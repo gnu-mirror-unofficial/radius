@@ -196,6 +196,7 @@ static void rad_daemon();
 static void rad_watcher();
 static void common_init();
 static void rad_main_loop();
+static void rad_fork_child_handler();
 static void meminfo();
 
 int radius_mode = MODE_DAEMON;    
@@ -446,6 +447,7 @@ main(argc, argv)
 		if (watch_interval)
 			rad_watcher();
                 common_init();
+		pthread_atfork(NULL, NULL, rad_fork_child_handler);
         }
 
         pid = getpid();
@@ -771,6 +773,13 @@ test_shell()
 }
 
 /* ************************************************************************* */
+
+/* Called in the child process just before fork() returns. */
+void
+rad_fork_child_handler()
+{
+        socket_list_close(socket_first);
+}
 
 void
 rad_susp()

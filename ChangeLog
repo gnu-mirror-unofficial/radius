@@ -1,3 +1,32 @@
+2003-09-29  Sergey Poznyakoff 
+
+	* include/cfg.h (cfg_get_number): New function.
+	* radiusd/config.y: Likewise.
+	* include/radius.h (enum avp_eval_type): New type.
+	(struct value_pair): Removed `eval'. Added new member
+	`eval_type'.
+	* include/rewrite.h (interpret): Removed.
+	(rewrite_interpret,rewrite_eval)
+	(rewrite_invoke,rewrite_compile)
+	(rewrite_get_stack_size,rewrite_set_stack_size): New function
+	* radiusd/rewrite.y: Likewise.
+	* lib/avl.c: Reflect the changes in VALUE_PAIR struct.
+	* lib/util.c: Likewise.
+	* lib/users.y (install_pair): Properly fill eval_type.
+	For IPADDR attributes whose value is of the form "IP+",
+	use Rewrite expression instead of adding fake
+	Add-Port-To-IP-Address attribute.
+	* radiusd/auth.c: Properly handle precompiled attributes
+	with deferred evaluation.
+	* radiusd/checkrad.c (compare): Use rewrite_invoke().
+	* radiusd/exec.c (filter_xlate): Use rewrite_interpret().
+	* radiusd/files.c (hints_setup,huntgroup_access): Use rewrite_eval
+	* radiusd/radck.c: Compile the A/V pairs marked as eval_interpret.
+	* radiusd/tsh.c: New command "rewrite-stack". Changed short
+	command names.
+	* radscm/rscm_rewrite.c (rad_rewrite_execute_string):
+	Use rewrite_interpret
+	
 2003-09-27  Sergey Poznyakoff
 
 	* NEWS: Updated.

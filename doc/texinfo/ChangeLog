@@ -1,3 +1,8 @@
+2003-09-29  Sergey Poznyakoff
+
+	* radius.texi: List particular radius utilities in the
+	main Info directory.
+
 2003-08-30  Sergey Poznyakoff  
 
 	* configure.texi: Provide a brief summary of configuration

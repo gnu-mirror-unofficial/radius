@@ -115,15 +115,6 @@ static char *compile_flag_str[] = {
 #if defined(OSFC2)
         "OSFC2",
 #endif
-#if defined(NT_DOMAIN_HACK)
-        "NT_DOMAIN_HACK",
-#endif
-#if defined(SPECIALIX_JETSTREAM_HACK)
-        "SPECIALIX_JETSTREAM_HACK",
-#endif
-#if defined(ASCEND_PORT_HACK)
-        "ASCEND_PORT_HACK",
-#endif
         NULL
 };
 

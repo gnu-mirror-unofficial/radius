@@ -535,9 +535,9 @@ category_stmt   : T_CATEGORY category_name begin category_list end
                           default:
                                   if (cat_def.level)
                                           radlog(L_WARN,
-                           _("%s:%d: no levels applicable for this category"),
-                                                 filename, line_num);
-
+						 "%s:%d: %s",
+                                                 filename, line_num
+				 _("no levels applicable for this category"));
                           }
                           in_category = 0;
                           register_category($2.cat, $2.pri, cat_def.head);
@@ -733,8 +733,9 @@ usedbm_stmt     : T_USEDBM T_BOOL
                                   radlog(L_DEBUG, "use dbm: %d", use_dbm);
 #else
                           radlog(L_WARN,
-                                 _("%s:%d: usedbm statement ignored: radiusd compiled without DBM support"),
-                                 filename, line_num);
+                                 "%s:%d: %s",
+                                 filename, line_num,
+				 _("usedbm statement ignored: radiusd compiled without DBM support"));
 #endif
                   }
                 ;
@@ -745,8 +746,9 @@ snmp_stmt       : T_SNMP '{' snmp_list '}'
                   {
 #ifndef USE_SNMP
                           radlog(L_WARN,
-                                 _("%s:%d: snmp statement ignored: radiusd compiled without snmp support"),
-                                 filename, line_num);
+                                 "%s:%d: %s",
+                                 filename, line_num,
+				 _("snmp statement ignored: radiusd compiled without snmp support"));
 #endif
                   }
                 ;
@@ -1001,8 +1003,10 @@ guile_stmt      : T_GUILE '{' guile_list '}'
                           use_guile = 1;
 #else
                           radlog(L_WARN,
-                                 _("%s:%d: guile statement ignored: radiusd compiled without guile support"),
-                                 filename, line_num);
+                                 "%s:%d: %s",
+                                 filename, line_num,
+                                 _("guile statement ignored: radiusd compiled without guile support"));
+
 #endif
                   }
                 ;
@@ -1016,8 +1020,9 @@ guile_def       : T_LOAD_PATH value EOL
 #ifdef USE_SERVER_GUILE
                           if ($2.type != AT_STRING) {
                                   radlog(L_ERR, 
-                                         _("%s:%d: wrong datatype (should be string)"),
-                                         filename, line_num);
+                                         "%s:%d: %s",
+                                         filename, line_num,
+					 _("wrong datatype (should be string)"));
                           } else
                                   scheme_add_load_path($2.v.string);
 #endif
@@ -1027,8 +1032,10 @@ guile_def       : T_LOAD_PATH value EOL
 #ifdef USE_SERVER_GUILE
                           if ($2.type != AT_STRING) {
                                   radlog(L_ERR, 
-                                         _("%s:%d: wrong datatype (should be string)"),
-                                         filename, line_num);
+                                         "%s:%d: %s",
+                                         filename, line_num,
+					 _("wrong datatype (should be string)"));
+
                           } else {
                                   scheme_load($2.v.string);
                           }
@@ -1270,8 +1277,10 @@ copy_alpha()
         
         do {
                 if (p >= yylval.string + sizeof(yylval.string)) {
-                        radlog(L_ERR, _("%s:%d: token too long"),
-                            filename, line_num);
+                        radlog(L_ERR,
+			       "%s:%d: %s", 
+			       filename, line_num,
+			       _("token too long"));
                         break;
                 }
                 *p++ = *curp++;
@@ -1291,8 +1300,8 @@ copy_string()
                         break;
                 }
                 if (p >= yylval.string + sizeof(yylval.string)) {
-                        radlog(L_ERR, _("%s:%d: token too long"),
-                            filename, line_num);
+                        radlog(L_ERR, "%s:%d: %s",
+			       filename, line_num, _("token too long"));
                         break;
                 }
                 *p++ = *curp++;
@@ -1315,8 +1324,8 @@ copy_digit()
         
         do {
                 if (p >= yylval.string + sizeof(yylval.string)) {
-                        radlog(L_ERR, _("%s:%d: token too long"),
-                            filename, line_num);
+                        radlog(L_ERR, "%s:%d: %s",
+			       filename, line_num, _("token too long"));
                         break;
                 }
                 if ((*p++ = *curp++) == '.')

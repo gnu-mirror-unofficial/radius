@@ -553,8 +553,9 @@ proxy_receive(radreq, activefd)
         
         if (oldreq == NULL) {
                 radlog_req(L_PROXY|L_ERR, radreq,
-                           _("Unrecognized proxy reply, proxy ID %d"),
-                       radreq->id);
+                           _("Unrecognized proxy reply from server %s, proxy ID %d"),
+			   client_lookup_name(radreq->ipaddr), 
+			   radreq->id);
                 return -1;
         }
 

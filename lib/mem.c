@@ -214,14 +214,14 @@ alloc_entry_nl(size)
         if (!class_ptr) {
                 class_ptr = alloc_class(size);
                 if (!class_ptr) {
-                        radlog(L_ERR, _("low core: exiting"));
+                        radlog(L_ERR, _("low core: aborting"));
                         abort();
                 }
         }
         
         if (!class_ptr->free) {
                 if (!alloc_bucket(class_ptr)) {
-                        radlog(L_ERR, _("low core: exiting"));
+                        radlog(L_ERR, _("low core: aborting"));
                         abort();
                 }
         }
@@ -315,7 +315,7 @@ calloc_entry(count, size)
                 /* allocate one if not found */
                 class_ptr = alloc_class(size);
                 if (!class_ptr) {
-                        radlog(L_ERR, _("low core: exiting"));
+                        radlog(L_ERR, _("low core: aborting"));
                         abort();
                 }
                 class_ptr->cont = 1;
@@ -374,7 +374,7 @@ again:
                         abort();
                 }
                 if (!alloc_bucket(class_ptr)) {
-                        radlog(L_ERR, _("low core: exiting"));
+                        radlog(L_ERR, _("low core: aborting"));
                         abort();
                 }
                 goto again;

@@ -936,8 +936,9 @@ stmt    : begin list end
           {
                   if (!loop_last) {
                           radlog(L_ERR,
-                                 _("%s:%d: nothing to break from"),
-                                 input_filename, input_line);
+                                 "%s:%d: %s",
+                                 input_filename, input_line,
+				 _("nothing to break from"));
                           errcnt++;
                           YYERROR;
                   }
@@ -950,8 +951,9 @@ stmt    : begin list end
           {
                   if (!loop_last) {
                           radlog(L_ERR,
-                                 _("%s:%d: nothing to continue"),
-                                 input_filename, input_line);
+                                 "%s:%d: %s",
+                                 input_filename, input_line,
+				 _("nothing to continue"));
                           errcnt++;
                           YYERROR;
                   }
@@ -1509,8 +1511,9 @@ yylex()
                         c = yychar;
                 if (input() != '\'') {
                         radlog(L_ERR,
-			       _("%s:%d: unterminated character constant"),
-                               input_filename, input_line);
+			       "%s:%d: %s",
+                               input_filename, input_line,
+			       _("unterminated character constant"),
                         errcnt++;
                 }
                 yylval.number = c;
@@ -2313,8 +2316,9 @@ mtx_bin(opcode, arg1, arg2)
                         break;
                 default:
                         radlog(L_ERR,
-                               _("%s:%d: operation not applicable for strings"),
-                               input_filename, input_line);
+                               "%s:%d: %s",
+                               input_filename, input_line,
+			       _("operation not applicable for strings"));
                         errcnt++;
                         return (MTX*)mtx;
                 }

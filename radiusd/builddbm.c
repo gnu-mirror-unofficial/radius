@@ -65,8 +65,9 @@ append_symbol(closure, sym)
         reply_len = list_length(sym->reply);
 
         if (2 + check_len + reply_len > closure->pair_buffer_size) {
-                radlog(L_ERR, _("%s:%d: too many attributes"),
-                       closure->filename, sym->lineno);
+                radlog(L_ERR, "%s:%d: %s",
+                       closure->filename, sym->lineno,
+		       _("too many attributes"));
                 return -1;
         }
 

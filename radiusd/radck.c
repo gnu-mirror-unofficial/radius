@@ -282,8 +282,9 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
                         if (strncmp(p->strvalue, "DEFAULT", 7) == 0 ||
                             strncmp(p->strvalue, "BEGIN", 5) == 0) {
                                 radlog(L_ERR,
-                        _("%s:%d: Match-Profile refers to a DEFAULT entry"),
-                                       filename, line);
+				       "%s:%d: %s",
+                                       filename, line,
+				       _("Match-Profile refers to a DEFAULT entry"));
                                 errcnt++;
                         }
                         break;
@@ -324,8 +325,9 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
         case DV_AUTH_TYPE_LOCAL:
                 if (!password && !pass_loc) {
                         radlog(L_ERR,
-                         _("%s:%d: No Password attribute in the checklist"),
-                               filename, line);
+			       "%s:%d: %s",
+                               filename, line,
+			       _("No User-Password attribute in LHS"));
                         errcnt++;
                 }
                 break;
@@ -335,37 +337,42 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
         case DV_AUTH_TYPE_ACCEPT:
                 if (password) {
                         radlog(L_WARN,
-                  _("%s:%d: Password attribute ignored for this Auth-Type"),
-                               filename, line);
+			       "%s:%d: %s",
+                               filename, line,
+			       _("User-Password attribute ignored for this Auth-Type"));
                 }
                 if (pass_loc) {
                         radlog(L_WARN,
-                  _("%s:%d: Password-Location attribute ignored for this Auth-Type"),
-                               filename, line);
+			       "%s:%d: %s",
+			       filename, line,
+			       _("Password-Location attribute ignored for this Auth-Type"));
                 }
                 break;
                 
         case DV_AUTH_TYPE_CRYPT_LOCAL:
                 if (!password && !crypt_password && !pass_loc) {
                         radlog(L_ERR,
-                       _("%s:%d: No Password attribute in the checklist"),
-                               filename, line);
+			       "%s:%d: %s",
+                               filename, line,
+			       _("No User-Password attribute in LHS"));
                         errcnt++;
                 }
                 break;
 
         case DV_AUTH_TYPE_SECURID:
                 radlog(L_ERR,
-                       _("%s:%d: Authentication type not supported"),
-                       filename, line);
+                       "%s:%d: %s",
+                       filename, line,
+		       _("Authentication type not supported"));
                 errcnt++;
                 break;
                 
         case DV_AUTH_TYPE_SQL:
                 if (password || crypt_password) {
                         radlog(L_WARN,
-                  _("%s:%d: Password attribute ignored for this Auth-Type"),
-                               filename, line);
+			       "%s:%d: %s",
+                               filename, line,
+			       _("User-Password attribute ignored for this Auth-Type"));
                 }
 
                 avl_delete(pairs, DA_AUTH_TYPE);
@@ -382,8 +389,9 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
         case DV_AUTH_TYPE_PAM:
                 if (pam_auth && auth_data) {
                         radlog(L_WARN,
-                 _("%s:%d: Both Auth-Data and PAM-Auth attributes present"),
-                               filename, line);
+			       "%s:%d: %s",
+                               filename, line,
+			       _("Both Auth-Data and PAM-Auth attributes present"));
                         auth_data = NULL;
                 } else 
                         pam_auth = auth_data = NULL;
@@ -428,8 +436,9 @@ fix_reply_pairs(cf_file, filename, line, name, pairs)
 
         if (strncmp(name, "BEGIN", 5) == 0 && fall_through == 0) {
                 radlog(L_WARN,
-                       _("%s:%d: BEGIN without Fall-Through"),
-                       filename, line);
+                       "%s:%d: %s",
+                       filename, line,
+		       _("BEGIN without Fall-Through"),
         }
         return errcnt;
 }

@@ -338,15 +338,17 @@ rad_sql_init()
         while (getline()) {
                 if (stmt_type == -1) {
                         radlog(L_ERR,
-                               _("%s:%d: unrecognized keyword"),
-                               sqlfile, line_no);
+                               "%s:%d: %s",
+                               sqlfile, line_no,
+			       _("unrecognized keyword"));
                         continue;
                 }
                 /* Each keyword should have an argument */
                 if (cur_ptr == NULL) {
                         radlog(L_ERR,
-                               _("%s:%d: required argument missing"),
-                               sqlfile, line_no);
+                               "%s:%d: %s",
+                               sqlfile, line_no,
+			       _("required argument missing"));
                         continue;
                 }
                 
@@ -368,8 +370,10 @@ rad_sql_init()
                 case STMT_PORT:
                         new_cfg.port = strtol(cur_ptr, &ptr, 0);
                         if (*ptr != 0 && !isspace(*ptr)) {
-                                radlog(L_ERR, _("%s:%d: number parse error"),
-                                       sqlfile, line_no);
+                                radlog(L_ERR,
+				       "%s:%d: %s",
+                                       sqlfile, line_no,
+				       _("number parse error"));
                                 new_cfg.doacct = 0;
                                 new_cfg.doauth = 0;
                         }
@@ -386,15 +390,17 @@ rad_sql_init()
                 case STMT_KEEPOPEN:
                         if (get_boolean(cur_ptr, &new_cfg.keepopen))
                                 radlog(L_ERR,
-                                       _("%s:%d: expected boolean value"),
-                                       sqlfile, line_no);
+                                       "%s:%d: %s",
+                                       sqlfile, line_no,
+				       _("expected boolean value"));
                         break;
 
                 case STMT_IDLE_TIMEOUT:
                         timeout = strtol(cur_ptr, &ptr, 0);
                         if ((*ptr != 0 && !isspace(*ptr)) || timeout <= 0) {
-                                radlog(L_ERR, _("%s:%d: number parse error"),
-                                       sqlfile, line_no);
+                                radlog(L_ERR, "%s:%d: %s",
+                                       sqlfile, line_no,
+				       _("number parse error"));
                         } else 
                                 new_cfg.idle_timeout = timeout;
                         break;
@@ -402,15 +408,17 @@ rad_sql_init()
                 case STMT_DOAUTH:       
                         if (get_boolean(cur_ptr, &new_cfg.doauth))
                                 radlog(L_ERR,
-                                       _("%s:%d: expected boolean value"),
-                                       sqlfile, line_no);
+                                       "%s:%d: %s",
+                                       sqlfile, line_no,
+				       _("expected boolean value"));
                         break;
                         
                 case STMT_DOACCT:
                         if (get_boolean(cur_ptr, &new_cfg.doacct))
                                 radlog(L_ERR,
-                                       _("%s:%d: expected boolean value"),
-                                       sqlfile, line_no);
+                                       "%s:%d: %s", 
+                                       sqlfile, line_no,
+				       _("expected boolean value"));
                         break;
                         
                 case STMT_AUTH_DB:
@@ -459,26 +467,31 @@ rad_sql_init()
                         
                 case STMT_MAX_AUTH_CONNECTIONS:
                         radlog(L_WARN,
-                               "%s:%d: auth_max_connections is obsolete",
-                               sqlfile, line_no);
+                               "%s:%d: %s",
+                               sqlfile, line_no,
+			       _("auth_max_connections is obsolete"));
                         break;
                         
                 case STMT_MAX_ACCT_CONNECTIONS:
                         radlog(L_WARN,
-                               "%s:%d: acct_max_connections is obsolete",
-                               sqlfile, line_no);
+                               "%s:%d: %s",
+                               sqlfile, line_no,
+			       _("acct_max_connections is obsolete"));
                         break;
                         
                 case STMT_QUERY_BUFFER_SIZE:
-                        radlog(L_WARN, "%s:%d: query_buffer_size is obsolete",
-                                       sqlfile, line_no);
+                        radlog(L_WARN,
+			       "%s:%d: %s",
+			       sqlfile, line_no,
+			       _("query_buffer_size is obsolete"));
                         break;
                         
                 case STMT_INTERFACE:
                         new_cfg.interface = disp_sql_interface_index(cur_ptr);
                         if (!new_cfg.interface) {
-                                radlog(L_WARN, "%s:%d: Unsupported SQL interface.",
-                                       sqlfile, line_no);
+                                radlog(L_WARN, "%s:%d: %s",
+                                       sqlfile, line_no,
+				       _("Unsupported SQL interface");
                         }
                         break;
                 }

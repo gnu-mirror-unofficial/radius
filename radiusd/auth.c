@@ -168,7 +168,8 @@ unix_pass(name, passwd)
 #ifdef DENY_SHELL
         /* Users with a certain shell are always denied access. */
         if (strcmp(pwd->pw_shell, DENY_SHELL) == 0) {
-                radlog(L_NOTICE, _("unix_pass: [%s]: invalid shell"), name);
+                radlog(L_NOTICE, "unix_pass: [%s]: %s",
+		       name, _("invalid shell"));
                 return -1;
         }
 #endif
@@ -179,7 +180,9 @@ unix_pass(name, passwd)
          */
         if (spwd && spwd->sp_expire > 0 &&
             (time(NULL) / 86400) > spwd->sp_expire) {
-                radlog(L_NOTICE, _("unix_pass: [%s]: password has expired"), name);
+                radlog(L_NOTICE,
+		       "unix_pass: [%s]: %s",
+		       name, _("password has expired"));
                 return -1;
         }
 #endif
@@ -189,7 +192,9 @@ unix_pass(name, passwd)
          * Check if the account is locked.
          */
         if (pr_pw->uflg.fg_lock != 1) {
-                radlog(L_NOTICE, _("unix_pass: [%s]: account locked"), name);
+                radlog(L_NOTICE,
+		       "unix_pass: [%s]: %s",
+		       name, _("account locked"));
                 return -1;
         }
 #endif /* OSFC2 */
@@ -625,46 +630,24 @@ auth_log(m, diag, pass, reason, addstr)
 {
         char buf[MAX_LONGNAME];
         
-#if 0
-        if (reason) {
-		if (pass)
-			radlog_req(L_NOTICE, m->req,
-				   "[%s] %s: %s %s",
-				   pass,
-				   diag, reason, addstr ? addstr : "");
-		else
-			radlog_req(L_NOTICE, m->req,
-				   "%s: %s %s",
-				   diag, reason, addstr ? addstr : "");
-        } else {
-		if (pass)
-			radlog_req(L_NOTICE, m->req,
-				   "[%s] %s",
-				   pass, diag);
-		else
-			radlog_req(L_NOTICE, m->req,
-				   "%s", diag);
-	}
-#else
         if (reason)
                 radlog_req(L_NOTICE, m->req,
-			   _("%s [%s%s%s]: %s%s, CLID %s"),
-                       diag,
-                       m->namepair->strvalue,
-                       pass ? "/" : "",
-                       pass ? pass : "",
-                       reason,
+			   "%s [%s%s%s]: %s%s, CLID %s",
+			   diag,
+			   m->namepair->strvalue,
+			   pass ? "/" : "",
+			   pass ? pass : "",
+			   reason,
 			   addstr,
 			   m->clid);
         else
                 radlog_req(L_NOTICE, m->req,
-			   _("%s [%s%s%s], CLID %s"),
-                       diag,
-                       m->namepair->strvalue,
-                       pass ? "/" : "",
-                       pass ? pass : "",
+			   "%s [%s%s%s], CLID %s",
+			   diag,
+			   m->namepair->strvalue,
+			   pass ? "/" : "",
+			   pass ? pass : "",
 			   m->clid);
-#endif
 }
 
 int
@@ -1116,11 +1099,10 @@ sfn_time(m)
                  * User called outside allowed time interval.
                  */
                 auth_format_msg(m, MSG_TIMESPAN_VIOLATION);
-                radlog(L_ERR,
-       _("Outside allowed timespan: [%s] (from nas %s) time allowed: %s"),
-                       m->namepair->strvalue,
-                       nas_request_to_name(m->req, buf, sizeof buf),
-                       m->check_pair->strvalue);
+                radlog_req(L_ERR,
+			   m->req,
+       _("Outside allowed timespan, time allowed: %s"),
+			   m->check_pair->strvalue);
                 newstate(as_reject);
         } else if (rc == 0) {
                 /*

@@ -1,3 +1,13 @@
+2003-05-18  Sergey Poznyakoff 
+
+	* intro.e.texi: Removed.
+	* naming.e.texi: Removed.
+	* operation.e.texi: Removed.
+	* intro.e.log: Removed.
+	* intro.texi: Corrections by Joe Fineman
+	* naming.texi: Likewise.
+	* operation.texi: Likewise.
+
 2003-02-23  Daniel Barowy <dan@barowy.net>
 
 	* operation.texi: Some grammatical changes.

@@ -1,3 +1,20 @@
+2003-05-06  Sergey Poznyakoff
+
+	* configure.ac: Raised version number.
+	* include/radiusd.h: New request state: RS_XMIT
+	* lib/list.c (list_remove): Check for p==NULL
+	* lib/radsrv.c: Removed #undef DEBUG_ONLY
+	* radiusd/request.c: Bugfixes.
+	* radiusd/rpp.c: Likewise.
+	* radiusd/acct.c (rad_acct_system): Bugfix. Thanks Alex Deiter
+	<tiamat@komi.mts.ru> for noticing. Strange it wasn't noticed
+	so far, possibly no one is using ComOS now, I'd better remove this
+	part of code?
+	* radiusd/Makefile.am (FILELIST:): Fixed.
+	* radiusd/radiusd.c (radiusd_cleanup): Print the status of each
+	exited child.
+	(radiusd_signal_init): Do not catch SIGTRAP
+	
 2003-05-03  Sergey Poznyakoff 
 
 	* lib/list.c: Fixed iterators to correctly handle iterator_next()

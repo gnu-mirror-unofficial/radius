@@ -61,6 +61,7 @@ extern int abort_on_failure;
 extern int x_argmax;
 extern int x_argc;
 extern char **x_argv;
+extern int disable_readline;
 
 int open_input(char *name);
 void close_input();
@@ -75,4 +76,6 @@ int var_free(Variable *var);
 void var_print(Variable *var);
 int compare_lists(grad_avp_t *reply, grad_avp_t *sample);
 int parse_datum(char *p, union datum *dp);
+
+char **radtest_command_completion(char *text, int start, int end);
 

@@ -66,20 +66,39 @@ fill_input_buffer(char *buf, int bufsize)
 		int rest;
 		
 		if (!input_line || input_pos == input_length) {
-			free(input_line);
-			input_line = grad_readline(prompt_str);
-			if (!input_line)
-				return 0;
-			grad_add_history(input_line);
-			input_length = strlen (input_line);
-			input_line = realloc(input_line, input_length+2);
-			if (!input_line) {
-				fprintf (stderr, _("low core: aborting"));
-				abort();
+			if (disable_readline) {
+				static size_t input_size;
+				
+				printf("%s", prompt_str);
+				fflush(stdout);
+				
+				if (getline(&input_line, &input_size,
+					    yyin) < 0) {
+					free (input_line);
+					input_line = NULL;
+					input_length = 0;
+					return 0;
+				}
+				input_length = strlen(input_line);
+				input_pos = 0;
+			} else {
+				free(input_line);
+				input_line = grad_readline(prompt_str);
+				if (!input_line)
+					return 0;
+				grad_add_history(input_line);
+				input_length = strlen (input_line);
+				input_line = realloc(input_line,
+						     input_length+2);
+				if (!input_line) {
+					fprintf (stderr,
+						 _("low core: aborting"));
+					abort();
+				}
+				input_line[input_length++] = '\n';
+				input_line[input_length] = 0;
+				input_pos = 0;
 			}
-			input_line[input_length++] = '\n';
-			input_line[input_length] = 0;
-			input_pos = 0;
 		}
 		rest = input_length - input_pos;
 		if (bufsize > rest)
@@ -289,7 +308,7 @@ open_input(char *name)
                 fp = stdin;
         }
 
-        interactive = isatty(fileno(fp));
+	interactive = isatty(fileno(fp));
 	grad_readline_init("radtest", interactive, radtest_command_completion);
 	if (interactive) 
 		grad_readline_set_input(fp);

@@ -56,6 +56,7 @@ char *filename = NULL;
 char *server = NULL;
 int retry = 0;
 int timeout = 0;
+int disable_readline;
 
 const char *argp_program_version = "radtest (" PACKAGE ") " VERSION;
 static char doc[] = N_("send arbitrary radius packets");
@@ -81,6 +82,8 @@ static struct argp_option options[] = {
          N_("set timeout"), 0},
         {"verbose", 'v', NULL, 0,
          N_("verbose mode"), 0},
+	{"no-interactive", 'n', NULL, 0,
+	 N_("disable interactive mode"), 0 },
         {NULL, 0, NULL, 0, NULL, 0}
 };
 
@@ -107,6 +110,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
         case 'f':
                 filename = optarg;
                 break;
+
+	case 'n':
+		disable_readline = 1;
+		break;
 		
         case 't':
                 timeout = strtol(optarg, NULL, 0);

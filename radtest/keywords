@@ -1,7 +1,0 @@
-# token		input	     
-AUTH		auth	     
-ACCT		acct	     	
-SEND		send	     
-EXPECT		expect	     
-PRINT		print	     
-EXIT		exit

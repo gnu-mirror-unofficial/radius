@@ -68,7 +68,7 @@ extern int strncasecmp(char*, char*, int);
 #endif	/* needed for AIX */
 
 /* UTMP stuff. Uses utmpx on svr4 */
-#ifdef __svr4__
+#if defined(__svr4__) || defined(__sgi)  
 #  include <utmpx.h>
 #  include <sys/fcntl.h>
 #  define utmp utmpx

@@ -577,7 +577,7 @@ rad_acct_db(radreq, authtype)
 {
 	int rc = 0;
 
-	if (ACCT_TYPE(radreq->request, DV_ACCT_TYPE_DETAIL))
+	if (acct_detail && ACCT_TYPE(radreq->request, DV_ACCT_TYPE_DETAIL))
 		rc = write_detail(radreq, authtype, "detail");
 #ifdef USE_SQL
 	if (ACCT_TYPE(radreq->request, DV_ACCT_TYPE_SQL))

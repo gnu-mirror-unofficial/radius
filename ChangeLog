@@ -16,6 +16,9 @@
 	
 	* radscripts/radauth.m4: Reflect new radtest syntax.
 	
+	* autogen.sh: Print a reminder for first-time installers.
+	* test/dejagnu/README: Fixed typos.
+
 2001-12-16 Sergey Poznyakoff
 
 	* README: Updated.

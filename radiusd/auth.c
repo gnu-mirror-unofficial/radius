@@ -434,13 +434,13 @@ rad_auth_init(RADIUS_REQ *radreq, int activefd)
 {
         VALUE_PAIR *namepair;
         
+	log_open(L_AUTH);
         /*
          * Get the username from the request
          */
         namepair = avl_find(radreq->request, DA_USER_NAME);
 
-        if ((namepair == (VALUE_PAIR *)NULL) || 
-           (strlen(namepair->avp_strvalue) <= 0)) {
+        if (avp_null_string(namepair)) {
                 radlog_req(L_ERR, radreq, _("No username"));
                 stat_inc(auth, radreq->ipaddr, num_bad_req);
                 return -1;
@@ -452,11 +452,6 @@ rad_auth_init(RADIUS_REQ *radreq, int activefd)
                 return -1;
         }
                 
-        /*
-         * Add any specific attributes for this username.
-         */
-        hints_setup(radreq);
-
         if (auth_detail)
                 write_detail(radreq, -1, "detail.auth");
 
@@ -711,8 +706,7 @@ rad_authenticate(RADIUS_REQ *radreq, int activefd)
         struct auth_state_s *sp;
         struct auth_mach m;
 
-        log_open(L_AUTH);
-        
+	log_open(L_AUTH);
         m.req = radreq;
         m.activefd = activefd;
         m.user_check = NULL;

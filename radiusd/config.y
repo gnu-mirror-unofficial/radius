@@ -95,7 +95,7 @@ static char *curp;
 static int expect_string; 
 static int in_category;
 
-static Channel channel;
+Channel channel;
 
 static void skipws();
 static void skipline();
@@ -149,7 +149,7 @@ static void asgn(void *base, Value *value, int type, int once);
 };
 
 %token EOL
-%token T_ALLOW T_AUTH T_CATEGORY T_DENY T_DETAIL T_FILE T_INFO
+%token T_ALLOW T_AUTH T_CATEGORY T_DENY T_DETAIL T_EXPWARNING T_FILE T_INFO
 %token T_IDENT T_LEVEL T_LISTEN T_LOGGING T_NETWORK T_MAIN T_OPTION T_USEDBM
 %token T_CHECKRAD_ASSUME_LOGGED T_DELAY T_DETAIL T_HOST           
 %token T_EXEC_PROGRAM_GROUP T_EXEC_PROGRAM_USER T_LOG_DIR T_MAX_REQUESTS
@@ -327,6 +327,10 @@ auth_def        : listen_stmt
 			  asgn(&config.checkrad_assume_logged, &$2,
 			       AT_BOOL, 0);
 		  }      
+                | T_EXPWARNING value
+                  {
+			  asgn(&warning_seconds, &$2, AT_INT, 0);
+		  }
                 ;
 
         /* Acct statement */
@@ -478,7 +482,6 @@ channel_def     : /* empty */ EOL
                   {
 			  channel.mode = LM_SYSLOG;
 			  channel.id.prio = $2 | syslog_severity[$4] ;
-			  channel.id.file = NULL;
                   }
                 | T_LOGOPT T_BOOL EOL
                   {

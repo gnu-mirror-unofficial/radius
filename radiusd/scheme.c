@@ -78,20 +78,21 @@ scheme_add_load_path(char *path)
 }
 
 struct scheme_exec_data {
-	void (*handler) (void *data);
+	SCM (*handler) (void *data);
 	void *data;
+	SCM result;
 };
 
 static SCM
 scheme_safe_exec_body (void *data)
 {
 	struct scheme_exec_data *ed = data;
-	ed->handler (ed->data);
+	ed->result = ed->handler (ed->data);
 	return SCM_BOOL_F;
 }
 
 static int
-scheme_safe_exec(void (*handler) (void *data), void *data)
+scheme_safe_exec(SCM (*handler) (void *data), void *data, SCM *result)
 {
  	jmp_buf jmp_env;
 	struct scheme_exec_data ed;
@@ -103,43 +104,48 @@ scheme_safe_exec(void (*handler) (void *data), void *data)
 	scm_internal_lazy_catch(SCM_BOOL_T,
 				scheme_safe_exec_body, (void*)&ed,
 				eval_catch_handler, &jmp_env);
+	if (result)
+		*result = ed.result;
 	return 0;
 }
 
-static void
+static SCM
 load_path_handler(void *data)
 {
 	scm_primitive_load_path((SCM)data);
+	return SCM_UNDEFINED;
 }
 
 static int
 scheme_load(char *filename)
 {
-	return scheme_safe_exec(load_path_handler, scm_makfrom0str(filename));
+	return scheme_safe_exec(load_path_handler, scm_makfrom0str(filename),
+				NULL);
 }
 
-static void
+static SCM
 load_module_handler(void *data)
 {
 	scm_c_use_module(data);
+	return SCM_UNDEFINED;
 }
 
 static int
 scheme_load_module(char *filename)
 {
-	return scheme_safe_exec(load_module_handler, filename);
+	return scheme_safe_exec(load_module_handler, filename, NULL);
 }
 
-static void
+static SCM
 eval_expr(void *data)
 {
-	scm_eval_string((SCM)data);
+	return scm_eval_string((SCM)data);
 }
 
 static int
-scheme_eval_expression(char *exp)
+scheme_eval_expression(char *exp, SCM *result)
 {
-	return scheme_safe_exec(eval_expr, scm_makfrom0str(exp));
+	return scheme_safe_exec(eval_expr, scm_makfrom0str(exp), result);
 }
 
 static void
@@ -161,16 +167,17 @@ scheme_read_eval_loop()
         printf("%d\n", status);
 }
 
-static void
+static SCM
 close_port_handler(void *port)
 {
 	scm_close_port((SCM)port);
+	return SCM_UNDEFINED;
 }
 
 static void
 silent_close_port(SCM port)
 {
-	scheme_safe_exec(close_port_handler, port);
+	scheme_safe_exec(close_port_handler, port, NULL);
 }
 
 void
@@ -236,7 +243,16 @@ scheme_call_proc(SCM *result, char *procname, SCM arglist)
 					  eval_catch_handler, &jmp_env);
 	return 0;
 }
-	
+
+int
+scheme_eval_boolean_expr(char *expr)
+{
+	SCM result;
+	if (scheme_eval_expression(expr, &result))
+		return -1;
+	return result != SCM_BOOL_F;
+}
+
 
 /* Main loop */
 
@@ -286,7 +302,7 @@ scheme_try_auth(int auth_type, grad_request_t *req,
 	grad_avp_t *tmp =
 		radius_decrypt_request_pairs(req,
 					     grad_avl_dup(req->request));
-        static const char *try_auth = "radiusd-try-auth";
+        static char *try_auth = "radiusd-try-auth";
 	
 	s_request = radscm_avl_to_list(tmp);
 	radius_destroy_pairs(&tmp);
@@ -579,7 +595,7 @@ scheme_cfg_eval(int argc, cfg_value_t *argv, void *block_data,
 		if (argv[i].type != CFG_STRING)
 			cfg_type_error(CFG_STRING);
 		else
-			scheme_eval_expression(argv[i].v.string);
+			scheme_eval_expression(argv[i].v.string, NULL);
 	}
 	return 0;
 }

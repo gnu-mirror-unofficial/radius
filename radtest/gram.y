@@ -46,14 +46,15 @@ extern grad_locus_t source_locus;
 char *print_ident(Variable *var);
 int subscript(Variable *var, char *attr_name, int all, Variable *ret_var);
 
-extern int yylex();
 int yyerror(char *s);
+
+extern int yylex();
 
 %}
 
 %token EOL AUTH ACCT SEND EXPECT
 %token EQ LT GT NE LE GE
-%token PRINT ALL VARS
+%token PRINT 
 %token EXIT
 %token <ident> IDENT
 %token <string> NAME
@@ -89,17 +90,11 @@ int yyerror(char *s);
 
 %%
 
-input         : { prompt(); } list
+input         : list
               ;
 
 list          : stmt
-                {
-                        prompt();
-                }
               | list stmt
-                {
-                        prompt();
-                }
               ;
 
 stmt          : /* empty */ EOL

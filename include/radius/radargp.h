@@ -1,6 +1,3 @@
-#ifdef HAVE_CONFIG_H
-# include <config.h>
-#endif
 
 #if defined(WITH_INCLUDED_ARGP)
 # include <../lib/argp.h>

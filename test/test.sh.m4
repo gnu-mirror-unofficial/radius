@@ -48,16 +48,16 @@ if expr ${[BUILDDIR]:?} : '\..*' 2>/dev/null 1>&2; then
     [BUILDDIR]="`pwd`/$[BUILDDIR]"
 fi
 
-if [ "$RADTEST" = "" ]; then
+if test "$RADTEST" = "" ; then
     RADTEST=$[BUILDDIR]/radtest/radtest
 fi
-if [ "$RADIUSD" = "" ]; then    
+if test "$RADIUSD" = "" ; then    
     RADIUSD=$[BUILDDIR]/radiusd/radiusd
 fi
     
 cd $[BUILDDIR]/test
 
-if [ ! -f raddb/config.in ]; then
+if test ! -f raddb/config.in ; then
     cp -r ${[SOURCEDIR]}/test/raddb .
 fi
 
@@ -72,8 +72,8 @@ do
     sed $EXPR raddb/${file}.in > raddb/$file
 done
 
-[ -d log ] || mkdir log
-[ -d acct ] || mkdir acct
+[[ -d log ]] || mkdir log
+[[ -d acct ]] || mkdir acct
 for file in log/radwtmp log/radutmp log/radius.log log/radius.info log/radius.debug log/radius.stderr 
 do
     cat /dev/null > $file

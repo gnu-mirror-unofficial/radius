@@ -46,19 +46,15 @@ directory by @file{raddb}. @xref{Naming Conventions}.
 @cindex Radiusd configuration
 @cindex @file{raddb/config} file
 
-@command{radiusd} uses the configuration values from the following
-sources (in order of increasing precedence):
+At startup @command{radiusd} obtains its configuration values from three
+places. The basic configuration is kept in the executable module
+itself.  These values are overridden by those obtained from
+@file{raddb/config} file. Finally, the options obtained from the
+command line override the first two sets of options.
 
-@enumerate 1
-@item Compiled-in defaults
-@item @file{raddb/config} file.
-@item Command line arguments
-@end enumerate
-
-This order of precedence applies only on startup. When re-reading of
-the configuration is initiated either by @code{SIGHUP} signal or by
-SNMP channel any changes in the config file take
-precedence over command line arguments, since @file{raddb/config} is
+When re-reading of the configuration is initiated either by
+@code{SIGHUP} signal or by SNMP channel any changes in the config file
+take precedence over command line arguments, since @file{raddb/config} is
 the only way to change configuration of the running program.
 
 This chapter discusses the @file{raddb/config} file in detail.
@@ -191,7 +187,25 @@ for the given user.
 Determines characters that are valid within a username. The alphanumeric
 characters are always allowed in a username, it is not necessary to
 specify them in this statement. By default the following characters
-are allowed in a username: @samp{.-_!@@#$%^&\/"}.
+are allowed in a username: @samp{.-_!@@#$%^&\/"}. The
+@code{username-chars} statement overrides this default, thus setting:
+
+@smallexample
+username-chars ":"
+@end smallexample
+
+@noindent
+will restrict the set of allowed characters to the alphanumeric
+characters and colon. If you wish to expand the default character
+set, you will have to explicitly specify it in the
+@code{username-chars} argument, as shown in the example below:
+
+@smallexample
+username-chars ".-_!@@#$%^&\\/\":"
+@end smallexample
+
+@noindent
+(Notice the use of escape character @samp{\}).
 
 @item log-dir
 Specifies the logging directory.
@@ -238,6 +252,8 @@ logging @{
 The @code{logging} statement describes the course followed by
 @command{radiusd}'s logging information.
 
+The parts of this statement are discussed below.
+
 @menu
 * category::         @code{category} statement.
 * channel::          @code{channel} statement.
@@ -267,8 +283,8 @@ the messages displayed by this channel. The priorities in ascending
 order are: @code{debug}, @code{info}, @code{notice}, @code{warn},   
 @code{err}, @code{crit}, @code{alert}, @code{emerg}.
 
-The full category specification, @dfn{category_spec}, can take any of
-the following three forms:
+The full category specification, denoted by the @code{category_spec}
+in the above section, can take any of the following three forms:
 
 @table @asis
 @item category_name
@@ -283,7 +299,8 @@ be displayed.
 @item category_name . priority
 Print the messages of given category, abridged by given priority. The
 priority may be prefixed with either @samp{=} or @samp{!} as described
-above.
+above. The dot (@samp{.}) separates the priority from the category
+name, it may be surrounded by any amount of whitespace.
 @end table
 
 Additional category options valid for @code{auth} category are:
@@ -431,11 +448,20 @@ default authentication port is assumed.
 If the @code{listen} statement is omitted, radiusd will accept incoming
 requests from any interface on the machine.
 
+The following example configures radius to listen for the incoming
+requests on the default authentication port on the address 10.10.10.1
+and on port 1645 on address 10.10.11.2.
+
+@smallexample
+listen 10.10.10.1, 10.10.11.2:1645;
+@end smallexample
+
 @subheading Numeric statements
 
 @table @code
 @item port
-Sets the number of @sc{udp} port to listen on for the authentication requests.
+Sets the number of which @sc{udp} port to listen on for the
+authentication requests.
 
 @item max-requests
 Sets the maximum number of authentication requests in the queue. Any
@@ -535,11 +561,19 @@ default accounting port is assumed.
 If the @code{listen} statement is omitted, radiusd will accept incoming
 requests from any interface on the machine.
 
+The following example configures radius to listen for the incoming
+requests on the default accounting port on the address 10.10.10.1
+and on port 1646 on address 10.10.11.2.
+
+@smallexample
+listen 10.10.10.1, 10.10.11.2:1646;
+@end smallexample
+
 @subheading Numeric statements
 
 @table @code
 @item port 
-Sets the port number to listen for the authentication requests.
+Sets the number of which port to listen for the authentication requests.
 
 @item max-requests 
 Sets the maximum number of accounting requests in the queue. Any
@@ -690,16 +724,25 @@ listen for incoming SNMP requests. The argument is a comma-separated
 list of items in the form @var{ip}:@var{port-number}. The @var{ip} can
 be either an IP address in familiar ``dotted-quad'' notation or a
 hostname. The :@var{port-number} part may be omitted, in which case the
-default accounting port is assumed.
+default SNMP port (161) is used.
 
 If the @code{listen} statement is omitted, radiusd will accept incoming
 requests from any interface on the machine.
+
+The following example configures radius to listen for the incoming
+SNMP requests on the default SNMP port on the address 10.10.10.1
+and on port 4500 on address 10.10.11.2.
+
+@smallexample
+listen 10.10.10.1, 10.10.11.2:4500;
+@end smallexample
+
 
 @subheading Numeric statements
 
 @table @code
 @item port
-Sets the port number to listen for the SNMP requests.
+Sets the number of which port to listen for the SNMP requests.
 
 @item max-requests
 Sets the maximum number of SNMP requests in the queue. Any
@@ -775,8 +818,8 @@ file:
 
 @cartouche
 @example
-reached SNMP storage limit for the number of monitored NASes:
-increase max-nas-count
+reached SNMP storage limit for the number of
+monitored NASes: increase max-nas-count
 @end example
 @end cartouche
 
@@ -787,8 +830,8 @@ file:
 
 @cartouche
 @example
-reached SNMP storage limit for the number of monitored ports:
-increase max-port-count
+reached SNMP storage limit for the number of
+monitored ports: increase max-port-count
 @end example
 @end cartouche
 
@@ -856,9 +899,14 @@ scripts.
 
 @table @code
 @item gc-interval
-Sets the interval in seconds between the two successive forced
-garbage collections. Setting this value to @code{0} disables forced
-garbage collections. This is the default.
+Configures the forced garbage collections. By default the invocation
+of the garbage collector is run by the internal Guile mechanism.
+However, you may force Radius to trigger the garbage collection
+at fixed time intervals. The @code{gc-interval} statement sets
+such interval in seconds.
+
+For more information about Guile memory management system in general
+and garbage collections in particular, see @ref{Memory Management,,Memory Management and Garbage Collection,guile,The Guile Reference Manual}.
 
 @end table
 
@@ -874,7 +922,7 @@ functions to the given file. Unless the filename starts with @samp{/},
 it is taken relative to the current logging directory.
 @end table
 
-For a detailed description of Guile extensions interface, @xref{Guile}.
+@xref{Guile}, for a detailed description of Guile extensions interface.
 
 @comment **L3***************************************************************
 @node message
@@ -939,7 +987,7 @@ a not-existent user-name as his authentication credentials.
 @item realm-quota
 This message is returned when the user is trying to log in using a
 realm, and number of users that are currently logged in from this realm
-reaches maximum value. For a description of realms, @xref{Realms}.
+reaches maximum value. For a description of realms, see @ref{Realms}.
 @item multiple-login
 This message is returned to the user, who has logged in more than
 allowed number of times. For description of how to set the maximum
@@ -994,6 +1042,8 @@ argument declares the name of the filter. This string must be
 used in @attr{Exec-Program-Wait} or @attr{Acct-Ext-Program} attributes
 to trigger invocation of this filter (@pxref{Exec-Program-Wait}).
 
+@subheading Usage
+
 @table @asis
 @item exec-path @var{path}
 Absolute path to the filter program.
@@ -1034,6 +1084,7 @@ this to @code{yes}. Otherwise, if the filter produces no output, use
 
 @end table
 
+
 @comment *L2****************************************************************
 @node dictionary file
 @section Dictionary of Attributes --- @file{raddb/dictionary}
@@ -1042,7 +1093,7 @@ this to @code{yes}. Otherwise, if the filter produces no output, use
 
 The dictionary file @file{raddb/dictionary} defines the symbolic names
 for radius attributes and their values (@pxref{Attributes}). The file consists
-of a series of statements. Each statement occupies one line.
+of a series of statements, each statement occupies one line.
 
 In the detailed discussion below we use the following meta-syntactic
 characters:
@@ -1069,8 +1120,6 @@ abbreviation, DD is day of month (1-31), CCYY is the year, including the
 century.
 @end table
 @end table
-
-There are following kinds of statements:
 
 @menu
 * Comment::             Introducing a comment line.
@@ -1108,7 +1157,7 @@ directory. @xref{Configuration Files}.
 
 @subheading Syntax
 @smallexample
-VENDOR  Vendor-Name     @var{number}
+VENDOR  Vendor-Name  @var{number}
 @end smallexample 
 
 @subheading Usage
@@ -1118,7 +1167,7 @@ to define Vendor-Specific attribute translations. @xref{Vendor-Specific}.
 
 @subheading Example
 @smallexample
-VENDOR          Livingston      307
+VENDOR  Livingston  307
 @end smallexample
 
 @comment **L3***************************************************************
@@ -1131,7 +1180,8 @@ ATTRIBUTE  @var{name}  @var{number}  @var{type} [@var{vendor} [@var{flags}]]
 @end smallexample
 
 @subheading Usage
-The @code{ATTRIBUTE} statement defines the translation for an attribute.
+The @code{ATTRIBUTE} statement defines the internal representation of
+an attribute: its symbolic name, data type and syntactical usage.
 Its parts have the following meaning:
 
 @table @var
@@ -1198,9 +1248,10 @@ The characters from @samp{1} to @samp{9} denote nine user-defined flags
 ATTRIBUTE  Service-Type  6 integer - [LR-RLR]=P 
 @end smallexample
 
-This statement assigns the translation string @samp{Service-Type} to the
-attribute number 6. It allows the use of this attribute in any part
-of matching rules, except in @LHS{} of a @file{raddb/hints} rule. The
+This statement declares that the attribute number 6 will be referred
+to by the symbolic name @samp{Service-Type}. The attribute is of
+integer data type and it may be used  in any part of matching rules,
+except in @LHS{} of a @file{raddb/hints} rule. The
 additivity of @attr{Service-Type} is set to @samp{Replace}. The
 attribute will be propagated through the proxy chain.
 
@@ -1226,7 +1277,7 @@ The following assigns the translation string @samp{Login-User} to
 the value 1 of the attribute @samp{Service-Type}.
 
 @smallexample
-VALUE           Service-Type            Login-User              1
+VALUE  Service-Type  Login-User  1
 @end smallexample
 
 @comment *L2****************************************************************
@@ -1279,7 +1330,7 @@ merlin                  emrys
 
 The @file{raddb/naslist} file contains a list of @NAS{}es known to the Radius
 server. Each record in the file consist of the following four fields,
-the first two being mandatory, the rest being optional:
+the first two being mandatory, the last two being optional:
 
 @table @asis
 @item NAS name
@@ -1322,7 +1373,7 @@ Logins}). These arguments override the ones specified in
 @file{nastypes} and can thus be used to override the default
 values.
 
-The  @dfn{nas-specific} arguments currently implemented are:
+The @dfn{nas-specific} arguments currently implemented are:
 
 @table @asis
 @item broken_pass
@@ -1411,7 +1462,7 @@ Method to use to query a @NAS{} of given type.
 Arguments to pass to this method. Each argument is a pair
 @var{arg}=@var{value}, where @var{arg} is its name and @var{value} is
 a value assigned to it. The list of predefined argument names follows.
-@emph{Note}, that no intervening whitespace is allowed in this
+Note, that no intervening whitespace is allowed in this
 field.
 @end table
 
@@ -1487,7 +1538,7 @@ Expands to port number + 1.
 @subsection Example of nastypes file.
 @exindex @file{nastypes} file
 
-@emph{Note}, that in the following example the long lines are
+Note, that in the following example the long lines are
 broken into several lines for readability.
 
 @smallexample
@@ -1537,7 +1588,7 @@ nas.name        T           max-f broken_pass
 @end group
 @end smallexample
 
-@emph{Note} the use of @code{broken_pass} flag. It is needed
+Note the use of @code{broken_pass} flag. It is needed
 for most MAX Ascend servers (@pxref{naslist file}).
 
 @item max --- MAX Ascend, answering SNMP
@@ -1740,7 +1791,7 @@ dom.ain                 server.dom.ain:3000             strip,quota=20
 @cindex @file{raddb/users} file
 
 File @file{raddb/users} contains the list of @dfn{User Profiles}.
-For a description of its purpose, @xref{User Profiles}.
+@xref{User Profiles}, for a description of its purpose.
 
 @menu
 * Example: users example.       An example of @file{users} file.
@@ -2067,7 +2118,7 @@ NAS-Port-Id <= 20
 @item
 Radius compares the incoming request with the @LHS{} pairs thus
 obtained. If the comparison fails, it rejects the authentication.
-@emph{Note} that the @attr{Auth-Type} attributes itself
+Note that the @attr{Auth-Type} attributes itself
 triggers execution of @code{auth_query}, described in the previous
 section.
 @item

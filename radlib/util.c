@@ -423,7 +423,7 @@ format_pair(pair, savep)
 		break;
 		
 	case TYPE_IPADDR:
-		ipaddr2str(pair->lvalue, buf2);
+		ip_iptostr(pair->lvalue, buf2);
 		break;
 		
 	case TYPE_DATE:

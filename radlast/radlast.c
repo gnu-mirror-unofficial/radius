@@ -163,7 +163,7 @@ main(argc, argv)
 			file = optarg;
 			break;
 		case 'h':
-			host_ip = htonl(get_ipaddr(optarg));
+			host_ip = htonl(ip_gethostaddr(optarg));
 			break;
 		case 'L':
 			license();
@@ -211,7 +211,7 @@ main(argc, argv)
 	read_naslist();
 
 	if (nas_name) {
-		nas_ip = get_ipaddr(nas_name);
+		nas_ip = ip_gethostaddr(nas_name);
 		if (!nas_ip) {
 			NAS *nas = nas_lookup_name(nas_name);
 			if (nas)
@@ -257,7 +257,7 @@ rawread()
 		strftime(ct, sizeof(ct), "%c", tm);
 
 		ipaddr = ut.framed_address;
-		ipaddr2str(ntohl(ipaddr), ip_str);
+		ip_iptostr(ntohl(ipaddr), ip_str);
 		
 		printf("%d %-*.*s %-*.*s %3.3d %-4.4s %c %-*.*s %-*.*s %-*.*s %10.10s %5.5s\n",
 		       ut.type,
@@ -655,7 +655,7 @@ print_entry(pp, bp, mark)
 	ipaddr = bp->framed_address;
 	if (ipaddr == 0 && pp)
 		ipaddr = pp->ut.framed_address;
-	ipaddr2str(ntohl(ipaddr), ip_str);
+	ip_iptostr(ntohl(ipaddr), ip_str);
 
 	if (long_fmt) {                                   
 		printf("%-*.*s %-*.*s %3.3d %-4.4s %c %-*.*s %-*.*s %-*.*s %10.10s %5.5s ",

@@ -270,7 +270,7 @@ install_pair(name, op, valstr)
 
 	case TYPE_IPADDR:
 		if (pair->attribute != DA_FRAMED_IP_ADDRESS) {
-			pair->lvalue = get_ipaddr(valstr);
+			pair->lvalue = ip_gethostaddr(valstr);
 		} else {
 			/*
 			 *	We allow a "+" at the end to
@@ -286,7 +286,7 @@ install_pair(name, op, valstr)
 					x = 1;
 				}
 			}
-			pair->lvalue = get_ipaddr(valstr);
+			pair->lvalue = ip_gethostaddr(valstr);
 
 			/*
 			 *	Add an extra (hidden) attribute.

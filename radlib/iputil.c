@@ -46,7 +46,7 @@ int do_not_resolve = 0;
  *	for the supplied IP address.
  */
 char * 
-ip_hostname(ipaddr, namebuf, size)
+ip_gethostname(ipaddr, namebuf, size)
 	UINT4 ipaddr;
 	char *namebuf;
 	size_t size;
@@ -63,7 +63,7 @@ ip_hostname(ipaddr, namebuf, size)
 				     sizeof (struct in_addr), AF_INET,
 				     &hent, buffer, sizeof buffer, &h_err);
 	if (hp == (struct hostent *) NULL) 
-		return ipaddr2str(ipaddr, namebuf);
+		return ip_iptostr(ipaddr, namebuf);
 
 	len = strlen((char *)hp->h_name);
 	if (len > size)
@@ -78,7 +78,7 @@ ip_hostname(ipaddr, namebuf, size)
  * name or address in dot notation.
  */
 UINT4 
-get_ipaddr(host)
+ip_gethostaddr(host)
 	char *host;
 {
 	struct hostent	*hp, hent;
@@ -86,7 +86,7 @@ get_ipaddr(host)
 	int h_err;
 	
 	if (good_ipaddr(host) == 0) {
-		return ipstr2long(host);
+		return ip_strtoip(host);
 	}
 	hp = gethostbyname_r(host, &hent, buffer, sizeof(buffer), &h_err);
 	if (!hp)
@@ -125,44 +125,24 @@ good_ipaddr(addr)
  * provided address in host long notation.
  */
 char *
-ipaddr2str(ipaddr, buffer)
+ip_iptostr(ipaddr, buffer)
 	UINT4 ipaddr;
 	char *buffer; 
-#ifdef HAVE_INET_NTOA
 {
-	struct in_addr in;
-	char           *p;
-
-	in.s_addr = ntohl(ipaddr);
-	if (p = inet_ntoa(in))
-		strncpy(buffer, p, DOTTED_QUAD_LEN);
-	else
-		strcpy(buffer, "0.0.0.0");
+	register char *p;
+	
+	p = (char *)&ipaddr;
+#define UC(b)   (((int)b)&0xff)
+	sprintf(buffer, "%d.%d.%d.%d", UC(p[0]), UC(p[1]), UC(p[2]), UC(p[3]));
 	return buffer;
 }
-#else
-{
-	int	addr_byte[4];
-	int	i;
-	UINT4	xbyte;
-
-	for (i = 0; i < 4; i++) {
-		xbyte = ipaddr >> (i*8);
-		xbyte = xbyte & (UINT4)0x000000FF;
-		addr_byte[i] = xbyte;
-	}
-	sprintf(buffer, "%u.%u.%u.%u", addr_byte[3], addr_byte[2],
-		addr_byte[1], addr_byte[0]);
-	return buffer;
-}
-#endif
 
 /*
  *	Return an IP address in host long notation from
  *	one supplied in standard dot notation.
  */
 UINT4 
-ipstr2long(ip_str)
+ip_strtoip(ip_str)
 	char *ip_str;
 #ifdef HAVE_INET_ATON
 {

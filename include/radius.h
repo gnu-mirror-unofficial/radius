@@ -269,11 +269,11 @@ void avl_move_pairs(VALUE_PAIR **to, VALUE_PAIR **from,
 		    int (*fun)(), void *closure);
 
 extern int do_not_resolve;
-char *ip_hostname (UINT4, char *buf, size_t size);
-UINT4 get_ipaddr (char *);
+char *ip_gethostname (UINT4, char *buf, size_t size);
+UINT4 ip_gethostaddr (char *);
 int good_ipaddr(char *);
-char *ipaddr2str(UINT4, char *);
-UINT4 ipstr2long(char *);
+char *ip_iptostr(UINT4, char *);
+UINT4 ip_strtoip(char *);
 
 /* nas.c */
 NAS *nas_next(NAS *p);

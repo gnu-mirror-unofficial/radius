@@ -141,9 +141,9 @@ the constructed entry is also appended to WTMP_FILE.")
 			else if (SCM_BIGP(elt)) 
 				ut.nas_address = (UINT4) scm_big2dbl(elt);
 			else if (SCM_NIMP(elt) && SCM_STRINGP(elt)) 
-				ut.nas_address = get_ipaddr(SCM_CHARS(elt));
+				ut.nas_address = ip_gethostaddr(SCM_CHARS(elt));
 			else if (SCM_NIMP(elt) && SCM_STRINGP(elt))
-				ut.nas_address = ipstr2long(SCM_CHARS(elt));
+				ut.nas_address = ip_strtoip(SCM_CHARS(elt));
 			else 
 				scm_misc_error(FUNC_NAME,
 					       "~S: NAS IP should be IP address",
@@ -158,9 +158,9 @@ the constructed entry is also appended to WTMP_FILE.")
 			else if (SCM_BIGP(elt)) 
 				ut.framed_address = (UINT4) scm_big2dbl(elt);
 			else if (SCM_NIMP(elt) && SCM_STRINGP(elt)) 
-				ut.framed_address = get_ipaddr(SCM_CHARS(elt));
+				ut.framed_address = ip_gethostaddr(SCM_CHARS(elt));
 			else if (SCM_NIMP(elt) && SCM_STRINGP(elt))
-				ut.framed_address = ipstr2long(SCM_CHARS(elt));
+				ut.framed_address = ip_strtoip(SCM_CHARS(elt));
 			else 
 				scm_misc_error(FUNC_NAME,
 					       "~S: Framed IP should be IP address",

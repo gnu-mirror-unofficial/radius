@@ -355,7 +355,7 @@ rad_sql_init()
 		
 		switch (stmt_type) {
 		case STMT_SERVER:
-			ipaddr = get_ipaddr(cur_ptr);
+			ipaddr = ip_gethostaddr(cur_ptr);
 			if (ipaddr == (UINT4)0) {
 				radlog(L_ERR,
 				       _("%s:%d: unknown host: %s"),

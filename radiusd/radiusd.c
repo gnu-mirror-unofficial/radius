@@ -317,7 +317,7 @@ main(argc, argv)
 			do_not_resolve = 1; 
 			break;
 		case 'i':
-			if ((myip = get_ipaddr(optarg)) == 0)
+			if ((myip = ip_gethostaddr(optarg)) == 0)
 				fprintf(stderr,
 					_("invalid IP address: %s"),
 					optarg);
@@ -842,7 +842,7 @@ getmyip()
 		exit(1);
 	}
 		
-	ip = get_ipaddr(name);
+	ip = ip_gethostaddr(name);
 	efree(name);
 	return ip;
 }
@@ -1804,7 +1804,7 @@ test_shell()
 			strncpy(ut.session_id, argv[2], sizeof(ut.session_id));
 			ut.nas_port = atoi(argv[3]);
 			if (argc == 5) 
-				ut.framed_address = ipstr2long(argv[5]);
+				ut.framed_address = ip_strtoip(argv[5]);
 			argcv_free(argc, argv);
 			printf("%d\n", checkrad(nas, &ut));
 			break;

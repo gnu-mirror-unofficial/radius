@@ -273,7 +273,7 @@ string        : QUOTE
               | IPADDRESS
                 {
                         char buf[DOTTED_QUAD_LEN];
-                        ipaddr2str($1, buf);
+                        ip_iptostr($1, buf);
                         $$ = make_string(buf);
                 }
               ;
@@ -539,7 +539,7 @@ install_pair(name, op, valstr)
 		break;
 
 	case TYPE_IPADDR:
-		pair->lvalue = get_ipaddr(valstr);
+		pair->lvalue = ip_gethostaddr(valstr);
 		break;
 		
 	case TYPE_DATE:

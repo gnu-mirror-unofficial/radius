@@ -355,7 +355,7 @@ stat_update(ut, status)
 		radlog(L_WARN,
 		    _("stat_update(): portno %d: can't find nas for IP %s"),
 		    ut->nas_port,
-		    ipaddr2str(ntohl(ut->nas_address), ipbuf));
+		    ip_iptostr(ntohl(ut->nas_address), ipbuf));
 		return;
 	}
 	if (nas->ipaddr == 0) /* DEFAULT nas */
@@ -366,7 +366,7 @@ stat_update(ut, status)
 		radlog(L_WARN,
 		    _("stat_update(): port %d not found on NAS %s"),
 		    ut->nas_port,
-		    ipaddr2str(ntohl(ut->nas_address), ipbuf));
+		    ip_iptostr(ntohl(ut->nas_address), ipbuf));
 		return;
 	}
 

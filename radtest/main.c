@@ -185,7 +185,7 @@ main(argc, argv)
 		for (i = 0; i < argc; i++) {
 			switch (i) {
 			case 0:
-				serv.addr = get_ipaddr(argv[i]);
+				serv.addr = ip_gethostaddr(argv[i]);
 				if (!serv.addr) {
 					radlog(L_ERR,
 					     "bad IP address or host name: %s",
@@ -327,7 +327,7 @@ parse_datum(p, dp)
 			type = Integer;
 		} else {
 			/* IP address */
-			if ((dp->ipaddr = get_ipaddr(p)) != 0)
+			if ((dp->ipaddr = ip_gethostaddr(p)) != 0)
 				type = Ipaddress;
 			else {
 				fprintf(stderr, _("assign: invalid IP address: %s\n"), p);
@@ -336,7 +336,7 @@ parse_datum(p, dp)
 		} 
 	} else if (strchr(p, '.')) {
 		/* IP address */
-		if ((dp->ipaddr = get_ipaddr(p)) != 0)
+		if ((dp->ipaddr = ip_gethostaddr(p)) != 0)
 			type = Ipaddress;
 		else {
 			fprintf(stderr, _("assign: invalid IP address: %s\n"), p);
@@ -362,7 +362,7 @@ print_ident(var)
 		sprintf(buf, "%d", var->datum.number);
 		return make_string(buf);
 	case Ipaddress:
-		ipaddr2str(var->datum.ipaddr, buf);
+		ip_iptostr(var->datum.ipaddr, buf);
 		return make_string(buf);
 	case String:
 		return dup_string(var->datum.string);
@@ -422,7 +422,7 @@ var_print(var)
 		printf("%d", var->datum.number);
 		break;
 	case Ipaddress:
-		printf("%s", ipaddr2str(var->datum.ipaddr, buf));
+		printf("%s", ip_iptostr(var->datum.ipaddr, buf));
 		break;
 	case String:
 		printf("%s", var->datum.string);

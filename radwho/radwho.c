@@ -885,9 +885,9 @@ hostname(ipaddr, buf, size)
 
 	switch (showip) {
 	case SIP_SMART:
-		return ip_hostname(ntohl(ipaddr), buf, size);
+		return ip_gethostname(ntohl(ipaddr), buf, size);
 	case SIP_NODOMAIN:
-		s = ip_hostname(ntohl(ipaddr), buf, size);
+		s = ip_gethostname(ntohl(ipaddr), buf, size);
 		for (p = s; *p && (isdigit(*p) || *p == '.'); p++)
 			;
 		if (*p == 0)
@@ -897,7 +897,7 @@ hostname(ipaddr, buf, size)
 		return s;
 	default:
 	case SIP_IPADDR:
-		ipaddr2str(ntohl(ipaddr), ipbuf);
+		ip_iptostr(ntohl(ipaddr), ipbuf);
 		return ipbuf;
 	}
 }
@@ -1041,10 +1041,10 @@ my_read_naslist_file(file)
 		}
 		c = Alloc_entry(NAS);
 
-		c->ipaddr = get_ipaddr(hostnm);
+		c->ipaddr = ip_gethostaddr(hostnm);
 		strcpy(c->nastype, nastype);
 		strcpy(c->shortname, shortnm);
-		ip_hostname(c->ipaddr, c->longname, sizeof(c->longname));
+		ip_gethostname(c->ipaddr, c->longname, sizeof(c->longname));
 
 		c->next = cl;
 		cl = c;
@@ -1085,7 +1085,7 @@ my_read_realms(file)
 		p = strtok(tok, ":");
 		if (!p)
 			continue;
-		rb.ipaddr = get_ipaddr(p);
+		rb.ipaddr = ip_gethostaddr(p);
 		rp = Alloc_entry(REALM);
 		memcpy(rp, &rb, sizeof(*rp));
 		rp->next = realms;

@@ -168,7 +168,7 @@ exit    return EXIT;
 	return QUOTE;
 }
 {DQ} {
-	yylval.ipaddr = ipstr2long(yytext);
+	yylval.ipaddr = ip_strtoip(yytext);
 	return IPADDRESS;
 }
 {D} {

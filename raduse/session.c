@@ -113,7 +113,7 @@ process_var(var, ptr)
 		break;
 	case SMI_IPADDRESS:
 		*(UINT4*)ptr = *(unsigned int*)var->var_str;
-		DEBUG(("%s", ipaddr2str(ntohl(*(UINT4*)ptr), buf)));
+		DEBUG(("%s", ip_iptostr(ntohl(*(UINT4*)ptr), buf)));
 		break;
 	case SMI_OPAQUE:
 		sptr = (char**)ptr;
@@ -147,7 +147,7 @@ converse(type, sp, pdu, closure)
 	
 	if (type == SNMP_CONV_TIMEOUT) {
 		radlog(L_ERR, "timed out in waiting SNMP response from %s\n",
-		       ipaddr2str(sp->remote_sin.sin_addr.s_addr, ipbuf));
+		       ip_iptostr(sp->remote_sin.sin_addr.s_addr, ipbuf));
 		/*FIXME: inform main that the timeout has occured */
 		return 1;
 	}
@@ -262,7 +262,7 @@ walk_converse(type, sp, pdu, closure)
 
 	if (type == SNMP_CONV_TIMEOUT) {
 		radlog(L_ERR, "timed out in waiting SNMP response from %s\n",
-		       ipaddr2str(sp->remote_sin.sin_addr.s_addr, ipbuf));
+		       ip_iptostr(sp->remote_sin.sin_addr.s_addr, ipbuf));
 		/*FIXME: inform main that the timeout has occured */
 		return 1;
 	}

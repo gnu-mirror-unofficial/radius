@@ -636,7 +636,7 @@ userparse(buffer, first_pair, errmsg)
 
 			case TYPE_IPADDR:
 				if (pair->attribute != DA_FRAMED_IP_ADDRESS) {
-					pair->lvalue = get_ipaddr(token);
+					pair->lvalue = ip_gethostaddr(token);
 					break;
 				}
 
@@ -653,7 +653,7 @@ userparse(buffer, first_pair, errmsg)
 						x = 1;
 					}
 				}
-				pair->lvalue = get_ipaddr(token);
+				pair->lvalue = ip_gethostaddr(token);
 
 				/*
 				 *	Add an extra (hidden) attribute.
@@ -967,11 +967,11 @@ read_clients_entry(unused, fc, fv, file, lineno)
 
 	cp = Alloc_entry(CLIENT);
 
-	cp->ipaddr = get_ipaddr(fv[0]);
+	cp->ipaddr = ip_gethostaddr(fv[0]);
 	cp->secret = estrdup(fv[1]);
 	if (fc == 3)
 		STRING_COPY(cp->shortname, fv[2]);
-	ip_hostname(cp->ipaddr, cp->longname, sizeof(cp->longname));
+	ip_gethostname(cp->ipaddr, cp->longname, sizeof(cp->longname));
 
 	cp->next = clients;
 	clients = cp;
@@ -1034,7 +1034,7 @@ client_lookup_name(ipaddr, buf, bufsize)
 		else
 			return cl->longname;
 	}
-	return ip_hostname(ipaddr, buf, bufsize);
+	return ip_gethostname(ipaddr, buf, bufsize);
 }
 
 /* ****************************************************************************
@@ -1164,7 +1164,7 @@ read_realms_entry(unused, fc, fv, file, lineno)
 		rp->acct_port = acct_port;
 	}
 	if (strcmp(fv[1], "LOCAL") != 0)
-		rp->ipaddr = get_ipaddr(fv[1]);
+		rp->ipaddr = ip_gethostaddr(fv[1]);
 	STRING_COPY(rp->realm, fv[0]);
 	STRING_COPY(rp->server, fv[1]);
 	

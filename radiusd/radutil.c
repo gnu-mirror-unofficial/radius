@@ -179,7 +179,7 @@ attr_to_str(obp, req, pairlist, attr, defval)
 		obstack_grow(obp, tmp, len);
 		break;
 	case TYPE_IPADDR:
-		ipaddr2str(pair->lvalue, tmp);
+		ip_iptostr(pair->lvalue, tmp);
 		len = strlen(tmp);
 		obstack_grow(obp, tmp, len);
 		break;

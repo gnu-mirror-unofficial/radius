@@ -1,5 +1,44 @@
 2002-01-25  Sergey Poznyakoff  
 
+	Renamed IP-conversion functions:
+		s/ip_hostname/ip_gethostname/
+		s/get_ipaddr/ip_getaddr/
+		s/ipaddr2str/ip_iptostr/
+		s/ipstr2long/ip_strtoip/
+
+	Files affected:
+	
+	* radlib/iputil.c
+	* include/radius.h
+	* radiusd/acct.c
+	* radiusd/checkrad.c
+	* radiusd/config.y
+	* radiusd/files.c
+	* radiusd/radiusd.c
+	* radiusd/radutil.c
+	* radiusd/rewrite.y
+	* radiusd/snmpserv.c
+	* radiusd/sql.c
+	* radiusd/stat.c
+	* radlast/radlast.c
+	* radlib/client.c
+	* radlib/iputil.c
+	* radlib/nas.c
+	* radlib/radutmp.c
+	* radlib/users.y
+	* radscm/radscm.c
+	* radscm/rscm_lib.c
+	* radscm/rscm_utmp.c
+	* radtest/gram.y
+	* radtest/input.l
+	* radtest/main.c
+	* raduse/session.c
+	* raduse/stat.c
+	* radwho/radwho.c
+	* radzap/radzap.c
+
+2002-01-25  Sergey Poznyakoff  
+
 	Fixed thread-unsafe functions all over the package.
 	
 	* radlib/gethost_r.c: (new) Replacements for missing

@@ -181,7 +181,7 @@ checkrad_xlat(checkp, str)
 				ptr = buf;
 				break;
 			case 'i':
-				ipaddr2str(checkp->ip, buf);
+				ip_iptostr(checkp->ip, buf);
 				ptr = buf;
 				break;
 			default:
@@ -244,7 +244,7 @@ converse(type, sp, pdu, closure)
 			debug(2, ("(INT) %d: %d", vlist->var_int, rc));
 			break;
 		case SMI_IPADDRESS:
-			ipaddr2str(*(UINT4*)vlist->var_int, buf);
+			ip_iptostr(*(UINT4*)vlist->var_int, buf);
 			rc = compare(checkp, buf);
 			debug(2, ("(IPADDR) %#x: %d",
 				  *(UINT4*)vlist->var_str, rc));

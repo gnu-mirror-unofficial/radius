@@ -125,7 +125,7 @@ SCM_DEFINE(rad_client_list_servers, "rad-client-list-servers", 0, 0, 0,
 	SCM tail = SCM_EOL;
          
 	for (s = radclient->first_server; s; s = s->next) {
-		ipaddr2str(s->addr, p);
+		ip_iptostr(s->addr, p);
 		tail = scm_cons(SCM_LIST2(scm_makfrom0str(s->name),
 					  scm_makfrom0str(p)),
 				tail);
@@ -162,7 +162,7 @@ scheme_to_server(LIST, func)
 	scm = SCM_CADR(LIST);
 	SCM_ASSERT(SCM_NIMP(scm) && SCM_STRINGP(scm),
 		   scm, SCM_ARG1, func);
-	serv.addr = get_ipaddr(SCM_CHARS(scm));
+	serv.addr = ip_gethostaddr(SCM_CHARS(scm));
 	if (serv.addr == 0) 
 		scm_misc_error(func,
 			       "Bad hostname or ip address ~S\n",
@@ -227,7 +227,7 @@ SCM_DEFINE(rad_client_source_ip, "rad-client-source-ip", 1, 0, 0,
 	UINT4 ip;
 	
 	SCM_ASSERT((SCM_NIMP(IP) && SCM_STRINGP(IP)), IP, SCM_ARG1, FUNC_NAME);
-	ip = get_ipaddr(SCM_CHARS(IP));
+	ip = ip_gethostaddr(SCM_CHARS(IP));
 	if (ip)
 		radclient->source_ip = ip;
 	else {

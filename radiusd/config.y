@@ -1186,7 +1186,7 @@ again:
 	if (isdigit(*curp)) {
 		if (copy_digit()) {
 			/* IP address */
-			yylval.ipaddr = ipstr2long(yylval.string);
+			yylval.ipaddr = ip_strtoip(yylval.string);
 			return T_IPADDR;
 		}
 		yylval.number = strtol(yylval.string, NULL, 0);
@@ -1423,7 +1423,7 @@ asgn(base, value, type, once)
 			type = AT_IPADDR;
 			break;
 		case AT_STRING:
-			ipaddr = get_ipaddr(value->v.string);
+			ipaddr = ip_gethostaddr(value->v.string);
 			if (ipaddr == 0) {
 				radlog(L_ERR, 
 				       _("%s:%d: unknown host: %s"),

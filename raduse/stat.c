@@ -241,7 +241,7 @@ test()
 		
 		printf("  ident:  %s\n", nasp->ident);
 		printf("  IP:     %s\n",
-		       ipaddr2str(ntohl(nasp->ipaddr), ipbuf));
+		       ip_iptostr(ntohl(nasp->ipaddr), ipbuf));
 		printf("  active: %d\n", nasp->ports_active);
 		printf("  idle:   %d\n", nasp->ports_idle);
 	}
@@ -250,7 +250,7 @@ test()
 		printf("  index:  %d\n", port->nas_index);  
 		printf("  portno: %d\n", port->port_no);
 		printf("  addr:   %s\n",
-		       ipaddr2str(ntohl(port->framed_address), ipbuf));
+		       ip_iptostr(ntohl(port->framed_address), ipbuf));
 		printf("  total logins: %d\n", port->count);
 		printf("  state: %d\n", port->active);
 		printf("  change: %s", ctime(&port->start));

@@ -4580,7 +4580,7 @@ interpret(fcall, req, type, datum)
                 case Integer:
                         n = strtol(argv[i], &p, 0);
                         if (*p) 
-                                n = get_ipaddr(argv[i]);
+                                n = ip_gethostaddr(argv[i]);
                         pushn(n);
                         break;
                 case String:

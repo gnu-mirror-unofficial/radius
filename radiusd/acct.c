@@ -498,7 +498,7 @@ write_detail(radreq, authtype, f)
 	}
 
 	if (cl == NULL) 
-		ip_hostname(nas, nasname, sizeof(nasname));
+		ip_gethostname(nas, nasname, sizeof(nasname));
 	
 	/* Create a directory for this nas. */
 	dir = mkfilename(radacct_dir, nasname);

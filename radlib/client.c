@@ -138,7 +138,7 @@ radclient_send(config, port_type, code, pair)
 		
 		if (radclient_debug) {
 			printf("server %s:%d\n",
-			       ipaddr2str(server->addr, ipbuf),
+			       ip_iptostr(server->addr, ipbuf),
 			       server->port[port_type]);
 		}
 		
@@ -198,7 +198,7 @@ radclient_send(config, port_type, code, pair)
 				else 
 					radlog(L_ERR|L_PERROR,
 					       _("error receiving data from %s:%d"),
-					       ipaddr2str(server->addr, ipbuf),
+					       ip_iptostr(server->addr, ipbuf),
 					       server->port[port_type]);
 				
 				break;
@@ -559,7 +559,7 @@ parse_client_config(client, argc, argv, file, lineno)
 		break;
 		
 	case TOK_SOURCE_IP:
-		client->source_ip = get_ipaddr(argv[1]);
+		client->source_ip = ip_gethostaddr(argv[1]);
 		break;
 		
 	case TOK_SERVER:
@@ -571,7 +571,7 @@ parse_client_config(client, argc, argv, file, lineno)
 		memset(&serv, 0, sizeof serv);
 
 		serv.name = argv[1];
-		serv.addr = get_ipaddr(argv[2]);
+		serv.addr = ip_gethostaddr(argv[2]);
 		if (!serv.addr) {
 			radlog(L_ERR,
 			       "%s:%d: bad IP address or host name",

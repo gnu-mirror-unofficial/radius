@@ -142,7 +142,7 @@ main(argc, argv)
 		np = nas_lookup_name(nas);
 		if (np)
 			ip = np->ipaddr;
-		else if ((ip = get_ipaddr(nas)) == 0) {
+		else if ((ip = ip_gethostaddr(nas)) == 0) {
 			fprintf(stderr, "%s: host not found.\n", nas);
 			return 1;
 		}
@@ -210,7 +210,7 @@ confirm(utp)
 	if (cl = nas_lookup_ip(ntohl(utp->nas_address)))
 		s = cl->shortname;
 	if (s == NULL || s[0] == 0) 
-		s = ip_hostname(ntohl(utp->nas_address), buf, sizeof(buf));
+		s = ip_gethostname(ntohl(utp->nas_address), buf, sizeof(buf));
 	
 	printf(_("radzap: zapping %s from %s, port %d"),
 	       utp->login,

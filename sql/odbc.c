@@ -343,7 +343,7 @@ rad_odbc_exec(struct sql_connection *conn, char *query)
 }
 
 static char *
-rad_odbc_column(void *data, int ncol)
+rad_odbc_column(void *data, size_t ncol)
 {
         SQLCHAR buffer[1024];
         long result;

@@ -149,7 +149,7 @@ This attribute can be used in reply-pairs of raddb/hints entry.
 Its value is the name of Guile function to be called on
 accounting. The function definition should look like:
 
-(define (auth-function-name request-list)
+(define (acct-function-name request-list)
   ...
 
 The function should return #t on success and #f on failure.

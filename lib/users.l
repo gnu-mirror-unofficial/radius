@@ -287,15 +287,18 @@ pop_source()
 {
         struct buffer_ctx *ctx;
 
-        if (!context_stack) {
-                yyin = NULL;
+        if (!yyin) 
                 return 1;
-        }
+	
         fclose(yyin);
 #ifndef FLEX_SCANNER
         lex_delete_buffer(current_buffer);
 #endif
-        /* Restore previous context */
+        if (!context_stack) {
+		yyin = NULL;
+                return 1;
+        }
+	/* Restore previous context */
         source_filename = context_stack->filename;
         source_line_num = context_stack->line;
         source_inode = context_stack->i_node;

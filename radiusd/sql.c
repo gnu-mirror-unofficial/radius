@@ -71,7 +71,7 @@ static struct sql_connection *sql_conn[SQL_NSERVICE];
 
 #define STMT_QUERY(c) (STMT_QUERY_BASE+c)
 #define STMT_QUERY_CODE(c) ((c)-STMT_QUERY_BASE)
-#define STMT_QUERY_P(t) ((t)>STMT_QUERY_BASE \
+#define STMT_QUERY_P(t) ((t)>=STMT_QUERY_BASE \
                          && STMT_QUERY_CODE(t)<num_radius_sql_query)
 
 

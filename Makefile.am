@@ -35,5 +35,5 @@ alphacheck:
 
 endif
 
-EXTRA_DIST=ylwrap
+EXTRA_DIST=ylwrap README-alpha
 

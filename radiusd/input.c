@@ -257,3 +257,33 @@ input_select(INPUT *input, struct timeval *tv)
 	debug(100,("exit"));
 	return status;
 }
+
+struct iterate_closure {
+	char *name;
+	list_iterator_t fun;
+	void *data;
+};
+
+static int
+_chan_itr(void *item, void *data)
+{
+	CHANNEL *chan = item;
+	struct iterate_closure *cp = data;
+	int rc = 0;
+	
+	if (cp->name == NULL || strcmp(chan->method->name, cp->name) == 0)
+		rc = cp->fun(chan->data, cp->data);
+	return rc;
+}
+
+int
+input_iterate_channels(INPUT *input, char *name,
+		       list_iterator_t fun, void *data)
+{
+	struct iterate_closure clos;
+
+	clos.name = name;
+	clos.fun  = fun;
+	clos.data = data;
+	list_iterate(input->channels, _chan_itr, &clos);
+}

@@ -15,6 +15,8 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
+#define RADIUS_MODULE_SCHEME_C
+
 #ifndef lint
 static char rcsid[] =
 "@(#) $Id$";
@@ -45,6 +47,7 @@ static void guile_boot1(void *closure, int argc, char **argv);
 struct call_data {
         struct call_data *next;
         pthread_cond_t cond;
+        pthread_mutex_t mutex;
         int ready;
         int retval;
         int (*fun)(struct call_data*);
@@ -57,20 +60,22 @@ struct call_data {
 pthread_t guile_tid;
 static pthread_mutex_t call_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t call_cond = PTHREAD_COND_INITIALIZER;
-struct call_data *data_head, *data_tail;
+static pthread_mutex_t queue_mutex = PTHREAD_MUTEX_INITIALIZER;
+struct call_data *queue_head, *queue_tail;
+static int scheme_inited;
 
 void
 call_place(cp)
         struct call_data *cp;
 {
-        pthread_mutex_lock(&call_mutex);
+        pthread_mutex_lock(&queue_mutex);
         cp->next = NULL;
-        if (!data_head)
-                data_head = cp;
+        if (!queue_head)
+                queue_head = cp;
         else
-                data_tail->next = cp;
-        data_tail = cp;
-        pthread_mutex_unlock(&call_mutex);
+                queue_tail->next = cp;
+        queue_tail = cp;
+        pthread_mutex_unlock(&queue_mutex);
 }
 
 void
@@ -79,8 +84,8 @@ call_remove(cp)
 {
         struct call_data *p, *prev = NULL;
 
-        pthread_mutex_lock(&call_mutex);
-        for (p = data_head; p; ) {
+        pthread_mutex_lock(&queue_mutex);
+        for (p = queue_head; p; ) {
                 if (p == cp)
                         break;
                 prev = p;
@@ -91,11 +96,11 @@ call_remove(cp)
                 if (prev)
                         prev->next = p->next;
                 else
-                        data_head = p->next;
-                if (p == data_tail)
-                        data_tail = prev;
+                        queue_head = p->next;
+                if (p == queue_tail)
+                        queue_tail = prev;
         }
-        pthread_mutex_unlock(&call_mutex);
+        pthread_mutex_unlock(&queue_mutex);
 }
 
 /* ************************************************************************* */
@@ -116,6 +121,11 @@ guile_boot0(arg)
         void *arg;
 {
         char *argv[] = { "radiusd", NULL };
+        sigset_t sig;
+        
+        sigemptyset(&sig);
+        pthread_sigmask(SIG_SETMASK, &sig, NULL);
+        
         scm_boot_guile (1, argv, guile_boot1, arg);
         return NULL;
 }       
@@ -124,26 +134,26 @@ static SCM
 boot_body (void *data)
 {
         struct call_data *p, *next;
-        pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
         scm_init_load_path();
         radscm_init();
         rscm_radlog_init();
         rscm_rewrite_init();
 
-        pthread_mutex_lock(&mutex);
+        scheme_inited=1;
+        pthread_mutex_lock(&call_mutex);
 
         while (1) {
-                struct timespec timeout;
-                timeout.tv_sec = time(NULL)+1;
-                timeout.tv_nsec = 0;
-                pthread_cond_timedwait(&call_cond, &mutex, &timeout);
-                for (p = data_head; p; ) {
+		debug(1, ("SRV: Waiting"));
+                pthread_cond_wait(&call_cond, &call_mutex);
+                for (p = queue_head; p; ) {
                         next = p->next;
                         if (!p->ready) {
+				debug(1, ("SRV: Handling request"));
                                 p->retval = p->fun(p);
                                 p->ready = 1;
                         }
+			debug(1, ("SRV: Signalling"));
                         pthread_cond_signal(&p->cond);
                         p = next;
                 }
@@ -314,27 +324,37 @@ scheme_generic_call(fun, procname, req, user_check, user_reply_ptr)
 {
         struct call_data *p = emalloc(sizeof(*p));
         int rc;
-        pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
         struct timespec timeout;
     
+        while (!scheme_inited)
+                sleep(1);
         p->fun = fun;
         p->procname = procname;
         p->request = req;
         p->user_check = user_check;
         p->user_reply_ptr = user_reply_ptr;
         p->ready = 0;
+        pthread_cond_init(&p->cond, NULL);
+        pthread_mutex_init(&p->mutex, NULL);
         call_place(p);
+	debug(1, ("APP: Placed call"));
 
-        pthread_mutex_lock(&mutex);
+        pthread_mutex_lock(&p->mutex);
+
         while (!p->ready) {
-//              printf("CALLING GUILE\n");
-                timeout.tv_sec = time(NULL)+1;
-                timeout.tv_nsec = 1;
+                struct timeval tv;
+                gettimeofday(&tv, NULL);
+                timeout.tv_sec = tv.tv_sec;
+                timeout.tv_nsec = (tv.tv_usec + 1) * 1000;
                 pthread_cond_signal(&call_cond);
-                //pthread_cond_wait(&p->cond, &mutex);
-                pthread_cond_timedwait(&p->cond, &mutex, &timeout);
+                if (p->ready)
+                        break;
+                pthread_cond_timedwait(&p->cond, &p->mutex, &timeout);
         }
-//      printf("REMOVING THE CALL\n");
+	debug(1, ("APP: Done"));
+        
+        pthread_mutex_unlock(&p->mutex);
+        pthread_mutex_unlock(&call_mutex);
         call_remove(p);
         rc = p->retval;
         efree(p);

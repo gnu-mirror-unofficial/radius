@@ -256,6 +256,9 @@ put_back(class, ptr)
         Entry eptr = (Entry)ptr;
 
         class->allocated_cnt--;
+        debug(10,
+	      ("elsize=%d, allocated_cnt=%d",
+	       class->elsize,class->allocated_cnt));
         insist(class->allocated_cnt <= class->bucket_cnt * class->elcnt);
         bzero(ptr, class->elsize);
         eptr->next = class->free;

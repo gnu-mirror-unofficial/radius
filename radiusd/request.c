@@ -71,6 +71,7 @@ void
 rad_cleanup_thread0(arg)
         void *arg;
 {
+	filter_cleanup();
 	num_threads--;
 }
 

@@ -51,6 +51,13 @@ static struct key_tab key_tab[] = {
 	{ "continue", 8, CONTINUE, 1 },
 	{ "if",    2, IF,      1 },
 	{ "else",  4, ELSE,    1 },
+	{ "set",   3, SET,     1 },
+	{ "getopt",6, GETOPT,  0 },
+	{ "input", 5, INPUT,   1 },
+	{ "shift", 5, SHIFT,   1 },
+	{ "return",6, T_RETURN,1 },
+	{ "case",  4, CASE,    1 },
+	{ "in",    2, IN,      0 },
 	{ NULL }
 };
 

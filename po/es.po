@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
 "POT-Creation-Date: 2002-06-07 02:36+0300\n"
-"PO-Revision-Date: 2002-06-04 11:10+0300\n"
+"PO-Revision-Date: 2002-06-07 13:21+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -2112,15 +2112,3 @@ msgstr "petición devolvió %d tuplas: %s"
 #, c-format
 msgid "PQexec returned %s"
 msgstr "PQexec: %s"
-
-#~ msgid "%s:%d: too few fields"
-#~ msgstr "%s:%d: insuficiente número de campos"
-
-#~ msgid "%s:%d: invalid type"
-#~ msgstr "%s:%d: tipo inválido"
-
-#~ msgid "hints:%d: %s(): not defined"
-#~ msgstr "hints:%d: %s(): función no definida"
-
-#~ msgid "huntgroups:%d: %s(): not defined"
-#~ msgstr "huntgroups:%d: %s(): función no definida"

@@ -33,7 +33,6 @@ argcv.h \
 debugmod.h \
 checkrad.h \
 envar.h \
-log.h \
 md5.h \
 mem.h \
 obstack1.h \

@@ -1183,10 +1183,7 @@ groupcmp(grad_request_t *req, char *groupname, char *username)
         char pwbuf[512];
         int retval;
 
-        if (radiusd_sql_checkgroup(req, groupname) == 0)
-                return 0;
-
-        if ((pwd = grad_getpwnam_r(username, &pw, pwbuf, sizeof pwbuf)) == NULL)
+        if (!(pwd = grad_getpwnam_r(username, &pw, pwbuf, sizeof pwbuf)))
                 return -1;
 
         if ((grp = grad_getgrnam(groupname)) == NULL)
@@ -1200,7 +1197,11 @@ groupcmp(grad_request_t *req, char *groupname, char *username)
                 }
         }
 	grad_free(grp);
-        return retval;
+
+	if (retval == 0)
+		return retval;
+	
+        return radiusd_sql_checkgroup(req, groupname);
 }
 
 /*

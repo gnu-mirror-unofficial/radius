@@ -17,6 +17,7 @@ EXTRA_DIST = \
  clients\
  client.conf.in\
  config.in\
+ filter\
  hints\
  huntgroups\
  menus/menu1\
@@ -50,7 +51,7 @@ dict.cisco: $(RADDB)/dict/cisco
 nastypes: $(RADDB)/nastypes
 	$(LN_S) $? $@
 
-rewrite: $(RADDB)/rewrite $(EXDIR)/ascend.rw $(EXDIR)/cisco.rw $(EXDIR)/jetstream.rw $(EXDIR)/nt.rw
+rewrite: $(RADDB)/rewrite $(EXDIR)/ascend.rw $(EXDIR)/cisco.rw $(EXDIR)/jetstream.rw $(EXDIR)/nt.rw $(EXDIR)/filter.rw
 	cat $(EXDIR)/*.rw $(RADDB)/rewrite > $@
 
 CLEANFILES=$(ALLTARGETS) config client.conf users acct.scm realms

@@ -156,6 +156,8 @@ log_to_channel(chan, cat, pri, buf1, buf2, buf3)
 		fprintf(fp, "%s: ", buffer);
 		if (chan->options & LO_PID) 
 			fprintf(fp, "[%lu]: ", getpid());
+		if (chan->options & LO_TID) 
+			fprintf(fp, "(%#lx): ", (long) pth_self());
 		if (prefix)
 			fprintf(fp, "%s: ", prefix);
 		if (buf1)
@@ -172,12 +174,17 @@ log_to_channel(chan, cat, pri, buf1, buf2, buf3)
 		spri = chan->id.prio;
 		if (chan->options & LO_PID)
 			spri |= LOG_PID;
-		if (prefix)
-			syslog(spri, "%s: %s%s%s",
-			       prefix, SP(buf1), SP(buf2), SP(buf3));
+		if (chan->options & LO_TID) 
+			snprintf(buffer, sizeof buffer, "(%#lx): ",
+				 (long) pth_self());
 		else
-			syslog(spri, "%s%s%s",
-			       SP(buf1), SP(buf2), SP(buf3));
+			buffer[0] = 0;
+		if (prefix)
+			syslog(spri, "%s%s: %s%s%s",
+			       buffer, prefix, SP(buf1), SP(buf2), SP(buf3));
+		else
+			syslog(spri, "%s%s%s%s",
+			       buffer, SP(buf1), SP(buf2), SP(buf3));
 		break;
 	}
 	

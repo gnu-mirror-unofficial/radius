@@ -1,3 +1,8 @@
+2002-01-16  Sergey Poznyakoff  
+
+	* radiusd/files.c (nextkn): Bugfix: do not require a '=' in
+	  A/V pairs to be surrounded by whitespace.
+
 2002-01-13  Sergey Poznyakoff
 
 	* radiusd/radiusd.c (main): Removed auto argval.

@@ -471,7 +471,7 @@ user_find(name, req, check_pairs, reply_pairs)
 #define PS_END 3     /*  --"-- end of input */
 
 #define isws(c) (c == ' ' || c == '\t')
-#define isdelim(c) (isws(c) || c == '\n' || c == ',')
+#define isdelim(c) (isws(c) || c == '\n' || c == ',' || c == '=')
 
 /*
  * Obtain next token from the input string
@@ -526,7 +526,7 @@ nextkn(sptr, token, toksize)
 			} else 
 				*token++ = *(*sptr)++;
 		}
-	} else if (**sptr == ',' || **sptr == '\n') {
+	} else if (**sptr == ',' || **sptr == '=' || **sptr == '\n') {
 		*token++ = *(*sptr)++;
 	} else {
 		while (toksize && **sptr && !isdelim(**sptr)) {

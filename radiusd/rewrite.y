@@ -5594,7 +5594,7 @@ rw_mach_init()
 
 	if (!runtime_stack)
 		runtime_stack = grad_emalloc(rewrite_stack_size *
-					sizeof(runtime_stack[0]));
+					     sizeof(runtime_stack[0]));
 	
 	mach.stack = runtime_stack;
         mach.st = 0;                      /* Stack top */
@@ -5606,6 +5606,8 @@ rw_mach_init()
 static void
 rw_mach_destroy()
 {
+	grad_free(mach.pmatch);
+	mach.pmatch = NULL;
 }
 
 FUNCTION *

@@ -29,26 +29,14 @@
 
 /*PRINTFLIKE2*/
 void
-radlog
-#if STDC_HEADERS
-      (int lvl, const char *msg, ...)
-#else	
-      (lvl, msg, va_alist)
-        int lvl;
-        const char *msg;
-        va_dcl
-#endif
+radlog (int lvl, const char *msg, ...)
 {
         va_list ap;
         int ec = 0;
 
         if (lvl & L_PERROR)
                 ec = errno;
-#if STDC_HEADERS	
         va_start(ap, msg);
-#else
-        va_start(ap);
-#endif
         vlog(lvl, NULL, 0, NULL, ec, msg, ap);
         va_end(ap);
 }
@@ -78,10 +66,7 @@ radlog
 */
 
 char *
-rad_print_request(req, outbuf, size)
-	RADIUS_REQ *req;
-	char *outbuf;
-	size_t size;
+rad_print_request(RADIUS_REQ *req, char *outbuf, size_t size)
 {
 	char nasbuf[MAX_LONGNAME];
 	VALUE_PAIR *stat_pair, *name_pair;
@@ -120,24 +105,12 @@ rad_print_request(req, outbuf, size)
 
 /*PRINTFLIKE3*/
 void
-radlog_req
-#if STDC_HEADERS
-           (int lvl, RADIUS_REQ *req, const char *msg, ...)
-#else
-	   (lvl, req, msg, va_alist)
-        int lvl;
-	RADIUS_REQ *req;
-        const char *msg;
-        va_dcl
-#endif
+radlog_req(int lvl, RADIUS_REQ *req, const char *msg, ...)
 {
 	va_list ap;
 
-#if STDC_HEADERS	
 	va_start(ap, msg);
-#else
-	va_start(ap);
-#endif
+
 	if (req) {
 		char idbuf[MAXIDBUFSIZE];
 		char *buf = NULL;
@@ -159,39 +132,34 @@ radlog_req
 }
 
 void
-_dolog
-#if STDC_HEADERS
-      (int level, char *file, int line, char *func_name, char *fmt, ...)
-#else
-      (level, file, line, func_name, fmt, va_alist)
-        int level;
-        char *file;
-        int line;
-        char *func_name;
-        char *fmt;
-        va_dcl
-#endif
+radlog_loc(int lvl, LOCUS *loc, const char *msg, ...)
+{
+	va_list ap;
+	int ec = 0;
+
+	if (lvl & L_PERROR)
+		ec = errno;
+
+	va_start(ap, msg);
+	vlog(lvl, loc->file, loc->line, NULL, ec, msg, ap);
+	va_end(ap);
+}
+
+void
+_dolog(int level, char *file, size_t line, char *func_name, char *fmt, ...)
 {
         va_list ap;
         int ec = 0;
         
         if (level & L_PERROR)
                 ec = errno;
-#if STDC_HEADERS	
 	va_start(ap, fmt);
-#else
-	va_start(ap);
-#endif
         vlog(level, file, line, func_name, ec, fmt, ap);
         va_end(ap);
 }
 
 void
-_debug_print(file, line, func_name, str)
-        char *file;
-        int line;
-        char *func_name;
-        char *str;
+_debug_print(char *file, size_t line, char *func_name, char *str)
 {
         _dolog(L_DEBUG, file, line, func_name, "%s", str);
         free(str);
@@ -199,24 +167,12 @@ _debug_print(file, line, func_name, str)
 
 /*VARARGS*/
 char *
-_debug_format_string
-#if STDC_HEADERS
-                    (char *fmt, ...)
-#else
-                    (va_alist)
-        va_dcl
-#endif
+_debug_format_string(char *fmt, ...)
 {
         va_list ap;
         char *str = NULL;
-#if !STDC_HEADERS
-        char *fmt;
-	
-        va_start(ap);
-        fmt = va_arg(ap,char*);
-#else
+
 	va_start(ap, fmt);
-#endif
         vasprintf(&str, fmt, ap);
         va_end(ap);
         return str;

@@ -501,6 +501,7 @@ int radutmp_mlc_collect_realm(grad_request_t *request,
 void radutmp_mlc_close(struct radutmp *up);
 
 /* mlc.c */
+extern struct cfg_stmt mlc_stmt[];
 int radius_mlc_user(char *name, grad_request_t *request,
 		    size_t maxsimul, size_t *pcount);
 int radius_mlc_realm(grad_request_t *request);

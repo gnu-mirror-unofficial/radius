@@ -99,7 +99,7 @@ typedef struct {
         int        nmatch;
         regmatch_t *pmatch;
 
-        VALUE_PAIR *request;
+        RADIUS_REQ *req;
         
         jmp_buf    jmp;
 } RWMACH;
@@ -628,7 +628,7 @@ static Datatype attr_datatype(int type);
  */
 static void gc();
 static void run(RWMACH *mach, pctr_t pc);
-static void run_init(pctr_t pc, VALUE_PAIR *req);
+static void run_init(pctr_t pc, RADIUS_REQ *req);
 
 /* These used to lock/unlock access to rw_code array. Now that the
    array is read-only and may be modified only by the main thread
@@ -637,7 +637,8 @@ static void run_init(pctr_t pc, VALUE_PAIR *req);
    for a while... */
 #define rw_code_lock() 
 #define rw_code_unlock()
- 
+
+#define AVPLIST(m) ((m)->req ? (m)->req->request : NULL)
 %}
 
 %union {
@@ -4029,6 +4030,14 @@ rw_asgn(mach)
         pushn(mach, n);
 }
 
+void
+assert_request_presence(mach)
+	RWMACH *mach;
+{
+	if (!mach->req)
+		rw_error(mach, _("code requires that the request be present"));
+}
+
 /* Check if the A/V pair is supplied in the request
  */
 void
@@ -4037,7 +4046,7 @@ rw_attrcheck0(mach)
 {
         int attr = (int) rw_code[mach->pc++];
 
-	pushn(mach, avl_find(mach->request, attr) != NULL);
+	pushn(mach, avl_find(AVPLIST(mach), attr) != NULL);
 }
 
 void
@@ -4046,10 +4055,10 @@ rw_attrcheck(mach)
 {
         int attr = (int) rw_code[mach->pc++];
 	RWSTYPE index;
-	VALUE_PAIR *p = mach->request;
+	VALUE_PAIR *p = AVPLIST(mach);
  
 	cpopn(mach, &index);
-	pushn(mach, avl_find_n(mach->request, attr, index) != NULL);
+	pushn(mach, avl_find_n(AVPLIST(mach), attr, index) != NULL);
 }
 
 /*
@@ -4062,11 +4071,12 @@ attrasgn_internal(mach, attr, pair, val)
 	VALUE_PAIR *pair;
 	RWSTYPE val;
 {
+	assert_request_presence(mach);
 	if (!pair) {
                  pair = avp_create(attr, 0, NULL, 0);
                  if (!pair)
                         rw_error(mach, _("can't create A/V pair"));
-                 avl_add_pair(&mach->request, pair);
+                 avl_add_pair(&mach->req->request, pair);
          }
 		
 	switch (pair->type) {
@@ -4093,7 +4103,7 @@ rw_attrasgn0(mach)
         RWSTYPE val;
         
         cpopn(mach, &val);
-	attrasgn_internal(mach, attr, avl_find(mach->request, attr), val);
+	attrasgn_internal(mach, attr, avl_find(AVPLIST(mach), attr), val);
 }
 
 void
@@ -4107,7 +4117,8 @@ rw_attrasgn(mach)
         cpopn(mach, &val);
 	cpopn(mach, &index);
 	attrasgn_internal(mach,
-			  attr, avl_find_n(mach->request, attr, index), val);
+			  attr, avl_find_n(AVPLIST(mach), attr, index),
+			  val);
 }
 
 void
@@ -4117,9 +4128,15 @@ rw_attrs0(mach)
         int attr = (int) rw_code[mach->pc++];
         VALUE_PAIR *pair;
         
-        if ((pair = avl_find(mach->request, attr)) == NULL) 
+        if ((pair = avl_find(AVPLIST(mach), attr)) == NULL) 
                 pushs(mach, &nil, 1);
-        else
+        else if (attr == DA_USER_PASSWORD) {
+		char string[AUTH_STRING_LEN+1];
+		int len;
+		req_decrypt_password(string, mach->req, pair);
+		len = strlen(string);
+		pushstr(mach, string, len);
+	} else
                 pushstr(mach, pair->strvalue, pair->strlength);
 }
 
@@ -4130,7 +4147,7 @@ rw_attrn0(mach)
         int attr = (int) rw_code[mach->pc++];
         VALUE_PAIR *pair;
 
-        if ((pair = avl_find(mach->request, attr)) == NULL)
+        if ((pair = avl_find(AVPLIST(mach), attr)) == NULL)
                 pushn(mach, 0);
         else
                 pushn(mach, pair->lvalue);
@@ -4145,7 +4162,7 @@ rw_attrs(mach)
 	RWSTYPE index;
 
 	cpopn(mach, &index);
-        if ((pair = avl_find_n(mach->request, attr, index)) == NULL) 
+        if ((pair = avl_find_n(AVPLIST(mach), attr, index)) == NULL) 
                 pushs(mach, &nil, 1);
         else
                 pushstr(mach, pair->strvalue, pair->strlength);
@@ -4160,7 +4177,7 @@ rw_attrn(mach)
 	RWSTYPE index;
 
 	cpopn(mach, &index);
-        if ((pair = avl_find_n(mach->request, attr, index)) == NULL)
+        if ((pair = avl_find_n(AVPLIST(mach), attr, index)) == NULL)
                 pushn(mach, 0);
         else
                 pushn(mach, pair->lvalue);
@@ -4171,7 +4188,7 @@ rw_attr_delete0(mach)
 	RWMACH *mach;
 {
         int attr = (int) rw_code[mach->pc++];
-	avl_delete(&mach->request, attr);
+	avl_delete(&mach->req->request, attr);
 }
 
 void
@@ -4181,8 +4198,9 @@ rw_attr_delete(mach)
         int attr = (int) rw_code[mach->pc++];
 	RWSTYPE index;
 
+	assert_request_presence(mach);
 	cpopn(mach, &index);
-	avl_delete_n(&mach->request, attr, index);
+	avl_delete_n(&mach->req->request, attr, index);
 }
 
 /*
@@ -4924,7 +4942,7 @@ rw_mach_destroy(mach)
 void
 run_init(pc, request)
         pctr_t     pc;
-        VALUE_PAIR *request;
+        RADIUS_REQ *request;
 {
         FILE *fp;
         RWMACH mach;
@@ -4935,11 +4953,11 @@ run_init(pc, request)
                 return;
 	}
         
-        mach.request = request;
+        mach.req = request;
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "Before rewriting:\n");
-                avl_fprint(fp, mach.request);
+                avl_fprint(fp, AVPLIST(&mach));
                 fclose(fp);
         }
 
@@ -4949,7 +4967,7 @@ run_init(pc, request)
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "After rewriting\n");
-                avl_fprint(fp, mach.request);
+                avl_fprint(fp, AVPLIST(&mach));
                 fclose(fp);
         }
 	rw_mach_destroy(&mach);
@@ -4959,11 +4977,11 @@ run_init(pc, request)
 int
 va_run_init
 #if STDC_HEADERS
-           (char *name, VALUE_PAIR *request, char *typestr, ...)
+           (char *name, RADIUS_REQ *request, char *typestr, ...)
 #else
            (name, request, typestr, va_alist)
         char *name;
-        VALUE_PAIR *request;
+        RADIUS_REQ *request;
         char *typestr;
         va_dcl
 #endif
@@ -4988,11 +5006,11 @@ va_run_init
                 return -1;
         }
         
-        mach.request = request;
+        mach.req = request;
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "Before rewriting:\n");
-                avl_fprint(fp, mach.request);
+                avl_fprint(fp, AVPLIST(&mach));
                 fclose(fp);
         }
 
@@ -5033,7 +5051,7 @@ va_run_init
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "After rewriting\n");
-                avl_fprint(fp, mach.request);
+                avl_fprint(fp, AVPLIST(&mach));
                 fclose(fp);
         }
 	ret = mach.rA;
@@ -5092,11 +5110,11 @@ interpret(fcall, req, type, datum)
         }
         
 	rw_mach_init(&mach, rewrite_stack_size);
-        mach.request = req ? req->request : NULL;
+        mach.req = req;
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "Before rewriting:\n");
-                avl_fprint(fp, mach.request);
+                avl_fprint(fp, AVPLIST(&mach));
                 fclose(fp);
         }
 
@@ -5168,7 +5186,7 @@ interpret(fcall, req, type, datum)
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "After rewriting\n");
-                avl_fprint(fp, mach.request);
+                avl_fprint(fp, AVPLIST(&mach));
                 fclose(fp);
         }
         
@@ -5190,7 +5208,7 @@ interpret(fcall, req, type, datum)
 int
 run_rewrite(name, req)
         char *name;
-        VALUE_PAIR *req;
+        RADIUS_REQ *req;
 {
         FUNCTION *fun;
 	

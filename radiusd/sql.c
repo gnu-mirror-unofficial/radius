@@ -921,7 +921,7 @@ rad_sql_setup(type, req)
 	int type;
 	RADIUS_REQ *req;
 {
-	int *dummy;
+	int dummy;
 	insist(type >= 0 && type < SQL_NSERVICE);
 
 	if (!sql_cfg.keepopen)

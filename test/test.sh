@@ -63,13 +63,15 @@ s^@ACCT_PORT@^%d^;\
 s^@USER@^gray^;\
 s^@BUILDDIR@^$BUILDDIR^;\
 s^@GUILE@^$GUILE^"`
-sed $EXPR raddb/config.in > raddb/config
-sed $EXPR raddb/client.conf.in > raddb/client.conf
-sed $EXPR raddb/users.in > raddb/users
+
+for file in config client.conf users acct.scm
+do
+    sed $EXPR raddb/${file}.in > raddb/$file
+done
 
 [ -d log ] || mkdir log
 [ -d acct ] || mkdir acct
-for file in log/radwtmp log/radutmp log/radius.log log/radius.info log/radius.debug
+for file in log/radwtmp log/radutmp log/radius.log log/radius.info log/radius.debug log/radius.stderr 
 do
     cat /dev/null > $file
 done    

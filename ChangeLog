@@ -1,5 +1,18 @@
 2001-09-04 Sergey Poznyakoff
 
+	* configure.in: Fixed erroneous AC_ARG_WITH specification
+	for --without-server-guile option.
+	Add GUILE_LIBS to RADIUSD_LDADD if USE_SERVER_GUILE is set.
+	* radiusd/Makefile.am: Removes @GUILE_LIBS@ from radiusd_LDADD:
+	taken care of in configure.in
+	* radiusd/radiusd.c: Pass an argument to rad_main(). It is needed
+	for builddbm only.
+	rad_main(): assign the argument given to extra_arg static. Actually,
+	this is a kludge and should be cleaned up.
+	rad_mainloop(): become daemon only if we really have to.
+
+2001-09-04 Sergey Poznyakoff
+
 	Allow user to configure which characters are allowed in a
 	username:
 

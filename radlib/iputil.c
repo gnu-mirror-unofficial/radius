@@ -39,7 +39,7 @@ static char rcsid[] =
 #include <radius.h>
 
 
-int do_not_resolve = 0;
+int resolve_hostnames = 1;
 
 /*
  *	Return a printable host name (or IP address in dot notation)
@@ -58,7 +58,7 @@ ip_gethostname(ipaddr, namebuf, size)
 	
 	n_ipaddr = htonl(ipaddr);
 	hp = (struct hostent *) NULL;
-	if (do_not_resolve == 0) 
+	if (resolve_hostnames) 
 		hp = gethostbyaddr_r((char *)&n_ipaddr,
 				     sizeof (struct in_addr), AF_INET,
 				     &hent, buffer, sizeof buffer, &h_err);
@@ -129,11 +129,11 @@ ip_iptostr(ipaddr, buffer)
 	UINT4 ipaddr;
 	char *buffer; 
 {
-	register char *p;
-	
-	p = (char *)&ipaddr;
-#define UC(b)   (((int)b)&0xff)
-	sprintf(buffer, "%d.%d.%d.%d", UC(p[0]), UC(p[1]), UC(p[2]), UC(p[3]));
+	sprintf(buffer, "%u.%u.%u.%u",
+		(ipaddr >> 24) & 0xff,
+		(ipaddr >> 16) & 0xff,
+		(ipaddr >> 8) & 0xff,
+		ipaddr & 0xff);
 	return buffer;
 }
 

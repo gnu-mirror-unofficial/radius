@@ -43,19 +43,20 @@ snmp_query(sess, pdu)
 {
         if (snmp_send(sess, pdu))
                 return -1;
-        snmp_poll();
+        snmp_poll(sess);
         return 0;
 }
         
 void
-snmp_poll()
+snmp_poll(sess)
+        struct snmp_session *sess;
 {
         int rc;
         int numfds;
         fd_set fdset;
         struct timeval timeout;
         
-        while (numfds = snmp_fdset(&fdset)) {
+        while (numfds = snmp_fdset(sess, &fdset)) {
                 timeout.tv_usec = 0;
                 timeout.tv_sec = 1;
                 rc = select(numfds, &fdset, NULL, NULL, &timeout);
@@ -64,22 +65,23 @@ snmp_poll()
                                 continue;
                         break;
                 } else if (rc == 0) {
-                        snmp_timeout();
+                        snmp_timeout(sess);
                 } else {
-                        snmp_read(&fdset);
+                        snmp_read(sess, &fdset);
                 }
         } 
 }
 
 void
-snmp_timeout()
+snmp_timeout(sess)
+        struct snmp_session *sess;
 {
         struct snmp_session *sp;
         struct snmp_request *req, *preq;
         struct timeval now;
 
         gettimeofday(&now, (struct timezone *) 0);
-        for (sp = snmp_def.session_list; sp; sp = sp->next) {
+        for (sp = sess; sp; sp = sp->next) {
 
                 if (sp->sd < 0) 
                         continue;
@@ -115,7 +117,8 @@ snmp_timeout()
 }
 
 void
-snmp_read(fdset)
+snmp_read(sess, fdset)
+        struct snmp_session *sess;
         fd_set *fdset;
 {
         struct snmp_session *sp;
@@ -128,8 +131,8 @@ snmp_read(fdset)
         char comm[128];
         int comm_len;
         
-        for (sp = snmp_def.session_list; sp; sp = sp->next) {
-                if (sp->sd < 0)
+        for (sp = sess; sp; sp = sp->next) {
+                if (sp->sd < 0 || !FD_ISSET(sp->sd, fdset))
                         continue;
 
                 /* read the data */

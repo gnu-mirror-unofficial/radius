@@ -15,7 +15,10 @@
 	* radiusd/radiusd.c: Removed socket_list_.* functions
 *	* radiusd/snmpserv.c: Implement "listen" statement.
 	* examples/config.syntax: Sample snmp.listen statement.
-	
+
+	* radlast/radlast.c: Restored state->next-1. Have to analyze it
+ 	  more carefully.
+	  
 	* po/POTFILES.in: Added radiusd/sockets.c
 	* po/es.po: Updated
 	* po/no.po: Updated
@@ -92,7 +95,7 @@
 	* po/no.po: Updated.
 	* po/es.po: Updated.
 	* po/LINGUAS: Added pl
-	* radiusd/config.y (obsolete): Removed
+	* radiusd/config.y (obsolete): Function removed
 	* radiusd/exec.c (radius_exec_program): Fixed typo in
 	  diagnostics.
 	* radiusd/version.c (version): Do not mention "deny shell".

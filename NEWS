@@ -171,8 +171,8 @@ To create the default radius database:
     port     - port to connect to
 
 	User credentials for creator of the database:
-    username - SQL username. This user must have create privileges.
-    password - SQL password.
+    CREATOR  - SQL username. This user must have create privileges.
+    CREATOR_PASSWORD - SQL password.
 
 	User credentials for the owner of the database:
     DB_USER  - SQL username.

@@ -1,5 +1,26 @@
-2001-12-20 Sergey Poznyakoff
+2001-12-21 Sergey Poznyakoff
 
+	* NEWS: Updated.
+	* db/config.m4: renamed username and password, they caused
+	  too much quoting in *.m4 files.
+	* db/mysql.m4: Likewise.
+	* db/pgsql.m4: Likewise.
+
+	Happily removed Queue-Id kludge (was introduced 2001-02-28).
+	
+	* include/radius.h: Added typedef qid_t. Added qid field to
+	  RADIUS_REQ.
+	* include/radsql.h: Removed typedef qid_t.
+	* raddb/dictionary: Removed Queue-Id.
+	* radiusd/auth.c: Removed DA_QUEUE_ID creation. Use
+	  RADIUS_REQ->qid instead.
+	* radiusd/sql.c: Likewise.
+	* radiusd/files.c: Removed DA_QUEUE_ID-related code. Changed
+	  function declarations accordingly.
+	* radiusd/builddbm.c: Likewise.
+
+2001-12-20 Sergey Poznyakoff
+					 
 	Reorganized test suite.
 	
 	* test/dejagnu/s.radiusd: removed

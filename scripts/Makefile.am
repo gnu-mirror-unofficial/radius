@@ -21,3 +21,8 @@ EXTRA_DIST=\
  mksnmp-h.awk\
  mktest.awk\
  texi2html
+
+EXTRA_PROGRAMS = pofilter
+
+noinst_PROGRAMS = @build_POFILTER@
+pofilter_SOURCES = pofilter.c

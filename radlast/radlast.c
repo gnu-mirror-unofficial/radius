@@ -64,6 +64,7 @@ WTMP *find_logout(struct radutmp *bp);
 WTMP *find_restart(struct radutmp *bp);
 void print_entry(WTMP *pp, struct radutmp *bp, int mark);
 void print_reboot_entry(struct radutmp *bp);
+void print_acct_toggle(struct radutmp *bp);
 void delete_logout(WTMP *pp, struct radutmp *utp);
 WTMP *add_wtmp_entry(WTMP **first, WTMP *pp);
 WTMP *delete_wtmp_entry(WTMP **first, WTMP *pp);

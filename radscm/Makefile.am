@@ -33,7 +33,8 @@ libservscm_a_SOURCES= \
 
 radscm_SOURCES=main.c radscm.c
 
-pkgdata_DATA=boot.scm ttl.scm @GUILE_PROCEDURES_TXT@
+schemedir=$(pkgdatadir)/$(VERSION)/scheme
+scheme_DATA=boot.scm ttl.scm @GUILE_PROCEDURES_TXT@
 DOT_X_FILES=\
  rscm_avl.x\
  rscm_dict.x\
@@ -55,7 +56,7 @@ radsession: $(srcdir)/radsession.in
 radscm_LDADD=@GUILE_LIBS@ ./libradscm.a ../lib/liblog.la ../lib/librad.la ../lib/libdebug.la @LIBINTL@
 
 INCLUDES  = -I$(top_builddir) -I$(top_srcdir)/include -I$(srcdir) -I. @INCLUDEPATH@ @GUILE_INCLUDES@
-AM_CPPFLAGS=-DDATADIR=\"$(pkgdatadir)\"
+AM_CPPFLAGS=-DDATADIR=\"$(schemedir)\"
 ETAGS_ARGS = --regex='/SCM_\(GLOBAL_\)?\(G?PROC\|G?PROC1\|SYMBOL\|VCELL\|CONST_LONG\).*\"\([^\"]\)*\"/\3/' \
    --regex='/[ \t]*SCM_[G]?DEFINE1?[ \t]*(\([^,]*\),[^,]*/\1/'
 

@@ -21,6 +21,8 @@
 raddbdir=$(sysconfdir)/raddb
 raddb_subdirs=dict menus
 
+rewritedir=$(pkgdatadir)/$(VERSION)/rewrite
+
 newdict=\
  dictionary\
  dict/ascend\
@@ -48,7 +50,10 @@ raddb_files_644=\
 
 raddb_files_600 = clients client.conf users 
 raddb_files=$(raddb_files_600) $(raddb_files_644)
-EXTRA_DIST=$(raddb_files) client.conf.in
+
+rewrite_DATA = checknas.rw log-hook.rw
+
+EXTRA_DIST=$(raddb_files) client.conf.in config.in checknas.rw log-hook.rw
 DISTCLEANFILES=client.conf
 
 install-data-local:

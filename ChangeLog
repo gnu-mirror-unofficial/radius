@@ -1,3 +1,41 @@
+2003-11-23  Sergey Poznyakoff  
+
+	* NEWS: Updated
+	* TODO: Updated
+	* configure.ac: Use AC_CONFIG_HEADERS
+	* include/radius.h (struct netdef): Declaration moved from
+	radiusd.h
+	(struct nas): New member netdef, instead of ipaddr
+	* include/radiusd.h (struct client) New member netdef, replaces
+	ipaddr.
+	(auth_log_hook): New global
+	* include/rewrite.h (rewrite_check_function): New function.
+	* radiusd/rewrite.y (rewrite_check_function): Likewise.
+	* lib/iputil.c (ip_getnetaddr,ip_addr_in_net_p): New functions
+	* lib/nas.c: Synchronize with the recent changes to struct nas.
+	* radiusd/snmpserv.c: Likewise.
+	* radiusd/stat.c: Likewise.
+	* radlast/radlast.c: Likewise.
+	* radzap/radzap.c: Likewise.
+	* radiusd/tsh.c: Likewise.
+	* radiusd/files.c: Synchronize with the recent changes to
+	structs nas and client.
+	* radiusd/Makefile.am (AM_CPPFLAGS): Define RADIUS_DATADIR.
+	* radiusd/auth.c (auth_log): Run user-defined logging hook and
+	display its return along with the diagnostic message.
+	* radiusd/log.c: Set auth_log_hook variable.
+	* radiusd/radiusd.c (auth_log_hook): New global
+
+	* raddb/checknas.rw: New file
+	* raddb/log-hook.rw: New file
+	* raddb/config.in: New file
+	* raddb/config: Removed
+	* raddb/rewrite: Removed
+	* raddb/Makefile.am: Updated
+	* raddb/.cvsignore: Updated
+
+	* radscm/Makefile.am: Updated
+	
 2003-11-19  Sergey Poznyakoff
 
 	* autogen.sh: Modified. Thanks Gerald for the suggestion.

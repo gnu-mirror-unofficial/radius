@@ -16,10 +16,11 @@ Version 1.1.92:
 Rewrite source files to be loaded instead of the single predefined
 file raddb/rewrite.
 
-** New configuration file option `trace-rules' allows to trace the
-configuration rules that were used when processing the request.
+** Arbitrary Rewrite expressions may be used in A/V pairs, for example:
 
-** Arbitrary Rewrite expressions may be used in A/V pairs.
+DEFAULT	     Auth-Type = SQL
+	     Framed-IP-Address =
+	           "=10.10.10.1 + %[NAS-Port-Id]/16 + %[NAS-Port-Id]"
 
 ** Test shell mode considerably improved.
 
@@ -128,12 +129,40 @@ acct {
 
 will effectively disable the accounting server.
 
+** The amount of information output in logs for category "Auth"
+is configurable via the use of "logging-hook" rewrite function. The
+function is declared using special statement "hook" in "category auth"
+section of raddb/config, e.g.:
+
+logging {
+	category auth {
+		print-auth yes;
+		hook "my-logging-hook";
+	};
+};
+
+The logging-hook rewrite function should take no arguments and return
+a string. See raddb/log-hook.rw for an example.
+
+** File raddb/rewrite is no longer installed. The Rewrite sources are
+installed under $prefix/share/radius/1.1.92/rewrite. [FIXME: This
+could cause name-clashes with  functions declared in old-version
+raddb/rewrite. Configure should take care of this]
+
 ** Dictionary
 
 Flag 'E' marks attributes encrypted as per RFC 2138. Currently
 these are User-Password and CHAP-Password. 
 
 Flag 'F' marks attribute encrypted as per RFC 2868.
+
+** Both raddb/naslist and raddb/clients files allow to specify hosts
+using CIDR notation, i.e.
+
+10.10.0.0/24			nas-1   as5600	community=public
+10.10.10.1/255.255.255.224	nas-2	true
+
+The DEFAULT keyword is also accepted in both files.
 
 * Emacs files: Improved radconf-mode.el
 

@@ -22,6 +22,9 @@ server queue a SMOB instead of a hidden list.
 snmp.
 ** Add missing SNMP MIBS and check the compliance of the snmpserv.c
 to RFC 2619,2621
+** SNMP should reflect each NAS that has actually sent requests to radiusd
+instead of the listing the configured NASes. The current behavior
+becomes wrong with the introduction of CIDR notation in raddb/naslist.
 ** Move the radtest functionality to the test shell and remove radtest
 altogether?
 

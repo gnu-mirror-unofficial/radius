@@ -29,6 +29,9 @@ radius_test "send auth 1 User-Name = \"crypt@remote\" User-Password = \"hamlet\"
 
 radius_test "send auth 1 User-Name = \"accept@iGnoReCaSE\"" "expect 2"  
 
+radius_test "send auth 1 User-Name = \"vsa-propagation@remote\""\
+     "expect 2 Cisco-AVPair = \"variable=value\""
+
 #clone_output "Checking Menus"
 
 radius_test -prereq USE_LIVINGSTON_MENUS\

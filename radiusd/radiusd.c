@@ -594,16 +594,10 @@ radiusd_watcher()
 	while (1) {
 		sleep(watch_interval);
 		if (child_died) {
-			if (WIFEXITED(child_exit_status)) {
-				radlog(L_NOTICE,
-				       _("radiusd exited with %d status"),
-				       WEXITSTATUS(child_exit_status));
-			} else if (WIFSIGNALED(child_exit_status)) {
-				radlog(L_NOTICE,
-				       _("radiusd terminated on signal %d"),
-				       WTERMSIG(child_exit_status));
-			} else 
-				radlog(L_NOTICE, _("radiusd terminated"));
+			char buffer[80];
+			format_exit_status(buffer,
+					   sizeof buffer, child_exit_status);
+			radlog(L_NOTICE, "radiusd %s", buffer);
 			radiusd_primitive_restart(1);
 			child_died = 0;
 		}
@@ -824,7 +818,9 @@ radiusd_exit()
 	radiusd_flush_queues();
 	radlog(L_CRIT, _("Normal shutdown."));
 
+#ifdef USE_SQL
         radiusd_sql_shutdown();
+#endif
         exit(0);
 }
 
@@ -865,8 +861,9 @@ radiusd_restart()
         
         /* Flush request queues */
         radiusd_flush_queues();
+#ifdef USE_SQL
         radiusd_sql_shutdown();
-
+#endif
 	return radiusd_primitive_restart(0);
 }
 
@@ -1817,13 +1814,6 @@ socket_list_select(list, tv)
         return 0;
 }
 
-#ifndef timercmp
-#define       timercmp(tvp, uvp, cmp)\
-                      ((tvp)->tv_sec cmp (uvp)->tv_sec ||\
-                      (tvp)->tv_sec == (uvp)->tv_sec &&\
-                      (tvp)->tv_usec cmp (uvp)->tv_usec)
-#endif
-
 int
 radiusd_mutex_lock(mutex, type)
 	pthread_mutex_t *mutex;
@@ -1908,3 +1898,4 @@ radiusd_get_timeout(type, tv)
 	tv->tv_sec += request_class[type].ttl;
 	return 0;
 }
+

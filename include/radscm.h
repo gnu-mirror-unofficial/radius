@@ -54,7 +54,6 @@ extern SCM scm_long2num (long val);
 #elif GUILE_VERSION >= 16
 
 # define RAD_SCM_SYMBOL_VALUE(p) SCM_VARIABLE_REF(scm_c_lookup(p))
-# define rad_scm_cell scm_cell
 
 #endif
 

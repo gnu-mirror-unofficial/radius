@@ -12,7 +12,7 @@
 AC_REVISION($Revision$)
 AC_INIT(radiusd/radiusd.c)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(gnu-radius, 0.96-alpha.1)
+AM_INIT_AUTOMAKE(gnu-radius, 0.96-alpha.2)
 AM_CONFIG_HEADER(config.h)
 
 ## * Available linguas
@@ -53,6 +53,12 @@ AC_PROG_LN_S
 AM_PROG_LIBTOOL
 
 rad_MAINTAINER_MODE
+
+AC_SUBST(GPERF)
+AC_PATH_PROG(GPERF, gperf, missing, $PATH)
+if test x$GPERF = xmissing; then
+	GPERF='$(top_srcdir)/missing gperf'
+fi
 
 ### Make sure Guile is installed.
 AC_PATH_PROG(GUILE_CONFIG, guile-config, no, $PATH)

@@ -64,6 +64,8 @@ disp_sql_reconnect(type, conn_type, conn)
         int conn_type;
         struct sql_connection *conn;
 {
+	if (!conn)
+		return -1;
         if (conn->connected)
                 disp_sql_entry(type)->disconnect(conn, 0);
         return disp_sql_entry(type)->reconnect(conn_type, conn);
@@ -74,7 +76,8 @@ disp_sql_drop(type, conn)
         int type;
         struct sql_connection *conn;
 {
-        disp_sql_entry(type)->disconnect(conn, 1);
+	if (conn)
+		disp_sql_entry(type)->disconnect(conn, 1);
 }
 
 void
@@ -82,7 +85,7 @@ disp_sql_disconnect(type, conn)
         int type;
         struct sql_connection *conn;
 {
-	if (conn->connected)
+	if (conn && conn->connected)
 		disp_sql_entry(type)->disconnect(conn, 0);
 }
 
@@ -94,6 +97,9 @@ disp_sql_query(type, conn, query, report_cnt)
         int *report_cnt;
 {
 	int rc;
+
+	if (!conn)
+		return -1;
 	rc = disp_sql_entry(type)->query(conn, query, report_cnt);
 	if (rc) 
 		radlog(L_ERR, "%s: %s", _("Failed query was"), query);
@@ -106,6 +112,8 @@ disp_sql_getpwd(type, conn, query)
         struct sql_connection *conn;
         char *query;
 {
+	if (!conn)
+		return NULL;
         return disp_sql_entry(type)->getpwd(conn, query);
 }
 
@@ -133,6 +141,8 @@ disp_sql_next_tuple(type, conn, data)
         struct sql_connection *conn;
         void *data;
 {
+	if (!conn)
+		return -1;
         return disp_sql_entry(type)->next_tuple(conn, data);
 }
 
@@ -143,5 +153,6 @@ disp_sql_free(type, conn, data)
         struct sql_connection *conn;
         void *data;
 {
-        disp_sql_entry(type)->free(conn, data);
+	if (conn)
+		disp_sql_entry(type)->free(conn, data);
 }

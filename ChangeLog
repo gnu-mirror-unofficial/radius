@@ -1,6 +1,43 @@
+2001-05-20  gray  <gray@farlep.net>
+	* Removed radlib/fixalloc.c
+	* Further namespace houskeeping:
+		renamed AUTH_REQ to RADIUS_REQ
+
+2001-05-19  gray  <gray@farlep.net>
+	* Additivity and flags in DICT_ATTR structure. Additivity
+        is a property of the attribute that determines the action
+	to be taken if an attempt is made to add the A/V pair
+	to the list that already contains a pair with given
+	attribute. There are three possible actions:
+		None(Drop)   -- any subsequent additions of the
+				attribute are ignored;
+		Replace	     -- the new A/V pair replaces the old
+				one;
+		Append	     -- the new pair is appended to the
+				end of the list.
+	Flags determine whether the attribute can be used in check or
+	reply list in raddb/users.
+	* Namespace housekeeping. Various pair.*, .*pair functions
+	renamed:
+		 pairmove_single --	avp_move
+		 pairmove2	--	avl_move_attr
+		 pairfree	--	avl_free
+		 free_pair	--	avp_free
+		 pairfind	--	avl_find
+		 pairdelete	--	avl_delete
+		 pairmove	--	avl_merge
+		 pairlistadd	--	avl_add_list
+		 pairadd	--	avl_add_pair
+		 paircopy	--	avl_dup
+		 pairdup	--	avp_dup
+		 create_pair	--	avp_create
+        avl_.* functions operate upon A/V lists, avp_.* functions
+	operate upon A/V pairs.
+
 2001-05-18  gray  <gray@farlep.net>
 	* Made backslash() global
 	* Modified raddb.c to accept \<newline> continuation sequence.
+	* Restored '-' notify reply semantics (see 2001-05-09)
 
 2001-05-17  gray  <gray@farlep.net>
 	* rad_sql_reconnect did not clear conn->connected on failure. 

@@ -1,3 +1,12 @@
+2005-01-15  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* Makefile.am: Rewritten to use gendocs.sh. Currently
+	(as of texinfo 4.8) the CVS version of gendocs.sh is needed
+	* fdl.texi: Use @unnumbered instead of @appendix
+	* gradient.texi: Likewise
+	* index.html.in: Removed
+	* gendocs_template: New file
+	
 2005-01-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* auth.texi: Fix typo

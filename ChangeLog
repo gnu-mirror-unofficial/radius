@@ -1,3 +1,19 @@
+2003-04-28  Sergey Poznyakoff  
+
+	Fixed proxy-id functions.
+	
+	* include/radius.h (SERVER_ID): New datatype.
+	  (RADIUS_SERVER): Added id_offset member.
+	  (RADIUS_SERVER_QUEUE): Removed messg_id.
+	* include/radiusd.h (PROXY_ID,proxy_cleanup): Removed.
+	* include/radpaths.h (RADMSGID): New define.
+	* lib/client.c: Get message IDs from the file on a per server
+	  basis.
+	* lib/radpaths.c (radmsgid_path): New variable.
+	* po/POTFILES.in: Removed deleted files.
+	* radiusd/files.c (reload_data): Removed call to proxy_cleanup().
+	* radiusd/proxy.c: Removed legacy PROXY_ID stuff.
+
 2003-04-27  Sergey Poznyakoff
 
 	Added back SNMP support.

@@ -1,0 +1,42 @@
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
+
+   GNU Radius is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   GNU Radius is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GNU Radius; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
+/* ComOS (up to and including 3.5.1b20) does not send
+   standard Acct-Status-Type=Accounting-{On|Off} attributes upon
+   reboot or restart. Instead it sends the packet with regular Start/Stop
+   attributes, Acct-Session-Id of "00000000" and Acct-Session-Time of 0
+   (or without Acct-Session-Time attribute at all.)
+
+   This function fixes the value of Acct-Status-Type attribute in such
+   packets.
+*/
+
+integer
+comos_start_stop()
+{
+	if (!*%[User-Name]
+            && (!*%[Acct-Session-Time] || %[Acct-Session-Time] == 0)
+            && (*%[Acct-Session-Id] && %[Acct-Session-Id] == "00000000")) {
+		logit("converting reboot packet");
+		if (%[Acct-Status-Type] == 2) # Stop
+			%[Acct-Status-Type] = 8; # Accounting-Off
+		if (%[Acct-Status-Type] == 1) # Start
+			%[Acct-Status-Type] = 7; # Accounting-On
+	}
+	return 0;
+}
+

@@ -1,3 +1,9 @@
+2005-01-28  Sergey Poznyakoff
+
+	* radiusd/checkrad.c (create_instance): Convert framed IP
+	and NAS IP to host order.
+	* radscripts/radauth.m4 (acct): Use acct modifier.
+
 2005-01-11  Sergey Poznyakoff
 
 	* lib/envar.c (grad_envar_parse_argcv_internal): Bugfix.

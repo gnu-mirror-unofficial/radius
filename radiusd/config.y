@@ -132,7 +132,6 @@ static void asgn(void *base, Value *value, int type, int once);
 		HOSTDECL *head;
 		HOSTDECL *tail;
 	} hostlist;
-	int category;
 	struct {
 		int cat;
 		int pri;
@@ -176,7 +175,7 @@ static void asgn(void *base, Value *value, int type, int once);
 %type <acl> acl network
 %type <value> value
 %type <number> facility 
-%type <category> category
+%type <number> category severity
 %type <category_name> category_name
 %type <category_def> category_list category_def
 %type <hostdecl> host
@@ -537,12 +536,13 @@ category_name   : category
 			  $$.cat = $1;
 			  $$.pri = -1;
 		  }
-                | T_SEVERITY
+                | severity
                   {
+			  in_category = $1;
 			  $$.cat = -1;
 			  $$.pri = $1;
 		  }
-                | category '.' T_SEVERITY
+                | category '.' severity
                   {
 			  in_category = $1;
 			  $$.cat = $1;
@@ -581,6 +581,20 @@ category        : T_MAIN
 			  $$ = -1;
 		  }
                 ;
+
+severity        : T_SEVERITY
+                  {
+			  $$ = L_UPTO($1);
+		  }
+                | '=' T_SEVERITY
+                  {
+			  $$ = L_MASK($2);
+		  }
+		| '!' T_SEVERITY
+                  {
+			  $$ = L_UPTO(L_DEBUG) & ~L_MASK($2);
+		  }
+		;
 
 category_list   : category_def
                 | category_list category_def
@@ -640,7 +654,7 @@ category_def    : T_CHANNEL { expect_string = 1; } T_STRING EOL
 begin_level     : T_LEVEL
                   {
 			  switch (in_category) {
-			  case L_DEBUG:
+			  case L_MASK(L_DEBUG):
 				  expect_string = 1;
 				  clear_debug();
 				  break;
@@ -682,7 +696,7 @@ level           : T_STRING
 				  }
 				  break;
 				  
-			  case L_DEBUG:
+			  case L_MASK(L_DEBUG):
 				  if (set_module_debug_level($1, -1))
 					  radlog(L_WARN,
 					 _("%s:%d: no such module name: %s"),
@@ -1273,7 +1287,8 @@ get_config()
 	struct stat st;
 	int fd;
 	extern int yydebug;
-
+	Channel *mark;
+	
 	filename = mkfilename(radius_dir, RADIUS_CONFIG);
 	if (stat(filename, &st)) {
 		radlog(L_ERR|L_PERROR, _("can't stat `%s'"), filename);
@@ -1323,13 +1338,7 @@ get_config()
 		debug_config = 0;
 	}
 
-	/*
-	 * Initialize logging module. Add logging to stdout if we
-	 * have not yet detached from console.
-	 */
-	log_init();
-	if (first_time)
-		log_stdout();
+	mark = log_mark();
 	
 	/* Parse configuration */
 	yyparse();
@@ -1337,7 +1346,7 @@ get_config()
 	/* Clean up the things */
 	efree(filename);
 	efree(buffer);
-	log_done();
+	log_release(mark);
 	
 #ifdef USE_SNMP
 	free_netlist();

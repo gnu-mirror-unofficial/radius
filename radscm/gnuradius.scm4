@@ -24,16 +24,8 @@ changequote([,])dnl
   :use-module (ice-9 [format]))
 
 (let ((lib-path "LIBDIR/"))
-  (cond
-   ((or (string=? (version) "1.4")
-	(string=? (version) "1.4.1"))
-    (dynamic-call "radscm_init"
-		  (dynamic-link (string-append
-				 lib-path
-				 "libguile-gnuradius-v-VERSION"))))
-   (else
-    (load-extension (string-append
-		     lib-path "libguile-gnuradius-v-VERSION") "radscm_init"))))
+  (load-extension (string-append
+		   lib-path "libguile-gnuradius-v-VERSION") "radscm_init"))
 
 ;; Exports go here
 (export %raddb-path

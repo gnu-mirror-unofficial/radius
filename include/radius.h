@@ -288,6 +288,7 @@ typedef struct radius_req {
 	int                     attempt_no;
         UINT4                   server_id;     /* Proxy ID of the packet */
 	char                    *remote_user;  /* Remote username (stringobj)*/
+        u_char                  remote_auth[AUTH_VECTOR_LEN];
 	
         int                     server_code;   /* Reply code from other srv */
         VALUE_PAIR              *server_reply; /* Reply from other server */
@@ -480,6 +481,8 @@ void rad_clt_clear_server_list(RADIUS_SERVER_QUEUE *qp);
 RADIUS_SERVER *rad_clt_find_server(RADIUS_SERVER_QUEUE *qp, char *name);
 void rad_clt_random_vector(char *vector);
 VALUE_PAIR *rad_clt_encrypt_pairlist(VALUE_PAIR *plist,
+				     u_char *vector, u_char *secret);
+VALUE_PAIR *rad_clt_decrypt_pairlist(VALUE_PAIR *plist,
 				     u_char *vector, u_char *secret);
 
 /* log.c */

@@ -372,19 +372,19 @@ format_vendor_pair(buf, pair)
 }
 		
 char *
-format_pair(pair)
+format_pair(pair, savep)
 	VALUE_PAIR *pair;
+	char **savep;
 {
-	static char *buf1;
+	char *buf1 = NULL;
 	char *buf2ptr = NULL;
 	char buf2[4*AUTH_STRING_LEN+1]; /* Enough to hold longest possible
 					   string value all converted to
 					   octal */
 	DICT_VALUE *dval;
+	struct tm tm;
 	
-	if (buf1)
-		free(buf1);
-	buf1 = NULL;
+	*savep = NULL;
 
 	switch (pair->eval ? TYPE_STRING : pair->type) {
 	case TYPE_STRING:
@@ -428,7 +428,7 @@ format_pair(pair)
 		
 	case TYPE_DATE:
 		strftime(buf2, sizeof(buf2), "\"%b %e %Y\"",
-			 localtime((time_t *)&pair->lvalue));
+			 localtime_r((time_t *)&pair->lvalue, &tm));
 		break;
 	default:
 		strncpy(buf2, "[UNKNOWN DATATYPE]", sizeof(buf2));
@@ -448,6 +448,7 @@ format_pair(pair)
 	if (buf2ptr)
 		free(buf2ptr);
 	
+	*savep = buf1;
 	return buf1;
 }
 

@@ -1,7 +1,6 @@
 Makefile
 Makefile.in
 POTFILES
-*.pot
 *.pot~
 *.gmo
 *.po~

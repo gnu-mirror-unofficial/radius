@@ -51,7 +51,7 @@
 	int old_lineno;
 
 	static void *closure;
-	static int (*add_entry)(void*, int, char *, VALUE_PAIR *, VALUE_PAIR *);
+	static int (*add_entry)(void*, char *, int, char *, VALUE_PAIR *, VALUE_PAIR *);
 
 	VALUE_PAIR *install_pair(char *name, int op, char *valstr);
 %}
@@ -95,7 +95,9 @@ list     : entry
 
 entry    : user descr
            {
-		   add_entry(closure, old_lineno, $1, $2.check, $2.reply);
+		   add_entry(closure,
+			     source_filename,
+			     old_lineno, $1, $2.check, $2.reply);
 	   }
 	 | user error
 	   {
@@ -212,6 +214,15 @@ install_pair(name, op, valstr)
 	pair->type = attr->type;
 	pair->additivity = attr->additivity;
 	pair->operator = op;
+
+	if (valstr[0] == '=') {
+		pair->eval = 1;
+		pair->strvalue = make_string(valstr+1);
+		pair->strlength = strlen(pair->strvalue);
+		return pair;
+	}
+
+	pair->eval = 0;
 	
 	switch (pair->type) {
 	case PW_TYPE_STRING:
@@ -344,11 +355,17 @@ parse_file(file, c, f)
 }
 
 void
-enable_usr_dbg()
+enable_usr_dbg(val)
+	int val;
 {
 #ifdef YACC_DEBUG
-	yydebug = 1;
-	radlog(L_NOTICE, _("enabled userfile parser debugging"));
+	yydebug = val;
+	if (yydebug)
+		radlog(L_NOTICE, _("%s:%d: enabled userfile parser debugging"),
+		       source_filename, source_line_num);
+	else
+		radlog(L_NOTICE, _("%s:%d: disabled userfile parser debugging"),
+		       source_filename, source_line_num);
 #else
 	radlog(L_WARN,
 	    _("%s:%d: radiusd compiled without parser debugging"),

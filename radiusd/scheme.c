@@ -40,6 +40,7 @@ VALUE_PAIR *radscm_cons_to_avp(SCM scm);
 static SCM
 catch_body (void *data)
 {
+	radscm_init();
 	scm_init_load_path();
 	rad_mainloop();
 	return SCM_BOOL_F;
@@ -107,8 +108,9 @@ scheme_auth(procname, req, user_check, user_reply_ptr)
 		       _("procname is not a procedure object"));
 		return 1;
 	}
-	if (setjmp(jmp_env))
+	if (setjmp(jmp_env)) 
 		return 1;
+
 	res = scm_internal_lazy_catch(SCM_BOOL_T,
 				      eval_catch_body,
 				      (void*)

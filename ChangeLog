@@ -1,3 +1,47 @@
+2001-08-20 Sergey Poznyakoff
+
+	Changed debugging conventions. Each module that calls debug()
+	functions should define symbol RADIUS_MODULE_<modulename>
+	before inclusion of config.h. When a new module is added
+	which uses debug facility, make debugmod should be run to
+	update include/debugmod.h and ./debugmod.c.
+
+	* scripts/debug.sh: Create a single header file instead of
+	modifying each source.
+	* Makefile.am: Split invocation of debug.sh among several lines
+	for readability.
+	* acconfig.h: Include <debugmod.h>
+
+	* include/Makefile.am: Added debugmod.h
+	* include/.cvsignore: Likewise.
+
+	* test/Makefile.am: Added INCLUDES.
+	* sql/Makefile.am: Use libsql_la_SOURCES instead of libsql_a_SOURCES.
+
+	* radiusd/acct.c: Define RADIUS_MODULE_<modname> at the start.
+	* radiusd/auth.c: Likewise.
+	* radiusd/builddbm.c: Likewise.
+	* radiusd/checkrad.c: Likewise.
+	* radiusd/debugmod.c: Likewise.
+	* radiusd/exec.c: Likewise.
+	* radiusd/files.c: Likewise.
+	* radiusd/notify.c: Likewise.
+	* radiusd/pam.c: Likewise.
+	* radiusd/proxy.c: Likewise.
+	* radiusd/radius.c: Likewise.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/radutil.c: Likewise.
+	* radiusd/rewrite.y: Likewise.
+	* radiusd/snmpserv.c: Likewise.
+	* radiusd/sql.c: Likewise.
+	* radiusd/stat.c: Likewise.
+	* radlib/debugmod.c: Likewise.
+	* radlib/leakdetect.c: Likewise.
+	* radlib/mem.c: Likewise.
+	* radlib/users.y: Likewise.
+	* sql/mysql.c: Likewise.
+	* sql/postgres.c: Likewise.
+
 2001-08-19 Sergey Poznyakoff
 
 	Modified SQL interface: radiusd can now be configured to use

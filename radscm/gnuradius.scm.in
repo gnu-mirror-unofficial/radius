@@ -41,15 +41,21 @@ changequote([,])dnl
 	grad-version
 	grad-package-string)
 
+(export sha1-calc)
+
 ;; Includes go here
 include(BUILDDIR/rscm_avl.inc)
 include(BUILDDIR/rscm_dict.inc)
 include(BUILDDIR/rscm_syslog.inc)
 include(BUILDDIR/rscm_utmp.inc)
+include(BUILDDIR/rscm_hash.inc)
 include(BUILDDIR/rscm_lib.inc)
 include(BUILDDIR/radscm.inc)
 
 ;; Code
+
+(define (sha1-calc . rest)
+  (sha1-calc-list rest))
 
 ;; Ports
 

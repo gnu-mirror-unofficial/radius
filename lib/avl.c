@@ -173,6 +173,16 @@ avp_cmp(VALUE_PAIR *a, VALUE_PAIR *b)
 	return rc;
 }
 
+int
+avp_null_string(VALUE_PAIR *pair)
+{
+	if (!pair)
+		return 1;
+	if (pair->type != TYPE_STRING)
+		return 1;
+	return strlen(pair->avp_strvalue) == 0;
+}
+
 /* A/V pairlist functions */
 
 /* Release the memory used by a list of attribute-value pairs.

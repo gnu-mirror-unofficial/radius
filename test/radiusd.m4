@@ -269,7 +269,7 @@ if {$failed == 0 && $success == $count} {
 }],
 shell,
 [define([_TEST_NUM],incr(_TEST_NUM))
- awk -v COUNT=${STRESS_COUNT:-500} '[BEGIN] {
+ ${AWK:-awk} -v COUNT=${STRESS_COUNT:-500} '[BEGIN] {
  print "print \"Sending " COUNT " authentication requests.\"" 
  print "print \"Please, wait: this can take a while...\""
  print ":_TEST_NUM:"

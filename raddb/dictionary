@@ -129,6 +129,10 @@ ATTRIBUTE	Scheme-Acct-Procedure	2010	string	- [---R--]
 ATTRIBUTE       Password-Location       2011    integer - [L-----]
 VALUE           Password-Location       SQL			1
 
+ATTRIBUTE	Proxy-Replied		2012	integer	- [L-L-L-]=
+VALUE           Proxy-Replied	        No                      0
+VALUE           Proxy-Replied	        Yes                     1
+
 # These are used by rewriting functions:
 ATTRIBUTE	Orig-User-Name		2101	string	- [L--R-R]
 ATTRIBUTE	Orig-NAS-Port-Id	2105	integer	- [L--R-R]

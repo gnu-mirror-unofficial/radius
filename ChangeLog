@@ -1,3 +1,41 @@
+2002-05-16  Sergey Poznyakoff  
+
+	* radlib/*: Moved to
+	* lib/*: ... here.
+
+	Old radlib support discontinued.
+
+	* Makefile.am: Renamed radlib/ to lib/
+	* configure.ac: Likewise.
+	* client/pam_radius/Makefile.am: Likewise.
+	* po/POTFILES.in: Likewise.
+	* radiusd/Makefile.am: Likewise.
+	* radlast/Makefile.am: Likewise.
+	* radscm/Makefile.am: Likewise.
+	* radtest/Makefile.am: Likewise.
+	* raduse/Makefile.am: Likewise.
+	* radwho/Makefile.am: Likewise.
+	* radzap/Makefile.am: Likewise.
+	
+	* lib/realms.c: Functions for dealing with data from
+	  raddb/realms,
+	* lib/printutmp.c: Functions to be used by radwho and
+	  (in the long run) by radlast.
+	* radiusd/acct.c: Use realm_lookup_name().
+	* radiusd/proxy.c: Likewise.
+	* radiusd/files.c: Removed realm-related functions.
+	
+	* include/radius.h: Added protos for realm_ functions
+	* include/radiusd.h: Removed realm_find() proto.
+	* include/radutmp.h: Added protos for functions from
+	  lib/printutmp.c
+*	* radwho/radwho.c: Use functions from lib/printutmp.c.
+	  Provide several predefined formats.
+	  
+	* radscripts/radping.m4: Use new format syntax.
+	
+	* TODO: Updated.
+
 2002-05-14  Sergey Poznyakoff
 
 	* TODO: Updated.

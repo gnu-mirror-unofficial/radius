@@ -34,6 +34,7 @@ debugmod.h \
 cfg.h \
 checkrad.h \
 envar.h \
+list.h \
 md5.h \
 mem.h \
 obstack1.h \

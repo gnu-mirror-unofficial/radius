@@ -65,7 +65,7 @@ Display the calling station @sc{id} in the second column.
 Set the radius configuration directory name.
 
 @item -D @{short|abbr|full@}
-@itemx --date-formap @{short|abbr|full@}
+@itemx --date-format @{short|abbr|full@}
 Set the date representation. By default dates are output as
 @code{DOW HH:MM}, where DOW means the day of week abbreviation,
 HH and MM mean hours and minutes respectively. This corresponds to

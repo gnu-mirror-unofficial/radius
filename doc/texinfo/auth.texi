@@ -48,7 +48,6 @@ following profile in @file{users}:
 @example
 @group
 guest   Auth-Type = Accept,
-                Password != "",
                 Simultaneous-Use = 10
         Service-Type = Framed-User,
                 Framed-Protocol = PPP
@@ -58,7 +57,7 @@ guest   Auth-Type = Accept,
 @noindent
 allows up to 10 simultaneous guest PPP accounts. To log in using such
 guest account it is sufficient to use username @samp{guest} and any
-non-empty password.
+password.
 
 @comment *L2****************************************************************
 @node Reject Auth

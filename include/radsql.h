@@ -31,8 +31,9 @@
 struct sql_connection {
 	struct sql_connection *next;
 	int    type;
-	qid_t  qid;
+	void   *owner;
 	int    connected;
+	int    delete_on_close;
 	time_t last_used;
 	void   *data;      /* connection - specific data */
 };
@@ -69,7 +70,6 @@ void rad_sql_acct(RADIUS_REQ *req);
 char *rad_sql_pass(RADIUS_REQ *req, char *data);
 void rad_sql_check_connect(int type);
 void rad_sql_need_reconnect(int type);
-int rad_sql_setup(int type, RADIUS_REQ *req);
 void rad_sql_cleanup(int type, RADIUS_REQ *req);
 int rad_sql_checkgroup(RADIUS_REQ *req, char *groupname);
 int rad_sql_check_attr_query(RADIUS_REQ *req, VALUE_PAIR **check_pairs);

@@ -65,9 +65,6 @@ port 3306
 login radius
 password password
 
-# Size of SQL query expansion buffer. Default is 1024 bytes.
-query_buffer_size 1024
-
 # Specifies whether radiusd should try to keep the connection open.
 # When set to no (the default), radiusd will open the new connection
 # before the transaction and close it right after finishing it.

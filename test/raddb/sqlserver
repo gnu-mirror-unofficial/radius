@@ -75,11 +75,6 @@ idle_timeout 14400
 # Enable/Disable Mysql authentication: default no
 doauth no
 
-# Maximum number of open connections. This equals the number of requests
-# that can be handled simultaneously.
-# Ignored when keepopen is no.
-auth_max_connections 16
-
 # authentication database name
 auth_db RADIUS
 
@@ -91,11 +86,6 @@ auth_query select password from passwd where user_name='%u'
 
 # Enable/Disable Mysql accounting: default no
 doacct no
-
-# Maximum number of open connections. This equals the number of requests
-# that can be handled simultaneously.
-# Ignored when keepopen is no.
-acct_max_connections 16
 
 # accounting database name
 acct_db RADIUS

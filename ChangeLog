@@ -1,3 +1,18 @@
+2002-07-25  Sergey Poznyakoff 
+
+	* lib/dict.c: Correctly handle plurals in diagnostics.
+	* radiusd/files.c: Likewise.
+	* radiusd/rewrite.y: Likewise.
+	* radiusd/sql.c: Likewise.
+	* sql/postgres.c: Likewise.
+	* po/es.po: Likewise. 
+	* po/no.po: Likewise.
+	* po/pl.po: Likewise.
+
+	* configure.ac: Provide a wrapper for ngettext() in case when
+	  NLS is not desired.
+	* scripts/dot.emacs: Updated
+	
 2002-07-24  Sergey Poznyakoff
 
 	* lib/mem.c: Cleaned wording of the diagnostics

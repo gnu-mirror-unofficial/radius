@@ -94,6 +94,7 @@ int spawn_flag;        /* Whether to spawn new children for handling
 int use_dbm = 0;       /* Use DBM storage */
 int auth_detail = 0;   /* Produce detailed logs of authentication packets */
 int acct_detail = 1;   /* Produce detailed logs of accounting packets */
+int acct_system = 1;   /* Run system accounting into radutmp/radwtmp files */
 int auth_trace_rules = 0; /* Produce trace logs for each auth request */
 int acct_trace_rules = 0; /* Produce trace logs for each acct request */
 int strip_names;          /* Strip preffixes/suffixes off the usernames */
@@ -430,6 +431,7 @@ common_init()
 	acct_init();
 	radiusd_reconfigure();
 	grad_path_init();
+	system_acct_init();
 	grad_log(L_INFO, _("Ready"));
 }
 
@@ -1353,6 +1355,8 @@ struct cfg_stmt acct_stmt[] = {
 	  cfg_get_integer, &request_class[R_ACCT].cleanup_delay,
 	  NULL, NULL },
 	{ "detail", CS_STMT, NULL, cfg_get_boolean, &acct_detail,
+	  NULL, NULL },
+	{ "system", CS_STMT, NULL, cfg_get_boolean, &acct_system,
 	  NULL, NULL },
 	{ "compare-attribute-flag", CS_STMT, NULL,
 	  cfg_get_integer, &acct_comp_flag,

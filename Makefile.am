@@ -10,7 +10,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-AUTOMAKE_OPTIONS = 1.6
+AUTOMAKE_OPTIONS = 1.6 readme-alpha
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS= intl m4 include lib sql snmplib radscm radiusd radwho radzap radlast\
@@ -41,7 +41,7 @@ alphacheck:
 
 endif
 
-EXTRA_DIST= config.rpath ylwrap README-alpha ABOUT-NLS
+EXTRA_DIST= config.rpath ylwrap ABOUT-NLS
 
 distcleancheck_listfiles = \
 	find . -type f -exec sh -c 'test -f $(top_srcdir)/{} || echo {}' \;

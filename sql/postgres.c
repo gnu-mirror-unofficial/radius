@@ -106,7 +106,8 @@ rad_postgres_query(struct sql_connection *conn, char *query, int *return_count)
                 grad_log(L_ERR,
                          "PQexec: %s",
                          PQerrorMessage((PGconn*)conn->data));
-		rad_postgres_disconnect(conn, 0);
+		if (PQstatus(conn) == CONNECTION_BAD)
+			rad_postgres_disconnect(conn, 0);
                 return -1;
         }
         
@@ -149,7 +150,8 @@ rad_postgres_query(struct sql_connection *conn, char *query, int *return_count)
                 grad_log(L_ERR,
                          _("PQexec returned %s"),
                          PQresStatus(stat));
-                if (stat == PGRES_FATAL_ERROR) 
+                if (stat == PGRES_FATAL_ERROR 
+                    && PQstatus(conn) == CONNECTION_BAD) 
 			rad_postgres_disconnect(conn, 0);
                 rc = -1;
         }
@@ -174,7 +176,8 @@ rad_postgres_getpwd(struct sql_connection *conn, char *query)
                 grad_log(L_ERR,
                          "PQexec: %s",
                          PQerrorMessage((PGconn*)conn->data));
-		rad_postgres_disconnect(conn, 0);
+		if (PQstatus(conn) == CONNECTION_BAD)
+			rad_postgres_disconnect(conn, 0);
                 return NULL;
         }
         
@@ -199,7 +202,8 @@ rad_postgres_getpwd(struct sql_connection *conn, char *query)
                 grad_log(L_ERR,
                          _("PQexec returned %s"),
                          PQresStatus(stat));
-                if (stat == PGRES_FATAL_ERROR)
+                if (stat == PGRES_FATAL_ERROR
+                    && PQstatus(conn) == CONNECTION_BAD)
 			rad_postgres_disconnect(conn, 0);
         }
         PQclear(res);
@@ -250,7 +254,8 @@ rad_postgres_exec(struct sql_connection *conn, char *query)
                 grad_log(L_ERR,
                          "PQexec: %s",
                          PQerrorMessage((PGconn*)conn->data));
-		rad_postgres_disconnect(conn, 0);
+		if (PQstatus(conn) == CONNECTION_BAD)
+			rad_postgres_disconnect(conn, 0);
                 return NULL;
         }
         
@@ -266,7 +271,8 @@ rad_postgres_exec(struct sql_connection *conn, char *query)
 			grad_log(L_ERR,
 			         _("PQexec returned %s"),
 			         PQresStatus(stat));
-			rad_postgres_disconnect(conn, 0);
+			if (PQstatus(conn) == CONNECTION_BAD)
+				rad_postgres_disconnect(conn, 0);
 		}
                 return NULL;
         }

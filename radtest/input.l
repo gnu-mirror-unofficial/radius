@@ -206,7 +206,9 @@ DQ {D3}\.{D3}\.{D3}\.{D3}
 \"getopt\"   |
 \"case\"     |
 \"in\"       |
-\"return\"   {
+\"return\"   |
+\"or\"       |
+\"and\"      {
 	add_str(yytext+1,yyleng-2);
         yylval.string = end_str();
         return NAME;
@@ -244,6 +246,8 @@ do      return DO;
 break   return BREAK;
 continue return CONTINUE;
 not     return NOT;
+or      return OR;
+and     return AND;
 input   return INPUT;
 shift   return SHIFT;
 getopt  return GETOPT;

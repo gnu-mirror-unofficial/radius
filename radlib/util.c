@@ -190,7 +190,8 @@ mkfilename3(dir, subdir, name)
 	return p;
 }
 
-
+/* Convert second character of a backslash sequence to its ASCII
+   value: */
 int
 backslash(c)
         int c;
@@ -235,71 +236,106 @@ op_str(op)
         return "?";
 }
 
+static int flush_seg(char **bufp, char *seg, char *ptr, int runlen);
+
+int
+flush_seg(bufp, seg, ptr, runlen)
+	char **bufp;
+	char *seg;
+	char *ptr;
+	int runlen;
+{
+	int outbytes = 0;
+	char *buf = *bufp;
+	
+	if (ptr - seg >= runlen) {
+		outbytes += ptr - seg;
+		if (buf)
+			while (seg < ptr)
+				*buf++ = *seg++;
+	} else {
+		outbytes += 4*(ptr - seg);
+		if (buf)
+			while (seg < ptr) {
+				sprintf(buf, "\\%03o", *seg);
+				seg++;
+				buf += 4;
+			}
+	}
+	*bufp = buf;
+	return outbytes;
+}
+
+/* Print LEN characters from STR to buffer BUF. If a sequence of RUNLEN
+   or more printable characters is encountered, it is printed as is,
+   otherwise, each character is printed as a three-digit octal number,
+   preceeded by a backslash (\%03o).
+   Return number of characters, _output_ to BUF. If BUF is NULL, no
+   printing is done, but the number of characters that would be output
+   is returned. */
+
+int
+format_string_visual(buf, runlen, str, len)
+	char *buf;
+	int runlen;
+	char *str;
+	int len;
+{
+	char *seg, *ptr;
+	int outbytes = 0;
+
+	seg = NULL;
+	ptr = str;
+	while (len) {
+		if (isprint(*ptr)) {
+			if (!seg)
+				seg = ptr;
+		} else {
+			if (seg) {
+				outbytes += flush_seg(&buf, seg, ptr, runlen);
+				seg = NULL;
+			}
+			if (buf) {
+				sprintf(buf, "\\%03o", *ptr);
+				buf += 4;
+			}
+			outbytes += 4;
+		}
+		len--;
+		ptr++;
+	}
+	if (seg) 
+		outbytes += flush_seg(&buf, seg, ptr, runlen);
+	if (buf)
+		*buf++ = 0;
+	return outbytes;
+}
+
 int
 pairstr_format(buf, pair)
 	char *buf;
 	VALUE_PAIR *pair;
 {
-	int n, ret = 0;
-	UINT4		vendor;
+	int n;
+	UINT4 vendor;
 	u_char *ptr = (u_char*)pair->strvalue;
 	char buf1[64];
 	char *bufp = buf;
-	u_int left, i, len;
 	
 	memcpy(&vendor, ptr, 4);
 	ptr += 4;
 	n = snprintf(buf1, sizeof(buf1), "V%d", (int)ntohl(vendor));
 	if (n < 0)
 		return -1;
-	ret += n;
 
 	if (bufp) {
 		memcpy(bufp, buf1, n);
 		bufp += n;
 	}
 	
-	left = pair->strlength - 4;
-	while (left >= 2) {
-		n = snprintf(buf1, sizeof(buf1), ":T%d:L%d:", ptr[0], ptr[1]);
-		if (n < 0)
-			return n;
-		if (bufp) {
-			memcpy(bufp, buf1, n);
-			bufp += n;
-		}
-	
-		left -= 2;
-		ptr += 2;
-		i = ptr[1] - 2;
-
-		len = 0;
-		do {
-			while (i > 0 && left > 0 && isprint(ptr[len])) {
-				len++;
-				i--;
-				left--;
-			}
-			if (bufp) {
-				memcpy(bufp, ptr, len);
-				bufp += len;
-			}
-			ret += len;
-			ptr += len;
-			if (i > 0 && left > 0) {
-				if (bufp) {
-					sprintf(bufp, "\\%03o", *ptr);
-					bufp += 4;
-				}
-				ptr++;
-				ret += 4;
-			}
-		} while (i > 0 && left > 0);
-	}
-	return ret;      
+	return n + format_string_visual(bufp, 4, ptr, pair->strlength - 4);
 }
-
-
+		
 char *
 format_pair(pair)
 	VALUE_PAIR *pair;

@@ -55,7 +55,7 @@ LIBADD=@LIBOBJS@
 librad_la_LIBADD = $(LIBADD:.o=.lo)
 liblog_la_SOURCES=applog.c 
 libdebug_la_SOURCES=debugmod.c
-LDFLAGS=-all-static
+AM_LDFLAGS=-all-static
 AM_CFLAGS=-static -DLOCALEDIR=\"$(localedir)\"
 
 BUILT_SOURCES=users_gram.c users_lex.c
@@ -69,7 +69,7 @@ EXTRA_DIST=users.y users.l strncasecmp.c strerror.c \
            argp-help.c argp-parse.c argp-pv.c argp-pvh.c argp-xinl.c pin.c \
            strchrnul.c strndup.c strnlen.c
 
-noinst_HEADERS=users_gram.h rx.h regex.h regexp.h getopt.h snprintf.h \
+noinst_HEADERS=users_gram.h rx.h regexp.h getopt.h snprintf.h \
                argp-fmtstream.h argp-namefrob.h argp.h
 
 YLWRAP=$(SHELL) $(top_srcdir)/ylwrap

@@ -23,6 +23,7 @@
 #include <obstack1.h>
 #include <radutmp.h>
 #include <pwd.h>
+#include <stdio.h>
 
 #define TAB_SIZE 8 /* FIXME */
 
@@ -184,9 +185,10 @@ output_tab(column, tabstop)
 	int column;
 	int tabstop;
 {
-	int goal = ((column / TAB_SIZE) + tabstop) * TAB_SIZE;
-	while (goal--)
+	int goal = (((column + TAB_SIZE - 1) / TAB_SIZE) + tabstop) * TAB_SIZE;
+	for (;column < goal; column++)
 		putchar(' ');
+	return column;
 }
 
 char *

@@ -1245,13 +1245,6 @@ short name of the NAS from @file{raddb/naslist}
 @itemx --acct-directory DIR
 Specify accounting directory.
 
-@c ** -c option (radiusd)
-@c ** --check-config (radiusd)
-@item -c
-@itemx --check-config
-Check configuration files and exit. All errors are reported via usual
-log channels.
-
 @c ** -b option (radiusd)
 @c ** --dbm option (radiusd)
 @item -b
@@ -1283,6 +1276,27 @@ picks up the first IP address it sees on the machine.
 @item -l DIR
 @itemx --logging-directory DIR
 Specify alternate logging directory. 
+
+@c ** -mb option (radiusd)
+@c ** --mode b (radiusd)
+@item -mb
+@itemx --mode b
+``Builddbm'' mode. Builds a DBM version of a plaintext users database.
+@ref{Builddbm}.
+
+@c ** -mc option (radiusd)
+@c ** --mode c (radiusd)
+@item -mc
+@itemx --mode c
+Check configuration files and exit. All errors are reported via usual
+log channels.
+
+@c ** -mt option (radiusd)
+@c ** --mode t (radiusd)
+@item -mt
+@itemx --mode t
+Test mode. In this mode @code{radiusd} starts an interactive interpreter
+which allows to test various aspects of its configuration.
 
 @c ** -n option (radiusd)
 @c ** --auth-only option (radiusd)
@@ -2934,7 +2948,7 @@ CREATE TABLE calls (
   Event_Date_Time     datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
   nas_ip_address      char(17),
   nas_port_id         int(6),
-  acct_session_id     char(16) DEFAULT NOT NULL,
+  acct_session_id     char(16) DEFAULT '' NOT NULL,
   acct_session_time   int(11),
   acct_input_octets   int(11),
   acct_output_octets  int(11),
@@ -3020,7 +3034,7 @@ CREATE TABLE calls (
   Event_Date_Time     datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
   nas_ip_address      char(17),
   nas_port_id         int(6),
-  acct_session_id     char(16) DEFAULT NOT NULL,
+  acct_session_id     char(16) DEFAULT '' NOT NULL,
   acct_session_time   int(11),
   acct_input_octets   int(11),
   acct_output_octets  int(11),
@@ -5296,12 +5310,6 @@ Use the following command line options to modify the operation of
 Specifies alternate directory for the Radius configuration
 files. This defaults to @file{@value{raddb}}.
 
-@item -i @var{filename}
-Specifies alternate input file instead of default
-@file{raddb/users}. The @samp{-i} option is provided
-for compatibility with other versions of @code{builddm}. It can
-safely be omitted.
-
 @item -h
 Outputs short usage summary and exits with 0 exit code.
 @end table
@@ -5326,7 +5334,7 @@ A path to radius configuration directory.
 @end deffn
 
 @deffn rad-server-list
-@vindex rad-server-list, radscm
+@cindex rad-server-list, radscm variable
 A list of radius servers. Each element of the list is:
 
 @lisp

@@ -4,6 +4,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @chapter New Configuration Approach (draft)
+@UNREVISED{}
 
 This document presents a draft describing new approach for
 processing @RADIUS{} requests. It is intended as a @dfn{request
@@ -14,6 +15,7 @@ developers.
 * Present State:: A brief description of Currently Used Approach
 * Deficiencies::   Deficiencies of Current Operation Model and Configuration Suite
 * Solution::      A Proposed Solution
+* New Rewrite::   Changes to Rewrite Language
 * Traditional Configuration:: Support for Traditional Configuration Files.
 * New Configuration:: New Configuration Files
 @end menu
@@ -138,233 +140,363 @@ nested queries, such a feature could come quite handy.
 @section Proposed Solution
 @UNREVISED{}
 
-The new (or, better said @dfn{GNU}) operation model is 
-
-The processing of incoming requests is controlled by a @dfn{radius
-command tree}. When a request arrives, an internal engine traverses
-this tree, executing actions and tests contained therein. Branching
-within the tree is performed depending on values returned by each test,
-as described below. 
+Processing of incoming requests is controlled by
+@dfn{request-processing program}. Request-processing program is a
+list-like structure, consisting of @dfn{instructions}. 
 
 @menu
-* Node::        Radius Command Tree Node Defined
-* grad_node_conditional::
-* grad_node_call::
-* grad_node_return::
-* grad_node_action::
-* grad_node_reply::
-* grad_node_proxy::
-* grad_node_forward::
+* Instruction::        
+* grad_instr_conditional::
+* grad_instr_call::
+* grad_instr_return::
+* grad_instr_action::
+* grad_instr_reply::
+* grad_instr_proxy::
+* grad_instr_forward::
 @end menu
 
-@node Node
-@subsection Radius Command Tree Node
+@node Instruction
+@subsection Request-processing Instruction
 
-@dfn{Radius Command Tree} consists of @dfn{nodes}. There are six
-basic node types:
+@dfn{Request-processing program} consists of @dfn{instructions}. There
+are seven basic instruction types:
 
 @table @code
-@item grad_node_conditional_t
-This node is a branch point.
+@item grad_instr_conditional_t
+This instruction marks a branch point within the program.
 
-@item grad_node_call_t
-Represents a @dfn{call} of a subtree
+@item grad_instr_call_t
+Represents a @dfn{call} of a subprogram
 
-@item grad_node_action_t
+@item grad_instr_action_t
 Invokes a Rewrite @FIXME{or Scheme?} function
 
-@item grad_node_proxy_t
+@item grad_instr_proxy_t
 Proxies a request to the remote server
 
-@item grad_node_forward_t
+@item grad_instr_forward_t
 Forwards a request to the remote server
 
-@item grad_node_reply_t
+@item grad_instr_reply_t
 Replies back to the requesting @NAS{}.
 @end table
 
-Consequently, a tree node is defined as a union of the above node
+Consequently, an instruction is defined as a union of the above node
 types:
 
-@deftp Node grad_node_t
+@deftp Instruction grad_instr_t
 @smallexample
 @group
-enum grad_node_type @{
-     grad_node_conditional,
-     grad_node_call,
-     grad_node_return,
-     grad_node_action,
-     grad_node_reply,
-     grad_node_proxy,
-     grad_node_forward
+enum grad_instr_type @{
+     grad_instr_conditional,
+     grad_instr_call,
+     grad_instr_return,
+     grad_instr_action,
+     grad_instr_reply,
+     grad_instr_proxy,
+     grad_instr_forward
 @};
 
-typedef struct grad_node grad_node_t;
+typedef struct grad_instr grad_instr_t;
 
-struct grad_node @{
-       enum grad_node_type type;
-       grad_node_t *next;
+struct grad_instr @{
+       enum grad_instr_type type;
+       grad_instr_t *next;
        union @{
-             grad_node_conditional_t cond;
-             grad_node_call_t call;
-             grad_node_action_t action;
-             grad_node_reply_t reply;
-             grad_node_proxy_t proxy;
-             grad_node_forward_t forward;
+             grad_instr_conditional_t cond;
+             grad_instr_call_t call;
+             grad_instr_action_t action;
+             grad_instr_reply_t reply;
+             grad_instr_proxy_t proxy;
+             grad_instr_forward_t forward;
        @} v;                                                             
 @};
 @end group
 @end smallexample
+
+@code{Type} member contains type of the instruction. The evaluator
+uses @code{type} to determine which part of @code{union v}, holds
+instruction-specific data.
+
+@code{Next} points to the next instruction. The evaluator will
+go to this instruction unless the present one changes the control
+flow.
+
+Finally, @code{v} contains instruction-specific data. These will
+be discussed in the following subsections.
 @end deftp
 
-Each node type is discussed in detail in the following subsections.
-
-@node grad_node_conditional
-@subsection grad_node_conditional
+@node grad_instr_conditional
+@subsection grad_instr_conditional
 @UNREVISED{}
 
-@deftp Node grad_node_conditional_t cond iftrue iffalse
+@deftp Instruction grad_instr_conditional_t cond iftrue iffalse
 @smallexample
 @group
-struct grad_node_conditional @{
-       grad_entry_point_t cond;    /* Entry point to the compiled
-                                      Rewrite condition */
-       grad_tree_node_t *iftrue;   /* Points to the ``true'' branch  */
-       grad_tree_node_t *iffalse;  /* Points to the ``false'' branch  */
+struct grad_instr_conditional @{
+       grad_entry_point_t cond;     /* Entry point to the compiled
+                                       Rewrite condition */
+       grad_instr_t *iftrue;        /* Points to the ``true'' branch  */
+       grad_instr_t *iffalse;       /* Points to the ``false'' branch  */
 @};
-typedef struct grad_node_conditional grad_node_conditional_t;
+typedef struct grad_instr_conditional grad_instr_conditional_t;
 @end group
 @end smallexample
-@end deftp
 
-Nodes of type @code{grad_node_conditional_t} indicate branching.
-Upon encountering of @code{grad_node_conditional_t} node, the
+Instructions of type @code{grad_instr_conditional_t} indicate branching.
+Upon encountering an @code{grad_instr_conditional_t}, the
 engine executes a Rewrite expression pointed to by @code{cond}.
 If the expression evaluates to @code{true}, execution branches to
-node @code{iftrue}. Otherwise, if @code{iffalse} is not @code{NULL},
-execution branches to that node. Otherwise, pointer @code{next} from
-@code{grad_node_t} will be used as address of the next tree node.
+instruction @code{iftrue}. Otherwise, if @code{iffalse} is not @code{NULL},
+execution branches to that instruction. Otherwise, the control flow
+passes to @code{grad_instr_t.next}, as described in the previous section.
+@end deftp
 
-@node grad_node_call
-@subsection grad_node_call
+@subheading RPL representation
+
+@deffn {RPL defun} COND @var{expr} @var{if-true} [@var{if-false}]
+
+@table @var
+@item expr
+Textual representation of Rewrite conditional expression or its entry
+point.
+@item if-true
+RPL expression executed if @var{expr} evaluates to @code{t}.
+@item if-true
+Optional RPL expression that is executed if @var{expr} evaluates to
+@code{nil}.
+@end table
+@end deffn
+
+@subheading Example
+
+@code{COND} with two arguments:
+
+@smalllisp
+@group
+(COND "%[User-Name] ~= \"test-.*\""
+      (REPLY Access-Reject ("Reply-Message" . "Test accounts disabled")))
+@end group      
+@end smalllisp
+
+@noindent
+@code{COND} with three arguments:
+
+@smalllisp
+@group
+(COND "%[Hint] == "PPP" && authorize(PAM)"
+      (REPLY Access-Accept
+             ("Service-Type" . "Framed-User")
+             ("Framed-Protocol" . "PPP"))
+      (REPLY Access-Reject
+             ("Reply-Message" . "Access Denied")))
+@end group      
+@end smalllisp
+
+@node grad_instr_call
+@subsection grad_instr_call
 @UNREVISED{}
 
-@deftp Node grad_node_call_t entry
+@deftp Instruction grad_instr_call_t entry
 @smallexample
 @group
-struct grad_node_call @{
-       grad_tree_node_t *entry;    
+struct grad_instr_call @{
+       grad_instr_t *entry;    
 @};
-typedef struct grad_node_call grad_node_call_t;
+typedef struct grad_instr_call grad_instr_call_t;
 @end group
 @end smallexample
 @end deftp
 
-@code{grad_node_call} node instructs the engine to @dfn{call} the
-given subtree. The engine pushes the current node @FIXME{definition?} to the return
-point stack @FIXME{definition?} and branches to the node @code{entry}. Execution of
-the subtree is stopped when the engine encounters @code{grad_node_return},
-@code{grad_node_reply} or @code{grad_node_proxy} node.
+Instructions of type @code{grad_instr_call} instruct the engine to
+@dfn{call} the given subprogram. The engine pushes the current
+instruction @FIXME{definition of current instruction or pc?} to the return
+point stack @FIXME{definition of this?} and branches to instruction
+@code{entry}. Execution of the subprogram ends when the engine
+encounters an instruction of one of the following types:
+@code{grad_instr_return}, @code{grad_instr_reply} or @code{grad_instr_proxy}.
 
-If @code{grad_node_return} is encountered, the engine pops a node from
-the top of the return point stack and makes it the current one, then
-it branches to the @code{next} node.
+If @code{grad_instr_return} is encountered, the engine pops the
+instruction from the top of the return point stack and makes it
+current instruction, then it branches to the @code{next} node.
 
-If @code{grad_node_reply} or @code{grad_node_proxy} is encountered,
-the engine, after executing the corresponding actions, stops further
-processing of the tree.
+If @code{grad_instr_reply} or @code{grad_instr_proxy} is encountered,
+the engine, after executing corresponding actions, finishes executing
+the program.
 
-@node grad_node_return
-@subsection grad_node_return
+@subheading RPL representation
+
+@deffn {RPL defun} CALL @var{list}
+@deffnx {RPL defun} CALL @var{defun-name}
+In the first form, the argument @var{list} is the RPL
+subprogram to be executed.
+
+In the second form @var{defun-name} is a name of the RPL subprogram
+defined by @code{defun}.
+@end deffn
+
+@subheading Examples
+
+First form:
+
+@smalllisp
+(CALL (ACTION "myfun(%[User-Name])")
+      (REPLY Access-Reject
+             ("Reply-Message" . "Access Denied")))
+@end smalllisp
+
+@noindent
+Second form:
+
+@smalllisp
+(CALL process_users)
+@end smalllisp
+
+@node grad_instr_return
+@subsection grad_instr_return
 @UNREVISED{}
 
-A node of type @code{grad_node_return} indicates a return point from
-the tree. If encountered in a subtree (i.e. a tree entered by
-@code{grad_node_call} node), it indicates return to the calling
-subtree (see the previous subsection). Otherwise, if
-@code{grad_node_return} is encountered within the main trunk, it
-halts the traversal.
+An instruction of type @code{grad_instr_return} indicates a return point from
+the subprogram. If encountered in a subprogram (i.e. a program entered by
+@code{grad_instr_call} node), it indicates return to the calling
+subprogram (see the previous subsection). Otherwise, if
+@code{grad_instr_return} is encountered within the main trunk, it
+ends evaluating of the program.
 
-This node type has no data associated with it in union @code{v}.
+Instructions of this type have no data associated with them in union @code{v}.
 
-@node grad_node_action
-@subsection grad_node_action
+@subheading RPL representation
+@deffn {RPL defun} RETURN
+@end deffn
+
+@subheading Examples
+
+@smalllisp
+(RETURN)
+@end smalllisp
+
+@node grad_instr_action
+@subsection grad_instr_action
 @UNREVISED{}
 
-@deftp Node grad_node_reply_t expr
+@deftp Instruction grad_instr_reply_t expr
 @smallexample
 @group
-struct grad_node_action @{
+struct grad_instr_action @{
        grad_entry_point_t expr;    /* Entry point to the compiled
                                       Rewrite expression */
 @};
-typedef struct grad_node_action grad_node_reply_t;
+typedef struct grad_instr_action grad_instr_reply_t;
 @end group
 @end smallexample
 @end deftp
 
 The machine executes a Rewrite expression with entry point
-@code{expr}. The return value from the expression is ignored.
+@code{expr}. Any return value from the expression is ignored.
 @FIXME{Should the expression receive any arguments? If so,
 what arguments? I'd say it should take at least the
 request being processed and the reply pairs collected so far.}
 
-@node grad_node_reply
-@subsection grad_node_reply
+@subheading RPL representation
+@deffn {RPL defun} ACTION @var{expr}
+@deffnx {RPL defun} ACTION @var{entry-point}
+@FIXME{Description}
+@end deffn
+
+@subheading Examples
+
+@smalllisp
+(ACTION "%[NAS-IP-Address] = request_source_ip()")
+@end smalllisp
+
+@node grad_instr_reply
+@subsection grad_instr_reply
 @UNREVISED{}
 
-@deftp Node grad_node_reply_t return_code
+@deftp Instruction grad_instr_reply_t return_code
 @smallexample
 @group
-struct grad_node_reply @{
-       u_char return_code;         /* Radius request code */
+struct grad_instr_reply @{
+       u_char reply_code;         /* Radius request code */
 @};
-typedef struct grad_node_reply grad_node_reply_t;
+typedef struct grad_instr_reply grad_instr_reply_t;
 @end group
 @end smallexample
 @end deftp
 
-@code{grad_node_reply} node instructs @command{radiusd} to send to the
-requesting @NAS{} a reply with code @code{return_code}. Any reply
-pairs collected while traversing the command tree are attached to
+@code{grad_instr_reply} instructs @command{radiusd} to send to the
+requesting @NAS{} a reply with code @code{reply_code}. Any reply
+pairs collected while executing the program are attached to
 the reply.
 
-Upon encountering @code{grad_node_reply} node, the engine stops further
-traversal of the tree. 
+After executing @code{grad_instr_reply} instruction, the engine
+stops executing of the program.
 
-Any execution path will usually end with this node.
+Any execution path will usually end with this instruction.
 
-@node grad_node_proxy
-@subsection grad_node_proxy
+@subheading RPL representation
+
+@deffn {RPL defun} REPLY @var{reply-code} [@var{attr-list}]
+
+Arguments:
+@table @var
+@item reply-code
+Radius reply code.
+@item attr-list
+List of @AVP{}s to be added to the reply. Each @AVP{} is represented
+as a @code{cons}: @code{(@var{name-or-number} . @var{value})}.
+@end table
+@end deffn
+
+@subheading Example
+
+@smalllisp
+(REPLY Access-Accept
+       ("Service-Type" . "Framed-User")
+       ("Framed-Protocol" . "PPP"))
+@end smalllisp
+
+@node grad_instr_proxy
+@subsection grad_instr_proxy
 @UNREVISED{}
 
-@deftp Node grad_node_proxy_t realm    
+@deftp Instruction grad_instr_proxy_t realm    
 @smallexample
 @group
-struct grad_node_proxy @{
+struct grad_instr_proxy @{
        grad_realm_t realm;
 @};
-typedef struct grad_node_proxy grad_node_proxy_t;
+typedef struct grad_instr_proxy grad_instr_proxy_t;
 @end group
 @end smallexample
 @end deftp
 
-This node instructs radius to proxy the request to the server defined
+This instruction tells radius to proxy the request to the server defined
 in @code{realm}. In other words, the engine executes
-@code{proxy_send}. Further processing of the tree is stopped.
+@code{proxy_send}. Further processing of the program is stopped.
 
+@subheading RPL representation
 
-@node grad_node_forward
-@subsection grad_node_forward
+@deffn {RPL defun} PROXY @var{realm-name}
+@var{Realm-name} is name of the realm as defined in
+@file{raddb/realms}. @FIXME{No, no. That's senseless. I must
+get rid of @file{raddb/*}!}
+@end deffn
+
+@subheading Examples
+@FIXME{Fix the above definition, then provide an example}.
+
+@node grad_instr_forward
+@subsection grad_instr_forward
 @UNREVISED{}
 
-@deftp Node grad_node_forward_t server_list
+@deftp Instruction grad_instr_forward_t server_list
 @smallexample
 @group
-struct grad_node_forward @{
+struct grad_instr_forward @{
        grad_list_t server_list; 
 @};
-typedef struct grad_node_forward grad_node_forward_t;
+typedef struct grad_instr_forward grad_instr_forward_t;
 @end group
 @end smallexample
 @end deftp
@@ -375,8 +507,8 @@ in that the requests are sent to the remote servers @emph{and} processed
 locally. The remote server is not expected to
 reply. @xref{auth,forwarding}, for more information on this subject.
 
-In contrast to @code{grad_node_proxy}, this node type does not cause the
-traversal to stop.
+In contrast to @code{grad_instr_proxy}, this instruction type does not
+cause the execution to stop.
 
 Elements of @code{server_list} are of type @code{grad_server_t}.
 
@@ -390,22 +522,31 @@ what shall we do with @code{forward} statement in @file{raddb/config}?
 I should address this issue in the section dedicated to backward
 compatibility}.
 
+@subsection RPL representation
+@deffn {RPL defun} FORWARD @var{server-list}
+@FIXME{What's in @var{server-list}?}
+@end deffn
+
+@node New Rewrite
+@section Changes to Rewrite Language
+@UNREVISED{}
+
 @node Traditional Configuration
 @section Support for Traditional Configuration Files.
 @UNREVISED{}
 
 Within the new configuration system, the traditional ``trio''
 @file{hints-huntgroups-users} will be translated to the following
-tree:
+program:
 
 @smalllisp
-(deftree main
- (CALL hints_subtree)
- (CALL huntgroups_subtree)
+(defprog main
+ (CALL hints)
+ (CALL huntgroups)
  (COND "request_code() == Access-Request"
-       '(CALL users_subtree))
+       (CALL users))
  (REPLY Access-Reject
-        '((Reply-Message . "\nAccess denied\n"))))
+        (Reply-Message . "\nAccess denied\n")))
 @end smalllisp
 
 For example, consider the following configuration:
@@ -415,12 +556,12 @@ For example, consider the following configuration:
 DEFAULT Prefix = "PPP" Hint = PPP
 @end smallexample
 
-This will produce the following tree:
+This will produce the following program:
 
 @smalllisp
-(deftree hints_subtree
+(defprog hints
  (COND "%[Prefix] == \"PPP\"")
-       '(ACTION "%[Hint] = \"PPP\""))
+       (ACTION "%[Hint] = \"PPP\""))
 @end smalllisp
  
 
@@ -433,12 +574,12 @@ DEFAULT NAS-IP-Address = 10.10.4.2      Huntgroup-Name = "second"
 Will produce
 
 @smalllisp
-(deftree huntgroups_subtree
- (COND "%[NAS-IP-Address] == 10.10.4.1 && !(%[Suffix] == "staff")"
-       '((REPLY Access-Reject
-                '((Reply-Pair . "Access Denied by Huntgroup")))))
+(defprog huntgroups
+ (COND "%[NAS-IP-Address] == 10.10.4.1 && !(%[Suffix] == \"staff\")"
+       (REPLY Access-Reject
+              ("Reply-Message" . "Access Denied by Huntgroup")))
  (COND "%[NAS-IP-Address] == 10.10.4.2"
-       '((ACTION "%[Huntgroup-Name] = \"second\""))))
+       (ACTION "%[Huntgroup-Name] = \"second\"")))
 @end smalllisp
 
 Finally, @file{users}:
@@ -460,17 +601,17 @@ DEFAULT Huntgroup-Name = "second",
 will produce
 
 @smalllisp
-(deftree users_subtree
+(defprog users
  (COND "%[Hint] == "PPP" && authorize(PAM)"
-       '((REPLY Access-Accept
-                '((Service-Type . Framed-User)
-                  (Framed-Protocol . PPP))))
-       '((REPLY Access-Reject
-                '((Reply-Message . "Access Denied")))))
+       (REPLY Access-Accept
+             (Service-Type . Framed-User)
+             (Framed-Protocol . PPP))
+       (REPLY Access-Reject
+             (Reply-Message . "Access Denied")))
  (COND "%[Huntgroup-Name] == \"second\" && authorize(PAM)"
-       '((REPLY Access-Accept
-                '((Service-Type . "Authenticate-Only")
-                  (Reply-Message . "Authentity Confirmed"))))))
+       (REPLY Access-Accept
+              (Service-Type . "Authenticate-Only")
+              (Reply-Message . "Authentity Confirmed"))))
 @end smalllisp
         
 

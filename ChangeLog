@@ -1,3 +1,27 @@
+2004-10-22  Sergey Poznyakoff
+
+	* lib/radutmp.c: If the file is opened for append,
+	seek to eof right before writing to it. Lock the
+	file *before* the seek.
+	Improved diagnostics.
+	* lib/util.c (grad_lock_file): Apply exclusive locks
+	* radlast/radlast.c: Do not use obsolete L_SET constant
+
+	* elisp/rewrite-mode.el: Major Emacs mode for editing Rewrite sources
+	* elisp/Makefile.am: Added rewrite-mode.el
+	* elisp/radconf-mode.el: Minor fix
+
+	* examples/ascend.rw: Mark as Rewrite source for Emacs
+	* examples/c3620.rw: Likewise
+	* examples/cisco.rw: Likewise
+	* examples/comos.rw: Likewise
+	* examples/filter.rw: Likewise
+	* examples/jetstream.rw: Likewise
+	* examples/nt.rw: Likewise
+	* raddb/checknas.rw: Likewise
+	* raddb/log-hook.rw: Likewise
+	* raddb/nas-ip.rw: Likewise
+	
 2004-10-09  Sergey Poznyakoff 
 
 	* configure.ac: Raised version number to 1.2.96

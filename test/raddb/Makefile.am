@@ -38,21 +38,18 @@ all: $(ALLTARGETS)
 RADDB=$(top_srcdir)/raddb
 
 dictionary: $(RADDB)/dictionary
-	sed 's/\$$INCLUDE dictionary.compat/#\$$INCLUDE dictionary.compat/;\
-             s/\$$INCLUDE dictionary.livingston/#\$$INCLUDE dictionary.livingston/;\
-             s/#\$$INCLUDE dictionary.cisco/\$$INCLUDE dictionary.cisco/;\
-             s/#\$$INCLUDE dictionary.voip/\$$INCLUDE dictionary.voip/' $< > $@
+	sed 's/\$$INCLUDE dictionary.compat/#\$$INCLUDE dictionary.compat/;s/\$$INCLUDE dictionary.livingston/#\$$INCLUDE dictionary.livingston/;s/#\$$INCLUDE dictionary.cisco/\$$INCLUDE dictionary.cisco/;s/#\$$INCLUDE dictionary.voip/\$$INCLUDE dictionary.voip/' $(RADDB)/dictionary > dictionary
 
 dictionary.voip: $(RADDB)/dictionary.voip
-	$(LN_S) $< $@
+	$(LN_S) $? $@
 
 dictionary.cisco: $(RADDB)/dictionary.cisco
-	$(LN_S) $< $@
+	$(LN_S) $? $@
 
 nastypes: $(RADDB)/nastypes
-	$(LN_S) $< $@
+	$(LN_S) $? $@
 
 rewrite: $(RADDB)/rewrite.full
-	$(LN_S) $< $@
+	$(LN_S) $? $@
 
 CLEANFILES=$(ALLTARGETS)

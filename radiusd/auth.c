@@ -1320,7 +1320,8 @@ req_decrypt_password(password, req, pair)
 	}
 	/* Determine whether we need to use broken decoding */
 	nas = nas_request_to_nas(req);
-	if ((s = envar_lookup(nas->args, "broken_pass")) != NULL
+	if (nas
+            && (s = envar_lookup(nas->args, "broken_pass")) != NULL
 	    && s[0] == '1')
 		decrypt_password_broken(password, pair,
 					req->vector, req->secret);

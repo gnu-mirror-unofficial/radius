@@ -147,11 +147,12 @@ pthread_attr_t thread_attr; /* Attribute for creating child threads */
 int max_threads = 128;  /* Maximum number of threads allowed */
 int num_threads = 0;    /* Number of threads currently spawned */
 
-#define CMD_NONE    0 /* No command */
-#define CMD_RELOAD  1 /* The reload of the configuration is needed */
-#define CMD_RESTART 2 /* Try to restart ourselves when set to 1 */
-#define CMD_MEMINFO 3 /* Dump memory usage statistics */
-#define CMD_DUMPDB  4 /* Dump authentication database */
+#define CMD_NONE     0 /* No command */
+#define CMD_RELOAD   1 /* The reload of the configuration is needed */
+#define CMD_RESTART  2 /* Try to restart ourselves when set to 1 */
+#define CMD_MEMINFO  3 /* Dump memory usage statistics */
+#define CMD_DUMPDB   4 /* Dump authentication database */
+#define CMD_SHUTDOWN 5 /* Stop immediately */
 
 int daemon_command = CMD_NONE;
 
@@ -159,7 +160,8 @@ static void check_reload();
 static void check_snmp_request();
 
 static void set_config_defaults();
-void rad_exit(int);
+void rad_exit();
+static RETSIGTYPE sig_exit (int);
 static RETSIGTYPE sig_fatal (int);
 static RETSIGTYPE sig_hup (int);
 static RETSIGTYPE sig_dumpdb (int);
@@ -171,8 +173,8 @@ static struct signal_list {
 	RETSIGTYPE (*handler)();
 } rad_signal_list[] = {
         1, SIGHUP,  sig_hup,
-        0, SIGQUIT, sig_fatal,
-        0, SIGTERM, sig_fatal,
+        0, SIGQUIT, sig_exit,
+        0, SIGTERM, sig_exit,
         0, SIGCHLD, sig_child,
         0, SIGPIPE, SIG_IGN,
         0, SIGBUS,  sig_fatal,
@@ -547,15 +549,15 @@ rad_daemon()
 }
 
 static int child_died;
+static int child_exit_status;
 
 RETSIGTYPE
 sig_watcher(sig)
 	int sig;
 {
 	pid_t pid;
-	int status;
 
-	while ((pid = waitpid(-1, &status, WNOHANG)) > 0)
+	while ((pid = waitpid(-1, &child_exit_status, WNOHANG)) > 0) 
 		child_died = 1;
 	signal(SIGCHLD, sig_watcher);
 }
@@ -594,6 +596,16 @@ rad_watcher()
 	while (1) {
 		sleep(watch_interval);
 		if (child_died) {
+			if (WIFEXITED(child_exit_status)) {
+				radlog(L_NOTICE,
+				       _("radiusd exited with %d status"),
+				       WEXITSTATUS(child_exit_status));
+			} else if (WIFSIGNALED(child_exit_status)) {
+				radlog(L_NOTICE,
+				       _("radiusd terminated on signal %d"),
+				       WTERMSIG(child_exit_status));
+			} else 
+				radlog(L_NOTICE, _("radiusd terminated"));
 			rad_restart(1);
 			signal(SIGCHLD, sig_watcher);
 			child_died = 0;
@@ -809,38 +821,18 @@ schedule_restart()
         daemon_command = CMD_RESTART;
 }
 
-/*
- *      Clean up and exit.
- */
+/* Clean up and exit. */
 void
-rad_exit(sig)
-        int sig;
+rad_exit()
 {
-        static int exiting;
-
-        if (exiting) /* Prevent recursive invocation */
-                return ;
-        exiting++;
-
         stat_done();
         unlink_pidfile();
 
-        switch (sig) {
-        case -1:
-                radlog(L_CRIT, _("failed in select() - exit."));
-                break;
-        case SIGINT:  /* Foreground mode */
-        case SIGTERM:
-        case SIGQUIT:
-                radlog(L_CRIT, _("Normal shutdown."));
-                break;
-        default:
-                radlog(L_CRIT, _("exit on signal (%d)"), sig);
-		abort();
-        }
+	rad_flush_queues();
+	radlog(L_CRIT, _("Normal shutdown."));
 
         rad_sql_shutdown();
-        exit(sig == SIGTERM ? 0 : 1);
+        exit(0);
 }
 
 int
@@ -1204,17 +1196,24 @@ check_reload()
                 radlog(L_INFO, _("Reloading configuration now"));
                 reread_config(1);
                 break;
+		
         case CMD_RESTART:
                 rad_restart(0);
                 break;
+		
         case CMD_MEMINFO:
                 meminfo();
                 break;
+		
         case CMD_DUMPDB:
                 radlog(L_INFO, _("Dumping users db to `%s'"),
-                        RADIUS_DUMPDB_NAME);
+		       RADIUS_DUMPDB_NAME);
                 dump_users_db();
                 break;
+		
+	case CMD_SHUTDOWN:
+		rad_exit();
+		
         default:
                 check_snmp_request();
                 break;
@@ -1257,8 +1256,7 @@ check_snmp_request()
                         break;
                         
                 case serv_shutdown:
-                        rad_flush_queues();
-                        rad_exit(SIGTERM);
+                        rad_exit();
                         break;
                 }
                 saved_status = server_stat.auth.status;
@@ -1380,7 +1378,14 @@ static RETSIGTYPE
 sig_fatal(sig)
         int sig;
 {
-        rad_exit(sig);
+	abort();
+}
+
+static RETSIGTYPE
+sig_exit(sig)
+        int sig;
+{
+	daemon_command = CMD_SHUTDOWN;
 }
 
 /*ARGSUSED*/

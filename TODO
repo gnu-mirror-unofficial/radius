@@ -1,3 +1,5 @@
+-100 : Extend functionality of snmp subsystem to cover that of radctl.c module.
+-100 : Add documentation for multiple interfaces/ports (listen statement, etc.)
 -100 : Add documentation for NOREALM.
 -100 : Add documentation and default configs for attr_query!
 -100 : Add documentation for default attribute values in % substitutions.
@@ -5,7 +7,6 @@
 -50  : Check for strcspn() and provide substitute if necessary.
 -3   : Enable use of port number in rewrite:check_unix()
 0    : Multiple servers per realm? (Rasmus Aveskogh <rasmus.aveskogh@utfors.se>)
-0    : Think about the possibility to serve multiple interfaces/ports.
 2    : radprintf: Select more appropriate notations for (%I, %A). Maybe
        %#i, %#p would do: both are accepted by usual printf functions
        and do not make lint angry.

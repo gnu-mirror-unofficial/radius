@@ -94,7 +94,7 @@ static struct {
 	{ "gnu",
 	  "User: (login)(newline)\
 In real life: (gecos)(newline)\
-Logged in: (time)(newline)\
+Logged in: (time :format %c)(newline)\
 NAS: (nas-address)(newline)\
 Port: (nas-port)(newline)\
 CLID: (clid)(newline)\

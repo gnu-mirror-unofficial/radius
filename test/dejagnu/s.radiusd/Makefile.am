@@ -6,7 +6,9 @@ EXTRA_DIST=\
  Stop.exp\
  Acct-stop.exp\
  Auth.exp\
+ Match.exp\
  Menu.exp\
+ Scheme.exp\
  Start.exp\
  Begin.exp\
  Default.exp\

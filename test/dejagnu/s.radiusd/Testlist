@@ -18,10 +18,12 @@
 + 5
 Start.exp
 Auth.exp
+Reply.exp 
 Begin.exp
 Default.exp
+Match.exp
+Scheme.exp
 Access.exp
-Reply.exp 
 Menu.exp 
 Acct-start.exp
 Acct-stop.exp

@@ -1,0 +1,76 @@
+/* This file is part of GNU RADIUS.
+   Copyright (C) 2000,2001 Sergey Poznyakoff
+  
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+  
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+  
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
+#ifndef lint
+static char rcsid[] =
+"@(#) $Id$";
+#endif
+
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include <libguile.h>
+#include <radius.h>
+#include <rewrite.h>
+
+
+SCM_DEFINE(rad_rewrite_execute_string, "rad-rewrite-execute-string", 1, 0, 0,
+	   (SCM STRING),
+"Interpret STRING as an invocation of a function in Rewrite language and\n"
+"execute it.\n"
+"Return value: return of the corresponding Rewrite call, translated to\n"
+"the Scheme data type.\n")	   
+#define FUNC_NAME s_rad_rewrite_execute_string
+{
+	int type;
+	Datum datum;
+
+	SCM_ASSERT(SCM_NIMP(STRING) && SCM_STRINGP(STRING),
+		   STRING, SCM_ARG1, FUNC_NAME);
+	if (interpret(SCM_CHARS(STRING), NULL, &type, &datum)) {
+		scm_misc_error(FUNC_NAME,
+			       "Error parsing expression: ~S",
+			       SCM_LIST1(STRING));
+	}
+
+	return radscm_datum_to_scm(type, datum);
+}
+#undef FUNC_NAME
+
+SCM_DEFINE(rad_rewrite_execute, "rad-rewrite-execute", 1, 0, 0,
+	   (SCM ARGLIST),
+"Execute a Rewrite language function.\n"
+"(car ARGLIST) is interpreted as a name of the Rewrite function to execute,\n"
+"and (cdr ARGLIST) as a list of arguments to be passed to it.\n"
+"Return value: return of the corresponding Rewrite call, translated to\n"
+"the Scheme data type.\n")	   
+#define FUNC_NAME s_rad_rewrite_execute
+{
+	SCM_ASSERT((SCM_IMP(ARGLIST) && ARGLIST == SCM_EOL)
+		   || (SCM_NIMP(ARGLIST) && SCM_CONSP(ARGLIST)),
+		   ARGLIST, SCM_ARG2, FUNC_NAME);
+	
+	return radscm_rewrite_execute(FUNC_NAME, ARGLIST);
+}
+#undef FUNC_NAME
+
+void
+rscm_rewrite_init()
+{
+#include <rscm_rewrite.x>
+}

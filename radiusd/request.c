@@ -54,7 +54,8 @@ pthread_mutex_t request_list_mutex = PTHREAD_MUTEX_INITIALIZER;
  Pthread_mutex_unlock(&request_list_mutex)
         
 static void request_free(REQUEST *req);
-static void request_drop(int type, void *data, char *status_str);
+static void request_drop(int type, void *data, void *orig_data, int fd,
+			 char *status_str);
 static void request_xmit(int type, int code, void *data, int fd);
 static void request_cleanup(int type, void *data);
 static void *request_thread0(void *arg);
@@ -119,12 +120,14 @@ request_free(req)
 }
 
 void
-request_drop(type, data, status_str)
+request_drop(type, data, orig_data, fd, status_str)
         int type;
         void *data;
+	void *orig_data;
+	int fd;
         char *status_str;
 {
-        request_class[type].drop(type, data, status_str);
+        request_class[type].drop(type, data, orig_data, fd, status_str);
 }
 
 void
@@ -210,7 +213,8 @@ request_put(type, data, activefd, numpending)
                            request_class[curreq->type].ttl <= curtime) {
                         switch (curreq->status) {
                         case RS_WAITING:
-                                request_drop(curreq->type, curreq->data,
+                                request_drop(curreq->type, NULL, curreq->data,
+					     curreq->fd,
                                              _("request timed out in queue"));
                                 
                                 if (prevreq == NULL) {
@@ -250,7 +254,8 @@ request_put(type, data, activefd, numpending)
                                              curreq->data,
                                              activefd);
                         else
-                                request_drop(type, data,
+                                request_drop(type, data, curreq->data,
+					     curreq->fd,
                                              _("duplicate request"));
                         request_list_unblock();
 
@@ -274,7 +279,8 @@ request_put(type, data, activefd, numpending)
         /* This is a new request */
         if (request_count >= config.max_requests) {
                 if (!to_replace) {
-                        request_drop(type, data,
+                        request_drop(type, data, NULL,
+				     activefd,
                                      _("too many requests in queue"));
 
                         request_list_unblock();
@@ -283,7 +289,8 @@ request_put(type, data, activefd, numpending)
         } else if (request_class[type].max_requests
                    && request_type_count >= request_class[type].max_requests) {
                 if (!to_replace) {
-                        request_drop(type, data,
+                        request_drop(type, data, NULL,
+				     activefd,
                                      _("too many requests of this type"));
 
                         request_list_unblock();

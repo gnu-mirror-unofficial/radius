@@ -557,11 +557,8 @@ rad_acct_ext(RADIUS_REQ *radreq)
 int
 rad_accounting(RADIUS_REQ *radreq, int activefd, int verified)
 {
-        log_open(L_ACCT);
+	log_open(L_ACCT);
 
-        /* FIXME: hints_setup won't work without a username */
-	hints_setup(radreq);
-	presuf_setup(radreq->request);
         huntgroup_access(radreq);
 
 #if defined(RT_ASCEND_EVENT_REQUEST) && defined(RT_ASCEND_EVENT_RESPONSE)

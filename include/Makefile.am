@@ -14,11 +14,11 @@ if MAINTAINER_MODE
 
 all: raddict.h radmibs.h
 
-raddict.h: ../raddb/dictionary
-	$(AWK) -f ../scripts/dict.awk ../raddb/dictionary > raddict.h
+raddict.h: $(top_srcdir)/raddb/dictionary
+	$(AWK) -f $(top_srcdir)/scripts/dict.awk $(top_srcdir)/raddb/dictionary > raddict.h
 
-radmibs.h: ../mibs/radmibs.h.in
-	$(AWK) -f ../scripts/mksnmp-h.awk ../mibs/radmibs.h.in > radmibs.h
+radmibs.h: $(top_srcdir)/mibs/radmibs.h.in
+	$(AWK) -f $(top_srcdir)/scripts/mksnmp-h.awk $(top_srcdir)/mibs/radmibs.h.in > radmibs.h
 
 lint:;
 

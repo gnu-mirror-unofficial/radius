@@ -835,6 +835,26 @@ sfn_init(AUTH_MACH *m)
         }
 }
 
+static void
+pair_set_value(VALUE_PAIR *p, Datatype type, Datum *datum)
+{
+	efree(p->avp_strvalue);
+	switch (type) {
+	case Integer:
+		p->avp_lvalue = datum->ival;
+		break;
+		
+	case String:
+		p->avp_strvalue = datum->sval;
+		p->avp_strlength = strlen(p->avp_strvalue);
+		break;
+		
+	default:
+		insist_fail("bad Datatype");
+	}
+	p->eval_type = eval_const;
+}
+
 void
 sfn_eval_reply(AUTH_MACH *m)
 {
@@ -842,27 +862,33 @@ sfn_eval_reply(AUTH_MACH *m)
         int errcnt = 0;
         
         for (p = m->user_reply; p; p = p->next) {
-                if (p->eval) {
-                        Datatype type;
-                        Datum datum;
- 
-                        if (interpret(p->avp_strvalue, m->req, &type, &datum)) {
+		Datatype type;
+		Datum datum;
+		
+		switch (p->eval_type) {
+		case eval_const:
+			break;
+
+		case eval_interpret:
+			if (rewrite_interpret(p->avp_strvalue,
+					      m->req, &type, &datum)) {
                                 errcnt++;
                                 continue;
                         }
-                        efree(p->avp_strvalue);
-                        switch (type) {
-                        case Integer:
-                                p->avp_lvalue = datum.ival;
-                                break;
-                        case String:
-                                p->avp_strvalue = datum.sval;
-                                p->avp_strlength = strlen(p->avp_strvalue);
-                                break;
-                        default:
-                                abort();
+			pair_set_value(p, type, &datum);
+			break;
+
+		case eval_compiled:
+			if (rewrite_eval(p->avp_strvalue,
+					      m->req, &type, &datum)) {
+                                errcnt++;
+                                continue;
                         }
-                        p->eval = 0;
+			pair_set_value(p, type, &datum);
+			break;
+
+		default:
+			insist_fail("bad eval_type");
                 }
         }
         if (errcnt)
@@ -1076,14 +1102,6 @@ sfn_ipaddr(AUTH_MACH *m)
         
         /* Assign an IP if necessary */
         if (!avl_find(m->user_reply, DA_FRAMED_IP_ADDRESS)) {
-#if 0
-                /* **************************************************
-                 * Keep it here until IP allocation is ready
-                 */
-                if (p = alloc_ip_pair(m->namepair->avp_strvalue, m->req))
-                        avl_add_pair(&m->user_reply, p);
-                else
-#endif  
                 if (p = avl_find(m->req->request, DA_FRAMED_IP_ADDRESS)) {
                         /* termserver hint */
                         avl_add_pair(&m->user_reply, avp_dup(p));

@@ -240,7 +240,8 @@ AC_CHECK_DECLS([strncasecmp, strtok_r, localtime_r, asprintf, vasprintf, getline
 # endif
 #else
 # include <time.h>
-#endif])
+#endif
+#include <stdio.h>])
 
 AC_ARG_WITH(included-argp,
 	[  --with-included-argp           Use included argp library],

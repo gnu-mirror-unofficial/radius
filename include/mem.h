@@ -33,6 +33,23 @@ struct mallocstat {
 };
 extern struct mallocstat mallocstat;
 
+typedef struct {
+	unsigned class_cnt;
+	unsigned bucket_cnt;
+	unsigned bytes_allocated;
+	unsigned bytes_used;
+} MEM_STAT;
+
+typedef struct {
+	int         index;
+	int         cont;            /* Allow contiguous allocation */
+	size_t      elsize;          /* Size of an element */
+	count_t     elcnt;           /* Number of elements per bucket */
+	count_t     allocated_cnt;   /* Number of allocated elements */
+	count_t     bucket_cnt;      /* Number of buckets */
+} CLASS_STAT;
+
+
 void *alloc_entry(size_t size);
 void free_entry(void *ptr);
 void *calloc_entry(count_t count, size_t size);
@@ -51,6 +68,7 @@ char *dup_string(char *str);
 void free_string(char *str);
 char *replace_string(char **str, char *value);
 
-void meminfo(int (*report)());
-		
+void mem_get_stat(MEM_STAT *stat);
+void mem_stat_enumerate(int (*fun)());
+
 #endif

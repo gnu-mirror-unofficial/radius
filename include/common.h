@@ -47,6 +47,9 @@ typedef grad_uint32_t grad_counter_t;
 
 char *grad_readline(char *prompt);
 void grad_add_history (char *line);
-static char *get_history_file_name();
 int grad_read_history_file();
-
+int grad_write_history_file();
+void grad_readline_init(char *name,
+			int interactive,
+			char **(*completion_fp)(char *cmd,
+						int start, int end));

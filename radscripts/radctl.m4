@@ -25,7 +25,7 @@ PATH=/bin:/usr/bin:/usr/ucb:$PATH; export PATH
 
 usage() {
 	cat - <<EOF
-usage: $0 {start|stop|restart|reload|dumpdb|status|which}
+usage: $0 {start|stop|restart|reload|which}
 EOF
 	exit 0
 }
@@ -55,17 +55,12 @@ stop() {
 
 chan_signal() {
 	case $1 in
-		reload|status|dumpdb)	
-			TEST($RUNNING -eq 0) && {
-				echo $PROCESS
-				exit 1
-			};;
-	esac
-
-	case $1 in
-		reload) kill -HUP  $PID && echo "Reloading configs";;
-		status)	kill -USR1 $PID && echo "Dumping statistics";;
-		dumpdb)	kill -INT  $PID && echo "Dumping Database";;
+		reload) 
+                        TEST($RUNNING -eq 0) && {
+                                echo $PROCESS
+                                exit 1
+                        }
+			kill -HUP  $PID && echo "Reloading configs";;
 		start)
 			TEST($RUNNING -eq 1) && {
 				echo "$0: start: radiusd (pid $PID) already running"

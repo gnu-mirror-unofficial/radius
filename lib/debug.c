@@ -190,8 +190,6 @@ grad_debug_p(char *name, int level)
 
 #else
 
-#include <radius.h>
-
 /*ARGSUSED*/
 int
 set_module_debug_level(char *name, int level)

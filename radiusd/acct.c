@@ -387,21 +387,25 @@ rad_acct_system(radreq, dowtmp)
         /* Decide if we should store this record into radutmp/radwtmp.
            We skip records:
 
-                - without a NAS-Port-Id (telnet / tcp access)
-                - with the username "!root" (console admin login)
-                - with Port-Type = Sync (leased line up/down)
-
-        */
-        if (!port_seen ||
-            strncmp(ut.login, "!root", RUT_NAMESIZE) == 0 ||
-            nas_port_type == DV_NAS_PORT_TYPE_SYNC)
+                - if NAS-Port-Id attribute is absent
+		- if request has one or more Acct-Type attributes
+		  and no one of them requires system accounting.
+		  (The Acct-Type pairs can be inserted only via
+		   raddb/hints  */
+        if (!port_seen)
                 return 0;
 
-        if (!ACCT_TYPE(radreq->request, DV_ACCT_TYPE_SYSTEM))
+        if (!ACCT_TYPE(radreq->request, DV_ACCT_TYPE_SYSTEM)) {
+		debug(1,("Acct type system disabled for %s", ut.login));
                 return 0;
+	}
         
         /* Update radutmp file. */
         rc = radutmp_putent(radutmp_path, &ut, status);
+	debug(1, ("radutmp_putent=%d for %s/%s",
+		  rc,
+		  ut.login,
+		  ut.session_id));
 
         /* Don't write wtmp if we don't have a username, or
            if this is an update record and the original record

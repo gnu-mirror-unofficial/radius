@@ -511,7 +511,10 @@ char *
 make_string(strval)
         char *strval;
 {
-        char *p = alloc_string(strlen(strval)+1);
+	char *p;
+	if (!strval)
+		return NULL;
+        p = alloc_string(strlen(strval)+1);
         return strcpy(p, strval);
 }
 

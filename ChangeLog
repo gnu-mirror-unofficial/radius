@@ -1,3 +1,36 @@
+2001-11-21 Sergey Poznyakoff
+	
+	* configure.in: AC_OUTPUT test/dejagnu/radiusd/Makefile
+	* radlib/client.c: radclient_build_request(): Check the length
+	of string value before writing it into packet.
+
+	* radtest/radtest.h: Store strings as string objects, not as
+	statically allocated arrays.
+	* radtest/input.l: Likewise.
+	* radtest/main.c: Likewise.
+	* radtest/gram.y: Likewise.
+	Added n[attr*] notation to return the concatenated string value
+	of all attributes of type attr in the packet.
+
+	* scripts/mktest.awk: (new) Rename test modules so that they are
+	executed in proper order.
+	* scripts/Makefile.am: Added mktest.awk.
+	* test/test.sh: New options --srcdir and builddir
+	* test/dejagnu/Makefile.am: Added radiusd to subdirs
+	* test/dejagnu/lib/radiusd.exp: Further improvements.
+	* test/raddb/users: Rewritten.
+	* test/raddb/menus/menu1: Removed leading whitespace from the menu
+	text. This makes it easier for testing.
+	* test/raddb/menus/menu2: Likewise.
+
+	* test/dejagnu/radiusd/Makefile.am: (new)
+	* test/dejagnu/radiusd/Testlist: (new)
+	* test/dejagnu/radiusd/Auth.in: (new) Test of basic authentication types
+	* test/dejagnu/radiusd/Menu.in: (new) Test of Livingston menus.
+	* test/dejagnu/radiusd/Reply.in: (new) Test of reply values.
+	* test/dejagnu/radiusd/Start.in: (new) Start the daemon.
+	* test/dejagnu/radiusd/Stop.in: (new) Stop the daemon.
+	
 2001-11-20 Sergey Poznyakoff
 	
 	* radtest/gram.y: Simplified syntax. Implemented full

@@ -57,14 +57,13 @@ static char rcsid[] =
 #endif
 #include <timestr.h>
 #include <envar.h>
+#include <obstack1.h>
 
 #if !defined(__linux__) && !defined(__GLIBC__)
   extern char *crypt();
 #endif
 
 static int pw_expired(UINT4 exptime);
-static int check_disable(char *username, char **user_msg);
-static int check_expiration(VALUE_PAIR *check_item, char **user_msg);
 static int unix_pass(char *name, char *passwd);
 static int rad_check_password(RADIUS_REQ *radreq, 
 			      VALUE_PAIR *check_item, VALUE_PAIR *namepair,
@@ -117,47 +116,6 @@ check_user_name(p)
 	return *p;
 }
 
-int
-check_disable(username, user_msg)
-	char *username;
-	char **user_msg;
-{
-	if (get_deny(username)) {
-		*user_msg = NULL;
-		asprintf(user_msg, 
-			 _("Sorry, your account is currently closed\r\n"));
-		return -1;
-	}
-	return 0;
-}
-
-/*
- * Check if account has expired, and if user may login now.
- */
-int
-check_expiration(check_item, user_msg)
-	VALUE_PAIR *check_item;
-	char **user_msg;
-{
-	int result, rc;
-	VALUE_PAIR *pair;
-	
-	result = AUTH_OK;
-	if (pair = avl_find(check_item, DA_EXPIRATION)) {
-		rc = pw_expired(pair->lvalue);
-		if (rc < 0) {
-			result = AUTH_FAIL;
-			asprintf(user_msg,
-				 _("Password Has Expired\r\n"));
-		} else if (rc > 0) {
-			asprintf(user_msg, 
-				   _("Password Will Expire in %d Days\r\n"),
-				   rc);
-		}
-	}
-
-	return result;
-}
 /*
  * Check the users password against UNIX password database.
  */
@@ -557,7 +515,9 @@ typedef struct auth_mach {
 	VALUE_PAIR *check_pair;
 	VALUE_PAIR *timeout_pair;
 	char       userpass[AUTH_STRING_LEN+1];
+
 	char       *user_msg;
+	struct obstack msg_stack;
 	
 	char       *clid;
 	enum auth_state state;
@@ -582,6 +542,7 @@ static void sfn_ack(MACH*);
 static void sfn_exec_nowait(MACH*);
 static void sfn_reject(MACH*);
 static VALUE_PAIR *timeout_pair(MACH *m);
+static int check_expiration(MACH *m);
 
 
 struct auth_state_s {
@@ -654,6 +615,8 @@ struct auth_state_s states[] = {
 static void auth_log(MACH *m, char *diag, char *pass, char *reason,
 		     char *addstr);
 static int is_log_mode(MACH *m, int mask);
+static void auth_format_msg(MACH *m, int msg_id);
+static char *auth_finish_msg(MACH *m);
 
 void
 auth_log(m, diag, pass, reason, addstr)
@@ -707,6 +670,58 @@ is_log_mode(m, mask)
         return (mode & ~xmask) & mask;
 }
 
+void
+auth_format_msg(m, msg_id)
+	MACH *m;
+	int msg_id;
+{
+	int len = strlen(message_text[msg_id]);
+	obstack_grow(&m->msg_stack, message_text[msg_id], len);
+}
+
+char *
+auth_finish_msg(m)
+	MACH *m;
+{
+	char *msg;
+	
+	if (m->user_msg)
+		obstack_grow(&m->msg_stack, m->user_msg, strlen(m->user_msg));
+	obstack_1grow(&m->msg_stack, 0);
+	return radius_xlate(&m->msg_stack, obstack_finish(&m->msg_stack),
+			    m->req, m->user_reply);
+}
+
+
+/*
+ * Check if account has expired, and if user may login now.
+ */
+int
+check_expiration(m)
+	MACH *m;
+{
+	int result, rc;
+	VALUE_PAIR *pair;
+	
+	result = AUTH_OK;
+	if (pair = avl_find(m->user_check, DA_EXPIRATION)) {
+		rc = pw_expired(pair->lvalue);
+		if (rc < 0) {
+			result = AUTH_FAIL;
+			auth_format_msg(m, MSG_PASSWORD_EXPIRED);
+		} else if (rc > 0) {
+			VALUE_PAIR *pair;
+			pair = avp_create(DA_PASSWORD_EXPIRE_DAYS, 0, NULL,
+					  rc/86400);
+			avl_add_pair(&m->user_reply, pair);
+			auth_format_msg(m, MSG_PASSWORD_EXPIRE_WARNING);
+		}
+	}
+
+	return result;
+}
+
+
 int
 rad_authenticate(radreq, activefd)
 	RADIUS_REQ  *radreq;
@@ -740,6 +755,7 @@ rad_authenticate(radreq, activefd)
 	m.check_pair = NULL;
 	m.timeout_pair = NULL;
 	m.user_msg   = NULL;
+	obstack_init(&m.msg_stack);
 	/*FIXME: this should have been cached by rad_auth_init */
 	m.namepair = avl_find(m.req->request, DA_USER_NAME);
 
@@ -784,6 +800,7 @@ rad_authenticate(radreq, activefd)
 	avl_free(m.proxy_pairs);
 	if (m.user_msg)
 		free(m.user_msg);
+	obstack_free(&m.msg_stack, NULL);
 	bzero(m.userpass, sizeof(m.userpass));
 	return 0;
 }
@@ -796,8 +813,6 @@ rad_authenticate(radreq, activefd)
 #else
 # define newstate(s) m->state = s
 #endif
-
-				
 				
 	
 void
@@ -937,7 +952,7 @@ sfn_validate(m)
 	/*
 	 * Validate the user
 	 */
-	if ((rc = check_expiration(m->user_check, &m->user_msg)) >= 0) {
+	if ((rc = check_expiration(m)) >= 0) {
 		rc = rad_check_password(radreq,
 					m->user_check, m->namepair,
 					&m->user_msg,
@@ -946,7 +961,8 @@ sfn_validate(m)
 		if (rc != AUTH_OK) { 
 			stat_inc(auth, radreq->ipaddr, num_rejects);
 			newstate(as_reject);
-			
+			auth_format_msg(m, MSG_ACCESS_DENIED);
+
 			if (is_log_mode(m, RLOG_AUTH)) {
 				switch (rc) {
 				case AUTH_REJECT:
@@ -1001,7 +1017,8 @@ void
 sfn_disable(m)
 	MACH *m;
 {
-	if (check_disable(m->namepair->strvalue, &m->user_msg)) {
+	if (get_deny(m->namepair->strvalue)) {
+		auth_format_msg(m, MSG_ACCOUNT_CLOSED);
 		auth_log(m, _("Account disabled"), NULL, NULL, NULL);
 		newstate(as_reject);
 	}
@@ -1014,7 +1031,7 @@ sfn_service_type(m)
 	if (m->check_pair->lvalue == DV_SERVICE_TYPE_AUTHENTICATE_ONLY) {
 		auth_log(m, _("Login rejected"), NULL,
 			 _("Authenticate only user"), NULL);
-		asprintf(&m->user_msg, _("\r\nAccess denied\r\n"));
+		auth_format_msg(m, MSG_ACCESS_DENIED);
 		newstate(as_reject);
 	}
 }
@@ -1028,8 +1045,7 @@ sfn_realmuse(m)
 	
 	if (rad_check_realm(m->req->realm) == 0)
 		return;
-	asprintf(&m->user_msg,
-		_("\r\nRealm quota exceeded - access denied\r\n"));
+	auth_format_msg(m, MSG_REALM_QUOTA);
 	auth_log(m, _("Login failed"), NULL,
 		 _("realm quota exceeded for "), m->req->realm);
 	newstate(as_reject);
@@ -1040,22 +1056,21 @@ sfn_simuse(m)
 	MACH *m;
 {
 	char  name[AUTH_STRING_LEN];
-	int   rc;
-
+	int rc;
+	int count;
+	
 	strip_username(strip_names,
 		       m->namepair->strvalue, m->user_check, name);
-	if ((rc = rad_check_multi(name, m->req->request,
-				  m->check_pair->lvalue)) == 0)
+	rc = rad_check_multi(name, m->req->request,
+			     m->check_pair->lvalue, &count);
+	avl_add_pair(&m->user_reply,
+		     avp_create(DA_SIMULTANEOUS_USE, 0, NULL, count));
+	if (!rc)
 		return;
-	
-	if (m->check_pair->lvalue > 1) {
-		asprintf(&m->user_msg,
-	      _("\r\nYou are already logged in %d times  - access denied\r\n"),
-			(int)m->check_pair->lvalue);
-	} else {
-		asprintf(&m->user_msg,
-		      _("\r\nYou are already logged in - access denied\r\n"));
-	}
+
+	auth_format_msg(m,
+			(m->check_pair->lvalue > 1) ?
+			MSG_MULTIPLE_LOGIN : MSG_SECOND_LOGIN);
 
 	radlog(L_WARN,
 	       _("Multiple logins: [%s] CLID %s (from nas %s) max. %ld%s"),
@@ -1094,8 +1109,7 @@ sfn_time(m)
 		/*
 		 * User called outside allowed time interval.
 		 */
-		asprintf(&m->user_msg,
-		      _("You are calling outside your allowed timespan\r\n"));
+		auth_format_msg(m, MSG_TIMESPAN_VIOLATION);
 		radlog(L_ERR,
        _("Outside allowed timespan: [%s] (from nas %s) time allowed: %s"),
 		       m->namepair->strvalue,
@@ -1128,9 +1142,7 @@ sfn_ttl(m)
 			auth_log(m,
 				 _("Zero time to live"),
 				 NULL, NULL, NULL);
-
-			asprintf(&m->user_msg,
-			 _("\r\nSorry, your account is currently closed\r\n"));
+			auth_format_msg(m, MSG_ACCOUNT_CLOSED);
 			newstate(as_reject);
 		}
 	}
@@ -1191,9 +1203,7 @@ sfn_exec_wait(m)
 
 		newstate(as_reject);
 
-		if (!m->user_msg)
-			asprintf(&m->user_msg,
-			     _("\r\nAccess denied (external check failed)."));
+		auth_format_msg(m, MSG_ACCESS_DENIED);
 
 		if (is_log_mode(m, RLOG_AUTH)) {
 			auth_log(m, _("Login incorrect"),
@@ -1265,7 +1275,7 @@ sfn_ack(m)
 	rad_send_reply(RT_AUTHENTICATION_ACK,
 		       m->req,
 		       m->user_reply,
-		       m->user_msg,
+		       auth_finish_msg(m),
 		       m->activefd);
 	
 	if (is_log_mode(m, RLOG_AUTH)) {
@@ -1281,7 +1291,6 @@ sfn_ack(m)
 	}
 }
 
-
 void
 sfn_reject(m)
 	MACH *m;
@@ -1290,7 +1299,7 @@ sfn_reject(m)
 	rad_send_reply(RT_AUTHENTICATION_REJECT,
 		       m->req,
 		       m->user_reply,
-		       m->user_msg,
+		       auth_finish_msg(m),
 		       m->activefd);
 	stat_inc(auth, m->req->ipaddr, num_rejects);
 }

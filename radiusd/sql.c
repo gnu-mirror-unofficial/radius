@@ -876,8 +876,8 @@ radiusd_sql_acct(grad_request_t *radreq)
                                      radreq, NULL);
                 rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
-                if (rc != 0) 
-			log_facility = L_INFO;
+                if (rc == 0 && count != 1) 
+			log_facility = L_WARN;
                 break;
                 
         }

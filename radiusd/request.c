@@ -230,22 +230,34 @@ _request_iterator(void *item, void *clos)
 
 		if (req->timestamp + request_class[req->type].ttl
 		      <= rp->curtime) {
-
+			
 			if (req->status == RS_XMIT)
 				req->status = RS_COMPLETED;
-			else if (rpp_kill(req->child_id, SIGKILL) == 0) { 
-				grad_log(L_NOTICE,
-				         _("Killing unresponsive %s child %lu"),
-				         request_class[req->type].name,
-				         (unsigned long) req->child_id);
+			else if (req->status == RS_TERMINATED) {
+				pid_t pid = rpp_check_pid(req->child_id);
+				if (pid == req->child_id) {
+					if (rpp_kill(req->child_id, SIGKILL) == 0) { 
+						grad_log(L_NOTICE,
+							 _("Killing unresponsive %s child %lu"),
+							 request_class[req->type].name,
+							 (unsigned long) req->child_id);
+					} else {
+						grad_log(L_CRIT,
+							 _("Cannot terminate child %lu. Attempting to kill inexisting process?"),
+							 (unsigned long) req->child_id);
+					}
+				}
 				grad_list_remove(request_list, req, NULL);
 				request_free(req);
 			} else {
-				grad_log(L_CRIT,
-					 _("Cannot terminate child %lu. Attempting to kill inexisting process?"),
-					 (unsigned long) req->child_id);
-				grad_list_remove(request_list, req, NULL);
-				request_free(req);
+				int rc = rpp_kill(req->child_id, SIGTERM);
+
+				grad_log(L_NOTICE,
+					 _("Terminating unresponsive %s child %lu, status: %s"),
+					 request_class[req->type].name,
+					 (unsigned long) req->child_id,
+					 rc == 0 ? _("OK") : _("FAILURE"));
+				req->status = RS_TERMINATED;
 			}
 		}
 		return 0;

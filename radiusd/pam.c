@@ -1,17 +1,24 @@
-/*
- * pam.c	Functions to access the PAM library. This was taken
- *		from the hacks that miguel a.l. paraz <map@iphil.net>
- *		did on radiusd-cistron-1.5.3 and migrated to a
- *		separate file.
+/* This file is part of GNU RADIUS.
+ * Copyright (C) 2001 Sergey Poznyakoff
  *
- *		That, in fact, was again based on the original stuff
- *		from Jeph Blaize <jab@kiva.net> done in May 1997.
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
- * Version:	@(#)pam.c  1.10  14-Jul-1998  cdent@kiva.net
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
 
 #define RADIUS_MODULE 11
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -22,132 +29,125 @@
 static char rcsid[] = "@(#) $Id$";
 #endif
 
-#include	<sys/types.h>
-#include	<sys/socket.h>
-#include	<sys/time.h>
-#include	<netinet/in.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <netdb.h>
+#include <pwd.h>
+#include <time.h>
+#include <ctype.h>
 
-#include	<stdio.h>
-#include	<netdb.h>
-#include	<pwd.h>
-#include	<time.h>
-#include	<ctype.h>
+#include <security/pam_appl.h>
 
-#include	<security/pam_appl.h>
+#include <radiusd.h>
 
-#include	<radiusd.h>
+struct pam_conv_data {
+	/* input data */
+	char *username;
+	char *password;
+	/* output data */
+	int error;
+	char *reply_msg;
+};
 
-/*************************************************************************
- *
- *	Function: PAM_conv
- *
- *	Purpose: Dialogue between RADIUS and PAM modules.
- *
- * jab - stolen from pop3d
- *************************************************************************/
+#define XSTRDUP(s) (s) ? strdup(s) : NULL
 
-static char *PAM_username;
-static char *PAM_password;
-static int PAM_error =0;
+static int rad_pam_conv(int num_msg, const struct pam_message **msg,
+			struct pam_response **resp, void *closure);
 
-#define COPY_STRING(s) (s) ? strdup(s) : NULL
-
-static int
-PAM_conv(num_msg, msg, resp, appdata_ptr)
+int
+rad_pam_conv(num_msg, msg, resp, closure)
 	int num_msg;
 	const struct pam_message **msg;
 	struct pam_response **resp;
-	void *appdata_ptr;
+	void *closure;
 {
 	int count = 0, replies = 0;
 	struct pam_response *reply = NULL;
-
+	struct pam_conv_data *data = (struct pam_conv_data *)closure;
+	int rc;
+	
 	if ((reply = calloc(num_msg, sizeof(struct pam_response))) == NULL)
 		return PAM_CONV_ERR;
-	
-	for (count = 0; count < num_msg; count++) {
+
+	rc = PAM_SUCCESS;
+	for (count = 0; rc == PAM_SUCCESS && count < num_msg; count++) {
 		switch (msg[count]->msg_style) {
 		case PAM_PROMPT_ECHO_ON:
 			reply[replies].resp_retcode = PAM_SUCCESS;
-			reply[replies++].resp = COPY_STRING(PAM_username);
-			/* PAM frees resp */
+			reply[replies++].resp = XSTRDUP(data->username);
 			break;
 		case PAM_PROMPT_ECHO_OFF:
 			reply[replies].resp_retcode = PAM_SUCCESS;
-			reply[replies++].resp = COPY_STRING(PAM_password);
-			/* PAM frees resp */
-			break;
-		case PAM_TEXT_INFO:
-			/* ignore it... */
+			reply[replies++].resp = XSTRDUP(data->password);
 			break;
 		case PAM_ERROR_MSG:
+		case PAM_TEXT_INFO: 
+			data->reply_msg = make_string((char*)msg[count]->msg);
+			break;
 		default:
-			/* Must be an error of some sort... */
-			free (reply);
-			PAM_error = 1;
-			return PAM_CONV_ERR;
+			data->error++;
+			rc = PAM_CONV_ERR;
+			break;
 		}
 	}
-	if (reply)
+	if (replies)
 		*resp = reply;
-	return PAM_SUCCESS;
+	else
+		free(reply);
+	return rc;
 }
 
-struct pam_conv conv = {
-	PAM_conv,
-	NULL
-};
-
-/*************************************************************************
- *
- *	Function: pam_pass
- *
- *	Purpose: Check the users password against the standard UNIX
- *		 password table + PAM.
- *
- * jab start 19970529
- *************************************************************************/
-
-/* cjd 19980706
- * 
- * for most flexibility, passing a pamauth type to this function
- * allows you to have multiple authentication types (i.e. multiple
- * files associated with radius in /etc/pam.d)
- */
 int
-pam_pass(name, passwd, pamauth)
+pam_pass(name, passwd, pamauth, reply_msg)
 	char *name;
 	char *passwd;
 	const char *pamauth;
+	char **reply_msg;
 {
-	pam_handle_t *pamh=NULL;
-	int retval;
+	pam_handle_t *pamh = NULL;
+	int rc;
+	struct pam_conv_data data;
+	struct pam_conv conv = {
+		rad_pam_conv,
+		NULL
+	};
 	
-	PAM_username = name;
-	PAM_password = passwd;
+	/* input data */
+	data.username = name;
+	data.password = passwd;
+	/* output data */
+	data.error = 0;
+	data.reply_msg = NULL;
 
-	debug(1,
-	     ("using pamauth string <%s> for pam.conf lookup",
-	     pamauth));
-	retval = pam_start(pamauth, name, &conv, &pamh);
-	if (retval == PAM_SUCCESS) {
-		debug(1, ("pam_start succeeded for <%s>", name));
-		retval = pam_authenticate(pamh, 0);
+	conv.appdata_ptr = &data;
+
+	debug(1,("username [%s], pamauth [%s]",  name, pamauth));
+
+	/* fake loop needed so we don't have to use gotos */
+	for (;;) {
+		rc = pam_start(pamauth, name, &conv, &pamh);
+		debug(1, ("pam_start: %d", rc));
+		if (rc != PAM_SUCCESS)
+			break;
+
+		rc = pam_authenticate(pamh, 0);
+		debug(1, ("pam_authenticate: %d", rc));
+
+		if (rc != PAM_SUCCESS) 
+			break;
+		
+		rc = pam_acct_mgmt(pamh, 0);
+		break;
 	}
-	if (retval == PAM_SUCCESS) {
-		debug(1, ("pam_authenticate succeeded for <%s>", name));
-		retval = pam_acct_mgmt(pamh, 0);
-	}
-	if (retval == PAM_SUCCESS) {
-		debug(1, ("pam_acct_mgmt succeeded for <%s>", name));
-		pam_end(pamh, 0);
-		return 0;
-	}
-	
-	debug(1, ("PAM FAILED for <%s> failed", name));
+	debug(1, ("pam_acct_mgmt: %d", rc));
 	pam_end(pamh, 0);
-	return -1;
+
+	*reply_msg = data.reply_msg;
+	
+	return rc != PAM_SUCCESS;
 }
 
-#endif /* USE_PAM */
-
+#endif

@@ -1,3 +1,45 @@
+2003-11-26  Sergey Poznyakoff
+
+	* radiusd/testsuite/proxy/realms.in (ignorecase): New
+	test realm.
+	* radiusd/testsuite/radiusd/proxy.exp: Test for case-insensitive
+	realm names.
+
+	An attempt to make log messages as configurable as reasonable:
+	a user is allowed to specify "prefix" and "suffix" hooks. Both
+	hooks are rewrite functions of three arguments (retuest type,
+	nas name and request id), returning a string that would be
+	displayed before and after the actual message. Theoretically,
+	this should allow a user to tailor the messages to his/her
+	liking.
+	
+	* examples/config.syntax: Example of prefix-hook and suffix-hook
+	statements.
+
+	* include/radius.h (nas_request_to_nas,nas_request_to_name): Use
+	const where appropriate.
+	(struct channel.prefix_hook,suffix_hook): New members
+	(vlog): Changed prototype declaration.
+	* include/rewrite.h (rewrite_invoke): Changed prototype
+	declaration.
+	(rewrite_check_function): Removed.
+	* radiusd/rewrite.y: Likewise.
+	* lib/nas.c (nas_request_to_nas,nas_request_to_name): Use
+	const where appropriate.
+	* lib/logger.c: Use new vlog().
+	(rad_print_request): Removed.
+	(radlog_req): Rewritten.
+	
+	* client/pam_radius/pam_radius.c: Use new vlog().
+	* lib/applog.c: Likewise.
+	
+	* radiusd/checkrad.c (compare): Change invocation of
+	rewrite_invoke()
+	* radiusd/log.c: User-defined per-channel prefix and suffix hooks.
+	* radiusd/auth.c: Rewritten using new hooks approach.
+	* raddb/config.in: Use default_log_prefix logging hook
+	* raddb/log-hook.rw: Rewritten
+
 2003-11-25  Sergey Poznyakoff
 
 	* configure.ac: Raised version number to 1.1.94 
@@ -8,7 +50,7 @@
 	* radiusd/sql.c (sql_check_config): Be more robust against
 	eventual errors.
 
-	* lib/iputil.c (ip_gethostaddr,p_strtoip,ip_getnetaddr)
+	* lib/iputil.c (ip_gethostaddr,ip_strtoip,ip_getnetaddr)
 	(ip_addr_in_net_p): Use const keyword wherever appropriate
 	* include/radius.h: Likewise. 
 	* radiusd/auth.c (sfn_validate): Do not log user password with
@@ -17,10 +59,6 @@
 	* include/radsql.h (doauth,doacct): Removed defines
 	* lib/list.c: Removed useless assertions
 	
-2003-11-25  Sergey Poznyakoff  
-
-	* lib/Makefile.am (librad_la_LIBADD): Use LTLIBOBJS directly.
-
 2003-11-25  Sergey Poznyakoff  
 
 	* lib/Makefile.am (librad_la_LIBADD): Use LTLIBOBJS directly.

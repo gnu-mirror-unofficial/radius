@@ -83,6 +83,7 @@
     (let ((keyword nil)
           (state (list 'start)))
       (while (and (not (eq (car state) 'stop))
+		  (not (bobp))
                   (= (forward-line -1) 0))
         (cond
          ((eq (car state) 'in-comment)

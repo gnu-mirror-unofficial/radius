@@ -1,3 +1,15 @@
+2003-05-29  Sergey Poznyakoff  
+
+	* configure.ac: Raised the patchlevel
+	* radiusd/radiusd.c (radiusd_exit0): New function.
+	* include/radiusd.h: Likewise.
+	* radiusd/rpp.c (pipe_write,pipe_read): Use simple write/read
+	calls.
+	(sig_handler): Use radiusd_exit0().
+	* radiusd/stat.c (stat_get_port_index): Bugfix.
+	* doc/texinfo/Makefile.am: Override the default rule for
+	radius.pdf.
+
 2003-05-22  Sergey Poznyakoff
 
 	* include/radiusd.h (scheme_redirect_output): New function.

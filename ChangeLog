@@ -1,5 +1,22 @@
 2004-07-18  Sergey Poznyakoff
 
+	* include/common.h: Added missing prototypes
+	* lib/list.c (grad_list_item): be robust if list==NULL
+
+	* radtest/completion.c: Minor syntax cleanup
+	* radtest/gram.y: Implemented 'case' statement.
+	* radtest/runtime.c: Implemented 'case' statement.
+	Improved memory allocation functions.
+	* radtest/input.l: Added 'case' and 'in' keywords.
+	Temporarily removed bracket counting code.
+	* radtest/main.c (radtest_parse_options): grad_argp_parse
+	resets program_invocation_name. Use argp_parse instead.
+	* radtest/radtest.h: Updated
+	
+	* radscripts/radauth.m4: Use 'case'
+
+2004-07-18  Sergey Poznyakoff
+
 	* radtest/gram.y: New statements 'set', 'shift', 'getopt'
 	* radtest/runtime.c: Likewise.
 	* radtest/input.l: New keywords 'set', 'shift', 'getopt'

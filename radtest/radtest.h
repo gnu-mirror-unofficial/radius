@@ -51,6 +51,8 @@ typedef struct radtest_node_cond radtest_node_cond_t;
 typedef struct radtest_node_input radtest_node_input_t;
 typedef struct radtest_node_set radtest_node_set_t;
 typedef struct radtest_node_getopt radtest_node_getopt_t;
+typedef struct radtest_node_case radtest_node_case_t;
+typedef struct radtest_case_branch radtest_case_branch_t;
 
 struct radtest_pair {
 	grad_dict_attr_t *attr;
@@ -93,7 +95,8 @@ typedef enum {
 	radtest_node_input,
 	radtest_node_set,
 	radtest_node_shift,
-	radtest_node_getopt
+	radtest_node_getopt,
+	radtest_node_case
 } radtest_node_type;
 
 struct radtest_node_send {
@@ -191,6 +194,16 @@ struct radtest_node_getopt {
 	radtest_variable_t *ind;
 };
 
+struct radtest_node_case {
+	radtest_node_t *expr;
+	grad_list_t *branchlist;
+};
+
+struct radtest_case_branch {
+	radtest_node_t *cond;
+	radtest_node_t *node;
+};
+
 struct radtest_node {
 	radtest_node_t *next;
 	grad_locus_t locus;
@@ -215,6 +228,7 @@ struct radtest_node {
 		radtest_node_input_t input;
 		radtest_node_set_t set;
 		radtest_node_getopt_t gopt;
+		radtest_node_case_t branch;
 	} v;
 };
 
@@ -222,35 +236,28 @@ struct radtest_node {
 /* External declarations */
 extern grad_locus_t source_locus;
 extern grad_symtab_t *vartab;
-extern grad_uint32_t auth_server;
-extern int   auth_port;
-extern grad_uint32_t acct_server;
-extern int   acct_port;
-extern u_char messg_id;
 extern int reply_code;
 extern grad_avp_t *reply_list;
 extern int verbose;
-extern int abort_on_failure;
 extern int x_argmax;
 extern int x_argc;
 extern char **x_argv;
 extern int disable_readline;
 extern int dry_run;
 
+int radtest_parse_options(int argc, char **argv);
+int read_and_eval(char *filename);
 int open_input(char *name);
 void close_input();
 void set_yydebug();
 void parse_error(const char *fmt, ...);
 void parse_error_loc(grad_locus_t *locus, const char *fmt, ...);
-void print(radtest_variable_t *var);
 void radtest_send(int port, int code, grad_avp_t *avl, grad_symtab_t *cntl);
-void putback(char *str);
-void prompt();
-void tempvar_free(radtest_variable_t *var);
-int var_free(radtest_variable_t *var);
 void var_print(radtest_variable_t *var);
 int compare_lists(grad_avp_t *reply, grad_avp_t *sample);
 radtest_data_type parse_datum(char *p, radtest_datum_t *dp);
+
+int radtest_eval(radtest_node_t *stmt);
 
 
 /* Memory management */
@@ -258,11 +265,12 @@ radtest_node_t *radtest_node_alloc(radtest_node_type);
 radtest_pair_t *radtest_pair_alloc();
 radtest_variable_t *radtest_var_alloc(radtest_data_type);
 void radtest_var_copy (radtest_variable_t *dst, radtest_variable_t *src);
-void radtest_free_variables();
-void radtest_free_nodes();
 radtest_pair_t *radtest_pair_alloc();
-void radtest_free_pairs();
 void radtest_free_strings();
+radtest_case_branch_t *radtest_branch_alloc();
+int var_free(radtest_variable_t *var);
+
+void radtest_free_mem();
 
 void radtest_start_string(char *str);
 void radtest_add_string(char *str);

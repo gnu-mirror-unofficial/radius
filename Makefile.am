@@ -15,7 +15,7 @@
 # along with GNU Radius; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-AUTOMAKE_OPTIONS = gnu 1.7.1 dist-bzip2 readme-alpha std-options
+AUTOMAKE_OPTIONS = gnu 1.7.5 dist-bzip2 readme-alpha std-options
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS= intl m4 include lib sql snmplib radscm radiusd radwho radzap radlast\

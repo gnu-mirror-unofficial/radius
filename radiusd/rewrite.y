@@ -34,6 +34,7 @@
 #include <rewrite.h>
 #ifdef USE_SERVER_GUILE 
 # include <libguile.h>
+# include <radscm.h>	
 #endif
         
 #ifndef lint
@@ -4879,7 +4880,7 @@ radscm_datum_to_scm(type, datum)
 {
         switch (type) {
         case Integer:
-                return scm_makenum(datum.ival);
+                return scm_long2num(datum.ival);
 
         case String:
                 return scm_makfrom0str(datum.sval);
@@ -4897,7 +4898,7 @@ radscm_scm_to_ival(cell, val)
                 if (SCM_INUMP(cell))  
                         *val = SCM_INUM(cell);
                 else if (SCM_BIGP(cell)) 
-                        *val = (UINT4) scm_big2dbl(cell);
+                        *val = (UINT4) scm_i_big2dbl(cell);
                 else if (SCM_CHARP(cell))
                         *val = SCM_CHAR(cell);
                 else if (cell == SCM_BOOL_F)
@@ -4911,7 +4912,7 @@ radscm_scm_to_ival(cell, val)
         } else {
                 if (SCM_STRINGP(cell)) {
                         char *p;
-                        *val = strtol(SCM_ROCHARS(cell), &p, 0);
+                        *val = strtol(SCM_STRING_CHARS(cell), &p, 0);
                         if (*p)
                                 return -1;
                 } else
@@ -4937,12 +4938,12 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
         SCM_ASSERT(SCM_NIMP(FNAME) && SCM_STRINGP(FNAME),
                    FNAME, SCM_ARG1, func_name);
 
-        name = SCM_ROCHARS(FNAME);
+        name = SCM_STRING_CHARS(FNAME);
         fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
         if (!fun) 
                 scm_misc_error(func_name,
                                "function ~S not defined",
-                               SCM_LIST1(FNAME));
+                               scm_list_1(FNAME));
 
         rw_code_lock();
 	rw_rt.st = 0;                     /* Stack top */
@@ -4960,7 +4961,7 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
                         rw_code_unlock();
                         scm_misc_error(func_name,
                                        "too many arguments for ~S",
-                                       SCM_LIST1(FNAME));
+                                       scm_list_1(FNAME));
                 }
 
                 switch (parm->datatype) {
@@ -4972,7 +4973,7 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
                         
                 case String:
                         if (SCM_NIMP(car) && SCM_STRINGP(car)) {
-                                char *p = SCM_ROCHARS(car);
+                                char *p = SCM_STRING_CHARS(car);
                                 pushstr(p, strlen(p));
                                 rc = 0;
                         } else
@@ -4983,7 +4984,7 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
                         rw_code_unlock();
                         scm_misc_error(func_name,
                              "type mismatch in argument ~S(~S) in call to ~S",
-                                       SCM_LIST3(SCM_MAKINUM(nargs),
+                                       scm_list_3(SCM_MAKINUM(nargs),
                                                  car,
                                                  FNAME));
                 }
@@ -4993,7 +4994,7 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
                 rw_code_unlock();
                 scm_misc_error(func_name,
                                "too few arguments for ~S",
-                               SCM_LIST1(FNAME));
+                               scm_list_1(FNAME));
         }
         
         /* Imitate a function call */

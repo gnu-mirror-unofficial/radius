@@ -17,7 +17,7 @@
 # along with GNU Radius; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-AUTOMAKE_OPTIONS = gnits 1.7.5 dist-bzip2 std-options
+AUTOMAKE_OPTIONS = gnits 1.8 dist-bzip2
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS= intl m4 include lib sql snmplib radscm radiusd radwho radzap radlast\
@@ -29,6 +29,11 @@ update-dictionary:
 	cd $$here/raddb;\
 	$(MAKE) update-dictionary;\
 	cd $$here
+
+# We never remove the contents of configuration directory and the
+# info directory index
+distuninstallcheck_listfiles = \
+ find . -type f | while read NAME; do expr $$NAME : '\..*/etc/raddb' >/dev/null || expr $$NAME : '\..*/info/dir' >/dev/null || echo $$NAME ; done
 
 if MAINTAINER_MODE
 MAINTAINERCLEANFILES=core *~ err out
@@ -54,32 +59,5 @@ alphacheck:
 
 endif
 
-distcleancheck_listfiles = \
-	find . -type f -exec sh -c 'test -f $(top_srcdir)/{} || echo {}' \;
-
-## Override distcheck rule.
-distcheck: dist
-	$(am__remove_distdir)
-	GZIP=$(GZIP_ENV) gunzip -c $(distdir).tar.gz | $(AMTAR) xf -
-	chmod -R a-w $(distdir); chmod a+w $(distdir)
-	mkdir $(distdir)/=build
-	mkdir $(distdir)/=inst
-	chmod a-w $(distdir)
-	dc_install_base=`$(am__cd) $(distdir)/=inst && pwd` \
-	 && cd $(distdir)/=build \
-	 && ../configure --srcdir=.. --prefix=$$dc_install_base \
-	$(DISTCHECK_CONFIGURE_FLAGS) \
-	 && $(MAKE) $(AM_MAKEFLAGS) \
-	 && $(MAKE) $(AM_MAKEFLAGS) dvi \
-	 && $(MAKE) $(AM_MAKEFLAGS) check \
-	 && $(MAKE) $(AM_MAKEFLAGS) install \
-	 && $(MAKE) $(AM_MAKEFLAGS) installcheck \
-	 && $(MAKE) $(AM_MAKEFLAGS) uninstall \
-	 && $(MAKE) $(AM_MAKEFLAGS) dist-gzip \
-	 && rm -f $(distdir).tar.gz \
-	 && $(MAKE) $(AM_MAKEFLAGS) distcleancheck
-	$(am__remove_distdir)
-	@echo "$(distdir).tar.gz is ready for distribution" | \
-	 sed 'h;s/./=/g;p;x;p;x'
  
 

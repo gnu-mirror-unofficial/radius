@@ -66,10 +66,15 @@ read_naslist_entry(unused, fc, fv, file, lineno)
 	}
 
 	bzero(&nas, sizeof(nas));
-	nas.ipaddr = get_ipaddr(fv[0]);
 	STRING_COPY(nas.shortname, fv[1]);
 	STRING_COPY(nas.nastype, fv[2]);
-	STRING_COPY(nas.longname, ip_hostname(nas.ipaddr));
+	if (strcmp(fv[0], "DEFAULT") == 0) {
+		nas.ipaddr = 0;
+		STRING_COPY(nas.longname, fv[0]);
+	} else {
+		nas.ipaddr = get_ipaddr(fv[0]);
+		STRING_COPY(nas.longname, ip_hostname(nas.ipaddr));
+	}
 	if (fc >= 4)
 		nas.args = envar_parse_argcv(fc-3, &fv[3]);
 	
@@ -105,12 +110,16 @@ nas_lookup_name(name)
 	char *name;
 {
 	NAS *nas;
-
-	for (nas = naslist; nas; nas = nas->next)
-		if (strcmp(nas->shortname, name) == 0
-		    || strcmp(nas->longname, name) == 0)
+	NAS *defnas = NULL;
+	
+	for (nas = naslist; nas; nas = nas->next) {
+		if (nas->ipaddr == 0)
+			defnas = nas;
+		else if (strcmp(nas->shortname, name) == 0
+			 || strcmp(nas->longname, name) == 0)
 			break;
-	return nas;
+	}
+	return nas ? nas : defnas;
 }
 
 /* Find a nas in the NAS list */
@@ -119,12 +128,15 @@ nas_lookup_ip(ipaddr)
 	UINT4 ipaddr;
 {
 	NAS *nas;
-
-	for (nas = naslist; nas; nas = nas->next)
-		if (ipaddr == nas->ipaddr)
+	NAS *defnas = NULL;
+	
+	for (nas = naslist; nas; nas = nas->next) {
+		if (nas->ipaddr == 0) 
+			defnas = nas;
+		else if (nas->ipaddr == ipaddr)
 			break;
-
-	return nas;
+	}
+	return nas ? nas : defnas;
 }
 
 
@@ -135,6 +147,7 @@ nas_ip_to_name(ipaddr)
 {
 	NAS *nas;
 
+	
 	if ((nas = nas_lookup_ip(ipaddr)) != NULL) {
 		if (nas->shortname[0])
 			return nas->shortname;

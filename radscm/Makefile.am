@@ -10,19 +10,34 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+noinst_LIBRARIES=@LIBRADSCM@
+EXTRA_LIBRARIES=libradscm.a
 bin_PROGRAMS=@RADSCM@
 EXTRA_PROGRAMS=radscm
+
+libradscm_a_SOURCES= \
+ rscm_dict.c\
+ rscm_syslog.c\
+ rscm_utmp.c\
+ rscm_lib.c\
+ radscm.c\
+ radscm.h
+
 radscm_SOURCES=main.c radscm.c
+
+pkgdata_DATA=boot.scm session.scm guile-procedures.txt
+DOT_X_FILES=rscm_dict.x rscm_syslog.x rscm_utmp.x rscm_lib.x radscm.x
+DOT_DOC_FILES=$(DOT_X_FILES:.x=.doc)
+BUILT_SOURCES=$(DOT_X_FILES) $(DOT_DOC_FILES)
+EXTRA_DIST=boot.scm session.scm 
+CLEANFILES = *.x *.doc
+
+radscm_LDADD=@GUILE_LIBS@ ./libradscm.a ../radlib/liblog.la ../radlib/librad.la ../radlib/libdebug.la 
+
 INCLUDES  = -I$(top_srcdir)/include @INCLUDEPATH@ @GUILE_INCLUDES@
 CPPFLAGS=-DDATADIR=\"$(pkgdatadir)\"
 ETAGS_ARGS = --regex='/SCM_\(GLOBAL_\)?\(G?PROC\|G?PROC1\|SYMBOL\|VCELL\|CONST_LONG\).*\"\([^\"]\)*\"/\3/' \
    --regex='/[ \t]*SCM_[G]?DEFINE1?[ \t]*(\([^,]*\),[^,]*/\1/'
-
-radscm_LDADD=@GUILE_LIBS@ ../radlib/liblog.la ../radlib/librad.la ../radlib/libdebug.la 
-pkgdata_DATA=boot.scm session.scm guile-procedures.txt
-BUILT_SOURCES=radscm.x radscm.doc 
-
-EXTRA_DIST=boot.scm session.scm 
 
 GUILE_DOC_SNARF=$(top_srcdir)/scripts/guile/guile-doc-snarf
 
@@ -36,8 +51,8 @@ SUFFIXES=.x .doc
 	$(GUILE_DOC_SNARF) $< $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) \
                            $< > /dev/null || { rm $@; false; }
 
-guile-procedures.txt: radscm.doc
-	cat radscm.doc > $@
+guile-procedures.txt: $(DOT_DOC_FILES)
+	cat $(DOT_DOC_FILES) > $@
 
 ## Add -MG to make the .x magic work with auto-dep code.
 MKDEP = $(CC) -M -MG $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)

@@ -182,6 +182,42 @@ get_first_ip()
 	
 	return ip;
 }
-		
+
+#ifdef HAVE_SIGACTION
+
+signal_handler_t
+rad_set_signal(int sig, signal_handler_t sighandler)
+{
+	struct sigaction act, oact;
 	
-	
+	act.sa_handler = sighandler;
+	sigemptyset (&act.sa_mask);
+	act.sa_flags = 0;
+# ifdef  SA_INTERRUPT           
+	act.sa_flags |= SA_INTERRUPT;
+# endif
+	if (sigaction (sig, &act, &oact) < 0)
+		return SIG_ERR;
+	return oact.sa_handler;
+}
+
+void
+rad_reset_signal(int sig ARG_UNUSED, signal_handler_t sighandler ARG_UNUSED)
+{
+}
+
+#else
+
+signal_handler_t
+rad_set_signal(int sig, signal_handler_t sighandler)
+{
+	return signal(sig, sighandler);
+}
+
+void
+rad_reset_signal(int sig ARG_UNUSED, signal_handler_t sighandler ARG_UNUSED)
+{
+	rad_set_signal(sig, sighandler);
+}
+#endif
+

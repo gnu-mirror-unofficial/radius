@@ -287,14 +287,14 @@ pop_source()
 {
         struct buffer_ctx *ctx;
 
-        fclose(yyin);
-#ifndef FLEX_SCANNER
-        lex_delete_buffer(current_buffer);
-#endif
         if (!context_stack) {
                 yyin = NULL;
                 return 1;
         }
+        fclose(yyin);
+#ifndef FLEX_SCANNER
+        lex_delete_buffer(current_buffer);
+#endif
         /* Restore previous context */
         source_filename = context_stack->filename;
         source_line_num = context_stack->line;
@@ -455,7 +455,7 @@ done_lex()
  * It is based on the assumption that only user names start
  * at column 0
  */
-void
+int
 users_sync()
 {
         int c;
@@ -467,10 +467,11 @@ users_sync()
                         if (!isspace(c)) {
                                 if (c)
                                         unput(c);
-                                return;
+				break;
                         } 
                 }
         }
+	return c;
 }
 
 #define isws(c) ((c) == ' ' || (c) == '\t')

@@ -37,8 +37,19 @@ obstack_grow_quoted(struct obstack *obp, char *str, int len)
                 case '\'':
                 case '\\':
                         obstack_1grow(obp, '\\');
+			obstack_1grow(obp, *str);
+			break;
+			
                 default:
-                        obstack_1grow(obp, *str);
+			if (isprint(*str))
+				obstack_1grow(obp, *str);
+			else {
+				char buf[4];
+				snprintf(buf, sizeof(buf), "%03o",
+					 *(u_char*)str);
+				obstack_1grow(obp, '\\');
+				obstack_grow(obp, str, 3);
+			}
                 }
         }
 }
@@ -77,8 +88,9 @@ attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
 {
         VALUE_PAIR *pair;
         int len;
-        char tmp[AUTH_STRING_LEN];
-        
+        char tmp[AUTH_STRING_LEN + 1];
+        char *str;
+	
         if (!attr) {
                 radlog_req(L_ERR, req, "attribute not found");
                 return;
@@ -138,19 +150,18 @@ attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
         case TYPE_STRING:
                 if ((attr->value == DA_USER_PASSWORD
 		     || attr->value == DA_CHAP_PASSWORD) && req) {
-                        char string[AUTH_STRING_LEN+1];
-                        int len;
-                        req_decrypt_password(string, req, pair);
-			if (attr->value == DA_USER_PASSWORD)
-                        	len = strlen(string);
-			else
-				len = pair->avp_strlength;
-                        obstack_grow_quoted(obp, string, len);
-                } else {
-                        obstack_grow_quoted(obp,
-					    pair->avp_strvalue,
-					    pair->avp_strlength);
-                }
+                        req_decrypt_password(tmp, req, pair);
+			str = tmp;
+		} else
+			str = pair->avp_strvalue;
+
+		if (attr->prop & AP_BINARY_STRING) 
+			len = pair->avp_strlength;
+		else
+			/* strvalue might include terminating zero
+			   character, so we need to recalculate it */
+			len = strlen(str);
+		obstack_grow_quoted(obp, str, len);
                 break;
 		
         case TYPE_INTEGER:

@@ -1139,6 +1139,7 @@ rad_sql_retrieve_sessions(struct sql_connection *conn,
 	
         for (i = 0; i < res->ntuples; i++) {
 		struct radutmp *up = grad_emalloc(sizeof(*up));
+		GRAD_STRING_COPY(up->login, res->tuple[i][0]);
 		GRAD_STRING_COPY(up->orig_login, res->tuple[i][0]);
 		up->nas_address = htonl(grad_ip_strtoip(res->tuple[i][1]));
 		up->nas_port = strtoul(res->tuple[i][2], NULL, 0);
@@ -1216,7 +1217,7 @@ rad_sql_mlc_close(struct radutmp *up)
 	/* Create a temporary request */
 	req = grad_request_alloc();
 	grad_avl_add_pair(&req->avlist,
-			  grad_avp_create_string(DA_USER_NAME, up->login));
+			  grad_avp_create_string(DA_USER_NAME, up->orig_login));
 	grad_avl_add_pair(&req->avlist,
 			  grad_avp_create_integer(DA_NAS_PORT_ID,
 						  up->nas_port));

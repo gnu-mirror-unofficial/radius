@@ -38,7 +38,7 @@ static char rcsid[] =
 #include <libpq-fe.h>
 
 static int rad_postgres_reconnect(int type, struct sql_connection *conn);
-static void rad_postgres_disconnect(struct sql_connection *conn);
+static void rad_postgres_disconnect(struct sql_connection *conn, int drop);
 static int rad_postgres_query(struct sql_connection *conn, char *query, int *return_count);
 static char *rad_postgres_getpwd(struct sql_connection *conn, char *query);
 static void *rad_postgres_exec(struct sql_connection *conn, char *query);
@@ -201,8 +201,9 @@ rad_postgres_reconnect(type, conn)
 }
 
 void 
-rad_postgres_disconnect(conn)
+rad_postgres_disconnect(conn, drop)
         struct sql_connection *conn;
+	int drop; /* currently unused */
 {
         if (!conn->data)
                 return ;
@@ -249,7 +250,7 @@ rad_postgres_query(conn, query, return_count)
                        ("PQexec returned %s"),
                        PQresStatus(stat));
                 if (stat == PGRES_FATAL_ERROR) 
-			rad_postgres_disconnect(conn);
+			rad_postgres_disconnect(conn, 0);
                 rc = -1;
         }
         PQclear(res);
@@ -298,7 +299,7 @@ rad_postgres_getpwd(conn, query)
                        _("PQexec returned %s"),
                        PQresStatus(stat));
                 if (stat == PGRES_FATAL_ERROR)
-			rad_postgres_disconnect(conn);
+			rad_postgres_disconnect(conn, 0);
         }
         PQclear(res);
         return return_passwd;
@@ -345,7 +346,7 @@ rad_postgres_exec(conn, query)
                        PQresStatus(stat));
                 PQclear(res);
                 if (stat == PGRES_FATAL_ERROR)
-			rad_postgres_disconnect(conn);
+			rad_postgres_disconnect(conn, 0);
                 return NULL;
         }
 

@@ -46,7 +46,7 @@ typedef struct {
 } ODBCconn;
 
 static int rad_odbc_reconnect(int type, struct sql_connection *conn);
-static void rad_odbc_disconnect(struct sql_connection *conn);
+static void rad_odbc_disconnect(struct sql_connection *conn, int drop);
 static int rad_odbc_query(struct sql_connection *conn, char *query, int *return_count);
 static char *rad_odbc_getpwd(struct sql_connection *conn, char *query);
 static void *rad_odbc_exec(struct sql_connection *conn, char *query);
@@ -143,8 +143,9 @@ rad_odbc_reconnect(type, conn)
 }
 
 void 
-rad_odbc_disconnect(conn)
+rad_odbc_disconnect(conn, drop)
         struct sql_connection *conn;
+	int drop; /* currently unused */
 {
         ODBCconn *odata;
         if (!conn->data)

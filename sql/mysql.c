@@ -47,7 +47,7 @@ static char rcsid[] =
 
 static int  do_mysql_query(struct sql_connection *conn, char *query);
 static int rad_mysql_reconnect(int type, struct sql_connection *conn);
-static void rad_mysql_disconnect(struct sql_connection *conn);
+static void rad_mysql_disconnect(struct sql_connection *conn, int drop);
 static int rad_mysql_query(struct sql_connection *conn, char *query, int *return_count);
 static char *rad_mysql_getpwd(struct sql_connection *conn, char *query);
 static void *rad_mysql_exec(struct sql_connection *conn, char *query);
@@ -86,7 +86,7 @@ do_mysql_query(conn, query)
                 
 		radlog(L_ERR, "[MYSQL] %s", mysql_error(mysql));
 
-		rad_mysql_disconnect(conn);
+		rad_mysql_disconnect(conn, 0);
 		return ret;
         }
         debug(1,("FAILURE"));
@@ -136,8 +136,9 @@ rad_mysql_reconnect(type, conn)
 }
 
 void 
-rad_mysql_disconnect(conn)
+rad_mysql_disconnect(conn, drop)
         struct sql_connection *conn;
+	int drop; /* currently unused */
 {
         mysql_close(conn->data);
         free_entry(conn->data);

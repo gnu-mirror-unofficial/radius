@@ -255,12 +255,17 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
                 debug(1, ("returned: %d", status));
                 if (status == 2) {
                         radlog(L_ERR,
-                               _("can't run external program (reason reported via syslog channel user.err)"));
+                               _("can't run external program `%s' (reason reported via syslog channel user.errs)"),
+			       cmd);
                 }
                 return status;
-        }
-        radlog(L_ERR, _("radius_exec_program(): abnormal child exit"));
+        } else {
+		format_exit_status(buffer,
+				   sizeof buffer, status);
 
+		radlog(L_ERR,
+		       _("external program `%s' %s"), cmd, buffer);
+	}
         return 1;
 }
 
@@ -481,13 +486,13 @@ _close_filter(data, sym)
 
 	for (filter = sym->filter; filter; filter = filter->next) {
 		if (filter->pid == data->pid) {
-			/* Do not close streams, since this function is
-			   called from a signal handler. Next filter_open
-			   will take care of them */
+			char buffer[80];
+			format_exit_status(buffer,
+					   sizeof buffer, data->status);
 			radlog(L_ERR,
-	      _("filter %s (pid %d) exited with status %d (in: %u, out: %u)"),
+			       _("filter %s (pid %d) %s (in: %u, out: %u)"),
 			       sym->name, filter->pid,
-			       WEXITSTATUS(data->status),
+			       buffer,
 			       filter->lines_input, filter->lines_output);
 
 			if (filter->input >= 0) {
@@ -517,7 +522,7 @@ filter_symbol_lock(sym, type)
 	
 	if (sym->common
 	    && sym->max_percent
-	    && num_threads > max_threads * sym->max_percent / 10
+	    && num_threads > max_threads * sym->max_percent / 100
 	    && counter > num_threads * sym->max_percent / 100) {
 		radlog(L_NOTICE,
 		       _("Too many (%d) threads waiting for filter %s."),
@@ -1019,7 +1024,7 @@ common_handler(argc, argv, block_data, handler_data)
 	if (argc > 2) {
 		if (argv[2].type != CFG_INTEGER || !filter_symbol.common)
 			return 1;
-		filter_symbol.max_percent = argv[1].v.number;
+		filter_symbol.max_percent = argv[2].v.number;
 		if (filter_symbol.max_percent < 0
 		    || filter_symbol.max_percent > 100)
 			return 1;

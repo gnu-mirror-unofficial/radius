@@ -1614,18 +1614,16 @@ reload_data(enum reload_what what, int *do_radck)
         
         switch (what) {
         case reload_all:
-                /* This implies reloading rewrite, users, huntgroups 
-		   and hints */
-                rc += reload_data(reload_dict, do_radck);
+		/* reload_sql implies reloading dictionaries
+		   and matching rules (users, hints, huntgroups) */
+                rc += reload_data(reload_sql, do_radck);
+		
                 rc += reload_data(reload_clients, do_radck);
                 rc += reload_data(reload_naslist, do_radck);
                 rc += reload_data(reload_realms, do_radck);
                 rc += reload_data(reload_deny, do_radck);
-#ifdef USE_SQL
-                rc += reload_data(reload_sql, do_radck);
-#endif
-                break;
-                
+		break;
+
         case reload_users:
                 grad_symtab_clear(user_tab);
                 path = grad_mkfilename(radius_dir, RADIUS_USERS);
@@ -1717,15 +1715,18 @@ reload_data(enum reload_what what, int *do_radck)
                 read_deny_file();
                 break;
 
-#ifdef USE_SQL
         case reload_sql:
+#ifdef USE_SQL
                 if (rad_sql_init() != 0) {
                         grad_log(L_CRIT,
                            _("SQL Error: SQL client could not be initialized"));
-                        rc = -1;
-                }
-                break;
+                        rc = 1;
+                } 
 #endif
+                /* This implies reloading rewrite, users, huntgroups 
+		   and hints */
+                rc += reload_data(reload_dict, do_radck);
+                break;
 
         case reload_rewrite:
 		rewrite_load_all();

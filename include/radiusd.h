@@ -179,6 +179,7 @@ typedef struct snmp_req {
 	char *community;
 	int access;
 	struct sockaddr_in sa;
+	int fd;
 } SNMP_REQ;
 
 void snmp_req_free(SNMP_REQ *req);

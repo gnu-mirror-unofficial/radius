@@ -1,3 +1,9 @@
+2001-07-30 Sergey Poznyakoff <gray@farlep.net>
+	* radlib/argcv.c: argcv_get(): Terminate output argv with NULL
+	entry.
+	* radiusd/exec.c: Fixed bug in installing SIGCHLD handler
+	introduced 2001-07-25.
+
 2001-07-25 Sergey Poznyakoff <gray@farlep.net>
 	* radiusd/acct.c: added external accounting (function rad_acct_ext).
 	Renamed rad_accounting_orig -> rad_acct_detail,

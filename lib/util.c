@@ -51,6 +51,7 @@ radreq_alloc()
 void 
 radreq_free(RADIUS_REQ *radreq)
 {
+	list_destroy(&radreq->locus_list, NULL, NULL);
 	efree(radreq->remote_user);
         avl_free(radreq->reply_pairs);
         efree(radreq->reply_msg);

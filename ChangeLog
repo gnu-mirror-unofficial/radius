@@ -18,6 +18,8 @@
 	* doc/texinfo/radwho.texi: Updated.
 	* doc/texinfo/radzap.texi: Updated.
 
+	* NEWS: Updated.
+	
 2002-12-24  Sergey Poznyakoff  
 
 	* doc/texinfo/Makefile.am: Changed rules for creating web
@@ -1048,7 +1050,7 @@
 2002-06-12  Sergey Poznyakoff 
 
 	* TODO: Updated.
-*	* configure.ac (--with-mysql): Try to link to libmysqlclient_r.
+	* configure.ac (--with-mysql): Try to link to libmysqlclient_r.
 	  If that fails, fall back to using (possibly non thread-safe)
 	  libmysqlclient.
 	  Removed legacy --enable-sql option.

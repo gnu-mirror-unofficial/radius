@@ -11,7 +11,7 @@ packet and displays the result it gets. It can be used to test the
 configuration files. The usage is:
 
 @example
-raduse [-v] username password
+radauth [-v] username password
 @end example
 
 The @option{-v} or @option{--verbose} option forces @command{radauth} to be

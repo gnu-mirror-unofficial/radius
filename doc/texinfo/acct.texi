@@ -52,7 +52,7 @@ users' sessions.
 
 Radius stores the detailed information about accounting packets it receives
 in files @* @file{radacct/@var{nasname}/detail} (@pxref{Naming Conventions}), 
-where @var{nasname} is replaceed with the short name of the @NAS{} from
+where @var{nasname} is replaced with the short name of the @NAS{} from
 the @file{raddb/naslist} file (@pxref{naslist file}).
 
 By default, this accounting type is always enabled, provided that
@@ -144,7 +144,7 @@ DEFAULT NULL Scheme-Acct-Procedure = "my-acct"
 For a detailed description of Scheme accounting procedures,
 @xref{Accounting with Scheme}.
 
-Another way of implemementing your own accounting method is using
+Another way of implementing your own accounting method is using
 an external program. This is less effective than the methods described
 above, but may be necessary sometimes. To invoke the program, use
 the following statement in the @LHS{} of @file{hints} entry:

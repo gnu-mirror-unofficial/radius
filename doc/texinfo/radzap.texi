@@ -2,7 +2,7 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Radzap, Radgrep, Raduse, Utility Programs
+@node Radzap, Radgrep, Radlast, Utility Programs
 @section Radzap
 @pindex radzap
 @cindex Deleting hung user sessions

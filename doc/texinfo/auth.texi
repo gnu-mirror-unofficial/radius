@@ -2,7 +2,7 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Authentication, Accounting, Configuration Files, Top
+@node Authentication, Accounting, Request Comparison, Top
 @chapter Authentication
 
 An @dfn{Authentication Type} specifies which credentials the user
@@ -123,7 +123,7 @@ detail in @ref{Authentication Server Parameters}.
 @cindex Encrypted Password Authentication Type
 
 The @dfn{Encrypted Password} type allows to keep user's passwords
-encrypted via @acronym{DES} or @acronym{MD5} algorythm. There are
+encrypted via @acronym{DES} or @acronym{MD5} algorithm. There are
 two ways of using this authentication type.
 
 @subheading Specifying Passwords in users File.
@@ -181,7 +181,7 @@ in the @LHS{} of a @file{users} entry.
 @cindex SQL Authentication Type
 
 Setting @code{Auth-Type = SQL} or @code{Auth-Type = Mysql}
-in the @LHS{} of a @file{users} entry is a synonim for
+in the @LHS{} of a @file{users} entry is a synonym for
 
 @example
 Auth-Type = Crypt-Local, Password-Location = SQL
@@ -254,7 +254,7 @@ DEFAULT  Auth-Type = Accept
 For a discussion of how to write Scheme authentication procedures,
 @xref{Authentication with Scheme}.
 
-The third way to implemement your own authentication method is using
+The third way to implement your own authentication method is using
 an external program. This is less effective than the methods described
 above, but may be necessary sometimes. To invoke the program, use
 the following statement in the @RHS{} of @file{users} entry:

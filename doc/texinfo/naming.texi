@@ -26,7 +26,7 @@ A directory where @command{radiusd} stores accounting detail files
 @end table
 
 The default locations of these directories are determined at compile
-time. By default these are:
+time. Usually these are:
 
 @multitable @columnfractions .40 .15 .45
 
@@ -63,7 +63,10 @@ short names, e.g. saying
 @noindent
 we actually mean @file{@value{RADDB}/sqlserver}.
 
-If necessary, locations of these directories can be overridden by
+To get the default directory names your version of Radius was
+compiled with run @command{radiusd --version}.
+
+If necessary, locations of these directories may be overridden by
 specifying appropriate command line options to a program. For
 example, any program from the GNU Radius package accepts command
 line option @option{-d} or @option{--directory}, which introduces

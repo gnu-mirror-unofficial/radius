@@ -10,7 +10,7 @@
 Radius server.
 
 Default output information is made compatible with that of the standard
-@UNIX{} finger(1) utility. For each user the following information is
+@UNIX{} @code{finger(1)} utility. For each user the following information is
 displayed: login name, name, connection protocol, @NAS{} port, login date,
 @NAS{} name, assigned @IP{} or corresponding network name.
 
@@ -40,6 +40,8 @@ Duration of the session.
 
 @menu
 * Options: radwho options.      Command line options.
+* Format Strings::
+* Predefined Formats::
 @end menu
 
 @comment *L2****************************************************************
@@ -58,31 +60,19 @@ users are shown with Proto field set to HUP.
 
 @item -c
 @itemx --calling-id
-Display the calling station @sc{id} in the second column.
+Display the calling station @sc{id} in the second column. Equivalent to
+@option{--format clid}.
 
 @item -d NAME
 @itemx --directory NAME
 Set the radius configuration directory name.
 
-@item -D @{short|abbr|full@}
-@itemx --date-format @{short|abbr|full@}
-Set the date representation. By default dates are output as
-@code{DOW HH:MM}, where DOW means the day of week abbreviation,
-HH and MM mean hours and minutes respectively. This corresponds to
-option @option{-D short}. Other available formats are:
-
-@table @samp
-@item abbr
-Abbreviated date: MM/DD HH:MM, where MM is a two-digit month number,
-DD --- a two-digit day of month.
-@item full
-Full data output, like this:
-
-@example
-Mon Dec 18 12:29:38 EET 2000
-@end example
-
-@end table
+@item -D @var{fmt}
+@itemx --date-format @var{fmt}
+Set the date representation. Th @var{fmt} is usual @code{strftime(3)}
+format string. It defaults to ``%a %H:%M'', i.e. the abbreviated weekday
+name according to the current locale, the hour and the minutes as two-digit
+decimal numbers.
 
 @item -e STRING
 @itemx --empty STRING
@@ -111,31 +101,11 @@ Don't display header line.
 @item -i
 @itemx --session-id
 Display session @sc{id} instead of @sc{gecos} in the second column.
+Equivalent to @option{--format sid}.
 
-@item -I @{smart|ip|nodomain@}
-@itemx --ip-format @{smart|ip|nodomain@}
-Change @IP{} representation. The meaning of the argument is as follows:
-
-@table @samp
-@item smart
-Select the best representation. The following rules apply:
-
-@enumerate 1
-@item For a @NAS{} use its short name from @file{naslist}. If there is no
-short name, use its long name. If there is no long name either, go to
-2.
-@item Resolve @IP{} to FQDN.
-@item If the @sc{ip} cannot be resolved, use dotted-quad representation of
-the @sc{ip}.
-@end enumerate
-
-@item ip
-Display @sc{ip} in dotted-quad form.
-
-@item nodomain
-If the @sc{ip} can be resolved to a fully qualified domain name, use the
-hostname part of it, i.e. any characters up to the first dot.
-@end table
+@item -I 
+@itemx --ip-strip-domain
+Display hostnames without domain part.
 
 @item -u
 @itemx --local-also
@@ -144,112 +114,212 @@ May prove useful when running @command{radwho} as a finger daemon.
 
 @item -n
 @itemx --no-resolve
-Do not resolve @IP{}. It is a synonym for @option{-I ip}.
+Do not resolve @IP{}.
 
 @item -o @var{format}
 @itemx --format @var{format}
 Select customized output format. This can also be changed by setting
-the value of environment variable @code{RADWHO_FORMAT}.
-The format string is a comma-separated list of format specifications
-in one of the following forms:
-
-@table @asis
-@item @var{field}
-Output @var{field} with its default width, heading and alignment. The
-field names and corresponding default values are discussed in detail below.
-@item @var{field}:@var{width}
-Output @var{field}, use column width @var{width}. If @var{width} starts
-with @samp{+}, the field will be right-aligned, if it starts with
-@samp{-}, the field will be left-aligned. Otherwise the default
-alignment will be used
-@item @var{field}:@var{width}:@var{heading}
-The same as above, but also supplies the heading for the column
-@end table
-
-The field names are:
-
-@table @code
-@item login
-Login name
-
-@item orig
-Original login name as supplied with the request.
-
-@item port
-@NAS{} port number
-
-@item sid
-The Session @sc{id}
-
-@item nas
-The @NAS{} name or @IP{}.
-
-@item ip
-Framed @IP{} assigned to the user, if it is provided framed
-service.
-
-@item proto
-Connection protocol. Its possible values are:
-
-@itemize @bullet
-@item @samp{PPP} for a point-to-point link
-@item @samp{SLIP} for a SLIP link
-@item @samp{HUP} for closed session
-@item @samp{shell} for shell user
-@end itemize
-
-@item date
-Date/time when the session started
-
-@item delay
-Delay time (@pxref{Acct-Delay-Time}).
-
-@item type
-Entry type in decimal.
-
-@item ptype
-Port type. This is one of the following letters:
-
-@multitable @columnfractions .15 .50
-@item Type @tab Meaning
-@item @samp{L}
-@tab Local connection
-@item @samp{R}
-@tab Rlogin connection
-@item @samp{S}
-@tab @sc{slip} connection
-@item @samp{C}
-@tab @sc{cslip} connection
-@item @samp{P}
-@tab @sc{ppp} connection
-@item @samp{A}
-@tab Auto @sc{ppp} connection
-@item @samp{E}
-@tab Telnet session
-@item @samp{T}
-@tab ``Clear @sc{tcp}'' connection
-@item @samp{U}
-@tab @sc{tcp} login service
-@item @samp{!}
-@tab Console session
-@item @samp{X}
-@tab Shell
-@end multitable
-
-@item time
-Total time of the session duration.
-
-@item clid
-The calling station @sc{id}.
-
-@item uname
-The @sc{gecos} field from local /etc/passwd, corresponding to the login name.
-If the user does not have a local account, his login name is output.
-
-@end table
+the value of environment variable @code{RADWHO_FORMAT}. The @var{format}
+is either a symbolic name of one of the predefined formats or a format
+specification (see below).
 
 @item -s
 @itemx --secure
 Run in secure mode. Queries without a user name are rejected.
 
 @end table
+
+@comment *L2****************************************************************
+@node Format Strings
+@subsection Radwho Format Strings
+@cindex @command{radwho}, format strings
+
+A format string controls the output of every record from @file{radutmp}.
+It contains two types of objects: ordinary characters which are simply
+copied to the output, and format specifications each of which causes
+output of a particular piece of information from the @file{radutmp}
+record.
+
+Each format specification starts with an opening brace and ends with
+a closing brace. The first word after the brace is the name of the
+format specification. The rest of words are @dfn{positional arguments}
+followed by @dfn{keyword arguments}. Both are optional. The keyword
+arguments begin with a colon and must follow the positional arguments. 
+
+The full list of format specifications follows.
+
+@deffn {Format Spec} newline [@var{count}]
+Causes the newline character to be output. If the optional @var{count}
+is supplied, that many newlines will be printed
+@end deffn
+
+@deffn {Format Spec} tab [@var{num}]
+Advance to the next tabstop in the output stream. If optional @var{num}
+is present, then skip @var{num} tabstops. Each tabstop is eight
+characters long.
+@end deffn
+
+Following specifications output particular fields of a @file{radutmp}
+record. They all take two positional arguments: @var{width} and
+@var{title}.
+
+The first argument, @var{width} sets the maximum output
+length for this specification. If the amount of data actually output
+is less than the width, it will be padded with whitespace either to
+the left or to the right, depending on the presence of @code{:right}
+keyword argument. Otherwise, if the data is wider than @var{width}, it
+will be truncated to fit this number of characters. If @var{width} is
+not given, the exact data is output as is.
+
+The second argument, @var{title} gives the title of this column for
+the heading line. By default no title is output.
+
+Every field specification accepts at least two keyword arguments.
+The keyword @code{:right} may be used to request alignment to the right
+for the data. This keyword is ignored if @var{width} is not given.
+
+The keyword @code{:empty} followed by a string causes @command{radwho}
+to output that string if the resulting value for this specification
+would be otherwise empty.
+
+
+@deffn {Format Spec} login @var{width} @var{title} [:empty @var{repl}][:right]
+Print the user login name.
+@end deffn
+
+@deffn {Format Spec} orig-login @var{width} @var{title} [:empty @var{repl}][:right]
+Print original login name as supplied with the request.
+@end deffn
+
+@deffn {Format Spec} gecos @var{width} @var{title} [:empty @var{repl}][:right]
+The @sc{gecos} field from local /etc/passwd, corresponding to the login name.
+If the user does not have a local account, his login name is output.
+@end deffn 
+
+@deffn {Format Spec} nas-port @var{width} @var{title} [:empty @var{repl}][:right]
+@NAS{} port number
+@end deffn
+
+@deffn {Format Spec} session-id @var{width} @var{title} [:empty @var{repl}][:right]
+The Session @acronym{ID}.
+@end deffn
+
+@deffn {Format Spec} nas-address @var{width} @var{title} [:empty @var{repl}][:right][:nodomain]
+The @NAS{} name or @IP{}.
+
+The @code{:nodomain} keyword suppresses the output of the domain part of
+the name, i.e. only the hostname up to the first dot is displayed.
+@end deffn
+
+@deffn {Format Spec} framed-address @var{width} @var{title} [:empty @var{repl}][:right][:nodomain]
+Framed @IP{} assigned to the user, if any.
+
+The @code{:nodomain} keyword suppresses the output of the domain part of
+the name, i.e. only the hostname up to the first dot is displayed.
+@end deffn 
+
+@deffn {Format Spec} protocol @var{width} @var{title} [:empty @var{repl}][:right]
+Connection protocol as reported by @attr{Framed-Protocol} attribute.
+If the symbolic value is found in the dictionary file, it will be
+displayed. Otherwise, the numeric value will be displayed as is.
+@end deffn
+
+@deffn {Format Spec} time @var{width} @var{title} [:empty @var{repl}][:right][:format @var{date-format}]
+Date/time when the session started.
+
+The @code{:format} keyword introduces the @code{strftime} format string
+to be used when converting the date for printing. Default value is
+``%a %H:%M''.
+@end deffn
+
+@deffn {Format Spec} duration @var{width} @var{title} [:empty @var{repl}][:right]
+Total time of the session duration.
+@end deffn
+
+@deffn {Format Spec} delay @var{width} @var{title} [:empty @var{repl}][:right]
+Delay time (@pxref{Acct-Delay-Time}).
+@end deffn
+
+@deffn {Format Spec} port-type @var{width} @var{title} [:empty @var{repl}][:right]
+Port type as reported by the value of @attr{NAS-Port-Type} attribute.
+If the symbolic value is found in the dictionary file, it will be
+displayed. Otherwise, the numeric value will be displayed as is.
+@end deffn
+
+@deffn {Format Spec} clid @var{width} @var{title} [:empty @var{repl}][:right]
+The calling station @acronym{ID}.
+@end deffn
+
+@deffn {Format Spec} realm @var{width} @var{title} [:empty @var{repl}][:right][:nodomain]
+If the request was forwarded to a realm server, print the symbolic name
+of the realm from the @file{raddb/realms} file. If no symbolic name
+is found, print the remote server @IP{} or hostname. In the latter case,
+the @code{:nodomain} keyword may be used to suppress the output of the
+domain part of the name, i.e. to display only the hostname up to the
+first dot.
+@end deffn
+
+
+@comment *L2****************************************************************
+@node Predefined Formats
+@subsection Radwho Predefined Formats
+@cindex @command{radwho}, predefined formats
+
+The predefined formats are:
+
+@table @asis
+@item default
+Default output format. Each record occupies one line. The fields output
+are: login name, @sc{gecos} name, connection protocol, port number, time when
+the connection was initiated, @NAS{} @IP{} and assigned framed @IP{}. It
+corresponds to the following format specification (split in several
+lines for readability:
+
+@example
+(login 10 Login) (gecos 17 Name) (protocol 5 Proto) \
+(nas-port 5 TTY) (time 9 When) (nas-address 9 From) \
+(framed-address 16 Location)
+@end example
+
+@item sid
+The same as @samp{default}, except that the session ID is output in
+the second column.
+
+@item clid
+The same as @samp{default}, except that the calling station ID is output in
+the second column.
+
+@item long
+Outputs all information from each @file{radutmp} record. It is
+equivalent to specifying the following format string:
+
+@example
+(login 32 Login) (session-id 32 SID) (protocol 5 Proto) \
+(nas-port 5 Port) (time 27 Date) (nas-address 32 NAS) \
+(clid 17 CLID) (duration 7 Duration) \
+(framed-address 16 Location) (realm 16 Realm)
+@end example
+
+@item gnu
+Each @file{radutmp} record is represented as a table. It is
+equivalent to specifying the following format string:
+
+@example
+User: (login)(newline)\
+In real life: (gecos)(newline)\
+Logged in: (time)(newline)\
+NAS: (nas-address)(newline)\
+Port: (nas-port)(newline)\
+CLID: (clid)(newline)\
+Protocol: (protocol)(newline)\
+Session ID: (session-id)(newline)\
+Uptime: (duration)(newline)\
+Assigned IP: (framed-address)(newline)\
+Realm: (realm)(newline)"
+@end example
+
+@end table
+
+
+
+

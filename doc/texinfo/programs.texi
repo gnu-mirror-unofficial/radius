@@ -10,7 +10,7 @@
 Controlling who and when was logged in
 * Radwho::              Show who is logged in by radius now.
 * Radlast::             Show the history of logins by radius.
-* Raduse::              Monitor the users in real time.
+@c * Raduse::              Monitor the users in real time.
 
 Maintenance commands
 * Radzap::              Modify the login records.
@@ -26,7 +26,7 @@ Guile interface
 
 @include radwho.texi
 @include radlast.texi
-@include raduse.texi
+@c @include raduse.texi
 @include radzap.texi
 @include radgrep.texi
 @include radping.texi

@@ -62,29 +62,35 @@ original English.
 @iftex
 @shorttitlepage GNU Radius Reference Manual
 @end iftex
+
 @titlepage
 @title GNU Radius Reference Manual
 @subtitle version @value{VERSION}, @value{UPDATED}
-@sp5
-@sp 1
+@author Sergey Poznyakoff
+
+@page
+@vskip 0pt plus 1filll
+Copyright @copyright{} 1999, 2000, 2001, 2002 Free Software Foundation, Inc.
+
+@sp 2
+Published by the Free Software Foundation, @*
+59 Temple Place - Suite 330, @*
+Boston, MA 02111-1307, USA
+
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
 are preserved on all copies.
 
 Permission is granted to copy and distribute modified versions of this
-manual under the conditions for verbatim copying, provided also that the
-sections entitled ``The GNU Manifesto'', ``Distribution'' and ``GNU
-General Public License'' are included exactly as in the original, and
-provided that the entire resulting derived work is distributed under the
-terms of a permission notice identical to this one.
+manual under the conditions for verbatim copying, provided that the
+entire
+resulting derived work is distributed under the terms of a permission
+notice identical to this one.
 
 Permission is granted to copy and distribute translations of this manual
 into another language, under the above conditions for modified versions,
-except that the sections entitled ``The GNU Manifesto'',
-``Distribution'' and ``GNU General Public License'' may be included in a
-translation approved by the Free Software Foundation instead of in the
-original English.
-@author Sergey Poznyakoff
+except that this permission notice may be stated in a translation
+approved by the Foundation.
 @end titlepage
 
 @node Top, Distrib, , (dir)
@@ -112,6 +118,7 @@ The radius daemon
 * Operation::           How radius operates.
 * Invocation::          How to start the daemon.
 * Configuration Files:: Radius configuration files.
+* Request Comparison::  How are duplicate requests dealt with.
 * Authentication::      How the users are authenticated.
 * Accounting::          Accounting methods.
 * Logging::             What gets logged and where.
@@ -572,6 +579,7 @@ Public License instead of this License.
 @include operation.texi
 @include invoke.texi
 @include configure.texi
+@include comp.texi
 @include auth.texi
 @include acct.texi
 @include logging.texi

@@ -43,7 +43,7 @@ he has supplied are correct. This process is called
 the access server has to decide which services and to what extent is
 this particular user allowed to use. That is called @dfn{authorization}.
 
-When these two stages have been successfully completed, the NAS
+When these two stages have been successfully completed, the @NAS{}
 starts the @dfn{user session}, i.e. it establishes the connection
 between the user and the main server. For the purposes of @dfn{accounting},
 it has to remember the exact time of the start of the session.
@@ -69,7 +69,7 @@ that communicates with the server by sending @dfn{radius packets}.
 
 @c @image{isp} 
 
-Now, an average user session lifecycle looks as follows.
+Now, an average user session life cycle looks as follows.
 
 A user connects to the nearest @NAS{} and supplies his login and password.
 The @NAS{} forms an authentication request and sends it to the server
@@ -83,27 +83,27 @@ back to the @NAS{}
 
 @c @image{authack}
 
-The @NAS{} receives the acknowlege packet and starts the user session.
+The @NAS{} receives the acknowledge packet and starts the user session.
 The information brought with the packet tells him to establish
 a connection between the core router and the user, and assign the
 user a certain IP address. Having established the session, @NAS{}
 informs the server about it by sending it accounting start packet.
-The server acknowleges the receipt of the packet.
+The server acknowledges the receipt of the packet.
 
 @c @image{acctstart}
 
 Now, after a certain time the user decides to break the connection.
 @NAS{} notices this, terminates the user session and sends an
 accounting stop packet to mark this event. Again, the server
-acknowleges the receipt of the packet (fig. 4).
+acknowledges the receipt of the packet.
 
 @c @image{acctstop}
 
 @subheading Radius Attributes
 
 @dfn{Attributes} are means of passing the information between
-the NAS and the server. Basically, an attribute is an integer
-number whis identifies some piece of information. A set of
+the @NAS{} and the server. Basically, an attribute is an integer
+number that identifies some piece of information. A set of
 @dfn{properties} is associated with each attribute, specifying
 the way of using this attribute. The most important property
 is @dfn{data type}. It declares the type of data this attribute
@@ -132,14 +132,14 @@ the authentication replies are subdivided into
 @dfn{authentication acknowleges},
 @dfn{authentication rejects} and @dfn{authentication challenges}.
 
-An authentication acknowlege packet is sent to the @NAS{} if the credentials
+An authentication acknowledge packet is sent to the @NAS{} if the credentials
 supplied with the authentication request were correct. It tells the @NAS{}
 to establish the normal user session. The additional attributes
 in such packets are carrying the @dfn{authorization data}, i.e.
 they determine which kind of service the user is to be provided.
 
-An authentication reject is sent to the NAS if the authentication
-failed. This packet forbids the NAS to provide any service to the user.
+An authentication reject is sent to the @NAS{} if the authentication
+failed. This packet forbids the @NAS{} to provide any service to the user.
 The additional attributes may carry descriptive text to be displayed
 as answer to the user.
 
@@ -147,7 +147,7 @@ Finally, an authentication challenge packet is sent to the @NAS{} if
 the supplied credentials did not suffice to establish the authenticity
 of the user. This means the continuation of the dialog between
 the @NAS{} and the server, during which the server is asking
-for more authentication credentials and the NAS is playing a
+for more authentication credentials and the @NAS{} is playing a
 role of go-between, passing the server requests to the user and
 sending user replies back to the server. Such dialog ends when the server
 sends either an acknowledge or a reject packet.
@@ -159,7 +159,7 @@ information about the event.
 
 For each accounting request that has been received and successfully processed
 radius server sends back an @dfn{accounting acknowlege}. This packet carries
-no attributes, it simply informs the NAS that the information it had sent
+no attributes, it simply informs the @NAS{} that the information it had sent
 was received.
 
 @comment *******************************************************************
@@ -209,7 +209,7 @@ Stands for Attribute-Value pair @ref{Attributes}.
 A user connecting to a service through the modem line.
 
 @item User Database
-A database in which Radius server keeps information about users, their
+A database where Radius server keeps information about users, their
 authentication information, etc.
 
 @item User's Profile

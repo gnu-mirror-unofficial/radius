@@ -151,7 +151,7 @@ Verbosely list the contents of the received reply.
 @pindex nas.scm
 
 @command{nas.scm} is a Guile program that allows to convert a GNU/Linux
-box into a @NAS{}. It requires Guile version 1.4 or better and ppp
+box into a @NAS{}. It requires Guile version 1.4 or better and PPP
 version 2.3.7 or better.
 
 To use it, you will basically need to do the following:
@@ -228,20 +228,34 @@ authentication. The module understands following command line options:
 @table @option
 @item audit
 Enable audit information.
+
 @item debug[=@var{level}]
 Enable debugging information. The higher @var{level} is, the more
 debugging info is output. When omitted, @var{level} defaults to
 100. @emph{Note}, that debugging levels equal to or greater than
 10 compromise users' passwords, so use them sparingly.
+
 @item use_authtok
 Use authentication token passed from the previous module in stack.
+
 @item confdir=@var{path}
 Look for configuration files in @var{path}. Default is
 @file{$sysconfdir/etc/raddb}.
+
+@item attr:
+This keyword marks end of command line options. The rest of command
+line after it is parsed as a whitespace-separated list of @AVP{}s
+to be sent with the request.
+
 @item service_type=@var{type}
-Add @code{Service-Type=@var{type}} to the authentication request.
-@var{type} must be a valid value, described in dictionary file.
+This option is retained for compatibility with 0.96 series of GNU
+Radius. It is equivalent to
+
+@example
+        attr: Service-Type=@var{type}
+@end example        
 @end table
 
 @command{pam_radius.so} module logs its messages under @code{LOG_AUTH}
 syslog facility.
+

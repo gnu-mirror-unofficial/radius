@@ -49,7 +49,20 @@ session start, session stop or changing some parameters during the
 session. It can also notify the server about other events, such as @NAS{}
 shutdown or startup. This is called @dfn{accounting} and the radius server
 responsible for processing this information is called an @dfn{accounting
-server}. 
+server}. The responses to accounting requests carry no attributes.
+
+The radius server may fail to receive some incoming requests or may
+fail to process them due to high server load. In order to prevent
+such requests from being lost, the @NAS{} retransmits the request
+if no response from the server is received within a
+predefined interval of time (a @dfn{timeout} interval). Usually the
+@NAS{} is configured in such a way that it continues retransmitting
+failed requests until either it receives a reply from the server
+or a predefined number of @dfn{retries} expires, whichever occurs first.
+Furthermore, the @NAS{} may be configured to communicate with a set
+of @dfn{backup} radius servers. In this case it applies the described
+process to each server from the set, until some of them responds or
+the set is exhausted.
 
 @menu
 * Attributes::                  Attributes.
@@ -174,11 +187,11 @@ request.
 @cindex Authentication requests
 @cindex Requests, authentication
 
-A @NAS{} sends authentication requests (packets with code Access-Request)
-to a @RADIUS{} server when a user is trying to connect to that @NAS{}. Such
+A @NAS{} sends authentication requests (packets with code field set to
+Access-Request) to a @RADIUS{} server when a user is trying to connect to that @NAS{}. Such
 requests convey information used to determine whether a user
-is allowed access to the @NAS{}, and any special services requested for
-that user.
+is allowed access to the @NAS{}, and whether any special services
+are requested for that user.
 
 An Access-Request must contain a @attr{User-Name} attribute
 @ref{User-Name}. It should contain either a @attr{NAS-IP-Address}
@@ -420,11 +433,59 @@ This step applies only to authentication requests.
 @end table
 
 @menu
+* Checking Duplicates::
 * Proxying::      
 * Hints::
 * Huntgroups::
 * User Profiles::
 @end menu
+
+@comment **L3***************************************************************
+@node Checking Duplicates
+@subsection Checking for Duplicate Requests
+@cindex duplicate requests, checking
+
+As described above (@pxref{Operation}), a @NAS{} may decide
+to retransmit the request under a certain circumstances. Whereas this
+behaviour makes sure no requests are lost, it has its upshots. For
+example, consider the following scenario:
+
+@enumerate
+@item @NAS{} sends a request to the server.
+@item The server processes it and sends back the reply.
+@item The reply is lost due to network outage or the load average of the
+@NAS{} was too high and it dropped the response.
+@item The @NAS{} retransmits the request.
+@end enumerate
+
+Thus the server will receive and process the same request twice. It
+possibly won't do any harm if the request in question is an
+authentication one, but for accounting requests this will lead to
+duplicate accounting. To avoid such undesirable effects, @command{radiusd}
+keeps a queue of received requests. When an incoming request arrives,
+@command{radiusd} first scans the request queue to see if the request
+is a duplicate of an already received one. If so, it drops the request.
+Otherwise it inserts the request into the queue and starts processing
+it. After the request is completed it will still reside in the queue for a
+preconfigured interval of time (@xref{auth}, parameter
+@code{request-cleanup-delay}).
+
+By default, @command{radiusd} considers two requests to be equal
+if the following conditions are met:
+
+@enumerate
+@item Both requests come from the same @NAS{}.
+@item They are of the same type.
+@item The request identifier is the same for both requests.
+@item The request authenticator is the same for both requests.
+@end enumerate
+
+Additionally, @command{radiusd} may be configured to take into account
+the contents of both requests. This may be necessary since some @NAS{}es
+modify the request authenticator or even request identifier before
+retransmitting the request, so the method described above fails to
+recognize the request as a duplicate. This @dfn{extended comparison} is
+described in detail in @ref{Extended Comparison}.
 
 @comment **L3***************************************************************
 @node Proxying
@@ -472,7 +533,7 @@ insert any local site-specific information that might be
 needed. Finally, it passes the reply back to the @NAS{}.
 
 The accounting requests are processed in the similar manner, except that
-no attribute filtering takes place, as the accounting responces do
+no attribute filtering takes place, as the accounting responses do
 not carry any @AVP{}s.
 
 This example illustrates the simplest @dfn{proxy chain}, consisting of

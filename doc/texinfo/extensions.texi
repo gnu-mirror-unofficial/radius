@@ -12,9 +12,238 @@ languages supported are Rewrite and Scheme. Use of Rewrite is always
 enabled. Use of Scheme requires Guile version 1.4 or higher.
 
 @menu
+* Filters::         Using external filter programs.
 * Rewrite::         The built-in extension language.
 * Guile::           Using Scheme.       
 @end menu
+
+@comment *L1****************************************************************
+@node Filters
+@section Filters
+@cindex Filters
+
+The simplest way to extend radius functionality is to use filters.
+A filter is an external program that communicates with radius via
+its standard input and output channels.
+
+@menu
+* Getting Acquainted with Filters::
+* Declaring the Filter::
+* Invoking the Filter from a User Profile::
+* Adding Reply Attributes::
+* Accounting Filters::
+* Invoking Accounting Filter::
+* Common Filters::
+@end menu
+
+@node Getting Acquainted with Filters
+@subsection Getting Acquainted with Filters
+
+Suppose we wish to implement an authentication method based on
+user name and user's calling station @acronym{ID}. We have a
+database of usernames with valid @acronym{ID}s and the new
+method should authenticate a user only if the combination
+@code{user_name,id} is found in this database.
+
+We write a filter program that reads its standard input line by line.
+Each input line must consist of exactly two words: the user name
+and the calling station @acronym{ID}. For each input line, the
+program prints @code{0} if the @code{user_name,id} is found in the
+database and @code{1} otherwise. Let's suppose for the example purposes
+that the database is a plaintext file and the filter is written in
+Shell program language. Then, it will look like:
+
+@example
+#! /bin/sh
+
+DB=/var/db/userlist
+
+while read NAME CLID
+do
+    if grep "$1:$2" $DB; then
+        echo "0"
+    else
+        echo "1"
+    fi
+done
+@end example
+
+@node Declaring the Filter
+@subsection Declaring the Filter
+
+Here is how this filter is declared in @file{raddb/config} file:
+
+@example
+filters @{
+    filter check_clid @{
+        exec-path "/usr/libexec/myfilter";
+        error-log "myfilter.log";
+        auth @{
+            input-format "%C@{User-Name@} %C@{Calling-Station-Id@}";
+            wait-reply yes;
+        @};
+    @};        
+@};                        
+@end example	
+
+Let's analyze this declaration line by line. 
+
+@enumerate
+@item filters @{
+
+This keyword opens the filters declaration block. The block may
+contain several declarations.
+
+@item filter check_clid @{
+
+This line starts the declaration of this particular filter and names it
+@samp{check_clid}.
+
+@item exec-path "/usr/libexec/myfilter";
+
+This line tells @command{radiusd} where to find the executable image of
+this filter.
+
+@item error-log "myfilter.log";
+
+The diagnostic output from this filter must be redirected to the file
+@file{myfilter.log} in the current logging directory
+
+@item auth @{
+
+This filter will process authentication requests
+
+@item input-format "%C@{User-Name@} %C@{Calling-Station-Id@}";
+
+Define the input line format for this filter. The %C@{@} notations
+will be substituted by the values of corresponding attributes from
+the incoming request (@pxref{Macro Substitution}).
+
+@item wait-reply yes;
+
+Radiusd shall wait for the reply from this filter to decide whether to
+authenticate the user. 
+@end enumerate
+		
+@node Invoking the Filter from a User Profile
+@subsection Invoking the Filter from a User Profile
+
+To invoke this filter from the user profile, specify its name prefixed
+with @samp{|} in the value of @attr{Exec-Program-Wait} attribute,
+like this:
+
+@example
+DEFAULT Auth-Type = System,
+                Simultaneous-Use = 1
+        Exec-Program-Wait = "|check_clid"
+@end example
+
+@node Adding Reply Attributes
+@subsection Adding Reply Attributes
+
+Apart from simply deciding whether to authenticate a user, the filter
+can also modify the reply pairs. 
+
+@example
+#! /bin/sh
+
+DB=/var/db/userlist
+
+while read NAME CLID
+do
+    if grep "$1:$2" $DB; then
+        echo "0 Service-Type = Login, Session-Timeout = 1200"
+    else
+        echo "1 Reply-Message = \"You are not authorized to log in\""
+    fi
+done
+@end example
+
+@node Accounting Filters
+@subsection Accounting Filters
+
+Let's suppose we further modify our filter to also handle 
+accounting requests. To discern between the authentication and
+accounting request we'll prefix each authentication request
+with the word @samp{auth} and each accounting request with
+the word @samp{acct}. Furthermore, the input line for accounting
+requests will also contain timestamp.
+
+Now, our filter program will look as follows:
+
+@example
+#! /bin/sh
+
+AUTH_DB=/var/db/userlist
+ACCT_DB=/var/db/acct.db
+
+while read CODE NAME CLID DATE
+do
+    case CODE
+    auth)
+        if grep "$1:$2" $DB; then
+            echo "0 Service-Type = Login, Session-Timeout = 1200"
+        else
+            echo "1 Reply-Message = \"You are not authorized to log in\""
+        fi
+    acct)
+        echo "$CODE $NAME $CLID $DATE" >> $ACCT_DB
+done
+@end example
+
+Its declaration in the @file{raddb/config} will also change:
+
+@example
+filter check_clid @{
+    exec-path "/usr/libexec/myfilter";
+    error-log "myfilter.log";
+    auth @{
+        input-format "auth %C@{User-Name@} %C@{Calling-Station-Id@}";
+        wait-reply yes;
+    @};
+    acct @{
+        input-format "acct %C@{User-Name@} %C@{Calling-Station-Id@} %D";
+        wait-reply no;
+    @};
+@};        
+@end example
+
+@noindent
+@emph{Notice} @code{wait-reply no} in the @code{acct} statement. It
+tells @command{radiusd} that it shouldn't wait for the response on
+accounting requests from the filter. 
+
+@node Invoking Accounting Filter
+@subsection Invoking Accounting Filter
+
+To invoke the accounting filter, specify its name prefixed with a
+vertical bar character as a value of @attr{Acct-Ext-Program} in our
+@file{raddb/hints} file. For example:
+
+@example
+DEFAULT NULL
+        Acct-Ext-Program = "|check_clid:
+@end example        
+
+@node Common Filters
+@subsection Common Filters
+
+The only aspect of the filter functionality we have not covered is
+so called @dfn{common filter}. By default, each @command{radiusd} thread
+runs its own instance of the filter. This allows all threads to run
+concurrently. However, in some configurations it might be necessary to
+share a single instance of the filter among all threads. Such filters
+are called @dfn{common} filters. Notice, that common filters create potential
+bottleneck in the data flow of the program: each thread has to wait
+for the previous request to be finished before passing its data to the
+filter.
+
+A filter is declared as common by adding the following statement to
+its declaration:
+
+@example
+common yes;
+@end example
 
 @comment *L1****************************************************************
 @node Rewrite
@@ -791,7 +1020,7 @@ delete @var{attribute-name};
 delete @var{attribute-name}(@var{n});
 @end example
 
-The first variant deletes @emph{all} the atributes of the given type.
+The first variant deletes @emph{all} the attributes of the given type.
 The second variant deletes only @var{n}th occurrence of the matching
 attribute.
 
@@ -821,14 +1050,49 @@ Returns the at most @var{length} substring of @var{s} starting at
 position @var{start}.
 @end deftypefn
 
+All character positions in strings are counted from 0.
+
+@deftypefn Function string field (string @var{buffer}, integer @var{n})
+This function regards the @var{buffer} argument as consisting of
+fields separated with any amount of whitespace. It extracts and
+returns the @var{n}th field. The @var{n} is counted from 1.
+@end deftypefn
+
 @deftypefn Function integer logit (string @var{msg})
 Outputs its argument to the radius log channel @code{info}. Returns 0.
 The function is intended for debugging purposes.
 @end deftypefn
 
-All character positions in strings are counted from 0.
+@deftypefn Function integer inet_aton (string @var{str})
+@command{inet_aton()} converts the Internet host address @var{str} from the
+standard numbers-and-dots notation into equivalent integer in
+host byte order.
+@end deftypefn
 
+@deftypefn Function string inet_ntoa (integer @var{ip})
+This function converts the Internet host address @var{ip} given
+in host byte order to a string in standard numbers-and-dots notation.
+@end deftypefn
 
+@deftypefn Function integer htonl (integer @var{n})
+Converts the integer @var{n} regarded as long from host to network byte
+order.
+@end deftypefn
+
+@deftypefn Function integer ntohl (integer @var{n})
+Converts the integer @var{n} regarded as long from network to host byte
+order.
+@end deftypefn
+
+@deftypefn Function integer htons (integer @var{n})
+Converts the integer @var{n} regarded as short from host to network byte
+order.
+@end deftypefn
+
+@deftypefn Function integer ntohs (integer @var{n})
+Converts the integer @var{n} regarded as short from network to host byte
+order.
+@end deftypefn
 
 @comment *L1****************************************************************
 @node Guile

@@ -2,7 +2,7 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Configuration Files, Authentication, Invocation, Top
+@node Configuration Files, Request Comparison, Invocation, Top
 @chapter Radius Configuration Files
 @cindex Radiusd configuration files
 @cindex Configuration files (radiusd)
@@ -87,8 +87,10 @@ These are the basic statements:
 * proxy::       Configure proxy service.
 * usedbm::      Enable the DBM feature.
 * snmp::        Configure SNMP service.
+* rewrite::     Configure Rewrite interface.
 * guile::       Configure Guile interface.
 * message::     Configure server reply messages.
+* filters::     Configure authentication and accounting filters.
 @end menu
 
 @comment **L3***************************************************************
@@ -367,6 +369,7 @@ logging @{
 @kwindex strip-names
 @kwindex checkrad-assume-logged
 @kwindex password-expire-warning
+@kwindex compare-atribute-flag
 @subheading Syntax:
 
 @example
@@ -380,6 +383,7 @@ auth @{
         [ strip-names @var{bool} ; ]
         [ checkrad-assume-logged @var{bool} ; ]
         [ password-expire-warning @var{number} ; ]
+        [ compare-atribute-flag @var{character} ; ]
 @} ;
 @end example
 
@@ -445,8 +449,19 @@ does not responds to checkrad queries (@pxref{Checking Simultaneous Logins}).
 If this variable is set to @code{yes}, the daemon will proceed as if
 the @NAS{} returned ``yes'', i.e. it will assume the user is logged in.
 Otherwise @command{radiusd} assumes the user @emph{is not} logged in.
+@end table
+
+@subheading Character statement
+
+@table @code
+@item compare-attribute-flag
+The argument to this statement is a character from @samp{1} through
+@samp{9}. This statement modifies the request comparison method for
+authentication requests. @xref{Extended Comparison}, for a detailed
+description of its usage.
 
 @end table
+
 
 @comment **L3***************************************************************
 @node acct
@@ -460,6 +475,7 @@ Otherwise @command{radiusd} assumes the user @emph{is not} logged in.
 @kwindex time-to-live 
 @kwindex request-cleanup-delay
 @kwindex detail
+@kwindex compare-atribute-flag
 
 @subheading Syntax:
 @example
@@ -470,6 +486,7 @@ acct @{
         [ max-requests @var{number} ; ]
         [ time-to-live @var{number} ; ]
         [ request-cleanup-delay @var{number} ; ]
+        [ compare-atribute-flag @var{character} ; ]
 @} ;
 @end example
 
@@ -518,6 +535,17 @@ the completed account request reside in the queue.
 @item detail
 When set to @code{false}, disables detailed accounting
 (@pxref{Detailed Request Accounting}). 
+@end table
+
+@subheading Character statement
+
+@table @code
+@item compare-attribute-flag
+The argument to this statement is a character from @samp{1} through
+@samp{9}. This statement modifies the request comparison method for
+authentication requests. @xref{Extended Comparison}, for a detailed
+description of its usage.
+
 @end table
 
 @comment **L3***************************************************************
@@ -599,6 +627,7 @@ Use only the DBM database and ignore @file{raddb/users}.
 @example
 snmp @{
         [ port @var{portno} ; ]
+        [ listen @var{addr-list} ; ]
         [ max-requests @var{number} ; ]
         [ time-to-live @var{number} ; ]
         [ request-cleanup-delay @var{number} ; ]
@@ -614,6 +643,18 @@ snmp @{
 
 @subheading Usage
 The @code{snmp} statement configures the SNMP service.
+
+@subheading listen statement
+
+The @code{listen} statement determines on which addresses radiusd will
+listen for incoming SNMP requests. The argument is a comma-separated
+list of items in the form @var{ip}:@var{port-number}. The @var{ip} can
+be either an IP address in familiar ``dotted-quad'' notation or a
+hostname. The :@var{port-number} part may be omitted, in which case the
+default accounting port is assumed.
+
+If the @code{listen} statement is omitted, radiusd will accept incoming
+requests from any interface on the machine.
 
 @subheading Numeric statements
 
@@ -668,6 +709,27 @@ Deny access to SNMP service from any host in the group @var{network_name}.
 @end table
 
 @comment **L3***************************************************************
+@node rewrite
+@subsection @code{rewrite} statement.
+@cindex Rewrite language settings
+@kwindex rewrite
+
+@subheading Syntax:
+@example
+rewrite @{
+	[ stack-size @var{number};
+@};
+@end example
+
+@subheading Numeric statements
+
+@table @code
+@item stack-size
+Configures runtime stack size for Rewrite. The @var{number} is the
+size of stack in words. The default value is 4096.
+@end table
+
+@comment **L3***************************************************************
 @node guile
 @subsection @code{guile} statement
 @cindex Guile interface configuration
@@ -689,6 +751,7 @@ guile @{
         [ load-path @var{string} ; ]
         [ load @var{string} ; ]
         [ gc-interval @var{number} ; ]
+        [ task-timeout @var{number} ; ]
 @};
 @end example
 
@@ -710,6 +773,12 @@ Sets the interval in seconds between the two successive forced
 garbage collections. Setting this value to @code{0} disables forced
 garbage collections. This is the default.
 
+@item task-timeout
+Sets the maximum interval in seconds the execution of a scheme function is
+allowed to take.
+The default timeout is @var{ttl}/2+1, where @var{ttl} means time-to-live
+value for the given type of request.
+
 @end table
 
 @subheading String statements
@@ -723,7 +792,7 @@ Load the specified source file on startup.
 For the detailed description of Guile extensions interface, @xref{Guile}.
 
 @comment **L3***************************************************************
-@node  message
+@node message
 @subsection @code{message} statement
 @cindex Messages: configuring
 @cindex Customizing reply messages
@@ -797,6 +866,94 @@ the user's login limit is 1.
 This message is returned to the user who is trying to login outside of
 allowed time interval. For description of how to limit user's login
 time, see @ref{Login-Time}.
+@end table
+
+@comment **L3***************************************************************
+@node filters
+@subsection @code{filters} statement
+@kwindex filters
+@kwindex filter
+@kwindex auth
+@kwindex acct
+@kwindex common
+@kwindex input-format
+@kwindex wait-reply
+
+The @code{filters} statement configures user-defined external filters.
+@xref{Filters}, for the detailed discussion of external filters.
+
+@subheading Syntax
+
+@example
+filters @{
+        filter @var{ident} @{
+                exec-path @var{path} ;
+                error-log @var{filename} ;
+                common @var{bool} [@var{max-wait}];
+                auth @{
+                        input-format @var{fmt} ;
+                        wait-reply @var{bool} ;
+                @};
+                acct @{
+                        input-format @var{fmt} ;
+                        wait-reply @var{bool} ;
+                @};
+        @};
+        @dots{}
+@};
+@end example                        
+
+@noindent
+Each @code{filter} directive defines a new filter. The @var{ident}
+argument declares the name of the filter. This string must be
+used in @attr{Exec-Program-Wait} or @attr{Acct-Ext-Program} attributes
+to trigger invocation of this filter (@pxref{Exec-Program-Wait}).
+
+@table @asis
+@item exec-path @var{path}
+Absolute path to the filter program.
+
+@item error-log @var{filename}
+Redirect error output from the filter program to @var{filename}. If the
+@var{filename} does not start with a slash, it is taken relative to
+the current logging directory (@pxref{option,log-dir}).
+
+@item common @var{bool} [@var{max-wait}]
+By default each program thread runs its own copy of filter. If
+@code{common yes} is set, this behaviour is inverted, i.e. a single
+instance of the filter server all program threads. In this case
+the optional parameter @var{max-wait} defines maximum number of
+requests waiting to acquire the filter attention. 
+
+@item auth
+@itemx acct
+
+These compound statements define authentication and accounting
+parts of this filter. Any one of them may be missing. The two
+statements allowed within @code{auth} and @code{acct} blocks are:
+
+@table @asis
+@item input-format @var{fmt}
+Format of the input line for this filter. Usually this string
+uses %C@{@} notations (@pxref{Macro Substitution}).
+
+You can also use the return value from a @code{rewrite} function as
+input line to the filter. To do so, declare:
+
+@example
+        input-format "=my_func()";
+@end example
+
+@noindent
+where @var{my_func} is the name of the rewrite function to invoke. The
+function must return string value.
+
+@item wait-reply @var{bool}
+If the filter prints a single line of output for each input line, set
+this to @code{yes}. Otherwise, if the filter produces no output, use
+@code{wait-reply no}.
+@end table
+
 @end table
 
 @comment *L2****************************************************************
@@ -927,7 +1084,7 @@ to @file{raddb/users}, the second one corresponds to @file{raddb/hints},
 and the third one corresponds to @file{raddb/huntgroups}. Within each
 pair, the letter @samp{L} in first position means that the attribute
 is allowed in @LHS{} of a rule. The letter @samp{R} in second position
-means that the attribute is allowed in @RHS{} of a rule. The absense of
+means that the attribute is allowed in @RHS{} of a rule. The absence of
 any of these letters is indicated by dash (@samp{-}). Thus, the
 following usage specification:
 
@@ -952,6 +1109,9 @@ Additivity = None
 @item
 The presence of letter @samp{P} in property flags raises the propagation
 bit.
+@item
+The characters from @samp{1} to @samp{9} denote nine user-defined flags
+(@pxref{Extended Comparison}).
 @end enumerate
 
 @subheading Example
@@ -1040,27 +1200,33 @@ merlin                  emrys
 @cindex MAX Ascend, broken passwords
 
 The @file{raddb/naslist} file contains a list of @NAS{}es known to the Radius
-server. Each record in the file consist of three fields:
+server. Each record in the file consist of the following four fields,
+the first two being mandatory, the rest being optional:
 
 @table @asis
 @item NAS name
 Specifies a hostname or @IP{} of the @NAS{}. The word @samp{DEFAULT} may
 be used in this field to match any @NAS{}.
-@footnote{Logins from DEFAULT @NAS{}es are not reported by
-@command{raduse}, neither are they reflected in SNMP variables.}
+@footnote{Logins from DEFAULT @NAS{}es are not reflected in SNMP variables.}
+
 @item Short Name
 This field defines a short name under which this @NAS{} will be listed
 in logfiles. The short name is also used as a name of the subdirectory
 where the detailed logs are stored.
+
 @item Type
-Specifies the type of this @NAS{}. Using this value @command{radiusd} determines
-the way to query @NAS{} about the presence of a given user on it
+Specifies the type of this @NAS{}. Using this value @command{radiusd}
+determines the way to query @NAS{} about the presence of a given user on it
 (@pxref{Checking Simultaneous Logins}).
-The two special types: @samp{true} and @samp{false}, can be used to disable @NAS{}
-querying. When the type field contains @samp{true}, @command{radiusd} assumes the
-user is logged in to the @NAS{}, when it contains @samp{false}, @command{radiusd} 
-assumes the user @emph{is not} logged in. Otherwise, the type
+The two special types: @samp{true} and @samp{false}, can be used to
+disable @NAS{} querying. When the type field contains @samp{true},
+@command{radiusd} assumes the user is logged in to the @NAS{}, when it
+contains @samp{false}, @command{radiusd} assumes the user @emph{is not}
+logged in. Otherwise, the type
 is used as a link to @file{nastypes} entry (@pxref{nastypes file}).
+
+If this field is not present @samp{true} is assumed.
+
 @item Arguments
 Additional arguments describing the @NAS{}. Multiple arguments
 must be separated by commas. No intervening whitespace is allowed in
@@ -1088,7 +1254,22 @@ method specified by @sc{rfc 2865}. However some @NAS{}es, most notably
 @sc{max a}scend series, implement a broken method of encoding long
 passwords. This flag instructs @command{radiusd} to use broken method
 of password encryption for the given @NAS{}.
+
+@item compare-auth-flag=@var{flag}
+Instructs radius to use attributes marked with a given user-defined flag
+when comparing authentication requests. It overrides
+@code{compare-attribute-flag} (@pxref{auth}) for this particular @NAS{}.
+@xref{Extended Comparison}, for a detailed description of its usage.
+
+@item compare-acct-flag=@var{flag}
+Instructs radius to use attributes marked with a given user-defined flag
+when comparing accounting requests. It overrides
+@code{compare-attribute-flag} (@pxref{acct}) for this particular @NAS{}.
+@xref{Extended Comparison}, for a detailed description of its usage.
 @end table
+
+@xref{Checking Duplicates}, for general description of request
+comparison methods.
 
 For the list of nas-querying arguments,
 @xref{nastypes file,,Full list of allowed arguments}.
@@ -1393,9 +1574,11 @@ Specifies the name of the realm being defined, i.e. part of the login
 name after the @samp{@@} symbol. The special realm name @samp{NOREALM}
 defines the empty realm, the name @samp{DEFAULT} defines the default
 realm (@pxref{Realms}).
-@item Remote server
-Specifies the remote server to which the requests for this realm should
-be forwarded. The syntax for this field is
+
+@item Remote server list
+
+A comma-separated list of remote servers to which the requests for this realm
+should be forwarded. Each item in the list is:
 
 @example
 @var{servername}[:@var{auth-port}[:@var{acct-port}]]
@@ -1406,6 +1589,11 @@ Optional @var{auth-port} and @var{acct-port} are the authentication and
 accounting port numbers. If @var{acct-port} is omitted, it is computed
 as @var{auth-port} + 1. If @var{auth-port} is omitted, the default
 authentication port number is used.
+
+The servers from this list are tried in turn until any of them replies
+or the list is exhausted, whichever occurs first. The timeout value and
+number of retries for each server are set via @code{timeout} and
+@code{retry} flags (see below).
 
 @item Flags (optional)
 @end table
@@ -1418,9 +1606,20 @@ Boolean value. Controls whether the realm name should be stripped off
 the username before forwarding the request to the remote server. Setting
 @code{strip} enables stripping, setting @code{nostrip} disables
 it. Default is to always strip user names.
+
 @item quota=@var{num}
 Set maximum number of concurrent logins allowed from this realm to
 the given value (@var{num}).
+
+@item timeout
+Number of seconds to wait for reply from the remote server before
+retransmitting the request.
+
+@item retries
+Number of attempts to connect a server. If the server does not
+respond after the last attempt, the next server from the list
+is tried. 
+
 @end table
 
 @menu
@@ -1440,6 +1639,7 @@ the given value (@var{num}).
 #----------------       ---------------------           --------
 that.net                radius.that.net                 nostrip
 dom.ain                 server.dom.ain:3000             strip,quota=20
+remote.net              srv1.remote.net,srv2.remote.net 
 @end group
 @end example
 
@@ -1577,7 +1777,7 @@ both @option{--with-mysql} and @option{--with-postgres} option.
 @item server @var{string}
 Specifies the hostname or @IP{} of the @sc{sql} server.
 @item port @var{number}
-Sets the @sc{sql} communicaton port number. It can be omitted if your
+Sets the @sc{sql} communication port number. It can be omitted if your
 server uses the default port.
 @item login @var{string}
 Sets the @sc{sql} user login name.
@@ -1838,7 +2038,7 @@ types (@pxref{Accounting Requests}) has a @sc{sql} query associated with
 it. Thus, when radius receives an accounting request, it determines
 the query to use by the value of @attr{Acct-Status-Type} attribute.
 
-Following statemens define the accounting queries:
+Following statements define the accounting queries:
 
 @table @code
 @item acct_start_query @var{string}
@@ -1862,7 +2062,7 @@ Specifies the @sc{sql} query to be used when a @NAS{} sends
 None of these queries should return any values.
 
 @menu
-* Queries::                     Writing SQL acounting query templates.
+* Queries::                     Writing SQL accounting query templates.
 @end menu
 
 @comment ***L4**************************************************************
@@ -2244,7 +2444,7 @@ request pairlist, and to @var{defval} otherwise. For example:
 will return the value of Acct-Session-Time attribute or 0 if it
 doesn't exist in the request pairlist.
 
-The substitition @code{%C@{@var{attr-name}:=@var{defval}@}} is expanded
+The substitution @code{%C@{@var{attr-name}:=@var{defval}@}} is expanded
 to the value of @var{attr-name} attribute. If this attribute is not
 present in the request pairlist, it will be created and assigned the
 value @var{defval}. E.g.:
@@ -2258,9 +2458,9 @@ to the value of @var{attr-name} attribute, if it is present. Otherwise
 the diagnostic message ``@var{attr-name}: @var{message}'' is issued to
 the log error channel, and string ``@var{message}'' is returned.
 
-The substitition @code{%C@{@var{attr-name}:+@var{retval}@}} is expanded
+The substitution @code{%C@{@var{attr-name}:+@var{retval}@}} is expanded
 to empty string if the attribute @var{attr-name} is present in the
-referenced pairlist. Othervise it is expanded to @var{retval}.
+referenced pairlist. Otherwise it is expanded to @var{retval}.
 
 You can also use the following shortcuts:
 

@@ -49,7 +49,7 @@ Is the attribute propagated back to the @NAS{} if the server works
 in proxy mode.
 @end table
 
-The value of @acronym{n/a} in any of this fields signifies ``not
+The value of @acronym{N/A} in any of this fields signifies ``not
 applicable''.
 
 
@@ -123,7 +123,7 @@ in order to bring username to its ``normal'' form (@pxref{rewrite file}).
 @subsection User-Password
 @atindex User-Password
 
-@defattr{User-Password,2,string,L-,--,--,@acronym{n/a},No}
+@defattr{User-Password,2,string,L-,--,--,@acronym{N/A},No}
 
 This User-Password attribute indicates the password of the user to be
 authenticated, or the user's input following an Access-Challenge.
@@ -154,7 +154,7 @@ characters.
 @subsection CHAP-Password
 @atindex CHAP-Password
 
-@defattr{CHAP-Password,3,string,L-,--,--,@acronym{n/a},No}
+@defattr{CHAP-Password,3,string,L-,--,--,@acronym{N/A},No}
 
 This Attribute indicates the response value provided by a PPP
 Challenge-Handshake Authentication Protocol (CHAP) user in
@@ -609,7 +609,7 @@ These attributes can not be used in matching rules.
 @subsection Acct-Status-Type
 @atindex Acct-Status-Type
 
-@defattr{Acct-Status-Type,40,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
+@defattr{Acct-Status-Type,40,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
 
 @example
 VALUE           Acct-Status-Type        Start                   1
@@ -636,7 +636,7 @@ last Alive record.
 @subsection Acct-Delay-Time
 @atindex Acct-Delay-Time
 
-@defattr{Acct-Delay-Time,41,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
+@defattr{Acct-Delay-Time,41,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
 
 This attribute indicates how many seconds the client has been
 trying to send this record for, and can be subtracted from the
@@ -649,7 +649,7 @@ is ignored.)
 @subsection Acct-Input-Octets
 @atindex Acct-Input-Octets
 
-@defattr{Acct-Input-Octets,42,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
+@defattr{Acct-Input-Octets,42,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
 
 This attribute indicates how many octets have been received from
 the port over the course of this service being provided, and can
@@ -661,7 +661,7 @@ Acct-Status-Type is set to Stop.
 @subsection Acct-Output-Octets
 @atindex Acct-Output-Octets
 
-@defattr{Acct-Output-Octets,43,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
+@defattr{Acct-Output-Octets,43,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
 
 This attribute indicates how many octets have been sent to the
 port in the course of delivering this service, and can only be
@@ -673,7 +673,7 @@ is set to Stop.
 @subsection Acct-Session-Id
 @atindex Acct-Session-Id
 
-@defattr{Acct-Session-Id,44,string,--,--,--,@acronym{n/a},@acronym{n/a}}
+@defattr{Acct-Session-Id,44,string,--,--,--,@acronym{N/A},@acronym{N/A}}
 
 This attribute is a unique Accounting @sc{id} to make it easy to match
 start and stop records in a log file.  The start and stop records
@@ -688,7 +688,7 @@ packets for that session.
 @subsection Acct-Authentic
 @atindex Acct-Authentic
 
-@defattr{Acct-Authentic,45,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
+@defattr{Acct-Authentic,45,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
 
 @example
 VALUE           Acct-Authentic          RADIUS          1
@@ -707,7 +707,7 @@ generate Accounting records.
 @subsection Acct-Session-Time
 @atindex Acct-Session-Time
 
-@defattr{Acct-Session-Time,46,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
+@defattr{Acct-Session-Time,46,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
 
 This attribute indicates how many seconds the user has received
 service for, and can only be present in Accounting-Request records
@@ -718,7 +718,7 @@ where the Acct-Status-Type is set to Stop.
 @subsection Acct-Input-Packets
 @atindex Acct-Input-Packets
 
-@defattr{Acct-Input-Packets,47,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
+@defattr{Acct-Input-Packets,47,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
 
 This attribute indicates how many packets have been received from
 the port over the course of this service being provided to a
@@ -730,7 +730,7 @@ where the Acct-Status-Type is set to Stop.
 @subsection Acct-Output-Packets
 @atindex Acct-Output-Packets
 
-@defattr{Acct-Output-Packets,48,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
+@defattr{Acct-Output-Packets,48,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
 
 This attribute indicates how many packets have been sent to the
 port in the course of delivering this service to a Framed User,
@@ -742,7 +742,7 @@ Acct-Status-Type is set to Stop.
 @subsection Acct-Terminate-Cause
 @atindex Acct-Terminate-Cause
 
-@defattr{Acct-Terminate-Cause,49,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
+@defattr{Acct-Terminate-Cause,49,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
 
 @example
 VALUE           Acct-Terminate-Cause    User-Request            1
@@ -867,7 +867,7 @@ The username/password combination is checked using PAM.
 @subsection Auth-Data
 @atindex Auth-Data
 
-@defattr{Auth-Data,2006,string,L-,-R,-R,Replace,@acronym{n/a}}
+@defattr{Auth-Data,2006,string,L-,-R,-R,Replace,@acronym{N/A}}
 
 The @attr{Auth-Data} can be used to pass additional data to the
 authentication methods that need them. In version @value{VERSION}
@@ -1254,8 +1254,21 @@ attributes from the request pairs.
 @defattr{Exec-Program-Wait,1039,string,-R,--,--,Replace,No}
 
 When present in @RHS{}, the @attr{Exec-Program-Wait} attribute specifies
-the full pathname and arguments for the program to be executed when the
-entry matches.
+the program to be executed when the entry matches. If the attribute
+value string starts with vertical bar (@samp{|}), then the attribute
+specifies the filter program to be used. Otherwise, if it starts with
+slash (@samp{/}), then it is understood as the full
+pathname and arguments for the external program to be executed. Using
+any other character as the start of this string results in error.
+
+@menu
+* Running External Program::
+* Using External Filter::
+@end menu
+
+@comment **************************************************************
+@node Running External Program
+@subsubsection Running External Program
 
 The command line can reference any attributes from both check and reply
 pairlists using attribute macros @ref{Macro Substitution}.
@@ -1273,7 +1286,7 @@ zero code, the match succeeds. In this case the standard output of the
 program is read and parsed as if it was a pairlist. The attributes
 thus obtained are added to the entry's reply attributes.
 
-@subheading Example
+@subheading Example.
 
 Suppose the @file{users} file contains the following entry:
 
@@ -1300,12 +1313,12 @@ following:
 DB=/var/db/userlist
 
 if grep "$1:$2" $DB; then
-        echo "Service-Type = Login,"
-        echo "Session-Timeout = 1200"
-        exit 0
+    echo "Service-Type = Login,"
+    echo "Session-Timeout = 1200"
+    exit 0
 else
-        echo "Reply-Message = \"You are not authorized to log in\""
-        exit 1
+    echo "Reply-Message = \"You are not authorized to log in\""
+    exit 1
 fi
 @end example
 
@@ -1315,15 +1328,79 @@ It is assumed that @file{/var/db/userlist} contains a list of
 authorized to use login service.
 
 @comment **************************************************************
+@node Using External Filter
+@subsubsection Using External Filter
+
+If the value of @attr{Exec-Program-Wait} attribute begins with @samp{|},
+radiusd strips this character from the value and uses resulting string
+as a name of the predefined external filter. Such filter must be
+declared in @file{raddb/config} (@pxref{filters}).
+
+@subheading Example.
+Let the @file{users} file contain the following entry:
+
+@example
+DEFAULT Auth-Type = System,
+                Simultaneous-Use = 1
+        Exec-Program-Wait = "|myfilter"
+@end example
+
+@noindent
+and let the @file{raddb/config} contain the following:
+
+@example
+filters @{
+    filter myfilter @{
+        exec-path "/usr/libexec/myfilter";
+        error-log "myfilter.log";
+        auth @{
+            input-format "%C@{User-Name@} %C@{Calling-Station-Id@}";
+            wait-reply yes;
+        @};
+    @};        
+@};                        
+@end example
+@noindent
+Then, upon successful authentication, the program
+@command{/usr/libexec/myfilter} will be invoked, if it wasn't already
+started for this thread. Any output it sends to its standard error
+will be redirected to the file @file{myfilter.log} in the current
+logging directory. A string consisting of the user login name and
+his calling station ID followed by a newline will be sent to the
+program. 
+
+The following is a sample @command{/usr/libexec/myfilter} written
+is shell:
+
+@example
+#! /bin/sh
+
+DB=/var/db/userlist
+
+while read NAME CLID
+do
+    if grep "$1:$2" $DB; then
+        echo "0 Service-Type = Login, Session-Timeout = 1200"
+    else
+        echo "1 Reply-Message = \"You are not authorized to log in\""
+    fi
+done
+@end example
+
+@comment **************************************************************
 @node Acct-Ext-Program
 @subsection Acct-Ext-Program
 @atindex Acct-Ext-Program
 
-@defattr{Acct-Ext-Program,2008,string,--,-R,--,Replace,@acronym{n/a}}
+@defattr{Acct-Ext-Program,2008,string,--,-R,--,Replace,@acronym{N/A}}
 
 The @attr{Acct-Ext-Program} attribute can be used in @RHS{} of an
-@file{raddb/hints} entry to specify the full path and attributes
-of an external program to be executed for each accounting request.
+@file{raddb/hints} to require the execution of an external accounting
+program or filter. If the attribute value starts with vertical bar
+(@samp{|}), then the attribute specifies the filter program to be used.
+Otherwise, if it starts with slash (@samp{/}), then it is understood as
+the full pathname and arguments for the external program to be executed.
+Using any other character as the start of this string results in error.
 
 The command line can reference any attributes from both check and reply
 pairlists using attribute macros (@pxref{Macro Substitution}).
@@ -1344,7 +1421,7 @@ accounting.
 
 @defattr{Hint,1040,string,L-,-R,-R,Append,No}
 
-Use @attr{Hint} attribute to specify additional matching criterium
+Use @attr{Hint} attribute to specify additional matching criterion
 depending on the hint (@pxref{hints file}).
 
 Let the @file{hints} contain:
@@ -1543,7 +1620,7 @@ assigned @IP{} @code{10.10.10.2}, otherwise if he is coming from @NAS{}
 @subsection Scheme-Procedure
 @atindex Scheme-Procedure
 
-@defattr{Scheme-Procedure,2009,string,-R,--,--,Append,@acronym{n/a}}
+@defattr{Scheme-Procedure,2009,string,-R,--,--,Append,@acronym{N/A}}
 
 The @attr{Scheme-Procedure} attribute is used to set the name
 of Scheme authentication procedure. @xref{Authentication with Scheme}, for
@@ -1553,7 +1630,7 @@ the information about how to write Scheme authentication procedures.
 @subsection Scheme-Acct-Procedure
 @atindex Scheme-Acct-Procedure
 
-@defattr{Scheme-Acct-Procedure,2010,string,--,-R,--,Replace,@acronym{n/a}} 
+@defattr{Scheme-Acct-Procedure,2010,string,--,-R,--,Replace,@acronym{N/A}} 
 
 The @attr{Scheme-Acct-Procedure} attribute is used to set the name
 of Scheme accounting procedure. @xref{Accounting with Scheme}, for
@@ -1563,7 +1640,7 @@ the information about how to write Scheme accounting procedures.
 @subsection Log-Mode-Mask
 @atindex Log-Mode-Mask
 
-@defattr{Log-Mode-Mask,2007,integer,L-,-R,-R,Append,@acronym{n/a}}
+@defattr{Log-Mode-Mask,2007,integer,L-,-R,-R,Append,@acronym{N/A}}
 
 @example
 VALUE		Log-Mode-Mask		Log-Auth		1
@@ -1600,7 +1677,7 @@ mode. The value thus obtained is used as effective log mode.
 @subsection Acct-Type
 @atindex Acct-Type
 
-@defattr{Acct-Type,2003,integer,L-,-R,-R,Append,@acronym{n/a}}
+@defattr{Acct-Type,2003,integer,L-,-R,-R,Append,@acronym{N/A}}
 
 @example
 VALUE		Acct-Type		None	0
@@ -1610,7 +1687,7 @@ VALUE		Acct-Type		SQL	3
 @end example
 
 The @attr{Acct-Type} allows to control which accounting methods
-must be used for a given user or a group of users. In the absense
+must be used for a given user or a group of users. In the absence
 of this attribute, all currently enabled accounting types are used.
 @xref{Accounting}, for more information about accounting types.
 

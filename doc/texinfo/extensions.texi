@@ -1394,7 +1394,7 @@ Returns the name of the previously used domain.
 @end deftypefn
 
 @deftypefn Function string gettext (string @var{msgid})
-@deftypefnx Function string _(string @var{msgid})
+@deftypefnx Function string _ (string @var{msgid})
 The function returns the translation of the string @var{msgid} if it
 is available in the current domain. If it is not available, the
 argument itself is returned.

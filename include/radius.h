@@ -249,7 +249,7 @@ int vendor_name_to_id(char *);
 
 void md5_calc(u_char *, u_char *, u_int);
 /* md5crypt.c */
-char *md5crypt(const char *pw, const char *salt);
+char *md5crypt(const char *pw, const char *salt, const char *pwbuf, size_t pwlen);
 
 /* avl.c */
 VALUE_PAIR *avp_alloc();

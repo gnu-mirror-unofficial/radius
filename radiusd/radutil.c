@@ -52,7 +52,7 @@ obstack_grow_quoted(obp, str, len)
 	char *str;
 	int len;
 {
-	for (; len; len--, str++) {
+	for (; len > 0; len--, str++) {
 		switch (*str) {
 		case '"':
 		case '\'':

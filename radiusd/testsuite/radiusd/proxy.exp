@@ -1,0 +1,63 @@
+# -*- tcl -*-
+# This file is part of GNU RADIUS testsuite. 
+# Copyright (C) 2000,2001,2002 Sergey Poznyakoff
+# 
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+default_radiusd_start --proxy
+
+clone_output "Checking Proxy Basic Authentication Types"
+radius_test "send auth 1 User-Name = \"accept@remote\"" "expect 2"  
+radius_test "send auth 1 User-Name = \"reject@remote\"" "expect 3"  
+radius_test "send auth 1 User-Name = \"local@remote\" User-Password = \"guessme\"" "expect 2" 
+radius_test "send auth 1 User-Name = \"local@remote\" User-Password = \"bad\"" "expect 3" 
+radius_test "send auth 1 User-Name = \"crypt@remote\" User-Password = \"hamlet\"" "expect 2" 
+
+clone_output "Checking Menus"
+default_radiusd_version
+if { [info exists CAPABILITY(USE_LIVINGSTON_MENUS)] } {
+   radius_test "send auth 1 User-Name = \"menu\"" "print \$REPLY\[Reply-Message*\]" "MENU1(1-PPP, 2-CSLIP, 3-SLIP, 4-Login, 5-Second, 6-Exit)"
+radius_test "send auth 1 User-Name = \"menu\" \
+                     User-Password = \"5\" State = \"MENU=menu1\"" "print \$REPLY\[Reply-Message*\]" "MENU2(ra,sol,weevil,top,quit)" 
+radius_test "send auth 1 User-Name = \"menu\" \
+                     User-Password = \"sol\" \
+                     State = \"MENU=menu2\"" "expect 2 Service-Type = 1 \
+                  Login-IP-Host = 127.0.0.1 \
+                  State = \"MENU=menu2\" \
+                  Termination-Action = 1" 
+} else {
+   unsupported "Checking Menus"
+}
+
+clone_output "Checking Nested Realms"
+radius_test "send auth 1 User-Name = \"accept@local@remote\"" "expect 2" 
+
+clone_output "Checking Proxy Accountng Start"
+radius_test "send acct 4 User-Name = \"simuse@remote\" \
+                    NAS-IP-Address = 127.0.0.1 \
+                    NAS-Port-Id = 1 \
+                    Acct-Session-Id = \"0001\" \
+                    Acct-Status-Type = Start" "expect 5" 
+
+clone_output "Checking Proxy Accountng Stop"
+radius_test "send acct 4 User-Name = \"simuse@remote\" \
+                    NAS-IP-Address = 127.0.0.1 \
+                    NAS-Port-Id = 1 \
+                    Acct-Session-Id = \"0001\" \
+                    Acct-Status-Type = Stop" "expect 5" 
+
+radius_exit
+
+# End of proxy.exp

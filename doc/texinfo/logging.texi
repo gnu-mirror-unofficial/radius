@@ -12,7 +12,7 @@ levels (in order of increasing severity):
 
 @table @code
 @item Debug
-The debug messages @ref{Debugging}.
+The debug messages (@ref{Debugging}).
 
 @item Auth
 Under this level every authentication attempt is logged. This is enabled
@@ -21,7 +21,7 @@ by setting
 level auth;
 @end example
 @noindent
-in @code{category auth} statement of @file{config} file.
+in the @code{category auth} statement of the @file{config} file.
 
 @item Proxy
 Messages regarding proxy requests (@pxref{Proxying}).
@@ -44,11 +44,11 @@ working. These require urgent actions from the site administrator.
 
 @end table
 
-By default, all messages in all levels are output to file
+By default, all messages in all levels are output to the file
 @file{radlog/radius.log}. In addition, messages in level
 @code{CRIT} are also duplicated to the system console. These defaults
-can be overridden using @code{logging} statement in @file{raddb/config} file
+can be overridden using @code{logging} statement in the
+@file{raddb/config} file.
 (@xref{logging,,logging statement}, for the description of logging
-statement syntax, @pxref{Naming Conventions} for information about the 
-locations of different radius configuration files).
-
+statement syntax; @pxref{Naming Conventions} for information about the 
+locations of different Radius configuration files.)

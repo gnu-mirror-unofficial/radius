@@ -7,33 +7,33 @@
 @cindex Debugging
 
 GNU Radius provides extensive debugging features. These are enabled
-either by @option{-x} command option to the @command{radiusd}
-@ref{Invocation}, or by @code{level} statement in debug category
-@ref{logging,,logging statement}. Both cases require as an argument
+either by the @option{-x} command option to @command{radiusd}
+@ref{Invocation}, or by the @code{level} statement in the debug category
+(@ref{logging,,logging statement}). Both cases require as an argument
 a valid debug specification.
 
 A debug specification sets the module for which the debugging should
-be enabled and debugging level. The higher the level is, the more
+be enabled and the debugging level. The higher the level is, the more
 detailed information is provided. The module name and level are
 separated by an equal sign. If the level is omitted, the highest
 possible level (100) is assumed. The module name may be abbreviated
-to first N characters, in which case the first matching module is
+to the first @math{N} characters, in which case the first matching module is
 selected. Several such specifications can be specified, in which case
-they should be separated by a comma. For example, the following is a
+they should be separated by commas. For example, the following is a
 valid debug specification:
 @example
         proxy.c=10,files.c,config.y=1
 @end example
 
 @noindent
-It sets debug level 10 for module @code{proxy.c}, level 100 for
+It sets debug level 10 for module @code{proxy.c}, 100 for
 @code{files.c}, and 1 for @code{config.y}.
 
 The modules and debugging levels are subject to change from release
 to release. 
 
-@c The following describes shortly the debugging levels for this release
-@c of GNU Radius (@value{VERSION}.
+@c The following describes briefly the debugging levels for this release
+@c of GNU Radius (@value{VERSION}).
 
 @c @include debug.texinfo
 

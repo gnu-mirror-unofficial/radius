@@ -6,7 +6,7 @@
 @chapter Extensions
 @cindex Extensions
 
-The use of extension language allows to extend the functionality of
+The use of extension language allows extending the functionality of
 GNU Radius without having to modify its source code. The two extension
 languages supported are Rewrite and Scheme. Use of Rewrite is always
 enabled. Use of Scheme requires Guile version 1.4 or higher.
@@ -22,8 +22,8 @@ enabled. Use of Scheme requires Guile version 1.4 or higher.
 @section Filters
 @cindex Filters
 
-The simplest way to extend radius functionality is to use filters.
-A filter is an external program that communicates with radius via
+The simplest way to extend the functionality of Radius is to use filters.
+A filter is an external program that communicates with Radius via
 its standard input and output channels.
 
 @menu
@@ -38,19 +38,19 @@ its standard input and output channels.
 @node Getting Acquainted with Filters
 @subsection Getting Acquainted with Filters
 
-Suppose we wish to implement an authentication method based on
-user name and user's calling station @acronym{ID}. We have a
-database of usernames with valid @acronym{ID}s and the new
+Suppose we wish to implement an authentication method based on the
+user name and the user's calling station @acronym{ID}. We have a
+database of user names with valid @acronym{ID}s, and the new
 method should authenticate a user only if the combination
-@code{user_name,id} is found in this database.
+@{@var{user_name}, @var{id}@} is found in this database.
 
 We write a filter program that reads its standard input line by line.
 Each input line must consist of exactly two words: the user name
 and the calling station @acronym{ID}. For each input line, the
-program prints @code{0} if the @code{user_name,id} is found in the
-database and @code{1} otherwise. Let's suppose for the example purposes
+program prints @code{0} if the @{@var{user_name}, @var{id}@} is found in the
+database and @code{1} otherwise. Let's suppose for the sake of example
 that the database is a plaintext file and the filter is written in
-Shell program language. Then, it will look like:
+a shell programming language. Then it will look like
 
 @example
 #! /bin/sh
@@ -70,7 +70,7 @@ done
 @node Declaring the Filter
 @subsection Declaring the Filter
 
-Here is how this filter is declared in @file{raddb/config} file:
+Here is how this filter is declared in the @file{raddb/config} file:
 
 @example
 filters @{
@@ -78,49 +78,50 @@ filters @{
         exec-path "/usr/libexec/myfilter";
         error-log "myfilter.log";
         auth @{
-            input-format "%C@{User-Name@} %C@{Calling-Station-Id@}";
+            input-format "%C@{User-Name@}
+            %C@{Calling-Station-Id@}";
             wait-reply yes;
         @};
     @};        
 @};                        
 @end example	
 
-Let's analyze this declaration line by line. 
+Let's analyze this declaration line by line:
 
 @enumerate
-@item filters @{
+@item @code{filters @{}
 
 This keyword opens the filters declaration block. The block may
 contain several declarations.
 
-@item filter check_clid @{
+@item @code{filter check_clid @{}
 
 This line starts the declaration of this particular filter and names it
 @samp{check_clid}.
 
-@item exec-path "/usr/libexec/myfilter";
+@item @code{exec-path "/usr/libexec/myfilter";}
 
 This line tells @command{radiusd} where to find the executable image of
 this filter.
 
-@item error-log "myfilter.log";
+@item @code{error-log "myfilter.log";}
 
 The diagnostic output from this filter must be redirected to the file
 @file{myfilter.log} in the current logging directory
 
-@item auth @{
+@item @code{auth @{}
 
-This filter will process authentication requests
+This filter will process authentication requests.
 
-@item input-format "%C@{User-Name@} %C@{Calling-Station-Id@}";
+@item @code{input-format "%C@{User-Name@} %C@{Calling-Station-Id@}";}
 
-Define the input line format for this filter. The %C@{@} notations
-will be substituted by the values of corresponding attributes from
+Define the input line format for this filter. The %C@{@} expressions
+will be replaced by the values of the corresponding attributes from
 the incoming request (@pxref{Macro Substitution}).
 
-@item wait-reply yes;
+@item @code{wait-reply yes;}
 
-Radiusd shall wait for the reply from this filter to decide whether to
+@code{radiusd} will wait for the reply from this filter to decide whether to
 authenticate the user. 
 @end enumerate
 		
@@ -153,7 +154,8 @@ do
     if grep "$1:$2" $DB; then
         echo "0 Service-Type = Login, Session-Timeout = 1200"
     else
-        echo "1 Reply-Message = \"You are not authorized to log in\""
+        echo "1 Reply-Message = 
+              \"You are not authorized to log in\""
     fi
 done
 @end example
@@ -163,10 +165,10 @@ done
 
 Let's suppose we further modify our filter to also handle 
 accounting requests. To discern between the authentication and
-accounting request we'll prefix each authentication request
+accounting requests we'll prefix each authentication request
 with the word @samp{auth} and each accounting request with
 the word @samp{acct}. Furthermore, the input line for accounting
-requests will also contain timestamp.
+requests will contain a timestamp.
 
 Now, our filter program will look as follows:
 
@@ -181,9 +183,11 @@ do
     case CODE
     auth)
         if grep "$1:$2" $DB; then
-            echo "0 Service-Type = Login, Session-Timeout = 1200"
+            echo "0 Service-Type = Login, \
+                  Session-Timeout = 1200"
         else
-            echo "1 Reply-Message = \"You are not authorized to log in\""
+            echo "1 Reply-Message = \
+                  \"You are not authorized to log in\""
         fi
     acct)
         echo "$CODE $NAME $CLID $DATE" >> $ACCT_DB
@@ -197,23 +201,28 @@ filter check_clid @{
     exec-path "/usr/libexec/myfilter";
     error-log "myfilter.log";
     auth @{
-        input-format "auth %C@{User-Name@} %C@{Calling-Station-Id@}";
+        input-format "auth %C@{User-Name@} 
+                      %C@{Calling-Station-Id@}";
         wait-reply yes;
     @};
     acct @{
-        input-format "acct %C@{User-Name@} %C@{Calling-Station-Id@} %D";
+        input-format "acct %C@{User-Name@} 
+                      %C@{Calling-Station-Id@} %D";
         wait-reply no;
     @};
 @};        
 @end example
 
 @noindent
+(The @code{input-format} lines are split for readability. Each of them
+is actually one line).
+
 @emph{Notice} @code{wait-reply no} in the @code{acct} statement. It
 tells @command{radiusd} that it shouldn't wait for the response on
 accounting requests from the filter. 
 
 @node Invoking Accounting Filter
-@subsection Invoking Accounting Filter
+@subsection Invoking the Accounting Filter
 
 To invoke the accounting filter, specify its name prefixed with a
 vertical bar character as a value of @attr{Acct-Ext-Program} in our
@@ -230,7 +239,7 @@ DEFAULT NULL
 @cindex Rewrite
 
 Rewrite is the GNU Radius extension language. Its name reflects the
-fact that it was originally designed to rewrite the broken request packets,
+fact that it was originally designed to rewrite the broken request packets
 so they could be processed as usual (@pxref{Rewriting Incoming
 Requests}). Beside this basic use, however, Rewrite functions are used
 in verifying the activity of user sessions
@@ -252,10 +261,10 @@ in verifying the activity of user sessions
 @subsection Syntax Overview
 @cindex Rewrite, syntax overview
 
-Rewrite syntax resembles that of C. Rewrite has two basic data types:
-integer and string. It does not have global variables, all variables are
-automatic. The only exception are the @AVP{}s from the incoming request,
-which are accessible to Rewrite functions via special notation
+The syntax of Rewrite resembles that of C. Rewrite has two basic data types:
+integer and string. It does not have global variables; all variables are
+automatic. The only exceptions are the @AVP{}s from the incoming request,
+which are accessible to Rewrite functions via the special notation
 @code{%[@var{attr}]}. 
 
 @comment *L2****************************************************************
@@ -280,9 +289,10 @@ foo(integer i)
 @end group
 @end example
 
-The function takes an integer argument and returns string
-``the number is odd'' or ``the number is even'', depending on the
-value of @var{i}. This illustrates the fact that in Rewrite the
+@noindent
+The function takes an integer argument and returns the string
+@samp{the number is odd} or @samp{the number is even}, depending on the
+value of @code{i}. This illustrates the fact that in Rewrite the
 addition operator is defined on the string type. The result of
 such operation is the concatenation of operands.
 
@@ -300,7 +310,8 @@ px_add()
 @end group
 @end example
 
-The function manipulates the contents of the incoming request, its
+@noindent
+This function manipulates the contents of the incoming request; its
 return value has no special meaning.
 
 
@@ -316,7 +327,7 @@ purpose. There are three major kinds of Rewrite functions:
 @itemize @bullet
 @item Functions used to rewrite the incoming requests.
 @item Functions designed for simultaneous login verification.
-@item Functions used to generate @sc{radius} attribute values.
+@item Functions used to generate Radius attribute values.
 @end itemize
 
 @comment *L3****************************************************************
@@ -324,29 +335,29 @@ purpose. There are three major kinds of Rewrite functions:
 @subsection Rewriting Incoming Requests
 @cindex Rewriting incoming requests
 
-The need of rewriting the incoming requests arises from the fact that
+The need for rewriting the incoming requests arises from the fact that
 some @NAS{}es are very particular about the information they send with
 the requests. There are cases when the information they send
-is hardly usable or even just unusable. For example, a
-Cisco @sc{as5300} terminal server used as a voice over @sc{ip} router packs
+is hardly usable or even completely unusable. For example, a
+Cisco @sc{as5300} terminal server used as a voice-over IP router packs
 a lot of information into its @attr{Acct-Session-Id} attribute. Though
 the information stored there is otherwise relevant, it makes proper
-accounting impossible since the @attr{Acct-Session-Id} attributes
+accounting impossible, since the @attr{Acct-Session-Id} attributes
 in the start and stop packets of the same session become different, and
-thus Radius cannot determine the @dfn{Session Start} to which the given
-@dfn{Session Stop} request corresponds (@pxref{Acct-Session-Id}).
+thus Radius cannot determine the session start to which the given
+session stop request corresponds (@pxref{Acct-Session-Id}).
 
 In order to cope with such @NAS{}es, GNU Radius is able to invoke
-a Rewrite function upon arrival of the packet and before further
-processing it. This function can transform the packet so, that
+a Rewrite function upon arrival of the packet and before 
+processing it further. This function can transform the packet so that
 it obtains the form prescribed by @sc{rfc}s and its further processing
 becomes possible.
 
-For example, in the case of @sc{as5300} router, a corresponding rewrite
-function parses the @attr{Acct-Session-Id} attribute, breaks it
-down into fields, stores them into proper attributes, creating
-them if necessary, and, finally replaces @attr{Acct-Session-Id} with
-its real value, which is the same for start and stop records
+For example, in the case of the @sc{as5300} router, a corresponding Rewrite
+function parses the @attr{Acct-Session-Id} attribute; breaks it
+down into fields; stores them into proper attributes, creating
+them if necessary; and finally replaces @attr{Acct-Session-Id} with
+its real value, which is the same for the start and stop records
 corresponding to a single session. Thus all the information that
 came with the packet is preserved, but the packet itself is made
 usable for proper accounting.
@@ -371,7 +382,7 @@ DEFAULT  NAS-IP-Address = 11.10.10.11
 The @attr{Rewrite-Function} attribute may also be used in a @file{hints}
 rule. In this case, it will invoke the function if the request matches
 the rule (@pxref{Hints}). For example, this @file{hints} rule will
-cause the function to be invoked for each request containing the username
+cause the function to be invoked for each request containing the user name
 starting with @samp{P}:
 
 @example
@@ -381,11 +392,12 @@ DEFAULT  Prefix = "P"
 @end group
 @end example
 
-@emph{Note}, that in both cases the attribute can be used
+@noindent
+Note that in both cases the attribute can be used
 either in @LHS{} or in @RHS{} pairs of a rule.
 
-The packet rewrite function must be declared as having no arguments,
-and returning integer value:
+The packet rewrite function must be declared as having no arguments
+and returning an integer value:
 
 @example
 @group
@@ -395,10 +407,11 @@ integer fixup()
 @end group
 @end example
 
+@noindent
 The actual return value from such a function is ignored, the integer
 return type is just a matter of convention.
 
-The following subsection present some examples of packet rewriting
+The following subsection present some examples of packet rewrite
 functions.
 
 @menu
@@ -407,26 +420,28 @@ functions.
 
 @comment **L3***************************************************************
 @node Rewrite Examples
-@subsubsection Examples of Various Rewrite Functions.
+@subsubsection Examples of Various Rewrite Functions
 @exindex Rewrite functions
 
 The examples found in this chapter are working functions that can be
 used with various existing @NAS{} types. They are taken from the
 @file{rewrite} file contained in distribution of GNU Radius.
 
-@subheading 1. Port rewriting for MAX Ascend terminal servers
+@subheading 1. Port rewriting for @sc{max a}scend terminal servers
 
 Some @sc{max a}scend terminal servers pack additional information
-into @attr{NAS-Port-Id} attribute. The port number is constructed as
-XYYZZ, where X = 1 for digital, X = 2 for analog, YY is line number
-(1 for first PRI/T1/E1, 2 for second, so on), and ZZ = channel number
-(on the PRI or Channelized T1/E1).
+into the @attr{NAS-Port-Id} attribute. The port number is constructed as
+@var{XYYZZ}, where @var{X} = 1 for digital, @var{X} = 2 for analog,
+@var{YY} is the line number
+(1 for first PRI/T1/E1, 2 for second, and so on), and @var{ZZ} is the
+channel number
+(on the PRI or channelized T1/E1).
 
 The following rewrite functions are intended to compute the integer
 port number in the range (1 .. @var{portcnt}), where @var{portcnt}
 represents the real number of physical ports available on the @NAS{}.
-Such port number can be used, for example, with
-@attr{Add-Port-To-IP-Address} attribute (@pxref{Add-Port-To-IP-Address}).
+Such a port number can be used, for example, with the
+@attr{Add-Port-To-IP-Address} attribute (@pxref{Add-Port-To-IP-Address}):
 
 @example
 @group
@@ -453,53 +468,55 @@ max_decode_port(integer P, integer portcnt)
 @group
 /*
  * Interface function for MAX terminal server with 23 ports.
- * Note that it saves the received NAS-Port-Id attribute in the
- * Orig-NAS-Port-Id attribute. The latter must be defined somewhere
- * in the dictionary
+ * Note that it saves the received NAS-Port-Id attribute in
+ * the Orig-NAS-Port-Id attribute. The latter must be
+ * defined somewhere in the dictionary
  */
 integer
 max_fixup()
 @{
-    %[Orig-NAS-Port-Id] = %[NAS-Port-Id]; # Preserve original data
+    %[Orig-NAS-Port-Id] = %[NAS-Port-Id];
+                                  # Preserve original data
     %[NAS-Port-Id] = max_decode_port(%[NAS-Port-Id], 23);
     return 0;
 @}
 @end group
 @end example
 
-@subheading 2. Session ID parsing for Cisco AS 5300 series
+@subheading 2. Session @sc{id} parsing for Cisco AS 5300 series
 
 Cisco @sc{voip ios} encodes a lot of other information into its
 @attr{Acct-Session-Id}. The pieces of information are separated by
-@samp{/} character. The part of @attr{Acct-Session-Id} up to first
+@samp{/} characters. The part of @attr{Acct-Session-Id} up to the first
 @samp{/} character is the actual session @sc{id}.
 
 On the other hand, its accounting packets lack @attr{NAS-Port-Id},
 though they may contain the vendor-specific pair with code 2
-(vendor @sc{pec} 9), which is the string in the form @samp{ISDN 9:D:999}
-(@samp{9} represents a decimal digit). The number after the last
+(vendor @sc{pec} 9), which is a string in the form @samp{ISDN 9:D:999}
+(@samp{9} represents any decimal digit). The number after the last
 @samp{:} character can be used as a port number.
 
 The following code parses @attr{Acct-Session-Id} attribute and stores
-the information it contains in various other attributes, generates
-normal @attr{Acct-Session-Id} and attempts to generate
+the information it contains in various other attributes, generates a
+normal @attr{Acct-Session-Id}, and attempts to generate a
 @attr{NAS-Port-Id} attribute.
 
 @example
 @group
 /* 
- * The port rewriting function for Cisco AS5300 used for VoIP.
- * This function is used to generate NAS-Port-Id pair on the basis
- * of vendor-specific pair 2. If the latter is in the form 
- * "ISDN 9:D:999" (where each 9 represents a decimal digit), then 
- * the function returns the number after the last colon. This is
- * used as a port number.
+ * The port rewriting function for Cisco AS5300 used for
+ * VoIP. This function is used to generate NAS-Port-Id pair
+ * on the basis of vendor-specific pair 2. If the latter is
+ * in the form "ISDN 9:D:999" (where each 9 represents a
+ * decimal digit), then the function returns the number
+ * after the last colon. This is used as a port number.
  */
 integer
 cisco_pid(string A)
 @{
     if (A =~ 
-        ".*\([0-9][0-9]*\):[A-Z0-9][A-Z0-9]*:\([0-9][0-9]*\)") @{
+        ".*\([0-9][0-9]*\):
+         [A-Z0-9][A-Z0-9]*:\([0-9][0-9]*\)") @{
         return (integer)\2;
     @}
     return -1;
@@ -509,11 +526,11 @@ cisco_pid(string A)
 @group
 /*
  * This function parses the packed session id.
- * The actual sid is the number before the first slash character.
- * Other possibly relevant fields are also parsed out and saved 
- * in the Voip-* A/V pairs. The latter should be defined somewhere
- * in the dictionary.
- * Note, that the regular expression in this example
+ * The actual sid is the number before the first slash
+ * character.  Other possibly relevant fields are also
+ * parsed out and saved in the Voip-* A/V pairs. The latter
+ * should be defined somewhere in the dictionary.
+ * Note that the regular expression in this example
  * spans several lines for readability. It should be on one 
  * line in real file.
  */
@@ -559,11 +576,11 @@ cisco_fixup()
 @end group
 @end example
 
-@subheading 3. Username rewriting for NT machines.
+@subheading 3. User-name rewriting for @sc{nt} machines
 
 Users coming from Windows @sc{nt} machines often authenticate themselves as
-@samp{NT_DOMAIN\username}. The following function selects the username part
-and stores it in the @attr{User-Name} attribute:
+@samp{NT_DOMAIN\@var{username}}. The following function selects the
+user-name part and stores it in the @attr{User-Name} attribute:
 
 @example
 @group
@@ -595,12 +612,13 @@ nt_rewrite()
 A login verification function is invoked to process the output from the
 @NAS{}. This process is described in @ref{Checking Simultaneous Logins}.
 The function to be invoked for given @NAS{} is defined by
-@code{function} flag in @file{raddb/nastypes} or @file{raddb/naslist}
-files (@pxref{nastypes file}). It must be defined as follows:
+a @code{function} flag in the @file{raddb/nastypes} or @file{raddb/naslist}
+file (@pxref{nastypes file}). It must be defined as follows:
 
 @example
 @group
-integer check(string str, string name, integer pid, string sid)
+integer check(string @var{str}, string @var{name}, integer @var{pid}, 
+              string @var{sid})
 @{
 @}
 @end group
@@ -613,35 +631,37 @@ Its arguments are:
 @item str
 Input string. If the query method is @code{finger}, this is the string
 of output received from the @NAS{} with trailing newline stripped off. If
-the query method is @code{snmp}, this is the received variable value
+the query method is @code{snmp}, it is the received variable value
 converted to its string representation.
 @item name
 User name.
 @item pid
-Port Id of the session.
+Port @sc{id} of the session.
 @item sid
 Session @sc{id}.
 @end table
 
-The function should return non-0 if its arguments match user's
-session and 0 otherwise.
+The function should return non-0 if its arguments match the user's
+session, and 0 otherwise.
 
 @menu
-* Example: Examples of login verification functions.
+* Example: Examples of Login Verification Functions
 @end menu
 
 @comment **L4*************************************************************
-@node Examples of login verification functions
-@subsubsection Examples of login verification functions
+@node Examples of Login Verification Functions
+@subsubsection Examples of Login Verification Functions
 @exindex Login verification functions
 
-@exindex Checking UNIX finger output
-As an example, let's consider the function for analyzing a line
-line of output from a standard @acronym{UNIX} finger service. In each line
-of finger output the first field contains username, the third field ---
-tty number (Port @sc{id}), and the seventh field contains session @sc{id}.
+@exindex Checking UNIX @code{finger} output
+As an example, let's consider the function for analyzing a 
+line of output from a standard @acronym{UNIX} @code{finger}
+service. In each line
+of @code{finger} output the first field contains the user name; the
+third field, the
+@c{tty} number (port @sc{id}); and the seventh field, the session @sc{id}.
 The function must return 1 if the three fields match the input
-user name, port and session @sc{id}s.
+user name and port and session @sc{id}s:
 
 @example
 integer
@@ -656,9 +676,9 @@ check_unix(string str, string name, integer pid, string sid)
 @c @xref{UNIX Finger}.
 
 @exindex Analyzing SNMP output
-Next example is a function to analyze a line of output from an @acronym{SNMP}
-query returning a user name. This function must return 1 if entire input
-line matches the user name.
+The next example is a function to analyze a line of output from an SNMP
+query returning a user name. This function must return 1 if the entire input
+line matches the user name:
 
 @example
 integer
@@ -673,25 +693,25 @@ check_username(string str, string name, integer pid, string sid)
 @subsection Attribute Creation Functions
 @cindex Rewrite, attribute creation functions
 
-These are the functions, used to create @RADIUS{} reply attributes. An
+These are the functions used to create Radius reply attributes. An
 attribute creation function can take any number of arguments. The type
-of its return is determined by the type of @RADIUS{} attribute the
+of its return is determined by the type of Radius attribute the
 value will be assigned to. To invoke the function, write its name
-in the @AVP{} of @RHS{} in @file{raddb/users} file, e.g.:
+in the @AVP{} of the @RHS{} in the @file{raddb/users} file, e.g.:
 
 @example
 @group
 DEFAULT Auth-Type = SQL
         Service-Type = Framed-User,
-                Framed-IP-Address = "=get_ip_addr(10.10.10.1)"
+            Framed-IP-Address = "=get_ip_addr(10.10.10.1)"
 @end group
 @end example
 
 @noindent
 The function @code{get_ip_addr} will be invoked after successful
-authentication and it will be passed @IP{} @code{10.10.10.1} as its
-argument. An example of a useful function, that can be invoked this
-way:
+authentication and it will be passed the IP @code{10.10.10.1} as its
+argument. An example of a useful function that can be invoked this
+way is
 
 @example
 @group
@@ -727,8 +747,9 @@ get_ip_address(integer base)
 There are only two data types: @code{integer} and @code{string}, 
 the two being coercible to each other in the sense that a string
 can be coerced to an integer if it contains a valid @sc{ascii} representation
-of a decimal, octal or hex number, and the integer can always be coerced
-to a string, the result of such coercion being the @sc{ascii} string with
+of a decimal, octal, or hex number, and an integer can always be coerced
+to a string, the result of such coercion being the @sc{ascii} string
+that is the
 decimal representation of the number.
 
 @comment **L4***************************************************************
@@ -737,51 +758,53 @@ decimal representation of the number.
 @cindex Symbols, Rewrite
 @cindex Rewrite, symbols
 
-A symbol is a lexical token. The following symbols are recognized:
+A @dfn{symbol} is a lexical token. The following symbols are recognized:
 
 @table @asis
 @item Arithmetical operators
 These are @samp{+}, @samp{-}, @samp{*}, @samp{/} representing the basic
-arithmetical operations and @samp{%} meaning remainder.
+arithmetical operations, and @samp{%} meaning remainder.
 @item Comparison operators
 These are: @samp{==}, @samp{!=}, @samp{<}, @samp{<=}, @samp{>},
 @samp{>=} with the same meaning they have in C. Special operators
-are provided for regular expression matching. Binary
-operator @samp{=~} returns true, if its left-hand-side operand
+are provided for regular-expression matching. The binary
+operator @samp{=~} returns true if its left-hand-side operand
 matches the regular expression on its right-hand side. @samp{!~}
-returns true if the left-hand side operand @emph{does not match}
-the regexp on right-hand side. The right-hand side operand of
-@samp{!~} or @samp{=~} must be a literal string, i.e. the regular
+returns true if its left-hand-side operand does @emph{not} match
+the regexp on its right-hand side. The right-hand-side operand of
+@samp{!~} or @samp{=~} must be a literal string, i.e., the regular
 expression must be known at compile time.
-@item Unary operators.
-Unary operators are @samp{-} and @samp{+} for unary plus and minus,
-@samp{!} for boolean negation and @samp{*} for testing for the
+@item Unary operators
+The unary operators are @samp{-} and @samp{+} for unary plus and minus,
+@samp{!} for boolean negation, and @samp{*} for testing for the
 existence of an attribute.
-@item Boolean operators.
-These are: @samp{&&} and @samp{||}.
+@item Boolean operators
+These are @samp{&&} and @samp{||}.
 @item Parentheses @samp{(} and @samp{)}
 These are used to change the precedence of operators, to introduce
-type casts (type coercions), to declare functions and to pass actual
+type casts (type coercions), to declare functions, and to pass actual
 arguments to functions.
 @item Curly braces (@samp{@{} and @samp{@}})
 These are used to delimit blocks of code.
 @item Numbers
-Numbers follow usual C convention for integers. A number consisting of
-a sequence of digits, is taken to be octal if it begins with @samp{0}
-(digit zero) and decimal otherwise. If the sequence of digits is
+Numbers follow the usual C convention for integers. A number consisting of
+a sequence of digits is taken to be octal if it begins with @samp{0}
+(digit zero), and decimal otherwise. If the sequence of digits is
 preceded by @samp{0x} or @samp{0X}, it is taken to be a hexadecimal
 integer.
 @item Characters
-These follow usual C convention for characters, i.e. either
-an @sc{ascii} character or its value enclosed in a pair of single
-quotes. The character value begins with @samp{\} (backslash) and
+These follow the usual C convention for characters, i.e., they consist
+either of
+an @sc{ascii} character itself or of its value, enclosed in a pair of
+singlequotes.
+The character value begins with @samp{\} (backslash) and
 consists either of three octal or of two hexadecimal digits.
-A character does not form a special data type, it is represented
+A character does not form a special data type; it is represented
 internally by an integer.
 @item Quoted strings
 These follow usual C conventions for strings.
 @item Attribute values
-The incoming request is passed implicitly to functions, invoked via
+The incoming request is passed implicitly to functions invoked via the
 @attr{Rewrite-Function} attribute. It is kept as an associative array,
 whose entries can be accessed using the following syntax:
 
@@ -791,12 +814,12 @@ whose entries can be accessed using the following syntax:
 @end example
 
 @noindent
-The first notation returns the value of the attribute @var{attribute-name}.
-@var{attribute-name} should be a valid Radius dictionary name
+The first form returns the value of the attribute @var{attribute-name}.
+Here @var{attribute-name} should be a valid Radius dictionary name
 (@pxref{dictionary file}).
 
-The second notation returns the value of the @var{n}th attribute of type
-@var{attribute-name} . Index @var{n} is counted from zero, so
+The second form returns the value of the @var{n}th attribute of type
+@var{attribute-name}. The index @var{n} is counted from zero, so
 
 @example
         %[@var{attribute-name}](0)
@@ -811,9 +834,9 @@ is equivalent to
 
 @item Identifiers
 Identifiers represent functions and variables. These are described in
-the next section.
+the next sub-subsection.
 @item Regexp group references
-A sequence of characters in the form:
+A sequence of characters in the form
 
 @example
 @samp{\@var{number}}
@@ -823,12 +846,12 @@ A sequence of characters in the form:
 
 refers to the contents of parenthesized group number @var{number}
 obtained as a result of the last executed @samp{=~} command.
-The regexp group reference has always string data type. E.g.
+The regexp group reference has always string data type. For example:
 
 @example
 @group
 string
-basename(string arg)
+basename(string @var{arg})
 @{
     if (arg =~ ".*/\(.*\)\..*")
         return \1;
@@ -840,8 +863,8 @@ basename(string arg)
 
 This function strips from @var{arg} all leading components up to the
 last slash character, and all trailing components after the last dot
-character. It returns @var{arg} unaltered, if it does not contain
-slashes and dots. Roughly, it is analogous to the system @code{basename}
+character. It returns @var{arg} unaltered if it does not contain
+slashes and dots. It is roughly analogous to the system @code{basename}
 utility.
 @end table
 
@@ -855,9 +878,9 @@ A valid identifier is a string of characters meeting the following
 requirements:
 
 @enumerate 1
-@item It starts with either a lower- or uppercase letter of the Latin
-alphabet or any of the following symbols: @samp{_}, @samp{$}.
-@item It consists of alphanumeric characters, underscores(@samp{_}) and
+@item It starts with either a lower- or an uppercase letter of the Latin
+alphabet or either of the following symbols: @samp{_}, @samp{$}.
+@item It consists of alphanumeric characters, underscores(@samp{_}), and
 dollar signs (@samp{$}).
 @end enumerate
 
@@ -869,7 +892,7 @@ dollar signs (@samp{$}).
 
 @subheading Function declarations
 
-The Rewrite function is declared as follows:
+A Rewrite function is declared as follows:
 
 @example
 @var{type} @var{function-name} (@var{parameter-list})
@@ -877,9 +900,9 @@ The Rewrite function is declared as follows:
 
 @noindent
 where @var{type} specifies the return type of the function,
-@var{function-name} declares the symbolic name of the function and
+@var{function-name} declares the symbolic name of the function, and
 @var{parameter-list} declares the formal parameters to the function.
-It is a comma-separated list of declarations in the form:
+It is a comma-separated list of declarations in the form
 
 @example
 @var{type} @var{parm-name}
@@ -895,15 +918,17 @@ be valid identifiers.
 There are no global variables in Rewrite. All variables are local.
 The local variables are declared right after the opening curly brace
 (@samp{@{}) and before any executable statements. The declaration
-syntax is:
+syntax is
 
 @example
 @var{type} @var{ident_list} ;
 @end example
 
 @noindent
-Here @var{ident_list} is either a valid Rewrite identifier, or a comma-
-separated list of such identifiers. @emph{Note} that, unlike in
+Here @var{ident_list} is either a valid Rewrite identifier or a 
+comma-separated list of such identifiers.
+
+Note that, unlike in
 C, no assignments are allowed in variable declarations.
 
 @comment **L4***************************************************************
@@ -912,11 +937,11 @@ C, no assignments are allowed in variable declarations.
 @cindex Statements, Rewrite
 
 The Rewrite statements are: expressions, assignments, conditional
-statements and return statements. A statement is terminated by semicolon.
+statements, and return statements. A statement is terminated by a semicolon.
 
 @subheading Expressions
 
-An @dfn{expression} is:
+An @dfn{expression} is one of the following:
 
 @itemize @bullet
 @item A variable identifier
@@ -936,7 +961,7 @@ The type coercion is like a type cast in C. Its syntax is
 @end example
 
 @noindent
-the result of type coercion is as follows:
+The result of type coercion is as follows:
 
 @multitable @columnfractions .20 .20 .60
 @item @var{type} @tab Variable type @tab Resulting conversion
@@ -948,8 +973,8 @@ the result of type coercion is as follows:
 @item integer
 @tab string
 @tab If the string value of the variable is a valid @sc{ascii} representation
-of the integer number (either decimal, octal or hex) it is converted to
-the integer, otherwise the result of the conversion is undefined.
+of the integer number (either decimal, octal, or hex), it is converted to
+the integer; otherwise the result of the conversion is undefined.
 
 @item string
 @tab integer
@@ -962,7 +987,7 @@ the integer, otherwise the result of the conversion is undefined.
 @end multitable
 
 @subheading Assignment
-An assignment is:
+An assignment is
 
 @example
 @var{ident} = @var{expression} ;
@@ -972,24 +997,24 @@ An assignment is:
 The variable @var{ident} is assigned the value of @var{expression}.
 
 @subheading Function calls
-These take the form:
+These take the form
 
 @example
 @var{ident} ( @var{arg-list} )
 @end example
 
 @noindent
-where @var{ident} is the identifier representing the function,
+where @var{ident} is the identifier representing the function, and
 @var{arg-list} is a comma-separated list of expressions supplying
-actual arguments to the function. The function @var{ident} 
+actual arguments to the function. The function that @var{ident} 
 references can be either a compiled function or a built-in
 function.
 
-@emph{Note} that, unlike in C, the mismatch between the
+Note that, unlike in C, a mismatch between the
 number of actual arguments and number of formal parameters in the
 compiled function declaration is not an error but rather a warning.
 
-@subheading Delete statement
+@subheading @samp{delete} statement
 
 The @samp{delete} statement is used to delete an attribute or attributes
 from the incoming request. Its syntax is:
@@ -1000,7 +1025,7 @@ delete @var{attribute-name}(@var{n});
 @end example
 
 The first variant deletes @emph{all} the attributes of the given type.
-The second variant deletes only @var{n}th occurrence of the matching
+The second variant deletes only the @var{n}th occurrence of the matching
 attribute.
 
 @comment **L4***************************************************************
@@ -1011,21 +1036,21 @@ attribute.
 The following built-in functions are provided:
 
 @deftypefn Function integer length (string @var{s})
-Returns the length of string @var{s}.
+Returns the length of the string @var{s}.
 @end deftypefn
 
 @deftypefn Function integer index (string @var{s}, integer @var{c})
 Returns the index of the first occurrence of the character @var{c} in
-the string @var{s}. Returns -1 if no such occurrence is found.
+the string @var{s}. Returns @minus{}1 if no such occurrence is found.
 @end deftypefn
 
 @deftypefn Function integer rindex (string @var{s}, integer @var{i})
 Returns the index of the last occurrence of the character @var{c} in
-the string @var{s}. Returns -1 if no such occurrence is found.
+the string @var{s}. Returns @minus{}1 if no such occurrence is found.
 @end deftypefn
 
 @deftypefn Function string substr (string @var{s}, integer @var{start}, integer @var{length})
-Returns the at most @var{length} substring of @var{s} starting at
+Returns the substring of @var{s} of length at most @var{length} starting at
 position @var{start}.
 @end deftypefn
 
@@ -1034,42 +1059,42 @@ All character positions in strings are counted from 0.
 @deftypefn Function string field (string @var{buffer}, integer @var{n})
 This function regards the @var{buffer} argument as consisting of
 fields separated with any amount of whitespace. It extracts and
-returns the @var{n}th field. The @var{n} is counted from 1.
+returns the @var{n}th field. @var{n} is counted from 1.
 @end deftypefn
 
 @deftypefn Function integer logit (string @var{msg})
-Outputs its argument to the radius log channel @code{info}. Returns 0.
-The function is intended for debugging purposes.
+Outputs its argument to the Radius log channel @code{info}. Returns 0.
+For debugging purposes.
 @end deftypefn
 
 @deftypefn Function integer inet_aton (string @var{str})
-@command{inet_aton()} converts the Internet host address @var{str} from the
-standard numbers-and-dots notation into equivalent integer in
+Converts the Internet host address @var{str} from the
+standard numbers-and-dots notation into the equivalent integer in
 host byte order.
 @end deftypefn
 
 @deftypefn Function string inet_ntoa (integer @var{ip})
-This function converts the Internet host address @var{ip} given
+Converts the Internet host address @var{ip} given
 in host byte order to a string in standard numbers-and-dots notation.
 @end deftypefn
 
 @deftypefn Function integer htonl (integer @var{n})
-Converts the integer @var{n} regarded as long from host to network byte
+Converts the integer @var{n}, regarded as long, from host to network byte
 order.
 @end deftypefn
 
 @deftypefn Function integer ntohl (integer @var{n})
-Converts the integer @var{n} regarded as long from network to host byte
+Converts the integer @var{n}, regarded as long, from network to host byte
 order.
 @end deftypefn
 
 @deftypefn Function integer htons (integer @var{n})
-Converts the integer @var{n} regarded as short from host to network byte
+Converts the integer @var{n}, regarded as short, from host to network byte
 order.
 @end deftypefn
 
 @deftypefn Function integer ntohs (integer @var{n})
-Converts the integer @var{n} regarded as short from network to host byte
+Converts the integer @var{n}, regarded as short, from network to host byte
 order.
 @end deftypefn
 
@@ -1079,19 +1104,20 @@ order.
 @cindex Guile
 
 The name Guile stands for @dfn{GNU's Ubiquitous Intelligent Language for
-Extensions}. It provides the Scheme interpreter conforming to R4RS
+Extensions}. It provides a Scheme interpreter conforming to the R4RS
 language specification. This section describes use of Guile as an
 extension language for GNU Radius. It assumes that the reader is
-sufficiently familiar with the Scheme language. Please, refer to
-@ref{Top,,,r4rs,Revised(4) Report on the Algorithmic Language Scheme},
-for the information about the language. If you wish to know more
-about the Guile, @xref{Top,,Overview,guile,The Guile Reference Manual}.
+sufficiently familiar with the Scheme language. For information about
+the language, refer to
+@ref{Top,,,r4rs,Revised(4) Report on the Algorithmic Language Scheme}.
+For more
+about Guile, @xref{Top,,Overview,guile,The Guile Reference Manual}.
 
 Scheme procedures can be called for processing both authentication
-and accounting requests. The invocation of a scheme procedure for an
-authentication request is triggered by @attr{Scheme-Procedure}
-attribute, the invocation for an accounting request is triggered
-by @attr{Scheme-Acct-Procedure} attribute. The following sections
+and accounting requests. The invocation of a Scheme procedure for an
+authentication request is triggered by the @attr{Scheme-Procedure}
+attribute; the invocation for an accounting request is triggered
+by the @attr{Scheme-Acct-Procedure} attribute. The following sections
 address these issues in more detail.
 
 @menu
@@ -1106,9 +1132,9 @@ address these issues in more detail.
 @subsection Data Representation
 @cindex Guile, representation of Radius data
 
-@AVP{} lists are the main object scheme functions operate upon. Scheme
+@AVP{} lists are the main object Scheme functions operate upon. Scheme
 is extremely convenient for representation of such objects. A Radius @AVP{}
-is represented by a Scheme pair, e.g.
+is represented by a Scheme pair; e.g.,
 
 @example
         Session-Timeout = 10
@@ -1121,8 +1147,8 @@ is represented in Guile as
         (cons "Session-Timeout" 10)
 @end lisp
 
-The @sc{car} of the pair can contain either the attribute dictionary
-name, or the attribute number. Thus, the above pair may also be
+The @code{car} of the pair can contain either the attribute dictionary
+name or the attribute number. Thus, the above pair may also be
 written in Scheme as
 
 @lisp
@@ -1130,10 +1156,10 @@ written in Scheme as
 @end lisp
 
 @noindent
-(@attr{Session-Timeout} corresponds to attribute number 27).
+(because @attr{Session-Timeout} corresponds to attribute number 27).
 
 Lists of @AVP{}s are represented by Scheme lists. For example,
-the following Radius pair list
+the Radius pair list
 
 @example
 @group
@@ -1145,7 +1171,7 @@ the following Radius pair list
 @end example
 
 @noindent
-is written in Scheme as:
+is written in Scheme as
 
 @lisp
 @group
@@ -1172,10 +1198,10 @@ Its arguments are:
 The list of @AVP{}s from the incoming request
 @item check-list
 The list of @AVP{}s from the @LHS{} of the profile entry that matched
-the request.
+the request
 @item reply-list
 The list of @AVP{}s from the @RHS{} of the profile entry that matched
-the request.
+the request
 @end table
 @end deffn
 
@@ -1184,17 +1210,18 @@ succeed. The function must return either a boolean value or a pair.
 The return of @code{#t} causes authentication to succeed. The return
 of @code{#f} causes it to fail.
 
-If the function wishes to add something to the reply @AVP{}s, it
-should return a pair in the form:
+For a function to add something to the reply @AVP{}s, it
+should return a pair in the form
 
 @lisp
     (cons @var{return-code} @var{list})
 @end lisp
 
-Where @var{return-code} is a boolean value of the same meaning as
-described above. The @var{list} is a list of @AVP{}s to be added
+@noindent
+where @var{return-code} is a boolean value of the same meaning as
+described above. @var{list} is a list of @AVP{}s to be added
 to the reply list. For example, the following function will always
-deny the authentication, returning appropriate message to the user:
+deny the authentication, returning an appropriate message to the user:
 
 @exindex Scheme authentication function
 @lisp
@@ -1203,13 +1230,14 @@ deny the authentication, returning appropriate message to the user:
   (cons #f
         (list
          (cons "Reply-Message"
-               "\r\nSorry, you are not allowed to log in\r\n"))))
+               "\r\nSorry, you are not
+                allowed to log in\r\n"))))
 @end group
 @end lisp
 
 As a more constructive example, let's consider a function that
 allows the authentication only if a user name is found in its
-internal database.
+internal database:
 
 @lisp
 @group
@@ -1250,8 +1278,8 @@ internal database.
 @end lisp
 
 To trigger the invocation of the Scheme authentication function, assign
-its name to @attr{Scheme-Procedure} attribute in @RHS{} of a
-corresponding @file{raddb/users} profile. E.g.:
+its name to the @attr{Scheme-Procedure} attribute in the @RHS{} of a
+corresponding @file{raddb/users} profile. For example:
 
 @exindex Invoking Scheme authentication function
 @exindex Scheme authentication function, invocation
@@ -1270,7 +1298,7 @@ DEFAULT Auth-Type = SQL
 The Scheme accounting procedure must be declared as follows:
 
 @deffn {Function Template} acct-function-name request-list
-Its arguments are:
+Its argument is:
 @table @var
 @item request-list
 The list of @AVP{}s from the incoming request
@@ -1278,9 +1306,9 @@ The list of @AVP{}s from the incoming request
 @end deffn
 
 The function must return a boolean value. The accounting succeeds only
-if it returned @code{#t}.
+if it has returned @code{#t}.
 
-Here is an example of Scheme accounting function. The function dumps
+Here is an example of a Scheme accounting function. The function dumps
 the contents of the incoming request to a file:
 
 @exindex Scheme accounting function
@@ -1323,10 +1351,13 @@ Return @code{#t} if all pairs from @var{list} are present in @var{target}.
 Return a dictionary entry for the given attribute @var{name} or @code{#f} if
 no such name was found in the dictionary.
 
-A dictionary entry is a list in the form:
+A dictionary entry is a list in the form
 
 @deffn {Scheme List} dict-entry name-string attr-number type-number vendor
-Where
+
+@noindent
+where the arguments are as follows:
+
 @table @var
 @item name-string
 The attribute name
@@ -1335,32 +1366,32 @@ The attribute number
 @item type-number
 The attribute type
 @item vendor
-is the vendor @acronym{PEC}, if the attribute is a Vendor-Specific one,
-or #f otherwise.
+The vendor @acronym{PEC}, if the attribute is a vendor-specific one,
+or @code{#f} otherwise.
 @end table
 @end deffn
 @end deffn
 
 @deffn {Scheme Function} rad-dict-value->name attr value
-Returns a dictionary name of the given @var{value} for an integer-type
-attribute @var{attr}. @var{attr} can be either an attribute number
+Returns the dictionary name of the given @var{value} for an integer-type
+attribute @var{attr}, which can be either an attribute number
 or its dictionary name.
 @end deffn
 
 @deffn {Scheme Function} rad-dict-name->value attr value
-Convert a symbolic attribute value name into its integer representation
+Convert a symbolic attribute value name into its integer representation.
 @end deffn
 
 @deffn {Scheme Function} rad-dict-pec->vendor pec
-Convert @acronym{PEC} to the vendor name
+Convert a @acronym{PEC} to the vendor name.
 @end deffn
 
 @deffn {Scheme Function} rad-log-open prio
-Open radius logging to the severity level @var{prio}.
+Open Radius logging to the severity level @var{prio}.
 @end deffn
 
 @deffn {Scheme Function} rad-log-close
-Close radius logging channel open by a previous call to @code{rad-log-open}.
+Close a Radius logging channel opened by a previous call to @code{rad-log-open}.
 @end deffn
 
 @deffn {Scheme Function} rad-rewrite-execute-string string
@@ -1394,8 +1425,9 @@ Scheme interface to the system @code{closelog()} call.
 @end deffn
 
 @deffn {Scheme Function} rad-utmp-putent status delay list radutmp_file radwtmp_file
-Write the supplied data into the radutmp file. If RADWTMP_FILE is not nil
-the constructed entry is also appended to WTMP_FILE.
+Write the supplied data into the radutmp file. If @var{radwtmp_file} is not nil,
+the constructed entry is also appended to @var{wtmp_file}.
+
 @var{list} is:
 
 @deffn {Scheme List} utmp-entry user-name orig-name port-id port-type session-id caller-id framed-ip nas-ip proto
@@ -1404,21 +1436,21 @@ the constructed entry is also appended to WTMP_FILE.
 @item user-name
 The user name
 @item orig-name
-Original user name from the request
+The original user name from the request
 @item port-id
-The value of @attr{NAS-Port-Id} attribute.
+The value of the @attr{NAS-Port-Id} attribute
 @item port-type
-A number or character indicating the port type.
+A number or character indicating the port type
 @item session-id
-Session @sc{id}.
+The session @sc{id}
 @item caller-id
-The value of @attr{Calling-Station-Id} attribute from the request.
+The value of the @attr{Calling-Station-Id} attribute from the request
 @item framed-ip
-The framed @IP{} assigned to the user.
+The framed IP assigned to the user
 @item nas-ip
-The @NAS{} @IP{}.
+The @NAS{} IP
 @item proto
-Number or character indicating type of the connection.
+A number or character indicating the type of the connection
 @end table
 @end deffn
 @end deffn

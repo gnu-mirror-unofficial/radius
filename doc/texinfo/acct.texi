@@ -14,13 +14,13 @@ The accounting methods are applied to a request in a following
 sequence:
 
 @enumerate 1
-@item UNIX Accounting
-@item Detailed Request Accounting
-@item SQL Accounting 
-@item Custom Accounting 
+@item UNIX accounting
+@item Detailed request accounting
+@item @acronym{sql} accounting 
+@item Custom accounting 
 @end enumerate
 
-In this sequence, only @dfn{UNIX Accounting} is obligatory, all
+In this sequence, only UNIX accounting is obligatory; all
 other methods are applied only when enabled.
 
 If any accounting type in this sequence fails, the accounting
@@ -51,17 +51,17 @@ users' sessions.
 @cindex Detailed Request Accounting
 
 Radius stores the detailed information about accounting packets it receives
-in files @* @file{radacct/@var{nasname}/detail} (@pxref{Naming Conventions}), 
+in files @file{radacct/@var{nasname}/detail} (@pxref{Naming Conventions}), 
 where @var{nasname} is replaced with the short name of the @NAS{} from
 the @file{raddb/naslist} file (@pxref{naslist file}).
 
 By default, this accounting type is always enabled, provided that
 @file{radacct} directory exists and is writable
 (@pxref{Naming Conventions}). To turn the detailed accounting off,
-use @code{detail} statement in @file{config} file. For more information
+use the @code{detail} statement in the @file{config} file. For more information
 about it, @xref{acct}.
 
-The accounting detail files consist of a record per each accounting
+The accounting detail files consist of a record for each accounting
 request. A record includes the timestamp and detailed
 dump of attributes from the packet, e.g.:
 
@@ -101,31 +101,31 @@ Fri Dec 15 18:32:09 2000
 
 @comment *L2****************************************************************
 @node SQL Accounting
-@section SQL Accounting
+@section @acronym{sql} Accounting
 @cindex SQL Accounting
 
-The @acronym{SQL} accounting method is enabled when Radius is configured with
-@option{--enable-sql} option and @file{sqlserver} file in its
+The @acronym{sql} accounting method is enabled when Radius is configured with
+@option{--enable-sql} option and the @file{sqlserver} file in its
 configuration directory is properly set up (@pxref{sqlserver file}).
 
 This version of GNU Radius (@value{VERSION}) supports MySQL and
-PostgreSQL servers. Support for Oracle servers will be added in the
-nearest future.
+PostgreSQL servers. It also supports @acronym{odbc}, which can be
+used to build interfaces to another database management systems.
 
 With this accounting method enabled, @command{radiusd} will store the
-information about accounting requests in the configured @acronym{SQL} database.
+information about accounting requests in the configured @acronym{sql} database.
 The accounting method is fully configurable: the Radius administrator
 defines both the types of requests to be accounted and the information
-to be stored into the database. (@pxref{sqlserver file}).
+to be stored into the database (@pxref{sqlserver file}).
 
 @comment *L2****************************************************************
 @node Custom Acct
-@section Defining Custom Accounting Types.
+@section Defining Custom Accounting Types
 @cindex Custom Accounting Types
 
 If the built-in accounting methods do not meet your requirements,
-you can implement your own accounting methods. There are two ways
-for doing so:
+you can implement your own. There are two ways
+of doing so:
 
 @enumerate 1
 @item Using a Guile procedure.
@@ -133,8 +133,8 @@ for doing so:
 @end enumerate
 
 To use a Guile procedure for accounting, the name of the procedure
-must be specified as a value to @attr{Scheme-Acct-Procedure} attribute
-in @RHS{} list of a @file{hints} entry, e.g.:
+must be specified as a value to the @attr{Scheme-Acct-Procedure} attribute
+in the @RHS{} list of a @file{hints} entry, e.g.:
 
 @example
 DEFAULT NULL Scheme-Acct-Procedure = "my-acct"
@@ -142,21 +142,21 @@ DEFAULT NULL Scheme-Acct-Procedure = "my-acct"
 @noindent
 
 For a detailed description of Scheme accounting procedures,
-@xref{Accounting with Scheme}.
+@pxref{Accounting with Scheme}.
 
 Another way of implementing your own accounting method is using
 an external program. This is less effective than the methods described
 above, but may be necessary sometimes. To invoke the program, use
-the following statement in the @LHS{} of @file{hints} entry:
+the following statement in the @LHS{} of the @file{hints} entry:
 
 @example
 Acct-Ext-Program = "@var{progname} @var{args}"
 @end example
 
-The @var{progname} must be the full path to the program, @var{args} ---
+The @var{progname} must be the full path to the program, and @var{args}
 any arguments it needs. The usual substitutions may be used in
 @var{args} to pass any request attributes to the program
 (@pxref{Macro Substitution}).
 
 For a detailed description of @attr{Acct-Ext-Program},
-@xref{Acct-Ext-Program}.
+@pxref{Acct-Ext-Program}.

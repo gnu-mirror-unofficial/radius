@@ -46,8 +46,8 @@ SCM_DEFINE(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
             SCM LIST,
             SCM RADUTMP_FILE,
             SCM RADWTMP_FILE),
-"Write the supplied data into the radutmp file. If RADWTMP_FILE is not nil
-the constructed entry is also appended to WTMP_FILE.")
+"Write the supplied data into the radutmp file. If RADWTMP_FILE is not nil"
+"the constructed entry is also appended to WTMP_FILE.")
 #define FUNC_NAME s_rad_utmp_putent
 {
         int status;

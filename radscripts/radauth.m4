@@ -13,6 +13,6 @@ include(SRCDIR/radscripts.m4)dnl
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 send auth 1 User-Name = ${1:?} \
-            Password = ${2:&Password: } \
+            User-Password = ${2:&Password: } \
             NAS-Port-Id = ${pid:-0}
 expect 2

@@ -364,6 +364,7 @@ match_user(User_symbol *sym, RADIUS_REQ *req,
                         continue;
                 }
 
+		radius_req_register_locus(req, &sym->loc);
                 found = 1;
 
                 for (p = avl_find(sym->check, DA_MATCH_PROFILE);
@@ -371,7 +372,8 @@ match_user(User_symbol *sym, RADIUS_REQ *req,
                      p = avl_find(p->next, DA_MATCH_PROFILE)) {
                         debug(1, ("submatch: %s", p->avp_strvalue));
 
-                        found = match_user(sym_lookup(user_tab, p->avp_strvalue),
+                        found = match_user(sym_lookup(user_tab,
+						      p->avp_strvalue),
                                            req, check_pairs, reply_pairs);
                 }                       
 
@@ -705,7 +707,8 @@ hints_setup(RADIUS_REQ *req)
                         continue;
 
                 matched++;
-                
+                radius_req_register_locus(req, &rule->loc);
+		
                 debug(1, ("matched %s at %s:%lu", rule->name, rule->loc.file,
 			  (unsigned long) rule->loc.line));
         
@@ -828,17 +831,17 @@ huntgroup_access(RADIUS_REQ *radreq)
         }
 	iterator_destroy(&itr);
 	
+        if (rule) {
+		radius_req_register_locus(radreq, &rule->loc);
 #ifdef DA_REWRITE_FUNCTION
-        if (rule &&
-            (pair = avl_find(rule->lhs, DA_REWRITE_FUNCTION)) != NULL) {
-                if (rewrite_eval(pair->avp_strvalue, radreq, NULL, NULL)) {
+		if ((pair = avl_find(rule->lhs, DA_REWRITE_FUNCTION)) != NULL
+		    && rewrite_eval(pair->avp_strvalue, radreq, NULL, NULL)) {
                         radlog_loc(L_ERR, &rule->loc, "%s(): %s",
 				   pair->avp_strvalue,
 				   _("not defined"));
                 }
-        }
 #endif  
-
+	}
         debug(1, ("returning %d", r));
         return r;
 }

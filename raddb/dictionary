@@ -43,7 +43,7 @@ ATTRIBUTE	Login-TCP-Port		16	integer	- [-R-R-R]=
 ATTRIBUTE	Reply-Message		18	string	- [-R----]+P
 ATTRIBUTE	Callback-Number		19	string	- [-R----]=
 ATTRIBUTE	Callback-Id		20	string	- [-R----]=	
-ATTRIBUTE	Framed-Route		22	string	- [-R----]=
+ATTRIBUTE	Framed-Route		22	string	- [-R----]+
 ATTRIBUTE	Framed-IPX-Network	23	ipaddr	- [-R----]=
 ATTRIBUTE	State			24	string	- [LRLRLR]P
 ATTRIBUTE	Class			25	string	- [LRLRLR]

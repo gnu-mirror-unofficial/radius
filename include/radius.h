@@ -379,12 +379,11 @@ int avp_null_string(VALUE_PAIR *pair);
 	
 extern int resolve_hostnames;
 char *ip_gethostname (UINT4, char *buf, size_t size);
-UINT4 ip_gethostaddr (char *);
-int good_ipaddr(char *);
+UINT4 ip_gethostaddr (const char *);
 char *ip_iptostr(UINT4, char *);
-UINT4 ip_strtoip(char *);
-int ip_getnetaddr(char *str, NETDEF *netdef);
-int ip_addr_in_net_p(NETDEF *netdef, UINT4 ipaddr);
+UINT4 ip_strtoip(const char *);
+int ip_getnetaddr(const char *str, NETDEF *netdef);
+int ip_addr_in_net_p(const NETDEF *netdef, UINT4 ipaddr);
 
 /* nas.c */
 NAS *nas_next(NAS *p);

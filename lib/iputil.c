@@ -39,6 +39,31 @@
 int resolve_hostnames = 1;
 
 /*
+ * Check for valid IP address in standard dot notation.
+ */
+static int 
+good_ipaddr(const char *addr)
+{
+        int     dot_count;
+        int     digit_count;
+
+        dot_count = 0;
+        digit_count = 0;
+        while (*addr != 0 && *addr != ' ') {
+                if (*addr == '.') {
+                        if (++dot_count > 3)
+                                break;
+                        digit_count = 0;
+                } else if (!(isdigit(*addr) && ++digit_count <= 3)) {
+                        return -1;
+                }
+                addr++;
+        }
+
+        return (dot_count != 3);
+}
+
+/*
  *      Return a printable host name (or IP address in dot notation)
  *      for the supplied IP address.
  */
@@ -72,7 +97,7 @@ ip_gethostname(UINT4 ipaddr, char *namebuf, size_t size)
  * name or address in dot notation.
  */
 UINT4 
-ip_gethostaddr(char *host)
+ip_gethostaddr(const char *host)
 {
         struct hostent  *hp, hent;
         char buffer[512];
@@ -85,31 +110,6 @@ ip_gethostaddr(char *host)
         if (!hp)
                 return 0;
         return ntohl(*(UINT4 *)hp->h_addr);
-}
-
-/*
- * Check for valid IP address in standard dot notation.
- */
-int 
-good_ipaddr(char *addr)
-{
-        int     dot_count;
-        int     digit_count;
-
-        dot_count = 0;
-        digit_count = 0;
-        while (*addr != 0 && *addr != ' ') {
-                if (*addr == '.') {
-                        if (++dot_count > 3)
-                                break;
-                        digit_count = 0;
-                } else if (!(isdigit(*addr) && ++digit_count <= 3)) {
-                        return -1;
-                }
-                addr++;
-        }
-
-        return (dot_count != 3);
 }
 
 /*
@@ -132,7 +132,7 @@ ip_iptostr(UINT4 ipaddr, char *buffer)
  *      one supplied in standard dot notation.
  */
 UINT4 
-ip_strtoip(char *ip_str)
+ip_strtoip(const char *ip_str)
 #ifdef HAVE_INET_ATON
 {
         struct in_addr in;
@@ -178,7 +178,7 @@ ip_strtoip(char *ip_str)
 #endif
 
 int
-ip_getnetaddr(char *str, NETDEF *netdef)
+ip_getnetaddr(const char *str, NETDEF *netdef)
 {
 	char *p = strchr(str, '/');
 	if (!p) {
@@ -212,7 +212,7 @@ ip_getnetaddr(char *str, NETDEF *netdef)
 }
 
 int
-ip_addr_in_net_p(NETDEF *netdef, UINT4 ipaddr)
+ip_addr_in_net_p(const NETDEF *netdef, UINT4 ipaddr)
 {
 	return netdef->ipaddr == (ipaddr & netdef->netmask);
 }

@@ -27,6 +27,7 @@ endif
 SUBDIRS=snmp
 
 EXTRA_DIST = \
+argcv.h \
 checkrad.h \
 display.h \
 getopt1.h \

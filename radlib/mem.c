@@ -477,6 +477,8 @@ typedef union {
 
 #define BLKCNT(length) ((length + HDRSIZE + MINSTRSIZE - 1) / (MINSTRSIZE - 1))
 
+static pthread_mutex_t string_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 /* alloc_string(): Allocate a string of given length
  */
 char *
@@ -518,10 +520,14 @@ dup_string(str)
 
         if (!str)
                 return NULL;
+        pthread_mutex_lock(&string_mutex);
         hp = (STRHDR*)str - 1;
-        if (hp->s.nref == 255) /* FIXME: use limits.h */
+        if (hp->s.nref == 255) { /* FIXME: use limits.h */
+                pthread_mutex_unlock(&string_mutex);
                 return make_string(str);
+        }
         hp->s.nref++;
+        pthread_mutex_unlock(&string_mutex);
         return str;
 }
 
@@ -539,12 +545,16 @@ replace_string(str, strvalue)
         if (!*str)
                 return *str = make_string(strvalue);
         
+        pthread_mutex_lock(&string_mutex);
         hp = (STRHDR*)*str - 1;
         if ( hp->s.nref > 1 || hp->s.nblk < BLKCNT(length) ) {
+                pthread_mutex_unlock(&string_mutex);
                 free_string(*str);
+                pthread_mutex_lock(&string_mutex);
                 *str = alloc_string(length + 1);
         }
         strcpy(*str, strvalue);
+        pthread_mutex_unlock(&string_mutex);
         return *str;
 }
 
@@ -560,10 +570,11 @@ free_string(str)
         if (!str)
                 return;
         
+        pthread_mutex_lock(&string_mutex);
         hp = (STRHDR*)str - 1;
-        if (--hp->s.nref)
-                return;
+        if (--hp->s.nref == 0)
         cfree_entry(hp, hp->s.nblk);
+        pthread_mutex_unlock(&string_mutex);
 }
 
 /* ************************************************************************* */

@@ -26,10 +26,14 @@ lint::
 	do \
 		$(MAKE) -C $$dir lint; \
 	done
+
+alpha: 
+	$(MAKE) dist distdir=$(PACKAGE)-$(VERSION)-`date +'%Y%m%d'`
+
+alphacheck: 
+	$(MAKE) distcheck distdir=$(PACKAGE)-$(VERSION)-`date +'%Y%m%d'`
+
 endif
 
 EXTRA_DIST=ylwrap
 
-
-alpha: 
-	$(MAKE) dist distdir=$(PACKAGE)-$(VERSION)-`date +'%Y%m%d'`

@@ -108,8 +108,8 @@ LINTFLAGS=-gzra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -DLOCALEDIR=\"$(localedir)
 llib-llog.ln: $(liblog_la_SOURCES:.c=.ln)
 	$(LINT.c) -Clog $(liblog_la_SOURCES:.c=.ln)
 
-llib-lrad.ln: $(librad_la_SOURCES:.c=.ln)  llib-llog.ln
-	$(LINT.c) -Crad $(librad_la_SOURCES:.c=.ln) -L. -llog
+llib-lrad.ln: $(libgnuradius_la_SOURCES:.c=.ln)  llib-llog.ln
+	$(LINT.c) -Crad $(libgnuradius_la_SOURCES:.c=.ln) -L. -llog
 
 llib-ldebug.ln: $(libdebug_la_SOURCES:.c=.ln) llib-llog.ln
 	$(LINT.c) -Cdebug $(libdebug_la_SOURCES:.c=.ln) -L. -llog
@@ -117,7 +117,7 @@ llib-ldebug.ln: $(libdebug_la_SOURCES:.c=.ln) llib-llog.ln
 lint:: llib-llog.ln llib-lrad.ln llib-ldebug.ln 
 
 LIBLIST:
-	-echo $(librad_la_SOURCES) $(BUILT_SOURCES) |\
+	-echo $(libgnuradius_la_SOURCES) $(BUILT_SOURCES) |\
 	tr -s ' ' '\n'|\
 	sort|\
 	uniq -u|\

@@ -1,25 +1,21 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
  
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
  
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
  
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #define RADIUS_MODULE_CLIENT_C
-#ifndef lint
-static char rcsid[] = 
-"$Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -28,9 +24,11 @@ static char rcsid[] =
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
 #include <ctype.h>
@@ -40,8 +38,7 @@ static char rcsid[] =
 #include <debugmod.h>
 
 void
-rad_clt_random_vector(vector)
-        char *vector;
+rad_clt_random_vector(char *vector)
 {
         int randno;
         int i;
@@ -54,14 +51,64 @@ rad_clt_random_vector(vector)
         }
 }
 
+#define PERM S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP
+
+unsigned
+rad_clt_message_id(RADIUS_SERVER *server)
+{
+	SERVER_ID sid;
+	int fd;
+	unsigned id;
+	
+	fd = open(radmsgid_path, O_RDWR|O_CREAT, PERM);
+	if (fd != -1) {
+		struct stat st;
+		
+		fstat(fd, &st);
+		if (server->id_offset != (off_t) -1
+		    && server->id_offset + sizeof(sid) <= st.st_size) {
+			rad_lock(fd, sizeof(sid), server->id_offset, SEEK_SET);
+			lseek(fd, server->id_offset, SEEK_SET);
+			read(fd, &sid, sizeof(sid));
+			id = sid.id++;
+			lseek(fd, server->id_offset, SEEK_SET);
+			write(fd, &sid, sizeof(sid));
+			rad_unlock(fd, sizeof(sid),
+				   server->id_offset, SEEK_SET);
+
+		} else {
+			off_t off = 0;
+			lseek(fd, 0, SEEK_SET);
+			rad_lock(fd, st.st_size + sizeof(sid), 0, SEEK_SET);
+			while (read(fd, &sid, sizeof(sid)) == sizeof(sid)) {
+				if (sid.addr == server->addr) {
+					id = sid.id++;
+					lseek(fd, off, SEEK_SET);
+					write(fd, &sid, sizeof(sid));
+					break;
+				}
+				off += sizeof(sid);
+			}
+			if (off == st.st_size) {
+				/* Entry not found. */
+				sid.addr = server->addr;
+				sid.id = 1;
+				write(fd, &sid, sizeof(sid));
+				server->id_offset = off;
+				id = 0;
+			} 
+			rad_unlock(fd, st.st_size + sizeof(sid), 0, SEEK_SET);
+		}
+		close(fd);
+	} else {
+		id = random() % 256;
+	}
+	return id;
+}
+	
 RADIUS_REQ *
-rad_clt_recv(host, udp_port, secret, vector, buffer, length)
-        UINT4 host;
-        u_short udp_port;
-        char *secret;
-        char *vector;
-        char *buffer;
-        int length;
+rad_clt_recv(UINT4 host, u_short udp_port, char *secret, char *vector,
+	     char *buffer, int length)
 {
         AUTH_HDR *auth;
         int totallen;
@@ -95,10 +142,7 @@ rad_clt_recv(host, udp_port, secret, vector, buffer, length)
 }
 
 static VALUE_PAIR *
-_encode_pairlist(p, vector, secret)
-	VALUE_PAIR *p;
-	u_char *vector;
-	u_char *secret;
+_encode_pairlist(VALUE_PAIR *p, u_char *vector, u_char *secret)
 {
 	VALUE_PAIR *ret = avl_dup(p);
 
@@ -114,11 +158,8 @@ _encode_pairlist(p, vector, secret)
 
 
 RADIUS_REQ *
-rad_clt_send(config, port_type, code, pairlist)
-        RADIUS_SERVER_QUEUE *config;
-        int port_type;
-        int code;
-        VALUE_PAIR *pairlist;
+rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
+	     VALUE_PAIR *pairlist)
 {
 	struct sockaddr salocal;
 	struct sockaddr saremote;
@@ -186,7 +227,7 @@ rad_clt_send(config, port_type, code, pairlist)
 		rad_clt_random_vector(vector);
 		pair = _encode_pairlist(pairlist, vector, server->secret);
 		size = rad_create_pdu(&pdu, code,
-				      config->messg_id,
+				      rad_clt_message_id(server),
 				      vector,
 				      server->secret,
 				      pair,
@@ -287,12 +328,8 @@ static struct keyword kwd[] = {
 };
 
 static int
-parse_client_config(client, argc, argv, file, lineno)
-        RADIUS_SERVER_QUEUE *client;
-        int argc;
-        char **argv;
-        char *file;
-        int lineno;
+parse_client_config(RADIUS_SERVER_QUEUE *client, int argc, char **argv,
+		    char *file, int lineno)
 {
         char *p;
         RADIUS_SERVER serv;
@@ -367,13 +404,9 @@ parse_client_config(client, argc, argv, file, lineno)
 
 
 RADIUS_SERVER_QUEUE *
-rad_clt_create_queue(read_cfg, source_ip, bufsize)
-        int read_cfg;
-        UINT4 source_ip;
-        size_t bufsize;
+rad_clt_create_queue(int read_cfg, UINT4 source_ip, size_t bufsize)
 {
         RADIUS_SERVER_QUEUE *client;
-        struct timeval tv;
         char *filename;
         
         client = emalloc(sizeof *client);
@@ -385,10 +418,6 @@ rad_clt_create_queue(read_cfg, source_ip, bufsize)
         client->buffer_size = bufsize ? bufsize : 4096;
         client->first_server = NULL;
 
-        gettimeofday(&tv, NULL);
-        srand(tv.tv_usec);
-        client->messg_id = random() % 256;
-
         if (read_cfg) {
                 filename = mkfilename(radius_dir, "client.conf");
                 read_raddb_file(filename, 1, parse_client_config, client);
@@ -398,8 +427,7 @@ rad_clt_create_queue(read_cfg, source_ip, bufsize)
 }
 
 void
-rad_clt_destroy_queue(queue)
-        RADIUS_SERVER_QUEUE *queue;
+rad_clt_destroy_queue(RADIUS_SERVER_QUEUE *queue)
 {
 	if (queue) {
 		rad_clt_clear_server_list(queue->first_server);
@@ -408,8 +436,7 @@ rad_clt_destroy_queue(queue)
 }
 
 RADIUS_SERVER *
-rad_clt_alloc_server(src)
-        RADIUS_SERVER *src;
+rad_clt_alloc_server(RADIUS_SERVER *src)
 {
         RADIUS_SERVER *server;
 
@@ -423,8 +450,7 @@ rad_clt_alloc_server(src)
 }
 
 RADIUS_SERVER *
-rad_clt_dup_server(src)
-        RADIUS_SERVER *src;
+rad_clt_dup_server(RADIUS_SERVER *src)
 {
         RADIUS_SERVER *dest;
 
@@ -442,8 +468,7 @@ rad_clt_dup_server(src)
  */
 
 void
-rad_clt_free_server(server)
-        RADIUS_SERVER *server;
+rad_clt_free_server(RADIUS_SERVER *server)
 {
         string_free(server->name);
         string_free(server->secret);
@@ -451,41 +476,33 @@ rad_clt_free_server(server)
 }
 
 RADIUS_SERVER *
-rad_clt_append_server(list, server)
-        RADIUS_SERVER *list;
-        RADIUS_SERVER *server;
+rad_clt_append_server(RADIUS_SERVER *list, RADIUS_SERVER *server)
 {
         return (RADIUS_SERVER*)append_slist((struct slist*)list,
                                      (struct slist*)server);
 }
 
 static void
-rad_clt_internal_free_server(server)
-        RADIUS_SERVER *server;
+rad_clt_internal_free_server(RADIUS_SERVER *server)
 {
         string_free(server->name);
         string_free(server->secret);
 }
 
 void
-rad_clt_clear_server_list(list)
-        RADIUS_SERVER *list;
+rad_clt_clear_server_list(RADIUS_SERVER *list)
 {
         free_slist((struct slist *)list, rad_clt_internal_free_server);
 }
 
 static int
-server_cmp(serv, id)
-        RADIUS_SERVER *serv;
-        char *id;
+server_cmp(RADIUS_SERVER *serv, char *id)
 {
         return strcmp(serv->name, id);
 }
 
 RADIUS_SERVER *
-rad_clt_find_server(list, name)
-        RADIUS_SERVER *list;
-        char *name;
+rad_clt_find_server(RADIUS_SERVER *list, char *name)
 {
         return (RADIUS_SERVER*)find_slist((struct slist *)list,
                                    server_cmp,

@@ -592,6 +592,7 @@ AC_OUTPUT(Makefile m4/Makefile
           test/guile/Makefile 
           test/dejagnu/Makefile
           test/dejagnu/lib/Makefile
+          test/dejagnu/radiusd/Makefile
           scripts/Makefile scripts/guile/Makefile 
           contrib/Makefile)
 

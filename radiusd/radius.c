@@ -42,9 +42,6 @@ static char rcsid[] =
 /*
  *      Make sure our buffer is aligned.
  */
-static int      i_send_buffer[RAD_BUFFER_SIZE];
-#define SEND_BUFFER_SIZE sizeof(i_send_buffer)
-static char     *send_buffer = (char *)i_send_buffer;
 
 /*
  *      Reply to the request.  Also attach
@@ -71,6 +68,9 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
         VALUE_PAIR *reply;
         int vendorcode, vendorpec;
         char buf[MAX_LONGNAME];
+	int  i_send_buffer[RAD_BUFFER_SIZE];
+#define SEND_BUFFER_SIZE sizeof(i_send_buffer)
+	char *send_buffer = (char *)i_send_buffer;
         
         auth = (AUTH_HDR *)send_buffer;
         reply = oreply;

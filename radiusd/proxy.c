@@ -41,12 +41,6 @@ static char rcsid[] =
 
 #include <radiusd.h>
 
-/*
- *      Make sure send_buffer is aligned properly.
- */
-static int i_send_buffer[RAD_BUFFER_SIZE];
-static u_char *send_buffer = (u_char *)i_send_buffer;
-
 static PROXY_ID *proxy_id;
 
 static void random_vector(char *vector);
@@ -182,6 +176,8 @@ rad_send_request(fd, ipaddr, port, id, secret, req)
         char                    vector[AUTH_VECTOR_LEN];
         u_char                  *ptr;
         struct sockaddr_in      saremote, *sin;
+	int i_send_buffer[RAD_BUFFER_SIZE];
+	u_char *send_buffer = (u_char *)i_send_buffer;
         
 #define checkovf(len) \
         if (total_length + len >= sizeof(i_send_buffer)) goto ovf;

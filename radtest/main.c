@@ -64,7 +64,9 @@ extern int radclient_debug;
 RADCLIENT       *radclient;
 char *progname;
 int reply_code;
+VALUE_PAIR *reply_list;
 int debug_flag = 0;
+int abort_on_failure = 0;
 
 void init_symbols();
 static void print_usage();
@@ -468,11 +470,45 @@ radtest_send(port, code, var)
 	var = (Variable*)sym_lookup(vartab, "REPLY_CODE");
 	var->type = Integer;
 	var->datum.number = reply_code;
+
+	if (reply_list)
+		avl_free(reply_list);
+	reply_list = avl_dup(auth->request);
 	var = (Variable*)sym_lookup(vartab, "REPLY");
 	var->type = Vector;
 	var->datum.vector = NULL;
-	var->datum.vector = avl_dup(auth->request);
+	var->datum.vector = reply_list;
 	radreq_free(auth);
+}
+
+int
+compare_lists(a, b)
+	VALUE_PAIR *a, *b;
+{
+	int result = 0;
+	
+	for (; b && result == 0; b = b->next) {
+		VALUE_PAIR *p;
+
+		if (b->attribute > 255)
+			continue;
+		for (p = a; p && p->attribute != b->attribute; p = p->next)
+			;
+		if (!p)
+			return -1;
+		switch (p->type) {
+		case TYPE_STRING:
+			result = strcmp(b->strvalue, p->strvalue);
+			break;
+		case TYPE_INTEGER:
+		case TYPE_IPADDR:
+			result = p->lvalue - b->lvalue;
+			break;
+		default:
+			result = -1;
+		}
+	}
+	return result;
 }
 
 /*

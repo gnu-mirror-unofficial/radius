@@ -43,13 +43,6 @@ typedef struct {
 	char *exec_user;
 } Config;
 
-typedef struct {
-	UINT4 ipaddr;
-	int   port;
-	int   timeout;
-	int   retry;
-} Notify;
-
 enum reload_what {
 	reload_config,
 	reload_all,
@@ -237,7 +230,6 @@ void snmp_req_drop(int type, SNMP_REQ *req, char *status_str);
  */
 extern int radius_mode;
 extern Config config;
-extern Notify notify_cfg;
 extern int debug_flag;
 extern int auth_detail;
 extern int strip_names;
@@ -262,9 +254,6 @@ extern int snmp_port;
 extern char *server_id;
 extern Server_stat *server_stat;
 #endif
-
-extern UINT4 notify_ipaddr;
-extern int notify_port;
 
 /*
  *	Function prototypes.
@@ -362,11 +351,6 @@ char * get_menu(char *menu_name);
 
 /* timestr.c */
 int timestr_match(char *, time_t);
-
-/* notify.c */
-int notify(char *login, int what, long *ttl_ptr);
-int notify_acct(char *login, int what);
-int timetolive(char *user_name, long *ttl);
 
 /* shmem.c */
 int shmem_alloc(unsigned size);

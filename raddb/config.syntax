@@ -109,16 +109,6 @@ proxy {
                                   # in queue after being processed
 };
 
-## Set up the notification service
-notify {
-	host ttl.domain.com;	# Hostname or IP address
-	port radnotify;		# Port (service name or number)
-	retry 3; 		# Number of retries before giving up
-	delay 1;		# Delay in seconds between retries
-};
-## This can be used to turn notification off
-#notify off;
-
 # DBM handling. Can be one of
 #	no	-	Never to use DBM database
 #	yes	-	Use only DBM database and ignore users

@@ -387,12 +387,6 @@ rad_acct_system(radreq, dowtmp)
 		     ut.session_id));
 	}
 
-#ifdef USE_NOTIFY
-	if (!port_seen) {
-		notify_acct(ut.login, status);
-	}
-#endif
-	
         /* Decide if we should store this record into radutmp/radwtmp.
 	   We skip records:
 
@@ -421,9 +415,6 @@ rad_acct_system(radreq, dowtmp)
 
 	/* Write a RADIUS wtmp log file. */
 	if (dowtmp) {
-#ifdef USE_NOTIFY
-		notify_acct(ut.login, status);
-#endif
 		stat_update(&ut, status);
 		write_wtmp(&ut);
 	} else if (rc == PUTENT_UPDATE) {

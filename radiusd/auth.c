@@ -486,7 +486,6 @@ enum auth_state {
 	as_time, 
 	as_eval,
 	as_scheme,
-	as_ttl, 
 	as_ipaddr, 
 	as_exec_wait, 
 	as_cleanup_cbkid, 
@@ -534,7 +533,6 @@ static void sfn_service_type(MACH*);
 static void sfn_realmuse(MACH*);
 static void sfn_simuse(MACH*);
 static void sfn_time(MACH*);
-static void sfn_ttl(MACH*);
 static void sfn_ipaddr(MACH*);
 static void sfn_exec_wait(MACH*);
 static void sfn_cleanup_cbkid(MACH*);
@@ -582,11 +580,8 @@ struct auth_state_s states[] = {
 	as_eval,         as_scheme,
 	                 0,               L_null,  sfn_eval_reply,
 
-	as_scheme,       as_ttl,
+	as_scheme,       as_ipaddr,
 	                 DA_SCHEME_PROCEDURE, L_reply, sfn_scheme,
-	
-	as_ttl,          as_ipaddr,
-	                 0,               L_null, sfn_ttl,
 	
 	as_ipaddr,       as_exec_wait,
 	                 0,               L_null, sfn_ipaddr,
@@ -1124,27 +1119,6 @@ sfn_time(m)
                           m->check_pair->strvalue,
                           rest));
 	}
-}
-
-/*ARGSUSED*/
-void
-sfn_ttl(m)
-	MACH *m;
-{
-#ifdef USE_NOTIFY	
-	long r;
-	if (timetolive(m->namepair->strvalue, &r) == 0) {
-		if (r > 0) {
-			timeout_pair(m)->lvalue = r;
-		} else {
-			auth_log(m,
-				 _("Zero time to live"),
-				 NULL, NULL, NULL);
-			auth_format_msg(m, MSG_ACCOUNT_CLOSED);
-			newstate(as_reject);
-		}
-	}
-#endif
 }
 
 void

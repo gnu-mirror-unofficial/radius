@@ -85,7 +85,6 @@ These are the basic statements:
 * auth::        Configure authentication service.
 * acct::        Configure accounting service.
 * proxy::       Configure proxy service.
-* notify::      Configure ttl service.
 * usedbm::      Enable the DBM feature.
 * snmp::        Configure SNMP service.
 * guile::       Configure Guile interface.
@@ -507,7 +506,7 @@ Determines if @code{radiusd} should spawn a child to process the request.
 @end table
 
 @comment **L3***************************************************************
-@node proxy, notify, acct, config file
+@node proxy, usedbm, acct, config file
 @subsection @code{proxy} statement
 @cindex Proxy service parameters
 @cindex Customizing proxy server
@@ -540,53 +539,7 @@ the completed account request reside in the queue.
 @end table
 
 @comment **L3***************************************************************
-@node notify, usedbm, proxy, config file
-@subsection @code{notify} statement (raddb/config)
-
-[FIXME: this is obsolete and will be removed]
-
-@subheading Syntax:
-@example
-notify @{
-        [ host @var{ipaddr} ; ]
-        [ port @var{portno} ; ]
-        [ retry @var{number} ; ]
-        [ delay @var{number} ; ]
-@} ;
-
-notify off ;
-@end example
-
-@subheading Usage
-The @code{notify} statement configures the TTL notification service.
-
-@subheading Disabling the service
-The @code{notify off;} form of the statement disables the service.
-
-@subheading Numeric statements
-
-@table @code
-@item port
-Specify the port number to send the TTL notifications to.
-
-@item retry
-Specifies how many time @code{radiusd} should try to re-send notifications
-if the remote party doesn't respond.
-
-@item delay
-Specifies the delay in seconds between each two successive resends.
-@end table
-
-@subheading IP-Number statements
-
-@table @code
-@item host
-Sets the hostname or IP address of the notification listener.
-
-@end table
-
-@comment **L3***************************************************************
-@node usedbm, snmp, notify, config file
+@node usedbm, snmp, proxy, config file
 @subsection @code{usedbm} statement
 @cindex DBM: enabling
 @cindex Enabling DBM

@@ -356,6 +356,8 @@ log_to_channel(void *item, void *pdata)
 	return 0;
 }
 
+/* Note: if modifying this function, make sure it does not allocate any
+   memory! */
 void
 radiusd_logger(int level,
 	       const grad_request_t *req,

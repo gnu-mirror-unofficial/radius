@@ -6,3 +6,4 @@ guile-procedures.txt
 .deps
 .libs
 radscm
+libradscm.a

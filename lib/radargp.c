@@ -73,7 +73,7 @@ static char license_text[] = N_(
     "\n"
     "You should have received a copy of the GNU General Public License\n"
     "along with GNU Radius; if not, write to the Free Software Foundation,\n"
-    "Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.\n";
+    "Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.\n");
 
 
 static error_t 

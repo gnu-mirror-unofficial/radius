@@ -491,32 +491,75 @@ radtest_send(port, code, var)
 	radreq_free(auth);
 }
 
+/* FIXME: duplicated in radiusd/files.c */
 int
-compare_lists(a, b)
-	VALUE_PAIR *a, *b;
+comp_op(op, result)
+	int op;
+	int result;
+{
+	switch (op) {
+	default:
+	case OPERATOR_EQUAL:
+		if (result != 0)
+			return -1;
+		break;
+
+	case OPERATOR_NOT_EQUAL:
+		if (result == 0)
+			return -1;
+		break;
+
+	case OPERATOR_LESS_THAN:
+		if (result >= 0)
+			return -1;
+		break;
+
+	case OPERATOR_GREATER_THAN:
+		if (result <= 0)
+			return -1;
+		break;
+		    
+	case OPERATOR_LESS_EQUAL:
+		if (result > 0)
+			return -1;
+		break;
+			
+	case OPERATOR_GREATER_EQUAL:
+		if (result < 0)
+			return -1;
+		break;
+	}
+	return 0;
+}
+
+int
+compare_lists(reply, sample)
+	VALUE_PAIR *reply, *sample;
 {
 	int result = 0;
 	
-	for (; b && result == 0; b = b->next) {
+	for (; sample && result == 0; sample = sample->next) {
 		VALUE_PAIR *p;
 
-		if (b->attribute > 255)
+		if (sample->attribute > 255)
 			continue;
-		for (p = a; p && p->attribute != b->attribute; p = p->next)
+		for (p = reply; p && p->attribute != sample->attribute;
+		     p = p->next)
 			;
 		if (!p)
 			return -1;
 		switch (p->type) {
 		case TYPE_STRING:
-			result = strcmp(b->strvalue, p->strvalue);
+			result = strcmp(sample->strvalue, p->strvalue);
 			break;
 		case TYPE_INTEGER:
 		case TYPE_IPADDR:
-			result = p->lvalue - b->lvalue;
+			result = sample->lvalue - p->lvalue;
 			break;
 		default:
 			result = -1;
 		}
+		result = comp_op(sample->operator, result);
 	}
 	return result;
 }

@@ -52,7 +52,7 @@ radsession: $(srcdir)/radsession.in
 radscm_LDADD=@GUILE_LIBS@ ./libradscm.a ../lib/liblog.la ../lib/librad.la ../lib/libdebug.la @LIBINTL@
 
 INCLUDES  = -I$(top_builddir) -I$(top_srcdir)/include -I$(srcdir) -I. @INCLUDEPATH@ @GUILE_INCLUDES@
-CPPFLAGS=-DDATADIR=\"$(pkgdatadir)\"
+AM_CPPFLAGS=-DDATADIR=\"$(pkgdatadir)\"
 ETAGS_ARGS = --regex='/SCM_\(GLOBAL_\)?\(G?PROC\|G?PROC1\|SYMBOL\|VCELL\|CONST_LONG\).*\"\([^\"]\)*\"/\3/' \
    --regex='/[ \t]*SCM_[G]?DEFINE1?[ \t]*(\([^,]*\),[^,]*/\1/'
 

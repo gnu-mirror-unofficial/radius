@@ -562,9 +562,14 @@ radprint(f, fmt, ap)
 
 			case 'A': /* Attribute/Value pair */
 				pair = va_arg(ap, VALUE_PAIR*);
-				n = radprintv(f, "%s %s ",
-					      pair->name,
-					      op_str(pair->operator));
+				if (pair->name)
+					n = radprintv(f, "%s %s ",
+						      pair->name,
+						      op_str(pair->operator));
+				else
+					n = radprintv(f, "%d %s ",
+						      pair->attribute,
+						      op_str(pair->operator));
 				if (n == -1) {
 					ret = n;
 					goto error;
@@ -577,8 +582,13 @@ radprint(f, fmt, ap)
 					break;
 					
 				case PW_TYPE_INTEGER:
-					dval = value_lookup(pair->lvalue,
-							    pair->name);
+					if (pair->name)
+						dval = value_lookup(
+							       pair->lvalue,
+						               pair->name);
+					else
+						dval = NULL;
+					
 					if (!dval)
 						n = radprintv(f, "%ld",
 							      pair->lvalue);

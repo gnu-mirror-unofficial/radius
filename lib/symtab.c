@@ -272,7 +272,9 @@ grad_symtab_free(grad_symtab_t **symtab)
 }
 
 void
-grad_symtab_iterate(grad_symtab_t *symtab, int (*fn)(), void *closure)
+grad_symtab_iterate(grad_symtab_t *symtab,
+		    int (*fn)(void *, grad_symbol_t *),
+		    void *closure)
 {
         int i;
         grad_symbol_t *sym, *next;

@@ -43,7 +43,11 @@ void *grad_sym_lookup(grad_symtab_t *symtab, const char *name);
 void *grad_sym_lookup_or_install(grad_symtab_t *symtab,
 				 const char *name, int install);
 void *grad_sym_next(grad_symbol_t *sym);
-void grad_symtab_iterate(grad_symtab_t *symtab, int (*fn)(), void *closure);
+
+void grad_symtab_iterate(grad_symtab_t *symtab,
+			 int (*fn)(void *, grad_symbol_t *),
+			 void *closure);
+
 int grad_symtab_delete(grad_symtab_t *symtab, grad_symbol_t *sym);
 
 void     grad_sym_free(grad_symbol_t *);

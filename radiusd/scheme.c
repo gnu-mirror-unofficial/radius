@@ -109,7 +109,7 @@ scheme_auth(char *procname, RADIUS_REQ *req,
 	procsym = RAD_SCM_SYMBOL_VALUE(procname);
 	if (scm_procedure_p(procsym) != SCM_BOOL_T) {
 		radlog(L_ERR,
-		       _("procname is not a procedure object"));
+		       _("%s is not a procedure object"), procname);
 		return 1;
 	}
 	if (setjmp(jmp_env)) 

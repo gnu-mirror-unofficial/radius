@@ -1,5 +1,13 @@
 2002-01-11  Sergey Poznyakoff  
 
+	* snmplib/snmp_recv.c: Bugfix.
+	* radiusd/snmpserv.c: Fixed handling of GetNext PDUs.
+	* raduse/raduse.h: Added rudimental GetNext requests.
+	* raduse/session.c: Likewise.
+	* raduse/stat.c: Likewise.
+
+2002-01-11  Sergey Poznyakoff  
+
 	* include/radiusd.h: Moved NITEMS to radius.h
 	* include/radius.h: Likewise.
 

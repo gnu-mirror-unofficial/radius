@@ -273,7 +273,7 @@ to file. The following section describes these rules in detail.
 @section Processing requests
 @cindex Processing requests
 
-Upon receiving request Radius applies to it a number of checks to
+Upon receiving a request Radius applies to it a number of checks to
 determine whether the request comes from an authorized source. If these
 checks succeed, the request is processed and answered. Otherwise, the
 request is dropped and corresponding error message is issued (@pxref{Logging}).
@@ -395,6 +395,13 @@ and replaces the value of @code{User-Name} attribute from the request.
 @subsection Huntgroups
 @cindex Huntgroups
 
+Huntgroups are special rules, that allow to alter processing of incoming
+requests, depending on NAS IP address and port number they come
+from. The rules are stored as a list of @dfn{User profiles}
+(@pxref{User Profile}). Upon receiving a request, @code{radiusd}
+scans this list sequentially until it finds an entry, such that
+the conditions set forth in its check list are matched by the
+request. If such an entry is found, @code{radiusd} verifies 
 
 
 @comment **L3***************************************************************

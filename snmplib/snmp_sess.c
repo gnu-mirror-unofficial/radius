@@ -29,6 +29,7 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <pthread.h>
 #if defined(HAVE_SYS_SELECT_H)
 # include <sys/select.h>
 #endif
@@ -36,15 +37,14 @@
 #include <snmp.h>
 #include <snmp_intern.h>
 
+
 int snmp_errno;
 struct snmp_def snmp_def = {
         0,     /* req_id */
-        NULL,  /* session_list */
         3,     /* retries */
         3,     /* timeout */
-        (snmp_alloc_t) malloc,  /* alloc */
-        (snmp_free_t) free,     /* free */
 };
+
 
 int
 snmp_req_id()
@@ -57,15 +57,15 @@ snmp_req_id()
 }
 
 int
-snmp_fdset(fdset)
+snmp_fdset(sp, fdset)
+        struct snmp_session *sp;
         fd_set *fdset;
 {
         int fdmax;
-        struct snmp_session *sp;
 
         fdmax = -1;
         FD_ZERO(fdset);
-        for (sp = snmp_def.session_list; sp; sp = sp->next)
+        for (; sp; sp = sp->next)
                 if (sp->sd != -1 && sp->request_list) {
                         FD_SET(sp->sd, fdset);
                         if (sp->sd > fdmax)
@@ -86,9 +86,9 @@ snmp_init(retries, timeout, memalloc, memfree)
         if (timeout)
                 snmp_def.timeout = timeout;
         if (memalloc)
-                snmp_def.alloc = memalloc;
+                __snmp_alloc_fp = memalloc;
         if (memfree)
-                snmp_def.free = memfree;
+                __snmp_free_fp = memfree;
 }
 
 struct snmp_session *
@@ -134,11 +134,12 @@ snmp_session_create(community, host, port, cfn, closure)
         sp->converse = cfn;
         sp->app_closure = closure;
         sp->pdu = NULL;
-        sp->next = snmp_def.session_list;
         sp->sd = -1;
+
+        sp->next = NULL;
         sp->request_list = NULL;
-        snmp_def.session_list = sp;
-        return sp;
+
+	return sp;
 }
 
 int
@@ -228,20 +229,6 @@ snmp_session_free(sess)
         if (!sess)
                 return;
 
-        if (sess == snmp_def.session_list) {
-                snmp_def.session_list = sess->next;
-        } else {
-                struct snmp_session *prev, *sp;
-                
-                for (prev = snmp_def.session_list, sp = prev->next;
-                     sp;
-                     prev = sp, sp = sp->next) {
-                        if (sp == sess) {
-                                prev->next = sp->next;
-                                break;
-                        }
-                }
-        }
         snmp_pdu_free(sess->pdu);
         snmp_request_free_list(sess->request_list);
         snmp_free(sess->remote_host);

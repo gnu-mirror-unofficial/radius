@@ -5184,7 +5184,7 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
         /* Imitate a function call */
         if (setjmp(mach.jmp)) {
                 rw_mach_destroy(&mach);
-                return -1;
+                return SCM_BOOL_F;
         }
 
         pushn(&mach, 0);                         /* Return address */

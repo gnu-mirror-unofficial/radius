@@ -32,7 +32,7 @@
 		 (for-each
 		  (lambda (pair)
 		    (cond
-		     ((avl-match req (car pair))
+		     ((avl-match? req (car pair))
 		      (set! reply-list (avl-merge reply-list (cdr pair)))
 		      (xx #t))))
 		  (cdr user-data))

@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
-#define RADIUS_MODULE 3
+#define RADIUS_MODULE 5
 
 #ifndef lint
 static char rcsid[] =
@@ -891,16 +891,6 @@ rad_acct_xmit(type, code, data, fd)
 }
 
 /*
- *	Timeout handler (10 secs)
- */
-static int got_alrm;
-static void
-alrm_handler()
-{
-	got_alrm = 1;
-}
-
-/*
  *	Check one terminal server to see if a user is logged in.
  * Return value:
  *      1 if user is logged in
@@ -940,13 +930,7 @@ static int
 check_ts(ut)
 	struct radutmp *ut;
 {
-	int	pid, st, e;
-	int	n;
 	NAS	*nas;
-	char	address[DOTTED_QUAD_LEN];
-	char	port[32];
-	char	session_id[RUT_IDSIZE+1];
-	RETSIGTYPE (*handler)(int);
 
 	/*
 	 *	Find NAS type.
@@ -963,79 +947,8 @@ check_ts(ut)
 		return 1;
 	else if (strcmp(nas->nastype, "false") == 0)
 		return 0;
-	
-	/*
-	 *	Fork.
-	 */
-	handler = signal(SIGCHLD, SIG_DFL);
-	if ((pid = fork()) < 0) {
-		radlog(L_ERR|L_PERROR, _("check_ts(): can't fork"));
-		signal(SIGCHLD, handler);
-		return -1;
-	}
 
-	if (pid > 0) {
-		/*
-		 *	Parent - Wait for checkrad to terminate.
-		 *	We timeout in 10 seconds.
-		 */
-		got_alrm = 0;
-		signal(SIGALRM, alrm_handler);
-		alarm(10);
-		while ((e = waitpid(pid, &st, 0)) != pid)
-			if (e < 0 && (errno != EINTR || got_alrm))
-				break;
-		alarm(0);
-		signal(SIGCHLD, handler);
-		if (got_alrm) {
-			kill(pid, SIGTERM);
-			sleep(1);
-			kill(pid, SIGKILL);
-			radlog(L_WARN, _("check_ts(): timeout waiting for checkrad"));
-			return -1;
-		}
-		if (e < 0) {
-			radlog(L_ERR|L_PERROR, 
-				_("check_ts(): error in waitpid()"));
-			return -1;
-		}
-		debug(10,
-			("got response %d", WEXITSTATUS(st))); 
-		return WEXITSTATUS(st);
-	}
-
-	/*
-	 *	Child - exec checkrad with the right parameters.
-	 */
-	for (n = 32; n >= 3; n--)
-		close(n);
-
-	ipaddr2str(address, ntohl(ut->nas_address));
-	sprintf(port, "%d", ut->nas_port);
-	strncpy(session_id, ut->session_id, RUT_IDSIZE);
-	session_id[RUT_IDSIZE] = 0;
-
-	debug(10,
-		("starting checkrad -d %s -t %s -h %s -p %s -u %s -s %s %s",
-		radius_dir,
-	    	nas->nastype, address, port, ut->login, session_id,
-	        nas->checkrad_args ? nas->checkrad_args : ""));
-	execl(CHECKRAD, "checkrad", 
-		"-d", radius_dir,	
-		"-t", nas->nastype, 
-		"-h", address, 
-		"-p", port,
-		"-u", ut->orig_login, 
-		"-s", session_id,
-	        nas->checkrad_args,
-	        NULL);
-	radlog(L_ERR, "check_ts(): exec %s: %s", CHECKRAD, strerror(errno));
-
-	/*
-	 *	Exit - 2 means "some error occured".
-	 */
-	exit(2);
-	/*NOTREACHED*/
+	return checkrad(nas, ut);
 }
 
 int

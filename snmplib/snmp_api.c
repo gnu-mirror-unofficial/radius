@@ -668,17 +668,18 @@ snmp_read(fdset)
  * should be called with that file descriptor set
  *
  * The timeout is the latest time that SNMP can wait for a timeout.  The
- * select should be done with the minimum time between timeout and any other
- * timeouts necessary.  This should be checked upon each invocation of select.
- * If a timeout is received, snmp_timeout should be called to check if the
- * timeout was for SNMP.  (snmp_timeout is idempotent)
+ * select should be done with the minimum time between timeout and any
+ * other timeouts necessary.  This should be checked upon each invocation
+ * of select. If a timeout is received, snmp_timeout should be called to
+ * check if the timeout was for SNMP.  (snmp_timeout is idempotent)
  *
- * Block is 1 if the select is requested to block indefinitely, rather than time out.
- * If block is input as 1, the timeout value will be treated as undefined, but it must
- * be available for setting in snmp_select_info.  On return, if block is true, the value
- * of timeout will be undefined.
+ * Block is 1 if the select is requested to block indefinitely, rather
+ * than time out. If block is input as 1, the timeout value will be treated
+ * as undefined, but it must be available for setting in snmp_select_info.
+ * On return, if block is true, the value of timeout will be undefined.
  *
- * snmp_select_info returns the number of open sockets.  (i.e. The number of sessions open)
+ * snmp_select_info returns the number of open sockets.  (i.e. The number
+ * of sessions open)
  */
 int
 snmp_select_info(numfds, fdset, timeout, block)
@@ -698,6 +699,7 @@ snmp_select_info(numfds, fdset, timeout, block)
      * For each request outstanding, add it's socket to the fdset,
      * and if it is the earliest timeout to expire, mark it as lowest.
      */
+    FD_ZERO(fdset);
     for (slp = Sessions; slp; slp = slp->next) {
 
 	active++;

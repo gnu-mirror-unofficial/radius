@@ -23,7 +23,7 @@
  * Version:	@(#)auth.c  1.83  21-Mar-1999  miquels@cistron.nl
  *              @(#) $Id$ 
  */
-#define RADIUS_MODULE 4
+#define RADIUS_MODULE 6
 #ifndef lint
 static char rcsid[] =
 "@(#) $Id$";

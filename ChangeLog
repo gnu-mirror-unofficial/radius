@@ -1,5 +1,9 @@
+2001-02-17  gray  <gray@farlep.net>
+	Integrated checkrad into radiusd. Fixed some bugs in rewrite.y
+
 2001-02-14  gray  <gray@farlep.net>
-	Introduced Match-Profile and Include-Profile attributes
+	Introduced Match-Profile and Include-Profile attributes.
+	Introduced BEGIN keyword in users.
 
 2001-02-12  gray  <gray@farlep.net>
 	Modified checkrad to use snmplib instead of calling external

@@ -169,3 +169,43 @@ jetstream_fixup()
 	return 0;
 }
 
+############################################################################
+# Checkrad functions
+#
+integer
+check_snmp_u(string str, string name, integer pid, string sid)
+{
+	logit("check_snmp_u: got " + str);
+	return str == name;
+}
+
+integer
+check_snmp_s(string str, string name, integer pid, string sid)
+{
+	logit("check_snmp_s: got " + str);
+	return str == sid;
+}
+
+integer
+decimal(string s)
+{
+	return (integer)("0x" + s);
+}
+
+integer
+check_max_finger(string str, string name, integer pid, string sid)
+{
+	logit("check_snmp_s: got " + str + " " + (string)pid + " " + sid);
+	return (integer) field(str, 2) == decimal(sid) &&
+	       field(str, 9) == name;
+}	
+
+integer
+check_unix(string str, string name, integer pid, string sid)
+{
+	logit("check_snmp_s: got " + str + " " + (string)pid + " " + sid);
+	return field(str, 1) == name &&
+               field(str, 3) == pid &&
+               field(str, 7) == sid;
+}
+

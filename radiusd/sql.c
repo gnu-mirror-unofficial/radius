@@ -17,7 +17,7 @@
  *
  */
 
-#define RADIUS_MODULE 7
+#define RADIUS_MODULE 9
 #ifndef lint
 static char rcsid[] =
 "@(#) $Id$";

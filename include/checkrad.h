@@ -17,49 +17,25 @@
  *
  */
 
-#define CONFIG_FILE "checkrad.conf"
+typedef struct radck_arg RADCK_ARG;
 
-#define MATCH_OFFSET 0
-#define MATCH_FIELD  1
+struct radck_arg {
+	RADCK_ARG    *next;
+	char         *name;
+	char         *value;
+};
 
-typedef struct header_list {
-	struct header_list *next;
-	char *string;
-	int offset;
-} HEADER_LIST;
+#define METHOD_FINGER 0
+#define METHOD_SNMP   1 
+#define METHOD_EXT    2
 
-typedef struct match_list {
-	struct match_list *next;
-	int type;
-	int num;
-	char *hdr;
-	char *value;
-} MATCH_LIST;
+typedef struct radck_type RADCK_TYPE;
 
-typedef int (*Check)(char*);
+struct radck_type {
+	RADCK_TYPE *next;
+	char       *type;
+	int        method;
+	RADCK_ARG  *args;
+};
 
-char * select_offset(char *str, int off);
-char * select_field(char *str, int num);
-int compare(char *str);
-char * checkrad_xlat(char *str);
-Check read_config();
-char *read_clients(char *);
-
-int netfinger(char*);
-int snmp_check(char*);
-
-void set_debug_level(char *);
-void set_logfile(char *);
-
-extern int want_header;
-extern char *nas_port;
-extern char *username;
-extern char *session_id;
-extern char *nas_type;
-extern char *snmp_community;
-extern char *snmp_oid;
-extern char *snmp_match;
-
-int ilookup(char *name, int defval);
-char *slookup(char *name, char *defval);
-
+RADCK_TYPE * find_radck_type(char *name);

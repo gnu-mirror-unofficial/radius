@@ -17,7 +17,7 @@
  *
  */
 %{
-#define RADIUS_MODULE 15
+#define RADIUS_MODULE 17
         #if defined(HAVE_CONFIG_H)
 	# include <config.h>
 	#endif
@@ -29,8 +29,10 @@
         #include <radiusd.h>
 	#include <symtab.h>
 	#include <setjmp.h>
+	#include <varargs.h>
         #include <obstack1.h>
-
+	#include <rewrite.h>
+	
         #ifndef lint
         static char rcsid[] =
           "@(#) $Id$";
@@ -85,16 +87,6 @@
 		regex_t      regex;    /* compiled regex itself */
 	       	int          nmatch;   /* number of \( ... \) groups */
 	};
-
-	/*
-	 * Data types
-	 */
-	typedef enum {
-		Undefined,
-		Integer,
-		String,
-		Max_datatype
-	} Datatype;
 
 	/*
 	 * Binary Operations
@@ -163,11 +155,6 @@
 		Attr_check,
 		Max_mtxtype
 	} Mtxtype;
-
-	typedef union {
-		int       ival;
-		char      *sval;
-	} Datum;
 
 	/*
 	 * Function parameter
@@ -737,11 +724,11 @@ fundecl : TYPE IDENT dclparm
 		  f.parm    = NULL;
 
 		  /* Count number of parameters */
-		  for (var = $3; var; var = var->dcllink) 
+		  for (var = $3; var; var = var->next) 
 			  f.nparm++;
 
 		  f.parm = last = NULL;
-		  for (var = $3; var; var = var->dcllink) {
+		  for (var = $3; var; var = var->next) {
 			  parm = alloc_entry(sizeof(*parm));
 			  parm->datatype = var->datatype;
 			  var->offset = -(STACK_BASE+
@@ -821,11 +808,12 @@ dclparm : '(' ')'
 
 parmlist: parm
           {
-		  $$->dcllink = NULL;
+		  /*FIXME*/
+		  /*$$->dcllink = NULL;*/
 	  }
         | parmlist ',' parm
           {
-		  $1->dcllink = $3;
+		  /*$1->dcllink = $3;*/
 		  $$ = $1;
 	  }
         ;
@@ -3240,7 +3228,7 @@ static void rw_attrcheck();
 static void rw_attrasgn();
 
 INSTR bin_codetab[] = {
-	rw_eq,
+	rw_eq,              
 	rw_ne,
 	rw_lt,
 	rw_le,
@@ -3261,20 +3249,25 @@ INSTR bin_codetab[] = {
 };
 
 INSTR bin_string_codetab[] = {
-	rw_eqs,
-	rw_nes,
-	rw_lts,
-	rw_les,
-	rw_gts,
-	rw_ges,
-	NULL,
-	NULL,
-	rw_adds,
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-};
+	rw_eqs,                      
+	rw_nes,			     
+	rw_lts,			     
+	rw_les,			     
+	rw_gts,			     
+	rw_ges,			     
+	NULL,			     
+	NULL,			     
+	NULL,   		     
+	NULL,			     
+	NULL,			     
+	NULL,			     
+	NULL,			     
+        rw_adds,		     
+	NULL,			     
+	NULL,			     
+	NULL,			     
+	NULL			     
+};				     
 
 INSTR coerce_tab[] = {
 	NULL,
@@ -3656,6 +3649,16 @@ pushs(sptr, len)
 		rw_rt.stack[rw_rt.ht--] = sptr[--len];
 
 	pushn((int) (rw_rt.stack + rw_rt.ht + 1));
+}
+
+void
+pushstr(str, len)
+	char *str;
+	int len;
+{
+	char *s;
+	strcpy(s = heap_reserve(len), str);
+	pushn((int)s);
 }
 
 char *
@@ -4130,7 +4133,7 @@ void
 rw_int()
 {
 	char *s = (char *)popn();
-	pushn(atoi(s));
+	pushn(strtol(s, NULL, 0));
 }
 
 void
@@ -4396,6 +4399,229 @@ run_init(pc, request)
 }
 
 int
+va_run_init(name, request, typestr, va_alist)
+	char *name;
+	VALUE_PAIR *request;
+	char *typestr;
+	va_dcl
+{
+	FILE *fp;
+	va_list ap;
+	FUNCTION *fun;
+	int nargs;
+	char *s;
+	
+	fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
+	if (!fun) {
+		radlog(L_ERR, _("function %s not defined"), name);
+		return -1;
+	}
+	
+	if (setjmp(rw_rt.jmp))
+		return -1;
+	
+	rw_rt.request = request;
+	if (debug_on(2)) {
+		fp = debug_open_file();
+		fprintf(fp, "Before rewriting:\n");
+		fprint_attr_list(fp, rw_rt.request);
+		fclose(fp);
+	}
+	rw_rt.st = 0;                     /* Stack top */
+	rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
+	rw_rt.pc = 0;
+
+	/* Pass arguments */
+	nargs = 0;
+	va_start(ap);
+	while (*typestr) {
+		nargs++;
+		switch (*typestr++) {
+		case 'i':
+			pushn(va_arg(ap, int));
+			break;
+		case 's':
+			s = va_arg(ap, char*);
+			pushs(s, strlen(s));
+			break;
+		default:
+			insist_fail("bad datatype");
+		}
+	}
+	va_end(ap);
+
+	if (fun->nparm != nargs) {
+		radlog(L_ERR,
+		       _("%s(): wrong number of arguments (should be %d, passed %d"),
+		       name, fun->nparm, nargs);
+		return -1;
+	}
+
+        /* Imitate a function call */
+	rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
+	pushn(0);                         /* Push on stack */
+	run(fun->entry);                  /* call function */
+	if (debug_on(2)) {
+		fp = debug_open_file();
+		fprintf(fp, "After rewriting\n");
+		fprint_attr_list(fp, rw_rt.request);
+		fclose(fp);
+	}
+	return rw_rt.rA;
+}
+
+typedef struct {
+	char *ptr;     /* current input pointer */
+	char *tok;     /* start of a (recent) token */
+	int  delim;    /* last found delimiter */
+} TOKBUF; 
+
+int
+tokbegin(buf, str)
+	TOKBUF *buf;
+	char   *str;
+{
+	buf->ptr = str;
+	buf->tok = str;
+	buf->delim = -1;
+}
+
+#define tokend(buf)
+#define tokptr(buf) (buf)->tok
+#define tokdelim(buf) (buf)->delim
+
+char *
+toknext(buf, delim)
+	TOKBUF *buf;
+	char *delim;
+{
+	int found = 0;
+
+	if (!*buf->ptr)
+		return NULL;
+	/* skip initial whitespace */
+	while (*buf->ptr && isspace(*buf->ptr))
+		buf->ptr++;
+	/* Mark start of a token */
+	buf->tok = buf->ptr;
+	/* Advance till a whitespace or a delimiter is found */
+	while (*buf->ptr && !isspace(*buf->ptr)) {
+		if (strchr(delim, *buf->ptr)) { 
+			found++;
+			break;
+		}
+		buf->ptr++;
+	}
+	if (!*buf->ptr)
+		return NULL;
+	if (!found) {
+		*buf->ptr++ = 0;
+		/* skip whitespace */
+		while (*buf->ptr && isspace(*buf->ptr))
+			buf->ptr++;
+	}
+	buf->delim = *buf->ptr;
+	*buf->ptr++ = 0;
+	return buf->tok;
+}
+	
+	
+int
+interpret(fcall, request, type, datum)
+	char *fcall;
+	VALUE_PAIR *request;
+	Datatype *type;
+	Datum *datum;
+{
+	FILE *fp;
+	FUNCTION *fun;
+	PARAMETER *parm;
+	int nargs;
+	char *name, *tok;
+	TOKBUF tokbuf;
+
+	tokbegin(&tokbuf, fcall);
+	name = toknext(&tokbuf, "(");
+	
+	fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
+	if (!fun) {
+		radlog(L_ERR, _("function %s not defined"), name);
+		return -1;
+	}
+	
+	if (setjmp(rw_rt.jmp))
+		return -1;
+	
+	rw_rt.request = request;
+	if (debug_on(2)) {
+		fp = debug_open_file();
+		fprintf(fp, "Before rewriting:\n");
+		fprint_attr_list(fp, rw_rt.request);
+		fclose(fp);
+	}
+	rw_rt.st = 0;                     /* Stack top */
+	rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
+	rw_rt.pc = 0;
+
+	/* Pass arguments */
+	nargs = 0;
+	parm = fun->parm;
+	while (tok = toknext(&tokbuf, ",)")) {
+		if (++nargs > fun->nparm) {
+			radlog(L_ERR, "too many arguments for %s", name);
+			return -1;
+		}
+		switch (parm->datatype) {
+		case Integer:
+			pushn(strtol(tok, NULL, 0));
+			break;
+		case String:
+			pushstr(tok, strlen(tok));
+			break;
+		default:
+			insist_fail("datatype!");
+		}
+		parm++;
+	}
+
+	if (tokdelim(&tokbuf) != ')') {
+		radlog(L_ERR,
+		       _("missing closing parenthesis in call to %s"), name);
+		return -1;
+	}
+	if (fun->nparm != nargs) {
+		radlog(L_ERR,
+		       _("too few arguments for %s"),
+			 name);
+		return -1;
+	}
+
+        /* Imitate a function call */
+	rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
+	pushn(0);                         /* Push on stack */
+	run(fun->entry);                  /* call function */
+	if (debug_on(2)) {
+		fp = debug_open_file();
+		fprintf(fp, "After rewriting\n");
+		fprint_attr_list(fp, rw_rt.request);
+		fclose(fp);
+	}
+	
+	switch (fun->rettype) {
+	case Integer:	
+		datum->ival = rw_rt.rA;
+		break;
+	case String:
+		datum->sval = (char*) rw_rt.rA;
+		break;
+	default:
+		abort();
+	}
+	*type = fun->rettype;
+	return 0;
+}
+
+int
 run_rewrite(name, req)
 	char *name;
 	VALUE_PAIR *req;
@@ -4432,6 +4658,8 @@ static void bi_length();
 static void bi_index();
 static void bi_rindex();
 static void bi_substr();
+static void bi_field();
+static void bi_logit();
 
 /*
  * integer length(string s)
@@ -4493,11 +4721,50 @@ bi_substr()
 	pushn((int) dest);
 }
 
+void
+bi_field()
+{
+	char *str = (char*)getarg(2);
+	int fn = getarg(1);
+	char *s = (char*)&nil;
+	int len = 1;
+
+	while (fn--) {
+		/* skip initial whitespace */
+		while (*str && isspace(*str))
+			str++;
+
+		s = str;
+		len = 0;
+		while (*str && !isspace(*str)) {
+			str++;
+			len++;
+		}
+	}
+
+	str = heap_reserve(len+1);
+	if (len) {
+		memcpy(str, s, len);
+		str[len] = 0;
+	}
+	pushn((int) str);
+}
+
+void
+bi_logit()
+{
+	char *msg = (char*)getarg(1);
+	radlog(L_INFO, "%s", msg);
+	pushn(0);
+}
+
 static builtin_t builtin[] = {
 	bi_length,  "length", Integer, "s",
 	bi_index,   "index",  Integer, "si",
 	bi_rindex,  "rindex", Integer, "si",
 	bi_substr,  "substr", String,  "sii",
+	bi_logit,   "logit",  Integer, "s",
+	bi_field,   "field",  String,  "si",
 	NULL
 };
 

@@ -17,7 +17,7 @@
  *
  */
 
-#define RADIUS_MODULE 2
+#define RADIUS_MODULE 4
 
 #ifndef lint
 static char rcsid[] =
@@ -50,6 +50,8 @@ static char rcsid[] =
 #include <radsql.h>
 #include <log.h>
 #include <symtab.h>
+#include <radutmp.h>
+#include <rewrite.h>
 
 #if defined (sun) && defined(__svr4__)
 RETSIGTYPE (*sun_signal(int signo, void (*func)(int)))(int);
@@ -144,15 +146,15 @@ int cntl_respond(int fd, struct sockaddr *sa, int salen,
 
 char			*progname;
 
-int debug_flag; /* can be raised from debugger only */
-
-static int		foreground;
-static int		spawn_flag;
-int			use_dbm = 0;
-int                     open_acct = 1;
-int                     auth_detail;
-int                     strip_names;
-int                     suspend_flag;
+int        debug_flag; /* can be raised from debugger only */
+int        test_mode;
+static int foreground;
+static int spawn_flag;
+int	   use_dbm = 0;
+int        open_acct = 1;
+int        auth_detail;
+int        strip_names;
+int        suspend_flag;
 
 Config config = {
 	10,              /* delayed_hup_wait */
@@ -228,7 +230,7 @@ static int      open_socket(int port, char *type);
 static void reread_config(int reload);
 static UINT4 getmyip(void);
 
-#define OPTSTR "Aa:bd:cfhl:Lni:p:P:Ssvx:yz"
+#define OPTSTR "Aa:bd:cfhl:Lni:p:P:Sstvx:yz"
 #ifdef HAVE_GETOPT_LONG
 struct option longopt[] = {
 	"log-auth-detail",    no_argument,       0, 'A',
@@ -248,6 +250,7 @@ struct option longopt[] = {
 	"pid-file-dir",       required_argument, 0, 'P',
 	"log-stripped-names", no_argument,       0, 'S',
 	"single-process",     no_argument,       0, 's',
+	"test",               no_argument,       0, 't',
 	"version",            no_argument,       0, 'v',
 	"debug",              required_argument, 0, 'x',
 	"log-auth",           no_argument,       0, 'y',
@@ -362,6 +365,9 @@ main(argc, argv)
 		case 's':	/* Single process mode */
 			spawn_flag = 0;
 			break;
+		case 't':
+			test_mode++;
+			break;
 		case 'v':
 			version();
 			break;
@@ -432,7 +438,8 @@ main(argc, argv)
 	reread_config(0);
 	if (check_config) 
 		exit(0);
-	
+	if (test_mode)
+		exit(test_shell());
 	
 #if 0
 /*DEBUG ONLY*/
@@ -1701,3 +1708,95 @@ open_socket(port, type)
 	return fd;
 }
 
+static char buf[128];
+int doprompt;
+
+char *
+moreinput(buf, bufsize)
+	char *buf;
+	size_t bufsize;
+{
+	if (doprompt)
+		printf("%% ");
+	return fgets(buf, bufsize, stdin);
+}
+
+int
+test_shell()
+{
+	char *tok;
+	int c;
+	NAS *nas;
+	struct radutmp ut;
+	Datatype type;
+	Datum datum;
+	
+#define nextkn() if ((tok = strtok(NULL, " \t")) == NULL) {\
+ printf("arg count\n");\
+ continue; }  
+	
+	printf("TEST MODE\n");
+	doprompt = isatty(fileno(stdin));
+	while (tok = moreinput(buf, sizeof(buf))) {
+		while (*tok && isspace(*tok))
+			tok++;
+		c = strlen(tok);
+		if (c > 1 && tok[c-1] == '\n')
+			tok[c-1] = 0;
+		c = *tok++;
+		tok = strtok(tok, " \t");
+		switch (c) {
+		case 0:
+		case '#':
+			continue;
+		case 'h':
+		case '?':
+			printf("h,?                help\n");
+			printf("q,<EOF>            quit\n");
+			printf("c LOGIN SID NAS    checkrad\n");
+			printf("r FUNCALL          function call\n");
+			printf("d LEVEL[,LEVEL]    set debug level\n");
+			break;
+		case 'd':
+			set_debug_levels(tok);
+			break;
+		case 'q':
+			return 0;
+		case 'c': /* checkrad */
+			strncpy(ut.orig_login, tok, sizeof(ut.orig_login));
+			nextkn();
+			strncpy(ut.session_id, tok, sizeof(ut.session_id));
+			nextkn();
+			ut.nas_port = atoi(tok);
+			nextkn();
+			nas = nas_by_name(tok);
+			if (!nas) {
+				printf("bad nas\n");
+				continue;
+			}
+			ut.nas_address = nas->ipaddr;
+			printf("%d\n", checkrad(nas, &ut));
+			break;
+		case 'r':
+			/* r fun types args */
+			if (interpret(tok, NULL, &type, &datum))
+				printf("?\n");
+			else {
+				switch (type) {
+				case Integer:
+					printf("%d (%u)", datum.ival,
+					             (unsigned) datum.ival);
+					break;
+				case String:
+					printf("%s", datum.sval);
+					break;
+				}
+				printf("\n");
+			}
+			break;
+		default:
+			printf("no command\n");
+		}
+	}
+	return 0;
+}

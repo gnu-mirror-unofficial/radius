@@ -200,6 +200,7 @@ typedef struct proxy_state {
 #ifdef USE_SNMP
 struct nas_stat;
 #endif
+struct nas_arg;
 
 typedef struct nas {
 	struct nas		*next;
@@ -207,7 +208,7 @@ typedef struct nas {
 	char			longname[MAX_LONGNAME+1];
 	char			shortname[MAX_SHORTNAME+1];
 	char			nastype[MAX_DICTNAME+1];
-	char                    *checkrad_args;
+	struct nas_arg          *args;
 #ifdef USE_SNMP
 	struct nas_stat         *nas_stat;
 #endif	

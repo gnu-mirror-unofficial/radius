@@ -41,7 +41,8 @@ static char rcsid[] =
 # include <fcntl.h>
 #endif
 #include <sysdep.h>
-#include <radiusd.h>
+#include <radius.h>
+#include <radpaths.h>
 #include <radutmp.h>
 #include <radlast.h>
 #include <log.h>
@@ -55,16 +56,13 @@ static char rcsid[] =
 #define C_B 2
 #define C_F 6
 
-typedef struct nasstat {
-	struct nasstat *next;
-	UINT4			ipaddr;
-	int                     use;
-	char			longname[256];
-	char			shortname[32];
-	char			nastype[32];
-	int                     nports;
-	PORT_STAT               *port;
-} NASSTAT;
+typedef struct {
+	int  use;
+	int  nports;
+	PORT_STAT *port;
+} port_usage_t;
+
+#define AP(p,m) (((port_usage_t*)(p)->app_data)-> ##m)
 
 /* various options */
 int width = 5;            /* width for time output (5 - hh:mm, 8 - hh:mm:ss) */
@@ -77,7 +75,6 @@ int interactive = -1;     /* interactive mode */
 int dump_only = 0;
 
 char *file;
-NASSTAT *naslist;
 int nas_cnt;
 
 time_t starttime;
@@ -87,19 +84,16 @@ unsigned offset;
 void raduse();
 int collect(int);
 int update(int);
-PORT_STAT * find_port(NASSTAT *nas, int port_no);
+PORT_STAT * find_port(NAS *nas, int port_no);
 void listnas();
 void usage();
 void license();
-NASSTAT *nasstat_find(UINT4);
-NASSTAT *nasstat_find_by_name(char *);
-void add_login(NASSTAT *nas, struct radutmp *bp);
-void add_logout(NASSTAT *nas, WTMP *pp, struct radutmp *bp);
-char * nasstat_name(UINT4 ipaddr);
+void add_login(NAS *nas, struct radutmp *bp);
+void add_logout(NAS *nas, WTMP *pp, struct radutmp *bp);
 void add_nas(char*);
 void use_all();
 void display();
-int read_naslist();
+void read_naslist();
 void raduse();
 void mark_all(int);
 int mark_nas(char *);
@@ -153,7 +147,6 @@ main(argc, argv)
 
 	app_setup();	
 	initlog(argv[0]);
-	read_naslist();
 	while ((c = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF)
 		switch(c) {
 		case 'b':
@@ -199,6 +192,7 @@ main(argc, argv)
 		}
 
 	radpath_init();
+	read_naslist();
 	file = radstat_path;
 
 	if (optind == argc) {
@@ -225,12 +219,28 @@ main(argc, argv)
 	return 0;	
 }
 
+void
+read_naslist()
+{
+	NAS *nas;
+	char *file = mkfilename(radius_dir, RADIUS_NASLIST);
+	if (nas_read_file(file) < 0)
+		exit(1);
+	efree(file);
+	nas_cnt = 0;
+	for (nas = nas_next(NULL); nas; nas = nas_next(nas)) {
+		nas->app_data = emalloc(sizeof(port_usage_t));
+		nas_cnt++;
+	}
+}
+
 int
 stat_insert_port(port)
 	PORT_STAT *port;
 {
-	NASSTAT *nas = nasstat_find(port->ip);
-
+	NAS *nas = nas_lookup_ip(port->ip);
+	port_usage_t *pu;
+	
 	if (!nas) {
 		radlog(L_ERR,
 		    _("stat_insert_port(): portno %d: can't find nas for IP %I"),
@@ -240,22 +250,23 @@ stat_insert_port(port)
 		return -1;
 	}
 
-	if (nas->port == NULL) {
-		nas->port = port;
-	} else if (nas->port->port_no > port->port_no) {
-		port->next = nas->port;
-		nas->port = port;
+	pu = nas->app_data;
+	if (pu->port == NULL) {
+		pu->port = port;
+	} else if (pu->port->port_no > port->port_no) {
+		port->next = pu->port;
+		pu->port = port;
 	} else {
 		PORT_STAT *p, *prevp = NULL;
 
-		for (p = nas->port; p; prevp = p, p = p->next) {
+		for (p = pu->port; p; prevp = p, p = p->next) {
 			if (p->port_no > port->port_no)
 				break;
 		}
 		port->next = p;
 		prevp->next = port;
 	}
-	nas->nports++;
+	pu->nports++;
 	return 0;
 }
 
@@ -266,7 +277,7 @@ collect(fd)
 {
 	PORT_STAT stat;
 	PORT_STAT *port;
-	NASSTAT *nas;
+	NAS *nas;
 	
 	if (lseek(fd, sizeof(PORT_STAT), SEEK_SET) != sizeof(PORT_STAT)) {
 		radlog(L_ERR, _("lseek error on `%s' (%d): %s"),
@@ -277,7 +288,7 @@ collect(fd)
 		if (stat.ip == 0)
 			break;
 
-		nas = nasstat_find(stat.ip);
+		nas = nas_lookup_ip(stat.ip);
 		if (!nas) {
 			radlog(L_ERR,
 			    _("collect(): port %d: can't find nas for IP %I"),
@@ -310,13 +321,13 @@ collect(fd)
 
 PORT_STAT *
 find_port(nas, port_no)
-	NASSTAT *nas;
+	NAS *nas;
 	int port_no;
 {
 	PORT_STAT *port;
 	
 	/* First try to find it in the cached buffer */
-	for (port = nas->port; port; port = port->next) 
+	for (port = AP(nas,port); port; port = port->next) 
 		if (port->port_no == port_no)
 			return port;
 	return NULL;
@@ -443,19 +454,14 @@ formatdelta(outbuf, delta)
 	char ct[128];
 	char buf[128];
 	struct tm *tm;
-	int days;
 
-	if (delta >= 86400) {
-		days = delta / 86400;
-		delta %= 86400;
-	} else
-		days = 0;
 	tm = gmtime(&delta);
-	strftime(ct, sizeof(ct), "%H:%M:%S", tm);
-	if (days == 0)
-		sprintf(buf, "%*.*s", width, width, ct);
+	strftime(ct, sizeof(ct), "%c", tm);
+	if (delta < 86400)
+		sprintf(buf, "%*.*s", width, width, ct + 11);
 	else
-		sprintf(buf, "%ld+%*.*s", days, width, width, ct);
+		sprintf(buf, "%ld+%*.*s",
+			delta / 86400, width, width, ct + 11);
 	return sprintf(outbuf, "%11.11s ", buf);
 }
 
@@ -468,8 +474,11 @@ formattime(buf, time)
 	char ct[128];
 	
 	tm = localtime(&time);
-	strftime(ct, sizeof(ct), "%a %b %e %H:%M", tm);
-	return sprintf(buf, "%s ", ct);
+	strftime(ct, sizeof(ct), "%c", tm);
+	return sprintf(buf, "%10.10s %5.5s ", ct, ct + 11);
+
+	/*"%m/%d/%y %H:%M:%S", tm);
+	printf("%8.8s %5.5s ", buf, buf + 9);*/
 }
 
 int
@@ -488,15 +497,15 @@ formatstop(buf, time)
 void
 display()
 {
-	NASSTAT *nas;
+	NAS *nas;
 	PORT_STAT *port;
 	int j, off = 0;
 	time_t now = time(NULL), delta, stop;
 	char *str;
 	int total_lines = 0, active_lines = 0;
 	
-	for (nas = naslist; nas; nas = nas->next) {
-		for (port = nas->port; port; port = port->next) {
+	for (nas = nas_next(NULL); nas; nas = nas_next(nas)) {
+		for (port = AP(nas,port); port; port = port->next) {
 			total_lines++;
 			if (port->active)
 				active_lines++;
@@ -522,11 +531,11 @@ display()
 		str += sprintf(str, _("Pool load ??.??"));
 
 	off = 0;
-	for (nas = naslist; nas; nas = nas->next) {
-		if (!nas->use)
+	for (nas = nas_next(NULL); nas; nas = nas_next(nas)) {
+		if (!AP(nas,use))
 			continue;
 		j = 0;
-		for (port = nas->port; port; port = port->next) {
+		for (port = AP(nas,port); port; port = port->next) {
 			if (!show_idle && !port->active) 
 				continue;
 			/* Port number */
@@ -584,23 +593,23 @@ void
 add_nas(name)
 	char *name;
 {
-	NASSTAT *nas;
+	NAS *nas;
 	
-	nas = nasstat_find_by_name(name);
+	nas = nas_lookup_name(name);
 	if (!nas) {
 		radlog(L_ERR, _("no such NAS: %s (use raduse -l to get the list)"),
 			name);
 		exit(1);
 	} else
-		nas->use++;
+		AP(nas,use) = 1;
 }
 
 void
 listnas()
 {
-	NASSTAT *p;
+	NAS *p;
 	
-	for (p = naslist; p; p = p->next) {
+	for (p = nas_next(NULL); p; p = nas_next(p)) {
 		printf("%-32.32s %-10.10s %-16.16I\n",
 		       p->longname,
 		       p->shortname,
@@ -608,111 +617,25 @@ listnas()
 	}
 }
 
-int
-read_naslist()
-{
-	FILE	*fp;
-	char	buffer[256];
-	char	hostnm[128];
-	char	shortnm[32];
-	char	nastype[32];
-	char    file[256];
-	int	lineno = 0;
-	NASSTAT	*c;
-
-	if (naslist)
-		return 1;
-	
-	sprintf(file, "%s/%s", RADIUS_DIR, RADIUS_NASLIST);
-	if ((fp = fopen(file, "r")) == NULL) {
-		radlog(L_CONS|L_ERR, _("can't open %s"), file);
-		return -1;
-	}
-	while (fgets(buffer, 256, fp) != NULL) {
-		lineno++;
-		if (buffer[0] == '#' || buffer[0] == '\n')
-			continue;
-		nastype[0] = 0;
-		if (sscanf(buffer, "%s%s%s", hostnm, shortnm, nastype) < 2) {
-			radlog(L_ERR, _("%s:%d: syntax error"), file, lineno);
-			continue;
-		}
-		c = emalloc(sizeof(*c));
-		
-		bzero(c, sizeof(*c));
-		c->ipaddr = get_ipaddr(hostnm);
-		strcpy(c->nastype, nastype);
-		strcpy(c->shortname, shortnm);
-		strcpy(c->longname, ip_hostname(c->ipaddr));
-		c->next = naslist;
-		naslist = c;
-		nas_cnt++;
-	}
-	fclose(fp);
-
-	return 0;
-}
-
-NASSTAT *
-nasstat_find(ipaddr)
-	UINT4 ipaddr;
-{
-	NASSTAT *cl;
-
-	for (cl = naslist; cl; cl = cl->next)
-		if (ipaddr == cl->ipaddr)
-			break;
-
-	return cl;
-}
-
-NASSTAT *
-nasstat_find_by_name(name)
-	char *name;
-{
-	NASSTAT *cl;
-
-	for (cl = naslist; cl; cl = cl->next)
-		if (strcasecmp(name, cl->shortname) == 0)
-			break;
-
-	return cl;
-}
-
-char *
-nasstat_name(ipaddr)
-	UINT4 ipaddr;
-{
-	NASSTAT *cl;
-
-	if ((cl = nasstat_find(ipaddr)) != NULL) {
-		if (cl->shortname[0])
-			return cl->shortname;
-		else
-			return cl->longname;
-	}
-	return ip_hostname(ipaddr);
-}
-
 void
 mark_all(m)
 	int m;
 {
-	NASSTAT *nas;
+	NAS *nas;
 
-	for (nas = naslist; nas; nas = nas->next)
-		nas->use = m;
+	for (nas = nas_next(NULL); nas; nas = nas_next(nas))
+		AP(nas,use) = m;
 }
 
 int
 mark_nas(name)
 	char *name;
 {
-	NASSTAT *nas;
+	NAS *nas;
 
-	for (nas = naslist; nas; nas = nas->next)
+	for (nas = nas_next(NULL); nas; nas = nas_next(nas))
 		if (strcasecmp(nas->shortname, name) == 0) {
-			nas->use = 1;
+			AP(nas,use) = 1;
 			return 0;
 		}
 	return 1;
@@ -763,12 +686,12 @@ dump(fd)
 	int fd;
 {
 	PORT_STAT stat;
-	NASSTAT *nas;
+	NAS *nas;
 	unsigned off = 0;
 	
 	while (read(fd, &stat, sizeof(stat)) == sizeof(stat)) {
 		if (stat.ip != 0) {
-			nas = nasstat_find(stat.ip);
+			nas = nas_lookup_ip(stat.ip);
 			printf("%8d %16.16s %4d\n",
 			       off,
 			       nas->shortname,

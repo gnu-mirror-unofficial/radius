@@ -36,10 +36,10 @@ static char rcsid[] =
 #include <netinet/in.h>
 
 #include <getopt1.h>
-#include <radiusd.h>
+#include <radius.h>
+#include <radpaths.h>
 #include <radutmp.h>
 
-NAS *naslist;
 #define LOCK_LEN sizeof(struct radutmp)
 
 static int write_wtmp(struct radutmp *ut);
@@ -135,19 +135,18 @@ main(argc, argv)
 	 *	Read the "naslist" file.
 	 */
 	path = mkfilename(radius_dir, RADIUS_NASLIST);
-	if (read_naslist_file(path) < 0)
+	if (nas_read_file(path) < 0)
 		exit(1);
 	efree(path);
 
 	if (nas) {
-		/*
-		 *	Find the IP address of the terminal server.
-		 */
-		if ((ip = findnas(nas)) == 0) {
-			if ((ip = get_ipaddr(nas)) == 0) {
-				fprintf(stderr, "%s: host not found.\n", nas);
-				return 1;
-			}
+		NAS *np;
+		np = nas_lookup_name(nas);
+		if (np)
+			ip = np->ipaddr;
+		else if ((ip = get_ipaddr(nas)) == 0) {
+			fprintf(stderr, "%s: host not found.\n", nas);
+			return 1;
 		}
 	}
 		
@@ -202,69 +201,6 @@ radzap(nasaddr, port, user, t)
 	return 0;
 }
 
-/*
- *	Read the nas file.
- *	FIXME: duplicated from files.c
- */
-int
-read_naslist_file(file)
-	char *file;
-{
-	FILE	*fp;
-	char	buffer[256];
-	char	hostnm[128];
-	char	shortnm[32];
-	char	nastype[32];
-	int	lineno = 0;
-	NAS	*c;
-
-	if ((fp = fopen(file, "r")) == NULL) {
-		perror(file);
-		return -1;
-	}
-	while(fgets(buffer, 256, fp) != NULL) {
-		lineno++;
-		if (buffer[0] == '#' || buffer[0] == '\n')
-			continue;
-		nastype[0] = 0;
-		if (sscanf(buffer, "%s%s%s", hostnm, shortnm, nastype) < 2) {
-			fprintf(stderr, _("%s:%d: syntax error\n"), file, lineno);
-			continue;
-		}
-		c = Alloc_entry(NAS);
-
-		c->ipaddr = get_ipaddr(hostnm);
-		strcpy(c->nastype, nastype);
-		strcpy(c->shortname, shortnm);
-		strcpy(c->longname, ip_hostname(c->ipaddr));
-
-		c->next = naslist;
-		naslist = c;
-	}
-	fclose(fp);
-
-	return 0;
-}
-
-
-UINT4
-findnas(nasname)
-	char *nasname;
-{
-	NAS *cl;
-
-	for(cl = naslist; cl; cl = cl->next) {
-		if (strcmp(nasname, cl->shortname) == 0 ||
-		    strcmp(nasname, cl->longname) == 0)
-			return cl->ipaddr;
-	}
-
-	return 0;
-}
-
-	
-
-
 int
 confirm(utp)
 	struct radutmp *utp;
@@ -273,7 +209,7 @@ confirm(utp)
 	NAS *cl;
 	char *s;
 	
-	if (cl = nas_find(ntohl(utp->nas_address)))
+	if (cl = nas_lookup_ip(ntohl(utp->nas_address)))
 		s = cl->shortname;
 	if (s == NULL || s[0] == 0) 
 		s = ip_hostname(ntohl(utp->nas_address));
@@ -300,22 +236,6 @@ write_wtmp(ut)
 	struct radutmp *ut;
 {
 	return radwtmp_putent(radwtmp_path, ut);
-}
-
-/*
- *	Find a nas in the NAS list.
- */
-NAS *
-nas_find(ipaddr)
-	UINT4 ipaddr;
-{
-	NAS *cl;
-
-	for(cl = naslist; cl; cl = cl->next)
-		if (ipaddr == cl->ipaddr)
-			break;
-
-	return cl;
 }
 
 char usage_text[] =

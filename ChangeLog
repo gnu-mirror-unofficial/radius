@@ -1,3 +1,32 @@
+2002-07-13  Sergey Poznyakoff  
+
+	* radiusd/exec.c: Implemented reading filter accounting
+	  replies, use of rewrite functions as input generators, and
+*	  redirection of a process stderr into a file (error-log
+	  statement).
+
+	* test/proto.m4 (TOOLDIR): Clear the directory if it exists.
+	* test/radiusd.m4 (Filter): New test.
+	* test/raddb/filter: New file. Sample filter for testing
+	* test/raddb/Makefile.am: Added filter.
+	* test/raddb/users.in: Added profiles for testing filters
+	* test/raddb/hints: Likewise.
+	* test/raddb/config.in: Added `filters' block.
+	* test/proxy/config.in: Fixed obsolete debug level specification.
+	
+	* examples/filter.rw: New file. Provides sample filter input
+	  generator for testing.
+	* examples/Makefile.am: Added filter.rw
+	* examples/config.syntax: Updated
+
+	* radiusd/radiusd.c: Renamed reread_config -> reconfigure.
+	* radiusd/request.c (request_process_command,
+	  request_thread_command): eliminated sleep.
+*	* radiusd/rewrite.y: New built-in functions: inet_ntoa,
+	  inet_aton, htonl, ntohl, htons, ntohs.
+	
+	* TODO: Updated
+	
 2002-07-13  Sergey Poznyakoff 
 
 	* radiusd/exec.c (filter_auth, filter_acct): Check for

@@ -25,11 +25,11 @@
 
 #ifdef USE_SQL
 
-#define SQL_AUTH     0
-#define SQL_ACCT     1
-#define SQL_NSERVICE 2
+# define SQL_AUTH     0
+# define SQL_ACCT     1
+# define SQL_NSERVICE 2
 
-#define SQL_CACHE_SIZE 16
+# define SQL_CACHE_SIZE 16
 typedef char **SQL_TUPLE;
 
 typedef struct {
@@ -66,6 +66,8 @@ enum radius_sql_query {
 	mlc_user_query,
 	mlc_realm_query,
 	mlc_stop_query,
+	auth_success_query,
+	auth_failure_query,
 	num_radius_sql_query
 };
 
@@ -85,20 +87,21 @@ typedef struct {
 
 extern SQL_cfg sql_cfg;
 
+int radiusd_sql_config();
 void radiusd_sql_shutdown();
 void radiusd_sql_clear_cache();
+void radiusd_sql_acct(grad_request_t *req);
+int radiusd_sql_checkgroup(grad_request_t *req, char *groupname);
+int radiusd_sql_check_attr_query(grad_request_t *req, grad_avp_t **check_pairs);
+int radiusd_sql_reply_attr_query(grad_request_t *req, grad_avp_t **reply_pairs);
+void radiusd_sql_auth_result_query(grad_request_t *req, int fail);
+void radiusd_sql_cleanup(int type, void *req);
 
-int rad_sql_init();
-void rad_sql_acct(grad_request_t *req);
-char *rad_sql_pass(grad_request_t *req, char *data);
-void rad_sql_cleanup(int type, void *req);
-int rad_sql_checkgroup(grad_request_t *req, char *groupname);
-int rad_sql_check_attr_query(grad_request_t *req, grad_avp_t **check_pairs);
-int rad_sql_reply_attr_query(grad_request_t *req, grad_avp_t **reply_pairs);
-
-#ifdef RADIUS_SERVER_GUILE
+char *radiusd_sql_pass(grad_request_t *req, char *data);
+	
+# ifdef RADIUS_SERVER_GUILE
 SCM sql_exec_query(int type, char *query);
-#endif
+# endif
 
 /* Dispatcher routines */
 int disp_sql_interface_index(char *name);
@@ -128,28 +131,31 @@ typedef struct {
 	int (*n_columns)(struct sql_connection *conn, void *data, size_t *np);
 } SQL_DISPATCH_TAB;
 
-#ifdef USE_SQL_MYSQL
+# ifdef USE_SQL_MYSQL
 extern SQL_DISPATCH_TAB mysql_dispatch_tab[];
-#else
-#define mysql_dispatch_tab NULL
-#endif
-#ifdef USE_SQL_POSTGRES
+# else
+#  define mysql_dispatch_tab NULL
+# endif
+# ifdef USE_SQL_POSTGRES
 extern SQL_DISPATCH_TAB postgres_dispatch_tab[];
 #else
-#define postgres_dispatch_tab NULL
+#  define postgres_dispatch_tab NULL
 #endif
-#ifdef USE_SQL_ODBC
+# ifdef USE_SQL_ODBC
 extern SQL_DISPATCH_TAB odbc_dispatch_tab[];
-#else
-#define odbc_dispatch_tab NULL
-#endif
+# else
+#  define odbc_dispatch_tab NULL
+# endif
 
 #else
-
-# define rad_sql_check_connect(a)
-# define rad_sql_setup NULL
-# define rad_sql_cleanup (void (*)(int, void *)) NULL
-# define rad_sql_shutdown()
-# define rad_sql_idle_check()
 # define sql_init()
+# define radiusd_sql_config() 0
+# define radiusd_sql_shutdown()
+# define radiusd_sql_clear_cache()
+# define radiusd_sql_acct(req)
+# define radiusd_sql_checkgroup(req, groupname) 0
+# define radiusd_sql_check_attr_query(req, check_pairs) 0
+# define radiusd_sql_reply_attr_query(req, reply_pairs)
+# define radiusd_sql_auth_result_query(req, fail)
+# define radiusd_sql_cleanup (void (*)(int, void *)) NULL
 #endif

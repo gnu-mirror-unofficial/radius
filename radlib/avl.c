@@ -118,8 +118,8 @@ avp_move(first, new)
 {
 	VALUE_PAIR *pair, *prev = NULL;
 
-	new->next = NULL;
 	if (*first == NULL) {
+		new->next = NULL;
 		*first = new;
 		return 0;
 	}
@@ -130,11 +130,13 @@ avp_move(first, new)
 			if (pair->attribute == new->attribute)
 				return new;
 		prev->next = new;
+		new->next = NULL;
 		return NULL;
 
 	case AP_ADD_REPLACE:
 		if ((*first)->attribute == new->attribute) {
 			prev = *first;
+			new->next = prev->next;
 			*first = new;
 			avp_free(prev);
 			return NULL;
@@ -146,12 +148,14 @@ avp_move(first, new)
 				avp_free(pair);
 				return NULL;
 			}
+		new->next = NULL;
 		prev->next = new;
 		return NULL;
 
 	case AP_ADD_APPEND:
 		for (pair = *first; pair->next; pair = pair->next)
 			;
+		new->next = NULL;
 		pair->next = new;
 		return NULL;
 	}
@@ -188,7 +192,7 @@ avl_find(first, attr)
 	return first;
 }
 
-/* Delete the pairs with the mathing attribute
+/* Delete the pairs with the matching attribute
  */
 void 
 avl_delete(first, attr)

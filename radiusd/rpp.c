@@ -31,12 +31,44 @@
 
 /* Process intercommunication primitives */
 
+enum process_status {
+	process_busy,      /* Process is busy handling a request */
+	process_ready,     /* Precess is idle and ready for input */
+	process_finished   /* Process has finished */
+};
+
 typedef struct {
-	pid_t pid;   
-	int p[2];
-	int ready;
+	pid_t pid;    /* PID of the handler process */
+	int p[2];     /* IPC descriptors. p[0] - input, p[1] - output */
+	enum process_status status; /* Current process status */
+	int exit_status;  /* Process exit status if status==process_finished */
 } rpp_proc_t;
 
+
+/* Low-level calls */
+
+/* Recompute the timeout TVAL taking into account the time elapsed since
+   START */
+static int
+recompute_timeout(struct timeval *start, struct timeval *tval)
+{
+	struct timeval now, diff;
+	
+	gettimeofday(&now, NULL);
+	timersub(&now, start, &diff);
+	if (timercmp(&diff, tval, <)) {
+		struct timeval tmp;
+		timersub(tval, &diff, &tmp);
+		*tval = tmp;
+		return 0;
+	}
+	return 1;
+}
+
+/* Write into the pipe (represented by FD) SIZE bytes from PTR. TV
+   sets timeout. TV==NULL means no timeout is imposed.
+
+   Returns number of bytes written */
 static int
 pipe_write(int fd, void *ptr, size_t size, struct timeval *tv)
 {
@@ -45,18 +77,28 @@ pipe_write(int fd, void *ptr, size_t size, struct timeval *tv)
 	else {
 		char *data = ptr;
 		int rc;
-		struct timeval to;
+		struct timeval tval, start;
 		fd_set wr_set;
 		size_t n;
-		
+
+		tval = *tv;
+		gettimeofday(&start, NULL);
 		for (n = 0; n < size;) {
-			to = *tv;
+			struct timeval to;
+			
 			FD_ZERO(&wr_set);
 			FD_SET(fd, &wr_set);
+
+			if (recompute_timeout (&start, &tval))
+				break;
+			to = tval;
+			
 			rc = select(fd + 1, NULL, &wr_set, NULL, &to);
 			if (rc == 0)
 				break;
 			else if (rc < 0) {
+				if (errno == EINTR) 
+					continue;
 				break;
 			} else if (rc > 0) {
 				rc = write(fd, data, 1);
@@ -70,6 +112,10 @@ pipe_write(int fd, void *ptr, size_t size, struct timeval *tv)
 	}
 }
 
+/* Read from the pipe (represented by FD) at most SIZE bytes into PTR. TV
+   sets timeout. TV==NULL means no timeout is imposed.
+
+   Returns number of bytes read */
 static int
 pipe_read(int fd, void *ptr, size_t size, struct timeval *tv)
 {
@@ -84,23 +130,33 @@ pipe_read(int fd, void *ptr, size_t size, struct timeval *tv)
 				data += rc;
 				size -= rc;
 				rdbytes += rc;
-			} else 
+			} else if (errno != EINTR)
 				break;
 		} while (size > 0);
 		return rdbytes;
 	} else {
-		struct timeval to;
+		struct timeval tval, start;
 		fd_set rd_set;
 		size_t n;
 		
+		tval = *tv;
+		gettimeofday(&start, NULL);
 		for (n = 0; n < size;) {
-			to = *tv;
+			struct timeval to;
+
 			FD_ZERO(&rd_set);
 			FD_SET(fd, &rd_set);
+
+			if (recompute_timeout (&start, &tval))
+				break;
+			to = tval;
+
 			rc = select(fd + 1, &rd_set, NULL, NULL, &to);
 			if (rc == 0)
 				break;
 			if (rc < 0) {
+				if (errno == EINTR)
+					continue;
 				break;
 			} else if (rc > 0) {
 				rc = read(fd, data, 1);
@@ -114,6 +170,11 @@ pipe_read(int fd, void *ptr, size_t size, struct timeval *tv)
 	}
 }
 
+
+/* RPP layer I/O. Each packet transmitted over a pipe is preceeded by
+   its length (a size_t number in host order) */
+
+/* Read SIZE bytes from the pipe (FD) into DATA. TV sets timeout */
 static int
 rpp_fd_read(int fd, void *data, size_t size, struct timeval *tv)
 {
@@ -135,6 +196,7 @@ rpp_fd_read(int fd, void *data, size_t size, struct timeval *tv)
 	return sz;
 }
 
+/* Write SIZE bytes from DATA to the pipe (FD. TV sets timeout */
 static int
 rpp_fd_write(int fd, void *data, size_t size, struct timeval *tv)
 {
@@ -145,6 +207,12 @@ rpp_fd_write(int fd, void *data, size_t size, struct timeval *tv)
 	return size;
 }
 
+
+
+/* Start a handler process. PROC_MAIN is the handler function (process'
+   main loop. DATA is passed to PROC_MAIN verbatim.
+
+   On success return 0 and fill in PROC structure. */
 int
 rpp_start_process(rpp_proc_t *proc, int (*proc_main)(void *), void *data)
 {
@@ -169,7 +237,6 @@ rpp_start_process(rpp_proc_t *proc, int (*proc_main)(void *), void *data)
 	}
 	if (pid == 0) {
 		/* Child */
-
 		/* Close remote side of pipes */
 		close(inp[0]);
 		close(outp[1]);
@@ -192,7 +259,7 @@ rpp_start_process(rpp_proc_t *proc, int (*proc_main)(void *), void *data)
 	proc->pid = pid;
 	proc->p[0] = inp[0];
 	proc->p[1] = outp[1];
-	proc->ready = 1;
+	proc->status = process_ready;
 	return 0;
 }
 
@@ -200,6 +267,7 @@ rpp_start_process(rpp_proc_t *proc, int (*proc_main)(void *), void *data)
 
 static grad_list_t *process_list; /* List of rpp_proc_t */
 
+/* Look up the rpp_proc_t whose input descriptor is FD */
 rpp_proc_t *
 rpp_lookup_fd(int fd)
 {
@@ -212,6 +280,9 @@ rpp_lookup_fd(int fd)
 	return p;
 }
 
+/* Find an rpp_proc_t ready for handling the reqest. If none is found,
+   start a new one. PROC_MAIN and DATA have the same meaning as in
+   rpp_start_process() */
 rpp_proc_t *
 rpp_lookup_ready(int (*proc_main)(void *), void *data)
 {
@@ -219,7 +290,8 @@ rpp_lookup_ready(int (*proc_main)(void *), void *data)
 
 	if (process_list) {
 		grad_iterator_t *itr = grad_iterator_create(process_list);
-		for (p = grad_iterator_first(itr); p && !p->ready;
+		for (p = grad_iterator_first(itr);
+		     p && p->status != process_ready;
 		     p = grad_iterator_next(itr))
 			;
 		grad_iterator_destroy(&itr);
@@ -242,6 +314,7 @@ rpp_lookup_ready(int (*proc_main)(void *), void *data)
 	return p;
 }
 
+/* Find the rpp_proc_t with a given PID */
 rpp_proc_t *
 rpp_lookup_pid(pid_t pid)
 {
@@ -254,7 +327,9 @@ rpp_lookup_pid(pid_t pid)
 	grad_iterator_destroy(&itr);
 	return p;
 }
-	
+
+/* Remove the given rpp_proc_t from the list. The underlying process
+   is supposed to have finished. No diagnostics is output. */
 static void
 _rpp_remove(rpp_proc_t *p)
 {
@@ -265,17 +340,58 @@ _rpp_remove(rpp_proc_t *p)
 		grad_free(p);
 }
 
+/* Remove the given rpp_proc_t from the list. Output diagnostics about
+   exit status of the handler */
 void
-rpp_remove(pid_t pid)
+rpp_remove(rpp_proc_t *p)
+{
+	char buffer[128];
+	format_exit_status(buffer, sizeof buffer, p->exit_status);
+	grad_log(L_NOTICE, _("child %lu %s"),
+		 (unsigned long) p->pid, buffer);
+	_rpp_remove(p);
+}
+
+/* Remove the rpp entry with given PID */
+void
+rpp_remove_pid(pid_t pid)
 {
 	rpp_proc_t *p = rpp_lookup_pid(pid);
 	if (p)
-		_rpp_remove(p);
+		rpp_remove(p);
+}
+
+/* Reflect the change of state of the rpp handler process.
+
+   The function is safe to be used from signal handlers */
+void
+rpp_status_changed(pid_t pid, int exit_status)
+{
+	rpp_proc_t *p = rpp_lookup_pid(pid);
+	if (p) {
+		p->status = process_finished;
+		p->exit_status = exit_status;
+	}
+}
+
+/* Collect rpp_proc's whose handler have exited. Free any associated
+   resources */
+void
+rpp_collect_exited()
+{
+	rpp_proc_t *p;
+	grad_iterator_t *itr = grad_iterator_create(process_list);
+	for (p = grad_iterator_first(itr); p; p = grad_iterator_next(itr)) {
+		if (p->status == process_finished)
+			rpp_remove(p);
+	}
+	grad_iterator_destroy(&itr);
 }
 
 
 static int rpp_request_handler(void *arg);
 
+/* Return 1 if rpp with the given PID is ready for input */
 int
 rpp_ready(pid_t pid)
 {
@@ -292,12 +408,14 @@ rpp_ready(pid_t pid)
 			}
 		}
 	        grad_iterator_destroy(&itr);
-		if (p && p->ready)
+		if (p && p->status == process_ready)
 			return 1;
 	}
 	return 0;
 }
 
+/* Traverse the rpp list until FUN returns non-zero or there are no
+   more busy handlers. While traversing, remove finished handlers. */
 void
 rpp_flush(int (*fun)(void*), void *closure)
 {
@@ -312,8 +430,17 @@ rpp_flush(int (*fun)(void*), void *closure)
 		for (count = 0, p = grad_iterator_first(itr);
 		     p;
 		     p = grad_iterator_next(itr))
-			if (!p->ready)
+			switch (p->status) {
+			case process_ready:
+				break;
+
+			case process_busy:
 				count++;
+				break;
+
+			case process_finished:
+				rpp_remove (p);
+			}
 	} while (count > 0 && (*fun)(closure) == 0);
 	grad_iterator_destroy(&itr);
 }
@@ -325,7 +452,8 @@ _kill_itr(void *item, void *data)
 	kill(p->pid, *(int*)data);
 	return 0;
 }
-	
+
+/* Deliver signal SIGNO to the handler with pid PID */
 int
 rpp_kill(pid_t pid, int signo)
 {
@@ -341,6 +469,7 @@ rpp_kill(pid_t pid, int signo)
 	return 0;
 }
 
+/* Slay the child */
 static void
 _rpp_slay(rpp_proc_t *p)
 {
@@ -349,11 +478,13 @@ _rpp_slay(rpp_proc_t *p)
 	_rpp_remove(p);
 }
 
-size_t
+/* Return number of the handlers registered in the process list */
 rpp_count()
 {
 	return grad_list_count(process_list);
 }
+
+
 
 struct rpp_request {
 	int type;                  /* Request type */
@@ -394,7 +525,7 @@ rpp_forward_request(REQUEST *req)
 	frq.fd = req->fd;
 	frq.size = req->rawsize;
 	
-	p->ready = 0;
+	p->status = process_busy;
 	req->child_id = p->pid;
 
 	if (radiusd_write_timeout) {
@@ -502,8 +633,10 @@ rpp_request_handler(void *arg ARG_UNUSED)
 			radiusd_exit0();
 		}
 		
+	debug(1,("%d",__LINE__));
 		req = request_create(frq.type, frq.fd, &frq.addr,
 				     data, frq.size);
+	debug(1,("%d",__LINE__));
 		req->status = RS_COMPLETED;
 		rc = request_handle(req, request_respond);
 			
@@ -526,7 +659,7 @@ rpp_input_handler(int fd, void *data)
 	rpp_proc_t *p = rpp_lookup_fd(fd);
 	struct timeval tv, *tvp;
 	int sz;
-	
+
 	grad_insist(p != NULL);
 	
 	if (radiusd_read_timeout) {
@@ -552,7 +685,7 @@ rpp_input_handler(int fd, void *data)
 		
 		if (p) {
 		        debug(1, ("updating pid %d", p->pid));
-			p->ready = 1;
+			p->status = process_ready;
 			request_update(p->pid, RS_COMPLETED, data);
 		} 
 		grad_free(data);
@@ -586,7 +719,9 @@ rpp_input_close(int fd, void *data)
 	return 0;
 }
 
+
 
+/* Don't use it. It's a debugging hook */
 int
 wd()
 {

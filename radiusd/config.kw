@@ -67,6 +67,7 @@ host, T_HOST
 ident, T_IDENT
 info, T_SEVERITY, _Y(S_INFO),
 level, T_LEVEL,
+listen, T_LISTEN,
 local0, T_FACILITY, _Y(LOG_LOCAL0)
 local1, T_FACILITY, _Y(LOG_LOCAL1)
 local2, T_FACILITY, _Y(LOG_LOCAL2)
@@ -116,10 +117,10 @@ print-failed-pass, T_LOGLEVEL, _Y(RLOG_FAILED_PASS)
 int
 keyword()
 {
-	struct conf_tok *p = in_word_set(conf_yylval.string,
-					 strlen(conf_yylval.string));
+	struct conf_tok *p = in_word_set(yylval.string,
+					 strlen(yylval.string));
 	if (p) {
-		conf_yylval = p->lval;
+		yylval = p->lval;
 		return p->token;
 	}
 	return T_STRING;

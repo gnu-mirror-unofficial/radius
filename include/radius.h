@@ -18,6 +18,8 @@
 #include <sysdep.h>
 #include <raddict.h>
 #include <mem.h>
+#include <pwd.h>
+#include <grp.h>
 
 #define DOTTED_QUAD_LEN         16
 
@@ -396,6 +398,9 @@ struct hostent *rad_gethostbyaddr_r(const char *addr, int length,
                                     int type, struct hostent *result,
                                     char *buffer, int buflen, int *h_errnop);
 
+struct passwd *rad_getpwnam_r(const char *name, struct passwd *result,
+			      char *buffer, int buflen);
+struct group *rad_getgrnam(const char *name);
 
 /* client.c */
 RADIUS_SERVER_QUEUE *rad_clt_create_queue(int read_cfg,

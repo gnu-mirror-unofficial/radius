@@ -434,11 +434,16 @@ addquote(char *s)
 int
 grad_parser_lex_init(char *name)
 {
+	int rc;
+
         obstack_init(&stack);
         
         context_stack = NULL;
         grad_parser_source_locus.file = NULL;
-        return push_source(name);
+        rc = push_source(name);
+	if (rc)	
+		obstack_free(&stack, NULL);
+	return rc;
 }
 
 void

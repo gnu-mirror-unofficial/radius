@@ -15,8 +15,6 @@
    along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-/*FIXME!FIXME!FIXME! server timeout is not used */
-
 #define RADIUS_MODULE_PROXY_C
 
 #ifdef HAVE_CONFIG_H
@@ -330,24 +328,13 @@ proxy_send(REQUEST *req)
         return 1;
 }
 
-/* FIXME: Unused */
+/* FIXME! server timeout is not used */
 void
-proxy_retry(int type, void *data, void *orig_data,
-	    int fd, char *status_str)
+proxy_retry(RADIUS_REQ *radreq, RADIUS_REQ *orig_req, int fd)
 {
-	RADIUS_REQ *radreq = data ? data : orig_data;
-	RADIUS_REQ *orig_req = orig_data;
 	VALUE_PAIR *namepair;
 	char *saved_username;
 	
-	if (!(orig_req && radreq)) {
-		radius_req_drop(type, radreq, orig_req, fd, status_str);
-		return;
-	}
-	
-	/* If both request and original request are given, try to retransmit
-	   the request */
-
         namepair = avl_find(radreq->request, DA_USER_NAME);
         if (namepair == NULL)
                 return;
@@ -364,15 +351,15 @@ proxy_retry(int type, void *data, void *orig_data,
 }
 
 
-int
-select_allowed(void *null ARG_UNUSED, VALUE_PAIR *pair)
+static int
+select_propagated(void *null ARG_UNUSED, VALUE_PAIR *pair)
 {
         return pair->prop & AP_PROPAGATE;
 }
 
 /* Called when a response from a remote radius server has been received.
    The function finds the original request and replaces all fields in
-   radreq, except `request' with the original data.
+   radreq, except `request', with the original data.
    Return:   0 proxy found
             -1 error don't reply */
 int
@@ -383,7 +370,6 @@ proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int fd)
         PROXY_STATE *state;
         
         /* Remove the last proxy pair from the list. */
-	/* FIXME: Should be done by proxy_cmp ? */
         proxy_state_pair = x = prev = NULL;
 
         for (vp = radreq->request; vp; vp = vp->next) {
@@ -405,7 +391,8 @@ proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int fd)
         /* Only allow some attributes to be propagated from
            the remote server back to the NAS, for security. */
         allowed_pairs = NULL;
-        avl_move_pairs(&allowed_pairs, &radreq->request, select_allowed, NULL);
+        avl_move_pairs(&allowed_pairs, &radreq->request,
+		       select_propagated, NULL);
         avl_free(radreq->request);
 
         /* Rebuild the RADIUS_REQ struct, so that the normal functions

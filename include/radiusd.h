@@ -564,5 +564,12 @@ void radck();
 /* checkrad.c */
 int checkrad(NAS *nas, struct radutmp *up);
 
+/* forward.c */
+int rad_cfg_forward_auth(int argc, cfg_value_t *argv,
+			 void *block_data, void *handler_data);
+int rad_cfg_forward_acct(int argc, cfg_value_t *argv,
+			 void *block_data, void *handler_data);
+void forward_init();
+void forward_request(int type, void *input, size_t inputsize);
 
 

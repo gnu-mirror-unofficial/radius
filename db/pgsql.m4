@@ -36,7 +36,7 @@ define({LONGINT_T},{int8})dnl
 define({CHAR_T},{character($1)})dnl
 define({VARCHAR_T},{character($1)})dnl
 define({CI})dnl
-define({TIME_T},{timestamp})dnl
+define({TIME_T},{timestamp}{}ifelse({$#}, {1},{ DEFAULT $1}))dnl
 define({ENUM_T},{ifelse({$1},1,char,character({$1}))})
 
 define({INDEX},{divert(1)
@@ -59,6 +59,8 @@ REVOKE ALL on "groups" from PUBLIC;
 GRANT SELECT on "groups" to "DB_USER";
 REVOKE ALL on "attrib" from PUBLIC;
 GRANT SELECT on "attrib" to "DB_USER";
+REVOKE ALL on "naspools" from PUBLIC;
+GRANT SELECT on "naspools" to "DB_USER";
 REVOKE ALL on "ippool" from PUBLIC;
 GRANT SELECT,UPDATE on "ippool" to "DB_USER";
 })})

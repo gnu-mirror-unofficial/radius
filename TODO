@@ -1,15 +1,26 @@
+* Redesign configuration files. The goals are:
+** get rid of the mess in raddb, replacing it with a single 
+logically structured configuration file.
+** restructure the packet matching logic (from hints,huntgroups,users)
+to allow for writing more complicated and logically structured rules.
+Possibly this will allow to get rid from the so-called 'server
+attributes', this will make dictionary simpler and clearer.
+** The current configuration file system should be supported as well.
+
 * Get rid of radscm (or build it only on systems that do not support
 shared libraries). Build a shared Guile module instead. Make
 server queue a SMOB instead of a hidden list.
 
-* Add \ line continuation to read_raddb_files.
-* redesign raduse to use snmp queries instead of peeking in radstat.
-* Clean up the semantics of log_init/log_done.
-* Enable use of port number in rewrite:check_unix()
-* Add include feature to config files that don't have it.
+* The server:
+** Add \ line continuation to read_raddb_files.
+** Clean up the semantics of log_init/log_done.
+** Enable use of port number in rewrite:check_unix()?
+** Add include feature to config files that don't have it.
+** Revise the possibility of listing memory and queue usage via
+snmp.
+
+* Redesign raduse to use snmp queries instead of peeking in radstat.
 * Write radctl substitute which would use SNMP.
-* Write a unified configuration utility in guile.
-* Need a more flexible IP allocation strategy
 
 
 Local variables:

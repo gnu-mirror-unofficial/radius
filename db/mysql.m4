@@ -51,6 +51,7 @@ GRANT INSERT,UPDATE,DELETE,SELECT on RADIUS.calls to DB_USER@'%';
 GRANT SELECT on RADIUS.passwd to DB_USER@'%';
 GRANT SELECT on RADIUS.groups to DB_USER@'%';
 GRANT SELECT on RADIUS.attrib to DB_USER@'%';
+GRANT SELECT on RADIUS.naspools to DB_USER@'%';
 GRANT SELECT,UPDATE on RADIUS.ippool to DB_USER@'%';
 UPDATE user set password=password('DB_PWD') where user='DB_USER';
 FLUSH PRIVILEGES;

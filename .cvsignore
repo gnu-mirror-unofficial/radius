@@ -24,3 +24,7 @@ missing
 depcomp
 autom4te.cache
 intl
+ABOUT-NLS
+*.tar
+*.tar.gz
+*.tar.bz2

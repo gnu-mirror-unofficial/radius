@@ -11,7 +11,7 @@ This version uses a different approach to simultaneous handling of the
 requests. Instead of spawning a child each time a request arrives, the
 main server keeps a pool of subprocesses and distributes the requests
 among them. This allows to ensure the stability of the SQL
-connections, make possible the retransmission of the replies when
+connections, and makes possible the retransmission of the replies when
 duplicate requests arrive.
 
 * New features
@@ -19,6 +19,12 @@ duplicate requests arrive.
 ** Support for Guile version 1.6 and newer.
 
 ** Multiple remote servers may be defined in a radius realm. 
+
+** New IP allocation strategy.
+
+Included is the plug-in module ipalloc.scm that implements a new
+strategy of allocating framed IP addresses for the users. See file
+doc/README.ipalloc for more info.
 
 * Changes to configure
 
@@ -39,22 +45,50 @@ the official GNU subtree.
 
 This keyword controls the maximum number of handler processes the
 dispatcher is allowed to start. It may be used in `option' block
-(see raddb/config.status for an example). The default value is 32.
+(see raddb/config.status for an example). The default value is 8.
+Please notice that each new process consumes 4 file descriptors, so
+make sure you have enough descriptors available before increasing this
+value.
 
 *** process-idle-timeout
 
 Each subprocess waits for the request for this amount of time.
 If no request arrives, the subprocess exits.
 
-*** New keyword print-milliseconds
+*** print-milliseconds
 
 This boolean keyword that can be used in `channel' statement of
 the `logging' block. It makes radiusd print log timestamps with
 milliseconds. See raddb/config.syntax for examples.
 
-** Keywords `spawn' and `usr2delay' are obsolete.
+*** master-read-timeout
 
-These keywords are useless with the new multi-process model.
+This keyword controls the amount of time the server waits when
+reading data from the child process. If no data arrives within this
+time, the child is considered `stuck' and is terminated. By default
+the value of this parameter is zero (no timeout at all).
+
+*** master-write-timeout
+
+Sets the number of seconds to wait for the child input channel to be
+able to receive data from the dispatcher process. If it does not
+become ready within this time , the child is considered `stuck' and
+is terminated. By default the value of this parameter is zero (no
+timeout at all).
+
+** Obsoleted keywords
+
+*** usr2delay (option)
+
+*** spawn (auth,acct,snmp)
+
+The keyword is useless in the new multiprocess model
+
+*** proxy (block statement)
+
+Proxied requests are handled on the common basis with their
+corresponding requests (auth or acct).
+
 
 ** Use of listen statement is allowed in snmp block.
 
@@ -67,7 +101,7 @@ deprecated
 
 The maximum number of connections to the authentication database equals
 the maximum number of processes set by `max-processes' statement. The
-same holds for the number of connections to accounting the database.
+same holds for the number of connections to the accounting database.
 
 * Testsuite completely rewritten.
 

@@ -1,3 +1,31 @@
+2003-06-17  Sergey Poznyakoff
+
+	* NEWS: Updated
+	* README: Updated
+	* TODO: Updated
+	* COPYING: Added to the repository
+	* .cvsignore: Updated
+	* db/db.m4: Create naspools table. Changed structure of
+	the ippool.
+	* db/mysql.m4: Updated.
+	* db/pgsql.m4: Updated.
+	
+	* radscm/ipalloc.scm: Rewritten for the new database structure.
+	* include/argcv.h: Updated the FSF address
+	* lib/obstack.c: Likewise.
+	* include/cfg.h (cfg_ignore,cfg_obsolete): New functions
+	* radiusd/config.y: Likewise.
+	* include/radiusd.h: Minor change
+	* lib/Makefile.am: Fixed LIBLIST rule
+	* radiusd/snmpserv.c: Removed handling for queue and memory
+	related OIDs. This should be revised in the future release.
+
+	* doc/COPYING.FDL: Removed.
+	* doc/COPYING.DOC: New file.
+	* doc/README.ipalloc: New file.
+	* doc/Makefile.am: Updated.
+	* radiusd/radiusd.c: Support for the obsolete statements.
+
 2003-06-16  Sergey Poznyakoff
 
 	* lib/Makefile.am (LIBLIST): Modified

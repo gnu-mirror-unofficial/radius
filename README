@@ -1,71 +1,71 @@
-		       I. Installation
-	            ---------------------
-    
-    Before installing, take a glance at doc/MACHINES, it
-    may describe some issues, specific to your configuration.
-    To install the package, do:
+* Installation
 
-    1. ./configure [options]
+Before installing, take a glance at doc/MACHINES, it may describe some
+issues, specific to your configuration.
 
-    For the list of available options consult file INSTALL.
-    The applications-specific options are:
+To install the package, do:
+
+** ./configure [options]
+
+For the list of available options consult file INSTALL.
+The applications-specific options are:
 			      			      	
-    --disable-debug
+*** --disable-debug
 	Disable debugging functions. This results in slightly more compact
     	code, but makes configuration issues difficult to debug. Use at
     	your own risk.
 
-    --with-auth-port=NUMBER
+*** --with-auth-port=NUMBER
 	Specify port number to use for authentication. Default is 1812.
         The default port number for accounting is computed as auth_port + 1.
 
-    --with-include-path=STRING
+*** --with-include-path=STRING
 	Specify any additional include directories that are required for
 	your configuration. Multiple directories are separated by colons.
 
-    --with-lib-path=STRING
+*** --with-lib-path=STRING
 	Specify any additional library directories that are required for
 	your configuration. Multiple directories are separated by
 	colons.
 
-    --enable-shadow
+*** --enable-shadow
 	Enable shadow support. Use this only if ./configure was unable to
         correctly determine if it should use the shadow support.
 
-    --enable-pam
+*** --enable-pam
     	Enable PAM support.
 	
-    --enable-dbm[={dbm|ndbm}]
+*** --enable-dbm[={dbm|ndbm}]
 	Enable dbm support. If no argument is specified, usual DBM is
 	assumed. The `ndbm' argument instructs to enable support of NDBM.
 		
-    --with-mysql
+*** --with-mysql
 	Enable MySQL support. Usually this requires adding appropriate
 	--with-lib-path and --with-include-path options.
     
-    --with-postgres
+*** --with-postgres
 	Enable PostgreSQL support. Usually this requires adding appropriate
 	--with-lib-path and --with-include-path options.
 
-    --with-odbc[={odbc|iodbc}]
+*** --with-odbc[={odbc|iodbc}]
         Configure to work with ODBC. This is an experimental feature, it
         has not been tested thoroughly.
     
-    --without-guile
+*** --without-guile
 	Do not compile Guile support.
 
-    --without-server-guile
+*** --without-server-guile
 	Do not compile server Guile support
 
-    --with-client
+*** --with-client
 	Build client programs. Requires presence of Guile >=1.4 and
 	PAM on your system.
 
-    --with-pamdir=DIR
+*** --with-pamdir=DIR
 	Install PAM modules in the given DIR. Default is
     	$prefix/lib/security.
 
-    --enable-snmp[=compat]
+*** --enable-snmp[=compat]
 	Enable SNMP support. By default this enables the use of enterprise
         subtree .iso.org.dod.internet.private.enterprises.gnu.radius
         (.1.3.6.1.4.1.11591.1). To enable support for the subtree used
@@ -74,44 +74,48 @@
         .1.3.6.1.4.1.9163) use --enable-snmp=compat form of this
         option.
         
-    --enable-livingston-menus
+*** --enable-livingston-menus
         Enable support for Livingston-compatible menus.
 
-    --enable-deny-shell=SHELL
+*** --enable-deny-shell=SHELL
 	Always reject users with given shell.
 
-    2. Run make.
+** Run make.
 
-    The GNU make is preferred.
+The GNU make is preferred.
 
-    3. Check it.
+** Check it.
 
-    You can check the functionality of the package without installing
-    it. To do so, run
+You can check the functionality of the package without installing
+it. To do so, run
 
         make check
 
-    (You have to have DejaGNU installed on your system).
+(You have to have DejaGNU installed on your system).
 
-    4. make install
+** Run `make install'
 
-    5. If you wish to install manual pages, do 
+** If you wish to install manual pages, do 
 
     make install-man.
 
-    Please note, that the information in man pages is no longer being
-    maintained and can therefore be inaccurate or incomplete. The
-    Info files are the authoritative documentation. 
+Please note, that the information in man pages is no longer being
+maintained and can therefore be inaccurate or incomplete. The
+Info files are the authoritative documentation. 
 
-		       II. Creating SQL database.
-		    -------------------------------
+* Creating SQL database.
 
-    Follow the procedure, described below if you have configured
-    Radius with SQL support:
-    
-    1. Change to the subdirectory db/
-    2. Edit file config.m4. Most of its contents is commented out, so
-       uncomment anything that may be needed. Variables are:
+If you have configured Radius with SQL support, you may wish
+to create the authentication and accounting database. Notice,
+that if you already have a running database, you may continue
+using it with GNU Radius. You will only have to modify file
+raddb/sqlserver to match your database structure.
+
+To create a fresh Radius database, follow the procedure below:
+
+** Change to the subdirectory db/
+** Edit file config.m4. Most of its contents is commented out, so
+uncomment anything that may be needed. Variables are:
     
     server   - SQL server name or IP address
     port     - port to connect to
@@ -127,66 +131,65 @@
     DB_PWD   - SQL password.
     (These must coincide with the values in raddb/sqlserver file)
     
-    3. Depending on the type of SQL server you are using, run either
-       `make mysql' or `make pgsql'.
+** Depending on the type of SQL server you are using, run either
+`make mysql' or `make pgsql'.
 
-       To get the database structure without creating it, run
-       `make mysql.struct' or `make pgsql.struct'.
+To get the database structure without creating it, run
+`make mysql.struct' or `make pgsql.struct'.
     
-		       III. Upgrade
-		    -------------------
+* Upgrading from earlier versions of GNU Radius
 
-    Please, read file NEWS. It describes all the new features,
-    introduced with version 1.0 as well as its basic differences
-    from the 0.96 series.
+Please, read file NEWS. It describes all the new features,
+introduced with version 1.0 as well as its basic differences
+from the 0.96 series.
                
-		       IV. Configuring
-		    ----------------------
+* Configuring
 
-    Be sure to read accompanying documentation. The online documentation
-    is available at http://www.gnu.org/software/radius/manual.
-    If you need help, subscribe to <help-gnu-radius@gnu.org> and send your
-    questions there. To subscribe, visit
+Be sure to read accompanying documentation. The online documentation
+is available at http://www.gnu.org/software/radius/manual.
+If you need help, subscribe to <help-gnu-radius@gnu.org> and send your
+questions there. To subscribe, visit
 
     http://mail.gnu.org/mailman/listinfo/help-gnu-radius
 
-    Before asking a question, it will be a good idea to look through
-    the mailing archives on the same page, as they might already
-    contain the answer.
+Before asking a question, it will be a good idea to look through
+the mailing archives on the same page, as they might already
+contain the answer.
         
-		       V. Testing.		
-		    ------------------
+* Testing.		
 
-    Both commands described below use the configuration file
-    raddb/client.conf. See the documentation for the detailed
-    description of it.
+The commands described below use the configuration file
+raddb/client.conf. See the documentation for the detailed description
+of this file.
     
-    Use radauth to send authentication requests to the running
-    server. The invocation syntax is:
+Use radauth to send authentication requests to the running
+server. The invocation syntax is:
 
             radauth [-v][-sSERVER:SECRET[:PORT]] username [pass]
 
-    The -v (--verbose) option produces verbose output. The -s (--server)
-    option allows to set the parameters of the radius server to send
-    the request to.
-    
-    If you have guile version 1.4 or better installed, you can use
-    radsession script to send authentication/accounting requests
-    to the server. To do so, you will first need to edit your
-    raddb/client.conf file. The template installed from the distribution
-    should suffice to test the server in default configuration.
+The -v (--verbose) option produces verbose output. The -s (--server)
+option allows to set the parameters of the radius server to send
+the request to.
+ 
+If you have guile version 1.4 or better installed, you can use
+radsession script to send authentication/accounting requests
+to the server. To do so, you will first need to edit your
+raddb/client.conf file. The template installed from the distribution
+should suffice to test the server in default configuration.
 
-    1. To test authentication do
+** Authentication test
 
-	radsession -l LOGIN -p PASSWD -P PORT-ID --auth
+  radsession -l LOGIN -p PASSWD -P PORT-ID --auth
 
-    2. To test accounting do
+** Accounting test
 
-	radsession -l LOGIN -p PASSWD -P PORT-ID -s SESSION-ID --start
-     or
-	radsession -l LOGIN -P PORT-ID -s SESSION-ID --stop
+To test accounting do:
 
-    Here,
+  radsession -l LOGIN -p PASSWD -P PORT-ID -s SESSION-ID --start
+or
+  radsession -l LOGIN -P PORT-ID -s SESSION-ID --stop
+
+Where:
 	LOGIN		is the user's login name
 	PASSWD		is his password. Use `.' (dot) to get prompted
 			for the password as passwd(1) does.
@@ -197,44 +200,40 @@
 			a session ID of a previously started session
 			when used with --stop option.
 
-    For example, supposing user `hamlet' has an entry in the users file,
-    the following would authenticate it and open a session for it:
+For example, supposing user `hamlet' has an entry in the users file,
+the following would authenticate him and open a session for him:
 
 	radsession -l hamlet -p guessme -P 1 -s "0001" --start
 
-    Now, if you run radwho, you would get something like:
+Now, if you run radwho, you would get something like:
 
      Login             Name What  TTY     When     From        Location
 hamlet           hamlet      PPP  S001  Mon 07:22 localhost    255.255.255.254
 
-    radlast shows the following;
+radlast shows the following;
 
 hamlet      local    001 127.0.0.2       Thu Mon 07 07:22 - still logged in
 
 radwtmp begins Fri Dec 01 16:36:59 2000
 
-    Then, suppose you run:
+Then, suppose you run:
 
 	radsession -l hamlet -P 1 -s "0001" --stop
 
-    This will send a stop record for session 0001. Radlast would then show
-    something like:
+This will send a stop record for session 0001. Radlast would then show
+something like:
 
 hamlet      local    001 127.0.0.2       Thu Mon 07 07:22 - 07:25  (00:03) 
 
 radwtmp begins Fri Dec 01 16:36:59 2000
 
-		        VI. Bug reporting.		
-                      ----------------------
+* Bug reporting.		
 
-    Send bug reports to <bug-gnu-radius@gnu.org>. 
+Send bug reports to <bug-gnu-radius@gnu.org>. 
 	
 
 Local Variables:
-mode: indented-text
-indent-tabs-mode: nil
-tab-stop-list: (4 8 12 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76)
-left-margin: 4
-fill-column: 74
+mode: outline
+paragraph-separate: "[ 	]*$"
 version-control: never
 End:

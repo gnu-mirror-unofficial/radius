@@ -63,9 +63,9 @@ typedef struct pw_auth_hdr {
 #define TYPE_IPADDR                     2
 #define TYPE_DATE                       3
 
-#define RT_AUTHENTICATION_REQUEST       1
-#define RT_AUTHENTICATION_ACK           2
-#define RT_AUTHENTICATION_REJECT        3
+#define RT_ACCESS_REQUEST               1
+#define RT_ACCESS_ACCEPT                2
+#define RT_ACCESS_REJECT                3
 #define RT_ACCOUNTING_REQUEST           4
 #define RT_ACCOUNTING_RESPONSE          5
 #define RT_ACCOUNTING_STATUS            6
@@ -75,11 +75,12 @@ typedef struct pw_auth_hdr {
 #define RT_ACCOUNTING_MESSAGE           10
 #define RT_ACCESS_CHALLENGE             11
 #define RT_STATUS_SERVER                12
+#define RT_STATUS_CLIENT                13
 
+/* These are not implemented yet */
 #define RT_ASCEND_TERMINATE_SESSION     31
 #define RT_ASCEND_EVENT_REQUEST         33
 #define RT_ASCEND_EVENT_RESPONSE        34
-/* These two are not implemented yet */
 #define RT_ASCEND_ALLOCATE_IP           51
 #define RT_ASCEND_RELEASE_IP            52
 

@@ -424,7 +424,7 @@ rad_auth_check_username(RADIUS_REQ *radreq, int activefd)
 
 	/* Process a malformed request */
 	if (auth_reject_malformed_names) 
-		radius_send_reply(RT_AUTHENTICATION_REJECT, radreq,
+		radius_send_reply(RT_ACCESS_REJECT, radreq,
 				  radreq->request,
 				  message_text[MSG_ACCESS_DENIED],
 				  activefd);
@@ -451,7 +451,7 @@ rad_auth_init(RADIUS_REQ *radreq, int activefd)
                 radlog_req(L_NOTICE, radreq,
 			   _("Access denied by huntgroup %s:%d"),
 			   loc.file, loc.line);
-                radius_send_reply(RT_AUTHENTICATION_REJECT, radreq,
+                radius_send_reply(RT_ACCESS_REJECT, radreq,
                                   radreq->request, NULL, activefd);
                 return -1;
         }
@@ -743,12 +743,12 @@ sfn_init(AUTH_MACH *m)
         VALUE_PAIR *pair_ptr;
 
 	switch (radreq->server_code) {
-	case RT_AUTHENTICATION_REJECT:
+	case RT_ACCESS_REJECT:
 		m->user_check = avp_create_integer(DA_AUTH_TYPE, 
 					           DV_AUTH_TYPE_REJECT);
 		break;
 
-	case RT_AUTHENTICATION_ACK:
+	case RT_ACCESS_ACCEPT:
 		m->user_check = avp_create_integer(DA_AUTH_TYPE, 
 					           DV_AUTH_TYPE_ACCEPT);
 		break;
@@ -1176,7 +1176,7 @@ sfn_ack(AUTH_MACH *m)
         
 	radius_eval_avl(m->req, m->user_reply);
 
-        radius_send_reply(RT_AUTHENTICATION_ACK,
+        radius_send_reply(RT_ACCESS_ACCEPT,
                           m->req,
                           m->user_reply,
                           auth_finish_msg(m),
@@ -1202,7 +1202,7 @@ sfn_reject(AUTH_MACH *m)
 {
         debug(1, ("REJECT: %s", m->namepair->avp_strvalue));
 	radius_eval_avl(m->req, m->user_reply);
-        radius_send_reply(RT_AUTHENTICATION_REJECT,
+        radius_send_reply(RT_ACCESS_REJECT,
                           m->req,
                           m->user_reply,
                           auth_finish_msg(m),

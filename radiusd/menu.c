@@ -163,7 +163,7 @@ menu_reply(RADIUS_REQ *radreq, int activefd)
 
         if ((term_pair = avl_find(pair, DA_MENU)) != NULL
 	    && strcmp(term_pair->avp_strvalue, "EXIT") == 0) {
-                radius_send_reply(RT_AUTHENTICATION_REJECT, radreq,
+                radius_send_reply(RT_ACCESS_REJECT, radreq,
                                   radreq->request, NULL, activefd);
         } else if (pair) {
                 if (new_pair = avl_find(pair, DA_MENU)) {
@@ -173,11 +173,11 @@ menu_reply(RADIUS_REQ *radreq, int activefd)
                         radius_send_challenge(radreq, msg, state_value, activefd);
 			efree(msg);
                 } else {
-                        radius_send_reply(RT_AUTHENTICATION_ACK, radreq,
+                        radius_send_reply(RT_ACCESS_ACCEPT, radreq,
                                           pair, NULL, activefd);
                 }
         } else {
-                radius_send_reply(RT_AUTHENTICATION_REJECT, radreq,
+                radius_send_reply(RT_ACCESS_REJECT, radreq,
                                   radreq->request, NULL, activefd);
         }
 

@@ -51,7 +51,7 @@ radius_send_reply(int code, RADIUS_REQ *radreq,
                 
                 switch (code) {
                 case RT_PASSWORD_REJECT:
-                case RT_AUTHENTICATION_REJECT:
+                case RT_ACCESS_REJECT:
                         radreq->reply_pairs = NULL;
                         avl_move_attr(&radreq->reply_pairs, &reply, 
                                       DA_REPLY_MESSAGE);
@@ -61,7 +61,7 @@ radius_send_reply(int code, RADIUS_REQ *radreq,
 			stat_inc(auth, radreq->ipaddr, num_rejects);
                         break;
 
-		case RT_AUTHENTICATION_ACK:
+		case RT_ACCESS_ACCEPT:
 			stat_inc(auth, radreq->ipaddr, num_accepts);
 			/*FALLTHROUGH*/
 			
@@ -320,9 +320,9 @@ radius_req_cmp(void *adata, void *bdata)
 	nas = nas_request_to_nas(a);
 
 	switch (a->code) {
-	case RT_AUTHENTICATION_REQUEST:
-	case RT_AUTHENTICATION_ACK:
-	case RT_AUTHENTICATION_REJECT:
+	case RT_ACCESS_REQUEST:
+	case RT_ACCESS_ACCEPT:
+	case RT_ACCESS_REJECT:
 	case RT_ACCESS_CHALLENGE:
 		prop = find_prop(nas, "compare-auth-flag", 0);
 		if (!prop)
@@ -449,7 +449,7 @@ radius_req_failure(int type, struct sockaddr_in *addr)
 int
 radius_status_server(RADIUS_REQ *radreq, int fd)
 {
-	radius_send_reply(RT_AUTHENTICATION_ACK, radreq, NULL,
+	radius_send_reply(RT_ACCESS_ACCEPT, radreq, NULL,
 			  "GNU Radius server fully operational",
 			  fd);
 	return 0;
@@ -467,7 +467,7 @@ radius_respond(REQUEST *req)
 	radiusd_sql_clear_cache();
 #endif
 
-	if (radreq->code == RT_AUTHENTICATION_REQUEST
+	if (radreq->code == RT_ACCESS_REQUEST
 	    && rad_auth_check_username(radreq, req->fd))
 	    return 1;
 	
@@ -476,7 +476,7 @@ radius_respond(REQUEST *req)
 
         /* Check if we support this request */
         switch (radreq->code) {
-        case RT_AUTHENTICATION_REQUEST:
+        case RT_ACCESS_REQUEST:
                 stat_inc(auth, radreq->ipaddr, num_access_req);
                 if (rad_auth_init(radreq, req->fd) < 0) 
                         return 1;
@@ -490,8 +490,8 @@ radius_respond(REQUEST *req)
                         return 0;
 		break;
 		
-	case RT_AUTHENTICATION_ACK:
-	case RT_AUTHENTICATION_REJECT:
+	case RT_ACCESS_ACCEPT:
+	case RT_ACCESS_REJECT:
 	case RT_ACCOUNTING_RESPONSE:
 	case RT_ACCESS_CHALLENGE:
 		if (!req->orig) {
@@ -511,7 +511,7 @@ radius_respond(REQUEST *req)
 	}
 
         switch (radreq->code) {
-        case RT_AUTHENTICATION_REQUEST:
+        case RT_ACCESS_REQUEST:
 		rad_authenticate(radreq, req->fd);
                 break;
 		
@@ -543,9 +543,9 @@ void
 radius_req_register_locus(RADIUS_REQ *req, LOCUS *loc)
 {
 	switch (req->code) {
-	case RT_AUTHENTICATION_REQUEST:
-	case RT_AUTHENTICATION_ACK:
-	case RT_AUTHENTICATION_REJECT:
+	case RT_ACCESS_REQUEST:
+	case RT_ACCESS_ACCEPT:
+	case RT_ACCESS_REJECT:
 	case RT_ACCESS_CHALLENGE:
 		if (!auth_trace_rules)
 			return;

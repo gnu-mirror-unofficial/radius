@@ -438,7 +438,7 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
 			     avp_create_integer(DA_SERVICE_TYPE, dv->value));
         }
         authreq = rad_clt_send(queue,
-			       PORT_AUTH, RT_AUTHENTICATION_REQUEST, pairs);
+			       PORT_AUTH, RT_ACCESS_REQUEST, pairs);
         if (authreq == NULL) {
                 _pam_log(LOG_ERR,
                          "no response from radius server");
@@ -447,10 +447,10 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
         }
 
         switch (authreq->code) {
-        case RT_AUTHENTICATION_ACK:
+        case RT_ACCESS_ACCEPT:
                 break;
 		
-        case RT_AUTHENTICATION_REJECT:
+        case RT_ACCESS_REJECT:
                 /* FIXME: radius may have returned Reply-Message attribute.
                  * we should return it to the caller
                  */

@@ -164,7 +164,7 @@ proxy_send_pdu(int fd, RADIUS_SERVER *server, RADIUS_REQ *radreq,
 	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = htonl(server->addr);
 	
-	sin.sin_port = htons((radreq->code == RT_AUTHENTICATION_REQUEST) ?
+	sin.sin_port = htons((radreq->code == RT_ACCESS_REQUEST) ?
 			     server->port[PORT_AUTH] : server->port[PORT_ACCT]);
 
 	debug(1, ("Proxying id %d to %lx",
@@ -269,7 +269,7 @@ proxy_lookup_realm(RADIUS_REQ *req, char *name)
 	if (realm) {
 		int rc;
 		switch (req->code) {
-		case RT_AUTHENTICATION_REQUEST:
+		case RT_ACCESS_REQUEST:
 			t = R_AUTH;
 			break;
 		

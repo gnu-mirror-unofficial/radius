@@ -351,7 +351,7 @@ tsh_req_define(int argc, char **argv, char *cmd)
 	} else {
 		if (interactive)
 			printf(_("Enter the pair list. End with end of file\n"));
-		while ((cmd = tsh_readline(tsh_ps2)) != NULL
+		while ((cmd = grad_readline(tsh_ps2)) != NULL
 		       && cmd[0]) {
 			if (userparse(cmd, &vp, &errp)) {
 				grad_log(L_ERR, "%s", errp);
@@ -376,143 +376,17 @@ tsh_req_print(int argc, char **argv, char *cmd)
 static void
 tsh_quit(int argc ARG_UNUSED, char **argv ARG_UNUSED, char *cmd ARG_UNUSED)
 {
+	grad_write_history_file();
 	exit(0);
 }
 
 
 #ifdef WITH_READLINE
-static char **tsh_command_completion __P((char *cmd, int start, int end));
-static char *tsh_command_generator __P((const char *text, int state));
-#else
-char *readline(const char *prompt);
-#endif
-
-static volatile int _interrupted;
-
-void
-tsh_clear_interrupt()
-{
-	_interrupted = 0;
-}
-
-int
-tsh_got_interrupt()
-{
-	int rc = _interrupted;
-	_interrupted = 0;
-	return rc;
-}
-
-static int
-tsh_getc(FILE * stream)
-{
-	unsigned char c;
-
-	while (1) {
-		if (read(fileno(stream), &c, 1) == 1)
-			return c;
-		if (errno == EINTR) {
-			if (_interrupted)
-				break;
-			/* keep going if we handled the signal */
-		} else
-			break;
-	}
-	return EOF;
-}
-
-void
-tsh_readline_init()
-{
-	if (!interactive)
-		return;
-
-#ifdef WITH_READLINE
-	rl_readline_name = "radiusd";
-	rl_attempted_completion_function =
-	    (CPPFunction *) tsh_command_completion;
-	rl_getc_function = tsh_getc;
-#endif
-}
-
-char *
-tsh_readline_internal()
-{
-	char *line;
-	char *p;
-	size_t alloclen, linelen;
-
-	p = line = calloc(1, 255);
-	if (!p) {
-		fprintf(stderr, _("Not enough memory\n"));
-		abort();
-	}
-	alloclen = 255;
-	linelen = 0;
-	for (;;) {
-		size_t n;
-
-		p = fgets(p, alloclen - linelen, stdin);
-
-		if (p)
-			n = strlen(p);
-		else if (_interrupted) {
-			free(line);
-			return NULL;
-		} else
-			n = 0;
-
-		linelen += n;
-
-		/* Error.  */
-		if (linelen == 0) {
-			free(line);
-			return NULL;
-		}
-
-		/* Ok.  */
-		if (line[linelen - 1] == '\n') {
-			line[linelen - 1] = '\0';
-			return line;
-		} else {
-			char *tmp;
-			alloclen *= 2;
-			tmp = realloc(line, alloclen);
-			if (tmp == NULL) {
-				free(line);
-				return NULL;
-			}
-			line = tmp;
-			p = line + linelen;
-		}
-	}
-}
-
-static char *
-tsh_readline(const char *prompt)
-{
-	if (interactive)
-		return readline(prompt);
-	return tsh_readline_internal();
-}
-
-#ifdef WITH_READLINE
-
-/*
- * readline tab completion
- */
-char **
-tsh_command_completion(char *cmd, int start ARG_UNUSED, int end ARG_UNUSED)
-{
-	if (start == 0)
-		return rl_completion_matches(cmd, tsh_command_generator);
-	return NULL;
-}
 
 /*
  * more readline
  */
-char *
+static char *
 tsh_command_generator(const char *text, int state)
 {
 	static int i, len;
@@ -533,18 +407,19 @@ tsh_command_generator(const char *text, int state)
 
 	return NULL;
 }
-#else
 
-char *
-readline(const char *prompt)
+/*
+ * readline tab completion
+ */
+static char **
+tsh_command_completion(char *cmd, int start ARG_UNUSED, int end ARG_UNUSED)
 {
-	if (prompt) {
-		printf("%s", prompt);
-		fflush(stdout);
-	}
-
-	return tsh_readline_internal();
+	if (start == 0)
+		return rl_completion_matches(cmd, tsh_command_generator);
+	return NULL;
 }
+#else
+# define tsh_command_completion NULL
 #endif
 
 static struct command_table *
@@ -600,9 +475,7 @@ tsh_run_command(char *cmd)
 	if (!cmd || cmd[0] == '#')
 		return;
 	if (argcv_get(cmd, "=", NULL, &argc, &argv) == 0) {
-#ifdef WITH_READLINE
-		add_history(cmd);
-#endif
+		grad_add_history(cmd);
 		tsh_run_function(argc, argv, cmd);
 	}
 	argcv_free(argc, argv);
@@ -616,8 +489,9 @@ tsh()
 	interactive = isatty(fileno(stdin));
 	if (interactive)
 		printf("** TEST SHELL **\n");
-	tsh_readline_init();
-	while ((cmd = tsh_readline(tsh_ps1)) != NULL) {
+	grad_readline_init("radiusd", interactive, tsh_command_completion);
+	grad_read_history_file();
+	while ((cmd = grad_readline(tsh_ps1)) != NULL) {
 		tsh_run_command(cmd);
 		free(cmd);
 	}

@@ -1719,6 +1719,7 @@ radiusd_respond(activefd, radreq, buf, size)
         case RT_AUTHENTICATION_REQUEST:
         case RT_AUTHENTICATION_ACK:
         case RT_AUTHENTICATION_REJECT:
+        case RT_ACCESS_CHALLENGE:
                 type = R_AUTH;
                 break;
         case RT_ACCOUNTING_REQUEST:
@@ -1773,6 +1774,7 @@ rad_req_setup(req)
         case RT_AUTHENTICATION_ACK:
         case RT_AUTHENTICATION_REJECT:
         case RT_ACCOUNTING_RESPONSE:
+	case RT_ACCESS_CHALLENGE:
                 if (proxy_receive(radreq, req->fd) < 0) 
                         return 1;
                 break;

@@ -1,3 +1,7 @@
+2003-11-25  Sergey Poznyakoff  
+
+	* lib/Makefile.am (librad_la_LIBADD): Use LTLIBOBJS directly.
+
 2003-11-24  Sergey Poznyakoff
 
 	* radiusd/rewrite.y (rewrite_before_config_hook): Fixed memory

@@ -52,14 +52,14 @@ struct request_class request_class[] = {
 	},
 #ifdef USE_SNMP
         { "SNMP", 0, MAX_REQUEST_TIME, 0, 
-	  snmp_decode,      /* Decoder */
-	  snmp_answer,      /* Handler */
-	  NULL,             /* Retransmitter */ 
-	  snmp_req_cmp,     /* Comparator */ 
-          snmp_req_free,    /* Deallocator */  
-	  snmp_req_drop,    /* Drop function */ 
-	  NULL,             /* Cleanup function */
-	  NULL,             /* Failure indicator */
+	  snmp_req_decode,     /* Decoder */
+	  snmp_req_respond,    /* Handler */
+	  NULL,                /* Retransmitter */ 
+	  snmp_req_cmp,        /* Comparator */ 
+          snmp_req_free,       /* Deallocator */  
+	  snmp_req_drop,       /* Drop function */ 
+	  NULL,                /* Cleanup function */
+	  NULL,                /* Failure indicator */
 	  NULL,
 	},
 #endif
@@ -359,3 +359,33 @@ request_scan_list(int type, list_iterator_t itr, void *closure)
         }
         return NULL;
 }
+
+static int
+_count_stat(void *item, void *data)
+{
+	REQUEST *req = item;
+	QUEUE_STAT *stat = data;
+	switch (req->status) {
+	case RS_COMPLETED:
+		(*stat)[req->type].completed++;
+		break;
+		
+	case RS_PROXY:
+		(*stat)[req->type].pending++; /*FIXME: Rename? */
+		break;
+		
+	case RS_WAITING:
+		(*stat)[req->type].waiting++;
+		break;
+	}
+	return 0;
+}
+
+int
+request_stat_list(QUEUE_STAT stat)
+{
+	memset(stat, 0, sizeof(QUEUE_STAT));
+	list_iterate(request_list, _count_stat, &stat);
+	return 0;
+}
+	

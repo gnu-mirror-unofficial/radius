@@ -479,6 +479,7 @@ _rpp_slay(rpp_proc_t *p)
 }
 
 /* Return number of the handlers registered in the process list */
+size_t
 rpp_count()
 {
 	return grad_list_count(process_list);

@@ -1,4 +1,12 @@
 2004-07-16  Sergey Poznyakoff
+	
+	* radtest/completion.c: Added new keywords. Handle variable
+	name completion.
+	* radtest/gram.y: Improved
+	* radtest/input.l: Allow to quote the keywords
+	* radtest/runtime.c: Implemented loops
+
+2004-07-16  Sergey Poznyakoff
 
 	* lib/radargp.c (grad_argp_parse): Minor fix.
 	* radiusd/checkrad.c (checkrad_xlat): Bugfix

@@ -48,6 +48,7 @@ radscm/radscm.c
 radtest/gram.c
 radtest/gram.y
 radtest/main.c
+radtest/runtime.c
 
 radwho/radwho.c
 

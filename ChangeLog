@@ -1,3 +1,64 @@
+2002-08-02  Sergey Poznyakoff 
+
+	* lib/mem.c: Normalized namespace. Round the size argument to
+	  mem_alloc to the next nearest Align_t boundary.
+	
+	* client/pam_radius/pam_radius.c: Namespace normalization in mem.c
+	  and radiusd.h 
+	* db/config.m4: Likewise
+	* include/mem.h: Likewise
+	* include/radius.h: Likewise
+	* include/timestr.h: Likewise
+	* lib/ascend.c: Likewise
+	* lib/avl.c: Likewise
+	* lib/client.c: Likewise
+	* lib/cryptpass.c: Likewise
+	* lib/dict.c: Likewise
+	* lib/envar.c: Likewise
+	* lib/logger.c: Likewise
+	* lib/nas.c: Likewise
+	* lib/radpaths.c: Likewise
+	* lib/radpdu.c: Likewise
+	* lib/realms.c: Likewise
+	* lib/slist.c: Likewise
+	* lib/symtab.c: Likewise
+	* lib/users.l: Likewise
+	* lib/users.y: Likewise
+	* lib/util.c: Likewise
+	* radiusd/acct.c: Likewise
+	* radiusd/auth.c: Likewise
+	* radiusd/builddbm.c: Likewise
+	* radiusd/config.y: Likewise
+	* radiusd/exec.c: Likewise
+	* radiusd/files.c: Likewise
+	* radiusd/log.c: Likewise
+	* radiusd/menu.c: Likewise
+	* radiusd/pam.c: Likewise
+	* radiusd/proxy.c: Likewise
+	* radiusd/radck.c: Likewise
+	* radiusd/radiusd.c: Likewise
+	* radiusd/radutil.c: Likewise
+	* radiusd/request.c: Likewise
+	* radiusd/rewrite.y: Likewise
+	* radiusd/snmpserv.c: Likewise
+	* radiusd/sockets.c: Likewise
+	* radiusd/sql.c: Likewise
+	* radiusd/stat.c: Likewise
+	* radscm/rscm_lib.c: Likewise
+	* radtest/gram.y: Likewise
+	* radtest/input.l: Likewise
+	* radtest/main.c: Likewise
+	* sql/mysql.c: Likewise
+	* po/es.po: Likewise
+	* po/no.po: Likewise
+	* po/pl.po: Likewise
+	* po/ru.po: Likewise
+
+2002-07-31  Sergey Poznyakoff
+
+	* radiusd/exec.c (filter_cleanup_proc): A thread may have multiple
+	  filters associated with it.
+
 2002-07-31  Sergey Poznyakoff
 
 	* include/radiusd.h (config_hook_fp): new datatype.

@@ -45,6 +45,7 @@
 #include <radiusd.h>
 #include <radutmp.h>
 #include <checkrad.h>
+#include <rewrite.h>
 
 #include <asn1.h>
 #include <snmp.h>
@@ -109,12 +110,16 @@ free_instance(struct check_instance *cptr)
 int
 compare(struct check_instance *checkp, char *str)
 {
-        return rewrite_invoke(checkp->func, NULL,
-			      "ssis",
-			      str,
-			      checkp->name,
-			      checkp->port,
-			      checkp->sid);
+	UINT4 result;
+	/* FIXME: what to do if invoke fails? */
+	rewrite_invoke(Integer, &result,
+		       checkp->func, NULL,
+		       "ssis",
+		       str,
+		       checkp->name,
+		       checkp->port,
+		       checkp->sid);
+	return result;
 }
 
 

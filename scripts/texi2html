@@ -1035,7 +1035,8 @@ EOC
 	    # list item
 	    if (/^\@itemx?\s+/) {
 		$what = $';
-		$what =~ s/\s+$//;
+		@rest = split(/\@tab/, $what);
+		$what = shift(@rest);
 		if ($in_bibliography && $use_bibliography) {
 		    if ($what =~ /^$BIBRE$/o) {
 			$id = 'BIB' . ++$bib_num;
@@ -1081,6 +1082,9 @@ EOC
 		    push(@lines, &debug("$deferred_ref\n", __LINE__));
 		    $deferred_ref = '';
 		}
+		foreach $tab (@rest) {
+		    push(@lines, "<TD>$tab</TD>\n");
+		}
 		next;
 	    } elsif (/^\@tab\s+(.*)$/) {
 		push(@lines, "<TD>$1</TD>\n");
@@ -1102,6 +1106,7 @@ EOC
 	$_ = &debug($_, __LINE__);
     }
     # otherwise
+    push(@lines, "    ") if ($in_pre);  # four spaces
     push(@lines, $_);
 }
 

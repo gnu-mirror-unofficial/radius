@@ -51,8 +51,8 @@ static char rcsid[] =
 int source_line_num;
 char *source_filename = "";
 
-void print_ident(char *str, Variable *var);
-int subscript(Variable *var, char *attr_name, Variable *ret_var);
+char *print_ident(Variable *var);
+int subscript(Variable *var, char *attr_name, int all, Variable *ret_var);
 
 %}
 
@@ -76,7 +76,7 @@ int subscript(Variable *var, char *attr_name, Variable *ret_var);
 %type <number> port_type
 
 %union {
-	char string[MAX_STRING];
+	char *string;
 	int number;
 	UINT4 ipaddr;
 	Variable *ident;
@@ -259,15 +259,19 @@ string        : QUOTE
               | NAME
               | NUMBER
                 {
-			sprintf($$, "%d", $1);
+			char buf[64];
+			sprintf(buf, "%d", $1);
+			$$ = make_string(buf);
 	        }
               | IDENT
                 {
-			print_ident($$, $1);
+			$$ = print_ident($1);
 		}
               | IPADDRESS
                 {
-			ipaddr2str($$, $1);
+			char buf[DOTTED_QUAD_LEN];
+			ipaddr2str(buf, $1);
+			$$ = make_string(buf);
 		}
               ;
 
@@ -310,7 +314,7 @@ value         : NUMBER
               | QUOTE
                 {
 			$$.type = String;
-			strcpy($$.datum.string, $1);
+			$$.datum.string = make_string($1);
 		}
               | IDENT
                 {
@@ -318,7 +322,11 @@ value         : NUMBER
 		}
               | IDENT '[' NAME ']'
                 {
-			subscript($1, $3, &$$);
+			subscript($1, $3, 0, &$$);
+		}
+              | IDENT '[' NAME '*' ']'
+                {
+			subscript($1, $3, 1, &$$);
 		}
               | vector
                 {
@@ -377,9 +385,10 @@ set_yydebug()
 }
 
 int
-subscript(var, attr_name, ret_var)
+subscript(var, attr_name, all, ret_var)
 	Variable *var;
 	char *attr_name;
+	int all;
 	Variable *ret_var;
 {
 	DICT_ATTR *dict;
@@ -402,7 +411,25 @@ subscript(var, attr_name, ret_var)
 	switch (dict->type) {
 	case TYPE_STRING:
 		ret_var->type = String;
-		strcpy(ret_var->datum.string, pair->strvalue);
+		if (all) {
+			int length = 0;
+			VALUE_PAIR *p;
+			char *cp;
+			
+			/* First, count total length of all attribute
+			   instances in the packet */
+			for (p = pair; p; p = avl_find(p->next, dict->value)) 
+				length += p->strlength;
+
+			cp = ret_var->datum.string = alloc_string(length+1);
+			/* Fill in the string contents */
+			for (p = pair; p; p = avl_find(p->next, dict->value)) {
+				memcpy(cp, p->strvalue, p->strlength);
+				cp += p->strlength;
+			}
+			*cp = 0;
+		} else
+			ret_var->datum.string = dup_string(pair->strvalue);
 		break;
 	case TYPE_INTEGER:
 	case TYPE_DATE:

@@ -2,7 +2,6 @@
 # include <config.h>
 #endif
 
-#include <getopt1.h>
 #include <libguile.h>
 #include <radius.h>
 

@@ -1,0 +1,4 @@
+server local 127.0.0.1 foobar @AUTH_PORT@ @ACCT_PORT@
+source_ip 127.0.0.1
+timeout 3
+retry 1

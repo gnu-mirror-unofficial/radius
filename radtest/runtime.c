@@ -966,21 +966,41 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 		rt_eval_expr(node->v.unary.operand, &left);
 		switch (node->v.unary.op) {
 		case radtest_op_neg:
-			if (left.type != rtv_integer)
-				unary_type_error(&node->locus,
-						 node->v.unary.op);
-			/* FIXME: typecast? */
+			typecast(&node->locus, &left, rtv_integer);
 			result->type = rtv_integer;
 			result->datum.number = - left.datum.number;
 			break;
 			
 		case radtest_op_not:
-			if (left.type != rtv_integer)
+			switch (left.type) {
+			case rtv_string:
+				if (strnum_p(&left)) {
+					typecast(&node->locus, &left, rtv_integer);
+					/* FALL THROUGH */
+				} else {
+					result->datum.number =
+						left.datum.string[0] == 0;
+					break;
+				}
+						
+			case rtv_integer:
+				result->datum.number = ! left.datum.number;
+				break;
+				
+			case rtv_ipaddress:
+				typecast(&node->locus, &left, rtv_integer);
+				result->datum.number = ! left.datum.number;
+				break;
+				
+			case rtv_avl:
+				result->datum.number = left.datum.avl == NULL;
+				break;
+					
+			default:
 				unary_type_error(&node->locus,
 						 node->v.unary.op);
-			/* FIXME: typecast? */
+			}
 			result->type = rtv_integer;
-			result->datum.number = ! left.datum.number;
 		}
 		break;
 			

@@ -61,20 +61,18 @@ static struct sql_connection *sql_conn[SQL_NSERVICE];
 #define STMT_DOACCT                 7
 #define STMT_AUTH_DB                8
 #define STMT_ACCT_DB                9
-#define STMT_AUTH_QUERY            10
-#define STMT_ACCT_START_QUERY      11
-#define STMT_ACCT_STOP_QUERY       12
-#define STMT_ACCT_NASUP_QUERY      13
-#define STMT_ACCT_NASDOWN_QUERY    14
-#define STMT_ACCT_KEEPALIVE_QUERY  15
-#define STMT_QUERY_BUFFER_SIZE     16
-#define STMT_IDLE_TIMEOUT          17
-#define STMT_MAX_AUTH_CONNECTIONS  18
-#define STMT_MAX_ACCT_CONNECTIONS  19
-#define STMT_GROUP_QUERY           20
-#define STMT_REPLY_ATTR_QUERY      21
-#define STMT_INTERFACE             22
-#define STMT_CHECK_ATTR_QUERY      23
+#define STMT_ACCT_KEEPALIVE_QUERY  10
+#define STMT_QUERY_BUFFER_SIZE     11
+#define STMT_IDLE_TIMEOUT          12
+#define STMT_MAX_AUTH_CONNECTIONS  13
+#define STMT_MAX_ACCT_CONNECTIONS  14
+#define STMT_INTERFACE             15
+#define STMT_QUERY_BASE           100
+
+#define STMT_QUERY(c) (STMT_QUERY_BASE+c)
+#define STMT_QUERY_CODE(c) ((c)-STMT_QUERY_BASE)
+#define STMT_QUERY_P(t) ((t)>STMT_QUERY_BASE \
+                         && STMT_QUERY_CODE(t)<num_radius_sql_query)
 
 
 /* *********************** Configuration File Parser *********************** */
@@ -98,20 +96,36 @@ struct keyword sql_keyword[] = {
         { "doacct",             STMT_DOACCT },
         { "auth_db",            STMT_AUTH_DB },
         { "acct_db",            STMT_ACCT_DB },
-        { "auth_query",         STMT_AUTH_QUERY },
-        { "group_query",        STMT_GROUP_QUERY },
-        { "attr_query",         STMT_REPLY_ATTR_QUERY },
-        { "reply_attr_query",   STMT_REPLY_ATTR_QUERY },
-        { "check_attr_query",   STMT_CHECK_ATTR_QUERY },
-        { "acct_start_query",   STMT_ACCT_START_QUERY },
-        { "acct_stop_query",    STMT_ACCT_STOP_QUERY },
-        { "acct_alive_query",   STMT_ACCT_KEEPALIVE_QUERY },
-        { "acct_keepalive_query", STMT_ACCT_KEEPALIVE_QUERY },
-        { "acct_nasup_query",   STMT_ACCT_NASUP_QUERY },
-        { "acct_nasdown_query", STMT_ACCT_NASDOWN_QUERY },
         { "interface",          STMT_INTERFACE },
+        { "auth_query",         STMT_QUERY(auth_query) },
+        { "group_query",        STMT_QUERY(group_query) },
+        { "attr_query",         STMT_QUERY(reply_attr_query) },
+        { "reply_attr_query",   STMT_QUERY(reply_attr_query) },
+        { "check_attr_query",   STMT_QUERY(check_attr_query) },
+        { "acct_start_query",   STMT_QUERY(acct_start_query) },
+        { "acct_stop_query",    STMT_QUERY(acct_stop_query) },
+        { "acct_alive_query",   STMT_QUERY(acct_keepalive_query) },
+        { "acct_keepalive_query", STMT_QUERY(acct_keepalive_query) },
+        { "acct_nasup_query",   STMT_QUERY(acct_nasup_query) },
+        { "acct_nasdown_query", STMT_QUERY(acct_nasdown_query) },
+	{ "mlc_user_query",     STMT_QUERY(mlc_user_query) },
+	{ "mlc_realm_query",    STMT_QUERY(mlc_realm_query) },
+	{ "mlc_stop_query",     STMT_QUERY(mlc_stop_query) },
         { NULL }
 };
+
+static char *
+sql_keyword_name(int kw)
+{
+	struct keyword *p;
+
+	for (p = sql_keyword; p->name; p++)
+		if (p->tok == kw)
+			return p->name;
+	return NULL;
+}
+
+#define sql_query_name(c) sql_keyword_name(STMT_QUERY(c)) 
 
 /*
  * Chop off trailing whitespace. Return length of the resulting string
@@ -284,7 +298,8 @@ rad_sql_init()
         char *ptr;
         time_t timeout;
         SQL_cfg new_cfg;
-
+	int i;
+	
 #define FREE(a) if (a) grad_free(a); a = NULL
 
         memset(&new_cfg, 0, sizeof(new_cfg));
@@ -397,42 +412,6 @@ rad_sql_init()
                         new_cfg.acct_db = grad_estrdup(cur_ptr);
                         break;
                         
-                case STMT_AUTH_QUERY:
-                        new_cfg.auth_query = grad_estrdup(cur_ptr);
-                        break;
-
-                case STMT_GROUP_QUERY:
-                        new_cfg.group_query = grad_estrdup(cur_ptr);
-                        break;
-                        
-                case STMT_ACCT_START_QUERY:
-                        new_cfg.acct_start_query = grad_estrdup(cur_ptr);
-                        break;
-                        
-                case STMT_ACCT_STOP_QUERY:
-                        new_cfg.acct_stop_query = grad_estrdup(cur_ptr);
-                        break;
-                        
-                case STMT_ACCT_KEEPALIVE_QUERY:
-                        new_cfg.acct_keepalive_query = grad_estrdup(cur_ptr);
-                        break;
-                        
-                case STMT_ACCT_NASUP_QUERY:
-                        new_cfg.acct_nasup_query = grad_estrdup(cur_ptr);
-                        break;
-
-                case STMT_ACCT_NASDOWN_QUERY:
-                        new_cfg.acct_nasdown_query = grad_estrdup(cur_ptr);
-                        break;
-                        
-                case STMT_REPLY_ATTR_QUERY:
-                        new_cfg.reply_attr_query = grad_estrdup(cur_ptr);
-                        break;
-
-                case STMT_CHECK_ATTR_QUERY:
-                        new_cfg.check_attr_query = grad_estrdup(cur_ptr);
-                        break;
-                        
                 case STMT_MAX_AUTH_CONNECTIONS:
                         grad_log(L_WARN,
                                  "%s:%d: %s",
@@ -462,6 +441,12 @@ rad_sql_init()
 				         _("Unsupported SQL interface"));
                         }
                         break;
+
+		default:
+			if (STMT_QUERY_P(stmt_type)) {
+				new_cfg.query[STMT_QUERY_CODE(stmt_type)]
+					       = grad_estrdup(cur_ptr);
+			} 			
                 }
                 
         }
@@ -483,16 +468,9 @@ rad_sql_init()
         FREE(sql_cfg.password);
         FREE(sql_cfg.acct_db) ;
         FREE(sql_cfg.auth_db);
-        FREE(sql_cfg.group_query);
-        FREE(sql_cfg.auth_query);
-        FREE(sql_cfg.acct_start_query);
-        FREE(sql_cfg.acct_stop_query);
-        FREE(sql_cfg.acct_nasup_query);
-        FREE(sql_cfg.acct_nasdown_query);
-        FREE(sql_cfg.acct_keepalive_query);
-        FREE(sql_cfg.reply_attr_query);
-        FREE(sql_cfg.check_attr_query);
-        
+	for (i = 0; i < num_radius_sql_query; i++)
+		FREE(sql_cfg.query[i]);
+	
         /* copy new config */
         sql_cfg = new_cfg;
                 
@@ -556,15 +534,15 @@ sql_check_config(const char *filename, SQL_cfg *cfg)
 			doauth = 0;
 		}
 
-		FREE_IF_EMPTY(cfg->auth_query);
-		if (!cfg->auth_query) {
+		FREE_IF_EMPTY(cfg->query[auth_query]);
+		if (!cfg->query[auth_query]) {
 			missing_statement(L_ERR, filename, "auth_query");
 			doauth = 0;
 		}
-			
-                if (!cfg->group_query) 
+			 
+		if (!cfg->query[group_query]) 
 			missing_statement(L_WARN, filename, "group_query");
-                FREE_IF_EMPTY(cfg->group_query);
+                FREE_IF_EMPTY(cfg->query[group_query]);
         }
 
 	/* Check SQL accounting setup */
@@ -573,26 +551,26 @@ sql_check_config(const char *filename, SQL_cfg *cfg)
 			missing_statement(L_ERR, filename, "acct_db");
 			doacct = 0;
 		}
-                if (!cfg->acct_start_query) 
+                if (!cfg->query[acct_start_query]) 
 			missing_statement(L_WARN, filename,
 					  "acct_start_query");
-                FREE_IF_EMPTY(cfg->acct_start_query);
+                FREE_IF_EMPTY(cfg->query[acct_start_query]);
 
-		if (!cfg->acct_stop_query) {
+		if (!cfg->query[acct_stop_query]) {
 			missing_statement(L_ERR, filename, "acct_stop_query");
 			doacct = 0;
 		}
-		FREE_IF_EMPTY(cfg->acct_stop_query);
+		FREE_IF_EMPTY(cfg->query[acct_stop_query]);
 
-                if (!cfg->acct_nasdown_query) 
+                if (!cfg->query[acct_nasdown_query]) 
 			missing_statement(L_WARN, filename,
 					  "acct_nasdown_query");
-                FREE_IF_EMPTY(cfg->acct_nasdown_query);
+                FREE_IF_EMPTY(cfg->query[acct_nasdown_query]);
 
-                if (!cfg->acct_nasup_query)
+                if (!cfg->query[acct_nasup_query])
 			missing_statement(L_WARN, filename,
 					  "acct_nasup_query");
-                FREE_IF_EMPTY(cfg->acct_nasup_query);
+                FREE_IF_EMPTY(cfg->query[acct_nasup_query]);
         }
 
 	/* Inform the user */
@@ -840,10 +818,10 @@ rad_sql_acct(grad_request_t *radreq)
         switch (status) {
         case DV_ACCT_STATUS_TYPE_START:
 		query_name = "acct_start_query";
-                if (!sql_cfg.acct_start_query)
+                if (!sql_cfg.query[acct_start_query])
                         break;
                 query = radius_xlate(&stack,
-                                     sql_cfg.acct_start_query,
+                                     sql_cfg.query[acct_start_query],
                                      radreq, NULL);
                 rc = disp_sql_query(conn, query, NULL);
                 sqllog(rc, query);
@@ -852,10 +830,10 @@ rad_sql_acct(grad_request_t *radreq)
                 
         case DV_ACCT_STATUS_TYPE_STOP:
 		query_name = "acct_stop_query";
-                if (!sql_cfg.acct_stop_query)
+                if (!sql_cfg.query[acct_stop_query])
                         break;
                 query = radius_xlate(&stack,
-                                     sql_cfg.acct_stop_query,
+                                     sql_cfg.query[acct_stop_query],
                                      radreq, NULL);
                 rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
@@ -865,10 +843,10 @@ rad_sql_acct(grad_request_t *radreq)
 
         case DV_ACCT_STATUS_TYPE_ACCOUNTING_ON:
 		query_name = "acct_nasup_query";
-                if (!sql_cfg.acct_nasup_query)
+                if (!sql_cfg.query[acct_nasup_query])
                         break;
                 query = radius_xlate(&stack,
-                                     sql_cfg.acct_nasup_query,
+                                     sql_cfg.query[acct_nasup_query],
                                      radreq, NULL);
                 rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
@@ -878,10 +856,10 @@ rad_sql_acct(grad_request_t *radreq)
 
         case DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF:
 		query_name = "acct_nasdown_query";
-                if (!sql_cfg.acct_nasdown_query)
+                if (!sql_cfg.query[acct_nasdown_query])
                         break;
                 query = radius_xlate(&stack,
-                                     sql_cfg.acct_nasdown_query,
+                                     sql_cfg.query[acct_nasdown_query],
                                      radreq, NULL);
                 rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
@@ -891,10 +869,10 @@ rad_sql_acct(grad_request_t *radreq)
 
         case DV_ACCT_STATUS_TYPE_ALIVE:
 		query_name = "acct_keepalive_query";
-                if (!sql_cfg.acct_keepalive_query)
+                if (!sql_cfg.query[acct_keepalive_query])
                         break;
                 query = radius_xlate(&stack,
-                                     sql_cfg.acct_keepalive_query,
+                                     sql_cfg.query[acct_keepalive_query],
                                      radreq, NULL);
                 rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
@@ -938,7 +916,7 @@ rad_sql_pass(grad_request_t *req, char *authdata)
         }
         
         obstack_init(&stack);
-        query = radius_xlate(&stack, sql_cfg.auth_query, req, NULL);
+        query = radius_xlate(&stack, sql_cfg.query[auth_query], req, NULL);
         grad_avl_delete(&req->request, DA_AUTH_DATA);
         
         conn = attach_sql_connection(SQL_AUTH);
@@ -964,7 +942,7 @@ rad_sql_checkgroup(req, groupname)
 	SQL_RESULT *res;
 	size_t i;
 	
-        if (sql_cfg.active[SQL_AUTH] == 0 || sql_cfg.group_query == NULL) 
+        if (sql_cfg.active[SQL_AUTH] == 0 || !sql_cfg.query[group_query]) 
                 return -1;
 
         conn = attach_sql_connection(SQL_AUTH);
@@ -973,7 +951,7 @@ rad_sql_checkgroup(req, groupname)
 
         obstack_init(&stack);
 	
-        query = radius_xlate(&stack, sql_cfg.group_query, req, NULL);
+        query = radius_xlate(&stack, sql_cfg.query[group_query], req, NULL);
 	res = sql_cache_lookup(conn, query);
 	if (!res) {
 		res = sql_cache_retrieve(conn, query);
@@ -1054,13 +1032,14 @@ rad_sql_reply_attr_query(grad_request_t *req, grad_avp_t **reply_pairs)
         int rc;
         struct obstack stack;
         
-        if (sql_cfg.active[SQL_AUTH] == 0 || !sql_cfg.reply_attr_query)
+        if (sql_cfg.active[SQL_AUTH] == 0 || !sql_cfg.query[reply_attr_query])
                 return 0;
         
         conn = attach_sql_connection(SQL_AUTH);
         obstack_init(&stack);
 
-        query = radius_xlate(&stack, sql_cfg.reply_attr_query, req, NULL);
+        query = radius_xlate(&stack, sql_cfg.query[reply_attr_query],
+			     req, NULL);
         rc = rad_sql_retrieve_pairs(conn, query, reply_pairs, 0);
 
         obstack_free(&stack, NULL);
@@ -1075,18 +1054,137 @@ rad_sql_check_attr_query(grad_request_t *req, grad_avp_t **return_pairs)
         int rc;
         struct obstack stack;
         
-        if (sql_cfg.active[SQL_AUTH] == 0 || !sql_cfg.check_attr_query)
+        if (sql_cfg.active[SQL_AUTH] == 0 || !sql_cfg.query[check_attr_query])
                 return 0;
         
         conn = attach_sql_connection(SQL_AUTH);
         obstack_init(&stack);
 	
-        query = radius_xlate(&stack, sql_cfg.check_attr_query, req, NULL);
+        query = radius_xlate(&stack, sql_cfg.query[check_attr_query],
+			     req, NULL);
         rc = rad_sql_retrieve_pairs(conn, query, return_pairs, 1);
         
         obstack_free(&stack, NULL);
         return rc == 0;
 }
+
+
+/* ****************************************************************************
+ * Multiple login checking
+ */
+
+static int
+rad_sql_retrieve_sessions(struct sql_connection *conn,
+			  char *query,
+			  grad_list_t **sess_list)
+{
+	SQL_RESULT *res;
+	size_t i;
+	grad_locus_t loc;
+	struct radutmp utmp;
+	
+	res = sql_cache_lookup(conn, query);
+	if (!res) {
+		res = sql_cache_retrieve(conn, query);
+		if (!res)
+			return 0;
+	}
+
+	if (res->ntuples == 0 || res->nfields != 3)
+		return 0;
+	
+        for (i = 0; i < res->ntuples; i++) {
+		struct radutmp *up = grad_emalloc(sizeof(*up));
+		GRAD_STRING_COPY(up->login, res->tuple[i][0]);
+		up->nas_port = strtoul(res->tuple[i][1], NULL, 0);
+		GRAD_STRING_COPY(up->session_id, res->tuple[i][2]);
+		if (*sess_list == NULL) 
+			*sess_list = grad_list_create();
+		grad_list_append(*sess_list, up);
+	}		
+
+	return i;
+}
+
+int
+sql_mlc_collect(const char *query_template,
+		grad_request_t *request,
+		grad_list_t **sess_list)
+{
+        struct sql_connection *conn;
+        char *query;
+        int rc;
+        struct obstack stack;
+        
+        conn = attach_sql_connection(SQL_ACCT);
+        obstack_init(&stack);
+	
+        query = radius_xlate(&stack, query_template, request, NULL);
+        rc = rad_sql_retrieve_sessions(conn, query, sess_list);
+	obstack_free(&stack, NULL);
+        return rc == 0;
+}
+
+int
+rad_sql_mlc_collect_user(char *name, grad_request_t *request,
+			 grad_list_t **sess_list)
+{
+        if (sql_cfg.active[SQL_ACCT] == 0 || !sql_cfg.query[mlc_user_query])
+                return 1;
+	return sql_mlc_collect(sql_cfg.query[mlc_user_query],
+			       request, sess_list);
+}
+
+int
+rad_sql_mlc_collect_realm(grad_request_t *request, grad_list_t **sess_list)
+{
+        if (sql_cfg.active[SQL_ACCT] == 0 || !sql_cfg.query[mlc_realm_query])
+                return 1;
+	return sql_mlc_collect(sql_cfg.query[mlc_realm_query],
+			       request, sess_list);
+}
+
+void
+rad_sql_mlc_close(struct radutmp *up)
+{
+	int query_index = sql_cfg.query[mlc_stop_query] ?
+		                  mlc_stop_query : acct_stop_query;
+	char *query;
+	struct obstack stack;
+	grad_request_t *req;
+	int rc;
+	size_t count;
+	struct sql_connection *conn;
+	
+	if (sql_cfg.active[SQL_ACCT] == 0 || !sql_cfg.query[query_index])
+		return;
+	conn = attach_sql_connection(SQL_ACCT);
+	obstack_init(&stack);
+	/* Create a temporary request */
+	req = grad_request_alloc();
+	grad_avl_add_pair(&req->request,
+			  grad_avp_create_string(DA_USER_NAME, up->login));
+	grad_avl_add_pair(&req->request,
+			  grad_avp_create_integer(DA_NAS_PORT_ID,
+						  up->nas_port));
+	grad_avl_add_pair(&req->request,
+			  grad_avp_create_string(DA_ACCT_SESSION_ID,
+						 up->session_id));
+	query = radius_xlate(&stack, sql_cfg.query[query_index], req, NULL);
+	grad_request_free(req);
+	rc = disp_sql_query(conn, query, &count);
+	sqllog(rc, query);
+	if (rc == 0 && count != 1) {
+		grad_log(L_WARN,
+			 ngettext("%s updated %d record",
+				  "%s updated %d records",
+				  count),
+			 sql_query_name(query_index),
+			 count);
+	}
+	obstack_free(&stack, NULL);
+}
+
 
 
 /* ****************************************************************************

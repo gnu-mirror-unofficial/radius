@@ -53,6 +53,22 @@ struct sql_connection {
 	size_t tail;
 };
 
+enum radius_sql_query {
+	auth_query,
+	group_query,
+	acct_start_query,
+        acct_stop_query,
+        acct_nasup_query,
+        acct_nasdown_query,
+        acct_keepalive_query,
+        check_attr_query,
+        reply_attr_query,
+	mlc_user_query,
+	mlc_realm_query,
+	mlc_stop_query,
+	num_radius_sql_query
+};
+
 typedef struct {
         int      interface;
         char     *server;
@@ -63,13 +79,7 @@ typedef struct {
         char     *auth_db;
         char     *auth_query;
         char     *group_query;
-        char     *acct_start_query;
-        char     *acct_stop_query;
-        char     *acct_nasup_query;
-        char     *acct_nasdown_query;
-        char     *acct_keepalive_query;
-        char     *check_attr_query;
-        char     *reply_attr_query;
+	char     *query[num_radius_sql_query];
         int      keepopen;
         time_t   idle_timeout;
         int      active[SQL_NSERVICE];

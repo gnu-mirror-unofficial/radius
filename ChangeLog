@@ -1,3 +1,21 @@
+2002-02-25  Sergey Poznyakoff 
+
+	* m4/guile.m4: Emit extra newline after calling guile-config.
+	  Needed for Sun's native sed (and possibly others).
+	
+	* radiusd/auth.c (sfn_eval_reply): Free strvalue before
+	  assigning evaluated value. This caused memory leaks.
+	* radiusd/config.y (acct_def productions): Bugfix: R_AUTH
+	  was used instead of R_ACCT.
+
+	* radiusd/stat.c: Thread safety: mutexes around critical sections.
+
+	These should be revised (stack-size considerations):
+	* radiusd/proxy.c: Thread safety: send_buffer is made local.
+	* radiusd/radius.c: Likewise.
+
+	* radiusd/.gdbinit: Disable handling for USR1 and USR2.
+	
 2002-02-20  Sergey Poznyakoff  
 
 	* radiusd/radiusd.c (rad_request_handle): Bugfix: return 0 if new

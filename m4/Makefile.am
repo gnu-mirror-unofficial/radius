@@ -1,5 +1,4 @@
 EXTRA_DIST = \
- aggr.m4 \
  common.m4 \
  getopt.m4 \
  guile.m4 \

@@ -1137,6 +1137,7 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 					    &node->v.gopt.argv);
 		}
 
+		opterr = 0;
 		node->v.gopt.last = getopt(node->v.gopt.argc,
 					   node->v.gopt.argv,
 					   node->v.gopt.optstr);
@@ -1148,7 +1149,10 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 
 		node->v.gopt.var->type = rtv_string;
 		grad_free(node->v.gopt.var->datum.string);
-		sprintf(buf, "-%c", node->v.gopt.last);
+		sprintf(buf, "-%c",
+			node->v.gopt.last == EOF ? '-'
+			   : (node->v.gopt.last == '?' ? optopt
+			        : node->v.gopt.last));
 		node->v.gopt.var->datum.string = grad_estrdup(buf);
 
 		grad_free(node->v.gopt.arg->datum.string);
@@ -1166,7 +1170,7 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 
 	case radtest_node_argcount:
 		result->type = rtv_integer;
-		result->datum.number = grad_list_count(curenv);
+		result->datum.number = grad_list_count(curenv) - 1;
 		break;
 	
 	case radtest_node_call:

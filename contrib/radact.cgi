@@ -28,7 +28,6 @@ use DBI;
 #
 
 
-
 my $q=new CGI;
 
 
@@ -42,9 +41,9 @@ $mysql_pass='radius-password';
 $mysql_table='calls';
 
 # You probably don't want to modify this unless your
-# database is on another host
-# in that case use 
-# $mysql_dsn = "DBI:mysql:database=radius;host=myhost.domain.com";
+# database is on another host.
+# In that case use 
+# $mysql_dsn = "DBI:mysql:database=radius;host=myhost.domain.com;port=<port-no>";
 $mysql_dsn = "DBI:mysql:database=RADIUS;";
 
 #Colors for the table rows
@@ -67,9 +66,15 @@ my %lang=(
 	  "Date-Range" => "Rango de Fechas",
 	  "From" => "Desde",
 	  "To" => "Hasta",
+          "Page" => "Pagina",
+	  "This" => "Misma",
+          "Next" => "Sigiente",
+          "Prev" => "Precedente",
+	  "records" => "entradas",
 	  "Time" => "Hora",
 	  "User" => "Usuario",
 	  "Show-Info" => "Mostrar",
+          "Limit" => "Limite",
 	  "All" => "Todos",
 	  "Unknown" => "Desconocido",
 	  "date not selected" => "Error: Debe escoger el Rango de Fecha / Hora",
@@ -135,11 +140,16 @@ $sth->finish;
 
 @fields=(!$q->param("view")) ? @fieldsdb : $q->param("view");
 
-if($q->param("idia") ne $lang{"All"} && $q->param("imes") ne $lang{"All"} && $q->param("iano") ne $lang{"All"} && $q->param("fdia") ne $lang{"All"} && $q->param("fmes") ne $lang{"All"} && $q->param("fano") ne $lang{"All"}){
-    $ifecha=$q->param("iano") . "-" . $q->param("imes") . "-" . $q->param("idia");
-    $ifecha.=" " . $q->param("ihora");	
-    $ffecha=$q->param("fano") . "-" . $q->param("fmes") . "-" . $q->param("fdia");
-    $ffecha.=" " . $q->param("fhora");
+if ($q->param("idia") ne $lang{"All"} && 
+    $q->param("imes") ne $lang{"All"} && 
+    $q->param("iano") ne $lang{"All"} && 
+    $q->param("fdia") ne $lang{"All"} && 
+    $q->param("fmes") ne $lang{"All"} && 
+    $q->param("fano") ne $lang{"All"}) {
+         $ifecha=$q->param("iano") . "-" . $q->param("imes") . "-" . $q->param("idia");
+         $ifecha.=" " . $q->param("ihora");	
+         $ffecha=$q->param("fano") . "-" . $q->param("fmes") . "-" . $q->param("fdia");
+         $ffecha.=" " . $q->param("fhora");
 }
 
 my $logs="SELECT ";
@@ -147,21 +157,63 @@ my $select=join(',',@fields);
 $logs.= $select ;
 $logs.=" FROM " . $mysql_table;
 
-if($ifecha && $ffecha){
+if ($ifecha && $ffecha){
     $logs.=" WHERE Event_Date_Time > '" . $ifecha . "' AND Event_Date_Time < '" . $ffecha . "' "; 
 }
 
-elsif(($ifecha && !$ffecha) || (!$ifecha && $ffecha) ){
+elsif (($ifecha && !$ffecha) || (!$ifecha && $ffecha) ){
     $res.="<font color='#FF0000'>$lang{'date not selected'}</font>";
 }
 $logs.=" AND user_name LIKE '" . $q->param("usuario") . "'" if($q->param("usuario"));
 
 $logs.=" ORDER BY " . $q->param("order") if($q->param("order"));
 
+$limit = $q->param("limite"); 
+$limit = 25 if (!$limit);
+
+if ($logs ne $q->param("last-query")) {
+	$init = 1;
+	$offset = 0;
+	warn('INITING') if($DEBUG == 1);
+} else {
+	$offset = $q->param("offset");
+}	
+
+sub increment() {
+    if ($q->param('pagina') eq 'Next') {
+        return $limit;
+    } elsif ($q->param('pagina') eq 'Prev') {
+        return -$limit;
+    }
+    return 0;
+}
+
+$old_query = $logs;
+
+if (!$init && ($q->param('pagina') ne $q->param('last-cmd'))) {
+    if ($q->param('last-cmd') ne 'This') {
+        $offset += 2*increment();
+    } else {
+        $offset += increment();
+    }
+}
+
+$logs .= " LIMIT ";
+$logs .= $offset . "," if ($offset);
+$logs .= $limit;
+warn($logs) if($DEBUG == 10);
+
+if (!$init) {
+	$offset += increment();
+} elsif ($q->param('pagina') ne 'This') {
+	$offset = $limit;
+}
+
 warn($logs) if($DEBUG == 1);
 $res.="<table border=0 width='100%' align='center'><tr><td>";
 $res.=$q->start_form(-action=>'radact.cgi',-method=>'post');
-
+$res .= $q->hidden(-name=>'last-query',-default=>$old_query,-override=>1);
+$res .= $q->hidden(-name=>'last-cmd',-default=>$q->param('pagina'),-override=>1);
 # Fecha
 my $sqlfecha="SELECT DISTINCT DATE_FORMAT(Event_Date_Time,'%e'),DATE_FORMAT(Event_Date_Time,'%m'),DATE_FORMAT(Event_Date_Time,'%Y') FROM " . $mysql_table . " ORDER BY Event_Date_Time";
 
@@ -172,7 +224,7 @@ my($pdia,$pmes,$pano);
 my (@dias,@meses,@anos);
 
 my %mesesval;
-while(my $arr=$sth->fetchrow_arrayref){
+while (my $arr=$sth->fetchrow_arrayref) {
     ($dia,$mes,$ano)=@$arr;
     push @dias,$dia if($dia ne $pdia);
     if($mes ne $pmes){
@@ -207,7 +259,20 @@ $res.="<br>" . $lang{"User"} . ": " . $q->textfield(-name=>'usuario',-size=>20) 
 $res.="</td><td>";
 $res.=$q->checkbox_group(-name=>'view',-values=>\@fieldsdb,-default=>\@fields,-labels=>\%fieldslabels,-columns=>"3");
 $res.="</td></tr></table>";
-$res.=$q->submit(-value=>$lang{"Show-Info"}) . "<br>";
+
+my @valores=('This','Next','Prev');
+my %labels=('This' => $lang{"This"}, 'Next'=>$lang{"Next"},
+         'Prev'=>$lang{"Prev"});
+
+$res .= "<hr>" . $lang{'Limit'} . " " .
+        $q->textfield(-name=>'limite',-size=>5,-value=>$limit) . 
+        $lang{'records'} . "<br>" .
+        $lang{"Page"} . 
+        $q->popup_menu(-name=>'pagina',-values=>\@valores,-labels=>\%labels) . 
+        "";
+
+$res .= $q->submit(-name=>$lang{'Show-Info'}) . 
+        $q->hidden(-name=>'offset',-default=>$offset,-override=>1)."<br>";
 
 my $arr;
 $res.="<table border=1 width='90%'>";

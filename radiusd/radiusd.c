@@ -400,6 +400,8 @@ radiusd_setup()
 
 	rewrite_init();
         snmp_init(0, 0, (snmp_alloc_t)grad_emalloc, (snmp_free_t)grad_free);
+	mlc_init();
+	sql_init();
 }
 
 void
@@ -1336,7 +1338,7 @@ struct cfg_stmt auth_stmt[] = {
 	{ "spawn", CS_STMT, NULL, cfg_obsolete, NULL, NULL, NULL },
 	{ NULL, }
 };
-	
+
 struct cfg_stmt acct_stmt[] = {
 	{ "port", CS_STMT, NULL, cfg_get_port, &acct_port, NULL, NULL },
 	{ "listen", CS_STMT, NULL, rad_cfg_listen_acct, NULL, NULL, NULL },
@@ -1376,6 +1378,7 @@ struct cfg_stmt config_syntax[] = {
 	  logging_stmt, logging_stmt_end },
 	{ "auth", CS_BLOCK, auth_stmt_begin, NULL, NULL, auth_stmt, NULL },
 	{ "acct", CS_BLOCK, acct_stmt_begin, NULL, NULL, acct_stmt, NULL  },
+	{ "mlc",  CS_BLOCK, NULL, NULL, NULL, mlc_stmt, NULL },
 	{ "proxy", CS_BLOCK, NULL, NULL, NULL, proxy_stmt, NULL  },
 	{ "rewrite", CS_BLOCK, rewrite_stmt_term, NULL, NULL, rewrite_stmt, NULL },
 	{ "filters", CS_BLOCK, filters_stmt_term, NULL, NULL, filters_stmt,

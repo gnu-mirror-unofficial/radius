@@ -1184,7 +1184,16 @@ rad_sql_mlc_close(struct radutmp *up)
 	}
 	obstack_free(&stack, NULL);
 }
+
 
+void
+sql_init()
+{
+	mlc_register_method("sql",
+			    rad_sql_mlc_collect_user,
+			    rad_sql_mlc_collect_realm,
+			    rad_sql_mlc_close);
+}
 
 
 /* ****************************************************************************

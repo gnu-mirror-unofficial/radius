@@ -26,7 +26,61 @@
 #include <radiusd.h>
 #include <radius/radutmp.h>
 
-/* Return value: that of CHECKRAD process, i.e. 1 means true (user FOUND)
+typedef int (*mlc_collect_user_t) (char *name, grad_request_t *request,
+				   grad_list_t **sess_list);
+typedef int (*mlc_collect_realm_t) (grad_request_t *request,
+				    grad_list_t **sess_list);
+typedef void (*mlc_close_t) (struct radutmp *up);
+
+struct mlc_dispatch {
+	char *name;
+	mlc_collect_user_t collect_user;
+	mlc_collect_realm_t collect_realm;
+	mlc_close_t close;
+};
+
+static grad_list_t *mlc_dispatch_list;
+struct mlc_dispatch *mlc_disptab;
+
+void
+mlc_register_method(char *name,
+		    mlc_collect_user_t collect_user,
+		    mlc_collect_realm_t collect_realm,
+		    mlc_close_t close)
+{
+	struct mlc_dispatch *mp = grad_emalloc(sizeof(*mp));
+	mp->name = grad_estrdup(name);
+	mp->collect_user = collect_user;
+	mp->collect_realm = collect_realm;
+	mp->close = close;
+	if (!mlc_dispatch_list)
+		mlc_dispatch_list = grad_list_create();
+	grad_list_append(mlc_dispatch_list, mp);
+}
+
+
+/* Entry points */
+int
+radius_mlc_collect_user(char *name, grad_request_t *request,
+			grad_list_t **sess_list)
+{
+	return mlc_disptab->collect_user(name, request, sess_list);
+}
+
+int
+radius_mlc_collect_realm(grad_request_t *request, grad_list_t **sess_list)
+{
+	return mlc_disptab->collect_realm(request, sess_list);
+}
+
+void
+radius_mlc_close(struct radutmp *up)
+{
+	mlc_disptab->close(up);
+}
+
+
+/* Return value: that of checkrad function, i.e. 1 means true (user FOUND)
    0 means false (user NOT found) */
 static int
 check_ts(struct radutmp *ut)
@@ -75,25 +129,6 @@ rad_check_ts(struct radutmp *ut)
                 return checkrad_assume_logged;
         }
         /*NOTREACHED*/
-}
-
-int
-radius_mlc_collect_user(char *name, grad_request_t *request,
-			grad_list_t **sess_list)
-{
-	return radutmp_mlc_collect_user(name, request, sess_list);
-}
-
-int
-radius_mlc_collect_realm(grad_request_t *request, grad_list_t **sess_list)
-{
-	return radutmp_mlc_collect_realm(request, sess_list);
-}
-
-void
-radius_mlc_close(struct radutmp *up)
-{
-	radutmp_mlc_close(up);
 }
 
 static int
@@ -200,4 +235,60 @@ radius_mlc_realm(grad_request_t *request)
 	}
 	grad_list_destroy(&sess_list, utmp_free, NULL);
         return count >= maxlogins;
+}
+
+
+
+static int
+name_cmp(const void *item, const void *data)
+{
+	const struct mlc_dispatch *mp = item;
+	const char *name = data;
+	return strcmp(mp->name, name);
+}
+	
+
+static int
+mlc_set_method(int argc, cfg_value_t *argv,
+	       void *block_data, void *handler_data)
+{
+	struct mlc_dispatch *mp;
+	
+	if (argc != 2 || argv[1].type != CFG_STRING) 
+		return 1;
+
+	mp = grad_list_locate(mlc_dispatch_list, argv[1].v.string, name_cmp);
+	if (mp) {
+		mlc_disptab = mp;
+		return 0;
+	}
+	return 1;
+}
+	    
+struct cfg_stmt mlc_stmt[] = {
+	{ "method", CS_STMT, NULL, mlc_set_method, NULL, NULL, NULL },
+	{ "checkrad-assume-logged", CS_STMT, NULL,
+	  cfg_get_boolean, &checkrad_assume_logged,
+	  NULL, NULL },
+	{ NULL, }
+};
+
+
+
+static void
+mlc_after_config_hook(void *arg, void *data ARG_UNUSED)
+{
+	if (!mlc_disptab)
+		mlc_disptab = grad_list_item(mlc_dispatch_list, 0);
+	grad_insist(mlc_disptab!=NULL);
+}
+
+void
+mlc_init()
+{
+	mlc_register_method("system",
+			    radutmp_mlc_collect_user,
+			    radutmp_mlc_collect_realm,
+			    radutmp_mlc_close);
+	radiusd_set_postconfig_hook(mlc_after_config_hook, NULL, 0);
 }

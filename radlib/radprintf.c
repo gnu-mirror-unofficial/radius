@@ -32,7 +32,7 @@
  * FIXME: FLOATING POINT FORMATS ARE NOT SUPPORTED. Upon encountering
  *        %[eEfg] spec, functions read next argument as double and
  *        simply output the format spec as is.
- * FIXME2: The return value is not consistent.
+ * FIXME2: The return value is not consistent?
  */
 
 #ifndef lint

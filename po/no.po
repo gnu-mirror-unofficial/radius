@@ -753,12 +753,12 @@ msgstr "lese fra filter «%s»"
 #: radiusd/exec.c:678
 #, c-format
 msgid "filter %s (auth): bad output: %s"
-msgstr "filter %s (auth): ugyldig utdata"
+msgstr "filter %s (auth): ugyldig utdata: %s"
 
 #: radiusd/exec.c:736
 #, c-format
 msgid "filter %s (acct): bad output: %s"
-msgstr "filter %s (acct): ugyldig utdata"
+msgstr "filter %s (acct): ugyldig utdata: %s"
 
 #: radiusd/exec.c:822
 #, c-format

@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-07-12 12:06+0300\n"
+"POT-Creation-Date: 2002-07-14 21:20+0300\n"
 "PO-Revision-Date: 2002-07-12 12:09+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Spanish <es@li.org>\n"
@@ -659,83 +659,109 @@ msgstr "leyendo %s"
 msgid "ready"
 msgstr "listo"
 
-#: radiusd/exec.c:73
+#: radiusd/exec.c:74
 #, c-format
 msgid "setgid(%d) failed"
 msgstr "setdig(%d) falló"
 
-#: radiusd/exec.c:79
+#: radiusd/exec.c:80
 #, c-format
 msgid "seteuid(%d) failed (ruid=%d, euid=%d)"
 msgstr "seteuid(%d) falló (ruid=%d, euid=%d)"
 
-#: radiusd/exec.c:84
+#: radiusd/exec.c:85
 #, c-format
 msgid "setreuid(0,%d) failed (ruid=%d, euid=%d)"
 msgstr "setreuid(0,%d) falló (ruid=%d, euid=%d)"
 
-#: radiusd/exec.c:140
+#: radiusd/exec.c:141
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
 msgstr ""
 "radius_exec_program(): no se puede ejecutar: el nombre del programa no es "
 "ruta absoluta: %s"
 
-#: radiusd/exec.c:151
+#: radiusd/exec.c:152
 #, c-format
 msgid "radius_exec_program(): won't execute, no such user: %s"
 msgstr "radius_exec_program(): no se puede ejecutar: el usuario `%s' no existe"
 
-#: radiusd/exec.c:158
+#: radiusd/exec.c:159
 msgid "couldn't open pipe"
 msgstr "no se puede abrir la tubería"
 
-#: radiusd/exec.c:183 radiusd/exec.c:215
+#: radiusd/exec.c:184 radiusd/exec.c:216
 msgid "can't close pipe"
 msgstr "no se puede cerrar la tubería"
 
-#: radiusd/exec.c:185
+#: radiusd/exec.c:186
 msgid "can't dup stdout"
 msgstr "no se puede duplicar la salida estándar (stdout)"
 
-#: radiusd/exec.c:232 radiusd/exec.c:553
+#: radiusd/exec.c:233 radiusd/exec.c:669
 #, c-format
 msgid "<stdout of %s>:%d: %s"
 msgstr "<salida de %s>:%d: %s"
 
 # FUZZY
-#: radiusd/exec.c:256
+#: radiusd/exec.c:257
 msgid ""
 "can't run external program (reason reported via syslog channel user.err)"
 msgstr ""
 "no se puede ejecutar programa externo: la razón reportado a través del canal "
 "syslog `user.err'"
 
-#: radiusd/exec.c:260
+#: radiusd/exec.c:261
 msgid "radius_exec_program(): abnormal child exit"
 msgstr "radius_exec_program(): el proceso hijo terminó anormalmente"
 
-#: radiusd/exec.c:279
+#: radiusd/exec.c:281
 #, c-format
 msgid "won't execute, no such user: %s"
 msgstr "no se puede ejecutar: el usuario `%s' no existe"
 
-#: radiusd/exec.c:443
+# FIXME
+#: radiusd/exec.c:434
 #, c-format
-msgid "filter `%s' is not declared"
-msgstr "filtro `%s' no declarado"
+msgid "filter %s (pid %d) exited with status %d (in: %u, out: %u)"
+msgstr "filtro %s (pid %d) terminó con estado %d (entrada: %u, salida: %u)"
 
-#: radiusd/exec.c:453
+#: radiusd/exec.c:502
+#, fuzzy, c-format
+msgid "filter %s is not declared"
+msgstr "filtro %s no declarado"
+
+#: radiusd/exec.c:530
+#, fuzzy, c-format
+msgid "cannot run filter %s"
+msgstr "no se puede ejecutar filtro %s"
+
+#: radiusd/exec.c:548
+#, fuzzy, c-format
+msgid "filter %s"
+msgstr "filtro %s"
+
+# FIXME
+#: radiusd/exec.c:581
+msgid "wrong return type"
+msgstr "tipo de devuelvo incorrecto"
+
+#: radiusd/exec.c:654 radiusd/exec.c:722
+#, fuzzy, c-format
+msgid "reading from filter %s"
+msgstr "no se puede ejecutar filtro %s"
+
+#: radiusd/exec.c:678
 #, c-format
-msgid "cannot run filter `%s'"
-msgstr "no se puede ejecutar filtro `%s'"
+msgid "filter %s (auth): bad output: %s"
+msgstr "filtro %s (auth): salida incorrecta: %s"
 
-#: radiusd/exec.c:466
+#: radiusd/exec.c:736
 #, c-format
-msgid "filter `%s'"
-msgstr "filtro `%s'"
+msgid "filter %s (acct): bad output: %s"
+msgstr "filter %s (acct): salida incorrecta: %s"
 
-#: radiusd/exec.c:666
+#: radiusd/exec.c:822
 #, c-format
 msgid "%s:%d: filter already declared at %s:%d"
 msgstr "%s:%d: filtro ya declarado en %s:%d"
@@ -785,9 +811,8 @@ msgid "expected , but found %s"
 msgstr "se esperaba , pero se ha encontrado %s"
 
 #: radiusd/files.c:812 radiusd/files.c:910
-#, fuzzy
 msgid "not defined"
-msgstr "No definido"
+msgstr "no definido"
 
 #: radiusd/files.c:960 radiusd/files.c:1145
 msgid "wrong number of fields"
@@ -1344,25 +1369,25 @@ msgstr "ERROR INTERNO (%s:%d): tipo de atributo %d es incorrecto (%d)"
 msgid "Can't spawn new thread: %s"
 msgstr "no se puede crear hilo: %s"
 
-#: radiusd/request.c:249
+#: radiusd/request.c:242
 msgid "request timed out in queue"
 msgstr "Expiró el tiempo de espera en cola"
 
 # FUZZY
-#: radiusd/request.c:264 radiusd/request.c:423
+#: radiusd/request.c:257 radiusd/request.c:416
 #, c-format
 msgid "Killing unresponsive %s thread %d"
 msgstr "Terminando petición %s de hilo %d no respondido"
 
-#: radiusd/request.c:292
+#: radiusd/request.c:285
 msgid "duplicate request"
 msgstr "petición duplicada"
 
-#: radiusd/request.c:317
+#: radiusd/request.c:310
 msgid "too many requests in queue"
 msgstr "demasiadas peticiones en cola"
 
-#: radiusd/request.c:327
+#: radiusd/request.c:320
 msgid "too many requests of this type"
 msgstr "demasiadas peticiones de este tipo"
 
@@ -1489,57 +1514,57 @@ msgstr "regex ha fallado: %s. Entrada: %s"
 msgid "pc out of range"
 msgstr "pc es fuera de rango"
 
-#: radiusd/rewrite.y:4811
+#: radiusd/rewrite.y:4869
 #, c-format
 msgid "%s:%d: redefinition of function %s"
 msgstr "%s:%d: función %s redefinida"
 
-#: radiusd/rewrite.y:4814
+#: radiusd/rewrite.y:4872
 #, c-format
 msgid "%s:%d: previously defined here"
 msgstr "%s:%d: posición de definición actual"
 
-#: radiusd/rewrite.y:4911 radiusd/rewrite.y:5014
+#: radiusd/rewrite.y:4969 radiusd/rewrite.y:5072
 #, c-format
 msgid "function %s not defined"
 msgstr "función %s no definida"
 
-#: radiusd/rewrite.y:4954
+#: radiusd/rewrite.y:5012
 #, c-format
 msgid "%s(): wrong number of arguments (should be %d, passed %d)"
 msgstr "%s(): número de argumentos incorrecto (debe ser %d, pasados %d)"
 
-#: radiusd/rewrite.y:4996
+#: radiusd/rewrite.y:5054
 #, c-format
 msgid "malformed function call: %s"
 msgstr "llamada a la función incorrecta: %s"
 
-#: radiusd/rewrite.y:5004
+#: radiusd/rewrite.y:5062
 msgid "missing '(' in function call"
 msgstr "falta '(' en la llamada a la función"
 
-#: radiusd/rewrite.y:5008
+#: radiusd/rewrite.y:5066
 msgid "missing ')' in function call"
 msgstr "falta ')' en la llamada a la función"
 
-#: radiusd/rewrite.y:5045
+#: radiusd/rewrite.y:5103
 #, c-format
 msgid "calling %s: expected ',' but found %s after arg %d"
 msgstr ""
 "invocación de %s: se esperaba ',' pero se ha encontrado %s (después de "
 "argumento %d)"
 
-#: radiusd/rewrite.y:5055
+#: radiusd/rewrite.y:5113
 #, c-format
 msgid "too many arguments for %s"
 msgstr "demasiados argumentos para %s"
 
-#: radiusd/rewrite.y:5081
+#: radiusd/rewrite.y:5139
 #, c-format
 msgid "too few arguments for %s"
 msgstr "insuficiente número de argumentos para %s"
 
-#: radiusd/rewrite.y:5131
+#: radiusd/rewrite.y:5189
 #, c-format
 msgid "function %s() requires %d parameters"
 msgstr "función %s() requiere %d parámetros"

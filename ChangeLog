@@ -1,3 +1,11 @@
+2002-07-14  Sergey Poznyakoff
+
+	* radiusd/exec.c: Implemented per-thread filters.
+	* examples/config.syntax: `common' keyword in `filter' block.
+
+	* po/es.po: Updated
+	* po/no.po: Updated
+	
 2002-07-13  Sergey Poznyakoff  
 
 	* radiusd/exec.c: Implemented reading filter accounting

@@ -53,7 +53,7 @@ char *
 md5crypt(pw, salt, passwd, size)
         register const char *pw;
         register const char *salt;
-        const char *passwd;
+        char *passwd;
         size_t size;
 {
         static char magic[] = "$1$"; /* This string is magic for
@@ -72,7 +72,7 @@ md5crypt(pw, salt, passwd, size)
         sp = salt;
 
         /* If it starts with the magic string, then skip that */
-        if(!strncmp(sp,magic,strlen(magic)))
+        if (!strncmp(sp, magic, strlen(magic)))
                 sp += strlen(magic);
         else {
                 pthread_mutex_lock(&crypt_mutex);

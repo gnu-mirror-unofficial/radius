@@ -662,7 +662,7 @@ write_detail(grad_request_t *radreq, int authtype, int rtype)
 
 	/* Change to the accounting directory */
 	if (chdir(radacct_dir)) {
-		free(filename);
+		grad_free(filename);
 		return 1;
 	}
 	

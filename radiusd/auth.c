@@ -106,7 +106,7 @@ int
 check_user_name(p)
 	char *p;
 {
-	static char valid_char[] = ".-_!";
+	static char valid_char[] = ".-_!@";
 	for (; *p && (isalnum(*p) || strchr(valid_char, *p)); p++)
 		;
 	return *p;

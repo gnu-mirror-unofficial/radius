@@ -42,6 +42,7 @@ radius_TEXINFOS=acct.texi\
  radgrep.texi\
  radlast.texi\
  radping.texi\
+ radtest.texi\
  radscm.texi\
  radwho.texi\
  radzap.texi\

@@ -1,5 +1,5 @@
 @c This is part of the Radius manual.
-@c Copyright (C) 1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+@c Copyright (C) 1999,2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 @c Written by Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
@@ -15,6 +15,7 @@ package.
 
 @menu
 * client.conf::   Configuration file is common for all client utilities.
+* radtest::       Radius client shell.
 * radsession::    Send arbitrary requests to Radius server.
 * nas.scm::       A @NAS{} implementation for GNU/Linux machines.
 * pam_radius.so:: A PAM module for authentication via Radius.
@@ -96,6 +97,9 @@ timeout 3
 retry 5
 @end group
 @end smallexample
+
+@comment *L2****************************************************************
+@include radtest.texi
 
 @comment *L2****************************************************************
 @node radsession

@@ -21,14 +21,14 @@
 # include <config.h>
 #endif
 
-#ifdef USE_SERVER_GUILE
-
 #include <unistd.h>
 #include <fcntl.h>
 #include <radiusd.h>
 #include <libguile.h>
 #include <setjmp.h>
 #include <errno.h>
+
+#ifdef USE_SERVER_GUILE
 
 #include <radius/radscm.h>
 
@@ -633,10 +633,12 @@ struct cfg_stmt guile_stmt[] = {
 
 #else
 
+#include <radius/radius.h>
+
 int
 scheme_try_auth(int auth_type, grad_request_t *req,
-	    grad_avp_t *user_check,
-	    grad_avp_t **user_reply_ptr)
+	        grad_avp_t *user_check,
+	        grad_avp_t **user_reply_ptr)
 {
 	return 1;
 }

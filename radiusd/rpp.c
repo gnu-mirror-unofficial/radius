@@ -177,6 +177,7 @@ rpp_start_process(rpp_proc_t *proc, int (*proc_main)(void *), void *data)
 	proc->pid = pid;
 	proc->p[0] = inp[0];
 	proc->p[1] = outp[1];
+	proc->ready = 1;
 	return 0;
 }
 
@@ -304,10 +305,25 @@ rpp_read_set(fd_set *fds, void *data, size_t size)
 static int rpp_request_handler(void *arg);
 
 int
-rpp_ready()
+rpp_ready(pid_t pid)
 {
-	rpp_proc_t *p = rpp_lookup_ready(rpp_request_handler, NULL);
-	return p != NULL;
+	if (pid == 0) {  
+		if (rpp_lookup_ready(rpp_request_handler, NULL))
+			return 1;
+	} else {
+		rpp_proc_t *p;
+
+		for (p = list_first(process_list);
+		     p;
+		     p = list_next(process_list)) {
+			if (p->pid == pid) {
+				if (p->ready)
+					return 1;
+				break;
+			}
+		}
+	}
+	return 0;
 }
 
 void
@@ -349,7 +365,7 @@ rpp_kill(pid_t pid, int signo)
 	list_iterate(process_list, _kill_itr, &signo);
 }
 
-struct fwd_request {
+struct rpp_request {
 	int type;                  /* Request type */
 	struct sockaddr_in addr;   /* Sender address */
 	int fd;                    /* Source descriptor */
@@ -357,18 +373,27 @@ struct fwd_request {
 	/* Raw data follow */
 };
 
+struct rpp_reply {
+	int code;
+	size_t size;
+	/* Data follows */
+};
+
 int
 rpp_forward_request(REQUEST *req)
 {
 	rpp_proc_t *p;
-	struct fwd_request frq;
+	struct rpp_request frq;
 
 	if (req->child_id) 
 		p = rpp_lookup_pid(req->child_id);
 	else
 		p = rpp_lookup_ready(rpp_request_handler, NULL);
+
 	if (!p)
 		return 1;
+	radlog(L_DEBUG, "sending request to %d", p->pid);
+	
 	frq.type = req->type;
 	frq.addr = req->addr;
 	frq.fd = req->fd;
@@ -426,19 +451,18 @@ sig_handler(int sig)
 	signal(sig, sig_handler);
 }
 
-
 int
 rpp_request_handler(void *arg ARG_UNUSED)
 {
-	struct fwd_request frq;
+	struct rpp_request frq;
+	struct rpp_reply repl;
 	char *data = NULL;
 	size_t datasize = 0;
-	int true = 1;
 	REQUEST *req;
 
 	radiusd_signal_init(sig_handler);
 	request_init_queue();
-	
+
 	while (1) {
 		if (rpp_fd_read(0, &frq, sizeof frq) != sizeof frq) {
 			abort();
@@ -460,12 +484,20 @@ rpp_request_handler(void *arg ARG_UNUSED)
 		req = request_create(frq.type, frq.fd, &frq.addr,
 				     data, frq.size);
 		req->status = RS_COMPLETED;
-		if (request_handle(req, request_respond))
-			request_free(req);
+		repl.code = request_handle(req, request_respond);
+			
+		/* Inform the master */
+		repl.size = req->update_size;
+		rpp_fd_write(1, &repl, sizeof repl);
+		if (req->update) {
+			rpp_fd_write(1, req->update, req->update_size);
+			efree(req->update);
+			req->update = NULL;
+			req->update_size = 0;
+		}
 
-		/* Inform master */
-		rpp_fd_write(1, &true, sizeof true);
-		exit(10);
+		if (repl.code)
+			request_free(req);
 	}
 	return 0;
 }
@@ -474,14 +506,22 @@ int
 rpp_input_handler(int fd, void *data)
 {
 	int true = 0;
+	struct rpp_reply repl;
 	
-	rpp_fd_read(fd, &true, sizeof(true));
-	if (true) {
+	if (rpp_fd_read(fd, &repl, sizeof(repl)) == sizeof(repl)) {
 		rpp_proc_t *p = rpp_lookup_fd(fd);
+		void *data = NULL;
+
+		if (repl.size) {
+			data = emalloc(repl.size);
+			rpp_fd_read(fd, data, repl.size);
+		}
+		
 		if (p) {
 			p->ready = 1;
-			request_set_status(p->pid, RS_COMPLETED);
-		}
+			request_update(p->pid, RS_COMPLETED, data);
+		} 
+		efree(data);
 	}
 	return 0;
 }

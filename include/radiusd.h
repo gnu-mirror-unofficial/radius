@@ -273,6 +273,7 @@ extern UINT4 expiration_seconds;
 extern UINT4 warning_seconds;
 extern int use_dbm;
 extern UINT4 myip;
+extern UINT4 ref_ip;
 extern int auth_port;
 extern int acct_port;
 extern int suspend_flag;

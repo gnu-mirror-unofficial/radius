@@ -1,9 +1,6 @@
-# -*- mode: po; buffer-file-coding-system: iso-8859-2; default-input-method: latin-2-prefix -*-
-# Polish messages for GNU Radius
+# Polish messages for GNU Radius -*- mode: po; buffer-file-coding-system: iso-8859-2; default-input-method: latin-2-prefix -*-
 # Copyright (C) 2003 Free Software Foundation, Inc.
-# This file is distributed under the same license as the GNU Radius package.
-#      
-# Sergey Poznyakoff <gray@gnu.org>, 2002.
+# Sergey Poznyakoff <gray@gnu.org>, 2003.
 # Krzysztof Kopera <Krzysztof_Kopera/HeadQ@netia.pl>, 2002.
 # 	  
 # Local Variables:
@@ -11,10 +8,10 @@
 # End:
 msgid ""
 msgstr ""
-"Project-Id-Version: GNU Radius 1.0\n"
-"Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2003-06-21 16:23+0300\n"
-"PO-Revision-Date: 2003-06-23 19:10+0300\n"
+"Project-Id-Version: radius 1.0\n"
+"Report-Msgid-Bugs-To: <gray@mirddin.farlep.net>\n"
+"POT-Creation-Date: 2003-06-23 20:01+0300\n"
+"PO-Revision-Date: 2003-06-24 16:44+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
@@ -192,9 +189,7 @@ msgstr "login: pozycja dla NAS-u %s, port %d wystêpuje w porz±dku b³êdnym"
 #: lib/radutmp.c:175
 #, c-format
 msgid "logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"
-msgstr ""
-"logout: pozycja dla NAS-u %s, port %d ma b³êdny ID (spodziewane %s, "
-"odnalezione %s)"
+msgstr "logout: pozycja dla NAS-u %s, port %d ma b³êdny ID (spodziewano %s, odnaleziono %s)"
 
 #: lib/radutmp.c:198
 #, c-format
@@ -243,7 +238,7 @@ msgstr "%s:%d: nieznany atrybut `%s'"
 #: lib/users.y:235
 #, c-format
 msgid "%s:%d: %s: not an absolute pathname"
-msgstr "%s:%d: naswa pliku `%s' nie rozpoczêta ¶cie¿k± absolutn±"
+msgstr "%s:%d: nazwa pliku `%s' nie jest pe³n± nazw± ¶cie¿ki"
 
 #: lib/users.y:248
 msgid "attribute"
@@ -267,12 +262,12 @@ msgstr "%s:%d: %s: nieznany typ atrybutu %d"
 #: lib/users.y:370
 #, c-format
 msgid "%s:%d: enabled userfile parser debugging"
-msgstr "%s:%d: w³±czanie odpluskwiania analizatora pliku users"
+msgstr "%s:%d: w³±czanie odpluskwiania analizatora pliku \"users\""
 
 #: lib/users.y:373
 #, c-format
 msgid "%s:%d: disabled userfile parser debugging"
-msgstr "%s:%d: wy³±czanie odpluskwiania analizatora pliku users"
+msgstr "%s:%d: wy³±czanie odpluskwiania analizatora pliku \"users\""
 
 #: lib/util.c:192
 #, c-format
@@ -334,7 +329,7 @@ msgstr "Wy¶wietla krótkie informacje o sk³adni polecenia"
 
 #: lib/argp-parse.c:103
 msgid "Set the program name"
-msgstr "Ustaw numer portu autentykacji"
+msgstr "Okre¶la nazwê programu"
 
 #: lib/argp-parse.c:105
 msgid "Hang for SECS seconds (default 3600)"
@@ -384,11 +379,11 @@ msgstr "KATALOG"
 
 #: lib/radargp.c:39
 msgid "Set path to the configuration directory"
-msgstr " Podaj nazwê katalogu konfiguracyjnego"
+msgstr "Podaje nazwê katalogu konfiguracyjnego"
 
 #: lib/radargp.c:40
 msgid "print license and exit"
-msgstr "wy¶wietla licencjê i wyhodzi"
+msgstr "wy¶wietla licencjê i wychodzi"
 
 #: lib/radargp.c:58
 msgid "Common options"
@@ -411,18 +406,18 @@ msgid ""
 "   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.\n"
 msgstr ""
 "   Niniejszy program jest wolnym oprogramowaniem; mo¿esz go\n"
-"   rozprowadzac dalej i/lub modyfikowaæ na warunkach Powszechnej\n"
+"   rozprowadzaæ dalej i/lub modyfikowaæ na warunkach Powszechnej\n"
 "   Licencji Publicznej GNU, wydanej przez Fundacjê Wolnego\n"
 "   Oprogramowania - wed³ug wersji 2-giej tej Licencji lub której¶\n"
 "   z pó¼niejszych wersji.\n"
 "   \n"
 "   Niniejszy program rozpowszechniany jest z nadziej±, i¿ bêdzie on\n"
 "   u¿yteczny - jednak BEZ JAKIEJKOLWIEK GWARANCJI, nawet domy¶lnej\n"
-"   gwarancji PRZYDATNO¦ÆI HANDLOWEJ albo PRZYDATNO¦ÆI DO OKRE¦LONYCH\n"
+"   gwarancji PRZYDATNO¦CI HANDLOWEJ albo PRZYDATNO¦CI DO OKRE¦LONYCH\n"
 "   ZASTOSOWAÑ. W celu uzyskania bli¿szych informacji przeczytaj\n"
 "   Powszechn± Licencjê Publiczn± GNU.\n"
 "   \n"
-"   Z pewno¶ci± wraz z niniejszym programem otrzyma³es te¿ egzemplarz\n"
+"   Z pewno¶ci± wraz z niniejszym programem otrzyma³e¶ te¿ egzemplarz\n"
 "   Powszechnej Licencji Publicznej GNU (GNU General Public License);\n"
 "   je¶li nie - napisz do Free Software Foundation, Inc.,\n"
 "   59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.\n"
@@ -580,7 +575,7 @@ msgstr "zewnêtrzna kontrola nie powiod³a siê: "
 
 #: radiusd/auth.c:1225
 msgid "Login OK"
-msgstr "Login podtwierdzony"
+msgstr "Login potwierdzony"
 
 #: radiusd/builddbm.c:63
 msgid "too many attributes"
@@ -716,12 +711,13 @@ msgstr "setreuid(%d) nie powiód³ siê (ruid=%d, euid=%d)"
 #: radiusd/exec.c:98
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
-msgstr "radius_exec_program(): nie mo¿na uruchomiæ, nazwa programu nie rozpoczêta ¶cie¿k± absolutn±: %s"
+msgstr "radius_exec_program(): nie mo¿na uruchomiæ, nazwa programu nie jest pe³n± nazw± ¶cie¿ki: %s"
 
 #: radiusd/exec.c:109
 #, c-format
 msgid "radius_exec_program(): won't execute, no such user: %s"
-msgstr "radius_exec_program(): nie mo¿na uruchomiæ, nie ma takiego u¿ytkownika: %s"
+msgstr ""
+"radius_exec_program(): nie mo¿na uruchomiæ, nie ma takiego u¿ytkownika: %s"
 
 #: radiusd/exec.c:116
 msgid "couldn't open pipe"
@@ -729,7 +725,7 @@ msgstr "nie mogê otworzyæ potoku"
 
 #: radiusd/exec.c:120
 msgid "can't reset SIGCHLD"
-msgstr "nie mo¿na ustaliæ obs³ugê SIGCHLD"
+msgstr "nie mo¿na ustaliæ obs³ugi SIGCHLD"
 
 #: radiusd/exec.c:141 radiusd/exec.c:174
 msgid "can't close pipe"
@@ -752,7 +748,9 @@ msgstr "nie mo¿na odtworzyæ obs³ugi SIGCHLD"
 #, c-format
 msgid ""
 "can't run external program `%s' (reason reported via syslog channel user.err)"
-msgstr "nie mo¿na wykonaæ programu zewnêtrznego `%s' (powód raportowany przez kana³ syslog user.err)"
+msgstr ""
+"nie mo¿na wykonaæ programu zewnêtrznego `%s' (powód raportowany przez kana³ "
+"syslog user.err)"
 
 #: radiusd/exec.c:218
 #, c-format
@@ -796,17 +794,17 @@ msgstr "czytanie z filtru %s"
 #: radiusd/exec.c:580
 #, c-format
 msgid "filter %s (auth): bad output: %s"
-msgstr "filter %s (auth): niepoprawne wyj¶cie: %s"
+msgstr "filter %s (uwierzytelnienie): niepoprawne wyj¶cie: %s"
 
 #: radiusd/exec.c:624 radiusd/exec.c:630
 #, c-format
 msgid "filter %s (acct): bad output: %s"
-msgstr "filter %s (acct): niepoprawne wyj¶cie: %s"
+msgstr "filter %s (rozliczenie): niepoprawne wyj¶cie: %s"
 
 #: radiusd/exec.c:701
 #, c-format
 msgid "%s:%d: filter already declared at %s:%d"
-msgstr "%s:%d: filtr ju¿ deklarowany w %s:%d"
+msgstr "%s:%d: filtr ju¿ zadeklarowany w %s:%d"
 
 #: radiusd/files.c:159
 #, c-format
@@ -915,11 +913,11 @@ msgstr "Main"
 
 #: radiusd/log.c:108
 msgid "Auth"
-msgstr "Auth"
+msgstr "Uwierzytelnienie"
 
 #: radiusd/log.c:109
 msgid "Acct"
-msgstr "Acct"
+msgstr "Rozliczenie"
 
 #: radiusd/log.c:110
 msgid "Proxy"
@@ -1154,7 +1152,7 @@ msgstr "Ustala nazwê kalalogu logowania"
 
 #: radiusd/radiusd.c:64
 msgid "Select operation mode: test, checkconf, builddbm."
-msgstr "Wybiera tryb operacji: test, checkout, builddbm."
+msgstr "Wybiera tryb operacji: test, checkconf, builddbm."
 
 #: radiusd/radiusd.c:66
 msgid "Do not resolve IP addresses"
@@ -1216,7 +1214,7 @@ msgstr "niew³a¶ciwy adres IP: %s"
 
 #: radiusd/radiusd.c:276
 msgid "Sorry, your account is currently closed\n"
-msgstr "Niestety, Twoje konto jest zamkniête\\n"
+msgstr "Niestety, Twoje konto jest zamkniête\n"
 
 #: radiusd/radiusd.c:278
 msgid "Password has expired\n"
@@ -1238,7 +1236,7 @@ msgstr ""
 msgid ""
 "\n"
 "Realm quota exceeded - access denied\n"
-msgstr "\nOsi±gniête ograniczenie dziedziny - odmowa dostêpu\n"
+msgstr "\nOsi±gniêto ograniczenie dziedziny - odmowa dostêpu\n"
 
 #: radiusd/radiusd.c:286
 msgid ""
@@ -1258,7 +1256,7 @@ msgstr ""
 
 #: radiusd/radiusd.c:290
 msgid "You are calling outside your allowed timespan\n"
-msgstr "Próba dostêpu poza dopuszczalnym okresem czasu\\n"
+msgstr "Próba dostêpu poza dopuszczalnym okresem czasu\n"
 
 #: radiusd/radiusd.c:328
 msgid "Terminating the subprocesses"
@@ -1274,7 +1272,7 @@ msgstr[2] "pozosta³y %d procesów potomnych"
 
 #: radiusd/radiusd.c:365
 msgid "Radiusd is not listening on any port. Trying to continue anyway..."
-msgstr "Radiusd nie nas³uchuje na ¿adnym porcie. Mimo to contynuujê..."
+msgstr "Radiusd nie nas³uchuje na ¿adnym porcie. Mimo to kontynuujê..."
 
 #: radiusd/radiusd.c:395
 msgid "Starting"
@@ -1307,7 +1305,7 @@ msgstr "Rozpoczêto ponowne uruchomienie"
 
 #: radiusd/radiusd.c:705
 msgid "can't restart: not started as absolute pathname"
-msgstr "nie mo¿na ponownie uruchomiæ: nazwa programu nie rozpoczêta ¶cie¿k± absolutn±"
+msgstr "nie mo¿na ponownie uruchomiæ: nazwa programu nie jest pe³n± nazw± ¶cie¿ki"
 
 #: radiusd/radiusd.c:717
 msgid "radiusd_restart: cannot fork"
@@ -1496,7 +1494,7 @@ msgstr "stos pusty"
 
 #: radiusd/rewrite.y:3906
 msgid "rewrite runtime error"
-msgstr "rewrite: b³±d wykoniania"
+msgstr "rewrite: b³±d wykonania"
 
 #: radiusd/rewrite.y:4002
 msgid "no request supplied"
@@ -1522,7 +1520,7 @@ msgstr "pc poza zakresem"
 #: radiusd/rewrite.y:4796
 #, c-format
 msgid "%s:%d: redefinition of function %s"
-msgstr "%s:%d: redefinicja funkcji %s"
+msgstr "%s:%d: przedefiniowanie funkcji %s"
 
 #: radiusd/rewrite.y:4799
 #, c-format
@@ -1589,13 +1587,12 @@ msgstr ""
 #: radiusd/scheme.c:153
 #, c-format
 msgid "Unexpected return value from Guile authentication function `%s'"
-msgstr ""
-"Niespodziewana warto¶æ zwrócona przez funkcje uwierzytelnienia Guile `%s'"
+msgstr "Funkcja uwierzytelniania Guile `%s' zwróci³a niespodziewan± warto¶æ"
 
 #: radiusd/scheme.c:190
 #, c-format
 msgid "Unexpected return value from Guile accounting function `%s'"
-msgstr "Niespodziewana warto¶æ zwrócona przez funkcje rozliczenia Guile `%s'"
+msgstr "Funkcja rozliczenia Guile `%s' zwróci³a niespodziewan± warto¶æ"
 
 #: radiusd/snmpserv.c:276
 #, c-format
@@ -1706,7 +1703,7 @@ msgstr "rozliczenie SQL: brak acct_start_query"
 
 #: radiusd/sql.c:537
 msgid "disabling SQL acct: no acct_stop_query specified"
-msgstr "wy³±czanie SQL acct: brak acct_stop_query"
+msgstr "wy³±czanie rozliczenia SQL: brak acct_stop_query"
 
 #: radiusd/sql.c:544
 msgid "SQL acct: no acct_nasdown_query specified"
@@ -1760,7 +1757,7 @@ msgstr[2] "shmem_get(): nie mo¿na zarezerwowaæ %d bajtów"
 
 #: radiusd/stat.c:168
 msgid "stat_init failed"
-msgstr "stat_init nie powód³ siê"
+msgstr "stat_init nie powiód³ siê"
 
 #: radiusd/stat.c:228
 msgid ""
@@ -1833,7 +1830,7 @@ msgstr "Porty:\n"
 
 #: radiusd/version.c:178
 msgid "Paths:\n"
-msgstr "¦ciê¿ki:\n"
+msgstr "¦cie¿ki:\n"
 
 #: radiusd/version.c:179
 #, c-format
@@ -1878,7 +1875,7 @@ msgstr ""
 #: radiusd/rpp.c:491
 #, c-format
 msgid "Child received malformed header (len = %d, error = %s)"
-msgstr "Podproces odebra³ niepoprawny nag³owek (d³ugo¶æ = %d, b³±d = %s)"
+msgstr "Podproces odebra³ niepoprawny nag³ówek (d³ugo¶æ = %d, b³±d = %s)"
 
 #: radiusd/rpp.c:503
 msgid "Child received malformed data"
@@ -1992,7 +1989,7 @@ msgstr "ustawia poziom odpluskwiania"
 msgid ""
 "Read input from FILE. When this option is used, all unknown options in the "
 "form --VAR=VALUE are treated as variable assignments"
-msgstr "Czyta z PLIKU. Po wyst±pieniu tej opcji wszystkie nieznane opcje w formie --ZMIENNA=WARTO¦Æ s± traktowane jako podstawienia"
+msgstr "Odczyt wej¶cia z PLIKU. Po wyst±pieniu tej opcji wszystkie nieznane opcje w formie --ZMIENNA=WARTO¦Æ s± traktowane jako podstawienia"
 
 #: radtest/main.c:77
 msgid "set number of retries"
@@ -2150,7 +2147,7 @@ msgstr "nie prosi o potwierdzenie przed usuniêciem"
 
 #: radzap/radzap.c:103
 msgid "at least one port, nas or user must be specified"
-msgstr "musi byæ podany przynajmniej port, nas b±d¼ nazwa u¿ytkownika"
+msgstr "musi byæ podany przynajmniej port, NAS b±d¼ nazwa u¿ytkownika"
 
 #: radzap/radzap.c:224
 #, c-format

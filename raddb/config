@@ -2,7 +2,6 @@
 # the syntax.
 #
 option {
-	usr2delay 30;
 	max-requests 1024;
 	# Uncomment and edit these if you need to:
 #	log-dir "/var/log";

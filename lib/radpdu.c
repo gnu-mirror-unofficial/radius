@@ -357,6 +357,23 @@ rad_decode_pair(int attrno, char *ptr, int attrlen)
         return pair;
 }
 
+static int
+decode_vsa(u_char *ptr, UINT4 attrlen, UINT4 *vendorpec, UINT4 *vendorcode)
+{
+	UINT4 x;
+	
+	if (attrlen <= 6) { /*FIXME*/
+		radlog(L_NOTICE,
+		       _("Received a vendor-specific attribute with length <= 6"));
+		return 1;
+	}
+	memcpy(&x, ptr, 4);
+	*vendorpec = ntohl(x);
+	*vendorcode = vendor_pec_to_id(*vendorpec);
+
+	return *vendorcode != 0;
+}
+
 /* Receive UDP client requests, build an authorization request
    structure, and attach attribute-value pairs contained in the request
    to the new structure. */
@@ -407,29 +424,20 @@ rad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, int length)
         stop = 0;
         
         while (ptr < endp && !stop) {
-                UINT4 attrno, attrlen, lval, vendorcode, vendorpec;
+                UINT4 attrno, attrlen, vendorcode, vendorpec;
                                 
                 attrno = *ptr++;
                 attrlen = *ptr++;
                 if (attrlen < 2) {
+			debug(1,("exit from the loop"));
                         stop = 1;
                         continue;
                 }
                 attrlen -= 2;
                 length  -= 2;
                 
-                if (attrno == DA_VENDOR_SPECIFIC) {
-                        if (attrlen <= 6) { /*FIXME*/
-                                stop = 1;
-                                continue;
-                        }
-                        memcpy(&lval, ptr, 4);
-                        vendorpec = ntohl(lval);
-                        if ((vendorcode = vendor_pec_to_id(vendorpec)) == 0) {
-                                stop = 1;
-                                continue;
-                        }
-                        
+                if (attrno == DA_VENDOR_SPECIFIC
+		    && decode_vsa(ptr, attrlen, &vendorpec, &vendorcode) == 0) {
                         ptr += 4;
                         attrlen -= 4;
 
@@ -450,30 +458,26 @@ rad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, int length)
 				}
 				
                                 pair = rad_decode_pair(attrno, ptr, len);
-                                if (!pair) {
-                                        stop = 1;
-                                        break;
-                                }
-                                if (first_pair == NULL) 
-                                        first_pair = pair;
-                                else 
-                                        prev->next = pair;
-                                prev = pair;
+                                if (pair) {
+                                	if (first_pair == NULL) 
+                                        	first_pair = pair;
+                                	else 
+                                        	prev->next = pair;
+                                	prev = pair;
+				} 
                                 ptr += len;
                                 attrlen -= len + 2;
                         }
                 } else {
                         pair = rad_decode_pair(attrno, ptr, attrlen);
                         ptr += attrlen;
-                        if (!pair) {
-                                stop = 1;
-                                break;
-                        }
-                        if (first_pair == NULL) 
-                                first_pair = pair;
-                        else 
-                                prev->next = pair;
-                        prev = pair;
+                        if (pair) {
+                        	if (first_pair == NULL) 
+                                	first_pair = pair;
+                        	else 
+                                	prev->next = pair;
+                        	prev = pair;
+			}
                 }
         }
 

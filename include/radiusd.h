@@ -381,6 +381,7 @@ void req_decrypt_password(char *password, RADIUS_REQ *req, VALUE_PAIR *pair);
 /* exec.c */
 int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **,
                         int, char **user_msg);
+void filter_cleanup();
 int filter_auth(char *name, RADIUS_REQ *req, VALUE_PAIR **reply_pairs);
 int filter_acct(char *name, RADIUS_REQ *req);
 int filter_sigchild(pid_t pid, int status);
@@ -460,9 +461,9 @@ extern struct cfg_stmt logging_stmt[];
 
 /* rewrite.y */
 extern struct cfg_stmt rewrite_stmt[];
-int run_rewrite(char *name, VALUE_PAIR *req);
+int run_rewrite(char *name, RADIUS_REQ *req);
 int parse_rewrite(char *name);
-int va_run_init __PVAR((char *name, VALUE_PAIR *request, char *typestr, ...));
+int va_run_init __PVAR((char *name, RADIUS_REQ *request, char *typestr, ...));
 
 /* radck.c */
 int fix_check_pairs(int sf_file, char *filename, int line, char *name,

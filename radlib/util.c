@@ -400,9 +400,13 @@ format_pair(pair)
 		else {
 			int len = format_vendor_pair(NULL, pair);
 			buf2ptr = malloc(len+1);
-			if (buf2ptr)
-				abort();/*FIXME*/
-			format_vendor_pair(buf2ptr, pair);
+			if (!buf2ptr) {
+				radlog(L_ERR,
+				       "%s:%d: can't alloc %d bytes",
+				       __FILE__, __LINE__);
+				buf2[0] = 0;
+			} else
+				format_vendor_pair(buf2ptr, pair);
 		}
 		break;
 					
@@ -434,7 +438,7 @@ format_pair(pair)
 		asprintf(&buf1, "%s %s %s",
 			 pair->name,
 			 op_to_str(pair->operator),
-			 buf2);
+			 buf2ptr ? buf2ptr : buf2);
 	else
 		asprintf(&buf1, "%d %s %s",
 			 pair->attribute,

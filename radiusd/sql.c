@@ -1147,7 +1147,7 @@ rad_sql_checkgroup(req, groupname)
 	char *p;
 	char *query;
 	
-	if (sql_cfg.group_query == NULL) 
+	if (sql_cfg.doauth == 0 || sql_cfg.group_query == NULL) 
 		return -1;
 
 	query = radius_xlate(&stack, sql_cfg.group_query, req, NULL);
@@ -1187,7 +1187,7 @@ rad_sql_attr_query(req, reply_pairs)
 	qid_t                   qid;
 	char *query;
 
-	if (!sql_cfg.attr_query)
+	if (sql_cfg.doauth == 0 || !sql_cfg.attr_query)
 		return 0;
 	
 	if ((pair = avl_find(request_pairs, DA_QUEUE_ID)) == NULL) {

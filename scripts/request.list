@@ -1,0 +1,19 @@
+Access-Request               1
+Access-Accept                2
+Access-Reject                3
+Accounting-Request           4
+Accounting-Response          5
+Accounting-Status            6
+Password-Request             7
+Password-Ack                 8
+Password-Reject              9
+Accounting-Message           10
+Access-Challenge             11
+Status-Server                12
+Status-Client                13
+
+Ascend-Terminate-Session     31
+Ascend-Event-Request         33
+Ascend-Event-Response        34
+Ascend-Allocate-IP           51
+Ascend-Release-IP            52

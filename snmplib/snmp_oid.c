@@ -104,6 +104,20 @@ oid_create_from_subid(len, subid)
 	return oid;
 }
 
+int
+oid_cmp(a, b)
+	oid_t a, b;
+{
+	int i;
+	
+	if (OIDLEN(a) != OIDLEN(b))
+		return 1;
+	for (i = 0; i < OIDLEN(a); i++)
+		if (SUBID(a,i) != SUBID(b,i))
+			return 1;
+	return 0;
+}
+
 char *
 sprint_oid(buf, buflen, oid)
 	char *buf;

@@ -54,8 +54,12 @@ To use the extended comparison, follow the procedure below:
 The syntax of dictionary file allows for nine user-defined properties,
 denoted by characters @samp{1} through @samp{9}. You should select one of
 them to mark comparable attributes for authentication and another one to
-mark those for accounting. @xref{ATTRIBUTE}, for detailed description
-of attribute property flags.
+mark those for accounting. It is strongly suggested that you use
+@code{PROPERTY} statement in your main dictionary file
+(@pxref{PROPERTY}), instead of modifying @code{ATTRIBUTE} statements
+in the underlying dictionary files.
+
+@xref{ATTRIBUTE}, for detailed description of attribute property flags. 
 
 @item To enable the extended comparison for requests coming from any
 @NAS{}, declare extended comparison flags in @file{raddb/config}.
@@ -105,15 +109,15 @@ the accounting comparable attributes.
 @subheading @file{raddb/dictionary}
 
 @smallexample
-ATTRIBUTE       User-Name               1       string  - [LR-RLR]12
-ATTRIBUTE       Password                2       string  - [L-----]1
-ATTRIBUTE       NAS-Port-Id             5       integer - [LR-RLR]12
-ATTRIBUTE       State                   24      string  - [LRLRLR]1
-ATTRIBUTE       Called-Station-Id       30      string  - [L--RLR]12
-ATTRIBUTE       Calling-Station-Id      31      string  - [L--RLR]12
-ATTRIBUTE       Acct-Status-Type        40      integer - []2
-ATTRIBUTE       Acct-Session-Id         44      string  - []2
-ATTRIBUTE       Acct-Session-Time       46      integer - []2
+PROPERTY       User-Name               +12
+PROPERTY       Password                +1
+PROPERTY       NAS-Port-Id             +12
+PROPERTY       State                   +1
+PROPERTY       Called-Station-Id       +12
+PROPERTY       Calling-Station-Id      +12
+PROPERTY       Acct-Status-Type        +2
+PROPERTY       Acct-Session-Id         +2
+PROPERTY       Acct-Session-Time       +2
 @end smallexample
 
 @subheading @file{raddb/config}

@@ -1467,18 +1467,41 @@ ALIAS User-Password Password
 @subheading Syntax
 @smallexample
 PROPERTY  @var{name}  @var{flags}
+PROPERTY  @var{name}  +@var{flags} [-@var{flags} ...]
 @end smallexample
 
 @subheading Usage
 The @code{PROPERTY} statement redefines property flags for attribute
 @var{name}. The attribute must be defined, otherwise an error occurs.
+The @code{PROPERTY} statement has two forms. In first form, it takes
+a single argument, representing new property flags for the attribute.
+In its second form it takes any number of arguments, each of them
+preceeded by @samp{+} sign, inidicating addition of properties, or
+by @samp{-} sign, indicating removal of these.
+
 @xref{ATTRIBUTE}, for the discussion of attribute property flags.
 
 @subheading Example
 
+The following example defines that the attribute @attr{User-Password}
+may be used only on left-hand side of a @file{raddb/users} entry, and
+that it is transmitted in encrypted form.
+
 @smallexample
 PROPERTY  User-Password [L-----]E
 @end smallexample
+
+@noindent
+Next example illustrates adding and removing attribute properties:
+
+@smallexample
+PROPERTY  My-Attrib     +P -=
+@end smallexample
+
+@noindent
+it adds propagation bit (@samp{P}) and removes @samp{replace}
+additivity from @attr{My-Attrib} attribute.
+
 
 @comment **L3***************************************************************
 @node VALUE

@@ -61,7 +61,20 @@ if test x$GPERF = xmissing; then
 fi
 
 ### Make sure Guile is installed.
-AC_PATH_PROG(GUILE_CONFIG, guile-config, no, $PATH)
+AC_ARG_WITH(guile,
+	[  --without-guile                do not compile Guile support],
+        [USE_GUILE=$withval],
+        [USE_GUILE=yes])
+
+AC_ARG_WITH(guile,
+	[  --without-server-guile         do not compile server Guile support],
+        [USE_SERVER_GUILE=$withval],
+        [USE_SERVER_GUILE=yes])
+
+if test $USE_GUILE = yes; then
+	AC_PATH_PROG(GUILE_CONFIG, guile-config, no, $PATH)
+	AC_DEFINE(USE_GUILE)
+fi
 
 ### Check for Emacs site-lisp directory
 AM_PATH_LISPDIR

@@ -1525,18 +1525,21 @@ yylex()
 		return STRING;
 	}
 
-	/*
-	 * A/V  pair reference
-	 */
+	/* A/V  pair reference.
+	   We do not allow %<number> sequences, since it would result
+	   in conflict with binary '%' operator.
+	   Thanks to Clement Gerouville for noticing.  */
 	if (yychar == '%') {
 		DICT_ATTR *attr = 0;
 		char *attr_name;
 		
-		if (isdigit(input())) {
-			attr = attr_number_to_dict(read_number());
-		} else if (yychar == '[' || yychar == '{') {
+		input();
+		if (yychar == '[' || yychar == '{') {
 			attr_name = read_to_delim(yychar == '[' ? ']' : '}');
 			attr = attr_name_to_dict(attr_name);
+		} else {
+			unput(yychar);
+			return '%';
 		}
 		if (!attr) {
 			radlog(L_ERR, "%s:%d: unknown attribute",

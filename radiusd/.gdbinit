@@ -14,7 +14,7 @@
 set main
 
 # Find radlib sources
-dir ../radlib
+dir ../lib
 
 handle SIGUSR1 nostop noprint pass
 handle SIGUSR2 nostop noprint pass
@@ -66,7 +66,7 @@ Print type of the pair $
 end
 
 define _pv
-output (($arg0->type == 0 || $arg0->type == 3) ? $arg0->v.string.s_value : (($arg0->type == 1) ? $arg0->v.ival : ip_hostname($arg0->v.ival)))
+output (($arg0->type == 0 || $arg0->type == 3) ? $arg0->v.string.s_value : (($arg0->type == 1) ? $arg0->v.ival : ip_gethostname($arg0->v.ival)))
 end
 
 define pv
@@ -176,17 +176,17 @@ define print_authcode
  end
 end
 document print_authcode
-Print the code value of AUTH_REQ $arg0
+Print the code value of RADIUS_REQ $arg0
 end
 
-define pauth
+define preq
  print_authcode $arg0
  printf " {\n"
  plist $arg0->request
  printf "}\n"
 end
-document pauth
-Print AUTH_REQ structure $arg0
+document preq
+Print RADIUS_REQ structure $arg0
 end
 
 

@@ -22,7 +22,8 @@
 	* radiusd/auth.c (rad_check_password): Rewritten CHAP part: it
 	  used to left garbage in `userpass', which then produced
 	  confusing log output.
-	  
+
+	* .gdbinit: Updated.
 	
 	* po/POTFILES.in: Added sql/disp.c
 	* po/es.po: Updated.

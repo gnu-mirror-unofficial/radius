@@ -235,6 +235,7 @@ extern int		acct_port;
 extern int              suspend_flag;
 extern int              log_mode;
 extern int              use_guile;
+extern char *username_valid_chars;
 
 extern unsigned long stat_start_time;
 extern REQUEST_CLASS    request_class[];

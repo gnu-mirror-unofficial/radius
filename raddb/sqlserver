@@ -67,14 +67,21 @@ auth_max_connections 16
 auth_db RADIUS
 
 # Query to select the password for the given user. Should return one string.
-auth_query  select password from passwd where user_name='%u'
+auth_query  SELECT password FROM passwd WHERE user_name='%u'
 
 # This query returns groups the user belongs to
-group_query select user_group from groups where user_name='%u'
+group_query SELECT user_group FROM groups where user_name='%u'
+
+# This query returns a list of a/v pairs to be added to user's check pairs.
+check_attr_query  SELECT attr,value,op \
+                    FROM attrib \
+                   WHERE user_name='%u' AND op IS NOT NULL
 
 # This query returns a list of a/v pairs to be included in reply packet.
 # The query is used only if the user is authorized successfully.
-attr_query  select attr,value from attrib where user_name='%u'
+reply_attr_query  SELECT attr,value \
+                    FROM attrib \
+                   WHERE user_name='%u' AND op IS NULL
 
 #########
 # Accounting-relevant settings

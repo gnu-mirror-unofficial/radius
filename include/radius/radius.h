@@ -109,7 +109,7 @@ enum grad_operator {
     0                   1                   2                   3
     0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-   | A | E |  P  | | LHS | RHS |     USER FLAGS    |               |
+   | A | E |   P   | LHS | RHS |     USER FLAGS    |               |
    +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
    A - Additivity bits
@@ -135,7 +135,8 @@ enum grad_operator {
 #define AP_INTERNAL      0x20 /* Internal attribute. */
 #define AP_BINARY_STRING 0x40 /* Binary string value. No str..() functions
 				 should be used */
-
+#define AP_TRANSLATE     0x80 /* Attribute has dictionary translations */
+				 
 #define AP_USER_FLAG(n) (0x4000<<(n))
 
 #define ADDITIVITY(val) ((val) & 0x3)

@@ -3,11 +3,15 @@
 # This file is distributed under the same license as the GNU Radius package.
 # Sergey Poznyakoff <gray@gnu.org>, 2002.
 #
+# Local Variables:
+# Local IspellDict: norsk
+# End:
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-05-06 01:40+0300\n"
-"PO-Revision-Date: 2002-05-06 01:10+03:00\n"
+"POT-Creation-Date: 2002-05-08 20:13+0300\n"
+"PO-Revision-Date: 2002-05-10 16:50+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Norwegian-bokmål <no@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -50,7 +54,7 @@ msgstr ""
 #: radlib/client.c:375 radiusd/radius.c:570
 #, fuzzy, c-format
 msgid "Actual request length does not match reported length (%d, %d)"
-msgstr "Actuell og meddelt forespørsellengde stemmer ikke (%d, %d)"
+msgstr "Aktuell og meddelt forespørsellengde stemmer ikke (%d, %d)"
 
 #: radlib/client.c:388
 msgid "Received invalid reply digest from server"
@@ -64,7 +68,7 @@ msgstr "fått ukjent attributt %d"
 #: radlib/client.c:461
 #, c-format
 msgid "attribute %d too long, %d > %d"
-msgstr "attributet %d for lang, %d > %d"
+msgstr "attributtet %d for lang, %d > %d"
 
 #: radlib/client.c:500
 #, c-format
@@ -98,7 +102,7 @@ msgstr "%s:%d: mangler ]"
 #: radlib/dict.c:207 radlib/dict.c:220
 #, fuzzy, c-format
 msgid "%s:%d: invalid syntax flag %c"
-msgstr "%s:%d: ugyldig syntaxflagg %c"
+msgstr "%s:%d: ugyldig syntaksflagg %c"
 
 #: radlib/dict.c:257 radlib/dict.c:362 radlib/dict.c:401
 #, c-format
@@ -233,12 +237,12 @@ msgstr "rut_setent(): kan ikke åpne «%s»"
 #: radlib/radutmp.c:168
 #, c-format
 msgid "login: entry for NAS %s port %d duplicate"
-msgstr "login: duplisert post for NAS %s port %d"
+msgstr "innlogging: duplisert post for NAS %s port %d"
 
 #: radlib/radutmp.c:173
 #, c-format
 msgid "login: entry for NAS %s port %d wrong order"
-msgstr "login: postet for NAS %s port %d ugyldig rekkefølge"
+msgstr "innlogging: postet for NAS %s port %d ugyldig rekkefølge"
 
 #: radlib/radutmp.c:184
 #, c-format
@@ -249,7 +253,7 @@ msgstr ""
 #: radlib/radutmp.c:207
 #, c-format
 msgid "logout: login entry for NAS %s port %d not found"
-msgstr "logout: login post for NAS %s port %d ikke funnet"
+msgstr "logout: innlogging post for NAS %s port %d ikke funnet"
 
 #: radlib/radutmp.c:227 radiusd/acct.c:510 radwho/radwho.c:1039
 #: radwho/radwho.c:1077
@@ -325,7 +329,7 @@ msgstr ""
 #: radlib/util.c:220
 #, c-format
 msgid "string too long: %s"
-msgstr "strenget for lang: %s"
+msgstr "strengen for lang: %s"
 
 #: radlib/argp-help.c:213
 #, c-format
@@ -379,7 +383,7 @@ msgstr "intet Acct-Status-Type attributt (fra nas %s)"
 
 #: radiusd/acct.c:246
 msgid "converting reboot records"
-msgstr "konvererer forespørsel om å starte på nytt"
+msgstr "konverterer forespørsel om å starte på nytt"
 
 #: radiusd/acct.c:255
 msgid "no username in record"
@@ -454,7 +458,7 @@ msgstr "%s: SQL godkjenning er ikke tilgjengelig"
 #: radiusd/auth.c:305
 #, c-format
 msgid "unknown Password-Location value: %d"
-msgstr "ulovlig verdi for Password-Location attribute: %d"
+msgstr "ulovlig verdi for Password-Location attributt: %d"
 
 #: radiusd/auth.c:338
 #, c-format
@@ -474,7 +478,7 @@ msgstr "Feilaktig brukernavn: [%s] (fra nas %s)"
 #: radiusd/auth.c:472
 #, c-format
 msgid "No huntgroup access: [%s] (from nas %s)"
-msgstr "Tilgang nektet av «huntgoup»: [%s] (fra nas %s)"
+msgstr "Tilgang nektet av «huntgroup»: [%s] (fra nas %s)"
 
 # FIXME!!
 #: radiusd/auth.c:637
@@ -511,7 +515,7 @@ msgstr "Forkastet"
 # FIXME: translation coincides with `Login failed'
 #: radiusd/auth.c:988 radiusd/auth.c:1182
 msgid "Login incorrect"
-msgstr "Login feil"
+msgstr "Innlogging feil"
 
 #: radiusd/auth.c:1014
 msgid "Account disabled"
@@ -546,16 +550,21 @@ msgstr " [MPP forsøk]"
 #: radiusd/auth.c:1108
 #, c-format
 msgid "Outside allowed timespan: [%s] (from nas %s) time allowed: %s"
-msgstr "Utenfor gyldig tidintervall: [%s] (fra nas %s) tidintervall: %s"
+msgstr "Utenfor gyldig tidsintervall: [%s] (fra nas %s) tidsintervall: %s"
 
 #: radiusd/auth.c:1183
 msgid "external check failed"
 msgstr ""
 
+#: radiusd/auth.c:1255
+#, fuzzy
+msgid "Login OK"
+msgstr "Innlogging godt"
+
 #: radiusd/builddbm.c:68
 #, c-format
 msgid "%s:%d: too many attributes"
-msgstr "%s:%d: for mange attributer"
+msgstr "%s:%d: for mange attributter"
 
 #: radiusd/builddbm.c:109
 #, fuzzy, c-format
@@ -589,7 +598,7 @@ msgstr "ugyldig OID: %s"
 #: radiusd/checkrad.c:302
 #, fuzzy, c-format
 msgid "can't create snmp session: %s"
-msgstr "kan ikke opprette snmp sesjion: %s"
+msgstr "kan ikke opprette snmp sesjon: %s"
 
 #: radiusd/checkrad.c:311
 #, c-format
@@ -680,7 +689,7 @@ msgstr "%s:%d: feil datatype (forventet streng)"
 #: radiusd/config.y:1176 rewrite.y:1459 radiusd/rewrite.y:1459
 #, c-format
 msgid "%s:%d: unexpected EOF in comment started at line %d"
-msgstr "%s:%d: uventet slutt-på-fil i kommentar begynnt på linje %d"
+msgstr "%s:%d: uventet slutt-på-fil i kommentar begynt på linje %d"
 
 #: radiusd/config.y:1226
 #, c-format
@@ -795,7 +804,7 @@ msgstr "kan ikke gjenopprette SIGCHLD"
 msgid ""
 "can't run external program (reason reported via syslog channel user.err)"
 msgstr ""
-"kan ikke kjøre subprocess (årsaken rapporteret gjennom syslogkanalen «user."
+"kan ikke kjøre subprocess (årsaken rapportert gjennom syslogkanalen «user."
 "err»)"
 
 #: radiusd/exec.c:216
@@ -1060,12 +1069,12 @@ msgstr "BRUKERLISTEN ER TOM"
 #: radiusd/radck.c:211
 #, fuzzy, c-format
 msgid "users:%d: duplicate %s attribute"
-msgstr "users:%d: attribut «%s» duplisert"
+msgstr "users:%d: attributt «%s» duplisert"
 
 #: radiusd/radck.c:243
 #, fuzzy, c-format
 msgid "%s:%d: attribute %s not allowed in LHS"
-msgstr "%s:%d: attribut %s er ikke gyldig i LHS"
+msgstr "%s:%d: attributt %s er ikke gyldig i LHS"
 
 #: radiusd/radck.c:284
 #, fuzzy, c-format
@@ -1075,17 +1084,17 @@ msgstr "%s:%d: Match-Profile referanser et DEFAULT innslag"
 #: radiusd/radck.c:326 radiusd/radck.c:350
 #, c-format
 msgid "%s:%d: No Password attribute in the checklist"
-msgstr "%s:%d: Intet Password attribut i LHS"
+msgstr "%s:%d: Intet Password attributt i LHS"
 
 #: radiusd/radck.c:337 radiusd/radck.c:366
 #, c-format
 msgid "%s:%d: Password attribute ignored for this Auth-Type"
-msgstr "%s:%d: Password attribut ignorert for dette Auth-Type"
+msgstr "%s:%d: Password attributt ignorert for dette Auth-Type"
 
 #: radiusd/radck.c:342
 #, c-format
 msgid "%s:%d: Password-Location attribute ignored for this Auth-Type"
-msgstr "%s:%d: Password-Location attribut ignorert for dette Auth-Type"
+msgstr "%s:%d: Password-Location attributt ignorert for dette Auth-Type"
 
 #: radiusd/radck.c:358
 #, c-format
@@ -1100,7 +1109,7 @@ msgstr "%s:%d: Auth-Data og PAM-Auth må ikke brukes i lag"
 #: radiusd/radck.c:413
 #, c-format
 msgid "%s:%d: attribute %s not allowed in RHS"
-msgstr "%s:%d: attributet %s er ikke gyldig i RHS"
+msgstr "%s:%d: attributt %s er ikke gyldig i RHS"
 
 #: radiusd/radck.c:430
 #, c-format
@@ -1115,7 +1124,7 @@ msgstr "forespørsel fra en ukjent klient: %s"
 #: radiusd/radiusd.c:180
 #, fuzzy
 msgid "GNU radius daemon"
-msgstr "%s: GNU Radius version %s"
+msgstr "%s: GNU Radius versjon %s"
 
 #: radiusd/radiusd.c:184
 msgid "radiusd specific switches:"
@@ -1125,7 +1134,7 @@ msgstr "Flagg spesifikk for radiusd:"
 #: radiusd/radiusd.c:186
 #, fuzzy
 msgid "Do detailed authentication logging"
-msgstr "Slå på detaljert autentiserung logging"
+msgstr "Slå på detaljert autentisering logging"
 
 #: radiusd/radiusd.c:188
 msgid "Set accounting directory"
@@ -1170,7 +1179,7 @@ msgstr "Guile godkjenning ikke tilgjengelig"
 #: radiusd/radiusd.c:208
 #, fuzzy
 msgid "Store pidfile in DIR"
-msgstr "Lagge pidfilen i DIR"
+msgstr "Lage pidfilen i DIR"
 
 #: radiusd/radiusd.c:210
 #, fuzzy
@@ -1196,7 +1205,7 @@ msgstr ""
 
 #: radiusd/radiusd.c:256
 msgid "radiusd compiled without DBM support"
-msgstr "radiusd ble blygget uten DBM"
+msgstr "radiusd ble bygget uten DBM"
 
 #: radiusd/radiusd.c:265
 #, c-format
@@ -1206,7 +1215,7 @@ msgstr "ukjent modus: %s"
 #: radiusd/radiusd.c:277
 #, c-format
 msgid "invalid IP address: %s"
-msgstr "ulovlig IP addresse: %s"
+msgstr "ulovlig IP adresse: %s"
 
 #: radiusd/radiusd.c:384
 msgid "Sorry, your account is currently closed\n"
@@ -1243,7 +1252,7 @@ msgid ""
 "You are already logged in %R{Simultaneous-Use} times - access denied\n"
 msgstr ""
 "\n"
-"De er allerede inlogget %R{Simultaneous-Use} ganger - tilgang nektet\n"
+"De er allerede innlogget %R{Simultaneous-Use} ganger - tilgang nektet\n"
 
 #: radiusd/radiusd.c:396
 msgid ""
@@ -1251,7 +1260,7 @@ msgid ""
 "You are already logged in - access denied\n"
 msgstr ""
 "\n"
-"De er allerede inlogget - tilgang nektet\n"
+"De er allerede innlogget - tilgang nektet\n"
 
 #: radiusd/radiusd.c:398
 msgid "You are calling outside your allowed timespan\n"
@@ -1550,7 +1559,7 @@ msgstr "SQL konfigurasjon vekslet: lukke av eksisterende tilkoblinger"
 #: radiusd/sql.c:696
 #, fuzzy
 msgid "no Acct-Status-Type attribute in rad_sql_acct()"
-msgstr "intet Acct-Status-Type attribut i rad_sql_acct()"
+msgstr "intet Acct-Status-Type attributt i rad_sql_acct()"
 
 #: radiusd/sql.c:731
 #, c-format
@@ -1620,7 +1629,7 @@ msgstr "GNU RADIUS server versjon"
 #: radiusd/version.c:165
 #, c-format
 msgid "%s: GNU Radius version %s"
-msgstr "%s: GNU Radius version %s"
+msgstr "%s: GNU Radius versjon %s"
 
 #: radiusd/version.c:171
 msgid "Compilation platform: "
@@ -1674,7 +1683,7 @@ msgstr " intet pidfil\n"
 #: radlast/radlast.c:110
 #, fuzzy
 msgid "report last logins from Radius database."
-msgstr "Rapporter siste loginer fra Radis database"
+msgstr "Rapporter siste innlogginger fra Radius database"
 
 #: radlast/radlast.c:114
 msgid "radlast specific switches:"
@@ -1693,15 +1702,15 @@ msgstr "les FILENAME istedenfor forvalgte radwtmp"
 #: radlast/radlast.c:130
 #, fuzzy
 msgid "show logins with IPADDR"
-msgstr "vis poster med IP addresse IPADDR"
+msgstr "vis poster med IP adresse IPADDR"
 
 #: radlast/radlast.c:132
 msgid "mark records with missed stops with bump (!)"
-msgstr "marke poster uten stopper med et utropstegn"
+msgstr "merke poster uten stopper med et utropstegn"
 
 #: radlast/radlast.c:134
 msgid "show logins from given NAS"
-msgstr "vis innloginger fra angitt NAS"
+msgstr "vis innlogginger fra angitt NAS"
 
 #: radlast/radlast.c:136
 #, fuzzy
@@ -1711,7 +1720,7 @@ msgstr "bruk lang ut-format"
 #: radlast/radlast.c:138
 #, fuzzy
 msgid "show logins from given port"
-msgstr "vis innloginger fra angitt port"
+msgstr "vis innlogginger fra angitt port"
 
 #: radlast/radlast.c:140
 msgid "show the login session duration in seconds"
@@ -1732,7 +1741,7 @@ msgstr "feil under lesing av ordliste"
 #: gram.y:451 radtest/gram.y:451
 #, c-format
 msgid "attribute %s has unknown type"
-msgstr "attribut %s har ujent type"
+msgstr "attributt %s har ukjent type"
 
 #: gram.y:532 radtest/gram.y:532
 #, fuzzy, c-format
@@ -1765,7 +1774,7 @@ msgid ""
 msgstr ""
 "Les inn fra FILE. Dersom dette flagg brukes alle flagg i formen «--"
 "VAR=VERDI»\n"
-"er behandles som tildelinger av VERDI til variablen VAR"
+"er behandles som tildelinger av VERDI til variabelen VAR"
 
 #: radtest/main.c:86
 msgid "set number of retries"
@@ -1795,7 +1804,7 @@ msgstr "medler lukkende siteringstegn\n"
 #: radtest/main.c:348 radtest/main.c:357
 #, c-format
 msgid "assign: invalid IP address: %s\n"
-msgstr "assign: ulovlig IP addresse: %s\n"
+msgstr "assign: ulovlig IP adresse: %s\n"
 
 #: radtest/main.c:486
 msgid "wrong datatype: expected vector"
@@ -2035,3 +2044,4 @@ msgstr ""
 #, c-format
 msgid "PQexec returned %s"
 msgstr ""
+

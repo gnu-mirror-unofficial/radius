@@ -1252,7 +1252,7 @@ sfn_ack(m)
                        m->activefd);
         
         if (is_log_mode(m, RLOG_AUTH)) {
-                auth_log(m, "Login OK",
+                auth_log(m, _("Login OK"),
                          is_log_mode(m, RLOG_AUTH_PASS) ? m->userpass : NULL,
                          NULL, NULL);
         }

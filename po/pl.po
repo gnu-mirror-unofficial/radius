@@ -12,8 +12,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-07-25 14:52+0300\n"
-"PO-Revision-Date: 2002-07-25 16:09+0300\n"
+"POT-Creation-Date: 2002-07-29 01:10+0300\n"
+"PO-Revision-Date: 2002-07-29 01:31+0300\n"
 "Last-Translator: Krzysztof Kopera <Krzysztof_Kopera/HeadQ@netia.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -198,7 +198,7 @@ msgstr "calloc_entry(): wykry³em pêtlê nieskoñczon±"
 msgid "alloc_string(): string too long"
 msgstr "alloc_string(): ³añcuch za d³ugi"
 
-#: lib/raddb.c:56 lib/raddb.c:60 radiusd/rewrite.y:1230 radiusd/rewrite.y:2645
+#: lib/raddb.c:56 lib/raddb.c:60 radiusd/rewrite.y:1232 radiusd/rewrite.y:2680
 #, c-format
 msgid "can't open file `%s'"
 msgstr "nie mogê otworzyæ `%s'"
@@ -354,6 +354,40 @@ msgstr "Napisz `%s --help' lub `%s --usage' by uzyskaæ wiêcej informacji.\n"
 msgid "Report bugs to %s.\n"
 msgstr "Prosimy zg³aszaæ b³êdy na adres %s.\n"
 
+#: lib/argp-parse.c:101
+msgid "Give this help list"
+msgstr "Wy¶wietla ten tekst pomocy"
+
+#: lib/argp-parse.c:102
+msgid "Give a short usage message"
+msgstr "Wy¶wietla krótkie informacje o sk³adni polecenia"
+
+#: lib/argp-parse.c:103
+#, fuzzy
+msgid "Set the program name"
+msgstr "Ustaw numer portu autentykacji"
+
+#: lib/argp-parse.c:105
+msgid "Hang for SECS seconds (default 3600)"
+msgstr "Czekaj przez SEK sekund (domy¶lnie 3600)"
+
+#: lib/argp-parse.c:162
+msgid "Print program version"
+msgstr "Wy¶wietla wersjê programu"
+
+#: lib/argp-parse.c:178
+msgid "(PROGRAM ERROR) No version known!?"
+msgstr "(B£¡D PROGRAMU) Nieznana wersja!?"
+
+#: lib/argp-parse.c:659
+#, c-format
+msgid "%s: Too many arguments\n"
+msgstr "%s: za du¿o argumentów\n"
+
+#: lib/argp-parse.c:800
+msgid "(PROGRAM ERROR) Option should have been recognized!?"
+msgstr "(B£¡D PROGRAMU) Opcja powinna zostaæ rozpoznana!?"
+
 #: lib/printutmp.c:585
 #, c-format
 msgid "missing closing quote in string started near `%s'"
@@ -373,6 +407,57 @@ msgstr "z³a liczba argumentów do formy %s"
 #, c-format
 msgid "form `%s' not closed"
 msgstr "forma `%s' nie jest zamkniêta"
+
+#: lib/radargp.c:38 radiusd/radiusd.c:226 radiusd/radiusd.c:234
+#: radiusd/radiusd.c:246
+msgid "DIR"
+msgstr "KATALOG"
+
+#: lib/radargp.c:39
+#, fuzzy
+msgid "Set path to the configuration directory"
+msgstr " Podaj nazwê katalogu konfiguracyjnego"
+
+#: lib/radargp.c:40
+msgid "print license and exit"
+msgstr "wy¶wietla licencjê i wyhodzi"
+
+#: lib/radargp.c:58
+msgid "Common options"
+msgstr ""
+
+#: lib/radargp.c:64
+msgid ""
+"   This program is free software; you can redistribute it and/or modify\n"
+"   it under the terms of the GNU General Public License as published by\n"
+"   the Free Software Foundation; either version 2, or (at your option)\n"
+"   any later version.\n"
+"\n"
+"   This program is distributed in the hope that it will be useful,\n"
+"   but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"   GNU General Public License for more details.\n"
+"\n"
+"   You should have received a copy of the GNU General Public License\n"
+"   along with this program; if not, write to the Free Software\n"
+"   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n"
+msgstr ""
+"   Niniejszy program jest wolnym oprogramowaniem; mo¿esz go\n"
+"   rozprowadzac dalej i/lub modyfikowaæ na warunkach Powszechnej\n"
+"   Licencji Publicznej GNU, wydanej przez Fundacjê Wolnego\n"
+"   Oprogramowania - wed³ug wersji 2-giej tej Licencji lub której¶\n"
+"   z pózniejszych wersji.\n"
+"   \n"
+"   Niniejszy program rozpowszechniany jest z nadzieja, i¿ bêdzie on\n"
+"   u¿yteczny - jednak BEZ JAKIEJKOLWIEK GWARANCJI, nawet domy¶lnej\n"
+"   gwarancji PRZYDATNO¦ÆI HANDLOWEJ albo PRZYDATNO¦ÆI DO OKRE¦LONYCH\n"
+"   ZASTOSOWAÑ. W celu uzyskania bli¿szych informacji - Powszechna\n"
+"   Licencja Publiczna GNU.\n"
+"   \n"
+"   Z pewno¶ci± wraz z niniejszym programem otrzyma³es te¿ egzemplarz\n"
+"   Powszechnej Licencji Publicznej GNU (GNU General Public License);\n"
+"   je¶li nie - napisz do Free Software Foundation, Inc., 675 Mass Ave,\n"
+"   Cambridge, MA 02139, USA.\n"
 
 #: radiusd/acct.c:216
 msgid "no Acct-Status-Type attribute"
@@ -460,7 +545,7 @@ msgstr "Zniekszta³cona nazwa u¿ytkownika"
 msgid "No huntgroup access"
 msgstr "Odmowa dostêpu przez `huntgroup'"
 
-#: radiusd/auth.c:854 radiusd/sql.c:739 radiusd/sql.c:741
+#: radiusd/auth.c:854 radiusd/sql.c:744 radiusd/sql.c:746
 msgid "unknown"
 msgstr "nieznany"
 
@@ -603,7 +688,7 @@ msgstr "niewiadoma instrukcja blokowa"
 msgid "invalid netmask length: %d"
 msgstr "b³êdna d³ugo¶æ maski podsieci: %d"
 
-#: radiusd/config.y:342 radiusd/rewrite.y:1485
+#: radiusd/config.y:342 radiusd/rewrite.y:1487
 #, c-format
 msgid "%s:%d: unexpected EOF in comment started at line %d"
 msgstr "%s:%d: nieoczekiwany koniec pliku w komentarzu rozpoczêtym w linii %d"
@@ -1101,10 +1186,6 @@ msgstr "Opcje specyficzne dla radiusd:"
 msgid "Do detailed authentication logging"
 msgstr "Prowad¼ dok³adn± rejestacjê uwierzytelnienia"
 
-#: radiusd/radiusd.c:226 radiusd/radiusd.c:234 radiusd/radiusd.c:246
-msgid "DIR"
-msgstr "KATALOG"
-
 #: radiusd/radiusd.c:227
 msgid "Set accounting directory"
 msgstr "Podaj nazwê katalogu rozliczeniowego"
@@ -1396,180 +1477,210 @@ msgstr "za du¿o ¿±dañ w kolejce"
 msgid "too many requests of this type"
 msgstr "za du¿o ¿±dañ tego typu"
 
-#: radiusd/rewrite.y:970
+#: radiusd/rewrite.y:972
 msgid "nothing to break from"
 msgstr "nic do przerwania"
 
-#: radiusd/rewrite.y:985
+#: radiusd/rewrite.y:987
 msgid "nothing to continue"
 msgstr "nic do kontynuacji"
 
-#: radiusd/rewrite.y:1054
+#: radiusd/rewrite.y:1056
 #, c-format
 msgid "%s:%d: undefined variable: %s"
 msgstr "%s:%d: niezdefiniowana zmienna: %s"
 
-#: radiusd/rewrite.y:1566
+#: radiusd/rewrite.y:1568
 msgid "unterminated character constant"
 msgstr "niezakoñczona sta³a znakowa"
 
-#: radiusd/rewrite.y:1610
+#: radiusd/rewrite.y:1612
 #, c-format
 msgid "%s:%d: unknown attribute %s"
 msgstr "%s:%d: nieznany atrybut %s"
 
-#: radiusd/rewrite.y:2330 radiusd/rewrite.y:2985
-#, c-format
-msgid "%s:%d: implicit %s to %s coercion"
-msgstr "%s:%d: niejawna konwersja z %s na %s"
+#: radiusd/rewrite.y:2328
+#, fuzzy, c-format
+msgid "%s:%d: %s implicit %s %s coercion"
+msgstr "%s:%d: %s niejawna konwersja %s %s"
 
-#: radiusd/rewrite.y:2364 radiusd/rewrite.y:2417
-#, c-format
-msgid "%s:%d: implicit string to integer coercion"
-msgstr "%s:%d: niejawna konwersja ³añcucha na liczbê ca³kowit±"
-
-#: radiusd/rewrite.y:2390
+#: radiusd/rewrite.y:2402
 msgid "operation not applicable for strings"
 msgstr "nieodpowiednia operacja dla ³añcuchów"
 
-#: radiusd/rewrite.y:2439
+#: radiusd/rewrite.y:2516 radiusd/rewrite.y:2584
 #, c-format
-msgid "%s:%d: implicit integer to string coercion"
-msgstr "%s:%d: niejawna konwersja liczby ca³kowitej na ³añcuch"
+msgid "(argument %d)"
+msgstr "(argument %d)"
 
-#: radiusd/rewrite.y:2508 radiusd/rewrite.y:2578
-#, c-format
-msgid "%s:%d: (arg %d) implicit %s to %s coercion"
-msgstr "%s:%d: (argument %d) niejawna konwersja z `%s' na `%s'"
-
-#: radiusd/rewrite.y:2525 radiusd/rewrite.y:2592
+#: radiusd/rewrite.y:2531 radiusd/rewrite.y:2595
 #, c-format
 msgid "%s:%d: too many arguments in call to %s"
 msgstr "%s:%d: za du¿o argumentów w wywo³aniu do %s"
 
-#: radiusd/rewrite.y:2530 radiusd/rewrite.y:2598
+#: radiusd/rewrite.y:2536 radiusd/rewrite.y:2601
 #, c-format
 msgid "%s:%d: too few arguments in call to %s"
 msgstr "%s:%d: za ma³o argumentów w wywo³aniu do %s"
 
-#: radiusd/rewrite.y:2626
+#: radiusd/rewrite.y:2629
 msgid "Undefined"
 msgstr "Niezdefiniowany"
 
-#: radiusd/rewrite.y:2628
+#: radiusd/rewrite.y:2631
 msgid "integer"
 msgstr "liczba ca³kowita"
 
-#: radiusd/rewrite.y:2630
+#: radiusd/rewrite.y:2633
 msgid "string"
 msgstr "³añcuch"
 
-#: radiusd/rewrite.y:2632
+#: radiusd/rewrite.y:2635
 msgid "UNKNOWN"
 msgstr "NIEZNANY"
 
-#: radiusd/rewrite.y:2959
+#: radiusd/rewrite.y:2645
+#, fuzzy
+msgid "from Undefined"
+msgstr "Niezdefiniowanego"
+
+#: radiusd/rewrite.y:2647
+#, fuzzy
+msgid "from integer"
+msgstr "liczby ca³kowitej"
+
+#: radiusd/rewrite.y:2649
+#, fuzzy
+msgid "from string"
+msgstr "³añcucha"
+
+#: radiusd/rewrite.y:2651
+#, fuzzy
+msgid "from UNKNOWN"
+msgstr "NIEZNANEGO"
+
+#: radiusd/rewrite.y:2661
+#, fuzzy
+msgid "to Undefined"
+msgstr "na Niezdefiniowany"
+
+#: radiusd/rewrite.y:2663
+#, fuzzy
+msgid "to integer"
+msgstr "na liczbê ca³kowit±"
+
+#: radiusd/rewrite.y:2665
+#, fuzzy
+msgid "to string"
+msgstr "na ³añcuch"
+
+#: radiusd/rewrite.y:2667
+#, fuzzy
+msgid "to UNKNOWN"
+msgstr "na NIEZNANY"
+
+#: radiusd/rewrite.y:2994
 #, c-format
 msgid "%s:%d: missing return statement"
 msgstr "%s:%d: brakuj±ce zdanie wyj¶cia"
 
-#: radiusd/rewrite.y:3087 radiusd/rewrite.y:3098
+#: radiusd/rewrite.y:3120 radiusd/rewrite.y:3131
 #, c-format
 msgid "%s:%d: divide by zero"
 msgstr "%s:%d: dzielenie przez zero"
 
-#: radiusd/rewrite.y:3709
+#: radiusd/rewrite.y:3742
 #, c-format
 msgid "%s:%d: regexp error: %s"
 msgstr "%s:%d: b³±d wyra¿enia regularnego: %s"
 
-#: radiusd/rewrite.y:3758
+#: radiusd/rewrite.y:3791
 msgid "out of pushdown space"
 msgstr "stos prze³adowany"
 
-#: radiusd/rewrite.y:3776 radiusd/rewrite.y:3808
+#: radiusd/rewrite.y:3809 radiusd/rewrite.y:3841
 msgid "heap overrun"
 msgstr "stóg prze³adowany"
 
-#: radiusd/rewrite.y:3823 radiusd/rewrite.y:3857
+#: radiusd/rewrite.y:3856 radiusd/rewrite.y:3890
 msgid "out of popup"
 msgstr "stos pusty"
 
-#: radiusd/rewrite.y:3932
+#: radiusd/rewrite.y:3965
 msgid "rewrite runtime error"
 msgstr "rewrite: b³±d wykoniania"
 
-#: radiusd/rewrite.y:4038
+#: radiusd/rewrite.y:4071
 #, fuzzy
 msgid "code requires that the request be present"
 msgstr "tryb bezpieczny: wymagane jest podanie nazwy u¿ytkownika"
 
-#: radiusd/rewrite.y:4078
+#: radiusd/rewrite.y:4111
 msgid "can't create A/V pair"
 msgstr "nie mogê utworzyæ pary A/W"
 
-#: radiusd/rewrite.y:4386 radiusd/rewrite.y:4403
+#: radiusd/rewrite.y:4419 radiusd/rewrite.y:4436
 msgid "division by zero!"
 msgstr "dzielenie przez zero"
 
-#: radiusd/rewrite.y:4605
+#: radiusd/rewrite.y:4638
 #, c-format
 msgid "rewrite regex failure: %s. Input: %s"
 msgstr "rewrite: b³±d wyra¿enia regularnego: %s. Wej¶cie: %s"
 
-#: radiusd/rewrite.y:4662
+#: radiusd/rewrite.y:4695
 msgid "pc out of range"
 msgstr "pc poza zakresem"
 
-#: radiusd/rewrite.y:4899
+#: radiusd/rewrite.y:4932
 #, c-format
 msgid "%s:%d: redefinition of function %s"
 msgstr "%s:%d: redefinicja funkcji %s"
 
-#: radiusd/rewrite.y:4902
+#: radiusd/rewrite.y:4935
 #, c-format
 msgid "%s:%d: previously defined here"
 msgstr "%s:%d: poprzednio zdefiniowana tutaj"
 
-#: radiusd/rewrite.y:4999 radiusd/rewrite.y:5102
+#: radiusd/rewrite.y:5032 radiusd/rewrite.y:5135
 #, c-format
 msgid "function %s not defined"
 msgstr "funkcja %s niezdefiniowana"
 
-#: radiusd/rewrite.y:5042
+#: radiusd/rewrite.y:5075
 #, c-format
 msgid "%s(): wrong number of arguments (should be %d, passed %d)"
 msgstr "%s(): niew³a¶ciwa liczba argumentów (powinno byæ %d, przesz³o %d)"
 
-#: radiusd/rewrite.y:5084
+#: radiusd/rewrite.y:5117
 #, c-format
 msgid "malformed function call: %s"
 msgstr "niew³a¶ciwe wywo³anie funkcji: %s"
 
-#: radiusd/rewrite.y:5092
+#: radiusd/rewrite.y:5125
 msgid "missing '(' in function call"
 msgstr "brakuj±cy '(' w wywo³aniu funkcji"
 
-#: radiusd/rewrite.y:5096
+#: radiusd/rewrite.y:5129
 msgid "missing ')' in function call"
 msgstr "brakuj±cy ')' w wywo³aniu funkcji"
 
-#: radiusd/rewrite.y:5133
+#: radiusd/rewrite.y:5166
 #, c-format
 msgid "calling %s: expected ',' but found %s after arg %d"
 msgstr "wywo³ywanie %s: wymagany ',' znaleziony %s po argumencie %d"
 
-#: radiusd/rewrite.y:5143
+#: radiusd/rewrite.y:5176
 #, c-format
 msgid "too many arguments for %s"
 msgstr "za du¿o argumentów dla %s"
 
-#: radiusd/rewrite.y:5169
+#: radiusd/rewrite.y:5202
 #, c-format
 msgid "too few arguments for %s"
 msgstr "za ma³o argumentów dla %s"
 
-#: radiusd/rewrite.y:5219
+#: radiusd/rewrite.y:5252
 #, c-format
 msgid "function %s() requires %d parameter"
 msgid_plural "function %s() requires %d parameters"
@@ -1714,38 +1825,23 @@ msgstr "SQL acct: brak acct_nasup_query"
 msgid "SQL configuration changed: closing existing connections"
 msgstr "Konfiguracja SQL zmieniona: zamykanie istniej±cych po³±czeñ"
 
-#: radiusd/sql.c:706
+#: radiusd/sql.c:708
 msgid "no Acct-Status-Type attribute in rad_sql_acct()"
 msgstr "brakuj±cy atrybut  Acct-Status-Type w rad_sql_acct()"
 
-#: radiusd/sql.c:743
+#: radiusd/sql.c:794
 #, fuzzy, c-format
-msgid "acct_stop_query: %d row changed"
-msgid_plural "acct_stop_query: %d rows changed"
-msgstr[0] "acct_stop_query: %d wiersz zmieniony"
-msgstr[1] "acct_stop_query: %d wierszy zmienionych"
-msgstr[2] "acct_stop_query: %d wierszy zmienionych"
+msgid "%s updated %d record"
+msgid_plural "%s updated %d records"
+msgstr[0] "na ¿±danie %s zmieni³ siê %d wiersz"
+msgstr[1] "na ¿±danie %s zmieni³o siê %d wierszy"
+msgstr[2] "na ¿±danie %s zmieni³o siê %d wierszy"
 
-#: radiusd/sql.c:760
-#, c-format
-msgid "acct_nasup_query updated %d records"
-msgstr "acct_nasup_query uaktualnionych %d rekordów"
-
-#: radiusd/sql.c:775
-#, c-format
-msgid "acct_nasdown_query updated %d records"
-msgstr "acct_nasdown_query uaktualnionych %d rekordów"
-
-#: radiusd/sql.c:790
-#, c-format
-msgid "acct_keepalive_query updated %d records"
-msgstr "acct_keepalive_query uaktualnionych %d rekordów"
-
-#: radiusd/sql.c:814
+#: radiusd/sql.c:818
 msgid "SQL Auth specified in users file, but not in sqlserver file"
 msgstr "SQL Auth wpisany w pliku u¿ytkowników, ale nie w pliku sqlserver"
 
-#: radiusd/sql.c:941
+#: radiusd/sql.c:945
 #, c-format
 msgid "SQL: invalid operator: %s"
 msgstr "SQL: b³êdny operator: %s"
@@ -1808,29 +1904,47 @@ msgstr ""
 "\n"
 "Opcje kompilacji: "
 
-#: radiusd/version.c:183
+#: radiusd/version.c:176
+#, fuzzy
+msgid "Compilation defaults:\n"
+msgstr "Domy¶lne parametry:\n"
+
+#: radiusd/version.c:177
+msgid "Ports in use:\n"
+msgstr "Porty:\n"
+
+#: radiusd/version.c:180
+msgid "Paths:\n"
+msgstr "¦ciê¿ki:\n"
+
+#: radiusd/version.c:181
 #, c-format
 msgid " configuration directory: %s\n"
 msgstr " katalog konfiguracyjny: %s\n"
 
-#: radiusd/version.c:184
+#: radiusd/version.c:182
 #, c-format
 msgid " logging directory:       %s\n"
-msgstr " katalog dzienników:       %s\n"
+msgstr " katalog dzienników:     %s\n"
 
-#: radiusd/version.c:185
+#: radiusd/version.c:183
 #, c-format
 msgid " accounting directory:    %s\n"
-msgstr "katalog rozliczeñ:    %s\n"
+msgstr " katalog rozliczeñ:      %s\n"
 
-#: radiusd/version.c:187
-#, c-format
-msgid " pidfile:                 %s\n"
-msgstr "pidfile:                 %s\n"
+#: radiusd/version.c:184
+#, fuzzy, c-format
+msgid " pidfile directory:       %s\n"
+msgstr " katalog pliku pid:      %s\n"
 
-#: radiusd/version.c:189
-msgid " no pidfile\n"
-msgstr "brak pidfile\n"
+#: radiusd/version.c:185
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Report bugs to <%s>\n"
+msgstr ""
+"\n"
+"Prosimy zg³aszaæ b³êdy na adres <%s>\n"
 
 #: radlast/radlast.c:110
 msgid "report last logins from Radius database."

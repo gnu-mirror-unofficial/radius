@@ -302,6 +302,8 @@ tsh_quit(int argc ARG_UNUSED, char **argv ARG_UNUSED)
 #ifdef WITH_READLINE
 static char **tsh_command_completion __P((char *cmd, int start, int end));
 static char *tsh_command_generator __P((const char *text, int state));
+#else
+char *readline(const char *prompt);
 #endif
 
 static volatile int _interrupted;
@@ -456,8 +458,8 @@ char *
 readline(const char *prompt)
 {
 	if (prompt) {
-		fprintf(ofile, "%s", prompt);
-		fflush(ofile);
+		printf("%s", prompt);
+		fflush(stdout);
 	}
 
 	return tsh_readline_internal();
@@ -511,7 +513,9 @@ tsh_run_command(char *cmd)
 		return;
 	if (argcv_get(cmd, "=", &argc, &argv) == 0) {
 		tsh_run_function(argc, argv);
+#ifdef WITH_READLINE
 		add_history(cmd);
+#endif
 	}
 	argcv_free(argc, argv);
 }

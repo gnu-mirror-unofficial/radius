@@ -1,5 +1,9 @@
 2004-08-28  Sergey Poznyakoff
 
+	* snmplib/snmp_var.c (snmp_var_decode): Initialize var
+
+2004-08-28  Sergey Poznyakoff
+
 	* README: Updated
 	* examples/radius.php: New file.
 	* examples/Makefile.am: Updated
@@ -27,7 +31,7 @@
 2004-08-26  Sergey Poznyakoff
 
 	* configure.ac: Renamed --without-server to --disable-server.
-	Added --enable-php and --with-php-moddir options.
+	Added --with-php and --with-php-moddir options.
 	* contrib/Makefile.am: Added php directory
 
 	* contrib/php: New directory

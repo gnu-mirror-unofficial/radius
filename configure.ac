@@ -166,7 +166,7 @@ CPPLAGS="$CPPLAGS $INCLUDEPATH"
 
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
-AC_CHECK_HEADERS(fcntl.h malloc.h strings.h\
+AC_CHECK_HEADERS(argp.h fcntl.h malloc.h strings.h\
  sys/file.h sys/time.h sys/types.h unistd.h\
  ctype.h sys/socket.h netinet/in.h arpa/inet.h\
  netdb.h stdarg.h varargs.h termcap.h termios.h termio.h sgtty.h\
@@ -175,6 +175,8 @@ AC_CHECK_HEADERS(fcntl.h malloc.h strings.h\
 ## * Check for national language support
 AM_GNU_GETTEXT(use-libtool)
 if test ".$BUILD_INCLUDED_LIBINTL" = ".yes" ; then
+	AC_DEFINE(WITH_INCLUDED_LIBINTL,1,
+                  [Define if the included libintl is used])
 	INCLUDEPATH="$INCLUDEPATH -I\$(top_srcdir)/intl"
 fi
 
@@ -188,7 +190,9 @@ AH_TOP([
 AH_BOTTOM([
 /* Internationalization support */
 #if defined(ENABLE_NLS) && !defined(lint)
-# ifdef HAVE_LIBINTL_H
+# if defined(WITH_INCLUDED_LIBINTL)
+#  include <libgnuintl.h>
+# elif defined(HAVE_LIBINTL_H)
 #  include <libintl.h>
 # else
 #  include <libgnuintl.h>
@@ -265,8 +269,13 @@ AC_ARG_WITH(included-argp,
         [USE_INCLUDED_ARGP=no])
 
 AC_CHECK_FUNCS(argp_parse, :, USE_INCLUDED_ARGP=yes)
+if test "$ac_cv_header_argp_h" = "yes"; then
+	USE_INCLUDED_ARGP=yes
+fi
 
 if test $USE_INCLUDED_ARGP = yes; then
+        AC_DEFINE(WITH_INCLUDED_ARGP, 1,
+                  [Define if we're using included argp])
 	AC_LIBOBJ([argp-ba])
         AC_LIBOBJ([argp-eexst])
         AC_LIBOBJ([argp-fmtstream])
@@ -688,7 +697,6 @@ AC_OUTPUT(Makefile m4/Makefile  intl/Makefile po/Makefile.in
 	  doc/texinfo/Makefile doc/man/Makefile doc/man/config.so 
           doc/rfc/Makefile 
           mibs/Makefile 
-          po/Makefile 
           elisp/Makefile 
           raddb/Makefile 
           db/Makefile 

@@ -15,7 +15,7 @@ endif
 INCLUDES=-I$(top_srcdir)/include
 noinst_PROGRAMS=findport
 findport_SOURCES=findport.c
-SUBDIRS=raddb guile dejagnu
+SUBDIRS=raddb proxy guile dejagnu
 noinst_SCRIPTS=test.sh
 EXTRA_DIST=test.sh.m4
 CLEANFILES=acct log raddb/config raddb/client.conf

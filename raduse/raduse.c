@@ -55,9 +55,9 @@ static char rcsid[] =
 #define C_F 6
 
 typedef struct {
-	int  use;
-	int  nports;
-	PORT_STAT *port;
+        int  use;
+        int  nports;
+        PORT_STAT *port;
 } port_usage_t;
 
 #define AP(p,m) (((port_usage_t*)(p)->app_data)-> ##m)
@@ -101,18 +101,18 @@ void dump(int);
 #define OPTSTR "bd:DhIilLns:wx"
 
 struct option longopt[] = {
-	"brief",         no_argument,       0, 'b',
+        "brief",         no_argument,       0, 'b',
         "display",       required_argument, 0, 'd',
-	"dump",          no_argument,       0, 'D',
-	"no-idle-lines", no_argument,       0, 'I',
-	"interactive",   no_argument,       0, 'i',
-	"no-interactive",no_argument,       0, 'n',
-	"delay",         required_argument, 0, 's',
-	"widen",         no_argument,       0, 'w',
-	"license",       no_argument,       0, 'L',
-	"list-nas",      no_argument,       0, 'l',
-	"help",          no_argument,       0, 'h',
-	0,
+        "dump",          no_argument,       0, 'D',
+        "no-idle-lines", no_argument,       0, 'I',
+        "interactive",   no_argument,       0, 'i',
+        "no-interactive",no_argument,       0, 'n',
+        "delay",         required_argument, 0, 's',
+        "widen",         no_argument,       0, 'w',
+        "license",       no_argument,       0, 'L',
+        "list-nas",      no_argument,       0, 'l',
+        "help",          no_argument,       0, 'h',
+        0,
 };
 
 /*
@@ -127,9 +127,9 @@ volatile int stop = 1;
 void
 wait_debug()
 {
-	printf("READY TO DEBUG: %d\n", getpid());
-	while (!stop)
-		;
+        printf("READY TO DEBUG: %d\n", getpid());
+        while (!stop)
+                ;
 }
 #else
 # define wait_debug()
@@ -138,566 +138,566 @@ wait_debug()
 
 int
 main(argc, argv)
-	int argc;
-	char **argv;
+        int argc;
+        char **argv;
 {
-	int c;
+        int c;
 
-	app_setup();	
-	initlog(argv[0]);
-	while ((c = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF)
-		switch(c) {
-		case 'b':
-			brief = !brief;
-			break;
-		case 'd':
-			maxscreens = atoi(optarg);
-			break;
-		case 'D':
-			dump_only++;
-			break;
-		case 'h':
-			usage();
-			/*NOTREACHED*/
-		case 'I':
-			show_idle = !show_idle;
-			break;
-		case 'i':
-			interactive = 1;
-			break;
-		case 'L':
-			license();
-			return 0;
-		case 'l':
-			listnas();
-			return 0;
-		case 'n':
-			interactive = 0;
-			break;
-		case 's':
-			delay = atoi(optarg);
-			break;
-		case 'w':
-			width = 8;
-			break;
+        app_setup();    
+        initlog(argv[0]);
+        while ((c = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF)
+                switch(c) {
+                case 'b':
+                        brief = !brief;
+                        break;
+                case 'd':
+                        maxscreens = atoi(optarg);
+                        break;
+                case 'D':
+                        dump_only++;
+                        break;
+                case 'h':
+                        usage();
+                        /*NOTREACHED*/
+                case 'I':
+                        show_idle = !show_idle;
+                        break;
+                case 'i':
+                        interactive = 1;
+                        break;
+                case 'L':
+                        license();
+                        return 0;
+                case 'l':
+                        listnas();
+                        return 0;
+                case 'n':
+                        interactive = 0;
+                        break;
+                case 's':
+                        delay = atoi(optarg);
+                        break;
+                case 'w':
+                        width = 8;
+                        break;
 #ifdef DEBUG
-		case 'x':
-			stop = 0;
-			break;
-#endif			
-		default:
-			break;
-		}
+                case 'x':
+                        stop = 0;
+                        break;
+#endif                  
+                default:
+                        break;
+                }
 
-	radpath_init();
-	read_naslist();
-	file = radstat_path;
+        radpath_init();
+        read_naslist();
+        file = radstat_path;
 
-	if (optind == argc) {
-		mark_all(1);
-	} else {
-		for (argv += optind; *argv; ++argv) 
-			add_nas(*argv);
-	}
+        if (optind == argc) {
+                mark_all(1);
+        } else {
+                for (argv += optind; *argv; ++argv) 
+                        add_nas(*argv);
+        }
 
-	setlinebuf(stdout);
-	
-	setvbuf(stdout, NULL, _IONBF, 0);
+        setlinebuf(stdout);
+        
+        setvbuf(stdout, NULL, _IONBF, 0);
 
-	wait_debug();
-	
-	init_termcap(interactive);
-	if (interactive == -1)
-		interactive = smart_terminal;
-	
-	alloc_screen(nas_cnt, MAX_PORTS);
-	init_screen();
-	raduse();
-	restore_screen();
-	return 0;	
+        wait_debug();
+        
+        init_termcap(interactive);
+        if (interactive == -1)
+                interactive = smart_terminal;
+        
+        alloc_screen(nas_cnt, MAX_PORTS);
+        init_screen();
+        raduse();
+        restore_screen();
+        return 0;       
 }
 
 void
 read_naslist()
 {
-	NAS *nas;
-	char *file = mkfilename(radius_dir, RADIUS_NASLIST);
-	if (nas_read_file(file) < 0)
-		exit(1);
-	efree(file);
-	nas_cnt = 0;
-	for (nas = nas_next(NULL); nas; nas = nas_next(nas)) {
-		nas->app_data = emalloc(sizeof(port_usage_t));
-		nas_cnt++;
-	}
+        NAS *nas;
+        char *file = mkfilename(radius_dir, RADIUS_NASLIST);
+        if (nas_read_file(file) < 0)
+                exit(1);
+        efree(file);
+        nas_cnt = 0;
+        for (nas = nas_next(NULL); nas; nas = nas_next(nas)) {
+                nas->app_data = emalloc(sizeof(port_usage_t));
+                nas_cnt++;
+        }
 }
 
 int
 stat_insert_port(port)
-	PORT_STAT *port;
+        PORT_STAT *port;
 {
-	NAS *nas = nas_lookup_ip(port->ip);
-	port_usage_t *pu;
-	
-	if (!nas) {
-		radlog(L_ERR,
-		    _("stat_insert_port(): portno %d: can't find nas for IP %s"),
-		    port->port_no,
-		    format_ipaddr(port->ip));
-		free_entry(port);
-		return -1;
-	}
+        NAS *nas = nas_lookup_ip(port->ip);
+        port_usage_t *pu;
+        
+        if (!nas) {
+                radlog(L_ERR,
+                    _("stat_insert_port(): portno %d: can't find nas for IP %s"),
+                    port->port_no,
+                    format_ipaddr(port->ip));
+                free_entry(port);
+                return -1;
+        }
 
-	pu = nas->app_data;
-	if (pu->port == NULL) {
-		pu->port = port;
-	} else if (pu->port->port_no > port->port_no) {
-		port->next = pu->port;
-		pu->port = port;
-	} else {
-		PORT_STAT *p, *prevp = NULL;
+        pu = nas->app_data;
+        if (pu->port == NULL) {
+                pu->port = port;
+        } else if (pu->port->port_no > port->port_no) {
+                port->next = pu->port;
+                pu->port = port;
+        } else {
+                PORT_STAT *p, *prevp = NULL;
 
-		for (p = pu->port; p; prevp = p, p = p->next) {
-			if (p->port_no > port->port_no)
-				break;
-		}
-		port->next = p;
-		prevp->next = port;
-	}
-	pu->nports++;
-	return 0;
+                for (p = pu->port; p; prevp = p, p = p->next) {
+                        if (p->port_no > port->port_no)
+                                break;
+                }
+                port->next = p;
+                prevp->next = port;
+        }
+        pu->nports++;
+        return 0;
 }
 
 
 int
 collect(fd)
-	int fd;
+        int fd;
 {
-	PORT_STAT stat;
-	PORT_STAT *port;
-	NAS *nas;
-	
-	if (lseek(fd, sizeof(PORT_STAT), SEEK_SET) != sizeof(PORT_STAT)) {
-		radlog(L_ERR, _("lseek error on `%s' (%d): %s"),
-		    file, sizeof(PORT_STAT), strerror(errno));
-		return 1;
-	}
-	while (read(fd, &stat, sizeof(stat)) == sizeof(stat)) {
-		if (stat.ip == 0)
-			break;
+        PORT_STAT stat;
+        PORT_STAT *port;
+        NAS *nas;
+        
+        if (lseek(fd, sizeof(PORT_STAT), SEEK_SET) != sizeof(PORT_STAT)) {
+                radlog(L_ERR, _("lseek error on `%s' (%d): %s"),
+                    file, sizeof(PORT_STAT), strerror(errno));
+                return 1;
+        }
+        while (read(fd, &stat, sizeof(stat)) == sizeof(stat)) {
+                if (stat.ip == 0)
+                        break;
 
-		nas = nas_lookup_ip(stat.ip);
-		if (!nas) {
-			radlog(L_ERR,
-			    _("collect(): port %d: can't find nas for IP %s"),
-			    stat.port_no,
-			    format_ipaddr(stat.ip));
-			return 1;
-		}
+                nas = nas_lookup_ip(stat.ip);
+                if (!nas) {
+                        radlog(L_ERR,
+                            _("collect(): port %d: can't find nas for IP %s"),
+                            stat.port_no,
+                            format_ipaddr(stat.ip));
+                        return 1;
+                }
 
-		port = find_port(nas, stat.port_no);
-		if (!port) {
-			port = alloc_entry(sizeof(*port));
-			stat.next = 0;
-			*port = stat;
-			stat_insert_port(port);
-		} else {
-			port->active = stat.active;               
-			strncmp(port->login, stat.login, sizeof(port->login));
-			port->count = stat.count;                
-			port->start = stat.start;
-			port->lastin = stat.lastin;            
-			port->lastout = stat.lastout;           
-			port->inuse = stat.inuse;             
-			port->idle = stat.idle;              
-			port->maxinuse = stat.maxinuse;
-			port->maxidle = stat.maxidle;
-		}
-	}
-	return 0;
+                port = find_port(nas, stat.port_no);
+                if (!port) {
+                        port = alloc_entry(sizeof(*port));
+                        stat.next = 0;
+                        *port = stat;
+                        stat_insert_port(port);
+                } else {
+                        port->active = stat.active;               
+                        strncmp(port->login, stat.login, sizeof(port->login));
+                        port->count = stat.count;                
+                        port->start = stat.start;
+                        port->lastin = stat.lastin;            
+                        port->lastout = stat.lastout;           
+                        port->inuse = stat.inuse;             
+                        port->idle = stat.idle;              
+                        port->maxinuse = stat.maxinuse;
+                        port->maxidle = stat.maxidle;
+                }
+        }
+        return 0;
 }
 
 PORT_STAT *
 find_port(nas, port_no)
-	NAS *nas;
-	int port_no;
+        NAS *nas;
+        int port_no;
 {
-	PORT_STAT *port;
-	
-	/* First try to find it in the cached buffer */
-	for (port = AP(nas,port); port; port = port->next) 
-		if (port->port_no == port_no)
-			return port;
-	return NULL;
+        PORT_STAT *port;
+        
+        /* First try to find it in the cached buffer */
+        for (port = AP(nas,port); port; port = port->next) 
+                if (port->port_no == port_no)
+                        return port;
+        return NULL;
 }
 
 void
 raduse()
 {
-	int wfd;
-	struct stat stb;
-	PORT_STAT stat;
-	struct timeval timeout;
-	fd_set rfd;
-	char cmd;
-	time_t lastmtime;
-	
-	wfd = open(file, O_RDONLY);
-	if (wfd == -1) {
-		radlog(L_ERR|L_PERROR, _("can't open `%s'"), file);
-		return;
-	}
-	
-	/* Read header record */
-	if (read(wfd, &stat, sizeof(stat)) != sizeof(stat)) {
-		radlog(L_ERR, _("read error on `%s': %s"),
-		    file, strerror(errno));
-		return;
-	}
-	starttime = stat.start;
-	fstat(wfd, &stb);
-	lastmtime = stb.st_mtime;
-	offset = sizeof(stat);
-	
-	if (dump_only) {
-		dump(wfd);
-		return;
-	}
-	
-	if (collect(wfd))
-		return;
-	
-	while (maxscreens == -1 || (numscreens++ < maxscreens)) {
-		display();
+        int wfd;
+        struct stat stb;
+        PORT_STAT stat;
+        struct timeval timeout;
+        fd_set rfd;
+        char cmd;
+        time_t lastmtime;
+        
+        wfd = open(file, O_RDONLY);
+        if (wfd == -1) {
+                radlog(L_ERR|L_PERROR, _("can't open `%s'"), file);
+                return;
+        }
+        
+        /* Read header record */
+        if (read(wfd, &stat, sizeof(stat)) != sizeof(stat)) {
+                radlog(L_ERR, _("read error on `%s': %s"),
+                    file, strerror(errno));
+                return;
+        }
+        starttime = stat.start;
+        fstat(wfd, &stb);
+        lastmtime = stb.st_mtime;
+        offset = sizeof(stat);
+        
+        if (dump_only) {
+                dump(wfd);
+                return;
+        }
+        
+        if (collect(wfd))
+                return;
+        
+        while (maxscreens == -1 || (numscreens++ < maxscreens)) {
+                display();
 
-		FD_ZERO(&rfd);
-		FD_SET(1, &rfd);
-		timeout.tv_sec = delay;
-		timeout.tv_usec = 0;
+                FD_ZERO(&rfd);
+                FD_SET(1, &rfd);
+                timeout.tv_sec = delay;
+                timeout.tv_usec = 0;
 
-/*		fstat(wfd, &stb);
-		if (stb.st_mtime > lastmtime) {
-			collect(wfd);
-		}
+/*              fstat(wfd, &stb);
+                if (stb.st_mtime > lastmtime) {
+                        collect(wfd);
+                }
 */
-		collect(wfd);
-		
-		if (interactive &&
-		    select(32, &rfd, NULL, NULL, &timeout) > 0) {
-			read(0, &cmd, 1);
-			switch (cmd) {
-			case '\n':
-			case ' ':
-				/* refresh */
-				clearmsg();
-				break;
-			case '\f':
-				clear();
-				display();
-				break;
-			case '^':
-				firstpage();
-				break;
-			case 'b':
-				brief = !brief;
-				if (brief)
-					clear();
-				break;
-			case C_B:
-				page(-1);
-				break;
-			case C_F:
-				page(1);
-				break;
-			case 'i':
-				show_idle = !show_idle;
-				if (!show_idle)
-					clear();
-				break;
-			case 'j': /* Next record */
-				/*scroll(brief ? 1 : 3);*/
-				scroll(1);
-				break;
-			case 'G':
-			case '$':
-				lastpage();
-				break;
-			case 'k': /* Prev record */
-				/*scroll(brief ? -1 : -3);*/
-				scroll(-1);
-				break;
-			case 'q': /* ie. stop */
-				numscreens = maxscreens = 0; 
-				break;
-			case 's':
-				getint(_("Seconds to delay: "), &delay);
-				break;
-			case 't':
-				select_nas();
-				break;
-			default:
-				msg(MT_standout,
-				    _("unknown command: %c"), cmd);
-			}
-		}
-	}
-	close(wfd);
+                collect(wfd);
+                
+                if (interactive &&
+                    select(32, &rfd, NULL, NULL, &timeout) > 0) {
+                        read(0, &cmd, 1);
+                        switch (cmd) {
+                        case '\n':
+                        case ' ':
+                                /* refresh */
+                                clearmsg();
+                                break;
+                        case '\f':
+                                clear();
+                                display();
+                                break;
+                        case '^':
+                                firstpage();
+                                break;
+                        case 'b':
+                                brief = !brief;
+                                if (brief)
+                                        clear();
+                                break;
+                        case C_B:
+                                page(-1);
+                                break;
+                        case C_F:
+                                page(1);
+                                break;
+                        case 'i':
+                                show_idle = !show_idle;
+                                if (!show_idle)
+                                        clear();
+                                break;
+                        case 'j': /* Next record */
+                                /*scroll(brief ? 1 : 3);*/
+                                scroll(1);
+                                break;
+                        case 'G':
+                        case '$':
+                                lastpage();
+                                break;
+                        case 'k': /* Prev record */
+                                /*scroll(brief ? -1 : -3);*/
+                                scroll(-1);
+                                break;
+                        case 'q': /* ie. stop */
+                                numscreens = maxscreens = 0; 
+                                break;
+                        case 's':
+                                getint(_("Seconds to delay: "), &delay);
+                                break;
+                        case 't':
+                                select_nas();
+                                break;
+                        default:
+                                msg(MT_standout,
+                                    _("unknown command: %c"), cmd);
+                        }
+                }
+        }
+        close(wfd);
 }
 
 int
 formatdelta(outbuf, delta)
-	char *outbuf;
-	time_t delta;
+        char *outbuf;
+        time_t delta;
 {
-	char ct[128];
-	char buf[128];
-	struct tm *tm;
+        char ct[128];
+        char buf[128];
+        struct tm *tm;
 
-	tm = gmtime(&delta);
-	strftime(ct, sizeof(ct), "%c", tm);
-	if (delta < 86400)
-		sprintf(buf, "%*.*s", width, width, ct + 11);
-	else
-		sprintf(buf, "%ld+%*.*s",
-			delta / 86400, width, width, ct + 11);
-	return sprintf(outbuf, "%11.11s ", buf);
+        tm = gmtime(&delta);
+        strftime(ct, sizeof(ct), "%c", tm);
+        if (delta < 86400)
+                sprintf(buf, "%*.*s", width, width, ct + 11);
+        else
+                sprintf(buf, "%ld+%*.*s",
+                        delta / 86400, width, width, ct + 11);
+        return sprintf(outbuf, "%11.11s ", buf);
 }
 
 int
 formattime(buf, time)
-	char *buf;
-	time_t time;
+        char *buf;
+        time_t time;
 {
-	struct tm *tm;
-	char ct[128];
-	
-	tm = localtime(&time);
-	strftime(ct, sizeof(ct), "%c", tm);
-	return sprintf(buf, "%10.10s %5.5s ", ct, ct + 11);
+        struct tm *tm;
+        char ct[128];
+        
+        tm = localtime(&time);
+        strftime(ct, sizeof(ct), "%c", tm);
+        return sprintf(buf, "%10.10s %5.5s ", ct, ct + 11);
 
-	/*"%m/%d/%y %H:%M:%S", tm);
-	printf("%8.8s %5.5s ", buf, buf + 9);*/
+        /*"%m/%d/%y %H:%M:%S", tm);
+        printf("%8.8s %5.5s ", buf, buf + 9);*/
 }
 
 int
 formatstop(buf, time)
-	char *buf;
-	time_t time;
+        char *buf;
+        time_t time;
 {
-	struct tm *tm;
-	char ct[128];
-	
-	tm = localtime(&time);
-	strftime(ct, sizeof(ct), "%H:%M:%S", tm);
-	return sprintf(buf, "%5.5s ", ct);
+        struct tm *tm;
+        char ct[128];
+        
+        tm = localtime(&time);
+        strftime(ct, sizeof(ct), "%H:%M:%S", tm);
+        return sprintf(buf, "%5.5s ", ct);
 }
-	
+        
 void
 display()
 {
-	NAS *nas;
-	PORT_STAT *port;
-	int j, off = 0;
-	time_t now = time(NULL), delta, stop;
-	char *str;
-	int total_lines = 0, active_lines = 0;
-	
-	for (nas = nas_next(NULL); nas; nas = nas_next(nas)) {
-		for (port = AP(nas,port); port; port = port->next) {
-			total_lines++;
-			if (port->active)
-				active_lines++;
-		}
-	}
+        NAS *nas;
+        PORT_STAT *port;
+        int j, off = 0;
+        time_t now = time(NULL), delta, stop;
+        char *str;
+        int total_lines = 0, active_lines = 0;
+        
+        for (nas = nas_next(NULL); nas; nas = nas_next(nas)) {
+                for (port = AP(nas,port); port; port = port->next) {
+                        total_lines++;
+                        if (port->active)
+                                active_lines++;
+                }
+        }
 
-	
-	str = headerbuf[0];
-	str += sprintf(str, _("uptime "));
-	str += formatdelta(str, now - starttime);
-	str += sprintf(str, "        ");
-	formattime(str, now);
-	
-	str = headerbuf[1];
-	str += sprintf(str, _("%3d lines, %3d active, %3d idle. "),
-		       total_lines,
-		       active_lines,
-		       total_lines - active_lines);
-	if (total_lines)
-		str += sprintf(str, _("Pool load %4.2f"),
-			       (double) active_lines / total_lines);
-	else
-		str += sprintf(str, _("Pool load ??.??"));
+        
+        str = headerbuf[0];
+        str += sprintf(str, _("uptime "));
+        str += formatdelta(str, now - starttime);
+        str += sprintf(str, "        ");
+        formattime(str, now);
+        
+        str = headerbuf[1];
+        str += sprintf(str, _("%3d lines, %3d active, %3d idle. "),
+                       total_lines,
+                       active_lines,
+                       total_lines - active_lines);
+        if (total_lines)
+                str += sprintf(str, _("Pool load %4.2f"),
+                               (double) active_lines / total_lines);
+        else
+                str += sprintf(str, _("Pool load ??.??"));
 
-	off = 0;
-	for (nas = nas_next(NULL); nas; nas = nas_next(nas)) {
-		if (!AP(nas,use))
-			continue;
-		j = 0;
-		for (port = AP(nas,port); port; port = port->next) {
-			if (!show_idle && !port->active) 
-				continue;
-			/* Port number */
-			str = screen[off + j++];
-			str += sprintf(str, "%-12.12s %3.3d %5d ",
-				      nas->shortname,
-				      port->port_no, port->count);
-			if (port->active) {
-				delta = now - port->lastin;
-				str += sprintf(str,
-					       "%-16.16s ", port->login);
-				str += formatdelta(str, delta);
-				str += formattime(str, port->lastin);
-			} else {
-				/* currently idle */
-				delta = now - port->lastout;
-				str += sprintf(str,
-					       "%-16.16s ", "[idle]");
-				str += formatdelta(str, delta);
-				str += formattime(str, port->lastout);
-			}
+        off = 0;
+        for (nas = nas_next(NULL); nas; nas = nas_next(nas)) {
+                if (!AP(nas,use))
+                        continue;
+                j = 0;
+                for (port = AP(nas,port); port; port = port->next) {
+                        if (!show_idle && !port->active) 
+                                continue;
+                        /* Port number */
+                        str = screen[off + j++];
+                        str += sprintf(str, "%-12.12s %3.3d %5d ",
+                                      nas->shortname,
+                                      port->port_no, port->count);
+                        if (port->active) {
+                                delta = now - port->lastin;
+                                str += sprintf(str,
+                                               "%-16.16s ", port->login);
+                                str += formatdelta(str, delta);
+                                str += formattime(str, port->lastin);
+                        } else {
+                                /* currently idle */
+                                delta = now - port->lastout;
+                                str += sprintf(str,
+                                               "%-16.16s ", "[idle]");
+                                str += formatdelta(str, delta);
+                                str += formattime(str, port->lastout);
+                        }
 
-			if (brief)
-				continue;
-			str = screen[off + j++];
-			str += sprintf(str, "          ");
-			/* In use statistics */
-			str += formatdelta(str, port->inuse);
-			str += formatdelta(str, port->maxinuse.time);
-			str += formattime(str, port->maxinuse.start);
-			str += sprintf(str, "- ");
-			stop = port->maxinuse.start +
-				port->maxinuse.time;
-			str += formatstop(str, stop);
+                        if (brief)
+                                continue;
+                        str = screen[off + j++];
+                        str += sprintf(str, "          ");
+                        /* In use statistics */
+                        str += formatdelta(str, port->inuse);
+                        str += formatdelta(str, port->maxinuse.time);
+                        str += formattime(str, port->maxinuse.start);
+                        str += sprintf(str, "- ");
+                        stop = port->maxinuse.start +
+                                port->maxinuse.time;
+                        str += formatstop(str, stop);
 
-			/* Port number */
-			str = screen[off + j++];
-			str += sprintf(str, "          ");
+                        /* Port number */
+                        str = screen[off + j++];
+                        str += sprintf(str, "          ");
 
-			/* Idle time statistics */
-			str += formatdelta(str, port->idle);
-			str += formatdelta(str, port->maxidle.time);
-			str += formattime(str, port->maxidle.start);
-			str += sprintf(str, "- ");
-			stop = port->maxidle.start +
-				port->maxidle.time;
-			str += formatstop(str, stop);
-		}
-		off += j;
-	}
-	update_display(off);
+                        /* Idle time statistics */
+                        str += formatdelta(str, port->idle);
+                        str += formatdelta(str, port->maxidle.time);
+                        str += formattime(str, port->maxidle.start);
+                        str += sprintf(str, "- ");
+                        stop = port->maxidle.start +
+                                port->maxidle.time;
+                        str += formatstop(str, stop);
+                }
+                off += j;
+        }
+        update_display(off);
 }
 
 void
 add_nas(name)
-	char *name;
+        char *name;
 {
-	NAS *nas;
-	
-	nas = nas_lookup_name(name);
-	if (!nas) {
-		radlog(L_ERR, _("no such NAS: %s (use raduse -l to get the list)"),
-			name);
-		exit(1);
-	} else
-		AP(nas,use) = 1;
+        NAS *nas;
+        
+        nas = nas_lookup_name(name);
+        if (!nas) {
+                radlog(L_ERR, _("no such NAS: %s (use raduse -l to get the list)"),
+                        name);
+                exit(1);
+        } else
+                AP(nas,use) = 1;
 }
 
 void
 listnas()
 {
-	NAS *p;
-	
-	for (p = nas_next(NULL); p; p = nas_next(p)) {
-		printf("%-32.32s %-10.10s %-16.16s\n",
-		       p->longname,
-		       p->shortname,
-		       format_ipaddr(p->ipaddr));
-	}
+        NAS *p;
+        
+        for (p = nas_next(NULL); p; p = nas_next(p)) {
+                printf("%-32.32s %-10.10s %-16.16s\n",
+                       p->longname,
+                       p->shortname,
+                       format_ipaddr(p->ipaddr));
+        }
 }
 
 void
 mark_all(m)
-	int m;
+        int m;
 {
-	NAS *nas;
+        NAS *nas;
 
-	for (nas = nas_next(NULL); nas; nas = nas_next(nas))
-		AP(nas,use) = m;
+        for (nas = nas_next(NULL); nas; nas = nas_next(nas))
+                AP(nas,use) = m;
 }
 
 int
 mark_nas(name)
-	char *name;
+        char *name;
 {
-	NAS *nas;
+        NAS *nas;
 
-	for (nas = nas_next(NULL); nas; nas = nas_next(nas))
-		if (strcasecmp(nas->shortname, name) == 0) {
-			AP(nas,use) = 1;
-			return 0;
-		}
-	return 1;
+        for (nas = nas_next(NULL); nas; nas = nas_next(nas))
+                if (strcasecmp(nas->shortname, name) == 0) {
+                        AP(nas,use) = 1;
+                        return 0;
+                }
+        return 1;
 }
-	
+        
 void
 select_nas()
 {
-	char buf[80];
-	int nas_cnt = 0;
-	char *p, *nasname;
+        char buf[80];
+        int nas_cnt = 0;
+        char *p, *nasname;
 
 #define PROMPT _("NASes to show:")       
-	msg(MT_standout, PROMPT);
+        msg(MT_standout, PROMPT);
 
-	if (readline(buf, sizeof(buf)-sizeof(PROMPT), 0) > 0) {
-		mark_all(0);
-		p = buf;
-		do {
-			while (*p && isspace(*p))
-				p++;
-			if (!*p)
-				break;
-			nasname = p;
+        if (readline(buf, sizeof(buf)-sizeof(PROMPT), 0) > 0) {
+                mark_all(0);
+                p = buf;
+                do {
+                        while (*p && isspace(*p))
+                                p++;
+                        if (!*p)
+                                break;
+                        nasname = p;
  
-			while (*p && !isspace(*p))
-				p++;
-			if (*p)
-				*p++ = 0;
-			nas_cnt++;
-			if (strcasecmp(nasname, "all") == 0) {
-				mark_all(1);
-				break;
-			} else if (mark_nas(nasname)) {
-				msg(MT_standout, _("No such NAS: ``%s'"), nasname);
-				mark_all(1);
-				return;
-			}
-		} while (*p);
-	}
-	if (!nas_cnt) 
-		mark_all(1);
-	clearmsg();
+                        while (*p && !isspace(*p))
+                                p++;
+                        if (*p)
+                                *p++ = 0;
+                        nas_cnt++;
+                        if (strcasecmp(nasname, "all") == 0) {
+                                mark_all(1);
+                                break;
+                        } else if (mark_nas(nasname)) {
+                                msg(MT_standout, _("No such NAS: ``%s'"), nasname);
+                                mark_all(1);
+                                return;
+                        }
+                } while (*p);
+        }
+        if (!nas_cnt) 
+                mark_all(1);
+        clearmsg();
 }
 
 void
 dump(fd)
-	int fd;
+        int fd;
 {
-	PORT_STAT stat;
-	NAS *nas;
-	unsigned off = 0;
-	
-	while (read(fd, &stat, sizeof(stat)) == sizeof(stat)) {
-		if (stat.ip != 0) {
-			nas = nas_lookup_ip(stat.ip);
-			printf("%8d %16.16s %4d\n",
-			       off,
-			       nas->shortname,
-			       stat.port_no);
-		}
-		off += sizeof(stat);
-	}
-	return;
+        PORT_STAT stat;
+        NAS *nas;
+        unsigned off = 0;
+        
+        while (read(fd, &stat, sizeof(stat)) == sizeof(stat)) {
+                if (stat.ip != 0) {
+                        nas = nas_lookup_ip(stat.ip);
+                        printf("%8d %16.16s %4d\n",
+                               off,
+                               nas->shortname,
+                               stat.port_no);
+                }
+                off += sizeof(stat);
+        }
+        return;
 }
 
 
@@ -708,26 +708,26 @@ char usage_str[] =
 "The options are:\n"
 "       -b, --brief               Brief mode.\n"
 "       -d, --display COUNT       Show only COUNT displays.\n"
-"	-D, --dump                Dump the statistics database to stdout\n"
+"       -D, --dump                Dump the statistics database to stdout\n"
 "                                 and exit.\n"
-"	-I, --no-idle-lines       Do not display idle lines.\n"
-"	-i, --interactive         Interactive mode.\n"
-"	-n, --no-interactive      Non-interactive mode.\n"
-"	-s, --delay NUM           Specify delay in seconds between\n"
+"       -I, --no-idle-lines       Do not display idle lines.\n"
+"       -i, --interactive         Interactive mode.\n"
+"       -n, --no-interactive      Non-interactive mode.\n"
+"       -s, --delay NUM           Specify delay in seconds between\n"
 "                                 screen updates.\n"
-"	-w, --widen               Widen the time display fields to show\n"
+"       -w, --widen               Widen the time display fields to show\n"
 "                                 the seconds.\n"
-"	-l, --list-nas            List the names and IP numbers of\n"
+"       -l, --list-nas            List the names and IP numbers of\n"
 "                                 network access servers and then exit.\n"
 "       -L, --license             Display GNU lisense and exit\n"
-"	-h, --help                Display short usage summary.\n";
+"       -h, --help                Display short usage summary.\n";
 
 void 
 usage()
 {
-	printf("%s", usage_str);
-	printf("\nReport bugs to <%s>\n", bug_report_address);
-	exit(1);
+        printf("%s", usage_str);
+        printf("\nReport bugs to <%s>\n", bug_report_address);
+        exit(1);
 }
 
 static char license_text[] = "\
@@ -750,8 +750,8 @@ static char license_text[] = "\
 void
 license()
 {
-	printf("%s: Copyright 1999,2000 Sergey Poznyakoff\n", progname);
-	printf("\nThis program is part of GNU Radius\n");
-	printf("%s", license_text);
-	exit(0);
+        printf("%s: Copyright 1999,2000 Sergey Poznyakoff\n", progname);
+        printf("\nThis program is part of GNU Radius\n");
+        printf("%s", license_text);
+        exit(0);
 }

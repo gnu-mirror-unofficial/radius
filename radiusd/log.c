@@ -964,22 +964,28 @@ channel_syslog_handler(argc, argv, block_data, handler_data)
 		return 1;
 	}
 
+	if (facility == -1)
+		return 1;
+
 	if (argv[2].type != CFG_CHAR || argv[2].v.ch != '.')
 		return 1;
 	
 	switch (argv[3].type) {
 	case CFG_INTEGER:
-		prio = argv[1].v.number;
+		prio = argv[3].v.number;
 		break;
 
 	case CFG_STRING:
-		prio = xlat_keyword(syslog_priority, argv[1].v.string, -1);
+		prio = xlat_keyword(syslog_priority, argv[3].v.string, -1);
 		break;
 
 	default:
 		return 1;
 	}
 
+	if (prio == -1)
+		return 1;
+	
 	channel.mode = LM_SYSLOG;
 	channel.id.prio = facility | prio ;
 	return 0;

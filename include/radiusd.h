@@ -296,6 +296,11 @@ void schedule_restart();
 void rad_mainloop();
 
 /* radius.c */
+
+#define REQ_AUTH_OK   0
+#define REQ_AUTH_ZERO 1
+#define REQ_AUTH_BAD  2
+
 int rad_send_reply(int, RADIUS_REQ *, VALUE_PAIR *, char *, int);
 RADIUS_REQ *radrecv (UINT4, u_short, u_char *, int);
 int validate_client(RADIUS_REQ *radreq);

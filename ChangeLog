@@ -1,3 +1,27 @@
+2002-07-24  Sergey Poznyakoff
+
+	* lib/mem.c: Cleaned wording of the diagnostics
+	* po/es.po: Likewise
+	* po/no.po: Likewise
+	* po/pl.po: Likewise
+	* radiusd/acct.c: Likewise
+	* radiusd/auth.c: Likewise
+	* radiusd/stat.c: Likewise
+	
+	* radiusd/rewrite.y: Changed protos of rewrite interface functions
+	  to take RADIUS_REQ* instead of VALUE_PAIRS*.
+	  %[User-Password] returns password in cleartext.
+	* include/radiusd.h: changed rewrite interface protos.
+	* radiusd/files.c: Changed run_rewrite invocations to conform
+	  to the new prototypes.
+	* TODO: Updated.  
+
+2002-07-23  Sergey Poznyakoff
+
+	* radiusd/exec.c (filter_cleanup): Cleanup handler. When the
+	  thread is cancelled, closes any filters associated with it.
+	* radiusd/request.c (rad_cleanup_thread0): Call filter_cleanup().
+
 2002-07-23  Sergey Poznyakoff 
 
 	* THANKS: Added Krzysztof Kopera.

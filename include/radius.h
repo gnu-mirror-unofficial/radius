@@ -233,8 +233,7 @@ typedef struct nas {
 
 typedef struct realm {
         char                    realm[MAX_REALMNAME+1];
-        int                     striprealm;
-        int                     maxlogins;
+	envar_t                 *args;
 	RADIUS_SERVER_QUEUE     *queue;
 } REALM;
 
@@ -368,6 +367,8 @@ int realm_read_file(char *filename, int auth_port, int acct_port,
 		    int (*set_secret)());
 int realm_verify_ip(REALM *realm, UINT4 ip);
 void realm_iterate(int (*fun)());
+int realm_strip_p(REALM *r);
+size_t realm_get_quota(REALM *r);
 
 /* fixalloc.c */
 RADIUS_REQ *radreq_alloc();

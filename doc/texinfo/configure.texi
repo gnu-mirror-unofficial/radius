@@ -220,8 +220,6 @@ the messages displayed by this channel. The priorities in ascending
 order are: @code{debug}, @code{info}, @code{notice}, @code{warn},   
 @code{err}, @code{crit}, @code{alert}, @code{emerg}.
 
-@c FIXME For more information on category names, see @xref{Logging,,Logging}.
-
 The full category specification, @dfn{category_spec}, can take any of
 the following three forms:
 
@@ -445,6 +443,7 @@ Otherwise @command{radiusd} assumes the user @emph{is not} logged in.
 @kwindex max-requests 
 @kwindex time-to-live 
 @kwindex request-cleanup-delay
+@kwindex detail
 
 @subheading Syntax:
 @example
@@ -452,6 +451,7 @@ acct @{
         [ listen @var{addr-list} ; ]
         [ port @var{number} ; ]
         [ spawn @var{bool} ; ]
+        [ detail @var{bool}; ]
         [ max-requests @var{number} ; ]
         [ time-to-live @var{number} ; ]
         [ request-cleanup-delay @var{number} ; ]
@@ -502,7 +502,9 @@ the completed account request reside in the queue.
 @table @code
 @item spawn 
 Determines if @command{radiusd} should spawn a child to process the request.
-
+@item detail
+When set to @code{false}, disables detailed accounting
+(@pxref{Detailed Request Accounting}). 
 @end table
 
 @comment **L3***************************************************************
@@ -876,22 +878,32 @@ VENDOR          Livingston      307
 @kwindex ATTRIBUTE 
 @subheading Syntax
 @example
-ATTRIBUTE  Attribute-Name  @var{number}  @var{type}
-ATTRIBUTE  Attribute-Name  @var{number}  @var{type} Vendor-Name
-ATTRIBUTE  Attribute-Name  @var{number}  @var{type} Vendor-Name Property
+ATTRIBUTE  @var{name}  @var{number}  @var{type} [@var{vendor} [@var{flags}]]
 @end example
 
 @subheading Usage
 The @code{ATTRIBUTE} statement defines the translation for an attribute.
-The second form defines the vendor-specific attribute @xref{Vendor-Specific}.
-[FIXME: Description of property flags]
+@table @var
+@item name
+The attribute name.
+@item number
+The attribute @acronym{ID} (number).
+@item type
+The attribute type. 
+@item vendor
+Vendor name for vendor-specific attributes. For usual attributes this
+field is empty or contains a dash (@samp{-}).
+@item flags
+Flags, defining attribute properties.
+@end table
+
 @subheading Example
 
 The following assigns the translation string @samp{Service-Type} to the
 attribute number 6:
 
 @example
-ATTRIBUTE       Service-Type            6       integer
+ATTRIBUTE  Service-Type  6 integer 
 @end example
 
 The following defines a vendor-specific attribute for vendor-id

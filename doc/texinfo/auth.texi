@@ -5,9 +5,10 @@
 @node Authentication, Accounting, Configuration files, Top
 @chapter Authentication
 
-Several authentication types are supported. The use of a particular
-authentication type for a given user is determined by the value
-of @attr{Auth-Type} attribute in his profile.
+An @dfn{Authentication Type} specifies which credentials the user
+is required to supply in order to be authenticated and where the
+user's authentication data are stored. It is defined by the value
+of @attr{Auth-Type} attribute in @LHS{} of a @file{users} entry.
 
 @menu
 * Accept Auth::                   Accept unconditionally.
@@ -17,35 +18,41 @@ of @attr{Auth-Type} attribute in his profile.
 * System Auth::                   Authenticate using system account.
 * SQL Auth::                      Authenticate using SQL.
 * PAM Auth::                      Authenticate using PAM.
+* Custom Auth::                   Defining Custom Authentication Types.
 * Checking Simultaneous Logins::  
 @end menu
 
 @comment *L2****************************************************************
-@node Accept Auth, Reject Auth, , Authentication
+@node Accept Auth
 @section Accept Authentication Type
 @cindex Accept Authentication Type
 @cindex guest accounts, setting up
 @exindex guest accounts, setting up
 
-@subheading Synopsis
+@dfn{Accept} is the simplest authentication type. Users with this
+authentication type will be authenticated successfully without checking
+any credentials. Actually this means that only username
+is required for authentication.
+
+This authentication type is used for each @file{users} entry, whose
+@LHS{} contains
+
 @example
 Auth-Type = Accept
 @end example
-
-@subheading Usage
-When a user has the above string in his profile he will be authenticated
-without any further checking. Actually this means that only username
-is required for authentication.
+@noindent
 
 This authentication type can be used for guest accounts, e.g. the
 following profile in @file{users}:
 
 @example
+@group
 guest   Auth-Type = Accept,
                 Password != "",
                 Simultaneous-Use = 10
         Service-Type = Framed-User,
                 Framed-Protocol = PPP
+@end group
 @end example
 
 @noindent
@@ -54,144 +61,232 @@ guest account it is sufficient to use username @samp{guest} and any
 non-empty password.
 
 @comment *L2****************************************************************
-@node Reject Auth, Local Password Auth, Accept Auth, Authentication
+@node Reject Auth
 @section Reject Authentication Type
 @cindex Reject Authentication Type
 @cindex disabling user accounts
 
-@subheading Synopsis
+The @dfn{Reject} authentication type causes the request to be rejected
+unconditionally. It can be used to disable a user account (For another
+method of disabling user accounts, @pxref{access.deny file}).
+
+This authentication type is used for each @file{users} entry, whose
+@LHS{} contains
+
 @example
 Auth-Type = Reject
 @end example
 
-@subheading Usage
-The @code{Reject} authentication type causes the request to be rejected
-unconditionally. It can be used to disable a user account. For another
-method of disabling user accounts, see @ref{access.deny file}.
-
 @comment *L2****************************************************************
-@node Local Password Auth, Encrypted Password Auth, Reject Auth, Authentication
+@node Local Password Auth
 @section Local Password Authentication Type
 @cindex Local Password Auth
+@cindex CHAP
 
-@subheading Synopsis
+The @dfn{Local Password} authentication type allows to keep plaintext
+user passwords. Although the use of this authentication type is strongly
+discouraged for security reasons, this is the only
+authentication type that can be used with @acronym{CHAP} authentication.
+
+There are two ways of using this authentication type
+
+@subheading Specifying Passwords in users File.
+To keep the plaintext passwords in @file{users} file, the profile
+entry must follow this pattern:
+
 @example
-Auth-Type = Local,
-Password = <plaintext password>
+@group
+@var{user-name}  Auth-Type = Local,
+                     Password = @var{plaintext}
+@end group
 @end example
 
-@subheading Usage
-The @code{Password} attribute in user's profile contains the
-@emph{plaintext} password. If this password and the one supplied by the
-user coincide, then the user is authenticated.
+The @var{plaintext} is the user's plaintext password. Obviously,
+@var{user-name} may not be @code{DEFAULT} nor @code{BEGIN}.
 
-We do not recommend the use of this authentication type, since keeping
-plaintext passwords in @file{users} is very insecure, even though the
-file is owned by root and its permissions are 0600.
+@subheading Specifying Passwords in SQL Database.
+
+@example
+@group
+@var{user-name}   Auth-Type = Local,
+                      Password-Location = SQL
+@end group
+@end example
+
+When the user is authenticated using such profile, its password
+is retrieved from the authentication database using @code{auth_query}.
+The configuration of @acronym{SQL} authentication is described in
+detail in @ref{Authentication server parameters}.
 
 @comment *L2****************************************************************
-@node Encrypted Password Auth, System Auth, Local Password Auth, Authentication
+@node Encrypted Password Auth
 @section Encrypted Password Authentication Type
 @cindex Encrypted Password Authentication Type
 
-@subheading Synopsis
+The @dfn{Encrypted Password} type allows to keep user's passwords
+encrypted via @acronym{DES} or @acronym{MD5} algorythm. There are
+two ways of using this authentication type.
+
+@subheading Specifying Passwords in users File.
+
 @example
-Auth-Type = Crypt-Local,
-Password = <MD5 hash>
+@var{user-name}  Auth-Type = Crypt-Local,
+                     Password = @var{crypt-pass}
 @end example
 @noindent
-or
+
+The @attr{Crypt-Password} is a shortcut for the above notation:
 
 @example
-Crypt-Password = <MD5 hash>
+@var{user-name}  Crypt-Password = @var{crypt-pass}
 @end example
 
-@subheading Usage
+@subheading Specifying Passwords in SQL Database.
 
-The @attr{Password} attribute in user's profile contains the MD5 hash
-of his password. The MD5 hash is computed over the password supplied
-by the user, both hashes are compared and if they coincide, the user
-is authenticated.
+@example
+@group
+@var{user-name}   Auth-Type = Crypt-Local,
+                      Password-Location = SQL
+@end group
+@end example
+
+Using this profile, the user's password is retrieved from the
+authentication database using @code{auth_query}.
+The configuration of @acronym{SQL} authentication is described in
+detail on @ref{Authentication server parameters}.
+
+The shortcut for this notation is @code{Auth-Type = SQL}.
+
+In any case, the passwords used with this authentication type
+must be either @acronym{DES} or @acronym{MD5} hashed.
 
 @comment *L2****************************************************************
-@node System Auth, SQL Auth, Encrypted Password Auth, Authentication
+@node System Auth
 @section System Authentication Type
 @cindex System Authentication Type
 
-@subheading Synopsis
+The @dfn{System} authentication type requires that the user
+have a valid system account on the machine where the radius
+server is running. The use of this type is triggered by setting
+
 @example
 Auth-Type = System
 @end example
+@noindent
 
-When a user has the above string in his profile record, he will be
-authenticated using system /etc/passwd (/etc/shadow) files, i.e.
-to be authenticated he has to have a valid system account on the
-machine where the radius server is running.
+in the @LHS{} of a @file{users} entry.
 
 @comment *L2****************************************************************
-@node SQL Auth, PAM Auth, System Auth, Authentication
+@node SQL Auth
 @section SQL Authentication Type
 @cindex SQL Authentication Type
 
-@subheading Synopsis
+Setting @code{Auth-Type = SQL} or @code{Auth-Type = Mysql}
+in the @LHS{} of a @file{users} entry is a synonim for
+
 @example
-Auth-Type = SQL
+Auth-Type = Crypt-Local, Password-Location = SQL
 @end example
 @noindent
-or
 
-@example
-Auth-Type = Mysql
-@end example
+and is provided as a shortcut and for backward compatibility with
+previous versions of GNU Radius.
 
-@subheading Usage
-This authentication type means that the MD5 hash of his password is kept
-in @sc{sql} database. To authenticate such user, @command{radiusd} will query
-the database using @code{auth_query} from the @file{sqlserver} file.
-It will then compute the MD5 hash over the supplied password and
-compare it with the string returned by the query. If both strings
-coincide, the user will be authenticated.
-
-@xref{sqlserver file}.
-@xref{Queries,,Writing SQL query templates}.
+For description of @acronym{SQL} authentication, @xref{Encrypted
+Password Auth}. The configuration of @acronym{SQL} subsystem
+is described in @xref{sqlserver file}.
 
 @comment *L2****************************************************************
-@node PAM Auth, Checking Simultaneous Logins, SQL Auth, Authentication
+@node PAM Auth
 @section PAM Authentication Type
 @cindex PAM Authentication Type
 
-@subheading Synopsis
+@dfn{PAM} authentication type indicates that a user should be authenticated
+using @acronym{PAM} (Pluggable Authentication Module) framework. The
+simplest way of usage is:
+
 @example
 Auth-Type = PAM
 @end example
 @noindent
-or
+
+Any user whose @file{users} profile contains the above, will be
+authenticated via @acronym{PAM}, using service name @samp{radius}.
+If you wish to use another service name, set it using @attr{Auth-Data}
+attribute, e.g.:
 
 @example
-Auth-Type = PAM
-PAM-Auth = <PAM service>
+Auth-Type = PAM,
+    Auth-Data = @var{pam-service}
 @end example
 
-@subheading Usage
+@comment *L2****************************************************************
+@node Custom Auth
+@section Defining Custom Authentication Types
+@cindex Custom Authentication Types
 
-This authentication type indicates that a user should be authenticated
-using PAM (Pluggable Authentication Module) framework. The value of
-@attr{PAM-Auth} attribute specifies the PAM service to be used. 
-If it is not specified, @samp{radius} will be used. 
+The are three ways to define custom authentication types:
+
+@enumerate 1
+@item Write a @acronym{PAM} module.
+@item Use a Guile procedure.
+@item Use an external program
+@end enumerate
+
+You can write a @acronym{PAM} module implementing the new authentication
+type. Then, specifying @code{Auth-Type = PAM} allows to apply
+it (@pxref{PAM Auth}).
+
+Alternatively, you may write a Scheme procedure implementing the new
+authentication type. To apply it, use @attr{Scheme-Procedure} attribute
+in @RHS{}. The @code{Auth-Type = Accept} can be used in @LHS{} if
+the whole authentication burden is to be passed to the Scheme procedure.
+For example, if one wrote a procedure @code{my-auth}, to apply it to
+all users, one will place the following profile in his @file{users}
+file:
+
+@example
+@group
+DEFAULT  Auth-Type = Accept
+         Scheme-Procedure = "my-auth"
+@end group
+@end example
+
+For a discussion of how to write Scheme authentication procedures,
+@xref{Authentication with Scheme}.
+
+The third way to implemement your own authentication method is using
+an external program. This is less effective than the methods described
+above, but may be necessary sometimes. To invoke the program, use
+the following statement in the @RHS{} of @file{users} entry:
+
+@example
+Exec-Program-Wait = "@var{progname} @var{args}"
+@end example
+@noindent
+
+The @var{progname} must be the full path to the program, @var{args} ---
+any arguments it needs. The usual substitutions may be used in
+@var{args} to pass any request attributes to the program
+(@pxref{Macro substitution}).
+
+For a detailed description of @attr{Exec-Program-Wait} attribute and
+an example of its use, @xref{Exec-Program-Wait}.
 
 @comment *L2****************************************************************
-@node Checking Simultaneous Logins, , PAM Auth, Authentication
+@node Checking Simultaneous Logins
 @section Checking Simultaneous Logins
 @cindex Checking Simultaneous Logins
 @cindex simultaneous logins, checking for
 
 The number of sessions a user can have open simultaneously can be
 restricted by setting @attr{Simultaneous-Use} attribute in the user's
-profile @LHS{} @ref{Simultaneous-Use}. By default the number
+profile @LHS{} (@pxref{Simultaneous-Use}). By default the number
 of simultaneous sessions is unlimited.
 
 When a user with limited number of simultaneous logins authenticates
-himself, Radius first sees how many sessions are already open for this user.
+himself, Radius first counts the number of the sessions that are already
+opened by this user.
 If this number is equal to the value of @attr{Simultaneous-Use}
 attribute the authentication request is rejected.
 
@@ -231,8 +326,8 @@ latter, and can thus be used to override default values specified
 in @file{nastypes}.
 
 Having determined the query method and its argument, Radius queries
-@NAS{} and analyses its output. To analyze it, Radius uses user-supplied
-Rewrite functions defined in file @file{raddb/rewrite}. The function to use
+@NAS{} and analyzes its output by invoking a user-supplied
+Rewrite function. The function to use
 is specified by the @code{function=} argument to the method. It is
 called each time a line of output is received from the @NAS{} (for
 finger queries) or a variable is received (for SNMP queries). The

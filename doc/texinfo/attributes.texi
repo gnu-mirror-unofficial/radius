@@ -1217,7 +1217,7 @@ the full pathname and arguments for the program to be executed when the
 entry matches.
 
 The command line can reference any attributes from both check and reply
-pairlists using attribute macros @ref{Macro substitution}.
+pairlists using attribute macros (@pxref{Macro substitution}).
 
 Before the execution of the program @command{radiusd} switches to
 uid and gid of user @code{daemon}, group @code{daemon}. You can
@@ -1325,6 +1325,17 @@ The @attr{Acct-Ext-Program} attribute can be used in @RHS{} of an
 @file{raddb/hints} entry to specify the full path and attributes
 of an external program to be executed for each accounting request.
 
+The command line can reference any attributes from both check and reply
+pairlists using attribute macros (@pxref{Macro substitution}).
+
+Before the execution of the program @command{radiusd} switches to
+uid and gid of user @code{daemon}, group @code{daemon}. You can
+override these defaults by setting variables @code{exec-program-user}
+and @code{exec-program-group} in configuration file to proper values
+@ref{option,, The option statement}.
+
+The accounting program must exit with status 0 to indicate a successive
+accounting.
 
 @comment **************************************************************
 @node Hint

@@ -1,3 +1,48 @@
+2001-12-11 Sergey Poznyakoff
+
+	* THANKS: Added Dave Restall.
+	* TODO: Updated.
+	
+	* configure.in: new options: --with-log-dir and --with-pid-dir
+	
+	* include/radiusd.h: Declaration of acct_detail.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/acct.c: Do not do detailed accounting if
+	  acct_detail == 0.
+	* radiusd/config.y: handle detail statement in acct block.
+	
+	* raddb/config.syntax: Added sample acct/detail statement.
+	
+	* doc/texinfo/acct.texi: Updated.
+	* doc/texinfo/attributes.texi: Updated.
+	* doc/texinfo/auth.texi: Updated.
+	* doc/texinfo/bugs.texi: Updated.
+	* doc/texinfo/configure.texi: Updated.
+	* doc/texinfo/extensions.texi: Updated.
+	* doc/texinfo/naming.texi: Updated.
+
+	* raddb/Makefile.am: Move dictionary.* to dict/*
+	* raddb/dictionary: Likewise.
+	* test/raddb/Makefile.am: Likewise.
+	
+	* raddb/dictionary.merit: (removed) Duplicates raddb/dictionary.
+	* raddb/dictionary.ascend: (removed)
+	* raddb/dictionary.cisco: (removed)
+	* raddb/dictionary.compat: (removed)
+	* raddb/dictionary.livingston: (removed)
+	* raddb/dictionary.tunnel: (removed)
+	* raddb/dictionary.usr: (removed)
+	* raddb/dictionary.voip: (removed)
+	* raddb/dict: (new dir)
+	* raddb/dict/ascend: (new)
+	* raddb/dict/cisco: (new)
+	* raddb/dict/livingston: (new)
+	* raddb/dict/usr: (new)
+	* raddb/dict/ascend.vs: (new)
+	* raddb/dict/compat: (new)
+	* raddb/dict/tunnel: (new)
+	* raddb/dict/voip: (new)
+	
 2001-12-10 Sergey Poznyakoff
 	   
 	* Makefile.am: Added rules for generating web documentation

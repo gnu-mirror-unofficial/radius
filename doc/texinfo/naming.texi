@@ -17,7 +17,7 @@ to store various configuration and log files:
 A directory where all configuration files are stored.
 
 @item Log directory
-A directory where @command{radiusd} stores its radius files.
+A directory where @command{radiusd} stores its log files.
 
 @item Accounting directory
 A directory where @command{radiusd} stores accounting detail files
@@ -26,7 +26,7 @@ A directory where @command{radiusd} stores accounting detail files
 @end table
 
 The default locations of these directories are determined at compile
-time. These are:
+time. By default these are:
 
 @multitable @columnfractions .40 .15 .45
 @item Directory @tab Short Name @tab Default location 
@@ -50,6 +50,8 @@ time. These are:
 @tab @value{RADACCT}
 
 @end multitable
+
+These location may differ depending on your local site configuration.
 
 Throughout this document we will refer to these directories by their
 short names, e.g. saying

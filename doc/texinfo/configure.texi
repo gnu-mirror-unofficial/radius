@@ -1,5 +1,5 @@
 @c This is part of the Radius manual.
-@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c Copyright (C) 1999,2000,2001,2002,2003 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Configuration Files, Request Comparison, Invocation, Top
@@ -7,13 +7,76 @@
 @cindex Radiusd configuration files
 @cindex Configuration files (radiusd)
 
-This chapter describes the configuration files used by GNU Radius
-package.
+At startup, GNU Radius obtains the information vital for its
+functioning from a number of configuration files. These are normally
+found in @value{RADDB} directory, which is defined at configuration
+time, although their location can be specified at runtime. In the
+discussion below we will refer to this directory by @file{raddb}.
+@xref{Naming Conventions}.
 
-These files are normally found in @value{RADDB} directory, which
-is defined at configuration time, although their location can be
-specified at runtime. In the discussion below we will refer to this
-directory by @file{raddb}. @xref{Naming Conventions}.
+Each configuration file is responsible for a certain part of the
+GNU Radius functionality. The following table lists all configuration
+files along with a brief description of their purposes.
+
+@table @file
+@item config
+Determines the runtime defaults for @command{radiusd}, such
+as the IP address and ports to listen on, the sizes of the request
+queues, configuration of the SNMP subsystem, fine-tuning of the
+extension languages, etc.
+
+@item clients
+Lists the shared secret belonging to each @NAS{}. It is
+crucial for the normal request processing that each @NAS{} have an
+entry in this file. The requests from @NAS{}es that are not listed
+in @file{clients} will be ignored, as well as those from the @NAS{}es
+that have a wrong value for the shared secret configured in this file.
+
+@item naslist
+Defines the types for the known @NAS{}es. Its information is
+used mainly when performing a simultaneous login checking (@pxref{Checking Simultaneous Logins}).
+
+@item nastypes
+Declares the known @NAS{} types. The symbolic type names,
+declared in this file can be used in @file{naslist}.
+
+@item dictionary
+Defines the symbolic names for radius attributes and attribute
+values. Only the names declared in this file may be used in the files
+@file{users}, @file{hints} and @file{huntgroups}.
+
+@item huntgroups
+Contains special rules that process the incoming requests
+basing on the @NAS{} IP and port number they come from. These can also
+be used as a kind of @dfn{access control list}.
+
+@item hints
+Defines the matching rules that modify the incoming
+request depending on the user name and its credentials.
+
+@item users
+Contains the individual users' profiles.
+
+@item realms
+Defines the Radius realms and the servers that are
+responsible for them.
+
+@item access.deny
+A list of usernames that should not be allowed access via Radius.
+
+@item sqlserver
+Contains the configuration for the @sc{sql} system. This includes the
+type of @sc{sql} interface used, the IP and port number of the server
+and the definition of the @sc{sql} requests used by @command{radiusd}.
+
+@item rewrite
+Contains the source code of functions in Rewrite extension language.
+
+@item menus
+A subdirectory containing the authentication menus. 
+@end table
+
+The rest of this chapter describes each of these files in detail.
 
 @menu
 * config file::         Run-time configuration options.
@@ -34,7 +97,7 @@ directory by @file{raddb}. @xref{Naming Conventions}.
 * sqlserver file::      SQL server configuration.
 * rewrite file::        Rewrite functions allow to change the input
                         packets.
-* menus file::          Menus allow user to select the type of
+* menus directory::     Menus allow user to select the type of
                         service.
 * Macro Substitution::  Macros which are expanded by the actual
                         attribute values.      
@@ -2326,7 +2389,7 @@ functions. For information regarding Rewrite extension language
 @xref{Rewrite}.
 
 @comment *L2****************************************************************
-@node menus file
+@node menus directory
 @section Login Menus --- @file{raddb/menus}
 @cindex @file{menus}, configuration subdirectory
 @cindex @file{raddb/menus}, configuration subdirectory

@@ -191,51 +191,51 @@ request_put(type, data, activefd, numpending)
                 if (curreq->status == RS_PENDING)
                         ++*numpending;
 
-		if (curreq->status == RS_COMPLETED
-		    && curreq->timestamp +
-		    request_class[curreq->type].cleanup_delay <= curtime) {
-			debug(1, ("deleting completed %s request",
-				  request_class[curreq->type].name));
-			if (prevreq == NULL) {
-				first_request = curreq->next;
-				request_free(curreq);
-				curreq = first_request;
-			} else {
-				prevreq->next = curreq->next;
-				request_free(curreq);
-				curreq = prevreq->next;
-			}
-			continue;
-		} else if (curreq->timestamp + 
-			   request_class[curreq->type].ttl <= curtime) {
-			switch (curreq->status) {
-			case RS_WAITING:
+                if (curreq->status == RS_COMPLETED
+                    && curreq->timestamp +
+                    request_class[curreq->type].cleanup_delay <= curtime) {
+                        debug(1, ("deleting completed %s request",
+                                  request_class[curreq->type].name));
+                        if (prevreq == NULL) {
+                                first_request = curreq->next;
+                                request_free(curreq);
+                                curreq = first_request;
+                        } else {
+                                prevreq->next = curreq->next;
+                                request_free(curreq);
+                                curreq = prevreq->next;
+                        }
+                        continue;
+                } else if (curreq->timestamp + 
+                           request_class[curreq->type].ttl <= curtime) {
+                        switch (curreq->status) {
+                        case RS_WAITING:
                                 request_drop(curreq->type, curreq->data,
                                              _("request timed out in queue"));
-				
-				if (prevreq == NULL) {
-					first_request = curreq->next;
-					request_free(curreq);
-					curreq = first_request;
-				} else {
-					prevreq->next = curreq->next;
-					request_free(curreq);
-					curreq = prevreq->next;
-				}
-				break;
-				
-			case RS_PENDING:
-				/*FIXME: This causes much grief */
+                                
+                                if (prevreq == NULL) {
+                                        first_request = curreq->next;
+                                        request_free(curreq);
+                                        curreq = first_request;
+                                } else {
+                                        prevreq->next = curreq->next;
+                                        request_free(curreq);
+                                        curreq = prevreq->next;
+                                }
+                                break;
+                                
+                        case RS_PENDING:
+                                /*FIXME: This causes much grief */
                                 radlog(L_NOTICE,
-                                     _("Killing unresponsive %s child pid %d"),
+                                     _("Killing unresponsive %s thread %d"),
                                        request_class[curreq->type].name,
                                        curreq->child_id);
                                 pthread_cancel(curreq->child_id);
                                 num_threads--;
                                 curreq = curreq->next;
-				break;
-			}
-			continue;
+                                break;
+                        }
+                        continue;
                 }
  
                 if (curreq->type == type
@@ -246,12 +246,12 @@ request_put(type, data, activefd, numpending)
                            Otherwise drop the request. */
                         if (curreq->status == RS_COMPLETED) 
                                 request_xmit(type,
-					     curreq->child_return,
-					     curreq->data,
+                                             curreq->child_return,
+                                             curreq->data,
                                              activefd);
-			else
-				request_drop(type, data,
-					     _("duplicate request"));
+                        else
+                                request_drop(type, data,
+                                             _("duplicate request"));
                         request_list_unblock();
 
                         return NULL;
@@ -377,7 +377,7 @@ request_flush_list()
                            request_class[curreq->type].ttl <= curtime) {
                         /* kill the request */
                         radlog(L_NOTICE,
-                               _("Killing unresponsive %s child pid %d"),
+                               _("Killing unresponsive %s thread %d"),
                                request_class[curreq->type].name,
                                curreq->child_id);
                         pthread_cancel(curreq->child_id);
@@ -400,23 +400,23 @@ request_stat_list(stat)
         REQUEST *curreq;
         int i;
 
-	memset(stat, 0, sizeof(QUEUE_STAT));
-	
+        memset(stat, 0, sizeof(QUEUE_STAT));
+        
         /* Block asynchronous access to the list
          */
         request_list_block();
         for (curreq = first_request; curreq != NULL; curreq = curreq->next) {
-		switch (curreq->status) {
-		case RS_COMPLETED:
+                switch (curreq->status) {
+                case RS_COMPLETED:
                         stat[curreq->type].completed++;
-			break;
+                        break;
                 case RS_PENDING:
                         stat[curreq->type].pending++;
-			break;
-		case RS_WAITING:
+                        break;
+                case RS_WAITING:
                         stat[curreq->type].waiting++;
-			break;
-		}
+                        break;
+                }
         }
         request_list_unblock();
 

@@ -206,8 +206,8 @@ open_input(name)
                 source_filename = name;
                 fp = fopen(name, "r");
                 if (!fp) {
-                        radlog(L_ERR, "can't open input file `%s': %s",
-                            name, strerror(errno));
+                        radlog(L_ERR|L_PERROR,
+                               _("can't open input file `%s'"), name);
                         return 1;
                 }
         } else {

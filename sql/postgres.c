@@ -229,7 +229,7 @@ rad_postgres_query(conn, query, return_count)
         res = PQexec((PGconn*)conn->data, query);
         if (res == NULL) {
                 radlog(L_ERR,
-                       _("PQexec: %s"),
+                       "PQexec: %s",
                        PQerrorMessage((PGconn*)conn->data));
                 return -1;
         }
@@ -273,7 +273,7 @@ rad_postgres_getpwd(conn, query)
         res = PQexec((PGconn*)conn->data, query);
         if (res == NULL) {
                 radlog(L_ERR,
-                       _("PQexec: %s"),
+                       "PQexec: %s",
                        PQerrorMessage((PGconn*)conn->data));
                 return NULL;
         }
@@ -328,7 +328,7 @@ rad_postgres_exec(conn, query)
         res = PQexec((PGconn*)conn->data, query);
         if (res == NULL) {
                 radlog(L_ERR,
-                       _("PQexec: %s"),
+                       "PQexec: %s",
                        PQerrorMessage((PGconn*)conn->data));
                 return NULL;
         }

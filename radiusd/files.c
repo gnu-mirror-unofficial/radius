@@ -2099,9 +2099,9 @@ dump_users_db()
         
         fp = fopen(name, "w");
         if (!fp) {
-                radlog(L_ERR, _("can't create parser output file `%s': %s"),
-                    RADIUS_DUMPDB_NAME,
-                    strerror(errno));
+                radlog(L_ERR|L_PERROR,
+                       _("can't create parser output file `%s'"),
+                       RADIUS_DUMPDB_NAME);
                 efree(name);
                 return;
         }

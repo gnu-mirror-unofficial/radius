@@ -109,7 +109,7 @@ radclient_send(config, port_type, code, pair)
         }
         sockfd = socket (AF_INET, SOCK_DGRAM, 0);
         if (sockfd < 0) {
-                radlog(L_ERR, _("can't open socket: %s"), strerror(errno));
+                radlog(L_ERR|L_PERROR, "socket");
                 return NULL;
         }
 
@@ -126,7 +126,7 @@ radclient_send(config, port_type, code, pair)
         } while ((bind(sockfd, &salocal, sizeof (struct sockaddr_in)) < 0) &&
                                                 local_port < 64000);
         if (local_port >= 64000) {
-                radlog(L_ERR, _("can't bind: %s"), strerror(errno));
+                radlog(L_ERR|L_PERROR, "bind");
                 close(sockfd);
                 return NULL;
         }
@@ -163,8 +163,7 @@ radclient_send(config, port_type, code, pair)
                                    total_length, 0,
                                    &saremote,
                                    sizeof(struct sockaddr_in)) == -1) {
-                                radlog(L_ERR,
-                                       "sendto: %s", strerror(errno));
+                                radlog(L_ERR|L_PERROR, "sendto");
                                 break;
                         }
 
@@ -176,9 +175,9 @@ radclient_send(config, port_type, code, pair)
                         FD_SET(sockfd, &readfds);
                         if (select(sockfd+1, &readfds, NULL, NULL, &tm) < 0) {
                                 if (errno == EINTR) {
-					i--;
+                                        i--;
                                         continue;
-				}
+                                }
                                 radlog(L_NOTICE, _("select() interrupted"));
                                 break;
                         }
@@ -228,11 +227,11 @@ radclient_build_request(config, server, code, pair)
         char     *ptr, *length_ptr;
         long     lval;
         int      vendorcode, vendorpec;
-	
+        
 #define CHECKSIZE(l) if (ptr + l >= config->data_buffer + config->bufsize) \
                          goto overflow;
         
-	random_vector(config->vector);
+        random_vector(config->vector);
         /*
          *      Build an authentication request
          */
@@ -300,7 +299,7 @@ radclient_build_request(config, server, code, pair)
                                 ppair = avp_alloc();
                                 encrypt_password(ppair, pair->strvalue,
                                                  config->vector,
-						 server->secret);
+                                                 server->secret);
                                 
                                 attrlen = ppair->strlength;
                                 CHECKSIZE(attrlen+2);
@@ -338,13 +337,13 @@ radclient_build_request(config, server, code, pair)
            the md5 hash over the entire packet and put it in the vector. */
         if (auth->code != RT_AUTHENTICATION_REQUEST) {
                 int len = strlen(server->secret);
-		CHECKSIZE(len);
-		strcpy(config->data_buffer + total_length, server->secret);
-		md5_calc(config->vector, config->data_buffer,
-			 total_length+len);
-	} 
-	memcpy(auth->vector, config->vector, AUTH_VECTOR_LEN);
-	
+                CHECKSIZE(len);
+                strcpy(config->data_buffer + total_length, server->secret);
+                md5_calc(config->vector, config->data_buffer,
+                         total_length+len);
+        } 
+        memcpy(auth->vector, config->vector, AUTH_VECTOR_LEN);
+        
         return total_length;
         
 overflow:
@@ -373,18 +372,18 @@ radclient_recv(host, udp_port, secret, vector, buffer, length)
 
         if (totallen != length) {
                 radlog(L_ERR,
-                       _("Received invalid reply length from server (want %d/ got %d)"),
+                       _("Actual request length does not match reported length (%d, %d)"),
                        totallen, length);
                 return NULL;
         }
 
         /* Verify the reply digest */
-	secretlen = strlen(secret);
-	memcpy(reply_digest, auth->vector, AUTH_VECTOR_LEN);
-	memcpy(auth->vector, vector, AUTH_VECTOR_LEN);
-	memcpy(buffer + length, secret, secretlen);
-	md5_calc(calc_digest, (unsigned char *)auth, length + secretlen);
-	
+        secretlen = strlen(secret);
+        memcpy(reply_digest, auth->vector, AUTH_VECTOR_LEN);
+        memcpy(auth->vector, vector, AUTH_VECTOR_LEN);
+        memcpy(buffer + length, secret, secretlen);
+        md5_calc(calc_digest, (unsigned char *)auth, length + secretlen);
+        
         if (memcmp(reply_digest, calc_digest, AUTH_VECTOR_LEN) != 0) {
                 radlog(L_WARN, _("Received invalid reply digest from server"));
         }
@@ -498,7 +497,7 @@ decode_buffer(host, udp_port, buffer, length)
                         
                         default:
                                 radlog(L_ERR,
-                                       _("    %s (Unknown Type %d)"),
+                                       _("    %s (Unknown type %d)"),
                                        attr->name, attr->type);
                                 avp_free(pair);
                                 break;

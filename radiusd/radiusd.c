@@ -60,17 +60,17 @@ void rad_req_xmit(int type, int code, void *data, int fd);
 struct request_class request_class[] = {
         { "AUTH", 0, MAX_REQUEST_TIME, CLEANUP_DELAY, 
           rad_req_setup, rad_authenticate, rad_req_xmit, rad_req_cmp,
-	  rad_req_free, rad_req_drop, rad_sql_cleanup },
+          rad_req_free, rad_req_drop, rad_sql_cleanup },
         { "ACCT", 0, MAX_REQUEST_TIME, CLEANUP_DELAY,
           rad_req_setup, rad_accounting, rad_req_xmit, rad_req_cmp,
           rad_req_free, rad_req_drop, rad_sql_cleanup },
         { "PROXY",0, MAX_REQUEST_TIME, CLEANUP_DELAY,
           NULL, rad_proxy, NULL, rad_req_cmp,
-	  rad_req_free, rad_req_drop, NULL },
+          rad_req_free, rad_req_drop, NULL },
 #ifdef USE_SNMP
         { "SNMP", 0, MAX_REQUEST_TIME, 0, 
           NULL, snmp_answer, NULL, snmp_req_cmp,
-	  snmp_req_free, snmp_req_drop, NULL },
+          snmp_req_free, snmp_req_drop, NULL },
 #endif
         { NULL, }
 };
@@ -177,141 +177,141 @@ char *x_debug_spec;
 extern void version(FILE *stream, struct argp_state *state);
 
 const char *argp_program_version = "radiusd (" PACKAGE ") " VERSION;
-static char doc[] = "The radius daemon";
+static char doc[] = N_("GNU radius daemon");
 
 static struct argp_option options[] = {
-	{NULL, 0, NULL, 0,
-	 "radiusd specific switches:", 0},
+        {NULL, 0, NULL, 0,
+         N_("radiusd specific switches:"), 0},
         {"log-auth-detail", 'A', 0, 0,
-	 "Do detailed authentication logging", 0},
-	{"acct-directory",  'a', "DIR", 0,
-	 "Set accounting directory", 0},
+         N_("Do detailed authentication logging"), 0},
+        {"acct-directory",  'a', "DIR", 0,
+         N_("Set accounting directory"), 0},
 #ifdef USE_DBM
-	{"dbm", 'b', NULL, 0,
-	 "Enable DBM support", 0},
+        {"dbm", 'b', NULL, 0,
+         N_("Enable DBM support"), 0},
 #endif
-	{"foreground", 'f', NULL, 0,
-	 "Stay in foreground", 0},
+        {"foreground", 'f', NULL, 0,
+         N_("Stay in foreground"), 0},
         {"logging-directory", 'l', "DIR", 0, 
-	 "Set logging directory name", 0},
+         N_("Set logging directory name"), 0},
         {"mode", 'm', "{t|c|b}", 0,
-	 "Select operation mode: test, checkconf,builddbm."},
+         N_("Select operation mode: test, checkconf, builddbm.")},
         {"auth-only", 'N', NULL, 0,
-	 "Do only authentication", 0},
-	{"do-not-resolve", 'n', NULL, 0,
-	 "Do not resolve IP addresses", 0},
+         N_("Do only authentication"), 0},
+        {"do-not-resolve", 'n', NULL, 0,
+         N_("Do not resolve IP addresses"), 0},
         {"ip-address", 'i', "ADDRESS", 0,
-	 "Listen on ADDRESS", 0},
+         N_("Listen on ADDRESS"), 0},
         {"port", 'p', "NUMBER", 0,
-	 "Set authentication port number", 0},
+         N_("Set authentication port number"), 0},
         {"pid-file-dir", 'P', "DIR", 0,
-	 "Store pidfile in DIR", 0},
+         N_("Store pidfile in DIR"), 0},
         {"log-stripped-names", 'S', NULL, 0,
-	 "Strip prefixes/suffixes off user names before logging"},
+         N_("Strip prefixes/suffixes off user names before logging")},
         {"single-process", 's', NULL, 0,
-	 "Run in single process mode", 0},
+         N_("Run in single process mode"), 0},
         {"debug", 'x', "DEBUGSPEC", 0,
-	 "Set debugging level", 0},
+         N_("Set debugging level"), 0},
         {"log-auth", 'y', NULL, 0,
-	 "Log authentications", 0},
+         N_("Log authentications"), 0},
         {"log-auth-pass", 'z', NULL, 0,
-	 "Log users' passwords", 0},
-	{NULL, 0, NULL, 0, NULL, 0}
+         N_("Log users' passwords"), 0},
+        {NULL, 0, NULL, 0, NULL, 0}
 };
-	
+        
 static error_t
 parse_opt (key, arg, state)
-	int key;
-	char *arg;
-	struct argp_state *state;
+        int key;
+        char *arg;
+        struct argp_state *state;
 {
-	switch (key) {
-	case 'A':
-		auth_detail++;
-		break;
-	case 'a':
-		radacct_dir = make_string(optarg);
-		break;
+        switch (key) {
+        case 'A':
+                auth_detail++;
+                break;
+        case 'a':
+                radacct_dir = make_string(optarg);
+                break;
 #ifdef USE_DBM
-	case 'b':
-		use_dbm++;
-		break;
+        case 'b':
+                use_dbm++;
+                break;
 #endif
-	case 'f':
-		foreground = 1;
-		break;
-	case 'l':
-		radlog_dir = make_string(optarg);
-		break;
-	case 'm':
-		switch (arg[0]) {
-		case 't':
-			radius_mode = MODE_TEST;
-			break;
-		case 'b':
+        case 'f':
+                foreground = 1;
+                break;
+        case 'l':
+                radlog_dir = make_string(optarg);
+                break;
+        case 'm':
+                switch (arg[0]) {
+                case 't':
+                        radius_mode = MODE_TEST;
+                        break;
+                case 'b':
 #ifdef USE_DBM
-			radius_mode = MODE_BUILDDBM;
+                        radius_mode = MODE_BUILDDBM;
 #else
-			fprintf(stderr,
-				_("radiusd compiled without DBM support"));
-			exit(1);
+                        fprintf(stderr,
+                                _("radiusd compiled without DBM support"));
+                        exit(1);
 #endif
-			break;
-		case 'c':
-			radius_mode = MODE_CHECKCONF;
-			break;
-		default:
-			radlog(L_ERR,
-			       _("unknown mode: %s"), arg);
+                        break;
+                case 'c':
+                        radius_mode = MODE_CHECKCONF;
+                        break;
+                default:
+                        radlog(L_ERR,
+                               _("unknown mode: %s"), arg);
                         }
-		break;
-	case 'N':
-		open_acct = 0;
-		break;
-	case 'n':
-		resolve_hostnames = 0;
-		break;
-	case 'i':
-		if ((myip = ip_gethostaddr(optarg)) == 0)
-			fprintf(stderr,
-				_("invalid IP address: %s"),
-				optarg);
-		break;
-	case 'P':
-		radpid_dir = optarg;
-		break;
-	case 'p':
-		radius_port = atoi(optarg);
-		break;
-	case 'S':
-		strip_names++;  
-		break;
-	case 's':       /* Single process mode */
-		spawn_flag = 0;
-		break;
-	case 'x':
-		x_debug_spec = optarg;
-		set_debug_levels(optarg);
-		break;
-	case 'y':
-		log_mode |= RLOG_AUTH;    
-		break;
-	case 'z':
-		log_mode |= RLOG_AUTH_PASS;
-		break;
-	default:
-		return ARGP_ERR_UNKNOWN;
-	}
-	return 0;
+                break;
+        case 'N':
+                open_acct = 0;
+                break;
+        case 'n':
+                resolve_hostnames = 0;
+                break;
+        case 'i':
+                if ((myip = ip_gethostaddr(optarg)) == 0)
+                        fprintf(stderr,
+                                _("invalid IP address: %s"),
+                                optarg);
+                break;
+        case 'P':
+                radpid_dir = optarg;
+                break;
+        case 'p':
+                radius_port = atoi(optarg);
+                break;
+        case 'S':
+                strip_names++;  
+                break;
+        case 's':       /* Single process mode */
+                spawn_flag = 0;
+                break;
+        case 'x':
+                x_debug_spec = optarg;
+                set_debug_levels(optarg);
+                break;
+        case 'y':
+                log_mode |= RLOG_AUTH;    
+                break;
+        case 'z':
+                log_mode |= RLOG_AUTH_PASS;
+                break;
+        default:
+                return ARGP_ERR_UNKNOWN;
+        }
+        return 0;
 }
 
 static struct argp argp = {
-	options,
-	parse_opt,
-	NULL,
-	doc,
-	&rad_common_argp_child,
-	NULL, NULL
+        options,
+        parse_opt,
+        NULL,
+        doc,
+        &rad_common_argp_child,
+        NULL, NULL
 };
 
 int
@@ -344,9 +344,9 @@ main(argc, argv)
         set_config_defaults();
 
         /* Process the options.  */
-	argp_program_version_hook = version;
-	if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, NULL))
-		return 1;
+        argp_program_version_hook = version;
+        if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, NULL))
+                return 1;
 
         log_set_default("default.log", -1, -1);
         if (radius_mode != MODE_DAEMON)
@@ -381,21 +381,21 @@ set_config_defaults()
         config.exec_user  = make_string("daemon");
         username_valid_chars = make_string(".-_!@#$%^&\\/");
         message_text[MSG_ACCOUNT_CLOSED] =
-                make_string("Sorry, your account is currently closed\r\n");
+                make_string(_("Sorry, your account is currently closed\n"));
         message_text[MSG_PASSWORD_EXPIRED] =
-                make_string("Password Has Expired\r\n");
+                make_string(_("Password has expired\n"));
         message_text[MSG_PASSWORD_EXPIRE_WARNING] =
-                make_string("Password Will Expire in %R{Password-Expire-Days} Days\r\n");
+                make_string(_("Password will expire in %R{Password-Expire-Days} Days\n"));
         message_text[MSG_ACCESS_DENIED] =
-                make_string("\r\nAccess denied\r\n");
+                make_string(_("\nAccess denied\n"));
         message_text[MSG_REALM_QUOTA] =
-                make_string("\r\nRealm quota exceeded - access denied\r\n");
+                make_string(_("\nRealm quota exceeded - access denied\n"));
         message_text[MSG_MULTIPLE_LOGIN] =
-                make_string("\r\nYou are already logged in %R{Simultaneous-Use} times - access denied\r\n");
+                make_string(_("\nYou are already logged in %R{Simultaneous-Use} times - access denied\n"));
         message_text[MSG_SECOND_LOGIN] =
-                make_string("\r\nYou are already logged in - access denied\r\n");
+                make_string(_("\nYou are already logged in - access denied\n"));
         message_text[MSG_TIMESPAN_VIOLATION] =
-                make_string("You are calling outside your allowed timespan\r\n");
+                make_string(_("You are calling outside your allowed timespan\n"));
 }
 
 void
@@ -408,7 +408,7 @@ rad_daemon()
         
         switch (pid = fork()) {
         case -1:
-                radlog(L_CRIT, _("couldn't fork: %s"), strerror(errno));
+                radlog(L_CRIT|L_PERROR, "fork");
                 exit(1);
         case 0: /* Child */
                 break;
@@ -430,7 +430,7 @@ rad_daemon()
         case 0:
                 break;
         case -1:
-                radlog(L_CRIT, _("couldn't fork: %s"), strerror(errno));
+                radlog(L_CRIT|L_PERROR, "fork");
                 exit(1);
         default:
                 exit(0);
@@ -756,8 +756,7 @@ rad_restart()
                 pid = fork();
         
         if (pid < 0) {
-                radlog(L_CRIT|L_PERROR,
-                       _("rad_restart: cannot fork"));
+                radlog(L_CRIT|L_PERROR, "fork");
                 return -1;
         }
 
@@ -1169,17 +1168,17 @@ rad_req_xmit(type, code, data, fd)
         RADIUS_REQ *req = (RADIUS_REQ*)data;
         char buf[MAX_LONGNAME];
 
-	if (code == 0) {
-		rad_send_reply(0, req, NULL, NULL, fd);
-		radlog(L_NOTICE,
-		     _("Retransmitting %s reply: client %s, ID: %d, code: %d"),
-		       request_class[type].name,
-		       client_lookup_name(req->ipaddr, buf, sizeof buf),
-		       req->id,
-		       req->reply_code);
-	} else {
-		rad_req_drop(type, req, "Request failed");
-	}
+        if (code == 0) {
+                rad_send_reply(0, req, NULL, NULL, fd);
+                radlog(L_NOTICE,
+                     _("Retransmitting %s reply: client %s, ID: %d, code: %d"),
+                       request_class[type].name,
+                       client_lookup_name(req->ipaddr, buf, sizeof buf),
+                       req->id,
+                       req->reply_code);
+        } else {
+                rad_req_drop(type, req, "Request failed");
+        }
 }
 
 int

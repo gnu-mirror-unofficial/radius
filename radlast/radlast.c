@@ -90,7 +90,7 @@ char *file = RADLOG_DIR "/" RADWTMP;
 struct radutmp buf[1024];
 
 char *nas_name = NULL; /* If not-null, select records matching this
-			  NAS name */
+                          NAS name */
 
 /* List of users user wants to get info about */
 struct user_chain *user_chain, *user_last;
@@ -107,123 +107,123 @@ WTMP *login_list;
 WTMP *nas_updown_list;
 
 const char *argp_program_version = "radlast (" PACKAGE ") " VERSION;
-static char doc[] = "report last logins from Radius database.";
+static char doc[] = N_("report last logins from Radius database.");
 
 static struct argp_option options[] = {
-	{NULL, 0, NULL, 0,
-	 "radlast specific switches:", 0},
-	{NULL, '0', NULL, OPTION_HIDDEN, NULL, 0},
-	{NULL, '1', NULL, OPTION_HIDDEN, NULL, 0},
-	{NULL, '2', NULL, OPTION_HIDDEN, NULL, 0},
-	{NULL, '3', NULL, OPTION_HIDDEN, NULL, 0},
-	{NULL, '4', NULL, OPTION_HIDDEN, NULL, 0},
-	{NULL, '5', NULL, OPTION_HIDDEN, NULL, 0},
-	{NULL, '6', NULL, OPTION_HIDDEN, NULL, 0},
-	{NULL, '7', NULL, OPTION_HIDDEN, NULL, 0},
-	{NULL, '8', NULL, OPTION_HIDDEN, NULL, 0},
-	{NULL, '9', NULL, OPTION_HIDDEN, NULL, 0},
+        {NULL, 0, NULL, 0,
+         N_("radlast specific switches:"), 0},
+        {NULL, '0', NULL, OPTION_HIDDEN, NULL, 0},
+        {NULL, '1', NULL, OPTION_HIDDEN, NULL, 0},
+        {NULL, '2', NULL, OPTION_HIDDEN, NULL, 0},
+        {NULL, '3', NULL, OPTION_HIDDEN, NULL, 0},
+        {NULL, '4', NULL, OPTION_HIDDEN, NULL, 0},
+        {NULL, '5', NULL, OPTION_HIDDEN, NULL, 0},
+        {NULL, '6', NULL, OPTION_HIDDEN, NULL, 0},
+        {NULL, '7', NULL, OPTION_HIDDEN, NULL, 0},
+        {NULL, '8', NULL, OPTION_HIDDEN, NULL, 0},
+        {NULL, '9', NULL, OPTION_HIDDEN, NULL, 0},
         {"count", 'c', "NUMBER", 0,
-	 "show at most NUMBER records", 0},
+         N_("show at most NUMBER records"), 0},
         {"file", 'f', "FILE", 0,
-	 "use FILENAME as radwtmp", 0},
+         N_("use FILENAME as radwtmp"), 0},
         {"host", 'h', "IPADDR", 0,
-	 "show logins with IPADDR", 0},
+         N_("show logins with IPADDR"), 0},
         {"missed-stops", 'm', NULL, 0,
-	 "mark records with missed stops with bump (!)", 0},
+         N_("mark records with missed stops with bump (!)"), 0},
         {"nas", 'n', "NASNAME", 0,
-	 "show logins from given NAS", 0},
+         N_("show logins from given NAS"), 0},
         {"long-format", 'l', NULL, 0,
-	 "use long output format", 0},
+         N_("use long output format"), 0},
         {"port", 'p', "NUMBER", 0,
-	 "show logins from given port", 0},
+         N_("show logins from given port"), 0},
         {"show-seconds", 's', NULL, 0,
-	 "show the login session duration in seconds", 0},
+         N_("show the login session duration in seconds"), 0},
         {"wide", 'w', NULL, 0,
-	 "widen the duration field to show seconds", 0},
-	{NULL, 0, NULL, 0, NULL, 0}
+         N_("widen the duration field to show seconds"), 0},
+        {NULL, 0, NULL, 0, NULL, 0}
 };
 
 static error_t
 parse_opt (key, arg, state)
-	int key;
-	char *arg;
-	struct argp_state *state;
+        int key;
+        char *arg;
+        struct argp_state *state;
 {
-	switch (key) {
-	case '0': case '1': case '2': case '3': case '4':
-	case '5': case '6': case '7': case '8': case '9':
-		if (maxrec == -1) {
-			char *p;
-			
-			maxrec = strtoul(state->argv[state->next]+1, &p, 0);
-			if (!maxrec) {
-				radlog(L_ERR,
-				       "invalid number (near %s)",
-				       p);
-				exit(1);
-			}
-		}
-		break;
-	case 'c':
-		maxrec = atol(arg);
-		if (!maxrec) {
-			radlog(L_ERR, "invalid number of records");
-			exit(1);
-		}
-		break;
-	case 'f':
-		file = arg;
-		break;
-	case 'h':
-		host_ip = htonl(ip_gethostaddr(arg));
-		break;
-	case 'm':
-		mark_missing_stops++;
-		break;
-	case 'n':
-		nas_name = arg;
-		break;
-	case 'l':
-		long_fmt++;
-		break;
-	case 'p':
-		if (*arg == 's' || *arg == 'S')
-			++arg;
-		port = atoi(arg);
-		break;
-	case 's':
-		show_seconds++;        /* Show delta as seconds */
-		break;
-	case 't':
-		if (*arg == 's' || *arg == 'S')
-			++arg;
-		port = atoi(arg);
-		break;
-	case 'w':
-		width = 8;
-		break;
+        switch (key) {
+        case '0': case '1': case '2': case '3': case '4':
+        case '5': case '6': case '7': case '8': case '9':
+                if (maxrec == -1) {
+                        char *p;
+                        
+                        maxrec = strtoul(state->argv[state->next]+1, &p, 0);
+                        if (!maxrec) {
+                                radlog(L_ERR,
+                                       "invalid number (near %s)",
+                                       p);
+                                exit(1);
+                        }
+                }
+                break;
+        case 'c':
+                maxrec = atol(arg);
+                if (!maxrec) {
+                        radlog(L_ERR, "invalid number of records");
+                        exit(1);
+                }
+                break;
+        case 'f':
+                file = arg;
+                break;
+        case 'h':
+                host_ip = htonl(ip_gethostaddr(arg));
+                break;
+        case 'm':
+                mark_missing_stops++;
+                break;
+        case 'n':
+                nas_name = arg;
+                break;
+        case 'l':
+                long_fmt++;
+                break;
+        case 'p':
+                if (*arg == 's' || *arg == 'S')
+                        ++arg;
+                port = atoi(arg);
+                break;
+        case 's':
+                show_seconds++;        /* Show delta as seconds */
+                break;
+        case 't':
+                if (*arg == 's' || *arg == 'S')
+                        ++arg;
+                port = atoi(arg);
+                break;
+        case 'w':
+                width = 8;
+                break;
 
-	case ARGP_KEY_FINI:
-		if (show_seconds && width == 8) {
-			radlog(L_ERR,
-   		             _("--width is incompatible with --show-seconds"));
-			exit (1);
-		}
-		break;
-		
-	default:
-		return ARGP_ERR_UNKNOWN;
-	}
-	return 0;
+        case ARGP_KEY_FINI:
+                if (show_seconds && width == 8) {
+                        radlog(L_ERR,
+                             _("--width is incompatible with --show-seconds"));
+                        exit (1);
+                }
+                break;
+                
+        default:
+                return ARGP_ERR_UNKNOWN;
+        }
+        return 0;
 }
 
 static struct argp argp = {
-	options,
-	parse_opt,
-	NULL,
-	doc,
-	&rad_common_argp_child,
-	NULL, NULL
+        options,
+        parse_opt,
+        NULL,
+        doc,
+        &rad_common_argp_child,
+        NULL, NULL
 };
 
 int
@@ -235,11 +235,11 @@ main(argc, argv)
 
         app_setup();
         initlog(argv[0]);
-	if (rad_argp_parse(&argp, &argc, &argv, 0, &index, NULL))
-		return 1;
+        if (rad_argp_parse(&argp, &argc, &argv, 0, &index, NULL))
+                return 1;
 
-	argv += index;
-	argc -= index;
+        argv += index;
+        argc -= index;
 
         if (argc) {
                 setlinebuf(stdout);
@@ -247,7 +247,7 @@ main(argc, argv)
                         adduser(*argv);
         }
 
-	dict_init();
+        dict_init();
         read_naslist();
 
         if (nas_name) {
@@ -289,7 +289,7 @@ rawread()
         char ip_str[DOTTED_QUAD_LEN];
         
         if ((wfd = open(file, O_RDONLY, 0)) < 0) {
-                radlog(L_ERR, "can't open %s: %s", file, strerror(errno));
+                radlog(L_ERR|L_PERROR, "can't open %s", file);
                 exit(1);
         }
         while (read(wfd, &ut, sizeof ut) == sizeof ut) {
@@ -352,7 +352,7 @@ radwtmp()
         WTMP *pp;
 
         if ((wfd = open(file, O_RDONLY, 0)) < 0 || fstat(wfd, &stb) == -1) {
-                radlog(L_ERR, "can't open %s: %s", file, strerror(errno));
+                radlog(L_ERR|L_PERROR, "can't open %s", file);
                 exit(1);
         }
         bl = (stb.st_size + sizeof(buf) - 1) / sizeof(buf);
@@ -663,14 +663,14 @@ char *
 proto_str(id)
         int id;
 {
-	DICT_VALUE *dval = value_lookup(id, "Framed-Protocol");
-	static char buf[64];
-	
-	if (!dval) {
-		snprintf(buf, sizeof(buf), "%lu", id);
-		return buf;
-	}
-	return dval->name;
+        DICT_VALUE *dval = value_lookup(id, "Framed-Protocol");
+        static char buf[64];
+        
+        if (!dval) {
+                snprintf(buf, sizeof(buf), "%lu", id);
+                return buf;
+        }
+        return dval->name;
 }
 
 /* NOTE:

@@ -214,7 +214,7 @@ rad_acct_system(radreq, dowtmp)
         
         /* A packet should have Acct-Status-Type attribute */
         if ((vp = avl_find(radreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
-                radlog(L_ERR, _("no Acct-Status-Type record (from nas %s)"),
+                radlog(L_ERR, _("no Acct-Status-Type attribute (from nas %s)"),
                        nas_request_to_name(radreq, buf, sizeof(buf)));
                 return -1;
         }
@@ -342,7 +342,7 @@ rad_acct_system(radreq, dowtmp)
         }
 #endif
         
-	ut.proto = protocol;
+        ut.proto = protocol;
         ut.time = t - ut.delay;
 
         /* Process Accounting-On/Off records */
@@ -388,24 +388,24 @@ rad_acct_system(radreq, dowtmp)
            We skip records:
 
                 - if NAS-Port-Id attribute is absent
-		- if request has one or more Acct-Type attributes
-		  and no one of them requires system accounting.
-		  (The Acct-Type pairs can be inserted only via
-		   raddb/hints  */
+                - if request has one or more Acct-Type attributes
+                  and no one of them requires system accounting.
+                  (The Acct-Type pairs can be inserted only via
+                   raddb/hints  */
         if (!port_seen)
                 return 0;
 
         if (!ACCT_TYPE(radreq->request, DV_ACCT_TYPE_SYSTEM)) {
-		debug(1,("Acct type system disabled for %s", ut.login));
+                debug(1,("Acct type system disabled for %s", ut.login));
                 return 0;
-	}
+        }
         
         /* Update radutmp file. */
         rc = radutmp_putent(radutmp_path, &ut, status);
-	debug(1, ("radutmp_putent=%d for %s/%s",
-		  rc,
-		  ut.login,
-		  ut.session_id));
+        debug(1, ("radutmp_putent=%d for %s/%s",
+                  rc,
+                  ut.login,
+                  ut.session_id));
 
         /* Don't write wtmp if we don't have a username, or
            if this is an update record and the original record
@@ -615,7 +615,7 @@ rad_accounting(radreq, activefd)
         log_open(L_ACCT);
         /* See if we know this client, then check the request authenticator. */
         auth = calc_acctdigest(radreq);
-	if (auth == REQ_AUTH_BAD) 
+        if (auth == REQ_AUTH_BAD) 
                 stat_inc(acct, radreq->ipaddr, num_bad_sign);
 
         huntgroup_access(radreq);
@@ -806,14 +806,14 @@ rad_check_multi(name, request, maxsimul, pcount)
                     && up->type == P_LOGIN) {
                         if (rad_check_ts(up) == 1) {
                                 count++;
-				/* Does it look like a MPP attempt? */
-				if (ipno && up->framed_address == ipno)
-					switch (up->proto) {
-					case DV_FRAMED_PROTOCOL_PPP:
-					case DV_FRAMED_PROTOCOL_SLIP:
-					case 256: /* Ascend MPP */
+                                /* Does it look like a MPP attempt? */
+                                if (ipno && up->framed_address == ipno)
+                                        switch (up->proto) {
+                                        case DV_FRAMED_PROTOCOL_PPP:
+                                        case DV_FRAMED_PROTOCOL_SLIP:
+                                        case 256: /* Ascend MPP */
                                         mpp = 1;
-					}
+                                        }
                         } else {
                                 /* Hung record */
                                 up->type = P_IDLE;

@@ -440,13 +440,7 @@ proxy_send(radreq, activefd)
         radreq->server_ipaddr = realm->ipaddr;
         radreq->server_id = proxy_id;
 
-        /*
-         *      Is this a valid & signed request ?
-         */
-        /*
-         *      FIXME: we have already calculated the
-         *      digest in rad_auth_init()
-         */
+        /* Is this a valid & signed request ? */
         switch (radreq->code) {
         case RT_AUTHENTICATION_REQUEST:
                 what = _("authentication");

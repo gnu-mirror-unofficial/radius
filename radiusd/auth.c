@@ -125,10 +125,10 @@ unix_pass(name, passwd)
         char *name;
         char *passwd;
 {
-	int rc;
+        int rc;
         struct passwd *pwd;
         char *encpw;
-	int pwlen;
+        int pwlen;
         char *encrypted_pass;
 #if defined(PWD_SHADOW)
 # if defined(M_UNIX)
@@ -139,7 +139,7 @@ unix_pass(name, passwd)
 #endif /* PWD_SHADOW */
 #ifdef OSFC2
         struct pr_passwd *pr_pw;
-	
+        
         if ((pr_pw = getprpwnam(name)) == NULL)
                 return -1;
         encrypted_pass = pr_pw->ufld.fd_encrypt;
@@ -166,9 +166,7 @@ unix_pass(name, passwd)
 #endif  /* PWD_SHADOW */
 
 #ifdef DENY_SHELL
-        /*
-         * Users with a certain shell are always denied access.
-         */
+        /* Users with a certain shell are always denied access. */
         if (strcmp(pwd->pw_shell, DENY_SHELL) == 0) {
                 radlog(L_NOTICE, _("unix_pass: [%s]: invalid shell"), name);
                 return -1;
@@ -205,11 +203,11 @@ unix_pass(name, passwd)
         /*
          * Check encrypted password.
          */
-	pwlen = strlen(encrypted_pass)+1;
-	encpw = emalloc(pwlen);
+        pwlen = strlen(encrypted_pass)+1;
+        encpw = emalloc(pwlen);
         rc = md5crypt(passwd, encrypted_pass, encpw, pwlen) == NULL
-		|| strcmp(encpw, encrypted_pass);
-	efree(encpw);
+                || strcmp(encpw, encrypted_pass);
+        efree(encpw);
         if (rc)
                 return -1;
 
@@ -246,8 +244,8 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
         char *authdata = NULL;
         char pw_digest[AUTH_VECTOR_LEN];
         int pwlen;
-	char *pwbuf;
-	
+        char *pwbuf;
+        
         result = AUTH_OK;
         userpass[0] = 0;
 
@@ -265,18 +263,18 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
            authentication fails. */
         
         if (auth_item = avl_find(radreq->request, DA_CHAP_PASSWORD))
-		auth_type = DV_AUTH_TYPE_LOCAL;
-	else
-		auth_item = avl_find(radreq->request, DA_USER_PASSWORD);
-	
-	/* Decrypt the password. */
-	if (auth_item) {
-		if (auth_item->strlength == 0)
-			userpass[0] = 0;
-		else
-			req_decrypt_password(userpass, radreq,
-					     auth_item);
-	} else /* if (auth_item == NULL) */
+                auth_type = DV_AUTH_TYPE_LOCAL;
+        else
+                auth_item = avl_find(radreq->request, DA_USER_PASSWORD);
+        
+        /* Decrypt the password. */
+        if (auth_item) {
+                if (auth_item->strlength == 0)
+                        userpass[0] = 0;
+                else
+                        req_decrypt_password(userpass, radreq,
+                                             auth_item);
+        } else /* if (auth_item == NULL) */
                 return AUTH_FAIL;
         
         /* Set up authentication data */
@@ -349,14 +347,14 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
                         result = AUTH_FAIL;
                         break;
                 }
-		pwlen = strlen(real_password)+1;
-		pwbuf = emalloc(pwlen);
-		if (!md5crypt(userpass, real_password, pwbuf, pwlen))
-			result = AUTH_FAIL;
-		else if (strcmp(real_password, pwbuf) != 0)
+                pwlen = strlen(real_password)+1;
+                pwbuf = emalloc(pwlen);
+                if (!md5crypt(userpass, real_password, pwbuf, pwlen))
                         result = AUTH_FAIL;
-		debug(1,("pwbuf: %s", pwbuf));
-		efree(pwbuf);
+                else if (strcmp(real_password, pwbuf) != 0)
+                        result = AUTH_FAIL;
+                debug(1,("pwbuf: %s", pwbuf));
+                efree(pwbuf);
                 break;
                 
         case DV_AUTH_TYPE_LOCAL:
@@ -828,9 +826,9 @@ sfn_init(m)
         VALUE_PAIR *pair_ptr;
         
         /* If this request got proxied to another server, we need
-	   to add an initial Auth-Type: Auth-Accept for success,
-	   Auth-Reject for fail. We also need to add the reply
-	   pairs from the server to the initial reply. */
+           to add an initial Auth-Type: Auth-Accept for success,
+           Auth-Reject for fail. We also need to add the reply
+           pairs from the server to the initial reply. */
         if (radreq->server_code == RT_AUTHENTICATION_REJECT ||
             radreq->server_code == RT_AUTHENTICATION_ACK) {
                 m->user_check = avp_create(DA_AUTH_TYPE, 0, NULL, 0);
@@ -884,13 +882,13 @@ sfn_eval_reply(m)
                                 errcnt++;
                                 continue;
                         }
-			free_string(p->strvalue);
+                        free_string(p->strvalue);
                         switch (type) {
                         case Integer:
                                 p->lvalue = datum.ival;
                                 break;
                         case String:
-				p->strvalue = datum.sval;
+                                p->strvalue = datum.sval;
                                 p->strlength = strlen(p->strvalue);
                                 break;
                         default:

@@ -164,9 +164,9 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
 
         /* Parent branch */ 
         if (pid < 0) {
-                radlog(L_ERR|L_PERROR, _("can't fork"));
-		if (exec_wait)
-			signal(SIGCHLD, oldsig);
+                radlog(L_ERR|L_PERROR, "fork");
+                if (exec_wait)
+                        signal(SIGCHLD, oldsig);
                 return -1;
         }
         if (!exec_wait)

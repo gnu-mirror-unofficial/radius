@@ -730,7 +730,7 @@ usedbm_stmt     : T_USEDBM T_BOOL
 #ifdef USE_DBM
                           use_dbm = $2;
                           if (debug_config)
-                                  radlog(L_DEBUG, _("use dbm: %d"), use_dbm);
+                                  radlog(L_DEBUG, "use dbm: %d", use_dbm);
 #else
                           radlog(L_WARN,
                                  _("%s:%d: usedbm statement ignored: radiusd compiled without DBM support"),
@@ -755,7 +755,7 @@ netmask         : T_IPADDR
                 | T_NUMBER
                   {
                           if ($1 > 32) {
-                                  radlog(L_ERR, _("invalid netmask: %d"), $1);
+                                  radlog(L_ERR, _("invalid netmask length: %d"), $1);
                                   YYERROR;
                           }
                           $$ = (0xfffffffful >> (32-$1)) << (32-$1);
@@ -1553,9 +1553,9 @@ obsolete(stmt, ign)
         char *stmt;
         int ign;
 {
-        char *expl = ign ? "Statement has no effect." : "";
+        char *expl = ign ? N_("Statement has no effect.") : NULL;
         radlog(L_WARN,
                _("%s:%d: `%s' is obsolete. %s"),
-               filename, line_num, stmt, expl);
+               filename, line_num, stmt, expl ? _(expl) : "");
 }
 

@@ -44,24 +44,24 @@ static void channel_close_file(Channel *chan, FILE *fp);
 static void
 log_init_specific()
 {
-	pthread_key_create(&log_key, NULL);
+        pthread_key_create(&log_key, NULL);
 }
 
 static int
 log_get_category()
 {
-	void *p;
-	pthread_once(&log_once, log_init_specific);
-	p = pthread_getspecific(log_key);
-	return p ? (int) p : L_CAT(L_MAIN);
+        void *p;
+        pthread_once(&log_once, log_init_specific);
+        p = pthread_getspecific(log_key);
+        return p ? (int) p : L_CAT(L_MAIN);
 }
 
 static void
 log_set_category(cat)
-	int cat;
+        int cat;
 {
-	pthread_once(&log_once, log_init_specific);
-	pthread_setspecific(log_key, (const void*) L_CAT(cat));
+        pthread_once(&log_once, log_init_specific);
+        pthread_setspecific(log_key, (const void*) L_CAT(cat));
 }
 
 void
@@ -116,29 +116,28 @@ vlog(level, file, line, func_name, en, fmt, ap)
         if (buf2)
                 free(buf2);
         if (buf3)
-                free(buf3);	
+                free(buf3);     
 }
 
 static char *catname[] = { /* category names */
-        "none",
-        "Main",
-        "Auth",
-        "Acct",
-        "Proxy",
-        "SNMP"
+        N_("none"),
+        N_("Main"),
+        N_("Auth"),
+        N_("Acct"),
+        N_("Proxy"),
+        N_("SNMP"),
 };
 
 static char *priname[] = { /* priority names */
-        "emerg",
-        "alert",
-        "crit",
-        "error",
-        "warning",
-        "notice",
-        "info",
-        "debug"
+        N_("emerg"),
+        N_("alert"),
+        N_("crit"),
+        N_("error"),
+        N_("warning"),
+        N_("notice"),
+        N_("info"),
+        N_("debug")
 };
-
 
 void
 log_to_channel(chan, cat, pri, buf1, buf2, buf3)
@@ -155,12 +154,14 @@ log_to_channel(chan, cat, pri, buf1, buf2, buf3)
         FILE *fp;
         
         if (chan->options & LO_CAT)
-                asprintf(&cat_pref, "%s", catname[cat]);
+                asprintf(&cat_pref, "%s", _(catname[cat]));
         if (chan->options & LO_PRI) {
                 if (cat_pref)
-                        asprintf(&prefix, "%s.%s", cat_pref, priname[pri]);
+                        asprintf(&prefix, "%s.%s",
+				 cat_pref,
+				 _(priname[pri]));
                 else
-                        asprintf(&prefix, "%s", priname[pri]);
+                        asprintf(&prefix, "%s", _(priname[pri]));
         } else if (cat_pref) {
                 prefix = cat_pref;
                 cat_pref = NULL;
@@ -171,21 +172,21 @@ log_to_channel(chan, cat, pri, buf1, buf2, buf3)
 
         switch (chan->mode) {
         case LM_FILE:
-		if (chan->options & LO_MSEC) {
-			struct timeval tv;
-			int len;
-			
-			gettimeofday(&tv, NULL);
-			tm = localtime_r(&tv.tv_sec, &tms);
-			strftime(buffer, sizeof(buffer), "%b %d %H:%M:%S", tm);
-			len = strlen(buffer);
-			snprintf(buffer+len, sizeof(buffer)-len,
-				 ".%06d", tv.tv_usec);
-		} else {
-			timeval = time(NULL);
-			tm = localtime_r(&timeval, &tms);
-			strftime(buffer, sizeof(buffer), "%b %d %H:%M:%S", tm);
-		}
+                if (chan->options & LO_MSEC) {
+                        struct timeval tv;
+                        int len;
+                        
+                        gettimeofday(&tv, NULL);
+                        tm = localtime_r(&tv.tv_sec, &tms);
+                        strftime(buffer, sizeof(buffer), "%b %d %H:%M:%S", tm);
+                        len = strlen(buffer);
+                        snprintf(buffer+len, sizeof(buffer)-len,
+                                 ".%06d", tv.tv_usec);
+                } else {
+                        timeval = time(NULL);
+                        tm = localtime_r(&timeval, &tms);
+                        strftime(buffer, sizeof(buffer), "%b %d %H:%M:%S", tm);
+                }
                 fp = channel_open_file(chan);
                 if (!fp) /* FIXME: log to default channel */
                         break;

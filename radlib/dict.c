@@ -450,7 +450,7 @@ parse_dict_entry(errcnt, fc, fv, file, lineno)
                 break;
         default:
                 radlog(L_ERR,
-                       _("%s:%d: name too long"),
+                       _("%s:%d: unknown keyword"),
                        file, lineno);
                 break;
         }

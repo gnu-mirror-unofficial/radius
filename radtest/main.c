@@ -67,81 +67,81 @@ int retry = 0;
 int timeout = 0;
 
 const char *argp_program_version = "radtest (" PACKAGE ") " VERSION;
-static char doc[] = "send arbitrary radius packets";
+static char doc[] = N_("send arbitrary radius packets");
 
 static struct argp_option options[] = {
-	{NULL, 0, NULL, 0,
-	 "radtest specific switches:", 0},
+        {NULL, 0, NULL, 0,
+         N_("radtest specific switches:"), 0},
         {"assign", 'a', "VARIABLE=VALUE", 0,
-	 "assign a VALUE to a VARIABLE", 0},
+         N_("assign a VALUE to VARIABLE"), 0},
         {"debug", 'x', "DEBUGSPEC", 0,
-	 "set debugging level", 0},
+         N_("set debugging level"), 0},
         {"file", 'f', "FILE", 0,
-	 "Read input from FILE. When this option is used, all unknown"
-	 " options in the form --VAR=VALUE are treated as variable"
-	 " assignments", 0},
+         N_("Read input from FILE. When this option is used, all unknown"
+         " options in the form --VAR=VALUE are treated as variable"
+         " assignments"), 0},
         {"quick", 'q', NULL, 0,
-	 "FIXME: quick mode", 0},
+         "FIXME: quick mode", 0},
         {"retry", 'r', "NUMBER", 0,
-	 "set number of retries", 0},
+         N_("set number of retries"), 0},
         {"server", 's', "SERVER", 0,
-	 "set radius server parameters", 0},
+         N_("set radius server parameters"), 0},
         {"timeout", 't', "NUMBER", 0,
-	 "set timeout", 0},
+         N_("set timeout"), 0},
         {"verbose", 'v', NULL, 0,
-	 "verbose mode", 0},
-	{NULL, 0, NULL, 0, NULL, 0}
+         N_("verbose mode"), 0},
+        {NULL, 0, NULL, 0, NULL, 0}
 };
 
 static error_t
 parse_opt (key, arg, state)
-	int key;
-	char *arg;
-	struct argp_state *state;
+        int key;
+        char *arg;
+        struct argp_state *state;
 {
-	char *p;
-	
-	switch (key) {
-	case 'a':
-		assign(optarg);
-		break;
-	case 'q':
-		quick++;
-		break;
-	case 'r':
-		retry = strtol(optarg, NULL, 0);
-		break;
-	case 's':
-		server = optarg;
-		break;
-	case 'f':
-		filename = optarg;
-		*(int *)state->input = state->next;
-		state->next = state->argc;
-		break;
-	case 't':
-		timeout = strtol(optarg, NULL, 0);
-		break;
-	case 'x':
-		set_debug_levels(optarg);
-		break;
-	case 'v':
-		verbose++;
-		radclient_debug++;
-		break;
-	default:
-		return ARGP_ERR_UNKNOWN;
-	}
-	return 0;
+        char *p;
+        
+        switch (key) {
+        case 'a':
+                assign(optarg);
+                break;
+        case 'q':
+                quick++;
+                break;
+        case 'r':
+                retry = strtol(optarg, NULL, 0);
+                break;
+        case 's':
+                server = optarg;
+                break;
+        case 'f':
+                filename = optarg;
+                *(int *)state->input = state->next;
+                state->next = state->argc;
+                break;
+        case 't':
+                timeout = strtol(optarg, NULL, 0);
+                break;
+        case 'x':
+                set_debug_levels(optarg);
+                break;
+        case 'v':
+                verbose++;
+                radclient_debug++;
+                break;
+        default:
+                return ARGP_ERR_UNKNOWN;
+        }
+        return 0;
 }
 
 static struct argp argp = {
-	options,
-	parse_opt,
-	NULL,
-	doc,
-	&rad_common_argp_child,
-	NULL, NULL
+        options,
+        parse_opt,
+        NULL,
+        doc,
+        &rad_common_argp_child,
+        NULL, NULL
 };
 
 int
@@ -151,17 +151,17 @@ main(argc, argv)
 {
         char *p;
         int index;
-	
+        
         app_setup();
         initlog(argv[0]);
         init_symbols();
 
-	index = argc;
-	if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, &index))
-		return 1;
+        index = argc;
+        if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, &index))
+                return 1;
 
-	argv += index;
-	argc -= index;
+        argv += index;
+        argc -= index;
 
         set_yydebug();
         radpath_init();
@@ -259,14 +259,14 @@ main(argc, argv)
         x_argmax = argc;
         x_argv[x_argc++] = filename;
 
-	for (; argc; argv++, argc--) {
-		if (argv[0][0] == '-'
-		    && argv[0][1] == '-'
-		    && (p = strchr(argv[0], '=')) != NULL
-		    && !(p > argv[0] && p[-1] == '\\')) 
-			assign(argv[0]+2);
-		else if ((p = strchr(*argv, '=')) != NULL &&
-			 !(p > *argv && p[-1] == '\\')) 
+        for (; argc; argv++, argc--) {
+                if (argv[0][0] == '-'
+                    && argv[0][1] == '-'
+                    && (p = strchr(argv[0], '=')) != NULL
+                    && !(p > argv[0] && p[-1] == '\\')) 
+                        assign(argv[0]+2);
+                else if ((p = strchr(*argv, '=')) != NULL &&
+                         !(p > *argv && p[-1] == '\\')) 
                         assign(*argv);
                 else 
                         x_argv[x_argc++] = *argv;

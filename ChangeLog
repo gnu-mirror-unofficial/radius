@@ -1,3 +1,11 @@
+2002-07-11  Sergey Poznyakoff  
+
+	* lib/util.c (flush_seg): Missed cast to u_char.
+	* radiusd/exec.c (filter_close): Avoid closing the filter
+	  twice.
+	  (filter_open): Unlock the filter _after_ closing it.
+	* radiusd/request.c (request_put): Bugfix in queue handling.
+
 2002-07-10  Sergey Poznyakoff 
 
 	* radiusd/exec.c: filter_ functions rewritten to make

@@ -15,7 +15,7 @@ make_raddb() {
     ABS_NAME=$builddir/$1
     shift
 
-    if test ! -f $ABS_NAME ; then
+    if test ! -d $ABS_NAME ; then
        cp -r $SOURCEDIR/$NAME $builddir
        chmod -R u+w $ABS_NAME
     fi

@@ -392,16 +392,16 @@ acct_def        : listen_stmt
                   }      
                 | T_TTL value
                   {
-                          asgn(&request_class[R_AUTH].ttl, &$2, AT_INT, 0);
+                          asgn(&request_class[R_ACCT].ttl, &$2, AT_INT, 0);
                   }      
                 | T_MAX_REQUESTS value
                   {
-                          asgn(&request_class[R_AUTH].max_requests, &$2,
+                          asgn(&request_class[R_ACCT].max_requests, &$2,
                                AT_INT, 0);
                   }      
                 | T_REQUEST_CLEANUP_DELAY value
                   {
-                          asgn(&request_class[R_AUTH].cleanup_delay, &$2,
+                          asgn(&request_class[R_ACCT].cleanup_delay, &$2,
                                AT_INT, 0);
                   }      
                 | T_DETAIL value

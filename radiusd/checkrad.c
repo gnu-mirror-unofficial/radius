@@ -303,7 +303,6 @@ snmp_check(struct check_instance *checkp, grad_nas_t *nas)
         if (!oid) {
                 grad_log(L_ERR,
                          _("invalid OID: %s"), snmp_oid);
-                grad_free(snmp_oid);
                 return -1;
         }
         
@@ -322,7 +321,6 @@ snmp_check(struct check_instance *checkp, grad_nas_t *nas)
                 grad_log(L_ERR,
                          _("can't create snmp session: %s"),
                          snmp_strerror(snmp_errno));
-                grad_free(snmp_oid);
                 snmp_free(oid);
                 return -1;
         }
@@ -331,7 +329,6 @@ snmp_check(struct check_instance *checkp, grad_nas_t *nas)
                 grad_log(L_ERR,
                          _("can't open snmp session: %s"),
                          snmp_strerror(snmp_errno));
-                grad_free(snmp_oid);                
                 snmp_free(oid);
                 return -1;
         }
@@ -340,7 +337,6 @@ snmp_check(struct check_instance *checkp, grad_nas_t *nas)
                 grad_log(L_ERR,
                          _("can't create SNMP PDU: %s"),
                          snmp_strerror(snmp_errno));
-                grad_free(snmp_oid);
                 snmp_free(oid);
                 snmp_session_close(sp);
                 return -1;
@@ -350,7 +346,6 @@ snmp_check(struct check_instance *checkp, grad_nas_t *nas)
                 grad_log(L_ERR,
                          _("can't create SNMP PDU: %s"),
                          snmp_strerror(snmp_errno));
-                grad_free(snmp_oid);
                 snmp_free(oid);
                 snmp_session_close(sp);
                 snmp_pdu_free(pdu);
@@ -365,8 +360,6 @@ snmp_check(struct check_instance *checkp, grad_nas_t *nas)
                   remote_port,
                   community,
                   snmp_oid));
-
-        grad_free(snmp_oid);
 
         checkp->result = rc;
         
@@ -420,7 +413,6 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
                 namebuf[i] = *ptr;
         namebuf[i] = 0;
         namelen = i;
-        grad_free(arg);
         
         peername = slookup(checkp, "host", nas->longname);
         if (!(hp = gethostbyname(peername))) {

@@ -98,6 +98,7 @@
 #define DV_LOG_MODE_MASK_LOG_FAILED_PASS 4
 #define DV_LOG_MODE_MASK_LOG_PASS 6
 #define DV_LOG_MODE_MASK_LOG_ALL 7
+#define DA_ACCT_EXT_PROGRAM 2007
 /*  These are used by rewriting functions:
  */
 #define DA_ORIG_USER_NAME 2101

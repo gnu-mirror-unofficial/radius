@@ -22,7 +22,6 @@ AM_CONFIG_HEADER(config.h)
 AC_SUBST(BUILD_TARGET)
 AC_SUBST(INCLUDEPATH)
 AC_SUBST(YACC_OPTS)
-AC_SUBST(RADLOG_DIR)
 AC_SUBST(RADIUS_PID)
 AC_SUBST(PS)
 AC_SUBST(GETOPT)
@@ -325,20 +324,12 @@ AC_ARG_ENABLE(debug,
 AC_DEFINE_UNQUOTED(RADIUS_DEBUG, $RADIUS_DEBUG,
                    [Define to 1 to enable debugging])
 
-# Set ETC_DIR. I suppose it's better to be defined in config.h,
-# so I do this dirty work here, instead of adding -DETC_DIR=$sysconfdir
-# to every invocation of C compiler.
-eval s=$sysconfdir
-ETC_DIR=`echo $s|sed -e 's%NONE/%/usr/local/%'`
-AC_SUBST(ETC_DIR)
-AC_DEFINE_UNQUOTED(ETC_DIR, "$ETC_DIR", [Location of the /etc directory])
-
 case "$ST" in
         "BSD")		RADLOG_DIR="/var/log"
 			RADPID_DIR="/var/run"
 			;;
 	"SYSV")		RADLOG_DIR="/usr/adm"           
-			RADPID_DIR="$ETC_DIR/raddb"
+			RADPID_DIR='$(sysconfdir)/raddb'
 			;;
 esac
 
@@ -360,11 +351,11 @@ AC_ARG_WITH(pid-dir,
          esac])
 AC_MSG_RESULT($RADPID_DIR)
 
+AC_SUBST(PATHFLAGS)
 AC_SUBST(RADPID_DIR)
-AC_DEFINE_UNQUOTED(RADLOG_DIR,
-                   "$RADLOG_DIR", [Directory to store radius log files in])
-AC_DEFINE_UNQUOTED(RADPID_DIR,
-                   "$RADPID_DIR", [Directory to put radius pid file in])
+AC_SUBST(RADLOG_DIR)
+PATHFLAGS='-DSYSCONFDIR=\"$(sysconfdir)\" -DRADPID_DIR=\"$(RADPID_DIR)\" -DRADLOG_DIR=\"$(RADLOG_DIR)\"'
+
 AC_DEFINE_UNQUOTED(BUILD_TARGET,
                    "$target", [Target the package is built for])
 
@@ -674,9 +665,11 @@ if test "$EMACS" != "no"; then
 fi
 AC_SUBST(lisp_LISP)
 
-AC_OUTPUT(Makefile m4/Makefile  intl/Makefile po/Makefile.in 
+AC_OUTPUT(Makefile m4/Makefile intl/Makefile po/Makefile.in 
           include/Makefile include/snmp/Makefile
-          lib/Makefile sql/Makefile snmplib/Makefile 
+          lib/Makefile
+          sql/Makefile
+          snmplib/Makefile 
 	  radscm/Makefile 
           radiusd/Makefile 
           radiusd/testsuite/Makefile 

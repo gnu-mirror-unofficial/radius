@@ -31,36 +31,6 @@
 #include <string.h>
 #include <common.h>
 
-static struct keyword auth_codes[] = {
-#define D(a)  {#a, a}
-        D(RT_ACCESS_REQUEST),
-        D(RT_ACCESS_ACCEPT),
-        D(RT_ACCESS_REJECT),
-        D(RT_ACCOUNTING_REQUEST),
-        D(RT_ACCOUNTING_RESPONSE),
-        D(RT_ACCOUNTING_STATUS),
-        D(RT_PASSWORD_REQUEST),
-        D(RT_PASSWORD_ACK),
-        D(RT_PASSWORD_REJECT),
-        D(RT_ACCOUNTING_MESSAGE),
-        D(RT_ACCESS_CHALLENGE),
-        D(RT_STATUS_SERVER),
-        D(RT_ASCEND_TERMINATE_SESSION),
-        { 0 }
-#undef D        
-};
-
-const char *
-grad_request_code_name(int code)
-{
-        struct keyword *p;
-
-        for (p = auth_codes; p->name; p++)
-                if (p->tok == code)
-                        return p->name;
-        return NULL;
-}
-
 static struct keyword auth_codes_abbr[] = {
         { "Access-Request", RT_ACCESS_REQUEST }, 
         { "Access-Accept", RT_ACCESS_ACCEPT },     
@@ -83,8 +53,40 @@ static struct keyword auth_codes_abbr[] = {
         { NULL }
 };
 
+struct auth_code_iterator {
+	int index;
+	const char *text;
+	int len;
+};
+
 const char *
-grad_request_code_to_string(int code)
+grad_next_matching_code_name(void *data)
+{
+	struct auth_code_iterator *itr = data;
+	const char *str;
+	
+	while (str = auth_codes_abbr[itr->index].name) {
+		itr->index++;
+		if (strlen(str) >= itr->len
+		    && strncmp(str, itr->text, itr->len) == 0)
+			break;
+	}
+	return str;
+}
+
+const char *
+grad_first_matching_code_name(const char *name, void **ptr)
+{
+	struct auth_code_iterator *itr = grad_emalloc(sizeof(*itr));
+	*ptr = itr;
+	itr->index = 0;
+	itr->text = name;
+	itr->len = strlen(name);
+	return grad_next_matching_code_name(itr);
+}
+
+const char *
+grad_request_code_to_name(int code)
 {
         struct keyword *p;
         for (p = auth_codes_abbr; p->name; p++)
@@ -94,7 +96,7 @@ grad_request_code_to_string(int code)
 }
 
 int
-grad_string_to_request_code(const char *ident)
+grad_request_name_to_code(const char *ident)
 {
 	return grad_xlat_keyword(auth_codes_abbr, ident, 0);
 }

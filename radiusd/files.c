@@ -1,25 +1,23 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000,2001, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
-/*
- * This file deals with contents of /etc/raddb directory (except config and
- * dictionaries)
- */
+   Copyright (C) 2000,2001, Sergey Poznyakoff
+  
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+  
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+  
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
+/* This file deals with contents of /etc/raddb directory (except config and
+   dictionaries) */
+
 #define RADIUS_MODULE_FILES_C
 #ifndef lint
 static char rcsid[] =
@@ -738,11 +736,8 @@ hints_setup(req)
 	char		*name;
 	VALUE_PAIR      *name_pair;
 	VALUE_PAIR      *orig_name_pair;
-	VALUE_PAIR	*add;
-	VALUE_PAIR	*last;
-	VALUE_PAIR	*tmp;
 	PAIR_LIST	*i;
-	int		do_strip;
+	int		matched = 0;
 
 	if (hints == NULL)
 		return 0;
@@ -761,60 +756,48 @@ hints_setup(req)
 	}
 	
 	if (name == NULL || name[0] == 0)
-		/*
-		 *	Will be complained about later.
-		 */
+		/* Will be complained about later. */
 		return 0;
 
 	debug(1, ("called for `%s'", name));
 	
-	/*
-	 * if Framed-Protocol is present but Service-Type is missing, add
-	 * Service-Type = Framed-User.
-	 */
+	/* if Framed-Protocol is present but Service-Type is missing, add
+	   Service-Type = Framed-User. */
 	if (avl_find(request_pairs, DA_FRAMED_PROTOCOL) != NULL &&
 	    avl_find(request_pairs, DA_SERVICE_TYPE) == NULL) {
 		tmp = avp_create(DA_SERVICE_TYPE, 0, NULL,
-				  DV_SERVICE_TYPE_FRAMED_USER);
-		if (tmp) {
+				 DV_SERVICE_TYPE_FRAMED_USER);
+		if (tmp) 
 			avl_merge(&request_pairs, &tmp);
-		}
 	}
-
 
 	for (i = hints; i; i = i->next) {
-		if (matches(request_pairs, name, i, newname) == 0) {
-			debug(1, ("matched %s at hints:%d",
-				 i->name, i->lineno));
-			break;
-		}
-	}
+		int do_strip;
+		VALUE_PAIR *add, *tmp;
+		
+		name = name_pair->strvalue;
 
-	if (i == NULL) {
-		avl_free(orig_name_pair);
-		return 0;
-	}
+		if (matches(request_pairs, name, i, newname))
+			continue;
+
+		matched++;
+		
+		debug(1, ("matched %s at hints:%d", i->name, i->lineno));
 	
-	add = avl_dup(i->reply);
-	if (orig_name_pair)
-		avl_add_pair(&add, orig_name_pair);
+		add = avl_dup(i->reply);
 	
-	/*
-	 *	See if we need to adjust the name.
-	 */
-	if (name_pair) {
+		/* See if we need to adjust the name. */
 		do_strip = 1;
-		if ((tmp = avl_find(i->reply, DA_STRIP_USER_NAME)) != NULL ||
-		    (tmp = avl_find(i->check, DA_STRIP_USER_NAME)) != NULL)
+		if ((tmp = avl_find(i->reply, DA_STRIP_USER_NAME)) != NULL
+		    || (tmp = avl_find(i->check, DA_STRIP_USER_NAME)) != NULL)
 			do_strip = tmp->lvalue;
-
-		if (do_strip) {
+		
+		if (do_strip) 
 			replace_string(&name_pair->strvalue, newname);
-		}
 
 		/* Ok, let's see if we need to further modify the username */
-		if ((tmp = avl_find(i->reply, DA_REPLACE_USER_NAME)) != NULL ||
-		    (tmp = avl_find(i->check, DA_REPLACE_USER_NAME)) != NULL) {
+		if ((tmp = avl_find(i->reply, DA_REPLACE_USER_NAME))
+		    || (tmp = avl_find(i->check, DA_REPLACE_USER_NAME))) {
 			char *ptr;
 			
 			if (!hints_stk_ready) {
@@ -829,8 +812,8 @@ hints_setup(req)
 		}
 		
 		/* Is the rewrite function specified? */
-		if ((tmp = avl_find(i->reply, DA_REWRITE_FUNCTION)) != NULL ||
-		    (tmp = avl_find(i->check, DA_REWRITE_FUNCTION)) != NULL) {
+		if ((tmp = avl_find(i->reply, DA_REWRITE_FUNCTION))
+		    || (tmp = avl_find(i->check, DA_REWRITE_FUNCTION))) {
 			if (run_rewrite(tmp->strvalue, request_pairs)) {
 				radlog(L_ERR, _("hints:%d: %s(): not defined"),
 				       i->lineno,
@@ -841,24 +824,30 @@ hints_setup(req)
 		debug(1, ("newname is `%s', username is `%s'",
 			 newname, name_pair->strvalue));
 
+		/* fix-up the string length */
+		name_pair->strlength = strlen(name_pair->strvalue);
+
+		/* Add all attributes to the request list, except
+		 * DA_STRIP_USER_NAME and DA_REPLACE_USER_NAME */
+		avl_delete(&add, DA_STRIP_USER_NAME);
+		avl_delete(&add, DA_REPLACE_USER_NAME);
+		avl_delete(&add, DA_REWRITE_FUNCTION);
+		avl_add_list(&request_pairs, add);
+
+                /* Ok, let's see if we need to further check the
+		   hint's rules */
+		if (((tmp = avl_find(i->reply, DA_FALL_THROUGH)) != NULL
+		     || (tmp = avl_find(i->check, DA_FALL_THROUGH)) != NULL)
+		    && tmp->lvalue)
+			continue;
+		break;
 	}
+
+	if (matched)
+		avl_add_pair (&request_pairs, orig_name_pair);
+	else
+		avl_free (orig_name_pair);
 	
-	/* fix-up the string length */
-	name_pair->strlength = strlen(name_pair->strvalue);
-
-
-	/*
-	 *	Now add all attributes to the request list,
-	 *	except the DA_STRIP_USER_NAME and DA_REPLACE_USER_NAME ones.
-	 */
-	avl_delete(&add, DA_STRIP_USER_NAME);
-	avl_delete(&add, DA_REPLACE_USER_NAME);
-	avl_delete(&add, DA_REWRITE_FUNCTION);
-	for (last = request_pairs; last && last->next; last = last->next)
-		;
-	if (last)
-		last->next = add;
-
 	return 0;
 }
 

@@ -292,6 +292,9 @@ guile {
 	# Load given file
 	load "lib.scm";
 
+	# Load Guile module
+	load-module "module-name";
+		
 	# Redirect the guile output to the given file.
 	outfile	"guile.out";	
 };

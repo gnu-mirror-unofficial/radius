@@ -30,9 +30,72 @@ typedef struct envar {
 } ENVAR;
 
 static void
+grad_envar_assign_internal(char *name, int namelen, char *value, int valuelen,
+			   grad_list_t **plist)
+{
+	ENVAR *env;
+	char *p;
+                
+	if (!value) {
+		if (namelen > 2 && memcmp(name, "no", 2) == 0) {
+			name += 2;
+			namelen -= 2;
+			value = "0";
+			valuelen = 1;
+		} else {
+			value = "1";
+			valuelen = 1;
+		}
+	} 
+			
+	env = grad_emalloc(sizeof(*env));
+	env->name = grad_emalloc(namelen + 1);
+	memcpy(env->name, name, namelen);
+	env->name[namelen] = 0;
+
+	env->value = grad_emalloc(valuelen + 1);
+	memcpy(env->value, value, valuelen);
+	env->value[valuelen] = 0;
+
+	if (!*plist)
+		*plist = grad_list_create();
+	grad_list_append(*plist, env);
+}
+
+void
+grad_envar_assign(char *name, char *value, grad_list_t **plist)
+{
+	grad_envar_assign_internal(name, strlen(name),
+				   value,
+				   value ? strlen(value) : 0,
+				   plist);
+}
+
+
+static void
+grad_envar_parse_argcv_internal(int argc, char **argv, grad_list_t **plist)
+{
+	int i;
+	char *p;
+	
+	for (i = 0; i < argc; i++) {
+                if (argv[i][0] == ',')
+                        continue;
+                p = strchr(argv[i], '=');
+                if (p) 
+			grad_envar_assign_internal(p, p - argv[i],
+						   p + 1, strlen(p + 1),
+						   plist);
+		else
+			grad_envar_assign_internal(argv[i], strlen(argv[i]),
+						   NULL, 0,
+						   plist);
+        }
+}
+
+static void
 grad_envar_parse_internal(char *str, grad_list_t **plist)
 {
-        int i;
         int argc;
         char **argv;
 
@@ -41,33 +104,7 @@ grad_envar_parse_internal(char *str, grad_list_t **plist)
                         argcv_free(argc, argv);
                 return;
         }
-
-        for (i = 0; i < argc; i++) {
-                ENVAR *env;
-                char *p;
-                
-                if (argv[i][0] == ',')
-                        continue;
-                env = grad_emalloc(sizeof(*env));
-                p = strchr(argv[i], '=');
-                if (p) {
-                        int len = p - argv[i];
-                        env->name = grad_emalloc(len + 1);
-                        memcpy(env->name, argv[i], len);
-                        env->name[len] = 0;
-                        env->value = grad_estrdup(p+1);
-                } else if (strlen(argv[i]) > 2
-                           && memcmp(argv[i], "no", 2) == 0) {
-                        env->name = grad_estrdup(argv[i]+2);
-                        env->value = grad_estrdup("0");
-                } else {
-                        env->name = grad_estrdup(argv[i]);
-                        env->value = grad_estrdup("1");
-                }
-		if (!*plist)
-			*plist = grad_list_create();
-		grad_list_append(*plist, env);
-        }
+	grad_envar_parse_argcv_internal(argc, argv, plist);
 	argcv_free(argc, argv);
 }
 
@@ -84,7 +121,7 @@ grad_envar_parse_argcv(int argc, char **argv)
 {
 	grad_list_t *list = NULL;
         while (argc--) {
-                grad_envar_parse_internal(*argv++, &list);
+		grad_envar_parse_internal(*argv++, &list);
         }
         return list;
 }

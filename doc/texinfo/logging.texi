@@ -2,7 +2,7 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Logging, Debugging, Accounting, Top
+@node Logging, Problem Tracking, Accounting, Top
 @chapter Logging
 @cindex Logging
 

@@ -111,7 +111,7 @@ The @RADIUS{} daemon
 * Authentication::      How users are authenticated
 * Accounting::          Accounting methods
 * Logging::             What gets logged and where
-* Debugging::           Extensive logging information
+* Problem Tracking::    Fixing configuration errors
 * Extensions::          Extending GNU Radius
 
 * Utility Programs::

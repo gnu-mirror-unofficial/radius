@@ -569,8 +569,8 @@ Otherwise @command{radiusd} assumes the user @emph{is not} logged in.
 
 @item trace-rules
 Enables tracing of the configuration rules that were matched during
-processing of each received authentication request.
-@c FIXME: More detail. Possibly a separate section is needed
+processing of each received authentication request. @xref{Rule
+Tracing}, for detailed information about this mode.
 @end table
 
 @subheading Character statement
@@ -669,7 +669,8 @@ When set to @code{false}, disables detailed accounting
 
 @item trace-rules
 Enables tracing of the configuration rules that were matched during
-processing of each received accounting request.
+processing of each received accounting request. @xref{Rule
+Tracing}, for detailed information about this mode.
 @end table
 
 @subheading Character statement

@@ -348,8 +348,10 @@ void input_iterate_channels(INPUT *input, char *name, list_iterator_t fun,
 /* rpp.c */
 int rpp_ready();
 int rpp_forward_request(REQUEST *req);
-void rpp_remove(pid_t pid);
+void rpp_remove_pid(pid_t pid);
+void rpp_status_changed(pid_t pid, int exit_status);
 void rpp_flush(int (*fun)(void*), void *closure);
+void rpp_collect_exited();
 int rpp_input_handler(int fd, void *data);
 int rpp_input_close(int fd, void *data);
 int rpp_kill(pid_t pid, int signo);

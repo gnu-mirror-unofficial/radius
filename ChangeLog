@@ -1,3 +1,25 @@
+2002-07-09  Sergey Poznyakoff  
+
+	Synchronized with the recent bugfixes in 0.96 trunk.
+	
+	* include/radius.h: Changed declaration of install_pair.
+	* lib/users.y: Likewise.
+	* client/pam_radius/pam_radius.c: Likewise.
+	* radiusd/radutil.c: Likewise.
+	* radiusd/sql.c: Likewise.
+	
+	* radtest/gram.y: Likewise. Removed local definition of
+	  install_pair().
+	
+	* include/radiusd.h: (AUTH_IGNORE): New define.
+	* raddb/dictionary: Added new Auth-Type = Ignore. It means
+	  to ignore the request silently (no reply is sent to the
+          NAS).
+	* radiusd/auth.c: Support for Auth-Type = Ignore.
+
+	* radiusd/request.c (request_thread_command): Changed while() loop
+	  to sleep() until I figure out what to do here.
+	
 2002-07-09  Sergey Poznyakoff 
 
 	* configure.ac: Check for pthread_atfork and libintl.h.

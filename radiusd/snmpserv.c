@@ -457,7 +457,7 @@ snmpserv_after_config_hook(void *arg, void *data ARG_UNUSED)
 		snmp_acct_server_reset();
                 
 		*(serv_stat*)arg = server_stat->auth.status;
-
+		snmp_init_nas_stat();
 		for (nas = nas_next(NULL); nas; nas = nas_next(nas))
 			snmp_attach_nas_stat(nas);
 		snmp_sort_nas_stat();

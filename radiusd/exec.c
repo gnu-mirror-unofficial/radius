@@ -70,9 +70,6 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         int line_num;
         char buffer[RAD_BUFFER_SIZE];
         struct passwd *pwd;
-#if 0
-        int saved_uid, saved_gid;
-#endif
         
         if (cmd[0] != '/') {
                 radlog(L_ERR,
@@ -128,15 +125,10 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
                                 radlog(L_ERR|L_PERROR, _("can't dup stdout"));
                 }
 
-                for(n = getmaxfd(); n >= 3; n--)
+                for (n = getmaxfd(); n >= 3; n--)
                         close(n);
 
                 chdir("/tmp");
-                
-                #if 0
-                saved_uid = geteuid();
-                saved_gid = getegid();
-                #endif
                 
                 if (pwd->pw_gid != 0 && setgid(pwd->pw_gid)) {
                         radlog(L_ERR|L_PERROR,
@@ -173,6 +165,8 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         /* Parent branch */ 
         if (pid < 0) {
                 radlog(L_ERR|L_PERROR, _("can't fork"));
+		if (exec_wait)
+			signal(SIGCHLD, oldsig);
                 return -1;
         }
         if (!exec_wait)

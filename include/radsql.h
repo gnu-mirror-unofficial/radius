@@ -78,6 +78,7 @@ typedef struct {
 extern SQL_cfg sql_cfg;
 
 void radiusd_sql_shutdown();
+void radiusd_sql_clear_cache();
 
 int rad_sql_init();
 void rad_sql_acct(RADIUS_REQ *req);

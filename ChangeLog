@@ -1,3 +1,20 @@
+2004-07-16  Sergey Poznyakoff
+
+	* lib/radargp.c (grad_argp_parse): Minor fix.
+	* radiusd/checkrad.c (checkrad_xlat): Bugfix
+	* radiusd/testsuite/test.sh.m4: New option --readline
+
+	Started rewriting radtest. The grammar is extended
+	and improved considerably. 
+	
+	* radtest/runtime.c: New file.
+	* radtest/Makefile.am: Added runtime.c
+	* radtest/completion.c: Minor formatting fix.
+	* radtest/gram.y: Rewritten from scratch.
+	* radtest/radtest.h: Likewise
+	* radtest/input.l: Rewritten
+	* radtest/main.c: Rewritten
+
 2004-07-05  Sergey Poznyakoff
 
 	Generating list of symbols-followers automatically requires

@@ -51,7 +51,7 @@ avp_free(VALUE_PAIR *p)
 {
         if (!p)
                 return;
-        if (p->type == TYPE_STRING || p->eval) 
+        if (p->type == TYPE_STRING || p->eval_type != eval_const) 
                 efree(p->avp_strvalue);
         efree(p);
 }
@@ -66,7 +66,7 @@ avp_dup(VALUE_PAIR *vp)
 
         memcpy(ret, vp, sizeof(VALUE_PAIR));
         ret->next = NULL;
-        if (ret->type == TYPE_STRING || ret->eval) {
+        if (ret->type == TYPE_STRING || ret->eval_type != eval_const) {
 		ret->avp_strlength = vp->avp_strlength;
                 ret->avp_strvalue = emalloc(ret->avp_strlength+1);
 		memcpy(ret->avp_strvalue, vp->avp_strvalue,
@@ -421,7 +421,7 @@ avl_dup(VALUE_PAIR *from)
         for ( ; from; from = from->next) {
                 temp = avp_alloc();
                 memcpy(temp, from, sizeof(VALUE_PAIR));
-                if (temp->type == TYPE_STRING || temp->eval) {
+                if (temp->type == TYPE_STRING || temp->eval_type != eval_const) {
 			char *p = emalloc(temp->avp_strlength+1);
 			memcpy(p, temp->avp_strvalue, temp->avp_strlength);
 			p[temp->avp_strlength] = 0;

@@ -405,7 +405,7 @@ format_pair(VALUE_PAIR *pair, char **savep)
         
         *savep = NULL;
 
-        switch (pair->eval ? TYPE_STRING : pair->type) {
+        switch (pair->eval_type == eval_const ? pair->type : TYPE_STRING) {
         case TYPE_STRING:
                 if (pair->attribute != DA_VENDOR_SPECIFIC) {
                         int len = strlen (pair->avp_strvalue);

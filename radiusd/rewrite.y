@@ -79,10 +79,33 @@ typedef struct {
  * Basic data types
  */
 
-typedef int stkoff_t;          /* Offset on stack */
-typedef unsigned int pctr_t;   /* Program counter */
-typedef void (*INSTR)();        /* program instruction */
+typedef int stkoff_t;             /* Offset on stack */
+typedef unsigned int pctr_t;      /* Program counter */
 
+#define RW_REG ('z'-'a'+1)
+
+typedef struct {
+        RWSTYPE    reg[RW_REG];       /* Registers */
+        #define rA reg[0]
+        char       *sA;               /* String accumulator */
+        pctr_t     pc;                /* Program counter */  
+        
+        RWSTYPE    *stack;            /* Stack+heap space */
+        int        stacksize;         /* Size of stack */
+        int        st;                /* Top of stack */
+        int        sb;                /* Stack base */
+        int        ht;                /* Top of heap */
+        
+        int        nmatch;
+        regmatch_t *pmatch;
+
+        VALUE_PAIR *request;
+        
+        jmp_buf    jmp;
+} RWMACH;
+
+typedef void (*INSTR)(RWMACH*);   /* program instruction */
+ 
 /* Compiled regular expression
  */
 typedef struct comp_regex COMP_REGEX;
@@ -604,13 +627,16 @@ static Datatype attr_datatype(int type);
  * Run-Time
  */
 static void gc();
-static void run(pctr_t pc);
+static void run(RWMACH *mach, pctr_t pc);
 static void run_init(pctr_t pc, VALUE_PAIR *req);
 
-static pthread_mutex_t rewrite_code_mutex = PTHREAD_MUTEX_INITIALIZER; 
-
-#define rw_code_lock() pthread_mutex_lock(&rewrite_code_mutex)
-#define rw_code_unlock() pthread_mutex_unlock(&rewrite_code_mutex)
+/* These used to lock/unlock access to rw_code array. Now that the
+   array is read-only and may be modified only by the main thread
+   (which makes sure no other thread is running at the moment),
+   these functions are not needed. However, I left the placeholders
+   for a while... */
+#define rw_code_lock() 
+#define rw_code_unlock()
  
 %}
 
@@ -3195,43 +3221,22 @@ optimize()
  * Code generator
  */
 
-#define RW_REG ('z'-'a'+1)
 
-struct {
-        RWSTYPE    reg[RW_REG];       /* Registers */
-        #define rA reg[0]
-        char       *sA;               /* String accumulator */
-        pctr_t     pc;                /* Program counter */  
-        
-        INSTR      *code;             /* Code segment */
-        int        codesize;          /* Length of code segment */ 
-        
-        RWSTYPE    *stack;            /* Stack+heap space */
-        int        stacksize;         /* Size of stack */
-        int        st;                /* Top of stack */
-        int        sb;                /* Stack base */
-        int        ht;                /* Top of heap */
-        
-        int        nmatch;
-        regmatch_t *pmatch;
-
-        VALUE_PAIR *request;
-        
-        jmp_buf    jmp;
-} rw_rt;
+static INSTR *rw_code;          /* Code segment */
+static pctr_t rw_pc;            /* PC when compiling the code */
+static size_t rw_codesize;      /* Length of code segment */ 
+int rewrite_stack_size;         /* Size of stack+heap (global)  */
 
 void
 code_init()
 {
-        if (rw_rt.code == NULL) {
-                rw_rt.codesize  = 4096;
-                rw_rt.stacksize = 4096;
-
-                rw_rt.code  = emalloc(rw_rt.codesize * sizeof(rw_rt.code[0]));
-                rw_rt.stack = emalloc(rw_rt.stacksize * sizeof(rw_rt.stack[0]));
+        if (rw_code == NULL) {
+                rw_codesize  = 4096;
+                rw_code  = emalloc(rw_codesize * sizeof(rw_code[0]));
         }
         /* 0's code element is the default return address */
-        rw_rt.pc = 1;
+	rw_code[0] = 0;
+	rw_pc = 1;
 }
 
 #if defined(MAINTAINER_MODE)
@@ -3244,16 +3249,16 @@ debug_dump_code()
         
         if ((fp = debug_open_file()) == NULL)
                 return;
-        fprintf(fp, "Code size: %d\n", rw_rt.codesize);
+        fprintf(fp, "Code size: %d\n", rw_codesize);
         fprintf(fp, "Code dump:\n");
 
         pc = 0;
         do {
                 fprintf(fp, "%4d:", pc);
-                for (i = 0; i < 8 && pc < rw_rt.codesize; i++, pc++)
-                        fprintf(fp, " %8x", (u_int) rw_rt.code[pc]);
+                for (i = 0; i < 8 && pc < rw_codesize; i++, pc++)
+                        fprintf(fp, " %8x", (u_int) rw_code[pc]);
                 fprintf(fp, "\n");
-        } while (pc < rw_rt.codesize);
+        } while (pc < rw_codesize);
         
         fclose(fp);
 }
@@ -3261,69 +3266,69 @@ debug_dump_code()
 /*
  * Runtime function prototypes
  */
-static int pushn(RWSTYPE n);
-static int cpopn(RWSTYPE *np);
-static RWSTYPE popn();
-static int checkpop(int cnt);
-static int pushref(char *str, int from, int to);
-static char *heap_reserve(int size);
-static void pushs(RWSTYPE *sptr, int len);
-static void pushstr(char *str, int len);
+static int pushn(RWMACH *mach, RWSTYPE n);
+static int cpopn(RWMACH *mach, RWSTYPE *np);
+static RWSTYPE popn(RWMACH *mach);
+static int checkpop(RWMACH *mach, int cnt);
+static int pushref(RWMACH *mach, char *str, int from, int to);
+static char *heap_reserve(RWMACH *mach, int size);
+static void pushs(RWMACH *mach, RWSTYPE *sptr, int len);
+static void pushstr(RWMACH *mach, char *str, int len);
 
-static void rw_pushn();
-static void rw_pushs();
-static void rw_pushref();
-static void rw_pushv();
-static void rw_int();
-static void rw_string();
-static void rw_eq();
-static void rw_ne();
-static void rw_lt();
-static void rw_le();
-static void rw_gt();
-static void rw_ge();
-static void rw_eqs();
-static void rw_nes();
-static void rw_lts();
-static void rw_les();
-static void rw_gts();
-static void rw_ges();
-static void rw_b_xor();
-static void rw_b_and();
-static void rw_b_or();
-static void rw_shl();
-static void rw_shr();
-static void rw_add();
-static void rw_sub();
-static void rw_mul();
-static void rw_div();
-static void rw_rem();
-static void rw_not();
-static void rw_neg();
-static void rw_asgn();
-static void rw_enter();
-static void rw_leave();
-static void rw_match();
-static void rw_jmp();
-static void rw_jne();
-static void rw_je();
-static void rw_adds();
-static void rw_adjstk();
-static void rw_popn();
-static void rw_pusha();
-static void rw_popa();
-static void rw_call();
-static void rw_builtin();
-static void rw_attrs();
-static void rw_attrs0();
-static void rw_attrn();
-static void rw_attrn0();
-static void rw_attrcheck();
-static void rw_attrcheck0();
-static void rw_attrasgn();
-static void rw_attrasgn0();
-static void rw_attr_delete();
-static void rw_attr_delete0();
+static void rw_pushn(RWMACH *mach);
+static void rw_pushs(RWMACH *mach);
+static void rw_pushref(RWMACH *mach);
+static void rw_pushv(RWMACH *mach);
+static void rw_int(RWMACH *mach);
+static void rw_string(RWMACH *mach);
+static void rw_eq(RWMACH *mach);
+static void rw_ne(RWMACH *mach);
+static void rw_lt(RWMACH *mach);
+static void rw_le(RWMACH *mach);
+static void rw_gt(RWMACH *mach);
+static void rw_ge(RWMACH *mach);
+static void rw_eqs(RWMACH *mach);
+static void rw_nes(RWMACH *mach);
+static void rw_lts(RWMACH *mach);
+static void rw_les(RWMACH *mach);
+static void rw_gts(RWMACH *mach);
+static void rw_ges(RWMACH *mach);
+static void rw_b_xor(RWMACH *mach);
+static void rw_b_and(RWMACH *mach);
+static void rw_b_or(RWMACH *mach);
+static void rw_shl(RWMACH *mach);
+static void rw_shr(RWMACH *mach);
+static void rw_add(RWMACH *mach);
+static void rw_sub(RWMACH *mach);
+static void rw_mul(RWMACH *mach);
+static void rw_div(RWMACH *mach);
+static void rw_rem(RWMACH *mach);
+static void rw_not(RWMACH *mach);
+static void rw_neg(RWMACH *mach);
+static void rw_asgn(RWMACH *mach);
+static void rw_enter(RWMACH *mach);
+static void rw_leave(RWMACH *mach);
+static void rw_match(RWMACH *mach);
+static void rw_jmp(RWMACH *mach);
+static void rw_jne(RWMACH *mach);
+static void rw_je(RWMACH *mach);
+static void rw_adds(RWMACH *mach);
+static void rw_adjstk(RWMACH *mach);
+static void rw_popn(RWMACH *mach);
+static void rw_pusha(RWMACH *mach);
+static void rw_popa(RWMACH *mach);
+static void rw_call(RWMACH *mach);
+static void rw_builtin(RWMACH *mach);
+static void rw_attrs(RWMACH *mach);
+static void rw_attrs0(RWMACH *mach);
+static void rw_attrn(RWMACH *mach);
+static void rw_attrn0(RWMACH *mach);
+static void rw_attrcheck(RWMACH *mach);
+static void rw_attrcheck0(RWMACH *mach);
+static void rw_attrasgn(RWMACH *mach);
+static void rw_attrasgn0(RWMACH *mach);
+static void rw_attr_delete(RWMACH *mach);
+static void rw_attr_delete0(RWMACH *mach);
 
 INSTR bin_codetab[] = {
         rw_eq,              
@@ -3399,7 +3404,7 @@ fixup_target(mtx, pc)
         TGT_MTX   *tgt;
         
         for (tgt = (TGT_MTX*)mtx->tgt; tgt; tgt = (TGT_MTX*)tgt->next) 
-                rw_rt.code[tgt->pc] = (INSTR)pc;
+                rw_code[tgt->pc] = (INSTR)pc;
         mtx->tgt = NULL;
 }
 
@@ -3408,7 +3413,7 @@ codegen()
 {
         MTX       *mtx;
 
-        function->entry = rw_rt.pc;
+        function->entry = rw_pc;
         for (mtx = mtx_first; mtx; mtx = mtx->gen.next) {
                 switch (mtx->gen.type) {
                 case Generic:
@@ -3420,8 +3425,8 @@ codegen()
                         return 0;
                 case Nop:
                         /* Fix-up the references */
-                        fixup_target(&mtx->nop, rw_rt.pc);
-                        mtx->nop.pc = rw_rt.pc;
+                        fixup_target(&mtx->nop, rw_pc);
+                        mtx->nop.pc = rw_pc;
                         break;
                 case Stop:
                         break;
@@ -3473,11 +3478,11 @@ codegen()
                 case Cond:
                         /*FIXME: this needs optimization */
                         code(rw_jne);
-                        add_target(&mtx->cond.if_true->nop, rw_rt.pc);
+                        add_target(&mtx->cond.if_true->nop, rw_pc);
                         code(NULL);
                         if (mtx->cond.if_false) {
                                 code(rw_jmp);
-                                add_target(&mtx->cond.if_false->nop, rw_rt.pc);
+                                add_target(&mtx->cond.if_false->nop, rw_pc);
                                 code(NULL);
                         }
                         break;
@@ -3500,13 +3505,13 @@ codegen()
                         
                 case Jump:
                         code(rw_jmp);
-                        add_target(&mtx->jump.dest->nop, rw_rt.pc);
+                        add_target(&mtx->jump.dest->nop, rw_pc);
                         code(NULL);
                         break;
 
                 case Branch:
                         code(mtx->branch.cond ? rw_jne : rw_je);
-                        add_target(&mtx->branch.dest->nop, rw_rt.pc);
+                        add_target(&mtx->branch.dest->nop, rw_pc);
                         code(NULL);
                         break;
                         
@@ -3592,7 +3597,7 @@ codegen()
         if (debug_on(25)) {
                 FILE *fp = debug_open_file();
                 fprintf(fp, "entry: %d, size %d\n",
-                        function->entry, rw_rt.pc - function->entry);
+                        function->entry, rw_pc - function->entry);
                 fclose(fp);
         }
 #endif  
@@ -3603,12 +3608,12 @@ void
 check_codesize(delta)
         int delta;
 {
-        if (rw_rt.pc + delta >= rw_rt.codesize) {
-                INSTR *p = emalloc((rw_rt.codesize + 4096) * sizeof(rw_rt.code[0]));
-                memcpy(rw_rt.code, p, rw_rt.codesize);
-                efree(rw_rt.code);
-                rw_rt.code = p;
-                rw_rt.codesize += 4096;
+        if (rw_pc + delta >= rw_codesize) {
+                INSTR *p = emalloc((rw_codesize + 4096) * sizeof(rw_code[0]));
+                memcpy(rw_code, p, rw_codesize);
+                efree(rw_code);
+                rw_code = p;
+                rw_codesize += 4096;
         }
 }
 
@@ -3617,8 +3622,8 @@ code(instr)
         INSTR instr;
 {
         check_codesize(1);
-        rw_rt.code[rw_rt.pc] = instr;
-        return rw_rt.pc++;
+        rw_code[rw_pc] = instr;
+        return rw_pc++;
 }
 
 int
@@ -3633,13 +3638,13 @@ data_str(ptr)
         char *ptr;
 {
         int  len   = strlen(ptr) + 1;
-        RWSTYPE delta = (len + sizeof(rw_rt.code[0])) / sizeof(rw_rt.code[0]);
+        RWSTYPE delta = (len + sizeof(rw_code[0])) / sizeof(rw_code[0]);
         
         check_codesize(delta+1);
-        rw_rt.code[rw_rt.pc++] = (INSTR)delta;
-        memcpy(rw_rt.code + rw_rt.pc, ptr, len);
-        rw_rt.pc += delta;
-        return rw_rt.pc;
+        rw_code[rw_pc++] = (INSTR)delta;
+        memcpy(rw_code + rw_pc, ptr, len);
+        rw_pc += delta;
+        return rw_pc;
 }
         
 
@@ -3730,15 +3735,16 @@ function_cleanup()
  * Push a number on stack
  */
 int
-pushn(n)
+pushn(mach, n)
+	RWMACH *mach;
         RWSTYPE n;
 {
-        if (rw_rt.st >= rw_rt.ht) {
+        if (mach->st >= mach->ht) {
                 /*FIXME: gc();*/
-                debug(1, ("st=%d, ht=%d", rw_rt.st, rw_rt.ht));
-                rw_error(_("out of pushdown space"));
+                debug(1, ("st=%d, ht=%d", mach->st, mach->ht));
+                rw_error(mach, _("out of pushdown space"));
         }
-        rw_rt.stack[rw_rt.st++] = n;
+        mach->stack[mach->st++] = n;
         return 0;
 }
 
@@ -3746,60 +3752,64 @@ pushn(n)
  * Push a string on stack
  */
 void
-pushs(sptr, len)
+pushs(mach, sptr, len)
+	RWMACH *mach;
         RWSTYPE  *sptr;
         int   len;
 {
-        if (rw_rt.ht - len <= rw_rt.st) {
+        if (mach->ht - len <= mach->st) {
                 /* Heap overrun: */
-                /*gc(); */
-                rw_error(_("heap overrun"));
+                /*gc(mach); */
+                rw_error(mach, _("heap overrun"));
         }
 
         while (len)
-                rw_rt.stack[rw_rt.ht--] = sptr[--len];
+                mach->stack[mach->ht--] = sptr[--len];
 
-        pushn((RWSTYPE) (rw_rt.stack + rw_rt.ht + 1));
+        pushn(mach, (RWSTYPE) (mach->stack + mach->ht + 1));
 }
 
 void
-pushstr(str, len)
+pushstr(mach, str, len)
+	RWMACH *mach;
         char *str;
         int len;
 {
         char *s;
-        strncpy(s = heap_reserve(len+1), str, len);
+        strncpy(s = heap_reserve(mach, len+1), str, len);
         s[len] = 0;
-        pushn((RWSTYPE)s);
+        pushn(mach, (RWSTYPE)s);
 }
 
 char *
-heap_reserve(size)
+heap_reserve(mach, size)
+	RWMACH *mach;
         int size;
 {
-        int  len = (size + sizeof(rw_rt.stack[0])) / sizeof(rw_rt.stack[0]);
+        int  len = (size + sizeof(mach->stack[0])) / sizeof(mach->stack[0]);
 
-        if (rw_rt.ht - len <= rw_rt.st) {
+        if (mach->ht - len <= mach->st) {
                 /* Heap overrun: */
                 gc();
-                if (rw_rt.ht - len <= rw_rt.st) 
-                        rw_error(_("heap overrun"));
+                if (mach->ht - len <= mach->st) 
+                        rw_error(mach, _("heap overrun"));
         }
-        rw_rt.ht -= len;
-        return (char*)(rw_rt.stack + rw_rt.ht--);
+        mach->ht -= len;
+        return (char*)(mach->stack + mach->ht--);
 }
 
 /*
  * Pop number from stack and store into NP.
  */
 int
-cpopn(np)
+cpopn(mach, np)
+	RWMACH *mach;
         RWSTYPE *np;
 {
-        if (rw_rt.st <= 0) {
-                rw_error(_("out of popup"));
+        if (mach->st <= 0) {
+                rw_error(mach, _("out of popup"));
         }
-        *np = rw_rt.stack[--rw_rt.st];
+        *np = mach->stack[--mach->st];
         return 0;
 }
 
@@ -3808,27 +3818,30 @@ cpopn(np)
  * should be called before calling this one.
  */
 RWSTYPE
-popn()
+popn(mach)
+	RWMACH *mach;
 {
-        return rw_rt.stack[--rw_rt.st];
+        return mach->stack[--mach->st];
 }
 
 RWSTYPE
-tos()
+tos(mach)
+	RWMACH *mach;
 {
-        return rw_rt.stack[rw_rt.st-1];
+        return mach->stack[mach->st-1];
 }
 
 /*
  * Check if the stack contains at list CNT elements.
  */
 int
-checkpop(cnt)
+checkpop(mach, cnt)
+	RWMACH *mach;
         int cnt;
 {
-        if (rw_rt.st >= cnt)
+        if (mach->st >= cnt)
                 return 0;
-        rw_error(_("out of popup"));
+        rw_error(mach, _("out of popup"));
         /*NOTREACHED*/
 }
         
@@ -3839,52 +3852,56 @@ checkpop(cnt)
  *            to      --    end of reference in string
  */
 int
-pushref(str, from, to)
+pushref(mach, str, from, to)
+	RWMACH *mach;
         char *str;
         int   from;
         int   to;
 {
         int len = to - from + 1;
-        char *s = heap_reserve(len);
+        char *s = heap_reserve(mach, len);
         char *p = s;
         
         while (from < to) 
                 *p++ = str[from++];
         *p = 0;
-        return pushn((RWSTYPE)s);
+        return pushn(mach, (RWSTYPE)s);
 }
 
 /*
  * Create a stack frame and enter the function
  */
 void
-enter(n)
+enter(mach, n)
+	RWMACH *mach;
         int n;
 {
-        pushn(rw_rt.sb);
-        rw_rt.sb = rw_rt.st;
-        rw_rt.st += n;
+        pushn(mach, mach->sb);
+        mach->sb = mach->st;
+        mach->st += n;
 }
 
 /*
  * Destroy the stack frame and leave the function
  */
 void
-leave()
+leave(mach)
+	RWMACH *mach;
 {
         /* Save return value */
-        rw_rt.rA = popn();
+        mach->rA = popn(mach);
         /* Restore stack frame */
-        rw_rt.st = rw_rt.sb;
-        rw_rt.sb = popn();
-        rw_rt.pc = (pctr_t) popn();
+        mach->st = mach->sb;
+        mach->sb = popn(mach);
+        mach->pc = (pctr_t) popn(mach);
 }
 
 RWSTYPE
-getarg(num)
+getarg(mach, num)
+	RWMACH *mach;
         int num;
 {
-        return rw_rt.stack[rw_rt.sb - (STACK_BASE + num)];
+        return mach->stack[mach->sb - (STACK_BASE + num)];
 }
 /* ****************************************************************************
  * Instructions
@@ -3893,129 +3910,142 @@ getarg(num)
 static RWSTYPE nil = 0;
 
 int
-rw_error(msg)
+rw_error(mach, msg)
+	RWMACH *mach;
         char *msg;
 {
         radlog(L_ERR,
 	       "%s: %s",
                _("rewrite runtime error"), msg);
-        longjmp(rw_rt.jmp, 1);
+        longjmp(mach->jmp, 1);
         /*NOTREACHED*/
 }
                 
 void
-rw_call()
+rw_call(mach)
+	RWMACH *mach;
 {
-        pctr_t  pc = (pctr_t) rw_rt.code[rw_rt.pc++];
-        pushn(rw_rt.pc); /* save return address */
-        rw_rt.pc = pc;
+        pctr_t  pc = (pctr_t) rw_code[mach->pc++];
+        pushn(mach, mach->pc); /* save return address */
+        mach->pc = pc;
 }
 
 void
-rw_adjstk()
+rw_adjstk(mach)
+	RWMACH *mach;
 {
-        int delta = (int) rw_rt.code[rw_rt.pc++];
-        rw_rt.st -= delta;
-        pushn(rw_rt.rA);   /* Push the return back on stack */
+        int delta = (int) rw_code[mach->pc++];
+        mach->st -= delta;
+        pushn(mach, mach->rA);   /* Push the return back on stack */
 }
 
 void
-rw_enter()
+rw_enter(mach)
+	RWMACH *mach;
 {
         /*FIXME: runtime checking */
-        int n = (int) rw_rt.code[rw_rt.pc++];
-        enter(n);
+        int n = (int) rw_code[mach->pc++];
+        enter(mach, n);
 }
 
 void
-rw_leave()
+rw_leave(mach)
+	RWMACH *mach;
 {
-        leave();
+        leave(mach);
 }
 
 /*
  * Push a number on stack
  */
 void
-rw_pushn()
+rw_pushn(mach)
+	RWMACH *mach;
 {
-        RWSTYPE n = (RWSTYPE) rw_rt.code[rw_rt.pc++];
-        pushn(n);
+        RWSTYPE n = (RWSTYPE) rw_code[mach->pc++];
+        pushn(mach, n);
 }
 
 /*
  * Push a reference value on stack
  */
 void
-rw_pushref()
+rw_pushref(mach)
+	RWMACH *mach;
 {
-        int i = (int) rw_rt.code[rw_rt.pc++];
+        int i = (int) rw_code[mach->pc++];
 
-        pushref(rw_rt.sA, rw_rt.pmatch[i].rm_so, rw_rt.pmatch[i].rm_eo);
+        pushref(mach, mach->sA, mach->pmatch[i].rm_so, mach->pmatch[i].rm_eo);
 }
 
 /*
  * Push a variable on stack
  */
 void
-rw_pushv()
+rw_pushv(mach)
+	RWMACH *mach;
 {
-        stkoff_t n = (stkoff_t) rw_rt.code[rw_rt.pc++];
+        stkoff_t n = (stkoff_t) rw_code[mach->pc++];
 
-        pushn(rw_rt.stack[rw_rt.sb + n]);
+        pushn(mach, mach->stack[mach->sb + n]);
 }
 
 void
-rw_pushs()
+rw_pushs(mach)
+	RWMACH *mach;
 {
-        int   len = (int) rw_rt.code[rw_rt.pc++];
-        RWSTYPE *sptr = (RWSTYPE*) (rw_rt.code + rw_rt.pc);
+        int   len = (int) rw_code[mach->pc++];
+        RWSTYPE *sptr = (RWSTYPE*) (rw_code + mach->pc);
 
-        rw_rt.pc += len;
-        pushs(sptr, len);
+        mach->pc += len;
+        pushs(mach, sptr, len);
 }
 
 /*
  * Assign a value to a variable
  */
 void
-rw_asgn()
+rw_asgn(mach)
+	RWMACH *mach;
 {
-        stkoff_t off = (stkoff_t) rw_rt.code[rw_rt.pc++];
+        stkoff_t off = (stkoff_t) rw_code[mach->pc++];
         RWSTYPE n;
 
-        cpopn(&n);
+        cpopn(mach, &n);
         
-        rw_rt.stack[rw_rt.sb + off] = n;
-        pushn(n);
+        mach->stack[mach->sb + off] = n;
+        pushn(mach, n);
 }
 
 /* Check if the A/V pair is supplied in the request
  */
 void
-rw_attrcheck0()
+rw_attrcheck0(mach)
+	RWMACH *mach;
 {
-        int attr = (int) rw_rt.code[rw_rt.pc++];
+        int attr = (int) rw_code[mach->pc++];
 
-	pushn(avl_find(rw_rt.request, attr) != NULL);
+	pushn(mach, avl_find(mach->request, attr) != NULL);
 }
 
 void
-rw_attrcheck()
+rw_attrcheck(mach)
+	RWMACH *mach;
 {
-        int attr = (int) rw_rt.code[rw_rt.pc++];
+        int attr = (int) rw_code[mach->pc++];
 	RWSTYPE index;
-	VALUE_PAIR *p = rw_rt.request;
+	VALUE_PAIR *p = mach->request;
  
-	cpopn(&index);
-	pushn(avl_find_n(rw_rt.request, attr, index) != NULL);
+	cpopn(mach, &index);
+	pushn(mach, avl_find_n(mach->request, attr, index) != NULL);
 }
 
- /*
-  * Assign a value to an A/V pair
-  */
- void
-attrasgn_internal(attr, pair, val)
+/*
+ * Assign a value to an A/V pair
+ */
+void
+attrasgn_internal(mach, attr, pair, val)
+	RWMACH *mach;
 	int attr;
 	VALUE_PAIR *pair;
 	RWSTYPE val;
@@ -4023,8 +4053,8 @@ attrasgn_internal(attr, pair, val)
 	if (!pair) {
                  pair = avp_create(attr, 0, NULL, 0);
                  if (!pair)
-                        rw_error(_("can't create A/V pair"));
-                 avl_add_pair(&rw_rt.request, pair);
+                        rw_error(mach, _("can't create A/V pair"));
+                 avl_add_pair(&mach->request, pair);
          }
 		
 	switch (pair->type) {
@@ -4033,528 +4063,574 @@ attrasgn_internal(attr, pair, val)
 		replace_string(&pair->strvalue, (char*)val);
 		pair->strlength = strlen((char*) val);
 		break;
+		
 	case TYPE_INTEGER:
 	case TYPE_IPADDR:
 		pair->lvalue = val;
 		break;
 	}
 	
-	pushn(val);
+	pushn(mach, val);
 }
 
 void
-rw_attrasgn0()
+rw_attrasgn0(mach)
+	RWMACH *mach;
 {
-        int attr = (int) rw_rt.code[rw_rt.pc++];
+        int attr = (int) rw_code[mach->pc++];
         RWSTYPE val;
         
-        cpopn(&val);
-	attrasgn_internal(attr, avl_find(rw_rt.request, attr), val);
+        cpopn(mach, &val);
+	attrasgn_internal(mach, attr, avl_find(mach->request, attr), val);
 }
 
 void
-rw_attrasgn()
+rw_attrasgn(mach)
+	RWMACH *mach;
 {
-        int attr = (int) rw_rt.code[rw_rt.pc++];
+        int attr = (int) rw_code[mach->pc++];
         RWSTYPE val;
 	RWSTYPE index;
  
-        cpopn(&val);
-	cpopn(&index);
-	attrasgn_internal(attr, avl_find_n(rw_rt.request, attr, index), val);
+        cpopn(mach, &val);
+	cpopn(mach, &index);
+	attrasgn_internal(mach,
+			  attr, avl_find_n(mach->request, attr, index), val);
 }
 
 void
-rw_attrs0()
+rw_attrs0(mach)
+	RWMACH *mach;
 {
-        int attr = (int) rw_rt.code[rw_rt.pc++];
+        int attr = (int) rw_code[mach->pc++];
         VALUE_PAIR *pair;
         
-        if ((pair = avl_find(rw_rt.request, attr)) == NULL) 
-                pushs(&nil, 1);
+        if ((pair = avl_find(mach->request, attr)) == NULL) 
+                pushs(mach, &nil, 1);
         else
-                pushstr(pair->strvalue, pair->strlength);
+                pushstr(mach, pair->strvalue, pair->strlength);
 }
 
 void
-rw_attrn0()
+rw_attrn0(mach)
+	RWMACH *mach;
 {
-        int attr = (int) rw_rt.code[rw_rt.pc++];
+        int attr = (int) rw_code[mach->pc++];
         VALUE_PAIR *pair;
 
-        if ((pair = avl_find(rw_rt.request, attr)) == NULL)
-                pushn(0);
+        if ((pair = avl_find(mach->request, attr)) == NULL)
+                pushn(mach, 0);
         else
-                pushn(pair->lvalue);
+                pushn(mach, pair->lvalue);
 }
 
 void
-rw_attrs()
+rw_attrs(mach)
+	RWMACH *mach;
 {
-        int attr = (int) rw_rt.code[rw_rt.pc++];
-        VALUE_PAIR *pair;
-	RWSTYPE index;
-
-	cpopn(&index);
-        if ((pair = avl_find_n(rw_rt.request, attr, index)) == NULL) 
-                pushs(&nil, 1);
-        else
-                pushstr(pair->strvalue, pair->strlength);
-}
-
-void
-rw_attrn()
-{
-        int attr = (int) rw_rt.code[rw_rt.pc++];
+        int attr = (int) rw_code[mach->pc++];
         VALUE_PAIR *pair;
 	RWSTYPE index;
 
-	cpopn(&index);
-        if ((pair = avl_find_n(rw_rt.request, attr, index)) == NULL)
-                pushn(0);
+	cpopn(mach, &index);
+        if ((pair = avl_find_n(mach->request, attr, index)) == NULL) 
+                pushs(mach, &nil, 1);
         else
-                pushn(pair->lvalue);
+                pushstr(mach, pair->strvalue, pair->strlength);
 }
 
 void
-rw_attr_delete0()
+rw_attrn(mach)
+	RWMACH *mach;
 {
-        int attr = (int) rw_rt.code[rw_rt.pc++];
-	avl_delete(&rw_rt.request, attr);
-}
-
-void
-rw_attr_delete()
-{
-        int attr = (int) rw_rt.code[rw_rt.pc++];
+        int attr = (int) rw_code[mach->pc++];
+        VALUE_PAIR *pair;
 	RWSTYPE index;
 
-	cpopn(&index);
-	avl_delete_n(&rw_rt.request, attr, index);
+	cpopn(mach, &index);
+        if ((pair = avl_find_n(mach->request, attr, index)) == NULL)
+                pushn(mach, 0);
+        else
+                pushn(mach, pair->lvalue);
+}
+
+void
+rw_attr_delete0(mach)
+	RWMACH *mach;
+{
+        int attr = (int) rw_code[mach->pc++];
+	avl_delete(&mach->request, attr);
+}
+
+void
+rw_attr_delete(mach)
+	RWMACH *mach;
+{
+        int attr = (int) rw_code[mach->pc++];
+	RWSTYPE index;
+
+	cpopn(mach, &index);
+	avl_delete_n(&mach->request, attr, index);
 }
 
 /*
  * Pop (and discard) a value from stack
  */
 void
-rw_popn()
+rw_popn(mach)
+	RWMACH *mach;
 {
         RWSTYPE n;
-        cpopn(&n);
+        cpopn(mach, &n);
 }
 
 /*
  * Pop a value from stack into the accumulator
  */
 void
-rw_popa()
+rw_popa(mach)
+	RWMACH *mach;
 {
-        cpopn(&rw_rt.rA);
+        cpopn(mach, &mach->rA);
 }
 
 /*
  * Push accumulator on stack
  */
 void
-rw_pusha()
+rw_pusha(mach)
+	RWMACH *mach;
 {
-        pushn(rw_rt.rA);
+        pushn(mach, mach->rA);
 }
 
 /*
  * String concatenation
  */
 void
-rw_adds()
+rw_adds(mach)
+	RWMACH *mach;
 {
         char *s1, *s2, *s;
 
-        checkpop(2);
-        s2 = (char*)popn();
-        s1 = (char*)popn();
-        s = heap_reserve(strlen(s1) + strlen(s2) + 1);
+        checkpop(mach, 2);
+        s2 = (char*)popn(mach);
+        s1 = (char*)popn(mach);
+        s = heap_reserve(mach, strlen(s1) + strlen(s2) + 1);
         strcat(strcpy(s, s1), s2);
-        pushn((RWSTYPE)s);
+        pushn(mach, (RWSTYPE)s);
 }
 
 /*
  * Unary negation
  */
 void
-rw_neg()
+rw_neg(mach)
+	RWMACH *mach;
 {
-        checkpop(1);
-        pushn(-popn());
+        checkpop(mach, 1);
+        pushn(mach, -popn(mach));
 }
 
 /*
  * Bitwise operations
  */
 void
-rw_b_and()
+rw_b_and(mach)
+	RWMACH *mach;
 {
         int n1, n2;
 
-        checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 & n2);
+        checkpop(mach, 2);
+        n2 = popn(mach);
+        n1 = popn(mach);
+        pushn(mach, n1 & n2);
 }
 
 void
-rw_b_or()
+rw_b_or(mach)
+	RWMACH *mach;
 {
         int n1, n2;
 
-        checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 | n2);
+        checkpop(mach, 2);
+        n2 = popn(mach);
+        n1 = popn(mach);
+        pushn(mach, n1 | n2);
 }
 
 void
-rw_b_xor()
+rw_b_xor(mach)
+	RWMACH *mach;
 {
         int n1, n2;
 
-        checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 ^ n2);
+        checkpop(mach, 2);
+        n2 = popn(mach);
+        n1 = popn(mach);
+        pushn(mach, n1 ^ n2);
 }
 
 void
-rw_shl()
+rw_shl(mach)
+	RWMACH *mach;
 {
         int n1, n2;
 
-        checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 << n2);
+        checkpop(mach, 2);
+        n2 = popn(mach);
+        n1 = popn(mach);
+        pushn(mach, n1 << n2);
 }
 
 void
-rw_shr()
+rw_shr(mach)
+	RWMACH *mach;
 {
         int n1, n2;
 
-        checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 >> n2);
+        checkpop(mach, 2);
+        n2 = popn(mach);
+        n1 = popn(mach);
+        pushn(mach, n1 >> n2);
 }
 
 /*
  * Addition
  */
 void
-rw_add()
+rw_add(mach)
+	RWMACH *mach;
 {
         int n1, n2;
 
-        checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1+n2);
+        checkpop(mach, 2);
+        n2 = popn(mach);
+        n1 = popn(mach);
+        pushn(mach, n1+n2);
 }
 
 /*
  * Subtraction
  */
 void
-rw_sub()
+rw_sub(mach)
+	RWMACH *mach;
 {
         int n1, n2;
 
-        checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1-n2);
+        checkpop(mach, 2);
+        n2 = popn(mach);
+        n1 = popn(mach);
+        pushn(mach, n1-n2);
 }
 
 /*
  * Multiplication
  */
 void
-rw_mul()
+rw_mul(mach)
+	RWMACH *mach;
 {
         int n1, n2;
 
-        checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1*n2);
+        checkpop(mach, 2);
+        n2 = popn(mach);
+        n1 = popn(mach);
+        pushn(mach, n1*n2);
 }
 
 /*
  * Division
  */
 void
-rw_div()
+rw_div(mach)
+	RWMACH *mach;
 {
         int n1, n2;
 
-        checkpop(2);
-        n2 = popn();
-        n1 = popn();
+        checkpop(mach, 2);
+        n2 = popn(mach);
+        n1 = popn(mach);
         if (n2 == 0) 
-                rw_error(_("division by zero!"));
-        pushn(n1/n2);
+                rw_error(mach, _("division by zero!"));
+        pushn(mach, n1/n2);
 }
 
 /*
  * Remainder
  */
 void
-rw_rem()
+rw_rem(mach)
+	RWMACH *mach;
 {
         int n1, n2;
 
-        checkpop(2);
-        n2 = popn();
-        n1 = popn();
+        checkpop(mach, 2);
+        n2 = popn(mach);
+        n1 = popn(mach);
         if (n2 == 0) 
-                rw_error(_("division by zero!"));
-        pushn(n1%n2);
+                rw_error(mach, _("division by zero!"));
+        pushn(mach, n1%n2);
 }
 
 void
-rw_int()
+rw_int(mach)
+	RWMACH *mach;
 {
-        char *s = (char *)popn();
-        pushn(strtol(s, NULL, 0));
+        char *s = (char *)popn(mach);
+        pushn(mach, strtol(s, NULL, 0));
 }
 
 void
-rw_string()
+rw_string(mach)
+	RWMACH *mach;
 {
-        int n = popn();
+        int n = popn(mach);
         RWSTYPE buf[64];
         
         snprintf((char*)buf, sizeof(buf), "%d", n);
-        pushs(buf, 64);
+        pushs(mach, buf, 64);
 }
 
 void
-rw_eq()
+rw_eq(mach)
+	RWMACH *mach;
 {
         int n1, n2;
 
-        checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 == n2);
+        checkpop(mach, 2);
+        n2 = popn(mach);
+        n1 = popn(mach);
+        pushn(mach, n1 == n2);
 }
 
 void
-rw_ne()
+rw_ne(mach)
+	RWMACH *mach;
 {
         int n1, n2;
 
-        checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 != n2);
+        checkpop(mach, 2);
+        n2 = popn(mach);
+        n1 = popn(mach);
+        pushn(mach, n1 != n2);
 }
 
 void
-rw_lt()
+rw_lt(mach)
+	RWMACH *mach;
 {
         int n1, n2;
 
-        checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 < n2);
+        checkpop(mach, 2);
+        n2 = popn(mach);
+        n1 = popn(mach);
+        pushn(mach, n1 < n2);
 }
 
 void
-rw_le()
+rw_le(mach)
+	RWMACH *mach;
 {
         int n1, n2;
 
-        checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 <= n2);
+        checkpop(mach, 2);
+        n2 = popn(mach);
+        n1 = popn(mach);
+        pushn(mach, n1 <= n2);
 }
 
 void
-rw_gt()
+rw_gt(mach)
+	RWMACH *mach;
 {
         int n1, n2;
 
-        checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 > n2);
+        checkpop(mach, 2);
+        n2 = popn(mach);
+        n1 = popn(mach);
+        pushn(mach, n1 > n2);
 }
 
 void
-rw_ge()
+rw_ge(mach)
+	RWMACH *mach;
 {
         int n1, n2;
 
-        checkpop(2);
-        n2 = popn();
-        n1 = popn();
-        pushn(n1 >= n2);
+        checkpop(mach, 2);
+        n2 = popn(mach);
+        n1 = popn(mach);
+        pushn(mach, n1 >= n2);
 }
 
 void
-rw_eqs()
+rw_eqs(mach)
+	RWMACH *mach;
 {
         char *s1, *s2;
 
-        checkpop(2);
-        s2 = (char*)popn();
-        s1 = (char*)popn();
-        pushn(strcmp(s1, s2) == 0);
+        checkpop(mach, 2);
+        s2 = (char*)popn(mach);
+        s1 = (char*)popn(mach);
+        pushn(mach, strcmp(s1, s2) == 0);
 }
 
 void
-rw_nes()
+rw_nes(mach)
+	RWMACH *mach;
 {
         char *s1, *s2;
 
-        checkpop(2);
-        s2 = (char*)popn();
-        s1 = (char*)popn();
-        pushn(strcmp(s1, s2) != 0);
+        checkpop(mach, 2);
+        s2 = (char*)popn(mach);
+        s1 = (char*)popn(mach);
+        pushn(mach, strcmp(s1, s2) != 0);
 }
 
 void
-rw_lts()
+rw_lts(mach)
+	RWMACH *mach;
 {
         char *s1, *s2;
 
-        checkpop(2);
-        s2 = (char*)popn();
-        s1 = (char*)popn();
-        pushn(strcmp(s1, s2) < 0);
+        checkpop(mach, 2);
+        s2 = (char*)popn(mach);
+        s1 = (char*)popn(mach);
+        pushn(mach, strcmp(s1, s2) < 0);
 }
 
 void
-rw_les()
+rw_les(mach)
+	RWMACH *mach;
 {
         char *s1, *s2;
 
-        checkpop(2);
-        s2 = (char*)popn();
-        s1 = (char*)popn();
-        pushn(strcmp(s1, s2) <= 0);
+        checkpop(mach, 2);
+        s2 = (char*)popn(mach);
+        s1 = (char*)popn(mach);
+        pushn(mach, strcmp(s1, s2) <= 0);
 }
 
 void
-rw_gts()
+rw_gts(mach)
+	RWMACH *mach;
 {
         char *s1, *s2;
 
-        checkpop(2);
-        s2 = (char*)popn();
-        s1 = (char*)popn();
-        pushn(strcmp(s1, s2) > 0);
+        checkpop(mach, 2);
+        s2 = (char*)popn(mach);
+        s1 = (char*)popn(mach);
+        pushn(mach, strcmp(s1, s2) > 0);
 }
 
 void
-rw_ges()
+rw_ges(mach)
+	RWMACH *mach;
 {
         char *s1, *s2;
 
-        checkpop(2);
-        s2 = (char*)popn();
-        s1 = (char*)popn();
-        pushn(strcmp(s1, s2) >= 0);
+        checkpop(mach, 2);
+        s2 = (char*)popn(mach);
+        s1 = (char*)popn(mach);
+        pushn(mach, strcmp(s1, s2) >= 0);
 }
 
 void
-rw_not()
+rw_not(mach)
+	RWMACH *mach;
 {
         int n;
 
-        checkpop(1);
-        n = popn();
-        pushn(!n);
+        checkpop(mach, 1);
+        n = popn(mach);
+        pushn(mach, !n);
 }
 
 void
-rw_match()
+rw_match(mach)
+	RWMACH *mach;
 {
-        COMP_REGEX *rx = (COMP_REGEX *)rw_rt.code[rw_rt.pc++];
-        char *s = (char*)popn();
+        COMP_REGEX *rx = (COMP_REGEX *)rw_code[mach->pc++];
+        char *s = (char*)popn(mach);
         int rc;
         
-        if (rw_rt.nmatch < rx->nmatch + 1) {
-                efree(rw_rt.pmatch);
-                rw_rt.nmatch = rx->nmatch + 1;
-                rw_rt.pmatch = emalloc((rx->nmatch + 1) *
-                                       sizeof(rw_rt.pmatch[0]));
+        if (mach->nmatch < rx->nmatch + 1) {
+                efree(mach->pmatch);
+                mach->nmatch = rx->nmatch + 1;
+                mach->pmatch = emalloc((rx->nmatch + 1) *
+                                       sizeof(mach->pmatch[0]));
         }
 
-        rw_rt.sA = s;
+        mach->sA = s;
         
-        rc = regexec(&rx->regex, rw_rt.sA, 
-                     rx->nmatch + 1, rw_rt.pmatch, 0);
+        rc = regexec(&rx->regex, mach->sA, 
+                     rx->nmatch + 1, mach->pmatch, 0);
         if (rc && debug_on(1)) {
                 char errbuf[512];
                 regerror(rc, &rx->regex,
                          errbuf, sizeof(errbuf));
                 radlog(L_DEBUG,
 		       _("rewrite regex failure: %s. Input: %s"),
-                       errbuf, (char*)rw_rt.rA);
+                       errbuf, (char*)mach->rA);
         }
-        pushn(rc == 0);
+        pushn(mach, rc == 0);
 }
 
 void
-rw_jmp()
+rw_jmp(mach)
+	RWMACH *mach;
 {
-        pctr_t pc = (pctr_t) rw_rt.code[rw_rt.pc++];
-        rw_rt.pc = pc;
+        pctr_t pc = (pctr_t) rw_code[mach->pc++];
+        mach->pc = pc;
 } 
 
 void
-rw_jne()
+rw_jne(mach)
+	RWMACH *mach;
 {
         int n;
-        pctr_t pc = (pctr_t) rw_rt.code[rw_rt.pc++];
+        pctr_t pc = (pctr_t) rw_code[mach->pc++];
         
-        n = popn();
+        n = popn(mach);
         if (n != 0)
-                rw_rt.pc = pc;
+                mach->pc = pc;
 }
 
 void
-rw_je()
+rw_je(mach)
+	RWMACH *mach;
 {
         int n;
-        pctr_t pc = (pctr_t) rw_rt.code[rw_rt.pc++];
+        pctr_t pc = (pctr_t) rw_code[mach->pc++];
         
-        n = popn();
+        n = popn(mach);
         if (n == 0)
-                rw_rt.pc = pc;
+                mach->pc = pc;
 }
 
 void
-rw_builtin()
+rw_builtin(mach)
+	RWMACH *mach;
 {
-        INSTR fun = (INSTR) rw_rt.code[rw_rt.pc++];
-        pushn(rw_rt.pc);
-        enter(0);
-        fun();
-        leave();
+        INSTR fun = (INSTR) rw_code[mach->pc++];
+        pushn(mach, mach->pc);
+        enter(mach, 0);
+        fun(mach);
+        leave(mach);
 }
 
 void
-run(pc)
+run(mach, pc)
+	RWMACH *mach;
         pctr_t pc;
 {
-        rw_rt.pc = pc;
-        while (rw_rt.code[rw_rt.pc]) {
-                if (rw_rt.pc >= rw_rt.codesize)
-                        rw_error(_("pc out of range"));
-                (*(rw_rt.code[rw_rt.pc++]))();
+        mach->pc = pc;
+        while (rw_code[mach->pc]) {
+                if (mach->pc >= rw_codesize)
+                        rw_error(mach, _("pc out of range"));
+                (*(rw_code[mach->pc++]))(mach);
         }
 }
 
@@ -4563,7 +4639,8 @@ run(pc)
  */
 
 void
-gc()
+gc(mach)
+	RWMACH *mach;
 {
 }
 
@@ -4571,78 +4648,83 @@ gc()
  * Built-in functions
  */
 
-static void bi_length();
-static void bi_index();
-static void bi_rindex();
-static void bi_substr();
-static void bi_field();
-static void bi_logit();
+static void bi_length(RWMACH *mach);
+static void bi_index(RWMACH *mach);
+static void bi_rindex(RWMACH *mach);
+static void bi_substr(RWMACH *mach);
+static void bi_field(RWMACH *mach);
+static void bi_logit(RWMACH *mach);
 
 /*
  * integer length(string s)
  */
 void
-bi_length()
+bi_length(mach)
+	RWMACH *mach;
 {
-        pushn(strlen((char*)getarg(1)));
+        pushn(mach, strlen((char*)getarg(mach, 1)));
 }
 
 /*
  * integer index(string s, integer a)
  */
 void
-bi_index()
+bi_index(mach)
+	RWMACH *mach;
 {
         char *s, *p;
         int   c;
 
-        s = (char*)getarg(2);
-        c = (int) getarg(1);
+        s = (char*) getarg(mach, 2);
+        c = (int) getarg(mach, 1);
         p = strchr(s, c);
-        pushn( p ? p - s : -1 );
+        pushn(mach, p ? p - s : -1);
 }
 
 /*
  * integer rindex(string s, integer a)
  */
 void
-bi_rindex()
+bi_rindex(mach)
+	RWMACH *mach;
 {
         char *s, *p;
         int   c;
 
-        s = (char*)getarg(2);
-        c = (int) getarg(1);
-        pushn( (p = strrchr(s, c)) ? p - s : -1 );
+        s = (char*) getarg(mach, 2);
+        c = (int) getarg(mach, 1);
+        pushn(mach, (p = strrchr(s, c)) ? p - s : -1 );
 }
 
 /*
  * integer substr(string s, int start, int length)
  */
 void
-bi_substr()
+bi_substr(mach)
+	RWMACH *mach;
 {
         char *src, *dest;
         int   start, length;
 
-        src    = (char*)getarg(3);
-        start  = getarg(2);
-        length = getarg(1);
+        src    = (char*) getarg(mach, 3);
+        start  = getarg(mach, 2);
+        length = getarg(mach, 1);
         if (length < 0)
                 length = strlen(src) - start;
         
-        dest = heap_reserve(length+1);
+        dest = heap_reserve(mach, length+1);
         if (length > 0) 
                 strncpy(dest, src + start, length);
         dest[length] = 0;
-        pushn((RWSTYPE) dest);
+        pushn(mach, (RWSTYPE) dest);
 }
 
 void
-bi_field()
+bi_field(mach)
+	RWMACH *mach;
 {
-        char *str = (char*)getarg(2);
-        int fn = getarg(1);
+        char *str = (char*) getarg(mach, 2);
+        int fn = getarg(mach, 1);
         char *s = (char*)&nil;
         int len = 1;
 
@@ -4659,20 +4741,21 @@ bi_field()
                 }
         }
 
-        str = heap_reserve(len+1);
+        str = heap_reserve(mach, len+1);
         if (len) {
                 memcpy(str, s, len);
                 str[len] = 0;
         }
-        pushn((RWSTYPE) str);
+        pushn(mach, (RWSTYPE) str);
 }
 
 void
-bi_logit()
+bi_logit(mach)
+	RWMACH *mach;
 {
-        char *msg = (char*)getarg(1);
+        char *msg = (char*) getarg(mach, 1);
         radlog(L_INFO, "%s", msg);
-        pushn(0);
+        pushn(mach, 0);
 }
 
 static builtin_t builtin[] = {
@@ -4749,39 +4832,57 @@ function_install(fun)
  */
 
 void
+rw_mach_init(mach, stacksize)
+ 	RWMACH *mach;
+	size_t stacksize;
+{
+	memset(mach, 0, sizeof(*mach));
+
+	mach->stacksize = stacksize;
+	mach->stack = emalloc(mach->stacksize * sizeof(mach->stack[0]));
+        mach->st = 0;                     /* Stack top */
+        mach->ht = mach->stacksize - 1;   /* Heap top */
+}
+
+void
+rw_mach_destroy(mach)
+ 	RWMACH *mach;
+{
+	efree(mach->stack);
+}
+
+void
 run_init(pc, request)
         pctr_t     pc;
         VALUE_PAIR *request;
 {
         FILE *fp;
-        
-        rw_code_lock();
-        if (setjmp(rw_rt.jmp)) {
-                rw_code_unlock();
+        RWMACH mach;
+
+	rw_mach_init(&mach, rewrite_stack_size);
+        if (setjmp(mach.jmp)) {
+		rw_mach_destroy(&mach);
                 return;
-        }
+	}
         
-        rw_rt.request = request;
+        mach.request = request;
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "Before rewriting:\n");
-                avl_fprint(fp, rw_rt.request);
+                avl_fprint(fp, mach.request);
                 fclose(fp);
         }
-        rw_rt.st = 0;                     /* Stack top */
-        rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
+
         /* Imitate a function call */
-        rw_rt.pc = 0;
-        rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
-        pushn(0);                         /* Push on stack */
-        run(pc);                          /* call function */
+        pushn(&mach, 0);                  /* Return address */
+        run(&mach, pc);                   /* call function */
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "After rewriting\n");
-                avl_fprint(fp, rw_rt.request);
+                avl_fprint(fp, mach.request);
                 fclose(fp);
         }
-        rw_code_unlock();
+	rw_mach_destroy(&mach);
 }
 
 /*VARARGS3*/
@@ -4803,29 +4904,27 @@ va_run_init
         int nargs;
         char *s;
         RWSTYPE ret;
-	
+	RWMACH mach;
+
         fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
         if (!fun) {
                 radlog(L_ERR, _("function %s not defined"), name);
                 return -1;
         }
         
-        rw_code_lock();
-        if (setjmp(rw_rt.jmp)) {
-                rw_code_unlock();
+	rw_mach_init(&mach, rewrite_stack_size);
+        if (setjmp(mach.jmp)) {
+                rw_mach_destroy(&mach);
                 return -1;
         }
         
-        rw_rt.request = request;
+        mach.request = request;
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "Before rewriting:\n");
-                avl_fprint(fp, rw_rt.request);
+                avl_fprint(fp, mach.request);
                 fclose(fp);
         }
-        rw_rt.st = 0;                     /* Stack top */
-        rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
-        rw_rt.pc = 0;
 
         /* Pass arguments */
         nargs = 0;
@@ -4838,11 +4937,11 @@ va_run_init
                 nargs++;
                 switch (*typestr++) {
                 case 'i':
-                        pushn(va_arg(ap, int));
+                        pushn(&mach, va_arg(ap, int));
                         break;
                 case 's':
                         s = va_arg(ap, char*);
-                        pushstr(s, strlen(s));
+                        pushstr(&mach, s, strlen(s));
                         break;
                 default:
                         insist_fail("bad datatype");
@@ -4854,22 +4953,21 @@ va_run_init
                 radlog(L_ERR,
                        _("%s(): wrong number of arguments (should be %d, passed %d)"),
                        name, fun->nparm, nargs);
-                rw_code_unlock();
+                rw_mach_destroy(&mach);
                 return -1;
         }
 
         /* Imitate a function call */
-        rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
-        pushn(0);                         /* Push on stack */
-        run(fun->entry);                  /* call function */
+        pushn(&mach, 0);                  /* Return address */
+        run(&mach, fun->entry);           /* call function */
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "After rewriting\n");
-                avl_fprint(fp, rw_rt.request);
+                avl_fprint(fp, mach.request);
                 fclose(fp);
         }
-	ret = rw_rt.rA;
-        rw_code_unlock();
+	ret = mach.rA;
+        rw_mach_destroy(&mach);
         return ret;
 }
 
@@ -4890,7 +4988,8 @@ interpret(fcall, req, type, datum)
         int i, errcnt = 0;
         struct obstack obs;
         char *args;
-        
+        RWMACH mach;
+	
         obstack_init(&obs);
         args = radius_xlate(&obs, fcall, req, NULL);
         if (argcv_get(args, "(),", &argc, &argv) || argc < 3) {
@@ -4922,18 +5021,14 @@ interpret(fcall, req, type, datum)
                 return 1;
         }
         
-        rw_code_lock();
-        rw_rt.request = req ? req->request : NULL;
+	rw_mach_init(&mach, rewrite_stack_size);
+        mach.request = req ? req->request : NULL;
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "Before rewriting:\n");
-                avl_fprint(fp, rw_rt.request);
+                avl_fprint(fp, mach.request);
                 fclose(fp);
         }
-
-	rw_rt.st = 0;                     /* Stack top */
-	rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
-	rw_rt.pc = 0;
 
         /* Pass arguments */
         nargs = 0;
@@ -4951,7 +5046,7 @@ interpret(fcall, req, type, datum)
                                argv[0], argv[i], parm);
                         obstack_free(&obs, NULL);
                         argcv_free(argc, argv);
-                        rw_code_unlock();
+                        rw_mach_destroy(&mach);
                         return -1;
                 }
 
@@ -4960,7 +5055,7 @@ interpret(fcall, req, type, datum)
 			       _("too many arguments for %s"), argv[0]);
                         obstack_free(&obs, NULL);
                         argcv_free(argc, argv);
-                        rw_code_unlock();
+                        rw_mach_destroy(&mach);
                         return -1;
                 }
 
@@ -4969,10 +5064,10 @@ interpret(fcall, req, type, datum)
                         n = strtol(argv[i], &p, 0);
                         if (*p) 
                                 n = ip_gethostaddr(argv[i]);
-                        pushn(n);
+                        pushn(&mach, n);
                         break;
                 case String:
-                        pushstr(argv[i], strlen(argv[i]));
+                        pushstr(&mach, argv[i], strlen(argv[i]));
                         break;
                 default:
                         insist_fail("datatype!");
@@ -4986,40 +5081,39 @@ interpret(fcall, req, type, datum)
                        _("too few arguments for %s"),
                          argv[0]);
                 argcv_free(argc, argv);
-                rw_code_unlock();
+		rw_mach_destroy(&mach);
                 return -1;
         }
 
         argcv_free(argc, argv);
 
         /* Imitate a function call */
-        if (setjmp(rw_rt.jmp)) {
-                rw_code_unlock();
+        if (setjmp(mach.jmp)) {
+                rw_mach_destroy(&mach);
                 return -1;
         }
         
-        rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
-        pushn(0);                         /* Push on stack */
-        run(fun->entry);                  /* call function */
+        pushn(&mach, 0);                         /* Return address */
+        run(&mach, fun->entry);                  /* call function */
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "After rewriting\n");
-                avl_fprint(fp, rw_rt.request);
+                avl_fprint(fp, mach.request);
                 fclose(fp);
         }
         
         switch (fun->rettype) {
         case Integer:   
-                datum->ival = rw_rt.rA;
+                datum->ival = mach.rA;
                 break;
         case String:
-                datum->sval = make_string((char*) rw_rt.rA);
+                datum->sval = make_string((char*) mach.rA);
                 break;
         default:
                 abort();
         }
         *type = fun->rettype;
-        rw_code_unlock();
+	rw_mach_destroy(&mach);
         return 0;
 }
 
@@ -5029,7 +5123,7 @@ run_rewrite(name, req)
         VALUE_PAIR *req;
 {
         FUNCTION *fun;
-        
+	
         fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
         if (fun) {
                 if (fun->nparm) {
@@ -5108,7 +5202,8 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
         Datum datum;
         SCM cell;
         SCM FNAME;
-        
+        RWMACH mach;
+	
         FNAME = SCM_CAR(ARGS);
         ARGS  = SCM_CDR(ARGS);
         SCM_ASSERT(SCM_NIMP(FNAME) && SCM_STRINGP(FNAME),
@@ -5120,11 +5215,8 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
                 scm_misc_error(func_name,
                                "function ~S not defined",
                                scm_list_1(FNAME));
-
-        rw_code_lock();
-	rw_rt.st = 0;                     /* Stack top */
-	rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
-	rw_rt.pc = 0;
+	
+        rw_mach_init(&mach, rewrite_stack_size);
 
         /* Pass arguments */
         nargs = 0;
@@ -5144,20 +5236,20 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
                 case Integer:
                         rc = radscm_scm_to_ival(car, &n);
                         if (!rc) 
-                                pushn(n);
+                                pushn(&mach, n);
                         break;
                         
                 case String:
                         if (SCM_NIMP(car) && SCM_STRINGP(car)) {
                                 char *p = SCM_STRING_CHARS(car);
-                                pushstr(p, strlen(p));
+                                pushstr(&mach, p, strlen(p));
                                 rc = 0;
                         } else
                                 rc = 1;
                 }
 
                 if (rc) {
-                        rw_code_unlock();
+                        rw_mach_destroy(&mach);
                         scm_misc_error(func_name,
                              "type mismatch in argument ~S(~S) in call to ~S",
                                        scm_list_3(SCM_MAKINUM(nargs),
@@ -5167,32 +5259,32 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
         }
 
         if (fun->nparm != nargs) {
-                rw_code_unlock();
+		rw_mach_destroy(&mach);
                 scm_misc_error(func_name,
                                "too few arguments for ~S",
                                scm_list_1(FNAME));
         }
         
         /* Imitate a function call */
-        if (setjmp(rw_rt.jmp)) {
-                rw_code_unlock();
+        if (setjmp(mach.jmp)) {
+                rw_mach_destroy(&mach);
                 return -1;
         }
-        rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
-        pushn(0);                         /* Push on stack */
-        run(fun->entry);                  /* call function */
+
+        pushn(&mach, 0);                         /* Return address */
+        run(&mach, fun->entry);                  /* call function */
 
         switch (fun->rettype) {
         case Integer:   
-                datum.ival = rw_rt.rA;
+                datum.ival = mach.rA;
                 break;
         case String:
-                datum.sval = (char*) rw_rt.rA;
+                datum.sval = (char*) mach.rA;
                 break;
         default:
                 abort();
         }
-        rw_code_unlock();
+	rw_mach_destroy(&mach);
         return radscm_datum_to_scm(fun->rettype, datum);
 }
 

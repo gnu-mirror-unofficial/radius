@@ -351,7 +351,7 @@ translation percentage of at least 50%.
      parted          |       []  []            []             | 11
      ptx             | [] [] []       []       [] []          | 15
      python          |                                        |  0
-     radius          | []                                     |  2
+     radius          | [] []                                  |  3
      recode          |    []          []    [] []             | 13
      sed             |           []   [] [] [] [] []          | 21
      sh-utils        | [] []     []   [] [] [] [] []     []   | 22

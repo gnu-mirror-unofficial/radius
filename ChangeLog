@@ -1,3 +1,11 @@
+2003-06-11  Sergey Poznyakoff 
+
+	* Makefile.am: Added some automake options
+	* radiusd/radutil.c (attr_to_str): Do not recalculate
+	string length to allow for passing binary strings.
+	* radiusd/scheme.c (scheme_auth): Minor fix
+	* radscripts/radgrep.m4: Bugfix
+
 2003-06-10  Sergey Poznyakoff
 	
 	* include/radius.h (avp_create_integer,avp_create_string)

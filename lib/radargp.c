@@ -122,8 +122,6 @@ rad_argp_parse(argp, pargc, pargv, flags, arg_index, input)
         else
                 progname++;
 
-	if (!argp->argp_domain)
-		argp->argp_domain = PACKAGE;
         ret = argp_parse (argp, *pargc, *pargv, flags, arg_index, input);
         return ret;
 }

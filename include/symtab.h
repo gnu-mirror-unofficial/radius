@@ -18,6 +18,9 @@
  */
 /* $Id$ */
 
+#ifndef __symtab_h
+#define __symtab_h
+
 typedef struct symbol Symbol;
 struct symbol {
 	Symbol *next;
@@ -37,7 +40,9 @@ void symtab_free(Symtab *symtab);
 Symbol * sym_install(Symtab *symtab, char *name);
 Symbol * sym_lookup(Symtab *symtab, char *name);
 Symbol * sym_next(Symbol *sym);
+void symtab_iterate(Symtab *symtab, int (*fn)(), void *closure);
 
 Symbol * alloc_sym(char *, unsigned);
 void     sym_free(Symbol *);
 
+#endif

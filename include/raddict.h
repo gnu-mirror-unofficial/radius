@@ -198,6 +198,9 @@
  * 
  */
 #define DV_AUTH_TYPE_MYSQL 252
+/*  A preferred alias for Mysql
+ */
+#define DV_AUTH_TYPE_SQL 252
 #define DV_AUTH_TYPE_PAM 253
 #define DV_AUTH_TYPE_ACCEPT 254
 #define DV_FALL_THROUGH_NO 0
@@ -206,7 +209,6 @@
 #define DV_ADD_PORT_TO_IP_ADDRESS_YES 1
 /* 
  * 	Configuration Values
- * 	comment out these two lines to turn account expiration off
  * 
  */
 #define DV_SERVER_CONFIG_PASSWORD_EXPIRATION 30

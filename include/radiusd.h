@@ -159,7 +159,7 @@ typedef struct auth_req {
 	u_char			code;
 	u_char			vector[AUTH_VECTOR_LEN];
 	u_char			secret[AUTH_PASS_LEN];
-	u_char			username[AUTH_STRING_LEN];
+	u_char		        digest[AUTH_PASS_LEN];
 	VALUE_PAIR		*request;
 	UINT4			timestamp;
 	u_char			*data;		/* Raw received data */
@@ -411,7 +411,7 @@ void		fprint_attr_list(FILE *, VALUE_PAIR *);
 void		fprint_attr_val(FILE *, VALUE_PAIR *);
 
 /* dict.c */
-int		dict_init(char *);
+int		dict_init();
 DICT_ATTR	*dict_attrget(int);
 DICT_ATTR	*dict_attrfind(char *);
 DICT_VALUE	*dict_valfind(char *);
@@ -570,8 +570,9 @@ void snmp_add_community(char *str, int access);
 void snmp_free_communities();
 #endif
 
-/* oldconfig.c */
-int read_old_config_file(char *name, int vital, int fcnt, int *flen, char **fv, int (*fun)(), void *closure);
+/* raddb.c */
+int read_raddb_file(char *name, int vital, int fcnt, int (*fun)(),
+		    void *closure);
 
 int xlat_keyword(struct keyword *kw, char *str, int def);
 
@@ -617,3 +618,7 @@ char * debug_print_pair(VALUE_PAIR *pair);
 /* rewrite.y */
 int run_rewrite(char *name, VALUE_PAIR *req);
 int parse_rewrite();
+
+/* md5crypt.c */
+char * md5crypt(const char *pw, const char *salt);
+

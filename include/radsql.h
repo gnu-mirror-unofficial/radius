@@ -21,8 +21,13 @@ typedef unsigned long qid_t; /* queue identifier */
 
 #ifdef USE_SQL
 
-#ifndef RAD_MYSQL_PORT
-# define RAD_MYSQL_PORT                 3306
+#ifndef RAD_SQL_PORT
+# if USE_SQL == SQL_MYSQL
+#  define RAD_SQL_PORT                 3306
+# endif
+# if USE_SQL == SQL_POSTGRES
+#  define RAD_SQL_PORT                 5432
+# endif
 #endif
 
 #define SQL_AUTH     0
@@ -49,6 +54,7 @@ typedef struct {
 	char     *auth_query;
 	char     *acct_start_query;
 	char     *acct_stop_query;
+	char     *acct_nasup_query;
 	char     *acct_nasdown_query;
 	BUFFER   buf;
 	int      keepopen;

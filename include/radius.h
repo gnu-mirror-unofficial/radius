@@ -42,9 +42,7 @@ typedef struct pw_auth_hdr {
 # define PW_ACCT_UDP_PORT		1646
 #endif
 
-#define VENDORPEC_USR			429
-
-
+#define PW_TYPE_INVALID                -1
 #define PW_TYPE_STRING			0
 #define PW_TYPE_INTEGER			1
 #define PW_TYPE_IPADDR			2

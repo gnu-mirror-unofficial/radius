@@ -62,7 +62,6 @@ proc default_radiusd_version {} {
     global RADIUSD
     global RADIUSFLAGS
     global RADIUSVERSION
-    global RADIUSFLAGS
     global CAPABILITY
 
     if [info exists RADIUSVERSION] {

@@ -11,7 +11,9 @@ radiusd - Authentication and accounting server
 [\fB-d\fR config_dir]
 [\fB-f\fR]
 [\fB-l\fR log_dir]
-[\fB-N\fR]
+[\fB-mb\fR]
+[\fB-mc\fR]
+[\fB-mt\fR]
 [\fB-n\fR]
 [\fB-p\fR port]
 [\fB-Ssv\fR]
@@ -79,6 +81,19 @@ terminal. This is used for debugging.
 .IP -l
 Specifies alternate name for logging directory. \fBRadiusd\fR writes
 there its logfile(s). The default is \fB\*(RL\fR.
+.IP -mc
+Check mode. In this mode \fBradiusd\fR starts as usual, checks its
+configuration files and exits. All log channels are duplicated to
+stdout.
+.IP -mb
+Build DBM users database out of plaintext file. If no argument is
+specified, the file \*(RD/users is taken as input.  Otherwise the
+argument specifies the filename to be used as input. This option
+takes effect only if the program was configureb with \fB--enable-dbm\fR
+option.
+.IP -mt
+Start in test mode. In this mode \fBradiusd\fR starts interactive
+interpreter which allows to test various aspects of its configuration.
 .IP -p
 Specifies alternate port for authentication requests. The port number
 for accounting requests is determined by adding 1 to this number. Port
@@ -125,7 +140,7 @@ accounting information.
 Or users.dir, users.pag pair. The DBM version of the users
 database. This is used when the server is compiled with
 \fB--enable-dbm\fR option and either \fB-b\fR flag is specified in the
-command line, or one of \fBusedbm yes\fR option is
+command line, or \fBusedbm yes\fR option is
 used in \fBconfig\fR file.
 .IP radius.deny
 The list of users whose access is denied for some reason.
@@ -142,14 +157,18 @@ to communicate to the server.
 .IP hints
 The \fBradius\fR server can alter its politics towards a user
 depending on its login name. It can, for example, supply a different
-kind of service, assign it the IP number, etc. To do so the server
-consults this file. This extends the Prefix/Suffix functionality of
-the \fILivingstone 2.0\fR server.
+kind of service, assign it the IP number, etc. This file specifies
+the rules to be applied to an incoming request depending on the 
+username it contains.
 .IP huntgroups
-Defines the huntgroups. The huntgroup is a class of users that have
-some common characteristics. 
+Defines the huntgroups. A huntgroup is a class of users that have
+some common attributes in the incoming packet, for example all users
+coming from a given NAS. 
 
 .SH FILES
+These are default values. They can be overridden either from command
+line or from configuration file.
+
 .IP \*(RD/
 Configuration files directory
 .PP

@@ -145,13 +145,17 @@ _encode_pairlist(VALUE_PAIR *p, u_char *vector, u_char *secret)
 {
 	VALUE_PAIR *ret = avl_dup(p);
 
-	for (p = ret; p; p = p->next)
-		if (p->attribute == DA_USER_PASSWORD
-		    || p->attribute == DA_CHAP_PASSWORD) {
+	for (p = ret; p; p = p->next) {
+		if (p->prop & AP_ENCRYPT_RFC2138) {
 			char *pass = p->avp_strvalue;
 			encrypt_password(p, pass, vector, secret);
 			efree(pass);
+		} else if (p->prop & AP_ENCRYPT_RFC2868) {
+			char *pass = p->avp_strvalue;
+			encrypt_tunnel_password(p, 0, pass, vector, secret);
+			efree(pass);
 		}
+	}
 	return ret;
 }
 

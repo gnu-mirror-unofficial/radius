@@ -1,3 +1,8 @@
+2004-08-16  Sergey Poznyakoff 
+
+	* radtest/input.l: Allow single quotes around any
+	identifier.
+
 2004-08-06  Sergey Poznyakoff
 
 	* radiusd/radiusd.c (struct cfg_stmt acct_stmt): Bugfix.

@@ -400,7 +400,7 @@ log_change_owner(RADIUS_USER *usr)
 		if (cp->mode == LM_FILE
 		    && chown(cp->id.file, usr->uid, usr->gid)) {
 			radlog(L_ERR,
-			       _("%s: cannot change owner to %d/%d"),
+			       _("%s: cannot change owner to %d:%d"),
 			       cp->id.file, usr->uid, usr->gid);
 			errcnt++;
 		}
@@ -541,13 +541,18 @@ format_exit_status(char *buffer, int buflen, int status)
 {
 	if (WIFEXITED(status)) {
 		snprintf(buffer, buflen,
+/* TRANSLATORS: the subject will always be printed before this msgid.
+   for example: "child 222 exited with status 0"
+*/
 			 _("exited with status %d"),
 			 WEXITSTATUS(status));
 	} else if (WIFSIGNALED(status)) {
 		snprintf(buffer, buflen,
+/* TRANSLATORS: the subject will always be printed before this msgid. */
 			 _("terminated on signal %d"),
 			 WTERMSIG(status));
 	} else
+/* TRANSLATORS: the subject will always be printed before this msgid. */
 		snprintf(buffer, buflen, _("terminated"));
 }
 

@@ -58,6 +58,13 @@
 # include <time.h>
 #endif
 
+#ifndef timercmp
+#define       timercmp(tvp, uvp, cmp)\
+                      ((tvp)->tv_sec cmp (uvp)->tv_sec ||\
+                      (tvp)->tv_sec == (uvp)->tv_sec &&\
+                      (tvp)->tv_usec cmp (uvp)->tv_usec)
+#endif
+
 #if !HAVE_DECL_STRNCASECMP
 extern int strncasecmp(char*, char*, int);
 #endif

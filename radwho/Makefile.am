@@ -12,13 +12,12 @@
 bin_PROGRAMS    = radwho
 radwho_SOURCES = radwho.c 
 radwho_LDADD   = ../radlib/librad.la ../radlib/liblog.la ../radlib/libdebug.la
-INCLUDES        = -I$(top_srcdir) -I$(top_srcdir)/include -I$(srcdir) @INCLUDEPATH@
+INCLUDES        = -I$(top_srcdir)/include @INCLUDEPATH@
 
 
 SUFFIXES=.S .c .ln .o .s
 
 if MAINTAINER_MODE
-CFLAGS=-ggdb -DMAINTAINER_MODE=1
 MAINTAINERCLEANFILES=core *~ err out
 CLEANFILES=*.ln
 

@@ -10,15 +10,11 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-if MAINTAINER_MODE
-AM_CFLAGS=-ggdb -DMAINTAINER_MODE=1
-endif
-
 pamdir=@PAMDIR@
 pam_PROGRAMS = pam_radius.la
 pam_radius_la_SOURCES = pam_radius.c
 pam_radius_la_LDADD = -lpam ../../radlib/librad.la ../../radlib/libdebug.la 
-INCLUDES = -I../.. -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp @INCLUDEPATH@
+INCLUDES = -I$(top_builddir) -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp @INCLUDEPATH@
 
 raddbdir=@ETC_DIR@/raddb
 raddb_DATA=client.conf

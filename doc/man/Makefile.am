@@ -18,10 +18,6 @@ CLEANFILES=$(man_MANS)
 dist-hook:
 	-(cd $(distdir); rm -f $(CLEANFILES))
 
-if MAINTAINER_MODE
-
-endif
-
 builddbm.8: $(srcdir)/builddbm.8.man
 	soelim $(srcdir)/builddbm.8.man > builddbm.8
 

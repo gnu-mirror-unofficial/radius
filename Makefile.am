@@ -21,11 +21,10 @@ if BUILD_CLIENT
 CLIENT=client
 endif
 
-SUBDIRS=include radlib snmplib radiusd radwho radzap radlast raduse\
+SUBDIRS=m4 include radlib snmplib radiusd radwho radzap radlast raduse\
         radscripts elisp raddb $(CLIENT) $(SCMDIR) $(TESTDIR) doc po
 
 if MAINTAINER_MODE
-CFLAGS=-ggdb
 MAINTAINERCLEANFILES=core *~ err out
 
 debugmod:; MAKE=${MAKE} $(top_srcdir)/scripts/debug.sh $(top_srcdir)/scripts/debugmod.m4 radlib $(SUBDIRS)
@@ -37,7 +36,7 @@ lint::
 	done
 endif
 
-EXTRA_DIST=include m4 doc mibs scripts contrib ylwrap
+EXTRA_DIST=doc mibs scripts contrib ylwrap
 
 dist-hook:
 	-(cd $(distdir); \

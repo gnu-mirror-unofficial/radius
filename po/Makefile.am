@@ -85,7 +85,4 @@ SUFFIXES=.c .o .po .pox .gmo .mo .msg .cat
 	file=$(srcdir)/`echo $* | sed 's,.*/,,'`.gmo \
 	 && rm -f $$file && $(GMSGFMT) -o $$file $<
 
-if MAINTAINER_MODE
-
-endif
 

@@ -38,6 +38,8 @@ typedef enum {
 	rtv_avl                  /* A/V pair list */
 } radtest_data_type;
 
+#define RTV_MAX rtv_avl+1
+
 union radtest_datum {
 	long number;             /* rtv_integer */
 	grad_uint32_t ipaddr;    /* rtv_ipaddress */ 

@@ -38,7 +38,7 @@ logging {
 	};
 	category debug {
 		channel debug;
-		level acct=1,radpdu,radsrv,proxy=100;
+		level acct=1,radpdu,radsrv,proxy=100,request;
 	};
 	category !debug {
 		channel default;

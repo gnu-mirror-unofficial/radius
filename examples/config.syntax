@@ -6,8 +6,8 @@ option {
 	source-ip 127.0.0.1;
 	# Maximum number of request in queue
 	max-requests 127;
-	# Maximum number of threads
-	max-threads 128;
+	# Maximum number of children processes
+	max-processes 128;
 	# The following specifies the uid under which external processes
 	# (those triggered by Exec-Program and Exec-Program-Wait 
 	# attributes) should be run. The corresponding gid is determined
@@ -35,7 +35,6 @@ logging {
 		print-cons yes;		# Duplicate output to /dev/console
 		print-level yes;	# Output severity level description
 		print-severity yes;     # Synonim for the above
-		print-tid yes;		# Print thread ID.
 		print-milliseconds yes; # Print timestamp with milliseconds
 		print-category yes;     # Print category description
 	};	
@@ -115,13 +114,6 @@ acct {
                                  # requests. Allowed values are 1 through 9
 };
 
-## This controls the proxy service
-proxy {
-	max-requests 24;	# Maximum number of ACCT requests in queue
-        request-cleanup-delay 60; # Number of seconds the request remains
-                                  # in queue after being processed
-};
-
 # DBM handling. Can be one of
 #	no	-	Never to use DBM database
 #	yes	-	Use only DBM database and ignore users
@@ -161,8 +153,6 @@ rewrite {
 guile {
 	debug yes;              # Enable debug mode
 	gc-interval 3600;       # Perform GC each hour
-	task-timeout 10;	# Maximum time a single scheme task is allowed
-                                # to run
 	load-path "/usr/local/libexec/guile"; # Add given path to guile's
                                               # %load-list
 	load "lib.scm";         # Load given file
@@ -185,7 +175,6 @@ filters {
 	filter ttl_filter {
 		exec-path "/usr/local/libexec/ttl-compute -f -";
 		error-log "ttl.log";
-		common yes;
 		auth {
 			input-format "%C{User-Name} ?";
 			wait-reply yes;

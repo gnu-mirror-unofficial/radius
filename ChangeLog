@@ -1,3 +1,23 @@
+2003-04-27  Sergey Poznyakoff
+
+	Added back SNMP support.
+
+	* configure.ac: Add AC_FUNC_MMAP
+	* examples/config.syntax: Updated
+	* include/radiusd.h (Server_stat,SNMP_REQ): Modified
+	  (stat_inc): Modified
+	  (server_stat): Pointer
+	  (request_stat_list): New function.
+	  (udp_open): Declaration changed.
+	* radiusd/.gdbinit: Updated.
+	* radiusd/files.c (read_naslist_file): Attach nas_stat data.
+	* radiusd/radiusd.c: Re-introduced SNMP
+	* radiusd/snmpserv.c: Likewise.
+	* radiusd/stat.c: Reverted to mmapped memory approach.
+	* radiusd/request.c (request_stat_list): New function.
+	* radiusd/testsuite/proxy/config.in: Updated
+	* radiusd/testsuite/raddb/config.in: Updated
+	
 2003-04-26  Sergey Poznyakoff
 
 	Added back server Scheme support. This commit passes successfully

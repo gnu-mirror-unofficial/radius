@@ -27,11 +27,12 @@ logging {
 		file "radius.log";
 		print-level yes;
 		print-category yes;
-		print-tid yes;
+		print-pid yes;
 	};
 	channel debug {
 		file "radius.debug";
 		print-milliseconds yes;
+		print-pid yes;
 	};
 	category auth {
 		channel default;
@@ -40,7 +41,7 @@ logging {
 	};
 	category debug {
 		channel debug;
-		level acct=1,radpdu,radsrv,radiusd=2,request=2,scheme,exec=100,signal=100;
+		level acct=1,radpdu,radsrv,radiusd=2,request=2,scheme;
 	};
 	category !debug {
 		channel default;
@@ -58,11 +59,6 @@ auth {
 
 acct {
 	port @ACCT_PORT@;
-	max-requests 127;
-	request-cleanup-delay 2;
-};
-
-proxy {
 	max-requests 127;
 	request-cleanup-delay 2;
 };

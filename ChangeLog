@@ -1,3 +1,13 @@
+2003-06-23  Sergey Poznyakoff 
+
+	* lib/avl.c: Fixed wording in diagnostic.
+	* lib/radargp.c: 
+	* radiusd/radiusd.c:
+	* radiusd/rewrite.y:
+	* radiusd/rpp.c
+	* radiusd/stat.c
+	* radiusd/testsuite/radiusd/radiusd.exp
+
 2003-06-19  Sergey Poznyakoff  
 
 	* client/pam_radius/pam_radius.c: Syntax cleanup.

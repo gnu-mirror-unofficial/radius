@@ -249,6 +249,13 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
                         break;
                         
                 case DA_PASSWORD_LOCATION:
+			if (p->avp_lvalue == DV_PASSWORD_LOCATION_SQL) {
+				const char *msg;
+				if (!sql_auth_avail_p(&msg)) {
+					grad_log_loc(L_ERR, loc, "%s", msg);
+					errcnt++;
+				}
+			}
                         check_dup_attr(&pass_loc, p, loc);
                         break;
 
@@ -354,6 +361,14 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
                 break;
                 
         case DV_AUTH_TYPE_SQL:
+	{
+		const char *msg;
+		if (!sql_auth_avail_p(&msg)) {
+			grad_log_loc(L_ERR, loc, "%s", msg);
+			errcnt++;
+			break;
+		}
+		
                 if (password || crypt_password) {
                         grad_log_loc(L_WARN, loc,
 				     "%s",
@@ -370,7 +385,8 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
                 grad_avl_add_pair(pairs, p);
                 
                 break;
-                
+	}
+	
         case DV_AUTH_TYPE_PAM:
                 if (pam_auth && auth_data) {
                         grad_log_loc(L_WARN, loc,

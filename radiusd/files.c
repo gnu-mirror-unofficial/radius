@@ -66,7 +66,6 @@ Symtab          *deny_tab;     /* raddb/access.deny */
 MATCHING_RULE   *huntgroups;   /* raddb/huntgroups */ 
 MATCHING_RULE   *hints;        /* raddb/hints */
 CLIENT          *clients;      /* raddb/clients */
-REALM           *realms;       /* raddb/realms */ 
 RADCK_TYPE      *radck_type;   /* raddb/nastypes */
 
 static struct keyword op_tab[] = {
@@ -1114,114 +1113,6 @@ find_radck_type(name)
                 
 
 /* ****************************************************************************
- * raddb/realms
- */
-
-/*
- * parser
- */
-
-/* read realms entry */
-/*ARGSUSED*/
-int
-read_realms_entry(unused, fc, fv, file, lineno)
-        void *unused;
-        int fc;
-        char **fv;
-        char *file;
-        int lineno;
-{
-        REALM *rp;
-        char *p;
-
-        if (fc < 2) {
-                radlog(L_ERR, _("%s:%d: too few fields (%d)"),
-                       file, lineno, fc);
-                return -1;
-        }
-        
-        rp = Alloc_entry(REALM);
-
-        if ((p = strchr(fv[1], ':')) != NULL) {
-                *p++ = 0;
-                rp->auth_port = strtoul(p, &p, 0);
-                rp->acct_port = rp->auth_port + 1;
-                if (*p) {
-                        if (*p == ':')
-                                rp->acct_port = strtoul(p+1, &p, 0);
-                        else 
-                                radlog(L_ERR,
-                                       "%s:%d: junk after port number",
-                                       file, lineno);
-                }
-        } else {
-                rp->auth_port = auth_port;
-                rp->acct_port = acct_port;
-        }
-        if (strcmp(fv[1], "LOCAL") != 0)
-                rp->ipaddr = ip_gethostaddr(fv[1]);
-        STRING_COPY(rp->realm, fv[0]);
-        STRING_COPY(rp->server, fv[1]);
-        
-        if (fc > 3 && isdigit(fv[fc-1][0])) {
-                /* Compatibility quirk: set login quota and decrease the
-                   number of fields. */
-                rp->maxlogins = atoi(fv[fc-1]);
-                fc--;
-        }
-        
-        if (fc > 2) {
-                envar_t *args;
-                int n;
-                
-                args = envar_parse_argcv(fc-2, &fv[2]);
-
-                rp->striprealm = envar_lookup_int(args, "strip", 1);
-                n = envar_lookup_int(args, "quota", 0);
-                if (n)
-                        rp->maxlogins = n;
-                envar_free_list(args);
-        }
-        rp->next = realms;
-        realms = rp;
-        return 0;
-}
-
-/*
- * Read the realms file.
- */
-int
-read_realms_file(file)
-        char *file;
-{
-        free_slist((struct slist*)realms, NULL);
-        realms = NULL;
-        
-        return read_raddb_file(file, 1, read_realms_entry, NULL);
-}
-
-/*
- * Realm Lookup Functions */
-
-/* Find a realm in the REALM list */
-REALM *
-realm_find(realm)
-        char *realm;
-{
-        REALM *p;
-
-        for (p = realms; p; p = p->next)
-                if (strcmp(p->realm, realm) == 0)
-                        break;
-        if (!p && strcmp(realm, "NOREALM")) {
-                for (p = realms; p; p = p->next)
-                        if (strcmp(p->realm, "DEFAULT") == 0)
-                                break;
-        }
-        return p;
-}
-
-/* ****************************************************************************
  * raddb/access.deny
  */
 
@@ -1943,7 +1834,7 @@ reload_data(what, do_radck)
 
         case reload_realms:
                 path = mkfilename(radius_dir, RADIUS_REALMS);
-                if (read_realms_file(path) < 0)
+                if (realm_read_file(path, auth_port, acct_port) < 0)
                         rc = 1;
                 efree(path);
                 break;

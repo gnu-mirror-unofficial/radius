@@ -462,7 +462,7 @@ radrecv(host, udp_port, buffer, length)
 			pair->name = attr->name;
 			pair->attribute = attr->value;
 			pair->type = attr->type;
-			pair->additivity = attr->additivity;
+			pair->prop = attr->prop;
 			pair->next = (VALUE_PAIR *)NULL;
 
 			switch (attr->type) {

@@ -212,7 +212,7 @@ install_pair(name, op, valstr)
 	pair->name = attr->name;
 	pair->attribute = attr->value;
 	pair->type = attr->type;
-	pair->additivity = attr->additivity;
+	pair->prop = attr->prop;
 	pair->operator = op;
 
 	if (valstr[0] == '=') {

@@ -10,8 +10,8 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-SUBDIRS=m4 include radlib sql snmplib radiusd radwho radzap radlast raduse\
-        radscripts elisp raddb db client radscm test doc po mibs\
+SUBDIRS=m4 include radlib sql snmplib radscm radiusd radwho radzap radlast\
+        raduse radscripts elisp raddb db client test doc po mibs\
         scripts contrib
 
 if MAINTAINER_MODE

@@ -245,6 +245,12 @@ scheme_call_proc(SCM *result, char *procname, SCM arglist)
 	return 0;
 }
 
+void
+scheme_eval_unspecified_expr(char *expr)
+{
+	scheme_eval_expression(expr, NULL);
+}
+
 int
 scheme_eval_boolean_expr(char *expr)
 {
@@ -672,6 +678,11 @@ scheme_try_auth(int auth_type, radiusd_request_t *req,
 	        grad_avp_t **user_reply_ptr)
 {
 	return 1;
+}
+
+void
+scheme_eval_unspecified_expr(char *expr)
+{
 }
 
 int

@@ -44,36 +44,35 @@ struct check_datum {
 };
 
 static void TC(unsigned *R, int n);
-static int sym_counter(void *closure, User_symbol *sym);
 static void mark_profile(struct check_datum *datum, User_symbol *sym,
                          char *target_name);
 static void mark_list(struct check_datum *datum, User_symbol *sym, 
                       grad_avp_t *list);
-static int pass1(struct check_datum *datum, User_symbol *sym);
-static int pass2(struct check_datum *datum, User_symbol *sym);
 static void check_dup_attr(grad_avp_t **prev, grad_avp_t *ptr, grad_locus_t *loc);
 
 
-int
-sym_counter(void *closure, User_symbol *sym)
+static int
+sym_counter(void *closure, grad_symbol_t *symbol)
 {
+	User_symbol *sym = (User_symbol *) symbol;
+
         sym->ordnum = (*(int*)closure)++;
         return 0;
 }
 
-void
+static void
 radck_setbit(unsigned *r, unsigned rowsize, unsigned row, unsigned col)
 {
         SETBIT(r + rowsize * row, col);
 }
 
-int
+static int
 radck_bitisset(unsigned *r, unsigned rowsize, unsigned row, unsigned col)
 {
         return BITISSET(r + rowsize * row, col);
 }
 
-void
+static void
 mark_profile(struct check_datum *datum, User_symbol *sym, char *target_name)
 {
         User_symbol *target = (User_symbol*)grad_sym_lookup(datum->symtab, target_name);
@@ -92,7 +91,7 @@ mark_profile(struct check_datum *datum, User_symbol *sym, char *target_name)
                  !strcmp(target->name, target_name));
 }
 
-void
+static void
 mark_list(struct check_datum *datum, User_symbol *sym, grad_avp_t *list)
 {
         grad_avp_t *p;
@@ -105,17 +104,23 @@ mark_list(struct check_datum *datum, User_symbol *sym, grad_avp_t *list)
         }
 }
 
-int
-pass1(struct check_datum *datum, User_symbol *sym)
+static int
+pass1(void *closure, grad_symbol_t *symbol)
 {
+	struct check_datum *datum = closure;
+	User_symbol *sym = (User_symbol *) symbol;
+
         mark_list(datum, sym, sym->check);
         mark_list(datum, sym, sym->reply);
         return 0;
 }
 
-int
-pass2(struct check_datum *datum, User_symbol *sym)
+static int
+pass2(void *closure, grad_symbol_t *symbol)
 {
+	struct check_datum *datum = closure;
+	User_symbol *sym = (User_symbol *) symbol;
+
         if (radck_bitisset(datum->r, datum->rlen, sym->ordnum, sym->ordnum)) {
                 grad_log_loc(L_ERR, &sym->loc,
 			     _("circular dependency for %s"),

@@ -1793,8 +1793,11 @@ dump_matching_rules(FILE *fp, char *header, grad_list_t *list)
 }
 
 int
-dump_user(FILE *fp, User_symbol *sym)
+dump_user(void *data, grad_symbol_t *symbol)
 {
+	FILE *fp = data;
+	User_symbol *sym = (User_symbol *) symbol;
+
         fprintf(fp, "\t%s:\n", sym->name);
         fprintf(fp, "\tlhs {\n");
 	grad_avl_fprint(fp, "\t\t", 1, sym->check);

@@ -483,9 +483,10 @@ struct cleanup_info {
 };
 	
 static int
-filter_cleanup_proc(void *ptr, Filter *filter)
+filter_cleanup_proc(void *ptr, grad_symbol_t *sym)
 {
 	struct cleanup_info *info = ptr;
+	Filter *filter = (Filter *) sym;
 
 	if (filter->pid == info->pid) {
 		static char buffer[512];

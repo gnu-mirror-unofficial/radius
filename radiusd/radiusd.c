@@ -414,12 +414,12 @@ common_init()
         setvbuf(stdout, NULL, _IOLBF, 0);
 #endif
 	radiusd_signal_init(sig_handler);
-	radiusd_reconfigure();
-	radpath_init();
 	forward_init();
 #ifdef USE_SNMP
         snmpserv_init(&saved_status);
 #endif		
+	radiusd_reconfigure();
+	radpath_init();
 	radlog(L_INFO, _("Ready"));
 }
 

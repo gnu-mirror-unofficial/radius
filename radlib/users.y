@@ -17,43 +17,43 @@
  *
  */
 %{
-        #ifndef lint
-	static char rcsid[] = 
-	"$Id$";
-        #endif
-	
-        #if defined(HAVE_CONFIG_H)
-        # include <config.h>
-        #endif
-        #include <sys/types.h>
-        #include <sys/socket.h>
-        #include <sys/time.h>
-        #include <sys/file.h>
-        #include <sys/stat.h>
-        #include <netinet/in.h>
-		 
-        #include <stdio.h>
-        #include <stdlib.h>
-        #include <netdb.h>
-        #include <fcntl.h>
-        #include <ctype.h>
-        #include <unistd.h>
-        #include <signal.h>
-        #include <errno.h>
-        #include <sys/wait.h>
+#ifndef lint
+static char rcsid[] = 
+"$Id$";
+#endif
 
-	#include <sysdep.h>
-        #include <radius.h>
-        #include <parser.h>
+#if defined(HAVE_CONFIG_H)
+# include <config.h>
+#endif
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/file.h>
+#include <sys/stat.h>
+#include <netinet/in.h>
+	 
+#include <stdio.h>
+#include <stdlib.h>
+#include <netdb.h>
+#include <fcntl.h>
+#include <ctype.h>
+#include <unistd.h>
+#include <signal.h>
+#include <errno.h>
+#include <sys/wait.h>
 
-        #define YYMAXDEPTH 10
+#include <sysdep.h>
+#include <radius.h>
+#include <parser.h>
 
-	int old_lineno;
+#define YYMAXDEPTH 10
 
-	static void *closure;
-	static int (*add_entry)(void*, char *, int, char *, VALUE_PAIR *, VALUE_PAIR *);
+int old_lineno;
 
-	VALUE_PAIR *install_pair(char *name, int op, char *valstr);
+static void *closure;
+static int (*add_entry)(void*, char *, int, char *, VALUE_PAIR *, VALUE_PAIR *);
+
+VALUE_PAIR *install_pair(char *name, int op, char *valstr);
 %}
 %token EQ LT GT NE LE GE
 %token NUL

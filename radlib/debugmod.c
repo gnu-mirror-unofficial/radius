@@ -26,10 +26,10 @@ int debug_level[4];
 
 struct debug_module debug_module[4+1] = {
 
-       "leakdetect.c", 0,
-       "mem.c", 1,
-       "mysql.c", 2,
-       "postgres.c", 3,
+    "leakdetect.c", 0,
+    "mem.c", 1,
+    "mysql.c", 2,
+    "postgres.c", 3,
 
 
 

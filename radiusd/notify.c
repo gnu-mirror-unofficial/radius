@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
-#define RADIUS_MODULE 10
+#define RADIUS_MODULE_NOTIFY_C
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif

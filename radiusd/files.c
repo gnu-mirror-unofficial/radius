@@ -20,7 +20,7 @@
  * This file deals with contents of /etc/raddb directory (except config and
  * dictionaries)
  */
-#define RADIUS_MODULE 8
+#define RADIUS_MODULE_FILES_C
 #ifndef lint
 static char rcsid[] =
 "@(#) $Id$";

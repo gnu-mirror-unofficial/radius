@@ -17,7 +17,7 @@
  *
  */
 
-#define RADIUS_MODULE 0
+#define RADIUS_MODULE_LEAKDETECT_C
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>

@@ -17,589 +17,589 @@
  *
  */
 %{
-#define RADIUS_MODULE 17
-        #if defined(HAVE_CONFIG_H)
-	# include <config.h>
-	#endif
-        #include <stdio.h>
-        #include <sys/types.h>
-	#include <ctype.h>
-	#include <errno.h>
-        #include <regex.h>
-        #include <radiusd.h>
-	#include <symtab.h>
-	#include <setjmp.h>
-	#include <varargs.h>
-        #include <obstack1.h>
-	#include <argcv.h>
-	#include <rewrite.h>
+#define RADIUS_MODULE_REWRITE_Y
+#if defined(HAVE_CONFIG_H)
+# include <config.h>
+#endif
+#include <stdio.h>
+#include <sys/types.h>
+#include <ctype.h>
+#include <errno.h>
+#include <regex.h>
+#include <radiusd.h>
+#include <symtab.h>
+#include <setjmp.h>
+#include <varargs.h>
+#include <obstack1.h>
+#include <argcv.h>
+#include <rewrite.h>
+
+#ifndef lint
+static char rcsid[] =
+  "@(#) $Id$";
+#endif
+
+
+/*
+ * Generalized list structure
+ */
+typedef struct list_t LIST;
+#define LIST(type) \
+	type     *next;\
+	type     *prev
+
+struct list_t {
+	LIST(LIST);
+};
+
+/*
+ * Generalized object 
+ */
+typedef struct object_t OBJECT ;
+
+#define OBJ(type) \
+	LIST(type);\
+	type    *alloc
+
+struct object_t {
+	OBJ(OBJECT);
+};
+
+typedef struct {
+	size_t   size;        /* Size of an element */
+	void     (*free)();   /* deallocator */ 
+	OBJECT   *alloc_list; /* list of allocated elements */
+} OBUCKET;
+
 	
-        #ifndef lint
-        static char rcsid[] =
-          "@(#) $Id$";
-        #endif
+/* ************************************************************
+ * Basic data types
+ */
 
+typedef int stkoff_t;          /* Offset on stack */
+typedef unsigned int pctr_t;   /* Program counter */
+typedef void (*INSTR)();        /* program instruction */
 
-	/*
-	 * Generalized list structure
-	 */
-	typedef struct list_t LIST;
-	#define LIST(type) \
-	        type     *next;\
-		type     *prev
+/* Compiled regular expression
+ */
+typedef struct comp_regex COMP_REGEX;
+struct comp_regex {
+	OBJ(COMP_REGEX);
+	regex_t      regex;    /* compiled regex itself */
+	int          nmatch;   /* number of \( ... \) groups */
+};
 
-	struct list_t {
-		LIST(LIST);
-	};
+/*
+ * Binary Operations
+ */
+typedef enum {
+	Eq,
+	Ne,
+	Lt,
+	Le,
+	Gt,
+	Ge,
+	BAnd,
+	BXor,
+	BOr,
+	And,
+	Or,
+	Shl,
+	Shr,
+	Add,
+	Sub,
+	Mul,
+	Div,
+	Rem,
+	Max_opcode
+} Bopcode;
+
+/*
+ * Unary operations
+ */
+typedef enum {
+	Neg,
+	Not,
+	Max_unary
+} Uopcode;
+
+/*
+ * Matrix types
+ */
+typedef enum {
+	Generic,
+	Nop,
+	Enter,
+	Leave,
+	Stop,
+	Constant,
+	Matchref,
+	Variable,
+	Unary,
+	Binary,
+	Cond,
+	Asgn,
+	Match,
+	Coercion,
+	Expression,
+	Return,
+	Jump,
+	Branch,
+	Target,
+	Call,
+	Builtin,
+	Pop,
+	Pusha,
+	Popa,
+	Attr,
+	Attr_asgn,
+	Attr_check,
+	Max_mtxtype
+} Mtxtype;
+
+/*
+ * Function parameter
+ */
+typedef struct parm_t PARAMETER;
+struct parm_t {
+	PARAMETER   *prev;     /* Previous parameter */
+	PARAMETER   *next;     /* Next parameter */
+	Datatype    datatype;  /* type */
+	stkoff_t    offset;    /* Offset on stack */
+};
+
+/*
+ * Local variable
+ */
+typedef struct variable VAR;
+struct variable {
+	OBJ(VAR);
+	VAR       *dcllink;  /* Link to the next variable vithin the
+			      * same declaration
+			      */
+	char      *name;     /* name of the variable */
+	int       level;     /* nesting level */
+	int       offset;    /* offset on stack */
+	Datatype  datatype;  /* type */
+	int       constant;  /* true if assigned a constant value */
+	Datum     datum;     /* constant value itself */
+};
+
+/*
+ * Function definition
+ */
+typedef struct function_def {
+	struct function_def *next;
+	char       *name;        /* Function name */
+	Datatype   rettype;      /* Return type */
+	pctr_t     entry;        /* Code entry */
+	COMP_REGEX *rx_list;     /* List of compiled regexps */
+	int        nparm;        /* Number of parameters */
+	PARAMETER  *parm;        /* List of parameters */
+	stkoff_t   stack_alloc;  /* required stack allocation */
+	int        line;         /* source line where the function
+				  * was declared
+				  */
+} FUNCTION;
+
+#define STACK_BASE 2
+
+/*
+ * Built-in function
+ */
+typedef struct  {
+	INSTR    handler;        /* Function itself */
+	char     *name;          /* Function name */
+	Datatype rettype;        /* Return type */
+	char     *parms;         /* coded parameter types */
+} builtin_t;
+
+/*
+ * Operation matrices
+ */
+typedef union mtx MTX;
+/*
+ * All matrices contain the following common fields:
+ *    alloc- link to the previously allocated matrix.
+ *           It is used at the end of code generation
+ *           pass to free all allocated matrices.
+ *    next - link to the next matrix in the subexpression
+ *    prev - link to the previous matrix in the subexpression
+ * Additionally, all expression matrices contain the field
+ * `datatype' which contains the data type for this matrix.
+ */
+#if defined(MAINTAINER_MODE)
+# define COMMON_MTX \
+	OBJ(MTX);\
+	int      id;\
+	int      line;\
+	Mtxtype  type;
+#else
+# define COMMON_MTX \
+	OBJ(MTX);\
+	int      line;\
+	Mtxtype  type;
+#endif
 	
-	/*
-	 * Generalized object 
-	 */
-	typedef struct object_t OBJECT ;
-	
-	#define OBJ(type) \
-		LIST(type);\
-	        type    *alloc
+#define COMMON_EXPR_MTX \
+	COMMON_MTX\
+	Datatype datatype;\
+	MTX      *uplink;\
+	MTX      *arglink;
 
-	struct object_t {
-		OBJ(OBJECT);
-	};
-	
-	typedef struct {
-		size_t   size;        /* Size of an element */
-		void     (*free)();   /* deallocator */ 
-		OBJECT   *alloc_list; /* list of allocated elements */
-	} OBUCKET;
+/*
+ * Generic matrix: nothing special
+ * Type: Generic
+ */
+typedef struct {
+	COMMON_EXPR_MTX
+} GEN_MTX;
+/*
+ * Constant matrix
+ * Type: Constant
+ */
+typedef struct {
+	COMMON_EXPR_MTX
+	Datum    datum;     /* Constant value */      
+} CONST_MTX;
+/*
+ * Reference to a previous regexp: corresponds to a \N construct
+ * Type: Matchref
+ */
+typedef struct {
+	COMMON_EXPR_MTX
+	int      num;       /* Number of \( ... \) to be referenced */
+} MATCHREF_MTX;
+/*
+ * Reference to a variable
+ * Type: Variable
+ */
+typedef struct {
+	COMMON_EXPR_MTX
+	VAR      *var;      /* Variable being referenced */ 
+} VAR_MTX;
+/*
+ * Unary operation matrix
+ * Type: Unary
+ */
+typedef struct {
+	COMMON_EXPR_MTX
+	Uopcode  opcode;    /* Operation code */
+	MTX      *arg;      /* Argument */
+} UN_MTX;
+/*
+ * Binary operation matrix
+ * Type: Binary
+ */
+typedef struct {
+	COMMON_EXPR_MTX
+	Bopcode   opcode;   /* Operation code */ 
+	MTX      *arg[2];   /* Arguments */ 
+} BIN_MTX;
+/*
+ * Assignment matrix
+ * Type: Asgn
+ */
+typedef struct {
+	COMMON_EXPR_MTX
+	VAR      *lval;     /* Lvalue */
+	MTX      *arg;      /* Rvalue */
+} ASGN_MTX;
+/*
+ * Conditional expression matrix
+ * Type: Cond
+ */
+typedef struct {
+	COMMON_MTX
+	MTX      *expr;     /* Conditional expression */
+	MTX      *if_true;  /* Branch if true */
+	MTX      *if_false; /* Branch if false */ 
+} COND_MTX;
+/*
+ * Regexp match
+ * Type: Match
+ */
+typedef struct {
+	COMMON_EXPR_MTX
+	int        negated; /* Is the match negated ? */
+	MTX        *arg;    /* Argument (lhs) */
+	COMP_REGEX *rx;     /* Regexp (rhs) */
+} MATCH_MTX;
+/*
+ * Type coercion
+ * Type: Coerce
+ */
+typedef struct {
+	COMMON_EXPR_MTX
+	MTX      *arg;      /* Argument of the coercion */ 
+} COERCE_MTX;
+/*
+ * Expression
+ * Type: Expression
+ */
+typedef struct {
+	COMMON_EXPR_MTX
+	MTX      *expr;
+} EXPR_MTX;
+/*
+ * Return from function
+ * Type: Return
+ */
+typedef struct {
+	COMMON_EXPR_MTX
+	MTX      *expr;     /* Return value */
+} RET_MTX;
+/*
+ * Unconditional branch (jump)
+ * Type: Jump
+ */
+typedef struct {
+	COMMON_MTX
+	MTX *link;          /* Link to the next jump matrix
+			     * (for break and continue matrices)
+			     */
+	MTX      *dest;     /* Jump destination (usually NOP matrix) */
+} JUMP_MTX;
+/*
+ * Conditional branch
+ * Type: Branch
+ */
+typedef struct {
+	COMMON_MTX
+	int      cond;      /* Condition: 1 - equal, 0 - not equal */
+	MTX      *dest;     /* Jump destination (usually NOP matrix) */
+} BRANCH_MTX;
+/*
+ * Stack frame matrix
+ * Type: Enter, Leave
+ */
+typedef struct {
+	COMMON_MTX
+	stkoff_t  stacksize;/* Required stack size */
+} FRAME_MTX;
+/*
+ * Jump target
+ * Type: Target
+ */
+typedef struct {
+	COMMON_MTX
+	pctr_t  pc;         /* Target's program counter */
+} TGT_MTX;
+/*
+ * No-op matrix. It is always inserted at the branch destination
+ * points. It's purpose is to fixup the jump statements.
+ * Type: Nop
+ */
+typedef struct {
+	COMMON_MTX
+	TGT_MTX   *tgt;     /* Target list */
+	pctr_t     pc;      /* Program counter for backward
+			       references */
+} NOP_MTX;
+/*
+ * Function call
+ * Type: Call
+ */
+typedef struct {
+	COMMON_EXPR_MTX
+	FUNCTION  *fun;     /* Called function */
+	int       nargs;    /* Number of arguments */
+	MTX       *args;    /* Arguments */
+} CALL_MTX;
+/*
+ * Builtin function call
+ * Type: Builtin
+ */
+typedef struct {
+	COMMON_EXPR_MTX
+	INSTR     fun;      /* Handler function */
+	int       nargs;    /* Number of arguments */   
+	MTX       *args;    /* Arguments */
+} BTIN_MTX;
+/*
+ * Attribute matrix
+ * Type: Attr, Attr_asgn, Attr_check
+ */
+typedef struct {
+	COMMON_EXPR_MTX
+	int       attrno;   /* Attribute number */
+	MTX       *rval;    /* Rvalue */
+} ATTR_MTX;
 
-		
-	/* ************************************************************
-	 * Basic data types
-	 */
-	
-	typedef int stkoff_t;          /* Offset on stack */
-	typedef unsigned int pctr_t;   /* Program counter */
-	typedef void (*INSTR)();        /* program instruction */
+union mtx {
+	GEN_MTX    gen;
+	NOP_MTX    nop;
+	FRAME_MTX  frame;
+	CONST_MTX  cnst;
+	MATCHREF_MTX    ref;
+	VAR_MTX    var;
+	UN_MTX     un;
+	BIN_MTX    bin;
+	COND_MTX   cond;
+	ASGN_MTX   asgn;
+	MATCH_MTX  match;
+	COERCE_MTX coerce;
+	RET_MTX    ret;
+	JUMP_MTX   jump;
+	BRANCH_MTX branch;
+	TGT_MTX    tgt;
+	CALL_MTX   call;
+	BTIN_MTX   btin;
+	ATTR_MTX   attr;
+};
 
-	/* Compiled regular expression
-	 */
-	typedef struct comp_regex COMP_REGEX;
-	struct comp_regex {
-		OBJ(COMP_REGEX);
-		regex_t      regex;    /* compiled regex itself */
-	       	int          nmatch;   /* number of \( ... \) groups */
-	};
+/*
+ * Stack frame
+ */
+typedef struct frame_t FRAME;
 
-	/*
-	 * Binary Operations
-	 */
-	typedef enum {
-		Eq,
-		Ne,
-		Lt,
-		Le,
-		Gt,
-		Ge,
-		BAnd,
-		BXor,
-		BOr,
-		And,
-		Or,
-		Shl,
-		Shr,
-		Add,
-		Sub,
-		Mul,
-		Div,
-		Rem,
-		Max_opcode
-	} Bopcode;
+struct frame_t {
+	OBJ(FRAME);
+	int       level;        /* nesting level */
+	stkoff_t  stack_offset; /* offset in the stack */
+};
 
-	/*
-	 * Unary operations
-	 */
-	typedef enum {
-		Neg,
-		Not,
-		Max_unary
-	} Uopcode;
+/* *****************************************************************
+ * Static data
+ */
+/*
+ * Stack Frame list
+ */
+static OBUCKET frame_bkt = { sizeof(FRAME), NULL };
+static FRAME *frame_first, *frame_last;
+#define curframe frame_last
 
-	/*
-	 * Matrix types
-	 */
-	typedef enum {
-		Generic,
-		Nop,
-		Enter,
-		Leave,
-		Stop,
-		Constant,
-		Matchref,
-		Variable,
-		Unary,
-		Binary,
-		Cond,
-		Asgn,
-		Match,
-		Coercion,
-		Expression,
-		Return,
-		Jump,
-		Branch,
-		Target,
-		Call,
-		Builtin,
-		Pop,
-		Pusha,
-		Popa,
-		Attr,
-		Attr_asgn,
-		Attr_check,
-		Max_mtxtype
-	} Mtxtype;
+static int errcnt;         /* Number of errors detected */ 
+static FUNCTION *function; /* Function being compiled */
+static Symtab *rewrite_tab;/* Function table */  
 
-	/*
-	 * Function parameter
-	 */
-	typedef struct parm_t PARAMETER;
-	struct parm_t {
-		PARAMETER   *prev;     /* Previous parameter */
-		PARAMETER   *next;     /* Next parameter */
-		Datatype    datatype;  /* type */
-		stkoff_t    offset;    /* Offset on stack */
-	};
+static MTX *mtx_first, *mtx_last;  /* Matrix list */
+static VAR *var_first, *var_last;  /* Variable list */ 
 
-	/*
-	 * Local variable
-	 */
-	typedef struct variable VAR;
-	struct variable {
-		OBJ(VAR);
-		VAR       *dcllink;  /* Link to the next variable vithin the
-				      * same declaration
-				      */
-		char      *name;     /* name of the variable */
-		int       level;     /* nesting level */
-		int       offset;    /* offset on stack */
-		Datatype  datatype;  /* type */
-		int       constant;  /* true if assigned a constant value */
-		Datum     datum;     /* constant value itself */
-	};
+/*
+ * Loops
+ */
+typedef struct loop_t LOOP;
+struct loop_t {
+	OBJ(LOOP);
+	JUMP_MTX *lp_break;
+	JUMP_MTX *lp_cont;
+};
+static OBUCKET loop_bkt = { sizeof(LOOP), NULL };
+static LOOP *loop_first, *loop_last;
 
-	/*
-	 * Function definition
-	 */
-	typedef struct function_def {
-		struct function_def *next;
-		char       *name;        /* Function name */
-		Datatype   rettype;      /* Return type */
-		pctr_t     entry;        /* Code entry */
-		COMP_REGEX *rx_list;     /* List of compiled regexps */
-		int        nparm;        /* Number of parameters */
-		PARAMETER  *parm;        /* List of parameters */
-		stkoff_t   stack_alloc;  /* required stack allocation */
-		int        line;         /* source line where the function
-					  * was declared
-					  */
-	} FUNCTION;
+void loop_push(MTX *mtx);
+void loop_pop();
+void loop_fixup(JUMP_MTX *list, MTX *target);
+void loop_init();
+void loop_free_all();
+void loop_unwind_all();
 
-	#define STACK_BASE 2
-
-	/*
-	 * Built-in function
-	 */
-	typedef struct  {
-		INSTR    handler;        /* Function itself */
-		char     *name;          /* Function name */
-		Datatype rettype;        /* Return type */
-		char     *parms;         /* coded parameter types */
-	} builtin_t;
-	
-	/*
-	 * Operation matrices
-	 */
-	typedef union mtx MTX;
-	/*
-	 * All matrices contain the following common fields:
-         *    alloc- link to the previously allocated matrix.
-	 *           It is used at the end of code generation
-	 *           pass to free all allocated matrices.
-	 *    next - link to the next matrix in the subexpression
-	 *    prev - link to the previous matrix in the subexpression
-	 * Additionally, all expression matrices contain the field
-	 * `datatype' which contains the data type for this matrix.
-	 */
-	#if defined(MAINTAINER_MODE)
-	# define COMMON_MTX \
-	        OBJ(MTX);\
-	        int      id;\
-                int      line;\
-	 	Mtxtype  type;
-	#else
-	# define COMMON_MTX \
-		OBJ(MTX);\
-                int      line;\
-		Mtxtype  type;
-        #endif
-		
-	#define COMMON_EXPR_MTX \
-		COMMON_MTX\
-		Datatype datatype;\
-		MTX      *uplink;\
-		MTX      *arglink;
-
-	/*
-	 * Generic matrix: nothing special
-	 * Type: Generic
-	 */
-	typedef struct {
-		COMMON_EXPR_MTX
-	} GEN_MTX;
-	/*
-	 * Constant matrix
-	 * Type: Constant
-	 */
-	typedef struct {
-		COMMON_EXPR_MTX
-		Datum    datum;     /* Constant value */      
-	} CONST_MTX;
-	/*
-	 * Reference to a previous regexp: corresponds to a \N construct
-	 * Type: Matchref
-	 */
-	typedef struct {
-		COMMON_EXPR_MTX
-		int      num;       /* Number of \( ... \) to be referenced */
-	} MATCHREF_MTX;
-	/*
-	 * Reference to a variable
-	 * Type: Variable
-	 */
-	typedef struct {
-		COMMON_EXPR_MTX
-		VAR      *var;      /* Variable being referenced */ 
-	} VAR_MTX;
-	/*
-	 * Unary operation matrix
-	 * Type: Unary
-	 */
-	typedef struct {
-		COMMON_EXPR_MTX
-		Uopcode  opcode;    /* Operation code */
-		MTX      *arg;      /* Argument */
-	} UN_MTX;
-	/*
-	 * Binary operation matrix
-	 * Type: Binary
-	 */
-	typedef struct {
-		COMMON_EXPR_MTX
-		Bopcode   opcode;   /* Operation code */ 
-		MTX      *arg[2];   /* Arguments */ 
-	} BIN_MTX;
-	/*
-	 * Assignment matrix
-	 * Type: Asgn
-	 */
-	typedef struct {
-		COMMON_EXPR_MTX
-		VAR      *lval;     /* Lvalue */
-		MTX      *arg;      /* Rvalue */
-	} ASGN_MTX;
-	/*
-	 * Conditional expression matrix
-	 * Type: Cond
-	 */
-	typedef struct {
-		COMMON_MTX
-		MTX      *expr;     /* Conditional expression */
-		MTX      *if_true;  /* Branch if true */
-		MTX      *if_false; /* Branch if false */ 
-	} COND_MTX;
-	/*
-	 * Regexp match
-	 * Type: Match
-	 */
-	typedef struct {
-		COMMON_EXPR_MTX
-		int        negated; /* Is the match negated ? */
-		MTX        *arg;    /* Argument (lhs) */
-		COMP_REGEX *rx;     /* Regexp (rhs) */
-	} MATCH_MTX;
-	/*
-	 * Type coercion
-	 * Type: Coerce
-	 */
-	typedef struct {
-		COMMON_EXPR_MTX
-		MTX      *arg;      /* Argument of the coercion */ 
-	} COERCE_MTX;
-	/*
-	 * Expression
-	 * Type: Expression
-	 */
-	typedef struct {
-		COMMON_EXPR_MTX
-		MTX      *expr;
-	} EXPR_MTX;
-	/*
-	 * Return from function
-	 * Type: Return
-	 */
-	typedef struct {
-		COMMON_EXPR_MTX
-		MTX      *expr;     /* Return value */
-	} RET_MTX;
-	/*
-	 * Unconditional branch (jump)
-	 * Type: Jump
-	 */
-	typedef struct {
-		COMMON_MTX
-		MTX *link;          /* Link to the next jump matrix
-				     * (for break and continue matrices)
-				     */
-		MTX      *dest;     /* Jump destination (usually NOP matrix) */
-	} JUMP_MTX;
-	/*
-	 * Conditional branch
-	 * Type: Branch
-	 */
-	typedef struct {
-		COMMON_MTX
-		int      cond;      /* Condition: 1 - equal, 0 - not equal */
-		MTX      *dest;     /* Jump destination (usually NOP matrix) */
-	} BRANCH_MTX;
-	/*
-	 * Stack frame matrix
-	 * Type: Enter, Leave
-	 */
-	typedef struct {
-		COMMON_MTX
-		stkoff_t  stacksize;/* Required stack size */
-	} FRAME_MTX;
-	/*
-	 * Jump target
-	 * Type: Target
-	 */
-	typedef struct {
-		COMMON_MTX
-		pctr_t  pc;         /* Target's program counter */
-	} TGT_MTX;
-	/*
-	 * No-op matrix. It is always inserted at the branch destination
-	 * points. It's purpose is to fixup the jump statements.
-	 * Type: Nop
-	 */
-	typedef struct {
-		COMMON_MTX
-		TGT_MTX   *tgt;     /* Target list */
-		pctr_t     pc;      /* Program counter for backward
-				       references */
-	} NOP_MTX;
-	/*
-	 * Function call
-	 * Type: Call
-	 */
-	typedef struct {
-		COMMON_EXPR_MTX
-		FUNCTION  *fun;     /* Called function */
-		int       nargs;    /* Number of arguments */
-		MTX       *args;    /* Arguments */
-	} CALL_MTX;
-	/*
-	 * Builtin function call
-	 * Type: Builtin
-	 */
-	typedef struct {
-		COMMON_EXPR_MTX
-		INSTR     fun;      /* Handler function */
-		int       nargs;    /* Number of arguments */   
-		MTX       *args;    /* Arguments */
-	} BTIN_MTX;
-	/*
-	 * Attribute matrix
-	 * Type: Attr, Attr_asgn, Attr_check
-	 */
-	typedef struct {
-		COMMON_EXPR_MTX
-		int       attrno;   /* Attribute number */
-		MTX       *rval;    /* Rvalue */
-	} ATTR_MTX;
-
-	union mtx {
-		GEN_MTX    gen;
-		NOP_MTX    nop;
-		FRAME_MTX  frame;
-		CONST_MTX  cnst;
-		MATCHREF_MTX    ref;
-		VAR_MTX    var;
-		UN_MTX     un;
-		BIN_MTX    bin;
-		COND_MTX   cond;
-		ASGN_MTX   asgn;
-		MATCH_MTX  match;
-		COERCE_MTX coerce;
-		RET_MTX    ret;
-		JUMP_MTX   jump;
-		BRANCH_MTX branch;
-		TGT_MTX    tgt;
-		CALL_MTX   call;
-		BTIN_MTX   btin;
-		ATTR_MTX   attr;
-	};
-
-	/*
-	 * Stack frame
-	 */
-	typedef struct frame_t FRAME;
-
-	struct frame_t {
-		OBJ(FRAME);
-		int       level;        /* nesting level */
-		stkoff_t  stack_offset; /* offset in the stack */
-	};
-
-	/* *****************************************************************
-	 * Static data
-	 */
-	/*
-	 * Stack Frame list
-	 */
-	static OBUCKET frame_bkt = { sizeof(FRAME), NULL };
-	static FRAME *frame_first, *frame_last;
-        #define curframe frame_last
-
-	static int errcnt;         /* Number of errors detected */ 
-	static FUNCTION *function; /* Function being compiled */
-	static Symtab *rewrite_tab;/* Function table */  
-	
-	static MTX *mtx_first, *mtx_last;  /* Matrix list */
-	static VAR *var_first, *var_last;  /* Variable list */ 
-
-	/*
-	 * Loops
-	 */
-	typedef struct loop_t LOOP;
-	struct loop_t {
-		OBJ(LOOP);
-		JUMP_MTX *lp_break;
-		JUMP_MTX *lp_cont;
-	};
-	static OBUCKET loop_bkt = { sizeof(LOOP), NULL };
-	static LOOP *loop_first, *loop_last;
-
-	void loop_push(MTX *mtx);
-	void loop_pop();
-	void loop_fixup(JUMP_MTX *list, MTX *target);
-	void loop_init();
-	void loop_free_all();
-	void loop_unwind_all();
-	
-	/*
-	 * Lexical analyzer stuff
-	 */
-	static FILE *infile;               /* Input file */ 
-	static char *input_filename;       /* Input location: file */
-	static int   input_line;           /* ------------- : line */ 
-	static int   yyeof;                /* rised when EOF is encountered */ 
-	static struct obstack input_stk;   /* Symbol stack */ 
+/*
+ * Lexical analyzer stuff
+ */
+static FILE *infile;               /* Input file */ 
+static char *input_filename;       /* Input location: file */
+static int   input_line;           /* ------------- : line */ 
+static int   yyeof;                /* rised when EOF is encountered */ 
+static struct obstack input_stk;   /* Symbol stack */ 
 
 
-	/* ***************************************************************
-	 * Function declarations
-	 */
+/* ***************************************************************
+ * Function declarations
+ */
 
-	/*
-         * Lexical analyzer
-         */
-	static void yysync();
+/*
+ * Lexical analyzer
+ */
+static void yysync();
 
-	/*
-	 * Frames
-	 */
-	static void frame_init();
-	static void frame_push();
-	static void frame_pop();
-	static void frame_unwind_all();
-	static void frame_free_all();
-	/*
-	 * Variables
-	 */
-	static void var_init();
-	static VAR * var_alloc(Datatype type, char *name, int grow);
-	static void var_unwind_level();
-	static void var_unwind_all();
-	static void var_type(Datatype type, VAR *var);
-	static void var_free_all();
-	static VAR *var_lookup(char *name);
-	/*
-	 * Matrices
-	 */
-	static void mtx_init();
-	static void mtx_free_all();
-	static void mtx_unwind_all();
-	static MTX * mtx_cur();
-	static MTX * mtx_nop();
-	static MTX * mtx_jump();
-	static MTX * mtx_frame(Mtxtype type, stkoff_t stksize);
-	static MTX * mtx_stop();
-	static MTX * mtx_pop();
-	static MTX * mtx_return();
-	static MTX * mtx_alloc(Mtxtype type);
-	static MTX * mtx_const(Datatype type, void *data);
-	static MTX * mtx_ref(int num);
-	static MTX * mtx_var(VAR *var);
-	static MTX * mtx_asgn(VAR *var, MTX *arg);
-	static MTX * mtx_bin(Bopcode opcode, MTX *arg1, MTX *arg2);
-	static MTX * mtx_un(Uopcode opcode, MTX *arg);
-	static MTX * mtx_match(int negated, MTX *mtx, COMP_REGEX *);
-	static MTX * mtx_cond(MTX *cond, MTX *if_true, MTX *if_false);
-	static MTX * mtx_coerce(Datatype type, MTX *arg);
-	static MTX * mtx_call(FUNCTION *fun, MTX *args);
-	static MTX * mtx_builtin(builtin_t *bin, MTX *args);
-	static MTX * mtx_attr(DICT_ATTR *attr);
-	static MTX * mtx_attr_asgn(DICT_ATTR *attr, MTX *rval);
-	static MTX * mtx_attr_check(DICT_ATTR *attr);
-	
-	static MTX * coerce(MTX  *arg, Datatype type);
-	/*
-	 * Regular expressions
-	 */
-	static COMP_REGEX * rx_alloc(regex_t  *regex, int nmatch);
-	static void rx_free(COMP_REGEX *rx);
-	static COMP_REGEX * compile_regexp(char *str);
-	/*
-	 * Functions
-	 */
-	static FUNCTION * function_install(FUNCTION *fun);
-	static int  function_free(FUNCTION *fun);
-	static void function_delete();
-	static void function_cleanup();
-	/*
-	 * Built-in functions
-	 */
-	static builtin_t * builtin_lookup(char *name);
+/*
+ * Frames
+ */
+static void frame_init();
+static void frame_push();
+static void frame_pop();
+static void frame_unwind_all();
+static void frame_free_all();
+/*
+ * Variables
+ */
+static void var_init();
+static VAR * var_alloc(Datatype type, char *name, int grow);
+static void var_unwind_level();
+static void var_unwind_all();
+static void var_type(Datatype type, VAR *var);
+static void var_free_all();
+static VAR *var_lookup(char *name);
+/*
+ * Matrices
+ */
+static void mtx_init();
+static void mtx_free_all();
+static void mtx_unwind_all();
+static MTX * mtx_cur();
+static MTX * mtx_nop();
+static MTX * mtx_jump();
+static MTX * mtx_frame(Mtxtype type, stkoff_t stksize);
+static MTX * mtx_stop();
+static MTX * mtx_pop();
+static MTX * mtx_return();
+static MTX * mtx_alloc(Mtxtype type);
+static MTX * mtx_const(Datatype type, void *data);
+static MTX * mtx_ref(int num);
+static MTX * mtx_var(VAR *var);
+static MTX * mtx_asgn(VAR *var, MTX *arg);
+static MTX * mtx_bin(Bopcode opcode, MTX *arg1, MTX *arg2);
+static MTX * mtx_un(Uopcode opcode, MTX *arg);
+static MTX * mtx_match(int negated, MTX *mtx, COMP_REGEX *);
+static MTX * mtx_cond(MTX *cond, MTX *if_true, MTX *if_false);
+static MTX * mtx_coerce(Datatype type, MTX *arg);
+static MTX * mtx_call(FUNCTION *fun, MTX *args);
+static MTX * mtx_builtin(builtin_t *bin, MTX *args);
+static MTX * mtx_attr(DICT_ATTR *attr);
+static MTX * mtx_attr_asgn(DICT_ATTR *attr, MTX *rval);
+static MTX * mtx_attr_check(DICT_ATTR *attr);
 
-	/*
-	 * Code optimizer and generator
-	 */
-	static int optimize();
-	static pctr_t codegen();
-	static void code_init();
+static MTX * coerce(MTX  *arg, Datatype type);
+/*
+ * Regular expressions
+ */
+static COMP_REGEX * rx_alloc(regex_t  *regex, int nmatch);
+static void rx_free(COMP_REGEX *rx);
+static COMP_REGEX * compile_regexp(char *str);
+/*
+ * Functions
+ */
+static FUNCTION * function_install(FUNCTION *fun);
+static int  function_free(FUNCTION *fun);
+static void function_delete();
+static void function_cleanup();
+/*
+ * Built-in functions
+ */
+static builtin_t * builtin_lookup(char *name);
 
-	/*
-	 * Auxiliary and debugging functions
-	 */
-	static void debug_dump_code();
-	static char * datatype_str(Datatype type);
-	static Datatype attr_datatype(int type);
+/*
+ * Code optimizer and generator
+ */
+static int optimize();
+static pctr_t codegen();
+static void code_init();
 
-	/*
-	 * Run-Time
-	 */
-	static void gc();
-	static void run(pctr_t pc);
-	static void run_init(pctr_t pc, VALUE_PAIR *req);
+/*
+ * Auxiliary and debugging functions
+ */
+static void debug_dump_code();
+static char * datatype_str(Datatype type);
+static Datatype attr_datatype(int type);
+
+/*
+ * Run-Time
+ */
+static void gc();
+static void run(pctr_t pc);
+static void run_init(pctr_t pc, VALUE_PAIR *req);
 %}
 
 %union {

@@ -22,7 +22,7 @@ static char rcsid[] =
 "$Id$";
 #endif
 
-#define RADIUS_MODULE 18
+#define RADIUS_MODULE_CHECKRAD_C
 
 #if defined(HAVE_CONFIG_H)
 # include <config.h>

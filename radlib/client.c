@@ -267,6 +267,13 @@ radclient_build_request(config, server, code, pair)
 
 		switch (pair->type) {
 		case TYPE_STRING:
+			if (pair->strlength >= AUTH_STRING_LEN) {
+				radlog(L_ERR,
+  "radclient_build_request(): Attribute %d string value too long (%d bytes)",
+				       pair->attribute,
+				       pair->strlength);
+				goto overflow;
+			}
 			/* attrlen always < AUTH_STRING_LEN */
 			if (pair->attribute == DA_PASSWORD) {
 				VALUE_PAIR *ppair;

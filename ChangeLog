@@ -1,3 +1,24 @@
+2002-01-10  Sergey Poznyakoff  
+
+	* include/radiusd.h: Changes to Server_stat structure
+	  and accompanying macros.
+	  (extern server_stat): Static structure.
+	  (stat_.* functions): Protected by USE_SNMP.
+	  Removed shmem_.* declarations.
+	* include/radsnmp.h: (struct nas_stat): New field 'next'.
+	* radiusd/shmem.c: (removed) Not needed in multi-thread version.
+	* radiusd/Makefile.am: Removed shmem.c
+	* radiusd/files.c: Removed call to stat_create().
+	* radiusd/radiusd.c: server_stat is a static structure, not
+	  a pointer.
+	* radiusd/snmpserv.c: Likewise.
+	* radiusd/stat.c: Rewritten. The statistics is kept in a
+	  separate file, this file is read upon startup. While running,
+	  all the statistics is updated in memory. It gets dumped to the
+	  file just before shutdown.
+
+	* TODO: Updated
+
 2002-01-09  Sergey Poznyakoff  
 
 	* raddb/Makefile.am: Fixed typo in raddb_subdirs (reported

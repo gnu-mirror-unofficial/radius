@@ -250,7 +250,9 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
         char pw_digest[AUTH_VECTOR_LEN];
         int pwlen;
         char *pwbuf;
-        
+        char *challenge;
+	int challenge_len;
+	
         result = AUTH_OK;
         userpass[0] = 0;
 
@@ -326,6 +328,7 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
                 if (unix_pass(name, userpass) != 0)
                         result = AUTH_FAIL;
                 break;
+		
         case DV_AUTH_TYPE_PAM:
 #ifdef USE_PAM
                 debug(1, ("  auth: Pam"));
@@ -370,46 +373,57 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
                         break;
                 }
 
-                /* CHAP - calculate MD5 sum over CHAP-ID,
-                   plain-text password and the Chap-Challenge.
-                   Compare to Chap-Response (strvalue + 1).
-                 
-                   FIXME: might not work with Ascend because
-                   we use vp->strlength, and Ascend gear likes
-                   to send an extra '\0' in the string! */
-                
+                /* CHAP: RFC 2865, page 7
+		   The RADIUS server looks up a password based on the
+		   User-Name, encrypts the challenge using MD5 on the
+		   CHAP ID octet, that password, and the CHAP challenge 
+		   (from the CHAP-Challenge attribute if present,
+		   otherwise from the Request Authenticator), and compares
+		   that result to the CHAP-Password.  If they match, the
+		   server sends back an Access-Accept, otherwise it sends
+		   back an Access-Reject. */
+
+		/* Provide some userpass in case authentication fails */
                 strcpy(userpass, "{chap-password}");
+		
                 if (real_password == NULL) {
                         result = AUTH_FAIL;
                         break;
                 }
-                i = 0;
-                ptr = userpass;
-                *ptr++ = *auth_item->strvalue;
-                i++;
+
+		/* Compute the length of the password buffer and
+		   allocate it */
                 length = strlen(real_password);
+		
+                if (tmp = avl_find(radreq->request, DA_CHAP_CHALLENGE)) {
+                        challenge = tmp->strvalue;
+                        challenge_len = tmp->strlength;
+                } else {
+                        challenge = radreq->vector;
+                        challenge_len = AUTH_VECTOR_LEN;
+                }
+
+                pwlen = 1 + length + challenge_len;
+		pwbuf = emalloc(pwlen);
+		
+                ptr = pwbuf;
+                *ptr++ = *auth_item->strvalue;
                 memcpy(ptr, real_password, length);
                 ptr += length;
-                i += length;
-                
-                /* Use Chap-Challenge pair if present,
-                   Request-Authenticator otherwise. */
-                if (tmp = avl_find(radreq->request, DA_CHAP_CHALLENGE)) {
-                        memcpy(ptr, tmp->strvalue, tmp->strlength);
-                        i += tmp->strlength;
-                } else {
-                        memcpy(ptr, radreq->vector, AUTH_VECTOR_LEN);
-                        i += AUTH_VECTOR_LEN;
-                }
-                md5_calc(pw_digest, (u_char*) userpass, i);
-                
+                memcpy(ptr, challenge, challenge_len);
+
+		/* Compute the MD5 hash */
+                md5_calc(pw_digest, (u_char*) pwbuf, i);
+                efree(pwbuf);
+		
                 /* Compare them */
                 if (memcmp(pw_digest, auth_item->strvalue + 1,
-                           CHAP_VALUE_LENGTH) != 0)
+			   CHAP_VALUE_LENGTH) != 0)
                         result = AUTH_FAIL;
                 else
                         strcpy(userpass, real_password);
                 break;
+		
         default:
                 result = AUTH_FAIL;
                 break;

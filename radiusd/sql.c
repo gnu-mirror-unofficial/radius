@@ -752,7 +752,7 @@ close_sql_connection(conn, prev)
  *       called rad_sql_idle_check() which will close connections that
  *       are now idle.
  * gray: The connection stuff is way too complicated and ugly. It must
- *       be reritten from scratch. See `NOTE' below.
+ *       be rewritten from scratch. See `NOTE' below.
  */
 struct sql_connection *
 attach_sql_connection(type, qid, keepopen)
@@ -1017,6 +1017,7 @@ rad_sql_check_connect(type)
 	efree(path);
 	if (pass)
 		close_sql_connections(type);
+        /*FIXME: mark active connections as close on exit */
 	
 }
 

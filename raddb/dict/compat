@@ -1,23 +1,27 @@
+# NOTE: This file may be overwritten by radius installation procedure.
+# Please add your customizations to the main dictionary file.
+# Run
+#       info Radius dictionary
+# for detailed description of the format of this file.
+# Please report errors to <bug-gnu-radius@gnu.org>
+
 #
-# Obsolete names for backwards compatibility with older users files.
-# Move the $INCLUDE in the main dictionary file to the end if you want
-# these names to be used in the "details" logfile.
+# Obsolete names for backward compatibility with older users files.
 #
-#
-ATTRIBUTE       Password                2       string 
-ATTRIBUTE	Client-Id		4	ipaddr
-ATTRIBUTE	Client-Port-Id		5	integer
-ATTRIBUTE	User-Service-Type	6	integer
-ATTRIBUTE	Framed-Address		8	ipaddr
-ATTRIBUTE	Framed-Netmask		9	ipaddr
-ATTRIBUTE	Framed-Filter-Id	11	string
-ATTRIBUTE	Login-Host		14	ipaddr
-ATTRIBUTE	Login-Port		16	integer
-ATTRIBUTE	Old-Password		17	string
-ATTRIBUTE	Port-Message		18	string
-ATTRIBUTE	Dialback-No		19	string
-ATTRIBUTE	Dialback-Name		20	string
-ATTRIBUTE	Challenge-State		24	string
+ALIAS		User-Password	Password
+ALIAS		NAS-IP-Address	Client-Id
+ALIAS		NAS-Port-Id	Client-Port-Id
+ALIAS		Service-Type	User-Service-Type
+ALIAS		Framed-IP-Address	Framed-Address
+ALIAS		Framed-IP-Netmask	Framed-Netmask
+ALIAS		Filter-Id		Framed-Filter-Id
+ALIAS		Login-IP-Host	Login-Host
+ALIAS		Login-TCP-Port	Login-Port
+ALIAS		Reply-Message	Port-Message
+ALIAS		Callback-Number	Dialback-No
+ALIAS		Callback-Id	Dialback-Name
+ALIAS		State		Challenge-State
+
 VALUE		Framed-Compression	Van-Jacobsen-TCP-IP	1
 VALUE		Framed-Compression	VJ-TCP-IP		1
 VALUE		Service-Type		Shell-User		6
@@ -28,12 +32,12 @@ VALUE		Service-Type		Dialback-Framed-User	4
 #
 #	For compatibility with MERIT users files.
 #
-ATTRIBUTE	NAS-Port		5	integer
-ATTRIBUTE	Login-Host		14	ipaddr
-ATTRIBUTE	Login-Callback-Number	19	string
-ATTRIBUTE	Framed-Callback-Id	20	string
-ATTRIBUTE	Client-Port-DNIS	30	string
-ATTRIBUTE	Caller-ID		31	string
+ALIAS		NAS-Port-Id	NAS-Port
+ALIAS		Callback-Number	Login-Callback-Number
+ALIAS		Callback-Id	Framed-Callback-Id
+ALIAS		Called-Station-Id	Client-Port-DNIS
+ALIAS		Calling-Station-Id	Caller-ID
+
 VALUE		Service-Type		Login			1
 VALUE		Service-Type		Framed			2
 VALUE		Service-Type		Callback-Login		3
@@ -43,7 +47,8 @@ VALUE		Service-Type		Exec-User		7
 #
 #	For compatibility with ESVA RADIUS, Old Cistron RADIUS
 #
-ATTRIBUTE	Session			1034	integer
-ATTRIBUTE	User-Name-Is-Star	1035	integer
+ALIAS		Simultaneous-Use	Session	
+ALIAS		Strip-User-Name		User-Name-Is-Star
+
 VALUE		User-Name-Is-Star	No			0
 VALUE		User-Name-Is-Star	Yes			1

@@ -38,9 +38,17 @@ static char rcsid[] =
 #ifndef DICT_INDEX_SIZE
 # define DICT_INDEX_SIZE 2048
 #endif
+
+typedef struct dict_value_rev {
+	struct dict_value_rev *next;
+	char *name;
+	DICT_VALUE *dval;
+} DICT_VALUE_REVERSE;
+
 static Symtab    *dict_attr_tab;
 static DICT_ATTR *dict_attr_index[DICT_INDEX_SIZE];
 static Symtab    *dict_value_tab;
+static Symtab    *dict_value_reverse;
 static DICT_VENDOR *dictionary_vendors;
 static int         vendorno;
 
@@ -69,6 +77,12 @@ dict_free()
 		symtab_clear(dict_value_tab);
 	else
 		dict_value_tab = symtab_create(sizeof(DICT_VALUE), NULL);
+
+	if (dict_value_reverse)
+		symtab_clear(dict_value_reverse);
+	else
+		dict_value_reverse = symtab_create(sizeof(DICT_VALUE_REVERSE),
+						   NULL);
 
 	free_slist((struct slist*)dictionary_vendors, free_vendor);
 
@@ -332,6 +346,39 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 	return 0;
 }
 
+void
+dval_reverse_install(dval)
+	DICT_VALUE *dval;
+{
+	char *name = NULL;
+	DICT_VALUE_REVERSE *rp;
+	
+	asprintf(&name, "%s-%d", dval->attrname, dval->value);
+	if (!name)
+		return;
+	
+	rp = sym_lookup_or_install(dict_value_reverse, name, 1);	
+	rp->dval = dval;
+	free(name);
+}
+
+DICT_VALUE *
+dval_reverse_lookup(attrname, val)
+	char *attrname;
+	int val;
+{
+	char *name = NULL;
+	DICT_VALUE_REVERSE *rp;
+
+	asprintf(&name, "%s-%d", attrname, val);
+	if (!name)
+		return NULL;
+	
+	rp = sym_lookup(dict_value_reverse, name);	
+	free(name);
+	return rp ? rp->dval : NULL;
+}
+
 int
 _dict_value(errcnt, fc, fv, file, lineno)
 	int    *errcnt;
@@ -365,6 +412,9 @@ _dict_value(errcnt, fc, fv, file, lineno)
 	dval->attrname = attr->name;
 	dval->value = value;
 
+	/* Create a reverse index entry */
+	dval_reverse_install(dval);
+	
 	return 0;
 }
 
@@ -540,37 +590,12 @@ value_name_to_value(valname)
  * the associated attribute name.
  */
 
-struct value_data {
-	UINT4 value;
-	char *attrname;
-	DICT_VALUE *dv;
-};
-
-int
-value_cmp(data, dv)
-	struct value_data *data;
-	DICT_VALUE *dv;
-{
-	if (strcmp(data->attrname, dv->attrname) == 0
-	    && data->value == dv->value) {
-		data->dv = dv;
-		return 1;
-	}
-	return 0;
-}
-
 DICT_VALUE *
 value_lookup(value, attrname)
 	UINT4	value;
 	char	*attrname;
 {
-	struct value_data data;
-
-	data.value = value;
-	data.attrname = attrname;
-	data.dv = NULL;
-	symtab_iterate(dict_value_tab, value_cmp, &data);
-	return data.dv;
+	return dval_reverse_lookup(attrname, value);
 }
 
 /*

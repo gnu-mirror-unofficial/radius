@@ -68,6 +68,82 @@ number use environment variable STRESS_COUNT, e.g.:
 
 
 =============================================================================
+Changes in Radius 0.96.4
+
+* The syntax of the "rewrite" language is extended. It 
+  supports addressing multiple attributes in a request and
+  deleting arbitrary attributes.
+
+* Fixed bug in "rewrite" optimizer, which caused boolean
+  short-cuts (|| and &&) to malfunction.
+
+* Added support for sybase and SecurID (thanks to Steve Bleazard)
+
+* Introduced new Auth-Type value Ignore. It causes the incoming request
+  to be dropped.
+
+* Configurable comparison of the requests allows to detect duplicate
+  requests even if the NAS changes request ID or authenticator between
+  retransmissions.
+
+* Fixed bug in formatting A/V pairs for detailed logging which
+  caused radiusd to dump core upon receiving certain vendor-specific
+  attributes.
+
+* If the incoming request does not contain NAS-IP-Address attribute,
+  it is generated and added to it.
+
+* Fixed bug in handling Expiration attribute
+
+
+=============================================================================
+Changes in Radius 0.96.3
+
+* Radiusd now automatically determines whether CHAP authentication
+  type should be used.
+
+* Proxy-State attributes are preserved in accounting replies.
+
+* Ascend-specific filters (attributes Ascend-Call-Filter and
+  Ascend-Data-Filter are now supported. Note, that you will
+  have to update your raddb/dict/ascend dictionary to use
+  this feature.
+
+
+=============================================================================
+Changes in Radius 0.96.2
+
+This release fixes some bugs found in 0.96. These are:
+
+* Malfunction of the daemon if the total number of reported ports
+  grows beyond STAT_MAX_PORT_COUNT (default 1024).
+
+* Inconsistencies in Postgres part of db/ scripts.
+
+* Typo in raddb/Makefile.am which prevented menus subdirectory
+  from being installed.
+
+* Typos in raddb/config.y (acct_def production) which caused
+  spawn, ttl, max-requests and request-cleanup-delay statements
+  to affect authentication settings, instead of accounting ones.
+
+* Client sub-package has been extended to send accounting
+  packets as well.
+
+* Fixed bug that caused install to attempt installing *.el? files
+  into / in the absence of emacs.
+
+Beside this, the handling of output from processes spawned by
+Exec-Program-Wait attribute was improved to allow for equal sign without
+surrounding whitespace (as in Session-Timeout=10).
+
+The detection of Guile version in configure script was improved to
+work with non-gnu versions of sed.
+
+The install procedure no longer overwrites the existing dictionaries.
+
+
+=============================================================================
 Changes in Radius 0.96
 
 * The format of raddb/config has changed a little.

@@ -70,12 +70,12 @@ REALM		*realms;       /* raddb/realms */
 RADCK_TYPE      *radck_type;   /* raddb/nastypes */
 
 static struct keyword op_tab[] = {
-	"=", PW_OPERATOR_EQUAL,
-	"!=", PW_OPERATOR_NOT_EQUAL,
-	">", PW_OPERATOR_GREATER_THAN,
-	"<", PW_OPERATOR_LESS_THAN,
-	">=", PW_OPERATOR_GREATER_EQUAL,
-	"<=", PW_OPERATOR_LESS_EQUAL,
+	"=", OPERATOR_EQUAL,
+	"!=", OPERATOR_NOT_EQUAL,
+	">", OPERATOR_GREATER_THAN,
+	"<", OPERATOR_LESS_THAN,
+	">=", OPERATOR_GREATER_EQUAL,
+	"<=", OPERATOR_LESS_EQUAL,
 	0
 };
 
@@ -107,32 +107,32 @@ comp_op(op, result)
 {
 	switch (op) {
 	default:
-	case PW_OPERATOR_EQUAL:
+	case OPERATOR_EQUAL:
 		if (result != 0)
 			return -1;
 		break;
 
-	case PW_OPERATOR_NOT_EQUAL:
+	case OPERATOR_NOT_EQUAL:
 		if (result == 0)
 			return -1;
 		break;
 
-	case PW_OPERATOR_LESS_THAN:
+	case OPERATOR_LESS_THAN:
 		if (result >= 0)
 			return -1;
 		break;
 
-	case PW_OPERATOR_GREATER_THAN:
+	case OPERATOR_GREATER_THAN:
 		if (result <= 0)
 			return -1;
 		break;
 		    
-	case PW_OPERATOR_LESS_EQUAL:
+	case OPERATOR_LESS_EQUAL:
 		if (result > 0)
 			return -1;
 		break;
 			
-	case PW_OPERATOR_GREATER_EQUAL:
+	case OPERATOR_GREATER_EQUAL:
 		if (result < 0)
 			return -1;
 		break;
@@ -588,12 +588,12 @@ userparse(buffer, first_pair, errmsg)
 
 			switch (pair->type) {
 
-			case PW_TYPE_STRING:
+			case TYPE_STRING:
 				pair->strvalue = make_string(token);
 				pair->strlength = strlen(pair->strvalue);
 				break;
 
-			case PW_TYPE_INTEGER:
+			case TYPE_INTEGER:
 				/*
 				 *	For DA_NAS_PORT_ID, allow a
 				 *	port range instead of just a port.
@@ -603,7 +603,7 @@ userparse(buffer, first_pair, errmsg)
 						if (!isdigit(*s))
 							break;
 					if (*s) {
-						pair->type = PW_TYPE_STRING;
+						pair->type = TYPE_STRING;
 						pair->strvalue = make_string(token);
 						pair->strlength = strlen(pair->strvalue);
 						break;
@@ -623,7 +623,7 @@ userparse(buffer, first_pair, errmsg)
 				}
 				break;
 
-			case PW_TYPE_IPADDR:
+			case TYPE_IPADDR:
 				if (pair->attribute != DA_FRAMED_IP_ADDRESS) {
 					pair->lvalue = get_ipaddr(token);
 					break;
@@ -651,13 +651,13 @@ userparse(buffer, first_pair, errmsg)
 				
 				pair2->name = "Add-Port-To-IP-Address";
 				pair2->attribute = DA_ADD_PORT_TO_IP_ADDRESS;
-				pair2->type = PW_TYPE_INTEGER;
+				pair2->type = TYPE_INTEGER;
 				pair2->lvalue = x;
 				pair2->next = pair;
 				pair = pair2;
 				break;
 
-			case PW_TYPE_DATE:
+			case TYPE_DATE:
 				timeval = time(NULL);
 				tm = localtime(&timeval);
 				if (user_gettime(token, tm)) {
@@ -893,7 +893,7 @@ huntgroup_paircmp(request, check)
 	
 		switch (check_item->type) {
 
-		case PW_TYPE_STRING:
+		case TYPE_STRING:
 			switch (check_item->attribute) {
 			case DA_NAS_PORT_ID:
 				result = portcmp(check_item, auth_item);
@@ -914,8 +914,8 @@ huntgroup_paircmp(request, check)
 			}
 			break;
 
-		case PW_TYPE_INTEGER:
-		case PW_TYPE_IPADDR:
+		case TYPE_INTEGER:
+		case TYPE_IPADDR:
 			if (check_item->lvalue == auth_item->lvalue) {
 				result = 0;
 			}
@@ -1603,7 +1603,7 @@ paircmp(request, check)
 		
 		compare = 0;	/* default result */
 		switch (check_item->type) {
-		case PW_TYPE_STRING:
+		case TYPE_STRING:
 			switch (check_item->attribute) {
 			case DA_PREFIX:
 			case DA_SUFFIX:
@@ -1632,14 +1632,14 @@ paircmp(request, check)
 			}
 			break;
 
-		case PW_TYPE_INTEGER:
+		case TYPE_INTEGER:
 			switch (check_item->attribute) {
 			case DA_USER_UID:
 				compare = uidcmp(check_item, username);
 				break;
 			}
 			/*FALLTHRU*/
-		case PW_TYPE_IPADDR:
+		case TYPE_IPADDR:
 			compare = auth_item->lvalue - check_item->lvalue;
 			break;
 			
@@ -2058,19 +2058,19 @@ dump_pairs(fp, pair)
 			op_tab[pair->operator].name);
 
 		switch (pair->type) {
-		case PW_TYPE_STRING:
+		case TYPE_STRING:
 			fprintf(fp, "(STRING) ");
 			break;
 
-		case PW_TYPE_INTEGER:
+		case TYPE_INTEGER:
 			fprintf(fp, "(INTEGER) ");
 			break;
 
-		case PW_TYPE_IPADDR:
+		case TYPE_IPADDR:
 			fprintf(fp, "(IP) ");
 			break;
 		
-		case PW_TYPE_DATE:
+		case TYPE_DATE:
 			fprintf(fp, "(DATE) ");
 			break;
 			
@@ -2079,25 +2079,25 @@ dump_pairs(fp, pair)
 		}
 
 		if (pair->eval) {
-			etype = PW_TYPE_STRING;
+			etype = TYPE_STRING;
 			fprintf(fp, "=");
 		} else
 			etype = pair->type;
 		
 		switch (etype) {
-		case PW_TYPE_STRING:
+		case TYPE_STRING:
 			fprintf(fp, "%s", pair->strvalue);
 			break;
 
-		case PW_TYPE_INTEGER:
+		case TYPE_INTEGER:
 			fprintf(fp, "%ld", pair->lvalue);
 			break;
 
-		case PW_TYPE_IPADDR:
+		case TYPE_IPADDR:
 			fprintf(fp, "%lx", pair->lvalue);
 			break;
 		
-		case PW_TYPE_DATE:
+		case TYPE_DATE:
 			fprintf(fp, "%ld", pair->lvalue);
 			break;
 			

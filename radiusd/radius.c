@@ -74,8 +74,8 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
 	reply = oreply;
 
 	switch (code) {
-		case PW_PASSWORD_REJECT:
-		case PW_AUTHENTICATION_REJECT:
+		case RT_PASSWORD_REJECT:
+		case RT_AUTHENTICATION_REJECT:
 			what = _("Reject");
 			/*
 			 *	Also delete all reply attributes
@@ -85,14 +85,14 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
 			avl_move_attr(&reply, &oreply, DA_REPLY_MESSAGE);
 			avl_move_attr(&reply, &oreply, DA_PROXY_STATE);
 			break;
-		case PW_ACCESS_CHALLENGE:
+		case RT_ACCESS_CHALLENGE:
 			what = _("Challenge");
 			stat_inc(auth, radreq->ipaddr, num_challenges);
 			break;
-		case PW_AUTHENTICATION_ACK:
+		case RT_AUTHENTICATION_ACK:
 			what = _("Ack");
 			break;
-		case PW_ACCOUNTING_RESPONSE:
+		case RT_ACCOUNTING_RESPONSE:
 			what = _("Accounting Ack");
 			break;
 		default:
@@ -149,7 +149,7 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
 
 		switch(reply->type) {
 
-		case PW_TYPE_STRING:
+		case TYPE_STRING:
 			/*
 			 *	FIXME: this is just to make sure but
 			 *	should NOT be needed. In fact I have no
@@ -172,8 +172,8 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
 			total_length += len + 2;
 			break;
 
-		case PW_TYPE_INTEGER:
-		case PW_TYPE_IPADDR:
+		case TYPE_INTEGER:
+		case TYPE_IPADDR:
 			if (total_length + sizeof(UINT4) + 2 >= RAD_BUFFER_SIZE)
 				goto err;
 				
@@ -429,7 +429,7 @@ radrecv(host, udp_port, buffer, length)
 
 			switch (attr->type) {
 
-			case PW_TYPE_STRING:
+			case TYPE_STRING:
 				/* attrlen always < AUTH_STRING_LEN */
 				pair->strlength = attrlen;
 				pair->strvalue = alloc_string(attrlen + 1);
@@ -448,8 +448,8 @@ radrecv(host, udp_port, buffer, length)
 				prev = pair;
 				break;
 			
-			case PW_TYPE_INTEGER:
-			case PW_TYPE_IPADDR:
+			case TYPE_INTEGER:
+			case TYPE_IPADDR:
 				memcpy(&lval, ptr, sizeof(UINT4));
 				pair->lvalue = ntohl(lval);
 
@@ -507,7 +507,7 @@ send_challenge(radreq, msg, state, activefd)
 	/*
 	 *	Build standard response header
 	 */
-	auth->code = PW_ACCESS_CHALLENGE;
+	auth->code = RT_ACCESS_CHALLENGE;
 	auth->id = radreq->id;
 	memcpy(auth->vector, radreq->vector, AUTH_VECTOR_LEN);
 	total_length = AUTH_HDR_LEN;

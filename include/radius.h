@@ -38,50 +38,51 @@ typedef struct pw_auth_hdr {
 #define AUTH_HDR_LEN			20
 #define CHAP_VALUE_LENGTH		16
 
-#ifndef PW_AUTH_UDP_PORT
-# define PW_AUTH_UDP_PORT		1645
+#ifndef DEF_AUTH_PORT
+# define DEF_AUTH_PORT	1645
 #endif
-#ifndef PW_ACCT_UDP_PORT
-# define PW_ACCT_UDP_PORT		1646
+#ifndef DEF_ACCT_PORT
+# define DEF_ACCT_PORT  1646
 #endif
 
-#define PW_TYPE_INVALID                -1
-#define PW_TYPE_STRING			0
-#define PW_TYPE_INTEGER			1
-#define PW_TYPE_IPADDR			2
-#define PW_TYPE_DATE			3
+#define TYPE_INVALID                -1
+#define TYPE_STRING			0
+#define TYPE_INTEGER			1
+#define TYPE_IPADDR			2
+#define TYPE_DATE			3
 
-#define	PW_AUTHENTICATION_REQUEST	1
-#define	PW_AUTHENTICATION_ACK		2
-#define	PW_AUTHENTICATION_REJECT	3
-#define	PW_ACCOUNTING_REQUEST		4
-#define	PW_ACCOUNTING_RESPONSE		5
-#define	PW_ACCOUNTING_STATUS		6
-#define PW_PASSWORD_REQUEST		7
-#define PW_PASSWORD_ACK			8
-#define PW_PASSWORD_REJECT		9
-#define	PW_ACCOUNTING_MESSAGE		10
-#define PW_ACCESS_CHALLENGE		11
+#define	RT_AUTHENTICATION_REQUEST	1
+#define	RT_AUTHENTICATION_ACK		2
+#define	RT_AUTHENTICATION_REJECT	3
+#define	RT_ACCOUNTING_REQUEST		4
+#define	RT_ACCOUNTING_RESPONSE		5
+#define	RT_ACCOUNTING_STATUS		6
+#define RT_PASSWORD_REQUEST		7
+#define RT_PASSWORD_ACK			8
+#define RT_PASSWORD_REJECT		9
+#define	RT_ACCOUNTING_MESSAGE		10
+#define RT_ACCESS_CHALLENGE		11
 
-#define PW_ASCEND_TERMINATE_SESSION     31
-#define PW_ASCEND_EVENT_REQUEST         33
-#define PW_ASCEND_EVENT_RESPONSE        34
+#define RT_ASCEND_TERMINATE_SESSION     31
+#define RT_ASCEND_EVENT_REQUEST         33
+#define RT_ASCEND_EVENT_RESPONSE        34
 /* These two are not implemented yet */
-#define PW_ASCEND_ALLOCATE_IP           51
-#define PW_ASCEND_RELEASE_IP            52
+#define RT_ASCEND_ALLOCATE_IP           51
+#define RT_ASCEND_RELEASE_IP            52
+
 
 #define DV_ACCT_STATUS_TYPE_QUERY       -1
 
 /* Basic structures */
 
 enum {
-	PW_OPERATOR_EQUAL = 0,	        /* = */
-	PW_OPERATOR_NOT_EQUAL,	        /* != */
-	PW_OPERATOR_LESS_THAN,	        /* < */
-	PW_OPERATOR_GREATER_THAN,	/* > */
-	PW_OPERATOR_LESS_EQUAL,	        /* <= */
-	PW_OPERATOR_GREATER_EQUAL,	/* >= */
-	PW_NUM_OPERATORS		/* number of operators */
+	OPERATOR_EQUAL = 0,             /* = */
+	OPERATOR_NOT_EQUAL,	        /* != */
+	OPERATOR_LESS_THAN,	        /* < */
+	OPERATOR_GREATER_THAN,	        /* > */
+	OPERATOR_LESS_EQUAL,	        /* <= */
+	OPERATOR_GREATER_EQUAL,	        /* >= */
+	NUM_OPERATORS                   /* number of operators */
 };
 
 /* ************************** Data structures ****************************** */

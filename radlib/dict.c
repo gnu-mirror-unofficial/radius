@@ -153,10 +153,10 @@ static int parse_dict_entry(int *, int, char **, char *, int);
 static int parse_dict(char *name);
 
 static struct keyword type_kw[] = {
-	"string", PW_TYPE_STRING,
-	"integer", PW_TYPE_INTEGER,
-	"ipaddr", PW_TYPE_IPADDR,
-	"date", PW_TYPE_DATE
+	"string", TYPE_STRING,
+	"integer", TYPE_INTEGER,
+	"ipaddr", TYPE_IPADDR,
+	"date", TYPE_DATE
 };
 
 /*ARGSUSED*/
@@ -259,8 +259,8 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 		return 0;
 	}
 
-	if ((type = xlat_keyword(type_kw, ATTR_TYPE, PW_TYPE_INVALID)) ==
-	    PW_TYPE_INVALID) {
+	if ((type = xlat_keyword(type_kw, ATTR_TYPE, TYPE_INVALID)) ==
+	    TYPE_INVALID) {
 		radlog(L_ERR,
 		       _("%s:%d: invalid type"),
 		       file, lineno);

@@ -1,21 +1,20 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
+   Copyright (C) 2000, Sergey Poznyakoff
+ 
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation, 
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
 #ifndef lint
 static char rcsid[] = 
 "$Id$";
@@ -54,18 +53,18 @@ static char * auth_code_str(int code);
 
 static struct keyword auth_codes[] = {
 #define D(a) #a, a	
-	D(PW_AUTHENTICATION_REQUEST),
-	D(PW_AUTHENTICATION_ACK),
-	D(PW_AUTHENTICATION_REJECT),
-	D(PW_ACCOUNTING_REQUEST),
-	D(PW_ACCOUNTING_RESPONSE),
-	D(PW_ACCOUNTING_STATUS),
-	D(PW_PASSWORD_REQUEST),
-	D(PW_PASSWORD_ACK),
-	D(PW_PASSWORD_REJECT),
-	D(PW_ACCOUNTING_MESSAGE),
-	D(PW_ACCESS_CHALLENGE),
-	D(PW_ASCEND_TERMINATE_SESSION),
+	D(RT_AUTHENTICATION_REQUEST),
+	D(RT_AUTHENTICATION_ACK),
+	D(RT_AUTHENTICATION_REJECT),
+	D(RT_ACCOUNTING_REQUEST),
+	D(RT_ACCOUNTING_RESPONSE),
+	D(RT_ACCOUNTING_STATUS),
+	D(RT_PASSWORD_REQUEST),
+	D(RT_PASSWORD_ACK),
+	D(RT_PASSWORD_REJECT),
+	D(RT_ACCOUNTING_MESSAGE),
+	D(RT_ACCESS_CHALLENGE),
+	D(RT_ASCEND_TERMINATE_SESSION),
 	0
 #undef D	
 };
@@ -271,7 +270,7 @@ radclient_build_request(config, server, code, pair)
 		*ptr++ = (pair->attribute & 0xFF);
 
 		switch (pair->type) {
-		case PW_TYPE_STRING:
+		case TYPE_STRING:
 			/* attrlen always < AUTH_STRING_LEN */
 			if (pair->attribute == DA_PASSWORD) {
 				VALUE_PAIR *ppair;
@@ -291,8 +290,8 @@ radclient_build_request(config, server, code, pair)
 				memcpy(ptr, pair->strvalue, attrlen);
 			}
 			break;
-		case PW_TYPE_INTEGER:
-		case PW_TYPE_IPADDR:
+		case TYPE_INTEGER:
+		case TYPE_IPADDR:
 			attrlen = sizeof(UINT4);
 			CHECKSIZE(attrlen+2);
 			*ptr++ = attrlen + 2;
@@ -436,7 +435,7 @@ decode_buffer(host, udp_port, buffer, length)
 
 			switch (attr->type) {
 
-			case PW_TYPE_STRING:
+			case TYPE_STRING:
 				pair->strvalue = alloc_string(attrlen + 1);
 				memcpy(pair->strvalue, ptr, attrlen);
 				pair->strvalue[attrlen] = '\0';
@@ -449,8 +448,8 @@ decode_buffer(host, udp_port, buffer, length)
 				prev = pair;
 				break;
 			
-			case PW_TYPE_INTEGER:
-			case PW_TYPE_IPADDR:
+			case TYPE_INTEGER:
+			case TYPE_IPADDR:
 				memcpy(&lval, ptr, sizeof(UINT4));
 				pair->lvalue = ntohl(lval);
 				if (first_pair == (VALUE_PAIR *)NULL) {

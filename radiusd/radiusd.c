@@ -435,7 +435,7 @@ main(argc, argv)
 		if (svp != (struct servent *) 0)
 			auth_port = ntohs(svp->s_port);
 		else
-			auth_port = PW_AUTH_UDP_PORT;
+			auth_port = DEF_AUTH_PORT;
 	}
 	if (radius_port ||
 	    (svp = getservbyname ("radacct", "udp")) == (struct servent *) 0)
@@ -905,21 +905,17 @@ check_reload()
 #endif		
 }	
 
-/*
- *	Respond to supported requests:
- *
- *		PW_AUTHENTICATION_REQUEST - Authentication request from
- *				a client network access server.
- *
- *		PW_ACCOUNTING_REQUEST - Accounting request from
- *				a client network access server.
- *
- *		PW_AUTHENTICATION_ACK
- *		PW_AUTHENTICATION_REJECT
- *		PW_ACCOUNTING_RESPONSE - Reply from a remote Radius server.
- *				Relay reply back to original NAS.
- *
- */
+/* Respond to supported requests:
+   RT_AUTHENTICATION_REQUEST - Authentication request from
+                               a client network access server.
+   RT_ACCOUNTING_REQUEST -     Accounting request from
+                               a client network access server.
+
+   RT_AUTHENTICATION_ACK
+   RT_AUTHENTICATION_REJECT
+   RT_ACCOUNTING_RESPONSE -    Reply from a remote Radius server.
+                               Relay reply back to original NAS. */
+
 int
 radrespond(radreq, activefd)
 	RADIUS_REQ *radreq;
@@ -942,7 +938,7 @@ radrespond(radreq, activefd)
 	 */
 	switch (radreq->code) {
 
-	case PW_AUTHENTICATION_REQUEST:
+	case RT_AUTHENTICATION_REQUEST:
 		/*
 		 *	Check request against hints and huntgroups.
 		 */
@@ -950,7 +946,7 @@ radrespond(radreq, activefd)
 		if ((e = rad_auth_init(radreq, activefd)) < 0)
 			return e;
 		/*FALLTHRU*/
-	case PW_ACCOUNTING_REQUEST:
+	case RT_ACCOUNTING_REQUEST:
 		namepair = avl_find(radreq->request, DA_USER_NAME);
 		if (namepair == NULL)
 			break;
@@ -960,9 +956,9 @@ radrespond(radreq, activefd)
 		}
 		break;
 
-	case PW_AUTHENTICATION_ACK:
-	case PW_AUTHENTICATION_REJECT:
-	case PW_ACCOUNTING_RESPONSE:
+	case RT_AUTHENTICATION_ACK:
+	case RT_AUTHENTICATION_REJECT:
+	case RT_ACCOUNTING_RESPONSE:
 		if (proxy_receive(radreq, activefd) < 0) {
 			radreq_free(radreq);
 			return 0;
@@ -976,23 +972,23 @@ radrespond(radreq, activefd)
 	 */
 	switch (radreq->code) {
 
-	case PW_AUTHENTICATION_REQUEST:
+	case RT_AUTHENTICATION_REQUEST:
 		rad_sql_check_connect(SQL_AUTH);
 		type = R_AUTH;
 		break;
 	
-	case PW_ACCOUNTING_REQUEST:
-	case PW_ASCEND_EVENT_REQUEST:
+	case RT_ACCOUNTING_REQUEST:
+	case RT_ASCEND_EVENT_REQUEST:
 		rad_sql_check_connect(SQL_ACCT);
 		type = R_ACCT;
 		break;
 		
-	case PW_PASSWORD_REQUEST:
+	case RT_PASSWORD_REQUEST:
 		/*
 		 *	We don't support this anymore.
 		 */
 		/* rad_passchange(radreq, activefd); */
-		radlog(L_NOTICE, "PW_PASSWORD_REQUEST not supported anymore");
+		radlog(L_NOTICE, "RT_PASSWORD_REQUEST not supported anymore");
 		break;
 
 	default:

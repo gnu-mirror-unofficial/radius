@@ -1,21 +1,20 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000,2001, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
+   Copyright (C) 2000,2001, Sergey Poznyakoff
+ 
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
 #define RADIUS_MODULE_ACCT_C 
 
 #ifndef lint
@@ -629,11 +628,11 @@ rad_accounting(radreq, activefd)
 
 	huntgroup_access(radreq);
 
-#if defined(PW_ASCEND_EVENT_REQUEST) && defined(PW_ASCEND_EVENT_RESPONSE)
+#if defined(RT_ASCEND_EVENT_REQUEST) && defined(RT_ASCEND_EVENT_RESPONSE)
 	/* Special handling for Ascend-Event-Request */
-	if (radreq->code == PW_ASCEND_EVENT_REQUEST) {
+	if (radreq->code == RT_ASCEND_EVENT_REQUEST) {
 		write_detail(radreq, auth, "detail");
-		rad_send_reply(PW_ASCEND_EVENT_RESPONSE,
+		rad_send_reply(RT_ASCEND_EVENT_RESPONSE,
 			       radreq, NULL, NULL, activefd);
 		stat_inc(acct, radreq->ipaddr, num_resp);
 		return 0;
@@ -644,7 +643,7 @@ rad_accounting(radreq, activefd)
 	    rad_acct_db(radreq, auth) == 0 &&
 	    rad_acct_ext(radreq) == 0) {
 		/* Now send back an ACK to the NAS. */
-		rad_send_reply(PW_ACCOUNTING_RESPONSE,
+		rad_send_reply(RT_ACCOUNTING_RESPONSE,
 			       radreq, NULL, NULL, activefd);
 		stat_inc(acct, radreq->ipaddr, num_resp);
 		return 0;
@@ -664,7 +663,7 @@ rad_acct_xmit(type, code, data, fd)
 	RADIUS_REQ *req = (RADIUS_REQ*)data;
 	
 	if (code == 0) {
-		rad_send_reply(PW_ACCOUNTING_RESPONSE, req, NULL, NULL, fd);
+		rad_send_reply(RT_ACCOUNTING_RESPONSE, req, NULL, NULL, fd);
 		radlog(L_NOTICE,
 		       _("Retransmitting ACCT reply: client %s, ID: %d"),
 		       client_lookup_name(req->ipaddr),

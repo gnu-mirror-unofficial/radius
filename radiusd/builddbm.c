@@ -1,20 +1,19 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2001, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- */
+   Copyright (C) 2001, Sergey Poznyakoff
+ 
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation, 
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #define RADIUS_MODULE_BUILDDBM_C
 
@@ -77,7 +76,7 @@ append_symbol(closure, sym)
 		*q++ = vp->attribute;
 		*q++ = vp->type;
 		*q++ = vp->operator;
-		if (vp->type == PW_TYPE_STRING) {
+		if (vp->type == TYPE_STRING) {
 			strcpy((char*)q, vp->strvalue);
 			q += NINT(vp->strlength+1);
 		} else
@@ -88,7 +87,7 @@ append_symbol(closure, sym)
 		*q++ = vp->attribute;
 		*q++ = vp->type;
 		*q++ = vp->operator;
-		if (vp->type == PW_TYPE_STRING) {
+		if (vp->type == TYPE_STRING) {
 			strcpy((char*)q, vp->strvalue);
 			q += NINT(vp->strlength+1);
 		} else
@@ -122,7 +121,7 @@ list_length(vp)
 	
 	for (len = 0; vp; vp = vp->next) {
 		len += 3;
-		if (vp->type == PW_TYPE_STRING)
+		if (vp->type == TYPE_STRING)
 			len += NINT(vp->strlength + 1);
 		else
 			len++;
@@ -194,7 +193,7 @@ decode_dbm(pptr)
 		next_pair->attribute = *ptr++;
 		next_pair->type = *ptr++;
 		next_pair->operator = *ptr++;
-		if (next_pair->type == PW_TYPE_STRING) {
+		if (next_pair->type == TYPE_STRING) {
 			next_pair->strvalue = make_string((char*)ptr);
 			next_pair->strlength = strlen(next_pair->strvalue);
 			ptr += NINT(next_pair->strlength+1);

@@ -1,21 +1,19 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
+   Copyright (C) 2000, Sergey Poznyakoff
+ 
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation, 
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #ifndef lint
 static char rcsid[] = 
@@ -57,7 +55,7 @@ void
 avp_free(p)	
 	VALUE_PAIR *p;
 {
-	if (p->type == PW_TYPE_STRING || p->eval) {
+	if (p->type == TYPE_STRING || p->eval) {
 		free_string(p->strvalue);
 	}
 	free_entry(p);
@@ -74,7 +72,7 @@ avp_dup(vp)
 
 	memcpy(ret, vp, sizeof(VALUE_PAIR));
 	ret->next = NULL;
-	if (ret->type == PW_TYPE_STRING)
+	if (ret->type == TYPE_STRING)
 		ret->strvalue = dup_string(vp->strvalue);
 	return ret;
 }
@@ -355,7 +353,7 @@ avl_dup(from)
 	for ( ; from; from = from->next) {
 		temp = avp_alloc();
 		memcpy(temp, from, sizeof(VALUE_PAIR));
-		if (temp->type == PW_TYPE_STRING)
+		if (temp->type == TYPE_STRING)
 			temp->strvalue = dup_string(temp->strvalue);
 		temp->next = NULL;
 		if (last)

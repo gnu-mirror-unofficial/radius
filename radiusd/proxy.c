@@ -198,7 +198,7 @@ rad_send_request(fd, ipaddr, port, id, code, old_vector, old_secret,
 	memset(auth, 0, sizeof(AUTH_HDR));
 	auth->code = code;
 	auth->id = id;
-	if (auth->code == PW_AUTHENTICATION_REQUEST)
+	if (auth->code == RT_AUTHENTICATION_REQUEST)
 		memcpy(auth->vector, vector, AUTH_VECTOR_LEN);
 
 	total_length = AUTH_HDR_LEN;
@@ -232,7 +232,7 @@ rad_send_request(fd, ipaddr, port, id, code, old_vector, old_secret,
 		*ptr++ = (vp->attribute & 0xFF);
 
 		switch (vp->type) {
-		case PW_TYPE_STRING:
+		case TYPE_STRING:
 			/*
 			 *	Re-encode passwd on the fly.
 			 */
@@ -251,9 +251,9 @@ rad_send_request(fd, ipaddr, port, id, code, old_vector, old_secret,
 
 			ptr += vp->strlength;
 			break;
-		case PW_TYPE_INTEGER:
-		case PW_TYPE_DATE:
-		case PW_TYPE_IPADDR:
+		case TYPE_INTEGER:
+		case TYPE_DATE:
+		case TYPE_IPADDR:
                         checkovf(sizeof(UINT4) + 2); 
 
 			*ptr++ = sizeof(UINT4) + 2;
@@ -272,7 +272,7 @@ rad_send_request(fd, ipaddr, port, id, code, old_vector, old_secret,
 
 	/* If this is not an authentication request, we	need to calculate
 	   the md5 hash over the entire packet and put it in the vector. */
-	if (auth->code != PW_AUTHENTICATION_REQUEST) {
+	if (auth->code != RT_AUTHENTICATION_REQUEST) {
 		len = strlen(new_secret);
 		if (total_length + len < sizeof(i_send_buffer)) {
 			strcpy(send_buffer + total_length, new_secret);
@@ -317,7 +317,7 @@ proxy_addinfo(radreq, proxy_id, remip)
 	proxy_pair = avp_alloc();
 	proxy_pair->name = "Proxy-State";
 	proxy_pair->attribute = DA_PROXY_STATE;
-	proxy_pair->type = PW_TYPE_STRING;
+	proxy_pair->type = TYPE_STRING;
 	proxy_pair->strlength = sizeof(PROXY_STATE);
 	proxy_pair->strvalue = alloc_string(proxy_pair->strlength);
 	
@@ -436,7 +436,7 @@ proxy_send(radreq, activefd)
 	replace_string(&namepair->strvalue, username);
 	namepair->strlength = strlen(namepair->strvalue);
 
-	if (radreq->code == PW_AUTHENTICATION_REQUEST)
+	if (radreq->code == RT_AUTHENTICATION_REQUEST)
 		rport = realm->auth_port;
 	else
 		rport = realm->acct_port;
@@ -455,11 +455,11 @@ proxy_send(radreq, activefd)
 	 *	digest in rad_auth_init()
 	 */
 	switch (radreq->code) {
-	case PW_AUTHENTICATION_REQUEST:
+	case RT_AUTHENTICATION_REQUEST:
 		what = _("authentication");
 		rc = 0;
 		break;
-	case PW_ACCOUNTING_REQUEST:
+	case RT_ACCOUNTING_REQUEST:
 		what = _("accounting");
 		rc = calc_acctdigest(radreq) < 0;
 		break;
@@ -495,7 +495,7 @@ proxy_send(radreq, activefd)
 
 		vp->name = "CHAP-Challenge";
 		vp->attribute = DA_CHAP_CHALLENGE;
-		vp->type = PW_TYPE_STRING;
+		vp->type = TYPE_STRING;
 		vp->strlength = AUTH_VECTOR_LEN;
 		vp->strvalue = alloc_string(AUTH_VECTOR_LEN);
 		memcpy(vp->strvalue, radreq->vector, AUTH_VECTOR_LEN);

@@ -1,21 +1,19 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000,2001, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
+   Copyright (C) 2000,2001, Sergey Poznyakoff
+ 
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation, 
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #if defined(HAVE_CONFIG_H)
 # include <config.h>
@@ -92,7 +90,7 @@ process_menu(radreq, activefd)
 
 	if ((term_pair = avl_find(pair, DA_MENU)) != NULL &&
 	    strcmp(term_pair->strvalue, "EXIT") == 0) {
-		rad_send_reply(PW_AUTHENTICATION_REJECT, radreq,
+		rad_send_reply(RT_AUTHENTICATION_REJECT, radreq,
 			       radreq->request, NULL, activefd);
 	} else if (pair) {
 		if (new_pair = avl_find(pair, DA_MENU)) {
@@ -101,11 +99,11 @@ process_menu(radreq, activefd)
 					"MENU=%s", new_pair->strvalue);
 			send_challenge(radreq, msg, state_value, activefd);
 		} else {
-			rad_send_reply(PW_AUTHENTICATION_ACK, radreq,
+			rad_send_reply(RT_AUTHENTICATION_ACK, radreq,
 				       pair, NULL, activefd);
 		}
 	} else {
-		rad_send_reply(PW_AUTHENTICATION_REJECT, radreq,
+		rad_send_reply(RT_AUTHENTICATION_REJECT, radreq,
 			       radreq->request, NULL, activefd);
 	}
 

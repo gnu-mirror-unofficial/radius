@@ -1,21 +1,20 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
+   Copyright (C) 2000, Sergey Poznyakoff
+ 
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation, 
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
 #define RADIUS_MODULE_RADUTIL_C
 
 #ifndef lint
@@ -91,7 +90,7 @@ attr_to_str(obp, req, pairlist, attr, defval)
 	
 	if ((pair = avl_find(pairlist, attr->value)) == NULL) {
 		if (!defval) {
-			if (attr->type == PW_TYPE_STRING)
+			if (attr->type == TYPE_STRING)
 				defval = "-";
 			else
 				defval = "-0";
@@ -113,7 +112,7 @@ attr_to_str(obp, req, pairlist, attr, defval)
 		case '=':
 			if (pairlist) {
 				pair = install_pair(attr->name,
-						    PW_OPERATOR_EQUAL,
+						    OPERATOR_EQUAL,
 						    defval);
 				if (pair)
 					avl_add_list(&pairlist, pair);
@@ -139,7 +138,7 @@ attr_to_str(obp, req, pairlist, attr, defval)
 
 	tmp[AUTH_STRING_LEN] = 0;
 	switch (attr->type) {
-	case PW_TYPE_STRING:
+	case TYPE_STRING:
 		if (attr->value == DA_PASSWORD && req) {
 			char string[AUTH_STRING_LEN+1];
 			int len;
@@ -154,17 +153,17 @@ attr_to_str(obp, req, pairlist, attr, defval)
 			obstack_grow(obp, pair->strvalue, length);
 		}
 		break;
-	case PW_TYPE_INTEGER:
+	case TYPE_INTEGER:
 		snprintf(tmp, sizeof(tmp), "%ld", pair->lvalue);
 		len = strlen(tmp);
 		obstack_grow(obp, tmp, len);
 		break;
-	case PW_TYPE_IPADDR:
+	case TYPE_IPADDR:
 		ipaddr2str(tmp, pair->lvalue);
 		len = strlen(tmp);
 		obstack_grow(obp, tmp, len);
 		break;
-	case PW_TYPE_DATE:
+	case TYPE_DATE:
 		snprintf(tmp, sizeof(tmp), "%ld", pair->lvalue);
 		len = strlen(tmp);
 		obstack_grow(obp, tmp, len);

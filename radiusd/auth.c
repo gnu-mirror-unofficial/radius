@@ -1,21 +1,19 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000,2001, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
+   Copyright (C) 2000,2001, Sergey Poznyakoff
+ 
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+ 
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+ 
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #define RADIUS_MODULE_AUTH_C
 #ifndef lint
@@ -504,7 +502,7 @@ rad_auth_init(radreq, activefd)
 	if (!huntgroup_access(radreq)) {
 		radlog(L_NOTICE, _("No huntgroup access: [%s] (from nas %s)"),
 			namepair->strvalue, nas_request_to_name(radreq));
-		rad_send_reply(PW_AUTHENTICATION_REJECT, radreq,
+		rad_send_reply(RT_AUTHENTICATION_REJECT, radreq,
 			       radreq->request, NULL, activefd);
 		return -1;
 	}
@@ -819,14 +817,14 @@ sfn_init(m)
 	 * Auth-Reject for fail. We also need to add the reply
 	 * pairs from the server to the initial reply.
 	 */
-	if (radreq->server_code == PW_AUTHENTICATION_REJECT ||
-	    radreq->server_code == PW_AUTHENTICATION_ACK) {
+	if (radreq->server_code == RT_AUTHENTICATION_REJECT ||
+	    radreq->server_code == RT_AUTHENTICATION_ACK) {
 		m->user_check = avp_create(DA_AUTH_TYPE, 0, NULL, 0);
 		proxied = 1;
 	}
-	if (radreq->server_code == PW_AUTHENTICATION_REJECT)
+	if (radreq->server_code == RT_AUTHENTICATION_REJECT)
 		m->user_check->lvalue = DV_AUTH_TYPE_REJECT;
-	if (radreq->server_code == PW_AUTHENTICATION_ACK)
+	if (radreq->server_code == RT_AUTHENTICATION_ACK)
 		m->user_check->lvalue = DV_AUTH_TYPE_ACCEPT;
 
 	if (radreq->server_reply) {
@@ -1262,7 +1260,7 @@ sfn_ack(m)
 	
 	stat_inc(auth, m->req->ipaddr, num_accepts);
 
-	rad_send_reply(PW_AUTHENTICATION_ACK,
+	rad_send_reply(RT_AUTHENTICATION_ACK,
 		       m->req,
 		       m->user_reply,
 		       m->user_msg,
@@ -1287,7 +1285,7 @@ sfn_reject(m)
 	MACH *m;
 {
 	debug(1, ("REJECT: %s", m->namepair->strvalue));
-	rad_send_reply(PW_AUTHENTICATION_REJECT,
+	rad_send_reply(RT_AUTHENTICATION_REJECT,
 		       m->req,
 		       m->user_reply,
 		       m->user_msg,

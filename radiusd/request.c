@@ -229,13 +229,15 @@ request_put(type, data, activefd, numpending)
                                 break;
                                 
                         case RS_PENDING:
-                                /*FIXME: This causes much grief */
                                 radlog(L_NOTICE,
                                      _("Killing unresponsive %s thread %d"),
                                        request_class[curreq->type].name,
                                        curreq->child_id);
+                                /*FIXME: This causes much grief */
+#if 0
                                 pthread_cancel(curreq->child_id);
                                 num_threads--;
+#endif
                                 curreq = curreq->next;
                                 break;
                         }

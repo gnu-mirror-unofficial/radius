@@ -11,7 +11,7 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 SUBDIRS=m4 include radlib sql snmplib radscm radiusd radwho radzap radlast\
-        raduse radscripts elisp raddb db client test doc po mibs\
+        raduse radscripts elisp raddb db client radtest test doc po mibs\
         scripts contrib
 
 if MAINTAINER_MODE

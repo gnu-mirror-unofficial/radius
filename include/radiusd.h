@@ -232,11 +232,17 @@ typedef void (*config_hook_fp)(void *func_data, void *app_data);
 /*
  * Authentication results
  */
-#define AUTH_OK      0 /* OK */
-#define AUTH_FAIL    1 /* Password fail */
-#define AUTH_NOUSER  2 /* No such user  */
-#define AUTH_REJECT  3 /* Rejected */
-#define AUTH_IGNORE  4 /* Silently ignore */
+enum auth_status {
+	auth_ok,              /* Authentication passed */
+	auth_valid,           /* Authentication passed, expiration timeout
+				 is returned */
+	auth_account_expired, /* Account has expired */
+	auth_password_expired,/* Password has expired */ 
+	auth_fail,
+	auth_nouser,
+	auth_reject,
+	auth_ignore,
+};
 
 /* Logging modes */
 #define RLOG_AUTH               0x0001

@@ -256,7 +256,7 @@ proxy_send(REQUEST *req)
 
         /* Look up name. */
         namepair = avl_find(radreq->request, DA_USER_NAME);
-        if (namepair == NULL)
+        if (avp_null_string(namepair))
                 return 0;
 
         saved_username = estrdup(namepair->avp_strvalue);

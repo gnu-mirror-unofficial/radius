@@ -32,7 +32,7 @@ static char rcsid[] =
 #include <fcntl.h>
 #include <raddbm.h>
 
-#if USE_DBM == USE_NDBM
+#if USE_DBM == DBM_NDBM
 
 int
 open_dbm(name, dbmfile)

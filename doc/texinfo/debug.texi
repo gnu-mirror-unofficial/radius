@@ -24,38 +24,183 @@ authentication data flow becomes even harder to understand if there
 are some complex rules in the @file{hints} and @file{huntgroups}
 files.
 
+The rule tracing mode is intended to help you find out the exact
+order of the rules that each request matched during processing.
+The mode is toggled by @code{trace-rules} statement in @code{auth}
+or @code{acct} block of your @file{config} file. When rule tracing
+mode is on for a given type of requests, @command{radiusd} will
+display the data flow diagram for each processed request of this
+type. The diagram is output on @code{info} logging category,
+it represents the list of rules in reverse chronological order.
+Each rule is represented by its location in the form
+@var{filename}:@var{line}. To make the output more compact, if
+several rules appear in the same configuration file, their locations
+are listed as a comma-separated list of numbers after the file name.
+Furthermore, if the configuration files have the same path prefix,
+then only the first file name appears with the full prefix.
 
+Here is an example of trace rule diagram:
+@smallexample
+@cartouche
+Oct 31 11:37:17 [28322]: Auth.info: (AUTHREQ foo 170 bar):
+rule trace: /etc/raddb/users:157,22,3; huntgroups:72; hints:34
+@end cartouche
+@end smallexample
+
+This diagram means, that the authentication request from server
+@samp{foo} for user @samp{bar} with ID 170 matched the following
+rules
+
+@multitable @columnfractions .40 .40
+@item File name                    @tab Line number
+@item @file{/etc/raddb/hints}      @tab 34
+@item @file{/etc/raddb/huntgroups} @tab 72 
+@item @file{/etc/raddb/users}      @tab 3
+@item @file{/etc/raddb/users}      @tab 22
+@item @file{/etc/raddb/users}      @tab 157
+@end multitable
+
+As a practical example, let's suppose you have the following setup.
+There are three classes of users:
+
+@enumerate 1
+@item
+Users from group ``root'' are authenticated using system password
+database and get rlogin access to the server 192.168.10.1
+@item
+Users from group ``staff'' are also authenticated using system
+password database, but they are granted only telnet access to the
+server 192.168.10.2
+@item
+Finally, the rest of users is authenticated against SQL database
+and get usual PPP access.
+@end enumerate
+
+In addition, users from the first two classes are accounted using
+custom Scheme procedure @code{staff-acct}.
+
+The configuration files for this setup are showed below:
+
+Contents of @file{hints}:
 @smallexample
 @group
-DEFAULT  Prefix = "tweedle-"
-         Scheme-Acct-Procedure = "tweedle-acct",
-                   Strip-User-Name = No
+DEFAULT  Group = "root"
+         Scheme-Acct-Procedure = "staff-acct",
+                   Hint = "admin"
+
+DEFAULT  Group = "staff"
+         Scheme-Acct-Procedure = "staff-acct",
+                   Hint = "staff"
 @end group
 @end smallexample
 
+Contents of file @file{users}:
 @smallexample
 @group
-DEFAULT  Prefix = "tweedle-",
-              Auth-Type = SQL,
+DEFAULT Auth-Type = SQL,
+              Simultaneous-Use = 1
+        Service-Type = Framed-User,
+              Framed-Protocol = PPP
+
+DEFAULT Hint = "admin",
+             Auth-Type = System
+        Service-Type = Login-User,
+             Login-IP-Host = 192.168.0.1,              
+             Login-Service = Rlogin
+             
+DEFAULT Hint = "staff",
+              Auth-Type = System,
               Simultaneous-Use = 1
          Service-Type = Login-User,
-              Login-IP-Host = 192.168.0.1,
-              Login-Service  = Telnet
+              Login-IP-Host = 192.168.0.2,
+              Login-Service = Telnet
+@end group
+@end smallexample
 
-DEFAULT  Group = "ppp",
-              Auth-Type = SQL,
+Now, let's suppose that user @samp{svp} is in the group
+@samp{staff} and is trying to log in. However, he fails to do so and
+in @command{radiusd} logs you see:
+
+@smallexample
+@cartouche
+Nov 06 21:25:24: Auth.notice: (AUTHREQ local 61 svp):
+  Login incorrect [svp], CLID unknown
+@end cartouche
+@end smallexample
+
+@noindent
+Why? To answer this question, you add to @code{auth} block of your
+@file{config} the statement
+
+@smallexample
+trace-rules yes;
+@end smallexample
+
+@noindent
+and ask user @samp{svp} to retry his attempt. Now you see in your
+logs:
+
+@smallexample
+@cartouche
+Nov 06 21:31:24: Auth.notice: (AUTHREQ local 13 svp):
+  Login incorrect [svp], CLID unknown
+Nov 06 21:31:24: Auth.info: (AUTHREQ local 13 svp):
+  rule trace: /etc/raddb/users:1, hints: 5
+@end cartouche
+@end smallexample
+
+@noindent
+This means that the request for @samp{svp} has first matched rule
+on the line 1 of file @file{hints}, then the rule on line 1 of file
+@file{users}. Now you see the error: the entries in @file{users}
+appear in wrong order! After fixing it your @file{users} looks like:
+
+@smallexample
+@group
+DEFAULT Hint = "admin",
+             Auth-Type = System
+        Service-Type = Login-User,
+             Login-IP-Host = 192.168.0.1,              
+             Login-Service = Rlogin
+
+DEFAULT  Hint = "staff",
+              Auth-Type = System,
+              Simultaneous-Use = 1
+         Service-Type = Login-User,
+              Login-IP-Host = 192.168.0.2,
+              Login-Service = Telnet
+             
+DEFAULT Auth-Type = SQL,
               Simultaneous-Use = 1
         Service-Type = Framed-User,
               Framed-Protocol = PPP
 @end group
 @end smallexample
 
+Now, you ask @samp{svp} to log in again, and see:
+
 @smallexample
 @cartouche
-Nov 06 21:25:24: Auth.notice: (AUTHREQ local 61 aud):
-  Login OK [tweedle-dum], CLID unknown
+Nov 06 21:35:14: Auth.notice: (AUTHREQ local 42 svp):
+  Login OK [svp], CLID unknown
+Nov 06 21:35:14: Auth.info: (AUTHREQ local 42 svp):
+  rule trace: /etc/raddb/users:7, hints: 5
 @end cartouche
 @end smallexample
+
+Let's also suppose that user @samp{plog} is not listed in
+groups ``root'' and ``staff'', so he is supposed to authenticate
+using SQL. When he logs in, you see in your logs:
+
+@smallexample
+@cartouche
+Nov 06 21:39:05: Auth.notice: (AUTHREQ local 122 plog):
+  Login OK [svp], CLID unknown
+Nov 06 21:39:05: Auth.info: (AUTHREQ local 122 plog):
+  rule trace: /etc/raddb/users:14
+@end cartouche
+@end smallexample
+
 
 @comment *******************************************************************
 @node Debugging

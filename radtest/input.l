@@ -1,4 +1,4 @@
-%x STRING
+%x STRING HEREDOC
 %{
 /* This file is part of GNU Radius.
    Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
@@ -52,6 +52,9 @@ int getline (char **lineptr, size_t *n, FILE *stream);
 grad_locus_t source_locus;
 static int interactive;
 static struct obstack string_stk;
+
+static char *heredoc_delimiter;
+static int strip_tabs; 
  
 char prompt_str[] = "radtest> ";
 
@@ -152,6 +155,14 @@ static void add_num(int skip, int base, char *text, int leng);
 static int backspace(int c);
 static int deref_var(char *name, char *p);
 static int deref_parm(unsigned num, char *p);
+
+static int isemptystr(char *text);
+char *heredoc_strip_tabs(char *text);
+void heredoc_begin();
+
+static int push_bracket(int tok);
+static int pop_bracket(int tok);
+
 %}
 
 WS [ \t][ \t]*
@@ -181,7 +192,10 @@ DQ {D3}\.{D3}\.{D3}\.{D3}
 \"break\"    |
 \"continue\" |
 \"not\"      |
-\"input\" {
+\"input\"    |
+\"set\"      |
+\"shift\"    |
+\"getopt\" {
 	add_str(yytext+1,yyleng-2);
         yylval.string = end_str();
         return NAME;
@@ -192,8 +206,8 @@ print   return PRINT;
 send    return SEND;
 expect  return EXPECT;
 exit    return EXIT;
-begin   return T_BEGIN;
-end     return T_END;
+begin   return push_bracket(T_BEGIN); 
+end     return pop_bracket(T_BEGIN) == 0 ? T_END : T_UNBALANCED;
 if      return IF;
 else    return ELSE;
 while   return WHILE;
@@ -202,6 +216,31 @@ break   return BREAK;
 continue return CONTINUE;
 not     return NOT;
 input   return INPUT;
+shift   return SHIFT;
+getopt  return GETOPT;
+set{WS}.*\n {
+	int i, argc;
+	char **argv;
+	char *p;
+	
+	argcv_get(yytext, "", NULL, &argc, &argv);
+	for (i = 0; i < argc; i++) 
+		add_str(argv[i], strlen(argv[i])+1);
+
+	add_chr(0);
+	for (p = end_str(); *p; p += strlen(p) + 1)
+		obstack_ptr_grow(&string_stk, p);
+	p = NULL;
+	obstack_ptr_grow(&string_stk, p);
+	yylval.set.argc = argc;
+	yylval.set.argv = obstack_finish(&string_stk);
+	argcv_free(argc, argv);
+	if (yytext[yyleng-2] == '\\')
+		yyless(yyleng-2);
+	else
+		yyless(yyleng-1);
+	return SET;
+}
 {IDENTIFIER} {
 	add_str(yytext,yyleng);
         yylval.string = end_str();
@@ -318,6 +357,26 @@ input   return INPUT;
         yylval.string = end_str();
         return QUOTE;
 }
+"<<"-?{IDENTIFIER}.*\n {
+	BEGIN(HEREDOC);
+	source_locus.line++;
+	heredoc_begin();
+}
+<HEREDOC>.*\n {
+	char *p = heredoc_strip_tabs (yytext);
+	if (strncmp (p, heredoc_delimiter, strlen (heredoc_delimiter))
+	    == 0
+	    && isemptystr (p + strlen (heredoc_delimiter))) {
+		grad_free (heredoc_delimiter);
+		heredoc_delimiter = NULL;
+		BEGIN(INITIAL);
+		yylval.string = end_str();
+		yyless(yyleng-1);
+		return QUOTE;
+	}
+	add_str(p, strlen(p));
+        source_locus.line++;
+}
 {DQ} {
         yylval.ipaddr = grad_ip_strtoip(yytext);
         return IPADDRESS;
@@ -337,6 +396,10 @@ input   return INPUT;
 ">="    return GE;
 "<="    return LE;
 "!"     return NOT;
+"("     return push_bracket('(');
+")"     return pop_bracket('(') == 0 ? yytext[0] : T_UNBALANCED;
+"["     return push_bracket('[');
+"]"     return pop_bracket('[') == 0 ? yytext[0] : T_UNBALANCED; 
 .       return yytext[0];
 
 %%
@@ -496,4 +559,141 @@ radtest_free_strings()
 {
 	obstack_free(&string_stk, NULL);
 	obstack_init(&string_stk);
+}
+
+static int
+isemptystr(char *text)
+{
+	for (; *text && isspace (*text); text++)
+		;
+	return *text == 0;
+}
+
+char *
+heredoc_strip_tabs(char *text)
+{
+	if (strip_tabs)
+		for (; *text == '\t'; text++)
+			;
+	return text;
+}
+
+void
+heredoc_begin()
+{
+	char *p = yytext + 2; /* past the << marker */
+
+	if (*p == '-') {
+		strip_tabs = 1;
+		p++;
+	}
+	else
+		strip_tabs = 0;
+
+	if (!isspace (*p)) {
+		char *endp;
+		int len;
+      
+		for (endp = p; *endp; endp++)
+			if (isspace (*endp))
+				break;
+
+		len = endp - p;
+		heredoc_delimiter = grad_emalloc(len + 1);
+		memcpy(heredoc_delimiter, p, len);
+		heredoc_delimiter[len] = 0;
+	} else {
+		heredoc_delimiter = grad_estrdup (".");
+	}
+}
+
+
+
+struct bracket {
+	int token;
+	grad_locus_t locus;
+};
+
+static grad_list_t *bracket_stack;
+
+static int
+push_bracket(int tok)
+{
+	struct bracket *p = grad_emalloc(sizeof *p);
+	p->token = tok;
+	p->locus = source_locus;
+	if (!bracket_stack)
+		bracket_stack = grad_list_create();
+	grad_list_prepend(bracket_stack, p);
+	return tok;
+}
+
+struct bracket_info {
+	int open_tok;
+	int close_tok;
+	char *open_name;
+	char *close_name;
+} bracket_info[] = {
+	{ '(', ')', "(", ")" },
+	{ T_BEGIN, T_END, "begin", "end" },
+	{ '[', ']', "[", "]" },
+	{ 0 }
+};
+
+static struct bracket_info *
+find_bracket(int tok)
+{
+	struct bracket_info *p;
+	for (p = bracket_info; p->open_tok; p++)
+		if (p->open_tok == tok)
+			return p;
+	grad_insist_fail("Unknown opening bracket");
+	return NULL;
+}
+
+static char *
+opening_bracket_name(int tok)
+{
+	struct bracket_info *p = find_bracket(tok);
+	return p->open_name;
+}
+
+static char *
+closing_bracket_name(int tok)
+{
+	struct bracket_info *p = find_bracket(tok);
+	return p->close_name;
+}
+
+static int
+pop_bracket(int tok)
+{
+	struct bracket *p = grad_list_item(bracket_stack, 0);
+
+	if (tok == p->token) {
+		grad_list_remove(bracket_stack, p, NULL);
+		grad_free(p);
+		return 0;
+	}
+
+	parse_error(_("Unbalanced '%s'"), closing_bracket_name(tok));
+	if (p)
+		parse_error_loc(&p->locus,
+			    _("This '%s' does not have matching '%s'"),
+			    opening_bracket_name(p->token),
+			    closing_bracket_name(p->token));
+	grad_list_destroy(&bracket_stack, _free_item, NULL);
+	return 1;
+}
+
+void
+bracket_error()
+{
+	struct bracket *p = grad_list_item(bracket_stack, 0);
+	if (p)
+		parse_error_loc(&p->locus,
+				_("This '%s' does not have matching '%s'"),
+				opening_bracket_name(p->token),
+				closing_bracket_name(p->token));
+	grad_list_destroy(&bracket_stack, _free_item, NULL);
 }

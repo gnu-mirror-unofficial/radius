@@ -2534,8 +2534,7 @@ rx_compactify_nfa (rx, mem, size)
     for (x = 0, n = rx->nfa_states; n; n = n->next)
       scratch[x++] = n;
 
-    qsort (scratch, total_nodec, sizeof (struct rx_nfa_state *),
-           (__compar_fn_t)nfacmp);
+    qsort (scratch, total_nodec, sizeof (struct rx_nfa_state *), nfacmp);
 
     for (x = 0; x < total_nodec; ++x)
       {

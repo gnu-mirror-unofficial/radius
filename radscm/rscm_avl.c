@@ -110,25 +110,7 @@ SCM_DEFINE(rscm_avl_match_p, "avl-match?", 2, 0, 0,
                      pair && pair->attribute != list->attribute;
                      pair = pair->next)
                         ;
-                if (!pair) {
-                        rc = 1;
-                        break;
-                }
-                        
-                switch (pair->type) {
-                case TYPE_STRING:
-                        rc = strcmp(check_pair->strvalue, pair->strvalue);
-                        break;
-
-                case TYPE_INTEGER:
-                case TYPE_IPADDR:
-                        rc = check_pair->lvalue != pair->lvalue;
-                        break;
-                        
-                default:
-                        rc = 1;
-                        break;
-                }
+                rc = !pair || avp_cmp(check_pair, pair);
         }
         avl_free(target);
         avl_free(list);

@@ -455,9 +455,11 @@ var_free(Variable *var)
 void
 tempvar_free(Variable *var)
 {
-        if (var->name)
-                return; /* named variables are not freed */
-	var_free(var);
+	if (var) {
+		if (var->name)
+			return; /* named variables are not freed */
+		var_free(var);
+	}
 }
 
 void
@@ -465,21 +467,24 @@ radtest_send(int port, int code, Variable *var, Symtab *cntl)
 {
         RADIUS_REQ *auth;
 	Variable *p;
+	VALUE_PAIR *pair;
 	
         if (reply_list)
                 avl_free(reply_list);
         reply_list = NULL;
         reply_code = 0;
         
-        if (var->type != Vector) {
-                parse_error(_("wrong datatype: expected vector"));
-                return;
-        }
+        if (var) {
+		if (var->type != Vector) {
+			parse_error(_("wrong datatype: expected vector"));
+			return;
+		}
+		pair = var->datum.vector;
+	} else
+		pair = NULL;
 
 	if (!cntl) {
-		auth = rad_clt_send(srv_queue,
-				    port,
-				    code, var->datum.vector);
+		auth = rad_clt_send(srv_queue, port, code, pair);
 	} else {
 		int id;
 		u_char vector[AUTH_VECTOR_LEN];
@@ -501,7 +506,7 @@ radtest_send(int port, int code, Variable *var, Symtab *cntl)
 		auth = rad_clt_send0(srv_queue,
 				     port,
 				     code,
-				     var->datum.vector,
+				     pair,
 				     0,
 				     &id,
 				     vector);

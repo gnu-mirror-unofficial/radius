@@ -335,17 +335,19 @@ rpp_lookup_ready(int (*proc_main)(void *), void *data)
 }
 
 /* Find the rpp_proc_t with a given PID */
+static int
+rpp_comparator(void *item, void *data)
+{
+	rpp_proc_t *p = item;
+	pid_t *pid = data;
+	return p->pid != *pid;
+}
+
+/* NOTE: Do not use any memory allocation calls */
 rpp_proc_t *
 rpp_lookup_pid(pid_t pid)
 {
-	rpp_proc_t *p;
-	grad_iterator_t *itr = grad_iterator_create(process_list);
-	for (p = grad_iterator_first(itr); p; p = grad_iterator_next(itr)) {
-		if (p->pid == pid)
-			break;
-	}
-	grad_iterator_destroy(&itr);
-	return p;
+	return grad_list_locate(process_list, &pid, rpp_comparator);
 }
 
 /* Remove the given rpp_proc_t from the list. The underlying process
@@ -615,6 +617,7 @@ sig_handler(int sig)
 		
 	case SIGTERM:
 	case SIGQUIT:
+		/* FIXME: Possibly unsafe, it calls free() etc. */
 	        radiusd_exit0();
 
 	case SIGCHLD:

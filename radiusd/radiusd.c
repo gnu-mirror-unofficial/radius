@@ -856,7 +856,8 @@ rad_restart(cont)
         
         /* Flush request queues */
         rad_flush_queues();
-        
+        rad_sql_shutdown();
+	
         if (foreground)
                 pid = 0; /* make-believe we're child */
         else 
@@ -1295,7 +1296,8 @@ rad_req_xmit(type, code, data, fd)
                 radlog_req(L_NOTICE, req, _("Retransmitting %s reply"),
                             request_class[type].name);
         } else {
-		/* FIXME: resend it too? */
+		/* We are here if the handling thread of the request
+		   had been cancelled while processing it. */
                 rad_req_drop(type, NULL, req, fd, _("request failed"));
         }
 }

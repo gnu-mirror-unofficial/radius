@@ -895,12 +895,13 @@ sfn_eval_reply(m)
                                 errcnt++;
                                 continue;
                         }
+			free_string(p->strvalue);
                         switch (type) {
                         case Integer:
                                 p->lvalue = datum.ival;
                                 break;
                         case String:
-                                p->strvalue = datum.sval;
+				p->strvalue = datum.sval;
                                 p->strlength = strlen(p->strvalue);
                                 break;
                         default:

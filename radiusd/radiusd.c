@@ -463,7 +463,7 @@ rad_daemon()
 	}
 
 	chdir("/tmp");/*FIXME*/
-	umask(0);
+	umask(022);
 	
 	pid = getpid();
 	p = mkfilename(radpid_dir, "radiusd.pid");

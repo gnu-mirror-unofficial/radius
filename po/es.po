@@ -10,8 +10,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-06-27 16:38+0300\n"
-"PO-Revision-Date: 2002-06-27 10:15+0300\n"
+"POT-Creation-Date: 2002-07-04 15:40+0300\n"
+"PO-Revision-Date: 2002-07-04 15:42+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -461,7 +461,7 @@ msgstr "Acceso denegado a las características del grupo"
 msgid "unknown"
 msgstr "desconocido"
 
-#: radiusd/auth.c:863 radiusd/auth.c:971
+#: radiusd/auth.c:863 radiusd/auth.c:969
 msgid "Invalid user"
 msgstr "Usuario no existente"
 
@@ -473,54 +473,58 @@ msgstr "autentificación Guile está desactivada para configuración"
 msgid "Guile authentication not available"
 msgstr "autentificación Guile no está disponible"
 
-#: radiusd/auth.c:966
+#: radiusd/auth.c:964
 msgid "Rejected"
 msgstr "Rechazado"
 
-#: radiusd/auth.c:991 radiusd/auth.c:1181
+#: radiusd/auth.c:975 radiusd/auth.c:993 radiusd/auth.c:1183
 msgid "Login incorrect"
 msgstr "Login incorrecto"
 
-#: radiusd/auth.c:1017
+#: radiusd/auth.c:996
+msgid "Password expired"
+msgstr "Contraseña ha expirado"
+
+#: radiusd/auth.c:1019
 msgid "Account disabled"
 msgstr "Cuenta desactivada"
 
-#: radiusd/auth.c:1027
+#: radiusd/auth.c:1029
 msgid "Login rejected"
 msgstr "Login rechazado"
 
 # FUZZY
-#: radiusd/auth.c:1028
+#: radiusd/auth.c:1030
 msgid "Authenticate only user"
 msgstr "Verificar únicamente al usuario"
 
-#: radiusd/auth.c:1044
+#: radiusd/auth.c:1046
 msgid "Login failed"
 msgstr "Login ha fallado"
 
-#: radiusd/auth.c:1045
+#: radiusd/auth.c:1047
 msgid "realm quota exceeded for "
 msgstr "Se ha excedido la cuota de `realm' para "
 
-#: radiusd/auth.c:1071
+#: radiusd/auth.c:1073
 #, c-format
 msgid "Multiple logins: [%s] max. %ld%s, CLID %s"
 msgstr "Logins múltiples: [%s} max. %ld%s, CLID %s"
 
-#: radiusd/auth.c:1074
+#: radiusd/auth.c:1076
 msgid " [MPP attempt]"
 msgstr " [tentativa MPP]"
 
-#: radiusd/auth.c:1109
+#: radiusd/auth.c:1111
 #, c-format
 msgid "Outside allowed timespan, time allowed: %s"
 msgstr "Fuera de tiempo permitido que es (%s)"
 
-#: radiusd/auth.c:1182
+#: radiusd/auth.c:1184
 msgid "external check failed"
 msgstr "prueba externa ha fallado"
 
-#: radiusd/auth.c:1254
+#: radiusd/auth.c:1256
 msgid "Login OK"
 msgstr "Autentificación válida"
 
@@ -671,36 +675,36 @@ msgstr "no se puede abrir archivo de configuración `%s'"
 msgid "reading %s"
 msgstr "leyendo %s"
 
-#: radiusd/config.y:1417
+#: radiusd/config.y:1414
 msgid "ready"
 msgstr "listo"
 
-#: radiusd/config.y:1443
+#: radiusd/config.y:1440
 #, c-format
 msgid "%s:%d: no such service: %s"
 msgstr "%s:%d: no existe tal servicio: %s"
 
-#: radiusd/config.y:1466 radiusd/sql.c:361
+#: radiusd/config.y:1463 radiusd/sql.c:361
 #, c-format
 msgid "%s:%d: unknown host: %s"
 msgstr "%s:%d: host desconocido: %s"
 
-#: radiusd/config.y:1480
+#: radiusd/config.y:1477
 #, c-format
 msgid "%s:%d: wrong datatype (should be %s)"
 msgstr "%s:%d: tipo de datos incorrecto (debe ser `%s')"
 
-#: radiusd/config.y:1509
+#: radiusd/config.y:1506
 #, c-format
 msgid "INTERNAL ERROR at %s:%d: unknown datatype %d"
 msgstr "ERROR INTERNO en %s:%d: tipo de datos desconocido (%d)"
 
-#: radiusd/config.y:1578
+#: radiusd/config.y:1575
 msgid "Statement has no effect."
 msgstr "La declaración no tiene efecto"
 
 # FUZZY
-#: radiusd/config.y:1580
+#: radiusd/config.y:1577
 #, c-format
 msgid "%s:%d: `%s' is obsolete. %s"
 msgstr "%s:%d: `%s' es obsoleto. %s"
@@ -1256,70 +1260,70 @@ msgstr "Iniciando -- leyendo archivos de configuración ..."
 msgid "Reloading configuration files."
 msgstr "Recargando archivos de configuración."
 
-#: radiusd/radiusd.c:957
+#: radiusd/radiusd.c:961
 msgid "Errors reading config file - EXITING"
 msgstr "Había errores al leer archivos de configuración - ABORTANDO"
 
-#: radiusd/radiusd.c:982
+#: radiusd/radiusd.c:988
 msgid "can't find out my own IP address"
 msgstr "no se puede determinar mi propia dirección IP"
 
-#: radiusd/radiusd.c:996
+#: radiusd/radiusd.c:1002
 msgid "Reloading configuration now"
 msgstr "Recargando la configuración ahora"
 
-#: radiusd/radiusd.c:1006
+#: radiusd/radiusd.c:1012
 #, c-format
 msgid "Dumping users db to `%s'"
 msgstr "Guardando base de usuarios en `%s'"
 
 # FIXME:  radiusd no tiene una ruta absoluta
-#: radiusd/radiusd.c:1026
+#: radiusd/radiusd.c:1032
 msgid "can't restart: radiusd not started as absolute pathname"
 msgstr "no se puede reiniciar: el nombre del programa no es ruta absoluta"
 
-#: radiusd/radiusd.c:1039
+#: radiusd/radiusd.c:1045
 msgid "RADIUSD RUNNING"
 msgstr "RADIUSD CORRIENDO"
 
-#: radiusd/radiusd.c:1046
+#: radiusd/radiusd.c:1052
 msgid "RADIUSD SUSPENDED"
 msgstr "RADIUSD SUSPENDIDO"
 
-#: radiusd/radiusd.c:1084
+#: radiusd/radiusd.c:1090
 #, c-format
 msgid "%u classes, %u buckets are using %u bytes of memory"
 msgstr "%u clases, %u buckets están usando %u bytes de memoria"
 
-#: radiusd/radiusd.c:1091
+#: radiusd/radiusd.c:1097
 #, c-format
 msgid "memory utilization: %u.%1u%%"
 msgstr "utilización de memoria: %u.%1u%%"
 
-#: radiusd/radiusd.c:1096
+#: radiusd/radiusd.c:1102
 msgid "    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"
 msgstr "    Clase Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"
 
-#: radiusd/radiusd.c:1101
+#: radiusd/radiusd.c:1107
 #, c-format
 msgid "malloc statistics: %d blocks, %d bytes"
 msgstr "estadística de malloc: %d bloques, %d bytes"
 
-#: radiusd/radiusd.c:1273
+#: radiusd/radiusd.c:1279
 msgid "Dropping packet"
 msgstr "Descartando petición"
 
-#: radiusd/radiusd.c:1296
+#: radiusd/radiusd.c:1302
 #, c-format
 msgid "Retransmitting %s reply"
 msgstr "Retransmitiendo respuesta %s"
 
 # FIXME: fallida?
-#: radiusd/radiusd.c:1301
+#: radiusd/radiusd.c:1307
 msgid "request failed"
 msgstr "petición falló"
 
-#: radiusd/radiusd.c:1419
+#: radiusd/radiusd.c:1425
 #, c-format
 msgid "unknown request code %d"
 msgstr "código de petición desconocido: %d"
@@ -1536,17 +1540,17 @@ msgstr "insuficiente número de argumentos para %s"
 msgid "function %s() requires %d parameters"
 msgstr "función %s() requiere %d parámetros"
 
-#: radiusd/scheme.c:180
+#: radiusd/scheme.c:184
 #, c-format
 msgid "Can't spawn guile thread: %s"
 msgstr "no se puede crear hila Guile: %s"
 
-#: radiusd/scheme.c:317 radiusd/scheme.c:361
+#: radiusd/scheme.c:323 radiusd/scheme.c:367
 #, c-format
 msgid "%s is not a procedure object"
 msgstr "%s no es un objeto procedural"
 
-#: radiusd/scheme.c:488
+#: radiusd/scheme.c:548
 msgid "scheme task timed out"
 msgstr ""
 

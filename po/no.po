@@ -10,8 +10,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-06-27 16:38+0300\n"
-"PO-Revision-Date: 2002-06-27 10:14+0300\n"
+"POT-Creation-Date: 2002-07-04 15:40+0300\n"
+"PO-Revision-Date: 2002-07-04 15:42+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Norwegian-bokmål <no@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -455,7 +455,7 @@ msgstr "Tilgang nektet av «huntgroup»"
 msgid "unknown"
 msgstr "ukjent"
 
-#: radiusd/auth.c:863 radiusd/auth.c:971
+#: radiusd/auth.c:863 radiusd/auth.c:969
 msgid "Invalid user"
 msgstr "Ugyldig bruker"
 
@@ -467,54 +467,58 @@ msgstr "Guile autentisering slått av i konfigurasjonsfilen"
 msgid "Guile authentication not available"
 msgstr "Guile godkjenning ikke tilgjengelig"
 
-#: radiusd/auth.c:966
+#: radiusd/auth.c:964
 msgid "Rejected"
 msgstr "Forkastet"
 
 # FIXME: translation coincides with `Login failed'
-#: radiusd/auth.c:991 radiusd/auth.c:1181
+#: radiusd/auth.c:975 radiusd/auth.c:993 radiusd/auth.c:1183
 msgid "Login incorrect"
 msgstr "Innlogging feil"
 
-#: radiusd/auth.c:1017
+#: radiusd/auth.c:996
+msgid "Password expired"
+msgstr "Passordet er ikke lenger gyldig"
+
+#: radiusd/auth.c:1019
 msgid "Account disabled"
 msgstr "Konto er stengt"
 
-#: radiusd/auth.c:1027
+#: radiusd/auth.c:1029
 msgid "Login rejected"
 msgstr "Innlogging forkastet"
 
-#: radiusd/auth.c:1028
+#: radiusd/auth.c:1030
 msgid "Authenticate only user"
 msgstr ""
 
-#: radiusd/auth.c:1044
+#: radiusd/auth.c:1046
 msgid "Login failed"
 msgstr "Innlogging feilet"
 
-#: radiusd/auth.c:1045
+#: radiusd/auth.c:1047
 msgid "realm quota exceeded for "
 msgstr "«realm» kvoten er overskredet for "
 
-#: radiusd/auth.c:1071
+#: radiusd/auth.c:1073
 #, c-format
 msgid "Multiple logins: [%s] max. %ld%s, CLID %s"
 msgstr "Flere innlogginger: [%s] max. %ld%s, CLID %s"
 
-#: radiusd/auth.c:1074
+#: radiusd/auth.c:1076
 msgid " [MPP attempt]"
 msgstr " [MPP forsøk]"
 
-#: radiusd/auth.c:1109
+#: radiusd/auth.c:1111
 #, c-format
 msgid "Outside allowed timespan, time allowed: %s"
 msgstr "Utenfor gyldig tidsintervall, tidsintervall: %s"
 
-#: radiusd/auth.c:1182
+#: radiusd/auth.c:1184
 msgid "external check failed"
 msgstr ""
 
-#: radiusd/auth.c:1254
+#: radiusd/auth.c:1256
 #, fuzzy
 msgid "Login OK"
 msgstr "Innlogging tillatet"
@@ -663,35 +667,35 @@ msgstr "kan ikke åpne konfigurasjonsfil «%s»"
 msgid "reading %s"
 msgstr "lese %s"
 
-#: radiusd/config.y:1417
+#: radiusd/config.y:1414
 msgid "ready"
 msgstr "klar"
 
-#: radiusd/config.y:1443
+#: radiusd/config.y:1440
 #, c-format
 msgid "%s:%d: no such service: %s"
 msgstr "%s:%d: ingen slik tjeneste: %s"
 
-#: radiusd/config.y:1466 radiusd/sql.c:361
+#: radiusd/config.y:1463 radiusd/sql.c:361
 #, c-format
 msgid "%s:%d: unknown host: %s"
 msgstr "%s:%d: ukjent vert: %s"
 
-#: radiusd/config.y:1480
+#: radiusd/config.y:1477
 #, c-format
 msgid "%s:%d: wrong datatype (should be %s)"
 msgstr "%s:%d: feil datatype (forventet %s)"
 
-#: radiusd/config.y:1509
+#: radiusd/config.y:1506
 #, c-format
 msgid "INTERNAL ERROR at %s:%d: unknown datatype %d"
 msgstr "INTERN FEIL (%s:%d): ukjent datatype %d"
 
-#: radiusd/config.y:1578
+#: radiusd/config.y:1575
 msgid "Statement has no effect."
 msgstr ""
 
-#: radiusd/config.y:1580
+#: radiusd/config.y:1577
 #, c-format
 msgid "%s:%d: `%s' is obsolete. %s"
 msgstr "%s:%d: «%s» er utdatert. %s"
@@ -1249,70 +1253,70 @@ msgstr "Starter - leser konfigurasjonsfiler"
 msgid "Reloading configuration files."
 msgstr "Omleser konfiguratjonsfiler"
 
-#: radiusd/radiusd.c:957
+#: radiusd/radiusd.c:961
 msgid "Errors reading config file - EXITING"
 msgstr "Feil ved lesing av konfigurasjonsfiler - avslutter!"
 
-#: radiusd/radiusd.c:982
+#: radiusd/radiusd.c:988
 msgid "can't find out my own IP address"
 msgstr "kan ikke finne min egen IP adresse"
 
-#: radiusd/radiusd.c:996
+#: radiusd/radiusd.c:1002
 msgid "Reloading configuration now"
 msgstr "Nå leser konfigurasjonsfiler på nytt"
 
-#: radiusd/radiusd.c:1006
+#: radiusd/radiusd.c:1012
 #, c-format
 msgid "Dumping users db to `%s'"
 msgstr "bruker database lagret til «%s»"
 
-#: radiusd/radiusd.c:1026
+#: radiusd/radiusd.c:1032
 msgid "can't restart: radiusd not started as absolute pathname"
 msgstr "Kan ikke starte om: programnavnet er ikke et absolutt filnavn"
 
-#: radiusd/radiusd.c:1039
+#: radiusd/radiusd.c:1045
 msgid "RADIUSD RUNNING"
 msgstr "RADIUSD KJØRER"
 
 # FIXME: Suspendert?
-#: radiusd/radiusd.c:1046
+#: radiusd/radiusd.c:1052
 #, fuzzy
 msgid "RADIUSD SUSPENDED"
 msgstr "RADIUSD STANSET"
 
-#: radiusd/radiusd.c:1084
+#: radiusd/radiusd.c:1090
 #, c-format
 msgid "%u classes, %u buckets are using %u bytes of memory"
 msgstr "%u klasser, %u sider bruker %u byter av minnet"
 
-#: radiusd/radiusd.c:1091
+#: radiusd/radiusd.c:1097
 #, fuzzy, c-format
 msgid "memory utilization: %u.%1u%%"
 msgstr "minneutnyttelse: %u.%1u%%"
 
-#: radiusd/radiusd.c:1096
+#: radiusd/radiusd.c:1102
 msgid "    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"
 msgstr ""
 
-#: radiusd/radiusd.c:1101
+#: radiusd/radiusd.c:1107
 #, c-format
 msgid "malloc statistics: %d blocks, %d bytes"
 msgstr ""
 
-#: radiusd/radiusd.c:1273
+#: radiusd/radiusd.c:1279
 msgid "Dropping packet"
 msgstr "Slet forespørselen"
 
-#: radiusd/radiusd.c:1296
+#: radiusd/radiusd.c:1302
 #, c-format
 msgid "Retransmitting %s reply"
 msgstr "Sender %s svaret på nytt"
 
-#: radiusd/radiusd.c:1301
+#: radiusd/radiusd.c:1307
 msgid "request failed"
 msgstr ""
 
-#: radiusd/radiusd.c:1419
+#: radiusd/radiusd.c:1425
 #, c-format
 msgid "unknown request code %d"
 msgstr "ukjent forespørselkode %d"
@@ -1523,17 +1527,17 @@ msgstr "for få argumenter til %s"
 msgid "function %s() requires %d parameters"
 msgstr ""
 
-#: radiusd/scheme.c:180
+#: radiusd/scheme.c:184
 #, fuzzy, c-format
 msgid "Can't spawn guile thread: %s"
 msgstr "Kan ikke starte en tråd til guile: %s"
 
-#: radiusd/scheme.c:317 radiusd/scheme.c:361
+#: radiusd/scheme.c:323 radiusd/scheme.c:367
 #, c-format
 msgid "%s is not a procedure object"
 msgstr "%s er ikke en prosedyre objekt"
 
-#: radiusd/scheme.c:488
+#: radiusd/scheme.c:548
 msgid "scheme task timed out"
 msgstr ""
 

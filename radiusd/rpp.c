@@ -29,6 +29,9 @@
 
 #include <radiusd.h>
 
+static int rpp_stdin;
+static int rpp_stdout;
+
 /* Process intercommunication primitives */
 
 enum process_status {
@@ -248,11 +251,10 @@ rpp_start_process(rpp_proc_t *proc, int (*proc_main)(void *), void *data)
 		/* Close stdio */
 		close(0);
 		close(1);
-		
-		/* Duplicate i/o channels to stdio */
-		dup(outp[0]);  /* This becomes standard in */
-		dup(inp[1]);   /* and this standard out */
 
+		rpp_stdin = outp[0];
+		rpp_stdout = inp[1];
+		
 		/* Run the main process */
 		exit(proc_main(data));
 	}
@@ -617,7 +619,7 @@ rpp_request_handler(void *arg ARG_UNUSED)
 		int len;
 
 		alarm(process_timeout);
-		len = rpp_fd_read(0, &frq, sizeof frq, NULL);
+		len = rpp_fd_read(rpp_stdin, &frq, sizeof frq, NULL);
 		alarm(0);
 		if (len != sizeof frq) {
 			if (errno == EINTR)
@@ -633,7 +635,7 @@ rpp_request_handler(void *arg ARG_UNUSED)
 			data = grad_erealloc(data, datasize);
 		}
 		
-		if (rpp_fd_read(0, data, frq.size, NULL) != frq.size) {
+		if (rpp_fd_read(rpp_stdin, data, frq.size, NULL) != frq.size) {
 			grad_log(L_ERR,
 			         _("Child received malformed data"));
 			radiusd_exit0();
@@ -649,7 +651,7 @@ rpp_request_handler(void *arg ARG_UNUSED)
 		debug(1, ("notifying the master"));
 		repl.code = RPP_COMPLETE;
 		repl.size = 0;
-		rpp_fd_write(1, &repl, sizeof repl, NULL);
+		rpp_fd_write(rpp_stdout, &repl, sizeof repl, NULL);
 		if (rc)
 			request_free(req);
 	}
@@ -710,8 +712,8 @@ rpp_update(void *data, size_t size)
 
 	repl.code = RPP_UPDATE;
 	repl.size = size;
-	rpp_fd_write(1, &repl, sizeof repl, NULL);
-	rpp_fd_write(1, data, size, NULL);
+	rpp_fd_write(rpp_stdout, &repl, sizeof repl, NULL);
+	rpp_fd_write(rpp_stdout, data, size, NULL);
 	return 0;
 }
 

@@ -1,5 +1,13 @@
 2003-10-26  Sergey Poznyakoff  
 
+	* radiusd/acct.c (check_ts): Return -1 if the NAS type
+	is not known.
+	* NEWS: Updated
+	* examples/cisco.rw: Force using case-sensitive basic regexps.
+	* radiusd/rewrite.y: Reset regcomp_flags before parsing.
+	
+2003-10-26  Sergey Poznyakoff  
+
 	* radiusd/exec.c: Reverted changes
 	* radiusd/auth.c (sfn_exec_wait): Explicitely clean up
 	reply pairs on error.

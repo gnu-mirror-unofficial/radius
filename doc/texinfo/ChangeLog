@@ -1,3 +1,11 @@
+2003-10-26  Sergey Poznyakoff  
+
+	* configure.texi: Minor change
+	* logging.texi: Likewise.
+	* radius.texi: Likewise.
+	* debug.texi: Added placeholders for two new nodes.
+	* extensions.texi: Document new features.
+
 2003-10-16  Sergey Poznyakoff  
 
 	* attributes.texi: Removed description of the deprecated

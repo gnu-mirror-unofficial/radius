@@ -21,6 +21,9 @@ configuration rules that were used when processing the request.
 
 ** Test shell mode considerably improved.
 
+** Rewrite: usual dotted-quad notation may be used to represent
+IP numbers.
+
 ** Rewrite: new builtin functions:
 
 *** gsub(R,S,T)

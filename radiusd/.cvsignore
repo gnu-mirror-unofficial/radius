@@ -5,6 +5,7 @@ rewrite.c
 config_tok.h
 y.output
 config_kw.c
+debugmod.c
 .deps
 radiusd
 .libs

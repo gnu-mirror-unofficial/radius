@@ -136,7 +136,7 @@ log_to_channel(chan, cat, pri, buf1, buf2, buf3)
 		if (cat_pref)
 			asprintf(&prefix, "%s.%s", cat_pref, priname[pri]);
 		else
-			asprintf(&prefix, "%s", catname[pri]);
+			asprintf(&prefix, "%s", priname[pri]);
 	} else if (cat_pref) {
 		prefix = cat_pref;
 		cat_pref = NULL;

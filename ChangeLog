@@ -1,3 +1,15 @@
+2004-06-25  Sergey Poznyakoff
+
+	* include/radius/radius.h: New flag AP_TRANSLATE
+	* lib/dict.c (_dict_value): Raise AP_TRANSLATE bit on
+	the attribute properties.
+	* lib/util.c (grad_format_pair): Check if AP_TRANSLATE bit
+	is set before calling grad_value_lookup(). This should spare
+	some cicles.
+	* radiusd/radutil.c (attr_to_str): Perform dictionary value lookup
+	for integer attributes if escape is set.
+	* THANKS: Added Charles Sprickman
+
 2004-06-24  Sergey Poznyakoff
 
 	* NEWS: Updated

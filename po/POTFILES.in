@@ -25,6 +25,7 @@ radiusd/files.c
 radiusd/forward.c
 radiusd/log.c
 radiusd/menu.c
+radiusd/mlc.c
 radiusd/pam.c
 radiusd/proxy.c
 radiusd/radck.c

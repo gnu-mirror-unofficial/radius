@@ -20,16 +20,16 @@
 
 struct snmp_def {
         int req_id;
-        struct snmp_session *session_list;
         int retries;
         int timeout;
-        snmp_alloc_t alloc;
-        snmp_free_t free;
 } ;
 
 extern struct snmp_def snmp_def;
+extern snmp_alloc_t __snmp_alloc_fp;
+extern snmp_free_t  __snmp_free_fp;
 
 void snmp_request_free(struct snmp_request *req);
 void snmp_request_free_list(struct snmp_request *req);
 int snmp_request_xmit(struct snmp_session *sess, struct snmp_request *req);
+int snmp_fdset (struct snmp_session *sp, fd_set *fdset);
 

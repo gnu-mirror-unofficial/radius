@@ -98,6 +98,7 @@ enum {
 #define AP_ADD_NONE      2
 
 #define AP_PROPAGATE   0x10
+#define AP_REQ_CMP     0x20
 
 #define ADDITIVITY(val) ((val) & 0x3)
 #define SET_ADDITIVITY(val,a) ((val) = ((val) & ~0x3) | (a))
@@ -314,6 +315,8 @@ VALUE_PAIR *avp_create(int attr, int length, char *strval, int lval);
 void avl_move_attr(VALUE_PAIR **to, VALUE_PAIR **from, int attr);
 void avl_move_pairs(VALUE_PAIR **to, VALUE_PAIR **from,
                     int (*fun)(), void *closure);
+int avp_cmp(VALUE_PAIR *a, VALUE_PAIR *b);
+int avl_cmp(VALUE_PAIR *a, VALUE_PAIR *b);
 
 extern int resolve_hostnames;
 char *ip_gethostname (UINT4, char *buf, size_t size);

@@ -51,4 +51,7 @@ clients: ../raddb/clients
 naslist: ../raddb/naslist
 	$(LN_S) $? $@
 
-CLEANFILES=$(ALLTARGETS)
+CLEANFILES=$(ALLTARGETS) client.conf config realms
+
+distclean-local:; -rm -rf log acct
+

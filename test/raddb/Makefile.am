@@ -52,4 +52,7 @@ nastypes: $(RADDB)/nastypes
 rewrite: $(RADDB)/rewrite.full
 	$(LN_S) $? $@
 
-CLEANFILES=$(ALLTARGETS)
+CLEANFILES=$(ALLTARGETS) config client.conf users acct.scm realms
+
+distclean-local:; -rm -rf log acct
+

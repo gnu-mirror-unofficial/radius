@@ -8,16 +8,6 @@
 # of the same huntgroup, then the first one that matches will be used.
 #
 
-## The following lines define administrative user huntgroup and the commands
-## it can use:
-ROOT		NAS-IP-Address = 127.0.0.1, State = "getpid"		NULL
-ROOT		NAS-IP-Address = 127.0.0.1, State = "get-m-stat"	NULL
-ROOT		NAS-IP-Address = 127.0.0.1, State = "get-q-stat"	NULL
-ROOT		NAS-IP-Address = 127.0.0.1, State = "reload"		NULL
-ROOT		NAS-IP-Address = 127.0.0.1, State = "restart"		NULL
-ROOT		NAS-IP-Address = 127.0.0.1, State = "shutdown"		NULL
-ROOT		NAS-IP-Address = 127.0.0.1, State = "dumpdb"		NULL
-
 ## Use the following for NASes that need packet rewriting:
 ##
 #DEFAULT	NAS-IP-Address = 10.0.15.1, Rewrite-Function = "func"	NULL

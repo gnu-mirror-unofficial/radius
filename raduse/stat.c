@@ -34,7 +34,7 @@ Acct_server_stat acct_stat;
 
 int sess_stat_handler(struct snmp_var *var, void*);
 
-struct mib_data mib_stat_data[] = {
+SNMP_GET_TAB get_stat_tab[] = {
 	oid_StatIdent,	          &stat_ident,
 	oid_StatUpTime,	          &stat_uptime,
 	oid_StatConfigReset,      &stat_config_reset,
@@ -44,7 +44,7 @@ struct mib_data mib_stat_data[] = {
 	NULL, NULL
 };	
 
-struct mib_data mib_auth_data[] = {
+SNMP_GET_TAB get_auth_tab[] = {
 	oid_AuthServResetTime,                    &auth_stat.reset_time,
 	oid_AuthServConfigReset,                  &auth_stat.status,
 	oid_AuthServTotalAccessRequests,          &auth_stat.num_access_req,
@@ -61,7 +61,7 @@ struct mib_data mib_auth_data[] = {
 	NULL, NULL
 };
 
-struct mib_data mib_acct_data[] = {
+SNMP_GET_TAB mib_acct_data[] = {
 	oid_AccServResetTime,                &acct_stat.reset_time,
 	oid_AccServConfigReset,              &acct_stat.status,
 	oid_AccServTotalRequests,            &acct_stat.num_req,
@@ -75,15 +75,43 @@ struct mib_data mib_acct_data[] = {
 	oid_AccServTotalUnknownTypes,        &acct_stat.num_unknowntypes,
 	NULL, NULL, 
 };
-	
+
+struct nas_usage_header {
+	struct nas_usage *head, *tail;
+} nas_usage_header;
+
+SNMP_WALK_TAB walk_stat_tab[] = {
+	oid_NASAddress,     offsetof(struct nas_usage, ipaddr),
+	oid_NASID,          offsetof(struct nas_usage, ident),
+	oid_NASLinesInUse,  offsetof(struct nas_usage, ports_active),
+	oid_NASLinesIdle,   offsetof(struct nas_usage, ports_idle),
+	NULL
+};
+
+void *
+nas_usage_alloc(hdr)
+	struct nas_usage_header *hdr;
+{
+	struct nas_usage *ptr = emalloc(sizeof(*ptr));
+	if (!hdr->head)
+		hdr->head = ptr;
+	else
+		hdr->tail->next = ptr;
+	hdr->tail = ptr;
+	return ptr;
+}
 
 void
 test()
 {
 	char buf[64];
-	
-	run_query(mib_stat_data);
-	run_query(mib_auth_data);
+	struct nas_usage *nasp;
+/*	
+	run_query(get_stat_tab);
+	run_query(get_auth_tab);
+*/	
+	run_walk(walk_stat_tab, nas_usage_alloc, &nas_usage_header);
+/*
 	printf("ident: %s\n", stat_ident);
 	printf("uptime: %s\n", format_time(&stat_uptime, buf, sizeof buf));
 
@@ -91,5 +119,15 @@ test()
 	printf("total:  %d\n", stat_total_lines);
 	printf("inuse:  %d\n", stat_lines_in_use);
 	printf("idle :  %d\n", stat_lines_idle);
+*/
+	printf("NAS status:\n");
+	for (nasp = nas_usage_header.head; nasp; nasp = nasp->next) {
+		char ipbuf[DOTTED_QUAD_LEN];
+		
+		printf("  ident:  %s\n", nasp->ident);
+		printf("  IP:     %s\n", ipaddr2str(ipbuf, nasp->ipaddr));
+		printf("  active: %d\n", nasp->ports_active);
+		printf("  idle:   %d\n", nasp->ports_idle);
+	}
 }
 

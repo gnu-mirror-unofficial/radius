@@ -23,7 +23,7 @@ static char rcsid[] =
 #define SERVER
 #include <raduse.h>
 
-struct mib_data *mib_data_lookup(struct mib_data *mp, oid_t oid);
+SNMP_GET_TAB *snmp_get_lookup(SNMP_GET_TAB *tab, oid_t oid);
 
 /* return formatted textual description of SNMP error status */
 char *
@@ -72,7 +72,7 @@ format_snmp_error_str(err_stat)
 }
 
 void
-save_var(var, ptr)
+process_var(var, ptr)
 	struct snmp_var *var;
 	void *ptr;
 {
@@ -129,7 +129,7 @@ converse(type, sp, pdu, closure)
 {
 	struct snmp_var *var;
 	int ind;
-	struct mib_data *mp;
+	SNMP_GET_TAB *tab;
 	
 	if (type == SNMP_CONV_TIMEOUT) {
 		radlog(L_ERR, "timed out in waiting SNMP response from %s\n",
@@ -154,35 +154,47 @@ converse(type, sp, pdu, closure)
 			break;
 		}
 
-		mp = mib_data_lookup(closure, var->name);
-		if (mp) 
-			save_var(var, mp->closure);
+		tab = snmp_get_lookup(closure, var->name);
+		if (tab) 
+			process_var(var, tab->closure);
 	}
 						
 	return 1;
 }
 
-struct mib_data *
-mib_data_lookup(mp, oid)
-	struct mib_data *mp;
+SNMP_GET_TAB *
+snmp_get_lookup(tab, oid)
+	SNMP_GET_TAB *tab;
 	oid_t oid;
 {
-	for (; mp->oid; mp++)
-		if (oid_cmp(mp->oid, oid) == 0)
-			return mp;
+	for (; tab->oid; tab++)
+		if (oid_cmp(tab->oid, oid) == 0)
+			return tab;
+	return NULL;
+}
+
+SNMP_WALK_TAB *
+snmp_walk_lookup(tab, oid)
+	SNMP_WALK_TAB *tab;
+	oid_t oid;
+{
+	for (; tab->oid; tab++)
+		if (memcmp(OIDPTR(tab->oid), OIDPTR(oid),
+			   (OIDLEN(tab->oid)-1)*sizeof(tab->oid[0])) == 0)
+			return tab;
 	return NULL;
 }
 
 void
-run_query(mp)
-	struct mib_data *mp;
+run_query(tab)
+	SNMP_GET_TAB *tab;
 {
 	int i;
 	struct snmp_session *session;
 	struct snmp_pdu *pdu;
 	struct snmp_var *var;
 	
-	session = snmp_session_create(community, hostname, port, converse, mp);
+	session = snmp_session_create(community, hostname, port, converse, tab);
 	if (!session) {
 		radlog(L_CRIT, "(session) snmp err %d\n", snmp_errno);
 		exit(1);
@@ -194,8 +206,8 @@ run_query(mp)
 		return;
 	}
 	
-	for (; mp->oid; mp++) {
-		var = snmp_var_create(mp->oid);
+	for (; tab->oid; tab++) {
+		var = snmp_var_create(tab->oid);
 		if (!var) {
 			radlog(L_ERR, "(var) snmp err %d\n", snmp_errno);
 			continue;
@@ -204,9 +216,135 @@ run_query(mp)
 	}
 
 	if (snmp_query(session, pdu)) {
-		fprintf(stderr, "(snmp_query) snmp err %d\n", snmp_errno);
+		radlog(L_ERR, "(snmp_query) snmp err %d\n", snmp_errno);
 		return;
 	}
+	snmp_session_close(session);
+}
+
+struct snmp_walk_data {
+	SNMP_WALK_TAB *tab;
+	void *app_data;
+	void *(*alloc_instance)();
+	u_char *instance;
+	struct snmp_var *varlist;
+};
+
+int
+walk_converse(type, sp, pdu, closure)
+	int type;
+	struct snmp_session *sp;
+	struct snmp_pdu *pdu;
+	void *closure;
+{
+	struct snmp_var *var;
+	int ind;
+	SNMP_WALK_TAB *tab;
+	struct snmp_walk_data *data = (struct snmp_walk_data *) closure;
+	int err = 0;
+	
+	data->varlist = NULL;
+
+	if (type == SNMP_CONV_TIMEOUT) {
+		radlog(L_ERR, "timed out in waiting SNMP response from %s\n",
+		       ip_hostname(sp->remote_sin.sin_addr.s_addr));
+		/*FIXME: inform main that the timeout has occured */
+		return 1;
+	}
+
+	if (type != SNMP_CONV_RECV_MSG)
+		return 1;
+
+	if (pdu->err_stat != SNMP_ERR_NOERROR
+	    && pdu->err_stat != SNMP_ERR_NOSUCHNAME) {
+		err++;
+		printf("Error in packet: %s\n",
+		       format_snmp_error_str(pdu->err_stat));
+	}
+	
+	for (var = pdu->var, ind = 1; var; var = var->next, ind++) {
+		if (ind == pdu->err_ind) {
+			char oidbuf[512];
+
+			if (err) {
+				printf("this variable caused error: %s\n",
+				       sprint_oid(oidbuf,
+						  sizeof oidbuf, var->name));
+				break;
+			} else
+				continue;
+		}
+
+		tab = snmp_walk_lookup(data->tab, var->name);
+		if (tab) {
+			struct snmp_var *vp;
+
+			if (!data->instance)
+				data->instance =
+					data->alloc_instance(data->app_data);
+			process_var(var, data->instance + tab->offset);
+			vp = snmp_var_create(var->name);
+			vp->next = data->varlist;
+			data->varlist = vp;
+		}
+	}
+						
+	return 1;
+}
+
+void
+run_walk(tab, alloc, app_data)
+	SNMP_WALK_TAB *tab;
+	void *(*alloc)();
+	void *app_data;
+{
+	struct snmp_session *session;
+	struct snmp_pdu *pdu;
+	struct snmp_var *var;
+	struct snmp_walk_data data;
+
+	data.tab = tab;
+	data.alloc_instance = alloc;
+	data.app_data = app_data;
+	data.varlist = NULL;
+	session = snmp_session_create(community, hostname, port,
+				      walk_converse, &data);
+	if (!session) {
+		radlog(L_CRIT, "(session) snmp err %d\n", snmp_errno);
+		exit(1);
+	}
+
+
+	for (; tab->oid; tab++) {
+		var = snmp_var_create(tab->oid);
+		if (!var) {
+			radlog(L_ERR, "(var) snmp err %d\n", snmp_errno);
+			continue;
+		}
+		var->next = data.varlist;
+		data.varlist = var;
+	}
+
+	do  {
+		pdu = snmp_pdu_create(SNMP_PDU_GETNEXT);
+		if (!pdu) {
+			radlog(L_ERR, "(pdu) snmp err %d\n", snmp_errno);
+			return;
+		}
+		for (var = data.varlist; var; ) {
+			struct snmp_var *next = var->next;
+			snmp_pdu_add_var(pdu, var);
+			var = next;
+		}
+
+		data.instance = NULL;
+		if (snmp_query(session, pdu)) {
+			radlog(L_ERR,
+			       "(snmp_query) snmp err %d\n", snmp_errno);
+			break;
+		}
+	} while (data.varlist);
+
 	snmp_session_close(session);
 }
 

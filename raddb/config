@@ -25,6 +25,7 @@ logging {
 	category auth {
 		print-auth yes;
 		print-failed-pass yes;
+		hook "show_station_ids";
 	};
 	category info {
 		channel info;
@@ -50,3 +51,11 @@ acct {
 	request-cleanup-delay 2;
 };
 
+rewrite {
+	load "checknas.rw";
+	load "log-hook.rw";
+};
+
+snmp {
+	listen no;
+};	

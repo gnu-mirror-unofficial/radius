@@ -890,6 +890,11 @@ sfn_scheme(AUTH_MACH *m)
              p = avl_find(p->next, DA_SCHEME_PROCEDURE)) {
                 if (scheme_auth(p->avp_strvalue,
                                 m->req, m->user_check, &m->user_reply)) {
+			auth_log(m,
+				 _("Login rejected"),
+				 NULL,
+				 _("denied by Scheme procedure "),
+				 p->avp_strvalue);
                         newstate(as_reject);
                         break;
                 }

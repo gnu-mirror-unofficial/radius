@@ -192,7 +192,8 @@ DQ {D3}\.{D3}\.{D3}\.{D3}
 \"shift\"    |
 \"getopt\"   |
 \"case\"     |
-\"in\"       {
+\"in\"       |
+\"return\"   {
 	add_str(yytext+1,yyleng-2);
         yylval.string = end_str();
         return NAME;
@@ -217,6 +218,7 @@ shift   return SHIFT;
 getopt  return GETOPT;
 case    return CASE;
 in      return IN;
+return  return T_RETURN;
 set{WS}.*\n {
 	int i, argc;
 	char **argv;
@@ -290,6 +292,7 @@ set{WS}.*\n {
 	yylval.deref.repl = p;
         return IDENT;
 }
+\$# 	return ARGCOUNT;
 \${D}  {
 	yylval.parm.number = strtoul(yytext+1, NULL, 0);
 	yylval.parm.repl = NULL;
@@ -431,7 +434,7 @@ open_input(char *name)
 		grad_readline_set_input(fp);
 	grad_read_history_file();
 
-        source_locus.line = 0;
+        source_locus.line = 1;
 #ifdef FLEX_SCANNER
         yyrestart(fp);
 #else
@@ -553,6 +556,12 @@ void
 radtest_free_strings()
 {
 	obstack_free(&string_stk, NULL);
+	obstack_init(&string_stk);
+}
+
+void
+radtest_fix_strings()
+{
 	obstack_init(&string_stk);
 }
 

@@ -37,17 +37,23 @@
 #include <radtest.h>
 #include <radius/argcv.h>
 
-static jmp_buf errbuf;
-static int break_level;
-static int continue_loop;
+static jmp_buf errbuf;      /* Buffer for jumping to from the error state */
+static int break_level;     /* Break (continue) from that many loops */
+static int continue_loop;   /* 1 if we are continuing */
+static radtest_variable_t function_result; /* Result of the last executed
+					      function */
+static grad_list_t *curenv; /* Current environment */ 
 
+/* Forward declarations */
 static void rt_eval_stmt_list(grad_list_t *list);
 static void rt_eval_expr(radtest_node_t *node, radtest_variable_t *result);
 static void rt_eval(radtest_node_t *stmt);
 static void rt_eval_variable(grad_locus_t *locus,
 			     radtest_variable_t *result,
 			     radtest_variable_t *var);
+static char *cast_to_string(grad_locus_t *locus, radtest_variable_t *var);
 
+/* Runtime error handling */
 static void
 runtime_error(grad_locus_t *locus, const char *fmt, ...)
 {
@@ -63,14 +69,77 @@ runtime_error(grad_locus_t *locus, const char *fmt, ...)
 	longjmp(errbuf, 1);
 }
 
+
+/* Radtest environment */
+
+void
+radtest_env_add_string(grad_list_t *env, char *string)
+{
+	radtest_variable_t *var;
+	var = grad_emalloc(sizeof(*var));
+	var->type = rtv_string;
+	var->datum.string = string;
+	grad_list_append(env, var);
+}
+
+void
+radtest_env_add(grad_list_t *env, radtest_variable_t *var)
+{
+	grad_list_append(env, var);
+}
+
+radtest_variable_t *
+radtest_env_get(grad_list_t *env, int n)
+{
+	return grad_list_item(env, n);
+}
+
+int
+radtest_env_shift(grad_list_t *env, int amount)
+{
+	if (amount > grad_list_count(env)-1)
+		return 1;
+	while (amount--)
+		grad_list_remove(env, grad_list_item(env, 1), NULL);
+	return 0;
+}
+
+void
+radtest_env_to_argv(grad_list_t *env, grad_locus_t *locus,
+		    int *pargc, char ***pargv)
+{
+	int i, argc;
+	char **argv;
+
+	argc = grad_list_count(env);
+	argv = calloc(argc + 1, sizeof (char *));
+	if (!argv)
+		runtime_error(locus, _("out of memory"));
+	for (i = 0; i < argc; i++) {
+		radtest_variable_t *var = grad_list_item(env, i);
+		char *p = cast_to_string(locus, var);
+		argv[i] = malloc(strlen(p) + 1);
+		if (!argv[i])
+			runtime_error(locus, _("out of memory"));
+		strcpy(argv[i], p);
+	}
+	argv[i] = NULL;
+
+	*pargc = argc;
+	*pargv = argv;
+}
+		
+	
+
 /* Main entry point */
 
 int
-radtest_eval(radtest_node_t *stmt)
+radtest_eval(radtest_node_t *stmt, grad_list_t *env)
 {
 	if (setjmp(errbuf))
 		return 1;
 	break_level = continue_loop = 0;
+	curenv = env;
 	rt_eval(stmt);
 	return 0;
 }
@@ -394,13 +463,13 @@ rt_eval_parm(radtest_node_t *node, radtest_variable_t *result)
 	int num = node->v.parm.number;
 	char *p;
 	size_t n;
+	radtest_variable_t *var;
 	
-	result->type = rtv_string;
-        if (num <= x_argc && x_argv[num]) {
-		radtest_start_string(x_argv[num]);
-		result->datum.string = radtest_end_string();
-                return;
-        }
+	var = radtest_env_get(curenv, num);
+	if (var) {
+		radtest_var_copy(result, var);
+		return;
+	}
         
         if (!node->v.parm.repl) {
 		radtest_start_string("");
@@ -411,19 +480,16 @@ rt_eval_parm(radtest_node_t *node, radtest_variable_t *result)
 	
         switch (*p++) {
         case '=':
-                if (num > x_argmax) {
-                        x_argmax = num;
-                        x_argv = grad_erealloc(x_argv,
-					       sizeof(x_argv[0]) * (num + 1));
-                }
-                x_argv[num] = grad_estrdup(p);
-                x_argc = num+1;
-		radtest_start_string(x_argv[num]);
-		result->datum.string = radtest_end_string();
+		radtest_start_string(p);
+		var->type = rtv_string;
+		var->datum.string = radtest_end_string();
+		radtest_env_add(curenv, var);
+		radtest_var_copy(result, var);
                 break;
                 
         case '-':
 		radtest_start_string(p);
+		result->type = rtv_string;
 		result->datum.string = p;
                 break;
                 
@@ -445,7 +511,8 @@ rt_eval_parm(radtest_node_t *node, radtest_variable_t *result)
                 p = NULL;
                 n = 0;
                 getline(&p, &n, stdin);
-		radtest_start_string(x_argv[num]);
+		radtest_start_string(p);
+		result->type = rtv_string;
 		result->datum.string = radtest_end_string();
                 free(p);
                 break;
@@ -460,6 +527,7 @@ rt_eval_parm(radtest_node_t *node, radtest_variable_t *result)
                 if (!p)
                         exit(0);
 		radtest_start_string(p);
+		result->type = rtv_string;
 		result->datum.string = radtest_end_string();
                 break;
         }
@@ -583,6 +651,41 @@ rt_eval_variable(grad_locus_t *locus,
 	default:
 		*result = *var;
 	}
+}
+
+static void
+rt_eval_call(radtest_node_t *stmt, radtest_variable_t *result)
+{
+	grad_list_t *env = curenv;
+	grad_iterator_t *itr;
+	radtest_node_t *expr;
+	radtest_variable_t *var;
+	
+	curenv = grad_list_create();
+	var = radtest_var_alloc(rtv_string);
+	var->datum.string = stmt->v.call.fun->name;
+	radtest_env_add(curenv, var);
+	
+	itr = grad_iterator_create(stmt->v.call.args);
+	for (expr = grad_iterator_first(itr);
+	     expr;
+	     expr = grad_iterator_next(itr)) {
+		radtest_variable_t result;
+
+		rt_eval_expr(expr, &result);
+		radtest_env_add(curenv, radtest_var_dup(&result));
+	}
+	grad_iterator_destroy(&itr);
+	
+	function_result.type = rtv_undefined;
+	rt_eval_stmt_list(stmt->v.call.fun->body);
+
+	grad_list_destroy(&env, NULL, NULL);
+	
+	curenv = env;
+	if (result)
+		*result = function_result;
+	break_level = 0;
 }
 
 static void
@@ -803,12 +906,21 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 	{
 		char buf[3];
 
-		if (node->v.gopt.last <= 0) 
+		if (node->v.gopt.last <= 0) {
 			optind = 0;
-		node->v.gopt.last = getopt(x_argc, x_argv,
+			radtest_env_to_argv(curenv, &node->locus,
+					    &node->v.gopt.argc,
+					    &node->v.gopt.argv);
+		}
+
+		node->v.gopt.last = getopt(node->v.gopt.argc,
+					   node->v.gopt.argv,
 					   node->v.gopt.optstr);
 		result->type = rtv_integer;
 		result->datum.number = node->v.gopt.last != EOF;
+
+		if (node->v.gopt.last == EOF) 
+			argcv_free(node->v.gopt.argc, node->v.gopt.argv);
 
 		node->v.gopt.var->type = rtv_string;
 		grad_free(node->v.gopt.var->datum.string);
@@ -828,6 +940,15 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 		break;
 	}
 
+	case radtest_node_argcount:
+		result->type = rtv_integer;
+		result->datum.number = grad_list_count(curenv);
+		break;
+	
+	case radtest_node_call:
+		rt_eval_call(node, result);
+		break;
+		
 	default:
 		grad_insist_fail("Unexpected node type");
 	}
@@ -1169,17 +1290,23 @@ rt_eval(radtest_node_t *stmt)
 		}
 		if (level == 0)
 			break;
-		if (x_argc <= level)
+		if (radtest_env_shift(curenv, level))
 			runtime_error(&stmt->locus,
 				      _("Not enough arguments to shift"));
-		memmove(x_argv+1, x_argv + level + 1,
-                        sizeof(x_argv[0]) * (x_argc - level));
-		x_argc -= level;
 		break;
 	}
 
 	case radtest_node_case:
 		rt_eval_case(stmt);
+		break;
+
+	case radtest_node_call:
+		rt_eval_call(stmt, NULL);
+		break;
+
+	case radtest_node_return:
+		rt_eval_expr(stmt->v.expr, &function_result);
+		break_level = 1;
 		break;
 		
 	default:
@@ -1236,6 +1363,13 @@ radtest_free_mem()
 	radtest_free_strings();
 }
 
+void
+radtest_fix_mem()
+{
+	memory_pool = NULL;
+	radtest_fix_strings();
+}
+
 
 radtest_node_t *
 radtest_node_alloc(radtest_node_type type)
@@ -1281,6 +1415,14 @@ radtest_var_copy (radtest_variable_t *dst, radtest_variable_t *src)
 {
 	dst->type = src->type;
 	dst->datum = src->datum; 
+}
+
+radtest_variable_t *
+radtest_var_dup(radtest_variable_t *src)
+{
+	radtest_variable_t *dst = radtest_var_alloc(src->type);
+	radtest_var_copy(dst, src);
+	return dst;
 }
 
 radtest_case_branch_t *

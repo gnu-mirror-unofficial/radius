@@ -47,16 +47,22 @@ extern int yylex();
 
 static int current_nesting_level; /* Nesting level of WHILE/DO statements */
 static int error_count;
-
+static struct {
+	 char *function;
+	 grad_locus_t locus;
+} defn;
+ 
 static void run_statement(radtest_node_t *node);
 %}
 
 %token EOL AUTH ACCT SEND EXPECT T_BEGIN T_END
 %token IF ELSE WHILE DO BREAK CONTINUE INPUT SHIFT GETOPT CASE IN
+%token T_RETURN
 %token <set> SET
 %token PRINT 
 %token EXIT
 %token T_UNBALANCED
+%token ARGCOUNT
 %token <deref> IDENT
 %token <parm> PARM
 %token <string> NAME
@@ -64,6 +70,7 @@ static void run_statement(radtest_node_t *node);
 %token <string> QUOTE
 %token <ipaddr> IPADDRESS
 
+%left PRITEM
 %left OR
 %left AND
 %nonassoc EQ NE 
@@ -71,10 +78,11 @@ static void run_statement(radtest_node_t *node);
 %left '+' '-'
 %left '*' '/' '%'
 %left UMINUS NOT
+%nonassoc '[' 
 
 %type <op> op
 %type <pair> pair
-%type <list> pair_list prlist list caselist
+%type <list> pair_list prlist maybe_prlist list caselist
 %type <i> closure req_code nesting_level port_type
 %type <node> stmt lstmt expr maybe_expr value bool cond expr_or_pair_list
              pritem 
@@ -82,6 +90,7 @@ static void run_statement(radtest_node_t *node);
 %type <symtab> send_flags send_flag_list
 %type <string> name string
 %type <case_branch> casecond
+%type <fun> function_def
 
 %union {
 	int i;
@@ -101,6 +110,7 @@ static void run_statement(radtest_node_t *node);
 		char **argv;
 	} set;
 	radtest_case_branch_t *case_branch;
+	radtest_function_t *fun;
 }
 
 %%
@@ -140,6 +150,7 @@ lstmt         : /* empty */ EOL
               | stmt EOL
               | error EOL
                 {
+			defn.function = NULL;
                         yyclearin;
                         yyerrok;
                 }
@@ -233,13 +244,22 @@ stmt          : T_BEGIN list T_END
 			$$ = radtest_node_alloc(radtest_node_continue);
 			$$->v.level = $2;
 		}
-              | INPUT maybe_expr name
+              | INPUT
+                {
+			$$ = radtest_node_alloc(radtest_node_input);
+			$$->v.input.expr = NULL;
+			$$->v.input.var = (radtest_variable_t*)
+				grad_sym_lookup_or_install(vartab,
+							   "INPUT",
+							   1);
+		}
+              | INPUT expr NAME
                 {
 			$$ = radtest_node_alloc(radtest_node_input);
 			$$->v.input.expr = $2;
 			$$->v.input.var = (radtest_variable_t*)
 				grad_sym_lookup_or_install(vartab,
-							   $3 ? $3 : "INPUT",
+							   $3,
 							   1);
 		}
               | SET
@@ -253,8 +273,66 @@ stmt          : T_BEGIN list T_END
 			$$ = radtest_node_alloc(radtest_node_shift);
 			$$->v.expr = $2;
 		}
+              | function_def list T_END
+                {
+			$1->body = $2;
+			radtest_fix_mem();
+			$$ = NULL;
+		}
+              | T_RETURN maybe_expr
+                {
+			if (!defn.function) {
+				parse_error(_("return outside of a function definition"));
+				YYERROR;
+			}
+			$$ = radtest_node_alloc(radtest_node_return);
+			$$->v.expr = $2;
+		}
+              | NAME '(' maybe_prlist ')'
+                {
+			radtest_function_t *fun;
+			
+			fun = (radtest_function_t*)
+				grad_sym_lookup(functab, $1);
+			if (!fun) {
+				parse_error(_("Undefined function %s"), $1);
+				YYERROR;
+			}
+			$$ = radtest_node_alloc(radtest_node_call);
+			$$->v.call.fun = fun;
+			$$->v.call.args = $3;
+		}
               ;
 
+function_def  : NAME EOL T_BEGIN EOL
+                {
+			radtest_function_t *fun;
+			
+			if (defn.function) {
+				parse_error(_("Nesting function definitions "
+					      "is not allowed"));
+				parse_error_loc(&defn.locus,
+						_("This is the location of "
+						  "the current function "
+						  "definition"));
+				YYERROR;
+			}
+			defn.function = $1;
+			defn.locus = source_locus;
+			fun = (radtest_function_t*)
+				grad_sym_lookup_or_install(functab, $1, 1);
+			if (fun->body) {
+				parse_error(_("Redefinition of function %s"), $1);
+				parse_error_loc(&fun->locus,
+						_("This is the location of "
+						  "the actual definition"));
+				YYERROR;
+			}
+			fun->locus = source_locus;
+			$$ = fun;
+		}
+              ;
+					
 else          : ELSE
               | ELSE EOL
               ;
@@ -550,6 +628,24 @@ value         : imm_value
 			$$ = radtest_node_alloc(radtest_node_parm);
 			$$->v.parm = $1;
 		}
+              | ARGCOUNT
+                {
+			$$ = radtest_node_alloc(radtest_node_argcount);
+		}
+              | NAME '(' maybe_prlist ')'
+                {
+			radtest_function_t *fun;
+			
+			fun = (radtest_function_t*)
+				grad_sym_lookup(functab, $1);
+			if (!fun) {
+				parse_error(_("Undefined function %s"), $1);
+				YYERROR;
+			}
+			$$ = radtest_node_alloc(radtest_node_call);
+			$$->v.call.fun = fun;
+			$$->v.call.args = $3;
+		}
               ;
 
 closure       : /* empty */
@@ -577,7 +673,7 @@ imm_value     : NUMBER
 			$$ = radtest_var_alloc(rtv_string);
 			$$->datum.string = $1;
 		}
-              | NAME
+              | NAME 
                 {
 			$$ = radtest_var_alloc(rtv_string);
 			$$->datum.string = $1;
@@ -587,6 +683,13 @@ imm_value     : NUMBER
 			$$ = radtest_var_alloc(rtv_pairlist);
 			$$->datum.list = $2;
 		}
+              ;
+
+maybe_prlist  : /* empty */
+	        {
+			$$ = NULL;
+		}
+              | prlist 
               ;
 
 pair_list     : pair
@@ -660,7 +763,7 @@ prlist        : pritem
 		}
               ;
 
-pritem        : expr 
+pritem        : expr %prec PRITEM 
               ;
 
 %%
@@ -714,7 +817,7 @@ run_statement(radtest_node_t *node)
 {
 	if (!dry_run) {
 		if (!error_count)
-			radtest_eval(node);
+			radtest_eval(node, toplevel_env);
 		error_count = 0;
 	}
 	radtest_free_mem();

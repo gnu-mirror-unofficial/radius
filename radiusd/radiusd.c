@@ -354,6 +354,8 @@ main(argc, argv)
         else
                 acct_port = ntohs(svp->s_port);
 
+	srand(time(NULL));
+	
         snmp_init(0, 0, emalloc, efree);
 
         rad_main(argv[optind]);

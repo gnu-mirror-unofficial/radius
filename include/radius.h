@@ -105,7 +105,7 @@ enum {
 #define AP_PROPAGATE     0x10
 #define AP_REQ_CMP       0x20
 #define AP_BINARY_STRING 0x40
-#define AP_USER_FLAG(n) (0x1000<<(n))
+#define AP_USER_FLAG(n) (0x4000<<(n))
 
 #define ADDITIVITY(val) ((val) & 0x3)
 #define SET_ADDITIVITY(val,a) ((val) = ((val) & ~0x3) | (a))
@@ -116,8 +116,8 @@ enum {
 #define CF_HUNTGROUPS 2
 #define CF_MAX        3
 
-#define AF_LHS(cf) (0x0100<<(2*cf))
-#define AF_RHS(cf) (0x0200<<(2*cf))
+#define AF_LHS(cf) (0x0100<<(cf))
+#define AF_RHS(cf) (0x0800<<(cf))
 
 #define AF_DEFAULT_FLAGS (AF_LHS(0)|AF_LHS(1)|AF_LHS(2)\
                          |AF_RHS(0)|AF_RHS(1)|AF_RHS(2))

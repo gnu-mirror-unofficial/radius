@@ -24,6 +24,8 @@ enum state {
 	st_g,
 	st_s1,
 	st_t,
+	st_r,
+	st_bracket,
 	st_hide,
 	st_echo,
 	st_newline
@@ -39,10 +41,9 @@ main()
 		
 		switch (state) {
 		case st_init:
+		  init:
 			switch (c) {
 			default:
-				if (!isspace(c))
-					state = st_hide;
 				break;
 				
 			case '#':
@@ -78,12 +79,29 @@ main()
 			break;
 
 		case st_t:
-			state = (c == 'r' && msgstr_count > 0) ?
-				st_echo : st_hide;
+			state = (c == 'r') ? st_r : st_hide;
+			c = ' ';
+			break;
+
+		case st_r:
+			if (c == '[')
+				state = st_bracket;
+			else if (msgstr_count > 0) 
+				state = st_echo;
+			else
+				state = st_hide;
 			msgstr_count++;
 			c = ' ';
 			break;
 
+		case st_bracket:
+			if (c == ']') {
+				state = st_echo;
+				c = ' ';
+				break;
+			}
+			/*FALLTHROUGH*/
+				
 		case st_hide:
 			if (c == '\n')
 				state = st_init;
@@ -98,12 +116,7 @@ main()
 				break;
 				
 			default:
-				if (!isspace(c)) {
-					state = st_hide;
-					c = ' ';
-				}
-				break;
-
+				goto init;
 			}
 			break;
 			

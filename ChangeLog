@@ -1,12 +1,17 @@
+2001-06-07  Sergey Poznyakoff <gray@farlep.net>
+	* radiusd/rewrite.y: fixed potential heap overflow in pushn().
+          Fix in interpret (coredumped when missed '(').
+	* Changed my username to real name in ChangeLog :^)
+ 
 2001-06-01  Peter Kazmier           <pete@kazmier.com>
 	* radiusd/radiusd.c, radiusd/sql.c, include/radsql.h: fixed
 	  expiring of SQL connections.
 
-2001-05-24  gray  <gray@farlep.net>
+2001-05-24  Sergey Poznyakoff <gray@farlep.net>
 	* client/pam/pam_radius.c: finished namespace houskeeping.
 	  Added debugging hook. Fixed trivial bugs in DEBUG macros.
 
-2001-05-22  gray  <gray@farlep.net>
+2001-05-22  Sergey Poznyakoff <gray@farlep.net>
 	* radlib/radutmp.c: fall back to readonly mode if the file can't
 	  be opened read-write.
 	* doc/COPYING.FDL: added
@@ -18,16 +23,16 @@
           now always present.
         * radiusd/radiusd.c: The same for HAVE_REGCOMP...
 
-2001-05-21  gray  <gray@farlep.net>
+2001-05-21  Sergey Poznyakoff <gray@farlep.net>
 	* radiusd/auth.c: fixed is_log_mode()
 	* raddb/Makefile.am: added config.syntax to the distribution
 
-2001-05-20  gray  <gray@farlep.net>
+2001-05-20  Sergey Poznyakoff <gray@farlep.net>
 	* Removed radlib/fixalloc.c
 	* Further namespace houskeeping:
 		renamed AUTH_REQ to RADIUS_REQ
 
-2001-05-19  gray  <gray@farlep.net>
+2001-05-19  Sergey Poznyakoff <gray@farlep.net>
 	* Additivity and flags in DICT_ATTR structure. Additivity
         is a property of the attribute that determines the action
 	to be taken if an attempt is made to add the A/V pair
@@ -58,208 +63,208 @@
         avl_.* functions operate upon A/V lists, avp_.* functions
 	operate upon A/V pairs.
 
-2001-05-18  gray  <gray@farlep.net>
+2001-05-18  Sergey Poznyakoff <gray@farlep.net>
 	* Made backslash() global
 	* Modified raddb.c to accept \<newline> continuation sequence.
 	* Restored '-' notify reply semantics (see 2001-05-09)
 
-2001-05-17  gray  <gray@farlep.net>
+2001-05-17  Sergey Poznyakoff <gray@farlep.net>
 	* rad_sql_reconnect did not clear conn->connected on failure. 
 	  Probably conn->connected is not needed after all: can just 
 	  use conn->data != NULL instead.
 
-2001-05-11  gray  <gray@farlep.net>
+2001-05-11  Sergey Poznyakoff <gray@farlep.net>
 	Debugged radscm/nas.scm interaction.
 
 2001-05-11  Michael Samuel   <michael@miknet.net>
         Added possibility to retrieve arbitrary reply pairs from
         the SQL database.
 
-2001-05-10  gray  <gray@farlep.net>
+2001-05-10  Sergey Poznyakoff <gray@farlep.net>
 	* Added Guile functions for dealing with rad[uw]tmp files.
 	* radlib/log.c: use rad?printf() functions instead of ?printf().
 	* radscripts/Makefile.am: use of _SCRIPTS instead of _PROGRAMS.
 
-2001-05-09  gray  <gray@farlep.net>
+2001-05-09  Sergey Poznyakoff <gray@farlep.net>
 	* notify.c: return 0 ttl when the peer responds with '-'.
 	Reported by Andrey Y. Mosienko <feo@ttn.ru>
 	* Added radwtmp_putent() function (radlib/radutmp.c), modified
 	  other sources accordingly.
 
-2001-05-08  gray  <gray@farlep.net>
+2001-05-08  Sergey Poznyakoff <gray@farlep.net>
 	radscm/ sources: added autogeneration of *.x, *.doc files.
 	Changed function declarations in radscm/radscm.c accordingly.
 	Also added scripts/guile directory: see comment at the start of
 	scripts/guile/guile-doc-snarf to find out why.
 
-2001-05-06  gray  <gray@farlep.net>
+2001-05-06  Sergey Poznyakoff <gray@farlep.net>
 	* Added m4 directory and modified configure.in.
 	* create_dbm() in DBM_DBM mode used malformed filenames.
 	* implemented ylwrap in makefiles
 	* Added radlib/radutmp.c. Changed related sources accordingly.
 	* Cleaned up rad_accounting_new().
 
-2001-05-05  gray  <gray@farlep.net>
+2001-05-05  Sergey Poznyakoff <gray@farlep.net>
 	Added client suite. Converted Makefile.am's to use libtool.
 	Added Makefile.am to raddb subdirectory.
 
-2001-04-28  gray  <gray@farlep.net>
+2001-04-28  Sergey Poznyakoff <gray@farlep.net>
 	Fixed errors in acct_stop_query and acct_keepalive_query in
 	the default sqlserver file. Reported by Oleg Gawriloff 
 	<Oleg_Gawriloff@atlantm.com>.
 
-2001-04-26  gray  <gray@farlep.net>
+2001-04-26  Sergey Poznyakoff <gray@farlep.net>
 	Added AM_PROG_CC_STDC to configure.in. Modified postgres.c
 	to properly handle fatal error conditions. Reported by
 	Andrew Kohlsmith <akohlsmith@benshaw.com>.
 
-2001-04-19  gray  <gray@farlep.net>
+2001-04-19  Sergey Poznyakoff <gray@farlep.net>
 	Fixed radiusd/timestr.c. Fixed radiusd/version.c so the
 	native AIX compiler does not bail out (reported by
 	Adrean P. van Bloois <adrian@accu.uu.nl>).
 
-2001-04-17  gray  <gray@farlep.net>
+2001-04-17  Sergey Poznyakoff <gray@farlep.net>
 	Fixed getopt_long detection in configure.in.
 
-2001-04-12  gray  <gray@farlep.net>	
+2001-04-12  Sergey Poznyakoff <gray@farlep.net>	
 	Written radconf-mode.el -- a major mode for editing raddb/config
 	file.
 
-2001-04-11  gray  <gray@farlep.net>
+2001-04-11  Sergey Poznyakoff <gray@farlep.net>
 	Fixed bug in radiusd/sql.c which prevented acct_keepalive_query
 	from working.
 
-2001-04-10  gray  <gray@farlep.net>
+2001-04-10  Sergey Poznyakoff <gray@farlep.net>
 	Modified radlast.c to exit gracefully on keyboard interrupt.
 
-2001-04-07  gray  <gray@farlep.net>
+2001-04-07  Sergey Poznyakoff <gray@farlep.net>
 	Added elisp directory. Written radius-mode.el -- a major
 	mode for editing files raddb/users,hints,huntgroups.
 
-2001-03-31  gray  <gray@farlep.net>
+2001-03-31  Sergey Poznyakoff <gray@farlep.net>
 	Fixed bug in radiusd/proxy.c that caused A/V pairs to be freed
 	twice. Improved debug()s. 
 	Inserted calls to insist() in critical places of radlib/mem.c.
 	Probably these should be enabled only when in maintainer mode...
 
-2001-03-30  gray  <gray@farlep.net>
+2001-03-30  Sergey Poznyakoff <gray@farlep.net>
 	Fixes in snmplib/snmp_sess.c.
 	Moved private SNMP MIBs to the enterprise number assigned by IANA.
 
-2001-03-27  gray  <gray@farlep.net>
+2001-03-27  Sergey Poznyakoff <gray@farlep.net>
 	Changed Stat MIBs and snmpserv.c so that previous ..Date
         variables be returned as unix timestamp values.
 
-2001-03-25  gray  <gray@farlep.net>
+2001-03-25  Sergey Poznyakoff <gray@farlep.net>
 	snmpserv.c completely rewritten. Stat MIBs are slightly changed
 	to provide for easier indexing of data.
 
-2001-03-20  gray  <gray@farlep.net>
+2001-03-20  Sergey Poznyakoff <gray@farlep.net>
 	Changed typedef ipaddr to ipaddr_t to prevent possible name
 	clashes (snmplib, include/snmp/snmp.h). Fixed inclusion of
 	<sys/time.h>, <time.h> in sysdep.h.
 
-2001-03-19  gray  <gray@farlep.net>
+2001-03-19  Sergey Poznyakoff <gray@farlep.net>
 	Added Log-Mode-Mask attribute. The attribute modifies logging
 	mode for a given username/hint-group. Works like UNIX umask,
 	i.e. effective-log-mode = log_mode & ~Log-Mode-Mask.
 
-2001-03-18  gray  <gray@farlep.net>
+2001-03-18  Sergey Poznyakoff <gray@farlep.net>
 	Finally finished writing SNMP library and attached it instead
 	of hacked up CMU version used previously. Adapted
 	radiusd/checkrad.c and radiusd/snmpserv.c for new calling 
 	conventions. The latter seems to need good rewriting.
 
-2001-03-17  gray  <gray@farlep.net>
+2001-03-17  Sergey Poznyakoff <gray@farlep.net>
 	Discovered and chopped memory leak in radiusd/checkrad.c. The
 	effect of the leak would be noticeable only if running radiusd
 	long enough with continuous SNMP polling of NASes.
 
-2001-03-15  gray  <gray@farlep.net>
+2001-03-15  Sergey Poznyakoff <gray@farlep.net>
 	Removed unnecessary radlog.h from includes. 
 	Moved system-dependent calls to radlib/sysdep.c.
 	Introduced getmaxfd() call instead of supposing an arbitrary 
 	number of open file descriptors (radiusd/radiusd.c, radiusd/exec.c).
 	Added check to the length of Password attribute in radiusd/client.c.
 
-2001-03-14  gray  <gray@farlep.net>
+2001-03-14  Sergey Poznyakoff <gray@farlep.net>
 	Added @ to the array of symbols allowed in a username.
 	Thanks to Jody Owens for reporting the bug.
         Added NULL pointer check to rad_pam_conv: Solaris does 
 	not pass appdata_ptr if the server is not running euid 0. Why?
 
-2001-03-13  gray  <gray@farlep.net>
+2001-03-13  Sergey Poznyakoff <gray@farlep.net>
 	Added ! to the array of symbols allowed in a username.
 	Got rid of last annoying traces of snprinf calls in
 	snmplib. Have to rewrite snmplib as soon as possible.
 
-2001-03-10  gray  <gray@farlep.net>
+2001-03-10  Sergey Poznyakoff <gray@farlep.net>
 	Rewritten radiusd/pam.c. 
 	Modified radiusd/log.c so that it echoes log messages to
 	console until the program detaches from it. Improved string
 	handling in radlib/users.l
 
-2001-03-09  gray  <gray@farlep.net>
+2001-03-09  Sergey Poznyakoff <gray@farlep.net>
 	Added semantic checks for `users' and `hints' files.
 	Integrated builddbm into radiusd.
 
-2001-03-05  gray  <gray@farlep.net>
+2001-03-05  Sergey Poznyakoff <gray@farlep.net>
 	Fixed DBM file handling. Now it provides the same functionality
 	as plaintext user database.
 
-2001-03-04  gray  <gray@farlep.net>
+2001-03-04  Sergey Poznyakoff <gray@farlep.net>
 	Introduced Auth-Data attribute. Currently it is handled
 	by Pam and SQL Auth-Types.
 
-2001-03-02  gray  <gray@farlep.net>
+2001-03-02  Sergey Poznyakoff <gray@farlep.net>
 	Introduced HAVE_SETEUID switches to radiusd/exec.c.
 
-2001-03-01  gray  <gray@farlep.net>
+2001-03-01  Sergey Poznyakoff <gray@farlep.net>
 	Changed setlinebuf() in radiusd/radiusd.c to setvbuf(). Added
 	check for <sys/select.h> needed by AIX. Reported by Alexandre Oliva.
 
-2001-02-28  gray  <gray@farlep.net>
+2001-02-28  Sergey Poznyakoff <gray@farlep.net>
 	groupcheck() did not attempt to fetch group name from SQL
 	database. Fixed it. Added group_query to raddb/sqlserver.
 	Added necessary changes to radlib/mysql.c and radlib/postgres.c
 	This requires the use of an additional attribute (Queue-Id) which
 	seems to be a kludge.
 
-2001-02-25  gray  <gray@farlep.net>
+2001-02-25  Sergey Poznyakoff <gray@farlep.net>
 	Added radsprintf functions. Fixed statements in configure.in and
 	*/Makefile.am which were not compatible with Digital Unix and
 	Solaris. Patches kindly donated by Alexandre Oliva <oliva@gnu.org>.
 
-2001-02-18  gray  <gray@farlep.net>
+2001-02-18  Sergey Poznyakoff <gray@farlep.net>
 	radiusd/timestr.c completely rewritten. The new version is
 	much faster and does a reliable error-checking.
 
-2001-02-17  gray  <gray@farlep.net>
+2001-02-17  Sergey Poznyakoff <gray@farlep.net>
 	Integrated checkrad into radiusd. Fixed some bugs in rewrite.y
 
-2001-02-14  gray  <gray@farlep.net>
+2001-02-14  Sergey Poznyakoff <gray@farlep.net>
 	Introduced Match-Profile and Include-Profile attributes.
 	Introduced BEGIN keyword in users.
 
-2001-02-12  gray  <gray@farlep.net>
+2001-02-12  Sergey Poznyakoff <gray@farlep.net>
 	Modified checkrad to use snmplib instead of calling external
 	process.
 
-2001-02-08  gray  <gray@farlep.net>
+2001-02-08  Sergey Poznyakoff <gray@farlep.net>
 	Introduced realm quotas. Added extra entry to radutmp structure
 	to keep the realm's handling server. Size of the structure did
 	not change, so it should be compatible with previous versions.
 	Added extra format flag `realm' to radwho. 
 
-2001-02-06  gray  <gray@farlep.net>
+2001-02-06  Sergey Poznyakoff <gray@farlep.net>
 	Fixed handling of integer objects in radscm/radscm.c (added
 	bignums). Improved test/test.scm. 
 
-2001-02-04  gray  <gray@farlep.net>
+2001-02-04  Sergey Poznyakoff <gray@farlep.net>
 	Fixed radiusd/timestr.c to allow for "descending" time strings
 	(Al1800-0100)
 
-2001-02-01  gray  <gray@farlep.net>
+2001-02-01  Sergey Poznyakoff <gray@farlep.net>
 	Added -i option (source IP address) to radiusd.
 	Fixed nasty bug in radscm/radscm.c:radclient_alloc_server
 	(missing return statement).
@@ -267,57 +272,57 @@
 	Added acct_alive_query keyword to raddb/sqlserver and
 	modified radiusd/acct.c to handle this type of queries.
 
-2001-01-31  gray  <gray@farlep.net>
+2001-01-31  Sergey Poznyakoff <gray@farlep.net>
 	Fixed alignment bug in radlib/mem.c Thanks to Oswaldo E. Aguirre M.
 	<oaguirre@reacciun.ve>.
 	Fixed radlib/md5.c (did not work on Sparks). 
 
-2001-01-23  gray  <gray@farlep.net>
+2001-01-23  Sergey Poznyakoff <gray@farlep.net>
 	Added boolean shortcut evaluation and bitwise operations
 	to rewrite.y
 
-2001-01-17  gray  <gray@farlep.net>
+2001-01-17  Sergey Poznyakoff <gray@farlep.net>
 	Finished writing radscm. Wrote guile modules which replace radctl
 	and radtest programs. Removed radctl and radtest subdirs from the 
 	distribution. Also added radctl.m4 to radscripts directory, so that
 	the functionality of old radctl is preserved.
 	
-2001-01-16  gray  <gray@farlep.net>
+2001-01-16  Sergey Poznyakoff <gray@farlep.net>
 	Fixed bugs in menu.c
 
-2001-01-15  gray  <gray@farlep.net>
+2001-01-15  Sergey Poznyakoff <gray@farlep.net>
 	Removed --with-etcdir from configure.in. 
 	Removed setting directory permissions to ETC_DIR in
 	install-data-local in Makefile.am. Thanks to
 	Alexandre Oliva <oliva@gnu.org> who proposed both
 	changes.
 
-2001-01-10  gray  <gray@farlep.net>
+2001-01-10  Sergey Poznyakoff <gray@farlep.net>
 	Started writing radscm -- a guile interface to radius functions.
 	I suppose it will obsolete both radctl and radtest as they could
 	be written as guile modules.
 
-2001-01-08  gray  <gray@farlep.net>
+2001-01-08  Sergey Poznyakoff <gray@farlep.net>
 	Added loops to rewrite.y
 
-2000-12-28  gray  <gray@farlep.net>
+2000-12-28  Sergey Poznyakoff <gray@farlep.net>
 	Removed radiusd/oldconfig.c. Its functionality moved to
 	radlib/raddb.c. raddb.c does not restrict input field lengths, 
 	though calling functions still restrict it.
 	radlib/dict.c rewritten from scratch.
 	Removed support for ATTRIB_NMC keyword in dictionaries. 
 	
-2000-12-26  gray  <gray@farlep.net>
+2000-12-26  Sergey Poznyakoff <gray@farlep.net>
 	Cached digest info in AUTH_REQ structure for authentication
 	requests.
 
-2000-12-25  gray  <gray@farlep.net>
+2000-12-25  Sergey Poznyakoff <gray@farlep.net>
 	Added support for PostgreSQL and fixed some bugs in sql.c
 
-2000-12-20  gray  <gray@farlep.net>
+2000-12-20  Sergey Poznyakoff <gray@farlep.net>
 	Replaced radlib/md5.c and raduse/screen.c
 
-2000-12-18  gray  <gray@farlep.net>
+2000-12-18  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/test
         In directory Mirddin:/export/home/gray/radius/test
         
@@ -325,7 +330,7 @@
         	acct.off.t acct.on.t acct.start.t acct.stop.t auth.t
         Log Message:
 
-2000-12-18  gray  <gray@farlep.net>
+2000-12-18  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/scripts
         In directory Mirddin:/export/home/gray/radius/scripts
         
@@ -334,7 +339,7 @@
         Log Message:
         Modified comment handling
         
-2000-12-18  gray  <gray@farlep.net>
+2000-12-18  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/radzap
         In directory Mirddin:/export/home/gray/radius/radzap
         
@@ -342,7 +347,7 @@
         	radzap.c
         Log Message:
 
-2000-12-18  gray  <gray@farlep.net>
+2000-12-18  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/radwho
         In directory Mirddin:/export/home/gray/radius/radwho
         
@@ -351,14 +356,14 @@
         Log Message:
         Completely rewritten.
         
-2000-12-18  gray  <gray@farlep.net>
+2000-12-18  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/raduse
         In directory Mirddin:/export/home/gray/radius/raduse
         
         Modified Files:
         	raduse.c
 
-2000-12-18  gray  <gray@farlep.net>
+2000-12-18  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/radtest
         In directory Mirddin:/export/home/gray/radius/radtest
         
@@ -368,7 +373,7 @@
         Addedd assignments in command line (without any option). Modified
         type handling in command line assignments. Added VSA handling.
 
-2000-12-18  gray  <gray@farlep.net>
+2000-12-18  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/radscripts
         In directory Mirddin:/export/home/gray/radius/radscripts
         
@@ -377,14 +382,14 @@
         Log Message:
         Adapted radauth.m4 to changes made in radtest
 
-2000-12-18  gray  <gray@farlep.net>
+2000-12-18  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/radiusd
         In directory Mirddin:/export/home/gray/radius/radiusd
         
         Modified Files:
         	config.y debugmod.c files.c menu.c radiusd.c sql.c symtab.c
 
-2000-12-18  gray  <gray@farlep.net>
+2000-12-18  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/raddb
         In directory Mirddin:/export/home/gray/radius/raddb
         
@@ -400,7 +405,7 @@
         Browsed and cleaned up all files. Also renamed radius.deny to
         access.deny
 
-2000-12-18  gray  <gray@farlep.net>
+2000-12-18  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/radctl
         In directory Mirddin:/export/home/gray/radius/radctl
         
@@ -409,14 +414,14 @@
         Log Message:
         Commands and options are made consistent
 
-2000-12-12  gray  <gray@farlep.net>
+2000-12-12  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/test
         In directory Mirddin:/export/home/gray/radius/test
         
         Modified Files:
         	auth.t portmap2.t
 
-2000-12-12  gray  <gray@farlep.net>
+2000-12-12  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/radtest
         In directory Mirddin:/export/home/gray/radius/radtest
         
@@ -429,7 +434,7 @@
         equal sign it is supposed to be an assignment. This obsoletes
         the -a option.
 
-2000-12-12  gray  <gray@farlep.net>
+2000-12-12  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/radscripts
         In directory Mirddin:/export/home/gray/radius/radscripts
         
@@ -437,7 +442,7 @@
         	Makefile.in
         Log Message:
 
-2000-12-12  gray  <gray@farlep.net>
+2000-12-12  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/radiusd
         In directory Mirddin:/export/home/gray/radius/radiusd
         
@@ -447,7 +452,7 @@
         Removed portmapping support. Its functionality is now
         provided by a rewrite feature, which is much more clever :)
 
-2000-12-12  gray  <gray@farlep.net>
+2000-12-12  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/raddb
         In directory Mirddin:/export/home/gray/radius/raddb
         
@@ -461,7 +466,7 @@
         Removed portmapping support. Its functionality is now
         provided by a rewrite feature, which is much more clever :)
         
-2000-12-12  gray  <gray@farlep.net>
+2000-12-12  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/include
         In directory Mirddin:/export/home/gray/radius/include
         
@@ -469,7 +474,7 @@
         	radiusd.h
         Log Message:
         
-2000-12-12  gray  <gray@farlep.net>
+2000-12-12  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/doc/texinfo
         In directory Mirddin:/export/home/gray/radius/doc/texinfo
         
@@ -478,7 +483,7 @@
         Log Message:
         Started writing texinfo doc.
 
-2000-12-12  gray  <gray@farlep.net>
+2000-12-12  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/doc
         In directory Mirddin:/export/home/gray/radius/doc
         
@@ -495,7 +500,7 @@
         Documentation files are now distributed to corresponding
         directories. Started writing texinfo doc.
         
-2000-12-12  gray  <gray@farlep.net>
+2000-12-12  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius
         In directory Mirddin:/export/home/gray/radius
         
@@ -505,28 +510,28 @@
         Removed --enable-decode-ascend-ports, since it is now provided
         by raddb/rewrite
         
-2000-12-08  gray  <gray@farlep.net>
+2000-12-08  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/doc/html
         In directory Mirddin:/export/home/gray/radius/doc/html
         
         Log Message:
         Directory /export/cvsroot/radius/doc/html added to the repository
         
-2000-12-08  gray  <gray@farlep.net>
+2000-12-08  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/doc/texinfo
         In directory Mirddin:/export/home/gray/radius/doc/texinfo
         
         Log Message:
         Directory /export/cvsroot/radius/doc/texinfo added to the repository
 
-2000-12-08  gray  <gray@farlep.net>
+2000-12-08  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/doc/man
         In directory Mirddin:/export/home/gray/radius/doc/man
         
         Log Message:
         Directory /export/cvsroot/radius/doc/man added to the repository
         
-2000-12-07  gray  <gray@farlep.net>
+2000-12-07  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/radiusd
         In directory Mirddin:/export/home/gray/radius/radiusd
         
@@ -535,7 +540,7 @@
         Log Message:
         Fixed some errors in multiline #define's
 
-2000-12-07  gray  <gray@farlep.net>
+2000-12-07  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/doc
         In directory Mirddin:/export/home/gray/radius/doc
         
@@ -545,7 +550,7 @@
         Log Message:
         Removed unnecessary files. These should be generated on build stage.
         
-2000-12-07  gray  <gray@farlep.net>
+2000-12-07  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/radiusd
         In directory Mirddin:/export/home/gray/radius/radiusd
         
@@ -572,7 +577,7 @@
         functions are defined in the file `raddb/rewrite'. The language
         is similar to C, though much more primitive.
         
-2000-12-07  gray  <gray@farlep.net>
+2000-12-07  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/raddb
         In directory Mirddin:/export/home/gray/radius/raddb
         
@@ -584,7 +589,7 @@
         name
         of the rewriting function for the packets matching the huntgroup.
         
-2000-12-07  gray  <gray@farlep.net>
+2000-12-07  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/include
         In directory Mirddin:/export/home/gray/radius/include
         
@@ -599,7 +604,7 @@
         Portmapping support has been removed and replaced by generalized
         rewriting functions.
         
-2000-12-01  gray  <gray@farlep.net>
+2000-12-01  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/radiusd
         In directory Mirddin:/export/home/gray/radius/radiusd
         
@@ -607,7 +612,7 @@
         	portmap.y
         Log Message:
         
-2000-12-01  gray  <gray@farlep.net>
+2000-12-01  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/checkrad
         In directory Mirddin:/export/home/gray/radius/checkrad
         
@@ -617,7 +622,7 @@
         Fixed assignment error:
         	logfile = stderr;
 
-2000-12-01  gray  <gray@farlep.net>
+2000-12-01  Sergey Poznyakoff <gray@farlep.net>
         Update of /export/cvsroot/radius/raddb
         In directory Mirddin:/export/home/gray/radius/raddb
         

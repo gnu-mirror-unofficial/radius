@@ -47,7 +47,7 @@ initlog(name)
 		progname = name;
 }
 
-void vlog(int lvl, char *file, int line, char *func_name, int errno,
+void vlog(int lvl, char *file, int line, char *func_name, int en,
 	  char *fmt, va_list ap);
 #define SP(p) ((p)?(p):"")
 
@@ -63,12 +63,12 @@ static char *priname[] = { /* priority names */
 };
 
 void
-vlog(level, file, line, func_name, errno, fmt, ap)
+vlog(level, file, line, func_name, en, fmt, ap)
 	int level;
 	char *file;
 	int line;
 	char *func_name;
-	int errno;
+	int en;
 	char *fmt;
 	va_list ap;
 {
@@ -76,8 +76,8 @@ vlog(level, file, line, func_name, errno, fmt, ap)
 	if (file) 
 		fprintf(stderr, "%s:%d:%s: ", file, line, SP(func_name));
 	vfprintf(stderr, fmt, ap);
-	if (errno)
-		fprintf(stderr, ": %s", strerror(errno));
+	if (en)
+		fprintf(stderr, ": %s", strerror(en));
         fprintf(stderr, "\n");
 }
 

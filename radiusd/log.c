@@ -33,7 +33,7 @@ static Channel *chanlist;                  /* List of defined channels */
 
 static void log_to_channel(Channel *chan, int cat, int pri,
 			   char *buf1, char *buf2, char *buf3);
-void vlog(int lvl, char *file, int line, char *func_name, int errno,
+void vlog(int lvl, char *file, int line, char *func_name, int en,
 	  char *fmt, va_list ap);
 static FILE *channel_open_file(Channel *chan);
 static void channel_close_file(Channel *chan, FILE *fp);
@@ -54,12 +54,12 @@ log_close()
 }
 
 void
-vlog(level, file, line, func_name, errno, fmt, ap)
+vlog(level, file, line, func_name, en, fmt, ap)
 	int level;
 	char *file;
 	int line;
 	char *func_name;
-	int errno;
+	int en;
 	char *fmt;
 	va_list ap;
 {
@@ -76,8 +76,8 @@ vlog(level, file, line, func_name, errno, fmt, ap)
 	
 	if (file) 
 		asprintf(&buf1, "%s:%d:%s: ", file, line, SP(func_name));
-	if (errno)
-		asprintf(&buf3, ": %s", strerror(errno));
+	if (en)
+		asprintf(&buf3, ": %s", strerror(en));
 
 	vasprintf(&buf2, fmt, ap);
 	

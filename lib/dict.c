@@ -586,10 +586,10 @@ _dict_value(int *errcnt, int fc, char **fv, grad_locus_t *loc)
         dval->attr = attr;
         dval->value = value;
 
-        /* Insert at front. */
+        /* Append */
 	if (!dictionary_values)
 		dictionary_values = grad_list_create();
-	grad_list_prepend(dictionary_values, dval);
+	grad_list_append(dictionary_values, dval);
         
         return 0;
 }
@@ -718,24 +718,11 @@ struct attr_value {
 static int
 attrval_cmp(struct attr_value *av, DICT_SYMBOL *sym)
 {
-	grad_dict_attr_t *attr;
 	
-	switch (sym->type) {
-	case dict_symbol_attribute:
-		attr = &sym->v.attr;
-		break;
-		
-	case dict_symbol_alias:
-		attr = sym->v.alias;
-		break;
-
-	default:
-		return 0;
-	}
-
-	if (attr->value == av->value) {
-                av->da = attr;
-                return 1;
+	if (sym->type == dict_symbol_attribute
+	    && sym->v.attr.value == av->value) {
+                av->da = &sym->v.attr;
+		return 1;
         }
         return 0;
 }

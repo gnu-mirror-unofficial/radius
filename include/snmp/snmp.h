@@ -206,8 +206,9 @@ int snmp_encode_request(struct snmp_session *sess, struct snmp_pdu *pdu,
 int snmp_decode_request(struct snmp_session *sess, struct snmp_pdu *pdu,
                         u_char *packet, int length, char *comm, int *comm_len);
 
-void snmp_poll();
+void snmp_poll(struct snmp_session *sess);
 int snmp_query(struct snmp_session *sess, struct snmp_pdu *pdu);
-void snmp_timeout();
+void snmp_timeout(struct snmp_session *sess);
+void snmp_read(struct snmp_session *sess, fd_set *fdset);
 
 char *snmp_strerror(int en);

@@ -146,9 +146,9 @@ boot_body (void *data)
                 time_t t;
 
                 if (time(&t) - last_gc_time > scheme_gc_interval) {
-                        radlog(L_INFO, "starting guile garbage collection");
+                        debug(1,("starting guile garbage collection"));
                         scm_gc();
-                        radlog(L_INFO, "finished guile garbage collection");
+                        debug(1,("finished guile garbage collection"));
                         last_gc_time = t;
                 }
                 

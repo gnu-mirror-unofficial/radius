@@ -268,7 +268,7 @@ rawread()
 		       ut.login,
 		       
 		       nas_name_len, nas_name_len,
-		       nas_name(ntohl(ut.nas_address)),
+		       nas_ip_to_name(ntohl(ut.nas_address)),
 
 		       ut.nas_port,
 
@@ -664,7 +664,7 @@ print_entry(pp, bp, mark)
 		       bp->login,
 		       
 		       nas_name_len, nas_name_len,
-		       nas_lookup_ip(ntohl(bp->nas_address)),
+		       nas_ip_to_name(ntohl(bp->nas_address)),
 
 		       bp->nas_port,
 
@@ -689,7 +689,7 @@ print_entry(pp, bp, mark)
 		       bp->login,
 		       
 		       nas_name_len, nas_name_len,
-		       nas_lookup_ip(ntohl(bp->nas_address)),
+		       nas_ip_to_name(ntohl(bp->nas_address)),
 
 		       bp->nas_port,
 
@@ -746,7 +746,7 @@ print_reboot_entry(bp)
 	       namesize, namesize,
 	       s,
 		       
-	       nas_lookup_ip(ntohl(bp->nas_address)),
+	       nas_ip_to_name(ntohl(bp->nas_address)),
 	       ct, ct + 11);
 }
 
@@ -771,8 +771,10 @@ void
 usage(void)
 {
 	fprintf(stderr,
-		"%s\n",
-		usage_str);
+		"%s\n"
+		"\nReport bugs to <%s>\n",
+		usage_str,
+		bug_report_address);
 	exit(1);
 }
 

@@ -26,17 +26,12 @@
 #include <radiusd.h>
 #include <radius/radutmp.h>
 
-typedef int (*mlc_collect_user_t) (char *name, grad_request_t *request,
-				   grad_list_t **sess_list);
-typedef int (*mlc_collect_realm_t) (grad_request_t *request,
-				    grad_list_t **sess_list);
-typedef void (*mlc_close_t) (struct radutmp *up);
-
 struct mlc_dispatch {
 	char *name;
 	mlc_collect_user_t collect_user;
 	mlc_collect_realm_t collect_realm;
 	mlc_close_t close;
+	mlc_enabled_t enabled_p;
 };
 
 static grad_list_t *mlc_dispatch_list;
@@ -46,13 +41,15 @@ void
 mlc_register_method(char *name,
 		    mlc_collect_user_t collect_user,
 		    mlc_collect_realm_t collect_realm,
-		    mlc_close_t close)
+		    mlc_close_t close,
+		    mlc_enabled_t enabled_p)
 {
 	struct mlc_dispatch *mp = grad_emalloc(sizeof(*mp));
 	mp->name = grad_estrdup(name);
 	mp->collect_user = collect_user;
 	mp->collect_realm = collect_realm;
 	mp->close = close;
+	mp->enabled_p = enabled_p;
 	if (!mlc_dispatch_list)
 		mlc_dispatch_list = grad_list_create();
 	grad_list_append(mlc_dispatch_list, mp);
@@ -60,6 +57,12 @@ mlc_register_method(char *name,
 
 
 /* Entry points */
+int
+radius_mlc_enabled_p()
+{
+	return mlc_disptab ? mlc_disptab->enabled_p() : 0;
+}
+
 int
 radius_mlc_collect_user(char *name, grad_request_t *request,
 			grad_list_t **sess_list)
@@ -296,20 +299,14 @@ struct cfg_stmt mlc_stmt[] = {
 
 
 
-static void
-mlc_after_config_hook(void *arg, void *data ARG_UNUSED)
-{
-	if (!mlc_disptab)
-		mlc_disptab = grad_list_item(mlc_dispatch_list, 0);
-	grad_insist(mlc_disptab!=NULL);
-}
-
 void
 mlc_init()
 {
 	mlc_register_method("system",
 			    radutmp_mlc_collect_user,
 			    radutmp_mlc_collect_realm,
-			    radutmp_mlc_close);
-	radiusd_set_postconfig_hook(mlc_after_config_hook, NULL, 0);
+			    radutmp_mlc_close,
+			    radutmp_mlc_enabled_p);
+	mlc_disptab = grad_list_item(mlc_dispatch_list, 0);
+	grad_insist(mlc_disptab!=NULL);	
 }

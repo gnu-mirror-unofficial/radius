@@ -100,7 +100,7 @@ avp_create(attr, length, strval, lval)
 	pair->name = dict->name;
 	pair->attribute = attr;
 	pair->type = dict->type;
-	pair->additivity = dict->additivity;
+	pair->prop = dict->prop;
 	if (strval) {
 		pair->strlength = length;
 		pair->strvalue = make_string(strval);
@@ -124,15 +124,15 @@ avp_move(first, new)
 		return 0;
 	}
 
-	switch (new->additivity) {
-	case AF_ADD_NONE:
+	switch (ADDITIVITY(new->prop)) {
+	case AP_ADD_NONE:
 		for (pair = *first; pair; prev = pair, pair = pair->next)
 			if (pair->attribute == new->attribute)
 				return new;
 		prev->next = new;
 		return NULL;
 
-	case AF_ADD_REPLACE:
+	case AP_ADD_REPLACE:
 		if ((*first)->attribute == new->attribute) {
 			prev = *first;
 			*first = new;
@@ -149,7 +149,7 @@ avp_move(first, new)
 		prev->next = new;
 		return NULL;
 
-	case AF_ADD_APPEND:
+	case AP_ADD_APPEND:
 		for (pair = *first; pair->next; pair = pair->next)
 			;
 		pair->next = new;
@@ -212,10 +212,11 @@ avl_delete(first, attr)
 
 /* Move all attributes of a given type from one list to another */
 void
-avl_move_attr(to, from, attr)
+avl_move_pairs(to, from, fun, closure)
 	VALUE_PAIR **to;
 	VALUE_PAIR **from;
-	int attr;
+	int (*fun)();
+	void *closure;
 {
 	VALUE_PAIR *to_tail, *i, *next;
 	VALUE_PAIR *iprev = NULL;
@@ -233,7 +234,7 @@ avl_move_attr(to, from, attr)
 	for(i = *from; i; i = next) {
 		next = i->next;
 
-		if (i->attribute != attr) {
+		if ((*fun)(closure, i) == 0) {
 			iprev = i;
 			continue;
 		}
@@ -256,6 +257,24 @@ avl_move_attr(to, from, attr)
 		to_tail = i;
 		i->next = NULL;
 	}
+}
+
+int
+cmp_attr(valp, pair)
+	int *valp;
+	VALUE_PAIR *pair;
+{
+	return *valp == pair->attribute;
+}
+
+/* Move all attributes of a given type from one list to another */
+void
+avl_move_attr(to, from, attr)
+	VALUE_PAIR **to;
+	VALUE_PAIR **from;
+	int attr;
+{
+	avl_move_pairs(to, from, cmp_attr, &attr);
 }
 
 /* Move attributes from one list to the other honoring their additivity 

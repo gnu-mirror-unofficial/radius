@@ -1097,13 +1097,11 @@ These take the form
 @noindent
 where @var{ident} is the identifier representing the function, and
 @var{arg-list} is a comma-separated list of expressions supplying
-actual arguments to the function. The function that @var{ident} 
+actual arguments to the function. The number of the expressions
+must correspond exactly to the number of formal parameters in the
+function definition. The function that @var{ident} 
 references can be either a compiled function or a built-in
 function.
-
-Note that, unlike in C, a mismatch between the
-number of actual arguments and number of formal parameters in the
-compiled function declaration is not an error but rather a warning.
 
 @subheading @samp{delete} statement
 

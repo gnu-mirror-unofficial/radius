@@ -114,14 +114,22 @@ dnl ** AM_DISABLE_SHARED
 ## *************************************
 AC_MSG_CHECKING(for additional includes)
 AC_ARG_WITH(include-path,
-	[  --with-include-path=PATH      specify additional include path],
-	[INCLUDEPATH="$INCLUDEPATH -I$withval"])
+	[  --with-include-path=PATH      specify additional include paths.
+                                         PATH is a ':' separated list of additional
+                                         include paths.  ],
+	[ for path in `echo $withval | sed 's/:/ /g'`
+          do
+            INCLUDEPATH="$INCLUDEPATH -I$path"
+          done])
 AC_MSG_RESULT($INCLUDEPATH)
 
 AC_MSG_CHECKING(for additional libraries)
 AC_ARG_WITH(lib-path,    
-	[  --with-lib-path=PATH          specify additional library path],
-	[LIBS="$LIBS -L$withval"])
+	[  --with-lib-path=PATH          specify additional library paths.],
+	[ for path in `echo $withval | sed 's/:/ /g'`
+          do
+            LIBS="$LIBS -L$withval"
+          done])
 AC_MSG_RESULT($LIBS)
 
 ## * Checks for libraries.

@@ -25,7 +25,7 @@ the following:
     `rlogin R', this should start your shell on R without prompting you
     for the password. If both tests succeed, go on to step 5.
  
- 6. Intar the distribution tarball0
+ 6. Untar the distribution tarball.
  6. Change to the distribution directory and run ./configure
  7. Change to test/dejagnu and run make site.exp
  8. Append contents of file remote.exp, copied from R in step 3, to the

@@ -93,7 +93,7 @@ SUFFIXES=.x .doc .inc .exp .scm4 .scm
 	sed -n 's/SCM_DEFINE *(.[^,]*, *\"\([^"][^"]*\)\".*/[ \1]dnl/p' $< > $@
 
 .scm4.scm:
-	m4 -DVERSION=$(VERSION) -DLIBDIR="`cd $(libdir);pwd`" \
+	m4 -DVERSION=$(VERSION) -DLIBDIR="$(libdir)" \
 	   -DBUILDDIR="`cd $(top_builddir)/radscm;pwd`" $< > $@
 
 guile-procedures.txt: $(DOT_DOC_FILES)
@@ -110,19 +110,4 @@ install-data-hook:
 	 fi; \
 	 cd $$here
 
-
-if MAINTAINER_MODE
-
-LINTFLAGS=-gezra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
-
-.c.ln:
-	$(LINT.c) -i $<
-
-llib-lradscm.ln: $(libradscm_a_SOURCES:.c=.ln)
-	$(LINT.c) -Cradscm $(libradscm_a_SOURCES:.c=.ln) 
-
-lint: $(radscm_SOURCES:.c=.ln) llib-lradscm.ln
-	$(LINT.c) -u $(radscm_SOURCES:.c=.ln) -lradscm -L../lib -llog -lrad -ldebug
-
-endif
 

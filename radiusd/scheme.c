@@ -40,9 +40,10 @@ VALUE_PAIR *radscm_cons_to_avp(SCM scm);
 static SCM
 catch_body (void *data)
 {
+	scm_init_load_path();
 	radscm_init();
 	rscm_radlog_init();
-	scm_init_load_path();
+	rscm_rewrite_init();
 	rad_mainloop();
 	return SCM_BOOL_F;
 }
@@ -179,6 +180,17 @@ scheme_load(filename)
 	scm_primitive_load_path(scm_makfrom0str(filename));
 }
 
-
+void
+scheme_read_eval_loop()
+{
+	SCM list;
+	int status;
+	SCM sym_top_repl = scm_symbol_value0("top-repl");
+	SCM sym_begin = scm_symbol_value0("begin");
+	
+	list = scm_cons(sym_begin, SCM_LIST1(scm_cons(sym_top_repl, SCM_EOL)));
+	status = scm_exit_status(scm_eval_x(list));
+	printf("%d\n", status);
+}
 
 #endif

@@ -487,6 +487,8 @@ rpp_request_handler(void *arg ARG_UNUSED)
 		len = rpp_fd_read(0, &frq, sizeof frq, NULL);
 		alarm(0);
 		if (len != sizeof frq) {
+			if (errno == EINTR)
+				continue;
 			radlog(L_ERR,
 			       _("Child received malformed header (len = %d, error = %s)"),
 			       len, strerror(errno));

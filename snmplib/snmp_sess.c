@@ -136,6 +136,7 @@ snmp_session_create(community, host, port, cfn, closure)
 	sp->sd = -1;
 	sp->request_list = NULL;
 	snmp_def.session_list = sp;
+	return sp;
 }
 
 int
@@ -157,7 +158,7 @@ snmp_session_open(sp, local_ip, local_port, timeout, retries)
 	if (local_ip == 0)
 		local_ip = INADDR_ANY;
 	sp->sd = socket(AF_INET, SOCK_DGRAM, 0);
-	if (!sp->sd) {
+	if (sp->sd < 0) {
 		SNMP_SET_ERRNO(E_SNMP_SOCKET);
 		snmp_session_free(sp);
 		return -1;

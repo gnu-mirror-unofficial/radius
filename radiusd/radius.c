@@ -48,10 +48,6 @@ radius_send_reply(int code, RADIUS_REQ *radreq,
                 avl_move_attr(&reply, &radreq->request, DA_PROXY_STATE);
                 
                 switch (code) {
-		case RT_AUTHENTICATION_ACK:
-			stat_inc(auth, radreq->ipaddr, num_accepts);
-			break;
-			
                 case RT_PASSWORD_REJECT:
                 case RT_AUTHENTICATION_REJECT:
                         radreq->reply_pairs = NULL;
@@ -63,6 +59,10 @@ radius_send_reply(int code, RADIUS_REQ *radreq,
 			stat_inc(auth, radreq->ipaddr, num_rejects);
                         break;
 
+		case RT_AUTHENTICATION_ACK:
+			stat_inc(auth, radreq->ipaddr, num_accepts);
+			/*FALLTHROUGH*/
+			
                 default:
                         radreq->reply_pairs = reply;
                 }

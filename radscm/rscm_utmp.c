@@ -74,7 +74,7 @@ the constructed entry is also appended to WTMP_FILE.")
         if (SCM_IMP(DELAY) && SCM_INUMP(DELAY)) 
                 ut.delay = SCM_INUM(DELAY);
         else if (SCM_BIGP(DELAY)) 
-                ut.delay = (UINT4) scm_big2dbl(DELAY);
+                ut.delay = (UINT4) scm_i_big2dbl(DELAY);
         else
                 SCM_ASSERT(0,
                            DELAY, SCM_ARG2, FUNC_NAME);
@@ -96,9 +96,9 @@ the constructed entry is also appended to WTMP_FILE.")
                         if (!(SCM_NIMP(elt) && SCM_STRINGP(elt))) {
                                 scm_misc_error(FUNC_NAME,
                                                "~S: login name should be string",
-                                               SCM_LIST1(elt));
+                                               scm_list_1(elt));
                         }
-                        strncpy(ut.login, SCM_CHARS(elt), sizeof(ut.login));
+                        strncpy(ut.login, SCM_STRING_CHARS(elt), sizeof(ut.login));
                         ut.login[sizeof(ut.login)-1] = 0;
                         break;
                         
@@ -107,9 +107,9 @@ the constructed entry is also appended to WTMP_FILE.")
                         if (!(SCM_NIMP(elt) && SCM_STRINGP(elt))) {
                                 scm_misc_error(FUNC_NAME,
                                                "~S: orig login name should be string",
-                                               SCM_LIST1(elt));
+                                               scm_list_1(elt));
                         }
-                        strncpy(ut.orig_login, SCM_CHARS(elt),
+                        strncpy(ut.orig_login, SCM_STRING_CHARS(elt),
                                 sizeof(ut.orig_login));
                         ut.orig_login[sizeof(ut.orig_login)-1] = 0;
                         break;
@@ -119,7 +119,7 @@ the constructed entry is also appended to WTMP_FILE.")
                         if (!(SCM_IMP(elt) && SCM_INUMP(elt))) {
                                 scm_misc_error(FUNC_NAME,
                                                "~S: port number should be integer",
-                                               SCM_LIST1(elt));
+                                               scm_list_1(elt));
                         }
                         ut.nas_port = SCM_INUM(elt);
                         break;
@@ -129,9 +129,9 @@ the constructed entry is also appended to WTMP_FILE.")
                         if (!(SCM_NIMP(elt) && SCM_STRINGP(elt))) {
                                 scm_misc_error(FUNC_NAME,
                                                "~S: session ID should be string",
-                                               SCM_LIST1(elt));
+                                               scm_list_1(elt));
                         }
-                        strncpy(ut.session_id, SCM_CHARS(elt),
+                        strncpy(ut.session_id, SCM_STRING_CHARS(elt),
                                 sizeof(ut.session_id));
                         ut.session_id[sizeof(ut.session_id)-1] = 0;
                         
@@ -140,15 +140,15 @@ the constructed entry is also appended to WTMP_FILE.")
                         if (SCM_IMP(elt) && SCM_INUMP(elt)) 
                                 ut.nas_address = SCM_INUM(elt);
                         else if (SCM_BIGP(elt)) 
-                                ut.nas_address = (UINT4) scm_big2dbl(elt);
+                                ut.nas_address = (UINT4) scm_i_big2dbl(elt);
                         else if (SCM_NIMP(elt) && SCM_STRINGP(elt)) 
-                                ut.nas_address = ip_gethostaddr(SCM_CHARS(elt));
+                                ut.nas_address = ip_gethostaddr(SCM_STRING_CHARS(elt));
                         else if (SCM_NIMP(elt) && SCM_STRINGP(elt))
-                                ut.nas_address = ip_strtoip(SCM_CHARS(elt));
+                                ut.nas_address = ip_strtoip(SCM_STRING_CHARS(elt));
                         else 
                                 scm_misc_error(FUNC_NAME,
                                                "~S: NAS IP should be IP address",
-                                               SCM_LIST1(elt));
+                                               scm_list_1(elt));
                         ut.nas_address = htonl(ut.nas_address);
                         break;
                         
@@ -157,15 +157,15 @@ the constructed entry is also appended to WTMP_FILE.")
                         if (SCM_IMP(elt) && SCM_INUMP(elt)) 
                                 ut.framed_address = SCM_INUM(elt);
                         else if (SCM_BIGP(elt)) 
-                                ut.framed_address = (UINT4) scm_big2dbl(elt);
+                                ut.framed_address = (UINT4) scm_i_big2dbl(elt);
                         else if (SCM_NIMP(elt) && SCM_STRINGP(elt)) 
-                                ut.framed_address = ip_gethostaddr(SCM_CHARS(elt));
+                                ut.framed_address = ip_gethostaddr(SCM_STRING_CHARS(elt));
                         else if (SCM_NIMP(elt) && SCM_STRINGP(elt))
-                                ut.framed_address = ip_strtoip(SCM_CHARS(elt));
+                                ut.framed_address = ip_strtoip(SCM_STRING_CHARS(elt));
                         else 
                                 scm_misc_error(FUNC_NAME,
                                                "~S: Framed IP should be IP address",
-                                               SCM_LIST1(elt));
+                                               scm_list_1(elt));
                         ut.framed_address = htonl(ut.framed_address);
                         break;
                         
@@ -176,18 +176,18 @@ the constructed entry is also appended to WTMP_FILE.")
                         else if (SCM_IMP(elt) && SCM_CHARP(elt)) {
                                 DICT_VALUE *dv;
 
-                                dv = value_name_to_value(SCM_ROCHARS(elt),
+                                dv = value_name_to_value(SCM_STRING_CHARS(elt),
                                                          DA_FRAMED_PROTOCOL);
 
                                 if (dv)
                                         scm_misc_error(FUNC_NAME,
                                                        "~S: Unknown proto",
-                                                       SCM_LIST1(elt));
+                                                       scm_list_1(elt));
                                 ut.proto = dv->value;
                         } else
                                 scm_misc_error(FUNC_NAME,
                                     "~S: Proto should be integer or string",
-                                               SCM_LIST1(elt));
+                                               scm_list_1(elt));
                         break;
                         
                 case RADUTMP_FIELD_PORT_TYPE:
@@ -199,7 +199,7 @@ the constructed entry is also appended to WTMP_FILE.")
                         else
                                 scm_misc_error(FUNC_NAME,
                                                "~S: Port type should be char or integer",
-                                               SCM_LIST1(elt));
+                                               scm_list_1(elt));
                         break;
 
                 case RADUTMP_FIELD_CALLER_ID:
@@ -207,9 +207,9 @@ the constructed entry is also appended to WTMP_FILE.")
                         if (!(SCM_NIMP(elt) && SCM_STRINGP(elt))) {
                                 scm_misc_error(FUNC_NAME,
                                                "~S: CLID should be string",
-                                               SCM_LIST1(elt));
+                                               scm_list_1(elt));
                         }
-                        strncpy(ut.caller_id, SCM_CHARS(elt),
+                        strncpy(ut.caller_id, SCM_STRING_CHARS(elt),
                                 sizeof(ut.caller_id));
                         ut.caller_id[sizeof(ut.caller_id)-1] = 0;
                         break;
@@ -225,27 +225,25 @@ the constructed entry is also appended to WTMP_FILE.")
         SCM_ASSERT(SCM_NIMP(RADUTMP_FILE) && SCM_STRINGP(RADUTMP_FILE),
                    RADUTMP_FILE, SCM_ARG4, FUNC_NAME);
 
-        file_name = SCM_CHARS(RADUTMP_FILE);
+        file_name = SCM_STRING_CHARS(RADUTMP_FILE);
         radutmp_putent(file_name, &ut, status);
 
         /* Add to wtmp if necessary */
         if (!SCM_UNBNDP(RADWTMP_FILE)) {
                 SCM_ASSERT(SCM_NIMP(RADWTMP_FILE) && SCM_STRINGP(RADWTMP_FILE),
                            RADWTMP_FILE, SCM_ARG5, FUNC_NAME); 
-                file_name = SCM_CHARS(RADWTMP_FILE);
+                file_name = SCM_STRING_CHARS(RADWTMP_FILE);
                 radwtmp_putent(file_name, &ut);
         }
 
-        return SCM_LIST3(scm_makenum(ut.duration),
-                         scm_makenum(0),
-                         scm_makenum(0));
+        return scm_list_3(scm_long2num(ut.duration),
+                         scm_long2num(0),
+                         scm_long2num(0));
 }
 #undef FUNC_NAME
 
 void
 rscm_utmp_init()
 {
-#ifndef SCM_MAGIC_SNARFER
-# include <rscm_utmp.x>
-#endif
+#include <rscm_utmp.x>
 }

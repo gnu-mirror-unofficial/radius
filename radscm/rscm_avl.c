@@ -30,7 +30,7 @@ static char rcsid[] =
 
 SCM_DEFINE(rscm_avl_delete, "avl-delete", 2, 0, 0,
            (SCM LIST, SCM ATTR),
-"Delete the pairs with the matching attribute")    
+	   "Delete the pairs with the matching attribute")
 #define FUNC_NAME s_rscm_avl_delete
 {
         VALUE_PAIR *pairlist;
@@ -40,11 +40,11 @@ SCM_DEFINE(rscm_avl_delete, "avl-delete", 2, 0, 0,
                    LIST, SCM_ARG1, FUNC_NAME);
         pairlist = radscm_list_to_avl(LIST);
         if (SCM_NIMP(ATTR) && SCM_STRINGP(ATTR)) {
-                DICT_ATTR *da = attr_name_to_dict(SCM_CHARS(ATTR));
+                DICT_ATTR *da = attr_name_to_dict(SCM_STRING_CHARS(ATTR));
                 if (!da)
                         scm_misc_error(FUNC_NAME,
                                        "Unknown attribute: ~S",
-                                       SCM_LIST1(ATTR));
+                                       scm_list_1(ATTR));
                 attr = da->value;
         } else {
                 SCM_ASSERT(SCM_IMP(ATTR) && SCM_INUMP(ATTR),
@@ -140,7 +140,5 @@ SCM_DEFINE(rscm_avl_match_p, "avl-match?", 2, 0, 0,
 void
 rscm_avl_init()
 {
-#ifndef SCM_MAGIC_SNARFER
-# include <rscm_avl.x>
-#endif
+#include <rscm_avl.x>
 }

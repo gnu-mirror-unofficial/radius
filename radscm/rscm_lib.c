@@ -28,9 +28,25 @@ static char rcsid[] =
 #include <radius.h>
 #include <radscm.h>
 
+#ifndef HAVE_SCM_CELL
 SCM 
-scm_makenum (val)
-        unsigned long val;
+rad_scm_cell(car, cdr)
+	SCM car;
+	SCM cdr;
+{
+	SCM c;
+	
+	SCM_NEWCELL(c);
+	SCM_SETCAR(c, car);
+	SCM_SETCDR(c, cdr);
+	return c;
+}
+#endif
+
+#ifndef HAVE_SCM_LONG2NUM
+SCM 
+scm_long2num (val)
+        long val;
 {
   if (SCM_FIXABLE ((long) val))
     return SCM_MAKINUM (val);
@@ -41,6 +57,7 @@ scm_makenum (val)
   return scm_make_real ((double) val);
 #endif /* SCM_BIGDIG */
 }
+#endif
 
 SCM
 radscm_avl_to_list(pair)
@@ -49,8 +66,7 @@ radscm_avl_to_list(pair)
         SCM scm_first = SCM_EOL, scm_last, new;
         
         for (; pair; pair = pair->next) {
-                SCM_NEWCELL(new);
-                SCM_SETCAR(new, radscm_avp_to_cons(pair));
+                SCM new = rad_scm_cell(radscm_avp_to_cons(pair), SCM_EOL);
                 if (scm_first == SCM_EOL) {
                         scm_last = scm_first = new;
                 } else {
@@ -105,7 +121,7 @@ radscm_avp_to_cons(pair)
                 scm_value = scm_makfrom0str(pair->strvalue);
                 break;
         case TYPE_INTEGER:
-                scm_value = scm_makenum(pair->lvalue);
+                scm_value = scm_long2num(pair->lvalue);
                 break;
         case TYPE_IPADDR:
                 scm_value = scm_ulong2num(pair->lvalue);
@@ -143,7 +159,7 @@ radscm_cons_to_avp(scm)
                         return NULL;
                 pair.name = dict->name;
         } else if (SCM_NIMP(car) && SCM_STRINGP(car)) {
-                pair.name = SCM_CHARS(car);
+                pair.name = SCM_STRING_CHARS(car);
                 dict = attr_name_to_dict(pair.name);
                 if (!dict) 
                         return NULL;
@@ -161,9 +177,9 @@ radscm_cons_to_avp(scm)
                 if (SCM_IMP(cdr) && SCM_INUMP(cdr)) {
                         pair.lvalue = SCM_INUM(cdr);
                 } else if (SCM_BIGP(cdr)) {
-                        pair.lvalue = (UINT4) scm_big2dbl(cdr);
+                        pair.lvalue = (UINT4) scm_i_big2dbl(cdr);
                 } else if (SCM_NIMP(cdr) && SCM_STRINGP(cdr)) {
-                        char *name = SCM_CHARS(cdr);
+                        char *name = SCM_STRING_CHARS(cdr);
                         val = value_name_to_value(name, pair.attribute);
                         if (val) {
                                 pair.lvalue = val->value;
@@ -180,9 +196,9 @@ radscm_cons_to_avp(scm)
                 if (SCM_IMP(cdr) && SCM_INUMP(cdr)) {
                         pair.lvalue = SCM_INUM(cdr);
                 } else if (SCM_BIGP(cdr)) {
-                        pair.lvalue = (UINT4) scm_big2dbl(cdr);
+                        pair.lvalue = (UINT4) scm_i_big2dbl(cdr);
                 } else if (SCM_NIMP(cdr) && SCM_STRINGP(cdr)) {
-                        pair.lvalue = ip_gethostaddr(SCM_CHARS(cdr));
+                        pair.lvalue = ip_gethostaddr(SCM_STRING_CHARS(cdr));
                 } else
                         return NULL;
                 break;
@@ -190,7 +206,7 @@ radscm_cons_to_avp(scm)
         case TYPE_DATE:
                 if (!(SCM_NIMP(cdr) && SCM_STRINGP(cdr)))
                         return NULL;
-                pair.strvalue = make_string(SCM_CHARS(cdr));
+                pair.strvalue = make_string(SCM_STRING_CHARS(cdr));
                 pair.strlength = strlen(pair.strvalue);
                 break;
         default:
@@ -208,18 +224,26 @@ rscm_add_load_path(path)
         char *path;
 {
         SCM scm, path_scm;
-        path_scm = scm_symbol_value0("%load-path");
+        path_scm = RAD_SCM_SYMBOL_VALUE("%load-path");
         for (scm = path_scm; scm != SCM_EOL; scm = SCM_CDR(scm)) {
                 SCM val = SCM_CAR(scm);
                 if (SCM_NIMP(val) && SCM_STRINGP(val))
-                        if (strcmp(SCM_CHARS(val), path) == 0)
+                        if (strcmp(SCM_STRING_CHARS(val), path) == 0)
                                 return;
         }
-        scm_sysintern ("%load-path",
-                       scm_append(scm_listify(path_scm,
-                                   scm_listify(scm_makfrom0str(path),
-                                               SCM_UNDEFINED),
-                                              SCM_UNDEFINED)));
+#if GUILE_VERSION == 14
+        scm_c_define ("%load-path",
+                       scm_append(scm_list_3(path_scm,
+					     scm_list_1(scm_makfrom0str(path)),
+					     SCM_EOL)));
+#else
+	{
+		SCM *scm = SCM_VARIABLE_LOC(scm_c_lookup("%load-path"));
+		*scm = scm_append(scm_list_3(path_scm,
+					    scm_list_1(scm_makfrom0str(path)),
+					    SCM_EOL));
+	}
+#endif
 }
 
 void
@@ -229,8 +253,6 @@ radscm_init()
         rscm_utmp_init();
         rscm_avl_init();
         rscm_dict_init();
-#ifndef SCM_MAGIC_SNARFER
-# include <rscm_lib.x>
-#endif
+#include <rscm_lib.x>
         rscm_add_load_path(DATADIR);
 }

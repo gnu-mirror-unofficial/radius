@@ -70,7 +70,7 @@ parse_facility(list)
                 if (SCM_IMP(car) && SCM_INUMP(car)) 
                         val = SCM_INUM(car);
                 else if (SCM_NIMP(car) && SCM_STRINGP(car))
-                        val = xlat_keyword(syslog_kw, SCM_CHARS(car), 0);
+                        val = xlat_keyword(syslog_kw, SCM_STRING_CHARS(car), 0);
                 else
                         continue;
                 accval |= val;
@@ -91,13 +91,13 @@ SCM_DEFINE(rad_openlog, "rad-openlog", 3, 0, 0,
         else {
                 SCM_ASSERT(SCM_NIMP(IDENT) && SCM_STRINGP(IDENT),
                            IDENT, SCM_ARG1, FUNC_NAME);
-                ident = SCM_CHARS(IDENT);
+                ident = SCM_STRING_CHARS(IDENT);
         }
         
         if (SCM_IMP(OPTION) && SCM_INUMP(OPTION)) {
                 option = SCM_INUM(OPTION);
         } else if (SCM_BIGP(OPTION)) {
-                option = (UINT4) scm_big2dbl(OPTION);
+                option = (UINT4) scm_i_big2dbl(OPTION);
         } else {
                 SCM_ASSERT(SCM_NIMP(OPTION) && SCM_CONSP(OPTION),
                            OPTION, SCM_ARG2, FUNC_NAME);
@@ -107,7 +107,7 @@ SCM_DEFINE(rad_openlog, "rad-openlog", 3, 0, 0,
         if (SCM_IMP(FACILITY) && SCM_INUMP(FACILITY)) {
                 facility = SCM_INUM(FACILITY);
         } else if (SCM_BIGP(FACILITY)) {
-                facility = (UINT4) scm_big2dbl(FACILITY);
+                facility = (UINT4) scm_i_big2dbl(FACILITY);
         } else {
                 SCM_ASSERT(SCM_NIMP(FACILITY) && SCM_CONSP(FACILITY),
                            FACILITY, SCM_ARG3, FUNC_NAME);
@@ -131,7 +131,7 @@ SCM_DEFINE(rad_syslog, "rad-syslog", 2, 0, 0,
         } else if (SCM_IMP(PRIO) && SCM_INUMP(PRIO)) {
                 prio = SCM_INUM(PRIO);
         } else if (SCM_BIGP(PRIO)) {
-                prio = (UINT4) scm_big2dbl(PRIO);
+                prio = (UINT4) scm_i_big2dbl(PRIO);
         } else {
                 SCM_ASSERT(SCM_NIMP(PRIO) && SCM_CONSP(PRIO),
                            PRIO, SCM_ARG1, FUNC_NAME);
@@ -140,7 +140,7 @@ SCM_DEFINE(rad_syslog, "rad-syslog", 2, 0, 0,
 
         SCM_ASSERT(SCM_NIMP(TEXT) && SCM_STRINGP(TEXT),
                    TEXT, SCM_ARG1, FUNC_NAME);
-        syslog(prio, "%s", SCM_CHARS(TEXT));
+        syslog(prio, "%s", SCM_STRING_CHARS(TEXT));
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
@@ -160,9 +160,7 @@ rscm_syslog_init()
 {
         int i;
         for (i = 0; syslog_kw[i].name; i++)
-                scm_sysintern(syslog_kw[i].name,
+                scm_c_define(syslog_kw[i].name,
                               SCM_MAKINUM(syslog_kw[i].tok));
-#ifndef SCM_MAGIC_SNARFER
-# include <rscm_syslog.x>
-#endif
+#include <rscm_syslog.x>
 }

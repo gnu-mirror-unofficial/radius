@@ -42,10 +42,10 @@ SCM_DEFINE(rad_rewrite_execute_string, "rad-rewrite-execute-string", 1, 0, 0,
 
         SCM_ASSERT(SCM_NIMP(STRING) && SCM_STRINGP(STRING),
                    STRING, SCM_ARG1, FUNC_NAME);
-        if (interpret(SCM_CHARS(STRING), NULL, &type, &datum)) {
+        if (interpret(SCM_STRING_CHARS(STRING), NULL, &type, &datum)) {
                 scm_misc_error(FUNC_NAME,
                                "Error parsing expression: ~S",
-                               SCM_LIST1(STRING));
+                               scm_list_1(STRING));
         }
 
         return radscm_datum_to_scm(type, datum);
@@ -72,7 +72,5 @@ SCM_DEFINE(rad_rewrite_execute, "rad-rewrite-execute", 1, 0, 0,
 void
 rscm_rewrite_init()
 {
-#ifndef SCM_MAGIC_SNARFER
-# include <rscm_rewrite.x>
-#endif
+#include <rscm_rewrite.x>
 }

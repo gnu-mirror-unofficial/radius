@@ -62,9 +62,9 @@ parse_facility(list)
                 if (SCM_IMP(car) && SCM_INUMP(car)) 
                         val = SCM_INUM(car);
                 else if (SCM_NIMP(car) && SCM_STRINGP(car))
-                        val = xlat_keyword(radlog_kw, SCM_CHARS(car), 0);
+                        val = xlat_keyword(radlog_kw, SCM_STRING_CHARS(car), 0);
                 else if (SCM_BIGP(car)) 
-                        val = (UINT4) scm_big2dbl(car);
+		  val = (UINT4) scm_i_big2dbl(car);
                 else
                         continue;
                 accval |= val;
@@ -82,7 +82,7 @@ SCM_DEFINE(rad_log_open, "rad-log-open", 1, 0, 0,
         if (SCM_IMP(PRIO) && SCM_INUMP(PRIO)) {
                 prio = SCM_INUM(PRIO);
         } else if (SCM_BIGP(PRIO)) {
-                prio = (UINT4) scm_big2dbl(PRIO);
+                prio = (UINT4) scm_i_big2dbl(PRIO);
         } else {
                 SCM_ASSERT(SCM_NIMP(PRIO) && SCM_CONSP(PRIO),
                            PRIO, SCM_ARG1, FUNC_NAME);
@@ -106,7 +106,7 @@ SCM_DEFINE(rad_log, "rad-log", 2, 0, 0,
         } else if (SCM_IMP(PRIO) && SCM_INUMP(PRIO)) {
                 prio = SCM_INUM(PRIO);
         } else if (SCM_BIGP(PRIO)) {
-                prio = (UINT4) scm_big2dbl(PRIO);
+                prio = (UINT4) scm_i_big2dbl(PRIO);
         } else {
                 SCM_ASSERT(SCM_NIMP(PRIO) && SCM_CONSP(PRIO),
                            PRIO, SCM_ARG1, FUNC_NAME);
@@ -115,7 +115,7 @@ SCM_DEFINE(rad_log, "rad-log", 2, 0, 0,
 
         SCM_ASSERT(SCM_NIMP(TEXT) && SCM_STRINGP(TEXT),
                    TEXT, SCM_ARG1, FUNC_NAME);
-        radlog(prio, "%s", SCM_CHARS(TEXT));
+        radlog(prio, "%s", SCM_STRING_CHARS(TEXT));
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
@@ -135,9 +135,7 @@ rscm_radlog_init()
 {
         int i;
         for (i = 0; radlog_kw[i].name; i++)
-                scm_sysintern(radlog_kw[i].name,
+                scm_c_define(radlog_kw[i].name,
                               SCM_MAKINUM(radlog_kw[i].tok));
-#ifndef SCM_MAGIC_SNARFER
-# include <rscm_radlog.x>
-#endif
+#include <rscm_radlog.x>
 }

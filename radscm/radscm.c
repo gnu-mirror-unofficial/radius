@@ -46,7 +46,7 @@ SCM_DEFINE(rad_directory, "rad-directory", 1, 0, 0,
 {
         SCM_ASSERT(SCM_NIMP(DIR) && SCM_STRINGP(DIR),
                    DIR, SCM_ARG1, FUNC_NAME);
-        radius_dir = SCM_CHARS(DIR);
+        radius_dir = SCM_STRING_CHARS(DIR);
         if (dict_init())
                 return SCM_BOOL_F;
         return SCM_BOOL_T;
@@ -125,7 +125,7 @@ SCM_DEFINE(rad_client_list_servers, "rad-client-list-servers", 0, 0, 0,
          
         for (s = srv_queue->first_server; s; s = s->next) {
                 ip_iptostr(s->addr, p);
-                tail = scm_cons(SCM_LIST2(scm_makfrom0str(s->name),
+                tail = scm_cons(scm_list_2(scm_makfrom0str(s->name),
                                           scm_makfrom0str(p)),
                                 tail);
         }
@@ -156,12 +156,12 @@ scheme_to_server(LIST, func)
         scm = SCM_CAR(LIST);
         SCM_ASSERT(SCM_NIMP(scm) && SCM_STRINGP(scm),
                    scm, SCM_ARG1, func);
-        serv.name = SCM_CHARS(scm);
+        serv.name = SCM_STRING_CHARS(scm);
 
         scm = SCM_CADR(LIST);
         SCM_ASSERT(SCM_NIMP(scm) && SCM_STRINGP(scm),
                    scm, SCM_ARG1, func);
-        serv.addr = ip_gethostaddr(SCM_CHARS(scm));
+        serv.addr = ip_gethostaddr(SCM_STRING_CHARS(scm));
         if (serv.addr == 0) 
                 scm_misc_error(func,
                                "Bad hostname or ip address ~S\n",
@@ -170,7 +170,7 @@ scheme_to_server(LIST, func)
         scm = SCM_CADDR(LIST);
         SCM_ASSERT(SCM_NIMP(scm) && SCM_STRINGP(scm),
                    scm, SCM_ARG1, func);
-        serv.secret = SCM_CHARS(scm);
+        serv.secret = SCM_STRING_CHARS(scm);
 
         scm = SCM_CADDDR(LIST);
         SCM_ASSERT(SCM_IMP(scm) && SCM_INUMP(scm),
@@ -226,13 +226,13 @@ SCM_DEFINE(rad_client_source_ip, "rad-client-source-ip", 1, 0, 0,
         UINT4 ip;
         
         SCM_ASSERT((SCM_NIMP(IP) && SCM_STRINGP(IP)), IP, SCM_ARG1, FUNC_NAME);
-        ip = ip_gethostaddr(SCM_CHARS(IP));
+        ip = ip_gethostaddr(SCM_STRING_CHARS(IP));
         if (ip)
                 srv_queue->source_ip = ip;
         else {
                 scm_misc_error(FUNC_NAME,
                                "Invalid IP/hostname: ~S",
-                               SCM_LIST1(IP));
+                               scm_list_1(IP));
         }
 
         return SCM_BOOL_T;
@@ -274,7 +274,7 @@ SCM_DEFINE(rad_read_no_echo, "rad-read-no-echo", 1, 0, 0,
         
         SCM_ASSERT((SCM_NIMP(PROMPT) && SCM_STRINGP(PROMPT)),
                    PROMPT, SCM_ARG1, FUNC_NAME);
-        s = getpass(SCM_CHARS(PROMPT));
+        s = getpass(SCM_STRING_CHARS(PROMPT));
         return scm_makfrom0str(s);
 }
 #undef FUNC_NAME
@@ -338,10 +338,9 @@ rad_scheme_init(argc, argv)
 
         radscm_init();
         
-#ifndef SCM_MAGIC_SNARFER
-# include <radscm.x>
-#endif
-        scm_loc = SCM_CDRLOC (scm_sysintern ("%raddb-path", SCM_EOL));
+#include <radscm.x>
+
+        scm_loc = SCM_CDRLOC (scm_c_define ("%raddb-path", SCM_EOL));
         *scm_loc = scm_makfrom0str(radius_dir);
 
         if (!(bootpath = getenv("RADSCM_BOOTPATH")))
@@ -351,8 +350,8 @@ rad_scheme_init(argc, argv)
          * Reset %load-path
          */
         scm = scm_cons(scm_makfrom0str(bootpath),
-                       scm_symbol_value0("%load-path"));
-        scm_loc = SCM_CDRLOC (scm_sysintern ("%load-path", SCM_EOL));
+                       RAD_SCM_SYMBOL_VALUE("%load-path"));
+        scm_loc = SCM_CDRLOC (scm_c_define ("%load-path", SCM_EOL));
         *scm_loc = scm;
 #endif
         /*

@@ -210,6 +210,13 @@ scheme_read_eval_loop()
         printf("%d\n", status);
 }
 
+static SCM
+eval_close_port(void *port)
+{
+	scm_close_port((SCM)port);
+	return SCM_BOOL_F;
+}
+
 void
 silent_close_port(SCM port)
 {
@@ -218,7 +225,7 @@ silent_close_port(SCM port)
 	if (setjmp(jmp_env))
 		return;
 	scm_internal_lazy_catch(SCM_BOOL_T,
-				scm_close_port, (void*)port,
+				eval_close_port, (void*)port,
 				eval_catch_handler, &jmp_env);
 }
 

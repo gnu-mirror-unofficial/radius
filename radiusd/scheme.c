@@ -119,11 +119,7 @@ guile_boot0(arg)
         void *arg;
 {
         char *argv[] = { "radiusd", NULL };
-        sigset_t sig;
-        
-        sigemptyset(&sig);
-        pthread_sigmask(SIG_SETMASK, &sig, NULL);
-        
+        rad_thread_init();
         scm_boot_guile (1, argv, guile_boot1, arg);
         return NULL;
 }       

@@ -1962,7 +1962,9 @@ reload_data(what, do_radck)
 #endif
 
 	case reload_rewrite:
-		rc = parse_rewrite();
+		path = mkfilename(radius_dir, "rewrite");
+		rc = parse_rewrite(path);
+		efree(path);
 		break;
 		
 	default:

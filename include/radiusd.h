@@ -406,7 +406,7 @@ void sqllog(/* int status, char *msg, va_alist */);
 
 /* rewrite.y */
 int run_rewrite(char *name, VALUE_PAIR *req);
-int parse_rewrite();
+int parse_rewrite(char *name);
 
 /* radck.c */
 int fix_check_pairs(int sf_file, char *filename, int line, char *name,

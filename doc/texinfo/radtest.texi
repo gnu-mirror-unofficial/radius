@@ -13,20 +13,179 @@ purpose is to provide a simple and convenient language for sending
 requests to @RADIUS{} servers and analyzing their reply packets.
 
 @menu
-* Interacting with Radius Servers::
 * Values and Variables::
+* Conversion Between Data Types::
+* Interacting with Radius Servers::
 * Conditional Statements::
 * Loops::
 * Built-in Primitives::
 * Complete Radtest Syntax Description::
 @end menu
 
-@node Interacting with Radius Servers
-@subsection Interacting with Radius Servers
-@UNREVISED{}
-
 @node Values and Variables
 @subsection Values and Variables
+@UNREVISED{}
+
+There are four basic data types in @command{radtest} language: integer,
+@IP{}, string and @AVP{} list.
+
+@dfn{Integer} means a signed integer value in the range
+-2147483648..2147483647.
+
+@dfn{@IP{}} is an unsigned integer value suitable for representing
+@IP{}s. These can be input either as decimal numbers or as @IP{}s
+in usual ``dotted-quad'' notation.
+
+@dfn{String} is an arbitrary string of characters. Any input token
+consisting of letters of Latin alphabet, decimal digits, underscores
+dashes and dots and starting with a Latin alphabet letter or
+underscores is considered a string. To input strings containing other
+letters, surround them by double quotes. The following are valid strings:
+
+@smallexample
+@group
+A-string
+"String, containing white space"
+@end group
+@end smallexample
+
+The double quote character @samp{"} must be preceeded by a backslash
+@samp{\} if it is part of a string:
+
+@smallexample
+"Always quote \" character"
+@end smallexample
+
+Generally speaking, @samp{\} is an @dfn{escape character}, that
+alters the meaning of the immediately following character. If it is
+located at the end of the line, it allows to input newline
+character to strings:
+
+@smallexample
+@group
+"This string contains a \
+newline character."
+@end group
+@end smallexample
+
+Other special escape sequences are:
+
+@table @asis
+@item \a
+Audible bell character (ASCII 7)
+@item \b
+Backspace (ASCII 8)
+@item \e
+Escape character (ASCII 27)
+@item \f
+Form feed (ASCII 12)
+@item \n
+Newline (ASCII 10)
+@item \r
+Carriage return (ASCII 13)
+@item \t
+Horizontal tab (ASCII 9)
+@item \\
+Backslash
+@item \ooo
+(@samp{o} represents an octal digit)
+A character whose ASCII value is represented by the octal number @samp{ooo}.
+@item \xHH
+@itemx \XHH
+(@samp{H} represents a hex digit)
+A character whose ASCII value is represented by the hex number @samp{HH}.
+@end table
+
+If the character following the backslash is not one of those
+specified, the backslash is ignored.
+
+@dfn{@AVP{} lists} are whitespace or comma-separated lists of
+@RADIUS{} attribute-value pairs. A syntax for @AVP{} is
+
+@example
+@var{name} @var{op} @var{value}
+@end example
+
+@noindent
+where @var{name} is attribute name, @var{op} is a comparison
+operator (@samp{=}, @samp{!=}, @samp{<}, @samp{<=}, @samp{>},
+@samp{>=}), and @var{value} is any valid @command{radtest} data
+or expression.
+An @AVP{} list must be enclosed in parentheses. This is an
+example of an @AVP{} list consisting of two pairs:
+
+@smallexample
+@group
+( User-Name = "test" NAS-IP-Address = 10.10.10.1 )
+@end group
+@end smallexample
+
+@node Conversion Between Data Types
+@subsection Conversion Between Data Types
+@UNREVISED{}
+
+The unary negation operand is always converted to @code{integer} type:
+
+@smallexample
+@group
+-(1 + 1)  @result{} -2
+-(127.0.0.1 + 2) @result{} -2130706435
+- ("1" + "1") @result{} -11
+- "text" @error{} cannot convert string to integer
+@end group
+@end smallexample
+
+@noindent
+The unary @code{NOT} operand is converted using the following rules:
+
+@enumerate 1
+@item If the operand is @code{integer}, no conversion is performed.
+@item If the operand is @code{STRNUM} @FIXME{explain what it is} or @IP{},
+it is converted to integer.
+@item If the operand is @code{string} (but is not @code{STRNUM}), the
+result of @code{NOT} is @code{true} only if the operand is an empty
+string.
+@item If the operand is @code{avl}, the result of @code{NOT} is
+@code{true} if the list is empty.
+@end enumerate
+
+Examples:
+
+@smallexample
+@group
+not 0 @result{} 1
+not 10 @result{} 0
+not "23" @result{} 0
+not "0" @result{} 1
+not "text" @result{} 0
+not "" @result{} 1
+not 127.0.0.1 @result{} 0
+not 0.0.0.0 @result{} 1
+@end group
+@end smallexample
+
+When operands of two different data types are used in a binary
+operation, one of the operands is converted (@dfn{cast}) to another
+operand's type according to the following rules:
+
+@enumerate 1
+@item If one of the operands is literal, @command{radtest} attemtps
+to convert another operand to the literal data type. If this attempt
+fails, it goes on to rule 2.
+@item If one of operands is @code{STRNUM} @FIXME{explain what it is} and another is of numeric
+data type (i.e. either integer or @IP{}), the latter is converted
+to string representation.
+@item If one of the operands is @IP{} and another is
+an integer, the latter is converted to @IP{}.
+@item Otherwise, if one of the operands is string, second operand
+is also converted to string.
+@item Otherwise, the two operands are incompatible. @command{Radtest}
+prints appropriate diagnostics and aborts execution of the current
+statement.
+@end enumerate
+
+@node Interacting with Radius Servers
+@subsection Interacting with Radius Servers
 @UNREVISED{}
 
 @node Conditional Statements

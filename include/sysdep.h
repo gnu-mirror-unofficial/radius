@@ -87,6 +87,10 @@ int asprintf(/*char **result, const char *format, ...*/);
 int vasprintf(char **result, const char *format, va_list args);
 #endif
 
+#if !HAVE_DECL_CRYPT
+extern char *crypt();
+#endif
+
 #if defined(__alpha) && (defined(__osf__) || defined(__linux__))
 typedef unsigned int    UINT4;
 #else

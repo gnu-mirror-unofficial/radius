@@ -1002,7 +1002,7 @@ rad_sql_acct(radreq)
 			break;
 		query = radius_xlate(&stack,
 				     sql_cfg.acct_start_query,
-				     radreq->request, NULL);
+				     radreq, NULL);
 		rc = rad_sql_query(conn, query, NULL);
 		sqllog(rc, query);
 		break;
@@ -1012,7 +1012,7 @@ rad_sql_acct(radreq)
 			break;
 		query = radius_xlate(&stack,
 				     sql_cfg.acct_stop_query,
-				     radreq->request, NULL);
+				     radreq, NULL);
 		rc = rad_sql_query(conn, query, &count);
 		sqllog(rc, query);
 		if (rc == 0 && count != 1) {
@@ -1034,7 +1034,7 @@ rad_sql_acct(radreq)
 			break;
 		query = radius_xlate(&stack,
 				     sql_cfg.acct_nasup_query,
-				     radreq->request, NULL);
+				     radreq, NULL);
 		rc = rad_sql_query(conn, query, &count);
 		sqllog(rc, query);
 		if (rc == 0) {
@@ -1050,7 +1050,7 @@ rad_sql_acct(radreq)
 			break;
 		query = radius_xlate(&stack,
 				     sql_cfg.acct_nasdown_query,
-				     radreq->request, NULL);
+				     radreq, NULL);
 		rc = rad_sql_query(conn, query, &count);
 		sqllog(rc, query);
 		if (rc == 0) {
@@ -1066,7 +1066,7 @@ rad_sql_acct(radreq)
 			break;
 		query = radius_xlate(&stack,
 				     sql_cfg.acct_keepalive_query,
-				     radreq->request, NULL);
+				     radreq, NULL);
 		rc = rad_sql_query(conn, query, &count);
 		sqllog(rc, query);
 		if (rc != 0) {
@@ -1110,7 +1110,7 @@ rad_sql_pass(req, authdata, passwd)
 				    strlen(authdata),
 				    authdata, 0));
 	}
-	query = radius_xlate(&stack, sql_cfg.auth_query, req->request, NULL);
+	query = radius_xlate(&stack, sql_cfg.auth_query, req, NULL);
 	avl_delete(&req->request, DA_AUTH_DATA);
 	
 	conn = attach_sql_connection(SQL_AUTH, (qid_t)req);
@@ -1150,9 +1150,7 @@ rad_sql_checkgroup(req, groupname)
 	if (sql_cfg.group_query == NULL) 
 		return -1;
 
-	query = radius_xlate(&stack,
-		     sql_cfg.group_query,
-		     req->request, NULL);
+	query = radius_xlate(&stack, sql_cfg.group_query, req, NULL);
 
 	conn = attach_sql_connection(SQL_AUTH, (qid_t)req);
 	data = rad_sql_exec(conn, query);
@@ -1174,10 +1172,11 @@ rad_sql_checkgroup(req, groupname)
 }
 
 int
-rad_sql_attr_query(request_pairs, reply_pairs)
-         VALUE_PAIR	*request_pairs;
-         VALUE_PAIR	**reply_pairs;
+rad_sql_attr_query(req, reply_pairs)
+        RADIUS_REQ *req;
+        VALUE_PAIR **reply_pairs;
 {
+        VALUE_PAIR *request_pairs = req->request;
 	struct sql_connection	*conn;
 	void			*data;
 	char			*attribute;
@@ -1199,7 +1198,7 @@ rad_sql_attr_query(request_pairs, reply_pairs)
 	qid = (qid_t)pair->lvalue;
 	conn = attach_sql_connection(SQL_AUTH, qid);
 	
-	query = radius_xlate(&stack, sql_cfg.attr_query, request_pairs, NULL);
+	query = radius_xlate(&stack, sql_cfg.attr_query, req, NULL);
 	
         data = rad_sql_exec(conn, query);
 	if (!data)

@@ -1048,10 +1048,18 @@ sfn_exec_wait(AUTH_MACH *m)
 {
 	int rc;
 	VALUE_PAIR *p;
+	VALUE_PAIR *repl = NULL;
 	
 	for (p = m->check_pair;
              p;
              p = avl_find(p->next, DA_EXEC_PROGRAM_WAIT)) {
+		VALUE_PAIR *tail = NULL;
+
+		if (m->user_reply)
+			for (tail = m->user_reply; tail->next;
+			     tail = tail->next)
+				;
+
 		switch (p->avp_strvalue[0]) {
 		case '/':
 			/* radius_exec_program() returns -1 on
@@ -1077,14 +1085,20 @@ sfn_exec_wait(AUTH_MACH *m)
 		if (rc != 0) {
 			newstate(as_reject);
 
-			auth_format_msg(m, MSG_ACCESS_DENIED);
-		
 			if (is_log_mode(m, RLOG_AUTH)) {
 				auth_log(m, _("Login incorrect"),
 				         NULL,
 				         _("external check failed: "), 
                                          p->avp_strvalue);
 		        }
+
+			p = tail->next;
+			tail->next = NULL;
+			avl_free(m->user_reply);
+			m->user_reply = p;
+			if (!avl_find(m->user_reply, DA_REPLY_MESSAGE))
+				auth_format_msg(m, MSG_ACCESS_DENIED);
+			
 			break;
 		}
 	}

@@ -40,6 +40,7 @@ static void sql_check_config(SQL_cfg *);
 static struct sql_connection *attach_sql_connection(int type);
 static void detach_sql_connection(int type);
 static void sql_conn_destroy(struct sql_connection **conn);
+static void sql_cache_destroy(struct sql_connection *conn);
 
 static char *getline();
 static int get_boolean(char *str, int *retval);
@@ -487,6 +488,13 @@ rad_sql_init()
 }
 
 void
+radiusd_sql_clear_cache()
+{
+	sql_cache_destroy(sql_conn[SQL_AUTH]);
+	sql_cache_destroy(sql_conn[SQL_ACCT]);
+}
+
+void
 radiusd_sql_shutdown()
 {
 	sql_conn_destroy(&sql_conn[SQL_AUTH]);
@@ -601,6 +609,8 @@ sql_cache_destroy(struct sql_connection *conn)
 {
 	size_t i;
 
+	if (!conn)
+		return;
 	for (; sql_cache_level(conn) > 0;
 	     conn->head = (conn->head + 1) % SQL_CACHE_SIZE)
 		sql_result_destroy(conn->cache[conn->head]);

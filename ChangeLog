@@ -1,5 +1,13 @@
 2003-12-03  Sergey Poznyakoff 
 
+	* Makefile.am (update-dictionary): New rule
+	* raddb/Makefile.am: Likewise
+	* NEWS: Updated
+	* scripts/update-dict.awk: New file
+	* scripts/Makefile.am: Added update-dict.awk
+
+2003-12-03  Sergey Poznyakoff 
+
 	* raddb/dict/standard: New file
 	* radiusd/testsuite/proxy/dictionary.in
 	* radiusd/testsuite/raddb/dictionary.in

@@ -1,4 +1,4 @@
-GNU Radius NEWS -- history of user-visible changes. 2003-12-02
+GNU Radius NEWS -- history of user-visible changes. 2003-12-03
 Copyright (C) 2002,2003 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
@@ -8,7 +8,9 @@ Version 1.1.95:
 
 * Important notes for upgrading from versions 1.0 - 1.1
 
-** This version does a very strict semantic checking on the dictionary
+** Run make update-dictionary after make install.
+
+This version does a very strict semantic checking on the dictionary
 files. Old dictionaries may produce lots of warnings and
 errors, therefore, new dictionaries are always installed by `make
 install'. The default main dictionary file, raddb/dictionary, does
@@ -23,6 +25,10 @@ installs.
 
 Two new statements are provided to help you customize your dictionary.
 See section `** Dictionary' below.
+
+Running `make update-dictionary' updates your main dictionary
+(raddb/dictionary) and secondary dictionaries (raddb/dict/*),
+preserving any changes you did to the former. 
 
 * New features:
 

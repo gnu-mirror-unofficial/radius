@@ -63,4 +63,11 @@ radius_test "send acct 4 User-Name = \"simuse@remote\" \
                     Acct-Session-Id = \"0001\" \
                     Acct-Status-Type = Stop" "expect 5" 
 
+radius_test "send auth 1 User-Name = \"tunnel\" \
+                         User-Password = \"test\"" \
+            "expect 2  Service-Type = Framed-User \
+		       Framed-Protocol = PPTP \
+		       Tunnel-Password = tUnnEl"
+
+
 radius_exit

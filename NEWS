@@ -1,4 +1,11 @@
-Changes in Radius 1.0
+GNU Radius NEWS -- history of user-visible changes. 2002-07-30
+Copyright (C) 2002 Free Software Foundation, Inc.
+See the end for copying conditions.
+
+Please send radius bug reports to <bug-gnu-radius@gnu.org>
+
+
+Version 1.0:
 
 This version implements multi-thread model instead of multi-process model
 used in previous versions. Each incoming request is served by a separate
@@ -9,7 +16,7 @@ attempts to start new thread and pass the request to it. If the number of
 threads has reached its maximum, the request is placed to the wait queue.
 It will be processed by the first thread that finishes its job.
 
-** configure: --enable-snmp gets optional argument 'compat'.
+* configure: --enable-snmp gets optional argument 'compat'.
 
 The radius-specific MIBs use the MIB subtree allocated for GNU project:
 .iso.org.dod.internet.private.enterprises.gnu.radius (.1.3.6.1.4.1.11591.1).
@@ -18,7 +25,7 @@ Previous versions have used the radius-specific subtree for this purpose
 Specifying --enable-snmp=compat enables support of this subtree along with
 the official GNU subtree.
 
-** raddb/config: New keyword max-threads
+* raddb/config: New keyword max-threads
 
 This keyword controls the maximum number of threads the dispatcher is
 allowed to start. It may be used in `option' block (see raddb/config.status
@@ -38,19 +45,19 @@ identifier before each diagnostic message. Use `print-milliseconds'
 to print log timestamps with milliseconds. See raddb/config.syntax
 for examples.
 
-** raddb/config: Keywords `spawn' and `usr2delay' are obsolete.
+* raddb/config: Keywords `spawn' and `usr2delay' are obsolete.
 
 These keywords are useless with the multi-threaded version.
 
-** sqlserver: auth_max_connections and acct_max_connections are
+* sqlserver: auth_max_connections and acct_max_connections are
    deprecated
 
 The maximum number of connections to the authentication database equals
 to the maximum number of threads set by `max-threads' statement. The
 same holds for the number of connections to accounting the database.
 
-** STRESS_COUNT environment variable allows to control number of
-   requests sent during stress test.
+* STRESS_COUNT environment variable allows to control number of
+  requests sent during stress test.
 
 The stress test is one of the tests run by the regression test
 suite. It consists in loading the server with a continuous flow
@@ -63,7 +70,7 @@ number use environment variable STRESS_COUNT, e.g.:
 =============================================================================
 Changes in Radius 0.96
 
-** The format of raddb/config has changed a little.
+* The format of raddb/config has changed a little.
 
 To convert old raddb/config to new format, run scripts/config-conv.
 It uses /usr/local as default prefix. If you have installed the
@@ -78,13 +85,13 @@ converted file, and edit it to your liking.
 For more information about the new format look in the texinfo
 documentation (chapter Configuration files/config file).
 
-** Slight changes to the format of raddb/dictionary.
+* Slight changes to the format of raddb/dictionary.
 
 Your old raddb/dictionary will be replaced automagically by
 `make install'. The copy of your dictionary will be preserved
 in file raddb/dictionary~.
 
-** Radiusd is able to listen on multiple interfaces/ports.
+* Radiusd is able to listen on multiple interfaces/ports.
 
 By default, it listens for auth and account ports on all available
 interfaces. To specify addresses/ports to listen on, use `listen'
@@ -96,9 +103,9 @@ auth {
 
 This statement is currently allowed only in `auth' and `acct' blocks
 
-** Shared secrets of arbitrary length are allowed
+* Shared secrets of arbitrary length are allowed
 
-** Passwords of arbitrary length are allowed
+* Passwords of arbitrary length are allowed
 
 NOTE for MAX Ascend users: the ascend termserver IOS incorrectly
 encodes passwords longer than 16 bytes. The workaround for this
@@ -110,12 +117,12 @@ flags column of the naslist file, e.g.:
 my_ascend		my_ascend	max		broken_pass
 
 
-** raddb/(naslist,nastypes): `arg' variable for method finger 
+* raddb/(naslist,nastypes): `arg' variable for method finger 
 
 The variable allows for specifying the finger query string. It
 defaults to %u, i.e. user name.
 
-** raddb/naslist:
+* raddb/naslist:
 
 The word DEFAULT may be used in the first column to match any
 NAS, not explicitely defined in the file. E.g.:
@@ -127,12 +134,12 @@ DEFAULT			other
 Logins from the DEFAULT NASes are not reported by raduse, neither
 are they reflected in SNMP variables.
 
-** raddb/realms: Special realm NOREALM is supported.
+* raddb/realms: Special realm NOREALM is supported.
 
 The realm is matched when the user did not specify any explicit realm
 with his username.
 
-** raddb/realms: Both authentication and accouting ports can be
+* raddb/realms: Both authentication and accouting ports can be
 specified.
 
 The syntax is: servername[:auth-port[:acct-port]] (brackets mark
@@ -143,17 +150,17 @@ optional fields), e.g.:
 remote.net	radius.remote.net:1923:2023
 
 
-** raddb/config: cntl statement is obsoleted.
+* raddb/config: cntl statement is obsoleted.
 
-** raddb/config: exec-program-group is obsoleted.
+* raddb/config: exec-program-group is obsoleted.
 
 The group to be used when executing external programs is determined
 from the /etc/passwd entry for exec-program-user.
 
-** %C{Password} substitution returns plaintext password, instead of
-   crypted one. Please, use with care.
+* %C{Password} substitution returns plaintext password, instead of
+  crypted one. Please, use with care.
 
-** The default values may be provided for % substitutions.
+* The default values may be provided for % substitutions.
 
 The default values are used when the referenced attribute does not
 exist. The syntax is similar to that of shell environment variables:
@@ -168,7 +175,7 @@ exist. The syntax is similar to that of shell environment variables:
                                saying "User-Name: not defined" and
 			       return string "not defined".
 
-** The value of a reply pair can be computed at authentication time.
+* The value of a reply pair can be computed at authentication time.
 
 For example:
 
@@ -189,14 +196,14 @@ where ATTR-NAME is the attribute name,
       ARGS is a comma-separated list of arguments. Usual %C substitutions
       may be used as arguments. ARGS can be empty.
 
-** Plaintext passwords are allowed in SQL database.
+* Plaintext passwords are allowed in SQL database.
 
 This allows to authenticate users via CHAP. To do so, user's profile
 should contain the following check-pairs:
 
 	Auth-Type = Local, Password-Location = SQL
 
-** Compiling Guile support into the server.
+* Compiling Guile support into the server.
 
 The radiusd server can be compiled with Guile support, which allows
 to further extend its functionality. The `guile' statement in raddb/config
@@ -244,9 +251,9 @@ An A/V list is represented as a scheme list of conses in the form
 
         ( ATTR-NAME-OR-NUMBER . ATTR-VALUE )
 
-*** Changes to SQL subsystem
+** Changes to SQL subsystem
 
-** Default MySQL and PostgreSQL database structures are provided.
+*** Default MySQL and PostgreSQL database structures are provided.
 
 To create the default radius database:
  1. Change to the subdirectory db/
@@ -273,8 +280,8 @@ To create the default radius database:
  Alternately, you can create text files, describing the database structure
  by running `make mysql.struct' or `make pgsql.struct'
 
-** Check and reply pairs for user's profile can be retrieved from the 
-SQL database.
+*** Check and reply pairs for user's profile can be retrieved from the 
+    SQL database.
 
 To do so, use `check_attr_query' and `reply_attr_query' statements in
 the raddb/sqlserver file. `reply_attr_query' must return pairs
@@ -305,9 +312,9 @@ check_attr_query  select attr,value,op \
                   where user_name='%u' \
                   and op is not null
 
-** raddb/sqlserver: query_buffer_size clause is obsolete.
+*** raddb/sqlserver: query_buffer_size clause is obsolete.
 
-** radiusd can be compiled with support for both MySQL and PostgreSQL.
+* radiusd can be compiled with support for both MySQL and PostgreSQL.
 
 In this case, the actual database to be used is controlled by `interface'
 statement in raddb/sqlserver file, e.g.:
@@ -316,7 +323,7 @@ interface mysql
 or
 interface postgres
 
-*** Client sub-package
+* Client sub-package
 
 Two client programs are provided: nas.scm and pam_radius.so. Specify the
 switch --with-client to enable the client packages.
@@ -346,7 +353,7 @@ The module understands following command line options:
 The default configuration file, $sysconfdir/raddb/client.conf, is installed
 by make install.
 
-** Support for computable session timeout 
+* Support for computable session timeout 
 
 This is a framework for computing the session timeout in real time.
 To use it, Radius must be compiled with Guile support. raddb/config
@@ -408,8 +415,7 @@ are in file elisp/README.
 =============================================================================
 NEWS for version 0.93
 
-I. Changes to radiusd
-----------------------
+* Changes to radiusd
 
 Added realm quota support. This feature allows to limit number of
 users coming from a certain realm.
@@ -420,8 +426,7 @@ case there are several network interfaces on the machine running radiusd.
 The checkrad program is now gone. Its functionality is integrated in
 the daemon itself. 
 
-II. Changes to configuration files
------------------------------------
+* Changes to configuration files
 
 A special username, BEGIN or BEGIN%d, where %d is any decimal number,
 may be used in raddb/users. It matches any username, just like DEFAULT
@@ -456,8 +461,7 @@ data for SQL and PAM authentication methods. When used with PAM
 authentication method it provides the same functionality as PAM-Auth
 attribute.
 
-III. Querying terminal servers
-------------------------------
+* Querying terminal servers
 
 GNU Radius version 0.94 is able to query a NAS about whether a given
 user's session is active at the moment. Such querying takes place when
@@ -544,8 +548,7 @@ function check_unix can be defined as:
 	}
 
 
-IV. SQL support
-------------------
+* SQL support
 
 User's group can now be obtained from the SQL database. The group_query
 statement in raddb/sqlserver file specifies the query to be used to
@@ -560,14 +563,14 @@ on the arrival of a keepalive packet.
 =============================================================================
 NEWS for version 0.93
 
-The Guile interface to Radius functions has been added. The program
-radscm (radius scheme) is actually a Guile Scheme interpreter with
-some special functions added.
+* The Guile interface to Radius functions has been added. The program
+  radscm (radius scheme) is actually a Guile Scheme interpreter with
+  some special functions added.
 
-The radctl monitor is completely rewritten in scheme.
+* The radctl monitor is completely rewritten in scheme.
 
-The PostgreSQL support has been added. To configure radius with
-SQL accounting to a Postrgres server run
+* The PostgreSQL support has been added. To configure radius with
+  SQL accounting to a Postrgres server run
 
 	./configure --enable-mysql=postgres
 
@@ -598,3 +601,23 @@ modify the contents of a packet on the fly.
 Vendor specific attributes can be added to dictionaries and Radius can
 be told the ways of handling them without recompiling.
 
+
+=========================================================================
+Copyright information:
+
+Copyright (C) 2002 Free Software Foundation, Inc.
+
+   Permission is granted to anyone to make or distribute verbatim copies
+   of this document as received, in any medium, provided that the
+   copyright notice and this permission notice are preserved,
+   thus giving the recipient permission to redistribute in turn.
+
+   Permission is granted to distribute modified versions
+   of this document, or of portions of it,
+   under the above conditions, provided also that they
+   carry prominent notices stating who last changed them.
+
+Local variables:
+mode: outline
+paragraph-separate: "[	]*$"
+end:

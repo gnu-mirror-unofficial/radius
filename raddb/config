@@ -55,6 +55,3 @@ proxy {
 	request-cleanup-delay 2;
 };
 
-#usedbm no;
-
-#notify off;

@@ -434,8 +434,6 @@ int
 init_lex(name)
 	char *name;
 {
-	FILE *fp;
-
 	obstack_init(&stack);
 	
 	context_stack = NULL;

@@ -414,7 +414,7 @@ free_chanlist(cp)
 void
 log_set_to_console()
 {
-	Channel chan, *cp;
+	Channel chan;
 	Chanlist chanlist;
 	
 	chan.mode = LM_FILE;
@@ -434,7 +434,7 @@ log_set_default(name, cat, pri)
 	int cat;
 	int pri;
 {
-	Channel chan, *cp;
+	Channel chan;
 	Chanlist chanlist;
 	
 	chan.mode = LM_FILE;

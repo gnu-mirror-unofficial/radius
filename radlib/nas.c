@@ -90,8 +90,6 @@ int
 nas_read_file(file)
 	char *file;
 {
-	int rc;
-
 	nas_free_list(naslist);
 	naslist = NULL;
 
@@ -152,7 +150,6 @@ nas_request_to_nas(radreq)
 	RADIUS_REQ *radreq;
 {
 	UINT4 ipaddr;
-	NAS *nas;
 	VALUE_PAIR *pair;
 
 	if ((pair = avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)

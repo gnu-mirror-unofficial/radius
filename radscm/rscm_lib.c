@@ -46,7 +46,7 @@ SCM
 radscm_avl_to_list(pair)
 	VALUE_PAIR *pair;
 {
-	SCM scm_first = SCM_EOL, scm_last, scm_attr, scm_value, new;
+	SCM scm_first = SCM_EOL, scm_last, new;
 	
 	for (; pair; pair = pair->next) {
 		SCM_NEWCELL(new);
@@ -90,7 +90,7 @@ SCM
 radscm_avp_to_cons(pair)
 	VALUE_PAIR *pair;
 {
-	SCM scm_attr, scm_value, new;
+	SCM scm_attr, scm_value;
 	DICT_ATTR *dict;
 	
 	if (dict = attr_number_to_dict(pair->attribute)) 

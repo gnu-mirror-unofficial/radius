@@ -22,6 +22,7 @@
 #include <string.h>
 #include <mem.h>
 #include <envar.h>
+#include <argcv.h>
 
 static void
 envar_parse_internal(str, phead, ptail)
@@ -38,7 +39,7 @@ envar_parse_internal(str, phead, ptail)
 	if (argcv_get(str, ",", &argc, &argv)) {
 		if (argv)
 			argcv_free(argc, argv);
-		return NULL;
+		return;
 	}
 
 	for (i = 0; i < argc; i++) {

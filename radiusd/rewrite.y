@@ -3739,9 +3739,8 @@ pushref(str, from, to)
 	char *s = heap_reserve(len);
 	char *p = s;
 	
-	for (; from < to; from) {
+	while (from < to) 
 		*p++ = str[from++];
-	}
 	*p = 0;
 	return pushn((int)s);
 }

@@ -28,6 +28,7 @@ static char rcsid[] =
 #include <stdio.h>
 #include <errno.h>
 #include <ctype.h>
+#include <argcv.h>
 #include <radius.h>
 
 int

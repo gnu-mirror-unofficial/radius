@@ -759,7 +759,6 @@ reread_config(reload)
 {
 	int res = 0;
 	int pid = getpid();
-	int fd;
 	
 	if (!reload) {
 		radlog(L_INFO, _("Starting - reading configuration files ..."));
@@ -788,7 +787,7 @@ reread_config(reload)
 
 #ifdef USE_SNMP
 	if (radius_mode == MODE_DAEMON) {
-		fd = open_socket(myip, snmp_port, "SNMP");
+		int fd = open_socket(myip, snmp_port, "SNMP");
 		set_nonblocking(fd);
 		add_socket_list(fd, NULL, snmp_respond, NULL);
 	}
@@ -1410,7 +1409,6 @@ stat_request_list(stat)
 	int     completed_count[R_MAX] = {0};
 	REQUEST	*curreq;
 	int     i;
-	char    tbuf[128];
 	
 	curreq = first_request;
 	/* Block asynchronous access to the list

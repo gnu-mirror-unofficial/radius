@@ -207,11 +207,7 @@ radclient_build_request(config, server, code, pair)
 	int      total_length;
 	int      attrlen;
 	AUTH_HDR *auth;
-	char     passbuf[AUTH_PASS_LEN];
-	u_char   md5buf[256];
 	char     *ptr, *length_ptr;
-	int      secretlen;
-	int      i;
 	long     lval;
 	int      vendorcode, vendorpec;
 	

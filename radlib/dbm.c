@@ -56,6 +56,7 @@ close_dbm(dbmfile)
 	DBM_FILE dbmfile;
 {
 	dbm_close(dbmfile);
+	return 0;
 }
 
 int

@@ -121,7 +121,6 @@ symtab_rehash(symtab)
 			sym = old_table[i];
 			while (sym) {
 				unsigned int h;
-				Symbol *sp;
 
 				next = sym->next;
 

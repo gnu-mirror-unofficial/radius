@@ -595,7 +595,6 @@ proxy_receive(radreq, activefd)
 	RADIUS_REQ	*oldreq;
 	PROXY_STATE	*state;
 	struct proxy_data data;
-	int             i;
 	
 	/* FIXME: calculate md5 checksum! */
 

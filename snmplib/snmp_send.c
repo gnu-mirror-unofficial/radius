@@ -112,7 +112,7 @@ snmp_encode_request(sess, pdu, packet_buf, length)
 	int  *length;
 {
 	u_char *buf, *msg_start, *pdu_header_ptr, *pdu_data_start,
-	       *var_header_ptr, *var_data_start, *p;
+	       *var_header_ptr, *var_data_start;
 	
 	#define BAIL_OUT if (!buf) return -1
 	

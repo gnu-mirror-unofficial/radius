@@ -154,7 +154,7 @@ add_user_entry(symtab, filename, line, name, check, reply)
 	char *name;
 	VALUE_PAIR *check, *reply;
 {
-	User_symbol *sym, *prev, *p;
+	User_symbol *sym;
 
 	/* Special handling for DEFAULT names: strip any trailing
 	 * symbols
@@ -1010,8 +1010,8 @@ read_naslist_file(file)
 	char *file;
 {
 	int rc;
-	NAS *nas;
 #ifdef USE_SNMP	
+	NAS *nas;
 	if (master_process()) {
 		snmp_init_nas_stat();
 	}
@@ -1384,10 +1384,6 @@ fallthrough(vp)
 
 	return (tmp = avl_find(vp, DA_FALL_THROUGH)) ? tmp->lvalue : 0;
 }
-
-
-/*
-
 
 /*
  *	Compare a portno with a range.
@@ -2177,8 +2173,6 @@ void
 dump_users_db()
 {
 	FILE *fp;
-	int i;
-	User_symbol *sym;
 	char *name = mkfilename(radlog_dir, RADIUS_DUMPDB_NAME);
 	
 	fp = fopen(name, "w");

@@ -224,7 +224,6 @@ parse_dict_attr(p, endp, defval)
 	char **defval;
 {
 	char namebuf[MAX_DICTNAME];
-	char *ret;
 	
 	*defval = NULL;
 	if (isdigit(*p)) {
@@ -268,7 +267,7 @@ parse_dict_attr(p, endp, defval)
 	return NULL;
 }
 
-char *
+void
 radius_xlate0(obp, str, req, reply)
 	struct obstack *obp;
 	char *str;

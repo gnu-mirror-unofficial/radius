@@ -112,7 +112,6 @@ mib_insert(node, oid, return_node)
 	struct mib_node_t **return_node;
 {
 	int len = OIDLEN(oid);
-	subid_t *p = OIDPTR(oid);
 	int i;
 	int rc;
 

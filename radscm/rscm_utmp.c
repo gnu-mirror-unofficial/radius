@@ -24,6 +24,8 @@ static char rcsid[] =
 # include <config.h>
 #endif
 
+#include <stdlib.h>
+#include <netinet/in.h>
 #include <libguile.h>
 #include <radius.h>
 #include <radutmp.h>

@@ -149,7 +149,6 @@ decrypt_password_broken(password, pair, vector, secret)
 	int md5len;
 	char *md5buf;
 	char digest[AUTH_VECTOR_LEN];
-	char *cp;
 	int secretlen;
 	int passlen;
 	int i, j;

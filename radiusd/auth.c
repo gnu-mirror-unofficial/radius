@@ -30,6 +30,7 @@ static char rcsid[] =
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <pwd.h>
 #include <time.h>
 #include <unistd.h>
@@ -683,8 +684,6 @@ char *
 auth_finish_msg(m)
 	MACH *m;
 {
-	char *msg;
-	
 	if (m->user_msg)
 		obstack_grow(&m->msg_stack, m->user_msg, strlen(m->user_msg));
 	obstack_1grow(&m->msg_stack, 0);
@@ -946,7 +945,6 @@ sfn_validate(m)
 	MACH *m;
 {
 	RADIUS_REQ *radreq = m->req;
-	VALUE_PAIR *p;
 	int rc;
 	
 	/*

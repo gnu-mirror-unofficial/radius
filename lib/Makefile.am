@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+# Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 #      
 # Written by Sergey Poznyakoff
 #
@@ -18,7 +18,6 @@
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 lib_LTLIBRARIES=libgnuradius.la
-noinst_LTLIBRARIES=liblog.la libdebug.la 
 libgnuradius_la_SOURCES= \
 argcv.c \
 ascend.c \
@@ -58,13 +57,6 @@ util.c
 localedir = $(datadir)/locale
 
 libgnuradius_la_LIBADD = @LTLIBOBJS@
-liblog_la_SOURCES=applog.c 
-libdebug_la_SOURCES=debugmod.c
-
-libdebug_la_LDFLAGS=-all-static
-libdebug_la_CFLAGS=-static
-liblog_la_LDFLAGS=-all-static
-liblog_la_CFLAGS=-static
 
 AM_CPPFLAGS=-DLOCALEDIR=\"$(localedir)\" @PATHFLAGS@
 
@@ -105,21 +97,9 @@ LINTFLAGS=-gzra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -DLOCALEDIR=\"$(localedir)
 .c.ln:
 	$(LINT.c) -i $<
 
-llib-llog.ln: $(liblog_la_SOURCES:.c=.ln)
-	$(LINT.c) -Clog $(liblog_la_SOURCES:.c=.ln)
+llib-lgnuradius.ln: $(libgnuradius_la_SOURCES:.c=.ln)  
+	$(LINT.c) -Crad $(libgnuradius_la_SOURCES:.c=.ln) 
 
-llib-lrad.ln: $(libgnuradius_la_SOURCES:.c=.ln)  llib-llog.ln
-	$(LINT.c) -Crad $(libgnuradius_la_SOURCES:.c=.ln) -L. -llog
+lint:: llib-lgnuradius.ln
 
-llib-ldebug.ln: $(libdebug_la_SOURCES:.c=.ln) llib-llog.ln
-	$(LINT.c) -Cdebug $(libdebug_la_SOURCES:.c=.ln) -L. -llog
-
-lint:: llib-llog.ln llib-lrad.ln llib-ldebug.ln 
-
-LIBLIST:
-	-echo $(libgnuradius_la_SOURCES) $(BUILT_SOURCES) |\
-	tr -s ' ' '\n'|\
-	sort|\
-	uniq -u|\
-	xargs grep -l '#define *RADIUS_MODULE' > .list
 endif

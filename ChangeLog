@@ -10,6 +10,9 @@
 
 	* NEWS: Updated.
 
+	* doc/texinfo/.cvsignore: Updated.
+	* doc/texinfo/Makefile.am: Added html: rule
+
 2001-10-17 Sergey Poznyakoff
 
 	* radlib/cryptpass.c: New function decrypt_password_broken()

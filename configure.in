@@ -587,7 +587,10 @@ AC_OUTPUT(Makefile m4/Makefile
           client/nas/Makefile 
           client/pam_radius/Makefile 
           radtest/Makefile
-          test/Makefile test/raddb/Makefile 
+          test/Makefile 
+          test/raddb/Makefile 
+          test/guile/Makefile 
+          test/dejagnu/Makefile
           scripts/Makefile scripts/guile/Makefile 
           contrib/Makefile)
 

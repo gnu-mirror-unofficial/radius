@@ -632,6 +632,10 @@ if test x$BUILD_CLIENT = xyes; then
 	fi
 fi
 
+if test "$EMACS" != "no"; then
+	lisp_LISP='$(LISPSRC)'
+fi
+AC_SUBST(lisp_LISP)
 
 AC_OUTPUT(Makefile m4/Makefile 
           include/Makefile include/snmp/Makefile

@@ -227,6 +227,7 @@ typedef void (*config_hook_fp)(void *func_data, void *app_data);
 #define CLEANUP_DELAY           10
 #define MAX_REQUESTS            255
 #define MAX_CHILDREN            8
+#define PROCESS_TIMEOUT         3600
 
 /*
  * Authentication results
@@ -271,6 +272,7 @@ extern int strip_names;
 extern int checkrad_assume_logged;
 extern size_t max_requests;
 extern size_t max_children;
+extern unsigned process_timeout;
 extern char *exec_user;
 extern UINT4 expiration_seconds;
 extern UINT4 warning_seconds;
@@ -317,6 +319,7 @@ void input_close_channels(INPUT *input);
 void input_close_channel_fd(INPUT *input, int fd);
 void input_close_channel_data(INPUT *input, char *name, void *data); 
 int input_select(INPUT *input, struct timeval *tv);
+int input_select_channel(INPUT *input, char *name, struct timeval *tv);
 void *input_find_channel(INPUT *input, char *name, void *data);
 int input_iterate_channels(INPUT *input, char *name, list_iterator_t fun,
 			   void *data);
@@ -325,7 +328,7 @@ int input_iterate_channels(INPUT *input, char *name, list_iterator_t fun,
 int rpp_ready();
 int rpp_forward_request(REQUEST *req);
 void rpp_remove(pid_t pid);
-void rpp_flush();
+void rpp_flush(int (*fun)(void*), void *closure);
 int rpp_input_handler(int fd, void *data);
 int rpp_input_close(int fd, void *data);
 int rpp_kill(pid_t pid, int signo);

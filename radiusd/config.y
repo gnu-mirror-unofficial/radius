@@ -316,7 +316,7 @@
 	struct facility facility;
 	struct {
 		int type;
-		Channel * channel;
+		Chanlist *chanlist;
 		int options;
 		int level;
 	} category_def;
@@ -568,7 +568,7 @@ category_stmt   : T_CATEGORY category_name '{' category_list '}'
 				  break;
 			  }
 			  in_debug = 0;
-			  register_category($2.severity, $4.channel);
+			  register_category($2.severity, $4.chanlist);
 		  }
                 ;
 
@@ -612,17 +612,19 @@ severity        : '*'
 category_list   : category_def
                 | category_list category_def
                   {
-			  $$ = $1;
 			  switch ($2.type) {
 			  case CT_CHANNEL:
-				  $$.channel = $2.channel;
+				  $2.chanlist->next = $1.chanlist;
+				  $1.chanlist = $2.chanlist;
 				  break;
 			  case CT_LEVEL:
-				  $$.level |= $2.level;
+				  $1.level |= $2.level;
 			  }
+			  $$ = $1;
 		  }
                 | category_list error '}'
                   {
+			  /*free_chanlist?*/
 			  tie_in = 0;
 			  putback("}", 1);
 			  yyclearin;
@@ -632,20 +634,26 @@ category_list   : category_def
 
 category_def    : T_CHANNEL T_STRING EOL
                   {
-			  $$.channel = channel_lookup($2);
+			  Channel *channel;
+			  channel = channel_lookup($2);
 			  $$.level = 0;
-			  if (!$$.channel) {
+			  if (!channel) {
 				  radlog(L_ERR,
 					 _("%s:%d: channel `%s' not defined"),
 					 filename, line_num, $2);
 				  $$.type = 0;
-			  } else
+				  $$.chanlist = NULL;
+			  } else {
+				  Chanlist *cl;
+				  
 				  $$.type = CT_CHANNEL;
+				  $$.chanlist = make_chanlist(channel);
+			  }
 		  }
                 | T_LEVEL { tie_in++; } level_list EOL
                   {
 			  tie_in = 0;
-			  $$.channel = NULL;
+			  $$.chanlist = NULL;
 			  if (xlat_tab) {
 				  $$.type = CT_LEVEL;
 				  $$.level = $3;
@@ -1329,7 +1337,6 @@ get_config()
 	int fd;
 	extern int yydebug;
 
-	log_init();
 	filename = mkfilename(radius_dir, RADIUS_CONFIG);
 	if (stat(filename, &st)) {
 		radlog(L_ERR|L_PERROR, _("can't stat `%s'"), filename);
@@ -1379,10 +1386,11 @@ get_config()
 		debug_config = 0;
 	}
 
+	log_init();
 	yyparse();
 	efree(filename);
 	efree(buffer);
-	log_cleanup(0);
+	log_done();
 	
 #ifdef USE_SNMP
 	free_netlist();

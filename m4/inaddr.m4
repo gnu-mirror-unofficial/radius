@@ -20,6 +20,7 @@ AC_DEFUN(rad_CHECK_INADDR_LOOPBACK,
     AC_MSG_CHECKING(for INADDR_LOOPBACK)
     AC_CACHE_VAL(rad_cv_decl_inaddrloopback,[
       AC_TRY_COMPILE([
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>

@@ -32,7 +32,6 @@ radiusd_SOURCES = \
  pam.c\
  proxy.c\
  radck.c\
- radctl.c\
  radius.c\
  radiusd.c\
  radutil.c\
@@ -55,12 +54,12 @@ GPERF=@GPERF@
 config.c config_tok.h: $(srcdir)/config.y
 	$(YLWRAP) "$(YACC)" $(srcdir)/config.y \
                   y.tab.c config.c y.tab.h config_tok.h y.output y.output \
-                  -- -yy conf_yy -vd @YACC_OPTS@
+                  -- -yy cc -vd @YACC_OPTS@
 
 config_kw.c: $(srcdir)/config.kw
 	$(YLWRAP) "$(GPERF)" $(srcdir)/config.kw \
 	   	  config_kw.c config_kw.c \
-                  -- -stdout -k1,2,6,7,11,13,$$ -t 
+                  -- -yy cc -stdout -k1,2,6,7,11,13,$$ -t 
 
 config.o: config.c ../include/radiusd.h 
 
@@ -86,7 +85,7 @@ lint:  $(radiusd_LNS)
 SRCS=radiusd.c acct.c auth.c exec.c files.c menu.c sql.c\
          notify.c config.y pam.c proxy.c radius.c\
          timestr.c version.c log.c stat.c\
-         snmpserv.c shmem.c radutil.c radctl.c rewrite.y\
+         snmpserv.c shmem.c radutil.c rewrite.y\
          checkrad.c radck.c builddbm.c
 
 FILELIST:; @echo $(SRCS) > .list

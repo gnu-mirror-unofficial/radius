@@ -389,15 +389,15 @@ proxy_send(radreq, activefd)
                LOCAL    -- process request locally.
                NOREALM  -- handle an empty realm name.
 
-           A realm with special name DEFAULT is returned by realm_find()
+           A realm with special name DEFAULT is returned by realm_lookup_name()
            if no other realm name matches. */
 
         if ((realmname = strrchr(username, '@')) == NULL) {
-                if ((realm = realm_find("NOREALM")) == NULL) {
+                if ((realm = realm_lookup_name("NOREALM")) == NULL) {
                         efree(saved_username);
                         return 0;
                 }
-        } else if ((realm = realm_find(realmname + 1)) == NULL) {
+        } else if ((realm = realm_lookup_name(realmname + 1)) == NULL) {
                 /* If the realm is not found, we treat it as usual. */
                 efree(saved_username);
                 return 0;

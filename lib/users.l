@@ -55,6 +55,7 @@ extern void enable_usr_dbg(int);
 static char *addstring();
 static char *addquote();
 static int preproc();
+static void read_number(char *text, int len, int base);
 
 static struct obstack stack; /* Obstack for keeping string values */ 
 char *source_filename;       /* Current filename */
@@ -314,7 +315,6 @@ pop_source()
         return 0;
 }
         
-#define to_num(c) ((c)-'0')
 %}
 
 WS [ \t][ \t]*
@@ -361,6 +361,17 @@ NULL    return NUL;
                  obstack_grow(&stack, yytext+1, yyleng-3);
           obstack_1grow(&stack, backslash(yytext[yyleng-1]));
 }
+\"[^"\\\n]*\\[xX]{X} |
+\"[^"\\\n]*\\[xX]{X}{X} {
+	  BEGIN(in_string);
+	  read_number(yytext + 1, yyleng - 1, 16);
+}
+\"[^"\\\n]*\\{O} |
+\"[^"\\\n]*\\{O}{O} |
+\"[^"\\\n]*\\{O}{O}{O} {
+          BEGIN(in_string);
+          read_number(yytext + 1, yyleng - 1, 8); 
+}
 <in_string>[^"\\\n]*\\\n {
           obstack_grow(&stack, yytext, yyleng-2);
 }
@@ -375,18 +386,14 @@ NULL    return NUL;
                    obstack_grow(&stack, yytext, yyleng-2);
           obstack_1grow(&stack, backslash(yytext[yyleng-1]));
 }
+<in_string>[^"\\\n]*\\[xX]{X} |
+<in_string>[^"\\\n]*\\[xX]{X}{X} {
+	  read_number(yytext, yyleng, 16);
+}
 <in_string>[^"\\\n]*\\{O} |
 <in_string>[^"\\\n]*\\{O}{O} |
 <in_string>[^"\\\n]*\\{O}{O}{O} {
-          int i = yyleng;
-          int c = 0;
-
-          while (i > 0 && yytext[i] != '\\')
-                  i--;
-          obstack_grow(&stack, yytext, i);
-          for (i++; i < yyleng; i++) 
-                  c = c*8 + to_num(yytext[i]);
-          obstack_1grow(&stack, c);
+          read_number(yytext, yyleng, 8);
 }
 <in_string>[^"\\\n]*\" {
           BEGIN(INITIAL);
@@ -549,4 +556,27 @@ preproc()
                 return 0;
         }
         return 1;
+}
+
+
+#define to_num(c) (isdigit(c) ? c - '0' : (isxdigit(c) ? toupper(c) - 'A' + 10 : -1 ))
+
+void
+read_number (text, len, base)
+	char *text;
+	int len;
+	int base;
+{
+	int i;
+	int c = 0;
+
+	for (i = len-1; i >= 0 && text[i] != '\\'; i--)
+		;
+	if (i)
+		obstack_grow(&stack, text, i);
+	if (base == 16)
+		i++;
+	for (i++; i < len; i++) 
+		c = c*base + to_num(text[i]);
+	obstack_1grow(&stack, c);
 }

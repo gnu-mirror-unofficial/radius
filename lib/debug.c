@@ -42,6 +42,7 @@ static struct keyword auth_codes[] = {
         D(RT_PASSWORD_REJECT),
         D(RT_ACCOUNTING_MESSAGE),
         D(RT_ACCESS_CHALLENGE),
+        D(RT_STATUS_SERVER),
         D(RT_ASCEND_TERMINATE_SESSION),
         { 0 }
 #undef D        

@@ -42,7 +42,19 @@ crypt   Auth-Type = Crypt-Local,
 
 ## Access.exp: bad-one should be rejected.
 bad-one Auth-Type = Accept     NULL
-	
+
+## Expiration.exp
+expire  Auth-Type = Local,
+               User-Password = "expire",
+               Expiration = "Jan 01 1971"
+       Service-Type = Framed-User
+
+no-expire  Auth-Type = Local,
+               User-Password = "expire",
+               Expiration = "Jan 01 2011"
+       Service-Type = Framed-User
+
+		
 ## Reply.exp: Test Reply Attributes
 reply   Auth-Type = Local,
 		User-Password = "guessme"

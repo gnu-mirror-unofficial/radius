@@ -12,7 +12,7 @@
 AC_REVISION($Revision$)
 AC_INIT(radiusd/radiusd.c)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(gnu-radius, 0.95)
+AM_INIT_AUTOMAKE(gnu-radius, 0.95.1)
 AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 
@@ -51,6 +51,7 @@ AC_PATH_PROG(M4, m4, no, $PATH:/usr/ccs/bin:/usr/bin:/usr/local/bin)
 AC_PATH_PROG(PS, ps, no, $PATH:/usr/bin:/usr/local/bin)
 AC_PATH_PROG(GETOPT, getopt, no, $PATH:/usr/bin)
 AC_PROG_LN_S
+AM_PROG_LIBTOOL
 
 ### Make sure Guile is installed.
 AC_PATH_PROG(GUILE_CONFIG, guile-config, no, $PATH)
@@ -66,6 +67,8 @@ main() { return strcmp(__FUNCTION__,"main"); },
 	AC_DEFINE_UNQUOTED(__FUNCTION__, (char*)0)
 	AC_MSG_RESULT(no),
 	AC_MSG_RESULT(don't know))
+
+dnl ** AM_DISABLE_SHARED
 
 ## *************************************
 ## add any additional libraries/includes
@@ -128,36 +131,8 @@ AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  strncasecmp setlocale strerror bzero \
  regcomp inet_ntoa inet_aton setvbuf seteuid setreuid getdtablesize) 
 
-## Check for getopt_long. This can't be done in AC_CHECK_FUNCS since
-## the function can be present in different libraries (namely, libmysqlclient)
-## but the necessary header files can be absent, thus AC_CHECK_FUNCS will
-## mark function as existent, wherease the compilation will bail out.
-AC_CACHE_CHECK([for getopt_long], rad_cv_func_getopt_long,
- [AC_TRY_RUN([
-#include <unistd.h>
-#ifdef HAVE_GETOPT_H
-# include <getopt.h>
-#endif
-
-struct option longopt[] = {
-	"help",    no_argument,       0, 'h',
-        (char*)0
-};
-
-main(argc, argv)
-int argc; char **argv;
-{
-	getopt_long(argc, argv, "h", longopt, (int*)0);
-	return 0;
-}],
-rad_cv_func_getopt_long=yes,
-rad_cv_func_getopt_long=no,
-rad_cv_func_getopt_long=no)])
-
-if test x$rad_cv_func_getopt_long = xyes ; then
-	AC_DEFINE(HAVE_GETOPT_LONG)
-fi
-    
+## Check for getopt_long.
+rad_FUNC_GETOPT_LONG
 
 AC_MSG_CHECKING(for sys_errlist and sys_nerr)
 AC_TRY_RUN(
@@ -219,6 +194,22 @@ AC_DEFINE_UNQUOTED(RADLOG_DIR, "$RADLOG_DIR")
 AC_DEFINE_UNQUOTED(RADPID_DIR, "$RADPID_DIR")
 AC_DEFINE_UNQUOTED(BUILD_TARGET, "$target")
 	
+## ***************
+## client programs
+## ***************
+AC_MSG_CHECKING(whether to build client programs)
+AC_ARG_WITH(client,
+	[  --with-client                 compile client programs],
+	[BUILD_CLIENT=$withval],
+	[BUILD_CLIENT=no])
+AC_MSG_RESULT($BUILD_CLIENT)
+if test x$BUILD_CLIENT = xyes; then
+	AC_CHECK_LIB(pam, pam_start,
+			[ ],
+			[ AC_MSG_ERROR(-lpam not found) 
+			  exit 1])
+fi
+
 ## **************
 ## auth port no
 ## **************
@@ -281,10 +272,7 @@ fi
 ## DBM 
 ## **************
 
-use_dbm() {
-	USE_DBM=yes
-	AC_DEFINE(USE_DBM)
-	AC_DEFINE(DBM)
+rad_lib_dbm() {
 	AC_CHECK_HEADER(dbm.h,,
 			[ AC_MSG_ERROR(can't find header dbm.h)
 			exit 0] )
@@ -295,10 +283,7 @@ use_dbm() {
 		 [ AC_MSG_ERROR(-ldbm not found) ])) 
 }
 
-use_ndbm() {
-	USE_DBM=yes
-	AC_DEFINE(USE_DBM)
-	AC_DEFINE(NDBM)
+rad_lib_ndbm() {
 	AC_CHECK_HEADER(ndbm.h,,
 			[ AC_MSG_ERROR(can't find header ndbm.h)
 			exit 0] )
@@ -312,13 +297,16 @@ use_ndbm() {
 AC_ARG_ENABLE(dbm,
 	[  --enable-dbm][[={dbm|ndbm}]][      include dbm support],
 	[case $enableval in
-		yes)	    use_ndbm;; 
+		yes)	    rad_lib_ndbm
+			    AC_DEFINE_UNQUOTED(USE_DBM,DBM_NDBM);;
 
-		no)	    USE_DBM=no; USE_NDBM=no;;	
+		no)	    USE_DBM=no;;	
 
-		DBM|dbm)    use_dbm;;
+		DBM|dbm)    rad_lib_dbm
+                            AC_DEFINE_UNQUOTED(USE_DBM,DBM_DBM);;
 
-		NDBM|ndbm)  use_ndbm;;
+		NDBM|ndbm)  rad_lib_ndbm
+			    AC_DEFINE_UNQUOTED(USE_DBM,DBM_NDBM);;
 
 		*)	    AC_MSG_ERROR(unsupported option value: $enableval)
 	esac])	
@@ -394,6 +382,15 @@ AC_ARG_ENABLE(notify,
 		no)		;;
 	 esac])
 
+
+## **************
+## Directories
+## **************
+PAMDIR='$(prefix)/lib/security'
+AC_ARG_WITH(pamdir,
+	[  --with-pamdir=DIR             install PAM modiles in DIR [PREFIX/lib/security]],
+	[PAMDIR=$withval])
+AC_SUBST(PAMDIR)
 
 ## ***********************************************************************
 ## *          Compatibility options and some special hacks               *
@@ -506,10 +503,13 @@ AC_SUBST(GUILE_LIBS)
 if test x$GUILE_CONFIG != xno; then
 	GUILE_INCLUDES=`guile-config compile`
 	GUILE_LIBS=`guile-config link`
+else
+	BUILD_CLIENT=no
 fi
 
 AM_CONDITIONAL(SQL, test x$USE_SQL != xno)
 AM_CONDITIONAL(GUILE, test x$GUILE_CONFIG != xno)
+AM_CONDITIONAL(BUILD_CLIENT, test x$BUILD_CLIENT = xyes)
 
 AC_OUTPUT(Makefile include/Makefile radlib/Makefile snmplib/Makefile \
           radiusd/Makefile radlast/Makefile radwho/Makefile \
@@ -519,5 +519,9 @@ AC_OUTPUT(Makefile include/Makefile radlib/Makefile snmplib/Makefile \
 	  doc/texinfo/Makefile doc/man/Makefile po/Makefile \
           doc/texinfo/config.texi doc/man/config.so \
           elisp/Makefile \
+          raddb/Makefile \
+          client/Makefile \
+          client/nas/Makefile \
+          client/pam_radius/Makefile \
           test/Makefile)
 

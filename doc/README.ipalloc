@@ -1,4 +1,5 @@
 Ipalloc: A dynamic IP allocator.
+(See the copying conditions at the end of this file.)
 
 * Overview
 
@@ -12,7 +13,7 @@ The tool is implemented as a Guile plug-in module.
 
 * Database description
 
-The pool of IP adresses is kept in two database tables.
+The pool of IP addresses is kept in two database tables.
 
 ** Table naspools
 
@@ -34,7 +35,7 @@ CREATE TABLE ippool (
   user_name character(32)  default '' not null
 );
 
-Each row in this table represents a single IP adress. The address itself
+Each row in this table represents a single IP address. The address itself
 is stored in the field `ipaddr'. The field `pool' keeps the name of the
 pool for this IP. These two fields never change. The rest of fields
 keep the state of the row. They are:
@@ -57,7 +58,7 @@ Value of status   |	user_name meaning
 ------------------+---------------------------------------------------------
 'FIXD'		  |	This user should always be given this IP address.
 'ASGN'		  |	The IP address is assigned to this user
-'RSRV'		  |	The IP address is temporarly reserved for this user. 
+'RSRV'		  |	The IP address is temporarily reserved for this user. 
 'BLCK'		  |	The IP address is blocked and should never be used.
 ------------------+---------------------------------------------------------
 
@@ -94,7 +95,7 @@ the framed IP for the user is marked as 'RSRV'.
 When the session is started, an accounting request arrives with the
 Acct-Session-Type attribute set to Start. Then the ipalloc looks up
 the entry with the matching pool and user_name and the value of status
-filed set to 'RSRV'. If such an entry is found, its status is changed
+field set to 'RSRV'. If such an entry is found, its status is changed
 to 'ASGN', thus ensuring it will not be used until the user logs out.
 
 Otherwise, if no start request arrives, this entry will eventually
@@ -154,6 +155,20 @@ attempts.
 The variable `ipalloc-sleep-time' sets the delay in microseconds
 between the two consecutive attempts.
 
+
+  Copyright (C) 2003 Free Software Foundation
+
+  Permission is granted to copy, distribute and/or modify this
+  document under the terms of the GNU Free Documentation License,
+  Version 1.2 or any later version published by the Free Software
+  Foundation; with no Invariant Sections, with the Front-Cover texts
+  being "A GNU Manual", and with the Back-Cover Texts as in (a)
+  below.  A copy of the license is included in the file COPYING.DOC
+  in this directory.
+
+  (a) The FSF's Back-Cover Text is: "You have freedom to copy and
+  modify this GNU Manual, like GNU software.  Copies published by
+  the Free Software Foundation raise funds for GNU development."
 
 
 Local Variables:

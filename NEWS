@@ -43,12 +43,12 @@ For example:
 Jun 23 12:59:58 [10653]: Auth.warning: (AUTHREQ nas-6 224 user): 
 Multiple logins: [user] max. 1, CLID unknown
 
-Here "AUTHREQ" means that the request was of Authentiation-Request type,
+Here "AUTHREQ" means that the request was of Authentication-Request type,
 "nas-6" is the name of the NAS that sent the request, "224" is the
 ID of the request, and "user" is the user name.
 
 ** The processing of raddb/hints is now done before raddb/realms for
-all paquets. The prior versions processed this file after raddb/realms
+all packets. The prior versions processed this file after raddb/realms
 for accounting requests.
 
 ** The only accounting requests that are not processed are those which
@@ -62,7 +62,7 @@ emulate this behavior, see the file examples/hints-0.96.
 users profile does not alter the authentication process as it did
 in 0.96.
 
-** Support for legacy ComOS accounting-on/accouting-off requests
+** Support for legacy ComOS accounting-on/accounting-off requests
 was removed from the main server code and re-implemented in Rewrite
 language. See examples/comos.rw for details.
 
@@ -122,7 +122,7 @@ timeout at all).
 
 This new block statement in the `snmp' section allows you to configure
 the storage file for the SNMP service. You will have to use this
-statement if you see in your logfile one of the following notices:
+statement if you see in your log file one of the following notices:
 
 reached SNMP storage limit for the number of monitored ports:
 increase max-port-count

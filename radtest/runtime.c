@@ -51,7 +51,7 @@ static void rt_eval(radtest_node_t *stmt);
 static void rt_eval_variable(grad_locus_t *locus,
 			     radtest_variable_t *result,
 			     radtest_variable_t *var);
-static char *cast_to_string(grad_locus_t *locus, radtest_variable_t *var);
+static char *cast_to_string(grad_locus_t *locus, radtest_variable_t const *var);
 
 /* Runtime error handling */
 static void
@@ -221,16 +221,43 @@ rt_eval_bin_uint(grad_locus_t *locus,
 	RT_EVAL(locus, result, op, a, b);
 }
 
-static void
-bin_type_error(grad_locus_t *locus)
-{
-	runtime_error(locus, _("invalid data type in binary operation"));
-}
+static char *binop_string[] = {
+/* TRANSLATORS: The following operation names are used as complements,
+   e.g.: "incompatible types in addition"
+*/
+	N_("addition"),
+	N_("subtraction"),
+	N_("multiplication"),
+	N_("division"),
+	N_("division"),
+	N_("boolean conjunction"),
+	N_("boolean disjunction"),
+	N_("comparison"),
+	N_("comparison"),
+	N_("comparison"),
+	N_("comparison"),
+	N_("comparison"),
+	N_("comparison")
+};
 
 static void
-unary_type_error(grad_locus_t *locus)
+bin_type_error(grad_locus_t *locus, radtest_binop_t op)
 {
-	runtime_error(locus, _("invalid data type in unary operation"));
+	runtime_error(locus, _("incompatible types in %s"),
+		      gettext(binop_string[op]));
+}
+
+static char *unary_string[] = {
+	N_("binary negation"),
+	N_("numeric negation"),
+};
+
+static void
+unary_type_error(grad_locus_t *locus, radtest_unop_t op)
+{
+	runtime_error(locus,
+		      _("incompatible data type in %s"),
+		      gettext(unary_string[op]));
 }
 
 static void
@@ -277,31 +304,8 @@ rt_eval_bin_str(grad_locus_t *locus,
 		break;
 		
 	default:
-		bin_type_error(locus);
+		bin_type_error(locus, op);
 	}
-}
-
-static char *
-cast_to_string(grad_locus_t *locus, radtest_variable_t *var)
-{
-	static char buf[64];
-	
-	switch (var->type) {
-	case rtv_string:
-		return var->datum.string;
-		
-	case rtv_integer:
-		snprintf(buf, sizeof buf, "%ld", var->datum.number);
-		break;
-			
-	case rtv_ipaddress:
-		grad_ip_iptostr(var->datum.ipaddr, buf);
-		break;
-		
-	default:
-		runtime_error(locus, _("data type cannot be cast to string"));
-	}
-	return buf;
 }
 
 static int
@@ -360,7 +364,7 @@ rt_eval_bin_avl(grad_locus_t *locus,
 		break;
 
 	default:
-		bin_type_error(locus);
+		bin_type_error(locus, op);
 	}
 }
 
@@ -692,6 +696,187 @@ rt_eval_call(radtest_node_t *stmt, radtest_variable_t *result)
 	break_level = 0;
 }
 
+static char *type_string[] = {
+/* TRANSLATORS: The following six msgids are data type names in the
+   form of *direct object*. They are used in place of the first %s
+   in the sentence 'cannot convert %s %s' */
+	N_("undefined"),
+	N_("integer"),
+	N_("ipaddress"),
+	N_("string"),
+	N_("pairlist"),
+	N_("A/V list")
+};
+
+static char *type_string_to[] = {
+/* TRANSLATORS: The following six msgids are data type names in the
+   form of *indirect object*. They are used in place of second %s
+   in the sentence 'cannot convert %s %s' */
+	N_("to undefined"),
+	N_("to integer"),
+	N_("to ipaddress"),
+	N_("to string"),
+	N_("to pairlist"),
+	N_("to A/V list")
+};
+
+static void
+typecast_error(grad_locus_t *locus, radtest_data_type from,
+	       radtest_data_type to)
+{
+	runtime_error(locus,
+/* TRANSLATORS: First %s is replaced with a type name,
+   second %s -- with a type name with an appropriate preposition.
+   For example, in English:
+     cannot convert integer to string
+*/
+		      _("cannot convert %s %s"),
+		      gettext(type_string[from]),
+		      gettext(type_string_to[to]));
+}
+
+typedef int (*typecast_proc_t) (radtest_variable_t *);
+
+static int
+tc_error(radtest_variable_t *var ARG_UNUSED)
+{
+	return 1;
+}
+
+static int
+int_to_ip(radtest_variable_t *var)
+{
+	var->datum.ipaddr = var->datum.number;
+	var->type = rtv_ipaddress;
+	return 0;
+}
+
+static int
+ip_to_int(radtest_variable_t *var)
+{
+	var->datum.number = var->datum.ipaddr;
+	return 0;
+}
+
+static int
+int_to_str(radtest_variable_t *var)
+{
+	static char buf[64];
+	
+	snprintf(buf, sizeof buf, "%ld", var->datum.number);
+	radtest_start_string(buf);
+	var->datum.string = radtest_end_string();
+	var->type = rtv_string;
+	return 0;
+}
+
+static int
+ip_to_str(radtest_variable_t *var)
+{
+	radtest_start_string(grad_ip_iptostr(var->datum.ipaddr, NULL));
+	var->datum.string = radtest_end_string();
+	var->type = rtv_string;
+	return 0;
+}
+
+static int
+str_to_int(radtest_variable_t *var)
+{
+	long v;
+	
+	if (isdigit(var->datum.string[0])) {
+		char *p;
+		v = strtol(var->datum.string, &p, 0);
+		if (*p)
+			return 1;
+	} else if ((v = grad_request_name_to_code(var->datum.string)) == 0)
+		return 1;
+	var->datum.number = v;
+	var->type = rtv_integer;
+	return 0;
+}
+
+static int
+str_to_ip(radtest_variable_t *var)
+{
+	/* FIXME: no error checking */
+	var->datum.ipaddr = grad_ip_gethostaddr(var->datum.string);
+	var->type = rtv_ipaddress;
+	return 0;
+}
+
+typecast_proc_t typecast_proc[][RTV_MAX] = {
+        /* undefined   integer   ipaddress     string     pairlist  avl */
+/* und */ { tc_error,  tc_error,  tc_error,   tc_error,  tc_error, tc_error },
+/* int */ { tc_error,      NULL, int_to_ip, int_to_str,  tc_error, tc_error },
+/* ip  */ { tc_error, ip_to_int,      NULL,  ip_to_str,  tc_error, tc_error },
+/* str */ { tc_error,str_to_int, str_to_ip,       NULL,  tc_error, tc_error },
+/* pls */ { tc_error,  tc_error,  tc_error,   tc_error,  tc_error, tc_error },
+/* avl */ { tc_error,  tc_error,  tc_error,   tc_error,  tc_error, tc_error },
+};
+
+static int
+try_typecast(radtest_variable_t *var, radtest_data_type t)
+{
+	typecast_proc_t proc = typecast_proc[var->type][t];
+	return proc && proc(var);
+}
+
+static void
+typecast(grad_locus_t *locus, radtest_variable_t *var, radtest_data_type t)
+{
+	if (try_typecast(var, t))
+		typecast_error(locus, var->type, t);
+}
+
+static char *
+cast_to_string(grad_locus_t *locus, radtest_variable_t const *var)
+{
+	static char buf[64];
+	
+	switch (var->type) {
+	case rtv_string:
+		return var->datum.string;
+		
+	case rtv_integer:
+		snprintf(buf, sizeof buf, "%ld", var->datum.number);
+		break;
+			
+	case rtv_ipaddress:
+		grad_ip_iptostr(var->datum.ipaddr, buf);
+		break;
+		
+	default:
+		typecast_error(locus, var->type, rtv_string);
+	}
+	return buf;
+}
+
+static int
+strnum_p(radtest_variable_t *var)
+{
+	char *p;
+	if (var->type != rtv_string)
+		return 0;
+	for (p = var->datum.string; *p; p++)
+		if (!isspace(*p))
+			break;
+	if (!*p)
+		return 0;
+	if (*p == '+' || *p == '-')
+		p++;
+	for (; *p; p++)
+		if (!isdigit(*p))
+			return 0;
+	return 1;
+}
+
+static int
+number_p(radtest_variable_t *var)
+{
+	return var->type == rtv_integer || var->type == rtv_ipaddress;
+}
+
 static void
 rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 {
@@ -710,105 +895,49 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 	case radtest_node_bin:
 		rt_eval_expr(node->v.bin.left, &left);
 		rt_eval_expr(node->v.bin.right, &right);
-		
+		if (left.type != right.type) {
+			if (node->v.bin.left->type == radtest_node_value
+			    && try_typecast(&right, left.type) == 0)
+				/* nothing */;
+			else if (node->v.bin.right->type == radtest_node_value
+				 && try_typecast(&left, right.type) == 0)
+				/* nothing */;
+			else if (strnum_p(&left) && number_p(&right))
+				typecast(&node->locus, &right, left.type);
+			else if (strnum_p(&right) && number_p(&left))
+				typecast(&node->locus, &left, right.type);
+			else if (left.type == rtv_ipaddress
+				 && right.type == rtv_integer)
+				typecast(&node->locus, &right, left.type);
+			else if (right.type == rtv_ipaddress
+				 && left.type == rtv_integer)
+				typecast(&node->locus, &left, right.type);
+			else if (left.type == rtv_string)
+				typecast(&node->locus, &right, left.type);
+			else if (right.type == rtv_string)
+				typecast(&node->locus, &left, right.type);
+			else
+				bin_type_error(&node->locus, node->v.bin.op);
+		}
+		grad_insist(left.type == right.type);
 		switch (left.type) {
 		case rtv_undefined:
 			grad_insist_fail("bad datatype");
 			
 		case rtv_integer:
-			switch (right.type) {
-			case rtv_undefined:
-				abort();
-				
-			case rtv_integer:
-				rt_eval_bin_int(&node->locus,
-						result,
-						node->v.bin.op,
-						left.datum.number,
-						right.datum.number);
-				break;
-				
-			case rtv_ipaddress:
-			{
-				grad_uint32_t v = left.datum.number;
-				rt_eval_bin_uint(&node->locus,
-						 result,
-						 node->v.bin.op,
-						 v,
-						 right.datum.ipaddr);
-				break;
-			}
-			
-			case rtv_string:
-			{
-				long v;
-
-				if (isdigit(right.datum.string[0])) {
-					char *p;
-					v = strtol(right.datum.string, &p, 0);
-					if (*p)
-						runtime_error(&node->locus,
-				    _("cannot convert string to integer: %s"),
-							   right.datum.string);
-				} else if ((v = grad_request_name_to_code(
-						    right.datum.string)) == 0)
-					runtime_error(&node->locus,
-				 _("cannot convert string to integer: %s"),
-						      right.datum.string);
-					   
-				    
-				rt_eval_bin_int(&node->locus,
-						result,
-						node->v.bin.op,
-						left.datum.number,
-						v);
-				break;
-			}
-			
-			case rtv_avl:
-				bin_type_error(&node->locus);
-				break;
-				
-			case rtv_pairlist:
-				grad_insist_fail("a value cannot evaluate "
-						 "to rtv_pairlist");
-			}
+			rt_eval_bin_int(&node->locus,
+					result,
+					node->v.bin.op,
+					left.datum.number,
+					right.datum.number);
 			break;
-				
+
 		case rtv_ipaddress:
-			switch (right.type) {
-			case rtv_integer:
-				rt_eval_bin_int(&node->locus,
-						result,
-						node->v.bin.op,
-						left.datum.number,
-						right.datum.number);
-				break;
-				
-			case rtv_ipaddress:
-				bin_type_error(&node->locus);
-				break;
-				
-			case rtv_string:
-			{
-				grad_uint32_t v = grad_ip_gethostaddr(right.datum.string);
-				/* FIXME: no way to check for errors */
-				rt_eval_bin_uint(&node->locus,
-						 result,
-						 node->v.bin.op,
-						 left.datum.ipaddr,
-						 v);
-				break;
-			}
-						
-			case rtv_avl:
-				bin_type_error(&node->locus);
-				break;
-				
-			case rtv_pairlist:
-			case rtv_undefined:
-				grad_insist_fail("bad datatype");
-			}
+			rt_eval_bin_uint(&node->locus,
+					 result,
+					 node->v.bin.op,
+					 left.datum.number,
+					 right.datum.ipaddr);
 			break;
 			
 		case rtv_string:
@@ -816,7 +945,7 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 					result,
 					node->v.bin.op,
 					left.datum.string,
-					cast_to_string(&node->locus, &right));
+					right.datum.string);
 			break;
 				
 		case rtv_pairlist:
@@ -824,8 +953,6 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 					 "rtv_pairlist");
 
 		case rtv_avl:
-			if (right.type != rtv_avl) 
-				bin_type_error(&node->locus);
 			rt_eval_bin_avl(&node->locus,
 					result,
 					node->v.bin.op,
@@ -840,7 +967,8 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 		switch (node->v.unary.op) {
 		case radtest_op_neg:
 			if (left.type != rtv_integer)
-				unary_type_error(&node->locus);
+				unary_type_error(&node->locus,
+						 node->v.unary.op);
 			/* FIXME: typecast? */
 			result->type = rtv_integer;
 			result->datum.number = - left.datum.number;
@@ -848,7 +976,8 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 			
 		case radtest_op_not:
 			if (left.type != rtv_integer)
-				unary_type_error(&node->locus);
+				unary_type_error(&node->locus,
+						 node->v.unary.op);
 			/* FIXME: typecast? */
 			result->type = rtv_integer;
 			result->datum.number = ! left.datum.number;
@@ -1041,8 +1170,8 @@ rt_expect(radtest_node_t *node)
 	radtest_node_expect_t *exp = &node->v.expect;
 	int pass = 1;
 	if (verbose) {
-		printf("expect %d\n", exp->code);
-		printf("got    %d\n", reply_code);
+		printf(_("expect %s\n"), grad_request_code_to_name(exp->code));
+		printf(_("got    %s\n"), grad_request_code_to_name(reply_code));
 	}
 	if (reply_code != exp->code) 
 		pass = 0;

@@ -49,7 +49,7 @@ static char rcsid[] =
 struct radstat radstat;
 #endif
 PORT_STAT *stat_base;
-unsigned maxstat = STAT_MAX_PORT_COUNT * STAT_MAX_NAS_COUNT;
+unsigned maxstat = STAT_MAX_PORT_COUNT;
 
 #ifdef USE_SNMP
 void

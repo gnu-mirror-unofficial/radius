@@ -125,9 +125,6 @@ static int scheme_load_internal(struct rad_scheme_task *p);
 static int scheme_add_load_path_internal(struct rad_scheme_task *p);
 static int scheme_read_eval_loop_internal(struct rad_scheme_task *unused);
 
-static void create_radius_port_list();
-static void inherit_socket(int fd);
-	
 /* variables */
 pthread_t guile_tid;
 static pthread_mutex_t server_mutex = PTHREAD_MUTEX_INITIALIZER;
@@ -381,57 +378,11 @@ scheme_acct_internal(p)
         return 1;
 }
 
-/* All file descriptors opened so far are kept in %radius-sockets list.
-   This ensures (close-all-ports-except) works and makes it possible to
-   use (primitive-fork).
-   Caution: %radius-sockets is read-write, so a careless scheme programmer
-   might close any port in the main process, thus destroying the functionality
-   of the daemon. */
-static char radius_sockets_name[] = "%radius-sockets";
-
-void
-inherit_socket(fd)
-	int fd;
-{
-	SCM sock_scm = RAD_SCM_SYMBOL_VALUE(radius_sockets_name);
-	SCM port = scm_fdes_to_port(fd, "r+0",
-				    scm_makfrom0str("radius-socket"));
-
-#if GUILE_VERSION == 14
-        scm_c_define (radius_sockets_name,
-		      scm_append(scm_list_3(sock_scm,
-					    scm_list_1(port),
-					    SCM_EOL)));
-#else
-	{
-		SCM *scm = SCM_VARIABLE_LOC(scm_c_lookup(radius_sockets_name));
-		*scm = scm_append(scm_list_3(sock_scm,
-					    scm_list_1(port),
-					    SCM_EOL));
-	}
-#endif
-}
-
-void
-create_radius_port_list()
-{
-#if GUILE_VERSION == 14
-        scm_c_define (radius_sockets_name, SCM_EOL);
-#else
-	{
-		SCM *scm = SCM_VARIABLE_LOC(scm_c_lookup(radius_sockets_name));
-		*scm = SCM_EOL;
-	}
-#endif
-}  
-
 /*ARGSUSED*/
 int
 scheme_before_reconfig_internal(p)
 	struct rad_scheme_task *p;
 {
-	create_radius_port_list();
-	scm_gc();
 }
 
 /*ARGSUSED*/
@@ -439,7 +390,6 @@ int
 scheme_after_reconfig_internal(p)
         struct rad_scheme_task *p;
 {
-	socket_list_iterate(inherit_socket);
 	scm_gc();
 	return 0;
 }

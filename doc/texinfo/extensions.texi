@@ -1377,6 +1377,61 @@ request_code_string(4) @result{} "Accounting-Request"
 @end smallexample
 @end deftypefn
 
+@subheading Native Language Support
+
+The native language support is provided via the functions described
+below. These functions are interfaces to GNU @code{gettext} library.
+For the information about general concepts and principles of
+Native Language Support, please refer to
+@ref{Top,GNU @code{gettext} utilities,gettext,gettext,GNU @code{gettext} utilities}.
+
+The default current textual domain is @samp{radius}.
+
+@deftypefn Function string textdomain (string @var{domain})
+Sets the new value for the current textual domain. This domain is used by
+the functions @code{gettext} and @code{ngettext}.
+Returns the name of the previously used domain. 
+@end deftypefn
+
+@deftypefn Function string gettext (string @var{msgid})
+@deftypefnx Function string _(string @var{msgid})
+The function returns the translation of the string @var{msgid} if it
+is available in the current domain. If it is not available, the
+argument itself is returned.
+
+The second form of this function provides a traditional shortcut
+notation.
+
+For a detailed description of the GNU @code{gettext} interface, 
+refer to @ref{Interface to gettext,,,gettext,GNU @code{gettext} utilities}.
+@end deftypefn
+
+@deftypefn Function string dgettext (string @var{domain}, string @var{msgid})
+Returns the translation of the string @var{msgid} if it
+is available in the domain @var{domain}. If it is not available, the
+argument itself is returned.
+@end deftypefn
+
+@deftypefn Function string ngettext (string @var{msgid_singular}, string @var{msgid_plural}, integer @var{number})
+The @code{ngettext} function is used to translate the messages that
+have singular and plural forms. The @var{msgid_singular} parameter
+must contain the singular form of the string to be converted. It is
+also used as the key for the search in the catalog. The
+@code{msgid_plural} parameter is the plural form.  The parameter
+@var{number} is used to determine the plural form. If no message
+catalog is found @var{msgid_singular} is returned if
+@code{@var{number} == 1}, otherwise @var{msgid_plural}.
+
+For a detailed description of the GNU @code{gettext} interface for the
+plural translation, 
+refer to @ref{Plural forms,,Additional functions for plural forms,gettext,GNU @code{gettext} utilities}.
+
+@end deftypefn
+
+@deftypefn Function string dngettext (string @var{domain}, string @var{msg_sing}, string @var{msg_plur}, integer @var{number})
+Similar to @code{ngettext}, but searches translation in the given @var{domain}.
+@end deftypefn
+
 @comment *L1****************************************************************
 @node Guile
 @section Guile

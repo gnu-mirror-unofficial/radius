@@ -4,7 +4,9 @@
 	req->request. Thanks to Lewis Watson <watson@visionsix.com>
 	for helping to trace the bug.
 	* THANKS: Added Lewis Watson
-
+	* radiusd/sql.c: Fixed debugging levels for cache functions
+	* NEWS: Updated
+	
 2003-07-20  Sergey Poznyakoff
 
 	* configure.ac: New option --without-readline

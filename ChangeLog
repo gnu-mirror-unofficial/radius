@@ -5,7 +5,8 @@
 	  the cleanup function.
 	  (request_put): Prevent successive invocations of pthread_cancel
 	  by updating the request timestamp to the current time.
-
+	* radiusd/radiusd.c: Always create the pidfile.
+	
 2002-06-14  Sergey Poznyakoff 
 
 *	* radiusd/radiusd.c: Added `watcher' feature. When radiusd

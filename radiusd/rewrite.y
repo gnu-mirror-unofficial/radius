@@ -2726,13 +2726,15 @@ mtx_call(FUNCTION *fun, MTX *args)
          * Note that the argument count mismatch is not an error!
          */
         if (argp) {
-                grad_log_loc(L_WARN, &locus,
+                grad_log_loc(L_ERR, &locus,
 			     _("too many arguments in call to %s"),
 			     fun->name);
+		errcnt++;
         } else if (parmp) {
-                grad_log_loc(L_WARN, &locus,
+                grad_log_loc(L_ERR, &locus,
 			     _("too few arguments in call to %s"),
 			     fun->name);
+		errcnt++;
         }
 
         call = (CALL_MTX*) mtx_alloc(Call);

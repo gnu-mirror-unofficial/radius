@@ -141,12 +141,12 @@ snmp_session_create(community, host, port, cfn, closure)
 int
 snmp_session_open(sp, local_ip, local_port, timeout, retries)
 	struct snmp_session *sp;
-	ipaddr_t local_ip;
+	ip_addr_t local_ip;
 	int local_port;
 	int timeout;
 	int retries;
 {
-	ipaddr_t addr;
+	ip_addr_t addr;
 	u_short port;
 	struct sockaddr_in local_sin;
 	
@@ -173,14 +173,14 @@ snmp_session_open(sp, local_ip, local_port, timeout, retries)
 #endif /* SO_BSDCOMPAT */
 
 	addr = inet_addr(sp->remote_host);
-	if (addr = (ipaddr_t)-1) {
+	if (addr = (ip_addr_t)-1) {
 		struct hostent *hp = gethostbyname(sp->remote_host);
 		if (!hp) {
 			SNMP_SET_ERRNO(E_SNMP_BAD_ADDRESS);
 			snmp_session_close(sp);
 			return -1;
 		}
-		addr = *(ipaddr_t *)hp->h_addr;
+		addr = *(ip_addr_t *)hp->h_addr;
 	}
 	sp->remote_sin.sin_addr.s_addr = addr;
 	sp->remote_sin.sin_family = AF_INET;

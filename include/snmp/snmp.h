@@ -22,7 +22,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-typedef u_int ipaddr_t;
+typedef u_int ip_addr_t;
 
 #define SNMP_PORT 161
 #define SNMP_PACKET_LENGTH 4500

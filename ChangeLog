@@ -1,3 +1,88 @@
+2004-02-03  Sergey Poznyakoff
+	
+	* TODO: Updated
+	* include/Makefile.am: Make part of the files installable
+        * radscm/Makefile.am: Removed boot.scm
+	
+	Further namespace cleanup:
+	
+	* client/pam_radius/pam_radius.c:
+	* include/md5.h:
+	* include/mem.h:
+	* include/obstack1.h:
+	* include/radius.h:
+	* include/timestr.h:
+        * lib/ascend.c:
+        * lib/avl.c:
+        * lib/client.c:
+        * lib/cryptpass.c:
+        * lib/dbm.c:
+        * lib/debug.c:
+        * lib/dict.c:
+        * lib/envar.c:
+        * lib/getgr.c:
+        * lib/insist.c:
+        * lib/leakdetect.c:
+        * lib/list.c:
+        * lib/logger.c:
+        * lib/md5.c:
+        * lib/md5crypt.c:
+        * lib/nas.c:
+        * lib/printutmp.c:
+        * lib/raddb.c:
+        * lib/radpaths.c:
+        * lib/radpdu.c:
+        * lib/radsrv.c:
+        * lib/radutmp.c:
+        * lib/realms.c:
+        * lib/symtab.c:
+        * lib/sysdep.c:
+        * lib/users.l:
+        * lib/users.y:
+        * lib/util.c:
+        * radiusd/acct.c:
+        * radiusd/auth.c:
+        * radiusd/builddbm.c:
+        * radiusd/checkrad.c:
+        * radiusd/config.y:
+        * radiusd/exec.c:
+        * radiusd/files.c:
+        * radiusd/forward.c:
+        * radiusd/input.c:
+        * radiusd/log.c:
+        * radiusd/menu.c:
+        * radiusd/pam.c:
+        * radiusd/proxy.c:
+        * radiusd/radck.c:
+        * radiusd/radius.c:
+        * radiusd/radiusd.c:
+        * radiusd/radutil.c:
+        * radiusd/request.c:
+        * radiusd/rewrite.y:
+        * radiusd/rpp.c:
+        * radiusd/scheme.c:
+        * radiusd/snmpserv.c:
+        * radiusd/sql.c:
+        * radiusd/stat.c:
+        * radiusd/tsh.c:
+        * radiusd/version.c:
+        * radlast/radlast.c:
+        * radscm/radscm.c:
+        * radscm/rscm_lib.c:
+        * radscm/rscm_radlog.c:
+        * radtest/gram.y:
+        * radtest/input.l:
+        * radtest/main.c:
+        * raduse/raduse.c:
+        * raduse/session.c:
+        * raduse/stat.c:
+        * radwho/radwho.c:
+        * radzap/radzap.c:
+        * sql/disp.c:
+        * sql/mysql.c:
+        * sql/odbc.c:
+        * sql/postgres.c:
+
 2004-01-31  Sergey Poznyakoff
 
 	* Makefile.am (debugmod rule): Removed

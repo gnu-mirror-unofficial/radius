@@ -21,7 +21,7 @@ pam_radius.lo: $(srcdir)/pam_radius.c
 	$(LIBTOOL) --mode=compile $(CC) -c -DHAVE_CONFIG_H \
                 $(CFLAGS) $(AM_CFLAGS) $(INCLUDES) $(srcdir)/pam_radius.c
 
-pam_radius.la: pam_radius.lo
+pam_radius.la$(EXEEXT): pam_radius.lo
 	$(LIBTOOL) --mode=link $(CC) -module -export-dynamic \
                  -o pam_radius.la pam_radius.lo $(pam_radius_la_LDADD) \
                  -rpath $(pamdir)

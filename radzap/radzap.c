@@ -33,8 +33,8 @@ static char rcsid[] =
 #include <errno.h>
 #include <netinet/in.h>
 
-#include <getopt1.h>
 #include <radius.h>
+#include <radargp.h>
 #include <radpaths.h>
 #include <radutmp.h>
 
@@ -46,22 +46,82 @@ static int confirm(struct radutmp *ut);
 UINT4 findnas(char *nasname);
 
 int confirm_flag;
-void usage();
-void license();
 
-#define OPTSTR "cd:hl:Ln:p:qw"
-
-struct option longopt[] = {       
-        "confirm",             no_argument, 0, 'c',
-        "directory",     required_argument, 0, 'd',
-        "help",                no_argument, 0, 'h',
-        "license",             no_argument, 0, 'L',
-        "log-directory", required_argument, 0, 'l',
-        "nas",           required_argument, 0, 'n',
-        "port",          required_argument, 0, 'p',
-        "quiet",               no_argument, 0, 'q',
-        0
+struct arguments {
+	char *user;
+	char *nas;
+	int port;
 };
+const char *argp_program_version = "radzap (" PACKAGE ") " VERSION;
+static char doc[] = "delete Radius login record";
+
+static struct argp_option options[] = {
+	{NULL, 0, NULL, 0,
+	 "radzap specific switches:", 0},
+        {"confirm", 'c', NULL, 0,
+	 "ask for confirmation before zapping", 0},
+        {"log-directory", 'l', "DIR", 0,
+	 "set logging directory", 0},
+        {"nas", 'n', "NASNAME", 0,
+	 "zap user from given NAS", 0},
+        {"port", 'p', "NUMBER", 0,
+	 "zap user coming from given port", 0},
+        {"quiet", 'q', NULL, 0,
+	 "do not ask for confirmation before zapping", 0},
+	{NULL, 0, NULL, 0, NULL, 0}
+};
+
+static error_t
+parse_opt (key, arg, state)
+	int key;
+	char *arg;
+	struct argp_state *state;
+{
+	struct arguments *args = state->input;
+	
+	switch (key) {
+	case 'c':
+		confirm_flag = 1;
+		break;
+	case 'l':
+		radlog_dir = arg;
+		break;
+	case 'n':
+		args->nas = arg;
+		break;
+	case 'p':
+		if (*arg == 's' || *arg == 'S')
+			++arg;
+		args->port = atoi(arg);
+		break;
+	case 'q':
+		confirm_flag = 0;
+		break;
+	case ARGP_KEY_ARG:
+		args->user = state->argv[state->next - 1];
+		break;
+	case ARGP_KEY_FINI:
+		if (!args->user && !args->nas && args->port == -1) {
+			radlog(L_ERR,
+			       _("at least one port, nas or user must be specified"));
+			exit(1);
+		}
+		break;
+	default:
+		return ARGP_ERR_UNKNOWN;
+	}
+	return 0;
+}
+
+static struct argp argp = {
+	options,
+	parse_opt,
+	NULL,
+	doc,
+	&rad_common_argp_child,
+	NULL, NULL
+};
+
 
 /*
  *      Zap a user from the radutmp and radwtmp file.
@@ -71,63 +131,22 @@ main(argc, argv)
         int argc;
         char **argv;
 {
-        int c;
-        int     nas_port = -1;
-        char    *user = NULL;
-        char    *nas = NULL;
-        UINT4   ip = 0;
+	UINT4   ip = 0;
         time_t  t;
         char    *path;
         char *s;        
-
+	struct arguments args;
+	
         app_setup();
         initlog(argv[0]);
 
         if (s = getenv("RADZAP_CONFIRM"))
                 confirm_flag = atoi(s);
-        while ((c = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF) {
-                switch (c) {
-                case 'c':
-                        confirm_flag = 1;
-                        break;
-                case 'd':
-                        radius_dir = optarg;
-                        break;
-                case 'l':
-                        radlog_dir = optarg;
-                        break;
-                case 'n':
-                        nas = optarg;
-                        break;
-                case 'p':
-                        if (*optarg == 's' || *optarg == 'S')
-                                ++optarg;
-                        nas_port = atoi(optarg);
-                        break;
-                case 'q':
-                        confirm_flag = 0;
-                        break;
-                case 'h':
-                        usage();
-                        return 0;
-                case 'L':
-                        license();
-                        return 0;
-                default :
-                        usage();
-                        return 0;
-                }
-        }
-
-        radpath_init();
-        
-        if (argc > optind)
-                user = argv[optind];
-        /* check the validity of the invocation */
-        if (!user && !nas && nas_port == -1) {
-                usage();
-                return 1;
-        }
+	args.user = NULL;
+	args.nas  = NULL;
+	args.port = -1;
+	if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, &args))
+		return 1;
 
         /*
          *      Read the "naslist" file.
@@ -137,19 +156,19 @@ main(argc, argv)
                 exit(1);
         efree(path);
 
-        if (nas) {
+        if (args.nas) {
                 NAS *np;
-                np = nas_lookup_name(nas);
+                np = nas_lookup_name(args.nas);
                 if (np)
                         ip = np->ipaddr;
-                else if ((ip = ip_gethostaddr(nas)) == 0) {
-                        fprintf(stderr, "%s: host not found.\n", nas);
+                else if ((ip = ip_gethostaddr(args.nas)) == 0) {
+                        fprintf(stderr, "%s: host not found.\n", args.nas);
                         return 1;
                 }
         }
                 
         t = time(NULL);
-        radzap(ip, nas_port, user, t);
+        radzap(ip, args.port, args.user, t);
         return 0;
 }
 
@@ -236,45 +255,3 @@ write_wtmp(ut)
         return radwtmp_putent(radwtmp_path, ut);
 }
 
-char usage_text[] =
-"usage: radzap [-c][-q][-d raddb][-L][-l log_dir] [-n nas][-p port] [user]\n"
-"either nas or port or user must be specified\n"
-"\n"
-"Options are:\n"
-"       -c, --confirm            Ask for confirmation before zapping.\n"
-"       -d, --directory DIR      Specify Radius configuration directory.\n"
-"       -L, --license            Display GNU license and exit.\n"
-"       -l, --log-directory DIR  Specify logging directory.\n"
-"       -n, --nas NASNAME        NAS from which to zap the user.\n"
-"       -p, --port PORT          Port to zap from.\n"
-"       -q, --quiet              Do not ask for confirmation before zapping.\n";
-
-void
-usage()
-{
-        printf("%s", usage_text);
-        printf("\nReport bugs to <%s>\n", bug_report_address);
-}
-
-char license_text[] =
-"   This program is free software; you can redistribute it and/or modify\n"
-"   it under the terms of the GNU General Public License as published by\n"
-"   the Free Software Foundation; either version 2, or (at your option)\n"
-"   any later version.\n"
-"\n"
-"   This program is distributed in the hope that it will be useful,\n"
-"   but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-"   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-"   GNU General Public License for more details.\n"
-"\n"
-"   You should have received a copy of the GNU General Public License\n"
-"   along with this program; if not, write to the Free Software\n"
-"   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n";
-
-void
-license()
-{
-        printf("%s: Copyright 1999,2000 Sergey Poznyakoff\n", progname);
-        printf("\nThis program is part of GNU Radius\n");
-        printf("%s", license_text);
-}

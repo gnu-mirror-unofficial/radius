@@ -31,30 +31,13 @@ static char rcsid[] =
 #include <pwd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <getopt1.h>
+
 #include <radius.h>
+#include <radargp.h>
 #include <radpaths.h>
 #include <radclient.h>
 #include <log.h>
 #include <radtest.h>
-
-#define OPTSTR "a:d:f:hLp:qr:s:t:vx:V"
-struct option longopt[] = {
-        "assign", required_argument, 0, 'a',
-        "debug", required_argument, 0, 'x',
-        "directory", required_argument, 0, 'd',
-        "file", required_argument, 0, 'f',
-        "help", no_argument, 0, 'h',
-        "license", no_argument, 0, 'L',
-        "port", required_argument, 0, 'p',
-        "quick", no_argument, 0, 'q',
-        "retry", required_argument, 0, 'r',
-        "server", required_argument, 0, 's',
-        "timeout", required_argument, 0, 't',
-        "verbose", no_argument, 0, 'v', 
-        "version", no_argument, 0, 'V',
-        0
-};
 
 Symtab *vartab;
 char *radius_dir = RADIUS_DIR;
@@ -77,78 +60,108 @@ int x_argmax;
 int x_argc;
 char **x_argv;
 
+int quick = 0;
+char *filename = NULL;
+char *server = NULL;
+int retry = 0;
+int timeout = 0;
+
+const char *argp_program_version = "radtest (" PACKAGE ") " VERSION;
+static char doc[] = "send arbitrary radius packets";
+
+static struct argp_option options[] = {
+	{NULL, 0, NULL, 0,
+	 "radtest specific switches:", 0},
+        {"assign", 'a', "VARIABLE=VALUE", 0,
+	 "assign a VALUE to a VARIABLE", 0},
+        {"debug", 'x', "DEBUGSPEC", 0,
+	 "set debugging level", 0},
+        {"file", 'f', "FILE", 0,
+	 "Read input from FILE. When this option is used, all unknown"
+	 " options in the form --VAR=VALUE are treated as variable"
+	 " assignments", 0},
+        {"quick", 'q', NULL, 0,
+	 "FIXME: quick mode", 0},
+        {"retry", 'r', "NUMBER", 0,
+	 "set number of retries", 0},
+        {"server", 's', "SERVER", 0,
+	 "set radius server parameters", 0},
+        {"timeout", 't', "NUMBER", 0,
+	 "set timeout", 0},
+        {"verbose", 'v', NULL, 0,
+	 "verbose mode", 0},
+	{NULL, 0, NULL, 0, NULL, 0}
+};
+
+static error_t
+parse_opt (key, arg, state)
+	int key;
+	char *arg;
+	struct argp_state *state;
+{
+	char *p;
+	
+	switch (key) {
+	case 'a':
+		assign(optarg);
+		break;
+	case 'q':
+		quick++;
+		break;
+	case 'r':
+		retry = strtol(optarg, NULL, 0);
+		break;
+	case 's':
+		server = optarg;
+		break;
+	case 'f':
+		filename = optarg;
+		*(int *)state->input = state->next;
+		state->next = state->argc;
+		break;
+	case 't':
+		timeout = strtol(optarg, NULL, 0);
+		break;
+	case 'x':
+		set_debug_levels(optarg);
+		break;
+	case 'v':
+		verbose++;
+		radclient_debug++;
+		break;
+	default:
+		return ARGP_ERR_UNKNOWN;
+	}
+	return 0;
+}
+
+static struct argp argp = {
+	options,
+	parse_opt,
+	NULL,
+	doc,
+	&rad_common_argp_child,
+	NULL, NULL
+};
+
 int
 main(argc, argv)
         int argc;
         char **argv;
 {
-        int c;
-        int quick = 0;
-        char *filename = NULL;
         char *p;
-        char *server = NULL;
-        int retry = 0;
-        int timeout = 0;
-        
+        int index;
+	
         app_setup();
         initlog(argv[0]);
         init_symbols();
 
-        opterr = 0;
-        while ((c = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF) {
-                switch (c) {
-                case 'a':
-                        assign(optarg);
-                        break;
-                case 'd':
-                        radius_dir = optarg;
-                        break;
-                case 'h':
-                        print_usage();
-                        break;
-                case 'L':
-                        print_license();
-                        break;
-                case 'p':
-                        break;
-                case 'q':
-                        quick++;
-                        break;
-                case 'r':
-                        retry = strtol(optarg, NULL, 0);
-                        break;
-                case 's':
-                        server = optarg;
-                        break;
-                case 'f':
-                        filename = optarg;
-                        break;
-                case 't':
-                        timeout = strtol(optarg, NULL, 0);
-                        break;
-                case 'x':
-                        set_debug_levels(optarg);
-                        break;
-                case 'v':
-                        verbose++;
-                        radclient_debug++;
-                        break;
-                case 'V':
-                        print_version();
-                        break;
-                default:
-                        if (filename
-                            && argv[optind-1][0] == '-'
-                            && argv[optind-1][1] == '-'
-                            && (p = strchr(argv[optind-1], '=')) != NULL
-                            && !(p > argv[optind-1] && p[-1] == '\\')) {
-                            assign(argv[optind-1]+2);
-                        } else {
-                                print_usage();
-                                return 1;
-                        }
-                }
-        }
+	index = argc;
+	if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, &index))
+		return 1;
+
+	argv += index;
+	argc -= index;
 
         set_yydebug();
         radpath_init();
@@ -241,17 +254,19 @@ main(argc, argv)
                 exit(1);
         }
         
-        argc -= optind;
-        argv += optind;
-
         x_argv = emalloc(sizeof(x_argv[0]) * argc);
         x_argc = 0;
         x_argmax = argc;
         x_argv[x_argc++] = filename;
 
-        for (; argc; argc--, argv++) {
-                if ((p = strchr(*argv, '=')) != NULL &&
-                    !(p > *argv && p[-1] == '\\')) 
+	for (; argc; argv++, argc--) {
+		if (argv[0][0] == '-'
+		    && argv[0][1] == '-'
+		    && (p = strchr(argv[0], '=')) != NULL
+		    && !(p > argv[0] && p[-1] == '\\')) 
+			assign(argv[0]+2);
+		else if ((p = strchr(*argv, '=')) != NULL &&
+			 !(p > *argv && p[-1] == '\\')) 
                         assign(*argv);
                 else 
                         x_argv[x_argc++] = *argv;
@@ -564,67 +579,3 @@ compare_lists(reply, sample)
         return result;
 }
 
-/*
- *      Print usage message and exit.
- */
-static char usage_str[] =
-"usage: radtest [options]\n"
-"Options are\n"
-"    -a, --assign VARIABLE=VALUE  Assign a VALUE to a VARIABLE\n"
-"    -d, --config-directory dir   Specify alternate configuration directory\n"
-"                                 (default " RADIUS_DIR ")\n"
-"    -f, --file FILE              Read input from FILE. When this option is\n"
-"                                 used, all unknown options in the form\n"
-"                                 --VAR=VALUE are treated as variable\n"
-"                                 assignments\n"
-"    -p, --port PORT-NUMBER       Set RADIUS authentication port to PORT-NUMBER\n"
-"    -q, --quick                  Quick mode\n"
-"    -r, --retry NUMBER           Set number of retries\n"
-"    -s, --server                 Set server name\n"
-"    -t, --timeout NUMBER         Set timeout in seconds\n"
-"    -v, --verbose                Verbose mode\n"
-"    -x, --debug DEBUG-LEVEL      Set debugging level\n"
-"    -h, --help                   Display this help and exit\n"
-"    -V, --version                Show program version\n"
-"    -L, --license                Display GNU license\n";
-
-void
-print_usage()
-{
-        printf(usage_str);
-        exit(1);
-}
-
-void
-print_version()
-{
-        printf(_("radtest version %s\n"), VERSION);
-        printf("\nReport bugs to <%s>\n", bug_report_address);
-        exit(0);
-}
-
-static char license_text[] = "\
-\n\
-  This program is free software; you can redistribute it and/or modify\n\
-  it under the terms of the GNU General Public License as published by\n\
-  the Free Software Foundation; either version 2 of the License, or\n\
-  (at your option) any later version.\n\
-\n\
-  This program is distributed in the hope that it will be useful,\n\
-  but WITHOUT ANY WARRANTY; without even the implied warranty of\n\
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n\
-  GNU General Public License for more details.\n\
- \n\
-  You should have received a copy of the GNU General Public License\n\
-  along with this program; if not, write to the Free Software\n\
-  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.\n\
-";
-
-void
-print_license()
-{
-        printf("%s: Copyright 1999,2000,2001 Sergey Poznyakoff\n", progname);
-        printf("\nThis program is part of GNU Radius\n");
-        printf("%s", license_text);
-        exit(0);
-}

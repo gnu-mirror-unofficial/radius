@@ -33,10 +33,10 @@ static char rcsid[] =
 #include <ctype.h>
 #include <netinet/in.h>
 
-#include <getopt1.h>
 #include <sysdep.h>
 #include <radutmp.h>
 #include <radius.h>
+#include <radargp.h>
 #include <radpaths.h>
 
 #define ALIGN_LEFT    0
@@ -83,8 +83,6 @@ char * hostname(UINT4 ipaddr, char *buf, size_t size);
 void parse_fmtspec(char *str);
 void set_date_format(char *s);
 void set_ip_format(char *s);
-void usage();
-void license();
 
 FORMAT end_fmt = { 0, 0, NULL, NULL };
 
@@ -196,29 +194,6 @@ FORMAT realm_fmt = {
 #define MAX_FMT 20
 FORMAT radwho_fmt[MAX_FMT];
 
-#define OPTSTR "Acd:D:e:f:FhHiI:lLno:su"
-
-struct option longopt[] = {       
-        "all",               no_argument, 0, 'A',
-        "calling-id",        no_argument, 0, 'c',
-        "directory",   required_argument, 0, 'd',
-        "date-format", required_argument, 0, 'D',
-        "empty",       required_argument, 0, 'e',
-        "file",        required_argument, 0, 'f',
-        "finger",            no_argument, 0, 'F',
-        "help",              no_argument, 0, 'h',
-        "no-header",         no_argument, 0, 'H',
-        "session-id",        no_argument, 0, 'i',
-        "ip-format",   required_argument, 0, 'I',
-        "license",           no_argument, 0, 'L',
-        "long",              no_argument, 0, 'l',
-        "local-also",        no_argument, 0, 'u',
-        "no-resolve",        no_argument, 0, 'n',
-        "format",      required_argument, 0, 'o', 
-        "secure",            no_argument, 0, 's',
-        0
-};
-
 #define SIP_SMART    0
 #define SIP_NODOMAIN 1
 #define SIP_IPADDR   2
@@ -280,6 +255,111 @@ REALM *realms;            /* List of realms */
                
 char *fmtspec = NULL;
 
+const char *argp_program_version = "radwho (" PACKAGE ") " VERSION;
+static char doc[] = "display who is logged on by Radius";
+
+static struct argp_option options[] = {
+	{NULL, 0, NULL, 0,
+	 "radwho specific switches:", 0},
+        {"all", 'A', NULL, 0,
+	 "print all entries, not only active ones", 0},
+        {"calling-id", 'c', NULL, 0,
+	 "display CLID in second column", 0},
+        {"date-format", 'D', "{short|abbr|full}", 0,
+	 "change date representation format", 0},
+        {"empty", 'e', "STRING", 0,
+	 "print STRING instead of an empty column", 0},
+        {"file", 'f', "FILE", 0,
+	 "Use FILE instead of /var/log/radutmp", 0},
+        {"finger", 'F', NULL, 0,
+	 "act as a finger daemon", 0},
+        {"no-header", 'H', NULL, 0,
+	 "do not display header line", 0},
+        {"session-id", 'i', NULL, 0,
+	 "display session ID in the second column", 0},
+        {"ip-format", 'I', "{smart|ip|nodomain}", 0,
+	 "select IP address representation format", 0},
+        {"long", 'l', NULL, 0,
+	 "Long output. All fields will be printed. Implies -D full -I smart",
+	 0},
+        {"local-also", 'u', NULL, 0,
+	 "display also local users", 0},
+        {"no-resolve", 'n', NULL, 0,
+	 "do not resolve hostnames. Synonim for -I ip", 0},
+        {"format", 'o', NULL, 0,
+	 "change output format", 0},
+        {"secure", 's', NULL, 0,
+	 "secure mode: requires that the username be specified", 0},
+	{NULL, 0, NULL, 0, NULL, 0}
+};
+
+static error_t
+parse_opt (key, arg, state)
+	int key;
+	char *arg;
+	struct argp_state *state;
+{
+	switch (key) {
+	case 'A': /* display all entries */
+		showall++;
+		break;
+	case 'c': /* CLID instead of GECOS */
+		fmtspec = estrdup(CLIDFMT);
+		break;
+	case 'D': /* Date format */
+		set_date_format(optarg);
+		break;
+	case 'e': /* empty field replacement */
+		empty = estrdup(optarg);
+		break;
+	case 'f': /* filename */
+		filename = optarg;
+		break;
+	case 'F':
+		fingerd++;
+		break;
+	case 'H': /* Disable header line */
+		display_header = 0;
+		break;
+	case 'i': /* Display SID instead of GECOS */
+		fmtspec = estrdup(SIDFMT);
+		break;
+	case 'I': /* Ipaddr format */
+		set_ip_format(optarg);
+		break;
+	case 'l': /* long output */
+		fmtspec = estrdup(LONGFMT);
+		showip = SIP_SMART;
+		showdate = SD_FULL;
+		break;
+	case 'n':
+		showip = SIP_IPADDR;
+		break;
+	case 'o':
+		fmtspec = optarg;
+		break;
+	case 's':
+		secure++;
+		break;
+	case 'u':
+		showlocal++;
+		break;
+	default:
+		return ARGP_ERR_UNKNOWN;
+	}
+	return 0;
+}
+
+static struct argp argp = {
+	options,
+	parse_opt,
+	NULL,
+	doc,
+	&rad_common_argp_child,
+	NULL, NULL
+};
+
+
 int
 main(argc, argv)
         int  argc;
@@ -288,72 +368,12 @@ main(argc, argv)
         char inbuf[128];
         char *path;
         char *p, *q;
-        int c;
-        extern char *optarg;
+        int index;
 
         app_setup();
         initlog(argv[0]);
-        while ((c = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF) 
-                switch(c) {
-                case 'A': /* display all entries */
-                        showall++;
-                        break;
-                case 'c': /* CLID instead of GECOS */
-                        fmtspec = estrdup(CLIDFMT);
-                        break;
-                case 'd': /* radius directory */
-                        radius_dir = optarg;
-                        break;
-                case 'D': /* Date format */
-                        set_date_format(optarg);
-                        break;
-                case 'e': /* empty field replacement */
-                        empty = estrdup(optarg);
-                        break;
-                case 'f': /* filename */
-                        filename = optarg;
-                        break;
-                case 'F':
-                        fingerd++;
-                        break;
-                case 'h':
-                        usage();
-                        exit(0);
-                case 'H': /* Disable header line */
-                        display_header = 0;
-                        break;
-                case 'i': /* Display SID instead of GECOS */
-                        fmtspec = estrdup(SIDFMT);
-                        break;
-                case 'I': /* Ipaddr format */
-                        set_ip_format(optarg);
-                        break;
-                case 'l': /* long output */
-                        fmtspec = estrdup(LONGFMT);
-                        showip = SIP_SMART;
-                        showdate = SD_FULL;
-                        break;
-                case 'L':
-                        license();
-                        exit(0);
-                case 'n':
-                        showip = SIP_IPADDR;
-                        break;
-                case 'o':
-                        fmtspec = optarg;
-                        break;
-                case 's':
-                        secure++;
-                        break;
-                case 'u':
-                        showlocal++;
-                        break;
-                default:
-                        usage();
-                        /*NOTREACHED*/
-                }
-
-        radpath_init();
+	if (rad_argp_parse(&argp, &argc, &argv, 0, &index, NULL))
+		return 1;
 
         if (!fmtspec)
                 fmtspec = getenv("RADWHO_FORMAT");
@@ -1108,61 +1128,3 @@ realm_name(ip, buf, size)
         return hostname(ip, buf, size);
 }
 
-/* ***************************************************************************
- *
- */
-
-char usage_str[] =
-"usage: radwho [options] username\n"
-"Options are:\n"
-"       -A, --all            Print all entries, not only active ones.\n" 
-"       -c, --calling-id     Display CLID in second column.\n"
-"       -D, --date-format {short|abbr|full}\n"
-"                            Change date representation format.\n"
-"       -d, --directory DIR  Specify Radius configuration directory.\n"
-"       -e, --empty STRING   Print STRING instead of an empty column.\n"
-"       -F, --finger         Act as a finger daemon.\n"
-"       -f, --file FILE      Use FILE instead of /var/log/radwtmp\n"
-"       -H, --no-header      Do not display header line.\n"
-"       -h, --help           Display this help.\n"
-"       -i, --session-id     Display session ID in the second column.\n"
-"       -I, --ip-format {smart|ip|nodomain}\n"
-"                            Change IP address representation format.\n"
-"       -L, --license        Display GNU license and exit\n"
-"       -l, --long           Long output. All fields will be printed.\n"
-"                            Implies -D full -I smart.\n"
-"       -n, --no-resolve     Do not resolve hostnames. The same as -I ip.\n"
-"       -o, --format         Specify format line.\n"
-"       -s, --secure         Secure mode: requires that the username be\n"
-"                            specified.\n"
-"       -u, --local-also     Display also local users.\n";
-
-void
-usage()
-{
-        printf("%s", usage_str);
-        printf("\nReport bugs to <%s>\n", bug_report_address);
-}
-
-char license_text[] =
-"   This program is free software; you can redistribute it and/or modify\n"
-"   it under the terms of the GNU General Public License as published by\n"
-"   the Free Software Foundation; either version 2, or (at your option)\n"
-"   any later version.\n"
-"\n"
-"   This program is distributed in the hope that it will be useful,\n"
-"   but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-"   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-"   GNU General Public License for more details.\n"
-"\n"
-"   You should have received a copy of the GNU General Public License\n"
-"   along with this program; if not, write to the Free Software\n"
-"   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n";
-
-void
-license()
-{
-        printf("%s: Copyright 1999,2000 Sergey Poznyakoff\n", progname);
-        printf("\nThis program is part of GNU Radius\n");
-        printf("%s", license_text);
-}

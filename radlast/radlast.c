@@ -38,10 +38,10 @@ static char rcsid[] =
 #include <signal.h>
 #include <netinet/in.h>
 
-#include <getopt1.h>
 #include <radius.h>
 #include <radpaths.h>
 #include <radutmp.h>
+#include <radargp.h>
 #include <log.h>
 
 #define IP_ADDR_LEN 15
@@ -60,8 +60,6 @@ struct wtmp_chain {
 
 void radwtmp();
 void adduser(char*);
-void usage();
-void license();
 int want(struct radutmp *);
 void add_logout(struct radutmp *bp);
 void add_nas_restart(struct radutmp *bp);
@@ -81,7 +79,7 @@ UINT4 host_ip = 0;
 UINT4 nas_ip = 0;
 int port = 0;
 int width = 5;
-int sflag = 0;
+int show_seconds = 0;
 int mark_missing_stops = 0;
 int long_fmt = 0;
 int namesize = 10;
@@ -90,6 +88,9 @@ int nas_name_len = 8;
 int maxrec = -1;
 char *file = RADLOG_DIR "/" RADWTMP;
 struct radutmp buf[1024];
+
+char *nas_name = NULL; /* If not-null, select records matching this
+			  NAS name */
 
 /* List of users user wants to get info about */
 struct user_chain *user_chain, *user_last;
@@ -105,22 +106,124 @@ WTMP *login_list;
 /* List of NAS up/down transitions */
 WTMP *nas_updown_list;
 
-#define OPTSTR "?0123456789c:d:f:h:mn:lLp:st:w"
+const char *argp_program_version = "radlast (" PACKAGE ") " VERSION;
+static char doc[] = "report last logins from Radius database.";
 
-struct option longopt[] = {
-        "count",              required_argument, 0, 'c',
-        "config-directory",   required_argument, 0, 'd',
-        "file",               required_argument, 0, 'f',
-        "help",               no_argument,       0, '?',
-        "host",               required_argument, 0, 'h',
-        "license",            no_argument,       0, 'L',
-        "missed-stops",       no_argument,       0, 'm',
-        "nas",                required_argument, 0, 'n',
-        "long-format",        no_argument,       0, 'l',
-        "port",               required_argument, 0, 'p',
-        "show-seconds",       no_argument,       0, 's',
-        "wide",               no_argument,       0, 'w',
-        0
+static struct argp_option options[] = {
+	{NULL, 0, NULL, 0,
+	 "radlast specific switches:", 0},
+	{NULL, '0', NULL, OPTION_HIDDEN, NULL, 0},
+	{NULL, '1', NULL, OPTION_HIDDEN, NULL, 0},
+	{NULL, '2', NULL, OPTION_HIDDEN, NULL, 0},
+	{NULL, '3', NULL, OPTION_HIDDEN, NULL, 0},
+	{NULL, '4', NULL, OPTION_HIDDEN, NULL, 0},
+	{NULL, '5', NULL, OPTION_HIDDEN, NULL, 0},
+	{NULL, '6', NULL, OPTION_HIDDEN, NULL, 0},
+	{NULL, '7', NULL, OPTION_HIDDEN, NULL, 0},
+	{NULL, '8', NULL, OPTION_HIDDEN, NULL, 0},
+	{NULL, '9', NULL, OPTION_HIDDEN, NULL, 0},
+        {"count", 'c', "NUMBER", 0,
+	 "show at most NUMBER records", 0},
+        {"file", 'f', "FILE", 0,
+	 "use FILENAME as radwtmp", 0},
+        {"host", 'h', "IPADDR", 0,
+	 "show logins with IPADDR", 0},
+        {"missed-stops", 'm', NULL, 0,
+	 "mark records with missed stops with bump (!)", 0},
+        {"nas", 'n', "NASNAME", 0,
+	 "show logins from given NAS", 0},
+        {"long-format", 'l', NULL, 0,
+	 "use long output format", 0},
+        {"port", 'p', "NUMBER", 0,
+	 "show logins from given port", 0},
+        {"show-seconds", 's', NULL, 0,
+	 "show the login session duration in seconds", 0},
+        {"wide", 'w', NULL, 0,
+	 "widen the duration field to show seconds", 0},
+	{NULL, 0, NULL, 0, NULL, 0}
+};
+
+static error_t
+parse_opt (key, arg, state)
+	int key;
+	char *arg;
+	struct argp_state *state;
+{
+	switch (key) {
+	case '0': case '1': case '2': case '3': case '4':
+	case '5': case '6': case '7': case '8': case '9':
+		if (maxrec == -1) {
+			char *p;
+			
+			maxrec = strtoul(state->argv[state->next]+1, &p, 0);
+			if (!maxrec) {
+				radlog(L_ERR,
+				       "invalid number (near %s)",
+				       p);
+				exit(1);
+			}
+		}
+		break;
+	case 'c':
+		maxrec = atol(arg);
+		if (!maxrec) {
+			radlog(L_ERR, "invalid number of records");
+			exit(1);
+		}
+		break;
+	case 'f':
+		file = arg;
+		break;
+	case 'h':
+		host_ip = htonl(ip_gethostaddr(arg));
+		break;
+	case 'm':
+		mark_missing_stops++;
+		break;
+	case 'n':
+		nas_name = arg;
+		break;
+	case 'l':
+		long_fmt++;
+		break;
+	case 'p':
+		if (*arg == 's' || *arg == 'S')
+			++arg;
+		port = atoi(arg);
+		break;
+	case 's':
+		show_seconds++;        /* Show delta as seconds */
+		break;
+	case 't':
+		if (*arg == 's' || *arg == 'S')
+			++arg;
+		port = atoi(arg);
+		break;
+	case 'w':
+		width = 8;
+		break;
+
+	case ARGP_KEY_FINI:
+		if (show_seconds && width == 8) {
+			radlog(L_ERR,
+   		             _("--width is incompatible with --show-seconds"));
+			exit (1);
+		}
+		break;
+		
+	default:
+		return ARGP_ERR_UNKNOWN;
+	}
+	return 0;
+}
+
+static struct argp argp = {
+	options,
+	parse_opt,
+	NULL,
+	doc,
+	&rad_common_argp_child,
+	NULL, NULL
 };
 
 int
@@ -128,86 +231,22 @@ main(argc, argv)
         int argc;
         char **argv;
 {
-        int c;
-        char *p;
-        char *nas_name = NULL;
+        int index;
 
+        app_setup();
         initlog(argv[0]);
-        while ((c = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF)
-                switch (c) {
-                case '0': case '1': case '2': case '3': case '4':
-                case '5': case '6': case '7': case '8': case '9':
-                        if (maxrec == -1) {
-                                p = argv[optind - 1];
-                                if (p[0] == '-' && p[1] == c && !p[2])
-                                        maxrec = atol(++p);
-                                else
-                                        maxrec = atol(argv[optind] + 1);
-                                if (!maxrec) {
-                                        radlog(L_ERR, "invalid number of records");
-                                        return 1;
-                                }
-                        }
-                        break;
-                case 'c':
-                        maxrec = atol(optarg);
-                        if (!maxrec) {
-                                radlog(L_ERR, "invalid number of records");
-                                return 1;
-                        }
-                        break;
-                case 'd':
-                        radius_dir = optarg;
-                        break;
-                case 'f':
-                        file = optarg;
-                        break;
-                case 'h':
-                        host_ip = htonl(ip_gethostaddr(optarg));
-                        break;
-                case 'L':
-                        license();
-                        exit(0);
-                case 'm':
-                        mark_missing_stops++;
-                        break;
-                case 'n':
-                        nas_name = optarg;
-                        break;
-                case 'l':
-                        long_fmt++;
-                        break;
-                case 'p':
-                        if (*optarg == 's' || *optarg == 'S')
-                                ++optarg;
-                        port = atoi(optarg);
-                        break;
-                case 's':
-                        sflag++;        /* Show delta as seconds */
-                        break;
-                case 't':
-                        if (*optarg == 's' || *optarg == 'S')
-                                ++optarg;
-                        port = atoi(optarg);
-                        break;
-                case 'w':
-                        width = 8;
-                        break;
-                case '?':
-                default:
-                        usage();
-                }
+	if (rad_argp_parse(&argp, &argc, &argv, 0, &index, NULL))
+		return 1;
 
-        if (sflag && width == 8)
-                usage();
+	argv += index;
+	argc -= index;
 
         if (argc) {
                 setlinebuf(stdout);
-                for (argv += optind; *argv; ++argv) {
+                for (; *argv; ++argv) 
                         adduser(*argv);
-                }
         }
-        radpath_init();
+
         read_naslist();
 
         if (nas_name) {
@@ -707,7 +746,7 @@ print_entry(pp, bp, mark)
 
                 /*delta = pp->ut.duration;*/
                 delta = pp->ut.time - bp->time;
-                if (sflag) {
+                if (show_seconds) {
                         printf("  (%8lu)", delta);
                 } else {
                         if (delta < 0)
@@ -748,56 +787,6 @@ print_reboot_entry(bp)
                        
                nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
                ct, ct + 11);
-}
-
-
-char usage_str[] =
-"usage: radlast [options] [user ...]\n"
-"Options are:\n"
-"    -c, --count NUMBER          show at most NUMBER records\n"
-"    -NUMBER                     the same as above\n"
-"    -f, --file FILENAME         use FILENAME as radwtmp\n"
-"    -h, --host IPADDR           show logins with IPADDR\n"
-"    -m, --missed-stops          mark records with missed stops with bump (!)\n"
-"    -n, --nas NAS               show logins from given NAS\n"
-"    -l, --long-format           use long output format\n"
-"    -L, --license               display license and exit\n"
-"    -p, --port PORT             show logins from given PORT\n"
-"    -s, --show-seconds          show the login session duration in seconds\n"
-"    -w, --wide                  widen the duration field to show seconds\n"
-"    -?, --help                  show this help info" ;
-
-void
-usage(void)
-{
-        printf("%s\n"
-                "\nReport bugs to <%s>\n",
-                usage_str,
-                bug_report_address);
-        exit(1);
-}
-
-char license_text[] =
-"   This program is free software; you can redistribute it and/or modify\n"
-"   it under the terms of the GNU General Public License as published by\n"
-"   the Free Software Foundation; either version 2, or (at your option)\n"
-"   any later version.\n"
-"\n"
-"   This program is distributed in the hope that it will be useful,\n"
-"   but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-"   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-"   GNU General Public License for more details.\n"
-"\n"
-"   You should have received a copy of the GNU General Public License\n"
-"   along with this program; if not, write to the Free Software\n"
-"   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n";
-
-void
-license()
-{
-        printf("%s: Copyright 1999,2000 Sergey Poznyakoff\n", progname);
-        printf("\nThis program is part of GNU Radius\n");
-        printf("%s", license_text);
 }
 
 

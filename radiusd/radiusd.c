@@ -38,8 +38,8 @@ static char rcsid[] =
 #include <signal.h>
 #include <errno.h>
 
-#include <getopt1.h>
 #include <radiusd.h>
+#include <radargp.h>
 #include <radsql.h>
 #include <log.h>
 #include <symtab.h>
@@ -98,8 +98,6 @@ int snmp_respond(int fd, struct sockaddr *sa, int salen,
 
 /* *************************** Global variables. ************************** */
 
-char       *progname;
-
 int        debug_flag; /* can be raised from debugger only */
 int        log_mode;
 
@@ -155,7 +153,6 @@ static void check_reload();
 static void check_snmp_request();
 
 static void set_config_defaults();
-static void usage(void);
 void rad_exit(int);
 static RETSIGTYPE sig_fatal (int);
 static RETSIGTYPE sig_hup (int);
@@ -169,40 +166,152 @@ static void reread_config(int reload);
 static void rad_main(char *extra_arg);
 static void meminfo();
 
-#define OPTSTR "Aa:bd:fhl:Lm:Nni:p:P:Ssvx:yz"
-
-struct option longopt[] = {
-        "log-auth-detail",    no_argument,       0, 'A',
-        "acct-directory",     required_argument, 0, 'a',
-#ifdef USE_DBM
-        "dbm",                no_argument,       0, 'b',
-#endif
-        "directory",          required_argument, 0, 'd',
-        "config-directory",   required_argument, 0, 'd',
-        "foreground",         no_argument,       0, 'f',
-        "help",               no_argument,       0, 'h', 
-        "logging-directory",  no_argument,       0, 'l',
-        "license",            no_argument,       0, 'L',
-        "mode",               required_argument, 0, 'm',
-        "auth-only",          no_argument,       0, 'N',
-        "do-not-resolve",     no_argument,       0, 'n',
-        "ip-address",         required_argument, 0, 'i',        
-        "port",               required_argument, 0, 'p',
-        "pid-file-dir",       required_argument, 0, 'P',
-        "log-stripped-names", no_argument,       0, 'S',
-        "single-process",     no_argument,       0, 's',
-        "version",            no_argument,       0, 'v',
-        "debug",              required_argument, 0, 'x',
-        "log-auth",           no_argument,       0, 'y',
-        "log-auth-pass",      no_argument,       0, 'z',
-        0
-};
-
 int radius_mode = MODE_DAEMON;    
+int radius_port = 0;
 
 int  xargc;
 char **xargv;
 char *x_debug_spec;
+
+extern void version(FILE *stream, struct argp_state *state);
+
+const char *argp_program_version = "radiusd (" PACKAGE ") " VERSION;
+static char doc[] = "The radius daemon";
+
+static struct argp_option options[] = {
+	{NULL, 0, NULL, 0,
+	 "radiusd specific switches:", 0},
+        {"log-auth-detail", 'A', 0, 0,
+	 "Do detailed authentication logging", 0},
+	{"acct-directory",  'a', "DIR", 0,
+	 "Set accounting directory", 0},
+#ifdef USE_DBM
+	{"dbm", 'b', NULL, 0,
+	 "Enable DBM support", 0},
+#endif
+	{"foreground", 'f', NULL, 0,
+	 "Stay in foreground", 0},
+        {"logging-directory", 'l', "DIR", 0, 
+	 "Set logging directory name", 0},
+        {"mode", 'm', "{t|c|b}", 0,
+	 "Select operation mode: test, checkconf,builddbm."},
+        {"auth-only", 'N', NULL, 0,
+	 "Do only authentication", 0},
+	{"do-not-resolve", 'n', NULL, 0,
+	 "Do not resolve IP addresses", 0},
+        {"ip-address", 'i', "ADDRESS", 0,
+	 "Listen on ADDRESS", 0},
+        {"port", 'p', "NUMBER", 0,
+	 "Set authentication port number", 0},
+        {"pid-file-dir", 'P', "DIR", 0,
+	 "Store pidfile in DIR", 0},
+        {"log-stripped-names", 'S', NULL, 0,
+	 "Strip prefixes/suffixes off user names before logging"},
+        {"single-process", 's', NULL, 0,
+	 "Run in single process mode", 0},
+        {"debug", 'x', "DEBUGSPEC", 0,
+	 "Set debugging level", 0},
+        {"log-auth", 'y', NULL, 0,
+	 "Log authentications", 0},
+        {"log-auth-pass", 'z', NULL, 0,
+	 "Log users' passwords", 0},
+	{NULL, 0, NULL, 0, NULL, 0}
+};
+	
+static error_t
+parse_opt (key, arg, state)
+	int key;
+	char *arg;
+	struct argp_state *state;
+{
+	switch (key) {
+	case 'A':
+		auth_detail++;
+		break;
+	case 'a':
+		radacct_dir = make_string(optarg);
+		break;
+#ifdef USE_DBM
+	case 'b':
+		use_dbm++;
+		break;
+#endif
+	case 'f':
+		foreground = 1;
+		break;
+	case 'l':
+		radlog_dir = make_string(optarg);
+		break;
+	case 'm':
+		switch (arg[0]) {
+		case 't':
+			radius_mode = MODE_TEST;
+			break;
+		case 'b':
+#ifdef USE_DBM
+			radius_mode = MODE_BUILDDBM;
+#else
+			fprintf(stderr,
+				_("radiusd compiled without DBM support"));
+			exit(1);
+#endif
+			break;
+		case 'c':
+			radius_mode = MODE_CHECKCONF;
+			break;
+		default:
+			radlog(L_ERR,
+			       _("unknown mode: %s"), arg);
+                        }
+		break;
+	case 'N':
+		open_acct = 0;
+		break;
+	case 'n':
+		resolve_hostnames = 0;
+		break;
+	case 'i':
+		if ((myip = ip_gethostaddr(optarg)) == 0)
+			fprintf(stderr,
+				_("invalid IP address: %s"),
+				optarg);
+		break;
+	case 'P':
+		radpid_dir = optarg;
+		break;
+	case 'p':
+		radius_port = atoi(optarg);
+		break;
+	case 'S':
+		strip_names++;  
+		break;
+	case 's':       /* Single process mode */
+		spawn_flag = 0;
+		break;
+	case 'x':
+		x_debug_spec = optarg;
+		set_debug_levels(optarg);
+		break;
+	case 'y':
+		log_mode |= RLOG_AUTH;    
+		break;
+	case 'z':
+		log_mode |= RLOG_AUTH_PASS;
+		break;
+	default:
+		return ARGP_ERR_UNKNOWN;
+	}
+	return 0;
+}
+
+static struct argp argp = {
+	options,
+	parse_opt,
+	NULL,
+	doc,
+	&rad_common_argp_child,
+	NULL, NULL
+};
 
 int
 main(argc, argv)
@@ -210,13 +319,7 @@ main(argc, argv)
         char **argv;
 {
         struct servent *svp;
-        int radius_port = 0;
         int t;
-
-        if ((progname = strrchr(argv[0], '/')) == NULL)
-                progname = argv[0];
-        else
-                progname++;
 
         for (t = getmaxfd(); t >= 3; t--)
                 close(t);
@@ -240,99 +343,9 @@ main(argc, argv)
         set_config_defaults();
 
         /* Process the options.  */
-        while ((t = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF) {
-                switch (t) {
-                case 'A':
-                        auth_detail++;
-                        break;
-                case 'a':
-                        radacct_dir = make_string(optarg);
-                        break;
-#ifdef USE_DBM
-                case 'b':
-                        use_dbm++;
-                        break;
-#endif
-                case 'd':
-                        radius_dir = optarg;
-                        break;
-                case 'f':
-                        foreground = 1;
-                        break;
-                case 'L':
-                        license();
-                        exit(0);
-                case 'l':
-                        radlog_dir = make_string(optarg);
-                        break;
-                case 'm':
-                        switch (optarg[0]) {
-                        case 't':
-                                radius_mode = MODE_TEST;
-                                break;
-                        case 'b':
-#ifdef USE_DBM
-                                radius_mode = MODE_BUILDDBM;
-#else
-                                fprintf(stderr,
-                                    _("radiusd compiled without DBM support"));
-                                exit(1);
-#endif
-                                break;
-                        case 'c':
-                                radius_mode = MODE_CHECKCONF;
-                                break;
-                        default:
-                                radlog(L_ERR,
-                                       _("unknown mode: %s"), optarg);
-                        }
-                        break;
-                case 'N':
-                        open_acct = 0;
-                        break;
-                case 'n':
-                        resolve_hostnames = 0;
-                        break;
-                case 'i':
-                        if ((myip = ip_gethostaddr(optarg)) == 0)
-                                fprintf(stderr,
-                                        _("invalid IP address: %s"),
-                                        optarg);
-                        break;
-                case 'P':
-                        radpid_dir = optarg;
-                        break;
-                case 'p':
-                        radius_port = atoi(optarg);
-                        break;
-                case 'S':
-                        strip_names++;  
-                        break;
-                case 's':       /* Single process mode */
-                        spawn_flag = 0;
-                        break;
-                case 'v':
-                        version();
-                        break;
-                case 'x':
-                        x_debug_spec = optarg;
-                        set_debug_levels(optarg);
-                        break;
-                case 'y':
-                        log_mode |= RLOG_AUTH;    
-                        break;
-                case 'z':
-                        log_mode |= RLOG_AUTH_PASS;
-                        break;
-                case 'h':
-                        usage();
-                        exit(0);
-                default:
-                        usage();
-                        exit(1);
-                }
-        }
-        radpath_init();
+	argp_program_version_hook = version;
+	if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, NULL))
+		return 1;
 
         log_set_default("default.log", -1, -1);
         if (radius_mode != MODE_DAEMON)
@@ -1419,43 +1432,4 @@ socket_list_select(list, tv)
         return 0;
 }
 
-/*
- *      Display the syntax for starting this program.
- */
-void
-usage()
-{
-        static char ustr[] =
-"usage: radiusd [options]\n\n"
-"options are:\n"
-"    -A, --log-auth-detail       Do detailed authentication logging.\n"
-"    -a, --acct-directory DIR    Specify accounting directory.\n"
-#ifdef USE_DBM
-"    -b, --dbm                   Enable DBM support.\n"
-#endif
-"    -d, --config-directory DIR  Specify alternate configuration directory\n"
-"                                (default " RADIUS_DIR ").\n"
-"    -f, --foreground            Stay in foreground.\n"
-"    -L, --license               Display GNU license and exit\n"
-"    -l, --logging-directory DIR Specify alternate logging directory\n"
-"                                (default " RADLOG_DIR ").\n"
-"    -m, --mode {t|c|b}          Select operation mode: test, checkconf,\n"
-"                                builddbm.\n"
-"    -N, --auth-only             Start only authentication process.\n"
-"    -n, --do-not-resolve        Do not resolve IP addresses.\n"
-"    -i, --ip-address IP         Use this IP as source address.\n"      
-"    -p, --port PORTNO           Use alternate port number.\n"
-"    -P, --pid-file-dir DIR      Store pidfile in DIR.\n"
-"                                (default " RADPID_DIR ")\n"
-"    -S, --log-stripped-names    Log usernames stripped off any\n"
-"                                prefixes/suffixes.\n"
-"    -s, --single-process        Run in single process mode.\n"
-"    -v, --version               Display program version and configuration\n"
-"                                parameters and exit.\n"
-"    -x, --debug debug_level     Set debugging level.\n"
-"    -y, --log-auth              Log authentications.\n"
-"    -z, --log-auth-pass         Log passwords used.\n"; 
-        fprintf(stdout, "%s", ustr);
-        fprintf(stdout, "\nReport bugs to <%s>\n", bug_report_address);
-        exit(1);
-}
+

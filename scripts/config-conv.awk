@@ -96,7 +96,7 @@ state == 0 && $1 == "cntl" { state = 4; }
 		print "## Please, edit them to your liking."	
 		if (!defchan) {
 			emit("channel default {", indent_level/2);
-			emit("syslog user.info;", indent_level);
+			emit("file \"radius.log\";", indent_level);
 			emit("print-category yes;", indent_level);
 			emit("print-level yes;", indent_level);
 			emit("};", indent_level/2);

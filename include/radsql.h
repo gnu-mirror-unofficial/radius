@@ -53,7 +53,8 @@ typedef struct {
 	char     *acct_nasup_query;
 	char     *acct_nasdown_query;
 	char     *acct_keepalive_query;
-	char     *attr_query;
+	char     *check_attr_query;
+	char     *reply_attr_query;
 	int      keepopen;
 	time_t   idle_timeout;
 	unsigned max_connections[SQL_NSERVICE];
@@ -72,7 +73,8 @@ void rad_sql_need_reconnect(int type);
 int rad_sql_setup(int type, qid_t qid);
 void rad_sql_cleanup(int type, qid_t qid);
 int rad_sql_checkgroup(RADIUS_REQ *req, char *groupname);
-int rad_sql_attr_query(RADIUS_REQ *req, VALUE_PAIR **reply_pairs);
+int rad_sql_check_attr_query(RADIUS_REQ *req, VALUE_PAIR **check_pairs);
+int rad_sql_reply_attr_query(RADIUS_REQ *req, VALUE_PAIR **reply_pairs);
 void rad_sql_shutdown();
 int disp_sql_interface_index(char *name);
 

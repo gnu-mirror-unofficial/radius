@@ -49,10 +49,10 @@ static int sym_counter(void *closure, User_symbol *sym);
 static void mark_profile(struct check_datum *datum, User_symbol *sym,
                          char *target_name);
 static void mark_list(struct check_datum *datum, User_symbol *sym, 
-                      VALUE_PAIR *list);
+                      grad_avp_t *list);
 static int pass1(struct check_datum *datum, User_symbol *sym);
 static int pass2(struct check_datum *datum, User_symbol *sym);
-static void check_dup_attr(VALUE_PAIR **prev, VALUE_PAIR *ptr, LOCUS *loc);
+static void check_dup_attr(grad_avp_t **prev, grad_avp_t *ptr, grad_locus_t *loc);
 
 
 int
@@ -94,9 +94,9 @@ mark_profile(struct check_datum *datum, User_symbol *sym, char *target_name)
 }
 
 void
-mark_list(struct check_datum *datum, User_symbol *sym, VALUE_PAIR *list)
+mark_list(struct check_datum *datum, User_symbol *sym, grad_avp_t *list)
 {
-        VALUE_PAIR *p;
+        grad_avp_t *p;
 
         if (p = grad_avl_find(list, DA_MATCH_PROFILE)) {
                 do {
@@ -175,7 +175,7 @@ radck()
 }
 
 static void
-check_dup_attr(VALUE_PAIR **prev, VALUE_PAIR *ptr, LOCUS *loc)
+check_dup_attr(grad_avp_t **prev, grad_avp_t *ptr, grad_locus_t *loc)
 {
         if (*prev) {
                 grad_log_loc(L_WARN, loc,
@@ -185,7 +185,7 @@ check_dup_attr(VALUE_PAIR **prev, VALUE_PAIR *ptr, LOCUS *loc)
 }
 
 static int
-compile_pair(VALUE_PAIR *pair)
+compile_pair(grad_avp_t *pair)
 {
 	if (pair->eval_type == eval_interpret) {
 		char *symname = rewrite_compile(pair->avp_strvalue);
@@ -201,17 +201,17 @@ compile_pair(VALUE_PAIR *pair)
 
 /*ARGSUSED*/
 int
-fix_check_pairs(int cf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs)
+fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
 {
-        VALUE_PAIR *p;
-        VALUE_PAIR *auth_type = NULL;
-        VALUE_PAIR *auth_data = NULL;
-        VALUE_PAIR *pam_auth = NULL;
-        VALUE_PAIR *password = NULL;
-        VALUE_PAIR *crypt_password = NULL;
-        VALUE_PAIR *chap_password = NULL;
-        VALUE_PAIR *pass_loc = NULL;
-        DICT_ATTR *dict;
+        grad_avp_t *p;
+        grad_avp_t *auth_type = NULL;
+        grad_avp_t *auth_data = NULL;
+        grad_avp_t *pam_auth = NULL;
+        grad_avp_t *password = NULL;
+        grad_avp_t *crypt_password = NULL;
+        grad_avp_t *chap_password = NULL;
+        grad_avp_t *pass_loc = NULL;
+        grad_dict_attr_t *dict;
         int errcnt = 0;
         
         for (p = *pairs; p; p = p->next) {
@@ -379,11 +379,11 @@ fix_check_pairs(int cf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs)
 }
 
 int
-fix_reply_pairs(int cf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs)
+fix_reply_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
 {
-        VALUE_PAIR *p;
+        grad_avp_t *p;
         int fall_through = 0;
-        DICT_ATTR *dict;
+        grad_dict_attr_t *dict;
         int errcnt = 0;
         
         for (p = *pairs; p; p = p->next) {

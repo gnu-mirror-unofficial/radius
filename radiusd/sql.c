@@ -288,7 +288,7 @@ rad_sql_init()
 
 #define FREE(a) if (a) grad_free(a); a = NULL
 
-        bzero(&new_cfg, sizeof(new_cfg));
+        memset(&new_cfg, 0, sizeof(new_cfg));
         new_cfg.keepopen = 0;
         new_cfg.idle_timeout = 4*3600; /* four hours */
         new_cfg.active[SQL_ACCT] = 0;
@@ -813,11 +813,11 @@ rad_sql_cleanup(int type, void *req ARG_UNUSED)
  * Perform normal accounting
  */ 
 void
-rad_sql_acct(RADIUS_REQ *radreq)
+rad_sql_acct(grad_request_t *radreq)
 {
         int rc, count;
         int status;
-        VALUE_PAIR *pair;
+        grad_avp_t *pair;
         char *query;
         struct sql_connection *conn;
         struct obstack stack;
@@ -919,7 +919,7 @@ rad_sql_acct(RADIUS_REQ *radreq)
 
 
 char *
-rad_sql_pass(RADIUS_REQ *req, char *authdata)
+rad_sql_pass(grad_request_t *req, char *authdata)
 {
         char *mysql_passwd;
         struct sql_connection *conn;
@@ -955,7 +955,7 @@ rad_sql_pass(RADIUS_REQ *req, char *authdata)
 
 int
 rad_sql_checkgroup(req, groupname)
-        RADIUS_REQ *req;
+        grad_request_t *req;
         char *groupname;
 {
         int   rc = -1;
@@ -997,12 +997,12 @@ rad_sql_checkgroup(req, groupname)
 static int
 rad_sql_retrieve_pairs(struct sql_connection *conn,
 		       char *query,
-		       VALUE_PAIR **return_pairs,
+		       grad_avp_t **return_pairs,
 		       int op_too)
 {
 	SQL_RESULT *res;
 	size_t i;
-	LOCUS loc;
+	grad_locus_t loc;
 	
 	res = sql_cache_lookup(conn, query);
 	if (!res) {
@@ -1018,7 +1018,7 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
 	
         for (i = 0; i < res->ntuples; i++) {
 		int op;
-		VALUE_PAIR *pair;
+		grad_avp_t *pair;
 		
 		if (op_too) {
 			char *opstr = res->tuple[i][2];
@@ -1048,7 +1048,7 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
 }
 			
 int
-rad_sql_reply_attr_query(RADIUS_REQ *req, VALUE_PAIR **reply_pairs)
+rad_sql_reply_attr_query(grad_request_t *req, grad_avp_t **reply_pairs)
 {
         struct sql_connection *conn;
         char *query;
@@ -1069,7 +1069,7 @@ rad_sql_reply_attr_query(RADIUS_REQ *req, VALUE_PAIR **reply_pairs)
 }
 
 int
-rad_sql_check_attr_query(RADIUS_REQ *req, VALUE_PAIR **return_pairs)
+rad_sql_check_attr_query(grad_request_t *req, grad_avp_t **return_pairs)
 {
         struct sql_connection *conn;
         char *query;

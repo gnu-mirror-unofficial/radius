@@ -52,7 +52,7 @@ scm_long2num(long val)
 #endif
 
 SCM
-radscm_avl_to_list(VALUE_PAIR *pair)
+radscm_avl_to_list(grad_avp_t *pair)
 {
         SCM scm_first = SCM_EOL, scm_last;
         
@@ -70,10 +70,10 @@ radscm_avl_to_list(VALUE_PAIR *pair)
         return scm_first;
 }
 
-VALUE_PAIR *
+grad_avp_t *
 radscm_list_to_avl(SCM list)
 {
-        VALUE_PAIR *first, *last, *p;
+        grad_avp_t *first, *last, *p;
 
         if (list == SCM_EOL)
                 return NULL;
@@ -95,10 +95,10 @@ radscm_list_to_avl(SCM list)
 
 
 SCM
-radscm_avp_to_cons(VALUE_PAIR *pair)
+radscm_avp_to_cons(grad_avp_t *pair)
 {
         SCM scm_attr, scm_value;
-        DICT_ATTR *dict;
+        grad_dict_attr_t *dict;
         
         if (dict = grad_attr_number_to_dict(pair->attribute)) 
                 scm_attr = scm_makfrom0str(dict->name);
@@ -126,13 +126,13 @@ radscm_avp_to_cons(VALUE_PAIR *pair)
  * (define scm (cons NAME VALUE))
  */
 
-VALUE_PAIR *
+grad_avp_t *
 radscm_cons_to_avp(SCM scm)
 {
         SCM car, cdr;
-        DICT_ATTR *dict;
-        DICT_VALUE *val;
-        VALUE_PAIR pair, *p;
+        grad_dict_attr_t *dict;
+        grad_dict_value_t *val;
+        grad_avp_t pair, *p;
         
         if (!(SCM_NIMP(scm) && SCM_CONSP(scm)))
                 return NULL;
@@ -165,7 +165,7 @@ radscm_cons_to_avp(SCM scm)
                 if (SCM_IMP(cdr) && SCM_INUMP(cdr)) {
                         pair.avp_lvalue = SCM_INUM(cdr);
                 } else if (SCM_BIGP(cdr)) {
-                        pair.avp_lvalue = (UINT4) scm_i_big2dbl(cdr);
+                        pair.avp_lvalue = (grad_uint32_t) scm_i_big2dbl(cdr);
                 } else if (SCM_NIMP(cdr) && SCM_STRINGP(cdr)) {
                         char *name = SCM_STRING_CHARS(cdr);
                         val = grad_value_name_to_value(name, pair.attribute);
@@ -184,7 +184,7 @@ radscm_cons_to_avp(SCM scm)
                 if (SCM_IMP(cdr) && SCM_INUMP(cdr)) {
                         pair.avp_lvalue = SCM_INUM(cdr);
                 } else if (SCM_BIGP(cdr)) {
-                        pair.avp_lvalue = (UINT4) scm_i_big2dbl(cdr);
+                        pair.avp_lvalue = (grad_uint32_t) scm_i_big2dbl(cdr);
                 } else if (SCM_NIMP(cdr) && SCM_STRINGP(cdr)) {
                         pair.avp_lvalue =
 				grad_ip_gethostaddr(SCM_STRING_CHARS(cdr));
@@ -202,7 +202,7 @@ radscm_cons_to_avp(SCM scm)
                 abort();
         }
 
-        p = grad_emalloc(sizeof(VALUE_PAIR));
+        p = grad_emalloc(sizeof(grad_avp_t));
         *p = pair;
         
         return p;

@@ -40,20 +40,20 @@
  
 struct snmp_pdu * snmp_agent_response(struct snmp_pdu *pdu, int access);
 int variable_cmp(struct snmp_var *v1, struct snmp_var *v2);
-static NAS *nas_lookup_index(int ind);
+static grad_nas_t *nas_lookup_index(int ind);
 static void snmpserv_before_config_hook(void *unused1, void *unused2);
 static void snmpserv_after_config_hook(void *arg, void *unused);
 static void snmp_tree_init();
 
-static RAD_LIST /* of ACL */ *snmp_acl;
-static RAD_LIST /* of Community */ *commlist;
+static grad_list_t /* of ACL */ *snmp_acl;
+static grad_list_t /* of Community */ *commlist;
 Server_stat *server_stat;
 struct radstat radstat;
 
 /* ************************************************************************ */
 /* Configuration file */
 
-static RAD_LIST /* of NETNAME */ *netlist;
+static grad_list_t /* of NETNAME */ *netlist;
 
 static int
 _netname_cmp(const void *item, const void *data)
@@ -137,7 +137,7 @@ snmp_free_communities()
 }
 
 struct acl_closure {
-	UINT4 ip;
+	grad_uint32_t ip;
 	char *community;
 	int access;
 };
@@ -145,7 +145,7 @@ struct acl_closure {
 int
 _netdef_cmp(const void *item, const void *data)
 {
-	const NETDEF *nd = item;
+	const grad_netdef_t *nd = item;
 	const struct acl_closure *clos = data;
 
 	if (grad_ip_in_net_p(nd, clos->ip))
@@ -170,7 +170,7 @@ _acl_iterator(void *item, void *data)
 }
 
 int
-check_acl(UINT4 ip, char *community)
+check_acl(grad_uint32_t ip, char *community)
 {
 	struct acl_closure clos;
 
@@ -182,7 +182,7 @@ check_acl(UINT4 ip, char *community)
 }
 
 void
-snmp_add_acl(Community *community, RAD_LIST /* of NETDEF */ *netlist)
+snmp_add_acl(Community *community, grad_list_t /* of grad_netdef_t */ *netlist)
 {
         ACL *acl;
 
@@ -345,7 +345,7 @@ snmp_cfg_network(int argc, cfg_value_t *argv,
 			         cfg_filename, cfg_line_num,
 			         i);
 		} else {
-			NETDEF *net = grad_emalloc(sizeof(*net));
+			grad_netdef_t *net = grad_emalloc(sizeof(*net));
 			net->ipaddr = argv[i].v.network.ipaddr;
 			net->netmask = argv[i].v.network.netmask;
 			grad_list_append(np->netlist, net);
@@ -460,8 +460,8 @@ static void
 snmpserv_after_config_hook(void *arg, void *data ARG_UNUSED)
 {
 	if (server_stat) {
-		NAS *nas;
-		ITERATOR *itr;
+		grad_nas_t *nas;
+		grad_iterator_t *itr;
 	
 		server_stat->auth.status =
 			suspend_flag ? serv_suspended : serv_running;
@@ -1132,7 +1132,7 @@ snmp_agent_response(struct snmp_pdu *pdu, int access)
 
 /* ************************************************************************* */
 
-counter
+grad_counter_t
 timeval_diff(struct timeval *tva, struct timeval *tvb)
 {
         return  (tva->tv_sec - tvb->tv_sec)*100 +
@@ -1212,81 +1212,81 @@ snmp_auth_var_get(subid_t subid, oid_t oid, int *errp)
         case MIB_KEY_AuthServUpTime:
                 gettimeofday(&tv, &tz);
                 ret->type = SMI_TIMETICKS;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = timeval_diff(&tv, &server_stat->start_time);
                 break;
 
         case MIB_KEY_AuthServResetTime:
                 gettimeofday(&tv, &tz);
                 ret->type = SMI_TIMETICKS;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = timeval_diff(&tv,
                                             &server_stat->auth.reset_time);
                 break;
 
         case MIB_KEY_AuthServConfigReset:
                 ret->type = ASN_INTEGER;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = abridge_server_state();
                 break;
 
         case MIB_KEY_AuthServTotalAccessRequests:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->auth.num_access_req;
                 break;
 
         case MIB_KEY_AuthServTotalInvalidRequests:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->auth.num_invalid_req;
                 break;
 
         case MIB_KEY_AuthServTotalDupAccessRequests:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->auth.num_dup_req;
                 break;
 
         case MIB_KEY_AuthServTotalAccessAccepts:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->auth.num_accepts;
                 break;
 
         case MIB_KEY_AuthServTotalAccessRejects:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->auth.num_rejects;
                 break;
 
         case MIB_KEY_AuthServTotalAccessChallenges:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->auth.num_challenges;
                 break;
 
         case MIB_KEY_AuthServTotalMalformedAccessRequests:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->auth.num_bad_req;
                 break;
 
         case MIB_KEY_AuthServTotalBadAuthenticators:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->auth.num_bad_auth;
                 break;
                 
         case MIB_KEY_AuthServTotalPacketsDropped:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->auth.num_dropped;
                 break;
 
         case MIB_KEY_AuthServTotalUnknownTypes:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->auth.num_unknowntypes;
                 break;
                 
@@ -1335,7 +1335,7 @@ snmp_auth_var_set(subid_t subid, struct snmp_var **vp, int *errp)
 
 /* Variable oids */
 
-void get_auth_nasstat(NAS *nas, struct snmp_var *var, int ind);
+void get_auth_nasstat(grad_nas_t *nas, struct snmp_var *var, int ind);
 int snmp_auth_v_handler(enum mib_node_cmd cmd, void *closure,
                         subid_t subid, struct snmp_var **varp,
                         int *errp);
@@ -1396,7 +1396,7 @@ snmp_auth_var_v_get(subid_t subid, struct snmp_var *var, int *errp)
 {
         struct snmp_var *ret;
         subid_t key;
-        NAS *nas;
+        grad_nas_t *nas;
         
         ret = snmp_var_create(var->name);
         *errp = SNMP_ERR_NOERROR;
@@ -1429,7 +1429,7 @@ snmp_auth_var_v_get(subid_t subid, struct snmp_var *var, int *errp)
 }
 
 void
-get_auth_nasstat(NAS *nas, struct snmp_var *var, int key)
+get_auth_nasstat(grad_nas_t *nas, struct snmp_var *var, int key)
 {
         struct nas_stat *statp = nas->app_data;
         
@@ -1442,9 +1442,9 @@ get_auth_nasstat(NAS *nas, struct snmp_var *var, int key)
                 
         case MIB_KEY_AuthClientAddress:
                 var->type = SMI_IPADDRESS;
-                var->val_length = sizeof(UINT4);
-                var->var_str = snmp_alloc(sizeof(UINT4));
-                *(UINT4*)var->var_str = ntohl(statp->ipaddr);
+                var->val_length = sizeof(grad_uint32_t);
+                var->var_str = snmp_alloc(sizeof(grad_uint32_t));
+                *(grad_uint32_t*)var->var_str = ntohl(statp->ipaddr);
                 break;
 
         case MIB_KEY_AuthClientID:
@@ -1455,55 +1455,55 @@ get_auth_nasstat(NAS *nas, struct snmp_var *var, int key)
 
         case MIB_KEY_AuthServAccessRequests:
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->auth.num_access_req;
                 break;
 
         case MIB_KEY_AuthServDupAccessRequests:
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->auth.num_dup_req;
                 break;
 
         case MIB_KEY_AuthServAccessAccepts:
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->auth.num_accepts;
                 break;
 
         case MIB_KEY_AuthServAccessRejects:
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->auth.num_rejects;
                 break;
 
         case MIB_KEY_AuthServAccessChallenges:
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->auth.num_challenges;
                 break;
 
         case MIB_KEY_AuthServMalformedAccessRequests:
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->auth.num_bad_req;
                 break;
 
         case MIB_KEY_AuthServBadAuthenticators:
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->auth.num_bad_auth;
                 break;
 
         case MIB_KEY_AuthServPacketsDropped:
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->auth.num_dropped;
                 break;
 
         case MIB_KEY_AuthServUnknownTypes:
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->auth.num_unknowntypes;
                 break;
                 
@@ -1571,74 +1571,74 @@ snmp_acct_var_get(subid_t subid, oid_t oid, int *errp)
         case MIB_KEY_AccServUpTime:
                 gettimeofday(&tv, &tz);
                 ret->type = SMI_TIMETICKS;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = timeval_diff(&tv, &server_stat->start_time);
                 break;
                 
         case MIB_KEY_AccServResetTime:
                 gettimeofday(&tv, &tz);
                 ret->type = SMI_TIMETICKS;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = timeval_diff(&tv, &server_stat->acct.reset_time);
                 break;
 
         case MIB_KEY_AccServConfigReset:
                 ret->type = ASN_INTEGER;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = abridge_server_state();
                 break;
                 
         case MIB_KEY_AccServTotalRequests:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->acct.num_req;
                 break;
                 
         case MIB_KEY_AccServTotalInvalidRequests:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->acct.num_invalid_req;
                 break;
                 
         case MIB_KEY_AccServTotalDupRequests:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->acct.num_dup_req;
                 break;
                 
         case MIB_KEY_AccServTotalResponses:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->acct.num_resp;
                 break;
                 
         case MIB_KEY_AccServTotalMalformedRequests:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->acct.num_bad_req;
                 break;
                 
         case MIB_KEY_AccServTotalBadAuthenticators:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->acct.num_bad_sign;
                 break;
                 
         case MIB_KEY_AccServTotalPacketsDropped:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->acct.num_dropped;
                 break;
                 
         case MIB_KEY_AccServTotalNoRecords:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->acct.num_norecords;
                 break;
                 
         case MIB_KEY_AccServTotalUnknownTypes:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->acct.num_unknowntypes;
                 break;
                 
@@ -1685,7 +1685,7 @@ snmp_acct_var_set(subid_t subid, struct snmp_var **vp, int *errp)
         return (*vp == NULL);
 }
 
-void get_acct_nasstat(NAS *nas, struct snmp_var *var, int key);
+void get_acct_nasstat(grad_nas_t *nas, struct snmp_var *var, int key);
 int snmp_acct_v_handler(enum mib_node_cmd cmd, void *closure,
                         subid_t subid, struct snmp_var **varp,
                         int *errp);
@@ -1735,7 +1735,7 @@ snmp_acct_var_v_get(subid_t subid, struct snmp_var *var, int *errp)
 {
         struct snmp_var *ret;
         subid_t key;
-        NAS *nas;
+        grad_nas_t *nas;
         
         ret = snmp_var_create(var->name);
         *errp = SNMP_ERR_NOERROR;
@@ -1767,7 +1767,7 @@ snmp_acct_var_v_get(subid_t subid, struct snmp_var *var, int *errp)
 }
 
 void
-get_acct_nasstat(NAS *nas, struct snmp_var *var, int key)
+get_acct_nasstat(grad_nas_t *nas, struct snmp_var *var, int key)
 {
         struct nas_stat *statp = nas->app_data;
         
@@ -1780,9 +1780,9 @@ get_acct_nasstat(NAS *nas, struct snmp_var *var, int key)
 
         case MIB_KEY_AccClientAddress:
                 var->type = SMI_IPADDRESS;
-                var->val_length = sizeof(UINT4);
-                var->var_str = snmp_alloc(sizeof(UINT4));
-                *(UINT4*)var->var_str = ntohl(statp->ipaddr);
+                var->val_length = sizeof(grad_uint32_t);
+                var->var_str = snmp_alloc(sizeof(grad_uint32_t));
+                *(grad_uint32_t*)var->var_str = ntohl(statp->ipaddr);
                 break;
 
         case MIB_KEY_AccClientID:
@@ -1793,49 +1793,49 @@ get_acct_nasstat(NAS *nas, struct snmp_var *var, int key)
 
         case MIB_KEY_AccServPacketsDropped:
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->acct.num_dropped;
                 break;
 
         case MIB_KEY_AccServRequests:
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->acct.num_req;
                 break;
 
         case MIB_KEY_AccServDupRequests:
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->acct.num_dup_req;
                 break;
 
         case MIB_KEY_AccServResponses:
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->acct.num_resp;
                 break;
 
         case MIB_KEY_AccServBadAuthenticators:
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->acct.num_bad_sign;
                 break;
 
         case MIB_KEY_AccServMalformedRequests:
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->acct.num_bad_req;
                 break;
 
         case MIB_KEY_AccServNoRecords:
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->acct.num_norecords;
                 break;
 
         case MIB_KEY_AccServUnknownTypes:         
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->acct.num_unknowntypes;
                 break;
         }
@@ -1892,21 +1892,21 @@ snmp_serv_var_get(subid_t subid, oid_t oid, int *errp)
         case MIB_KEY_radiusServerUpTime:
                 gettimeofday(&tv, &tz);
                 ret->type = SMI_TIMETICKS;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = timeval_diff(&tv, &server_stat->start_time);
                 break;
 
         case MIB_KEY_radiusServerResetTime:
                 gettimeofday(&tv, &tz);
                 ret->type = SMI_TIMETICKS;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = timeval_diff(&tv,
                                             &server_stat->auth.reset_time);
                 break;
 
         case MIB_KEY_radiusServerState:
                 ret->type = ASN_INTEGER;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = server_stat->auth.status;/*FIXME*/
                 break;
         default:
@@ -2044,19 +2044,19 @@ snmp_stat_var_get(subid_t subid, oid_t oid, int *errp)
         case MIB_KEY_StatUpTime:
                 gettimeofday(&tv, &tz);
                 ret->type = SMI_TIMETICKS;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = timeval_diff(&tv, &radstat.start_time);
                 break;
 
         case MIB_KEY_StatConfigReset:
                 ret->type = ASN_INTEGER;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 ret->var_int = serv_running;;
                 break;
 
         case MIB_KEY_StatTotalLines:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 stat_count_ports();
                 ret->var_int = radstat.port_active_count
                             + radstat.port_idle_count;
@@ -2064,14 +2064,14 @@ snmp_stat_var_get(subid_t subid, oid_t oid, int *errp)
 
         case MIB_KEY_StatTotalLinesInUse:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 stat_count_ports();
                 ret->var_int = radstat.port_active_count;
                 break;
 
         case MIB_KEY_StatTotalLinesIdle:
                 ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
+                ret->val_length = sizeof(grad_counter_t);
                 stat_count_ports();
                 ret->var_int = radstat.port_idle_count;
                 break;
@@ -2088,9 +2088,9 @@ int
 snmp_stat_nas(int num, enum mib_node_cmd cmd, struct nas_data *closure,
 	      subid_t subid, struct snmp_var **varp, int *errp)
 {
-        NAS *nas;
+        grad_nas_t *nas;
         struct nas_stat *nsp;
-        UINT4 ip;
+        grad_uint32_t ip;
         struct snmp_var *var;
         int len;
         
@@ -2215,7 +2215,7 @@ snmp_stat_nas4(enum mib_node_cmd cmd, void *unused,
 }
 
 
-void get_stat_nasstat(NAS *nas, struct snmp_var *var, int ind);
+void get_stat_nasstat(grad_nas_t *nas, struct snmp_var *var, int ind);
 struct snmp_var *snmp_nas_table_get(subid_t subid, oid_t oid, int *errp);
 
 int
@@ -2268,7 +2268,7 @@ snmp_nas_table_get(subid_t subid, oid_t oid, int *errp)
 {
         struct snmp_var *ret;
         subid_t key;
-        NAS *nas;
+        grad_nas_t *nas;
         
         ret = snmp_var_create(oid);
         *errp = SNMP_ERR_NOERROR;
@@ -2293,16 +2293,16 @@ snmp_nas_table_get(subid_t subid, oid_t oid, int *errp)
 }
 
 void
-get_stat_nasstat(NAS *nas, struct snmp_var *var, int ind)
+get_stat_nasstat(grad_nas_t *nas, struct snmp_var *var, int ind)
 {
         struct nas_stat *statp = nas->app_data;
         
         switch (ind) {
         case MIB_KEY_NASAddress:
                 var->type = SMI_IPADDRESS;
-                var->val_length = sizeof(UINT4);
-                var->var_str = snmp_alloc(sizeof(UINT4));
-                *(UINT4*)var->var_str = ntohl(statp->ipaddr);
+                var->val_length = sizeof(grad_uint32_t);
+                var->var_str = snmp_alloc(sizeof(grad_uint32_t));
+                *(grad_uint32_t*)var->var_str = ntohl(statp->ipaddr);
                 break;
 
         case MIB_KEY_NASID:
@@ -2314,7 +2314,7 @@ get_stat_nasstat(NAS *nas, struct snmp_var *var, int ind)
         case MIB_KEY_NASLines:
                 stat_count_ports();
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->ports_active +
                                statp->ports_idle;
                 break;
@@ -2322,14 +2322,14 @@ get_stat_nasstat(NAS *nas, struct snmp_var *var, int ind)
         case MIB_KEY_NASLinesInUse:
                 stat_count_ports();
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->ports_active;
                 break;
 
         case MIB_KEY_NASLinesIdle:
                 stat_count_ports();
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = statp->ports_idle;
                 break;
 
@@ -2341,7 +2341,7 @@ int
 snmp_port_index1(enum mib_node_cmd cmd, void *unused,
 		 subid_t subid, struct snmp_var **varp, int *errp)
 {
-        NAS *nas;
+        grad_nas_t *nas;
         struct port_data *pind = (struct port_data*)snmpserv_get_data();
         
         switch (cmd) {
@@ -2381,7 +2381,7 @@ int
 snmp_port_index2(enum mib_node_cmd cmd, void *unused,
 		 subid_t subid, struct snmp_var **varp, int *errp)
 {
-        NAS *nas;
+        grad_nas_t *nas;
         int index;
         struct snmp_var *var;
         struct port_data *pind = (struct port_data*)snmpserv_get_data();
@@ -2535,14 +2535,14 @@ get_port_stat(PORT_STAT *port, struct snmp_var *var, subid_t key)
 {
         struct timeval tv;
         struct timezone tz;
-        NAS *nas;
+        grad_nas_t *nas;
         
         switch (key) {
 
         case MIB_KEY_StatPortNASIndex:
                 nas = grad_nas_lookup_ip(port->ip);
                 var->type = ASN_INTEGER;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 if (nas && nas->app_data) {
                         struct nas_stat *nsp = nas->app_data;
                         var->var_int = nsp->index;
@@ -2552,26 +2552,26 @@ get_port_stat(PORT_STAT *port, struct snmp_var *var, subid_t key)
 
         case MIB_KEY_StatPortID:
                 var->type = ASN_INTEGER;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = port->port_no;
                 break;
 
         case MIB_KEY_StatPortFramedAddress:
                 var->type = SMI_IPADDRESS;
-                var->val_length = sizeof(UINT4);
-                var->var_str = snmp_alloc(sizeof(UINT4));
-                *(UINT4*)var->var_str = port->framed_address;
+                var->val_length = sizeof(grad_uint32_t);
+                var->var_str = snmp_alloc(sizeof(grad_uint32_t));
+                *(grad_uint32_t*)var->var_str = port->framed_address;
                 break;
 
         case MIB_KEY_StatPortTotalLogins:                 
                 var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = port->count;
                 break;
                 
         case MIB_KEY_StatPortStatus:        
                 var->type = ASN_INTEGER;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = port->active ? port_active : port_idle;
                 break;
 
@@ -2584,7 +2584,7 @@ get_port_stat(PORT_STAT *port, struct snmp_var *var, subid_t key)
         case MIB_KEY_StatPortUpTime:         
                 gettimeofday(&tv, &tz);
                 var->type = SMI_TIMETICKS;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = TDIFF(tv, port->start);
                 break;
                 
@@ -2608,13 +2608,13 @@ get_port_stat(PORT_STAT *port, struct snmp_var *var, subid_t key)
 
         case MIB_KEY_StatPortIdleTotalTime:     
                 var->type = SMI_TIMETICKS;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = port->idle * 100;
                 break;
                 
         case MIB_KEY_StatPortIdleMaxTime:      
                 var->type = SMI_TIMETICKS;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = port->maxidle.time * 100;
                 break;
                 
@@ -2626,13 +2626,13 @@ get_port_stat(PORT_STAT *port, struct snmp_var *var, subid_t key)
 
         case MIB_KEY_StatPortInUseTotalTime:        
                 var->type = SMI_TIMETICKS;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = port->inuse * 100;
                 break;
                 
         case MIB_KEY_StatPortInUseMaxTime:     
                 var->type = SMI_TIMETICKS;
-                var->val_length = sizeof(counter);
+                var->val_length = sizeof(grad_counter_t);
                 var->var_int = port->maxinuse.time * 100;
                 break;
                 
@@ -2644,11 +2644,11 @@ get_port_stat(PORT_STAT *port, struct snmp_var *var, subid_t key)
         }
 }
 
-NAS *
+grad_nas_t *
 nas_lookup_index(int ind)
 {
-        NAS *nas;
-	ITERATOR *itr = grad_nas_iterator();
+        grad_nas_t *nas;
+	grad_iterator_t *itr = grad_nas_iterator();
         struct nas_stat *ns;
         
         for (nas = iterator_first(itr); nas; nas = iterator_next(itr)) {

@@ -42,14 +42,14 @@
 
 /* Memory allocation interface */
 
-VALUE_PAIR *
+grad_avp_t *
 grad_avp_alloc()
 {
-        return grad_emalloc(sizeof(VALUE_PAIR));
+        return grad_emalloc(sizeof(grad_avp_t));
 }
 
 void
-grad_avp_free(VALUE_PAIR *p)
+grad_avp_free(grad_avp_t *p)
 {
         if (!p)
                 return;
@@ -61,12 +61,12 @@ grad_avp_free(VALUE_PAIR *p)
 /* A/V pair functions */
 
 /* Create a copy of a pair */
-VALUE_PAIR *
-grad_avp_dup(VALUE_PAIR *vp)
+grad_avp_t *
+grad_avp_dup(grad_avp_t *vp)
 {
-        VALUE_PAIR *ret = grad_avp_alloc();
+        grad_avp_t *ret = grad_avp_alloc();
 
-        memcpy(ret, vp, sizeof(VALUE_PAIR));
+        memcpy(ret, vp, sizeof(grad_avp_t));
         ret->next = NULL;
         if (ret->type == TYPE_STRING || ret->eval_type != eval_const) {
 		ret->avp_strlength = vp->avp_strlength;
@@ -79,11 +79,11 @@ grad_avp_dup(VALUE_PAIR *vp)
 }
 
 /* Create a pair with given attribute */
-VALUE_PAIR *
+grad_avp_t *
 grad_avp_create(int attr)
 {
-        VALUE_PAIR *pair;
-        DICT_ATTR  *dict;
+        grad_avp_t *pair;
+        grad_dict_attr_t  *dict;
 
         dict = grad_attr_number_to_dict(attr);
         if (!dict) {
@@ -100,20 +100,20 @@ grad_avp_create(int attr)
 	return pair;
 }
 
-VALUE_PAIR *
-grad_avp_create_integer(int attr, UINT4 value)
+grad_avp_t *
+grad_avp_create_integer(int attr, grad_uint32_t value)
 {
-	VALUE_PAIR *pair = grad_avp_create(attr);
+	grad_avp_t *pair = grad_avp_create(attr);
 
 	if (pair) 
 		pair->avp_lvalue = value;
 	return pair;
 }
 
-VALUE_PAIR *
+grad_avp_t *
 grad_avp_create_string(int attr, char *value)
 {
-	VALUE_PAIR *pair = grad_avp_create(attr);
+	grad_avp_t *pair = grad_avp_create(attr);
 	if (pair) {
 		pair->avp_strvalue = grad_estrdup(value);
                 pair->avp_strlength = strlen(value);
@@ -121,10 +121,10 @@ grad_avp_create_string(int attr, char *value)
 	return pair;
 }
 
-VALUE_PAIR *
+grad_avp_t *
 grad_avp_create_binary(int attr, int length, u_char *value)
 {
-	VALUE_PAIR *pair = grad_avp_create(attr);
+	grad_avp_t *pair = grad_avp_create(attr);
 	if (pair) {
                 pair->avp_strlength = length;
                 pair->avp_strvalue = grad_emalloc(length + 1);
@@ -134,11 +134,11 @@ grad_avp_create_binary(int attr, int length, u_char *value)
 	return pair;
 }
 
-/* Add a pair to the end of a VALUE_PAIR list. */
-VALUE_PAIR *
-grad_avp_move(VALUE_PAIR **first, VALUE_PAIR *new)
+/* Add a pair to the end of a grad_avp_t list. */
+grad_avp_t *
+grad_avp_move(grad_avp_t **first, grad_avp_t *new)
 {
-        VALUE_PAIR *pair, *prev = NULL;
+        grad_avp_t *pair, *prev = NULL;
 
         if (*first == NULL) {
                 new->next = NULL;
@@ -185,7 +185,7 @@ grad_avp_move(VALUE_PAIR **first, VALUE_PAIR *new)
 }
 
 int
-grad_avp_cmp(VALUE_PAIR *a, VALUE_PAIR *b)
+grad_avp_cmp(grad_avp_t *a, grad_avp_t *b)
 {
 	int rc = 1;
 	
@@ -210,7 +210,7 @@ grad_avp_cmp(VALUE_PAIR *a, VALUE_PAIR *b)
 }
 
 int
-grad_avp_null_string_p(VALUE_PAIR *pair)
+grad_avp_null_string_p(grad_avp_t *pair)
 {
 	if (!pair)
 		return 1;
@@ -224,9 +224,9 @@ grad_avp_null_string_p(VALUE_PAIR *pair)
 /* Release the memory used by a list of attribute-value pairs.
  */
 void 
-grad_avl_free(VALUE_PAIR *pair)
+grad_avl_free(grad_avp_t *pair)
 {
-        VALUE_PAIR *next;
+        grad_avp_t *next;
 
         while (pair != NULL) {
                 next = pair->next;
@@ -238,8 +238,8 @@ grad_avl_free(VALUE_PAIR *pair)
 
 /* Find the pair with the matching attribute
  */
-VALUE_PAIR * 
-grad_avl_find(VALUE_PAIR *first, int attr)
+grad_avp_t * 
+grad_avl_find(grad_avp_t *first, int attr)
 {
         while (first && first->attribute != attr)
                 first = first->next;
@@ -247,8 +247,8 @@ grad_avl_find(VALUE_PAIR *first, int attr)
 }
 
 /* Find nth occurrence of a pair with the matching attribute. */
-VALUE_PAIR * 
-grad_avl_find_n(VALUE_PAIR *first, int attr,	int n)
+grad_avp_t * 
+grad_avl_find_n(grad_avp_t *first, int attr,	int n)
 {
 	for ( ; first; first = first->next) {
 		if (first->attribute == attr && n-- == 0)
@@ -260,9 +260,9 @@ grad_avl_find_n(VALUE_PAIR *first, int attr,	int n)
 /* Delete the pairs with the matching attribute
  */
 void 
-grad_avl_delete(VALUE_PAIR **first, int attr)
+grad_avl_delete(grad_avp_t **first, int attr)
 {
-        VALUE_PAIR *pair, *next, *last = NULL;
+        grad_avp_t *pair, *next, *last = NULL;
 
         for (pair = *first; pair; pair = next) {
                 next = pair->next;
@@ -279,9 +279,9 @@ grad_avl_delete(VALUE_PAIR **first, int attr)
 
 /* Delete Nth pair with the matching attribute */
 void 
-grad_avl_delete_n(VALUE_PAIR **first, int attr, int n)
+grad_avl_delete_n(grad_avp_t **first, int attr, int n)
 {
-	VALUE_PAIR *pair, *next, *last = NULL;
+	grad_avp_t *pair, *next, *last = NULL;
 
 	for (pair = *first; pair; pair = next) {
 		next = pair->next;
@@ -300,11 +300,11 @@ grad_avl_delete_n(VALUE_PAIR **first, int attr, int n)
 
 /* Move all attributes of a given type from one list to another */
 void
-grad_avl_move_pairs(VALUE_PAIR **to, VALUE_PAIR **from, int (*fun)(),
+grad_avl_move_pairs(grad_avp_t **to, grad_avp_t **from, int (*fun)(),
 	       void *closure)
 {
-        VALUE_PAIR *to_tail, *i, *next;
-        VALUE_PAIR *iprev = NULL;
+        grad_avp_t *to_tail, *i, *next;
+        grad_avp_t *iprev = NULL;
 
         /*
          *      Find the last pair in the "to" list and put it in "to_tail".
@@ -345,14 +345,14 @@ grad_avl_move_pairs(VALUE_PAIR **to, VALUE_PAIR **from, int (*fun)(),
 }
 
 static int
-cmp_attr(int *valp, VALUE_PAIR *pair)
+cmp_attr(int *valp, grad_avp_t *pair)
 {
         return *valp == pair->attribute;
 }
 
 /* Move all attributes of a given type from one list to another */
 void
-grad_avl_move_attr(VALUE_PAIR **to, VALUE_PAIR **from, int attr)
+grad_avl_move_attr(grad_avp_t **to, grad_avp_t **from, int attr)
 {
         grad_avl_move_pairs(to, from, cmp_attr, &attr);
 }
@@ -360,9 +360,9 @@ grad_avl_move_attr(VALUE_PAIR **to, VALUE_PAIR **from, int attr)
 /* Move attributes from one list to the other honoring their additivity 
  */
 void
-grad_avl_merge(VALUE_PAIR **dst_ptr, VALUE_PAIR **src_ptr)
+grad_avl_merge(grad_avp_t **dst_ptr, grad_avp_t **src_ptr)
 {
-        VALUE_PAIR *src, *next, *src_head, *src_tail;
+        grad_avp_t *src, *next, *src_head, *src_tail;
 
         if (*dst_ptr == NULL) {
                 *dst_ptr = *src_ptr;
@@ -389,9 +389,9 @@ grad_avl_merge(VALUE_PAIR **dst_ptr, VALUE_PAIR **src_ptr)
 
 /* Append the list `new' to the end of the list `*first' */
 void
-grad_avl_add_list(VALUE_PAIR **first, VALUE_PAIR *new)
+grad_avl_add_list(grad_avp_t **first, grad_avp_t *new)
 {
-        VALUE_PAIR *pair;
+        grad_avp_t *pair;
         
         if (*first == NULL) {
                 *first = new;
@@ -404,7 +404,7 @@ grad_avl_add_list(VALUE_PAIR **first, VALUE_PAIR *new)
 
 /* Add a single pair to the list */
 void
-grad_avl_add_pair(VALUE_PAIR **first, VALUE_PAIR *new)
+grad_avl_add_pair(grad_avp_t **first, grad_avp_t *new)
 {
         if (!new)
                 return;
@@ -414,16 +414,16 @@ grad_avl_add_pair(VALUE_PAIR **first, VALUE_PAIR *new)
 
 
 /* Create a copy of a pair list. */
-VALUE_PAIR *
-grad_avl_dup(VALUE_PAIR *from)
+grad_avp_t *
+grad_avl_dup(grad_avp_t *from)
 {
-        VALUE_PAIR *first = NULL;
-        VALUE_PAIR *last = NULL;
-        VALUE_PAIR *temp;
+        grad_avp_t *first = NULL;
+        grad_avp_t *last = NULL;
+        grad_avp_t *temp;
 
         for ( ; from; from = from->next) {
                 temp = grad_avp_alloc();
-                memcpy(temp, from, sizeof(VALUE_PAIR));
+                memcpy(temp, from, sizeof(grad_avp_t));
                 if (temp->type == TYPE_STRING || temp->eval_type != eval_const) {
 			char *p = grad_emalloc(temp->avp_strlength+1);
 			memcpy(p, temp->avp_strvalue, temp->avp_strlength);
@@ -443,7 +443,7 @@ grad_avl_dup(VALUE_PAIR *from)
 
 /* write a pairlist to the file */
 void
-grad_avl_fprint(FILE *fp, char *prefix, int typeflag, VALUE_PAIR *avl)
+grad_avl_fprint(FILE *fp, char *prefix, int typeflag, grad_avp_t *avl)
 {
         char *save;
 	if (!prefix)
@@ -456,13 +456,13 @@ grad_avl_fprint(FILE *fp, char *prefix, int typeflag, VALUE_PAIR *avl)
 }
 
 int
-grad_avl_cmp(VALUE_PAIR *a, VALUE_PAIR *b, int prop)
+grad_avl_cmp(grad_avp_t *a, grad_avp_t *b, int prop)
 {
 	int cmp_count = 0;
 	
 	for (; a; a = a->next) {
 		if (a->prop & prop) {
-			VALUE_PAIR *p = grad_avl_find(b, a->attribute);
+			grad_avp_t *p = grad_avl_find(b, a->attribute);
 			if (!p || grad_avp_cmp(a, p))
 				return 1;
 			cmp_count++;

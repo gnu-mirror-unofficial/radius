@@ -45,10 +45,10 @@ struct cfg_memblock {
 	int line_num;
 };
 
-static RAD_LIST /* of struct cfg_memblock */ *cfg_memory_pool;
+static grad_list_t /* of struct cfg_memblock */ *cfg_memory_pool;
  
-static RAD_LIST *_cfg_vlist_create(cfg_value_t *val);
-static void _cfg_vlist_append(RAD_LIST *vlist, cfg_value_t *val);
+static grad_list_t *_cfg_vlist_create(cfg_value_t *val);
+static void _cfg_vlist_append(grad_list_t *vlist, cfg_value_t *val);
 
 void *cfg_malloc(size_t size, void (*destructor)(void *));
  
@@ -81,7 +81,7 @@ static struct syntax_block *block;
 static void _cfg_push_block(struct cfg_stmt *stmt, cfg_end_fp end, void *data);
 static struct syntax_block *_cfg_pop_block();
 
-int _cfg_make_argv(cfg_value_t **argv, char *keyword, RAD_LIST *vlist);
+int _cfg_make_argv(cfg_value_t **argv, char *keyword, grad_list_t *vlist);
 void _cfg_free_argv(int argc, cfg_value_t *argv);
 
 struct cfg_stmt *_cfg_find_keyword(struct cfg_stmt *stmt, char *str);
@@ -98,11 +98,11 @@ static char *curp;
 %union {
         size_t number;
         int bool;
-        UINT4 ipaddr;
+        grad_uint32_t ipaddr;
         char *string;
         cfg_value_t value;
         cfg_network_t network;
-	RAD_LIST *vlist;
+	grad_list_t *vlist;
 	struct cfg_stmt *stmt;
 };
 
@@ -521,7 +521,7 @@ _cfg_free_memory_pool()
 }
 
 int
-_cfg_make_argv(cfg_value_t **argv, char *keyword, RAD_LIST *vlist)
+_cfg_make_argv(cfg_value_t **argv, char *keyword, grad_list_t *vlist)
 {
 	int argc;
 
@@ -535,7 +535,7 @@ _cfg_make_argv(cfg_value_t **argv, char *keyword, RAD_LIST *vlist)
 	if (vlist) {
 		int i;
 		cfg_value_t *val;
-		ITERATOR *itr = iterator_create(vlist);
+		grad_iterator_t *itr = iterator_create(vlist);
 
 		if (itr) {
 			for (i = 1, val = iterator_first(itr); val;
@@ -556,23 +556,23 @@ _cfg_free_argv(int argc, cfg_value_t *argv)
 static void
 _cfg_vlist_destroy(void *arg)
 {
-	RAD_LIST **pl = arg;
+	grad_list_t **pl = arg;
 	grad_list_destroy(pl, NULL, NULL);
 }
 
 void
-_cfg_vlist_append(RAD_LIST *vlist, cfg_value_t *val)
+_cfg_vlist_append(grad_list_t *vlist, cfg_value_t *val)
 {
 	cfg_value_t *vp = cfg_malloc(sizeof(*vp), NULL);
 	*vp = *val;
 	grad_list_append(vlist, vp);
 }
 
-RAD_LIST *
+grad_list_t *
 _cfg_vlist_create(cfg_value_t *val)
 {
-	RAD_LIST *vlist = grad_list_create();
-	RAD_LIST **lp = cfg_malloc(sizeof(*lp), _cfg_vlist_destroy);
+	grad_list_t *vlist = grad_list_create();
+	grad_list_t **lp = cfg_malloc(sizeof(*lp), _cfg_vlist_destroy);
 	*lp = vlist;
 	_cfg_vlist_append(vlist, val);
 	return vlist;
@@ -618,7 +618,7 @@ int
 _get_value(cfg_value_t *arg, int type, void *base)
 {
         struct servent *s;
-        UINT4 ipaddr;
+        grad_uint32_t ipaddr;
         cfg_value_t value;
 
 	value = *arg;
@@ -698,7 +698,7 @@ _get_value(cfg_value_t *arg, int type, void *base)
                 break;
 		
         case CFG_IPADDR:
-                *(UINT4*) base = value.v.ipaddr;
+                *(grad_uint32_t*) base = value.v.ipaddr;
                 break;
 		
         case CFG_BOOLEAN:

@@ -17,10 +17,10 @@
    along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-SCM radscm_avl_to_list(VALUE_PAIR *pair);
-VALUE_PAIR *radscm_list_to_avl(SCM list);
-SCM radscm_avp_to_cons(VALUE_PAIR *pair);
-VALUE_PAIR *radscm_cons_to_avp(SCM scm);
+SCM radscm_avl_to_list(grad_avp_t *pair);
+grad_avp_t *radscm_list_to_avl(SCM list);
+SCM radscm_avp_to_cons(grad_avp_t *pair);
+grad_avp_t *radscm_cons_to_avp(SCM scm);
 void radscm_init();
 
 void rscm_syslog_init();

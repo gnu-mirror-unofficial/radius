@@ -33,7 +33,7 @@ typedef struct envar {
 } ENVAR;
 
 static void
-grad_envar_parse_internal(char *str, RAD_LIST **plist)
+grad_envar_parse_internal(char *str, grad_list_t **plist)
 {
         int i;
         int argc;
@@ -77,7 +77,7 @@ grad_envar_parse_internal(char *str, RAD_LIST **plist)
 grad_envar_t *
 grad_envar_parse(char *str)
 {
-	RAD_LIST *list = NULL;
+	grad_list_t *list = NULL;
         grad_envar_parse_internal(str, &list);
         return list;
 }
@@ -85,7 +85,7 @@ grad_envar_parse(char *str)
 grad_envar_t *
 grad_envar_parse_argcv(int argc, char **argv)
 {
-	RAD_LIST *list = NULL;
+	grad_list_t *list = NULL;
         while (argc--) {
                 grad_envar_parse_internal(*argv++, &list);
         }
@@ -112,7 +112,7 @@ char *
 grad_envar_lookup(grad_envar_t *env, char *name)
 {
 	ENVAR *p;
-	ITERATOR *itr = iterator_create(env);
+	grad_iterator_t *itr = iterator_create(env);
 
 	if (!itr)
 		return NULL;
@@ -160,7 +160,7 @@ grad_envar_merge_lists(grad_envar_t *prim, grad_envar_t *sec)
 {
         grad_envar_t *list;
 	ENVAR *p;
-	ITERATOR *itr;
+	grad_iterator_t *itr;
         
         list = grad_list_create();
 	itr = iterator_create(sec);

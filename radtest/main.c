@@ -39,9 +39,9 @@
 Symtab *vartab;
 int verbose;
 extern int grad_client_debug;
-RADIUS_SERVER_QUEUE *srv_queue;
+grad_server_queue_t *srv_queue;
 int reply_code;
-VALUE_PAIR *reply_list;
+grad_avp_t *reply_list;
 int debug_flag = 0;
 int abort_on_failure = 0;
 
@@ -174,7 +174,7 @@ main(int argc, char **argv)
         if (retry)
                 srv_queue->retries = retry;
         if (server) {
-                RADIUS_SERVER serv;
+                grad_server_t serv;
                 int i, argc;
                 char **argv;
 
@@ -378,7 +378,7 @@ print_ident(Variable *var)
 }
 
 void
-print_pairs(FILE *fp, VALUE_PAIR *pair)
+print_pairs(FILE *fp, grad_avp_t *pair)
 {
         for (; pair; pair = pair->next) {
                 fprintf(fp, " %s = ", pair->name);
@@ -466,9 +466,9 @@ tempvar_free(Variable *var)
 void
 radtest_send(int port, int code, Variable *var, Symtab *cntl)
 {
-        RADIUS_REQ *auth;
+        grad_request_t *auth;
 	Variable *p;
-	VALUE_PAIR *pair;
+	grad_avp_t *pair;
 	
         if (reply_list)
                 grad_avl_free(reply_list);
@@ -581,12 +581,12 @@ comp_op(int op, int result)
 }
 
 int
-compare_lists(VALUE_PAIR *reply, VALUE_PAIR *sample)
+compare_lists(grad_avp_t *reply, grad_avp_t *sample)
 {
         int result = 0;
         
         for (; sample && result == 0; sample = sample->next) {
-                VALUE_PAIR *p;
+                grad_avp_t *p;
 
                 if (sample->attribute > 255)
                         continue;

@@ -27,7 +27,7 @@
 #include <stdio.h>
 #include <radiusd.h>
 
-static VALUE_PAIR *
+static grad_avp_t *
 menu_pairs(char *menu_name, char *menu_selection)
 {
         FILE    *fp;
@@ -36,7 +36,7 @@ menu_pairs(char *menu_name, char *menu_selection)
         char    selection[MAX_MENU_INPUT];
         int     mode;
         char    *ptr, *errp;
-        VALUE_PAIR      *reply_first;
+        grad_avp_t      *reply_first;
         int line_num;
         
         menu_path = grad_mkfilename3(radius_dir, "menus", menu_name);
@@ -114,9 +114,9 @@ menu_pairs(char *menu_name, char *menu_selection)
 }       
 
 void
-menu_reply(RADIUS_REQ *radreq, int activefd)
+menu_reply(grad_request_t *radreq, int activefd)
 {
-        VALUE_PAIR *pair, *term_pair, *new_pair;
+        grad_avp_t *pair, *term_pair, *new_pair;
         char menu_name[MAX_MENU_NAME];
         char menu_input[MAX_MENU_INPUT];
         char state_value[MAX_STATE_VALUE];

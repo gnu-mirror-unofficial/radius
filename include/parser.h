@@ -21,13 +21,13 @@
 
 struct matching_rule {
         char *name;
-        VALUE_PAIR *lhs;
-        VALUE_PAIR *rhs;
-	LOCUS loc;
+        grad_avp_t *lhs;
+        grad_avp_t *rhs;
+	grad_locus_t loc;
 };
 typedef struct matching_rule MATCHING_RULE;
 
-extern LOCUS source_locus;
+extern grad_locus_t source_locus;
 
 extern Symtab *user_tab;
 

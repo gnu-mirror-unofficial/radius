@@ -46,8 +46,8 @@ static char *priname[] = { /* priority names */
 
 void
 grad_default_logger(int level, 
-     const RADIUS_REQ *req,
-     const LOCUS *loc,
+     const grad_request_t *req,
+     const grad_locus_t *loc,
      const char *func_name, int en,
      const char *fmt, va_list ap)
 {
@@ -93,7 +93,7 @@ grad_log(int lvl, const char *msg, ...)
 
 /*PRINTFLIKE3*/
 void
-grad_log_req(int lvl, RADIUS_REQ *req, const char *msg, ...)
+grad_log_req(int lvl, grad_request_t *req, const char *msg, ...)
 {
         va_list ap;
         int ec = 0;
@@ -106,7 +106,7 @@ grad_log_req(int lvl, RADIUS_REQ *req, const char *msg, ...)
 }
 
 void
-grad_log_loc(int lvl, LOCUS *loc, const char *msg, ...)
+grad_log_loc(int lvl, grad_locus_t *loc, const char *msg, ...)
 {
 	va_list ap;
 	int ec = 0;
@@ -124,7 +124,7 @@ _dolog(int level, char *file, size_t line, char *func_name, char *fmt, ...)
 {
         va_list ap;
         int ec = 0;
-        LOCUS loc;
+        grad_locus_t loc;
 
         if (level & L_PERROR)
                 ec = errno;

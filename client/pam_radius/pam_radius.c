@@ -88,9 +88,9 @@ _cleanup_string(pam_handle_t *pamh, void *x, int error_status)
 
 /* Clean up the temporary A/V pair list */
 static void
-_cleanup_fake_pairlist(VALUE_PAIR *p)
+_cleanup_fake_pairlist(grad_avp_t *p)
 {
-	VALUE_PAIR *next;
+	grad_avp_t *next;
 	while (p) {
 		next = p->next;
 		grad_free(p);
@@ -149,8 +149,8 @@ int priority[] = {
 
 void
 vlog(int level,
-     const RADIUS_REQ *req,
-     const LOCUS *loc,
+     const grad_request_t *req,
+     const grad_locus_t *loc,
      const char *func_name, int en,
      const char *fmt, va_list ap)
 {
@@ -214,14 +214,14 @@ _pam_parse(pam_handle_t *pamh, int argc, const char **argv)
 {
         int ctrl=0;
 	int in_attr = 0;
-	VALUE_PAIR *head = NULL, *tail = NULL;
+	grad_avp_t *head = NULL, *tail = NULL;
 	
         /* step through arguments */
         for (ctrl=0; argc-- > 0; ++argv) {
 		
 		if (in_attr) {
 			char *p = strchr(*argv, '=');
-			VALUE_PAIR *pair;
+			grad_avp_t *pair;
 			
 			if (!p) {
 				_pam_log(LOG_ERR,
@@ -297,14 +297,14 @@ _cleanup_server_queue(pam_handle_t *pamh, void *x, int error_status)
 static void
 _cleanup_request(pam_handle_t *pamh, void *x, int error_status)
 {
-        grad_request_free((RADIUS_REQ*)x);
+        grad_request_free((grad_request_t*)x);
 }
 
 int
 _read_client_config(pam_handle_t *pamh)
 {
         int errcnt = 0;
-        RADIUS_SERVER_QUEUE *queue;
+        grad_server_queue_t *queue;
         
         queue = grad_client_create_queue(1, 0, 0);
         if (!queue)
@@ -365,12 +365,12 @@ _pam_init_radius_client(pam_handle_t *pamh)
 static int
 _radius_auth(pam_handle_t *pamh, char *name, char *password)
 {
-        RADIUS_SERVER_QUEUE *queue;
+        grad_server_queue_t *queue;
         int retval;
-        VALUE_PAIR *pairs, *namepair, *add_pair = NULL;
-        RADIUS_REQ *authreq;
-        DICT_VALUE *dv;
-	LOCUS loc = { __FILE__, __LINE__ }; /* FIXME */
+        grad_avp_t *pairs, *namepair, *add_pair = NULL;
+        grad_request_t *authreq;
+        grad_dict_value_t *dv;
+	grad_locus_t loc = { __FILE__, __LINE__ }; /* FIXME */
 
         retval = pam_get_data(pamh,
                               "radius_server_queue", 
@@ -403,7 +403,7 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
 						  queue->source_ip));
 	/* Add any additional attributes */
 	for (; add_pair; add_pair = add_pair->next) {
-		VALUE_PAIR *p = grad_create_pair(&loc,
+		grad_avp_t *p = grad_create_pair(&loc,
 						 add_pair->name, 
 						 OPERATOR_EQUAL,
 						 add_pair->avp_strvalue);
@@ -464,7 +464,7 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
 }
 
 static void
-add_stat_pairs(VALUE_PAIR *plist)
+add_stat_pairs(grad_avp_t *plist)
 {
 	/* FIXME: noop */
 }
@@ -472,13 +472,13 @@ add_stat_pairs(VALUE_PAIR *plist)
 static int
 _radius_acct(pam_handle_t *pamh, struct radutmp *ut)
 {
-        RADIUS_SERVER_QUEUE *queue;
+        grad_server_queue_t *queue;
         int retval;
-        VALUE_PAIR *pairs, *add_pair = NULL;
-        RADIUS_REQ *req;
-        DICT_VALUE *dv;
+        grad_avp_t *pairs, *add_pair = NULL;
+        grad_request_t *req;
+        grad_dict_value_t *dv;
         int type;
-	LOCUS loc = { __FILE__, __LINE__ }; /* FIXME */
+	grad_locus_t loc = { __FILE__, __LINE__ }; /* FIXME */
 	
         retval = pam_get_data(pamh,
                               "radius_server_queue", 
@@ -519,7 +519,7 @@ _radius_acct(pam_handle_t *pamh, struct radutmp *ut)
 	
 	/* Add any additional attributes */
 	for (; add_pair; add_pair = add_pair->next) {
-		VALUE_PAIR *p = grad_create_pair(&loc,
+		grad_avp_t *p = grad_create_pair(&loc,
                                              add_pair->name, 
                                              OPERATOR_EQUAL,
 				             add_pair->avp_strvalue);

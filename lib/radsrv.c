@@ -39,7 +39,7 @@
           radreq      -- The request. */
 
 int
-grad_server_send_reply(int fd, RADIUS_REQ *radreq)
+grad_server_send_reply(int fd, grad_request_t *radreq)
 {
         void *pdu;
         size_t length;
@@ -80,12 +80,12 @@ grad_server_send_reply(int fd, RADIUS_REQ *radreq)
           state       -- Value of the State attribute.
 */
 int
-grad_server_send_challenge(int fd, RADIUS_REQ *radreq, char *msg, char *state)
+grad_server_send_challenge(int fd, grad_request_t *radreq, char *msg, char *state)
 {
         void *pdu;
         size_t length;
-        VALUE_PAIR *p = grad_avp_create_string(DA_STATE, state);
-	VALUE_PAIR *reply;
+        grad_avp_t *p = grad_avp_create_string(DA_STATE, state);
+	grad_avp_t *reply;
 
 	reply = grad_avl_dup(radreq->reply_pairs);
 	grad_avl_merge(&reply, &p);

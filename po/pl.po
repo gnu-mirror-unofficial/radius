@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: radius 1.2\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
-"POT-Creation-Date: 2004-02-03 13:37+0200\n"
+"POT-Creation-Date: 2004-02-04 14:00+0200\n"
 "PO-Revision-Date: 2003-12-16 13:49+0200\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -73,11 +73,11 @@ msgstr "niew³a¶ciwa warto¶æ limita czasu oczekiwania"
 msgid "bad retry value"
 msgstr "niew³a¶ciwa warto¶æ liczby powtórzeñ"
 
-#: lib/debug.c:199 lib/debug.c:206
+#: lib/debug.c:197 lib/debug.c:204
 msgid "compiled without debugging support"
 msgstr "program skompilowany bez obs³ugi odpluskwiania"
 
-#: lib/dict.c:121 lib/nas.c:56 radiusd/files.c:973
+#: lib/dict.c:121 lib/nas.c:53 radiusd/files.c:973
 msgid "too few fields"
 msgstr "za ma³o pól"
 
@@ -390,22 +390,22 @@ msgstr "%s: za du¿o argumentów\n"
 msgid "(PROGRAM ERROR) Option should have been recognized!?"
 msgstr "(B£¡D PROGRAMU) Opcja powinna zostaæ rozpoznana!?"
 
-#: lib/printutmp.c:490
+#: lib/printutmp.c:491
 #, c-format
 msgid "missing closing quote in string started near `%s'"
 msgstr "brak cudzys³owa zamykaj±cego w ³añcuchu rozpoczêtym przy `%s'"
 
-#: lib/printutmp.c:566
+#: lib/printutmp.c:567
 #, c-format
 msgid "error in format spec: unknown format %s"
 msgstr "b³±d w specyfikacji formatu: nieznany format %s"
 
-#: lib/printutmp.c:588
+#: lib/printutmp.c:589
 #, c-format
 msgid "wrong number of arguments to form %s"
 msgstr "z³a liczba argumentów do formy %s"
 
-#: lib/printutmp.c:616
+#: lib/printutmp.c:617
 #, c-format
 msgid "form `%s' not closed"
 msgstr "forma `%s' nie jest zamkniêta"
@@ -665,7 +665,7 @@ msgstr "nie mogê stworzyæ sesji SNMP: %s"
 msgid "can't open snmp session: %s"
 msgstr "nie mogê otworzyæ sesji SNMP: %s"
 
-#: radiusd/checkrad.c:292 radiusd/checkrad.c:302 radiusd/snmpserv.c:2676
+#: radiusd/checkrad.c:292 radiusd/checkrad.c:302 radiusd/snmpserv.c:2681
 #, c-format
 msgid "can't create SNMP PDU: %s"
 msgstr "nie mogê stworzyæ SNMP PDU: %s"
@@ -1790,45 +1790,45 @@ msgstr "%s:%d: nie ma takiej sieci: %s"
 msgid "%s:%d: undefined community %s"
 msgstr "%s:%d: niezdefiniowana spo³eczno¶æ %s"
 
-#: radiusd/snmpserv.c:1325
+#: radiusd/snmpserv.c:1328
 msgid "acct server re-initializing on SNMP request"
 msgstr "ponowna inicjalizacja serwera rozliczania na ¿±danie SNMP"
 
-#: radiusd/snmpserv.c:1677
+#: radiusd/snmpserv.c:1680
 msgid "auth server re-initializing on SNMP request"
 msgstr "ponowna inicjalizacja serwera uwierzytelnienia na ¿±danie SNMP"
 
-#: radiusd/snmpserv.c:1957
+#: radiusd/snmpserv.c:1960
 msgid "server re-initializing on SNMP request"
 msgstr "serwer ponownie inicjalizowany na ¿±danie SNMP"
 
-#: radiusd/snmpserv.c:1961
+#: radiusd/snmpserv.c:1964
 msgid "server restart on SNMP request"
 msgstr "ponowne uruchomienie serwera na ¿±danie SNMP"
 
-#: radiusd/snmpserv.c:1965
+#: radiusd/snmpserv.c:1968
 msgid "server continuing on SNMP request"
 msgstr "kontynuacja pracy serwera na ¿±danie SNMP"
 
-#: radiusd/snmpserv.c:1969
+#: radiusd/snmpserv.c:1972
 msgid "server suspending on SNMP request"
 msgstr "serwer u¶piony na ¿±danie SNMP"
 
-#: radiusd/snmpserv.c:1973
+#: radiusd/snmpserv.c:1976
 msgid "server shutting down on SNMP request"
 msgstr "zatrzymywanie serwera na ¿±danie SNMP"
 
-#: radiusd/snmpserv.c:2683
+#: radiusd/snmpserv.c:2688
 #, c-format
 msgid "can't decode SNMP packet from %s: %s"
 msgstr "nie mo¿na zdekodowaæ pakietu SNMP z %s: %s"
 
-#: radiusd/snmpserv.c:2693
+#: radiusd/snmpserv.c:2698
 #, c-format
 msgid "DENIED attempt to access community %s from %s"
 msgstr "ODRZUCONO próbê dostêpu do spo³eczno¶ci %s z %s"
 
-#: radiusd/snmpserv.c:2747
+#: radiusd/snmpserv.c:2752
 #, c-format
 msgid "Dropping SNMP request from client %s: %s"
 msgstr "Zrzucanie ¿±dania SNMP od klienta %s: %s"
@@ -1954,7 +1954,7 @@ msgstr "ujemny czas ja³owy"
 msgid "negative port session time"
 msgstr "ujemna d³ugo¶æ sesji"
 
-#: radiusd/stat.c:467
+#: radiusd/stat.c:470
 msgid ""
 "reached SNMP storage limit for the number of monitored NASes: increase max-"
 "nas-count"

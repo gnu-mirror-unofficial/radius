@@ -66,7 +66,7 @@ struct request_class request_class[] = {
         { NULL, }
 };
 
-static RAD_LIST *request_list; /* List of REQUEST structures */
+static grad_list_t *request_list; /* List of REQUEST structures */
 
 
 /* ************************* General-purpose functions ********************* */
@@ -362,7 +362,7 @@ void
 request_update(pid_t pid, int status, void *ptr)
 {
 	REQUEST *p;
-	ITERATOR *itr;
+	grad_iterator_t *itr;
 	
 	debug(100,("enter, pid=%lu, ptr = %p", (unsigned long)pid, ptr));
 	itr = iterator_create(request_list);
@@ -404,7 +404,7 @@ void *
 request_scan_list(int type, list_iterator_t fn, void *closure)
 {
 	REQUEST *p;
-	ITERATOR *itr;
+	grad_iterator_t *itr;
 
 	itr = iterator_create(request_list);
 	if (!itr)

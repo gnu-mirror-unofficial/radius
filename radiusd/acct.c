@@ -50,21 +50,21 @@
 int     doradwtmp = 1;
 
 static int write_wtmp(struct radutmp *ut);
-static int write_nas_restart(int status, UINT4 addr);
+static int write_nas_restart(int status, grad_uint32_t addr);
 static int check_ts(struct radutmp *ut);
 
-int rad_acct_system(RADIUS_REQ *radreq, int dowtmp);
-int rad_acct_db(RADIUS_REQ *radreq, int authtype);
-int rad_acct_ext(RADIUS_REQ *radreq);
+int rad_acct_system(grad_request_t *radreq, int dowtmp);
+int rad_acct_db(grad_request_t *radreq, int authtype);
+int rad_acct_ext(grad_request_t *radreq);
 
 
 /* Zap a user, or all users on a NAS, from the radutmp file. */
 int
-radzap(UINT4 nasaddr, int port, char *user, time_t t)
+radzap(grad_uint32_t nasaddr, int port, char *user, time_t t)
 {
         struct radutmp  *up;
         radut_file_t    file;
-        UINT4           netaddr;
+        grad_uint32_t           netaddr;
         
         if (t == 0) time(&t);
         netaddr = htonl(nasaddr);
@@ -152,10 +152,10 @@ end:
 }
 
 int
-check_attribute(VALUE_PAIR *check_pairs, int pair_attr,
+check_attribute(grad_avp_t *check_pairs, int pair_attr,
 		int pair_value, int def)
 {
-        VALUE_PAIR *pair;
+        grad_avp_t *pair;
 
         if ((pair = grad_avl_find(check_pairs, pair_attr)) == NULL)
                 return def;
@@ -177,10 +177,10 @@ check_attribute(VALUE_PAIR *check_pairs, int pair_attr,
 
 /*  Store logins in the RADIUS utmp file. */
 int
-rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
+rad_acct_system(grad_request_t *radreq, int dowtmp)
 {
         struct radutmp  ut;
-        VALUE_PAIR *vp;
+        grad_avp_t *vp;
         int status = -1;
         int nas_address = 0;
         int protocol = -1;
@@ -204,7 +204,7 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
         ut.porttype = -1; /* Unknown so far */
 
         if (radreq->realm) {
-		RADIUS_SERVER *server =
+		grad_server_t *server =
 			grad_list_item(radreq->realm->queue->servers,
 				       radreq->server_no);
 		if (server)
@@ -425,15 +425,15 @@ acct_init()
 }
 
 int
-write_detail(RADIUS_REQ *radreq, int authtype, char *f)
+write_detail(grad_request_t *radreq, int authtype, char *f)
 {
         FILE *outfd;
         char nasname[MAX_LONGNAME];
         char *dir, *path;
         char *save;
-        VALUE_PAIR *pair;
-        UINT4 nas;
-        NAS *cl;
+        grad_avp_t *pair;
+        grad_uint32_t nas;
+        grad_nas_t *cl;
         time_t curtime;
         int ret = 0;
 
@@ -451,7 +451,7 @@ write_detail(RADIUS_REQ *radreq, int authtype, char *f)
         if ((pair = grad_avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
                 nas = pair->avp_lvalue;
         if (radreq->realm) {
-		RADIUS_SERVER *server =
+		grad_server_t *server =
 			grad_list_item(radreq->realm->queue->servers,
 				       radreq->server_no);
 		if (server)
@@ -547,7 +547,7 @@ write_detail(RADIUS_REQ *radreq, int authtype, char *f)
 }
 
 int
-rad_acct_db(RADIUS_REQ *radreq, int authtype)
+rad_acct_db(grad_request_t *radreq, int authtype)
 {
         int rc = 0;
 
@@ -561,9 +561,9 @@ rad_acct_db(RADIUS_REQ *radreq, int authtype)
 }
 
 int
-rad_acct_ext(RADIUS_REQ *radreq)
+rad_acct_ext(grad_request_t *radreq)
 {
-        VALUE_PAIR *p;
+        grad_avp_t *p;
 
 #ifdef USE_SERVER_GUILE
         for (p = grad_avl_find(radreq->request, DA_SCHEME_ACCT_PROCEDURE);
@@ -587,7 +587,7 @@ rad_acct_ext(RADIUS_REQ *radreq)
 
 /* run accounting modules */
 int
-rad_accounting(RADIUS_REQ *radreq, int activefd, int verified)
+rad_accounting(grad_request_t *radreq, int activefd, int verified)
 {
 	log_open(L_ACCT);
 
@@ -651,7 +651,7 @@ rad_check_ts(struct radutmp *ut)
 static int
 check_ts(struct radutmp *ut)
 {
-        NAS     *nas;
+        grad_nas_t     *nas;
 
         /* Find NAS type. */
         if ((nas = grad_nas_lookup_ip(ntohl(ut->nas_address))) == NULL) {
@@ -669,7 +669,7 @@ check_ts(struct radutmp *ut)
 }
 
 int
-rad_check_realm(REALM *realm)
+rad_check_realm(grad_realm_t *realm)
 {
         int count;
         struct radutmp *up;
@@ -729,15 +729,15 @@ rad_check_realm(REALM *realm)
       0 == OK,
       1 == user exceeds its simultaneous-use parameter */
 int
-rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul, int *pcount)
+rad_check_multi(char *name, grad_avp_t *request, int maxsimul, int *pcount)
 {
         radut_file_t file;
         int             count;
         struct radutmp  *up;
-        VALUE_PAIR      *fra;
+        grad_avp_t      *fra;
         int             mpp = 1; /* MPP flag. The sense is reversed: 1 if
                                     the session is NOT an MPP one */
-        UINT4           ipno = 0;
+        grad_uint32_t           ipno = 0;
         
         if ((file = rut_setent(radutmp_path, 0)) == NULL)
                 return 0;
@@ -797,11 +797,11 @@ rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul, int *pcount)
 }
 
 int
-write_nas_restart(int status, UINT4 addr)
+write_nas_restart(int status, grad_uint32_t addr)
 {
         struct radutmp ut;
 
-        bzero(&ut, sizeof(ut));
+        memset(&ut, 0, sizeof(ut));
         if (status == DV_ACCT_STATUS_TYPE_ACCOUNTING_ON) 
                 ut.type = P_NAS_START;
         else

@@ -42,9 +42,9 @@ struct variable {
         union datum {
                 int number;
                 char *string;
-                VALUE_PAIR *vector;
-                UINT4 ipaddr;
-                DICT_VALUE *dval;
+                grad_avp_t *vector;
+                grad_uint32_t ipaddr;
+                grad_dict_value_t *dval;
                 struct {
                         int (*set)();
                         int (*print)();
@@ -53,13 +53,13 @@ struct variable {
 };
 
 extern Symtab *vartab;
-extern UINT4 auth_server;
+extern grad_uint32_t auth_server;
 extern int   auth_port;
-extern UINT4 acct_server;
+extern grad_uint32_t acct_server;
 extern int   acct_port;
 extern u_char messg_id;
 extern int reply_code;
-extern VALUE_PAIR *reply_list;
+extern grad_avp_t *reply_list;
 extern int verbose;
 extern int abort_on_failure;
 extern int x_argmax;
@@ -69,7 +69,7 @@ extern char **x_argv;
 int open_input(char *name);
 void close_input();
 void set_yydebug();
-void parse_error __PVAR((const char *fmt, ...));
+void parse_error(const char *fmt, ...);
 void print(Variable *var);
 void radtest_send(int port, int code, Variable *var, Symtab *cntl);
 void putback(char *str);
@@ -77,6 +77,6 @@ void prompt();
 void tempvar_free(Variable *var);
 int var_free(Variable *var);
 void var_print(Variable *var);
-int compare_lists(VALUE_PAIR *reply, VALUE_PAIR *sample);
+int compare_lists(grad_avp_t *reply, grad_avp_t *sample);
 int parse_datum(char *p, union datum *dp);
 

@@ -84,10 +84,10 @@ obstack_grow_quoted(struct obstack *obp, char *str, int len)
  * others.
  */
 static void
-attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
-            DICT_ATTR  *attr, char *defval)
+attr_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
+            grad_dict_attr_t  *attr, char *defval)
 {
-        VALUE_PAIR *pair;
+        grad_avp_t *pair;
         int len;
         char tmp[AUTH_STRING_LEN + 1];
         char *str;
@@ -120,7 +120,7 @@ attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
                         break;
                 case '=':
                         if (pairlist) {
-				LOCUS loc;
+				grad_locus_t loc;
 				loc.file = __FILE__; /*FIXME*/
 				loc.line = __LINE__;
                                 pair = grad_create_pair(&loc,
@@ -195,11 +195,11 @@ attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
 }
 
 static void
-curtime_to_str(struct obstack *obp, VALUE_PAIR *request, int gmt)
+curtime_to_str(struct obstack *obp, grad_avp_t *request, int gmt)
 {
         time_t curtime;
         struct tm *tm, tms;
-        VALUE_PAIR *pair;
+        grad_avp_t *pair;
         char tbuf[AUTH_STRING_LEN];
         int len;
         
@@ -221,14 +221,14 @@ curtime_to_str(struct obstack *obp, VALUE_PAIR *request, int gmt)
  * attr_to_str)
  */
 static void
-attrno_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
+attrno_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
               int attr_no, char *defval)
 {
         attr_to_str(obp, req, pairlist,
 		    grad_attr_number_to_dict(attr_no), defval);
 }
 
-static DICT_ATTR *
+static grad_dict_attr_t *
 parse_dict_attr(char *p, char **endp, char **defval)
 {
         char namebuf[MAX_DICTNAME];
@@ -276,12 +276,12 @@ parse_dict_attr(char *p, char **endp, char **defval)
 }
 
 void
-radius_xlate0(struct obstack *obp, char *str, RADIUS_REQ *req,
-              VALUE_PAIR *reply)
+radius_xlate0(struct obstack *obp, char *str, grad_request_t *req,
+              grad_avp_t *reply)
 {
         int c;
         char *p;
-        DICT_ATTR *da;
+        grad_dict_attr_t *da;
         char *defval;
 
         for (p = str; *p; ) {
@@ -428,7 +428,7 @@ end:
 }
 
 char *
-radius_xlate(struct obstack *obp, char *str, RADIUS_REQ *req, VALUE_PAIR *reply)
+radius_xlate(struct obstack *obp, char *str, grad_request_t *req, grad_avp_t *reply)
 {
         radius_xlate0(obp, str, req, reply);
         obstack_1grow(obp, 0);
@@ -436,7 +436,7 @@ radius_xlate(struct obstack *obp, char *str, RADIUS_REQ *req, VALUE_PAIR *reply)
 }
 
 static void
-pair_set_value(VALUE_PAIR *p, Datatype type, Datum *datum)
+pair_set_value(grad_avp_t *p, Datatype type, Datum *datum)
 {
 	grad_free(p->avp_strvalue);
 	switch (type) {
@@ -456,7 +456,7 @@ pair_set_value(VALUE_PAIR *p, Datatype type, Datum *datum)
 }
 
 int
-radius_eval_avl(RADIUS_REQ *req, VALUE_PAIR *p)
+radius_eval_avl(grad_request_t *req, grad_avp_t *p)
 {
 	int errcnt = 0;
 	for (; p; p = p->next) {

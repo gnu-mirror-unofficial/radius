@@ -49,8 +49,8 @@ enum ascend_filter_cmp_op {
 
 /* The format of an IP filter attribute value. Fields are in netorder */
 typedef struct {
-	UINT4    src_ip;       /* The source IP address.  */
-	UINT4    dst_ip;       /* The destination IP address.  */
+	grad_uint32_t    src_ip;       /* The source IP address.  */
+	grad_uint32_t    dst_ip;       /* The destination IP address.  */
 	u_char   src_masklen;  /* The source netmask length */
 	u_char   dst_masklen;  /* The destination netmask length */
 	u_char   proto;        /* The IP protocol number */
@@ -66,7 +66,7 @@ typedef struct {
 /* IPX stuff. Not used at the moment */
 #define IPX_NODE_ADDR_LEN 6
 
-typedef UINT4   IPXADDR;
+typedef grad_uint32_t   IPXADDR;
 typedef char    IPXNODE[IPX_NODE_ADDR_LEN];
 typedef u_short IPXSOCKET;
 
@@ -363,7 +363,7 @@ _get_ip(struct ascend_parse_buf *pb)
 {
 	int dir = _get_direction_type(pb, "ip", 0);
 	char *tok;
-	UINT4 ip, mask;
+	grad_uint32_t ip, mask;
 	
 	if (dir == ASCEND_DIR_NONE)
 		return ASCEND_DIR_NONE;
@@ -635,7 +635,7 @@ _ascend_parse_filter(const char *input, ASCEND_FILTER *flt, char **errp)
 }
 
 int
-grad_ascend_parse_filter(VALUE_PAIR *pair, char **errp)
+grad_ascend_parse_filter(grad_avp_t *pair, char **errp)
 {
 	ASCEND_FILTER flt;
 	

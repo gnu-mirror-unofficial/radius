@@ -121,11 +121,11 @@ static struct argp argp = {
  *      Zap a user, or all users on a NAS, from the radutmp file.
  */
 int
-radzap(NETDEF *netdef, int port, char *user, time_t t)
+radzap(grad_netdef_t *netdef, int port, char *user, time_t t)
 {
         struct radutmp  *up;
         radut_file_t    file;
-        UINT4           netaddr;
+        grad_uint32_t   netaddr;
 
         if (t == 0) 
                 time(&t);
@@ -162,7 +162,7 @@ int
 confirm(struct radutmp *utp)
 {
         char buf[MAX_LONGNAME];
-        NAS *cl;
+        grad_nas_t *cl;
         char *s = NULL;
         
         if (cl = grad_nas_lookup_ip(ntohl(utp->nas_address)))
@@ -200,7 +200,7 @@ write_wtmp(struct radutmp *ut)
 int
 main(int argc, char **argv)
 {
-        NETDEF netdef, *netdefp = NULL;
+        grad_netdef_t netdef, *netdefp = NULL;
         time_t  t;
         char    *path;
         char *s;        
@@ -225,7 +225,7 @@ main(int argc, char **argv)
         grad_free(path);
 
         if (args.nas) {
-                NAS *np;
+                grad_nas_t *np;
                 np = grad_nas_lookup_name(args.nas);
 		if (np) {
                         netdefp = &np->netdef;

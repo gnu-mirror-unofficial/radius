@@ -33,12 +33,12 @@ typedef union {
 } Datum;
 
 void rewrite_init();
-int rewrite_interpret(char *expr, RADIUS_REQ *req,
+int rewrite_interpret(char *expr, grad_request_t *req,
 		      Datatype *type, Datum *datum);
-int rewrite_eval(char *func, RADIUS_REQ *req,
+int rewrite_eval(char *func, grad_request_t *req,
 		 Datatype *type, Datum *datum);
 int rewrite_invoke(Datatype rettype, void *ret,
-		   char *name, RADIUS_REQ *request, char *typestr, ...);
+		   char *name, grad_request_t *request, char *typestr, ...);
 char *rewrite_compile(char *expr);
 int rewrite_stmt_term(int finish, void *block_data, void *handler_data);
 size_t rewrite_get_stack_size();

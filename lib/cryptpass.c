@@ -174,7 +174,7 @@ grad_decrypt_text(u_char *password,   /* At least AUTH_STRING_LEN+1
 
 /* RFC 2138 functions */
 void
-grad_encrypt_password(VALUE_PAIR *pair,
+grad_encrypt_password(grad_avp_t *pair,
 		      char *password, /* Cleantext password */
 		      char *vector,   /* Request authenticator */
 		      char *secret)   /* Shared secret */
@@ -192,7 +192,7 @@ grad_encrypt_password(VALUE_PAIR *pair,
 void
 grad_decrypt_password(char *password,   /* At least AUTH_STRING_LEN+1
 					   characters long */
-		      VALUE_PAIR *pair, /* Password pair */
+		      grad_avp_t *pair, /* Password pair */
 		      char *vector,     /* Request authenticator */
 		      char *secret)     /* Shared secret */
 {
@@ -211,7 +211,7 @@ grad_decrypt_password(char *password,   /* At least AUTH_STRING_LEN+1
 void
 grad_decrypt_password_broken(char *password, /* At least AUTH_STRING_LEN+1
 						characters long */
-			     VALUE_PAIR *pair, /* Password pair */
+			     grad_avp_t *pair, /* Password pair */
 			     char *vector,     /* Request authenticator */
 			     char *secret)     /* Shared secret */
 {
@@ -249,7 +249,7 @@ grad_decrypt_password_broken(char *password, /* At least AUTH_STRING_LEN+1
 /* RFC 2868 */
       
 void
-grad_encrypt_tunnel_password(VALUE_PAIR *pair,
+grad_encrypt_tunnel_password(grad_avp_t *pair,
 			     u_char tag,
 			     char *password, /* Cleantext password */
 			     char *vector,   /* Request authenticator */
@@ -282,7 +282,7 @@ void
 grad_decrypt_tunnel_password(char *password,   /* At least AUTH_STRING_LEN+1
 						  characters long */
 			     u_char *tag,
-			     VALUE_PAIR *pair, /* Password pair */
+			     grad_avp_t *pair, /* Password pair */
 			     char *vector,     /* Request authenticator */
 			     char *secret)     /* Shared secret */
 {

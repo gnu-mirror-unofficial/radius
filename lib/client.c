@@ -52,9 +52,9 @@ grad_client_random_vector(char *vector)
 #define PERM S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP
 
 unsigned
-grad_client_message_id(RADIUS_SERVER *server)
+grad_client_message_id(grad_server_t *server)
 {
-	SERVER_ID sid;
+	grad_server_id_t sid;
 	int fd;
 	unsigned id;
 	
@@ -107,8 +107,8 @@ grad_client_message_id(RADIUS_SERVER *server)
 	return id;
 }
 	
-RADIUS_REQ *
-grad_client_recv(UINT4 host, u_short udp_port, char *secret, char *vector,
+grad_request_t *
+grad_client_recv(grad_uint32_t host, u_short udp_port, char *secret, char *vector,
 	     char *buffer, int length)
 {
         AUTH_HDR *auth;
@@ -116,7 +116,7 @@ grad_client_recv(UINT4 host, u_short udp_port, char *secret, char *vector,
         u_char reply_digest[AUTH_VECTOR_LEN];
         u_char calc_digest[AUTH_VECTOR_LEN];
         int  secretlen;
-	RADIUS_REQ *req;
+	grad_request_t *req;
 	
         auth = (AUTH_HDR *)buffer;
         totallen = ntohs(auth->length);
@@ -146,10 +146,10 @@ grad_client_recv(UINT4 host, u_short udp_port, char *secret, char *vector,
 	return req;
 }
 
-VALUE_PAIR *
-grad_client_encrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
+grad_avp_t *
+grad_client_encrypt_pairlist(grad_avp_t *plist, u_char *vector, u_char *secret)
 {
-	VALUE_PAIR *p;
+	grad_avp_t *p;
 	
 	for (p = plist; p; p = p->next) {
 		if (p->prop & AP_ENCRYPT_RFC2138) {
@@ -166,10 +166,10 @@ grad_client_encrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
 	return plist;
 }	
 
-VALUE_PAIR *
-grad_client_decrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
+grad_avp_t *
+grad_client_decrypt_pairlist(grad_avp_t *plist, u_char *vector, u_char *secret)
 {
-	VALUE_PAIR *p;
+	grad_avp_t *p;
 	char password[AUTH_STRING_LEN+1];
 	
 	for (p = plist; p; p = p->next) {
@@ -194,9 +194,9 @@ grad_client_decrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
 	return plist;
 }
 
-RADIUS_REQ *
-grad_client_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
-		  VALUE_PAIR *pairlist,
+grad_request_t *
+grad_client_send0(grad_server_queue_t *config, int port_type, int code,
+		  grad_avp_t *pairlist,
 		  int flags,
 		  int *authid, u_char *authvec)
 {
@@ -207,11 +207,11 @@ grad_client_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
         int sockfd;
         int salen;
         int i;
-        RADIUS_REQ *req = NULL;
-        RADIUS_SERVER *server;
+        grad_request_t *req = NULL;
+        grad_server_t *server;
         char ipbuf[DOTTED_QUAD_LEN];
 	char *recv_buf;
-	ITERATOR *itr;
+	grad_iterator_t *itr;
 	int id;
 	
         if (port_type < 0 || port_type > 2) {
@@ -255,7 +255,7 @@ grad_client_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 		u_char vector[AUTH_VECTOR_LEN];
 		void *pdu;
 		size_t size;
-		VALUE_PAIR *pair;
+		grad_avp_t *pair;
 
                 if (server->port[port_type] <= 0)
                         continue;
@@ -364,9 +364,9 @@ grad_client_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
         return req;
 }
 
-RADIUS_REQ *
-grad_client_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
-		 VALUE_PAIR *pairlist)
+grad_request_t *
+grad_client_send(grad_server_queue_t *config, int port_type, int code,
+		 grad_avp_t *pairlist)
 {
 	return grad_client_send0(config, port_type, code, pairlist, 0, NULL, NULL);
 }
@@ -390,11 +390,11 @@ static struct keyword kwd[] = {
 };
 
 static int
-parse_client_config(void *closure, int argc, char **argv, LOCUS *loc)
+parse_client_config(void *closure, int argc, char **argv, grad_locus_t *loc)
 {
-	RADIUS_SERVER_QUEUE *client = closure;
+	grad_server_queue_t *client = closure;
         char *p;
-        RADIUS_SERVER serv;
+        grad_server_t serv;
         
         switch (grad_xlat_keyword(kwd, argv[0], TOK_INVALID)) {
         case TOK_INVALID:
@@ -456,10 +456,10 @@ parse_client_config(void *closure, int argc, char **argv, LOCUS *loc)
 }
 
 
-RADIUS_SERVER_QUEUE *
-grad_client_create_queue(int read_cfg, UINT4 source_ip, size_t bufsize)
+grad_server_queue_t *
+grad_client_create_queue(int read_cfg, grad_uint32_t source_ip, size_t bufsize)
 {
-        RADIUS_SERVER_QUEUE *client;
+        grad_server_queue_t *client;
         char *filename;
         
         client = grad_emalloc(sizeof *client);
@@ -480,7 +480,7 @@ grad_client_create_queue(int read_cfg, UINT4 source_ip, size_t bufsize)
 }
 
 void
-grad_client_destroy_queue(RADIUS_SERVER_QUEUE *queue)
+grad_client_destroy_queue(grad_server_queue_t *queue)
 {
 	if (queue) {
 		grad_client_clear_server_list(queue);
@@ -488,10 +488,10 @@ grad_client_destroy_queue(RADIUS_SERVER_QUEUE *queue)
 	}
 }
 
-RADIUS_SERVER *
-grad_client_alloc_server(RADIUS_SERVER *src)
+grad_server_t *
+grad_client_alloc_server(grad_server_t *src)
 {
-        RADIUS_SERVER *server;
+        grad_server_t *server;
 
         server = grad_emalloc(sizeof(*server));
         server->name = grad_estrdup(src->name);
@@ -503,10 +503,10 @@ grad_client_alloc_server(RADIUS_SERVER *src)
         return server;
 }
 
-RADIUS_SERVER *
-grad_client_dup_server(RADIUS_SERVER *src)
+grad_server_t *
+grad_client_dup_server(grad_server_t *src)
 {
-        RADIUS_SERVER *dest;
+        grad_server_t *dest;
 
         dest = grad_emalloc(sizeof(*dest));
         dest->addr = src->addr;
@@ -522,7 +522,7 @@ grad_client_dup_server(RADIUS_SERVER *src)
  */
 
 void
-grad_client_free_server(RADIUS_SERVER *server)
+grad_client_free_server(grad_server_t *server)
 {
         grad_free(server->name);
         grad_free(server->secret);
@@ -530,7 +530,7 @@ grad_client_free_server(RADIUS_SERVER *server)
 }
 
 void
-grad_client_append_server(RADIUS_SERVER_QUEUE *qp, RADIUS_SERVER *server)
+grad_client_append_server(grad_server_queue_t *qp, grad_server_t *server)
 {
 	if (!qp->servers)
 		qp->servers = grad_list_create();
@@ -540,7 +540,7 @@ grad_client_append_server(RADIUS_SERVER_QUEUE *qp, RADIUS_SERVER *server)
 static int
 grad_client_internal_free_server(void *item, void *data)
 {
-	RADIUS_SERVER *server = item;
+	grad_server_t *server = item;
         grad_free(server->name);
         grad_free(server->secret);
 	grad_free(server);
@@ -548,7 +548,7 @@ grad_client_internal_free_server(void *item, void *data)
 }
 
 void
-grad_client_clear_server_list(RADIUS_SERVER_QUEUE *qp)
+grad_client_clear_server_list(grad_server_queue_t *qp)
 {
 	grad_list_destroy(&qp->servers,
 			  grad_client_internal_free_server, NULL);
@@ -557,14 +557,14 @@ grad_client_clear_server_list(RADIUS_SERVER_QUEUE *qp)
 static int
 server_cmp(const void *item, const void *data)
 {
-	const RADIUS_SERVER *serv = item;
+	const grad_server_t *serv = item;
 	const char *id = data;
 
         return strcmp(serv->name, id);
 }
 
-RADIUS_SERVER *
-grad_client_find_server(RADIUS_SERVER_QUEUE *qp, char *name)
+grad_server_t *
+grad_client_find_server(grad_server_queue_t *qp, char *name)
 {
 	return grad_list_locate(qp->servers, name, server_cmp);
 }

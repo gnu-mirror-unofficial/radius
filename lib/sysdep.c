@@ -85,10 +85,10 @@ grad_max_fd()
 #endif
 }
 
-static UINT4
+static grad_uint32_t
 grad_first_ip_nameindex()
 {
-	UINT4 ip = INADDR_ANY;
+	grad_uint32_t ip = INADDR_ANY;
 #ifdef SIOCGIFCONF
 	struct ifreq *ifr, *end, *cur;
 	struct ifconf ifc;
@@ -136,7 +136,7 @@ grad_first_ip_nameindex()
 
 		sinp = (struct sockaddr_in *)&cur->ifr_addr;
 		if (sinp->sin_family == AF_INET) {
-			UINT4 n = ntohl(sinp->sin_addr.s_addr);
+			grad_uint32_t n = ntohl(sinp->sin_addr.s_addr);
 
 			if (n != INADDR_LOOPBACK) {
 				ip = n;
@@ -151,10 +151,10 @@ grad_first_ip_nameindex()
 	return ip;
 }
 
-static UINT4
+static grad_uint32_t
 grad_first_ip_hostname()
 {
-	UINT4 ip = INADDR_ANY;
+	grad_uint32_t ip = INADDR_ANY;
 	char *name;
 	int name_len = 256;
 	int status;
@@ -172,10 +172,10 @@ grad_first_ip_hostname()
 	return ip;
 }
 
-UINT4
+grad_uint32_t
 grad_first_ip()
 {
-	UINT4 ip = INADDR_ANY;
+	grad_uint32_t ip = INADDR_ANY;
 
 	ip = grad_first_ip_nameindex();
 	if (ip == INADDR_ANY)
@@ -187,8 +187,8 @@ grad_first_ip()
 
 #ifdef HAVE_SIGACTION
 
-signal_handler_t
-grad_set_signal(int sig, signal_handler_t sighandler)
+grad_signal_handler_t
+grad_set_signal(int sig, grad_signal_handler_t sighandler)
 {
 	struct sigaction act, oact;
 	
@@ -204,20 +204,20 @@ grad_set_signal(int sig, signal_handler_t sighandler)
 }
 
 void
-grad_reset_signal(int sig ARG_UNUSED, signal_handler_t sighandler ARG_UNUSED)
+grad_reset_signal(int sig ARG_UNUSED, grad_signal_handler_t sighandler ARG_UNUSED)
 {
 }
 
 #else
 
-signal_handler_t
-grad_set_signal(int sig, signal_handler_t sighandler)
+grad_signal_handler_t
+grad_set_signal(int sig, grad_signal_handler_t sighandler)
 {
 	return signal(sig, sighandler);
 }
 
 void
-grad_reset_signal(int sig, signal_handler_t sighandler)
+grad_reset_signal(int sig, grad_signal_handler_t sighandler)
 {
 	grad_set_signal(sig, sighandler);
 }

@@ -44,11 +44,11 @@
 
 #define YYMAXDEPTH 10
 
-static LOCUS start_loc;
+static grad_locus_t start_loc;
 
 static void *closure;
 static register_rule_fp add_entry;
-static VALUE_PAIR *grad_create_pair0(char *name, int op, char *valstr);
+static grad_avp_t *grad_create_pair0(char *name, int op, char *valstr);
 
 int yyerror(char *s);
 extern int yylex();
@@ -70,9 +70,9 @@ extern int yylex();
         char *string;
         MATCHING_RULE *rule;
         struct {
-                VALUE_PAIR *lhs, *rhs;
+                grad_avp_t *lhs, *rhs;
         } descr;
-        VALUE_PAIR *pair;
+        grad_avp_t *pair;
         int op;
 } 
 
@@ -189,24 +189,24 @@ yyerror(char *s)
 	return 0;
 }
 
-VALUE_PAIR *
+grad_avp_t *
 grad_create_pair0(char *name, int op, char *valstr)
 {
 	return grad_create_pair(&source_locus, name, op, valstr);
 }
 
-VALUE_PAIR *
-grad_create_pair(LOCUS *loc, char *name, int op, char *valstr)
+grad_avp_t *
+grad_create_pair(grad_locus_t *loc, char *name, int op, char *valstr)
 {
-        DICT_ATTR       *attr = NULL;
-        DICT_VALUE      *dval;
-        VALUE_PAIR      *pair, *pair2;
+        grad_dict_attr_t *attr = NULL;
+        grad_dict_value_t *dval;
+        grad_avp_t *pair, *pair2;
         char *s;
         int x;
         time_t timeval;
         struct tm *tm, tms;
         
-        if ((attr = grad_attr_name_to_dict(name)) == (DICT_ATTR *)NULL) {
+        if ((attr = grad_attr_name_to_dict(name)) == NULL) {
                 grad_log_loc(L_ERR, loc, _("unknown attribute `%s'"),
 			     name);
                 return NULL;
@@ -331,9 +331,9 @@ grad_create_pair(LOCUS *loc, char *name, int op, char *valstr)
                         return NULL;
                 }
 #ifdef TIMELOCAL
-                pair->avp_lvalue = (UINT4)timelocal(tm);
+                pair->avp_lvalue = (grad_uint32_t)timelocal(tm);
 #else /* TIMELOCAL */
-                pair->avp_lvalue = (UINT4)mktime(tm);
+                pair->avp_lvalue = (grad_uint32_t)mktime(tm);
 #endif /* TIMELOCAL */
                 break;
 

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -22,7 +22,7 @@
 
 #include <list.h>
 
-typedef RAD_LIST grad_envar_t;
+typedef grad_list_t grad_envar_t;
 
 grad_envar_t *grad_envar_parse(char *str);
 grad_envar_t *grad_envar_parse_argcv(int argc, char **argv);

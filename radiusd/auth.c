@@ -196,16 +196,16 @@ unix_pass(char *name, char *passwd)
 
 /* Check password. */
 static enum auth_status 
-rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
-                   VALUE_PAIR *namepair, char **user_msg,
+rad_check_password(grad_request_t *radreq, grad_avp_t *check_item,
+                   grad_avp_t *namepair, char **user_msg,
 		   char *userpass,
 		   time_t *exp)
 {
         char *ptr;
         char *real_password = NULL;
         char name[AUTH_STRING_LEN];
-        VALUE_PAIR *auth_item;
-        VALUE_PAIR *tmp;
+        grad_avp_t *auth_item;
+        grad_avp_t *tmp;
         int auth_type = -1;
         int length;
         enum auth_status result = auth_ok;
@@ -407,9 +407,9 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
 }
 
 int
-rad_auth_check_username(RADIUS_REQ *radreq, int activefd)
+rad_auth_check_username(grad_request_t *radreq, int activefd)
 {
-        VALUE_PAIR *namepair = grad_avl_find(radreq->request, DA_USER_NAME);
+        grad_avp_t *namepair = grad_avl_find(radreq->request, DA_USER_NAME);
 
 	log_open(L_AUTH);
 
@@ -433,9 +433,9 @@ rad_auth_check_username(RADIUS_REQ *radreq, int activefd)
 
 /* Initial step of authentication. */
 int
-rad_auth_init(RADIUS_REQ *radreq, int activefd)
+rad_auth_init(grad_request_t *radreq, int activefd)
 {
-	LOCUS loc;
+	grad_locus_t loc;
 	
 	log_open(L_AUTH);
                 
@@ -489,13 +489,13 @@ enum list_id {
 };
 
 typedef struct auth_mach {
-        RADIUS_REQ *req;
-        VALUE_PAIR *user_check;
-        VALUE_PAIR *user_reply;
+        grad_request_t *req;
+        grad_avp_t *user_check;
+        grad_avp_t *user_reply;
         int        activefd;
         
-        VALUE_PAIR *namepair;
-        VALUE_PAIR *check_pair;
+        grad_avp_t *namepair;
+        grad_avp_t *check_pair;
         char       userpass[AUTH_STRING_LEN+1];
 
         char       *user_msg;
@@ -612,7 +612,7 @@ is_log_mode(AUTH_MACH *m, int mask)
         int mode = log_mode;
         int xmask = 0;
 #ifdef DA_LOG_MODE_MASK
-        VALUE_PAIR *p;
+        grad_avp_t *p;
 
         for (p = grad_avl_find(m->user_check, DA_LOG_MODE_MASK);
              p;
@@ -647,7 +647,7 @@ auth_finish_msg(AUTH_MACH *m)
 enum auth_status 
 radius_check_expiration(AUTH_MACH *m, time_t *exp)
 {
-        VALUE_PAIR *pair;
+        grad_avp_t *pair;
         
         if (pair = grad_avl_find(m->user_check, DA_EXPIRATION)) {
 		struct timeval tv;
@@ -662,7 +662,7 @@ radius_check_expiration(AUTH_MACH *m, time_t *exp)
 
 
 int
-rad_authenticate(RADIUS_REQ *radreq, int activefd)
+rad_authenticate(grad_request_t *radreq, int activefd)
 {
         enum auth_state oldstate;
         struct auth_state_s *sp;
@@ -686,7 +686,7 @@ rad_authenticate(RADIUS_REQ *radreq, int activefd)
                 sp = &states[m.state];
                 oldstate = m.state;
                 if (sp->attr) {
-                        VALUE_PAIR *p;
+                        grad_avp_t *p;
                         
                         switch (sp->list) {
                         case L_req:
@@ -720,7 +720,7 @@ rad_authenticate(RADIUS_REQ *radreq, int activefd)
         if (m.user_msg)
                 free(m.user_msg);
         obstack_free(&m.msg_stack, NULL);
-        bzero(m.userpass, sizeof(m.userpass));
+        memset(m.userpass, 0, sizeof(m.userpass));
         return 0;
 }
 
@@ -737,8 +737,8 @@ rad_authenticate(RADIUS_REQ *radreq, int activefd)
 void
 sfn_init(AUTH_MACH *m)
 {
-        RADIUS_REQ *radreq = m->req;
-        VALUE_PAIR *pair_ptr;
+        grad_request_t *radreq = m->req;
+        grad_avp_t *pair_ptr;
 
 	switch (radreq->server_code) {
 	case RT_ACCESS_REJECT:
@@ -810,8 +810,8 @@ void
 sfn_scheme(AUTH_MACH *m)
 {
 #ifdef USE_SERVER_GUILE
-        VALUE_PAIR *p;
-        VALUE_PAIR *reply;
+        grad_avp_t *p;
+        grad_avp_t *reply;
         
         if (!use_guile) {
                 grad_log_req(L_ERR, m->req,
@@ -848,10 +848,10 @@ sfn_scheme(AUTH_MACH *m)
 void
 sfn_validate(AUTH_MACH *m)
 {
-        RADIUS_REQ *radreq = m->req;
+        grad_request_t *radreq = m->req;
 	enum auth_status rc;
 	time_t exp;
-	VALUE_PAIR *pair;
+	grad_avp_t *pair;
 	
 	rc = rad_check_password(radreq,
 				m->user_check, m->namepair,
@@ -990,10 +990,10 @@ sfn_simuse(AUTH_MACH *m)
         newstate(as_reject_cleanup);
 }
 
-static UINT4
-set_session_timeout(AUTH_MACH *m, UINT4 val)
+static grad_uint32_t
+set_session_timeout(AUTH_MACH *m, grad_uint32_t val)
 {
-	VALUE_PAIR *p;
+	grad_avp_t *p;
 	
         if (!(p = grad_avl_find(m->user_reply, DA_SESSION_TIMEOUT))) {
                 p = grad_avp_create_integer(DA_SESSION_TIMEOUT, val);
@@ -1026,7 +1026,7 @@ sfn_time(AUTH_MACH *m)
                 /*
                  * User is allowed, but set Session-Timeout.
                  */
-                UINT4 to = set_session_timeout(m, rest);
+                grad_uint32_t to = set_session_timeout(m, rest);
                 debug(2, ("user %s, span %s, timeout %d, real timeout %d",
                           m->namepair->avp_strvalue,
                           m->check_pair->avp_strvalue,
@@ -1038,7 +1038,7 @@ sfn_time(AUTH_MACH *m)
 void
 sfn_ipaddr(AUTH_MACH *m)
 {
-        VALUE_PAIR *p, *tmp, *pp;
+        grad_avp_t *p, *tmp, *pp;
         
         /* Assign an IP if necessary */
         if (!grad_avl_find(m->user_reply, DA_FRAMED_IP_ADDRESS)) {
@@ -1054,13 +1054,13 @@ void
 sfn_exec_wait(AUTH_MACH *m)
 {
 	int rc;
-	VALUE_PAIR *p;
-	VALUE_PAIR *repl = NULL;
+	grad_avp_t *p;
+	grad_avp_t *repl = NULL;
 	
 	for (p = m->check_pair;
              p;
              p = grad_avl_find(p->next, DA_EXEC_PROGRAM_WAIT)) {
-		VALUE_PAIR *tail = NULL;
+		grad_avp_t *tail = NULL;
 
 		if (m->user_reply)
 			for (tail = m->user_reply; tail->next;
@@ -1114,7 +1114,7 @@ sfn_exec_wait(AUTH_MACH *m)
 void
 sfn_exec_nowait(AUTH_MACH *m)
 {
-	VALUE_PAIR *p;
+	grad_avp_t *p;
 	
 	for (p = m->check_pair;
              p;
@@ -1208,9 +1208,9 @@ sfn_reject(AUTH_MACH *m)
 }
 
 void
-req_decrypt_password(char *password, RADIUS_REQ *req, VALUE_PAIR *pair)
+req_decrypt_password(char *password, grad_request_t *req, grad_avp_t *pair)
 {
-        NAS *nas;
+        grad_nas_t *nas;
         char *s;
         
         if (!pair) {

@@ -28,9 +28,9 @@
 struct input_system {
 	fd_set fdset;
 	int fd_max;
-	RAD_LIST *methods;    /* List of METHOD structures */
-	RAD_LIST *channels;   /* List of CHANNEL structures */
-	ITERATOR *citr;
+	grad_list_t *methods;    /* List of METHOD structures */
+	grad_list_t *channels;   /* List of CHANNEL structures */
+	grad_iterator_t *citr;
 };
 
 typedef struct input_method METHOD;

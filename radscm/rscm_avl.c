@@ -30,14 +30,14 @@ SCM_DEFINE(rscm_avl_delete, "avl-delete", 2, 0, 0,
 	   "Delete the pairs with the matching attribute")
 #define FUNC_NAME s_rscm_avl_delete
 {
-        VALUE_PAIR *pairlist;
+        grad_avp_t *pairlist;
         int attr;
         SCM RETVAL;
         SCM_ASSERT(SCM_NIMP(LIST) && SCM_CONSP(LIST),
                    LIST, SCM_ARG1, FUNC_NAME);
         pairlist = radscm_list_to_avl(LIST);
         if (SCM_NIMP(ATTR) && SCM_STRINGP(ATTR)) {
-                DICT_ATTR *da = grad_attr_name_to_dict(SCM_STRING_CHARS(ATTR));
+                grad_dict_attr_t *da = grad_attr_name_to_dict(SCM_STRING_CHARS(ATTR));
                 if (!da)
                         scm_misc_error(FUNC_NAME,
                                        "Unknown attribute: ~S",
@@ -60,7 +60,7 @@ SCM_DEFINE(rscm_avl_merge, "avl-merge", 2, 0, 0,
 "Merge SRC into DST.")     
 #define FUNC_NAME s_rscm_avl_merge
 {
-        VALUE_PAIR *dst, *src;
+        grad_avp_t *dst, *src;
         SCM RETVAL;
         
         SCM_ASSERT(DST == SCM_EOL || (SCM_NIMP(DST) && SCM_CONSP(DST)),
@@ -82,8 +82,8 @@ SCM_DEFINE(rscm_avl_match_p, "avl-match?", 2, 0, 0,
 "Return #t if all pairs from LIST are present in TARGET")          
 #define FUNC_NAME s_rscm_avl_match_p
 {
-        VALUE_PAIR *target, *pair;
-        VALUE_PAIR *list, *check_pair;
+        grad_avp_t *target, *pair;
+        grad_avp_t *list, *check_pair;
         int rc;
 
         SCM_ASSERT((SCM_IMP(TARGET) && TARGET == SCM_EOL)

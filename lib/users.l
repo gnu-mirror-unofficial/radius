@@ -56,7 +56,7 @@ static int preproc();
 static void read_number(char *text, int len, int base);
 
 static struct obstack stack; /* Obstack for keeping string values */ 
-LOCUS source_locus;
+grad_locus_t source_locus;
 ino_t source_inode;          /* Inode of the current source (for preventing
                                 recursive inclusion */
 
@@ -197,7 +197,7 @@ xunput(int c)
 
 struct buffer_ctx {
         struct buffer_ctx *prev;
-	LOCUS loc;
+	grad_locus_t loc;
         ino_t i_node;
         FILE *yyin;
         LEX_BUFFER_STATE state;

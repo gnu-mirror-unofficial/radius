@@ -24,12 +24,12 @@
 #define CS_BLOCK 1
 
 typedef struct {
-	UINT4 ipaddr;
-	UINT4 netmask;
+	grad_uint32_t ipaddr;
+	grad_uint32_t netmask;
 } cfg_network_t;
 
 typedef struct {
-	UINT4 ipaddr;
+	grad_uint32_t ipaddr;
 	int port;
 } cfg_host_t;
 
@@ -46,7 +46,7 @@ typedef struct {
         int type;
         union {
 		char *string;
-                UINT4 ipaddr;
+                grad_uint32_t ipaddr;
                 size_t number;
                 int bool;
 		cfg_network_t network;

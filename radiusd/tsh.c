@@ -46,7 +46,7 @@
 #include <timestr.h>
 
 static int interactive;
-static RADIUS_REQ test_req;
+static grad_request_t test_req;
 static char *tsh_ps1 = "(radiusd) ";
 static char *tsh_ps2 = "[radiusd] ";
 
@@ -158,7 +158,7 @@ tsh_help(int argc, char **argv, char *cmd ARG_UNUSED)
 static void
 tsh_query_nas(int argc, char **argv, char *cmd ARG_UNUSED)
 {
-	NAS *nas;
+	grad_nas_t *nas;
 	struct radutmp ut;
 
 	if (argc < 5 || argc > 6) {
@@ -340,7 +340,7 @@ static void
 tsh_req_define(int argc, char **argv, char *cmd)
 {
 	char *errp;
-	VALUE_PAIR *vp = NULL;
+	grad_avp_t *vp = NULL;
 	
 	if (argc > 1) {
 		while (*cmd && isspace(*cmd))

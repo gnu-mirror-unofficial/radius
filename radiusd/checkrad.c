@@ -52,7 +52,7 @@ struct check_instance {
         char          *name;
         int           port;
         char          *sid;
-        UINT4         ip;
+        grad_uint32_t         ip;
         int           result;
         int           timeout;
         int           method;
@@ -74,7 +74,7 @@ ilookup(struct check_instance *checkp, char *name, int defval)
 }
         
 struct check_instance *
-create_instance(struct check_instance *cptr, NAS *nas, struct radutmp *up)
+create_instance(struct check_instance *cptr, grad_nas_t *nas, struct radutmp *up)
 {
         RADCK_TYPE *radck_type;
                 
@@ -109,7 +109,7 @@ free_instance(struct check_instance *cptr)
 int
 compare(struct check_instance *checkp, char *str)
 {
-	UINT4 result;
+	grad_uint32_t result;
 
 	if (rewrite_invoke(Integer, &result,
 			   checkp->func, NULL,
@@ -218,10 +218,10 @@ converse(int type, struct snmp_session *sp, struct snmp_pdu *pdu, void *closure)
                         debug(2, ("(INT) %d: %d", vlist->var_int, rc));
                         break;
                 case SMI_IPADDRESS:
-                        grad_ip_iptostr(*(UINT4*)vlist->var_int, buf);
+                        grad_ip_iptostr(*(grad_uint32_t*)vlist->var_int, buf);
                         rc = compare(checkp, buf);
                         debug(2, ("(IPADDR) %#x: %d",
-                                  *(UINT4*)vlist->var_str, rc));
+                                  *(grad_uint32_t*)vlist->var_str, rc));
                         break;
                 }
 
@@ -231,7 +231,7 @@ converse(int type, struct snmp_session *sp, struct snmp_pdu *pdu, void *closure)
 }
 
 int
-snmp_check(struct check_instance *checkp, NAS *nas)
+snmp_check(struct check_instance *checkp, grad_nas_t *nas)
 {
         int rc = -1;
         struct snmp_pdu *pdu;
@@ -342,7 +342,7 @@ alrm_handler()
 #define MIN(a,b) ((a)<(b))?(a):(b)
 
 int
-finger_check(struct check_instance *checkp, NAS *nas)
+finger_check(struct check_instance *checkp, grad_nas_t *nas)
 {
         char *arg;
         char namebuf[RUT_NAMESIZE+1];
@@ -523,14 +523,14 @@ finger_check(struct check_instance *checkp, NAS *nas)
 
 /*ARGSUSED*/
 int
-ext_check(struct check_instance *checkp, NAS *nas)
+ext_check(struct check_instance *checkp, grad_nas_t *nas)
 {
         grad_log(L_ERR, "ext_check not implemented");
         return -1;
 }
 
 int
-checkrad(NAS *nas, struct radutmp *up)
+checkrad(grad_nas_t *nas, struct radutmp *up)
 {
         struct check_instance checkp;
         int rc = -1;

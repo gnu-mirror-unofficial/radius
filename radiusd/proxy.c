@@ -42,8 +42,8 @@
 
 /* Decode a password and encode it again. */
 static void
-passwd_recode(VALUE_PAIR *pass_pair, char *new_secret, char *new_vector,
-	      RADIUS_REQ *req)
+passwd_recode(grad_avp_t *pass_pair, char *new_secret, char *new_vector,
+	      grad_request_t *req)
 {
         char password[AUTH_STRING_LEN+1];
         req_decrypt_password(password, req, pass_pair);
@@ -55,8 +55,8 @@ passwd_recode(VALUE_PAIR *pass_pair, char *new_secret, char *new_vector,
 
 /* Decode a password and encode it again. */
 static void
-tunnel_passwd_recode(VALUE_PAIR *pass_pair, char *new_secret, char *new_vector,
-		     RADIUS_REQ *req)
+tunnel_passwd_recode(grad_avp_t *pass_pair, char *new_secret, char *new_vector,
+		     grad_request_t *req)
 {
         char password[AUTH_STRING_LEN+1];
 	u_char tag;
@@ -71,11 +71,11 @@ tunnel_passwd_recode(VALUE_PAIR *pass_pair, char *new_secret, char *new_vector,
 	memset(password, 0, AUTH_STRING_LEN);
 }
 
-VALUE_PAIR *
-proxy_request_recode(RADIUS_REQ *radreq, VALUE_PAIR *plist,
+grad_avp_t *
+proxy_request_recode(grad_request_t *radreq, grad_avp_t *plist,
 		     u_char *secret, u_char *vector)
 {
-	VALUE_PAIR *p;
+	grad_avp_t *p;
 
 	/* Recode password pair(s) */
 	for (p = plist; p; p = p->next) {
@@ -92,10 +92,10 @@ proxy_request_recode(RADIUS_REQ *radreq, VALUE_PAIR *plist,
  */
 
 int
-proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r)
+proxy_cmp(grad_request_t *qr, grad_request_t *r)
 {
-	VALUE_PAIR *p, *proxy_state_pair = NULL;
-	RADIUS_SERVER *server;
+	grad_avp_t *p, *proxy_state_pair = NULL;
+	grad_server_t *server;
 	
 	if (!qr->realm) {
 		debug(100,("no proxy realm"));
@@ -153,7 +153,7 @@ proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r)
 
 /* Send the request */
 static int
-proxy_send_pdu(int fd, RADIUS_SERVER *server, RADIUS_REQ *radreq,
+proxy_send_pdu(int fd, grad_server_t *server, grad_request_t *radreq,
 	       void *pdu, size_t size)
 {
 	struct sockaddr_in sin;
@@ -172,12 +172,12 @@ proxy_send_pdu(int fd, RADIUS_SERVER *server, RADIUS_REQ *radreq,
 }
 
 int
-proxy_send_request(int fd, RADIUS_REQ *radreq)
+proxy_send_request(int fd, grad_request_t *radreq)
 {
-	VALUE_PAIR *plist, *p;
+	grad_avp_t *plist, *p;
 	void *pdu;
 	size_t size;
-	RADIUS_SERVER *server;
+	grad_server_t *server;
 	int rc;
 	PROXY_STATE *proxy_state;
 	
@@ -258,10 +258,10 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 /* ************************************************************************* */
 /* Interface functions */
 
-static REALM *
-proxy_lookup_realm(RADIUS_REQ *req, char *name)
+static grad_realm_t *
+proxy_lookup_realm(grad_request_t *req, char *name)
 {
-	REALM *realm = grad_realm_lookup_name(name);
+	grad_realm_t *realm = grad_realm_lookup_name(name);
 	static char *var[] = { "auth", "acct" };
 	int t;
 	
@@ -304,12 +304,12 @@ proxy_lookup_realm(RADIUS_REQ *req, char *name)
 int
 proxy_send(REQUEST *req)
 {
-	RADIUS_REQ *radreq = req->data;
+	grad_request_t *radreq = req->data;
         char *username;
-        VALUE_PAIR *namepair;
-        VALUE_PAIR *vp;
+        grad_avp_t *namepair;
+        grad_avp_t *vp;
         char *realmname;
-        REALM *realm;
+        grad_realm_t *realm;
 
         /* Look up name. */
         namepair = grad_avl_find(radreq->request, DA_USER_NAME);
@@ -364,9 +364,9 @@ proxy_send(REQUEST *req)
 
 /* FIXME! server timeout is not used */
 void
-proxy_retry(RADIUS_REQ *req, int fd)
+proxy_retry(grad_request_t *req, int fd)
 {
-	VALUE_PAIR *namepair;
+	grad_avp_t *namepair;
 	char *saved_username;
 	
         namepair = grad_avl_find(req->request, DA_USER_NAME);
@@ -385,7 +385,7 @@ proxy_retry(RADIUS_REQ *req, int fd)
 }
 
 static int
-select_propagated(void *null ARG_UNUSED, VALUE_PAIR *pair)
+select_propagated(void *null ARG_UNUSED, grad_avp_t *pair)
 {
         return pair->prop & AP_PROPAGATE;
 }
@@ -396,10 +396,10 @@ select_propagated(void *null ARG_UNUSED, VALUE_PAIR *pair)
    Return:   0 proxy found
             -1 error don't reply */
 int
-proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int fd)
+proxy_receive(grad_request_t *radreq, grad_request_t *oldreq, int fd)
 {
-        VALUE_PAIR *vp, *proxy_state_pair, *prev, *x;
-        VALUE_PAIR *allowed_pairs;
+        grad_avp_t *vp, *proxy_state_pair, *prev, *x;
+        grad_avp_t *allowed_pairs;
 	
         /* Remove the last proxy pair from the list. */
         proxy_state_pair = x = prev = NULL;
@@ -427,7 +427,7 @@ proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int fd)
 			    select_propagated, NULL);
         grad_avl_free(radreq->request);
 
-        /* Rebuild the RADIUS_REQ struct, so that the normal functions
+        /* Rebuild the grad_request_t struct, so that the normal functions
            can process it. Take care not to modify oldreq! */
 
 	memcpy(radreq->vector, oldreq->remote_auth, sizeof radreq->vector);

@@ -34,11 +34,11 @@
           is used instead of the supplied arguments. */
 
 void
-radius_send_reply(int code, RADIUS_REQ *radreq,
-		  VALUE_PAIR *reply_pairs, char *msg, int fd)
+radius_send_reply(int code, grad_request_t *radreq,
+		  grad_avp_t *reply_pairs, char *msg, int fd)
 {
         if (radreq->reply_code == 0) {
-                VALUE_PAIR *reply;
+                grad_avp_t *reply;
                 
                 /* Save the data */
                 radreq->reply_code = code;
@@ -82,7 +82,7 @@ radius_send_reply(int code, RADIUS_REQ *radreq,
           state       -- Value of the State attribute.
           fd          -- Socket descriptor. */
 void
-radius_send_challenge(RADIUS_REQ *radreq, char *msg, char *state, int fd)
+radius_send_challenge(grad_request_t *radreq, char *msg, char *state, int fd)
 {
 	radreq->reply_pairs = NULL;
 	grad_avl_move_attr(&radreq->reply_pairs, &radreq->request,
@@ -94,7 +94,7 @@ radius_send_challenge(RADIUS_REQ *radreq, char *msg, char *state, int fd)
 
 /* Validates the requesting client NAS. */
 static int
-validate_client(RADIUS_REQ *radreq)
+validate_client(grad_request_t *radreq)
 {
         CLIENT  *cl;
         
@@ -113,7 +113,7 @@ validate_client(RADIUS_REQ *radreq)
 int
 radius_verify_digest(REQUEST *req)
 {
-	RADIUS_REQ *radreq = req->data;
+	grad_request_t *radreq = req->data;
 	size_t len = req->rawsize;
         int  secretlen;
         char zero[AUTH_VECTOR_LEN];
@@ -151,7 +151,7 @@ int
 radius_auth_req_decode(struct sockaddr_in *sa,
 		       void *input, size_t inputsize, void **output)
 {
-        RADIUS_REQ *radreq;
+        grad_request_t *radreq;
 
 	log_open(L_AUTH);
 
@@ -181,7 +181,7 @@ radius_auth_req_decode(struct sockaddr_in *sa,
 
 	if (grad_avl_find(radreq->request, DA_CHAP_PASSWORD)
 	    && !grad_avl_find(radreq->request, DA_CHAP_CHALLENGE)) {
-		VALUE_PAIR *p = grad_avp_create_binary(DA_CHAP_CHALLENGE,
+		grad_avp_t *p = grad_avp_create_binary(DA_CHAP_CHALLENGE,
 						       AUTH_VECTOR_LEN,
 						       radreq->vector);
 		grad_avl_add_pair(&radreq->request, p);
@@ -195,7 +195,7 @@ int
 radius_acct_req_decode(struct sockaddr_in *sa,
 		       void *input, size_t inputsize, void **output)
 {
-        RADIUS_REQ *radreq;
+        grad_request_t *radreq;
 
 	log_open(L_ACCT);
 	
@@ -222,7 +222,7 @@ radius_acct_req_decode(struct sockaddr_in *sa,
 }
 
 static void
-decrypt_pair(RADIUS_REQ *req, VALUE_PAIR *pair)
+decrypt_pair(grad_request_t *req, grad_avp_t *pair)
 {
 	if (pair->prop & AP_ENCRYPT) {
 		char password[AUTH_STRING_LEN+1];
@@ -233,10 +233,10 @@ decrypt_pair(RADIUS_REQ *req, VALUE_PAIR *pair)
 	}
 }
 
-VALUE_PAIR *
-radius_decrypt_request_pairs(RADIUS_REQ *req, VALUE_PAIR *plist)
+grad_avp_t *
+radius_decrypt_request_pairs(grad_request_t *req, grad_avp_t *plist)
 {
-	VALUE_PAIR *pair;
+	grad_avp_t *pair;
 
 	for (pair = plist; pair; pair = pair->next) 
 		decrypt_pair(req, pair);
@@ -245,9 +245,9 @@ radius_decrypt_request_pairs(RADIUS_REQ *req, VALUE_PAIR *plist)
 }
 
 void
-radius_destroy_pairs(VALUE_PAIR **p)
+radius_destroy_pairs(grad_avp_t **p)
 {
-	VALUE_PAIR *pair;
+	grad_avp_t *pair;
 	
 	if (!p || !*p)
 		return;
@@ -261,12 +261,12 @@ radius_destroy_pairs(VALUE_PAIR **p)
 	*p = NULL;
 }
 
-static VALUE_PAIR *
-_extract_pairs(RADIUS_REQ *req, int prop)
+static grad_avp_t *
+_extract_pairs(grad_request_t *req, int prop)
 {
 	int i;
-	VALUE_PAIR *newlist = NULL;
-	VALUE_PAIR *pair;
+	grad_avp_t *newlist = NULL;
+	grad_avp_t *pair;
 	char password[AUTH_STRING_LEN+1];
 	int found = 0;
 	
@@ -289,7 +289,7 @@ _extract_pairs(RADIUS_REQ *req, int prop)
 }
 
 static int
-find_prop(NAS *nas, char *name, int defval)
+find_prop(grad_nas_t *nas, char *name, int defval)
 {
 	if (!nas)
 		return defval;
@@ -299,12 +299,12 @@ find_prop(NAS *nas, char *name, int defval)
 int
 radius_req_cmp(void *adata, void *bdata)
 {
-	RADIUS_REQ *a = adata;
-	RADIUS_REQ *b = bdata;
+	grad_request_t *a = adata;
+	grad_request_t *b = bdata;
 	int prop = 0;
-	VALUE_PAIR *alist = NULL, *blist = NULL, *ap, *bp;
+	grad_avp_t *alist = NULL, *blist = NULL, *ap, *bp;
 	int rc;
-	NAS *nas;
+	grad_nas_t *nas;
 
 	if (proxy_cmp(a, b) == 0) 
 		return RCMP_PROXY;
@@ -373,7 +373,7 @@ radius_req_cmp(void *adata, void *bdata)
 void
 radius_req_update(void *req_ptr, void *data_ptr)
 {
-	RADIUS_REQ *req = req_ptr;
+	grad_request_t *req = req_ptr;
 	RADIUS_UPDATE *upd = data_ptr;
 
 	if (req->id != upd->id)
@@ -388,7 +388,7 @@ radius_req_update(void *req_ptr, void *data_ptr)
 void
 radius_req_free(void *req)
 {
-        grad_request_free((RADIUS_REQ *)req);
+        grad_request_free((grad_request_t *)req);
 }
 
 /*ARGSUSED*/
@@ -396,7 +396,7 @@ void
 radius_req_drop(int type, void *data, void *orig_data,
 		int fd, const char *status_str)
 {
-	RADIUS_REQ *radreq = data ? data : orig_data;
+	grad_request_t *radreq = data ? data : orig_data;
 
         grad_log_req(L_NOTICE, radreq,
 		     "%s: %s", _("Dropping packet"),  status_str);
@@ -413,7 +413,7 @@ radius_req_drop(int type, void *data, void *orig_data,
 void
 radius_req_xmit(REQUEST *request)
 {
-        RADIUS_REQ *req = request->data;
+        grad_request_t *req = request->data;
 
         if (request->code == 0) {
 		if (req->reply_code == 0 && req->realm) {
@@ -446,7 +446,7 @@ radius_req_failure(int type, struct sockaddr_in *addr)
 }
 
 int
-radius_status_server(RADIUS_REQ *radreq, int fd)
+radius_status_server(grad_request_t *radreq, int fd)
 {
 	radius_send_reply(RT_ACCESS_ACCEPT, radreq, NULL,
 			  "GNU Radius server fully operational",
@@ -458,7 +458,7 @@ int
 radius_respond(REQUEST *req)
 {
 	int rc;
-	RADIUS_REQ *radreq = req->data;
+	grad_request_t *radreq = req->data;
 
 	forward_request(req->type, radreq);
 
@@ -539,7 +539,7 @@ radius_respond(REQUEST *req)
 }
 
 void
-radius_req_register_locus(RADIUS_REQ *req, LOCUS *loc)
+radius_req_register_locus(grad_request_t *req, grad_locus_t *loc)
 {
 	switch (req->code) {
 	case RT_ACCESS_REQUEST:
@@ -587,7 +587,7 @@ skip_common_substring(char *str, char *pat)
 static int
 _trace_path_compose(void *item, void *data)
 {
-	LOCUS *loc = item;
+	grad_locus_t *loc = item;
 	struct trace_data *td = data;
 	char buf[64];
 	
@@ -616,7 +616,7 @@ _trace_path_compose(void *item, void *data)
 }
 
 void
-radius_trace_path(RADIUS_REQ *req)
+radius_trace_path(grad_request_t *req)
 {
 	struct trace_data td;
 	char *p;

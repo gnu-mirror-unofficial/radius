@@ -48,18 +48,18 @@ struct dict_symbol {
 	char *name;
 	enum dict_symbol_type type; /* Type of the entry */
 	union {
-		DICT_ATTR attr;
-		DICT_ATTR *alias;
+		grad_dict_attr_t attr;
+		grad_dict_attr_t *alias;
 	} v;
 };
 
 static Symtab    *dict_attr_tab;
-static DICT_ATTR *dict_attr_index[DICT_INDEX_SIZE];
-static RAD_LIST /* of DICT_VALUE */ *dictionary_values;
-static RAD_LIST /* of DICT_VENDOR */ *dictionary_vendors;
+static grad_dict_attr_t *dict_attr_index[DICT_INDEX_SIZE];
+static grad_list_t /* of grad_dict_value_t */ *dictionary_values;
+static grad_list_t /* of grad_dict_vendor_t */ *dictionary_vendors;
 static int         vendorno;
 
-static DICT_ATTR *
+static grad_dict_attr_t *
 dict_attr_lookup(char *ident)
 {
 	DICT_SYMBOL *sym = sym_lookup(dict_attr_tab, ident);
@@ -84,7 +84,7 @@ dict_attr_lookup(char *ident)
 static int
 free_vendor(void *ptr, void *closure ARG_UNUSED)
 {
-        DICT_VENDOR *vp = ptr;
+        grad_dict_vendor_t *vp = ptr;
         if (vp->vendorname)
                 grad_free(vp->vendorname);
 	grad_free(vp);
@@ -94,7 +94,7 @@ free_vendor(void *ptr, void *closure ARG_UNUSED)
 static int
 free_value(void *ptr, void *closure ARG_UNUSED)
 {
-        DICT_VALUE *vp = ptr;
+        grad_dict_value_t *vp = ptr;
         grad_free(vp->name);
 	grad_free(vp);
 	return 0;
@@ -115,7 +115,7 @@ dict_free()
 }
 
 static int
-nfields(int fc, int minf, int maxf, LOCUS *loc)
+nfields(int fc, int minf, int maxf, grad_locus_t *loc)
 {
         if (fc < minf) {
                 grad_log_loc(L_ERR, loc, "%s", _("too few fields"));
@@ -133,9 +133,9 @@ nfields(int fc, int minf, int maxf, LOCUS *loc)
 static int
 addvendor(char *name, int value)
 {
-        DICT_VENDOR *vval;
+        grad_dict_vendor_t *vval;
 
-        vval = grad_emalloc(sizeof(DICT_VENDOR));
+        vval = grad_emalloc(sizeof(grad_dict_vendor_t));
         
         vval->vendorname = grad_estrdup(name);
         vval->vendorpec  = value;
@@ -208,7 +208,7 @@ static struct keyword type_kw[] = {
 
 /*ARGSUSED*/
 static int
-_dict_include(int *errcnt, int fc, char **fv, LOCUS *loc)
+_dict_include(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 {
         if (nfields(fc, 2, 2, loc)) 
                 return 0;
@@ -217,7 +217,7 @@ _dict_include(int *errcnt, int fc, char **fv, LOCUS *loc)
 }
 
 static int
-parse_flags(char **ptr, int *flags, LOCUS *loc)
+parse_flags(char **ptr, int *flags, grad_locus_t *loc)
 {
         int i;
         char *p;
@@ -266,7 +266,7 @@ parse_flags(char **ptr, int *flags, LOCUS *loc)
 }
 
 static int
-parse_attr_properties(LOCUS *loc, char *str, int *flags, int *prop)
+parse_attr_properties(grad_locus_t *loc, char *str, int *flags, int *prop)
 {
 	int errcnt = 0;
 	char *p;
@@ -358,10 +358,10 @@ set_default_attr_properties(int value, int *flags, int *prop)
 }
 
 static int
-_dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
+_dict_attribute(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 {
 	DICT_SYMBOL *sym;
-        DICT_ATTR *attr;
+        grad_dict_attr_t *attr;
         int type;
         int vendor = 0;
         unsigned value;
@@ -457,10 +457,10 @@ _dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
 /* Syntax:
    ALIAS oldname newname */
 static int
-_dict_alias(int *errcnt, int fc, char **fv, LOCUS *loc)
+_dict_alias(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 {
 	DICT_SYMBOL *sym;
-	DICT_ATTR *attr;
+	grad_dict_attr_t *attr;
 	
 	if (nfields(fc, 3, 3, loc))
                 return 0;
@@ -491,9 +491,9 @@ _dict_alias(int *errcnt, int fc, char **fv, LOCUS *loc)
    
    PROPERTY Attribute Flags */
 static int
-_dict_property(int *errcnt, int fc, char **fv, LOCUS *loc)
+_dict_property(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 {
-	DICT_ATTR *attr;
+	grad_dict_attr_t *attr;
 	int flags;
 	int prop;
 	
@@ -515,10 +515,10 @@ _dict_property(int *errcnt, int fc, char **fv, LOCUS *loc)
 }
 
 static int
-_dict_value(int *errcnt, int fc, char **fv, LOCUS *loc)
+_dict_value(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 {
-        DICT_VALUE *dval;
-        DICT_ATTR *attr;
+        grad_dict_value_t *dval;
+        grad_dict_attr_t *attr;
         char *p;
         int value;
         
@@ -544,7 +544,7 @@ _dict_value(int *errcnt, int fc, char **fv, LOCUS *loc)
 	}
 	
         /* Create a new VALUE entry for the list */
-        dval = grad_emalloc(sizeof(DICT_VALUE));
+        dval = grad_emalloc(sizeof(grad_dict_value_t));
                         
         dval->name = grad_estrdup(VALUE_NAME);
         dval->attr = attr;
@@ -559,7 +559,7 @@ _dict_value(int *errcnt, int fc, char **fv, LOCUS *loc)
 }
 
 static int
-_dict_vendor(int *errcnt, int fc, char **fv, LOCUS *loc)
+_dict_vendor(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 {
         int value;
         char *p;
@@ -604,7 +604,7 @@ static struct keyword dict_kw[] = {
 };
 
 static int
-parse_dict_entry(void *closure, int fc, char **fv, LOCUS *loc)
+parse_dict_entry(void *closure, int fc, char **fv, grad_locus_t *loc)
 {
 	int *errcnt = closure;
         switch (grad_xlat_keyword(dict_kw, KEYWORD, -1)) {
@@ -676,13 +676,13 @@ grad_dict_init()
 
 struct attr_value {
         unsigned value;
-        DICT_ATTR *da;
+        grad_dict_attr_t *da;
 };
 
 static int
 attrval_cmp(struct attr_value *av, DICT_SYMBOL *sym)
 {
-	DICT_ATTR *attr;
+	grad_dict_attr_t *attr;
 	
 	switch (sym->type) {
 	case dict_symbol_attribute:
@@ -704,7 +704,7 @@ attrval_cmp(struct attr_value *av, DICT_SYMBOL *sym)
         return 0;
 }
 
-DICT_ATTR *
+grad_dict_attr_t *
 grad_attr_number_to_dict(int attribute)
 {
         struct attr_value av;
@@ -720,7 +720,7 @@ grad_attr_number_to_dict(int attribute)
  *  Return the full attribute structure based on the attribute name.
  */
 
-DICT_ATTR *
+grad_dict_attr_t *
 grad_attr_name_to_dict(char *attrname)
 {
         return dict_attr_lookup(attrname);
@@ -738,14 +738,14 @@ struct val_lookup {
 static int
 valname_cmp(const void *item, const void *data)
 {
-	const DICT_VALUE *v = item;
+	const grad_dict_value_t *v = item;
 	const struct val_lookup *d = data;
         if (d->number == v->attr->value && strcmp(v->name, d->name) == 0) 
 		return 0;
 	return 1;
 }
 
-DICT_VALUE *
+grad_dict_value_t *
 grad_value_name_to_value(char *valname, int attr)
 {
         struct val_lookup data;
@@ -761,7 +761,7 @@ grad_value_name_to_value(char *valname, int attr)
 static int
 valnum_cmp(const void *item, const void *data)
 {
-	const DICT_VALUE *v = item;
+	const grad_dict_value_t *v = item;
 	const struct val_lookup *d = data;
 
         if (strcmp(d->attrname, v->attr->name) == 0 && d->number == v->value) 
@@ -769,8 +769,8 @@ valnum_cmp(const void *item, const void *data)
 	return 1;
 }
 
-DICT_VALUE *
-grad_value_lookup(UINT4 value, char *attrname)
+grad_dict_value_t *
+grad_value_lookup(grad_uint32_t value, char *attrname)
 {
         struct val_lookup data;
         data.number = value;
@@ -785,7 +785,7 @@ grad_value_lookup(UINT4 value, char *attrname)
 static int
 code_cmp(const void *item, const void *data)
 {
-	const DICT_VENDOR *v = item;
+	const grad_dict_vendor_t *v = item;
 	const int *code = data;
 
         return v->vendorcode != *code;
@@ -794,7 +794,7 @@ code_cmp(const void *item, const void *data)
 int 
 grad_vendor_id_to_pec(int code)
 {
-        DICT_VENDOR *vp;
+        grad_dict_vendor_t *vp;
 
 	vp = grad_list_locate(dictionary_vendors, &code, code_cmp);
         return vp ? vp->vendorpec : 0;
@@ -806,7 +806,7 @@ grad_vendor_id_to_pec(int code)
 static int
 pec_cmp(const void *item, const void *data)
 {
-	const DICT_VENDOR *v = item;
+	const grad_dict_vendor_t *v = item;
 	const int *pec = data;
 
         return v->vendorpec != *pec;
@@ -815,7 +815,7 @@ pec_cmp(const void *item, const void *data)
 int 
 grad_vendor_pec_to_id(int pec)
 {
-        DICT_VENDOR *vp;
+        grad_dict_vendor_t *vp;
 
 	vp = grad_list_locate(dictionary_vendors, &pec, pec_cmp);
         return vp ? vp->vendorcode : 0;
@@ -824,7 +824,7 @@ grad_vendor_pec_to_id(int pec)
 char *
 grad_vendor_pec_to_name(int pec)
 {
-        DICT_VENDOR *vp;
+        grad_dict_vendor_t *vp;
 
 	vp = grad_list_locate(dictionary_vendors, &pec, pec_cmp);
         return vp ? vp->vendorname : NULL;
@@ -837,7 +837,7 @@ grad_vendor_pec_to_name(int pec)
 static int
 vendor_cmp(const void *item, const void *data)
 {
-	const DICT_VENDOR *v = item;
+	const grad_dict_vendor_t *v = item;
 	const char *s = data;
 
         return strcmp(v->vendorname, s);
@@ -846,7 +846,7 @@ vendor_cmp(const void *item, const void *data)
 int 
 grad_vendor_name_to_id(char *name)
 {
-        DICT_VENDOR *vp;
+        grad_dict_vendor_t *vp;
 
 	vp = grad_list_locate(dictionary_vendors, name, vendor_cmp);
         return vp ? vp->vendorcode : 0;

@@ -164,13 +164,13 @@ radius_switch_to_user(RADIUS_USER *usr)
    Return 0 if exec_wait == 0.
    Return the exit code of the called program if exec_wait != 0. */
 int
-radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
+radius_exec_program(char *cmd, grad_request_t *req, grad_avp_t **reply,
 		    int exec_wait)
 {
         int p[2];
         int n;
         char *ptr, *errp;
-        VALUE_PAIR *vp;
+        grad_avp_t *vp;
         FILE *fp;
         int line_num;
         char buffer[RAD_BUFFER_SIZE];
@@ -461,7 +461,7 @@ filter_kill(Filter *filter)
 }
 
 static Filter *
-filter_open(char *name, RADIUS_REQ *req, int type, int *errp)
+filter_open(char *name, grad_request_t *req, int type, int *errp)
 {
 	Filter *filter = sym_lookup(filter_tab, name);
 	if (!filter) {
@@ -509,7 +509,7 @@ filter_open(char *name, RADIUS_REQ *req, int type, int *errp)
 }
 
 static char *
-filter_xlate(struct obstack *sp, char *fmt, RADIUS_REQ *radreq)
+filter_xlate(struct obstack *sp, char *fmt, grad_request_t *radreq)
 {
 	char *str;
 	
@@ -535,7 +535,7 @@ filter_xlate(struct obstack *sp, char *fmt, RADIUS_REQ *radreq)
 }
 
 static int
-filter_write(Filter *filter, char *fmt, RADIUS_REQ *radreq)
+filter_write(Filter *filter, char *fmt, grad_request_t *radreq)
 {
 	int rc, length;
 	struct obstack stack;
@@ -600,7 +600,7 @@ filter_read(Filter *filter, int type, char *buffer, size_t buflen)
    Returns: 0   -- Authentication succeeded
             !0  -- Authentication failed */
 int
-filter_auth(char *name, RADIUS_REQ *req, VALUE_PAIR **reply_pairs)
+filter_auth(char *name, grad_request_t *req, grad_avp_t **reply_pairs)
 {
 	Filter *filter;
 	int rc = -1;
@@ -629,7 +629,7 @@ filter_auth(char *name, RADIUS_REQ *req, VALUE_PAIR **reply_pairs)
 			rc = err;
 		} else if (isdigit(buffer[0])) {
 			char *ptr;
-			VALUE_PAIR *vp = NULL;
+			grad_avp_t *vp = NULL;
 			char *errp;
 
 			debug(1, ("%s > \"%s\"", filter->name, buffer));
@@ -655,7 +655,7 @@ filter_auth(char *name, RADIUS_REQ *req, VALUE_PAIR **reply_pairs)
 }
 
 int
-filter_acct(char *name, RADIUS_REQ *req)
+filter_acct(char *name, grad_request_t *req)
 {
 	Filter *filter;
 	int rc = -1;

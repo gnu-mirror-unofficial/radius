@@ -30,16 +30,16 @@
 
 struct request_data {
 	int type;
-	RADIUS_REQ *req;
+	grad_request_t *req;
 };
 
 static int forward_fd = -1;
-static RAD_LIST *forward_list;
+static grad_list_t *forward_list;
 
 static void
-add_forward(int type, UINT4 ip, int port)
+add_forward(int type, grad_uint32_t ip, int port)
 {
-	RADIUS_SERVER *srv;
+	grad_server_t *srv;
 
 	if (!forward_list) {
 		forward_list = grad_list_create();
@@ -92,7 +92,7 @@ rad_cfg_forward_acct(int argc, cfg_value_t *argv,
 
 
 static void
-forward_data(RADIUS_SERVER *srv, int type, void *data, size_t size)
+forward_data(grad_server_t *srv, int type, void *data, size_t size)
 {
 	int rc;
 	struct sockaddr_in addr;
@@ -116,12 +116,12 @@ forward_data(RADIUS_SERVER *srv, int type, void *data, size_t size)
 static int
 forwarder(void *item, void *data)
 {
-	RADIUS_SERVER *srv = item;
+	grad_server_t *srv = item;
 	struct request_data *r = data;
 	int rc;
 
 	if (srv->port[r->type] != 0) {
-		VALUE_PAIR *vp = NULL, *plist;
+		grad_avp_t *vp = NULL, *plist;
 		void *pdu;
 		size_t size;
 		int id;
@@ -172,7 +172,7 @@ forward_before_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 static int
 fixup_forward_server(void *item, void *data)
 {
-	RADIUS_SERVER *srv = item;
+	grad_server_t *srv = item;
 	CLIENT *cl = client_lookup_ip(srv->addr);
 	if (!cl) {
 		char buffer[DOTTED_QUAD_LEN];
@@ -218,7 +218,7 @@ forward_init()
 }
 
 void
-forward_request(int type, RADIUS_REQ *req)
+forward_request(int type, grad_request_t *req)
 {
 	struct request_data rd;
 

@@ -184,9 +184,9 @@ output_tab(int column, int tabstop)
 }
 
 static char *
-get_hostname(UINT4 ipaddr, int nodomain, char *buf, size_t size)
+get_hostname(grad_uint32_t ipaddr, int nodomain, char *buf, size_t size)
 {
-        if (ipaddr == 0 || ipaddr == (UINT4)-1 || ipaddr == (UINT4)-2)
+        if (ipaddr == 0 || ipaddr == (grad_uint32_t)-1 || ipaddr == (grad_uint32_t)-2)
                 return "";
 
         if (nodomain) {
@@ -205,7 +205,7 @@ get_hostname(UINT4 ipaddr, int nodomain, char *buf, size_t size)
 }
 
 static int
-output_hostname(UINT4 ip, int width, format_key_t *key)
+output_hostname(grad_uint32_t ip, int width, format_key_t *key)
 {
 	char buf[80];
 	return output_string_key(get_hostname(ip, key_nodomain(key),
@@ -288,7 +288,7 @@ static int
 nas_address_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 {
 	if (printutmp_use_naslist) {
-		NAS *nas;
+		grad_nas_t *nas;
 	
 		nas = grad_nas_lookup_ip(ntohl(up->nas_address));
 		if (!nas)
@@ -311,7 +311,7 @@ framed_address_fh(int outbytes, int width, format_key_t *key,
 static int
 protocol_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 {
-	DICT_VALUE *dval = grad_value_lookup(up->proto, "Framed-Protocol");
+	grad_dict_value_t *dval = grad_value_lookup(up->proto, "Framed-Protocol");
 	char buf[80];
 	char *s;
 	
@@ -354,7 +354,8 @@ delay_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 static int
 port_type_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 {
-	DICT_VALUE *dval = grad_value_lookup(up->porttype, "NAS-Port-Type");
+	grad_dict_value_t *dval = grad_value_lookup(up->porttype, 
+                                                    "NAS-Port-Type");
 	char buf[80];
 	char *s;
 	
@@ -382,7 +383,7 @@ realm_address_fh(int outbytes, int width, format_key_t *key,
         if (up->realm_address == 0)
 		return output_string_key("", width, key);
 	else {
-		REALM *rp = grad_realm_lookup_ip(up->realm_address);
+		grad_realm_t *rp = grad_realm_lookup_ip(up->realm_address);
 		if (rp)
 			return output_string_key(rp->realm, width, key);
 	}

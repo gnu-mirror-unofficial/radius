@@ -41,7 +41,7 @@ grad_read_raddb_file(char *filename, int vital, int (*fun)(), void *closure)
         char *lineptr = NULL;
         size_t bsize = 0;
         int nread;
-        LOCUS loc;
+        grad_locus_t loc;
 	
         input = fopen(filename, "r");
         if (!input) {

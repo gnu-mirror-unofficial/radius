@@ -62,7 +62,7 @@ typedef struct locus_name {
 static Symtab *locus_tab;
 
 void
-locus_dup(LOCUS *dst, LOCUS *src)
+locus_dup(grad_locus_t *dst, grad_locus_t *src)
 {
 	Locus_symbol *sp;
 	
@@ -75,7 +75,7 @@ locus_dup(LOCUS *dst, LOCUS *src)
 }
 
 void
-locus_free(LOCUS *loc)
+locus_free(grad_locus_t *loc)
 {
 	Locus_symbol *sp = (Locus_symbol*) sym_lookup(locus_tab, loc->file);
 	if (--sp->refcnt == 0)
@@ -88,10 +88,10 @@ locus_free(LOCUS *loc)
 Symtab          *user_tab;     /* raddb/users  */
 Symtab          *deny_tab;     /* raddb/access.deny */
 
-static RAD_LIST /* of MATCHING_RULE */  *huntgroups;   /* raddb/huntgroups */ 
-static RAD_LIST /* of MATCHING_RULE */  *hints;        /* raddb/hints */
-static RAD_LIST /* of CLIENT */ *clients; /* raddb/clients */
-static RAD_LIST /* of RADCK_TYPE */ *radck_type;   /* raddb/nastypes */
+static grad_list_t /* of MATCHING_RULE */  *huntgroups;   /* raddb/huntgroups */ 
+static grad_list_t /* of MATCHING_RULE */  *hints;        /* raddb/hints */
+static grad_list_t /* of CLIENT */ *clients; /* raddb/clients */
+static grad_list_t /* of RADCK_TYPE */ *radck_type;   /* raddb/nastypes */
 
 static struct keyword op_tab[] = {
         { "=", OPERATOR_EQUAL },
@@ -103,24 +103,24 @@ static struct keyword op_tab[] = {
         { 0 }
 };
 
-int paircmp(RADIUS_REQ *req, VALUE_PAIR *check, char *pusername);
-int fallthrough(VALUE_PAIR *vp);
+int paircmp(grad_request_t *req, grad_avp_t *check, char *pusername);
+int fallthrough(grad_avp_t *vp);
 /*
  * Static declarations
  */
-static int portcmp(VALUE_PAIR *check, VALUE_PAIR *request);
-static int groupcmp(RADIUS_REQ *req, char *groupname, char *username);
-static int uidcmp(VALUE_PAIR *check, char *username);
+static int portcmp(grad_avp_t *check, grad_avp_t *request);
+static int groupcmp(grad_request_t *req, char *groupname, char *username);
+static int uidcmp(grad_avp_t *check, char *username);
 static void matchrule_free(MATCHING_RULE **pl);
-static int matches(RADIUS_REQ *req, char *name, MATCHING_RULE *pl, char *matchpart);
-static int huntgroup_match(RADIUS_REQ *req, char *huntgroup);
-static int user_find_sym(char *name, RADIUS_REQ *req, 
-                         VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
+static int matches(grad_request_t *req, char *name, MATCHING_RULE *pl, char *matchpart);
+static int huntgroup_match(grad_request_t *req, char *huntgroup);
+static int user_find_sym(char *name, grad_request_t *req, 
+                         grad_avp_t **check_pairs, grad_avp_t **reply_pairs);
 #ifdef USE_DBM
-int user_find_db(char *name, RADIUS_REQ *req,
-                        VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
+int user_find_db(char *name, grad_request_t *req,
+                        grad_avp_t **check_pairs, grad_avp_t **reply_pairs);
 #endif
-static RAD_LIST *file_read(int cf_file, char *name);
+static grad_list_t *file_read(int cf_file, char *name);
 
 int
 comp_op(int op, int result)
@@ -168,8 +168,8 @@ comp_op(int op, int result)
  * parser
  */
 int
-add_user_entry(void *closure, LOCUS *loc,
-	       char *name, VALUE_PAIR *check, VALUE_PAIR *reply)
+add_user_entry(void *closure, grad_locus_t *loc,
+	       char *name, grad_avp_t *check, grad_avp_t *reply)
 {
 	Symtab *symtab = closure;
         User_symbol *sym;
@@ -212,12 +212,12 @@ free_user_entry(User_symbol *sym)
 
 struct temp_data {
         int cf_file;
-	RAD_LIST *list;
+	grad_list_t *list;
 };
 
 int
-add_pairlist(void *closure, LOCUS *loc,
-	     char *name, VALUE_PAIR *lhs, VALUE_PAIR *rhs)
+add_pairlist(void *closure, grad_locus_t *loc,
+	     char *name, grad_avp_t *lhs, grad_avp_t *rhs)
 {
 	struct temp_data *data = closure;
         MATCHING_RULE *rule;
@@ -248,7 +248,7 @@ read_users(char *name)
         return grad_parse_rule_file(name, user_tab, add_user_entry);
 }
 
-static RAD_LIST *
+static grad_list_t *
 file_read(int cf_file, char *name)
 {
         struct temp_data tmp;
@@ -313,15 +313,15 @@ user_next(USER_LOOKUP *lptr)
 }
 
 
-static int match_user(User_symbol *sym, RADIUS_REQ *req,
-                      VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
+static int match_user(User_symbol *sym, grad_request_t *req,
+                      grad_avp_t **check_pairs, grad_avp_t **reply_pairs);
 
 /*
  * Find matching profile in the hash table
  */
 int
-user_find_sym(char *name, RADIUS_REQ *req,
-              VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs)
+user_find_sym(char *name, grad_request_t *req,
+              grad_avp_t **check_pairs, grad_avp_t **reply_pairs)
 {
         int found = 0;
         User_symbol *sym;
@@ -342,12 +342,12 @@ user_find_sym(char *name, RADIUS_REQ *req,
 }
 
 int
-match_user(User_symbol *sym, RADIUS_REQ *req,
-           VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs)
+match_user(User_symbol *sym, grad_request_t *req,
+           grad_avp_t **check_pairs, grad_avp_t **reply_pairs)
 {
-        VALUE_PAIR *p;
-        VALUE_PAIR *check_tmp;
-        VALUE_PAIR *reply_tmp;
+        grad_avp_t *p;
+        grad_avp_t *check_tmp;
+        grad_avp_t *reply_tmp;
         int found;
         
         if (!sym)
@@ -415,8 +415,8 @@ match_user(User_symbol *sym, RADIUS_REQ *req,
  * is done by the caller. user_find() only compares attributes.
  */
 int
-user_find(char *name, RADIUS_REQ *req,
-          VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs)
+user_find(char *name, grad_request_t *req,
+          grad_avp_t **check_pairs, grad_avp_t **reply_pairs)
 {
         int found = 0;
 
@@ -538,15 +538,15 @@ nextkn(char **sptr, char *token, int toksize)
  * in errmsg.
  */
 int
-userparse(char *buffer, VALUE_PAIR **first_pair, char **errmsg)
+userparse(char *buffer, grad_avp_t **first_pair, char **errmsg)
 {
         int             state;
-        DICT_ATTR       *attr = NULL;
-        VALUE_PAIR      *pair;
+        grad_dict_attr_t *attr = NULL;
+        grad_avp_t      *pair;
         int             op;
         static char errbuf[512];
         char token[256];
-	LOCUS loc;
+	grad_locus_t loc;
 
 	loc.file = "<stdin>"; /* FIXME */
 	loc.line = 0;
@@ -616,9 +616,9 @@ userparse(char *buffer, VALUE_PAIR **first_pair, char **errmsg)
 /* Provide a support for backward-compatible attributes Replace-User-Name
    and Rewrite-Function */
 static void
-hints_eval_compat(RADIUS_REQ *req, VALUE_PAIR *name_pair, MATCHING_RULE *rule)
+hints_eval_compat(grad_request_t *req, grad_avp_t *name_pair, MATCHING_RULE *rule)
 {
-        VALUE_PAIR      *tmp;
+        grad_avp_t      *tmp;
 
 	/* Let's see if we need to further modify the username */
 	if ((tmp = grad_avl_find(rule->rhs, DA_REPLACE_USER_NAME))
@@ -649,16 +649,16 @@ hints_eval_compat(RADIUS_REQ *req, VALUE_PAIR *name_pair, MATCHING_RULE *rule)
    based on the pattern of the username and the contents of the incoming
    request */
 int
-hints_setup(RADIUS_REQ *req)
+hints_setup(grad_request_t *req)
 {
-        VALUE_PAIR      *request_pairs = req->request;
+        grad_avp_t      *request_pairs = req->request;
         char            newname[AUTH_STRING_LEN];
-        VALUE_PAIR      *name_pair;
-        VALUE_PAIR      *orig_name_pair;
-        VALUE_PAIR      *tmp;
+        grad_avp_t      *name_pair;
+        grad_avp_t      *orig_name_pair;
+        grad_avp_t      *tmp;
         MATCHING_RULE   *rule;
         int             matched = 0;
-	ITERATOR *itr;
+	grad_iterator_t *itr;
 	
         /* Add Proxy-Replied pair if necessary */
         switch (req->code) {
@@ -704,7 +704,7 @@ hints_setup(RADIUS_REQ *req)
 	itr = iterator_create(hints);
 	for (rule = iterator_first(itr); rule; rule = iterator_next(itr)) {
                 int do_strip;
-                VALUE_PAIR *add;
+                grad_avp_t *add;
                 
                 if (matches(req, name_pair->avp_strvalue, rule, newname))
                         continue;
@@ -784,10 +784,10 @@ hints_setup(RADIUS_REQ *req)
  * See if the huntgroup matches.
  */
 int
-huntgroup_match(RADIUS_REQ *req, char *huntgroup)
+huntgroup_match(grad_request_t *req, char *huntgroup)
 {
         MATCHING_RULE *rule;
-	ITERATOR *itr;
+	grad_iterator_t *itr;
 
         if (!huntgroups)
 		return 0;
@@ -814,11 +814,11 @@ huntgroup_match(RADIUS_REQ *req, char *huntgroup)
  *         -1 on error.
  */
 int
-huntgroup_access(RADIUS_REQ *radreq, LOCUS *loc)
+huntgroup_access(grad_request_t *radreq, grad_locus_t *loc)
 {
-        VALUE_PAIR      *pair;
+        grad_avp_t      *pair;
         MATCHING_RULE   *rule;
-	ITERATOR *itr;
+	grad_iterator_t *itr;
         int             r = 1;
 
         if (huntgroups == NULL)
@@ -874,7 +874,7 @@ read_naslist_file(char *file)
  */
 /*ARGSUSED*/
 int
-read_clients_entry(void *u ARG_UNUSED, int fc, char **fv, LOCUS *loc)
+read_clients_entry(void *u ARG_UNUSED, int fc, char **fv, grad_locus_t *loc)
 {
         CLIENT *cp;
         
@@ -922,10 +922,10 @@ read_clients_file(char *file)
  * Find a client in the CLIENTS list.
  */
 CLIENT *
-client_lookup_ip(UINT4 ipaddr)
+client_lookup_ip(grad_uint32_t ipaddr)
 {
         CLIENT *cl;
-        ITERATOR *itr = iterator_create(clients);
+        grad_iterator_t *itr = iterator_create(clients);
 
         if (!itr)
                 return NULL;
@@ -941,7 +941,7 @@ client_lookup_ip(UINT4 ipaddr)
  * Find the name of a client (prefer short name).
  */
 char *
-client_lookup_name(UINT4 ipaddr, char *buf, size_t bufsize)
+client_lookup_name(grad_uint32_t ipaddr, char *buf, size_t bufsize)
 {
         CLIENT *cl;
 
@@ -964,7 +964,7 @@ client_lookup_name(UINT4 ipaddr, char *buf, size_t bufsize)
  */
 /*ARGSUSED*/
 int
-read_nastypes_entry(void *u ARG_UNUSED, int fc, char **fv, LOCUS *loc)
+read_nastypes_entry(void *u ARG_UNUSED, int fc, char **fv, grad_locus_t *loc)
 {
         RADCK_TYPE *mp;
         int method;
@@ -1019,7 +1019,7 @@ RADCK_TYPE *
 find_radck_type(char *name)
 {
         RADCK_TYPE *tp;
-       	ITERATOR *itr = iterator_create(radck_type);
+       	grad_iterator_t *itr = iterator_create(radck_type);
 
         if (!itr)
         	return NULL;
@@ -1047,7 +1047,7 @@ add_deny(char *user)
 
 /*ARGSUSED*/
 int
-read_denylist_entry(void *closure, int fc, char **fv, LOCUS *loc)
+read_denylist_entry(void *closure, int fc, char **fv, grad_locus_t *loc)
 {
 	int *denycnt = closure;
 	if (fc != 1) {
@@ -1101,12 +1101,12 @@ get_deny(char *user)
  */
 
 /*
- *      See if a VALUE_PAIR list contains Fall-Through = Yes
+ *      See if a grad_avp_t list contains Fall-Through = Yes
  */
 int
-fallthrough(VALUE_PAIR *vp)
+fallthrough(grad_avp_t *vp)
 {
-        VALUE_PAIR *tmp;
+        grad_avp_t *tmp;
 
         return (tmp = grad_avl_find(vp, DA_FALL_THROUGH)) ?
 		         tmp->avp_lvalue : 0;
@@ -1116,7 +1116,7 @@ fallthrough(VALUE_PAIR *vp)
  *      Compare a portno with a range.
  */
 int
-portcmp(VALUE_PAIR *check, VALUE_PAIR *request)
+portcmp(grad_avp_t *check, grad_avp_t *request)
 {
         char buf[AUTH_STRING_LEN];
         char *s, *p, *save;
@@ -1143,7 +1143,7 @@ portcmp(VALUE_PAIR *check, VALUE_PAIR *request)
 
 
 int
-uidcmp(VALUE_PAIR *check, char *username)
+uidcmp(grad_avp_t *check, char *username)
 {
         struct passwd pw, *pwd;
 	char buffer[512];
@@ -1159,7 +1159,7 @@ uidcmp(VALUE_PAIR *check, char *username)
  *      We also handle additional groups.
  */
 int
-groupcmp(RADIUS_REQ *req, char *groupname, char *username)
+groupcmp(grad_request_t *req, char *groupname, char *username)
 {
         struct passwd pw, *pwd;
         struct group *grp;
@@ -1193,7 +1193,7 @@ groupcmp(RADIUS_REQ *req, char *groupname, char *username)
  *      Compare prefix/suffix.
  */
 int
-presufcmp(VALUE_PAIR *check, char *name, char *rest)
+presufcmp(grad_avp_t *check, char *name, char *rest)
 {
         int len, namelen;
         int ret = -1;
@@ -1270,10 +1270,10 @@ server_attr(int attr)
  * Return 0 on match.
  */
 int
-paircmp(RADIUS_REQ *request, VALUE_PAIR *check, char *pusername)
+paircmp(grad_request_t *request, grad_avp_t *check, char *pusername)
 {
-        VALUE_PAIR *check_item = check;
-        VALUE_PAIR *auth_item;
+        grad_avp_t *check_item = check;
+        grad_avp_t *auth_item;
         char username[AUTH_STRING_LEN];
         int result = 0;
         int compare;
@@ -1553,7 +1553,7 @@ wild_match(char *expr, char *name, char *return_name)
  * Match a username with a wildcard expression.
  */
 int
-matches(RADIUS_REQ *req, char *name, MATCHING_RULE *pl, char *matchpart)
+matches(grad_request_t *req, char *name, MATCHING_RULE *pl, char *matchpart)
 {
 	memcpy(matchpart, name, AUTH_STRING_LEN);
         if (strncmp(pl->name, "DEFAULT", 7) == 0
@@ -1588,7 +1588,7 @@ checkdbm(char *users, char *ext)
 static int reload_data(enum reload_what what, int *do_radck);
 
 static int
-realm_set_secret(RADIUS_SERVER *srv)
+realm_set_secret(grad_server_t *srv)
 {
 	CLIENT *client;
 
@@ -1750,10 +1750,10 @@ reload_config_file(enum reload_what what)
  * Debugging functions
  */
 void
-dump_matching_rules(FILE *fp, char *header, RAD_LIST *list)
+dump_matching_rules(FILE *fp, char *header, grad_list_t *list)
 {
 	MATCHING_RULE *rule;
-	ITERATOR *itr = iterator_create(list);
+	grad_iterator_t *itr = iterator_create(list);
 
         fprintf(fp, "%s {\n", header);
  	for (rule = iterator_first(itr); rule; rule = iterator_next(itr)) {
@@ -1819,12 +1819,12 @@ dump_users_db()
  */
 
 void
-strip_username(int do_strip, char *name, VALUE_PAIR *check_item,
+strip_username(int do_strip, char *name, grad_avp_t *check_item,
 	       char *stripped_name)
 {
         char tmpname[AUTH_STRING_LEN];
         char *source_ptr = name;
-        VALUE_PAIR *presuf_item, *tmp;
+        grad_avp_t *presuf_item, *tmp;
         
         /*
          *      See if there was a Prefix or Suffix included.

@@ -36,7 +36,7 @@ struct list {
 
 struct iterator {
 	struct iterator *next;
-	RAD_LIST *list;
+	grad_list_t *list;
 	struct list_entry *cur;
 	int advanced;
 };
@@ -71,17 +71,17 @@ grad_list_destroy(struct list **plist, list_iterator_t user_free, void *data)
 }
 
 void *
-iterator_current(ITERATOR *ip)
+iterator_current(grad_iterator_t *ip)
 {
 	if (!ip)
 		return NULL;
 	return ip->cur ? ip->cur->data : NULL;
 }
 
-ITERATOR *
-iterator_create(RAD_LIST *list)
+grad_iterator_t *
+iterator_create(grad_list_t *list)
 {
-	ITERATOR *itr;
+	grad_iterator_t *itr;
 
 	if (!list)
 		return NULL;
@@ -95,9 +95,9 @@ iterator_create(RAD_LIST *list)
 }
 
 void
-iterator_destroy(ITERATOR **ip)
+iterator_destroy(grad_iterator_t **ip)
 {
-	ITERATOR *itr, *prev;
+	grad_iterator_t *itr, *prev;
 
 	if (!ip || !*ip)
 		return;
@@ -118,7 +118,7 @@ iterator_destroy(ITERATOR **ip)
 }
 		
 void *
-iterator_first(ITERATOR *ip)
+iterator_first(grad_iterator_t *ip)
 {
 	if (!ip)
 		return NULL;
@@ -128,7 +128,7 @@ iterator_first(ITERATOR *ip)
 }
 
 void *
-iterator_next(ITERATOR *ip)
+iterator_next(grad_iterator_t *ip)
 {
 	if (!ip || !ip->cur)
 		return NULL;
@@ -139,7 +139,7 @@ iterator_next(ITERATOR *ip)
 }	
 
 static void
-_iterator_advance(ITERATOR *ip, struct list_entry *e)
+_iterator_advance(grad_iterator_t *ip, struct list_entry *e)
 {
 	for (; ip; ip = ip->next) {
 		if (ip->cur == e) {
@@ -245,7 +245,7 @@ grad_list_remove(struct list *list, void *data, list_comp_t cmp)
 void
 grad_list_iterate(struct list *list, list_iterator_t func, void *data)
 {
-	ITERATOR *itr;
+	grad_iterator_t *itr;
 	void *p;
 	
 	if (!list)

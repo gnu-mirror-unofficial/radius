@@ -20,28 +20,28 @@
 #ifndef LIST_H
 #define LIST_H
 
-typedef struct list RAD_LIST;
-typedef struct iterator ITERATOR;
+typedef struct list grad_list_t;
+typedef struct iterator grad_iterator_t;
 
 typedef int (*list_iterator_t)(void *item, void *data);
 typedef int (*list_comp_t)(const void *, const void *);
 
-RAD_LIST *grad_list_create();
-void grad_list_destroy(RAD_LIST **list, list_iterator_t free, void *data);
-void grad_list_iterate(RAD_LIST *list, list_iterator_t itr, void *data);
-void *grad_list_item(RAD_LIST *list, size_t n);
-size_t grad_list_count(RAD_LIST *list);
-void grad_list_append(RAD_LIST *list, void *data);
-void grad_list_prepend(RAD_LIST *list, void *data);
+grad_list_t *grad_list_create();
+void grad_list_destroy(grad_list_t **list, list_iterator_t free, void *data);
+void grad_list_iterate(grad_list_t *list, list_iterator_t itr, void *data);
+void *grad_list_item(grad_list_t *list, size_t n);
+size_t grad_list_count(grad_list_t *list);
+void grad_list_append(grad_list_t *list, void *data);
+void grad_list_prepend(grad_list_t *list, void *data);
 int grad_list_insert_sorted(struct list *list, void *data, list_comp_t cmp);
-void *grad_list_locate(RAD_LIST *list, void *data, list_comp_t cmp);
-void *grad_list_remove(RAD_LIST *list, void *data, list_comp_t cmp);
+void *grad_list_locate(grad_list_t *list, void *data, list_comp_t cmp);
+void *grad_list_remove(grad_list_t *list, void *data, list_comp_t cmp);
 
-void *iterator_current(ITERATOR *ip);
-ITERATOR *iterator_create(RAD_LIST *list);
-void iterator_destroy(ITERATOR **ip);
-void *iterator_first(ITERATOR *ip);
-void *iterator_next(ITERATOR *ip);
+void *iterator_current(grad_iterator_t *ip);
+grad_iterator_t *iterator_create(grad_list_t *list);
+void iterator_destroy(grad_iterator_t **ip);
+void *iterator_first(grad_iterator_t *ip);
+void *iterator_next(grad_iterator_t *ip);
 
 
 #endif

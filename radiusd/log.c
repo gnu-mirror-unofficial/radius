@@ -32,7 +32,7 @@
 #include <rewrite.h>
 
 static int logging_category = L_CAT(L_MAIN);
-static RAD_LIST /* of Channel*/ *chanlist;     /* List of defined channels */
+static grad_list_t /* of Channel*/ *chanlist;     /* List of defined channels */
 static char *log_prefix_hook;             /* Name of the global prefix hook */
 static char *log_suffix_hook;             /* Name of the global suffix hook */
 
@@ -83,7 +83,7 @@ static char *priname[] = { /* priority names */
 };
 
 static char *
-run_log_hook(const RADIUS_REQ *req, const char *hook_name)
+run_log_hook(const grad_request_t *req, const char *hook_name)
 {
 	char *result;
 	char nasbuf[MAX_LONGNAME];
@@ -102,7 +102,7 @@ run_log_hook(const RADIUS_REQ *req, const char *hook_name)
 }
 
 static void
-channel_format_prefix(char **bufp, Channel *chan, const RADIUS_REQ *req)
+channel_format_prefix(char **bufp, Channel *chan, const grad_request_t *req)
 {
 	char **hook_name_ptr = &(chan->prefix_hook ? 
 		                   chan->prefix_hook : log_prefix_hook);
@@ -119,7 +119,7 @@ channel_format_prefix(char **bufp, Channel *chan, const RADIUS_REQ *req)
 }
 
 static void
-channel_format_suffix(char **bufp, Channel *chan, const RADIUS_REQ *req)
+channel_format_suffix(char **bufp, Channel *chan, const grad_request_t *req)
 {
 	char **hook_name_ptr = &(chan->suffix_hook ? 
 		                   chan->suffix_hook : log_suffix_hook);
@@ -155,7 +155,7 @@ channel_close_file(Channel *chan, FILE *fp)
 
 void
 log_to_channel(Channel *chan, int cat, int pri,
-	       const RADIUS_REQ *req,
+	       const grad_request_t *req,
 	       char *buf1, char *buf2, char *buf3)
 {
         char *cat_pref = NULL;
@@ -258,8 +258,8 @@ log_to_channel(Channel *chan, int cat, int pri,
 
 void
 radiusd_logger(int level,
-	       const RADIUS_REQ *req,
-	       const LOCUS *loc,
+	       const grad_request_t *req,
+	       const grad_locus_t *loc,
 	       const char *func_name,
 	       int en,
 	       const char *fmt, va_list ap)
@@ -269,7 +269,7 @@ radiusd_logger(int level,
         char *buf1 = NULL;
         char *buf2 = NULL;
         char *buf3 = NULL;
-        ITERATOR *itr = iterator_create(chanlist);
+        grad_iterator_t *itr = iterator_create(chanlist);
 
         cat = L_CAT(level);
         if (cat == 0)
@@ -359,7 +359,7 @@ log_release(Channel *chan)
 {
         Channel *cp;
         int emerg, alert, crit;
-	ITERATOR *itr = iterator_create(chanlist);
+	grad_iterator_t *itr = iterator_create(chanlist);
 
 	for (cp = iterator_first(itr); cp; cp = iterator_next(itr))
 		if (cp == chan)
@@ -397,7 +397,7 @@ log_change_owner(RADIUS_USER *usr)
 {
         Channel *cp;
 	int errcnt = 0;
-	ITERATOR *itr = iterator_create(chanlist);
+	grad_iterator_t *itr = iterator_create(chanlist);
 	for (cp = iterator_first(itr); cp; cp = iterator_next(itr)) {
 		if (cp->mode == LM_FILE
 		    && chown(cp->id.file, usr->uid, usr->gid)) {
@@ -495,7 +495,7 @@ _regcat(void *item, void *data)
 }
 
 void
-register_category(int cat, int pri, RAD_LIST *clist)
+register_category(int cat, int pri, grad_list_t *clist)
 {
 	struct category_closure clos;
 
@@ -568,7 +568,7 @@ static struct category_def {
 	int init;
 	int cat;
 	int pri;
-        RAD_LIST /* of Channel */ *clist;
+        grad_list_t /* of Channel */ *clist;
         int level;
 } cat_def;
 

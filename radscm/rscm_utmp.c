@@ -73,7 +73,7 @@ the constructed entry is also appended to WTMP_FILE.")
         if (SCM_IMP(DELAY) && SCM_INUMP(DELAY)) 
                 ut.delay = SCM_INUM(DELAY);
         else if (SCM_BIGP(DELAY)) 
-                ut.delay = (UINT4) scm_i_big2dbl(DELAY);
+                ut.delay = (grad_uint32_t) scm_i_big2dbl(DELAY);
         else
                 SCM_ASSERT(0,
                            DELAY, SCM_ARG2, FUNC_NAME);
@@ -139,7 +139,7 @@ the constructed entry is also appended to WTMP_FILE.")
                         if (SCM_IMP(elt) && SCM_INUMP(elt)) 
                                 ut.nas_address = SCM_INUM(elt);
                         else if (SCM_BIGP(elt)) 
-                                ut.nas_address = (UINT4) scm_i_big2dbl(elt);
+                                ut.nas_address = (grad_uint32_t) scm_i_big2dbl(elt);
                         else if (SCM_NIMP(elt) && SCM_STRINGP(elt)) 
                                 ut.nas_address =
 				    grad_ip_gethostaddr(SCM_STRING_CHARS(elt));
@@ -158,7 +158,7 @@ the constructed entry is also appended to WTMP_FILE.")
                         if (SCM_IMP(elt) && SCM_INUMP(elt)) 
                                 ut.framed_address = SCM_INUM(elt);
                         else if (SCM_BIGP(elt)) 
-                                ut.framed_address = (UINT4) scm_i_big2dbl(elt);
+                                ut.framed_address = (grad_uint32_t) scm_i_big2dbl(elt);
                         else if (SCM_NIMP(elt) && SCM_STRINGP(elt)) 
                                 ut.framed_address =
 				   grad_ip_gethostaddr(SCM_STRING_CHARS(elt));
@@ -177,7 +177,7 @@ the constructed entry is also appended to WTMP_FILE.")
                         if (SCM_IMP(elt) && SCM_INUMP(elt)) 
                                 ut.proto = SCM_INUM(elt);
                         else if (SCM_IMP(elt) && SCM_CHARP(elt)) {
-                                DICT_VALUE *dv;
+                                grad_dict_value_t *dv;
 
                                 dv = grad_value_name_to_value(
 					                 SCM_STRING_CHARS(elt),

@@ -1,5 +1,18 @@
 2004-02-04  Sergey Poznyakoff
 
+	Further namespace cleanup;
+	Autodetect 32-bit unsigned integer;
+	Use memset() instead of bzero (except rx.[ch]);
+	Removed PVAR macro: we assume ANSI C.
+	
+2004-02-04  Sergey Poznyakoff 
+
+	* configure.ac: Removed m4/Makefile
+	* Makefile.am: Likewise
+	* m4/Makefile.am: Likewise
+
+2004-02-04  Sergey Poznyakoff
+
 	* TODO: Updated
 	* include/radius.h (struct nas): Removed 'next'.
 	(grad_nas_next): Removed

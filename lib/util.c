@@ -42,16 +42,16 @@
 #include <checkrad.h>
 #include <obstack1.h>
 
-RADIUS_REQ *
+grad_request_t *
 grad_request_alloc()
 {
-        return grad_emalloc(sizeof(RADIUS_REQ));
+        return grad_emalloc(sizeof(grad_request_t));
 }
 
-/* Free a RADIUS_REQ struct.
+/* Free a grad_request_t struct.
  */
 void 
-grad_request_free(RADIUS_REQ *radreq)
+grad_request_free(grad_request_t *radreq)
 {
 	grad_list_destroy(&radreq->locus_list, NULL, NULL);
 	grad_free(radreq->remote_user);
@@ -374,10 +374,10 @@ grad_format_string_visual(char *buf, int runlen, char *str, int len)
 }
 
 int
-grad_format_vendor_pair(char *buf, VALUE_PAIR *pair)
+grad_format_vendor_pair(char *buf, grad_avp_t *pair)
 {
         int n;
-        UINT4 vendor;
+        grad_uint32_t vendor;
         u_char *ptr = (u_char*)pair->avp_strvalue;
         char buf1[64];
         char *bufp = buf;
@@ -398,14 +398,14 @@ grad_format_vendor_pair(char *buf, VALUE_PAIR *pair)
 }
                 
 char *
-grad_format_pair(VALUE_PAIR *pair, int typeflag, char **savep)
+grad_format_pair(grad_avp_t *pair, int typeflag, char **savep)
 {
         char *buf1 = NULL;
         char *buf2ptr = NULL;
         char buf2[4*AUTH_STRING_LEN+1]; /* Enough to hold longest possible
                                            string value all converted to
                                            octal */
-        DICT_VALUE *dval;
+        grad_dict_value_t *dval;
         struct tm tm;
         char *type = "";
 	

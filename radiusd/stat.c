@@ -108,7 +108,7 @@ shmem_alloc(size_t size)
 	} else {
 		shmem_size = size;
 		if (init) 
-			bzero(shmem_base, size);
+			memset(shmem_base, 0, size);
 	}
 	return 0;
 }
@@ -137,7 +137,7 @@ shmem_get(size_t size, int zero)
 		ptr = shmem_base + offset;
 		offset += size;
 		if (zero)
-			bzero(ptr, size);
+			memset(ptr, 0, size);
 	}
 	return ptr;
 }
@@ -209,7 +209,7 @@ stat_alloc_port()
 }
 
 PORT_STAT *
-stat_find_port(NAS *nas, int port_no)
+stat_find_port(grad_nas_t *nas, int port_no)
 {
 	PORT_STAT *port;
 
@@ -238,7 +238,7 @@ stat_find_port(NAS *nas, int port_no)
 }
 
 int
-stat_get_port_index(NAS *nas, int port_no)
+stat_get_port_index(grad_nas_t *nas, int port_no)
 {
 	PORT_STAT *port;
 	
@@ -255,7 +255,7 @@ stat_get_port_index(NAS *nas, int port_no)
 }
 
 int
-stat_get_next_port_no(NAS *nas, int port_no)
+stat_get_next_port_no(grad_nas_t *nas, int port_no)
 {
 	PORT_STAT *port;
 	int next = stat_port_count;
@@ -276,7 +276,7 @@ stat_get_next_port_no(NAS *nas, int port_no)
 void
 stat_update(struct radutmp *ut, int status)
 {
-	NAS *nas;
+	grad_nas_t *nas;
 	PORT_STAT *port;
 	long dt;
         char ipbuf[DOTTED_QUAD_LEN];
@@ -367,10 +367,10 @@ stat_update(struct radutmp *ut, int status)
 void
 stat_count_ports()
 {
-	NAS *nas;
+	grad_nas_t *nas;
 	struct nas_stat *statp;
 	PORT_STAT *port;
-	ITERATOR *itr;
+	grad_iterator_t *itr;
 
 	if (!server_stat)
 		return;
@@ -442,7 +442,7 @@ snmp_init_nas_stat()
 /* For a given ip_address return NAS statistics info associated with it.
    if no NAS with this address is known, return NULL */
 struct nas_stat *
-find_nas_stat(UINT4 ip_addr)
+find_nas_stat(grad_uint32_t ip_addr)
 {
         struct nas_stat *np;
 
@@ -457,7 +457,7 @@ find_nas_stat(UINT4 ip_addr)
 
 /* Attach NAS stat info to a given NAS structure. */
 void
-snmp_attach_nas_stat(NAS *nas)
+snmp_attach_nas_stat(grad_nas_t *nas)
 {
         struct nas_stat *np;
 

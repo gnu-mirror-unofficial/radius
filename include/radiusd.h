@@ -115,18 +115,18 @@ struct queue_stat {
 typedef struct queue_stat QUEUE_STAT[R_MAX];
 
 typedef struct client {
-	NETDEF                  netdef;
+	grad_netdef_t                  netdef;
         char                    longname[MAX_LONGNAME+1];
         u_char                  *secret;
         char                    shortname[MAX_SHORTNAME+1];
 } CLIENT;
 
 typedef struct proxy_state {
-	UINT4 ref_ip;             /* Radius server IP */
-        UINT4 proxy_id;           /* Proxy ID assigned by the server */
-        UINT4 remote_ip;          /* Remote radius server IP */
-        UINT4 client_ip;          /* IP of the requesting client */ 
-        UINT4 id;                 /* Radius request ID */
+	grad_uint32_t ref_ip;             /* Radius server IP */
+        grad_uint32_t proxy_id;           /* Proxy ID assigned by the server */
+        grad_uint32_t remote_ip;          /* Remote radius server IP */
+        grad_uint32_t client_ip;          /* IP of the requesting client */ 
+        grad_uint32_t id;                 /* Radius request ID */
 } PROXY_STATE;
 
 typedef struct {
@@ -142,9 +142,9 @@ typedef struct {
 typedef struct user_symbol {
         struct user_symbol *next;  /* Link to the next entry */
         char *name;                /* Label */
-        VALUE_PAIR *check;         /* LHS */
-        VALUE_PAIR *reply;         /* RHS */
-        LOCUS loc;                 /* Location of the definition of
+        grad_avp_t *check;         /* LHS */
+        grad_avp_t *reply;         /* RHS */
+        grad_locus_t loc;                 /* Location of the definition of
 				      this entry */
         int ordnum;                /* Entry ordinal number (used for semantic
 				      checks */
@@ -160,7 +160,7 @@ typedef struct user_symbol {
 typedef struct netname NETNAME;
 struct netname {
 	char *name;
-	RAD_LIST /* of NETDEF */ *netlist;
+	grad_list_t /* of grad_netdef_t */ *netlist;
 };
 
 typedef struct community Community;
@@ -172,13 +172,13 @@ struct community {
 typedef struct access_control_list ACL;
 struct access_control_list {
         Community *community;   /* community or NULL to deny access */
-	RAD_LIST /* of NETDEF */ *netlist;
+	grad_list_t /* of grad_netdef_t */ *netlist;
 };
 
 struct radstat {
         struct timeval start_time;
-        counter port_active_count;
-        counter port_idle_count;
+        grad_counter_t port_active_count;
+        grad_counter_t port_idle_count;
 };
 
 typedef enum {
@@ -199,7 +199,7 @@ typedef struct {
 
 #define stat_inc(m,a,c) \
  do if (server_stat) {\
-        NAS *nas;\
+        grad_nas_t *nas;\
         server_stat -> m . c ++;\
         if ((nas = grad_nas_lookup_ip(a)) != NULL && nas->app_data)\
                 ((struct nas_stat*)nas->app_data)-> m . c ++;\
@@ -290,11 +290,11 @@ extern size_t max_children;
 extern unsigned process_timeout;
 extern unsigned radiusd_write_timeout;
 extern unsigned radiusd_read_timeout;
-extern UINT4 expiration_seconds;
-extern UINT4 warning_seconds;
+extern grad_uint32_t expiration_seconds;
+extern grad_uint32_t warning_seconds;
 extern int use_dbm;
-extern UINT4 myip;
-extern UINT4 ref_ip;
+extern grad_uint32_t myip;
+extern grad_uint32_t ref_ip;
 extern int auth_port;
 extern int acct_port;
 extern int suspend_flag;
@@ -372,7 +372,7 @@ int udp_input_handler(int fd, void *data);
 int udp_input_close(int fd, void *data);
 int udp_input_cmp(const void *a, const void *b);
 
-int udp_open(int type, UINT4 ipaddr, int port, int nonblock);
+int udp_open(int type, grad_uint32_t ipaddr, int port, int nonblock);
 
 void radiusd_pidfile_write(char *name);
 pid_t radiusd_pidfile_read(char *name);
@@ -395,10 +395,10 @@ void radiusd_close_channel(int fd);
 /* exec.c */
 int radius_get_user_ids(RADIUS_USER *usr, const char *name);
 int radius_switch_to_user(RADIUS_USER *usr);
-int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **, int);
+int radius_exec_program(char *, grad_request_t *, grad_avp_t **, int);
 void filter_cleanup(pid_t pid, int status);
-int filter_auth(char *name, RADIUS_REQ *req, VALUE_PAIR **reply_pairs);
-int filter_acct(char *name, RADIUS_REQ *req);
+int filter_auth(char *name, grad_request_t *req, grad_avp_t **reply_pairs);
+int filter_acct(char *name, grad_request_t *req);
 int filters_stmt_term(int finish, void *block_data, void *handler_data);
 extern struct cfg_stmt filters_stmt[];
 
@@ -407,9 +407,9 @@ void scheme_main();
 void scheme_load(char *filename);
 void scheme_load_path(char *pathname);
 void scheme_debug(int val);
-int scheme_auth(char *procname, RADIUS_REQ *req,
-                VALUE_PAIR *user_check, VALUE_PAIR **user_reply_ptr);
-int scheme_acct(char *procname, RADIUS_REQ *req);
+int scheme_auth(char *procname, grad_request_t *req,
+                grad_avp_t *user_check, grad_avp_t **user_reply_ptr);
+int scheme_acct(char *procname, grad_request_t *req);
 void scheme_add_load_path(char *path);
 void scheme_read_eval_loop();
 void scheme_redirect_output();
@@ -420,12 +420,12 @@ extern struct cfg_stmt guile_stmt[];
 
 /* log.c */
 void radiusd_logger(int level,
-		    const RADIUS_REQ *req,
-		    const LOCUS *loc,
+		    const grad_request_t *req,
+		    const grad_locus_t *loc,
 		    const char *func_name,
 		    int en,
 		    const char *fmt, va_list ap);
-void sqllog __PVAR((int status, char *msg, ...));
+void sqllog(int status, char *msg, ...);
 int logging_stmt_handler(int argc, cfg_value_t *argv, void *block_data,
 			 void *handler_data);
 int logging_stmt_end(void *block_data, void *handler_data);
@@ -440,8 +440,8 @@ extern struct cfg_stmt logging_stmt[];
 #define REQ_AUTH_ZERO 1
 #define REQ_AUTH_BAD  2
 
-void radius_send_reply(int, RADIUS_REQ *, VALUE_PAIR *, char *, int);
-void radius_send_challenge(RADIUS_REQ *radreq, char *msg, char *state, int fd);
+void radius_send_reply(int, grad_request_t *, grad_avp_t *, char *, int);
+void radius_send_challenge(grad_request_t *radreq, char *msg, char *state, int fd);
 int radius_verify_digest(REQUEST *req);
 
 int radius_auth_req_decode(struct sockaddr_in *sa,
@@ -456,10 +456,10 @@ void radius_req_xmit(REQUEST *request);
 int radius_req_failure(int type, struct sockaddr_in *addr);
 void radius_req_update(void *req_ptr, void *data_ptr);
 int radius_respond(REQUEST *req);
-void radius_req_register_locus(RADIUS_REQ *req, LOCUS *loc);
-void radius_trace_path(RADIUS_REQ *req);
-VALUE_PAIR *radius_decrypt_request_pairs(RADIUS_REQ *req, VALUE_PAIR *pair);
-void radius_destroy_pairs(VALUE_PAIR **p);
+void radius_req_register_locus(grad_request_t *req, grad_locus_t *loc);
+void radius_trace_path(grad_request_t *req);
+grad_avp_t *radius_decrypt_request_pairs(grad_request_t *req, grad_avp_t *pair);
+void radius_destroy_pairs(grad_avp_t **p);
 
 /* shmem.c */
 int shmem_alloc(size_t size);
@@ -472,10 +472,10 @@ int pam_pass(char *name, char *passwd, const char *pamauth, char **reply_msg);
 
 /* proxy.c */
 int proxy_send(REQUEST *req);
-int proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int activefd);
-void proxy_retry(RADIUS_REQ *radreq, int fd);
-int proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r);
-VALUE_PAIR *proxy_request_recode(RADIUS_REQ *radreq, VALUE_PAIR *plist,
+int proxy_receive(grad_request_t *radreq, grad_request_t *oldreq, int activefd);
+void proxy_retry(grad_request_t *radreq, int fd);
+int proxy_cmp(grad_request_t *qr, grad_request_t *r);
+grad_avp_t *proxy_request_recode(grad_request_t *radreq, grad_avp_t *plist,
 				 u_char *secret, u_char *vector);
 
 /* menu.c */
@@ -486,50 +486,50 @@ VALUE_PAIR *proxy_request_recode(RADIUS_REQ *radreq, VALUE_PAIR *plist,
 #define MAX_STATE_VALUE                 128
 #define RAD_BUFFER_SIZE                 4096
 
-void menu_reply(RADIUS_REQ *radreq, int fd);
+void menu_reply(grad_request_t *radreq, int fd);
 char *menu_read_text(char *menu_name);
 
 /* acct.c */
 void acct_init();
-int rad_accounting(RADIUS_REQ *, int, int);
-int radzap(UINT4 nas, int port, char *user, time_t t);
-int rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul,
+int rad_accounting(grad_request_t *, int, int);
+int radzap(grad_uint32_t nas, int port, char *user, time_t t);
+int rad_check_multi(char *name, grad_avp_t *request, int maxsimul,
 		    int *pcount);
-int rad_check_realm(REALM *realm);
-int write_detail(RADIUS_REQ *radreq, int authtype, char *f);
+int rad_check_realm(grad_realm_t *realm);
+int write_detail(grad_request_t *radreq, int authtype, char *f);
 
 /* files.c */
-int user_find(char *name, RADIUS_REQ *, VALUE_PAIR **, VALUE_PAIR **);
-int userparse(char *buf, VALUE_PAIR **first_pair, char **errmsg);
-void presuf_setup(VALUE_PAIR *request_pairs);
-int hints_setup(RADIUS_REQ *request);
-int huntgroup_access(RADIUS_REQ *radreq, LOCUS *loc);
-CLIENT *client_lookup_ip(UINT4 ipno);
-char *client_lookup_name(UINT4 ipno, char *buf, size_t size);
+int user_find(char *name, grad_request_t *, grad_avp_t **, grad_avp_t **);
+int userparse(char *buf, grad_avp_t **first_pair, char **errmsg);
+void presuf_setup(grad_avp_t *request_pairs);
+int hints_setup(grad_request_t *request);
+int huntgroup_access(grad_request_t *radreq, grad_locus_t *loc);
+CLIENT *client_lookup_ip(grad_uint32_t ipno);
+char *client_lookup_name(grad_uint32_t ipno, char *buf, size_t size);
 int read_clients_file(char *);
-NAS *grad_nas_find(UINT4 ipno);
-NAS *grad_nas_by_name(char *name);
-char *grad_nas_name(UINT4 ipno);
-char *nas_name2(RADIUS_REQ *r);
+grad_nas_t *grad_nas_find(grad_uint32_t ipno);
+grad_nas_t *grad_nas_by_name(char *name);
+char *grad_nas_name(grad_uint32_t ipno);
+char *nas_name2(grad_request_t *r);
 int read_nas_list_file(char *);
 int reload_config_file(enum reload_what);
-int presufcmp(VALUE_PAIR *check, char *name, char *rest);
+int presufcmp(grad_avp_t *check, char *name, char *rest);
 int get_config();
 int get_deny(char *user);
-NAS *findnasbyindex(int);
+grad_nas_t *findnasbyindex(int);
 char *make_server_ident();
 void dump_users_db();
 void strip_username(int do_strip, char *name,
-                    VALUE_PAIR *check_item, char *stripped_name);
+                    grad_avp_t *check_item, char *stripped_name);
 
 /* version.c */
 void version();
 
 /* auth.c */
-int rad_auth_init(RADIUS_REQ *radreq, int activefd);
-int rad_auth_check_username(RADIUS_REQ *radreq, int activefd);
-int rad_authenticate (RADIUS_REQ *, int);
-void req_decrypt_password(char *password, RADIUS_REQ *req, VALUE_PAIR *pair);
+int rad_auth_init(grad_request_t *radreq, int activefd);
+int rad_auth_check_username(grad_request_t *radreq, int activefd);
+int rad_authenticate (grad_request_t *, int);
+void req_decrypt_password(char *password, grad_request_t *req, grad_avp_t *pair);
 
 /* timestr.c */
 int timestr_match(char *, time_t);
@@ -539,7 +539,7 @@ int timestr_match(char *, time_t);
 void snmpserv_init(void *arg);
 void snmp_auth_server_reset();
 void snmp_acct_server_reset();
-void snmp_attach_nas_stat(NAS *nas);
+void snmp_attach_nas_stat(grad_nas_t *nas);
 void snmp_init_nas_stat();
 void snmp_sort_nas_stat();
 int snmp_stmt_begin(int finish, void *data, void *up_data);
@@ -552,9 +552,9 @@ void stat_init();
 void stat_done();
 void stat_update(struct radutmp *ut, int status);
 void stat_count_ports();
-struct nas_stat * find_nas_stat(UINT4 ip_addr);
-int stat_get_port_index(NAS *nas, int port_no);
-int stat_get_next_port_no(NAS *nas, int port_no);
+struct nas_stat * find_nas_stat(grad_uint32_t ip_addr);
+int stat_get_port_index(grad_nas_t *nas, int port_no);
+int stat_get_next_port_no(grad_nas_t *nas, int port_no);
 #else
 # define stat_init()
 # define stat_done()
@@ -572,20 +572,20 @@ int snmp_req_respond(REQUEST *request);
         
 /* radutil.c */
 char *radius_xlate(struct obstack *obp, char *str,
-                   RADIUS_REQ *req, VALUE_PAIR *reply_pairs);
-int radius_eval_avl(RADIUS_REQ *req, VALUE_PAIR *p);
+                   grad_request_t *req, grad_avp_t *reply_pairs);
+int radius_eval_avl(grad_request_t *req, grad_avp_t *p);
 
 /* rewrite.y */
 extern struct cfg_stmt rewrite_stmt[];
 int parse_rewrite(char *name);
 
 /* radck.c */
-int fix_check_pairs(int sf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs);
-int fix_reply_pairs(int cf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs);
+int fix_check_pairs(int sf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs);
+int fix_reply_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs);
 void radck();
 
 /* checkrad.c */
-int checkrad(NAS *nas, struct radutmp *up);
+int checkrad(grad_nas_t *nas, struct radutmp *up);
 
 /* forward.c */
 int rad_cfg_forward_auth(int argc, cfg_value_t *argv,
@@ -593,6 +593,6 @@ int rad_cfg_forward_auth(int argc, cfg_value_t *argv,
 int rad_cfg_forward_acct(int argc, cfg_value_t *argv,
 			 void *block_data, void *handler_data);
 void forward_init();
-void forward_request(int type, RADIUS_REQ *req);
+void forward_request(int type, grad_request_t *req);
 
 

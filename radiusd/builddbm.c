@@ -41,14 +41,14 @@ typedef struct {
 
 
 static int append_symbol(DBM_closure *closure, User_symbol *sym);
-static int list_length(VALUE_PAIR *vp);
+static int list_length(grad_avp_t *vp);
 
 int
 append_symbol(DBM_closure *closure, User_symbol *sym)
 {
         int     check_len;
         int     reply_len;
-        VALUE_PAIR *vp;
+        grad_avp_t *vp;
         int     *q;
         DBM_DATUM       named;
         DBM_DATUM       contentd;
@@ -108,7 +108,7 @@ append_symbol(DBM_closure *closure, User_symbol *sym)
 }
 
 int
-list_length(VALUE_PAIR *vp)
+list_length(grad_avp_t *vp)
 {
         int len;
         
@@ -151,15 +151,15 @@ builddbm(char *name)
 
 /* ************ */
 
-static VALUE_PAIR * decode_dbm(int **dbm_ptr);
+static grad_avp_t * decode_dbm(int **dbm_ptr);
 static int dbm_find(DBM_FILE dbmfile, char *name,
-                    RADIUS_REQ *req, 
-                    VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
+                    grad_request_t *req, 
+                    grad_avp_t **check_pairs, grad_avp_t **reply_pairs);
 static char *_dbm_dup_name(char *buf, size_t bufsize, char *name, int ordnum);
 static char *_dbm_number_name(char *buf, size_t bufsize, char *name, int ordnum);
 static int dbm_match(DBM_FILE dbmfile, char *name, char *(*fn)(), 
-                     RADIUS_REQ *req, VALUE_PAIR **check_pairs,
-                     VALUE_PAIR **reply_pairs, int  *fallthru);
+                     grad_request_t *req, grad_avp_t **check_pairs,
+                     grad_avp_t **reply_pairs, int  *fallthru);
 
 /*
  * DBM lookup:
@@ -169,11 +169,11 @@ static int dbm_match(DBM_FILE dbmfile, char *name, char *(*fn)(),
  */
 #define NINT(n) ((n) + sizeof(int) - 1)/sizeof(int)
 
-VALUE_PAIR *
+grad_avp_t *
 decode_dbm(int **pptr)
 {
         int *ptr, *endp, len;
-        VALUE_PAIR *next_pair, *first_pair, *last_pair;
+        grad_avp_t *next_pair, *first_pair, *last_pair;
         
         ptr = *pptr;
         len = *ptr++;
@@ -208,14 +208,14 @@ decode_dbm(int **pptr)
  * for both calls is needed.
  */
 int
-dbm_find(DBM_FILE file, char *name, RADIUS_REQ *req,
-         VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs)
+dbm_find(DBM_FILE file, char *name, grad_request_t *req,
+         grad_avp_t **check_pairs, grad_avp_t **reply_pairs)
 {
         DBM_DATUM       named;
         DBM_DATUM       contentd;
         int             *ptr;
-        VALUE_PAIR      *check_tmp;
-        VALUE_PAIR      *reply_tmp;
+        grad_avp_t      *check_tmp;
+        grad_avp_t      *reply_tmp;
         int             ret = 0;
         
         named.dptr = name;
@@ -241,7 +241,7 @@ dbm_find(DBM_FILE file, char *name, RADIUS_REQ *req,
          *      See if the check_pairs match.
          */
         if (paircmp(req, check_tmp) == 0) {
-                VALUE_PAIR *p;
+                grad_avp_t *p;
 
                 /*
                  * Found an almost matching entry. See if it has a
@@ -294,13 +294,13 @@ _dbm_number_name(char *buf, size_t bufsize, char *name, int ordnum)
 }
 
 int
-dbm_match(DBM_FILE dbmfile, char *name, char *(*fn)(), RADIUS_REQ *req,
-          VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs, int  *fallthru)
+dbm_match(DBM_FILE dbmfile, char *name, char *(*fn)(), grad_request_t *req,
+          grad_avp_t **check_pairs, grad_avp_t **reply_pairs, int  *fallthru)
 {
         int  found = 0;
         int  i, r;
         char buffer[64];
-        VALUE_PAIR *p;
+        grad_avp_t *p;
         
         *fallthru = 0;
         for (i = 0;;i++) {
@@ -345,8 +345,8 @@ dbm_match(DBM_FILE dbmfile, char *name, char *(*fn)(), RADIUS_REQ *req,
  * Find matching profile in the DBM database
  */
 int
-user_find_db(char *name, RADIUS_REQ *req, 
-             VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs)
+user_find_db(char *name, grad_request_t *req, 
+             grad_avp_t **check_pairs, grad_avp_t **reply_pairs)
 {
         int             found = 0;
         char            *path;

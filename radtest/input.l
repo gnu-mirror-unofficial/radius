@@ -49,7 +49,7 @@
 int getline (char **lineptr, size_t *n, FILE *stream);
 #endif
 
-LOCUS source_locus;
+grad_locus_t source_locus;
 static int interactive;
 static struct obstack string_stk;
  

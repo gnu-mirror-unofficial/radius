@@ -68,11 +68,11 @@ good_ipaddr(const char *addr)
  *      for the supplied IP address.
  */
 char * 
-grad_ip_gethostname(UINT4 ipaddr, char *namebuf, size_t size)
+grad_ip_gethostname(grad_uint32_t ipaddr, char *namebuf, size_t size)
 {
         struct hostent *hp, hent;
         char buffer[512];
-        UINT4 n_ipaddr;
+        grad_uint32_t n_ipaddr;
         int h_err, len;
         
         n_ipaddr = htonl(ipaddr);
@@ -97,7 +97,7 @@ grad_ip_gethostname(UINT4 ipaddr, char *namebuf, size_t size)
  * Return an IP address in host long notation from a host
  * name or address in dot notation.
  */
-UINT4 
+grad_uint32_t 
 grad_ip_gethostaddr(const char *host)
 {
         struct hostent  *hp, hent;
@@ -110,7 +110,7 @@ grad_ip_gethostaddr(const char *host)
         hp = grad_gethostbyname_r(host, &hent, buffer, sizeof(buffer), &h_err);
         if (!hp)
                 return 0;
-        return ntohl(*(UINT4 *)hp->h_addr);
+        return ntohl(*(grad_uint32_t *)hp->h_addr);
 }
 
 /*
@@ -118,7 +118,7 @@ grad_ip_gethostaddr(const char *host)
  * provided address in host long notation.
  */
 char *
-grad_ip_iptostr(UINT4 ipaddr, char *buffer)
+grad_ip_iptostr(grad_uint32_t ipaddr, char *buffer)
 {
         sprintf(buffer, "%u.%u.%u.%u",
                 (u_int) ((ipaddr >> 24) & 0xff),
@@ -132,7 +132,7 @@ grad_ip_iptostr(UINT4 ipaddr, char *buffer)
  *      Return an IP address in host long notation from
  *      one supplied in standard dot notation.
  */
-UINT4 
+grad_uint32_t 
 grad_ip_strtoip(const char *ip_str)
 #ifdef HAVE_INET_ATON
 {
@@ -148,38 +148,38 @@ grad_ip_strtoip(const char *ip_str)
         char    *ptr;
         int     i;
         int     count;
-        UINT4   ipaddr;
+        grad_uint32_t   ipaddr;
         int     cur_byte;
 
-        ipaddr = (UINT4)0;
+        ipaddr = (grad_uint32_t)0;
         for (i = 0; i < 4; i++) {
                 ptr = buf;
                 count = 0;
                 *ptr = '\0';
                 while (*ip_str != '.' && *ip_str != '\0' && count < 4) {
                         if (!isdigit(*ip_str)) {
-                                return((UINT4)0);
+                                return((grad_uint32_t)0);
                         }
                         *ptr++ = *ip_str++;
                         count++;
                 }
                 if (count >= 4 || count == 0) {
-                        return((UINT4)0);
+                        return((grad_uint32_t)0);
                 }
                 *ptr = '\0';
                 cur_byte = atoi(buf);
                 if (cur_byte < 0 || cur_byte > 255) {
-                        return((UINT4)0);
+                        return((grad_uint32_t)0);
                 }
                 ip_str++;
-                ipaddr = ipaddr << 8 | (UINT4)cur_byte;
+                ipaddr = ipaddr << 8 | (grad_uint32_t)cur_byte;
         }
         return ipaddr;
 }
 #endif
 
 int
-grad_ip_getnetaddr(const char *str, NETDEF *netdef)
+grad_ip_getnetaddr(const char *str, grad_netdef_t *netdef)
 {
 	char *p = strchr(str, '/');
 	if (!p) {
@@ -199,7 +199,7 @@ grad_ip_getnetaddr(const char *str, NETDEF *netdef)
 			netdef->netmask = grad_ip_strtoip(p+1);
 		else {
 			char *endp;
-			UINT4 n = strtoul(p+1, &endp, 0);
+			grad_uint32_t n = strtoul(p+1, &endp, 0);
 			if (*endp || n > 32)
 				return 1;
 			n = 32 - n;
@@ -213,7 +213,7 @@ grad_ip_getnetaddr(const char *str, NETDEF *netdef)
 }
 
 int
-grad_ip_in_net_p(const NETDEF *netdef, UINT4 ipaddr)
+grad_ip_in_net_p(const grad_netdef_t *netdef, grad_uint32_t ipaddr)
 {
 	return netdef->ipaddr == (ipaddr & netdef->netmask);
 }

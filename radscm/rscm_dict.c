@@ -41,7 +41,7 @@ SCM_DEFINE(rad_dict_name_to_attr, "rad-dict-name->attr", 1, 0, 0,
 "                       Vendor-Specific one, or #f otherwise.\n")
 #define FUNC_NAME s_rad_dict_name_to_attr          
 {
-        DICT_ATTR *attr;
+        grad_dict_attr_t *attr;
         int vendor;
         
         if (SCM_IMP(NAME) && SCM_INUMP(NAME)) {
@@ -73,8 +73,8 @@ SCM_DEFINE(rad_dict_value_to_name, "rad-dict-value->name", 2, 0, 0,
 "attribute\n")     
 #define FUNC_NAME s_rad_dict_value_to_name
 {
-        DICT_ATTR *attr;
-        DICT_VALUE *val;
+        grad_dict_attr_t *attr;
+        grad_dict_value_t *val;
 
         if (SCM_IMP(ATTR) && SCM_INUMP(ATTR)) {
                 attr = grad_attr_number_to_dict(SCM_INUM(ATTR));
@@ -101,8 +101,8 @@ SCM_DEFINE(rad_dict_name_to_value, "rad-dict-name->value", 2, 0, 0,
 "Convert a symbolic attribute value name into its integer representation\n")
 #define FUNC_NAME s_rad_dict_name_to_value      
 {
-        DICT_ATTR *attr;
-        DICT_VALUE *val;
+        grad_dict_attr_t *attr;
+        grad_dict_value_t *val;
         
         if (SCM_IMP(ATTR) && SCM_INUMP(ATTR)) {
                 attr = grad_attr_number_to_dict(SCM_INUM(ATTR));

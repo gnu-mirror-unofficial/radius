@@ -96,7 +96,7 @@ typedef struct {
         int        nmatch;
         regmatch_t *pmatch;
 
-        RADIUS_REQ *req;
+        grad_request_t *req;
         
         jmp_buf    jmp;
 } RWMACH;
@@ -221,7 +221,7 @@ typedef struct function_def {
         int        nparm;        /* Number of parameters */
         PARAMETER  *parm;        /* List of parameters */
         stkoff_t   stack_alloc;  /* required stack allocation */
-        LOCUS      loc;          /* source location where the function
+        grad_locus_t      loc;          /* source location where the function
                                   * was declared
                                   */
 } FUNCTION;
@@ -256,12 +256,12 @@ typedef union mtx MTX;
 # define COMMON_MTX \
         OBJ(MTX);\
         int      id;\
-        LOCUS    loc;\
+        grad_locus_t    loc;\
         Mtxtype  type;
 #else
 # define COMMON_MTX \
         OBJ(MTX);\
-        LOCUS    loc;\
+        grad_locus_t    loc;\
         Mtxtype  type;
 #endif
         
@@ -525,7 +525,7 @@ void loop_unwind_all();
  * Lexical analyzer stuff
  */
 static FILE *infile;               /* Input file */ 
-static LOCUS locus;                /* Input location */
+static grad_locus_t locus;                /* Input location */
 
 static char *inbuf;                /* Input string */
 static char *curp;                 /* Current pointer */
@@ -600,10 +600,10 @@ static MTX * mtx_cond(MTX *cond, MTX *if_true, MTX *if_false);
 static MTX * mtx_coerce(Datatype type, MTX *arg);
 static MTX * mtx_call(FUNCTION *fun, MTX *args);
 static MTX * mtx_builtin(builtin_t *bin, MTX *args);
-static MTX * mtx_attr(DICT_ATTR *attr, MTX *index);
-static MTX * mtx_attr_asgn(DICT_ATTR *attr, MTX *index, MTX *rval);
-static MTX * mtx_attr_check(DICT_ATTR *attr, MTX *index);
-static MTX * mtx_attr_delete(DICT_ATTR *attr, MTX *index);
+static MTX * mtx_attr(grad_dict_attr_t *attr, MTX *index);
+static MTX * mtx_attr_asgn(grad_dict_attr_t *attr, MTX *index, MTX *rval);
+static MTX * mtx_attr_check(grad_dict_attr_t *attr, MTX *index);
+static MTX * mtx_attr_delete(grad_dict_attr_t *attr, MTX *index);
 
 static MTX * coerce(MTX  *arg, Datatype type);
 /*
@@ -646,7 +646,7 @@ static Datatype attr_datatype(int type);
  */
 static void gc();
 static void run(pctr_t pc);
-static int run_init(pctr_t pc, RADIUS_REQ *req);
+static int run_init(pctr_t pc, grad_request_t *req);
 static int rw_error(const char *msg);
 static int rw_error_free(char *msg);
  
@@ -666,7 +666,7 @@ static int rw_error_free(char *msg);
         MTX   *mtx;
         FUNCTION  *fun;
         builtin_t *btin;
-        DICT_ATTR *attr;
+        grad_dict_attr_t *attr;
         struct {
                 MTX *arg_first;
                 MTX *arg_last;
@@ -800,7 +800,7 @@ fundecl : TYPE IDENT dclparm
                   if (errcnt)
                           YYERROR;
                   
-                  bzero(&f, sizeof(f));
+                  memset(&f, 0, sizeof(f));
                   f.name    = $2;
                   f.rettype = $1;
                   f.entry   = 0;
@@ -1838,7 +1838,7 @@ yylex()
            in conflict with binary '%' operator.
            Thanks to Clement Gerouville for noticing.  */
         if (yychar == '%') {
-                DICT_ATTR *attr = 0;
+                grad_dict_attr_t *attr = 0;
                 char *attr_name;
                 
                 input();
@@ -2520,7 +2520,7 @@ attr_datatype(int type)
 }
 
 MTX *
-mtx_attr(DICT_ATTR *attr, MTX *index)
+mtx_attr(grad_dict_attr_t *attr, MTX *index)
 {
         ATTR_MTX *mtx = (ATTR_MTX*)mtx_alloc(Attr);
         mtx_append(mtx);
@@ -2531,7 +2531,7 @@ mtx_attr(DICT_ATTR *attr, MTX *index)
 }
 
 MTX *
-mtx_attr_check(DICT_ATTR *attr,	MTX *index)
+mtx_attr_check(grad_dict_attr_t *attr,	MTX *index)
 {
         ATTR_MTX *mtx = (ATTR_MTX*)mtx_alloc(Attr_check);
         mtx_append(mtx);
@@ -2554,7 +2554,7 @@ rw_coercion_warning(Datatype from, Datatype to, char *pref)
 
 
 MTX *
-mtx_attr_asgn(DICT_ATTR *attr, MTX *index, MTX *rval)
+mtx_attr_asgn(grad_dict_attr_t *attr, MTX *index, MTX *rval)
 {
         ATTR_MTX *mtx = (ATTR_MTX*)mtx_alloc(Attr_asgn);
         mtx_append(mtx);
@@ -2570,7 +2570,7 @@ mtx_attr_asgn(DICT_ATTR *attr, MTX *index, MTX *rval)
 }
 
 MTX *
-mtx_attr_delete(DICT_ATTR *attr, MTX *index)
+mtx_attr_delete(grad_dict_attr_t *attr, MTX *index)
 {
         ATTR_MTX *mtx = (ATTR_MTX*)mtx_alloc(Attr_delete);
         mtx_append(mtx);
@@ -4326,7 +4326,7 @@ rw_attrcheck()
  * Assign a value to an A/V pair
  */
 void
-attrasgn_internal(int attr, VALUE_PAIR *pair, RWSTYPE val)
+attrasgn_internal(int attr, grad_avp_t *pair, RWSTYPE val)
 {
 	assert_request_presence();
 	if (!pair) {
@@ -4379,7 +4379,7 @@ void
 rw_attrs0()
 {
         int attr = (int) rw_code[mach.pc++];
-        VALUE_PAIR *pair;
+        grad_avp_t *pair;
         
         if ((pair = grad_avl_find(AVPLIST(&mach), attr)) == NULL) 
                 pushs(&nil, 1);
@@ -4397,7 +4397,7 @@ void
 rw_attrn0()
 {
         int attr = (int) rw_code[mach.pc++];
-        VALUE_PAIR *pair;
+        grad_avp_t *pair;
 
         if ((pair = grad_avl_find(AVPLIST(&mach), attr)) == NULL)
                 pushn(0);
@@ -4409,7 +4409,7 @@ void
 rw_attrs()
 {
         int attr = (int) rw_code[mach.pc++];
-        VALUE_PAIR *pair;
+        grad_avp_t *pair;
 	RWSTYPE index;
 
 	cpopn(&index);
@@ -4423,7 +4423,7 @@ void
 rw_attrn()
 {
         int attr = (int) rw_code[mach.pc++];
-        VALUE_PAIR *pair;
+        grad_avp_t *pair;
 	RWSTYPE index;
 
 	cpopn(&index);
@@ -5103,7 +5103,7 @@ struct subst_segment {
 };
 
 static void
-add_text_segment(RAD_LIST *lst, char *ptr, char *end)
+add_text_segment(grad_list_t *lst, char *ptr, char *end)
 {
 	struct subst_segment *seg;
 	if (ptr >= end)
@@ -5116,7 +5116,7 @@ add_text_segment(RAD_LIST *lst, char *ptr, char *end)
 }
 
 static void
-add_match_segment(RAD_LIST *lst)
+add_match_segment(grad_list_t *lst)
 {
 	struct subst_segment *seg = grad_emalloc(sizeof(*seg));
 	seg->type = subst_match;
@@ -5124,7 +5124,7 @@ add_match_segment(RAD_LIST *lst)
 }
 
 static void
-add_ref_segment(RAD_LIST *lst, size_t ref)
+add_ref_segment(grad_list_t *lst, size_t ref)
 {
 	struct subst_segment *seg = grad_emalloc(sizeof(*seg));
 	seg->type = subst_ref;
@@ -5132,11 +5132,11 @@ add_ref_segment(RAD_LIST *lst, size_t ref)
 	grad_list_append(lst, seg);
 }
 
-RAD_LIST *
+grad_list_t *
 subst_create(char *text)
 {
 	char *p;
-	RAD_LIST *lst = grad_list_create();
+	grad_list_t *lst = grad_list_create();
 	if (!lst)
 		return lst;
 
@@ -5182,16 +5182,16 @@ seg_free(void *item, void *data ARG_UNUSED)
 }
 
 void
-subst_destroy(RAD_LIST *lst)
+subst_destroy(grad_list_t *lst)
 {
 	grad_list_destroy(&lst, seg_free, NULL);
 }
 
 void
-subst_run(RAD_LIST *subst, size_t nsub,
+subst_run(grad_list_t *subst, size_t nsub,
 	  char **baseptr, char *arg)
 {
-	ITERATOR *itr = iterator_create(subst);
+	grad_iterator_t *itr = iterator_create(subst);
 	struct subst_segment *seg;
 	
 	for (seg = iterator_first(itr); seg; seg = iterator_next(itr)) {
@@ -5228,7 +5228,7 @@ bi_gsub()
 	char *arg = (char*) getarg(1);
 	char *base;
 	regex_t rx;
-	RAD_LIST *subst;
+	grad_list_t *subst;
 	
         int rc = regcomp(&rx, re_str, regcomp_flags);
         if (rc) 
@@ -5264,7 +5264,7 @@ bi_sub()
 	char *arg = (char*) getarg(1);
 	char *base;
 	regex_t rx;
-	RAD_LIST *subst;
+	grad_list_t *subst;
 	
         int rc = regcomp(&rx, re_str, regcomp_flags);
         if (rc) 
@@ -5508,7 +5508,7 @@ rewrite_check_function(char *name, Datatype rettype, char *typestr)
 }
 
 int
-run_init(pctr_t pc, RADIUS_REQ *request)
+run_init(pctr_t pc, grad_request_t *request)
 {
         FILE *fp;
 
@@ -5540,7 +5540,7 @@ run_init(pctr_t pc, RADIUS_REQ *request)
 }
 
 static int
-evaluate(pctr_t pc, RADIUS_REQ *req, Datatype rettype, Datum *datum)
+evaluate(pctr_t pc, grad_request_t *req, Datatype rettype, Datum *datum)
 {
         if (run_init(pc, req))
 		return -1;
@@ -5563,7 +5563,7 @@ evaluate(pctr_t pc, RADIUS_REQ *req, Datatype rettype, Datum *datum)
 
 int
 rewrite_invoke(Datatype rettype, void *ret,
-	       char *name, RADIUS_REQ *request, char *typestr, ...)
+	       char *name, grad_request_t *request, char *typestr, ...)
 {
         FILE *fp;
         va_list ap;
@@ -5627,7 +5627,7 @@ rewrite_invoke(Datatype rettype, void *ret,
 		break;
 
 	case Integer:
-		*(UINT4*)ret = mach.rA;
+		*(grad_uint32_t*)ret = mach.rA;
 	}
         rw_mach_destroy();
         return 0;
@@ -5655,7 +5655,7 @@ rewrite_compile(char *expr)
 }
 
 int
-rewrite_interpret(char *expr, RADIUS_REQ *req, Datatype *type, Datum *datum)
+rewrite_interpret(char *expr, grad_request_t *req, Datatype *type, Datum *datum)
 {
 	pctr_t save_pc = rw_pc;
 	int rc;
@@ -5675,7 +5675,7 @@ rewrite_interpret(char *expr, RADIUS_REQ *req, Datatype *type, Datum *datum)
 }
 
 int
-rewrite_eval(char *symname, RADIUS_REQ *req, Datatype *type, Datum *datum)
+rewrite_eval(char *symname, grad_request_t *req, Datatype *type, Datum *datum)
 {
         FUNCTION *fun;
 	
@@ -5702,8 +5702,8 @@ rewrite_eval(char *symname, RADIUS_REQ *req, Datatype *type, Datum *datum)
  * Configuration
  */
 
-static RAD_LIST *source_list;        /* List of loaded source files */
-static RAD_LIST *rewrite_load_path;  /* Load path list */
+static grad_list_t *source_list;        /* List of loaded source files */
+static grad_list_t *rewrite_load_path;  /* Load path list */
 
 /* Add a path to load path */
 static void
@@ -5771,7 +5771,7 @@ free_path(void *item, void *data ARG_UNUSED)
 	return 0;
 }
 
-static RAD_LIST *source_candidate_list; /* List of modules that are to
+static grad_list_t *source_candidate_list; /* List of modules that are to
 					   be loaded */
 
 int
@@ -5927,7 +5927,7 @@ radscm_scm_to_ival(SCM cell, int *val)
                 if (SCM_INUMP(cell))  
                         *val = SCM_INUM(cell);
                 else if (SCM_BIGP(cell)) 
-                        *val = (UINT4) scm_i_big2dbl(cell);
+                        *val = (grad_uint32_t) scm_i_big2dbl(cell);
                 else if (SCM_CHARP(cell))
                         *val = SCM_CHAR(cell);
                 else if (cell == SCM_BOOL_F)

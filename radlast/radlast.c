@@ -72,8 +72,8 @@ WTMP *find_wtmp_nas(WTMP *first, struct radutmp *bp);
 WTMP *find_wtmp_nas_port(WTMP *first, struct radutmp *bp);
 WTMP *find_wtmp_nas_port_sid(WTMP *first, struct radutmp *bp);
 
-UINT4 host_ip = 0;
-NETDEF nas_ip = { 0, 0 } ;
+grad_uint32_t host_ip = 0;
+grad_netdef_t nas_ip = { 0, 0 } ;
 int port = 0;
 int width = 5;
 int show_seconds = 0;
@@ -247,7 +247,7 @@ main(int argc, char **argv)
         read_naslist();
 
         if (nas_name) {
-		NAS *nas = grad_nas_lookup_name(nas_name);
+		grad_nas_t *nas = grad_nas_lookup_name(nas_name);
 		if (!nas) {
 			if (grad_ip_getnetaddr(nas_name, &nas_ip)) {
                                 grad_log(L_ERR, "unknown nas: %s", nas_name);
@@ -277,7 +277,7 @@ rawread()
         struct radutmp ut;
         struct tm *tm;
         char ct[256];
-        UINT4 ipaddr;
+        grad_uint32_t ipaddr;
         char ip_str[DOTTED_QUAD_LEN];
         
         if ((wfd = open(file, O_RDONLY, 0)) < 0) {
@@ -642,7 +642,7 @@ delete_logout(WTMP *pp, struct radutmp *utp)
 char *
 proto_str(int id)
 {
-        DICT_VALUE *dval = grad_value_lookup(id, "Framed-Protocol");
+        grad_dict_value_t *dval = grad_value_lookup(id, "Framed-Protocol");
         static char buf[64];
         
         if (!dval) {
@@ -655,7 +655,7 @@ proto_str(int id)
 char *
 port_type_str(int porttype)
 {
-	DICT_VALUE *dval = grad_value_lookup(porttype, "NAS-Port-Type");
+	grad_dict_value_t *dval = grad_value_lookup(porttype, "NAS-Port-Type");
 	static char buf[80];
 	char *s;
 	
@@ -681,7 +681,7 @@ print_entry(WTMP *pp, struct radutmp *bp, int mark)
         char ct[256];
         char ip_str[IP_ADDR_LEN+1];
         time_t delta;
-        UINT4 ipaddr;
+        grad_uint32_t ipaddr;
         char buf[MAX_LONGNAME];
         
         tm = localtime(&bp->time);

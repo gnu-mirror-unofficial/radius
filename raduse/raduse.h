@@ -31,7 +31,7 @@ typedef struct {
 
 struct nas_usage {
         struct nas_usage *next;
-        UINT4 ipaddr;
+        grad_uint32_t ipaddr;
         char *ident;
         counter ports_active;
         counter ports_idle;
@@ -50,7 +50,7 @@ struct port_usage {
         int port_no;               /* port number */
         int active;                /* is the port used now */
         char *login;               /* last login name */
-        UINT4 framed_address;      /* IP address assigned to that port */
+        grad_uint32_t framed_address;      /* IP address assigned to that port */
         unsigned long count;       /* number of logins */
         time_t start;
         time_t lastin;             /* last time the user logged in */

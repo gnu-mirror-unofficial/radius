@@ -60,7 +60,7 @@ parse_facility(SCM list)
                         val = grad_xlat_keyword(radlog_kw,
 						SCM_STRING_CHARS(car), 0);
                 else if (SCM_BIGP(car)) 
-		  val = (UINT4) scm_i_big2dbl(car);
+		  val = (grad_uint32_t) scm_i_big2dbl(car);
                 else
                         continue;
                 accval |= val;
@@ -78,7 +78,7 @@ SCM_DEFINE(rad_log_open, "rad-log-open", 1, 0, 0,
         if (SCM_IMP(PRIO) && SCM_INUMP(PRIO)) {
                 prio = SCM_INUM(PRIO);
         } else if (SCM_BIGP(PRIO)) {
-                prio = (UINT4) scm_i_big2dbl(PRIO);
+                prio = (grad_uint32_t) scm_i_big2dbl(PRIO);
         } else {
                 SCM_ASSERT(SCM_NIMP(PRIO) && SCM_CONSP(PRIO),
                            PRIO, SCM_ARG1, FUNC_NAME);
@@ -102,7 +102,7 @@ SCM_DEFINE(rad_log, "rad-log", 2, 0, 0,
         } else if (SCM_IMP(PRIO) && SCM_INUMP(PRIO)) {
                 prio = SCM_INUM(PRIO);
         } else if (SCM_BIGP(PRIO)) {
-                prio = (UINT4) scm_i_big2dbl(PRIO);
+                prio = (grad_uint32_t) scm_i_big2dbl(PRIO);
         } else {
                 SCM_ASSERT(SCM_NIMP(PRIO) && SCM_CONSP(PRIO),
                            PRIO, SCM_ARG1, FUNC_NAME);

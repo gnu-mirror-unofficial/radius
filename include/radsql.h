@@ -81,12 +81,12 @@ void radiusd_sql_shutdown();
 void radiusd_sql_clear_cache();
 
 int rad_sql_init();
-void rad_sql_acct(RADIUS_REQ *req);
-char *rad_sql_pass(RADIUS_REQ *req, char *data);
+void rad_sql_acct(grad_request_t *req);
+char *rad_sql_pass(grad_request_t *req, char *data);
 void rad_sql_cleanup(int type, void *req);
-int rad_sql_checkgroup(RADIUS_REQ *req, char *groupname);
-int rad_sql_check_attr_query(RADIUS_REQ *req, VALUE_PAIR **check_pairs);
-int rad_sql_reply_attr_query(RADIUS_REQ *req, VALUE_PAIR **reply_pairs);
+int rad_sql_checkgroup(grad_request_t *req, char *groupname);
+int rad_sql_check_attr_query(grad_request_t *req, grad_avp_t **check_pairs);
+int rad_sql_reply_attr_query(grad_request_t *req, grad_avp_t **reply_pairs);
 
 #ifdef RADIUS_SERVER_GUILE
 SCM sql_exec_query(int type, char *query);

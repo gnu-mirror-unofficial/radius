@@ -139,11 +139,11 @@ unsigned process_timeout = PROCESS_TIMEOUT;
 unsigned radiusd_write_timeout = RADIUSD_WRITE_TIMEOUT;
 unsigned radiusd_read_timeout = RADIUSD_READ_TIMEOUT;
 
-UINT4 warning_seconds;
+grad_uint32_t warning_seconds;
 int use_guile;
 char *message_text[MSG_COUNT];
-UINT4 myip = INADDR_ANY;
-UINT4 ref_ip = INADDR_ANY;
+grad_uint32_t myip = INADDR_ANY;
+grad_uint32_t ref_ip = INADDR_ANY;
 int auth_port;
 int acct_port;
 
@@ -834,8 +834,8 @@ struct hook_rec {
 	int once; /* Run once and remove */
 };
 
-static RAD_LIST /* of struct hook_rec */ *preconfig;
-static RAD_LIST /* of struct hook_rec */ *postconfig;
+static grad_list_t /* of struct hook_rec */ *preconfig;
+static grad_list_t /* of struct hook_rec */ *postconfig;
 
 void
 radiusd_set_preconfig_hook(void (*f)(void *, void *), void *p, int once)
@@ -862,7 +862,7 @@ radiusd_set_postconfig_hook(void (*f)(void *, void *), void *p, int once)
 }
 
 struct hook_runtime_closure {
-	RAD_LIST *list;
+	grad_list_t *list;
 	void *call_data;
 };
 
@@ -1073,7 +1073,7 @@ udp_input_cmp(const void *a, const void *b)
 }
 
 int
-udp_open(int type, UINT4 ipaddr, int port, int nonblock)
+udp_open(int type, grad_uint32_t ipaddr, int port, int nonblock)
 {
 	int fd;
 	struct sockaddr_in s;

@@ -29,9 +29,9 @@
 #include <radutmp.h>
 #include <radscm.h>
 
-static RADIUS_SERVER_QUEUE *srv_queue;
+static grad_server_queue_t *srv_queue;
 
-static RADIUS_SERVER *scheme_to_server(SCM g_list, const char *func);
+static grad_server_t *scheme_to_server(SCM g_list, const char *func);
 
 static void
 die(char *msg)
@@ -82,9 +82,9 @@ SCM_DEFINE(rad_send_internal, "rad-send-internal", 3, 0, 0,
 {
         int port;
         int code;
-        VALUE_PAIR *pairlist;
+        grad_avp_t *pairlist;
         SCM scm_auth, scm_plist;
-        RADIUS_REQ *auth;
+        grad_request_t *auth;
         
         SCM_ASSERT((SCM_IMP(PORT) && SCM_INUMP(PORT)),
                    PORT, SCM_ARG1, FUNC_NAME);
@@ -120,10 +120,10 @@ SCM_DEFINE(rad_client_list_servers, "rad-client-list-servers", 0, 0, 0,
 "Server ID and IP address.\n")
 #define FUNC_NAME s_rad_client_list_servers        
 {
-        RADIUS_SERVER *s;
+        grad_server_t *s;
         char p[DOTTED_QUAD_LEN+1];
         SCM tail = SCM_EOL;
-        ITERATOR *itr = iterator_create(srv_queue->servers);
+        grad_iterator_t *itr = iterator_create(srv_queue->servers);
 
         for (s = iterator_first(itr); s; s = iterator_next(itr)) {
                 grad_ip_iptostr(s->addr, p);
@@ -142,17 +142,17 @@ SCM_DEFINE(rad_get_server, "rad-get-server", 0, 0, 0,
 #define FUNC_NAME s_rad_get_server      
 {
 	/*FIXME*/
-	RADIUS_SERVER *s = grad_list_item(srv_queue->servers, 0);
+	grad_server_t *s = grad_list_item(srv_queue->servers, 0);
 	return s ? scm_makfrom0str(s->name) : SCM_BOOL_F;
 }
 #undef FUNC_NAME
 
-RADIUS_SERVER *
+grad_server_t *
 scheme_to_server(SRVLIST, func)
         SCM SRVLIST;
         const char *func;
 {
-        RADIUS_SERVER serv;
+        grad_server_t serv;
         SCM scm;
         
         SCM_ASSERT((SCM_NIMP(SRVLIST) && SCM_CONSP(SRVLIST)),
@@ -213,7 +213,7 @@ SCM_DEFINE(rad_client_set_server, "rad-client-set-server", 1, 0, 0,
 "       ACCT-NUM        Accounting port number\n")
 #define FUNC_NAME s_rad_client_set_server
 {
-        RADIUS_SERVER *s = scheme_to_server(SRVLIST, FUNC_NAME);
+        grad_server_t *s = scheme_to_server(SRVLIST, FUNC_NAME);
         
         grad_client_clear_server_list(srv_queue);
         grad_client_append_server(srv_queue, s);
@@ -226,7 +226,7 @@ SCM_DEFINE(rad_client_source_ip, "rad-client-source-ip", 1, 0, 0,
 "Set source IP address for packets coming from this client\n")
 #define FUNC_NAME s_rad_client_source_ip
 {
-        UINT4 ip;
+        grad_uint32_t ip;
         
         SCM_ASSERT((SCM_NIMP(IP) && SCM_STRINGP(IP)), IP, SCM_ARG1, FUNC_NAME);
         ip = grad_ip_gethostaddr(SCM_STRING_CHARS(IP));

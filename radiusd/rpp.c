@@ -202,13 +202,13 @@ rpp_start_process(rpp_proc_t *proc, int (*proc_main)(void *), void *data)
 
   
 
-static RAD_LIST *process_list; /* List of rpp_proc_t */
+static grad_list_t *process_list; /* List of rpp_proc_t */
 
 rpp_proc_t *
 rpp_lookup_fd(int fd)
 {
 	rpp_proc_t *p;
-	ITERATOR *itr = iterator_create(process_list);
+	grad_iterator_t *itr = iterator_create(process_list);
 	for (p = iterator_first(itr); p; p = iterator_next(itr))
 		if (p->p[0] == fd)
 			break;
@@ -222,7 +222,7 @@ rpp_lookup_ready(int (*proc_main)(void *), void *data)
 	rpp_proc_t *p;
 
 	if (process_list) {
-		ITERATOR *itr = iterator_create(process_list);
+		grad_iterator_t *itr = iterator_create(process_list);
 		for (p = iterator_first(itr); p && !p->ready;
 		     p = iterator_next(itr))
 			;
@@ -250,7 +250,7 @@ rpp_proc_t *
 rpp_lookup_pid(pid_t pid)
 {
 	rpp_proc_t *p;
-	ITERATOR *itr = iterator_create(process_list);
+	grad_iterator_t *itr = iterator_create(process_list);
 	for (p = iterator_first(itr); p; p = iterator_next(itr)) {
 		if (p->pid == pid)
 			break;
@@ -288,7 +288,7 @@ rpp_ready(pid_t pid)
 			return 1;
 	} else {
 		rpp_proc_t *p;
-		ITERATOR *itr = iterator_create(process_list);
+		grad_iterator_t *itr = iterator_create(process_list);
 
 		for (p = iterator_first(itr); p; p = iterator_next(itr)) {
 			if (p->pid == pid) {
@@ -307,7 +307,7 @@ rpp_flush(int (*fun)(void*), void *closure)
 {
 	time_t t;
 	unsigned count;
-	ITERATOR *itr = iterator_create(process_list);
+	grad_iterator_t *itr = iterator_create(process_list);
 
 	time(&t);
 

@@ -51,7 +51,7 @@ struct radius_attr {
 
 void grad_pdu_destroy(struct radius_pdu *pdu);
 int grad_attr_write(struct radius_attr *ap, void *data, size_t size);
-int grad_encode_pair(struct radius_attr *ap, VALUE_PAIR *pair);
+int grad_encode_pair(struct radius_attr *ap, grad_avp_t *pair);
 
 
 /* Initialize a PDU */
@@ -163,9 +163,9 @@ grad_attr_write(struct radius_attr *ap, void *data, size_t size)
    Return value: length of the encoded data or 0 if an error occurred */
    
 int
-grad_encode_pair(struct radius_attr *ap, VALUE_PAIR *pair)
+grad_encode_pair(struct radius_attr *ap, grad_avp_t *pair)
 {
-        UINT4 lval;
+        grad_uint32_t lval;
         size_t len;
         int rc;
 
@@ -184,7 +184,7 @@ grad_encode_pair(struct radius_attr *ap, VALUE_PAIR *pair)
         case TYPE_INTEGER:
         case TYPE_IPADDR:
                 lval = htonl(pair->avp_lvalue);
-                rc = grad_attr_write(ap, &lval, sizeof(UINT4));
+                rc = grad_attr_write(ap, &lval, sizeof(grad_uint32_t));
                 break;
 
         default:
@@ -203,19 +203,19 @@ grad_encode_pair(struct radius_attr *ap, VALUE_PAIR *pair)
    
 size_t
 grad_create_pdu(void **rptr, int code, int id, u_char *vector,
-		u_char *secret, VALUE_PAIR *pairlist, char *msg)
+		u_char *secret, grad_avp_t *pairlist, char *msg)
 {
         struct radius_pdu pdu;
         size_t attrlen = 0;
         int status = 0;
         int len;
-        VALUE_PAIR *pair;
+        grad_avp_t *pair;
         
         grad_pdu_init(&pdu);
 
         for (pair = pairlist; pair; pair = pair->next) {
                 struct radius_attr attr;
-                UINT4 lval;
+                grad_uint32_t lval;
                 int vendorcode, vendorpec;
                 
                 if (debug_on(10)) {
@@ -233,7 +233,7 @@ grad_create_pdu(void **rptr, int code, int id, u_char *vector,
                         grad_attr_write(&attr, &lval, 4);
 			if (vendorpec == 429) {
 				/* Hack for non-compliant USR VSA */
-				UINT4 atval = htonl(pair->attribute & 0xffff);
+				grad_uint32_t atval = htonl(pair->attribute & 0xffff);
 				grad_attr_write(&attr, &atval, 4);
 				attrlen = grad_encode_pair(&attr, pair);
 			} else {
@@ -296,12 +296,12 @@ grad_create_pdu(void **rptr, int code, int id, u_char *vector,
         return attrlen;
 }
 
-static VALUE_PAIR *
-grad_decode_pair(UINT4 attrno, char *ptr, size_t attrlen)
+static grad_avp_t *
+grad_decode_pair(grad_uint32_t attrno, char *ptr, size_t attrlen)
 {
-        DICT_ATTR *attr;
-        VALUE_PAIR *pair;
-        UINT4 lval;
+        grad_dict_attr_t *attr;
+        grad_avp_t *pair;
+        grad_uint32_t lval;
         
         if ((attr = grad_attr_number_to_dict(attrno)) == NULL) {
                 debug(1, ("Received unknown attribute %d", attrno));
@@ -342,7 +342,7 @@ grad_decode_pair(UINT4 attrno, char *ptr, size_t attrlen)
                         
         case TYPE_INTEGER:
         case TYPE_IPADDR:
-                memcpy(&lval, ptr, sizeof(UINT4));
+                memcpy(&lval, ptr, sizeof(grad_uint32_t));
                 pair->avp_lvalue = ntohl(lval);
 
                 if (debug_on(10)) {
@@ -366,9 +366,9 @@ grad_decode_pair(UINT4 attrno, char *ptr, size_t attrlen)
 }
 
 static int
-decode_vsa(u_char *ptr, UINT4 attrlen, UINT4 *vendorpec, UINT4 *vendorcode)
+decode_vsa(u_char *ptr, grad_uint32_t attrlen, grad_uint32_t *vendorpec, grad_uint32_t *vendorcode)
 {
-	UINT4 x;
+	grad_uint32_t x;
 	
 	if (attrlen <= 6) { /*FIXME*/
 		grad_log(L_NOTICE,
@@ -386,16 +386,16 @@ decode_vsa(u_char *ptr, UINT4 attrlen, UINT4 *vendorpec, UINT4 *vendorcode)
    structure, and attach attribute-value pairs contained in the request
    to the new structure. */
 
-RADIUS_REQ *
-grad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, size_t length)
+grad_request_t *
+grad_decode_pdu(grad_uint32_t host, u_short udp_port, u_char *buffer, size_t length)
 {
         u_char          *ptr;
         AUTH_HDR        *auth;
-        VALUE_PAIR      *first_pair;
-        VALUE_PAIR      *prev;
-        VALUE_PAIR      *pair;
-        RADIUS_REQ      *radreq;
-        UINT4 reported_len;
+        grad_avp_t      *first_pair;
+        grad_avp_t      *prev;
+        grad_avp_t      *pair;
+        grad_request_t  *radreq;
+        grad_uint32_t reported_len;
         u_char *endp;
         int stop;
         
@@ -432,7 +432,7 @@ grad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, size_t length)
         stop = 0;
         
         while (ptr < endp && !stop) {
-                UINT4 attrno, attrlen, vendorcode, vendorpec;
+                grad_uint32_t attrno, attrlen, vendorcode, vendorpec;
                                 
                 attrno = *ptr++;
                 attrlen = *ptr++;
@@ -495,7 +495,7 @@ grad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, size_t length)
         radreq->request = first_pair;
 #ifdef DEBUG_ONLY
         {
-                VALUE_PAIR *p = grad_avl_find(radreq->request,
+                grad_avp_t *p = grad_avl_find(radreq->request,
 					      DA_NAS_IP_ADDRESS);
                 if (p)
                         radreq->ipaddr = p->avp_lvalue;

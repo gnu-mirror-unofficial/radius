@@ -100,7 +100,7 @@ struct debug_module {
 	int level;
 };
 
-static RAD_LIST *_grad_debug_list;
+static grad_list_t *_grad_debug_list;
 
 static int
 debug_name_cmp(const void *item, const void *data)

@@ -25,30 +25,17 @@
 #endif
 #include <string.h>
 
-/*FIXME
-#ifndef HAVE_STRCHR
-# define strchr index
-# define strrchr rindex
-#endif
-#ifndef HAVE_MEMCPY
-# define memcpy(d, s, n) bcopy ((s), (d), (n))
-# define memmove(d, s, n) bcopy ((s), (d), (n))
-#endif
-*/
 #ifndef HAVE_BZERO
 # define bzero(s,n) memset(s, 0, n)
 #endif
 
-#if STDC_HEADERS
-# include <stdarg.h>
-# define __PVAR(c) c
-#else
-# include <varargs.h>
-# define __PVAR(c) 
-#endif
+#include <stdarg.h>
 
 #ifdef HAVE_SYS_TYPES_H
 # include <sys/types.h>
+#endif
+#ifdef HAVE_STDINT_H
+# include <stdint.h>
 #endif
 
 #ifdef HAVE_SYS_TIME_H
@@ -91,23 +78,26 @@ int vasprintf(char **result, const char *format, va_list args);
 extern char *crypt();
 #endif
 
-#if defined(__alpha) && (defined(__osf__) || defined(__linux__))
-typedef unsigned int    UINT4;
+#if SIZEOF_UINT32_T == 4
+typedef uint32_t grad_uint32_t;
+#elif SIZEOF_UNSIGNED_INT == 4
+typedef unsigned int grad_uint32_t;
+#elif SIZEOF_UNSIGNED_LONG == 4
+typedef unsigned long grad_uint32_t;
 #else
-typedef unsigned long   UINT4;
+# error "Cannot find any 32-bit integer data type"
 #endif
 
-typedef unsigned long counter;
+typedef grad_uint32_t grad_counter_t;
 
-RETSIGTYPE (*install_signal(int signo, void (*func)(int)))(int);
 int grad_set_nonblocking(int fd);
 int grad_max_fd();
-UINT4 grad_first_ip();
+grad_uint32_t grad_first_ip();
 
-typedef RETSIGTYPE (*signal_handler_t)(int);
+typedef RETSIGTYPE (*grad_signal_handler_t)(int);
 
-signal_handler_t grad_set_signal(int sig, signal_handler_t sighandler);
-void grad_reset_signal(int sig, signal_handler_t sighandler);
+grad_signal_handler_t grad_set_signal(int sig, grad_signal_handler_t sighandler);
+void grad_reset_signal(int sig, grad_signal_handler_t sighandler);
 
 
 #endif /* SYSDEP_H_INCLUDED */

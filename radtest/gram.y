@@ -41,7 +41,7 @@
 #include <radius.h>
 #include <radtest.h>
 
-extern LOCUS source_locus;
+extern grad_locus_t source_locus;
 
 char *print_ident(Variable *var);
 int subscript(Variable *var, char *attr_name, int all, Variable *ret_var);
@@ -74,12 +74,12 @@ int yyerror(char *s);
 %union {
         char *string;
         int number;
-        UINT4 ipaddr;
+        grad_uint32_t ipaddr;
         Variable *ident;
-        VALUE_PAIR *pair;
-        VALUE_PAIR *vector;
+        grad_avp_t *pair;
+        grad_avp_t *vector;
         struct {
-                VALUE_PAIR *head, *tail;
+                grad_avp_t *head, *tail;
         } pair_list;
         Variable variable;
 	Symtab *symtab;
@@ -423,8 +423,8 @@ set_yydebug()
 int
 subscript(Variable *var, char *attr_name, int all, Variable *ret_var)
 {
-        DICT_ATTR *dict;
-        VALUE_PAIR *pair;
+        grad_dict_attr_t *dict;
+        grad_avp_t *pair;
 
         ret_var->type = Undefined;
         if (var->type != Vector) {
@@ -445,7 +445,7 @@ subscript(Variable *var, char *attr_name, int all, Variable *ret_var)
                 ret_var->type = String;
                 if (all) {
                         int length = 0;
-                        VALUE_PAIR *p;
+                        grad_avp_t *p;
                         char *cp;
                         
                         /* First, count total length of all attribute

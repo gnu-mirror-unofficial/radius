@@ -37,10 +37,10 @@ static SCM scheme_error_port = SCM_EOL;
 
 /* Protos to be moved to radscm */
 SCM scm_makenum (unsigned long val);
-SCM radscm_avl_to_list(VALUE_PAIR *pair);
-VALUE_PAIR *radscm_list_to_avl(SCM list);
-SCM radscm_avp_to_cons(VALUE_PAIR *pair);
-VALUE_PAIR *radscm_cons_to_avp(SCM scm);
+SCM radscm_avl_to_list(grad_avp_t *pair);
+grad_avp_t *radscm_list_to_avl(SCM list);
+SCM radscm_avp_to_cons(grad_avp_t *pair);
+grad_avp_t *radscm_cons_to_avp(SCM scm);
 
 static SCM
 catch_body(void *data)
@@ -98,15 +98,15 @@ eval_catch_handler (void *data, SCM tag, SCM throw_args)
 }
 
 int
-scheme_auth(char *procname, RADIUS_REQ *req, 
-	    VALUE_PAIR *user_check,
-	    VALUE_PAIR **user_reply_ptr)
+scheme_auth(char *procname, grad_request_t *req, 
+	    grad_avp_t *user_check,
+	    grad_avp_t **user_reply_ptr)
 {
 	SCM s_request, s_check, s_reply;
 	SCM res;
 	SCM procsym;
  	jmp_buf jmp_env;
-	VALUE_PAIR *tmp =
+	grad_avp_t *tmp =
 		radius_decrypt_request_pairs(req,
 					     grad_avl_dup(req->request));
 	
@@ -148,7 +148,7 @@ scheme_auth(char *procname, RADIUS_REQ *req,
 		return res == SCM_BOOL_F;
 	if (SCM_NIMP(res) && SCM_CONSP(res)) {
 		SCM code = SCM_CAR(res);
-		VALUE_PAIR *list = radscm_list_to_avl(SCM_CDR(res));
+		grad_avp_t *list = radscm_list_to_avl(SCM_CDR(res));
 		grad_avl_merge(user_reply_ptr, &list);
 		grad_avl_free(list);
 		return code == SCM_BOOL_F;
@@ -160,7 +160,7 @@ scheme_auth(char *procname, RADIUS_REQ *req,
 }
 
 int
-scheme_acct(char *procname, RADIUS_REQ *req)
+scheme_acct(char *procname, grad_request_t *req)
 {
 	SCM procsym, res;
 	jmp_buf jmp_env;

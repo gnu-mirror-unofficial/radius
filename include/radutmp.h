@@ -59,11 +59,11 @@ struct maxsession {
 
 typedef struct port_stat {
         struct port_stat *next;
-        UINT4 ip;                  /* NAS IP */
+        grad_uint32_t ip;                  /* NAS IP */
         int port_no;               /* port number */
         int active;                /* is the port used now */
         char login[RUT_NAMESIZE];  /* last login name */
-        UINT4 framed_address;      /* IP address assigned to that port */
+        grad_uint32_t framed_address; /* IP address assigned to that port */
         unsigned long count;       /* number of logins */
         time_t start;
         time_t lastin;             /* last time the user logged in */

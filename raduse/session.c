@@ -107,8 +107,8 @@ process_var(var, ptr)
         case SMI_COUNTER64:
                 break;
         case SMI_IPADDRESS:
-                *(UINT4*)ptr = *(unsigned int*)var->var_str;
-                DEBUG(("%s", grad_ip_iptostr(ntohl(*(UINT4*)ptr), buf)));
+                *(grad_uint32_t*)ptr = *(unsigned int*)var->var_str;
+                DEBUG(("%s", grad_ip_iptostr(ntohl(*(grad_uint32_t*)ptr), buf)));
                 break;
         case SMI_OPAQUE:
                 sptr = (char**)ptr;

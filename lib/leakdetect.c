@@ -60,7 +60,7 @@ grad_malloc(size_t size)
                 mhdr->s.size = size;
                 p += EXTRA;
 #endif
-                bzero(p, size);
+                memset(p, 0, size);
         }
         return p;
 }

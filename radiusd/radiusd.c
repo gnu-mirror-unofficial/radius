@@ -295,11 +295,11 @@ radiusd_preconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 	/* Flush any pending requests and empty the request queue */
 	radiusd_flush_queue();
 	request_init_queue();
-	input_close_channels(radius_input);
 	
 	/* Terminate all subprocesses */
 	rpp_kill(-1, SIGTERM);
 	radiusd_cleanup();
+	input_close_channels(radius_input);
 }
 
 static void

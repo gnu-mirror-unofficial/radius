@@ -1,3 +1,3 @@
-Think about the possibility to serve multiple interfaces.
+Think about the possibility to serve multiple interfaces/ports.
 Need a more flexible IP allocation strategy
 Write a unified configuration utility in guile.

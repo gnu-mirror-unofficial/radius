@@ -1,3 +1,20 @@
+2001-08-18 Sergey Poznyakoff
+
+	* radiusd/radiusd.c: sig_usr1(): changed due to the changes
+	in underlying library functions.
+	* radiusd/snmpserv.c: Implemented radiusServerQueueTable
+	subtree.
+
+	* radlib/mem.c: New functions: mem_get_stat() and
+	mem_stat_enumerate() instead of meminfo().
+
+	* include/mem.h: MEM_STAT, CLASS_STAT, declarations for
+	mem_get_stat() and mem_enumerate().
+	* include/radiusd.h: Changed proto for stat_request_list().
+	Added typedef QUEUE_STAT.
+
+	* mibs/radmibs.h.in: Added mibs from radiusServerMIB subtree.
+
 2001-08-17 Sergey Poznyakoff
 
 	* mibs/GNU-RADIUS-SERVER-MIB.txt: (new) MIBs describing internals
@@ -6,7 +23,8 @@
 	* radiusd/snmpserv.c: Implemented radiusServerUpTime and
 	radiusServerResetTime. radiusServerState implemented partially
 	(read-only).
-
+	* include/radsnmp.h: New values for enum serv_stat: serv_suspended,
+	serv_shutdown.
 	* radiusd/config.y: Fixed bug in the action for 'severity' rule.
 
 2001-08-16 Sergey Poznyakoff

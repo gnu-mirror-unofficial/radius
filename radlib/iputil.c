@@ -40,6 +40,9 @@ static char rcsid[] =
 #include <signal.h>
 #include <radius.h>
 
+
+int do_not_resolve = 0;
+
 /*
  *	Return a printable host name (or IP address in dot notation)
  *	for the supplied IP address.
@@ -53,8 +56,10 @@ ip_hostname(ipaddr)
 	UINT4		n_ipaddr;
 
 	n_ipaddr = htonl(ipaddr);
-	hp = gethostbyaddr((char *)&n_ipaddr, sizeof (struct in_addr), AF_INET);
-	if (hp == 0) 
+	hp = (struct hostent *) NULL;
+	if (do_not_resolve == 0) 
+		hp = gethostbyaddr((char *)&n_ipaddr, sizeof (struct in_addr), AF_INET);
+	if (hp == (struct hostent *) NULL) 
 		return ipaddr2str(hstname, ipaddr);
 
 	return (char *)hp->h_name;

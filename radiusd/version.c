@@ -187,3 +187,12 @@ version(FILE *stream, struct argp_state *state)
         exit(0);
 }
 
+void
+show_compilation_defaults()
+{
+	int i;
+	
+        for (i = 0; compile_flag_str[i]; i++) 
+                printf("%s\n", compile_flag_str[i]);
+}
+

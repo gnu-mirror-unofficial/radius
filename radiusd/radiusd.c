@@ -42,6 +42,8 @@
 const char *argp_program_version = "radiusd (" PACKAGE ") " VERSION;
 static char doc[] = N_("GNU radius daemon");
 
+#define SHOW_DEFAULTS_OPTION 256
+
 static struct argp_option options[] = {
         {NULL, 0, NULL, 0,
          N_("radiusd specific switches:"), 0},
@@ -77,6 +79,8 @@ static struct argp_option options[] = {
          N_("Log authentications"), 0},
         {"log-auth-pass", 'z', NULL, 0,
          N_("Log users' passwords"), 0},
+	{"show-defaults", SHOW_DEFAULTS_OPTION, NULL, 0,
+	 N_("Show compilation defaults"), 0},
         {NULL, 0, NULL, 0, NULL, 0}
 };
 
@@ -257,6 +261,10 @@ parse_opt(int key, char *arg, struct argp_state *state)
         case 'z':
                 log_mode |= RLOG_AUTH_PASS;
                 break;
+
+	case SHOW_DEFAULTS_OPTION:
+		show_compilation_defaults();
+		exit(0);
 		
         default:
                 return ARGP_ERR_UNKNOWN;

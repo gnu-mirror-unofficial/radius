@@ -25,10 +25,10 @@ LINTFLAGS=-gzra -fAI -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INC
 .c.ln:
 	$(LINT.c) -i $<
 
-llib-lsql.ln: $(libsql_a_SOURCES:.c=.ln) llib-llog.ln llib-lrad.ln
-	$(LINT.c) -Csql $(libsql_a_SOURCES:.c=.ln) -L. -llog -lrad
+llib-lsql.ln: $(libsql_la_SOURCES:.c=.ln) llib-llog.ln llib-lrad.ln
+	$(LINT.c) -Csql $(libsql_la_SOURCES:.c=.ln) -L. -llog -lrad
 
 lint:: llib-lsql.ln
 
-LIBLIST:; @echo $(LIBSRC) > .list
+LIBLIST:; @echo $(libsql_la_SOURCES) > .list
 endif

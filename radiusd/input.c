@@ -22,6 +22,7 @@
 #include <errno.h>
 #include <radiusd.h>
 #include <list.h>
+#include <assert.h>
 
 struct input_system {
 	LIST *methods;    /* List of METHOD structures */
@@ -114,6 +115,7 @@ channel_close(CHANNEL *chan)
 		chan->method->close(chan->fd, chan->data);
 	FD_CLR(chan->fd, &chan->method->fdset);
 	chan->method->fd_max = -2;
+	efree(chan);
 }
 
 static int
@@ -157,7 +159,6 @@ input_close_channels(INPUT *input)
 	     p = iterator_next(input->citr)) {
 		list_remove(input->channels, p, NULL);
 		channel_close(p);
-		efree(p);
 	}
 	iterator_destroy(&input->citr);
 }
@@ -197,7 +198,6 @@ input_close_channel_data(INPUT *input, char *name, void *data)
 	if (p) {
 		list_remove(input->channels, p, NULL);
 		channel_close(p);
-		efree(p);
 	}
 }
 
@@ -206,7 +206,8 @@ input_select(INPUT *input, struct timeval *tv)
 {
 	METHOD *m;
 	int status;
-
+	int count = 0;
+	
 	if (!input->citr)
 		input->citr = iterator_create(input->channels);
 	if (!input->mitr)
@@ -230,6 +231,8 @@ input_select(INPUT *input, struct timeval *tv)
 		if (m->fd_max < 0)
 			continue;
 		
+		count++;
+		
 		readfds = m->fdset;
 		
 		status = select(m->fd_max + 1, &readfds, NULL, NULL, tv);
@@ -245,5 +248,7 @@ input_select(INPUT *input, struct timeval *tv)
 			}
 		} 
 	}
+	assert(count > 0);
+	
 	return status;
 }

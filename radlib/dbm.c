@@ -34,46 +34,46 @@ static char rcsid[] =
 
 int
 open_dbm(name, dbmfile)
-	char *name;
-	DBM_FILE *dbmfile;
+        char *name;
+        DBM_FILE *dbmfile;
 {
-	return (*dbmfile = dbm_open(name, O_RDONLY, 0)) == NULL;
+        return (*dbmfile = dbm_open(name, O_RDONLY, 0)) == NULL;
 }
 
 int
 create_dbm(name, dbmfile)
-	char *name;
-	DBM_FILE *dbmfile;
+        char *name;
+        DBM_FILE *dbmfile;
 {
-	return (*dbmfile = dbm_open(name, O_RDWR|O_CREAT|O_TRUNC, 0600))
-		== NULL;
+        return (*dbmfile = dbm_open(name, O_RDWR|O_CREAT|O_TRUNC, 0600))
+                == NULL;
 }
 
 int
 close_dbm(dbmfile)
-	DBM_FILE dbmfile;
+        DBM_FILE dbmfile;
 {
-	dbm_close(dbmfile);
-	return 0;
+        dbm_close(dbmfile);
+        return 0;
 }
 
 int
 fetch_dbm(dbmfile, key, ret)
-	DBM_FILE dbmfile;
-	DBM_DATUM key;
-	DBM_DATUM *ret;
+        DBM_FILE dbmfile;
+        DBM_DATUM key;
+        DBM_DATUM *ret;
 {
-	*ret = dbm_fetch(dbmfile, key);
-	return ret->dptr == NULL;
+        *ret = dbm_fetch(dbmfile, key);
+        return ret->dptr == NULL;
 }
 
 int
 insert_dbm(dbmfile, key, contents)
-	DBM_FILE dbmfile;
-	DBM_DATUM key;
-	DBM_DATUM contents;
+        DBM_FILE dbmfile;
+        DBM_DATUM key;
+        DBM_DATUM contents;
 {
-	return dbm_store(dbmfile, key, contents, DBM_INSERT);
+        return dbm_store(dbmfile, key, contents, DBM_INSERT);
 }
 
 #else /* DBM_DBM */
@@ -81,64 +81,64 @@ insert_dbm(dbmfile, key, contents)
 /*ARGSUSED*/
 int
 open_dbm(name, dbmfile)
-	char *name;
-	DBM_FILE *dbmfile;
+        char *name;
+        DBM_FILE *dbmfile;
 {
-	return dbminit(name);
+        return dbminit(name);
 }
 
 int
 create_dbm(name, dbmfile)
-	char *name;
-	DBM_FILE *dbmfile;
+        char *name;
+        DBM_FILE *dbmfile;
 {
-	int fd;
-	char *p;
+        int fd;
+        char *p;
 
-	p = emalloc(strlen(name)+5);
-	strcat(strcpy(p, name), ".pag");
-	fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0600);
-	efree(p);
-	if (fd < 0) 
-		return 1;
-	close(fd);
+        p = emalloc(strlen(name)+5);
+        strcat(strcpy(p, name), ".pag");
+        fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+        efree(p);
+        if (fd < 0) 
+                return 1;
+        close(fd);
 
-	p = emalloc(strlen(name)+5);
-	strcat(strcpy(p, name), ".dir");
-	fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0600);
-	efree(p);
-	if (fd < 0) 
-		return 1;
-	close(fd);
-	return dbminit(name);
+        p = emalloc(strlen(name)+5);
+        strcat(strcpy(p, name), ".dir");
+        fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0600);
+        efree(p);
+        if (fd < 0) 
+                return 1;
+        close(fd);
+        return dbminit(name);
 }
 
 /*ARGSUSED*/
 int
 close_dbm(dbmfile)
-	DBM_FILE dbmfile;
+        DBM_FILE dbmfile;
 {
-	dbmclose();
+        dbmclose();
 }
 
 /*ARGSUSED*/
 int
 fetch_dbm(dbmfile, key, ret)
-	DBM_FILE dbmfile;
-	DBM_DATUM key;
-	DBM_DATUM *ret;
+        DBM_FILE dbmfile;
+        DBM_DATUM key;
+        DBM_DATUM *ret;
 {
-	*ret = fetch(key);
-	return ret->dptr == NULL;
+        *ret = fetch(key);
+        return ret->dptr == NULL;
 }
 
 int
 insert_dbm(dbmfile, key, contents)
-	DBM_FILE dbmfile;
-	DBM_DATUM key;
-	DBM_DATUM contents;
+        DBM_FILE dbmfile;
+        DBM_DATUM key;
+        DBM_DATUM contents;
 {
-	return store(key, contents);
+        return store(key, contents);
 }
 
 #endif

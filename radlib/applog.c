@@ -38,46 +38,46 @@ char *progname;
 
 void
 initlog(name)
-	char *name;
+        char *name;
 {
-	progname = strrchr(name, '/');
-	if (progname)
-		progname++;
-	else
-		progname = name;
+        progname = strrchr(name, '/');
+        if (progname)
+                progname++;
+        else
+                progname = name;
 }
 
 void vlog(int lvl, char *file, int line, char *func_name, int en,
-	  char *fmt, va_list ap);
+          char *fmt, va_list ap);
 #define SP(p) ((p)?(p):"")
 
 static char *priname[] = { /* priority names */
-	"emerg",
-	"alert",
-	"crit",
-	"error",
-	"warning",
-	"notice",
-	"info",
-	"debug"
+        "emerg",
+        "alert",
+        "crit",
+        "error",
+        "warning",
+        "notice",
+        "info",
+        "debug"
 };
 
 void
 vlog(level, file, line, func_name, en, fmt, ap)
-	int level;
-	char *file;
-	int line;
-	char *func_name;
-	int en;
-	char *fmt;
-	va_list ap;
+        int level;
+        char *file;
+        int line;
+        char *func_name;
+        int en;
+        char *fmt;
+        va_list ap;
 {
-	fprintf(stderr, "%s: %s: ", progname, priname[level & L_PRIMASK]);
-	if (file) 
-		fprintf(stderr, "%s:%d:%s: ", file, line, SP(func_name));
-	vfprintf(stderr, fmt, ap);
-	if (en)
-		fprintf(stderr, ": %s", strerror(en));
+        fprintf(stderr, "%s: %s: ", progname, priname[level & L_PRIMASK]);
+        if (file) 
+                fprintf(stderr, "%s:%d:%s: ", file, line, SP(func_name));
+        vfprintf(stderr, fmt, ap);
+        if (en)
+                fprintf(stderr, ": %s", strerror(en));
         fprintf(stderr, "\n");
 }
 

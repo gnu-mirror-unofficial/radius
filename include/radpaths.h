@@ -39,25 +39,25 @@
 #endif
 #define RADIUS_PID              RADPID_DIR "/radiusd.pid"
 
-#define RADIUS_DIR		RADDB_DIR
+#define RADIUS_DIR              RADDB_DIR
 
-#define RADACCT_DIR		RADLOG_DIR "/radacct"
+#define RADACCT_DIR             RADLOG_DIR "/radacct"
 
-#define RADIUS_DICTIONARY	"dictionary"
-#define RADIUS_CLIENTS		"clients"
-#define RADIUS_NASLIST		"naslist"
+#define RADIUS_DICTIONARY       "dictionary"
+#define RADIUS_CLIENTS          "clients"
+#define RADIUS_NASLIST          "naslist"
 #define RADIUS_NASTYPES         "nastypes"
-#define RADIUS_USERS		"users"
-#define RADIUS_HOLD		"holdusers"
-#define RADIUS_LOG		"radius.log"
-#define RADIUS_HINTS		"hints"
-#define RADIUS_HUNTGROUPS	"huntgroups"
-#define RADIUS_REALMS		"realms"
+#define RADIUS_USERS            "users"
+#define RADIUS_HOLD             "holdusers"
+#define RADIUS_LOG              "radius.log"
+#define RADIUS_HINTS            "hints"
+#define RADIUS_HUNTGROUPS       "huntgroups"
+#define RADIUS_REALMS           "realms"
 #define RADIUS_CONFIG           "config"
 #define RADIUS_DENY             "access.deny"
 
-#define RADUTMP			"radutmp"
-#define RADWTMP			"radwtmp"
+#define RADUTMP                 "radutmp"
+#define RADWTMP                 "radwtmp"
 
 #define RADSTAT                 "radius.stat"
 

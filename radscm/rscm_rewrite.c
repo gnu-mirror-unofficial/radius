@@ -30,42 +30,42 @@ static char rcsid[] =
 
 
 SCM_DEFINE(rad_rewrite_execute_string, "rad-rewrite-execute-string", 1, 0, 0,
-	   (SCM STRING),
+           (SCM STRING),
 "Interpret STRING as an invocation of a function in Rewrite language and\n"
 "execute it.\n"
 "Return value: return of the corresponding Rewrite call, translated to\n"
-"the Scheme data type.\n")	   
+"the Scheme data type.\n")         
 #define FUNC_NAME s_rad_rewrite_execute_string
 {
-	int type;
-	Datum datum;
+        int type;
+        Datum datum;
 
-	SCM_ASSERT(SCM_NIMP(STRING) && SCM_STRINGP(STRING),
-		   STRING, SCM_ARG1, FUNC_NAME);
-	if (interpret(SCM_CHARS(STRING), NULL, &type, &datum)) {
-		scm_misc_error(FUNC_NAME,
-			       "Error parsing expression: ~S",
-			       SCM_LIST1(STRING));
-	}
+        SCM_ASSERT(SCM_NIMP(STRING) && SCM_STRINGP(STRING),
+                   STRING, SCM_ARG1, FUNC_NAME);
+        if (interpret(SCM_CHARS(STRING), NULL, &type, &datum)) {
+                scm_misc_error(FUNC_NAME,
+                               "Error parsing expression: ~S",
+                               SCM_LIST1(STRING));
+        }
 
-	return radscm_datum_to_scm(type, datum);
+        return radscm_datum_to_scm(type, datum);
 }
 #undef FUNC_NAME
 
 SCM_DEFINE(rad_rewrite_execute, "rad-rewrite-execute", 1, 0, 0,
-	   (SCM ARGLIST),
+           (SCM ARGLIST),
 "Execute a Rewrite language function.\n"
 "(car ARGLIST) is interpreted as a name of the Rewrite function to execute,\n"
 "and (cdr ARGLIST) as a list of arguments to be passed to it.\n"
 "Return value: return of the corresponding Rewrite call, translated to\n"
-"the Scheme data type.\n")	   
+"the Scheme data type.\n")         
 #define FUNC_NAME s_rad_rewrite_execute
 {
-	SCM_ASSERT((SCM_IMP(ARGLIST) && ARGLIST == SCM_EOL)
-		   || (SCM_NIMP(ARGLIST) && SCM_CONSP(ARGLIST)),
-		   ARGLIST, SCM_ARG2, FUNC_NAME);
-	
-	return radscm_rewrite_execute(FUNC_NAME, ARGLIST);
+        SCM_ASSERT((SCM_IMP(ARGLIST) && ARGLIST == SCM_EOL)
+                   || (SCM_NIMP(ARGLIST) && SCM_CONSP(ARGLIST)),
+                   ARGLIST, SCM_ARG2, FUNC_NAME);
+        
+        return radscm_rewrite_execute(FUNC_NAME, ARGLIST);
 }
 #undef FUNC_NAME
 

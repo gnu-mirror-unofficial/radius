@@ -26,28 +26,28 @@
 #include <snmp.h>
 
 char *snmp_errlist[] = {
-	"no error",
-	"ASN.1 encode",
-	"ASN.1 decode",
-	"not enough memory",
-	"malformed OID",
-	"bad IP address or hostname",
-	"can't open socket",
-	"can't bind socket",
-	"send",
-	"operation or type not supported",
-	"SNMP decode",
-	"bad version number",
-	"unknown request type",
-	"unknown variable type",
+        "no error",
+        "ASN.1 encode",
+        "ASN.1 decode",
+        "not enough memory",
+        "malformed OID",
+        "bad IP address or hostname",
+        "can't open socket",
+        "can't bind socket",
+        "send",
+        "operation or type not supported",
+        "SNMP decode",
+        "bad version number",
+        "unknown request type",
+        "unknown variable type",
 };
 int snmp_nerr = sizeof(snmp_errlist)/sizeof(snmp_errlist[0]);
 
 char *
 snmp_strerror(en)
-	int en;
+        int en;
 {
-	if (en < snmp_nerr)
-		return snmp_errlist[en];
-	return "unknown error";
+        if (en < snmp_nerr)
+                return snmp_errlist[en];
+        return "unknown error";
 }

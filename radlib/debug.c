@@ -15,7 +15,7 @@
    along with this program; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-/* debug.c	Debugging module. */
+/* debug.c      Debugging module. */
 
 #ifndef lint
 static char rcsid[] = 
@@ -39,63 +39,63 @@ static char rcsid[] =
 
 int
 set_module_debug_level(name, level)
-	char *name;
-	int   level;
+        char *name;
+        int   level;
 {
-	int  i;
-	int  length;
+        int  i;
+        int  length;
 
-	length = strlen(name);
+        length = strlen(name);
 
-	if (level == -1)
-		level = MAX_DEBUG_LEVEL;
+        if (level == -1)
+                level = MAX_DEBUG_LEVEL;
 
-	for (i = 0; debug_module[i].name; i++) {
-		if (strncmp(debug_module[i].name, name, length) == 0) {
-			debug_level[ debug_module[i].modnum ] = level;
-			return 0;
-		}
-	}
-	return 1;
+        for (i = 0; debug_module[i].name; i++) {
+                if (strncmp(debug_module[i].name, name, length) == 0) {
+                        debug_level[ debug_module[i].modnum ] = level;
+                        return 0;
+                }
+        }
+        return 1;
 }
 
 void
 set_debug_levels(str)
-	char *str;
+        char *str;
 {
-	int  i;
-	char *tok, *p, *save;
-	int  length;
-	int  level;
+        int  i;
+        char *tok, *p, *save;
+        int  length;
+        int  level;
 
-	for (tok = strtok_r(str, ",", &save); tok; 
+        for (tok = strtok_r(str, ",", &save); tok; 
              tok = strtok_r(NULL, ",", &save)) {
-		p = strchr(tok, '=');
-		if (p) {
-			length = p - tok;
-			level  = atoi(p+1);
-		} else {
-			length = strlen(tok);
-			level  = MAX_DEBUG_LEVEL;
-		}		
-		for (i = 0; debug_module[i].name; i++) {
-			if (strncmp(debug_module[i].name, tok, length) == 0) {
-				debug_level[ debug_module[i].modnum ] = level;
-				break;
-			}
-		}
-	/*	if (debug_module[i].name == NULL)
-			radlog(L_ERR, "unknown module: %s", tok); */
-	}
+                p = strchr(tok, '=');
+                if (p) {
+                        length = p - tok;
+                        level  = atoi(p+1);
+                } else {
+                        length = strlen(tok);
+                        level  = MAX_DEBUG_LEVEL;
+                }               
+                for (i = 0; debug_module[i].name; i++) {
+                        if (strncmp(debug_module[i].name, tok, length) == 0) {
+                                debug_level[ debug_module[i].modnum ] = level;
+                                break;
+                        }
+                }
+        /*      if (debug_module[i].name == NULL)
+                        radlog(L_ERR, "unknown module: %s", tok); */
+        }
 }
 
 void
 clear_debug()
 {
-	int  i;
+        int  i;
 
-	for (i = 0; debug_module[i].name; i++) 
-		debug_level[ debug_module[i].modnum ] = 0;
+        for (i = 0; debug_module[i].name; i++) 
+                debug_level[ debug_module[i].modnum ] = 0;
 }
 
 #else
@@ -105,18 +105,18 @@ clear_debug()
 /*ARGSUSED*/
 int
 set_module_debug_level(name, level)
-	char *name;
-	int   level;
+        char *name;
+        int   level;
 {
-	radlog(L_ERR, _("compiled without debugging support"));
+        radlog(L_ERR, _("compiled without debugging support"));
 }
 
 /*ARGSUSED*/
 void
 set_debug_levels(str)
-	char *str;
+        char *str;
 {
-	radlog(L_ERR, _("compiled without debugging support"));
+        radlog(L_ERR, _("compiled without debugging support"));
 }
 
 #endif

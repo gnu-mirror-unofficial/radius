@@ -43,15 +43,15 @@ static void *guile_boot0(void *ignored);
 static void guile_boot1(void *closure, int argc, char **argv);
 
 struct call_data {
-	struct call_data *next;
-	pthread_cond_t cond;
-	int ready;
-	int retval;
-	int (*fun)(struct call_data*);
-	char *procname;
-	RADIUS_REQ *request;
-	VALUE_PAIR *user_check;
-	VALUE_PAIR **user_reply_ptr;
+        struct call_data *next;
+        pthread_cond_t cond;
+        int ready;
+        int retval;
+        int (*fun)(struct call_data*);
+        char *procname;
+        RADIUS_REQ *request;
+        VALUE_PAIR *user_check;
+        VALUE_PAIR **user_reply_ptr;
 };
 
 pthread_t guile_tid;
@@ -61,41 +61,41 @@ struct call_data *data_head, *data_tail;
 
 void
 call_place(cp)
-	struct call_data *cp;
+        struct call_data *cp;
 {
-	pthread_mutex_lock(&call_mutex);
-	cp->next = NULL;
-	if (!data_head)
-		data_head = cp;
-	else
-		data_tail->next = cp;
-	data_tail = cp;
-	pthread_mutex_unlock(&call_mutex);
+        pthread_mutex_lock(&call_mutex);
+        cp->next = NULL;
+        if (!data_head)
+                data_head = cp;
+        else
+                data_tail->next = cp;
+        data_tail = cp;
+        pthread_mutex_unlock(&call_mutex);
 }
 
 void
 call_remove(cp)
-	struct call_data *cp;
+        struct call_data *cp;
 {
-	struct call_data *p, *prev = NULL;
+        struct call_data *p, *prev = NULL;
 
-	pthread_mutex_lock(&call_mutex);
-	for (p = data_head; p; ) {
-		if (p == cp)
-			break;
-		prev = p;
-		p = p->next;
-	}
-	
-	if (p) {
-		if (prev)
-			prev->next = p->next;
-		else
-			data_head = p->next;
-		if (p == data_tail)
-			data_tail = prev;
-	}
-	pthread_mutex_unlock(&call_mutex);
+        pthread_mutex_lock(&call_mutex);
+        for (p = data_head; p; ) {
+                if (p == cp)
+                        break;
+                prev = p;
+                p = p->next;
+        }
+        
+        if (p) {
+                if (prev)
+                        prev->next = p->next;
+                else
+                        data_head = p->next;
+                if (p == data_tail)
+                        data_tail = prev;
+        }
+        pthread_mutex_unlock(&call_mutex);
 }
 
 /* ************************************************************************* */
@@ -104,81 +104,81 @@ call_remove(cp)
 void
 start_guile()
 {
-	int rc;
+        int rc;
 
-	if (rc = pthread_create(&guile_tid, NULL, guile_boot0, NULL))
-		radlog(L_ERR|L_PERROR, _("Can't spawn guile thread: %s"),
-		       strerror(errno));
+        if (rc = pthread_create(&guile_tid, NULL, guile_boot0, NULL))
+                radlog(L_ERR|L_PERROR, _("Can't spawn guile thread: %s"),
+                       strerror(errno));
 }
 
 void *
 guile_boot0(arg)
-	void *arg;
+        void *arg;
 {
-	char *argv[] = { "radiusd", NULL };
-	scm_boot_guile (1, argv, guile_boot1, arg);
-	return NULL;
-}	
+        char *argv[] = { "radiusd", NULL };
+        scm_boot_guile (1, argv, guile_boot1, arg);
+        return NULL;
+}       
 
 static SCM
 boot_body (void *data)
 {
-	struct call_data *p, *next;
-	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+        struct call_data *p, *next;
+        pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
-	scm_init_load_path();
-	radscm_init();
-	rscm_radlog_init();
-	rscm_rewrite_init();
+        scm_init_load_path();
+        radscm_init();
+        rscm_radlog_init();
+        rscm_rewrite_init();
 
-	pthread_mutex_lock(&mutex);
+        pthread_mutex_lock(&mutex);
 
-	while (1) {
-		struct timespec timeout;
+        while (1) {
+                struct timespec timeout;
                 timeout.tv_sec = time(NULL)+1;
                 timeout.tv_nsec = 0;
-		pthread_cond_timedwait(&call_cond, &mutex, &timeout);
-		for (p = data_head; p; ) {
-			next = p->next;
-			if (!p->ready) {
-				p->retval = p->fun(p);
-				p->ready = 1;
-			}
-			pthread_cond_signal(&p->cond);
-			p = next;
-		}
-	}
-	
-	return SCM_BOOL_F;
+                pthread_cond_timedwait(&call_cond, &mutex, &timeout);
+                for (p = data_head; p; ) {
+                        next = p->next;
+                        if (!p->ready) {
+                                p->retval = p->fun(p);
+                                p->ready = 1;
+                        }
+                        pthread_cond_signal(&p->cond);
+                        p = next;
+                }
+        }
+        
+        return SCM_BOOL_F;
 }
 
 static SCM
 boot_handler (void *data, SCM tag, SCM throw_args)
 {
-	return scm_handle_by_message_noexit("radiusd", tag, throw_args);
+        return scm_handle_by_message_noexit("radiusd", tag, throw_args);
 }
 
 void
 guile_boot1(closure, argc, argv)
-	void *closure;
-	int argc;
-	char **argv;
+        void *closure;
+        int argc;
+        char **argv;
 {
-	scm_internal_catch(SCM_BOOL_T,
-			   boot_body, closure,
-			   boot_handler, NULL);
+        scm_internal_catch(SCM_BOOL_T,
+                           boot_body, closure,
+                           boot_handler, NULL);
 }
 
 void
 scheme_debug(val)
-	int val;
+        int val;
 {
-	SCM_DEVAL_P = val;
-	SCM_BACKTRACE_P = val;
-	SCM_RECORD_POSITIONS_P = val;
-	SCM_RESET_DEBUG_MODE;
+        SCM_DEVAL_P = val;
+        SCM_BACKTRACE_P = val;
+        SCM_RECORD_POSITIONS_P = val;
+        SCM_RESET_DEBUG_MODE;
 }
-		
+                
 
 /* ************************************************************************* */
 /* Functions running in Guile thread address space */
@@ -186,119 +186,119 @@ scheme_debug(val)
 static SCM
 eval_catch_body (void *list)
 {
-	return scm_eval((SCM)list);
+        return scm_eval((SCM)list);
 }
 
 static SCM
 eval_catch_handler (void *data, SCM tag, SCM throw_args)
 {
-	scm_handle_by_message_noexit("radiusd", tag, throw_args);
-	longjmp(*(jmp_buf*)data, 1);
+        scm_handle_by_message_noexit("radiusd", tag, throw_args);
+        longjmp(*(jmp_buf*)data, 1);
 }
 
 int
 scheme_auth_internal(p)
-	struct call_data *p;
+        struct call_data *p;
 {
-	SCM s_request, s_check, s_reply;
-	SCM res, env;
-	SCM procsym;
-	jmp_buf jmp_env;
-	
-	s_request = radscm_avl_to_list(p->request->request);
-	s_check = radscm_avl_to_list(p->user_check);
-	s_reply = radscm_avl_to_list(*p->user_reply_ptr);
+        SCM s_request, s_check, s_reply;
+        SCM res, env;
+        SCM procsym;
+        jmp_buf jmp_env;
+        
+        s_request = radscm_avl_to_list(p->request->request);
+        s_check = radscm_avl_to_list(p->user_check);
+        s_reply = radscm_avl_to_list(*p->user_reply_ptr);
 
-	/* Evaluate the procedure */
-	procsym = scm_symbol_value0 (p->procname);
-	if (scm_procedure_p(procsym) != SCM_BOOL_T) {
-		radlog(L_ERR,
-		       _("%s is not a procedure object"), p->procname);
-		return 1;
-	}
-	if (setjmp(jmp_env)) 
-		return 1;
+        /* Evaluate the procedure */
+        procsym = scm_symbol_value0 (p->procname);
+        if (scm_procedure_p(procsym) != SCM_BOOL_T) {
+                radlog(L_ERR,
+                       _("%s is not a procedure object"), p->procname);
+                return 1;
+        }
+        if (setjmp(jmp_env)) 
+                return 1;
 
-	res = scm_internal_lazy_catch(
-		SCM_BOOL_T,
-		eval_catch_body,
-		(void*) SCM_LIST4(procsym,
-				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-					      s_request,
-					      SCM_UNDEFINED),
-				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-					      s_check,
-					      SCM_UNDEFINED),
-				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-					      s_reply,
-					      SCM_UNDEFINED)),
-		eval_catch_handler, &jmp_env);
-	
-	if (SCM_IMP(res) && SCM_BOOLP(res)) 
-		return res == SCM_BOOL_F;
-	if (SCM_NIMP(res) && SCM_CONSP(res)) {
-		int code = SCM_CAR(res);
-		VALUE_PAIR *list = radscm_list_to_avl(SCM_CDR(res));
-		avl_merge(p->user_reply_ptr, &list);
-		avl_free(list);
-		return code == SCM_BOOL_F;
-	}
-	/*FIXME: message*/
-	return 1;
+        res = scm_internal_lazy_catch(
+                SCM_BOOL_T,
+                eval_catch_body,
+                (void*) SCM_LIST4(procsym,
+                                  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+                                              s_request,
+                                              SCM_UNDEFINED),
+                                  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+                                              s_check,
+                                              SCM_UNDEFINED),
+                                  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+                                              s_reply,
+                                              SCM_UNDEFINED)),
+                eval_catch_handler, &jmp_env);
+        
+        if (SCM_IMP(res) && SCM_BOOLP(res)) 
+                return res == SCM_BOOL_F;
+        if (SCM_NIMP(res) && SCM_CONSP(res)) {
+                int code = SCM_CAR(res);
+                VALUE_PAIR *list = radscm_list_to_avl(SCM_CDR(res));
+                avl_merge(p->user_reply_ptr, &list);
+                avl_free(list);
+                return code == SCM_BOOL_F;
+        }
+        /*FIXME: message*/
+        return 1;
 }
 
 
 int
 scheme_acct_internal(p)
-	struct call_data *p;
+        struct call_data *p;
 {
-	SCM procsym, res;
-	jmp_buf jmp_env;
-	SCM s_request = radscm_avl_to_list(p->request->request);
+        SCM procsym, res;
+        jmp_buf jmp_env;
+        SCM s_request = radscm_avl_to_list(p->request->request);
 
-	/* Evaluate the procedure */
-	procsym = scm_symbol_value0 (p->procname);
-	if (scm_procedure_p(procsym) != SCM_BOOL_T) {
-		radlog(L_ERR,
-		       _("%s is not a procedure object"), p->procname);
-		return 1;
-	}
-	if (setjmp(jmp_env))
-		return 1;
-	res = scm_internal_lazy_catch(
-		SCM_BOOL_T,
-		eval_catch_body,
-		(void*) SCM_LIST2(procsym,
-				  scm_listify(SCM_IM_QUOTE,
-					      s_request,
-					      SCM_UNDEFINED)),
-		eval_catch_handler, &jmp_env);
-	if (SCM_IMP(res) && SCM_BOOLP(res)) 
-		return res == SCM_BOOL_F;
-	return 1;
+        /* Evaluate the procedure */
+        procsym = scm_symbol_value0 (p->procname);
+        if (scm_procedure_p(procsym) != SCM_BOOL_T) {
+                radlog(L_ERR,
+                       _("%s is not a procedure object"), p->procname);
+                return 1;
+        }
+        if (setjmp(jmp_env))
+                return 1;
+        res = scm_internal_lazy_catch(
+                SCM_BOOL_T,
+                eval_catch_body,
+                (void*) SCM_LIST2(procsym,
+                                  scm_listify(SCM_IM_QUOTE,
+                                              s_request,
+                                              SCM_UNDEFINED)),
+                eval_catch_handler, &jmp_env);
+        if (SCM_IMP(res) && SCM_BOOLP(res)) 
+                return res == SCM_BOOL_F;
+        return 1;
 }
 
 int
 scheme_end_reconfig_internal(p)
-	struct call_data *p;
+        struct call_data *p;
 {
-	scm_gc();
-	return 0;
+        scm_gc();
+        return 0;
 }
 
 void
 scheme_load_internal(p)
-	struct call_data *p;
+        struct call_data *p;
 {
-	scm_primitive_load_path(scm_makfrom0str(p->procname));
+        scm_primitive_load_path(scm_makfrom0str(p->procname));
 }
 
 
 void
 scheme_add_load_path_internal(p)
-	struct call_data *p;
+        struct call_data *p;
 {
-	rscm_add_load_path(p->procname);
+        rscm_add_load_path(p->procname);
 }
 
 /* ************************************************************************* */
@@ -306,101 +306,101 @@ scheme_add_load_path_internal(p)
 
 int
 scheme_generic_call(fun, procname, req, user_check, user_reply_ptr)
-	int (*fun)();
-	char *procname;
-	RADIUS_REQ *req;
-	VALUE_PAIR *user_check;
-	VALUE_PAIR **user_reply_ptr;
+        int (*fun)();
+        char *procname;
+        RADIUS_REQ *req;
+        VALUE_PAIR *user_check;
+        VALUE_PAIR **user_reply_ptr;
 {
-	struct call_data *p = emalloc(sizeof(*p));
-	int rc;
-	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-	struct timespec timeout;
+        struct call_data *p = emalloc(sizeof(*p));
+        int rc;
+        pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+        struct timespec timeout;
     
-	p->fun = fun;
-	p->procname = procname;
-	p->request = req;
-	p->user_check = user_check;
-	p->user_reply_ptr = user_reply_ptr;
-	p->ready = 0;
-	call_place(p);
+        p->fun = fun;
+        p->procname = procname;
+        p->request = req;
+        p->user_check = user_check;
+        p->user_reply_ptr = user_reply_ptr;
+        p->ready = 0;
+        call_place(p);
 
-	pthread_mutex_lock(&mutex);
-	while (!p->ready) {
-//		printf("CALLING GUILE\n");
-		timeout.tv_sec = time(NULL)+1;
-		timeout.tv_nsec = 1;
-		pthread_cond_signal(&call_cond);
-		//pthread_cond_wait(&p->cond, &mutex);
-		pthread_cond_timedwait(&p->cond, &mutex, &timeout);
-	}
-//	printf("REMOVING THE CALL\n");
-	call_remove(p);
-	rc = p->retval;
-	efree(p);
-	return rc;
+        pthread_mutex_lock(&mutex);
+        while (!p->ready) {
+//              printf("CALLING GUILE\n");
+                timeout.tv_sec = time(NULL)+1;
+                timeout.tv_nsec = 1;
+                pthread_cond_signal(&call_cond);
+                //pthread_cond_wait(&p->cond, &mutex);
+                pthread_cond_timedwait(&p->cond, &mutex, &timeout);
+        }
+//      printf("REMOVING THE CALL\n");
+        call_remove(p);
+        rc = p->retval;
+        efree(p);
+        return rc;
 }
 
 void
 scheme_load(filename)
-	char *filename;
+        char *filename;
 {
-	scheme_generic_call(scheme_load_internal, filename, NULL, NULL, NULL);
+        scheme_generic_call(scheme_load_internal, filename, NULL, NULL, NULL);
 }
 
 int
 scheme_end_reconfig()
 {
-	scheme_generic_call(scheme_end_reconfig_internal,
-			    NULL, NULL, NULL, NULL);
+        scheme_generic_call(scheme_end_reconfig_internal,
+                            NULL, NULL, NULL, NULL);
 }
 
 
 int
 scheme_auth(procname, req, user_check, user_reply_ptr)
-	char *procname;
-	RADIUS_REQ *req;
-	VALUE_PAIR *user_check;
-	VALUE_PAIR **user_reply_ptr;
+        char *procname;
+        RADIUS_REQ *req;
+        VALUE_PAIR *user_check;
+        VALUE_PAIR **user_reply_ptr;
 {
-	return scheme_generic_call(scheme_auth_internal,
-				   procname, req, user_check, user_reply_ptr);
+        return scheme_generic_call(scheme_auth_internal,
+                                   procname, req, user_check, user_reply_ptr);
 }
 
 int
 scheme_acct(procname, req)
-	char *procname;
-	RADIUS_REQ *req;
+        char *procname;
+        RADIUS_REQ *req;
 {
-	return scheme_generic_call(scheme_acct_internal,
-				   procname, req, NULL, NULL);
+        return scheme_generic_call(scheme_acct_internal,
+                                   procname, req, NULL, NULL);
 }
 
 void
 scheme_read_eval_loop_internal()
 {
-	SCM list;
-	int status;
-	SCM sym_top_repl = scm_symbol_value0("top-repl");
-	SCM sym_begin = scm_symbol_value0("begin");
-	
-	list = scm_cons(sym_begin, SCM_LIST1(scm_cons(sym_top_repl, SCM_EOL)));
-	status = scm_exit_status(scm_eval_x(list));
-	printf("%d\n", status);
+        SCM list;
+        int status;
+        SCM sym_top_repl = scm_symbol_value0("top-repl");
+        SCM sym_begin = scm_symbol_value0("begin");
+        
+        list = scm_cons(sym_begin, SCM_LIST1(scm_cons(sym_top_repl, SCM_EOL)));
+        status = scm_exit_status(scm_eval_x(list));
+        printf("%d\n", status);
 }
 
 void
 scheme_read_eval_loop()
 {
-	scheme_generic_call(scheme_read_eval_loop_internal,
-			    NULL, NULL, NULL, NULL);
+        scheme_generic_call(scheme_read_eval_loop_internal,
+                            NULL, NULL, NULL, NULL);
 }
 
-void	
+void    
 scheme_add_load_path(path)
 {
-	scheme_generic_call(scheme_add_load_path_internal,
-			    path, NULL, NULL, NULL);
+        scheme_generic_call(scheme_add_load_path_internal,
+                            path, NULL, NULL, NULL);
 }
 
 #endif

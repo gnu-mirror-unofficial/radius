@@ -36,15 +36,15 @@
 #define L_CATMASK        0x38        /* Mask to extract category part */
 
 /* log priorities */
-#define	L_EMERG	   0	/* system is unusable */
-#define	L_ALERT	   1	/* action must be taken immediately */
-#define	L_CRIT	   2	/* critical conditions */
-#define	L_ERR	   3	/* error conditions */
-#define	L_WARN     4	/* warning conditions */
-#define	L_NOTICE   5	/* normal but signification condition */
-#define	L_INFO	   6 	/* informational */
-#define	L_DEBUG	   7	/* debug-level messages */
-#define	L_PRIMASK  0x0007  /* mask to extract priority part */
+#define L_EMERG    0    /* system is unusable */
+#define L_ALERT    1    /* action must be taken immediately */
+#define L_CRIT     2    /* critical conditions */
+#define L_ERR      3    /* error conditions */
+#define L_WARN     4    /* warning conditions */
+#define L_NOTICE   5    /* normal but signification condition */
+#define L_INFO     6    /* informational */
+#define L_DEBUG    7    /* debug-level messages */
+#define L_PRIMASK  0x0007  /* mask to extract priority part */
 
 #define L_CAT(v)   (((v)&L_CATMASK)>>3)
 #define L_PRI(v)   ((v)&L_PRIMASK)
@@ -72,37 +72,37 @@
  ((void) ((cond) || __insist_failure(MKSTRING(cond), __FILE__, __LINE__)))
 #define insist_fail(str) \
  __insist_failure(MKSTRING(str), __FILE__, __LINE__)
-	
+        
 #define RADIUS_DEBUG_BUFFER_SIZE 1024
 
 typedef struct {
-	int type;
-	union {
-		char string[256];
-		UINT4 ipaddr;
-		int number;
-		int bool;
-	} v;
+        int type;
+        union {
+                char string[256];
+                UINT4 ipaddr;
+                int number;
+                int bool;
+        } v;
 } Value;
 
 typedef struct channel Channel;
 
 struct channel {
-	struct channel *next;
-	char *name;
-	int  pmask[L_NCAT]; 
-	int mode;   /* LM_ constant */
-	union {
-		int prio;        /* syslog: facility|priority */
-		char *file;      /* file: output file name */
-	} id;
-	int options;
+        struct channel *next;
+        char *name;
+        int  pmask[L_NCAT]; 
+        int mode;   /* LM_ constant */
+        union {
+                int prio;        /* syslog: facility|priority */
+                char *file;      /* file: output file name */
+        } id;
+        int options;
 };
 
 typedef struct chanlist Chanlist;
 struct chanlist {  /* for keeping channels while parsing config file */
-	Chanlist *next;
-	Channel *chan;
+        Chanlist *next;
+        Channel *chan;
 };
 
 /* Global variables */
@@ -121,8 +121,8 @@ int __insist_failure(char *, char *, int);
 #endif
 
 struct debug_module {
-	char *name;
-	int  modnum;
+        char *name;
+        int  modnum;
 };
 
 extern struct debug_module debug_module[];
@@ -139,8 +139,8 @@ extern struct debug_module debug_module[];
 
 void _debug_print(char *file, int line, char *func_name, char *str);
 char *_debug_format_string(/* char *fmt, ... */);
-	
-/* Parsing */	
+        
+/* Parsing */   
 
 Channel *channel_lookup(char *name);
 void channel_free(Channel *chan);

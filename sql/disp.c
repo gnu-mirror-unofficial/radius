@@ -24,109 +24,109 @@
 #include <pth.h>
 
 static SQL_DISPATCH_TAB *sql_dispatch_tab[] = {
-	NULL,
-	mysql_dispatch_tab,
-	postgres_dispatch_tab,
-	odbc_dispatch_tab,
+        NULL,
+        mysql_dispatch_tab,
+        postgres_dispatch_tab,
+        odbc_dispatch_tab,
 };
 
 #define NDISP sizeof(sql_dispatch_tab)/sizeof(sql_dispatch_tab[0])
 
 int
 disp_sql_interface_index(name)
-	char *name;
+        char *name;
 {
-	int i;
+        int i;
 
-	for (i = 1; i < NDISP; i++)
-		if (sql_dispatch_tab[i]
-		    && strcmp(sql_dispatch_tab[i]->name, name) == 0)
-		    return i;
-	return 0;
+        for (i = 1; i < NDISP; i++)
+                if (sql_dispatch_tab[i]
+                    && strcmp(sql_dispatch_tab[i]->name, name) == 0)
+                    return i;
+        return 0;
 }
 
 SQL_DISPATCH_TAB *
 disp_sql_entry(type)
-	int type;
+        int type;
 {
-	insist(type < SQLT_MAX);
-	if (type == 0) {
-		for (type = 1; type < NDISP; type++)
-			if (sql_dispatch_tab[type])
-				return sql_dispatch_tab[type];
-		type = 0;
-	} 
-	return sql_dispatch_tab[type];
+        insist(type < SQLT_MAX);
+        if (type == 0) {
+                for (type = 1; type < NDISP; type++)
+                        if (sql_dispatch_tab[type])
+                                return sql_dispatch_tab[type];
+                type = 0;
+        } 
+        return sql_dispatch_tab[type];
 }
 
 int
 disp_sql_reconnect(type, conn_type, conn)
-	int type;
-	int conn_type;
-	struct sql_connection *conn;
+        int type;
+        int conn_type;
+        struct sql_connection *conn;
 {
-	return disp_sql_entry(type)->reconnect(conn_type, conn);
+        return disp_sql_entry(type)->reconnect(conn_type, conn);
 }
 
 void
 disp_sql_disconnect(type, conn)
-	int type;
-	struct sql_connection *conn;
+        int type;
+        struct sql_connection *conn;
 {
-	disp_sql_entry(type)->disconnect(conn);
+        disp_sql_entry(type)->disconnect(conn);
 }
 
 int
 disp_sql_query(type, conn, query, report_cnt)
-	int type;
-	struct sql_connection *conn;
-	char *query;
-	int *report_cnt;
+        int type;
+        struct sql_connection *conn;
+        char *query;
+        int *report_cnt;
 {
-	return disp_sql_entry(type)->query(conn, query, report_cnt);
+        return disp_sql_entry(type)->query(conn, query, report_cnt);
 }
 
 char *
 disp_sql_getpwd(type, conn, query)
-	int type;
-	struct sql_connection *conn;
-	char *query;
+        int type;
+        struct sql_connection *conn;
+        char *query;
 {
-	return disp_sql_entry(type)->getpwd(conn, query);
+        return disp_sql_entry(type)->getpwd(conn, query);
 }
 
 void *
 disp_sql_exec(type, conn, query)
-	int type;
-	struct sql_connection *conn;
-	char *query;
+        int type;
+        struct sql_connection *conn;
+        char *query;
 {
-	return disp_sql_entry(type)->exec_query(conn, query);
+        return disp_sql_entry(type)->exec_query(conn, query);
 }
 
 char *
 disp_sql_column(type, data, ncol)
-	int type;
-	void *data;
-	int ncol;
+        int type;
+        void *data;
+        int ncol;
 {
-	return disp_sql_entry(type)->column(data, ncol);
+        return disp_sql_entry(type)->column(data, ncol);
 }
 
 int
 disp_sql_next_tuple(type, conn, data)
-	int type;
-	struct sql_connection *conn;
-	void *data;
+        int type;
+        struct sql_connection *conn;
+        void *data;
 {
-	return disp_sql_entry(type)->next_tuple(conn, data);
+        return disp_sql_entry(type)->next_tuple(conn, data);
 }
 
 void
 disp_sql_free(type, conn, data)
-	int type;
-	struct sql_connection *conn;
-	void *data;
+        int type;
+        struct sql_connection *conn;
+        void *data;
 {
-	return disp_sql_entry(type)->free(conn, data);
+        return disp_sql_entry(type)->free(conn, data);
 }

@@ -612,25 +612,25 @@ static void rw_code_unlock(int *locker, int force);
  
 static void
 rw_code_lock(locker)
-	int *locker;
+        int *locker;
 {
-	*locker = rewrite_call_level;
-	if (rewrite_call_level == 0)
-		pthread_mutex_lock(&rewrite_code_mutex);
-	rewrite_call_level++;
+        *locker = rewrite_call_level;
+        if (rewrite_call_level == 0)
+                pthread_mutex_lock(&rewrite_code_mutex);
+        rewrite_call_level++;
 }
 
 static void
 rw_code_unlock(locker, force)
-	int *locker;
+        int *locker;
         int force;
 {
-	if (force)
-		rewrite_call_level = *locker;
-	else
-		--rewrite_call_level;
-	if (rewrite_call_level == 0)
-		pthread_mutex_unlock(&rewrite_code_mutex);
+        if (force)
+                rewrite_call_level = *locker;
+        else
+                --rewrite_call_level;
+        if (rewrite_call_level == 0)
+                pthread_mutex_unlock(&rewrite_code_mutex);
 }
  
 %}
@@ -1194,8 +1194,8 @@ int
 parse_rewrite(path)
         char *path;
 {
-	int locker;
-	
+        int locker;
+        
         input_filename = path;
         infile = fopen(input_filename, "r");
         if (!infile) {
@@ -1209,10 +1209,10 @@ parse_rewrite(path)
 
         if (!rewrite_tab) 
                 rewrite_tab = symtab_create(sizeof(FUNCTION), function_free);
-	else
+        else
                 symtab_clear(rewrite_tab);
 
-	rw_code_lock(&locker);
+        rw_code_lock(&locker);
         yyeof = 0;
         input_line = 1;
         obstack_init(&input_stk);
@@ -1241,7 +1241,7 @@ parse_rewrite(path)
                 
         fclose(infile);
         obstack_free(&input_stk, NULL);
-	rw_code_unlock(&locker, 0);
+        rw_code_unlock(&locker, 0);
         return 0;
 }
 
@@ -4602,11 +4602,11 @@ run_init(pc, request)
         VALUE_PAIR *request;
 {
         FILE *fp;
-	int locker;
-	
-	rw_code_lock(&locker);
+        int locker;
+        
+        rw_code_lock(&locker);
         if (setjmp(rw_rt.jmp)) {
-		rw_code_unlock(&locker, 1);
+                rw_code_unlock(&locker, 1);
                 return;
         }
         
@@ -4630,7 +4630,7 @@ run_init(pc, request)
                 avl_fprint(fp, rw_rt.request);
                 fclose(fp);
         }
-	rw_code_unlock(&locker, 0);
+        rw_code_unlock(&locker, 0);
 }
 
 /*VARARGS3*/
@@ -4647,16 +4647,16 @@ va_run_init(name, request, typestr, va_alist)
         int nargs;
         char *s;
         int locker;
-	
+        
         fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
         if (!fun) {
                 radlog(L_ERR, _("function %s not defined"), name);
                 return -1;
         }
         
-	rw_code_lock(&locker);
+        rw_code_lock(&locker);
         if (setjmp(rw_rt.jmp)) {
-		rw_code_unlock(&locker, 1);
+                rw_code_unlock(&locker, 1);
                 return -1;
         }
         
@@ -4694,8 +4694,8 @@ va_run_init(name, request, typestr, va_alist)
                 radlog(L_ERR,
                        _("%s(): wrong number of arguments (should be %d, passed %d"),
                        name, fun->nparm, nargs);
-		rw_code_unlock(&locker, 1);
-		return -1;
+                rw_code_unlock(&locker, 1);
+                return -1;
         }
 
         /* Imitate a function call */
@@ -4708,7 +4708,7 @@ va_run_init(name, request, typestr, va_alist)
                 avl_fprint(fp, rw_rt.request);
                 fclose(fp);
         }
-	rw_code_unlock(&locker, 0);
+        rw_code_unlock(&locker, 0);
         return rw_rt.rA;
 }
 
@@ -4729,8 +4729,8 @@ interpret(fcall, req, type, datum)
         int i, errcnt = 0;
         struct obstack obs;
         char *args;
-	int locker;
-	
+        int locker;
+        
         obstack_init(&obs);
         args = radius_xlate(&obs, fcall, req, NULL);
         if (argcv_get(args, "(),", &argc, &argv) || argc < 3) {
@@ -4762,7 +4762,7 @@ interpret(fcall, req, type, datum)
                 return 1;
         }
         
-	rw_code_lock(&locker);
+        rw_code_lock(&locker);
         rw_rt.request = req ? req->request : NULL;
         if (debug_on(2)) {
                 fp = debug_open_file();
@@ -4793,7 +4793,7 @@ interpret(fcall, req, type, datum)
                                argv[0], argv[i], parm);
                         obstack_free(&obs, NULL);
                         argcv_free(argc, argv);
-			rw_code_unlock(&locker, 1);
+                        rw_code_unlock(&locker, 1);
                         return -1;
                 }
 
@@ -4801,7 +4801,7 @@ interpret(fcall, req, type, datum)
                         radlog(L_ERR, "too many arguments for %s", argv[0]);
                         obstack_free(&obs, NULL);
                         argcv_free(argc, argv);
-			rw_code_unlock(&locker, 1);
+                        rw_code_unlock(&locker, 1);
                         return -1;
                 }
 
@@ -4827,7 +4827,7 @@ interpret(fcall, req, type, datum)
                        _("too few arguments for %s"),
                          argv[0]);
                 argcv_free(argc, argv);
-		rw_code_unlock(&locker, 1);
+                rw_code_unlock(&locker, 1);
                 return -1;
         }
 
@@ -4835,7 +4835,7 @@ interpret(fcall, req, type, datum)
 
         /* Imitate a function call */
         if (setjmp(rw_rt.jmp)) {
-		rw_code_unlock(&locker, 1);
+                rw_code_unlock(&locker, 1);
                 return -1;
         }
         
@@ -4860,7 +4860,7 @@ interpret(fcall, req, type, datum)
                 abort();
         }
         *type = fun->rettype;
-	rw_code_unlock(&locker, 0);
+        rw_code_unlock(&locker, 0);
         return 0;
 }
 
@@ -4948,8 +4948,8 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
         Datum datum;
         SCM cell;
         SCM FNAME;
-	int locker;
-	
+        int locker;
+        
         FNAME = SCM_CAR(ARGS);
         ARGS  = SCM_CDR(ARGS);
         SCM_ASSERT(SCM_NIMP(FNAME) && SCM_STRINGP(FNAME),
@@ -4962,7 +4962,7 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
                                "function ~S not defined",
                                SCM_LIST1(FNAME));
 
-	rw_code_lock(&locker);
+        rw_code_lock(&locker);
         if (rewrite_call_level == 1) {
                 rw_rt.st = 0;                     /* Stack top */
                 rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
@@ -4977,7 +4977,7 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
                 SCM car = SCM_CAR(cell);
 
                 if (++nargs > fun->nparm) {
-			rw_code_unlock(&locker, 1);
+                        rw_code_unlock(&locker, 1);
                         scm_misc_error(func_name,
                                        "too many arguments for ~S",
                                        SCM_LIST1(FNAME));
@@ -5000,25 +5000,25 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
                 }
 
                 if (rc) {
-			rw_code_unlock(&locker, 1);
+                        rw_code_unlock(&locker, 1);
                         scm_misc_error(func_name,
                              "type mismatch in argument ~S(~S) in call to ~S",
                                        SCM_LIST3(SCM_MAKINUM(nargs),
                                                  car,
                                                  FNAME));
-		}
+                }
         }
 
         if (fun->nparm != nargs) {
-		rw_code_unlock(&locker, 1);
+                rw_code_unlock(&locker, 1);
                 scm_misc_error(func_name,
                                "too few arguments for ~S",
                                SCM_LIST1(FNAME));
-	}
-	
+        }
+        
         /* Imitate a function call */
         if (setjmp(rw_rt.jmp)) {
-		rw_code_unlock(&locker, 1);
+                rw_code_unlock(&locker, 1);
                 return -1;
         }
         rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
@@ -5035,7 +5035,7 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
         default:
                 abort();
         }
-	rw_code_unlock(&locker, 0);
+        rw_code_unlock(&locker, 0);
         return radscm_datum_to_scm(fun->rettype, datum);
 }
 

@@ -36,8 +36,8 @@
 #  define P_SHELL         'X'
 #endif
 
-#define P_IDLE		0
-#define P_LOGIN		1
+#define P_IDLE          0
+#define P_LOGIN         1
 #define P_NAS_START     128
 #define P_NAS_SHUTDOWN  129
 
@@ -46,48 +46,48 @@
 #define RUT_PNSIZE 24           /* Phone number size */
 
 struct radutmp {
-	char login[RUT_NAMESIZE];       /* Loginname (maybe modified) */
-	char orig_login[RUT_NAMESIZE];  /* Original loginname */
-	int  nas_port;		        /* Port on the terminal server */
-	char session_id[RUT_IDSIZE];    /* Radius session ID */
-	                                /* (last RUT_IDSIZE bytes at least)*/
-	unsigned int nas_address;	/* IP of portmaster. */
-	unsigned int framed_address;	/* SLIP/PPP address or login-host. */
-	int proto;			/* Protocol. */
-	time_t time;			/* Time the entry was last updated. */
-	time_t delay;			/* Delay time of request */
-	int type;			/* Type of entry (login/logout) */
-	char porttype;	       /* Porttype (I=ISDN A=Async T=Async-ISDN) */
-	char res1,res2,res3;		/* Fills up to one int */
-	time_t duration;
-	char caller_id[RUT_PNSIZE];      /* calling station ID */
-	unsigned int realm_address;
-	char reserved[10];		
+        char login[RUT_NAMESIZE];       /* Loginname (maybe modified) */
+        char orig_login[RUT_NAMESIZE];  /* Original loginname */
+        int  nas_port;                  /* Port on the terminal server */
+        char session_id[RUT_IDSIZE];    /* Radius session ID */
+                                        /* (last RUT_IDSIZE bytes at least)*/
+        unsigned int nas_address;       /* IP of portmaster. */
+        unsigned int framed_address;    /* SLIP/PPP address or login-host. */
+        int proto;                      /* Protocol. */
+        time_t time;                    /* Time the entry was last updated. */
+        time_t delay;                   /* Delay time of request */
+        int type;                       /* Type of entry (login/logout) */
+        char porttype;         /* Porttype (I=ISDN A=Async T=Async-ISDN) */
+        char res1,res2,res3;            /* Fills up to one int */
+        time_t duration;
+        char caller_id[RUT_PNSIZE];      /* calling station ID */
+        unsigned int realm_address;
+        char reserved[10];              
 };
 
 #define LOCK_LEN sizeof(struct radutmp)
 
 
 struct maxsession {
-	time_t start;
-	time_t time;
+        time_t start;
+        time_t time;
 };
 
 typedef struct port_stat {
-	struct port_stat *next;
-	UINT4 ip;                  /* NAS IP */
-	int port_no;               /* port number */
-	int active;                /* is the port used now */
-	char login[RUT_NAMESIZE];  /* last login name */
-	UINT4 framed_address;      /* IP address assigned to that port */
-	unsigned long count;       /* number of logins */
-	time_t start;
-	time_t lastin;             /* last time the user logged in */
-	time_t lastout;            /* last time the user logged out */
-	time_t inuse;              /* total time the line was in use */
-	time_t idle;               /* total idle time */
-	struct maxsession maxinuse;
-	struct maxsession maxidle;
+        struct port_stat *next;
+        UINT4 ip;                  /* NAS IP */
+        int port_no;               /* port number */
+        int active;                /* is the port used now */
+        char login[RUT_NAMESIZE];  /* last login name */
+        UINT4 framed_address;      /* IP address assigned to that port */
+        unsigned long count;       /* number of logins */
+        time_t start;
+        time_t lastin;             /* last time the user logged in */
+        time_t lastout;            /* last time the user logged out */
+        time_t inuse;              /* total time the line was in use */
+        time_t idle;               /* total idle time */
+        struct maxsession maxinuse;
+        struct maxsession maxidle;
 } PORT_STAT;
 
 /* stat.c */

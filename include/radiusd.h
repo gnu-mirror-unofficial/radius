@@ -30,30 +30,30 @@ struct obstack;
 
 typedef struct hostdecl HOSTDECL;
 struct hostdecl {
-	HOSTDECL *next;
-	UINT4    ipaddr;
-	UINT4    port;
+        HOSTDECL *next;
+        UINT4    ipaddr;
+        UINT4    port;
 };
 
 typedef struct {
-	int checkrad_assume_logged;
-	int max_requests;
-	char *exec_user;
+        int checkrad_assume_logged;
+        int max_requests;
+        char *exec_user;
 } Config;
 
 enum reload_what {
-	reload_config,
-	reload_all,
-	reload_dict,
-	reload_users,
-	reload_huntgroups,
-	reload_hints,
-	reload_clients, 
-	reload_naslist, 
-	reload_realms,
-	reload_deny,
-	reload_sql,
-	reload_rewrite
+        reload_config,
+        reload_all,
+        reload_dict,
+        reload_users,
+        reload_huntgroups,
+        reload_hints,
+        reload_clients, 
+        reload_naslist, 
+        reload_realms,
+        reload_deny,
+        reload_sql,
+        reload_rewrite
 };
 
 /* ********************** Request list handling **************************** */
@@ -69,54 +69,54 @@ enum reload_what {
 /* Request class structure
  */
 typedef struct request_class {
-	char *name;           /* Class name */
-	int  max_requests;    /* Max.number of pending requests of this type */
-	int  ttl;             /* Request time-to-live */
-	int  cleanup_delay;   /* Delay before cleaning the completed request */
-	int  spawn;           /* execute handler as a separate process */
-	int  (*handler)();    /* Handler function */
-	void (*xmit)();       /* Retransmit function */
-	int  (*comp)();       /* Compare function */
-	void (*free)();       /* Free */
-	void (*drop)();       /* Drop request error message */
-	int  (*setup)();      /* Setup function */
-	void (*cleanup)();    /* Cleanup function */
+        char *name;           /* Class name */
+        int  max_requests;    /* Max.number of pending requests of this type */
+        int  ttl;             /* Request time-to-live */
+        int  cleanup_delay;   /* Delay before cleaning the completed request */
+        int  spawn;           /* execute handler as a separate process */
+        int  (*handler)();    /* Handler function */
+        void (*xmit)();       /* Retransmit function */
+        int  (*comp)();       /* Compare function */
+        void (*free)();       /* Free */
+        void (*drop)();       /* Drop request error message */
+        int  (*setup)();      /* Setup function */
+        void (*cleanup)();    /* Cleanup function */
 } REQUEST_CLASS;
 
 
 typedef int QUEUE_STAT[R_MAX][2];
-	
+        
 typedef struct client {
-	struct client		*next;
-	UINT4			ipaddr;
-	char			longname[MAX_LONGNAME+1];
-	u_char			*secret;
-	char			shortname[MAX_SHORTNAME+1];
+        struct client           *next;
+        UINT4                   ipaddr;
+        char                    longname[MAX_LONGNAME+1];
+        u_char                  *secret;
+        char                    shortname[MAX_SHORTNAME+1];
 } CLIENT;
 
 typedef struct proxy_id {
-	struct proxy_id         *next;
-	UINT4                   ipaddr;
-	u_char                  id;
+        struct proxy_id         *next;
+        UINT4                   ipaddr;
+        u_char                  id;
 } PROXY_ID;
 
 typedef struct proxy_state {
-	UINT4			ipaddr;
-	UINT4			id;
-	UINT4			proxy_id;
-	UINT4			rem_ipaddr;
+        UINT4                   ipaddr;
+        UINT4                   id;
+        UINT4                   proxy_id;
+        UINT4                   rem_ipaddr;
 } PROXY_STATE;
 
 /*
  * Internal representation of a user's profile
  */
 typedef struct user_symbol {
-	struct user_symbol *next;
-	char *name;
-	int lineno;
-	int ordnum;
-	VALUE_PAIR *check;
-	VALUE_PAIR *reply;
+        struct user_symbol *next;
+        char *name;
+        int lineno;
+        int ordnum;
+        VALUE_PAIR *check;
+        VALUE_PAIR *reply;
 } User_symbol;
 
 #define SNMP_RO 1
@@ -128,71 +128,71 @@ typedef struct user_symbol {
 
 typedef struct community_list Community;
 struct community_list {
-	Community *next;
-	char *name;
-	int access;
+        Community *next;
+        char *name;
+        int access;
 } ;
 
 typedef struct access_control_list ACL;
 struct access_control_list {
-	ACL *next;           /* next ACL */
-	Community *community;/* community or NULL to deny access */
-	UINT4 ipaddr;        /* IP address */
-	UINT4 netmask;
+        ACL *next;           /* next ACL */
+        Community *community;/* community or NULL to deny access */
+        UINT4 ipaddr;        /* IP address */
+        UINT4 netmask;
 };
 
 struct radstat {
-	struct timeval start_time;
-	counter port_active_count;
-	counter port_idle_count;
+        struct timeval start_time;
+        counter port_active_count;
+        counter port_idle_count;
 };
 
 typedef enum {
-	port_idle = 1,
-	port_active
+        port_idle = 1,
+        port_active
 } port_status;
 
 typedef struct {
-	struct timeval start_time;
-	unsigned port_count; /* Number of ports in the port_stat array */
-	unsigned nas_count;  /* Number of NASes in the nas_stat array */
-	int nas_index; /* Next available NAS index */
-	Auth_server_stat auth;
-	Acct_server_stat acct;
-	struct nas_stat *nas_head, *nas_tail;
-	struct port_stat *port_head, *port_tail;
+        struct timeval start_time;
+        unsigned port_count; /* Number of ports in the port_stat array */
+        unsigned nas_count;  /* Number of NASes in the nas_stat array */
+        int nas_index; /* Next available NAS index */
+        Auth_server_stat auth;
+        Acct_server_stat acct;
+        struct nas_stat *nas_head, *nas_tail;
+        struct port_stat *port_head, *port_tail;
 } Server_stat;
 
 #define stat_inc(m,a,c) \
  do {\
-	NAS *nas;\
-	server_stat . ##m . ##c ++;\
-	if ((nas = nas_lookup_ip(a)) != NULL && nas->app_data)\
-		((struct nas_stat*)nas->app_data)-> ##m . ##c ++;\
+        NAS *nas;\
+        server_stat . ##m . ##c ++;\
+        if ((nas = nas_lookup_ip(a)) != NULL && nas->app_data)\
+                ((struct nas_stat*)nas->app_data)-> ##m . ##c ++;\
  } while (0)
 
 extern struct radstat radstat;
 
 typedef struct snmp_req {
-	struct snmp_pdu *pdu;
-	char *community;
-	int access;
-	struct sockaddr_in sa;
-	int fd;
+        struct snmp_pdu *pdu;
+        char *community;
+        int access;
+        struct sockaddr_in sa;
+        int fd;
 } SNMP_REQ;
 
 void snmp_req_free(SNMP_REQ *req);
 void snmp_req_drop(int type, SNMP_REQ *req, char *status_str);
-	
+        
 #else
 #define stat_inc(m,a,c)
 #endif
 
 
-#define SECONDS_PER_DAY		86400
-#define MAX_REQUEST_TIME	60
-#define CLEANUP_DELAY		10
-#define MAX_REQUESTS		255
+#define SECONDS_PER_DAY         86400
+#define MAX_REQUEST_TIME        60
+#define CLEANUP_DELAY           10
+#define MAX_REQUESTS            255
 
 
 /*
@@ -227,7 +227,7 @@ void snmp_req_drop(int type, SNMP_REQ *req, char *status_str);
 #define MSG_COUNT                   8
 
 /*
- *	Global variables.
+ *      Global variables.
  */
 extern int radius_mode;
 extern Config config;
@@ -257,7 +257,7 @@ extern Server_stat server_stat;
 #endif
 
 /*
- *	Function prototypes.
+ *      Function prototypes.
  */
 
 /* acct.c */
@@ -306,7 +306,7 @@ NAS *findnasbyindex(int);
 char *make_server_ident();
 void dump_users_db();
 void strip_username(int do_strip, char *name,
-		    VALUE_PAIR *check_item, char *stripped_name);
+                    VALUE_PAIR *check_item, char *stripped_name);
 
 /* version.c */
 void version();
@@ -332,7 +332,7 @@ void req_decrypt_password(char *password, RADIUS_REQ *req, VALUE_PAIR *pair);
 
 /* exec.c */
 int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **,
-			int, char **user_msg);
+                        int, char **user_msg);
 
 /* menu.c */
 void process_menu(RADIUS_REQ *radreq, int fd);
@@ -385,15 +385,15 @@ void stat_count_ports();
 /* snmpserver.c */
 struct sockaddr_in;
 struct snmp_req * rad_snmp_respond(u_char *buf, int len,
-				   struct sockaddr_in *sa);
+                                   struct sockaddr_in *sa);
 int snmp_req_cmp(struct snmp_req *a, struct snmp_req *b);
 void snmp_req_free(struct snmp_req  *req);
 void snmp_req_drop(int type, struct snmp_req *req, char *status_str);
 int snmp_answer(struct snmp_req *req, int fd);
-	
+        
 /* radutil.c */
 char *radius_xlate(struct obstack *obp, char *str,
-		   RADIUS_REQ *req, VALUE_PAIR *reply_pairs);
+                   RADIUS_REQ *req, VALUE_PAIR *reply_pairs);
 
 /* intl.c */
 void app_setup();
@@ -407,9 +407,9 @@ int parse_rewrite(char *name);
 
 /* radck.c */
 int fix_check_pairs(int sf_file, char *filename, int line, char *name,
-		    VALUE_PAIR **pairs);
+                    VALUE_PAIR **pairs);
 int fix_reply_pairs(int cf_file, char *filename, int line, char *name,
-		    VALUE_PAIR **pairs);
+                    VALUE_PAIR **pairs);
 void radck();
 
 /* scheme.c */
@@ -418,5 +418,5 @@ void scheme_load(char *filename);
 void scheme_load_path(char *pathname);
 void scheme_debug(int val);
 int scheme_auth(char *procname, RADIUS_REQ *req,
-		VALUE_PAIR *user_check, VALUE_PAIR **user_reply_ptr);
+                VALUE_PAIR *user_check, VALUE_PAIR **user_reply_ptr);
 int scheme_acct(char *procname, RADIUS_REQ *req);

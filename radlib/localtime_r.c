@@ -22,14 +22,14 @@ static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 struct tm *
 localtime_r(timep, res)
-	const time_t *timep;
-	struct tm *res;
+        const time_t *timep;
+        struct tm *res;
 {
-	struct tm *tm;
+        struct tm *tm;
 
-	pthread_mutex_lock(&mutex);
-	tm = localtime(timep);
-	memcpy(res, tm, sizeof(*res));
-	pthread_mutex_unlock(&mutex);
-	return res;
+        pthread_mutex_lock(&mutex);
+        tm = localtime(timep);
+        memcpy(res, tm, sizeof(*res));
+        pthread_mutex_unlock(&mutex);
+        return res;
 }

@@ -30,7 +30,7 @@
 
 static int
 argcv_scan (int len, const char *command, const char *delim,
-	    int *start, int *end, int *save)
+            int *start, int *end, int *save)
 {
   int i = *save;
 
@@ -44,17 +44,17 @@ argcv_scan (int len, const char *command, const char *delim,
     case '"':
     case '\'':
       while (++i < len && command[i] != command[*start])
-	;
+        ;
       if (i < len)  /* found matching quote */
-	break;
+        break;
       /*FALLTHRU*/
     default:
       if (isdelim (command [i], delim))
-	break;
+        break;
       /* Skip until next whitespace character or end of line */
       while (++i < len &&
-	     !(isws (command [i]) || isdelim (command [i], delim)))
-	;
+             !(isws (command [i]) || isdelim (command [i], delim)))
+        ;
       i--;
       break;
     }
@@ -95,19 +95,19 @@ argcv_get (const char *command, const char *delim, int *argc, char ***argv)
       argcv_scan (len, command, delim, &start, &end, &save);
 
       if (command[start] == '"' && command[end] == '"')
-	{
-	  start++;
-	  end--;
-	}
+        {
+          start++;
+          end--;
+        }
       else if (command[start] == '\'' && command[end] == '\'')
-	{
-	  start++;
-	  end--;
-	}
+        {
+          start++;
+          end--;
+        }
       n = end - start + 1;
       (*argv)[i] = calloc (n+1,  sizeof (char));
       if ((*argv)[i] == NULL)
-	return 1;
+        return 1;
       memcpy ((*argv)[i], &command[start], n);
       (*argv)[i][n] = 0;
     }
@@ -153,9 +153,9 @@ argcv_string (int argc, char **argv, char **pstring)
       len += strlen (argv[i]) + 2;
       buffer = realloc (buffer, len);
       if (buffer == NULL)
-	return 1;
+        return 1;
       if (i != 0)
-	strcat (buffer, " ");
+        strcat (buffer, " ");
       strcat (buffer, argv[i]);
     }
 
@@ -163,9 +163,9 @@ argcv_string (int argc, char **argv, char **pstring)
   if (*buffer != '\0')
     {
       while (buffer[strlen (buffer) - 1] == ' ')
-	{
-	  buffer[strlen (buffer) - 1] = '\0';
-	}
+        {
+          buffer[strlen (buffer) - 1] = '\0';
+        }
     }
   if (pstring)
     *pstring = buffer;

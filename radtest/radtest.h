@@ -24,30 +24,30 @@ extern int debug_level[];
 #define MAX_STRING 128
 
 enum {
-	Undefined,
-	Builtin,
-	Integer,
-	Ipaddress,
-	String,
-	Vector
+        Undefined,
+        Builtin,
+        Integer,
+        Ipaddress,
+        String,
+        Vector
 };
 
 typedef struct variable Variable;
 struct variable {
-	Symbol *next;
-	char *name;
-	int type;
-	union datum {
-		int number;
-		char *string;
-		VALUE_PAIR *vector;
-		UINT4 ipaddr;
-		DICT_VALUE *dval;
-		struct {
-			int (*set)();
-			int (*print)();
-		} builtin;
-	} datum;
+        Symbol *next;
+        char *name;
+        int type;
+        union datum {
+                int number;
+                char *string;
+                VALUE_PAIR *vector;
+                UINT4 ipaddr;
+                DICT_VALUE *dval;
+                struct {
+                        int (*set)();
+                        int (*print)();
+                } builtin;
+        } datum;
 };
 
 extern Symtab *vartab;

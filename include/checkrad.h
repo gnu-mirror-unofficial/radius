@@ -24,10 +24,10 @@
 typedef struct radck_type RADCK_TYPE;
 
 struct radck_type {
-	RADCK_TYPE *next;
-	char       *type;
-	int        method;
-	envar_t    *args;
+        RADCK_TYPE *next;
+        char       *type;
+        int        method;
+        envar_t    *args;
 };
 
 RADCK_TYPE * find_radck_type(char *name);

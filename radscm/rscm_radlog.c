@@ -30,111 +30,111 @@ static char rcsid[] =
 
 static struct keyword radlog_kw[] = {
 #define D(c) #c, c
-	/* log categories */
-	D(L_MAIN),
-	D(L_AUTH),
-	D(L_ACCT),
-	D(L_PROXY),
-	D(L_SNMP),
-	/* log priorities */
-	D(L_EMERG),
-	D(L_ALERT),
-	D(L_CRIT),
-	D(L_ERR),
-	D(L_WARN),
-	D(L_NOTICE),
-	D(L_INFO),
-	D(L_DEBUG),
-	NULL
+        /* log categories */
+        D(L_MAIN),
+        D(L_AUTH),
+        D(L_ACCT),
+        D(L_PROXY),
+        D(L_SNMP),
+        /* log priorities */
+        D(L_EMERG),
+        D(L_ALERT),
+        D(L_CRIT),
+        D(L_ERR),
+        D(L_WARN),
+        D(L_NOTICE),
+        D(L_INFO),
+        D(L_DEBUG),
+        NULL
 #undef D
 };
 
 static int
 parse_facility(list)
-	SCM list;
+        SCM list;
 {
-	int accval = 0;
-	for (; list != SCM_EOL; list = SCM_CDR(list)) {
-		SCM car = SCM_CAR(list);
-		int val = 0;
-		
-		if (SCM_IMP(car) && SCM_INUMP(car)) 
-			val = SCM_INUM(car);
-		else if (SCM_NIMP(car) && SCM_STRINGP(car))
-			val = xlat_keyword(radlog_kw, SCM_CHARS(car), 0);
-		else if (SCM_BIGP(car)) 
-			val = (UINT4) scm_big2dbl(car);
-		else
-			continue;
-		accval |= val;
-	} 
-	return accval;
+        int accval = 0;
+        for (; list != SCM_EOL; list = SCM_CDR(list)) {
+                SCM car = SCM_CAR(list);
+                int val = 0;
+                
+                if (SCM_IMP(car) && SCM_INUMP(car)) 
+                        val = SCM_INUM(car);
+                else if (SCM_NIMP(car) && SCM_STRINGP(car))
+                        val = xlat_keyword(radlog_kw, SCM_CHARS(car), 0);
+                else if (SCM_BIGP(car)) 
+                        val = (UINT4) scm_big2dbl(car);
+                else
+                        continue;
+                accval |= val;
+        } 
+        return accval;
 }
 
 SCM_DEFINE(rad_log_open, "rad-log-open", 1, 0, 0,
-	   (SCM PRIO),
-"Open radius logging to the severity level PRIO.")	   
+           (SCM PRIO),
+"Open radius logging to the severity level PRIO.")         
 #define FUNC_NAME s_rad_log_open
 {
-	int prio;
+        int prio;
 
-	if (SCM_IMP(PRIO) && SCM_INUMP(PRIO)) {
-		prio = SCM_INUM(PRIO);
-	} else if (SCM_BIGP(PRIO)) {
-		prio = (UINT4) scm_big2dbl(PRIO);
-	} else {
-		SCM_ASSERT(SCM_NIMP(PRIO) && SCM_CONSP(PRIO),
-			   PRIO, SCM_ARG1, FUNC_NAME);
-		prio = parse_facility(PRIO);
-	}
+        if (SCM_IMP(PRIO) && SCM_INUMP(PRIO)) {
+                prio = SCM_INUM(PRIO);
+        } else if (SCM_BIGP(PRIO)) {
+                prio = (UINT4) scm_big2dbl(PRIO);
+        } else {
+                SCM_ASSERT(SCM_NIMP(PRIO) && SCM_CONSP(PRIO),
+                           PRIO, SCM_ARG1, FUNC_NAME);
+                prio = parse_facility(PRIO);
+        }
 
-	log_open(prio);
-	return SCM_UNSPECIFIED;
+        log_open(prio);
+        return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
 
 SCM_DEFINE(rad_log, "rad-log", 2, 0, 0,
-	   (SCM PRIO, SCM TEXT),
+           (SCM PRIO, SCM TEXT),
 "Output TEXT to the radius logging channel corresponding to\n"
 "category/severity given by PRIO.\n")
 #define FUNC_NAME s_rad_log
 {
-	int prio;
-	if (PRIO == SCM_BOOL_F) {
-		prio = L_INFO;
-	} else if (SCM_IMP(PRIO) && SCM_INUMP(PRIO)) {
-		prio = SCM_INUM(PRIO);
-	} else if (SCM_BIGP(PRIO)) {
-		prio = (UINT4) scm_big2dbl(PRIO);
-	} else {
-		SCM_ASSERT(SCM_NIMP(PRIO) && SCM_CONSP(PRIO),
-			   PRIO, SCM_ARG1, FUNC_NAME);
-		prio = parse_facility(PRIO);
-	}
+        int prio;
+        if (PRIO == SCM_BOOL_F) {
+                prio = L_INFO;
+        } else if (SCM_IMP(PRIO) && SCM_INUMP(PRIO)) {
+                prio = SCM_INUM(PRIO);
+        } else if (SCM_BIGP(PRIO)) {
+                prio = (UINT4) scm_big2dbl(PRIO);
+        } else {
+                SCM_ASSERT(SCM_NIMP(PRIO) && SCM_CONSP(PRIO),
+                           PRIO, SCM_ARG1, FUNC_NAME);
+                prio = parse_facility(PRIO);
+        }
 
-	SCM_ASSERT(SCM_NIMP(TEXT) && SCM_STRINGP(TEXT),
-		   TEXT, SCM_ARG1, FUNC_NAME);
-	radlog(prio, "%s", SCM_CHARS(TEXT));
-	return SCM_UNSPECIFIED;
+        SCM_ASSERT(SCM_NIMP(TEXT) && SCM_STRINGP(TEXT),
+                   TEXT, SCM_ARG1, FUNC_NAME);
+        radlog(prio, "%s", SCM_CHARS(TEXT));
+        return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
 
 SCM_DEFINE(rad_log_close, "rad-log-close", 0, 0, 0,
-	   (),
+           (),
 "Close radius logging channel open by a previous call to rad-log-open.\n")
 #define FUNC_NAME s_rad_log_close
 {
-	log_close();
-	return SCM_UNSPECIFIED;
+        log_close();
+        return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
 
 void
 rscm_radlog_init()
 {
-	int i;
-	for (i = 0; radlog_kw[i].name; i++)
-		scm_sysintern(radlog_kw[i].name,
-			      SCM_MAKINUM(radlog_kw[i].tok));
+        int i;
+        for (i = 0; radlog_kw[i].name; i++)
+                scm_sysintern(radlog_kw[i].name,
+                              SCM_MAKINUM(radlog_kw[i].tok));
 #include <rscm_radlog.x>
 }

@@ -1,5 +1,5 @@
 struct slist {
-	struct slist *next;
+        struct slist *next;
 };
 
 void free_slist(struct slist *s, void (*f)());

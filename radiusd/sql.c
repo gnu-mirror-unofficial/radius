@@ -87,41 +87,41 @@ static int obstack_ready;
 static int stmt_type;
 
 struct keyword sql_keyword[] = {
-	"server",             STMT_SERVER,
-	"port",               STMT_PORT,
-	"login",              STMT_LOGIN,
-	"password",           STMT_PASSWORD,
-	"keepopen",           STMT_KEEPOPEN,
-	"idle_timeout",       STMT_IDLE_TIMEOUT,
-	"auth_max_connections", STMT_MAX_AUTH_CONNECTIONS,
-	"acct_max_connections", STMT_MAX_ACCT_CONNECTIONS,
-	"doauth",             STMT_DOAUTH,
-	"doacct",             STMT_DOACCT,
-	"auth_db",            STMT_AUTH_DB,
-	"acct_db",            STMT_ACCT_DB,
-	"auth_query",         STMT_AUTH_QUERY,
-	"group_query",        STMT_GROUP_QUERY,
-	"attr_query",         STMT_REPLY_ATTR_QUERY,
-	"reply_attr_query",   STMT_REPLY_ATTR_QUERY,
-	"check_attr_query",   STMT_CHECK_ATTR_QUERY,
-	"acct_start_query",   STMT_ACCT_START_QUERY,
-	"acct_stop_query",    STMT_ACCT_STOP_QUERY,
-	"acct_alive_query",   STMT_ACCT_KEEPALIVE_QUERY,
-	"acct_keepalive_query", STMT_ACCT_KEEPALIVE_QUERY,
-	"acct_nasup_query",   STMT_ACCT_NASUP_QUERY,
-	"acct_nasdown_query", STMT_ACCT_NASDOWN_QUERY,
-	"interface",          STMT_INTERFACE,
-	NULL,
+        "server",             STMT_SERVER,
+        "port",               STMT_PORT,
+        "login",              STMT_LOGIN,
+        "password",           STMT_PASSWORD,
+        "keepopen",           STMT_KEEPOPEN,
+        "idle_timeout",       STMT_IDLE_TIMEOUT,
+        "auth_max_connections", STMT_MAX_AUTH_CONNECTIONS,
+        "acct_max_connections", STMT_MAX_ACCT_CONNECTIONS,
+        "doauth",             STMT_DOAUTH,
+        "doacct",             STMT_DOACCT,
+        "auth_db",            STMT_AUTH_DB,
+        "acct_db",            STMT_ACCT_DB,
+        "auth_query",         STMT_AUTH_QUERY,
+        "group_query",        STMT_GROUP_QUERY,
+        "attr_query",         STMT_REPLY_ATTR_QUERY,
+        "reply_attr_query",   STMT_REPLY_ATTR_QUERY,
+        "check_attr_query",   STMT_CHECK_ATTR_QUERY,
+        "acct_start_query",   STMT_ACCT_START_QUERY,
+        "acct_stop_query",    STMT_ACCT_STOP_QUERY,
+        "acct_alive_query",   STMT_ACCT_KEEPALIVE_QUERY,
+        "acct_keepalive_query", STMT_ACCT_KEEPALIVE_QUERY,
+        "acct_nasup_query",   STMT_ACCT_NASUP_QUERY,
+        "acct_nasdown_query", STMT_ACCT_NASDOWN_QUERY,
+        "interface",          STMT_INTERFACE,
+        NULL,
 };
 
 static char *service_name[SQL_NSERVICE] = {
-	"AUTH",
-	"ACCT"
+        "AUTH",
+        "ACCT"
 };
 
 static char *reconnect_file[SQL_NSERVICE] = {
-	"auth.reconnect",
-	"acct.reconnect"
+        "auth.reconnect",
+        "acct.reconnect"
 };
 
 
@@ -130,469 +130,469 @@ static char *reconnect_file[SQL_NSERVICE] = {
  */
 int
 chop(str)
-	char *str;
+        char *str;
 {
-	int len;
+        int len;
 
-	for (len = strlen(str); len > 0 && isspace(str[len-1]); len--)
-		;
-	str[len] = 0;
-	return len;
+        for (len = strlen(str); len > 0 && isspace(str[len-1]); len--)
+                ;
+        str[len] = 0;
+        return len;
 }
 
 char *
 getline()
 {
-	char buf[256];
-	char *ptr;
-	int len, eff_len;
-	int total_length = 0;
-	int cont;
+        char buf[256];
+        char *ptr;
+        int len, eff_len;
+        int total_length = 0;
+        int cont;
 
-	if (cur_line)
-		obstack_free(&stack, cur_line);
-	cont = 1;
-	while (cont) {
-		ptr = fgets(buf, sizeof(buf), sqlfd);
-		if (!ptr)
-			break;
-		line_no++;
-		
-		/* Skip empty lines and comments */
-		while (*ptr && isspace(*ptr))
-			ptr++;
-		if (!*ptr || *ptr == '#')
-			continue;
-		/* chop trailing spaces */
-		/* note: len is guaranteed to be > 0 */
-		len = strlen(ptr) - 1;
-		while (len > 0 && isspace(ptr[len]))
-			len--;
-		
-		/* compute effective length */
-		eff_len = (cont = ptr[len] == '\\') ? len : len + 1;
-		if (eff_len == 0)
-			continue;
-		total_length += eff_len;
-		/* add to the stack */
-		obstack_grow(&stack, ptr, eff_len);
-	} 
+        if (cur_line)
+                obstack_free(&stack, cur_line);
+        cont = 1;
+        while (cont) {
+                ptr = fgets(buf, sizeof(buf), sqlfd);
+                if (!ptr)
+                        break;
+                line_no++;
+                
+                /* Skip empty lines and comments */
+                while (*ptr && isspace(*ptr))
+                        ptr++;
+                if (!*ptr || *ptr == '#')
+                        continue;
+                /* chop trailing spaces */
+                /* note: len is guaranteed to be > 0 */
+                len = strlen(ptr) - 1;
+                while (len > 0 && isspace(ptr[len]))
+                        len--;
+                
+                /* compute effective length */
+                eff_len = (cont = ptr[len] == '\\') ? len : len + 1;
+                if (eff_len == 0)
+                        continue;
+                total_length += eff_len;
+                /* add to the stack */
+                obstack_grow(&stack, ptr, eff_len);
+        } 
 
-	if (total_length == 0)
-		return NULL;
-	obstack_1grow(&stack, 0);
-	cur_ptr = cur_line = obstack_finish(&stack);
-	/* recognize keyword */
-	while (*cur_ptr && !isspace(*cur_ptr))
-		cur_ptr++;
-	if (*cur_ptr) {
-		*cur_ptr++ = 0;
-		while (*cur_ptr && isspace(*cur_ptr))
-			cur_ptr++;
-	}
-	stmt_type = xlat_keyword(sql_keyword, cur_line, -1);
-	return cur_ptr;
+        if (total_length == 0)
+                return NULL;
+        obstack_1grow(&stack, 0);
+        cur_ptr = cur_line = obstack_finish(&stack);
+        /* recognize keyword */
+        while (*cur_ptr && !isspace(*cur_ptr))
+                cur_ptr++;
+        if (*cur_ptr) {
+                *cur_ptr++ = 0;
+                while (*cur_ptr && isspace(*cur_ptr))
+                        cur_ptr++;
+        }
+        stmt_type = xlat_keyword(sql_keyword, cur_line, -1);
+        return cur_ptr;
 }
 
 int
 get_boolean(str, retval)
-	char *str;
-	int *retval;
+        char *str;
+        int *retval;
 {
-	if (strcmp(str, "yes") == 0)
-		*retval = 1;
-	else if (strcmp(str, "no") == 0)
-		*retval = 0;
-	else
-		return 1;
-	return 0;
+        if (strcmp(str, "yes") == 0)
+                *retval = 1;
+        else if (strcmp(str, "no") == 0)
+                *retval = 0;
+        else
+                return 1;
+        return 0;
 }
 
 int
 get_unsigned(str, retval)
-	char *str;
-	unsigned *retval;
+        char *str;
+        unsigned *retval;
 {
-	unsigned val;
-	
-	val = strtol(str, &str, 0);
-	if (*str != 0 && !isspace(*str))
-		return 1;
+        unsigned val;
+        
+        val = strtol(str, &str, 0);
+        if (*str != 0 && !isspace(*str))
+                return 1;
 
-	*retval = val;
-	return 0;
+        *retval = val;
+        return 0;
 }
 
 char *
 sql_digest(cfg)
-	SQL_cfg *cfg;
+        SQL_cfg *cfg;
 {
-	int length;
-	char *digest, *p;
-	
+        int length;
+        char *digest, *p;
+        
 #define STRLEN(a) (a ? strlen(a) : 0)
 #define STPCPY(d,s) if (s) { strcpy(d,s); d += strlen(s); }
-	
-	length =  6 * sizeof(int)
-		+ 2 * sizeof(unsigned)
-		+ STRLEN(cfg->server)
-		+ STRLEN(cfg->login)
-		+ STRLEN(cfg->password)
-		+ STRLEN(cfg->auth_db)
-		+ STRLEN(cfg->acct_db)
-		+ 1;
+        
+        length =  6 * sizeof(int)
+                + 2 * sizeof(unsigned)
+                + STRLEN(cfg->server)
+                + STRLEN(cfg->login)
+                + STRLEN(cfg->password)
+                + STRLEN(cfg->auth_db)
+                + STRLEN(cfg->acct_db)
+                + 1;
 
-	digest = emalloc(length);
-	p = digest;
-	
-	*(int*)p = length;
-	p += sizeof(int);
+        digest = emalloc(length);
+        p = digest;
+        
+        *(int*)p = length;
+        p += sizeof(int);
 
-	*(int*)p = cfg->interface;
-	p += sizeof(int);
-	
-	*(int*)p = cfg->keepopen;
-	p += sizeof(int);
-	
-	*(int*)p = cfg->doauth;
-	p += sizeof(int);
-	
-	*(int*)p = cfg->doacct;
-	p += sizeof(int);
-	
-	*(int*)p = cfg->port;
-	p += sizeof(int);
+        *(int*)p = cfg->interface;
+        p += sizeof(int);
+        
+        *(int*)p = cfg->keepopen;
+        p += sizeof(int);
+        
+        *(int*)p = cfg->doauth;
+        p += sizeof(int);
+        
+        *(int*)p = cfg->doacct;
+        p += sizeof(int);
+        
+        *(int*)p = cfg->port;
+        p += sizeof(int);
 
-	*(unsigned*)p = cfg->max_connections[SQL_AUTH];
-	p += sizeof(unsigned);
+        *(unsigned*)p = cfg->max_connections[SQL_AUTH];
+        p += sizeof(unsigned);
 
-	*(unsigned*)p = cfg->max_connections[SQL_ACCT];
-	p += sizeof(unsigned);
-	
-	STPCPY(p, cfg->server);
-	STPCPY(p, cfg->login);
-	STPCPY(p, cfg->password);
-	STPCPY(p, cfg->auth_db);
-	STPCPY(p, cfg->acct_db);
+        *(unsigned*)p = cfg->max_connections[SQL_ACCT];
+        p += sizeof(unsigned);
+        
+        STPCPY(p, cfg->server);
+        STPCPY(p, cfg->login);
+        STPCPY(p, cfg->password);
+        STPCPY(p, cfg->auth_db);
+        STPCPY(p, cfg->acct_db);
 
-	return digest;
+        return digest;
 }
 
 int
 sql_digest_comp(d1, d2)
-	char *d1, *d2;
+        char *d1, *d2;
 {
-	int len;
+        int len;
 
-	len = *(int*)d1;
-	if (len != *(int*)d2)
-		return 1;
-	return memcmp(d1, d2, len);
+        len = *(int*)d1;
+        if (len != *(int*)d2)
+                return 1;
+        return memcmp(d1, d2, len);
 }
 
 int
 sql_cfg_comp(a, b)
-	SQL_cfg *a, *b;
+        SQL_cfg *a, *b;
 {
-	char *dig1, *dig2;
-	int rc;
-	
-	dig1 = sql_digest(a);
-	dig2 = sql_digest(b);
-	rc = sql_digest_comp(dig1, dig2);
-	efree(dig1);
-	efree(dig2);
-	return rc;
+        char *dig1, *dig2;
+        int rc;
+        
+        dig1 = sql_digest(a);
+        dig2 = sql_digest(b);
+        rc = sql_digest_comp(dig1, dig2);
+        efree(dig1);
+        efree(dig2);
+        return rc;
 }
 
 int 
 rad_sql_init()
 {
-	char *sqlfile;
-	UINT4 ipaddr;
-	char *ptr;
-	size_t bufsize = 0;
-	time_t timeout;
-	SQL_cfg new_cfg;
+        char *sqlfile;
+        UINT4 ipaddr;
+        char *ptr;
+        size_t bufsize = 0;
+        time_t timeout;
+        SQL_cfg new_cfg;
 
 #define FREE(a) if (a) efree(a); a = NULL
 
-	bzero(&new_cfg, sizeof(new_cfg));
-	new_cfg.keepopen = 0;
-	new_cfg.idle_timeout = 4*3600; /* four hours */
-	new_cfg.max_connections[SQL_AUTH] = 16;
-	new_cfg.max_connections[SQL_ACCT] = 16;
-	new_cfg.doacct = 0;
-	new_cfg.doauth = 0;
+        bzero(&new_cfg, sizeof(new_cfg));
+        new_cfg.keepopen = 0;
+        new_cfg.idle_timeout = 4*3600; /* four hours */
+        new_cfg.max_connections[SQL_AUTH] = 16;
+        new_cfg.max_connections[SQL_ACCT] = 16;
+        new_cfg.doacct = 0;
+        new_cfg.doauth = 0;
 
-	sqlfile = mkfilename(radius_dir, "sqlserver");
-	/* Open source file */
-	if ((sqlfd = fopen(sqlfile, "r")) == (FILE *) NULL) {
-		radlog(L_ERR, _("could not read sqlserver file %s"), sqlfile);
-		efree(sqlfile);
-		return -1;
-	}
-	line_no = 0;
-	cur_line = NULL;
-	if (!obstack_ready) {
-		obstack_init(&stack);
-		obstack_ready = 1;
-	} 
-	while (getline()) {
-		if (stmt_type == -1) {
-			radlog(L_ERR,
-			       _("%s:%d: unrecognized keyword"),
-			       sqlfile, line_no);
-			continue;
-		}
-		/* Each keyword should have an argument */
-		if (cur_ptr == NULL) {
-			radlog(L_ERR,
-			       _("%s:%d: required argument missing"),
-			       sqlfile, line_no);
-			continue;
-		}
-		
-		switch (stmt_type) {
-		case STMT_SERVER:
-			ipaddr = ip_gethostaddr(cur_ptr);
-			if (ipaddr == (UINT4)0) {
-				radlog(L_ERR,
-				       _("%s:%d: unknown host: %s"),
-				       sqlfile, line_no,
-				       cur_ptr);
-				new_cfg.doacct = 0;
-				new_cfg.doauth = 0;
-			} else {
-				new_cfg.server = estrdup(cur_ptr);
-			}
-			break;
-			
-		case STMT_PORT:
-			new_cfg.port = strtol(cur_ptr, &ptr, 0);
-			if (*ptr != 0 && !isspace(*ptr)) {
-				radlog(L_ERR, _("%s:%d: number parse error"),
-				       sqlfile, line_no);
-				new_cfg.doacct = 0;
-				new_cfg.doauth = 0;
-			}
-			break;
-			
-		case STMT_LOGIN:
-			new_cfg.login = estrdup(cur_ptr);
-			break;
-			
-		case STMT_PASSWORD:
-			new_cfg.password = estrdup(cur_ptr);
-			break;
-			
-		case STMT_KEEPOPEN:
-			if (get_boolean(cur_ptr, &new_cfg.keepopen))
-				radlog(L_ERR,
-				       _("%s:%d: expected boolean value"),
-				       sqlfile, line_no);
-			break;
+        sqlfile = mkfilename(radius_dir, "sqlserver");
+        /* Open source file */
+        if ((sqlfd = fopen(sqlfile, "r")) == (FILE *) NULL) {
+                radlog(L_ERR, _("could not read sqlserver file %s"), sqlfile);
+                efree(sqlfile);
+                return -1;
+        }
+        line_no = 0;
+        cur_line = NULL;
+        if (!obstack_ready) {
+                obstack_init(&stack);
+                obstack_ready = 1;
+        } 
+        while (getline()) {
+                if (stmt_type == -1) {
+                        radlog(L_ERR,
+                               _("%s:%d: unrecognized keyword"),
+                               sqlfile, line_no);
+                        continue;
+                }
+                /* Each keyword should have an argument */
+                if (cur_ptr == NULL) {
+                        radlog(L_ERR,
+                               _("%s:%d: required argument missing"),
+                               sqlfile, line_no);
+                        continue;
+                }
+                
+                switch (stmt_type) {
+                case STMT_SERVER:
+                        ipaddr = ip_gethostaddr(cur_ptr);
+                        if (ipaddr == (UINT4)0) {
+                                radlog(L_ERR,
+                                       _("%s:%d: unknown host: %s"),
+                                       sqlfile, line_no,
+                                       cur_ptr);
+                                new_cfg.doacct = 0;
+                                new_cfg.doauth = 0;
+                        } else {
+                                new_cfg.server = estrdup(cur_ptr);
+                        }
+                        break;
+                        
+                case STMT_PORT:
+                        new_cfg.port = strtol(cur_ptr, &ptr, 0);
+                        if (*ptr != 0 && !isspace(*ptr)) {
+                                radlog(L_ERR, _("%s:%d: number parse error"),
+                                       sqlfile, line_no);
+                                new_cfg.doacct = 0;
+                                new_cfg.doauth = 0;
+                        }
+                        break;
+                        
+                case STMT_LOGIN:
+                        new_cfg.login = estrdup(cur_ptr);
+                        break;
+                        
+                case STMT_PASSWORD:
+                        new_cfg.password = estrdup(cur_ptr);
+                        break;
+                        
+                case STMT_KEEPOPEN:
+                        if (get_boolean(cur_ptr, &new_cfg.keepopen))
+                                radlog(L_ERR,
+                                       _("%s:%d: expected boolean value"),
+                                       sqlfile, line_no);
+                        break;
 
-		case STMT_IDLE_TIMEOUT:
-			timeout = strtol(cur_ptr, &ptr, 0);
-			if ((*ptr != 0 && !isspace(*ptr)) || timeout <= 0) {
-				radlog(L_ERR, _("%s:%d: number parse error"),
-				       sqlfile, line_no);
-			} else 
-				new_cfg.idle_timeout = timeout;
-			break;
-			
-		case STMT_MAX_AUTH_CONNECTIONS:
-			if (get_unsigned(cur_ptr,
-					 &new_cfg.max_connections[SQL_AUTH])) 
-				radlog(L_ERR, _("%s:%d: number parse error"),
-				       sqlfile, line_no);
-			break;
-			
-		case STMT_MAX_ACCT_CONNECTIONS:
-			if (get_unsigned(cur_ptr,
-					 &new_cfg.max_connections[SQL_ACCT])) 
-				radlog(L_ERR, _("%s:%d: number parse error"),
-				       sqlfile, line_no);
-			break;
-			
-		case STMT_DOAUTH:	
-			if (get_boolean(cur_ptr, &new_cfg.doauth))
-				radlog(L_ERR,
-				       _("%s:%d: expected boolean value"),
-				       sqlfile, line_no);
-			break;
-			
-		case STMT_DOACCT:
-			if (get_boolean(cur_ptr, &new_cfg.doacct))
-				radlog(L_ERR,
-				       _("%s:%d: expected boolean value"),
-				       sqlfile, line_no);
-			break;
-			
-		case STMT_AUTH_DB:
-			new_cfg.auth_db = estrdup(cur_ptr);
-			break;
+                case STMT_IDLE_TIMEOUT:
+                        timeout = strtol(cur_ptr, &ptr, 0);
+                        if ((*ptr != 0 && !isspace(*ptr)) || timeout <= 0) {
+                                radlog(L_ERR, _("%s:%d: number parse error"),
+                                       sqlfile, line_no);
+                        } else 
+                                new_cfg.idle_timeout = timeout;
+                        break;
+                        
+                case STMT_MAX_AUTH_CONNECTIONS:
+                        if (get_unsigned(cur_ptr,
+                                         &new_cfg.max_connections[SQL_AUTH])) 
+                                radlog(L_ERR, _("%s:%d: number parse error"),
+                                       sqlfile, line_no);
+                        break;
+                        
+                case STMT_MAX_ACCT_CONNECTIONS:
+                        if (get_unsigned(cur_ptr,
+                                         &new_cfg.max_connections[SQL_ACCT])) 
+                                radlog(L_ERR, _("%s:%d: number parse error"),
+                                       sqlfile, line_no);
+                        break;
+                        
+                case STMT_DOAUTH:       
+                        if (get_boolean(cur_ptr, &new_cfg.doauth))
+                                radlog(L_ERR,
+                                       _("%s:%d: expected boolean value"),
+                                       sqlfile, line_no);
+                        break;
+                        
+                case STMT_DOACCT:
+                        if (get_boolean(cur_ptr, &new_cfg.doacct))
+                                radlog(L_ERR,
+                                       _("%s:%d: expected boolean value"),
+                                       sqlfile, line_no);
+                        break;
+                        
+                case STMT_AUTH_DB:
+                        new_cfg.auth_db = estrdup(cur_ptr);
+                        break;
 
-		case STMT_ACCT_DB:
-			new_cfg.acct_db = estrdup(cur_ptr);
-			break;
-			
-		case STMT_AUTH_QUERY:
-			new_cfg.auth_query = estrdup(cur_ptr);
-			break;
+                case STMT_ACCT_DB:
+                        new_cfg.acct_db = estrdup(cur_ptr);
+                        break;
+                        
+                case STMT_AUTH_QUERY:
+                        new_cfg.auth_query = estrdup(cur_ptr);
+                        break;
 
-		case STMT_GROUP_QUERY:
-			new_cfg.group_query = estrdup(cur_ptr);
-			break;
-			
-		case STMT_ACCT_START_QUERY:
-			new_cfg.acct_start_query = estrdup(cur_ptr);
-			break;
-			
-		case STMT_ACCT_STOP_QUERY:
-			new_cfg.acct_stop_query = estrdup(cur_ptr);
-			break;
-			
-		case STMT_ACCT_KEEPALIVE_QUERY:
-			new_cfg.acct_keepalive_query = estrdup(cur_ptr);
-			break;
-			
-		case STMT_ACCT_NASUP_QUERY:
-			new_cfg.acct_nasup_query = estrdup(cur_ptr);
-			break;
+                case STMT_GROUP_QUERY:
+                        new_cfg.group_query = estrdup(cur_ptr);
+                        break;
+                        
+                case STMT_ACCT_START_QUERY:
+                        new_cfg.acct_start_query = estrdup(cur_ptr);
+                        break;
+                        
+                case STMT_ACCT_STOP_QUERY:
+                        new_cfg.acct_stop_query = estrdup(cur_ptr);
+                        break;
+                        
+                case STMT_ACCT_KEEPALIVE_QUERY:
+                        new_cfg.acct_keepalive_query = estrdup(cur_ptr);
+                        break;
+                        
+                case STMT_ACCT_NASUP_QUERY:
+                        new_cfg.acct_nasup_query = estrdup(cur_ptr);
+                        break;
 
-		case STMT_ACCT_NASDOWN_QUERY:
-			new_cfg.acct_nasdown_query = estrdup(cur_ptr);
-			break;
-			
-		case STMT_REPLY_ATTR_QUERY:
-			new_cfg.reply_attr_query = estrdup(cur_ptr);
-			break;
+                case STMT_ACCT_NASDOWN_QUERY:
+                        new_cfg.acct_nasdown_query = estrdup(cur_ptr);
+                        break;
+                        
+                case STMT_REPLY_ATTR_QUERY:
+                        new_cfg.reply_attr_query = estrdup(cur_ptr);
+                        break;
 
-		case STMT_CHECK_ATTR_QUERY:
-			new_cfg.check_attr_query = estrdup(cur_ptr);
-			break;
-			
-		case STMT_QUERY_BUFFER_SIZE:
-			radlog(L_WARN, "%s:%d: query_buffer_size is obsolete",
-				       sqlfile, line_no);
-			break;
-			
-		case STMT_INTERFACE:
-			new_cfg.interface = disp_sql_interface_index(cur_ptr);
-			if (!new_cfg.interface) {
-				radlog(L_WARN, "%s:%d: Unsupported SQL interface.",
-				       sqlfile, line_no);
-			}
-			break;
-		}
-		
-	}
+                case STMT_CHECK_ATTR_QUERY:
+                        new_cfg.check_attr_query = estrdup(cur_ptr);
+                        break;
+                        
+                case STMT_QUERY_BUFFER_SIZE:
+                        radlog(L_WARN, "%s:%d: query_buffer_size is obsolete",
+                                       sqlfile, line_no);
+                        break;
+                        
+                case STMT_INTERFACE:
+                        new_cfg.interface = disp_sql_interface_index(cur_ptr);
+                        if (!new_cfg.interface) {
+                                radlog(L_WARN, "%s:%d: Unsupported SQL interface.",
+                                       sqlfile, line_no);
+                        }
+                        break;
+                }
+                
+        }
 
-	obstack_free(&stack, NULL);
+        obstack_free(&stack, NULL);
 
-	fclose(sqlfd);
-	efree(sqlfile);
+        fclose(sqlfd);
+        efree(sqlfile);
 
-	sql_check_config(&new_cfg);
+        sql_check_config(&new_cfg);
 
-	if (sql_cfg_comp(&new_cfg, &sql_cfg)) 
-		sql_flush();
+        if (sql_cfg_comp(&new_cfg, &sql_cfg)) 
+                sql_flush();
 
-	/* Free old configuration structure */
-	FREE(sql_cfg.server);
-	FREE(sql_cfg.login);
-	FREE(sql_cfg.password);
-	FREE(sql_cfg.acct_db) ;
-	FREE(sql_cfg.auth_db);
-	FREE(sql_cfg.group_query);
-	FREE(sql_cfg.auth_query);
-	FREE(sql_cfg.acct_start_query);
-	FREE(sql_cfg.acct_stop_query);
-	FREE(sql_cfg.acct_nasup_query);
-	FREE(sql_cfg.acct_nasdown_query);
-	FREE(sql_cfg.acct_keepalive_query);
-	FREE(sql_cfg.reply_attr_query);
-	FREE(sql_cfg.check_attr_query);
-	
-	/* copy new config */
-	sql_cfg = new_cfg;
-		
-	return 0;
+        /* Free old configuration structure */
+        FREE(sql_cfg.server);
+        FREE(sql_cfg.login);
+        FREE(sql_cfg.password);
+        FREE(sql_cfg.acct_db) ;
+        FREE(sql_cfg.auth_db);
+        FREE(sql_cfg.group_query);
+        FREE(sql_cfg.auth_query);
+        FREE(sql_cfg.acct_start_query);
+        FREE(sql_cfg.acct_stop_query);
+        FREE(sql_cfg.acct_nasup_query);
+        FREE(sql_cfg.acct_nasdown_query);
+        FREE(sql_cfg.acct_keepalive_query);
+        FREE(sql_cfg.reply_attr_query);
+        FREE(sql_cfg.check_attr_query);
+        
+        /* copy new config */
+        sql_cfg = new_cfg;
+                
+        return 0;
 }
 
 void
 rad_sql_shutdown()
 {
-	close_sql_connections(SQL_AUTH);
-	close_sql_connections(SQL_ACCT);
+        close_sql_connections(SQL_AUTH);
+        close_sql_connections(SQL_ACCT);
 }
 
 void
 sql_check_config(cfg)
-	SQL_cfg *cfg;
+        SQL_cfg *cfg;
 {
 #define FREE_IF_EMPTY(s) if (s && strcmp(s, "none") == 0) {\
-				efree(s);\
-				s = NULL;\
-			 }
-	/*
-	 * Check if we should do SQL authentication
-	 */
-	if (cfg->doauth) {
-		FREE_IF_EMPTY(cfg->auth_query);
-		if (!cfg->auth_query) {
-			radlog(L_ERR,
-			    _("disabling SQL auth: no auth_query specified"));
-			cfg->doauth = 0;
-		}
-		if (!cfg->group_query) {
-			radlog(L_WARN,
-			       _("SQL auth: no group_query specified"));
-		}
-		FREE_IF_EMPTY(cfg->group_query);
-	}
-	/*
-	 * Check if we should do SQL accounting
-	 */
-	if (cfg->doacct) {
-		if (!cfg->acct_start_query) {
-			radlog(L_WARN,
-			       _("SQL acct: no acct_start_query specified"));
-		}
-		FREE_IF_EMPTY(cfg->acct_start_query);
+                                efree(s);\
+                                s = NULL;\
+                         }
+        /*
+         * Check if we should do SQL authentication
+         */
+        if (cfg->doauth) {
+                FREE_IF_EMPTY(cfg->auth_query);
+                if (!cfg->auth_query) {
+                        radlog(L_ERR,
+                            _("disabling SQL auth: no auth_query specified"));
+                        cfg->doauth = 0;
+                }
+                if (!cfg->group_query) {
+                        radlog(L_WARN,
+                               _("SQL auth: no group_query specified"));
+                }
+                FREE_IF_EMPTY(cfg->group_query);
+        }
+        /*
+         * Check if we should do SQL accounting
+         */
+        if (cfg->doacct) {
+                if (!cfg->acct_start_query) {
+                        radlog(L_WARN,
+                               _("SQL acct: no acct_start_query specified"));
+                }
+                FREE_IF_EMPTY(cfg->acct_start_query);
 
-		if (!cfg->acct_stop_query) {
-			radlog(L_ERR,
-		     _("disabling SQL acct: no acct_stop_query specified"));
-			cfg->doacct = 0;
-		}
-		FREE_IF_EMPTY(cfg->acct_stop_query);
+                if (!cfg->acct_stop_query) {
+                        radlog(L_ERR,
+                     _("disabling SQL acct: no acct_stop_query specified"));
+                        cfg->doacct = 0;
+                }
+                FREE_IF_EMPTY(cfg->acct_stop_query);
 
-		if (!cfg->acct_nasdown_query) {
-			radlog(L_WARN,
-		     _("SQL acct: no acct_nasdown_query specified"));
-		}
-		FREE_IF_EMPTY(cfg->acct_nasdown_query);
+                if (!cfg->acct_nasdown_query) {
+                        radlog(L_WARN,
+                     _("SQL acct: no acct_nasdown_query specified"));
+                }
+                FREE_IF_EMPTY(cfg->acct_nasdown_query);
 
-		if (!cfg->acct_nasup_query) {
-			radlog(L_WARN,
-		     _("SQL acct: no acct_nasup_query specified"));
-		}
-		FREE_IF_EMPTY(cfg->acct_nasup_query);
-	}
-	
-	debug(1, ("SQL init using: %s:%d,%s,%s,%s,%d,%ld,%d,%d",
-	       cfg->server,
-	       cfg->port,
-	       cfg->login,
-	       cfg->acct_db,
-	       cfg->auth_db,
-	       cfg->keepopen,
-	       cfg->idle_timeout,
-	       cfg->doacct,
-	       cfg->doauth));
+                if (!cfg->acct_nasup_query) {
+                        radlog(L_WARN,
+                     _("SQL acct: no acct_nasup_query specified"));
+                }
+                FREE_IF_EMPTY(cfg->acct_nasup_query);
+        }
+        
+        debug(1, ("SQL init using: %s:%d,%s,%s,%s,%d,%ld,%d,%d",
+               cfg->server,
+               cfg->port,
+               cfg->login,
+               cfg->acct_db,
+               cfg->auth_db,
+               cfg->keepopen,
+               cfg->idle_timeout,
+               cfg->doacct,
+               cfg->doauth));
 }
 
 /* ************************************************************************* */
@@ -608,46 +608,46 @@ sql_check_config(cfg)
 /* The connection list
  */
 static struct sql_connection *conn_first; /* First connection: the one
-					   * to be used
-					   */
+                                           * to be used
+                                           */
 static struct sql_connection *conn_last;  /* Last connection: the most
-					   * recently used one.
-					   */
+                                           * recently used one.
+                                           */
 static int conn_count[SQL_NSERVICE];      /* number of connections in list */
 
 static void
 print_queue()
 {
-	struct sql_connection *conn, *prev;
-	int i = 0;
-	
-	if (debug_on(10)) {
-		debug(10, ("Connection queue: %p - %p, %d;%d:",
-			     conn_first,
-			     conn_last,
-			     conn_count[SQL_AUTH], conn_count[SQL_ACCT]));
-		prev = NULL;
-		for (conn = conn_first; conn; conn = conn->next) {
-			debug(10, ("%d: %p (%d) %p",
-				     i++, conn, conn->type, conn->owner));
-			prev = conn;
-		}
-		insist(conn_last == prev);
-	}
+        struct sql_connection *conn, *prev;
+        int i = 0;
+        
+        if (debug_on(10)) {
+                debug(10, ("Connection queue: %p - %p, %d;%d:",
+                             conn_first,
+                             conn_last,
+                             conn_count[SQL_AUTH], conn_count[SQL_ACCT]));
+                prev = NULL;
+                for (conn = conn_first; conn; conn = conn->next) {
+                        debug(10, ("%d: %p (%d) %p",
+                                     i++, conn, conn->type, conn->owner));
+                        prev = conn;
+                }
+                insist(conn_last == prev);
+        }
 }
 
 void
 sql_flush()
 {
-	if (conn_first != NULL) {
-		radlog(L_NOTICE,
-		 _("SQL configuration changed: closing existing connections"));
+        if (conn_first != NULL) {
+                radlog(L_NOTICE,
+                 _("SQL configuration changed: closing existing connections"));
 
-		rad_flush_queues();
-		
-		close_sql_connections(SQL_AUTH);
-		close_sql_connections(SQL_ACCT);
-	}
+                rad_flush_queues();
+                
+                close_sql_connections(SQL_AUTH);
+                close_sql_connections(SQL_ACCT);
+        }
 }
 
 /* Create the new SQL connection and attach it to the head of the
@@ -655,28 +655,28 @@ sql_flush()
  */
 struct sql_connection *
 create_sql_connection(type)
-	int   type;
+        int   type;
 {
-	struct sql_connection *conn;
+        struct sql_connection *conn;
 
-	debug(1, ("allocating new %d sql connection", type));
-	print_queue();
+        debug(1, ("allocating new %d sql connection", type));
+        print_queue();
 
-	conn = alloc_entry(sizeof(struct sql_connection));
-	conn->owner = NULL;
-	conn->delete_on_close = 0;
-	conn->connected = 0;
-	conn->type = type;
+        conn = alloc_entry(sizeof(struct sql_connection));
+        conn->owner = NULL;
+        conn->delete_on_close = 0;
+        conn->connected = 0;
+        conn->type = type;
 
-	/* attach to the head of the list */
-	conn->next = conn_first;
-	conn_first = conn;
-	if (!conn_last)
-		conn_last = conn;
+        /* attach to the head of the list */
+        conn->next = conn_first;
+        conn_first = conn;
+        if (!conn_last)
+                conn_last = conn;
 
-	conn_count[type]++;
-	disp_sql_reconnect(sql_cfg.interface, type, conn);	
-	return conn;
+        conn_count[type]++;
+        disp_sql_reconnect(sql_cfg.interface, type, conn);      
+        return conn;
 }
 
 /* Close the existing SQL connection, unlink it from the list and deallocate
@@ -687,170 +687,170 @@ create_sql_connection(type)
  */
 void
 close_sql_connection(conn, prev)
-	struct sql_connection *conn, *prev;
+        struct sql_connection *conn, *prev;
 {
-	if (conn->owner) {
-		conn->delete_on_close = 1;
-		return;
-	}
-		
-	debug(1, ("destructing sql connection: %d left in queue",
-		 conn_count[SQL_AUTH] + conn_count[SQL_ACCT] - 1));
-	
-	if (conn->connected)
-		disp_sql_disconnect(sql_cfg.interface, conn);
-	if (prev)
-		prev->next = conn->next;
-	if (conn_first == conn)
-		conn_first = conn->next;
-	if (conn_last == conn)
-		conn_last = prev;
-	conn_count[conn->type]--;
-	free_entry(conn);
+        if (conn->owner) {
+                conn->delete_on_close = 1;
+                return;
+        }
+                
+        debug(1, ("destructing sql connection: %d left in queue",
+                 conn_count[SQL_AUTH] + conn_count[SQL_ACCT] - 1));
+        
+        if (conn->connected)
+                disp_sql_disconnect(sql_cfg.interface, conn);
+        if (prev)
+                prev->next = conn->next;
+        if (conn_first == conn)
+                conn_first = conn->next;
+        if (conn_last == conn)
+                conn_last = prev;
+        conn_count[conn->type]--;
+        free_entry(conn);
 }
 
 /* Attach the SQL connection of the given type and queue id to the connection
    list:
          1. If the request already has a connection attached, return this
-	    connection.
+            connection.
          2. Scan the list for the first unused connection of the given type
          3. If not found, allocate one.
          4. Update connection's owner, last usage timestamp and return. */
 
 struct sql_connection *
 attach_sql_connection(type, req)
-	int type;
-	RADIUS_REQ *req;
+        int type;
+        RADIUS_REQ *req;
 {
-	struct sql_connection *conn = req->conn;
+        struct sql_connection *conn = req->conn;
 
-	if (!conn) {
-		struct sql_connection *prev, *next;
-		time_t now = time(NULL);
+        if (!conn) {
+                struct sql_connection *prev, *next;
+                time_t now = time(NULL);
 
-		prev = NULL;
+                prev = NULL;
 
-		debug(1, ("attaching %d,%p", type, req));
-		print_queue();
+                debug(1, ("attaching %d,%p", type, req));
+                print_queue();
 
-		conn = conn_first;
-		while (conn) {
-			if (conn->owner == NULL)
-				break;
-			next = conn->next;
-			prev = conn;
-			conn = next;
-		}
+                conn = conn_first;
+                while (conn) {
+                        if (conn->owner == NULL)
+                                break;
+                        next = conn->next;
+                        prev = conn;
+                        conn = next;
+                }
 
-		if (!conn) {
-			if (conn_count[type] >=
-			    sql_cfg.max_connections[type]) {
-				radlog(L_CRIT,
-	 _("can't create new %s SQL connection: too many connections open"),
-			       	       service_name[type]);
-				return NULL;
-			}
-			conn = create_sql_connection(type);
-		}
-		conn->owner = req;
-		req->conn = conn;
-		conn->last_used = now;
-	}
-	return conn;
+                if (!conn) {
+                        if (conn_count[type] >=
+                            sql_cfg.max_connections[type]) {
+                                radlog(L_CRIT,
+         _("can't create new %s SQL connection: too many connections open"),
+                                       service_name[type]);
+                                return NULL;
+                        }
+                        conn = create_sql_connection(type);
+                }
+                conn->owner = req;
+                req->conn = conn;
+                conn->last_used = now;
+        }
+        return conn;
 }
 
 /* Unattach the SQL connection. Move it to the end of the list.
  */
 void
 unattach_sql_connection(type, req)
-	int    type;
-	RADIUS_REQ *req;
+        int    type;
+        RADIUS_REQ *req;
 {
-	struct sql_connection *conn, *prev;
+        struct sql_connection *conn, *prev;
 
-	conn = req->conn;
-	if (!conn)
-		return;
-	if (sql_cfg.keepopen == 0 || conn->delete_on_close) {
-		free_sql_connection(req->conn);
-		return;
-	}
-	debug(1, ("unattaching connection %d,%p", type, req));
+        conn = req->conn;
+        if (!conn)
+                return;
+        if (sql_cfg.keepopen == 0 || conn->delete_on_close) {
+                free_sql_connection(req->conn);
+                return;
+        }
+        debug(1, ("unattaching connection %d,%p", type, req));
 
-	prev = NULL;
-	conn = conn_first;
-	while (conn) {
-		if (conn == req->conn) {
-			debug(5, ("unattaching connection: found"));
-			conn->owner = 0;
+        prev = NULL;
+        conn = conn_first;
+        while (conn) {
+                if (conn == req->conn) {
+                        debug(5, ("unattaching connection: found"));
+                        conn->owner = 0;
 
-			if (conn_last == conn)
-				return;
+                        if (conn_last == conn)
+                                return;
 
-			/* Unattach the connection from the list
-			 */
-			if (conn_first == conn)
-				conn_first = conn->next;
-			else if (prev)
-				prev->next = conn->next;
-			conn->next = NULL;
-			
-			/* Append it to the end of list
-			 */
-			conn_last->next = conn;
-			conn_last = conn;
+                        /* Unattach the connection from the list
+                         */
+                        if (conn_first == conn)
+                                conn_first = conn->next;
+                        else if (prev)
+                                prev->next = conn->next;
+                        conn->next = NULL;
+                        
+                        /* Append it to the end of list
+                         */
+                        conn_last->next = conn;
+                        conn_last = conn;
 
-			return;
-		}
-		prev = conn;
-		conn = conn->next;
-	}
-	print_queue();
+                        return;
+                }
+                prev = conn;
+                conn = conn->next;
+        }
+        print_queue();
 }
 
 /* Unlink the sql connection from the list. Close it and free any memory
    associated with it. */
 void
 free_sql_connection(sql_conn)
-	struct sql_connection *sql_conn;
+        struct sql_connection *sql_conn;
 {
-	struct sql_connection *conn, *prev;
+        struct sql_connection *conn, *prev;
 
-	prev = NULL;
-	conn = conn_first;
-	while (conn) {
-		if (conn == sql_conn) {
-			close_sql_connection(conn, prev);
-			return;
-		}
+        prev = NULL;
+        conn = conn_first;
+        while (conn) {
+                if (conn == sql_conn) {
+                        close_sql_connection(conn, prev);
+                        return;
+                }
 
-		prev = conn;
-		conn = conn->next;
-	}
+                prev = conn;
+                conn = conn->next;
+        }
 }
 
 /* Close and deallocate all SQL connections
  */
 void
 close_sql_connections(type)
-	int    type;
+        int    type;
 {
-	struct sql_connection *conn, *prev, *next;
+        struct sql_connection *conn, *prev, *next;
 
-	debug(1, ("closing all %s connections", service_name[type]));
-	
-	prev = NULL;
-	conn = conn_first;
-	while (conn) {
-		if (conn->type == type) {
-			next = conn->next;
-			close_sql_connection(conn, prev);
-			conn = next;
-		} else {
-			prev = conn;
-			conn = conn->next;
-		}
-	}
+        debug(1, ("closing all %s connections", service_name[type]));
+        
+        prev = NULL;
+        conn = conn_first;
+        while (conn) {
+                if (conn->type == type) {
+                        next = conn->next;
+                        close_sql_connection(conn, prev);
+                        conn = next;
+                } else {
+                        prev = conn;
+                        conn = conn->next;
+                }
+        }
 }
 
 /* ************************************************************************* */
@@ -858,81 +858,81 @@ close_sql_connections(type)
 void
 rad_sql_idle_check(void)
 {
-  	struct sql_connection *conn = NULL, *prev, *next;
-  	time_t now = time(NULL);
+        struct sql_connection *conn = NULL, *prev, *next;
+        time_t now = time(NULL);
 
-  	prev = NULL;
-	
-  	if (sql_cfg.keepopen) {
-    		conn = conn_first;
-    		while (conn) {
-			next = conn->next;
+        prev = NULL;
+        
+        if (sql_cfg.keepopen) {
+                conn = conn_first;
+                while (conn) {
+                        next = conn->next;
 
-			if (conn->owner == NULL &&
-			    (now - conn->last_used) >= sql_cfg.idle_timeout) {
-				/* Close the idle connection */
-				debug(1,
-				      ("connection reached idle timeout: %p,%d",
-				       conn, conn->type));
-				close_sql_connection(conn, prev);
-			} else
-				prev = conn;
+                        if (conn->owner == NULL &&
+                            (now - conn->last_used) >= sql_cfg.idle_timeout) {
+                                /* Close the idle connection */
+                                debug(1,
+                                      ("connection reached idle timeout: %p,%d",
+                                       conn, conn->type));
+                                close_sql_connection(conn, prev);
+                        } else
+                                prev = conn;
 
-			conn = next;
-		}
-	}
+                        conn = next;
+                }
+        }
 }
 
 void
 rad_sql_cleanup(type, req)
-	int type;
-	RADIUS_REQ *req;
+        int type;
+        RADIUS_REQ *req;
 {
-	insist(type >= 0 && type < SQL_NSERVICE);
+        insist(type >= 0 && type < SQL_NSERVICE);
 
-	if (sql_cfg.active[type])
-		unattach_sql_connection(type, req);
+        if (sql_cfg.active[type])
+                unattach_sql_connection(type, req);
 }
 
 void
 rad_sql_need_reconnect(type)
-	int type;
+        int type;
 {
-	int fd;
-	char *path;
+        int fd;
+        char *path;
 
-	insist(type >= 0 && type < SQL_NSERVICE);
+        insist(type >= 0 && type < SQL_NSERVICE);
 
-	if (sql_cfg.keepopen && sql_cfg.active[type]) {
-		path = mkfilename(radius_dir, reconnect_file[type]);
-		fd = open(path, O_CREAT|O_TRUNC|O_RDWR, S_IRUSR|S_IWUSR);
-		if (fd == -1) 
-			radlog(L_ERR|L_PERROR, 
-				_("can't create file: %s"), path);
-		else 
-			close(fd);
-		efree(path);
-	}
+        if (sql_cfg.keepopen && sql_cfg.active[type]) {
+                path = mkfilename(radius_dir, reconnect_file[type]);
+                fd = open(path, O_CREAT|O_TRUNC|O_RDWR, S_IRUSR|S_IWUSR);
+                if (fd == -1) 
+                        radlog(L_ERR|L_PERROR, 
+                                _("can't create file: %s"), path);
+                else 
+                        close(fd);
+                efree(path);
+        }
 }
 
 
 void
 rad_sql_check_connect(type)
-	int type;
+        int type;
 {
-	char *path;
-	int  pass = 0;
-	
-	insist(type >= 0 && type < SQL_NSERVICE);
+        char *path;
+        int  pass = 0;
+        
+        insist(type >= 0 && type < SQL_NSERVICE);
 
-	path = mkfilename(radius_dir, reconnect_file[type]);
-	if (access(path, F_OK) == 0) {
-		unlink(path);
-		pass++;
-	}
-	efree(path);
-	if (pass)
-		close_sql_connections(type);
+        path = mkfilename(radius_dir, reconnect_file[type]);
+        if (access(path, F_OK) == 0) {
+                unlink(path);
+                pass++;
+        }
+        efree(path);
+        if (pass)
+                close_sql_connections(type);
 }
 
 /*
@@ -940,243 +940,243 @@ rad_sql_check_connect(type)
  */ 
 void
 rad_sql_acct(radreq)
-	RADIUS_REQ *radreq;
+        RADIUS_REQ *radreq;
 {
-	int rc, count;
-	int status;
-	VALUE_PAIR *pair;
-	char *query;
-	struct sql_connection *conn;
-	char buf[MAX_LONGNAME];
-	
-	if (!sql_cfg.doacct)
-		return;
+        int rc, count;
+        int status;
+        VALUE_PAIR *pair;
+        char *query;
+        struct sql_connection *conn;
+        char buf[MAX_LONGNAME];
+        
+        if (!sql_cfg.doacct)
+                return;
 
-	if ((pair = avl_find(radreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
-		/* should never happen!! */
-		radlog(L_ERR, _("no Acct-Status-Type record in rad_sql_acct()"));
-		return ;
-	}
-	status = pair->lvalue;
+        if ((pair = avl_find(radreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
+                /* should never happen!! */
+                radlog(L_ERR, _("no Acct-Status-Type record in rad_sql_acct()"));
+                return ;
+        }
+        status = pair->lvalue;
 
-	conn = attach_sql_connection(SQL_ACCT, radreq);
+        conn = attach_sql_connection(SQL_ACCT, radreq);
 
-	switch (status) {
-	case DV_ACCT_STATUS_TYPE_START:
-		if (!sql_cfg.acct_start_query)
-			break;
-		query = radius_xlate(&stack,
-				     sql_cfg.acct_start_query,
-				     radreq, NULL);
-		rc = disp_sql_query(sql_cfg.interface, conn, query, NULL);
-		sqllog(rc, query);
-		break;
-		
-	case DV_ACCT_STATUS_TYPE_STOP:
-		if (!sql_cfg.acct_stop_query)
-			break;
-		query = radius_xlate(&stack,
-				     sql_cfg.acct_stop_query,
-				     radreq, NULL);
-		rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
-		sqllog(rc, query);
-		if (rc == 0 && count != 1) {
-			char *name;
-			char *session_id;
+        switch (status) {
+        case DV_ACCT_STATUS_TYPE_START:
+                if (!sql_cfg.acct_start_query)
+                        break;
+                query = radius_xlate(&stack,
+                                     sql_cfg.acct_start_query,
+                                     radreq, NULL);
+                rc = disp_sql_query(sql_cfg.interface, conn, query, NULL);
+                sqllog(rc, query);
+                break;
+                
+        case DV_ACCT_STATUS_TYPE_STOP:
+                if (!sql_cfg.acct_stop_query)
+                        break;
+                query = radius_xlate(&stack,
+                                     sql_cfg.acct_stop_query,
+                                     radreq, NULL);
+                rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
+                sqllog(rc, query);
+                if (rc == 0 && count != 1) {
+                        char *name;
+                        char *session_id;
 
-			pair = avl_find(radreq->request, DA_USER_NAME);
-			name = pair ? pair->strvalue : _("unknown");
-			pair = avl_find(radreq->request, DA_ACCT_SESSION_ID);
-			session_id = pair ? pair->strvalue : _("unknown");
-			radlog(L_WARN, 
-			       _("SQL %s (%s) %d rows changed"),
-			       name, session_id, count);
-		}
-		break;
+                        pair = avl_find(radreq->request, DA_USER_NAME);
+                        name = pair ? pair->strvalue : _("unknown");
+                        pair = avl_find(radreq->request, DA_ACCT_SESSION_ID);
+                        session_id = pair ? pair->strvalue : _("unknown");
+                        radlog(L_WARN, 
+                               _("SQL %s (%s) %d rows changed"),
+                               name, session_id, count);
+                }
+                break;
 
-	case DV_ACCT_STATUS_TYPE_ACCOUNTING_ON:
-		if (!sql_cfg.acct_nasup_query)
-			break;
-		query = radius_xlate(&stack,
-				     sql_cfg.acct_nasup_query,
-				     radreq, NULL);
-		rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
-		sqllog(rc, query);
-		if (rc == 0) {
-			radlog(L_INFO,
-			       _("SQL: %d records updated writing acct-on info for NAS %s"),
-			       count,
-			       nas_request_to_name(radreq, buf, sizeof buf));
-		}
-		break;
+        case DV_ACCT_STATUS_TYPE_ACCOUNTING_ON:
+                if (!sql_cfg.acct_nasup_query)
+                        break;
+                query = radius_xlate(&stack,
+                                     sql_cfg.acct_nasup_query,
+                                     radreq, NULL);
+                rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
+                sqllog(rc, query);
+                if (rc == 0) {
+                        radlog(L_INFO,
+                               _("SQL: %d records updated writing acct-on info for NAS %s"),
+                               count,
+                               nas_request_to_name(radreq, buf, sizeof buf));
+                }
+                break;
 
-	case DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF:
-		if (!sql_cfg.acct_nasdown_query)
-			break;
-		query = radius_xlate(&stack,
-				     sql_cfg.acct_nasdown_query,
-				     radreq, NULL);
-		rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
-		sqllog(rc, query);
-		if (rc == 0) {
-			radlog(L_INFO,
-			       _("SQL: %d records updated writing acct-off info for NAS %s"),
-			       count,
-			       nas_request_to_name(radreq, buf, sizeof buf));
-		}
-		break;
+        case DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF:
+                if (!sql_cfg.acct_nasdown_query)
+                        break;
+                query = radius_xlate(&stack,
+                                     sql_cfg.acct_nasdown_query,
+                                     radreq, NULL);
+                rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
+                sqllog(rc, query);
+                if (rc == 0) {
+                        radlog(L_INFO,
+                               _("SQL: %d records updated writing acct-off info for NAS %s"),
+                               count,
+                               nas_request_to_name(radreq, buf, sizeof buf));
+                }
+                break;
 
-	case DV_ACCT_STATUS_TYPE_ALIVE:
-		if (!sql_cfg.acct_keepalive_query)
-			break;
-		query = radius_xlate(&stack,
-				     sql_cfg.acct_keepalive_query,
-				     radreq, NULL);
-		rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
-		sqllog(rc, query);
-		if (rc != 0) {
-			radlog(L_INFO,
-			       _("SQL: %d records updated writing keepalive info for NAS %s"),
-			       count,
-			       nas_request_to_name(radreq, buf, sizeof buf));
-		}
-		break;
-		
-	}
+        case DV_ACCT_STATUS_TYPE_ALIVE:
+                if (!sql_cfg.acct_keepalive_query)
+                        break;
+                query = radius_xlate(&stack,
+                                     sql_cfg.acct_keepalive_query,
+                                     radreq, NULL);
+                rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
+                sqllog(rc, query);
+                if (rc != 0) {
+                        radlog(L_INFO,
+                               _("SQL: %d records updated writing keepalive info for NAS %s"),
+                               count,
+                               nas_request_to_name(radreq, buf, sizeof buf));
+                }
+                break;
+                
+        }
 
-	if (query)
-		obstack_free(&stack, query);
+        if (query)
+                obstack_free(&stack, query);
 }
 
 
 char *
 rad_sql_pass(req, authdata)
-	RADIUS_REQ *req;
-	char *authdata;
+        RADIUS_REQ *req;
+        char *authdata;
 {
-	int   rc;
-	char *mysql_passwd;
-	struct sql_connection *conn;
-	char *query;
+        int   rc;
+        char *mysql_passwd;
+        struct sql_connection *conn;
+        char *query;
 
-	if (sql_cfg.doauth == 0) {
-		radlog(L_ERR,
-		       _("SQL Auth specified in users file, but not in sqlserver file"));
-		return NULL;
-	}
-	
-	if (authdata) {
-		avl_add_pair(&req->request,
-			     avp_create(DA_AUTH_DATA,
-					strlen(authdata),
-					authdata, 0));
-	}
-	query = radius_xlate(&stack, sql_cfg.auth_query, req, NULL);
-	avl_delete(&req->request, DA_AUTH_DATA);
-	
-	conn = attach_sql_connection(SQL_AUTH, req);
-	mysql_passwd = disp_sql_getpwd(sql_cfg.interface, conn, query);
-	
-	if (mysql_passwd) 
-		chop(mysql_passwd);
-	
-	if (!query)
-		obstack_free(&stack, query);
-	
-	return mysql_passwd;
+        if (sql_cfg.doauth == 0) {
+                radlog(L_ERR,
+                       _("SQL Auth specified in users file, but not in sqlserver file"));
+                return NULL;
+        }
+        
+        if (authdata) {
+                avl_add_pair(&req->request,
+                             avp_create(DA_AUTH_DATA,
+                                        strlen(authdata),
+                                        authdata, 0));
+        }
+        query = radius_xlate(&stack, sql_cfg.auth_query, req, NULL);
+        avl_delete(&req->request, DA_AUTH_DATA);
+        
+        conn = attach_sql_connection(SQL_AUTH, req);
+        mysql_passwd = disp_sql_getpwd(sql_cfg.interface, conn, query);
+        
+        if (mysql_passwd) 
+                chop(mysql_passwd);
+        
+        if (!query)
+                obstack_free(&stack, query);
+        
+        return mysql_passwd;
 }
 
 int
 rad_sql_checkgroup(req, groupname)
-	RADIUS_REQ *req;
-	char *groupname;
+        RADIUS_REQ *req;
+        char *groupname;
 {
-	int   rc = -1;
-	struct sql_connection *conn;
-	void *data;
-	char *p;
-	char *query;
-	
-	if (sql_cfg.doauth == 0 || sql_cfg.group_query == NULL) 
-		return -1;
+        int   rc = -1;
+        struct sql_connection *conn;
+        void *data;
+        char *p;
+        char *query;
+        
+        if (sql_cfg.doauth == 0 || sql_cfg.group_query == NULL) 
+                return -1;
 
-	conn = attach_sql_connection(SQL_AUTH, req);
-	if (!conn)
-		return -1;
+        conn = attach_sql_connection(SQL_AUTH, req);
+        if (!conn)
+                return -1;
 
-	query = radius_xlate(&stack, sql_cfg.group_query, req, NULL);
+        query = radius_xlate(&stack, sql_cfg.group_query, req, NULL);
 
-	data = disp_sql_exec(sql_cfg.interface, conn, query);
-	while (rc != 0
-	       && disp_sql_next_tuple(sql_cfg.interface, conn, data) == 0) {
-		if ((p = disp_sql_column(sql_cfg.interface, data, 0)) == NULL)
-			break;
-		chop(p);
-		if (strcmp(p, groupname) == 0)
-			rc = 0;
-	}
-	disp_sql_free(sql_cfg.interface, conn, data);
-	
-	if (query)
-		obstack_free(&stack, query);
-	return rc;
+        data = disp_sql_exec(sql_cfg.interface, conn, query);
+        while (rc != 0
+               && disp_sql_next_tuple(sql_cfg.interface, conn, data) == 0) {
+                if ((p = disp_sql_column(sql_cfg.interface, data, 0)) == NULL)
+                        break;
+                chop(p);
+                if (strcmp(p, groupname) == 0)
+                        rc = 0;
+        }
+        disp_sql_free(sql_cfg.interface, conn, data);
+        
+        if (query)
+                obstack_free(&stack, query);
+        return rc;
 }
 
 static int rad_sql_retrieve_pairs(struct sql_connection *conn,
-				  char *query,
-				  VALUE_PAIR **return_pairs,
-				  int op_too);
+                                  char *query,
+                                  VALUE_PAIR **return_pairs,
+                                  int op_too);
 
 int
 rad_sql_retrieve_pairs(conn, query, return_pairs, op_too)
-	struct sql_connection *conn;
-	char *query;
-	VALUE_PAIR **return_pairs;
-	int op_too;
+        struct sql_connection *conn;
+        char *query;
+        VALUE_PAIR **return_pairs;
+        int op_too;
 {
-	void *data;
-	int i;
-	
+        void *data;
+        int i;
+        
         data = disp_sql_exec(sql_cfg.interface, conn, query);
-	if (!data)
-		return 0;
-	
-	for (i = 0; disp_sql_next_tuple(sql_cfg.interface, conn, data) == 0;
-	     i++) {
-		VALUE_PAIR *pair;
-		char *attribute;
-		char *value;
-		int op;
-		
-		if (!(attribute = disp_sql_column(sql_cfg.interface, data, 0))
-		    || !(value =  disp_sql_column(sql_cfg.interface, data, 1)))
-			break;
-		if (op_too) {
-			char *opstr;
-			opstr = disp_sql_column(sql_cfg.interface, data, 2);
-			if (!opstr)
-				break;
-			chop(opstr);
-			op = str_to_op(opstr);
-			if (op == NUM_OPERATORS) {
-				radlog(L_NOTICE,
-				       _("SQL: invalid operator: %s"), opstr);
-				continue;
-			}
-		} else
-			op = OPERATOR_EQUAL;
+        if (!data)
+                return 0;
+        
+        for (i = 0; disp_sql_next_tuple(sql_cfg.interface, conn, data) == 0;
+             i++) {
+                VALUE_PAIR *pair;
+                char *attribute;
+                char *value;
+                int op;
+                
+                if (!(attribute = disp_sql_column(sql_cfg.interface, data, 0))
+                    || !(value =  disp_sql_column(sql_cfg.interface, data, 1)))
+                        break;
+                if (op_too) {
+                        char *opstr;
+                        opstr = disp_sql_column(sql_cfg.interface, data, 2);
+                        if (!opstr)
+                                break;
+                        chop(opstr);
+                        op = str_to_op(opstr);
+                        if (op == NUM_OPERATORS) {
+                                radlog(L_NOTICE,
+                                       _("SQL: invalid operator: %s"), opstr);
+                                continue;
+                        }
+                } else
+                        op = OPERATOR_EQUAL;
 
-		chop(attribute);
-		chop(value);
-		
-		pair = install_pair(attribute, op, value);
-		
-		if (pair)
-			avl_add_list(return_pairs, pair);
-	}
+                chop(attribute);
+                chop(value);
+                
+                pair = install_pair(attribute, op, value);
+                
+                if (pair)
+                        avl_add_list(return_pairs, pair);
+        }
 
-	disp_sql_free(sql_cfg.interface, conn, data);
-	return i;
+        disp_sql_free(sql_cfg.interface, conn, data);
+        return i;
 }
 
 int
@@ -1185,23 +1185,23 @@ rad_sql_reply_attr_query(req, reply_pairs)
         VALUE_PAIR **reply_pairs;
 {
         VALUE_PAIR *request_pairs = req->request;
-	VALUE_PAIR *pair;
-	struct sql_connection *conn;
-	char *query;
-	int rc;
-	
-	if (sql_cfg.doauth == 0 || !sql_cfg.reply_attr_query)
-		return 0;
-	
-	conn = attach_sql_connection(SQL_AUTH, req);
-	
-	query = radius_xlate(&stack, sql_cfg.reply_attr_query, req, NULL);
+        VALUE_PAIR *pair;
+        struct sql_connection *conn;
+        char *query;
+        int rc;
+        
+        if (sql_cfg.doauth == 0 || !sql_cfg.reply_attr_query)
+                return 0;
+        
+        conn = attach_sql_connection(SQL_AUTH, req);
+        
+        query = radius_xlate(&stack, sql_cfg.reply_attr_query, req, NULL);
 
-	rc = rad_sql_retrieve_pairs(conn, query, reply_pairs, 0);
-	
-	if (query)
-		obstack_free(&stack, query);
-	return rc == 0;
+        rc = rad_sql_retrieve_pairs(conn, query, reply_pairs, 0);
+        
+        if (query)
+                obstack_free(&stack, query);
+        return rc == 0;
 }
 
 int
@@ -1210,23 +1210,23 @@ rad_sql_check_attr_query(req, return_pairs)
         VALUE_PAIR **return_pairs;
 {
         VALUE_PAIR *request_pairs = req->request;
-	VALUE_PAIR *pair;
-	struct sql_connection *conn;
-	char *query;
-	int rc;
-	
-	if (sql_cfg.doauth == 0 || !sql_cfg.check_attr_query)
-		return 0;
-	
-	conn = attach_sql_connection(SQL_AUTH, req);
-	
-	query = radius_xlate(&stack, sql_cfg.check_attr_query, req, NULL);
+        VALUE_PAIR *pair;
+        struct sql_connection *conn;
+        char *query;
+        int rc;
+        
+        if (sql_cfg.doauth == 0 || !sql_cfg.check_attr_query)
+                return 0;
+        
+        conn = attach_sql_connection(SQL_AUTH, req);
+        
+        query = radius_xlate(&stack, sql_cfg.check_attr_query, req, NULL);
 
-	rc = rad_sql_retrieve_pairs(conn, query, return_pairs, 1);
-	
-	if (query)
-		obstack_free(&stack, query);
-	return rc == 0;
+        rc = rad_sql_retrieve_pairs(conn, query, return_pairs, 1);
+        
+        if (query)
+                obstack_free(&stack, query);
+        return rc == 0;
 }
 
 #endif

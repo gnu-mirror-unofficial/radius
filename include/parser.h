@@ -18,11 +18,11 @@
 #include <symtab.h>
 
 struct matching_rule {
-	struct matching_rule *next;
-	char *name;
-	VALUE_PAIR *lhs;
-	VALUE_PAIR *rhs;
-	int lineno;
+        struct matching_rule *next;
+        char *name;
+        VALUE_PAIR *lhs;
+        VALUE_PAIR *rhs;
+        int lineno;
 };
 typedef struct matching_rule MATCHING_RULE;
 

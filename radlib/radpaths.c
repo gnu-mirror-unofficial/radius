@@ -25,9 +25,9 @@
 static char rcsid[] = "@(#) $Id$";
 #endif
 
-char	*radius_dir;
-char	*radlog_dir;
-char	*radacct_dir;
+char    *radius_dir;
+char    *radlog_dir;
+char    *radacct_dir;
 char    *radutmp_path;
 char    *radwtmp_path;
 char    *radstat_path;
@@ -37,21 +37,21 @@ char    *bug_report_address = "bug-gnu-radius@gnu.org";
 void
 radpath_init()
 {
-	if (!radius_dir)
-		radius_dir = make_string(RADIUS_DIR);
-	if (!radlog_dir)
-		radlog_dir = make_string(RADLOG_DIR);
-	if (!radacct_dir)
-		radacct_dir = make_string(RADACCT_DIR);
-	if (!radpid_dir)
-		radpid_dir = make_string(RADPID_DIR);
-	
-	efree(radutmp_path);
-	radutmp_path = mkfilename(radlog_dir, RADUTMP);
+        if (!radius_dir)
+                radius_dir = make_string(RADIUS_DIR);
+        if (!radlog_dir)
+                radlog_dir = make_string(RADLOG_DIR);
+        if (!radacct_dir)
+                radacct_dir = make_string(RADACCT_DIR);
+        if (!radpid_dir)
+                radpid_dir = make_string(RADPID_DIR);
+        
+        efree(radutmp_path);
+        radutmp_path = mkfilename(radlog_dir, RADUTMP);
 
-	efree(radwtmp_path);
-	radwtmp_path = mkfilename(radlog_dir, RADWTMP);
+        efree(radwtmp_path);
+        radwtmp_path = mkfilename(radlog_dir, RADWTMP);
 
-	efree(radstat_path);
-	radstat_path = mkfilename(radlog_dir, RADSTAT);
+        efree(radstat_path);
+        radstat_path = mkfilename(radlog_dir, RADSTAT);
 }

@@ -63,20 +63,20 @@ static char rcsid[] =
 Symtab          *user_tab;     /* raddb/users  */
 Symtab          *deny_tab;     /* raddb/access.deny */
 
-MATCHING_RULE	*huntgroups;   /* raddb/huntgroups */ 
-MATCHING_RULE	*hints;        /* raddb/hints */
-CLIENT		*clients;      /* raddb/clients */
-REALM		*realms;       /* raddb/realms */ 
+MATCHING_RULE   *huntgroups;   /* raddb/huntgroups */ 
+MATCHING_RULE   *hints;        /* raddb/hints */
+CLIENT          *clients;      /* raddb/clients */
+REALM           *realms;       /* raddb/realms */ 
 RADCK_TYPE      *radck_type;   /* raddb/nastypes */
 
 static struct keyword op_tab[] = {
-	"=", OPERATOR_EQUAL,
-	"!=", OPERATOR_NOT_EQUAL,
-	">", OPERATOR_GREATER_THAN,
-	"<", OPERATOR_LESS_THAN,
-	">=", OPERATOR_GREATER_EQUAL,
-	"<=", OPERATOR_LESS_EQUAL,
-	0
+        "=", OPERATOR_EQUAL,
+        "!=", OPERATOR_NOT_EQUAL,
+        ">", OPERATOR_GREATER_THAN,
+        "<", OPERATOR_LESS_THAN,
+        ">=", OPERATOR_GREATER_EQUAL,
+        "<=", OPERATOR_LESS_EQUAL,
+        0
 };
 
 int paircmp(RADIUS_REQ *req, VALUE_PAIR *check);
@@ -92,51 +92,51 @@ static void matchrule_free(MATCHING_RULE **pl);
 static int matches(RADIUS_REQ *req, char *name, MATCHING_RULE *pl, char *matchpart);
 static int huntgroup_match(RADIUS_REQ *req, char *huntgroup);
 static int user_find_sym(char *name, RADIUS_REQ *req, 
-			 VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
+                         VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 #ifdef USE_DBM
 int user_find_db(char *name, RADIUS_REQ *req,
-			VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
+                        VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 #endif
 static MATCHING_RULE *file_read(int cf_file, char *name);
 
 int
 comp_op(op, result)
-	int op;
-	int result;
+        int op;
+        int result;
 {
-	switch (op) {
-	default:
-	case OPERATOR_EQUAL:
-		if (result != 0)
-			return -1;
-		break;
+        switch (op) {
+        default:
+        case OPERATOR_EQUAL:
+                if (result != 0)
+                        return -1;
+                break;
 
-	case OPERATOR_NOT_EQUAL:
-		if (result == 0)
-			return -1;
-		break;
+        case OPERATOR_NOT_EQUAL:
+                if (result == 0)
+                        return -1;
+                break;
 
-	case OPERATOR_LESS_THAN:
-		if (result >= 0)
-			return -1;
-		break;
+        case OPERATOR_LESS_THAN:
+                if (result >= 0)
+                        return -1;
+                break;
 
-	case OPERATOR_GREATER_THAN:
-		if (result <= 0)
-			return -1;
-		break;
-		    
-	case OPERATOR_LESS_EQUAL:
-		if (result > 0)
-			return -1;
-		break;
-			
-	case OPERATOR_GREATER_EQUAL:
-		if (result < 0)
-			return -1;
-		break;
-	}
-	return 0;
+        case OPERATOR_GREATER_THAN:
+                if (result <= 0)
+                        return -1;
+                break;
+                    
+        case OPERATOR_LESS_EQUAL:
+                if (result > 0)
+                        return -1;
+                break;
+                        
+        case OPERATOR_GREATER_EQUAL:
+                if (result < 0)
+                        return -1;
+                break;
+        }
+        return 0;
 }
 
 /* ***************************************************************************
@@ -148,124 +148,124 @@ comp_op(op, result)
  */
 int
 add_user_entry(symtab, filename, line, name, check, reply)
-	Symtab *symtab;
-	char *filename;
-	int line;
-	char *name;
-	VALUE_PAIR *check, *reply;
+        Symtab *symtab;
+        char *filename;
+        int line;
+        char *name;
+        VALUE_PAIR *check, *reply;
 {
-	User_symbol *sym;
+        User_symbol *sym;
 
-	/* Special handling for DEFAULT names: strip any trailing
-	 * symbols
-	 */
-	if (strncmp(name, "DEFAULT", 7) == 0) 
-		name = "DEFAULT";
-	if (strncmp(name, "BEGIN", 5) == 0) 
-		name = "BEGIN";
+        /* Special handling for DEFAULT names: strip any trailing
+         * symbols
+         */
+        if (strncmp(name, "DEFAULT", 7) == 0) 
+                name = "DEFAULT";
+        if (strncmp(name, "BEGIN", 5) == 0) 
+                name = "BEGIN";
 
-	if ((check == NULL && reply == NULL)
-	    || fix_check_pairs(CF_USERS, filename, line, name, &check)
-	    || fix_reply_pairs(CF_USERS, filename, line, name, &reply)) {
-		radlog(L_ERR,
-		       _("%s:%d: discarding user `%s'"),
-		       filename,
-		       line, name);
-		avl_free(check);
-		avl_free(reply);
-		return 0;
-	}
+        if ((check == NULL && reply == NULL)
+            || fix_check_pairs(CF_USERS, filename, line, name, &check)
+            || fix_reply_pairs(CF_USERS, filename, line, name, &reply)) {
+                radlog(L_ERR,
+                       _("%s:%d: discarding user `%s'"),
+                       filename,
+                       line, name);
+                avl_free(check);
+                avl_free(reply);
+                return 0;
+        }
 
-	sym = sym_install(symtab, name);
-	
-	sym->check = check;
-	sym->reply = reply;
-	sym->lineno = line;
-	return 0;
+        sym = sym_install(symtab, name);
+        
+        sym->check = check;
+        sym->reply = reply;
+        sym->lineno = line;
+        return 0;
 }
 
 static int
 free_user_entry(sym)
-	User_symbol *sym;
+        User_symbol *sym;
 {
-	avl_free(sym->check);
-	avl_free(sym->reply);
-	return 0;
+        avl_free(sym->check);
+        avl_free(sym->reply);
+        return 0;
 }
 
 struct temp_list {
-	int cf_file;
-	MATCHING_RULE *head;
-	MATCHING_RULE *tail;
+        int cf_file;
+        MATCHING_RULE *head;
+        MATCHING_RULE *tail;
 };
 
 int
 add_pairlist(closure, filename, line, name, lhs, rhs)
-	struct temp_list *closure;
-	char *filename;
-	int line;
-	char *name;
-	VALUE_PAIR *lhs, *rhs;
+        struct temp_list *closure;
+        char *filename;
+        int line;
+        char *name;
+        VALUE_PAIR *lhs, *rhs;
 {
-	MATCHING_RULE *pl;
-	
-	if ((lhs == NULL && rhs == NULL)
-	    || fix_check_pairs(closure->cf_file, filename, line, name, &lhs)
-	    || fix_reply_pairs(closure->cf_file, filename, line, name, &rhs)) {
-		radlog(L_ERR,
-		       _("%s:%d: discarding entry `%s'"),
-		       filename,
-		       line, name);
-		avl_free(lhs);
-		avl_free(rhs);
-		return 0;
-	}
+        MATCHING_RULE *pl;
+        
+        if ((lhs == NULL && rhs == NULL)
+            || fix_check_pairs(closure->cf_file, filename, line, name, &lhs)
+            || fix_reply_pairs(closure->cf_file, filename, line, name, &rhs)) {
+                radlog(L_ERR,
+                       _("%s:%d: discarding entry `%s'"),
+                       filename,
+                       line, name);
+                avl_free(lhs);
+                avl_free(rhs);
+                return 0;
+        }
 
-	pl = Alloc_entry(MATCHING_RULE);
-	pl->name = estrdup(name);
-	pl->lhs = lhs;
-	pl->rhs = rhs;
-	pl->lineno = line;
-	if (closure->tail)
-		closure->tail->next = pl;
-	else
-		closure->head = pl;
-	closure->tail = pl;
-	return  0;
+        pl = Alloc_entry(MATCHING_RULE);
+        pl->name = estrdup(name);
+        pl->lhs = lhs;
+        pl->rhs = rhs;
+        pl->lineno = line;
+        if (closure->tail)
+                closure->tail->next = pl;
+        else
+                closure->head = pl;
+        closure->tail = pl;
+        return  0;
 }
 
 int
 read_users(name)
-	char *name;
+        char *name;
 {
-	if (!user_tab)
-		user_tab = symtab_create(sizeof(User_symbol), free_user_entry);
-	return parse_file(name, user_tab, add_user_entry);
+        if (!user_tab)
+                user_tab = symtab_create(sizeof(User_symbol), free_user_entry);
+        return parse_file(name, user_tab, add_user_entry);
 }
 
 MATCHING_RULE *
 file_read(cf_file, name)
-	int cf_file;
-	char *name;
+        int cf_file;
+        char *name;
 {
-	struct temp_list tmp;
+        struct temp_list tmp;
 
-	tmp.cf_file = cf_file;
-	tmp.head = tmp.tail = NULL;
-	parse_file(name, &tmp, add_pairlist);
-	return tmp.head;
+        tmp.cf_file = cf_file;
+        tmp.head = tmp.tail = NULL;
+        parse_file(name, &tmp, add_pairlist);
+        return tmp.head;
 }
 
 enum lookup_state {
-	LU_begin,
-	LU_match,
-	LU_default
+        LU_begin,
+        LU_match,
+        LU_default
 };
 
 typedef struct {
-	char *name;
-	enum lookup_state state;
-	User_symbol *sym;
+        char *name;
+        enum lookup_state state;
+        User_symbol *sym;
 } USER_LOOKUP;
 
 
@@ -277,138 +277,138 @@ static User_symbol * user_next(USER_LOOKUP *lptr);
  */
 User_symbol *
 user_lookup(name, lptr)
-	char *name;
-	USER_LOOKUP *lptr;
+        char *name;
+        USER_LOOKUP *lptr;
 {
-	lptr->name = name;
-	lptr->state = LU_begin;
-	lptr->sym = sym_lookup(user_tab, "BEGIN");
-	return lptr->sym ? lptr->sym : user_next(lptr);
+        lptr->name = name;
+        lptr->state = LU_begin;
+        lptr->sym = sym_lookup(user_tab, "BEGIN");
+        return lptr->sym ? lptr->sym : user_next(lptr);
 }
 
 User_symbol *
 user_next(lptr)
-	USER_LOOKUP *lptr;
+        USER_LOOKUP *lptr;
 {
-	if (lptr->sym && (lptr->sym = sym_next((Symbol*)lptr->sym)))
-		return lptr->sym;
-	
-	switch (lptr->state) {
-	case LU_begin:
-		lptr->sym = sym_lookup(user_tab, lptr->name);
-		if (lptr->sym) {
-			lptr->state = LU_match;
-			break;
-		}
-		/*FALLTHRU*/
-	case LU_match:
-		lptr->state = LU_default;
-		lptr->sym = sym_lookup(user_tab, "DEFAULT");
-		break;
-		
-	case LU_default:
-		break;
-	}
-	return lptr->sym;
+        if (lptr->sym && (lptr->sym = sym_next((Symbol*)lptr->sym)))
+                return lptr->sym;
+        
+        switch (lptr->state) {
+        case LU_begin:
+                lptr->sym = sym_lookup(user_tab, lptr->name);
+                if (lptr->sym) {
+                        lptr->state = LU_match;
+                        break;
+                }
+                /*FALLTHRU*/
+        case LU_match:
+                lptr->state = LU_default;
+                lptr->sym = sym_lookup(user_tab, "DEFAULT");
+                break;
+                
+        case LU_default:
+                break;
+        }
+        return lptr->sym;
 }
 
 
 static int match_user(User_symbol *sym, RADIUS_REQ *req,
-		      VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
+                      VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 
 /*
  * Find matching profile in the hash table
  */
 int
 user_find_sym(name, req, check_pairs, reply_pairs)
-	char       *name;
+        char       *name;
         RADIUS_REQ *req;
-	VALUE_PAIR **check_pairs;
-	VALUE_PAIR **reply_pairs;
+        VALUE_PAIR **check_pairs;
+        VALUE_PAIR **reply_pairs;
 {
-	int found = 0;
-	User_symbol *sym;
-	USER_LOOKUP lu;
-	
-	debug(1,("looking for %s", name));
-	for (sym = user_lookup(name, &lu); sym; sym = user_next(&lu)) {
-		if (match_user(sym, req, check_pairs, reply_pairs)) {
-			found = 1;
-			if (!fallthrough(sym->reply))
-				break;
-			debug(1, ("fall through"));
-			lu.sym = NULL; /* force jump to next state */
-		}
-	}
-	debug(1, ("returning %d", found));
-	return found;
+        int found = 0;
+        User_symbol *sym;
+        USER_LOOKUP lu;
+        
+        debug(1,("looking for %s", name));
+        for (sym = user_lookup(name, &lu); sym; sym = user_next(&lu)) {
+                if (match_user(sym, req, check_pairs, reply_pairs)) {
+                        found = 1;
+                        if (!fallthrough(sym->reply))
+                                break;
+                        debug(1, ("fall through"));
+                        lu.sym = NULL; /* force jump to next state */
+                }
+        }
+        debug(1, ("returning %d", found));
+        return found;
 }
 
 int
 match_user(sym, req, check_pairs, reply_pairs)
-	User_symbol *sym;
-	RADIUS_REQ *req;
-	VALUE_PAIR **check_pairs;
-	VALUE_PAIR **reply_pairs;
+        User_symbol *sym;
+        RADIUS_REQ *req;
+        VALUE_PAIR **check_pairs;
+        VALUE_PAIR **reply_pairs;
 {
-	VALUE_PAIR *p;
-	VALUE_PAIR *check_tmp;
-	VALUE_PAIR *reply_tmp;
-	int found;
-	
-	if (!sym)
-		return 0;
+        VALUE_PAIR *p;
+        VALUE_PAIR *check_tmp;
+        VALUE_PAIR *reply_tmp;
+        int found;
+        
+        if (!sym)
+                return 0;
 
-	found = 0;
-	do {
-		check_tmp = avl_dup(sym->check);
+        found = 0;
+        do {
+                check_tmp = avl_dup(sym->check);
 #ifdef USE_SQL
-		rad_sql_check_attr_query(req, &check_tmp);
+                rad_sql_check_attr_query(req, &check_tmp);
 #endif
-		if (paircmp(req, check_tmp)) {
-			avl_free(check_tmp);
-			continue;
-		}
+                if (paircmp(req, check_tmp)) {
+                        avl_free(check_tmp);
+                        continue;
+                }
 
-		found = 1;
+                found = 1;
 
-		for (p = avl_find(sym->check, DA_MATCH_PROFILE);
+                for (p = avl_find(sym->check, DA_MATCH_PROFILE);
                      p; 
                      p = avl_find(p->next, DA_MATCH_PROFILE)) {
-			debug(1, ("submatch: %s", p->strvalue));
+                        debug(1, ("submatch: %s", p->strvalue));
 
-			found = match_user(sym_lookup(user_tab, p->strvalue),
-			  	           req, check_pairs, reply_pairs);
-		}			
+                        found = match_user(sym_lookup(user_tab, p->strvalue),
+                                           req, check_pairs, reply_pairs);
+                }                       
 
-		if (!found) {
-			avl_free(check_tmp);
-			continue;
-		}	
+                if (!found) {
+                        avl_free(check_tmp);
+                        continue;
+                }       
 
-		reply_tmp = avl_dup(sym->reply);
-		avl_merge(reply_pairs, &reply_tmp);
-		avl_merge(check_pairs, &check_tmp);
+                reply_tmp = avl_dup(sym->reply);
+                avl_merge(reply_pairs, &reply_tmp);
+                avl_merge(check_pairs, &check_tmp);
 #ifdef USE_SQL
-		rad_sql_reply_attr_query(req, reply_pairs);
+                rad_sql_reply_attr_query(req, reply_pairs);
 #endif
 
-		avl_free(reply_tmp);
-		avl_free(check_tmp);
+                avl_free(reply_tmp);
+                avl_free(check_tmp);
 
-		for (p = avl_find(sym->reply, DA_MATCH_PROFILE);
+                for (p = avl_find(sym->reply, DA_MATCH_PROFILE);
                      p;
                      p = avl_find(p->next, DA_MATCH_PROFILE)) {
-			debug(1, ("next: %s", p->strvalue));
-			match_user(sym_lookup(user_tab, p->strvalue),
-				   req, check_pairs, reply_pairs);
-		}
-		if (!fallthrough(sym->reply))
-			break;
-		debug(1, ("fall through near line %d", sym->lineno));
-	} while (sym = sym_next((Symbol*)sym));
+                        debug(1, ("next: %s", p->strvalue));
+                        match_user(sym_lookup(user_tab, p->strvalue),
+                                   req, check_pairs, reply_pairs);
+                }
+                if (!fallthrough(sym->reply))
+                        break;
+                debug(1, ("fall through near line %d", sym->lineno));
+        } while (sym = sym_next((Symbol*)sym));
 
-	return found;
+        return found;
 }
 
 /*
@@ -419,44 +419,44 @@ match_user(sym, req, check_pairs, reply_pairs)
  */
 int
 user_find(name, req, check_pairs, reply_pairs)
-	char       *name;
-	RADIUS_REQ *req;
-	VALUE_PAIR **check_pairs;
-	VALUE_PAIR **reply_pairs;
+        char       *name;
+        RADIUS_REQ *req;
+        VALUE_PAIR **check_pairs;
+        VALUE_PAIR **reply_pairs;
 {
-	int		found = 0;
+        int             found = 0;
 
-	/* 
-	 *	Check for valid input, zero length names not permitted 
-	 */
-	if (name[0] == 0) {
-		radlog(L_ERR, _("zero length username not permitted"));
-		return -1;
-	}
+        /* 
+         *      Check for valid input, zero length names not permitted 
+         */
+        if (name[0] == 0) {
+                radlog(L_ERR, _("zero length username not permitted"));
+                return -1;
+        }
 
-	/*
-	 *	Find the entry for the user.
-	 */
+        /*
+         *      Find the entry for the user.
+         */
 #ifdef USE_DBM
-	if (use_dbm) 
-		found = user_find_db(name, req, check_pairs, reply_pairs);
-	else
+        if (use_dbm) 
+                found = user_find_db(name, req, check_pairs, reply_pairs);
+        else
 #endif
-		found = user_find_sym(name, req, check_pairs, reply_pairs);
+                found = user_find_sym(name, req, check_pairs, reply_pairs);
 
-	/*
-	 *	See if we succeeded.
-	 */
-	if (!found)
-		return -1;
+        /*
+         *      See if we succeeded.
+         */
+        if (!found)
+                return -1;
 
-	/*
-	 *	Remove server internal parameters.
-	 */
-	avl_delete(reply_pairs, DA_FALL_THROUGH);
-	avl_delete(reply_pairs, DA_MATCH_PROFILE);
-	
-	return 0;
+        /*
+         *      Remove server internal parameters.
+         */
+        avl_delete(reply_pairs, DA_FALL_THROUGH);
+        avl_delete(reply_pairs, DA_MATCH_PROFILE);
+        
+        return 0;
 }
 
 /*
@@ -480,62 +480,62 @@ static int nextkn(char **sptr, char *token, int toksize);
 
 int
 nextkn(sptr, token, toksize)
-	char **sptr;
-	char *token;
-	int toksize;
+        char **sptr;
+        char *token;
+        int toksize;
 {
-	char *start;
-	
-	/* skip whitespace */
-	while (**sptr && isws(**sptr))
-		++(*sptr);
-	if (!*sptr)
-		return 0;
-	start = token;
-	if (**sptr == '"') {
-		(*sptr)++;
-		while (toksize && **sptr && **sptr != '"') {
-			if (**sptr == '\\' && (*sptr)[1]) {
-				switch (*++*sptr) {
-				default:
-					*token++ = **sptr;
-					break;
-				case 'a':
-					*token++ = '\a';
-					break;
-				case 'b':
-					*token++ = '\b';
-					break;
-				case 'f':
-					*token++ = '\f';
-					break;
-				case 'n':
-					*token++ = '\n';
-					break;
-				case 'r':
-					*token++ = '\r';
-					break;
-				case 't':
-					*token++ = '\t';
-					break;
-				case 'v':
-					*token++ = '\v';
-				}
-				++*sptr;
-				toksize--;
-			} else 
-				*token++ = *(*sptr)++;
-		}
-	} else if (**sptr == ',' || **sptr == '=' || **sptr == '\n') {
-		*token++ = *(*sptr)++;
-	} else {
-		while (toksize && **sptr && !isdelim(**sptr)) {
-			*token++ = *(*sptr)++;
-			toksize--;
-		}
-	}
-	*token = 0;
-	return start[0];
+        char *start;
+        
+        /* skip whitespace */
+        while (**sptr && isws(**sptr))
+                ++(*sptr);
+        if (!*sptr)
+                return 0;
+        start = token;
+        if (**sptr == '"') {
+                (*sptr)++;
+                while (toksize && **sptr && **sptr != '"') {
+                        if (**sptr == '\\' && (*sptr)[1]) {
+                                switch (*++*sptr) {
+                                default:
+                                        *token++ = **sptr;
+                                        break;
+                                case 'a':
+                                        *token++ = '\a';
+                                        break;
+                                case 'b':
+                                        *token++ = '\b';
+                                        break;
+                                case 'f':
+                                        *token++ = '\f';
+                                        break;
+                                case 'n':
+                                        *token++ = '\n';
+                                        break;
+                                case 'r':
+                                        *token++ = '\r';
+                                        break;
+                                case 't':
+                                        *token++ = '\t';
+                                        break;
+                                case 'v':
+                                        *token++ = '\v';
+                                }
+                                ++*sptr;
+                                toksize--;
+                        } else 
+                                *token++ = *(*sptr)++;
+                }
+        } else if (**sptr == ',' || **sptr == '=' || **sptr == '\n') {
+                *token++ = *(*sptr)++;
+        } else {
+                while (toksize && **sptr && !isdelim(**sptr)) {
+                        *token++ = *(*sptr)++;
+                        toksize--;
+                }
+        }
+        *token = 0;
+        return start[0];
 }
 
 /*
@@ -546,170 +546,170 @@ nextkn(sptr, token, toksize)
  */
 int
 userparse(buffer, first_pair, errmsg)
-	char *buffer;
-	VALUE_PAIR **first_pair;
-	char **errmsg;
+        char *buffer;
+        VALUE_PAIR **first_pair;
+        char **errmsg;
 {
-	int		state;
-	int		x;
-	char		*s;
-	DICT_ATTR	*attr = NULL;
-	DICT_VALUE	*dval;
-	VALUE_PAIR	*pair, *pair2;
-	struct tm	*tm, tms;
-	time_t		timeval;
-	int		op;
-	static char errbuf[512];
-	char token[256];
+        int             state;
+        int             x;
+        char            *s;
+        DICT_ATTR       *attr = NULL;
+        DICT_VALUE      *dval;
+        VALUE_PAIR      *pair, *pair2;
+        struct tm       *tm, tms;
+        time_t          timeval;
+        int             op;
+        static char errbuf[512];
+        char token[256];
 
-	state = PS_LHS;
-	while (nextkn(&buffer, token, sizeof(token))) {
-		switch (state) {
-		case PS_LHS:
-			if (token[0] == '\n' || token[0] == '#')
-				continue;
-			if (!(attr = attr_name_to_dict(token))) {
-				snprintf(errbuf, sizeof(errbuf),
-					_("unknown attribute `%s/%s'"), 
-					token, buffer);
-				*errmsg = errbuf; 
-				return -1;
-			}
-			state = PS_OPS;
-			break;
-			
-		case PS_OPS:
-			op = xlat_keyword(op_tab, token, -1);
-			if (op == -1) {
-				snprintf(errbuf, sizeof(errbuf),
-					_("expected opcode but found %s"),
-					token);
-				*errmsg = errbuf; 
-				return -1;
-			}
-			state = PS_RHS;
-			break;
-			
-		case PS_RHS:
-			pair = avp_alloc();
-			pair->name = attr->name;
-			pair->attribute = attr->value;
-			pair->type = attr->type;
-			pair->operator = op;
+        state = PS_LHS;
+        while (nextkn(&buffer, token, sizeof(token))) {
+                switch (state) {
+                case PS_LHS:
+                        if (token[0] == '\n' || token[0] == '#')
+                                continue;
+                        if (!(attr = attr_name_to_dict(token))) {
+                                snprintf(errbuf, sizeof(errbuf),
+                                        _("unknown attribute `%s/%s'"), 
+                                        token, buffer);
+                                *errmsg = errbuf; 
+                                return -1;
+                        }
+                        state = PS_OPS;
+                        break;
+                        
+                case PS_OPS:
+                        op = xlat_keyword(op_tab, token, -1);
+                        if (op == -1) {
+                                snprintf(errbuf, sizeof(errbuf),
+                                        _("expected opcode but found %s"),
+                                        token);
+                                *errmsg = errbuf; 
+                                return -1;
+                        }
+                        state = PS_RHS;
+                        break;
+                        
+                case PS_RHS:
+                        pair = avp_alloc();
+                        pair->name = attr->name;
+                        pair->attribute = attr->value;
+                        pair->type = attr->type;
+                        pair->operator = op;
 
-			switch (pair->type) {
+                        switch (pair->type) {
 
-			case TYPE_STRING:
-				pair->strvalue = make_string(token);
-				pair->strlength = strlen(pair->strvalue);
-				break;
+                        case TYPE_STRING:
+                                pair->strvalue = make_string(token);
+                                pair->strlength = strlen(pair->strvalue);
+                                break;
 
-			case TYPE_INTEGER:
-				/*
-				 *	For DA_NAS_PORT_ID, allow a
-				 *	port range instead of just a port.
-				 */
-				if (attr->value == DA_NAS_PORT_ID) {
-					for (s = token; *s; s++)
-						if (!isdigit(*s))
-							break;
-					if (*s) {
-						pair->type = TYPE_STRING;
-						pair->strvalue = make_string(token);
-						pair->strlength = strlen(pair->strvalue);
-						break;
-					}
-				}
-				if (isdigit(*token)) {
-					pair->lvalue = atoi(token);
-				} else if (!(dval = value_name_to_value(token, pair->attribute))) {
-					avp_free(pair);
-					snprintf(errbuf, sizeof(errbuf),
-						_("unknown value %s"),
-						token);
-					*errmsg = errbuf;
-					return -1;
-				} else {
-					pair->lvalue = dval->value;
-				}
-				break;
+                        case TYPE_INTEGER:
+                                /*
+                                 *      For DA_NAS_PORT_ID, allow a
+                                 *      port range instead of just a port.
+                                 */
+                                if (attr->value == DA_NAS_PORT_ID) {
+                                        for (s = token; *s; s++)
+                                                if (!isdigit(*s))
+                                                        break;
+                                        if (*s) {
+                                                pair->type = TYPE_STRING;
+                                                pair->strvalue = make_string(token);
+                                                pair->strlength = strlen(pair->strvalue);
+                                                break;
+                                        }
+                                }
+                                if (isdigit(*token)) {
+                                        pair->lvalue = atoi(token);
+                                } else if (!(dval = value_name_to_value(token, pair->attribute))) {
+                                        avp_free(pair);
+                                        snprintf(errbuf, sizeof(errbuf),
+                                                _("unknown value %s"),
+                                                token);
+                                        *errmsg = errbuf;
+                                        return -1;
+                                } else {
+                                        pair->lvalue = dval->value;
+                                }
+                                break;
 
-			case TYPE_IPADDR:
-				if (pair->attribute != DA_FRAMED_IP_ADDRESS) {
-					pair->lvalue = ip_gethostaddr(token);
-					break;
-				}
+                        case TYPE_IPADDR:
+                                if (pair->attribute != DA_FRAMED_IP_ADDRESS) {
+                                        pair->lvalue = ip_gethostaddr(token);
+                                        break;
+                                }
 
-				/*
-				 * We allow a "+" at the end to	indicate that
-				 * we should add the portno. to the IP address.
-				 */
-				x = 0;
-				if (token[0]) {
-					for(s = token; s[1]; s++)
-						;
-					if (*s == '+') {
-						*s = 0;
-						x = 1;
-					}
-				}
-				pair->lvalue = ip_gethostaddr(token);
+                                /*
+                                 * We allow a "+" at the end to indicate that
+                                 * we should add the portno. to the IP address.
+                                 */
+                                x = 0;
+                                if (token[0]) {
+                                        for(s = token; s[1]; s++)
+                                                ;
+                                        if (*s == '+') {
+                                                *s = 0;
+                                                x = 1;
+                                        }
+                                }
+                                pair->lvalue = ip_gethostaddr(token);
 
-				/*
-				 *	Add an extra (hidden) attribute.
-				 */
-				pair2 = avp_alloc();
-				
-				pair2->name = "Add-Port-To-IP-Address";
-				pair2->attribute = DA_ADD_PORT_TO_IP_ADDRESS;
-				pair2->type = TYPE_INTEGER;
-				pair2->lvalue = x;
-				pair2->next = pair;
-				pair = pair2;
-				break;
+                                /*
+                                 *      Add an extra (hidden) attribute.
+                                 */
+                                pair2 = avp_alloc();
+                                
+                                pair2->name = "Add-Port-To-IP-Address";
+                                pair2->attribute = DA_ADD_PORT_TO_IP_ADDRESS;
+                                pair2->type = TYPE_INTEGER;
+                                pair2->lvalue = x;
+                                pair2->next = pair;
+                                pair = pair2;
+                                break;
 
-			case TYPE_DATE:
-				timeval = time(NULL);
-				tm = localtime_r(&timeval, &tms);
-				if (user_gettime(token, tm)) {
-					snprintf(errbuf, sizeof(errbuf),
-						_("%s: error parsing date %s"),
-						attr->name, token);	
-					goto error;
-				}
+                        case TYPE_DATE:
+                                timeval = time(NULL);
+                                tm = localtime_r(&timeval, &tms);
+                                if (user_gettime(token, tm)) {
+                                        snprintf(errbuf, sizeof(errbuf),
+                                                _("%s: error parsing date %s"),
+                                                attr->name, token);     
+                                        goto error;
+                                }
 #ifdef TIMELOCAL
-				pair->lvalue = (UINT4)timelocal(tm);
+                                pair->lvalue = (UINT4)timelocal(tm);
 #else /* TIMELOCAL */
-				pair->lvalue = (UINT4)mktime(tm);
+                                pair->lvalue = (UINT4)mktime(tm);
 #endif /* TIMELOCAL */
-				break;
+                                break;
 
-			default:
-				snprintf(errbuf, sizeof(errbuf),
-					_("unknown attribute type %d"),
-					pair->type);
-			error:
-				*errmsg = errbuf;
-				avp_free(pair);
-				return -1;
-			}
-			avl_add_list(first_pair, pair);
-			state = PS_END;
-			break;
-			
-		case PS_END:
-			if (token[0] != ',' && token[0] != '\n') {
-				snprintf(errbuf, sizeof(errbuf),
-					_("expected , but found %s"),
-					token);
-				*errmsg = errbuf;
-				return -1;
-			}
-			state = PS_LHS;
-			break;
-		}
-	}
-	return 0;
+                        default:
+                                snprintf(errbuf, sizeof(errbuf),
+                                        _("unknown attribute type %d"),
+                                        pair->type);
+                        error:
+                                *errmsg = errbuf;
+                                avp_free(pair);
+                                return -1;
+                        }
+                        avl_add_list(first_pair, pair);
+                        state = PS_END;
+                        break;
+                        
+                case PS_END:
+                        if (token[0] != ',' && token[0] != '\n') {
+                                snprintf(errbuf, sizeof(errbuf),
+                                        _("expected , but found %s"),
+                                        token);
+                                *errmsg = errbuf;
+                                return -1;
+                        }
+                        state = PS_LHS;
+                        break;
+                }
+        }
+        return 0;
 }
 
 /* ***************************************************************************
@@ -720,133 +720,133 @@ static struct obstack hints_stk;
 static int hints_stk_ready;
 
 /*
- *	Add hints to the info sent by the terminal server
- *	based on the pattern of the username.
+ *      Add hints to the info sent by the terminal server
+ *      based on the pattern of the username.
  */
 int
 hints_setup(req)
-	RADIUS_REQ *req;
+        RADIUS_REQ *req;
 {
-	VALUE_PAIR      *request_pairs = req->request;
-	char		newname[AUTH_STRING_LEN];
-	char		*name;
-	VALUE_PAIR      *name_pair;
-	VALUE_PAIR      *orig_name_pair;
-	VALUE_PAIR      *tmp;
-	MATCHING_RULE	*i;
-	int		matched = 0;
+        VALUE_PAIR      *request_pairs = req->request;
+        char            newname[AUTH_STRING_LEN];
+        char            *name;
+        VALUE_PAIR      *name_pair;
+        VALUE_PAIR      *orig_name_pair;
+        VALUE_PAIR      *tmp;
+        MATCHING_RULE   *i;
+        int             matched = 0;
 
-	if (hints == NULL)
-		return 0;
+        if (hints == NULL)
+                return 0;
 
-	/* 
-	 *	Check for valid input, zero length names not permitted 
-	 */
-	if ((name_pair = avl_find(request_pairs, DA_USER_NAME)) == NULL) {
-		name = NULL;
-		orig_name_pair = NULL;
-	} else {
-		name = name_pair->strvalue;
-		orig_name_pair = avp_dup(name_pair);
-		orig_name_pair->attribute = DA_ORIG_USER_NAME;
-		orig_name_pair->name = "Orig-User-Name";
-	}
-	
-	if (name == NULL || name[0] == 0)
-		/* Will be complained about later. */
-		return 0;
+        /* 
+         *      Check for valid input, zero length names not permitted 
+         */
+        if ((name_pair = avl_find(request_pairs, DA_USER_NAME)) == NULL) {
+                name = NULL;
+                orig_name_pair = NULL;
+        } else {
+                name = name_pair->strvalue;
+                orig_name_pair = avp_dup(name_pair);
+                orig_name_pair->attribute = DA_ORIG_USER_NAME;
+                orig_name_pair->name = "Orig-User-Name";
+        }
+        
+        if (name == NULL || name[0] == 0)
+                /* Will be complained about later. */
+                return 0;
 
-	debug(1, ("called for `%s'", name));
-	
-	/* if Framed-Protocol is present but Service-Type is missing, add
-	   Service-Type = Framed-User. */
-	if (avl_find(request_pairs, DA_FRAMED_PROTOCOL) != NULL &&
-	    avl_find(request_pairs, DA_SERVICE_TYPE) == NULL) {
-		tmp = avp_create(DA_SERVICE_TYPE, 0, NULL,
-				 DV_SERVICE_TYPE_FRAMED_USER);
-		if (tmp) 
-			avl_merge(&request_pairs, &tmp);
-	}
+        debug(1, ("called for `%s'", name));
+        
+        /* if Framed-Protocol is present but Service-Type is missing, add
+           Service-Type = Framed-User. */
+        if (avl_find(request_pairs, DA_FRAMED_PROTOCOL) != NULL &&
+            avl_find(request_pairs, DA_SERVICE_TYPE) == NULL) {
+                tmp = avp_create(DA_SERVICE_TYPE, 0, NULL,
+                                 DV_SERVICE_TYPE_FRAMED_USER);
+                if (tmp) 
+                        avl_merge(&request_pairs, &tmp);
+        }
 
-	for (i = hints; i; i = i->next) {
-		int do_strip;
-		VALUE_PAIR *add;
-		
-		name = name_pair->strvalue;
+        for (i = hints; i; i = i->next) {
+                int do_strip;
+                VALUE_PAIR *add;
+                
+                name = name_pair->strvalue;
 
-		if (matches(req, name, i, newname))
-			continue;
+                if (matches(req, name, i, newname))
+                        continue;
 
-		matched++;
-		
-		debug(1, ("matched %s at hints:%d", i->name, i->lineno));
-	
-		add = avl_dup(i->rhs);
-	
-		/* See if we need to adjust the name. */
-		do_strip = 1;
-		if ((tmp = avl_find(i->rhs, DA_STRIP_USER_NAME)) != NULL
-		    || (tmp = avl_find(i->lhs, DA_STRIP_USER_NAME)) != NULL)
-			do_strip = tmp->lvalue;
-		
-		if (do_strip) 
-			replace_string(&name_pair->strvalue, newname);
+                matched++;
+                
+                debug(1, ("matched %s at hints:%d", i->name, i->lineno));
+        
+                add = avl_dup(i->rhs);
+        
+                /* See if we need to adjust the name. */
+                do_strip = 1;
+                if ((tmp = avl_find(i->rhs, DA_STRIP_USER_NAME)) != NULL
+                    || (tmp = avl_find(i->lhs, DA_STRIP_USER_NAME)) != NULL)
+                        do_strip = tmp->lvalue;
+                
+                if (do_strip) 
+                        replace_string(&name_pair->strvalue, newname);
 
-		/* Ok, let's see if we need to further modify the username */
-		if ((tmp = avl_find(i->rhs, DA_REPLACE_USER_NAME))
-		    || (tmp = avl_find(i->lhs, DA_REPLACE_USER_NAME))) {
-			char *ptr;
-			
-			if (!hints_stk_ready) {
-				obstack_init(&hints_stk);
-				hints_stk_ready = 1;
-			}
-			ptr = radius_xlate(&hints_stk, tmp->strvalue,
-					   req, NULL);
-			if (ptr) 
-				replace_string(&name_pair->strvalue, ptr);
-			obstack_free(&hints_stk, ptr);
-		}
-		
-		/* Is the rewrite function specified? */
-		if ((tmp = avl_find(i->rhs, DA_REWRITE_FUNCTION))
-		    || (tmp = avl_find(i->lhs, DA_REWRITE_FUNCTION))) {
-			if (run_rewrite(tmp->strvalue, request_pairs)) {
-				radlog(L_ERR, _("hints:%d: %s(): not defined"),
-				       i->lineno,
-				       tmp->strvalue);
-			}
-		}
+                /* Ok, let's see if we need to further modify the username */
+                if ((tmp = avl_find(i->rhs, DA_REPLACE_USER_NAME))
+                    || (tmp = avl_find(i->lhs, DA_REPLACE_USER_NAME))) {
+                        char *ptr;
+                        
+                        if (!hints_stk_ready) {
+                                obstack_init(&hints_stk);
+                                hints_stk_ready = 1;
+                        }
+                        ptr = radius_xlate(&hints_stk, tmp->strvalue,
+                                           req, NULL);
+                        if (ptr) 
+                                replace_string(&name_pair->strvalue, ptr);
+                        obstack_free(&hints_stk, ptr);
+                }
+                
+                /* Is the rewrite function specified? */
+                if ((tmp = avl_find(i->rhs, DA_REWRITE_FUNCTION))
+                    || (tmp = avl_find(i->lhs, DA_REWRITE_FUNCTION))) {
+                        if (run_rewrite(tmp->strvalue, request_pairs)) {
+                                radlog(L_ERR, _("hints:%d: %s(): not defined"),
+                                       i->lineno,
+                                       tmp->strvalue);
+                        }
+                }
 
-		debug(1, ("newname is `%s', username is `%s'",
-			 newname, name_pair->strvalue));
+                debug(1, ("newname is `%s', username is `%s'",
+                         newname, name_pair->strvalue));
 
-		/* fix-up the string length */
-		name_pair->strlength = strlen(name_pair->strvalue);
+                /* fix-up the string length */
+                name_pair->strlength = strlen(name_pair->strvalue);
 
-		/* Add all attributes to the request list, except
-		 * DA_STRIP_USER_NAME and DA_REPLACE_USER_NAME */
-		avl_delete(&add, DA_STRIP_USER_NAME);
-		avl_delete(&add, DA_REPLACE_USER_NAME);
-		avl_delete(&add, DA_REWRITE_FUNCTION);
-		avl_merge(&request_pairs, &add);
-		avl_free(add);
-		
+                /* Add all attributes to the request list, except
+                 * DA_STRIP_USER_NAME and DA_REPLACE_USER_NAME */
+                avl_delete(&add, DA_STRIP_USER_NAME);
+                avl_delete(&add, DA_REPLACE_USER_NAME);
+                avl_delete(&add, DA_REWRITE_FUNCTION);
+                avl_merge(&request_pairs, &add);
+                avl_free(add);
+                
                 /* Ok, let's see if we need to further check the
-		   hint's rules */
-		if (((tmp = avl_find(i->rhs, DA_FALL_THROUGH)) != NULL
-		     || (tmp = avl_find(i->lhs, DA_FALL_THROUGH)) != NULL)
-		    && tmp->lvalue)
-			continue;
-		break;
-	}
+                   hint's rules */
+                if (((tmp = avl_find(i->rhs, DA_FALL_THROUGH)) != NULL
+                     || (tmp = avl_find(i->lhs, DA_FALL_THROUGH)) != NULL)
+                    && tmp->lvalue)
+                        continue;
+                break;
+        }
 
-	if (matched)
-		avl_add_pair (&request_pairs, orig_name_pair);
-	else
-		avl_free (orig_name_pair);
-	
-	return 0;
+        if (matched)
+                avl_add_pair (&request_pairs, orig_name_pair);
+        else
+                avl_free (orig_name_pair);
+        
+        return 0;
 }
 
 /* ***************************************************************************
@@ -858,22 +858,22 @@ hints_setup(req)
  */
 int
 huntgroup_match(req, huntgroup)
-	RADIUS_REQ *req;
-	char       *huntgroup;
+        RADIUS_REQ *req;
+        char       *huntgroup;
 {
-	MATCHING_RULE *pl;
-	
-	for (pl = huntgroups; pl; pl = pl->next) {
-		if (strcmp(pl->name, huntgroup) != 0)
-			continue;
-		if (paircmp(req, pl->lhs) == 0) {
-			debug(1, ("matched %s at huntgroups:%d",
-				 pl->name, pl->lineno));
-			break;
-		}
-	}
+        MATCHING_RULE *pl;
+        
+        for (pl = huntgroups; pl; pl = pl->next) {
+                if (strcmp(pl->name, huntgroup) != 0)
+                        continue;
+                if (paircmp(req, pl->lhs) == 0) {
+                        debug(1, ("matched %s at huntgroups:%d",
+                                 pl->name, pl->lineno));
+                        break;
+                }
+        }
 
-	return (pl != NULL);
+        return (pl != NULL);
 }
 
 
@@ -885,60 +885,60 @@ huntgroup_match(req, huntgroup)
  */
 int
 huntgroup_access(radreq)
-	RADIUS_REQ *radreq;
+        RADIUS_REQ *radreq;
 {
-	VALUE_PAIR      *request_pairs, *pair;
-	MATCHING_RULE	*pl;
-	int		r = 1;
+        VALUE_PAIR      *request_pairs, *pair;
+        MATCHING_RULE   *pl;
+        int             r = 1;
 
-	if (huntgroups == NULL)
-		return 1;
+        if (huntgroups == NULL)
+                return 1;
 
-	request_pairs = radreq->request;
-	for (pl = huntgroups; pl; pl = pl->next) {
-		/*
-		 *	See if this entry matches.
-		 */
-		if (paircmp(radreq, pl->lhs) != 0)
-			continue;
-		debug(1, ("matched huntgroup at huntgroups:%d", pl->lineno));
-		r = paircmp(radreq, pl->rhs) == 0;
-		break;
-	}
+        request_pairs = radreq->request;
+        for (pl = huntgroups; pl; pl = pl->next) {
+                /*
+                 *      See if this entry matches.
+                 */
+                if (paircmp(radreq, pl->lhs) != 0)
+                        continue;
+                debug(1, ("matched huntgroup at huntgroups:%d", pl->lineno));
+                r = paircmp(radreq, pl->rhs) == 0;
+                break;
+        }
 
 #ifdef DA_REWRITE_FUNCTION
-	if (pl &&
-	    (pair = avl_find(pl->lhs, DA_REWRITE_FUNCTION)) != NULL) {
-		if (run_rewrite(pair->strvalue, radreq->request)) {
-			radlog(L_ERR, _("huntgroups:%d: %s(): not defined"),
-			       pl->lineno,
-			       pair->strvalue);
-		}
-	}
-#endif	
+        if (pl &&
+            (pair = avl_find(pl->lhs, DA_REWRITE_FUNCTION)) != NULL) {
+                if (run_rewrite(pair->strvalue, radreq->request)) {
+                        radlog(L_ERR, _("huntgroups:%d: %s(): not defined"),
+                               pl->lineno,
+                               pair->strvalue);
+                }
+        }
+#endif  
 
-	debug(1, ("returning %d", r));
-	return r;
+        debug(1, ("returning %d", r));
+        return r;
 }
 
 int
 read_naslist_file(file)
-	char *file;
+        char *file;
 {
-	int rc;
-#ifdef USE_SNMP	
-	NAS *nas;
+        int rc;
+#ifdef USE_SNMP 
+        NAS *nas;
 
-	snmp_init_nas_stat();
+        snmp_init_nas_stat();
 #endif
-	rc = nas_read_file(file);
-	
-#ifdef USE_SNMP	
-	for (nas = nas_next(NULL); nas; nas = nas_next(nas))
-		snmp_attach_nas_stat(nas);
-	snmp_sort_nas_stat();
-#endif	
-	return rc;
+        rc = nas_read_file(file);
+        
+#ifdef USE_SNMP 
+        for (nas = nas_next(NULL); nas; nas = nas_next(nas))
+                snmp_attach_nas_stat(nas);
+        snmp_sort_nas_stat();
+#endif  
+        return rc;
 }
 
 /* ***************************************************************************
@@ -951,39 +951,39 @@ read_naslist_file(file)
 /*ARGSUSED*/
 int
 read_clients_entry(unused, fc, fv, file, lineno)
-	void *unused;
-	int fc;
-	char **fv;
-	char *file;
-	int lineno;
+        void *unused;
+        int fc;
+        char **fv;
+        char *file;
+        int lineno;
 {
-	CLIENT *cp;
-	
-	if (fc != 2) {
-		radlog(L_ERR, _("%s:%d: wrong number of fields (%d)"),
-		       file, lineno, fc);
-		return -1;
-	}
+        CLIENT *cp;
+        
+        if (fc != 2) {
+                radlog(L_ERR, _("%s:%d: wrong number of fields (%d)"),
+                       file, lineno, fc);
+                return -1;
+        }
 
-	cp = Alloc_entry(CLIENT);
+        cp = Alloc_entry(CLIENT);
 
-	cp->ipaddr = ip_gethostaddr(fv[0]);
-	cp->secret = estrdup(fv[1]);
-	if (fc == 3)
-		STRING_COPY(cp->shortname, fv[2]);
-	ip_gethostname(cp->ipaddr, cp->longname, sizeof(cp->longname));
+        cp->ipaddr = ip_gethostaddr(fv[0]);
+        cp->secret = estrdup(fv[1]);
+        if (fc == 3)
+                STRING_COPY(cp->shortname, fv[2]);
+        ip_gethostname(cp->ipaddr, cp->longname, sizeof(cp->longname));
 
-	cp->next = clients;
-	clients = cp;
+        cp->next = clients;
+        clients = cp;
 
-	return 0;
+        return 0;
 }
 
 static void
 client_free(cl)
-	CLIENT *cl;
+        CLIENT *cl;
 {
-	efree(cl->secret);
+        efree(cl->secret);
 }
 
 /*
@@ -991,12 +991,12 @@ client_free(cl)
  */
 int
 read_clients_file(file)
-	char *file;
+        char *file;
 {
-	free_slist((struct slist*)clients, client_free);
-	clients = NULL;
+        free_slist((struct slist*)clients, client_free);
+        clients = NULL;
 
-	return read_raddb_file(file, 1, read_clients_entry, NULL);
+        return read_raddb_file(file, 1, read_clients_entry, NULL);
 }
 
 
@@ -1005,15 +1005,15 @@ read_clients_file(file)
  */
 CLIENT *
 client_lookup_ip(ipaddr)
-	UINT4 ipaddr;
+        UINT4 ipaddr;
 {
-	CLIENT *cl;
+        CLIENT *cl;
 
-	for(cl = clients; cl; cl = cl->next)
-		if (ipaddr == cl->ipaddr)
-			break;
+        for(cl = clients; cl; cl = cl->next)
+                if (ipaddr == cl->ipaddr)
+                        break;
 
-	return cl;
+        return cl;
 }
 
 
@@ -1022,19 +1022,19 @@ client_lookup_ip(ipaddr)
  */
 char *
 client_lookup_name(ipaddr, buf, bufsize)
-	UINT4 ipaddr;
-	char *buf;
-	size_t bufsize;
+        UINT4 ipaddr;
+        char *buf;
+        size_t bufsize;
 {
-	CLIENT *cl;
+        CLIENT *cl;
 
-	if ((cl = client_lookup_ip(ipaddr)) != NULL) {
-		if (cl->shortname[0])
-			return cl->shortname;
-		else
-			return cl->longname;
-	}
-	return ip_gethostname(ipaddr, buf, bufsize);
+        if ((cl = client_lookup_ip(ipaddr)) != NULL) {
+                if (cl->shortname[0])
+                        return cl->shortname;
+                else
+                        return cl->longname;
+        }
+        return ip_gethostname(ipaddr, buf, bufsize);
 }
 
 /* ****************************************************************************
@@ -1042,7 +1042,7 @@ client_lookup_name(ipaddr, buf, bufsize)
  */
 
 int read_nastypes_entry(void *unused, int fc, char **fv, char *file,
-			int lineno);
+                        int lineno);
 int read_nastypes_file(char *file);
 
 
@@ -1052,71 +1052,71 @@ int read_nastypes_file(char *file);
 /*ARGSUSED*/
 int
 read_nastypes_entry(unused, fc, fv, file, lineno)
-	void *unused;
-	int fc;
-	char **fv;
-	char *file;
-	int lineno;
+        void *unused;
+        int fc;
+        char **fv;
+        char *file;
+        int lineno;
 {
-	RADCK_TYPE *mp;
-	int method;
+        RADCK_TYPE *mp;
+        int method;
 
-	if (fc < 2) {
-		radlog(L_ERR, _("%s:%d: too few fields"), file, lineno);
-		return -1;
-	}
+        if (fc < 2) {
+                radlog(L_ERR, _("%s:%d: too few fields"), file, lineno);
+                return -1;
+        }
 
-	if (strcmp(fv[1], "finger") == 0)
-		method = METHOD_FINGER;
-	else if (strcmp(fv[1], "snmp") == 0)
-		method = METHOD_SNMP;
-	else if (strcmp(fv[1], "ext") == 0)
-		method = METHOD_EXT;
-	else {
-		radlog(L_ERR, _("%s:%d: unknown method"), file, lineno);
-		return -1;
-	}
-			
-	mp = alloc_entry(sizeof(*mp));
+        if (strcmp(fv[1], "finger") == 0)
+                method = METHOD_FINGER;
+        else if (strcmp(fv[1], "snmp") == 0)
+                method = METHOD_SNMP;
+        else if (strcmp(fv[1], "ext") == 0)
+                method = METHOD_EXT;
+        else {
+                radlog(L_ERR, _("%s:%d: unknown method"), file, lineno);
+                return -1;
+        }
+                        
+        mp = alloc_entry(sizeof(*mp));
         mp->type = estrdup(fv[0]);
-	mp->method = method;
-	if (fc > 2)
-		mp->args = envar_parse_argcv(fc-2, &fv[2]);
-	else
-		mp->args = NULL;
-	mp->next = radck_type;
-	radck_type = mp;
-	return 0;
+        mp->method = method;
+        if (fc > 2)
+                mp->args = envar_parse_argcv(fc-2, &fv[2]);
+        else
+                mp->args = NULL;
+        mp->next = radck_type;
+        radck_type = mp;
+        return 0;
 }
-	
+        
 void
 free_radck_type(rp)
-	RADCK_TYPE *rp;
+        RADCK_TYPE *rp;
 {
-	efree(rp->type);
-	envar_free_list(rp->args);
+        efree(rp->type);
+        envar_free_list(rp->args);
 }
 
 int
 read_nastypes_file(file)
-	char *file;
+        char *file;
 {
-	free_slist((struct slist *)radck_type, free_radck_type);
-	radck_type = NULL;
-	return read_raddb_file(file, 0, read_nastypes_entry, NULL);
+        free_slist((struct slist *)radck_type, free_radck_type);
+        radck_type = NULL;
+        return read_raddb_file(file, 0, read_nastypes_entry, NULL);
 }
 
 RADCK_TYPE *
 find_radck_type(name)
-	char *name;
+        char *name;
 {
-	RADCK_TYPE *tp;
-	
-	for (tp = radck_type; tp && strcmp(tp->type, name); tp = tp->next)
-		;
-	return tp;
+        RADCK_TYPE *tp;
+        
+        for (tp = radck_type; tp && strcmp(tp->type, name); tp = tp->next)
+                ;
+        return tp;
 }
-		
+                
 
 /* ****************************************************************************
  * raddb/realms
@@ -1130,66 +1130,66 @@ find_radck_type(name)
 /*ARGSUSED*/
 int
 read_realms_entry(unused, fc, fv, file, lineno)
-	void *unused;
-	int fc;
-	char **fv;
-	char *file;
-	int lineno;
+        void *unused;
+        int fc;
+        char **fv;
+        char *file;
+        int lineno;
 {
-	REALM *rp;
-	char *p;
+        REALM *rp;
+        char *p;
 
-	if (fc < 2) {
-		radlog(L_ERR, _("%s:%d: too few fields (%d)"),
-		       file, lineno, fc);
-		return -1;
-	}
-	
-	rp = Alloc_entry(REALM);
+        if (fc < 2) {
+                radlog(L_ERR, _("%s:%d: too few fields (%d)"),
+                       file, lineno, fc);
+                return -1;
+        }
+        
+        rp = Alloc_entry(REALM);
 
-	if ((p = strchr(fv[1], ':')) != NULL) {
-		*p++ = 0;
-		rp->auth_port = strtoul(p, &p, 0);
-		rp->acct_port = rp->auth_port + 1;
-		if (*p) {
-			if (*p == ':')
-				rp->acct_port = strtoul(p+1, &p, 0);
-			else 
-				radlog(L_ERR,
-				       "%s:%d: junk after port number",
-				       file, lineno);
-		}
-	} else {
-		rp->auth_port = auth_port;
-		rp->acct_port = acct_port;
-	}
-	if (strcmp(fv[1], "LOCAL") != 0)
-		rp->ipaddr = ip_gethostaddr(fv[1]);
-	STRING_COPY(rp->realm, fv[0]);
-	STRING_COPY(rp->server, fv[1]);
-	
-	if (fc > 3 && isdigit(fv[fc-1][0])) {
-		/* Compatibility quirk: set login quota and decrease the
-		   number of fields. */
-		rp->maxlogins = atoi(fv[fc-1]);
-		fc--;
-	}
-	
-	if (fc > 2) {
-		envar_t *args;
-		int n;
-		
-		args = envar_parse_argcv(fc-2, &fv[2]);
+        if ((p = strchr(fv[1], ':')) != NULL) {
+                *p++ = 0;
+                rp->auth_port = strtoul(p, &p, 0);
+                rp->acct_port = rp->auth_port + 1;
+                if (*p) {
+                        if (*p == ':')
+                                rp->acct_port = strtoul(p+1, &p, 0);
+                        else 
+                                radlog(L_ERR,
+                                       "%s:%d: junk after port number",
+                                       file, lineno);
+                }
+        } else {
+                rp->auth_port = auth_port;
+                rp->acct_port = acct_port;
+        }
+        if (strcmp(fv[1], "LOCAL") != 0)
+                rp->ipaddr = ip_gethostaddr(fv[1]);
+        STRING_COPY(rp->realm, fv[0]);
+        STRING_COPY(rp->server, fv[1]);
+        
+        if (fc > 3 && isdigit(fv[fc-1][0])) {
+                /* Compatibility quirk: set login quota and decrease the
+                   number of fields. */
+                rp->maxlogins = atoi(fv[fc-1]);
+                fc--;
+        }
+        
+        if (fc > 2) {
+                envar_t *args;
+                int n;
+                
+                args = envar_parse_argcv(fc-2, &fv[2]);
 
-		rp->striprealm = envar_lookup_int(args, "strip", 1);
-		n = envar_lookup_int(args, "quota", 0);
-		if (n)
-			rp->maxlogins = n;
-		envar_free_list(args);
-	}
-	rp->next = realms;
-	realms = rp;
-	return 0;
+                rp->striprealm = envar_lookup_int(args, "strip", 1);
+                n = envar_lookup_int(args, "quota", 0);
+                if (n)
+                        rp->maxlogins = n;
+                envar_free_list(args);
+        }
+        rp->next = realms;
+        realms = rp;
+        return 0;
 }
 
 /*
@@ -1197,12 +1197,12 @@ read_realms_entry(unused, fc, fv, file, lineno)
  */
 int
 read_realms_file(file)
-	char *file;
+        char *file;
 {
-	free_slist((struct slist*)realms, NULL);
-	realms = NULL;
-	
-	return read_raddb_file(file, 1, read_realms_entry, NULL);
+        free_slist((struct slist*)realms, NULL);
+        realms = NULL;
+        
+        return read_raddb_file(file, 1, read_realms_entry, NULL);
 }
 
 /*
@@ -1211,19 +1211,19 @@ read_realms_file(file)
 /* Find a realm in the REALM list */
 REALM *
 realm_find(realm)
-	char *realm;
+        char *realm;
 {
-	REALM *p;
+        REALM *p;
 
-	for (p = realms; p; p = p->next)
-		if (strcmp(p->realm, realm) == 0)
-			break;
-	if (!p && strcmp(realm, "NOREALM")) {
-		for (p = realms; p; p = p->next)
-			if (strcmp(p->realm, "DEFAULT") == 0)
-				break;
-	}
-	return p;
+        for (p = realms; p; p = p->next)
+                if (strcmp(p->realm, realm) == 0)
+                        break;
+        if (!p && strcmp(realm, "NOREALM")) {
+                for (p = realms; p; p = p->next)
+                        if (strcmp(p->realm, "DEFAULT") == 0)
+                                break;
+        }
+        return p;
 }
 
 /* ****************************************************************************
@@ -1235,19 +1235,19 @@ realm_find(realm)
  */
 void
 add_deny(user)
-	 char *user;
+         char *user;
 {
-	sym_install(deny_tab, user);
+        sym_install(deny_tab, user);
 }
 
 /*ARGSUSED*/
 int
 read_denylist_entry(denycnt, fc, fv, file, lineno)
-	int *denycnt;
-	int fc;
-	char **fv;
-	char *file;
-	int lineno;
+        int *denycnt;
+        int fc;
+        char **fv;
+        char *file;
+        int lineno;
 {
         if (fc != 1) {
                 radlog(L_ERR, _("%s:%d: wrong number of fields (%d)"),
@@ -1255,33 +1255,33 @@ read_denylist_entry(denycnt, fc, fv, file, lineno)
                 return -1;
         }
 
-	if (get_deny(fv[0]))
-		radlog(L_ERR, _("user `%s' already found in %s"),
-		    fv[0], RADIUS_DENY);
-	else {
-		add_deny(fv[0]);
-		(*denycnt)++;
-	}
-	return 0;
+        if (get_deny(fv[0]))
+                radlog(L_ERR, _("user `%s' already found in %s"),
+                    fv[0], RADIUS_DENY);
+        else {
+                add_deny(fv[0]);
+                (*denycnt)++;
+        }
+        return 0;
 }
 
 void
 read_deny_file()
 {
-	int denycnt;
-	char *name;
-	
-	name = mkfilename(radius_dir, RADIUS_DENY);
-	if (deny_tab)
-		symtab_clear(deny_tab);
-	else
-		deny_tab = symtab_create(sizeof(Symbol), NULL);
-	denycnt = 0;
+        int denycnt;
+        char *name;
+        
+        name = mkfilename(radius_dir, RADIUS_DENY);
+        if (deny_tab)
+                symtab_clear(deny_tab);
+        else
+                deny_tab = symtab_create(sizeof(Symbol), NULL);
+        denycnt = 0;
 
-	read_raddb_file(name, 0, read_denylist_entry, &denycnt);
-	efree(name);
-	if (denycnt)
-		radlog(L_INFO, _("%d users disabled"), denycnt);
+        read_raddb_file(name, 0, read_denylist_entry, &denycnt);
+        efree(name);
+        if (denycnt)
+                radlog(L_INFO, _("%d users disabled"), denycnt);
 }
 
 /*
@@ -1289,9 +1289,9 @@ read_deny_file()
  */
 int
 get_deny(user)
-	char *user;
+        char *user;
 {
-	return sym_lookup(deny_tab, user) != NULL;
+        return sym_lookup(deny_tab, user) != NULL;
 }
 
 
@@ -1300,133 +1300,133 @@ get_deny(user)
  */
 
 /*
- *	See if a VALUE_PAIR list contains Fall-Through = Yes
+ *      See if a VALUE_PAIR list contains Fall-Through = Yes
  */
 int
 fallthrough(vp)
-	VALUE_PAIR *vp;
+        VALUE_PAIR *vp;
 {
-	VALUE_PAIR *tmp;
+        VALUE_PAIR *tmp;
 
-	return (tmp = avl_find(vp, DA_FALL_THROUGH)) ? tmp->lvalue : 0;
+        return (tmp = avl_find(vp, DA_FALL_THROUGH)) ? tmp->lvalue : 0;
 }
 
 /*
- *	Compare a portno with a range.
+ *      Compare a portno with a range.
  */
 int
 portcmp(check, request)
-	VALUE_PAIR *check;
-	VALUE_PAIR *request;
+        VALUE_PAIR *check;
+        VALUE_PAIR *request;
 {
-	char buf[AUTH_STRING_LEN];
-	char *s, *p, *save;
-	int lo, hi;
-	int port = request->lvalue;
+        char buf[AUTH_STRING_LEN];
+        char *s, *p, *save;
+        int lo, hi;
+        int port = request->lvalue;
 
-	strcpy(buf, check->strvalue);
-	s = strtok_r(buf, ",", &save);
-	while(s) {
-		if ((p = strchr(s, '-')) != NULL)
-			p++;
-		else
-			p = s;
-		lo = atoi(s);
-		hi = atoi(p);
-		if (lo <= port && port <= hi) {
-			return 0;
-		}
-		s = strtok_r(NULL, ",", &save);
-	}
+        strcpy(buf, check->strvalue);
+        s = strtok_r(buf, ",", &save);
+        while(s) {
+                if ((p = strchr(s, '-')) != NULL)
+                        p++;
+                else
+                        p = s;
+                lo = atoi(s);
+                hi = atoi(p);
+                if (lo <= port && port <= hi) {
+                        return 0;
+                }
+                s = strtok_r(NULL, ",", &save);
+        }
 
-	return -1;
+        return -1;
 }
 
 
 int
 uidcmp(check, username)
-	VALUE_PAIR *check;
-	char *username;
+        VALUE_PAIR *check;
+        char *username;
 {
-	struct passwd *pwd;
+        struct passwd *pwd;
 
         if ((pwd = getpwnam(username)) == NULL)
                 return -1;
 
-	return pwd->pw_uid - check->lvalue;
+        return pwd->pw_uid - check->lvalue;
 }
 
 /*
- *	See if user is member of a group.
- *	We also handle additional groups.
+ *      See if user is member of a group.
+ *      We also handle additional groups.
  */
 int
 groupcmp(req, groupname, username)
-	RADIUS_REQ *req;
-	char *groupname;
-	char *username;
+        RADIUS_REQ *req;
+        char *groupname;
+        char *username;
 {
-	struct passwd *pwd;
-	struct group *grp;
-	char **member;
-	int retval;
+        struct passwd *pwd;
+        struct group *grp;
+        char **member;
+        int retval;
 
 #ifdef USE_SQL
-	if (rad_sql_checkgroup(req, groupname) == 0)
-		return 0;
+        if (rad_sql_checkgroup(req, groupname) == 0)
+                return 0;
 #endif
 
         if ((pwd = getpwnam(username)) == NULL)
                 return -1;
 
-	if ((grp = getgrnam(groupname)) == NULL)
-		return -1;
+        if ((grp = getgrnam(groupname)) == NULL)
+                return -1;
 
-	retval = (pwd->pw_gid == grp->gr_gid) ? 0 : -1;
-	if (retval < 0) {
-		for (member = grp->gr_mem; *member && retval; member++) {
-			if (strcmp(*member, pwd->pw_name) == 0)
-				retval = 0;
-		}
-	}
-	return retval;
+        retval = (pwd->pw_gid == grp->gr_gid) ? 0 : -1;
+        if (retval < 0) {
+                for (member = grp->gr_mem; *member && retval; member++) {
+                        if (strcmp(*member, pwd->pw_name) == 0)
+                                retval = 0;
+                }
+        }
+        return retval;
 }
 
 /*
- *	Compare prefix/suffix.
+ *      Compare prefix/suffix.
  */
 int
 presufcmp(check, name, rest)
-	VALUE_PAIR *check;
-	char *name;
-	char *rest;
+        VALUE_PAIR *check;
+        char *name;
+        char *rest;
 {
-	int len, namelen;
-	int ret = -1;
+        int len, namelen;
+        int ret = -1;
 
-	debug(1, ("comparing %s and %s, check->attr is %d",
-		 name, check->strvalue, check->attribute));
+        debug(1, ("comparing %s and %s, check->attr is %d",
+                 name, check->strvalue, check->attribute));
 
-	len = strlen(check->strvalue);
-	switch (check->attribute) {
-		case DA_PREFIX:
-			ret = strncmp(name, check->strvalue, len);
-			if (ret == 0 && rest)
-				strcpy(rest, name + len);
-			break;
-		case DA_SUFFIX:
-			namelen = strlen(name);
-			if (namelen < len)
-				break;
-			ret = strcmp(name + namelen - len, check->strvalue);
-			if (ret == 0 && rest) {
-				strncpy(rest, name, namelen - len);
-				rest[namelen - len] = 0;
-			}
-			break;
-	}
-	debug(1, ("returning %d", ret));
-	return ret;
+        len = strlen(check->strvalue);
+        switch (check->attribute) {
+                case DA_PREFIX:
+                        ret = strncmp(name, check->strvalue, len);
+                        if (ret == 0 && rest)
+                                strcpy(rest, name + len);
+                        break;
+                case DA_SUFFIX:
+                        namelen = strlen(name);
+                        if (namelen < len)
+                                break;
+                        ret = strcmp(name + namelen - len, check->strvalue);
+                        if (ret == 0 && rest) {
+                                strncpy(rest, name, namelen - len);
+                                rest[namelen - len] = 0;
+                        }
+                        break;
+        }
+        debug(1, ("returning %d", ret));
+        return ret;
 }
 
 /*
@@ -1434,42 +1434,42 @@ presufcmp(check, name, rest)
  * These are "server" check items.
  */
 static int server_check_items[] = {
-	DA_EXPIRATION,
-	DA_LOGIN_TIME,
-	DA_PASSWORD,
-	DA_CRYPT_PASSWORD,
-	DA_PASSWORD_LOCATION,
-	DA_AUTH_TYPE,
-	DA_PAM_AUTH,
-	DA_SIMULTANEOUS_USE,
-	DA_STRIP_USER_NAME,
-	DA_REPLACE_USER_NAME,
+        DA_EXPIRATION,
+        DA_LOGIN_TIME,
+        DA_PASSWORD,
+        DA_CRYPT_PASSWORD,
+        DA_PASSWORD_LOCATION,
+        DA_AUTH_TYPE,
+        DA_PAM_AUTH,
+        DA_SIMULTANEOUS_USE,
+        DA_STRIP_USER_NAME,
+        DA_REPLACE_USER_NAME,
 #ifdef DA_REWRITE_FUNCTION
-	DA_REWRITE_FUNCTION,
-#endif	
+        DA_REWRITE_FUNCTION,
+#endif  
 #ifdef DA_ACCT_TYPE
-	DA_ACCT_TYPE,
+        DA_ACCT_TYPE,
 #endif
 #ifdef DA_LOG_MODE_MASK
-	DA_LOG_MODE_MASK,
+        DA_LOG_MODE_MASK,
 #endif
-	DA_MENU,
-	DA_TERMINATION_MENU,
-	DA_GROUP_NAME,
-	DA_MATCH_PROFILE,
-	DA_AUTH_DATA
+        DA_MENU,
+        DA_TERMINATION_MENU,
+        DA_GROUP_NAME,
+        DA_MATCH_PROFILE,
+        DA_AUTH_DATA
 };
 
 int
 server_attr(attr)
-	int attr;
+        int attr;
 {
-	int i;
+        int i;
 
-	for (i = 0; i < NITEMS(server_check_items); i++) 
-		if (server_check_items[i] == attr)
-			return 1;	
-	return 0;
+        for (i = 0; i < NITEMS(server_check_items); i++) 
+                if (server_check_items[i] == attr)
+                        return 1;       
+        return 0;
 }
 
 /*
@@ -1478,134 +1478,134 @@ server_attr(attr)
  */
 int
 paircmp(request, check)
-	RADIUS_REQ *request;
-	VALUE_PAIR *check;
+        RADIUS_REQ *request;
+        VALUE_PAIR *check;
 {
-	VALUE_PAIR *check_item = check;
-	VALUE_PAIR *auth_item;
-	char username[AUTH_STRING_LEN];
-	int result = 0;
-	int compare;
-	char *save;
+        VALUE_PAIR *check_item = check;
+        VALUE_PAIR *auth_item;
+        char username[AUTH_STRING_LEN];
+        int result = 0;
+        int compare;
+        char *save;
 
-	while (result == 0 && check_item != NULL) {
-		if (server_attr(check_item->attribute)) {  
-			check_item = check_item->next;
-			continue;
-		}
+        while (result == 0 && check_item != NULL) {
+                if (server_attr(check_item->attribute)) {  
+                        check_item = check_item->next;
+                        continue;
+                }
 
-		if (debug_on(20)) {
-			radlog(L_DEBUG, 
-		               "check_item: %s", 
+                if (debug_on(20)) {
+                        radlog(L_DEBUG, 
+                               "check_item: %s", 
                                format_pair(check_item, &save));
-			free(save);
-		}
+                        free(save);
+                }
 
-		/*
-		 *	See if this item is present in the request.
-		 */
-		for (auth_item = request->request; auth_item; 
-				auth_item = auth_item->next) {
-			debug(30, ("trying %d", auth_item->attribute));
+                /*
+                 *      See if this item is present in the request.
+                 */
+                for (auth_item = request->request; auth_item; 
+                                auth_item = auth_item->next) {
+                        debug(30, ("trying %d", auth_item->attribute));
 
-			switch (check_item->attribute) {
-			case DA_PREFIX:
-			case DA_SUFFIX:
-			case DA_GROUP_NAME:
-			case DA_GROUP:
-				if (auth_item->attribute != DA_USER_NAME)
-					continue;
-				/*FALLTHRU*/
-			case DA_HUNTGROUP_NAME:
-			case DA_USER_UID:
-				break;
-			case DA_HINT:
-				if (auth_item->attribute != check_item->attribute)
-					continue;
-				if (strcmp(check_item->strvalue,
-					   auth_item->strvalue) != 0)
-					continue;
-				break;
-			default:
-				if (auth_item->attribute !=
-				    check_item->attribute)
-					continue;
-			}
-			break;
-		}
-		if (auth_item == NULL) {
-			result = -1;
-			continue;
-		}
+                        switch (check_item->attribute) {
+                        case DA_PREFIX:
+                        case DA_SUFFIX:
+                        case DA_GROUP_NAME:
+                        case DA_GROUP:
+                                if (auth_item->attribute != DA_USER_NAME)
+                                        continue;
+                                /*FALLTHRU*/
+                        case DA_HUNTGROUP_NAME:
+                        case DA_USER_UID:
+                                break;
+                        case DA_HINT:
+                                if (auth_item->attribute != check_item->attribute)
+                                        continue;
+                                if (strcmp(check_item->strvalue,
+                                           auth_item->strvalue) != 0)
+                                        continue;
+                                break;
+                        default:
+                                if (auth_item->attribute !=
+                                    check_item->attribute)
+                                        continue;
+                        }
+                        break;
+                }
+                if (auth_item == NULL) {
+                        result = -1;
+                        continue;
+                }
 
-		if (debug_on(20)) {
-			radlog(L_DEBUG,
-			       "auth_item: %s",
-			       format_pair(auth_item, &save));
-			free(save);
-		}
+                if (debug_on(20)) {
+                        radlog(L_DEBUG,
+                               "auth_item: %s",
+                               format_pair(auth_item, &save));
+                        free(save);
+                }
 
-		/*
-		 *	OK it is present now compare them.
-		 */
-		
-		compare = 0;	/* default result */
-		switch (check_item->type) {
-		case TYPE_STRING:
-			switch (check_item->attribute) {
-			case DA_PREFIX:
-			case DA_SUFFIX:
-				strcpy(username, auth_item->strvalue);
-				compare = presufcmp(check_item,
-						    auth_item->strvalue,
-						    username);
-				break;
-			case DA_NAS_PORT_ID:
-				compare = portcmp(check_item, auth_item);
-				break;
-			case DA_GROUP_NAME:
-			case DA_GROUP:
-				strcpy(username, auth_item->strvalue);
-				compare = groupcmp(request,
-						   check_item->strvalue,
-						   username);
-				break;
-			case DA_HUNTGROUP_NAME:
-				compare = !huntgroup_match(request,
-							 check_item->strvalue);
-				break;
-			default:
-				compare = strcmp(auth_item->strvalue,
-						 check_item->strvalue);
-			}
-			break;
+                /*
+                 *      OK it is present now compare them.
+                 */
+                
+                compare = 0;    /* default result */
+                switch (check_item->type) {
+                case TYPE_STRING:
+                        switch (check_item->attribute) {
+                        case DA_PREFIX:
+                        case DA_SUFFIX:
+                                strcpy(username, auth_item->strvalue);
+                                compare = presufcmp(check_item,
+                                                    auth_item->strvalue,
+                                                    username);
+                                break;
+                        case DA_NAS_PORT_ID:
+                                compare = portcmp(check_item, auth_item);
+                                break;
+                        case DA_GROUP_NAME:
+                        case DA_GROUP:
+                                strcpy(username, auth_item->strvalue);
+                                compare = groupcmp(request,
+                                                   check_item->strvalue,
+                                                   username);
+                                break;
+                        case DA_HUNTGROUP_NAME:
+                                compare = !huntgroup_match(request,
+                                                         check_item->strvalue);
+                                break;
+                        default:
+                                compare = strcmp(auth_item->strvalue,
+                                                 check_item->strvalue);
+                        }
+                        break;
 
-		case TYPE_INTEGER:
-			switch (check_item->attribute) {
-			case DA_USER_UID:
-				compare = uidcmp(check_item, username);
-				break;
-			}
-			/*FALLTHRU*/
-		case TYPE_IPADDR:
-			compare = auth_item->lvalue - check_item->lvalue;
-			break;
-			
-		default:
-			return -1;
-			break;
-		}
+                case TYPE_INTEGER:
+                        switch (check_item->attribute) {
+                        case DA_USER_UID:
+                                compare = uidcmp(check_item, username);
+                                break;
+                        }
+                        /*FALLTHRU*/
+                case TYPE_IPADDR:
+                        compare = auth_item->lvalue - check_item->lvalue;
+                        break;
+                        
+                default:
+                        return -1;
+                        break;
+                }
 
-		debug(20, ("compare: %d", compare));
+                debug(20, ("compare: %d", compare));
 
-		result = comp_op(check_item->operator, compare);
+                result = comp_op(check_item->operator, compare);
 
-		if (result == 0)
-			check_item = check_item->next;
-	}
+                if (result == 0)
+                        check_item = check_item->next;
+        }
 
-	debug(20, ("returning %d", result));
-	return result;
+        debug(20, ("returning %d", result));
+        return result;
 
 }
 
@@ -1614,58 +1614,58 @@ paircmp(request, check)
  */
 void
 matchrule_free(pl)
-	MATCHING_RULE **pl;
+        MATCHING_RULE **pl;
 {
-	MATCHING_RULE *p, *next;
+        MATCHING_RULE *p, *next;
 
-	for (p = *pl; p; p = next) {
-		if (p->name)
-			efree(p->name);
-		if (p->lhs)
-			avl_free(p->lhs);
-		if (p->rhs)
-			avl_free(p->rhs);
-		next = p->next;
-		free_entry(p);
-	}
-	*pl = NULL;
+        for (p = *pl; p; p = next) {
+                if (p->name)
+                        efree(p->name);
+                if (p->lhs)
+                        avl_free(p->lhs);
+                if (p->rhs)
+                        avl_free(p->rhs);
+                next = p->next;
+                free_entry(p);
+        }
+        *pl = NULL;
 }
 
 int
 hints_pairmatch(pl, req, name, ret_name)
-	MATCHING_RULE *pl;
-	RADIUS_REQ *req;
-	char *name;
-	char *ret_name;
+        MATCHING_RULE *pl;
+        RADIUS_REQ *req;
+        char *name;
+        char *ret_name;
 {
-	VALUE_PAIR *pair;
-	char username[AUTH_STRING_LEN];
-	int compare;
-	
-	strcpy(ret_name, name);
-	strncpy(username, name, AUTH_STRING_LEN);
+        VALUE_PAIR *pair;
+        char username[AUTH_STRING_LEN];
+        int compare;
+        
+        strcpy(ret_name, name);
+        strncpy(username, name, AUTH_STRING_LEN);
 
-	compare = 0;
-	for (pair = pl->lhs; compare == 0 && pair; pair = pair->next) {
-		switch (pair->attribute) {
-		case DA_PREFIX:
-		case DA_SUFFIX:
-			compare = presufcmp(pair, username, ret_name);
-			strncpy(username, ret_name, AUTH_STRING_LEN);
-			break;
-		case DA_USER_UID:
-			compare = uidcmp(pair, username);
-			break;
-		case DA_GROUP:
-			compare = groupcmp(req, pair->strvalue, username);
-			break;
-		default:
-			continue;
-		}
-		compare = comp_op(pair->operator, compare);
-	}
+        compare = 0;
+        for (pair = pl->lhs; compare == 0 && pair; pair = pair->next) {
+                switch (pair->attribute) {
+                case DA_PREFIX:
+                case DA_SUFFIX:
+                        compare = presufcmp(pair, username, ret_name);
+                        strncpy(username, ret_name, AUTH_STRING_LEN);
+                        break;
+                case DA_USER_UID:
+                        compare = uidcmp(pair, username);
+                        break;
+                case DA_GROUP:
+                        compare = groupcmp(req, pair->strvalue, username);
+                        break;
+                default:
+                        continue;
+                }
+                compare = comp_op(pair->operator, compare);
+        }
 
-	return compare;
+        return compare;
 }
 
 /* ***************************************************************************
@@ -1673,125 +1673,125 @@ hints_pairmatch(pl, req, name, ret_name)
  */
 char *
 wild_start(str)
-	char *str;
+        char *str;
 {
-	char *p;
+        char *p;
 
-	p = str;
-	while (*p) {
-		switch (*p) {
-		case '*':
-		case '?':
-			return p;
-			
-		case '\\':
-			if (p[1] == '(' || p[1] == ')')
-				return p;
-			/*FALLTHRU*/
-		default:
-			p++;
-		}
-	}
-	return NULL;
+        p = str;
+        while (*p) {
+                switch (*p) {
+                case '*':
+                case '?':
+                        return p;
+                        
+                case '\\':
+                        if (p[1] == '(' || p[1] == ')')
+                                return p;
+                        /*FALLTHRU*/
+                default:
+                        p++;
+                }
+        }
+        return NULL;
 }
 
 int
 match_any_chars(expr, name)
-	char **expr;
-	char **name;
+        char **expr;
+        char **name;
 {
-	char *exprp, *expr_start, *p, *namep;
-	int length;
-	
-	exprp = *expr;
-	while (*exprp && *exprp == '*')
-		exprp++;
-	
-	expr_start = exprp;
-	while (exprp[0] == '\\' && (exprp[1] == '(' || exprp[1] == ')'))
-		exprp += 2;
-	
-	p = wild_start(exprp);
-	
-	if (p) 
-		length = p - exprp;
-	else
-		length = strlen(exprp);
+        char *exprp, *expr_start, *p, *namep;
+        int length;
+        
+        exprp = *expr;
+        while (*exprp && *exprp == '*')
+                exprp++;
+        
+        expr_start = exprp;
+        while (exprp[0] == '\\' && (exprp[1] == '(' || exprp[1] == ')'))
+                exprp += 2;
+        
+        p = wild_start(exprp);
+        
+        if (p) 
+                length = p - exprp;
+        else
+                length = strlen(exprp);
 
-	if (length == 0) {
-		*name += strlen(*name);
-	} else {
-		namep = *name + strlen(*name) - 1;
-		while (namep > *name) {
-			if (strncmp(namep, exprp, length) == 0) {
-				*name = namep;
-				break;
-			}
-			namep--;
-		}
-	}
-	*expr = (exprp == expr_start) ? p : expr_start;
-	return 0;
+        if (length == 0) {
+                *name += strlen(*name);
+        } else {
+                namep = *name + strlen(*name) - 1;
+                while (namep > *name) {
+                        if (strncmp(namep, exprp, length) == 0) {
+                                *name = namep;
+                                break;
+                        }
+                        namep--;
+                }
+        }
+        *expr = (exprp == expr_start) ? p : expr_start;
+        return 0;
 }
 
 int
 wild_match(expr, name, return_name)
-	char *expr;
-	char *name;
-	char *return_name;
+        char *expr;
+        char *name;
+        char *return_name;
 {
-	char *curp;
-	char *start_pos, *end_pos;
-	int c;
-	
-	strcpy(return_name, name);
-	start_pos = end_pos = NULL;
-	curp = name;
-	while (expr && *expr) {
-		switch (*expr) {
-		case '*':
-			expr++;
-			if (match_any_chars(&expr, &curp))
-				return curp - name + 1;
-			break;
-			
-		case '?':
-			expr++;
-			if (*curp == 0)
-				return curp - name + 1;
-			curp++;
-			break;
-			
-		case '\\':
-			if (expr[1] == 0) 
-				goto def;
-			c = *++expr; expr++;
-			if (c == '(') {
-				start_pos = curp;
-			} else if (c == ')') {
-				end_pos = curp;
-				if (start_pos) {
-					int len = end_pos - start_pos;
-					strncpy(return_name, start_pos, len);
-					return_name += len;
-					*return_name = 0;
-				}
-			} else {
-				if (*curp != c)
-					return curp - name + 1;
-				curp++;
-			}
-			break;
-			
-		default:
-		def:
-			if (*expr != *curp)
-				return curp - name + 1;
-			expr++;
-			curp++;
-		}
-	}
-	return *curp != 0;
+        char *curp;
+        char *start_pos, *end_pos;
+        int c;
+        
+        strcpy(return_name, name);
+        start_pos = end_pos = NULL;
+        curp = name;
+        while (expr && *expr) {
+                switch (*expr) {
+                case '*':
+                        expr++;
+                        if (match_any_chars(&expr, &curp))
+                                return curp - name + 1;
+                        break;
+                        
+                case '?':
+                        expr++;
+                        if (*curp == 0)
+                                return curp - name + 1;
+                        curp++;
+                        break;
+                        
+                case '\\':
+                        if (expr[1] == 0) 
+                                goto def;
+                        c = *++expr; expr++;
+                        if (c == '(') {
+                                start_pos = curp;
+                        } else if (c == ')') {
+                                end_pos = curp;
+                                if (start_pos) {
+                                        int len = end_pos - start_pos;
+                                        strncpy(return_name, start_pos, len);
+                                        return_name += len;
+                                        *return_name = 0;
+                                }
+                        } else {
+                                if (*curp != c)
+                                        return curp - name + 1;
+                                curp++;
+                        }
+                        break;
+                        
+                default:
+                def:
+                        if (*expr != *curp)
+                                return curp - name + 1;
+                        expr++;
+                        curp++;
+                }
+        }
+        return *curp != 0;
 }
 
 /* ************************************************************************* */
@@ -1801,41 +1801,41 @@ wild_match(expr, name, return_name)
  */
 int
 matches(req, name, pl, matchpart)
-	RADIUS_REQ *req;
-	char *name;
-	MATCHING_RULE *pl;
-	char *matchpart;
+        RADIUS_REQ *req;
+        char *name;
+        MATCHING_RULE *pl;
+        char *matchpart;
 {
-	if (strncmp(pl->name, "DEFAULT", 7) == 0 ||
-	    wild_match(pl->name, name, matchpart) == 0)
-		return hints_pairmatch(pl, req, name, matchpart);
-	return 1;
-}	
-	
+        if (strncmp(pl->name, "DEFAULT", 7) == 0 ||
+            wild_match(pl->name, name, matchpart) == 0)
+                return hints_pairmatch(pl, req, name, matchpart);
+        return 1;
+}       
+        
 /* ****************************************************************************
  * Read all configuration files
  */
 
 #if USE_DBM
 /*
- *	See if a potential DBM file is present.
+ *      See if a potential DBM file is present.
  */
 static int checkdbm(char *users, char *ext);
 
 int
 checkdbm(users, ext)
-	char *users;
-	char *ext;
+        char *users;
+        char *ext;
 {
-	char *buffer;
-	struct stat st;
-	int rc;
-	
-	buffer = emalloc(strlen(users) + strlen(ext) + 1);
-	strcat(strcpy(buffer, users), ext);
-	rc = stat(buffer, &st);
-	efree(buffer);
-	return rc;
+        char *buffer;
+        struct stat st;
+        int rc;
+        
+        buffer = emalloc(strlen(users) + strlen(ext) + 1);
+        strcat(strcpy(buffer, users), ext);
+        rc = stat(buffer, &st);
+        efree(buffer);
+        return rc;
 }
 #endif
 
@@ -1843,155 +1843,155 @@ static int reload_data(enum reload_what what, int *do_radck);
 
 int
 reload_data(what, do_radck)
-	enum reload_what what;
-	int *do_radck;
+        enum reload_what what;
+        int *do_radck;
 {
-	char *path;
-	int   rc = 0;
-	
-	switch (what) {
-	case reload_all:
+        char *path;
+        int   rc = 0;
+        
+        switch (what) {
+        case reload_all:
                 /* This implies reloading users, huntgroups and hints */
-		rc += reload_data(reload_dict, do_radck);
-		rc += reload_data(reload_clients, do_radck);
-		rc += reload_data(reload_naslist, do_radck);
-		rc += reload_data(reload_realms, do_radck);
-		rc += reload_data(reload_deny, do_radck);
+                rc += reload_data(reload_dict, do_radck);
+                rc += reload_data(reload_clients, do_radck);
+                rc += reload_data(reload_naslist, do_radck);
+                rc += reload_data(reload_realms, do_radck);
+                rc += reload_data(reload_deny, do_radck);
 #ifdef USE_SQL
-		rc += reload_data(reload_sql, do_radck);
+                rc += reload_data(reload_sql, do_radck);
 #endif
-		reload_data(reload_rewrite, do_radck);
-		break;
-		
-	case reload_users:
-		symtab_clear(user_tab);
-		path = mkfilename(radius_dir, RADIUS_USERS);
-	
+                reload_data(reload_rewrite, do_radck);
+                break;
+                
+        case reload_users:
+                symtab_clear(user_tab);
+                path = mkfilename(radius_dir, RADIUS_USERS);
+        
 #if USE_DBM
-		if (use_dbm && radius_mode != MODE_BUILDDBM) {
-			if (access(path, 0) == 0) {
-				radlog(L_WARN,
-				       _("using only dbm: USERS NOT LOADED"));
-			}
-			*do_radck = 0;
-		} else {
-			if (radius_mode != MODE_BUILDDBM
-			    && (checkdbm(path, ".dir") == 0
-				|| checkdbm(path, ".db") == 0))
-				radlog(L_WARN,
-		    _("DBM files found but no -b flag given - NOT using DBM"));
-	        
+                if (use_dbm && radius_mode != MODE_BUILDDBM) {
+                        if (access(path, 0) == 0) {
+                                radlog(L_WARN,
+                                       _("using only dbm: USERS NOT LOADED"));
+                        }
+                        *do_radck = 0;
+                } else {
+                        if (radius_mode != MODE_BUILDDBM
+                            && (checkdbm(path, ".dir") == 0
+                                || checkdbm(path, ".db") == 0))
+                                radlog(L_WARN,
+                    _("DBM files found but no -b flag given - NOT using DBM"));
+                
 #endif
-		if (read_users(path)) {
-			radlog(L_CRIT, _("can't load %s: exited"), path);
-			exit(1);
-		} else
-			radlog(L_INFO, _("%s reloaded."), path);
-		*do_radck = 1;
+                if (read_users(path)) {
+                        radlog(L_CRIT, _("can't load %s: exited"), path);
+                        exit(1);
+                } else
+                        radlog(L_INFO, _("%s reloaded."), path);
+                *do_radck = 1;
 #if USE_DBM
-		}
+                }
 #endif
-		efree(path);
-		break;
+                efree(path);
+                break;
 
-	case reload_dict:
-		/* Non-zero result from dict_init means there was some real
-		 * trouble.
-		 */
-		if (dict_init())
-			rc = 1;
+        case reload_dict:
+                /* Non-zero result from dict_init means there was some real
+                 * trouble.
+                 */
+                if (dict_init())
+                        rc = 1;
 
-		/* Users, huntgroups and hints should be reloaded after
-		 * changing dictionary.
-		 */
-		rc += reload_data(reload_users, do_radck);
-		rc += reload_data(reload_huntgroups, do_radck);
-		rc += reload_data(reload_hints, do_radck);
-		break;
-		
-	case reload_huntgroups:
-		matchrule_free(&huntgroups);
-		path = mkfilename(radius_dir, RADIUS_HUNTGROUPS);
-		huntgroups = file_read(CF_HUNTGROUPS, path);
-		efree(path);
-		break;
-		
-	case reload_hints:
-		matchrule_free(&hints);
-		path = mkfilename(radius_dir, RADIUS_HINTS);
-		hints = file_read(CF_HINTS, path);
-		efree(path);
-		if (!use_dbm) 
-			*do_radck = 1;
-		break;
-		
-	case reload_clients:
-		path = mkfilename(radius_dir, RADIUS_CLIENTS);
-		if (read_clients_file(path) < 0)
-			rc = 1;
-		proxy_cleanup();
-		efree(path);
-		break;
+                /* Users, huntgroups and hints should be reloaded after
+                 * changing dictionary.
+                 */
+                rc += reload_data(reload_users, do_radck);
+                rc += reload_data(reload_huntgroups, do_radck);
+                rc += reload_data(reload_hints, do_radck);
+                break;
+                
+        case reload_huntgroups:
+                matchrule_free(&huntgroups);
+                path = mkfilename(radius_dir, RADIUS_HUNTGROUPS);
+                huntgroups = file_read(CF_HUNTGROUPS, path);
+                efree(path);
+                break;
+                
+        case reload_hints:
+                matchrule_free(&hints);
+                path = mkfilename(radius_dir, RADIUS_HINTS);
+                hints = file_read(CF_HINTS, path);
+                efree(path);
+                if (!use_dbm) 
+                        *do_radck = 1;
+                break;
+                
+        case reload_clients:
+                path = mkfilename(radius_dir, RADIUS_CLIENTS);
+                if (read_clients_file(path) < 0)
+                        rc = 1;
+                proxy_cleanup();
+                efree(path);
+                break;
 
-	case reload_naslist:
-		/*FIXME*/
-		path = mkfilename(radius_dir, RADIUS_NASTYPES);
-		read_nastypes_file(path);
-		efree(path);
-		/*EMXIF*/
-		
-		path = mkfilename(radius_dir, RADIUS_NASLIST);
-		if (read_naslist_file(path) < 0)
-			rc = 1;
-		efree(path);
-		break;
+        case reload_naslist:
+                /*FIXME*/
+                path = mkfilename(radius_dir, RADIUS_NASTYPES);
+                read_nastypes_file(path);
+                efree(path);
+                /*EMXIF*/
+                
+                path = mkfilename(radius_dir, RADIUS_NASLIST);
+                if (read_naslist_file(path) < 0)
+                        rc = 1;
+                efree(path);
+                break;
 
-	case reload_realms:
-		path = mkfilename(radius_dir, RADIUS_REALMS);
-		if (read_realms_file(path) < 0)
-			rc = 1;
-		efree(path);
-		break;
-		
-	case reload_deny:
-		read_deny_file();
-		break;
+        case reload_realms:
+                path = mkfilename(radius_dir, RADIUS_REALMS);
+                if (read_realms_file(path) < 0)
+                        rc = 1;
+                efree(path);
+                break;
+                
+        case reload_deny:
+                read_deny_file();
+                break;
 
 #ifdef USE_SQL
-	case reload_sql:
-		if (rad_sql_init() != 0) {
-			radlog(L_CRIT,
-			       _("SQL Error: SQL client could not be initialized"));
-			rc = -1;
-		}
-		break;
+        case reload_sql:
+                if (rad_sql_init() != 0) {
+                        radlog(L_CRIT,
+                               _("SQL Error: SQL client could not be initialized"));
+                        rc = -1;
+                }
+                break;
 #endif
 
-	case reload_rewrite:
-		path = mkfilename(radius_dir, "rewrite");
-		rc = parse_rewrite(path);
-		efree(path);
-		break;
-		
-	default:
-		radlog(L_CRIT, _("INTERNAL ERROR: unknown reload code: %d"),
-		       what);
-	}
-		
-	return rc;
+        case reload_rewrite:
+                path = mkfilename(radius_dir, "rewrite");
+                rc = parse_rewrite(path);
+                efree(path);
+                break;
+                
+        default:
+                radlog(L_CRIT, _("INTERNAL ERROR: unknown reload code: %d"),
+                       what);
+        }
+                
+        return rc;
 }
 
 int
 reload_config_file(what)
-	enum reload_what what;
+        enum reload_what what;
 {
-	int do_radck;
-	int rc;
+        int do_radck;
+        int rc;
 
-	rc = reload_data(what, &do_radck);
-	if (rc == 0 && do_radck)
-		radck();
-	return rc;
+        rc = reload_data(what, &do_radck);
+        if (rc == 0 && do_radck)
+                radck();
+        return rc;
 }
 
 /* ****************************************************************************
@@ -2001,127 +2001,127 @@ static void dump_pair_list(FILE *fp, char *header, MATCHING_RULE *pl);
 
 void
 dump_pairs(fp, pair)
-	FILE       *fp;
-	VALUE_PAIR *pair;
+        FILE       *fp;
+        VALUE_PAIR *pair;
 {
-	int etype;
-	
-	for (; pair; pair = pair->next) {
-		fprintf(fp, "\t\t%s %s ", pair->name, 
-			op_tab[pair->operator].name);
+        int etype;
+        
+        for (; pair; pair = pair->next) {
+                fprintf(fp, "\t\t%s %s ", pair->name, 
+                        op_tab[pair->operator].name);
 
-		switch (pair->type) {
-		case TYPE_STRING:
-			fprintf(fp, "(STRING) ");
-			break;
+                switch (pair->type) {
+                case TYPE_STRING:
+                        fprintf(fp, "(STRING) ");
+                        break;
 
-		case TYPE_INTEGER:
-			fprintf(fp, "(INTEGER) ");
-			break;
+                case TYPE_INTEGER:
+                        fprintf(fp, "(INTEGER) ");
+                        break;
 
-		case TYPE_IPADDR:
-			fprintf(fp, "(IP) ");
-			break;
-		
-		case TYPE_DATE:
-			fprintf(fp, "(DATE) ");
-			break;
-			
-		default:
-			fprintf(fp, "(%d) ", pair->type);
-		}
+                case TYPE_IPADDR:
+                        fprintf(fp, "(IP) ");
+                        break;
+                
+                case TYPE_DATE:
+                        fprintf(fp, "(DATE) ");
+                        break;
+                        
+                default:
+                        fprintf(fp, "(%d) ", pair->type);
+                }
 
-		if (pair->eval) {
-			etype = TYPE_STRING;
-			fprintf(fp, "=");
-		} else
-			etype = pair->type;
-		
-		switch (etype) {
-		case TYPE_STRING:
-			fprintf(fp, "%s", pair->strvalue);
-			break;
+                if (pair->eval) {
+                        etype = TYPE_STRING;
+                        fprintf(fp, "=");
+                } else
+                        etype = pair->type;
+                
+                switch (etype) {
+                case TYPE_STRING:
+                        fprintf(fp, "%s", pair->strvalue);
+                        break;
 
-		case TYPE_INTEGER:
-			fprintf(fp, "%ld", pair->lvalue);
-			break;
+                case TYPE_INTEGER:
+                        fprintf(fp, "%ld", pair->lvalue);
+                        break;
 
-		case TYPE_IPADDR:
-			fprintf(fp, "%lx", pair->lvalue);
-			break;
-		
-		case TYPE_DATE:
-			fprintf(fp, "%ld", pair->lvalue);
-			break;
-			
-		}
-		fprintf(fp, "\n");
-	}
+                case TYPE_IPADDR:
+                        fprintf(fp, "%lx", pair->lvalue);
+                        break;
+                
+                case TYPE_DATE:
+                        fprintf(fp, "%ld", pair->lvalue);
+                        break;
+                        
+                }
+                fprintf(fp, "\n");
+        }
 }
 
 void
 dump_pair_list(fp, header, pl)
-	FILE      *fp;
-	char      *header;
-	MATCHING_RULE *pl;
+        FILE      *fp;
+        char      *header;
+        MATCHING_RULE *pl;
 {
-	fprintf(fp, "%s {\n", header);
-	for ( ; pl; pl = pl->next) {
-		fprintf(fp, "\t%s:\n", pl->name);
-		fprintf(fp, "\tlhs {\n");
-		dump_pairs(fp, pl->lhs);
-		fprintf(fp, "\t}\n");
+        fprintf(fp, "%s {\n", header);
+        for ( ; pl; pl = pl->next) {
+                fprintf(fp, "\t%s:\n", pl->name);
+                fprintf(fp, "\tlhs {\n");
+                dump_pairs(fp, pl->lhs);
+                fprintf(fp, "\t}\n");
 
-		fprintf(fp, "\trhs {\n");
-		dump_pairs(fp, pl->rhs);
-		fprintf(fp, "\t}\n");
-	}
-	fprintf(fp, "}\n");
+                fprintf(fp, "\trhs {\n");
+                dump_pairs(fp, pl->rhs);
+                fprintf(fp, "\t}\n");
+        }
+        fprintf(fp, "}\n");
 }
 
 int
 dump_user(fp, sym)
-	FILE *fp;
-	User_symbol *sym;
+        FILE *fp;
+        User_symbol *sym;
 {
-	fprintf(fp, "\t%s:\n", sym->name);
-	fprintf(fp, "\tlhs {\n");
-	dump_pairs(fp, sym->check);
-	fprintf(fp, "\t}\n");
+        fprintf(fp, "\t%s:\n", sym->name);
+        fprintf(fp, "\tlhs {\n");
+        dump_pairs(fp, sym->check);
+        fprintf(fp, "\t}\n");
 
-	fprintf(fp, "\trhs {\n");
-	dump_pairs(fp, sym->reply);
-	fprintf(fp, "\t}\n");
-	
-	return 0;
+        fprintf(fp, "\trhs {\n");
+        dump_pairs(fp, sym->reply);
+        fprintf(fp, "\t}\n");
+        
+        return 0;
 }
 
 void
 dump_users_db()
 {
-	FILE *fp;
-	char *name = mkfilename(radlog_dir, RADIUS_DUMPDB_NAME);
-	
-	fp = fopen(name, "w");
-	if (!fp) {
-		radlog(L_ERR, _("can't create parser output file `%s': %s"),
-		    RADIUS_DUMPDB_NAME,
-		    strerror(errno));
-		efree(name);
-		return;
-	}
+        FILE *fp;
+        char *name = mkfilename(radlog_dir, RADIUS_DUMPDB_NAME);
+        
+        fp = fopen(name, "w");
+        if (!fp) {
+                radlog(L_ERR, _("can't create parser output file `%s': %s"),
+                    RADIUS_DUMPDB_NAME,
+                    strerror(errno));
+                efree(name);
+                return;
+        }
 
-	fchmod(fileno(fp), S_IRUSR|S_IWUSR);
+        fchmod(fileno(fp), S_IRUSR|S_IWUSR);
 
-	fprintf(fp, "%s {\n", "users");
-	symtab_iterate(user_tab, dump_user, fp);
-	fprintf(fp, "}\n");
+        fprintf(fp, "%s {\n", "users");
+        symtab_iterate(user_tab, dump_user, fp);
+        fprintf(fp, "}\n");
 
-	dump_pair_list(fp, "huntgroups", huntgroups);
-	dump_pair_list(fp, "hints", hints);
-	radlog(L_INFO, _("dumped users database to %s"), RADIUS_DUMPDB_NAME);
-	fclose(fp);
-	efree(name);
+        dump_pair_list(fp, "huntgroups", huntgroups);
+        dump_pair_list(fp, "hints", hints);
+        radlog(L_INFO, _("dumped users database to %s"), RADIUS_DUMPDB_NAME);
+        fclose(fp);
+        efree(name);
 }
 
 /* ***************************************************************************
@@ -2134,64 +2134,64 @@ dump_users_db()
  */
 void
 presuf_setup(request_pairs)
-	VALUE_PAIR *request_pairs;
+        VALUE_PAIR *request_pairs;
 {
-	User_symbol *sym;
-	USER_LOOKUP lu;
-	VALUE_PAIR  *presuf_pair;
-	VALUE_PAIR  *name_pair;
-	VALUE_PAIR  *tmp;
-	char	     name[RUT_NAMESIZE+1];
-	
-	if ((name_pair = avl_find(request_pairs, DA_USER_NAME)) == NULL)
-		return ;
+        User_symbol *sym;
+        USER_LOOKUP lu;
+        VALUE_PAIR  *presuf_pair;
+        VALUE_PAIR  *name_pair;
+        VALUE_PAIR  *tmp;
+        char         name[RUT_NAMESIZE+1];
+        
+        if ((name_pair = avl_find(request_pairs, DA_USER_NAME)) == NULL)
+                return ;
 
-	for (sym = user_lookup(name_pair->strvalue, &lu); sym;
-	     sym = user_next(&lu)) {
+        for (sym = user_lookup(name_pair->strvalue, &lu); sym;
+             sym = user_next(&lu)) {
 
-		if ((presuf_pair = avl_find(sym->check, DA_PREFIX)) == NULL &&
-		    (presuf_pair = avl_find(sym->check, DA_SUFFIX)) == NULL)
-			continue;
-		if (presufcmp(presuf_pair, name_pair->strvalue, name) != 0)
-			continue;
-		/*
-		 *	See if username must be stripped.
-		 */
-		if ((tmp = avl_find(sym->check, DA_STRIP_USER_NAME)) != NULL &&
-		    tmp->lvalue == 0)
-			continue;
-		replace_string(&name_pair->strvalue, name);
-		name_pair->strlength = strlen(name_pair->strvalue);
-		break;
-	}
+                if ((presuf_pair = avl_find(sym->check, DA_PREFIX)) == NULL &&
+                    (presuf_pair = avl_find(sym->check, DA_SUFFIX)) == NULL)
+                        continue;
+                if (presufcmp(presuf_pair, name_pair->strvalue, name) != 0)
+                        continue;
+                /*
+                 *      See if username must be stripped.
+                 */
+                if ((tmp = avl_find(sym->check, DA_STRIP_USER_NAME)) != NULL &&
+                    tmp->lvalue == 0)
+                        continue;
+                replace_string(&name_pair->strvalue, name);
+                name_pair->strlength = strlen(name_pair->strvalue);
+                break;
+        }
 }
 
 void
 strip_username(do_strip, name, check_item, stripped_name)
-	int         do_strip;
-	char        *name;
-	VALUE_PAIR  *check_item;
-	char        *stripped_name;
+        int         do_strip;
+        char        *name;
+        VALUE_PAIR  *check_item;
+        char        *stripped_name;
 {
-	char tmpname[AUTH_STRING_LEN];
-	char *source_ptr = name;
-	VALUE_PAIR *presuf_item, *tmp;
-	
-	/*
-	 *	See if there was a Prefix or Suffix included.
-	 */
-	if ((presuf_item = avl_find(check_item, DA_PREFIX)) == NULL)
-		presuf_item = avl_find(check_item, DA_SUFFIX);
-	if (presuf_item) {
-		if (tmp = avl_find(check_item, DA_STRIP_USER_NAME))
-			do_strip = tmp->lvalue;
-		if (do_strip) { 
-			if (presufcmp(presuf_item, name, tmpname) == 0)
-				source_ptr = tmpname;
-		}
-	}
-		
-	strcpy(stripped_name, source_ptr);
+        char tmpname[AUTH_STRING_LEN];
+        char *source_ptr = name;
+        VALUE_PAIR *presuf_item, *tmp;
+        
+        /*
+         *      See if there was a Prefix or Suffix included.
+         */
+        if ((presuf_item = avl_find(check_item, DA_PREFIX)) == NULL)
+                presuf_item = avl_find(check_item, DA_SUFFIX);
+        if (presuf_item) {
+                if (tmp = avl_find(check_item, DA_STRIP_USER_NAME))
+                        do_strip = tmp->lvalue;
+                if (do_strip) { 
+                        if (presufcmp(presuf_item, name, tmpname) == 0)
+                                source_ptr = tmpname;
+                }
+        }
+                
+        strcpy(stripped_name, source_ptr);
 }
 
 

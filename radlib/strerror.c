@@ -34,27 +34,27 @@ extern int sys_nerr;
 
 char *
 strerror(err)
-	int err;
+        int err;
 {
-	static char buf[80];
+        static char buf[80];
 
-	if (err > sys_nerr) {
-		snprintf(buf, sizeof(buf), "error %d", err);
-		return buf;
-	}
-	return sys_errlist[err];
+        if (err > sys_nerr) {
+                snprintf(buf, sizeof(buf), "error %d", err);
+                return buf;
+        }
+        return sys_errlist[err];
 }
 
 #else
 
 char *
 strerror(err)
-	int err;
+        int err;
 {
-	static char buf[80];
+        static char buf[80];
 
-	snprintf(buf, sizeof(buf), "error %d", err);
-	return buf;
+        snprintf(buf, sizeof(buf), "error %d", err);
+        return buf;
 }
 
 #endif /* HAVE_SYS_ERRLIST */

@@ -1,9 +1,9 @@
 typedef struct timespan TIMESPAN;
 
 struct timespan {
-	TIMESPAN *next;
-	int      start;
-	int      stop;
+        TIMESPAN *next;
+        int      start;
+        int      stop;
 };
 
 void ts_free(TIMESPAN *sp);

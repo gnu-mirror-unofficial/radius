@@ -29,36 +29,36 @@
 
 
 struct sql_connection {
-	struct sql_connection *next;
-	int    type;
-	void   *owner;
-	int    connected;
-	int    delete_on_close;
-	time_t last_used;
-	void   *data;      /* connection - specific data */
+        struct sql_connection *next;
+        int    type;
+        void   *owner;
+        int    connected;
+        int    delete_on_close;
+        time_t last_used;
+        void   *data;      /* connection - specific data */
 };
 
 typedef struct {
-	int      interface;
-	char     *server;
-	int      port;
-	char     *login;
-	char     *password;
-	char     *acct_db;
-	char     *auth_db;
-	char     *auth_query;
-	char     *group_query;
-	char     *acct_start_query;
-	char     *acct_stop_query;
-	char     *acct_nasup_query;
-	char     *acct_nasdown_query;
-	char     *acct_keepalive_query;
-	char     *check_attr_query;
-	char     *reply_attr_query;
-	int      keepopen;
-	time_t   idle_timeout;
-	unsigned max_connections[SQL_NSERVICE];
-	int      active[SQL_NSERVICE];
+        int      interface;
+        char     *server;
+        int      port;
+        char     *login;
+        char     *password;
+        char     *acct_db;
+        char     *auth_db;
+        char     *auth_query;
+        char     *group_query;
+        char     *acct_start_query;
+        char     *acct_stop_query;
+        char     *acct_nasup_query;
+        char     *acct_nasdown_query;
+        char     *acct_keepalive_query;
+        char     *check_attr_query;
+        char     *reply_attr_query;
+        int      keepopen;
+        time_t   idle_timeout;
+        unsigned max_connections[SQL_NSERVICE];
+        int      active[SQL_NSERVICE];
 #define doauth   active[SQL_AUTH]
 #define doacct   active[SQL_ACCT]
 } SQL_cfg;
@@ -81,7 +81,7 @@ int disp_sql_interface_index(char *name);
 int disp_sql_reconnect(int interface, int conn_type, struct sql_connection *);
 void disp_sql_disconnect(int interface, struct sql_connection *);
 int disp_sql_query(int interface, struct sql_connection *,
-		   char *query, int *report_cnt);
+                   char *query, int *report_cnt);
 char * disp_sql_getpwd(int interface, struct sql_connection *, char *query);
 void * disp_sql_exec(int interface, struct sql_connection *conn, char *query);
 char * disp_sql_column(int interface, void *data, int ncol);
@@ -89,16 +89,16 @@ int disp_sql_next_tuple(int interface, struct sql_connection *conn, void *data);
 void disp_sql_free(int interface, struct sql_connection *conn, void *data);
 
 typedef struct {
-	char *name;
-	int port;
-	int (*reconnect)(int type, struct sql_connection *);
-	void (*disconnect)(struct sql_connection *conn);
-	int (*query)(struct sql_connection *, char *query, int *report_cnt);
-	char *(*getpwd)(struct sql_connection *, char *query);
-	void *(*exec_query)(struct sql_connection *conn, char *query);
-	char *(*column)(void *data, int ncol);
-	int  (*next_tuple)(struct sql_connection *conn, void *data);
-	void (*free)(struct sql_connection *conn, void *data);
+        char *name;
+        int port;
+        int (*reconnect)(int type, struct sql_connection *);
+        void (*disconnect)(struct sql_connection *conn);
+        int (*query)(struct sql_connection *, char *query, int *report_cnt);
+        char *(*getpwd)(struct sql_connection *, char *query);
+        void *(*exec_query)(struct sql_connection *conn, char *query);
+        char *(*column)(void *data, int ncol);
+        int  (*next_tuple)(struct sql_connection *conn, void *data);
+        void (*free)(struct sql_connection *conn, void *data);
 } SQL_DISPATCH_TAB;
 
 #ifdef USE_SQL_MYSQL

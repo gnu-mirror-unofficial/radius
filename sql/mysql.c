@@ -69,286 +69,286 @@ static void rad_mysql_free(struct sql_connection *conn, void *data);
 
 static int 
 do_mysql_query(conn, query)
-	struct sql_connection *conn;
-	char *query;
+        struct sql_connection *conn;
+        char *query;
 {
-	int    ret;
-	int    i;
-	MYSQL *mysql;
+        int    ret;
+        int    i;
+        MYSQL *mysql;
 #ifdef STOP_SIGNALS
-	sigset_t        set, old_set;
+        sigset_t        set, old_set;
 #endif
-	
-	debug(1, ("called with %s", query));
-		
-	for (i = 0; i < 10; i++) {	/* Try it 10 Times */
-		if (!conn->connected) {
-			rad_mysql_reconnect(conn->type, conn);
-			if (!conn->connected)
-				return -1;
-		}
-		mysql = (MYSQL*)conn->data;
+        
+        debug(1, ("called with %s", query));
+                
+        for (i = 0; i < 10; i++) {      /* Try it 10 Times */
+                if (!conn->connected) {
+                        rad_mysql_reconnect(conn->type, conn);
+                        if (!conn->connected)
+                                return -1;
+                }
+                mysql = (MYSQL*)conn->data;
 #ifdef STOP_SIGNALS
-		/*
-		 * Try to not catch any signals during mysql_query We need
-		 * this if mysql is less than 3.20.25 or 3.21.3
-		 */
-		sigemptyset(&set);
-		sigaddset(&set, SIGALRM);
-		sigprocmask(SIG_BLOCK, &set, &old_set);
+                /*
+                 * Try to not catch any signals during mysql_query We need
+                 * this if mysql is less than 3.20.25 or 3.21.3
+                 */
+                sigemptyset(&set);
+                sigaddset(&set, SIGALRM);
+                sigprocmask(SIG_BLOCK, &set, &old_set);
 #endif
-		ret = mysql_query(mysql, query);
+                ret = mysql_query(mysql, query);
 #ifdef STOP_SIGNALS
-		sigprocmask(SIG_SETMASK, &old_set, NULL);
+                sigprocmask(SIG_SETMASK, &old_set, NULL);
 #endif
-		debug(1, ("MYSQL query returned %d", ret));
-		if (!ret) {
-			return ret;
-		}
-		
-		if (!strcasecmp(mysql_error(mysql),
-				"mysql server has gone away")) {
-			radlog(L_ERR,
-			       _("MYSQL Error (retrying %d): Cannot Query:%s"), 
-			       ret, query);
-			radlog(L_ERR, _("MYSQL error: %s"),
-			       mysql_error(mysql));
-			mysql_close(mysql);
-			conn->connected = 0;
-		} else {
-			radlog(L_ERR, _("MYSQL Error (%d): Cannot Query:%s"),
-			       ret, query);
-			radlog(L_ERR, _("MYSQL error: %s"), mysql_error(mysql));
-			rad_sql_need_reconnect(conn->type);
-			return ret;
-		}
-	}
-	debug(1,("FAILURE"));
-	radlog(L_ERR, _("MYSQL Error (giving up): Cannot Query:%s"), query);
-	rad_sql_need_reconnect(conn->type);
-	return ret;
+                debug(1, ("MYSQL query returned %d", ret));
+                if (!ret) {
+                        return ret;
+                }
+                
+                if (!strcasecmp(mysql_error(mysql),
+                                "mysql server has gone away")) {
+                        radlog(L_ERR,
+                               _("MYSQL Error (retrying %d): Cannot Query:%s"), 
+                               ret, query);
+                        radlog(L_ERR, _("MYSQL error: %s"),
+                               mysql_error(mysql));
+                        mysql_close(mysql);
+                        conn->connected = 0;
+                } else {
+                        radlog(L_ERR, _("MYSQL Error (%d): Cannot Query:%s"),
+                               ret, query);
+                        radlog(L_ERR, _("MYSQL error: %s"), mysql_error(mysql));
+                        rad_sql_need_reconnect(conn->type);
+                        return ret;
+                }
+        }
+        debug(1,("FAILURE"));
+        radlog(L_ERR, _("MYSQL Error (giving up): Cannot Query:%s"), query);
+        rad_sql_need_reconnect(conn->type);
+        return ret;
 }
 
 /* ************************************************************************* */
 /* Interface routines */
 int
 rad_mysql_reconnect(type, conn)
-	int    type;
-	struct sql_connection *conn;
+        int    type;
+        struct sql_connection *conn;
 {
-	int   i;
-	MYSQL *mysql = NULL;
-	char *dbname;
+        int   i;
+        MYSQL *mysql = NULL;
+        char *dbname;
 
-	if (sql_cfg.port)
-		mysql_port = sql_cfg.port;
+        if (sql_cfg.port)
+                mysql_port = sql_cfg.port;
 
-	conn->data = alloc_entry(sizeof(MYSQL));
-	
-	for (i = 0; !mysql && i < 10; i++) {	/* Try it 10 Times */
-		if (!(mysql_connect((MYSQL*)conn->data,
-				    sql_cfg.server,
-				    sql_cfg.login,
-				    sql_cfg.password))) {
-			radlog(L_ERR,
-			       _("MYSQL: cannot connect to %s as %s"),
-			       sql_cfg.server,
-			       sql_cfg.login);
-		} else {
-			debug(1,
-				("connected to %s", sql_cfg.server));
-			mysql = (MYSQL*)conn->data;
-			conn->connected++;
-		}
-	}
+        conn->data = alloc_entry(sizeof(MYSQL));
+        
+        for (i = 0; !mysql && i < 10; i++) {    /* Try it 10 Times */
+                if (!(mysql_connect((MYSQL*)conn->data,
+                                    sql_cfg.server,
+                                    sql_cfg.login,
+                                    sql_cfg.password))) {
+                        radlog(L_ERR,
+                               _("MYSQL: cannot connect to %s as %s"),
+                               sql_cfg.server,
+                               sql_cfg.login);
+                } else {
+                        debug(1,
+                                ("connected to %s", sql_cfg.server));
+                        mysql = (MYSQL*)conn->data;
+                        conn->connected++;
+                }
+        }
 
-	switch (type) {
-	case SQL_AUTH:
-		dbname = sql_cfg.auth_db;
-		break;
-	case SQL_ACCT:
-		dbname = sql_cfg.acct_db;
-		break;
-	}
-	
-	if (mysql != NULL) {
-		for (i = 0; i < 10; i++) {/* Try it 10 Times  */
-			if (mysql_select_db(mysql, dbname)) {
-				radlog(L_ERR, _("MYSQL cannot select db %s"), 
-				       dbname);
-				radlog(L_ERR, _("MYSQL error: %s"), 
-				       mysql_error(mysql));
-			} else {
-				debug(1, ("MYSQL Connected to db %s", dbname));
-				return 0;
-			}
-		}
-	}
+        switch (type) {
+        case SQL_AUTH:
+                dbname = sql_cfg.auth_db;
+                break;
+        case SQL_ACCT:
+                dbname = sql_cfg.acct_db;
+                break;
+        }
+        
+        if (mysql != NULL) {
+                for (i = 0; i < 10; i++) {/* Try it 10 Times  */
+                        if (mysql_select_db(mysql, dbname)) {
+                                radlog(L_ERR, _("MYSQL cannot select db %s"), 
+                                       dbname);
+                                radlog(L_ERR, _("MYSQL error: %s"), 
+                                       mysql_error(mysql));
+                        } else {
+                                debug(1, ("MYSQL Connected to db %s", dbname));
+                                return 0;
+                        }
+                }
+        }
 
-	free_entry(conn->data);
-	conn->data = NULL;
-	conn->connected = 0;
-	radlog(L_ERR, _("MYSQL: Giving up on connect"));
-	rad_sql_need_reconnect(type);
-	return -1;
+        free_entry(conn->data);
+        conn->data = NULL;
+        conn->connected = 0;
+        radlog(L_ERR, _("MYSQL: Giving up on connect"));
+        rad_sql_need_reconnect(type);
+        return -1;
 }
 
 void 
 rad_mysql_disconnect(conn)
-	struct sql_connection *conn;
+        struct sql_connection *conn;
 {
-	mysql_close(conn->data);
-	free_entry(conn->data);
+        mysql_close(conn->data);
+        free_entry(conn->data);
 }
 
 int
 rad_mysql_query(conn, query, return_count)
-	struct sql_connection *conn;
-	char *query;
-	int *return_count;
+        struct sql_connection *conn;
+        char *query;
+        int *return_count;
 {
-	if (!conn) 
-		return -1;
+        if (!conn) 
+                return -1;
 
-	if (do_mysql_query(conn, query)) {
-		radlog(L_ERR, _("MYSQL Error: query %s"), query);
-		return -1;
-	}
-	
-	if (return_count != NULL) 
-		*return_count = mysql_affected_rows((MYSQL*)conn->data);
+        if (do_mysql_query(conn, query)) {
+                radlog(L_ERR, _("MYSQL Error: query %s"), query);
+                return -1;
+        }
+        
+        if (return_count != NULL) 
+                *return_count = mysql_affected_rows((MYSQL*)conn->data);
 
-	return 0;
+        return 0;
 }
 
 char *
 rad_mysql_getpwd(conn, query)
-	struct sql_connection *conn;
-	char *query;
+        struct sql_connection *conn;
+        char *query;
 {
-	MYSQL_RES      *result;
-	MYSQL_ROW       row;
-	char *return_passwd;
-	
-	if (!conn)
-		return NULL;
+        MYSQL_RES      *result;
+        MYSQL_ROW       row;
+        char *return_passwd;
+        
+        if (!conn)
+                return NULL;
 
-	debug(1, ("query: %s", query));
+        debug(1, ("query: %s", query));
 
-	if (do_mysql_query(conn, query))
-		return NULL;
+        if (do_mysql_query(conn, query))
+                return NULL;
 
-	if (!(result = mysql_store_result((MYSQL*)conn->data))) {
-		radlog(L_ERR,
-		       _("MYSQL Error: can't get result for authentication"));
-		return NULL;
-	}
-	if (mysql_num_rows(result) != 1) {
-		/* user not found in database */
-		mysql_free_result(result);
-		return NULL;
-	}
-	row = mysql_fetch_row(result);
+        if (!(result = mysql_store_result((MYSQL*)conn->data))) {
+                radlog(L_ERR,
+                       _("MYSQL Error: can't get result for authentication"));
+                return NULL;
+        }
+        if (mysql_num_rows(result) != 1) {
+                /* user not found in database */
+                mysql_free_result(result);
+                return NULL;
+        }
+        row = mysql_fetch_row(result);
 
-	return_passwd = estrdup(row[0]);
-	mysql_free_result(result);
+        return_passwd = estrdup(row[0]);
+        mysql_free_result(result);
 
-	return return_passwd;
+        return return_passwd;
 }
 
 typedef struct {
-	MYSQL_RES      *result;
-	MYSQL_ROW       row;
+        MYSQL_RES      *result;
+        MYSQL_ROW       row;
 } RADMYSQL_DATA;
 
 void *
 rad_mysql_exec(conn, query)
-	struct sql_connection *conn;
-	char *query;
+        struct sql_connection *conn;
+        char *query;
 {
-	MYSQL_RES      *result;
-	RADMYSQL_DATA  *data;
-	int nrows;
-	
-	if (!conn)
-		return NULL;
-	
-	debug(1, ("query: %s", query));
-	
-	if (do_mysql_query(conn, query))
-		return NULL;
+        MYSQL_RES      *result;
+        RADMYSQL_DATA  *data;
+        int nrows;
+        
+        if (!conn)
+                return NULL;
+        
+        debug(1, ("query: %s", query));
+        
+        if (do_mysql_query(conn, query))
+                return NULL;
 
-	if (!(result = mysql_store_result((MYSQL*)conn->data))) {
-		radlog(L_ERR,
-		       _("MYSQL Error: can't get result"));
-		return NULL;
-	}
-	nrows = mysql_num_rows(result);
-	debug(1, ("got %d rows", nrows));
-	if (nrows == 0) {
-		mysql_free_result(result);
-		return NULL;
-	}
+        if (!(result = mysql_store_result((MYSQL*)conn->data))) {
+                radlog(L_ERR,
+                       _("MYSQL Error: can't get result"));
+                return NULL;
+        }
+        nrows = mysql_num_rows(result);
+        debug(1, ("got %d rows", nrows));
+        if (nrows == 0) {
+                mysql_free_result(result);
+                return NULL;
+        }
 
-	data = emalloc(sizeof(*data));
-	data->result = result;
-	return (void*)data;
+        data = emalloc(sizeof(*data));
+        data->result = result;
+        return (void*)data;
 }
 
 char *
 rad_mysql_column(data, ncol)
-	void *data;
-	int ncol;
+        void *data;
+        int ncol;
 {
-	RADMYSQL_DATA  *dp = (RADMYSQL_DATA *) data;
+        RADMYSQL_DATA  *dp = (RADMYSQL_DATA *) data;
 
-	if (!data)
-		return NULL;
-	if (ncol >= mysql_num_fields(dp->result)) {
-		radlog(L_ERR,
-		       _("too few columns returned (%d req'd)"), ncol);
-		return NULL;
-	}
-	return dp->row[ncol];
+        if (!data)
+                return NULL;
+        if (ncol >= mysql_num_fields(dp->result)) {
+                radlog(L_ERR,
+                       _("too few columns returned (%d req'd)"), ncol);
+                return NULL;
+        }
+        return dp->row[ncol];
 }
 
 int
 rad_mysql_next_tuple(conn, data)
-	struct sql_connection *conn;
-	void *data;
+        struct sql_connection *conn;
+        void *data;
 {
-	RADMYSQL_DATA  *dp = (RADMYSQL_DATA *) data;
+        RADMYSQL_DATA  *dp = (RADMYSQL_DATA *) data;
 
-	if (!data)
-		return 1;
-	return (dp->row = mysql_fetch_row(dp->result)) == NULL;
+        if (!data)
+                return 1;
+        return (dp->row = mysql_fetch_row(dp->result)) == NULL;
 }
 
 void
 rad_mysql_free(conn, data)
-	struct sql_connection *conn;
-	void *data;
+        struct sql_connection *conn;
+        void *data;
 {
-	RADMYSQL_DATA  *dp = (RADMYSQL_DATA *) data;
+        RADMYSQL_DATA  *dp = (RADMYSQL_DATA *) data;
 
-	if (!data)
-		return;
+        if (!data)
+                return;
 
-	mysql_free_result(dp->result);
-	efree(dp);
+        mysql_free_result(dp->result);
+        efree(dp);
 }
 
 SQL_DISPATCH_TAB mysql_dispatch_tab[] = {
-	"mysql",
-	3306,
-	rad_mysql_reconnect,
-	rad_mysql_disconnect,
-	rad_mysql_query,
-	rad_mysql_getpwd,
-	rad_mysql_exec,
-	rad_mysql_column,
-	rad_mysql_next_tuple,
-	rad_mysql_free
+        "mysql",
+        3306,
+        rad_mysql_reconnect,
+        rad_mysql_disconnect,
+        rad_mysql_query,
+        rad_mysql_getpwd,
+        rad_mysql_exec,
+        rad_mysql_column,
+        rad_mysql_next_tuple,
+        rad_mysql_free
 };
 
 #endif /* USE_SQL_MYSQL */

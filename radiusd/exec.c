@@ -46,183 +46,183 @@ static char rcsid[] =
 #include <obstack1.h>
 
 /*
- *	Execute a program on successful authentication.
- *	Return 0 if exec_wait == 0.
- *	Return the exit code of the called program if exec_wait != 0.
+ *      Execute a program on successful authentication.
+ *      Return 0 if exec_wait == 0.
+ *      Return the exit code of the called program if exec_wait != 0.
  *
  */
 int
 radius_exec_program(cmd, req, reply, exec_wait, user_msg)
-	char *cmd;
-	RADIUS_REQ *req;
-	VALUE_PAIR **reply;
-	int exec_wait;
-	char **user_msg;
+        char *cmd;
+        RADIUS_REQ *req;
+        VALUE_PAIR **reply;
+        int exec_wait;
+        char **user_msg;
 {
-	int p[2];
-	RETSIGTYPE (*oldsig)();
-	pid_t pid;
-	int n;
-	char *ptr, *errp;
-	int status;
-	VALUE_PAIR *vp;
-	FILE *fp;
-	int line_num;
-	char buffer[RAD_BUFFER_SIZE];
-	struct passwd *pwd;
+        int p[2];
+        RETSIGTYPE (*oldsig)();
+        pid_t pid;
+        int n;
+        char *ptr, *errp;
+        int status;
+        VALUE_PAIR *vp;
+        FILE *fp;
+        int line_num;
+        char buffer[RAD_BUFFER_SIZE];
+        struct passwd *pwd;
 #if 0
-	int saved_uid, saved_gid;
+        int saved_uid, saved_gid;
 #endif
-	
-	if (cmd[0] != '/') {
-		radlog(L_ERR,
+        
+        if (cmd[0] != '/') {
+                radlog(L_ERR,
    _("radius_exec_program(): won't execute, not an absolute pathname: %s"),
-		       cmd);
-		return -1;
-	}
+                       cmd);
+                return -1;
+        }
 
-	/* Check user/group
-	 * FIXME: This should be checked *once* after re-reading the
-	 *        configuration
-	 */
-	pwd = getpwnam(config.exec_user);
-	if (!pwd) {
-		radlog(L_ERR,
+        /* Check user/group
+         * FIXME: This should be checked *once* after re-reading the
+         *        configuration
+         */
+        pwd = getpwnam(config.exec_user);
+        if (!pwd) {
+                radlog(L_ERR,
     _("radius_exec_program(): won't execute, no such user: %s"),
-		       config.exec_user);
-		return -1;
-	}
-	
-	if (exec_wait) {
-		if (pipe(p) != 0) {
-			radlog(L_ERR|L_PERROR, _("couldn't open pipe"));
-			p[0] = p[1] = 0;
-			return -1;
-		}
+                       config.exec_user);
+                return -1;
+        }
+        
+        if (exec_wait) {
+                if (pipe(p) != 0) {
+                        radlog(L_ERR|L_PERROR, _("couldn't open pipe"));
+                        p[0] = p[1] = 0;
+                        return -1;
+                }
 
-		if ((oldsig = signal(SIGCHLD, SIG_DFL)) == SIG_ERR) {
-			radlog(L_ERR|L_PERROR, _("can't reset SIGCHLD"));
-			return -1;
-		}
-	}
+                if ((oldsig = signal(SIGCHLD, SIG_DFL)) == SIG_ERR) {
+                        radlog(L_ERR|L_PERROR, _("can't reset SIGCHLD"));
+                        return -1;
+                }
+        }
 
-	if ((pid = fork()) == 0) {
-		int argc;
-		char **argv;
-		struct obstack s;
+        if ((pid = fork()) == 0) {
+                int argc;
+                char **argv;
+                struct obstack s;
 
-		obstack_init(&s);
-		
-		/* child branch */
-		ptr = radius_xlate(&s, cmd, req, reply ? *reply : NULL);
+                obstack_init(&s);
+                
+                /* child branch */
+                ptr = radius_xlate(&s, cmd, req, reply ? *reply : NULL);
 
-		debug(1,
-			("command line: %s", ptr));
+                debug(1,
+                        ("command line: %s", ptr));
 
-		argcv_get(ptr, "", &argc, &argv);
-		
-		if (exec_wait) {
-			if (close(p[0]))
-				radlog(L_ERR|L_PERROR, _("can't close pipe"));
-			if (dup2(p[1], 1) != 1)
-				radlog(L_ERR|L_PERROR, _("can't dup stdout"));
-		}
+                argcv_get(ptr, "", &argc, &argv);
+                
+                if (exec_wait) {
+                        if (close(p[0]))
+                                radlog(L_ERR|L_PERROR, _("can't close pipe"));
+                        if (dup2(p[1], 1) != 1)
+                                radlog(L_ERR|L_PERROR, _("can't dup stdout"));
+                }
 
-		for(n = getmaxfd(); n >= 3; n--)
-			close(n);
+                for(n = getmaxfd(); n >= 3; n--)
+                        close(n);
 
-		chdir("/tmp");
-		
-		#if 0
-		saved_uid = geteuid();
-		saved_gid = getegid();
-		#endif
-		
-		if (pwd->pw_gid != 0 && setgid(pwd->pw_gid)) {
-			radlog(L_ERR|L_PERROR,
-			       _("setgid(%d) failed"), pwd->pw_gid);
-		}
-		if (pwd->pw_uid != 0) {
+                chdir("/tmp");
+                
+                #if 0
+                saved_uid = geteuid();
+                saved_gid = getegid();
+                #endif
+                
+                if (pwd->pw_gid != 0 && setgid(pwd->pw_gid)) {
+                        radlog(L_ERR|L_PERROR,
+                               _("setgid(%d) failed"), pwd->pw_gid);
+                }
+                if (pwd->pw_uid != 0) {
 #if defined(HAVE_SETEUID)
-			if (seteuid(pwd->pw_uid)) 
-				radlog(L_ERR|L_PERROR,
-				       _("seteuid(%d) failed (ruid=%d, euid=%d)"),
-					 pwd->pw_uid, getuid(), geteuid());
+                        if (seteuid(pwd->pw_uid)) 
+                                radlog(L_ERR|L_PERROR,
+                                       _("seteuid(%d) failed (ruid=%d, euid=%d)"),
+                                         pwd->pw_uid, getuid(), geteuid());
 #elif defined(HAVE_SETREUID)
-			if (setreuid(0, pwd->pw_uid)) 
-				radlog(L_ERR|L_PERROR,
-				       _("setreuid(0,%d) failed (ruid=%d, euid=%d)"),
-					 pwd->pw_uid, getuid(), geteuid());
+                        if (setreuid(0, pwd->pw_uid)) 
+                                radlog(L_ERR|L_PERROR,
+                                       _("setreuid(0,%d) failed (ruid=%d, euid=%d)"),
+                                         pwd->pw_uid, getuid(), geteuid());
 #else
 # warning "*** NO WAY TO SET EFFECTIVE UID IN radius_exec_program() ***"
 #endif
-		}
-		execvp(argv[0], argv);
+                }
+                execvp(argv[0], argv);
 
-		/*
-		 * Report error via syslog: we might not be able
-		 * to restore initial privileges if we were started
-		 * as non-root.
-		 */
-		openlog("radiusd", LOG_PID, LOG_USER);
-		syslog(LOG_ERR, "can't run %s (ruid=%d, euid=%d): %m",
-		       argv[0], getuid(), geteuid());
-		exit(2);
-	}
+                /*
+                 * Report error via syslog: we might not be able
+                 * to restore initial privileges if we were started
+                 * as non-root.
+                 */
+                openlog("radiusd", LOG_PID, LOG_USER);
+                syslog(LOG_ERR, "can't run %s (ruid=%d, euid=%d): %m",
+                       argv[0], getuid(), geteuid());
+                exit(2);
+        }
 
-	/* Parent branch */ 
-	if (pid < 0) {
-		radlog(L_ERR|L_PERROR, _("can't fork"));
-		return -1;
-	}
-	if (!exec_wait)
-		return 0;
+        /* Parent branch */ 
+        if (pid < 0) {
+                radlog(L_ERR|L_PERROR, _("can't fork"));
+                return -1;
+        }
+        if (!exec_wait)
+                return 0;
 
-	if (close(p[1]))
-		radlog(L_ERR|L_PERROR, _("can't close pipe"));
+        if (close(p[1]))
+                radlog(L_ERR|L_PERROR, _("can't close pipe"));
 
-	fp = fdopen(p[0], "r");
+        fp = fdopen(p[0], "r");
 
-	vp = NULL;
-	line_num = 0;
-	while (ptr = fgets(buffer, sizeof(buffer), fp)) {
-		line_num++;
-		debug(1,
-			("got `%s'", buffer));
-		if (userparse(ptr, &vp, &errp)) {
-			radlog(L_ERR,
-			    _("<stdout of %s>:%d: %s"),
-			    cmd, line_num, errp);
-			avl_free(vp);
-			vp = NULL;
-		}
-	}
+        vp = NULL;
+        line_num = 0;
+        while (ptr = fgets(buffer, sizeof(buffer), fp)) {
+                line_num++;
+                debug(1,
+                        ("got `%s'", buffer));
+                if (userparse(ptr, &vp, &errp)) {
+                        radlog(L_ERR,
+                            _("<stdout of %s>:%d: %s"),
+                            cmd, line_num, errp);
+                        avl_free(vp);
+                        vp = NULL;
+                }
+        }
 
-	fclose(fp);
-	/*close(p[0]);*/
+        fclose(fp);
+        /*close(p[0]);*/
 
-	if (vp) {
-		avl_merge(reply, &vp);
-	}
+        if (vp) {
+                avl_merge(reply, &vp);
+        }
 
-	
-	while (waitpid(pid, &status, 0) != pid)
-		;
+        
+        while (waitpid(pid, &status, 0) != pid)
+                ;
 
-	if (signal(SIGCHLD, oldsig) == SIG_ERR)
-		radlog(L_CRIT|L_PERROR,
-			_("can't restore SIGCHLD"));
+        if (signal(SIGCHLD, oldsig) == SIG_ERR)
+                radlog(L_CRIT|L_PERROR,
+                        _("can't restore SIGCHLD"));
 
-	if (WIFEXITED(status)) {
-		status = WEXITSTATUS(status);
-		debug(1, ("returned: %d", status));
-		if (status == 2) {
-			radlog(L_ERR,
-			       _("can't run external program (reason reported via syslog channel user.err)"));
-		}
-		return status;
-	}
-	radlog(L_ERR, _("radius_exec_program(): abnormal child exit"));
+        if (WIFEXITED(status)) {
+                status = WEXITSTATUS(status);
+                debug(1, ("returned: %d", status));
+                if (status == 2) {
+                        radlog(L_ERR,
+                               _("can't run external program (reason reported via syslog channel user.err)"));
+                }
+                return status;
+        }
+        radlog(L_ERR, _("radius_exec_program(): abnormal child exit"));
 
-	return 1;
+        return 1;
 }

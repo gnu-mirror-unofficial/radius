@@ -52,133 +52,133 @@ void output(int);
 char *format = NULL;
 
 main(argc, argv)
-	int argc;
-	char **argv;
+        int argc;
+        char **argv;
 {
-	char *progname = argv[0]; 
-	int local_port, max_port, num_ports;
-	struct	sockaddr	salocal;
-	struct	sockaddr_in	*sin;
-	int fd;
-	
-	/* Process command line */
-	local_port = 1024;
-	max_port = 65535;
-	num_ports = 1;
+        char *progname = argv[0]; 
+        int local_port, max_port, num_ports;
+        struct  sockaddr        salocal;
+        struct  sockaddr_in     *sin;
+        int fd;
+        
+        /* Process command line */
+        local_port = 1024;
+        max_port = 65535;
+        num_ports = 1;
 
-	#define OPTARG (*argv)[2] ? *argv+2 : *++argv
-	while (*++argv) {
-		if (**argv == '-') {
-			switch ((*argv)[1]) {
-			case 's':
-				local_port = atoi(OPTARG);
-				break;
-			case 'm':
-				max_port = atoi(OPTARG);
-				break;
-			case 'c':
-				num_ports = atoi(OPTARG);
-				break;
-			case 'f':
-				format = OPTARG;
-				break;
-			default:
-				fprintf(stderr,
-					"%s: unknown switch: %s\n",
-					progname, *argv);
-				return 1;
-			}
-		} else {
-			fprintf(stderr,
-				"%s: stray argument %s\n", progname, *argv);
-			return 1;
-		}
-	}
-	
-	while (num_ports--) {
-		fd = socket(AF_INET, SOCK_DGRAM, 0);
-		if (fd < 0) {
-			fprintf(stderr,
-				"%s: can't open socket: %s\n",
-				progname, strerror(errno));
-			return 1;
-		}
+        #define OPTARG (*argv)[2] ? *argv+2 : *++argv
+        while (*++argv) {
+                if (**argv == '-') {
+                        switch ((*argv)[1]) {
+                        case 's':
+                                local_port = atoi(OPTARG);
+                                break;
+                        case 'm':
+                                max_port = atoi(OPTARG);
+                                break;
+                        case 'c':
+                                num_ports = atoi(OPTARG);
+                                break;
+                        case 'f':
+                                format = OPTARG;
+                                break;
+                        default:
+                                fprintf(stderr,
+                                        "%s: unknown switch: %s\n",
+                                        progname, *argv);
+                                return 1;
+                        }
+                } else {
+                        fprintf(stderr,
+                                "%s: stray argument %s\n", progname, *argv);
+                        return 1;
+                }
+        }
+        
+        while (num_ports--) {
+                fd = socket(AF_INET, SOCK_DGRAM, 0);
+                if (fd < 0) {
+                        fprintf(stderr,
+                                "%s: can't open socket: %s\n",
+                                progname, strerror(errno));
+                        return 1;
+                }
 
-		sin = (struct sockaddr_in *) &salocal;
-		memset(sin, 0, sizeof (salocal));
-		sin->sin_family = AF_INET;
-		sin->sin_addr.s_addr = INADDR_ANY;
+                sin = (struct sockaddr_in *) &salocal;
+                memset(sin, 0, sizeof (salocal));
+                sin->sin_family = AF_INET;
+                sin->sin_addr.s_addr = INADDR_ANY;
 
-		do {
-			if (++local_port > max_port) {
-				fprintf(stderr, "%s: can't bind socket\n",
-					progname);
-				return 1;
-			}
-			sin->sin_port = htons((u_short)local_port);
-		} while ((bind(fd, &salocal, sizeof(struct sockaddr_in)) < 0) &&
-			 local_port < max_port);
-		output(local_port);
-		close(fd);
-	}
-	output(0);
-	return 0;
+                do {
+                        if (++local_port > max_port) {
+                                fprintf(stderr, "%s: can't bind socket\n",
+                                        progname);
+                                return 1;
+                        }
+                        sin->sin_port = htons((u_short)local_port);
+                } while ((bind(fd, &salocal, sizeof(struct sockaddr_in)) < 0) &&
+                         local_port < max_port);
+                output(local_port);
+                close(fd);
+        }
+        output(0);
+        return 0;
 }
 
 char *
 who_am_i()
 {
-	struct passwd *pw = getpwuid(getuid());
-	if (pw)
-		return pw->pw_name;
-	return "nobody";
+        struct passwd *pw = getpwuid(getuid());
+        if (pw)
+                return pw->pw_name;
+        return "nobody";
 }
 
 void
 output(port)
-	int port;
+        int port;
 {
-	if (!format) {
-		if (port)
-			printf("%d\n", port);
-		return;
-	}
-	
-	while (*format) {
-		if (port && format[0] == '%' && format[1] == 'd') {
-			printf("%d", port);
-			format += 2;
-			break;
-		} else if (format[0] == '%' && format[1] == 'u') {
-			printf("%s", who_am_i());
-			format += 2;
-		} else if (format[0] == '\\' && format[1]) {
-			switch (format[1]) {
-			case 'a':
-				putchar('\a');
-				break;
-			case 'b':
-				putchar('\b');
-				break;
-			case 'n':
-				putchar('\n');
-				break;
-			case 't':
-				putchar('\t');
-				break;
-			case 'v':
-				putchar('\v');
-				break;
-			case '\\':
-				putchar('\\');
-				break;
-			default:
-				putchar(format[0]);
-				putchar(format[2]);
-				break;
-			}
-			format += 2;
-		} else
-			putchar(*format++);
-	}
+        if (!format) {
+                if (port)
+                        printf("%d\n", port);
+                return;
+        }
+        
+        while (*format) {
+                if (port && format[0] == '%' && format[1] == 'd') {
+                        printf("%d", port);
+                        format += 2;
+                        break;
+                } else if (format[0] == '%' && format[1] == 'u') {
+                        printf("%s", who_am_i());
+                        format += 2;
+                } else if (format[0] == '\\' && format[1]) {
+                        switch (format[1]) {
+                        case 'a':
+                                putchar('\a');
+                                break;
+                        case 'b':
+                                putchar('\b');
+                                break;
+                        case 'n':
+                                putchar('\n');
+                                break;
+                        case 't':
+                                putchar('\t');
+                                break;
+                        case 'v':
+                                putchar('\v');
+                                break;
+                        case '\\':
+                                putchar('\\');
+                                break;
+                        default:
+                                putchar(format[0]);
+                                putchar(format[2]);
+                                break;
+                        }
+                        format += 2;
+                } else
+                        putchar(*format++);
+        }
 }

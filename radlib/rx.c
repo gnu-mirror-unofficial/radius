@@ -1,4 +1,4 @@
-/*	Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
+/*      Copyright (C) 1992, 1993, 1994, 1995 Free Software Foundation, Inc.
 
 This file is part of the librx library.
 
@@ -26,16 +26,16 @@ write to the Free Software Foundation, 675 Mass Ave, Cambridge, MA
 #endif
 
 /* To make linux happy? */
-#ifndef	_GNU_SOURCE
-#define	_GNU_SOURCE
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
 #endif
 
 
 char rx_version_string[] = "GNU Rx version 0.07.2";
 
-			/* ``Too hard!''
-			 *	    -- anon.
-			 */
+                        /* ``Too hard!''
+                         *          -- anon.
+                         */
 
 
 #include <stdio.h>
@@ -254,8 +254,8 @@ init_syntax_once ()
 /* Compile with `-DRX_DEBUG' and use the following flags.
  *
  * Debugging flags:
- *   	rx_debug - print information as a regexp is compiled
- * 	rx_debug_trace - print information as a regexp is executed
+ *      rx_debug - print information as a regexp is compiled
+ *      rx_debug_trace - print information as a regexp is executed
  */
 
 #ifdef RX_DEBUG
@@ -272,7 +272,7 @@ static struct re_pattern_buffer * dbug_rxb = 0;
 typedef void (*side_effect_printer) (struct rx *, void *, FILE *);
 static void   print_cset                (struct rx *, rx_Bitset, FILE *);
 static void   print_rexp                (struct rx *, struct rexp_node *, int,
-	                                      side_effect_printer, FILE *);
+                                              side_effect_printer, FILE *);
 static void   print_nfa                 (struct rx *, struct rx_nfa_state *,
                                          side_effect_printer, FILE *);
 static void   re_seprint                (struct rx *, void *, FILE *);
@@ -286,8 +286,8 @@ static void print_cset ();
 #ifdef __STDC__
 static void
 print_rexp (struct rx *rx,
-	    struct rexp_node *node, int depth,
-	    side_effect_printer seprint, FILE * fp)
+            struct rexp_node *node, int depth,
+            side_effect_printer seprint, FILE * fp)
 #else
 static void
 print_rexp (rx, node, depth, seprint, fp)
@@ -303,49 +303,49 @@ print_rexp (rx, node, depth, seprint, fp)
   else
     {
       switch (node->type)
-	{
-	case r_cset:
-	  {
-	    fprintf (fp, "%*s", depth, "");
-	    print_cset (rx, node->params.cset, fp);
-	    fputc ('\n', fp);
-	    break;
-	  }
+        {
+        case r_cset:
+          {
+            fprintf (fp, "%*s", depth, "");
+            print_cset (rx, node->params.cset, fp);
+            fputc ('\n', fp);
+            break;
+          }
 
- 	case r_opt:
-	case r_star:
-	  fprintf (fp, "%*s%s\n", depth, "",
-		   node->type == r_opt ? "opt" : "star");
-	  print_rexp (rx, node->params.pair.left, depth + 3, seprint, fp);
-	  break;
+        case r_opt:
+        case r_star:
+          fprintf (fp, "%*s%s\n", depth, "",
+                   node->type == r_opt ? "opt" : "star");
+          print_rexp (rx, node->params.pair.left, depth + 3, seprint, fp);
+          break;
 
-	case r_2phase_star:
-	  fprintf (fp, "%*s2phase star\n", depth, "");
-	  print_rexp (rx, node->params.pair.right, depth + 3, seprint, fp);
-	  print_rexp (rx, node->params.pair.left, depth + 3, seprint, fp);
-	  break;
+        case r_2phase_star:
+          fprintf (fp, "%*s2phase star\n", depth, "");
+          print_rexp (rx, node->params.pair.right, depth + 3, seprint, fp);
+          print_rexp (rx, node->params.pair.left, depth + 3, seprint, fp);
+          break;
 
 
-	case r_alternate:
-	case r_concat:
-	  fprintf (fp, "%*s%s\n", depth, "",
-		   node->type == r_alternate ? "alt" : "concat");
-	  print_rexp (rx, node->params.pair.left, depth + 3, seprint, fp);
-	  print_rexp (rx, node->params.pair.right, depth + 3, seprint, fp);
-	  break;
-	case r_side_effect:
-	  fprintf (fp, "%*sSide effect: ", depth, "");
-	  seprint (rx, node->params.side_effect, fp);
-	  fputc ('\n', fp);
-	}
+        case r_alternate:
+        case r_concat:
+          fprintf (fp, "%*s%s\n", depth, "",
+                   node->type == r_alternate ? "alt" : "concat");
+          print_rexp (rx, node->params.pair.left, depth + 3, seprint, fp);
+          print_rexp (rx, node->params.pair.right, depth + 3, seprint, fp);
+          break;
+        case r_side_effect:
+          fprintf (fp, "%*sSide effect: ", depth, "");
+          seprint (rx, node->params.side_effect, fp);
+          fputc ('\n', fp);
+        }
     }
 }
 
 #ifdef __STDC__
 static void
 print_nfa (struct rx * rx,
-	   struct rx_nfa_state * n,
-	   side_effect_printer seprint, FILE * fp)
+           struct rx_nfa_state * n,
+           side_effect_printer seprint, FILE * fp)
 #else
 static void
 print_nfa (rx, n, seprint, fp)
@@ -360,46 +360,46 @@ print_nfa (rx, n, seprint, fp)
       struct rx_nfa_edge *e = n->edges;
       struct rx_possible_future *ec = n->futures;
       fprintf (fp, "node %d %s\n", n->id,
-	       n->is_final ? "final" : (n->is_start ? "start" : ""));
+               n->is_final ? "final" : (n->is_start ? "start" : ""));
       while (e)
-	{
-	  fprintf (fp, "   edge to %d, ", e->dest->id);
-	  switch (e->type)
-	    {
-	    case ne_epsilon:
-	      fprintf (fp, "epsilon\n");
-	      break;
-	    case ne_side_effect:
-	      fprintf (fp, "side effect ");
-	      seprint (rx, e->params.side_effect, fp);
-	      fputc ('\n', fp);
-	      break;
-	    case ne_cset:
-	      fprintf (fp, "cset ");
-	      print_cset (rx, e->params.cset, fp);
-	      fputc ('\n', fp);
-	      break;
-	    }
-	  e = e->next;
-	}
+        {
+          fprintf (fp, "   edge to %d, ", e->dest->id);
+          switch (e->type)
+            {
+            case ne_epsilon:
+              fprintf (fp, "epsilon\n");
+              break;
+            case ne_side_effect:
+              fprintf (fp, "side effect ");
+              seprint (rx, e->params.side_effect, fp);
+              fputc ('\n', fp);
+              break;
+            case ne_cset:
+              fprintf (fp, "cset ");
+              print_cset (rx, e->params.cset, fp);
+              fputc ('\n', fp);
+              break;
+            }
+          e = e->next;
+        }
 
       while (ec)
-	{
-	  int x;
-	  struct rx_nfa_state_set * s;
-	  struct rx_se_list * l;
-	  fprintf (fp, "   eclosure to {");
-	  for (s = ec->destset; s; s = s->cdr)
-	    fprintf (fp, "%d ", s->car->id);
-	  fprintf (fp, "} (");
-	  for (l = ec->effects; l; l = l->cdr)
-	    {
-	      seprint (rx, l->car, fp);
-	      fputc (' ', fp);
-	    }
-	  fprintf (fp, ")\n");
-	  ec = ec->next;
-	}
+        {
+          int x;
+          struct rx_nfa_state_set * s;
+          struct rx_se_list * l;
+          fprintf (fp, "   eclosure to {");
+          for (s = ec->destset; s; s = s->cdr)
+            fprintf (fp, "%d ", s->car->id);
+          fprintf (fp, "} (");
+          for (l = ec->effects; l; l = l->cdr)
+            {
+              seprint (rx, l->car, fp);
+              fputc (' ', fp);
+            }
+          fprintf (fp, ")\n");
+          ec = ec->next;
+        }
       n = n->next;
     }
 }
@@ -649,7 +649,7 @@ rx_bitset_union (size, a, b)
 #ifdef __STDC__
 RX_DECL void
 rx_bitset_intersection (int size,
-			rx_Bitset a, rx_Bitset b)
+                        rx_Bitset a, rx_Bitset b)
 #else
 RX_DECL void
 rx_bitset_intersection (size, a, b)
@@ -684,7 +684,7 @@ rx_bitset_difference (size, a, b)
 #ifdef __STDC__
 RX_DECL void
 rx_bitset_revdifference (int size,
-			 rx_Bitset a, rx_Bitset b)
+                         rx_Bitset a, rx_Bitset b)
 #else
 RX_DECL void
 rx_bitset_revdifference (size, a, b)
@@ -788,10 +788,10 @@ print_cset (rx, cset, fp)
   for (x = 0; x < rx->local_cset_size; ++x)
     if (RX_bitset_member (cset, x))
       {
-	if (isprint(x))
-	  fputc (x, fp);
-	else
-	  fprintf (fp, "\\0%o ", x);
+        if (isprint(x))
+          fputc (x, fp);
+        else
+          fprintf (fp, "\\0%o ", x);
       }
   fputc (']', fp);
 }
@@ -813,9 +813,9 @@ static unsigned long rx_hash_masks[4] =
 #ifdef __STDC__
 RX_DECL struct rx_hash_item * 
 rx_hash_find (struct rx_hash * table,
-	      unsigned long hash,
-	      void * value,
-	      struct rx_hash_rules * rules)
+              unsigned long hash,
+              void * value,
+              struct rx_hash_rules * rules)
 #else
 RX_DECL struct rx_hash_item * 
 rx_hash_find (table, hash, value, rules)
@@ -842,9 +842,9 @@ rx_hash_find (table, hash, value, rules)
     struct rx_hash_item * it = table->buckets[bucket];
     while (it)
       if (eq (it->data, value))
-	return it;
+        return it;
       else
-	it = it->next_same_hash;
+        it = it->next_same_hash;
   }
 
   return 0;
@@ -853,9 +853,9 @@ rx_hash_find (table, hash, value, rules)
 #ifdef __STDC__
 RX_DECL struct rx_hash_item *
 rx_hash_store (struct rx_hash * table,
-	       unsigned long hash,
-	       void * value,
-	       struct rx_hash_rules * rules)
+               unsigned long hash,
+               void * value,
+               struct rx_hash_rules * rules)
 #else
 RX_DECL struct rx_hash_item *
 rx_hash_store (table, hash, value, rules)
@@ -884,48 +884,48 @@ rx_hash_store (table, hash, value, rules)
     struct rx_hash_item * it = table->buckets[bucket];
     while (it)
       if (eq (it->data, value))
-	return it;
+        return it;
       else
-	it = it->next_same_hash;
+        it = it->next_same_hash;
   }
   
   {
     if (   (depth < 3)
-	&& (table->bucket_size [bucket] >= 4))
+        && (table->bucket_size [bucket] >= 4))
       {
-	struct rx_hash * newtab = ((struct rx_hash *)
-				   rules->hash_alloc (rules));
-	if (!newtab)
-	  goto add_to_bucket;
-	bzero (newtab, sizeof (*newtab));
-	newtab->parent = table;
-	{
-	  struct rx_hash_item * them = table->buckets[bucket];
-	  unsigned long newmask = rx_hash_masks[maskc + 1];
-	  while (them)
-	    {
-	      struct rx_hash_item * save = them->next_same_hash;
-	      int new_buck = (them->hash & newmask) % 13;
-	      them->next_same_hash = newtab->buckets[new_buck];
-	      newtab->buckets[new_buck] = them;
-	      them->table = newtab;
-	      them = save;
-	      ++newtab->bucket_size[new_buck];
-	      ++newtab->refs;
-	    }
-	  table->refs = (table->refs - table->bucket_size[bucket] + 1);
-	  table->bucket_size[bucket] = 0;
-	  table->buckets[bucket] = 0;
-	  table->children[bucket] = newtab;
-	  table = newtab;
-	  bucket = (hash & newmask) % 13;
-	}
+        struct rx_hash * newtab = ((struct rx_hash *)
+                                   rules->hash_alloc (rules));
+        if (!newtab)
+          goto add_to_bucket;
+        bzero (newtab, sizeof (*newtab));
+        newtab->parent = table;
+        {
+          struct rx_hash_item * them = table->buckets[bucket];
+          unsigned long newmask = rx_hash_masks[maskc + 1];
+          while (them)
+            {
+              struct rx_hash_item * save = them->next_same_hash;
+              int new_buck = (them->hash & newmask) % 13;
+              them->next_same_hash = newtab->buckets[new_buck];
+              newtab->buckets[new_buck] = them;
+              them->table = newtab;
+              them = save;
+              ++newtab->bucket_size[new_buck];
+              ++newtab->refs;
+            }
+          table->refs = (table->refs - table->bucket_size[bucket] + 1);
+          table->bucket_size[bucket] = 0;
+          table->buckets[bucket] = 0;
+          table->children[bucket] = newtab;
+          table = newtab;
+          bucket = (hash & newmask) % 13;
+        }
       }
   }
  add_to_bucket:
   {
     struct rx_hash_item  * it = ((struct rx_hash_item *)
-				 rules->hash_item_alloc (rules, value));
+                                 rules->hash_item_alloc (rules, value));
     if (!it)
       return 0;
     it->hash = hash;
@@ -955,38 +955,38 @@ rx_hash_free (it, rules)
       struct rx_hash * table = it->table;
       unsigned long hash = it->hash;
       int depth = (table->parent
-		   ? (table->parent->parent
-		      ? (table->parent->parent->parent
-			 ? 3
-			 : 2)
-		      : 1)
-		   : 0);
+                   ? (table->parent->parent
+                      ? (table->parent->parent->parent
+                         ? 3
+                         : 2)
+                      : 1)
+                   : 0);
       int bucket = (hash & rx_hash_masks [depth]) % 13;
       struct rx_hash_item ** pos = &table->buckets [bucket];
       
       while (*pos != it)
-	pos = &(*pos)->next_same_hash;
+        pos = &(*pos)->next_same_hash;
       *pos = it->next_same_hash;
       rules->free_hash_item (it, rules);
       --table->bucket_size[bucket];
       --table->refs;
       while (!table->refs && depth)
-	{
-	  struct rx_hash * save = table;
-	  table = table->parent;
-	  --depth;
-	  bucket = (hash & rx_hash_masks [depth]) % 13;
-	  --table->refs;
-	  table->children[bucket] = 0;
-	  rules->free_hash (save, rules);
-	}
+        {
+          struct rx_hash * save = table;
+          table = table->parent;
+          --depth;
+          bucket = (hash & rx_hash_masks [depth]) % 13;
+          --table->refs;
+          table->children[bucket] = 0;
+          rules->free_hash (save, rules);
+        }
     }
 }
 
 #ifdef __STDC__
 RX_DECL void
 rx_free_hash_table (struct rx_hash * tab, rx_hash_freefn freefn,
-		    struct rx_hash_rules * rules)
+                    struct rx_hash_rules * rules)
 #else
 RX_DECL void
 rx_free_hash_table (tab, freefn, rules)
@@ -1000,19 +1000,19 @@ rx_free_hash_table (tab, freefn, rules)
   for (x = 0; x < 13; ++x)
     if (tab->children[x])
       {
-	rx_free_hash_table (tab->children[x], freefn, rules);
-	rules->free_hash (tab->children[x], rules);
+        rx_free_hash_table (tab->children[x], freefn, rules);
+        rules->free_hash (tab->children[x], rules);
       }
     else
       {
-	struct rx_hash_item * them = tab->buckets[x];
-	while (them)
-	  {
-	    struct rx_hash_item * that = them;
-	    them = that->next_same_hash;
-	    freefn (that);
-	    rules->free_hash_item (that, rules);
-	  }
+        struct rx_hash_item * them = tab->buckets[x];
+        while (them)
+          {
+            struct rx_hash_item * that = them;
+            them = that->next_same_hash;
+            freefn (that);
+            rules->free_hash_item (that, rules);
+          }
       }
 }
 
@@ -1108,7 +1108,7 @@ compiler_hash_item_alloc (rules, value)
 #ifdef __STDC__
 static void
 compiler_free_hash (struct rx_hash * tab,
-		    struct rx_hash_rules * rules)
+                    struct rx_hash_rules * rules)
 #else
 static void
 compiler_free_hash (tab, rules)
@@ -1123,7 +1123,7 @@ compiler_free_hash (tab, rules)
 #ifdef __STDC__
 static void
 compiler_free_hash_item (struct rx_hash_item * item,
-			 struct rx_hash_rules * rules)
+                         struct rx_hash_rules * rules)
 #else
 static void
 compiler_free_hash_item (item, rules)
@@ -1140,7 +1140,7 @@ compiler_free_hash_item (item, rules)
 #ifdef __STDC__
 RX_DECL struct rexp_node *
 rexp_node (struct rx *rx,
-	   enum rexp_node_type type)
+           enum rexp_node_type type)
 #else
 RX_DECL struct rexp_node *
 rexp_node (rx, type)
@@ -1166,7 +1166,7 @@ rexp_node (rx, type)
 #ifdef __STDC__
 RX_DECL struct rexp_node *
 rx_mk_r_cset (struct rx * rx,
-	      rx_Bitset b)
+              rx_Bitset b)
 #else
 RX_DECL struct rexp_node *
 rx_mk_r_cset (rx, b)
@@ -1183,8 +1183,8 @@ rx_mk_r_cset (rx, b)
 #ifdef __STDC__
 RX_DECL struct rexp_node *
 rx_mk_r_concat (struct rx * rx,
-		struct rexp_node * a,
-		struct rexp_node * b)
+                struct rexp_node * a,
+                struct rexp_node * b)
 #else
 RX_DECL struct rexp_node *
 rx_mk_r_concat (rx, a, b)
@@ -1206,8 +1206,8 @@ rx_mk_r_concat (rx, a, b)
 #ifdef __STDC__
 RX_DECL struct rexp_node *
 rx_mk_r_alternate (struct rx * rx,
-		   struct rexp_node * a,
-		   struct rexp_node * b)
+                   struct rexp_node * a,
+                   struct rexp_node * b)
 #else
 RX_DECL struct rexp_node *
 rx_mk_r_alternate (rx, a, b)
@@ -1229,7 +1229,7 @@ rx_mk_r_alternate (rx, a, b)
 #ifdef __STDC__
 RX_DECL struct rexp_node *
 rx_mk_r_opt (struct rx * rx,
-	     struct rexp_node * a)
+             struct rexp_node * a)
 #else
 RX_DECL struct rexp_node *
 rx_mk_r_opt (rx, a)
@@ -1249,7 +1249,7 @@ rx_mk_r_opt (rx, a)
 #ifdef __STDC__
 RX_DECL struct rexp_node *
 rx_mk_r_star (struct rx * rx,
-	      struct rexp_node * a)
+              struct rexp_node * a)
 #else
 RX_DECL struct rexp_node *
 rx_mk_r_star (rx, a)
@@ -1270,8 +1270,8 @@ rx_mk_r_star (rx, a)
 #ifdef __STDC__
 RX_DECL struct rexp_node *
 rx_mk_r_2phase_star (struct rx * rx,
-		     struct rexp_node * a,
-		     struct rexp_node * b)
+                     struct rexp_node * a,
+                     struct rexp_node * b)
 #else
 RX_DECL struct rexp_node *
 rx_mk_r_2phase_star (rx, a, b)
@@ -1292,7 +1292,7 @@ rx_mk_r_2phase_star (rx, a, b)
 #ifdef __STDC__
 RX_DECL struct rexp_node *
 rx_mk_r_side_effect (struct rx * rx,
-		     rx_side_effect a)
+                     rx_side_effect a)
 #else
 RX_DECL struct rexp_node *
 rx_mk_r_side_effect (rx, a)
@@ -1313,7 +1313,7 @@ rx_mk_r_side_effect (rx, a)
 #ifdef __STDC__
 RX_DECL struct rexp_node *
 rx_mk_r_data  (struct rx * rx,
-	       void * a)
+               void * a)
 #else
 RX_DECL struct rexp_node *
 rx_mk_r_data  (rx, a)
@@ -1343,27 +1343,27 @@ rx_free_rexp (rx, node)
   if (node)
     {
       switch (node->type)
-	{
-	case r_cset:
-	  if (node->params.cset)
-	    rx_free_cset (rx, node->params.cset);
+        {
+        case r_cset:
+          if (node->params.cset)
+            rx_free_cset (rx, node->params.cset);
 
-	case r_side_effect:
-	  break;
-	  
-	case r_concat:
-	case r_alternate:
-	case r_2phase_star:
-	case r_opt:
-	case r_star:
-	  rx_free_rexp (rx, node->params.pair.left);
-	  rx_free_rexp (rx, node->params.pair.right);
-	  break;
+        case r_side_effect:
+          break;
+          
+        case r_concat:
+        case r_alternate:
+        case r_2phase_star:
+        case r_opt:
+        case r_star:
+          rx_free_rexp (rx, node->params.pair.left);
+          rx_free_rexp (rx, node->params.pair.right);
+          break;
 
-	case r_data:
-	  /* This shouldn't occur. */
-	  break;
-	}
+        case r_data:
+          /* This shouldn't occur. */
+          break;
+        }
       free ((char *)node);
     }
 }
@@ -1371,7 +1371,7 @@ rx_free_rexp (rx, node)
 #ifdef __STDC__
 RX_DECL struct rexp_node * 
 rx_copy_rexp (struct rx *rx,
-	   struct rexp_node *node)
+           struct rexp_node *node)
 #else
 RX_DECL struct rexp_node * 
 rx_copy_rexp (rx, node)
@@ -1385,42 +1385,42 @@ rx_copy_rexp (rx, node)
     {
       struct rexp_node *n = rexp_node (rx, node->type);
       if (!n)
-	return 0;
+        return 0;
       switch (node->type)
-	{
-	case r_cset:
-	  n->params.cset = rx_copy_cset (rx, node->params.cset);
-	  if (!n->params.cset)
-	    {
-	      rx_free_rexp (rx, n);
-	      return 0;
-	    }
-	  break;
+        {
+        case r_cset:
+          n->params.cset = rx_copy_cset (rx, node->params.cset);
+          if (!n->params.cset)
+            {
+              rx_free_rexp (rx, n);
+              return 0;
+            }
+          break;
 
-	case r_side_effect:
-	  n->params.side_effect = node->params.side_effect;
-	  break;
+        case r_side_effect:
+          n->params.side_effect = node->params.side_effect;
+          break;
 
-	case r_concat:
-	case r_alternate:
-	case r_opt:
-	case r_2phase_star:
-	case r_star:
-	  n->params.pair.left =
-	    rx_copy_rexp (rx, node->params.pair.left);
-	  n->params.pair.right =
-	    rx_copy_rexp (rx, node->params.pair.right);
-	  if (   (node->params.pair.left && !n->params.pair.left)
-	      || (node->params.pair.right && !n->params.pair.right))
-	    {
-	      rx_free_rexp  (rx, n);
-	      return 0;
-	    }
-	  break;
-	case r_data:
-	  /* shouldn't happen */
-	  break;
-	}
+        case r_concat:
+        case r_alternate:
+        case r_opt:
+        case r_2phase_star:
+        case r_star:
+          n->params.pair.left =
+            rx_copy_rexp (rx, node->params.pair.left);
+          n->params.pair.right =
+            rx_copy_rexp (rx, node->params.pair.right);
+          if (   (node->params.pair.left && !n->params.pair.left)
+              || (node->params.pair.right && !n->params.pair.right))
+            {
+              rx_free_rexp  (rx, n);
+              return 0;
+            }
+          break;
+        case r_data:
+          /* shouldn't happen */
+          break;
+        }
       return n;
     }
 }
@@ -1468,7 +1468,7 @@ rx_free_nfa_state (n)
 #ifdef __STDC__
 RX_DECL struct rx_nfa_state * 
 rx_id_to_nfa_state (struct rx * rx,
-		    int id)
+                    int id)
 #else
 RX_DECL struct rx_nfa_state * 
 rx_id_to_nfa_state (rx, id)
@@ -1491,9 +1491,9 @@ rx_id_to_nfa_state (rx, id)
 #ifdef __STDC__
 RX_DECL struct rx_nfa_edge * 
 rx_nfa_edge (struct rx *rx,
-	     enum rx_nfa_etype type,
-	     struct rx_nfa_state *start,
-	     struct rx_nfa_state *dest)
+             enum rx_nfa_etype type,
+             struct rx_nfa_state *start,
+             struct rx_nfa_state *dest)
 #else
 RX_DECL struct rx_nfa_edge * 
 rx_nfa_edge (rx, type, start, dest)
@@ -1535,7 +1535,7 @@ rx_free_nfa_edge (e)
 #ifdef __STDC__
 static struct rx_possible_future * 
 rx_possible_future (struct rx * rx,
-		 struct rx_se_list * effects)
+                 struct rx_se_list * effects)
 #else
 static struct rx_possible_future * 
 rx_possible_future (rx, effects)
@@ -1579,37 +1579,37 @@ rx_free_nfa (rx)
   while (rx->nfa_states)
     {
       while (rx->nfa_states->edges)
-	{
-	  switch (rx->nfa_states->edges->type)
-	    {
-	    case ne_cset:
-	      rx_free_cset (rx, rx->nfa_states->edges->params.cset);
-	      break;
-	    default:
-	      break;
-	    }
-	  {
-	    struct rx_nfa_edge * e;
-	    e = rx->nfa_states->edges;
-	    rx->nfa_states->edges = rx->nfa_states->edges->next;
-	    rx_free_nfa_edge (e);
-	  }
-	} /* while (rx->nfa_states->edges) */
+        {
+          switch (rx->nfa_states->edges->type)
+            {
+            case ne_cset:
+              rx_free_cset (rx, rx->nfa_states->edges->params.cset);
+              break;
+            default:
+              break;
+            }
+          {
+            struct rx_nfa_edge * e;
+            e = rx->nfa_states->edges;
+            rx->nfa_states->edges = rx->nfa_states->edges->next;
+            rx_free_nfa_edge (e);
+          }
+        } /* while (rx->nfa_states->edges) */
       {
-	/* Iterate over the partial epsilon closures of rx->nfa_states */
-	struct rx_possible_future * pf = rx->nfa_states->futures;
-	while (pf)
-	  {
-	    struct rx_possible_future * pft = pf;
-	    pf = pf->next;
-	    rx_free_possible_future (pft);
-	  }
+        /* Iterate over the partial epsilon closures of rx->nfa_states */
+        struct rx_possible_future * pf = rx->nfa_states->futures;
+        while (pf)
+          {
+            struct rx_possible_future * pft = pf;
+            pf = pf->next;
+            rx_free_possible_future (pft);
+          }
       }
       {
-	struct rx_nfa_state *n;
-	n = rx->nfa_states;
-	rx->nfa_states = rx->nfa_states->next;
-	rx_free_nfa_state (n);
+        struct rx_nfa_state *n;
+        n = rx->nfa_states;
+        rx->nfa_states = rx->nfa_states->next;
+        rx_free_nfa_state (n);
       }
     }
 }
@@ -1633,9 +1633,9 @@ rx_free_nfa (rx)
 #ifdef __STDC__
 RX_DECL int
 rx_build_nfa (struct rx *rx,
-	      struct rexp_node *rexp,
-	      struct rx_nfa_state **start,
-	      struct rx_nfa_state **end)
+              struct rexp_node *rexp,
+              struct rx_nfa_state **start,
+              struct rx_nfa_state **end)
 #else
 RX_DECL int
 rx_build_nfa (rx, rexp, start, end)
@@ -1675,84 +1675,84 @@ rx_build_nfa (rx, rexp, start, end)
     case r_cset:
       edge = rx_nfa_edge (rx, ne_cset, *start, *end);
       if (!edge)
-	return 0;
+        return 0;
       edge->params.cset = rx_copy_cset (rx, rexp->params.cset);
       if (!edge->params.cset)
-	{
-	  rx_free_nfa_edge (edge);
-	  return 0;
-	}
+        {
+          rx_free_nfa_edge (edge);
+          return 0;
+        }
       return 1;
  
     case r_opt:
       return (rx_build_nfa (rx, rexp->params.pair.left, start, end)
-	      && rx_nfa_edge (rx, ne_epsilon, *start, *end));
+              && rx_nfa_edge (rx, ne_epsilon, *start, *end));
 
     case r_star:
       {
-	struct rx_nfa_state * star_start = 0;
-	struct rx_nfa_state * star_end = 0;
-	return (rx_build_nfa (rx, rexp->params.pair.left,
-			      &star_start, &star_end)
-		&& star_start
-		&& star_end
-		&& rx_nfa_edge (rx, ne_epsilon, star_start, star_end)
-		&& rx_nfa_edge (rx, ne_epsilon, *start, star_start)
-		&& rx_nfa_edge (rx, ne_epsilon, star_end, *end)
+        struct rx_nfa_state * star_start = 0;
+        struct rx_nfa_state * star_end = 0;
+        return (rx_build_nfa (rx, rexp->params.pair.left,
+                              &star_start, &star_end)
+                && star_start
+                && star_end
+                && rx_nfa_edge (rx, ne_epsilon, star_start, star_end)
+                && rx_nfa_edge (rx, ne_epsilon, *start, star_start)
+                && rx_nfa_edge (rx, ne_epsilon, star_end, *end)
 
-		&& rx_nfa_edge (rx, ne_epsilon, star_end, star_start));
+                && rx_nfa_edge (rx, ne_epsilon, star_end, star_start));
       }
 
     case r_2phase_star:
       {
-	struct rx_nfa_state * star_start = 0;
-	struct rx_nfa_state * star_end = 0;
-	struct rx_nfa_state * loop_exp_start = 0;
-	struct rx_nfa_state * loop_exp_end = 0;
+        struct rx_nfa_state * star_start = 0;
+        struct rx_nfa_state * star_end = 0;
+        struct rx_nfa_state * loop_exp_start = 0;
+        struct rx_nfa_state * loop_exp_end = 0;
 
-	return (rx_build_nfa (rx, rexp->params.pair.left,
-			      &star_start, &star_end)
-		&& rx_build_nfa (rx, rexp->params.pair.right,
-				 &loop_exp_start, &loop_exp_end)
-		&& star_start
-		&& star_end
-		&& loop_exp_end
-		&& loop_exp_start
-		&& rx_nfa_edge (rx, ne_epsilon, star_start, *end)
-		&& rx_nfa_edge (rx, ne_epsilon, *start, star_start)
-		&& rx_nfa_edge (rx, ne_epsilon, star_end, *end)
+        return (rx_build_nfa (rx, rexp->params.pair.left,
+                              &star_start, &star_end)
+                && rx_build_nfa (rx, rexp->params.pair.right,
+                                 &loop_exp_start, &loop_exp_end)
+                && star_start
+                && star_end
+                && loop_exp_end
+                && loop_exp_start
+                && rx_nfa_edge (rx, ne_epsilon, star_start, *end)
+                && rx_nfa_edge (rx, ne_epsilon, *start, star_start)
+                && rx_nfa_edge (rx, ne_epsilon, star_end, *end)
 
-		&& rx_nfa_edge (rx, ne_epsilon, star_end, loop_exp_start)
-		&& rx_nfa_edge (rx, ne_epsilon, loop_exp_end, star_start));
+                && rx_nfa_edge (rx, ne_epsilon, star_end, loop_exp_start)
+                && rx_nfa_edge (rx, ne_epsilon, loop_exp_end, star_start));
       }
 
 
     case r_concat:
       {
-	struct rx_nfa_state *shared = 0;
-	return
-	  (rx_build_nfa (rx, rexp->params.pair.left, start, &shared)
-	   && rx_build_nfa (rx, rexp->params.pair.right, &shared, end));
+        struct rx_nfa_state *shared = 0;
+        return
+          (rx_build_nfa (rx, rexp->params.pair.left, start, &shared)
+           && rx_build_nfa (rx, rexp->params.pair.right, &shared, end));
       }
 
     case r_alternate:
       {
-	struct rx_nfa_state *ls = 0;
-	struct rx_nfa_state *le = 0;
-	struct rx_nfa_state *rs = 0;
-	struct rx_nfa_state *re = 0;
-	return (rx_build_nfa (rx, rexp->params.pair.left, &ls, &le)
-		&& rx_build_nfa (rx, rexp->params.pair.right, &rs, &re)
-		&& rx_nfa_edge (rx, ne_epsilon, *start, ls)
-		&& rx_nfa_edge (rx, ne_epsilon, *start, rs)
-		&& rx_nfa_edge (rx, ne_epsilon, le, *end)
-		&& rx_nfa_edge (rx, ne_epsilon, re, *end));
+        struct rx_nfa_state *ls = 0;
+        struct rx_nfa_state *le = 0;
+        struct rx_nfa_state *rs = 0;
+        struct rx_nfa_state *re = 0;
+        return (rx_build_nfa (rx, rexp->params.pair.left, &ls, &le)
+                && rx_build_nfa (rx, rexp->params.pair.right, &rs, &re)
+                && rx_nfa_edge (rx, ne_epsilon, *start, ls)
+                && rx_nfa_edge (rx, ne_epsilon, *start, rs)
+                && rx_nfa_edge (rx, ne_epsilon, le, *end)
+                && rx_nfa_edge (rx, ne_epsilon, re, *end));
       }
 
     case r_side_effect:
       edge = rx_nfa_edge (rx, ne_side_effect, *start, *end);
       if (!edge)
-	return 0;
+        return 0;
       edge->params.side_effect = rexp->params.side_effect;
       return 1;
     }
@@ -1789,30 +1789,30 @@ rx_name_nfa_states (rx)
       struct rx_nfa_edge *e = n->edges;
 
       if (n->is_start)
-	n->eclosure_needed = 1;
+        n->eclosure_needed = 1;
 
       while (e)
-	{
-	  switch (e->type)
-	    {
-	    case ne_epsilon:
-	    case ne_side_effect:
-	      break;
+        {
+          switch (e->type)
+            {
+            case ne_epsilon:
+            case ne_side_effect:
+              break;
 
-	    case ne_cset:
-	      n->id = rx->nodec++;
-	      {
-		struct rx_nfa_edge *from_n = n->edges;
-		while (from_n)
-		  {
-		    from_n->dest->eclosure_needed = 1;
-		    from_n = from_n->next;
-		  }
-	      }
-	      goto cont;
-	    }
-	  e = e->next;
-	}
+            case ne_cset:
+              n->id = rx->nodec++;
+              {
+                struct rx_nfa_edge *from_n = n->edges;
+                while (from_n)
+                  {
+                    from_n->dest->eclosure_needed = 1;
+                    from_n = from_n->next;
+                  }
+              }
+              goto cont;
+            }
+          e = e->next;
+        }
       n->id = rx->epsnodec--;
     cont:
       n = n->next;
@@ -1858,16 +1858,16 @@ se_list_cmp (va, vb)
   struct rx_se_list * b = (struct rx_se_list *)vb;
 
   return ((va == vb)
-	  ? 0
-	  : (!va
-	     ? -1
-	     : (!vb
-		? 1
-		: ((long)a->car < (long)b->car
-		   ? 1
-		   : ((long)a->car > (long)b->car
-		      ? -1
-		      : se_list_cmp ((void *)a->cdr, (void *)b->cdr))))));
+          ? 0
+          : (!va
+             ? -1
+             : (!vb
+                ? 1
+                : ((long)a->car < (long)b->car
+                   ? 1
+                   : ((long)a->car > (long)b->car
+                      ? -1
+                      : se_list_cmp ((void *)a->cdr, (void *)b->cdr))))));
 }
 
 
@@ -1897,7 +1897,7 @@ static struct rx_hash_rules se_list_hash_rules =
 #ifdef __STDC__
 static struct rx_se_list * 
 side_effect_cons (struct rx * rx,
-		  void * se, struct rx_se_list * list)
+                  void * se, struct rx_se_list * list)
 #else
 static struct rx_se_list * 
 side_effect_cons (rx, se, list)
@@ -1919,8 +1919,8 @@ side_effect_cons (rx, se, list)
 #ifdef __STDC__
 static struct rx_se_list *
 hash_cons_se_prog (struct rx * rx,
-		   struct rx_hash * memo,
-		   void * car, struct rx_se_list * cdr)
+                   struct rx_hash * memo,
+                   void * car, struct rx_se_list * cdr)
 #else
 static struct rx_se_list *
 hash_cons_se_prog (rx, memo, car, cdr)
@@ -1937,21 +1937,21 @@ hash_cons_se_prog (rx, memo, car, cdr)
   template.cdr = cdr;
   {
     struct rx_hash_item * it = rx_hash_store (memo, hash,
-					      (void *)&template,
-					      &se_list_hash_rules);
+                                              (void *)&template,
+                                              &se_list_hash_rules);
     if (!it)
       return 0;
     if (it->data == (void *)&template)
       {
-	struct rx_se_list * consed;
-	consed = (struct rx_se_list *) malloc (sizeof (*consed));
-	if (! consed)
-	  {
-	    free ((char *)it);
-	    return 0;
-	  }
-	*consed = template;
-	it->data = (void *)consed;
+        struct rx_se_list * consed;
+        consed = (struct rx_se_list *) malloc (sizeof (*consed));
+        if (! consed)
+          {
+            free ((char *)it);
+            return 0;
+          }
+        *consed = template;
+        it->data = (void *)consed;
       }
     return (struct rx_se_list *)it->data;
   }
@@ -1974,7 +1974,7 @@ hash_se_prog (rx, memo, prog)
     {
       answer = hash_cons_se_prog (rx, memo, prog->car, answer);
       if (!answer)
-	return 0;
+        return 0;
       prog = prog->cdr;
     }
   return answer;
@@ -1994,16 +1994,16 @@ nfa_set_cmp (va, vb)
   struct rx_nfa_state_set * b = (struct rx_nfa_state_set *)vb;
 
   return ((va == vb)
-	  ? 0
-	  : (!va
-	     ? -1
-	     : (!vb
-		? 1
-		: (a->car->id < b->car->id
-		   ? 1
-		   : (a->car->id > b->car->id
-		      ? -1
-		      : nfa_set_cmp ((void *)a->cdr, (void *)b->cdr))))));
+          ? 0
+          : (!va
+             ? -1
+             : (!vb
+                ? 1
+                : (a->car->id < b->car->id
+                   ? 1
+                   : (a->car->id > b->car->id
+                      ? -1
+                      : nfa_set_cmp ((void *)a->cdr, (void *)b->cdr))))));
 }
 
 #ifdef __STDC__
@@ -2032,8 +2032,8 @@ static struct rx_hash_rules nfa_set_hash_rules =
 #ifdef __STDC__
 static struct rx_nfa_state_set * 
 nfa_set_cons (struct rx * rx,
-	      struct rx_hash * memo, struct rx_nfa_state * state,
-	      struct rx_nfa_state_set * set)
+              struct rx_hash * memo, struct rx_nfa_state * state,
+              struct rx_nfa_state_set * set)
 #else
 static struct rx_nfa_state_set * 
 nfa_set_cons (rx, memo, state, set)
@@ -2048,8 +2048,8 @@ nfa_set_cons (rx, memo, state, set)
   template.car = state;
   template.cdr = set;
   node = rx_hash_store (memo,
-			(((long)state) >> 8) ^ (long)set,
-			&template, &nfa_set_hash_rules);
+                        (((long)state) >> 8) ^ (long)set,
+                        &template, &nfa_set_hash_rules);
   if (!node)
     return 0;
   if (node->data == &template)
@@ -2058,7 +2058,7 @@ nfa_set_cons (rx, memo, state, set)
       l = (struct rx_nfa_state_set *) malloc (sizeof (*l));
       node->data = (void *) l;
       if (!l)
-	return 0;
+        return 0;
       *l = template;
     }
   return (struct rx_nfa_state_set *)node->data;
@@ -2067,8 +2067,8 @@ nfa_set_cons (rx, memo, state, set)
 #ifdef __STDC__
 static struct rx_nfa_state_set * 
 nfa_set_enjoin (struct rx * rx,
-		struct rx_hash * memo, struct rx_nfa_state * state,
-		struct rx_nfa_state_set * set)
+                struct rx_hash * memo, struct rx_nfa_state * state,
+                struct rx_nfa_state_set * set)
 #else
 static struct rx_nfa_state_set * 
 nfa_set_enjoin (rx, memo, state, set)
@@ -2085,9 +2085,9 @@ nfa_set_enjoin (rx, memo, state, set)
   else
     {
       struct rx_nfa_state_set * newcdr
-	= nfa_set_enjoin (rx, memo, state, set->cdr);
+        = nfa_set_enjoin (rx, memo, state, set->cdr);
       if (newcdr != set->cdr)
-	set = nfa_set_cons (rx, memo, set->car, newcdr);
+        set = nfa_set_cons (rx, memo, set->car, newcdr);
       return set;
     }
 }
@@ -2193,7 +2193,7 @@ static rx_Bitset
 #ifdef __STDC__
 static int 
 eclose_node (struct rx *rx, struct rx_nfa_state *outnode,
-	     struct rx_nfa_state *node, struct eclose_frame *frame)
+             struct rx_nfa_state *node, struct eclose_frame *frame)
 #else
 static int 
 eclose_node (rx, outnode, node, frame)
@@ -2219,64 +2219,64 @@ eclose_node (rx, outnode, node, frame)
     {
       struct rx_possible_future **ec;
       struct rx_se_list * prog_in_order
-	= ((struct rx_se_list *)hash_se_prog (rx,
-					      &rx->se_list_memo,
-					      frame->prog_backwards));
+        = ((struct rx_se_list *)hash_se_prog (rx,
+                                              &rx->se_list_memo,
+                                              frame->prog_backwards));
       int cmp;
 
       ec = &outnode->futures;
 
       while (*ec)
-	{
-	  cmp = se_list_cmp ((void *)(*ec)->effects, (void *)prog_in_order);
-	  if (cmp <= 0)
-	    break;
-	  ec = &(*ec)->next;
-	}
+        {
+          cmp = se_list_cmp ((void *)(*ec)->effects, (void *)prog_in_order);
+          if (cmp <= 0)
+            break;
+          ec = &(*ec)->next;
+        }
       if (!*ec || (cmp < 0))
-	{
-	  struct rx_possible_future * saved = *ec;
-	  *ec = rx_possible_future (rx, prog_in_order);
-	  (*ec)->next = saved;
-	  if (!*ec)
-	    return 0;
-	}
+        {
+          struct rx_possible_future * saved = *ec;
+          *ec = rx_possible_future (rx, prog_in_order);
+          (*ec)->next = saved;
+          if (!*ec)
+            return 0;
+        }
       if (node->id >= 0)
-	{
-	  (*ec)->destset = nfa_set_enjoin (rx, &rx->set_list_memo,
-					   node, (*ec)->destset);
-	  if (!(*ec)->destset)
-	    return 0;
-	}
+        {
+          (*ec)->destset = nfa_set_enjoin (rx, &rx->set_list_memo,
+                                           node, (*ec)->destset);
+          if (!(*ec)->destset)
+            return 0;
+        }
     }
 
   while (e)
     {
       switch (e->type)
-	{
-	case ne_epsilon:
-	  if (!eclose_node (rx, outnode, e->dest, frame))
-	    return 0;
-	  break;
-	case ne_side_effect:
-	  {
-	    frame->prog_backwards = side_effect_cons (rx, 
-						      e->params.side_effect,
-						      frame->prog_backwards);
-	    if (!frame->prog_backwards)
-	      return 0;
-	    if (!eclose_node (rx, outnode, e->dest, frame))
-	      return 0;
-	    {
-	      struct rx_se_list * dying = frame->prog_backwards;
-	      frame->prog_backwards = frame->prog_backwards->cdr;
-	      free ((char *)dying);
-	    }
-	    break;
-	  }
-	default:
-	  break;
-	}
+        {
+        case ne_epsilon:
+          if (!eclose_node (rx, outnode, e->dest, frame))
+            return 0;
+          break;
+        case ne_side_effect:
+          {
+            frame->prog_backwards = side_effect_cons (rx, 
+                                                      e->params.side_effect,
+                                                      frame->prog_backwards);
+            if (!frame->prog_backwards)
+              return 0;
+            if (!eclose_node (rx, outnode, e->dest, frame))
+              return 0;
+            {
+              struct rx_se_list * dying = frame->prog_backwards;
+              frame->prog_backwards = frame->prog_backwards->cdr;
+              free ((char *)dying);
+            }
+            break;
+          }
+        default:
+          break;
+        }
       e = e->next;
     }
   node->mark = 0;
@@ -2304,7 +2304,7 @@ rx_eclose_nfa (rx)
     {
       n->futures = 0;
       if (n->eclosure_needed && !eclose_node (rx, n, n, &frame))
-	return 0;
+        return 0;
       /* clear_marks (rx); */
       n = n->next;
     }
@@ -2333,22 +2333,22 @@ rx_delete_epsilon_transitions (rx)
     {
       e = &n->edges;
       while (*e)
-	{
-	  struct rx_nfa_edge *t;
-	  switch ((*e)->type)
-	    {
-	    case ne_epsilon:
-	    case ne_side_effect:
-	      t = *e;
-	      *e = t->next;
-	      rx_free_nfa_edge (t);
-	      break;
+        {
+          struct rx_nfa_edge *t;
+          switch ((*e)->type)
+            {
+            case ne_epsilon:
+            case ne_side_effect:
+              t = *e;
+              *e = t->next;
+              rx_free_nfa_edge (t);
+              break;
 
-	    default:
-	      e = &(*e)->next;
-	      break;
-	    }
-	}
+            default:
+              e = &(*e)->next;
+              break;
+            }
+        }
       n = n->next;
     }
 }
@@ -2360,7 +2360,7 @@ rx_delete_epsilon_transitions (rx)
 
 /* This is for qsort on an array of nfa_states. The order
  * is based on state ids and goes 
- *		[0...MAX][MIN..-1] where (MAX>=0) and (MIN<0)
+ *              [0...MAX][MIN..-1] where (MAX>=0) and (MIN<0)
  * This way, positive ids double as array indices.
  */
 
@@ -2376,12 +2376,12 @@ nfacmp (va, vb)
 {
   struct rx_nfa_state **a = (struct rx_nfa_state **)va;
   struct rx_nfa_state **b = (struct rx_nfa_state **)vb;
-  return (*a == *b		/* &&&& 3.18 */
-	  ? 0
-	  : (((*a)->id < 0) == ((*b)->id < 0)
-	     ? (((*a)->id  < (*b)->id) ? -1 : 1)
-	     : (((*a)->id < 0)
-		? 1 : -1)));
+  return (*a == *b              /* &&&& 3.18 */
+          ? 0
+          : (((*a)->id < 0) == ((*b)->id < 0)
+             ? (((*a)->id  < (*b)->id) ? -1 : 1)
+             : (((*a)->id < 0)
+                ? 1 : -1)));
 }
 
 #ifdef __STDC__
@@ -2397,8 +2397,8 @@ count_hash_nodes (st)
   int count = 0;
   for (x = 0; x < 13; ++x)
     count += ((st->children[x])
-	      ? count_hash_nodes (st->children[x])
-	      : st->bucket_size[x]);
+              ? count_hash_nodes (st->children[x])
+              : st->bucket_size[x]);
   
   return count;
 }
@@ -2438,7 +2438,7 @@ nfa_set_freer (node)
 #ifdef __STDC__
 RX_DECL int 
 rx_compactify_nfa (struct rx *rx,
-		   void **mem, unsigned long *size)
+                   void **mem, unsigned long *size)
 #else
 RX_DECL int 
 rx_compactify_nfa (rx, mem, size)
@@ -2466,33 +2466,33 @@ rx_compactify_nfa (rx, mem, size)
       struct rx_possible_future *ec = n->futures;
       ++total_nodec;
       while (e)
-	{
-	  ++edgec;
-	  e = e->next;
-	}
+        {
+          ++edgec;
+          e = e->next;
+        }
       while (ec)
-	{
-	  ++eclosec;
-	  ec = ec->next;
-	}
+        {
+          ++eclosec;
+          ec = ec->next;
+        }
       n = n->next;
     }
 
   total_size = (total_nodec * sizeof (struct rx_nfa_state)
-		+ edgec * rx_sizeof_bitset (rx->local_cset_size)
-		+ edgec * sizeof (struct rx_nfa_edge)
-		+ nfa_setc * sizeof (struct rx_nfa_state_set)
-		+ eclosec * sizeof (struct rx_possible_future)
-		+ se_list_consc * sizeof (struct rx_se_list)
-		+ rx->reserved);
+                + edgec * rx_sizeof_bitset (rx->local_cset_size)
+                + edgec * sizeof (struct rx_nfa_edge)
+                + nfa_setc * sizeof (struct rx_nfa_state_set)
+                + eclosec * sizeof (struct rx_possible_future)
+                + se_list_consc * sizeof (struct rx_se_list)
+                + rx->reserved);
 
   if (total_size > *size)
     {
       *mem = remalloc (*mem, total_size);
       if (*mem)
-	*size = total_size;
+        *size = total_size;
       else
-	return 0;
+        return 0;
     }
   /* Now we've allocated the memory; this copies the NFA. */
   {
@@ -2502,14 +2502,14 @@ rx_compactify_nfa (rx, mem, size)
     struct rx_nfa_state *new_state = state_base;
     struct rx_nfa_edge *new_edge =
       (struct rx_nfa_edge *)
-	((char *) state_base + total_nodec * sizeof (struct rx_nfa_state));
+        ((char *) state_base + total_nodec * sizeof (struct rx_nfa_state));
     struct rx_se_list * new_se_list =
       (struct rx_se_list *)
-	((char *)new_edge + edgec * sizeof (struct rx_nfa_edge));
+        ((char *)new_edge + edgec * sizeof (struct rx_nfa_edge));
     struct rx_possible_future *new_close =
       ((struct rx_possible_future *)
        ((char *) new_se_list
-	+ se_list_consc * sizeof (struct rx_se_list)));
+        + se_list_consc * sizeof (struct rx_se_list)));
     struct rx_nfa_state_set * new_nfa_set =
       ((struct rx_nfa_state_set *)
        ((char *)new_close + eclosec * sizeof (struct rx_possible_future)));
@@ -2520,15 +2520,15 @@ rx_compactify_nfa (rx, mem, size)
 
     if (scratch_alloc < total_nodec)
       {
-	scratch = ((struct rx_nfa_state **)
-		   remalloc (scratch, total_nodec * sizeof (*scratch)));
-	if (scratch)
-	  scratch_alloc = total_nodec;
-	else
-	  {
-	    scratch_alloc = 0;
-	    return 0;
-	  }
+        scratch = ((struct rx_nfa_state **)
+                   remalloc (scratch, total_nodec * sizeof (*scratch)));
+        if (scratch)
+          scratch_alloc = total_nodec;
+        else
+          {
+            scratch_alloc = 0;
+            return 0;
+          }
       }
 
     for (x = 0, n = rx->nfa_states; n; n = n->next)
@@ -2538,83 +2538,83 @@ rx_compactify_nfa (rx, mem, size)
 
     for (x = 0; x < total_nodec; ++x)
       {
-	struct rx_possible_future *eclose = scratch[x]->futures;
-	struct rx_nfa_edge *edge = scratch[x]->edges;
-	struct rx_nfa_state *cn = new_state++;
-	cn->futures = 0;
-	cn->edges = 0;
-	cn->next = (x == total_nodec - 1) ? 0 : (cn + 1);
-	cn->id = scratch[x]->id;
-	cn->is_final = scratch[x]->is_final;
-	cn->is_start = scratch[x]->is_start;
-	cn->mark = 0;
-	while (edge)
-	  {
-	    int indx = (edge->dest->id < 0
-			 ? (total_nodec + edge->dest->id)
-			 : edge->dest->id);
-	    struct rx_nfa_edge *e = new_edge++;
-	    rx_Bitset cset = (rx_Bitset) new_bitset;
-	    new_bitset += rx_sizeof_bitset (rx->local_cset_size);
-	    rx_bitset_null (rx->local_cset_size, cset);
-	    rx_bitset_union (rx->local_cset_size, cset, edge->params.cset);
-	    e->next = cn->edges;
-	    cn->edges = e;
-	    e->type = edge->type;
-	    e->dest = state_base + indx;
-	    e->params.cset = cset;
-	    edge = edge->next;
-	  }
-	while (eclose)
-	  {
-	    struct rx_possible_future *ec = new_close++;
-	    struct rx_hash_item * sp;
-	    struct rx_se_list ** sepos;
-	    struct rx_se_list * sesrc;
-	    struct rx_nfa_state_set * destlst;
-	    struct rx_nfa_state_set ** destpos;
-	    ec->next = cn->futures;
-	    cn->futures = ec;
-	    for (sepos = &ec->effects, sesrc = eclose->effects;
-		 sesrc;
-		 sesrc = sesrc->cdr, sepos = &(*sepos)->cdr)
-	      {
-		sp = rx_hash_find (&rx->se_list_memo,
-				   (long)sesrc->car ^ (long)sesrc->cdr,
-				   sesrc, &se_list_hash_rules);
-		if (sp->binding)
-		  {
-		    sesrc = (struct rx_se_list *)sp->binding;
-		    break;
-		  }
-		*new_se_list = *sesrc;
-		sp->binding = (void *)new_se_list;
-		*sepos = new_se_list;
-		++new_se_list;
-	      }
-	    *sepos = sesrc;
-	    for (destpos = &ec->destset, destlst = eclose->destset;
-		 destlst;
-		 destpos = &(*destpos)->cdr, destlst = destlst->cdr)
-	      {
-		sp = rx_hash_find (&rx->set_list_memo,
-				   ((((long)destlst->car) >> 8)
-				    ^ (long)destlst->cdr),
-				   destlst, &nfa_set_hash_rules);
-		if (sp->binding)
-		  {
-		    destlst = (struct rx_nfa_state_set *)sp->binding;
-		    break;
-		  }
-		*new_nfa_set = *destlst;
-		new_nfa_set->car = state_base + destlst->car->id;
-		sp->binding = (void *)new_nfa_set;
-		*destpos = new_nfa_set;
-		++new_nfa_set;
-	      }
-	    *destpos = destlst;
-	    eclose = eclose->next;
-	  }
+        struct rx_possible_future *eclose = scratch[x]->futures;
+        struct rx_nfa_edge *edge = scratch[x]->edges;
+        struct rx_nfa_state *cn = new_state++;
+        cn->futures = 0;
+        cn->edges = 0;
+        cn->next = (x == total_nodec - 1) ? 0 : (cn + 1);
+        cn->id = scratch[x]->id;
+        cn->is_final = scratch[x]->is_final;
+        cn->is_start = scratch[x]->is_start;
+        cn->mark = 0;
+        while (edge)
+          {
+            int indx = (edge->dest->id < 0
+                         ? (total_nodec + edge->dest->id)
+                         : edge->dest->id);
+            struct rx_nfa_edge *e = new_edge++;
+            rx_Bitset cset = (rx_Bitset) new_bitset;
+            new_bitset += rx_sizeof_bitset (rx->local_cset_size);
+            rx_bitset_null (rx->local_cset_size, cset);
+            rx_bitset_union (rx->local_cset_size, cset, edge->params.cset);
+            e->next = cn->edges;
+            cn->edges = e;
+            e->type = edge->type;
+            e->dest = state_base + indx;
+            e->params.cset = cset;
+            edge = edge->next;
+          }
+        while (eclose)
+          {
+            struct rx_possible_future *ec = new_close++;
+            struct rx_hash_item * sp;
+            struct rx_se_list ** sepos;
+            struct rx_se_list * sesrc;
+            struct rx_nfa_state_set * destlst;
+            struct rx_nfa_state_set ** destpos;
+            ec->next = cn->futures;
+            cn->futures = ec;
+            for (sepos = &ec->effects, sesrc = eclose->effects;
+                 sesrc;
+                 sesrc = sesrc->cdr, sepos = &(*sepos)->cdr)
+              {
+                sp = rx_hash_find (&rx->se_list_memo,
+                                   (long)sesrc->car ^ (long)sesrc->cdr,
+                                   sesrc, &se_list_hash_rules);
+                if (sp->binding)
+                  {
+                    sesrc = (struct rx_se_list *)sp->binding;
+                    break;
+                  }
+                *new_se_list = *sesrc;
+                sp->binding = (void *)new_se_list;
+                *sepos = new_se_list;
+                ++new_se_list;
+              }
+            *sepos = sesrc;
+            for (destpos = &ec->destset, destlst = eclose->destset;
+                 destlst;
+                 destpos = &(*destpos)->cdr, destlst = destlst->cdr)
+              {
+                sp = rx_hash_find (&rx->set_list_memo,
+                                   ((((long)destlst->car) >> 8)
+                                    ^ (long)destlst->cdr),
+                                   destlst, &nfa_set_hash_rules);
+                if (sp->binding)
+                  {
+                    destlst = (struct rx_nfa_state_set *)sp->binding;
+                    break;
+                  }
+                *new_nfa_set = *destlst;
+                new_nfa_set->car = state_base + destlst->car->id;
+                sp->binding = (void *)new_nfa_set;
+                *destpos = new_nfa_set;
+                ++new_nfa_set;
+              }
+            *destpos = destlst;
+            eclose = eclose->next;
+          }
       }
   }
   rx_free_hash_table (&rx->se_list_memo, se_memo_freer, &se_list_hash_rules);
@@ -2669,16 +2669,16 @@ rx_cache_malloc (cache, bytes)
   while (cache->bytes_left < bytes)
     {
       if (cache->memory_pos)
-	cache->memory_pos = cache->memory_pos->next;
+        cache->memory_pos = cache->memory_pos->next;
       if (!cache->memory_pos)
-	{
-	  cache->morecore (cache);
-	  if (!cache->memory_pos)
-	    return 0;
-	}
+        {
+          cache->morecore (cache);
+          if (!cache->memory_pos)
+            return 0;
+        }
       cache->bytes_left = cache->memory_pos->bytes;
       cache->memory_addr = ((char *)cache->memory_pos
-			    + sizeof (struct rx_blocklist));
+                            + sizeof (struct rx_blocklist));
     }
   cache->bytes_left -= bytes;
   {
@@ -2691,7 +2691,7 @@ rx_cache_malloc (cache, bytes)
 #ifdef __STDC__
 static void
 rx_cache_free (struct rx_cache * cache,
-	       struct rx_freelist ** freelist, char * mem)
+               struct rx_freelist ** freelist, char * mem)
 #else
 static void
 rx_cache_free (cache, freelist, mem)
@@ -2712,7 +2712,7 @@ rx_cache_free (cache, freelist, mem)
 #ifdef __STDC__
 static void 
 install_transition (struct rx_superstate *super,
-		    struct rx_inx *answer, rx_Bitset trcset) 
+                    struct rx_inx *answer, rx_Bitset trcset) 
 #else
 static void 
 install_transition (super, answer, trcset)
@@ -2726,22 +2726,22 @@ install_transition (super, answer, trcset)
   for (chr = 0; chr < 256; )
     if (!*trcset)
       {
-	++trcset;
-	chr += 32;
+        ++trcset;
+        chr += 32;
       }
     else
       {
-	RX_subset sub = *trcset;
-	RX_subset mask = 1;
-	int bound = chr + 32;
-	while (chr < bound)
-	  {
-	    if (sub & mask)
-	      transitions [chr] = *answer;
-	    ++chr;
-	    mask <<= 1;
-	  }
-	++trcset;
+        RX_subset sub = *trcset;
+        RX_subset mask = 1;
+        int bound = chr + 32;
+        while (chr < bound)
+          {
+            if (sub & mask)
+              transitions [chr] = *answer;
+            ++chr;
+            mask <<= 1;
+          }
+        ++trcset;
       }
 }
 
@@ -2812,27 +2812,27 @@ semifree_superstate (cache)
       cache->lru_superstate = cache->lru_superstate->next_recyclable;
       ++disqualified;
       if (disqualified == cache->superstates)
-	return;
+        return;
     }
   {
     struct rx_superstate * it = cache->lru_superstate;
     it->next_recyclable->prev_recyclable = it->prev_recyclable;
     it->prev_recyclable->next_recyclable = it->next_recyclable;
     cache->lru_superstate = (it == it->next_recyclable
-			     ? 0
-			     : it->next_recyclable);
+                             ? 0
+                             : it->next_recyclable);
     if (!cache->semifree_superstate)
       {
-	cache->semifree_superstate = it;
-	it->next_recyclable = it;
-	it->prev_recyclable = it;
+        cache->semifree_superstate = it;
+        it->next_recyclable = it;
+        it->prev_recyclable = it;
       }
     else
       {
-	it->prev_recyclable = cache->semifree_superstate->prev_recyclable;
-	it->next_recyclable = cache->semifree_superstate;
-	it->prev_recyclable->next_recyclable = it;
-	it->next_recyclable->prev_recyclable = it;
+        it->prev_recyclable = cache->semifree_superstate->prev_recyclable;
+        it->next_recyclable = cache->semifree_superstate;
+        it->prev_recyclable->next_recyclable = it;
+        it->next_recyclable->prev_recyclable = it;
       }
     {
       struct rx_distinct_future *df;
@@ -2840,25 +2840,25 @@ semifree_superstate (cache)
       ++cache->semifree_superstates;
       df = it->transition_refs;
       if (df)
-	{
-	  df->prev_same_dest->next_same_dest = 0;
-	  for (df = it->transition_refs; df; df = df->next_same_dest)
-	    {
-	      df->future_frame.inx = cache->instruction_table[rx_cache_miss];
-	      df->future_frame.data = 0;
-	      df->future_frame.data_2 = (void *) df;
-	      /* If there are any NEXT-CHAR instruction frames that
-	       * refer to this state, we convert them to CACHE-MISS frames.
-	       */
-	      if (!df->effects
-		  && (df->edge->options->next_same_super_edge[0]
-		      == df->edge->options))
-		install_transition (df->present, &df->future_frame,
-				    df->edge->cset);
-	    }
-	  df = it->transition_refs;
-	  df->prev_same_dest->next_same_dest = df;
-	}
+        {
+          df->prev_same_dest->next_same_dest = 0;
+          for (df = it->transition_refs; df; df = df->next_same_dest)
+            {
+              df->future_frame.inx = cache->instruction_table[rx_cache_miss];
+              df->future_frame.data = 0;
+              df->future_frame.data_2 = (void *) df;
+              /* If there are any NEXT-CHAR instruction frames that
+               * refer to this state, we convert them to CACHE-MISS frames.
+               */
+              if (!df->effects
+                  && (df->edge->options->next_same_super_edge[0]
+                      == df->edge->options))
+                install_transition (df->present, &df->future_frame,
+                                    df->edge->cset);
+            }
+          df = it->transition_refs;
+          df->prev_same_dest->next_same_dest = df;
+        }
     }
   }
 }
@@ -2866,7 +2866,7 @@ semifree_superstate (cache)
 #ifdef __STDC__
 static void 
 refresh_semifree_superstate (struct rx_cache * cache,
-			     struct rx_superstate * super)
+                             struct rx_superstate * super)
 #else
 static void 
 refresh_semifree_superstate (cache, super)
@@ -2880,25 +2880,25 @@ refresh_semifree_superstate (cache, super)
     {
       super->transition_refs->prev_same_dest->next_same_dest = 0; 
       for (df = super->transition_refs; df; df = df->next_same_dest)
-	{
-	  df->future_frame.inx = cache->instruction_table[rx_next_char];
-	  df->future_frame.data = (void *) super->transitions;
-	  /* CACHE-MISS instruction frames that refer to this state,
-	   * must be converted to NEXT-CHAR frames.
-	   */
-	  if (!df->effects
-	      && (df->edge->options->next_same_super_edge[0]
-		  == df->edge->options))
-	    install_transition (df->present, &df->future_frame,
-				df->edge->cset);
-	}
+        {
+          df->future_frame.inx = cache->instruction_table[rx_next_char];
+          df->future_frame.data = (void *) super->transitions;
+          /* CACHE-MISS instruction frames that refer to this state,
+           * must be converted to NEXT-CHAR frames.
+           */
+          if (!df->effects
+              && (df->edge->options->next_same_super_edge[0]
+                  == df->edge->options))
+            install_transition (df->present, &df->future_frame,
+                                df->edge->cset);
+        }
       super->transition_refs->prev_same_dest->next_same_dest
-	= super->transition_refs;
+        = super->transition_refs;
     }
   if (cache->semifree_superstate == super)
     cache->semifree_superstate = (super->prev_recyclable == super
-				  ? 0
-				  : super->prev_recyclable);
+                                  ? 0
+                                  : super->prev_recyclable);
   super->next_recyclable->prev_recyclable = super->prev_recyclable;
   super->prev_recyclable->next_recyclable = super->next_recyclable;
 
@@ -2935,9 +2935,9 @@ rx_refresh_this_superstate (cache, superstate)
   else if (superstate != cache->lru_superstate->prev_recyclable)
     {
       superstate->next_recyclable->prev_recyclable
-	= superstate->prev_recyclable;
+        = superstate->prev_recyclable;
       superstate->prev_recyclable->next_recyclable
-	= superstate->next_recyclable;
+        = superstate->next_recyclable;
       superstate->next_recyclable = cache->lru_superstate;
       superstate->prev_recyclable = cache->lru_superstate->prev_recyclable;
       superstate->next_recyclable->prev_recyclable = superstate;
@@ -2948,7 +2948,7 @@ rx_refresh_this_superstate (cache, superstate)
 #ifdef __STDC__
 static void 
 release_superset_low (struct rx_cache * cache,
-		     struct rx_superset *set)
+                     struct rx_superset *set)
 #else
 static void 
 release_superset_low (cache, set)
@@ -2959,17 +2959,17 @@ release_superset_low (cache, set)
   if (!--set->refs)
     {
       if (set->cdr)
-	release_superset_low (cache, set->cdr);
+        release_superset_low (cache, set->cdr);
 
       set->starts_for = 0;
 
       rx_hash_free
-	(rx_hash_find
-	 (&cache->superset_table,
-	  (unsigned long)set->car ^ set->id ^ (unsigned long)set->cdr,
-	  (void *)set,
-	  &cache->superset_hash_rules),
-	 &cache->superset_hash_rules);
+        (rx_hash_find
+         (&cache->superset_table,
+          (unsigned long)set->car ^ set->id ^ (unsigned long)set->cdr,
+          (void *)set,
+          &cache->superset_hash_rules),
+         &cache->superset_hash_rules);
       rx_cache_free (cache, &cache->free_supersets, (char *)set);
     }
 }
@@ -2977,7 +2977,7 @@ release_superset_low (cache, set)
 #ifdef __STDC__
 RX_DECL void 
 rx_release_superset (struct rx *rx,
-		     struct rx_superset *set)
+                     struct rx_superset *set)
 #else
 RX_DECL void 
 rx_release_superset (rx, set)
@@ -3015,14 +3015,14 @@ rx_really_free_superstate (cache)
      */
     while ((cache->hits + cache->misses) > cache->superstates_allowed)
       {
-	cache->hits >>= 1;
-	cache->misses >>= 1;
+        cache->hits >>= 1;
+        cache->misses >>= 1;
       }
     if (  ((cache->hits + cache->misses) * cache->semifree_superstates)
-	< (cache->superstates		 * cache->misses))
+        < (cache->superstates            * cache->misses))
       {
-	semifree_superstate (cache);
-	semifree_superstate (cache);
+        semifree_superstate (cache);
+        semifree_superstate (cache);
       }
   }
 
@@ -3031,7 +3031,7 @@ rx_really_free_superstate (cache)
       refresh_semifree_superstate (cache, cache->semifree_superstate);
       ++locked_superstates;
       if (locked_superstates == cache->superstates)
-	return 0;
+        return 0;
     }
 
   if (cache->semifree_superstate)
@@ -3040,70 +3040,70 @@ rx_really_free_superstate (cache)
       it->next_recyclable->prev_recyclable = it->prev_recyclable;
       it->prev_recyclable->next_recyclable = it->next_recyclable;
       cache->semifree_superstate = ((it == it->next_recyclable)
-				    ? 0
-				    : it->next_recyclable);
+                                    ? 0
+                                    : it->next_recyclable);
       --cache->semifree_superstates;
     }
   else
     {
       while (cache->lru_superstate->locks)
-	{
-	  cache->lru_superstate = cache->lru_superstate->next_recyclable;
-	  ++locked_superstates;
-	  if (locked_superstates == cache->superstates)
-	    return 0;
-	}
+        {
+          cache->lru_superstate = cache->lru_superstate->next_recyclable;
+          ++locked_superstates;
+          if (locked_superstates == cache->superstates)
+            return 0;
+        }
       it = cache->lru_superstate;
       it->next_recyclable->prev_recyclable = it->prev_recyclable;
       it->prev_recyclable->next_recyclable = it->next_recyclable;
       cache->lru_superstate = ((it == it->next_recyclable)
-				    ? 0
-				    : it->next_recyclable);
+                                    ? 0
+                                    : it->next_recyclable);
     }
 
   if (it->transition_refs)
     {
       struct rx_distinct_future *df;
       for (df = it->transition_refs,
-	   df->prev_same_dest->next_same_dest = 0;
-	   df;
-	   df = df->next_same_dest)
-	{
-	  df->future_frame.inx = cache->instruction_table[rx_cache_miss];
-	  df->future_frame.data = 0;
-	  df->future_frame.data_2 = (void *) df;
-	  df->future = 0;
-	}
+           df->prev_same_dest->next_same_dest = 0;
+           df;
+           df = df->next_same_dest)
+        {
+          df->future_frame.inx = cache->instruction_table[rx_cache_miss];
+          df->future_frame.data = 0;
+          df->future_frame.data_2 = (void *) df;
+          df->future = 0;
+        }
       it->transition_refs->prev_same_dest->next_same_dest =
-	it->transition_refs;
+        it->transition_refs;
     }
   {
     struct rx_super_edge *tc = it->edges;
     while (tc)
       {
-	struct rx_distinct_future * df;
-	struct rx_super_edge *tct = tc->next;
-	df = tc->options;
-	df->next_same_super_edge[1]->next_same_super_edge[0] = 0;
-	while (df)
-	  {
-	    struct rx_distinct_future *dft = df;
-	    df = df->next_same_super_edge[0];
-	    
-	    
-	    if (dft->future && dft->future->transition_refs == dft)
-	      {
-		dft->future->transition_refs = dft->next_same_dest;
-		if (dft->future->transition_refs == dft)
-		  dft->future->transition_refs = 0;
-	      }
-	    dft->next_same_dest->prev_same_dest = dft->prev_same_dest;
-	    dft->prev_same_dest->next_same_dest = dft->next_same_dest;
-	    rx_cache_free (cache, &cache->free_discernable_futures,
-			   (char *)dft);
-	  }
-	rx_cache_free (cache, &cache->free_transition_classes, (char *)tc);
-	tc = tct;
+        struct rx_distinct_future * df;
+        struct rx_super_edge *tct = tc->next;
+        df = tc->options;
+        df->next_same_super_edge[1]->next_same_super_edge[0] = 0;
+        while (df)
+          {
+            struct rx_distinct_future *dft = df;
+            df = df->next_same_super_edge[0];
+            
+            
+            if (dft->future && dft->future->transition_refs == dft)
+              {
+                dft->future->transition_refs = dft->next_same_dest;
+                if (dft->future->transition_refs == dft)
+                  dft->future->transition_refs = 0;
+              }
+            dft->next_same_dest->prev_same_dest = dft->prev_same_dest;
+            dft->prev_same_dest->next_same_dest = dft->next_same_dest;
+            rx_cache_free (cache, &cache->free_discernable_futures,
+                           (char *)dft);
+          }
+        rx_cache_free (cache, &cache->free_transition_classes, (char *)tc);
+        tc = tct;
       }
   }
   
@@ -3118,7 +3118,7 @@ rx_really_free_superstate (cache)
 #ifdef __STDC__
 static char *
 rx_cache_get (struct rx_cache * cache,
-	      struct rx_freelist ** freelist)
+              struct rx_freelist ** freelist)
 #else
 static char *
 rx_cache_get (cache, freelist)
@@ -3140,7 +3140,7 @@ rx_cache_get (cache, freelist)
 #ifdef __STDC__
 static char *
 rx_cache_malloc_or_get (struct rx_cache * cache,
-			struct rx_freelist ** freelist, int bytes)
+                        struct rx_freelist ** freelist, int bytes)
 #else
 static char *
 rx_cache_malloc_or_get (cache, freelist, bytes)
@@ -3153,7 +3153,7 @@ rx_cache_malloc_or_get (cache, freelist, bytes)
     {
       char * answer = rx_cache_malloc (cache, bytes);
       if (answer)
-	return answer;
+        return answer;
     }
 
   return rx_cache_get (cache, freelist);
@@ -3165,28 +3165,28 @@ rx_cache_get_superstate (struct rx_cache * cache)
 #else
 static char *
 rx_cache_get_superstate (cache)
-	  struct rx_cache * cache;
+          struct rx_cache * cache;
 #endif
 {
   char * answer;
   int bytes = (   sizeof (struct rx_superstate)
-	       +  cache->local_cset_size * sizeof (struct rx_inx));
+               +  cache->local_cset_size * sizeof (struct rx_inx));
   if (!cache->free_superstates
       && (cache->superstates < cache->superstates_allowed))
     {
       answer = rx_cache_malloc (cache, bytes);
       if (answer)
-	{
-	  ++cache->superstates;
-	  return answer;
-	}
+        {
+          ++cache->superstates;
+          return answer;
+        }
     }
   answer = rx_cache_get (cache, &cache->free_superstates);
   if (!answer)
     {
       answer = rx_cache_malloc (cache, bytes);
       if (answer)
-	++cache->superstates_allowed;
+        ++cache->superstates_allowed;
     }
   ++cache->superstates;
   return answer;
@@ -3207,7 +3207,7 @@ supersetcmp (va, vb)
   struct rx_superset * a = (struct rx_superset *)va;
   struct rx_superset * b = (struct rx_superset *)vb;
   return (   (a == b)
-	  || (a && b && (a->car == b->car) && (a->cdr == b->cdr)));
+          || (a && b && (a->car == b->car) && (a->cdr == b->cdr)));
 }
 
 #ifdef __STDC__
@@ -3223,13 +3223,13 @@ superset_allocator (rules, val)
   struct rx_cache * cache
     = ((struct rx_cache *)
        ((char *)rules
-	- (unsigned long)(&((struct rx_cache *)0)->superset_hash_rules)));
+        - (unsigned long)(&((struct rx_cache *)0)->superset_hash_rules)));
   struct rx_superset * template = (struct rx_superset *)val;
   struct rx_superset * newset
     = ((struct rx_superset *)
        rx_cache_malloc_or_get (cache,
-			       &cache->free_supersets,
-			       sizeof (*template)));
+                               &cache->free_supersets,
+                               sizeof (*template)));
   if (!newset)
     return 0;
   newset->refs = 0;
@@ -3255,10 +3255,10 @@ super_hash_allocator (rules)
   struct rx_cache * cache
     = ((struct rx_cache *)
        ((char *)rules
-	- (unsigned long)(&((struct rx_cache *)0)->superset_hash_rules)));
+        - (unsigned long)(&((struct rx_cache *)0)->superset_hash_rules)));
   return ((struct rx_hash *)
-	  rx_cache_malloc_or_get (cache,
-				  &cache->free_hash, sizeof (struct rx_hash)));
+          rx_cache_malloc_or_get (cache,
+                                  &cache->free_hash, sizeof (struct rx_hash)));
 }
 
 
@@ -3281,7 +3281,7 @@ super_hash_liberator (hash, rules)
 #ifdef __STDC__
 static void
 superset_hash_item_liberator (struct rx_hash_item * it,
-			      struct rx_hash_rules * rules)
+                              struct rx_hash_rules * rules)
 #else
 static void
 superset_hash_item_liberator (it, rules) /* Well, it does ya know. */
@@ -3308,10 +3308,10 @@ bytes_for_cache_size (supers, cset_size)
   return (int)
     ((float)supers *
      (  (1.03 * (float) (  rx_sizeof_bitset (cset_size)
-			 + sizeof (struct rx_super_edge)))
+                         + sizeof (struct rx_super_edge)))
       + (1.80 * (float) sizeof (struct rx_possible_future))
       + (float) (  sizeof (struct rx_superstate)
-		 + cset_size * sizeof (struct rx_inx))));
+                 + cset_size * sizeof (struct rx_inx))));
 }
 
 #ifdef __STDC__
@@ -3334,7 +3334,7 @@ rx_morecore (cache)
     while (*pos)
       pos = &(*pos)->next;
     *pos = ((struct rx_blocklist *)
-	    malloc (size + sizeof (struct rx_blocklist))); 
+            malloc (size + sizeof (struct rx_blocklist))); 
     if (!*pos)
       return;
 
@@ -3399,7 +3399,7 @@ static struct rx_cache default_cache =
 #ifdef __STDC__
 RX_DECL struct rx_superset *
 rx_superset_cons (struct rx * rx,
-		  struct rx_nfa_state *car, struct rx_superset *cdr)
+                  struct rx_nfa_state *car, struct rx_superset *cdr)
 #else
 RX_DECL struct rx_superset *
 rx_superset_cons (rx, car, cdr)
@@ -3412,16 +3412,16 @@ rx_superset_cons (rx, car, cdr)
   if (!car && !cdr)
     {
       if (!cache->empty_superset)
-	{
-	  cache->empty_superset
-	    = ((struct rx_superset *)
-	       rx_cache_malloc_or_get (cache, &cache->free_supersets,
-				       sizeof (struct rx_superset)));
-	  if (!cache->empty_superset)
-	    return 0;
-	  bzero (cache->empty_superset, sizeof (struct rx_superset));
-	  cache->empty_superset->refs = 1000;
-	}
+        {
+          cache->empty_superset
+            = ((struct rx_superset *)
+               rx_cache_malloc_or_get (cache, &cache->free_supersets,
+                                       sizeof (struct rx_superset)));
+          if (!cache->empty_superset)
+            return 0;
+          bzero (cache->empty_superset, sizeof (struct rx_superset));
+          cache->empty_superset->refs = 1000;
+        }
       return cache->empty_superset;
     }
   {
@@ -3435,13 +3435,13 @@ rx_superset_cons (rx, car, cdr)
        it's protected -- [gsstark:19961026.2155EST] */
     rx_protect_superset (rx, cdr);
     hit = rx_hash_store (&cache->superset_table,
-			 (unsigned long)car ^ car->id ^ (unsigned long)cdr,
-			 (void *)&template,
-			 &cache->superset_hash_rules);
+                         (unsigned long)car ^ car->id ^ (unsigned long)cdr,
+                         (void *)&template,
+                         &cache->superset_hash_rules);
     rx_release_superset (rx, cdr);
     return (hit
-	    ?  (struct rx_superset *)hit->data
-	    : 0);
+            ?  (struct rx_superset *)hit->data
+            : 0);
   }
 }
 
@@ -3467,7 +3467,7 @@ rx_superstate_eclosure_union (rx, set, ecl)
 
   if (!set->car)
     return rx_superset_cons (rx, ecl->car,
-			     rx_superstate_eclosure_union (rx, set, ecl->cdr));
+                             rx_superstate_eclosure_union (rx, set, ecl->cdr));
   if (set->car == ecl->car)
     return rx_superstate_eclosure_union (rx, set, ecl->cdr);
 
@@ -3477,28 +3477,28 @@ rx_superstate_eclosure_union (rx, set, ecl)
 
     if (set->car > ecl->car)
       {
-	tail = rx_superstate_eclosure_union (rx, set->cdr, ecl);
-	first = set->car;
+        tail = rx_superstate_eclosure_union (rx, set->cdr, ecl);
+        first = set->car;
       }
     else
       {
-	tail = rx_superstate_eclosure_union (rx, set, ecl->cdr);
-	first = ecl->car;
+        tail = rx_superstate_eclosure_union (rx, set, ecl->cdr);
+        first = ecl->car;
       }
     if (!tail)
       return 0;
     else
       {
-	struct rx_superset * answer;
-	answer = rx_superset_cons (rx, first, tail);
-	if (!answer)
-	  {
-	    rx_protect_superset (rx, tail);
-	    rx_release_superset (rx, tail);
-	    return 0;
-	  }
-	else
-	  return answer;
+        struct rx_superset * answer;
+        answer = rx_superset_cons (rx, first, tail);
+        if (!answer)
+          {
+            rx_protect_superset (rx, tail);
+            rx_release_superset (rx, tail);
+            return 0;
+          }
+        else
+          return answer;
       }
   }
 }
@@ -3516,8 +3516,8 @@ rx_superstate_eclosure_union (rx, set, ecl)
 #ifdef __STDC__
 static struct rx_distinct_future *
 include_futures (struct rx *rx,
-		 struct rx_distinct_future *df, struct rx_nfa_state
-		 *state, struct rx_superstate *superstate) 
+                 struct rx_distinct_future *df, struct rx_nfa_state
+                 *state, struct rx_superstate *superstate) 
 #else
 static struct rx_distinct_future *
 include_futures (rx, df, state, superstate)
@@ -3534,57 +3534,57 @@ include_futures (rx, df, state, superstate)
       struct rx_distinct_future *dfp;
       struct rx_distinct_future *insert_before = 0;
       if (df)
-	df->next_same_super_edge[1]->next_same_super_edge[0] = 0;
+        df->next_same_super_edge[1]->next_same_super_edge[0] = 0;
       for (dfp = df; dfp; dfp = dfp->next_same_super_edge[0])
-	if (dfp->effects == future->effects)
-	  break;
-	else
-	  {
-	    int order = rx->se_list_cmp (rx, dfp->effects, future->effects);
-	    if (order > 0)
-	      {
-		insert_before = dfp;
-		dfp = 0;
-		break;
-	      }
-	  }
+        if (dfp->effects == future->effects)
+          break;
+        else
+          {
+            int order = rx->se_list_cmp (rx, dfp->effects, future->effects);
+            if (order > 0)
+              {
+                insert_before = dfp;
+                dfp = 0;
+                break;
+              }
+          }
       if (df)
-	df->next_same_super_edge[1]->next_same_super_edge[0] = df;
+        df->next_same_super_edge[1]->next_same_super_edge[0] = df;
       if (!dfp)
-	{
-	  dfp
-	    = ((struct rx_distinct_future *)
-	       rx_cache_malloc_or_get (cache, &cache->free_discernable_futures,
-				       sizeof (struct rx_distinct_future)));
-	  if (!dfp)
-	    return 0;
-	  if (!df)
-	    {
-	      df = insert_before = dfp;
-	      df->next_same_super_edge[0] = df->next_same_super_edge[1] = df;
-	    }
-	  else if (!insert_before)
-	    insert_before = df;
-	  else if (insert_before == df)
-	    df = dfp;
+        {
+          dfp
+            = ((struct rx_distinct_future *)
+               rx_cache_malloc_or_get (cache, &cache->free_discernable_futures,
+                                       sizeof (struct rx_distinct_future)));
+          if (!dfp)
+            return 0;
+          if (!df)
+            {
+              df = insert_before = dfp;
+              df->next_same_super_edge[0] = df->next_same_super_edge[1] = df;
+            }
+          else if (!insert_before)
+            insert_before = df;
+          else if (insert_before == df)
+            df = dfp;
 
-	  dfp->next_same_super_edge[0] = insert_before;
-	  dfp->next_same_super_edge[1]
-	    = insert_before->next_same_super_edge[1];
-	  dfp->next_same_super_edge[1]->next_same_super_edge[0] = dfp;
-	  dfp->next_same_super_edge[0]->next_same_super_edge[1] = dfp;
-	  dfp->next_same_dest = dfp->prev_same_dest = dfp;
-	  dfp->future = 0;
-	  dfp->present = superstate;
-	  dfp->future_frame.inx = rx->instruction_table[rx_cache_miss];
-	  dfp->future_frame.data = 0;
-	  dfp->future_frame.data_2 = (void *) dfp;
-	  dfp->side_effects_frame.inx
-	    = rx->instruction_table[rx_do_side_effects];
-	  dfp->side_effects_frame.data = 0;
-	  dfp->side_effects_frame.data_2 = (void *) dfp;
-	  dfp->effects = future->effects;
-	}
+          dfp->next_same_super_edge[0] = insert_before;
+          dfp->next_same_super_edge[1]
+            = insert_before->next_same_super_edge[1];
+          dfp->next_same_super_edge[1]->next_same_super_edge[0] = dfp;
+          dfp->next_same_super_edge[0]->next_same_super_edge[1] = dfp;
+          dfp->next_same_dest = dfp->prev_same_dest = dfp;
+          dfp->future = 0;
+          dfp->present = superstate;
+          dfp->future_frame.inx = rx->instruction_table[rx_cache_miss];
+          dfp->future_frame.data = 0;
+          dfp->future_frame.data_2 = (void *) dfp;
+          dfp->side_effects_frame.inx
+            = rx->instruction_table[rx_do_side_effects];
+          dfp->side_effects_frame.data = 0;
+          dfp->side_effects_frame.data_2 = (void *) dfp;
+          dfp->effects = future->effects;
+        }
     }
   return df;
 }
@@ -3596,7 +3596,7 @@ include_futures (rx, df, state, superstate)
 #ifdef __STDC__
 RX_DECL struct rx_superstate *
 rx_superstate (struct rx *rx,
-	       struct rx_superset *set)
+               struct rx_superset *set)
 #else
 RX_DECL struct rx_superstate *
 rx_superstate (rx, set)
@@ -3611,51 +3611,51 @@ rx_superstate (rx, set)
   if (set->superstate)
     {
       if (set->superstate->rx_id != rx->rx_id)
-	{
-	  /* Aha.  It is in the cache, but belongs to a superstate
-	   * that refers to an NFA that no longer exists.
-	   * (We know it no longer exists because it was evidently
-	   *  stored in the same region of memory as the current nfa
-	   *  yet it has a different id.)
-	   */
-	  superstate = set->superstate;
-	  if (!superstate->is_semifree)
-	    {
-	      if (cache->lru_superstate == superstate)
-		{
-		  cache->lru_superstate = superstate->next_recyclable;
-		  if (cache->lru_superstate == superstate)
-		    cache->lru_superstate = 0;
-		}
-	      {
-		superstate->next_recyclable->prev_recyclable
-		  = superstate->prev_recyclable;
-		superstate->prev_recyclable->next_recyclable
-		  = superstate->next_recyclable;
-		if (!cache->semifree_superstate)
-		  {
-		    (cache->semifree_superstate
-		     = superstate->next_recyclable
-		     = superstate->prev_recyclable
-		     = superstate);
-		  }
-		else
-		  {
-		    superstate->next_recyclable = cache->semifree_superstate;
-		    superstate->prev_recyclable
-		      = cache->semifree_superstate->prev_recyclable;
-		    superstate->next_recyclable->prev_recyclable
-		      = superstate;
-		    superstate->prev_recyclable->next_recyclable
-		      = superstate;
-		    cache->semifree_superstate = superstate;
-		  }
-		++cache->semifree_superstates;
-	      }
-	    }
-	  set->superstate = 0;
-	  goto handle_cache_miss;
-	}
+        {
+          /* Aha.  It is in the cache, but belongs to a superstate
+           * that refers to an NFA that no longer exists.
+           * (We know it no longer exists because it was evidently
+           *  stored in the same region of memory as the current nfa
+           *  yet it has a different id.)
+           */
+          superstate = set->superstate;
+          if (!superstate->is_semifree)
+            {
+              if (cache->lru_superstate == superstate)
+                {
+                  cache->lru_superstate = superstate->next_recyclable;
+                  if (cache->lru_superstate == superstate)
+                    cache->lru_superstate = 0;
+                }
+              {
+                superstate->next_recyclable->prev_recyclable
+                  = superstate->prev_recyclable;
+                superstate->prev_recyclable->next_recyclable
+                  = superstate->next_recyclable;
+                if (!cache->semifree_superstate)
+                  {
+                    (cache->semifree_superstate
+                     = superstate->next_recyclable
+                     = superstate->prev_recyclable
+                     = superstate);
+                  }
+                else
+                  {
+                    superstate->next_recyclable = cache->semifree_superstate;
+                    superstate->prev_recyclable
+                      = cache->semifree_superstate->prev_recyclable;
+                    superstate->next_recyclable->prev_recyclable
+                      = superstate;
+                    superstate->prev_recyclable->next_recyclable
+                      = superstate;
+                    cache->semifree_superstate = superstate;
+                  }
+                ++cache->semifree_superstates;
+              }
+            }
+          set->superstate = 0;
+          goto handle_cache_miss;
+        }
       ++cache->hits;
       superstate = set->superstate;
 
@@ -3673,10 +3673,10 @@ rx_superstate (rx, set)
       struct rx_superset * setp = set;
       fprintf (stderr, "Building a superstet %d(%d): ", rx->rx_id, set);
       while (setp)
-	{
-	  fprintf (stderr, "%d ", setp->id);
-	  setp = setp->cdr;
-	}
+        {
+          fprintf (stderr, "%d ", setp->id);
+          setp = setp->cdr;
+        }
       fprintf (stderr, "(%d)\n", set);
     }
 #endif
@@ -3710,9 +3710,9 @@ rx_superstate (rx, set)
     /* None of the transitions from this superstate are known yet. */
     for (x = 0; x < rx->local_cset_size; ++x) /* &&&&& 3.8 % */
       {
-	struct rx_inx * ifr = &superstate->transitions[x];
-	ifr->inx = rx->instruction_table [rx_cache_miss];
-	ifr->data = ifr->data_2 = 0;
+        struct rx_inx * ifr = &superstate->transitions[x];
+        ifr->inx = rx->instruction_table [rx_cache_miss];
+        ifr->data = ifr->data_2 = 0;
       }
   }
   return superstate;
@@ -3750,32 +3750,32 @@ solve_destination (rx, df)
       /* Iterate over all edges of each NFA state. */
       for (e = nfa_state->car->edges; e; e = e->next)
         /* If we find an edge that is labeled with 
-	 * the characters we are solving for.....
-	 */
-	if (rx_bitset_is_subset (rx->local_cset_size,
-				 tc->cset, e->params.cset))
-	  {
-	    struct rx_nfa_state *n = e->dest;
-	    struct rx_possible_future *pf;
-	    /* ....search the partial epsilon closures of the destination
-	     * of that edge for a path that involves the same set of
-	     * side effects we are solving for.
-	     * If we find such a RX_POSSIBLE_FUTURE, we add members to the
-	     * stateset we are computing.
-	     */
-	    for (pf = n->futures; pf; pf = pf->next)
-	      if (pf->effects == df->effects)
-		{
-		  struct rx_superset * old_sol;
-		  old_sol = solution;
-		  solution = rx_superstate_eclosure_union (rx, solution,
-							   pf->destset);
-		  if (!solution)
-		    return 0;
-		  rx_protect_superset (rx, solution);
-		  rx_release_superset (rx, old_sol);
-		}
-	  }
+         * the characters we are solving for.....
+         */
+        if (rx_bitset_is_subset (rx->local_cset_size,
+                                 tc->cset, e->params.cset))
+          {
+            struct rx_nfa_state *n = e->dest;
+            struct rx_possible_future *pf;
+            /* ....search the partial epsilon closures of the destination
+             * of that edge for a path that involves the same set of
+             * side effects we are solving for.
+             * If we find such a RX_POSSIBLE_FUTURE, we add members to the
+             * stateset we are computing.
+             */
+            for (pf = n->futures; pf; pf = pf->next)
+              if (pf->effects == df->effects)
+                {
+                  struct rx_superset * old_sol;
+                  old_sol = solution;
+                  solution = rx_superstate_eclosure_union (rx, solution,
+                                                           pf->destset);
+                  if (!solution)
+                    return 0;
+                  rx_protect_superset (rx, solution);
+                  rx_release_superset (rx, old_sol);
+                }
+          }
     }
   /* It is possible that the RX_DISTINCT_FUTURE we are working on has 
    * the empty set of NFA states as its definition.  In that case, this
@@ -3799,10 +3799,10 @@ solve_destination (rx, df)
     df->prev_same_dest->next_same_dest = 0;
     while (dft)
       {
-	dft->future = dest;
-	dft->future_frame.inx = rx->instruction_table[rx_next_char];
-	dft->future_frame.data = (void *) dest->transitions;
-	dft = dft->next_same_dest;
+        dft->future = dest;
+        dft->future_frame.inx = rx->instruction_table[rx_next_char];
+        dft->future_frame.data = (void *) dest->transitions;
+        dft = dft->next_same_dest;
       }
     df->prev_same_dest->next_same_dest = df;
   }
@@ -3832,8 +3832,8 @@ solve_destination (rx, df)
 #ifdef __STDC__
 static int 
 compute_super_edge (struct rx *rx, struct rx_distinct_future **dfout,
-			  rx_Bitset csetout, struct rx_superstate *superstate,
-			  unsigned char chr)  
+                          rx_Bitset csetout, struct rx_superstate *superstate,
+                          unsigned char chr)  
 #else
 static int 
 compute_super_edge (rx, dfout, csetout, superstate, chr)
@@ -3857,51 +3857,51 @@ compute_super_edge (rx, dfout, csetout, superstate, chr)
     {
       struct rx_nfa_edge *e;
       for (e = stateset->car->edges; e; e = e->next)
-	if (RX_bitset_member (e->params.cset, chr))
-	  {
-	    /* If we find an NFA edge that applies, we make sure there
-	     * are corresponding edges in the superstate NFA.
-	     */
-	    {
-	      struct rx_distinct_future * saved;
-	      saved = *dfout;
-	      *dfout = include_futures (rx, *dfout, e->dest, superstate);
-	      if (!*dfout)
-		{
-		  struct rx_distinct_future * df;
-		  df = saved;
-		  if (df)
-		    df->next_same_super_edge[1]->next_same_super_edge[0] = 0;
-		  while (df)
-		    {
-		      struct rx_distinct_future *dft;
-		      dft = df;
-		      df = df->next_same_super_edge[0];
+        if (RX_bitset_member (e->params.cset, chr))
+          {
+            /* If we find an NFA edge that applies, we make sure there
+             * are corresponding edges in the superstate NFA.
+             */
+            {
+              struct rx_distinct_future * saved;
+              saved = *dfout;
+              *dfout = include_futures (rx, *dfout, e->dest, superstate);
+              if (!*dfout)
+                {
+                  struct rx_distinct_future * df;
+                  df = saved;
+                  if (df)
+                    df->next_same_super_edge[1]->next_same_super_edge[0] = 0;
+                  while (df)
+                    {
+                      struct rx_distinct_future *dft;
+                      dft = df;
+                      df = df->next_same_super_edge[0];
 
-		      if (dft->future && dft->future->transition_refs == dft)
-			{
-			  dft->future->transition_refs = dft->next_same_dest;
-			  if (dft->future->transition_refs == dft)
-			    dft->future->transition_refs = 0;
-			}
-		      dft->next_same_dest->prev_same_dest = dft->prev_same_dest;
-		      dft->prev_same_dest->next_same_dest = dft->next_same_dest;
-		      rx_cache_free (rx->cache,
-				     &rx->cache->free_discernable_futures,
-				     (char *)dft);
-		    }
-		  return 0;
-		}
-	    }
-	    /* We also trim the character set a bit. */
-	    rx_bitset_intersection (rx->local_cset_size,
-				    csetout, e->params.cset);
-	  }
-	else
-	  /* An edge that doesn't apply at least tells us some characters
-	   * that don't share the same edge set as CHR.
-	   */
-	  rx_bitset_difference (rx->local_cset_size, csetout, e->params.cset);
+                      if (dft->future && dft->future->transition_refs == dft)
+                        {
+                          dft->future->transition_refs = dft->next_same_dest;
+                          if (dft->future->transition_refs == dft)
+                            dft->future->transition_refs = 0;
+                        }
+                      dft->next_same_dest->prev_same_dest = dft->prev_same_dest;
+                      dft->prev_same_dest->next_same_dest = dft->next_same_dest;
+                      rx_cache_free (rx->cache,
+                                     &rx->cache->free_discernable_futures,
+                                     (char *)dft);
+                    }
+                  return 0;
+                }
+            }
+            /* We also trim the character set a bit. */
+            rx_bitset_intersection (rx->local_cset_size,
+                                    csetout, e->params.cset);
+          }
+        else
+          /* An edge that doesn't apply at least tells us some characters
+           * that don't share the same edge set as CHR.
+           */
+          rx_bitset_difference (rx->local_cset_size, csetout, e->params.cset);
       stateset = stateset->cdr;
     }
   return 1;
@@ -3918,8 +3918,8 @@ compute_super_edge (rx, dfout, csetout, superstate, chr)
 #ifdef __STDC__
 static struct rx_super_edge *
 rx_super_edge (struct rx *rx,
-	       struct rx_superstate *super, rx_Bitset cset,
-	       struct rx_distinct_future *df) 
+               struct rx_superstate *super, rx_Bitset cset,
+               struct rx_distinct_future *df) 
 #else
 static struct rx_super_edge *
 rx_super_edge (rx, super, cset, df)
@@ -3949,10 +3949,10 @@ rx_super_edge (rx, super, cset, df)
       struct rx_distinct_future * dfp = df;
       df->next_same_super_edge[1]->next_same_super_edge[0] = 0;
       while (dfp)
-	{
-	  dfp->edge = tc;
-	  dfp = dfp->next_same_super_edge[0];
-	}
+        {
+          dfp->edge = tc;
+          dfp = dfp->next_same_super_edge[0];
+        }
       df->next_same_super_edge[1]->next_same_super_edge[0] = df;
     }
   return tc;
@@ -3977,8 +3977,8 @@ rx_super_edge (rx, super, cset, df)
 #ifdef __STDC__
 static void
 install_partial_transition  (struct rx_superstate *super,
-			     struct rx_inx *answer,
-			     RX_subset set, int offset)
+                             struct rx_inx *answer,
+                             RX_subset set, int offset)
 #else
 static void
 install_partial_transition  (super, answer, set, offset)
@@ -3996,7 +3996,7 @@ install_partial_transition  (super, answer, set, offset)
   while (start < end)
     {
       if (set & pos)
-	transitions[start] = *answer;
+        transitions[start] = *answer;
       pos <<= 1;
       ++start;
     }
@@ -4018,73 +4018,73 @@ rx_handle_cache_miss (rx, super, chr, data)
   int offset = chr / RX_subset_bits;
   struct rx_distinct_future *df = data;
 
-  if (!df)			/* must be the shared_cache_miss_frame */
+  if (!df)                      /* must be the shared_cache_miss_frame */
     {
       /* Perhaps this is just a transition waiting to be filled. */
       struct rx_super_edge *tc;
       RX_subset mask = rx_subset_singletons [chr % RX_subset_bits];
 
       for (tc = super->edges; tc; tc = tc->next)
-	if (tc->cset[offset] & mask)
-	  {
-	    struct rx_inx * answer;
-	    df = tc->options;
-	    answer = ((tc->options->next_same_super_edge[0] != tc->options)
-		      ? &tc->rx_backtrack_frame
-		      : (df->effects
-			 ? &df->side_effects_frame
-			 : &df->future_frame));
-	    install_partial_transition (super, answer,
-					tc->cset [offset], offset * 32);
-	    return answer;
-	  }
+        if (tc->cset[offset] & mask)
+          {
+            struct rx_inx * answer;
+            df = tc->options;
+            answer = ((tc->options->next_same_super_edge[0] != tc->options)
+                      ? &tc->rx_backtrack_frame
+                      : (df->effects
+                         ? &df->side_effects_frame
+                         : &df->future_frame));
+            install_partial_transition (super, answer,
+                                        tc->cset [offset], offset * 32);
+            return answer;
+          }
       /* Otherwise, it's a flushed or  newly encountered edge. */
       {
-	char cset_space[1024];	/* this limit is far from unreasonable */
-	rx_Bitset trcset;
-	struct rx_inx *answer;
+        char cset_space[1024];  /* this limit is far from unreasonable */
+        rx_Bitset trcset;
+        struct rx_inx *answer;
 
-	if (rx_sizeof_bitset (rx->local_cset_size) > sizeof (cset_space))
-	  return 0;		/* If the arbitrary limit is hit, always fail */
-				/* cleanly. */
-	trcset = (rx_Bitset)cset_space;
-	rx_lock_superstate (rx, super);
-	if (!compute_super_edge (rx, &df, trcset, super, chr))
-	  {
-	    rx_unlock_superstate (rx, super);
-	    return 0;
-	  }
-	if (!df)		/* We just computed the fail transition. */
-	  {
-	    static struct rx_inx
-	      shared_fail_frame = { 0, 0, (void *)rx_backtrack, 0 };
-	    answer = &shared_fail_frame;
-	  }
-	else
-	  {
-	    tc = rx_super_edge (rx, super, trcset, df);
-	    if (!tc)
-	      {
-		rx_unlock_superstate (rx, super);
-		return 0;
-	      }
-	    answer = ((tc->options->next_same_super_edge[0] != tc->options)
-		      ? &tc->rx_backtrack_frame
-		      : (df->effects
-			 ? &df->side_effects_frame
-			 : &df->future_frame));
-	  }
-	install_partial_transition (super, answer,
-				    trcset[offset], offset * 32);
-	rx_unlock_superstate (rx, super);
-	return answer;
+        if (rx_sizeof_bitset (rx->local_cset_size) > sizeof (cset_space))
+          return 0;             /* If the arbitrary limit is hit, always fail */
+                                /* cleanly. */
+        trcset = (rx_Bitset)cset_space;
+        rx_lock_superstate (rx, super);
+        if (!compute_super_edge (rx, &df, trcset, super, chr))
+          {
+            rx_unlock_superstate (rx, super);
+            return 0;
+          }
+        if (!df)                /* We just computed the fail transition. */
+          {
+            static struct rx_inx
+              shared_fail_frame = { 0, 0, (void *)rx_backtrack, 0 };
+            answer = &shared_fail_frame;
+          }
+        else
+          {
+            tc = rx_super_edge (rx, super, trcset, df);
+            if (!tc)
+              {
+                rx_unlock_superstate (rx, super);
+                return 0;
+              }
+            answer = ((tc->options->next_same_super_edge[0] != tc->options)
+                      ? &tc->rx_backtrack_frame
+                      : (df->effects
+                         ? &df->side_effects_frame
+                         : &df->future_frame));
+          }
+        install_partial_transition (super, answer,
+                                    trcset[offset], offset * 32);
+        rx_unlock_superstate (rx, super);
+        return answer;
       }
     }
   else if (df->future) /* A cache miss on an edge with a future? Must be
-			* a semi-free destination. */
-    {				
+                        * a semi-free destination. */
+    {                           
       if (df->future->is_semifree)
-	refresh_semifree_superstate (rx->cache, df->future);
+        refresh_semifree_superstate (rx->cache, df->future);
       return &df->future_frame;
     }
   else
@@ -4092,14 +4092,14 @@ rx_handle_cache_miss (rx, super, chr, data)
     {
       rx_lock_superstate (rx, super);
       if (!solve_destination (rx, df))
-	{
-	  rx_unlock_superstate (rx, super);
-	  return 0;
-	}
+        {
+          rx_unlock_superstate (rx, super);
+          return 0;
+        }
       if (!df->effects
-	  && (df->edge->options->next_same_super_edge[0] == df->edge->options))
-	install_partial_transition (super, &df->future_frame,
-				    df->edge->cset[offset], offset * 32);
+          && (df->edge->options->next_same_super_edge[0] == df->edge->options))
+        install_partial_transition (super, &df->future_frame,
+                                    df->edge->cset[offset], offset * 32);
       rx_unlock_superstate (rx, super);
       return &df->future_frame;
     }
@@ -4113,23 +4113,23 @@ rx_handle_cache_miss (rx, super, chr, data)
 
 __const__ char *re_error_msg[] =
 {
-  0,						/* REG_NOUT */
-  "No match",					/* REG_NOMATCH */
-  "Invalid regular expression",			/* REG_BADPAT */
-  "Invalid collation character",		/* REG_ECOLLATE */
-  "Invalid character class name",		/* REG_ECTYPE */
-  "Trailing backslash",				/* REG_EESCAPE */
-  "Invalid back reference",			/* REG_ESUBREG */
-  "Unmatched [ or [^",				/* REG_EBRACK */
-  "Unmatched ( or \\(",				/* REG_EPAREN */
-  "Unmatched \\{",				/* REG_EBRACE */
-  "Invalid content of \\{\\}",			/* REG_BADBR */
-  "Invalid range end",				/* REG_ERANGE */
-  "Memory exhausted",				/* REG_ESPACE */
-  "Invalid preceding regular expression",	/* REG_BADRPT */
-  "Premature end of regular expression",	/* REG_EEND */
-  "Regular expression too big",			/* REG_ESIZE */
-  "Unmatched ) or \\)",				/* REG_ERPAREN */
+  0,                                            /* REG_NOUT */
+  "No match",                                   /* REG_NOMATCH */
+  "Invalid regular expression",                 /* REG_BADPAT */
+  "Invalid collation character",                /* REG_ECOLLATE */
+  "Invalid character class name",               /* REG_ECTYPE */
+  "Trailing backslash",                         /* REG_EESCAPE */
+  "Invalid back reference",                     /* REG_ESUBREG */
+  "Unmatched [ or [^",                          /* REG_EBRACK */
+  "Unmatched ( or \\(",                         /* REG_EPAREN */
+  "Unmatched \\{",                              /* REG_EBRACE */
+  "Invalid content of \\{\\}",                  /* REG_BADBR */
+  "Invalid range end",                          /* REG_ERANGE */
+  "Memory exhausted",                           /* REG_ESPACE */
+  "Invalid preceding regular expression",       /* REG_BADRPT */
+  "Premature end of regular expression",        /* REG_EEND */
+  "Regular expression too big",                 /* REG_ESIZE */
+  "Unmatched ) or \\)",                         /* REG_ERPAREN */
 };
 
 
@@ -4150,19 +4150,19 @@ __const__ char *re_error_msg[] =
  * string passed to us by the user to an unsigned char that we can use
  * as an array index (in, e.g., `translate').
  */
-#define PATFETCH(c)							\
- do {if (p == pend) return REG_EEND;					\
-    c = (unsigned char) *p++;						\
-    c = translate[c];		 					\
+#define PATFETCH(c)                                                     \
+ do {if (p == pend) return REG_EEND;                                    \
+    c = (unsigned char) *p++;                                           \
+    c = translate[c];                                                   \
  } while (0)
 
 /* 
  * Fetch the next character in the uncompiled pattern, with no
  * translation.
  */
-#define PATFETCH_RAW(c)							\
-  do {if (p == pend) return REG_EEND;					\
-    c = (unsigned char) *p++; 						\
+#define PATFETCH_RAW(c)                                                 \
+  do {if (p == pend) return REG_EEND;                                   \
+    c = (unsigned char) *p++;                                           \
   } while (0)
 
 /* Go backwards one character in the pattern.  */
@@ -4189,7 +4189,7 @@ typedef struct
 {
   compile_stack_elt_t *stack;
   unsigned size;
-  unsigned avail;			/* Offset of next open position.  */
+  unsigned avail;                       /* Offset of next open position.  */
 } compile_stack_type;
 
 static boolean
@@ -4250,30 +4250,30 @@ static __inline__ int
    |= 1 << (((unsigned char) c) % CHARBITS))
 
 /* Get the next unsigned number in the uncompiled pattern.  */
-#define GET_UNSIGNED_NUMBER(num) 					\
-  { if (p != pend)							\
-     {									\
-       PATFETCH (c); 							\
-       while (isdigit (c)) 						\
-         { 								\
-           if (num < 0)							\
-              num = 0;							\
-           num = num * 10 + c - '0'; 					\
-           if (p == pend) 						\
-              break; 							\
-           PATFETCH (c);						\
-         } 								\
-       } 								\
-    }		
+#define GET_UNSIGNED_NUMBER(num)                                        \
+  { if (p != pend)                                                      \
+     {                                                                  \
+       PATFETCH (c);                                                    \
+       while (isdigit (c))                                              \
+         {                                                              \
+           if (num < 0)                                                 \
+              num = 0;                                                  \
+           num = num * 10 + c - '0';                                    \
+           if (p == pend)                                               \
+              break;                                                    \
+           PATFETCH (c);                                                \
+         }                                                              \
+       }                                                                \
+    }           
 
 #define CHAR_CLASS_MAX_LENGTH  6 /* Namely, `xdigit'.  */
 
-#define IS_CHAR_CLASS(string)						\
-   (!strcmp (string, "alpha") || !strcmp (string, "upper")		\
-    || !strcmp (string, "lower") || !strcmp (string, "digit")		\
-    || !strcmp (string, "alnum") || !strcmp (string, "xdigit")		\
-    || !strcmp (string, "space") || !strcmp (string, "print")		\
-    || !strcmp (string, "punct") || !strcmp (string, "graph")		\
+#define IS_CHAR_CLASS(string)                                           \
+   (!strcmp (string, "alpha") || !strcmp (string, "upper")              \
+    || !strcmp (string, "lower") || !strcmp (string, "digit")           \
+    || !strcmp (string, "alnum") || !strcmp (string, "xdigit")          \
+    || !strcmp (string, "space") || !strcmp (string, "print")           \
+    || !strcmp (string, "punct") || !strcmp (string, "graph")           \
     || !strcmp (string, "cntrl") || !strcmp (string, "blank"))
 
 
@@ -4382,8 +4382,8 @@ unsigned char rx_id_translation[256] =
 #ifdef __STDC__
 static rx_Bitset
 inverse_translation (struct re_pattern_buffer * rxb,
-		     char * valid, rx_Bitset cache,
-		     unsigned char * translate, int c)
+                     char * valid, rx_Bitset cache,
+                     unsigned char * translate, int c)
 #else
 static rx_Bitset
 inverse_translation (rxb, valid, cache, translate, c)
@@ -4402,9 +4402,9 @@ inverse_translation (rxb, valid, cache, translate, c)
       int x;
       int c_tr = TRANSLATE(c);
       rx_bitset_null (rxb->rx.local_cset_size, cs);
-      for (x = 0; x < 256; ++x)	/* &&&& 13.37 */
-	if (TRANSLATE(x) == c_tr)
-	  RX_bitset_enjoin (cs, x);
+      for (x = 0; x < 256; ++x) /* &&&& 13.37 */
+        if (TRANSLATE(x) == c_tr)
+          RX_bitset_enjoin (cs, x);
       valid[c] = 1;
     }
   return cs;
@@ -4456,9 +4456,9 @@ group_in_compile_stack (compile_stack, regnum)
 #ifdef __STDC__
 static reg_errcode_t
 compile_range (struct re_pattern_buffer * rxb, rx_Bitset cs,
-	       __const__ char ** p_ptr, __const__ char * pend,
-	       unsigned char * translate, reg_syntax_t syntax,
-	       rx_Bitset inv_tr,  char * valid_inv_tr)
+               __const__ char ** p_ptr, __const__ char * pend,
+               unsigned char * translate, reg_syntax_t syntax,
+               rx_Bitset inv_tr,  char * valid_inv_tr)
 #else
 static reg_errcode_t
 compile_range (rxb, cs, p_ptr, pend, translate, syntax, inv_tr, valid_inv_tr)
@@ -4492,7 +4492,7 @@ compile_range (rxb, cs, p_ptr, pend, translate, syntax, inv_tr, valid_inv_tr)
   for (this_char = range_start; this_char <= range_end; this_char++)
     {
       rx_Bitset it =
-	inverse_translation (rxb, valid_inv_tr, inv_tr, translate, this_char);
+        inverse_translation (rxb, valid_inv_tr, inv_tr, translate, this_char);
       rx_bitset_union (rxb->rx.local_cset_size, cs, it);
     }
   
@@ -4512,7 +4512,7 @@ compile_range (rxb, cs, p_ptr, pend, translate, syntax, inv_tr, valid_inv_tr)
 #ifdef __STDC__
 static void
 find_backrefs (char * out, struct rexp_node * rexp,
-	       struct re_se_params * params)
+               struct re_se_params * params)
 #else
 static void
 find_backrefs (out, rexp, params)
@@ -4526,20 +4526,20 @@ find_backrefs (out, rexp, params)
       {
       case r_cset:
       case r_data:
-	return;
+        return;
       case r_alternate:
       case r_concat:
       case r_opt:
       case r_star:
       case r_2phase_star:
-	find_backrefs (out, rexp->params.pair.left, params);
-	find_backrefs (out, rexp->params.pair.right, params);
-	return;
+        find_backrefs (out, rexp->params.pair.left, params);
+        find_backrefs (out, rexp->params.pair.right, params);
+        return;
       case r_side_effect:
-	if (   ((long)rexp->params.side_effect >= 0)
-	    && (params [(long)rexp->params.side_effect].se == re_se_backref))
-	  out[ params [(long)rexp->params.side_effect].op1] = 1;
-	return;
+        if (   ((long)rexp->params.side_effect >= 0)
+            && (params [(long)rexp->params.side_effect].se == re_se_backref))
+          out[ params [(long)rexp->params.side_effect].op1] = 1;
+        return;
       }
 }
 
@@ -4565,20 +4565,20 @@ compute_fastset (rxb, rexp)
       return 1;
     case r_cset:
       {
-	rx_bitset_union (rxb->rx.local_cset_size,
-			 rxb->fastset, rexp->params.cset);
+        rx_bitset_union (rxb->rx.local_cset_size,
+                         rxb->fastset, rexp->params.cset);
       }
       return 0;
     case r_concat:
       return (compute_fastset (rxb, rexp->params.pair.left)
-	      && compute_fastset (rxb, rexp->params.pair.right));
+              && compute_fastset (rxb, rexp->params.pair.right));
     case r_2phase_star:
       compute_fastset (rxb, rexp->params.pair.left);
       /* compute_fastset (rxb, rexp->params.pair.right);  nope... */
       return 1;
     case r_alternate:
       return !!(compute_fastset (rxb, rexp->params.pair.left)
-		+ compute_fastset (rxb, rexp->params.pair.right));
+                + compute_fastset (rxb, rexp->params.pair.right));
     case r_opt:
     case r_star:
       compute_fastset (rxb, rexp->params.pair.left);
@@ -4619,20 +4619,20 @@ is_anchored (rexp, se)
     case r_concat:
     case r_2phase_star:
       {
-	int l = is_anchored (rexp->params.pair.left, se);
-	return (l == 2 ? is_anchored (rexp->params.pair.right, se) : l);
+        int l = is_anchored (rexp->params.pair.left, se);
+        return (l == 2 ? is_anchored (rexp->params.pair.right, se) : l);
       }
     case r_alternate:
       {
-	int l = is_anchored (rexp->params.pair.left, se);
-	int r = l ? is_anchored (rexp->params.pair.right, se) : 0;
+        int l = is_anchored (rexp->params.pair.left, se);
+        int r = l ? is_anchored (rexp->params.pair.right, se) : 0;
 
-	if (l == r)
-	  return l;
-	else if ((l == 0) || (r == 0))
-	  return 0;
-	else
-	  return 2;
+        if (l == r)
+          return l;
+        else if ((l == 0) || (r == 0))
+          return 0;
+        else
+          return 2;
       }
     case r_opt:
     case r_star:
@@ -4640,7 +4640,7 @@ is_anchored (rexp, se)
       
     case r_side_effect:
       return ((rexp->params.side_effect == se)
-	      ? 1 : 2);
+              ? 1 : 2);
     }
 
   /* this should never happen */
@@ -4660,8 +4660,8 @@ is_anchored (rexp, se)
 #ifdef __STDC__
 static struct rexp_node *
 remove_unecessary_side_effects (struct rx * rx, char * needed,
-				struct rexp_node * rexp,
-				struct re_se_params * params)
+                                struct rexp_node * rexp,
+                                struct re_se_params * params)
 #else
 static struct rexp_node *
 remove_unecessary_side_effects (rx, needed, rexp, params)
@@ -4680,56 +4680,56 @@ remove_unecessary_side_effects (rx, needed, rexp, params)
       {
       case r_cset:
       case r_data:
-	return rexp;
+        return rexp;
       case r_alternate:
       case r_concat:
       case r_2phase_star:
-	l = remove_unecessary_side_effects (rx, needed,
-					    rexp->params.pair.left, params);
-	r = remove_unecessary_side_effects (rx, needed,
-					    rexp->params.pair.right, params);
-	if ((l && r) || (rexp->type != r_concat))
-	  {
-	    rexp->params.pair.left = l;
-	    rexp->params.pair.right = r;
-	    return rexp;
-	  }
-	else
-	  {
-	    rexp->params.pair.left = rexp->params.pair.right = 0;
-	    rx_free_rexp (rx, rexp);
-	    return l ? l : r;
-	  }
+        l = remove_unecessary_side_effects (rx, needed,
+                                            rexp->params.pair.left, params);
+        r = remove_unecessary_side_effects (rx, needed,
+                                            rexp->params.pair.right, params);
+        if ((l && r) || (rexp->type != r_concat))
+          {
+            rexp->params.pair.left = l;
+            rexp->params.pair.right = r;
+            return rexp;
+          }
+        else
+          {
+            rexp->params.pair.left = rexp->params.pair.right = 0;
+            rx_free_rexp (rx, rexp);
+            return l ? l : r;
+          }
       case r_opt:
       case r_star:
-	l = remove_unecessary_side_effects (rx, needed,
-					    rexp->params.pair.left, params);
-	if (l)
-	  {
-	    rexp->params.pair.left = l;
-	    return rexp;
-	  }
-	else
-	  {
-	    rexp->params.pair.left = 0;
-	    rx_free_rexp (rx, rexp);
-	    return 0;
-	  }
+        l = remove_unecessary_side_effects (rx, needed,
+                                            rexp->params.pair.left, params);
+        if (l)
+          {
+            rexp->params.pair.left = l;
+            return rexp;
+          }
+        else
+          {
+            rexp->params.pair.left = 0;
+            rx_free_rexp (rx, rexp);
+            return 0;
+          }
       case r_side_effect:
-	{
-	  int se = (long)rexp->params.side_effect;
-	  if (   (se >= 0)
-	      && (   ((enum re_side_effects)params[se].se == re_se_lparen)
-		  || ((enum re_side_effects)params[se].se == re_se_rparen))
-	      && (params [se].op1 > 0)
-	      && (!needed [params [se].op1]))
-	    {
-	      rx_free_rexp (rx, rexp);
-	      return 0;
-	    }
-	  else
-	    return rexp;
-	}
+        {
+          int se = (long)rexp->params.side_effect;
+          if (   (se >= 0)
+              && (   ((enum re_side_effects)params[se].se == re_se_lparen)
+                  || ((enum re_side_effects)params[se].se == re_se_rparen))
+              && (params [se].op1 > 0)
+              && (!needed [params [se].op1]))
+            {
+              rx_free_rexp (rx, rexp);
+              return 0;
+            }
+          else
+            return rexp;
+        }
       }
 
   /* this should never happen */
@@ -4758,37 +4758,37 @@ pointless_if_repeated (node, params)
     case r_concat:
     case r_2phase_star:
       return (pointless_if_repeated (node->params.pair.left, params)
-	      && pointless_if_repeated (node->params.pair.right, params));
+              && pointless_if_repeated (node->params.pair.right, params));
     case r_opt:
     case r_star:
       return pointless_if_repeated (node->params.pair.left, params);
     case r_side_effect:
       switch (((long)node->params.side_effect < 0)
-	      ? (enum re_side_effects)node->params.side_effect
-	      : (enum re_side_effects)params[(long)node->params.side_effect].se)
-	{
-	case re_se_try:
-	case re_se_at_dot:
-	case re_se_begbuf:
-	case re_se_hat:
-	case re_se_wordbeg:
-	case re_se_wordbound:
-	case re_se_notwordbound:
-	case re_se_wordend:
-	case re_se_endbuf:
-	case re_se_dollar:
-	case re_se_fail:
-	case re_se_win:
-	  return 1;
-	case re_se_lparen:
-	case re_se_rparen:
-	case re_se_iter:
-	case re_se_end_iter:
-	case re_se_syntax:
-	case re_se_not_syntax:
-	case re_se_backref:
-	  return 0;
-	}
+              ? (enum re_side_effects)node->params.side_effect
+              : (enum re_side_effects)params[(long)node->params.side_effect].se)
+        {
+        case re_se_try:
+        case re_se_at_dot:
+        case re_se_begbuf:
+        case re_se_hat:
+        case re_se_wordbeg:
+        case re_se_wordbound:
+        case re_se_notwordbound:
+        case re_se_wordend:
+        case re_se_endbuf:
+        case re_se_dollar:
+        case re_se_fail:
+        case re_se_win:
+          return 1;
+        case re_se_lparen:
+        case re_se_rparen:
+        case re_se_iter:
+        case re_se_end_iter:
+        case re_se_syntax:
+        case re_se_not_syntax:
+        case re_se_backref:
+          return 0;
+        }
     case r_data:
     default:
       return 0;
@@ -4800,8 +4800,8 @@ pointless_if_repeated (node, params)
 #ifdef __STDC__
 static int
 registers_on_stack (struct re_pattern_buffer * rxb,
-		    struct rexp_node * rexp, int in_danger,
-		    struct re_se_params * params)
+                    struct rexp_node * rexp, int in_danger,
+                    struct re_se_params * params)
 #else
 static int
 registers_on_stack (rxb, rexp, in_danger, params)
@@ -4818,34 +4818,34 @@ registers_on_stack (rxb, rexp, in_danger, params)
       {
       case r_cset:
       case r_data:
-	return 0;
+        return 0;
       case r_alternate:
       case r_concat:
-	return (   registers_on_stack (rxb, rexp->params.pair.left,
-				       in_danger, params)
-		|| (registers_on_stack
-		    (rxb, rexp->params.pair.right,
-		     in_danger, params)));
+        return (   registers_on_stack (rxb, rexp->params.pair.left,
+                                       in_danger, params)
+                || (registers_on_stack
+                    (rxb, rexp->params.pair.right,
+                     in_danger, params)));
       case r_opt:
-	return registers_on_stack (rxb, rexp->params.pair.left, 0, params);
+        return registers_on_stack (rxb, rexp->params.pair.left, 0, params);
       case r_star:
-	return registers_on_stack (rxb, rexp->params.pair.left, 1, params);
+        return registers_on_stack (rxb, rexp->params.pair.left, 1, params);
       case r_2phase_star:
-	return
-	  (   registers_on_stack (rxb, rexp->params.pair.left, 1, params)
-	   || registers_on_stack (rxb, rexp->params.pair.right, 1, params));
+        return
+          (   registers_on_stack (rxb, rexp->params.pair.left, 1, params)
+           || registers_on_stack (rxb, rexp->params.pair.right, 1, params));
       case r_side_effect:
-	{
-	  int se = (long)rexp->params.side_effect;
-	  if (   in_danger
-	      && (se >= 0)
-	      && (params [se].op1 > 0)
-	      && (   ((enum re_side_effects)params[se].se == re_se_lparen)
-		  || ((enum re_side_effects)params[se].se == re_se_rparen)))
-	    return 1;
-	  else
-	    return 0;
-	}
+        {
+          int se = (long)rexp->params.side_effect;
+          if (   in_danger
+              && (se >= 0)
+              && (params [se].op1 > 0)
+              && (   ((enum re_side_effects)params[se].se == re_se_lparen)
+                  || ((enum re_side_effects)params[se].se == re_se_rparen)))
+            return 1;
+          else
+            return 0;
+        }
       }
 
   /* this should never happen */
@@ -4859,7 +4859,7 @@ static char idempotent_complex_se[] =
 #define RX_WANT_SE_DEFS 1
 #undef RX_DEF_SE
 #undef RX_DEF_CPLX_SE
-#define RX_DEF_SE(IDEM, NAME, VALUE)	      
+#define RX_DEF_SE(IDEM, NAME, VALUE)          
 #define RX_DEF_CPLX_SE(IDEM, NAME, VALUE)     IDEM,
 #include "rx.h"
 #undef RX_DEF_SE
@@ -4874,7 +4874,7 @@ static char idempotent_se[] =
 #define RX_WANT_SE_DEFS 1
 #undef RX_DEF_SE
 #undef RX_DEF_CPLX_SE
-#define RX_DEF_SE(IDEM, NAME, VALUE)	      IDEM,
+#define RX_DEF_SE(IDEM, NAME, VALUE)          IDEM,
 #define RX_DEF_CPLX_SE(IDEM, NAME, VALUE)     
 #include "rx.h"
 #undef RX_DEF_SE
@@ -4888,7 +4888,7 @@ static char idempotent_se[] =
 #ifdef __STDC__
 static int
 has_any_se (struct rx * rx,
-	    struct rexp_node * rexp)
+            struct rexp_node * rexp)
 #else
 static int
 has_any_se (rx, rexp)
@@ -4912,8 +4912,8 @@ has_any_se (rx, rexp)
     case r_concat:
     case r_alternate:
       return
-	(   has_any_se (rx, rexp->params.pair.left)
-	 || has_any_se (rx, rexp->params.pair.right));
+        (   has_any_se (rx, rexp->params.pair.left)
+         || has_any_se (rx, rexp->params.pair.right));
 
     case r_opt:
     case r_star:
@@ -4930,8 +4930,8 @@ has_any_se (rx, rexp)
 #ifdef __STDC__
 static int
 has_non_idempotent_epsilon_path (struct rx * rx,
-				 struct rexp_node * rexp,
-				 struct re_se_params * params)
+                                 struct rexp_node * rexp,
+                                 struct re_se_params * params)
 #else
 static int
 has_non_idempotent_epsilon_path (rx, rexp, params)
@@ -4952,28 +4952,28 @@ has_non_idempotent_epsilon_path (rx, rexp, params)
 
     case r_side_effect:
       return
-	!((long)rexp->params.side_effect > 0
-	  ? idempotent_complex_se [ params [(long)rexp->params.side_effect].se ]
-	  : idempotent_se [-(long)rexp->params.side_effect]);
+        !((long)rexp->params.side_effect > 0
+          ? idempotent_complex_se [ params [(long)rexp->params.side_effect].se ]
+          : idempotent_se [-(long)rexp->params.side_effect]);
       
     case r_alternate:
       return
-	(   has_non_idempotent_epsilon_path (rx,
-					     rexp->params.pair.left, params)
-	 || has_non_idempotent_epsilon_path (rx,
-					     rexp->params.pair.right, params));
+        (   has_non_idempotent_epsilon_path (rx,
+                                             rexp->params.pair.left, params)
+         || has_non_idempotent_epsilon_path (rx,
+                                             rexp->params.pair.right, params));
 
     case r_2phase_star:
     case r_concat:
       return
-	(   has_non_idempotent_epsilon_path (rx,
-					     rexp->params.pair.left, params)
-	 && has_non_idempotent_epsilon_path (rx,
-					     rexp->params.pair.right, params));
+        (   has_non_idempotent_epsilon_path (rx,
+                                             rexp->params.pair.left, params)
+         && has_non_idempotent_epsilon_path (rx,
+                                             rexp->params.pair.right, params));
 
     case r_opt:
       return has_non_idempotent_epsilon_path (rx,
-					      rexp->params.pair.left, params);
+                                              rexp->params.pair.left, params);
     }
 
   /* this should never happen */
@@ -5009,8 +5009,8 @@ begins_with_complex_se (rx, rexp)
       
     case r_alternate:
       return
-	(   begins_with_complex_se (rx, rexp->params.pair.left)
-	 && begins_with_complex_se (rx, rexp->params.pair.right));
+        (   begins_with_complex_se (rx, rexp->params.pair.left)
+         && begins_with_complex_se (rx, rexp->params.pair.right));
 
 
     case r_concat:
@@ -5036,8 +5036,8 @@ begins_with_complex_se (rx, rexp)
 #ifdef __STDC__
 static void
 speed_up_alt (struct rx * rx,
-	      struct rexp_node * rexp,
-	      int unposix)
+              struct rexp_node * rexp,
+              int unposix)
 #else
 static void
 speed_up_alt (rx, rexp, unposix)
@@ -5074,16 +5074,16 @@ speed_up_alt (rx, rexp, unposix)
       speed_up_alt (rx, rexp->params.pair.right->params.pair.right, unposix);
       
       if (   unposix
-	  || (begins_with_complex_se
-	      (rx, rexp->params.pair.right->params.pair.right))
-	  || !(   has_any_se (rx, rexp->params.pair.right->params.pair.right)
-	       || has_any_se (rx, rexp->params.pair.left)))
-	{
-	  struct rexp_node * conc = rexp->params.pair.right;
-	  rexp->params.pair.right = conc->params.pair.right;
-	  conc->params.pair.right = 0;
-	  rx_free_rexp (rx, conc);
-	}
+          || (begins_with_complex_se
+              (rx, rexp->params.pair.right->params.pair.right))
+          || !(   has_any_se (rx, rexp->params.pair.right->params.pair.right)
+               || has_any_se (rx, rexp->params.pair.left)))
+        {
+          struct rexp_node * conc = rexp->params.pair.right;
+          rexp->params.pair.right = conc->params.pair.right;
+          conc->params.pair.right = 0;
+          rx_free_rexp (rx, conc);
+        }
     }
 }
 
@@ -5113,8 +5113,8 @@ speed_up_alt (rx, rexp, unposix)
 #ifdef __STDC__
 RX_DECL reg_errcode_t
 rx_compile (__const__ char *pattern, int size,
-	    reg_syntax_t syntax,
-	    struct re_pattern_buffer * rxb) 
+            reg_syntax_t syntax,
+            struct re_pattern_buffer * rxb) 
 #else
 RX_DECL reg_errcode_t
 rx_compile (pattern, size, syntax, rxb)
@@ -5146,8 +5146,8 @@ rx_compile (pattern, size, syntax, rxb)
   
   /* How to translate the characters in the pattern.  */
   unsigned char *translate = (rxb->translate
-			      ? rxb->translate
-			      : rx_id_translation);
+                              ? rxb->translate
+                              : rx_id_translation);
 
   /* When parsing is done, this will hold the expression tree. */
   struct rexp_node * rexp = 0;
@@ -5176,9 +5176,9 @@ rx_compile (pattern, size, syntax, rxb)
   __const__ char *beg_interval;
 
   struct re_se_params * params = 0;
-  int paramc = 0;		/* How many complex side effects so far? */
+  int paramc = 0;               /* How many complex side effects so far? */
 
-  rx_side_effect side;		/* param to `goto add_side_effect' */
+  rx_side_effect side;          /* param to `goto add_side_effect' */
 
   bzero (validate_inv_tr, sizeof (validate_inv_tr));
 
@@ -5226,14 +5226,14 @@ rx_compile (pattern, size, syntax, rxb)
                 || syntax & RE_CONTEXT_INDEP_ANCHORS
                    /* Otherwise, depends on what's come before.  */
                 || at_begline_loc_p (pattern, p, syntax))
-	      {
-		struct rexp_node * n
-		  = rx_mk_r_side_effect (&rxb->rx, (rx_side_effect)re_se_hat);
-		if (!n)
-		  return REG_ESPACE;
-		append = n;
-		goto append_node;
-	      }
+              {
+                struct rexp_node * n
+                  = rx_mk_r_side_effect (&rxb->rx, (rx_side_effect)re_se_hat);
+                if (!n)
+                  return REG_ESPACE;
+                append = n;
+                goto append_node;
+              }
             else
               goto normal_char;
           }
@@ -5248,21 +5248,21 @@ rx_compile (pattern, size, syntax, rxb)
                 || syntax & RE_CONTEXT_INDEP_ANCHORS
                    /* Otherwise, depends on what's next.  */
                 || at_endline_loc_p (p, pend, syntax))
-	      {
-		struct rexp_node * n
-		  = rx_mk_r_side_effect (&rxb->rx, (rx_side_effect)re_se_dollar);
-		if (!n)
-		  return REG_ESPACE;
-		append = n;
-		goto append_node;
-	      }
+              {
+                struct rexp_node * n
+                  = rx_mk_r_side_effect (&rxb->rx, (rx_side_effect)re_se_dollar);
+                if (!n)
+                  return REG_ESPACE;
+                append = n;
+                goto append_node;
+              }
              else
                goto normal_char;
            }
            break;
 
 
-	case '+':
+        case '+':
         case '?':
           if ((syntax & RE_BK_PLUS_QM)
               || (syntax & RE_LIMITED_OPS))
@@ -5330,174 +5330,174 @@ rx_compile (pattern, size, syntax, rxb)
             if (!last_expression)
               break;
 
-	    /* Now we know whether or not zero matches is allowed
-	     * and also whether or not two or more matches is allowed.
-	     */
+            /* Now we know whether or not zero matches is allowed
+             * and also whether or not two or more matches is allowed.
+             */
 
-	    {
-	      struct rexp_node * inner_exp = *last_expression;
-	      int need_sync = 0;
+            {
+              struct rexp_node * inner_exp = *last_expression;
+              int need_sync = 0;
 
-	      if (many_times_ok
-		  && has_non_idempotent_epsilon_path (&rxb->rx,
-						      inner_exp, params))
-		{
-		  struct rexp_node * pusher
-		    = rx_mk_r_side_effect (&rxb->rx,
-					   (rx_side_effect)re_se_pushpos);
-		  struct rexp_node * checker
-		    = rx_mk_r_side_effect (&rxb->rx,
-					   (rx_side_effect)re_se_chkpos);
-		  struct rexp_node * pushback
-		    = rx_mk_r_side_effect (&rxb->rx,
-					   (rx_side_effect)re_se_pushback);
-		  rx_Bitset cs = rx_cset (&rxb->rx);
-		  struct rexp_node * lit_t;
-		  struct rexp_node * fake_state;
-		  struct rexp_node * phase2;
-		  struct rexp_node * popper;
-		  struct rexp_node * star;
-		  struct rexp_node * a;
-		  struct rexp_node * whole_thing;
+              if (many_times_ok
+                  && has_non_idempotent_epsilon_path (&rxb->rx,
+                                                      inner_exp, params))
+                {
+                  struct rexp_node * pusher
+                    = rx_mk_r_side_effect (&rxb->rx,
+                                           (rx_side_effect)re_se_pushpos);
+                  struct rexp_node * checker
+                    = rx_mk_r_side_effect (&rxb->rx,
+                                           (rx_side_effect)re_se_chkpos);
+                  struct rexp_node * pushback
+                    = rx_mk_r_side_effect (&rxb->rx,
+                                           (rx_side_effect)re_se_pushback);
+                  rx_Bitset cs = rx_cset (&rxb->rx);
+                  struct rexp_node * lit_t;
+                  struct rexp_node * fake_state;
+                  struct rexp_node * phase2;
+                  struct rexp_node * popper;
+                  struct rexp_node * star;
+                  struct rexp_node * a;
+                  struct rexp_node * whole_thing;
 
-		  if (! cs)
-		    return REG_ESPACE;
-		  lit_t = rx_mk_r_cset (&rxb->rx, cs);
-		  fake_state = rx_mk_r_concat (&rxb->rx, pushback, lit_t);
-		  phase2 = rx_mk_r_concat (&rxb->rx, checker, fake_state);
-		  popper = rx_mk_r_side_effect (&rxb->rx,
-					   (rx_side_effect)re_se_poppos);
-		  star = rx_mk_r_2phase_star (&rxb->rx, inner_exp, phase2);
-		  a = rx_mk_r_concat (&rxb->rx, pusher, star);
-		  whole_thing = rx_mk_r_concat (&rxb->rx, a, popper);
+                  if (! cs)
+                    return REG_ESPACE;
+                  lit_t = rx_mk_r_cset (&rxb->rx, cs);
+                  fake_state = rx_mk_r_concat (&rxb->rx, pushback, lit_t);
+                  phase2 = rx_mk_r_concat (&rxb->rx, checker, fake_state);
+                  popper = rx_mk_r_side_effect (&rxb->rx,
+                                           (rx_side_effect)re_se_poppos);
+                  star = rx_mk_r_2phase_star (&rxb->rx, inner_exp, phase2);
+                  a = rx_mk_r_concat (&rxb->rx, pusher, star);
+                  whole_thing = rx_mk_r_concat (&rxb->rx, a, popper);
 
-		  if (!(pusher && star && pushback && lit_t && fake_state
-			&& lit_t && phase2 && checker && popper
-			&& a && whole_thing))
-		    return REG_ESPACE;
-		  RX_bitset_enjoin (cs, 't');
-		  *last_expression = whole_thing;
-		}
-	      else
-		{
-		  struct rexp_node * star =
-		    (many_times_ok ? rx_mk_r_star : rx_mk_r_opt)
-		      (&rxb->rx, *last_expression);
-		  if (!star)
-		    return REG_ESPACE;
-		  *last_expression = star;
-		  need_sync = has_any_se (&rxb->rx, *last_expression);
-		}
-	      if (!zero_times_ok)
-		{
-		  struct rexp_node * concat
-		    = rx_mk_r_concat (&rxb->rx, inner_exp,
-				      rx_copy_rexp (&rxb->rx,
-						    *last_expression));
-		  if (!concat)
-		    return REG_ESPACE;
-		  *last_expression = concat;
-		}
-	      if (need_sync)
-		{
-		  int sync_se = paramc;
-		  params = (params
-			    ? ((struct re_se_params *)
-			       realloc (params,
-					sizeof (*params) * (1 + paramc)))
-			    : ((struct re_se_params *)
-			       malloc (sizeof (*params))));
-		  if (!params)
-		    return REG_ESPACE;
-		  ++paramc;
-		  params [sync_se].se = re_se_tv;
-		  side = (rx_side_effect)sync_se;
-		  goto add_side_effect;
-		}
-	    }
-	    /* The old regex.c used to optimize `.*\n'.  
-	     * Maybe rx should too?
-	     */
-	  }
-	  break;
+                  if (!(pusher && star && pushback && lit_t && fake_state
+                        && lit_t && phase2 && checker && popper
+                        && a && whole_thing))
+                    return REG_ESPACE;
+                  RX_bitset_enjoin (cs, 't');
+                  *last_expression = whole_thing;
+                }
+              else
+                {
+                  struct rexp_node * star =
+                    (many_times_ok ? rx_mk_r_star : rx_mk_r_opt)
+                      (&rxb->rx, *last_expression);
+                  if (!star)
+                    return REG_ESPACE;
+                  *last_expression = star;
+                  need_sync = has_any_se (&rxb->rx, *last_expression);
+                }
+              if (!zero_times_ok)
+                {
+                  struct rexp_node * concat
+                    = rx_mk_r_concat (&rxb->rx, inner_exp,
+                                      rx_copy_rexp (&rxb->rx,
+                                                    *last_expression));
+                  if (!concat)
+                    return REG_ESPACE;
+                  *last_expression = concat;
+                }
+              if (need_sync)
+                {
+                  int sync_se = paramc;
+                  params = (params
+                            ? ((struct re_se_params *)
+                               realloc (params,
+                                        sizeof (*params) * (1 + paramc)))
+                            : ((struct re_se_params *)
+                               malloc (sizeof (*params))));
+                  if (!params)
+                    return REG_ESPACE;
+                  ++paramc;
+                  params [sync_se].se = re_se_tv;
+                  side = (rx_side_effect)sync_se;
+                  goto add_side_effect;
+                }
+            }
+            /* The old regex.c used to optimize `.*\n'.  
+             * Maybe rx should too?
+             */
+          }
+          break;
 
 
-	case '.':
-	  {
-	    rx_Bitset cs = rx_cset (&rxb->rx);
-	    struct rexp_node * n = rx_mk_r_cset (&rxb->rx, cs);
-	    if (!(cs && n))
-	      return REG_ESPACE;
+        case '.':
+          {
+            rx_Bitset cs = rx_cset (&rxb->rx);
+            struct rexp_node * n = rx_mk_r_cset (&rxb->rx, cs);
+            if (!(cs && n))
+              return REG_ESPACE;
 
-	    rx_bitset_universe (rxb->rx.local_cset_size, cs);
-	    if (!(rxb->syntax & RE_DOT_NEWLINE))
-	      RX_bitset_remove (cs, '\n');
-	    if (!(rxb->syntax & RE_DOT_NOT_NULL))
-	      RX_bitset_remove (cs, 0);
+            rx_bitset_universe (rxb->rx.local_cset_size, cs);
+            if (!(rxb->syntax & RE_DOT_NEWLINE))
+              RX_bitset_remove (cs, '\n');
+            if (!(rxb->syntax & RE_DOT_NOT_NULL))
+              RX_bitset_remove (cs, 0);
 
-	    append = n;
-	    goto append_node;
-	    break;
-	  }
+            append = n;
+            goto append_node;
+            break;
+          }
 
 
         case '[':
-	  if (p == pend) return REG_EBRACK;
+          if (p == pend) return REG_EBRACK;
           {
             boolean had_char_class = false;
-	    rx_Bitset cs = rx_cset (&rxb->rx);
-	    struct rexp_node * node = rx_mk_r_cset (&rxb->rx, cs);
-	    int is_inverted = *p == '^';
-	    
-	    if (!(node && cs))
-	      return REG_ESPACE;
-	    
-	    /* This branch of the switch is normally exited with
-	     *`goto append_node'
-	     */
-	    append = node;
-	    
+            rx_Bitset cs = rx_cset (&rxb->rx);
+            struct rexp_node * node = rx_mk_r_cset (&rxb->rx, cs);
+            int is_inverted = *p == '^';
+            
+            if (!(node && cs))
+              return REG_ESPACE;
+            
+            /* This branch of the switch is normally exited with
+             *`goto append_node'
+             */
+            append = node;
+            
             if (is_inverted)
-	      p++;
-	    
+              p++;
+            
             /* Remember the first position in the bracket expression.  */
             p1 = p;
-	    
+            
             /* Read in characters and ranges, setting map bits.  */
             for (;;)
               {
                 if (p == pend) return REG_EBRACK;
-		
+                
                 PATFETCH (c);
-		
+                
                 /* \ might escape characters inside [...] and [^...].  */
                 if ((syntax & RE_BACKSLASH_ESCAPE_IN_LISTS) && c == '\\')
                   {
                     if (p == pend) return REG_EESCAPE;
-		    
+                    
                     PATFETCH (c1);
-		    {
-		      rx_Bitset it = inverse_translation (rxb, 
-							  validate_inv_tr,
-							  inverse_translate,
-							  translate,
-							  c1);
-		      rx_bitset_union (rxb->rx.local_cset_size, cs, it);
-		    }
+                    {
+                      rx_Bitset it = inverse_translation (rxb, 
+                                                          validate_inv_tr,
+                                                          inverse_translate,
+                                                          translate,
+                                                          c1);
+                      rx_bitset_union (rxb->rx.local_cset_size, cs, it);
+                    }
                     continue;
                   }
-		
+                
                 /* Could be the end of the bracket expression.  If it's
                    not (i.e., when the bracket expression is `[]' so
                    far), the ']' character bit gets set way below.  */
                 if (c == ']' && p != p1 + 1)
                   goto finalize_class_and_append;
-		
+                
                 /* Look ahead to see if it's a range when the last thing
                    was a character class.  */
                 if (had_char_class && c == '-' && *p != ']')
                   return REG_ERANGE;
-		
+                
                 /* Look ahead to see if it's a range when the last thing
                    was a character: if this is a hyphen not at the
                    beginning or the end of a list, then it's the range
@@ -5509,46 +5509,46 @@ rx_compile (pattern, size, syntax, rxb)
                   {
                     reg_errcode_t ret
                       = compile_range (rxb, cs, &p, pend, translate, syntax,
-				       inverse_translate, validate_inv_tr);
+                                       inverse_translate, validate_inv_tr);
                     if (ret != REG_NOERROR) return ret;
                   }
-		
+                
                 else if (p[0] == '-' && p[1] != ']')
                   { /* This handles ranges made up of characters only.  */
                     reg_errcode_t ret;
-		    
-		    /* Move past the `-'.  */
+                    
+                    /* Move past the `-'.  */
                     PATFETCH (c1);
                     
                     ret = compile_range (rxb, cs, &p, pend, translate, syntax,
-					 inverse_translate, validate_inv_tr);
+                                         inverse_translate, validate_inv_tr);
                     if (ret != REG_NOERROR) return ret;
                   }
-		
+                
                 /* See if we're at the beginning of a possible character
                    class.  */
-		
-		else if ((syntax & RE_CHAR_CLASSES)
-			 && (c == '[') && (*p == ':'))
+                
+                else if ((syntax & RE_CHAR_CLASSES)
+                         && (c == '[') && (*p == ':'))
                   {
                     char str[CHAR_CLASS_MAX_LENGTH + 1];
-		    
+                    
                     PATFETCH (c);
                     c1 = 0;
-		    
+                    
                     /* If pattern is `[[:'.  */
                     if (p == pend) return REG_EBRACK;
-		    
+                    
                     for (;;)
                       {
                         PATFETCH (c);
                         if (c == ':' || c == ']' || p == pend
                             || c1 == CHAR_CLASS_MAX_LENGTH)
-			  break;
+                          break;
                         str[c1++] = c;
                       }
                     str[c1] = '\0';
-		    
+                    
                     /* If isn't a word bracketed by `[:' and:`]':
                        undo the ending character, the letters, and leave 
                        the leading `:' and `[' (but set bits for them).  */
@@ -5569,13 +5569,13 @@ rx_compile (pattern, size, syntax, rxb)
                         boolean is_xdigit = !strcmp (str, "xdigit");
                         
                         if (!IS_CHAR_CLASS (str)) return REG_ECTYPE;
-			
+                        
                         /* Throw away the ] at the end of the character
                            class.  */
-                        PATFETCH (c);					
-			
+                        PATFETCH (c);                                   
+                        
                         if (p == pend) return REG_EBRACK;
-			
+                        
                         for (ch = 0; ch < 1 << CHARBITS; ch++)
                           {
                             if (   (is_alnum  && isalnum (ch))
@@ -5590,16 +5590,16 @@ rx_compile (pattern, size, syntax, rxb)
                                 || (is_space  && isspace (ch))
                                 || (is_upper  && isupper (ch))
                                 || (is_xdigit && isxdigit (ch)))
-			      {
-				rx_Bitset it =
-				  inverse_translation (rxb, 
-						       validate_inv_tr,
-						       inverse_translate,
-						       translate,
-						       ch);
-				rx_bitset_union (rxb->rx.local_cset_size,
-						 cs, it);
-			      }
+                              {
+                                rx_Bitset it =
+                                  inverse_translation (rxb, 
+                                                       validate_inv_tr,
+                                                       inverse_translate,
+                                                       translate,
+                                                       ch);
+                                rx_bitset_union (rxb->rx.local_cset_size,
+                                                 cs, it);
+                              }
                           }
                         had_char_class = true;
                       }
@@ -5608,56 +5608,56 @@ rx_compile (pattern, size, syntax, rxb)
                         c1++;
                         while (c1--)    
                           PATUNFETCH;
-			{
-			  rx_Bitset it =
-			    inverse_translation (rxb, 
-						 validate_inv_tr,
-						 inverse_translate,
-						 translate,
-						 '[');
-			  rx_bitset_union (rxb->rx.local_cset_size,
-					   cs, it);
-			}
-			{
-			  rx_Bitset it =
-			    inverse_translation (rxb, 
-						 validate_inv_tr,
-						 inverse_translate,
-						 translate,
-						 ':');
-			  rx_bitset_union (rxb->rx.local_cset_size,
-					   cs, it);
-			}
+                        {
+                          rx_Bitset it =
+                            inverse_translation (rxb, 
+                                                 validate_inv_tr,
+                                                 inverse_translate,
+                                                 translate,
+                                                 '[');
+                          rx_bitset_union (rxb->rx.local_cset_size,
+                                           cs, it);
+                        }
+                        {
+                          rx_Bitset it =
+                            inverse_translation (rxb, 
+                                                 validate_inv_tr,
+                                                 inverse_translate,
+                                                 translate,
+                                                 ':');
+                          rx_bitset_union (rxb->rx.local_cset_size,
+                                           cs, it);
+                        }
                         had_char_class = false;
                       }
                   }
                 else
                   {
                     had_char_class = false;
-		    {
-		      rx_Bitset it = inverse_translation (rxb, 
-							  validate_inv_tr,
-							  inverse_translate,
-							  translate,
-							  c);
-		      rx_bitset_union (rxb->rx.local_cset_size, cs, it);
-		    }
+                    {
+                      rx_Bitset it = inverse_translation (rxb, 
+                                                          validate_inv_tr,
+                                                          inverse_translate,
+                                                          translate,
+                                                          c);
+                      rx_bitset_union (rxb->rx.local_cset_size, cs, it);
+                    }
                   }
               }
 
-	  finalize_class_and_append:
-	    if (is_inverted)
-	      {
-		rx_bitset_complement (rxb->rx.local_cset_size, cs);
-		if (syntax & RE_HAT_LISTS_NOT_NEWLINE)
-		  RX_bitset_remove (cs, '\n');
-	      }
-	    goto append_node;
+          finalize_class_and_append:
+            if (is_inverted)
+              {
+                rx_bitset_complement (rxb->rx.local_cset_size, cs);
+                if (syntax & RE_HAT_LISTS_NOT_NEWLINE)
+                  RX_bitset_remove (cs, '\n');
+              }
+            goto append_node;
           }
           break;
 
 
-	case '(':
+        case '(':
           if (syntax & RE_NO_BK_PARENS)
             goto handle_open;
           else
@@ -5678,7 +5678,7 @@ rx_compile (pattern, size, syntax, rxb)
             goto normal_char;
 
 
-	case '|':
+        case '|':
           if (syntax & RE_NO_BK_VBAR)
             goto handle_alt;
           else
@@ -5686,10 +5686,10 @@ rx_compile (pattern, size, syntax, rxb)
 
 
         case '{':
-	  if ((syntax & RE_INTERVALS) && (syntax & RE_NO_BK_BRACES))
-	    goto handle_interval;
-	  else
-	    goto normal_char;
+          if ((syntax & RE_INTERVALS) && (syntax & RE_NO_BK_BRACES))
+            goto handle_interval;
+          else
+            goto normal_char;
 
 
         case '\\':
@@ -5712,35 +5712,35 @@ rx_compile (pattern, size, syntax, rxb)
               if (COMPILE_STACK_FULL)
                 { 
                   ((compile_stack.stack) =
-		   (compile_stack_elt_t *) realloc (compile_stack.stack, ( compile_stack.size << 1) * sizeof (
-													      compile_stack_elt_t)));
+                   (compile_stack_elt_t *) realloc (compile_stack.stack, ( compile_stack.size << 1) * sizeof (
+                                                                                                              compile_stack_elt_t)));
                   if (compile_stack.stack == 0) return REG_ESPACE;
 
                   compile_stack.size <<= 1;
                 }
 
-	      if (*last_expression)
-		{
-		  struct rexp_node * concat
-		    = rx_mk_r_concat (&rxb->rx, *last_expression, 0);
-		  if (!concat)
-		    return REG_ESPACE;
-		  *last_expression = concat;
-		  last_expression = &concat->params.pair.right;
-		}
+              if (*last_expression)
+                {
+                  struct rexp_node * concat
+                    = rx_mk_r_concat (&rxb->rx, *last_expression, 0);
+                  if (!concat)
+                    return REG_ESPACE;
+                  *last_expression = concat;
+                  last_expression = &concat->params.pair.right;
+                }
 
               /*
-	       * These are the values to restore when we hit end of this
+               * These are the values to restore when we hit end of this
                * group.  
-	       */
-	      COMPILE_STACK_TOP.top_expression = top_expression;
-	      COMPILE_STACK_TOP.last_expression = last_expression;
+               */
+              COMPILE_STACK_TOP.top_expression = top_expression;
+              COMPILE_STACK_TOP.last_expression = last_expression;
               COMPILE_STACK_TOP.regnum = regnum;
-	      
+              
               compile_stack.avail++;
-	      
-	      top_expression = last_expression;
-	      break;
+              
+              top_expression = last_expression;
+              break;
 
 
             case ')':
@@ -5762,93 +5762,93 @@ rx_compile (pattern, size, syntax, rxb)
                    later groups should continue to be numbered higher,
                    as in `(ab)c(de)' -- the second group is #2.  */
                 regnum_t this_group_regnum;
-		struct rexp_node ** inner = top_expression;
+                struct rexp_node ** inner = top_expression;
 
                 compile_stack.avail--;
-		top_expression = COMPILE_STACK_TOP.top_expression;
-		last_expression = COMPILE_STACK_TOP.last_expression;
+                top_expression = COMPILE_STACK_TOP.top_expression;
+                last_expression = COMPILE_STACK_TOP.last_expression;
                 this_group_regnum = COMPILE_STACK_TOP.regnum;
-		{
-		  int left_se = paramc;
-		  int right_se = paramc + 1;
+                {
+                  int left_se = paramc;
+                  int right_se = paramc + 1;
 
-		  params = (params
-			    ? ((struct re_se_params *)
-			       realloc (params,
-					(paramc + 2) * sizeof (params[0])))
-			    : ((struct re_se_params *)
-			       malloc (2 * sizeof (params[0]))));
-		  if (!params)
-		    return REG_ESPACE;
-		  paramc += 2;
+                  params = (params
+                            ? ((struct re_se_params *)
+                               realloc (params,
+                                        (paramc + 2) * sizeof (params[0])))
+                            : ((struct re_se_params *)
+                               malloc (2 * sizeof (params[0]))));
+                  if (!params)
+                    return REG_ESPACE;
+                  paramc += 2;
 
-		  params[left_se].se = re_se_lparen;
-		  params[left_se].op1 = this_group_regnum;
-		  params[right_se].se = re_se_rparen;
-		  params[right_se].op1 = this_group_regnum;
-		  {
-		    struct rexp_node * left
-		      = rx_mk_r_side_effect (&rxb->rx,
-					     (rx_side_effect)left_se);
-		    struct rexp_node * right
-		      = rx_mk_r_side_effect (&rxb->rx,
-					     (rx_side_effect)right_se);
-		    struct rexp_node * c1
-		      = (*inner
-			 ? rx_mk_r_concat (&rxb->rx, left, *inner) : left);
-		    struct rexp_node * c2
-		      = rx_mk_r_concat (&rxb->rx, c1, right);
-		    if (!(left && right && c1 && c2))
-		      return REG_ESPACE;
-		    *inner = c2;
-		  }
-		}
-		break;
-	      }
+                  params[left_se].se = re_se_lparen;
+                  params[left_se].op1 = this_group_regnum;
+                  params[right_se].se = re_se_rparen;
+                  params[right_se].op1 = this_group_regnum;
+                  {
+                    struct rexp_node * left
+                      = rx_mk_r_side_effect (&rxb->rx,
+                                             (rx_side_effect)left_se);
+                    struct rexp_node * right
+                      = rx_mk_r_side_effect (&rxb->rx,
+                                             (rx_side_effect)right_se);
+                    struct rexp_node * c1
+                      = (*inner
+                         ? rx_mk_r_concat (&rxb->rx, left, *inner) : left);
+                    struct rexp_node * c2
+                      = rx_mk_r_concat (&rxb->rx, c1, right);
+                    if (!(left && right && c1 && c2))
+                      return REG_ESPACE;
+                    *inner = c2;
+                  }
+                }
+                break;
+              }
 
-            case '|':					/* `\|'.  */
+            case '|':                                   /* `\|'.  */
               if ((syntax & RE_LIMITED_OPS) || (syntax & RE_NO_BK_VBAR))
                 goto normal_backslash;
             handle_alt:
               if (syntax & RE_LIMITED_OPS)
                 goto normal_char;
 
-	      {
-		struct rexp_node * alt
-		  = rx_mk_r_alternate (&rxb->rx, *top_expression, 0);
-		if (!alt)
-		  return REG_ESPACE;
-		*top_expression = alt;
-		last_expression = &alt->params.pair.right;
-		{
-		  int sync_se = paramc;
+              {
+                struct rexp_node * alt
+                  = rx_mk_r_alternate (&rxb->rx, *top_expression, 0);
+                if (!alt)
+                  return REG_ESPACE;
+                *top_expression = alt;
+                last_expression = &alt->params.pair.right;
+                {
+                  int sync_se = paramc;
 
-		  params = (params
-			    ? ((struct re_se_params *)
-			       realloc (params,
-					(paramc + 1) * sizeof (params[0])))
-			    : ((struct re_se_params *)
-			       malloc (sizeof (params[0]))));
-		  if (!params)
-		    return REG_ESPACE;
-		  ++paramc;
+                  params = (params
+                            ? ((struct re_se_params *)
+                               realloc (params,
+                                        (paramc + 1) * sizeof (params[0])))
+                            : ((struct re_se_params *)
+                               malloc (sizeof (params[0]))));
+                  if (!params)
+                    return REG_ESPACE;
+                  ++paramc;
 
-		  params[sync_se].se = re_se_tv;
-		  {
-		    struct rexp_node * sync
-		      = rx_mk_r_side_effect (&rxb->rx,
-					     (rx_side_effect)sync_se);
-		    struct rexp_node * conc
-		      = rx_mk_r_concat (&rxb->rx, sync, 0);
+                  params[sync_se].se = re_se_tv;
+                  {
+                    struct rexp_node * sync
+                      = rx_mk_r_side_effect (&rxb->rx,
+                                             (rx_side_effect)sync_se);
+                    struct rexp_node * conc
+                      = rx_mk_r_concat (&rxb->rx, sync, 0);
 
-		    if (!sync || !conc)
-		      return REG_ESPACE;
+                    if (!sync || !conc)
+                      return REG_ESPACE;
 
-		    *last_expression = conc;
-		    last_expression = &conc->params.pair.right;
-		  }
-		}
-	      }
+                    *last_expression = conc;
+                    last_expression = &conc->params.pair.right;
+                  }
+                }
+              }
               break;
 
 
@@ -5921,82 +5921,82 @@ rx_compile (pattern, size, syntax, rxb)
                       return REG_BADRPT;
                     else if (!(syntax & RE_CONTEXT_INDEP_OPS))
                       goto unfetch_interval;
-		    /* was: else laststart = b; */
+                    /* was: else laststart = b; */
                   }
 
                 /* If the upper bound is zero, don't want to iterate
                  * at all.
-		 */
+                 */
                  if (upper_bound == 0)
-		   {
-		     if (*last_expression)
-		       {
-			 rx_free_rexp (&rxb->rx, *last_expression);
-			 *last_expression = 0;
-		       }
-		   }
-		else
-		  /* Otherwise, we have a nontrivial interval. */
-		  {
-		    int iter_se = paramc;
-		    int end_se = paramc + 1;
-		    params = (params
-			      ? ((struct re_se_params *)
-				 realloc (params,
-					  sizeof (*params) * (2 + paramc)))
-			      : ((struct re_se_params *)
-				 malloc (2 * sizeof (*params))));
-		    if (!params)
-		      return REG_ESPACE;
-		    paramc += 2;
-		    params [iter_se].se = re_se_iter;
-		    params [iter_se].op1 = lower_bound;
-		    params[iter_se].op2 = upper_bound;
+                   {
+                     if (*last_expression)
+                       {
+                         rx_free_rexp (&rxb->rx, *last_expression);
+                         *last_expression = 0;
+                       }
+                   }
+                else
+                  /* Otherwise, we have a nontrivial interval. */
+                  {
+                    int iter_se = paramc;
+                    int end_se = paramc + 1;
+                    params = (params
+                              ? ((struct re_se_params *)
+                                 realloc (params,
+                                          sizeof (*params) * (2 + paramc)))
+                              : ((struct re_se_params *)
+                                 malloc (2 * sizeof (*params))));
+                    if (!params)
+                      return REG_ESPACE;
+                    paramc += 2;
+                    params [iter_se].se = re_se_iter;
+                    params [iter_se].op1 = lower_bound;
+                    params[iter_se].op2 = upper_bound;
 
-		    params[end_se].se = re_se_end_iter;
-		    params[end_se].op1 = lower_bound;
-		    params[end_se].op2 = upper_bound;
-		    {
-		      struct rexp_node * push0
-			= rx_mk_r_side_effect (&rxb->rx,
-					       (rx_side_effect)re_se_push0);
-		      struct rexp_node * start_one_iter
-			= rx_mk_r_side_effect (&rxb->rx,
-					       (rx_side_effect)iter_se);
-		      struct rexp_node * phase1
-			= rx_mk_r_concat (&rxb->rx, start_one_iter,
-					  *last_expression);
-		      struct rexp_node * pushback
-			= rx_mk_r_side_effect (&rxb->rx,
-					       (rx_side_effect)re_se_pushback);
-		      rx_Bitset cs = rx_cset (&rxb->rx);
-		      struct rexp_node * lit_t;
-		      struct rexp_node * phase2;
-		      struct rexp_node * loop;
-		      struct rexp_node * push_n_loop;
-		      struct rexp_node * final_test;
-		      struct rexp_node * full_exp;
+                    params[end_se].se = re_se_end_iter;
+                    params[end_se].op1 = lower_bound;
+                    params[end_se].op2 = upper_bound;
+                    {
+                      struct rexp_node * push0
+                        = rx_mk_r_side_effect (&rxb->rx,
+                                               (rx_side_effect)re_se_push0);
+                      struct rexp_node * start_one_iter
+                        = rx_mk_r_side_effect (&rxb->rx,
+                                               (rx_side_effect)iter_se);
+                      struct rexp_node * phase1
+                        = rx_mk_r_concat (&rxb->rx, start_one_iter,
+                                          *last_expression);
+                      struct rexp_node * pushback
+                        = rx_mk_r_side_effect (&rxb->rx,
+                                               (rx_side_effect)re_se_pushback);
+                      rx_Bitset cs = rx_cset (&rxb->rx);
+                      struct rexp_node * lit_t;
+                      struct rexp_node * phase2;
+                      struct rexp_node * loop;
+                      struct rexp_node * push_n_loop;
+                      struct rexp_node * final_test;
+                      struct rexp_node * full_exp;
 
-		      if (! cs)
-			return REG_ESPACE;
-		      lit_t = rx_mk_r_cset (&rxb->rx, cs);
-		      phase2 = rx_mk_r_concat (&rxb->rx, pushback, lit_t);
-		      loop = rx_mk_r_2phase_star (&rxb->rx, phase1, phase2);
-		      push_n_loop = rx_mk_r_concat (&rxb->rx, push0, loop);
-		      final_test = rx_mk_r_side_effect (&rxb->rx,
-					       (rx_side_effect)end_se);
-		      full_exp = rx_mk_r_concat (&rxb->rx, push_n_loop, final_test);
+                      if (! cs)
+                        return REG_ESPACE;
+                      lit_t = rx_mk_r_cset (&rxb->rx, cs);
+                      phase2 = rx_mk_r_concat (&rxb->rx, pushback, lit_t);
+                      loop = rx_mk_r_2phase_star (&rxb->rx, phase1, phase2);
+                      push_n_loop = rx_mk_r_concat (&rxb->rx, push0, loop);
+                      final_test = rx_mk_r_side_effect (&rxb->rx,
+                                               (rx_side_effect)end_se);
+                      full_exp = rx_mk_r_concat (&rxb->rx, push_n_loop, final_test);
 
-		      if (!(push0 && start_one_iter && phase1
-			    && pushback && lit_t && phase2
-			    && loop && push_n_loop && final_test && full_exp))
-			return REG_ESPACE;
+                      if (!(push0 && start_one_iter && phase1
+                            && pushback && lit_t && phase2
+                            && loop && push_n_loop && final_test && full_exp))
+                        return REG_ESPACE;
 
-		      RX_bitset_enjoin(cs, 't');
+                      RX_bitset_enjoin(cs, 't');
 
-		      *last_expression = full_exp;
-		    }
-		  }
+                      *last_expression = full_exp;
+                    }
+                  }
                 beg_interval = 0;
               }
               break;
@@ -6007,7 +6007,7 @@ rx_compile (pattern, size, syntax, rxb)
                beg_interval = 0;
 
                /* normal_char and normal_backslash need `c'.  */
-               PATFETCH (c);	
+               PATFETCH (c);    
 
                if (!(syntax & RE_NO_BK_BRACES))
                  {
@@ -6020,64 +6020,64 @@ rx_compile (pattern, size, syntax, rxb)
             /* There is no way to specify the before_dot and after_dot
                operators.  rms says this is ok.  --karl  */
             case '=':
-	      side = (rx_side_effect)rx_se_at_dot;
-	      goto add_side_effect;
+              side = (rx_side_effect)rx_se_at_dot;
+              goto add_side_effect;
               break;
 
             case 's':
-	    case 'S':
-	      {
-		rx_Bitset cs = rx_cset (&rxb->rx);
-		struct rexp_node * set = rx_mk_r_cset (&rxb->rx, cs);
-		if (!(cs && set))
-		  return REG_ESPACE;
-		if (c == 'S')
-		  rx_bitset_universe (rxb->rx.local_cset_size, cs);
+            case 'S':
+              {
+                rx_Bitset cs = rx_cset (&rxb->rx);
+                struct rexp_node * set = rx_mk_r_cset (&rxb->rx, cs);
+                if (!(cs && set))
+                  return REG_ESPACE;
+                if (c == 'S')
+                  rx_bitset_universe (rxb->rx.local_cset_size, cs);
 
-		PATFETCH (c);
-		{
-		  int x;
-		  enum syntaxcode code = syntax_spec_code [c];
-		  for (x = 0; x < 256; ++x)
-		    {
-		      
-		      if (SYNTAX (x) == code)
-			{
-			  rx_Bitset it =
-			    inverse_translation (rxb, validate_inv_tr,
-						 inverse_translate,
-						 translate, x);
-			  rx_bitset_xor (rxb->rx.local_cset_size, cs, it);
-			}
-		    }
-		}
-		append = set;
-		goto append_node;
-	      }
+                PATFETCH (c);
+                {
+                  int x;
+                  enum syntaxcode code = syntax_spec_code [c];
+                  for (x = 0; x < 256; ++x)
+                    {
+                      
+                      if (SYNTAX (x) == code)
+                        {
+                          rx_Bitset it =
+                            inverse_translation (rxb, validate_inv_tr,
+                                                 inverse_translate,
+                                                 translate, x);
+                          rx_bitset_xor (rxb->rx.local_cset_size, cs, it);
+                        }
+                    }
+                }
+                append = set;
+                goto append_node;
+              }
               break;
 #endif /* emacs */
 
 
             case 'w':
             case 'W':
-	      if (syntax & RE_NO_GNU_OPS)
-		goto normal_char;
-	      {
-		rx_Bitset cs = rx_cset (&rxb->rx);
-		struct rexp_node * n = (cs ? rx_mk_r_cset (&rxb->rx, cs) : 0);
-		if (!(cs && n))
-		  return REG_ESPACE;
-		if (c == 'W')
-		  rx_bitset_universe (rxb->rx.local_cset_size ,cs);
-		{
-		  int x;
-		  for (x = rxb->rx.local_cset_size - 1; x > 0; --x)
-		    if (SYNTAX(x) & Sword)
-		      RX_bitset_toggle (cs, x);
-		}
-		append = n;
-		goto append_node;
-	      }
+              if (syntax & RE_NO_GNU_OPS)
+                goto normal_char;
+              {
+                rx_Bitset cs = rx_cset (&rxb->rx);
+                struct rexp_node * n = (cs ? rx_mk_r_cset (&rxb->rx, cs) : 0);
+                if (!(cs && n))
+                  return REG_ESPACE;
+                if (c == 'W')
+                  rx_bitset_universe (rxb->rx.local_cset_size ,cs);
+                {
+                  int x;
+                  for (x = rxb->rx.local_cset_size - 1; x > 0; --x)
+                    if (SYNTAX(x) & Sword)
+                      RX_bitset_toggle (cs, x);
+                }
+                append = n;
+                goto append_node;
+              }
               break;
 
 /* With a little extra work, some of these side effects could be optimized
@@ -6085,57 +6085,57 @@ rx_compile (pattern, size, syntax, rxb)
  * chars).  
  */
             case '<':
-	      if (syntax & RE_NO_GNU_OPS)
-		goto normal_char;
-	      side = (rx_side_effect)re_se_wordbeg;
-	      goto add_side_effect;
+              if (syntax & RE_NO_GNU_OPS)
+                goto normal_char;
+              side = (rx_side_effect)re_se_wordbeg;
+              goto add_side_effect;
               break;
 
             case '>':
-	      if (syntax & RE_NO_GNU_OPS)
-		goto normal_char;
+              if (syntax & RE_NO_GNU_OPS)
+                goto normal_char;
               side = (rx_side_effect)re_se_wordend;
-	      goto add_side_effect;
+              goto add_side_effect;
               break;
 
             case 'b':
-	      if (syntax & RE_NO_GNU_OPS)
-		goto normal_char;
+              if (syntax & RE_NO_GNU_OPS)
+                goto normal_char;
               side = (rx_side_effect)re_se_wordbound;
-	      goto add_side_effect;
+              goto add_side_effect;
               break;
 
             case 'B':
-	      if (syntax & RE_NO_GNU_OPS)
-		goto normal_char;
+              if (syntax & RE_NO_GNU_OPS)
+                goto normal_char;
               side = (rx_side_effect)re_se_notwordbound;
-	      goto add_side_effect;
+              goto add_side_effect;
               break;
 
             case '`':
-	      if (syntax & RE_NO_GNU_OPS)
-		goto normal_char;
-	      side = (rx_side_effect)re_se_begbuf;
-	      goto add_side_effect;
-	      break;
-	      
+              if (syntax & RE_NO_GNU_OPS)
+                goto normal_char;
+              side = (rx_side_effect)re_se_begbuf;
+              goto add_side_effect;
+              break;
+              
             case '\'':
-	      if (syntax & RE_NO_GNU_OPS)
-		goto normal_char;
-	      side = (rx_side_effect)re_se_endbuf;
-	      goto add_side_effect;
+              if (syntax & RE_NO_GNU_OPS)
+                goto normal_char;
+              side = (rx_side_effect)re_se_endbuf;
+              goto add_side_effect;
               break;
 
-	    add_side_effect:
-	      {
-		struct rexp_node * se
-		  = rx_mk_r_side_effect (&rxb->rx, side);
-		if (!se)
-		  return REG_ESPACE;
-		append = se;
-		goto append_node;
-	      }
-	      break;
+            add_side_effect:
+              {
+                struct rexp_node * se
+                  = rx_mk_r_side_effect (&rxb->rx, side);
+                if (!se)
+                  return REG_ESPACE;
+                append = se;
+                goto append_node;
+              }
+              break;
 
             case '1': case '2': case '3': case '4': case '5':
             case '6': case '7': case '8': case '9':
@@ -6149,24 +6149,24 @@ rx_compile (pattern, size, syntax, rxb)
 
               /* Can't back reference to a subexpression if inside of it.  */
               if (group_in_compile_stack (compile_stack, c1))
-		return REG_ESUBREG;
+                return REG_ESUBREG;
 
-	      {
-		int backref_se = paramc;
-		params = (params
-			  ? ((struct re_se_params *)
-			     realloc (params,
-				      sizeof (*params) * (1 + paramc)))
-			  : ((struct re_se_params *)
-			     malloc (sizeof (*params))));
-		if (!params)
-		  return REG_ESPACE;
-		++paramc;
-		params[backref_se].se = re_se_backref;
-		params[backref_se].op1 = c1;
-		side = (rx_side_effect)backref_se;
-		goto add_side_effect;
-	      }
+              {
+                int backref_se = paramc;
+                params = (params
+                          ? ((struct re_se_params *)
+                             realloc (params,
+                                      sizeof (*params) * (1 + paramc)))
+                          : ((struct re_se_params *)
+                             malloc (sizeof (*params))));
+                if (!params)
+                  return REG_ESPACE;
+                ++paramc;
+                params[backref_se].se = re_se_backref;
+                params[backref_se].op1 = c1;
+                side = (rx_side_effect)backref_se;
+                goto add_side_effect;
+              }
               break;
 
             case '+':
@@ -6187,59 +6187,59 @@ rx_compile (pattern, size, syntax, rxb)
           break;
 
 
-	default:
+        default:
         /* Expects the character in `c'.  */
-	normal_char:
-	    {
-	      rx_Bitset cs = rx_cset(&rxb->rx);
-	      struct rexp_node * match = rx_mk_r_cset (&rxb->rx, cs);
-	      rx_Bitset it;
-	      if (!(cs && match))
-		return REG_ESPACE;
-	      it = inverse_translation (rxb, validate_inv_tr,
-					inverse_translate, translate, c);
-	      rx_bitset_union (CHAR_SET_SIZE, cs, it);
-	      append = match;
+        normal_char:
+            {
+              rx_Bitset cs = rx_cset(&rxb->rx);
+              struct rexp_node * match = rx_mk_r_cset (&rxb->rx, cs);
+              rx_Bitset it;
+              if (!(cs && match))
+                return REG_ESPACE;
+              it = inverse_translation (rxb, validate_inv_tr,
+                                        inverse_translate, translate, c);
+              rx_bitset_union (CHAR_SET_SIZE, cs, it);
+              append = match;
 
-	    append_node:
-	      /* This genericly appends the rexp APPEND to *LAST_EXPRESSION
-	       * and then parses the next character normally.
-	       */
-	      if (*last_expression)
-		{
-		  struct rexp_node * concat
-		    = rx_mk_r_concat (&rxb->rx, *last_expression, append);
-		  if (!concat)
-		    return REG_ESPACE;
-		  *last_expression = concat;
-		  last_expression = &concat->params.pair.right;
-		}
-	      else
-		*last_expression = append;
-	    }
-	} /* switch (c) */
+            append_node:
+              /* This genericly appends the rexp APPEND to *LAST_EXPRESSION
+               * and then parses the next character normally.
+               */
+              if (*last_expression)
+                {
+                  struct rexp_node * concat
+                    = rx_mk_r_concat (&rxb->rx, *last_expression, append);
+                  if (!concat)
+                    return REG_ESPACE;
+                  *last_expression = concat;
+                  last_expression = &concat->params.pair.right;
+                }
+              else
+                *last_expression = append;
+            }
+        } /* switch (c) */
     } /* while p != pend */
 
   
   {
     int win_se = paramc;
     params = (params
-	      ? ((struct re_se_params *)
-		 realloc (params,
-			  sizeof (*params) * (1 + paramc)))
-	      : ((struct re_se_params *)
-		 malloc (sizeof (*params))));
+              ? ((struct re_se_params *)
+                 realloc (params,
+                          sizeof (*params) * (1 + paramc)))
+              : ((struct re_se_params *)
+                 malloc (sizeof (*params))));
     if (!params)
       return REG_ESPACE;
     ++paramc;
     params[win_se].se = re_se_win;
     {
       struct rexp_node * se
-	= rx_mk_r_side_effect (&rxb->rx, (rx_side_effect)win_se);
+        = rx_mk_r_side_effect (&rxb->rx, (rx_side_effect)win_se);
       struct rexp_node * concat
-	= rx_mk_r_concat (&rxb->rx, rexp, se);
+        = rx_mk_r_concat (&rxb->rx, rexp, se);
       if (!(se && concat))
-	return REG_ESPACE;
+        return REG_ESPACE;
       rexp = concat;
     }
   }
@@ -6275,7 +6275,7 @@ rx_compile (pattern, size, syntax, rxb)
     find_backrefs (se_map, rexp, params);
     fewer_side_effects =
       remove_unecessary_side_effects (&rxb->rx, se_map,
-				      rx_copy_rexp (&rxb->rx, rexp), params);
+                                      rx_copy_rexp (&rxb->rx, rexp), params);
 
     speed_up_alt (&rxb->rx, rexp, 0);
     speed_up_alt (&rxb->rx, fewer_side_effects, 1);
@@ -6283,19 +6283,19 @@ rx_compile (pattern, size, syntax, rxb)
     {
       char * syntax_parens = rxb->syntax_parens;
       if (syntax_parens == (char *)0x1)
-	rexp = remove_unecessary_side_effects
-	  (&rxb->rx, se_map, rexp, params);
+        rexp = remove_unecessary_side_effects
+          (&rxb->rx, se_map, rexp, params);
       else if (syntax_parens)
-	{
-	  int x;
-	  for (x = 0; x < paramc; ++x)
-	    if ((   (params[x].se == re_se_lparen)
-		 || (params[x].se == re_se_rparen))
-		&& (!syntax_parens [params[x].op1]))
-	      se_map [x] = 1;
-	  rexp = remove_unecessary_side_effects
-	    (&rxb->rx, se_map, rexp, params);
-	}
+        {
+          int x;
+          for (x = 0; x < paramc; ++x)
+            if ((   (params[x].se == re_se_lparen)
+                 || (params[x].se == re_se_rparen))
+                && (!syntax_parens [params[x].op1]))
+              se_map [x] = 1;
+          rexp = remove_unecessary_side_effects
+            (&rxb->rx, se_map, rexp, params);
+        }
     }
 
     /* At least one more optimization would be nice to have here but i ran out 
@@ -6307,7 +6307,7 @@ rx_compile (pattern, size, syntax, rxb)
      *
      * Trickier:  `(abc|defg)'  is the same as `(abc(:3:|defg(:4:))'
      * (The paren nesting may be hard to follow -- that's an alternation
-     *	of `abc(:3:' and `defg(:4:' inside (purely syntactic) parens
+     *  of `abc(:3:' and `defg(:4:' inside (purely syntactic) parens
      *  followed by the closing paren from the original expression.)
      *
      * Neither the expression tree representation nor the the nfa make
@@ -6330,10 +6330,10 @@ rx_compile (pattern, size, syntax, rxb)
    */
     new_rexp =
       rx_mk_r_alternate
-	(&rxb->rx,
-	 rx_mk_r_concat (&rxb->rx, rx_mk_r_cset (&rxb->rx, cs2), rexp),
-	 rx_mk_r_concat (&rxb->rx,
-			 rx_mk_r_cset (&rxb->rx, cs), fewer_side_effects));
+        (&rxb->rx,
+         rx_mk_r_concat (&rxb->rx, rx_mk_r_cset (&rxb->rx, cs2), rexp),
+         rx_mk_r_concat (&rxb->rx,
+                         rx_mk_r_cset (&rxb->rx, cs), fewer_side_effects));
 
     if (!(new_rexp && cs && cs2))
       return REG_ESPACE;
@@ -6354,71 +6354,71 @@ rx_compile (pattern, size, syntax, rxb)
     struct rx_nfa_state *end = 0;
 
     if (!rx_build_nfa (&rxb->rx, rexp, &start, &end))
-      return REG_ESPACE;	/*  */
+      return REG_ESPACE;        /*  */
     else
       {
-	void * mem = (void *)rxb->buffer;
-	unsigned long size = rxb->allocated;
-	int start_id;
-	char * perm_mem;
-	int iterator_size = paramc * sizeof (params[0]);
+        void * mem = (void *)rxb->buffer;
+        unsigned long size = rxb->allocated;
+        int start_id;
+        char * perm_mem;
+        int iterator_size = paramc * sizeof (params[0]);
 
-	end->is_final = 1;
-	start->is_start = 1;
-	rx_name_nfa_states (&rxb->rx);
-	start_id = start->id;
+        end->is_final = 1;
+        start->is_start = 1;
+        rx_name_nfa_states (&rxb->rx);
+        start_id = start->id;
 #ifdef RX_DEBUG
-	if (rx_debug_compile)
-	  {
-	    fputs ("...giving the NFA: \n", stdout);
-	    dbug_rxb = rxb;
-	    print_nfa (&rxb->rx, rxb->rx.nfa_states, re_seprint, stdout);
-	  }
+        if (rx_debug_compile)
+          {
+            fputs ("...giving the NFA: \n", stdout);
+            dbug_rxb = rxb;
+            print_nfa (&rxb->rx, rxb->rx.nfa_states, re_seprint, stdout);
+          }
 #endif
-	if (!rx_eclose_nfa (&rxb->rx))
-	  return REG_ESPACE;
-	else
-	  {
-	    rx_delete_epsilon_transitions (&rxb->rx);
-	    
-	    /* For compatability reasons, we need to shove the
-	     * compiled nfa into one chunk of malloced memory.
-	     */
-	    rxb->rx.reserved = (   sizeof (params[0]) * paramc
-				+  rx_sizeof_bitset (rxb->rx.local_cset_size));
+        if (!rx_eclose_nfa (&rxb->rx))
+          return REG_ESPACE;
+        else
+          {
+            rx_delete_epsilon_transitions (&rxb->rx);
+            
+            /* For compatability reasons, we need to shove the
+             * compiled nfa into one chunk of malloced memory.
+             */
+            rxb->rx.reserved = (   sizeof (params[0]) * paramc
+                                +  rx_sizeof_bitset (rxb->rx.local_cset_size));
 #ifdef RX_DEBUG
-	    if (rx_debug_compile)
-	      {
-		dbug_rxb = rxb;
-		fputs ("...which cooks down (uncompactified) to: \n", stdout);
-		print_nfa (&rxb->rx, rxb->rx.nfa_states, re_seprint, stdout);
-	      }
+            if (rx_debug_compile)
+              {
+                dbug_rxb = rxb;
+                fputs ("...which cooks down (uncompactified) to: \n", stdout);
+                print_nfa (&rxb->rx, rxb->rx.nfa_states, re_seprint, stdout);
+              }
 #endif
-	    if (!rx_compactify_nfa (&rxb->rx, &mem, &size))
-	      return REG_ESPACE;
-	    rxb->buffer = mem;
-	    rxb->allocated = size;
-	    rxb->rx.buffer = mem;
-	    rxb->rx.allocated = size;
-	    perm_mem = ((char *)rxb->rx.buffer
-			+ rxb->rx.allocated - rxb->rx.reserved);
-	    rxb->se_params = ((struct re_se_params *)perm_mem);
-	    bcopy (params, rxb->se_params, iterator_size);
-	    perm_mem += iterator_size;
-	    rxb->fastset = (rx_Bitset) perm_mem;
-	    rxb->start = rx_id_to_nfa_state (&rxb->rx, start_id);
-	  }
-	rx_bitset_null (rxb->rx.local_cset_size, rxb->fastset);
-	rxb->can_match_empty = compute_fastset (rxb, orig_rexp);
-	rxb->match_regs_on_stack =
-	  registers_on_stack (rxb, orig_rexp, 0, params); 
-	rxb->search_regs_on_stack =
-	  registers_on_stack (rxb, fewer_side_effects, 0, params);
-	if (rxb->can_match_empty)
-	  rx_bitset_universe (rxb->rx.local_cset_size, rxb->fastset);
-	rxb->is_anchored = is_anchored (orig_rexp, (rx_side_effect) re_se_hat);
-	rxb->begbuf_only = is_anchored (orig_rexp,
-					(rx_side_effect) re_se_begbuf);
+            if (!rx_compactify_nfa (&rxb->rx, &mem, &size))
+              return REG_ESPACE;
+            rxb->buffer = mem;
+            rxb->allocated = size;
+            rxb->rx.buffer = mem;
+            rxb->rx.allocated = size;
+            perm_mem = ((char *)rxb->rx.buffer
+                        + rxb->rx.allocated - rxb->rx.reserved);
+            rxb->se_params = ((struct re_se_params *)perm_mem);
+            bcopy (params, rxb->se_params, iterator_size);
+            perm_mem += iterator_size;
+            rxb->fastset = (rx_Bitset) perm_mem;
+            rxb->start = rx_id_to_nfa_state (&rxb->rx, start_id);
+          }
+        rx_bitset_null (rxb->rx.local_cset_size, rxb->fastset);
+        rxb->can_match_empty = compute_fastset (rxb, orig_rexp);
+        rxb->match_regs_on_stack =
+          registers_on_stack (rxb, orig_rexp, 0, params); 
+        rxb->search_regs_on_stack =
+          registers_on_stack (rxb, fewer_side_effects, 0, params);
+        if (rxb->can_match_empty)
+          rx_bitset_universe (rxb->rx.local_cset_size, rxb->fastset);
+        rxb->is_anchored = is_anchored (orig_rexp, (rx_side_effect) re_se_hat);
+        rxb->begbuf_only = is_anchored (orig_rexp,
+                                        (rx_side_effect) re_se_begbuf);
       }
     rx_free_rexp (&rxb->rx, rexp);
     if (params)
@@ -6426,9 +6426,9 @@ rx_compile (pattern, size, syntax, rxb)
 #ifdef RX_DEBUG
     if (rx_debug_compile)
       {
-	dbug_rxb = rxb;
-	fputs ("...which cooks down to: \n", stdout);
-	print_nfa (&rxb->rx, rxb->rx.nfa_states, re_seprint, stdout);
+        dbug_rxb = rxb;
+        fputs ("...which cooks down to: \n", stdout);
+        print_nfa (&rxb->rx, rxb->rx.nfa_states, re_seprint, stdout);
       }
 #endif
   }
@@ -6441,23 +6441,23 @@ rx_compile (pattern, size, syntax, rxb)
    in regex.h.  Obviously the order here has to be same as there.  */
 
 __const__ char * rx_error_msg[] =
-{ 0,						/* REG_NOERROR */
-    "No match",					/* REG_NOMATCH */
-    "Invalid regular expression",		/* REG_BADPAT */
-    "Invalid collation character",		/* REG_ECOLLATE */
-    "Invalid character class name",		/* REG_ECTYPE */
-    "Trailing backslash",			/* REG_EESCAPE */
-    "Invalid back reference",			/* REG_ESUBREG */
-    "Unmatched [ or [^",			/* REG_EBRACK */
-    "Unmatched ( or \\(",			/* REG_EPAREN */
-    "Unmatched \\{",				/* REG_EBRACE */
-    "Invalid content of \\{\\}",		/* REG_BADBR */
-    "Invalid range end",			/* REG_ERANGE */
-    "Memory exhausted",				/* REG_ESPACE */
-    "Invalid preceding regular expression",	/* REG_BADRPT */
-    "Premature end of regular expression",	/* REG_EEND */
-    "Regular expression too big",		/* REG_ESIZE */
-    "Unmatched ) or \\)",			/* REG_ERPAREN */
+{ 0,                                            /* REG_NOERROR */
+    "No match",                                 /* REG_NOMATCH */
+    "Invalid regular expression",               /* REG_BADPAT */
+    "Invalid collation character",              /* REG_ECOLLATE */
+    "Invalid character class name",             /* REG_ECTYPE */
+    "Trailing backslash",                       /* REG_EESCAPE */
+    "Invalid back reference",                   /* REG_ESUBREG */
+    "Unmatched [ or [^",                        /* REG_EBRACK */
+    "Unmatched ( or \\(",                       /* REG_EPAREN */
+    "Unmatched \\{",                            /* REG_EBRACE */
+    "Invalid content of \\{\\}",                /* REG_BADBR */
+    "Invalid range end",                        /* REG_ERANGE */
+    "Memory exhausted",                         /* REG_ESPACE */
+    "Invalid preceding regular expression",     /* REG_BADRPT */
+    "Premature end of regular expression",      /* REG_EEND */
+    "Regular expression too big",               /* REG_ESIZE */
+    "Unmatched ) or \\)",                       /* REG_ERPAREN */
 };
 
 
@@ -6493,7 +6493,7 @@ rx_blow_up_fastmap (rxb)
 #endif
 {
   int x;
-  for (x = 0; x < 256; ++x)	/* &&&& 3.6 % */
+  for (x = 0; x < 256; ++x)     /* &&&& 3.6 % */
     rxb->fastmap [x] = !!RX_bitset_member (rxb->fastset, x);
   rxb->fastmap_accurate = 1;
 }
@@ -6502,10 +6502,10 @@ rx_blow_up_fastmap (rxb)
 
 
 #if !defined(REGEX_MALLOC) && !defined(__GNUC__)
-#define RE_SEARCH_2_FN	inner_re_search_2
+#define RE_SEARCH_2_FN  inner_re_search_2
 #define RE_S2_QUAL static
 #else
-#define RE_SEARCH_2_FN	re_search_2
+#define RE_SEARCH_2_FN  re_search_2
 #define RE_S2_QUAL 
 #endif
 
@@ -6585,20 +6585,20 @@ re_search_2_get_burst (pos, vclosure, stop)
 
       inset = pos->pos - pos->string;
       if ((inset < -1) || (inset > closure->size1))
-	return rx_get_burst_no_more;
+        return rx_get_burst_no_more;
       else
-	{
-	  pos->pos = (__const__ unsigned char *) closure->string1 + inset;
-	  pos->string = (__const__ unsigned char *) closure->string1;
-	  pos->size = closure->size1;
-	  pos->end = ((__const__ unsigned char *)
-		      MIN(closure->string1 + closure->size1,
-			  closure->string1 + stop));
-	  pos->offset = 0;
-	  return ((pos->pos < pos->end)
-		  ? rx_get_burst_ok
-		  :  rx_get_burst_no_more);
-	}
+        {
+          pos->pos = (__const__ unsigned char *) closure->string1 + inset;
+          pos->string = (__const__ unsigned char *) closure->string1;
+          pos->size = closure->size1;
+          pos->end = ((__const__ unsigned char *)
+                      MIN(closure->string1 + closure->size1,
+                          closure->string1 + stop));
+          pos->offset = 0;
+          return ((pos->pos < pos->end)
+                  ? rx_get_burst_ok
+                  :  rx_get_burst_no_more);
+        }
     }
   else if (!closure->string1)
     {
@@ -6609,12 +6609,12 @@ re_search_2_get_burst (pos, vclosure, stop)
       pos->string = (__const__ unsigned char *) closure->string2;
       pos->size = closure->size2;
       pos->end = ((__const__ unsigned char *)
-		  MIN(closure->string2 + closure->size2,
-		      closure->string2 + stop));
+                  MIN(closure->string2 + closure->size2,
+                      closure->string2 + stop));
       pos->offset = 0;
       return ((pos->pos < pos->end)
-	      ? rx_get_burst_ok
-	      :  rx_get_burst_no_more);
+              ? rx_get_burst_ok
+              :  rx_get_burst_no_more);
     }
   else
     {
@@ -6622,30 +6622,30 @@ re_search_2_get_burst (pos, vclosure, stop)
 
       inset = pos->pos - pos->string + pos->offset;
       if (inset < closure->size1)
-	{
-	  pos->pos = (__const__ unsigned char *) closure->string1 + inset;
-	  pos->string = (__const__ unsigned char *) closure->string1;
-	  pos->size = closure->size1;
-	  pos->end = ((__const__ unsigned char *)
-		      MIN(closure->string1 + closure->size1,
-			  closure->string1 + stop));
-	  pos->offset = 0;
-	  return rx_get_burst_ok;
-	}
+        {
+          pos->pos = (__const__ unsigned char *) closure->string1 + inset;
+          pos->string = (__const__ unsigned char *) closure->string1;
+          pos->size = closure->size1;
+          pos->end = ((__const__ unsigned char *)
+                      MIN(closure->string1 + closure->size1,
+                          closure->string1 + stop));
+          pos->offset = 0;
+          return rx_get_burst_ok;
+        }
       else
-	{
-	  pos->pos = ((__const__ unsigned char *)
-		      closure->string2 + inset - closure->size1);
-	  pos->string = (__const__ unsigned char *) closure->string2;
-	  pos->size = closure->size2;
-	  pos->end = ((__const__ unsigned char *)
-		      MIN(closure->string2 + closure->size2,
-			  closure->string2 + stop - closure->size1));
-	  pos->offset = closure->size1;
-	  return ((pos->pos < pos->end)
-		  ? rx_get_burst_ok
-		  :  rx_get_burst_no_more);
-	}
+        {
+          pos->pos = ((__const__ unsigned char *)
+                      closure->string2 + inset - closure->size1);
+          pos->string = (__const__ unsigned char *) closure->string2;
+          pos->size = closure->size2;
+          pos->end = ((__const__ unsigned char *)
+                      MIN(closure->string2 + closure->size2,
+                          closure->string2 + stop - closure->size1));
+          pos->offset = closure->size1;
+          return ((pos->pos < pos->end)
+                  ? rx_get_burst_ok
+                  :  rx_get_burst_no_more);
+        }
     }
 }
 
@@ -6681,17 +6681,17 @@ re_search_2_back_check (pos, lparen, rparen, translate, vclosure, stop)
   re_search_2_get_burst (pos, vclosure, stop);
 
   while (   (there.pos != past.pos)
-	 && (pos->pos != pos->end))
+         && (pos->pos != pos->end))
     if (TRANSLATE(*there.pos) != TRANSLATE(*pos->pos))
       return rx_back_check_fail;
     else
       {
-	++there.pos;
-	++pos->pos;
-	if (there.pos == there.end)
-	  re_search_2_get_burst (&there, vclosure, stop);
-	if (pos->pos == pos->end)
-	  re_search_2_get_burst (pos, vclosure, stop);
+        ++there.pos;
+        ++pos->pos;
+        if (there.pos == there.end)
+          re_search_2_get_burst (&there, vclosure, stop);
+        if (pos->pos == pos->end)
+          re_search_2_get_burst (pos, vclosure, stop);
       }
 
   if (there.pos != past.pos)
@@ -6719,16 +6719,16 @@ re_search_2_fetch_char (pos, offset, app_closure, stop)
   if (offset == 0)
     {
       if (pos->pos >= pos->string)
-	return *pos->pos;
+        return *pos->pos;
       else
-	{
-	  if (   (pos->string == (__const__ unsigned char *) closure->string2)
-	      && (closure->string1)
-	      && (closure->size1))
-	    return closure->string1[closure->size1 - 1];
-	  else
-	    return 0;		/* sure, why not. */
-	}
+        {
+          if (   (pos->string == (__const__ unsigned char *) closure->string2)
+              && (closure->string1)
+              && (closure->size1))
+            return closure->string1[closure->size1 - 1];
+          else
+            return 0;           /* sure, why not. */
+        }
     }
   if (pos->pos == pos->end)
     return *closure->string2;
@@ -6736,22 +6736,22 @@ re_search_2_fetch_char (pos, offset, app_closure, stop)
 #if 0
     return pos->pos[1];
 #else
-    return pos->pos[offset];	/* FIXME */
+    return pos->pos[offset];    /* FIXME */
 #endif
 }
 
 #ifdef __STDC__
 RE_S2_QUAL int
 RE_SEARCH_2_FN (struct re_pattern_buffer *rxb,
-		__const__ char * string1, int size1,
-		__const__ char * string2, int size2,
-		int startpos, int range,
-		struct re_registers *regs,
-		int stop)
+                __const__ char * string1, int size1,
+                __const__ char * string2, int size2,
+                int startpos, int range,
+                struct re_registers *regs,
+                int stop)
 #else
 RE_S2_QUAL int
 RE_SEARCH_2_FN (rxb,
-		string1, size1, string2, size2, startpos, range, regs, stop)
+                string1, size1, string2, size2, startpos, range, regs, stop)
      struct re_pattern_buffer *rxb;
      __const__ char * string1;
      int size1;
@@ -6770,13 +6770,13 @@ RE_SEARCH_2_FN (rxb,
   closure.string2 = string2;
   closure.size2 = size2;
   answer = rx_search (rxb, startpos, range, stop, size1 + size2,
-		      re_search_2_get_burst,
-		      re_search_2_back_check,
-		      re_search_2_fetch_char,
-		      (void *)&closure,
-		      regs,
-		      0,
-		      0);
+                      re_search_2_get_burst,
+                      re_search_2_back_check,
+                      re_search_2_fetch_char,
+                      (void *)&closure,
+                      regs,
+                      0,
+                      0);
   switch (answer)
     {
     case rx_search_continuation:
@@ -6804,8 +6804,8 @@ re_rx_search ( struct re_pattern_buffer * rxb, int startpos, int range,
 #else
 int
 re_rx_search (rxb, startpos, range, stop, total_size,
-	      get_burst, back_check, fetch_char,
-	      app_closure, regs, resume_state, save_state)
+              get_burst, back_check, fetch_char,
+              app_closure, regs, resume_state, save_state)
      struct re_pattern_buffer * rxb;
      int startpos;
      int range;
@@ -6821,19 +6821,19 @@ re_rx_search (rxb, startpos, range, stop, total_size,
 #endif
 {
   return rx_search (rxb, startpos, range, stop, total_size,
-		    get_burst, back_check, fetch_char, app_closure,
-		    regs, resume_state, save_state);
+                    get_burst, back_check, fetch_char, app_closure,
+                    regs, resume_state, save_state);
 }
 
 #if !defined(REGEX_MALLOC) && !defined(__GNUC__)
 #ifdef __STDC__
 int
 re_search_2 (struct re_pattern_buffer *rxb,
-	     __const__ char * string1, int size1,
-	     __const__ char * string2, int size2,
-	     int startpos, int range,
-	     struct re_registers *regs,
-	     int stop)
+             __const__ char * string1, int size1,
+             __const__ char * string2, int size2,
+             int startpos, int range,
+             struct re_registers *regs,
+             int stop)
 #else
 int
 re_search_2 (rxb, string1, size1, string2, size2, startpos, range, regs, stop)
@@ -6850,7 +6850,7 @@ re_search_2 (rxb, string1, size1, string2, size2, startpos, range, regs, stop)
 {
   int ret;
   ret = inner_re_search_2 (rxb, string1, size1, string2, size2, startpos,
-			   range, regs, stop);
+                           range, regs, stop);
   alloca (0);
   return ret;
 }
@@ -6864,8 +6864,8 @@ re_search_2 (rxb, string1, size1, string2, size2, startpos, range, regs, stop)
 #ifdef __STDC__
 int
 re_search (struct re_pattern_buffer * rxb, __const__ char *string,
-	   int size, int startpos, int range,
-	   struct re_registers *regs)
+           int size, int startpos, int range,
+           struct re_registers *regs)
 #else
 int
 re_search (rxb, string, size, startpos, range, regs)
@@ -6883,9 +6883,9 @@ re_search (rxb, string, size, startpos, range, regs)
 #ifdef __STDC__
 int
 re_match_2 (struct re_pattern_buffer * rxb,
-	    __const__ char * string1, int size1,
-	    __const__ char * string2, int size2,
-	    int pos, struct re_registers *regs, int stop)
+            __const__ char * string1, int size1,
+            __const__ char * string2, int size2,
+            int pos, struct re_registers *regs, int stop)
 #else
 int
 re_match_2 (rxb, string1, size1, string2, size2, pos, regs, stop)
@@ -6918,7 +6918,7 @@ re_match_2 (rxb, string1, size1, string2, size2, pos, regs, stop)
 
   rxb->fastmap = NULL;
   srch = re_search_2 (rxb, string1, size1, string2, size2,
-		      pos, 1, regs_to_pass, stop);
+                      pos, 1, regs_to_pass, stop);
   rxb->fastmap = old_fastmap;
   if (regs_to_pass != regs)
     rxb->regs_allocated = save;
@@ -6932,9 +6932,9 @@ re_match_2 (rxb, string1, size1, string2, size2, pos, regs, stop)
 #ifdef __STDC__
 int
 re_match (struct re_pattern_buffer * rxb,
-	  __const__ char * string,
-	  int size, int pos,
-	  struct re_registers *regs)
+          __const__ char * string,
+          int size, int pos,
+          struct re_registers *regs)
 #else
 int
 re_match (rxb, string, size, pos, regs)
@@ -6995,9 +6995,9 @@ re_set_syntax (syntax)
 #ifdef __STDC__
 void
 re_set_registers (struct re_pattern_buffer *bufp,
-		  struct re_registers *regs,
-		  unsigned num_regs,
-		  regoff_t * starts, regoff_t * ends)
+                  struct re_registers *regs,
+                  unsigned num_regs,
+                  regoff_t * starts, regoff_t * ends)
 #else
 void
 re_set_registers (bufp, regs, num_regs, starts, ends)
@@ -7039,7 +7039,7 @@ cplx_se_sublist_len (list)
   while (list)
     {
       if ((long)list->car >= 0)
-	++x;
+        ++x;
       list = list->cdr;
     }
   return x;
@@ -7051,7 +7051,7 @@ cplx_se_sublist_len (list)
 #ifdef __STDC__
 static int 
 posix_se_list_order (struct rx * rx,
-		     struct rx_se_list * a, struct rx_se_list * b)
+                     struct rx_se_list * a, struct rx_se_list * b)
 #else
 static int 
 posix_se_list_order (rx, a, b)
@@ -7065,8 +7065,8 @@ posix_se_list_order (rx, a, b)
 
   if (!al && !bl)
     return ((a == b)
-	    ? 0
-	    : ((a < b) ? -1 : 1));
+            ? 0
+            : ((a < b) ? -1 : 1));
   
   else if (!al)
     return -1;
@@ -7077,37 +7077,37 @@ posix_se_list_order (rx, a, b)
   else
     {
       rx_side_effect * av = ((rx_side_effect *)
-			     alloca (sizeof (rx_side_effect) * (al + 1)));
+                             alloca (sizeof (rx_side_effect) * (al + 1)));
       rx_side_effect * bv = ((rx_side_effect *)
-			     alloca (sizeof (rx_side_effect) * (bl + 1)));
+                             alloca (sizeof (rx_side_effect) * (bl + 1)));
       struct rx_se_list * ap = a;
       struct rx_se_list * bp = b;
       int ai, bi;
       
       for (ai = al - 1; ai >= 0; --ai)
-	{
-	  while ((long)ap->car < 0)
-	    ap = ap->cdr;
-	  av[ai] = ap->car;
-	  ap = ap->cdr;
-	}
+        {
+          while ((long)ap->car < 0)
+            ap = ap->cdr;
+          av[ai] = ap->car;
+          ap = ap->cdr;
+        }
       av[al] = (rx_side_effect)-2;
       for (bi = bl - 1; bi >= 0; --bi)
-	{
-	  while ((long)bp->car < 0)
-	    bp = bp->cdr;
-	  bv[bi] = bp->car;
-	  bp = bp->cdr;
-	}
+        {
+          while ((long)bp->car < 0)
+            bp = bp->cdr;
+          bv[bi] = bp->car;
+          bp = bp->cdr;
+        }
       bv[bl] = (rx_side_effect)-1;
 
       {
-	int ret;
-	int x = 0;
-	while (av[x] == bv[x])
-	  ++x;
- 	ret = (((unsigned *)(av[x]) < (unsigned *)(bv[x])) ? -1 : 1);
-	return ret;
+        int ret;
+        int x = 0;
+        while (av[x] == bv[x])
+          ++x;
+        ret = (((unsigned *)(av[x]) < (unsigned *)(bv[x])) ? -1 : 1);
+        return ret;
       }
     }
 }
@@ -7127,8 +7127,8 @@ posix_se_list_order (rx, a, b)
 #ifdef __STDC__
 __const__ char *
 re_compile_pattern (__const__ char *pattern,
-		    int length,
-		    struct re_pattern_buffer * rxb)
+                    int length,
+                    struct re_pattern_buffer * rxb)
 #else
 __const__ char *
 re_compile_pattern (pattern, length, rxb)
@@ -7207,7 +7207,7 @@ re_comp (s)
   if (!s || (*s == '\0'))
     {
       if (!rx_comp_buf.buffer)
-	return "No previous regular expression";
+        return "No previous regular expression";
       return 0;
     }
 
@@ -7215,7 +7215,7 @@ re_comp (s)
     {
       rx_comp_buf.fastmap = (char *) malloc (1 << CHARBITS);
       if (!rx_comp_buf.fastmap)
-	return "Memory exhausted";
+        return "Memory exhausted";
     }
 
   /* Since `rx_exec' always passes NULL for the `regs' argument, we
@@ -7393,8 +7393,8 @@ regcomp (preg, pattern, cflags)
 #ifdef __STDC__
 int
 regexec (__const__ regex_t *preg, __const__ char *string,
-	 size_t nmatch, regmatch_t pmatch[],
-	 int eflags)
+         size_t nmatch, regmatch_t pmatch[],
+         int eflags)
 #else
 int
 regexec (preg, string, nmatch, pmatch, eflags)
@@ -7433,9 +7433,9 @@ regexec (preg, string, nmatch, pmatch, eflags)
 
   /* Perform the searching operation.  */
   ret = re_search (&private_preg,
-		   string, len,
+                   string, len,
                    /* start: */ 0,
-		   /* range: */ len,
+                   /* range: */ len,
                    want_reg_info ? &regs : (struct re_registers *) 0);
 
   /* Copy the register information to the POSIX structure.  */
@@ -7468,7 +7468,7 @@ regexec (preg, string, nmatch, pmatch, eflags)
 #ifdef __STDC__
 size_t
 regerror (int errcode, __const__ regex_t *preg,
-	  char *errbuf, size_t errbuf_size)
+          char *errbuf, size_t errbuf_size)
 #else
 size_t
 regerror (errcode, preg, errbuf, errbuf_size)

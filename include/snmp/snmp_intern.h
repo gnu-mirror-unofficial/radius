@@ -19,12 +19,12 @@
    Boston, MA 02111-1307, USA.  */
 
 struct snmp_def {
-	int req_id;
-	struct snmp_session *session_list;
-	int retries;
-	int timeout;
-	snmp_alloc_t alloc;
-	snmp_free_t free;
+        int req_id;
+        struct snmp_session *session_list;
+        int retries;
+        int timeout;
+        snmp_alloc_t alloc;
+        snmp_free_t free;
 } ;
 
 extern struct snmp_def snmp_def;

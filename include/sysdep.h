@@ -19,9 +19,9 @@
 #define SYSDEP_H_INCLUDED
 
 #if defined(__alpha) && (defined(__osf__) || defined(__linux__))
-typedef unsigned int	UINT4;
+typedef unsigned int    UINT4;
 #else
-typedef unsigned long	UINT4;
+typedef unsigned long   UINT4;
 #endif
 
 #ifdef HAVE_SYS_TYPES_H
@@ -61,26 +61,26 @@ extern struct tm *localtime_r(const time_t *timep, struct tm *res);
 #if defined(bsdi)
 # include <machine/inline.h>
 # include <machine/endian.h>
-#else	/* bsdi */
+#else   /* bsdi */
 # if defined(__FreeBSD__) || defined(__OpenBSD__)
 #  include <stdlib.h>
 # else
 #  include <malloc.h>
 # endif  /* FreeBSD and OpenBSD */
-#endif	/* bsdi */
+#endif  /* bsdi */
 
 #if defined(HAVE_SYS_SELECT_H)  
 # include <sys/select.h>
-#endif	/* needed for AIX */
+#endif  /* needed for AIX */
 
 /* UTMP stuff. Uses utmpx on svr4 */
 #if defined(__svr4__) || defined(__sgi)  
 #  include <utmpx.h>
 #  include <sys/fcntl.h>
 #  define utmp utmpx
-#  define UT_NAMESIZE	32
-#  define UT_LINESIZE	32
-#  define UT_HOSTSIZE	257
+#  define UT_NAMESIZE   32
+#  define UT_LINESIZE   32
+#  define UT_HOSTSIZE   257
 #  undef UTMP_FILE
 #  define UTMP_FILE UTMPX_FILE
 #  undef WTMP_FILE
@@ -89,9 +89,9 @@ extern struct tm *localtime_r(const time_t *timep, struct tm *res);
 #  include <utmp.h>
 #endif
 #ifdef __osf__
-#  define UT_NAMESIZE	32
-#  define UT_LINESIZE	32
-#  define UT_HOSTSIZE	64
+#  define UT_NAMESIZE   32
+#  define UT_LINESIZE   32
+#  define UT_HOSTSIZE   64
 #endif
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(bsdi)
 #  ifndef UTMP_FILE

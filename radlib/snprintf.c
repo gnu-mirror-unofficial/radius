@@ -219,7 +219,7 @@ char ** fract;
     SWAP_INT(integral_part[i], integral_part[j]);
 
 /* the fractionnal part */
-  for (i=0, fp=fraction; precision > 0 && i < MAX_FRACT ; i++, precision--	) {
+  for (i=0, fp=fraction; precision > 0 && i < MAX_FRACT ; i++, precision--      ) {
     fraction_part[i] = (int)((fp + PRECISION)*10. + '0');
     if (! isdigit(fraction_part[i])) /* underflow ? */
       break;
@@ -551,15 +551,15 @@ va_list args;
             exponent(&data, d);
             state = 0;
             break;
-	  case 'u':  /* unsigned decimal */
-	    STAR_ARGS(&data);
-	    if (data.a_long == FOUND)
-		d = va_arg(args, unsigned long);
-	    else
-		d = va_arg(args, unsigned int);
-	    decimal(&data, d);
-	    state = 0;
-	    break;
+          case 'u':  /* unsigned decimal */
+            STAR_ARGS(&data);
+            if (data.a_long == FOUND)
+                d = va_arg(args, unsigned long);
+            else
+                d = va_arg(args, unsigned int);
+            decimal(&data, d);
+            state = 0;
+            break;
           case 'd':  /* decimal */
             STAR_ARGS(&data);
             if (data.a_long == FOUND)

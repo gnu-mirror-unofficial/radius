@@ -39,32 +39,32 @@ DEST-BOOL has the same meaning as in format.
 
 (rad-format-code DEST-BOOL CODE-NUMBER)"
   (format dest "~A\n"
-	  (cond 
-	    ((= code :auth-req)
-	     "Auth-Request")
-	    ((= code :auth-ack)
-	     "Auth-Acknowledge")
-	    ((= code :auth-rej)
-	     "Auth-Reject")
-	    ((= code :acct-req)
-	     "Acct-Request")
-	    ((= code :acct-resp)
-	     "Acct-Response")
-	    ((= code :acct-stat)
-	     "Acct-Stat")
-	    ((= code :access-challenge)
-	     "Access-Challenge")
-	    (else
-	     (number->string code)))))
+          (cond 
+            ((= code :auth-req)
+             "Auth-Request")
+            ((= code :auth-ack)
+             "Auth-Acknowledge")
+            ((= code :auth-rej)
+             "Auth-Reject")
+            ((= code :acct-req)
+             "Acct-Request")
+            ((= code :acct-resp)
+             "Acct-Response")
+            ((= code :acct-stat)
+             "Acct-Stat")
+            ((= code :access-challenge)
+             "Access-Challenge")
+            (else
+             (number->string code)))))
 
 ;; Format an attribute-value pair
 (define (rad-format-pair dest pair)
 "Format a radius attribute/value pair for output.
 DEST-BOOL has the same meaning as in format.
 PAIR is eihter 
-		(cons NAME-STRING VALUE)
-	or
-		(cons ATTR-NUMBER VALUE)
+                (cons NAME-STRING VALUE)
+        or
+                (cons ATTR-NUMBER VALUE)
 Where VALUE may be of any type appropriate for the given attribute.
 (rad-format-pair DEST-BOOL PAIR)"
   (format dest "~A: ~A\n" (car pair) (cdr pair)))
@@ -74,9 +74,9 @@ Where VALUE may be of any type appropriate for the given attribute.
 "Output the radius attribute/value pairs from the PAIR-LIST.
 DEST-BOOL has the same meaning as in format.
 PAIR-LIST is a list of pairs in the form
-		(cons NAME-STRING VALUE)
-	or
-		(cons ATTR-NUMBER VALUE)
+                (cons NAME-STRING VALUE)
+        or
+                (cons ATTR-NUMBER VALUE)
 Where VALUE may be of any type appropriate for the given attribute.
 
 All \"Reply-Message\" pairs from the list are concatenated and displayed
@@ -84,24 +84,24 @@ as one.
 
 (rad-print-pairs DEST-BOOL PAIR-LIST)"
   (let loop ((plist plist)
-	     (mesg '()))
+             (mesg '()))
     (cond
      ((null? plist)
       (cond
        ((not (null? mesg))
-	(format dest "Reply Message:\n")
-	(for-each (lambda (m)
-		    (format dest "~A" m))
-		  mesg)))
+        (format dest "Reply Message:\n")
+        (for-each (lambda (m)
+                    (format dest "~A" m))
+                  mesg)))
       (format dest "\n"))
      (else
       (loop (cdr plist)
-	    (cond
-	     ((string=? (car (car plist)) "Reply-Message")
-	      (append mesg (list (cdr (car plist)))))
-	     (else
-	      (rad-format-pair dest (car plist))
-	      mesg)))))))
+            (cond
+             ((string=? (car (car plist)) "Reply-Message")
+              (append mesg (list (cdr (car plist)))))
+             (else
+              (rad-format-pair dest (car plist))
+              mesg)))))))
 
 (define (rad-format-reply-msg plist . text)
 "Concatenate and print text from all \"Reply-Message\" pairs from the
@@ -110,23 +110,23 @@ text.
 
 (rad-format-reply-msg PAIR-LIST . TEXT)"
   (let loop ((plist plist)
-	     (mesg '()))
+             (mesg '()))
     (cond
      ((null? plist)
       (cond
        ((not (null? mesg))
-	(if (pair? text)
-	    (format #t "~A\n" (car text)))
-	(for-each (lambda (m)
-		    (format #t "~A" m))
-		  mesg))))
+        (if (pair? text)
+            (format #t "~A\n" (car text)))
+        (for-each (lambda (m)
+                    (format #t "~A" m))
+                  mesg))))
      (else
       (loop (cdr plist)
-	    (cond
-	     ((string=? (car (car plist)) "Reply-Message")
-	      (append mesg (list (cdr (car plist)))))
-	     (else
-	      mesg)))))))
+            (cond
+             ((string=? (car (car plist)) "Reply-Message")
+              (append mesg (list (cdr (car plist)))))
+             (else
+              mesg)))))))
 
 ;; Send a radius request.
 ;;  Arguments:
@@ -140,26 +140,26 @@ text.
 ;;   () when if there were no response
 (define (rad-send port code plist . verbose)
 "Sends the request to currently selected server.
-PORT-NUMBER	Port to use.
-			0 - Authentication port
-			1 - Accounting port
-			2 - Control port
-		The actual port numbers are those configured for
-		the given server.
-CODE-NUMBER	Request code.
-PAIR-LIST	List of Attribute-value pairs. Each pair is:
-			(cons ATTR-NAME-STRING . VALUE)
-		or
-			(cons ATTR-NUMBER . VALUE)
+PORT-NUMBER     Port to use.
+                        0 - Authentication port
+                        1 - Accounting port
+                        2 - Control port
+                The actual port numbers are those configured for
+                the given server.
+CODE-NUMBER     Request code.
+PAIR-LIST       List of Attribute-value pairs. Each pair is:
+                        (cons ATTR-NAME-STRING . VALUE)
+                or
+                        (cons ATTR-NUMBER . VALUE)
 VERBOSE         If it is specified, the verbose report about interaction
                 with the radius server is printed.
 
 Return:
 
 On success
-	(list RETURN-CODE-NUMBER PAIR-LIST)
+        (list RETURN-CODE-NUMBER PAIR-LIST)
 On failure:
-	'()
+        '()
 
 (rad-send PORT-NUMBER CODE-NUMBER PAIR-LIST . VERBOSE)" 
   (let ((repl (rad-send-internal port code plist)))
@@ -167,10 +167,10 @@ On failure:
      ((and (pair? verbose) (car verbose))
       (cond
        ((null? repl)
-	(format #t "NO REPLY\n"))
+        (format #t "NO REPLY\n"))
        (else
-	(rad-format-code #t (car repl))
-	(rad-print-pairs #t (cdr repl))))))
+        (rad-format-code #t (car repl))
+        (rad-print-pairs #t (cdr repl))))))
     repl))
 
 (define rad-server-list '())
@@ -181,10 +181,10 @@ data are looked up in rad-server-list variable.
 
 (rad-select-server ID-STRING)"
   (let ((server (do ((tail rad-server-list (cdr tail))
-		     (match #f))
-		    ((or (null? tail) match) match)
-		  (if (string=? (caar tail) id)
-		      (set! match (car tail))))))
+                     (match #f))
+                    ((or (null? tail) match) match)
+                  (if (string=? (caar tail) id)
+                      (set! match (car tail))))))
     (cond
      (server
       (rad-client-set-server server))
@@ -198,24 +198,24 @@ The server data are looked up in rad-server-list variable.
 
 (rad-add-server ID-STRING)"  
   (let ((server (do ((tail rad-server-list (cdr tail))
-		     (match #f))
-		    ((or (null? tail) match) match)
-		  (if (string=? (caar tail) id)
-		      (set! match (car tail))))))
+                     (match #f))
+                    ((or (null? tail) match) match)
+                  (if (string=? (caar tail) id)
+                      (set! match (car tail))))))
     (cond
      (server
       (rad-client-add-server server))
      (else
       (format #t "no such server: ~A\n" id)
       #f))))
-	
+        
 (define (rad-list-servers)
 "For each server from rad-server-list print its ID and hostname
 or IP address.
 
 (rad-list-servers)"
   (for-each (lambda (s)
-	      (format #t "~A ~A\n"
-		      (car s) (cadr s)))
-	    rad-server-list))
+              (format #t "~A ~A\n"
+                      (car s) (cadr s)))
+            rad-server-list))
 

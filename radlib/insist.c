@@ -22,12 +22,12 @@ static char rcsid[] = "@(#) $Id$";
 
 int
 __insist_failure(str, file, line)
-	char *str;
-	char *file;
-	int   line;
+        char *str;
+        char *file;
+        int   line;
 {
-	radlog(L_CRIT,
-	       "INSIST FAILURE: %s at %s:%d", str, file, line);
-	abort();
-	/*NOTREACHED*/
+        radlog(L_CRIT,
+               "INSIST FAILURE: %s at %s:%d", str, file, line);
+        abort();
+        /*NOTREACHED*/
 }

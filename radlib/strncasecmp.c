@@ -26,22 +26,22 @@ static char rcsid[] =
 
 int
 strncasecmp(a, b, n)
-	char *a;
-	char *b;
-	int   n;
+        char *a;
+        char *b;
+        int   n;
 {
-	register int d;
+        register int d;
 
-	while (n--) {
-		if (!*a)
-			return -1;
-		if (!*b)
-			return 1;
-		if ((d = tolower(a) - tolower(b)) != 0)
-			return d;
-	}
-	return 0;		
+        while (n--) {
+                if (!*a)
+                        return -1;
+                if (!*b)
+                        return 1;
+                if ((d = tolower(a) - tolower(b)) != 0)
+                        return d;
+        }
+        return 0;               
 }
-		
+                
 
 

@@ -28,126 +28,126 @@
 
 oid_t
 oid_dup(oid)
-	oid_t oid;
+        oid_t oid;
 {
-	oid_t new_oid;
+        oid_t new_oid;
 
-	new_oid = snmp_alloc(OIDSIZE(oid)+sizeof(oid[0]));
-	if (!new_oid)
-		return NULL;
-	memcpy(new_oid, oid, OIDSIZE(oid)+sizeof(oid[0]));
-	return new_oid;
+        new_oid = snmp_alloc(OIDSIZE(oid)+sizeof(oid[0]));
+        if (!new_oid)
+                return NULL;
+        memcpy(new_oid, oid, OIDSIZE(oid)+sizeof(oid[0]));
+        return new_oid;
 }
 
 oid_t
 oid_create(len)
-	int len;
+        int len;
 {
-	oid_t oid;
+        oid_t oid;
 
-	if ((oid = snmp_alloc((len+1)*sizeof(oid[0])))) 
-		OIDLEN(oid) = len;
-	return oid;
+        if ((oid = snmp_alloc((len+1)*sizeof(oid[0])))) 
+                OIDLEN(oid) = len;
+        return oid;
 }
 
 oid_t 
 oid_create_from_string(str)
-	char *str;
+        char *str;
 {
-	char *tok;
-	int len;
-	oid_t name, p;
+        char *tok;
+        int len;
+        oid_t name, p;
 
-	if (*str == '.')
-		str++;
-	
-	for (tok = str, len = 0; *tok; tok++)
-		if (*tok == '.')
-			len++;
-	len++;
-	name = snmp_alloc(sizeof(*name) * (len+1));
-	if (!name) {
-		SNMP_SET_ERRNO(E_SNMP_NOMEM);
-		return NULL;
-	}
-	OIDLEN(name) = len;
-	p = OIDPTR(name);
-	tok = str;
-	for (;;) {
-		*p++ = strtol(tok, &tok, 10);
-		if (*tok == 0)
-			break;
-		if (*tok++ != '.') {
-			SNMP_SET_ERRNO(E_SNMP_BAD_OID);
-			snmp_free(name);
-			name = NULL;
-			break;
-		}
-	} 
-	return name;
+        if (*str == '.')
+                str++;
+        
+        for (tok = str, len = 0; *tok; tok++)
+                if (*tok == '.')
+                        len++;
+        len++;
+        name = snmp_alloc(sizeof(*name) * (len+1));
+        if (!name) {
+                SNMP_SET_ERRNO(E_SNMP_NOMEM);
+                return NULL;
+        }
+        OIDLEN(name) = len;
+        p = OIDPTR(name);
+        tok = str;
+        for (;;) {
+                *p++ = strtol(tok, &tok, 10);
+                if (*tok == 0)
+                        break;
+                if (*tok++ != '.') {
+                        SNMP_SET_ERRNO(E_SNMP_BAD_OID);
+                        snmp_free(name);
+                        name = NULL;
+                        break;
+                }
+        } 
+        return name;
 }
 
 oid_t
 oid_create_from_subid(len, subid)
-	int len;
-	subid_t *subid;
+        int len;
+        subid_t *subid;
 {
-	oid_t oid;
+        oid_t oid;
 
-	oid = snmp_alloc((len+1)*sizeof(oid[0]));
-	if (!oid) {
-		SNMP_SET_ERRNO(E_SNMP_NOMEM);
-		return NULL;
-	}
-	OIDLEN(oid) = len;
-	memcpy(OIDPTR(oid), subid, len*sizeof(oid[0]));
-	return oid;
+        oid = snmp_alloc((len+1)*sizeof(oid[0]));
+        if (!oid) {
+                SNMP_SET_ERRNO(E_SNMP_NOMEM);
+                return NULL;
+        }
+        OIDLEN(oid) = len;
+        memcpy(OIDPTR(oid), subid, len*sizeof(oid[0]));
+        return oid;
 }
 
 int
 oid_cmp(a, b)
-	oid_t a, b;
+        oid_t a, b;
 {
-	int i;
-	
-	if (OIDLEN(a) != OIDLEN(b))
-		return 1;
-	for (i = 0; i < OIDLEN(a); i++)
-		if (SUBID(a,i) != SUBID(b,i))
-			return 1;
-	return 0;
+        int i;
+        
+        if (OIDLEN(a) != OIDLEN(b))
+                return 1;
+        for (i = 0; i < OIDLEN(a); i++)
+                if (SUBID(a,i) != SUBID(b,i))
+                        return 1;
+        return 0;
 }
 
 char *
 sprint_oid(buf, buflen, oid)
-	char *buf;
-	oid_t oid;
+        char *buf;
+        oid_t oid;
 {
-	int i, d;
-	char *p, *start;
-	char temp[64];
-	int len = OIDLEN(oid);
-	oid_t name = OIDPTR(oid);
+        int i, d;
+        char *p, *start;
+        char temp[64];
+        int len = OIDLEN(oid);
+        oid_t name = OIDPTR(oid);
 
-	start = buf;
-	for (i = 0; i < len; i++) {
-		if (buflen < 3) {
-			*buf++ = '>';
-			break;
-		}
+        start = buf;
+        for (i = 0; i < len; i++) {
+                if (buflen < 3) {
+                        *buf++ = '>';
+                        break;
+                }
 
-		sprintf(temp, "%d", *name);
-		d = strlen(temp) + 1;
-		if (buflen - d < 3) {
-			*buf++ = '>';
-			break;
-		}
-		buflen -= d;
-		*buf++ = '.';
-		for (p = temp; *p; )
-		     *buf++ = *p++;
-		name++;
-	}
-	*buf = 0;
-	return start;
+                sprintf(temp, "%d", *name);
+                d = strlen(temp) + 1;
+                if (buflen - d < 3) {
+                        *buf++ = '>';
+                        break;
+                }
+                buflen -= d;
+                *buf++ = '.';
+                for (p = temp; *p; )
+                     *buf++ = *p++;
+                name++;
+        }
+        *buf = 0;
+        return start;
 }

@@ -51,80 +51,80 @@ int nfields(int  fc, int  minf, int  maxfm, char *file, int  lineno);
 
 static void
 free_vendor(vp)
-	DICT_VENDOR *vp;
+        DICT_VENDOR *vp;
 {
-	if (vp->vendorname)
-		efree(vp->vendorname);
+        if (vp->vendorname)
+                efree(vp->vendorname);
 }
 
 static void
 free_value(vp)
-	DICT_VALUE *vp;
+        DICT_VALUE *vp;
 {
-	efree(vp->name);
+        efree(vp->name);
 }
 
 void
 dict_free()
 {
-	if (dict_attr_tab)
-		symtab_clear(dict_attr_tab);
-	else
-		dict_attr_tab = symtab_create(sizeof(DICT_ATTR), NULL);
-	memset(dict_attr_index, 0, sizeof dict_attr_index);
+        if (dict_attr_tab)
+                symtab_clear(dict_attr_tab);
+        else
+                dict_attr_tab = symtab_create(sizeof(DICT_ATTR), NULL);
+        memset(dict_attr_index, 0, sizeof dict_attr_index);
 
-	free_slist((struct slist*)dictionary_values, free_value);
-	dictionary_values = NULL;
-	
-	free_slist((struct slist*)dictionary_vendors, free_vendor);
+        free_slist((struct slist*)dictionary_values, free_value);
+        dictionary_values = NULL;
+        
+        free_slist((struct slist*)dictionary_vendors, free_vendor);
 
-	dictionary_vendors = NULL;
-	vendorno = 1;
+        dictionary_vendors = NULL;
+        vendorno = 1;
 }
 
 int
 nfields(fc, minf, maxf, file, lineno)
-	int  fc;
-	int  minf;
-	int  maxf;
-	char *file;
-	int  lineno;
+        int  fc;
+        int  minf;
+        int  maxf;
+        char *file;
+        int  lineno;
 {
-	if (fc < minf) {
-		radlog(L_ERR,
-		       _("%s:%d: too few fields"),
-		       file, lineno);
-		return -1;
-	} else if (fc > maxf) {
-		radlog(L_ERR,
-		       _("%s:%d: too many fields"),
-		       file, lineno);
-		return -1;
-	}
-	return 0;
+        if (fc < minf) {
+                radlog(L_ERR,
+                       _("%s:%d: too few fields"),
+                       file, lineno);
+                return -1;
+        } else if (fc > maxf) {
+                radlog(L_ERR,
+                       _("%s:%d: too many fields"),
+                       file, lineno);
+                return -1;
+        }
+        return 0;
 }
 
 /*
- *	Add vendor to the list.
+ *      Add vendor to the list.
  */
 int
 addvendor(name, value)
-	char *name;
-	int value;
+        char *name;
+        int value;
 {
-	DICT_VENDOR *vval;
+        DICT_VENDOR *vval;
 
-	vval = Alloc_entry(DICT_VENDOR);
-	
-	vval->vendorname = estrdup(name);
-	vval->vendorpec  = value;
-	vval->vendorcode = vendorno++;
+        vval = Alloc_entry(DICT_VENDOR);
+        
+        vval->vendorname = estrdup(name);
+        vval->vendorpec  = value;
+        vval->vendorcode = vendorno++;
 
-	/* Insert at front. */
-	vval->next = dictionary_vendors;
-	dictionary_vendors = vval;
+        /* Insert at front. */
+        vval->next = dictionary_vendors;
+        dictionary_vendors = vval;
 
-	return 0;
+        return 0;
 }
 
 /* **************************************************************************
@@ -153,331 +153,331 @@ static int parse_dict_entry(int *, int, char **, char *, int);
 static int parse_dict(char *name);
 
 static struct keyword type_kw[] = {
-	"string", TYPE_STRING,
-	"integer", TYPE_INTEGER,
-	"ipaddr", TYPE_IPADDR,
-	"date", TYPE_DATE
+        "string", TYPE_STRING,
+        "integer", TYPE_INTEGER,
+        "ipaddr", TYPE_IPADDR,
+        "date", TYPE_DATE
 };
 
 /*ARGSUSED*/
 int
 _dict_include(errcnt, fc, fv, file, lineno)
-	int    *errcnt;
-	int     fc;
-	char    **fv;
-	char    *file;
-	int     lineno;
+        int    *errcnt;
+        int     fc;
+        char    **fv;
+        char    *file;
+        int     lineno;
 {
-	if (nfields(fc, 2, 2, file, lineno)) 
-		return 0;
-	parse_dict(fv[1]);
-	return 0;
+        if (nfields(fc, 2, 2, file, lineno)) 
+                return 0;
+        parse_dict(fv[1]);
+        return 0;
 }
 
 int
 parse_flags(ptr, flags, filename, line)
-	char **ptr;
-	int *flags;
-	char *filename;
-	int line;
+        char **ptr;
+        int *flags;
+        char *filename;
+        int line;
 {
-	int i;
-	char *p;
-	
-	for (p = *ptr+1, i = 0; i < CF_MAX; i++) {
-		if (*p == 0) {
-			radlog(L_ERR,
-			       _("%s:%d: missing ]"),
-			       filename, line, *p);
-			return 1;
-		}
-		switch (*p++) {
-		case 'C':
-		case 'L':
-			*flags |= AF_LHS(i);
-			break;
-		case '-':
-			*flags &= ~AF_LHS(i);
-			break;
-		case ']':
-			p--;
-			goto stop;
-		default:
-			radlog(L_ERR,
-			       _("%s:%d: invalid syntax flag %c"),
-			       filename, line, p[-1]);
-			return 1;
-		}
-		switch (*p++) {
- 		case 'R':
-			*flags |= AF_RHS(i);
-			break;
-		case '-':
-			*flags &= ~AF_RHS(i);
-			break;
-		default:
-			radlog(L_ERR,
-			       _("%s:%d: invalid syntax flag %c"),
-			       filename, line, p[-1]);
-			return 1;
-		}
-	}
+        int i;
+        char *p;
+        
+        for (p = *ptr+1, i = 0; i < CF_MAX; i++) {
+                if (*p == 0) {
+                        radlog(L_ERR,
+                               _("%s:%d: missing ]"),
+                               filename, line, *p);
+                        return 1;
+                }
+                switch (*p++) {
+                case 'C':
+                case 'L':
+                        *flags |= AF_LHS(i);
+                        break;
+                case '-':
+                        *flags &= ~AF_LHS(i);
+                        break;
+                case ']':
+                        p--;
+                        goto stop;
+                default:
+                        radlog(L_ERR,
+                               _("%s:%d: invalid syntax flag %c"),
+                               filename, line, p[-1]);
+                        return 1;
+                }
+                switch (*p++) {
+                case 'R':
+                        *flags |= AF_RHS(i);
+                        break;
+                case '-':
+                        *flags &= ~AF_RHS(i);
+                        break;
+                default:
+                        radlog(L_ERR,
+                               _("%s:%d: invalid syntax flag %c"),
+                               filename, line, p[-1]);
+                        return 1;
+                }
+        }
   stop:
-	for (; i < CF_MAX; i++) 
-		*flags |= AF_LHS(i)|AF_RHS(i);
-	*ptr = p;
-	return 0;
+        for (; i < CF_MAX; i++) 
+                *flags |= AF_LHS(i)|AF_RHS(i);
+        *ptr = p;
+        return 0;
 }
 
 int
 _dict_attribute(errcnt, fc, fv, file, lineno)
-	int    *errcnt;
-	int     fc;
-	char    **fv;
-	char    *file;
-	int     lineno;
+        int    *errcnt;
+        int     fc;
+        char    **fv;
+        char    *file;
+        int     lineno;
 {
-	DICT_ATTR *attr;
-	int type;
-	int vendor = 0;
-	unsigned value;
-	char *p;
-	int flags = AF_DEFAULT_FLAGS;
-	int prop  = AP_DEFAULT_ADD;
-	
-	if (nfields(fc, 4, 6, file, lineno))
-		return 0;
-	/*
-	 * Validate all entries
-	 */
-	
-	value = strtol(ATTR_VALUE, &p, 0);
-	if (*p) {
-		radlog(L_ERR,
-		       _("%s:%d: value not a number (near %s)"),
-		       file, lineno, p);
-		(*errcnt)++;
-		return 0;
-	}
+        DICT_ATTR *attr;
+        int type;
+        int vendor = 0;
+        unsigned value;
+        char *p;
+        int flags = AF_DEFAULT_FLAGS;
+        int prop  = AP_DEFAULT_ADD;
+        
+        if (nfields(fc, 4, 6, file, lineno))
+                return 0;
+        /*
+         * Validate all entries
+         */
+        
+        value = strtol(ATTR_VALUE, &p, 0);
+        if (*p) {
+                radlog(L_ERR,
+                       _("%s:%d: value not a number (near %s)"),
+                       file, lineno, p);
+                (*errcnt)++;
+                return 0;
+        }
 
-	if ((type = xlat_keyword(type_kw, ATTR_TYPE, TYPE_INVALID)) ==
-	    TYPE_INVALID) {
-		radlog(L_ERR,
-		       _("%s:%d: invalid type"),
-		       file, lineno);
-		(*errcnt)++;
-		return 0;
-	}
+        if ((type = xlat_keyword(type_kw, ATTR_TYPE, TYPE_INVALID)) ==
+            TYPE_INVALID) {
+                radlog(L_ERR,
+                       _("%s:%d: invalid type"),
+                       file, lineno);
+                (*errcnt)++;
+                return 0;
+        }
 
-	if (HAS_VENDOR(fc, fv)) {
-		if ((vendor = vendor_name_to_id(ATTR_VENDOR)) == 0) {
-			radlog(L_ERR,
-			       _("%s:%d: unknown vendor"),
-			       file, lineno);
-			(*errcnt)++;
-			return 0;
-		}
-	}
+        if (HAS_VENDOR(fc, fv)) {
+                if ((vendor = vendor_name_to_id(ATTR_VENDOR)) == 0) {
+                        radlog(L_ERR,
+                               _("%s:%d: unknown vendor"),
+                               file, lineno);
+                        (*errcnt)++;
+                        return 0;
+                }
+        }
 
-	if (HAS_FLAGS(fc,fv)) {
-		char *p;
+        if (HAS_FLAGS(fc,fv)) {
+                char *p;
 
-		for (p = ATTR_FLAGS; *p; p++) {
-			switch (*p) {
-			case 'C':
-			case 'L':
-				flags |= AF_LHS(CF_USERS)
-					|AF_LHS(CF_HINTS)
-					|AF_LHS(CF_HUNTGROUPS);
-				break;
-			case 'R':
-				flags |= AF_RHS(CF_USERS)
-					|AF_RHS(CF_HINTS)
-					|AF_RHS(CF_HUNTGROUPS);
-				break;
-			case '[':
-				if (parse_flags(&p, &flags, file, lineno)) {
-					while (*++p);
-					--p;
-					++(*errcnt);
-				}
-				break;
-			case '=':
-				SET_ADDITIVITY(prop, AP_ADD_REPLACE);
-				break;
-			case '+':
-			        SET_ADDITIVITY(prop, AP_ADD_APPEND);
-				break;
-			case 'N':
-				SET_ADDITIVITY(prop, AP_ADD_NONE);
-				break;
-			case 'P':
-				prop |= AP_PROPAGATE;
-				break;
-			case 'Z':
-			case 'I':
-				break;
-			default:
-				radlog(L_ERR,
-				       _("%s:%d: invalid flag %c"),
-				       file, lineno, *p);
-				(*errcnt)++;
-				return 0;
-			}
-		}
-	}
+                for (p = ATTR_FLAGS; *p; p++) {
+                        switch (*p) {
+                        case 'C':
+                        case 'L':
+                                flags |= AF_LHS(CF_USERS)
+                                        |AF_LHS(CF_HINTS)
+                                        |AF_LHS(CF_HUNTGROUPS);
+                                break;
+                        case 'R':
+                                flags |= AF_RHS(CF_USERS)
+                                        |AF_RHS(CF_HINTS)
+                                        |AF_RHS(CF_HUNTGROUPS);
+                                break;
+                        case '[':
+                                if (parse_flags(&p, &flags, file, lineno)) {
+                                        while (*++p);
+                                        --p;
+                                        ++(*errcnt);
+                                }
+                                break;
+                        case '=':
+                                SET_ADDITIVITY(prop, AP_ADD_REPLACE);
+                                break;
+                        case '+':
+                                SET_ADDITIVITY(prop, AP_ADD_APPEND);
+                                break;
+                        case 'N':
+                                SET_ADDITIVITY(prop, AP_ADD_NONE);
+                                break;
+                        case 'P':
+                                prop |= AP_PROPAGATE;
+                                break;
+                        case 'Z':
+                        case 'I':
+                                break;
+                        default:
+                                radlog(L_ERR,
+                                       _("%s:%d: invalid flag %c"),
+                                       file, lineno, *p);
+                                (*errcnt)++;
+                                return 0;
+                        }
+                }
+        }
 
-	attr = sym_lookup_or_install(dict_attr_tab, ATTR_NAME, 1);
-	if (value < DICT_INDEX_SIZE) 
-		dict_attr_index[value] = attr;
-			
-	attr->value = value;
-	attr->type = type;
-	attr->prop = flags|prop;
-	if (vendor)
-		attr->value |= (vendor << 16);
-	
-	return 0;
+        attr = sym_lookup_or_install(dict_attr_tab, ATTR_NAME, 1);
+        if (value < DICT_INDEX_SIZE) 
+                dict_attr_index[value] = attr;
+                        
+        attr->value = value;
+        attr->type = type;
+        attr->prop = flags|prop;
+        if (vendor)
+                attr->value |= (vendor << 16);
+        
+        return 0;
 }
 
 int
 _dict_value(errcnt, fc, fv, file, lineno)
-	int    *errcnt;
-	int     fc;
-	char    **fv;
-	char    *file;
-	int     lineno;
+        int    *errcnt;
+        int     fc;
+        char    **fv;
+        char    *file;
+        int     lineno;
 {
-	DICT_VALUE *dval;
-	DICT_ATTR *attr;
-	char *p;
-	int value;
-	
-	if (nfields(fc, 4, 4, file, lineno))
-		return 0;
+        DICT_VALUE *dval;
+        DICT_ATTR *attr;
+        char *p;
+        int value;
+        
+        if (nfields(fc, 4, 4, file, lineno))
+                return 0;
 
-	value = strtol(VALUE_NUM, &p, 0);
-	if (*p) {
-		radlog(L_ERR,
-		       _("%s:%d: value not a number (near %s)"),
-		       file, lineno, p);
-		(*errcnt)++;
-		return 0;
-	}
+        value = strtol(VALUE_NUM, &p, 0);
+        if (*p) {
+                radlog(L_ERR,
+                       _("%s:%d: value not a number (near %s)"),
+                       file, lineno, p);
+                (*errcnt)++;
+                return 0;
+        }
 
-	attr = sym_lookup_or_install(dict_attr_tab, VALUE_ATTR, 1);
-	
-	/* Create a new VALUE entry for the list */
-	dval = Alloc_entry(DICT_VALUE);
-			
-	dval->name = estrdup(VALUE_NAME);
-	dval->attr = attr;
-	dval->value = value;
+        attr = sym_lookup_or_install(dict_attr_tab, VALUE_ATTR, 1);
+        
+        /* Create a new VALUE entry for the list */
+        dval = Alloc_entry(DICT_VALUE);
+                        
+        dval->name = estrdup(VALUE_NAME);
+        dval->attr = attr;
+        dval->value = value;
 
-	/* Insert at front. */
-	dval->next = dictionary_values;
-	dictionary_values = dval;
-	
-	return 0;
+        /* Insert at front. */
+        dval->next = dictionary_values;
+        dictionary_values = dval;
+        
+        return 0;
 }
 
 int
 _dict_vendor(errcnt, fc, fv, file, lineno)
-	int    *errcnt;
-	int     fc;
-	char    **fv;
-	char    *file;
-	int     lineno;
+        int    *errcnt;
+        int     fc;
+        char    **fv;
+        char    *file;
+        int     lineno;
 {
-	int             value;
-	char            *p;
+        int             value;
+        char            *p;
 
-	if (nfields(fc, 3, 3, file, lineno))
-		return 0;
+        if (nfields(fc, 3, 3, file, lineno))
+                return 0;
 
-	value = strtol(VENDOR_VALUE, &p, 0);
-	if (*p) {
-		radlog(L_ERR,
-		       _("%s:%d: value not a number (near %s)"),
-		       file, lineno, p);
-		(*errcnt)++;
-		return 0;
-	}
+        value = strtol(VENDOR_VALUE, &p, 0);
+        if (*p) {
+                radlog(L_ERR,
+                       _("%s:%d: value not a number (near %s)"),
+                       file, lineno, p);
+                (*errcnt)++;
+                return 0;
+        }
 
-	if (addvendor(VENDOR_NAME, value) < 0) {
-		(*errcnt)++;
-	}
+        if (addvendor(VENDOR_NAME, value) < 0) {
+                (*errcnt)++;
+        }
 
-	return 0;
+        return 0;
 
 }
 
 enum {
-	KW_INCLUDE,
-	KW_ATTRIBUTE,
-	KW_VALUE,
-	KW_VENDOR
+        KW_INCLUDE,
+        KW_ATTRIBUTE,
+        KW_VALUE,
+        KW_VENDOR
 };
 
 static struct keyword dict_kw[] = {
-	"$INCLUDE", KW_INCLUDE,
-	"ATTRIBUTE", KW_ATTRIBUTE,
-	"VALUE", KW_VALUE,
-	"VENDOR", KW_VENDOR,
-	NULL, 0
+        "$INCLUDE", KW_INCLUDE,
+        "ATTRIBUTE", KW_ATTRIBUTE,
+        "VALUE", KW_VALUE,
+        "VENDOR", KW_VENDOR,
+        NULL, 0
 };
 
 int
 parse_dict_entry(errcnt, fc, fv, file, lineno)
-	int    *errcnt;
-	int     fc;
-	char    **fv;
-	char    *file;
-	int     lineno;
+        int    *errcnt;
+        int     fc;
+        char    **fv;
+        char    *file;
+        int     lineno;
 {
-	switch (xlat_keyword(dict_kw, KEYWORD, -1)) {
-	case KW_INCLUDE:
-		_dict_include(errcnt, fc, fv, file, lineno);
-		break;
-	case KW_ATTRIBUTE:
-		_dict_attribute(errcnt, fc, fv, file, lineno);
-		break;
-	case KW_VALUE:
-		_dict_value(errcnt, fc, fv, file, lineno);
-		break;
-	case KW_VENDOR:
-		_dict_vendor(errcnt, fc, fv, file, lineno);
-		break;
-	default:
-		radlog(L_ERR,
-		       _("%s:%d: name too long"),
-		       file, lineno);
-		break;
-	}
-	return 0;
+        switch (xlat_keyword(dict_kw, KEYWORD, -1)) {
+        case KW_INCLUDE:
+                _dict_include(errcnt, fc, fv, file, lineno);
+                break;
+        case KW_ATTRIBUTE:
+                _dict_attribute(errcnt, fc, fv, file, lineno);
+                break;
+        case KW_VALUE:
+                _dict_value(errcnt, fc, fv, file, lineno);
+                break;
+        case KW_VENDOR:
+                _dict_vendor(errcnt, fc, fv, file, lineno);
+                break;
+        default:
+                radlog(L_ERR,
+                       _("%s:%d: name too long"),
+                       file, lineno);
+                break;
+        }
+        return 0;
 }
 
 int
 parse_dict(name)
-	char *name;
+        char *name;
 {
-	char *path;
-	int   rc;
-	int   errcnt = 0;
-	
-	path = mkfilename(radius_dir, name);
-	rc = read_raddb_file(path, 1, parse_dict_entry, &errcnt);
-	if (errcnt)
-		radlog(L_NOTICE, _("%s: %d errors"), path, errcnt);
-	efree(path);
-	return rc;
+        char *path;
+        int   rc;
+        int   errcnt = 0;
+        
+        path = mkfilename(radius_dir, name);
+        rc = read_raddb_file(path, 1, parse_dict_entry, &errcnt);
+        if (errcnt)
+                radlog(L_NOTICE, _("%s: %d errors"), path, errcnt);
+        efree(path);
+        return rc;
 }
 
 int
 dict_init()
 {
-	dict_free();
-	return parse_dict(RADIUS_DICTIONARY);
+        dict_free();
+        return parse_dict(RADIUS_DICTIONARY);
 }
 
 /* **************************************************************************
@@ -490,33 +490,33 @@ dict_init()
  */
 
 struct attr_value {
-	unsigned value;
-	DICT_ATTR *da;
+        unsigned value;
+        DICT_ATTR *da;
 };
 
 int
 attrval_cmp(av, attr)
-	struct attr_value *av;
-	DICT_ATTR *attr;
+        struct attr_value *av;
+        DICT_ATTR *attr;
 {
-	if (attr->value == av->value) {
-		av->da = attr;
-		return 1;
-	}
-	return 0;
+        if (attr->value == av->value) {
+                av->da = attr;
+                return 1;
+        }
+        return 0;
 }
 
 DICT_ATTR *
 attr_number_to_dict(attribute)
-	int	attribute;
+        int     attribute;
 {
-	struct attr_value av;
-	if (attribute < DICT_INDEX_SIZE)
-		return dict_attr_index[attribute];
-	av.value = attribute;
-	av.da = NULL;
-	symtab_iterate(dict_attr_tab, attrval_cmp, &av);
-	return av.da;
+        struct attr_value av;
+        if (attribute < DICT_INDEX_SIZE)
+                return dict_attr_index[attribute];
+        av.value = attribute;
+        av.da = NULL;
+        symtab_iterate(dict_attr_tab, attrval_cmp, &av);
+        return av.da;
 }
 
 /*
@@ -525,40 +525,40 @@ attr_number_to_dict(attribute)
 
 DICT_ATTR *
 attr_name_to_dict(attrname)
-	char	*attrname;
+        char    *attrname;
 {
-	return sym_lookup(dict_attr_tab, attrname);
+        return sym_lookup(dict_attr_tab, attrname);
 }
 
 /*
  * Return the full value structure based on the value name.
  */
 struct val_lookup {
-	char *name;
-	char *attrname;
-	int number;
+        char *name;
+        char *attrname;
+        int number;
 };
 
 int
 valname_cmp(v, d)
-	DICT_VALUE *v;
-	struct val_lookup *d;
+        DICT_VALUE *v;
+        struct val_lookup *d;
 {
-	return !(d->number == v->attr->value
-		 && strcmp(v->name, d->name) == 0); 
+        return !(d->number == v->attr->value
+                 && strcmp(v->name, d->name) == 0); 
 }
 
 DICT_VALUE *
 value_name_to_value(valname, attr)
-	char	*valname;
-	int attr;
+        char    *valname;
+        int attr;
 {
-	struct val_lookup data;
-	data.name = valname;
-	data.number = attr;
-	return (DICT_VALUE *)find_slist((struct slist*) dictionary_values,
-					valname_cmp,
-					&data);
+        struct val_lookup data;
+        data.name = valname;
+        data.number = attr;
+        return (DICT_VALUE *)find_slist((struct slist*) dictionary_values,
+                                        valname_cmp,
+                                        &data);
 }
 
 /*
@@ -567,24 +567,24 @@ value_name_to_value(valname, attr)
  */
 int
 valnum_cmp(v, d)
-	DICT_VALUE *v;
-	struct val_lookup *d;
+        DICT_VALUE *v;
+        struct val_lookup *d;
 {
-	return !(strcmp(d->attrname, v->attr->name) == 0
-		 && d->number == v->value); 
+        return !(strcmp(d->attrname, v->attr->name) == 0
+                 && d->number == v->value); 
 }
 
 DICT_VALUE *
 value_lookup(value, attrname)
-	UINT4	value;
-	char	*attrname;
+        UINT4   value;
+        char    *attrname;
 {
-	struct val_lookup data;
-	data.number = value;
-	data.attrname = attrname;
-	return (DICT_VALUE *)find_slist((struct slist*) dictionary_values,
-					valnum_cmp,
-					&data);
+        struct val_lookup data;
+        data.number = value;
+        data.attrname = attrname;
+        return (DICT_VALUE *)find_slist((struct slist*) dictionary_values,
+                                        valnum_cmp,
+                                        &data);
 }
 
 /*
@@ -593,22 +593,22 @@ value_lookup(value, attrname)
  */
 int
 code_cmp(v, code)
-	DICT_VENDOR *v;
-	int *code;
+        DICT_VENDOR *v;
+        int *code;
 {
-	return v->vendorcode - *code;
+        return v->vendorcode - *code;
 }
 
 int 
 vendor_id_to_pec(code)
-	int code;
+        int code;
 {
-	DICT_VENDOR *vp;
+        DICT_VENDOR *vp;
 
-	vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
-				      code_cmp,
-				      &code);
-	return vp ? vp->vendorpec : 0;
+        vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
+                                      code_cmp,
+                                      &code);
+        return vp ? vp->vendorpec : 0;
 }
 
 /*
@@ -616,57 +616,57 @@ vendor_id_to_pec(code)
  */
 int
 pec_cmp(v, pec)
-	DICT_VENDOR *v;
-	int *pec;
+        DICT_VENDOR *v;
+        int *pec;
 {
-	return v->vendorpec - *pec;
+        return v->vendorpec - *pec;
 }
 
 int 
 vendor_pec_to_id(pec)
-	int pec;
+        int pec;
 {
-	DICT_VENDOR *vp;
+        DICT_VENDOR *vp;
 
-	vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
-				      pec_cmp,
-				      &pec);
-	return vp ? vp->vendorcode : 0;
+        vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
+                                      pec_cmp,
+                                      &pec);
+        return vp ? vp->vendorcode : 0;
 }
-	
+        
 char *
 vendor_pec_to_name(pec)
-	int pec;
+        int pec;
 {
-	DICT_VENDOR *vp;
+        DICT_VENDOR *vp;
 
-	vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
-				      pec_cmp,
-				      &pec);
-	return vp ? vp->vendorname : NULL;
+        vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
+                                      pec_cmp,
+                                      &pec);
+        return vp ? vp->vendorname : NULL;
 }
-	
+        
 
 /*
  * Get the internal code of the vendor based on its name.
  */
 int
 vendor_cmp(v, s)
-	DICT_VENDOR *v;
-	char        *s;
+        DICT_VENDOR *v;
+        char        *s;
 {
-	return strcmp(v->vendorname, s);
+        return strcmp(v->vendorname, s);
 }
 
 int 
 vendor_name_to_id(name)
-	char *name;
+        char *name;
 {
-	DICT_VENDOR *vp;
+        DICT_VENDOR *vp;
 
-	vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
-				      vendor_cmp,
-				      name);
-	return vp ? vp->vendorcode : 0;
+        vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
+                                      vendor_cmp,
+                                      name);
+        return vp ? vp->vendorcode : 0;
 }
-	
+        

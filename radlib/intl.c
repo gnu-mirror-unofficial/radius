@@ -20,7 +20,7 @@ void
 app_setup()
 {
 #ifdef HAVE_SETLOCALE
-	setlocale(LC_ALL, "");
+        setlocale(LC_ALL, "");
 #endif
 #ifdef HAVE_LIBINTL
         textdomain(PACKAGE);

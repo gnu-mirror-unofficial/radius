@@ -19,13 +19,13 @@
 
 typedef struct format Format;
 struct format {
-	Format *next;
-	char *name;
-	char *hdr;
-	char *(*fmt)();
-	int offset;
-	int width;
-	int prec;
+        Format *next;
+        char *name;
+        char *hdr;
+        char *(*fmt)();
+        int offset;
+        int width;
+        int prec;
 };
 
 extern char *eol;

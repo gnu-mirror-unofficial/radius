@@ -36,61 +36,61 @@ static char rcsid[] =
 /*PRINTFLIKE2*/
 void
 radlog(lvl, msg, va_alist)
-	int lvl;
-	char *msg;
-	va_dcl
+        int lvl;
+        char *msg;
+        va_dcl
 {
-	va_list ap;
-	int ec = 0;
+        va_list ap;
+        int ec = 0;
 
-	if (lvl & L_PERROR)
-		ec = errno;
-	va_start(ap);
-	vlog(lvl, NULL, 0, NULL, ec, msg, ap);
-	va_end(ap);
+        if (lvl & L_PERROR)
+                ec = errno;
+        va_start(ap);
+        vlog(lvl, NULL, 0, NULL, ec, msg, ap);
+        va_end(ap);
 }
 
 void
 _dolog(level, file, line, func_name, fmt, va_alist)
-	int level;
-	char *file;
-	int line;
-	char *func_name;
-	char *fmt;
-	va_dcl
+        int level;
+        char *file;
+        int line;
+        char *func_name;
+        char *fmt;
+        va_dcl
 {
-	va_list ap;
-	int ec = 0;
-	
-	if (level & L_PERROR)
-		ec = errno;
-	va_start(ap);
-	vlog(level, file, line, func_name, ec, fmt, ap);
-	va_end(ap);
+        va_list ap;
+        int ec = 0;
+        
+        if (level & L_PERROR)
+                ec = errno;
+        va_start(ap);
+        vlog(level, file, line, func_name, ec, fmt, ap);
+        va_end(ap);
 }
 
 void
 _debug_print(file, line, func_name, str)
-	char *file;
-	int line;
-	char *func_name;
-	char *str;
+        char *file;
+        int line;
+        char *func_name;
+        char *str;
 {
-	_dolog(L_DEBUG, file, line, func_name, "%s", str);
-	free(str);
+        _dolog(L_DEBUG, file, line, func_name, "%s", str);
+        free(str);
 }
 
 char *
 _debug_format_string(va_alist)
-	va_dcl
+        va_dcl
 {
-	va_list ap;
-	char *fmt;
-	char *str = NULL;
-	
-	va_start(ap);
-	fmt = va_arg(ap,char*);
-	vasprintf(&str, fmt, ap);
-	va_end(ap);
-	return str;
+        va_list ap;
+        char *fmt;
+        char *str = NULL;
+        
+        va_start(ap);
+        fmt = va_arg(ap,char*);
+        vasprintf(&str, fmt, ap);
+        va_end(ap);
+        return str;
 }

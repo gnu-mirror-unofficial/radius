@@ -26,7 +26,7 @@ unsigned long total_page_cnt;
 void *
 alloc_page()
 {
-	total_page_cnt++;
-	return malloc(MEM_PAGESIZE);
+        total_page_cnt++;
+        return malloc(MEM_PAGESIZE);
 }
 

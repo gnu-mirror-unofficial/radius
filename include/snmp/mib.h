@@ -27,35 +27,35 @@
 struct mib_node_t;
 
 enum mib_node_cmd {
-	MIB_NODE_GET,
-	MIB_NODE_SET,
-	MIB_NODE_SET_TRY,
-	MIB_NODE_COMPARE,
-	MIB_NODE_NEXT,
-	MIB_NODE_GET_SUBID,
-	MIB_NODE_RESET
+        MIB_NODE_GET,
+        MIB_NODE_SET,
+        MIB_NODE_SET_TRY,
+        MIB_NODE_COMPARE,
+        MIB_NODE_NEXT,
+        MIB_NODE_GET_SUBID,
+        MIB_NODE_RESET
 };
 
 typedef int (*mib_fp)(enum mib_node_cmd, void *,
-		      subid_t,
-		      struct snmp_var **, int *);
+                      subid_t,
+                      struct snmp_var **, int *);
 
 struct mib_node_t {
-	struct mib_node_t *up, *down, *next;
-	subid_t subid;
-	int index;
-	mib_fp handler;
-	void *closure;
+        struct mib_node_t *up, *down, *next;
+        subid_t subid;
+        int index;
+        mib_fp handler;
+        void *closure;
 };
 
 #define SUBID_X (subid_t)-1
 
 int mib_lookup(struct mib_node_t *node, oid_t oid, int len,
-	       struct mib_node_t **return_node);
+               struct mib_node_t **return_node);
 int mib_insert_node(struct mib_node_t **root_node, oid_t oid, int len,
-		    struct mib_node_t **return_node);
+                    struct mib_node_t **return_node);
 int mib_insert(struct mib_node_t **node, oid_t oid,
-	       struct mib_node_t **return_node);
+               struct mib_node_t **return_node);
 
 
-	
+        

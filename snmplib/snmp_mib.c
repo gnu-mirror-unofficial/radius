@@ -29,95 +29,95 @@
 (((node)->subid == SUBID_X) ? \
 ((*(node)->handler)(MIB_NODE_COMPARE, (node)->closure, s, NULL, NULL) \
      op 0) :\
- ((node)->subid op s)) 	
+ ((node)->subid op s))  
 
 int
 mib_lookup(node, oid, len, return_node)
-	struct mib_node_t *node;
-	oid_t oid;
-	int len;
-	struct mib_node_t **return_node;
+        struct mib_node_t *node;
+        oid_t oid;
+        int len;
+        struct mib_node_t **return_node;
 {
-	subid_t *p = OIDPTR(oid);
-	int ind;
-	
-	for (ind = 0; ind < len; ind++) {
-		while (SCMP(node, p[ind], <)) {
-			if (node->down) {
-				node = node->down;
-			} else {
-				*return_node = node;
-				return MIB_MATCH_UPPER;
-			}
-		}
-		if (node->next == NULL) {
-			*return_node = node;
-			break;
-		}
-		node = node->next;
-	}
-	*return_node = node;
-	return (ind+1) < len ? MIB_MATCH_PREV : MIB_MATCH_EXACT;
+        subid_t *p = OIDPTR(oid);
+        int ind;
+        
+        for (ind = 0; ind < len; ind++) {
+                while (SCMP(node, p[ind], <)) {
+                        if (node->down) {
+                                node = node->down;
+                        } else {
+                                *return_node = node;
+                                return MIB_MATCH_UPPER;
+                        }
+                }
+                if (node->next == NULL) {
+                        *return_node = node;
+                        break;
+                }
+                node = node->next;
+        }
+        *return_node = node;
+        return (ind+1) < len ? MIB_MATCH_PREV : MIB_MATCH_EXACT;
 }
 
 int
 mib_insert_node(root_node, oid, len, return_node)
-	struct mib_node_t **root_node;
-	oid_t oid;
-	int len;
-	struct mib_node_t **return_node;
+        struct mib_node_t **root_node;
+        oid_t oid;
+        int len;
+        struct mib_node_t **return_node;
 {
-	int rc;
-	struct mib_node_t *newp;
+        int rc;
+        struct mib_node_t *newp;
 
-	*return_node = *root_node;
-	if (*root_node &&
-	    (rc = mib_lookup(*root_node, oid, len, return_node)) ==
-	     MIB_MATCH_EXACT)
-		return rc;
+        *return_node = *root_node;
+        if (*root_node &&
+            (rc = mib_lookup(*root_node, oid, len, return_node)) ==
+             MIB_MATCH_EXACT)
+                return rc;
 
-	if (!(newp = snmp_alloc(sizeof(*newp)))) {
-		SNMP_SET_ERRNO(E_SNMP_NOMEM);
-		return MIB_ERROR;
-	}
-	newp->next = newp->down = NULL;
-	newp->index = len-1;
-	newp->subid = SUBID(oid,len-1);
-	newp->handler = NULL;
-	if (!*root_node)
-		*root_node = newp;
-	else if (rc == MIB_MATCH_UPPER) {
-		struct mib_node_t *p;
+        if (!(newp = snmp_alloc(sizeof(*newp)))) {
+                SNMP_SET_ERRNO(E_SNMP_NOMEM);
+                return MIB_ERROR;
+        }
+        newp->next = newp->down = NULL;
+        newp->index = len-1;
+        newp->subid = SUBID(oid,len-1);
+        newp->handler = NULL;
+        if (!*root_node)
+                *root_node = newp;
+        else if (rc == MIB_MATCH_UPPER) {
+                struct mib_node_t *p;
 
-		newp->up = (*return_node)->up;
-		if (!(*return_node)->down)
-			(*return_node)->down = newp;
-		else {
-			for (p = (*return_node)->down; p->down; p = p->down)
-				;
-			p->down = newp;
-		}
-	} else {
-		(*return_node)->next = newp;
-		newp->up = *return_node;
-	}
-	*return_node = newp;
-	return rc;
+                newp->up = (*return_node)->up;
+                if (!(*return_node)->down)
+                        (*return_node)->down = newp;
+                else {
+                        for (p = (*return_node)->down; p->down; p = p->down)
+                                ;
+                        p->down = newp;
+                }
+        } else {
+                (*return_node)->next = newp;
+                newp->up = *return_node;
+        }
+        *return_node = newp;
+        return rc;
 }
 
 int
 mib_insert(node, oid, return_node)
-	struct mib_node_t **node;
-	oid_t oid;
-	struct mib_node_t **return_node;
+        struct mib_node_t **node;
+        oid_t oid;
+        struct mib_node_t **return_node;
 {
-	int len = OIDLEN(oid);
-	int i;
-	int rc;
+        int len = OIDLEN(oid);
+        int i;
+        int rc;
 
-	*return_node = NULL;
-	for (i = 1; i <= len; i++) 
-		rc = mib_insert_node(node, oid, i, return_node);
-	return rc;
+        *return_node = NULL;
+        for (i = 1; i <= len; i++) 
+                rc = mib_insert_node(node, oid, i, return_node);
+        return rc;
 }
 

@@ -27,103 +27,103 @@
 
 static char *sys_def[] = {
 #if defined(__alpha)
-	"__alpha",
+        "__alpha",
 #endif
 #if defined(__osf__)
-	"__osf__",
+        "__osf__",
 #endif
 #if defined(aix)
-	"aix",
+        "aix",
 #endif
 #if defined(bsdi)
-	"bsdi",
+        "bsdi",
 #endif
 #if defined(__FreeBSD__)
-	"FreeBSD",
+        "FreeBSD",
 #endif
 #if defined(__NetBSD__)
-	"NetBSD",
+        "NetBSD",
 #endif
 #if defined(__OpenBSD__)
         "OpenBSD",
 #endif
 #if defined(sun)
-	"sun",
+        "sun",
 #endif
 #if defined(sys5)
-	"sys5",
+        "sys5",
 #endif
 #if defined(unixware)
-	"unixware",
+        "unixware",
 #endif
 #if defined(__linux__)
-	"linux",
+        "linux",
 #endif
 #if defined(M_UNIX)
-	"M_UNIX",
+        "M_UNIX",
 #endif
-	NULL
+        NULL
 };
 
 static char *debug_flag_str[] = {
 #if defined(MAINTAINER_MODE)
-	"MAINTAINER_MODE",
+        "MAINTAINER_MODE",
 #endif
-	NULL
+        NULL
 };
 
 static char *compile_flag_str[] = {
 #if defined(PWD_SHADOW)
-	"PWD_SHADOW",
+        "PWD_SHADOW",
 #endif
 #if defined(USE_SERVER_GUILE)
-	"USE_SERVER_GUILE",
+        "USE_SERVER_GUILE",
 #endif
 #if defined(USE_PAM)
-	"USE_PAM",
+        "USE_PAM",
 #endif
 #if defined(USE_DBM)
-# if USE_DBM == DBM_DBM	
-	"USE_DBM=DBM",
+# if USE_DBM == DBM_DBM 
+        "USE_DBM=DBM",
 # elif USE_DBM == DBM_NDBM
-	"USE_DBM=NDBM",
+        "USE_DBM=NDBM",
 # endif
 #endif /* USE_DBM */
 #ifdef USE_SQL_MYSQL
-	"USE_SQL_MYSQL",
-#endif	    
+        "USE_SQL_MYSQL",
+#endif      
 #ifdef USE_SQL_POSTGRES
-	"USE_SQL_POSTGRES",
-#endif	
+        "USE_SQL_POSTGRES",
+#endif  
 #ifdef USE_SQL_ODBC
-	"USE_SQL_ODBC",
-#endif	
+        "USE_SQL_ODBC",
+#endif  
 #if defined(USE_SNMP)
 # if defined(SNMP_COMPAT_0_96)
-	"USE_SNMP=COMPAT_0_96",
-# else	
-	"USE_SNMP",
-# endif	
+        "USE_SNMP=COMPAT_0_96",
+# else  
+        "USE_SNMP",
+# endif 
 #endif
 #if defined(USE_LIVINGSTON_MENUS)
-	"USE_LIVINGSTON_MENUS",
+        "USE_LIVINGSTON_MENUS",
 #endif
 #if defined(DENY_SHELL)
-	"DENY_SHELL",
+        "DENY_SHELL",
 #endif
 #if defined(OSFC2)
-	"OSFC2",
+        "OSFC2",
 #endif
 #if defined(NT_DOMAIN_HACK)
-	"NT_DOMAIN_HACK",
+        "NT_DOMAIN_HACK",
 #endif
 #if defined(SPECIALIX_JETSTREAM_HACK)
-	"SPECIALIX_JETSTREAM_HACK",
+        "SPECIALIX_JETSTREAM_HACK",
 #endif
 #if defined(ASCEND_PORT_HACK)
-	"ASCEND_PORT_HACK",
+        "ASCEND_PORT_HACK",
 #endif
-	NULL
+        NULL
 };
 
 
@@ -140,15 +140,15 @@ char *server_id;
 char *
 make_server_ident()
 {
-	if (server_id)
-		return estrdup(server_id);
-	else {
-		char *msg = _("GNU RADIUS server version ");
-		int len = strlen(msg) + sizeof(VERSION);
-		char *p = emalloc(len);
-		sprintf(p, "%s%s", msg, VERSION);
-		return p;
-	}
+        if (server_id)
+                return estrdup(server_id);
+        else {
+                char *msg = _("GNU RADIUS server version ");
+                int len = strlen(msg) + sizeof(VERSION);
+                char *p = emalloc(len);
+                sprintf(p, "%s%s", msg, VERSION);
+                return p;
+        }
 }
 
 /*
@@ -157,50 +157,50 @@ make_server_ident()
 void
 version()
 {
-	int i;
-	
-	printf(_("%s: GNU Radius version %s"), progname, VERSION);
+        int i;
+        
+        printf(_("%s: GNU Radius version %s"), progname, VERSION);
 #ifdef BUILD_TARGET
-	printf(" (%s)", BUILD_TARGET);
+        printf(" (%s)", BUILD_TARGET);
 #endif
-	printf("\n");
+        printf("\n");
 
-	printf(_("Compilation platform: "));
-	for (i = 0; sys_def[i]; i++)
-		printf("%s ", sys_def[i]);
+        printf(_("Compilation platform: "));
+        for (i = 0; sys_def[i]; i++)
+                printf("%s ", sys_def[i]);
 
-	printf(_("\nDebugging flags: "));
-	for (i = 0; debug_flag_str[i]; i++) {
-		printf("%s ", debug_flag_str[i]);
-	}
+        printf(_("\nDebugging flags: "));
+        for (i = 0; debug_flag_str[i]; i++) {
+                printf("%s ", debug_flag_str[i]);
+        }
 
-	printf(_("\nCompilation flags: "));
-	for (i = 0; compile_flag_str[i]; i++) {
-		printf("%s ", compile_flag_str[i]);
-	}
-	printf("\n");
-	printf("Ports in use:\n");
-	printf(" AUTH: %d\n", DEF_AUTH_PORT);
-	printf(" ACCT: %d\n", DEF_ACCT_PORT);
+        printf(_("\nCompilation flags: "));
+        for (i = 0; compile_flag_str[i]; i++) {
+                printf("%s ", compile_flag_str[i]);
+        }
+        printf("\n");
+        printf("Ports in use:\n");
+        printf(" AUTH: %d\n", DEF_AUTH_PORT);
+        printf(" ACCT: %d\n", DEF_ACCT_PORT);
 #if defined(USE_MYSQL)
-	printf(" SQL : %d\n", RAD_SQL_PORT);
+        printf(" SQL : %d\n", RAD_SQL_PORT);
 #endif
-	printf("Paths:\n");
-	printf(_(" configuration directory: %s\n"), RADIUS_DIR);
-	printf(_(" logging directory:       %s\n"), RADLOG_DIR);
-	printf(_(" accounting directory:    %s\n"), RADACCT_DIR);
+        printf("Paths:\n");
+        printf(_(" configuration directory: %s\n"), RADIUS_DIR);
+        printf(_(" logging directory:       %s\n"), RADLOG_DIR);
+        printf(_(" accounting directory:    %s\n"), RADACCT_DIR);
 #if defined(DENY_SHELL)
-	printf(_(" deny shell:              %s\n"), DENY_SHELL);
+        printf(_(" deny shell:              %s\n"), DENY_SHELL);
 #endif
 
 #ifdef RADIUS_PID
-	printf(_(" pidfile:                 %s\n"), RADIUS_PID);
+        printf(_(" pidfile:                 %s\n"), RADIUS_PID);
 #else
-	printf(_(" no pidfile\n"));
+        printf(_(" no pidfile\n"));
 #endif
 
-	printf("\nReport bugs to <%s>\n", bug_report_address);
-	exit(0);
+        printf("\nReport bugs to <%s>\n", bug_report_address);
+        exit(0);
 }
 
 char license_text[] =
@@ -221,7 +221,7 @@ char license_text[] =
 void
 license()
 {
-	printf("%s: Copyright 1999,2000,2001 Sergey Poznyakoff\n", progname);
-	printf("\nThis program is part of GNU Radius\n");
-	printf("%s", license_text);
+        printf("%s: Copyright 1999,2000,2001 Sergey Poznyakoff\n", progname);
+        printf("\nThis program is part of GNU Radius\n");
+        printf("%s", license_text);
 }

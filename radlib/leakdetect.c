@@ -28,132 +28,132 @@
 #ifdef LEAK_DETECTOR
 typedef union mem_header MHDR;
 union mem_header {
-	struct {
-		size_t size;
-	} s;
-	Align_t align;
+        struct {
+                size_t size;
+        } s;
+        Align_t align;
 };
 # define EXTRA sizeof(MHDR)
 struct mallocstat mallocstat;
 #else
-# define EXTRA 0	
+# define EXTRA 0        
 #endif
 
 void *
 radxmalloc(size)
-	size_t size;
+        size_t size;
 {
-	char *p;
+        char *p;
 
-	p = malloc(size + EXTRA);
+        p = malloc(size + EXTRA);
 
-	debug(10, ("malloc(%d) = %p", size, p));
-	
-	if (p) {
+        debug(10, ("malloc(%d) = %p", size, p));
+        
+        if (p) {
 #ifdef LEAK_DETECTOR
-		MHDR *mhdr;
-		
-		mallocstat.size += size;
-		mallocstat.count++;
+                MHDR *mhdr;
+                
+                mallocstat.size += size;
+                mallocstat.count++;
 
-		mhdr = (MHDR*)p;
-		mhdr->s.size = size;
-		p += EXTRA;
+                mhdr = (MHDR*)p;
+                mhdr->s.size = size;
+                p += EXTRA;
 #endif
-		bzero(p, size);
-	}
-	return p;
+                bzero(p, size);
+        }
+        return p;
 }
 
 void *
 radxrealloc(ptr, size)
-	void *ptr;
-	size_t size;
+        void *ptr;
+        size_t size;
 {
-	if (!ptr)
-		return radxmalloc(size);
-	else {
+        if (!ptr)
+                return radxmalloc(size);
+        else {
 #ifdef LEAK_DETECTOR
-		MHDR *mhdr;
-		size_t osize;
-		
-		mhdr = (MHDR*)((char*)ptr - EXTRA);
-		osize = mhdr->s.size;
+                MHDR *mhdr;
+                size_t osize;
+                
+                mhdr = (MHDR*)((char*)ptr - EXTRA);
+                osize = mhdr->s.size;
 
-		ptr = realloc(mhdr, size + EXTRA);
-		if (ptr) {
-			mhdr = (MHDR*)ptr;
-			mhdr->s.size = size;
-			mallocstat.size += size - osize;
-			ptr = (char*)ptr + EXTRA;
-		}
+                ptr = realloc(mhdr, size + EXTRA);
+                if (ptr) {
+                        mhdr = (MHDR*)ptr;
+                        mhdr->s.size = size;
+                        mallocstat.size += size - osize;
+                        ptr = (char*)ptr + EXTRA;
+                }
 #else
-		ptr = realloc(ptr, size);
+                ptr = realloc(ptr, size);
 #endif
-	}
-	return ptr;
+        }
+        return ptr;
 }
 
 void *
 emalloc(size)
-	size_t size;
+        size_t size;
 {
-	char *p;
+        char *p;
 
-	p = radxmalloc(size);
-	if (!p) {
-		radlog(L_CRIT, _("low core: aborting"));
-		abort();
-	} 
-	return p;
+        p = radxmalloc(size);
+        if (!p) {
+                radlog(L_CRIT, _("low core: aborting"));
+                abort();
+        } 
+        return p;
 }
 
 void *
 erealloc(ptr, size)
-	void *ptr;
-	size_t size;
+        void *ptr;
+        size_t size;
 {
-	ptr = radxrealloc(ptr, size);
-	if (!ptr) {
-		radlog(L_CRIT, _("low core: aborting"));
-		abort();
-	} 
-	return ptr;
+        ptr = radxrealloc(ptr, size);
+        if (!ptr) {
+                radlog(L_CRIT, _("low core: aborting"));
+                abort();
+        } 
+        return ptr;
 }
 
 void 
 efree(ptr)
-	void *ptr;
+        void *ptr;
 {
 #ifdef LEAK_DETECTOR
-	MHDR *mhdr;
+        MHDR *mhdr;
 #endif
 
-	if (!ptr)
-		return;
+        if (!ptr)
+                return;
 
 #ifdef LEAK_DETECTOR
-	ptr = (char*)ptr - EXTRA;
-	mhdr = (MHDR*)ptr;
+        ptr = (char*)ptr - EXTRA;
+        mhdr = (MHDR*)ptr;
 
         mallocstat.size -= mhdr->s.size;
-	mallocstat.count--;
-	
-	debug(10, ("free(%p) %d bytes", mhdr, mhdr->s.size));
+        mallocstat.count--;
+        
+        debug(10, ("free(%p) %d bytes", mhdr, mhdr->s.size));
 #else
-	debug(10, ("free(%p)", ptr));
+        debug(10, ("free(%p)", ptr));
 #endif
-	free(ptr);
+        free(ptr);
 }
 
 char *
 estrdup(s)
-	char *s;
+        char *s;
 {
-	char *p;
-	
-	if (!s)
-		return NULL;
-	p = emalloc(strlen(s)+1);
-	return strcpy(p, s);
+        char *p;
+        
+        if (!s)
+                return NULL;
+        p = emalloc(strlen(s)+1);
+        return strcpy(p, s);
 }

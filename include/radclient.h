@@ -20,27 +20,27 @@
 #define PORT_MAX  2
 
 typedef struct server {
-	struct server *next;
-	UINT4  addr;
-	char   *name;
-	int    port[PORT_MAX];
-	char   *secret;
+        struct server *next;
+        UINT4  addr;
+        char   *name;
+        int    port[PORT_MAX];
+        char   *secret;
 } SERVER;
 
 typedef struct {
-	size_t bufsize;
-	char  *data_buffer;
-	char   vector[AUTH_VECTOR_LEN];
-	UINT4  source_ip;
-	unsigned timeout;
-	unsigned retries;
-	unsigned messg_id;
-	SERVER *first_server;
-} RADCLIENT;	
+        size_t bufsize;
+        char  *data_buffer;
+        char   vector[AUTH_VECTOR_LEN];
+        UINT4  source_ip;
+        unsigned timeout;
+        unsigned retries;
+        unsigned messg_id;
+        SERVER *first_server;
+} RADCLIENT;    
 
 RADCLIENT *radclient_alloc(int read_cfg, UINT4 source_ip, size_t bufsize);
 RADIUS_REQ *radclient_send(RADCLIENT *config, int port_type,
-			 int code, VALUE_PAIR *pair);
+                         int code, VALUE_PAIR *pair);
 
 SERVER *radclient_alloc_server(SERVER *data);
 

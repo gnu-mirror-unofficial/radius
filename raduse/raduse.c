@@ -46,11 +46,11 @@ struct option longopt[] = {
         "license",       no_argument,       0, 'L',
         "list-nas",      no_argument,       0, 'l',
         "help",          no_argument,       0, 'h',
-	
-	"host",          required_argument, 0, 'H',
-	"port",          required_argument, 0, 'p',
-	"community",     required_argument, 0, 'C',
-	"format",        required_argument, 0, 'f',
+        
+        "host",          required_argument, 0, 'H',
+        "port",          required_argument, 0, 'p',
+        "community",     required_argument, 0, 'C',
+        "format",        required_argument, 0, 'f',
         0,
 };
 
@@ -63,27 +63,27 @@ static void license();
 
 int
 main(argc, argv)
-	int argc;
-	char **argv;
+        int argc;
+        char **argv;
 {
         int c;
-	
+        
         app_setup();    
         initlog(argv[0]);
         while ((c = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF)
                 switch(c) {
-		case 'H':
-			hostname = optarg;
-			break;
-		case 'p':
-			port = atoi(optarg);
-			break;
-		case 'C':
-			community = optarg;
-			break;
-		case 'f':
-			break;
-			
+                case 'H':
+                        hostname = optarg;
+                        break;
+                case 'p':
+                        port = atoi(optarg);
+                        break;
+                case 'C':
+                        community = optarg;
+                        break;
+                case 'f':
+                        break;
+                        
                 case 'b':
                         brief = !brief;
                         break;
@@ -106,7 +106,7 @@ main(argc, argv)
                         license();
                         return 0;
                 case 'l':
-			unimplemented(c);
+                        unimplemented(c);
                         return 0;
                 case 'n':
                         interactive = 0;
@@ -125,18 +125,18 @@ main(argc, argv)
                 default:
                         exit(1);
                 }
-	
-	radpath_init();
-	snmp_init(0, 0, emalloc, efree);
-	test();
+        
+        radpath_init();
+        snmp_init(0, 0, emalloc, efree);
+        test();
 }
 
 int
 unimplemented(c)
-	int c;
+        int c;
 {
-	radlog(L_ERR, "option %c is not implemented", c);
-	exit(1);
+        radlog(L_ERR, "option %c is not implemented", c);
+        exit(1);
 }
 
 char usage_str[] = 

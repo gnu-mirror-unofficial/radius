@@ -33,55 +33,55 @@ static char rcsid[] =
 
 int
 read_raddb_file(filename, vital, fun, closure)
-	char *filename;   /* file name */
-	int vital;        /* is the file vital */
-	int (*fun)();     /* handler */
-	void *closure;
+        char *filename;   /* file name */
+        int vital;        /* is the file vital */
+        int (*fun)();     /* handler */
+        void *closure;
 {
-	int    argc;
-	char **argv;
-	FILE *input;
-	int  line = 1;
-	char *lineptr = NULL;
-	size_t bsize = 0;
-	int nread;
-	
-	input = fopen(filename, "r");
-	if (!input) {
-		if (vital) {
-			radlog(L_ERR|L_PERROR, _("can't open file `%s'"),
-			       filename);
-			return -1;
-		} else {
-			radlog(L_NOTICE|L_PERROR, _("can't open file `%s'"),
-			       filename);
-			return 0;
-		}
-	}
+        int    argc;
+        char **argv;
+        FILE *input;
+        int  line = 1;
+        char *lineptr = NULL;
+        size_t bsize = 0;
+        int nread;
+        
+        input = fopen(filename, "r");
+        if (!input) {
+                if (vital) {
+                        radlog(L_ERR|L_PERROR, _("can't open file `%s'"),
+                               filename);
+                        return -1;
+                } else {
+                        radlog(L_NOTICE|L_PERROR, _("can't open file `%s'"),
+                               filename);
+                        return 0;
+                }
+        }
 
-	while (getline(&lineptr, &bsize, input) > 0) {
-		nread = strlen(lineptr);
-		if (nread == 0)
-			break;
-		if (lineptr[nread-1] == '\n')
-			lineptr[nread-1] = 0;
-		if (lineptr[0] == 0)
-			continue;
-		if (argcv_get(lineptr, "", &argc, &argv) == 0) {
-			int n;
-			for (n = 0; n < argc && argv[n][0] != '#'; n++)
-				;
-			if (n)
-				fun(closure, n, argv, filename, line);
-		}
-		line++;
-		if (argv)
-			argcv_free(argc, argv);
-	}
+        while (getline(&lineptr, &bsize, input) > 0) {
+                nread = strlen(lineptr);
+                if (nread == 0)
+                        break;
+                if (lineptr[nread-1] == '\n')
+                        lineptr[nread-1] = 0;
+                if (lineptr[0] == 0)
+                        continue;
+                if (argcv_get(lineptr, "", &argc, &argv) == 0) {
+                        int n;
+                        for (n = 0; n < argc && argv[n][0] != '#'; n++)
+                                ;
+                        if (n)
+                                fun(closure, n, argv, filename, line);
+                }
+                line++;
+                if (argv)
+                        argcv_free(argc, argv);
+        }
 
-	if (lineptr)
-		free(lineptr);
-	fclose(input);
+        if (lineptr)
+                free(lineptr);
+        fclose(input);
 
-	return 0;
+        return 0;
 }

@@ -27,25 +27,25 @@
 typedef unsigned count_t;
 typedef double Align_t;
 struct mallocstat {
-	int count;
-	unsigned size;
+        int count;
+        unsigned size;
 };
 extern struct mallocstat mallocstat;
 
 typedef struct {
-	unsigned class_cnt;
-	unsigned bucket_cnt;
-	unsigned bytes_allocated;
-	unsigned bytes_used;
+        unsigned class_cnt;
+        unsigned bucket_cnt;
+        unsigned bytes_allocated;
+        unsigned bytes_used;
 } MEM_STAT;
 
 typedef struct {
-	int         index;
-	int         cont;            /* Allow contiguous allocation */
-	size_t      elsize;          /* Size of an element */
-	count_t     elcnt;           /* Number of elements per bucket */
-	count_t     allocated_cnt;   /* Number of allocated elements */
-	count_t     bucket_cnt;      /* Number of buckets */
+        int         index;
+        int         cont;            /* Allow contiguous allocation */
+        size_t      elsize;          /* Size of an element */
+        count_t     elcnt;           /* Number of elements per bucket */
+        count_t     allocated_cnt;   /* Number of allocated elements */
+        count_t     bucket_cnt;      /* Number of buckets */
 } CLASS_STAT;
 
 

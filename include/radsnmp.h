@@ -19,51 +19,51 @@
 #define __radsnmp_h
 
 typedef enum {
-	serv_other=1,
-	serv_reset,
-	serv_init,
-	serv_running,
-	serv_suspended,
-	serv_shutdown
+        serv_other=1,
+        serv_reset,
+        serv_init,
+        serv_running,
+        serv_suspended,
+        serv_shutdown
 } serv_stat;
 
 typedef struct {
-	serv_stat status;
-	struct timeval reset_time;
-	counter num_req;
-	counter num_invalid_req;
-	counter num_dup_req;
-	counter num_resp;
-	counter num_bad_req;
-	counter num_bad_sign;
-	counter num_dropped;
-	counter num_norecords;
-	counter num_unknowntypes;
+        serv_stat status;
+        struct timeval reset_time;
+        counter num_req;
+        counter num_invalid_req;
+        counter num_dup_req;
+        counter num_resp;
+        counter num_bad_req;
+        counter num_bad_sign;
+        counter num_dropped;
+        counter num_norecords;
+        counter num_unknowntypes;
 } Acct_server_stat;
 
 typedef struct {
-	serv_stat status;
-	struct timeval reset_time;
-	counter num_access_req;
-	counter num_invalid_req;
-	counter num_dup_req;
-	counter num_accepts;
-	counter num_rejects;
-	counter num_challenges;
-	counter num_bad_req;
-	counter num_bad_auth;
-	counter num_dropped;
-	counter num_unknowntypes;
+        serv_stat status;
+        struct timeval reset_time;
+        counter num_access_req;
+        counter num_invalid_req;
+        counter num_dup_req;
+        counter num_accepts;
+        counter num_rejects;
+        counter num_challenges;
+        counter num_bad_req;
+        counter num_bad_auth;
+        counter num_dropped;
+        counter num_unknowntypes;
 } Auth_server_stat;
 
 struct nas_stat {
-	struct nas_stat *next;
-	int index;
-	UINT4 ipaddr;
-	counter ports_active;
-	counter ports_idle;
-	Auth_server_stat auth;
-	Acct_server_stat acct;
+        struct nas_stat *next;
+        int index;
+        UINT4 ipaddr;
+        counter ports_active;
+        counter ports_idle;
+        Auth_server_stat auth;
+        Acct_server_stat acct;
 };
 
 

@@ -30,7 +30,7 @@ static char rcsid[] =
 #include <sys/file.h>
 #include <sys/stat.h>
 #include <netinet/in.h>
-	 
+         
 #include <stdio.h>
 #include <stdlib.h>
 #include <netdb.h>
@@ -67,13 +67,13 @@ VALUE_PAIR *install_pair(char *name, int op, char *valstr);
 %start input
 
 %union {
-	char *string;
-	MATCHING_RULE *rule;
-	struct {
-		VALUE_PAIR *lhs, *rhs;
-	} descr;
-	VALUE_PAIR *pair;
-	int op;
+        char *string;
+        MATCHING_RULE *rule;
+        struct {
+                VALUE_PAIR *lhs, *rhs;
+        } descr;
+        VALUE_PAIR *pair;
+        int op;
 } 
 
 %%
@@ -87,90 +87,90 @@ list     : entry
            } 
          | list entry
          | list error
-	   {
-		   users_sync(); yyerrok; yyclearin;
-	   }
+           {
+                   users_sync(); yyerrok; yyclearin;
+           }
          ;
 
 entry    : user descr
            {
-		   add_entry(closure,
-			     source_filename,
-			     old_lineno, $1, $2.lhs, $2.rhs);
-	   }
-	 | user error
-	   {
-		   radlog(L_ERR, _("discarding user `%s'"), $1);
-		   users_sync(); yyerrok; yyclearin;
-    	   }   
+                   add_entry(closure,
+                             source_filename,
+                             old_lineno, $1, $2.lhs, $2.rhs);
+           }
+         | user error
+           {
+                   radlog(L_ERR, _("discarding user `%s'"), $1);
+                   users_sync(); yyerrok; yyclearin;
+           }   
          ;
 
 user     : value
            {
-		   old_lineno = source_line_num;
-	   }
+                   old_lineno = source_line_num;
+           }
          ;
 
 descr    : npairlist npairlist
            {
-		   $$.lhs = $1;
-		   $$.rhs = $2;
-	   }
+                   $$.lhs = $1;
+                   $$.rhs = $2;
+           }
          ;
 
 npairlist: NUL
            {
-		   $$ = NULL;
-	   }
+                   $$ = NULL;
+           }
          | pairlist
          ;
 
 pairlist : pair
          | pairlist ',' pair
            {
-		   if ($1) {
-			   if ($3) 
-				   avl_add_list(&$1, $3);
-			   $$ = $1;
-		   } else
-			   $$ = $3;
-	   }
+                   if ($1) {
+                           if ($3) 
+                                   avl_add_list(&$1, $3);
+                           $$ = $1;
+                   } else
+                           $$ = $3;
+           }
          ;
 
 pair     : STRING op value
            {
-		   $$ = install_pair($1, $2, $3);   
-	   }
+                   $$ = install_pair($1, $2, $3);   
+           }
          | STRING op BOGUS
            {
-		   YYERROR;
-	   }
+                   YYERROR;
+           }
          ;
 
 op       : EQ
            {
-		   $$ = OPERATOR_EQUAL;
-	   }
+                   $$ = OPERATOR_EQUAL;
+           }
          | LT
            {
-		   $$ = OPERATOR_LESS_THAN;
-	   }
+                   $$ = OPERATOR_LESS_THAN;
+           }
          | GT
            { 
-		   $$ = OPERATOR_GREATER_THAN;
-	   }
+                   $$ = OPERATOR_GREATER_THAN;
+           }
          | NE
            {
-		   $$ = OPERATOR_NOT_EQUAL;
-	   }
+                   $$ = OPERATOR_NOT_EQUAL;
+           }
          | LE
            {
-		   $$ = OPERATOR_LESS_EQUAL;
-	   }
+                   $$ = OPERATOR_LESS_EQUAL;
+           }
          | GE
            {
-		   $$ = OPERATOR_GREATER_EQUAL;
-	   }
+                   $$ = OPERATOR_GREATER_EQUAL;
+           }
          ;
 
 value    : STRING
@@ -180,186 +180,186 @@ value    : STRING
 %%
 
 yyerror(s)
-	char *s;
+        char *s;
 {
-	radlog(L_ERR, "%s:%d: %s", source_filename, source_line_num, s);
+        radlog(L_ERR, "%s:%d: %s", source_filename, source_line_num, s);
 }
 
 VALUE_PAIR *
 install_pair(name, op, valstr)
-	char *name;
-	int op;
-	char *valstr;
+        char *name;
+        int op;
+        char *valstr;
 {
-	DICT_ATTR	*attr = NULL;
-	DICT_VALUE	*dval;
-	VALUE_PAIR	*pair, *pair2;
-	char *s;
-	int x;
-	time_t timeval;
-	struct tm *tm, tms;
-	
-	if ((attr = attr_name_to_dict(name)) == (DICT_ATTR *)NULL) {
-		radlog(L_ERR, _("%s:%d: unknown attribute `%s'"),
-		       source_filename, source_line_num, name);
-		return NULL;
-	}
+        DICT_ATTR       *attr = NULL;
+        DICT_VALUE      *dval;
+        VALUE_PAIR      *pair, *pair2;
+        char *s;
+        int x;
+        time_t timeval;
+        struct tm *tm, tms;
+        
+        if ((attr = attr_name_to_dict(name)) == (DICT_ATTR *)NULL) {
+                radlog(L_ERR, _("%s:%d: unknown attribute `%s'"),
+                       source_filename, source_line_num, name);
+                return NULL;
+        }
 
-	pair = avp_alloc();
-	
-	pair->next = NULL;
-	pair->name = attr->name;
-	pair->attribute = attr->value;
-	pair->type = attr->type;
-	pair->prop = attr->prop;
-	pair->operator = op;
+        pair = avp_alloc();
+        
+        pair->next = NULL;
+        pair->name = attr->name;
+        pair->attribute = attr->value;
+        pair->type = attr->type;
+        pair->prop = attr->prop;
+        pair->operator = op;
 
-	if (valstr[0] == '=') {
-		pair->eval = 1;
-		pair->strvalue = make_string(valstr+1);
-		pair->strlength = strlen(pair->strvalue);
-		return pair;
-	}
+        if (valstr[0] == '=') {
+                pair->eval = 1;
+                pair->strvalue = make_string(valstr+1);
+                pair->strlength = strlen(pair->strvalue);
+                return pair;
+        }
 
-	pair->eval = 0;
-	
-	switch (pair->type) {
-	case TYPE_STRING:
-		if (pair->attribute == DA_EXEC_PROGRAM ||
-		    pair->attribute == DA_EXEC_PROGRAM_WAIT) {
-			if (valstr[0] != '/') {
-				radlog(L_ERR,
-				   _("%s:%d: %s: not an absolute pathname"),
-				       source_filename, source_line_num, name);
-				avp_free(pair);
-				return NULL;
-			}
-		}
-		pair->strvalue = make_string(valstr);
-		pair->strlength = strlen(pair->strvalue);
-		break;
+        pair->eval = 0;
+        
+        switch (pair->type) {
+        case TYPE_STRING:
+                if (pair->attribute == DA_EXEC_PROGRAM ||
+                    pair->attribute == DA_EXEC_PROGRAM_WAIT) {
+                        if (valstr[0] != '/') {
+                                radlog(L_ERR,
+                                   _("%s:%d: %s: not an absolute pathname"),
+                                       source_filename, source_line_num, name);
+                                avp_free(pair);
+                                return NULL;
+                        }
+                }
+                pair->strvalue = make_string(valstr);
+                pair->strlength = strlen(pair->strvalue);
+                break;
 
-	case TYPE_INTEGER:
-		/*
-		 *	For DA_NAS_PORT_ID, allow a
-		 *	port range instead of just a port.
-		 */
-		if (attr->value == DA_NAS_PORT_ID) {
-			for (s = valstr; *s; s++)
-				if (!isdigit(*s))
-					break;
-			if (*s) {
-				pair->type = TYPE_STRING;
-				pair->strvalue = make_string(valstr);
-				pair->strlength = strlen(pair->strvalue);
-				break;
-			}
-		}
-		if (isdigit(*valstr)) {
-			pair->lvalue = atoi(valstr);
-		} else if ((dval = value_name_to_value(valstr, pair->attribute)) == NULL) {
-			avp_free(pair);
-			radlog(L_ERR, _("%s:%d: unknown value %s"),
-			    source_filename, source_line_num,
-			    valstr);
-			return NULL;
-		} else {
-			pair->lvalue = dval->value;
-		}
-		break;
+        case TYPE_INTEGER:
+                /*
+                 *      For DA_NAS_PORT_ID, allow a
+                 *      port range instead of just a port.
+                 */
+                if (attr->value == DA_NAS_PORT_ID) {
+                        for (s = valstr; *s; s++)
+                                if (!isdigit(*s))
+                                        break;
+                        if (*s) {
+                                pair->type = TYPE_STRING;
+                                pair->strvalue = make_string(valstr);
+                                pair->strlength = strlen(pair->strvalue);
+                                break;
+                        }
+                }
+                if (isdigit(*valstr)) {
+                        pair->lvalue = atoi(valstr);
+                } else if ((dval = value_name_to_value(valstr, pair->attribute)) == NULL) {
+                        avp_free(pair);
+                        radlog(L_ERR, _("%s:%d: unknown value %s"),
+                            source_filename, source_line_num,
+                            valstr);
+                        return NULL;
+                } else {
+                        pair->lvalue = dval->value;
+                }
+                break;
 
-	case TYPE_IPADDR:
-		if (pair->attribute != DA_FRAMED_IP_ADDRESS) {
-			pair->lvalue = ip_gethostaddr(valstr);
-		} else {
-			/*
-			 *	We allow a "+" at the end to
-			 *	indicate that we should add the
-			 *	portno. to the IP address.
-			 */
-			x = 0;
-			if (valstr[0]) {
-				for(s = valstr; s[1]; s++)
-					;
-				if (*s == '+') {
-					*s = 0;
-					x = 1;
-				}
-			}
-			pair->lvalue = ip_gethostaddr(valstr);
+        case TYPE_IPADDR:
+                if (pair->attribute != DA_FRAMED_IP_ADDRESS) {
+                        pair->lvalue = ip_gethostaddr(valstr);
+                } else {
+                        /*
+                         *      We allow a "+" at the end to
+                         *      indicate that we should add the
+                         *      portno. to the IP address.
+                         */
+                        x = 0;
+                        if (valstr[0]) {
+                                for(s = valstr; s[1]; s++)
+                                        ;
+                                if (*s == '+') {
+                                        *s = 0;
+                                        x = 1;
+                                }
+                        }
+                        pair->lvalue = ip_gethostaddr(valstr);
 
-			/*
-			 *	Add an extra (hidden) attribute.
-			 */
-			pair2 = avp_alloc();
-			
-			pair2->name = "Add-Port-To-IP-Address";
-			pair2->attribute = DA_ADD_PORT_TO_IP_ADDRESS;
-			pair2->type = TYPE_INTEGER;
-			pair2->lvalue = x;
-			pair2->next = pair;
-			pair = pair2;
-		}
-		break;
-		
-	case TYPE_DATE:
-		timeval = time(0);
-		tm = localtime_r(&timeval, &tms);
-		if (user_gettime(valstr, tm)) {
-			radlog(L_ERR,
-				_("%s:%d: %s: can't parse date"),
-				source_filename, source_line_num, name);
-			avp_free(pair);
-			return NULL;
-		}
+                        /*
+                         *      Add an extra (hidden) attribute.
+                         */
+                        pair2 = avp_alloc();
+                        
+                        pair2->name = "Add-Port-To-IP-Address";
+                        pair2->attribute = DA_ADD_PORT_TO_IP_ADDRESS;
+                        pair2->type = TYPE_INTEGER;
+                        pair2->lvalue = x;
+                        pair2->next = pair;
+                        pair = pair2;
+                }
+                break;
+                
+        case TYPE_DATE:
+                timeval = time(0);
+                tm = localtime_r(&timeval, &tms);
+                if (user_gettime(valstr, tm)) {
+                        radlog(L_ERR,
+                                _("%s:%d: %s: can't parse date"),
+                                source_filename, source_line_num, name);
+                        avp_free(pair);
+                        return NULL;
+                }
 #ifdef TIMELOCAL
-		pair->lvalue = (UINT4)timelocal(tm);
+                pair->lvalue = (UINT4)timelocal(tm);
 #else /* TIMELOCAL */
-		pair->lvalue = (UINT4)mktime(tm);
+                pair->lvalue = (UINT4)mktime(tm);
 #endif /* TIMELOCAL */
-		break;
+                break;
 
-	default:
-		radlog(L_ERR, _("%s:%d: %s: unknown attribute type %d"),
-		    source_filename, source_line_num, name,
-		    pair->type);
-		avp_free(pair);
-		return NULL;
-	}
+        default:
+                radlog(L_ERR, _("%s:%d: %s: unknown attribute type %d"),
+                    source_filename, source_line_num, name,
+                    pair->type);
+                avp_free(pair);
+                return NULL;
+        }
 
-	return pair;
+        return pair;
 }
 
 extern int yydebug;
 
 int
 parse_file(file, c, f)
-	char *file;
-	void *c;
-	int (*f)();
+        char *file;
+        void *c;
+        int (*f)();
 {
-	int rc;
-	
-	if (init_lex(file))
-		return -1;
-	closure = c;
-	add_entry = f;
+        int rc;
+        
+        if (init_lex(file))
+                return -1;
+        closure = c;
+        add_entry = f;
 
-	yydebug = 0;
-	rc = yyparse();
-	done_lex();
-	return rc;
+        yydebug = 0;
+        rc = yyparse();
+        done_lex();
+        return rc;
 }
 
 void
 enable_usr_dbg(val)
-	int val;
+        int val;
 {
-	yydebug = val;
-	if (yydebug)
-		radlog(L_NOTICE, _("%s:%d: enabled userfile parser debugging"),
-		       source_filename, source_line_num);
-	else
-		radlog(L_NOTICE, _("%s:%d: disabled userfile parser debugging"),
-		       source_filename, source_line_num);
+        yydebug = val;
+        if (yydebug)
+                radlog(L_NOTICE, _("%s:%d: enabled userfile parser debugging"),
+                       source_filename, source_line_num);
+        else
+                radlog(L_NOTICE, _("%s:%d: disabled userfile parser debugging"),
+                       source_filename, source_line_num);
 }

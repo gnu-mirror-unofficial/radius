@@ -18,9 +18,9 @@
 typedef struct envar_t envar_t;
 
 struct envar_t {
-	struct envar_t *next;
-	char *name;
-	char *value;
+        struct envar_t *next;
+        char *name;
+        char *value;
 };
 
 envar_t *envar_parse(char *str);

@@ -18,9 +18,9 @@
 /* $Id$ */
 typedef struct wtmp_chain WTMP;
 struct wtmp_chain {
-	WTMP *next;
-	WTMP *prev;
-	struct radutmp ut;
-};	
+        WTMP *next;
+        WTMP *prev;
+        struct radutmp ut;
+};      
 
 void delete_entry(WTMP *);

@@ -30,27 +30,27 @@
 
 void *
 snmp_alloc(size)
-	size_t size;
+        size_t size;
 {
-	return (*snmp_def.alloc)(size);
+        return (*snmp_def.alloc)(size);
 }
 
 void
 snmp_free(ptr)
-	void *ptr;
+        void *ptr;
 {
-	if (ptr)
-		(*snmp_def.free)(ptr);
+        if (ptr)
+                (*snmp_def.free)(ptr);
 }
 
 char *
 snmp_strdup(str)
-	char *str;
+        char *str;
 {
-	int len = strlen(str)+1;
-	char *p = snmp_alloc(len);
-	if (p)
-		strcpy(p, str);
-	return p;
+        int len = strlen(str)+1;
+        char *p = snmp_alloc(len);
+        if (p)
+                strcpy(p, str);
+        return p;
 }
 

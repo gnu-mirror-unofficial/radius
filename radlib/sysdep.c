@@ -44,44 +44,44 @@
  */
 int
 set_nonblocking(fd)
-	int fd;
+        int fd;
 {
-	int flags;
+        int flags;
 
-	if ((flags = fcntl(fd, F_GETFL, 0)) < 0) {
-		radlog(L_ERR, "F_GETFL: %s", strerror(errno));
-		return -1;
-	}
-	if (fcntl(fd, F_SETFL, flags | FCNTL_NONBLOCK) < 0) {
-		radlog(L_ERR, "F_GETFL: %s", strerror(errno));
-		return -1;
-	}
-	return 0;
+        if ((flags = fcntl(fd, F_GETFL, 0)) < 0) {
+                radlog(L_ERR, "F_GETFL: %s", strerror(errno));
+                return -1;
+        }
+        if (fcntl(fd, F_SETFL, flags | FCNTL_NONBLOCK) < 0) {
+                radlog(L_ERR, "F_GETFL: %s", strerror(errno));
+                return -1;
+        }
+        return 0;
 }
 
 #if defined (sun) && defined(__svr4__)
 /*
- *	The signal() function in Solaris 2.5.1 sets SA_NODEFER in
- *	sa_flags, which causes grief if signal() is called in the
- *	handler before the cause of the signal has been cleared.
- *	(Infinite recursion).
+ *      The signal() function in Solaris 2.5.1 sets SA_NODEFER in
+ *      sa_flags, which causes grief if signal() is called in the
+ *      handler before the cause of the signal has been cleared.
+ *      (Infinite recursion).
  */
 RETSIGTYPE
 (*sun_signal(signo, func))(int)
-	int signo;
-	void (*func)(int);
+        int signo;
+        void (*func)(int);
 {
-	struct sigaction act, oact;
+        struct sigaction act, oact;
 
-	act.sa_handler = func;
-	sigemptyset(&act.sa_mask);
-	act.sa_flags = 0;
-#ifdef  SA_INTERRUPT		/* SunOS */
-	act.sa_flags |= SA_INTERRUPT;
+        act.sa_handler = func;
+        sigemptyset(&act.sa_mask);
+        act.sa_flags = 0;
+#ifdef  SA_INTERRUPT            /* SunOS */
+        act.sa_flags |= SA_INTERRUPT;
 #endif
-	if (sigaction(signo, &act, &oact) < 0)
-		return SIG_ERR;
-	return oact.sa_handler;
+        if (sigaction(signo, &act, &oact) < 0)
+                return SIG_ERR;
+        return oact.sa_handler;
 }
 #endif
 
@@ -94,15 +94,15 @@ int
 getmaxfd()
 {
 #if defined(HAVE_GETDTABLESIZE)
-	return getdtablesize();
+        return getdtablesize();
 #elif defined(RLIMIT_NOFILE)
-	struct rlimit rlim;
+        struct rlimit rlim;
 
-	if (getrlimit(RLIMIT_NOFILE, &rlim)) 
-		return DEFMAXFD;
-	return rlim.rlim_max;
+        if (getrlimit(RLIMIT_NOFILE, &rlim)) 
+                return DEFMAXFD;
+        return rlim.rlim_max;
 #else
-	return DEFMAXFD;
+        return DEFMAXFD;
 #endif
 }
-		
+                

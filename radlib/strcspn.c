@@ -11,19 +11,19 @@
 
 int
 strcspn(s1, s2)
-	char *s1;
-	char *s2;
+        char *s1;
+        char *s2;
 {
-	register char *scan1;
-	register char *scan2;
-	register int count;
+        register char *scan1;
+        register char *scan2;
+        register int count;
 
-	count = 0;
-	for (scan1 = s1; *scan1; scan1++) {
-		for (scan2 = s2; *scan2;)	
-			if (*scan1 == *scan2++)
-				return count;
-		count++;
-	}
-	return count;
+        count = 0;
+        for (scan1 = s1; *scan1; scan1++) {
+                for (scan2 = s2; *scan2;)       
+                        if (*scan1 == *scan2++)
+                                return count;
+                count++;
+        }
+        return count;
 }

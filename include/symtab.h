@@ -22,16 +22,16 @@
 
 typedef struct symbol Symbol;
 struct symbol {
-	Symbol *next;
-	char *name;
+        Symbol *next;
+        char *name;
 } ;
 
 typedef struct {
-	int elsize;
-	int elcnt;
-	int hash_num;
-	Symbol **sym;
-	int (*elfree)();
+        int elsize;
+        int elcnt;
+        int hash_num;
+        Symbol **sym;
+        int (*elfree)();
 } Symtab;
 
 Symtab * symtab_create(unsigned esize, int (*)());

@@ -26,17 +26,17 @@
 #ifndef _REGEXP_H
 #define _REGEXP_H
 
-#include <sys/types.h>			/* regex.h needs size_t */
-#include <regex.h>			/* POSIX.2 regexp routines */
-#include <stdlib.h>			/* for malloc, realloc and free */
+#include <sys/types.h>                  /* regex.h needs size_t */
+#include <regex.h>                      /* POSIX.2 regexp routines */
+#include <stdlib.h>                     /* for malloc, realloc and free */
 
 /*
  * These three advertised external variables record state information
  * for compile and step.  They are so gross, I'm choking as I write this.
  */
-char *loc1;				/* the beginning of a match */
-char *loc2;				/* the end of a match */
-int circf;				/* current pattern begins with '^' */
+char *loc1;                             /* the beginning of a match */
+char *loc2;                             /* the end of a match */
+int circf;                              /* current pattern begins with '^' */
 
 /*
  * These are the other variables mentioned in the regexp.h manpage.
@@ -59,9 +59,9 @@ int nbra;
 #define __REGEX_T_ALIGN 8
 #endif /* !__GNUC__ */
 
-#define __regex_t_align(p)						\
-	((regex_t *) ((((unsigned long) p) + __REGEX_T_ALIGN - 1)	\
-		/ __REGEX_T_ALIGN * __REGEX_T_ALIGN))
+#define __regex_t_align(p)                                              \
+        ((regex_t *) ((((unsigned long) p) + __REGEX_T_ALIGN - 1)       \
+                / __REGEX_T_ALIGN * __REGEX_T_ALIGN))
 
 /*
  * We just slurp the whole pattern into a string and then compile
@@ -72,113 +72,113 @@ int nbra;
 char *
 compile(char *instring, char *expbuf, char *endbuf, int eof)
 {
-	int __c;
-	int __len;
-	char *__buf;
-	int __buflen;
-	int __error;
-	regex_t *__preg;
-	INIT;
+        int __c;
+        int __len;
+        char *__buf;
+        int __buflen;
+        int __error;
+        regex_t *__preg;
+        INIT;
 
-	__buflen = 128;
-	__buf = malloc(__buflen);
-	if (!__buf) {
-		ERROR(50);
-		return 0;
-	}
-	__len = 0;
-	circf = 0;
-	for (;;) {
-		__c = GETC();
-		if (__c == eof)
-			break;
-		if (__c == '\0' || __c == '\n') {
-			UNGETC(__c);
-			break;
-		}
-		if (__len + 2 > __buflen) {
-			__buflen *= 2;
-			__buf = realloc(__buf, __buflen);
-			if (!__buf) {
-				ERROR(50);
-				return 0;
-			}
-		}
-		if (__len == 0 && !circf && __c == '^')
-			circf = 1;
-		else
-			__buf[__len++] = __c;
-	}
-	if (__len == 0 && !circf) {
-		free(__buf);
-		ERROR(41);
-		return 0;
-	}
-	__buf[__len] = '\0';
-	if (endbuf <= expbuf + sizeof(regex_t)) {
-		free(__buf);
-		ERROR(50);
-		return 0;
-	}
-	__preg = __regex_t_align(expbuf);
-	__preg->buffer = (char *) (__preg + 1);
-	__preg->allocated = endbuf - (char *) __preg->buffer;
-	__error = regcomp(__preg, __buf, REG_NEWLINE);
-	free(__buf);
-	switch (__error) {
-	case 0:
-		break;
-	case REG_BADRPT:
-		__error = 36; /* poor fit */
-		break;
-	case REG_BADBR:
-		__error = 16;
-		break;
-	case REG_EBRACE:
-		__error = 44; /* poor fit */
-		break;
-	case REG_EBRACK:
-		__error = 49;
-		break;
-	case REG_ERANGE:
-		__error = 36; /* poor fit */
-		break;
-	case REG_ECTYPE:
-		__error = 36; /* poor fit */
-		break;
-	case REG_EPAREN:
-		__error = 42;
-		break;
-	case REG_ESUBREG:
-		__error = 36; /* poor fit */
-		break;
-	case REG_EEND:
-		__error = 36; /* poor fit */
-		break;
-	case REG_EESCAPE:
-		__error = 36;
-		break;
-	case REG_BADPAT:
-		__error = 36; /* poor fit */
-		break;
-	case REG_ESIZE:
-		__error = 50;
-		break;
-	case REG_ESPACE:
-		__error = 50;
-		break;
-	default:
-		__error = 36; /* as good as any */
-		break;
-	}
-	if (__error) {
-		ERROR(__error);
-		return 0;
-	}
+        __buflen = 128;
+        __buf = malloc(__buflen);
+        if (!__buf) {
+                ERROR(50);
+                return 0;
+        }
+        __len = 0;
+        circf = 0;
+        for (;;) {
+                __c = GETC();
+                if (__c == eof)
+                        break;
+                if (__c == '\0' || __c == '\n') {
+                        UNGETC(__c);
+                        break;
+                }
+                if (__len + 2 > __buflen) {
+                        __buflen *= 2;
+                        __buf = realloc(__buf, __buflen);
+                        if (!__buf) {
+                                ERROR(50);
+                                return 0;
+                        }
+                }
+                if (__len == 0 && !circf && __c == '^')
+                        circf = 1;
+                else
+                        __buf[__len++] = __c;
+        }
+        if (__len == 0 && !circf) {
+                free(__buf);
+                ERROR(41);
+                return 0;
+        }
+        __buf[__len] = '\0';
+        if (endbuf <= expbuf + sizeof(regex_t)) {
+                free(__buf);
+                ERROR(50);
+                return 0;
+        }
+        __preg = __regex_t_align(expbuf);
+        __preg->buffer = (char *) (__preg + 1);
+        __preg->allocated = endbuf - (char *) __preg->buffer;
+        __error = regcomp(__preg, __buf, REG_NEWLINE);
+        free(__buf);
+        switch (__error) {
+        case 0:
+                break;
+        case REG_BADRPT:
+                __error = 36; /* poor fit */
+                break;
+        case REG_BADBR:
+                __error = 16;
+                break;
+        case REG_EBRACE:
+                __error = 44; /* poor fit */
+                break;
+        case REG_EBRACK:
+                __error = 49;
+                break;
+        case REG_ERANGE:
+                __error = 36; /* poor fit */
+                break;
+        case REG_ECTYPE:
+                __error = 36; /* poor fit */
+                break;
+        case REG_EPAREN:
+                __error = 42;
+                break;
+        case REG_ESUBREG:
+                __error = 36; /* poor fit */
+                break;
+        case REG_EEND:
+                __error = 36; /* poor fit */
+                break;
+        case REG_EESCAPE:
+                __error = 36;
+                break;
+        case REG_BADPAT:
+                __error = 36; /* poor fit */
+                break;
+        case REG_ESIZE:
+                __error = 50;
+                break;
+        case REG_ESPACE:
+                __error = 50;
+                break;
+        default:
+                __error = 36; /* as good as any */
+                break;
+        }
+        if (__error) {
+                ERROR(__error);
+                return 0;
+        }
 #ifdef _RX_H
-	RETURN((__preg->buffer + __preg->rx.allocated - __preg->rx.reserved));
+        RETURN((__preg->buffer + __preg->rx.allocated - __preg->rx.reserved));
 #else
-	RETURN((__preg->buffer + __preg->used));
+        RETURN((__preg->buffer + __preg->used));
 #endif
 }
 
@@ -190,17 +190,17 @@ compile(char *instring, char *expbuf, char *endbuf, int eof)
 int
 step(char *string, char *expbuf)
 {
-	int __result;
-	regmatch_t __pmatch[1];
+        int __result;
+        regmatch_t __pmatch[1];
 
-	__result = regexec(__regex_t_align(expbuf), string, 1, __pmatch, 0);
-	if (circf && __pmatch[0].rm_so != 0)
-		__result = REG_NOMATCH;
-	if (__result == 0) {
-		loc1 = string + __pmatch[0].rm_so;
-		loc2 = string + __pmatch[0].rm_eo;
-	}
-	return __result == 0;
+        __result = regexec(__regex_t_align(expbuf), string, 1, __pmatch, 0);
+        if (circf && __pmatch[0].rm_so != 0)
+                __result = REG_NOMATCH;
+        if (__result == 0) {
+                loc1 = string + __pmatch[0].rm_so;
+                loc2 = string + __pmatch[0].rm_eo;
+        }
+        return __result == 0;
 }
 
 /*
@@ -211,14 +211,14 @@ step(char *string, char *expbuf)
 int
 advance(char *string, char *expbuf)
 {
-	int __old_circf;
-	int __result;
+        int __old_circf;
+        int __result;
 
-	__old_circf = circf;
-	circf = 1;
-	__result = step(string, expbuf);
-	circf = __old_circf;
-	return __result;
+        __old_circf = circf;
+        circf = 1;
+        __result = step(string, expbuf);
+        circf = __old_circf;
+        return __result;
 }
 
 #endif /* _REGEXP_H */

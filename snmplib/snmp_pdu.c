@@ -28,103 +28,103 @@
 
 struct snmp_pdu *
 snmp_pdu_create(type)
-	int type;
+        int type;
 {
-	struct snmp_pdu *pdu;
+        struct snmp_pdu *pdu;
 
-	pdu = snmp_alloc(sizeof(*pdu));
+        pdu = snmp_alloc(sizeof(*pdu));
 
-	pdu->type = type;
-	pdu->req_id = 0;
-	pdu->err_stat = 0;
-	pdu->err_ind = 0;
-	pdu->var = NULL;
-	return pdu;
+        pdu->type = type;
+        pdu->req_id = 0;
+        pdu->err_stat = 0;
+        pdu->err_ind = 0;
+        pdu->var = NULL;
+        return pdu;
 }
 
 void
 snmp_pdu_free(pdu)
-	struct snmp_pdu *pdu;
+        struct snmp_pdu *pdu;
 {
-	if (!pdu)
-		return;
-	snmp_var_free_list(pdu->var);
-	snmp_free(pdu);
+        if (!pdu)
+                return;
+        snmp_var_free_list(pdu->var);
+        snmp_free(pdu);
 }
 
 void
 snmp_pdu_add_var(pdu, var)
-	struct snmp_pdu *pdu;
-	struct snmp_var *var;
+        struct snmp_pdu *pdu;
+        struct snmp_var *var;
 {
-	var->next = pdu->var;
-	pdu->var = var;
+        var->next = pdu->var;
+        pdu->var = var;
 }
 
 u_char *
 snmp_pdu_decode(data, length, pdu)
-	u_char *data;
-	int *length;
-	struct snmp_pdu *pdu;
+        u_char *data;
+        int *length;
+        struct snmp_pdu *pdu;
 {
-	u_char *buf = data;
-	u_char type;
-	
-	buf = asn_decode_header(buf, length, &pdu->type);
-	if (!buf)
-		return NULL;
+        u_char *buf = data;
+        u_char type;
+        
+        buf = asn_decode_header(buf, length, &pdu->type);
+        if (!buf)
+                return NULL;
 
-	switch (pdu->type) {
-	case SNMP_PDU_RESPONSE:
-	case SNMP_PDU_GET:
-	case SNMP_PDU_GETNEXT:
-	case SNMP_PDU_SET:
-		buf = asn_decode_int(buf, length, &type,
-				     &pdu->req_id, sizeof(pdu->req_id));
-		if (!buf)
-			break;
+        switch (pdu->type) {
+        case SNMP_PDU_RESPONSE:
+        case SNMP_PDU_GET:
+        case SNMP_PDU_GETNEXT:
+        case SNMP_PDU_SET:
+                buf = asn_decode_int(buf, length, &type,
+                                     &pdu->req_id, sizeof(pdu->req_id));
+                if (!buf)
+                        break;
 
-		buf = asn_decode_int(buf, length, &type,
-				     &pdu->err_stat, sizeof(pdu->err_stat));
-		if (!buf)
-			break;
-		
-		buf = asn_decode_int(buf, length, &type,
-				     &pdu->err_ind, sizeof(pdu->err_ind));
-		break;
-	default:
-		SNMP_SET_ERRNO(E_SNMP_UNKNOWN_REQ);
-		buf = NULL;
-	}
-	return buf;
+                buf = asn_decode_int(buf, length, &type,
+                                     &pdu->err_stat, sizeof(pdu->err_stat));
+                if (!buf)
+                        break;
+                
+                buf = asn_decode_int(buf, length, &type,
+                                     &pdu->err_ind, sizeof(pdu->err_ind));
+                break;
+        default:
+                SNMP_SET_ERRNO(E_SNMP_UNKNOWN_REQ);
+                buf = NULL;
+        }
+        return buf;
 }
-		
-		
+                
+                
 u_char *
 snmp_pdu_encode(data, length, pdu)
-	u_char *data;
-	int *length;
-	struct snmp_pdu *pdu;
+        u_char *data;
+        int *length;
+        struct snmp_pdu *pdu;
 {
-	u_char *buf = data;
+        u_char *buf = data;
 
 #define BAIL_OUT if (!buf) return NULL;
-	
+        
         /*FIXME: No support for trap and bulk PDUs */
-	buf = asn_encode_int(buf, length,
-			     (ASN_UNIVERSAL | ASN_PRIMITIVE | ASN_INTEGER),
-			     pdu->req_id);
-	BAIL_OUT;
+        buf = asn_encode_int(buf, length,
+                             (ASN_UNIVERSAL | ASN_PRIMITIVE | ASN_INTEGER),
+                             pdu->req_id);
+        BAIL_OUT;
 
-	buf = asn_encode_int(buf, length,
-			     (ASN_UNIVERSAL | ASN_PRIMITIVE | ASN_INTEGER),
-			     pdu->err_stat);
-	BAIL_OUT;
+        buf = asn_encode_int(buf, length,
+                             (ASN_UNIVERSAL | ASN_PRIMITIVE | ASN_INTEGER),
+                             pdu->err_stat);
+        BAIL_OUT;
 
-	buf = asn_encode_int(buf, length,
-			     (ASN_UNIVERSAL | ASN_PRIMITIVE | ASN_INTEGER),
-			     pdu->err_ind);
-	BAIL_OUT;
+        buf = asn_encode_int(buf, length,
+                             (ASN_UNIVERSAL | ASN_PRIMITIVE | ASN_INTEGER),
+                             pdu->err_ind);
+        BAIL_OUT;
 
-	return buf;
+        return buf;
 }

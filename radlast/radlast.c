@@ -47,16 +47,16 @@ static char rcsid[] =
 #define IP_ADDR_LEN 15
 
 struct user_chain {
-	struct user_chain *next;
-	char *name;
+        struct user_chain *next;
+        char *name;
 };
 
 typedef struct wtmp_chain WTMP;
 struct wtmp_chain {
-	WTMP *next;
-	WTMP *prev;
-	struct radutmp ut;
-};	
+        WTMP *next;
+        WTMP *prev;
+        struct radutmp ut;
+};      
 
 void radwtmp();
 void adduser(char*);
@@ -108,185 +108,185 @@ WTMP *nas_updown_list;
 #define OPTSTR "?0123456789c:d:f:h:mn:lLp:st:w"
 
 struct option longopt[] = {
-	"count",              required_argument, 0, 'c',
-	"config-directory",   required_argument, 0, 'd',
-	"file",               required_argument, 0, 'f',
-	"help",               no_argument,       0, '?',
-	"host",               required_argument, 0, 'h',
-	"license",            no_argument,       0, 'L',
-	"missed-stops",       no_argument,       0, 'm',
-	"nas",                required_argument, 0, 'n',
-	"long-format",        no_argument,       0, 'l',
-	"port",               required_argument, 0, 'p',
-	"show-seconds",       no_argument,       0, 's',
-	"wide",               no_argument,       0, 'w',
-	0
+        "count",              required_argument, 0, 'c',
+        "config-directory",   required_argument, 0, 'd',
+        "file",               required_argument, 0, 'f',
+        "help",               no_argument,       0, '?',
+        "host",               required_argument, 0, 'h',
+        "license",            no_argument,       0, 'L',
+        "missed-stops",       no_argument,       0, 'm',
+        "nas",                required_argument, 0, 'n',
+        "long-format",        no_argument,       0, 'l',
+        "port",               required_argument, 0, 'p',
+        "show-seconds",       no_argument,       0, 's',
+        "wide",               no_argument,       0, 'w',
+        0
 };
 
 int
 main(argc, argv)
-	int argc;
-	char **argv;
+        int argc;
+        char **argv;
 {
-	int c;
-	char *p;
-	char *nas_name = NULL;
+        int c;
+        char *p;
+        char *nas_name = NULL;
 
-	initlog(argv[0]);
-	while ((c = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF)
-		switch (c) {
-		case '0': case '1': case '2': case '3': case '4':
-		case '5': case '6': case '7': case '8': case '9':
-			if (maxrec == -1) {
-				p = argv[optind - 1];
-				if (p[0] == '-' && p[1] == c && !p[2])
-					maxrec = atol(++p);
-				else
-					maxrec = atol(argv[optind] + 1);
-				if (!maxrec) {
-					radlog(L_ERR, "invalid number of records");
-					return 1;
-				}
-			}
-			break;
-		case 'c':
-			maxrec = atol(optarg);
-			if (!maxrec) {
-				radlog(L_ERR, "invalid number of records");
-				return 1;
-			}
-			break;
-		case 'd':
-			radius_dir = optarg;
-			break;
-		case 'f':
-			file = optarg;
-			break;
-		case 'h':
-			host_ip = htonl(ip_gethostaddr(optarg));
-			break;
-		case 'L':
-			license();
-			exit(0);
-		case 'm':
-			mark_missing_stops++;
-			break;
-		case 'n':
-			nas_name = optarg;
-			break;
-		case 'l':
-			long_fmt++;
-			break;
-		case 'p':
-			if (*optarg == 's' || *optarg == 'S')
-				++optarg;
-			port = atoi(optarg);
-			break;
-		case 's':
-			sflag++;	/* Show delta as seconds */
-			break;
-		case 't':
-			if (*optarg == 's' || *optarg == 'S')
-				++optarg;
-			port = atoi(optarg);
-			break;
-		case 'w':
-			width = 8;
-			break;
-		case '?':
-		default:
-			usage();
-		}
+        initlog(argv[0]);
+        while ((c = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF)
+                switch (c) {
+                case '0': case '1': case '2': case '3': case '4':
+                case '5': case '6': case '7': case '8': case '9':
+                        if (maxrec == -1) {
+                                p = argv[optind - 1];
+                                if (p[0] == '-' && p[1] == c && !p[2])
+                                        maxrec = atol(++p);
+                                else
+                                        maxrec = atol(argv[optind] + 1);
+                                if (!maxrec) {
+                                        radlog(L_ERR, "invalid number of records");
+                                        return 1;
+                                }
+                        }
+                        break;
+                case 'c':
+                        maxrec = atol(optarg);
+                        if (!maxrec) {
+                                radlog(L_ERR, "invalid number of records");
+                                return 1;
+                        }
+                        break;
+                case 'd':
+                        radius_dir = optarg;
+                        break;
+                case 'f':
+                        file = optarg;
+                        break;
+                case 'h':
+                        host_ip = htonl(ip_gethostaddr(optarg));
+                        break;
+                case 'L':
+                        license();
+                        exit(0);
+                case 'm':
+                        mark_missing_stops++;
+                        break;
+                case 'n':
+                        nas_name = optarg;
+                        break;
+                case 'l':
+                        long_fmt++;
+                        break;
+                case 'p':
+                        if (*optarg == 's' || *optarg == 'S')
+                                ++optarg;
+                        port = atoi(optarg);
+                        break;
+                case 's':
+                        sflag++;        /* Show delta as seconds */
+                        break;
+                case 't':
+                        if (*optarg == 's' || *optarg == 'S')
+                                ++optarg;
+                        port = atoi(optarg);
+                        break;
+                case 'w':
+                        width = 8;
+                        break;
+                case '?':
+                default:
+                        usage();
+                }
 
-	if (sflag && width == 8)
-		usage();
+        if (sflag && width == 8)
+                usage();
 
-	if (argc) {
-		setlinebuf(stdout);
-		for (argv += optind; *argv; ++argv) {
-			adduser(*argv);
-		}
-	}
-	radpath_init();
-	read_naslist();
+        if (argc) {
+                setlinebuf(stdout);
+                for (argv += optind; *argv; ++argv) {
+                        adduser(*argv);
+                }
+        }
+        radpath_init();
+        read_naslist();
 
-	if (nas_name) {
-		nas_ip = ip_gethostaddr(nas_name);
-		if (!nas_ip) {
-			NAS *nas = nas_lookup_name(nas_name);
-			if (nas)
-				nas_ip = nas->ipaddr;
-			else {
-				radlog(L_ERR, "unknown nas: %s", nas_name);
-				return 1;
-			}
-		}	
-		nas_ip = htonl(nas_ip);
-	}
-	radwtmp();
-	return 0;
+        if (nas_name) {
+                nas_ip = ip_gethostaddr(nas_name);
+                if (!nas_ip) {
+                        NAS *nas = nas_lookup_name(nas_name);
+                        if (nas)
+                                nas_ip = nas->ipaddr;
+                        else {
+                                radlog(L_ERR, "unknown nas: %s", nas_name);
+                                return 1;
+                        }
+                }       
+                nas_ip = htonl(nas_ip);
+        }
+        radwtmp();
+        return 0;
 }
 
 int
 read_naslist()
 {
-	int rc;
-	char *path = mkfilename(radius_dir, RADIUS_NASLIST);
-	rc = nas_read_file(path);
-	efree(path);
-	return rc;
+        int rc;
+        char *path = mkfilename(radius_dir, RADIUS_NASLIST);
+        rc = nas_read_file(path);
+        efree(path);
+        return rc;
 }
 
 #if 0
 int
 rawread()
 {
-	int wfd;
-	struct radutmp ut;
-	struct tm *tm;
-	char ct[256];
-	UINT4 ipaddr;
-	char ip_str[DOTTED_QUAD_LEN];
-	
-	if ((wfd = open(file, O_RDONLY, 0)) < 0) {
-		radlog(L_ERR, "can't open %s: %s", file, strerror(errno));
-		exit(1);
-	}
-	while (read(wfd, &ut, sizeof ut) == sizeof ut) {
-		tm = localtime(&ut.time);
-		strftime(ct, sizeof(ct), "%c", tm);
+        int wfd;
+        struct radutmp ut;
+        struct tm *tm;
+        char ct[256];
+        UINT4 ipaddr;
+        char ip_str[DOTTED_QUAD_LEN];
+        
+        if ((wfd = open(file, O_RDONLY, 0)) < 0) {
+                radlog(L_ERR, "can't open %s: %s", file, strerror(errno));
+                exit(1);
+        }
+        while (read(wfd, &ut, sizeof ut) == sizeof ut) {
+                tm = localtime(&ut.time);
+                strftime(ct, sizeof(ct), "%c", tm);
 
-		ipaddr = ut.framed_address;
-		ip_iptostr(ntohl(ipaddr), ip_str);
-		
-		printf("%d %-*.*s %-*.*s %3.3d %-4.4s %c %-*.*s %-*.*s %-*.*s %10.10s %5.5s\n",
-		       ut.type,
-		       
-		       namesize, namesize,
-		       ut.login,
-		       
-		       nas_name_len, nas_name_len,
-		       nas_ip_to_name(ntohl(ut.nas_address)),
+                ipaddr = ut.framed_address;
+                ip_iptostr(ntohl(ipaddr), ip_str);
+                
+                printf("%d %-*.*s %-*.*s %3.3d %-4.4s %c %-*.*s %-*.*s %-*.*s %10.10s %5.5s\n",
+                       ut.type,
+                       
+                       namesize, namesize,
+                       ut.login,
+                       
+                       nas_name_len, nas_name_len,
+                       nas_ip_to_name(ntohl(ut.nas_address)),
 
-		       ut.nas_port,
+                       ut.nas_port,
 
-		       proto_str(ut.proto),
+                       proto_str(ut.proto),
 
-		       ut.porttype,
+                       ut.porttype,
 
-		       RUT_IDSIZE, RUT_IDSIZE,
-		       ut.session_id,
+                       RUT_IDSIZE, RUT_IDSIZE,
+                       ut.session_id,
 
-		       RUT_PNSIZE, RUT_PNSIZE,
-		       ut.caller_id[0] == 0 ? "?" : ut.caller_id,
-		       
-		       IP_ADDR_LEN, IP_ADDR_LEN,
-		       ip_str,
-		       
-		       ct, ct + 11);
-	}
-	close(wfd);
-	return;
+                       RUT_PNSIZE, RUT_PNSIZE,
+                       ut.caller_id[0] == 0 ? "?" : ut.caller_id,
+                       
+                       IP_ADDR_LEN, IP_ADDR_LEN,
+                       ip_str,
+                       
+                       ct, ct + 11);
+        }
+        close(wfd);
+        return;
 }
 #endif
 
@@ -294,170 +294,170 @@ volatile int stop;
 
 RETSIGTYPE
 sig_int(sig)
-	int sig;
+        int sig;
 {
-	stop = 1;
+        stop = 1;
 }
 
 void
 radwtmp()
 {
-	int wfd;
-	struct stat stb;
-	int bl;
-	struct radutmp *bp;
-	int bytes;
-	struct tm *tm;
-	char ct[256];
-	WTMP *pp;
-	
-	if ((wfd = open(file, O_RDONLY, 0)) < 0 || fstat(wfd, &stb) == -1) {
-		radlog(L_ERR, "can't open %s: %s", file, strerror(errno));
-		exit(1);
-	}
-	bl = (stb.st_size + sizeof(buf) - 1) / sizeof(buf);
-	
-	signal(SIGINT, sig_int);
-	stop = 0;
+        int wfd;
+        struct stat stb;
+        int bl;
+        struct radutmp *bp;
+        int bytes;
+        struct tm *tm;
+        char ct[256];
+        WTMP *pp;
+        
+        if ((wfd = open(file, O_RDONLY, 0)) < 0 || fstat(wfd, &stb) == -1) {
+                radlog(L_ERR, "can't open %s: %s", file, strerror(errno));
+                exit(1);
+        }
+        bl = (stb.st_size + sizeof(buf) - 1) / sizeof(buf);
+        
+        signal(SIGINT, sig_int);
+        stop = 0;
 
-	/*time(&buf[0].ut_time);*/
-	
-	while (!stop && --bl >= 0) {
-		if (lseek(wfd, (off_t)(bl * sizeof(buf)), L_SET) == -1 ||
-		    (bytes = read(wfd, buf, sizeof(buf))) == -1)
-			radlog(L_ERR, "%s", file);
-		for (bp = &buf[bytes / sizeof(buf[0]) - 1]; bp >= buf; --bp) {
-			switch (bp->type) {
-			case P_LOGIN:
-				if (pp = find_logout(bp)) {
-					if (want(bp)) {
-						print_entry(pp, bp, 0);
-						if (maxrec != -1 && !--maxrec)
-							return;
-					}
-					delete_logout(pp, bp);
-				} else if (pp = find_restart(bp)) {
-					if (want(bp)) {
-						print_entry(pp, bp, 0);
-						if (maxrec != -1 && !--maxrec)
-							return;
-					}
-				} else if (pp = find_login(bp)) {
-					/* Ignore duplicate logins */
-					if (strncmp(pp->ut.session_id,
-						   bp->session_id,
-						   RUT_IDSIZE) == 0)
-						break; 
-					/*
-					 * This login misses logout
-					 */
-					if (want(bp)) {
-						print_entry(pp, bp,
-							    mark_missing_stops);
-						if (maxrec != -1 && !--maxrec)
-							return;
-					}
-					/* Update login information */
-					pp->ut = *bp;
-				} else {
-					if (want(bp)) {
-						print_entry(NULL, bp, 0);
-						if (maxrec != -1 && !--maxrec)
-							return;
-					}
-				}
-				break;
-			case P_IDLE:
-				/*if (!find_logout_sid(bp))*/
-					add_logout(bp);
-				break;
-			case P_NAS_SHUTDOWN:
-			case P_NAS_START:
-				add_nas_restart(bp);
-				if (want(bp)) {
-					print_reboot_entry(bp);
-					if (maxrec != -1 && !--maxrec)
-						return;
-				}
-				break;
-			default:
-				break;
-			}
-		}
-	}
-	
-	tm = localtime(&buf[0].time);
-	(void) strftime(ct, sizeof(ct), "\nradwtmp begins %c\n", tm);
-	printf(ct);
+        /*time(&buf[0].ut_time);*/
+        
+        while (!stop && --bl >= 0) {
+                if (lseek(wfd, (off_t)(bl * sizeof(buf)), L_SET) == -1 ||
+                    (bytes = read(wfd, buf, sizeof(buf))) == -1)
+                        radlog(L_ERR, "%s", file);
+                for (bp = &buf[bytes / sizeof(buf[0]) - 1]; bp >= buf; --bp) {
+                        switch (bp->type) {
+                        case P_LOGIN:
+                                if (pp = find_logout(bp)) {
+                                        if (want(bp)) {
+                                                print_entry(pp, bp, 0);
+                                                if (maxrec != -1 && !--maxrec)
+                                                        return;
+                                        }
+                                        delete_logout(pp, bp);
+                                } else if (pp = find_restart(bp)) {
+                                        if (want(bp)) {
+                                                print_entry(pp, bp, 0);
+                                                if (maxrec != -1 && !--maxrec)
+                                                        return;
+                                        }
+                                } else if (pp = find_login(bp)) {
+                                        /* Ignore duplicate logins */
+                                        if (strncmp(pp->ut.session_id,
+                                                   bp->session_id,
+                                                   RUT_IDSIZE) == 0)
+                                                break; 
+                                        /*
+                                         * This login misses logout
+                                         */
+                                        if (want(bp)) {
+                                                print_entry(pp, bp,
+                                                            mark_missing_stops);
+                                                if (maxrec != -1 && !--maxrec)
+                                                        return;
+                                        }
+                                        /* Update login information */
+                                        pp->ut = *bp;
+                                } else {
+                                        if (want(bp)) {
+                                                print_entry(NULL, bp, 0);
+                                                if (maxrec != -1 && !--maxrec)
+                                                        return;
+                                        }
+                                }
+                                break;
+                        case P_IDLE:
+                                /*if (!find_logout_sid(bp))*/
+                                        add_logout(bp);
+                                break;
+                        case P_NAS_SHUTDOWN:
+                        case P_NAS_START:
+                                add_nas_restart(bp);
+                                if (want(bp)) {
+                                        print_reboot_entry(bp);
+                                        if (maxrec != -1 && !--maxrec)
+                                                return;
+                                }
+                                break;
+                        default:
+                                break;
+                        }
+                }
+        }
+        
+        tm = localtime(&buf[0].time);
+        (void) strftime(ct, sizeof(ct), "\nradwtmp begins %c\n", tm);
+        printf(ct);
 }
 
 int
 want(ut)
-	struct radutmp *ut;
+        struct radutmp *ut;
 {
-	/* First see if it's a reboot/shutdown record and handle it
-	 * accordingly
-	 */  
-	if (ut->type == P_NAS_START) {
-		if (show_reboot_rec) 
-			return (nas_ip == 0 || ut->nas_address == nas_ip) ;
-	} else if (ut->type == P_NAS_SHUTDOWN) {
-		if (show_shutdown_rec) 
-			return (nas_ip == 0 || ut->nas_address == nas_ip) ;
-	} else {
-		/* Process ususal login/logout entry */
-	
-		if (user_chain) {
-			struct user_chain *cp;
-			
-			for (cp = user_chain; cp; cp = cp->next) {
-				if (strcmp(cp->name, ut->login) == 0) {
-					if (host_ip != 0)
-						return ut->framed_address == host_ip ;
-					if (nas_ip != 0)
-						return ut->nas_address == nas_ip;
-					if (port != 0)
-						return ut->nas_port == port;
-					return 1;
-				}
-			}
-		}
-		if (show_reboot_rec || show_shutdown_rec)
-			return 0;
+        /* First see if it's a reboot/shutdown record and handle it
+         * accordingly
+         */  
+        if (ut->type == P_NAS_START) {
+                if (show_reboot_rec) 
+                        return (nas_ip == 0 || ut->nas_address == nas_ip) ;
+        } else if (ut->type == P_NAS_SHUTDOWN) {
+                if (show_shutdown_rec) 
+                        return (nas_ip == 0 || ut->nas_address == nas_ip) ;
+        } else {
+                /* Process ususal login/logout entry */
+        
+                if (user_chain) {
+                        struct user_chain *cp;
+                        
+                        for (cp = user_chain; cp; cp = cp->next) {
+                                if (strcmp(cp->name, ut->login) == 0) {
+                                        if (host_ip != 0)
+                                                return ut->framed_address == host_ip ;
+                                        if (nas_ip != 0)
+                                                return ut->nas_address == nas_ip;
+                                        if (port != 0)
+                                                return ut->nas_port == port;
+                                        return 1;
+                                }
+                        }
+                }
+                if (show_reboot_rec || show_shutdown_rec)
+                        return 0;
 
-		if (host_ip != 0 && ut->framed_address == host_ip) 
-			return 1;
+                if (host_ip != 0 && ut->framed_address == host_ip) 
+                        return 1;
 
-		if (nas_ip != 0 && ut->nas_address == nas_ip)
-			return 1;
-	
-		if (port != 0 && ut->nas_port == port)
-			return 1;
-	}
-	return host_ip == 0 && nas_ip == 0 && user_chain == 0 && port == 0;
+                if (nas_ip != 0 && ut->nas_address == nas_ip)
+                        return 1;
+        
+                if (port != 0 && ut->nas_port == port)
+                        return 1;
+        }
+        return host_ip == 0 && nas_ip == 0 && user_chain == 0 && port == 0;
 }
 
 void
 adduser(s)
-	char *s;
+        char *s;
 {
-	struct user_chain *uc;
+        struct user_chain *uc;
 
-	if (*s == '~') {
-		if (strcmp(s+1, "reboot") == 0)
-			show_reboot_rec = 1;
-		else if (strcmp(s+1, "shutdown") == 0)
-			show_shutdown_rec = 1;
-	}
+        if (*s == '~') {
+                if (strcmp(s+1, "reboot") == 0)
+                        show_reboot_rec = 1;
+                else if (strcmp(s+1, "shutdown") == 0)
+                        show_shutdown_rec = 1;
+        }
 
-	uc = emalloc(sizeof(*uc));
-	uc->next = NULL;
-	if (user_last) 
-		user_last->next = uc;
-	else
-		user_chain = uc;
-	uc->name = estrdup(s);
-	user_last = uc;
+        uc = emalloc(sizeof(*uc));
+        uc->next = NULL;
+        if (user_last) 
+                user_last->next = uc;
+        else
+                user_chain = uc;
+        uc->name = estrdup(s);
+        user_last = uc;
 }
 
 /*
@@ -465,16 +465,16 @@ adduser(s)
  */
 WTMP *
 add_wtmp_entry(first, pp)
-	WTMP **first;
-	WTMP *pp;
+        WTMP **first;
+        WTMP *pp;
 {
-	assert(*first!=pp);
-	pp->prev = NULL;
-	pp->next = *first;
-	if (*first)
-		(*first)->prev = pp;
-	*first = pp;
-	return pp;
+        assert(*first!=pp);
+        pp->prev = NULL;
+        pp->next = *first;
+        if (*first)
+                (*first)->prev = pp;
+        *first = pp;
+        return pp;
 }
 
 /*
@@ -483,151 +483,151 @@ add_wtmp_entry(first, pp)
  */
 WTMP *
 delete_wtmp_entry(first, pp)
-	WTMP **first;
-	WTMP *pp;
+        WTMP **first;
+        WTMP *pp;
 {
-	WTMP *p;
+        WTMP *p;
 
-	if (pp == *first) 
-		*first = (*first)->next;
-	if (p = pp->prev) 
-		p->next = pp->next;
-	if (p = pp->next)
-		p->prev = pp->prev;
-	return pp;
+        if (pp == *first) 
+                *first = (*first)->next;
+        if (p = pp->prev) 
+                p->next = pp->next;
+        if (p = pp->next)
+                p->prev = pp->prev;
+        return pp;
 }
 
 WTMP *
 find_wtmp_nas(first, bp)
-	WTMP *first;
-	struct radutmp *bp;
+        WTMP *first;
+        struct radutmp *bp;
 {
-	WTMP *wp;
-	
-	for (wp = first; wp; wp = wp->next) {
-		if (wp->ut.nas_address == bp->nas_address)
-			break;
-	}
-	return wp;
+        WTMP *wp;
+        
+        for (wp = first; wp; wp = wp->next) {
+                if (wp->ut.nas_address == bp->nas_address)
+                        break;
+        }
+        return wp;
 }
 
 WTMP *
 find_wtmp_nas_port(first, bp)
-	WTMP *first;
-	struct radutmp *bp;
+        WTMP *first;
+        struct radutmp *bp;
 {
-	WTMP *wp;
-	
-	for (wp = first; wp; wp = wp->next) {
-		if (wp->ut.nas_address == bp->nas_address &&
-		    wp->ut.nas_port == bp->nas_port) 
-			break;
-	}
-	return wp;
+        WTMP *wp;
+        
+        for (wp = first; wp; wp = wp->next) {
+                if (wp->ut.nas_address == bp->nas_address &&
+                    wp->ut.nas_port == bp->nas_port) 
+                        break;
+        }
+        return wp;
 }
 
 WTMP *
 find_wtmp_nas_port_sid(first, bp)
-	WTMP *first;
-	struct radutmp *bp;
+        WTMP *first;
+        struct radutmp *bp;
 {
-	WTMP *wp;
-	
-	for (wp = first; wp; wp = wp->next) {
-		if (wp->ut.nas_address == bp->nas_address &&
-		    wp->ut.nas_port == bp->nas_port &&
-		    strncmp(wp->ut.session_id, bp->session_id, RUT_IDSIZE)==0) 
-			break;
-	}
-	return wp;
+        WTMP *wp;
+        
+        for (wp = first; wp; wp = wp->next) {
+                if (wp->ut.nas_address == bp->nas_address &&
+                    wp->ut.nas_port == bp->nas_port &&
+                    strncmp(wp->ut.session_id, bp->session_id, RUT_IDSIZE)==0) 
+                        break;
+        }
+        return wp;
 }
 
 /* ************************************************************************* */
 
 void
 add_logout(bp)
-	struct radutmp *bp;
+        struct radutmp *bp;
 {
-	WTMP *wp;
+        WTMP *wp;
 
-	wp = emalloc(sizeof(*wp));
-	wp->ut = *bp;
-	add_wtmp_entry(&logout_list, wp);
-	/* purge deleted queue */
-	if (wp = find_wtmp_nas_port(login_list, bp)) {
-		delete_wtmp_entry(&login_list, wp);
-		efree(wp);
-	}
+        wp = emalloc(sizeof(*wp));
+        wp->ut = *bp;
+        add_wtmp_entry(&logout_list, wp);
+        /* purge deleted queue */
+        if (wp = find_wtmp_nas_port(login_list, bp)) {
+                delete_wtmp_entry(&login_list, wp);
+                efree(wp);
+        }
 }
 
 void
 add_nas_restart(bp)
-	struct radutmp *bp;
+        struct radutmp *bp;
 {
-	WTMP *wp;
+        WTMP *wp;
 
-	if (wp = find_wtmp_nas(nas_updown_list, bp)) {
-		delete_wtmp_entry(&nas_updown_list, wp);
-		efree(wp);
-	}
-		    
-	wp = emalloc(sizeof(*wp));
-	wp->ut = *bp;
-	add_wtmp_entry(&nas_updown_list, wp);
+        if (wp = find_wtmp_nas(nas_updown_list, bp)) {
+                delete_wtmp_entry(&nas_updown_list, wp);
+                efree(wp);
+        }
+                    
+        wp = emalloc(sizeof(*wp));
+        wp->ut = *bp;
+        add_wtmp_entry(&nas_updown_list, wp);
 }
 
 WTMP *
 find_login(bp)
-	struct radutmp *bp;
+        struct radutmp *bp;
 {
-	return find_wtmp_nas_port(login_list, bp);
+        return find_wtmp_nas_port(login_list, bp);
 }
 
 WTMP *
 find_logout_sid(bp)
-	struct radutmp *bp;
+        struct radutmp *bp;
 {
-	return find_wtmp_nas_port_sid(logout_list, bp);
+        return find_wtmp_nas_port_sid(logout_list, bp);
 }
 
 WTMP *
 find_logout(bp)
-	struct radutmp *bp;
+        struct radutmp *bp;
 {
-	return find_wtmp_nas_port(logout_list, bp) ;
+        return find_wtmp_nas_port(logout_list, bp) ;
 }
 
 WTMP *
 find_restart(bp)
-	struct radutmp *bp;
+        struct radutmp *bp;
 {
-	return find_wtmp_nas(nas_updown_list, bp);
+        return find_wtmp_nas(nas_updown_list, bp);
 }
 
 void
 delete_logout(pp, utp)
-	WTMP *pp;
-	struct radutmp *utp;
+        WTMP *pp;
+        struct radutmp *utp;
 {
-	static int count;
-	
-	delete_wtmp_entry(&logout_list, pp);
-	pp->ut = *utp;
-	count++;
-	add_wtmp_entry(&login_list, pp);
+        static int count;
+        
+        delete_wtmp_entry(&logout_list, pp);
+        pp->ut = *utp;
+        count++;
+        add_wtmp_entry(&login_list, pp);
 }
 
 /* ************************************************************************* */
 
 char *
 proto_str(id)
-	int id;
+        int id;
 {
-	if (id == 'S')
-		return "SLIP";
-	if (id == 'P')
-		return "PPP";
-	return "shell";
+        if (id == 'S')
+                return "SLIP";
+        if (id == 'P')
+                return "PPP";
+        return "shell";
 }
 
 /* NOTE:
@@ -638,116 +638,116 @@ proto_str(id)
  */
 void
 print_entry(pp, bp, mark)
-	WTMP *pp;
-	struct radutmp *bp;
-	int mark;
+        WTMP *pp;
+        struct radutmp *bp;
+        int mark;
 {
-	struct tm *tm;
-	char ct[256];
-	char ip_str[IP_ADDR_LEN+1];
-	time_t delta;
-	UINT4 ipaddr;
-	char buf[MAX_LONGNAME];
-	
-	tm = localtime(&bp->time);
-	strftime(ct, sizeof(ct), "%c", tm);
+        struct tm *tm;
+        char ct[256];
+        char ip_str[IP_ADDR_LEN+1];
+        time_t delta;
+        UINT4 ipaddr;
+        char buf[MAX_LONGNAME];
+        
+        tm = localtime(&bp->time);
+        strftime(ct, sizeof(ct), "%c", tm);
 
-	ipaddr = bp->framed_address;
-	if (ipaddr == 0 && pp)
-		ipaddr = pp->ut.framed_address;
-	ip_iptostr(ntohl(ipaddr), ip_str);
+        ipaddr = bp->framed_address;
+        if (ipaddr == 0 && pp)
+                ipaddr = pp->ut.framed_address;
+        ip_iptostr(ntohl(ipaddr), ip_str);
 
-	if (long_fmt) {                                   
-		printf("%-*.*s %-*.*s %3.3d %-4.4s %c %-*.*s %-*.*s %-*.*s %10.10s %5.5s ",
-		       namesize, namesize,
-		       bp->login,
-		       
-		       nas_name_len, nas_name_len,
-		       nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
+        if (long_fmt) {                                   
+                printf("%-*.*s %-*.*s %3.3d %-4.4s %c %-*.*s %-*.*s %-*.*s %10.10s %5.5s ",
+                       namesize, namesize,
+                       bp->login,
+                       
+                       nas_name_len, nas_name_len,
+                       nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
 
-		       bp->nas_port,
+                       bp->nas_port,
 
-		       proto_str(bp->proto),
+                       proto_str(bp->proto),
 
-		       bp->porttype,
+                       bp->porttype,
 
-		       RUT_IDSIZE, RUT_IDSIZE,
-		       bp->session_id,
+                       RUT_IDSIZE, RUT_IDSIZE,
+                       bp->session_id,
 
-		       RUT_PNSIZE, RUT_PNSIZE,
-		       bp->caller_id[0] == 0 ? "?" : bp->caller_id,
-		       
-		       IP_ADDR_LEN, IP_ADDR_LEN,
-		       ip_str,
-		       
-		       ct, ct + 11);
+                       RUT_PNSIZE, RUT_PNSIZE,
+                       bp->caller_id[0] == 0 ? "?" : bp->caller_id,
+                       
+                       IP_ADDR_LEN, IP_ADDR_LEN,
+                       ip_str,
+                       
+                       ct, ct + 11);
 
-	} else {
-		printf("%-*.*s %-*.*s %3.3d %-*.*s %10.10s %5.5s ",
-		       namesize, namesize,
-		       bp->login,
-		       
-		       nas_name_len, nas_name_len,
-		       nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
+        } else {
+                printf("%-*.*s %-*.*s %3.3d %-*.*s %10.10s %5.5s ",
+                       namesize, namesize,
+                       bp->login,
+                       
+                       nas_name_len, nas_name_len,
+                       nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
 
-		       bp->nas_port,
+                       bp->nas_port,
 
-		       IP_ADDR_LEN, IP_ADDR_LEN,
-		       ip_str,
-		       
-		       ct, ct + 11);
-	}
-	
-	if (pp == NULL) {
-		printf("still logged in");
-	} else {
-		tm = localtime(&pp->ut.time);
-		strftime(ct, sizeof(ct), "%c", tm);
-		printf("- %5.5s", ct + 11);
+                       IP_ADDR_LEN, IP_ADDR_LEN,
+                       ip_str,
+                       
+                       ct, ct + 11);
+        }
+        
+        if (pp == NULL) {
+                printf("still logged in");
+        } else {
+                tm = localtime(&pp->ut.time);
+                strftime(ct, sizeof(ct), "%c", tm);
+                printf("- %5.5s", ct + 11);
 
-		/*delta = pp->ut.duration;*/
-		delta = pp->ut.time - bp->time;
-		if (sflag) {
-			printf("  (%8lu)", delta);
-		} else {
-			if (delta < 0)
-				delta = 0;
-			tm = gmtime(&delta);
-			strftime(ct, sizeof(ct), "%c", tm);
-			if (delta < 86400)
-				printf("  (%*.*s)", width, width, ct + 11);
-			else
-				printf(" (%ld+%*.*s)",
-				       delta / 86400, width, width, ct + 11);
-		}
-	}
-	if (mark)
-		printf(" !");
-	printf("\n");
+                /*delta = pp->ut.duration;*/
+                delta = pp->ut.time - bp->time;
+                if (sflag) {
+                        printf("  (%8lu)", delta);
+                } else {
+                        if (delta < 0)
+                                delta = 0;
+                        tm = gmtime(&delta);
+                        strftime(ct, sizeof(ct), "%c", tm);
+                        if (delta < 86400)
+                                printf("  (%*.*s)", width, width, ct + 11);
+                        else
+                                printf(" (%ld+%*.*s)",
+                                       delta / 86400, width, width, ct + 11);
+                }
+        }
+        if (mark)
+                printf(" !");
+        printf("\n");
 }
 
 void
 print_reboot_entry(bp)
-	struct radutmp *bp;
+        struct radutmp *bp;
 {
-	char *s;
-	struct tm *tm;
-	char ct[256];
-	char buf[MAX_LONGNAME];
-	
-	tm = localtime(&bp->time);
-	strftime(ct, sizeof(ct), "%c", tm);
+        char *s;
+        struct tm *tm;
+        char ct[256];
+        char buf[MAX_LONGNAME];
+        
+        tm = localtime(&bp->time);
+        strftime(ct, sizeof(ct), "%c", tm);
 
-	if (bp->type == P_NAS_SHUTDOWN)
-		s = "shutdown";
-	else
-		s = "reboot";
-	printf("%-*.*s %s      ~                   %10.10s %5.5s\n",
-	       namesize, namesize,
-	       s,
-		       
-	       nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
-	       ct, ct + 11);
+        if (bp->type == P_NAS_SHUTDOWN)
+                s = "shutdown";
+        else
+                s = "reboot";
+        printf("%-*.*s %s      ~                   %10.10s %5.5s\n",
+               namesize, namesize,
+               s,
+                       
+               nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
+               ct, ct + 11);
 }
 
 
@@ -770,11 +770,11 @@ char usage_str[] =
 void
 usage(void)
 {
-	printf("%s\n"
-		"\nReport bugs to <%s>\n",
-		usage_str,
-		bug_report_address);
-	exit(1);
+        printf("%s\n"
+                "\nReport bugs to <%s>\n",
+                usage_str,
+                bug_report_address);
+        exit(1);
 }
 
 char license_text[] =
@@ -795,9 +795,9 @@ char license_text[] =
 void
 license()
 {
-	printf("%s: Copyright 1999,2000 Sergey Poznyakoff\n", progname);
-	printf("\nThis program is part of GNU Radius\n");
-	printf("%s", license_text);
+        printf("%s: Copyright 1999,2000 Sergey Poznyakoff\n", progname);
+        printf("\nThis program is part of GNU Radius\n");
+        printf("%s", license_text);
 }
 
 

@@ -24,7 +24,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 /* The `getdelim' function is only declared if the following symbol
    is defined.  */
-#define _GNU_SOURCE	1
+#define _GNU_SOURCE     1
 #include <stdio.h>
 #include <sys/types.h>
 
@@ -68,8 +68,8 @@ getstr (lineptr, n, stream, terminator, offset)
      char terminator;
      size_t offset;
 {
-  int nchars_avail;		/* Allocated but unused chars in *LINEPTR.  */
-  char *read_pos;		/* Where we're reading into *LINEPTR. */
+  int nchars_avail;             /* Allocated but unused chars in *LINEPTR.  */
+  char *read_pos;               /* Where we're reading into *LINEPTR. */
   int ret;
 
   if (!lineptr || !n || !stream)
@@ -80,7 +80,7 @@ getstr (lineptr, n, stream, terminator, offset)
       *n = MIN_CHUNK;
       *lineptr = malloc (*n);
       if (!*lineptr)
-	return -1;
+        return -1;
     }
 
   nchars_avail = *n - offset;
@@ -91,40 +91,40 @@ getstr (lineptr, n, stream, terminator, offset)
       register int c = getc (stream);
 
       /* We always want at least one char left in the buffer, since we
-	 always (unless we get an error while reading the first char)
-	 NUL-terminate the line buffer.  */
+         always (unless we get an error while reading the first char)
+         NUL-terminate the line buffer.  */
 
       assert(*n - nchars_avail == read_pos - *lineptr);
       if (nchars_avail < 2)
-	{
-	  if (*n > MIN_CHUNK)
-	    *n *= 2;
-	  else
-	    *n += MIN_CHUNK;
+        {
+          if (*n > MIN_CHUNK)
+            *n *= 2;
+          else
+            *n += MIN_CHUNK;
 
-	  nchars_avail = *n + *lineptr - read_pos;
-	  *lineptr = realloc (*lineptr, *n);
-	  if (!*lineptr)
-	    return -1;
-	  read_pos = *n - nchars_avail + *lineptr;
-	  assert(*n - nchars_avail == read_pos - *lineptr);
-	}
+          nchars_avail = *n + *lineptr - read_pos;
+          *lineptr = realloc (*lineptr, *n);
+          if (!*lineptr)
+            return -1;
+          read_pos = *n - nchars_avail + *lineptr;
+          assert(*n - nchars_avail == read_pos - *lineptr);
+        }
 
       if (c == EOF || ferror (stream))
-	{
-	  /* Return partial line, if any.  */
-	  if (read_pos == *lineptr)
-	    return -1;
-	  else
-	    break;
-	}
+        {
+          /* Return partial line, if any.  */
+          if (read_pos == *lineptr)
+            return -1;
+          else
+            break;
+        }
 
       *read_pos++ = c;
       nchars_avail--;
 
       if (c == terminator)
-	/* Return the line.  */
-	break;
+        /* Return the line.  */
+        break;
     }
 
   /* Done - NUL terminate and return the number of chars read.  */

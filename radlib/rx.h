@@ -1,7 +1,7 @@
 #if !defined(_RX_H) || defined(RX_WANT_SE_DEFS)
 #define _RX_H
 
-/*	Copyright (C) 1992, 1993 Free Software Foundation, Inc.
+/*      Copyright (C) 1992, 1993 Free Software Foundation, Inc.
 
 This file is part of the librx library.
 
@@ -19,7 +19,7 @@ You should have received a copy of the GNU Library General Public
 License along with this software; see the file COPYING.LIB.  If not,
 write to the Free Software Foundation, 675 Mass Ave, Cambridge, MA
 02139, USA.  */
-/*  t. lord	Wed Sep 23 18:20:57 1992	*/
+/*  t. lord     Wed Sep 23 18:20:57 1992        */
 
 
 
@@ -47,8 +47,8 @@ __BEGIN_DECLS
 
 #ifndef RX_subset
 typedef unsigned int RX_subset;
-#define RX_subset_bits	(32)
-#define RX_subset_mask	(RX_subset_bits - 1)
+#define RX_subset_bits  (32)
+#define RX_subset_mask  (RX_subset_bits - 1)
 #endif
 
 typedef RX_subset * rx_Bitset;
@@ -68,7 +68,7 @@ typedef void (*rx_bitset_iterator) ();
 #define RX_bitset_remove(B,N)   RX_bitset_access(B, N, &= ~)
 #define RX_bitset_toggle(B,N)   RX_bitset_access(B, N, ^= )
 #define rx_bitset_numb_subsets(N) (((N) + RX_subset_bits - 1) / RX_subset_bits)
-#define rx_sizeof_bitset(N)	(rx_bitset_numb_subsets(N) * sizeof(RX_subset))
+#define rx_sizeof_bitset(N)     (rx_bitset_numb_subsets(N) * sizeof(RX_subset))
 
 
 
@@ -121,11 +121,11 @@ struct rx_hash_rules;
 typedef int (*rx_hash_eq)(void *, void *);
 typedef struct rx_hash * (*rx_alloc_hash)(struct rx_hash_rules *);
 typedef void (*rx_free_hash)(struct rx_hash *,
-			    struct rx_hash_rules *);
+                            struct rx_hash_rules *);
 typedef struct rx_hash_item * (*rx_alloc_hash_item)(struct rx_hash_rules *,
-						    void *);
+                                                    void *);
 typedef void (*rx_free_hash_item)(struct rx_hash_item *,
-				 struct rx_hash_rules *);
+                                 struct rx_hash_rules *);
 #else
 typedef int (*rx_hash_eq)();
 typedef struct rx_hash * (*rx_alloc_hash)();
@@ -197,7 +197,7 @@ struct rx_se_list;
  *       indicated side effect has been successfully accomplished.
  *       Some examples of side effects are:
  *
- *		Storing the current match position to record the
+ *              Storing the current match position to record the
  *              location of a parentesized subexpression.
  *
  *              Advancing the matcher over N characters if they
@@ -231,8 +231,8 @@ struct rx_se_list;
  
 #ifdef __STDC__
 typedef int (*rx_se_list_order) (struct rx *,
-				 struct rx_se_list *, 
-				 struct rx_se_list *);
+                                 struct rx_se_list *, 
+                                 struct rx_se_list *);
 #else
 typedef int (*rx_se_list_order) ();
 #endif
@@ -289,7 +289,7 @@ struct rx
   unsigned long reserved;
 
   /* --------- The remaining fields are for internal use only. --------- */
-  /* --------- But! they must be initialized to 0.	       --------- */
+  /* --------- But! they must be initialized to 0.             --------- */
 
   /* NODEC is the number of nodes in the NFA with non-epsilon
    * transitions. 
@@ -364,11 +364,11 @@ struct rx
 
 enum rexp_node_type
 {
-  r_cset,			/* Match from a character set. `a' or `[a-z]'*/
-  r_concat,			/* Concat two subexpressions.   `ab' */
-  r_alternate,			/* Choose one of two subexpressions. `a\|b' */
-  r_opt,			/* Optional subexpression. `a?' */
-  r_star,			/* Repeated subexpression. `a*' */
+  r_cset,                       /* Match from a character set. `a' or `[a-z]'*/
+  r_concat,                     /* Concat two subexpressions.   `ab' */
+  r_alternate,                  /* Choose one of two subexpressions. `a\|b' */
+  r_opt,                        /* Optional subexpression. `a?' */
+  r_star,                       /* Repeated subexpression. `a*' */
 
 
   /* A 2phase-star is a variation on a repeated subexpression.
@@ -417,8 +417,8 @@ struct rexp_node
     rx_side_effect side_effect;
     struct
       {
-	struct rexp_node *left;
-	struct rexp_node *right;
+        struct rexp_node *left;
+        struct rexp_node *right;
       } pair;
     void * data;
   } params;
@@ -532,7 +532,7 @@ enum rx_nfa_etype
    * reached.  Side effects may cause the match to fail or the
    * position of the matcher to advance.
    */
-  ne_side_effect		/* A special kind of epsilon. */
+  ne_side_effect                /* A special kind of epsilon. */
 };
 
 struct rx_nfa_edge
@@ -600,7 +600,7 @@ struct rx_possible_future
  *                 origin (nfaEDGE) == DEST
  *              && origin (nfaEDGE) is a member of nfa_states(SUPER)
  *              && exists PF in possible_futures(dest(nfaEDGE)) s.t.
- * 	                sides_of_possible_future (PF) == superedge_sides (EDGE)
+ *                      sides_of_possible_future (PF) == superedge_sides (EDGE)
  *
  * also:
  *
@@ -608,7 +608,7 @@ struct rx_possible_future
  *          nfa_states(SUPER2)
  *           == union of all nfa state sets S s.t.
  *                          exists PF in possible_futures(dest(nfaEDGE)) s.t.
- * 	                       sides_of_possible_future (PF) == superedge_sides (EDGE)
+ *                             sides_of_possible_future (PF) == superedge_sides (EDGE)
  *                          && S == dests_of_possible_future (PF) }
  *
  * Or in english, every superstate is a set of nfa states.  A given
@@ -677,7 +677,7 @@ enum rx_opcode
    * instruction, the matcher saves enough state to backtrack to this
    * point in the match later.
    */
-  rx_backtrack_point = 0,	/* data is (struct transition_class *) */
+  rx_backtrack_point = 0,       /* data is (struct transition_class *) */
 
   /* 
    * RX_DO_SIDE_EFFECTS evaluates the side effects of an epsilon path.
@@ -775,7 +775,7 @@ struct rx_inx
  */
 struct rx_superset
 {
-  int refs;			/* This is a reference counted structure. */
+  int refs;                     /* This is a reference counted structure. */
 
   /* We keep these sets in a cache because (in an unpredictable way),
    * the same set is often created again and again.  But that is also
@@ -790,7 +790,7 @@ struct rx_superset
    */
   int id;
 
-  struct rx_nfa_state * car;	/* May or may not be a valid addr. */
+  struct rx_nfa_state * car;    /* May or may not be a valid addr. */
   struct rx_superset * cdr;
 
   /* If the corresponding superstate exists: */
@@ -851,8 +851,8 @@ struct rx_super_edge
  */
 struct rx_superstate
 {
-  int rx_id;			/* c.f. the id field of rx_superset */
-  int locks;			/* protection from reclamation */
+  int rx_id;                    /* c.f. the id field of rx_superset */
+  int locks;                    /* protection from reclamation */
 
   /* Within a superstate cache, all the superstates are kept in a big
    * queue.  The tail of the queue is the state most likely to be
@@ -913,8 +913,8 @@ struct rx_distinct_future
   struct rx_distinct_future * next_same_super_edge[2];
   struct rx_distinct_future * next_same_dest;
   struct rx_distinct_future * prev_same_dest;
-  struct rx_superstate * present;	/* source state */
-  struct rx_superstate * future;	/* destination state */
+  struct rx_superstate * present;       /* source state */
+  struct rx_superstate * future;        /* destination state */
   struct rx_super_edge * edge;
 
 
@@ -1039,13 +1039,13 @@ struct rx_cache
 /* This holds a matcher position */
 struct rx_string_position
 {
-  __const__ unsigned char * pos;	/* The current pos. */
+  __const__ unsigned char * pos;        /* The current pos. */
   __const__ unsigned char * string; /* The current string burst. */
-  __const__ unsigned char * end;	/* First invalid position >= POS. */
-  int offset;			/* Integer address of the current burst. */
-  int size;			/* Current string's size. */
-  int search_direction;		/* 1 or -1 */
-  int search_end;		/* First position to not try. */
+  __const__ unsigned char * end;        /* First invalid position >= POS. */
+  int offset;                   /* Integer address of the current burst. */
+  int size;                     /* Current string's size. */
+  int search_direction;         /* 1 or -1 */
+  int search_end;               /* First position to not try. */
 };
 
 
@@ -1073,9 +1073,9 @@ enum rx_get_burst_return
 #ifdef __STDC__
 typedef enum rx_get_burst_return
   (*rx_get_burst_fn) (struct rx_string_position * pos,
-		      void * app_closure,
-		      int stop);
-					       
+                      void * app_closure,
+                      int stop);
+                                               
 #else
 typedef enum rx_get_burst_return (*rx_get_burst_fn) ();
 #endif
@@ -1101,12 +1101,12 @@ enum rx_back_check_return
 #ifdef __STDC__
 typedef enum rx_back_check_return
   (*rx_back_check_fn) (struct rx_string_position * pos,
-		       int lparen,
-		       int rparen,
-		       unsigned char * translate,
-		       void * app_closure,
-		       int stop);
-					       
+                       int lparen,
+                       int rparen,
+                       unsigned char * translate,
+                       void * app_closure,
+                       int stop);
+                                               
 #else
 typedef enum rx_back_check_return (*rx_back_check_fn) ();
 #endif
@@ -1121,9 +1121,9 @@ typedef enum rx_back_check_return (*rx_back_check_fn) ();
 
 #ifdef __STDC__
 typedef int (*rx_fetch_char_fn) (struct rx_string_position * pos,
-				 int offset,
-				 void * app_closure,
-				 int stop);
+                                 int offset,
+                                 void * app_closure,
+                                 int stop);
 #else
 typedef int (*rx_fetch_char_fn) ();
 #endif
@@ -1133,8 +1133,8 @@ enum rx_search_return
 {
   rx_search_continuation = -4,
   rx_search_error = -3,
-  rx_search_soft_fail = -2,	/* failed by running out of string */
-  rx_search_fail = -1		/* failed only by reaching failure states */
+  rx_search_soft_fail = -2,     /* failed by running out of string */
+  rx_search_fail = -1           /* failed only by reaching failure states */
   /* return values >= 0 indicate the position of a successful match */
 };
 
@@ -1156,28 +1156,28 @@ extern __const__ char *re_error_msg[];
    `re_error_msg' table in regex.c.  */
 typedef enum
 {
-  REG_NOERROR = 0,	/* Success.  */
-  REG_NOMATCH,		/* Didn't find a match (for regexec).  */
+  REG_NOERROR = 0,      /* Success.  */
+  REG_NOMATCH,          /* Didn't find a match (for regexec).  */
 
   /* POSIX regcomp return error codes.  (In the order listed in the
      standard.)  */
-  REG_BADPAT,		/* Invalid pattern.  */
-  REG_ECOLLATE,		/* Not implemented.  */
-  REG_ECTYPE,		/* Invalid character class name.  */
-  REG_EESCAPE,		/* Trailing backslash.  */
-  REG_ESUBREG,		/* Invalid back reference.  */
-  REG_EBRACK,		/* Unmatched left bracket.  */
-  REG_EPAREN,		/* Parenthesis imbalance.  */ 
-  REG_EBRACE,		/* Unmatched \{.  */
-  REG_BADBR,		/* Invalid contents of \{\}.  */
-  REG_ERANGE,		/* Invalid range end.  */
-  REG_ESPACE,		/* Ran out of memory.  */
-  REG_BADRPT,		/* No preceding re for repetition op.  */
+  REG_BADPAT,           /* Invalid pattern.  */
+  REG_ECOLLATE,         /* Not implemented.  */
+  REG_ECTYPE,           /* Invalid character class name.  */
+  REG_EESCAPE,          /* Trailing backslash.  */
+  REG_ESUBREG,          /* Invalid back reference.  */
+  REG_EBRACK,           /* Unmatched left bracket.  */
+  REG_EPAREN,           /* Parenthesis imbalance.  */ 
+  REG_EBRACE,           /* Unmatched \{.  */
+  REG_BADBR,            /* Invalid contents of \{\}.  */
+  REG_ERANGE,           /* Invalid range end.  */
+  REG_ESPACE,           /* Ran out of memory.  */
+  REG_BADRPT,           /* No preceding re for repetition op.  */
 
   /* Error codes we've added.  */
-  REG_EEND,		/* Premature end.  */
-  REG_ESIZE,		/* Compiled pattern bigger than 2^16 bytes.  */
-  REG_ERPAREN		/* Unmatched ) or \); not returned from regcomp.  */
+  REG_EEND,             /* Premature end.  */
+  REG_ESIZE,            /* Compiled pattern bigger than 2^16 bytes.  */
+  REG_ERPAREN           /* Unmatched ) or \); not returned from regcomp.  */
 } reg_errcode_t;
 
 /* The regex.c support, as a client of rx, defines a set of possible
@@ -1190,7 +1190,7 @@ enum re_side_effects
 #define RX_WANT_SE_DEFS 1
 #undef RX_DEF_SE
 #undef RX_DEF_CPLX_SE
-#define RX_DEF_SE(IDEM, NAME, VALUE)	      NAME VALUE,
+#define RX_DEF_SE(IDEM, NAME, VALUE)          NAME VALUE,
 #define RX_DEF_CPLX_SE(IDEM, NAME, VALUE)     NAME VALUE,
 #include "rx.h"
 #undef RX_DEF_SE
@@ -1216,17 +1216,17 @@ typedef unsigned reg_syntax_t;
 struct re_pattern_buffer
 {
   struct rx rx;
-  reg_syntax_t syntax;		/* See below for syntax bit definitions. */
+  reg_syntax_t syntax;          /* See below for syntax bit definitions. */
 
-  unsigned int no_sub:1;	/* If set, don't  return register offsets. */
-  unsigned int not_bol:1;	/* If set, the anchors ('^' and '$') don't */
-  unsigned int not_eol:1;	/*     match at the ends of the string.  */  
+  unsigned int no_sub:1;        /* If set, don't  return register offsets. */
+  unsigned int not_bol:1;       /* If set, the anchors ('^' and '$') don't */
+  unsigned int not_eol:1;       /*     match at the ends of the string.  */  
   unsigned int newline_anchor:1;/* If true, an anchor at a newline matches.*/
-  unsigned int least_subs:1;	/* If set, and returning registers, return
-				 * as few values as possible.  Only 
-				 * backreferenced groups and group 0 (the whole
-				 * match) will be returned.
-				 */
+  unsigned int least_subs:1;    /* If set, and returning registers, return
+                                 * as few values as possible.  Only 
+                                 * backreferenced groups and group 0 (the whole
+                                 * match) will be returned.
+                                 */
 
   /* If true, this says that the matcher should keep registers on its
    * backtracking stack.  For many patterns, we can easily determine that
@@ -1236,8 +1236,8 @@ struct re_pattern_buffer
   unsigned int search_regs_on_stack:1;
 
   /* is_anchored and begbuf_only are filled in by rx_compile. */
-  unsigned int is_anchored:1;	/* Anchorded by ^? */
-  unsigned int begbuf_only:1;	/* Anchored to char position 0? */
+  unsigned int is_anchored:1;   /* Anchorded by ^? */
+  unsigned int begbuf_only:1;   /* Anchored to char position 0? */
 
   
   /* If REGS_UNALLOCATED, allocate space in the `regs' structure
@@ -1270,11 +1270,11 @@ struct re_pattern_buffer
    */
   char * syntax_parens;
 
-	/* Number of subexpressions found by the compiler.  */
+        /* Number of subexpressions found by the compiler.  */
   size_t re_nsub;
 
-  void * buffer;		/* Malloced memory for the nfa. */
-  unsigned long allocated;	/* Size of that memory. */
+  void * buffer;                /* Malloced memory for the nfa. */
+  unsigned long allocated;      /* Size of that memory. */
 
   /* Pointer to a fastmap, if any, otherwise zero.  re_search uses
    * the fastmap, if there is one, to skip over impossible
@@ -1283,7 +1283,7 @@ struct re_pattern_buffer
 
   unsigned int fastmap_accurate:1; /* These three are internal. */
   unsigned int can_match_empty:1;  
-  struct rx_nfa_state * start;	/* The nfa starting state. */
+  struct rx_nfa_state * start;  /* The nfa starting state. */
 
   /* This is the list of iterator bounds for {lo,hi} constructs.
    * The memory pointed to is part of the rx->buffer.
@@ -1436,32 +1436,32 @@ extern reg_syntax_t re_syntax_options;
 /* [[[begin syntaxes]]] */
 #define RE_SYNTAX_EMACS 0
 
-#define RE_SYNTAX_AWK							\
-  (RE_BACKSLASH_ESCAPE_IN_LISTS | RE_DOT_NOT_NULL			\
-   | RE_NO_BK_PARENS            | RE_NO_BK_REFS				\
-   | RE_NO_BK_VBAR              | RE_NO_EMPTY_RANGES			\
-   | RE_DOT_NEWLINE							\
+#define RE_SYNTAX_AWK                                                   \
+  (RE_BACKSLASH_ESCAPE_IN_LISTS | RE_DOT_NOT_NULL                       \
+   | RE_NO_BK_PARENS            | RE_NO_BK_REFS                         \
+   | RE_NO_BK_VBAR              | RE_NO_EMPTY_RANGES                    \
+   | RE_DOT_NEWLINE                                                     \
    | RE_UNMATCHED_RIGHT_PAREN_ORD | RE_NO_GNU_OPS)
 
-#define RE_SYNTAX_GNU_AWK 						\
+#define RE_SYNTAX_GNU_AWK                                               \
   ((RE_SYNTAX_POSIX_EXTENDED | RE_BACKSLASH_ESCAPE_IN_LISTS) \
     & ~(RE_DOT_NOT_NULL|RE_INTERVALS))
 
-#define RE_SYNTAX_POSIX_AWK 						\
+#define RE_SYNTAX_POSIX_AWK                                             \
   (RE_SYNTAX_POSIX_EXTENDED | RE_BACKSLASH_ESCAPE_IN_LISTS | RE_NO_GNU_OPS)
 
-#define RE_SYNTAX_GREP							\
-  (RE_BK_PLUS_QM              | RE_CHAR_CLASSES				\
-   | RE_HAT_LISTS_NOT_NEWLINE | RE_INTERVALS				\
+#define RE_SYNTAX_GREP                                                  \
+  (RE_BK_PLUS_QM              | RE_CHAR_CLASSES                         \
+   | RE_HAT_LISTS_NOT_NEWLINE | RE_INTERVALS                            \
    | RE_NEWLINE_ALT)
 
-#define RE_SYNTAX_EGREP							\
-  (RE_CHAR_CLASSES        | RE_CONTEXT_INDEP_ANCHORS			\
-   | RE_CONTEXT_INDEP_OPS | RE_HAT_LISTS_NOT_NEWLINE			\
-   | RE_NEWLINE_ALT       | RE_NO_BK_PARENS				\
+#define RE_SYNTAX_EGREP                                                 \
+  (RE_CHAR_CLASSES        | RE_CONTEXT_INDEP_ANCHORS                    \
+   | RE_CONTEXT_INDEP_OPS | RE_HAT_LISTS_NOT_NEWLINE                    \
+   | RE_NEWLINE_ALT       | RE_NO_BK_PARENS                             \
    | RE_NO_BK_VBAR)
 
-#define RE_SYNTAX_POSIX_EGREP						\
+#define RE_SYNTAX_POSIX_EGREP                                           \
   (RE_SYNTAX_EGREP | RE_INTERVALS | RE_NO_BK_BRACES)
 
 /* P1003.2/D11.2, section 4.20.7.1, lines 5078ff.  */
@@ -1470,32 +1470,32 @@ extern reg_syntax_t re_syntax_options;
 #define RE_SYNTAX_SED RE_SYNTAX_POSIX_BASIC
 
 /* Syntax bits common to both basic and extended POSIX regex syntax.  */
-#define _RE_SYNTAX_POSIX_COMMON						\
-  (RE_CHAR_CLASSES | RE_DOT_NEWLINE      | RE_DOT_NOT_NULL		\
+#define _RE_SYNTAX_POSIX_COMMON                                         \
+  (RE_CHAR_CLASSES | RE_DOT_NEWLINE      | RE_DOT_NOT_NULL              \
    | RE_INTERVALS  | RE_NO_EMPTY_RANGES)
 
-#define RE_SYNTAX_POSIX_BASIC						\
+#define RE_SYNTAX_POSIX_BASIC                                           \
   (_RE_SYNTAX_POSIX_COMMON | RE_BK_PLUS_QM)
 
 /* Differs from ..._POSIX_BASIC only in that RE_BK_PLUS_QM becomes
    RE_LIMITED_OPS, i.e., \? \+ \| are not recognized.  Actually, this
    isn't minimal, since other operators, such as \`, aren't disabled.  */
-#define RE_SYNTAX_POSIX_MINIMAL_BASIC					\
+#define RE_SYNTAX_POSIX_MINIMAL_BASIC                                   \
   (_RE_SYNTAX_POSIX_COMMON | RE_LIMITED_OPS)
 
-#define RE_SYNTAX_POSIX_EXTENDED					\
-  (_RE_SYNTAX_POSIX_COMMON | RE_CONTEXT_INDEP_ANCHORS			\
-   | RE_CONTEXT_INDEP_OPS  | RE_NO_BK_BRACES				\
-   | RE_NO_BK_PARENS       | RE_NO_BK_VBAR				\
+#define RE_SYNTAX_POSIX_EXTENDED                                        \
+  (_RE_SYNTAX_POSIX_COMMON | RE_CONTEXT_INDEP_ANCHORS                   \
+   | RE_CONTEXT_INDEP_OPS  | RE_NO_BK_BRACES                            \
+   | RE_NO_BK_PARENS       | RE_NO_BK_VBAR                              \
    | RE_UNMATCHED_RIGHT_PAREN_ORD)
 
 /* Differs from ..._POSIX_EXTENDED in that RE_CONTEXT_INVALID_OPS
    replaces RE_CONTEXT_INDEP_OPS and RE_NO_BK_REFS is added.  */
-#define RE_SYNTAX_POSIX_MINIMAL_EXTENDED				\
-  (_RE_SYNTAX_POSIX_COMMON  | RE_CONTEXT_INDEP_ANCHORS			\
-   | RE_CONTEXT_INVALID_OPS | RE_NO_BK_BRACES				\
-   | RE_NO_BK_PARENS        | RE_NO_BK_REFS				\
-   | RE_NO_BK_VBAR	    | RE_UNMATCHED_RIGHT_PAREN_ORD)
+#define RE_SYNTAX_POSIX_MINIMAL_EXTENDED                                \
+  (_RE_SYNTAX_POSIX_COMMON  | RE_CONTEXT_INDEP_ANCHORS                  \
+   | RE_CONTEXT_INVALID_OPS | RE_NO_BK_BRACES                           \
+   | RE_NO_BK_PARENS        | RE_NO_BK_REFS                             \
+   | RE_NO_BK_VBAR          | RE_UNMATCHED_RIGHT_PAREN_ORD)
 /* [[[end syntaxes]]] */
 
 /* Maximum number of duplicates an interval can allow.  Some systems
@@ -1583,82 +1583,82 @@ RX_DECL void rx_bitset_complement (int size, rx_Bitset b);
 RX_DECL void rx_bitset_assign (int size, rx_Bitset a, rx_Bitset b);
 RX_DECL void rx_bitset_union (int size, rx_Bitset a, rx_Bitset b);
 RX_DECL void rx_bitset_intersection (int size,
-				     rx_Bitset a, rx_Bitset b);
+                                     rx_Bitset a, rx_Bitset b);
 RX_DECL void rx_bitset_difference (int size, rx_Bitset a, rx_Bitset b);
 RX_DECL void rx_bitset_revdifference (int size,
-				      rx_Bitset a, rx_Bitset b);
+                                      rx_Bitset a, rx_Bitset b);
 RX_DECL void rx_bitset_xor (int size, rx_Bitset a, rx_Bitset b);
 RX_DECL unsigned long rx_bitset_hash (int size, rx_Bitset b);
 RX_DECL struct rx_hash_item * rx_hash_find (struct rx_hash * table,
-					    unsigned long hash,
-					    void * value,
-					    struct rx_hash_rules * rules);
+                                            unsigned long hash,
+                                            void * value,
+                                            struct rx_hash_rules * rules);
 RX_DECL struct rx_hash_item * rx_hash_store (struct rx_hash * table,
-					     unsigned long hash,
-					     void * value,
-					     struct rx_hash_rules * rules);
+                                             unsigned long hash,
+                                             void * value,
+                                             struct rx_hash_rules * rules);
 RX_DECL void rx_hash_free (struct rx_hash_item * it, struct rx_hash_rules * rules);
 RX_DECL void rx_free_hash_table (struct rx_hash * tab, rx_hash_freefn freefn,
-				 struct rx_hash_rules * rules);
+                                 struct rx_hash_rules * rules);
 RX_DECL rx_Bitset rx_cset (struct rx *rx);
 RX_DECL rx_Bitset rx_copy_cset (struct rx *rx, rx_Bitset a);
 RX_DECL void rx_free_cset (struct rx * rx, rx_Bitset c);
 RX_DECL struct rexp_node * rexp_node (struct rx *rx,
-				      enum rexp_node_type type);
+                                      enum rexp_node_type type);
 RX_DECL struct rexp_node * rx_mk_r_cset (struct rx * rx,
-					 rx_Bitset b);
+                                         rx_Bitset b);
 RX_DECL struct rexp_node * rx_mk_r_concat (struct rx * rx,
-					   struct rexp_node * a,
-					   struct rexp_node * b);
+                                           struct rexp_node * a,
+                                           struct rexp_node * b);
 RX_DECL struct rexp_node * rx_mk_r_alternate (struct rx * rx,
-					      struct rexp_node * a,
-					      struct rexp_node * b);
+                                              struct rexp_node * a,
+                                              struct rexp_node * b);
 RX_DECL struct rexp_node * rx_mk_r_opt (struct rx * rx,
-					struct rexp_node * a);
+                                        struct rexp_node * a);
 RX_DECL struct rexp_node * rx_mk_r_star (struct rx * rx,
-					 struct rexp_node * a);
+                                         struct rexp_node * a);
 RX_DECL struct rexp_node * rx_mk_r_2phase_star (struct rx * rx,
-						struct rexp_node * a,
-						struct rexp_node * b);
+                                                struct rexp_node * a,
+                                                struct rexp_node * b);
 RX_DECL struct rexp_node * rx_mk_r_side_effect (struct rx * rx,
-						rx_side_effect a);
+                                                rx_side_effect a);
 RX_DECL struct rexp_node * rx_mk_r_data  (struct rx * rx,
-					  void * a);
+                                          void * a);
 RX_DECL void rx_free_rexp (struct rx * rx, struct rexp_node * node);
 RX_DECL struct rexp_node * rx_copy_rexp (struct rx *rx,
-					 struct rexp_node *node);
+                                         struct rexp_node *node);
 RX_DECL struct rx_nfa_state * rx_nfa_state (struct rx *rx);
 RX_DECL void rx_free_nfa_state (struct rx_nfa_state * n);
 RX_DECL struct rx_nfa_state * rx_id_to_nfa_state (struct rx * rx,
-						  int id);
+                                                  int id);
 RX_DECL struct rx_nfa_edge * rx_nfa_edge (struct rx *rx,
-					  enum rx_nfa_etype type,
-					  struct rx_nfa_state *start,
-					  struct rx_nfa_state *dest);
+                                          enum rx_nfa_etype type,
+                                          struct rx_nfa_state *start,
+                                          struct rx_nfa_state *dest);
 RX_DECL void rx_free_nfa_edge (struct rx_nfa_edge * e);
 RX_DECL void rx_free_nfa (struct rx *rx);
 RX_DECL int rx_build_nfa (struct rx *rx,
-			  struct rexp_node *rexp,
-			  struct rx_nfa_state **start,
-			  struct rx_nfa_state **end);
+                          struct rexp_node *rexp,
+                          struct rx_nfa_state **start,
+                          struct rx_nfa_state **end);
 RX_DECL void rx_name_nfa_states (struct rx *rx);
 RX_DECL int rx_eclose_nfa (struct rx *rx);
 RX_DECL void rx_delete_epsilon_transitions (struct rx *rx);
 RX_DECL int rx_compactify_nfa (struct rx *rx,
-			       void **mem, unsigned long *size);
+                               void **mem, unsigned long *size);
 RX_DECL void rx_release_superset (struct rx *rx,
-				  struct rx_superset *set);
+                                  struct rx_superset *set);
 RX_DECL struct rx_superset * rx_superset_cons (struct rx * rx,
-					       struct rx_nfa_state *car, struct rx_superset *cdr);
+                                               struct rx_nfa_state *car, struct rx_superset *cdr);
 RX_DECL struct rx_superset * rx_superstate_eclosure_union
   (struct rx * rx, struct rx_superset *set, struct rx_nfa_state_set *ecl);
 RX_DECL struct rx_superstate * rx_superstate (struct rx *rx,
-					      struct rx_superset *set);
+                                              struct rx_superset *set);
 RX_DECL struct rx_inx * rx_handle_cache_miss
   (struct rx *rx, struct rx_superstate *super, unsigned char chr, void *data);
 RX_DECL reg_errcode_t rx_compile (__const__ char *pattern, int size,
-				  reg_syntax_t syntax,
-				  struct re_pattern_buffer * rxb);
+                                  reg_syntax_t syntax,
+                                  struct re_pattern_buffer * rxb);
 RX_DECL void rx_blow_up_fastmap (struct re_pattern_buffer * rxb);
 #else /* STDC */
 RX_DECL int rx_bitset_is_equal ();
@@ -1719,39 +1719,39 @@ RX_DECL void rx_blow_up_fastmap ();
 
 #ifdef __STDC__
 extern int re_search_2 (struct re_pattern_buffer *rxb,
-			__const__ char * string1, int size1,
-			__const__ char * string2, int size2,
-			int startpos, int range,
-			struct re_registers *regs,
-			int stop);
+                        __const__ char * string1, int size1,
+                        __const__ char * string2, int size2,
+                        int startpos, int range,
+                        struct re_registers *regs,
+                        int stop);
 extern int re_search (struct re_pattern_buffer * rxb, __const__ char *string,
-		      int size, int startpos, int range,
-		      struct re_registers *regs);
+                      int size, int startpos, int range,
+                      struct re_registers *regs);
 extern int re_match_2 (struct re_pattern_buffer * rxb,
-		       __const__ char * string1, int size1,
-		       __const__ char * string2, int size2,
-		       int pos, struct re_registers *regs, int stop);
+                       __const__ char * string1, int size1,
+                       __const__ char * string2, int size2,
+                       int pos, struct re_registers *regs, int stop);
 extern int re_match (struct re_pattern_buffer * rxb,
-		     __const__ char * string,
-		     int size, int pos,
-		     struct re_registers *regs);
+                     __const__ char * string,
+                     int size, int pos,
+                     struct re_registers *regs);
 extern reg_syntax_t re_set_syntax (reg_syntax_t syntax);
 extern void re_set_registers (struct re_pattern_buffer *bufp,
-			      struct re_registers *regs,
-			      unsigned num_regs,
-			      regoff_t * starts, regoff_t * ends);
+                              struct re_registers *regs,
+                              unsigned num_regs,
+                              regoff_t * starts, regoff_t * ends);
 extern __const__ char * re_compile_pattern (__const__ char *pattern,
-					int length,
-					struct re_pattern_buffer * rxb);
+                                        int length,
+                                        struct re_pattern_buffer * rxb);
 extern int re_compile_fastmap (struct re_pattern_buffer * rxb);
 extern char * re_comp (__const__ char *s);
 extern int re_exec (__const__ char *s);
 extern int regcomp (regex_t * preg, __const__ char * pattern, int cflags);
 extern int regexec (__const__ regex_t *preg, __const__ char *string,
-		    size_t nmatch, regmatch_t pmatch[],
-		    int eflags);
+                    size_t nmatch, regmatch_t pmatch[],
+                    int eflags);
 extern size_t regerror (int errcode, __const__ regex_t *preg,
-			char *errbuf, size_t errbuf_size);
+                        char *errbuf, size_t errbuf_size);
 extern void regfree (regex_t *preg);
 
 #else /* STDC */
@@ -1871,26 +1871,26 @@ struct rx_search_state
    *
    * For some patterns, there may also be registers saved on the stack.
    */
-  unsigned num_regs;		/* Includes an element for register zero. */
-  regoff_t * lparen;		/* scratch space for register returns */
+  unsigned num_regs;            /* Includes an element for register zero. */
+  regoff_t * lparen;            /* scratch space for register returns */
   regoff_t * rparen;
-  regoff_t * best_lpspace;	/* in case the user doesn't want these */
-  regoff_t * best_rpspace;	/* values, we still need space to store
-				 * them.  Normally, this memoryis unused
-				 * and the space pointed to by REGS is 
-				 * used instead.
-				 */
+  regoff_t * best_lpspace;      /* in case the user doesn't want these */
+  regoff_t * best_rpspace;      /* values, we still need space to store
+                                 * them.  Normally, this memoryis unused
+                                 * and the space pointed to by REGS is 
+                                 * used instead.
+                                 */
   
-  int last_l;			/* Highest index of a valid lparen. */
-  int last_r;			/* It's dual. */
+  int last_l;                   /* Highest index of a valid lparen. */
+  int last_r;                   /* It's dual. */
   
-  int * best_lparen;		/* This contains the best known register */
-  int * best_rparen;		/* assignments. 
-				 * This may point to the same mem as
-				 * best_lpspace, or it might point to memory
-				 * passed by the caller.
-				 */
-  int best_last_l;		/* best_last_l:best_lparen::last_l:lparen */
+  int * best_lparen;            /* This contains the best known register */
+  int * best_rparen;            /* assignments. 
+                                 * This may point to the same mem as
+                                 * best_lpspace, or it might point to memory
+                                 * passed by the caller.
+                                 */
+  int best_last_l;              /* best_last_l:best_lparen::last_l:lparen */
   int best_last_r;
 
 
@@ -1900,7 +1900,7 @@ struct rx_search_state
 
   struct rx_superstate * start_super;
   int nfa_choice;
-  int first_found;		/* If true, return after finding any match. */
+  int first_found;              /* If true, return after finding any match. */
   int ret_val;
 
   /* For continuations... */
@@ -1957,7 +1957,7 @@ struct rx_search_state
    * Possible return values are:
    *     1   --- end of string while the superNFA is still going
    *     0   --- internal error (out of memory)
-   *	-1   --- search completed by reaching the superNFA fail state
+   *    -1   --- search completed by reaching the superNFA fail state
    *    -2   --- a match was found, maybe not the longest.
    *
    * When the search is complete (-1), best_last_r indicates whether
@@ -1994,7 +1994,7 @@ struct rx_search_state
   
 };
 static __inline__ void init_fastmap( struct re_pattern_buffer *,
-												struct rx_search_state * );
+                                                                                                struct rx_search_state * );
 
 
 extern char rx_slowmap[];
@@ -2002,11 +2002,11 @@ extern unsigned char rx_id_translation[];
 
 static __inline__ void
 init_fastmap( struct re_pattern_buffer * rxb,
-				 struct rx_search_state * search_state )
+                                 struct rx_search_state * search_state )
 {
   search_state->fastmap = (rxb->fastmap
-			   ? (char *)rxb->fastmap
-			   : (char *)rx_slowmap);
+                           ? (char *)rxb->fastmap
+                           : (char *)rx_slowmap);
   /* Update the fastmap now if not correct already. 
    * When the regexp was compiled, the fastmap was computed
    * and stored in a bitset.  This expands the bitset into a
@@ -2021,7 +2021,7 @@ init_fastmap( struct re_pattern_buffer * rxb,
 
 static __inline__ void
 uninit_fastmap ( struct re_pattern_buffer * rxb,
-					 struct rx_search_state * search_state )
+                                         struct rx_search_state * search_state )
 {
   /* Unset the fastmap sentinel */
   if (search_state->fastmap_chr >= 0)
@@ -2031,8 +2031,8 @@ uninit_fastmap ( struct re_pattern_buffer * rxb,
 
 static __inline__ int
 fastmap_search ( struct re_pattern_buffer * rxb, int stop,
-					 rx_get_burst_fn get_burst, void * app_closure,
-					 struct rx_search_state * search_state )
+                                         rx_get_burst_fn get_burst, void * app_closure,
+                                         struct rx_search_state * search_state )
 {
   enum rx_fastmap_entry pc;
 
@@ -2061,120 +2061,120 @@ fastmap_search ( struct re_pattern_buffer * rxb, int stop,
        * `goto init_fastmap_sentinal'.
        */
       if (search_state->outer_pos.size)
-	{
-	  search_state->fastmap_chr = ((search_state->outer_pos.search_direction == 1)
-				       ? *(search_state->outer_pos.end - 1)
-				       : *search_state->outer_pos.string);
-	  search_state->fastmap_val
-	    = search_state->fastmap[search_state->fastmap_chr];
-	  search_state->fastmap[search_state->fastmap_chr] = 1;
-	}
+        {
+          search_state->fastmap_chr = ((search_state->outer_pos.search_direction == 1)
+                                       ? *(search_state->outer_pos.end - 1)
+                                       : *search_state->outer_pos.string);
+          search_state->fastmap_val
+            = search_state->fastmap[search_state->fastmap_chr];
+          search_state->fastmap[search_state->fastmap_chr] = 1;
+        }
       else
-	{
-	  search_state->fastmap_chr = -1;
-	  search_state->fastmap_val = 0;
-	}
+        {
+          search_state->fastmap_chr = -1;
+          search_state->fastmap_val = 0;
+        }
       
       if (search_state->outer_pos.pos >= search_state->outer_pos.end)
-	goto fastmap_hit_bound;
+        goto fastmap_hit_bound;
       else
-	{
-	  if (search_state->outer_pos.search_direction == 1)
-	    {
-	      if (search_state->fastmap_val)
-		{
-		  for (;;)
-		    {
-		      while (!search_state->fastmap[*search_state->outer_pos.pos])
-			++search_state->outer_pos.pos;
-		      return rx_fastmap_ok;
-		    }
-		}
-	      else
-		{
-		  for (;;)
-		    {
-		      while (!search_state->fastmap[*search_state->outer_pos.pos])
-			++search_state->outer_pos.pos;
-		      if (*search_state->outer_pos.pos != search_state->fastmap_chr)
-			return rx_fastmap_ok;
-		      else 
-			{
-			  ++search_state->outer_pos.pos;
-			  if (search_state->outer_pos.pos == search_state->outer_pos.end)
-			    goto fastmap_hit_bound;
-			}
-		    }
-		}
-	    }
-	  else
-	    {
-	      __const__ unsigned char * bound;
-	      bound = search_state->outer_pos.string - 1;
-	      if (search_state->fastmap_val)
-		{
-		  for (;;)
-		    {
-		      while (!search_state->fastmap[*search_state->outer_pos.pos])
-			--search_state->outer_pos.pos;
-		      return rx_fastmap_ok;
-		    }
-		}
-	      else
-		{
-		  for (;;)
-		    {
-		      while (!search_state->fastmap[*search_state->outer_pos.pos])
-			--search_state->outer_pos.pos;
-		      if ((*search_state->outer_pos.pos != search_state->fastmap_chr) || search_state->fastmap_val)
-			return rx_fastmap_ok;
-		      else 
-			{
-			  --search_state->outer_pos.pos;
-			  if (search_state->outer_pos.pos == bound)
-			    goto fastmap_hit_bound;
-			}
-		    }
-		}
-	    }
-	}
+        {
+          if (search_state->outer_pos.search_direction == 1)
+            {
+              if (search_state->fastmap_val)
+                {
+                  for (;;)
+                    {
+                      while (!search_state->fastmap[*search_state->outer_pos.pos])
+                        ++search_state->outer_pos.pos;
+                      return rx_fastmap_ok;
+                    }
+                }
+              else
+                {
+                  for (;;)
+                    {
+                      while (!search_state->fastmap[*search_state->outer_pos.pos])
+                        ++search_state->outer_pos.pos;
+                      if (*search_state->outer_pos.pos != search_state->fastmap_chr)
+                        return rx_fastmap_ok;
+                      else 
+                        {
+                          ++search_state->outer_pos.pos;
+                          if (search_state->outer_pos.pos == search_state->outer_pos.end)
+                            goto fastmap_hit_bound;
+                        }
+                    }
+                }
+            }
+          else
+            {
+              __const__ unsigned char * bound;
+              bound = search_state->outer_pos.string - 1;
+              if (search_state->fastmap_val)
+                {
+                  for (;;)
+                    {
+                      while (!search_state->fastmap[*search_state->outer_pos.pos])
+                        --search_state->outer_pos.pos;
+                      return rx_fastmap_ok;
+                    }
+                }
+              else
+                {
+                  for (;;)
+                    {
+                      while (!search_state->fastmap[*search_state->outer_pos.pos])
+                        --search_state->outer_pos.pos;
+                      if ((*search_state->outer_pos.pos != search_state->fastmap_chr) || search_state->fastmap_val)
+                        return rx_fastmap_ok;
+                      else 
+                        {
+                          --search_state->outer_pos.pos;
+                          if (search_state->outer_pos.pos == bound)
+                            goto fastmap_hit_bound;
+                        }
+                    }
+                }
+            }
+        }
       
     case rx_fastmap_string_break:
     fastmap_hit_bound:
       {
-	/* If we hit a bound, it may be time to fetch another burst
-	 * of string, or it may be time to return a continuation to 
- 	 * the caller, or it might be time to fail.
-	 */
+        /* If we hit a bound, it may be time to fetch another burst
+         * of string, or it may be time to return a continuation to 
+         * the caller, or it might be time to fail.
+         */
 
-	int burst_state;
-	burst_state = get_burst (&search_state->outer_pos, app_closure, stop);
-	switch (burst_state)
-	  {
-	  default:
-	  case rx_get_burst_error:
-	    return rx_fastmap_error;
-	  case rx_get_burst_continuation:
-	    {
-	      pc = rx_fastmap_string_break;
-	      goto return_continuation;
-	    }
-	  case rx_get_burst_ok:
-	    goto init_fastmap_sentinal;
-	  case rx_get_burst_no_more:
-	    /* ...not a string split, simply no more string. 
-	     *
-	     * When searching backward, running out of string
-	     * is reason to quit.
-	     *
-	     * When searching forward, we allow the possibility
-	     * of an (empty) match after the last character in the
-	     * virtual string.  So, fall through to the matcher
-	     */
-	    return (  (search_state->outer_pos.search_direction == 1)
-		    ? rx_fastmap_ok
-		    : rx_fastmap_fail);
-	  }
+        int burst_state;
+        burst_state = get_burst (&search_state->outer_pos, app_closure, stop);
+        switch (burst_state)
+          {
+          default:
+          case rx_get_burst_error:
+            return rx_fastmap_error;
+          case rx_get_burst_continuation:
+            {
+              pc = rx_fastmap_string_break;
+              goto return_continuation;
+            }
+          case rx_get_burst_ok:
+            goto init_fastmap_sentinal;
+          case rx_get_burst_no_more:
+            /* ...not a string split, simply no more string. 
+             *
+             * When searching backward, running out of string
+             * is reason to quit.
+             *
+             * When searching forward, we allow the possibility
+             * of an (empty) match after the last character in the
+             * virtual string.  So, fall through to the matcher
+             */
+            return (  (search_state->outer_pos.search_direction == 1)
+                    ? rx_fastmap_ok
+                    : rx_fastmap_fail);
+          }
       }
     }
 
@@ -2206,15 +2206,15 @@ fastmap_search ( struct re_pattern_buffer * rxb, int stop,
 #include <string.h>
 
 #ifndef bcmp
-#define bcmp(s1, s2, n)	memcmp ((s1), (s2), (n))
+#define bcmp(s1, s2, n) memcmp ((s1), (s2), (n))
 #endif
 
 #ifndef bcopy
-#define bcopy(s, d, n)	memcpy ((d), (s), (n))
+#define bcopy(s, d, n)  memcpy ((d), (s), (n))
 #endif
 
 #ifndef bzero
-#define bzero(s, n)	memset ((s), 0, (n))
+#define bzero(s, n)     memset ((s), 0, (n))
 #endif
 
 #else /*  HAVE_STRING_H || STDC_HEADERS */
@@ -2252,12 +2252,12 @@ RX_DECL char re_syntax_table[CHAR_SET_SIZE];
  */
 
 #define AT_STRINGS_BEG() \
-  (   -1		 \
+  (   -1                 \
    == ((search_state.test_pos.pos - search_state.test_pos.string) \
        + search_state.test_pos.offset))
 
 #define AT_STRINGS_END() \
-  (   (total_size - 1)	 \
+  (   (total_size - 1)   \
    == ((search_state.test_pos.pos - search_state.test_pos.string) \
        + search_state.test_pos.offset))
 
@@ -2269,14 +2269,14 @@ RX_DECL char re_syntax_table[CHAR_SET_SIZE];
  *
  * Assumes `string1' exists, so use in conjunction with AT_STRINGS_BEG ().  
  */
-#define LETTER_P(POS,OFF)						\
-  (   SYNTAX (fetch_char(POS, OFF, app_closure, stop))			\
+#define LETTER_P(POS,OFF)                                               \
+  (   SYNTAX (fetch_char(POS, OFF, app_closure, stop))                  \
    == Sword)
 
 /* Test if the character at D and the one after D differ with respect
  * to being word-constituent.  
  */
-#define AT_WORD_BOUNDARY(d)						\
+#define AT_WORD_BOUNDARY(d)                                             \
   (AT_STRINGS_BEG () || AT_STRINGS_END () || LETTER_P (d,0) != LETTER_P (d, 1))
 
 
@@ -2293,28 +2293,28 @@ RX_DECL char re_syntax_table[CHAR_SET_SIZE];
 
 #define PUSH(CHUNK_VAR,BYTES)   \
   if (!CHUNK_VAR || (CHUNK_VAR->bytes_left < (BYTES)))  \
-    {					\
-      struct rx_stack_chunk * new_chunk;	\
-      if (search_state.free_chunks)			\
-	{				\
-	  new_chunk = search_state.free_chunks;	\
-	  search_state.free_chunks = search_state.free_chunks->next_chunk; \
-	}				\
-      else				\
-	{				\
-	  new_chunk = (struct rx_stack_chunk *)RX_STACK_ALLOC(search_state.chunk_bytes); \
-	  if (!new_chunk)		\
-	    {				\
-	      search_state.ret_val = 0;		\
-	      goto test_do_return;	\
-	    }				\
-	}				\
+    {                                   \
+      struct rx_stack_chunk * new_chunk;        \
+      if (search_state.free_chunks)                     \
+        {                               \
+          new_chunk = search_state.free_chunks; \
+          search_state.free_chunks = search_state.free_chunks->next_chunk; \
+        }                               \
+      else                              \
+        {                               \
+          new_chunk = (struct rx_stack_chunk *)RX_STACK_ALLOC(search_state.chunk_bytes); \
+          if (!new_chunk)               \
+            {                           \
+              search_state.ret_val = 0;         \
+              goto test_do_return;      \
+            }                           \
+        }                               \
       new_chunk->sp = (char *)new_chunk + sizeof (struct rx_stack_chunk); \
       new_chunk->bytes_left = (search_state.chunk_bytes \
-			       - (BYTES) \
-			       - sizeof (struct rx_stack_chunk)); \
+                               - (BYTES) \
+                               - sizeof (struct rx_stack_chunk)); \
       new_chunk->next_chunk = CHUNK_VAR; \
-      CHUNK_VAR = new_chunk;		\
+      CHUNK_VAR = new_chunk;            \
     } \
   else \
     (CHUNK_VAR->sp += (BYTES)), (CHUNK_VAR->bytes_left -= (BYTES))
@@ -2339,22 +2339,22 @@ RX_DECL char re_syntax_table[CHAR_SET_SIZE];
 #ifdef __STDC__
 RX_DECL __inline__ int
 rx_search  (struct re_pattern_buffer * rxb,
-	    int startpos,
-	    int range,
-	    int stop,
-	    int total_size,
-	    rx_get_burst_fn get_burst,
-	    rx_back_check_fn back_check,
-	    rx_fetch_char_fn fetch_char,
-	    void * app_closure,
-	    struct re_registers * regs,
-	    struct rx_search_state * resume_state,
-	    struct rx_search_state * save_state)
+            int startpos,
+            int range,
+            int stop,
+            int total_size,
+            rx_get_burst_fn get_burst,
+            rx_back_check_fn back_check,
+            rx_fetch_char_fn fetch_char,
+            void * app_closure,
+            struct re_registers * regs,
+            struct rx_search_state * resume_state,
+            struct rx_search_state * save_state)
 #else
 RX_DECL __inline__ int
 rx_search  (rxb, startpos, range, stop, total_size,
-	    get_burst, back_check, fetch_char,
-	    app_closure, regs, resume_state, save_state)
+            get_burst, back_check, fetch_char,
+            app_closure, regs, resume_state, save_state)
      struct re_pattern_buffer * rxb;
      int startpos;
      int range;
@@ -2389,23 +2389,23 @@ rx_search  (rxb, startpos, range, stop, total_size,
       back_check = search_state.saved_back_check;
       pc = search_state.outer_search_resume_pt;
       if (0)
-	{
-	return_continuation:
-	  if (save_state)
-	    {
-	      *save_state = search_state;
-	      save_state->saved_regs = regs;
-	      save_state->saved_rxb = rxb;
-	      save_state->saved_startpos = startpos;
-	      save_state->saved_range = range;
-	      save_state->saved_stop = stop;
-	      save_state->saved_total_size = total_size;
-	      save_state->saved_get_burst = get_burst;
-	      save_state->saved_back_check = back_check;
-	      save_state->outer_search_resume_pt = pc;
-	    }
-	  return rx_search_continuation;
-	}
+        {
+        return_continuation:
+          if (save_state)
+            {
+              *save_state = search_state;
+              save_state->saved_regs = regs;
+              save_state->saved_rxb = rxb;
+              save_state->saved_startpos = startpos;
+              save_state->saved_range = range;
+              save_state->saved_stop = stop;
+              save_state->saved_total_size = total_size;
+              save_state->saved_get_burst = get_burst;
+              save_state->saved_back_check = back_check;
+              save_state->outer_search_resume_pt = pc;
+            }
+          return rx_search_continuation;
+        }
     }
 
   switch (pc)
@@ -2426,108 +2426,108 @@ rx_search  (rxb, startpos, range, stop, total_size,
       
       /* check for out-of-range startpos.  */
       if ((startpos < 0) || (startpos > total_size))
-	return rx_search_fail;
+        return rx_search_fail;
       
       /* fix up range if it might eventually take us outside the string. */
       {
-	int endpos;
-	endpos = startpos + range;
-	if (endpos < -1)
-	  range = (-1 - startpos);
-	else if (endpos > (total_size + 1))
-	  range = total_size - startpos;
+        int endpos;
+        endpos = startpos + range;
+        if (endpos < -1)
+          range = (-1 - startpos);
+        else if (endpos > (total_size + 1))
+          range = total_size - startpos;
       }
       
       /* if the search isn't to be a backwards one, don't waste time in a
        * long search for a pattern that says it is anchored.
        */
       if (rxb->begbuf_only && (range > 0))
-	{
-	  if (startpos > 0)
-	    return rx_search_fail;
-	  else
-	    range = 1;
-	}
+        {
+          if (startpos > 0)
+            return rx_search_fail;
+          else
+            range = 1;
+        }
       
       /* decide whether to use internal or user-provided reg buffers. */
       if (!regs || rxb->no_sub)
-	{
-	  search_state.best_lpspace =
-	    (regoff_t *)REGEX_ALLOCATE (search_state.num_regs * sizeof(regoff_t));
-	  search_state.best_rpspace =
-	    (regoff_t *)REGEX_ALLOCATE (search_state.num_regs * sizeof(regoff_t));
-	  search_state.best_lparen = search_state.best_lpspace;
-	  search_state.best_rparen = search_state.best_rpspace;
-	}
+        {
+          search_state.best_lpspace =
+            (regoff_t *)REGEX_ALLOCATE (search_state.num_regs * sizeof(regoff_t));
+          search_state.best_rpspace =
+            (regoff_t *)REGEX_ALLOCATE (search_state.num_regs * sizeof(regoff_t));
+          search_state.best_lparen = search_state.best_lpspace;
+          search_state.best_rparen = search_state.best_rpspace;
+        }
       else
-	{	
-	  /* have the register data arrays been allocated?  */
-	  if (rxb->regs_allocated == REGS_UNALLOCATED)
-	    { /* no.  so allocate them with malloc.  we need one
-		 extra element beyond `search_state.num_regs' for the `-1' marker
-		 gnu code uses.  */
-	      regs->num_regs = MAX (RE_NREGS, rxb->re_nsub + 1);
-	      regs->start = ((regoff_t *)
-			     malloc (regs->num_regs * sizeof ( regoff_t)));
-	      regs->end = ((regoff_t *)
-			   malloc (regs->num_regs * sizeof ( regoff_t)));
-	      if (regs->start == 0 || regs->end == 0)
-		return rx_search_error;
-	      rxb->regs_allocated = REGS_REALLOCATE;
-	    }
-	  else if (rxb->regs_allocated == REGS_REALLOCATE)
-	    { /* yes.  if we need more elements than were already
-		 allocated, reallocate them.  if we need fewer, just
-		 leave it alone.  */
-	      if (regs->num_regs < search_state.num_regs + 1)
-		{
-		  regs->num_regs = search_state.num_regs + 1;
-		  regs->start = ((regoff_t *)
-				 realloc (regs->start,
-					  regs->num_regs * sizeof (regoff_t)));
-		  regs->end = ((regoff_t *)
-			       realloc (regs->end,
-					regs->num_regs * sizeof ( regoff_t)));
-		  if (regs->start == 0 || regs->end == 0)
-		    return rx_search_error;
-		}
-	    }
-	  else if (rxb->regs_allocated != REGS_FIXED)
-	    return rx_search_error;
-	  
-	  if (regs->num_regs < search_state.num_regs + 1)
-	    {
-	      search_state.best_lpspace =
-		((regoff_t *)
-		 REGEX_ALLOCATE (search_state.num_regs * sizeof(regoff_t)));
-	      search_state.best_rpspace =
-		((regoff_t *)
-		 REGEX_ALLOCATE (search_state.num_regs * sizeof(regoff_t)));
-	      search_state.best_lparen = search_state.best_lpspace;
-	      search_state.best_rparen = search_state.best_rpspace;
-	    }
-	  else
-	    {
-	      search_state.best_lparen = regs->start;
-	      search_state.best_rparen = regs->end;
-	    }
-	}
+        {       
+          /* have the register data arrays been allocated?  */
+          if (rxb->regs_allocated == REGS_UNALLOCATED)
+            { /* no.  so allocate them with malloc.  we need one
+                 extra element beyond `search_state.num_regs' for the `-1' marker
+                 gnu code uses.  */
+              regs->num_regs = MAX (RE_NREGS, rxb->re_nsub + 1);
+              regs->start = ((regoff_t *)
+                             malloc (regs->num_regs * sizeof ( regoff_t)));
+              regs->end = ((regoff_t *)
+                           malloc (regs->num_regs * sizeof ( regoff_t)));
+              if (regs->start == 0 || regs->end == 0)
+                return rx_search_error;
+              rxb->regs_allocated = REGS_REALLOCATE;
+            }
+          else if (rxb->regs_allocated == REGS_REALLOCATE)
+            { /* yes.  if we need more elements than were already
+                 allocated, reallocate them.  if we need fewer, just
+                 leave it alone.  */
+              if (regs->num_regs < search_state.num_regs + 1)
+                {
+                  regs->num_regs = search_state.num_regs + 1;
+                  regs->start = ((regoff_t *)
+                                 realloc (regs->start,
+                                          regs->num_regs * sizeof (regoff_t)));
+                  regs->end = ((regoff_t *)
+                               realloc (regs->end,
+                                        regs->num_regs * sizeof ( regoff_t)));
+                  if (regs->start == 0 || regs->end == 0)
+                    return rx_search_error;
+                }
+            }
+          else if (rxb->regs_allocated != REGS_FIXED)
+            return rx_search_error;
+          
+          if (regs->num_regs < search_state.num_regs + 1)
+            {
+              search_state.best_lpspace =
+                ((regoff_t *)
+                 REGEX_ALLOCATE (search_state.num_regs * sizeof(regoff_t)));
+              search_state.best_rpspace =
+                ((regoff_t *)
+                 REGEX_ALLOCATE (search_state.num_regs * sizeof(regoff_t)));
+              search_state.best_lparen = search_state.best_lpspace;
+              search_state.best_rparen = search_state.best_rpspace;
+            }
+          else
+            {
+              search_state.best_lparen = regs->start;
+              search_state.best_rparen = regs->end;
+            }
+        }
       
       search_state.lparen =
-	(regoff_t *) REGEX_ALLOCATE (search_state.num_regs * sizeof(regoff_t));
+        (regoff_t *) REGEX_ALLOCATE (search_state.num_regs * sizeof(regoff_t));
       search_state.rparen =
-	(regoff_t *) REGEX_ALLOCATE (search_state.num_regs * sizeof(regoff_t)); 
+        (regoff_t *) REGEX_ALLOCATE (search_state.num_regs * sizeof(regoff_t)); 
       
       if (! (   search_state.best_rparen
-	     && search_state.best_lparen
-	     && search_state.lparen && search_state.rparen))
-	return rx_search_error;
+             && search_state.best_lparen
+             && search_state.lparen && search_state.rparen))
+        return rx_search_error;
       
       search_state.best_last_l = search_state.best_last_r = -1;
       
       search_state.translate = (rxb->translate
-				? rxb->translate
-				: rx_id_translation);
+                                ? rxb->translate
+                                : rx_id_translation);
       
       
       
@@ -2545,63 +2545,63 @@ rx_search  (rxb, startpos, range, stop, total_size,
       search_state.first_found = !regs;
       
       if (range >= 0)
-	{
-	  search_state.outer_pos.search_end = startpos + range;
-	  search_state.outer_pos.search_direction = 1;
-	}
+        {
+          search_state.outer_pos.search_end = startpos + range;
+          search_state.outer_pos.search_direction = 1;
+        }
       else
-	{
-	  search_state.outer_pos.search_end = startpos + range;
-	  search_state.outer_pos.search_direction = -1;
-	}
+        {
+          search_state.outer_pos.search_end = startpos + range;
+          search_state.outer_pos.search_direction = -1;
+        }
       
       /* the vacuous search always turns up nothing. */
       if ((search_state.outer_pos.search_direction == 1)
-	  ? (startpos > search_state.outer_pos.search_end)
-	  : (startpos < search_state.outer_pos.search_end))
-	return rx_search_fail;
+          ? (startpos > search_state.outer_pos.search_end)
+          : (startpos < search_state.outer_pos.search_end))
+        return rx_search_fail;
       
       /* now we build the starting state of the supernfa. */
       {
-	struct rx_superset * start_contents;
-	struct rx_nfa_state_set * start_nfa_set;
-	
-	/* we presume here that the nfa start state has only one
-	 * possible future with no side effects.  
-	 */
-	start_nfa_set = rxb->start->futures->destset;
-	if (   rxb->rx.start_set
-	    && (rxb->rx.start_set->starts_for == &rxb->rx))
-	  start_contents = rxb->rx.start_set;
-	else
-	  {
-	    start_contents =
-	      rx_superstate_eclosure_union (&rxb->rx,
-					    rx_superset_cons (&rxb->rx, 0, 0),
-					    start_nfa_set);
-	    
-	    if (!start_contents)
-	      return rx_search_fail;
-	    
-	    start_contents->starts_for = &rxb->rx;
-	    rxb->rx.start_set = start_contents;
-	  }
-	if (   start_contents->superstate
-	    && (start_contents->superstate->rx_id == rxb->rx.rx_id))
-	  {
-	    search_state.start_super = start_contents->superstate;
-	    rx_lock_superstate (&rxb->rx, search_state.start_super);
-	  }
-	else
-	  {
-	    rx_protect_superset (&rxb->rx, start_contents);
-	    
-	    search_state.start_super = rx_superstate (&rxb->rx, start_contents);
-	    if (!search_state.start_super)
-	      return rx_search_fail;
-	    rx_lock_superstate (&rxb->rx, search_state.start_super);
-	    rx_release_superset (&rxb->rx, start_contents);
-	  }
+        struct rx_superset * start_contents;
+        struct rx_nfa_state_set * start_nfa_set;
+        
+        /* we presume here that the nfa start state has only one
+         * possible future with no side effects.  
+         */
+        start_nfa_set = rxb->start->futures->destset;
+        if (   rxb->rx.start_set
+            && (rxb->rx.start_set->starts_for == &rxb->rx))
+          start_contents = rxb->rx.start_set;
+        else
+          {
+            start_contents =
+              rx_superstate_eclosure_union (&rxb->rx,
+                                            rx_superset_cons (&rxb->rx, 0, 0),
+                                            start_nfa_set);
+            
+            if (!start_contents)
+              return rx_search_fail;
+            
+            start_contents->starts_for = &rxb->rx;
+            rxb->rx.start_set = start_contents;
+          }
+        if (   start_contents->superstate
+            && (start_contents->superstate->rx_id == rxb->rx.rx_id))
+          {
+            search_state.start_super = start_contents->superstate;
+            rx_lock_superstate (&rxb->rx, search_state.start_super);
+          }
+        else
+          {
+            rx_protect_superset (&rxb->rx, start_contents);
+            
+            search_state.start_super = rx_superstate (&rxb->rx, start_contents);
+            if (!search_state.start_super)
+              return rx_search_fail;
+            rx_lock_superstate (&rxb->rx, search_state.start_super);
+            rx_release_superset (&rxb->rx, start_contents);
+          }
       }
       
       
@@ -2634,32 +2634,32 @@ rx_search  (rxb, startpos, range, stop, total_size,
       /* do { */
     pseudo_do:
       {
-	{
-	  int fastmap_state;
-	  fastmap_state = fastmap_search (rxb, stop, get_burst, app_closure,
-					  &search_state);
-	  switch (fastmap_state)
-	    {
-	    case rx_fastmap_continuation:
-	      pc = rx_outer_fastmap;
-	      goto return_continuation;
-	    case rx_fastmap_fail:
-	      goto finish;
-	    case rx_fastmap_ok:
-	      break;
-	    }
-	}
-	
-	/* now the fastmap loop has brought us to a plausible 
-	 * starting point for a match.  so, it's time to run the
-	 * nfa and see if a match occured.
-	 */
-	startpos = (  search_state.outer_pos.pos
-		    - search_state.outer_pos.string
-		    + search_state.outer_pos.offset);
+        {
+          int fastmap_state;
+          fastmap_state = fastmap_search (rxb, stop, get_burst, app_closure,
+                                          &search_state);
+          switch (fastmap_state)
+            {
+            case rx_fastmap_continuation:
+              pc = rx_outer_fastmap;
+              goto return_continuation;
+            case rx_fastmap_fail:
+              goto finish;
+            case rx_fastmap_ok:
+              break;
+            }
+        }
+        
+        /* now the fastmap loop has brought us to a plausible 
+         * starting point for a match.  so, it's time to run the
+         * nfa and see if a match occured.
+         */
+        startpos = (  search_state.outer_pos.pos
+                    - search_state.outer_pos.string
+                    + search_state.outer_pos.offset);
 #if 0
-/*|*/	if ((range > 0) && (startpos == search_state.outer_pos.search_end))
-/*|*/	  goto finish;
+/*|*/   if ((range > 0) && (startpos == search_state.outer_pos.search_end))
+/*|*/     goto finish;
 #endif
       }
 
@@ -2668,60 +2668,60 @@ rx_search  (rxb, startpos, range, stop, total_size,
     case rx_outer_test:
       /* ...do continued */
       {
-	goto test_match;
+        goto test_match;
       test_returns_to_search:
-	switch (test_state)
-	  {
-	  case rx_test_continuation:
-	    pc = rx_outer_test;
-	    goto return_continuation;
-	  case rx_test_error:
-	    search_state.ret_val = rx_search_error;
-	    goto finish;
-	  case rx_test_fail:
-	    break;
-	  case rx_test_ok:
-	    goto finish;
-	  }
-	search_state.outer_pos.pos += search_state.outer_pos.search_direction;
-	startpos += search_state.outer_pos.search_direction;
+        switch (test_state)
+          {
+          case rx_test_continuation:
+            pc = rx_outer_test;
+            goto return_continuation;
+          case rx_test_error:
+            search_state.ret_val = rx_search_error;
+            goto finish;
+          case rx_test_fail:
+            break;
+          case rx_test_ok:
+            goto finish;
+          }
+        search_state.outer_pos.pos += search_state.outer_pos.search_direction;
+        startpos += search_state.outer_pos.search_direction;
 #if 0
-/*|*/	if (search_state.test_pos.pos < search_state.test_pos.end)
-/*|*/	  break;
+/*|*/   if (search_state.test_pos.pos < search_state.test_pos.end)
+/*|*/     break;
 #endif
       }
       /* do interrupted for entry point... */
     case rx_outer_restore_pos:
       {
-	int x;
-	x = get_burst (&search_state.outer_pos, app_closure, stop);
-	switch (x)
-	  {
-	  case rx_get_burst_continuation:
-	    pc = rx_outer_restore_pos;
-	    goto return_continuation;
-	  case rx_get_burst_error:
-	    search_state.ret_val = rx_search_error;
-	    goto finish;
-	  case rx_get_burst_no_more:
-	    if (rxb->can_match_empty)
-	      break;
-	    goto finish;
-	  case rx_get_burst_ok:
-	    break;
-	  }
+        int x;
+        x = get_burst (&search_state.outer_pos, app_closure, stop);
+        switch (x)
+          {
+          case rx_get_burst_continuation:
+            pc = rx_outer_restore_pos;
+            goto return_continuation;
+          case rx_get_burst_error:
+            search_state.ret_val = rx_search_error;
+            goto finish;
+          case rx_get_burst_no_more:
+            if (rxb->can_match_empty)
+              break;
+            goto finish;
+          case rx_get_burst_ok:
+            break;
+          }
       } /* } while (...see below...) */
 
       if ((search_state.outer_pos.search_direction == 1)
-	  ? (startpos <= search_state.outer_pos.search_end)
-	  : (startpos > search_state.outer_pos.search_end))
-	goto pseudo_do;
+          ? (startpos <= search_state.outer_pos.search_end)
+          : (startpos > search_state.outer_pos.search_end))
+        goto pseudo_do;
 
-	
+        
     finish:
       uninit_fastmap (rxb, &search_state);
       if (search_state.start_super)
-	rx_unlock_superstate (&rxb->rx, search_state.start_super);
+        rx_unlock_superstate (&rxb->rx, search_state.start_super);
       
 #ifdef regex_malloc
       if (search_state.lparen) free (search_state.lparen);
@@ -2741,28 +2741,28 @@ rx_search  (rxb, startpos, range, stop, total_size,
     if (test_pc == rx_test_start)
       {
 #ifdef RX_DEBUG
-	search_state.backtrack_depth = 0;
+        search_state.backtrack_depth = 0;
 #endif
-	search_state.last_l = search_state.last_r = 0;
-	search_state.lparen[0] = startpos;
-	search_state.super = search_state.start_super;
-	search_state.c = search_state.nfa_choice;
-	search_state.test_pos.pos = search_state.outer_pos.pos - 1;    
-	search_state.test_pos.string = search_state.outer_pos.string;
-	search_state.test_pos.end = search_state.outer_pos.end;
-	search_state.test_pos.offset = search_state.outer_pos.offset;
-	search_state.test_pos.size = search_state.outer_pos.size;
-	search_state.test_pos.search_direction = 1;
-	search_state.counter_stack = 0;
-	search_state.backtrack_stack = 0;
-	search_state.backtrack_frame_bytes =
-	  (sizeof (struct rx_backtrack_frame)
-	   + (rxb->match_regs_on_stack
-	      ? sizeof (regoff_t) * (search_state.num_regs + 1) * 2
-	      : 0));
-	search_state.chunk_bytes = search_state.backtrack_frame_bytes * 64;
-	search_state.test_ret = rx_test_line_finished;
-	search_state.could_have_continued = 0;
+        search_state.last_l = search_state.last_r = 0;
+        search_state.lparen[0] = startpos;
+        search_state.super = search_state.start_super;
+        search_state.c = search_state.nfa_choice;
+        search_state.test_pos.pos = search_state.outer_pos.pos - 1;    
+        search_state.test_pos.string = search_state.outer_pos.string;
+        search_state.test_pos.end = search_state.outer_pos.end;
+        search_state.test_pos.offset = search_state.outer_pos.offset;
+        search_state.test_pos.size = search_state.outer_pos.size;
+        search_state.test_pos.search_direction = 1;
+        search_state.counter_stack = 0;
+        search_state.backtrack_stack = 0;
+        search_state.backtrack_frame_bytes =
+          (sizeof (struct rx_backtrack_frame)
+           + (rxb->match_regs_on_stack
+              ? sizeof (regoff_t) * (search_state.num_regs + 1) * 2
+              : 0));
+        search_state.chunk_bytes = search_state.backtrack_frame_bytes * 64;
+        search_state.test_ret = rx_test_line_finished;
+        search_state.could_have_continued = 0;
       }  
     /* This is while (1)...except that the body of the loop is interrupted 
      * by some alternative entry points.
@@ -2771,870 +2771,870 @@ rx_search  (rxb, startpos, range, stop, total_size,
     switch (test_pc)
       {
       case rx_test_cache_hit_loop:
-	goto resume_continuation_1;
+        goto resume_continuation_1;
       case rx_test_backreference_check:
-	goto resume_continuation_2;
+        goto resume_continuation_2;
       case rx_test_backtrack_return:
-	goto resume_continuation_3;
+        goto resume_continuation_3;
       case rx_test_start:
 #ifdef RX_DEBUG
-	/* There is a search tree with every node as set of deterministic
-	 * transitions in the super nfa.  For every branch of a 
-	 * backtrack point is an edge in the tree.
-	 * This counts up a pre-order of nodes in that tree.
-	 * It's saved on the search stack and printed when debugging. 
-	 */
-	search_state.line_no = 0;
-	search_state.lines_found = 0;
+        /* There is a search tree with every node as set of deterministic
+         * transitions in the super nfa.  For every branch of a 
+         * backtrack point is an edge in the tree.
+         * This counts up a pre-order of nodes in that tree.
+         * It's saved on the search stack and printed when debugging. 
+         */
+        search_state.line_no = 0;
+        search_state.lines_found = 0;
 #endif
-	
+        
       top_of_cycle:
-	/* A superstate is basicly a transition table, indexed by 
-	 * characters from the string being tested, and containing 
-	 * RX_INX (`instruction frame') structures.
-	 */
-	search_state.ifr = &search_state.super->transitions [search_state.c];
-	
+        /* A superstate is basicly a transition table, indexed by 
+         * characters from the string being tested, and containing 
+         * RX_INX (`instruction frame') structures.
+         */
+        search_state.ifr = &search_state.super->transitions [search_state.c];
+        
       recurse_test_match:
-	/* This is the point to which control is sent when the
-	 * test matcher `recurses'.  Before jumping here, some variables
-	 * need to be saved on the stack and the next instruction frame
-	 * has to be computed.
-	 */
-	
+        /* This is the point to which control is sent when the
+         * test matcher `recurses'.  Before jumping here, some variables
+         * need to be saved on the stack and the next instruction frame
+         * has to be computed.
+         */
+        
       restart:
-	/* Some instructions don't advance the matcher, but just
-	 * carry out some side effects and fetch a new instruction.
-	 * To dispatch that new instruction, `goto restart'.
-	 */
-	
-	{
-	  struct rx_inx * next_tr_table;
-	  struct rx_inx * this_tr_table;
+        /* Some instructions don't advance the matcher, but just
+         * carry out some side effects and fetch a new instruction.
+         * To dispatch that new instruction, `goto restart'.
+         */
+        
+        {
+          struct rx_inx * next_tr_table;
+          struct rx_inx * this_tr_table;
 
-	  /* The fastest route through the loop is when the instruction 
-	   * is RX_NEXT_CHAR.  This case is detected when SEARCH_STATE.IFR->DATA
-	   * is non-zero.  In that case, it points to the next
-	   * superstate. 
-	   *
-	   * This allows us to not bother fetching the bytecode.
-	   */
-	  next_tr_table = (struct rx_inx *)search_state.ifr->data;
-	  this_tr_table = search_state.super->transitions;
-	  while (next_tr_table)
-	    {
+          /* The fastest route through the loop is when the instruction 
+           * is RX_NEXT_CHAR.  This case is detected when SEARCH_STATE.IFR->DATA
+           * is non-zero.  In that case, it points to the next
+           * superstate. 
+           *
+           * This allows us to not bother fetching the bytecode.
+           */
+          next_tr_table = (struct rx_inx *)search_state.ifr->data;
+          this_tr_table = search_state.super->transitions;
+          while (next_tr_table)
+            {
 #ifdef RX_DEBUG_0
-	      if (rx_debug_trace)
-		{
-		  struct rx_superset * setp;
-		  
-		  fprintf (stderr, "%d %d>> re_next_char @ %d (%d)",
-			   search_state.line_no,
-			   search_state.backtrack_depth,
-			   (search_state.test_pos.pos - search_state.test_pos.string
-			    + search_state.test_pos.offset), search_state.c);
-		  
-		  search_state.super =
-		    ((struct rx_superstate *)
-		     ((char *)this_tr_table
-		      - ((unsigned long)
-			 ((struct rx_superstate *)0)->transitions)));
-		  
-		  setp = search_state.super->contents;
-		  fprintf (stderr, "   superstet (rx=%d, &=%x: ",
-			   rxb->rx.rx_id, setp);
-		  while (setp)
-		    {
-		      fprintf (stderr, "%d ", setp->id);
-		      setp = setp->cdr;
-		    }
-		  fprintf (stderr, "\n");
-		}
+              if (rx_debug_trace)
+                {
+                  struct rx_superset * setp;
+                  
+                  fprintf (stderr, "%d %d>> re_next_char @ %d (%d)",
+                           search_state.line_no,
+                           search_state.backtrack_depth,
+                           (search_state.test_pos.pos - search_state.test_pos.string
+                            + search_state.test_pos.offset), search_state.c);
+                  
+                  search_state.super =
+                    ((struct rx_superstate *)
+                     ((char *)this_tr_table
+                      - ((unsigned long)
+                         ((struct rx_superstate *)0)->transitions)));
+                  
+                  setp = search_state.super->contents;
+                  fprintf (stderr, "   superstet (rx=%d, &=%x: ",
+                           rxb->rx.rx_id, setp);
+                  while (setp)
+                    {
+                      fprintf (stderr, "%d ", setp->id);
+                      setp = setp->cdr;
+                    }
+                  fprintf (stderr, "\n");
+                }
 #endif
-	      this_tr_table = next_tr_table;
-	      ++search_state.test_pos.pos;
-	      if (search_state.test_pos.pos == search_state.test_pos.end)
-		{
-		  int burst_state;
-		try_burst_1:
-		  burst_state = get_burst (&search_state.test_pos,
-					   app_closure, stop);
-		  switch (burst_state)
-		    {
-		    case rx_get_burst_continuation:
-		      search_state.saved_this_tr_table = this_tr_table;
-		      search_state.saved_next_tr_table = next_tr_table;
-		      test_pc = rx_test_cache_hit_loop;
-		      goto test_return_continuation;
-		      
-		    resume_continuation_1:
-		      /* Continuation one jumps here to do its work: */
-		      search_state.saved_this_tr_table = this_tr_table;
-		      search_state.saved_next_tr_table = next_tr_table;
-		      goto try_burst_1;
-		      
-		    case rx_get_burst_ok:
-		      /* get_burst succeeded...keep going */
-		      break;
-		      
-		    case rx_get_burst_no_more:
-		      search_state.test_ret = rx_test_line_finished;
-		      search_state.could_have_continued = 1;
-		      goto test_do_return;
-		      
-		    case rx_get_burst_error:
-		      /* An error... */
-		      search_state.test_ret = rx_test_internal_error;
-		      goto test_do_return;
-		    }
-		}
-	      search_state.c = *search_state.test_pos.pos;
-	      search_state.ifr = this_tr_table + search_state.c;
-	      next_tr_table = (struct rx_inx *)search_state.ifr->data;
-	    } /* Fast loop through cached transition tables */
-	  
-	  /* Here when we ran out of cached next-char transitions. 
-	   * So, it will be necessary to do a more expensive
-	   * dispatch on the current instruction.  The superstate
-	   * pointer is allowed to become invalid during next-char
-	   * transitions -- now we must bring it up to date.
-	   */
-	  search_state.super =
-	    ((struct rx_superstate *)
-	     ((char *)this_tr_table
-	      - ((unsigned long)
-		 ((struct rx_superstate *)0)->transitions)));
-	}
-	
-	/* We've encountered an instruction other than next-char.
-	 * Dispatch that instruction:
-	 */
-	inx = (int)search_state.ifr->inx;
+              this_tr_table = next_tr_table;
+              ++search_state.test_pos.pos;
+              if (search_state.test_pos.pos == search_state.test_pos.end)
+                {
+                  int burst_state;
+                try_burst_1:
+                  burst_state = get_burst (&search_state.test_pos,
+                                           app_closure, stop);
+                  switch (burst_state)
+                    {
+                    case rx_get_burst_continuation:
+                      search_state.saved_this_tr_table = this_tr_table;
+                      search_state.saved_next_tr_table = next_tr_table;
+                      test_pc = rx_test_cache_hit_loop;
+                      goto test_return_continuation;
+                      
+                    resume_continuation_1:
+                      /* Continuation one jumps here to do its work: */
+                      search_state.saved_this_tr_table = this_tr_table;
+                      search_state.saved_next_tr_table = next_tr_table;
+                      goto try_burst_1;
+                      
+                    case rx_get_burst_ok:
+                      /* get_burst succeeded...keep going */
+                      break;
+                      
+                    case rx_get_burst_no_more:
+                      search_state.test_ret = rx_test_line_finished;
+                      search_state.could_have_continued = 1;
+                      goto test_do_return;
+                      
+                    case rx_get_burst_error:
+                      /* An error... */
+                      search_state.test_ret = rx_test_internal_error;
+                      goto test_do_return;
+                    }
+                }
+              search_state.c = *search_state.test_pos.pos;
+              search_state.ifr = this_tr_table + search_state.c;
+              next_tr_table = (struct rx_inx *)search_state.ifr->data;
+            } /* Fast loop through cached transition tables */
+          
+          /* Here when we ran out of cached next-char transitions. 
+           * So, it will be necessary to do a more expensive
+           * dispatch on the current instruction.  The superstate
+           * pointer is allowed to become invalid during next-char
+           * transitions -- now we must bring it up to date.
+           */
+          search_state.super =
+            ((struct rx_superstate *)
+             ((char *)this_tr_table
+              - ((unsigned long)
+                 ((struct rx_superstate *)0)->transitions)));
+        }
+        
+        /* We've encountered an instruction other than next-char.
+         * Dispatch that instruction:
+         */
+        inx = (int)search_state.ifr->inx;
 #ifdef RX_DEBUG_0
-	if (rx_debug_trace)
-	  {
-	    struct rx_superset * setp = search_state.super->contents;
-	    
-	    fprintf (stderr, "%d %d>> %s @ %d (%d)", search_state.line_no,
-		     search_state.backtrack_depth,
-		     inx_names[inx],
-		     (search_state.test_pos.pos - search_state.test_pos.string
-		      + (test_pos.half == 0 ? 0 : size1)), search_state.c);
-	    
-	    fprintf (stderr, "   superstet (rx=%d, &=%x: ",
-		     rxb->rx.rx_id, setp);
-	    while (setp)
-	      {
-		fprintf (stderr, "%d ", setp->id);
-		setp = setp->cdr;
-	      }
-	    fprintf (stderr, "\n");
-	  }
+        if (rx_debug_trace)
+          {
+            struct rx_superset * setp = search_state.super->contents;
+            
+            fprintf (stderr, "%d %d>> %s @ %d (%d)", search_state.line_no,
+                     search_state.backtrack_depth,
+                     inx_names[inx],
+                     (search_state.test_pos.pos - search_state.test_pos.string
+                      + (test_pos.half == 0 ? 0 : size1)), search_state.c);
+            
+            fprintf (stderr, "   superstet (rx=%d, &=%x: ",
+                     rxb->rx.rx_id, setp);
+            while (setp)
+              {
+                fprintf (stderr, "%d ", setp->id);
+                setp = setp->cdr;
+              }
+            fprintf (stderr, "\n");
+          }
 #endif
-	switch ((enum rx_opcode)inx)
-	  {
-	  case rx_do_side_effects:
-	    
-	    /*  RX_DO_SIDE_EFFECTS occurs when we cross epsilon 
-	     *  edges associated with parentheses, backreferencing, etc.
-	     */
-	    {
-	      struct rx_distinct_future * df =
-		(struct rx_distinct_future *)search_state.ifr->data_2;
-	      struct rx_se_list * el = df->effects;
-	      /* Side effects come in lists.  This walks down
-	       * a list, dispatching.
-	       */
-	      while (el)
-		{
-		  long effect;
-		  effect = (long)el->car;
-		  if (effect < 0)
-		    {
+        switch ((enum rx_opcode)inx)
+          {
+          case rx_do_side_effects:
+            
+            /*  RX_DO_SIDE_EFFECTS occurs when we cross epsilon 
+             *  edges associated with parentheses, backreferencing, etc.
+             */
+            {
+              struct rx_distinct_future * df =
+                (struct rx_distinct_future *)search_state.ifr->data_2;
+              struct rx_se_list * el = df->effects;
+              /* Side effects come in lists.  This walks down
+               * a list, dispatching.
+               */
+              while (el)
+                {
+                  long effect;
+                  effect = (long)el->car;
+                  if (effect < 0)
+                    {
 #ifdef RX_DEBUG_0
-		      if (rx_debug_trace)
-			{
-			  struct rx_superset * setp = search_state.super->contents;
-			  
-			  fprintf (stderr, "....%d %d>> %s\n", search_state.line_no,
-				   search_state.backtrack_depth,
-				   efnames[-effect]);
-			}
+                      if (rx_debug_trace)
+                        {
+                          struct rx_superset * setp = search_state.super->contents;
+                          
+                          fprintf (stderr, "....%d %d>> %s\n", search_state.line_no,
+                                   search_state.backtrack_depth,
+                                   efnames[-effect]);
+                        }
 #endif
-		      switch ((enum re_side_effects) effect)
+                      switch ((enum re_side_effects) effect)
 
-			{
-			case re_se_pushback:
-			  search_state.ifr = &df->future_frame;
-			  if (!search_state.ifr->data)
-			    {
-			      struct rx_superstate * sup;
-			      sup = search_state.super;
-			      rx_lock_superstate (rx, sup);
-			      if (!rx_handle_cache_miss (&rxb->rx,
-							 search_state.super,
-							 search_state.c,
-							 (search_state.ifr
-							  ->data_2)))
-				{
-				  rx_unlock_superstate (rx, sup);
-				  search_state.test_ret = rx_test_internal_error;
-				  goto test_do_return;
-				}
-			      rx_unlock_superstate (rx, sup);
-			    }
-			  /* --search_state.test_pos.pos; */
-			  search_state.c = 't';
-			  search_state.super
-			    = ((struct rx_superstate *)
-			       ((char *)search_state.ifr->data
-				- (long)(((struct rx_superstate *)0)
-					 ->transitions)));
-			  goto top_of_cycle;
-			  break;
-			case re_se_push0:
-			  {
-			    struct rx_counter_frame * old_cf
-			      = (search_state.counter_stack
-				 ? ((struct rx_counter_frame *)
-				    search_state.counter_stack->sp)
-				 : 0);
-			    struct rx_counter_frame * cf;
-			    PUSH (search_state.counter_stack,
-				  sizeof (struct rx_counter_frame));
-			    cf = ((struct rx_counter_frame *)
-				  search_state.counter_stack->sp);
-			    cf->tag = re_se_iter;
-			    cf->val = 0;
-			    cf->inherited_from = 0;
-			    cf->cdr = old_cf;
-			    break;
-			  }
-			case re_se_fail:
-			  goto test_do_return;
-			case re_se_begbuf:
-			  if (!AT_STRINGS_BEG ())
-			    goto test_do_return;
-			  break;
-			case re_se_endbuf:
-			  if (!AT_STRINGS_END ())
-			    goto test_do_return;
-			  break;
-			case re_se_wordbeg:
-			  if (   LETTER_P (&search_state.test_pos, 1)
-			      && (   AT_STRINGS_BEG()
-				  || !LETTER_P (&search_state.test_pos, 0)))
-			    break;
-			  else
-			    goto test_do_return;
-			case re_se_wordend:
-			  if (   !AT_STRINGS_BEG ()
-			      && LETTER_P (&search_state.test_pos, 0)
-			      && (AT_STRINGS_END ()
-				  || !LETTER_P (&search_state.test_pos, 1)))
-			    break;
-			  else
-			    goto test_do_return;
-			case re_se_wordbound:
-			  if (AT_WORD_BOUNDARY (&search_state.test_pos))
-			    break;
-			  else
-			    goto test_do_return;
-			case re_se_notwordbound:
-			  if (!AT_WORD_BOUNDARY (&search_state.test_pos))
-			    break;
-			  else
-			    goto test_do_return;
-			case re_se_hat:
-			  if (AT_STRINGS_BEG ())
-			    {
-			      if (rxb->not_bol)
-				goto test_do_return;
-			      else
-				break;
-			    }
-			  else
-			    {
-			      char pos_c = *search_state.test_pos.pos;
-			      if (   (SRCH_TRANSLATE (pos_c)
-				      == SRCH_TRANSLATE('\n'))
-				  && rxb->newline_anchor)
-				break;
-			      else
-				goto test_do_return;
-			    }
-			case re_se_dollar:
-			  if (AT_STRINGS_END ())
-			    {
-			      if (rxb->not_eol)
-				goto test_do_return;
-			      else
-				break;
-			    }
-			  else
-			    {
-			      if (   (   SRCH_TRANSLATE (fetch_char
-						    (&search_state.test_pos, 1,
-						     app_closure, stop))
-				      == SRCH_TRANSLATE ('\n'))
-				  && rxb->newline_anchor)
-				break;
-			      else
-				goto test_do_return;
-			    }
-			  
-			case re_se_try:
-			  /* This is the first side effect in every
-			   * expression.
-			   *
-			   *  FOR NO GOOD REASON...get rid of it...
-			   */
-			  break;
-			  
-			case re_se_pushpos:
-			  {
-			    int urhere =
-			      ((int)(search_state.test_pos.pos
-				     - search_state.test_pos.string)
-			       + search_state.test_pos.offset);
-			    struct rx_counter_frame * old_cf
-			      = (search_state.counter_stack
-				 ? ((struct rx_counter_frame *)
-				    search_state.counter_stack->sp)
-				 : 0);
-			    struct rx_counter_frame * cf;
-			    PUSH(search_state.counter_stack,
-				 sizeof (struct rx_counter_frame));
-			    cf = ((struct rx_counter_frame *)
-				  search_state.counter_stack->sp);
-			    cf->tag = re_se_pushpos;
-			    cf->val = urhere;
-			    cf->inherited_from = 0;
-			    cf->cdr = old_cf;
-			    break;
-			  }
-			  
-			case re_se_chkpos:
-			  {
-			    int urhere =
-			      ((int)(search_state.test_pos.pos
-				     - search_state.test_pos.string)
-			       + search_state.test_pos.offset);
-			    struct rx_counter_frame * cf
-			      = ((struct rx_counter_frame *)
-				 search_state.counter_stack->sp);
-			    if (cf->val == urhere)
-			      goto test_do_return;
-			    cf->val = urhere;
-			    break;
-			  }
-			  break;
-			  
-			case re_se_poppos:
-			  POP(search_state.counter_stack,
-			      sizeof (struct rx_counter_frame));
-			  break;
-			  
-			  
-			case re_se_at_dot:
-			case re_se_syntax:
-			case re_se_not_syntax:
+                        {
+                        case re_se_pushback:
+                          search_state.ifr = &df->future_frame;
+                          if (!search_state.ifr->data)
+                            {
+                              struct rx_superstate * sup;
+                              sup = search_state.super;
+                              rx_lock_superstate (rx, sup);
+                              if (!rx_handle_cache_miss (&rxb->rx,
+                                                         search_state.super,
+                                                         search_state.c,
+                                                         (search_state.ifr
+                                                          ->data_2)))
+                                {
+                                  rx_unlock_superstate (rx, sup);
+                                  search_state.test_ret = rx_test_internal_error;
+                                  goto test_do_return;
+                                }
+                              rx_unlock_superstate (rx, sup);
+                            }
+                          /* --search_state.test_pos.pos; */
+                          search_state.c = 't';
+                          search_state.super
+                            = ((struct rx_superstate *)
+                               ((char *)search_state.ifr->data
+                                - (long)(((struct rx_superstate *)0)
+                                         ->transitions)));
+                          goto top_of_cycle;
+                          break;
+                        case re_se_push0:
+                          {
+                            struct rx_counter_frame * old_cf
+                              = (search_state.counter_stack
+                                 ? ((struct rx_counter_frame *)
+                                    search_state.counter_stack->sp)
+                                 : 0);
+                            struct rx_counter_frame * cf;
+                            PUSH (search_state.counter_stack,
+                                  sizeof (struct rx_counter_frame));
+                            cf = ((struct rx_counter_frame *)
+                                  search_state.counter_stack->sp);
+                            cf->tag = re_se_iter;
+                            cf->val = 0;
+                            cf->inherited_from = 0;
+                            cf->cdr = old_cf;
+                            break;
+                          }
+                        case re_se_fail:
+                          goto test_do_return;
+                        case re_se_begbuf:
+                          if (!AT_STRINGS_BEG ())
+                            goto test_do_return;
+                          break;
+                        case re_se_endbuf:
+                          if (!AT_STRINGS_END ())
+                            goto test_do_return;
+                          break;
+                        case re_se_wordbeg:
+                          if (   LETTER_P (&search_state.test_pos, 1)
+                              && (   AT_STRINGS_BEG()
+                                  || !LETTER_P (&search_state.test_pos, 0)))
+                            break;
+                          else
+                            goto test_do_return;
+                        case re_se_wordend:
+                          if (   !AT_STRINGS_BEG ()
+                              && LETTER_P (&search_state.test_pos, 0)
+                              && (AT_STRINGS_END ()
+                                  || !LETTER_P (&search_state.test_pos, 1)))
+                            break;
+                          else
+                            goto test_do_return;
+                        case re_se_wordbound:
+                          if (AT_WORD_BOUNDARY (&search_state.test_pos))
+                            break;
+                          else
+                            goto test_do_return;
+                        case re_se_notwordbound:
+                          if (!AT_WORD_BOUNDARY (&search_state.test_pos))
+                            break;
+                          else
+                            goto test_do_return;
+                        case re_se_hat:
+                          if (AT_STRINGS_BEG ())
+                            {
+                              if (rxb->not_bol)
+                                goto test_do_return;
+                              else
+                                break;
+                            }
+                          else
+                            {
+                              char pos_c = *search_state.test_pos.pos;
+                              if (   (SRCH_TRANSLATE (pos_c)
+                                      == SRCH_TRANSLATE('\n'))
+                                  && rxb->newline_anchor)
+                                break;
+                              else
+                                goto test_do_return;
+                            }
+                        case re_se_dollar:
+                          if (AT_STRINGS_END ())
+                            {
+                              if (rxb->not_eol)
+                                goto test_do_return;
+                              else
+                                break;
+                            }
+                          else
+                            {
+                              if (   (   SRCH_TRANSLATE (fetch_char
+                                                    (&search_state.test_pos, 1,
+                                                     app_closure, stop))
+                                      == SRCH_TRANSLATE ('\n'))
+                                  && rxb->newline_anchor)
+                                break;
+                              else
+                                goto test_do_return;
+                            }
+                          
+                        case re_se_try:
+                          /* This is the first side effect in every
+                           * expression.
+                           *
+                           *  FOR NO GOOD REASON...get rid of it...
+                           */
+                          break;
+                          
+                        case re_se_pushpos:
+                          {
+                            int urhere =
+                              ((int)(search_state.test_pos.pos
+                                     - search_state.test_pos.string)
+                               + search_state.test_pos.offset);
+                            struct rx_counter_frame * old_cf
+                              = (search_state.counter_stack
+                                 ? ((struct rx_counter_frame *)
+                                    search_state.counter_stack->sp)
+                                 : 0);
+                            struct rx_counter_frame * cf;
+                            PUSH(search_state.counter_stack,
+                                 sizeof (struct rx_counter_frame));
+                            cf = ((struct rx_counter_frame *)
+                                  search_state.counter_stack->sp);
+                            cf->tag = re_se_pushpos;
+                            cf->val = urhere;
+                            cf->inherited_from = 0;
+                            cf->cdr = old_cf;
+                            break;
+                          }
+                          
+                        case re_se_chkpos:
+                          {
+                            int urhere =
+                              ((int)(search_state.test_pos.pos
+                                     - search_state.test_pos.string)
+                               + search_state.test_pos.offset);
+                            struct rx_counter_frame * cf
+                              = ((struct rx_counter_frame *)
+                                 search_state.counter_stack->sp);
+                            if (cf->val == urhere)
+                              goto test_do_return;
+                            cf->val = urhere;
+                            break;
+                          }
+                          break;
+                          
+                        case re_se_poppos:
+                          POP(search_state.counter_stack,
+                              sizeof (struct rx_counter_frame));
+                          break;
+                          
+                          
+                        case re_se_at_dot:
+                        case re_se_syntax:
+                        case re_se_not_syntax:
 #ifdef emacs
-			  /* 
-			   * this release lacks emacs support
-			   */
+                          /* 
+                           * this release lacks emacs support
+                           */
 #endif
-			  break;
-			case re_se_win:
-			case re_se_lparen:
-			case re_se_rparen:
-			case re_se_backref:
-			case re_se_iter:
-			case re_se_end_iter:
-			case re_se_tv:
-			case re_floogle_flap:
-			  search_state.ret_val = 0;
-			  goto test_do_return;
-			}
-		    }
-		  else
-		    {
+                          break;
+                        case re_se_win:
+                        case re_se_lparen:
+                        case re_se_rparen:
+                        case re_se_backref:
+                        case re_se_iter:
+                        case re_se_end_iter:
+                        case re_se_tv:
+                        case re_floogle_flap:
+                          search_state.ret_val = 0;
+                          goto test_do_return;
+                        }
+                    }
+                  else
+                    {
 #ifdef RX_DEBUG_0
-		      if (rx_debug_trace)
-			fprintf (stderr, "....%d %d>> %s %d %d\n", search_state.line_no,
-				 search_state.backtrack_depth,
-				 efnames2[rxb->se_params [effect].se],
-				 rxb->se_params [effect].op1,
-				 rxb->se_params [effect].op2);
+                      if (rx_debug_trace)
+                        fprintf (stderr, "....%d %d>> %s %d %d\n", search_state.line_no,
+                                 search_state.backtrack_depth,
+                                 efnames2[rxb->se_params [effect].se],
+                                 rxb->se_params [effect].op1,
+                                 rxb->se_params [effect].op2);
 #endif
-		      switch (rxb->se_params [effect].se)
-			{
-			case re_se_win:
-			  /* This side effect indicates that we've 
-			   * found a match, though not necessarily the 
-			   * best match.  This is a fancy assignment to 
-			   * register 0 unless the caller didn't 
-			   * care about registers.  In which case,
-			   * this stops the match.
-			   */
-			  {
-			    int urhere =
-			      ((int)(search_state.test_pos.pos
-				     - search_state.test_pos.string)
-			       + search_state.test_pos.offset);
-			    
-			    if (   (search_state.best_last_r < 0)
-				|| (urhere + 1 > search_state.best_rparen[0]))
-			      {
-				/* Record the best known and keep
-				 * looking.
-				 */
-				int x;
-				for (x = 0; x <= search_state.last_l; ++x)
-				  search_state.best_lparen[x] = search_state.lparen[x];
-				search_state.best_last_l = search_state.last_l;
-				for (x = 0; x <= search_state.last_r; ++x)
-				  search_state.best_rparen[x] = search_state.rparen[x];
-				search_state.best_rparen[0] = urhere + 1;
-				search_state.best_last_r = search_state.last_r;
-			      }
-			    /* If we're not reporting the match-length 
-			     * or other register info, we need look no
-			     * further.
-			     */
-			    if (search_state.first_found)
-			      {
-				search_state.test_ret = rx_test_found_first;
-				goto test_do_return;
-			      }
-			  }
-			  break;
-			case re_se_lparen:
-			  {
-			    int urhere =
-			      ((int)(search_state.test_pos.pos
-				     - search_state.test_pos.string)
-			       + search_state.test_pos.offset);
-			    
-			    int reg = rxb->se_params [effect].op1;
+                      switch (rxb->se_params [effect].se)
+                        {
+                        case re_se_win:
+                          /* This side effect indicates that we've 
+                           * found a match, though not necessarily the 
+                           * best match.  This is a fancy assignment to 
+                           * register 0 unless the caller didn't 
+                           * care about registers.  In which case,
+                           * this stops the match.
+                           */
+                          {
+                            int urhere =
+                              ((int)(search_state.test_pos.pos
+                                     - search_state.test_pos.string)
+                               + search_state.test_pos.offset);
+                            
+                            if (   (search_state.best_last_r < 0)
+                                || (urhere + 1 > search_state.best_rparen[0]))
+                              {
+                                /* Record the best known and keep
+                                 * looking.
+                                 */
+                                int x;
+                                for (x = 0; x <= search_state.last_l; ++x)
+                                  search_state.best_lparen[x] = search_state.lparen[x];
+                                search_state.best_last_l = search_state.last_l;
+                                for (x = 0; x <= search_state.last_r; ++x)
+                                  search_state.best_rparen[x] = search_state.rparen[x];
+                                search_state.best_rparen[0] = urhere + 1;
+                                search_state.best_last_r = search_state.last_r;
+                              }
+                            /* If we're not reporting the match-length 
+                             * or other register info, we need look no
+                             * further.
+                             */
+                            if (search_state.first_found)
+                              {
+                                search_state.test_ret = rx_test_found_first;
+                                goto test_do_return;
+                              }
+                          }
+                          break;
+                        case re_se_lparen:
+                          {
+                            int urhere =
+                              ((int)(search_state.test_pos.pos
+                                     - search_state.test_pos.string)
+                               + search_state.test_pos.offset);
+                            
+                            int reg = rxb->se_params [effect].op1;
 #if 0
-			    if (reg > search_state.last_l)
+                            if (reg > search_state.last_l)
 #endif
-			      {
-				search_state.lparen[reg] = urhere + 1;
-				/* In addition to making this assignment,
-				 * we now know that lower numbered regs
-				 * that haven't already been assigned,
-				 * won't be.  We make sure they're
-				 * filled with -1, so they can be
-				 * recognized as unassigned.
-				 */
-				if (search_state.last_l < reg)
-				  while (++search_state.last_l < reg)
-				    search_state.lparen[search_state.last_l] = -1;
-			      }
-			    break;
-			  }
-			  
-			case re_se_rparen:
-			  {
-			    int urhere =
-			      ((int)(search_state.test_pos.pos
-				     - search_state.test_pos.string)
-			       + search_state.test_pos.offset);
-			    int reg = rxb->se_params [effect].op1;
-			    search_state.rparen[reg] = urhere + 1;
-			    if (search_state.last_r < reg)
-			      {
-				while (++search_state.last_r < reg)
-				  search_state.rparen[search_state.last_r]
-				    = -1;
-			      }
-			    break;
-			  }
-			  
-			case re_se_backref:
-			  {
-			    int reg = rxb->se_params [effect].op1;
-			    if (   reg > search_state.last_r
-				|| search_state.rparen[reg] < 0)
-			      goto test_do_return;
-			    
-			    {
-			      int backref_status;
-			    check_backreference:
-			      backref_status
-				= back_check (&search_state.test_pos,
-					      search_state.lparen[reg],
-					      search_state.rparen[reg],
-					      search_state.translate,
-					      app_closure,
-					      stop);
-			      switch (backref_status)
-				{
-				case rx_back_check_continuation:
-				  search_state.saved_reg = reg;
-				  test_pc = rx_test_backreference_check;
-				  goto test_return_continuation;
-				resume_continuation_2:
-				  reg = search_state.saved_reg;
-				  goto check_backreference;
-				case rx_back_check_fail:
-				  /* Fail */
-				  goto test_do_return;
-				case rx_back_check_pass:
-				  /* pass --
-				   * test_pos now advanced to last
-				   * char matched by backref
-				   */
-				  break;
-				}
-			    }
-			    break;
-			  }
-			case re_se_iter:
-			  {
-			    struct rx_counter_frame * csp
-			      = ((struct rx_counter_frame *)
-				 search_state.counter_stack->sp);
-			    if (csp->val == rxb->se_params[effect].op2)
-			      goto test_do_return;
-			    else
-			      ++csp->val;
-			    break;
-			  }
-			case re_se_end_iter:
-			  {
-			    struct rx_counter_frame * csp
-			      = ((struct rx_counter_frame *)
-				 search_state.counter_stack->sp);
-			    if (csp->val < rxb->se_params[effect].op1)
-			      goto test_do_return;
-			    else
-			      {
-				struct rx_counter_frame * source = csp;
-				while (source->inherited_from)
-				  source = source->inherited_from;
-				if (!source || !source->cdr)
-				  {
-				    POP(search_state.counter_stack,
-					sizeof(struct rx_counter_frame));
-				  }
-				else
-				  {
-				    source = source->cdr;
-				    csp->val = source->val;
-				    csp->tag = source->tag;
-				    csp->cdr = 0;
-				    csp->inherited_from = source;
-				  }
-			      }
-			    break;
-			  }
-			case re_se_tv:
-			  /* is a noop */
-			  break;
-			case re_se_try:
-			case re_se_pushback:
-			case re_se_push0:
-			case re_se_pushpos:
-			case re_se_chkpos:
-			case re_se_poppos:
-			case re_se_at_dot:
-			case re_se_syntax:
-			case re_se_not_syntax:
-			case re_se_begbuf:
-			case re_se_hat:
-			case re_se_wordbeg:
-			case re_se_wordbound:
-			case re_se_notwordbound:
-			case re_se_wordend:
-			case re_se_endbuf:
-			case re_se_dollar:
-			case re_se_fail:
-			case re_floogle_flap:
-			  search_state.ret_val = 0;
-			  goto test_do_return;
-			}
-		    }
-		  el = el->cdr;
-		}
-	      /* Now the side effects are done,
-	       * so get the next instruction.
-	       * and move on.
-	       */
-	      search_state.ifr = &df->future_frame;
-	      goto restart;
-	    }
-	    
-	  case rx_backtrack_point:
-	    {
-	      /* A backtrack point indicates that we've reached a
-	       * non-determinism in the superstate NFA.  This is a
-	       * loop that exhaustively searches the possibilities.
-	       *
-	       * A backtracking strategy is used.  We keep track of what
-	       * registers are valid so we can erase side effects.
-	       *
-	       * First, make sure there is some stack space to hold 
-	       * our state.
-	       */
-	      
-	      struct rx_backtrack_frame * bf;
-	      
-	      PUSH(search_state.backtrack_stack,
-		   search_state.backtrack_frame_bytes);
+                              {
+                                search_state.lparen[reg] = urhere + 1;
+                                /* In addition to making this assignment,
+                                 * we now know that lower numbered regs
+                                 * that haven't already been assigned,
+                                 * won't be.  We make sure they're
+                                 * filled with -1, so they can be
+                                 * recognized as unassigned.
+                                 */
+                                if (search_state.last_l < reg)
+                                  while (++search_state.last_l < reg)
+                                    search_state.lparen[search_state.last_l] = -1;
+                              }
+                            break;
+                          }
+                          
+                        case re_se_rparen:
+                          {
+                            int urhere =
+                              ((int)(search_state.test_pos.pos
+                                     - search_state.test_pos.string)
+                               + search_state.test_pos.offset);
+                            int reg = rxb->se_params [effect].op1;
+                            search_state.rparen[reg] = urhere + 1;
+                            if (search_state.last_r < reg)
+                              {
+                                while (++search_state.last_r < reg)
+                                  search_state.rparen[search_state.last_r]
+                                    = -1;
+                              }
+                            break;
+                          }
+                          
+                        case re_se_backref:
+                          {
+                            int reg = rxb->se_params [effect].op1;
+                            if (   reg > search_state.last_r
+                                || search_state.rparen[reg] < 0)
+                              goto test_do_return;
+                            
+                            {
+                              int backref_status;
+                            check_backreference:
+                              backref_status
+                                = back_check (&search_state.test_pos,
+                                              search_state.lparen[reg],
+                                              search_state.rparen[reg],
+                                              search_state.translate,
+                                              app_closure,
+                                              stop);
+                              switch (backref_status)
+                                {
+                                case rx_back_check_continuation:
+                                  search_state.saved_reg = reg;
+                                  test_pc = rx_test_backreference_check;
+                                  goto test_return_continuation;
+                                resume_continuation_2:
+                                  reg = search_state.saved_reg;
+                                  goto check_backreference;
+                                case rx_back_check_fail:
+                                  /* Fail */
+                                  goto test_do_return;
+                                case rx_back_check_pass:
+                                  /* pass --
+                                   * test_pos now advanced to last
+                                   * char matched by backref
+                                   */
+                                  break;
+                                }
+                            }
+                            break;
+                          }
+                        case re_se_iter:
+                          {
+                            struct rx_counter_frame * csp
+                              = ((struct rx_counter_frame *)
+                                 search_state.counter_stack->sp);
+                            if (csp->val == rxb->se_params[effect].op2)
+                              goto test_do_return;
+                            else
+                              ++csp->val;
+                            break;
+                          }
+                        case re_se_end_iter:
+                          {
+                            struct rx_counter_frame * csp
+                              = ((struct rx_counter_frame *)
+                                 search_state.counter_stack->sp);
+                            if (csp->val < rxb->se_params[effect].op1)
+                              goto test_do_return;
+                            else
+                              {
+                                struct rx_counter_frame * source = csp;
+                                while (source->inherited_from)
+                                  source = source->inherited_from;
+                                if (!source || !source->cdr)
+                                  {
+                                    POP(search_state.counter_stack,
+                                        sizeof(struct rx_counter_frame));
+                                  }
+                                else
+                                  {
+                                    source = source->cdr;
+                                    csp->val = source->val;
+                                    csp->tag = source->tag;
+                                    csp->cdr = 0;
+                                    csp->inherited_from = source;
+                                  }
+                              }
+                            break;
+                          }
+                        case re_se_tv:
+                          /* is a noop */
+                          break;
+                        case re_se_try:
+                        case re_se_pushback:
+                        case re_se_push0:
+                        case re_se_pushpos:
+                        case re_se_chkpos:
+                        case re_se_poppos:
+                        case re_se_at_dot:
+                        case re_se_syntax:
+                        case re_se_not_syntax:
+                        case re_se_begbuf:
+                        case re_se_hat:
+                        case re_se_wordbeg:
+                        case re_se_wordbound:
+                        case re_se_notwordbound:
+                        case re_se_wordend:
+                        case re_se_endbuf:
+                        case re_se_dollar:
+                        case re_se_fail:
+                        case re_floogle_flap:
+                          search_state.ret_val = 0;
+                          goto test_do_return;
+                        }
+                    }
+                  el = el->cdr;
+                }
+              /* Now the side effects are done,
+               * so get the next instruction.
+               * and move on.
+               */
+              search_state.ifr = &df->future_frame;
+              goto restart;
+            }
+            
+          case rx_backtrack_point:
+            {
+              /* A backtrack point indicates that we've reached a
+               * non-determinism in the superstate NFA.  This is a
+               * loop that exhaustively searches the possibilities.
+               *
+               * A backtracking strategy is used.  We keep track of what
+               * registers are valid so we can erase side effects.
+               *
+               * First, make sure there is some stack space to hold 
+               * our state.
+               */
+              
+              struct rx_backtrack_frame * bf;
+              
+              PUSH(search_state.backtrack_stack,
+                   search_state.backtrack_frame_bytes);
 #ifdef RX_DEBUG_0
-	      ++search_state.backtrack_depth;
+              ++search_state.backtrack_depth;
 #endif
-	      
-	      bf = ((struct rx_backtrack_frame *)
-		    search_state.backtrack_stack->sp);
-	      {
-		bf->stk_super = search_state.super;
-		/* We prevent the current superstate from being
-		 * deleted from the superstate cache.
-		 */
-		rx_lock_superstate (&rxb->rx, search_state.super);
+              
+              bf = ((struct rx_backtrack_frame *)
+                    search_state.backtrack_stack->sp);
+              {
+                bf->stk_super = search_state.super;
+                /* We prevent the current superstate from being
+                 * deleted from the superstate cache.
+                 */
+                rx_lock_superstate (&rxb->rx, search_state.super);
 #ifdef RX_DEBUG_0
-		bf->stk_search_state.line_no = search_state.line_no;
+                bf->stk_search_state.line_no = search_state.line_no;
 #endif
-		bf->stk_c = search_state.c;
-		bf->stk_test_pos = search_state.test_pos;
-		bf->stk_last_l = search_state.last_l;
-		bf->stk_last_r = search_state.last_r;
-		bf->df = ((struct rx_super_edge *)
-			  search_state.ifr->data_2)->options;
-		bf->first_df = bf->df;
-		bf->counter_stack_sp = (search_state.counter_stack
-					? search_state.counter_stack->sp
-					: 0);
-		bf->stk_test_ret = search_state.test_ret;
-		if (rxb->match_regs_on_stack)
-		  {
-		    int x;
-		    regoff_t * stk =
-		      (regoff_t *)((char *)bf + sizeof (*bf));
-		    for (x = 0; x <= search_state.last_l; ++x)
-		      stk[x] = search_state.lparen[x];
-		    stk += x;
-		    for (x = 0; x <= search_state.last_r; ++x)
-		      stk[x] = search_state.rparen[x];
-		  }
-	      }
-	      
-	      /* Here is a while loop whose body is mainly a function
-	       * call and some code to handle a return from that
-	       * function.
-	       *
-	       * From here on for the rest of `case backtrack_point' it
-	       * is unsafe to assume that the search_state copies of 
-	       * variables saved on the backtracking stack are valid
-	       * -- so read their values from the backtracking stack.
-	       *
-	       * This lets us use one generation fewer stack saves in
-	       * the call-graph of a search.
-	       */
-	      
-	    while_non_det_options:
+                bf->stk_c = search_state.c;
+                bf->stk_test_pos = search_state.test_pos;
+                bf->stk_last_l = search_state.last_l;
+                bf->stk_last_r = search_state.last_r;
+                bf->df = ((struct rx_super_edge *)
+                          search_state.ifr->data_2)->options;
+                bf->first_df = bf->df;
+                bf->counter_stack_sp = (search_state.counter_stack
+                                        ? search_state.counter_stack->sp
+                                        : 0);
+                bf->stk_test_ret = search_state.test_ret;
+                if (rxb->match_regs_on_stack)
+                  {
+                    int x;
+                    regoff_t * stk =
+                      (regoff_t *)((char *)bf + sizeof (*bf));
+                    for (x = 0; x <= search_state.last_l; ++x)
+                      stk[x] = search_state.lparen[x];
+                    stk += x;
+                    for (x = 0; x <= search_state.last_r; ++x)
+                      stk[x] = search_state.rparen[x];
+                  }
+              }
+              
+              /* Here is a while loop whose body is mainly a function
+               * call and some code to handle a return from that
+               * function.
+               *
+               * From here on for the rest of `case backtrack_point' it
+               * is unsafe to assume that the search_state copies of 
+               * variables saved on the backtracking stack are valid
+               * -- so read their values from the backtracking stack.
+               *
+               * This lets us use one generation fewer stack saves in
+               * the call-graph of a search.
+               */
+              
+            while_non_det_options:
 #ifdef RX_DEBUG_0
-	      ++search_state.lines_found;
-	      if (rx_debug_trace)
-		fprintf (stderr, "@@@ %d calls %d @@@\n",
-			 search_state.line_no, search_state.lines_found);
-	      
-	      search_state.line_no = search_state.lines_found;
+              ++search_state.lines_found;
+              if (rx_debug_trace)
+                fprintf (stderr, "@@@ %d calls %d @@@\n",
+                         search_state.line_no, search_state.lines_found);
+              
+              search_state.line_no = search_state.lines_found;
 #endif
-	      
-	      if (bf->df->next_same_super_edge[0] == bf->first_df)
-		{
-		  /* This is a tail-call optimization -- we don't recurse
-		   * for the last of the possible futures.
-		   */
-		  search_state.ifr = (bf->df->effects
-				      ? &bf->df->side_effects_frame
-				      : &bf->df->future_frame);
-		  
-		  rx_unlock_superstate (&rxb->rx, search_state.super);
-		  POP(search_state.backtrack_stack,
-		      search_state.backtrack_frame_bytes);
+              
+              if (bf->df->next_same_super_edge[0] == bf->first_df)
+                {
+                  /* This is a tail-call optimization -- we don't recurse
+                   * for the last of the possible futures.
+                   */
+                  search_state.ifr = (bf->df->effects
+                                      ? &bf->df->side_effects_frame
+                                      : &bf->df->future_frame);
+                  
+                  rx_unlock_superstate (&rxb->rx, search_state.super);
+                  POP(search_state.backtrack_stack,
+                      search_state.backtrack_frame_bytes);
 #ifdef RX_DEBUG
-		  --search_state.backtrack_depth;
+                  --search_state.backtrack_depth;
 #endif
-		  goto restart;
-		}
-	      else
-		{
-		  if (search_state.counter_stack)
-		    {
-		      struct rx_counter_frame * old_cf
-			= ((struct rx_counter_frame *)search_state.counter_stack->sp);
-		      struct rx_counter_frame * cf;
-		      PUSH(search_state.counter_stack, sizeof (struct rx_counter_frame));
-		      cf = ((struct rx_counter_frame *)search_state.counter_stack->sp);
-		      cf->tag = old_cf->tag;
-		      cf->val = old_cf->val;
-		      cf->inherited_from = old_cf;
-		      cf->cdr = 0;
-		    }			
-		  /* `Call' this test-match block */
-		  search_state.ifr = (bf->df->effects
-				      ? &bf->df->side_effects_frame
-				      : &bf->df->future_frame);
-		  goto recurse_test_match;
-		}
-	      
-	      /* Returns in this block are accomplished by
-	       * goto test_do_return.  There are two cases.
-	       * If there is some search-stack left,
-	       * then it is a return from a `recursive' call.
-	       * If there is no search-stack left, then
-	       * we should return to the fastmap/search loop.
-	       */
-	      
-	    test_do_return:
-	      
-	      if (!search_state.backtrack_stack)
-		{
+                  goto restart;
+                }
+              else
+                {
+                  if (search_state.counter_stack)
+                    {
+                      struct rx_counter_frame * old_cf
+                        = ((struct rx_counter_frame *)search_state.counter_stack->sp);
+                      struct rx_counter_frame * cf;
+                      PUSH(search_state.counter_stack, sizeof (struct rx_counter_frame));
+                      cf = ((struct rx_counter_frame *)search_state.counter_stack->sp);
+                      cf->tag = old_cf->tag;
+                      cf->val = old_cf->val;
+                      cf->inherited_from = old_cf;
+                      cf->cdr = 0;
+                    }                   
+                  /* `Call' this test-match block */
+                  search_state.ifr = (bf->df->effects
+                                      ? &bf->df->side_effects_frame
+                                      : &bf->df->future_frame);
+                  goto recurse_test_match;
+                }
+              
+              /* Returns in this block are accomplished by
+               * goto test_do_return.  There are two cases.
+               * If there is some search-stack left,
+               * then it is a return from a `recursive' call.
+               * If there is no search-stack left, then
+               * we should return to the fastmap/search loop.
+               */
+              
+            test_do_return:
+              
+              if (!search_state.backtrack_stack)
+                {
 #ifdef RX_DEBUG_0
-		  if (rx_debug_trace)
-		    fprintf (stderr, "!!! %d bails returning %d !!!\n",
-			     search_state.line_no, search_state.test_ret);
+                  if (rx_debug_trace)
+                    fprintf (stderr, "!!! %d bails returning %d !!!\n",
+                             search_state.line_no, search_state.test_ret);
 #endif
-		  
-		  /* No more search-stack -- this test is done. */
-		  if (search_state.test_ret != rx_test_internal_error)
-		    goto return_from_test_match;
-		  else
-		    goto error_in_testing_match;
-		}
-	      
-	      /* Returning from a recursive call to 
-	       * the test match block:
-	       */
-	      
-	      bf = ((struct rx_backtrack_frame *)
-		    search_state.backtrack_stack->sp);
+                  
+                  /* No more search-stack -- this test is done. */
+                  if (search_state.test_ret != rx_test_internal_error)
+                    goto return_from_test_match;
+                  else
+                    goto error_in_testing_match;
+                }
+              
+              /* Returning from a recursive call to 
+               * the test match block:
+               */
+              
+              bf = ((struct rx_backtrack_frame *)
+                    search_state.backtrack_stack->sp);
 #ifdef RX_DEBUG_0
-	      if (rx_debug_trace)
-		fprintf (stderr, "+++ %d returns %d (to %d)+++\n",
-			 search_state.line_no,
-			 search_state.test_ret,
-			 bf->stk_search_state.line_no);
+              if (rx_debug_trace)
+                fprintf (stderr, "+++ %d returns %d (to %d)+++\n",
+                         search_state.line_no,
+                         search_state.test_ret,
+                         bf->stk_search_state.line_no);
 #endif
-	      
-	      while (search_state.counter_stack
-		     && (!bf->counter_stack_sp
-			 || (bf->counter_stack_sp
-			     != search_state.counter_stack->sp)))
-		{
-		  POP(search_state.counter_stack,
-		      sizeof (struct rx_counter_frame));
-		}
-	      
-	      if (search_state.test_ret == rx_test_internal_error)
-		{
-		  POP (search_state.backtrack_stack,
-		       search_state.backtrack_frame_bytes);
-		  goto test_do_return;
-		}
-	      
-	      /* If a non-longest match was found and that is good 
-	       * enough, return immediately.
-	       */
-	      if (   (search_state.test_ret == rx_test_found_first)
-		  && search_state.first_found)
-		{
-		  rx_unlock_superstate (&rxb->rx, bf->stk_super);
-		  POP (search_state.backtrack_stack,
-		       search_state.backtrack_frame_bytes);
-		  goto test_do_return;
-		}
-	      
-	      search_state.test_ret = bf->stk_test_ret;
-	      search_state.last_l = bf->stk_last_l;
-	      search_state.last_r = bf->stk_last_r;
-	      bf->df = bf->df->next_same_super_edge[0];
-	      search_state.super = bf->stk_super;
-	      search_state.c = bf->stk_c;
+              
+              while (search_state.counter_stack
+                     && (!bf->counter_stack_sp
+                         || (bf->counter_stack_sp
+                             != search_state.counter_stack->sp)))
+                {
+                  POP(search_state.counter_stack,
+                      sizeof (struct rx_counter_frame));
+                }
+              
+              if (search_state.test_ret == rx_test_internal_error)
+                {
+                  POP (search_state.backtrack_stack,
+                       search_state.backtrack_frame_bytes);
+                  goto test_do_return;
+                }
+              
+              /* If a non-longest match was found and that is good 
+               * enough, return immediately.
+               */
+              if (   (search_state.test_ret == rx_test_found_first)
+                  && search_state.first_found)
+                {
+                  rx_unlock_superstate (&rxb->rx, bf->stk_super);
+                  POP (search_state.backtrack_stack,
+                       search_state.backtrack_frame_bytes);
+                  goto test_do_return;
+                }
+              
+              search_state.test_ret = bf->stk_test_ret;
+              search_state.last_l = bf->stk_last_l;
+              search_state.last_r = bf->stk_last_r;
+              bf->df = bf->df->next_same_super_edge[0];
+              search_state.super = bf->stk_super;
+              search_state.c = bf->stk_c;
 #ifdef RX_DEBUG_0
-	      search_state.line_no = bf->stk_search_state.line_no;
+              search_state.line_no = bf->stk_search_state.line_no;
 #endif
-	      
-	      if (rxb->match_regs_on_stack)
-		{
-		  int x;
-		  regoff_t * stk =
-		    (regoff_t *)((char *)bf + sizeof (*bf));
-		  for (x = 0; x <= search_state.last_l; ++x)
-		    search_state.lparen[x] = stk[x];
-		  stk += x;
-		  for (x = 0; x <= search_state.last_r; ++x)
-		    search_state.rparen[x] = stk[x];
-		}
-	      
-	      if ((search_state.test_ret != rx_test_line_finished) &&
-		  (search_state.test_ret != rx_test_internal_error))
-	      {
-		int x;
-	      try_burst_2:
-		x = get_burst (&bf->stk_test_pos, app_closure, stop);
-		switch (x)
-		  {
-		  case rx_get_burst_continuation:
-		    search_state.saved_bf = bf;
-		    test_pc = rx_test_backtrack_return;
-		    goto test_return_continuation;
-		  resume_continuation_3:
-		    bf = search_state.saved_bf;
-		    goto try_burst_2;
-		  case rx_get_burst_no_more:
-		    /* Since we've been here before, it is some kind of
-		     * error that we can't return.
-		     */
-		  case rx_get_burst_error:
-		    search_state.test_ret = rx_test_internal_error;
-		    goto test_do_return;
-		  case rx_get_burst_ok:
-		    break;
-		  }
-	      }
-	      search_state.test_pos = bf->stk_test_pos;
-	      goto while_non_det_options;
-	    }
-	    
-	    
-	  case rx_cache_miss:
-	    /* Because the superstate NFA is lazily constructed,
-	     * and in fact may erode from underneath us, we sometimes
-	     * have to construct the next instruction from the hard way.
-	     * This invokes one step in the lazy-conversion.
-	     */
-	    search_state.ifr = rx_handle_cache_miss (&rxb->rx,
-						     search_state.super,
-						     search_state.c,
-						     search_state.ifr->data_2);
-	    if (!search_state.ifr)
-	      {
-		search_state.test_ret = rx_test_internal_error;
-		goto test_do_return;
-	      }
-	    goto restart;
-	    
-	  case rx_backtrack:
-	    /* RX_BACKTRACK means that we've reached the empty
-	     * superstate, indicating that match can't succeed
-	     * from this point.
-	     */
-	    goto test_do_return;
-	    
-	  case rx_next_char:
-	  case rx_error_inx:
-	  case rx_num_instructions:
-	    search_state.ret_val = 0;
-	    goto test_do_return;
-	  }
-	goto pseudo_while_1;
+              
+              if (rxb->match_regs_on_stack)
+                {
+                  int x;
+                  regoff_t * stk =
+                    (regoff_t *)((char *)bf + sizeof (*bf));
+                  for (x = 0; x <= search_state.last_l; ++x)
+                    search_state.lparen[x] = stk[x];
+                  stk += x;
+                  for (x = 0; x <= search_state.last_r; ++x)
+                    search_state.rparen[x] = stk[x];
+                }
+              
+              if ((search_state.test_ret != rx_test_line_finished) &&
+                  (search_state.test_ret != rx_test_internal_error))
+              {
+                int x;
+              try_burst_2:
+                x = get_burst (&bf->stk_test_pos, app_closure, stop);
+                switch (x)
+                  {
+                  case rx_get_burst_continuation:
+                    search_state.saved_bf = bf;
+                    test_pc = rx_test_backtrack_return;
+                    goto test_return_continuation;
+                  resume_continuation_3:
+                    bf = search_state.saved_bf;
+                    goto try_burst_2;
+                  case rx_get_burst_no_more:
+                    /* Since we've been here before, it is some kind of
+                     * error that we can't return.
+                     */
+                  case rx_get_burst_error:
+                    search_state.test_ret = rx_test_internal_error;
+                    goto test_do_return;
+                  case rx_get_burst_ok:
+                    break;
+                  }
+              }
+              search_state.test_pos = bf->stk_test_pos;
+              goto while_non_det_options;
+            }
+            
+            
+          case rx_cache_miss:
+            /* Because the superstate NFA is lazily constructed,
+             * and in fact may erode from underneath us, we sometimes
+             * have to construct the next instruction from the hard way.
+             * This invokes one step in the lazy-conversion.
+             */
+            search_state.ifr = rx_handle_cache_miss (&rxb->rx,
+                                                     search_state.super,
+                                                     search_state.c,
+                                                     search_state.ifr->data_2);
+            if (!search_state.ifr)
+              {
+                search_state.test_ret = rx_test_internal_error;
+                goto test_do_return;
+              }
+            goto restart;
+            
+          case rx_backtrack:
+            /* RX_BACKTRACK means that we've reached the empty
+             * superstate, indicating that match can't succeed
+             * from this point.
+             */
+            goto test_do_return;
+            
+          case rx_next_char:
+          case rx_error_inx:
+          case rx_num_instructions:
+            search_state.ret_val = 0;
+            goto test_do_return;
+          }
+        goto pseudo_while_1;
       }
     
     /* Healthy exits from the test-match loop do a 
@@ -3646,39 +3646,39 @@ rx_search  (rxb, startpos, range, stop, total_size,
     goto test_returns_to_search;
     
     /***** fastmap/search loop body
-     *	      considering the results testing for a match
+     *        considering the results testing for a match
      */
     
   return_from_test_match:
     
     if (search_state.best_last_l >= 0)
       {
-	if (regs && (regs->start != search_state.best_lparen))
-	  {
-	    bcopy (search_state.best_lparen, regs->start,
-		   regs->num_regs * sizeof (int));
-	    bcopy (search_state.best_rparen, regs->end,
-		   regs->num_regs * sizeof (int));
-	  }
-	if (regs && !rxb->no_sub)
-	  {
-	    int q;
-	    int bound = (regs->num_regs < search_state.num_regs
-			 ? regs->num_regs
-			 : search_state.num_regs);
-	    regoff_t * s = regs->start;
-	    regoff_t * e = regs->end;
-	    for (q = search_state.best_last_l + 1;  q < bound; ++q)
-	      s[q] = e[q] = -1;
-	  }
-	search_state.ret_val = search_state.best_lparen[0];
-	test_state = rx_test_ok;
-	goto test_returns_to_search;
+        if (regs && (regs->start != search_state.best_lparen))
+          {
+            bcopy (search_state.best_lparen, regs->start,
+                   regs->num_regs * sizeof (int));
+            bcopy (search_state.best_rparen, regs->end,
+                   regs->num_regs * sizeof (int));
+          }
+        if (regs && !rxb->no_sub)
+          {
+            int q;
+            int bound = (regs->num_regs < search_state.num_regs
+                         ? regs->num_regs
+                         : search_state.num_regs);
+            regoff_t * s = regs->start;
+            regoff_t * e = regs->end;
+            for (q = search_state.best_last_l + 1;  q < bound; ++q)
+              s[q] = e[q] = -1;
+          }
+        search_state.ret_val = search_state.best_lparen[0];
+        test_state = rx_test_ok;
+        goto test_returns_to_search;
       }
     else
       {
-	test_state = rx_test_fail;
-	goto test_returns_to_search;
+        test_state = rx_test_fail;
+        goto test_returns_to_search;
       }
     
   test_return_continuation:
@@ -3708,7 +3708,7 @@ rx_search  (rxb, startpos, range, stop, total_size,
    * The integer name of a complex effect is an index into rxb->se_params.
    */
  
-  RX_DEF_SE(1, re_se_try, = -1)		/* Epsilon from start state */
+  RX_DEF_SE(1, re_se_try, = -1)         /* Epsilon from start state */
 
   RX_DEF_SE(0, re_se_pushback, = re_se_try - 1)
   RX_DEF_SE(0, re_se_push0, = re_se_pushback -1)
@@ -3716,7 +3716,7 @@ rx_search  (rxb, startpos, range, stop, total_size,
   RX_DEF_SE(0, re_se_chkpos, = re_se_pushpos -1)
   RX_DEF_SE(0, re_se_poppos, = re_se_chkpos - 1)
 
-  RX_DEF_SE(1, re_se_at_dot, = re_se_poppos - 1)	/* Emacs only */
+  RX_DEF_SE(1, re_se_at_dot, = re_se_poppos - 1)        /* Emacs only */
   RX_DEF_SE(0, re_se_syntax, = re_se_at_dot - 1) /* Emacs only */
   RX_DEF_SE(0, re_se_not_syntax, = re_se_syntax - 1) /* Emacs only */
 

@@ -41,195 +41,195 @@ static char rcsid[] =
 #define RADUTMP_NUM_FIELDS        9
 
 SCM_DEFINE(rad_utmp_putent, "rad-utmp-putent", 4, 1, 0,
-	   (SCM STATUS,
-	    SCM DELAY,
-	    SCM LIST,
-	    SCM RADUTMP_FILE,
-	    SCM RADWTMP_FILE),
+           (SCM STATUS,
+            SCM DELAY,
+            SCM LIST,
+            SCM RADUTMP_FILE,
+            SCM RADWTMP_FILE),
 "Write the supplied data into the radutmp file. If RADWTMP_FILE is not nil
 the constructed entry is also appended to WTMP_FILE.")
 #define FUNC_NAME s_rad_utmp_putent
 {
-	int status;
-	struct radutmp ut;
-	char *file_name;
-	SCM elt;
-	int num;
-	
-	/* status */
-	SCM_ASSERT(SCM_IMP(STATUS) && SCM_INUMP(STATUS),
-		   STATUS, SCM_ARG1, FUNC_NAME);
-	status = SCM_INUM(STATUS);
+        int status;
+        struct radutmp ut;
+        char *file_name;
+        SCM elt;
+        int num;
+        
+        /* status */
+        SCM_ASSERT(SCM_IMP(STATUS) && SCM_INUMP(STATUS),
+                   STATUS, SCM_ARG1, FUNC_NAME);
+        status = SCM_INUM(STATUS);
 
         /* initialize the radutmp structure */
-	memset(&ut, 0, sizeof(ut));
+        memset(&ut, 0, sizeof(ut));
 
-	/* Now fill it */
-	
-	/* Time */
-	time(&ut.time);
+        /* Now fill it */
+        
+        /* Time */
+        time(&ut.time);
 
         /* Delay */
-	if (SCM_IMP(DELAY) && SCM_INUMP(DELAY)) 
-		ut.delay = SCM_INUM(DELAY);
-	else if (SCM_BIGP(DELAY)) 
-		ut.delay = (UINT4) scm_big2dbl(DELAY);
-	else
-		SCM_ASSERT(0,
-			   DELAY, SCM_ARG2, FUNC_NAME);
+        if (SCM_IMP(DELAY) && SCM_INUMP(DELAY)) 
+                ut.delay = SCM_INUM(DELAY);
+        else if (SCM_BIGP(DELAY)) 
+                ut.delay = (UINT4) scm_big2dbl(DELAY);
+        else
+                SCM_ASSERT(0,
+                           DELAY, SCM_ARG2, FUNC_NAME);
 
-	/* Rest of fields */
-	SCM_ASSERT((SCM_NIMP(LIST) && SCM_CONSP(LIST)),
-		   LIST, SCM_ARG3, FUNC_NAME);
+        /* Rest of fields */
+        SCM_ASSERT((SCM_NIMP(LIST) && SCM_CONSP(LIST)),
+                   LIST, SCM_ARG3, FUNC_NAME);
 
-	num = 0;
-	while (num < RADUTMP_NUM_FIELDS &&
-		!(SCM_NIMP(LIST) && LIST == SCM_EOL)) {
+        num = 0;
+        while (num < RADUTMP_NUM_FIELDS &&
+                !(SCM_NIMP(LIST) && LIST == SCM_EOL)) {
 
-		elt = SCM_CAR(LIST);
-		LIST = SCM_CDR(LIST);
+                elt = SCM_CAR(LIST);
+                LIST = SCM_CDR(LIST);
 
-		switch (num++) {
-		case RADUTMP_FIELD_LOGIN:
-			/* login name */
-			if (!(SCM_NIMP(elt) && SCM_STRINGP(elt))) {
-				scm_misc_error(FUNC_NAME,
-					       "~S: login name should be string",
-					       SCM_LIST1(elt));
-			}
-			strncpy(ut.login, SCM_CHARS(elt), sizeof(ut.login));
-			ut.login[sizeof(ut.login)-1] = 0;
-			break;
-			
-		case RADUTMP_FIELD_ORIG_LOGIN:
-			/* original login name */
-			if (!(SCM_NIMP(elt) && SCM_STRINGP(elt))) {
-				scm_misc_error(FUNC_NAME,
-					       "~S: orig login name should be string",
-					       SCM_LIST1(elt));
-			}
-			strncpy(ut.orig_login, SCM_CHARS(elt),
-				sizeof(ut.orig_login));
-			ut.orig_login[sizeof(ut.orig_login)-1] = 0;
-			break;
+                switch (num++) {
+                case RADUTMP_FIELD_LOGIN:
+                        /* login name */
+                        if (!(SCM_NIMP(elt) && SCM_STRINGP(elt))) {
+                                scm_misc_error(FUNC_NAME,
+                                               "~S: login name should be string",
+                                               SCM_LIST1(elt));
+                        }
+                        strncpy(ut.login, SCM_CHARS(elt), sizeof(ut.login));
+                        ut.login[sizeof(ut.login)-1] = 0;
+                        break;
+                        
+                case RADUTMP_FIELD_ORIG_LOGIN:
+                        /* original login name */
+                        if (!(SCM_NIMP(elt) && SCM_STRINGP(elt))) {
+                                scm_misc_error(FUNC_NAME,
+                                               "~S: orig login name should be string",
+                                               SCM_LIST1(elt));
+                        }
+                        strncpy(ut.orig_login, SCM_CHARS(elt),
+                                sizeof(ut.orig_login));
+                        ut.orig_login[sizeof(ut.orig_login)-1] = 0;
+                        break;
 
-		case RADUTMP_FIELD_PORT:
-			/* port number */
-			if (!(SCM_IMP(elt) && SCM_INUMP(elt))) {
-				scm_misc_error(FUNC_NAME,
-					       "~S: port number should be integer",
-					       SCM_LIST1(elt));
-			}
-			ut.nas_port = SCM_INUM(elt);
-			break;
-			
-		case RADUTMP_FIELD_SESSION_ID:
-			/* session id */
-			if (!(SCM_NIMP(elt) && SCM_STRINGP(elt))) {
-				scm_misc_error(FUNC_NAME,
-					       "~S: session ID should be string",
-					       SCM_LIST1(elt));
-			}
-			strncpy(ut.session_id, SCM_CHARS(elt),
-				sizeof(ut.session_id));
-			ut.session_id[sizeof(ut.session_id)-1] = 0;
-			
-		case RADUTMP_FIELD_NAS_IP:
-			/* NAS IP address */
-			if (SCM_IMP(elt) && SCM_INUMP(elt)) 
-				ut.nas_address = SCM_INUM(elt);
-			else if (SCM_BIGP(elt)) 
-				ut.nas_address = (UINT4) scm_big2dbl(elt);
-			else if (SCM_NIMP(elt) && SCM_STRINGP(elt)) 
-				ut.nas_address = ip_gethostaddr(SCM_CHARS(elt));
-			else if (SCM_NIMP(elt) && SCM_STRINGP(elt))
-				ut.nas_address = ip_strtoip(SCM_CHARS(elt));
-			else 
-				scm_misc_error(FUNC_NAME,
-					       "~S: NAS IP should be IP address",
-					       SCM_LIST1(elt));
-			ut.nas_address = htonl(ut.nas_address);
-			break;
-			
-		case RADUTMP_FIELD_FRAMED_IP:
-			/* Framed IP address */
-			if (SCM_IMP(elt) && SCM_INUMP(elt)) 
-				ut.framed_address = SCM_INUM(elt);
-			else if (SCM_BIGP(elt)) 
-				ut.framed_address = (UINT4) scm_big2dbl(elt);
-			else if (SCM_NIMP(elt) && SCM_STRINGP(elt)) 
-				ut.framed_address = ip_gethostaddr(SCM_CHARS(elt));
-			else if (SCM_NIMP(elt) && SCM_STRINGP(elt))
-				ut.framed_address = ip_strtoip(SCM_CHARS(elt));
-			else 
-				scm_misc_error(FUNC_NAME,
-					       "~S: Framed IP should be IP address",
-					       SCM_LIST1(elt));
-			ut.framed_address = htonl(ut.framed_address);
-			break;
-			
-		case RADUTMP_FIELD_PROTO:
-			/* Prototype */
-			if (SCM_IMP(elt) && SCM_INUMP(elt)) 
-				ut.proto = SCM_INUM(elt);
-			else if (SCM_IMP(elt) && SCM_CHARP(elt))
-				ut.proto = SCM_CHAR(elt);
-			else
-				scm_misc_error(FUNC_NAME,
-					       "~S: Proto should be integer or character",
-					       SCM_LIST1(elt));
-			break;
-			
-			
-		case RADUTMP_FIELD_PORT_TYPE:
-			/* Port type */
-			if (SCM_IMP(elt) && SCM_INUMP(elt)) 
-				ut.porttype = SCM_INUM(elt);
-			else if (SCM_IMP(elt) && SCM_CHARP(elt))
-				ut.porttype = SCM_CHAR(elt);
-			else
-				scm_misc_error(FUNC_NAME,
-					       "~S: Port type should be char or integer",
-					       SCM_LIST1(elt));
-			break;
+                case RADUTMP_FIELD_PORT:
+                        /* port number */
+                        if (!(SCM_IMP(elt) && SCM_INUMP(elt))) {
+                                scm_misc_error(FUNC_NAME,
+                                               "~S: port number should be integer",
+                                               SCM_LIST1(elt));
+                        }
+                        ut.nas_port = SCM_INUM(elt);
+                        break;
+                        
+                case RADUTMP_FIELD_SESSION_ID:
+                        /* session id */
+                        if (!(SCM_NIMP(elt) && SCM_STRINGP(elt))) {
+                                scm_misc_error(FUNC_NAME,
+                                               "~S: session ID should be string",
+                                               SCM_LIST1(elt));
+                        }
+                        strncpy(ut.session_id, SCM_CHARS(elt),
+                                sizeof(ut.session_id));
+                        ut.session_id[sizeof(ut.session_id)-1] = 0;
+                        
+                case RADUTMP_FIELD_NAS_IP:
+                        /* NAS IP address */
+                        if (SCM_IMP(elt) && SCM_INUMP(elt)) 
+                                ut.nas_address = SCM_INUM(elt);
+                        else if (SCM_BIGP(elt)) 
+                                ut.nas_address = (UINT4) scm_big2dbl(elt);
+                        else if (SCM_NIMP(elt) && SCM_STRINGP(elt)) 
+                                ut.nas_address = ip_gethostaddr(SCM_CHARS(elt));
+                        else if (SCM_NIMP(elt) && SCM_STRINGP(elt))
+                                ut.nas_address = ip_strtoip(SCM_CHARS(elt));
+                        else 
+                                scm_misc_error(FUNC_NAME,
+                                               "~S: NAS IP should be IP address",
+                                               SCM_LIST1(elt));
+                        ut.nas_address = htonl(ut.nas_address);
+                        break;
+                        
+                case RADUTMP_FIELD_FRAMED_IP:
+                        /* Framed IP address */
+                        if (SCM_IMP(elt) && SCM_INUMP(elt)) 
+                                ut.framed_address = SCM_INUM(elt);
+                        else if (SCM_BIGP(elt)) 
+                                ut.framed_address = (UINT4) scm_big2dbl(elt);
+                        else if (SCM_NIMP(elt) && SCM_STRINGP(elt)) 
+                                ut.framed_address = ip_gethostaddr(SCM_CHARS(elt));
+                        else if (SCM_NIMP(elt) && SCM_STRINGP(elt))
+                                ut.framed_address = ip_strtoip(SCM_CHARS(elt));
+                        else 
+                                scm_misc_error(FUNC_NAME,
+                                               "~S: Framed IP should be IP address",
+                                               SCM_LIST1(elt));
+                        ut.framed_address = htonl(ut.framed_address);
+                        break;
+                        
+                case RADUTMP_FIELD_PROTO:
+                        /* Prototype */
+                        if (SCM_IMP(elt) && SCM_INUMP(elt)) 
+                                ut.proto = SCM_INUM(elt);
+                        else if (SCM_IMP(elt) && SCM_CHARP(elt))
+                                ut.proto = SCM_CHAR(elt);
+                        else
+                                scm_misc_error(FUNC_NAME,
+                                               "~S: Proto should be integer or character",
+                                               SCM_LIST1(elt));
+                        break;
+                        
+                        
+                case RADUTMP_FIELD_PORT_TYPE:
+                        /* Port type */
+                        if (SCM_IMP(elt) && SCM_INUMP(elt)) 
+                                ut.porttype = SCM_INUM(elt);
+                        else if (SCM_IMP(elt) && SCM_CHARP(elt))
+                                ut.porttype = SCM_CHAR(elt);
+                        else
+                                scm_misc_error(FUNC_NAME,
+                                               "~S: Port type should be char or integer",
+                                               SCM_LIST1(elt));
+                        break;
 
-		case RADUTMP_FIELD_CALLER_ID:
-			/* Calling station ID */
-			if (!(SCM_NIMP(elt) && SCM_STRINGP(elt))) {
-				scm_misc_error(FUNC_NAME,
-					       "~S: CLID should be string",
-					       SCM_LIST1(elt));
-			}
-			strncpy(ut.caller_id, SCM_CHARS(elt),
-				sizeof(ut.caller_id));
-			ut.caller_id[sizeof(ut.caller_id)-1] = 0;
-			break;
-		}
-	}
+                case RADUTMP_FIELD_CALLER_ID:
+                        /* Calling station ID */
+                        if (!(SCM_NIMP(elt) && SCM_STRINGP(elt))) {
+                                scm_misc_error(FUNC_NAME,
+                                               "~S: CLID should be string",
+                                               SCM_LIST1(elt));
+                        }
+                        strncpy(ut.caller_id, SCM_CHARS(elt),
+                                sizeof(ut.caller_id));
+                        ut.caller_id[sizeof(ut.caller_id)-1] = 0;
+                        break;
+                }
+        }
 
 
-	/* FIXME: IF (LIST == SCM_EOL) ? */
+        /* FIXME: IF (LIST == SCM_EOL) ? */
 
         /* Finally, put it into radutmp file */
 
-	/* Obtain the file name */
-	SCM_ASSERT(SCM_NIMP(RADUTMP_FILE) && SCM_STRINGP(RADUTMP_FILE),
-		   RADUTMP_FILE, SCM_ARG4, FUNC_NAME);
+        /* Obtain the file name */
+        SCM_ASSERT(SCM_NIMP(RADUTMP_FILE) && SCM_STRINGP(RADUTMP_FILE),
+                   RADUTMP_FILE, SCM_ARG4, FUNC_NAME);
 
-	file_name = SCM_CHARS(RADUTMP_FILE);
-	radutmp_putent(file_name, &ut, status);
+        file_name = SCM_CHARS(RADUTMP_FILE);
+        radutmp_putent(file_name, &ut, status);
 
-	/* Add to wtmp if necessary */
-	if (!SCM_UNBNDP(RADWTMP_FILE)) {
-		SCM_ASSERT(SCM_NIMP(RADWTMP_FILE) && SCM_STRINGP(RADWTMP_FILE),
-			   RADWTMP_FILE, SCM_ARG5, FUNC_NAME); 
-		file_name = SCM_CHARS(RADWTMP_FILE);
-		radwtmp_putent(file_name, &ut);
-	}
+        /* Add to wtmp if necessary */
+        if (!SCM_UNBNDP(RADWTMP_FILE)) {
+                SCM_ASSERT(SCM_NIMP(RADWTMP_FILE) && SCM_STRINGP(RADWTMP_FILE),
+                           RADWTMP_FILE, SCM_ARG5, FUNC_NAME); 
+                file_name = SCM_CHARS(RADWTMP_FILE);
+                radwtmp_putent(file_name, &ut);
+        }
 
-	return SCM_LIST3(scm_makenum(ut.duration),
-			 scm_makenum(0),
-			 scm_makenum(0));
+        return SCM_LIST3(scm_makenum(ut.duration),
+                         scm_makenum(0),
+                         scm_makenum(0));
 }
 #undef FUNC_NAME
 

@@ -472,7 +472,8 @@ int scheme_auth(char *procname, RADIUS_REQ *req,
 int scheme_acct(char *procname, RADIUS_REQ *req);
 void scheme_add_load_path(char *path);
 void scheme_read_eval_loop();
-void scheme_end_reconfig();
+void scheme_before_reconfig();
+void scheme_after_reconfig();
 void start_guile();
 
 /* request.c */

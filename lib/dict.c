@@ -284,7 +284,8 @@ _dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
 			(*errcnt)++;
                         return 0;
                 }
-        }
+        } else if (value > 255)
+		flags |= AP_INTERNAL;
 
         if (HAS_FLAGS(fc,fv)) {
                 char *p;

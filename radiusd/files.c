@@ -598,6 +598,27 @@ userparse(char *buffer, grad_avp_t **first_pair, char **errmsg)
         return 0;
 }
 
+static void
+avl_eval_rewrite (grad_request_t *req, grad_matching_rule_t *rule,
+		  grad_avp_t *p)
+{
+	for (; p; p = p->next) {
+		if (p->attribute == DA_REWRITE_FUNCTION
+		    && (rewrite_eval(p->avp_strvalue, req, NULL, NULL))) {
+			grad_log_loc(L_ERR, &rule->loc, "%s(): %s",
+				     p->avp_strvalue,
+				     _("not defined"));
+		}
+	}
+}
+
+void
+rule_eval_rewrite (grad_request_t *req, grad_matching_rule_t *rule)
+{
+	avl_eval_rewrite (req, rule, rule->rhs);
+	avl_eval_rewrite (req, rule, rule->lhs);
+}
+
 /* ***************************************************************************
  * raddb/hints
  */
@@ -608,7 +629,7 @@ static void
 hints_eval_compat(grad_request_t *req, grad_avp_t *name_pair, grad_matching_rule_t *rule)
 {
         grad_avp_t      *tmp;
-
+	
 	/* Let's see if we need to further modify the username */
 	if ((tmp = grad_avl_find(rule->rhs, DA_REPLACE_USER_NAME))
 	    || (tmp = grad_avl_find(rule->lhs, DA_REPLACE_USER_NAME))) {
@@ -622,16 +643,8 @@ hints_eval_compat(grad_request_t *req, grad_avp_t *name_pair, grad_matching_rule
 			grad_string_replace(&name_pair->avp_strvalue, ptr);
 		obstack_free(&hints_stk, NULL);
 	}
-                
-	/* Is the rewrite function specified? */
-	if ((tmp = grad_avl_find(rule->rhs, DA_REWRITE_FUNCTION))
-	    || (tmp = grad_avl_find(rule->lhs, DA_REWRITE_FUNCTION))) {
-		if (rewrite_eval(tmp->avp_strvalue, req, NULL, NULL)) {
-			grad_log_loc(L_ERR, &rule->loc, "%s(): %s",
-				     tmp->avp_strvalue,
-				     _("not defined"));
-		}
-	}
+
+	rule_eval_rewrite (req, rule);
 }
 
 /* Add hints to the info sent by the terminal server
@@ -835,15 +848,7 @@ huntgroup_access(grad_request_t *radreq, grad_locus_t *loc)
 		if (loc)
 			*loc = rule->loc;
 		radius_req_register_locus(radreq, &rule->loc);
-#ifdef DA_REWRITE_FUNCTION
-		if ((pair = grad_avl_find(rule->lhs, DA_REWRITE_FUNCTION))
-		          != NULL
-		    && rewrite_eval(pair->avp_strvalue, radreq, NULL, NULL)) {
-                        grad_log_loc(L_ERR, &rule->loc, "%s(): %s",
-				     pair->avp_strvalue,
-				     _("not defined"));
-                }
-#endif  
+		rule_eval_rewrite (radreq, rule);
 	}
         debug(1, ("returning %d", r));
         return r;

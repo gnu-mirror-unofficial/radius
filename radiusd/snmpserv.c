@@ -370,7 +370,33 @@ static struct mib_data {
 	oid_grad_StatPortInUseMaxTime,	 snmp_port_table, &port_table,
 	oid_grad_StatPortInUseMaxTimestamp, snmp_port_table, &port_table,
 #endif
-	/* enterprise.gnu-radius subtree */
+	/* enterprise.gnu.radius subtree */
+	/* Server */
+	oid_radiusServerUpTime,         snmp_serv_handler, NULL,
+	oid_radiusServerResetTime,      snmp_serv_handler, NULL,
+	oid_radiusServerState,          snmp_serv_handler, NULL,
+
+	/* Variable oids */
+	oid_queueIndex,   snmp_serv_queue_handler, &queue_closure,
+	oid_queueName,    snmp_serv_queue_handler, &queue_closure,	
+	oid_queueActive,  snmp_serv_queue_handler, &queue_closure,	
+	oid_queueHeld,    snmp_serv_queue_handler, &queue_closure,	
+	oid_queueTotal,   snmp_serv_queue_handler, &queue_closure,	
+
+	oid_memoryNumClasses,      snmp_serv_mem_summary,   NULL,
+	oid_memoryNumBuckets,      snmp_serv_mem_summary,   NULL,
+	oid_memoryBytesAllocated,  snmp_serv_mem_summary,   NULL,
+	oid_memoryBytesUsed,       snmp_serv_mem_summary,   NULL,
+	
+	oid_classIndex,	        snmp_serv_class_handler, &mem_closure,
+	oid_classSize,	        snmp_serv_class_handler, &mem_closure,
+	oid_classElsPerBucket,     snmp_serv_class_handler, &mem_closure,
+	oid_classNumBuckets,	snmp_serv_class_handler, &mem_closure,
+	oid_classElsUsed,          snmp_serv_class_handler, &mem_closure,
+	
+	oid_memoryMallocBlocks,	snmp_serv_mem_summary,   NULL,
+	oid_memoryMallocBytes,	snmp_serv_mem_summary,   NULL,
+
 	/* Statistics */
 	oid_StatIdent,	          	     snmp_stat_handler, NULL,
 	oid_StatUpTime,	                     snmp_stat_handler, NULL,

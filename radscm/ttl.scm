@@ -173,7 +173,7 @@
 	      (lambda ()
 		(return (select (list fd) '() '() ttl-timeout)))
 	      (lambda (key . args)
-		(if (!= (car (list-ref args 3)) EINTR)
+		(if (not (= (car (list-ref args 3)) EINTR))
 		    (apply throw key args))))))))
 
 (define (ttl-message code user-name)

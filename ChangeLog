@@ -1,3 +1,18 @@
+2002-12-24  Sergey Poznyakoff  
+
+	* doc/texinfo/Makefile.am: Changed rules for creating web
+	  documentation.
+	* doc/texinfo/index.html.in: Likewise.
+	* doc/texinfo/acct.texi: Minor changes.
+	* doc/texinfo/attributes.texi: Likewise.
+	* doc/texinfo/radius.texi: Likewise.
+	* doc/texinfo/intro.texi: Major changes.
+
+	* scripts/texi2html: Removed.
+	* scripts/texi2html.diff: New file. A patch to fix texi2html
+	  v. 1.64 to correctly handle @macro declarations.
+	* scripts/Makefile.am: Replaced texi2html with texi2html.diff.
+
 2002-12-24  Sergey Poznyakoff
 
 	* configure.ac: AC_CONFIG_AUX_DIR([scripts])

@@ -171,4 +171,7 @@ log-mode-mask Auth-Type = Local,
 	Service-Type = Framed-User,
 		Framed-Protocol = PPP
 
+vsa-propagation	Auth-Type = Accept
+		Cisco-AVPair = "variable=value"
+
 # End of users.in

@@ -1,3 +1,11 @@
+2004-07-31  Sergey Poznyakoff
+
+	* radtest/runtime.c (rt_eval_expr): Implemented default typecast
+	rules for unary operations.
+
+	* radwho/radwho.c (gnu format): Changed default time
+	representation to %c.
+
 2004-07-21  Sergey Poznyakoff
 
 	* radtest/input.l: Check if the literal is a request name

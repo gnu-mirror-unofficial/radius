@@ -99,7 +99,7 @@ cisco_fixup()
  *        where <IPADDR> is the IP address of your MAX server.
  */
 integer
-max_decode_port(integer P)
+max_decode_port(integer P, integer portcnt)
 {
 	if (P > 9999) {
 		integer s, l, c;
@@ -107,7 +107,7 @@ max_decode_port(integer P)
 		s = P / 10000; 
 		l = (P - (10000 * s))/100; 
 		c = P - ((10000 * s) + (100 * l)); 
-		return (c-1) + (l-1) * 23;
+		return (c-1) + (l-1) * portcnt;
 	}
 	return P;
 }

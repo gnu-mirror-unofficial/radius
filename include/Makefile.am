@@ -32,7 +32,6 @@ EXTRA_DIST = \
 argcv.h \
 debugmod.h \
 checkrad.h \
-display.h \
 envar.h \
 log.h \
 md5.h \
@@ -47,6 +46,7 @@ radiusd.h \
 radlast.h \
 radmibs.h \
 radpaths.h \
+radscm.h \
 radsnmp.h \
 radsql.h \
 radutmp.h \

@@ -1,3 +1,31 @@
+2001-09-18 Sergey Poznyakoff
+
+	* raddb/dictionary: Fixed syntax flags of some attributes.
+	* radiusd/rewrite.y: Fixed interpret.
+	* radiusd/auth.c: Removed spurious 'Authentication OK' message.
+	Fixed call to interpret to match its proto. Do not replace
+	strvalue with computed pair result, assign it directly instead.
+	* radiusd/radutil.c: radius_xlate(): Allow for NULL req argument.
+	(for test_shell).
+
+	* radwho/radwho.c: Forgotten to commit on 2001-09-12.
+
+	* THANKS: Added Eric Salome.
+
+2001-09-18 Eric Salome
+
+	* radiusd/auth.c: sfn_init(): Try to look up proxied request
+	in the local user's database to fetch site-specific pairs.
+	* radiusd/files.c: hints_setup(): Allow for use of
+	Fall-Through attribute in raddb/hints.
+
+2001-09-12 Sergey Poznyakoff
+	
+	* include/sysdep.h: Fixed to compile properly on IRIX (thanks to
+	Michael Weizer.
+
+	* THANKS: Added Michael Weizer.
+
 2001-09-09 Sergey Poznyakoff
 
 	* configure.in: AC_SUBST for RADSCM_BUILT_SOURCES and 
@@ -13,7 +41,6 @@
 	and AcctConfigResetObjects. Make sure this variables always
 	return RFC-prescribed values. GNU extensions are returned by
 	radiusServerState variable.
-
 
 2001-09-05 Sergey Poznyakoff
 

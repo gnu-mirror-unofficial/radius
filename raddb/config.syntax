@@ -82,7 +82,9 @@ auth {
 	strip-names yes;	# Strip username prefixes/suffixes
 	checkrad-assume-logged yes;	# Assume the user is logged in when
 					# checkrad returns don't-know answer
-	password-expire-warning 1440;
+	password-expire-warning 1440;   # Emit warning if user's password
+                                        # expires within the given interval
+                                        # (seconds).
 };
 
 ## This controls the accounting service
@@ -149,8 +151,10 @@ snmp {
 	};
 };
 
+# Guile interface configuration
 guile {
-	load-path "/usr/local/libexec/guile";
-	load "lib.scm";
-	debug yes;
+	debug yes;                            # Enable debug mode
+	load-path "/usr/local/libexec/guile"; # Add given path to guile's
+                                              # %load-list
+	load "lib.scm";                       # Load given file
 };

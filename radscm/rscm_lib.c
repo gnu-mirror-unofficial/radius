@@ -241,6 +241,7 @@ grad_scm_init()
         rscm_utmp_init();
         rscm_avl_init();
         rscm_dict_init();
+	rscm_hash_init();
 #include <rscm_lib.x>
         rscm_add_load_path(DATADIR);
 }

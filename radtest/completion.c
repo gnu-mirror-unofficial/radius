@@ -45,6 +45,12 @@ static struct key_tab key_tab[] = {
 	"acct",  4, ACCT,    0,
 	"begin", 5, T_BEGIN, 0,
 	"end",   3, T_END,   0,
+	"while", 5, WHILE,   1,
+	"do",    2, DO,      1,
+	"break", 5, BREAK,   1,
+	"continue", 8, CONTINUE, 1,
+	"if",    2, IF,      1,
+	"else",  4, ELSE,    1,
 	NULL
 };
 
@@ -215,6 +221,56 @@ is_cmp_op(char *str)
 	return 0;
 }
 
+
+static struct obstack var_stk;
+static char **namelist;
+
+static char *
+gen_variable_name(const char *text, int state)
+{
+	if (*namelist)
+		return strdup(*(namelist++));
+	return NULL;
+}
+
+struct varname_buf {
+	char *ptr;
+	size_t len;
+};
+
+int
+variable_selector(void *data, grad_symbol_t *sym)
+{
+	struct varname_buf *vb = data;
+	if (strlen(sym->name) >= vb->len
+	    && strncmp(sym->name, vb->ptr, vb->len) == 0)
+		obstack_grow(&var_stk, sym->name, strlen(sym->name)+1);
+	return 0;
+}
+	    
+char **
+complete_variable(int start, int end)
+{
+	char **retval;
+	char *p;
+	struct varname_buf d;
+	
+	d.ptr = rl_line_buffer+start;
+	d.len = end - start;
+
+	obstack_init(&var_stk);
+	grad_symtab_iterate(vartab, variable_selector, &d);
+	obstack_1grow(&var_stk, 0);
+	for (p = obstack_finish(&var_stk); *p; p += strlen(p)+1) 
+		obstack_grow(&var_stk, &p, sizeof(char**));
+	p = NULL;
+	obstack_grow(&var_stk, &p, sizeof(char**));
+	namelist = obstack_finish(&var_stk);
+	retval = rl_completion_matches(rl_line_buffer, gen_variable_name);
+	obstack_free(&var_stk, NULL);
+	return retval;
+}
+
 char **
 radtest_command_completion(char *text, int start, int end)
 {
@@ -236,19 +292,28 @@ radtest_command_completion(char *text, int start, int end)
 		if (rc)
 			return NULL;
 
+		if (start > 1
+		    && rl_line_buffer[start-1] == '$' 
+		    && !isspace(rl_line_buffer[end]))
+		    return complete_variable(start, end);
+		
 		if (strcmp (argv[argc-1], "send") == 0)
 			return rl_completion_matches(text, gen_port_list);
 		else if (strcmp (argv[argc-1], "auth") == 0
-			 || strcmp (argv[argc-1], "acct") == 0)
+			 || strcmp (argv[argc-1], "acct") == 0
+			 || (argc == 1 && strcmp (argv[0], "expect") == 0))
 			return rl_completion_matches(text, gen_number_list);
-		else if (argc == 2 && strcmp (argv[argc-2], "expect") == 0)
-			return rl_completion_matches(text, gen_attribute_name);
+		else if (argc == 2 && strcmp (argv[0], "expect") == 0)
+			return rl_completion_matches(text,
+						     gen_attribute_name);
+		
 		else if (argc > 2) {
+			
 			if (strcmp (argv[argc-2], "auth") == 0
 			    || strcmp (argv[argc-2], "acct") == 0
 			    || is_cmp_op(argv[argc-2]))
 				return rl_completion_matches(text,
-							  gen_attribute_name);
+							     gen_attribute_name);
 			else if (is_cmp_op(argv[argc-1])) {
 				grad_dict_attr_t *dict =
 					grad_attr_name_to_dict(argv[argc-2]);
@@ -257,8 +322,10 @@ radtest_command_completion(char *text, int start, int end)
 				attribute_number = dict->value;
 				return rl_completion_matches(text,
 							  gen_attribute_value);
-			}
-		}
+			} else if (strcmp (argv[0], "expect") == 0)
+				return rl_completion_matches(text,
+							     gen_attribute_name);
+		} 
 	}
 			
 				     

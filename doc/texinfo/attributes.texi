@@ -811,6 +811,7 @@ used in matching rules.
 * Scheme-Acct-Procedure::
 * Log-Mode-Mask::
 * Acct-Type::
+* Proxy-Replied::
 @end menu
 
 @comment **************************************************************
@@ -1710,4 +1711,19 @@ The @attr{Acct-Type} allows one to control which accounting methods
 must be used for a given user or group of users. In the absence
 of this attribute, all currently enabled accounting types are used.
 @xref{Accounting}, for more information about accounting types.
+
+@comment **************************************************************
+@node Proxy-Replied
+@subsection @attr{Proxy-Replied}
+@atindex Proxy-Replied
+
+@defattr{Proxy-Replied,2012,integer,L-,L-,L-,Replace,@acronym{N/A}}
+
+@smallexample
+VALUE      Proxy-Replied     No                   0       
+VALUE      Proxy-Replied     Yes                  1       
+@end smallexample
+
+The @command{radiusd} adds this attribute to the incoming request if it
+was already processed by a remote radius server.
 

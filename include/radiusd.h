@@ -41,7 +41,6 @@ typedef struct {
 	int checkrad_assume_logged;
 	int max_requests;
 	char *exec_user;
-	char *exec_group;
 } Config;
 
 typedef struct {
@@ -414,4 +413,10 @@ void sqllog(/* int status, char *msg, va_alist */);
 int run_rewrite(char *name, VALUE_PAIR *req);
 int parse_rewrite();
 
+/* radck.c */
+int fix_check_pairs(int sf_file, char *filename, int line, char *name,
+		    VALUE_PAIR **pairs);
+int fix_reply_pairs(int cf_file, char *filename, int line, char *name,
+		    VALUE_PAIR **pairs);
+void radck();
 

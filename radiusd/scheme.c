@@ -40,6 +40,7 @@ VALUE_PAIR *radscm_cons_to_avp(SCM scm);
 static SCM
 catch_body (void *data)
 {
+	scm_init_load_path();
 	rad_mainloop();
 	return SCM_BOOL_F;
 }
@@ -181,10 +182,19 @@ void
 scheme_load_path(path)
 	char *path;
 {
-	SCM scm, *scm_loc;
-	scm_loc = SCM_CDRLOC (scm_sysintern ("%load-path", SCM_EOL));
-	*scm_loc = scm_cons(scm_makfrom0str(path),
-			    scm_symbol_value0("%load-path"));
+	SCM scm, path_scm;
+	path_scm = scm_symbol_value0("%load-path");
+	for (scm = path_scm; scm != SCM_EOL; scm = SCM_CDR(scm)) {
+		SCM val = SCM_CAR(scm);
+		if (SCM_NIMP(val) && SCM_STRINGP(val))
+			if (strcmp(SCM_CHARS(val), path) == 0)
+				return;
+	}
+	scm_sysintern ("%load-path",
+		       scm_append(scm_listify(path_scm,
+				   scm_listify(scm_makfrom0str(path),
+					       SCM_UNDEFINED),
+					      SCM_UNDEFINED)));
 }
 
 

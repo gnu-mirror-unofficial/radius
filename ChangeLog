@@ -1,3 +1,22 @@
+2002-06-02  Sergey Poznyakoff
+
+	* lib/mem.c: Fixed diagnostic output.
+	* radiusd/auth.c: Likewise.
+	* radiusd/builddbm.c: Likewise.
+	* radiusd/config.y: Likewise.
+	* radiusd/proxy.c: Likewise.
+	* radiusd/radck.c: Likewise.
+	* radiusd/rewrite.y: Likewise.
+	* radiusd/sql.c: Likewise.
+	* radiusd/version.c: Likewise.
+	
+	* po/POTFILES.in: Removed rewrite.c.
+	* po/Makefile.in.in: Use fuzzy translations.
+	* po/no.po: Brought in sync with the latest changes.
+
+	* radiusd/scheme.c: Forgotten to commit yesterday.
+	* scripts/guile/1.6/guile-doc-snarf: Removed unneeded bits.
+	
 2002-06-02  Sergey Poznyakoff  
 
 	Added support for Guile 1.6. At the time of the writing

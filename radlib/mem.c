@@ -1,21 +1,19 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
+   Copyright (C) 2000,2001 Sergey Poznyakoff
+  
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+  
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+  
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #ifndef lint
 static char rcsid[] = 
@@ -534,87 +532,69 @@ free_string(str)
  */
 
 void
-meminfo(report)
-	int (*report)();
+mem_get_stat(stat)
+	MEM_STAT *stat;
 {
-	unsigned long class_cnt, bucket_cnt;
 	Bucketclass class;
-	unsigned long total_bytes, total_used;
-	extern unsigned long total_page_cnt;
-	char buffer[512];
-#ifdef MAINTAINER_MODE	
-	int check_cont(int (*)());
-#else
-# define check_cont(r)
-#endif
 	
-	class_cnt = 0;
-	bucket_cnt = 0;
-
+	stat->class_cnt = 0;
+	stat->bucket_cnt = 0;
+	stat->bytes_allocated = 0;
+	stat->bytes_used = 0;
+	
 	for (class = bucket_class; class; class = class->next) {
-		class_cnt++;
-		bucket_cnt += class->bucket_cnt;
-	}
-
-	radsprintf(buffer, sizeof(buffer),
-		_("%lu classes, %lu buckets are using %lu pages (%lu bytes) of memory"),
-		   class_cnt, bucket_cnt,
-		   total_page_cnt, total_page_cnt*MEM_PAGESIZE);
-	report(buffer);
-
-	report(_("    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"));
-
-	total_bytes = total_used = 0;
-	for (class = bucket_class; class; class = class->next) {
-		radsprintf(buffer, sizeof(buffer),
-			"%9d   %1d    %9d %9d %9d %9d",
-			class->elsize,
-			class->cont, 
-			class->elcnt,
-			class->bucket_cnt,
-			class->allocated_cnt,
-			class->bucket_cnt * class->elcnt);
-		report(buffer);
-		total_bytes +=  class->bucket_cnt * class->elcnt *
-			        class->elsize;
-		total_used  +=  class->allocated_cnt * class->elsize;
+		stat->class_cnt++;
+		stat->bucket_cnt += class->bucket_cnt;
+		stat->bytes_allocated +=
+			class->bucket_cnt * class->elcnt * class->elsize;
+		stat->bytes_used  +=  class->allocated_cnt * class->elsize;
 		/* sanity check */
 		insist(class->allocated_cnt <= class->bucket_cnt * class->elcnt);	
+#ifdef MAINTAINER_MODE
+		check_cont(class);
+#endif
 	}
-	radsprintf(buffer, sizeof(buffer),
-		_("memory utilization: %ld.%1ld%%"),
-		total_used * 100 / total_bytes,
-		(total_used * 1000 / total_bytes) % 10);
-	report(buffer);
-	check_cont(report);
+}
+
+void 
+mem_stat_enumerate(fun)
+	int (*fun)();
+{
+	CLASS_STAT stat;
+	Bucketclass class;
+	
+	stat.index = 0;
+	for (class = bucket_class; class; class = class->next, stat.index++) {
+		stat.elsize = class->elsize;
+		stat.cont = class->cont;
+		stat.elcnt = class->elcnt;
+		stat.bucket_cnt = class->bucket_cnt;
+		stat.allocated_cnt = class->allocated_cnt;
+		if ((*fun)(&stat))
+			break;
+	}
 }
 
 #ifdef MAINTAINER_MODE
 int
-check_cont(report)
-	int (*report)();
-{
+check_cont(class)
 	Bucketclass class;
+{
 	Entry ep, prev;
-	char buf[128];
 	
-	for (class = bucket_class; class; class = class->next) {
-		if (class->cont) {
-			ep = class->free;
-			prev = NULL;
-			while (ep) {
-				if (prev && ep < prev) {
-					radsprintf(buf, sizeof(buf),
-						"CLASS %d CONTAINS ERRORS",
-						class->elsize);
-					report(buf);
-					break;
-				}
-				prev = ep;
-				ep = ep->next;
+	if (class->cont) {
+		ep = class->free;
+		prev = NULL;
+		while (ep) {
+			if (prev && ep < prev) {
+				radlog(L_CRIT,
+				       "CLASS %d CONTAINS ERRORS",
+				       class->elsize);
+				break;
 			}
+			prev = ep;
+			ep = ep->next;
 		}
 	}
-	return 0;
 }
 #endif

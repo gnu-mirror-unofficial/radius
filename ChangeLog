@@ -1,3 +1,18 @@
+2003-09-30  Sergey Poznyakoff 
+
+	* NEWS: Updated
+	* configure.ac: Raised version number to 1.1.90.
+	* lib/envar.c (envar_parse_internal): Fixed memory leak
+	* lib/radpdu.c (rad_create_pdu): Added support for sending
+	USR VSA attributes.
+	(rad_decode_pdu): Fixed bug in handling
+	USR VSA attributes.
+	* lib/symtab.c (symtab_iterate): Bugfix
+	* lib/users.l (pop_source): Bugfix
+	* radiusd/rewrite.y: Handle dotted-quad IP as numbers.
+	Some bugfixes.
+	* radiusd/files.c: Restored reload_rewrite case
+	
 2003-09-29  Sergey Poznyakoff 
 
 	* include/cfg.h (cfg_get_number): New function.

@@ -4,7 +4,7 @@ See the end of file for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
 
-Version 1.1.1:
+Version 1.1.90:
 
 * Bugfixes
 ** Renamed LIST to RAD_LIST to eliminate possible name clashes with the

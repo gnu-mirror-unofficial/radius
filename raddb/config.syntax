@@ -82,6 +82,7 @@ auth {
 	strip-names yes;	# Strip username prefixes/suffixes
 	checkrad-assume-logged yes;	# Assume the user is logged in when
 					# checkrad returns don't-know answer
+	password-expire-warning 1440;
 };
 
 ## This controls the accounting service

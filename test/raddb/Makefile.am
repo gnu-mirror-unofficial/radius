@@ -22,7 +22,7 @@ EXTRA_DIST = \
  menus/menu1\
  menus/menu2\
  naslist\
- realms\
+ realms.in\
  sqlserver\
  users.in
 

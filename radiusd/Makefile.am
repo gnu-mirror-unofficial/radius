@@ -11,7 +11,7 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 if SQL
-LIBSQL=-lsql
+LIBSQL=../radlib/libsql.la
 endif
 
 sbin_PROGRAMS   = radiusd
@@ -22,21 +22,22 @@ radiusd_SOURCES = radiusd.c acct.c auth.c exec.c files.c menu.c sql.c\
                   rewrite.c checkrad.c debugmod.c radck.c\
                   builddbm.c
 
-radiusd_LDADD   = @LEXLIB@ -L../radlib -lrad -L../snmplib -lsnmp $(LIBSQL) @RADIUSD_LDADD@
+radiusd_LDADD   = @LEXLIB@ ../radlib/librad.la -L../snmplib -lsnmp $(LIBSQL) @RADIUSD_LDADD@
 BUILT_SOURCES   = config.c rewrite.c
 DISTCLEANFILES  = config.c rewrite.c y.output
 INCLUDES        = -I$(top_srcdir) -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp @INCLUDEPATH@
 EXTRA_DIST      = config.y rewrite.y .gdbinit
+YLWRAP = $(SHELL) $(top_srcdir)/ylwrap
 
 config.c: $(srcdir)/config.y
-	$(YACC) -v @YACC_OPTS@ $(srcdir)/config.y
-	sed -e 's/y\.tab\.\([ch]\)/config\.\1/g;s/yy/conf_yy/g' y.tab.c > config.c
+	$(YLWRAP) "$(YACC)" $(srcdir)/config.y \
+                  y.tab.c config.c -- -yy conf_yy -v @YACC_OPTS@
 
 config.o: config.c ../include/radiusd.h 
 
 rewrite.c: $(srcdir)/rewrite.y
-	$(YACC) -v @YACC_OPTS@ $(srcdir)/rewrite.y
-	sed -e 's/y\.tab\.\([ch]\)/rewrite\.\1/g;s/yy/rw_yy/g' y.tab.c > rewrite.c
+	$(YLWRAP) "$(YACC)" $(srcdir)/rewrite.y \
+		  y.tab.c rewrite.c -- -yy rw_yy -v @YACC_OPTS@
 
 SUFFIXES=.S .c .ln .o .s
 

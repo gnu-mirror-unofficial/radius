@@ -11,33 +11,38 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 if SQL
-LIBSQL=libsql.a
-libsql_a_SOURCES=mysql.c postgres.c
+LIBSQL=libsql.la
+libsql_la_SOURCES=mysql.c postgres.c
 endif
 
-noinst_LIBRARIES=librad.a $(LIBSQL) liblog.a libdebug.a 
-librad_a_SOURCES=intl.c radpaths.c sysdep.c alloc.c radprintf.c \
+noinst_LTLIBRARIES=librad.la $(LIBSQL) liblog.la libdebug.la 
+librad_la_SOURCES=intl.c radpaths.c sysdep.c alloc.c radprintf.c \
 		 raddb.c dict.c fixalloc.c iputil.c strerror.c \
 		 strncasecmp.c md5.c md5crypt.c mem.c leakdetect.c \
                  users_gram.c users_lex.c util.c client.c \
-		 insist.c debug.c slist.c dbm.c obstack.c
+		 insist.c debug.c slist.c dbm.c obstack.c \
+		 radutmp.c
 
-liblog_a_SOURCES=log.c 
-libdebug_a_SOURCES=debugmod.c
+liblog_la_SOURCES=log.c 
+libdebug_la_SOURCES=debugmod.c
+LDFLAGS=-all-static
+AM_CFLAGS=-static
 
 BUILT_SOURCES=users_gram.c users_lex.c
-DISTCLEANFILES=users_gram.c users_lex.c
+noinst_HEADERS=users_gram.h 
+DISTCLEANFILES=users_gram.c users_gram.h users_lex.c
 INCLUDES= -I$(srcdir) -I$(top_srcdir)/include @INCLUDEPATH@
 EXTRA_DIST=users.y users.l mysql.c postgres.c
+YLWRAP=$(SHELL) $(top_srcdir)/ylwrap
 
 users_gram.c users_gram.h: $(srcdir)/users.y
-	$(YACC) -vd @YACC_OPTS@ $(srcdir)/users.y
-	sed -e 's/y\.tab\.\([ch]\)/users_gram\.\1/g;s/yy/uyy/g' y.tab.c > users_gram.c
-	sed -e 's/y\.tab\.\([ch]\)/users_gram\.\1/g;s/yy/uyy/g' y.tab.h > users_gram.h
+	$(YLWRAP) "$(YACC)" $(srcdir)/users.y \
+                  y.tab.c users_gram.c y.tab.h users_gram.h \
+                  -- -yy uyy -vd @YACC_OPTS@ 
 
 users_lex.c: $(srcdir)/users.l
-	$(LEX) $(srcdir)/users.l
-	sed -e 's/lex\.yy\.c/users_lex\.c/g;s/yy/uyy/g' lex.yy.c > users_lex.c
+	$(YLWRAP) "$(LEX)" $(srcdir)/users.l \
+		  lex.yy.c users_lex.c -- -yy uyy
 
 users_lex.o: users_lex.c users_gram.h $(top_srcdir)/include/parser.h
 users_gram.o: users_gram.c users_gram.h $(top_srcdir)/include/parser.h

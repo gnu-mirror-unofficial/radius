@@ -25,7 +25,7 @@
 #include <radius.h>
 #include <mem.h>
 
-/* From rfc2138:
+/* From rfc 2138:
       Call the shared secret S and the pseudo-random 128-bit Request
       Authenticator RA.  Break the password into 16-octet chunks p1, p2,
       etc.  with the last one padded at the end with nulls to a 16-octet
@@ -40,32 +40,61 @@
          bi = MD5(S + c(i-1))   c(i) = pi xor bi
 
       The String will contain c(1)+c(2)+...+c(i) where + denotes
-      concatenation. */
+      concatenation.
 
+
+   From rfc 2868:
+         Call the shared secret S, the pseudo-random 128-bit Request
+         Authenticator (from the corresponding Access-Request packet) R,
+         and the contents of the Salt field A.  Break P into 16 octet
+         chunks p(1), p(2)...p(i), where i = len(P)/16.  Call the
+         ciphertext blocks c(1), c(2)...c(i) and the final ciphertext C.
+         Intermediate values b(1), b(2)...c(i) are required.  Encryption
+         is performed in the following manner ('+' indicates
+         concatenation):
+
+            b(1) = MD5(S + R + A)    c(1) = p(1) xor b(1)   C = c(1)
+            b(2) = MD5(S + c(1))     c(2) = p(2) xor b(2)   C = C + c(2)
+                        .                      .
+                        .                      .
+                        .                      .
+            b(i) = MD5(S + c(i-1))   c(i) = p(i) xor b(i)   C = C + c(i)
+
+         The resulting encrypted String field will contain
+         c(1)+c(2)+...+c(i).
+
+ The rfc2138 algorithm can be obtained from rfc2868 by setting salt
+ length to zero */
+
+/* General purpose encryption and decryption functions. These satisfy
+   both rfc 2138 and 2868. */
 void
-encrypt_password(VALUE_PAIR *pair,
-		 char *password, /* Cleantext password */
-		 char *vector,   /* Request authenticator */
-		 char *secret)   /* Shared secret */
+encrypt_text(u_char **encr_text,
+	     size_t *encr_size,
+	     u_char *password,   /* Cleantext password */
+	     u_char *vector,     /* Request authenticator */
+	     u_char *secret,     /* Shared secret */
+	     u_char *salt,
+	     size_t saltlen)
 {
         int passlen;
         int secretlen;
         int nchunks;
         int buflen;
-        char *passbuf;
+        u_char *passbuf;
         int md5len;
-        char *md5buf;
-        char digest[AUTH_VECTOR_LEN];
-        char *cp;
+        u_char *md5buf;
+        u_char digest[AUTH_VECTOR_LEN];
+        u_char *cp;
         int i, j;
         
         passlen = strlen(password);
         nchunks = (passlen + AUTH_VECTOR_LEN - 1) / AUTH_VECTOR_LEN;
         buflen = nchunks * AUTH_VECTOR_LEN;
 
-        pair->avp_strvalue = emalloc(buflen);
-        pair->avp_strlength = buflen;
-        passbuf = pair->avp_strvalue;
+        *encr_text = emalloc(buflen);
+        *encr_size = buflen;
+        passbuf = *encr_text;
 
         /* Prepare passbuf */
         memset(passbuf, 0, buflen);
@@ -73,14 +102,18 @@ encrypt_password(VALUE_PAIR *pair,
 
         secretlen = strlen(secret);
         md5len = secretlen + AUTH_VECTOR_LEN;
-        md5buf = emalloc(md5len);
+        md5buf = emalloc(md5len + saltlen);
         memcpy(md5buf, secret, secretlen);
 
         cp = vector;
         for (i = 0; i < buflen; ) {
                 /* Compute next MD5 hash */
                 memcpy(md5buf + secretlen, cp, AUTH_VECTOR_LEN);
-                md5_calc(digest, md5buf, md5len);
+		if (i == 0 && saltlen) {
+			memcpy(md5buf + md5len, salt, saltlen);
+			md5_calc(digest, md5buf, md5len + saltlen);
+		} else
+			md5_calc(digest, md5buf, md5len);
                 /* Save hash start */
                 cp = passbuf + i;
                 /* Encrypt next chunk */
@@ -91,23 +124,24 @@ encrypt_password(VALUE_PAIR *pair,
 }
 
 void
-decrypt_password(char *password, /* At least AUTH_STRING_LEN+1 characters long */
-		 VALUE_PAIR *pair, /* Password pair */
-		 char *vector,     /* Request authenticator */
-		 char *secret)     /* Shared secret */
+decrypt_text(u_char *password,   /* At least AUTH_STRING_LEN+1
+				    characters long */
+	     u_char *encr_text,  /* encrypted text */
+	     size_t encr_size,   /* Size of encr_text and password buffers */
+	     u_char *vector,     /* Request authenticator */
+	     u_char *secret,     /* Shared secret */
+	     u_char *salt,
+	     size_t saltsize)
 {
         int md5len;
-        char *md5buf;
-        char digest[AUTH_VECTOR_LEN];
-        char *cp;
+        u_char *md5buf;
+        u_char digest[AUTH_VECTOR_LEN];
+        u_char *cp;
         int secretlen;
-        int passlen;
         int i, j;
         
         /* Initialize password buffer */
-        /* FIXME: control length */
-        memcpy(password, pair->avp_strvalue, pair->avp_strlength);
-        passlen = pair->avp_strlength;
+        memcpy(password, encr_text, encr_size);
         
         /* Prepare md5buf */
         secretlen = strlen(secret);
@@ -116,21 +150,60 @@ decrypt_password(char *password, /* At least AUTH_STRING_LEN+1 characters long *
         memcpy(md5buf, secret, secretlen);
 
         cp = vector;
-        for (i = 0; i < passlen; ) {
+        for (i = 0; i < encr_size; ) {
                 /* Compute next MD5 hash */
                 memcpy(md5buf + secretlen, cp, AUTH_VECTOR_LEN);
-                md5_calc(digest, md5buf, md5len);
+		if (i == 0 && saltsize) {
+			memcpy(md5buf + md5len, salt, saltsize);
+			md5_calc(digest, md5buf, md5len + saltsize);
+		} else
+			md5_calc(digest, md5buf, md5len);
                 /* Save hash start */
-                cp = pair->avp_strvalue + i;
+                cp = encr_text + i;
                 /* Decrypt next chunk */
                 for (j = 0; j < AUTH_VECTOR_LEN; j++, i++)
                         password[i] ^= digest[j];
         }
-        password[passlen] = 0;
+        password[encr_size] = 0;
         efree(md5buf);
 }
 
-/* Decrypt a password encrypted using broken algorythm.
+
+/* RFC 2138 functions */
+void
+encrypt_password(VALUE_PAIR *pair,
+		 char *password, /* Cleantext password */
+		 char *vector,   /* Request authenticator */
+		 char *secret)   /* Shared secret */
+{
+	u_char *encr_text;
+	size_t encr_size;
+	
+	encrypt_text(&encr_text, &encr_size,
+		     password, vector, secret, 
+		     NULL, 0);
+        pair->avp_strvalue = encr_text;
+        pair->avp_strlength = encr_size;
+}
+
+void
+decrypt_password(char *password,   /* At least AUTH_STRING_LEN+1
+				      characters long */
+		 VALUE_PAIR *pair, /* Password pair */
+		 char *vector,     /* Request authenticator */
+		 char *secret)     /* Shared secret */
+{
+	decrypt_text(password,
+		     pair->avp_strvalue,
+		     pair->avp_strlength,
+		     vector,
+		     secret, 
+		     NULL,
+		     0);
+}
+
+/* Special case:
+   Decrypt a password encrypted using broken algorythm.
    This is for use with such brain-damaged NASes as MAX ascend. */
 void
 decrypt_password_broken(char *password, /* At least AUTH_STRING_LEN+1
@@ -167,4 +240,52 @@ decrypt_password_broken(char *password, /* At least AUTH_STRING_LEN+1
                         password[i] ^= digest[j];
         }
         efree(md5buf);
+}
+	
+
+/* RFC 2868 */
+      
+void
+encrypt_tunnel_password(VALUE_PAIR *pair,
+			u_char tag,
+			char *password, /* Cleantext password */
+			char *vector,   /* Request authenticator */
+			char *secret)   /* Shared secret */
+{
+	u_char *encr_text;
+	size_t encr_size;
+	unsigned short salt;
+	
+	salt = htons( (((long)pair ^ *(long *)vector) & 0xffff) | 0x8000 );
+	
+	encrypt_text(&encr_text, &encr_size,
+		     password, vector, secret, 
+		     &salt, 2);
+
+	pair->avp_strlength = 4 + encr_size;
+	pair->avp_strvalue = emalloc(pair->avp_strlength);
+	pair->avp_strvalue[0] = tag;
+	pair->avp_strvalue[1] = strlen(password);
+	memcpy(&pair->avp_strvalue[2], &salt, 2);
+	memcpy(&pair->avp_strvalue[4], encr_text, encr_size);
+	efree(encr_text);
+}
+
+void
+decrypt_tunnel_password(char *password,   /* At least AUTH_STRING_LEN+1
+					     characters long */
+			u_char *tag,
+			VALUE_PAIR *pair, /* Password pair */
+			char *vector,     /* Request authenticator */
+			char *secret)     /* Shared secret */
+{
+	decrypt_text(password,
+		     pair->avp_strvalue + 4,
+		     pair->avp_strlength - 4,
+		     vector,
+		     secret, 
+		     &pair->avp_strvalue[2],
+		     2);
+	password[pair->avp_strvalue[1]] = 0;
+	*tag = pair->avp_strvalue[0];
 }

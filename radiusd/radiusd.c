@@ -380,8 +380,8 @@ radiusd_postconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 
 static void
 daemon_postconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
-{        system_acct_init();
- 
+{
+	system_acct_init();
 }
 
 void
@@ -401,6 +401,19 @@ radiusd_setup()
 	snmp_port = get_port_number("snmp", "udp", 161);
 #endif
         srand(time(NULL));
+	
+#ifdef HAVE_CRYPT_SET_FORMAT
+	/* MD5 hashes are handled by libgnuradius function md5crypt(). To
+	   handle DES hashes it falls back to system crypt(). The behaviour
+	   of the latter on FreeBSD depends upon a 'default format'. so e.g.
+	   crypt() may generate MD5 hashes even if presented with a valid
+	   MD5 salt.
+	   
+	   To make sure this does not happen, we need to set the default
+	   crypt() format. */
+	
+	crypt_set_format("des");
+#endif
 
 	/* Register radiusd hooks first. This ensures they will be
 	   executed after all other hooks */

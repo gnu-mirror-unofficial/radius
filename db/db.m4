@@ -1,4 +1,4 @@
-divert(-1)dnl
+divert(-1)
 dnl This file is part of GNU RADIUS.
 dnl Copyright (C) 2001 Sergey Poznyakoff
 dnl  
@@ -21,13 +21,14 @@ include(INCLUDE)
 ifdef({DB_USER},,{define(DB_USER,{radius})})
 ifdef({DB_PWD},,{define({DB_PWD},{guessme})})
 divert{}dnl
+
 CREATEDATABASE(RADIUS)
 
 CREATETABLE(passwd, {
   user_name           VARCHAR_T(32) CI default '' not null,
   service             CHAR_T(16) default 'Framed-PPP' not null,
   password            CHAR_T(64),
-  active              enum ('Y','N') COMMA
+  active              ENUM_T(1,'Y','N') COMMA
   INDEX(uname, user_name,active) COMMA
   UNIQUE(usrv, user_name,service,active) 
 })
@@ -40,7 +41,7 @@ CREATETABLE(attrib, {
   user_name           VARCHAR_T(32) CI default '' not null,
   attr                CHAR_T(32) default '' not null,
   value               CHAR_T(128),
-  op                  enum('=','!=','<','>','<=','>=') default NULL COMMA
+  op                  ENUM_T(2,'=','!=','<','>','<=','>=') default NULL COMMA
   INDEX(uattr,user_name,attr,op)
 })
 CREATETABLE(calls, {
@@ -49,7 +50,7 @@ CREATETABLE(calls, {
   event_date_time     TIME_T('0000-00-00 00:00:00') NOT NULL,
   nas_ip_address      CHAR_T(17) default '0.0.0.0' not null,
   nas_port_id         INT_T,
-  acct_session_id     CHAR_T(16) DEFAULT '' NOT NULL,
+  acct_session_id     CHAR_T(17) DEFAULT '' NOT NULL,
   acct_session_time   LONGINT_T,
   acct_input_octets   LONGINT_T,
   acct_output_octets  LONGINT_T,

@@ -1650,8 +1650,11 @@ regex_pragma (enum pragma_handler_phase phase)
 		input();
 		break;
 	}
-	if (!isword(yychar))
+	if (!isword(yychar)) {
+		radlog_loc(L_ERR, &locus, _("Malformed pragma"));
 		return 1;
+	}
+	
 	s = read_ident(yychar);
 
 	if (strcmp (s, "extended") == 0)

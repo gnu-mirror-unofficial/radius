@@ -196,7 +196,7 @@ d1:345:respawn:/sbin/mgetty ttyS1 vt100
 The mgetty's @file{login.config} will then contain the following line:
 
 @example
-*       -       -       /usr/local/libexec/nas.scm @
+*       -       -       /usr/local/libexec/nas.scm @@
 @end example
 
 If you use @command{agetty}, then the @file{inittab} will contain

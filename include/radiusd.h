@@ -20,6 +20,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
+#include <pth.h>
 #include <radius.h>
 #include <radpaths.h>
 
@@ -236,7 +237,6 @@ extern int acct_detail;
 extern int strip_names;
 extern UINT4 expiration_seconds;
 extern UINT4 warning_seconds;
-extern int radius_pid;
 extern int use_dbm;
 extern UINT4 myip;
 extern UINT4 warning_seconds;
@@ -249,6 +249,8 @@ extern char *message_text[MSG_COUNT];
 extern char *username_valid_chars;
 extern unsigned long stat_start_time;
 extern REQUEST_CLASS    request_class[];
+
+extern pth_t radius_pid;
 
 #ifdef USE_SNMP
 extern int snmp_port;

@@ -45,6 +45,7 @@ static char rcsid[] =
 #include <grp.h>
 #include <sysdep.h>
 #include <radiusd.h>
+#include <checkrad.h>
 
 RADIUS_REQ *
 radreq_alloc()
@@ -302,3 +303,57 @@ backslash(c)
         return c;
 }
 	
+void
+string_copy(d, s, len)
+	char *d;
+	char *s;
+	int  len;
+{
+	int slen = strlen(s);
+
+	if (slen > len) {
+		radlog(L_ERR, _("string too long: %s"), s);
+	}
+	strncpy(d, s, len);
+	d[len] = 0;
+}
+
+void
+free_radck_arg(arg)
+	RADCK_ARG *arg;
+{
+	efree(arg->name);
+}
+
+void
+free_radck_type(rp)
+	RADCK_TYPE *rp;
+{
+	efree(rp->type);
+	free_slist((struct slist*)rp->args, free_radck_arg);
+}
+
+RADCK_ARG *
+parse_radck_args(str)
+	char *str;
+{
+	char *p, *s;
+	RADCK_ARG *arg;
+	RADCK_ARG *prev;
+
+	prev = NULL;
+	for (p = strtok(str, ","); p; p = strtok(NULL, ",")) {
+		s = strchr(p, '=');
+		if (s) {
+			arg = alloc_entry(sizeof(*arg));
+			arg->name = estrdup(p);
+			s = strchr(arg->name, '=');
+			*s++ = 0;
+			arg->value = s;
+			arg->next  = prev;
+			prev = arg;
+		} else 
+			radlog(L_ERR, _("bad flag: %s"), p);
+	}
+	return prev;
+}

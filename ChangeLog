@@ -1,3 +1,7 @@
+2003-07-31  Sergey Poznyakoff 
+
+	* scripts/texi2html.diff: Updated
+
 2003-07-29  Sergey Poznyakoff 
 
 	* doc/texinfo/Makefile.am: Generate PDF on make webdoc.

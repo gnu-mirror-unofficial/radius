@@ -1,16 +1,18 @@
 --- /home/gray/texi2html-1.64/texi2html	Wed Jul 23 11:21:59 2003
-+++ /usr/local/bin/texi2html	Fri Jul 25 13:11:13 2003
-@@ -3069,6 +3069,10 @@ INPUT_LINE: while ($_ = &next_line) {
- 	  $args = $1;
- 	  $after = $2;
- 	}
-+	elsif ($after =~ /^\s*{}(.*)/)
++++ /home/gray/tmp/texi2html	Thu Jul 31 11:29:58 2003
+@@ -3064,7 +3064,11 @@ INPUT_LINE: while ($_ = &next_line) {
+ 	my $after = $';
+ 	my @args;
+ 	my $args;
+-	if ($after =~ /^\s*{(.*?[^\\])}(.*)/)  
++	if ($after =~ /^\s*{}(.*)/)
 +	{
 +	  $after = $1;
 +	}
- 	elsif (@{$macros->{$name}->{Args}} == 1)
++	elsif ($after =~ /^\s*{(.*?[^\\])}(.*)/)  
  	{
- 	  $args = $after;
+ 	  $args = $1;
+ 	  $after = $2;
 @@ -3076,10 +3080,7 @@ INPUT_LINE: while ($_ = &next_line) {
  	  $args =~ s/\s*$//;
  	  $after = '';

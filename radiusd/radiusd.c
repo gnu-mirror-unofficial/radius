@@ -844,8 +844,7 @@ radrespond(radreq, activefd)
 		namepair = avl_find(radreq->request, DA_USER_NAME);
 		if (namepair == NULL)
 			break;
-		if (strchr(namepair->strvalue, '@') &&
-		    proxy_send(radreq, activefd) != 0) {
+		if (proxy_send(radreq, activefd) != 0) {
 			rad_spawn_child(R_PROXY, radreq, activefd);
 			return 0;
 		}

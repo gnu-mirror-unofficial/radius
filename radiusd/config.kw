@@ -99,6 +99,7 @@ syslog, T_SYSLOG
 time-to-live, T_TTL
 usedbm, T_USEDBM
 user, T_FACILITY, _Y(LOG_USER)
+usr2delay, T_USR2DELAY
 warning, T_SEVERITY, _Y(L_WARN)
 yes, T_BOOL, _Y(1)
 print-pid, T_LOGOPT, _Y(LO_PID)

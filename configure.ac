@@ -116,8 +116,6 @@ main() { return strcmp(__FUNCTION__,"main"); },
 	AC_MSG_RESULT(no),
 	AC_MSG_RESULT(don't know))
 
-dnl ** AM_DISABLE_SHARED
-
 ## *************************************
 ## add any additional libraries/includes
 ## *************************************
@@ -548,7 +546,7 @@ AC_MSG_RESULT($BUILD_CLIENT)
 ## **************
 
 AC_ARG_WITH(php,
-            AC_HELP_STRING([--enable-php=PATH],
+            AC_HELP_STRING([--with-php=PATH],
                            [Enable PHP module]),
             [case $withval in
              no)	PHP_PREFIX=

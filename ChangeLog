@@ -4,7 +4,8 @@
 	* radiusd/request.c (request_thread0): Handle as many
 	  requests as possible before going to cond_wait.
 	* test/proxy/config.in: Enable proxy debug level.
-
+	* configure.in: Raised patchlevel.
+	
 2002-02-18  Sergey Poznyakoff 
 
 	* radiusd/rewrite.y (interpret): Thread-safety: always return

@@ -71,14 +71,13 @@
 #include <timestr.h>
 #include <envar.h>
 #include <obstack1.h>
+#include <rewrite.h>
 
 char *username_valid_chars;
 
-/*
- * Check if the username is valid. Valid usernames consist of 
- * alphanumeric characters and symbols from username_valid_chars[]
- * array
- */
+/* Check if the username is valid. Valid usernames consist of 
+   alphanumeric characters and symbols from username_valid_chars[]
+   array */
 int
 check_user_name(char *p)
 {
@@ -95,8 +94,8 @@ pw_expired(UINT4 exptime)
 {
         struct timeval  tp;
         struct timezone tzp;
-        UINT4           exp_remain;
-        int             exp_remain_int;
+        UINT4 exp_remain;
+        int exp_remain_int;
 
         gettimeofday(&tp, &tzp);
         if (tp.tv_sec > exptime)
@@ -496,7 +495,6 @@ typedef struct auth_mach {
         char       *user_msg;
         struct obstack msg_stack;
         
-        const char *clid;
         enum auth_state state;
 } AUTH_MACH;
 
@@ -580,28 +578,54 @@ static int is_log_mode(AUTH_MACH *m, int mask);
 static void auth_format_msg(AUTH_MACH *m, int msg_id);
 static char *auth_finish_msg(AUTH_MACH *m);
 
+static char *
+run_auth_log_hook(AUTH_MACH *m)
+{
+	if (!auth_log_hook)
+		return NULL;
+	else {
+		Datatype type;
+		Datum datum;
+		
+		if (rewrite_eval(auth_log_hook, m->req, &type, &datum)) {
+			auth_log_hook = NULL;
+			return NULL;
+		}
+		if (type != String) {
+			radlog(L_ERR,
+			       _("Authentication log hook %s returns wrong datatype"),
+			       auth_log_hook);
+			auth_log_hook = NULL;
+			return NULL;
+		}
+		return datum.sval;
+	}
+}
+
 static void
 auth_log(AUTH_MACH *m, const char *diag, const char *pass,
 	 const char *reason, const char *addstr)
 {
+	char *s = run_auth_log_hook(m);
         if (reason)
                 radlog_req(L_NOTICE, m->req,
-			   "%s [%s%s%s]: %s%s, CLID %s",
+			   "%s [%s%s%s]: %s%s %s",
 			   diag,
 			   m->namepair->avp_strvalue,
 			   pass ? "/" : "",
 			   pass ? pass : "",
 			   reason,
 			   addstr ? addstr : "",
-			   m->clid);
+			   s ? s : "");
         else
                 radlog_req(L_NOTICE, m->req,
-			   "%s [%s%s%s], CLID %s",
+			   "%s [%s%s%s] %s",
 			   diag,
 			   m->namepair->avp_strvalue,
 			   pass ? "/" : "",
 			   pass ? pass : "",
-			   m->clid);
+			   s ? s : "");
+	efree(s);
 }
 
 int
@@ -799,11 +823,6 @@ sfn_init(AUTH_MACH *m)
                 radreq->server_reply = NULL;
         }
 
-        if (pair_ptr = avl_find(radreq->request, DA_CALLING_STATION_ID)) 
-                m->clid = pair_ptr->avp_strvalue;
-        else
-                m->clid = _("unknown");
-
         /*
          * Get the user from the database
          */
@@ -955,7 +974,8 @@ sfn_simuse(AUTH_MACH *m)
         char  name[AUTH_STRING_LEN];
         int rc;
         int count;
-        
+        char *s;
+	
         strip_username(strip_names,
                        m->namepair->avp_strvalue, m->user_check, name);
         rc = rad_check_multi(name, m->req->request,
@@ -969,12 +989,14 @@ sfn_simuse(AUTH_MACH *m)
                         (m->check_pair->avp_lvalue > 1) ?
                         MSG_MULTIPLE_LOGIN : MSG_SECOND_LOGIN);
 
+	s = run_auth_log_hook(m);
         radlog_req(L_WARN, m->req,
-		   _("Multiple logins: [%s] max. %ld%s, CLID %s"),
-               m->namepair->avp_strvalue,
-               m->check_pair->avp_lvalue,
+		   _("Multiple logins: [%s] max. %ld%s %s"),
+		   m->namepair->avp_strvalue,
+		   m->check_pair->avp_lvalue,
 		   rc == 2 ? _(" [MPP attempt]") : "",
-		   m->clid);
+		   s ? s : "");
+	efree(s);
         newstate(as_reject_cleanup);
 }
 

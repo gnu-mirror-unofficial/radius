@@ -98,11 +98,11 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         /* Check user/group
            FIXME: This should be checked *once* after re-reading the
            configuration */
-        pwd = getpwnam(config.exec_user);
+        pwd = getpwnam(exec_user);
         if (!pwd) {
                 radlog(L_ERR,
     _("radius_exec_program(): won't execute, no such user: %s"),
-                       config.exec_user);
+                       exec_user);
                 return -1;
         }
 

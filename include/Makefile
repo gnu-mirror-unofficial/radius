@@ -89,7 +89,7 @@ RADLOG_DIR = /usr/adm
 RADPID_DIR = /usr/local/etc/raddb
 RANLIB = ranlib
 USE_NLS = no
-VERSION = 0.93.1
+VERSION = 0.94-beta
 YACC = byacc
 YACC_OPTS = -t
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -198,6 +198,8 @@ raddict.h: ../raddb/dictionary
 
 radmibs.h: ../mibs/radmibs.h.in
 	$(AWK) -f ../scripts/mksnmp-h.awk ../mibs/radmibs.h.in > radmibs.h
+
+lint:;
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

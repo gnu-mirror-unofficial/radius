@@ -114,6 +114,13 @@ Checking Access Lists,
 [TEST(send auth 1 User-Name = QUOTE(bad-one),
  expect 3 Reply-Message = QUOTE([[Sorry, your account is currently closed]]ESC(\r,\n)))])
 
+SEQUENCE(Expiration,
+Checking Expiration Attribute,
+[TEST(send auth 1 User-Name = QUOTE(expire) User-Password = QUOTE(expire),
+ expect 3 Reply-Message = QUOTE([[Password has expired]]ESC(\r,\n)))
+ TEST(send auth 1 User-Name = QUOTE(no-expire) User-Password = QUOTE(expire),
+ expect 2)])
+
 IFSEQUENCE(Menu, USE_LIVINGSTON_MENUS,
 Checking Menus,
 [TEST(send auth 1 User-Name = QUOTE(menu),

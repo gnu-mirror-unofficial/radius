@@ -396,7 +396,10 @@ main(argc, argv)
 		}
 	}
 
-
+	log_set_default("default.log", -1, -1);
+	if (mode != MODE_DAEMON)
+		log_set_to_console();
+	
 	signal(SIGHUP, sig_hup);
 	signal(SIGUSR1, sig_usr1);
 	signal(SIGUSR2, sig_usr2);
@@ -478,10 +481,6 @@ main(argc, argv)
 #endif
 		chdir("/");
 	}
-	/*
-	 * Stop logging to console
-	 */
-	log_disconnect();
 
 	radius_pid = getpid();
 	p = mkfilename(radpid_dir, "radiusd.pid");
@@ -929,13 +928,8 @@ radrespond(radreq, activefd)
 		break;
 	}
 
-	/*
-	 *	If we did select a function, execute it
-	 *	(perhaps through rad_spawn_child)
-	 */
-	if (type != -1) {
+	if (type != -1) 
 	        rad_spawn_child(type, radreq, activefd);
-	}
 	return 0;
 }
 
@@ -1179,6 +1173,7 @@ rad_spawn_child(type, data, activefd)
 			request_class[type].handler(data, activefd);
 		request_cleanup(type, (qid_t)curreq->data);
 		request_list_unblock();
+		log_close();
 		return;
 	}
 

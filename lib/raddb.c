@@ -45,7 +45,7 @@ read_raddb_file(filename, vital, fun, closure)
         int    argc;
         char **argv;
         FILE *input;
-        int  line = 1;
+        int  line = 0;
         char *lineptr = NULL;
         size_t bsize = 0;
         int nread;
@@ -67,12 +67,12 @@ read_raddb_file(filename, vital, fun, closure)
                 nread = strlen(lineptr);
                 if (nread == 0)
                         break;
-                if (lineptr[nread-1] == '\n')
-                        lineptr[nread-1] = 0;
-                if (lineptr[0] == 0) {
-                        line++;
-			continue;
+                if (lineptr[nread-1] == '\n') {
+			line++;
+			lineptr[nread-1] = 0;
 		}
+		if (lineptr[0] == 0)
+			continue;
                 if (argcv_get(lineptr, "", &argc, &argv) == 0) {
                         int n;
                         for (n = 0; n < argc && argv[n][0] != '#'; n++)

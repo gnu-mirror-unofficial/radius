@@ -29,12 +29,10 @@ mem.c \
 nas.c \
 raddb.c \
 radpaths.c \
-radprintf.c \
 radutmp.c \
 slist.c \
 symtab.c \
 sysdep.c \
-vasprintf.c \
 users_gram.c \
 users_lex.c \
 util.c
@@ -51,8 +49,11 @@ noinst_HEADERS=users_gram.h
 MAINTAINERCLEANFILES=users_gram.c users_gram.h users_lex.c
 INCLUDES= -I$(top_srcdir)/include @INCLUDEPATH@
 EXTRA_DIST=users.y users.l strncasecmp.c strerror.c \
-           obstack.c obstack.h rx.c rx.h regex.h regexp.h \
-	   getopt.c getopt1.c getopt.h
+           obstack.c obstack.h rx.c \
+	   getopt.c getopt1.c getopt.h \
+	   vasprintf.c snprintf.c
+noinst_HEADERS=rx.h regex.h regexp.h getopt.h snprintf.h
+
 YLWRAP=$(SHELL) $(top_srcdir)/ylwrap
 
 users_gram.c users_gram.h: $(srcdir)/users.y
@@ -71,7 +72,7 @@ SUFFIXES=.S .c .ln .o .s
 
 if MAINTAINER_MODE
 CLEANFILES=*.ln
-LINTFLAGS=-gzra -fAI -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
+LINTFLAGS=-gzra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
 
 .c.ln:
 	$(LINT.c) -i $<

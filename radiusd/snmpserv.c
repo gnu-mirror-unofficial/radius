@@ -588,6 +588,7 @@ snmp_answer(req, sock)
 	struct snmp_pdu *pdu;
 	int len;
 
+	log_open(L_SNMP);
 	pdu = snmp_agent_response(req->pdu, req->access);
 	if (pdu) {
 		session.version = SNMP_VERSION_1;

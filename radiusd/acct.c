@@ -616,6 +616,7 @@ rad_accounting(radreq, activefd)
 	int auth;
 	u_char pw_digest[AUTH_PASS_LEN];
 
+	log_open(L_ACCT);
 	/* See if we know this client, then check the request authenticator. */
 	auth = calc_acctdigest(pw_digest, radreq);
 	if (auth < 0) {

@@ -16,12 +16,15 @@ set main
 # Find radlib sources
 dir ../radlib
 
+handle SIGUSR1 nostop noprint pass
+handle SIGUSR2 nostop noprint pass
+
 # Make sure radiusd won't spawn any children 
 break main
 commands
  set variable debug_flag=1
- set variable spawn_flag=0
  set variable foreground=1
+ set variable spawn_flag=0
  continue
 end
 

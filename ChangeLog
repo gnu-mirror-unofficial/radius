@@ -1,3 +1,23 @@
+2003-05-30  Sergey Poznyakoff 
+
+	* radiusd/radius.c (radius_respond): Call hints_setup
+*	before any processing. Side effect: for proxy replies
+	hints are processed twice.
+	
+	* examples/comos.rw: Minor change
+	* include/radius.h (avp_null_string): New function
+	* lib/avl.c: Likewise.
+	* raddb/dictionary (Proxy-Replied): New attribute
+	* radiusd/acct.c (rad_accounting): hints_setup moved to
+	radius_respond().
+	* radiusd/auth.c (rad_auth_init): Likewise.
+	* radiusd/files.c (paircmp): Added extra argument to return
+	the stripped username.
+	(hints_pairmatch,presuf_setup): Removed.
+	(hints_setup): Use paircmp. Add Proxy-Replied attribute
+	to the request if it was a proxy reply.
+	* radiusd/proxy.c (proxy_send): Use avp_null_string().
+
 2003-05-29  Sergey Poznyakoff 
 
 	* radiusd/scheme.c: New configuration keyword `outfile'

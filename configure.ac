@@ -180,11 +180,6 @@ AH_TOP([
 ])
 
 AH_BOTTOM([
-/* Internationalization support */
-#include <gettext.h>
-#define _(s) gettext(s)
-#define N_(s) (s)
-
 /*FIXME*/
 #if defined(sun) && !defined(__EXTENSIONS__)
 # define __EXTENSIONS__

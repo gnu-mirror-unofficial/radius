@@ -38,4 +38,11 @@ translation strings."
   (define-key po-mode-map "i" 'po-ispell-buffer)
   (define-key po-mode-map "\M-i" 'po-ispell-region))
 
+(defvar rad-po-input-method "latin-1-prefix")
+
+(defun rad-po-subedit-mode-hook ()
+  (set-input-method rad-po-input-method)) 
+
+(require 'po-mode)
 (add-hook 'po-mode-hook 'rad-po-mode-hook)
+(add-hook 'po-subedit-mode-hook 'rad-po-subedit-mode-hook)

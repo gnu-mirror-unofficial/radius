@@ -24,38 +24,81 @@
 #include <common.h>
 #include <radsql.h>
 
-static SQL_DISPATCH_TAB *sql_dispatch_tab[] = {
-        NULL,
-        mysql_dispatch_tab,
-        postgres_dispatch_tab,
-        odbc_dispatch_tab,
-};
+#include "modlist.h"
 
-#define NDISP sizeof(sql_dispatch_tab)/sizeof(sql_dispatch_tab[0])
+#define NSTATIC_MODS sizeof(static_dispatch_tab)/sizeof(static_dispatch_tab[0])
+
+static SQL_DISPATCH_TAB **sql_disptab;
+size_t sql_disptab_next;
+size_t sql_disptab_size;
+
+static void
+init_disptab()
+{
+	size_t size;
+	
+	if (sql_disptab)
+		return;
+	sql_disptab_size = NSTATIC_MODS;
+	size = sql_disptab_size * sizeof sql_disptab[0];
+	sql_disptab = grad_emalloc(size);
+	memcpy(sql_disptab, static_dispatch_tab, size);
+	sql_disptab_next = sql_disptab_size;
+}
+
+static int
+add_disptab(SQL_DISPATCH_TAB *tab)
+{
+	if (sql_disptab_next == sql_disptab_size) {
+		sql_disptab_size += 4;
+		sql_disptab = grad_realloc(sql_disptab, sql_disptab_size);
+	}
+	sql_disptab[sql_disptab_next] = tab;
+	return sql_disptab_next++;
+}
+
+static void
+before_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
+{
+	init_disptab();
+	sql_disptab[0] = NULL;
+	sql_disptab_next = NSTATIC_MODS;
+}
+
+void
+disp_init()
+{
+	radiusd_set_preconfig_hook(before_config_hook, NULL, NULL);
+}
 
 int
 disp_sql_interface_index(char *name)
 {
         int i;
-
-        for (i = 1; i < NDISP; i++)
-                if (sql_dispatch_tab[i]
-                    && strcmp(sql_dispatch_tab[i]->name, name) == 0)
+	SQL_DISPATCH_TAB *tab;
+	
+	init_disptab();
+        for (i = 1; i < sql_disptab_next; i++)
+                if (sql_disptab[i]
+                    && strcmp(sql_disptab[i]->name, name) == 0)
                     return i;
+	if (radiusd_load_ext(name, "dispatch_tab", &tab))
+		return add_disptab(tab);
         return 0;
 }
 
 SQL_DISPATCH_TAB *
 disp_sql_entry(int type)
 {
-        grad_insist(type < SQLT_MAX);
-        if (type == 0) {
-                for (type = 1; type < NDISP; type++)
-                        if (sql_dispatch_tab[type])
-                                return sql_dispatch_tab[type];
-                type = 0;
+	if (type == 0) {
+		int i;
+                for (i = 1; i < sql_disptab_next; i++)
+                        if (sql_disptab[i]) {
+				sql_disptab[type] = sql_disptab[i];
+				break;
+			}
         } 
-        return sql_dispatch_tab[type];
+        return sql_disptab[type];
 }
 
 int

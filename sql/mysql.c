@@ -32,8 +32,6 @@
 #include <radius/radutmp.h>
 #include <radsql.h>
 
-#ifdef USE_SQL_MYSQL
-
 #include <mysql/mysql.h>
 
 #define MYSQL_AUTH SQL_AUTH
@@ -89,23 +87,23 @@ rad_mysql_reconnect(int type, struct sql_connection *conn)
 
         switch (type) {
         case SQL_AUTH:
-                dbname = sql_cfg.auth_db;
+                dbname = conn->cfg->auth_db;
                 break;
         case SQL_ACCT:
-                dbname = sql_cfg.acct_db;
+                dbname = conn->cfg->acct_db;
                 break;
         }
         
         mysql = conn->data = grad_emalloc(sizeof(MYSQL));
         mysql_init(mysql);
 	if (!mysql_real_connect(mysql, 
-				sql_cfg.server, sql_cfg.login,
-				sql_cfg.password, dbname, sql_cfg.port,
+				conn->cfg->server, conn->cfg->login,
+				conn->cfg->password, dbname, conn->cfg->port,
 				NULL, 0)) {
 		grad_log(L_ERR,
 		         _("[MYSQL] cannot connect to %s as %s: %s"),
-		         sql_cfg.server,
-		         sql_cfg.login,
+		         conn->cfg->server,
+		         conn->cfg->login,
 		         mysql_error((MYSQL*)conn->data));
 		grad_free(conn->data);
 		conn->data = NULL;
@@ -113,7 +111,7 @@ rad_mysql_reconnect(int type, struct sql_connection *conn)
 		return -1;
 	}
 
-	debug(1, ("connected to %s", sql_cfg.server));
+	debug(1, ("connected to %s", conn->cfg->server));
 	conn->connected++;
         return 0;
 }
@@ -269,7 +267,7 @@ rad_mysql_free(struct sql_connection *conn, void *data)
         grad_free(dp);
 }
 
-SQL_DISPATCH_TAB mysql_dispatch_tab[] = {
+DECL_SQL_DISPATCH_TAB(mysql) = {
         "mysql",
         3306,
         rad_mysql_reconnect,
@@ -284,4 +282,3 @@ SQL_DISPATCH_TAB mysql_dispatch_tab[] = {
 	rad_mysql_n_columns,
 };
 
-#endif /* USE_SQL_MYSQL */

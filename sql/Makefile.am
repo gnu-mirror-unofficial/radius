@@ -12,8 +12,33 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 noinst_LTLIBRARIES=@BUILD_SQL@
-EXTRA_LTLIBRARIES=libsql.la
+EXTRA_LTLIBRARIES=libsql.la mysql.la postgres.la odbc.la
+EXTRA_DIST=\
+ mysql.c\
+ postgres.c\
+ odbc.c 
+DISTCLEANFILES = modlist.h
 
 INCLUDES=@RADIUS_INCLUDE_PATH@
-libsql_la_SOURCES=disp.c mysql.c postgres.c odbc.c
+libsql_la_SOURCES=disp.c
+libsql_la_LIBADD=@SQL_LTLIBOBJS@
+
+libsql_la_DEPENDENCIES = @SQL_LTLIBOBJS@
+
+moddir = $(pkgdatadir)/$(VERSION)/modules
+mod_LTLIBRARIES = @SQL_LOADABLE_MODULES@
+
+MODFLAGS=-module -avoid-version -no-undefined -rpath $(moddir) -Wl,-Bsymbolic
+
+mysql_la_SOURCES = mysql.c
+mysql_la_LIBADD = ../lib/libgnuradius.la @MYSQLLIBS@
+mysql_la_LDFLAGS = $(MODFLAGS)
+
+postgres_la_SOURCES = postgres.c
+postgres_la_LIBADD = ../lib/libgnuradius.la @POSTGRESLIBS@
+postgres_la_LDFLAGS = $(MODFLAGS)
+
+odbc_la_SOURCES = odbc.c
+odbc_la_LIBADD = ../lib/libgnuradius.la @ODBCLIBS@
+odbc_la_LDFLAGS = $(MODFLAGS)
 

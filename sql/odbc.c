@@ -29,8 +29,6 @@
 #include <common.h>
 #include <radsql.h>
 
-#ifdef USE_SQL_ODBC
-
 #include <sql.h>
 #include <sqlext.h>
 #include <sqltypes.h>
@@ -73,18 +71,18 @@ rad_odbc_reconnect(int type, struct sql_connection *conn)
         
         switch (type) {
         case SQL_AUTH:
-                dbname = sql_cfg.auth_db;
+                dbname = conn->cfg->auth_db;
                 break;
         case SQL_ACCT:
-                dbname = sql_cfg.acct_db;
+                dbname = conn->cfg->acct_db;
                 break;
         }
 
-        if (sql_cfg.port == 0)
+        if (conn->cfg->port == 0)
                 portstr = NULL;
         else {
                 portstr = portbuf;
-                snprintf(portbuf, sizeof(portbuf), "%d", sql_cfg.port);
+                snprintf(portbuf, sizeof(portbuf), "%d", conn->cfg->port);
         }
 
         oconn = grad_emalloc(sizeof(ODBCconn));
@@ -110,8 +108,8 @@ rad_odbc_reconnect(int type, struct sql_connection *conn)
         }
         result = SQLConnect(oconn->dbc,
                             (SQLCHAR*)dbname, SQL_NTS,
-                            (SQLCHAR*)sql_cfg.login, SQL_NTS,
-                            (SQLCHAR*)sql_cfg.password, SQL_NTS);
+                            (SQLCHAR*)conn->cfg->login, SQL_NTS,
+                            (SQLCHAR*)conn->cfg->password, SQL_NTS);
         if (result != SQL_SUCCESS && result != SQL_SUCCESS_WITH_INFO) {
                 rad_odbc_diag(SQL_HANDLE_DBC, oconn->dbc,
                               "SQLConnect failed");
@@ -390,7 +388,7 @@ rad_odbc_free(struct sql_connection *conn, void *data)
         grad_free(edata);
 }
 
-SQL_DISPATCH_TAB odbc_dispatch_tab[] = {
+DECL_SQL_DISPATCH_TAB(odbc) = {
         "odbc",     
         0,
         rad_odbc_reconnect,
@@ -404,6 +402,4 @@ SQL_DISPATCH_TAB odbc_dispatch_tab[] = {
 	rad_odbc_n_tuples,
 	rad_odbc_n_columns,
 };
-
-#endif
 

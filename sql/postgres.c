@@ -30,8 +30,6 @@
 #include <common.h>
 #include <radsql.h>
 
-#ifdef USE_SQL_POSTGRES
-
 #include <libpq-fe.h>
 
 static int rad_postgres_reconnect(int type, struct sql_connection *conn);
@@ -49,23 +47,23 @@ rad_postgres_reconnect(int type, struct sql_connection *conn)
         
         switch (type) {
         case SQL_AUTH:
-                dbname = sql_cfg.auth_db;
+                dbname = conn->cfg->auth_db;
                 break;
         case SQL_ACCT:
-                dbname = sql_cfg.acct_db;
+                dbname = conn->cfg->acct_db;
                 break;
         }
 
-        if (sql_cfg.port == 0)
+        if (conn->cfg->port == 0)
                 portstr = NULL;
         else {
                 portstr = portbuf;
-                snprintf(portbuf, sizeof(portbuf), "%d", sql_cfg.port);
+                snprintf(portbuf, sizeof(portbuf), "%d", conn->cfg->port);
         }
                 
-        pgconn = PQsetdbLogin(sql_cfg.server, portstr, NULL, NULL,
+        pgconn = PQsetdbLogin(conn->cfg->server, portstr, NULL, NULL,
                               dbname,
-                              sql_cfg.login, sql_cfg.password);
+                              conn->cfg->login, conn->cfg->password);
         
         if (PQstatus(pgconn) == CONNECTION_BAD) {
                 grad_log(L_ERR,
@@ -292,7 +290,7 @@ rad_postgres_free(struct sql_connection *conn, void *data)
         grad_free(edata);
 }
 
-SQL_DISPATCH_TAB postgres_dispatch_tab[] = {
+DECL_SQL_DISPATCH_TAB(postgres) = {
         "postgres",     
         5432,
         rad_postgres_reconnect,
@@ -306,6 +304,4 @@ SQL_DISPATCH_TAB postgres_dispatch_tab[] = {
 	rad_postgres_n_tuples,
 	rad_postgres_n_columns,
 };
-
-#endif
 

@@ -1,3 +1,20 @@
+2002-12-30 Sergey Poznyakoff 
+
+	* configure.ac: Use -pthread instead of -lc_r on BSD systems.
+	* include/radiusd.h (ref_ip): New variable.
+	* lib/sysdep.c (get_first_ip): New function. A more sophisticated
+          version of radiusd.c:getmyip().
+
+	* m4/Makefile.am: Reordered EXTRA_DIST to separate radius files
+	  from those added by autopoint.
+	  
+	* radiusd/proxy.c (get_socket_addr): Use ref_ip if the socket was
+	  bound to INADDR_ANY.
+	  (proxy_compare_request): Compare request proxy id and remote
+	  server IP as well.
+	
+	* radiusd/radiusd.c (ref_ipp): New variable.
+	
 2002-12-26  Sergey Poznyakoff
 
 	* doc/texinfo/comp.texi: New file.

@@ -1,3 +1,31 @@
+2003-08-14  Sergey Poznyakoff
+
+	* configure.ac: Raised version number to 1.1.1
+	Check for sigaction.
+	* Makefile.am: Force gnits option
+	* include/sysdep.h (signal_handler_t): New datatype
+	(rad_set_signal,rad_reset_signal): New functions.
+	* lib/argp-help.c: Provide a proto for strchrnul if
+	necessary.
+	* lib/sysdep.c (rad_set_signal,rad_reset_signal): New functions.
+	* radiusd/checkrad.c (finger_check): Use rad_set_signal().
+	* radiusd/exec.c (radius_exec_program): Likewise.
+	* radiusd/radius.c (radius_req_free): Removed spurious
+	diagnostics.
+	* radiusd/radiusd.c (radiusd_daemon)
+	(radiusd_signal_init): Use rad_set_signal().
+	(sig_handler): Call rad_reset_signal().
+	* radiusd/rpp.c (pipe_read): Bugfix.
+	(sig_handler): Use rad_reset_signal().
+	(rpp_request_handler): Use rad_set_signal().
+	* radlast/radlast.c (radwtmp): Likewise.
+
+	* examples/c3620.rw: Minor change to allow for safe concatenating
+	with other rw files (for the testsuite purposes)
+	* elisp/radconf-mode.el (radconf-locate-block): Minor change
+	* NEWS: Updated
+	* THANKS: Added Markus Zahn <markus.zahn@rz.uni-augsburg.de>
+	
 2003-08-02  Sergey Poznyakoff
 
 	* radiusd/files.c (nextkn): Advance past the closing quote in

@@ -1,8 +1,20 @@
-GNU Radius NEWS -- history of user-visible changes. 2003-07-21
+GNU Radius NEWS -- history of user-visible changes. 2003-08-15
 Copyright (C) 2002,2003 Free Software Foundation, Inc.
 See the end for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
+
+Version 1.1.1:
+
+* Bugfixes
+** Renamed LIST to RAD_LIST to eliminate possible name clashes with the
+other libraries (namely, libmysqlclient)
+** Choose the strictest timeout value between the one imposed by Login-Time
+attribute and the one set using	Session-Timeout attribute.
+** Use sigaction for signal handling whenever it is available.
+
+* Emacs files: Improved radconf-mode.el
+
 
 Version 1.1:
 

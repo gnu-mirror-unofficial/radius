@@ -1,3 +1,8 @@
+2003-08-02  Sergey Poznyakoff
+
+	* radiusd/files.c (nextkn): Advance past the closing quote in
+	strings. Thanks <jmt@bluemoon.net> for the suggestion.
+
 2003-07-31  Sergey Poznyakoff 
 
 	* scripts/texi2html.diff: Updated

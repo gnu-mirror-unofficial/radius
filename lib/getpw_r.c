@@ -20,6 +20,7 @@
 #endif
 
 #include <sys/types.h>
+#include <stdlib.h>
 #include <pwd.h>
 
 LOCK_DECLARE(lock)

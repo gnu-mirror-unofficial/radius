@@ -305,7 +305,7 @@ cisco_pid(string A)
  * Other possibly relevant fields are also parsed out and saved 
  * in the Voip-* A/V pairs. The latter should be defined somewhere
  * in the dictionary.
- * Please note, that the regular expression in this example
+ * Note, that the regular expression in this example
  * spans several lines for readability. It should be on one 
  * line in real file.
  */
@@ -579,12 +579,28 @@ whose entries can be accessed using the following syntax:
 
 @example
 @samp{%[} @var{attribute-name} @samp{]}
+@samp{%[} @var{attribute-name} @samp{]} @samp{(} @var{n} @samp{)}
 @end example
 
 @noindent
-Thus notation returns the value of the attribute @var{attribute-name}.
+The first notation returns the value of the attribute @var{attribute-name}.
 @var{attribute-name} should be a valid Radius dictionary name
 (@pxref{dictionary file}).
+
+The second notation returns the value of the @var{n}th attribute of type
+@var{attribute-name} . Index @var{n} is counted from zero, so
+
+@example
+        %[@var{attribute-name}](0)
+@end example
+
+@noindent
+is equivalent to
+
+@example
+        %[@var{attribute-name}]
+@end example
+
 @item Identifiers
 Identifiers represent functions and variables. These are described in
 the next section.
@@ -701,6 +717,7 @@ An @dfn{expression} is:
 @item A boolean expression
 @item An assignment
 @item A function call
+@item A delete statement
 @end itemize
 
 @subheading Type coercion
@@ -763,6 +780,20 @@ function.
 @emph{Note} that, unlike in C, the mismatch between the
 number of actual arguments and number of formal parameters in the
 compiled function declaration is not an error but rather a warning.
+
+@subheading Delete statement
+
+The @samp{delete} statement is used to delete an attribute or attributes
+from the incoming request. Its syntax is:
+
+@example
+delete @var{attribute-name};
+delete @var{attribute-name}(@var{n});
+@end example
+
+The first variant deletes @emph{all} the atributes of the given type.
+The second variant deletes only @var{n}th occurrence of the matching
+attribute.
 
 @comment **L4***************************************************************
 @node Built-in Functions

@@ -45,6 +45,7 @@ static char rcsid[] =
 #endif
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
 #include <varargs.h>
 #include <limits.h>
 

@@ -124,13 +124,12 @@ acct_nasup_query   UPDATE calls \
 
 # Multiple Login Checking
 
-mlc_user_query     SELECT user_name,nas_port_id,acct_session_id \
+mlc_user_query     SELECT user_name,nas_ip_address,nas_port_id,acct_session_id \
 	           FROM calls \
 		   WHERE user_name='%C{User-Name}' \
-	           AND nas_ip_address='%C{NAS-IP-Address}' \
                    AND status = 1
 
-mlc_realm_query    SELECT user_name,nas_port_id,acct_session_id \
+mlc_realm_query    SELECT user_name,nas_ip_address,nas_port_id,acct_session_id \
 	           FROM calls \
 		   WHERE realm_name='%C{Realm-Name}'	
 

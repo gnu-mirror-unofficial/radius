@@ -1,0 +1,29 @@
+-- Enterprises tree:
+.1.3.6.1.4.1.9163.	(.iso.org.dod.internet.private.enterprises.gnu-radius.)
+-- -------------------------------------
+
+       +-(1) radiusServerMIB
+	  +-(1) radiusServerUpTime
+	  +-(2) radiusServerResetTime
+          +-(3) radiusServerState        -- (rw) running,reload,reset,shutdown
+          +-(4) radiusServerQueueTable
+	    +-(1) queueEntry
+              +-(1) queueIndex
+              +-(2) queueName 
+	      +-(3) queueActive
+              +-(4) queueHeld
+	      +-(5) queueTotal
+          +-(5) radiusServerMemoryUsage
+              +-(1) memoryNumClasses
+	      +-(2) memoryNumBuckets
+              +-(3) memoryBytesAllocated
+              +-(4) memoryBytesUsed
+              +-(5) memoryClassTable
+                +-(1) memoryClassEntry
+                  +-(1) classIndex
+                  +-(2) classSize
+		  +-(3) classElsPerBucket
+	          +-(4) classNumBuckets
+	          +-(5) classElsUsed
+              +-(6) memoryMallocBlocks
+              +-(7) memoryMallocBytes

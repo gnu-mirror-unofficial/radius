@@ -26,6 +26,10 @@ typedef unsigned int	UINT4;
 typedef unsigned long	UINT4;
 #endif
 
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+
 #ifdef HAVE_STRINGS_H
 # include <strings.h>
 #else

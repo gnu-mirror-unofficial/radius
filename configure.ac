@@ -181,21 +181,9 @@ AH_TOP([
 
 AH_BOTTOM([
 /* Internationalization support */
-#if defined(ENABLE_NLS) && !defined(lint)
-# if defined(WITH_INCLUDED_LIBINTL)
-#  include <libgnuintl.h>
-# elif defined(HAVE_LIBINTL_H)
-#  include <libintl.h>
-# else
-#  include <libgnuintl.h>
-# endif
-# define _(s) gettext(s)
-#else
-# define _(s) s
-# define dgettext(domain,msgid) msgid
-# define ngettext(s,p,n) p
-#endif
-#define N_(s) s
+#include <gettext.h>
+#define _(s) gettext(s)
+#define N_(s) (s)
 
 /*FIXME*/
 #if defined(sun) && !defined(__EXTENSIONS__)

@@ -1,4 +1,35 @@
-2002-03-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+2002-03-20  Sergey Poznyakoff 
+
+	According to RFC 2138, renamed Password attribute to
+	User-Password. Files affected:
+	
+	* raddb/dictionary,
+	* client/pam_radius/pam_radius.c,
+	* doc/texinfo/attributes.texi,
+	* doc/texinfo/auth.texi,
+	* doc/texinfo/extensions.texi,
+	* doc/texinfo/operation.texi,
+	* radiusd/acct.c,
+	* radiusd/auth.c,
+	* radiusd/files.c,
+	* radiusd/log.c,
+	* radiusd/menu.c,
+	* radiusd/proxy.c,
+	* radiusd/radck.c,
+	* radiusd/radutil.c,
+	* radlib/client.c,
+	* radscm/radsession.in,
+	* test/proxy.m4,
+	* test/radiusd.m4,
+	* test/raddb/users.in.
+	
+	* raddb/dict/compat: Added Password for backward compatibility.
+
+	* radiusd/stat.c: Bugfix: Initialize server_stat.start_time with
+	  current time.
+	* raddb/Makefile.am: Do not overwrite existing dictionary.
+	
+2002-03-19  Sergey Poznyakoff  
 
 	* configure.in: More elaborate checking for POSIX threads
 	  library: FreeBSD keeps posix_ functions in libc_r.

@@ -466,6 +466,11 @@ radius_respond(REQUEST *req)
 #ifdef USE_SQL
 	radiusd_sql_clear_cache();
 #endif
+
+	if (radreq->code == RT_AUTHENTICATION_REQUEST
+	    && rad_auth_check_username(radreq, req->fd))
+	    return 1;
+	
         /* Add any specific attributes for this username. */
         hints_setup(radreq);
 
@@ -475,12 +480,14 @@ radius_respond(REQUEST *req)
                 stat_inc(auth, radreq->ipaddr, num_access_req);
                 if (rad_auth_init(radreq, req->fd) < 0) 
                         return 1;
-		/*FALLTHRU*/
+                if (proxy_send(req) != 0) 
+                        return 0;
+		break;
 		
         case RT_ACCOUNTING_REQUEST:
-                if (proxy_send(req) != 0) {
+		stat_inc(acct, radreq->ipaddr, num_req);
+                if (proxy_send(req) != 0) 
                         return 0;
-                }
 		break;
 		
 	case RT_AUTHENTICATION_ACK:

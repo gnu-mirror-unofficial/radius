@@ -80,6 +80,9 @@ static char *compile_flag_str[] = {
 #if defined(PWD_SHADOW)
 	"PWD_SHADOW",
 #endif
+#if defined(USE_GUILE)
+	"USE_GUILE",
+#endif
 #if defined(USE_PAM)
 	"USE_PAM",
 #endif

@@ -216,6 +216,20 @@ avl_find(first, attr)
         return first;
 }
 
+/* Find nth occurrence of a pair with the matching attribute. */
+VALUE_PAIR * 
+avl_find_n(first, attr, n)
+	VALUE_PAIR *first; 
+	int attr;
+	int n;
+{
+	for ( ; first; first = first->next) {
+		if (first->attribute == attr && n-- == 0)
+			break;
+	}
+	return first;
+}
+
 /* Delete the pairs with the matching attribute
  */
 void 
@@ -237,6 +251,30 @@ avl_delete(first, attr)
                         last = pair;
         }
 }
+
+/* Delete Nth pair with the matching attribute */
+void 
+avl_delete_n(first, attr, n)
+	VALUE_PAIR **first; 
+	int attr;
+	int n;
+{
+	VALUE_PAIR *pair, *next, *last = NULL;
+
+	for (pair = *first; pair; pair = next) {
+		next = pair->next;
+		if (pair->attribute == attr && n-- == 0) {
+			if (last)
+				last->next = next;
+			else
+				*first = next;
+			avp_free(pair);
+			break;
+		} else
+			last = pair;
+	}
+}
+
 
 /* Move all attributes of a given type from one list to another */
 void

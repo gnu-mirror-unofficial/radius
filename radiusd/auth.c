@@ -895,38 +895,40 @@ sfn_validate(AUTH_MACH *m)
 
 
 	if (rc != AUTH_OK) { 
-		if (is_log_mode(m, RLOG_AUTH)) {
-			switch (rc) {
-			case AUTH_REJECT:
+		switch (rc) {
+		case AUTH_REJECT:
+			if (is_log_mode(m, RLOG_AUTH)) 
 				auth_log(m, _("Rejected"),
 					 NULL, NULL, NULL);  
-				newstate(as_reject);
-				break;
+			newstate(as_reject);
+			break;
 
-			case AUTH_IGNORE:
+		case AUTH_IGNORE:
+			if (is_log_mode(m, RLOG_AUTH)) 
 				auth_log(m, _("Ignored"),
 					 NULL, NULL, NULL);
-				newstate(as_stop);
-				return; /*NOTE: do not break!*/
+			newstate(as_stop);
+			return; /*NOTE: do not break!*/
                                 
-			case AUTH_NOUSER:
+		case AUTH_NOUSER:
+			if (is_log_mode(m, RLOG_AUTH)) 
 				auth_log(m, _("Invalid user"),
 					 NULL, NULL, NULL);
-				newstate(as_reject_cleanup);
-				break;
+			newstate(as_reject_cleanup);
+			break;
                                 
-			case AUTH_FAIL:
+		case AUTH_FAIL:
+			if (is_log_mode(m, RLOG_AUTH)) 
 				auth_log(m,
 					 _("Login incorrect"),
 					 is_log_mode(m, RLOG_FAILED_PASS) ?
 					 m->userpass : NULL,
 					 NULL, NULL);
-				newstate(as_reject_cleanup);
-				break;
+			newstate(as_reject_cleanup);
+			break;
 
-			default:
-				insist_fail("sfn_validate");
-			}
+		default:
+			insist_fail("sfn_validate");
 		}
 		auth_format_msg(m, MSG_ACCESS_DENIED);
 		return;

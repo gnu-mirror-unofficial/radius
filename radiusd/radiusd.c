@@ -314,7 +314,7 @@ main(argc, argv)
 			open_acct = 0;
 			break;
 		case 'n':
-			do_not_resolve = 1; 
+			resolve_hostnames = 0;
 			break;
 		case 'i':
 			if ((myip = ip_gethostaddr(optarg)) == 0)
@@ -498,6 +498,7 @@ common_init()
 #endif
 	radius_tid = pthread_self();
 	pthread_attr_init(&thread_attr);
+	pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_DETACHED);
 #ifdef USE_SERVER_GUILE
 	start_guile();
 #endif
@@ -958,7 +959,7 @@ radrespond(radreq, activefd)
 		int rc = pthread_create(&tid, &thread_attr,
 					radrespond0, radreq);
 		if (rc) {
-			radlog(L_ERR, _("Can't spawn new thread: %d"),
+			radlog(L_ERR, _("Can't spawn new thread: %s"),
 			       strerror(rc));
 			return -1;
 		}
@@ -1126,6 +1127,7 @@ rad_cleanup_thread(arg)
 	void *arg;
 {
 	REQUEST *curreq = arg;
+	debug(2, ("cleaning up request %lu", curreq->child_pid));
 	curreq->child_pid = 0;
 	curreq->timestamp = time(NULL);
 	request_cleanup(curreq->type, curreq->data);
@@ -1279,16 +1281,16 @@ rad_handle_request(type, data, activefd)
 
 	curreq->child_pid = pthread_self();
 	
-	debug(1, ("adding %s request to the list. %d requests held.", 
-		 request_class[type].name,
-		 request_count+1));
+	debug(1, ("%s request %lu added to the list. %d requests held.", 
+		  request_class[type].name,
+		  (u_long) curreq->child_pid,
+		  request_count+1));
 
 	request_list_unblock();
 
 	pthread_cleanup_push(rad_cleanup_thread, curreq);
 	/* Finally, handle the request */
 	curreq->child_return = request_class[type].handler(data, activefd);
-	request_cleanup(type, curreq->data);
 	pthread_cleanup_pop(1);
 	log_close();
 	return;

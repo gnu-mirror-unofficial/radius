@@ -72,6 +72,7 @@
 (define ttl-dest-port 0)
 (define ttl-max-retry 1)
 (define ttl-timeout 3)
+(define ttl-debug-enabled #f)
 
 (define (host-spec? x)
   (and
@@ -104,6 +105,8 @@
 	  (cond
 	   ((keyword? key)
 	    (case key
+	      ((#:debug)
+	       (set! ttl-debug-enabled #t))
 	      ((#:dest-ip-address #:dest-ip)
 	       (checkval key host-spec?)
 	       (set! ttl-dest-ip-address (car value)))
@@ -137,6 +140,13 @@
 		     (format #f "ttl-init: stray argument near ~A" key)))))
 	(reverse rest))))))
 
+(define (ttl-debug fmt . rest)
+  (if ttl-debug-enabled
+      (rad-log L_DEBUG (apply format
+			      (append
+			       (list #f fmt)
+			       rest)))))
+
 (define (ttl-make-header code user-name)
   (let ((hdr (make-string 2 (integer->char 0))))
     (string-set! hdr 0 (integer->char (+ 3 (string-length user-name))))
@@ -154,11 +164,23 @@
 (define (ttl-reply-string packet)
   (substring packet 2 (1- (ttl-reply-length packet))))
 
+(define (wait-input fd ttl-timeout)
+  (call-with-current-continuation
+   (lambda (return)
+     (do ()
+	 (#f)
+       (catch 'system-error
+	      (lambda ()
+		(return (select (list fd) '() '() ttl-timeout)))
+	      (lambda (key . args)
+		(if (!= (car (list-ref args 3)) EINTR)
+		    (apply throw key args))))))))
+
 (define (ttl-message code user-name)
   (let ((packet (ttl-make-packet code user-name))
         (fd (socket AF_INET SOCK_DGRAM 0))
         (ttl #f))
-    ;(rad-log L_DEBUG (format #f "Sending ~A, ~A" code user-name))
+    (ttl-debug "Sending ~A, ~A" code user-name)
     (cond
      ((not fd)
       (rad-log L_ERR "can't open socket for ttl exchange"))
@@ -171,14 +193,15 @@
               ((or ttl (>= i ttl-max-retry)) #f)
 
               (sendto fd packet AF_INET ttl-dest-ip-address ttl-dest-port)
-              (let ((sel (select (list fd) '() '() ttl-timeout)))
+	      
+              (let ((sel (wait-input fd ttl-timeout)))
                 (cond
                  ((not (null? (car sel)))
                   (let* ((ret (recvfrom! fd packet))
                          (length (car ret)))
-		    ;(rad-log L_DEBUG (format #f "length ~A" length))
-		    ;(rad-log L_DEBUG (format #f "reply-length ~A"
-		    ;			     (ttl-reply-length packet)))
+		    (ttl-debug "reply packet length ~A, reported length ~A"
+			       length
+			       (ttl-reply-length packet))
                     (if (not
                          (or
                           (< length 4) ;; Remote party should send us
@@ -193,8 +216,7 @@
                                       #\-)
                             (set! ttl #t)) ;; Force exit from loop
                            (else
-			    ;(rad-log L_DEBUG (format #f "text ~A"
-			    ;			     (ttl-reply-string packet)))
+			    (ttl-debug "text ~A" (ttl-reply-string packet))
                             (let ((num (string->number
                                         (ttl-reply-string packet))))
                               (if (not num)
@@ -209,7 +231,7 @@
           ;;FIXME: more verbose
           (rad-log L_ERR (format #f "~A" args))))
       (close-port fd)))
-    ;(rad-log L_DEBUG (format #f "returning ~A" ttl))
+    (ttl-debug "returning ~A" ttl)
     ttl))
 
 (define-public (ttl-query req check reply)

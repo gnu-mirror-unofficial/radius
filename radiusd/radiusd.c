@@ -713,24 +713,23 @@ radiusd_close_channel(int fd)
 }
 
 void
-radiusd_cleanup()
+radiusd_collect_children()
 {
 	pid_t pid;
 	int status;
-	char buffer[128];
-	
-        for (;;) {
 
+	for (;;) {
 		pid = waitpid((pid_t)-1, &status, WNOHANG);
-                if (pid <= 0)
-                        break;
-
-		format_exit_status(buffer, sizeof buffer, status);
-		grad_log(L_NOTICE, _("child %lu %s"),
-		         (unsigned long) pid, buffer);
-
-		rpp_remove(pid);
+		if (pid <= 0)
+			break;
+		rpp_status_changed(pid, status);
 	}
+}
+
+void
+radiusd_cleanup()
+{
+	rpp_collect_exited ();
 }
 
 void
@@ -950,6 +949,7 @@ sig_handler(int sig)
 		break;
 
 	case SIGCHLD:
+		radiusd_collect_children ();
 		daemon_command = CMD_CLEANUP;
 		break;
 

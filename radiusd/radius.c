@@ -405,6 +405,15 @@ radius_req_failure(int type, struct sockaddr_in *addr)
 }
 
 int
+radius_status_server(RADIUS_REQ *radreq, int fd)
+{
+	radius_send_reply(RT_AUTHENTICATION_ACK, radreq, NULL,
+			  "GNU Radius server fully operational",
+			  fd);
+	return 0;
+}
+
+int
 radius_respond(REQUEST *req)
 {
 	int rc;
@@ -462,7 +471,11 @@ radius_respond(REQUEST *req)
 			stat_inc(acct, radreq->ipaddr, num_bad_sign);
 		rad_accounting(radreq, req->fd, rc);
                 break;
-		
+
+	case RT_STATUS_SERVER:
+		radius_status_server(radreq, req->fd);
+		break;
+					
         default:
                 stat_inc(acct, radreq->ipaddr, num_unknowntypes);
                 radlog_req(L_NOTICE, radreq, _("unknown request code %d"), 

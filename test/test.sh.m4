@@ -91,7 +91,7 @@ drv_dejagnu() {
              -l $[BUILDDIR]/test/log \
 	     -a $[BUILDDIR]/test/acct \
 	     -P $[BUILDDIR]/test/log
-    $RADTEST -d $[BUILDDIR]/test/raddb -xgram.y 2>/tmp/log
+    $RADTEST -d $[BUILDDIR]/test/raddb 2>/tmp/radtest.err
     kill -TERM `cat $[BUILDDIR]/test/log/radiusd.pid`
     sleep 5
     if test -r $[BUILDDIR]/test/log/radiusd.pid ; then

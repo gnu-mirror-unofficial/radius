@@ -21,7 +21,7 @@ dbm.c \
 debug.c \
 dict.c \
 envar.c \
-getline.c \
+gethost_r.c\
 insist.c \
 intl.c \
 iputil.c \
@@ -53,7 +53,7 @@ MAINTAINERCLEANFILES=users_gram.c users_gram.h users_lex.c
 INCLUDES= -I$(top_srcdir)/include @INCLUDEPATH@
 EXTRA_DIST=users.y users.l strncasecmp.c strerror.c \
            obstack.c obstack.h rx.c \
-	   getopt.c getopt1.c getopt.h \
+	   getline.c getopt.c getopt1.c getopt.h \
 	   vasprintf.c snprintf.c strcspn.c strtok_r.c localtime_r.c
 noinst_HEADERS=users_gram.h rx.h regex.h regexp.h getopt.h snprintf.h
 

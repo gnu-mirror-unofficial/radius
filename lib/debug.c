@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -95,63 +95,97 @@ auth_code_abbr(int code)
 
 #if RADIUS_DEBUG
 
+struct debug_module {
+	char *name;
+	int level;
+};
+
+static RAD_LIST *_grad_debug_list;
+
+static int
+debug_name_cmp(const void *item, const void *data)
+{
+	const struct debug_module *lp = item;
+	return strcmp(lp->name, (char*)data);
+}
+
+static int
+debug_mod_cmp(const void *item, const void *data)
+{
+	const struct debug_module *mod = item;
+	const struct debug_module *sample = data;
+	int len = strlen(mod->name);
+
+	if (strlen(mod->name) > len)
+		return 1;
+	if (strncmp(mod->name, sample->name, len))
+		return 1;
+	return mod->level < sample->level;
+}
+
+static int
+free_debug_module(void *item, void *data)
+{
+	efree(item);
+	return 0;
+}
 
 int
 set_module_debug_level(char *name, int level)
 {
-        int  i;
-        int  length;
-
-        length = strlen(name);
-
+	struct debug_module *lp;
+	
         if (level == -1)
                 level = MAX_DEBUG_LEVEL;
 
-        for (i = 0; debug_module[i].name; i++) {
-                if (strncmp(debug_module[i].name, name, length) == 0) {
-                        debug_level[ debug_module[i].modnum ] = level;
-                        return 0;
-                }
-        }
-        return 1;
+	if (!_grad_debug_list)
+		_grad_debug_list = grad_list_create();
+
+	lp = grad_list_locate(_grad_debug_list, name, debug_name_cmp);
+	if (!lp) {
+		lp = emalloc(sizeof(*lp));
+		lp->name = estrdup(name);
+		grad_list_append(_grad_debug_list, lp);
+	}
+
+	if (lp->level < level)
+		lp->level = level;
+        return 0;
 }
 
 void
 set_debug_levels(char *str)
 {
-        int  i;
         char *tok, *p, *save;
-        int  length;
         int  level;
 
         for (tok = strtok_r(str, ",", &save); tok; 
              tok = strtok_r(NULL, ",", &save)) {
                 p = strchr(tok, '=');
                 if (p) {
-                        length = p - tok;
-                        level  = atoi(p+1);
+                        *p++ = 0;
+                        level  = atoi(p);
                 } else {
-                        length = strlen(tok);
                         level  = MAX_DEBUG_LEVEL;
-                }               
-                for (i = 0; debug_module[i].name; i++) {
-                        if (strncmp(debug_module[i].name, tok, length) == 0) {
-                                debug_level[ debug_module[i].modnum ] = level;
-                                break;
-                        }
                 }
-        /*      if (debug_module[i].name == NULL)
-                        radlog(L_ERR, "unknown module: %s", tok); */
+		set_module_debug_level(tok, level);
         }
 }
 
 void
 clear_debug()
 {
-        int  i;
+	grad_list_destroy(&_grad_debug_list, free_debug_module, NULL);
+}
 
-        for (i = 0; debug_module[i].name; i++) 
-                debug_level[ debug_module[i].modnum ] = 0;
+
+int
+grad_debug_p(char *name, int level)
+{
+	struct debug_module mod;
+	mod.name = name;
+	mod.level = level;
+	return grad_list_locate(_grad_debug_list, &mod, debug_mod_cmp) != NULL;
 }
 
 #else
@@ -175,6 +209,12 @@ set_debug_levels(char *str)
 void
 clear_debug()
 {
+}
+
+int
+grad_debug_p(char *name, int level)
+{
+	return 0;
 }
 
 #endif

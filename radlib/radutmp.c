@@ -45,7 +45,7 @@ rut_setent(name, append)
 		ro = 1;
 		fd = open(name, O_RDONLY);
 	}
-	if (!fd) {
+	if (fd == -1) {
 		radlog(L_ERR|L_PERROR, 
 		       _("rut_setent(): cannot open"));
 		return NULL;

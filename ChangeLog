@@ -1,3 +1,23 @@
+2004-07-01  Sergey Poznyakoff
+
+	* lib/debug.c (auth_code_str): Renamed to grad_request_code_name
+	(auth_code_abbr): Renamed to grad_request_code_to_string
+	(grad_string_to_request_code): New function.
+	* include/radius/radius.h: Likewise
+	* lib/client.c: Likewise
+	* lib/radsrv.c: Likewise
+	* radiusd/rewrite.y: Likewise
+
+	* radtest/gram.y: Allow symbolic request names in send and
+	expect clauses
+	* radtest/input.l: Stylistic changes
+	* radiusd/testsuite/radiusd/proxy.exp: Use the improved send/expect
+	syntax
+	* radiusd/testsuite/radiusd/radiusd.exp: Likewise
+	* radscripts/radauth.m4: Likewise
+	
+	* radscm/gnuradius.scm4: Removed support for Guile 1.4.x
+	
 2004-06-30  Sergey Poznyakoff
 
 	* include/radiusd.h (rpp_remove_pid,rpp_status_changed): New

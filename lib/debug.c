@@ -183,7 +183,9 @@ int
 grad_debug_p(char *name, int level)
 {
 	struct debug_module mod;
-	mod.name = name;
+	char *p = strrchr(name, '/');
+
+	mod.name = p ? p + 1 : name;
 	mod.level = level;
 	return grad_list_locate(_grad_debug_list, &mod, debug_mod_cmp) != NULL;
 }

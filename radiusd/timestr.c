@@ -1,23 +1,19 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2001, Sergey Poznyakoff
+/* This file is part of GNU Radius
+   Copyright (C) 2001, 2003, Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
-
-#ifndef lint
-static char rcsid[] = "@(#) $Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -48,14 +44,8 @@ static char rcsid[] = "@(#) $Id$";
 #define DAYMIN  (24*60)
 #define val(x)  (( (x) < '0' || (x) > '9') ? 0 : ((x) - '0'))
 
-static TIMESPAN *timespan_new(int start, int stop);
-static void timespan_day(TIMESPAN **ts, int day, int start, int stop);
-static int timespan_parse(TIMESPAN **ts, char *s, char **endp);
-
-TIMESPAN *
-timespan_new(start, stop)
-        int start;
-        int stop;
+static TIMESPAN *
+timespan_new(int start, int stop)
 {
         TIMESPAN *ts;
 
@@ -66,12 +56,8 @@ timespan_new(start, stop)
         return ts;
 }
 
-void
-timespan_day(ts, day, start, stop)
-        TIMESPAN **ts;
-        int day;
-        int start;
-        int stop;
+static void
+timespan_day(TIMESPAN **ts, int day, int start, int stop)
 {
         TIMESPAN *tp, *prev;
         
@@ -130,11 +116,8 @@ timespan_day(ts, day, start, stop)
         }
 }
 
-int
-timespan_parse(ts, s, endp)
-        TIMESPAN **ts;
-        char *s;
-        char **endp;
+static int
+timespan_parse(TIMESPAN **ts, char *s, char **endp)
 {
         register int i, j;
         register char *p;
@@ -214,8 +197,7 @@ timespan_parse(ts, s, endp)
 }
 
 void
-ts_free(sp)
-        TIMESPAN *sp;
+ts_free(TIMESPAN *sp)
 {
         TIMESPAN *next;
 
@@ -228,10 +210,7 @@ ts_free(sp)
 
 
 int
-ts_parse(sp, str, endp)
-        TIMESPAN **sp;
-        char *str;
-        char **endp;
+ts_parse(TIMESPAN **sp, char *str, char **endp)
 {
         *sp = NULL;
         while (1) {
@@ -252,10 +231,7 @@ ts_parse(sp, str, endp)
 }
 
 int
-ts_match(timespan, time_now, rest)
-        TIMESPAN *timespan;
-        time_t *time_now;
-        unsigned *rest;
+ts_match(TIMESPAN *timespan, time_t *time_now, unsigned *rest)
 {
         TIMESPAN *tp;
         struct tm *tm, tms;
@@ -291,11 +267,7 @@ ts_match(timespan, time_now, rest)
 }
 
 int
-ts_check(str, time, rest, endp)
-        char *str;
-        time_t *time;
-        unsigned *rest;
-        char **endp;
+ts_check(char *str, time_t *time, unsigned *rest, char **endp)
 {
         TIMESPAN *ts;
         int rc;

@@ -1,18 +1,18 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001 Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #ifdef HAVE_CONFIG_H
@@ -76,10 +76,7 @@ static char license_text[] = N_(
     "   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n");
 
 static error_t 
-rad_common_argp_parser (key, arg, state)
-        int key;
-        char *arg;
-        struct argp_state *state;
+rad_common_argp_parser(int key, char *arg, struct argp_state *state)
 {
         switch (key) {
         case 'd':
@@ -103,13 +100,8 @@ rad_common_argp_parser (key, arg, state)
 char *progname;
 
 error_t
-rad_argp_parse(argp, pargc, pargv, flags, arg_index, input)
-        const struct argp *argp;
-        int *pargc;
-        char **pargv[];
-        unsigned flags;
-        int *arg_index;
-        void *input;
+rad_argp_parse(const struct argp *argp, int *pargc, char **pargv[],
+	       unsigned flags, int *arg_index, void *input)
 {
         error_t ret;
   

@@ -1,20 +1,19 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2001, Free Software Foundation
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston,
-   MA 02111-1307, USA. */
+   along with GNU Radius; if not, write to the Free Software Foundation, 
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -33,8 +32,7 @@ static int read_naslist_entry();
 
 /* Free a NAS list */
 void
-nas_free_list(list)
-        NAS *list;
+nas_free_list(NAS *list)
 {
         NAS *next;
 
@@ -51,12 +49,8 @@ nas_free_list(list)
  */
 /*ARGSUSED*/
 int
-read_naslist_entry(unused, fc, fv, file, lineno)
-        void *unused;
-        int fc;
-        char **fv;
-        char *file;
-        int lineno;
+read_naslist_entry(void *unused, int fc, char **fv, char *file,
+		   int lineno)
 {
         NAS nas, *nasp;
 
@@ -95,8 +89,7 @@ read_naslist_entry(unused, fc, fv, file, lineno)
  * Read naslist file
  */
 int
-nas_read_file(file)
-        char *file;
+nas_read_file(char *file)
 {
         nas_free_list(naslist);
         naslist = NULL;
@@ -109,8 +102,7 @@ nas_read_file(file)
  */
 
 NAS *
-nas_lookup_name(name)
-        char *name;
+nas_lookup_name(char *name)
 {
         NAS *nas;
         NAS *defnas = NULL;
@@ -127,8 +119,7 @@ nas_lookup_name(name)
 
 /* Find a nas in the NAS list */
 NAS *
-nas_lookup_ip(ipaddr)
-        UINT4 ipaddr;
+nas_lookup_ip(UINT4 ipaddr)
 {
         NAS *nas;
         NAS *defnas = NULL;
@@ -145,10 +136,7 @@ nas_lookup_ip(ipaddr)
 
 /* Find the name of a nas (prefer short name) */
 char *
-nas_ip_to_name(ipaddr, buf, size)
-        UINT4 ipaddr;
-        char *buf;
-        size_t size;
+nas_ip_to_name(UINT4 ipaddr, char *buf, size_t size)
 {
         NAS *nas;
         
@@ -163,8 +151,7 @@ nas_ip_to_name(ipaddr, buf, size)
 
 /* Find the name of a nas (prefer short name) based on the request */
 NAS *
-nas_request_to_nas(radreq)
-        RADIUS_REQ *radreq;
+nas_request_to_nas(RADIUS_REQ *radreq)
 {
         UINT4 ipaddr;
         VALUE_PAIR *pair;
@@ -178,10 +165,7 @@ nas_request_to_nas(radreq)
 }
 
 char *
-nas_request_to_name(radreq, buf, size)
-        RADIUS_REQ *radreq;
-        char *buf;
-        size_t size;
+nas_request_to_name(RADIUS_REQ *radreq, char *buf, size_t size)
 {
         UINT4 ipaddr;
         NAS *nas;
@@ -202,8 +186,7 @@ nas_request_to_name(radreq, buf, size)
 }
 
 NAS *
-nas_next(p)
-        NAS *p;
+nas_next(NAS *p)
 {
         if (!p)
                 return naslist;

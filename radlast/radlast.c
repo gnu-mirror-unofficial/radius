@@ -1,24 +1,19 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000, 2002, 2003, Sergey Poznyakoff
  
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
  
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
  
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
-
-#ifndef lint
-static char rcsid[] = 
-"$Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -144,10 +139,7 @@ static struct argp_option options[] = {
 };
 
 static error_t
-parse_opt (key, arg, state)
-        int key;
-        char *arg;
-        struct argp_state *state;
+parse_opt (int key, char *arg, struct argp_state *state)
 {
         switch (key) {
         case '0': case '1': case '2': case '3': case '4':
@@ -227,9 +219,7 @@ static struct argp argp = {
 };
 
 int
-main(argc, argv)
-        int argc;
-        char **argv;
+main(int argc, char **argv)
 {
         int index;
 
@@ -333,8 +323,7 @@ rawread()
 volatile int stop;
 
 RETSIGTYPE
-sig_int(sig)
-        int sig;
+sig_int(int sig)
 {
         stop = 1;
 }
@@ -432,8 +421,7 @@ radwtmp()
 }
 
 int
-want(ut)
-        struct radutmp *ut;
+want(struct radutmp *ut)
 {
         /* First see if it's a reboot/shutdown record and handle it
          * accordingly
@@ -478,8 +466,7 @@ want(ut)
 }
 
 void
-adduser(s)
-        char *s;
+adduser(char *s)
 {
         struct user_chain *uc;
 
@@ -504,9 +491,7 @@ adduser(s)
  * Add WTMP entry to the head of the list
  */
 WTMP *
-add_wtmp_entry(first, pp)
-        WTMP **first;
-        WTMP *pp;
+add_wtmp_entry(WTMP **first, WTMP *pp)
 {
         assert(*first!=pp);
         pp->prev = NULL;
@@ -522,9 +507,7 @@ add_wtmp_entry(first, pp)
  * NOTE: Does not free the entry itself
  */
 WTMP *
-delete_wtmp_entry(first, pp)
-        WTMP **first;
-        WTMP *pp;
+delete_wtmp_entry(WTMP **first, WTMP *pp)
 {
         WTMP *p;
 
@@ -538,9 +521,7 @@ delete_wtmp_entry(first, pp)
 }
 
 WTMP *
-find_wtmp_nas(first, bp)
-        WTMP *first;
-        struct radutmp *bp;
+find_wtmp_nas(WTMP *first, struct radutmp *bp)
 {
         WTMP *wp;
         
@@ -552,9 +533,7 @@ find_wtmp_nas(first, bp)
 }
 
 WTMP *
-find_wtmp_nas_port(first, bp)
-        WTMP *first;
-        struct radutmp *bp;
+find_wtmp_nas_port(WTMP *first, struct radutmp *bp)
 {
         WTMP *wp;
         
@@ -567,9 +546,7 @@ find_wtmp_nas_port(first, bp)
 }
 
 WTMP *
-find_wtmp_nas_port_sid(first, bp)
-        WTMP *first;
-        struct radutmp *bp;
+find_wtmp_nas_port_sid(WTMP *first, struct radutmp *bp)
 {
         WTMP *wp;
         
@@ -585,8 +562,7 @@ find_wtmp_nas_port_sid(first, bp)
 /* ************************************************************************* */
 
 void
-add_logout(bp)
-        struct radutmp *bp;
+add_logout(struct radutmp *bp)
 {
         WTMP *wp;
 
@@ -601,8 +577,7 @@ add_logout(bp)
 }
 
 void
-add_nas_restart(bp)
-        struct radutmp *bp;
+add_nas_restart(struct radutmp *bp)
 {
         WTMP *wp;
 
@@ -617,37 +592,31 @@ add_nas_restart(bp)
 }
 
 WTMP *
-find_login(bp)
-        struct radutmp *bp;
+find_login(struct radutmp *bp)
 {
         return find_wtmp_nas_port(login_list, bp);
 }
 
 WTMP *
-find_logout_sid(bp)
-        struct radutmp *bp;
+find_logout_sid(struct radutmp *bp)
 {
         return find_wtmp_nas_port_sid(logout_list, bp);
 }
 
 WTMP *
-find_logout(bp)
-        struct radutmp *bp;
+find_logout(struct radutmp *bp)
 {
         return find_wtmp_nas_port(logout_list, bp) ;
 }
 
 WTMP *
-find_restart(bp)
-        struct radutmp *bp;
+find_restart(struct radutmp *bp)
 {
         return find_wtmp_nas(nas_updown_list, bp);
 }
 
 void
-delete_logout(pp, utp)
-        WTMP *pp;
-        struct radutmp *utp;
+delete_logout(WTMP *pp, struct radutmp *utp)
 {
         static int count;
         
@@ -660,8 +629,7 @@ delete_logout(pp, utp)
 /* ************************************************************************* */
 
 char *
-proto_str(id)
-        int id;
+proto_str(int id)
 {
         DICT_VALUE *dval = value_lookup(id, "Framed-Protocol");
         static char buf[64];
@@ -674,7 +642,7 @@ proto_str(id)
 }
 
 char *
-port_type_str(porttype)
+port_type_str(int porttype)
 {
 	DICT_VALUE *dval = value_lookup(porttype, "NAS-Port-Type");
 	static char buf[80];
@@ -696,10 +664,7 @@ port_type_str(porttype)
  * LOGIN      NAS     PORT PROTO PORT_TYPE SESSION_ID  CALLER_ID FRAMED-IP       START_TIME - STOP_TIME (DURATION)
  */
 void
-print_entry(pp, bp, mark)
-        WTMP *pp;
-        struct radutmp *bp;
-        int mark;
+print_entry(WTMP *pp, struct radutmp *bp, int mark)
 {
         struct tm *tm;
         char ct[256];
@@ -786,8 +751,7 @@ print_entry(pp, bp, mark)
 }
 
 void
-print_reboot_entry(bp)
-        struct radutmp *bp;
+print_reboot_entry(struct radutmp *bp)
 {
         char *s;
         struct tm *tm;

@@ -1,24 +1,19 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003, Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
-
-#ifndef lint
-static char rcsid[] = 
-"$Id$";
-#endif
 
 #if defined(HAVE_CONFIG_H)
 # include <config.h>
@@ -113,8 +108,7 @@ Realm: (realm)(newline)" },
 };
 
 static char *
-lookup_format(name)
-	char *name;
+lookup_format(char *name)
 {
 	int i;
 	for (i = 0; fmtdef[i].name; i++)
@@ -165,10 +159,7 @@ static struct argp_option options[] = {
 };
 
 static error_t
-parse_opt (key, arg, state)
-        int key;
-        char *arg;
-        struct argp_state *state;
+parse_opt(int key, char *arg, struct argp_state *state)
 {
         switch (key) {
         case 'A': /* display all entries */
@@ -230,9 +221,7 @@ static struct argp argp = {
 
 
 int
-main(argc, argv)
-        int  argc;
-        char **argv;
+main(int  argc, char **argv)
 {
         char inbuf[128];
         char *path;
@@ -312,9 +301,7 @@ main(argc, argv)
 }
 
 void
-tty_to_port(rt, tty)
-        struct radutmp *rt;
-        char *tty;
+tty_to_port(struct radutmp *rt, char *tty)
 {
         char *p;
 
@@ -397,8 +384,7 @@ print_header()
 }
 
 int
-want_rad_record(rt)
-        struct radutmp *rt;
+want_rad_record(struct radutmp *rt)
 {
         if (username && strcmp(rt->login, username))
                 return 0;

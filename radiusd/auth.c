@@ -1,25 +1,21 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001, Sergey Poznyakoff
+/* This file is part of GNU Radius
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
  
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
  
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
  
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #define RADIUS_MODULE_AUTH_C
-#ifndef lint
-static char rcsid[] =
-"@(#) $Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -78,8 +74,7 @@ static int rad_check_password(RADIUS_REQ *radreq,
  *         otherwise 0 for success and -1 for failure.
  */
 static int
-pw_expired(exptime)
-        UINT4 exptime;
+pw_expired(UINT4 exptime)
 {
         struct timeval  tp;
         struct timezone tzp;
@@ -109,8 +104,7 @@ char *username_valid_chars;
  * array
  */
 int
-check_user_name(p)
-        char *p;
+check_user_name(char *p)
 {
         for (; *p && (isalnum(*p) || strchr(username_valid_chars, *p)); p++)
                 ;
@@ -123,9 +117,7 @@ LOCK_DECLARE(lock)
  * Check the users password against UNIX password database.
  */
 int
-unix_pass(name, passwd)
-        char *name;
-        char *passwd;
+unix_pass(char *name, char *passwd)
 {
         int rc;
         struct passwd *pwd;
@@ -225,12 +217,8 @@ unix_pass(name, passwd)
  *                      AUTH_IGNORE  Silently ignored                 
  */
 int
-rad_check_password(radreq, check_item, namepair, user_msg, userpass)
-        RADIUS_REQ   *radreq;
-        VALUE_PAIR *check_item;
-        VALUE_PAIR *namepair;
-        char       **user_msg;
-        char       *userpass;
+rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
+                   VALUE_PAIR *namepair, char **user_msg, char *userpass)
 {
         char *ptr;
         char *real_password = NULL;
@@ -442,9 +430,7 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
  *      process the hints and huntgroups file.
  */
 int
-rad_auth_init(radreq, activefd)
-        RADIUS_REQ *radreq;
-        int       activefd;
+rad_auth_init(RADIUS_REQ *radreq, int activefd)
 {
         VALUE_PAIR *namepair;
         
@@ -630,12 +616,7 @@ static void auth_format_msg(AUTH_MACH *m, int msg_id);
 static char *auth_finish_msg(AUTH_MACH *m);
 
 void
-auth_log(m, diag, pass, reason, addstr)
-        AUTH_MACH *m;
-        char *diag;
-        char *pass;
-        char *reason;
-        char *addstr;
+auth_log(AUTH_MACH *m, char *diag, char *pass, char *reason, char *addstr)
 {
         if (reason)
                 radlog_req(L_NOTICE, m->req,
@@ -658,9 +639,7 @@ auth_log(m, diag, pass, reason, addstr)
 }
 
 int
-is_log_mode(m, mask)
-        AUTH_MACH *m;
-        int mask;
+is_log_mode(AUTH_MACH *m, int mask)
 {
         int mode = log_mode;
         int xmask = 0;
@@ -680,17 +659,14 @@ is_log_mode(m, mask)
 }
 
 void
-auth_format_msg(m, msg_id)
-        AUTH_MACH *m;
-        int msg_id;
+auth_format_msg(AUTH_MACH *m, int msg_id)
 {
         int len = strlen(message_text[msg_id]);
         obstack_grow(&m->msg_stack, message_text[msg_id], len);
 }
 
 char *
-auth_finish_msg(m)
-        AUTH_MACH *m;
+auth_finish_msg(AUTH_MACH *m)
 {
         if (m->user_msg)
                 obstack_grow(&m->msg_stack, m->user_msg, strlen(m->user_msg));
@@ -704,8 +680,7 @@ auth_finish_msg(m)
  * Check if account has expired, and if user may login now.
  */
 int
-check_expiration(m)
-        AUTH_MACH *m;
+check_expiration(AUTH_MACH *m)
 {
         int result, rc;
         VALUE_PAIR *pair;
@@ -730,9 +705,7 @@ check_expiration(m)
 
 
 int
-rad_authenticate(radreq, activefd)
-        RADIUS_REQ  *radreq;
-        int        activefd;
+rad_authenticate(RADIUS_REQ *radreq, int activefd)
 {
         enum auth_state oldstate;
         struct auth_state_s *sp;
@@ -807,8 +780,7 @@ rad_authenticate(radreq, activefd)
                                 
         
 void
-sfn_init(m)
-        AUTH_MACH *m;
+sfn_init(AUTH_MACH *m)
 {
         RADIUS_REQ *radreq = m->req;
         VALUE_PAIR *pair_ptr;
@@ -881,8 +853,7 @@ sfn_init(m)
 }
 
 void
-sfn_eval_reply(m)
-        AUTH_MACH *m;
+sfn_eval_reply(AUTH_MACH *m)
 {
         VALUE_PAIR *p;
         int errcnt = 0;
@@ -916,8 +887,7 @@ sfn_eval_reply(m)
 }               
 
 void
-sfn_scheme(m)
-        AUTH_MACH *m;
+sfn_scheme(AUTH_MACH *m)
 {
 #ifdef USE_SERVER_GUILE
         VALUE_PAIR *p;
@@ -951,8 +921,7 @@ sfn_scheme(m)
 }
 
 void
-sfn_validate(m)
-        AUTH_MACH *m;
+sfn_validate(AUTH_MACH *m)
 {
         RADIUS_REQ *radreq = m->req;
         int rc;
@@ -1016,8 +985,7 @@ sfn_validate(m)
 }
 
 void
-sfn_service(m)
-        AUTH_MACH *m;
+sfn_service(AUTH_MACH *m)
 {
         /* FIXME: Other service types should also be handled,
          *        I suppose     
@@ -1028,8 +996,7 @@ sfn_service(m)
 }
 
 void
-sfn_disable(m)
-        AUTH_MACH *m;
+sfn_disable(AUTH_MACH *m)
 {
         if (get_deny(m->namepair->avp_strvalue)) {
                 auth_format_msg(m, MSG_ACCOUNT_CLOSED);
@@ -1039,8 +1006,7 @@ sfn_disable(m)
 }
 
 void
-sfn_service_type(m)
-        AUTH_MACH *m;
+sfn_service_type(AUTH_MACH *m)
 {
         if (m->check_pair->avp_lvalue == DV_SERVICE_TYPE_AUTHENTICATE_ONLY) {
                 auth_log(m, _("Login rejected"), NULL,
@@ -1051,8 +1017,7 @@ sfn_service_type(m)
 }
 
 void
-sfn_realmuse(m)
-        AUTH_MACH *m;
+sfn_realmuse(AUTH_MACH *m)
 {
         if (!m->req->realm)
                 return;
@@ -1066,8 +1031,7 @@ sfn_realmuse(m)
 }
 
 void
-sfn_simuse(m)
-        AUTH_MACH *m;
+sfn_simuse(AUTH_MACH *m)
 {
         char  name[AUTH_STRING_LEN];
         int rc;
@@ -1096,8 +1060,7 @@ sfn_simuse(m)
 }
 
 VALUE_PAIR *
-timeout_pair(m)
-        AUTH_MACH *m;
+timeout_pair(AUTH_MACH *m)
 {
         if (!m->timeout_pair &&
             !(m->timeout_pair = avl_find(m->user_reply, DA_SESSION_TIMEOUT))) {
@@ -1109,8 +1072,7 @@ timeout_pair(m)
 }
 
 void
-sfn_time(m)
-        AUTH_MACH *m;
+sfn_time(AUTH_MACH *m)
 {
         int rc;
         time_t t;
@@ -1141,8 +1103,7 @@ sfn_time(m)
 }
 
 void
-sfn_ipaddr(m)
-        AUTH_MACH *m;
+sfn_ipaddr(AUTH_MACH *m)
 {
         VALUE_PAIR *p, *tmp, *pp;
         
@@ -1178,8 +1139,7 @@ sfn_ipaddr(m)
 }
 
 void
-sfn_exec_wait(m)
-        AUTH_MACH *m;
+sfn_exec_wait(AUTH_MACH *m)
 {
 	int rc;
 	VALUE_PAIR *p;
@@ -1227,8 +1187,7 @@ sfn_exec_wait(m)
 }
 
 void
-sfn_exec_nowait(m)
-        AUTH_MACH *m;
+sfn_exec_nowait(AUTH_MACH *m)
 {
 	VALUE_PAIR *p;
 	
@@ -1245,8 +1204,7 @@ sfn_exec_nowait(m)
 }
 
 void
-sfn_cleanup_cbkid(m)
-        AUTH_MACH *m;
+sfn_cleanup_cbkid(AUTH_MACH *m)
 {
         static int delete_pairs[] = {
                 DA_FRAMED_PROTOCOL,
@@ -1267,8 +1225,7 @@ sfn_cleanup_cbkid(m)
 }
 
 void
-sfn_menu_challenge(m)
-        AUTH_MACH *m;
+sfn_menu_challenge(AUTH_MACH *m)
 {
 #ifdef USE_LIVINGSTON_MENUS
         char *msg;
@@ -1287,8 +1244,7 @@ sfn_menu_challenge(m)
 }
 
 void
-sfn_ack(m)
-        AUTH_MACH *m;
+sfn_ack(AUTH_MACH *m)
 {
         debug(1, ("ACK: %s", m->namepair->avp_strvalue));
         
@@ -1314,8 +1270,7 @@ sfn_ack(m)
 }
 
 void
-sfn_reject(m)
-        AUTH_MACH *m;
+sfn_reject(AUTH_MACH *m)
 {
         debug(1, ("REJECT: %s", m->namepair->avp_strvalue));
         radius_send_reply(RT_AUTHENTICATION_REJECT,
@@ -1327,10 +1282,7 @@ sfn_reject(m)
 }
 
 void
-req_decrypt_password(password, req, pair)
-        char *password;
-        RADIUS_REQ *req;
-        VALUE_PAIR *pair; /* Password pair */
+req_decrypt_password(char *password, RADIUS_REQ *req, VALUE_PAIR *pair)
 {
         NAS *nas;
         char *s;

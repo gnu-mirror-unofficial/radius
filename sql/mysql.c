@@ -1,18 +1,18 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #define RADIUS_MODULE_MYSQL_C
@@ -45,7 +45,6 @@ static char rcsid[] =
 #define MYSQL_AUTH SQL_AUTH
 #define MYSQL_ACCT SQL_ACCT
 
-static int  do_mysql_query(struct sql_connection *conn, char *query);
 static int rad_mysql_reconnect(int type, struct sql_connection *conn);
 static void rad_mysql_disconnect(struct sql_connection *conn, int drop);
 static int rad_mysql_query(struct sql_connection *conn, char *query, int *return_count);
@@ -62,9 +61,7 @@ static void rad_mysql_free(struct sql_connection *conn, void *data);
  *************************************************************************/
 
 static int 
-do_mysql_query(conn, query)
-        struct sql_connection *conn;
-        char *query;
+do_mysql_query(struct sql_connection *conn, char *query)
 {
         int    ret;
         int    i;
@@ -96,10 +93,8 @@ do_mysql_query(conn, query)
 
 /* ************************************************************************* */
 /* Interface routines */
-int
-rad_mysql_reconnect(type, conn)
-        int    type;
-        struct sql_connection *conn;
+static int
+rad_mysql_reconnect(int type, struct sql_connection *conn)
 {
         MYSQL *mysql = NULL;
         char *dbname;
@@ -135,10 +130,9 @@ rad_mysql_reconnect(type, conn)
         return 0;
 }
 
-void 
-rad_mysql_disconnect(conn, drop)
-        struct sql_connection *conn;
-	int drop; /* currently unused */
+static void 
+rad_mysql_disconnect(struct sql_connection *conn,
+		     int drop /* currently unused */)
 {
 	mysql_close(conn->data);
         mem_free(conn->data);
@@ -146,11 +140,8 @@ rad_mysql_disconnect(conn, drop)
         conn->connected = 0;
 }
 
-int
-rad_mysql_query(conn, query, return_count)
-        struct sql_connection *conn;
-        char *query;
-        int *return_count;
+static int
+rad_mysql_query(struct sql_connection *conn, char *query, int *return_count)
 {
         if (!conn) 
                 return -1;
@@ -164,10 +155,8 @@ rad_mysql_query(conn, query, return_count)
         return 0;
 }
 
-char *
-rad_mysql_getpwd(conn, query)
-        struct sql_connection *conn;
-        char *query;
+static char *
+rad_mysql_getpwd(struct sql_connection *conn, char *query)
 {
         MYSQL_RES      *result;
         MYSQL_ROW       row;
@@ -203,10 +192,8 @@ typedef struct {
         MYSQL_ROW       row;
 } RADMYSQL_DATA;
 
-void *
-rad_mysql_exec(conn, query)
-        struct sql_connection *conn;
-        char *query;
+static void *
+rad_mysql_exec(struct sql_connection *conn, char *query)
 {
         MYSQL_RES      *result;
         RADMYSQL_DATA  *data;
@@ -236,10 +223,8 @@ rad_mysql_exec(conn, query)
         return (void*)data;
 }
 
-char *
-rad_mysql_column(data, ncol)
-        void *data;
-        int ncol;
+static char *
+rad_mysql_column(void *data, int ncol)
 {
         RADMYSQL_DATA  *dp = (RADMYSQL_DATA *) data;
 
@@ -254,10 +239,8 @@ rad_mysql_column(data, ncol)
 }
 
 /*ARGSUSED*/
-int
-rad_mysql_next_tuple(conn, data)
-        struct sql_connection *conn;
-        void *data;
+static int
+rad_mysql_next_tuple(struct sql_connection *conn, void *data)
 {
         RADMYSQL_DATA  *dp = (RADMYSQL_DATA *) data;
 
@@ -267,10 +250,8 @@ rad_mysql_next_tuple(conn, data)
 }
 
 /*ARGSUSED*/
-void
-rad_mysql_free(conn, data)
-        struct sql_connection *conn;
-        void *data;
+static void
+rad_mysql_free(struct sql_connection *conn, void *data)
 {
         RADMYSQL_DATA  *dp = (RADMYSQL_DATA *) data;
 

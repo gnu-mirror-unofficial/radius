@@ -1,18 +1,18 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #define RADIUS_MODULE_LEAKDETECT_C
@@ -39,8 +39,7 @@ struct mallocstat mallocstat;
 #endif
 
 void *
-radxmalloc(size)
-        size_t size;
+radxmalloc(size_t size)
 {
         char *p;
 
@@ -65,9 +64,7 @@ radxmalloc(size)
 }
 
 void *
-radxrealloc(ptr, size)
-        void *ptr;
-        size_t size;
+radxrealloc(void *ptr, size_t size)
 {
         if (!ptr)
                 return radxmalloc(size);
@@ -94,8 +91,7 @@ radxrealloc(ptr, size)
 }
 
 void *
-emalloc(size)
-        size_t size;
+emalloc(size_t size)
 {
         char *p;
 
@@ -108,9 +104,7 @@ emalloc(size)
 }
 
 void *
-erealloc(ptr, size)
-        void *ptr;
-        size_t size;
+erealloc(void *ptr, size_t size)
 {
         ptr = radxrealloc(ptr, size);
         if (!ptr) {
@@ -121,8 +115,7 @@ erealloc(ptr, size)
 }
 
 void 
-efree(ptr)
-        void *ptr;
+efree(void *ptr)
 {
 #ifdef LEAK_DETECTOR
         MHDR *mhdr;
@@ -146,8 +139,7 @@ efree(ptr)
 }
 
 char *
-estrdup(s)
-        char *s;
+estrdup(char *s)
 {
         char *p;
         

@@ -1,25 +1,20 @@
 %{
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003, Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
-
-#ifndef lint
-static char rcsid[] = 
-        "@(#) $Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -386,9 +381,7 @@ again:
 }
 
 void
-putback(tok, length)
-        char *tok;
-        int length;
+putback(char *tok, int length)
 {
         if (length > curp - buffer) {
                 radlog(L_CRIT, 
@@ -418,8 +411,7 @@ skipline()
 }
 
 int
-isword(c)
-        int c;
+isword(int c)
 {
         return isalnum(c) || c == '_' || c == '-';
 }
@@ -477,10 +469,10 @@ copy_digit()
 }
 
 struct keyword booleans[] = {
-	"on", 1,
-	"off", 0,
-	"yes", 1,
-	"no", 0,
+	{ "on", 1 }, 
+	{ "off", 0 },
+	{ "yes", 1 }, 
+	{ "no", 0 },
 	0
 };
 
@@ -498,8 +490,7 @@ keyword()
 
 
 int
-yyerror(s)
-        char *s;
+yyerror(char *s)
 {
         radlog(L_ERR, "%s:%d: %s", cfg_filename, cfg_line_num, s);
 }
@@ -508,9 +499,7 @@ yyerror(s)
 /* Internal functions */
 
 void
-_cfg_run_begin(stmt, up_data)
-	struct cfg_stmt *stmt;
-	void *up_data;
+_cfg_run_begin(struct cfg_stmt *stmt, void *up_data)
 {
 	for ( ; stmt->keyword; stmt++) {
 		if (stmt->term)
@@ -521,9 +510,7 @@ _cfg_run_begin(stmt, up_data)
 }
 
 void
-_cfg_run_finish(stmt, up_data)
-	struct cfg_stmt *stmt;
-	void *up_data;
+_cfg_run_finish(struct cfg_stmt *stmt, void *up_data)
 {
 	for ( ; stmt->keyword; stmt++) {
 		if (stmt->term)
@@ -550,10 +537,7 @@ _cfg_free_memory_pool()
 }
 
 int
-_cfg_make_argv(argv, keyword, vlist)
-	cfg_value_t **argv;
-	char *keyword;
-	VLIST *vlist;
+_cfg_make_argv(cfg_value_t **argv, char *keyword, VLIST *vlist)
 {
 	int i, argc;
 	struct value_list *p;
@@ -573,16 +557,13 @@ _cfg_make_argv(argv, keyword, vlist)
 }
 
 void
-_cfg_free_argv(argc, argv)
-	int argc;
-	cfg_value_t *argv;
+_cfg_free_argv(int argc, cfg_value_t *argv)
 {
 	efree(argv);
 }
 		
 VLIST *
-_cfg_vlist_create(val)
-	cfg_value_t *val;
+_cfg_vlist_create(cfg_value_t *val)
 {
 	VLIST *vlist = cfg_malloc(sizeof(*vlist), _cfg_vlist_destroy);
 	struct value_list *p = emalloc(sizeof(*p));
@@ -594,9 +575,7 @@ _cfg_vlist_create(val)
 }
 
 VLIST *
-_cfg_vlist_append(vlist, val)
-	VLIST *vlist;
-	cfg_value_t *val;
+_cfg_vlist_append(VLIST *vlist,	cfg_value_t *val)
 {
 	struct value_list *p = emalloc(sizeof(*p));
 	p->val = *val;
@@ -607,8 +586,7 @@ _cfg_vlist_append(vlist, val)
 }
 
 void
-_cfg_vlist_destroy(arg)
-	void *arg;
+_cfg_vlist_destroy(void *arg)
 {
 	VLIST *vlist = arg;
 	struct value_list *p, *next;
@@ -622,10 +600,7 @@ _cfg_vlist_destroy(arg)
 }
 
 void
-_cfg_push_block(stmt, end, block_data)
-	struct cfg_stmt *stmt;
-	cfg_end_fp end;
-	void *block_data;
+_cfg_push_block(struct cfg_stmt *stmt, cfg_end_fp end, void *block_data)
 {
 	struct syntax_block *p = emalloc(sizeof(*p));
 	p->stmt = stmt;
@@ -650,9 +625,7 @@ _cfg_pop_block()
 }
 
 struct cfg_stmt *
-_cfg_find_keyword(stmt, str)
-	struct cfg_stmt *stmt;
-	char *str;
+_cfg_find_keyword(struct cfg_stmt *stmt, char *str)
 {
 	if (stmt)
 		for (; stmt->keyword; stmt++) {
@@ -663,10 +636,7 @@ _cfg_find_keyword(stmt, str)
 }
 
 int
-_get_value(arg, type, base)
-	cfg_value_t *arg;
-        int type;
-	void *base;
+_get_value(cfg_value_t *arg, int type, void *base)
 {
         struct servent *s;
         UINT4 ipaddr;
@@ -766,9 +736,7 @@ _get_value(arg, type, base)
 /* Global functions */
 
 void *
-cfg_malloc(size, destructor)
-	size_t size;
-	void (*destructor)(void *);
+cfg_malloc(size_t size,	void (*destructor)(void *))
 {
 	struct cfg_memblock *p = emalloc(size + sizeof(*p));
 	p->next = cfg_memory_pool;
@@ -779,8 +747,7 @@ cfg_malloc(size, destructor)
 }
 
 void
-cfg_type_error(type)
-	int type;
+cfg_type_error(int type)
 {
 	radlog(L_ERR, 
 	       _("%s:%d: wrong datatype (should be %s)"),
@@ -788,8 +755,7 @@ cfg_type_error(type)
 }
 
 void
-cfg_argc_error(few)
-	int few;
+cfg_argc_error(int few)
 {
 	radlog(L_ERR,
 	       "%s:%d: %s",
@@ -804,76 +770,55 @@ cfg_argc_error(few)
  }		
 
 int
-cfg_get_ipaddr(argc, argv, block_data, handler_data)
-	int argc;
-	cfg_value_t *argv;
-	void *block_data;
-	void *handler_data;
+cfg_get_ipaddr(int argc, cfg_value_t *argv, void *block_data,
+	       void *handler_data)
 {
 	_check_argc(argc, 1);
 	return _get_value(&argv[1], CFG_IPADDR, handler_data);
 }
 
 int
-cfg_get_integer(argc, argv, block_data, handler_data)
-	int argc;
-	cfg_value_t *argv;
-	void *block_data;
-	void *handler_data;
+cfg_get_integer(int argc, cfg_value_t *argv, void *block_data,
+		void *handler_data)
 {
 	_check_argc(argc, 1);
 	return _get_value(&argv[1], CFG_INTEGER, handler_data);
 }
 
 int
-cfg_get_string(argc, argv, block_data, handler_data)
-	int argc;
-	cfg_value_t *argv;
-	void *block_data;
-	void *handler_data;
+cfg_get_string(int argc, cfg_value_t *argv, void *block_data,
+	       void *handler_data)
 {
 	_check_argc(argc, 1);
 	return _get_value(&argv[1], CFG_STRING, handler_data);
 }
 
 int
-cfg_get_boolean(argc, argv, block_data, handler_data)
-	int argc;
-	cfg_value_t *argv;
-	void *block_data;
-	void *handler_data;
+cfg_get_boolean(int argc, cfg_value_t *argv, void *block_data,
+		void *handler_data)
 {
 	_check_argc(argc, 1);
 	return _get_value(&argv[1], CFG_BOOLEAN, handler_data);
 }
 
 int
-cfg_get_network(argc, argv, block_data, handler_data)
-	int argc;
-	cfg_value_t *argv;
-	void *block_data;
-	void *handler_data;
+cfg_get_network(int argc, cfg_value_t *argv,
+		void *block_data, void *handler_data)
 {
 	_check_argc(argc, 1);
 	return _get_value(&argv[1], CFG_NETWORK, handler_data);
 }
 
 int
-cfg_get_port(argc, argv, block_data, handler_data)
-	int argc;
-	cfg_value_t *argv;
-	void *block_data;
-	void *handler_data;
+cfg_get_port(int argc, cfg_value_t *argv,
+	     void *block_data, void *handler_data)
 {
 	_check_argc(argc, 1);
 	return _get_value(&argv[1], CFG_PORT, handler_data);
 }
 
 int
-cfg_read(fname, syntax, data)
-	char *fname;
-	struct cfg_stmt *syntax;
-	void *data;
+cfg_read(char *fname, struct cfg_stmt *syntax, void *data)
 {
         struct stat st;
         int fd;

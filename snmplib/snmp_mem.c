@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2001, Sergey Poznyakoff.
+   Copyright (C) 2001,2003, Sergey Poznyakoff.
 
    This file is part of GNU Radius SNMP Library.
 
@@ -32,23 +32,20 @@ snmp_alloc_t __snmp_alloc_fp = (snmp_alloc_t) malloc;
 snmp_free_t  __snmp_free_fp  = (snmp_free_t) free;
 
 void *
-snmp_alloc(size)
-        size_t size;
+snmp_alloc(size_t size)
 {
         return (*__snmp_alloc_fp)(size);
 }
 
 void
-snmp_free(ptr)
-        void *ptr;
+snmp_free(void *ptr)
 {
         if (ptr)
                 (*__snmp_free_fp)(ptr);
 }
 
 char *
-snmp_strdup(str)
-        char *str;
+snmp_strdup(char *str)
 {
         int len = strlen(str)+1;
         char *p = snmp_alloc(len);

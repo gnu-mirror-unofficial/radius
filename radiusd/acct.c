@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001, Sergey Poznyakoff
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
  
    GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by

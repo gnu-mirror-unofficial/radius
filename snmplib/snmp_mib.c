@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2001, Sergey Poznyakoff.
+   Copyright (C) 2001,2003, Sergey Poznyakoff.
 
    This file is part of GNU Radius SNMP Library.
 
@@ -32,11 +32,8 @@
  ((node)->subid op s))  
 
 int
-mib_lookup(node, oid, len, return_node)
-        struct mib_node_t *node;
-        oid_t oid;
-        int len;
-        struct mib_node_t **return_node;
+mib_lookup(struct mib_node_t *node, oid_t oid,
+	   int len, struct mib_node_t **return_node)
 {
         subid_t *p = OIDPTR(oid);
         int ind;
@@ -61,11 +58,8 @@ mib_lookup(node, oid, len, return_node)
 }
 
 int
-mib_insert_node(root_node, oid, len, return_node)
-        struct mib_node_t **root_node;
-        oid_t oid;
-        int len;
-        struct mib_node_t **return_node;
+mib_insert_node(struct mib_node_t **root_node, oid_t oid,
+		int len, struct mib_node_t **return_node)
 {
         int rc;
         struct mib_node_t *newp;
@@ -106,10 +100,8 @@ mib_insert_node(root_node, oid, len, return_node)
 }
 
 int
-mib_insert(node, oid, return_node)
-        struct mib_node_t **node;
-        oid_t oid;
-        struct mib_node_t **return_node;
+mib_insert(struct mib_node_t **node, oid_t oid,
+	   struct mib_node_t **return_node)
 {
         int len = OIDLEN(oid);
         int i;

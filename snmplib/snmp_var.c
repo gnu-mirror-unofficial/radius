@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2001, Sergey Poznyakoff.
+   Copyright (C) 2001,2003, Sergey Poznyakoff.
 
    This file is part of GNU Radius SNMP Library.
 
@@ -28,8 +28,7 @@
 
 /* free a *single* snmp variable */
 void
-snmp_var_free(var)
-        struct snmp_var *var;
+snmp_var_free(struct snmp_var *var)
 {
         if (!var)
                 return;
@@ -59,8 +58,7 @@ snmp_var_free(var)
 
 /* free whole snmp variable list */
 void
-snmp_var_free_list(var)
-        struct snmp_var *var;
+snmp_var_free_list(struct snmp_var *var)
 {
         struct snmp_var *next;
 
@@ -72,8 +70,7 @@ snmp_var_free_list(var)
 }
 
 struct snmp_var *
-snmp_var_create(oid)
-        oid_t oid;
+snmp_var_create(oid_t oid)
 {
         struct snmp_var *var;
 
@@ -95,8 +92,7 @@ snmp_var_create(oid)
 }
 
 struct snmp_var *
-snmp_var_dup(src)
-        struct snmp_var *src;
+snmp_var_dup(struct snmp_var *src)
 {
         struct snmp_var *var;
 
@@ -140,8 +136,7 @@ snmp_var_dup(src)
 }
 
 struct snmp_var *
-snmp_var_dup_list(var)
-        struct snmp_var *var;
+snmp_var_dup_list(struct snmp_var *var)
 {
         struct snmp_var *var_head, *var_tail, *vp;
 
@@ -174,11 +169,8 @@ snmp_var_dup_list(var)
 */
 
 u_char *
-snmp_var_decode(data, length, var_head, version)
-        u_char *data;
-        int *length;
-        struct snmp_var **var_head;
-        int version;
+snmp_var_decode(u_char *data, int *length, struct snmp_var **var_head,
+		int version)
 {
         u_char *buf, *tmp;
         u_char *data_ptr;
@@ -311,11 +303,7 @@ err:
 }
 
 u_char *
-snmp_var_encode(data, length, var, version)
-        u_char *data;
-        int *length;
-        struct snmp_var *var;
-        int version;
+snmp_var_encode(u_char *data, int *length, struct snmp_var *var, int version)
 {
         u_char *buf = data;
         u_char *header_ptr, *header_end;

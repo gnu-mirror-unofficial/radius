@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2001, Sergey Poznyakoff.
+   Copyright (C) 2001,2003, Sergey Poznyakoff.
 
    This file is part of GNU Radius SNMP Library.
 
@@ -44,8 +44,7 @@ char *snmp_errlist[] = {
 int snmp_nerr = sizeof(snmp_errlist)/sizeof(snmp_errlist[0]);
 
 char *
-snmp_strerror(en)
-        int en;
+snmp_strerror(int en)
 {
         if (en < snmp_nerr)
                 return snmp_errlist[en];

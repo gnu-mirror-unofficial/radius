@@ -1,24 +1,19 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001, Sergey Poznyakoff
+/* This file is part of GNU Radius
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
-
-#ifndef lint
-static char rcsid[] = 
-"$Id$";
-#endif
 
 #define RADIUS_MODULE_CHECKRAD_C
 
@@ -65,18 +60,20 @@ struct check_instance {
         char      *hostname;
 };
 
-struct check_instance * create_instance(struct check_instance *cptr,
-                                        NAS *nas, struct radutmp *up);
-void free_instance(struct check_instance *cptr);
-char * slookup(struct check_instance *checkp, char *name, char *defval);
-int ilookup(struct check_instance *checkp, char *name, int defval);
-int compare(struct check_instance *checkp, char *str);
+char *
+slookup(struct check_instance *checkp, char *name, char *defval)
+{
+        return envar_lookup_str(checkp->args, name, defval);
+}
 
+int
+ilookup(struct check_instance *checkp, char *name, int defval)
+{
+        return envar_lookup_int(checkp->args, name, defval);
+}
+        
 struct check_instance *
-create_instance(cptr, nas, up)
-        struct check_instance *cptr;
-        NAS *nas;
-        struct radutmp *up;
+create_instance(struct check_instance *cptr, NAS *nas, struct radutmp *up)
 {
         RADCK_TYPE *radck_type;
                 
@@ -102,34 +99,13 @@ create_instance(cptr, nas, up)
 }
 
 void
-free_instance(cptr)
-        struct check_instance *cptr;
+free_instance(struct check_instance *cptr)
 {
         envar_free_list(&cptr->args);
 }
 
-char *
-slookup(checkp, name, defval)
-        struct check_instance *checkp;
-        char *name;
-        char *defval;
-{
-        return envar_lookup_str(checkp->args, name, defval);
-}
-
 int
-ilookup(checkp, name, defval)
-        struct check_instance *checkp;
-        char *name;
-        int defval;
-{
-        return envar_lookup_int(checkp->args, name, defval);
-}
-        
-int
-compare(checkp, str)
-        struct check_instance *checkp;
-        char *str;
+compare(struct check_instance *checkp, char *str)
 {
         return va_run_init(checkp->func, NULL,
                            "ssis",
@@ -146,9 +122,7 @@ compare(checkp, str)
  *          %P  -- port no + 1
  */
 char *
-checkrad_xlat(checkp, str)
-        struct check_instance *checkp;
-        char *str;
+checkrad_xlat(struct check_instance *checkp, char *str)
 {
         char *ptr;
         int len;
@@ -204,16 +178,9 @@ checkrad_xlat(checkp, str)
         return str;
 }
 
-static int converse(int type, struct snmp_session *sp, struct snmp_pdu *pdu,
-                    void *closure);
-
 /*ARGSUSED*/
-int
-converse(type, sp, pdu, closure)
-        int type;
-        struct snmp_session *sp;
-        struct snmp_pdu *pdu;
-        void *closure;
+static int
+converse(int type, struct snmp_session *sp, struct snmp_pdu *pdu, void *closure)
 {
         int rc = 0;
         struct snmp_var *vlist;
@@ -257,9 +224,7 @@ converse(type, sp, pdu, closure)
 }
 
 int
-snmp_check(checkp, nas)
-        struct check_instance *checkp;
-        NAS *nas;
+snmp_check(struct check_instance *checkp, NAS *nas)
 {
         int rc = -1;
         struct snmp_pdu *pdu;
@@ -370,9 +335,7 @@ alrm_handler()
 #define MIN(a,b) ((a)<(b))?(a):(b)
 
 int
-finger_check(checkp, nas)
-        struct check_instance *checkp;
-        NAS *nas;
+finger_check(struct check_instance *checkp, NAS *nas)
 {
         char *arg;
         char namebuf[RUT_NAMESIZE+1];
@@ -554,18 +517,14 @@ finger_check(checkp, nas)
 
 /*ARGSUSED*/
 int
-ext_check(checkp, nas)
-        struct check_instance *checkp;
-        NAS *nas;
+ext_check(struct check_instance *checkp, NAS *nas)
 {
         radlog(L_ERR, "ext_check not implemented");
         return -1;
 }
 
 int
-checkrad(nas, up)
-        NAS *nas;
-        struct radutmp *up;
+checkrad(NAS *nas, struct radutmp *up)
 {
         struct check_instance checkp;
         int rc = -1;

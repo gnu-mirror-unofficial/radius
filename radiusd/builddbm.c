@@ -1,18 +1,18 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2001, Sergey Poznyakoff
+/* This file is part of GNU Radius
+   Copyright (C) 2001, 2003 Sergey Poznyakoff
  
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
  
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
  
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
 
 #define RADIUS_MODULE_BUILDDBM_C
@@ -27,11 +27,6 @@
 #include <raddbm.h>
 #include <symtab.h>
 #include <parser.h>
-
-#ifndef lint
-static char rcsid[] =
-"@(#) $Id$";
-#endif
 
 #define NINT(n) ((n) + sizeof(int) - 1)/sizeof(int)
 
@@ -49,9 +44,7 @@ static int append_symbol(DBM_closure *closure, User_symbol *sym);
 static int list_length(VALUE_PAIR *vp);
 
 int
-append_symbol(closure, sym)
-        DBM_closure *closure;
-        User_symbol *sym;
+append_symbol(DBM_closure *closure, User_symbol *sym)
 {
         int     check_len;
         int     reply_len;
@@ -115,8 +108,7 @@ append_symbol(closure, sym)
 }
 
 int
-list_length(vp)
-        VALUE_PAIR *vp;
+list_length(VALUE_PAIR *vp)
 {
         int len;
         
@@ -131,8 +123,7 @@ list_length(vp)
 }
 
 int
-builddbm(name)
-        char *name;
+builddbm(char *name)
 {
         DBM_closure closure;
         char *db_file;
@@ -179,8 +170,7 @@ static int dbm_match(DBM_FILE dbmfile, char *name, char *(*fn)(),
 #define NINT(n) ((n) + sizeof(int) - 1)/sizeof(int)
 
 VALUE_PAIR *
-decode_dbm(pptr)
-        int **pptr;
+decode_dbm(int **pptr)
 {
         int *ptr, *endp, len;
         VALUE_PAIR *next_pair, *first_pair, *last_pair;
@@ -218,12 +208,8 @@ decode_dbm(pptr)
  * for both calls is needed.
  */
 int
-dbm_find(file, name, req, check_pairs, reply_pairs)
-        DBM_FILE file;
-        char       *name;
-        RADIUS_REQ *req;
-        VALUE_PAIR **check_pairs;
-        VALUE_PAIR **reply_pairs;
+dbm_find(DBM_FILE file, char *name, RADIUS_REQ *req,
+         VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs)
 {
         DBM_DATUM       named;
         DBM_DATUM       contentd;
@@ -293,11 +279,7 @@ dbm_find(file, name, req, check_pairs, reply_pairs)
 
 /*ARGSUSED*/
 char *
-_dbm_dup_name(buf, bufsize, name, ordnum)
-        char *buf;
-        size_t bufsize;
-        char *name;
-        int ordnum;
+_dbm_dup_name(char *buf, size_t bufsize, char *name, int ordnum)
 {
         strncpy(buf, name, bufsize);
         buf[bufsize-1] = 0;
@@ -305,25 +287,15 @@ _dbm_dup_name(buf, bufsize, name, ordnum)
 }
 
 char *
-_dbm_number_name(buf, bufsize, name, ordnum)
-        char *buf;
-        size_t bufsize;
-        char *name;
-        int ordnum;
+_dbm_number_name(char *buf, size_t bufsize, char *name, int ordnum)
 {
         snprintf(buf, bufsize, "%s%d", name, ordnum);
         return buf;
 }
 
 int
-dbm_match(dbmfile, name, fn, req, check_pairs, reply_pairs, fallthru)
-        DBM_FILE dbmfile;
-        char *name;
-        char *(*fn)();
-        RADIUS_REQ *req;
-        VALUE_PAIR **check_pairs;
-        VALUE_PAIR **reply_pairs;
-        int  *fallthru;
+dbm_match(DBM_FILE dbmfile, char *name, char *(*fn)(), RADIUS_REQ *req,
+          VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs, int  *fallthru)
 {
         int  found = 0;
         int  i, r;
@@ -373,11 +345,8 @@ dbm_match(dbmfile, name, fn, req, check_pairs, reply_pairs, fallthru)
  * Find matching profile in the DBM database
  */
 int
-user_find_db(name, req, check_pairs, reply_pairs)
-        char *name;
-        RADIUS_REQ *req;
-        VALUE_PAIR **check_pairs;
-        VALUE_PAIR **reply_pairs;
+user_find_db(char *name, RADIUS_REQ *req, 
+             VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs)
 {
         int             found = 0;
         char            *path;

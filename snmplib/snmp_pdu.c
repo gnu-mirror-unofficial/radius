@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2001, Sergey Poznyakoff.
+   Copyright (C) 2001,2003, Sergey Poznyakoff.
 
    This file is part of GNU Radius SNMP Library.
 
@@ -27,8 +27,7 @@
 #include <snmp.h>
 
 struct snmp_pdu *
-snmp_pdu_create(type)
-        int type;
+snmp_pdu_create(int type)
 {
         struct snmp_pdu *pdu;
 
@@ -43,8 +42,7 @@ snmp_pdu_create(type)
 }
 
 void
-snmp_pdu_free(pdu)
-        struct snmp_pdu *pdu;
+snmp_pdu_free(struct snmp_pdu *pdu)
 {
         if (!pdu)
                 return;
@@ -53,19 +51,14 @@ snmp_pdu_free(pdu)
 }
 
 void
-snmp_pdu_add_var(pdu, var)
-        struct snmp_pdu *pdu;
-        struct snmp_var *var;
+snmp_pdu_add_var(struct snmp_pdu *pdu, struct snmp_var *var)
 {
         var->next = pdu->var;
         pdu->var = var;
 }
 
 u_char *
-snmp_pdu_decode(data, length, pdu)
-        u_char *data;
-        int *length;
-        struct snmp_pdu *pdu;
+snmp_pdu_decode(u_char *data, int *length, struct snmp_pdu *pdu)
 {
         u_char *buf = data;
         u_char type;
@@ -101,10 +94,7 @@ snmp_pdu_decode(data, length, pdu)
                 
                 
 u_char *
-snmp_pdu_encode(data, length, pdu)
-        u_char *data;
-        int *length;
-        struct snmp_pdu *pdu;
+snmp_pdu_encode(u_char *data, int *length, struct snmp_pdu *pdu)
 {
         u_char *buf = data;
 

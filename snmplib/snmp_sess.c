@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2001, Sergey Poznyakoff.
+   Copyright (C) 2001,2003, Sergey Poznyakoff.
 
    This file is part of GNU Radius SNMP Library.
 
@@ -52,8 +52,7 @@ static pthread_once_t snmp_errno_once = PTHREAD_ONCE_INIT;
 static pthread_key_t snmp_errno_key;
 
 static void
-snmp_errno_destroy(ptr)
-        void *ptr;
+snmp_errno_destroy(void *ptr)
 {
         free(ptr);
 }
@@ -100,9 +99,7 @@ snmp_req_id()
 }
 
 int
-snmp_fdset(sp, fdset)
-        struct snmp_session *sp;
-        fd_set *fdset;
+snmp_fdset(struct snmp_session *sp, fd_set *fdset)
 {
         int fdmax;
 
@@ -118,11 +115,7 @@ snmp_fdset(sp, fdset)
 }
 
 void
-snmp_init(retries, timeout, memalloc, memfree)
-        int retries;
-        int timeout;
-        snmp_alloc_t memalloc;
-        snmp_free_t memfree;
+snmp_init(int retries, int timeout, snmp_alloc_t memalloc, snmp_free_t memfree)
 {
         if (retries)
                 snmp_def.retries = retries;
@@ -135,12 +128,8 @@ snmp_init(retries, timeout, memalloc, memfree)
 }
 
 struct snmp_session *
-snmp_session_create(community, host, port, cfn, closure)
-        char *community;
-        char *host;
-        int port;
-        snmp_cfn cfn;
-        void *closure;
+snmp_session_create(char *community, char *host, int port,
+		    snmp_cfn cfn, void *closure)
 {
         struct snmp_session *sp;
         int len;
@@ -186,12 +175,8 @@ snmp_session_create(community, host, port, cfn, closure)
 }
 
 int
-snmp_session_open(sp, local_ip, local_port, timeout, retries)
-        struct snmp_session *sp;
-        ip_addr_t local_ip;
-        int local_port;
-        int timeout;
-        int retries;
+snmp_session_open(struct snmp_session *sp, ip_addr_t local_ip,
+		  int local_port, int timeout, int retries)
 {
         ip_addr_t addr;
         u_short port;
@@ -257,8 +242,7 @@ snmp_session_open(sp, local_ip, local_port, timeout, retries)
 }
 
 void
-snmp_session_close(sess)
-        struct snmp_session *sess;
+snmp_session_close(struct snmp_session *sess)
 {
         if (sess->sd != -1) 
                 close(sess->sd);
@@ -266,8 +250,7 @@ snmp_session_close(sess)
 }
 
 void
-snmp_session_free(sess)
-        struct snmp_session *sess;
+snmp_session_free(struct snmp_session *sess)
 {
         if (!sess)
                 return;
@@ -280,8 +263,7 @@ snmp_session_free(sess)
 }
 
 void
-snmp_request_free(req)
-        struct snmp_request *req;
+snmp_request_free(struct snmp_request *req)
 {
         if (req) {
                 snmp_pdu_free(req->pdu);
@@ -290,8 +272,7 @@ snmp_request_free(req)
 }
 
 void
-snmp_request_free_list(req)
-        struct snmp_request *req;
+snmp_request_free_list(struct snmp_request *req)
 {
         struct snmp_request *next;
 

@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2001, Sergey Poznyakoff.
+   Copyright (C) 2001,2003, Sergey Poznyakoff.
 
    This file is part of GNU Radius SNMP Library.
 
@@ -38,9 +38,7 @@
 void snmp_read();
 
 int
-snmp_query(sess, pdu)
-        struct snmp_session *sess;
-        struct snmp_pdu *pdu;
+snmp_query(struct snmp_session *sess, struct snmp_pdu *pdu)
 {
         if (snmp_send(sess, pdu))
                 return -1;
@@ -49,8 +47,7 @@ snmp_query(sess, pdu)
 }
         
 void
-snmp_poll(sess)
-        struct snmp_session *sess;
+snmp_poll(struct snmp_session *sess)
 {
         int rc;
         int numfds;
@@ -74,8 +71,7 @@ snmp_poll(sess)
 }
 
 void
-snmp_timeout(sess)
-        struct snmp_session *sess;
+snmp_timeout(struct snmp_session *sess)
 {
         struct snmp_session *sp;
         struct snmp_request *req, *preq;
@@ -118,9 +114,7 @@ snmp_timeout(sess)
 }
 
 void
-snmp_read(sess, fdset)
-        struct snmp_session *sess;
-        fd_set *fdset;
+snmp_read(struct snmp_session *sess, fd_set *fdset)
 {
         struct snmp_session *sp;
         struct snmp_request *req, *prev;

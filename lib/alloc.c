@@ -1,4 +1,4 @@
-/* This file is part of GNU RADIUS.
+/* This file is part of GNU Radius.
    Copyright (C) 2000,2001, Sergey Poznyakoff
   
    This file is free software; as a special exception the author gives

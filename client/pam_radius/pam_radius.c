@@ -169,14 +169,8 @@ int priority[] = {
 
 
 void
-vlog(level, file, line, func_name, en, fmt, ap)
-        int level;
-        char *file;
-        int line;
-        char *func_name;
-        int en;
-        char *fmt;
-        va_list ap;
+vlog(int level, char *file, int line, char *func_name, int en,
+     char *fmt, va_list ap)
 {
         openlog("pam_radius", LOG_CONS|LOG_PID, LOG_AUTH);
         vsyslog(priority[level & L_PRIMASK], fmt, ap);

@@ -1,24 +1,19 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001 Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
-
-#ifndef lint
-static char rcsid[] = 
-"$Id$";
-#endif
 
 #define RADIUS_MODULE_MEM_C
 
@@ -83,8 +78,7 @@ static size_t mem_effective_size(size_t size);
         sizeof(Align_t)*((size + sizeof(Align_t) - 1) / sizeof(Align_t))
 
 size_t
-mem_effective_size(size)
-	size_t size;
+mem_effective_size(size_t size)
 {
 	if (size < ENTRY_SIZE)
                 size = ENTRY_SIZE;
@@ -125,8 +119,7 @@ alloc_class_mem()
 #define free_class mem_free
 
 Bucketclass
-alloc_class(size)
-        size_t size;
+alloc_class(size_t size)
 {
         Bucketclass bcp;
         count_t count;
@@ -160,8 +153,7 @@ alloc_class(size)
 
 
 Bucket
-alloc_bucket(class)
-        Bucketclass class;
+alloc_bucket(Bucketclass class)
 {
         Bucket bp;
         union {
@@ -210,8 +202,7 @@ alloc_bucket(class)
  */
 
 void *
-mem_alloc_nl(size)
-        size_t size;
+mem_alloc_nl(size_t size)
 {
         Bucketclass class_ptr;
         Entry ptr;
@@ -245,8 +236,7 @@ mem_alloc_nl(size)
 }
 
 void *
-mem_alloc(size)
-        size_t size;
+mem_alloc(size_t size)
 {
 	void *p;
 	mem_lock();
@@ -256,9 +246,7 @@ mem_alloc(size)
 }
 
 void
-put_back(class, ptr)
-        Bucketclass class;
-        void *ptr;
+put_back(Bucketclass class, void *ptr)
 {
         Entry eptr = (Entry)ptr;
 
@@ -273,8 +261,7 @@ put_back(class, ptr)
 }
 
 void
-mem_free(ptr)
-        void *ptr;
+mem_free(void *ptr)
 {
         Bucketclass class;
         Bucket bucket;
@@ -302,9 +289,7 @@ mem_free(ptr)
 /* Allocate COUNT contiguous objects of size SIZE
  */
 void *
-mem_calloc(count, size)
-        count_t count;
-        size_t size;
+mem_calloc(count_t count, size_t size)
 {
         Bucketclass class_ptr;
         Entry       first, last;
@@ -404,9 +389,7 @@ again:
  * allocated using mem_calloc().
  */
 void
-mem_cfree(ptr, count)
-        void *ptr;
-        count_t count;
+mem_cfree(void *ptr, count_t count)
 {
         Bucketclass class;
         Bucket bucket;
@@ -425,10 +408,7 @@ mem_cfree(ptr, count)
 }
 
 void
-put_back_cont(class, ptr, count)
-        Bucketclass class;
-        void *ptr;
-        count_t count;
+put_back_cont(Bucketclass class, void *ptr, count_t count)
 {
         int   i;
         Entry sptr = (Entry)ptr;
@@ -492,8 +472,7 @@ LOCK_DECLARE(string_lock)
 /* string_alloc(): Allocate a string of given length
  */
 char *
-string_alloc(length)
-        size_t length;
+string_alloc(size_t length)
 {
         count_t count;
         STRHDR  *p;
@@ -513,8 +492,7 @@ string_alloc(length)
  * STRVAL and store the latter into it.
  */
 char *
-string_create(strval)
-        char *strval;
+string_create(char *strval)
 {
 	char *p;
 	if (!strval)
@@ -526,8 +504,7 @@ string_create(strval)
 /* string_dup(): create a copy of existing string object
  */
 char *
-string_dup(str)
-        char *str;
+string_dup(char *str)
 {
         STRHDR *hp;
 
@@ -547,9 +524,7 @@ string_dup(str)
  * with the new string value.
  */
 char *
-string_replace(str, string_value)
-        char **str;
-        char *string_value;
+string_replace(char **str, char *string_value)
 {
         int length = strlen(string_value);
         STRHDR *hp;
@@ -574,8 +549,7 @@ string_replace(str, string_value)
  * and deallocate the object when the counter becomes zero
  */
 void
-string_free(str)
-        char *str;
+string_free(char *str)
 {
         STRHDR *hp;
 
@@ -594,8 +568,7 @@ string_free(str)
  */
 
 void
-mem_get_stat(stat)
-        MEM_STAT *stat;
+mem_get_stat(MEM_STAT *stat)
 {
         Bucketclass class;
         
@@ -619,9 +592,7 @@ mem_get_stat(stat)
 }
 
 int
-mem_stat_enumerate(fun, closure)
-        int (*fun)();
-        void *closure;
+mem_stat_enumerate(int (*fun)(), void *closure)
 {
         CLASS_STAT stat;
         Bucketclass class;
@@ -641,8 +612,7 @@ mem_stat_enumerate(fun, closure)
 
 #ifdef MAINTAINER_MODE
 int
-check_cont(class)
-        Bucketclass class;
+check_cont(Bucketclass class)
 {
         Entry ep, prev;
         

@@ -1,24 +1,19 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, Sergey Poznyakoff
- 
-   This program is free software; you can redistribute it and/or modify
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
+  
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
- 
-   This program is distributed in the hope that it will be useful,
+  
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
- 
+  
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
-
-#ifndef lint
-static char rcsid[] = 
-"$Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -52,8 +47,7 @@ avp_alloc()
 }
 
 void
-avp_free(p)     
-        VALUE_PAIR *p;
+avp_free(VALUE_PAIR *p)
 {
         if (!p)
                 return;
@@ -66,8 +60,7 @@ avp_free(p)
 
 /* Create a copy of a pair */
 VALUE_PAIR *
-avp_dup(vp)
-        VALUE_PAIR *vp;
+avp_dup(VALUE_PAIR *vp)
 {
         VALUE_PAIR *ret = avp_alloc();
 
@@ -80,11 +73,7 @@ avp_dup(vp)
 
 /* Create a pair with given attribute, length and value; */
 VALUE_PAIR *
-avp_create(attr, length, strval, lval)
-        int attr;
-        int length;
-        char *strval;
-        int lval;
+avp_create(int attr, int length, char *strval, int lval)
 {
         VALUE_PAIR *pair;
         DICT_ATTR  *dict;
@@ -111,9 +100,7 @@ avp_create(attr, length, strval, lval)
 
 /* Add a pair to the end of a VALUE_PAIR list. */
 VALUE_PAIR *
-avp_move(first, new)
-        VALUE_PAIR **first; 
-        VALUE_PAIR *new;
+avp_move(VALUE_PAIR **first, VALUE_PAIR *new)
 {
         VALUE_PAIR *pair, *prev = NULL;
 
@@ -162,8 +149,7 @@ avp_move(first, new)
 }
 
 int
-avp_cmp(a, b)
-	VALUE_PAIR *a, *b;
+avp_cmp(VALUE_PAIR *a, VALUE_PAIR *b)
 {
 	int rc = 1;
 	
@@ -192,8 +178,7 @@ avp_cmp(a, b)
 /* Release the memory used by a list of attribute-value pairs.
  */
 void 
-avl_free(pair)
-        VALUE_PAIR *pair;
+avl_free(VALUE_PAIR *pair)
 {
         VALUE_PAIR *next;
 
@@ -208,9 +193,7 @@ avl_free(pair)
 /* Find the pair with the matching attribute
  */
 VALUE_PAIR * 
-avl_find(first, attr)
-        VALUE_PAIR *first; 
-        int attr;
+avl_find(VALUE_PAIR *first, int attr)
 {
         while (first && first->attribute != attr)
                 first = first->next;
@@ -219,10 +202,7 @@ avl_find(first, attr)
 
 /* Find nth occurrence of a pair with the matching attribute. */
 VALUE_PAIR * 
-avl_find_n(first, attr, n)
-	VALUE_PAIR *first; 
-	int attr;
-	int n;
+avl_find_n(VALUE_PAIR *first, int attr,	int n)
 {
 	for ( ; first; first = first->next) {
 		if (first->attribute == attr && n-- == 0)
@@ -234,9 +214,7 @@ avl_find_n(first, attr, n)
 /* Delete the pairs with the matching attribute
  */
 void 
-avl_delete(first, attr)
-        VALUE_PAIR **first; 
-        int attr;
+avl_delete(VALUE_PAIR **first, int attr)
 {
         VALUE_PAIR *pair, *next, *last = NULL;
 
@@ -255,10 +233,7 @@ avl_delete(first, attr)
 
 /* Delete Nth pair with the matching attribute */
 void 
-avl_delete_n(first, attr, n)
-	VALUE_PAIR **first; 
-	int attr;
-	int n;
+avl_delete_n(VALUE_PAIR **first, int attr, int n)
 {
 	VALUE_PAIR *pair, *next, *last = NULL;
 
@@ -279,11 +254,8 @@ avl_delete_n(first, attr, n)
 
 /* Move all attributes of a given type from one list to another */
 void
-avl_move_pairs(to, from, fun, closure)
-        VALUE_PAIR **to;
-        VALUE_PAIR **from;
-        int (*fun)();
-        void *closure;
+avl_move_pairs(VALUE_PAIR **to, VALUE_PAIR **from, int (*fun)(),
+	       void *closure)
 {
         VALUE_PAIR *to_tail, *i, *next;
         VALUE_PAIR *iprev = NULL;
@@ -326,20 +298,15 @@ avl_move_pairs(to, from, fun, closure)
         }
 }
 
-int
-cmp_attr(valp, pair)
-        int *valp;
-        VALUE_PAIR *pair;
+static int
+cmp_attr(int *valp, VALUE_PAIR *pair)
 {
         return *valp == pair->attribute;
 }
 
 /* Move all attributes of a given type from one list to another */
 void
-avl_move_attr(to, from, attr)
-        VALUE_PAIR **to;
-        VALUE_PAIR **from;
-        int attr;
+avl_move_attr(VALUE_PAIR **to, VALUE_PAIR **from, int attr)
 {
         avl_move_pairs(to, from, cmp_attr, &attr);
 }
@@ -347,9 +314,7 @@ avl_move_attr(to, from, attr)
 /* Move attributes from one list to the other honoring their additivity 
  */
 void
-avl_merge(dst_ptr, src_ptr)
-        VALUE_PAIR **dst_ptr;
-        VALUE_PAIR **src_ptr;
+avl_merge(VALUE_PAIR **dst_ptr, VALUE_PAIR **src_ptr)
 {
         VALUE_PAIR *src, *next, *src_head, *src_tail;
 
@@ -378,9 +343,7 @@ avl_merge(dst_ptr, src_ptr)
 
 /* Append the list `new' to the end of the list `*first' */
 void
-avl_add_list(first, new)
-        VALUE_PAIR **first;
-        VALUE_PAIR *new;
+avl_add_list(VALUE_PAIR **first, VALUE_PAIR *new)
 {
         VALUE_PAIR *pair;
         
@@ -395,9 +358,7 @@ avl_add_list(first, new)
 
 /* Add a single pair to the list */
 void
-avl_add_pair(first, new)
-        VALUE_PAIR **first;
-        VALUE_PAIR *new;
+avl_add_pair(VALUE_PAIR **first, VALUE_PAIR *new)
 {
         if (!new)
                 return;
@@ -408,8 +369,7 @@ avl_add_pair(first, new)
 
 /* Create a copy of a pair list. */
 VALUE_PAIR *
-avl_dup(from)
-        VALUE_PAIR *from;
+avl_dup(VALUE_PAIR *from)
 {
         VALUE_PAIR *first = NULL;
         VALUE_PAIR *last = NULL;
@@ -433,9 +393,7 @@ avl_dup(from)
 
 /* write a pairlist to the file */
 void
-avl_fprint(fp, avl)
-        FILE *fp;
-        VALUE_PAIR *avl;
+avl_fprint(FILE *fp, VALUE_PAIR *avl)
 {
         char *save;
         for (;avl; avl = avl->next) {
@@ -445,9 +403,7 @@ avl_fprint(fp, avl)
 }
 
 int
-avl_cmp(a, b, prop)
-	VALUE_PAIR *a, *b;
-	int prop;
+avl_cmp(VALUE_PAIR *a, VALUE_PAIR *b, int prop)
 {
 	int cmp_count = 0;
 	

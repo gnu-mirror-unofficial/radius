@@ -1,18 +1,18 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #ifdef HAVE_CONFIG_H
@@ -24,12 +24,11 @@
 LOCK_DECLARE(lock)
 
 static int
-store_hostent(h_in, h_out, buf, buflen, h_errnop)
-        struct hostent *h_in;
-        struct hostent *h_out;
-        char *buf;
-        int buflen;
-        int *h_errnop;
+store_hostent(struct hostent *h_in,
+	      struct hostent *h_out,
+	      char *buf,
+	      int buflen,
+	      int *h_errnop)
 {
         int len, i;
         char *base;
@@ -95,12 +94,11 @@ store_hostent(h_in, h_out, buf, buflen, h_errnop)
 }
         
 struct hostent *
-rad_gethostbyname_r(name, result, buffer, buflen, h_errnop)
-        const char *name;
-        struct hostent *result;
-        char *buffer;
-        int buflen;
-        int *h_errnop;
+rad_gethostbyname_r(const char *name,
+		    struct hostent *result,
+		    char *buffer,
+		    int buflen,
+		    int *h_errnop)
 {
         struct hostent *host;
 
@@ -113,14 +111,13 @@ rad_gethostbyname_r(name, result, buffer, buflen, h_errnop)
 }
 
 struct hostent *
-rad_gethostbyaddr_r(addr, length, type, result, buffer, buflen, h_errnop)
-        const char *addr;
-        int length;
-        int type;
-        struct hostent *result;
-        char *buffer;
-        int buflen;
-        int *h_errnop;
+rad_gethostbyaddr_r(const char *addr,
+		    int length,
+		    int type,
+		    struct hostent *result,
+		    char *buffer,
+		    int buflen,
+		    int *h_errnop)
 {
         struct hostent *host;
 

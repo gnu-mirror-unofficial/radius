@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2001, Sergey Poznyakoff.
+   Copyright (C) 2001,2003, Sergey Poznyakoff.
 
    This file is part of GNU Radius SNMP Library.
 
@@ -28,8 +28,7 @@
 #include <snmp.h>
 
 oid_t
-oid_dup(oid)
-        oid_t oid;
+oid_dup(oid_t oid)
 {
         oid_t new_oid;
 
@@ -41,8 +40,7 @@ oid_dup(oid)
 }
 
 oid_t
-oid_create(len)
-        int len;
+oid_create(int len)
 {
         oid_t oid;
 
@@ -52,8 +50,7 @@ oid_create(len)
 }
 
 oid_t 
-oid_create_from_string(str)
-        char *str;
+oid_create_from_string(char *str)
 {
         char *tok;
         int len;
@@ -89,9 +86,7 @@ oid_create_from_string(str)
 }
 
 oid_t
-oid_create_from_subid(len, subid)
-        int len;
-        subid_t *subid;
+oid_create_from_subid(int len, subid_t *subid)
 {
         oid_t oid;
 
@@ -106,8 +101,7 @@ oid_create_from_subid(len, subid)
 }
 
 int
-oid_cmp(a, b)
-        oid_t a, b;
+oid_cmp(oid_t a, oid_t b)
 {
         int i;
         
@@ -120,9 +114,7 @@ oid_cmp(a, b)
 }
 
 char *
-sprint_oid(buf, buflen, oid)
-        char *buf;
-        oid_t oid;
+sprint_oid(char *buf, int buflen, oid_t oid)
 {
         int i, d;
         char *p, *start;

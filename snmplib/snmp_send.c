@@ -1,5 +1,5 @@
 /*
-   Copyright (C) 2001, Sergey Poznyakoff.
+   Copyright (C) 2001,2003, Sergey Poznyakoff.
 
    This file is part of GNU Radius SNMP Library.
 
@@ -27,9 +27,7 @@
 #include <snmp.h>
 
 int
-snmp_send(sess, pdu)
-        struct snmp_session *sess;
-        struct snmp_pdu *pdu;
+snmp_send(struct snmp_session *sess, struct snmp_pdu *pdu)
 {
         struct snmp_request *req;
             
@@ -66,9 +64,7 @@ snmp_send(sess, pdu)
 }
 
 int
-snmp_request_xmit(sess, req)
-        struct snmp_session *sess;
-        struct snmp_request *req;
+snmp_request_xmit(struct snmp_session *sess, struct snmp_request *req)
 {
         u_char packet_buf[SNMP_PACKET_LENGTH];
         int length;
@@ -102,14 +98,9 @@ snmp_request_xmit(sess, req)
        data
      } */
 
-
-
 int
-snmp_encode_request(sess, pdu, packet_buf, length)
-        struct snmp_session *sess;
-        struct snmp_pdu *pdu;
-        u_char *packet_buf;
-        int  *length;
+snmp_encode_request(struct snmp_session *sess, struct snmp_pdu *pdu,
+		    u_char *packet_buf, int *length)
 {
         u_char *buf, *msg_start, *pdu_header_ptr, *pdu_data_start,
                *var_header_ptr, *var_data_start;
@@ -165,13 +156,8 @@ snmp_encode_request(sess, pdu, packet_buf, length)
 }
 
 int
-snmp_decode_request(sess, pdu, packet, length, comm, comm_len)
-        struct snmp_session *sess;
-        struct snmp_pdu *pdu;
-        u_char *packet;
-        int length;
-        char *comm;
-        int *comm_len;
+snmp_decode_request(struct snmp_session *sess, struct snmp_pdu *pdu,
+		    u_char *packet, int length, char *comm, int *comm_len)
 {
         int vers;
         u_char *buf;

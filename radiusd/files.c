@@ -94,9 +94,7 @@ int user_find_db(char *name, RADIUS_REQ *req,
 static MATCHING_RULE *file_read(int cf_file, char *name);
 
 int
-comp_op(op, result)
-        int op;
-        int result;
+comp_op(int op, int result)
 {
         switch (op) {
         default:
@@ -141,12 +139,8 @@ comp_op(op, result)
  * parser
  */
 int
-add_user_entry(symtab, filename, line, name, check, reply)
-        Symtab *symtab;
-        char *filename;
-        int line;
-        char *name;
-        VALUE_PAIR *check, *reply;
+add_user_entry(Symtab *symtab, char *filename, int line,
+	       char *name, VALUE_PAIR *check, VALUE_PAIR *reply)
 {
         User_symbol *sym;
 
@@ -179,8 +173,7 @@ add_user_entry(symtab, filename, line, name, check, reply)
 }
 
 static int
-free_user_entry(sym)
-        User_symbol *sym;
+free_user_entry(User_symbol *sym)
 {
         avl_free(sym->check);
         avl_free(sym->reply);
@@ -194,12 +187,8 @@ struct temp_list {
 };
 
 int
-add_pairlist(closure, filename, line, name, lhs, rhs)
-        struct temp_list *closure;
-        char *filename;
-        int line;
-        char *name;
-        VALUE_PAIR *lhs, *rhs;
+add_pairlist(struct temp_list *closure, char *filename, int line,
+	     char *name, VALUE_PAIR *lhs, VALUE_PAIR *rhs)
 {
         MATCHING_RULE *pl;
         
@@ -229,8 +218,7 @@ add_pairlist(closure, filename, line, name, lhs, rhs)
 }
 
 int
-read_users(name)
-        char *name;
+read_users(char *name)
 {
         if (!user_tab)
                 user_tab = symtab_create(sizeof(User_symbol), free_user_entry);
@@ -238,9 +226,7 @@ read_users(name)
 }
 
 MATCHING_RULE *
-file_read(cf_file, name)
-        int cf_file;
-        char *name;
+file_read(int cf_file, char *name)
 {
         struct temp_list tmp;
 
@@ -270,9 +256,7 @@ static User_symbol * user_next(USER_LOOKUP *lptr);
  * Hash lookup
  */
 User_symbol *
-user_lookup(name, lptr)
-        char *name;
-        USER_LOOKUP *lptr;
+user_lookup(char *name, USER_LOOKUP *lptr)
 {
         lptr->name = name;
         lptr->state = LU_begin;
@@ -281,8 +265,7 @@ user_lookup(name, lptr)
 }
 
 User_symbol *
-user_next(lptr)
-        USER_LOOKUP *lptr;
+user_next(USER_LOOKUP *lptr)
 {
         if (lptr->sym && (lptr->sym = sym_next((Symbol*)lptr->sym)))
                 return lptr->sym;
@@ -314,11 +297,8 @@ static int match_user(User_symbol *sym, RADIUS_REQ *req,
  * Find matching profile in the hash table
  */
 int
-user_find_sym(name, req, check_pairs, reply_pairs)
-        char       *name;
-        RADIUS_REQ *req;
-        VALUE_PAIR **check_pairs;
-        VALUE_PAIR **reply_pairs;
+user_find_sym(char *name, RADIUS_REQ *req,
+	      VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs)
 {
         int found = 0;
         User_symbol *sym;
@@ -339,11 +319,8 @@ user_find_sym(name, req, check_pairs, reply_pairs)
 }
 
 int
-match_user(sym, req, check_pairs, reply_pairs)
-        User_symbol *sym;
-        RADIUS_REQ *req;
-        VALUE_PAIR **check_pairs;
-        VALUE_PAIR **reply_pairs;
+match_user(User_symbol *sym, RADIUS_REQ *req,
+	   VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs)
 {
         VALUE_PAIR *p;
         VALUE_PAIR *check_tmp;
@@ -412,13 +389,10 @@ match_user(sym, req, check_pairs, reply_pairs)
  * is done by the caller. user_find() only compares attributes.
  */
 int
-user_find(name, req, check_pairs, reply_pairs)
-        char       *name;
-        RADIUS_REQ *req;
-        VALUE_PAIR **check_pairs;
-        VALUE_PAIR **reply_pairs;
+user_find(char *name, RADIUS_REQ *req,
+	  VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs)
 {
-        int             found = 0;
+        int found = 0;
 
         /* 
          *      Check for valid input, zero length names not permitted 
@@ -470,13 +444,9 @@ user_find(name, req, check_pairs, reply_pairs)
 /*
  * Obtain next token from the input string
  */
-static int nextkn(char **sptr, char *token, int toksize);
 
-int
-nextkn(sptr, token, toksize)
-        char **sptr;
-        char *token;
-        int toksize;
+static int
+nextkn(char **sptr, char *token, int toksize)
 {
         char *start;
         
@@ -539,10 +509,7 @@ nextkn(sptr, token, toksize)
  * in errmsg.
  */
 int
-userparse(buffer, first_pair, errmsg)
-        char *buffer;
-        VALUE_PAIR **first_pair;
-        char **errmsg;
+userparse(char *buffer, VALUE_PAIR **first_pair, char **errmsg)
 {
         int             state;
         int             x;
@@ -621,8 +588,7 @@ userparse(buffer, first_pair, errmsg)
  *      based on the pattern of the username.
  */
 int
-hints_setup(req)
-        RADIUS_REQ *req;
+hints_setup(RADIUS_REQ *req)
 {
         VALUE_PAIR      *request_pairs = req->request;
         char            newname[AUTH_STRING_LEN];
@@ -753,9 +719,7 @@ hints_setup(req)
  * See if the huntgroup matches.
  */
 int
-huntgroup_match(req, huntgroup)
-        RADIUS_REQ *req;
-        char       *huntgroup;
+huntgroup_match(RADIUS_REQ *req, char *huntgroup)
 {
         MATCHING_RULE *pl;
         
@@ -780,8 +744,7 @@ huntgroup_match(req, huntgroup)
  *         -1 on error.
  */
 int
-huntgroup_access(radreq)
-        RADIUS_REQ *radreq;
+huntgroup_access(RADIUS_REQ *radreq)
 {
         VALUE_PAIR      *pair;
         MATCHING_RULE   *pl;
@@ -818,8 +781,7 @@ huntgroup_access(radreq)
 }
 
 int
-read_naslist_file(file)
-        char *file;
+read_naslist_file(char *file)
 {
         int rc;
 #ifdef USE_SNMP 
@@ -982,8 +944,7 @@ read_nastypes_file(char *file)
 }
 
 RADCK_TYPE *
-find_radck_type(name)
-        char *name;
+find_radck_type(char *name)
 {
         RADCK_TYPE *tp;
         
@@ -1003,20 +964,14 @@ find_radck_type(name)
  * parser
  */
 void
-add_deny(user)
-         char *user;
+add_deny(char *user)
 {
         sym_install(deny_tab, user);
 }
 
 /*ARGSUSED*/
 int
-read_denylist_entry(denycnt, fc, fv, file, lineno)
-        int *denycnt;
-        int fc;
-        char **fv;
-        char *file;
-        int lineno;
+read_denylist_entry(int *denycnt, int fc, char **fv, char *file, int lineno)
 {
         if (fc != 1) {
                 radlog(L_ERR,
@@ -1061,8 +1016,7 @@ read_deny_file()
  * Return 1 if the given user should be denied access
  */
 int
-get_deny(user)
-        char *user;
+get_deny(char *user)
 {
         return sym_lookup(deny_tab, user) != NULL;
 }
@@ -1076,8 +1030,7 @@ get_deny(user)
  *      See if a VALUE_PAIR list contains Fall-Through = Yes
  */
 int
-fallthrough(vp)
-        VALUE_PAIR *vp;
+fallthrough(VALUE_PAIR *vp)
 {
         VALUE_PAIR *tmp;
 
@@ -1088,9 +1041,7 @@ fallthrough(vp)
  *      Compare a portno with a range.
  */
 int
-portcmp(check, request)
-        VALUE_PAIR *check;
-        VALUE_PAIR *request;
+portcmp(VALUE_PAIR *check, VALUE_PAIR *request)
 {
         char buf[AUTH_STRING_LEN];
         char *s, *p, *save;
@@ -1117,9 +1068,7 @@ portcmp(check, request)
 
 
 int
-uidcmp(check, username)
-        VALUE_PAIR *check;
-        char *username;
+uidcmp(VALUE_PAIR *check, char *username)
 {
         struct passwd pw, *pwd;
 	char buffer[512];
@@ -1135,10 +1084,7 @@ uidcmp(check, username)
  *      We also handle additional groups.
  */
 int
-groupcmp(req, groupname, username)
-        RADIUS_REQ *req;
-        char *groupname;
-        char *username;
+groupcmp(RADIUS_REQ *req, char *groupname, char *username)
 {
         struct passwd pw, *pwd;
         struct group gr, *grp;
@@ -1172,10 +1118,7 @@ groupcmp(req, groupname, username)
  *      Compare prefix/suffix.
  */
 int
-presufcmp(check, name, rest)
-        VALUE_PAIR *check;
-        char *name;
-        char *rest;
+presufcmp(VALUE_PAIR *check, char *name, char *rest)
 {
         int len, namelen;
         int ret = -1;
@@ -1237,8 +1180,7 @@ static int server_check_items[] = {
 };
 
 int
-server_attr(attr)
-        int attr;
+server_attr(int attr)
 {
         int i;
 
@@ -1253,9 +1195,7 @@ server_attr(attr)
  * Return 0 on match.
  */
 int
-paircmp(request, check)
-        RADIUS_REQ *request;
-        VALUE_PAIR *check;
+paircmp(RADIUS_REQ *request, VALUE_PAIR *check)
 {
         VALUE_PAIR *check_item = check;
         VALUE_PAIR *auth_item;
@@ -1389,8 +1329,7 @@ paircmp(request, check)
  * Free a MATCHING_RULE
  */
 void
-matchrule_free(pl)
-        MATCHING_RULE **pl;
+matchrule_free(MATCHING_RULE **pl)
 {
         MATCHING_RULE *p, *next;
 
@@ -1408,11 +1347,7 @@ matchrule_free(pl)
 }
 
 int
-hints_pairmatch(pl, req, name, ret_name)
-        MATCHING_RULE *pl;
-        RADIUS_REQ *req;
-        char *name;
-        char *ret_name;
+hints_pairmatch(MATCHING_RULE *pl, RADIUS_REQ *req, char *name, char *ret_name)
 {
         VALUE_PAIR *pair;
         char username[AUTH_STRING_LEN];
@@ -1448,8 +1383,7 @@ hints_pairmatch(pl, req, name, ret_name)
  * a *very* restricted version  of wildmat
  */
 char *
-wild_start(str)
-        char *str;
+wild_start(char *str)
 {
         char *p;
 
@@ -1472,9 +1406,7 @@ wild_start(str)
 }
 
 int
-match_any_chars(expr, name)
-        char **expr;
-        char **name;
+match_any_chars(char **expr, char **name)
 {
         char *exprp, *expr_start, *p, *namep;
         int length;
@@ -1511,10 +1443,7 @@ match_any_chars(expr, name)
 }
 
 int
-wild_match(expr, name, return_name)
-        char *expr;
-        char *name;
-        char *return_name;
+wild_match(char *expr, char *name, char *return_name)
 {
         char *curp;
         char *start_pos, *end_pos;
@@ -1576,11 +1505,7 @@ wild_match(expr, name, return_name)
  * Match a username with a wildcard expression.
  */
 int
-matches(req, name, pl, matchpart)
-        RADIUS_REQ *req;
-        char *name;
-        MATCHING_RULE *pl;
-        char *matchpart;
+matches(RADIUS_REQ *req, char *name, MATCHING_RULE *pl, char *matchpart)
 {
         if (strncmp(pl->name, "DEFAULT", 7) == 0 ||
             wild_match(pl->name, name, matchpart) == 0)
@@ -1596,12 +1521,8 @@ matches(req, name, pl, matchpart)
 /*
  *      See if a potential DBM file is present.
  */
-static int checkdbm(char *users, char *ext);
-
-int
-checkdbm(users, ext)
-        char *users;
-        char *ext;
+static int
+checkdbm(char *users, char *ext)
 {
         char *buffer;
         struct stat st;
@@ -1618,8 +1539,7 @@ checkdbm(users, ext)
 static int reload_data(enum reload_what what, int *do_radck);
 
 static int
-realm_set_secret(srv)
-	RADIUS_SERVER *srv;
+realm_set_secret(RADIUS_SERVER *srv)
 {
 	CLIENT *client;
 
@@ -1630,9 +1550,7 @@ realm_set_secret(srv)
 }
 
 int
-reload_data(what, do_radck)
-        enum reload_what what;
-        int *do_radck;
+reload_data(enum reload_what what, int *do_radck)
 {
         char *path;
         int   rc = 0;
@@ -1770,8 +1688,7 @@ reload_data(what, do_radck)
 }
 
 int
-reload_config_file(what)
-        enum reload_what what;
+reload_config_file(enum reload_what what)
 {
         int do_radck;
         int rc;
@@ -1785,12 +1702,8 @@ reload_config_file(what)
 /* ****************************************************************************
  * Debugging functions
  */
-static void dump_pair_list(FILE *fp, char *header, MATCHING_RULE *pl);
-
-void
-dump_pairs(fp, pair)
-        FILE       *fp;
-        VALUE_PAIR *pair;
+static void
+dump_pairs(FILE *fp, VALUE_PAIR *pair)
 {
         int etype;
         
@@ -1848,10 +1761,7 @@ dump_pairs(fp, pair)
 }
 
 void
-dump_pair_list(fp, header, pl)
-        FILE      *fp;
-        char      *header;
-        MATCHING_RULE *pl;
+dump_pair_list(FILE *fp, char *header, MATCHING_RULE *pl)
 {
         fprintf(fp, "%s {\n", header);
         for ( ; pl; pl = pl->next) {
@@ -1868,9 +1778,7 @@ dump_pair_list(fp, header, pl)
 }
 
 int
-dump_user(fp, sym)
-        FILE *fp;
-        User_symbol *sym;
+dump_user(FILE *fp, User_symbol *sym)
 {
         fprintf(fp, "\t%s:\n", sym->name);
         fprintf(fp, "\tlhs {\n");
@@ -1921,8 +1829,7 @@ dump_users_db()
  * Not 100% safe, since we don't compare attributes.
  */
 void
-presuf_setup(request_pairs)
-        VALUE_PAIR *request_pairs;
+presuf_setup(VALUE_PAIR *request_pairs)
 {
         User_symbol *sym;
         USER_LOOKUP lu;
@@ -1955,11 +1862,8 @@ presuf_setup(request_pairs)
 }
 
 void
-strip_username(do_strip, name, check_item, stripped_name)
-        int         do_strip;
-        char        *name;
-        VALUE_PAIR  *check_item;
-        char        *stripped_name;
+strip_username(int do_strip, char *name, VALUE_PAIR *check_item,
+	       char *stripped_name)
 {
         char tmpname[AUTH_STRING_LEN];
         char *source_ptr = name;

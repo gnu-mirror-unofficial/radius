@@ -1,24 +1,20 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, 2001, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003, Sergey Poznyakoff
  
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
  
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
  
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-#ifndef lint
-static char rcsid[] = 
-        "@(#) $Id$";
-#endif
 #if defined(HAVE_CONFIG_H)        
 # include <config.h>
 #endif
@@ -89,40 +85,45 @@ static struct argp_option options[] = {
 };
 
 static error_t
-parse_opt (key, arg, state)
-        int key;
-        char *arg;
-        struct argp_state *state;
+parse_opt(int key, char *arg, struct argp_state *state)
 {
         switch (key) {
         case 'a':
                 assign(optarg);
                 break;
+		
         case 'q':
                 quick++;
                 break;
+		
         case 'r':
                 retry = strtol(optarg, NULL, 0);
                 break;
+		
         case 's':
                 server = optarg;
                 break;
+		
         case 'f':
                 filename = optarg;
                 *(int *)state->input = state->next;
                 state->next = state->argc;
                 break;
+		
         case 't':
                 timeout = strtol(optarg, NULL, 0);
                 break;
+		
         case 'x':
                 set_debug_levels(optarg);
                 break;
+		
         case 'v':
                 verbose++;
 		set_module_debug_level("radpdu", 100);
 		set_module_debug_level("client", 100);
                 break;
+		
         default:
                 return ARGP_ERR_UNKNOWN;
         }
@@ -139,9 +140,7 @@ static struct argp argp = {
 };
 
 int
-main(argc, argv)
-        int argc;
-        char **argv;
+main(int argc, char **argv)
 {
         char *p;
         int index;
@@ -283,8 +282,7 @@ init_symbols()
 }
 
 void
-assign(s)
-        char *s;
+assign(char *s)
 {
         char *p;
         Variable *var;
@@ -307,9 +305,7 @@ assign(s)
 }
 
 int
-parse_datum(p, dp)
-        char *p;
-        union datum *dp;
+parse_datum(char *p, union datum *dp)
 {
         int type = Undefined;
         int length;
@@ -356,8 +352,7 @@ parse_datum(p, dp)
 }
 
 char *
-print_ident(var)
-        Variable *var;
+print_ident(Variable *var)
 {
         char buf[64];
         switch (var->type) {
@@ -380,9 +375,7 @@ print_ident(var)
 }
 
 void
-print_pairs(fp, pair)
-        FILE *fp;
-        VALUE_PAIR *pair;
+print_pairs(FILE *fp, VALUE_PAIR *pair)
 {
         for (; pair; pair = pair->next) {
                 fprintf(fp, " %s = ", pair->name);
@@ -415,8 +408,7 @@ print_pairs(fp, pair)
 }
 
 void
-var_print(var)
-        Variable *var;
+var_print(Variable *var)
 {
         char buf[DOTTED_QUAD_LEN];
         if (!var)
@@ -446,8 +438,7 @@ var_print(var)
 }
 
 void
-var_free(var)
-        Variable *var;
+var_free(Variable *var)
 {
         if (var->name)
                 return; /* named variables are not freed */
@@ -462,10 +453,7 @@ var_free(var)
 }
 
 void
-radtest_send(port, code, var)
-        int port;
-        int code;
-        Variable *var;
+radtest_send(int port, int code, Variable *var)
 {
         RADIUS_REQ *auth;
         
@@ -500,9 +488,7 @@ radtest_send(port, code, var)
 
 /* FIXME: duplicated in radiusd/files.c */
 int
-comp_op(op, result)
-        int op;
-        int result;
+comp_op(int op, int result)
 {
         switch (op) {
         default:
@@ -540,8 +526,7 @@ comp_op(op, result)
 }
 
 int
-compare_lists(reply, sample)
-        VALUE_PAIR *reply, *sample;
+compare_lists(VALUE_PAIR *reply, VALUE_PAIR *sample)
 {
         int result = 0;
         

@@ -1,18 +1,18 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2001 Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2001,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #define RADIUS_MODULE_PAM_C
@@ -22,10 +22,6 @@
 #endif
 
 #ifdef USE_PAM
-
-#ifndef lint
-static char rcsid[] = "@(#) $Id$";
-#endif
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -53,15 +49,9 @@ struct pam_conv_data {
 
 #define XSTRDUP(s) (s) ? strdup(s) : NULL
 
-static int rad_pam_conv(int num_msg, const struct pam_message **msg,
-                        struct pam_response **resp, void *closure);
-
-int
-rad_pam_conv(num_msg, msg, resp, closure)
-        int num_msg;
-        const struct pam_message **msg;
-        struct pam_response **resp;
-        void *closure;
+static int
+rad_pam_conv(int num_msg, const struct pam_message **msg,
+             struct pam_response **resp, void *closure)
 {
         int count = 0, replies = 0;
         struct pam_response *reply = NULL;
@@ -106,11 +96,7 @@ rad_pam_conv(num_msg, msg, resp, closure)
 }
 
 int
-pam_pass(name, passwd, pamauth, reply_msg)
-        char *name;
-        char *passwd;
-        const char *pamauth;
-        char **reply_msg;
+pam_pass(char *name, char *passwd, const char *pamauth, char **reply_msg)
 {
         pam_handle_t *pamh = NULL;
         int rc;

@@ -1,5 +1,5 @@
 /* 
-   Copyright (C) 2001, Sergey Poznyakoff.
+   Copyright (C) 2001,2003 Sergey Poznyakoff.
 
    This file is part of GNU Radius SNMP Library.
 
@@ -34,9 +34,7 @@
    Return: pointer to the first byte of the object.  
    Error:  Returns NULL, does not change args */  
 u_char *
-asn_decode_length(data, length)
-        u_char *data;
-        u_int  *length;
+asn_decode_length(u_char *data, u_int *length)
 {
         u_char size = *data++;
         
@@ -68,10 +66,7 @@ asn_decode_length(data, length)
    Return:Pointer to the byte immediately past the encoded length
    Error: NULL */
 u_char *
-asn_encode_length(data, datalength, length)
-        u_char *data;
-        int *datalength;
-        u_int length;
+asn_encode_length(u_char *data, int *datalength, u_int length)
 {
         if (*datalength < 1) {
                 SNMP_SET_ERRNO(E_ASN_ENCODE);
@@ -103,9 +98,7 @@ asn_encode_length(data, datalength, length)
 }
 
 u_char *
-asn_recode_length(data, length)
-        u_char *data;
-        u_int length;
+asn_recode_length(u_char *data, u_int length)
 {
         /*length can be at most 0xffff */
         *data++ = (u_char)(ASN_LONG_LEN|0x02);
@@ -124,11 +117,7 @@ asn_recode_length(data, length)
           data).
    Error: NULL */
 u_char *
-asn_encode_header(data, datalength, type, length)
-        u_char *data;
-        int *datalength;
-        u_char type;
-        int length;
+asn_encode_header(u_char *data, int *datalength, u_char type, int length)
 {
         if (*datalength < 1) {
                 SNMP_SET_ERRNO(E_ASN_ENCODE);
@@ -140,10 +129,7 @@ asn_encode_header(data, datalength, type, length)
 }
 
 u_char *
-asn_decode_header(data, datalength, type)
-        u_char *data;
-        int *datalength;
-        u_char *type;
+asn_decode_header(u_char *data, int *datalength, u_char *type)
 {
         if (*datalength < 1) {
                 SNMP_SET_ERRNO(E_ASN_DECODE);
@@ -155,10 +141,7 @@ asn_decode_header(data, datalength, type)
 }
 
 u_char *
-asn_encode_null(data, datalength, type)
-                u_char *data;
-                int *datalength;
-                u_char type;
+asn_encode_null(u_char *data, int *datalength, u_char type)
 {
         return asn_encode_header(data, datalength, type, 0);
 }
@@ -178,12 +161,8 @@ asn_encode_null(data, datalength, type)
    Return:Pointer to the byte immediately past the decoded object.
    Error: NULL */
 u_char *
-asn_decode_int(data, datalength, type, intp, intsize)
-        u_char *data;
-        int *datalength;
-        u_char *type;
-        int *intp;
-        int intsize;
+asn_decode_int(u_char *data, int *datalength, u_char *type,
+	       int *intp, int intsize)
 {
         u_int count;
         u_char *buf = data;
@@ -229,11 +208,7 @@ asn_decode_int(data, datalength, type, intp, intsize)
    Error: NULL */
    
 u_char *
-asn_encode_int(data, datalength, type, intval)
-        u_char *data;
-        int *datalength;
-        u_char type;
-        int intval;
+asn_encode_int(u_char *data, int *datalength, u_char type, int intval)
 {
         u_int mask;
         u_int intsize = sizeof(int);
@@ -286,12 +261,8 @@ asn_encode_int(data, datalength, type, intval)
    Return:Pointer to the byte immediately past the decoded object.
    Error: NULL */
 u_char *
-asn_decode_string(data, datalength, type, string, strlength)
-        u_char *data;
-        int *datalength;
-        u_char *type;
-        u_char *string;
-        int *strlength;
+asn_decode_string(u_char *data, int *datalength, u_char *type,
+		  u_char *string, int *strlength)
 {
         u_char *buf = data;
         int count;
@@ -321,12 +292,8 @@ asn_decode_string(data, datalength, type, string, strlength)
    Return:Pointer to the byte immediately past the encoded object.
    Error: NULL */
 u_char *
-asn_encode_string(data, datalength, type, string, strlength)
-        u_char *data;
-        int *datalength;
-        u_char type;
-        u_char *string;
-        int strlength;
+asn_encode_string(u_char *data, int *datalength, u_char type,
+		  u_char *string, int strlength)
 {
         data = asn_encode_header(data, datalength, type, strlength);
         if (!data || *datalength < strlength) {
@@ -361,12 +328,8 @@ asn_encode_string(data, datalength, type, string, strlength)
    Return:Pointer to the byte immediately past the decoded object.
    Error: NULL */
 u_char *
-asn_decode_oid(data, datalength, type, obid, obidlength)
-        u_char *data;
-        int *datalength;
-        u_char *type;
-        oid_t obid;
-        int *obidlength;
+asn_decode_oid(u_char *data, int *datalength, u_char *type,
+	       oid_t obid, int *obidlength)
 {
         u_char *buf = data;
         u_int count;
@@ -421,12 +384,8 @@ asn_decode_oid(data, datalength, type, obid, obidlength)
    Return:Pointer to the byte immediately past the encoded object.
    Error: NULL */
 u_char *
-asn_encode_oid(data, datalength, type, obid, obidlength)
-        u_char *data;
-        int *datalength;
-        u_char type;
-        oid_t obid;
-        int obidlength;
+asn_encode_oid(u_char *data, int *datalength, u_char type,
+	       oid_t obid, int obidlength)
 {
         int length;
         u_char *buf, *bp;

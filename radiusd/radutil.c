@@ -1,26 +1,21 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, Sergey Poznyakoff
+/* This file is part of GNU Radius
+   Copyright (C) 2000, 2002, 2003 Sergey Poznyakoff
  
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
  
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
  
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #define RADIUS_MODULE_RADUTIL_C
-
-#ifndef lint
-static char rcsid[] =
-"@(#) $Id$"; 
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -32,25 +27,9 @@ static char rcsid[] =
 #include <radiusd.h>
 #include <obstack1.h>
 
-static void attr_to_str(struct obstack *obp,
-                        RADIUS_REQ *req,
-                        VALUE_PAIR *pairlist,
-                        DICT_ATTR  *attr, char *defval);
-static void curtime_to_str(struct obstack *obp, VALUE_PAIR *request, int gmt);
-static void attrno_to_str(struct obstack *obp,
-                          RADIUS_REQ *req,
-                          VALUE_PAIR *pairlist,
-                          int attr_no, char *defval);
-static DICT_ATTR *parse_dict_attr(char *p, char **endp, char **defval);
-
-static void obstack_grow_quoted(struct obstack *obp, char *str, int len);
-
 /* obstack_grow with quoting of potentially dangerous characters */
-void
-obstack_grow_quoted(obp, str, len)
-        struct obstack *obp;
-        char *str;
-        int len;
+static void
+obstack_grow_quoted(struct obstack *obp, char *str, int len)
 {
         for (; len > 0; len--, str++) {
                 switch (*str) {
@@ -92,13 +71,9 @@ obstack_grow_quoted(obp, str, len)
  * the latter is NULL, store "unknown" for string type and "0" for
  * others.
  */
-void
-attr_to_str(obp, req, pairlist, attr, defval)
-        struct obstack *obp;
-        RADIUS_REQ *req;
-        VALUE_PAIR *pairlist;
-        DICT_ATTR  *attr;
-        char *defval;
+static void
+attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
+            DICT_ATTR  *attr, char *defval)
 {
         VALUE_PAIR *pair;
         int len;
@@ -202,11 +177,8 @@ attr_to_str(obp, req, pairlist, attr, defval)
         }
 }
 
-void
-curtime_to_str(obp, request, gmt)
-        struct obstack *obp;
-        VALUE_PAIR *request;
-        int gmt;
+static void
+curtime_to_str(struct obstack *obp, VALUE_PAIR *request, int gmt)
 {
         time_t curtime;
         struct tm *tm, tms;
@@ -231,23 +203,16 @@ curtime_to_str(obp, request, gmt)
  * If no attribute found, use provided default value (see comment to
  * attr_to_str)
  */
-void
-attrno_to_str(obp, req, pairlist, attr_no, defval)
-        struct obstack *obp;
-        RADIUS_REQ *req;
-        VALUE_PAIR *pairlist;
-        int attr_no;
-        char *defval;
+static void
+attrno_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
+              int attr_no, char *defval)
 {
         attr_to_str(obp, req, pairlist,
 		    attr_number_to_dict(attr_no), defval);
 }
 
 static DICT_ATTR *
-parse_dict_attr(p, endp, defval)
-        char *p;
-        char **endp;
-        char **defval;
+parse_dict_attr(char *p, char **endp, char **defval)
 {
         char namebuf[MAX_DICTNAME];
         
@@ -294,11 +259,8 @@ parse_dict_attr(p, endp, defval)
 }
 
 void
-radius_xlate0(obp, str, req, reply)
-        struct obstack *obp;
-        char *str;
-        RADIUS_REQ *req;
-        VALUE_PAIR *reply;
+radius_xlate0(struct obstack *obp, char *str, RADIUS_REQ *req,
+              VALUE_PAIR *reply)
 {
         int c;
         char *p;
@@ -424,11 +386,7 @@ end:
 }
 
 char *
-radius_xlate(obp, str, req, reply)
-        struct obstack *obp;
-        char *str;
-        RADIUS_REQ *req;
-        VALUE_PAIR *reply;
+radius_xlate(struct obstack *obp, char *str, RADIUS_REQ *req, VALUE_PAIR *reply)
 {
         radius_xlate0(obp, str, req, reply);
         obstack_1grow(obp, 0);

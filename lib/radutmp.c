@@ -1,18 +1,18 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2001, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #ifdef HAVE_CONFIG_H
@@ -34,9 +34,7 @@ struct _radut_file {
 };
 
 radut_file_t
-rut_setent(name, append)
-        char *name;
-        int append;
+rut_setent(char *name, int append)
 {
         int fd;
         int ro = 0;
@@ -61,16 +59,14 @@ rut_setent(name, append)
 }
 
 void
-rut_rewind(file)
-        radut_file_t file;
+rut_rewind(radut_file_t file)
 {
         lseek(file->fd, 0, SEEK_SET);
         file->eof = 0;
 }
 
 void
-rut_endent(file)
-        radut_file_t file;
+rut_endent(radut_file_t file)
 {
         if (!file)
                 return;
@@ -79,8 +75,7 @@ rut_endent(file)
 }
 
 struct radutmp *
-rut_getent(file)
-        radut_file_t file;
+rut_getent(radut_file_t file)
 {
         int rc;
         
@@ -94,9 +89,7 @@ rut_getent(file)
 }
 
 int
-rut_putent(file, ent)
-        radut_file_t file;
-        struct radutmp *ent;
+rut_putent(radut_file_t file, struct radutmp *ent)
 {
         if (file->readonly) {
                 radlog(L_ERR, "rut_putent(): file opened readonly");
@@ -127,10 +120,7 @@ rut_putent(file, ent)
 }
         
 int
-radutmp_putent(filename, ut, status)
-        char *filename;
-        struct radutmp *ut;
-        int status;
+radutmp_putent(char *filename, struct radutmp *ut, int status)
 {
         radut_file_t file;
         struct radutmp *ent;
@@ -217,9 +207,7 @@ radutmp_putent(filename, ut, status)
 }
         
 int
-radwtmp_putent(filename, ut)
-        char *filename;
-        struct radutmp *ut;
+radwtmp_putent(char *filename, struct radutmp *ut)
 {
         radut_file_t file;
                 

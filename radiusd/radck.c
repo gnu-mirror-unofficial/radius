@@ -1,18 +1,18 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2001, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2001,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
  
 #ifdef HAVE_CONFIG_H
@@ -53,33 +53,26 @@ static void check_dup_attr(VALUE_PAIR **prev, VALUE_PAIR *ptr, int line);
 
 
 int
-sym_counter(closure, sym)
-        void *closure;
-        User_symbol *sym;
+sym_counter(void *closure, User_symbol *sym)
 {
         sym->ordnum = (*(int*)closure)++;
         return 0;
 }
 
 void
-radck_setbit(r, rowsize, row, col)
-        unsigned *r, rowsize, row, col;
+radck_setbit(unsigned *r, unsigned rowsize, unsigned row, unsigned col)
 {
         SETBIT(r + rowsize * row, col);
 }
 
 int
-radck_bitisset(r, rowsize, row, col)
-        unsigned *r, rowsize, row, col;
+radck_bitisset(unsigned *r, unsigned rowsize, unsigned row, unsigned col)
 {
         return BITISSET(r + rowsize * row, col);
 }
 
 void
-mark_profile(datum, sym, target_name)
-        struct check_datum *datum;
-        User_symbol *sym;
-        char *target_name;
+mark_profile(struct check_datum *datum, User_symbol *sym, char *target_name)
 {
         User_symbol *target = (User_symbol*)sym_lookup(datum->symtab, target_name);
 
@@ -98,10 +91,7 @@ mark_profile(datum, sym, target_name)
 }
 
 void
-mark_list(datum, sym, list)
-        struct check_datum *datum;
-        User_symbol *sym;
-        VALUE_PAIR *list;
+mark_list(struct check_datum *datum, User_symbol *sym, VALUE_PAIR *list)
 {
         VALUE_PAIR *p;
 
@@ -114,9 +104,7 @@ mark_list(datum, sym, list)
 }
 
 int
-pass1(datum, sym)
-        struct check_datum *datum;
-        User_symbol *sym;
+pass1(struct check_datum *datum, User_symbol *sym)
 {
         mark_list(datum, sym, sym->check);
         mark_list(datum, sym, sym->reply);
@@ -125,9 +113,7 @@ pass1(datum, sym)
 }
 
 int
-pass2(datum, sym)
-        struct check_datum *datum;
-        User_symbol *sym;
+pass2(struct check_datum *datum, User_symbol *sym)
 {
         if (radck_bitisset(datum->r, datum->rlen, sym->ordnum, sym->ordnum)) {
                 radlog(L_ERR,
@@ -187,10 +173,7 @@ radck()
 }
 
 void
-check_dup_attr(prev, ptr, line)
-        VALUE_PAIR **prev;
-        VALUE_PAIR *ptr;
-        int line;
+check_dup_attr(VALUE_PAIR **prev, VALUE_PAIR *ptr, int line)
 {
         if (*prev) {
                 radlog(L_WARN,
@@ -202,12 +185,8 @@ check_dup_attr(prev, ptr, line)
 
 /*ARGSUSED*/
 int
-fix_check_pairs(cf_file, filename, line, name, pairs)
-        int cf_file;
-        char *filename;
-        int line;
-        char *name;
-        VALUE_PAIR **pairs;
+fix_check_pairs(int cf_file, char *filename, int line, char *name,
+                VALUE_PAIR **pairs)
 {
         VALUE_PAIR *p;
         VALUE_PAIR *auth_type = NULL;
@@ -387,12 +366,8 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
 }
 
 int
-fix_reply_pairs(cf_file, filename, line, name, pairs)
-        int cf_file;
-        char *filename;
-        int line;
-        char *name;
-        VALUE_PAIR **pairs;
+fix_reply_pairs(int cf_file, char *filename, int line,
+                char *name, VALUE_PAIR **pairs)
 {
         VALUE_PAIR *p;
         int fall_through = 0;
@@ -432,9 +407,7 @@ fix_reply_pairs(cf_file, filename, line, name, pairs)
    to be the transitive closure of what was given.  */
 
 void
-TC(R, n)
-        unsigned *R;
-        int n;
+TC(unsigned *R, int n)
 {
         register int rowsize;
         register unsigned mask;

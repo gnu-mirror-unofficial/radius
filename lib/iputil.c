@@ -1,24 +1,19 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
-
-#ifndef lint
-static char rcsid[] = 
-"$Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -46,10 +41,7 @@ int resolve_hostnames = 1;
  *      for the supplied IP address.
  */
 char * 
-ip_gethostname(ipaddr, namebuf, size)
-        UINT4 ipaddr;
-        char *namebuf;
-        size_t size;
+ip_gethostname(UINT4 ipaddr, char *namebuf, size_t size)
 {
         struct hostent *hp, hent;
         char buffer[512];
@@ -78,8 +70,7 @@ ip_gethostname(ipaddr, namebuf, size)
  * name or address in dot notation.
  */
 UINT4 
-ip_gethostaddr(host)
-        char *host;
+ip_gethostaddr(char *host)
 {
         struct hostent  *hp, hent;
         char buffer[512];
@@ -98,8 +89,7 @@ ip_gethostaddr(host)
  * Check for valid IP address in standard dot notation.
  */
 int 
-good_ipaddr(addr)
-        char *addr;
+good_ipaddr(char *addr)
 {
         int     dot_count;
         int     digit_count;
@@ -125,9 +115,7 @@ good_ipaddr(addr)
  * provided address in host long notation.
  */
 char *
-ip_iptostr(ipaddr, buffer)
-        UINT4 ipaddr;
-        char *buffer; 
+ip_iptostr(UINT4 ipaddr, char *buffer)
 {
         sprintf(buffer, "%u.%u.%u.%u",
                 (u_int) ((ipaddr >> 24) & 0xff),
@@ -142,8 +130,7 @@ ip_iptostr(ipaddr, buffer)
  *      one supplied in standard dot notation.
  */
 UINT4 
-ip_strtoip(ip_str)
-        char *ip_str;
+ip_strtoip(char *ip_str)
 #ifdef HAVE_INET_ATON
 {
         struct in_addr in;

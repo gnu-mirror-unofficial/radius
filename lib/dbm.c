@@ -1,17 +1,18 @@
-/* This file is part of GNU RADIUS.
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #ifdef HAVE_CONFIG_H
@@ -19,11 +20,6 @@
 #endif
 
 #ifdef USE_DBM
-
-#ifndef lint
-static char rcsid[] =
-"@(#) $Id$";
-#endif
 
 #include <stdlib.h>
 #include <unistd.h>
@@ -33,45 +29,34 @@ static char rcsid[] =
 #if USE_DBM == DBM_NDBM
 
 int
-open_dbm(name, dbmfile)
-        char *name;
-        DBM_FILE *dbmfile;
+open_dbm(char *name, DBM_FILE *dbmfile)
 {
         return (*dbmfile = dbm_open(name, O_RDONLY, 0)) == NULL;
 }
 
 int
-create_dbm(name, dbmfile)
-        char *name;
-        DBM_FILE *dbmfile;
+create_dbm(char *name, DBM_FILE *dbmfile)
 {
         return (*dbmfile = dbm_open(name, O_RDWR|O_CREAT|O_TRUNC, 0600))
                 == NULL;
 }
 
 int
-close_dbm(dbmfile)
-        DBM_FILE dbmfile;
+close_dbm(DBM_FILE dbmfile)
 {
         dbm_close(dbmfile);
         return 0;
 }
 
 int
-fetch_dbm(dbmfile, key, ret)
-        DBM_FILE dbmfile;
-        DBM_DATUM key;
-        DBM_DATUM *ret;
+fetch_dbm(DBM_FILE dbmfile, DBM_DATUM key, DBM_DATUM *ret)
 {
         *ret = dbm_fetch(dbmfile, key);
         return ret->dptr == NULL;
 }
 
 int
-insert_dbm(dbmfile, key, contents)
-        DBM_FILE dbmfile;
-        DBM_DATUM key;
-        DBM_DATUM contents;
+insert_dbm(DBM_FILE dbmfile, DBM_DATUM key, DBM_DATUM contents)
 {
         return dbm_store(dbmfile, key, contents, DBM_INSERT);
 }
@@ -80,17 +65,13 @@ insert_dbm(dbmfile, key, contents)
 
 /*ARGSUSED*/
 int
-open_dbm(name, dbmfile)
-        char *name;
-        DBM_FILE *dbmfile;
+open_dbm(char *name, DBM_FILE *dbmfile)
 {
         return dbminit(name);
 }
 
 int
-create_dbm(name, dbmfile)
-        char *name;
-        DBM_FILE *dbmfile;
+create_dbm(char *name, DBM_FILE *dbmfile)
 {
         int fd;
         char *p;
@@ -115,28 +96,21 @@ create_dbm(name, dbmfile)
 
 /*ARGSUSED*/
 int
-close_dbm(dbmfile)
-        DBM_FILE dbmfile;
+close_dbm(DBM_FILE dbmfile)
 {
         dbmclose();
 }
 
 /*ARGSUSED*/
 int
-fetch_dbm(dbmfile, key, ret)
-        DBM_FILE dbmfile;
-        DBM_DATUM key;
-        DBM_DATUM *ret;
+fetch_dbm(DBM_FILE dbmfile, DBM_DATUM key, DBM_DATUM *ret)
 {
         *ret = fetch(key);
         return ret->dptr == NULL;
 }
 
 int
-insert_dbm(dbmfile, key, contents)
-        DBM_FILE dbmfile;
-        DBM_DATUM key;
-        DBM_DATUM contents;
+insert_dbm(DBM_FILE dbmfile, DBM_DATUM key, DBM_DATUM contents)
 {
         return store(key, contents);
 }

@@ -1,20 +1,19 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001, Sergey Poznyakoff
- 
-   This program is free software; you can redistribute it and/or modify
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
+  
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
-   
-   This program is distributed in the hope that it will be useful,
+  
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+  
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston,
-   MA 02111-1307, USA. */
+   along with GNU Radius; if not, write to the Free Software Foundation, 
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 %e 8000
 %p 15000
 %x in_string
@@ -125,8 +124,7 @@ LEX_BUFFER_STATE current_buffer;
 } while (0)
                                     
 void
-lex_set_buffer(fp)
-        FILE *fp;
+lex_set_buffer(FILE *fp)
 {
         char *buf;
         size_t size;
@@ -149,8 +147,7 @@ lex_set_buffer(fp)
 }
                 
 void
-lex_delete_buffer(buf)
-        LEX_BUFFER_STATE buf;
+lex_delete_buffer(LEX_BUFFER_STATE buf)
 {
         efree(buf.buffer);
         if (buf.putback)
@@ -182,8 +179,7 @@ xinput()
 }
 
 int
-xunput(c)
-        int c;
+xunput(int c)
 {
         if (current_buffer.pb_level == current_buffer.pb_size) {
                 char *putback;
@@ -216,8 +212,7 @@ static int push_source(char *name);
 static int pop_source();
 
 struct buffer_ctx *
-ctx_lookup(ino)
-        ino_t ino;
+ctx_lookup(ino_t ino)
 {
         struct buffer_ctx *ctx;
 
@@ -228,8 +223,7 @@ ctx_lookup(ino)
 }
         
 int
-push_source(name)
-        char *name;
+push_source(char *name)
 {
         FILE *fp;
         struct buffer_ctx *ctx;
@@ -423,8 +417,7 @@ yywrap()
 }
 
 char *
-addstring(s)
-        char *s;
+addstring(char *s)
 {
         int length = strlen(s);
         obstack_grow(&stack, s, length+1);
@@ -432,8 +425,7 @@ addstring(s)
 }
         
 char *
-addquote(s)
-        char *s;
+addquote(char *s)
 {
         int length = strlen(s);
         if (length-2 > 0)
@@ -443,8 +435,7 @@ addquote(s)
 }
 
 int
-init_lex(name)
-        char *name;
+init_lex(char *name)
 {
         obstack_init(&stack);
         
@@ -562,10 +553,7 @@ preproc()
 #define to_num(c) (isdigit(c) ? c - '0' : (isxdigit(c) ? toupper(c) - 'A' + 10 : -1 ))
 
 void
-read_number (text, len, base)
-	char *text;
-	int len;
-	int base;
+read_number(char *text, int len, int base)
 {
 	int i;
 	int c = 0;

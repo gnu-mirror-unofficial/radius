@@ -1,23 +1,22 @@
 %x STRING
 %{
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, 2001, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
  
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
  
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
  
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
-static char rcsid[] = 
-"$Id$";
+
 #if defined(HAVE_CONFIG_H)        
 # include <config.h>
 #endif
@@ -200,8 +199,7 @@ yywrap()
 }
 
 int
-open_input(name)
-        char *name;
+open_input(char *name)
 {
         FILE *fp;
 
@@ -251,8 +249,7 @@ prompt()
 }
 
 void
-putback(str)
-        char *str;
+putback(char *str)
 {
         char *p = str + strlen(str);
 
@@ -261,11 +258,7 @@ putback(str)
 }
 
 void
-add_num(skip, base, text, leng)
-        int skip;
-        int base;
-        char *text;
-        int leng;
+add_num(int skip, int base, char *text, int leng)
 {
         int n;
 
@@ -281,17 +274,14 @@ static char string_acc[MAX_STRING];
 static char string_len;
 
 void
-add_str(str, len)
-        char *str;
-        int  len;
+add_str(char *str, int len)
 {
         obstack_grow(&string_stk, str, len);
         string_len += len;
 }
 
 void
-add_chr(c)
-        int c;
+add_chr(int c)
 {
         obstack_1grow(&string_stk, c);
         string_len++;
@@ -304,8 +294,7 @@ end_str()
 }
 
 int
-backspace(c)
-        int c;
+backspace(int c)
 {
         switch (c) {
         case '\\':
@@ -329,8 +318,7 @@ backspace(c)
 }
 
 int
-deref_var(name, p)
-        char *name, *p;
+deref_var(char *name, char *p)
 {
         int type;
         union datum datum;
@@ -426,9 +414,7 @@ deref_var(name, p)
 }
 
 int
-deref_parm(num, p)
-        unsigned num;
-        char *p;
+deref_parm(unsigned num, char *p)
 {
         size_t n;
         

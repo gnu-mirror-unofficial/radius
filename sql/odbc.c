@@ -1,19 +1,19 @@
-/* This file is part of GNU RADIUS.
+/* This file is part of GNU Radius.
    Copyright (C) 2001 Vlad Lungu
    based on postgresql.c (C) 2000,2001 Sergey Pozniakoff  
 
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
+   along with GNU Radius; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.*/
 
 #define RADIUS_MODULE_ODBC_C
@@ -54,11 +54,8 @@ static char *rad_odbc_column(void *data, int ncol);
 static int rad_odbc_next_tuple(struct sql_connection *conn, void *data);
 static void rad_odbc_free(struct sql_connection *conn, void *data);
 
-void
-rad_odbc_diag(handle_type, handle, what)
-        SQLSMALLINT handle_type;
-        SQLHANDLE handle;
-        char *what;
+static void
+rad_odbc_diag(SQLSMALLINT handle_type, SQLHANDLE handle, char *what)
 {
         char state[16];
         SQLINTEGER nerror;
@@ -78,10 +75,8 @@ rad_odbc_diag(handle_type, handle, what)
 
 /* ************************************************************************* */
 /* Interface routines */
-int
-rad_odbc_reconnect(type, conn)
-        int    type;
-        struct sql_connection *conn;
+static int
+rad_odbc_reconnect(int type, struct sql_connection *conn)
 {
 
         ODBCconn        *oconn;
@@ -142,10 +137,9 @@ rad_odbc_reconnect(type, conn)
         return 0;
 }
 
-void 
-rad_odbc_disconnect(conn, drop)
-        struct sql_connection *conn;
-	int drop; /* currently unused */
+static void 
+rad_odbc_disconnect(struct sql_connection *conn,
+		    int drop /* currently unused */)
 {
         ODBCconn *odata;
         if (!conn->data)
@@ -158,11 +152,8 @@ rad_odbc_disconnect(conn, drop)
         conn->connected = 0;
 }
 
-int
-rad_odbc_query(conn, query, return_count)
-        struct sql_connection *conn;
-        char *query;
-        int *return_count;
+static int
+rad_odbc_query(struct sql_connection *conn, char *query, int *return_count)
 {
         ODBCconn        *odata;
         long            result;
@@ -201,10 +192,8 @@ rad_odbc_query(conn, query, return_count)
         return 0;
 }
 
-char *
-rad_odbc_getpwd(conn, query)
-        struct sql_connection *conn;
-        char *query;
+static char *
+rad_odbc_getpwd(struct sql_connection *conn, char *query)
 {
         ODBCconn        *odata;
         long            result;
@@ -278,10 +267,8 @@ typedef struct {
         int             nfields;
 } EXEC_DATA;
 
-void *
-rad_odbc_exec(conn, query)
-        struct sql_connection *conn;
-        char *query;
+static void *
+rad_odbc_exec(struct sql_connection *conn, char *query)
 {
 
         ODBCconn        *odata;
@@ -325,10 +312,8 @@ rad_odbc_exec(conn, query)
         return (void*)data;
 }
 
-char *
-rad_odbc_column(data, ncol)
-        void *data;
-        int ncol;
+static char *
+rad_odbc_column(void *data, int ncol)
 {
         SQLCHAR buffer[1024];
         long result;
@@ -354,10 +339,8 @@ rad_odbc_column(data, ncol)
 }
 
 /*ARGSUSED*/
-int
-rad_odbc_next_tuple(conn, data)
-        struct sql_connection *conn;
-        void *data;
+static int
+rad_odbc_next_tuple(struct sql_connection *conn, void *data)
 {
         long result;
         EXEC_DATA *edata = (EXEC_DATA*)data;
@@ -381,10 +364,8 @@ rad_odbc_next_tuple(conn, data)
 }
 
 /*ARGSUSED*/
-void
-rad_odbc_free(conn, data)
-        struct sql_connection *conn;
-        void *data;
+static void
+rad_odbc_free(struct sql_connection *conn, void *data)
 {
         EXEC_DATA *edata = (EXEC_DATA*)data;
 

@@ -1,28 +1,23 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001 Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.*/
+   along with GNU Radius; if not, write to the Free Software Foundation, 
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #define RADIUS_MODULE_POSTGRES_C
 #ifdef HAVE_CONFIG_H
 # include <config.h>
-#endif
-
-#ifndef lint
-static char rcsid[] =
- "@(#) $Id$" ;
 #endif
 
 #include <stdlib.h>
@@ -46,57 +41,11 @@ static char *rad_postgres_column(void *data, int ncol);
 static int rad_postgres_next_tuple(struct sql_connection *conn, void *data);
 static void rad_postgres_free(struct sql_connection *conn, void *data);
 
-#define CI_HOST     "host="
-#define CI_DBNAME   "dbname="
-#define CI_USER     "user="
-#define CI_PASSWORD "password="
-
-#define CI_SIZE sizeof(CI_HOST) +\
-                sizeof(CI_DBNAME) +\
-                sizeof(CI_USER) +\
-                sizeof(CI_PASSWORD)
-
-static char *
-postgres_conninfo(type)
-        int type;
-{
-        char *dbname;
-        char *conninfo;
-        int  len;
-        
-        switch (type) {
-        case SQL_AUTH:
-                dbname = sql_cfg.auth_db;
-                break;
-        case SQL_ACCT:
-                dbname = sql_cfg.acct_db;
-                break;
-        }
-
-        len = CI_SIZE +
-                strlen(sql_cfg.server) +
-                strlen(dbname) +
-                strlen(sql_cfg.login) +
-                strlen(sql_cfg.password) + 1;
-        conninfo = emalloc(len);
-
-        snprintf(conninfo, len - 1,
-                "%s%s %s%s %s%s %s%s",
-                CI_HOST, sql_cfg.server,
-                CI_DBNAME, dbname,
-                CI_USER, sql_cfg.login,
-                CI_PASSWORD, sql_cfg.password);
-        return conninfo;
-}
-
 /* ************************************************************************* */
 /* Interface routines */
-int
-rad_postgres_reconnect(type, conn)
-        int    type;
-        struct sql_connection *conn;
+static int
+rad_postgres_reconnect(int type, struct sql_connection *conn)
 {
-#if 1
         PGconn  *pgconn;
         char *dbname;
         char portbuf[16];
@@ -132,78 +81,11 @@ rad_postgres_reconnect(type, conn)
         conn->data = pgconn;
         conn->connected = 1;
         return 0;
-
-#else
-        PGconn  *pgconn;
-        int     sockfd;
-        int     rc, active;
-        struct timeval tv;
-        fd_set  fds;
-        char    *p;
-
-        p = postgres_conninfo(type);
-        debug(1, ("conninfo = \"%s\"", p));
-        pgconn = PQconnectStart(p);
-        efree(p);
-        if (!pgconn) {
-                radlog(L_ERR,
-                       _("PQconnectStart failed"));
-                return -1;
-        }
-
-        if (PQstatus(pgconn) == CONNECTION_BAD) {
-                radlog(L_ERR,
-                       _("PQconnectStart failed: %s"), PQerrorMessage(pgconn));
-                PQfinish(pgconn);
-        }
-        
-        sockfd = PQsocket(pgconn);
-        active = 0;
-        while ((rc = PQconnectPoll(pgconn)) != PGRES_POLLING_OK) {
-                switch (rc) {
-                case PGRES_POLLING_ACTIVE:
-                        active++;
-                        break;
-                        
-                case PGRES_POLLING_READING:
-                        FD_ZERO(&fds);
-                        FD_SET(sockfd, &fds);
-                        tv.tv_sec = 5;
-                        tv.tv_usec = 0;
-                        rc = select(sockfd+1, &fds, NULL, NULL, &tv);
-                        if (rc == -1) 
-                                goto err;
-                        active = FD_ISSET(sockfd, &fds);
-                        break;
-                                
-                case PGRES_POLLING_WRITING:
-                        FD_ZERO(&fds);
-                        FD_SET(sockfd, &fds);
-                        tv.tv_sec = 5;
-                        tv.tv_usec = 0;
-                        rc = select(sockfd+1, NULL, &fds, NULL, &tv);
-                        if (rc == -1)
-                                goto err;
-                        active = FD_ISSET(sockfd, &fds);
-                        break;
-                        
-                case PGRES_POLLING_FAILED:
-        err:
-                        PQfinish(pgconn);
-                        return -1;
-                }
-        } 
-
-        conn->data = pgconn;
-        conn->connected = 1;
-        return 0;
-#endif
 }
 
-void 
-rad_postgres_disconnect(conn, drop)
-        struct sql_connection *conn;
-	int drop; /* currently unused */
+static void 
+rad_postgres_disconnect(struct sql_connection *conn,
+			int drop /* currently unused */)
 {
         if (!conn->data)
                 return;
@@ -212,11 +94,8 @@ rad_postgres_disconnect(conn, drop)
         conn->connected = 0;
 }
 
-int
-rad_postgres_query(conn, query, return_count)
-        struct sql_connection *conn;
-        char *query;
-        int *return_count;
+static int
+rad_postgres_query(struct sql_connection *conn, char *query, int *return_count)
 {
         PGresult       *res;
         ExecStatusType stat;
@@ -257,10 +136,8 @@ rad_postgres_query(conn, query, return_count)
         return rc;
 }
 
-char *
-rad_postgres_getpwd(conn, query)
-        struct sql_connection *conn;
-        char *query;
+static char *
+rad_postgres_getpwd(struct sql_connection *conn, char *query)
 {
         PGresult       *res;
         ExecStatusType stat;
@@ -314,10 +191,8 @@ typedef struct {
         int            curtuple;
 } EXEC_DATA;
 
-void *
-rad_postgres_exec(conn, query)
-        struct sql_connection *conn;
-        char *query;
+static void *
+rad_postgres_exec(struct sql_connection *conn, char *query)
 {
         PGresult       *res;
         ExecStatusType stat;
@@ -360,10 +235,8 @@ rad_postgres_exec(conn, query)
         return (void*)data;
 }
 
-char *
-rad_postgres_column(data, ncol)
-        void *data;
-        int ncol;
+static char *
+rad_postgres_column(void *data, int ncol)
 {
         EXEC_DATA *edata = (EXEC_DATA*)data;
         if (!data)
@@ -377,10 +250,8 @@ rad_postgres_column(data, ncol)
 }
 
 /*ARGSUSED*/
-int
-rad_postgres_next_tuple(conn, data)
-        struct sql_connection *conn;
-        void *data;
+static int
+rad_postgres_next_tuple(struct sql_connection *conn, void *data)
 {
         EXEC_DATA *edata = (EXEC_DATA*)data;
         if (!data)
@@ -393,10 +264,8 @@ rad_postgres_next_tuple(conn, data)
 }
 
 /*ARGSUSED*/
-void
-rad_postgres_free(conn, data)
-        struct sql_connection *conn;
-        void *data;
+static void
+rad_postgres_free(struct sql_connection *conn, void *data)
 {
         EXEC_DATA *edata = (EXEC_DATA*)data;
 

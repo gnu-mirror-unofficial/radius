@@ -1,25 +1,20 @@
 %{
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
-
-#ifndef lint
-static char rcsid[] = 
-"$Id$";
-#endif
 
 #if defined(HAVE_CONFIG_H)
 # include <config.h>
@@ -180,29 +175,20 @@ value    : STRING
 %%
 
 int
-yyerror(s)
-        char *s;
+yyerror(char *s)
 {
         radlog(L_ERR, "%s:%d: %s", source_filename, source_line_num, s);
 }
 
 VALUE_PAIR *
-install_pair0(name, op, valstr)
-        char *name;
-        int op;
-        char *valstr;
+install_pair0(char *name, int op, char *valstr)
 {
 	return install_pair(source_filename, source_line_num, 
 			    name, op, valstr);
 }
 
 VALUE_PAIR *
-install_pair(file, line, name, op, valstr)
-	char *file;
-	int line;
-        char *name;
-        int op;
-        char *valstr;
+install_pair(char *file, int line, char *name, int op, char *valstr)
 {
         DICT_ATTR       *attr = NULL;
         DICT_VALUE      *dval;
@@ -357,10 +343,7 @@ install_pair(file, line, name, op, valstr)
 extern int yydebug;
 
 int
-parse_file(file, c, f)
-        char *file;
-        void *c;
-        int (*f)();
+parse_file(char *file, void *c, int (*f)())
 {
         int rc;
         
@@ -376,8 +359,7 @@ parse_file(file, c, f)
 }
 
 void
-enable_usr_dbg(val)
-        int val;
+enable_usr_dbg(int val)
 {
         yydebug = val;
         if (yydebug)

@@ -1,26 +1,21 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 /* debug.c      Debugging module. */
-
-#ifndef lint
-static char rcsid[] = 
-"$Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -53,8 +48,7 @@ static struct keyword auth_codes[] = {
 };
 
 char *
-auth_code_str(code)
-        int code;
+auth_code_str(int code)
 {
         struct keyword *p;
 
@@ -80,8 +74,7 @@ static struct keyword auth_codes_abbr[] = {
 };
 
 char *
-auth_code_abbr(code)
-        int code;
+auth_code_abbr(int code)
 {
         struct keyword *p;
         for (p = auth_codes_abbr; p->name; p++)
@@ -94,9 +87,7 @@ auth_code_abbr(code)
 
 
 int
-set_module_debug_level(name, level)
-        char *name;
-        int   level;
+set_module_debug_level(char *name, int level)
 {
         int  i;
         int  length;
@@ -116,8 +107,7 @@ set_module_debug_level(name, level)
 }
 
 void
-set_debug_levels(str)
-        char *str;
+set_debug_levels(char *str)
 {
         int  i;
         char *tok, *p, *save;
@@ -160,17 +150,14 @@ clear_debug()
 
 /*ARGSUSED*/
 int
-set_module_debug_level(name, level)
-        char *name;
-        int   level;
+set_module_debug_level(char *name, int level)
 {
         radlog(L_ERR, _("compiled without debugging support"));
 }
 
 /*ARGSUSED*/
 void
-set_debug_levels(str)
-        char *str;
+set_debug_levels(char *str)
 {
         radlog(L_ERR, _("compiled without debugging support"));
 }

@@ -1,24 +1,19 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
-   
+  
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
-
-#ifndef lint
-static char rcsid[] = 
-"@(#) $Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -51,9 +46,7 @@ static unsigned int hashval(unsigned char *s, unsigned bias);
 static void _sym_add(Symtab *symtab, unsigned h, Symbol *sp);
 
 Symtab *
-symtab_create(esize, elfree)
-        unsigned esize;
-        int (*elfree)();
+symtab_create(unsigned esize, int (*elfree)())
 {
         Symtab *symtab;
         
@@ -67,9 +60,7 @@ symtab_create(esize, elfree)
 }
 
 unsigned int
-hashval(s, bias)
-        unsigned char *s;
-        unsigned bias;
+hashval(unsigned char *s, unsigned bias)
 {
         unsigned h = 0;
 
@@ -81,10 +72,7 @@ hashval(s, bias)
 }
 
 void
-_sym_add(symtab, h, sp)
-        Symtab *symtab;
-        unsigned h;
-        Symbol *sp;
+_sym_add(Symtab *symtab, unsigned h, Symbol *sp)
 {
         sp->next = NULL;
         if (symtab->sym[h]) {
@@ -97,8 +85,7 @@ _sym_add(symtab, h, sp)
 }
 
 int
-symtab_rehash(symtab)
-        Symtab *symtab;
+symtab_rehash(Symtab *symtab)
 {
         Symbol **old_table = symtab->sym;
         int i;
@@ -134,10 +121,7 @@ symtab_rehash(symtab)
 }
 
 void *
-sym_lookup_or_install(symtab, name, install)
-        Symtab *symtab;
-        char *name;
-        int install;
+sym_lookup_or_install(Symtab *symtab, char *name, int install)
 {
         if (symtab->sym) {
                 Symbol *sp;
@@ -159,9 +143,7 @@ sym_lookup_or_install(symtab, name, install)
 }
 
 void *
-sym_install(symtab, name)
-        Symtab *symtab;
-        char *name;
+sym_install(Symtab *symtab, char *name)
 {
         Symbol *sp;
         unsigned int h;
@@ -179,16 +161,13 @@ sym_install(symtab, name)
 }
 
 void *
-sym_lookup(symtab, name)
-        Symtab *symtab;
-        char *name;
+sym_lookup(Symtab *symtab, char *name)
 {
         return sym_lookup_or_install(symtab, name, 0);
 }
 
 void *
-sym_next(sym)
-        Symbol *sym;
+sym_next(Symbol *sym)
 {
         char *name = sym->name;
         for (sym = sym->next; sym; sym = sym->next) {
@@ -199,9 +178,7 @@ sym_next(sym)
 }
 
 Symbol *
-alloc_sym(s, size)
-        char *s;
-        unsigned size;
+alloc_sym(char *s, unsigned size)
 {
         Symbol *ptr;
         ptr = mem_alloc(size);
@@ -213,9 +190,7 @@ alloc_sym(s, size)
  * Delete the symbol `sym' from symtab.
  */
 int
-symtab_delete(symtab, sym)
-        Symtab *symtab;
-        Symbol *sym;
+symtab_delete(Symtab *symtab, Symbol *sym)
 {
         Symbol *sp, *prev;
         unsigned h;
@@ -260,16 +235,14 @@ symtab_delete(symtab, sym)
 }
 
 void
-sym_free(sp)
-        Symbol *sp;
+sym_free(Symbol *sp)
 {
         efree(sp->name);
         mem_free(sp);
 }
 
 void
-symtab_clear(symtab)
-        Symtab *symtab;
+symtab_clear(Symtab *symtab)
 {
         int i;
         Symbol *sp, *next;
@@ -290,8 +263,7 @@ symtab_clear(symtab)
 }
 
 void
-symtab_free(symtab)
-        Symtab **symtab;
+symtab_free(Symtab **symtab)
 {
         symtab_clear(*symtab);
         efree((*symtab)->sym);
@@ -300,10 +272,7 @@ symtab_free(symtab)
 }
 
 void
-symtab_iterate(symtab, fn, closure)
-        Symtab *symtab;
-        int (*fn)();
-        void *closure;
+symtab_iterate(Symtab *symtab, int (*fn)(), void *closure)
 {
         int i;
         Symbol *sym, *next;

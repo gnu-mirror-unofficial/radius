@@ -1,18 +1,18 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #if defined(HAVE_CONFIG_H)
@@ -32,8 +32,7 @@ static RADIUS_SERVER_QUEUE *srv_queue;
 static RADIUS_SERVER *scheme_to_server(SCM g_list, const char *func);
 
 static void
-die(msg)
-        char *msg;
+die(char *msg)
 {
         radlog(L_ERR, "%s", msg);
 }
@@ -282,9 +281,7 @@ SCM_DEFINE(rad_read_no_echo, "rad-read-no-echo", 1, 0, 0,
 
 
 void
-rad_scheme_init(argc, argv)
-        int argc;
-        char **argv;
+rad_scheme_init(int argc, char **argv)
 {
         int di, si;
         int double_dash = 0;

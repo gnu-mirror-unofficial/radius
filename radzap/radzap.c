@@ -1,24 +1,19 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
-
-#ifndef lint
-static char rcsid[] = 
-"$Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -74,10 +69,7 @@ static struct argp_option options[] = {
 };
 
 static error_t
-parse_opt (key, arg, state)
-        int key;
-        char *arg;
-        struct argp_state *state;
+parse_opt(int key, char *arg, struct argp_state *state)
 {
         struct arguments *args = state->input;
         
@@ -132,9 +124,7 @@ static struct argp argp = {
  *      Zap a user from the radutmp and radwtmp file.
  */
 int
-main(argc, argv)
-        int argc;
-        char **argv;
+main(int argc, char **argv)
 {
         UINT4   ip = 0;
         time_t  t;
@@ -181,11 +171,7 @@ main(argc, argv)
  *      Zap a user, or all users on a NAS, from the radutmp file.
  */
 int
-radzap(nasaddr, port, user, t)
-        UINT4 nasaddr;
-        int port;
-        char *user;
-        time_t t;
+radzap(UINT4 nasaddr, int port, char *user, time_t t)
 {
         struct radutmp  *up;
         radut_file_t    file;
@@ -224,8 +210,7 @@ radzap(nasaddr, port, user, t)
 }
 
 int
-confirm(utp)
-        struct radutmp *utp;
+confirm(struct radutmp *utp)
 {
         char buf[MAX_LONGNAME];
         NAS *cl;
@@ -254,8 +239,7 @@ confirm(utp)
 }
 
 int
-write_wtmp(ut)
-        struct radutmp *ut;
+write_wtmp(struct radutmp *ut)
 {
         return radwtmp_putent(radwtmp_path, ut);
 }

@@ -1,24 +1,19 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, 2001 Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
-
-#ifndef lint
-static char rcsid[] = 
-"$Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -53,8 +48,7 @@ radreq_alloc()
 /* Free a RADIUS_REQ struct.
  */
 void 
-radreq_free(radreq)
-        RADIUS_REQ *radreq;
+radreq_free(RADIUS_REQ *radreq)
 {
 	string_free(radreq->remote_user);
         avl_free(radreq->reply_pairs);
@@ -72,9 +66,7 @@ static char *months[] = {
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
 int
-user_gettime(valstr, tm)
-        char *valstr; 
-        struct tm *tm;
+user_gettime(char *valstr, struct tm *tm)
 {
         int     i;
 
@@ -114,11 +106,7 @@ user_gettime(valstr, tm)
  * `whence' determines from where the offset is counted (seek-like)
  */
 void
-rad_lock(fd, size, offset, whence)
-        int fd;
-        size_t size;
-        off_t offset;
-        int whence;
+rad_lock(int fd, size_t size, off_t offset, int whence)
 {
         struct flock fl;
 
@@ -133,11 +121,7 @@ rad_lock(fd, size, offset, whence)
  * `whence' determines from where the offset is counted (seek-like)
  */
 void
-rad_unlock(fd, size, offset, whence)
-        int fd;
-        size_t size;
-        off_t offset;
-        int whence;
+rad_unlock(int fd, size_t size, off_t offset, int whence)
 {
         struct flock fl;
 
@@ -152,10 +136,7 @@ rad_unlock(fd, size, offset, whence)
  * number if found. Otherwise return default value `def'.
  */
 int
-xlat_keyword(kw, str, def)
-        struct keyword *kw;
-        char *str;
-        int def;
+xlat_keyword(struct keyword *kw, char *str, int def)
 {
         for ( ; kw->name; kw++) 
                 if (strcmp(str, kw->name) == 0)
@@ -166,9 +147,7 @@ xlat_keyword(kw, str, def)
 /* compose a full pathname from given path and filename
  */
 char *
-mkfilename(dir, name)
-        char *dir;
-        char *name;
+mkfilename(char *dir, char *name)
 {
         int len = strlen(dir) + strlen(name);
         char *p = emalloc(len+2);
@@ -179,10 +158,7 @@ mkfilename(dir, name)
 /* compose a full pathname from given path, subdirectory and filename
  */
 char *
-mkfilename3(dir, subdir, name)
-        char *dir;
-        char *subdir;
-        char *name;
+mkfilename3(char *dir, char *subdir, char *name)
 {
         int len = strlen(dir) + strlen(subdir) + strlen(name);
         char *p = emalloc(len+3); /* two intermediate slashes and
@@ -195,8 +171,7 @@ mkfilename3(dir, subdir, name)
 /* Convert second character of a backslash sequence to its ASCII
    value: */
 int
-backslash(c)
-        int c;
+backslash(int c)
 {
         static char transtab[] = "b\bf\fn\nr\rt\t";
         char *p;
@@ -209,10 +184,7 @@ backslash(c)
 }
 
 void
-string_copy(d, s, len)
-        char *d;
-        char *s;
-        int  len;
+string_copy(char *d, char *s, int len)
 {
         int slen = strlen(s);
         
@@ -223,8 +195,7 @@ string_copy(d, s, len)
 }
 
 char *
-op_to_str(op)
-        int op;
+op_to_str(int op)
 {
         switch (op) {
         case OPERATOR_EQUAL:         return "=";
@@ -238,8 +209,7 @@ op_to_str(op)
 }
 
 int
-str_to_op(str)
-        char *str;
+str_to_op(char *str)
 {
         int op = NUM_OPERATORS;
         switch (*str++) {
@@ -268,14 +238,8 @@ str_to_op(str)
         return op;
 }
 
-static int flush_seg(char **bufp, char *seg, char *ptr, int runlen);
-
-int
-flush_seg(bufp, seg, ptr, runlen)
-        char **bufp;
-        char *seg;
-        char *ptr;
-        int runlen;
+static int
+flush_seg(char **bufp, char *seg, char *ptr, int runlen)
 {
         int outbytes = 0;
         char *buf = *bufp;
@@ -307,11 +271,7 @@ flush_seg(bufp, seg, ptr, runlen)
    (not counting null terminator) is returned. */
 
 int
-format_string_visual(buf, runlen, str, len)
-        char *buf;
-        int runlen;
-        char *str;
-        int len;
+format_string_visual(char *buf, int runlen, char *str, int len)
 {
         char *seg, *ptr;
         int outbytes = 0;
@@ -349,9 +309,7 @@ format_string_visual(buf, runlen, str, len)
 }
 
 int
-format_vendor_pair(buf, pair)
-        char *buf;
-        VALUE_PAIR *pair;
+format_vendor_pair(char *buf, VALUE_PAIR *pair)
 {
         int n;
         UINT4 vendor;
@@ -374,9 +332,7 @@ format_vendor_pair(buf, pair)
 }
                 
 char *
-format_pair(pair, savep)
-        VALUE_PAIR *pair;
-        char **savep;
+format_pair(VALUE_PAIR *pair, char **savep)
 {
         char *buf1 = NULL;
         char *buf2ptr = NULL;

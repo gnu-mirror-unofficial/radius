@@ -1,18 +1,18 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2003 Sergey Poznyakoff
  
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
  
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
  
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation, 
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #if defined(HAVE_CONFIG_H)
@@ -25,18 +25,10 @@
 #include <stdio.h>
 #include <radiusd.h>
 
-#ifndef lint
-static char rcsid[] =
-"@(#) $Id$";
-#endif
-
 static VALUE_PAIR * menu_pairs(char *menu_name, char  *menu_selection);
 
-
 void
-process_menu(radreq, activefd)
-        RADIUS_REQ        *radreq;
-        int             activefd;
+process_menu(RADIUS_REQ *radreq, int activefd)
 {
         VALUE_PAIR *pair, *term_pair, *new_pair;
         char menu_name[MAX_MENU_NAME];
@@ -109,8 +101,7 @@ process_menu(radreq, activefd)
 }
 
 char *
-get_menu(menu_name)
-        char    *menu_name;
+get_menu(char *menu_name)
 {
         FILE    *fp;
         static  char menu_buffer[MAX_MENU_SIZE];
@@ -162,9 +153,7 @@ get_menu(menu_name)
 }
                
 VALUE_PAIR *
-menu_pairs(menu_name, menu_selection)
-        char    *menu_name;
-        char    *menu_selection;
+menu_pairs(char *menu_name, char *menu_selection)
 {
         FILE    *fp;
         char    *menu_path;

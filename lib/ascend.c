@@ -1,18 +1,18 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001 Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 /* Support for ascend binary filters. */
@@ -139,9 +139,7 @@ static int _ascend_parse(struct ascend_parse_buf *pb);
 #define _moreinput(pb) ((pb)->tokn < (pb)->tokc)
 
 static char *
-_get_token(pb, require)
-	struct ascend_parse_buf *pb;
-	int require;
+_get_token(struct ascend_parse_buf *pb, int require)
 {
 
 	if (!_moreinput(pb)) {
@@ -155,8 +153,7 @@ _get_token(pb, require)
 }
 
 static char *
-_lookahead(pb)
-	struct ascend_parse_buf *pb;
+_lookahead(struct ascend_parse_buf *pb)
 {
 	if (_moreinput(pb))
 		return pb->tokv[pb->tokn];
@@ -164,8 +161,7 @@ _lookahead(pb)
 }
 
 static int
-_get_type(pb)
-	struct ascend_parse_buf *pb;
+_get_type(struct ascend_parse_buf *pb)
 {
 	char *tok = _get_token(pb, 1);
 	if (!tok)
@@ -185,8 +181,7 @@ _get_type(pb)
 }
 
 static int
-_get_dir(pb)
-	struct ascend_parse_buf *pb;
+_get_dir(struct ascend_parse_buf *pb)
 {
 	char *tok;
 	if ((tok = _get_token(pb, 1)) == NULL)
@@ -203,8 +198,7 @@ _get_dir(pb)
 }
 
 static int
-_get_action(pb)
-	struct ascend_parse_buf *pb;
+_get_action(struct ascend_parse_buf *pb)
 {
 	char *tok;
 	if ((tok = _get_token(pb, 1)) == NULL)
@@ -225,9 +219,7 @@ _get_action(pb)
 /* GENERIC filter parsing */
 
 int
-_get_hex_string(pb, buf)
-	struct ascend_parse_buf *pb;
-	u_char *buf;
+_get_hex_string(struct ascend_parse_buf *pb, u_char *buf)
 {
 	u_char tmp[2*ASCEND_MAX_CMP_LENGTH], *p;
 	char *tok = _get_token(pb, 1);
@@ -277,8 +269,7 @@ _get_hex_string(pb, buf)
 	mask and value are hex strings */
    
 int
-_ascend_parse_generic(pb)
-	struct ascend_parse_buf *pb;
+_ascend_parse_generic(struct ascend_parse_buf *pb)
 {
 	char *p;
 	int num;
@@ -337,8 +328,7 @@ _ascend_parse_generic(pb)
 /* ************************************************************************* */
 /* IP filter parsing */
 int
-_get_protocol(pb)
-	struct ascend_parse_buf *pb;
+_get_protocol(struct ascend_parse_buf *pb)
 {
 	char *tok = _get_token(pb, 1);
 	char *p;
@@ -366,10 +356,7 @@ _get_protocol(pb)
 #define ASCEND_DIR_DST 1
 
 int
-_get_direction_type(pb, suffix, lookahead)
-	struct ascend_parse_buf *pb;
-	char *suffix;
-	int lookahead;
+_get_direction_type(struct ascend_parse_buf *pb, char *suffix, int lookahead)
 {
 	char *tok = lookahead ? _lookahead(pb) : _get_token(pb, 1);
 
@@ -388,8 +375,7 @@ _get_direction_type(pb, suffix, lookahead)
 }
 
 int
-_get_ip(pb)
-	struct ascend_parse_buf *pb;
+_get_ip(struct ascend_parse_buf *pb)
 {
 	int dir = _get_direction_type(pb, "ip", 0);
 	char *tok;
@@ -437,8 +423,7 @@ _get_ip(pb)
 /* FIXME: if second {src|dst}ip is misspelled, the function returns
    success, supposing it was a portspec */
 int
-_ascend_parse_ip_clause(pb)
-	struct ascend_parse_buf *pb;
+_ascend_parse_ip_clause(struct ascend_parse_buf *pb)
 {
 	int n;
 
@@ -459,8 +444,7 @@ _ascend_parse_ip_clause(pb)
 }
 
 int
-_get_op(pb)
-	struct ascend_parse_buf *pb;
+_get_op(struct ascend_parse_buf *pb)
 {
 	char *s = _get_token(pb, 1);
 	if (!s)
@@ -481,8 +465,7 @@ _get_op(pb)
 }
 
 int
-_get_port(pb)
-	struct ascend_parse_buf *pb;
+_get_port(struct ascend_parse_buf *pb)
 {
 	int dir = _get_direction_type(pb, "port", 0);
 	char *tok;
@@ -539,8 +522,7 @@ _get_port(pb)
 }
 
 int
-_ascend_parse_port_clause(pb)
-	struct ascend_parse_buf *pb;
+_ascend_parse_port_clause(struct ascend_parse_buf *pb)
 {
 	int n = _get_port(pb);
 
@@ -574,8 +556,7 @@ _ascend_parse_port_clause(pb)
 	 PORT   is either the port number or its name from /etc/services */
 
 int
-_ascend_parse_ip(pb)
-	struct ascend_parse_buf *pb;
+_ascend_parse_ip(struct ascend_parse_buf *pb)
 {
 	if (!_moreinput(pb))
 		return 0;
@@ -616,16 +597,14 @@ _ascend_parse_ip(pb)
                     [ "dstipxnet" NETADDR "dstipxnode" NODE
   		     [ "dstipxsoc" cmp HEXNUM ]] */
 int
-_ascend_parse_ipx(pb)
-	struct ascend_parse_buf *pb;
+_ascend_parse_ipx(struct ascend_parse_buf *pb)
 {
 	asprintf(pb->errmsg, "IPX filters are not yet supported");
 	return 1;
 }
  
 int
-_ascend_parse(pb)
-	struct ascend_parse_buf *pb;
+_ascend_parse(struct ascend_parse_buf *pb)
 {
 	memset(pb->flt, 0, sizeof(pb->flt[0]));
 	
@@ -649,10 +628,7 @@ _ascend_parse(pb)
    Return !0 and return diagnostics in errp otherwise.
    NOTE: errp is malloced and should be freed using usual free() */
 int
-_ascend_parse_filter(input, flt, errp)
-	const char *input;
-	ASCEND_FILTER *flt;
-	char **errp;
+_ascend_parse_filter(const char *input, ASCEND_FILTER *flt, char **errp)
 {
 	struct ascend_parse_buf pb;
 	int rc;
@@ -673,9 +649,7 @@ _ascend_parse_filter(input, flt, errp)
 }
 
 int
-ascend_parse_filter(pair, errp)
-	VALUE_PAIR *pair;
-	char **errp;
+ascend_parse_filter(VALUE_PAIR *pair, char **errp)
 {
 	ASCEND_FILTER flt;
 	

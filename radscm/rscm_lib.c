@@ -1,18 +1,18 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001 Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #ifndef lint
@@ -29,9 +29,7 @@ static char rcsid[] =
 #include <radscm.h>
 
 SCM 
-rad_scm_cell(car, cdr)
-	SCM car;
-	SCM cdr;
+rad_scm_cell(SCM car, SCM cdr)
 {
 	SCM c;
 	
@@ -43,8 +41,7 @@ rad_scm_cell(car, cdr)
 
 #ifndef HAVE_SCM_LONG2NUM
 SCM 
-scm_long2num (val)
-        long val;
+scm_long2num(long val)
 {
   if (SCM_FIXABLE ((long) val))
     return SCM_MAKINUM (val);
@@ -58,8 +55,7 @@ scm_long2num (val)
 #endif
 
 SCM
-radscm_avl_to_list(pair)
-        VALUE_PAIR *pair;
+radscm_avl_to_list(VALUE_PAIR *pair)
 {
         SCM scm_first = SCM_EOL, scm_last;
         
@@ -78,8 +74,7 @@ radscm_avl_to_list(pair)
 }
 
 VALUE_PAIR *
-radscm_list_to_avl(list)
-        SCM list;
+radscm_list_to_avl(SCM list)
 {
         VALUE_PAIR *first, *last, *p;
 
@@ -103,8 +98,7 @@ radscm_list_to_avl(list)
 
 
 SCM
-radscm_avp_to_cons(pair)
-        VALUE_PAIR *pair;
+radscm_avp_to_cons(VALUE_PAIR *pair)
 {
         SCM scm_attr, scm_value;
         DICT_ATTR *dict;
@@ -136,8 +130,7 @@ radscm_avp_to_cons(pair)
  */
 
 VALUE_PAIR *
-radscm_cons_to_avp(scm)
-        SCM scm;
+radscm_cons_to_avp(SCM scm)
 {
         SCM car, cdr;
         DICT_ATTR *dict;
@@ -218,8 +211,7 @@ radscm_cons_to_avp(scm)
 }
 
 void
-rscm_add_load_path(path)
-        char *path;
+rscm_add_load_path(char *path)
 {
         SCM scm, path_scm;
         path_scm = RAD_SCM_SYMBOL_VALUE("%load-path");

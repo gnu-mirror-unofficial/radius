@@ -183,13 +183,19 @@ typedef struct dict_vendor {
         int                     vendorcode;
 } DICT_VENDOR;
 
+enum avp_eval_type {
+	eval_const,
+	eval_interpret,
+	eval_compiled
+};
+
 /* An attribute/value pair */
 typedef struct value_pair {
         struct value_pair       *next;      /* Link to next A/V pair in list */
         char                    *name;      /* Attribute name */
         int                     attribute;  /* Attribute value */
         int                     type;       /* Data type */
-        int                     eval;       /* Evaluation flag */
+        enum avp_eval_type      eval_type;  /* Evaluation flag */
         int                     prop;       /* Properties */ 
         int                     operator;   /* Comparison operator */
         union {

@@ -89,22 +89,10 @@
     You can check the functionality of the package without installing
     it. To do so, run
 
-	make check.
+        make check
 
-    Two test suites are provided:
-    
-	* The shell-based test suite (located in test/shell)
-	* The DejaGNU-based test suite (located in test/dejagnu)
+    (You have to have DejaGNU installed on your system).
 
-    Basically, both suites contain the same tests. The DejaGNU-based
-    test suite allows for remote testing of the package. For instructions
-    on how to test the package remotely, refer to file test/dejagnu/README.
-
-    To control the number of requests sent during the stress test use
-    STRESS_COUNT environment variable, e.g.:
-
-                 make STRESS_COUNT=2000 check
-    
     4. make install
 
     5. If you wish to install manual pages, do 
@@ -148,21 +136,10 @@
 		       III. Upgrade
 		    -------------------
 
-    Please, read file NEWS. It describes many features, introduced
-    with version 0.96.
+    Please, read file NEWS. It describes all the new features,
+    introduced with version 1.0 as well as its basic differences
+    from the 0.96 series.
                
-    If you are upgrading from GNU Radius 0.94 or 0.95, you will need
-    to run script scripts/config-conv. It converts old raddb/config to
-    the new format. It assumes /usr/local as default prefix. If you have
-    installed the previous version of radius under a different prefix, run
-
-	scripts/config-conv --prefix=PATH
-
-    The script will create a backup copy of your old config file in your
-    raddb directory (It will name it config~). Please, take a look at
-    converted file, and edit it to your liking.
-
-    
 		       IV. Configuring
 		    ----------------------
 

@@ -1,3 +1,15 @@
+2003-06-14  Sergey Poznyakoff 
+
+	* README: Updated
+	* doc/MACHINES: Updated
+	* configure.ac: Use AC_HELP_STRING. Patch courtesy Wojciech
+	Polak <polak@gnu.org>
+	* include/radiusd.h (radiusd_write_timeout,radiusd_read_timeout):
+	New variables.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/rewrite.y: Minor changes.
+	* radiusd/rpp.c: Impose timeouts on master I/O operations.
+
 2003-06-13  Sergey Poznyakoff 
 
 	* radiusd/sql.c (rad_sql_checkgroup): Do not print spurious

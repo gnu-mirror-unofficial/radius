@@ -6,16 +6,7 @@ Intel x86
     i686-pc-linux-gnu
     i386-unknown-freebsd4.4
     i386-pc-solaris2.7
-
     i386-unknown-gnu0.2
-
-        POSIX threads are not available on this platform, pth-1.4.1
-        was used instead. The pth's configure was run as follows:
-
-        ac_cv_func_sigstack=no ac_cv_func_sigaltstack=no \
-        ./configure --with-mctx-mth=sjlj --with-mctx-dsp=sjljlx \
-                    --with-mctx-stk=none \
-                    --enable-pthread --enable-syscall-soft
 
 Alpha
     alpha-unknown-freebsd4.4

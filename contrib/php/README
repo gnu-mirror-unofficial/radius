@@ -1,15 +1,143 @@
+This file documents `mod_radius' php module. See end of file for
+copying conditions.
+
+* Introduction
+
+`Mod_radius' is a loadable php module providing functions for querying
+remote RADIUS servers and analyzing their replies. The module is designed
+for use with php version 4.3.x (Zend v1.3.0).
+
+The complete example of using this module may be found in
+/examples/radius.php.
+
+* Constants
+
+The module defines following constants:
+
+1) Attribute data types
+
+TYPE_INVALID		Invalid data type
+TYPE_INTEGER		Integer
+TYPE_IPADDR		IPv4 Address
+TYPE_STRING		String (0..253 characters)
+TYPE_DATE		Date
+
+2) GNU Radius port types
+
+PORT_AUTH		Port for sending authentication requests
+PORT_ACCT		Port for sending accounting requests
+
+3) RADIUS Request codes:
+
+RT_ACCESS_REQUEST               1
+RT_ACCESS_ACCEPT                2
+RT_ACCESS_REJECT                3
+RT_ACCOUNTING_REQUEST           4
+RT_ACCOUNTING_RESPONSE          5
+RT_ACCOUNTING_STATUS            6
+RT_PASSWORD_REQUEST             7
+RT_PASSWORD_ACK                 8
+RT_PASSWORD_REJECT              9
+RT_ACCOUNTING_MESSAGE           10
+RT_ACCESS_CHALLENGE             11
+RT_STATUS_SERVER                12
+RT_STATUS_CLIENT                13
+RT_ASCEND_TERMINATE_SESSION     31
+RT_ASCEND_EVENT_REQUEST         33
+RT_ASCEND_EVENT_RESPONSE        34
+RT_ASCEND_ALLOCATE_IP           51
+RT_ASCEND_RELEASE_IP            52
+
+* Functions
+
+The module provides following functions:
+
+** void radius_set_debug (string level);
+
+Sets debug level to that specified by its argument.
+
+** void radius_clear_debug (void);
+
+Clears debug level.
+
+** bool radius_auth_user (string user_name, string password
+                          [, array send_pairs]);
+
+Sends an Access-Request to the RADIUS server. As usual for GNU Radius
+client programs, the parameters of the server are retrieved from
+client configuration file. The two obligatory arguments `user_name'
+and `password' specify user name and password to send.
+
+Optional `send_pairs' is an array of A/V pairs to send. The array is
+indexed with attribute dictionary name. The values in the array are the
+values of corresponding attributes. If several instances of the same
+attribute must be sent, these must form a sub-array. For example:
+
+$send = array ( "NAS-IP-Address" => "127.0.0.1",
+                "NAS-Identifier" => "apache",
+                "Reply-Message"  => array ("first message", "second message")
+              );
+
+This will add to the request NAS-IP-Address and NAS-Identifier pairs
+and *two* Reply-Message pairs with values "first message" and
+"second message".
+
+`Radius_auth_user' returns TRUE if the user was successfully authenticated
+(an Access-Accept reply has been received) or FALSE otherwise.
+
+** long radius_query (long port_type, long request_code, array request_pairs
+                      [, reply_pairs [, reply_message]]);
+
+Sends an arbitrary query to the server. Arguments are:
+
+ port_type	Type of port to send the request through. Use PORT_AUTH and
+		PORT_ACCT constants for this argument.
+ request_code   RADIUS request code.
+ request_pairs  A/V pairs to be added to the request. See description of
+                `send_pairs' argument to function `radius_auth_user'.
+ reply_pairs    If this argument is given, it is filled with reply pairs
+		received from the server. The structure of the array is
+		the same as described above (see `send_pairs' argument 
+		to function `radius_auth_user').
+ reply_message  This argument, if specified, receives a concatenated
+		values of all Reply-Message attributes found in the
+		reply. It can thus be used to display the entire reply
+		message.
+
+`Radius_query' returns RADIUS code of the reply. 
+
+** string radius_lookup_value (string attribute, long value);
+
+Looks up in the dictionary the symbolic name for integer `value'
+of the given `attribute'. Returns the name or NULL if not found.
+
+** long radius_attribute_type (string attribute);
+
+Returns data type of a dictionary attribute identified by its name.
+
+
+* Copyright information:
+
+Copyright (C) 2004 Free Software Foundation, Inc.
+
+   Permission is granted to anyone to make or distribute verbatim copies
+   of this document as received, in any medium, provided that the
+   copyright notice and this permission notice are preserved,
+   thus giving the recipient permission to redistribute in turn.
+
+   Permission is granted to distribute modified versions
+   of this document, or of portions of it,
+   under the above conditions, provided also that they
+   carry prominent notices stating who last changed them.
+
+
+
 Received: from odessa.farlep.net (odessa.farlep.net [213.130.1.236]) 
 	by Mirddin.farlep.net with ESMTP id i7QHAq022191
 	for <gray@Mirddin.farlep.net>; Thu, 26 Aug 2004 20:10:52 +0300
 X-Mailutils-Message-Id: i7QHAq022191
-Organization: Farlep
-Received: from localhost (ecilop.farlep.net [213.130.1.227])
-	(authenticated bits=0)
-	by odessa.farlep.net (Schnaps?/Ja-Ja!/Farlep-Odessa-Mail) with ESMTP id i7QHAn7T021889
-	for <gray@Mirddin.farlep.net>; Thu, 26 Aug 2004 20:10:52 +0300
 Date: Thu, 26 Aug 2004 20:10:49 +0300
 From: Sergei Sinkovsky <glorybox@farlep.net>
-X-Mailer: The Bat! (v2.00)         CD5BF9353B3B7091
 Reply-To: Sergei Sinkovsky <glorybox@farlep.net>
 X-Priority: 3 (Normal)
 Message-ID: <100428618320.20040826201049@farlep.net>
@@ -20,7 +148,6 @@ References: <200408261708.i7QH86022177@Mirddin.farlep.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Virus-Scanned: clamd / ClamAV version 0.70, clamav-milter version 0.70j
 X-Envelope-Date: Thu Aug 26 20:10:52 2004
 X-Envelope-Sender: glorybox@farlep.net
 
@@ -43,3 +170,9 @@ Sergei Sinkovski
 mailto:glorybox@farlep.net
 
 
+
+Local Variables:
+mode: outline
+paragraph-separate: "[ 	]*$"
+version-control: never
+End:

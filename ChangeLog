@@ -12,7 +12,10 @@
 	duplcating descriptors if they already have desired values.
 	* contrib/php/README: Updated
 	* NEWS: Updated
-
+	* README: Updated
+	* configure.ac: Minor fixes
+	* tests/scheme-acct.at: Check the output file.
+	
 2004-09-14  Sergey Poznyakoff
 
 	* radiusd/auth.c (from_base64): Assume right to left

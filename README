@@ -85,7 +85,11 @@ The applications-specific options are:
 
 *** --without-readline
 	Disable GNU readline support
-	
+
+*** --with-php=PHP-PREFIX
+        Compile mod_radius php module. PHP-PREFIX is the path where
+	php is installed. The module requires php 4.3.x
+		
 *** --enable-snmp[=compat]
 	Enable SNMP support. By default this enables the use of enterprise
         subtree .iso.org.dod.internet.private.enterprises.gnu.radius

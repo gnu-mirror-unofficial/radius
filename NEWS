@@ -141,7 +141,8 @@ powerful scripting language useful for writing RADIUS client applications.
 
 See README files in corresponding directories. 
 
-* Testsuite rewritten in autotest.
+* Testsuite rewritten in autotest. This allows to run it on almost
+any platform.
 
 * Bugfixes
 
@@ -152,6 +153,14 @@ described in the documentation.
 Ascend-Call-Filter attributes.
 
 ** Fixed bugs in SNMP library (CAN-2004-0849)
+
+** Do not use descriptors 0 and 1 for interprocess communications since
+user-defined procedures and/or libraries may attempt to write to
+stdout and thus interfere in the communication.
+
+** Fixed 'forward' statement in `acct' block. It was incorrectly
+enabling forwarding of authentication requests, instead of accounting
+ones.
 
 
 Version 1.2:

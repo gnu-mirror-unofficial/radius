@@ -55,6 +55,54 @@ $html2_doctype = '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0 Strict Level 2//E
 #$LDC_FOOT = 'Footnotes';
 # TODO: @def* shortcuts
 
+# user-defined subs
+
+sub defattr()
+{
+    s/\@defattr\{(.*)\}/$1/;
+#    print "S1: $_\n";
+    my @args = split(/\s+/, &protect_html($_));
+    my ($S,$name,$value,$type,$us,$hnt,$hgr,$add,$prop);
+#    print "IN: $_\n";
+    while (/\{([^\{\}]*)\}/) {
+	# this is a {} construct
+	($before, $contents, $after) = ($`, $1, $');
+	# protect spaces
+	$contents =~ s/\s+/$;9/g;
+	# restore $_ protecting {}
+	$_ = "$before$;7$contents$;8$after";
+    }
+#    print "CTS: $_\n";
+    @args = split(/,/, &protect_html($_));
+    foreach (@args) {
+	s/$;9/ /g;	# unprotect spaces
+	s/$;7/\{/g;	# ... {
+	s/$;8/\}/g;	# ... }
+    }
+
+    $name = shift(@args);
+    $value = shift(@args);
+    $type = shift(@args);
+    $us = shift(@args);
+    $hnt = shift(@args);
+    $hgr = shift(@args);
+    $add = shift(@args);
+    $prop = shift(@args);
+
+    $S = "ATTRIBUTE <B>$name</B> $value $type";
+    $S .= "<TABLE>";
+    $S .= "<TR><TD>Users:</TD><TD>$us</TD></TR>";
+    $S .= "<TR><TD>Hints:</TD><TD>$hnt</TD></TR>";
+    $S .= "<TR><TD>Huntgroups:</TD><TD>$hgr</TD></TR>";
+    $S .= "<TR><TD>Additivity:</TD><TD>$add</TD></TR>";
+    $S .= "<TR><TD>Proxy propagated:</TD><TD>$prop</TD></TR>";
+    $S .= "</TABLE>";
+    push(@lines, $S);
+}
+
+%user_sub = (
+	     'defattr', 'defattr');
+
 #
 # pre-defined indices
 #
@@ -136,6 +184,7 @@ $html2_doctype = '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0 Strict Level 2//E
 # texinfo "things" (@foo{}) to HTML ones
 #
 %things_map = (
+               'AVP', 'A/V pair',
                'IP', 'IP address',
                'LHS', 'LHS',
                'NAS', 'NAS',
@@ -180,6 +229,7 @@ $html2_doctype = '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0 Strict Level 2//E
 	      'r', '',			# unsupported
 	      'samp', '"SAMP',		# will put quotes, cf. &apply_style
 	      'sc', '&do_sc',		# special case
+	      'acronym', '&do_sc',
 	      'strong', 'STRONG',
 	      't', 'TT',
 	      'titlefont', '',		# useless
@@ -495,7 +545,7 @@ foreach (keys(%simple_map)) {
     $subst_code .= "s/\\\@$re/$simple_map{$_}/g;\n";
 }
 foreach (keys(%things_map)) {
-    $subst_code .= "s/\\\@$_\\{\\}/$things_map{$_}/g;\n";
+    $subst_code .= "s^\\\@$_\\{\\}^$things_map{$_}^g;\n";
 }
 if ($use_acc) {
     # accentuated characters

@@ -89,6 +89,16 @@ filters {
 	};
 };
 
+rewrite {
+	load-path "@SOURCEDIR@/../../examples";
+	load "rewrite";
+	load "ascend.rw";
+	load "cisco.rw";
+	load "jetstream.rw";
+	load "nt.rw";
+	load "filter.rw";
+};
+		
 @GUILE@guile {
 @GUILE@        debug yes;
 @GUILE@        load-path "@BUILDDIR@/raddb";

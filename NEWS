@@ -42,6 +42,9 @@ active sessions.
 
 More methods of checking will be added in future versions.
 
+** New methods of querying the NASes about active user sessions: using
+guile function and using an external program.
+
 ** When an unsupported authentication type is requested, radiusd first
 checks if an extension Scheme module is provided that handles that
 authentication type. If such module is found, it is invoked to handle

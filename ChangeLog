@@ -1,3 +1,29 @@
+2004-05-18  Sergey Poznyakoff
+
+	* raddb/sqlserver (mlc_user_query): Fixed
+	* radiusd/checkrad.c (struct check_instance): Keep nas ip
+	address. All functions updated accordingly
+	* radiusd/scheme.c [!USE_SERVER_GUILE] (scheme_eval_boolean_expr):
+	Define the function.
+	* radiusd/sql.c (rad_sql_retrieve_sessions): Get four fields from
+	the database.
+
+	* NEWS: Updated
+	* include/radius/envar.h: Uniformly protect header files from
+	re-inclusion.
+	* include/radius/list.h: Likewise.
+	* include/radius/md4.h: Likewise.
+	* include/radius/md5.h: Likewise.
+	* include/radius/mem.h: Likewise.
+	* include/radius/radius.h: Likewise.
+	* include/radius/radpaths.h: Likewise.
+	* include/radius/radscm.h: Likewise.
+	* include/radius/radutmp.h: Likewise.
+	* include/radius/sha1.h: Likewise.
+	* include/radius/symtab.h: Likewise.
+	* scripts/dict.awk: Likewise.
+	* scripts/mktypes.c: Likewise.
+	
 2004-05-07  Sergey Poznyakoff
 
 	* include/checkrad.h (METHOD_GUILE): New define

@@ -151,5 +151,5 @@ extern SQL_DISPATCH_TAB odbc_dispatch_tab[];
 # define rad_sql_cleanup (void (*)(int, void *)) NULL
 # define rad_sql_shutdown()
 # define rad_sql_idle_check()
-
+# define sql_init()
 #endif

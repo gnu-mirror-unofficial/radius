@@ -23,6 +23,7 @@
 
 EXTRA_DIST = $(TESTSUITE_AT) testsuite package.m4 
 DISTCLEANFILES       = atconfig $(check_SCRIPTS)
+CLEANFILES           = confdir
 MAINTAINERCLEANFILES = Makefile.in $(TESTSUITE)
 SUBDIRS=raddb proxy
 

@@ -148,3 +148,9 @@ snmp {
 		deny any;
 	};
 };
+
+guile {
+	load-path "/usr/local/libexec/guile";
+	load "lib.scm";
+	debug yes;
+};

@@ -1,20 +1,20 @@
 menu
 
-       *** This is a test Menu coming from RADIUS ***
+*** This is a test Menu coming from RADIUS ***
 
-       Menus can call other menus.
-       This menu is called when option 5 of menu1 is selected.
-       Menu choices can be words as well as numbers.
+Menus can call other menus.
+This menu is called when option 5 of menu1 is selected.
+Menu choices can be words as well as numbers.
 
-       Please enter an option:
+Please enter an option:
 
-       ra       Connect to host ra
-       sol      Connect to host sol
-       weevil   Connect to host weevil
-       top      Return to top level menu
-       quit     Quit
+ra       Connect to host ra
+sol      Connect to host sol
+weevil   Connect to host weevil
+top      Return to top level menu
+quit     Quit
 
-       Option: 
+Option: 
 end
 ra
         Service-Type = Login-User,
@@ -24,7 +24,7 @@ ra
 #
 sol
         Service-Type = Login-User,
-	Login-IP-Host = sol,
+	Login-IP-Host = 127.0.0.1,
         Login-Service = Rlogin,
         Termination-Menu = "menu2"
 #

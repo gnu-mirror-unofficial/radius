@@ -1,3 +1,131 @@
+2002-05-06  Sergey Poznyakoff
+
+	* radiusd/acct.c: Fixed diagnostics.
+	* radiusd/auth.c: Likewise.
+	* radiusd/config.y: Likewise.
+	* radiusd/exec.c: Likewise.
+	* radiusd/files.c: Likewise.
+	* radiusd/log.c: Likewise.
+	* radiusd/proxy.c: Likewise.
+	* radiusd/radius.c: Likewise.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/request.c: Likewise.
+	* radlast/radlast.c: Likewise.
+	* radlib/client.c: Likewise.
+	* radlib/dict.c: Likewise.
+	* radlib/radargp.c: Likewise.
+	* radtest/input.l: Likewise.
+	* radtest/main.c: Likewise.
+	* radwho/radwho.c: Likewise.
+	* sql/postgres.c: Likewise.
+	* radiusd/rewrite.y: Likewise.
+	* radiusd/scheme.c: Likewise.
+	* radiusd/sql.c: Likewise.
+	* radlib/radutmp.c: Likewise.
+	* radlib/sysdep.c: Likewise.
+	* radlib/users.l: Likewise.
+	* radlib/users.y: Likewise.
+	* radzap/radzap.c: Likewise.
+	* sql/mysql.c: Likewise.
+	* sql/odbc.c: Likewise.
+	
+	* radiusd/radius.c: Removed \r from user reply messages.
+	* radiusd/menu.c: Likewise.
+
+	* radlib/intl.c: Use ENABLE_NLS instead of HAVE_LIBINTL
+	
+	* TODO: Updated
+	* README: Updated
+	* .cvsignore: Added intl
+	* Makefile.am: Likewise.
+	* configure.ac: Fixed nls-related  issues.
+
+	* client/pam_radius/Makefile.am: Added @LTLIBINTL@
+	* radiusd/Makefile.am: Likewise.
+	* radlast/Makefile.am: Likewise.
+	* m4/Makefile.am: Added nls-related files.
+	* radlib/Makefile.am: Added nls-related issues.
+	* radscm/Makefile.am: Likewise.
+	* radtest/Makefile.am: Likewise.
+	* raduse/Makefile.am: Likewise.
+	* radwho/Makefile.am: Likewise.
+	* radzap/Makefile.am: Likewise.
+
+	Added nls-related files:
+	* m4/codeset.m4,
+	* m4/gettext.m4,
+	* m4/glibc21.m4,
+	* m4/iconv.m4,
+	* m4/isc-posix.m4,
+	* m4/lcmessage.m4,
+	* m4/lib-ld.m4,
+	* m4/lib-link.m4,
+	* m4/lib-prefix.m4,
+	* m4/progtest.m4.
+	
+	* po/.cvsignore: Updated.
+	* po/Makefile.in.in: new, from gettext-0.11.2.
+	* po/Rules-quot: Likewise.
+	* po/boldquot.sed: Likewise.
+	* po/en@boldquot.header: Likewise.
+	* po/en@quot.header: Likewise.
+	* po/insert-header.sin: Likewise.
+	* po/quot.sed: Likewise.
+	* po/remove-potcdate.sin: Likewise.
+	* po/remove-potcdate.sed: Likewise.
+
+	* po/POTFILES.in: new.
+	* po/LINGUAS: new.
+	* po/Makevars: new.
+	* po/no.po: Norwegian messages (bokmaal)
+
+	* intl/: New directory. Sources for standalone libintl
+	  implementation.
+	* intl/Makefile.in: new, from gettext-0.11.2.
+	* intl/ChangeLog: Likewise.
+	* intl/VERSION: Likewise.
+	* intl/bindtextdom.c: Likewise.
+	* intl/config.charset: Likewise.
+	* intl/dcgettext.c: Likewise.
+	* intl/dcigettext.c: Likewise.
+	* intl/dcngettext.c: Likewise.
+	* intl/dgettext.c: Likewise.
+	* intl/dngettext.c: Likewise.
+	* intl/eval-plural.h: Likewise.
+	* intl/explodename.c: Likewise.
+	* intl/finddomain.c: Likewise.
+	* intl/gettext.c: Likewise.
+	* intl/gettextP.h: Likewise.
+	* intl/gmo.h: Likewise.
+	* intl/hash-string.h: Likewise.
+	* intl/intl-compat.c: Likewise.
+	* intl/l10nflist.c: Likewise.
+	* intl/libgnuintl.h: Likewise.
+	* intl/loadinfo.h: Likewise.
+	* intl/loadmsgcat.c: Likewise.
+	* intl/localcharset.c: Likewise.
+	* intl/locale.alias: Likewise.
+	* intl/localealias.c: Likewise.
+	* intl/localename.c: Likewise.
+	* intl/ngettext.c: Likewise.
+	* intl/os2compat.c: Likewise.
+	* intl/os2compat.h: Likewise.
+	* intl/osdep.c: Likewise.
+	* intl/plural-exp.c: Likewise.
+	* intl/plural-exp.h: Likewise.
+	* intl/plural.c: Likewise.
+	* intl/plural.y: Likewise.
+	* intl/ref-add.sin: Likewise.
+	* intl/ref-del.sin: Likewise.
+	* intl/textdomain.c: Likewise.
+	* intl/libintl.h: Likewise.
+	* intl/charset.alias: Likewise.
+	* intl/ref-add.sed: Likewise.
+	* intl/ref-del.sed: Likewise.
+	* intl/.cvsignore: new.
+
+	* ABOUT-NLS: new file, from gettext-0.11.2.
+	
 2002-05-02  Sergey Poznyakoff  
 
 	* .cvsignore: Updated.

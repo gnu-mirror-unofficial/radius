@@ -69,7 +69,8 @@ static Bucketclass alloc_class(size_t size);
 static Bucket alloc_bucket(Bucketclass);
 static void put_back(Bucketclass, void *);
 static void put_back_cont(Bucketclass, void *, count_t);
-static void *alloc_entry_nl(size_t size);
+static void *mem_alloc_nl(size_t size);
+static size_t mem_effective_size(size_t size);
 
 #define ENTRY_SIZE sizeof(struct entry)
 #define CLASS_SIZE sizeof(struct bucketclass)
@@ -79,6 +80,17 @@ static void *alloc_entry_nl(size_t size);
         (Entry)((char*)((Bucket)b+1) + (b)->s.class->elsize * (n))
 #define bucket_capacity(size) \
         (count_t)((MEM_PAGESIZE-BUCKET_SIZE+(size)-1)/(size)-1)
+#define EFFECTIVE_SIZE(size) \
+        sizeof(Align_t)*((size + sizeof(Align_t) - 1) / sizeof(Align_t))
+
+size_t
+mem_effective_size(size)
+	size_t size;
+{
+	if (size < ENTRY_SIZE)
+                size = ENTRY_SIZE;
+	return EFFECTIVE_SIZE(size);
+}
 
 Bucketclass
 alloc_class_mem()
@@ -88,8 +100,8 @@ alloc_class_mem()
                 struct bucketclass class = {
                         (Bucketclass)0,  /* next */
                         0,               /* cont */
-                        CLASS_SIZE,
-                        bucket_capacity(CLASS_SIZE),
+                        EFFECTIVE_SIZE(CLASS_SIZE),
+                        bucket_capacity(EFFECTIVE_SIZE(CLASS_SIZE)),
                         0,
                         0,
                         (Bucket)0,
@@ -97,8 +109,8 @@ alloc_class_mem()
                 };
                 
                 Bucket bp = alloc_bucket(&class);
-                bucket_class = &class; /* to fake alloc_entry() */
-                bucket_class = alloc_entry_nl(CLASS_SIZE);
+                bucket_class = &class; /* to fake mem_alloc() */
+                bucket_class = mem_alloc_nl(CLASS_SIZE);
                 bp->s.class = bucket_class;
                 
                 bucket_class->first = bp;
@@ -108,10 +120,10 @@ alloc_class_mem()
                 bucket_class->elsize = CLASS_SIZE;
                 bucket_class->elcnt = bucket_capacity(CLASS_SIZE);
         }
-        return alloc_entry_nl(CLASS_SIZE);
+        return mem_alloc_nl(CLASS_SIZE);
 }
 
-#define free_class free_entry
+#define free_class mem_free
 
 Bucketclass
 alloc_class(size)
@@ -199,14 +211,13 @@ alloc_bucket(class)
  */
 
 void *
-alloc_entry_nl(size)
+mem_alloc_nl(size)
         size_t size;
 {
         Bucketclass class_ptr;
         Entry ptr;
 
-        if (size < ENTRY_SIZE)
-                size = ENTRY_SIZE;
+	size = mem_effective_size(size);
         for (class_ptr = bucket_class; class_ptr; class_ptr = class_ptr->next) 
                 if (class_ptr->elsize == size && !class_ptr->cont) 
                         break;
@@ -235,12 +246,12 @@ alloc_entry_nl(size)
 }
 
 void *
-alloc_entry(size)
+mem_alloc(size)
         size_t size;
 {
 	void *p;
 	mem_lock();
-	p = alloc_entry_nl(size);
+	p = mem_alloc_nl(size);
 	mem_unlock();
 	return p;
 }
@@ -263,7 +274,7 @@ put_back(class, ptr)
 }
 
 void
-free_entry(ptr)
+mem_free(ptr)
         void *ptr;
 {
         Bucketclass class;
@@ -292,7 +303,7 @@ free_entry(ptr)
 /* Allocate COUNT contiguous objects of size SIZE
  */
 void *
-calloc_entry(count, size)
+mem_calloc(count, size)
         count_t count;
         size_t size;
 {
@@ -302,9 +313,9 @@ calloc_entry(count, size)
         size_t      found;
         int         dead_loop;
 
-        /* Fix-up entry size if less than minimum */
-        if (size < ENTRY_SIZE)
-                size = ENTRY_SIZE;
+        /* Fix-up entry size */
+	size = mem_effective_size(size);
+
         mem_lock();
         /* Find the appropriate class */
         for (class_ptr = bucket_class; class_ptr; class_ptr = class_ptr->next) 
@@ -325,7 +336,7 @@ calloc_entry(count, size)
          */
         if (count > class_ptr->elcnt) {
                 radlog(L_CRIT, 
-                       _("calloc_entry(): too many contiguous objects requested (%d/%d)"),
+                       _("mem_calloc(): too many contiguous objects requested (%d/%d)"),
                        count, class_ptr->elcnt);
                 abort();
         }
@@ -369,7 +380,7 @@ again:
 
         if (found != count) {
                 if (dead_loop++) {
-                        radlog(L_CRIT, _("calloc_entry(): infinite loop detected"));
+                        radlog(L_CRIT, _("mem_calloc(): infinite loop detected"));
                         abort();
                 }
                 if (!alloc_bucket(class_ptr)) {
@@ -391,10 +402,10 @@ again:
 }
         
 /* Free COUNT contiguous objects of size SIZE. The objects should have been
- * allocated using calloc_entry().
+ * allocated using mem_calloc().
  */
 void
-cfree_entry(ptr, count)
+mem_cfree(ptr, count)
         void *ptr;
         count_t count;
 {
@@ -479,10 +490,10 @@ typedef union {
 
 static pthread_mutex_t string_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-/* alloc_string(): Allocate a string of given length
+/* string_alloc(): Allocate a string of given length
  */
 char *
-alloc_string(length)
+string_alloc(length)
         size_t length;
 {
         count_t count;
@@ -490,33 +501,33 @@ alloc_string(length)
         
         count = BLKCNT(length);
         if (count > 255) {
-                radlog(L_CRIT, _("alloc_string(): string too long"));
+                radlog(L_CRIT, _("string_alloc(): string too long"));
                 abort();
         }
-        p = calloc_entry(count, MINSTRSIZE);
+        p = mem_calloc(count, MINSTRSIZE);
         p->s.nref = 1;
         p->s.nblk = count;
         return (char*)(p + 1);
 }
 
-/* make_string(): create a string object capable of holding the
+/* string_create(): create a string object capable of holding the
  * STRVAL and store the latter into it.
  */
 char *
-make_string(strval)
+string_create(strval)
         char *strval;
 {
 	char *p;
 	if (!strval)
 		return NULL;
-        p = alloc_string(strlen(strval)+1);
+        p = string_alloc(strlen(strval)+1);
         return strcpy(p, strval);
 }
 
-/* dup_string(): create a copy of existing string object
+/* string_dup(): create a copy of existing string object
  */
 char *
-dup_string(str)
+string_dup(str)
         char *str;
 {
         STRHDR *hp;
@@ -526,18 +537,18 @@ dup_string(str)
         pthread_mutex_lock(&string_mutex);
         hp = (STRHDR*)str - 1;
         if (hp->s.nref == 255)  /* FIXME: use limits.h */
-                str = make_string(str);
+                str = string_create(str);
 	else
 		hp->s.nref++;
         pthread_mutex_unlock(&string_mutex);
         return str;
 }
 
-/* replace_string(): replace a string value of the given string object
+/* string_replace(): replace a string value of the given string object
  * with the new string value.
  */
 char *
-replace_string(str, string_value)
+string_replace(str, string_value)
         char **str;
         char *string_value;
 {
@@ -545,26 +556,26 @@ replace_string(str, string_value)
         STRHDR *hp;
 
         if (!*str)
-                return *str = make_string(string_value);
+                return *str = string_create(string_value);
         
         pthread_mutex_lock(&string_mutex);
         hp = (STRHDR*)*str - 1;
         if ( hp->s.nref > 1 || hp->s.nblk < BLKCNT(length) ) {
                 pthread_mutex_unlock(&string_mutex);
-                free_string(*str);
+                string_free(*str);
                 pthread_mutex_lock(&string_mutex);
-                *str = alloc_string(length + 1);
+                *str = string_alloc(length + 1);
         }
         strcpy(*str, string_value);
         pthread_mutex_unlock(&string_mutex);
         return *str;
 }
 
-/* free_string(): Decrement reference counter of the given string object
+/* string_free(): Decrement reference counter of the given string object
  * and deallocate the object when the counter becomes zero
  */
 void
-free_string(str)
+string_free(str)
         char *str;
 {
         STRHDR *hp;
@@ -575,7 +586,7 @@ free_string(str)
         pthread_mutex_lock(&string_mutex);
         hp = (STRHDR*)str - 1;
         if (--hp->s.nref == 0)
-                cfree_entry(hp, hp->s.nblk);
+                mem_cfree(hp, hp->s.nblk);
         pthread_mutex_unlock(&string_mutex);
 }
 

@@ -40,8 +40,29 @@ static void curtime_to_str(struct obstack *obp, VALUE_PAIR *request, int gmt);
 static void attrno_to_str(struct obstack *obp,
 			  RADIUS_REQ *req,
 			  VALUE_PAIR *pairlist,
-			 int attr_no, char *defval);
+			  int attr_no, char *defval);
 static DICT_ATTR *parse_dict_attr(char *p, char **endp, char **defval);
+
+static void obstack_grow_quoted(struct obstack *obp, char *str, int len);
+
+/* obstack_grow with quoting of potentially dangerous characters */
+void
+obstack_grow_quoted(obp, str, len)
+	struct obstack *obp;
+	char *str;
+	int len;
+{
+	for (; len; len--, str++) {
+		switch (*str) {
+		case '"':
+		case '\'':
+		case '\\':
+			obstack_1grow(obp, '\\');
+		default:
+			obstack_1grow(obp, *str);
+		}
+	}
+}
 
 /*
  *	Replace %<whatever> in a string.
@@ -144,12 +165,12 @@ attr_to_str(obp, req, pairlist, attr, defval)
 			int len;
 			req_decrypt_password(string, req, pair);
 			len = strlen(string);
-			obstack_grow(obp, string, len);
+			obstack_grow_quoted(obp, string, len);
 		} else {
 			/* strvalue might include terminating zero character,
 			   so we need to recalculate it */
 			int length = strlen(pair->strvalue);
-			obstack_grow(obp, pair->strvalue, length);
+			obstack_grow_quoted(obp, pair->strvalue, length);
 		}
 		break;
 	case TYPE_INTEGER:

@@ -429,6 +429,11 @@ rad_decode_pdu(host, udp_port, buffer, length)
                 }
         }
 
+	/* Add NAS-IP-Address if the NAS didn't send one */
+	if (!avl_find(first_pair, DA_NAS_IP_ADDRESS)) 
+		avl_add_pair(&first_pair,
+			     avp_create(DA_NAS_IP_ADDRESS, 0, NULL, host));
+	
         radreq->request = first_pair;
 #ifdef DEBUG_ONLY
         {

@@ -90,9 +90,11 @@ static char base64[] =         /* 0 ... 63 => ascii - 64 */
 static int
 from_base64(u_char *data, int len, unsigned int *value)
 {
+	int i;
+
 	*value = 0;
-	while (len--) {
-		char *p = strchr(base64, *data++);
+	for (i = len-1; i >= 0; i--) {
+		char *p = strchr(base64, data[i]);
 		if (!p)
 			return 1;
 		*value <<= 6;

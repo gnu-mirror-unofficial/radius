@@ -45,21 +45,25 @@
 #endif
 #include <timestr.h>
 
-
 static int interactive;
+static RADIUS_REQ test_req;
+static char *tsh_ps1 = "(radiusd) ";
+static char *tsh_ps2 = "[radiusd] ";
 
-static void tsh_help(int argc, char **argv);
-static void tsh_query_nas(int argc, char **argv);
+static void tsh_help(int argc, char **argv, char *cmd);
+static void tsh_query_nas(int argc, char **argv, char *cmd);
 #ifdef USE_SERVER_GUILE
-static void tsh_guile(int argc, char **argv);
+static void tsh_guile(int argc, char **argv, char *cmd);
 #endif
-static void tsh_run_rewrite(int argc, char **argv);
-static void tsh_source_rewrite(int argc, char **argv);
-static void tsh_timespan(int argc, char **argv);
-static void tsh_debug(int argc, char **argv);
-static void tsh_quit(int argc, char **argv);
+static void tsh_run_rewrite(int argc, char **argv, char *cmd);
+static void tsh_source_rewrite(int argc, char **argv, char *cmd);
+static void tsh_timespan(int argc, char **argv, char *cmd);
+static void tsh_debug(int argc, char **argv, char *cmd);
+static void tsh_quit(int argc, char **argv, char *cmd);
+static void tsh_req_define(int argc, char **argv, char *cmd);
+static void tsh_req_print(int argc, char **argv, char *cmd);
 
-typedef void (*tsh_command) (int argc, char **argv);
+typedef void (*tsh_command) (int argc, char **argv, char *cmd);
 
 struct command_table {
 	char *shortname;
@@ -81,6 +85,10 @@ struct command_table {
 	{"t", "timespan", N_("TIMESPAN [DOW [HH [MM]]]"),
 	 N_("Check the timespan interval"), tsh_timespan},
 	{"d", "debug", N_("LEVEL"), N_("Set debugging level"), tsh_debug},
+	{"request-d", "request-define", N_("[PAIR [,PAIR]]"), N_("Define a request"),
+	 tsh_req_define },
+	{"request-p", "request-print", NULL, N_("Print the request"),
+	 tsh_req_print},
 	{"quit", "quit", NULL, N_("Quit the shell"), tsh_quit},
 	{NULL}
 };
@@ -125,7 +133,7 @@ print_doc (int n, char *s)
       
 
 static void
-tsh_help(int argc, char **argv)
+tsh_help(int argc, char **argv, char *cmd ARG_UNUSED)
 {
 	struct command_table *cp;
 	int n;
@@ -145,7 +153,7 @@ tsh_help(int argc, char **argv)
 
 /* query-nas NAS LOGIN SID PORT [IP] */
 static void
-tsh_query_nas(int argc, char **argv)
+tsh_query_nas(int argc, char **argv, char *cmd ARG_UNUSED)
 {
 	NAS *nas;
 	struct radutmp ut;
@@ -173,16 +181,15 @@ tsh_query_nas(int argc, char **argv)
 
 #ifdef USE_SERVER_GUILE
 static void
-tsh_guile(int argc ARG_UNUSED, char **argv ARG_UNUSED)
+tsh_guile(int argc ARG_UNUSED, char **argv ARG_UNUSED, char *cmd ARG_UNUSED)
 {
 	scheme_read_eval_loop();
 }
 #endif
 
 static void
-tsh_run_rewrite(int argc, char **argv)
+tsh_run_rewrite(int argc, char **argv, char *cmd)
 {
-	char *str;
 	Datatype type;
 	Datum datum;
 
@@ -191,9 +198,13 @@ tsh_run_rewrite(int argc, char **argv)
 			_("%s: wrong number of arguments\n"), argv[0]);
 		return;
 	}
-	argcv_string(argc - 1, argv + 1, &str);
 
-	if (interpret(str, NULL, &type, &datum))
+	while (*cmd && isspace(*cmd))
+		cmd++;
+	while (*cmd && !isspace(*cmd))
+		cmd++;
+
+	if (interpret(cmd, &test_req, &type, &datum))
 		printf("?\n");
 	else {
 		switch (type) {
@@ -215,23 +226,22 @@ tsh_run_rewrite(int argc, char **argv)
 		}
 		printf("\n");
 	}
-	free(str);
 }
 
 static void
-tsh_source_rewrite(int argc, char **argv)
+tsh_source_rewrite(int argc, char **argv, char *cmd ARG_UNUSED)
 {
 	if (argc != 2) {
 		fprintf(stderr,
 			_("%s: wrong number of arguments\n"), argv[0]);
 		return;
 	}
-	printf("%d\n", parse_rewrite(argv[1]));
+	printf("%d\n", rewrite_load_module(argv[1]));
 }
 
 /* timespan TIMESPAN [DOW [HH [MM]]] */
 static void
-tsh_timespan(int argc, char **argv)
+tsh_timespan(int argc, char **argv, char *cmd ARG_UNUSED)
 {
         time_t          t;
         TIMESPAN       *ts;
@@ -281,7 +291,7 @@ tsh_timespan(int argc, char **argv)
 }
 
 static void
-tsh_debug(int argc, char **argv)
+tsh_debug(int argc, char **argv, char *cmd ARG_UNUSED)
 {
 	if (argc < 2) {
 		fprintf(stderr,
@@ -293,7 +303,48 @@ tsh_debug(int argc, char **argv)
 }
 
 static void
-tsh_quit(int argc ARG_UNUSED, char **argv ARG_UNUSED)
+tsh_req_define(int argc, char **argv, char *cmd)
+{
+	char *errp;
+	VALUE_PAIR *vp = NULL;
+	
+	if (argc > 1) {
+		while (*cmd && isspace(*cmd))
+			cmd++;
+		while (*cmd && !isspace(*cmd))
+			cmd++;
+
+		if (userparse(cmd, &vp, &errp)) {
+                        radlog(L_ERR, "%s", errp);
+			return;
+		}
+	} else {
+		if (interactive)
+			printf(_("Enter the pair list. End with end of file\n"));
+		while ((cmd = tsh_readline(tsh_ps2)) != NULL
+		       && cmd[0]) {
+			if (userparse(cmd, &vp, &errp)) {
+				radlog(L_ERR, "%s", errp);
+				free(cmd);
+				avl_free(vp);
+				return;
+			}
+			free(cmd);
+		}
+	}
+	avl_free(test_req.request);
+	test_req.request = vp;
+}
+
+static void
+tsh_req_print(int argc, char **argv, char *cmd)
+{
+	avl_fprint(stdout, test_req.request);
+}
+
+
+static void
+tsh_quit(int argc ARG_UNUSED, char **argv ARG_UNUSED, char *cmd ARG_UNUSED)
 {
 	exit(0);
 }
@@ -493,11 +544,11 @@ tsh_find_function(char *name)
 }
 
 static void
-tsh_run_function(int argc, char **argv)
+tsh_run_function(int argc, char **argv, char *cmd)
 {
 	tsh_command fp = tsh_find_function(argv[0]);
 	if (fp)
-		fp(argc, argv);
+		fp(argc, argv, cmd);
 	else
 		fprintf(stderr, _("Bad command\n"));
 }
@@ -512,10 +563,10 @@ tsh_run_command(char *cmd)
 	if (!cmd || cmd[0] == '#')
 		return;
 	if (argcv_get(cmd, "=", &argc, &argv) == 0) {
-		tsh_run_function(argc, argv);
 #ifdef WITH_READLINE
 		add_history(cmd);
 #endif
+		tsh_run_function(argc, argv, cmd);
 	}
 	argcv_free(argc, argv);
 }
@@ -529,8 +580,9 @@ tsh()
 	if (interactive)
 		printf("** TEST SHELL **\n");
 	tsh_readline_init();
-	while ((cmd = tsh_readline("test shell> ")) != NULL) {
+	while ((cmd = tsh_readline(tsh_ps1)) != NULL) {
 		tsh_run_command(cmd);
 		free(cmd);
 	}
+	tsh_quit(0, NULL, NULL);
 }

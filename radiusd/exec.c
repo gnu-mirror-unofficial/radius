@@ -423,6 +423,9 @@ void
 filter_close(sym)
 	Filter_symbol *sym;
 {
+	if (sym->pid == -1) 
+		return;
+
 	fclose(sym->input);
 	fclose(sym->output);
 	kill(sym->pid, SIGTERM);
@@ -463,8 +466,8 @@ filter_open(name, req)
 		radlog_req(L_ERR|L_PERROR, req,
 			   _("filter `%s'"),
 			   name);
-		filter_unlock(sym);
 		filter_close(sym);
+		filter_unlock(sym);
 		return NULL;
 	}
 	return sym;

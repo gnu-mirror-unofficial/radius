@@ -12,7 +12,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-12-23 12:06+0200\n"
+"POT-Creation-Date: 2002-12-24 13:04+0200\n"
 "PO-Revision-Date: 2002-12-23 14:17+0200\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Norwegian-bokmål <no@li.org>\n"
@@ -747,7 +747,7 @@ msgstr "kan ikke stenge røret"
 msgid "can't dup stdout"
 msgstr "kan ikke duplisere standard utgang"
 
-#: radiusd/exec.c:229 radiusd/exec.c:819
+#: radiusd/exec.c:229 radiusd/exec.c:844
 #, c-format
 msgid "<stdout of %s>:%d: %s"
 msgstr "<standard ut av %s>:%d: %s"
@@ -772,54 +772,59 @@ msgstr ""
 "radius_exec_program(): ville ikke kjøre kommando: ingen slik bruker: %s"
 
 # FUZZY
-#: radiusd/exec.c:509
+#: radiusd/exec.c:510
 #, c-format
 msgid "Too many (%d) threads waiting for filter %s."
 msgstr ""
 
 # FIXME
-#: radiusd/exec.c:607
+#: radiusd/exec.c:622
 #, c-format
 msgid "filter %s is not declared"
 msgstr "filter %s er ikke definert"
 
-#: radiusd/exec.c:639
+#: radiusd/exec.c:651
+#, c-format
+msgid "Killing unresponsive filter %s (pid %d)"
+msgstr ""
+
+#: radiusd/exec.c:663
 #, fuzzy, c-format
 msgid "filter %s (pid %d) %s (in: %u, out: %u)"
 msgstr "filter %s (pid %d) %s (inn: %u, ut: %u)"
 
 # FUZZY
-#: radiusd/exec.c:659
+#: radiusd/exec.c:684
 #, fuzzy, c-format
 msgid "cannot run filter %s"
 msgstr "kan ikke eksekvere filter «%s»"
 
-#: radiusd/exec.c:678
+#: radiusd/exec.c:703
 #, c-format
 msgid "filter %s"
 msgstr "filter %s"
 
-#: radiusd/exec.c:710
+#: radiusd/exec.c:735
 msgid "wrong return type"
 msgstr ""
 
 # FUZZY
-#: radiusd/exec.c:805 radiusd/exec.c:872
+#: radiusd/exec.c:830 radiusd/exec.c:897
 #, c-format
 msgid "reading from filter %s"
 msgstr "lese fra filter «%s»"
 
-#: radiusd/exec.c:828
+#: radiusd/exec.c:853
 #, c-format
 msgid "filter %s (auth): bad output: %s"
 msgstr "filter %s (auth): ugyldig utdata: %s"
 
-#: radiusd/exec.c:885
+#: radiusd/exec.c:910
 #, c-format
 msgid "filter %s (acct): bad output: %s"
 msgstr "filter %s (acct): ugyldig utdata: %s"
 
-#: radiusd/exec.c:971
+#: radiusd/exec.c:996
 #, c-format
 msgid "%s:%d: filter already declared at %s:%d"
 msgstr "%s:%d: filter allerede deklarert i %s:%d"
@@ -1917,7 +1922,7 @@ msgstr ""
 "Rapporter bugs til <%s>\n"
 
 #: radiusd/sockets.c:88
-#, fuzzy, c-format
+#, c-format
 msgid "socket %s:%d is already assigned for %s"
 msgstr ""
 

@@ -9,7 +9,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-12-23 12:06+0200\n"
+"POT-Creation-Date: 2002-12-24 13:04+0200\n"
 "PO-Revision-Date: 2002-12-23 14:40+0200\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Russian <ru@li.org>\n"
@@ -761,7 +761,7 @@ msgstr "невозможно закрыть канал"
 msgid "can't dup stdout"
 msgstr ""
 
-#: radiusd/exec.c:229 radiusd/exec.c:819
+#: radiusd/exec.c:229 radiusd/exec.c:844
 #, c-format
 msgid "<stdout of %s>:%d: %s"
 msgstr ""
@@ -784,51 +784,56 @@ msgstr "внешняя программа `%s' %s"
 msgid "won't execute, no such user: %s"
 msgstr "невозможно выполнить; нет такого пользователя: %s"
 
-#: radiusd/exec.c:509
+#: radiusd/exec.c:510
 #, c-format
 msgid "Too many (%d) threads waiting for filter %s."
 msgstr "Слишком много (%d) потоков ожидает освобождения фильтра %s."
 
-#: radiusd/exec.c:607
+#: radiusd/exec.c:622
 #, c-format
 msgid "filter %s is not declared"
 msgstr "фильтр %s не объявлен"
 
-#: radiusd/exec.c:639
+#: radiusd/exec.c:651
+#, fuzzy, c-format
+msgid "Killing unresponsive filter %s (pid %d)"
+msgstr "Уничтожение неотвечающего потока %s %d"
+
+#: radiusd/exec.c:663
 #, c-format
 msgid "filter %s (pid %d) %s (in: %u, out: %u)"
 msgstr "фильтр %s (pid %d) %s (считано: %u, записано: %u)"
 
-#: radiusd/exec.c:659
+#: radiusd/exec.c:684
 #, c-format
 msgid "cannot run filter %s"
 msgstr "невозможно выполнить фильтр %s"
 
-#: radiusd/exec.c:678
+#: radiusd/exec.c:703
 #, c-format
 msgid "filter %s"
 msgstr "фильтр %s"
 
-#: radiusd/exec.c:710
+#: radiusd/exec.c:735
 msgid "wrong return type"
 msgstr "неправильный тип возврата"
 
-#: radiusd/exec.c:805 radiusd/exec.c:872
+#: radiusd/exec.c:830 radiusd/exec.c:897
 #, c-format
 msgid "reading from filter %s"
 msgstr "чтение из фильтра %s"
 
-#: radiusd/exec.c:828
+#: radiusd/exec.c:853
 #, c-format
 msgid "filter %s (auth): bad output: %s"
 msgstr "фильтр %s (auth): плохой выход %s"
 
-#: radiusd/exec.c:885
+#: radiusd/exec.c:910
 #, c-format
 msgid "filter %s (acct): bad output: %s"
 msgstr "фильтр %s (auth): плохой выход %s"
 
-#: radiusd/exec.c:971
+#: radiusd/exec.c:996
 #, c-format
 msgid "%s:%d: filter already declared at %s:%d"
 msgstr "%s:%d: фильтр уже объявлен в %s:%d"

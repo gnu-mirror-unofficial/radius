@@ -12,7 +12,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-12-23 12:06+0200\n"
+"POT-Creation-Date: 2002-12-24 13:04+0200\n"
 "PO-Revision-Date: 2002-12-23 14:17+0200\n"
 "Last-Translator: Krzysztof Kopera <Krzysztof_Kopera/HeadQ@netia.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -764,7 +764,7 @@ msgstr "nie mogê zamkn±æ potoku"
 msgid "can't dup stdout"
 msgstr "nie mogê zduplikowaæ stdout"
 
-#: radiusd/exec.c:229 radiusd/exec.c:819
+#: radiusd/exec.c:229 radiusd/exec.c:844
 #, c-format
 msgid "<stdout of %s>:%d: %s"
 msgstr "<wyj¶cie standardowe %s>:%d: %s"
@@ -787,51 +787,56 @@ msgstr "program zewnêtrzny `%s' %s"
 msgid "won't execute, no such user: %s"
 msgstr "nie mogê wykonaæ: nie ma takiego u¿ytkownika: %s"
 
-#: radiusd/exec.c:509
+#: radiusd/exec.c:510
 #, c-format
 msgid "Too many (%d) threads waiting for filter %s."
 msgstr "Za du¿o w±tków (%d) w oczekiwaniu na filtr %s."
 
-#: radiusd/exec.c:607
+#: radiusd/exec.c:622
 #, c-format
 msgid "filter %s is not declared"
 msgstr "filtr %s nie jest zadeklarowany"
 
-#: radiusd/exec.c:639
+#: radiusd/exec.c:651
+#, fuzzy, c-format
+msgid "Killing unresponsive filter %s (pid %d)"
+msgstr "Unicestwienie nieodpowiadaj±cego %s w±tka %d"
+
+#: radiusd/exec.c:663
 #, c-format
 msgid "filter %s (pid %d) %s (in: %u, out: %u)"
 msgstr "filtr %s (pid %d) %s (wej¶cie: %u, wyj¶cie: %u)"
 
-#: radiusd/exec.c:659
+#: radiusd/exec.c:684
 #, c-format
 msgid "cannot run filter %s"
 msgstr "nie mogê uruchomiæ filtra %s"
 
-#: radiusd/exec.c:678
+#: radiusd/exec.c:703
 #, c-format
 msgid "filter %s"
 msgstr "filtr %s"
 
-#: radiusd/exec.c:710
+#: radiusd/exec.c:735
 msgid "wrong return type"
 msgstr "zwracany typ jest b³êdny"
 
-#: radiusd/exec.c:805 radiusd/exec.c:872
+#: radiusd/exec.c:830 radiusd/exec.c:897
 #, c-format
 msgid "reading from filter %s"
 msgstr "czytanie z filtru %s"
 
-#: radiusd/exec.c:828
+#: radiusd/exec.c:853
 #, c-format
 msgid "filter %s (auth): bad output: %s"
 msgstr "filter %s (auth): niepoprawne wyj¶cie: %s"
 
-#: radiusd/exec.c:885
+#: radiusd/exec.c:910
 #, c-format
 msgid "filter %s (acct): bad output: %s"
 msgstr "filter %s (acct): niepoprawne wyj¶cie: %s"
 
-#: radiusd/exec.c:971
+#: radiusd/exec.c:996
 #, c-format
 msgid "%s:%d: filter already declared at %s:%d"
 msgstr "%s:%d: filtr ju¿ deklarowany w %s:%d"

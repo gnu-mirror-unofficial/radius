@@ -6,9 +6,9 @@ POTFILES
 *.gmo
 *.po~
 *.sed
-po/Makefile.in.in
-po/Rules-quot
-po/en@boldquot.header
-po/en@quot.header
-po/insert-header.sin
-po/remove-potcdate.sin
+Makefile.in.in
+Rules-quot
+en@boldquot.header
+en@quot.header
+insert-header.sin
+remove-potcdate.sin

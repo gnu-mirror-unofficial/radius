@@ -388,6 +388,7 @@ finger_check(checkp, nas)
 	struct check_instance *checkp;
 	NAS *nas;
 {
+	char *arg;
 	char namebuf[RUT_NAMESIZE+1];
 	int namelen;
 	register FILE *fp;
@@ -404,14 +405,16 @@ finger_check(checkp, nas)
 	char *ptr;
 	RETSIGTYPE (*handler)() = SIG_IGN;
 	unsigned int to;
-	
+
+	arg = checkrad_xlat(checkp, slookup(checkp, "arg", "%u"));
 	/* Copy at most RUT_NAMESIZE bytes from the user name */
-	ptr = checkp->name;
+	ptr = arg;
 	for (i = 0; i < RUT_NAMESIZE && *ptr; ++ptr, ++i)
 		namebuf[i] = *ptr;
 	namebuf[i] = 0;
 	namelen = i;
-
+	efree(arg);
+	
 	peername = slookup(checkp, "host", nas->longname);
 	if (!(hp = gethostbyname(peername))) {
 		radlog(L_ERR, _("unknown host: %s"), peername);

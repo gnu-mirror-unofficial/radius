@@ -171,3 +171,12 @@ message {
         second-login "\r\nYou are already logged in - access denied\r\n";
         timespan-violation "You are calling outside your allowed timespan\r\n";
 };
+
+filters {
+	filter ttl_filter {
+		exec-path "/usr/local/libexec/ttl-compute -f -";
+		auth-input-format "%C{User-Name} ?";
+		acct-input-format "%C{User-Name} %C{Acct-Status-Type}";
+		wait-reply yes;
+	};
+};

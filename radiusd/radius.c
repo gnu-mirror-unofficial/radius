@@ -138,17 +138,30 @@ radius_verify_digest(REQUEST *req)
 /* *********************** Radius Protocol Support ************************* */
 
 int
-radius_req_decode(struct sockaddr_in *sa,
-		  void *input, size_t inputsize, void **output)
+radius_auth_req_decode(struct sockaddr_in *sa,
+		       void *input, size_t inputsize, void **output)
 {
         RADIUS_REQ *radreq;
 
+	log_open(L_AUTH);
+
+        if (suspend_flag) {
+		stat_inc(auth, radreq->ipaddr, num_dropped);
+                return 1;
+	}
+        
         radreq = rad_decode_pdu(ntohl(sa->sin_addr.s_addr),
 				ntohs(sa->sin_port),
 				input,
 				inputsize);
 	if (!radreq)
 		return 1;
+        
+        if (validate_client(radreq)) {
+		stat_inc(auth, radreq->ipaddr, num_dropped);
+		radreq_free(radreq);
+ 		return 1;
+        }
 
 	/* RFC 2865 p. 2.2:
 	   The random challenge can either be included in the
@@ -168,6 +181,36 @@ radius_req_decode(struct sockaddr_in *sa,
 	return 0;
 }
 
+int
+radius_acct_req_decode(struct sockaddr_in *sa,
+		       void *input, size_t inputsize, void **output)
+{
+        RADIUS_REQ *radreq;
+
+	log_open(L_ACCT);
+	
+        if (suspend_flag) {
+		stat_inc(acct, radreq->ipaddr, num_dropped);
+                return 1;
+	}
+        
+        radreq = rad_decode_pdu(ntohl(sa->sin_addr.s_addr),
+				ntohs(sa->sin_port),
+				input,
+				inputsize);
+	if (!radreq)
+		return 1;
+        
+        if (validate_client(radreq)) {
+		stat_inc(acct, radreq->ipaddr, num_dropped);
+		radreq_free(radreq);
+ 		return 1;
+        }
+
+	*output = radreq;
+	return 0;
+}
+
 static VALUE_PAIR *
 _extract_pairs(RADIUS_REQ *req, int prop)
 {
@@ -176,15 +219,18 @@ _extract_pairs(RADIUS_REQ *req, int prop)
 	VALUE_PAIR *newlist = NULL;
 	VALUE_PAIR *pair;
 	char password[AUTH_STRING_LEN+1];
-
-	for (pair = req->request; pair; pair = pair->next) 
+	int found = 0;
+	
+	for (pair = req->request; !found && pair; pair = pair->next) 
 		for (i = 0; i < NITEMS(attrlist); i++) {
 			if (pair->attribute == attrlist[i]
-			    && (pair->prop & prop))
+			    && (pair->prop & prop)) {
+				found = 1;
 				break;
+			}
 		}
 
-	if (!pair)
+	if (!found)
 		return NULL;
 
 	newlist = avl_dup(req->request);
@@ -201,6 +247,14 @@ _extract_pairs(RADIUS_REQ *req, int prop)
 	return newlist;
 }
 
+static int
+find_prop(NAS *nas, char *name, int defval)
+{
+	if (!nas)
+		return defval;
+	return envar_lookup_int(nas->args, name, defval);
+}
+
 int
 radius_req_cmp(void *adata, void *bdata)
 {
@@ -211,7 +265,7 @@ radius_req_cmp(void *adata, void *bdata)
 	int rc;
 	NAS *nas;
 
-	if (proxy_cmp(a, b) == 0)
+	if (proxy_cmp(a, b) == 0) 
 		return RCMP_PROXY;
 	
 	if (a->ipaddr != b->ipaddr || a->code != b->code)
@@ -221,31 +275,35 @@ radius_req_cmp(void *adata, void *bdata)
 	    && memcmp(a->vector, b->vector, sizeof(a->vector)) == 0)
 		return RCMP_EQ;
 
-	if (nas = nas_request_to_nas(a))
-		prop = envar_lookup_int(nas->args, "compare-atribute-flag", 0);
+	nas = nas_request_to_nas(a);
 
-	if (!prop) {
-		switch (a->code) {
-		case RT_AUTHENTICATION_REQUEST:
-		case RT_AUTHENTICATION_ACK:
-		case RT_AUTHENTICATION_REJECT:
-		case RT_ACCESS_CHALLENGE:
-			prop = auth_comp_flag;
-			break;
+	switch (a->code) {
+	case RT_AUTHENTICATION_REQUEST:
+	case RT_AUTHENTICATION_ACK:
+	case RT_AUTHENTICATION_REJECT:
+	case RT_ACCESS_CHALLENGE:
+		prop = find_prop(nas, "compare-auth-flag", 0);
+		if (!prop)
+			prop = find_prop(nas, "compare-attribute-flag",
+					 auth_comp_flag);
+		break;
 			
-		case RT_ACCOUNTING_REQUEST:
-		case RT_ACCOUNTING_RESPONSE:
-		case RT_ACCOUNTING_STATUS:
-		case RT_ACCOUNTING_MESSAGE:
-			prop = acct_comp_flag;
-			break;
-		}
+	case RT_ACCOUNTING_REQUEST:
+	case RT_ACCOUNTING_RESPONSE:
+	case RT_ACCOUNTING_STATUS:
+	case RT_ACCOUNTING_MESSAGE:
+		prop = find_prop(nas, "compare-acct-flag", 0);
+		if (!prop)
+			prop = find_prop(nas, "compare-attribute-flag",
+					 acct_comp_flag);
+		break;
 	}
+
 
 	if (prop == 0) 
 		return RCMP_NE;
 
-	prop |= AP_REQ_CMP;
+	prop = AP_USER_FLAG(prop);
 	alist = _extract_pairs(a, prop);
 	blist = _extract_pairs(b, prop);
 
@@ -256,6 +314,18 @@ radius_req_cmp(void *adata, void *bdata)
 
 	avl_free(alist);
 	avl_free(blist);
+	
+	if (rc == 0) {
+		/* We need to replace A/V pairs, authenticator and ID
+		   so that the reply is signed correctly.
+		   Notice that the raw data will be replaced by
+		   request_retransmit() */
+		memcpy(a->vector, b->vector, sizeof(a->vector));
+		avl_free(a->request);
+		a->request = avl_dup(b->request);
+		a->id = b->id;
+	}
+	
 	return rc == 0 ? RCMP_EQ : RCMP_NE;
 }
 
@@ -342,25 +412,9 @@ radius_respond(REQUEST *req)
 	int rc;
 	RADIUS_REQ *radreq = req->data;
 	
-        if (suspend_flag)
-                return 1;
-        
-        if (validate_client(radreq)) {
-        	switch (req->type) {
-        	case R_AUTH:
-                	stat_inc(auth, radreq->ipaddr, num_dropped);
-                	break;
-
-        	case R_ACCT:
-                	stat_inc(acct, radreq->ipaddr, num_dropped);
-                	break;
-
-        	}
- 		return -1;
-        }
-
-	log_open(L_MAIN);
-
+#ifdef USE_SQL
+	radiusd_sql_clear_cache();
+#endif
         /* Add any specific attributes for this username. */
         hints_setup(radreq);
 

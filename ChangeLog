@@ -1,3 +1,38 @@
+2002-07-07  Sergey Poznyakoff  
+
+	Rewritten configuration file parser for radiusd. The new
+	parser defines only basic configuration file synax. The
+	complete syntax description is given to the main parser
+	function cfg_parse() as an argument. Thus, the same function
+	may be used for several configuration files. Hopefully, this
+	will serve when I start unifying the confguration files.
+	
+	* configure.ac: Removed gperf-related issues.
+	* examples/config.syntax: Added more sample statements.
+	
+	* include/Makefile.am: Add cfg.h
+	* include/cfg.h: Added to repository.
+	* include/radius.h: Removed struct {} Value.
+	* include/radiusd.h: Include cfg.h. Replaced Config with three
+	  separage global variables. Removed HOSTDECL type. Added
+	  declarations for the new functions and variables.
+
+	* radiusd/config.kw: Removed
+	* radiusd/Makefile.am: Removed config.kw and related rules.
+	* radiusd/acct.c (rad_check_ts): checkrad_assume_logged is now
+	  global.
+	* radiusd/exec.c (radius_exec_program): exec_user is now global.
+	* radiusd/request.c (request_put): max_requests is now global.
+	* radiusd/config.y: Completely rewritten.
+	* radiusd/log.c: Added configuration-related data.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/rewrite.y: Likewise.
+	* radiusd/scheme.c: Likewise.
+	* radiusd/snmpserv.c: Likewise.
+	
+	* po/es.po: Updated.
+	* po/no.po: Updated.
+	  	
 2002-07-05  Sergey Poznyakoff 
 
 	* radiusd/sql.c (sql_conn_destroy): Removed if (data) condition.

@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
 "POT-Creation-Date: 2002-06-03 12:52+0300\n"
-"PO-Revision-Date: 2002-06-03 14:58+0300\n"
+"PO-Revision-Date: 2002-06-04 11:10+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -1195,13 +1195,17 @@ msgstr ""
 msgid ""
 "\n"
 "You are already logged in %R{Simultaneous-Use} times - access denied\n"
-msgstr "Acceso denegado - hay %R{Simultaneous-Use} sesiones abiertas para Ud."
+msgstr ""
+"\n"
+"Acceso denegado - hay %R{Simultaneous-Use} sesiones abiertas para Ud.\n"
 
 #: radiusd/radiusd.c:397
 msgid ""
 "\n"
 "You are already logged in - access denied\n"
-msgstr "Acceso denegado - hay una sesión abierta para Ud."
+msgstr ""
+"\n"
+"Acceso denegado - hay una sesión abierta para Ud.\n"
 
 #: radiusd/radiusd.c:399
 msgid "You are calling outside your allowed timespan\n"
@@ -1706,7 +1710,7 @@ msgid "stat_update(): port %d not found on NAS %s"
 msgstr "stat_update(): puerto %d no encontrado en NAS %s"
 
 #: radiusd/stat.c:381
-#, c-format, fuzzy
+#, fuzzy, c-format
 msgid "stat_update(START,%s,%s,%d): negative time skew"
 msgstr "stat_update(START,%s,%s,%d): duración de sesión negativa"
 
@@ -1992,7 +1996,7 @@ msgstr "modo seguro: requiere que se especifique el nombre de usuario"
 
 #: radwho/radwho.c:297
 msgid "must provide username\n"
-msgstr "se requiere un nombre de usuario"
+msgstr "se requiere un nombre de usuario\n"
 
 #: radwho/radwho.c:335
 #, c-format
@@ -2093,7 +2097,7 @@ msgstr "MYSQL Error: no se puede obtener resultado"
 #: sql/mysql.c:306 sql/odbc.c:342 sql/postgres.c:370
 #, c-format
 msgid "too few columns returned (%d req'd)"
-msgstr "número de columnas insuficiente (%d, debe ser %d)"
+msgstr "número de columnas insuficiente (debe ser %d)"
 
 #: sql/odbc.c:257
 #, c-format
@@ -2113,7 +2117,7 @@ msgstr "PQconnectStart falló"
 #: sql/postgres.c:291
 #, c-format
 msgid "query returned %d tuples: %s"
-msgstr "petición volvió %d tuplas"
+msgstr "petición devolvió %d tuplas: %s"
 
 #: sql/postgres.c:298 sql/postgres.c:344
 #, c-format

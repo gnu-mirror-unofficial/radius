@@ -92,16 +92,22 @@ int        log_mode;       /* logging mode */
 char       *auth_log_hook; /* Authentication logging hook function */
 
 static int foreground; /* Stay in the foreground */
-int spawn_flag; 
+int spawn_flag;        /* Whether to spawn new children for handling
+			  the requests */
 
-int use_dbm = 0;
-int auth_detail = 0;
-int acct_detail = 1;
-int auth_trace_rules = 0;
-int acct_trace_rules = 0;
-int strip_names;
-int suspend_flag;
-int auth_reject_malformed_names = 0;
+int use_dbm = 0;       /* Use DBM storage */
+int auth_detail = 0;   /* Produce detailed logs of authentication packets */
+int acct_detail = 1;   /* Produce detailed logs of accounting packets */
+int auth_trace_rules = 0; /* Produce trace logs for each auth request */
+int acct_trace_rules = 0; /* Produce trace logs for each acct request */
+int strip_names;          /* Strip preffixes/suffixes off the usernames */
+int suspend_flag;         /* Suspend processing of RADIUS requests */
+int auth_reject_malformed_names = 0; /* Respond with Access-Reject packets
+					for requests with malformed user
+					names */
+
+RADIUS_USER radiusd_user; /* Run the daemon with this user privileges */
+RADIUS_USER exec_user;    /* Run the user programs with this user privileges */
 
 #define CMD_NONE     0 /* No command */
 #define CMD_CLEANUP  1 /* Cleanup finished children */
@@ -133,7 +139,6 @@ size_t max_children = MAX_CHILDREN;
 unsigned process_timeout = PROCESS_TIMEOUT;
 unsigned radiusd_write_timeout = RADIUSD_WRITE_TIMEOUT;
 unsigned radiusd_read_timeout = RADIUSD_READ_TIMEOUT;
-char *exec_user = NULL;
 
 UINT4 warning_seconds;
 int use_guile;
@@ -274,7 +279,6 @@ static struct argp argp = {
 void
 set_config_defaults()
 {
-        exec_user  = estrdup("daemon");
         username_valid_chars = estrdup(".-_!@#$%^&\\/");
         message_text[MSG_ACCOUNT_CLOSED] =
                 estrdup(_("Sorry, your account is currently closed\n"));
@@ -484,6 +488,7 @@ radiusd_daemon()
                 fflush(stdout);
                 fflush(stderr);
         }
+	
         efree(p);
 }
 
@@ -532,6 +537,15 @@ radiusd_main()
         }
 
 	radiusd_pidfile_write(RADIUSD_PID_FILE);
+
+	if (radiusd_user.username) {
+		char *p;
+		log_change_owner(&radiusd_user);
+		p = mkfilename(radlog_dir, "radius.stderr");
+		chown(p, radiusd_user.uid, radiusd_user.gid);
+		efree(p);
+		radius_switch_to_user(&radiusd_user);
+	}
 
         radiusd_main_loop();
 }
@@ -1208,6 +1222,30 @@ acct_stmt_begin(int finish, void *block_data, void *handler_data)
 	return 0;
 }
 
+static int
+rad_cfg_user(int argc, cfg_value_t *argv,
+	     void *block_data, void *handler_data)
+{
+	RADIUS_USER *usr = handler_data;
+
+	if (argc != 2 || argv[1].type != CFG_STRING) 
+		return 1;
+	return radius_get_user_ids((RADIUS_USER *) handler_data,
+				   argv[1].v.string);
+}
+
+int
+option_stmt_end(void *block_data, void *handler_data)
+{
+	if (radiusd_user.username && radiusd_user.uid != 0) {
+		radlog(L_WARN, _("Ignoring exec-program-user"));
+		efree(exec_user.username);
+		exec_user.username = NULL;
+	} else if (exec_user.username == NULL)
+		radius_get_user_ids(&exec_user, "daemon");
+	return 0;
+}
+
 struct cfg_stmt option_stmt[] = {
 	{ "source-ip", CS_STMT, NULL, cfg_get_ipaddr, &myip,
 	  NULL, NULL },
@@ -1223,8 +1261,10 @@ struct cfg_stmt option_stmt[] = {
 	  cfg_get_integer, &radiusd_read_timeout, NULL, NULL },
 	{ "master-write-timeout", CS_STMT, NULL,
 	  cfg_get_integer, &radiusd_write_timeout, NULL, NULL },
-	{ "exec-program-user", CS_STMT, NULL, cfg_get_string, &exec_user,
-	  NULL, NULL },
+	{ "exec-program-user", CS_STMT, NULL, rad_cfg_user,
+	  &exec_user, NULL, NULL },
+	{ "radiusd-user", CS_STMT, NULL, rad_cfg_user,
+	  &radiusd_user, NULL, NULL },
 	{ "log-dir", CS_STMT, NULL, cfg_get_string, &radlog_dir,
 	  NULL, NULL },
 	{ "acct-dir", CS_STMT, NULL, cfg_get_string, &radacct_dir,
@@ -1232,8 +1272,7 @@ struct cfg_stmt option_stmt[] = {
 	{ "resolve", CS_STMT, NULL, cfg_get_boolean, &resolve_hostnames,
 	  NULL, NULL },
 	{ "username-chars", CS_STMT, NULL, cfg_get_string,
-	  &username_valid_chars,
-	  NULL, NULL },
+	  &username_valid_chars, NULL, NULL },
 	/* Obsolete statements */
 	{ "usr2delay", CS_STMT, NULL, cfg_obsolete, NULL, NULL, NULL },
 	{ NULL, }
@@ -1333,7 +1372,7 @@ struct cfg_stmt proxy_stmt[] = {
 };
 
 struct cfg_stmt config_syntax[] = {
-	{ "option", CS_BLOCK, NULL, NULL, NULL, option_stmt, NULL },
+	{ "option", CS_BLOCK, NULL, NULL, NULL, option_stmt, option_stmt_end },
 	{ "message", CS_BLOCK, NULL, NULL, NULL, message_stmt, NULL },
 	{ "logging", CS_BLOCK, logging_stmt_begin, logging_stmt_handler, NULL,
 	  logging_stmt, logging_stmt_end },

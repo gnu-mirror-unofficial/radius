@@ -1,5 +1,15 @@
 2002-05-14  Sergey Poznyakoff
 
+	* TODO: Updated.
+
+*	* include/radutmp.h: Changed semantics of porttype member. Now
+	  it keeps the value of NAS-Port-Type verbatim.
+	* radiusd/acct.c: Likewise.
+	* radlast/radlast.c: Likewise.
+	* radwho/radwho.c: Likewise.
+
+2002-05-14  Sergey Poznyakoff
+
 	A little housekeeping:
 	
 	* configure.ac: Supply an argument to RA_MAINTAINER_MODE.

@@ -478,7 +478,7 @@ local_who()
 	print_header();
 
 	memset(&rt, 0, sizeof(rt));
-	rt.nas_address = rt.framed_address = 0x0100007f;
+	rt.nas_address = rt.framed_address = htonl(INADDR_LOOPBACK);
 	
 	while(fread(&ut, sizeof(ut), 1, fp) == 1) {
 #ifdef USER_PROCESS

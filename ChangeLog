@@ -1,3 +1,29 @@
+2002-03-11  Sergey Poznyakoff  
+
+	Thread-safety fixes to libsnmp. Todo's are:
+	1. per-thread snmp_errno variable
+	2. per-thread snmp_def structure. Possibly snmp_errno should be
+	incorporated in it.
+	
+	* include/snmp/snmp.h (snmp_poll, snmp_timeout): Changed
+	  prototypes.
+          (snmp_read): Added prototype.
+	* include/snmp/snmp_intern.h (struct snmp_def): Removed
+	  session_list, alloc and free members.
+	  (__snmp_alloc_fp, __snmp_free_fp): externs.
+	  (snmp_fdset): prototype declaration.
+	* snmplib/snmp_mem.c (__snmp_alloc_fp, __snmp_free_fp): New
+	  globals. These keep appropriate function pointers, instead
+	  of snmp_def.alloc and snmp_def.free. This will come handy
+	  when snmp_def passes to thread-specific memory.
+	* snmplib/snmp_recv.c (snmp_poll, snmp_timeout, snmp_read):
+	  Changed declarations. All functions now take an explicit
+	  struct snmp_session * argument, meaning the session list
+	  to operate upon.
+	* snmplib/snmp_sess.c (struct snmp_def): Removed
+	  session_list, alloc and free members. Fixed rest of functions
+	  accordingly.
+
 2002-03-06  Sergey Poznyakoff
 
 	* configure.in (enable-snmp): documented compat value.

@@ -1,0 +1,60 @@
+/* This file is part of GNU Radius.
+   Copyright (C) 2003 Free Software Foundation, Inc.
+
+   Written by Sergey Poznyakoff
+
+   GNU Radius is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   GNU Radius is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GNU Radius; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
+/* Radiusd uses these functions to verify simultaneous logins */
+
+integer
+check_snmp_u(string str, string name, integer pid, string sid)
+{
+	logit("check_snmp_u: got " + str);
+	return str == name;
+}
+
+integer
+check_snmp_s(string str, string name, integer pid, string sid)
+{
+	logit("check_snmp_s: got " + str);
+	return str == sid;
+}
+
+integer
+decimal(string s)
+{
+	return (integer)("0x" + s);
+}
+
+integer
+check_max_finger(string str, string name, integer pid, string sid)
+{
+	logit("check_snmp_s: got " + str + " " + (string)pid + " " + sid);
+	return (integer) field(str, 2) == decimal(sid) &&
+	       field(str, 9) == name;
+}	
+
+integer
+check_unix(string str, string name, integer pid, string sid)
+{
+        logit("check_unix: got " + str + " " + (string)pid + " " + sid);
+
+        return field(str, 1) == name &&
+               field(str, 2) == sid; /* &&
+               (integer)field(str, 4) == pid; */
+}
+
+/* End of checknas.rw */

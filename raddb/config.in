@@ -1,0 +1,61 @@
+# A minimum config file. See config.syntax for explanation of 
+# the syntax.
+#
+option {
+	max-requests 1024;
+	# Uncomment and edit these if you need to:
+#	log-dir "/var/log";
+#	acct-dir "/var/acct";
+	resolve no;
+};
+
+logging {
+	channel default {
+		file "radius.log";
+		print-category yes;
+		print-level yes;
+	};
+	channel info {
+		file "radius.info";
+		print-pid yes;
+	};	
+	channel debug {
+		file "radius.debug";
+	};
+	category auth {
+		print-auth yes;
+		print-failed-pass yes;
+		hook "show_station_ids";
+	};
+	category info {
+		channel info;
+	};
+	category =debug {
+		channel debug;
+	};
+	category * {
+		channel default;
+	};
+};
+
+auth {
+	max-requests 127;
+	request-cleanup-delay 2;
+	detail yes;
+	strip-names yes;
+	checkrad-assume-logged yes;
+};
+
+acct {
+	max-requests 127;
+	request-cleanup-delay 2;
+};
+
+rewrite {
+	load "checknas.rw";
+	load "log-hook.rw";
+};
+
+@SNMP_CONFIG@snmp {
+@SNMP_CONFIG@	listen no;
+@SNMP_CONFIG@};	

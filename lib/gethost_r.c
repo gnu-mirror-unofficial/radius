@@ -105,11 +105,12 @@ rad_gethostbyname_r(name, result, buffer, buflen, h_errnop)
 {
         struct hostent *host;
 
+	pthread_cleanup_push((void (*)(void*))pthread_mutex_unlock, &mutex);
         pthread_mutex_lock(&mutex);
         host = gethostbyname(name);
         if (!host || store_hostent(host, result, buffer, buflen, h_errnop))
                 result = NULL;
-        pthread_mutex_unlock(&mutex);
+        pthread_cleanup_pop(1);
         return result;
 }
 
@@ -125,11 +126,12 @@ rad_gethostbyaddr_r(addr, length, type, result, buffer, buflen, h_errnop)
 {
         struct hostent *host;
 
+	pthread_cleanup_push((void (*)(void*))pthread_mutex_unlock, &mutex);
         pthread_mutex_lock (&mutex);
         host = gethostbyaddr (addr, length, type);
         if (!host || store_hostent(host, result, buffer, buflen, h_errnop))
                 result = NULL;
-        pthread_mutex_unlock (&mutex);
+        pthread_cleanup_pop(1);
         return result;
 }
 

@@ -27,9 +27,10 @@ localtime_r(timep, res)
 {
         struct tm *tm;
 
+	pthread_cleanup_push((void (*)(void*))pthread_mutex_unlock, &mutex);
         pthread_mutex_lock(&mutex);
         tm = localtime(timep);
         memcpy(res, tm, sizeof(*res));
-        pthread_mutex_unlock(&mutex);
+        pthread_cleanup_pop(1);
         return res;
 }

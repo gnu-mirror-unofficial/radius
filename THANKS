@@ -3,7 +3,7 @@ GNU Radius THANKS file.
 GNU Radius would have never appeared without help from many individuals.
 
 Special thanks to Oswaldo E. Aguirre M. <oaguirre@reacciun.ve> for offering
-the possibility to test Radius on Spark platform and for valuable
+the possibility to test Radius on Sparc platform and for valuable
 improvements he had proposed.
 
 Francisco J. Obispo S. <fobispo@reacciun.ve> invested a lot of his time and
@@ -13,8 +13,11 @@ interface to radius accounting information.
 Alexandre Oliva <aoliva@gnu.org> provided a lot of good advices and offered
 valuable help in testing Radius on various platforms.
 
-Thanks to Dustin Mitchell <dustin@cs.uchicago.edu> for help in improving 
-texinfo documentation.
+Dustin Mitchell <dustin@cs.uchicago.edu> helped improve the texinfo
+documentation.
+
+David Friedman <driz@away.net> offered an Alpha machine and helped in
+testing and debugging Radius.
 
 Thanks to all of the following for their
 bug reports/discussions/contributions:
@@ -31,5 +34,4 @@ Michael Weiser          michael@weiser.saale-net.de
 Eric Salome'            esalome@ctx.net
 Clement Gerouville      clems@certix.fr
 Dave Restall            dave@restall.net
-David Friedman		driz@away.net
 Vlad Lungu		vlad@rls.roknet.ro

@@ -1,3 +1,20 @@
+2001-12-27 Sergey Poznyakoff
+
+	* doc/MACHINES: (new)
+	* doc/Makefile.am: Added MACHINES.
+	* NEWS: Updated.
+	* README: Updated.
+	* THANKS: Updated.
+	* configure.in: Version 0.96
+
+	* radiusd/sql.c: Minor fix.
+	* radscm/ttl.scm: Added descriptive comment.
+
+	* doc/texinfo/radius.texi: Updated.
+	* doc/texinfo/bugs.texi: Updated.
+	* doc/texinfo/configure.texi: Updated.
+	* doc/man/config.so.in: Updated.
+	
 2001-12-26 Sergey Poznyakoff
 
 	* configure.in: Added EXPERIMENTAL mark for untested features.

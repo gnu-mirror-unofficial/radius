@@ -1,11 +1,13 @@
 		       I. Installation
 	            ---------------------
     
-  To install do:
+    Before installing, take a glance at doc/MACHINES, it
+    may describe some issues, specific to your configuration.
+    To install the package, do:
 
-1. ./configure [options]
-    
-    For the list of available options consult INSTALL file.
+    1. ./configure [options]
+
+    For the list of available options consult file INSTALL.
     The applications-specific options are:
 			      			      	
     --enable-yydebug
@@ -58,6 +60,10 @@
 	Enable PostgreSQL support. Usually this requires adding appropriate
 	--with-lib-path and --with-include-path options.
 
+    --with-odbc[={odbc|iodbc}]
+        Configure to work with ODBC. This is an experimental feature, it
+        has not been tested thoroughly.
+    
     --without-guile
 	Do not compile Guile support.
 
@@ -81,9 +87,6 @@
     --enable-deny-shell=SHELL
 	Always reject users with given shell.
 
-    --enable-osfc2
-	Enable OSFC2 support.
-
     The following is designed for future use. Currently the Norwegian locale
     (bokmal) is being finished.
 
@@ -105,25 +108,29 @@
     --with-gnu-msgfmt=PROG
 	Use PROG instead of GNU msgfmt.
 
-2. Run make.
+    2. Run make.
 
     The GNU make is preferred.
 
-3. Check it
+    3. Check it.
 
-    This step is optional. It requires DejaGNU package installed
-    either directly on the machine you have compiled radius on, or on 
-    another machine, connected to it via network. In the simplest case,
-    it will suffice to type
+    You can check the functionality of the package without installing
+    it. To do so, run
 
-       make check
+	make check.
 
-    For instructions on how to test radius from a remote machine, refer
-    to file test/dejagnu/README.
+    Two test suites are provided:
     
-4. make install
+	* The shell-based test suite (located in test/shell)
+	* The DejaGNU-based test suite (located in test/dejagnu)
 
-5. If you wish to install manual pages, do 
+    Basically, both suites contain the same tests. The DejaGNU-based
+    test suite allows for remote testing of the package. For instructions
+    on how to test the package remotely, refer to file test/dejagnu/README.
+    
+    4. make install
+
+    5. If you wish to install manual pages, do 
 
     make install-man.
 
@@ -131,28 +138,89 @@
     maintained and can therefore be inaccurate or incomplete. The
     Info files are the authoritative documentation. 
 
-		       II. Configuring
-		    --------------------
+		       II. Creating SQL database.
+		    -------------------------------
 
-    Be sure to read accompanying documentation. If you need help,
-    subscribe to <help-gnu-radius@gnu.org> and send your questions
-    there. To subscribe, visit
+    Follow the procedure, described below if you have configured
+    Radius with SQL support:
+    
+    1. Change to the subdirectory db/
+    2. Edit file config.m4. Most of its contents is commented out, so
+       uncomment anything that may be needed. Variables are:
+    
+    server   - SQL server name or IP address
+    port     - port to connect to
+
+	User credentials for creator of the database:
+    
+    CREATOR  - SQL username. This user must have create privileges.
+    CREATOR_PASSWORD - SQL password.
+
+	User credentials for the owner of the database:
+    
+    DB_USER  - SQL username.
+    DB_PWD   - SQL password.
+    (These must coincide with the values in raddb/sqlserver file)
+    
+    3. Depending on the type of SQL server you are using, run either
+       `make mysql' or `make pgsql'.
+
+       To get the database structure without creating it, run
+       `make mysql.struct' or `make pgsql.struct'.
+    
+		       III. Upgrade
+		    -------------------
+
+    Please, read file NEWS. It describes many features, introduced
+    with version 0.96.
+               
+    If you are upgrading from GNU Radius 0.94 or 0.95, you will need
+    to run script scripts/config-conv. It converts old raddb/config to
+    the new format. It assumes /usr/local as default prefix. If you have
+    installed the previous version of radius under a different prefix, run
+
+	scripts/config-conv --prefix=PATH
+
+    The script will create a backup copy of your old config file in your
+    raddb directory (It will name it config~). Please, take a look at
+    converted file, and edit it to your liking.
+
+    
+		       IV. Configuring
+		    ----------------------
+
+    Be sure to read accompanying documentation. The online documentation
+    is available at http://www.gnu.org/software/radius/manual.
+    If you need help, subscribe to <help-gnu-radius@gnu.org> and send your
+    questions there. To subscribe, visit
 
     http://mail.gnu.org/mailman/listinfo/help-gnu-radius
 
-    Before asking a question, it is be a good idea to look through
+    Before asking a question, it will be a good idea to look through
     the mailing archives on the same page, as they might already
     contain the answer.
         
-		       III. Testing.		
+		       V. Testing.		
 		    ------------------
 
+    Both commands described below use the configuration file
+    raddb/client.conf. See the documentation for the detailed
+    description of it.
+    
+    Use radauth to send authentication requests to the running
+    server. The invocation syntax is:
+
+            radauth [-v][-sSERVER:SECRET[:PORT]] username [pass]
+
+    The -v (--verbose) option produces verbose output. The -s (--server)
+    option allows to set the parameters of the radius server to send
+    the request to.
+    
     If you have guile version 1.4 or better installed, you can use
     radsession script to send authentication/accounting requests
     to the server. To do so, you will first need to edit your
     raddb/client.conf file. The template installed from the distribution
     should suffice to test the server in default configuration.
-
 
     1. To test authentication do
 
@@ -193,7 +261,7 @@ radwtmp begins Fri Dec 01 16:36:59 2000
 
     Then, suppose you run:
 
-	radsess -l hamlet -P 1 -s "0001" --stop
+	radsession -l hamlet -P 1 -s "0001" --stop
 
     This will send a stop record for session 0001. Radlast would then show
     something like:
@@ -202,14 +270,16 @@ hamlet      local    001 127.0.0.2       Thu Mon 07 07:22 - 07:25  (00:03)
 
 radwtmp begins Fri Dec 01 16:36:59 2000
 
-		       IV. Bug reporting.		
-                      ---------------------
+		        VI. Bug reporting.		
+                      ----------------------
 
-    Send bug reports to bug-gnu-radius@gnu.org. 
+    Send bug reports to <bug-gnu-radius@gnu.org>. 
 	
 
 Local Variables:
 mode: indented-text
+indent-tabs-mode: nil
+tab-stop-list: (4 8 12 16 20 24 28 32 36 40 44 48 52 56 60 64 68 72 76)
 left-margin: 4
 fill-column: 74
 version-control: never

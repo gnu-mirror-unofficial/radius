@@ -1,4 +1,4 @@
-Changes in Radius 0.95.93
+Changes in Radius 0.96
 
 ** The format of raddb/config has changed a little.
 
@@ -8,7 +8,7 @@ previous version of radius under a different prefix, run
 
 	scripts/config-conv --prefix=PATH
 
-The script will create a backup copy of your old config file in your
+The script will create a backup copy of the old config file in your
 raddb directory (It will name it config~). Please, take a look at
 converted file, and edit it to your liking.
 
@@ -72,8 +72,8 @@ with his username.
 ** raddb/realms: Both authentication and accouting ports can be
 specified.
 
-The syntax is: servername[:auth-port[:acct-port]], with brackets surrounding
-optional fields, e.g.:
+The syntax is: servername[:auth-port[:acct-port]] (brackets mark
+optional fields), e.g.:
 
 #Realm name	Radius server
 #----------	-------------
@@ -138,8 +138,8 @@ should contain the following check-pairs:
 The radiusd server can be compiled with Guile support, which allows
 to further extend its functionality. The `guile' statement in raddb/config
 controls the use of Guile functions. Please, take a look in
-raddb/config.syntax for an example of how to use it. There is also a
-description in texinfo documentation (Configuration files/config file/guile).
+raddb/config.syntax for an example of how to use it. Complete description
+is in texinfo documentation (Configuration files/config file/guile).
 
 The Guile functions can be called on authentication or accounting
 using the following special reply-pairs:
@@ -201,7 +201,7 @@ To create the default radius database:
     DB_USER  - SQL username.
     DB_PWD   - SQL password.
     (These must coincide with the values in raddb/sqlserver file)
- 3. Depending on what type of SQL server you are using, run either
+ 3. Depending on type of SQL server you are using, run either
 
 	make mysql
     or
@@ -246,7 +246,7 @@ check_attr_query  select attr,value,op \
 
 ** radiusd can be compiled with support for both MySQL and PostgreSQL.
 
-In this case the actual database to be used is controlled by `interface'
+In this case, the actual database to be used is controlled by `interface'
 statement in raddb/sqlserver file, e.g.:
 
 interface mysql
@@ -285,8 +285,17 @@ by make install.
 
 ** Support for computable session timeout 
 
-[FIXME]
+This is a framework for computing the session timeout in real time.
+To use it, Radius must be compiled with Guile support. raddb/config
+must contain:
 
+guile {
+	load "ttl.scm";
+};
+
+See the source file radscm/ttl.scm for the description of the module.
+
+
 =============================================================================
 NEWS for version 0.95
 
@@ -332,7 +341,7 @@ The major modes for editing configuration files users, hints,
 huntgroups and config are provided. The installation instructions
 are in file elisp/README.
 
-
+
 =============================================================================
 NEWS for version 0.93
 
@@ -484,7 +493,7 @@ profile.
 The acct_keepalive_query keyword specifies the query to be used
 on the arrival of a keepalive packet.
 
-
+
 =============================================================================
 NEWS for version 0.93
 
@@ -499,7 +508,7 @@ SQL accounting to a Postrgres server run
 
 	./configure --enable-mysql=postgres
 
-
+
 =============================================================================
 NEWS for version 0.92.1
 

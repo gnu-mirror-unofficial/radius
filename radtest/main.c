@@ -60,8 +60,11 @@ struct option longopt[] = {
 Symtab *vartab;
 char *radius_dir = RADIUS_DIR;
 int verbose;
-extern RADCLIENT *radclient;
 extern int radclient_debug;
+RADCLIENT       *radclient;
+char *progname;
+int reply_code;
+int debug_flag = 0;
 
 void init_symbols();
 static void print_usage();
@@ -77,6 +80,9 @@ main(argc, argv)
 	int c;
 	int quiet = 0;
 	char *p;
+	char *server = NULL;
+	int retry = 0;
+	int timeout = 0;
 	
 	app_setup();
 	initlog(argv[0]);
@@ -102,10 +108,13 @@ main(argc, argv)
 			quiet++;
 			break;
 		case 'r':
+			retry = strtol(optarg, NULL, 0);
 			break;
 		case 's':
+			server = optarg;
 			break;
 		case 't':
+			timeout = strtol(optarg, NULL, 0);
 			break;
 		case 'x':
 			set_debug_levels(optarg);
@@ -133,6 +142,80 @@ main(argc, argv)
 	
 	if (!radclient)
 		return 1;
+
+	if (timeout)
+		radclient->timeout = timeout;
+	if (retry)
+		radclient->retries = retry;
+	if (server) {
+		SERVER serv;
+		int i, argc;
+		char **argv;
+
+		if (argcv_get(server, ":", &argc, &argv)) {
+			radlog(L_ERR, "can't parse server definition");
+			exit(1);
+		}
+
+		if (argc < 3) {
+			radlog(L_ERR, "no shared secret for the server");
+			exit(1);
+		}
+
+		memset(&serv, 0, sizeof serv);
+		serv.name = "default";
+		for (i = 0; i < argc; i++) {
+			switch (i) {
+			case 0:
+				serv.addr = get_ipaddr(argv[i]);
+				if (!serv.addr) {
+					radlog(L_ERR,
+					     "bad IP address or host name: %s",
+					       argv[i]);
+					exit(1);
+				}
+				break;
+			case 2:
+				serv.secret = argv[i];
+				break;
+			case 4:
+				serv.port[0] = strtol(argv[i], &p, 0);
+				if (*p) {
+					radlog(L_ERR,
+					       "bad port number %s",
+					       argv[i]);
+					break;
+				}
+				break;
+			case 6:
+				serv.port[1] = strtol(argv[i], &p, 0);
+				if (*p) {
+					radlog(L_ERR,
+					       "bad port number %s",
+					       argv[i]);
+					break;
+				}
+				break;
+			default:
+				if (argv[i][0] != ':') {
+					radlog(L_ERR,
+					       "bad separator near %s",
+					       argv[i]);
+					exit(1);
+				}
+				break;
+			}
+		}
+
+		if (argc < 4)
+			serv.port[0] = DEF_AUTH_PORT;
+		if (argc < 6)
+			serv.port[0] = DEF_ACCT_PORT;
+		radclient->first_server =
+			radclient_append_server(radclient->first_server,
+						radclient_alloc_server(&serv));
+		argcv_free(argc, argv);
+	}
 	
 	if (!quiet) {
 		struct stat sb;
@@ -362,6 +445,35 @@ print(var)
 	}
 }
 
+void
+radtest_send(port, code, var)
+	int port;
+	int code;
+	Variable *var;
+{
+	RADIUS_REQ *auth;
+	
+	if (var->type != Vector) {
+		parse_error(_("wrong datatype: expected vector"));
+		return;
+	}
+
+	auth = radclient_send(radclient,
+			      port,
+			      code, var->datum.vector);
+	if (!auth)
+		return;
+
+	reply_code = auth->code;
+	var = (Variable*)sym_lookup(vartab, "REPLY_CODE");
+	var->type = Integer;
+	var->datum.number = reply_code;
+	var = (Variable*)sym_lookup(vartab, "REPLY");
+	var->type = Vector;
+	var->datum.vector = NULL;
+	var->datum.vector = avl_dup(auth->request);
+	radreq_free(auth);
+}
 
 /*
  *	Print usage message and exit.
@@ -369,7 +481,6 @@ print(var)
 static char usage_str[] =
 "usage: radtest [options]\n"
 "Options are\n"
-#ifdef HAVE_GETOPT_LONG
 "    -a, --assign VARIABLE=VALUE  Assign a VALUE to a VARIABLE\n"
 "    -d, --config-directory dir   Specify alternate configuration directory\n"
 "                                 (default " RADIUS_DIR ")\n"
@@ -383,21 +494,6 @@ static char usage_str[] =
 "    -h, --help                   Display this help and exit\n"
 "    -V, --version                Show program version\n"
 "    -L, --license                Display GNU license\n";
-#else
-"    -a VARIABLE=VALUE          Assign a VALUE to a VARIABLE\n"
-"    -d dir                     Specify alternate configuration directory\n"
-"                               (default " RADIUS_DIR ")\n"
-"    -p PORT-NUMBER             Set RADIUS authentication port to PORT-NUMBER\n"
-"    -q                         Quick mode\n"
-"    -r NUMBER                  Set number of retries\n"
-"    -s SERVER                  Set server name\n"
-"    -t NUMBER                  Set timeout in seconds\n"
-"    -v                         Verbose mode\n"
-"    -x DEBUG-LEVEL             Set debugging level\n"
-"    -h                         Display this help and exit\n"
-"    -V                         Show program version\n"
-"    -L                         Display GNU license\n";
-#endif
 
 void
 print_usage()

@@ -12,6 +12,7 @@
 
 SUBDIRS=guile
 EXTRA_DIST=\
+ config-conv\
  config-conv.awk\
  debug.sh\
  debugmod.m4\

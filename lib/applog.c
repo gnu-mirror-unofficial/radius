@@ -56,13 +56,15 @@ static char *priname[] = { /* priority names */
 };
 
 void
-vlog(int level, const char *file, size_t line,
+vlog(int level, 
+     const RADIUS_REQ *req,
+     const LOCUS *loc,
      const char *func_name, int en,
      const char *fmt, va_list ap)
 {
         fprintf(stderr, "%s: %s: ", progname, priname[level & L_PRIMASK]);
-        if (file) {
-                fprintf(stderr, "%s:%lu:", file, (unsigned long) line);
+        if (loc) {
+                fprintf(stderr, "%s:%lu:", loc->file, (unsigned long) loc->line);
 		if (func_name)
 			fprintf(stderr, "%s:", func_name);
 		fprintf(stderr, " ");

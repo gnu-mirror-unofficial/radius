@@ -172,7 +172,8 @@ int priority[] = {
 
 void
 vlog(int level,
-     const char *file, size_t line,
+     const RADIUS_REQ *req,
+     const LOCUS *loc,
      const char *func_name, int en,
      const char *fmt, va_list ap)
 {

@@ -1,3 +1,9 @@
+2004-09-16  Sergey Poznyakoff
+
+	* radiusd/auth.c: Removed stray #define
+	* radtest/completion.c: Compile only if WITH_READLINE is defined
+	* radtest/runtime.c: Translators comment
+
 2004-09-15  Sergey Poznyakoff
 
 	-== Alpha release 1.2.94 ==-

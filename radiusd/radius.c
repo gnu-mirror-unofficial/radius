@@ -154,6 +154,20 @@ radius_req_decode(struct sockaddr_in *sa,
 	if (!radreq)
 		return 1;
 
+	/* RFC 2865 p. 2.2:
+	   The random challenge can either be included in the
+	   CHAP-Challenge attribute or, if it is 16 octets long,
+	   it can be placed in the Request Authenticator field of
+	   the Access-Request packet. */
+
+	if (avl_find(radreq->request, DA_CHAP_PASSWORD)
+	    && !avl_find(radreq->request, DA_CHAP_CHALLENGE)) {
+		VALUE_PAIR *p = avp_create_binary(DA_CHAP_CHALLENGE,
+					          AUTH_VECTOR_LEN,
+					          radreq->vector);
+		avl_add_pair(&radreq->request, p);
+	}
+	
 	*output = radreq;
 	return 0;
 }

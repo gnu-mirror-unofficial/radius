@@ -1,3 +1,13 @@
+2004-04-20  Sergey Poznyakoff
+
+	* radscripts/radctl.m4 (usage): Quote $PROCESS when echoing
+	to prevent it from pathname expansion.
+
+2004-04-19  Sergey Poznyakoff
+
+	* lib/debug.c (grad_debug_p): Bugfix allowing it to work
+	with a separate build directory.
+
 2004-04-16  Sergey Poznyakoff
 
 	* include/radiusd.h: Minor formatting change.

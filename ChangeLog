@@ -1,3 +1,49 @@
+2003-12-12  Sergey Poznyakoff
+
+	Temporarily switched to the back-up repository
+	on mirddin. Change map:
+
+	Date from	Date to		Repository
+	========	=======		==========
+	2000-12-01	2003-12-03	Savannah	
+	2003-12-04	***		Mirddin
+
+2003-12-10  Sergey Poznyakoff
+
+	* radiusd/files.c (userparse): Changed wording of
+	the error message.
+
+2003-12-09  Sergey Poznyakoff
+
+	* radiusd/request.c (request_cleanup): Changed declaration.
+	(request_call_handler): New function
+	(_request_iterator,request_handle): Invoke handler indirectly
+	through request_call_handler().
+	
+2003-12-08  Sergey Poznyakoff
+	
+	-== Version 1.1 released ==-
+	
+2003-12-08  Sergey Poznyakoff
+
+	* configure.ac: Raised version number to 1.2
+	* NEWS: Updated
+
+2003-12-05  Sergey Poznyakoff
+
+	* radiusd/testsuite/proxy/realms.in (ignorecase): Use 127.0.0.1
+	* lib/users.y (install_pair): Bugfix: duplicate percent sign, when
+	given to asprintf.
+	* elisp/radconf-mode.el (radconf-keyword-dict): Added new keywords.
+
+2003-12-04  Sergey Poznyakoff
+
+	* scripts/texi2html.diff: Updated
+	* TODO: Updated
+	* radiusd/dict.c: Minor fixes.
+	* radiusd/exec.c: Likewise
+	* radiusd/log.c: Likewise
+
 2003-12-03  Sergey Poznyakoff
 
 	* NEWS: Updated
@@ -109,7 +155,7 @@
 	* doc/rfc/rfc3575.txt: New file
 	* doc/rfc/Makefile.am: Added rfc3575.txt
 	
-2003-11-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+2003-11-28  Sergey Poznyakoff  
 
 	* include/argcv.h: Updated from the mailutils repository (with
 	certain additions).
@@ -169,7 +215,7 @@
 
 	An attempt to make log messages as configurable as reasonable:
 	a user is allowed to specify "prefix" and "suffix" hooks. Both
-	hooks are rewrite functions of three arguments (retuest type,
+	hooks are rewrite functions of three arguments (request type,
 	nas name and request id), returning a string that would be
 	displayed before and after the actual message. Theoretically,
 	this should allow a user to tailor the messages to his/her

@@ -123,6 +123,7 @@ snmp_read(fdset)
 	struct snmp_pdu *pdu;
 	u_char packet[SNMP_PACKET_LENGTH];
 	struct sockaddr_in sin;
+	int salen;
 	int length;
 	char comm[128];
 	int comm_len;
@@ -132,11 +133,11 @@ snmp_read(fdset)
 			continue;
 
 		/* read the data */
-		length = sizeof(sin);
+		salen = sizeof(sin);
 		length = recvfrom(sp->sd,
 				  (char*) packet, sizeof(packet),
 				  0, (struct sockaddr *)&sin,
-				  &length);
+				  &salen);
 		if (length == -1) {
 			perror("recvfrom");/*FIXME */
 			continue;

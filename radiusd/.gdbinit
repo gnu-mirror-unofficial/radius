@@ -18,6 +18,7 @@ dir ../radlib
 
 handle SIGUSR1 nostop noprint pass
 handle SIGUSR2 nostop noprint pass
+handle SIGPIPE nostop print pass
 
 # Make sure radiusd won't spawn any children 
 break main

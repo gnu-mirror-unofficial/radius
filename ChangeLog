@@ -1,5 +1,27 @@
 2004-08-02  Sergey Poznyakoff
 
+	* Makefile.am: Removed lint-related MAINTAINER_MODE part
+	* doc/Makefile.am: Likewise
+	* include/Makefile.am: Likewise
+	* lib/Makefile.am: Likewise
+	* radiusd/Makefile.am: Likewise
+	* radlast/Makefile.am: Likewise
+	* radscripts/Makefile.am: Likewise
+	* radtest/Makefile.am: Likewise
+	* raduse/Makefile.am: Likewise
+	* radwho/Makefile.am: Likewise
+	* radzap/Makefile.am: Likewise
+	* scripts/Makefile.am: Likewise
+	* snmplib/Makefile.am: Likewise
+	* sql/Makefile.am: Likewise
+
+	* radscm/Makefile.am (.scm.scm4): Do not run `cd $(libdir)`, as
+	$(libdir) may not exist at the build time.
+
+	* radscm/radsession.in: Prepend SCHEMEDIR to %load-path
+
+2004-08-02  Sergey Poznyakoff
+
 	* contrib/Makefile.am: Updated
 	* contrib/README: Rewritten
 	* contrib/call_table.en: Moved to web-radact

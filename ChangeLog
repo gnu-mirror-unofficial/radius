@@ -1,3 +1,9 @@
+2002-06-22  Sergey Poznyakoff
+
+	* radiusd/acct.c (rad_check_multi): Fixed MPP validation.
+	* radiusd/exec.c (radius_exec_program): Handle eventual
+	  cancellation.
+
 2002-06-21  Sergey Poznyakoff
 
 	* include/radsql.h (SQL_DISPATCH_TAB): new argument to disconnect

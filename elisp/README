@@ -15,10 +15,10 @@ have to add the following to your .emacs or site-start file:
 
 (setq radius-db-path <path-to-raddb-directory>)
 (setq auto-mode-alist (append auto-mode-alist
-                       '(("raddb/users$" . radius-mode)
-                         ("raddb/hints$" . radius-mode)
-                         ("raddb/huntgroups$" . radius-mode)
-                         ("raddb/config$" . radconf-mode))))
+                       '((".*/raddb/users$" . radius-mode)
+                         (".*/raddb/hints$" . radius-mode)
+                         (".*/raddb/huntgroups$" . radius-mode)
+                         (".*/raddb/config$" . radconf-mode))))
 
 Replace <path-to-raddb-directory> with actual path to raddb directory.
 It can be obtained from the output of radiusd -v.

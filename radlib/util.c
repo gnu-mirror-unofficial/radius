@@ -413,7 +413,7 @@ format_pair(pair)
 			dval = NULL;
 		
 		if (!dval)
-			snprintf(buf2, sizeof(buf2), "%ld", pair->lvalue);
+			snprintf(buf2, sizeof(buf2), "%lu", pair->lvalue);
 		else
 			snprintf(buf2, sizeof(buf2), "%s", dval->name);
 		break;

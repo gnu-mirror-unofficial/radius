@@ -161,8 +161,14 @@ sym_install(symtab, name)
 	h = hashval((unsigned char *)name, hash_size[symtab->hash_num]);
 
 	sp = alloc_sym(name, symtab->elsize);
-	sp->next = symtab->sym[h];
-	symtab->sym[h] = sp;
+	sp->next = NULL;
+	if (symtab->sym[h]) {
+		Symbol *prev;
+		for (prev = symtab->sym[h]; prev->next; prev = prev->next)
+			;
+		prev->next = sp;
+	} else
+		symtab->sym[h] = sp;
 	symtab->elcnt++;
 	return sp;
 }

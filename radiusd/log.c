@@ -390,6 +390,25 @@ log_release(Channel *chan)
                 log_set_default("##emerg##", -1, emerg|alert|crit);
 }
 
+int
+log_change_owner(RADIUS_USER *usr)
+{
+        Channel *cp;
+	int errcnt = 0;
+	ITERATOR *itr = iterator_create(chanlist);
+	for (cp = iterator_first(itr); cp; cp = iterator_next(itr)) {
+		if (cp->mode == LM_FILE
+		    && chown(cp->id.file, usr->uid, usr->gid)) {
+			radlog(L_ERR,
+			       _("%s: cannot change owner to %d/%d"),
+			       cp->id.file, usr->uid, usr->gid);
+			errcnt++;
+		}
+	}
+	iterator_destroy(&itr);
+	return errcnt;
+}
+
 static int
 _chancmp(const void *item, const void *data)
 {

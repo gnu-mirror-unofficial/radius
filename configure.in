@@ -175,10 +175,15 @@ AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  setlocale bzero \
  inet_ntoa inet_aton setvbuf seteuid setreuid getdtablesize) 
 AM_FUNC_OBSTACK
-AC_REPLACE_FUNCS(strerror strncasecmp strcspn snprintf vasprintf strtok_r \
- localtime_r)
+AC_REPLACE_FUNCS(getline strerror strncasecmp strcspn snprintf vasprintf\
+ strtok_r localtime_r)
+
+AC_CHECK_FUNCS(gethostbyname_r gethostbyaddr_r)
+rad_CHECK_STRUCT_FIELD(hostent, h_addr_list,
+                       [#include <netdb.h>])
 rad_REPLACE_GNU_GETOPT
 rad_REPLACE_REGEX
+
 
 AC_MSG_CHECKING(for sys_errlist and sys_nerr)
 AC_TRY_RUN(

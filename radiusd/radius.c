@@ -163,7 +163,9 @@ radius_auth_req_decode(struct sockaddr_in *sa,
 		radreq_free(radreq);
  		return 1;
         }
-
+	
+	forward_request(R_AUTH, input, inputsize);
+	
 	/* RFC 2865 p. 2.2:
 	   The random challenge can either be included in the
 	   CHAP-Challenge attribute or, if it is 16 octets long,
@@ -208,6 +210,8 @@ radius_acct_req_decode(struct sockaddr_in *sa,
  		return 1;
         }
 
+	forward_request(R_AUTH, input, inputsize);
+	
 	*output = radreq;
 	return 0;
 }

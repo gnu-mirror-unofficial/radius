@@ -251,6 +251,7 @@ VALUE		Auth-Type		System			1
 VALUE		Auth-Type		SecurID			2
 VALUE		Auth-Type		Crypt-Local		3
 VALUE		Auth-Type		Reject			4
+VALUE           Auth-Type               Ignore			5
 
 #
 # Extensions introduced by Cistron

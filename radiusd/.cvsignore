@@ -2,9 +2,9 @@ Makefile
 Makefile.in
 config.c
 rewrite.c
-config_tok.h
+config.y.output
+rewrite.y.output
 y.output
-config_kw.c
 debugmod.c
 .deps
 radiusd

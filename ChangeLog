@@ -1,3 +1,53 @@
+2001-09-02 Sergey Poznyakoff
+
+	Further changes integrating Guile support.
+
+	* Makefile.am: Reorganized subdirs.
+	* configure.in: More sophisticated checking for working Guile
+	libraries.
+
+	* m4/guile.m4: (new) Test for working Guile libraries.
+	* m4/Makefile.am: Added guile.m4
+	* m4/rx.m4: Simplified a lot. There's no use checking for
+	librx if we can just supply included rx.o
+
+	* raddb/config.syntax: Added more comments.
+	
+	* radscm/radscm.h: (new) Protos for libradscm functions.
+	* radscm/rscm_dict.c: (new) Scheme interface to radius dictionaries.
+	* radscm/rscm_lib.c: (new) libradscm basic functions.
+	* radscm/rscm_syslog.c: (new) Scheme interface to syslog.
+	* radscm/rscm_utmp.c: (new) Scheme interface to radius [uw]tmp files.
+	* radscm/.cvsignore: Added libradscm.a
+
+	* raddb/dictionary: New attribute: Scheme-Acct-Procedure. Can be
+	used in reply pairs of a hints profile to trigger execution
+	of the given Scheme procedure on accounting events. The procedure
+	takes one argument: the request A/V pairs. Return value is #f
+	if accounting fails and #t otherwise.
+	* radiusd/Makefile.am: Moved librad.a to the end of LDADD (needed
+	for linking against libradscm.a)
+	* radiusd/acct.c: Handle Scheme-Acct-Procedure attribute.
+	* radiusd/log.c: Added static qualifier to chanlist.
+
+	* acconfig.h: Changed USE_GUILE to USE_SERVER_GUILE.
+	* radiusd/auth.c: Likewise.
+	* radiusd/config.y: Likewise.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/version.c: Likewise.
+	* radiusd/scheme.c: Likewise. Added scheme_acct(). Removed library-
+	specific functions.
+
+	* radscm/Makefile.am: Build libradscm.a.
+	* radscm/radscm.c: Removed library-specific functions.
+
+	* radscripts/Makefile.am: Removed `if GUILE' conditional.
+	* radscripts/radtest.m4: Likewise.
+
+	* include/radiusd.h: Protos for scheme_.*() functions.
+	* elisp/radconf-mode.el: Recognize new keywords. Obsolete ones
+	are retained for backward compatibility.
+
 2001-09-01 Sergey Poznyakoff
 
 	Started integrating Guile support into the server:

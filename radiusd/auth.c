@@ -877,7 +877,7 @@ sfn_eval_reply(m)
                 if (p->eval) {
                         Datatype type;
                         Datum datum;
-                        
+ 
                         if (interpret(p->strvalue, m->req, &type, &datum)) {
                                 errcnt++;
                                 continue;
@@ -887,7 +887,7 @@ sfn_eval_reply(m)
                                 p->lvalue = datum.ival;
                                 break;
                         case String:
-                                p->strvalue = make_string(datum.sval);
+                                p->strvalue = datum.sval;
                                 p->strlength = strlen(p->strvalue);
                                 break;
                         default:

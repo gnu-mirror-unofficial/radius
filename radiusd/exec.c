@@ -123,12 +123,12 @@ radius_exec_program(cmd, request, reply, exec_wait, user_msg)
 			p[0] = p[1] = 0;
 			return -1;
 		}
-		}
 
-	if ((oldsig = signal(SIGCHLD, SIG_IGN)) == SIG_ERR) {
+		if ((oldsig = signal(SIGCHLD, SIG_DFL)) == SIG_ERR) {
 			radlog(L_ERR|L_PERROR, _("can't reset SIGCHLD"));
 			return -1;
 		}
+	}
 
 	if ((pid = fork()) == 0) {
 		int argc;
@@ -144,7 +144,7 @@ radius_exec_program(cmd, request, reply, exec_wait, user_msg)
 			("command line: %s", ptr));
 
 		argcv_get(ptr, "", &argc, &argv);
-
+		
 		if (exec_wait) {
 			if (close(p[0]))
 				radlog(L_ERR|L_PERROR, _("can't close pipe"));

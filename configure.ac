@@ -18,7 +18,7 @@
 AC_PREREQ(2.57)
 
 AC_REVISION($Revision$)
-AC_INIT(GNU Radius, 0.99.100, bug-gnu-radius@gnu.org)
+AC_INIT(GNU Radius, 0.99.101, bug-gnu-radius@gnu.org)
 AC_CONFIG_SRCDIR(radiusd/radiusd.c)
 AC_CONFIG_AUX_DIR([scripts])
 AC_CANONICAL_SYSTEM
@@ -163,7 +163,7 @@ AC_CHECK_HEADERS(argp.h fcntl.h malloc.h strings.h\
  crypt.h sys/uio.h sys/select.h sys/resources.h getopt.h libintl.h)
 
 ## * Check for national language support
-AM_GNU_GETTEXT(use-libtool, need-ngettext)
+AM_GNU_GETTEXT(no-libtool, need-ngettext)
 AM_GNU_GETTEXT_VERSION(0.11.5)
 if test ".$BUILD_INCLUDED_LIBINTL" = ".yes" ; then
 	AC_DEFINE(WITH_INCLUDED_LIBINTL,1,
@@ -382,11 +382,13 @@ AC_ARG_WITH(auth-port,
 		*)		AC_MSG_ERROR(invalid port number)
 				;;
 	esac],
-	AUTH_PORT=1645)
-AC_MSG_RESULT($AUTH_PORT)
+	AUTH_PORT=1812)
+ACCT_PORT="`expr $AUTH_PORT + 1`"
+AC_MSG_RESULT([Default ports are $AUTH_PORT/$ACCT_PORT])
+AC_SUBST(AUTH_PORT)
+AC_SUBST(ACCT_PORT)
 AC_DEFINE_UNQUOTED(DEF_AUTH_PORT, $AUTH_PORT, [Default authentication port])
-AC_DEFINE_UNQUOTED(DEF_ACCT_PORT, `expr $AUTH_PORT + 1`,
-                   [Default accounting port])		
+AC_DEFINE_UNQUOTED(DEF_ACCT_PORT, $ACCT_PORT, [Default accounting port])
 		
 
 ## **************
@@ -646,7 +648,7 @@ if test x$BUILD_CLIENT = xyes; then
 	if test x$USE_GUILE != xno; then
 		BUILD_NAS_SCM=nas.scm
 	else
-		AC_MSG_WARN([GUILE not installed. Won't build nas.scm])
+		AC_MSG_WARN([Guile not installed. Won't build nas.scm])
 	fi
 fi
 
@@ -675,7 +677,8 @@ AH_BOTTOM([
 AC_OUTPUT(Makefile 
           m4/Makefile 
           intl/Makefile 
-          po/Makefile.in 
+          po/Makefile.in
+          raddb/client.conf
           include/Makefile 
           include/snmp/Makefile
           lib/Makefile

@@ -1,3 +1,13 @@
+2003-09-16  Sergey Poznyakoff 
+
+	* lib/users.l (users_sync): Return the last read character.
+	(pop_source): Check for context_stack==NULL before closing
+	yyin.
+	* lib/users.y: Check the return from users_sync(). Set yychar
+	if it returns <= 0.
+	* include/parser.h (users_sync): Updated declaration
+	* NEWS: Updated
+
 2003-09-12  Sergey Poznyakoff 
 
 	* include/radius.h (RT_STATUS_SERVER): New define

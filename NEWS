@@ -1,4 +1,4 @@
-GNU Radius NEWS -- history of user-visible changes. 2003-08-15
+GNU Radius NEWS -- history of user-visible changes. 2003-09-16
 Copyright (C) 2002,2003 Free Software Foundation, Inc.
 See the end for copying conditions.
 
@@ -12,6 +12,12 @@ other libraries (namely, libmysqlclient)
 ** Choose the strictest timeout value between the one imposed by Login-Time
 attribute and the one set using	Session-Timeout attribute.
 ** Use sigaction for signal handling whenever it is available.
+** Fixed coredumps after unsuccessful error recovery in raddb/users
+file.
+
+* New features:
+
+** Support for Status-Server request.
 
 * Emacs files: Improved radconf-mode.el
 

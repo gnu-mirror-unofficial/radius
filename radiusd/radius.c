@@ -248,8 +248,8 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
 	/*
 	 *	Send it to the user
 	 */
-	sendto(activefd, (char *)auth, (int)total_length, (int)0,
-			&saremote, sizeof(struct sockaddr_in));
+	pth_sendto(activefd, (char *)auth, (int)total_length, (int)0,
+		   &saremote, sizeof(struct sockaddr_in));
 
 	/*
 	 *	Just to be tidy move pairs back.
@@ -598,7 +598,7 @@ send_challenge(radreq, msg, state, activefd)
 	/*
 	 *	Send it to the user
 	 */
-	sendto(activefd, (char *)auth, (int)total_length, (int)0,
+	pth_sendto(activefd, (char *)auth, (int)total_length, (int)0,
 			&saremote, sizeof(struct sockaddr_in));
 }
 

@@ -118,14 +118,17 @@ grad_ip_gethostaddr(const char *host)
  * provided address in host long notation.
  */
 char *
-grad_ip_iptostr(grad_uint32_t ipaddr, char *buffer)
+grad_ip_iptostr(grad_uint32_t ipaddr, char *bufp)
 {
-        sprintf(buffer, "%u.%u.%u.%u",
+	static char buffer[DOTTED_QUAD_LEN];
+	if (!bufp)
+		bufp = buffer;
+        sprintf(bufp, "%u.%u.%u.%u",
                 (u_int) ((ipaddr >> 24) & 0xff),
                 (u_int) ((ipaddr >> 16) & 0xff),
                 (u_int) ((ipaddr >> 8) & 0xff),
                 (u_int) (ipaddr & 0xff));
-        return buffer;
+        return bufp;
 }
 
 /*

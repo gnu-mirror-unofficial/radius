@@ -1,5 +1,9 @@
 2003-10-31  Sergey Poznyakoff
 
+	*  radiusd/radius.c: (radius_send_reply): Bugfix
+
+2003-10-31  Sergey Poznyakoff
+
 	Several modifications proposed by Maurice Makaay.
 	
 	* NEWS: Updated

@@ -288,7 +288,7 @@ rpp_ready(pid_t pid)
 }
 
 void
-rpp_flush()
+rpp_flush(int (*fun)(void*), void *closure)
 {
 	time_t t;
 	unsigned count;
@@ -303,7 +303,7 @@ rpp_flush()
 		     p = iterator_next(itr))
 			if (!p->ready)
 				count++;
-	} while (count > 0 && time(NULL) - t <= 10);
+	} while (count > 0 && (*fun)(closure) == 0);
 	iterator_destroy(&itr);
 }
 
@@ -407,6 +407,10 @@ sig_handler(int sig)
 		/*Ignored*/
 		break;
 		
+	case SIGALRM:
+		radlog(L_INFO, _("Child exiting on timeout."));
+		/*FALLTHRU*/
+		
 	case SIGTERM:
 	case SIGQUIT:
 	        radiusd_exit0();
@@ -435,14 +439,19 @@ rpp_request_handler(void *arg ARG_UNUSED)
 	REQUEST *req;
 
 	radiusd_signal_init(sig_handler);
+	signal(SIGALRM, sig_handler);
 	request_init_queue();
 #ifdef USE_SERVER_GUILE
         scheme_redirect_output();
 #endif
-
+	
 	while (1) {
 		int rc;
-		int len = rpp_fd_read(0, &frq, sizeof frq);
+		int len;
+
+		alarm(process_timeout);
+		len = rpp_fd_read(0, &frq, sizeof frq);
+		alarm(0);
 		if (len != sizeof frq) {
 			radlog(L_ERR,
 			       _("Child received malformed header. len = %d, errno = %s"),

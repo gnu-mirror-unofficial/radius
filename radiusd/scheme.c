@@ -46,7 +46,7 @@ static SCM
 catch_body(void *data)
 {
 	scm_init_load_path();
-	radscm_init();
+	grad_scm_init();
 	rscm_server_init();
 	radiusd_main();
 	return SCM_BOOL_F;

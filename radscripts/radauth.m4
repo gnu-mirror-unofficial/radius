@@ -1,5 +1,7 @@
 include(SRCDIR/radscripts.m4)dnl
 #! BINDIR/radtest -f
+# NOEDIT
+#
 # This file is part of GNU Radius.
 # Copyright (C) 2004 Free Software Foundation, Inc.
 #
@@ -19,22 +21,26 @@ include(SRCDIR/radscripts.m4)dnl
 # along with GNU Radius; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
-while getopt "An:s:P:hv"
+while getopt "n:s:P:hv"
 begin
   case $OPTVAR in
   "-n")	NASIP = $OPTARG 
   "-s")	SID = $OPTARG 
   "-P") pid = $OPTARG 
   "-v")	set -v 
-  "-A")	ACCT = yes 
   "-h") begin
           print <<-EOT
-		usage: radauth [[OPTIONS]] login [[password]]
+		usage: radauth [[OPTIONS]] [[COMMAND]] login [[password]]
 		Options are:
-		  -A            Run accounting after successful authentication
 		  -n IP		Set NAS IP address
 		  -s SID	Set session ID
 		  -P PORT	Set NAS port number
+		COMMAND is one of:
+		  auth		Send only Access-Request
+		  acct		Send Access-Request. If successfull, send
+		                accounting start request
+		  start		Send accounting start request
+		  stop 		Send accounting stop request
 		EOT
           exit 0
         end
@@ -45,7 +51,7 @@ begin
   end
 end
 
-[shift] ${OPTIND}-1
+SHIFT ${OPTIND}-1
 
 if $# > 4
 begin
@@ -57,7 +63,7 @@ end
 case $1 in
 "auth|acct|start|stop") begin
                           COMMAND=$1
-                          [shift] 1
+                          SHIFT 1
                         end
 ".*")	COMMAND="auth"
 end
@@ -106,10 +112,10 @@ begin
       input 
       send auth Access-Request \
            (User-Name = $LOGIN User-Password = $INPUT State = $REPLY[[State]])
-      end else begin
-        print "Authentication failed. Reply code " + $REPLY_CODE + "\n"
-        break
-      end
+    end else begin
+      print "Authentication failed. Reply code " + $REPLY_CODE + "\n"
+      break
+    end
   end
   exit 1
 end

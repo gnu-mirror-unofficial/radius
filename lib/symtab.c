@@ -286,7 +286,7 @@ symtab_iterate(Symtab *symtab, int (*fn)(), void *closure)
                 while (sym) {
                         next = sym->next;
                         if ((*fn)(closure, sym))
-                                break;
+                                return;
                         sym = next;
                 }
         }

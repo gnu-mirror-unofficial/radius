@@ -2,6 +2,7 @@
 
 	* extensions.texi: Minor change
 	* configure.texi: Document radiusd-user statement
+	* debug.texi: Documented test shell mode.
 
 2003-11-28  Sergey Poznyakoff 
 

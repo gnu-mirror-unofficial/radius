@@ -1,4 +1,9 @@
-2003-12-02  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+2003-12-02  Sergey Poznyakoff
+
+	* radiusd/tsh.c (tsh_timespan): Minor fix: the second
+	argument specifies the ordinal number of the day of week.
+
+2003-12-02  Sergey Poznyakoff 
 
 	* NEWS: Updated
 	* THANKS: Added Gerald Coon.
@@ -18,6 +23,11 @@
 	* radiusd/menu.c: Likewise.
 	* radiusd/proxy.c: Likewise.
 	* radiusd/radius.c: Likewise.
+	* lib/radpdu.c: Likewise.
+	* radiusd/files.c: Likewise.
+	* lib/debug.c (auth_codes, auth_codes_abbr): Use names defined
+	in RFC 3575.
+	
 	* include/radiusd.h  (RADIUS_USER): New data type
 	(exec_user): Removed global
 	(exec_user, radiusd_user): New globals
@@ -29,7 +39,7 @@
 	* radiusd/radiusd.c (exec_user, radiusd_user): New globals
 	Implemented "radiusd-user" config statement, proposed by
 	Maurice.
-
+	* radiusd/log.c (log_change_owner): New function
 	* radiusd/testsuite/proxy/config.in: Use default_log_prefix
 	* radiusd/testsuite/raddb/config.in: Likewise
 	

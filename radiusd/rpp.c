@@ -38,41 +38,110 @@ typedef struct {
 } rpp_proc_t;
 
 static int
-pipe_write(int fd, void *ptr, size_t size)
+pipe_write(int fd, void *ptr, size_t size, struct timeval *tv)
 {
-	return write(fd, ptr, size);
+	if (!tv)
+		return write(fd, ptr, size);
+	else {
+		char *data = ptr;
+		int rc;
+		struct timeval to;
+		fd_set wr_set;
+		size_t n;
+		
+		for (n = 0; n < size;) {
+			to = *tv;
+			FD_ZERO(&wr_set);
+			FD_SET(fd, &wr_set);
+			rc = select(fd + 1, NULL, &wr_set, NULL, &to);
+			if (rc == 0)
+				break;
+			else if (rc < 0) {
+				if (errno == EINTR)
+					continue;
+				break;
+			} else if (rc > 0) {
+				rc = write(fd, data, 1);
+				if (rc != 1) 
+					break;
+				data++;
+				n++;
+			}
+		}
+		return n;
+	}
 }
 
 static int
-pipe_read(int fd, void *ptr, size_t size)
+pipe_read(int fd, void *ptr, size_t size, struct timeval *tv)
 {
-	return read(fd, ptr, size);
+	int rc;
+
+	if (!tv) {
+		int rdbytes = 0;
+		do {
+			rc = read(fd, ptr, size);
+			if (rc > 0) {
+				ptr += rc;
+				size -= rc;
+				rdbytes += rc;
+			} else
+				break;
+		} while (size > 0);
+		return rdbytes;
+	} else {
+		char *data = ptr;
+		struct timeval to;
+		fd_set rd_set;
+		size_t n;
+		
+		for (n = 0; n < size;) {
+			to = *tv;
+			FD_ZERO(&rd_set);
+			FD_SET(fd, &rd_set);
+			rc = select(fd + 1, &rd_set, NULL, NULL, &to);
+			if (rc == 0)
+				break;
+			if (rc < 0) {
+				if (errno == EINTR)
+					continue;
+				break;
+			} else if (rc > 0) {
+				rc = read(fd, data, 1);
+				if (rc != 1) 
+					break;
+				data++;
+				n++;
+			}
+		}
+		return n;
+	}
 }
 
 static int
-rpp_fd_read(int fd, void *data, size_t size)
+rpp_fd_read(int fd, void *data, size_t size, struct timeval *tv)
 {
 	size_t sz, nbytes;
-	
-	if (pipe_read(fd, &nbytes, sizeof(nbytes)) != sizeof(nbytes)) 
+
+	if (pipe_read(fd, &nbytes, sizeof(nbytes), tv) != sizeof(nbytes)) 
 		return -1;
 	sz = nbytes > size ? size : nbytes;
-	if (pipe_read (fd, data, sz) != sz)
+	if (pipe_read (fd, data, sz, tv) != sz)
 		return -2;
 	for (;nbytes > size; nbytes--) {
 		char c;
-		pipe_read(fd, &c, 1);
+		pipe_read(fd, &c, 1, tv);
 	}
 	
 	return sz;
 }
 
 static int
-rpp_fd_write(int fd, void *data, size_t size)
+rpp_fd_write(int fd, void *data, size_t size, struct timeval *tv)
 {
-	if (pipe_write(fd, &size, sizeof(size)) != sizeof(size))
+	if (pipe_write(fd, &size, sizeof(size), tv) != sizeof(size))
 		return -1;
-	if (pipe_write(fd, data, size) != size)
+	if (pipe_write(fd, data, size, tv) != size)
 		return -2;
 	return size;
 }
@@ -206,62 +275,6 @@ rpp_remove(pid_t pid)
 		_rpp_remove(p);
 }
 
-int
-rpp_fdset(fd_set *read_fds, fd_set *write_fds)
-{
-	int max = 0;
-	rpp_proc_t *p;
-	ITERATOR *itr = iterator_create(process_list);
-	
-	for (p = iterator_first(itr); p; p = iterator_next(itr)) {
-		if (read_fds) {
-			FD_SET(p->p[0], read_fds);
-			if (max < p->p[0])
-				max = p->p[0];
-		}
-		if (write_fds) {
-			FD_SET(p->p[1], write_fds);
-			if (max < p->p[1])
-				max = p->p[1];
-		}
-	}
-	iterator_destroy(&itr);
-	return max;
-}
-
-int
-rpp_read(int fd, void *data, size_t size)
-{
-	rpp_proc_t *p;
-	ITERATOR *itr = iterator_create(process_list);
-
-	for (p = iterator_first(itr); 
-	     p && p->p[0] != fd; 
-	     p = iterator_next(itr)) 
-		;
-	iterator_destroy(&itr);
-	if (!p)
-		return -1;
-	return rpp_fd_read(p->p[0], data, size);
-}
-
-int
-rpp_read_set(fd_set *fds, void *data, size_t size)
-{
-	rpp_proc_t *p;
-	ITERATOR *itr = iterator_create(process_list);
-
-	for (p = iterator_first(itr); 
-	     p && !FD_ISSET(p->p[0], fds);
-	     p = iterator_next(itr))
-		;
-	iterator_destroy(&itr);
-	if (!p)
-		return -1;
-	FD_CLR(p->p[0], fds);
-	return rpp_fd_read(p->p[0], data, size);
-}
-
 
 static int rpp_request_handler(void *arg);
 
@@ -330,6 +343,14 @@ rpp_kill(pid_t pid, int signo)
 	return 0;
 }
 
+static void
+_rpp_slay(rpp_proc_t *p)
+{
+	radlog(L_NOTICE, _("Killing stuck process %lu"), (u_long) p->pid);
+	kill(p->pid, SIGKILL);
+	_rpp_remove(p);
+}
+
 size_t
 rpp_count()
 {
@@ -353,12 +374,14 @@ struct rpp_reply {
 	/* Data follows */
 };
 
+/* Master: Forward a request to the child */
 int
 rpp_forward_request(REQUEST *req)
 {
 	rpp_proc_t *p;
 	struct rpp_request frq;
-
+	struct timeval tv, *tvp;
+	
 	if (req->child_id) 
 		p = rpp_lookup_pid(req->child_id);
 	else
@@ -375,11 +398,19 @@ rpp_forward_request(REQUEST *req)
 	
 	p->ready = 0;
 	req->child_id = p->pid;
- 	if (rpp_fd_write(p->p[1], &frq, sizeof frq) != sizeof frq)
-		return 1;
 
- 	if (rpp_fd_write(p->p[1], req->rawdata, req->rawsize) != req->rawsize)
+	if (radiusd_write_timeout) {
+		tv.tv_sec = radiusd_write_timeout;
+		tv.tv_usec = 0;
+		tvp = &tv;
+	} else
+		tvp = NULL;
+	
+ 	if (rpp_fd_write(p->p[1], &frq, sizeof frq, tvp) != sizeof frq
+	    || rpp_fd_write(p->p[1], req->rawdata, req->rawsize, tvp) != req->rawsize) {
+		_rpp_slay(p);
 		return 1;
+	}
 	return 0;
 }
 
@@ -429,6 +460,7 @@ sig_handler(int sig)
 	signal(sig, sig_handler);
 }
 
+/* Main loop for a child process */
 int
 rpp_request_handler(void *arg ARG_UNUSED)
 {
@@ -450,7 +482,7 @@ rpp_request_handler(void *arg ARG_UNUSED)
 		int len;
 
 		alarm(process_timeout);
-		len = rpp_fd_read(0, &frq, sizeof frq);
+		len = rpp_fd_read(0, &frq, sizeof frq, NULL);
 		alarm(0);
 		if (len != sizeof frq) {
 			radlog(L_ERR,
@@ -464,10 +496,10 @@ rpp_request_handler(void *arg ARG_UNUSED)
 			data = erealloc(data, datasize);
 		}
 		
-		if (rpp_fd_read(0, data, frq.size) != frq.size) {
+		if (rpp_fd_read(0, data, frq.size, NULL) != frq.size) {
 			radlog(L_ERR,
 			       _("Child received malformed data"));
-			continue;
+			radiusd_exit0();
 		}
 		
 		req = request_create(frq.type, frq.fd, &frq.addr,
@@ -479,26 +511,42 @@ rpp_request_handler(void *arg ARG_UNUSED)
 		debug(1, ("notifying the master"));
 		repl.code = RPP_COMPLETE;
 		repl.size = 0;
-		rpp_fd_write(1, &repl, sizeof repl);
+		rpp_fd_write(1, &repl, sizeof repl, NULL);
 		if (rc)
 			request_free(req);
 	}
 	return 0;
 }
 
+/* Master: Read notification from the child and update the request queue */
 int
 rpp_input_handler(int fd, void *data)
 {
 	int true = 0;
 	struct rpp_reply repl;
+	rpp_proc_t *p = rpp_lookup_fd(fd);
+	struct timeval tv, *tvp;
+
+	insist(p != NULL);
 	
-	if (rpp_fd_read(fd, &repl, sizeof(repl)) == sizeof(repl)) {
-		rpp_proc_t *p = rpp_lookup_fd(fd);
+	if (radiusd_read_timeout) {
+		tv.tv_sec = radiusd_read_timeout;
+		tv.tv_usec = 0;
+		tvp = &tv;
+	} else
+		tvp = NULL;
+	
+	if (rpp_fd_read(fd, &repl, sizeof(repl), tvp) == sizeof(repl)) {
 		void *data = NULL;
 
 		if (repl.size) {
 			data = emalloc(repl.size);
-			rpp_fd_read(fd, data, repl.size);
+			if (rpp_fd_read(fd, data, repl.size, tvp)
+			    != repl.size) {
+				_rpp_slay(p);
+				efree(data);
+				return 1;
+			}
 		}
 		
 		if (p) {
@@ -507,10 +555,15 @@ rpp_input_handler(int fd, void *data)
 			request_update(p->pid, RS_COMPLETED, data);
 		} 
 		efree(data);
+	} else {
+		_rpp_slay(p);
+		return 1;
 	}
+	
 	return 0;
 }
 
+/* Client: Send an update to the master */
 int
 rpp_update(void *data, size_t size)
 {
@@ -518,8 +571,8 @@ rpp_update(void *data, size_t size)
 
 	repl.code = RPP_UPDATE;
 	repl.size = size;
-	rpp_fd_write(1, &repl, sizeof repl);
-	rpp_fd_write(1, data, size);
+	rpp_fd_write(1, &repl, sizeof repl, NULL);
+	rpp_fd_write(1, data, size, NULL);
 	return 0;
 }
 

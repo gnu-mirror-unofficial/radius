@@ -4,13 +4,12 @@
 -50  :  Fall back to pth if POSIX threads are not available?
 
      General:
--100 : Provide a scheme function for setting radclient_debug variable.
+-100 : Get rid of radscm (or build it only on systems that do not support
+       shared libraries). Build a shared Guile module instead. Make
+       server queue a SMOB instead of a hidden list.
 -50  : Add \ line continuation to read_raddb_files.
--50  : Get rid of radscm (or build it only on systems that do not support
-       shared libraries). Build a shared Guile module instead.
 -10  : Clean up the semantics of log_init/log_done.
 -3   : Enable use of port number in rewrite:check_unix()
-0    : Multiple servers per realm? (Rasmus Aveskogh <rasmus.aveskogh@utfors.se>)
 5    : Add include feature to config files that don't have it.
 5    : Write radctl substitute which would use SNMP.
 5    : Write a unified configuration utility in guile.

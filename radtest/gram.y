@@ -44,7 +44,6 @@ static char rcsid[] =
 #include <varargs.h>
 #include <sysdep.h>
 #include <radius.h>
-#include <radclient.h>
 #include <radtest.h>
 #include <debugmod.h>
 

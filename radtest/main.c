@@ -35,15 +35,14 @@ static char rcsid[] =
 #include <radius.h>
 #include <radargp.h>
 #include <radpaths.h>
-#include <radclient.h>
 #include <log.h>
 #include <radtest.h>
 
 Symtab *vartab;
 char *radius_dir = RADIUS_DIR;
 int verbose;
-extern int radclient_debug;
-RADCLIENT       *radclient;
+extern int rad_clt_debug;
+RADIUS_SERVER_QUEUE *srv_queue;
 char *progname;
 int reply_code;
 VALUE_PAIR *reply_list;
@@ -127,7 +126,8 @@ parse_opt (key, arg, state)
                 break;
         case 'v':
                 verbose++;
-                radclient_debug++;
+		set_module_debug_level("radpdu", 100);
+		set_module_debug_level("client", 100);
                 break;
         default:
                 return ARGP_ERR_UNKNOWN;
@@ -169,17 +169,17 @@ main(argc, argv)
                 radlog(L_ERR, _("error reading dictionary file"));
                 return 1;
         }
-        radclient = radclient_alloc(!quick, 0, 0);
+        srv_queue = rad_clt_create_queue(!quick, 0, 0);
         
-        if (!radclient)
+        if (!srv_queue)
                 return 1;
 
         if (timeout)
-                radclient->timeout = timeout;
+                srv_queue->timeout = timeout;
         if (retry)
-                radclient->retries = retry;
+                srv_queue->retries = retry;
         if (server) {
-                SERVER serv;
+                RADIUS_SERVER serv;
                 int i, argc;
                 char **argv;
 
@@ -242,13 +242,13 @@ main(argc, argv)
                         serv.port[0] = DEF_AUTH_PORT;
                 if (argc < 6)
                         serv.port[1] = DEF_ACCT_PORT;
-                radclient->first_server =
-                        radclient_append_server(radclient->first_server,
-                                                radclient_alloc_server(&serv));
+                srv_queue->first_server =
+                        rad_clt_append_server(srv_queue->first_server,
+                                                rad_clt_alloc_server(&serv));
                 argcv_free(argc, argv);
         }
 
-        if (!radclient->first_server) {
+        if (!srv_queue->first_server) {
                 radlog(L_ERR,
                        "No servers specfied. Use -s option.\n");
                 exit(1);
@@ -487,9 +487,9 @@ radtest_send(port, code, var)
                 return;
         }
 
-        auth = radclient_send(radclient,
-                              port,
-                              code, var->datum.vector);
+        auth = rad_clt_send(srv_queue,
+                            port,
+                            code, var->datum.vector);
         if (!auth)
                 return;
 

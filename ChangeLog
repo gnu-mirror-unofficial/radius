@@ -1,3 +1,44 @@
+2002-05-18  Sergey Poznyakoff 
+
+	Client / Server Proxy revised.
+
+	* Makefile.am: Added readme-alpha option.
+	* configure.ac: Added no-exeext automake option.
+	
+	* lib/radpdu.c: new file.
+	* lib/radsrv.c: new file.
+	* lib/Makefile.am: Added radpdu.c and radsrv.c.
+	
+	* include/radclient.h: Removed.
+	* include/Makefile.am: Removed radclient.h
+	* include/radius.h (REALM): Redesigned the structure. Use
+	  a queue of servers instead of a single IP.
+	  (RADIUS_SERVER,RADIUS_SERVER_QUEUE): new structures.
+	  
+	* lib/mem.c (make_string): Handle NULL argument.
+	* lib/radargp.c: Removed dubious assignment.
+	* lib/raddb.c: Bugfix: count empty lines.
+*	* lib/realms.c: Reflect changes to REALM structure. Allow for
+	  multiple servers per line.
+	* radiusd/acct.c: Reflect changes to REALM structure.
+	* radiusd/files.c: LIkewise.
+	* radwho/radwho.c: Likewise.
+	
+	* lib/client.c: Redesigned.
+	* lib/debug.c (auth_code_str): New function.
+	
+*	* radiusd/proxy.c: Rewritten using new server/client functions.
+	  Implemented multiple servers per realm. Proposed by Rasmus
+   	  Aveskogh <rasmus.aveskogh@utfors.se>.
+	* radiusd/radius.c: Rewritten using new server/client functions.
+	  This file should disappear.
+	* radiusd/radiusd.c: Use new server/client functions.
+	* radscm/radscm.c: Likewise.
+	* radscm/radscm.c: Likewise.
+	* client/pam_radius/pam_radius.c: Likewise.
+	
+	* TODO: Updated.
+
 2002-05-17  Sergey Poznyakoff
 
 	Implemented retransmitting of the proxy requests.

@@ -1,3 +1,10 @@
+2003-10-26  Sergey Poznyakoff  
+
+	* radiusd/exec.c: Reverted changes
+	* radiusd/auth.c (sfn_exec_wait): Explicitely clean up
+	reply pairs on error.
+	* radiusd/rewrite.y (regex_pragma): More diagnostics.
+
 2003-10-25  Sergey Poznyakoff 
 
 	* NEWS: Updated

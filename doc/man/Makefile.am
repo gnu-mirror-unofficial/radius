@@ -15,6 +15,9 @@ man_MANS=builddbm.8 radctl.8 radiusd.8\
          radgrep.1 radlast.1 raduse.1 radwho.1
 CLEANFILES=$(man_MANS)
 
+dist-hook:
+	-(cd $(distdir); rm -f $(CLEANFILES))
+
 if MAINTAINER_MODE
 
 endif

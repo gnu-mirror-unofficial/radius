@@ -1,0 +1,17 @@
+This directory contains the ASN.1 specification of the SNMP OIDs
+assigned to RADIUS MIB work by the IANA. The specifications in
+RADIUS-ACC-SERVER-MIB.txt and RADIUS-AUTH-SERVER-MIB.txt are
+extracted from RFCs 2621 and 2619 accordingly. The corresponding
+RFCs can be found in subdirectory doc/rfc of the package. Both
+RFCs allow unlimited distribution of the information contained
+therein.
+
+GNU-RADIUS-STAT-MIB.txt represents the GNU RADIUS private extensions
+to the above RFCs. It is in its beta stage.
+
+*.chart files contain the graphic representation of the corresponding
+MIB trees.
+
+
+radmibs.h.in is the source file used to build include/radmibs.h header.
+

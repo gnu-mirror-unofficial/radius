@@ -76,8 +76,12 @@
      Use PROG instead of GNU msgfmt.
 
 2. make
-3. make install
 
+3. If guile version 1.4 or higher is installed on your system, you can do
+	make check
+   to check the functionality of the package without installing it.
+
+4. make install
 
               II. Some configuration issues:
            ------------------------------------		

@@ -492,11 +492,6 @@ grad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, size_t length)
                 }
         }
 
-	/* Add NAS-IP-Address if the NAS didn't send one */
-	if (!grad_avl_find(first_pair, DA_NAS_IP_ADDRESS)) 
-		grad_avl_add_pair(&first_pair,
-			     grad_avp_create_integer(DA_NAS_IP_ADDRESS, host));
-	
         radreq->request = first_pair;
 #ifdef DEBUG_ONLY
         {
@@ -504,6 +499,8 @@ grad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, size_t length)
 					      DA_NAS_IP_ADDRESS);
                 if (p)
                         radreq->ipaddr = p->avp_lvalue;
+		else
+			radreq->ipaddr = host;
         }
 #endif
         return radreq;

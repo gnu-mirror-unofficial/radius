@@ -16,6 +16,7 @@ alloc.c \
 argcv.c \
 avl.c \
 client.c \
+cryptpass.c \
 dbm.c \
 debug.c \
 dict.c \

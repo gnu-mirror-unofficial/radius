@@ -12,6 +12,6 @@
 
 AUTOMAKE_OPTIONS = dejagnu
 DEJATOOL = radiusd
-RUNTESTFLAGS = -v -v -v
+RUNTESTFLAGS = 
 SUBDIRS = lib s.radiusd
 

@@ -346,7 +346,7 @@ radwtmp()
         }
         bl = (stb.st_size + sizeof(buf) - 1) / sizeof(buf);
         
-        signal(SIGINT, sig_int);
+        rad_set_signal(SIGINT, sig_int);
         stop = 0;
 
         /*time(&buf[0].ut_time);*/

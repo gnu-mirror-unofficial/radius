@@ -1,5 +1,4 @@
-;; This is a sample configuration file for radctl and session
-;; scripts.
+;; This is a sample configuration file for nas.scm
 
 ;; These statements can be used to override the defaults set in
 ;; raddb/client.conf

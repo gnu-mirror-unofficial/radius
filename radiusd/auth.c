@@ -888,37 +888,23 @@ sfn_init(AUTH_MACH *m)
 void
 sfn_scheme(AUTH_MACH *m)
 {
-#ifdef USE_SERVER_GUILE
-        grad_avp_t *p;
-        grad_avp_t *reply = NULL;
-        
-        if (!use_guile) {
-                grad_log_req(L_ERR, m->req->request,
-                             _("Guile authentication disabled in config"));
-                newstate(as_reject_cleanup);
-                return;
-        }
+	grad_avp_t *p;
+        grad_avp_t *tmp = NULL;
 
-	grad_avl_move_attr(&reply, &m->user_reply, DA_SCHEME_PROCEDURE);
-        for (p = reply; p; p = p->next) {
-                if (scheme_auth(p->avp_strvalue,
-                                m->req, m->user_check, &m->user_reply)) {
+	grad_avl_move_attr(&tmp, &m->user_reply, DA_SCHEME_PROCEDURE);
+	if (scheme_eval_avl (m->req, m->user_check, tmp, &m->user_reply, &p)) {
+		if (p) {
 			auth_log(m,
 				 _("Login rejected"),
 				 NULL,
 				 _("denied by Scheme procedure "),
 				 p->avp_strvalue);
                         newstate(as_reject);
-                        break;
-                }
-        }
-        grad_avl_free(reply);
-#else
-        grad_log_req(L_ERR, m->req,
-                     _("Guile authentication not available"));
-        newstate(as_reject_cleanup);
-        return;
-#endif
+		} else { /* Empty P means that Guile auth is not available */
+			newstate(as_reject_cleanup);
+		}
+	}
+	grad_avl_free(tmp);
 }
 
 /* Execute an Authentication Failure Trigger, if the one is specified */
@@ -1164,59 +1150,27 @@ sfn_exec_wait(AUTH_MACH *m)
 {
 	int rc;
 	grad_avp_t *p;
-	grad_avp_t *repl = NULL;
+	grad_avp_t *reply = NULL;
 	
-	for (p = m->check_pair;
-             p;
-             p = grad_avl_find(p->next, DA_EXEC_PROGRAM_WAIT)) {
-		grad_avp_t *tail = NULL;
+	rc = exec_program_wait (m->req, m->check_pair, &reply, &p);
+	
+	if (rc != 0) {
+		newstate(as_reject);
 
-		if (m->user_reply)
-			for (tail = m->user_reply; tail->next;
-			     tail = tail->next)
-				;
-
-		switch (p->avp_strvalue[0]) {
-		case '/':
-			/* radius_exec_program() returns -1 on
-		   	   fork/exec errors, or >0 if the exec'ed program
-		   	   had a non-zero exit status.
-			 */
-			rc = radius_exec_program(p->avp_strvalue,
-					         m->req,
-					         &m->user_reply,
-					         1);
-			break;
-
-		case '|':
-			rc = filter_auth(p->avp_strvalue+1,
-				         m->req,
-				         &m->user_reply);
-			break;
-
-		default:
-			rc = 1;
+		if (is_log_mode(m, RLOG_AUTH)) {
+			auth_log(m, _("Login incorrect"),
+				 NULL,
+				 _("external check failed: "), 
+				 p->avp_strvalue);
 		}
 
-		if (rc != 0) {
-			newstate(as_reject);
-
-			if (is_log_mode(m, RLOG_AUTH)) {
-				auth_log(m, _("Login incorrect"),
-				         NULL,
-				         _("external check failed: "), 
-                                         p->avp_strvalue);
-		        }
-
-			p = tail->next;
-			tail->next = NULL;
-			grad_avl_free(m->user_reply);
-			m->user_reply = p;
-			if (!grad_avl_find(m->user_reply, DA_REPLY_MESSAGE))
-				auth_format_msg(m, MSG_ACCESS_DENIED);
-			
-			break;
-		}
+		grad_avl_free(m->user_reply);
+		m->user_reply = reply;
+		if (!grad_avl_find(m->user_reply, DA_REPLY_MESSAGE))
+			auth_format_msg(m, MSG_ACCESS_DENIED);
+	} else {
+		grad_avl_merge(&m->user_reply, &reply);
+		grad_avl_free(reply);
 	}
 }
 

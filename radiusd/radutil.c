@@ -307,6 +307,10 @@ radius_xlate0(obp, str, req, reply)
                         break;
                 case 0:
                         goto end;
+		case '\n':
+			obstack_1grow(obp, '\r');
+			obstack_1grow(obp, c);
+			break;
                 case '%':
                         if (!req) {
                                 obstack_1grow(obp, c);

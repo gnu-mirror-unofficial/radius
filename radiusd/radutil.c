@@ -152,8 +152,7 @@ attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
         tmp[AUTH_STRING_LEN-1] = 0;
         switch (attr->type) {
         case TYPE_STRING:
-                if ((attr->value == DA_USER_PASSWORD
-		     || attr->value == DA_CHAP_PASSWORD) && req) {
+                if ((attr->prop & AP_ENCRYPT) && req) {
                         req_decrypt_password(tmp, req, pair);
 			str = tmp;
 		} else

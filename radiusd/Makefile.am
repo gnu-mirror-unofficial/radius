@@ -24,7 +24,6 @@ radiusd_SOURCES = \
  files.c\
  log.c\
  menu.c\
- notify.c\
  pam.c\
  proxy.c\
  radck.c\
@@ -80,7 +79,7 @@ lint:  $(radiusd_LNS)
 	$(LINT.c) -u $(radiusd_LNS) -L../radlib -lrad
 
 SRCS=radiusd.c acct.c auth.c exec.c files.c menu.c sql.c\
-         notify.c config.y pam.c proxy.c radius.c\
+         config.y pam.c proxy.c radius.c\
          timestr.c version.c log.c stat.c\
          snmpserv.c shmem.c radutil.c rewrite.y\
          checkrad.c radck.c builddbm.c

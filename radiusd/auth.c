@@ -264,19 +264,19 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
         /* Find the password sent by the user. If it's not present,
            authentication fails. */
         
-        if (!(auth_item = avl_find(radreq->request, DA_CHAP_PASSWORD))) {
-                auth_item = avl_find(radreq->request, DA_USER_PASSWORD);
-                /* Decrypt the password. */
-                if (auth_item) {
-                        if (auth_item->strlength == 0)
-                                userpass[0] = 0;
-                        else
-                                req_decrypt_password(userpass, radreq,
-                                                     auth_item);
-                }
-        }
-                
-        if (auth_item == NULL)
+        if (auth_item = avl_find(radreq->request, DA_CHAP_PASSWORD))
+		auth_type = DV_AUTH_TYPE_LOCAL;
+	else
+		auth_item = avl_find(radreq->request, DA_USER_PASSWORD);
+	
+	/* Decrypt the password. */
+	if (auth_item) {
+		if (auth_item->strlength == 0)
+			userpass[0] = 0;
+		else
+			req_decrypt_password(userpass, radreq,
+					     auth_item);
+	} else /* if (auth_item == NULL) */
                 return AUTH_FAIL;
         
         /* Set up authentication data */

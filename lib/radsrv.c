@@ -35,8 +35,6 @@
 #include <radius.h>
 #include <debugmod.h>
 
-#undef DEBUG_ONLY 
-
 /* Build and send a reply to the incoming request.
    Input: fd          -- Socket descriptor.
           radreq      -- The request. */

@@ -556,9 +556,10 @@ mem_get_stat(stat)
 	}
 }
 
-void 
-mem_stat_enumerate(fun)
+int
+mem_stat_enumerate(fun, closure)
 	int (*fun)();
+	void *closure;
 {
 	CLASS_STAT stat;
 	Bucketclass class;
@@ -570,9 +571,10 @@ mem_stat_enumerate(fun)
 		stat.elcnt = class->elcnt;
 		stat.bucket_cnt = class->bucket_cnt;
 		stat.allocated_cnt = class->allocated_cnt;
-		if ((*fun)(&stat))
-			break;
+		if ((*fun)(&stat, closure))
+			return 1;
 	}
+	return 0;
 }
 
 #ifdef MAINTAINER_MODE

@@ -69,6 +69,6 @@ void free_string(char *str);
 char *replace_string(char **str, char *value);
 
 void mem_get_stat(MEM_STAT *stat);
-void mem_stat_enumerate(int (*fun)());
+int mem_stat_enumerate(int (*fun)(), void *closure);
 
 #endif

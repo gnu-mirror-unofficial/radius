@@ -12,7 +12,7 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 bin_PROGRAMS    = radtest
-radtest_SOURCES = main.c gram.y input.l radtest.h completion.c
+radtest_SOURCES = main.c gram.y input.l radtest.h runtime.c completion.c
 radtest_LDADD   = @LIBGNURADIUS@ ../lib/libradextra.a @READLINE_LIBS@ @LIBINTL@
 noinst_HEADERS  = gram.h
 INCLUDES        = @RADIUS_INCLUDE_PATH@ -I$(srcdir) 

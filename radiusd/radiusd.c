@@ -719,12 +719,8 @@ radiusd_main_loop()
         radlog(L_INFO, _("Ready to process requests."));
 
         for(;;) {
-                struct timeval tv;
-
 		check_reload();
-                tv.tv_sec = 2;
-                tv.tv_usec = 0;
-		input_select(radius_input, &tv);
+		input_select(radius_input, NULL);
 	}
 }
 

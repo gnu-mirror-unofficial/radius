@@ -41,136 +41,208 @@
 #include <common.h>
 #include <radtest.h>
 
-extern grad_locus_t source_locus;
-
-char *print_ident(Variable *var);
-int subscript(Variable *var, char *attr_name, int all, Variable *ret_var);
-
 int yyerror(char *s);
 
 extern int yylex();
 
+static int current_nesting_level; /* Nesting level of WHILE/DO statements */
+ 
 %}
 
-%token EOL AUTH ACCT SEND EXPECT
-%token EQ LT GT NE LE GE
+%token EOL AUTH ACCT SEND EXPECT T_BEGIN T_END
+%token IF ELSE WHILE DO BREAK CONTINUE
 %token PRINT 
 %token EXIT
-%token <ident> IDENT
+%token <deref> IDENT
+%token <parm> PARM
 %token <string> NAME
 %token <number> NUMBER
 %token <string> QUOTE
 %token <ipaddr> IPADDRESS
 
-%type <number> code 
+%left OR
+%left AND
+%nonassoc EQ NE 
+%nonassoc LT LE GT GE
+%left '+' '-'
+%left '*' '/' '%'
+%left UMINUS NOT
+
 %type <op> op
-%type <variable> value expr send_flag
-%type <ident> maybe_expr 
-%type <symtab> send_flags send_flag_list
-%type <vector> vector 
-%type <pair_list> pair_list
 %type <pair> pair
-%type <string> string 
-%type <number> port_type
+%type <list> pair_list prlist list
+%type <i> closure req_code nesting_level port_type
+%type <node> stmt lstmt expr maybe_expr value bool cond expr_or_pair_list pritem
+%type <var> send_flag imm_value
+%type <symtab> send_flags send_flag_list
 
 %union {
-        char *string;
-        int number;
-        grad_uint32_t ipaddr;
-        Variable *ident;
-        grad_avp_t *pair;
-        grad_avp_t *vector;
-        struct {
-                grad_avp_t *head, *tail;
-        } pair_list;
-        Variable variable;
-	grad_symtab_t *symtab;
+	int i;
+	long number;
+	char *string;
+	radtest_node_t *node;
+	radtest_node_deref_var_t deref;
+	radtest_node_deref_parm_t parm;
+	grad_uint32_t ipaddr;
 	enum grad_operator op;
+	radtest_pair_t *pair;
+	grad_list_t *list;
+	radtest_variable_t *var;
+	grad_symtab_t *symtab;
 }
 
 %%
 
-input         : list
+program       : /* empty */
+              | input
+              ; 
+
+input         : lstmt
+                {
+			radtest_eval($1);
+			radtest_free_mem();
+		}
+              | input lstmt
+                {
+			radtest_eval($2);
+			radtest_free_mem();
+		}
               ;
 
-list          : stmt
-              | list stmt
+list          : lstmt
+                {
+			$$ = grad_list_create();
+			if ($1)
+				grad_list_append($$, $1);
+		}
+              | list lstmt
+                {
+			if ($2) 
+				grad_list_append($1, $2);
+			$$ = $1;
+		}
               ;
 
-stmt          : /* empty */ EOL
-              | PRINT prlist EOL
+lstmt         : /* empty */ EOL
                 {
-                        printf("\n");
-                }
-              | NAME EQ expr EOL
-                {
-                        Variable *var;
-                        
-                        if ((var = (Variable*) grad_sym_lookup(vartab, $1)) == NULL)
-                                var = (Variable*) grad_sym_install(vartab, $1);
-                        if (var->type == Builtin)
-                                var->datum.builtin.set(&$3);
-                        else {
-                                var->type = $3.type;
-                                var->datum = $3.datum;
-                        }
-                }
-              | SEND send_flags port_type code maybe_expr EOL
-                {
-                        radtest_send($3, $4, $5, $2);
-                        tempvar_free($5);
-			grad_symtab_free(&$2);
-                }
-              | EXPECT code maybe_expr EOL
-                {
-                        int pass = 1;
-                        if (verbose) {
-                                printf("expect %d\n", $2);
-                                printf("got    %d\n", reply_code);
-                        }
-                        if (reply_code != $2) {
-                                if (abort_on_failure) {
-                                        parse_error("expect failed: got %d\n",
-                                                    reply_code);
-                                        YYACCEPT;
-                                }
-                                pass = 0;
-                        }
-                        if ($3) {
-                                if ($3->type != Vector) {
-                                        parse_error("expecting vector");
-                                        YYERROR;
-                                }
-                                if (compare_lists(reply_list,
-                                                  $3->datum.vector))
-                                        pass = 0;
-                                tempvar_free($3);
-                                grad_free($3);
-                        }
-                        printf("%s\n", pass ? "PASS" : "FAIL");
-                } 
+			$$ = NULL;
+		}
+              | stmt EOL
               | error EOL
                 {
                         yyclearin;
                         yyerrok;
                 }
-              | EXIT
+	      ;
+
+stmt          : T_BEGIN list T_END
                 {
-                        YYACCEPT;
-                }
+			$$ = radtest_node_alloc(radtest_node_stmt);
+			$$->v.list = $2;			
+		}
+              | IF cond stmt 
+                {
+			$$ = radtest_node_alloc(radtest_node_cond);
+			$$->v.cond.cond = $2;
+			$$->v.cond.iftrue = $3;
+			$$->v.cond.iffalse = NULL;
+		}
+              | IF cond stmt ELSE stmt 
+                {
+			$$ = radtest_node_alloc(radtest_node_cond);
+			$$->v.cond.cond = $2;
+			$$->v.cond.iftrue = $3;
+			$$->v.cond.iffalse = $5;
+		}
+              | WHILE cond { current_nesting_level++; } stmt
+                {
+			current_nesting_level--;
+			$$ = radtest_node_alloc(radtest_node_loop);
+			$$->v.loop.cond = $2;
+			$$->v.loop.body = $4;
+			$$->v.loop.first_pass = 0;
+		}
+              | DO { current_nesting_level++; } stmt WHILE {current_nesting_level--;} cond  
+                {
+			$$ = radtest_node_alloc(radtest_node_loop);
+			$$->v.loop.cond = $3;
+			$$->v.loop.body = $6;
+			$$->v.loop.first_pass = 1;
+                } 
+              | PRINT prlist 
+                {
+			$$ = radtest_node_alloc(radtest_node_print);
+			$$->v.list = $2;
+		}
+              | NAME EQ expr 
+                {
+			$$ = radtest_node_alloc(radtest_node_asgn);
+			$$->v.asgn.name = $1;
+			$$->v.asgn.expr = $3;
+		}
+              | SEND send_flags port_type req_code expr_or_pair_list 
+                {
+			$$ = radtest_node_alloc(radtest_node_send);
+			$$->v.send.cntl = $2;
+			$$->v.send.port_type = $3;
+			$$->v.send.code = $4;
+			$$->v.send.expr = $5;
+		}			
+              | EXPECT req_code expr_or_pair_list 
+                {
+			$$ = radtest_node_alloc(radtest_node_expect);
+			$$->v.expect.code = $2;
+			$$->v.expect.expr = $3;
+		}
+              | EXIT maybe_expr 
+                {
+			$$ = radtest_node_alloc(radtest_node_exit);
+			$$->v.expr = $2;
+		}
+	      | BREAK nesting_level 
+                {
+			if ($2 > current_nesting_level) {
+				parse_error(_("Not enough 'while's to break from"));
+				YYERROR;
+			}
+			$$ = radtest_node_alloc(radtest_node_break);
+			$$->v.level = $2;
+		}
+	      | CONTINUE nesting_level 
+                {
+			if ($2 > current_nesting_level) {
+				parse_error(_("Not enough 'while's to continue"));
+				YYERROR;
+			}
+			$$ = radtest_node_alloc(radtest_node_continue);
+			$$->v.level = $2;
+		}
+              ;
+
+nesting_level : /* empty */
+                {
+			$$ = 1;
+		}
+              | NUMBER
+                {
+			$$ = $1;
+		}
               ;
 
 port_type     : AUTH
                 {
-                        $$ = PORT_AUTH;
-                }
+			$$ = PORT_AUTH;
+		}
               | ACCT
                 {
-                        $$ = PORT_ACCT;
-                }
+			$$ = PORT_ACCT;
+		}
               ;
 
-code          : NUMBER
+req_code      : NUMBER
+                {
+			$$ = $1;
+		}
               | NAME
                 {
 			$$ = grad_request_name_to_code($1);
@@ -179,15 +251,6 @@ code          : NUMBER
 				YYERROR;
 			}
 		}
-              | IDENT
-                {
-                        if ($1->type != Integer) {
-                                yyerror("expected integer value or request code name");
-                                YYERROR;
-                        } else {
-                                $$ = $1->datum.number;
-                        }
-                }
               ;
 
 send_flags    : /* empty */
@@ -199,122 +262,270 @@ send_flags    : /* empty */
 
 send_flag_list: send_flag
                 {
-			Variable *var;
+			radtest_variable_t *var;
 			
-			$$ = grad_symtab_create(sizeof(Variable), var_free);
-			var = (Variable*) grad_sym_install($$, $1.name);
-			var->type = $1.type;
-			var->datum = $1.datum;
+			$$ = grad_symtab_create(sizeof(*var), var_free);
+			var = (radtest_variable_t*) grad_sym_install($$,
+								     $1->name);
+			radtest_var_copy (var, $1);
 		}
               | send_flag_list send_flag
                 {
-			Variable *var;
-			var = (Variable*) grad_sym_install($1, $2.name);
-			var->type = $2.type;
-			var->datum = $2.datum;
-			$$ = $1;
+			radtest_variable_t *var;
+			var = (radtest_variable_t*) grad_sym_install($1,
+								     $2->name);
+			radtest_var_copy (var, $2); /* FIXME: check this */
 		}
               ;
 
 send_flag     : NAME EQ NUMBER
                 {
-                        $$.name = $1;
-                        $$.type = Integer;
-                        $$.datum.number = $3;
+			$$ = radtest_var_alloc(rtv_integer);
+			$$->name = $1;
+			$$->datum.number = $3;
 		}
               ;
 
-expr          : value
-              | expr '+' value 
+expr_or_pair_list: /* empty */
                 {
-                        if ($1.type != Vector) {
-                                parse_error("bad datatype of larg in +");
-                        } else if ($3.type != Vector) {
-                                parse_error("bad datatype of rarg in +");
-                        } else {
-                                grad_avl_add_list(&$1.datum.vector,
-						  $3.datum.vector);
-                                $$ = $1;
-                        }
-                }
+			$$ = NULL;
+		}
+              | pair_list
+                {
+			radtest_variable_t *var = radtest_var_alloc(rtv_pairlist);
+			var->datum.list = $1;
+			$$ = radtest_node_alloc(radtest_node_value);
+			$$->v.var = var;
+		}
+	      | expr
+	      ;
+     
+cond          : bool
+              | NOT cond
+                {
+			$$ = radtest_node_alloc(radtest_node_unary);
+			$$->v.unary.op = radtest_op_not;
+			$$->v.unary.operand = $2;
+		}
+              | '(' cond ')'
+                {
+			$$ = $2;
+		}
+              | cond AND cond
+                {
+			$$ = radtest_node_alloc(radtest_node_bin);
+			$$->v.bin.op = radtest_op_and;
+			$$->v.bin.left = $1;
+			$$->v.bin.right = $3;
+		}
+              | cond OR cond
+                {
+			$$ = radtest_node_alloc(radtest_node_bin);
+			$$->v.bin.op = radtest_op_or;
+			$$->v.bin.left = $1;
+			$$->v.bin.right = $3;
+		}
+              | cond EQ cond
+                {
+			$$ = radtest_node_alloc(radtest_node_bin);
+			$$->v.bin.op = radtest_op_eq;
+			$$->v.bin.left = $1;
+			$$->v.bin.right = $3;
+		}
+              | cond LT cond
+                {
+			$$ = radtest_node_alloc(radtest_node_bin);
+			$$->v.bin.op = radtest_op_lt;
+			$$->v.bin.left = $1;
+			$$->v.bin.right = $3;
+		}
+              | cond GT	cond
+                {
+			$$ = radtest_node_alloc(radtest_node_bin);
+			$$->v.bin.op = radtest_op_gt;
+			$$->v.bin.left = $1;
+			$$->v.bin.right = $3;
+		}
+              | cond NE	cond
+                {
+			$$ = radtest_node_alloc(radtest_node_bin);
+			$$->v.bin.op = radtest_op_ne;
+			$$->v.bin.left = $1;
+			$$->v.bin.right = $3;
+		}
+              | cond LE	cond
+                {
+			$$ = radtest_node_alloc(radtest_node_bin);
+			$$->v.bin.op = radtest_op_le;
+			$$->v.bin.left = $1;
+			$$->v.bin.right = $3;
+		}
+              | cond GE	cond
+                {
+			$$ = radtest_node_alloc(radtest_node_bin);
+			$$->v.bin.op = radtest_op_ge;
+			$$->v.bin.left = $1;
+			$$->v.bin.right = $3;
+		}
+              ;
+
+bool          : expr
+              ;
+
+expr          : value
+              | '(' expr ')'
+                {
+			$$ = $2;
+		}
+              | expr '[' NAME closure ']' 
+                {
+			grad_dict_attr_t *dict = grad_attr_name_to_dict($3);
+			if (!dict) {
+				parse_error(_("Unknown attribute: %s"), $3);
+				YYERROR;
+			}
+			$$ = radtest_node_alloc(radtest_node_attr);
+			$$->v.attr.node = $1;
+			$$->v.attr.dict = dict;
+			$$->v.attr.all = $4;
+			if ($4 && dict->type != TYPE_STRING) 
+				parse_error(_("warning: '*' is meaningless for this attribute type"));
+		}
+              | expr '+' expr
+                {
+			$$ = radtest_node_alloc(radtest_node_bin);
+			$$->v.bin.op = radtest_op_add;
+			$$->v.bin.left = $1;
+			$$->v.bin.right = $3;
+		}
+              | expr '-' expr
+                {
+			$$ = radtest_node_alloc(radtest_node_bin);
+			$$->v.bin.op = radtest_op_sub;
+			$$->v.bin.left = $1;
+			$$->v.bin.right = $3;
+		}
+              | expr '*' expr
+                {
+			$$ = radtest_node_alloc(radtest_node_bin);
+			$$->v.bin.op = radtest_op_mul;
+			$$->v.bin.left = $1;
+			$$->v.bin.right = $3;
+		}
+              | expr '/' expr
+                {
+			$$ = radtest_node_alloc(radtest_node_bin);
+			$$->v.bin.op = radtest_op_div;
+			$$->v.bin.left = $1;
+			$$->v.bin.right = $3;
+		}
+              | expr '%' expr
+                {
+			$$ = radtest_node_alloc(radtest_node_bin);
+			$$->v.bin.op = radtest_op_mod;
+			$$->v.bin.left = $1;
+			$$->v.bin.right = $3;
+		}
+              | '-' expr %prec UMINUS
+                {
+			$$ = radtest_node_alloc(radtest_node_unary);
+			$$->v.unary.op = radtest_op_neg;
+			$$->v.unary.operand = $2;
+		}
               ;
 
 maybe_expr    : /* empty */
                 {
-                        $$ = NULL;
-                }
+			$$ = NULL;
+		}
               | expr
-                {
-			$$ = grad_emalloc(sizeof(*$$));
-                        *$$ = $1;
-                }
               ;
 
-vector        : pair_list
+value         : imm_value
                 {
-                        $$ = $1.head;
-                }
+			$$ = radtest_node_alloc(radtest_node_value);
+			$$->v.var = $1;
+		}
+              | IDENT
+                {
+			$$ = radtest_node_alloc(radtest_node_deref);
+			$$->v.deref = $1;
+		}
+              | PARM
+                {
+			$$ = radtest_node_alloc(radtest_node_parm);
+			$$->v.parm = $1;
+		}
+              ;
+
+closure       : /* empty */
+                {
+			$$ = 0;
+		}
+              | '*'
+                {
+			$$ = 1;
+		}
+              ;
+
+imm_value     : NUMBER
+                {
+			$$ = radtest_var_alloc(rtv_integer);
+			$$->datum.number = $1;
+		}
+              | IPADDRESS
+                {
+			$$ = radtest_var_alloc(rtv_ipaddress);
+			$$->datum.ipaddr = $1;
+		}
+              | QUOTE
+                {
+			$$ = radtest_var_alloc(rtv_string);
+			$$->datum.string = $1;
+		}
+              | NAME
+                {
+			$$ = radtest_var_alloc(rtv_string);
+			$$->datum.string = $1;
+		}
+              | '(' pair_list ')'
+                {
+			$$ = radtest_var_alloc(rtv_pairlist);
+			$$->datum.list = $2;
+		}
               ;
 
 pair_list     : pair
                 {
-                        $$.head = $$.tail = $1;
-                }
+			$$ = grad_list_create();
+			grad_list_append($$, $1);
+		}
               | pair_list pair
                 {
-                        if ($2) {
-                                if ($$.tail) {
-                                        $$.tail->next = $2;
-                                } else {
-                                        $$.head = $2;
-                                }
-				for ($$.tail = $2; $$.tail->next; $$.tail = $$.tail->next)
-					;	
-                        } 
-                }
+			grad_list_append($1, $2);
+			$$ = $1;
+		}
               | pair_list ',' pair
                 {
-                        if ($3) {
-                                if ($$.tail) {
-                                        $$.tail->next = $3;
-                                        $$.tail = $3;
-                                } else {
-                                        $$.head = $$.tail = $3;
-                                }
-                        }
-                }
-              | pair_list error 
-                {
-                        grad_avl_free($1.head);
-                        $$.head = $$.tail = NULL;
-                }
+			grad_list_append($1, $3);
+			$$ = $1;
+		}
+              | pair_list error
               ;
 
-pair          : NAME op string
+pair          : NAME op expr
                 {
-                        $$ = grad_create_pair(&source_locus, $1, $2, $3);
-                        grad_free($3);
-                }
-              ;
-
-string        : QUOTE
-              | NAME
-              | NUMBER
-                {
-                        char buf[64];
-                        sprintf(buf, "%d", $1);
-                        $$ = grad_estrdup(buf);
-                }
-              | IDENT
-                {
-                        $$ = print_ident($1);
-                }
-              | IPADDRESS
-                {
-                        char buf[DOTTED_QUAD_LEN];
-                        grad_ip_iptostr($1, buf);
-                        $$ = grad_estrdup(buf);
-                }
+			grad_dict_attr_t *attr = grad_attr_name_to_dict($1);
+			if (!attr) {
+				parse_error(_("Unknown attribute '%s'"), $1);
+				YYERROR;
+			}
+					    
+			$$ = radtest_pair_alloc();
+			$$->attr = attr;
+			$$->op = $2;
+			$$->node = $3;
+		}
               ;
 
 op            : EQ
@@ -343,55 +554,19 @@ op            : EQ
                 }
               ;
 
-value         : NUMBER
-                {
-                        $$.name = NULL;
-                        $$.type = Integer;
-                        $$.datum.number = $1;
-                }
-              | IPADDRESS
-                {
-                        $$.name = NULL;
-                        $$.type = Ipaddress;
-                        $$.datum.ipaddr = $1;
-                }
-              | QUOTE
-                {
-                        $$.name = NULL;
-                        $$.type = String;
-                        $$.datum.string = grad_estrdup($1);
-                }
-              | IDENT
-                {
-                        $$ = *$1;
-                }
-              | IDENT '[' NAME ']'
-                {
-                        $$.name = NULL;
-                        subscript($1, $3, 0, &$$);
-                }
-              | IDENT '[' NAME '*' ']'
-                {
-                        $$.name = NULL;
-                        subscript($1, $3, 1, &$$);
-                }
-              | vector
-                {
-                        $$.name = NULL;
-                        $$.type = Vector;
-                        $$.datum.vector = $1;
-                }
-              ;
-
 prlist        : pritem
+                {
+			$$ = grad_list_create();
+			grad_list_append($$, $1);
+		}
               | prlist pritem
+                {
+			grad_list_append($1, $2);
+			$$ = $1;
+		}
               ;
 
-pritem        : expr
-                {
-                        var_print(&$1);
-                        tempvar_free(&$1);
-                }
+pritem        : expr 
               ;
 
 %%
@@ -423,68 +598,5 @@ set_yydebug()
         if (debug_on(1)) {
                 yydebug = 1;
         }
-}
-
-int
-subscript(Variable *var, char *attr_name, int all, Variable *ret_var)
-{
-        grad_dict_attr_t *dict;
-        grad_avp_t *pair;
-
-        ret_var->type = Undefined;
-        if (var->type != Vector) {
-                parse_error("subscript on non-vector");
-                return -1;
-        }
-        if ((dict = grad_attr_name_to_dict(attr_name)) == NULL) {
-                parse_error("unknown attribute %s", attr_name);
-                return -1;
-        }
-        
-        pair = grad_avl_find(var->datum.vector, dict->value);
-        if (!pair) 
-                return -1;
-
-        switch (dict->type) {
-        case TYPE_STRING:
-                ret_var->type = String;
-                if (all) {
-                        int length = 0;
-                        grad_avp_t *p;
-                        char *cp;
-                        
-                        /* First, count total length of all attribute
-                           instances in the packet */
-                        for (p = pair; p;
-			     p = grad_avl_find(p->next, dict->value)) 
-                                length += p->avp_strlength;
-
-                        cp = ret_var->datum.string = grad_emalloc(length+1);
-                        /* Fill in the string contents */
-                        for (p = pair; p;
-			     p = grad_avl_find(p->next, dict->value)) {
-                                memcpy(cp, p->avp_strvalue, p->avp_strlength);
-                                cp += p->avp_strlength;
-                        }
-                        *cp = 0;
-                } else
-                        ret_var->datum.string = grad_estrdup(pair->avp_strvalue);
-                break;
-        case TYPE_INTEGER:
-        case TYPE_DATE:
-                ret_var->type = Integer;
-                ret_var->datum.number = pair->avp_lvalue;
-                break;
-        case TYPE_IPADDR:
-                ret_var->type = Ipaddress;
-                ret_var->datum.ipaddr = pair->avp_lvalue;
-                break;
-        default:
-                grad_log(L_CRIT,
-                         _("attribute %s has unknown type"),
-                         dict->name);
-                exit(1);
-        }
-        return 0;
 }
 

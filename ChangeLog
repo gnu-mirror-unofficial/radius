@@ -1,4 +1,3 @@
-
 2001-12-16 Sergey Poznyakoff
 
 	* README: Updated.
@@ -16,8 +15,19 @@
 	  new option, -S (--shell), for use with '#! prog' shell
 	  mechanism.
 	* radtest/input.l: Added '\' line continuation.
-
+	* radtest/gram.y: print "expect failed" only if abort_on_failure
+	  is true.
+	
 	* test/test.sh.m4: Removed -x option to radtest.
+
+	* radscripts/Makefile.am: Combine all m4 defines into M4_DEFINES
+	  make variable.
+	* radscripts/radauth.m4: Use radtest.
+	* radscripts/radscripts.m4: Changed quoting and comments to
+	  improve readability.
+	* radscripts/radctl.m4: Likewise.
+	* radscripts/radgrep.m4: Likewise.
+	* radscripts/radping.m4: Likewise.
 	
 2001-12-14 Sergey Poznyakoff
 

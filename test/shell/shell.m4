@@ -27,21 +27,23 @@ define([ESC],[ifelse($1,,,[$1[]ESC(shift($@))])])
 
 
 dnl ***
-define([BEGIN],[SEQUENCE(Start,,echo [$1])])
+define([BEGIN],[SEQUENCE(Start,,[$1])])
 
-define([END],[SEQUENCE(Stop,,echo exit)])
+define([END],[SEQUENCE(Stop,,exit)])
 
 dnl ***
 dnl DISPLAY(TEXT)
-define([DISPLAY],[ifelse(x[$1],x,,echo 'print "[[$1]]"')])
+define([DISPLAY],[ifelse(x[$1],x,,print "[[$1]]")])
 
 dnl ***
 dnl SEQUENCE(NAME,COMMENT,tests...)
 define([SEQUENCE],[define([_SEQ_NUM],incr(_SEQ_NUM))
 cat > FILENAME($1,3,sh) <<'EOF'
 _HEADER(__file__,__line__)
+cat <<'FIN'
 DISPLAY([$2])
 $3
+FIN
 EOF[]dnl])
 
 dnl ***
@@ -50,7 +52,9 @@ define([IFSEQUENCE],[define([_SEQ_NUM],incr(_SEQ_NUM))
 cat > FILENAME($1,3,sh) <<'EOF'
 _HEADER(__file__,__line__)
 if test "x$[$2]" = "x1"; then
+cat <<'FIN'
    $4
+FIN
 else
    echo 'print "UNSUPPORTED"'
 fi
@@ -61,7 +65,7 @@ define([_TEST_NUM],0)
 dnl ***
 dnl TEST(SEND,EXPECT,[PATTERN])
 define([TEST],[define([_TEST_NUM],incr(_TEST_NUM))
-echo 'print ":_TEST_NUM:ifelse($#,3,[$3]:)"'
-echo '[$1]'
-echo '[$2]'])
+print ":_TEST_NUM:ifelse($#,3,[$3]:)"
+[$1]
+[$2]])
 divert[]dnl

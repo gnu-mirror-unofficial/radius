@@ -45,7 +45,7 @@ typedef struct pw_auth_hdr {
 # define DEF_ACCT_PORT  1646
 #endif
 
-#define TYPE_INVALID                -1
+#define TYPE_INVALID                   -1
 #define TYPE_STRING                     0
 #define TYPE_INTEGER                    1
 #define TYPE_IPADDR                     2
@@ -69,9 +69,6 @@ typedef struct pw_auth_hdr {
 /* These two are not implemented yet */
 #define RT_ASCEND_ALLOCATE_IP           51
 #define RT_ASCEND_RELEASE_IP            52
-
-
-#define DV_ACCT_STATUS_TYPE_QUERY       -1
 
 /* Basic structures */
 
@@ -100,6 +97,7 @@ enum {
 
 #define AP_PROPAGATE   0x10
 #define AP_REQ_CMP     0x20
+#define AP_USER_FLAG(n) (0x1000<<(n))
 
 #define ADDITIVITY(val) ((val) & 0x3)
 #define SET_ADDITIVITY(val,a) ((val) = ((val) & ~0x3) | (a))
@@ -318,7 +316,7 @@ void avl_move_attr(VALUE_PAIR **to, VALUE_PAIR **from, int attr);
 void avl_move_pairs(VALUE_PAIR **to, VALUE_PAIR **from,
                     int (*fun)(), void *closure);
 int avp_cmp(VALUE_PAIR *a, VALUE_PAIR *b);
-int avl_cmp(VALUE_PAIR *a, VALUE_PAIR *b);
+int avl_cmp(VALUE_PAIR *a, VALUE_PAIR *b, int prop);
 
 extern int resolve_hostnames;
 char *ip_gethostname (UINT4, char *buf, size_t size);

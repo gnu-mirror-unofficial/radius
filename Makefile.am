@@ -10,15 +10,9 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-if GUILE
-SCMDIR=radscm
-TESTDIR=test
-TESTS=@top_srcdir@/test/test.sh
-TESTS_ENVIRONMENT=BUILDDIR=$(top_builddir) SOURCEDIR=$(top_srcdir)
-endif
-
 SUBDIRS=m4 include radlib sql snmplib radiusd radwho radzap radlast raduse\
-        radscripts elisp raddb client $(SCMDIR) $(TESTDIR) doc po
+        radscripts elisp raddb client radscm test doc po mibs\
+        scripts contrib
 
 if MAINTAINER_MODE
 MAINTAINERCLEANFILES=core *~ err out
@@ -34,11 +28,7 @@ lint::
 	done
 endif
 
-EXTRA_DIST=doc mibs scripts contrib ylwrap
+EXTRA_DIST=ylwrap
 
-dist-hook:
-	-(cd $(distdir); \
-	 find . \( -name CVS -o -name .emacs.desktop -o -name .deps -o \
-                   -name .cvsignore -o -name '*~' -o -name core \) \
-		   -exec rm -rf {} \; )
+
 

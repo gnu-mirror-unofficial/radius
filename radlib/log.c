@@ -1,21 +1,19 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
+   Copyright (C) 2000, 2001, Sergey Poznyakoff
+  
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+  
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+  
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #ifndef lint
 static char rcsid[] = 
@@ -53,6 +51,17 @@ static void vlog(int lvl, char *file, int line, char *func_name, int errno,
 		 char *fmt, va_list ap);
 #define SP(p) ((p)?(p):"")
 
+static char *priname[] = { /* priority names */
+	"emerg",
+	"alert",
+	"crit",
+	"error",
+	"warning",
+	"notice",
+	"info",
+	"debug"
+};
+
 void
 vlog(level, file, line, func_name, errno, fmt, ap)
 	int level;
@@ -63,27 +72,7 @@ vlog(level, file, line, func_name, errno, fmt, ap)
 	char *fmt;
 	va_list ap;
 {
-	char	*s = ":";
-
-	fprintf(stderr, "%s: ", progname);
-	switch (L_MASK(level)) {
-	case L_DEBUG:
-		s = "Debug: ";
-		break;
-	case L_INFO:
-		s = "Info: ";
-		break;
-	case L_WARN:
-		s = "Warning: ";
-		break;
-	case L_ERR:
-		s = "Error: ";
-		break;
-	case L_CRIT:
-		s = "CRIT: ";
-		break;
-	}
-	fprintf(stderr, s);
+	fprintf(stderr, "%s: %s: ", progname, priname[L_MASK(level)]);
 	if (file) 
 		fprintf(stderr, "%s:%d:%s: ", file, line, SP(func_name));
 	fprintf(stderr, fmt, ap);

@@ -46,7 +46,19 @@ auth_query  SELECT password \
             AND active='Y'
 
 # This query returns groups the user belongs to
-group_query SELECT user_group FROM groups where user_name='%u'
+group_query        SELECT user_group FROM groups WHERE user_name='%u'
+#group_query       SELECT user_group FROM groups \
+#                    WHERE user_name='%u' \
+#                  UNION \
+#                  SELECT CASE WHEN (SELECT count>3 FROM authfail \
+#                                                   WHERE user_name='%u')
+#                         THEN '*LOCKED_ACCOUNT*' END
+
+auth_success_query REPLACE authfail VALUES('%C{User-Name}',0,'%G')
+
+auth_failure_query UPDATE authfail \
+                   SET count=count+1,time='%G' \
+                   WHERE user_name='%C{User-Name}'
 
 # This query returns a list of a/v pairs to be added to user's check pairs.
 check_attr_query  SELECT attr,value,op \
@@ -112,7 +124,7 @@ acct_nasdown_query   UPDATE calls \
                      SET status=2,\
                         acct_session_time=unix_timestamp(now())-unix_timestamp(event_date_time) \
                      WHERE status=1 AND nas_ip_address='%C{NAS-IP-Address}'
-
+#SQL92: acct_session_time=extract('epoch' from age(now(),event_date_time))
 
 # Query to be used when a NAS goes up, i.e. when it sends 
 # Accounting-On packet

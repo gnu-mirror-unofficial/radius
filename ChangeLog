@@ -1,3 +1,59 @@
+2001-11-23 Sergey Poznyakoff
+
+	* NEWS: Fixed inconsistency in description of
+	  Scheme-Acct-Procedure attribute.
+	* raddb/dictionary: Missed values for Strip-User-Name.
+	* radiusd/files.c: Removed huntgroup_paircmp(). Use paircmp
+	  instead.
+	* radiusd/radiusd.c: Added '/' and '\' to the list of symbols,
+	  allowed in a username.
+	  Modified test_shell() to use argcv_get() when necessary.
+	* doc/texinfo/configure.texi: Added '/' and '\' to the list of
+	  symbols, allowed in a username.
+	* radscm/Makefile.am: Pass AWK envariable to guile_doc_snarf.
+	* radtest/main.c: Clean up reply_list and reply_code _before_
+	sending the request. This way the old replies won't be reused if
+	send fails.
+	
+	* snmplib/snmp_sess.c: Reordered includes. Previous version
+	wouldn't compile on FreeBSD.
+
+	* test/dejagnu/s.radiusd/Huntgroups.exp: (new) Test huntgroups.
+	* test/dejagnu/s.radiusd/Rewrite.exp: (new) Test rewrite
+	functions.
+	* test/dejagnu/s.radiusd/Makefile.am: Added Huntgroups.exp and
+	Rewrite.exp
+	* test/dejagnu/s.radiusd/Testlist: Likewise.
+
+	* test/raddb/clients: Added two new nases for testing huntgroups
+	and rewriting rules.
+	* test/raddb/naslist: Likewise.
+	* test/raddb/huntgroups: Set up for Huntgroups.exp and
+	Rewrite.exp.
+	* test/raddb/users.in: Likewise.
+
+	Avoid duplication of files in test/raddb. We leave here only
+	the files that are special to testsuite, all the rest is copied/
+	linked from /raddb. Thus we are always testing the actual
+	configuration files (and save space in distribution tarball).
+
+	* test/raddb/checkrad.conf: (removed) A leftover from the old
+	days.
+	* test/raddb/dictionary: (removed)
+	* test/raddb/dictionary.ascend: (removed) 
+	* test/raddb/dictionary.cisco: (removed) 
+	* test/raddb/dictionary.compat: (removed) 
+	* test/raddb/dictionary.livingston: (removed) 
+	* test/raddb/dictionary.merit: (removed) 
+	* test/raddb/dictionary.tunnel: (removed) 
+	* test/raddb/dictionary.usr: (removed) 
+	* test/raddb/dictionary.voip: (removed) 
+	* test/raddb/nastypes: (removed) 
+	* test/raddb/rewrite: (removed) 
+	* test/raddb/Makefile.am: Removed unneeded files. Added goals
+	for building needed ones.
+	* test/raddb/.cvsignore: Added built files.
+	
 2001-11-22 Sergey Poznyakoff
 
 	* test/dejagnu/s.radiusd/Scheme-acct.exp: (new) Check scheme
@@ -160,7 +216,8 @@
 
 	* test/dejagnu/radiusd/Makefile.am: (new)
 	* test/dejagnu/radiusd/Testlist: (new)
-	* test/dejagnu/radiusd/Auth.in: (new) Test of basic authentication types
+	* test/dejagnu/radiusd/Auth.in: (new) Test of basic authentication
+	types.
 	* test/dejagnu/radiusd/Menu.in: (new) Test of Livingston menus.
 	* test/dejagnu/radiusd/Reply.in: (new) Test of reply values.
 	* test/dejagnu/radiusd/Start.in: (new) Start the daemon.

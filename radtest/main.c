@@ -498,15 +498,15 @@ static char usage_str[] =
 void
 print_usage()
 {
-	fprintf(stderr, usage_str);
+	printf(usage_str);
 	exit(1);
 }
 
 void
 print_version()
 {
-	fprintf(stderr,
-		_("radtest version %s\n"), VERSION);
+	printf(_("radtest version %s\n"), VERSION);
+        printf("\nReport bugs to <%s>\n", bug_report_address);
 	exit(0);
 }
 
@@ -530,8 +530,7 @@ static char license_text[] = "\
 void
 print_license()
 {
-	printf(_("This is radtest version %s\n"), VERSION);
-	printf("%s: Copyright 1999,2000 Sergey Poznyakoff\n", progname);
+	printf("%s: Copyright 1999,2000,2001 Sergey Poznyakoff\n", progname);
 	printf("\nThis program is part of GNU Radius\n");
 	printf("%s", license_text);
 	exit(0);

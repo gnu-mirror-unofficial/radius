@@ -1,21 +1,20 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000,2001, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
+   Copyright (C) 2000,2001, Sergey Poznyakoff
+  
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+   
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+  
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
 /* $Id$ */
 
 #ifdef HAVE_CONFIG_H
@@ -159,47 +158,47 @@ version()
 {
 	int i;
 	
-	fprintf(stderr, _("%s: GNU Radius version %s"), progname, VERSION);
+	printf(_("%s: GNU Radius version %s"), progname, VERSION);
 #ifdef BUILD_TARGET
-	fprintf(stderr, " (%s)", BUILD_TARGET);
+	printf(" (%s)", BUILD_TARGET);
 #endif
-	fprintf(stderr, "\n");
+	printf("\n");
 
-	fprintf(stderr, _("Compilation platform: "));
+	printf(_("Compilation platform: "));
 	for (i = 0; sys_def[i]; i++)
-		fprintf(stderr, "%s ", sys_def[i]);
+		printf("%s ", sys_def[i]);
 
-	fprintf(stderr, _("\nDebugging flags: "));
+	printf(_("\nDebugging flags: "));
 	for (i = 0; debug_flag_str[i]; i++) {
-		fprintf(stderr, "%s ", debug_flag_str[i]);
+		printf("%s ", debug_flag_str[i]);
 	}
 
-	fprintf(stderr, _("\nCompilation flags: "));
+	printf(_("\nCompilation flags: "));
 	for (i = 0; compile_flag_str[i]; i++) {
-		fprintf(stderr, "%s ", compile_flag_str[i]);
+		printf("%s ", compile_flag_str[i]);
 	}
-	fprintf(stderr, "\n");
-	fprintf(stderr, "Ports in use:\n");
-	fprintf(stderr, " AUTH: %d\n", DEF_AUTH_PORT);
-	fprintf(stderr, " ACCT: %d\n", DEF_ACCT_PORT);
+	printf("\n");
+	printf("Ports in use:\n");
+	printf(" AUTH: %d\n", DEF_AUTH_PORT);
+	printf(" ACCT: %d\n", DEF_ACCT_PORT);
 #if defined(USE_MYSQL)
-	fprintf(stderr, " SQL : %d\n", RAD_SQL_PORT);
+	printf(" SQL : %d\n", RAD_SQL_PORT);
 #endif
-	fprintf(stderr, "Paths:\n");
-	fprintf(stderr, _(" configuration directory: %s\n"), RADIUS_DIR);
-	fprintf(stderr, _(" logging directory:       %s\n"), RADLOG_DIR);
-	fprintf(stderr, _(" accounting directory:    %s\n"), RADACCT_DIR);
+	printf("Paths:\n");
+	printf(_(" configuration directory: %s\n"), RADIUS_DIR);
+	printf(_(" logging directory:       %s\n"), RADLOG_DIR);
+	printf(_(" accounting directory:    %s\n"), RADACCT_DIR);
 #if defined(DENY_SHELL)
-	fprintf(stderr, _(" deny shell:              %s\n"), DENY_SHELL);
+	printf(_(" deny shell:              %s\n"), DENY_SHELL);
 #endif
 
 #ifdef RADIUS_PID
-	fprintf(stderr, _(" pidfile:                 %s\n"), RADIUS_PID);
+	printf(_(" pidfile:                 %s\n"), RADIUS_PID);
 #else
-	fprintf(stderr, _(" no pidfile\n"));
+	printf(_(" no pidfile\n"));
 #endif
 
-	fprintf(stderr, "\nReport bugs to <%s>\n", bug_report_address);
+	printf("\nReport bugs to <%s>\n", bug_report_address);
 	exit(0);
 }
 

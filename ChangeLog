@@ -1,3 +1,10 @@
+2004-06-18  Sergey Poznyakoff
+
+	* radscm/ttl.scm (ttl-message): Ignore interrupts during select.
+	New option -debug turns on debugging output.
+	* radiusd/sql.c (radiusd_sql_acct): Fixed issuing improper
+	diagnostics.
+
 2004-06-18  Sergey Poznyakoff 
 
 	* lib/ascend.c (_ascend_parse_ip): Bugfix: port specification after

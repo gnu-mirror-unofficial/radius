@@ -11,6 +11,7 @@
 
 EXTRA_DIST = \
  access.deny\
+ ascend.bin\
  auth.bin\
  auth.scm\
  acct.scm.in\
@@ -29,6 +30,7 @@ EXTRA_DIST = \
 
 ALLTARGETS= \
  dictionary\
+ dict.ascend\
  dict.voip\
  dict.cisco\
  nastypes\
@@ -40,7 +42,10 @@ RADDB=$(top_srcdir)/raddb
 EXDIR=$(top_srcdir)/examples
 
 dictionary: $(RADDB)/dictionary
-	sed '/\$$INCLUDE dict\/compat/d;/\$$INCLUDE dict\/livingston/d;s/#\$$INCLUDE dict\/cisco/\$$INCLUDE dict.cisco/;s/#\$$INCLUDE dict\/voip/\$$INCLUDE dict.voip/' $(RADDB)/dictionary > dictionary
+	sed '/\$$INCLUDE dict\/compat/d;/\$$INCLUDE dict\/livingston/d;/#\$$INCLUDE dict\/ascend\.vs/d;s/#\$$INCLUDE dict\/cisco/\$$INCLUDE dict.cisco/;s/#\$$INCLUDE dict\/voip/\$$INCLUDE dict.voip/;s/#\$$INCLUDE dict\/ascend/\$$INCLUDE dict.ascend/' $(RADDB)/dictionary > dictionary
+
+dict.ascend: $(RADDB)/dict/ascend
+	$(LN_S) $? $@
 
 dict.voip: $(RADDB)/dict/voip
 	$(LN_S) $? $@

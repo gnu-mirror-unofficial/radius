@@ -1,0 +1,24 @@
+#! /bin/sh
+# This file is part of GNU RADIUS testsuite.
+# Copyright (C) 2001, Sergey Poznyakoff
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+cat <<EOF
+Ascend-Data-Filter = "ip in forward icmp",
+Ascend-Data-Filter = "ip in forward dstip 10.10.0.6 tcp dstport = 80",
+Ascend-Data-Filter = "ip in forward dstip 10.10.0.5 tcp dstport = 20",
+Ascend-Data-Filter = "ip in forward dstip 10.10.0.5 tcp dstport = 21",
+Ascend-Data-Filter = "ip in forward dstip 10.10.0.1 tcp dstport = 53",
+Ascend-Data-Filter = "ip in forward dstip 10.10.0.1 udp dstport = 53",
+Ascend-Data-Filter = "ip in forward dstip 10.11.4.1 tcp dstport = 53",
+Ascend-Data-Filter = "ip in forward dstip 10.11.4.1 udp dstport = 53",
+Ascend-Data-Filter = "ip in drop"
+EOF
+exit 0

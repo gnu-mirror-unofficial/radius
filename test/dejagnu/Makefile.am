@@ -13,7 +13,7 @@
 AUTOMAKE_OPTIONS = dejagnu
 DEJATOOL = radiusd
 RUNTESTFLAGS = 
-SUBDIRS = lib s.radiusd s.radiusd.proxy
+SUBDIRS = lib
 
 site.exp: Makefile remote.exp
 	@echo 'Making a new site.exp file...'

@@ -27,6 +27,11 @@
 ##   password            char(64),
 ##   UNIQUE (user_name)
 ## );
+## CREATE TABLE groups(
+##   user_name           char(32),
+##   user_group          char(32),
+##   KEY (user_name)
+## );
 ## CREATE TABLE calls (
 ##   status              int(3),
 ##   user_name           char(32),
@@ -87,7 +92,8 @@ auth_max_connections 16
 auth_db RADIUS
 
 # Query to select the password for the given user. Should return one string.
-auth_query select password from passwd where user_name='%u'
+auth_query  select password from passwd where user_name='%u'
+group_query select user_group from groups where user_name='%u'
 
 #########
 # Accounting-relevant settings
@@ -145,6 +151,14 @@ acct_alive_query     UPDATE calls \
 # Accounting-Off packet
 acct_nasdown_query   UPDATE calls \
                         SET status=2,\
+                        acct_session_time=unix_timestamp(now())-unix_timestamp(event_date_time) \
+                      WHERE status=1 AND nas_ip_address='%C{NAS-IP-Address}'
+
+
+# Query to be used when a NAS goes up, i.e. when it sends 
+# Accounting-On packet
+acct_nasup_query   UPDATE calls \
+                        SET status=3,\
                         acct_session_time=unix_timestamp(now())-unix_timestamp(event_date_time) \
                       WHERE status=1 AND nas_ip_address='%C{NAS-IP-Address}'
 

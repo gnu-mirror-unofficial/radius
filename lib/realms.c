@@ -153,6 +153,7 @@ _realm_mem_free(void *item, void *data ARG_UNUSED)
 {
 	REALM *r = item;
 	rad_clt_destroy_queue(r->queue);
+	envar_free_list(&r->args);
 	efree(item);
 	return 0;
 }

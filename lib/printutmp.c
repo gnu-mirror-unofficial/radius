@@ -328,7 +328,7 @@ nas_port_fh(outbytes, width, key, up)
 {
 	char buf[6];
 	
-	sprintf(buf, "%0*d", width, up->nas_port);
+	snprintf(buf, sizeof(buf), "%0*d", width-1, up->nas_port);
 	return output_string_key(buf, width, key);
 }
 

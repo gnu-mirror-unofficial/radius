@@ -1075,7 +1075,7 @@ sfn_exec_wait(AUTH_MACH *m)
 		}
 
 		if (rc != 0) {
-			newstate(as_reject_cleanup);
+			newstate(as_reject);
 
 			auth_format_msg(m, MSG_ACCESS_DENIED);
 		

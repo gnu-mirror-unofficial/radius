@@ -18,7 +18,7 @@
 
 clone_output "Checking accountng stop"
 
-radius_test -message "Acct start" \
+radius_test -message "Acct stop" \
 	    "acct 4 User-Name = \"simuse\" \
                     NAS-IP-Address = \"127.0.0.1\" \
                     NAS-Port-Id = 1 \

@@ -98,8 +98,9 @@ radiusServerState OBJECT-TYPE
 RadiusServerQueueEntry ::= SEQUENCE {
        QueueIndex                    Integer32,
        QueueName                     SnmpAdminString,
-       QueueActive                   Counter32,
-       QueueHeld                     Counter32,
+       QueueWaiting                  Counter32,
+       QueuePending                  Counter32,
+       QueueCompleted                Counter32,
        QueueTotal                    Counter32,
 }
 
@@ -137,21 +138,29 @@ queueName OBJECT-TYPE
              "A string describing the type of messages the queue contains."
        ::= { radiusServerQueueEntry 2 }
 
-queueActive OBJECT-TYPE
+queueWaiting OBJECT-TYPE
+       SYNTAX Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "Number of messages waiting for processing."
+       ::= { radiusServerQueueEntry 3 }
+
+queuePending OBJECT-TYPE
        SYNTAX Counter32
        MAX-ACCESS read-only
        STATUS     current
        DESCRIPTION
              "Number of messages currently being processed."
-       ::= { radiusServerQueueEntry 3 }
+       ::= { radiusServerQueueEntry 4 }
 
-queueHeld OBJECT-TYPE
+queueCompleted OBJECT-TYPE
        SYNTAX Counter32
        MAX-ACCESS read-only
        STATUS     current
        DESCRIPTION
              "Number of processed messages the queue holds."
-       ::= { radiusServerQueueEntry 4 }
+       ::= { radiusServerQueueEntry 5 }
 
 queueTotal OBJECT-TYPE
        SYNTAX Counter32
@@ -159,7 +168,7 @@ queueTotal OBJECT-TYPE
        STATUS     current
        DESCRIPTION
              "Total number of messages the queue holds."
-       ::= { radiusServerQueueEntry 5 }
+       ::= { radiusServerQueueEntry 6 }
 
 radiusServerMemoryUsage OBJECT IDENTIFIER ::= { radiusServerMIB 5 }
 

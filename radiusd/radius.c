@@ -256,8 +256,8 @@ rad_create_pdu(rptr, code, id, vector, secret, pairlist, msg)
 {
 	AUTH_HDR *hdr;
 	struct radius_pdu pdu;
-	size_t attrlen = 1; /* attrlen is initialized to 1 in case
-			       pairlist == NULL */
+	size_t attrlen = 0;
+	int status = 0;
 	int len;
 	VALUE_PAIR *pair;
 	
@@ -293,14 +293,16 @@ rad_create_pdu(rptr, code, id, vector, secret, pairlist, msg)
 			attr.attrno = pair->attribute;
 			attrlen = rad_encode_pair(&attr, pair);
 		}
-		if (attrlen < 0)
+		if (attrlen <= 0) {
+			status = 1;
 			break;
+		}
 		rad_pdu_add(&pdu, attr);
 	}
 
         /* Append the user message
 	   Add multiple DA_REPLY_MESSAGEs if it doesn't fit into one. */
-	if (attrlen > 0
+	if (status == 0
 	    && msg != NULL
 	    && (len = strlen(msg)) > 0) {
                 int block_len;
@@ -315,14 +317,20 @@ rad_create_pdu(rptr, code, id, vector, secret, pairlist, msg)
 			rad_attr_init(&attr);
 			attr.attrno = DA_REPLY_MESSAGE;
 			attrlen = rad_attr_write(&attr, msg, block_len);
+			if (attrlen <= 0) {
+				status = 1;
+				break;
+			}
 			rad_pdu_add(&pdu, attr);
 			msg += block_len;
 			len -= block_len;
                 }
         }
 
-	if (attrlen > 0)
+	if (status == 0)
 		attrlen = rad_pdu_finish(rptr, &pdu, code, id, vector, secret);
+	else
+		attrlen = 0;
 	rad_pdu_destroy(&pdu);
 	return attrlen;
 }
@@ -411,10 +419,8 @@ rad_send_reply(code, radreq, reply_pairs, msg, fd)
 		efree(pdu);
 	}
 	
-	if (reply != radreq->reply_pairs) {
-		avl_move_attr(&radreq->reply_pairs, &reply, DA_PROXY_STATE);
-		avl_move_attr(&radreq->reply_pairs, &reply, DA_REPLY_MESSAGE);
-	}
+	if (reply != radreq->reply_pairs) 
+		avl_add_list(&radreq->reply_pairs, reply);
 }
 
 #ifdef USE_LIVINGSTON_MENUS

@@ -2,7 +2,6 @@
 -50  :  Fall back to pth if POSIX threads are not available?
 
      General:
--100 : rewrite: Boolean shortcut optimization is broken
 -100 : rewrite: fix passing of %[User-Password]	
 -100 : Get rid of radscm (or build it only on systems that do not support
        shared libraries). Build a shared Guile module instead. Make

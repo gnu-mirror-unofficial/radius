@@ -1,6 +1,14 @@
+2004-11-01  Sergey Poznyakoff  
+
+	* attributes.texi: Updated 
+	* auth.texi: Updated 
+	* configure.texi: Updated 
+	* debug.texi: Updated 
+	* extensions.texi: Updated 
+
 2004-09-09  Sergey Poznyakoff
 
-	* configure.texi: Updated
+	* configure.texi: Updated 
 
 2004-08-06  Sergey Poznyakoff
 

@@ -1,5 +1,5 @@
 @c This is part of the Radius manual.
-@c Copyright (C) 1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+@c Copyright (C) 1999,2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 @c Written by Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
@@ -20,7 +20,7 @@ of @attr{Auth-Type} attribute in @LHS{} of a @file{users} entry.
 * SQL Auth::                      Authenticate using SQL.
 * PAM Auth::                      Authenticate using PAM.
 * Custom Auth::                   Defining Custom Authentication Types.
-* Checking Simultaneous Logins::  
+* Multiple Login Checking::       Checking for Simultaneous Logins.
 @end menu
 
 @comment *L2****************************************************************
@@ -274,9 +274,9 @@ For a detailed description of @attr{Exec-Program-Wait} attribute and
 an example of its use, see @ref{Exec-Program-Wait}.
 
 @comment *L2****************************************************************
-@node Checking Simultaneous Logins
-@section Checking Simultaneous Logins
-@cindex Checking Simultaneous Logins
+@node Multiple Login Checking
+@section Multiple Login Checking
+@cindex Multiple Login Checking
 @cindex Simultaneous logins, checking for
 @UNREVISED{}
 
@@ -286,45 +286,132 @@ profile @LHS{} (@pxref{Simultaneous-Use}). By default the number
 of simultaneous sessions is unlimited.
 
 When a user with limited number of simultaneous logins authenticates
-himself, Radius first counts the number of the sessions that are already
-opened by this user.
-If this number is equal to the value of @attr{Simultaneous-Use}
-attribute the authentication request is rejected.
+himself, Radius counts the number of the sessions that are already
+opened by this user. If this number is equal to the value of
+@attr{Simultaneous-Use} attribute the authentication request is
+rejected.
 
-To determine the number of open sessions, Radius scans the
-@file{radlog/radutmp} for any open entries marked with the
-user's login name @ref{System Accounting}. @FIXME{It is not true
-with the introduction of @acronym{MLC} concept. I must rewrite this.}
-Such entries are created
-when Radius receives an Accounting-Request packet with
-@attr{Acct-Status-Type} attribute set to @code{Start}. An entry is
-marked closed when a corresponding Accounting-Request packet arrives with
-@attr{Acct-Status-Type} attribute set to @code{Stop}.
+This process is run in several stages. First, Radius retrieves the
+information about currently opened sessions from one of its accounting
+databases. Then, it verifies whether all these sessions are still
+active. This pass is necessary since an open entry might be a result
+of missing @code{Stop} request. Finally, the server counts the
+sessions and compares their count with the value of
+@attr{Simultaneous-Use} attribute.
 
-Since an open entry might be a result of missing @code{Stop} packet,
-Radius queries the @NAS{} whether the session listed in the entry is
-currently active. If the @NAS{} replies positive, the session count
-is incremented, if it replies negative, such entry is marked as
-closed and is not counted. There may also be cases when the @NAS{}
-is unreachable due to some reasons. In such cases the Radius behavior
-is determined by the value of @code{checkrad-assume-logged} in
-@file{config} file @ref{auth,,auth statement (raddb/config)}.
-If the value is @code{yes}, Radius assumes the session is still
-active and increases the session count, otherwise it proceeds as
-if the @NAS{} returned negative reply.
+The following subsections address each stage in detail.
+
+@menu
+* Retrieving Session Data::
+* Verifying Active Sessions::
+@end menu
+
+@node Retrieving Session Data
+@subsection Retrieving Session Data
+
+Radius retrieves the list of sessions currently opened by the user
+either from the system database (@pxref{System Accounting}), or from
+the @acronym{SQL} database (@pxref{SQL Accounting}). The system administrator
+determines which method to use.
+
+By default, system accounting database is used. Its advantages are
+simplicity and ease of handling. It has, however, a serious
+deficiency: the information is kept in the local files. If you run
+several radius servers, each of them has no easy way of knowing about
+the sessions initiated by other servers.
+
+This problem is easy to solve if you run @dfn{SQL accounting}
+(@pxref{SQL Accounting}). In this case, each radius server stores the data in
+your @acronym{SQL} database and can easily retrieve them from there.
+
+To enable use of @acronym{SQL} database for multiple login checking, do the
+following:
+
+In your @file{raddb/config} file set:
+
+@smallexample
+mlc @{
+    method sql;
+@};
+@end smallexample
+
+In your @file{raddb/sqlserver} file, specify the queries for
+retrieving the information about open sessions and, optionally, a
+query to close an existing open record.
+
+There are two queries for retrieving the information:
+@code{mlc_user_query} returns the list of sessions opened by the user,
+@code{mlc_realm_query} returns the list of sessions opened for the
+given realm. Each of them should return a list of 5-element
+tuples@footnote{This interface is likely to change in future versions}:
+
+@smallexample
+@var{user-name}, @var{nas-ip-address}, @var{nas-port-id}, @var{acct-session-id}@end smallexample
+
+Here is an example of @code{mlc_user_query} and @code{mlc_realm_query}:
+
+@smallexample     
+mlc_user_query SELECT user_name,nas_ip_address,nas_port_id,acct_session_id \
+               FROM calls \
+	       WHERE user_name='%C@{User-Name@}' \
+               AND status = 1
+
+mlc_realm_query SELECT user_name,nas_ip_address,nas_port_id,acct_session_id \
+	        FROM calls \
+		WHERE realm_name='%C@{Realm-Name@}'	
+@end smallexample
+
+Apart from these two queries you may also wish to provide a query for
+closing a hung record. By default, @command{radiusd} will use
+@code{acct_stop_query}. If you wish to override it, supply a query
+named @code{mlc_stop_query}, for example:
+
+@smallexample
+mlc_stop_query UPDATE calls \
+               SET status=4,\
+                acct_session_time=unix_timestamp(now())-\
+                                  unix_timestamp(event_date_time) \
+               WHERE user_name='%C@{User-Name@}' \
+                 AND status = 1 \
+                 AND acct_session_id='%C@{Acct-Session-Id@}' 
+@end smallexample
+
+@xref{Queries}, for detailed information on how to write these queries.
+
+@node Verifying Active Sessions
+@subsection Verifying Active Sessions
+
+Whatever database @command{radiusd} uses, an open entry in it does not
+necessary mean that the corresponding session is still being
+active. So, after retrieving the information about user sessions, 
+Radius verifies on corresponding @NAS{}es whether these are actually
+active.
+
+For each entry in the session list, if its @NAS{} acknowledges the
+session, the session count is incremented. Otherwise, such entry is
+marked as closed in the database and is not counted.
+
+There may also be cases when the @NAS{} is unreachable due to some
+reasons. In such cases the Radius behavior is determined by the value
+of @code{checkrad-assume-logged} in @file{config} file
+@ref{auth,,auth statement (raddb/config)}. If the value is @code{yes},
+Radius assumes the session is still active and increases the session
+count, otherwise it proceeds as if the @NAS{} returned negative reply.
 
 To query a @NAS{}, Radius first looks up its type and additional parameters
-in @file{naslist} file (@pxref{naslist file}). If the @NAS{} type is @samp{true},
-Radius acts as if the @NAS{} returned 1, if the type is @samp{false}, it
-acts as if the @NAS{} returned 0, otherwise it looks up the entry
-in the @file{nastypes} which has matching type (@pxref{nastypes file}).
-If such entry does not exist, Radius issues the error message and
-acts accordingly to the value of configuration variable
-@code{checkrad-assume-logged}.
-Otherwise, Radius determines the query method to use from the second
-field of this entry, and constructs its arguments by appending
-arguments from the @file{naslist} entry to those of @code{nastypes}
-entry. Note, that the former take precedence over the
+in @file{naslist} file (@pxref{naslist file}). There are two
+predefined @NAS{} types that cause Radius to act immediately without
+querying tne @NAS{}: the special type @samp{true} forces Radius to act
+as if the @NAS{} returned 1, the type @samp{false} forces it to act
+as if the @NAS{} returned 0. If the type is neither of this predefined types,
+Radius uses it as a look up key into the @file{nastypes} file
+(@pxref{nastypes file}) and tries to retrieve an entry which has
+matching type. If such entry does not exist, Radius issues the error
+message and acts accordingly to the value of configuration variable
+@code{checkrad-assume-logged}. Otherwise, Radius determines the query
+method to use from the second field of this entry, and constructs method
+arguments by appending arguments from the @file{naslist} entry to
+those of @code{nastypes} entry. Note, that the former take precedence over the
 latter, and can thus be used to override default values specified
 in @file{nastypes}.
 

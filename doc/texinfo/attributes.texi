@@ -1,5 +1,5 @@
 @c This is part of the Radius manual.
-@c Copyright (C) 1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+@c Copyright (C) 1999,2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 @c Written by Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @setfilename radius.info
@@ -1605,7 +1605,7 @@ This attribute specifies the maximum number of simultaneous logins
 a given user is permitted to have. When the user is logged in this
 number of times, any further attempts to log in are rejected.
 
-@xref{Checking Simultaneous Logins}.
+@xref{Multiple Login Checking}.
  
 @comment **************************************************************
 @node Strip-User-Name

@@ -35,7 +35,8 @@ that have a wrong value for the shared secret configured in this file.
 
 @item naslist
 Defines the types for the known @NAS{}es. Its information is
-used mainly when performing a simultaneous login checking (@pxref{Checking Simultaneous Logins}).
+used mainly when performing multiple login checking
+(@pxref{Multiple Login Checking}).
 
 @item nastypes
 Declares the known @NAS{} types. The symbolic type names,
@@ -175,18 +176,18 @@ These are the basic statements:
 
 @smallexample
 option @{
-        [ source-ip @var{number} ; ]
-        [ max-requests @var{number} ; ]
-        [ radiusd-user @var{string} ; ]
-        [ exec-program-user @var{string} ; ]
-        [ username-chars @var{string} ; ]
-        [ log-dir @var{string} ; ]
-        [ acct-dir @var{string} ; ]
-        [ resolve @var{bool} ; ]
-        [ max-processes @var{number} ; ]
-        [ process-idle-timeout @var{number} ; ]
-        [ master-read-timeout @var{number} ; ]
-        [ master-write-timeout @var{number} ; ]
+        source-ip @var{number} ; 
+        max-requests @var{number} ; 
+        radiusd-user @var{string} ; 
+        exec-program-user @var{string} ; 
+        username-chars @var{string} ; 
+        log-dir @var{string} ; 
+        acct-dir @var{string} ; 
+        resolve @var{bool} ; 
+        max-processes @var{number} ; 
+        process-idle-timeout @var{number} ; 
+        master-read-timeout @var{number} ; 
+        master-write-timeout @var{number} ; 
 @} ;
 @end smallexample
 
@@ -309,28 +310,28 @@ Specifies the accounting directory.
 
 @smallexample
 logging @{
-        [ prefix-hook @var{string} ; ]
-        [ suffix-hook @var{string} ; ]
-        [ category category_spec @{
-                [ channel channel_name ; ]
-                [ print-auth @var{bool} ; ]
-                [ print-pass @var{bool} ; ]
-                [ print-failed-pass @var{bool} ; ]
-                [ level @var{debug_level} ; ]
-        @} ; ]
-        [ channel channel_name @{
-               (  file @var{string} ;
-                | syslog facility . priority ; )
-                [ print-pid @var{bool} ; ]
-                [ print-category @var{bool} ; ]
-                [ print-cons @var{bool} ; ]
-                [ print-level @var{bool} ; ]
-                [ print-priority @var{bool} ; ]
-                [ print-tid @var{bool}; ]
-                [ print-milliseconds @var{bool}; ]
-                [ prefix-hook @var{string} ; ]
-                [ suffix-hook @var{string} ; ]
-        @}; ]
+        prefix-hook @var{string} ; 
+        suffix-hook @var{string} ; 
+        category category_spec @{
+                channel channel_name ; 
+                print-auth @var{bool} ; 
+                print-pass @var{bool} ; 
+                print-failed-pass @var{bool} ; 
+                level @var{debug_level} ; 
+        @} ; 
+        channel channel_name @{
+                file @var{string} ;
+                syslog facility . priority ; 
+                print-pid @var{bool} ; 
+                print-category @var{bool} ; 
+                print-cons @var{bool} ; 
+                print-level @var{bool} ; 
+                print-priority @var{bool} ; 
+                print-tid @var{bool}; 
+                print-milliseconds @var{bool}; 
+                prefix-hook @var{string} ; 
+                suffix-hook @var{string} ; 
+        @}; 
 @} ;
 
 @end smallexample
@@ -548,19 +549,19 @@ logging @{
 
 @smallexample
 auth @{
-        [ listen ( @var{addr-list} | no ); ]
-        [ forward @var{addr-list}; ]
-        [ port @var{number} ; ]
-        [ max-requests @var{number} ; ]
-        [ time-to-live @var{number} ; ]
-        [ request-cleanup-delay @var{number} ; ]
-        [ detail @var{bool} ; ]
-        [ strip-names @var{bool} ; ]
-        [ checkrad-assume-logged @var{bool} ; ]
-        [ password-expire-warning @var{number} ; ]
-        [ compare-atribute-flag @var{character} ; ]
-        [ trace-rules @var{bool} ; ]
-        [ reject-malformed-names @var{bool} ; ]
+        listen ( @var{addr-list} | no ); 
+        forward @var{addr-list}; 
+        port @var{number} ; 
+        max-requests @var{number} ; 
+        time-to-live @var{number} ; 
+        request-cleanup-delay @var{number} ; 
+        detail @var{bool} ; 
+        strip-names @var{bool} ; 
+        checkrad-assume-logged @var{bool} ; 
+        password-expire-warning @var{number} ; 
+        compare-atribute-flag @var{character} ; 
+        trace-rules @var{bool} ; 
+        reject-malformed-names @var{bool} ; 
 @} ;
 @end smallexample
 
@@ -636,7 +637,7 @@ is 0.
 
 @item detail
 When set to true, @command{radiusd} will produce the detailed log of each
-received packet in the file @file{radacct/NASNAME/detail.auth}. The
+received packet in the file @file{radacct/@var{nasname}/detail.auth}. The
 format of such log files is identical to the format of detailed
 accounting files (@pxref{Detailed Request Accounting}).
 
@@ -645,11 +646,8 @@ Determines whether @command{radiusd} should strip any prefixes/suffixes
 off the username before logging.
 
 @item checkrad-assume-logged
-@command{radiusd} consults the value of this variable when the @NAS{}
-does not responds to checkrad queries (@pxref{Checking Simultaneous Logins}).
-If this variable is set to @code{yes}, the daemon will proceed as if
-the @NAS{} returned ``yes'', i.e. it will assume the user is logged in.
-Otherwise @command{radiusd} assumes the user @emph{is not} logged in.
+@xref{mlc}, for the description of this setting. It is accepted in
+@code{auth} for compatibility with previous versions of GNU Radius.  
 
 @item trace-rules
 Enables tracing of the configuration rules that were matched during
@@ -694,16 +692,16 @@ description of its usage.
 @subheading Syntax:
 @smallexample
 acct @{
-        [ listen ( @var{addr-list} | no ); ]
-        [ forward @var{addr-list} ; ]
-        [ port @var{number} ; ]
-        [ detail @var{bool}; ]
-        [ system @var{bool};
-        [ max-requests @var{number} ; ]
-        [ time-to-live @var{number} ; ]
-        [ request-cleanup-delay @var{number} ; ]
-        [ compare-atribute-flag @var{character} ; ]
-        [ trace-rules @var{bool} ; ]
+        listen ( @var{addr-list} | no ); 
+        forward @var{addr-list} ; 
+        port @var{number} ; 
+        detail @var{bool}; 
+        system @var{bool};
+        max-requests @var{number} ; 
+        time-to-live @var{number} ; 
+        request-cleanup-delay @var{number} ; 
+        compare-atribute-flag @var{character} ; 
+        trace-rules @var{bool} ; 
 @} ;
 @end smallexample
 
@@ -777,9 +775,10 @@ When set to @code{no}, disables detailed accounting
 
 @item system
 When set to @code{no}, disables system accounting (@pxref{System
-Accounting}). @FIXME{This will disable simultaneous use checking as
-well, unless an alternative mlc method is used. Describe this.
-Possibly give an xref to the node discussing MLC.}
+Accounting}). Notice, that this will disable simultaneous use checking
+as well, unless you supply an alternative @sc{mlc} method (currently
+@sc{sql}, @xref{Multiple Login Checking}, for the detailed discussion
+of this). 
 
 @item trace-rules
 Enables tracing of the configuration rules that were matched during
@@ -848,24 +847,24 @@ Use only the DBM database and ignore @file{raddb/users}.
 @subheading Syntax:
 @smallexample
 snmp @{
-        [ port @var{portno} ; ]
-        [ listen ( @var{addr-list} | no ); ]
-        [ max-requests @var{number} ; ]
-        [ time-to-live @var{number} ; ]
-        [ request-cleanup-delay @var{number} ; ]
-        [ ident @var{string} ; ]
-        [ community @var{name} ( rw | ro ) ; ]
-        [ network @var{name} @var{network} [ @var{network} ... ] ; ]
-        [ acl @{
-                [ allow @var{network_name} @var{community_name} ; ]
-                [ deny @var{network_name} ; ]
-        @} ; ]
-        [ storage @{
-                [ file @var{filename} ; ]
-                [ perms @var{number} ; ]
-                [ max-nas-count @var{number} ; ]
-                [ max-port-count @var{number} ; ]
-        @} ; ]
+        port @var{portno} ; 
+        listen ( @var{addr-list} | no ); 
+        max-requests @var{number} ; 
+        time-to-live @var{number} ; 
+        request-cleanup-delay @var{number} ; 
+        ident @var{string} ; 
+        community @var{name} ( rw | ro ) ; 
+        network @var{name} @var{network} [ @var{network} ... ] ; 
+        acl @{
+                allow @var{network_name} @var{community_name} ; 
+                deny @var{network_name} ; 
+        @} ; 
+        storage @{
+                file @var{filename} ; 
+                perms @var{number} ; 
+                max-nas-count @var{number} ; 
+                max-port-count @var{number} ; 
+        @} ; 
 @};
 @end smallexample
 
@@ -1004,9 +1003,9 @@ monitored ports: increase max-port-count
 @subheading Syntax:
 @smallexample
 rewrite @{
-        [ stack-size @var{number} ; ]
-        [ load-path @var{string} ; ]
-        [ load @var{string} ; ]
+        stack-size @var{number} ; 
+        load-path @var{string} ; 
+        load @var{string} ; 
 @};
 @end smallexample
 
@@ -1056,13 +1055,13 @@ Guile.
 
 @smallexample
 guile @{
-        [ debug @var{bool} ; ]
-        [ load-path @var{string} ; ]
-        [ load @var{string} ; ]
-        [ load-module @var{string} [ @var{string} ... ] ; ]
-        [ eval @var{expression} [ @var{expression} ... ] ; 
-        [ gc-interval @var{number} ; ]
-        [ outfile @var{string} ; ]
+        debug @var{bool} ; 
+        load-path @var{string} ; 
+        load @var{string} ; 
+        load-module @var{string} [ @var{string} ... ] ; 
+        eval @var{expression} [ @var{expression} ... ] ; 
+        gc-interval @var{number} ; 
+        outfile @var{string} ; 
 @};
 @end smallexample
 
@@ -1098,8 +1097,8 @@ Add specified pathname to @code{%load-path} variable.
 @item load
 Loads the specified source file on startup.
 @item load-module
-Loads the specified Scheme module on startup. @FIXME{Describe in more
-detail the the loading sequence. Why are modules preferred over plain
+Loads the specified Scheme module on startup. @FIXME{Describe the
+loading sequence in more detail. Why are modules preferred over plain
 SCM programs, etc.}
 @item outfile
 Redirects the standard output and standard error streams of the @code{Guile}
@@ -1131,14 +1130,14 @@ returned to the user with authentication-response packets.
 
 @smallexample
 message @{
-        [ account-closed @var{string} ; ]
-        [ password-expired @var{string} ; ]
-        [ password-expire-warning @var{string} ; ]
-        [ access-denied @var{string} ; ]
-        [ realm-quota @var{string} ; ]
-        [ multiple-login @var{string} ; ]
-        [ second-login @var{string} ; ]
-        [ timespan-violation @var{string} ; ]
+        account-closed @var{string} ; 
+        password-expired @var{string} ; 
+        password-expire-warning @var{string} ; 
+        access-denied @var{string} ; 
+        realm-quota @var{string} ; 
+        multiple-login @var{string} ; 
+        second-login @var{string} ; 
+        timespan-violation @var{string} ; 
 @};
 @end smallexample
 
@@ -1287,7 +1286,26 @@ mlc @{
 @end smallexample
 
 @subheading Usage
-@FIXME{Describe it}
+
+@code{Mlc} statement configures multiple login checking subsystem
+(@pxref{Multiple Login Checking}).
+
+@table @asis
+@item method
+Sets the method of retrieving information about the currently open
+sessions. Currently two methods are implemented. Setting @code{method}
+to @code{system} will use system accounting database (@pxref{System
+Accounting}). This is the default method. Setting it to @code{sql}
+will use @sc{sql} database.
+
+@item checkrad-assume-logged
+@command{radiusd} consults the value of this variable when the @NAS{}
+does not responds to checkrad queries (@pxref{Multiple Login Checking}).
+If this variable is set to @code{yes}, the daemon will proceed as if
+the @NAS{} returned ``yes'', i.e. it will assume the user is logged in.
+Otherwise @command{radiusd} assumes the user @emph{is not} logged in.
+
+@end table
 
 @comment *L2****************************************************************
 @node dictionary file
@@ -1737,7 +1755,7 @@ where the detailed logs are stored.
 @item Type
 Specifies the type of this @NAS{}. Using this value @command{radiusd}
 determines the way to query @NAS{} about the presence of a given user on it
-(@pxref{Checking Simultaneous Logins}).
+(@pxref{Multiple Login Checking}).
 The two special types: @samp{true} and @samp{false}, can be used to
 disable @NAS{} querying. When the type field contains @samp{true},
 @command{radiusd} assumes the user is logged in to the @NAS{}, when it
@@ -1759,8 +1777,7 @@ modify a behavior of @command{radiusd} when sending or receiving the
 information to or from a particular @NAS{}.
 
 @dfn{Nas-querying} arguments control the way @command{radiusd} queries
-a @NAS{} for confirmation of a user's session (@pxref{Checking Simultaneous
-Logins}). These arguments override the ones specified in 
+a @NAS{} for confirmation of a user's session (@pxref{Multiple Login Checking}). These arguments override the ones specified in 
 @file{nastypes} and can thus be used to override the default
 values.
 
@@ -1876,7 +1893,7 @@ The following arguments are predefined:
 Specifies the check function to use with this method
 (@pxref{Login Verification Functions}).
 This argument must be present. For description of how this function is
-applied, see @ref{Checking Simultaneous Logins}.
+applied, see @ref{Multiple Login Checking}.
 @item port=@var{n}
 Use port number @var{n} instead of the default for the given method.
 @end table
@@ -2636,6 +2653,18 @@ Specifies the @sc{sql} query to be used when a @NAS{} sends
 
 None of these queries should return any values.
 
+Three queries are designed for use by multiple login checking
+mechanism (@pxref{Multiple Login Checking}):
+
+@table @code
+@item mlc_user_query @var{string}
+A query retrieving a list of sessions currently opened by the given user.
+@item mlc_realm_query @var{string}
+A query to retrieve a list of sessions currently open for the given realm.
+@item mlc_stop_query @var{string}
+A query to mark given record as @dfn{hung}.
+@end table
+
 @menu
 * Queries::                     Writing SQL accounting query templates.
 @end menu
@@ -2793,6 +2822,51 @@ acct_nasup_query   UPDATE calls \
                    WHERE status=1 \
                    AND nas_ip_address='%C@{NAS-IP-Address@}'
 @end group
+@end smallexample
+
+If you plan to use SQL database for multiple login checking
+(@pxref{Multiple Login Checking}), you will have to supply at least
+two additional queries for retrieving the information about currently
+active sessions for a given user and realm (@pxref{Retrieving Session
+Data}). Each of these queries must return a list consisting of
+5-element tuples:
+
+@smallexample
+@var{user-name}, @var{nas-ip-address}, @var{nas-port-id}, @var{acct-session-id}@end smallexample
+
+For example, in our setup these queries will be:
+
+@smallexample     
+mlc_user_query SELECT user_name,nas_ip_address,nas_port_id,acct_session_id \
+               FROM calls \
+	       WHERE user_name='%C@{User-Name@}' \
+               AND status = 1
+
+mlc_realm_query SELECT user_name,nas_ip_address,nas_port_id,acct_session_id \
+	        FROM calls \
+		WHERE realm_name='%C@{Realm-Name@}'	
+@end smallexample
+
+While performing multiple login checking @command{radiusd} will
+eventually need to close @dfn{hung} records, i.e. such records that are
+marked as open in the database (@code{status=1}, in our setup), but
+are actually not active (@xref{Verifying Active Sessions}, for the
+description of why it may be necessary). It will by default use
+@code{acct_stop_query} for that, but it has a drawback that hung
+records will be marked as if they were closed correctly. This may not
+be suitable for accounting purposes. The special query
+@code{mlc_stop_query} is provided to override
+@code{acct_stop_query}. If we mark hung records with @code{status=4},
+then the @code{mlc_stop_query} will look as follows:
+
+@smallexample
+mlc_stop_query UPDATE calls \
+               SET status=4,\
+                acct_session_time=unix_timestamp(now())-\
+                                  unix_timestamp(event_date_time) \
+               WHERE user_name='%C@{User-Name@}' \
+                 AND status = 1 \
+                 AND acct_session_id='%C@{Acct-Session-Id@}' 
 @end smallexample
 
 @comment *L2****************************************************************

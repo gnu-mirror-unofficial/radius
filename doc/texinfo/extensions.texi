@@ -614,7 +614,7 @@ nt_rewrite()
 @cindex Rewrite, login verification functions
 
 A login verification function is invoked to process the output from the
-@NAS{}. This process is described in @ref{Checking Simultaneous Logins}.
+@NAS{}. This process is described in @ref{Multiple Login Checking}.
 The function to be invoked for given @NAS{} is defined by
 a @code{function} flag in the @file{raddb/nastypes} or @file{raddb/naslist}
 file (@pxref{nastypes file}). It must be defined as follows:

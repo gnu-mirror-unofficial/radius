@@ -318,7 +318,7 @@ the command.
 @deffnx {Test Shell Abbreviation} q
 Queries the given @NAS{} about the session described by its
 arguments. This command is useful in testing simultaneous login verification
-(@pxref{Checking Simultaneous Logins}. Its arguments are
+(@pxref{Multiple Login Checking}. Its arguments are
 
 @table @var
 @item nas

@@ -543,8 +543,7 @@ rad_acct_ext(RADIUS_REQ *radreq)
 	     p = avl_find(p->next, DA_ACCT_EXT_PROGRAM)) {
     		switch (p->avp_strvalue[0]) {
 		case '/':
-                	radius_exec_program(p->avp_strvalue, radreq,
-					    NULL, 0, NULL);
+                	radius_exec_program(p->avp_strvalue, radreq, NULL, 0);
 			break;
 		case '|':
                 	filter_acct(p->avp_strvalue+1, radreq);

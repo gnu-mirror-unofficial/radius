@@ -10,8 +10,8 @@
 @sc{radius}
 @end macro
 
-@macro radius{}
-@command{radius}
+@macro radiusd{}
+@command{radiusd}
 @end macro
 
 @macro NAS{}

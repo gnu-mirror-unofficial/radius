@@ -319,7 +319,6 @@ snmp_var_encode(data, length, var, version)
 {
 	u_char *buf = data;
 	u_char *header_ptr, *header_end;
-	int len;
 	
 	for (; var; var = var->next) {
 		header_ptr = buf;
@@ -338,7 +337,6 @@ snmp_var_encode(data, length, var, version)
 				     OIDPTR(var->name), OIDLEN(var->name));
 		if (!buf)
 			return NULL;
-		OIDLEN(var->name) = len;
 
 		switch (var->type) {
 		case ASN_INTEGER:

@@ -5216,7 +5216,9 @@ run_rewrite(name, req)
         if (fun) {
                 if (fun->nparm) {
                         radlog(L_ERR,
-			       _("function %s() requires %d parameters"),
+			       ngettext("function %s() requires %d parameter",
+					"function %s() requires %d parameters",
+					fun->nparm),
                                fun->name, fun->nparm);
                         return -1;
                 }

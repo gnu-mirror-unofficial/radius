@@ -1,3 +1,5 @@
+# -*- mode: po; buffer-file-coding-system: iso-8859-1; default-input-method: latin-1-prefix -*-
+#     
 # Norwegian messages for GNU Radius (bokmål dialect)
 # Copyright (C) 2002 Free Software Foundation, Inc.
 # This file is distributed under the same license as the GNU Radius package.
@@ -10,8 +12,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-07-24 10:10+0300\n"
-"PO-Revision-Date: 2002-07-22 17:01+0300\n"
+"POT-Creation-Date: 2002-07-25 14:52+0300\n"
+"PO-Revision-Date: 2002-07-25 14:58+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Norwegian-bokmål <no@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -96,10 +98,12 @@ msgstr "%s:%d: ugyldig flagg %c"
 msgid "unknown keyword"
 msgstr "ukjent nøkkelord"
 
-#: lib/dict.c:526
+#: lib/dict.c:527
 #, c-format
-msgid "%s: %d errors"
-msgstr "%s: %d feil"
+msgid "%s: %d error"
+msgid_plural "%s: %d errors"
+msgstr[0] "%s: %d feil"
+msgstr[1] "%s: %d feil"
 
 #: lib/getopt.c:686
 #, c-format
@@ -823,44 +827,46 @@ msgstr "ukjent metode"
 msgid "user `%s' already found in %s"
 msgstr "brukeren «%s» allerede funnet i %s"
 
-#: radiusd/files.c:1175
+#: radiusd/files.c:1176
 #, c-format
-msgid "%d users disabled"
-msgstr "%d brukere lukket"
+msgid "%d user disabled"
+msgid_plural "%d users disabled"
+msgstr[0] "%d bruker lukket"
+msgstr[1] "%d brukere lukket"
 
-#: radiusd/files.c:1780
+#: radiusd/files.c:1782
 msgid "using only dbm: USERS NOT LOADED"
 msgstr "bruker bare dbm: USERS IKKE LEST"
 
-#: radiusd/files.c:1788
+#: radiusd/files.c:1790
 msgid "DBM files found but no -b flag given - NOT using DBM"
 msgstr "DBM filene funnet men -b flagg ikke spesifisert - DBM BRUKES IKKE"
 
-#: radiusd/files.c:1792
+#: radiusd/files.c:1794
 #, c-format
 msgid "can't load %s: exited"
 msgstr "kan ikke laste %s: Avslutter!"
 
-#: radiusd/files.c:1795
+#: radiusd/files.c:1797
 #, c-format
 msgid "%s reloaded."
 msgstr "%s omlastet."
 
-#: radiusd/files.c:1871
+#: radiusd/files.c:1873
 msgid "SQL Error: SQL client could not be initialized"
 msgstr "SQL Feil: kunne ikke starte SQL klient"
 
-#: radiusd/files.c:1884
+#: radiusd/files.c:1886
 #, c-format
 msgid "INTERNAL ERROR: unknown reload code: %d"
 msgstr "INTERN FEIL: ukjent omlastkode: %d"
 
-#: radiusd/files.c:2015
+#: radiusd/files.c:2017
 #, c-format
 msgid "can't create parser output file `%s'"
 msgstr "kan ikke opprette utskrift fil «%s»"
 
-#: radiusd/files.c:2029
+#: radiusd/files.c:2031
 #, c-format
 msgid "dumped users database to %s"
 msgstr "lagret bruker database i %s"
@@ -1573,9 +1579,11 @@ msgid "too few arguments for %s"
 msgstr "for få argumenter til %s"
 
 #: radiusd/rewrite.y:5219
-#, c-format
-msgid "function %s() requires %d parameters"
-msgstr ""
+#, fuzzy, c-format
+msgid "function %s() requires %d parameter"
+msgid_plural "function %s() requires %d parameters"
+msgstr[0] "Funksjonen %s() må ha %d argument"
+msgstr[1] "Funksjonen %s() må ha %d argumenter"
 
 #: radiusd/scheme.c:182
 #, fuzzy, c-format
@@ -1729,31 +1737,33 @@ msgstr "intet Acct-Status-Type attributt i rad_sql_acct()"
 
 #: radiusd/sql.c:743
 #, c-format
-msgid "acct_stop_query: %d rows changed"
-msgstr ""
+msgid "acct_stop_query: %d row changed"
+msgid_plural "acct_stop_query: %d rows changed"
+msgstr[0] ""
+msgstr[1] ""
 
-#: radiusd/sql.c:758
+#: radiusd/sql.c:760
 #, c-format
 msgid "acct_nasup_query updated %d records"
 msgstr ""
 
-#: radiusd/sql.c:773
+#: radiusd/sql.c:775
 #, c-format
 msgid "acct_nasdown_query updated %d records"
 msgstr ""
 
-#: radiusd/sql.c:788
+#: radiusd/sql.c:790
 #, c-format
 msgid "acct_keepalive_query updated %d records"
 msgstr ""
 
-#: radiusd/sql.c:812
+#: radiusd/sql.c:814
 msgid "SQL Auth specified in users file, but not in sqlserver file"
 msgstr ""
 "SQL autentisering er brukt i «users»-filen men ikke krevet i «sqlserver»-"
 "filen"
 
-#: radiusd/sql.c:939
+#: radiusd/sql.c:941
 #, c-format
 msgid "SQL: invalid operator: %s"
 msgstr ""
@@ -2142,7 +2152,7 @@ msgstr "[MYSQL] feil under kobling til %s som bruker %s: %s"
 msgid "[MYSQL]: can't get result"
 msgstr "[MYSQL]: kan ikke få resultat"
 
-#: sql/mysql.c:250 sql/odbc.c:342 sql/postgres.c:371
+#: sql/mysql.c:250 sql/odbc.c:342 sql/postgres.c:373
 #, fuzzy, c-format
 msgid "too few columns returned (%d req'd)"
 msgstr "for få kolonner fått (%d kreves)"
@@ -2163,10 +2173,12 @@ msgstr "PQconnectStart feilet"
 
 #: sql/postgres.c:292
 #, c-format
-msgid "query returned %d tuples: %s"
-msgstr ""
+msgid "query returned %d tuple: %s"
+msgid_plural "query returned %d tuples: %s"
+msgstr[0] ""
+msgstr[1] ""
 
-#: sql/postgres.c:299 sql/postgres.c:345
+#: sql/postgres.c:301 sql/postgres.c:347
 #, c-format
 msgid "PQexec returned %s"
 msgstr ""

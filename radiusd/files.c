@@ -1172,7 +1172,9 @@ read_deny_file()
         read_raddb_file(name, 0, read_denylist_entry, &denycnt);
         efree(name);
         if (denycnt)
-                radlog(L_INFO, _("%d users disabled"), denycnt);
+                radlog(L_INFO,
+		       ngettext ("%d user disabled",
+				 "%d users disabled", denycnt), denycnt);
 }
 
 /*

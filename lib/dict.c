@@ -523,7 +523,9 @@ parse_dict(name)
         path = mkfilename(radius_dir, name);
         rc = read_raddb_file(path, 1, parse_dict_entry, &errcnt);
         if (errcnt)
-                radlog(L_NOTICE, _("%s: %d errors"), path, errcnt);
+                radlog(L_NOTICE,
+		       ngettext("%s: %d error", "%s: %d errors",
+				errcnt), path, errcnt);
         efree(path);
         return rc;
 }

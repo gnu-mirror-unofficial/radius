@@ -206,7 +206,7 @@ rad_postgres_disconnect(conn, drop)
 	int drop; /* currently unused */
 {
         if (!conn->data)
-                return ;
+                return;
         PQfinish(conn->data);
         conn->data = NULL;
         conn->connected = 0;
@@ -289,7 +289,9 @@ rad_postgres_getpwd(conn, query)
                 int ntuples = PQntuples(res);
                 if (ntuples > 1 && PQnfields(res)) {
                         radlog(L_NOTICE,
-                               _("query returned %d tuples: %s"),
+			       ngettext("query returned %d tuple: %s",
+					"query returned %d tuples: %s",
+					ntuples),
                                ntuples, query);
                 } else if (ntuples == 1) {
                         return_passwd = estrdup(PQgetvalue(res, 0, 0));

@@ -1,3 +1,5 @@
+# -*- mode: po; buffer-file-coding-system: iso-8859-1; default-input-method: latin-1-prefix -*-
+#
 # Spanish messages for GNU Radius
 # Copyright (C) 2002 Free Software Foundation, Inc.
 # This file is distributed under the same license as the GNU Radius package.
@@ -12,8 +14,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-07-24 10:10+0300\n"
-"PO-Revision-Date: 2002-07-23 13:04+0300\n"
+"POT-Creation-Date: 2002-07-25 14:52+0300\n"
+"PO-Revision-Date: 2002-07-25 14:59+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -99,11 +101,12 @@ msgstr "%s:%d: opción %c es inválida"
 msgid "unknown keyword"
 msgstr "palabra clave desconocida"
 
-# FIXME: should use new gettext features
-#: lib/dict.c:526
+#: lib/dict.c:527
 #, c-format
-msgid "%s: %d errors"
-msgstr "%s: %d errores"
+msgid "%s: %d error"
+msgid_plural "%s: %d errors"
+msgstr[0] "%s: %d error"
+msgstr[1] "%s: %d errores"
 
 #: lib/getopt.c:686
 #, c-format
@@ -710,7 +713,6 @@ msgstr ""
 msgid "won't execute, no such user: %s"
 msgstr "no se puede ejecutar: el usuario `%s' no existe"
 
-# FIXME
 #: radiusd/exec.c:517
 #, c-format
 msgid "filter %s (pid %d) %s (in: %u, out: %u)"
@@ -822,47 +824,48 @@ msgstr "método desconocido"
 msgid "user `%s' already found in %s"
 msgstr "usuario `%s' ya fue encontrado en %s"
 
-# FIXME: plural!
-#: radiusd/files.c:1175
+#: radiusd/files.c:1176
 #, c-format
-msgid "%d users disabled"
-msgstr "%d usuarios desactivados"
+msgid "%d user disabled"
+msgid_plural "%d users disabled"
+msgstr[0] "%d usuario desactivado"
+msgstr[1] "%d usuarios desactivados"
 
-#: radiusd/files.c:1780
+#: radiusd/files.c:1782
 msgid "using only dbm: USERS NOT LOADED"
 msgstr "usando solo dbm: ARCHIVO USERS NO SE HA CARGADO"
 
-#: radiusd/files.c:1788
+#: radiusd/files.c:1790
 msgid "DBM files found but no -b flag given - NOT using DBM"
 msgstr ""
 "archivos DBM se han encontrado, pero la opción -b no es especificada -- DBM "
 "SIN USO"
 
-#: radiusd/files.c:1792
+#: radiusd/files.c:1794
 #, c-format
 msgid "can't load %s: exited"
 msgstr "no se puede cargar %s: terminando"
 
-#: radiusd/files.c:1795
+#: radiusd/files.c:1797
 #, c-format
 msgid "%s reloaded."
 msgstr "%s recargado."
 
-#: radiusd/files.c:1871
+#: radiusd/files.c:1873
 msgid "SQL Error: SQL client could not be initialized"
 msgstr "Error SQL: no se puede inicializar el cliente SQL"
 
-#: radiusd/files.c:1884
+#: radiusd/files.c:1886
 #, c-format
 msgid "INTERNAL ERROR: unknown reload code: %d"
 msgstr "ERROR INTERNO: código de recarga desconocido: %d"
 
-#: radiusd/files.c:2015
+#: radiusd/files.c:2017
 #, c-format
 msgid "can't create parser output file `%s'"
 msgstr "no se puede crear archivo de salida del analizador `%s'"
 
-#: radiusd/files.c:2029
+#: radiusd/files.c:2031
 #, c-format
 msgid "dumped users database to %s"
 msgstr "base de usuarios guardada en archivo %s"
@@ -1572,8 +1575,10 @@ msgstr "insuficiente número de argumentos para %s"
 
 #: radiusd/rewrite.y:5219
 #, c-format
-msgid "function %s() requires %d parameters"
-msgstr "función %s() requiere %d parámetros"
+msgid "function %s() requires %d parameter"
+msgid_plural "function %s() requires %d parameters"
+msgstr[0] "función %s() requiere %d parámetro"
+msgstr[1] "función %s() requiere %d parámetros"
 
 #: radiusd/scheme.c:182
 #, c-format
@@ -1720,34 +1725,35 @@ msgstr "configuración SQL se ha cambiado: cerrando conexiones."
 msgid "no Acct-Status-Type attribute in rad_sql_acct()"
 msgstr "rad_sql_acct(): falta atributo Acct-Status-Type"
 
-# FIXME: plural
 #: radiusd/sql.c:743
-#, c-format
-msgid "acct_stop_query: %d rows changed"
-msgstr "acct_stop_query: cambiado %d registros"
+#, fuzzy, c-format
+msgid "acct_stop_query: %d row changed"
+msgid_plural "acct_stop_query: %d rows changed"
+msgstr[0] "acct_stop_query: cambiado %d registro"
+msgstr[1] "acct_stop_query: cambiado %d registros"
 
-#: radiusd/sql.c:758
+#: radiusd/sql.c:760
 #, c-format
 msgid "acct_nasup_query updated %d records"
 msgstr "acct_nasup_query modificó %d registros"
 
-#: radiusd/sql.c:773
+#: radiusd/sql.c:775
 #, c-format
 msgid "acct_nasdown_query updated %d records"
 msgstr "acct_nasdown_query modificó %d registros"
 
-#: radiusd/sql.c:788
+#: radiusd/sql.c:790
 #, c-format
 msgid "acct_keepalive_query updated %d records"
 msgstr "acct_keepalive_query modificó %d registros"
 
-#: radiusd/sql.c:812
+#: radiusd/sql.c:814
 msgid "SQL Auth specified in users file, but not in sqlserver file"
 msgstr ""
 "Autentificación SQL se requiere por archivo `users' pero no esta activada en "
 "el archivo `sqlserver'"
 
-#: radiusd/sql.c:939
+#: radiusd/sql.c:941
 #, c-format
 msgid "SQL: invalid operator: %s"
 msgstr "SQL: operador inválido: %s"
@@ -2115,7 +2121,7 @@ msgstr "[MYSQL] no se puede conectar a %s como usuario %s: %s"
 msgid "[MYSQL]: can't get result"
 msgstr "[MYSQL] no se puede obtener resultado"
 
-#: sql/mysql.c:250 sql/odbc.c:342 sql/postgres.c:371
+#: sql/mysql.c:250 sql/odbc.c:342 sql/postgres.c:373
 #, c-format
 msgid "too few columns returned (%d req'd)"
 msgstr "número de columnas insuficiente (debe ser %d)"
@@ -2134,13 +2140,14 @@ msgstr "PQconnectStart falló: %s"
 msgid "PQconnectStart failed"
 msgstr "PQconnectStart falló"
 
-# FIXME: plural
 #: sql/postgres.c:292
-#, c-format
-msgid "query returned %d tuples: %s"
-msgstr "petición devolvió %d tuplas: %s"
+#, fuzzy, c-format
+msgid "query returned %d tuple: %s"
+msgid_plural "query returned %d tuples: %s"
+msgstr[0] "petición devolvió %d tupla: %s"
+msgstr[1] "petición devolvió %d tuplas: %s"
 
-#: sql/postgres.c:299 sql/postgres.c:345
+#: sql/postgres.c:301 sql/postgres.c:347
 #, c-format
 msgid "PQexec returned %s"
 msgstr "PQexec devolvió %s"

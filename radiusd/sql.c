@@ -740,7 +740,9 @@ rad_sql_acct(radreq)
                         pair = avl_find(radreq->request, DA_ACCT_SESSION_ID);
                         session_id = pair ? pair->strvalue : _("unknown");
                         radlog_req(L_WARN, radreq,
-                                   _("acct_stop_query: %d rows changed"),
+				   ngettext("acct_stop_query: %d row changed",
+					    "acct_stop_query: %d rows changed",
+					    count),
                                    count);
                 }
                 break;

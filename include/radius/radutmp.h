@@ -18,8 +18,8 @@
    along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-#ifndef _RADUTMP_H
-#define _RADUTMP_H
+#ifndef _gnu_radius_radutmp_h
+#define _gnu_radius_radutmp_h
 
 #define P_IDLE          0
 #define P_LOGIN         1
@@ -105,4 +105,4 @@ extern int printutmp_use_naslist; /* use naslist when displaying nas names */
 extern char *printutmp_date_format;
 extern char *printutmp_empty_string;
 
-#endif /* _RADUTMP_H */
+#endif /* !_gnu_radius_radutmp_h */

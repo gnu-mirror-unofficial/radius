@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -17,8 +17,8 @@
    along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-#ifndef __symtab_h
-#define __symtab_h
+#ifndef _gnu_radius_symtab_h
+#define _gnu_radius_symtab_h
 
 typedef struct symbol grad_symbol_t;
 struct symbol {
@@ -48,4 +48,4 @@ int grad_symtab_delete(grad_symtab_t *symtab, grad_symbol_t *sym);
 
 void     grad_sym_free(grad_symbol_t *);
 
-#endif
+#endif /* !_gnu_radius_symtab_h */

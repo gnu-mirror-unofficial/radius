@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -16,6 +16,9 @@
    You should have received a copy of the GNU General Public License
    along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
+#ifndef _gnu_radius_radpaths_h
+#define _gnu_radius_radpaths_h
 
 #define RADDB_DIR SYSCONFDIR "/raddb"
 
@@ -47,3 +50,5 @@
 
 #define RADCLIENT_CONFIG        "client.config"
 #define RADCLIENT_SHADOW        "client.shadow"
+
+#endif /* !_gnu_radius_radpaths_h */

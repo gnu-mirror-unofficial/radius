@@ -37,6 +37,8 @@ int
 main()
 {
 	printf("%s\n\n", header_text);
+	printf("#ifndef _gnu_radius_types_h\n");
+	printf("#define _gnu_radius_types_h\n");
 	printf("#include <sys/types.h>\n");
 #ifdef HAVE_STDINT_H
 	printf("#include <stdint.h>\n");
@@ -57,7 +59,7 @@ main()
 	printf("#define RADIUS_AUTH_PORT %u\n", DEF_AUTH_PORT);
 	printf("#define RADIUS_ACCT_PORT %u\n", DEF_ACCT_PORT);
 
-
+	printf("#endif\n");
 	printf("/* End of radius/types.h */\n");
 	return 0;
 }

@@ -17,8 +17,8 @@
    along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-#ifndef __ENVAR_H
-#define __ENVAR_H
+#ifndef _gnu_radius_envar_h
+#define _gnu_radius_envar_h
 
 #include <radius/list.h>
 

@@ -18,8 +18,8 @@
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 /* $Id$ */
-#ifndef __mem_h
-#define __mem_h
+#ifndef _gnu_radius_mem_h
+#define _gnu_radius_mem_h
 
 typedef unsigned count_t;
 typedef double Align_t;

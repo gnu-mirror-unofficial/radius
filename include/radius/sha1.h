@@ -6,13 +6,9 @@
  *  Version:	$Id$
  */
 
-#ifndef _GRAD_SHA1_H
-#define _GRAD_SHA1_H
+#ifndef _gnu_radius_sha1_h
+#define _gnu_radius_sha1_h
 
-/*
- *  FreeRADIUS defines to ensure globally unique SHA1 function names,
- *  so that we don't pick up vendor-specific broken SHA1 libraries.
- */
 #define SHA1_CTX		grad_SHA1_CTX
 #define SHA1Transform		grad_SHA1Transform
 #define SHA1Init		grad_SHA1Init
@@ -30,4 +26,4 @@ void SHA1Init(SHA1_CTX *context);
 void SHA1Update(SHA1_CTX *context, const unsigned char *data, unsigned int len);
 void SHA1Final(unsigned char digest[20], SHA1_CTX *context);
 
-#endif /* _LRAD_SHA1_H */
+#endif /* !_gnu_radius_sha1_h */

@@ -17,8 +17,8 @@
    along with GNU Radius; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA */
 
-#ifndef LIST_H
-#define LIST_H
+#ifndef _gnu_radius_list_h
+#define _gnu_radius_list_h
 
 typedef struct list grad_list_t;
 typedef struct iterator grad_iterator_t;

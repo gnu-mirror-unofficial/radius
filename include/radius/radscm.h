@@ -17,6 +17,9 @@
    along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
+#ifndef _gnu_radius_radscm_h
+#define _gnu_radius_radscm_h
+
 SCM radscm_avl_to_list(grad_avp_t *pair);
 grad_avp_t *radscm_list_to_avl(SCM list);
 SCM radscm_avp_to_cons(grad_avp_t *pair);
@@ -35,34 +38,11 @@ void rscm_server_init();
 	
 char *rscm_load_path(char *);
 
-#if GUILE_VERSION == 14
-
-# define SCM_STRING_CHARS SCM_CHARS
-# define scm_list_1 SCM_LIST1
-# define scm_list_2 SCM_LIST2
-# define scm_list_3 SCM_LIST3
-# define scm_list_4 SCM_LIST4
-# define scm_list_5 SCM_LIST5
-# define scm_list_n SCM_LISTN
-
-# define scm_c_define scm_sysintern
-
-# define RAD_SCM_EVAL_X scm_eval_x
-# define RAD_SCM_EVAL scm_eval
-
-# define RAD_SCM_SYMBOL_VALUE(p) scm_symbol_value0(p)
-
-# define scm_i_big2dbl scm_big2dbl
-
-extern SCM scm_long2num (long val);
-
-#elif GUILE_VERSION >= 16
-
 # define RAD_SCM_EVAL_X scm_primitive_eval_x
 # define RAD_SCM_EVAL scm_primitive_eval
 # define RAD_SCM_SYMBOL_VALUE(p) SCM_VARIABLE_REF(scm_c_lookup(p))
 
-#endif
+#endif /* !_gnu_radius_radscm_h */
 
 
 

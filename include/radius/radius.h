@@ -17,6 +17,9 @@
    along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
+#ifndef _gnu_radius_radius_h
+#define _gnu_radius_radius_h
+
 #include <radius/types.h>
 #include <radius/list.h>
 #include <radius/envar.h>
@@ -605,4 +608,4 @@ int grad_max_fd();
 grad_uint32_t grad_first_ip();
 
 
-
+#endif /* !_gnu_radius_radius_h */

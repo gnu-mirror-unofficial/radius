@@ -1,5 +1,5 @@
-#ifndef GRAD_MD5_H
-#define GRAD_MD5_H
+#ifndef _gnu_radius_md5_h
+#define _gnu_radius_md5_h
 
 struct MD5Context {
         uint32_t buf[4];
@@ -17,4 +17,4 @@ void grad_md5_calc(unsigned char *output, unsigned char *input,
 
 typedef struct MD5Context MD5_CTX;
 
-#endif /* !MD5_H */
+#endif /* !_gnu_radius_md5_h */

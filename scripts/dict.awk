@@ -1,5 +1,5 @@
 ## This file is part of GNU Radius.
-## Copyright (C) 2001 Free Software Foundation, Inc.
+## Copyright (C) 2001,2004 Free Software Foundation, Inc.
 ##
 ## Written by Sergey Poznyakoff
 ##
@@ -26,7 +26,13 @@ BEGIN {
   print " *     DA_XXX          -   Dictionary Attribute XXX"
   print " *     DV_XXX_YYY      -   Dictionary Value YYY corresponding to attribute XXX"	
   print " */"
+  print "#ifndef _gnu_radius_dictionary_h"
+  print "#define _gnu_radius_dictionary_h"		 
 }
+
+END {
+	print "#endif /* !_gnu_radius_dictionary_h */"
+}		
 
 ## Output the appropriate comment starter.
 ##

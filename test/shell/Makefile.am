@@ -11,9 +11,14 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 TESTS=runtest.sh
-TESTS_ENVIRONMENT=TOOL=radiusd
+TESTS_ENVIRONMENT=\
+ TOOL=radiusd\
+ AWK=$(AWK)\
+ BUILDDIR=`cd $(top_builddir); pwd`\
+ SOURCEDIR=`cd $(top_srcdir); pwd`
 
 EXTRA_DIST = runtest.sh shell.m4 radiusd-stamp proxy-stamp radiusd radiusd.proxy
+DISTCLEANFILES = radiusd-stamp proxy-stamp
 
 M4_DEFINES=-DBUILDDIR=`cd $(top_builddir); pwd` \
            -DSOURCEDIR=`cd $(top_srcdir); pwd`

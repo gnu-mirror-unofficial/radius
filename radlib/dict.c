@@ -31,27 +31,48 @@ static char rcsid[] =
 #include <pwd.h>
 #include <ctype.h>
 
-#include <radiusd.h>
+#include <radius.h>
+#include <radpaths.h>
 #include <slist.h>
+#include <symtab.h>
 
-static DICT_ATTR	*dictionary_attributes;
-static DICT_VALUE	*dictionary_values;
-static DICT_VENDOR	*dictionary_vendors;
-static int               vendorno;
+#ifndef DICT_INDEX_SIZE
+# define DICT_INDEX_SIZE 2048
+#endif
+static Symtab    *dict_attr_tab;
+static DICT_ATTR *dict_attr_index[DICT_INDEX_SIZE];
+static Symtab    *dict_value_tab;
+static DICT_VENDOR *dictionary_vendors;
+static int         vendorno;
 
 int nfields(int  fc, int  minf, int  maxfm, char *file, int  lineno);
 
 /* ************************************************************************ */
 
 void
+free_vendor(vp)
+	DICT_VENDOR *vp;
+{
+	if (vp->vendorname)
+		efree(vp->vendorname);
+}
+
+void
 dict_free()
 {
-	free_slist((struct slist*)dictionary_attributes, NULL);
-	free_slist((struct slist*)dictionary_values, NULL);
-	free_slist((struct slist*)dictionary_vendors, NULL);
+	if (dict_attr_tab)
+		symtab_clear(dict_attr_tab);
+	else
+		dict_attr_tab = symtab_create(sizeof(DICT_ATTR), NULL);
+	memset(dict_attr_index, 0, sizeof dict_attr_index);
 
-	dictionary_attributes = NULL;
-	dictionary_values = NULL;
+	if (dict_value_tab)
+		symtab_clear(dict_value_tab);
+	else
+		dict_value_tab = symtab_create(sizeof(DICT_VALUE), NULL);
+
+	free_slist((struct slist*)dictionary_vendors, free_vendor);
+
 	dictionary_vendors = NULL;
 	vendorno = 1;
 }
@@ -90,7 +111,7 @@ addvendor(name, value)
 
 	vval = Alloc_entry(DICT_VENDOR);
 	
-	strcpy(vval->vendorname, name);
+	vval->vendorname = estrdup(name);
 	vval->vendorpec  = value;
 	vval->vendorcode = vendorno++;
 
@@ -160,7 +181,7 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 	DICT_ATTR	*attr;
 	int              type;
 	int              vendor = 0;
-	int              value;
+	unsigned        value;
 	char            *p;
 	int              flags = AF_DEFAULT_FLAGS;
 	int              add   = AF_DEFAULT_ADD;
@@ -170,13 +191,6 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 	/*
 	 * Validate all entries
 	 */
-	if (strlen(ATTR_NAME) > MAX_DICTNAME) {
-		radlog(L_ERR|L_CONS,
-		       _("%s:%d: name too long"),
-		       file, lineno);
-		(*errcnt)++;
-		return 0;
-	}
 	
 	value = strtol(ATTR_VALUE, &p, 0);
 	if (*p) {
@@ -240,9 +254,10 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 		}
 	}
 
-	attr = Alloc_entry(DICT_ATTR);
+	attr = sym_lookup_or_install(dict_attr_tab, ATTR_NAME, 1);
+	if (value < DICT_INDEX_SIZE) 
+		dict_attr_index[value] = attr;
 			
-	strcpy(attr->name, ATTR_NAME);
 	attr->value = value;
 	attr->type = type;
 	attr->flags = flags;
@@ -250,13 +265,6 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 	if (vendor)
 		attr->value |= (vendor << 16);
 	
-	/*
-	 *	Add to the front of the list, so that
-	 *	values at the end of the file override
-	 *	those in the beginning.
-	 */
-	attr->next = dictionary_attributes;
-	dictionary_attributes = attr;
 	return 0;
 }
 
@@ -269,25 +277,13 @@ _dict_value(errcnt, fc, fv, file, lineno)
 	int     lineno;
 {
 	DICT_VALUE	*dval;
+	DICT_ATTR       *attr;
 	char            *p;
 	int             value;
 	
 	if (nfields(fc, 4, 4, file, lineno))
 		return 0;
 
-	if (strlen(VALUE_NAME) > MAX_DICTNAME) {
-		radlog(L_ERR|L_CONS,
-		       _("%s:%d: value name too long"),
-		       file, lineno);
-		return 0;
-	}
-	if (strlen(VALUE_ATTR) > MAX_DICTNAME) {
-		radlog(L_ERR|L_CONS,
-		       _("%s:%d: value attribute name too long"),
-		       file, lineno);
-		return 0;
-	}
-	
 	value = strtol(VALUE_NUM, &p, 0);
 	if (*p) {
 		radlog(L_ERR|L_CONS,
@@ -297,17 +293,14 @@ _dict_value(errcnt, fc, fv, file, lineno)
 		return 0;
 	}
 
+	attr = sym_lookup_or_install(dict_attr_tab, VALUE_ATTR, 1);
+	
 	/* Create a new VALUE entry for the list */
-	dval = Alloc_entry(DICT_VALUE);
+	dval = sym_install(dict_value_tab, VALUE_NAME);
 			
-	strcpy(dval->name, VALUE_NAME);
-	strcpy(dval->attrname, VALUE_ATTR);
+	dval->attrname = attr->name;
 	dval->value = value;
 
-	/* Insert at front. */
-	dval->next = dictionary_values;
-	dictionary_values = dval;
-	
 	return 0;
 }
 
@@ -324,12 +317,7 @@ _dict_vendor(errcnt, fc, fv, file, lineno)
 
 	if (nfields(fc, 3, 3, file, lineno))
 		return 0;
-	if (strlen(VENDOR_NAME) > MAX_DICTNAME) {
-		radlog(L_ERR|L_CONS,
-		       _("%s:%d: vendor name too long"),
-		       file, lineno);
-		return 0;
-	}
+
 	value = strtol(VENDOR_VALUE, &p, 0);
 	if (*p) {
 		radlog(L_ERR|L_CONS,
@@ -423,41 +411,45 @@ dict_init()
  * Return the full attribute structure based on the
  * attribute id number.
  */
+
+struct attr_value {
+	unsigned value;
+	DICT_ATTR *da;
+};
+
 int
-attrval_cmp(a,attr)
-	DICT_ATTR *a;
-	int       attr;
+attrval_cmp(av, attr)
+	struct attr_value *av;
+	DICT_ATTR *attr;
 {
-	return a->value - attr;
+	if (attr->value == av->value) {
+		av->da = attr;
+		return 1;
+	}
+	return 0;
 }
 
 DICT_ATTR *
 attr_number_to_dict(attribute)
 	int	attribute;
 {
-	return (DICT_ATTR *)find_slist((struct slist*) dictionary_attributes,
-				       attrval_cmp,
-				       (void*)attribute);
+	struct attr_value av;
+	if (attribute < DICT_INDEX_SIZE)
+		return dict_attr_index[attribute];
+	av.da = NULL;
+	symtab_iterate(dict_attr_tab, attrval_cmp, &av);
+	return av.da;
 }
 
 /*
  *  Return the full attribute structure based on the attribute name.
  */
-int
-attrname_cmp(a,attr)
-	DICT_ATTR *a;
-	char      *attr;
-{
-	return strcmp(a->name, attr);
-}
 
 DICT_ATTR *
 attr_name_to_dict(attrname)
 	char	*attrname;
 {
-	return (DICT_ATTR *)find_slist((struct slist*) dictionary_attributes,
-				       attrname_cmp,
-				       attrname);
+	return sym_lookup(dict_attr_tab, attrname);
 }
 
 /*
@@ -475,21 +467,31 @@ DICT_VALUE *
 value_name_to_value(valname)
 	char	*valname;
 {
-	return (DICT_VALUE *)find_slist((struct slist*) dictionary_values,
-					valname_cmp,
-					valname);
+	return sym_lookup(dict_value_tab, valname);
 }
 
 /*
  * Return the full value structure based on the actual value and
  * the associated attribute name.
  */
+
+struct value_data {
+	UINT4 value;
+	char *attrname;
+	DICT_VALUE *dv;
+};
+
 int
-value_cmp(a, b)
-	DICT_VALUE *a, *b;
+value_cmp(data, dv)
+	struct value_data *data;
+	DICT_VALUE *dv;
 {
-	return !(strcmp(a->attrname, b->attrname) == 0 &&
-		 a->value == b->value);
+	if (strcmp(data->attrname, dv->attrname) == 0
+	    && data->value == dv->value) {
+		data->dv = dv;
+		return 1;
+	}
+	return 0;
 }
 
 DICT_VALUE *
@@ -497,13 +499,13 @@ value_lookup(value, attrname)
 	UINT4	value;
 	char	*attrname;
 {
-	DICT_VALUE val;
+	struct value_data data;
 
-	strcpy(val.attrname, attrname);
-	val.value = value;
-	return (DICT_VALUE *)find_slist((struct slist*) dictionary_values,
-					value_cmp,
-					&val);
+	data.value = value;
+	data.attrname = attrname;
+	data.dv = NULL;
+	symtab_iterate(dict_value_tab, value_cmp, &data);
+	return data.dv;
 }
 
 /*

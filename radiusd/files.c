@@ -716,9 +716,6 @@ userparse(buffer, first_pair, errmsg)
  * raddb/hints
  */
 
-static struct obstack hints_stk;
-static int hints_stk_ready;
-
 /*
  *      Add hints to the info sent by the terminal server
  *      based on the pattern of the username.
@@ -796,16 +793,14 @@ hints_setup(req)
                 if ((tmp = avl_find(i->rhs, DA_REPLACE_USER_NAME))
                     || (tmp = avl_find(i->lhs, DA_REPLACE_USER_NAME))) {
                         char *ptr;
-                        
-                        if (!hints_stk_ready) {
-                                obstack_init(&hints_stk);
-                                hints_stk_ready = 1;
-                        }
+                        struct obstack hints_stk;
+ 
+                        obstack_init(&hints_stk);
                         ptr = radius_xlate(&hints_stk, tmp->strvalue,
                                            req, NULL);
                         if (ptr) 
                                 replace_string(&name_pair->strvalue, ptr);
-                        obstack_free(&hints_stk, ptr);
+                        obstack_free(&hints_stk, NULL);
                 }
                 
                 /* Is the rewrite function specified? */

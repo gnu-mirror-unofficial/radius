@@ -42,4 +42,10 @@ html: radius.html
 
 radius.html: radius.texi $(radius_TEXINFOS)
 	$(TEXI2HTML) -menu -monolithic radius.texi
+
+ps: radius.ps
+
+radius.ps: radius.dvi
+	dvips -oradius.ps radius.dvi
+
 endif

@@ -1,13 +1,14 @@
 @c This is part of the GNU Radius manual.
-@c Copyright (C) 2003 Sergey Poznyakoff
+@c Copyright (C) 2003 Free Software Foundation
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Intro, Glossary, Copying, Top
 @unnumbered Introduction to Radius
 
-Radius is a system serving for authentication and accounting. The acronym
-@RADIUS{} stands for @dfn{Remote Authentication Dial In User Service} and 
-usually denotes the underlying protocol name.
+GNU Radius is a software package that provides authentication and
+accounting services. The acronym @RADIUS{} stands for @dfn{Remote
+Authentication Dial In User Service} and usually denotes the
+underlying protocol name.
 
 Historically, @RADIUS{} servers were used as a means to authenticate the user
 coming from a dial-in connection, but GNU Radius is much more than an
@@ -18,10 +19,10 @@ GNU Radius has several built-in authentication and accounting methods.
 When these methods are not enough, it allows the administrator to implement
 any new method he deems convenient. 
 
-The GNU Radius distribution includes the radius server program which
-responds to authentication and accounting requests, and a set of
-accompanying programs designed to monitor the activity of the server
-and analyze the information it provides.
+The GNU Radius package includes the radius server program,
+@radiusd{}, which responds to authentication and accounting requests,
+and a set of accompanying programs designed to monitor the activity of
+the server and analyze the information it provides.
 
 @menu
 * Overview::
@@ -63,10 +64,11 @@ becomes.
 
 @subheading How Does @RADIUS{} Solve These Tasks?
 
-@RADIUS{} allows an administrator to keep authentication and accounting
-data in a single place, no matter how many network access servers are
-actually present.  Using @RADIUS{}, @NAS{}es communicate with this
-central server to perform authentication and accounting.
+@RADIUS{} allows an administrator to keep authentication and
+accounting data in a single place, no matter how many network access
+servers are actually present.  Using @RADIUS{}, @NAS{}es instead
+communicate with this central server to perform authentication and
+accounting, thus easing the burden on the system administrator.
 
 Let's return to our imaginary ISP. Suppose it runs a @RADIUS{} daemon
 on its central server. Each @NAS{} runs @dfn{client software} to
@@ -99,8 +101,8 @@ the accounting packet.
 
 @c @image{acctstart}
 
-Now suppose, after some time, the user decides to break the
-connection.  The @NAS{} notices this and terminates the user's
+Now suppose that after some time the user decides to break the
+connection --- the @NAS{} notices this and terminates the user's
 session. The @NAS{} then sends an accounting stop packet to the
 @RADIUS{} server to mark this event. Again, the server acknowledges
 the receipt of the packet.
@@ -133,7 +135,7 @@ accounting packets. Each of them is subdivided into @dfn{requests} and
 identity of the user. The minimum set of data in such packets are:
 user login name, user password, and @NAS{} @IP{} or identifier.
 
-@dfn{Authentication replies} are sent by the @RADIUS server and
+@dfn{Authentication replies} are sent by the @RADIUS{} server and
 contain the reply code and a set of additional attributes. By their
 reply code the authentication replies are subdivided into
 @dfn{authentication acknowlegements}, @dfn{authentication rejections},
@@ -146,7 +148,7 @@ user session. The additional attributes in such packets are carrying
 the @dfn{authorization data}, i.e.  they determine which kind of
 service the user is to be provided.
 
-An authentication reject is sent to the @NAS{} if the authentication
+An authentication rejection is sent to the @NAS{} if the authentication
 failed. This packet forbids the @NAS{} from providing any service to
 the user.  The additional attributes may carry descriptive text to be
 displayed as an explanation to the user for the failed request for
@@ -155,11 +157,11 @@ services.
 Finally, an authentication challenge packet is sent to the @NAS{} if
 the supplied credentials did not suffice to establish the authenticity
 of the user. This means that the dialog between the @NAS{} and the
-@RADIUS{} server continues, during which the server asks for
-additional authentication credentials and the @NAS{} acts as a
-liaison, passing the server requests to the user and sending user
-replies back to the server. Such a dialog ends when the server sends
-either an acknowledgement or a rejection packet.
+@RADIUS{} server continues.  As the @RADIUS{} server asks for
+additional authentication credentials, the @NAS{} acts as a
+liaison, passing server requests to the user and sending user
+replies back to the server. Such a dialog ends when the @RADIUS{} server sends
+either an acknowledgement packet or a rejection packet.
 
 An @dfn{accounting request} is sent to the server when the @NAS{}
 wishes to report some event in the user session, e.g. start of the
@@ -170,6 +172,18 @@ For each accounting request that has been received and successfully
 processed, the @RADIUS{} server sends back an @dfn{accounting
 acknowlegement}. This packet carries no attributes, but simply informs
 the @NAS{} that the information it had sent was received.
+
+Occasionally, a @RADIUS{} server may fail to receive incoming requests or may
+fail to process them due to high server load. In order to prevent
+such requests from being lost, the @NAS{} retransmits the request
+if no response from the server is received within a
+predefined interval of time (a @dfn{timeout} interval). Usually the
+@NAS{} is configured in such a way that it continues retransmitting
+failed requests until either it receives a reply from the server
+or until a predefined number of @dfn{retries} are exhausted, whichever occurs first.  Furthermore, a @NAS{} may be configured to communicate with a set
+of @dfn{backup} @RADIUS{} servers. In this case it applies the described
+process to each server from the set, until one of them responds or
+the set is exhausted.
 
 @comment *******************************************************************
 @node Glossary, Naming Conventions, Intro, Top

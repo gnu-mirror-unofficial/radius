@@ -619,16 +619,18 @@ sql_cache_destroy(struct sql_connection *conn)
 static void
 sql_cache_insert(struct sql_connection *conn, SQL_RESULT *res)
 {
-	debug(1,("cache: %d,(%d,%d)",sql_cache_level(conn),conn->head,conn->tail));
+	debug(20,
+	      ("cache: %d,(%d,%d)",
+	       sql_cache_level(conn),conn->head,conn->tail));
 	if (sql_cache_level(conn) >= SQL_CACHE_SIZE-1) {
 		sql_result_destroy(conn->cache[conn->head]);
 		conn->head = (conn->head + 1) % SQL_CACHE_SIZE;
-	        debug(1,("head: %d,%d", conn->head,conn->tail));
+	        debug(20,("head: %d,%d", conn->head,conn->tail));
 	}
-	debug(1,("inserting at pos %d", conn->tail));
+	debug(20,("inserting at pos %d", conn->tail));
 	conn->cache[conn->tail] = res;
 	conn->tail = (conn->tail + 1) % SQL_CACHE_SIZE;
-	debug(1,("tail: %d,%d", conn->head,conn->tail));
+	debug(20,("tail: %d,%d", conn->head,conn->tail));
 }
 
 static SQL_RESULT *
@@ -638,7 +640,7 @@ sql_cache_retrieve(struct sql_connection *conn, char *query)
 	SQL_RESULT *res;
 	size_t i;
 	
-	debug(1,("query: %s",query));
+	debug(20,("query: %s",query));
 	res = emalloc(sizeof(*res));
 	res->query = estrdup(query);
 	res->nfields = res->ntuples = 0;
@@ -683,15 +685,15 @@ sql_cache_lookup(struct sql_connection *conn, char *query)
 {
 	size_t i;
 
-	debug(1,("looking up %s", query));
+	debug(20,("looking up %s", query));
 	for (i = conn->head; i != conn->tail;
 	     i = (i + 1) % SQL_CACHE_SIZE) {
 		if (strcmp(conn->cache[i]->query, query) == 0) {
-			debug(1,("found at %d", i));
+			debug(20,("found at %d", i));
 			return conn->cache[i];
 		}
 	}
-	debug(1,("NOT FOUND"));
+	debug(20,("NOT FOUND"));
 	return NULL;
 }
 

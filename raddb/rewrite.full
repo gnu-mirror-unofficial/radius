@@ -116,7 +116,7 @@ integer
 max_fixup()
 {
 	%[Orig-NAS-Port-Id] = %[NAS-Port-Id]; # Preserve original data
-	%[NAS-Port-Id] = max_decode_port(%[NAS-Port-Id]);
+	%[NAS-Port-Id] = max_decode_port(%[NAS-Port-Id], 32);
 	return 0;
 }
 

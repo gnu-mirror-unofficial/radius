@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2001,2003 Free Software Foundation, Inc.
+# Copyright (C) 2001,2003,2004 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -11,17 +11,13 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-noinst_LIBRARIES=@LIBRADSCM@
-EXTRA_LIBRARIES=libradscm.a libservscm.a
-bin_PROGRAMS=@RADSCM@
+lib_LTLIBRARIES=@LIBRADSCM@
+EXTRA_LTLIBRARIES=libradscm.la
+EXTRA_LIBRARIES=libservscm.a
 bin_SCRIPTS=@RADSESSION@
-EXTRA_PROGRAMS=radscm
 EXTRA_SCRIPTS=radsession
 
-# Sad but true, libguile prints --help output on stderr!
-AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = radscm$(EXEEXT) 
-
-libradscm_a_SOURCES= \
+libradscm_la_SOURCES= \
  rscm_avl.c\
  rscm_dict.c\
  rscm_syslog.c\
@@ -34,10 +30,8 @@ libservscm_a_SOURCES= \
  rscm_rewrite.c\
  rscm_sql.c
 
-radscm_SOURCES=main.c radscm.c
-
 schemedir=$(pkgdatadir)/$(VERSION)/scheme
-scheme_DATA=boot.scm ttl.scm @GUILE_PROCEDURES_TXT@
+scheme_DATA=ttl.scm @RADSCM_PKGDATA@
 DOT_X_FILES=\
  rscm_avl.x\
  rscm_dict.x\
@@ -50,13 +44,15 @@ DOT_X_FILES=\
  radscm.x
 DOT_DOC_FILES=$(DOT_X_FILES:.x=.doc)
 BUILT_SOURCES=@RADSCM_BUILT_SOURCES_LIST@
-EXTRA_DIST=boot.scm ttl.scm ipalloc.scm radsession.in
-CLEANFILES = *.x *.doc radsession guile-procedures.txt
+EXTRA_DIST=boot.scm ttl.scm ipalloc.scm radsession.in \
+ gnuradius.scm gnuradius.scm.in
+CLEANFILES = *.inc *.x *.doc radsession gnuradius.scm guile-procedures.txt
 
 radsession: $(srcdir)/radsession.in
-	sed 's,BINDIR,$(bindir),;s,PACKAGE_STRING,$(PACKAGE_STRING),' $? > $@
+	sed 's,GUILE_BINDIR,$(GUILE_BINDIR),;s,SCHEMEDIR,$(schemedir),;s,PACKAGE_STRING,$(PACKAGE_STRING),' $? > $@
 
-radscm_LDADD=@GUILE_LIBS@ ./libradscm.a @LIBGNURADIUS@ @LIBINTL@
+libradscm_la_LIBADD=@LIBGNURADIUS@ @LIBINTL@
+libradscm_la_LDFLAGS = -rpath $(libdir) -version-info 0:0:0
 
 INCLUDES  = -I$(top_builddir) -I$(top_srcdir)/include -I$(srcdir) -I. @INCLUDEPATH@ @GUILE_INCLUDES@
 AM_CPPFLAGS=-DDATADIR=\"$(schemedir)\"
@@ -65,7 +61,7 @@ ETAGS_ARGS = --regex='/SCM_\(GLOBAL_\)?\(G?PROC\|G?PROC1\|SYMBOL\|VCELL\|CONST_L
 
 GUILE_DOC_SNARF=$(top_srcdir)/scripts/guile/$(GUILE_SNARF_VERSION)/guile-doc-snarf
 
-SUFFIXES=.x .doc
+SUFFIXES=.x .doc .inc
 
 .c.x:
 	AWK=$(AWK) \
@@ -77,11 +73,29 @@ SUFFIXES=.x .doc
 	$(GUILE_DOC_SNARF) -d -o $@ \
                            $< $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) 
 
+.c.inc:
+	sed -n 's/SCM_DEFINE *(.[^,]*, *\"\([^"][^"]*\)\".*/[(export \1)]/p' $< > $@
+
+
 guile-procedures.txt: $(DOT_DOC_FILES)
 	cat $(DOT_DOC_FILES) > $@
 
+gnuradius.scm: gnuradius.scm.in $(libradscm_la_SOURCES:.c=.inc)
+	m4 -DVERSION=$(VERSION) -DLIBDIR=$(libdir) \
+	   -DBUILDDIR=$(top_builddir)/radscm $< > $@
+
+
 ## Add -MG to make the .x magic work with auto-dep code.
 MKDEP = $(CC) -M -MG $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
+
+install-data-hook:
+	@here=`pwd`; \
+	 cd $(DESTDIR)$(libdir);\
+	 if test -f libradscm.so; then \
+	   $(LN_S) -f libradscm.so libguile-gnuradius-v-$(VERSION).so; \
+	 fi; \
+	 cd $$here
+
 
 if MAINTAINER_MODE
 

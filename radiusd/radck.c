@@ -62,14 +62,14 @@ sym_counter(closure, sym)
 }
 
 void
-setbit(r, rowsize, row, col)
+radck_setbit(r, rowsize, row, col)
         unsigned *r, rowsize, row, col;
 {
         SETBIT(r + rowsize * row, col);
 }
 
 int
-bitisset(r, rowsize, row, col)
+radck_bitisset(r, rowsize, row, col)
         unsigned *r, rowsize, row, col;
 {
         return BITISSET(r + rowsize * row, col);
@@ -91,7 +91,8 @@ mark_profile(datum, sym, target_name)
         }
         
         do {
-                setbit(datum->r, datum->rlen, sym->ordnum, target->ordnum);
+                radck_setbit(datum->r, datum->rlen, sym->ordnum,
+			     target->ordnum);
         } while ((target = target->next) &&
                  !strcmp(target->name, target_name));
 }
@@ -128,7 +129,7 @@ pass2(datum, sym)
         struct check_datum *datum;
         User_symbol *sym;
 {
-        if (bitisset(datum->r, datum->rlen, sym->ordnum, sym->ordnum)) {
+        if (radck_bitisset(datum->r, datum->rlen, sym->ordnum, sym->ordnum)) {
                 radlog(L_ERR,
                        _("users:%d: circular dependency for %s"),
                        sym->lineno, sym->name);

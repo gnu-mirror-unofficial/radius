@@ -542,7 +542,7 @@ _dict_value(int *errcnt, int fc, char **fv, LOCUS *loc)
         attr = dict_attr_lookup(VALUE_ATTR);
 	if (!attr) {
 		radlog_loc(L_ERR, loc,
-			   _("Attribute %s not defined"),
+			   _("Attribute %s is not defined"),
 			   VALUE_ATTR);
                 (*errcnt)++;
 		return 0;

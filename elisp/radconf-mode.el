@@ -171,6 +171,7 @@
 		process-idle-timeout
 		master-read-timeout
 		master-write-timeout
+		radiusd-user
                 exec-program-user
                 log-dir
                 acct-dir
@@ -178,9 +179,13 @@
 		username-chars)
     (logging    channel
                 category
+		prefix-hook
+		suffix-hook
 		(channel    file
 			    syslog
 			    option
+			    prefix-hook
+			    suffix-hook
                             print-pid
                             print-category
                             print-cons

@@ -1,6 +1,37 @@
---- /home/gray/texi2html-1.64/texi2html	Wed Jul 23 11:21:59 2003
-+++ /home/gray/tmp/texi2html	Thu Jul 31 11:29:58 2003
-@@ -3064,7 +3064,11 @@ INPUT_LINE: while ($_ = &next_line) {
+--- texi2html	Thu Dec  4 17:21:05 2003
++++ /usr/local/bin/texi2html	Thu Jul 31 11:31:01 2003
+@@ -1957,8 +1957,8 @@ $complex_format_map =
+  ],
+  smallexample => 
+  [
+-  q{"<TABLE><tr>$T2H_SMALL_EXAMPLE_INDENT_CELL<td class=smallexample><FONT SIZE=$T2H_SMALL_FONT_SIZE><pre>"},
+-  q{'</FONT></pre></td></tr></table>'}
++  q{"<TABLE><tr>$T2H_EXAMPLE_INDENT_CELL<td class=example><pre>"},
++  q{'</pre></td></tr></table>'}
+  ],
+  display =>
+  [
+@@ -1967,8 +1967,8 @@ $complex_format_map =
+  ],
+  smalldisplay =>
+  [
+-  q{"<TABLE><tr>$T2H_SMALL_EXAMPLE_INDENT_CELL<td class=smalldisplay><FONT SIZE=$T2H_SMALL_FONT_SIZE><pre " . 'style="font-family: serif">'},
+-  q{'</pre></FONT></td></tr></table>'}
++  q{"<TABLE><tr>$T2H_EXAMPLE_INDENT_CELL<td class=display><pre " . 'style="font-family: serif">'},
++  q{'</pre></td></tr></table>'}
+  ]
+ };
+ 
+@@ -3050,6 +3050,8 @@ INPUT_LINE: while ($_ = &next_line) {
+     # value substitution before macro expansion, so that
+     # it works in macro arguments			    
+     s/\@value{($VARRE)}/$value{$1}/eg;
++    s/\@var{($VARRE)}/$1/eg;
++    s/\@acronym{($VARRE)}/&do_sc($1)/eg;
+ 			    
+     #############################################################
+     # macro substitution
+@@ -3062,7 +3064,11 @@ INPUT_LINE: while ($_ = &next_line) {
  	my $after = $';
  	my @args;
  	my $args;
@@ -13,14 +44,10 @@
  	{
  	  $args = $1;
  	  $after = $2;
-@@ -3076,10 +3080,7 @@ INPUT_LINE: while ($_ = &next_line) {
+@@ -3074,6 +3080,7 @@ INPUT_LINE: while ($_ = &next_line) {
  	  $args =~ s/\s*$//;
  	  $after = '';
  	}
--        else
--        {
--          $after = '';
--        }
 +
  	$args =~ s|\\\\|\\|g;
  	$args =~ s|\\{|{|g;

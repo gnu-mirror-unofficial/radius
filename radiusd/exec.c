@@ -74,8 +74,8 @@ radius_switch_to_user(RADIUS_USER *usr)
 	emptygidset[0] = usr->gid ? usr->gid : getegid();
 	if (geteuid() == 0 && setgroups(1, emptygidset)) {
 		radlog(L_ERR|L_PERROR,
-		       _("setgroups(1, %d) failed"),
-		       emptygidset[0]);
+		       _("setgroups(1, %lu) failed"),
+		       (u_long) emptygidset[0]);
 		rc = 1;
 	}
 
@@ -85,26 +85,29 @@ radius_switch_to_user(RADIUS_USER *usr)
 #if defined(HAVE_SETEGID)
 	if ((rc = setegid(usr->gid)) < 0)
 		radlog(L_ERR|L_PERROR,
-		       _("setegid(%d) failed"), usr->gid);
+		       _("setegid(%lu) failed"), (u_long) usr->gid);
 #elif defined(HAVE_SETREGID)
 	if ((rc = setregid(usr->gid, usr->gid)) < 0)
 		radlog(L_ERR|L_PERROR,
-		       _("setregid(%d,%d) failed"), usr->gid, usr->gid);
+		       _("setregid(%lu,%lu) failed"),
+		       (u_long) usr->gid, (u_long) usr->gid);
 #elif defined(HAVE_SETRESGID)
 	if ((rc = setresgid(usr->gid, usr->gid, usr->gid)) < 0)
 		radlog(L_ERR|L_PERROR,
-		       _("setresgidd(%d,%d,) failed"),
-		       usr->gid, usr->gid, usr->gid);
+		       _("setresgid(%lu,%lu,%lu) failed"),
+		       (u_long) usr->gid,
+		       (u_long) usr->gid,
+		       (u_long) usr->gid);
 #endif
 
 	if (rc == 0 && usr->gid != 0) {
 		if ((rc = setgid(usr->gid)) < 0 && getegid() != usr->gid) 
 			radlog(L_ERR|L_PERROR,
-			       _("setgid(%d) failed"), usr->gid);
+			       _("setgid(%lu) failed"), (u_long) usr->gid);
 		if (rc == 0 && getegid() != usr->gid) {
 			radlog(L_ERR,
-			       _("cannot set effective gid to %d"),
-			       usr->gid);
+			       _("cannot set effective gid to %lu"),
+			       (u_long) usr->gid);
 			rc = 1;
 		}
 	}
@@ -122,22 +125,22 @@ radius_switch_to_user(RADIUS_USER *usr)
 			if (geteuid() != usr->uid) {
 				if (setreuid(usr->uid, -1) < 0) { 
 					radlog(L_ERR|L_PERROR,
-					       _("setreuid(%d,-1) failed"),
-					       usr->uid);
+					       _("setreuid(%lu,-1) failed"),
+					       (u_long) usr->uid);
 					rc = 1;
 				}
 				if (setuid(usr->uid) < 0) {
 					radlog(L_ERR|L_PERROR,
-					       _("second setuid(%d) failed"),
-					       usr->uid);
+					       _("second setuid(%lu) failed"),
+					       (u_long) usr->uid);
 					rc = 1;
 				}
 			} else
 #endif
 				{
 					radlog(L_ERR|L_PERROR,
-					       _("setuid(%d) failed"),
-					       usr->uid);
+					       _("setuid(%lu) failed"),
+					       (u_long) usr->uid);
 					rc = 1;
 				}
 		}
@@ -145,7 +148,7 @@ radius_switch_to_user(RADIUS_USER *usr)
 
 		euid = geteuid();
 		if (usr->uid != 0 && setuid(0) == 0) {
-			radlog(L_ERR, _("seteuid(0) succeeded"));
+			radlog(L_ERR, _("seteuid(0) succeeded when it should not"));
 			rc = 1;
 		} else if (usr->uid != euid && setuid(euid) == 0) {
 			radlog(L_ERR, _("cannot drop non-root setuid privileges"));
@@ -229,8 +232,8 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
 		   to restore initial privileges if we were started
 		   as non-root. */
                 openlog("radiusd", LOG_PID, LOG_USER);
-                syslog(LOG_ERR, "can't run %s (ruid=%d, euid=%d): %m",
-                       argv[0], getuid(), geteuid());
+                syslog(LOG_ERR, "can't run %s (ruid=%lu, euid=%lu): %m",
+                       argv[0], (u_long) getuid(), (u_long) geteuid());
                 exit(2);
         }
 

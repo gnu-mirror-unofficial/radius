@@ -309,7 +309,7 @@ install_pair(LOCUS *loc, char *name, int op, char *valstr)
 
 			if (x) {
 				char *s;
-				asprintf(&s, "%lu+%{NAS-Port-Id}",
+				asprintf(&s, "%lu+%%{NAS-Port-Id}",
 					 pair->avp_lvalue);
 				pair->avp_strvalue = estrdup(s);
 				pair->avp_strlength = strlen(pair->avp_strvalue);

@@ -1398,7 +1398,7 @@ this behavior.
 Letter @samp{E} marks attributes encrypted as described in RFC 2138.
 Currently these are User-Password and CHAP-Password. 
 @item 
-Letter @samp{F} marks attribute encrypted according to RFC 2868.
+Letter @samp{T} marks attribute encrypted according to RFC 2868.
 @item
 The characters from @samp{1} to @samp{9} denote nine user-defined flags
 (@pxref{Extended Comparison}).

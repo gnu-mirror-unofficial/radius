@@ -9,6 +9,8 @@ Possibly this will allow to get rid from the so-called 'server
 attributes', this will make dictionary simpler and clearer.
 ** The current configuration file system should be supported as well.
 
+* Rewrite librad and make it an installable shared library.
+
 * Get rid of radscm (or build it only on systems that do not support
 shared libraries). Build a shared Guile module instead. Make
 server queue a SMOB instead of a hidden list.

@@ -94,6 +94,6 @@ install-data-local:
 		done; \
 	        for file in $(dictionaries); do \
 		        ${INSTALL} -m 644 $(top_srcdir)/raddb/$$file $(DESTDIR)$(raddbdir)/$$file; \
-	        done;\ 
+	        done;\
 	fi
 

@@ -1,10 +1,10 @@
-GNU Radius NEWS -- history of user-visible changes. 2003-12-03
+GNU Radius NEWS -- history of user-visible changes. 2003-12-08
 Copyright (C) 2002,2003 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
 
-Version 1.1.95:
+Version 1.2:
 
 * Important notes for upgrading from earlier versions of GNU Radius
 
@@ -113,7 +113,7 @@ of the following keywords:
   icase         Ignore case
   newline       Match-any-character operators don't match a newline.
 
-optionally preceeded by plus, indicating enabling the feature, or
+optionally preceded by plus, indicating enabling the feature, or
 minus, indicating disabling it.
 
 Default is `-extended -icase -newline'.
@@ -154,7 +154,7 @@ Enables tracing of configuration rules matched while processing
 requests. The statement may be used in `auth' and `acct' blocks.
 The example of information appearing in trace mode:
 
-Oct 31 11:37:17 [28322]: Auth.info: (AUTHREQ foo 170 bar):
+Oct 31 11:37:17 [28322]: Auth.info: (Access-Request foo 170 bar):
 rule trace: /etc/raddb/users:157,22,3; huntgroups:72; hints:34
 
 This means that when processing an authentication request
@@ -214,7 +214,7 @@ the attribute properties.
 Flag 'E' marks attributes encrypted as per RFC 2138. Currently
 these are User-Password and CHAP-Password. 
 
-Flag 'F' marks attribute encrypted as per RFC 2868.
+Flag 'T' marks attribute encrypted as per RFC 2868.
 
 ** Both raddb/naslist and raddb/clients files allow to specify hosts
 using CIDR notation, i.e.

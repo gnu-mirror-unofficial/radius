@@ -136,10 +136,10 @@ request_cmp(REQUEST *req, void *ptr)
 }
 
 void
-request_cleanup(int type, void *data)
+request_cleanup(REQUEST *req)
 {
-        if (request_class[type].cleanup)
-                request_class[type].cleanup(type, data);
+        if (request_class[req->type].cleanup)
+                request_class[req->type].cleanup(req->type, req->data);
 }
 
 int
@@ -183,6 +183,14 @@ struct request_closure {
 	size_t request_type_count; /* Number of requests of this type */
 };
 
+int
+request_call_handler(int (*handler)(REQUEST *), REQUEST *req)
+{
+	int rc = (*handler)(req);
+	request_cleanup(req);
+	return rc;
+}
+
 static int
 _request_iterator(void *item, void *clos)
 {
@@ -203,7 +211,7 @@ _request_iterator(void *item, void *clos)
 			debug(1, ("%s proxy reply. Process %lu", 
 				  request_class[req->type].name,
 				  (u_long) req->child_id));
-			(*rp->handler)(req);
+			request_call_handler(rp->handler, req);
 			list_remove(request_list, req, NULL);
 			request_free(req);
 		} else if (req->timestamp + request_class[req->type].ttl
@@ -269,6 +277,7 @@ int
 request_handle(REQUEST *req, int (*handler)(REQUEST *))
 {
 	struct request_closure rc;
+	int status;
 
 	if (!req)
 		return 1;
@@ -299,13 +308,13 @@ request_handle(REQUEST *req, int (*handler)(REQUEST *))
 			debug(1, ("%s proxy reply. Process %lu", 
 				  request_class[req->type].name,
 				  (u_long) req->child_id));
-			(*handler)(req);
+			request_call_handler(handler, req);
 		} else {
 			if (!spawn_flag || rpp_ready(req->child_id)) {
 				debug(1, ("%s proxy reply. Process %lu", 
 					  request_class[req->type].name,
 					  (u_long) req->child_id));
-				(*handler)(req);
+				request_call_handler(handler, req);
 			} else {
 				req->status = RS_PROXY;
 				/* Add request to the queue */
@@ -345,11 +354,10 @@ request_handle(REQUEST *req, int (*handler)(REQUEST *))
                   (u_long) req->child_id,
                   rc.request_count+1));
 
-	if ((*handler)(req) == 0) {
+	status = request_call_handler(handler, req);
+	if (status == 0) 
 		list_append(request_list, req);
-		return 0;
-	}
-	return 1;
+	return status;
 }
 
 void

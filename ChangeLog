@@ -1,3 +1,17 @@
+2004-04-16  Sergey Poznyakoff
+
+	* include/radiusd.h: Minor formatting change.
+	* lib/leakdetect.c: Provide extensive debugging features.
+	* lib/users.l (grad_parser_lex_init): Fixed potential memory
+	leak.
+	* radiusd/checkrad.c (finger_check): Likewise.
+	* radiusd/sql.c (detach_sql_connection): Call sql_conn_destroy()
+	to deallocate the connection. This fixes serious memory leak.
+	(sql_conn_destroy): Call disp_sql_disconnect() only if
+	conn->connected is set.
+	(rad_sql_checkgroup): Fix potential memory leak (did not reclaim
+	obstack memory if sql_cache_retrieve() returned NULL.
+
 2004-04-14  Sergey Poznyakoff
 
 	* radiusd/scheme.c (arglist_to_scm): Bugfix.

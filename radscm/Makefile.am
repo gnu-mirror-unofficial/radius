@@ -95,11 +95,11 @@ guile-procedures.txt: $(DOT_DOC_FILES)
 
 gnuradius.scm: gnuradius.scm.in $(libradscm_la_SOURCES:.c=.inc)
 	m4 -DVERSION=$(VERSION) -DLIBDIR=$(libdir) \
-	   -DBUILDDIR=$(top_builddir)/radscm $< > $@
+	   -DBUILDDIR=$(top_builddir)/radscm gnuradius.scm.in > $@
 
 radiusd.scm: radiusd.scm.in $(libservscm_a_SOURCES:.c=.exp)
 	m4 -DVERSION=$(VERSION) -DLIBDIR=$(libdir) \
-	   -DBUILDDIR=$(top_builddir)/radscm $< > $@
+	   -DBUILDDIR=$(top_builddir)/radscm radiusd.scm.in > $@
 
 ## Add -MG to make the .x magic work with auto-dep code.
 MKDEP = $(CC) -M -MG $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)

@@ -87,9 +87,11 @@ typedef struct request_class {
 } REQUEST_CLASS;
 
 
-#define RS_WAITING   0
-#define RS_PENDING   1
-#define RS_COMPLETED 2
+#define RS_WAITING   0     /* Request waiting for processing */
+#define RS_PENDING   1     /* Request is being processed */
+#define RS_COMPLETED 2     /* Request is completed */
+#define RS_HUNG      3     /* Request is (possibly) hung */
+#define RS_DEAD      4     /* Request was killed */
 
 typedef struct request {
         struct request *next;         /* Link to the next request */
@@ -299,14 +301,21 @@ int write_detail(RADIUS_REQ *radreq, int authtype, char *f);
 int stat_request_list(QUEUE_STAT);
 void *scan_request_list(int type, int (*handler)(), void *closure);
 int set_nonblocking(int fd);
-void rad_thread_init();
-int rad_flush_queues();
+void radiusd_thread_init();
+int radiusd_flush_queues();
 void schedule_restart();
-void rad_mainloop();
+void radiusd_mainloop();
 void rad_req_drop(int type, RADIUS_REQ *req, RADIUS_REQ *orig, int fd,
 		  char *status_str);
 void socket_list_iterate(void (*fun)());
-
+int radiusd_mutex_lock(pthread_mutex_t *mutex, int type);
+int radiusd_mutex_unlock(pthread_mutex_t *mutex);
+void radiusd_pidfile_write(char *name);
+pid_t radiusd_pidfile_read(char *name);
+void radiusd_pidfile_remove(char *name);
+int radiusd_is_watched();
+int radiusd_restart();
+int radiusd_primitive_restart();
 /* radius.c */
 
 #define REQ_AUTH_OK   0
@@ -372,6 +381,9 @@ void req_decrypt_password(char *password, RADIUS_REQ *req, VALUE_PAIR *pair);
 /* exec.c */
 int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **,
                         int, char **user_msg);
+int filter_auth(char *name, RADIUS_REQ *req, VALUE_PAIR **reply_pairs);
+int filter_acct(char *name, RADIUS_REQ *req);
+int filter_sigchild(pid_t pid, int status);
 int filters_stmt_term(int finish, void *block_data, void *handler_data);
 extern struct cfg_stmt filters_stmt[];
 

@@ -32,9 +32,8 @@ typedef unsigned long	UINT4;
 
 #ifdef HAVE_STRINGS_H
 # include <strings.h>
-#else
-# include <string.h>
 #endif
+#include <string.h>
 
 #ifndef HAVE_BZERO
 # define bzero(s,n) memset(s, 0, n)

@@ -1,4 +1,7 @@
 # This is the users database.
+#
+# See the documentation for detailed description.
+#
 
 DEFAULT	Auth-Type = SQL,
 		Simultaneous-Use = 1	

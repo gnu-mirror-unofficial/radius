@@ -12,23 +12,9 @@
 #                       will be returned,
 #       false           Means no check will be made and 0 code
 #                       will be returned.               
-# ** The following is optional:
-# iv.   Additional arguments to query NAS with. Multiple arguments 
-# should be separated by commas (,) with no intervening whitespace.
-# Currently radiusd recognizes following arguments (S means string,
-# N - number):
-#   a. Common arguments:
-#     port=N            Use port number N instead of the default
-#     password=S        Use password (community for snmp) 
-#   b. Method snmp arguments
-#     retries=N         Retry N times before giving up
-#     timeout=N         Timeout N seconds on each retry
-#     community=S       Use community S 
-#   c. Method finger arguments
-#     arg=S             Argument to query for. By default it is %u
-#                       (username).                     
-#     tcp=0             Disable the use of T/TCP for hosts with
-#                       a broken TCP implementation.
+# iv.   [optional] Additional arguments to query NAS with.
+#
+# See the documentation for detailed description.
 #
 
 # NAS Name		Short Name	Type		Checkrad flags

@@ -126,8 +126,8 @@ int checkrad_assume_logged = 1;
 size_t max_requests = MAX_REQUESTS;
 size_t max_children = MAX_CHILDREN;
 unsigned process_timeout = PROCESS_TIMEOUT;
-unsigned radiusd_write_timeout = 0;
-unsigned radiusd_read_timeout = 0;
+unsigned radiusd_write_timeout = RADIUSD_WRITE_TIMEOUT;
+unsigned radiusd_read_timeout = RADIUSD_READ_TIMEOUT;
 char *exec_user = NULL;
 
 UINT4 warning_seconds;

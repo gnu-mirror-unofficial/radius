@@ -1,27 +1,18 @@
-# 
-# This is the hints file. Matching can take place with the the Prefix and 
-# Suffix attributes, just like in the "users" file, but ONLY on the username.
+# When handling an authentication request, the rules from this file
+# are processed before "huntgroups" and "users".
 #
-# On the match the reply pairs get added to the request pairs sent by the
-# terminal server, thus allowing to continue the match on "users" file.
+# When handling an accounting request, this file and "huntgroups" are
+# the only files to be processed.
 #
-# In addiction, a matching entry can transform a username for authentication
-# purposes. This can be done with attributes Strip-User-Name,Replace-User-Name
-# and Rewrite-Function. If all three attributes are present, they are applied
-# in the same order as listed above.
+# These rules match exactly as those in "users"; On the match the pairs
+# from RHS are appended to the request pairs sent by the terminal server,
+# using the additivity rules.  
 #
-# The Replace-User-Name can use any request pairs to produce the transformed
-# username. 
-#
-# To use in check-pairs of the "users" file a special attribute "Hint" can
-# be used.
+# See the documentation for detailed information.
 #
 
 # These are some examples:
 
-#DEFAULT	Prefix = "U", Strip-User-Name = No
-#	Hint = "UUCP"
-#
 #DEFAULT	Prefix = "P", Strip-User-Name = Yes
 #	Hint = "PPP",
 #	Service-Type = Framed-User,
@@ -32,27 +23,6 @@
 #	Service-Type = Framed-User,
 #	Framed-Protocol = SLIP
 #
-#DEFAULT	Prefix = "C", Strip-User-Name = Yes
-#	Hint = "CSLIP",
-#	Service-Type = Framed-User,
-#	Framed-Protocol = SLIP,
-#	Framed-Compression = Van-Jacobson-TCP-IP
-#
-#DEFAULT	Suffix = ".ppp", Strip-User-Name = Yes
-#	Hint = "PPP",
-#	Service-Type = Framed-User,
-#	Framed-Protocol = PPP
-#
-#DEFAULT	Suffix = ".slip", Strip-User-Name = Yes
-#	Hint = "SLIP",
-#	Service-Type = Framed-User,
-#	Framed-Protocol = SLIP
-#
-#DEFAULT	Suffix = ".cslip", Strip-User-Name = Yes
-#	Hint = "CSLIP",
-#	Service-Type = Framed-User,
-#	Framed-Protocol = SLIP,
-#	Framed-Compression = Van-Jacobson-TCP-IP
 
 ##
 ## Examples of hints which modify packets.

@@ -3,20 +3,9 @@
 # as the last part of the loginname, the realm part is looked up in this 
 # file. If found, the request is sent to the listed remote radius server.
 #
-# Each record consists of following fields:
-#
-# 	i.   Realm name.
-# 	ii.  Hostname. Optional is :port to use a non-standard port. 
-#	     In that case, port is the authenication port and the 
-#	     accounting port is taken as port + 1.
-#            A reserved word LOCAL means the logins for this realm must
-#            be processed locally.
-# 	iii. (optional) flag. This can be either strip, meaning to strip
-#	     the realm name off the full user name (the default), or
-#            nostrip, meaning the realm should not be stripped. 
-
+# See the documentation for detailed information.
 
 # Realm                 Remote server[:port[:port]]	flags	
 #----------------	---------------------		--------
 #isp2.com		radius.isp2.com			nostrip,quota=10
-#company.com		radius.company.com:1600
+#company.com		radius1.company.com:1645,radius2.company.com:1645 nostrip

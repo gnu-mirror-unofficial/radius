@@ -1,16 +1,23 @@
-# This file defines the `huntgroups' that you have. 
-# A huntgroup is defined by specifying the IP address of the NAS and 
-# possibly a port range.
+# The rules from this file are processed after "hints" and
+# before "users".
 #
-# Matching is done while RADIUS scans the user file; if it includes the 
-# selection criterium "Huntgroup-Name = XXX" the huntgroup is looked up 
-# in this file to see if it matches. If there are multiple definitions 
-# of the same huntgroup, then the first one that matches will be used.
+# When matching, first the contents of the incoming request
+# is matched against LHS of each entry. When the matching
+# entry is found, the contents of its RHS is compared with
+# the incoming request. The request is accepted for further
+# processing only if the comparison succeeds.
+#
+# Additionally, Radius adds to the incoming request the attribute
+# "Huntgroup-Name = LABEL", where LABEL is the LABEL of the
+# matched entry.
+#
+# See the documentation for more details.
 #
 
+## Example:
+
+## 
 ## Use the following for NASes that need packet rewriting:
 ##
 #DEFAULT	NAS-IP-Address = 10.0.15.1, Rewrite-Function = "func"	NULL
 ##
-## Replace 10.0.15.1 with proper IP address and func with the name of
-## function to use.

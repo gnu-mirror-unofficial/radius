@@ -37,6 +37,9 @@
 	* radlib/debug.c: Likewise.
 	* radlib/users.y: Likewise.
 
+	* m4/pth.m4: (new)
+	* m4/Makefile.am: Added pth.m4.
+	
 2002-01-08 Sergey Poznyakoff
 
 	Started redesigning radiusd to multithreaded model. Initially

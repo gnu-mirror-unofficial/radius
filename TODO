@@ -1,12 +1,10 @@
      Switching to multithread server:
--100 :  format_pair() is not thread-safe.
-        use strtok_r instead of strtok.
-        gethosbyname() is not thread-safe.
--100 :  sql.c (comprises ex-`Revise sql.c. See ChangeLog for 2001-12-21.')
+-100 :  gethosbyname() is not thread-safe.
 -100 :  rewrite.y
 -100 :  stat.c and stat-related issuses: get rid of mmap, compile in the
 	stat support only if USE_SNMP is true; redesign raduse to use
 	snmp queries instead of peeking in radstat.
+-80  :  spawn statement in config is obsoleted (update docs).	
 -50  :  Include pth library in the distribution, update configure.in
 	accordingly.
 -30  :  retransmit proxy (and possibly auth?) requests

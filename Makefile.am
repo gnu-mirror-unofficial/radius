@@ -17,9 +17,10 @@ SUBDIRS=m4 include radlib sql snmplib radscm radiusd radwho radzap radlast\
 if MAINTAINER_MODE
 MAINTAINERCLEANFILES=core *~ err out
 
-debugmod:; MAKE=${MAKE} \
-           $(top_srcdir)/scripts/debug.sh \
-                 $(top_srcdir)/scripts/debugmod.m4 radlib $(SUBDIRS)
+debugmod:; here=`cd $(top_srcdir); pwd`; \
+           MAKE=${MAKE} \
+           $$here/scripts/debug.sh \
+                 $$here/scripts/debugmod.m4 radlib $(SUBDIRS)
 
 lint::
 	for dir in $(SUBDIRS); \

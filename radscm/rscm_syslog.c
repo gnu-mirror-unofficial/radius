@@ -56,8 +56,7 @@ static struct keyword syslog_kw[] = {
 	NULL
 };
 
-
-int
+static int
 parse_facility(list)
 	SCM list;
 {

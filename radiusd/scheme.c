@@ -63,6 +63,7 @@ static pthread_cond_t call_cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t queue_mutex = PTHREAD_MUTEX_INITIALIZER;
 struct call_data *queue_head, *queue_tail;
 static int scheme_inited;
+unsigned scheme_gc_interval = 3600;
 
 void
 call_place(cp)
@@ -134,7 +135,8 @@ static SCM
 boot_body (void *data)
 {
         struct call_data *p, *next;
-
+	time_t last_gc_time;
+	
         scm_init_load_path();
         radscm_init();
         rscm_radlog_init();
@@ -144,6 +146,14 @@ boot_body (void *data)
         pthread_mutex_lock(&call_mutex);
 
         while (1) {
+		time_t t;
+		if (time(&t) - last_gc_time > scheme_gc_interval) {
+			radlog(L_INFO, "starting Scheme garbage collection");
+			scm_gc();
+			radlog(L_INFO, "finished Scheme garbage collection");
+			last_gc_time = t;
+		}
+		
 		debug(1, ("SRV: Waiting"));
                 pthread_cond_wait(&call_cond, &call_mutex);
                 for (p = queue_head; p; ) {

@@ -32,6 +32,7 @@ radiusd_SOURCES = \
  radiusd.c\
  radutil.c\
  rewrite.c\
+ scheme.c\
  shmem.c\
  snmpserv.c\
  sql.c\
@@ -39,10 +40,10 @@ radiusd_SOURCES = \
  timestr.c\
  version.c
 
-radiusd_LDADD   = @LEXLIB@ ../radlib/librad.la -L../snmplib -lsnmp @SQLLIB@ @RADIUSD_LDADD@
+radiusd_LDADD = @LEXLIB@ ../radlib/librad.la -L../snmplib -lsnmp @SQLLIB@ @RADIUSD_LDADD@ @GUILE_LIBS@
 BUILT_SOURCES   = config.c config_kw.c rewrite.c
 MAINTAINERCLEANFILES=config.c config_tok.h config_kw.c rewrite.c y.output
-INCLUDES        = -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp -I$(top_srcdir)/radlib @INCLUDEPATH@
+INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp -I$(top_srcdir)/radlib @INCLUDEPATH@ @GUILE_INCLUDES@
 EXTRA_DIST      = config.y config.kw rewrite.y .gdbinit
 YLWRAP = $(SHELL) $(top_srcdir)/ylwrap
 GPERF=@GPERF@

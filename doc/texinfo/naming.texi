@@ -21,32 +21,33 @@ A directory where @radiusd{} stores its log files.
 
 @item Accounting directory
 A directory where @radiusd{} stores accounting detail files
-@ref{Detailed Request Accounting}.
+(@pxref{Detailed Request Accounting}).
 
 @end table
 
 The default locations of these directories are determined at compile
 time. Usually these are:
 
-@multitable @columnfractions .40 .15 .45
+@multitable @columnfractions .40 .20 .40
 
-@item Directory @tab Short Name @tab Default location 
+@item Directory @tab Short name @tab Default location 
+
 @item Configuration directory
 @cindex Configuration directory
 @cindex @file{raddb}
-@tab raddb
+@tab @file{raddb}
 @tab @value{RADDB}
 
 @item Log directory
 @cindex Log directory
 @cindex @file{radlog}
-@tab radlog
+@tab @file{radlog}
 @tab @value{RADLOG}
 
 @item Accounting directory
 @cindex Accounting directory
 @cindex @file{radacct}, accounting directory
-@tab radacct
+@tab @file{radacct}
 @tab @value{RADACCT}
 
 @end multitable
@@ -64,11 +65,11 @@ short names.  For example, when we say:
 we actually mean @file{@value{RADDB}/sqlserver}.
 
 To get the default directory names that your version of Radius was
-compiled with run @command{radiusd --version}.
+compiled with, run @command{radiusd --version}.
 
 Locations of these directories may be overridden by
 specifying the appropriate command line options. For
-example, any program from the GNU Radius package accepts command
+example, any program from the GNU Radius package accepts the command
 line option @option{-d} or @option{--directory}, which introduces
 the configuration directory path. 
 

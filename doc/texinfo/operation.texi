@@ -23,19 +23,19 @@ be used for any kind of network connection.
 @node Attributes
 @section Attributes
 @cindex Attribute
-@cindex Attribute-Value pair
+@cindex Attribute-value pair
 @cindex A/V pair
 @cindex Additivity of an attribute
 @cindex Propagation of an attribute
 @cindex Properties of an attribute
 
-Information carried by @RADIUS{} requests are stored as a list of
-@dfn{Attribute-Value pairs}. Each pair consists of an @dfn{Attribute
-number} and an @dfn{Attribute value}. The @dfn{Attribute number} identifies
-the type of information the pair carries and the @dfn{Attribute Value}
+Information carried by @RADIUS{} requests is stored as a list of
+@dfn{attribute-value pairs}. Each pair consists of an @dfn{attribute
+number} and an @dfn{attribute value}. The @dfn{attribute number} identifies
+the type of information the pair carries, and the @dfn{attribute value}
 keeps the actual data.
 
-The Value part of an attribute can contain the data of one of the
+The value part of an attribute can contain data of one of the
 following types:
 
 @table @asis
@@ -49,24 +49,24 @@ A character string up to 253 characters long.
 
 For convenience, the attributes and the values of some frequently used
 integer attributes are given symbolic names. These names are assigned to
-attributes and values in the dictionary file @ref{dictionary file}.
+attributes and values in the dictionary file (@pxref{dictionary file}).
 
 Attribute numbers range from 1 to 255. Attributes with numbers
-greater than 255 are used internally by the sever and cannot be sent to
+greater than 255 are used internally by the server and cannot be sent to
 the @NAS{}.
 
-The @dfn{Vendor-Specific} attribute number 26 is special, allowing
+The @dfn{vendor-specific} attribute number 26 is special, allowing
 vendors of the @NAS{} hardware or software to support their own extended
-attributes. @ref{Vendor-Specific,, Vendor-Specific attribute}.
+attributes. @ref{Vendor-Specific, vendor-specific attribute}.
 
 Each attribute has a set of properties associated with it. The
 properties are:
 
 @table @dfn
-@item usage flags
+@item Usage flags
 These flags determine the usage of the attribute in the configuration
-files @file{huntgroups}, @file{hints} and @file{users}.
-@item propagation
+files @file{huntgroups}, @file{hints}, and @file{users}.
+@item Propagation
 When a @RADIUS{} server functions in proxy mode, it uses the @dfn{propagation
 bit} to determine which attributes from the reply packet should be passed
 back to the requesting @NAS{} (@pxref{Proxy Service}).
@@ -74,11 +74,11 @@ back to the requesting @NAS{} (@pxref{Proxy Service}).
 Some configuration rules may cause the addition of new @AVP{}s to the
 incoming request. Before the addition of a new pair, @radiusd{}
 scans the request to see if it already contains a pair with the same
-attribute. If it does, the value of @dfn{additivity} determines the
+attribute. If it does, the value of the @dfn{additivity} determines the
 following additional actions:
 @table @asis
 @item None
-The old pair is retained in the request, the new pair is not added to
+The old pair is retained in the request; the new pair is not added to
 it.
 @item Replace
 The old pair is retained in the request, but its value is replaced with
@@ -89,8 +89,8 @@ The new pair is appended to the end of the pair list.
 @end table
 
 Attributes are declared in the @file{raddb/dictionary} file. For a
-detailed description, @xref{ATTRIBUTE}.
-For information about particular attributes, @xref{Attribute List}.
+detailed description, see @ref{ATTRIBUTE}.
+For information about particular attributes, see @ref{Attribute List}.
 
 @comment *L2****************************************************************
 @node Requests
@@ -101,7 +101,7 @@ The term @dfn{request} refers to both the authentication/accounting
 request packet from a @NAS{} to a @RADIUS{} server and the response
 packet that the server sends back to the @NAS{}.
 
-Each request contains the following fields
+Each request contains the following fields:
 
 @table @samp
 
@@ -109,7 +109,7 @@ Each request contains the following fields
 The code field identifies the type of the request. 
 
 @item Identifier
-The number in the range 0-255 used to match the request with the reply.
+The number in the range 0--255 used to match the request with the reply.
 
 @item Length
 The length of the request packet.
@@ -119,7 +119,7 @@ The 16-byte hash value used to authenticate the packet.
 
 @item Attributes
 
-The list of attribute/value pairs carrying actual information about the
+The list of attribute-value pairs carrying actual information about the
 request. 
 
 @end table
@@ -143,19 +143,20 @@ special services are requested for that user.
 
 An Access-Request must contain a @attr{User-Name} attribute
 @ref{User-Name}. This packet should contain a @attr{NAS-IP-Address}
-attribute, a @attr{NAS-Identifier} attribute, or both attributes.  It
-also must contain either a @attr{User-Password} attribute or
-@attr{CHAP-Password} attribute. These attributes are passed encoded
+attribute, a @attr{NAS-Identifier} attribute, or both.  It
+also must contain either a @attr{User-Password} attribute or a
+@attr{CHAP-Password} attribute. These attributes are passed after
+being encoded
 using a method based on the RSA Message Digest Algorithm MD5.
 
 The Access-Request should contain a @attr{NAS-Port} or @attr{NAS-Port-Type}
-attribute or both unless the type of access being requested does
+attribute or both, unless the type of access being requested does
 not involve a port or the @NAS{} does not distinguish among its
 ports.
 
 Upon receiving an Access-Request packet for a particular user and
 authenticating that user, the @RADIUS{} server replies to the @NAS{} that
-has sent the packet with either of the following packets:
+has sent the packet with any one of the following packets:
 
 @itemize @bullet
 @item Access-Accept
@@ -193,9 +194,9 @@ If the @NAS{} does not support challenge/response, it treats an
 Access-Challenge as though it had received an Access-Reject instead.
 Otherwise, upon receipt of a valid Access-Challenge the @NAS{} prompts
 the user for a response, possibly displaying the text message provided
-in @attr{Reply-Message} attributes of the request. It then sends its
-original Access-Request with a new request @sc{id} and Request
-Authenticator, along with the @attr{User-Password} attribute replaced
+in the @attr{Reply-Message} attributes of the request. It then sends its
+original Access-Request with a new request @sc{id} and request
+authenticator, along with the @attr{User-Password} attribute replaced
 by the encrypted user's response, and including the @attr{State}
 attribute from the Access-Challenge, if any.
 
@@ -208,8 +209,8 @@ attribute from the Access-Challenge, if any.
 Accounting-Request packets are sent from a @NAS{} to a @RADIUS{}
 server to allow for accounting of a service provided to a user.
 
-Upon receipt of an Accounting-Request, the server attempts to record
-the accounting packet @ref{Accounting}, and if it succeeds in doing
+Upon receipt of an Accounting-Request packet, the server attempts to record
+it (@pxref{Accounting}), and if it succeeds in doing
 so, it replies with an Accounting-Response packet. Otherwise, it sends
 no reply, which then causes the @NAS{} to retransmit its request
 within a preconfigured interval of time. Such retransmits will
@@ -219,26 +220,26 @@ occurs first.
 
 Any attribute valid in an Access-Request or Access-Accept packet is
 also valid in an Accounting-Request packet, except the following
-attributes which are never present in any Accounting-Request packet:
+attributes, which are never present in any Accounting-Request packet:
 
 @itemize @bullet
-@item User-Password
-@item CHAP-Password
-@item Reply-Message
-@item State
+@item @attr{User-Password}
+@item @attr{CHAP-Password}
+@item @attr{Reply-Message}
+@item @attr{State}
 @end itemize
 
 Either a @attr{NAS-IP-Address} or a @attr{NAS-Identifier} must be
-present in an Accounting-Request.  It should contain either a
-@attr{NAS-Port} or @attr{NAS-Port-Type} attribute (or both
-attributes), unless the service does not involve a port or the @NAS{}
+present in an Accounting-Request packet.  It should contain either a
+@attr{NAS-Port} or a @attr{NAS-Port-Type} attribute (or both),
+unless the service does not involve a port or the @NAS{}
 does not distinguish among its ports.
 
 If the Accounting-Request packet includes a @attr{Framed-IP-Address},
-that attribute @emph{must} contain the actual @IP{} of the user.
+that attribute @emph{must} contain the actual IP of the user.
 
 There are five types of accounting packets, differentiated by the
-value of @attr{Acct-Status-Type} attribute. These are:
+value of the @attr{Acct-Status-Type} attribute. These are:
 
 @table @dfn
 @item Session Start Packet
@@ -247,43 +248,43 @@ passed the authentication and has started to receive the requested
 service. It must contain at least following attributes:
 
 @itemize @bullet
-@item Acct-Status-Type = Start
-@item User-Name
-@item Acct-Session-Id
-@item NAS-IP-Address
-@item NAS-Port-Id
+@item @attr{Acct-Status-Type = Start}
+@item @attr{User-Name}
+@item @attr{Acct-Session-Id}
+@item @attr{NAS-IP-Address}
+@item @attr{NAS-Port-Id}
 @end itemize
 
 @item Session Stop Packet
-The Session Stop Packet is sent after the user has disconnected. It
+The session stop packet is sent after the user has disconnected. It
 conveys the information about the duration of the session, number of
 octets transferred, etc. It must contain at least the following
 attributes:
 
 @itemize @bullet
-@item Acct-Status-Type = Stop
-@item User-Name
-@item NAS-IP-Address
-@item Acct-Session-Id
+@item @attr{Acct-Status-Type = Stop}
+@item @attr{User-Name}
+@item @attr{NAS-IP-Address}
+@item @attr{Acct-Session-Id}
 @end itemize
 
-The last three of them are used to find the corresponding @dfn{Session
-Start Packet}.
+The last three of them are used to find the corresponding session
+start packet.
 
 @item Keepalive Packet
 The keepalive packet is sent by the @NAS{} when it obtains some new
-information about the user's session, e.g. it has determined its @IP{}
-or has changed the connection speed, etc. The packet must contain at
-least following attributes:
+information about the user's session, e.g. it has determined its IP
+or has changed the connection speed. The packet must contain at
+least the following attributes:
 
 @itemize @bullet
-@item Acct-Status-Type = Alive
-@item User-Name
-@item NAS-IP-Address
-@item Acct-Session-Id
+@item @attr{Acct-Status-Type = Alive}
+@item @attr{User-Name}
+@item @attr{NAS-IP-Address}
+@item @attr{Acct-Session-Id}
 @end itemize
 
-@item Accounting Off Packet
+@item Accounting-Off Packet
 By sending this packet, the @NAS{} requests that @radiusd{} mark all
 sessions registered from this particular @NAS{} as finished. Receiving
 this packet usually means that the @NAS{} is to be shut down, or is
@@ -292,19 +293,19 @@ opened sessions to be closed. The packet must contain at least the
 following attributes:
 
 @itemize @bullet
-@item Acct-Status-Type = Accounting-Off
-@item NAS-IP-Address
+@item @attr{Acct-Status-Type = Accounting-Off}
+@item @attr{NAS-IP-Address}
 @end itemize
 
-@item Accounting On Packet
+@item Accounting-On Packet
 By sending this packet, the @NAS{} informs @radiusd{} that it is ready
 to accept the incoming connections. Usually this packet is sent after
 startup, or after a major reconfiguration of the @NAS{}. It must
 contain at least the following attributes:
 
 @itemize @bullet
-@item Acct-Status-Type = Accounting-Off
-@item NAS-IP-Address
+@item @attr{Acct-Status-Type = Accounting-Off}
+@item @attr{NAS-IP-Address}
 @end itemize
 @end table
 
@@ -317,10 +318,10 @@ contain at least the following attributes:
 @cindex RHS, Matching Rule
 
 A record in the GNU Radius database describing a particular rule for
-matching an incoming request is called a @dfn{Matching Rule}. Each
+matching an incoming request is called a @dfn{matching rule}. Each
 such rule defines an action to be taken when the match occurs.
 
-The @dfn{Matching Rule} consists of three distinct parts:
+The matching rule consists of three distinct parts:
 
 @table @dfn
 @item Label
@@ -328,17 +329,17 @@ This is used to identify the rule. The special usernames
 @code{DEFAULT} and @code{BEGIN} are reserved. These will be described
 in detail below.
 
-@item Left-Hand Side (LHS)
+@item Left-Hand Side (@LHS{})
 The list of attribute-value pairs used for matching the profile
 against an incoming request.
 
-@item Right-Hand Side (RHS)
+@item Right-Hand Side (@RHS{})
 The list of attribute-value pairs that define the action to be taken
 if the request matches @LHS{}.
 @end table
 
 The following GNU Radius configuration files keep data in a
-@dfn{Matching Rule} format: @file{hints}, @file{huntgroups} and
+matching rule format: @file{hints}, @file{huntgroups}, and
 @file{users}. Although they keep data in a similar format, the rules
 that are used to match incoming requests against the contents of these
 files differ from file to file. The following section describes these
@@ -349,7 +350,7 @@ rules in detail.
 @section Processing Requests
 @cindex Processing requests
 
-Upon receiving a request @radiusd{} applies to it a number of checks
+Upon receiving a request, @radiusd{} applies to it a number of checks
 to determine whether the request comes from an authorized source. If
 these checks succeed, the request is processed and
 answered. Otherwise, the request is dropped and corresponding error
@@ -358,29 +359,29 @@ message is issued (@pxref{Logging}).
 The following checks are performed:
 
 @table @asis
-@item Check if the username is supplied
-If the packet lacks the @attr{User-Name} attribute it is not processed
-@item Check if the @NAS{} is allowed to speak
-The source @IP{} of the machine that sent the packet is looked up in
+@item Check if the username is supplied.
+If the packet lacks the @attr{User-Name} attribute, it is not processed.
+@item Check if the @NAS{} is allowed to speak.
+The source IP of the machine that sent the packet is looked up in
 the @file{clients} file (@pxref{clients file}). If no match is found,
 the request is rejected.
-@item Compute the encryption key
+@item Compute the encryption key.
 Using the data from the packet and the shared key value from the
 @file{clients} file, Radius computes the MD5 encryption key that will
 be used to decrypt the value of the @attr{User-Password} attribute.
 @item Process user-name hints.
 @dfn{User-name hints} are special rules that modify the request
-depending on user name and his credentials. These rules allow an
+depending on the user's name and her credentials. These rules allow an
 administrator to divide users into distinct groups, each group having
 its own authentication and/or accounting methods. The user-name hints
 are stored in @file{raddb/hints} (@pxref{hints file}).
-@item Process huntgroup rules
+@item Process huntgroup rules.
 @dfn{Huntgroup rules} allow an administrator to segregate incoming
 requests depending on the @NAS{} and/or port number they came
 from. These rules are stored in @file{raddb/huntgroups}
 (@pxref{huntgroups file}).
-@item Determine whether the request must be proxied to another @RADIUS{}
-server The requests pertaining to another realm are immediately
+@item Determine whether the request must be proxied to another @RADIUS{} server.
+The requests pertaining to another realm are immediately
 forwarded to the remote @RADIUS{} server for further
 processing. @xref{Proxying}, for the description of this process.
 @item Process individual user profiles
@@ -401,28 +402,28 @@ This step applies only to authentication requests.
 @cindex duplicate requests, checking
 
 As described above (@pxref{Operation}), a @NAS{} may decide to
-retransmit the request under certain circumstances. This behaviour
+retransmit the request under certain circumstances. This behavior
 ensures that no requests are lost. For example, consider the following
 scenario:
 
 @enumerate
 @item The @NAS{} sends a request to the server.
 @item The server processes it and sends back the reply.
-@item The reply is lost due to a network outage or the load average of the
-@NAS{} was too high and it dropped the response.
+@item The reply is lost due to a network outage, or the load average of the
+@NAS{} is too high and it drops the response.
 @item The @NAS{} retransmits the request.
 @end enumerate
 
 Thus the @RADIUS{} server will receive and process the same request
-twice. It probably won't do any harm if the request in question is an
-authentication one, but for accounting requests this will lead to
+twice. This probably won't do any harm if the request in question is an
+authentication one, but for accounting requests it will lead to
 duplicate accounting. To avoid such an undesirable effect, @radiusd{}
 keeps a queue of received requests. When an incoming request arrives,
 @radiusd{} first scans the request queue to see if the request is a
-duplicate. If so, it drops the request, otherwise it inserts the
-request into the queue for processing. After the request is completed
+duplicate. If so, it drops the request; otherwise, it inserts the
+request into the queue for processing. After the request is completed,
 it will still reside in the queue for a preconfigured interval of time
-(@xref{auth}, parameter @code{request-cleanup-delay}).
+(@pxref{auth}, parameter @code{request-cleanup-delay}).
 
 By default, @radiusd{} considers two requests to be equal if the
 following conditions are met:
@@ -435,7 +436,7 @@ following conditions are met:
 @end enumerate
 
 Additionally, @radiusd{} may be configured to take into account the
-contents of both requests. This may be necessary since some @NAS{}es
+contents of both requests. This may be necessary, since some @NAS{}es
 modify the request authenticator or request identifier before
 retransmitting the request, so the method described above fails to
 recognize the request as a duplicate. This @dfn{extended comparison}
@@ -446,16 +447,16 @@ is described in detail in @ref{Extended Comparison}.
 @subsection Proxying
 @cindex Proxying
 
-@dfn{Proxying} is a mode of operation when a @RADIUS{} server forwards
+@dfn{Proxying} is a mode of operation where a @RADIUS{} server forwards
 incoming requests from a @NAS{} to another @RADIUS{} server, waits for
 the latter to reply, and then forwards the reply back to the
 requesting @NAS{}. A common use for such operation mode is to provide
-@dfn{roaming} between several Internet Service Providers
-(@acronym{ISP}s). Roaming permits @acronym{ISP}s to share their
-resources, allowing  each other's users to connect to other party's
+@dfn{roaming} between several internet service providers
+(ISPs). Roaming permits ISPs to share their
+resources, allowing  each party's users to connect to other party's
 equipment. Thus, users traveling outside the area of one
-@acronym{ISP}'s coverage are still able to access their services
-through another @acronym{ISP}.
+ISP's coverage are still able to access their services
+through another ISP.
 
 @menu
 * Proxy Service::
@@ -467,8 +468,8 @@ through another @acronym{ISP}.
 @subsubsection Proxy Service
 @cindex Proxy Service
 
-Suppose the @acronym{ISP} @samp{Local} has a roaming arrangement with
-the @acronym{ISP} @samp{Remote}. When the user of @samp{Remote} dials
+Suppose the ISP @samp{Local} has a roaming arrangement with
+the ISP @samp{Remote}. When the user of @samp{Remote} dials
 in to the @NAS{} of @samp{Local}, the @NAS{} sends the authentication
 request to the @samp{Local} @RADIUS{} server. The server then
 determines that this is a roaming user, stores a copy of the request
@@ -482,7 +483,7 @@ When the @samp{Remote} @RADIUS{} server responds, the @samp{Local}
 which @NAS{} originated the request. Before passing the request back
 to the @NAS{}, the server removes information specific to the
 @samp{Remote} site, such as @attr{Framed-IP-Address},
-@attr{Framed-Netmask}, etc. Only the attributes marked with
+@attr{Framed-Netmask}, etc. Only the attributes marked with a
 @samp{propagate} flag (@pxref{Attributes}) are passed back to the
 @NAS{}. After removing site-specific attributes, the @samp{Local}
 @RADIUS{} server passes the request through its user profiles
@@ -490,7 +491,7 @@ to the @NAS{}, the server removes information specific to the
 that might be needed. Finally, it passes the reply back to the @NAS{}.
 
 Proxied accounting requests are processed in a similar manner, except
-that no attribute filtering takes place as accounting responses do not
+that no attribute filtering takes place, as accounting responses do not
 carry any @AVP{}s.
 
 This example illustrates only the simplest @dfn{proxy chain},
@@ -499,7 +500,7 @@ several servers. For example, our @samp{Remote} @RADIUS{} server might
 also act as a proxy, forwarding the request to yet another @RADIUS{}
 server, and so on.
 
-NOTE: When the accounting request passes through a chain of forwarding
+Note that when the accounting request passes through a chain of forwarding
 servers, the accounting records are @emph{stored on all servers in the
 chain}.
 
@@ -513,17 +514,16 @@ the request's @dfn{authentication realm}. There are three kinds of
 realms:
 
 @enumerate 1
-@item A @dfn{Named Realm} is the part of a user name following the
-@samp{at sign} (@samp{@@}). For example, if the user name is
+@item A @dfn{named realm} is the part of a user name following the
+at sign (@samp{@@}). For example, if the user name is
 @samp{jsmith@@this.net}, then @samp{this.net} is the realm.
-
-The named realms can be cascaded, e.g. a request with user name
+The named realms can be cascaded; e.g., a request with user name
 @samp{jsmith@@this.net@@remote.net} will first be forwarded to the
-@RADIUS{} server of realm @samp{remote.net}, which in turn will
+@RADIUS{} server of the realm @samp{remote.net}, which in turn will
 forward it to @samp{this.net}.
-@item A @dfn{Default Realm} defines the server to which the requests
+@item A @dfn{default realm} defines the server to which the requests
 for realms not mentioned explicitly in the configuration are forwarded.
-@item An @dfn{Empty Realm} defines the server to which the requests
+@item An @dfn{empty realm} defines the server to which the requests
 @emph{without} explicitly named realms are forwarded. If the
 configuration does not define an empty realm, such requests are
 processed by the server itself.
@@ -538,49 +538,50 @@ GNU Radius keeps the information about the realms it serves in the
 @cindex Hints
 
 @dfn{User-name hints} are special rules that modify the incoming
-request depending on the username and its credentials. Hints are
-stored as a list of @dfn{Matching Rules} (@pxref{Matching Rule}). Upon
-receiving a request, @radiusd{} scans the hints entries sequentially,
-comparing each rule's @dfn{Label} with the value of the
+request depending on the user name and its credentials. Hints are
+stored as a list of @dfn{matching rules} (@pxref{Matching Rule}). Upon
+receiving a request, @radiusd{} scans the hint entries sequentially,
+comparing each rule's label with the value of the
 @attr{User-Name} attribute from the request. If they coincide, then
 @radiusd{} appends the contents of the rule's @RHS{} to the request's
-pair-list.
+pair list.
 
-Both user names must match exactly in order for a hint to take effect,
+The two user names must match exactly in order for a hint to take effect,
 unless the hint's checklist contains either the @attr{Prefix} or the
 @attr{Suffix} attribute. The special name @samp{DEFAULT} or
-@samp{DEFAULT%d} (where %d denotes any decimal number), used as hint's
-@dfn{Label}, match any username.
+@samp{DEFAULT@var{%d}} (where @var{%d} denotes any decimal number),
+used as a hint's
+label, matches any user name.
 
 Two special attributes, @attr{Prefix} and @attr{Suffix}, may be used
 in @LHS{} to restrict the match to a specified part of a
-username. Both are string attributes. The @attr{Prefix} instructs
-@radiusd{} to accept the hint only if the username begins with the
+user name. Both are string attributes. The @attr{Prefix} instructs
+@radiusd{} to accept the hint only if the user name begins with the
 given prefix. Similarly, @attr{Suffix} instructs @radiusd{} to accept
-the hint only if the username ends with the given suffix. A hint may
+the hint only if the user name ends with the given suffix. A hint may
 contain both @attr{Prefix} and @attr{Suffix} attributes.
 
 In addition to these two attributes, a hint's @LHS{} may contain
 @attr{User-ID} and @attr{Group} attributes.
 
 The following attributes, when used in a hint's @RHS{} have special
-meaning. They are not appended to the request pair-list.  Instead,
+meaning. They are not appended to the request pair list.  Instead,
 they are removed after completing their function:
 @table @attr
 @item Fall-Through
-If this attribute is present, and is set to @code{Yes}, @radiusd{}
-continues scanning the hints after processing current entry. This
+If this attribute is present and is set to @code{Yes}, @radiusd{}
+continues scanning the hints after processing the current entry. This
 allows @radiusd{} to apply several hints to a single packet.
 @item Rewrite-Function
 If this attribute is present, the specified rewrite function is
 invoked.
 @item Replace-User-Name
-The value of this attribute is expanded (@pxref{Macro Substitution}),
+The value of this attribute is expanded (@pxref{Macro Substitution})
 and replaces the value of the @attr{User-Name} attribute from the
 request.
 @end table
 
-Hints rules are defined in @file{raddb/hints} file (@pxref{hints
+Hint rules are defined in the @file{raddb/hints} file (@pxref{hints
 file}).
 
 @comment **L3***************************************************************
@@ -590,18 +591,18 @@ file}).
 
 Huntgroups are special rules that allow an administrator to provide
 alternate processing of certain incoming requests depending on the
-@NAS{} @IP{} and port number they come from. These rules are stored as
-a list of @dfn{Matching Rules} (@pxref{Matching Rule}).
+@NAS{} IP and port number they come from. These rules are stored as
+a list of matching rules (@pxref{Matching Rule}).
 
 Upon receiving a request, @radiusd{} scans this list sequentially
-until it finds an entry, such that the conditions set forth in its
+until it finds an entry such that the conditions set forth in its
 @LHS{} are matched by the request. If such an entry is found,
 @radiusd{} verifies that the request meets the conditions described by
 @RHS{}. If it does not, the request is rejected. In short, a huntgroup
 requires that any request matching its @LHS{} must match also its
 @RHS{}.
 
-The @dfn{Label} part of the rule is not used in comparisons, instead
+The label part of the rule is not used in comparisons; instead
 it is used to label huntgroups. All entries with the same label form a
 single huntgroup. The special attribute @attr{Huntgroup-Name} can be
 used to request a match against a particular huntgroup
@@ -616,37 +617,37 @@ Huntgroup rules are defined in the @file{raddb/huntgroups} file
 @cindex User Profiles
 @cindex Authentication
 
-@dfn{User Profiles} are @emph{per-user} matching rules
+@dfn{User profiles} are @emph{per-user} matching rules
 (@pxref{Matching Rule}). All incoming authentication requests are
-compared with the @dfn{User Profiles} after they have passed both
-@dfn{Hints} and @dfn{Huntgroups}. @radiusd{} selects the @dfn{User
-Profiles} whose @dfn{Label} matches the value of @attr{User-Name}
+compared with the user profiles after they have passed both
+hints and huntgroups. @radiusd{} selects the user
+profiles whose label matches the value of the @attr{User-Name}
 attribute from the incoming request.
 
 The selected profiles form the list of authentication rules for the
 request. In order for a profile to be selected, its label must either
-coincide literally with the @attr{User-Name} value, or it must be one
-of special labels, @code{DEFAULT} or @code{BEGIN}.
+coincide literally with the @attr{User-Name} value, or be one
+of the special labels, @code{DEFAULT} or @code{BEGIN}.
 
 Rules in an authentication list are ordered as follows: first go all
-the profiles with @code{BEGIN} label, followed by the profiles whose
-labels match the @attr{User-Name} literally, finally followed by rules
-labeled with @code{DEFAULT}. @footnote{For compatibility with other
-implementations of radius, GNU Radius treats profile labels in the
-form @code{DEFAULT%d}, where @code{%d} represents a decimal number, in
+the profiles with the @code{BEGIN} label, followed by the profiles whose
+labels match the @attr{User-Name} literally, followed finally by the rules
+labeled with the @code{DEFAULT}. @footnote{For compatibility with other
+radius implementations, GNU Radius treats profile labels in the
+form @code{DEFAULT@var{%d}}, where @var{%d} represents a decimal number, in
 the same way it treats @code{DEFAULT} labels. The same applies to
 @code{BEGIN} labels.}
 
-Within each of the three sub-lists, the rules preserve the order in
+Within each of the three sublists, the rules preserve the order in
 which they appear in the @file{raddb/users} file. Once the list is
 constructed, it is scanned sequentially until the rule is found whose
 @LHS{} matches the incoming request. If no such rule is found, the
-authentication fails. Otherwise, the contents of its @RHS{} is
-appended to the @dfn{Reply List} being constructed. If the @RHS{} of
+authentication fails. Otherwise, the contents of its @RHS{} are
+appended to the reply list being constructed. If the @RHS{} of
 the matched rule contains the attribute @attr{Fall-Through} with the
 value @code{Yes}, the matching continues.  When the list is exhausted,
 the authentication result is sent back to the @NAS{} along with the
-@AVP{}s collected in the @dfn{Reply List}.
+@AVP{}s collected in the reply list.
 
 User profiles are defined in the @file{raddb/users} file
 (@pxref{users file}).

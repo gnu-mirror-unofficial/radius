@@ -319,13 +319,13 @@ proxy_send(REQUEST *req)
         username = namepair->avp_strvalue;
 
         /* Find the realm from the _end_ so that we can cascade realms:
-           user@realm1@realm2. Two special realms are handled separately:
-           
-               LOCAL    -- process request locally.
-               NOREALM  -- handle an empty realm name.
+           user@realm1@realm2. A special realms NOREALM matches usual
+	   user name (without explicit realm). A realm named DEFAULT is
+	   returned by grad_realm_lookup_name() if no other realm name
+	   matches.
 
-           A realm with special name DEFAULT is returned by
-	   grad_realm_lookup_name() if no other realm name matches. */
+	   In addition, a keyword LOCAL in server list fields indicates
+	   that the realm should be handled locally */
 
         if ((realmname = strrchr(username, '@')) == NULL) {
                 if ((realm = grad_realm_lookup_name("NOREALM")) == NULL) {

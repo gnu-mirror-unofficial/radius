@@ -185,13 +185,15 @@ static int rad_cfg_listen_auth(int argc, cfg_value_t *argv,
 static int rad_cfg_listen_acct(int argc, cfg_value_t *argv,
 			       void *block_data, void *handler_data);
 
-static void reconfigure(int reload);
+static void reconfigure();
 static void radiusd_daemon();
 static void radiusd_watcher();
 static void common_init();
 static void radiusd_main_loop();
 static void radiusd_fork_child_handler();
 static void meminfo();
+static void radiusd_before_config_hook(void *unused1, void *unused2);
+static void radiusd_after_config_hook(void *unused1, void *unused2);
 
 int radius_mode = MODE_DAEMON;    
 int radius_port = 0;
@@ -411,7 +413,13 @@ main(argc, argv)
 
         srand(time(NULL));
         
-        snmp_init(0, 0, emalloc, efree);
+	/* Register radiusd hooks first. This ensures they will be
+	   executed after all other hooks */
+	register_before_config_hook(radiusd_before_config_hook, NULL);
+	register_after_config_hook(radiusd_after_config_hook, NULL);
+
+        snmp_init(0, 0, (snmp_alloc_t)emalloc, (snmp_free_t)efree);
+        snmpserv_init(&saved_status);
 
         switch (radius_mode) {
         case MODE_CHECKCONF:
@@ -436,9 +444,7 @@ main(argc, argv)
 
 		chdir("/");
 		umask(022);
-#ifdef USE_SNMP
-                snmp_tree_init();
-#endif
+
                 if (!foreground)
                         radiusd_daemon();
 		
@@ -595,6 +601,8 @@ common_init()
 {
 	int i;
 	
+	radlog(L_INFO, _("Starting"));
+
         /* Install signal handlers */
 	sigemptyset(&rad_signal_set);
 	for (i = 0; i < NITEMS(rad_signal_list); i++) {
@@ -615,7 +623,12 @@ common_init()
 #ifdef USE_SERVER_GUILE
         start_guile();
 #endif
-        reconfigure(0);
+        reconfigure();
+	if (x_debug_spec)
+		set_debug_levels(x_debug_spec);
+	radpath_init();
+	stat_init();
+	radlog(L_INFO, _("Ready"));
 }       
 
 void
@@ -1107,6 +1120,77 @@ struct cfg_stmt config_syntax[] = {
 	{ NULL, },
 };	
 
+/* ************************************************************************* */
+
+struct config_hook_list {
+	struct config_hook_list *next;
+	config_hook_fp fun;
+	void *data;
+};
+
+static struct config_hook_list *before_list;
+static struct config_hook_list *after_list;
+
+static void run_config_hooks(struct config_hook_list *list,
+			     void *data);
+static void register_config_hook(struct config_hook_list **list,
+				 config_hook_fp fp, void *data);
+
+
+void
+register_config_hook(listp, fp, data)
+	struct config_hook_list **listp;
+	config_hook_fp fp;
+	void *data;
+{
+	struct config_hook_list *p = emalloc(sizeof(*p));
+	p->fun = fp;
+	p->data = data;
+	p->next = *listp;
+	*listp = p;
+}
+
+void
+run_config_hooks(list, data)
+	struct config_hook_list *list;
+	void *data;
+{
+	for (; list; list = list->next) 
+		list->fun(list->data, data);
+}
+
+void
+run_before_config_hooks(data)
+	void *data;
+{
+	run_config_hooks(before_list, data);
+}
+
+void
+run_after_config_hooks(data)
+	void *data;
+{
+	run_config_hooks(after_list, data);
+}
+
+void
+register_before_config_hook(fp, data)
+	config_hook_fp fp;
+	void *data;
+{
+	register_config_hook(&before_list, fp, data);
+}
+
+void
+register_after_config_hook(fp, data)
+	config_hook_fp fp;
+	void *data;
+{
+	register_config_hook(&after_list, fp, data);
+}
+
+/* ************************************************************************* */
+
 void
 socket_after_reconfig(type, fd)
 	int type;
@@ -1119,62 +1203,19 @@ socket_after_reconfig(type, fd)
 }
 
 void
-reconfigure(reload)
-        int reload;
+radiusd_before_config_hook(unused1, unused2)
+	void *unused1;
+	void *unused2;
 {
-        int res = 0;
-        char *filename;
-	
-        if (!reload) {
-                radlog(L_INFO, _("Starting - reading configuration files ..."));
-        } else {
-                radlog(L_INFO, _("Reloading configuration files."));
                 radiusd_flush_queues();
 		socket_list_init(socket_first);
         }
 
-#ifdef USE_SNMP
-        server_stat.auth.status = serv_init;
-        server_stat.acct.status = serv_init;
-#endif  
-
-#ifdef USE_SERVER_GUILE
-        scheme_before_reconfig();
-#endif
-
-        /* Read the options */
-        filename = mkfilename(radius_dir, RADIUS_CONFIG);
-        cfg_read(filename, config_syntax, NULL);
-	efree(filename);
-        if (!reload) {
-                if (x_debug_spec)
-                        set_debug_levels(x_debug_spec);
-                radpath_init();
-                stat_init();
-        }
-
-        res = reload_config_file(reload_all);
-        
-#ifdef USE_SNMP
-        
-        server_stat.auth.status = suspend_flag ?
-                                                serv_suspended : serv_running;
-        snmp_auth_server_reset();
-
-        server_stat.acct.status = server_stat.auth.status;
-        snmp_acct_server_reset();
-                
-        saved_status = server_stat.auth.status;
-                
-#endif  
-        if (res != 0) {
-                radlog(L_CRIT,
-                       _("Errors reading config file - EXITING"));
-                exit(1);
-        }
-#ifdef USE_SERVER_GUILE
-        scheme_after_reconfig();
-#endif
+void
+radiusd_after_config_hook(unused1, unused2)
+	void *unused1;
+	void *unused2;
+{
 	if (radius_mode == MODE_DAEMON) {
 		if (socket_list_open(&socket_first) == 0) {
 			radlog(L_ALERT,
@@ -1182,6 +1223,32 @@ reconfigure(reload)
 		}
 		socket_list_iterate(socket_first, socket_after_reconfig);
 	}
+}
+
+void
+reconfigure()
+{
+        int res = 0;
+        char *filename;
+	
+	radlog(L_INFO, _("Loading configuration files."));
+
+	run_before_config_hooks(NULL);
+
+        /* Read the options */
+        filename = mkfilename(radius_dir, RADIUS_CONFIG);
+        cfg_read(filename, config_syntax, NULL);
+	efree(filename);
+
+        res = reload_config_file(reload_all);
+        
+        if (res != 0) {
+                radlog(L_CRIT,
+                       _("Errors reading config file - EXITING"));
+                exit(1);
+        }
+
+	run_after_config_hooks(NULL);
 }
 
 /*
@@ -1218,7 +1285,7 @@ check_reload()
         switch (daemon_command) {
         case CMD_RELOAD:
                 radlog(L_INFO, _("Reloading configuration now"));
-                reconfigure(1);
+                reconfigure();
                 break;
 		
         case CMD_RESTART:
@@ -1261,7 +1328,7 @@ check_snmp_request()
                         break;
                         
                 case serv_init:
-                        reconfigure(1);
+                        reconfigure();
                         break;
                         
                 case serv_running:

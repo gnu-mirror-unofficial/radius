@@ -48,6 +48,10 @@ proc default_radiusd_version {} {
     global RADIUSVERSION
     global RADIUSFLAGS
     global CAPABILITY
+
+    if [info exists RADIUSVERSION] {
+	return
+    }
     
     set output [remote_exec host "$RADIUSD --version"]
 
@@ -82,8 +86,16 @@ proc default_radiusd_start {} {
     global RADIUSFLAGS
     global RADTEST
     global radtest_prompt
-    
-    set radiusd_cmd "$srcdir/../test.sh --srcdir $srcdir/../.. --builddir $base_dir/../.. --radiusd $RADIUSD --radtest $RADTEST --driver dejagnu"
+    global CAPABILITY
+
+    default_radiusd_version
+    if [info exists CAPABILITY(USE_SERVER_GUILE)] {
+	set sw "--guile"
+    } else {
+	set sw ""
+    }
+	
+    set radiusd_cmd "$srcdir/../test.sh --srcdir $srcdir/../.. --builddir $base_dir/../.. --radiusd $RADIUSD --radtest $RADTEST $sw --driver dejagnu"
 
     verbose "Spawning $radiusd_cmd"
 

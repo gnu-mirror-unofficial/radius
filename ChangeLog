@@ -1,3 +1,25 @@
+2003-06-11  Sergey Poznyakoff  
+
+	* Makefile.am: Updated AUTOMAKE_OPTIONS
+	* NEWS: Updated.
+	* examples/config.syntax: Added process-idle-timeout
+	* include/radiusd.h (process_timeout): New global
+	(input_select_channel): New function.
+	(rpp_flush): Changed declaration
+	* radiusd/input.c (input_select_channel): New function.
+	* radiusd/radiusd.c (radiusd_preconfig_hook): Rewritten.
+	(radiusd_postconfig_hook): Do not check the number of open
+	channels if not in daemon mode.
+	(radiusd_suspend,radiusd_continue): Terminate subprocesses
+	before proceeding.
+	(radiusd_restart): Run the preconfig hooks before respawning.
+	(radiusd_flush_queue): Do not wait for the subprocesses longer
+	than the maximum ttl value.
+	(option_stmt): New keyword process-idle-timeout.
+	* radiusd/rpp.c (rpp_flush): Call user-supplied function at
+	the end of each loop.
+	(sig_handler): Exit on SIGALRM
+
 2003-06-11  Sergey Poznyakoff 
 
 	* Makefile.am: Added some automake options

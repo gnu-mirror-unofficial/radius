@@ -37,7 +37,7 @@ SCM_DEFINE(rad_rewrite_execute_string, "rad-rewrite-execute-string", 1, 0, 0,
 "the Scheme data type.\n")         
 #define FUNC_NAME s_rad_rewrite_execute_string
 {
-        int type;
+        Datatype type;
         Datum datum;
 
         SCM_ASSERT(SCM_NIMP(STRING) && SCM_STRINGP(STRING),

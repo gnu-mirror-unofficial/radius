@@ -215,7 +215,9 @@ stat_update(ut, status)
 		    format_ipaddr(ntohl(ut->nas_address)));
 		return;
 	}
-
+	if (nas->ipaddr == 0) /* DEFAULT nas */
+		return;
+	
 	port = stat_find_port(nas, ut->nas_port);
 	if (!port) {
 		radlog(L_WARN,

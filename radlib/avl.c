@@ -72,7 +72,7 @@ avp_dup(vp)
 
         memcpy(ret, vp, sizeof(VALUE_PAIR));
         ret->next = NULL;
-        if (ret->type == TYPE_STRING)
+        if (ret->type == TYPE_STRING || ret->eval)
                 ret->strvalue = dup_string(vp->strvalue);
         return ret;
 }

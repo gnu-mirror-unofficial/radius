@@ -1,7 +1,7 @@
 /*
-   Copyright (C) 2001, Sergey Poznyakoff.
-
    This file is part of GNU Radius SNMP Library.
+   Copyright (C) 2001 Free Software Foundation, Inc.
+   Written by Sergey Poznyakoff
 
    This library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public License as

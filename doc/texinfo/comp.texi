@@ -1,5 +1,6 @@
 @c This is part of the Radius manual.
-@c Copyright (C) 1999,2000,2001,2002 Sergey Poznyakoff
+@c Copyright (C) 1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+@c Written by Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Request Comparison, Authentication, Configuration Files, Top

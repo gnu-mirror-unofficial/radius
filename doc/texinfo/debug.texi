@@ -1,5 +1,6 @@
 @c This is part of the Radius manual.
-@c Copyright (C) 1999,2000,2001,2002,2003 Sergey Poznyakoff
+@c Copyright (C) 1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+@c Written by Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Problem Tracking, Extensions, Logging, Top
@@ -17,7 +18,44 @@
 @section Rule Tracing
 @cindex Rule Tracing
 
+If you have more than one entry in your @file{users} file it is not
+always obvious which of the entries were used for authentication. The
+authentication data flow becomes even harder to understand if there
+are some complex rules in the @file{hints} and @file{huntgroups}
+files.
 
+
+@smallexample
+@group
+DEFAULT  Prefix = "tweedle-"
+         Scheme-Acct-Procedure = "tweedle-acct",
+                   Strip-User-Name = No
+@end group
+@end smallexample
+
+@smallexample
+@group
+DEFAULT  Prefix = "tweedle-",
+              Auth-Type = SQL,
+              Simultaneous-Use = 1
+         Service-Type = Login-User,
+              Login-IP-Host = 192.168.0.1,
+              Login-Service  = Telnet
+
+DEFAULT  Group = "ppp",
+              Auth-Type = SQL,
+              Simultaneous-Use = 1
+        Service-Type = Framed-User,
+              Framed-Protocol = PPP
+@end group
+@end smallexample
+
+@smallexample
+@cartouche
+Nov 06 21:25:24: Auth.notice: (AUTHREQ local 61 aud):
+  Login OK [tweedle-dum], CLID unknown
+@end cartouche
+@end smallexample
 
 @comment *******************************************************************
 @node Debugging

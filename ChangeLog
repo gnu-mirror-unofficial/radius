@@ -1,3 +1,9 @@
+2003-11-08  Sergey Poznyakoff
+
+	* All files: changed copyright holder to Free Software Foundation.
+	* configure.ac: Report missing libraries using
+	AC_MSG_FAILURE. Added -lz requisite to check for libmysqlclient
+
 2003-11-07  Sergey Poznyakoff 
 
 	* NEWS: Updated
@@ -13,7 +19,7 @@
 
 	* radiusd/auth.c (sfn_validate): Fixed the bug introduced 2003-11-02
 	* radiusd/testsuite/raddb/users.in: Added testcase for
-	Log-Mode-Mask bug
+	Log-Mode-Mask bug.
 	* radiusd/testsuite/radiusd/radiusd.exp: Likewise.
 
 	* NEWS: Updated

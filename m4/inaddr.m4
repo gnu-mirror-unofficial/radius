@@ -1,5 +1,7 @@
 dnl This file is part of GNU Radius.
-dnl Copyright (C) 2001,2003 Sergey Poznyakoff
+dnl Copyright (C) 2001,2003 Free Software Foundation, Inc.
+dnl
+dnl Written by Sergey Poznyakoff
 dnl
 dnl GNU Radius is free software; you can redistribute it and/or modify
 dnl it under the terms of the GNU General Public License as published by

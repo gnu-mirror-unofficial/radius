@@ -1,5 +1,7 @@
 ;;;; This file is part of GNU Radius testsuite.
-;;;; Copyright (C) 2001,2003 Sergey Poznyakoff
+;;;; Copyright (C) 2001,2003 Free Software Foundation, Inc.
+;;;;
+;;;; Written by Sergey Poznyakoff
 ;;;;
 ;;;; This file is free software; as a special exception the author gives
 ;;;; unlimited permission to copy and/or distribute it, with or without

@@ -1,6 +1,7 @@
-# Copyright (C) 2002 Sergey Poznyakoff
-#
 # This is a snarfer for guile version 1.6
+# Copyright (C) 2002 Free Software Foundation, Inc.
+#
+# Written by Sergey Poznyakoff
 # 
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by

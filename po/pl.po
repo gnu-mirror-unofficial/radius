@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: radius 1.1\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2003-11-02 02:24+0200\n"
+"POT-Creation-Date: 2003-11-02 23:16+0200\n"
 "PO-Revision-Date: 2003-11-02 02:42+0200\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -25,51 +25,51 @@ msgstr ""
 msgid "make_pair(): attribute %d not found in dictionary"
 msgstr "make_pair(): atrybutu %d nie odnaleziono w s³owniku"
 
-#: lib/client.c:123
+#: lib/client.c:124
 #, c-format
 msgid "Actual request length does not match reported length (%d, %d)"
 msgstr ""
 "Rzeczywista d³ugo¶æ ¿±dania ró¿ni siê od d³ugo¶ci zameldowanej (%d, %d)"
 
-#: lib/client.c:137
+#: lib/client.c:138
 msgid "Received invalid reply digest from server"
 msgstr "Otrzymano b³êdny odcisk odpowiedzi od serwera"
 
-#: lib/client.c:183
+#: lib/client.c:215
 msgid "invalid port type"
 msgstr "Nieprawid³owy typ portu"
 
-#: lib/client.c:288
+#: lib/client.c:320
 msgid "select() interrupted"
 msgstr "select() zosta³ przerwany"
 
-#: lib/client.c:308
+#: lib/client.c:340
 #, c-format
 msgid "error receiving data from %s:%d"
 msgstr "b³±d przy otrzymaniu danych od %s:%d"
 
-#: lib/client.c:366 lib/dict.c:475 radiusd/config.y:204
+#: lib/client.c:398 lib/dict.c:475 radiusd/config.y:204
 msgid "unknown keyword"
 msgstr "nieznane s³owo kluczowe"
 
-#: lib/client.c:375 radiusd/files.c:874 radiusd/files.c:1043
+#: lib/client.c:407 radiusd/files.c:874 radiusd/files.c:1043
 msgid "wrong number of fields"
 msgstr "b³êdna ilo¶æ pól"
 
-#: lib/client.c:384
+#: lib/client.c:416
 msgid "bad IP address or host name"
 msgstr "niepoprawny adres IP czy nazwa hosta"
 
-#: lib/client.c:392 lib/client.c:399
+#: lib/client.c:424 lib/client.c:431
 #, c-format
 msgid "bad port number %s"
 msgstr "niew³a¶ciwy numer portu %s"
 
-#: lib/client.c:410
+#: lib/client.c:442
 msgid "bad timeout value"
 msgstr "niew³a¶ciwa warto¶æ limita czasu oczekiwania"
 
-#: lib/client.c:416
+#: lib/client.c:448
 msgid "bad retry value"
 msgstr "niew³a¶ciwa warto¶æ liczby powtórzeñ"
 
@@ -1059,7 +1059,7 @@ msgstr ""
 msgid "rad_pam_conv(): no application-specific data passed"
 msgstr "rad_pam_conv(): brak przekazanych danych aplikacji"
 
-#: radiusd/proxy.c:193
+#: radiusd/proxy.c:192
 #, c-format
 msgid "couldn't send request to realm %s"
 msgstr "nie mo¿na wys³aæ ¿±dania do dziedziny %s"

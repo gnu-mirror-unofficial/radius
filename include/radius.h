@@ -276,7 +276,7 @@ size_t rad_create_pdu(void **rptr, int code, int id,
 		      VALUE_PAIR *pairlist, char *msg);
 
 RADIUS_REQ *rad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer,
-			   int length);
+			   size_t length);
 
 int rad_srv_send_reply(int fd, RADIUS_REQ *radreq);
 int rad_srv_send_challenge(int fd, RADIUS_REQ *radreq, char *msg, char *state);

@@ -133,7 +133,7 @@ radscm_cons_to_avp(scm)
 
 	car = SCM_CAR(scm);
 	cdr = SCM_CDR(scm);
-
+	memset(&pair, 0, sizeof(pair));
 	if (SCM_IMP(car) && SCM_INUMP(car)) {
 		pair.attribute = SCM_INUM(car);
 		dict = attr_number_to_dict(pair.attribute);
@@ -151,6 +151,8 @@ radscm_cons_to_avp(scm)
 	
 	pair.type = dict->type;
 	pair.operator = PW_OPERATOR_EQUAL;
+	pair.type = dict->type;
+	pair.prop = dict->prop;
 
 	switch (pair.type) {
 	case PW_TYPE_INTEGER:
@@ -204,6 +206,7 @@ radscm_init()
 {
 	rscm_syslog_init();
 	rscm_utmp_init();
+	rscm_avl_init();
 	rscm_dict_init();
 #include <rscm_lib.x>
 }

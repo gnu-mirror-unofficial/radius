@@ -620,7 +620,9 @@ static void code_init();
  * Auxiliary and debugging functions
  */
 static void debug_dump_code();
-static char * datatype_str(Datatype type);
+static char * datatype_str_nom(Datatype type);
+static char * datatype_str_acc(Datatype type);
+static char * datatype_str_abl(Datatype type);
 static Datatype attr_datatype(int type);
 
 /*
@@ -2315,6 +2317,22 @@ mtx_attr_check(attr, index)
         return (MTX*)mtx;
 }
 
+
+void
+rw_coercion_warning (from, to, pref)
+	Datatype from;
+	Datatype to;
+	char *pref;
+{
+	radlog(L_WARN,
+	       _("%s:%d: %s implicit %s %s coercion"),
+	       input_filename, input_line,
+	       pref ? pref : "",
+	       datatype_str_abl(from),
+	       datatype_str_acc(to));
+}
+
+
 MTX *
 mtx_attr_asgn(attr, index, rval)
         DICT_ATTR *attr;
@@ -2326,11 +2344,7 @@ mtx_attr_asgn(attr, index, rval)
         mtx->attrno   = attr->value;
         mtx->datatype = attr_datatype(attr->type);
         if (rval->gen.datatype != mtx->datatype) {
-                radlog(L_WARN,
-                       _("%s:%d: implicit %s to %s coercion"),
-                       input_filename, input_line,
-                       datatype_str(rval->gen.datatype),
-                       datatype_str(mtx->datatype));
+		rw_coercion_warning(rval->gen.datatype, mtx->datatype, NULL);
                 rval = coerce(rval, mtx->datatype);
         }
 	mtx->index = index;
@@ -2360,9 +2374,7 @@ mtx_bin(opcode, arg1, arg2)
 
         mtx_append(mtx);
         if (arg1->gen.datatype != arg2->gen.datatype) {
-                radlog(L_WARN,
-		       _("%s:%d: implicit string to integer coercion"),
-                       input_filename, input_line);
+		rw_coercion_warning(String, Integer, NULL);
                 if (arg1->gen.datatype == String)
                         coerce(arg1, Integer);
                 else
@@ -2413,9 +2425,7 @@ mtx_un(opcode, arg)
 
         mtx_append(mtx);
         if (arg->gen.datatype != Integer) {
-                radlog(L_WARN,
-		       _("%s:%d: implicit string to integer coercion"),
-                       input_filename, input_line);
+		rw_coercion_warning(String, Integer, NULL);
                 coerce(arg, Integer);
         }
         mtx->datatype = Integer;
@@ -2435,9 +2445,7 @@ mtx_match(negated, arg, rx)
 
         mtx_append(mtx);
         if (arg->gen.datatype != String) {
-                radlog(L_WARN,
-		       _("%s:%d: implicit integer to string coercion"),
-                       input_filename, input_line);
+		rw_coercion_warning(Integer, String, NULL);
                 coerce(arg, String);
         }
         mtx->datatype = Integer;
@@ -2504,12 +2512,10 @@ mtx_call(fun, args)
         parmp = fun->parm;
         while (argp && parmp) {
                 if (argp->gen.datatype != parmp->datatype) {
-                        radlog(L_WARN,
-                               _("%s:%d: (arg %d) implicit %s to %s coercion"),
-                               input_filename, input_line,
-                               argn,
-                               datatype_str(argp->gen.datatype),
-                               datatype_str(parmp->datatype));
+			char buf[24];
+			snprintf(buf, sizeof buf, _("(argument %d)"), argn);
+			rw_coercion_warning(argp->gen.datatype,
+					    parmp->datatype, buf);
                         coerce(argp, parmp->datatype);
                 }
                 argn++;
@@ -2574,12 +2580,9 @@ mtx_builtin(bin, args)
                 }
 
                 if (argp->gen.datatype != type) {
-                        radlog(L_WARN,
-                               _("%s:%d: (arg %d) implicit %s to %s coercion"),
-                               input_filename, input_line,
-                               argn,
-                               datatype_str(argp->gen.datatype),
-                               datatype_str(type));
+			char buf[24];
+			snprintf(buf, sizeof buf, _("(argument %d)"), argn);
+			rw_coercion_warning(argp->gen.datatype, type, buf);
                         coerce(argp, type);
                 }
                 argn++;
@@ -2618,7 +2621,7 @@ mtx_builtin(bin, args)
 
 
 char *
-datatype_str(type)
+datatype_str_nom(type)
         Datatype type;
 {
         switch (type) {
@@ -2630,6 +2633,38 @@ datatype_str(type)
                 return _("string");
         default:
                 return _("UNKNOWN");
+        }
+}
+
+char *
+datatype_str_abl(type)
+        Datatype type;
+{
+        switch (type) {
+        case Undefined:
+                return _("from Undefined");
+        case Integer:
+                return _("from integer");
+        case String:
+                return _("from string");
+        default:
+                return _("from UNKNOWN");
+        }
+}
+
+char *
+datatype_str_acc(type)
+        Datatype type;
+{
+        switch (type) {
+        case Undefined:
+                return _("to Undefined");
+        case Integer:
+                return _("to integer");
+        case String:
+                return _("to string");
+        default:
+                return _("to UNKNOWN");
         }
 }
 
@@ -2691,7 +2726,7 @@ debug_print_datum(fp, type, datum)
         Datatype type;
         Datum    *datum;
 {
-        fprintf(fp, "%3.3s ", datatype_str(type));
+        fprintf(fp, "%3.3s ", datatype_str_nom(type));
         switch (type) {
         case Integer:
                 fprintf(fp, "%d", datum->ival);
@@ -2707,7 +2742,7 @@ debug_print_var(fp, var)
         VAR    *var;
 {
         fprintf(fp, "%3.3s %s L:%d S:%d",
-                datatype_str(var->datatype),
+                datatype_str_nom(var->datatype),
                 var->name,
                 var->level,
                 var->offset);
@@ -2779,18 +2814,18 @@ debug_print_mtxlist(s)
                         break;
                 CASE (Matchref)
                         fprintf(fp, "%3.3s %d",
-                                datatype_str(String),
+                                datatype_str_nom(String),
                                 mtx->ref.num);
                         break;
                 CASE (Variable)
                         debug_print_var(fp, mtx->var.var);
                         break;
                 CASE (Unary)
-                        fprintf(fp, "%3.3s ", datatype_str(mtx->gen.datatype));
+                        fprintf(fp, "%3.3s ", datatype_str_nom(mtx->gen.datatype));
                         debug_print_unary(fp, &mtx->un);
                         break;
                 CASE (Binary)
-                        fprintf(fp, "%3.3s ", datatype_str(mtx->gen.datatype));
+                        fprintf(fp, "%3.3s ", datatype_str_nom(mtx->gen.datatype));
                         debug_print_binary(fp, &mtx->bin);
                         break;
                 CASE (Cond)
@@ -2802,7 +2837,7 @@ debug_print_mtxlist(s)
                         break;
                 CASE (Asgn)
                         fprintf(fp, "%3.3s ",
-                                datatype_str(mtx->gen.datatype));
+                                datatype_str_nom(mtx->gen.datatype));
                         fprintf(fp, "V:%s,%d,%d M:%4d",
                                 mtx->asgn.lval->name,
                                 mtx->asgn.lval->level,
@@ -2817,12 +2852,12 @@ debug_print_mtxlist(s)
                         break; 
                 CASE (Coercion)
                         fprintf(fp, "%3.3s M:%4d",
-                                datatype_str(mtx->coerce.datatype),
+                                datatype_str_nom(mtx->coerce.datatype),
                                 LINK(mtx->coerce.arg));
                         break;
                 CASE (Return)
                         fprintf(fp, "%3.3s M:%4d",
-                                datatype_str(mtx->ret.expr->gen.datatype),
+                                datatype_str_nom(mtx->ret.expr->gen.datatype),
                                 LINK(mtx->ret.expr));
                         break;
                 CASE (Jump)
@@ -2837,7 +2872,7 @@ debug_print_mtxlist(s)
                         break;
                 CASE (Call)
                         fprintf(fp, "%3.3s F:%s, A:%d:",
-                                datatype_str(mtx->call.datatype),
+                                datatype_str_nom(mtx->call.datatype),
                                 mtx->call.fun->name,
                                 mtx->call.fun->nparm);
                         for (tmp = mtx->call.args; tmp; tmp = tmp->gen.arglink)
@@ -2846,7 +2881,7 @@ debug_print_mtxlist(s)
 
                 CASE(Builtin)
                         fprintf(fp, "%3.3s F:%p, A:%d:",
-                                datatype_str(mtx->btin.datatype),
+                                datatype_str_nom(mtx->btin.datatype),
                                 mtx->btin.fun,
                                 mtx->btin.nargs);
                         for (tmp = mtx->btin.args; tmp; tmp = tmp->gen.arglink)
@@ -2864,21 +2899,21 @@ debug_print_mtxlist(s)
                 
                 CASE (Attr)
                         fprintf(fp, "%3.3s A:%d I:%d",
-                                datatype_str(mtx->gen.datatype),
+                                datatype_str_nom(mtx->gen.datatype),
                                 mtx->attr.attrno,
 				mtx->attr.index);
                         break;
 
                 CASE (Attr_check)
                         fprintf(fp, "%3.3s A:%d I:%d",
-                                datatype_str(mtx->gen.datatype),
+                                datatype_str_nom(mtx->gen.datatype),
                                 mtx->attr.attrno,
 				mtx->attr.index);
                         break;
                         
                 CASE (Attr_asgn)
                         fprintf(fp, "%3.3s A:%d I:%d M:%d",
-                                datatype_str(mtx->gen.datatype),
+                                datatype_str_nom(mtx->gen.datatype),
                                 mtx->attr.attrno,
 				mtx->attr.index,
                                 LINK(mtx->attr.rval));
@@ -2886,7 +2921,7 @@ debug_print_mtxlist(s)
                         
 		CASE (Attr_delete)
 			fprintf(fp, "%3.3s A:%d I:%d",
-				datatype_str(mtx->gen.datatype),
+				datatype_str_nom(mtx->gen.datatype),
 				mtx->attr.attrno,
 				mtx->attr.index);
 		        break;
@@ -2911,13 +2946,13 @@ debug_print_function()
                 return;
 
         fprintf(fp, "FUNCTION: %s\n", function->name);
-        fprintf(fp, "RETURNS : %s\n", datatype_str(function->rettype));
+        fprintf(fp, "RETURNS : %s\n", datatype_str_nom(function->rettype));
         fprintf(fp, "NPARMS  : %d\n", function->nparm);
         fprintf(fp, "PARMS   :\n");
 
         for (parm = function->parm, n = 0; parm; parm = parm->next, n++) 
                 fprintf(fp, "    %4d: %s at %4d\n",
-                        n, datatype_str(parm->datatype),
+                        n, datatype_str_nom(parm->datatype),
                         parm->offset);
         
         fclose(fp);
@@ -2981,11 +3016,9 @@ pass1()
         for (mtx = mtx_first; mtx; mtx = mtx->gen.next) {
                 if (mtx->gen.type == Return) {
                         if (mtx->ret.expr->gen.datatype != function->rettype) {
-                                radlog(L_WARN,
-                                       _("%s:%d: implicit %s to %s coercion"),
-                                       input_filename, mtx->ret.line,
-                                       datatype_str(mtx->ret.expr->gen.datatype),
-                                       datatype_str(function->rettype));
+				rw_coercion_warning(
+					mtx->ret.expr->gen.datatype,
+					function->rettype, NULL);
                                 coerce(mtx->ret.expr, function->rettype);
                         }
                         mtx->gen.type = Jump;

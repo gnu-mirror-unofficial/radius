@@ -20,6 +20,9 @@
 #if defined(HAVE_CONFIG_H)        
 # include <config.h>
 #endif
+
+#ifdef WITH_READLINE
+
 #include <stdio.h>
 #ifdef HAVE_READLINE_READLINE_H
 # include <readline/readline.h>
@@ -322,3 +325,14 @@ radtest_command_completion(char *text, int start, int end)
 				     
 	return NULL;
 }
+
+#else /* !WITH_READLINE */
+
+char **
+radtest_command_completion(char *text ARG_UNUSED, int start ARG_UNUSED,
+			   int end ARG_UNUSED)
+{
+	return NULL;
+}
+
+#endif /* WITH_READLINE */

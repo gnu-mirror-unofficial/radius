@@ -1919,14 +1919,16 @@ reload_data(what, do_radck)
 		path = mkfilename(radius_dir, RADIUS_USERS);
 	
 #if USE_DBM
-		if (use_dbm) {
+		if (use_dbm && radius_mode != MODE_BUILDDBM) {
 			if (access(path, 0) == 0) {
 				radlog(L_WARN,
 				       _("using only dbm: USERS NOT LOADED"));
 			}
+			*do_radck = 0;
 		} else {
-			if (checkdbm(path, ".dir") == 0 ||
-			    checkdbm(path, ".db") == 0)
+			if (radius_mode != MODE_BUILDDBM
+			    && (checkdbm(path, ".dir") == 0
+				|| checkdbm(path, ".db") == 0))
 				radlog(L_WARN,
 		    _("DBM files found but no -b flag given - NOT using DBM"));
 	        
@@ -1936,11 +1938,11 @@ reload_data(what, do_radck)
 			exit(1);
 		} else
 			radlog(L_INFO, _("%s reloaded."), path);
+		*do_radck = 1;
 #if USE_DBM
 		}
 #endif
 		efree(path);
-		*do_radck = 1;
 		break;
 
 	case reload_dict:

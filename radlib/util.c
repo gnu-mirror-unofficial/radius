@@ -265,12 +265,12 @@ op_str(op)
         int op;
 {
         switch (op) {
-        case PW_OPERATOR_EQUAL:         return "=";
-        case PW_OPERATOR_NOT_EQUAL:     return "!=";
-        case PW_OPERATOR_LESS_THAN:     return "<";
-        case PW_OPERATOR_GREATER_THAN:  return ">";
-        case PW_OPERATOR_LESS_EQUAL:    return "<=";
-        case PW_OPERATOR_GREATER_EQUAL: return ">=";
+        case OPERATOR_EQUAL:         return "=";
+        case OPERATOR_NOT_EQUAL:     return "!=";
+        case OPERATOR_LESS_THAN:     return "<";
+        case OPERATOR_GREATER_THAN:  return ">";
+        case OPERATOR_LESS_EQUAL:    return "<=";
+        case OPERATOR_GREATER_EQUAL: return ">=";
         }
         return "?";
 }
@@ -352,8 +352,8 @@ format_pair(pair)
 		free(buf1);
 	buf1 = NULL;
 
-	switch (pair->eval ? PW_TYPE_STRING : pair->type) {
-	case PW_TYPE_STRING:
+	switch (pair->eval ? TYPE_STRING : pair->type) {
+	case TYPE_STRING:
 		if (pair->attribute != DA_VENDOR_SPECIFIC) 
 			snprintf(buf2, sizeof(buf2), "\"%s\"", pair->strvalue);
 		else if (pair->strlength < 6) 
@@ -368,7 +368,7 @@ format_pair(pair)
 		}
 		break;
 					
-	case PW_TYPE_INTEGER:
+	case TYPE_INTEGER:
 		if (pair->name)
 			dval = value_lookup(pair->lvalue, pair->name);
 		else
@@ -380,11 +380,11 @@ format_pair(pair)
 			snprintf(buf2, sizeof(buf2), "%s", dval->name);
 		break;
 		
-	case PW_TYPE_IPADDR:
+	case TYPE_IPADDR:
 		ipaddr2str(buf2, pair->lvalue);
 		break;
 		
-	case PW_TYPE_DATE:
+	case TYPE_DATE:
 		strftime(buf2, sizeof(buf2), "\"%b %e %Y\"",
 			 localtime((time_t *)&pair->lvalue));
 		break;

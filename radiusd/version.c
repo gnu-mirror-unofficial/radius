@@ -180,8 +180,8 @@ version()
 	}
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Ports in use:\n");
-	fprintf(stderr, " AUTH: %d\n", PW_AUTH_UDP_PORT);
-	fprintf(stderr, " ACCT: %d\n", PW_ACCT_UDP_PORT);
+	fprintf(stderr, " AUTH: %d\n", DEF_AUTH_PORT);
+	fprintf(stderr, " ACCT: %d\n", DEF_ACCT_PORT);
 #if defined(USE_MYSQL)
 	fprintf(stderr, " SQL : %d\n", RAD_SQL_PORT);
 #endif

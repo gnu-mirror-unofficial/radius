@@ -1,6 +1,15 @@
 
 2001-10-16 Sergey Poznyakoff
 
+	* include/radiusd.h: External declaration for radius_mode and
+	MODE_ defines.
+	* radiusd/radiusd.c: Removed static qualifier from radius_mode
+	declaration.
+	* radiusd/files.c: Check MODE_BUILDDBM to decide whether to
+	parse `users' file.
+
+2001-10-16 Sergey Poznyakoff
+
 	Namespace cleanup.
 
 	* include/radius.h: Data type defines are prefixed with TYPE_,

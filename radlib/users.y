@@ -150,27 +150,27 @@ pair     : STRING op value
 
 op       : EQ
            {
-		   $$ = PW_OPERATOR_EQUAL;
+		   $$ = OPERATOR_EQUAL;
 	   }
          | LT
            {
-		   $$ = PW_OPERATOR_LESS_THAN;
+		   $$ = OPERATOR_LESS_THAN;
 	   }
          | GT
            { 
-		   $$ = PW_OPERATOR_GREATER_THAN;
+		   $$ = OPERATOR_GREATER_THAN;
 	   }
          | NE
            {
-		   $$ = PW_OPERATOR_NOT_EQUAL;
+		   $$ = OPERATOR_NOT_EQUAL;
 	   }
          | LE
            {
-		   $$ = PW_OPERATOR_LESS_EQUAL;
+		   $$ = OPERATOR_LESS_EQUAL;
 	   }
          | GE
            {
-		   $$ = PW_OPERATOR_GREATER_EQUAL;
+		   $$ = OPERATOR_GREATER_EQUAL;
 	   }
          ;
 
@@ -225,7 +225,7 @@ install_pair(name, op, valstr)
 	pair->eval = 0;
 	
 	switch (pair->type) {
-	case PW_TYPE_STRING:
+	case TYPE_STRING:
 		if (pair->attribute == DA_EXEC_PROGRAM ||
 		    pair->attribute == DA_EXEC_PROGRAM_WAIT) {
 			if (valstr[0] != '/') {
@@ -240,7 +240,7 @@ install_pair(name, op, valstr)
 		pair->strlength = strlen(pair->strvalue);
 		break;
 
-	case PW_TYPE_INTEGER:
+	case TYPE_INTEGER:
 		/*
 		 *	For DA_NAS_PORT_ID, allow a
 		 *	port range instead of just a port.
@@ -250,7 +250,7 @@ install_pair(name, op, valstr)
 				if (!isdigit(*s))
 					break;
 			if (*s) {
-				pair->type = PW_TYPE_STRING;
+				pair->type = TYPE_STRING;
 				pair->strvalue = make_string(valstr);
 				pair->strlength = strlen(pair->strvalue);
 				break;
@@ -269,7 +269,7 @@ install_pair(name, op, valstr)
 		}
 		break;
 
-	case PW_TYPE_IPADDR:
+	case TYPE_IPADDR:
 		if (pair->attribute != DA_FRAMED_IP_ADDRESS) {
 			pair->lvalue = get_ipaddr(valstr);
 		} else {
@@ -296,14 +296,14 @@ install_pair(name, op, valstr)
 			
 			pair2->name = "Add-Port-To-IP-Address";
 			pair2->attribute = DA_ADD_PORT_TO_IP_ADDRESS;
-			pair2->type = PW_TYPE_INTEGER;
+			pair2->type = TYPE_INTEGER;
 			pair2->lvalue = x;
 			pair2->next = pair;
 			pair = pair2;
 		}
 		break;
 		
-	case PW_TYPE_DATE:
+	case TYPE_DATE:
 		timeval = time(0);
 		tm = localtime(&timeval);
 		if (user_gettime(valstr, tm)) {

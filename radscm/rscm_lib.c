@@ -98,14 +98,14 @@ radscm_avp_to_cons(pair)
 	else
 		scm_attr = SCM_MAKINUM(pair->attribute);
 	switch (pair->type) {
-	case PW_TYPE_STRING:
-	case PW_TYPE_DATE:
+	case TYPE_STRING:
+	case TYPE_DATE:
 		scm_value = scm_makfrom0str(pair->strvalue);
 		break;
-	case PW_TYPE_INTEGER:
+	case TYPE_INTEGER:
 		scm_value = scm_makenum(pair->lvalue);
 		break;
-	case PW_TYPE_IPADDR:
+	case TYPE_IPADDR:
 		scm_value = scm_ulong2num(pair->lvalue);
 		break;
 	default:
@@ -150,12 +150,12 @@ radscm_cons_to_avp(scm)
 		return NULL;
 	
 	pair.type = dict->type;
-	pair.operator = PW_OPERATOR_EQUAL;
+	pair.operator = OPERATOR_EQUAL;
 	pair.type = dict->type;
 	pair.prop = dict->prop;
 
 	switch (pair.type) {
-	case PW_TYPE_INTEGER:
+	case TYPE_INTEGER:
 		if (SCM_IMP(cdr) && SCM_INUMP(cdr)) {
 			pair.lvalue = SCM_INUM(cdr);
 		} else if (SCM_BIGP(cdr)) {
@@ -174,7 +174,7 @@ radscm_cons_to_avp(scm)
 			return NULL;
 		break;
 		
-	case PW_TYPE_IPADDR:
+	case TYPE_IPADDR:
 		if (SCM_IMP(cdr) && SCM_INUMP(cdr)) {
 			pair.lvalue = SCM_INUM(cdr);
 		} else if (SCM_BIGP(cdr)) {
@@ -184,8 +184,8 @@ radscm_cons_to_avp(scm)
 		} else
 			return NULL;
 		break;
-	case PW_TYPE_STRING:
-	case PW_TYPE_DATE:
+	case TYPE_STRING:
+	case TYPE_DATE:
 		if (!(SCM_NIMP(cdr) && SCM_STRINGP(cdr)))
 			return NULL;
 		pair.strvalue = make_string(SCM_CHARS(cdr));

@@ -1214,7 +1214,7 @@ rad_sql_attr_query(req, reply_pairs)
 			chop(value);
 
 			pair = install_pair(attribute,
-					    PW_OPERATOR_EQUAL, value);
+					    OPERATOR_EQUAL, value);
  
 			if (pair)
 				avl_add_list(reply_pairs, pair);

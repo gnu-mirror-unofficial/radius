@@ -215,9 +215,16 @@ void snmp_req_drop(int type, SNMP_REQ *req, char *status_str);
 #define RLOG_FAILED_PASS        0x0004
 #define RLOG_DEFAULT            (RLOG_AUTH | RLOG_FAILED_PASS)
 
+/* Running modes */
+#define MODE_DAEMON    0
+#define MODE_CHECKCONF 1
+#define MODE_TEST      2
+#define MODE_BUILDDBM  3
+
 /*
  *	Global variables.
  */
+extern int radius_mode;
 extern Config           config;
 extern Notify           notify_cfg;
 extern int		debug_flag;

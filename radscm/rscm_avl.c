@@ -114,12 +114,12 @@ SCM_DEFINE(rscm_avl_match, "avl-match", 2, 0, 0,
 		}
 			
 		switch (pair->type) {
-		case PW_TYPE_STRING:
+		case TYPE_STRING:
 			rc = strcmp(check_pair->strvalue, pair->strvalue);
 			break;
 
-		case PW_TYPE_INTEGER:
-		case PW_TYPE_IPADDR:
+		case TYPE_INTEGER:
+		case TYPE_IPADDR:
 			rc = check_pair->lvalue != pair->lvalue;
 			break;
 			

@@ -258,12 +258,7 @@ struct option longopt[] = {
 	0
 };
 
-#define MODE_DAEMON    0
-#define MODE_CHECKCONF 1
-#define MODE_TEST      2
-#define MODE_BUILDDBM  3
-
-static int radius_mode = MODE_DAEMON;    
+int radius_mode = MODE_DAEMON;    
 
 int  xargc;
 char **xargv;
@@ -773,6 +768,7 @@ reread_config(reload)
 	}
 #endif	
 
+	flush_request_list();
 	close_socket_list();
 	
 	/* Read the options */

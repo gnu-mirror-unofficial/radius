@@ -18,8 +18,8 @@
  */
 /* $Id$ */
 
-#undef PW_AUTH_UDP_PORT
-#undef PW_ACCT_UDP_PORT
+#undef DEF_AUTH_PORT
+#undef DEF_ACCT_PORT
 
 /* Target RADIUS was built for */
 #undef BUILD_TARGET 

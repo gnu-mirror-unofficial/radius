@@ -2209,11 +2209,11 @@ attr_datatype(type)
 	int type;
 {
 	switch (type) {
-	case PW_TYPE_STRING:
-	case PW_TYPE_DATE:
+	case TYPE_STRING:
+	case TYPE_DATE:
 		return String;
-	case PW_TYPE_INTEGER:
-	case PW_TYPE_IPADDR:
+	case TYPE_INTEGER:
+	case TYPE_IPADDR:
 		return Integer;
 	default:
 		insist_fail("unknown attribute type");
@@ -3907,13 +3907,13 @@ rw_attrasgn()
 		avl_add_pair(&rw_rt.request, pair);
 	}
 	switch (pair->type) {
-	case PW_TYPE_STRING:
-	case PW_TYPE_DATE:
+	case TYPE_STRING:
+	case TYPE_DATE:
 		replace_string(&pair->strvalue, (char*)val);
 		pair->strlength = strlen((char*) val);
 		break;
-	case PW_TYPE_INTEGER:
-	case PW_TYPE_IPADDR:
+	case TYPE_INTEGER:
+	case TYPE_IPADDR:
 		pair->lvalue = val;
 		break;
 	}

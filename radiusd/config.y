@@ -83,18 +83,6 @@ static int syslog_severity[] = {
 	LOG_WARNING,
 };
 	 
-static int radius_severity[] = {
-	-1,            
-	L_CRIT,        
-	L_DBG,         
-	-1,   	       
-	L_ERR,         
-	L_INFO,        
-	L_NOTICE,      
-	L_WARN,	       
-};
-	
- 
 extern time_t delayed_hup_wait;
 extern int keyword();
 
@@ -144,9 +132,11 @@ static void asgn(void *base, Value *value, int type, int once);
 		HOSTDECL *head;
 		HOSTDECL *tail;
 	} hostlist;
+	int category;
 	struct {
-		int severity;
-	} category;
+		int cat;
+		int pri;
+	} category_name;
 	struct {
 		int type;
 		Chanlist *chanlist;
@@ -165,7 +155,7 @@ static void asgn(void *base, Value *value, int type, int once);
 
 %token EOL
 %token T_ALLOW T_AUTH T_CATEGORY T_DENY T_DETAIL T_FILE T_INFO
-%token T_IDENT T_LEVEL T_LISTEN T_LOGGING T_NETWORK T_OPTION T_USEDBM
+%token T_IDENT T_LEVEL T_LISTEN T_LOGGING T_NETWORK T_MAIN T_OPTION T_USEDBM
 %token T_CHECKRAD_ASSUME_LOGGED T_DELAY T_DETAIL T_HOST           
 %token T_EXEC_PROGRAM_GROUP T_EXEC_PROGRAM_USER T_LOG_DIR T_MAX_REQUESTS
 %token T_PORT T_REQUEST_CLEANUP_DELAY T_RETRY T_SPAWN T_STRIP_NAMES   
@@ -185,8 +175,9 @@ static void asgn(void *base, Value *value, int type, int once);
 %type <netlist> netlist
 %type <acl> acl network
 %type <value> value
-%type <number> facility severity
-%type <category> category_name
+%type <number> facility 
+%type <category> category
+%type <category_name> category_name
 %type <category_def> category_list category_def
 %type <hostdecl> host
 %type <hostlist> hostlist listen_stmt
@@ -523,7 +514,7 @@ facility        : T_FACILITY
 
 category_stmt   : T_CATEGORY category_name '{' category_list '}'
                   {
-			  switch ($2.severity) {
+			  switch ($2.cat) {
 			  case L_AUTH:
 				  log_mode = $4.level;
 				  break;
@@ -535,27 +526,59 @@ category_stmt   : T_CATEGORY category_name '{' category_list '}'
 
 			  }
 			  in_category = 0;
-			  register_category($2.severity, $4.chanlist);
+			  register_category($2.cat, $2.pri, $4.chanlist);
+			  free_chanlist($4.chanlist);
 		  }
                 ;
 
-category_name   : severity
+category_name   : category
                   {
-			  $$.severity = in_category = $1;
-                  }
-                | T_AUTH
-                  {
-			  $$.severity = in_category = L_AUTH;
-		  }
-                ;
-
-severity        : '*'
-                  {
-			  $$ = -1;
+			  in_category = $1;
+			  $$.cat = $1;
+			  $$.pri = -1;
 		  }
                 | T_SEVERITY
                   {
-			  $$ = radius_severity[$1];
+			  $$.cat = -1;
+			  $$.pri = $1;
+		  }
+                | category '.' T_SEVERITY
+                  {
+			  in_category = $1;
+			  $$.cat = $1;
+			  $$.pri = $3;
+		  }
+                | category '.' '*'
+                  {
+			  in_category = $1;
+			  $$.cat = $1;
+			  $$.pri = -1;
+		  }
+                ;
+
+category        : T_MAIN
+                  {
+			  $$ = L_ACCT;
+		  }
+                | T_AUTH
+                  {
+			  $$ = L_AUTH;
+		  }
+                | T_ACCT
+                  {
+			  $$ = L_ACCT;
+		  }
+                | T_SNMP
+                  {
+			  $$ = L_SNMP;
+		  }
+                | T_PROXY
+                  {
+			  $$ = L_PROXY;
+		  }
+                | '*'
+                  {
+			  $$ = -1;
 		  }
                 ;
 
@@ -585,8 +608,7 @@ category_list   : category_def
 
 category_def    : T_CHANNEL { expect_string = 1; } T_STRING EOL
                   {
-			  Channel *channel;
-			  channel = channel_lookup($3);
+			  Channel *channel = channel_lookup($3);
 			  expect_string = 0;
 			  $$.level = 0;
 			  if (!channel) {
@@ -618,7 +640,7 @@ category_def    : T_CHANNEL { expect_string = 1; } T_STRING EOL
 begin_level     : T_LEVEL
                   {
 			  switch (in_category) {
-			  case L_DBG:
+			  case L_DEBUG:
 				  expect_string = 1;
 				  clear_debug();
 				  break;
@@ -660,7 +682,7 @@ level           : T_STRING
 				  }
 				  break;
 				  
-			  case L_DBG:
+			  case L_DEBUG:
 				  if (set_module_debug_level($1, -1))
 					  radlog(L_WARN,
 					 _("%s:%d: no such module name: %s"),
@@ -671,7 +693,7 @@ level           : T_STRING
 		  }
                 | T_STRING '=' T_NUMBER
                   {
-			  if (in_category != L_DBG) {
+			  if (in_category != L_DEBUG) {
 				  yyerror("level syntax");
 				  YYERROR;
 			  }
@@ -688,7 +710,7 @@ usedbm_stmt     : T_USEDBM T_BOOL
                    #ifdef USE_DBM
 			  use_dbm = $2;
 			  if (debug_config)
-				  radlog(L_DBG, _("use dbm: %d"), use_dbm);
+				  radlog(L_DEBUG, _("use dbm: %d"), use_dbm);
 		   #else
 			  radlog(L_WARN,
 				 _("%s:%d: usedbm statement ignored: radiusd compiled without DBM support"),
@@ -701,7 +723,7 @@ notify_stmt     : T_NOTIFY '{' notify_list '}'
                   {
                    #ifdef USE_NOTIFY
 			  if (debug_config)
-				  radlog(L_DBG, 
+				  radlog(L_DEBUG, 
 					_("TTL server %I:%d %d, %d sec"),
 					 notify_cfg.ipaddr,
 					 notify_cfg.port,
@@ -719,7 +741,7 @@ notify_stmt     : T_NOTIFY '{' notify_list '}'
 			  if ($2 == 0) {
 				  notify_cfg.ipaddr = notify_cfg.port = 0;
 				  if (debug_config)
-					  radlog(L_DBG, _("TTL service OFF"));
+					  radlog(L_DEBUG, _("TTL service OFF"));
 			  } else {
 				  yyerror("syntax error: `off' expected");
 			  }
@@ -1039,7 +1061,7 @@ obs_option_string: T_STRING
 			  else if (strcmp($1, "cons") == 0)
 				  $$ = LO_CONS;
 			  else if (strcmp($1, "level") == 0)
-				  $$ = LO_LEVEL;
+				  $$ = LO_PRI;
 			  else
 				  $$ = 0;
 		  }

@@ -1,3 +1,8 @@
+2003-07-09  Sergey Poznyakoff  
+
+	* client/nas/Makefile.am: Bugfix. Removed leftover ETC_DIR
+	* raddb/Makefile.am (install-data-local): Use DESTDIR
+
 2003-07-07  Sergey Poznyakoff 
 
 	* THANKS: Added Christian Schrader

@@ -37,10 +37,9 @@ static VALUE_PAIR * menu_pairs(char *menu_name, char  *menu_selection);
 
 
 void
-process_menu(radreq, activefd, pw_digest)
+process_menu(radreq, activefd)
 	RADIUS_REQ        *radreq;
 	int             activefd;
-	u_char          *pw_digest;
 {
         VALUE_PAIR *pair, *term_pair, *new_pair;
 	char menu_name[MAX_MENU_NAME];
@@ -63,10 +62,8 @@ process_menu(radreq, activefd, pw_digest)
 		*menu_input = 0;
 	else {
 		/* Decrypt the password in the request. */
-		memcpy(menu_input, pair->strvalue, AUTH_PASS_LEN);
-		for (i = 0; i < AUTH_PASS_LEN; i++) 
-			menu_input[i] ^= pw_digest[i];
-		menu_input[AUTH_PASS_LEN] = 0;
+		decrypt_password(menu_input, pair,
+				 radreq->vector, radreq->secret);
 	}
 
 	pair = menu_pairs(menu_name, menu_input);

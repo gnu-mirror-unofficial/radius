@@ -1,3 +1,29 @@
+2001-09-23 Sergey Poznyakoff
+
+	* radscm/rscm_avl.c: (new) Scheme interface to some avl
+	functions.
+	* radscm/Makefile.am: Added rscm_avl.c
+	* radscm/rscm_dict.c: Minor changes.
+	* radscm/rscm_lib.c: radscm_cons_to_avp(): Initialize all VALUE_PAIR
+	members.
+	radscm_init(): added call to rscm_avl_init().
+
+	* elisp/radconf-mode.el: Missed closing parenthesis in
+	radconf-keyword-dict.
+
+	* radiusd/auth.c: sfn_scheme(): scan the copy of reply
+	pairlist, not the list itself, since it can be modified by
+	scheme_auth().
+	* radiusd/files.c: Removed spurious block of code in
+	add_user_entry (sym_install now does all the job).
+	hints_setup(): fixed error: wrong scope for tmp variable.
+	Use avl_merge instead of avl_add_list.
+	* radiusd/scheme.c: Call radscm_init().
+	* radlib/avl.c: avp_move was broken, it always set new->next
+	to NULL. Fixed.
+	* radlib/symtab.c: Append symbols to the end of collision list,
+	so that duplicate ones appear in chronological order.
+
 2001-09-18 Sergey Poznyakoff
 
 	* raddb/dictionary: Fixed syntax flags of some attributes.

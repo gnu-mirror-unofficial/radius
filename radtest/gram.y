@@ -170,8 +170,8 @@ stmt          : T_BEGIN list T_END
               | DO { current_nesting_level++; } stmt WHILE {current_nesting_level--;} cond  
                 {
 			$$ = radtest_node_alloc(radtest_node_loop);
-			$$->v.loop.cond = $3;
-			$$->v.loop.body = $6;
+			$$->v.loop.cond = $6;
+			$$->v.loop.body = $3;
 			$$->v.loop.first_pass = 1;
                 } 
               | PRINT prlist 

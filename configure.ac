@@ -241,6 +241,14 @@ AH_TOP([
 #endif
 ])
 
+AC_ARG_VAR([LEAK_DETECTOR],
+           [Enable leak detector support. Allowed values: 0 - disable leak detector, 1 - enable debug messages, 2 - enable debug messages and memory statistics. The setting takes effect only if --enable-maintainer-mode is specified. Using --enable-maintainer-mode alone implies LEAK_DETECTOR=1.])
+
+case $LEAK_DETECTOR in
+[[0-9]])	AC_DEFINE_UNQUOTED(LEAK_DETECTOR, $LEAK_DETECTOR);;
+*)	;;
+esac
+
 AH_BOTTOM([
 /*FIXME*/
 #if defined(sun) && !defined(__EXTENSIONS__)

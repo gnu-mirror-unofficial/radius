@@ -85,7 +85,7 @@ avp_create(int attr)
 
         dict = attr_number_to_dict(attr);
         if (!dict) {
-                radlog(L_ERR, _("make_pair(): dictionary attr %d not found"),
+                radlog(L_ERR, _("make_pair(): attribute %d not found in dictionary"),
                        attr);
                 return NULL;
         }

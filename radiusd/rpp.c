@@ -348,7 +348,7 @@ rpp_kill(pid_t pid, int signo)
 static void
 _rpp_slay(rpp_proc_t *p)
 {
-	radlog(L_NOTICE, _("Killing stuck process %lu"), (u_long) p->pid);
+	radlog(L_NOTICE, _("Killing unresponding process %lu"), (u_long) p->pid);
 	kill(p->pid, SIGKILL);
 	_rpp_remove(p);
 }
@@ -488,7 +488,7 @@ rpp_request_handler(void *arg ARG_UNUSED)
 		alarm(0);
 		if (len != sizeof frq) {
 			radlog(L_ERR,
-			       _("Child received malformed header. len = %d, errno = %s"),
+			       _("Child received malformed header (len = %d, error = %s)"),
 			       len, strerror(errno));
 			radiusd_exit0();
 		}

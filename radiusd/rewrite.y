@@ -3999,7 +3999,7 @@ void
 assert_request_presence(RWMACH *mach)
 {
 	if (!mach->req)
-		rw_error(mach, _("code requires that the request be present"));
+		rw_error(mach, _("no request supplied"));
 }
 
 /* Check if the A/V pair is supplied in the request

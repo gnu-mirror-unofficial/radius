@@ -84,7 +84,7 @@ shmem_alloc(size_t size)
 		}
 		if ((sb.st_mode & statfile_perms) != statfile_perms) {
 			radlog(L_ERR,
-			       _("refusing to use file `%s': file has incorrect permissions"),
+			       _("SNMP system disabled: file `%s' has incorrect permissions"),
 			       radstat_path);
 			close(tempfd);
 			return -1;
@@ -128,7 +128,11 @@ shmem_get(size_t size, int zero)
 	if (!shmem_base && shmem_alloc(size))
 		return NULL;
 	if (shmem_size - offset < size) {
-		radlog(L_ERR, _("shmem_get(): can't alloc %d bytes"), size);
+		radlog(L_ERR,
+		       ngettext("shmem_get(): can't allocate %d byte",
+				"shmem_get(): can't allocate %d bytes",
+				size),
+		       size);
 	} else {
 		ptr = shmem_base + offset;
 		offset += size;

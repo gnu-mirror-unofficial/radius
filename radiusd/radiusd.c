@@ -335,8 +335,12 @@ terminate_subprocesses()
 		radiusd_cleanup();
 		if (time(NULL) >= t) {
 			if (kill_sent) {
-				radlog(L_CRIT, _("%d processes left!"),
-					rpp_count());
+				int n = rpp_count();
+				radlog(L_CRIT,
+				       ngettext("%d process left!",
+						"%d processes left!",
+						n),
+				       n);
 				break;
 			}
 			max_ttl(&t);
@@ -635,7 +639,6 @@ check_reload()
                 break;
 		
         case CMD_MEMINFO:
-//                meminfo();
                 break;
 		
         case CMD_DUMPDB:
@@ -711,7 +714,7 @@ radiusd_restart()
 		pid = fork();
 	if (pid < 0) {
 		radlog(L_CRIT|L_PERROR,
-		       _("rad_restart: cannot fork"));
+		       _("radiusd_restart: cannot fork"));
 		return;
 	}
 	
@@ -1060,7 +1063,6 @@ test_shell()
                         printf("%d\n", parse_rewrite(tok));
                         break;
                 case 'm': /*memory statistics */
-                        //meminfo();
                         break;
                 default:
                         printf("no command\n");

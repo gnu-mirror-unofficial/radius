@@ -462,7 +462,8 @@ end:
 }
 
 char *
-radius_xlate(struct obstack *obp, char *str, grad_request_t *req, grad_avp_t *reply)
+radius_xlate(struct obstack *obp, char *str,
+	     grad_request_t *req, grad_avp_t *reply)
 {
         radius_xlate0(obp, str, req, reply);
         obstack_1grow(obp, 0);

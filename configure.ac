@@ -286,7 +286,7 @@ AC_CHECK_HEADER([obstack.h],
 
 
 AC_CHECK_DECLS([strncasecmp, strtok_r, localtime_r, asprintf, vasprintf,
-getline, crypt], , ,
+getline, crypt, crypt_set_format], , ,
                [
 #define _REENTRANT
 #include <string.h>

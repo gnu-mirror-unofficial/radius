@@ -15,7 +15,6 @@
    along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-#define RADIUS_MODULE_RADIUSD_C
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -572,7 +571,8 @@ main(int argc, char **argv)
                 spawn_flag = 1;
         }
         grad_app_setup();
-
+	grad_set_logger(radiusd_logger);
+	
         /* save the invocation */
         xargc = argc;
         xargv = argv;

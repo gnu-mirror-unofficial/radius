@@ -104,6 +104,21 @@ pw_expired(exptime)
 	return 0;
 }
 
+/*
+ * Check if the username is valid. Valid usernames consist of 
+ * alphanumeric characters and symbols from valid_char[]
+ * array
+ */
+int
+check_user_name(p)
+	char *p;
+{
+	static char valid_char[] = ".-_";
+	for (; *p && (isalnum(*p) || strchr(valid_char, *p)); p++)
+		;
+	return *p;
+}
+
 int
 check_disable(username, user_msg)
 	char *username;
@@ -128,11 +143,11 @@ check_expiration(check_item, umsg, user_msg)
 	int result, rc;
 	VALUE_PAIR *pair;
 
-	result = 0;
+	result = AUTH_OK;
 	if (pair = pairfind(check_item, DA_EXPIRATION)) {
 		rc = pw_expired(pair->lvalue);
 		if (rc < 0) {
-			result = -1;
+			result = AUTH_FAIL;
 			*user_msg = _("Password Has Expired\r\n");
 		} else if (rc > 0) {
 			radsprintf(umsg, sizeof(umsg),
@@ -242,10 +257,11 @@ unix_pass(name, passwd)
 /*
  *	Check password.
  *
- *	Returns:	0  OK
- *			-1 Password fail
- *			-2 Rejected
- *			1  End check & return.
+ *	Returns:	AUTH_OK      OK
+ *			AUTH_FAIL    Password fail
+ *                      AUTH_NOUSER  No such user 
+ *			AUTH_REJECT  Rejected
+ *			
  */
 /*ARGSUSED*/
 int
@@ -275,7 +291,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 	char *pamauth;
 #endif
 	
-	result = 0;
+	result = AUTH_OK;
 	userpass[0] = 0;
 	string[0] = 0;
 
@@ -288,11 +304,11 @@ rad_check_password(authreq, activefd, check_item, namepair,
 		auth_type = auth_type_pair->lvalue;
 
 	if (auth_type == DV_AUTH_TYPE_ACCEPT)
-		return 0;
+		return AUTH_OK;
 
 	if (auth_type == DV_AUTH_TYPE_REJECT) {
 		*user_msg = NULL;
-		return -2;
+		return AUTH_REJECT;
 	}
 
 #ifdef USE_PAM
@@ -310,7 +326,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 	if ((auth_item = pairfind(authreq->request, DA_CHAP_PASSWORD)) == NULL)
 		auth_item = pairfind(authreq->request, DA_PASSWORD);
 	if (auth_item == NULL)
-		return -1;
+		return AUTH_FAIL;
 
 	/*
 	 *	Find the password from the users file.
@@ -359,7 +375,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 	}
 
 	debug(1,
-		("auth_type=%d, string=%s, namepair=%s, password_pair=%s\n",
+		("auth_type=%d, string=%s, namepair=%s, password_pair=%s",
 		 auth_type, string, name,
 		 password_pair ? password_pair->strvalue : ""));
 
@@ -370,7 +386,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 			 *	Check the password against /etc/passwd.
 			 */
 			if (unix_pass(name, string) != 0)
-				result = -1;
+				result = AUTH_FAIL;
 			break;
 		case DV_AUTH_TYPE_PAM:
 #ifdef USE_PAM
@@ -385,32 +401,31 @@ rad_check_password(authreq, activefd, check_item, namepair,
 			 */
 			pamauth = pamauth ? pamauth : PAM_DEFAULT_TYPE;
 			if (pam_pass(name, string, pamauth) != 0)
-				result = -1;
+				result = AUTH_FAIL;
 #else
 			radlog(L_ERR, _("%s: PAM authentication not available"),
 				name);
-			result = -1;
+			result = AUTH_NOUSER;
 #endif
 			break;
 		case DV_AUTH_TYPE_MYSQL:
 #ifdef USE_SQL
-			if (rad_sql_pass(authreq, string) != 0)
-				result = -1;
+			result = rad_sql_pass(authreq, string);
 #else
 			radlog(L_ERR, _("%s: MYSQL authentication not available"),
 				name);
-			result = -1;
+			result = AUTH_NOUSER;
 #endif
 			break;
 		case DV_AUTH_TYPE_CRYPT_LOCAL:
 			debug(1, ("  auth: Crypt"));
 			if (password_pair == NULL) {
-				result = string[0] ? -1 : 0;
+				result = string[0] ? AUTH_FAIL : AUTH_OK;
 				break;
 			}
 			if (strcmp(password_pair->strvalue,
 			    md5crypt(string, password_pair->strvalue)) != 0)
-					result = -1;
+					result = AUTH_FAIL;
 			break;
 		case DV_AUTH_TYPE_LOCAL:
 			debug(1, ("  auth: Local"));
@@ -423,7 +438,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 				 */
 				if (password_pair == NULL ||
 				    strcmp(password_pair->strvalue, string)!=0)
-					result = -1;
+					result = AUTH_FAIL;
 				break;
 			}
 
@@ -438,7 +453,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 			 */
 			strcpy(string, "{chap-password}");
 			if (password_pair == NULL) {
-				result= -1;
+				result= AUTH_FAIL;
 				break;
 			}
 			i = 0;
@@ -468,18 +483,19 @@ rad_check_password(authreq, activefd, check_item, namepair,
 			 */
 			if (memcmp(pw_digest, auth_item->strvalue + 1,
 					CHAP_VALUE_LENGTH) != 0)
-				result = -1;
+				result = AUTH_FAIL;
 			else
 				strcpy(userpass, password_pair->strvalue);
 			break;
 		default:
-			result = -1;
+			result = AUTH_FAIL;
 			break;
 	}
 
+	/*??
 	if (result < 0)
 		*user_msg = NULL;
-
+	*/
 	return result;
 }
 
@@ -511,7 +527,16 @@ rad_auth_init(authreq, activefd)
 		authfree(authreq);
 		return -1;
 	}
-
+	debug(1,("checking username: %s", namepair->strvalue));
+	if (check_user_name(namepair->strvalue)) {
+		radlog(L_AUTH, _("Malformed username: [%s] (from nas %s)"),
+		       namepair->strvalue,
+		       nas_name2(authreq));
+		stat_inc(auth, authreq->ipaddr, num_bad_req);
+		authfree(authreq);
+		return -1;
+	}
+		
 	/*
 	 *	Verify the client and Calculate the MD5 Password Digest
 	 */
@@ -843,20 +868,39 @@ sfn_validate(m)
 					m->user_check,
 					m->namepair, authreq->digest,
 					&m->user_msg, m->userpass);
-		if (rc > 0) {
+
+		if (rc != AUTH_OK) { 
 			stat_inc(auth, authreq->ipaddr, num_rejects);
-			newstate(as_stop);
-			return;
-		}
-		if (rc == -2) {
-			if (p = pairfind(m->user_reply, DA_REPLY_MESSAGE))
-				m->user_msg = p->strvalue;
-		}
+			newstate(as_reject);
+			
+			switch (rc) {
+			case AUTH_REJECT:
+				radlog(L_AUTH,
+			      _("Rejected user: [%s] CLID %s (from nas %s)"),
+				       m->namepair->strvalue,
+				       m->clid,
+				       nas_name2(authreq));
+				return;
+				
+			case AUTH_NOUSER:
+				radlog(L_AUTH,
+			       _("Invalid user: [%s] CLID %s (from nas %s)"),
+				       m->namepair->strvalue,
+				       m->clid,
+				       nas_name2(authreq));
+				return;
+				
+			case AUTH_FAIL:
+				break;
+			}
+		}		
+		if (p = pairfind(m->user_reply, DA_REPLY_MESSAGE))
+			m->user_msg = p->strvalue;
 	}
 
 	pairmove2(&m->user_reply, &m->proxy_pairs, DA_PROXY_STATE);
 
-	if (rc < 0) {
+	if (rc != AUTH_OK) {
 		/*
 		 *	Failed to validate the user.
 		 */
@@ -1017,6 +1061,10 @@ sfn_time(m)
 		 *	User is allowed, but set Session-Timeout.
 		 */
 		timeout_pair(m)->lvalue = rest;
+		debug(2, ("user %s, span %s, timeout %d",
+			  m->namepair->strvalue,
+                          m->check_pair->strvalue,
+                          rest));
 	}
 }
 

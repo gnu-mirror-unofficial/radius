@@ -96,6 +96,7 @@ acct {
 	listen localhost, 192.168.10.1:1843;
 	spawn yes;              # Spawn the child process to handle the
 				# request (the default)
+	detail yes;             # Do the request detail accounting (default)
 	max-requests 24;	# Maximum number of ACCT requests in queue
 	time-to-live 60;	# Request time to live
         request-cleanup-delay 10; # Number of seconds the request remains

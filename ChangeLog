@@ -1,3 +1,11 @@
+2003-11-24  Sergey Poznyakoff
+
+	* configure.ac: Detect struct passwd.pw_expire and pw_check
+	Raised version number to 1.1.93
+	* include/radiusd.h (enum auth_status): New data type.
+	* raddb/Makefile.am: Removed rewrite
+	* radiusd/auth.c: Rewritten expiration handling.
+
 2003-11-23  Sergey Poznyakoff  
 
 	* NEWS: Updated

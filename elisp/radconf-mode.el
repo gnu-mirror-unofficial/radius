@@ -336,6 +336,7 @@ Key bindings:
   (interactive)
   (kill-all-local-variables)
   (set-syntax-table radconf-mode-syntax-table)
+  (make-local-variable 'indent-line-function)
   (setq major-mode 'radconf-mode
 	mode-name "Radius-Config"
 	local-abbrev-table radconf-mode-abbrev-table

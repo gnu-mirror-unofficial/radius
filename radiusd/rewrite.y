@@ -3127,16 +3127,28 @@ void
 mtx_bool(mtx)
         MTX *mtx;
 {
-        MTX *j_mtx;
+        MTX *j_mtx, *p, *p1;
 
-        /*
-         * Insert a j?e after first operand
-         */
+        /* Insert after first operand:
+	   popa
+	   pusha
+	   pusha      ;; Duplicate tos value
+	   j?e   L10
+	   popa       ;; Pop up the unneded value */
+
+	p = mtx_alloc(Popa);
+	mtx_insert(mtx->bin.arg[0], p);
+	p1 = mtx_alloc(Pusha);
+	mtx_insert(p, p1);
+	p = mtx_alloc(Pusha);
+	mtx_insert(p1, p);
         j_mtx = mtx_branch(mtx->bin.opcode == Or, mtx);
-        mtx_insert(mtx->bin.arg[0],  j_mtx);
-        /*
-         * Remove the op matrix
-         */
+        mtx_insert(p, j_mtx);
+	p1 = mtx_alloc(Popa);
+	mtx_insert(j_mtx, p1);
+        /* Remove the op matrix
+	   Note that the mtx->cond.expr is not correct after this
+	   operation, but this does not affect the functionality */
         mtx_remove(mtx);
 }
 

@@ -1,5 +1,23 @@
 2004-03-22  Sergey Poznyakoff
 
+	* NEWS: Updated
+	* configure.ac: Raised version number to 1.2.3
+
+	* radiusd/rewrite.y: New builtin functions for accessing request
+	fields.
+
+	* examples/nas_ip.rw: New file	
+	* examples/Makefile.am: Added nas_ip.rw
+	* examples/README: Likewise
+
+	* raddb/dict/compat: The Auth-Type values Mysql and Pam
+	moved here.
+	* raddb/dict/standard: Removed Auth-Type values Mysql and Pam
+	* radiusd/mlc.c: Added extensive debugging
+	* radiusd/radck.c (fix_check_pairs): Minor fix
+
+2004-03-22  Sergey Poznyakoff
+
 	* examples/config.syntax: Sample mlc statement
 	* include/radiusd.h (mlc_stmt): New external
 	* include/radsql.h: New prototypes

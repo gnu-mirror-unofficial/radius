@@ -1,3 +1,7 @@
+2004-03-22  Sergey Poznyakoff
+
+	* extensions.texi: Documented new builtin functions
+
 2004-03-02  Sergey Poznyakoff
 
 	* extensions.texi: Minor fix

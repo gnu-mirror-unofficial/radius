@@ -24,6 +24,9 @@ supercedes radscm program, which has been removed.
 
 ** Added i18n support
 
+** Built-in functions allowing to read some internal fields of a
+RADIUS request.
+
 * radiusd
 
 ** Improved checking for multiple logins. Previous versions relied entirely

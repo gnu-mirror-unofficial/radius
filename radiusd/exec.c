@@ -449,7 +449,7 @@ filter_xlate(struct obstack *sp, char *fmt, RADIUS_REQ *radreq)
 			return NULL;
 		}
 		obstack_grow(sp, datum.sval, strlen(datum.sval)+1);
-		string_free(datum.sval);
+		efree(datum.sval);
 		str = obstack_finish(sp);
 	} else {
 		str = radius_xlate(sp, fmt, radreq, NULL);

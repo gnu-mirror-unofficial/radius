@@ -861,7 +861,7 @@ sfn_eval_reply(AUTH_MACH *m)
                                 errcnt++;
                                 continue;
                         }
-                        string_free(p->avp_strvalue);
+                        efree(p->avp_strvalue);
                         switch (type) {
                         case Integer:
                                 p->avp_lvalue = datum.ival;

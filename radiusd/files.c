@@ -204,7 +204,7 @@ add_pairlist(struct temp_list *closure, char *filename, int line,
                 return 0;
         }
 
-        pl = mem_alloc(sizeof(MATCHING_RULE));
+        pl = emalloc(sizeof(MATCHING_RULE));
         pl->name = estrdup(name);
         pl->lhs = lhs;
         pl->rhs = rhs;
@@ -1368,7 +1368,7 @@ matchrule_free(MATCHING_RULE **pl)
                 if (p->rhs)
                         avl_free(p->rhs);
                 next = p->next;
-                mem_free(p);
+                efree(p);
         }
         *pl = NULL;
 }
@@ -1501,8 +1501,9 @@ wild_match(char *expr, char *name, char *return_name)
 int
 matches(RADIUS_REQ *req, char *name, MATCHING_RULE *pl, char *matchpart)
 {
-        if (strncmp(pl->name, "DEFAULT", 7) == 0 ||
-            wild_match(pl->name, name, matchpart) == 0)
+	memcpy(matchpart, name, AUTH_STRING_LEN);
+        if (strncmp(pl->name, "DEFAULT", 7) == 0
+	    || wild_match(pl->name, name, matchpart) == 0)
                 return paircmp(req, pl->lhs, matchpart);
         return 1;
 }       

@@ -319,7 +319,7 @@ parse_datum(char *p, union datum *dp)
                 p[length-1] = 0;
                 
                 type = String;
-                dp->string = string_create(p);
+                dp->string = estrdup(p);
         } else if (isdigit(*p)) {
                 char *endp;
                 
@@ -346,7 +346,7 @@ parse_datum(char *p, union datum *dp)
                 }
         } else {
                 type = String;
-                dp->string = string_create(p);
+                dp->string = estrdup(p);
         }
         return type;
 }
@@ -357,19 +357,19 @@ print_ident(Variable *var)
         char buf[64];
         switch (var->type) {
         case Undefined:
-                return string_create("UNDEFINED");
+                return estrdup("UNDEFINED");
                 break;
         case Integer:
                 sprintf(buf, "%d", var->datum.number);
-                return string_create(buf);
+                return estrdup(buf);
         case Ipaddress:
                 ip_iptostr(var->datum.ipaddr, buf);
-                return string_create(buf);
+                return estrdup(buf);
         case String:
-                return string_dup(var->datum.string);
+                return estrdup(var->datum.string);
                 break;
         case Vector:
-                return string_create("VECTOR");
+                return estrdup("VECTOR");
         }
 	return NULL;
 }
@@ -444,7 +444,7 @@ var_free(Variable *var)
                 return; /* named variables are not freed */
         switch (var->type) {
         case String:
-                string_free(var->datum.string);
+                efree(var->datum.string);
                 break;
         case Vector:
                 avl_free(var->datum.vector);

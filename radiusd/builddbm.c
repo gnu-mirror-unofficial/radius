@@ -186,7 +186,7 @@ decode_dbm(int **pptr)
                 next_pair->type = *ptr++;
                 next_pair->operator = *ptr++;
                 if (next_pair->type == TYPE_STRING) {
-                        next_pair->avp_strvalue = string_create((char*)ptr);
+                        next_pair->avp_strvalue = estrdup((char*)ptr);
                         next_pair->avp_strlength = strlen(next_pair->avp_strvalue);
                         ptr += NINT(next_pair->avp_strlength+1);
                 } else
@@ -254,12 +254,12 @@ dbm_find(DBM_FILE file, char *name, RADIUS_REQ *req,
                         char *name;
                         
                         debug(1, ("submatch: %s", p->avp_strvalue));
-                        name = string_dup(p->avp_strvalue);
+                        name = estrdup(p->avp_strvalue);
                         if (!dbm_match(file, name, _dbm_dup_name,
                                        req,
                                        &check_tmp, &reply_tmp, &dummy))
                                 ret = 0;
-                        string_free(name);
+                        efree(name);
                 } 
                 
                 if (ret == 1) {
@@ -325,12 +325,12 @@ dbm_match(DBM_FILE dbmfile, char *name, char *(*fn)(), RADIUS_REQ *req,
                         char *name;
                         
                         debug(1, ("next: %s", p->avp_strvalue));
-                        name = string_dup(p->avp_strvalue);
+                        name = estrdup(p->avp_strvalue);
                         avl_delete(reply_pairs, DA_MATCH_PROFILE);
                         dbm_match(dbmfile, name, _dbm_dup_name,
                                   req,
                                   check_pairs, reply_pairs, &dummy);
-                        string_free(name);
+                        efree(name);
                 }
 
                 if (!fallthrough(*reply_pairs))

@@ -1,3 +1,13 @@
+2003-05-03  Sergey Poznyakoff 
+
+	* lib/list.c: Fixed iterators to correctly handle iterator_next()
+	after removal of the current item;
+	* radiusd/input.c (channel_close): Free the memory
+	* radiusd/radiusd.c (radiusd_preconfig_hook): Call
+	input_close_channels() last.
+	* radiusd/snmpserv.c: Rewritten ACL subsystem using generic lists.
+	* include/radiusd.h: Likewise
+
 2003-04-30  Sergey Poznyakoff 
 
 	* include/Makefile.am: Added list.h

@@ -94,10 +94,10 @@ static void pairlist_free(PAIR_LIST **pl);
 static int matches(VALUE_PAIR *req, char *name, PAIR_LIST *pl, char *matchpart);
 static int huntgroup_match(VALUE_PAIR *request_pairs, char *huntgroup);
 static void clients_free(CLIENT *cl);
-static int user_find_sym(char *name, VALUE_PAIR *request_pairs, 
+static int user_find_sym(char *name, RADIUS_REQ *req, 
 			 VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 #ifdef USE_DBM
-int user_find_db(char *name, VALUE_PAIR *request_pairs,
+int user_find_db(char *name, RADIUS_REQ *req,
 			VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 #endif
 
@@ -318,16 +318,16 @@ user_next(lptr)
 }
 
 
-static int match_user(User_symbol *sym, VALUE_PAIR *request_pairs,
+static int match_user(User_symbol *sym, RADIUS_REQ *req,
 		      VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 
 /*
  * Find matching profile in the hash table
  */
 int
-user_find_sym(name, request_pairs, check_pairs, reply_pairs)
+user_find_sym(name, req, check_pairs, reply_pairs)
 	char       *name;
-	VALUE_PAIR *request_pairs;
+        RADIUS_REQ *req;
 	VALUE_PAIR **check_pairs;
 	VALUE_PAIR **reply_pairs;
 {
@@ -336,7 +336,7 @@ user_find_sym(name, request_pairs, check_pairs, reply_pairs)
 	USER_LOOKUP lu;
 	
 	for (sym = user_lookup(name, &lu); sym; sym = user_next(&lu)) {
-		if (match_user(sym, request_pairs, check_pairs, reply_pairs)) {
+		if (match_user(sym, req, check_pairs, reply_pairs)) {
 			found = 1;
 			if (!fallthrough(sym->reply))
 				break;
@@ -349,12 +349,13 @@ user_find_sym(name, request_pairs, check_pairs, reply_pairs)
 }
 
 int
-match_user(sym, request_pairs, check_pairs, reply_pairs)
+match_user(sym, req, check_pairs, reply_pairs)
 	User_symbol *sym;
-	VALUE_PAIR *request_pairs;
+	RADIUS_REQ *req;
 	VALUE_PAIR **check_pairs;
 	VALUE_PAIR **reply_pairs;
 {
+	VALUE_PAIR *request_pairs = req->request;
 	VALUE_PAIR *p;
 	VALUE_PAIR *check_tmp;
 	VALUE_PAIR *reply_tmp;
@@ -373,8 +374,7 @@ match_user(sym, request_pairs, check_pairs, reply_pairs)
 
 			if (!match_user((User_symbol*)sym_lookup(user_tab,
 								 p->strvalue),
-					request_pairs, check_pairs,
-					reply_pairs))
+					req, check_pairs, reply_pairs))
 				continue;
 		}			
 
@@ -385,7 +385,7 @@ match_user(sym, request_pairs, check_pairs, reply_pairs)
 		avl_merge(reply_pairs, &reply_tmp);
 		avl_merge(check_pairs, &check_tmp);
 #ifdef USE_SQL
-		rad_sql_attr_query(request_pairs, reply_pairs);
+		rad_sql_attr_query(req, reply_pairs);
 #endif
 
 		avl_free(reply_tmp);
@@ -395,7 +395,7 @@ match_user(sym, request_pairs, check_pairs, reply_pairs)
 			debug(1, ("next: %s", p->strvalue));
 			match_user((User_symbol*)sym_lookup(user_tab,
 							    p->strvalue),
-				   request_pairs, check_pairs, reply_pairs);
+				   req, check_pairs, reply_pairs);
 		}
 		if (!fallthrough(sym->reply))
 			break;
@@ -413,9 +413,9 @@ match_user(sym, request_pairs, check_pairs, reply_pairs)
  * is done by the caller. user_find() only compares attributes.
  */
 int
-user_find(name, request_pairs, check_pairs, reply_pairs)
+user_find(name, req, check_pairs, reply_pairs)
 	char       *name;
-	VALUE_PAIR *request_pairs;
+	RADIUS_REQ *req;
 	VALUE_PAIR **check_pairs;
 	VALUE_PAIR **reply_pairs;
 {
@@ -434,12 +434,10 @@ user_find(name, request_pairs, check_pairs, reply_pairs)
 	 */
 #ifdef USE_DBM
 	if (use_dbm) 
-		found = user_find_db(name,
-				     request_pairs, check_pairs, reply_pairs);
+		found = user_find_db(name, req, check_pairs, reply_pairs);
 	else
 #endif
-		found = user_find_sym(name, 
-				      request_pairs, check_pairs, reply_pairs);
+		found = user_find_sym(name, req, check_pairs, reply_pairs);
 
 	/*
 	 *	See if we succeeded.
@@ -721,9 +719,10 @@ static int hints_stk_ready;
  *	based on the pattern of the username.
  */
 int
-hints_setup(request_pairs)
-	VALUE_PAIR *request_pairs;
+hints_setup(req)
+	RADIUS_REQ *req;
 {
+	VALUE_PAIR      *request_pairs = req->request;
 	char		newname[AUTH_STRING_LEN];
 	char		*name;
 	VALUE_PAIR      *name_pair;
@@ -812,7 +811,7 @@ hints_setup(request_pairs)
 				hints_stk_ready = 1;
 			}
 			ptr = radius_xlate(&hints_stk, tmp->strvalue,
-					   request_pairs, NULL);
+					   req, NULL);
 			if (ptr) 
 				replace_string(&name_pair->strvalue, ptr);
 			obstack_free(&hints_stk, ptr);

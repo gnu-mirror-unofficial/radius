@@ -43,6 +43,7 @@ static char rcsid[] =
  *	Make sure our buffer is aligned.
  */
 static int	i_send_buffer[RAD_BUFFER_SIZE];
+#define SEND_BUFFER_SIZE sizeof(i_send_buffer)
 static char	*send_buffer = (char *)i_send_buffer;
 
 /*
@@ -126,7 +127,7 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
 		length_ptr = NULL;
 		if ((vendorcode = VENDOR(reply->attribute)) > 0 &&
 		    (vendorpec  = vendor_id_to_pec(vendorcode)) > 0) {
-			if (total_length + 6 >= RAD_BUFFER_SIZE)
+			if (total_length + 6 >= SEND_BUFFER_SIZE)
 				goto err;
 			*ptr++ = DA_VENDOR_SPECIFIC;
 			length_ptr = ptr;
@@ -161,7 +162,7 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
 			if (len >= AUTH_STRING_LEN) {
 				len = AUTH_STRING_LEN - 1;
 			}
-			if (total_length + len + 2 >= RAD_BUFFER_SIZE)
+			if (total_length + len + 2 >= SEND_BUFFER_SIZE)
 				goto err;
 
 			*ptr++ = len + 2;
@@ -173,7 +174,7 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
 
 		case TYPE_INTEGER:
 		case TYPE_IPADDR:
-			if (total_length + sizeof(UINT4) + 2 >= RAD_BUFFER_SIZE)
+			if (total_length + sizeof(UINT4) + 2 >= SEND_BUFFER_SIZE)
 				goto err;
 				
 			*ptr++ = sizeof(UINT4) + 2;
@@ -206,7 +207,7 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
 				block_len = len;
 			}
 
-			if (total_length + block_len + 2 >= RAD_BUFFER_SIZE) {
+			if (total_length + block_len + 2 >= SEND_BUFFER_SIZE) {
 				radlog(L_ERR,
 				       _("user message too long in rad_send_reply"));
 				return -1; /* be on the safe side */
@@ -224,10 +225,10 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
 
 	auth->length = htons(total_length);
 
-	/*
-	 *	Append secret and calculate the response digest
-	 */
+	/* Append secret and calculate the response digest */
 	secretlen = strlen(radreq->secret);
+	if (total_length + secretlen >= SEND_BUFFER_SIZE)
+	    goto err;
 	memcpy(send_buffer + total_length, radreq->secret, secretlen);
 	md5_calc(digest, (u_char *)auth, total_length + secretlen);
 	memcpy(auth->vector, digest, AUTH_VECTOR_LEN);
@@ -521,7 +522,7 @@ send_challenge(radreq, msg, state, activefd)
 				block_len = len;
 			}
 
-			if (total_length + block_len + 2 >= RAD_BUFFER_SIZE) {
+			if (total_length + block_len + 2 >= SEND_BUFFER_SIZE) {
 				radlog(L_ERR,
 				    _("user message too long in send_challenge"));
 				return;
@@ -554,10 +555,13 @@ send_challenge(radreq, msg, state, activefd)
 	 */
 	auth->length = htons(total_length);
 
-	/*
-	 *	Calculate the response digest
-	 */
+	/* Calculate the response digest */
 	secretlen = strlen(radreq->secret);
+	if (total_length + secretlen >= SEND_BUFFER_SIZE) {
+		radlog(L_ERR,
+		       _("send buffer overflow in send_challenge"));
+		return;
+	}
 	memcpy(send_buffer + total_length, radreq->secret, secretlen);
 	md5_calc(digest, (u_char *)auth, total_length + secretlen);
 	memcpy(auth->vector, digest, AUTH_VECTOR_LEN);

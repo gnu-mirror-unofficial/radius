@@ -85,11 +85,11 @@ vlog(lvl, syserr, fmt, ap)
 		s = "CRIT: ";
 		break;
 	}
-	fprintf(stderr, s);
-	vfprintf(stderr, fmt, ap);
+	radfprintf(stderr, s);
+	radvfprintf(stderr, fmt, ap);
 	if (syserr)
-		fprintf(stderr, ": %s", strerror(errnum));
-        fprintf(stderr, "\n");
+		radfprintf(stderr, ": %s", strerror(errnum));
+        radfprintf(stderr, "\n");
 
 	return 0;
 }

@@ -1,4 +1,5 @@
-# This file is part of GNU RADIUS.
+# -*- tcl -*-
+# This file is part of GNU RADIUS testsuite.
 # Copyright (C) 2000,2001, Sergey Poznyakoff
 #  
 # This program is free software; you can redistribute it and/or modify
@@ -259,7 +260,7 @@ proc radius_test { args } {
     set command [lindex $args 0]
     set pattern [lindex $args 1]
     if {"$message" == ""}  {
-	set message [lindex $args 2]
+	set message $command
     }
 
     if { [info exists suppress_flag] && $suppress_flag } {

@@ -89,6 +89,7 @@ ATTRIBUTE	Ascend-Port-Redir-Server	 84	ipaddr		Ascend
 ATTRIBUTE	Ascend-IP-Pool-Chaining		 85	integer		Ascend
 ATTRIBUTE	Ascend-Owner-IP-Addr		 86	ipaddr		Ascend
 ATTRIBUTE	Ascend-IP-TOS			 87	integer		Ascend
+ATTRIBUTE       Ascend-IP-TOS-Precedence         88     integer         Ascend
 ATTRIBUTE	Ascend-IP-TOS-Apply-To		 89	integer		Ascend
 ATTRIBUTE	Ascend-Filter			 90 	string		Ascend
 ATTRIBUTE	Ascend-Telnet-Profile		 91	string		Ascend

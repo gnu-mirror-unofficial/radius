@@ -1,3 +1,22 @@
+2002-07-10  Sergey Poznyakoff 
+
+	* radiusd/exec.c: filter_ functions rewritten to make
+	  sure there are no simultaneous accesses to a single
+	  filter.
+  	  (radius_run_filter): Close all open descriptors.
+	  (struct filter_symbol): Introduced two wait_reply
+	  flags: for auth and for accounting processes.
+	  
+	* radiusd/radiusd.c: Changed handling of fatal signals.
+	  (sig_fatal): Simply aborts. Calling radlog() seems to
+	  be unsafe in signal handler context.
+	  (sig_watcher): Print exit status of the watched process.
+	  
+	* examples/config.syntax: Updated syntax of filters
+	  block.
+	* po/es.po: Updated
+	* po/no.po: Updated
+	
 2002-07-09  Sergey Poznyakoff  
 
 	Synchronized with the recent bugfixes in 0.96 trunk.

@@ -1,5 +1,32 @@
 2001-09-01 Sergey Poznyakoff
 
+	Started integrating Guile support into the server:
+
+	* acconfig.h: New define: USE_GUILE
+	* configure.in: New options: --without-guile, --without-server-guile.
+	* include/radiusd.h: Protos for guile interface functions.
+	* raddb/config.syntax: Sample guile configuration.
+	* raddb/dictionary: New attribute: Scheme-Procedure. When encountered
+	in reply pairs triggers evaluation of the specified guile procedure.
+	The procedure takes three arguments: request pairs, check pairs
+	and reply pairs. It returns cons, whose car contains #f to deny
+	access, or anything else to allow it and whose cdr contains
+	a list of A/V pairs to be appended to the reply list.
+	* raddb/.gdbinit: Uncommented dir ../radlib.
+	* radiusd/scheme.c: (new) Scheme interface functions.
+	* radiusd/Makefile.am: Added scheme.c. Added guile libraries
+	and include paths.
+	* radiusd/auth.c: New state as_scheme gets triggered by the
+	presense of Scheme-Attribute in the reply pairs.
+	* radiusd/config.kw: Added guile-related keywords.
+	* radiusd/config.y: Added guile-related rules.
+	* radiusd/radiusd.c: Split main into several functions.
+	Added use_guile global variable.
+	* radiusd/version.c: Reveal USE_GUILE option, when configured
+	with it.
+	
+2001-09-01 Sergey Poznyakoff
+
 	* radiusd/config.kw: New keyword: password-expire-warning.
 	* raddb/config.syntax: Sample password-expire-warning statement;
 	* raddb/dictionary: Removed obsolete Server-Config attribute and

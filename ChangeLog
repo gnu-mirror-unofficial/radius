@@ -1,5 +1,36 @@
 2001-10-04 Sergey Poznyakoff
 
+	* .cvsignore: Added *.tar.gz
+
+	* scripts/texi2html: (new)
+	* scripts/Makefile.am: Added texi2html
+
+	* doc/texinfo/Makefile.am: New rule for creating a monolithic html
+	page.
+	* doc/texinfo/acct.texi: Changes for easier convertion to html.
+	* doc/texinfo/attributes.texi: Likewise.
+	* doc/texinfo/auth.texi: Likewise.
+	* doc/texinfo/bugs.texi: Likewise.
+	* doc/texinfo/builddbm.texi: Likewise.
+	* doc/texinfo/configure.texi: Likewise.
+	* doc/texinfo/debug.texi: Likewise.
+	* doc/texinfo/invoke.texi: Likewise.
+	* doc/texinfo/logging.texi: Likewise.
+	* doc/texinfo/naming.texi: Likewise.
+	* doc/texinfo/operation.texi: Likewise.
+	* doc/texinfo/radauth.texi: Likewise.
+	* doc/texinfo/radctl.texi: Likewise.
+	* doc/texinfo/radgrep.texi: Likewise.
+	* doc/texinfo/radius.texi: Likewise.
+	* doc/texinfo/radlast.texi: Likewise.
+	* doc/texinfo/radping.texi: Likewise.
+	* doc/texinfo/radscm.texi: Likewise.
+	* doc/texinfo/raduse.texi: Likewise.
+	* doc/texinfo/radwho.texi: Likewise.
+	* doc/texinfo/radzap.texi: Likewise.
+
+2001-10-04 Sergey Poznyakoff
+
 	* doc/texinfo/.ispell_english: (new)
 	* doc/texinfo/configure.texi: Updated.
 	* doc/texinfo/intro.texi: Likewise.

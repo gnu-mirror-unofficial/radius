@@ -1,6 +1,7 @@
 2003-05-06  Sergey Poznyakoff
 
 	* configure.ac: Raised version number.
+	* NEWS: Updated.
 	* include/radiusd.h: New request state: RS_XMIT
 	* lib/list.c (list_remove): Check for p==NULL
 	* lib/radsrv.c: Removed #undef DEBUG_ONLY

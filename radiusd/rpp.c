@@ -90,8 +90,8 @@ pipe_read(int fd, void *ptr, size_t size)
 		} else if (rc > 0) {
 			rc = read(fd, data, 1);
 			if (rc != 1) {
-			  //				if (errno == EINTR)
-			  //		continue;
+				/* if (errno == EINTR)
+				   continue;*/
 				break;
 			}
 			data++;
@@ -486,8 +486,7 @@ rpp_request_handler(void *arg ARG_UNUSED)
 			radlog(L_ERR,
 			       _("Child received malformed header. len = %d, errno = %s"),
 			       len, strerror(errno));
-			abort();
-			//radiusd_exit();
+			radiusd_exit();
 		}
 
 		if (datasize < frq.size) {

@@ -1,3 +1,29 @@
+2004-05-01  Sergey Poznyakoff
+
+	* configure.ac: New variable RADIUS_INCLUDE_PATH keeps the
+	include path and is exported to all Makefile.am's
+	* client/pam_radius/Makefile.am: Likewise
+	* lib/Makefile.am: Likewise
+	* radiusd/Makefile.am: Likewise
+	* radiusd/testsuite/Makefile.am: Likewise
+	* radlast/Makefile.am: Likewise
+	* radscm/Makefile.am: Likewise
+	* radtest/Makefile.am: Likewise
+	* raduse/Makefile.am: Likewise
+	* radwho/Makefile.am: Likewise
+	* radzap/Makefile.am: Likewise
+	* snmplib/Makefile.am: Likewise
+	* sql/Makefile.am: Likewise
+	
+	* radiusd/acct.c (write_detail): Bugfix: improper use of free().
+	* include/radiusd.h (radius_exec_command): New prototype
+	* radiusd/exec.c (radius_exec_command): New function (for future
+	use).
+	* radiusd/radutil.c (util_xlate): New function (for future use).
+	* radiusd/scheme.c [!USE_SERVER_GUILE]: Bugfix
+	* radiusd/tsh.c (tsh_run_function): Bugfix. Empty line caused
+	coredumps.
+	
 2004-04-28  Sergey Poznyakoff
 
 	* NEWS: Updated

@@ -170,6 +170,7 @@ oid_t oid_dup(oid_t oid);
 oid_t oid_create(int len);
 oid_t oid_create_from_string(char *str);
 oid_t oid_create_from_subid(int len, subid_t *subid);
+int oid_cmp(oid_t a, oid_t b);
 
 char * sprint_oid(char *buf, int buflen, oid_t oid);
 

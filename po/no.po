@@ -1,0 +1,2037 @@
+# Norwegian messages for GNU Radius (bokmål dialect)
+# Copyright (C) 2002 Free Software Foundation, Inc.
+# This file is distributed under the same license as the GNU Radius package.
+# Sergey Poznyakoff <gray@gnu.org>, 2002.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: GNU Radius 0.99.95\n"
+"POT-Creation-Date: 2002-05-06 01:40+0300\n"
+"PO-Revision-Date: 2002-05-06 01:10+03:00\n"
+"Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
+"Language-Team: Norwegian-bokmål <no@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: radlib/avl.c:94
+#, c-format
+msgid "make_pair(): dictionary attr %d not found"
+msgstr "make_pair(): attributt %d ikke funnet"
+
+#: radlib/client.c:107
+msgid "invalid port type"
+msgstr "ugyldig port type"
+
+#: radlib/client.c:181
+#, fuzzy
+msgid "select() interrupted"
+msgstr "select() ble avbryttet"
+
+#: radlib/client.c:201
+#, c-format
+msgid "error receiving data from %s:%d"
+msgstr "feilet å ta imot svar fra %s:%d"
+
+#: radlib/client.c:258
+msgid "send"
+msgstr "sende"
+
+#: radlib/client.c:325
+msgid "unknown attribute type"
+msgstr "ukjent attributtype %d"
+
+# FIXME: This should disappear when client.c is rewritten
+#: radlib/client.c:350
+msgid "build_request(): data buffer overflow"
+msgstr ""
+
+#: radlib/client.c:375 radiusd/radius.c:570
+#, fuzzy, c-format
+msgid "Actual request length does not match reported length (%d, %d)"
+msgstr "Actuell og meddelt forespørsellengde stemmer ikke (%d, %d)"
+
+#: radlib/client.c:388
+msgid "Received invalid reply digest from server"
+msgstr ""
+
+#: radlib/client.c:458
+#, fuzzy, c-format
+msgid "Received unknown attribute %d"
+msgstr "fått ukjent attributt %d"
+
+#: radlib/client.c:461
+#, c-format
+msgid "attribute %d too long, %d > %d"
+msgstr "attributet %d for lang, %d > %d"
+
+#: radlib/client.c:500
+#, c-format
+msgid "    %s (Unknown type %d)"
+msgstr "    %s (Ukjent type %d)"
+
+#: radlib/client.c:509
+msgid "recv"
+msgstr "mottatt"
+
+#: radlib/debug.c:111 radlib/debug.c:119
+#, fuzzy
+msgid "compiled without debugging support"
+msgstr "programmet ble kompilert uten feilsøking støtte"
+
+#: radlib/dict.c:95 radlib/nas.c:64 radiusd/files.c:1060
+#, c-format
+msgid "%s:%d: too few fields"
+msgstr "%s:%d: for få felter"
+
+#: radlib/dict.c:100
+#, c-format
+msgid "%s:%d: too many fields"
+msgstr "%s:%d: for mange felter"
+
+#: radlib/dict.c:190
+#, c-format
+msgid "%s:%d: missing ]"
+msgstr "%s:%d: mangler ]"
+
+#: radlib/dict.c:207 radlib/dict.c:220
+#, fuzzy, c-format
+msgid "%s:%d: invalid syntax flag %c"
+msgstr "%s:%d: ugyldig syntaxflagg %c"
+
+#: radlib/dict.c:257 radlib/dict.c:362 radlib/dict.c:401
+#, c-format
+msgid "%s:%d: value not a number (near %s)"
+msgstr "%s:%d: ikke en tallverdi (nær %s)"
+
+#: radlib/dict.c:266
+#, c-format
+msgid "%s:%d: invalid type"
+msgstr "%s:%d: ugyldig type"
+
+#: radlib/dict.c:275
+#, c-format
+msgid "%s:%d: unknown vendor"
+msgstr ""
+
+#: radlib/dict.c:322
+#, c-format
+msgid "%s:%d: invalid flag %c"
+msgstr "%s:%d: ugyldig flagg %c"
+
+#: radlib/dict.c:453
+#, c-format
+msgid "%s:%d: unknown keyword"
+msgstr "%s:%d: ukjent nøkkelord"
+
+#: radlib/dict.c:471
+#, c-format
+msgid "%s: %d errors"
+msgstr "%s: %d feil"
+
+#: radlib/getopt.c:686
+#, c-format
+msgid "%s: option `%s' is ambiguous\n"
+msgstr "%s: flagget «%s» er flertydig\n"
+
+#: radlib/getopt.c:711
+#, c-format
+msgid "%s: option `--%s' doesn't allow an argument\n"
+msgstr "%s: flagget «--%s» tar ikke argumenter\n"
+
+#: radlib/getopt.c:716
+#, c-format
+msgid "%s: option `%c%s' doesn't allow an argument\n"
+msgstr "%s: flagget «%c%s» tar ikke argumenter\n"
+
+#: radlib/getopt.c:734 radlib/getopt.c:907
+#, c-format
+msgid "%s: option `%s' requires an argument\n"
+msgstr "%s: flagget må ha et argument -- %s\n"
+
+#: radlib/getopt.c:763
+#, c-format
+msgid "%s: unrecognized option `--%s'\n"
+msgstr "%s: ukjent flagg «--%s»\n"
+
+#: radlib/getopt.c:767
+#, c-format
+msgid "%s: unrecognized option `%c%s'\n"
+msgstr "%s: ukjent flagg «%c%s»\n"
+
+#: radlib/getopt.c:793
+#, c-format
+msgid "%s: illegal option -- %c\n"
+msgstr "%s: ulovlig flagg -- %c\n"
+
+#: radlib/getopt.c:796
+#, c-format
+msgid "%s: invalid option -- %c\n"
+msgstr "%s: ugyldig flagg -- %c\n"
+
+#: radlib/getopt.c:826 radlib/getopt.c:956
+#, c-format
+msgid "%s: option requires an argument -- %c\n"
+msgstr "%s: flagget må ha et argument -- %c\n"
+
+#: radlib/getopt.c:873
+#, c-format
+msgid "%s: option `-W %s' is ambiguous\n"
+msgstr "%s: flagget «-W %s» er flertydig\n"
+
+#: radlib/getopt.c:891
+#, c-format
+msgid "%s: option `-W %s' doesn't allow an argument\n"
+msgstr "%s: flagget «-W %s» tar ikke argumenter\n"
+
+#: radlib/leakdetect.c:105 radlib/leakdetect.c:118
+msgid "low core: aborting"
+msgstr "minnet oppbrukt: programmet avsluttes!"
+
+#: radlib/mem.c:139
+#, c-format
+msgid "Page too small to alloc %d-byte objects"
+msgstr "Siden for lite for å tildele %d-byter objekter"
+
+#: radlib/mem.c:144
+msgid "can't allocate bucket class"
+msgstr "kan ikke tildele minneklasse"
+
+#: radlib/mem.c:176
+msgid "can't allocate bucket page"
+msgstr "kan ikke tildele siden"
+
+#: radlib/mem.c:231 radlib/mem.c:238 radlib/mem.c:322 radlib/mem.c:381
+msgid "low core: exiting"
+msgstr "minnet oppbrukt: programmet avsluttes"
+
+#: radlib/mem.c:333
+#, fuzzy, c-format
+msgid "calloc_entry(): too many contiguous objects requested (%d/%d)"
+msgstr "calloc_entry(): for mange sammenhengende objekter kreves (%d/%d)"
+
+#: radlib/mem.c:377
+msgid "calloc_entry(): dead loop detected"
+msgstr ""
+
+#: radlib/mem.c:498
+msgid "alloc_string(): string too long"
+msgstr "alloc_string(): strengen er for lang"
+
+#: radlib/raddb.c:52 radlib/raddb.c:56 rewrite.y:1204 rewrite.y:2592
+#: radiusd/rewrite.y:1204 radiusd/rewrite.y:2592
+#, c-format
+msgid "can't open file `%s'"
+msgstr "kan ikke åpne filen «%s»"
+
+#: radlib/radutmp.c:50
+#, c-format
+msgid "rut_setent(): cannot open `%s'"
+msgstr "rut_setent(): kan ikke åpne «%s»"
+
+#: radlib/radutmp.c:168
+#, c-format
+msgid "login: entry for NAS %s port %d duplicate"
+msgstr "login: duplisert post for NAS %s port %d"
+
+#: radlib/radutmp.c:173
+#, c-format
+msgid "login: entry for NAS %s port %d wrong order"
+msgstr "login: postet for NAS %s port %d ugyldig rekkefølge"
+
+#: radlib/radutmp.c:184
+#, c-format
+msgid "logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"
+msgstr ""
+"logout: postet for NAS %s port %d har ugyldig ID (%s forventet, funnet %s)"
+
+#: radlib/radutmp.c:207
+#, c-format
+msgid "logout: login entry for NAS %s port %d not found"
+msgstr "logout: login post for NAS %s port %d ikke funnet"
+
+#: radlib/radutmp.c:227 radiusd/acct.c:510 radwho/radwho.c:1039
+#: radwho/radwho.c:1077
+#, c-format
+msgid "can't open %s"
+msgstr "kan ikke åpne «%s»"
+
+#: radlib/users.l:137
+msgid "not enough memory"
+msgstr "minnet oppbrukt"
+
+#: radlib/users.l:239 radiusd/config.y:1339
+#, c-format
+msgid "can't stat `%s'"
+msgstr "«stat» feilet for «%s»"
+
+#: radlib/users.l:251
+#, c-format
+msgid "%s:%d: `%s' already included here"
+msgstr "%s:%d: «%s» ble allerede inkludert her"
+
+#: radlib/users.l:254
+#, fuzzy, c-format
+msgid "`%s' already included at top level"
+msgstr "«%s» ble inkludert på øverste nivå"
+
+#: radlib/users.l:261 radiusd/builddbm.c:151
+#, c-format
+msgid "can't open `%s'"
+msgstr "kan ikke åpne «%s»"
+
+#: radlib/users.y:103
+#, fuzzy, c-format
+msgid "discarding user `%s'"
+msgstr "brukeren «%s» ble slettet"
+
+#: radlib/users.y:203 gram.y:473 radtest/gram.y:473
+#, c-format
+msgid "%s:%d: unknown attribute `%s'"
+msgstr "%s:%d: ukjent attributt «%s»"
+
+#: radlib/users.y:232 gram.y:502 radtest/gram.y:502
+#, c-format
+msgid "%s:%d: %s: not an absolute pathname"
+msgstr "%s:%d: %s: ikke et absolutt filnavn"
+
+#: radlib/users.y:263
+#, fuzzy, c-format
+msgid "%s:%d: cannot translate value %s"
+msgstr "%s:%d: kan ikke oversette verdi %s"
+
+#: radlib/users.y:311 gram.y:550 radtest/gram.y:550
+#, c-format
+msgid "%s:%d: %s: can't parse date"
+msgstr "%s:%d: %s: kan ikke tolke dato"
+
+#: radlib/users.y:324 gram.y:563 radtest/gram.y:563
+#, c-format
+msgid "%s:%d: %s: unknown attribute type %d"
+msgstr "%s:%d: %s: ukjent attributtype %d"
+
+#: radlib/users.y:361
+#, c-format
+msgid "%s:%d: enabled userfile parser debugging"
+msgstr ""
+
+#: radlib/users.y:364
+#, c-format
+msgid "%s:%d: disabled userfile parser debugging"
+msgstr ""
+
+# FIXME: should disappear
+#: radlib/util.c:220
+#, c-format
+msgid "string too long: %s"
+msgstr "strenget for lang: %s"
+
+#: radlib/argp-help.c:213
+#, c-format
+msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
+msgstr "  %.*s: ARGP_HELP_FMT-parameteren krever en verdi"
+
+#: radlib/argp-help.c:222
+#, c-format
+msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
+msgstr "  %.*s: Ukjent ARGP_HELP_FMT-parameter"
+
+#: radlib/argp-help.c:234
+#, c-format
+msgid "Garbage in ARGP_HELP_FMT: %s"
+msgstr "  Søppel i ARGP_HELP_FMT: %s"
+
+#: radlib/argp-help.c:1196
+msgid ""
+"Mandatory or optional arguments to long options are also mandatory or "
+"optional for any corresponding short options."
+msgstr ""
+"  Obligatoriske eller frivillige argumenter til lange flagg er også "
+"obligatoriske eller frivillige for tilsvarende korte flagg."
+
+#: radlib/argp-help.c:1576
+msgid "Usage:"
+msgstr "  Bruk:"
+
+#: radlib/argp-help.c:1580
+msgid "  or: "
+msgstr "    eller: "
+
+#: radlib/argp-help.c:1592
+msgid " [OPTION...]"
+msgstr "   [FLAGG...]"
+
+#: radlib/argp-help.c:1619
+#, c-format
+msgid "Try `%s --help' or `%s --usage' for more information.\n"
+msgstr "  Prøv «%s --help» eller «%s --usage» for mer informasjon.\n"
+
+#: radlib/argp-help.c:1647
+#, c-format
+msgid "Report bugs to %s.\n"
+msgstr "  Rapporter bugs til %s.\n"
+
+#: radiusd/acct.c:217
+#, fuzzy, c-format
+msgid "no Acct-Status-Type attribute (from nas %s)"
+msgstr "intet Acct-Status-Type attributt (fra nas %s)"
+
+#: radiusd/acct.c:246
+msgid "converting reboot records"
+msgstr "konvererer forespørsel om å starte på nytt"
+
+#: radiusd/acct.c:255
+msgid "no username in record"
+msgstr "intet brukernavn i forespørselen"
+
+#: radiusd/acct.c:351
+#, c-format
+msgid "NAS %s restarted (Accounting-On packet seen)"
+msgstr "NAS %s ble startet på nytt (fått forespørsel om Accounting-ON)"
+
+#: radiusd/acct.c:359
+#, c-format
+msgid "NAS %s rebooted (Accounting-Off packet seen)"
+msgstr "NAS %s ble avsluttet (fått Accounting-Off forespørsel)"
+
+#: radiusd/acct.c:370
+#, c-format
+msgid "NAS %s port %d unknown packet type (%d)"
+msgstr "NAS %s port %d ukjent forespørsel type (%d)"
+
+#: radiusd/acct.c:427
+#, c-format
+msgid "NOT writing wtmp record (%d) for `%s',NAS %s,port %d"
+msgstr "wtmp post (%d) for «%s», NAS %s, port %d IKKE lagret"
+
+#: radiusd/acct.c:445
+#, c-format
+msgid "%s: not a directory"
+msgstr "%s: ikke en katalog"
+
+#: radiusd/acct.c:452
+#, fuzzy, c-format
+msgid "can't create accounting directory `%s'"
+msgstr "kan ikke opprette katalogen «%s»"
+
+#: radiusd/acct.c:667
+#, c-format
+msgid "assuming `%s' is logged in"
+msgstr ""
+
+#: radiusd/acct.c:670
+#, c-format
+msgid "assuming `%s' is NOT logged in"
+msgstr ""
+
+# FIXME: message too hazy
+#: radiusd/acct.c:687
+msgid "check_ts(): unknown NAS"
+msgstr "check_ts(): ukjent NAS"
+
+# FIXME: message too misleading
+#: radiusd/auth.c:171
+#, c-format
+msgid "unix_pass: [%s]: invalid shell"
+msgstr ""
+
+#: radiusd/auth.c:182
+#, c-format
+msgid "unix_pass: [%s]: password has expired"
+msgstr "unix_pass: [%s]: passordet er ikke lenger gyldig"
+
+#: radiusd/auth.c:192
+#, c-format
+msgid "unix_pass: [%s]: account locked"
+msgstr ""
+
+#: radiusd/auth.c:297
+#, c-format
+msgid "%s: SQL authentication not available"
+msgstr "%s: SQL godkjenning er ikke tilgjengelig"
+
+#: radiusd/auth.c:305
+#, c-format
+msgid "unknown Password-Location value: %d"
+msgstr "ulovlig verdi for Password-Location attribute: %d"
+
+#: radiusd/auth.c:338
+#, c-format
+msgid "%s: PAM authentication not available"
+msgstr "%s: PAM godkjenning er ikke tilgjengelig"
+
+#: radiusd/auth.c:446
+#, c-format
+msgid "No username: [] (from nas %s)"
+msgstr "intet brukernavn: [] (fra nas %s)"
+
+#: radiusd/auth.c:453
+#, c-format
+msgid "Malformed username: [%s] (from nas %s)"
+msgstr "Feilaktig brukernavn: [%s] (fra nas %s)"
+
+#: radiusd/auth.c:472
+#, c-format
+msgid "No huntgroup access: [%s] (from nas %s)"
+msgstr "Tilgang nektet av «huntgoup»: [%s] (fra nas %s)"
+
+# FIXME!!
+#: radiusd/auth.c:637
+#, c-format
+msgid "%s: [%s%s%s]: %s%s: CLID %s (from nas %s)"
+msgstr "%s: [%s%s%s]: %s%s: CLID %s (fra nas %s)"
+
+# FIXME!!!
+#: radiusd/auth.c:648
+#, c-format
+msgid "%s: [%s%s%s]: CLID %s (from nas %s)"
+msgstr "%s: [%s%s%s]: CLID %s (fra nas %s)"
+
+#: radiusd/auth.c:850 radiusd/proxy.c:454 radiusd/sql.c:727 radiusd/sql.c:729
+msgid "unknown"
+msgstr "ukjent"
+
+#: radiusd/auth.c:860 radiusd/auth.c:968
+msgid "Invalid user"
+msgstr "Ugyldig bruker"
+
+#: radiusd/auth.c:914
+msgid "Guile authentication disabled in config"
+msgstr "Guile autentisering slått av i konfigurasjonsfilen"
+
+#: radiusd/auth.c:933
+msgid "Guile authentication not available"
+msgstr "Guile godkjenning ikke tilgjengelig"
+
+#: radiusd/auth.c:963
+msgid "Rejected"
+msgstr "Forkastet"
+
+# FIXME: translation coincides with `Login failed'
+#: radiusd/auth.c:988 radiusd/auth.c:1182
+msgid "Login incorrect"
+msgstr "Login feil"
+
+#: radiusd/auth.c:1014
+msgid "Account disabled"
+msgstr "Konto er stengt"
+
+#: radiusd/auth.c:1024
+msgid "Login rejected"
+msgstr "Innlogging forkastet"
+
+#: radiusd/auth.c:1025
+msgid "Authenticate only user"
+msgstr ""
+
+#: radiusd/auth.c:1041
+msgid "Login failed"
+msgstr "Innlogging feilet"
+
+#: radiusd/auth.c:1042
+msgid "realm quota exceeded for "
+msgstr "«realm» kvoten er overskredet for "
+
+#: radiusd/auth.c:1069
+#, c-format
+msgid "Multiple logins: [%s] CLID %s (from nas %s) max. %ld%s"
+msgstr "Flere innlogginger: [%s] CLID %s (fra nas %s) max. %ld%s"
+
+#: radiusd/auth.c:1074
+#, fuzzy
+msgid " [MPP attempt]"
+msgstr " [MPP forsøk]"
+
+#: radiusd/auth.c:1108
+#, c-format
+msgid "Outside allowed timespan: [%s] (from nas %s) time allowed: %s"
+msgstr "Utenfor gyldig tidintervall: [%s] (fra nas %s) tidintervall: %s"
+
+#: radiusd/auth.c:1183
+msgid "external check failed"
+msgstr ""
+
+#: radiusd/builddbm.c:68
+#, c-format
+msgid "%s:%d: too many attributes"
+msgstr "%s:%d: for mange attributer"
+
+#: radiusd/builddbm.c:109
+#, fuzzy, c-format
+msgid "can't store datum for %s"
+msgstr "kan ikke lage datum for %s"
+
+#: radiusd/builddbm.c:388
+#, c-format
+msgid "cannot open dbm file %s"
+msgstr "feil under åpning av dbm fila «%s»"
+
+#: radiusd/checkrad.c:85
+#, c-format
+msgid "unknown NAS type: %s (nas %s)"
+msgstr "ukjent NAS type: %s (nas %s)"
+
+#: radiusd/checkrad.c:225
+#, fuzzy, c-format
+msgid "timed out in waiting SNMP response from NAS %s"
+msgstr "overskred tidsgrensen mens forventning til SNMP svaret fra NAS %s"
+
+#: radiusd/checkrad.c:277
+msgid "no snmp_oid"
+msgstr "intet snmp_oid"
+
+#: radiusd/checkrad.c:284
+#, c-format
+msgid "invalid OID: %s"
+msgstr "ugyldig OID: %s"
+
+#: radiusd/checkrad.c:302
+#, fuzzy, c-format
+msgid "can't create snmp session: %s"
+msgstr "kan ikke opprette snmp sesjion: %s"
+
+#: radiusd/checkrad.c:311
+#, c-format
+msgid "can't open snmp session: %s"
+msgstr "kan ikke åpne snmp sesjon: %s"
+
+#: radiusd/checkrad.c:320 radiusd/checkrad.c:330 radiusd/snmpserv.c:566
+#, fuzzy, c-format
+msgid "can't create SNMP PDU: %s"
+msgstr "kan ikke opprette SNMP PDU: %s"
+
+#: radiusd/checkrad.c:409
+#, c-format
+msgid "unknown host: %s"
+msgstr "ukjent vert: %s"
+
+#: radiusd/checkrad.c:475
+#, fuzzy, c-format
+msgid "timed out in waiting for finger response from NAS %s"
+msgstr "overskred tidsgrensen mens forventning til «finger» svaret fra NAS %s"
+
+#: radiusd/config.y:469
+#, c-format
+msgid "%s:%d: no channel mode for `%s'"
+msgstr "%s:%d: intet modus for kanal «%s»"
+
+#: radiusd/config.y:538
+#, c-format
+msgid "%s:%d: no levels applicable for this category"
+msgstr ""
+
+#: radiusd/config.y:642
+#, c-format
+msgid "%s:%d: channel `%s' not defined"
+msgstr "%s:%d: kanal «%s» ikke definert"
+
+#: radiusd/config.y:692 radiusd/config.y:722
+#, c-format
+msgid "%s:%d: no such module name: %s"
+msgstr "%s:%d: intet slik modul: %s"
+
+#: radiusd/config.y:705
+#, c-format
+msgid "%s:%d: invalid level: %s"
+msgstr "%s:%d: ugyldig nivå: %s"
+
+#: radiusd/config.y:736
+#, c-format
+msgid "%s:%d: usedbm statement ignored: radiusd compiled without DBM support"
+msgstr "%s:%d: usedbm ignorert: radiusd ble kompilert uten støtte for DBM"
+
+#: radiusd/config.y:748
+#, c-format
+msgid "%s:%d: snmp statement ignored: radiusd compiled without snmp support"
+msgstr "%s:%d: snmp ignorert: radiusd ble kompilert uten støtte for SNMP"
+
+#: radiusd/config.y:758
+#, c-format
+msgid "invalid netmask length: %d"
+msgstr "ugyldig nettmask lengde: %d"
+
+# FIXME: This is not an acl at all. The message is ambiguous
+#: radiusd/config.y:807
+#, fuzzy, c-format
+msgid "%s:%d: no such acl: %s"
+msgstr "%s:%d: intet slik ACL: %s"
+
+#: radiusd/config.y:873
+#, c-format
+msgid "%s:%d: community %s already declared"
+msgstr "%s:%d: felleskapen «%s» ble allerede definert"
+
+#: radiusd/config.y:911
+#, c-format
+msgid "%s:%d: undefined community %s"
+msgstr "%s:%d: felleskapen «%s» er ikke definert"
+
+#: radiusd/config.y:1004
+#, c-format
+msgid "%s:%d: guile statement ignored: radiusd compiled without guile support"
+msgstr "%s:%d: guile ignorert: radiusd ble kompilert uten støtte for guile"
+
+#: radiusd/config.y:1019 radiusd/config.y:1030
+#, c-format
+msgid "%s:%d: wrong datatype (should be string)"
+msgstr "%s:%d: feil datatype (forventet streng)"
+
+#: radiusd/config.y:1176 rewrite.y:1459 radiusd/rewrite.y:1459
+#, c-format
+msgid "%s:%d: unexpected EOF in comment started at line %d"
+msgstr "%s:%d: uventet slutt-på-fil i kommentar begynnt på linje %d"
+
+#: radiusd/config.y:1226
+#, c-format
+msgid "INTERNAL ERROR parsing %s near %d: out of putback space"
+msgstr "INTERN FEIL ved kjøring av %s nær linje %d: Ikke ledig plass"
+
+#: radiusd/config.y:1273 radiusd/config.y:1294 radiusd/config.y:1318
+#, c-format
+msgid "%s:%d: token too long"
+msgstr ""
+
+#: radiusd/config.y:1347
+#, c-format
+msgid "can't open config file `%s'"
+msgstr "kan ikke åpne konfigurasjonsfil «%s»"
+
+#: radiusd/config.y:1364
+#, c-format
+msgid "reading %s"
+msgstr "lese %s"
+
+# FIXME: do we need it? Can it be made less cryptic?
+#: radiusd/config.y:1395
+#, fuzzy
+msgid "ready"
+msgstr "klar"
+
+#: radiusd/config.y:1421
+#, c-format
+msgid "%s:%d: no such service: %s"
+msgstr "%s:%d: ingen slik tjeneste: %s"
+
+#: radiusd/config.y:1444 radiusd/sql.c:358
+#, c-format
+msgid "%s:%d: unknown host: %s"
+msgstr "%s:%d: ukjent vert: %s"
+
+#: radiusd/config.y:1458
+#, c-format
+msgid "%s:%d: wrong datatype (should be %s)"
+msgstr "%s:%d: feil datatype (forventet %s)"
+
+#: radiusd/config.y:1487
+#, c-format
+msgid "INTERNAL ERROR at %s:%d: unknown datatype %d"
+msgstr "INTERN FEIL (%s:%d): ukjent datatype %d"
+
+#: radiusd/config.y:1556
+msgid "Statement has no effect."
+msgstr ""
+
+#: radiusd/config.y:1558
+#, c-format
+msgid "%s:%d: `%s' is obsolete. %s"
+msgstr "%s:%d: «%s» er utdatert. %s"
+
+#: radiusd/exec.c:76
+#, c-format
+msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
+msgstr ""
+"radius_exec_program(): ville ikke kjøre kommando: ikke et absolutt filnavn: %"
+"s"
+
+#: radiusd/exec.c:88
+#, c-format
+msgid "radius_exec_program(): won't execute, no such user: %s"
+msgstr ""
+"radius_exec_program(): ville ikke kjøre kommando: ingen slik bruker: %s"
+
+#: radiusd/exec.c:95
+msgid "couldn't open pipe"
+msgstr "kan ikke åpne utfilen"
+
+#: radiusd/exec.c:101
+msgid "can't reset SIGCHLD"
+msgstr "kan ikke gjenopprette SIGCHLD"
+
+#: radiusd/exec.c:123 radiusd/exec.c:176
+msgid "can't close pipe"
+msgstr "kan ikke stenge utfilen"
+
+#: radiusd/exec.c:125
+msgid "can't dup stdout"
+msgstr "kan ikke duplisere standard utgang"
+
+#: radiusd/exec.c:135
+#, fuzzy, c-format
+msgid "setgid(%d) failed"
+msgstr "setgid(%d) feil"
+
+#: radiusd/exec.c:141
+#, c-format
+msgid "seteuid(%d) failed (ruid=%d, euid=%d)"
+msgstr "seteuid(%d) feilet (ruid=%d, euid=%d)"
+
+#: radiusd/exec.c:146
+#, c-format
+msgid "setreuid(0,%d) failed (ruid=%d, euid=%d)"
+msgstr "setreuid(0,%d) feilet (ruid=%d, euid=%d)"
+
+#: radiusd/exec.c:188
+#, c-format
+msgid "<stdout of %s>:%d: %s"
+msgstr "<standart ut av %s>:%d: %s"
+
+#: radiusd/exec.c:205
+msgid "can't restore SIGCHLD"
+msgstr "kan ikke gjenopprette SIGCHLD"
+
+#: radiusd/exec.c:212
+#, fuzzy
+msgid ""
+"can't run external program (reason reported via syslog channel user.err)"
+msgstr ""
+"kan ikke kjøre subprocess (årsaken rapporteret gjennom syslogkanalen «user."
+"err»)"
+
+#: radiusd/exec.c:216
+msgid "radius_exec_program(): abnormal child exit"
+msgstr "radius_exec_program(): ugyldig avslutning av underprosess"
+
+#: radiusd/files.c:171
+#, c-format
+msgid "%s:%d: discarding user `%s'"
+msgstr "%s:%d: brukeren «%s» ble slettet"
+
+#: radiusd/files.c:216
+#, fuzzy, c-format
+msgid "%s:%d: discarding entry `%s'"
+msgstr "%s:%d: posten «%s» ble slettet"
+
+#: radiusd/files.c:433
+msgid "zero length username not permitted"
+msgstr "et brukernavn må ha minst én bokstav"
+
+#: radiusd/files.c:573
+#, c-format
+msgid "unknown attribute `%s/%s'"
+msgstr "ukjent attributt «%s/%s»"
+
+#: radiusd/files.c:585
+#, fuzzy, c-format
+msgid "expected opcode but found %s"
+msgstr "operasjonskode forventet men funnet %s"
+
+#: radiusd/files.c:628
+#, c-format
+msgid "unknown value %s"
+msgstr "ukjent verdi %s"
+
+#: radiusd/files.c:676
+#, c-format
+msgid "%s: error parsing date %s"
+msgstr "%s: feil under tolkning av dato %s"
+
+#: radiusd/files.c:689
+#, c-format
+msgid "unknown attribute type %d"
+msgstr "ukjent attributtype %d"
+
+#: radiusd/files.c:703
+#, c-format
+msgid "expected , but found %s"
+msgstr "forventet , men funnet %s"
+
+#: radiusd/files.c:810
+#, fuzzy, c-format
+msgid "hints:%d: %s(): not defined"
+msgstr "hints:%d: %s(): ikke definert"
+
+#: radiusd/files.c:908
+#, fuzzy, c-format
+msgid "huntgroups:%d: %s(): not defined"
+msgstr "huntgroups:%d: %s(): ikke definert"
+
+#: radiusd/files.c:958 radiusd/files.c:1248
+#, fuzzy, c-format
+msgid "%s:%d: wrong number of fields (%d)"
+msgstr "%s:%d: feil antall av felter (%d)"
+
+#: radiusd/files.c:1071
+#, c-format
+msgid "%s:%d: unknown method"
+msgstr "%s:%d: ukjent metode"
+
+#: radiusd/files.c:1138
+#, c-format
+msgid "%s:%d: too few fields (%d)"
+msgstr "%s:%d: for få felter (%d)"
+
+#: radiusd/files.c:1254
+#, c-format
+msgid "user `%s' already found in %s"
+msgstr "brukeren «%s» allerede funnet i %s"
+
+#: radiusd/files.c:1279
+#, c-format
+msgid "%d users disabled"
+msgstr "%d brukere lukket"
+
+#: radiusd/files.c:1869
+msgid "using only dbm: USERS NOT LOADED"
+msgstr "bruker bare dbm: USERS IKKE LEST"
+
+#: radiusd/files.c:1877
+msgid "DBM files found but no -b flag given - NOT using DBM"
+msgstr "DBM filene funnet men -b flagg ikke spesifisert - DBM BRUKES IKKE"
+
+#: radiusd/files.c:1881
+#, c-format
+msgid "can't load %s: exited"
+msgstr "kan ikke laste %s: Avslutter!"
+
+#: radiusd/files.c:1884
+#, c-format
+msgid "%s reloaded."
+msgstr "%s omlastet."
+
+#: radiusd/files.c:1959
+msgid "SQL Error: SQL client could not be initialized"
+msgstr "SQL Feil: kunne ikke starte SQL klient"
+
+#: radiusd/files.c:1972
+#, c-format
+msgid "INTERNAL ERROR: unknown reload code: %d"
+msgstr "INTERN FEIL: ukjent omlastkode: %d"
+
+#: radiusd/files.c:2103
+#, fuzzy, c-format
+msgid "can't create parser output file `%s'"
+msgstr "kan ikke opprette utskrift fil «%s»"
+
+#: radiusd/files.c:2117
+#, c-format
+msgid "dumped users database to %s"
+msgstr "lagret bruker database i %s"
+
+#: radiusd/log.c:123
+msgid "none"
+msgstr "intet"
+
+#: radiusd/log.c:124
+#, fuzzy
+msgid "Main"
+msgstr "Hoved"
+
+#: radiusd/log.c:125
+msgid "Auth"
+msgstr ""
+
+#: radiusd/log.c:126
+msgid "Acct"
+msgstr ""
+
+#: radiusd/log.c:127
+msgid "Proxy"
+msgstr ""
+
+#: radiusd/log.c:128
+msgid "SNMP"
+msgstr ""
+
+#: radiusd/log.c:132
+msgid "emerg"
+msgstr ""
+
+# årvåken?vaktsom?
+#: radiusd/log.c:133
+msgid "alert"
+msgstr "alarm"
+
+#: radiusd/log.c:134
+msgid "crit"
+msgstr "kritisk"
+
+#: radiusd/log.c:135
+msgid "error"
+msgstr "feil"
+
+#: radiusd/log.c:136
+msgid "warning"
+msgstr "advarsel"
+
+#: radiusd/log.c:137
+msgid "notice"
+msgstr "merknad"
+
+#: radiusd/log.c:138
+msgid "info"
+msgstr "info"
+
+#: radiusd/log.c:139
+msgid "debug"
+msgstr "feilsøk"
+
+#: radiusd/log.c:271
+#, c-format
+msgid "could not append to file %s"
+msgstr "kan ikke tilføye til filen %s"
+
+#: radiusd/log.c:392
+#, c-format
+msgid "can't access `%s'"
+msgstr "kan ikke aksessere «%s»"
+
+#: radiusd/menu.c:128 radiusd/menu.c:182
+#, c-format
+msgid "can't open menu `%s'"
+msgstr "kan ikke åpne menufil «%s»"
+
+#: radiusd/menu.c:130
+msgid ""
+"\n"
+"*** User Menu is Not Available ***\n"
+msgstr ""
+"\n"
+"*** Brukermeny er ikke tilgjengelig ***\n"
+
+#: radiusd/menu.c:232
+#, c-format
+msgid "menu %s:%d: %s"
+msgstr "meny %s:%d: %s"
+
+# FIXME: revise pam.c
+#: radiusd/pam.c:72
+msgid "rad_pam_conv(): no application-specific data passed"
+msgstr "rad_pam_conv(): Overført intet data spesifikk for vedlegget"
+
+# FIXME: should disappear when proxy.c:rad_send_request is fixed
+#: radiusd/proxy.c:291
+msgid "send buffer overflow"
+msgstr ""
+
+#: radiusd/proxy.c:415
+#, c-format
+msgid "cannot find secret for server %s in clients file"
+msgstr "kan ikke finne sikkerhetsnøkkel for tjener %s i klientens fil"
+
+#: radiusd/proxy.c:446
+msgid "authentication"
+msgstr "autentisering"
+
+#: radiusd/proxy.c:450
+msgid "accounting"
+msgstr ""
+
+# FIXME: ambiguous message
+#: radiusd/proxy.c:460
+#, c-format
+msgid "%s request from client %s for user %s - Security Breach"
+msgstr "overtredelse av sikkerhet: %s forespørsel fra NAS %s, bruker %s"
+
+#: radiusd/proxy.c:645
+#, c-format
+msgid "Unrecognized proxy reply from server %s - ID %d"
+msgstr "Ulovlig proxy svar fra tjenester %s - ID %d"
+
+#: radiusd/radck.c:88
+#, fuzzy, c-format
+msgid "users:%d: Match-Profile refers to non-existing profile (%s)"
+msgstr "users:%d: Match-Profile referanser ikke eksisterende profildata (%s)"
+
+# FIXME: circular dependency?
+#: radiusd/radck.c:133
+#, fuzzy, c-format
+msgid "users:%d: circular dependency for %s"
+msgstr "users:%d: gjensidig avhengighet for %s"
+
+#: radiusd/radck.c:163
+msgid "not enough memory for transitivity check"
+msgstr ""
+
+#: radiusd/radck.c:194
+msgid "USER LIST IS EMPTY"
+msgstr "BRUKERLISTEN ER TOM"
+
+#: radiusd/radck.c:211
+#, fuzzy, c-format
+msgid "users:%d: duplicate %s attribute"
+msgstr "users:%d: attribut «%s» duplisert"
+
+#: radiusd/radck.c:243
+#, fuzzy, c-format
+msgid "%s:%d: attribute %s not allowed in LHS"
+msgstr "%s:%d: attribut %s er ikke gyldig i LHS"
+
+#: radiusd/radck.c:284
+#, fuzzy, c-format
+msgid "%s:%d: Match-Profile refers to a DEFAULT entry"
+msgstr "%s:%d: Match-Profile referanser et DEFAULT innslag"
+
+#: radiusd/radck.c:326 radiusd/radck.c:350
+#, c-format
+msgid "%s:%d: No Password attribute in the checklist"
+msgstr "%s:%d: Intet Password attribut i LHS"
+
+#: radiusd/radck.c:337 radiusd/radck.c:366
+#, c-format
+msgid "%s:%d: Password attribute ignored for this Auth-Type"
+msgstr "%s:%d: Password attribut ignorert for dette Auth-Type"
+
+#: radiusd/radck.c:342
+#, c-format
+msgid "%s:%d: Password-Location attribute ignored for this Auth-Type"
+msgstr "%s:%d: Password-Location attribut ignorert for dette Auth-Type"
+
+#: radiusd/radck.c:358
+#, c-format
+msgid "%s:%d: Authentication type not supported"
+msgstr "%s:%d: Autentiserungtypen er ikke støttet"
+
+#: radiusd/radck.c:384
+#, c-format
+msgid "%s:%d: Both Auth-Data and PAM-Auth attributes present"
+msgstr "%s:%d: Auth-Data og PAM-Auth må ikke brukes i lag"
+
+#: radiusd/radck.c:413
+#, c-format
+msgid "%s:%d: attribute %s not allowed in RHS"
+msgstr "%s:%d: attributet %s er ikke gyldig i RHS"
+
+#: radiusd/radck.c:430
+#, c-format
+msgid "%s:%d: BEGIN without Fall-Through"
+msgstr "%s:%d: BEGIN ble brukt uten Fall-Through"
+
+#: radiusd/radius.c:495
+#, c-format
+msgid "request from unknown client: %s"
+msgstr "forespørsel fra en ukjent klient: %s"
+
+#: radiusd/radiusd.c:180
+#, fuzzy
+msgid "GNU radius daemon"
+msgstr "%s: GNU Radius version %s"
+
+#: radiusd/radiusd.c:184
+msgid "radiusd specific switches:"
+msgstr "Flagg spesifikk for radiusd:"
+
+# FIXME: very fuzzy
+#: radiusd/radiusd.c:186
+#, fuzzy
+msgid "Do detailed authentication logging"
+msgstr "Slå på detaljert autentiserung logging"
+
+#: radiusd/radiusd.c:188
+msgid "Set accounting directory"
+msgstr ""
+
+#: radiusd/radiusd.c:191
+msgid "Enable DBM support"
+msgstr "Slå på DBM støtte"
+
+#: radiusd/radiusd.c:194
+msgid "Stay in foreground"
+msgstr ""
+
+#: radiusd/radiusd.c:196
+#, fuzzy
+msgid "Set logging directory name"
+msgstr "Sette navnet til loggkatalog"
+
+#: radiusd/radiusd.c:198
+#, fuzzy
+msgid "Select operation mode: test, checkconf, builddbm."
+msgstr "Velge operasjonmodus: test, checkconf, builddbm."
+
+#: radiusd/radiusd.c:200
+#, fuzzy
+msgid "Do only authentication"
+msgstr "autentisering"
+
+#: radiusd/radiusd.c:202
+msgid "Do not resolve IP addresses"
+msgstr ""
+
+#: radiusd/radiusd.c:204
+msgid "Listen on ADDRESS"
+msgstr ""
+
+#: radiusd/radiusd.c:206
+#, fuzzy
+msgid "Set authentication port number"
+msgstr "Guile godkjenning ikke tilgjengelig"
+
+#: radiusd/radiusd.c:208
+#, fuzzy
+msgid "Store pidfile in DIR"
+msgstr "Lagge pidfilen i DIR"
+
+#: radiusd/radiusd.c:210
+#, fuzzy
+msgid "Strip prefixes/suffixes off user names before logging"
+msgstr "Logge brukernavn uten prefikser og suffikser"
+
+#: radiusd/radiusd.c:212
+msgid "Run in single process mode"
+msgstr ""
+
+#: radiusd/radiusd.c:214
+msgid "Set debugging level"
+msgstr "Sette modus for feilsøkning"
+
+#: radiusd/radiusd.c:216
+#, fuzzy
+msgid "Log authentications"
+msgstr "autentisering"
+
+#: radiusd/radiusd.c:218
+msgid "Log users' passwords"
+msgstr ""
+
+#: radiusd/radiusd.c:256
+msgid "radiusd compiled without DBM support"
+msgstr "radiusd ble blygget uten DBM"
+
+#: radiusd/radiusd.c:265
+#, c-format
+msgid "unknown mode: %s"
+msgstr "ukjent modus: %s"
+
+#: radiusd/radiusd.c:277
+#, c-format
+msgid "invalid IP address: %s"
+msgstr "ulovlig IP addresse: %s"
+
+#: radiusd/radiusd.c:384
+msgid "Sorry, your account is currently closed\n"
+msgstr "Beklager, Deres konto er stengt\n"
+
+#: radiusd/radiusd.c:386
+msgid "Password has expired\n"
+msgstr "Passordet er ikke lenger gyldig\n"
+
+#: radiusd/radiusd.c:388
+msgid "Password will expire in %R{Password-Expire-Days} Days\n"
+msgstr "Passordet må endres innen %R{Password-Expire-Days} dager\n"
+
+#: radiusd/radiusd.c:390
+msgid ""
+"\n"
+"Access denied\n"
+msgstr ""
+"\n"
+"Tilgang nektet\n"
+
+#: radiusd/radiusd.c:392
+#, fuzzy
+msgid ""
+"\n"
+"Realm quota exceeded - access denied\n"
+msgstr ""
+"\n"
+"«realm» kvoten er overskredet - tilgang nektet\n"
+
+#: radiusd/radiusd.c:394
+msgid ""
+"\n"
+"You are already logged in %R{Simultaneous-Use} times - access denied\n"
+msgstr ""
+"\n"
+"De er allerede inlogget %R{Simultaneous-Use} ganger - tilgang nektet\n"
+
+#: radiusd/radiusd.c:396
+msgid ""
+"\n"
+"You are already logged in - access denied\n"
+msgstr ""
+"\n"
+"De er allerede inlogget - tilgang nektet\n"
+
+#: radiusd/radiusd.c:398
+msgid "You are calling outside your allowed timespan\n"
+msgstr ""
+
+#: radiusd/radiusd.c:523
+msgid "Ready to process requests."
+msgstr "Klar for tilkoblinger."
+
+#: radiusd/radiusd.c:708
+msgid "failed in select() - exit."
+msgstr "feil under select() - avslutning."
+
+#: radiusd/radiusd.c:712
+msgid "Normal shutdown."
+msgstr "Normal avslutning."
+
+#: radiusd/radiusd.c:715
+#, c-format
+msgid "exit on signal (%d)"
+msgstr "avslutning under signal (%d)"
+
+#: radiusd/radiusd.c:727
+msgid "flushing request queues"
+msgstr "tømmer forespørsel-køer"
+
+#: radiusd/radiusd.c:743
+msgid "restart initiated"
+msgstr "omstart påbegynt"
+
+#: radiusd/radiusd.c:746
+msgid "can't restart: not started as absolute pathname"
+msgstr "Kan ikke starte om: programnavnet er ikke et absolutt filnavn"
+
+#: radiusd/radiusd.c:791
+msgid "restarting radius"
+msgstr "starter tjenesten på nytt"
+
+#: radiusd/radiusd.c:793
+msgid "RADIUS NOT RESTARTED: exec failed"
+msgstr "RADIUSD STARTET IKKE: feil under exec"
+
+#: radiusd/radiusd.c:810
+msgid "Starting - reading configuration files ..."
+msgstr "Starter - leser konfigurasjonsfiler"
+
+#: radiusd/radiusd.c:812
+msgid "Reloading configuration files."
+msgstr "Omleser konfiguratjonfiler"
+
+#: radiusd/radiusd.c:858
+msgid "Errors reading config file - EXITING"
+msgstr "Feil ved lesing av konfigurasjonsfiler - avslutter!"
+
+#: radiusd/radiusd.c:883
+msgid "can't find out my own IP address"
+msgstr "kan ikke finne min egen IP adresse"
+
+#: radiusd/radiusd.c:897
+#, fuzzy
+msgid "Reloading configuration now"
+msgstr "Nå leser konfigurasjonsfiler på nytt"
+
+#: radiusd/radiusd.c:907
+#, c-format
+msgid "Dumping users db to `%s'"
+msgstr "bruker database lagret til «%s»"
+
+#: radiusd/radiusd.c:927
+msgid "can't restart: radiusd not started as absolute pathname"
+msgstr "Kan ikke starte om: programnavnet er ikke et absolutt filnavn"
+
+#: radiusd/radiusd.c:940
+msgid "RADIUSD RUNNING"
+msgstr "RADIUSD KJØRER"
+
+# FIXME: Suspendert?
+#: radiusd/radiusd.c:947
+#, fuzzy
+msgid "RADIUSD SUSPENDED"
+msgstr "RADIUSD STANSET"
+
+#: radiusd/radiusd.c:985
+#, fuzzy, c-format
+msgid "%lu classes, %lu buckets are using %lu bytes of memory"
+msgstr "%lu klasser, %lu sider bruker %lu byter av minnet"
+
+#: radiusd/radiusd.c:992
+#, c-format
+msgid "memory utilization: %ld.%1ld%%"
+msgstr "minneutnyttelse: %ld.%1ld%%"
+
+#: radiusd/radiusd.c:997
+msgid "    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"
+msgstr ""
+
+#: radiusd/radiusd.c:1002
+#, c-format
+msgid "malloc statistics: %d blocks, %d bytes"
+msgstr ""
+
+#: radiusd/radiusd.c:1145
+#, fuzzy, c-format
+msgid "Dropping %s packet from client %s, ID: %d: %s"
+msgstr "Slet %s forespørsler fra klient %s, ID: %d: %s"
+
+#: radiusd/radiusd.c:1174
+#, c-format
+msgid "Retransmitting %s reply: client %s, ID: %d, code: %d"
+msgstr "Sender %s svaret på nytt: klient %s, ID: %d, kode: %d"
+
+#: radiusd/radiusd.c:1297
+#, c-format
+msgid "unknown request %d"
+msgstr "ukjent forespørselkode %d"
+
+#: radiusd/radutil.c:193
+#, c-format
+msgid "INTERNAL ERROR (%s:%d): attribute %d has bad type (%d)"
+msgstr "INTERN FEIL (%s:%d): attributt %d har ulovlig type (%d)"
+
+#: radiusd/request.c:71
+#, c-format
+msgid "Can't spawn new thread: %s"
+msgstr "Kan ikke starter ny tråd: %s"
+
+#: radiusd/request.c:214
+#, fuzzy
+msgid "request timed out in queue"
+msgstr "Forespørsel overskred tidsgrensen mens i køen"
+
+#: radiusd/request.c:230 radiusd/request.c:380
+#, c-format
+msgid "Killing unresponsive %s thread %d"
+msgstr ""
+
+#: radiusd/request.c:254
+#, fuzzy
+msgid "duplicate request"
+msgstr "duplisert forespørsel"
+
+#: radiusd/request.c:278
+msgid "too many requests in queue"
+msgstr "for mange forespørsler i køen"
+
+#: radiusd/request.c:287
+msgid "too many requests of this type"
+msgstr "for mange forespørsler av denne typen"
+
+#: rewrite.y:962 radiusd/rewrite.y:962
+#, c-format
+msgid "%s:%d: nothing to break from"
+msgstr ""
+
+#: rewrite.y:976 radiusd/rewrite.y:976
+#, c-format
+msgid "%s:%d: nothing to continue"
+msgstr ""
+
+#: rewrite.y:4653 rewrite.y:4755 radiusd/rewrite.y:4653 radiusd/rewrite.y:4755
+#, c-format
+msgid "function %s not defined"
+msgstr "Funksjonen %s er ikke definert"
+
+#: rewrite.y:4695 radiusd/rewrite.y:4695
+#, fuzzy, c-format
+msgid "%s(): wrong number of arguments (should be %d, passed %d)"
+msgstr "%s(): feil antall argumenter (forventet %d, overført %d)"
+
+#: rewrite.y:4737 radiusd/rewrite.y:4737
+#, c-format
+msgid "malformed function call: %s"
+msgstr "feilaktig funksjonkall: %s"
+
+#: rewrite.y:4745 radiusd/rewrite.y:4745
+msgid "missing '(' in function call"
+msgstr "mangler '(' i funksjonkall"
+
+#: rewrite.y:4749 radiusd/rewrite.y:4749
+msgid "missing ')' in function call"
+msgstr "mangler ')' i funksjonkall"
+
+#: rewrite.y:4827 radiusd/rewrite.y:4827
+#, c-format
+msgid "too few arguments for %s"
+msgstr "for få argumenter til %s"
+
+#: radiusd/scheme.c:111
+#, fuzzy, c-format
+msgid "Can't spawn guile thread: %s"
+msgstr "Kan ikke starte en tråd til guile: %s"
+
+#: radiusd/scheme.c:237 radiusd/scheme.c:284
+#, fuzzy, c-format
+msgid "%s is not a procedure object"
+msgstr "%s er ikke en prosedyre objekt"
+
+#: radiusd/snmpserv.c:573
+#, c-format
+msgid "can't decode SNMP packet from %s: %s"
+msgstr "kan ikke dekode SNMP forespørsel fra %s: %s"
+
+#: radiusd/snmpserv.c:582
+#, fuzzy, c-format
+msgid "DENIED attempt to access community %s from %s"
+msgstr "IKKE TILGANG for «community» %s fra %s"
+
+#: radiusd/snmpserv.c:620
+#, c-format
+msgid "Dropping SNMP request from client %s: %s"
+msgstr "Hopper over forespørsel fra klient %s: %s"
+
+#: radiusd/snmpserv.c:1236
+msgid "acct server re-initializing on SNMP request"
+msgstr ""
+
+#: radiusd/snmpserv.c:1610
+msgid "auth server re-initializing on SNMP request"
+msgstr ""
+
+#: radiusd/snmpserv.c:1911
+msgid "server re-initializing on SNMP request"
+msgstr ""
+
+#: radiusd/snmpserv.c:1915
+msgid "server restart on SNMP request"
+msgstr ""
+
+#: radiusd/snmpserv.c:1919
+msgid "server continuing on SNMP request"
+msgstr ""
+
+#: radiusd/snmpserv.c:1923
+msgid "server suspending on SNMP request"
+msgstr ""
+
+#: radiusd/snmpserv.c:1927
+msgid "server shutting down on SNMP request"
+msgstr ""
+
+#: radiusd/sql.c:331
+#, c-format
+msgid "could not read sqlserver file %s"
+msgstr "kan ikke leser sqlserver fil «%s»"
+
+#: radiusd/sql.c:341
+#, c-format
+msgid "%s:%d: unrecognized keyword"
+msgstr "%s:%d: ukjent nøkkelord"
+
+#: radiusd/sql.c:348
+#, c-format
+msgid "%s:%d: required argument missing"
+msgstr "%s:%d: mangler nødvendig argument"
+
+#: radiusd/sql.c:371 radiusd/sql.c:396
+#, c-format
+msgid "%s:%d: number parse error"
+msgstr "%s:%d: feil under tolkning av tallet"
+
+#: radiusd/sql.c:389 radiusd/sql.c:405 radiusd/sql.c:412
+#, c-format
+msgid "%s:%d: expected boolean value"
+msgstr "%s:%d: booleansk verdi forventet"
+
+#: radiusd/sql.c:548
+#, fuzzy
+msgid "disabling SQL auth: no auth_query specified"
+msgstr "slå av SQL autentisering: intet auth_query"
+
+#: radiusd/sql.c:553
+msgid "SQL auth: no group_query specified"
+msgstr "SQL autentisering: intet group_query"
+
+#: radiusd/sql.c:563
+msgid "SQL acct: no acct_start_query specified"
+msgstr "SQL autentisering: intet acct_start_query"
+
+#: radiusd/sql.c:569
+msgid "disabling SQL acct: no acct_stop_query specified"
+msgstr "slå av SQL acct: intet acct_stop_query"
+
+#: radiusd/sql.c:576
+msgid "SQL acct: no acct_nasdown_query specified"
+msgstr "SQL acct: intet acct_nasdown_query"
+
+#: radiusd/sql.c:582
+msgid "SQL acct: no acct_nasup_query specified"
+msgstr "SQL acct: intet acct_nasup_query"
+
+#: radiusd/sql.c:604
+#, fuzzy
+msgid "SQL configuration changed: closing existing connections"
+msgstr "SQL konfigurasjon vekslet: lukke av eksisterende tilkoblinger"
+
+#: radiusd/sql.c:696
+#, fuzzy
+msgid "no Acct-Status-Type attribute in rad_sql_acct()"
+msgstr "intet Acct-Status-Type attribut i rad_sql_acct()"
+
+#: radiusd/sql.c:731
+#, c-format
+msgid "SQL %s (%s) %d rows changed"
+msgstr "SQL %s (%s) %d felter vekslet"
+
+#: radiusd/sql.c:746
+#, fuzzy, c-format
+msgid "SQL: %d records updated writing acct-on info for NAS %s"
+msgstr "SQL: %d poster oppdatert ved lage av acct-on data for NAS %s"
+
+#: radiusd/sql.c:762
+#, fuzzy, c-format
+msgid "SQL: %d records updated writing acct-off info for NAS %s"
+msgstr "SQL: %d poster oppdatert ved lage av acct-off data for NAS %s"
+
+#: radiusd/sql.c:778
+#, fuzzy, c-format
+msgid "SQL: %d records updated writing keepalive info for NAS %s"
+msgstr "SQL: %d poster oppdatert ved lage av «keepalive» data for NAS %s"
+
+#: radiusd/sql.c:803
+msgid "SQL Auth specified in users file, but not in sqlserver file"
+msgstr ""
+"SQL autentisering er brukt i «users»-filen men ikke krevet i «sqlserver»-"
+"filen"
+
+#: radiusd/sql.c:904
+#, c-format
+msgid "SQL: invalid operator: %s"
+msgstr ""
+
+#: radiusd/stat.c:178
+#, c-format
+msgid "Error writing to statfile %s"
+msgstr "Feil ved skriving til statistikk fil %s"
+
+#: radiusd/stat.c:238
+#, c-format
+msgid "Cannot open statfile %s"
+msgstr "Kan ikke åpne statistikk fil %s"
+
+#: radiusd/stat.c:358
+#, c-format
+msgid "stat_update(): portno %d: can't find nas for IP %s"
+msgstr "stat_update(): port %d: kan ikke finne nas med IP %s"
+
+#: radiusd/stat.c:369
+#, c-format
+msgid "stat_update(): port %d not found on NAS %s"
+msgstr "stat_update(): port %d ikke funnet for NAS %s"
+
+#: radiusd/stat.c:381
+#, c-format
+msgid "stat_update(START,%s,%s,%d): negative time skew"
+msgstr ""
+
+#: radiusd/stat.c:404
+#, c-format
+msgid "stat_update(STOP,%s,%s,%d): negative time skew"
+msgstr ""
+
+#: radiusd/version.c:147
+msgid "GNU RADIUS server version "
+msgstr "GNU RADIUS server versjon"
+
+#: radiusd/version.c:165
+#, c-format
+msgid "%s: GNU Radius version %s"
+msgstr "%s: GNU Radius version %s"
+
+#: radiusd/version.c:171
+msgid "Compilation platform: "
+msgstr "Plattform for kompilering:"
+
+#: radiusd/version.c:175
+msgid ""
+"\n"
+"Debugging flags: "
+msgstr ""
+"\n"
+"Flagg for feilsøking:"
+
+#: radiusd/version.c:180
+msgid ""
+"\n"
+"Compilation flags: "
+msgstr ""
+"\n"
+"Flagg for kompilering:"
+
+#: radiusd/version.c:192
+#, c-format
+msgid " configuration directory: %s\n"
+msgstr " konfigurasjon katalog: %s\n"
+
+#: radiusd/version.c:193
+#, c-format
+msgid " logging directory:       %s\n"
+msgstr " loggkatalog:           %s\n"
+
+#: radiusd/version.c:194
+#, fuzzy, c-format
+msgid " accounting directory:    %s\n"
+msgstr "acct katalog:           %s\n"
+
+#: radiusd/version.c:196
+#, c-format
+msgid " deny shell:              %s\n"
+msgstr ""
+
+#: radiusd/version.c:200
+#, c-format
+msgid " pidfile:                 %s\n"
+msgstr " pidfil:                %s\n"
+
+#: radiusd/version.c:202
+msgid " no pidfile\n"
+msgstr " intet pidfil\n"
+
+#: radlast/radlast.c:110
+#, fuzzy
+msgid "report last logins from Radius database."
+msgstr "Rapporter siste loginer fra Radis database"
+
+#: radlast/radlast.c:114
+msgid "radlast specific switches:"
+msgstr "flagg spesifikk for radlast:"
+
+#: radlast/radlast.c:126
+#, fuzzy
+msgid "show at most NUMBER records"
+msgstr "vis ikke mer enn NUMBER poster"
+
+#: radlast/radlast.c:128
+#, fuzzy
+msgid "use FILENAME as radwtmp"
+msgstr "les FILENAME istedenfor forvalgte radwtmp"
+
+#: radlast/radlast.c:130
+#, fuzzy
+msgid "show logins with IPADDR"
+msgstr "vis poster med IP addresse IPADDR"
+
+#: radlast/radlast.c:132
+msgid "mark records with missed stops with bump (!)"
+msgstr "marke poster uten stopper med et utropstegn"
+
+#: radlast/radlast.c:134
+msgid "show logins from given NAS"
+msgstr "vis innloginger fra angitt NAS"
+
+#: radlast/radlast.c:136
+#, fuzzy
+msgid "use long output format"
+msgstr "bruk lang ut-format"
+
+#: radlast/radlast.c:138
+#, fuzzy
+msgid "show logins from given port"
+msgstr "vis innloginger fra angitt port"
+
+#: radlast/radlast.c:140
+msgid "show the login session duration in seconds"
+msgstr ""
+
+#: radlast/radlast.c:142
+msgid "widen the duration field to show seconds"
+msgstr ""
+
+#: radlast/radlast.c:209
+msgid "--width is incompatible with --show-seconds"
+msgstr "--width er ikke kompatible med --show-seconds"
+
+#: radscm/radscm.c:331 radtest/main.c:169
+msgid "error reading dictionary file"
+msgstr "feil under lesing av ordliste"
+
+#: gram.y:451 radtest/gram.y:451
+#, c-format
+msgid "attribute %s has unknown type"
+msgstr "attribut %s har ujent type"
+
+#: gram.y:532 radtest/gram.y:532
+#, fuzzy, c-format
+msgid "%s:%d: unknown value %s"
+msgstr "%s:%d: ukjent verdi %s"
+
+#: radtest/main.c:70
+#, fuzzy
+msgid "send arbitrary radius packets"
+msgstr "sende vilkårlige radius forespørsler"
+
+#: radtest/main.c:74
+msgid "radtest specific switches:"
+msgstr "flagg spesifikk for radtest:"
+
+#: radtest/main.c:76
+#, fuzzy
+msgid "assign a VALUE to VARIABLE"
+msgstr "del VALUE til VARIABLE"
+
+#: radtest/main.c:78
+msgid "set debugging level"
+msgstr "sette modus for feilsøkning"
+
+#: radtest/main.c:80
+#, fuzzy
+msgid ""
+"Read input from FILE. When this option is used, all unknown options in the "
+"form --VAR=VALUE are treated as variable assignments"
+msgstr ""
+"Les inn fra FILE. Dersom dette flagg brukes alle flagg i formen «--"
+"VAR=VERDI»\n"
+"er behandles som tildelinger av VERDI til variablen VAR"
+
+#: radtest/main.c:86
+msgid "set number of retries"
+msgstr ""
+
+#: radtest/main.c:88
+msgid "set radius server parameters"
+msgstr "sette parameteren til radius tjener"
+
+#: radtest/main.c:90
+msgid "set timeout"
+msgstr "sette tidsgrensen"
+
+#: radtest/main.c:92
+msgid "verbose mode"
+msgstr "gi mer fyldige meldinger"
+
+#: radtest/main.c:305
+msgid "assign: expected `='\n"
+msgstr "assign: forventet «=»\n"
+
+#: radtest/main.c:329
+#, fuzzy
+msgid "assign: missing closing quote\n"
+msgstr "medler lukkende siteringstegn\n"
+
+#: radtest/main.c:348 radtest/main.c:357
+#, c-format
+msgid "assign: invalid IP address: %s\n"
+msgstr "assign: ulovlig IP addresse: %s\n"
+
+#: radtest/main.c:486
+msgid "wrong datatype: expected vector"
+msgstr "feil datatype: forventet vektor"
+
+#: radwho/radwho.c:260
+#, fuzzy
+msgid "display who is logged on by Radius"
+msgstr "vis brukerer innlogget av Radius"
+
+#: radwho/radwho.c:264
+msgid "radwho specific switches:"
+msgstr "flagg spesifikk for radwho:"
+
+#: radwho/radwho.c:266
+#, fuzzy
+msgid "print all entries, not only active ones"
+msgstr "vis alle de innslag"
+
+#: radwho/radwho.c:268
+#, fuzzy
+msgid "display CLID in second column"
+msgstr "vis CLID i annen kolonne"
+
+#: radwho/radwho.c:270
+#, fuzzy
+msgid "change date representation format"
+msgstr "velg format for representasjon av datoer"
+
+#: radwho/radwho.c:272
+msgid "print STRING instead of an empty column"
+msgstr "vis STRING istedenfor tom kolonne"
+
+#: radwho/radwho.c:274
+#, fuzzy
+msgid "Use FILE instead of /var/log/radutmp"
+msgstr "les FILE istedenfor /var/log/radutmp"
+
+#: radwho/radwho.c:276
+msgid "act as a finger daemon"
+msgstr ""
+
+#: radwho/radwho.c:278
+#, fuzzy
+msgid "do not display header line"
+msgstr "vis ikke hodeslinje"
+
+#: radwho/radwho.c:280
+#, fuzzy
+msgid "display session ID in the second column"
+msgstr "vis sesjon ID i annen kolonne"
+
+#: radwho/radwho.c:282
+msgid "select IP address representation format"
+msgstr "velg format for representasjon av IP adresser"
+
+#: radwho/radwho.c:284
+msgid "Long output. All fields will be printed. Implies -D full -I smart"
+msgstr ""
+
+#: radwho/radwho.c:287
+msgid "display also local users"
+msgstr ""
+
+#: radwho/radwho.c:289
+msgid "do not resolve hostnames. Synonim for -I ip"
+msgstr ""
+
+#: radwho/radwho.c:291
+#, fuzzy
+msgid "change output format"
+msgstr "velg ut-format"
+
+#: radwho/radwho.c:293
+#, fuzzy
+msgid "secure mode: requires that the username be specified"
+msgstr "sikkerhet modus: krever at brukernavn være spesifisert"
+
+#: radwho/radwho.c:427
+#, fuzzy
+msgid "must provide username\n"
+msgstr "brukernavn må spesifiseres\n"
+
+#: radwho/radwho.c:454
+#, fuzzy, c-format
+msgid "invalid date format: %s"
+msgstr "feil datoformat: %s"
+
+#: radwho/radwho.c:468
+#, c-format
+msgid "invalid IP format: %s"
+msgstr "feil IP format: %s"
+
+#: radwho/radwho.c:493
+#, c-format
+msgid "can't open file: %s"
+msgstr "kan ikke åpne fil: %s"
+
+#: radwho/radwho.c:967
+msgid "too many format specs"
+msgstr "for mange formatspesifikasjoner"
+
+#: radwho/radwho.c:984
+#, c-format
+msgid "no such format name: %s"
+msgstr "intet slik formatnavn: %s"
+
+#: radwho/radwho.c:1008
+#, c-format
+msgid "error in format spec near %s"
+msgstr "feil i formatspesifikasjonen nær %s"
+
+#: radwho/radwho.c:1049
+#, c-format
+msgid "%s:%d: syntax error\n"
+msgstr "%s:%d: syntaksfeil\n"
+
+#: radzap/radzap.c:56
+#, fuzzy
+msgid "delete Radius login records"
+msgstr "ta bort Radius login poster"
+
+#: radzap/radzap.c:60
+msgid "radzap specific switches:"
+msgstr "flagg spesifikk for radzap:"
+
+#: radzap/radzap.c:62
+msgid "ask for confirmation before zapping"
+msgstr ""
+
+#: radzap/radzap.c:64
+#, fuzzy
+msgid "set logging directory"
+msgstr "sette katalog til loggfila"
+
+#: radzap/radzap.c:66
+msgid "operate on FILE instead of /var/log/radutmp"
+msgstr "behandle FILE istedenfor /var/log/radutmp"
+
+#: radzap/radzap.c:68
+msgid "zap user from given NAS"
+msgstr ""
+
+#: radzap/radzap.c:70
+msgid "zap user coming from given port"
+msgstr ""
+
+#: radzap/radzap.c:72
+msgid "do not ask for confirmation before zapping"
+msgstr ""
+
+#: radzap/radzap.c:111
+msgid "at least one port, nas or user must be specified"
+msgstr ""
+
+#: radzap/radzap.c:239
+#, c-format
+msgid "radzap: zapping %s from %s, port %d"
+msgstr ""
+
+#: radzap/radzap.c:247
+msgid "Not confirmed\n"
+msgstr "Bekreftet ikke\n"
+
+#: sql/mysql.c:109
+#, c-format
+msgid "MYSQL error: %s"
+msgstr "MYSQL feil: %s"
+
+#: sql/mysql.c:110
+#, c-format
+msgid "Failed query was: %s"
+msgstr "Feilet forespørsel var: %s"
+
+#: sql/mysql.c:123
+#, fuzzy
+msgid "MYSQL Error: giving up"
+msgstr "MYSQL feil: gitt opp"
+
+#: sql/mysql.c:150
+#, c-format
+msgid "MYSQL: cannot connect to %s as %s"
+msgstr "MYSQL: feil under kobling til %s som bruker %s"
+
+#: sql/mysql.c:173
+#, c-format
+msgid "MYSQL: cannot select db %s"
+msgstr "MYSQL: kan ikke velge db %s"
+
+#: sql/mysql.c:175
+#, fuzzy, c-format
+msgid "MYSQL: error: %s"
+msgstr "MYSQL feil: forespørsel %s"
+
+#: sql/mysql.c:187
+msgid "MYSQL: Giving up on connect"
+msgstr "MYSQL: Kan ikke koble. Gitt opp."
+
+#: sql/mysql.c:211
+#, c-format
+msgid "MYSQL Error: query %s"
+msgstr "MYSQL feil: forespørsel %s"
+
+#: sql/mysql.c:240
+msgid "MYSQL Error: can't get result for authentication"
+msgstr "MYSQL feil: kan ikke få resultat for autentisering"
+
+#: sql/mysql.c:280
+msgid "MYSQL Error: can't get result"
+msgstr "MYSQL feil: kan ikke få resultat"
+
+#: sql/mysql.c:306 sql/odbc.c:342 sql/postgres.c:370
+#, fuzzy, c-format
+msgid "too few columns returned (%d req'd)"
+msgstr "for få kolonner fått (%d kreves)"
+
+#: sql/odbc.c:257
+#, c-format
+msgid "query returned more tuples: %s"
+msgstr ""
+
+#: sql/postgres.c:127 sql/postgres.c:156
+#, c-format
+msgid "PQconnectStart failed: %s"
+msgstr "PQconnectStart feilet: %s"
+
+#: sql/postgres.c:150
+msgid "PQconnectStart failed"
+msgstr "PQconnectStart feilet"
+
+#: sql/postgres.c:291
+#, c-format
+msgid "query returned %d tuples: %s"
+msgstr ""
+
+#: sql/postgres.c:298 sql/postgres.c:344
+#, c-format
+msgid "PQexec returned %s"
+msgstr ""

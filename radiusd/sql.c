@@ -1155,7 +1155,7 @@ sql_mlc_collect(const char *query_template,
         conn = attach_sql_connection(SQL_ACCT);
         obstack_init(&stack);
 	
-        query = radius_xlate(&stack, query_template, request, NULL);
+        query = radius_xlate(&stack, (char*) query_template, request, NULL);
         rc = rad_sql_retrieve_sessions(conn, query, sess_list);
 	obstack_free(&stack, NULL);
         return rc == 0;

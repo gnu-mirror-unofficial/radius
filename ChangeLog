@@ -1,3 +1,13 @@
+2001-12-22 Sergey Poznyakoff
+
+	* radlib/util.c: (format_pair) Fixed a dumb error.
+
+	* test/proto.m4: (new) Common m4 test suite defines.
+	* test/Makefile.am: Added proto.m4.
+	* test/dejagnu.m4: Modified.
+
+	* test/raddb/sqlserver: Synchronized with /raddb/sqlserver.
+	
 2001-12-21 Sergey Poznyakoff
 
 	Still more changes due to the removal of Queue-Id.

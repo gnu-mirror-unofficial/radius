@@ -276,8 +276,8 @@ void            rad_mainloop();
 /* radius.c */
 int		rad_send_reply(int, RADIUS_REQ *, VALUE_PAIR *, char *, int);
 RADIUS_REQ	*radrecv (UINT4, u_short, u_char *, int);
-int		calc_digest (u_char *, RADIUS_REQ *);
-int		calc_acctdigest(u_char *digest, RADIUS_REQ *radreq);
+int validate_client(RADIUS_REQ *radreq);
+int		calc_acctdigest(RADIUS_REQ *radreq);
 void            send_challenge(RADIUS_REQ *radreq, char *msg, char *state, int activefd);
 
 
@@ -334,7 +334,7 @@ int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **,
 			int, char **user_msg);
 
 /* menu.c */
-void process_menu(RADIUS_REQ *radreq, int fd, u_char *pw_digest);
+void process_menu(RADIUS_REQ *radreq, int fd);
 char * get_menu(char *menu_name);
 
 

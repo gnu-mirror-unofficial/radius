@@ -20,12 +20,13 @@
  *	@(#) $Id$
  */
 
-#include <stdio.h>
 #include <sysdep.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <stdio.h>
 #include <radius.h>
 #include <radpaths.h>
-#include <mem.h>
-#include <log.h>
 
 #define NITEMS(a) sizeof(a)/sizeof((a)[0])
 
@@ -91,96 +92,6 @@ typedef struct request_class {
 } REQUEST_CLASS;
 
 
-/* ************************** Data structures ****************************** */
-
-#define MAX_DICTNAME  32
-#define MAX_SECRETLEN 32
-#define MAX_REALMNAME 256
-#define MAX_LONGNAME  256
-#define MAX_SHORTNAME 32
-
-#define AF_CHECKLIST   0x0001  /* The attribute is valid in checklist */
-#define AF_REPLYLIST   0x0002  /* The attribute is valid in replylist */
-#define AF_ADD_REPLACE 0
-#define AF_ADD_APPEND  1
-#define AF_ADD_NONE    2
-
-#define AF_DEFAULT_FLAGS (AF_CHECKLIST|AF_REPLYLIST)
-#define AF_DEFAULT_ADD   AF_ADD_APPEND
-
-/* Dictionary attribute */
-typedef struct dict_attr {
-	struct dict_attr	*next;
-	char			name[MAX_DICTNAME+1];
-	int			value;
-	int			type;
-	int			vendor;
-	int                     flags;
-	int                     additivity; 
-} DICT_ATTR;
-
-/* Dictionary value */
-typedef struct dict_value {
-	struct dict_value	*next;
-	char			attrname[MAX_DICTNAME+1];
-	char			name[MAX_DICTNAME+1];
-	int			value;
-} DICT_VALUE;
-
-/* Dictionary vendor information */
-typedef struct dict_vendor {
-	struct dict_vendor	*next;
-	char			vendorname[MAX_DICTNAME+1];
-	int			vendorpec;
-	int			vendorcode;
-} DICT_VENDOR;
-
-/* An attribute/value pair */
-typedef struct value_pair {
-	struct value_pair	*next;      /* Link to next A/V pair in list */
-	char	                *name;      /* Attribute name */
-	int			attribute;  /* Attribute value */
-	int			type;       /* Data type */
-	int                     eval;       /* Evaluation flag */
-	int                     additivity; 
-	int			operator;   /* Comparison operator */
-	union {
-		UINT4		ival;       /* integer value */
-		struct {
-			int	s_length;   /* length of s_value w/o
-					     * trailing 0
-					     */
-			char	*s_value;   /* string value */
-		} string;
-	} v;
-	
-#define lvalue v.ival
-#define strvalue v.string.s_value
-#define strlength v.string.s_length
-
-} VALUE_PAIR;
-
-typedef struct radius_req {
-	UINT4			ipaddr;
-	u_short			udp_port;
-	u_char			id;
-	u_char			code;
-	u_char			vector[AUTH_VECTOR_LEN];
-	u_char			secret[AUTH_PASS_LEN];
-	u_char		        digest[AUTH_PASS_LEN];
-	VALUE_PAIR		*request;
-	u_char			*data;		/* Raw received data */
-	int			data_len;       /* Length of raw data */
-	int                     data_alloced;   /* Was the data malloced */
-        /* Proxy support fields */
-	char			*realm;         /* stringobj, actually */
-	int			validated;	/* Already md5 checked */
-	UINT4			server_ipaddr;
-	UINT4			server_id;
-	VALUE_PAIR		*server_reply;	/* Reply from other server */
-	int			server_code;	/* Reply code from other srv */
-} RADIUS_REQ;
-
 typedef struct client {
 	struct client		*next;
 	UINT4			ipaddr;
@@ -202,34 +113,6 @@ typedef struct proxy_state {
 	UINT4			rem_ipaddr;
 } PROXY_STATE;
 
-#ifdef USE_SNMP
-struct nas_stat;
-#endif
-struct radck_arg;
-
-typedef struct nas {
-	struct nas		*next;
-	UINT4			ipaddr;
-	char			longname[MAX_LONGNAME+1];
-	char			shortname[MAX_SHORTNAME+1];
-	char			nastype[MAX_DICTNAME+1];
-	struct radck_arg        *args;
-#ifdef USE_SNMP
-	struct nas_stat         *nas_stat;
-#endif	
-} NAS;
-
-typedef struct realm {
-	struct realm		*next;
-	char			realm[MAX_REALMNAME+1];
-	char			server[MAX_LONGNAME+1];
-	UINT4			ipaddr;
-	int			auth_port;
-	int			acct_port;
-	int			striprealm;
-	int                     maxlogins;
-} REALM;
-
 /*
  * Internal representation of a user's profile
  */
@@ -242,16 +125,12 @@ typedef struct user_symbol {
 	VALUE_PAIR *reply;
 } User_symbol;
 
-struct keyword {
-	char *name;
-	int tok;
-};
+#define SNMP_RO 1
+#define SNMP_RW 2
 
 #ifdef USE_SNMP
 
-
-#define SNMP_RO 1
-#define SNMP_RW 2
+#include <radsnmp.h>
 
 typedef struct community_list Community;
 struct community_list {
@@ -268,8 +147,6 @@ struct access_control_list {
 	UINT4 netmask;
 };
 
-typedef unsigned long counter;
-
 struct radstat {
 	struct timeval start_time;
 	counter port_active_count;
@@ -277,45 +154,9 @@ struct radstat {
 };
 
 typedef enum {
-	serv_other=1,
-	serv_reset,
-	serv_init,
-	serv_running
-} serv_stat;
-
-typedef enum {
 	port_idle = 1,
 	port_active
 } port_status;
-
-typedef struct {
-	serv_stat status;
-	struct timeval reset_time;
-	counter num_req;
-	counter num_invalid_req;
-	counter num_dup_req;
-	counter num_resp;
-	counter num_bad_req;
-	counter num_bad_sign;
-	counter num_dropped;
-	counter num_norecords;
-	counter num_unknowntypes;
-} Acct_server_stat;
-
-typedef struct {
-	serv_stat status;
-	struct timeval reset_time;
-	counter num_access_req;
-	counter num_invalid_req;
-	counter num_dup_req;
-	counter num_accepts;
-	counter num_rejects;
-	counter num_challenges;
-	counter num_bad_req;
-	counter num_bad_auth;
-	counter num_dropped;
-	counter num_unknowntypes;
-} Auth_server_stat;
 
 typedef struct {
 	struct timeval start_time;
@@ -326,47 +167,36 @@ typedef struct {
 	/* a tail of nas_stat structures follows */
 } Server_stat;
 
-struct nas_stat {
-	int index;
-	UINT4 ipaddr;
-	counter ports_active;
-	counter ports_idle;
-	Auth_server_stat auth;
-	Acct_server_stat acct;
-};
-
-
 #define stat_inc(m,a,c) \
  do {\
 	NAS *nas;\
 	server_stat->##m . ##c ++;\
-	if ((nas = nas_lookup_ip(a)) != NULL && nas->nas_stat)\
-		nas->nas_stat-> ##m . ##c ++;\
+	if ((nas = nas_lookup_ip(a)) != NULL && nas->app_data)\
+		((struct nas_stat*)nas->app_data)-> ##m . ##c ++;\
  } while (0)
 
 extern struct radstat radstat;
 
+typedef struct snmp_req {
+	struct snmp_pdu *pdu;
+	char *community;
+	int access;
+	struct sockaddr_in sa;
+} SNMP_REQ;
+
+void snmp_req_free(SNMP_REQ *req);
+void snmp_req_drop(int type, SNMP_REQ *req, char *status_str);
+	
 #else
 #define stat_inc(m,a,c)
 #endif
 
-
-enum {
-	PW_OPERATOR_EQUAL = 0,	        /* = */
-	PW_OPERATOR_NOT_EQUAL,	        /* != */
-	PW_OPERATOR_LESS_THAN,	        /* < */
-	PW_OPERATOR_GREATER_THAN,	/* > */
-	PW_OPERATOR_LESS_EQUAL,	        /* <= */
-	PW_OPERATOR_GREATER_EQUAL,	/* >= */
-	PW_NUM_OPERATORS		/* number of operators */
-};
 
 #define SECONDS_PER_DAY		86400
 #define MAX_REQUEST_TIME	60
 #define CLEANUP_DELAY		10
 #define MAX_REQUESTS		255
 
-#define VENDOR(x) (x >> 16)
 
 /*
  * Authentication results
@@ -380,20 +210,12 @@ enum {
 /*
  *	Global variables.
  */
-extern char		*progname;
 extern Config           config;
 extern Notify           notify_cfg;
 extern int		debug_flag;
 extern int              verbose;
 extern int              auth_detail;
 extern int              strip_names;
-extern char     	*radius_dir;
-extern char	        *radlog_dir;
-extern char      	*radacct_dir;
-extern char             *radutmp_path;
-extern char             *radwtmp_path;
-extern char             *radstat_path;
-extern char             *bug_report_address;
 extern UINT4		expiration_seconds;
 extern UINT4		warning_seconds;
 extern int		radius_pid;
@@ -428,22 +250,6 @@ int		rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul);
 int             write_detail(RADIUS_REQ *radreq, int authtype, char *f);
 void            rad_acct_xmit(int type, int code, void *data, int fd);
 
-/* dict.c */
-int		dict_init();
-DICT_ATTR	*attr_number_to_dict(int);
-DICT_ATTR       *attr_name_to_dict(char *);
-DICT_VALUE      *value_name_to_value(char *);
-DICT_VALUE      *value_lookup(UINT4, char *);
-int             vendor_id_to_pec(int);
-int             vendor_pec_to_id(int);
-char            *vendor_pec_to_name(int);
-int             vendor_name_to_id(char *);
-
-
-/* md5.c */
-
-void		md5_calc(u_char *, u_char *, u_int);
-
 /* radiusd.c */
 void		debug_pair(char *, VALUE_PAIR *);
 void		sig_cleanup(int);
@@ -455,35 +261,7 @@ int             master_process();
 int             rad_flush_queues();
 void            schedule_restart();
 
-/* avl.c */
-VALUE_PAIR *avp_alloc();
-void avp_free();
-void		avl_free(VALUE_PAIR *);
-VALUE_PAIR	*avl_find(VALUE_PAIR *, int);
-void		avl_delete(VALUE_PAIR **, int);
-void		avl_add_list(VALUE_PAIR **, VALUE_PAIR *);
-void		avl_add_pair(VALUE_PAIR **, VALUE_PAIR *);
-VALUE_PAIR     *avl_dup(VALUE_PAIR *from);
-VALUE_PAIR     *avp_dup(VALUE_PAIR *vp);
-void            avl_merge(VALUE_PAIR **dst_ptr, VALUE_PAIR **src_ptr);
-VALUE_PAIR     *avp_create(int attr, int length, char *strval, int lval);
-void		avl_move_attr(VALUE_PAIR **to, VALUE_PAIR **from, int attr);
 
-/* util.c */
-char *		ip_hostname (UINT4);
-UINT4		get_ipaddr (char *);
-int		good_ipaddr(char *);
-char *		ipaddr2str(char *, UINT4);
-UINT4		ipstr2long(char *);
-struct passwd	*rad_getpwnam(char *);
-void		radreq_free(RADIUS_REQ *radreq);
-void            rad_lock(int fd, size_t size, off_t off, int whence);
-void            rad_unlock(int fd, size_t size, off_t off, int whence);
-char           *mkfilename(char *, char*);
-char           *mkfilename3(char *dir, char *subdir, char *name);
-int             backslash(int c);
-void string_copy(char *d, char *s, int  len);
-#define STRING_COPY(s,d) string_copy(s,d,sizeof(s)-1)
 
 /* radius.c */
 int		rad_send_reply(int, RADIUS_REQ *, VALUE_PAIR *, char *, int);
@@ -491,17 +269,6 @@ RADIUS_REQ	*radrecv (UINT4, u_short, u_char *, int);
 int		calc_digest (u_char *, RADIUS_REQ *);
 int		calc_acctdigest(u_char *digest, RADIUS_REQ *radreq);
 void            send_challenge(RADIUS_REQ *radreq, char *msg, char *state, int activefd);
-
-/* nas.c */
-NAS *nas_next(NAS *p);
-int nas_read_file(char *file);
-NAS *nas_lookup_name(char *name);
-NAS *nas_lookup_ip(UINT4 ipaddr);
-#ifdef USE_SNMP
-NAS *nas_lookup_index(int ind);
-#endif
-char *nas_ip_to_name(UINT4 ipaddr);
-char *nas_request_to_name(RADIUS_REQ *radreq);
 
 
 /* files.c */
@@ -564,10 +331,6 @@ int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **,
 void process_menu(RADIUS_REQ *radreq, int fd, u_char *pw_digest);
 char * get_menu(char *menu_name);
 
-/* fixalloc.c */
-#define Alloc_entry(t) alloc_entry(sizeof(t))
-RADIUS_REQ *radreq_alloc();
-#define free_request free_entry
 
 #define MAX_PATH_LENGTH                 256
 #define MAX_MENU_SIZE                   4096
@@ -607,19 +370,8 @@ void snmp_add_community(char *str, int access);
 void snmp_free_communities();
 #endif
 
-/* raddb.c */
-int read_raddb_file(char *name, int vital, int fcnt, int (*fun)(),
-		    void *closure);
-
 int xlat_keyword(struct keyword *kw, char *str, int def);
 
-/* mem.c */
-void *emalloc(size_t);
-void efree(void*);
-char *estrdup(char *);
-
-/* radpaths.c */
-void radpath_init();
 
 /* stat.c */
 void stat_init();
@@ -627,11 +379,6 @@ void stat_done();
 void stat_update(struct radutmp *ut, int status);
 void stat_create();
 void stat_count_ports();
-
-/* users.y */
-int parse_file(char *file, void *c, int (*f)());
-int user_gettime(char *valstr, struct tm *tm);
-VALUE_PAIR *install_pair(char *name, int op, char *valstr);
 
 /* snmpserver.c */
 struct sockaddr_in;
@@ -657,6 +404,4 @@ char * debug_print_pair(VALUE_PAIR *pair);
 int run_rewrite(char *name, VALUE_PAIR *req);
 int parse_rewrite();
 
-/* md5crypt.c */
-char * md5crypt(const char *pw, const char *salt);
 

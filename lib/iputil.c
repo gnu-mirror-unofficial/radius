@@ -177,5 +177,42 @@ ip_strtoip(char *ip_str)
 }
 #endif
 
+int
+ip_getnetaddr(char *str, NETDEF *netdef)
+{
+	char *p = strchr(str, '/');
+	if (!p) {
+		netdef->netmask = 0xfffffffful;
+		netdef->ipaddr = ip_gethostaddr(str);
+	} else {
+		char buf[DOTTED_QUAD_LEN];
+		size_t len = p - str;
 
+		if (len >= DOTTED_QUAD_LEN)
+			return 1;
+		memcpy(buf, str, len);
+		buf[len] = 0;
+		netdef->ipaddr = ip_strtoip(buf);
+					
+		if (good_ipaddr(p+1) == 0)
+			netdef->netmask = ip_strtoip(p+1);
+		else {
+			char *endp;
+			UINT4 n = strtoul(p+1, &endp, 0);
+			if (*endp || n > 32)
+				return 1;
+			n = 32 - n;
+			if (n == 32)
+				netdef->netmask = 0;
+			else
+				netdef->netmask = (0xfffffffful >> n) << n;
+		}
+	}
+	return 0;
+}
 
+int
+ip_addr_in_net_p(NETDEF *netdef, UINT4 ipaddr)
+{
+	return netdef->ipaddr == (ipaddr & netdef->netmask);
+}

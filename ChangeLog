@@ -1,3 +1,37 @@
+2002-05-14  Sergey Poznyakoff
+
+	A little housekeeping:
+	
+	* configure.ac: Supply an argument to RA_MAINTAINER_MODE.
+	* doc/texinfo/configure.texi: @tab after a newline confuses
+	  tex2html.
+	* m4/maintain.m4: RA_MAINTAINER_MODE takes an argument.
+	* scripts/pofilter.c: A filter to ispell (vers. >= 3.2.06) for
+	  use with .po files.
+	* scripts/Makefile.am: Build pofilter if in maintainer mode.
+
+	* po/no.po: Updated.
+
+	* snmplib/COPYING.LIB: Updated to LGPL 2.1
+	* include/snmp/asn1.h: Cleaned up wording: Lesser GPL instead
+	  of Library GPL.
+	* include/snmp/mib.h: Likewise.
+	* include/snmp/snmp.h: Likewise.
+	* include/snmp/snmp_intern.h: Likewise.
+	* snmplib/asn1.c: Likewise.
+	* snmplib/snmp_err.c: Likewise.
+	* snmplib/snmp_mem.c: Likewise.
+	* snmplib/snmp_mib.c: Likewise.
+	* snmplib/snmp_oid.c: Likewise.
+	* snmplib/snmp_pdu.c: Likewise.
+	* snmplib/snmp_recv.c: Likewise.
+	* snmplib/snmp_send.c: Likewise.
+	* snmplib/snmp_sess.c: Likewise.
+	* snmplib/snmp_var.c: Likewise.
+
+	* mibs/GNU-RADIUS-SERVER-MIB.txt: Fixed REVISION format.
+	* mibs/GNU-RADIUS-STAT-MIB.txt: Likewise.
+	
 2002-05-13  Sergey Poznyakoff  
 
 	* po/no.po: Updated.

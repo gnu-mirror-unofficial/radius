@@ -1,3 +1,14 @@
+2003-11-02  Sergey Poznyakoff 
+
+	* include/radius.h (rad_clt_encrypt_pairlist): New function.
+	* lib/client.c: Likewise.
+	* include/radiusd.h (radius_decrypt_request_pairs): Changed proto.
+	* radiusd/auth.c (sfn_init): Decrypt the remote server reply
+	before further processing.
+	* radiusd/radius.c (radius_send_reply): Encrypt the reply.
+	* radiusd/scheme.c: Updated calls to
+	radius_decrypt_request_pairs().
+
 2003-11-01  Sergey Poznyakoff  
 
 	Added tunnel protocol support (RFC 2868)

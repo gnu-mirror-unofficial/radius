@@ -12,7 +12,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-08-02 13:46+0300\n"
+"POT-Creation-Date: 2002-09-20 17:08+0300\n"
 "PO-Revision-Date: 2002-08-02 14:01+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Norwegian-bokmål <no@li.org>\n"
@@ -70,7 +70,7 @@ msgstr "%s:%d: mangler ]"
 msgid "%s:%d: invalid syntax flag %c"
 msgstr "%s:%d: ugyldig syntaksflagg %c"
 
-#: lib/dict.c:295 lib/dict.c:416 lib/dict.c:455
+#: lib/dict.c:295 lib/dict.c:427 lib/dict.c:466
 #, c-format
 msgid "%s:%d: value not a number (near %s)"
 msgstr "%s:%d: ikke en tallverdi (nær %s)"
@@ -89,16 +89,16 @@ msgstr "ugyldig type"
 msgid "%s:%d: unknown vendor"
 msgstr ""
 
-#: lib/dict.c:375
+#: lib/dict.c:386
 #, c-format
 msgid "%s:%d: invalid flag %c"
 msgstr "%s:%d: ugyldig flagg %c"
 
-#: lib/dict.c:509 radiusd/config.y:216
+#: lib/dict.c:520 radiusd/config.y:216
 msgid "unknown keyword"
 msgstr "ukjent nøkkelord"
 
-#: lib/dict.c:527
+#: lib/dict.c:538
 #, c-format
 msgid "%s: %d error"
 msgid_plural "%s: %d errors"
@@ -399,8 +399,8 @@ msgstr "feil antall argumenter til %s"
 msgid "form `%s' not closed"
 msgstr ""
 
-#: lib/radargp.c:38 radiusd/radiusd.c:215 radiusd/radiusd.c:223
-#: radiusd/radiusd.c:235
+#: lib/radargp.c:38 radiusd/radiusd.c:219 radiusd/radiusd.c:227
+#: radiusd/radiusd.c:239
 msgid "DIR"
 msgstr "KATALOG"
 
@@ -520,78 +520,78 @@ msgstr "Feilaktig brukernavn"
 msgid "No huntgroup access"
 msgstr "Tilgang nektet av «huntgroup»"
 
-#: radiusd/auth.c:854 radiusd/sql.c:744 radiusd/sql.c:746
+#: radiusd/auth.c:865 radiusd/sql.c:744 radiusd/sql.c:746
 msgid "unknown"
 msgstr "ukjent"
 
-#: radiusd/auth.c:864 radiusd/auth.c:974
+#: radiusd/auth.c:875 radiusd/auth.c:985
 msgid "Invalid user"
 msgstr "Ugyldig bruker"
 
-#: radiusd/auth.c:918
+#: radiusd/auth.c:929
 msgid "Guile authentication disabled in config"
 msgstr "Guile autentisering slått av i konfigurasjonsfilen"
 
-#: radiusd/auth.c:937
+#: radiusd/auth.c:948
 msgid "Guile authentication not available"
 msgstr "Guile godkjenning ikke tilgjengelig"
 
-#: radiusd/auth.c:963
+#: radiusd/auth.c:974
 msgid "Rejected"
 msgstr "Forkastet"
 
-#: radiusd/auth.c:968
+#: radiusd/auth.c:979
 msgid "Ignored"
 msgstr "Ignorert"
 
 # FIXME: translation coincides with `Login failed'
-#: radiusd/auth.c:980 radiusd/auth.c:1000 radiusd/auth.c:1205
+#: radiusd/auth.c:991 radiusd/auth.c:1011 radiusd/auth.c:1220
 msgid "Login incorrect"
 msgstr "Innlogging feil"
 
-#: radiusd/auth.c:1003
+#: radiusd/auth.c:1014
 msgid "Password expired"
 msgstr "Passordet er ikke lenger gyldig"
 
-#: radiusd/auth.c:1026
+#: radiusd/auth.c:1037
 msgid "Account disabled"
 msgstr "Konto er stengt"
 
-#: radiusd/auth.c:1036
+#: radiusd/auth.c:1047
 msgid "Login rejected"
 msgstr "Innlogging forkastet"
 
-#: radiusd/auth.c:1037
+#: radiusd/auth.c:1048
 msgid "Authenticate only user"
 msgstr ""
 
-#: radiusd/auth.c:1053
+#: radiusd/auth.c:1064
 msgid "Login failed"
 msgstr "Innlogging feilet"
 
-#: radiusd/auth.c:1054
+#: radiusd/auth.c:1065
 msgid "realm quota exceeded for "
 msgstr "«realm» kvoten er overskredet for "
 
-#: radiusd/auth.c:1080
+#: radiusd/auth.c:1091
 #, c-format
 msgid "Multiple logins: [%s] max. %ld%s, CLID %s"
 msgstr "Flere innlogginger: [%s] max. %ld%s, CLID %s"
 
-#: radiusd/auth.c:1083
+#: radiusd/auth.c:1094
 msgid " [MPP attempt]"
 msgstr " [MPP forsøk]"
 
-#: radiusd/auth.c:1118
+#: radiusd/auth.c:1129
 #, fuzzy, c-format
 msgid "Outside allowed timespan (%s)"
 msgstr "Utenfor gyldig tidsintervall (%s)"
 
-#: radiusd/auth.c:1207
-msgid "external check failed"
+#: radiusd/auth.c:1222
+msgid "external check failed: "
 msgstr ""
 
-#: radiusd/auth.c:1279
+#: radiusd/auth.c:1305
 #, fuzzy
 msgid "Login OK"
 msgstr "Innlogging tillatet"
@@ -1156,134 +1156,134 @@ msgstr "BEGIN ble brukt uten Fall-Through"
 msgid "request from unknown client"
 msgstr "forespørsel fra en ukjent klient"
 
-#: radiusd/radiusd.c:208
+#: radiusd/radiusd.c:212
 msgid "GNU radius daemon"
 msgstr ""
 
-#: radiusd/radiusd.c:212
+#: radiusd/radiusd.c:216
 msgid "radiusd specific switches:"
 msgstr "Flagg spesifikk for radiusd:"
 
 # FIXME: very fuzzy
-#: radiusd/radiusd.c:214
+#: radiusd/radiusd.c:218
 #, fuzzy
 msgid "Do detailed authentication logging"
 msgstr "Slå på detaljert autentisering logging"
 
-#: radiusd/radiusd.c:216
+#: radiusd/radiusd.c:220
 msgid "Set accounting directory"
 msgstr ""
 
-#: radiusd/radiusd.c:219
+#: radiusd/radiusd.c:223
 msgid "Enable DBM support"
 msgstr "Slå på DBM støtte"
 
-#: radiusd/radiusd.c:222
+#: radiusd/radiusd.c:226
 msgid "Stay in foreground"
 msgstr ""
 
-#: radiusd/radiusd.c:224
+#: radiusd/radiusd.c:228
 #, fuzzy
 msgid "Set logging directory name"
 msgstr "Sette navnet til loggkatalog"
 
-#: radiusd/radiusd.c:226
+#: radiusd/radiusd.c:230
 #, fuzzy
 msgid "Select operation mode: test, checkconf, builddbm."
 msgstr "Velge operasjonmodus: test, checkconf, builddbm."
 
-#: radiusd/radiusd.c:228
+#: radiusd/radiusd.c:232
 msgid "Do only authentication"
 msgstr ""
 
-#: radiusd/radiusd.c:230
+#: radiusd/radiusd.c:234
 msgid "Do not resolve IP addresses"
 msgstr ""
 
-#: radiusd/radiusd.c:231 radlast/radlast.c:129
+#: radiusd/radiusd.c:235 radlast/radlast.c:129
 msgid "IPADDR"
 msgstr "IPADR"
 
-#: radiusd/radiusd.c:232
+#: radiusd/radiusd.c:236
 msgid "Listen on IPADDR"
 msgstr ""
 
-#: radiusd/radiusd.c:234
+#: radiusd/radiusd.c:238
 msgid "Set authentication port number"
 msgstr ""
 
-#: radiusd/radiusd.c:236
+#: radiusd/radiusd.c:240
 #, fuzzy
 msgid "Store pidfile in DIR"
 msgstr "Lage pidfilen i KATALOG"
 
-#: radiusd/radiusd.c:238
+#: radiusd/radiusd.c:242
 #, fuzzy
 msgid "Strip prefixes/suffixes off user names before logging"
 msgstr "Logge brukernavn uten prefikser og suffikser"
 
-#: radiusd/radiusd.c:240
+#: radiusd/radiusd.c:244
 msgid "Run in single process mode"
 msgstr ""
 
-#: radiusd/radiusd.c:241
+#: radiusd/radiusd.c:245
 msgid "DEBUGSPEC"
 msgstr "DEBUGSPEC"
 
-#: radiusd/radiusd.c:242
+#: radiusd/radiusd.c:246
 msgid "Set debugging level"
 msgstr "Sette modus for feilsøkning"
 
-#: radiusd/radiusd.c:244
+#: radiusd/radiusd.c:248
 msgid "Log authentications"
 msgstr ""
 
-#: radiusd/radiusd.c:245 radlast/radlast.c:125 radlast/radlast.c:137
+#: radiusd/radiusd.c:249 radlast/radlast.c:125 radlast/radlast.c:137
 #: radtest/main.c:82 radtest/main.c:86 radzap/radzap.c:69
 msgid "NUMBER"
 msgstr "TALL"
 
-#: radiusd/radiusd.c:246
+#: radiusd/radiusd.c:250
 msgid "Start watcher process"
 msgstr ""
 
-#: radiusd/radiusd.c:248
+#: radiusd/radiusd.c:252
 msgid "Log users' passwords"
 msgstr ""
 
-#: radiusd/radiusd.c:287
+#: radiusd/radiusd.c:291
 msgid "radiusd compiled without DBM support"
 msgstr "radiusd ble bygget uten DBM"
 
-#: radiusd/radiusd.c:296
+#: radiusd/radiusd.c:300
 #, c-format
 msgid "unknown mode: %s"
 msgstr "ukjent modus: %s"
 
-#: radiusd/radiusd.c:308
+#: radiusd/radiusd.c:312
 #, c-format
 msgid "invalid IP address: %s"
 msgstr "ulovlig IP adresse: %s"
 
 # FUZZY
-#: radiusd/radiusd.c:443
+#: radiusd/radiusd.c:447
 #, fuzzy
 msgid "can't create watcher: not started as absolute pathname"
 msgstr "programnavnet er ikke et absolutt filnavn"
 
-#: radiusd/radiusd.c:470
+#: radiusd/radiusd.c:474
 msgid "Sorry, your account is currently closed\n"
 msgstr "Beklager, Deres konto er stengt\n"
 
-#: radiusd/radiusd.c:472
+#: radiusd/radiusd.c:476
 msgid "Password has expired\n"
 msgstr "Passordet er ikke lenger gyldig\n"
 
-#: radiusd/radiusd.c:474
+#: radiusd/radiusd.c:478
 msgid "Password will expire in %R{Password-Expire-Days} Days\n"
 msgstr "Passordet må endres innen %R{Password-Expire-Days} dager\n"
 
-#: radiusd/radiusd.c:476
+#: radiusd/radiusd.c:480
 msgid ""
 "\n"
 "Access denied\n"
@@ -1291,7 +1291,7 @@ msgstr ""
 "\n"
 "Tilgang nektet\n"
 
-#: radiusd/radiusd.c:478
+#: radiusd/radiusd.c:482
 msgid ""
 "\n"
 "Realm quota exceeded - access denied\n"
@@ -1299,7 +1299,7 @@ msgstr ""
 "\n"
 "«realm» kvoten er overskredet - tilgang nektet\n"
 
-#: radiusd/radiusd.c:480
+#: radiusd/radiusd.c:484
 msgid ""
 "\n"
 "You are already logged in %R{Simultaneous-Use} times - access denied\n"
@@ -1307,7 +1307,7 @@ msgstr ""
 "\n"
 "De er allerede innlogget %R{Simultaneous-Use} ganger - tilgang nektet\n"
 
-#: radiusd/radiusd.c:482
+#: radiusd/radiusd.c:486
 msgid ""
 "\n"
 "You are already logged in - access denied\n"
@@ -1315,131 +1315,131 @@ msgstr ""
 "\n"
 "De er allerede innlogget - tilgang nektet\n"
 
-#: radiusd/radiusd.c:484
+#: radiusd/radiusd.c:488
 msgid "You are calling outside your allowed timespan\n"
 msgstr "Forespørsel utenfor gyldig tidsintervall\n"
 
-#: radiusd/radiusd.c:606
+#: radiusd/radiusd.c:610
 #, fuzzy
 msgid "Starting"
 msgstr "Starter"
 
-#: radiusd/radiusd.c:633
+#: radiusd/radiusd.c:637
 #, fuzzy
 msgid "Ready"
 msgstr "Klar"
 
-#: radiusd/radiusd.c:645
+#: radiusd/radiusd.c:649
 msgid "Ready to process requests."
 msgstr "Klar for tilkoblinger."
 
-#: radiusd/radiusd.c:823
+#: radiusd/radiusd.c:827
 msgid "Normal shutdown."
 msgstr "Normal avslutning."
 
-#: radiusd/radiusd.c:843
+#: radiusd/radiusd.c:847
 msgid "flushing request queues"
 msgstr "tømmer forespørsel-køer"
 
-#: radiusd/radiusd.c:859
+#: radiusd/radiusd.c:863
 msgid "restart initiated"
 msgstr "omstart påbegynt"
 
-#: radiusd/radiusd.c:862
+#: radiusd/radiusd.c:866
 msgid "can't restart: not started as absolute pathname"
 msgstr "Kan ikke starte om: programnavnet er ikke et absolutt filnavn"
 
-#: radiusd/radiusd.c:911
+#: radiusd/radiusd.c:915
 msgid "restarting radius"
 msgstr "starter tjenesten på nytt"
 
-#: radiusd/radiusd.c:913
+#: radiusd/radiusd.c:917
 msgid "RADIUS NOT RESTARTED: exec failed"
 msgstr "RADIUSD STARTET IKKE: feil under exec"
 
-#: radiusd/radiusd.c:1224
+#: radiusd/radiusd.c:1234
 msgid "Radiusd is not listening on any port. Trying to continue anyway..."
 msgstr ""
 
-#: radiusd/radiusd.c:1236
+#: radiusd/radiusd.c:1246
 #, fuzzy
 msgid "Loading configuration files."
 msgstr "Omleser konfiguratjonsfiler"
 
-#: radiusd/radiusd.c:1249
+#: radiusd/radiusd.c:1259
 msgid "Errors reading config file - EXITING"
 msgstr "Feil ved lesing av konfigurasjonsfiler - avslutter!"
 
-#: radiusd/radiusd.c:1275
+#: radiusd/radiusd.c:1285
 msgid "can't find out my own IP address"
 msgstr "kan ikke finne min egen IP adresse"
 
-#: radiusd/radiusd.c:1289
+#: radiusd/radiusd.c:1299
 msgid "Reloading configuration now"
 msgstr "Nå leser konfigurasjonsfiler på nytt"
 
-#: radiusd/radiusd.c:1302
+#: radiusd/radiusd.c:1312
 #, c-format
 msgid "Dumping users db to `%s'"
 msgstr "bruker database lagret til «%s»"
 
-#: radiusd/radiusd.c:1326
+#: radiusd/radiusd.c:1336
 msgid "can't restart: radiusd not started as absolute pathname"
 msgstr "Kan ikke starte om: programnavnet er ikke et absolutt filnavn"
 
-#: radiusd/radiusd.c:1339
+#: radiusd/radiusd.c:1349
 msgid "RADIUSD RUNNING"
 msgstr "RADIUSD KJØRER"
 
 # FIXME: Suspendert?
-#: radiusd/radiusd.c:1346
+#: radiusd/radiusd.c:1356
 #, fuzzy
 msgid "RADIUSD SUSPENDED"
 msgstr "RADIUSD STANSET"
 
-#: radiusd/radiusd.c:1383
+#: radiusd/radiusd.c:1393
 #, c-format
 msgid "%u classes, %u buckets are using %u bytes of memory"
 msgstr "%u klasser, %u sider bruker %u byter av minnet"
 
-#: radiusd/radiusd.c:1390
+#: radiusd/radiusd.c:1400
 #, c-format
 msgid "memory utilization: %u.%1u%%"
 msgstr "minneutnyttelse: %u.%1u%%"
 
-#: radiusd/radiusd.c:1395
+#: radiusd/radiusd.c:1405
 msgid "    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"
 msgstr ""
 
-#: radiusd/radiusd.c:1400
+#: radiusd/radiusd.c:1410
 #, c-format
 msgid "malloc statistics: %d blocks, %d bytes"
 msgstr ""
 
-#: radiusd/radiusd.c:1412
+#: radiusd/radiusd.c:1422
 #, fuzzy, c-format
 msgid "exit on signal %d"
 msgstr "avslutning under signal %d"
 
-#: radiusd/radiusd.c:1520
+#: radiusd/radiusd.c:1585
 msgid "Dropping packet"
 msgstr "Slet forespørselen"
 
-#: radiusd/radiusd.c:1543
+#: radiusd/radiusd.c:1608
 #, c-format
 msgid "Retransmitting %s reply"
 msgstr "Sender %s svaret på nytt"
 
-#: radiusd/radiusd.c:1548
+#: radiusd/radiusd.c:1613
 msgid "request failed"
 msgstr ""
 
-#: radiusd/radiusd.c:1668
+#: radiusd/radiusd.c:1734
 #, c-format
 msgid "unknown request code %d"
 msgstr "ukjent forespørselkode %d"
 
-#: radiusd/radutil.c:194
+#: radiusd/radutil.c:197
 #, c-format
 msgid "INTERNAL ERROR (%s:%d): attribute %d has bad type (%d)"
 msgstr "INTERN FEIL (%s:%d): attributt %d har ulovlig type (%d)"

@@ -1,3 +1,18 @@
+2002-09-20  Sergey Poznyakoff 
+
+	* configure.ac: Override CPPFLAGS when checking for the headers.
+	* include/radscm.h: Removed rad_scm_cell override.
+	* radscm/rscm_lib.c: Always declare rad_scm_cell.
+	
+	* radiusd/auth.c (sfn_exec_wait, sfn_exec_nowait): Allow multiple
+	  Exec-Program attributes.
+	* raddb/dictionary: Likewise.
+
+	* po/es.po: Updated.
+	* po/no.po: Updated.
+	* po/pl.po: Updated.
+	* po/ru.po: Updated.
+	
 2002-08-30  Sergey Poznyakoff 
 
 	* lib/radpdu.c (rad_encode_pair): Bugfix: Was cutting off the

@@ -51,8 +51,3 @@ acct {
 	request-cleanup-delay 2;
 };
 
-proxy {
-	max-requests 127;
-	request-cleanup-delay 2;
-};
-

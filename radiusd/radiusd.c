@@ -128,6 +128,7 @@ int use_guile;
 char *message_text[MSG_COUNT];
 
 UINT4 myip = INADDR_ANY;
+UINT4 ref_ip = INADDR_ANY;
 int auth_port;
 int acct_port;
 #ifdef USE_SNMP
@@ -383,7 +384,7 @@ main(argc, argv)
         log_set_default("default.log", -1, -1);
         if (radius_mode != MODE_DAEMON)
                 log_set_to_console();
-        
+
         /* Determine default port numbers for authentication and accounting */
         if (radius_port)
                 auth_port = radius_port;
@@ -426,6 +427,13 @@ main(argc, argv)
                 exit(builddbm(extra_arg));
 #endif
         case MODE_DAEMON:
+		if (myip != INADDR_ANY)
+			ref_ip = myip;
+		else
+			ref_ip = get_first_ip();
+		if (ref_ip == INADDR_ANY)
+		    radlog(L_ALERT, _("can't find out my own IP address"));
+		
 		chdir("/");
 		umask(022);
 

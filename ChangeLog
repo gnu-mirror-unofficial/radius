@@ -1,3 +1,20 @@
+2004-04-13  Sergey Poznyakoff
+
+	* NEWS: Updated
+	* radiusd/config.y (yylex): Recognize tokens starting with dash
+	as strings
+	* radiusd/radiusd.c (rad_cfg_listen_auth)
+	(rad_cfg_listen_acct): Bugfixes
+	* radiusd/scheme.c (scheme_call_proc): New function
+	(scheme_try_auth,scheme_auth,scheme_acct): Rewritten using
+	scheme_call_proc().
+	(guile_stmt): New statement "eval"
+	(scheme_cfg_load_module): Changed semantics of  extra arguments
+	to "load-module". They mean arguments to module-init function.
+	* radiusd/tsh.c (tsh_query_nas): Bugfix
+	* radscm/ttl.scm (ttl-init): Modified to match new invocation
+	conventions.
+
 2004-04-13  Sergey Poznyakoff 
 
 	* radscm/ttl.scm: Rewritten as module

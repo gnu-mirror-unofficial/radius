@@ -138,12 +138,14 @@ typedef struct {
  * Internal representation of a user's profile
  */
 typedef struct user_symbol {
-        struct user_symbol *next;
-        char *name;
-        int lineno;
-        int ordnum;
-        VALUE_PAIR *check;
-        VALUE_PAIR *reply;
+        struct user_symbol *next;  /* Link to the next entry */
+        char *name;                /* Label */
+        VALUE_PAIR *check;         /* LHS */
+        VALUE_PAIR *reply;         /* RHS */
+        LOCUS loc;                 /* Location of the definition of
+				      this entry */
+        int ordnum;                /* Entry ordinal number (used for semantic
+				      checks */
 } User_symbol;
 
 #define SNMP_RO 1
@@ -549,10 +551,8 @@ int parse_rewrite(char *name);
 int va_run_init __PVAR((char *name, RADIUS_REQ *request, char *typestr, ...));
 
 /* radck.c */
-int fix_check_pairs(int sf_file, char *filename, int line, char *name,
-                    VALUE_PAIR **pairs);
-int fix_reply_pairs(int cf_file, char *filename, int line, char *name,
-                    VALUE_PAIR **pairs);
+int fix_check_pairs(int sf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs);
+int fix_reply_pairs(int cf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs);
 void radck();
 
 /* checkrad.c */

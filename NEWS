@@ -1,35 +1,239 @@
-Shared secrets of arbitrary length are allowed.
-Passwords longer than 16 bytes are allowed.
+Changes in Radius 0.95.91
 
-Client package
+** The format of raddb/config has changed a little.
 
-possibility to retrieve arbitrary reply pairs from the SQL database.
+To convert old raddb/config to new format, run scripts/config-conv.
+It uses /usr/local as default prefix. If you have installed the
+previous version of radius under a different prefix, run
 
-\<newline> continuation sequence in traditional config files
+	scripts/config-conv --prefix=PATH
 
-	Added possibility to defer evaluation of a reply pair value. To
-	defer evaluation of a pair, it should be specified in raddb/users
-	(or hints, huntgroups) in the following form:
+The script will create a backup copy of your old config file in your
+raddb directory (It will name it config~). Please, take a look at
+converted file, and edit it to your liking.
 
-		NAME = "=function(arg1,arg2,...)"
+For more information about the new format look in the texinfo
+documentation (chapter Configuration files/config file).
 
-	`function' must be defined in raddb/rewrite.
+** Slight changes to the format of raddb/dictionary.
 
-%C{Password} substitution return plaintext password
+Your old raddb/dictionary will be replaced automagically by
+`make install'. The copy of your dictionary will be preserved
+in file raddb/dictionary~.
 
-sqlserver: query_buffer_size clause is obsolete.
+** Radiusd is able to listen on multiple interfaces/ports.
 
-Special realm NOREALM in radb/realms.
+By default, it listens for auth and account ports on all available
+interfaces. To specify addresses/ports to listen on, use `listen'
+statement in raddb/config file, e.g.:
 
-Added provisions for specifying default values	for undefined attributes
-(shell-like syntax: %{Acct-Sessison-Time:-0},
-%{Acct-Sessison-Time:?not defined}, etc.).
+auth {
+	listen 10.10.10.1, 10.10.10.2:1812, localhost;
+}
 
-radiusd is able to listen to multiple interfaces/ports.
+This statement is currently allowed only in `auth' and `acct' blocks
 
-cntl statement (raddb/config) is obsolete. cntl port is gone.
+** Shared secrets of arbitrary length are allowed
 
-exec-program-group is obsolete.
+** Passwords of arbitrary length are allowed
+
+NOTE for MAX Ascend users: the ascend termserver IOS incorrectly
+encodes passwords longer than 16 bytes. The workaround for this
+bug is enabled by setting boolean variable broken_pass in the
+flags column of the naslist file, e.g.:
+
+# NAS Name		Short Name	Type		  Flags
+#----------------	----------	----		---------------
+my_ascend		my_ascend	max		broken_pass
+
+
+** raddb/(naslist,nastypes): `arg' variable for method finger 
+
+The variable allows for specifying the finger query string. It
+defaults to %u, i.e. user name.
+
+** raddb/realms: Special realm NOREALM is supported.
+
+The realm is matched when the user did not specify any explicit realm
+with his username.
+
+** raddb/config: cntl statement is obsoleted.
+
+** raddb/config: exec-program-group is obsoleted.
+
+The group to be used when executing external programs is determined
+from the /etc/passwd entry for exec-program-user.
+
+** The % substitutions can be used in right-hand side of reply pairs.
+
+** %C{Password} substitution returns plaintext password, instead of
+   crypted one. Please, use with care.
+
+** The default values may be provided for % substitutions.
+
+The default values are used when the referenced attribute does not
+exist. The syntax is similar to that of shell environment variables:
+
+  %{Acct-Session-Time:-0}   -- return the value of Acct-Session-Time
+                               attribute or 0 if it doesn't exist
+  %{Acct-Session-Time:=0}   -- return the value of Acct-Session-Time.
+                               If it doesn't exist, create it and assign
+			       it to 0.
+  %{User-Name:?not defined} -- return the value of User-Name. If it is
+                               not present, issue diagnostic message
+                               saying "User-Name: not defined" and
+			       return string "not defined".
+
+** The value of a reply pair can be computed at authentication time.
+
+For example:
+
+DEFAULT	Auth-Type = SQL
+	Service-Type = Framed-User,
+		Framed-IP-Address = "=get_ip_addr(10.10.10.1)"
+
+In this case, the function get_ip_addr will be called with the argument
+(IP) 10.10.10.1 and its return value will be assigned to Framed-IP-Address
+pair. The function itself must be declared in raddb/rewrite.
+
+In short, the syntax for evaluated pairs is:
+
+	ATTR-NAME = "=FUNC-NAME(ARGS)"
+
+where ATTR-NAME is the attribute name,
+      FUNC-NAME is the name of the function, declared in raddb/rewrite 
+      ARGS is a comma-separated list of arguments. Usual %C substitutions
+      may be used as arguments. ARGS can be empty.
+
+** Compiling Guile support into the server.
+
+The radiusd server can be compiled with Guile support, which allows
+to further extend its functionality. The `guile' statement in raddb/config
+controls the use of Guile functions. Please, take a look in
+raddb/config.syntax for an example of how to use it. There is also a
+description in texinfo documentation (Configuration files/config file/guile).
+
+The Guile functions can be called on authentication or accounting
+using the following special reply-pairs:
+
+ 1. Scheme-Procedure. 
+    This attribute can be used in reply-pairs of raddb/users entry.
+    Its value is the name of Guile function to be called on
+    authentication.
+ 2. Scheme-Acct-Procedure.
+    This attribute can be used in reply-pairs of raddb/hints entry.
+    Its value is the name of Guile function to be called on
+    accounting.
+
+Both functions should be defined in Guile source as
+
+(define (auth-function-name request-list check-list reply-list)
+  ...
+
+The arguments are:
+
+ request-list -- The list of A/V pairs received in the request.
+ check-list   -- The check list from the user's profile entry (raddb/users).
+ reply-list   -- The reply list collected this far.
+
+The authentication function (i.e., the one specified in Scheme-Procedure
+pair) should return cons in the form:
+
+	( BOOL . reply-pair-list )
+
+where BOOL is #t if authentication succeeds, and #f otherwise.
+      reply-pair-list is the list of A/V pairs to be added to the
+      reply packet.
+
+An A/V list is represented as a scheme list of conses in the form
+
+        ( ATTR-NAME-OR-NUMBER . ATTR-VALUE )
+
+*** Changes to SQL subsystem
+
+** Default MySQL and PostgreSQL database structures are provided.
+
+To create the default radius database:
+ 1. Change to the subdirectory db/
+ 2. Edit file config.m4. Most of its contents is commented out, so
+    uncomment anything that may be needed. Variables are:
+
+    server   - SQL server name or IP address
+    port     - port to connect to
+
+	User credentials for creator of the database:
+    username - SQL username. This user must have create privileges.
+    password - SQL password.
+
+	User credentials for the owner of the database:
+    DB_USER  - SQL username.
+    DB_PWD   - SQL password.
+    (These must coincide with the values in raddb/sqlserver file)
+ 3. Depending on what type of SQL server you are using, run either
+
+	make mysql
+    or
+	make pgsql
+
+ Alternately, you can create text files, describing the database structure
+ by running `make mysql.struct' or `make pgsql.struct'
+
+** User's reply pairs can be retrieved from the SQL database.
+
+To do so, use `attr_query' statement in the raddb/sqlserver file. The
+statement must return pairs Attrname-Value, where Attrname is the name
+of attribute, as listed in raddb/dictionary, Value is the value to be
+assigned to it. For example, given the following table:
+
+CREATE TABLE attrib (
+  user_name varchar(32) default '' not null,
+  attr      char(32) default '' not null,
+  value     char(128)
+);
+
+the attr_query will look like:
+
+attr_query  select attr,value from attrib where user_name='%u'
+
+** raddb/sqlserver: query_buffer_size clause is obsolete.
+
+** radiusd can be compiled with support for both MySQL and PostgreSQL support.
+
+In this case the actual database to be used is controlled by `interface'
+statement in raddb/sqlserver file, e.g.:
+
+interface mysql
+or
+interface postgres
+
+*** Client sub-package
+
+Two client programs are provided: nas.scm and pam_radius.so. Specify the
+switch --with-client to enable the client packages.
+
+i. nas.scm is a guile program that allows to use a GNU/Linux box as a NAS.
+It requires Guile and ppp-2.3.7 or higher. To use it, you will basically
+need to do the following:
+
+ 1. Create links:
+      ln -s $libexec/nas.scm /etc/ppp/ip-up
+      ln -s $libexec/nas.scm /etc/ppp/ip-down
+ 2. Edit file $sysconfdir/raddb/nas.rc
+
+ii. pam_radius.so is an authentication module to be used in PAM.
+The module understands following command line options:
+
+  audit             -  Enable audit information
+  debug[=LEVEL]     -  Enable debugging information
+  use_authtok       -  Use authentication token passed from the previous module
+                       in stack.
+  confdir=PATH      -  Use PATH as a configuration directory
+                       (default $sysconfdir/etc).
+  service_type=STR  -  Add Service-Type=STR in the auth packet. STR should
+                       be a valid value, described in dictionary file.
+
+The default configuration file, $sysconfdir/raddb/client.conf, is installed
+by make install.
 
 =============================================================================
 NEWS for version 0.95

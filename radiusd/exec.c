@@ -342,22 +342,21 @@ radius_close_filter(pid, pipe)
 
 typedef struct filter_symbol {
         struct user_symbol *next;
-	char *name;                 /* Filter identifier */
+	char *name;
 	/* Configuration data */
-	int line_num;               /* Line number in raddb/config */
-	int  argc;                  /* Number of arguments */
-        char **argv;                /* Invocation vector */
+	int line_num;
+	int  argc;   
+        char **argv;           /* Invocation vector */
 	char *auth_input_fmt;  /* Format for input data -- authentication */
 	char *acct_input_fmt;  /* Format for input data -- accounting */
-	int wait_reply;             /* Is the filter supposed to reply */
-	                            /* FIXME: there should be two flags,
-				       one for auth and one for acct */
+	int wait_reply;
 	/* Runtime data */
-	pid_t  pid;                 /* Pid of the filter process */
-	size_t lines_input;         /* number of lines read from the filter */
-	size_t lines_output;        /* number of lines written to the filter */
-	FILE   *input;              /* Input file */
-	FILE   *output;             /* Output file */
+	pid_t  pid;
+	size_t lines_input;
+	size_t lines_output;
+	FILE   *input;
+	FILE   *output;
+	/* FIXME: mutex */
 } Filter_symbol;
 
 static Symtab *filter_tab;
@@ -502,7 +501,9 @@ filter_auth(name, req, reply_pairs)
 	if (!sym->wait_reply)
 		return 0;
 	
+        pthread_cleanup_push(filter_close, sym);
 	buf = fgets(buffer, sizeof buffer, sym->input);
+	pthread_cleanup_pop(0);
 	if (!buf) {
 		radlog(L_ERR|L_PERROR,
 		       "reading from filter %s",

@@ -50,7 +50,7 @@ GPERF=@GPERF@
 config.c config_tok.h: $(srcdir)/config.y
 	$(YLWRAP) "$(YACC)" $(srcdir)/config.y \
                   y.tab.c config.c y.tab.h config_tok.h y.output y.output \
-                  -- -yy cc -vd @YACC_OPTS@
+                  -- -yy cc -vdt 
 
 config_kw.c: $(srcdir)/config.kw
 	$(YLWRAP) "$(GPERF)" $(srcdir)/config.kw \
@@ -61,7 +61,7 @@ config.o: config.c ../include/radiusd.h
 
 rewrite.c: $(srcdir)/rewrite.y
 	$(YLWRAP) "$(YACC)" $(srcdir)/rewrite.y \
-		  y.tab.c rewrite.c -- -yy rw_yy -v @YACC_OPTS@
+		  y.tab.c rewrite.c -- -yy rw_yy -vt
 
 SUFFIXES=.S .c .ln .o .s
 

@@ -36,11 +36,48 @@
 # define DICT_INDEX_SIZE 2048
 #endif
 
+enum dict_symbol_type {
+	dict_symbol_uninitialized,
+	dict_symbol_attribute,
+	dict_symbol_alias
+};
+
+typedef struct dict_symbol DICT_SYMBOL;
+struct dict_symbol {
+        DICT_SYMBOL *next;          /* Link to the next attribute */
+	char *name;
+	enum dict_symbol_type type; /* Type of the entry */
+	union {
+		DICT_ATTR attr;
+		DICT_ATTR *alias;
+	} v;
+};
+
 static Symtab    *dict_attr_tab;
 static DICT_ATTR *dict_attr_index[DICT_INDEX_SIZE];
 static RAD_LIST /* of DICT_VALUE */ *dictionary_values;
 static RAD_LIST /* of DICT_VENDOR */ *dictionary_vendors;
 static int         vendorno;
+
+static DICT_ATTR *
+dict_attr_lookup(char *ident)
+{
+	DICT_SYMBOL *sym = sym_lookup(dict_attr_tab, ident);
+	if (sym) {
+		switch (sym->type) {
+		case dict_symbol_uninitialized:
+			insist_fail("sym_lookup returned uninitialized symbol!");
+			break;
+			
+		case dict_symbol_attribute:
+			return &sym->v.attr;
+
+		case dict_symbol_alias:
+			return sym->v.alias;
+		}
+	}
+	return NULL;
+}
 
 /* ************************************************************************ */
 
@@ -69,7 +106,7 @@ dict_free()
         if (dict_attr_tab)
                 symtab_clear(dict_attr_tab);
         else
-                dict_attr_tab = symtab_create(sizeof(DICT_ATTR), NULL);
+                dict_attr_tab = symtab_create(sizeof(DICT_SYMBOL), NULL);
         memset(dict_attr_index, 0, sizeof dict_attr_index);
 
 	list_destroy(&dictionary_values, free_value, NULL);
@@ -93,7 +130,7 @@ nfields(int fc, int minf, int maxf, LOCUS *loc)
 /*
  *      Add vendor to the list.
  */
-int
+static int
 addvendor(char *name, int value)
 {
         DICT_VENDOR *vval;
@@ -121,9 +158,8 @@ struct attr_parser_tab {
 	attr_parser_fp fun;
 };
 static ATTR_PARSER_TAB *attr_parser_tab;
-static attr_parser_fp dict_find_parser(int);
 
-attr_parser_fp
+static attr_parser_fp
 dict_find_parser(int attr)
 {
 	ATTR_PARSER_TAB *ep;
@@ -176,7 +212,7 @@ static struct keyword type_kw[] = {
 };
 
 /*ARGSUSED*/
-int
+static int
 _dict_include(int *errcnt, int fc, char **fv, LOCUS *loc)
 {
         if (nfields(fc, 2, 2, loc)) 
@@ -185,7 +221,7 @@ _dict_include(int *errcnt, int fc, char **fv, LOCUS *loc)
         return 0;
 }
 
-int
+static int
 parse_flags(char **ptr, int *flags, LOCUS *loc)
 {
         int i;
@@ -234,17 +270,110 @@ parse_flags(char **ptr, int *flags, LOCUS *loc)
         return 0;
 }
 
-int
+static int
+parse_attr_properties(LOCUS *loc, char *str, int *flags, int *prop)
+{
+	int errcnt = 0;
+	char *p;
+	
+	for (p = str; *p; p++) {
+		switch (*p) {
+		case 'C':
+		case 'L':
+			*flags |= AF_LHS(CF_USERS)
+				   |AF_LHS(CF_HINTS)
+				   |AF_LHS(CF_HUNTGROUPS);
+			break;
+		case 'R':
+			*flags |= AF_RHS(CF_USERS)
+				   |AF_RHS(CF_HINTS)
+				   |AF_RHS(CF_HUNTGROUPS);
+			break;
+		case '[':
+			if (parse_flags(&p, flags, loc)) {
+				while (*++p);
+				--p;
+				errcnt++;
+			}
+			break;
+		case '=':
+			SET_ADDITIVITY(*prop, AP_ADD_REPLACE);
+			break;
+		case '+':
+			SET_ADDITIVITY(*prop, AP_ADD_APPEND);
+			break;
+		case 'N':
+			SET_ADDITIVITY(*prop, AP_ADD_NONE);
+			break;
+		case 'P':
+			*prop |= AP_PROPAGATE;
+			break;
+		case 'l':
+			*flags &= ~AP_INTERNAL;
+			break;
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9':
+			*prop |= AP_USER_FLAG(*p-'0');
+			break;
+		case 'b':
+			*prop |= AP_BINARY_STRING;
+			break;
+		case 'E':
+			*prop |= AP_ENCRYPT_RFC2138;
+			break;
+		case 'T':
+			*prop |= AP_ENCRYPT_RFC2868;
+			break;
+		case 'c':
+			/* Retained for compatibility */
+			break;
+		default:
+			radlog_loc(L_ERR, loc,
+				   _("invalid flag %c"),
+				   *p);
+			errcnt++;
+			break;
+		}
+	}
+	return errcnt;
+}
+
+static void
+set_default_attr_properties(int value, int *flags, int *prop)
+{
+        *flags = AF_DEFAULT_FLAGS;
+        *prop  = AP_DEFAULT_ADD;
+
+	if (VENDOR(value) == 0) {
+		if (value > 255)
+			*flags |= AP_INTERNAL;
+		/* FIXME: A temporary hack until all users update
+		   their dictionaries */
+		else if (value == DA_USER_PASSWORD
+			 || value == DA_USER_PASSWORD)
+			*prop |= AP_ENCRYPT_RFC2138;
+	}
+}
+
+static int
 _dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
 {
+	DICT_SYMBOL *sym;
         DICT_ATTR *attr;
         int type;
         int vendor = 0;
         unsigned value;
         char *p;
-        int flags = AF_DEFAULT_FLAGS;
-        int prop  = AP_DEFAULT_ADD;
 	attr_parser_fp fp = NULL;
+        int flags;
+        int prop;
         
         if (nfields(fc, 4, 6, loc))
                 return 0;
@@ -286,99 +415,111 @@ _dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
 			(*errcnt)++;
                         return 0;
                 }
-        } else if (value > 255)
-		flags |= AP_INTERNAL;
-	/* FIXME: A temporary hack until all users update their dictionaries */
-	else if (value == DA_USER_PASSWORD
-		 || value == DA_USER_PASSWORD)
-		prop |= AP_ENCRYPT_RFC2138;
+		value |= (vendor << 16);
+        } 
+	set_default_attr_properties(value, &flags, &prop);
 
         if (HAS_FLAGS(fc,fv)) {
-                char *p;
-
-                for (p = ATTR_FLAGS; *p; p++) {
-                        switch (*p) {
-                        case 'C':
-                        case 'L':
-                                flags |= AF_LHS(CF_USERS)
-                                        |AF_LHS(CF_HINTS)
-                                        |AF_LHS(CF_HUNTGROUPS);
-                                break;
-                        case 'R':
-                                flags |= AF_RHS(CF_USERS)
-                                        |AF_RHS(CF_HINTS)
-                                        |AF_RHS(CF_HUNTGROUPS);
-                                break;
-                        case '[':
-                                if (parse_flags(&p, &flags, loc)) {
-                                        while (*++p);
-                                        --p;
-                                        ++(*errcnt);
-                                }
-                                break;
-                        case '=':
-                                SET_ADDITIVITY(prop, AP_ADD_REPLACE);
-                                break;
-                        case '+':
-                                SET_ADDITIVITY(prop, AP_ADD_APPEND);
-                                break;
-                        case 'N':
-                                SET_ADDITIVITY(prop, AP_ADD_NONE);
-                                break;
-                        case 'P':
-                                prop |= AP_PROPAGATE;
-                                break;
-			case 'l':
-				flags &= ~AP_INTERNAL;
-				break;
-			case '1':
-			case '2':
-			case '3':
-			case '4':
-			case '5':
-			case '6':
-			case '7':
-			case '8':
-			case '9':
-				prop |= AP_USER_FLAG(*p-'0');
-				break;
-			case 'b':
-				prop |= AP_BINARY_STRING;
-                                break;
-			case 'E':
-				prop |= AP_ENCRYPT_RFC2138;
-				break;
-			case 'T':
-				prop |= AP_ENCRYPT_RFC2868;
-				break;
-			case 'c':
-				/* Retained for compatibility */
-				break;
-                        default:
-                                radlog_loc(L_ERR, loc,
-					   _("invalid flag %c"),
-					   *p);
-                                (*errcnt)++;
-                                return 0;
-                        }
-                }
+		int rc = parse_attr_properties(loc, ATTR_FLAGS, &flags, &prop);
+		if (rc) {
+			++*errcnt;
+			return 0;
+		}
         }
 
-        attr = sym_lookup_or_install(dict_attr_tab, ATTR_NAME, 1);
-                        
+	sym = sym_lookup_or_install(dict_attr_tab, ATTR_NAME, 1);
+	switch (sym->type) {
+	case dict_symbol_uninitialized:
+		sym->type = dict_symbol_attribute;
+		attr = &sym->v.attr;
+		break;
+
+	case dict_symbol_attribute:
+		radlog_loc(L_WARN, loc,
+			   _("Redefining attribute %s"),
+			   ATTR_NAME);
+		attr = &sym->v.attr;
+		break;
+		
+	case dict_symbol_alias:
+		radlog_loc(L_WARN, loc,
+			   _("Redefining alias %s"),
+			   ATTR_NAME);
+		attr = sym->v.alias;
+	}
+
+	attr->name = sym->name;
         attr->value = value;
         attr->type = type;
-        attr->prop = flags|prop;
+        attr->prop = flags | prop;
 	attr->parser = fp;
-        if (vendor)
-                attr->value |= (vendor << 16);
         if (attr->value >= 0 && attr->value < DICT_INDEX_SIZE) 
                 dict_attr_index[attr->value] = attr;
         
         return 0;
 }
 
-int
+/* Syntax:
+   ALIAS oldname newname */
+static int
+_dict_alias(int *errcnt, int fc, char **fv, LOCUS *loc)
+{
+	DICT_SYMBOL *sym;
+	DICT_ATTR *attr;
+	
+	if (nfields(fc, 3, 3, loc))
+                return 0;
+
+        attr = dict_attr_lookup(fv[1]);
+	if (!attr) {
+		radlog_loc(L_ERR, loc,
+			   _("Attribute %s is not defined"),
+			   fv[1]);
+		return 0;
+	}
+		
+	sym = sym_lookup_or_install(dict_attr_tab, fv[2], 1);
+	if (sym->type != dict_symbol_uninitialized) {
+		radlog_loc(L_ERR, loc,
+			   _("Symbol %s already declared"),
+			   fv[2]);
+		/*FIXME: location of the previous declaration*/
+		/* Not a fatal error: do not increase error count */
+		return 0;
+	}
+	sym->type = dict_symbol_alias;
+	sym->v.alias = attr;
+	return 0;
+}
+
+/* Syntax:
+   
+   PROPERTY Attribute Flags */
+static int
+_dict_property(int *errcnt, int fc, char **fv, LOCUS *loc)
+{
+	DICT_ATTR *attr;
+	int flags;
+	int prop;
+	
+	if (nfields(fc, 3, 3, loc))
+                return 0;
+
+        attr = dict_attr_lookup(fv[1]);
+	if (!attr) {
+		radlog_loc(L_ERR, loc,
+			   _("Attribute %s is not defined"),
+			   fv[1]);
+		return 0;
+	}
+	set_default_attr_properties(attr->value, &flags, &prop);
+	if (parse_attr_properties(loc, fv[2], &flags, &prop))
+		++*errcnt;
+        attr->prop = flags | prop;
+	return 0;
+}
+
+static int
 _dict_value(int *errcnt, int fc, char **fv, LOCUS *loc)
 {
         DICT_VALUE *dval;
@@ -398,8 +539,15 @@ _dict_value(int *errcnt, int fc, char **fv, LOCUS *loc)
                 return 0;
         }
 
-        attr = sym_lookup_or_install(dict_attr_tab, VALUE_ATTR, 1);
-        
+        attr = dict_attr_lookup(VALUE_ATTR);
+	if (!attr) {
+		radlog_loc(L_ERR, loc,
+			   _("Attribute %s not defined"),
+			   VALUE_ATTR);
+                (*errcnt)++;
+		return 0;
+	}
+	
         /* Create a new VALUE entry for the list */
         dval = emalloc(sizeof(DICT_VALUE));
                         
@@ -415,7 +563,7 @@ _dict_value(int *errcnt, int fc, char **fv, LOCUS *loc)
         return 0;
 }
 
-int
+static int
 _dict_vendor(int *errcnt, int fc, char **fv, LOCUS *loc)
 {
         int value;
@@ -444,15 +592,19 @@ _dict_vendor(int *errcnt, int fc, char **fv, LOCUS *loc)
 enum {
         KW_INCLUDE,
         KW_ATTRIBUTE,
+	KW_ALIAS,
         KW_VALUE,
-        KW_VENDOR
+        KW_VENDOR,
+	KW_PROPERTY
 };
 
 static struct keyword dict_kw[] = {
         { "$INCLUDE", KW_INCLUDE },
         { "ATTRIBUTE", KW_ATTRIBUTE },
+	{ "ALIAS", KW_ALIAS },
         { "VALUE", KW_VALUE },
         { "VENDOR", KW_VENDOR },
+	{ "PROPERTY", KW_PROPERTY },
         { NULL, 0 }
 };
 
@@ -467,12 +619,18 @@ parse_dict_entry(void *closure, int fc, char **fv, LOCUS *loc)
         case KW_ATTRIBUTE:
                 _dict_attribute(errcnt, fc, fv, loc);
                 break;
+	case KW_ALIAS:
+		_dict_alias(errcnt, fc, fv, loc);
+		break;
         case KW_VALUE:
                 _dict_value(errcnt, fc, fv, loc);
                 break;
         case KW_VENDOR:
                 _dict_vendor(errcnt, fc, fv, loc);
                 break;
+	case KW_PROPERTY:
+		_dict_property(errcnt, fc, fv, loc);
+		break;
         default:
                 radlog_loc(L_ERR, loc, "%s", _("unknown keyword"));
                 break;
@@ -527,9 +685,24 @@ struct attr_value {
 };
 
 int
-attrval_cmp(struct attr_value *av, DICT_ATTR *attr)
+attrval_cmp(struct attr_value *av, DICT_SYMBOL *sym)
 {
-        if (attr->value == av->value) {
+	DICT_ATTR *attr;
+	
+	switch (sym->type) {
+	case dict_symbol_attribute:
+		attr = &sym->v.attr;
+		break;
+		
+	case dict_symbol_alias:
+		attr = sym->v.alias;
+		break;
+
+	default:
+		return 0;
+	}
+
+	if (attr->value == av->value) {
                 av->da = attr;
                 return 1;
         }
@@ -555,7 +728,7 @@ attr_number_to_dict(int attribute)
 DICT_ATTR *
 attr_name_to_dict(char *attrname)
 {
-        return sym_lookup(dict_attr_tab, attrname);
+        return dict_attr_lookup(attrname);
 }
 
 /*

@@ -367,7 +367,9 @@ radius_who()
                 return ;
 
         while (up = rut_getent(file)) {
-                if (want_rad_record(up)) 
+		if (up->type == P_ACCT_DISABLED) 
+			printf(_("System accounting is disabled\n"));
+		else if (want_rad_record(up)) 
                         grad_utent_print(form, up, 1);
         }
         rut_endent(file);
@@ -385,7 +387,8 @@ print_header()
 int
 want_rad_record(struct radutmp *rt)
 {
-        if (username && strcmp(rt->login, username))
+        if ((username && strcmp(rt->login, username))
+	    || rt->type == P_ACCT_ENABLED) 
                 return 0;
         
         switch (showall) {

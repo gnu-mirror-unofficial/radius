@@ -340,7 +340,8 @@ radwtmp()
         struct tm *tm;
         char ct[256];
         WTMP *pp;
-
+	int acct_enabled = 0;
+		
         if ((wfd = open(file, O_RDONLY, 0)) < 0 || fstat(wfd, &stb) == -1) {
                 grad_log(L_ERR|L_PERROR, "can't open %s", file);
                 exit(1);
@@ -356,7 +357,8 @@ radwtmp()
                 if (lseek(wfd, (off_t)(bl * sizeof(buf)), L_SET) == -1 ||
                     (bytes = read(wfd, buf, sizeof(buf))) == -1)
                         grad_log(L_ERR, "%s", file);
-                for (bp = &buf[bytes / sizeof(buf[0]) - 1]; bp >= buf; --bp) {
+                for (bp = &buf[bytes / sizeof(buf[0]) - 1]; !stop && bp >= buf;
+		     --bp) {
                         switch (bp->type) {
                         case P_LOGIN:
                                 if (pp = find_logout(bp)) {
@@ -410,6 +412,17 @@ radwtmp()
                                                 return;
                                 }
                                 break;
+			case P_ACCT_DISABLED:
+				if (!acct_enabled) {
+					printf(_("System accounting is disabled\n"));
+					stop = 1;
+				} else
+					print_acct_toggle(bp);
+				break;
+			case P_ACCT_ENABLED:
+				acct_enabled = 1;
+				print_acct_toggle(bp);
+				break;
                         default:
                                 break;
                         }
@@ -773,9 +786,32 @@ print_reboot_entry(struct radutmp *bp)
         strftime(ct, sizeof(ct), "%a %b %d %H:%M", tm);
 
         if (bp->type == P_NAS_SHUTDOWN)
-                s = "shutdown";
+                s = _("shutdown");
         else
-                s = "reboot";
+                s = _("reboot");
+        printf("%-*.*s %s      ~                   %16.16s\n",
+               namesize, namesize,
+               s,
+                       
+               grad_nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
+               ct);
+}
+
+void
+print_acct_toggle(struct radutmp *bp)
+{
+        char *s;
+        struct tm *tm;
+        char ct[256];
+        char buf[MAX_LONGNAME];
+        
+        tm = localtime(&bp->time);
+        strftime(ct, sizeof(ct), "%a %b %d %H:%M", tm);
+
+        if (bp->type == P_ACCT_DISABLED)
+                s = _("acct_off");
+        else
+                s = _("acct_on");
         printf("%-*.*s %s      ~                   %16.16s\n",
                namesize, namesize,
                s,

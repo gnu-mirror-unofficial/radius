@@ -7,7 +7,7 @@
   The applications-specific options are:
 
   --enable-yydebug	         
-     Enable parser debugging. The parser deugging can be useful to track down
+     Enable parser debugging. The parser debugging can be useful to track down
   errors in configuration files such as /etc/raddb/users and /etc/raddb/config.
   To enable the debugging on a given file, the first line of it should contain
   the statement #debug starting on the first colon. Debugging output goes to
@@ -34,7 +34,7 @@
      Enable dbm support. If no argument is specified, an usual DBM is enabled.
   The `ndbm' argument instructs to enable support of NDBM.
 
-  --ensble-sql={mysql|postgres}                 
+  --enable-sql={mysql|postgres}                 
      Enable SQL accounting support. Currently MySQL and PostgreSQL interfaces
      are supported.
 
@@ -54,7 +54,7 @@
   --enable-osfc2	          
      Enable OSFC2 support.
 
-     The following is designed for future use. Currently the norwegian locale
+     The following is designed for future use. Currently the Norwegian locale
   (bokmal) is being finished.
 
   --enable-nls		         
@@ -147,7 +147,7 @@ are reserved. When authenticating a request, radius first tries to find
 the exact match on username and check_pairs. If such a match cannot be found
 it tries to find a DEFAULT entry matching the check_pairs. All DEFAULT
 entries are tried in the order of their appearance in the file.
-  When compairing pairlists, order of pairs is not significant. Special
+  When comparing pairlists, order of pairs is not significant. Special
 attributes (the ones with number > 254) appearing in a pairlist are ignored.
 
               III. Special hacks for some peculiar NASes		
@@ -223,7 +223,7 @@ radwtmp begins Fri Dec 01 16:36:59 2000
 		V. Bug reporting.		
            ------------------------------------------------
 
-Bug reports are velcome. Should you find any bugs please report them 
+Bug reports are welcome. Should you find any bugs please report them 
 to bug-gnu-radius@gnu.org. 
 
 	

@@ -79,7 +79,7 @@ the same number of columns on each line of output.
 
 .IP "-F, --finger"
 Start in fingerd mode. In this mode \fBradwho\fR emulates the
-behaviour of fingerd(8) utility. Use this option if starting
+behavior of fingerd(8) utility. Use this option if starting
 \fBradwho\fR from the /etc/inetd.conf line like this:
 .IP
 finger  stream  tcp   nowait  nobody   /usr/sbin/radwho radwho -fL
@@ -101,7 +101,7 @@ Display information about local users from the system \fButmp\fR file.
 May prove useful when running \fBradwho\fR as a finger daemon.
 
 .IP "-n, --no-resolve"
-Do not resolve IP addresses. It is a synonim for \fB-I ip\fR.
+Do not resolve IP addresses. It is a synonym for \fB-I ip\fR.
 
 .IP "-o, --format FORMAT"
 Select customized output format. This can also be changed by setting

@@ -225,7 +225,7 @@ All queries are completely configurable.
 
 4.	Support for NASes that don't honor RFC.
 
-Some NASes have particularities in sending Radius packets. These can
+Some NASes have peculiarities in sending Radius packets. These can
 be overridden by using special rewriting language which allows to 
 modify the contents of a packet on the fly. 
 

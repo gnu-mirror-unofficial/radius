@@ -15,7 +15,7 @@ builddbm - build a DBM version of Radius users database
 DBM files. Some versions of \fBRadius\fR daemon have used this to
 speed up the access to the users database.
 .PP
-Howewer in this implementation of \fBRadius\fR daemon things go the
+However in this implementation of \fBRadius\fR daemon things go the
 other way around. The server reads entire plaintext database, converts
 it into internal form and stores into hash table which provides for
 fast access. Actually, using DBM version of the users database slows

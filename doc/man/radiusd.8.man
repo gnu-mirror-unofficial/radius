@@ -23,7 +23,7 @@ radiusd - Authentication and accounting server
 \fBradiusd\fR is the server implementing \fBRADIUS\fR protocol.
 .PP
 \fBRADIUS\fR is a protocol spoken between the network access server
-(\fBNAS\fR) and the auhtentication server. The network access server
+(\fBNAS\fR) and the authentication server. The network access server
 is typically a device accepting connections from several modem lines
 and the authentication server is the server which decides whether some
 user has the right to log in or he has not. This is called authentication.
@@ -69,7 +69,7 @@ database (\fB\*(RD/users.db\fR or \fB\*(RD/users.pag\fR,
 (\fB\*(RD/users\fR).
 .IP
 Note that this makes the processing of each authentication request
-\fBmuch more slower\fR when the number of users grows beyong some
+\fBmuch more slower\fR when the number of users grows beyond some
 limit.
 .IP -d
 Specifies alternate name for the configuration
@@ -89,7 +89,7 @@ stdout.
 Build DBM users database out of plaintext file. If no argument is
 specified, the file \*(RD/users is taken as input.  Otherwise the
 argument specifies the filename to be used as input. This option
-takes effect only if the program was configureb with \fB--enable-dbm\fR
+takes effect only if the program was configured with \fB--enable-dbm\fR
 option.
 .IP -mt
 Start in test mode. In this mode \fBradiusd\fR starts interactive
@@ -126,7 +126,7 @@ insecure.
 .SH CONFIGURATION
 \fBRadiusd\fR uses rather complicated configuration file suite. The
 files live in \fB\*(RD\fR directory. The place of their location
-can be overriden using \fB-d\fr option.
+can be overridden using \fB-d\fr option.
 .PP
 The configuration files are:
 .IP config
@@ -152,7 +152,7 @@ The list of network access servers that are allowed to use this
 \fBRadius\fR server. This file specifies for each \fBNAS\fR its long
 and short names, NAS type, and possibly its IP pool.
 .IP clients
-The list of IP addresses and secred keys for each \fBNAS\fR that wants
+The list of IP addresses and secret keys for each \fBNAS\fR that wants
 to communicate to the server.
 .IP hints
 The \fBradius\fR server can alter its politics towards a user

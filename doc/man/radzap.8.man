@@ -39,7 +39,7 @@ its short form, i.e. ``radzap -p 2''.
 
 .SH ENVIRONMENT VARIABLE
 .IP RADZAP_CONFIRM
-Specifies the default behaviour of the \fBradzap\fR. When set to a
+Specifies the default behavior of the \fBradzap\fR. When set to a
 positive value, \fBradzap\fR starts in confirm mode.
 
 .SH FILES

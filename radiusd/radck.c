@@ -118,10 +118,6 @@ pass1(datum, sym)
 	struct check_datum *datum;
 	User_symbol *sym;
 {
-	PAIR_LIST *hint;
-	VALUE_PAIR *p;
-	char matchpart[AUTH_STRING_LEN];
-		
 	mark_list(datum, sym, sym->check);
 	mark_list(datum, sym, sym->reply);
 

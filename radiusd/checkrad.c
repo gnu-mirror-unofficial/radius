@@ -329,7 +329,6 @@ snmp_check(checkp, nas)
 	int timeout;
 	char *peername;
 	int remote_port;
-	int namelen;
 	oid_t oid;
 	char *snmp_oid;
 	
@@ -615,6 +614,7 @@ finger_check(checkp, nas)
 	return found;
 }
 
+/*ARGSUSED*/
 int
 ext_check(checkp, nas)
 	struct check_instance *checkp;

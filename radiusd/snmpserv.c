@@ -427,7 +427,6 @@ rad_snmp_respond(buf, len, sa)
 	struct sockaddr_in *sa;
 {
 	SNMP_REQ *req;
-	char ipbuf[DOTTED_QUAD_LEN];
 
 	req = alloc_entry(sizeof *req);
 	req->sa = *sa;
@@ -454,7 +453,6 @@ snmp_decode(req, buf, len)
 	struct snmp_pdu *pdu;
 	struct snmp_session sess;
 	int access;
-	char ipbuf[DOTTED_QUAD_LEN];
 	char comm[128];
 	int comm_len;
 	
@@ -723,11 +721,10 @@ mib_get(node, varp, errp)
 	struct snmp_var **varp;
 	int *errp;
 {
-	int rc;
 	oid_t oid = (*varp)->name;
 	
-	if ((rc = mib_lookup(node, oid, OIDLEN(oid), &node)) !=
-	    MIB_MATCH_EXACT || !node->handler) {
+	if (mib_lookup(node, oid, OIDLEN(oid), &node) != MIB_MATCH_EXACT ||
+	    !node->handler) {
 		*errp = SNMP_ERR_NOSUCHNAME;
 		return -1;
 	}
@@ -748,11 +745,10 @@ mib_set_try(node, varp, errp)
 	struct snmp_var **varp;
 	int *errp;
 {
-	int rc;
 	oid_t oid = (*varp)->name;
 	
-	if ((rc = mib_lookup(node, oid, OIDLEN(oid), &node)) !=
-	    MIB_MATCH_EXACT || !node->handler) {
+	if (mib_lookup(node, oid, OIDLEN(oid), &node) != MIB_MATCH_EXACT ||
+	    !node->handler) {
 		*errp = SNMP_ERR_NOSUCHNAME;
 		return -1;
 	}
@@ -775,11 +771,10 @@ mib_set(node, varp)
 	struct mib_node_t *node;
 	struct snmp_var **varp;
 {
-	int rc;
 	oid_t oid = (*varp)->name;
 	
-	if ((rc = mib_lookup(node, oid, OIDLEN(oid), &node)) !=
-	    MIB_MATCH_EXACT || !node->handler) {
+	if (mib_lookup(node, oid, OIDLEN(oid), &node) != MIB_MATCH_EXACT ||
+	    !node->handler) {
 		return -1;
 	}
 	
@@ -930,6 +925,7 @@ struct snmp_var *snmp_auth_var_get(subid_t subid, oid_t oid, int *errp);
 int snmp_auth_var_set(subid_t subid, struct snmp_var **vp, int *errp);
 
 /* Handler function for fixed oids from the authentication subtree */
+/*ARGSUSED*/
 int
 snmp_auth_handler(cmd, closure, subid, varp, errp)
 	enum mib_node_cmd cmd;
@@ -1132,8 +1128,6 @@ snmp_auth_v_handler(cmd, closure, subid, varp, errp)
 	struct snmp_var **varp;
 	int *errp;
 {
-	NAS *nas;
-	
 	switch (cmd) {
 	case MIB_NODE_GET:
 		if ((*varp = snmp_auth_var_v_get(subid, *varp, errp)) == NULL)
@@ -1184,9 +1178,6 @@ snmp_auth_var_v_get(subid, var, errp)
 	int *errp;
 {
 	struct snmp_var *ret;
-	struct timeval tv;
-	struct timezone tz;
-	char *p;
 	subid_t key;
 	NAS *nas;
 	
@@ -1310,6 +1301,7 @@ struct snmp_var *snmp_acct_var_get(subid_t subid, oid_t oid, int *errp);
 int snmp_acct_var_set(subid_t subid, struct snmp_var **vp, int *errp);
 
 /* Handler function for fixed oids from the authentication subtree */
+/*ARGSUSED*/
 int
 snmp_acct_handler(cmd, closure, subid, varp, errp)
 	enum mib_node_cmd cmd;
@@ -1503,7 +1495,6 @@ snmp_acct_v_handler(cmd, closure, subid, varp, errp)
 	struct snmp_var **varp;
 	int *errp;
 {
-	NAS *nas;
 	
 	switch (cmd) {
 	case MIB_NODE_GET:
@@ -1543,9 +1534,6 @@ snmp_acct_var_v_get(subid, var, errp)
 	int *errp;
 {
 	struct snmp_var *ret;
-	struct timeval tv;
-	struct timezone tz;
-	char *p;
 	subid_t key;
 	NAS *nas;
 	
@@ -1660,6 +1648,7 @@ struct snmp_var *snmp_stat_var_get(subid_t subid, oid_t oid, int *errp);
 int snmp_stat_var_set(subid_t subid, struct snmp_var **vp, int *errp);
 
 /* Handler function for fixed oids from the authentication subtree */
+/*ARGSUSED*/
 int
 snmp_stat_handler(cmd, closure, subid, varp, errp)
 	enum mib_node_cmd cmd;
@@ -1954,9 +1943,6 @@ snmp_nas_table_get(subid, oid, errp)
 	int *errp;
 {
 	struct snmp_var *ret;
-	struct timeval tv;
-	struct timezone tz;
-	char *p;
 	subid_t key;
 	NAS *nas;
 	
@@ -2028,6 +2014,7 @@ get_stat_nasstat(nas, var, ind)
 	}
 }
 
+/*ARGSUSED*/
 int
 snmp_port_index1(cmd, closure, subid, varp, errp)
 	enum mib_node_cmd cmd;
@@ -2037,9 +2024,6 @@ snmp_port_index1(cmd, closure, subid, varp, errp)
 	int *errp;
 {
 	NAS *nas;
-	struct nas_stat *nsp;
-	UINT4 ip;
-	struct snmp_var *var;
 	struct port_closure *pind = (struct port_closure*)closure;
 	
 	switch (cmd) {
@@ -2153,7 +2137,6 @@ snmp_port_table(cmd, closure, subid, varp, errp)
 	struct snmp_var **varp;
 	int *errp;
 {
-	NAS *nas;
 	struct port_table_closure *p = (struct port_table_closure*)closure;
 	
 	switch (cmd) {
@@ -2247,7 +2230,6 @@ get_port_stat(port, var, key)
 {
 	struct timeval tv;
 	struct timezone tz;
-	char *p;
 	NAS *nas;
 	
 	switch (key) {

@@ -92,8 +92,8 @@ register_channel(chan)
 				       _("can't access `%s'"), filename);
 				efree(filename);
 				filename = estrdup("stdout");
-			}
-			fclose(fp);
+			} else
+				fclose(fp);
 		} else
 			filename = estrdup("stdout");
 	} else if (chan->mode == LM_SYSLOG) {

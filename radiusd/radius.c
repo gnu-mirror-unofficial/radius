@@ -153,6 +153,7 @@ radius_req_decode(struct sockaddr_in *sa,
 				inputsize);
 	if (!radreq)
 		return 1;
+
 	*output = radreq;
 	return 0;
 }
@@ -199,13 +200,16 @@ radius_req_cmp(void *adata, void *bdata)
 	VALUE_PAIR *alist = NULL, *blist = NULL, *ap, *bp;
 	int rc;
 	NAS *nas;
+
+	if (proxy_cmp(a, b) == 0)
+		return RCMP_PROXY;
 	
 	if (a->ipaddr != b->ipaddr || a->code != b->code)
-		return 1;
+		return RCMP_NE;
 	
 	if (a->id == b->id
 	    && memcmp(a->vector, b->vector, sizeof(a->vector)) == 0)
-		return 0;
+		return RCMP_EQ;
 
 	if (nas = nas_request_to_nas(a))
 		prop = envar_lookup_int(nas->args, "compare-atribute-flag", 0);
@@ -229,7 +233,7 @@ radius_req_cmp(void *adata, void *bdata)
 	}
 
 	if (prop == 0) 
-		return 1;
+		return RCMP_NE;
 
 	prop |= AP_REQ_CMP;
 	alist = _extract_pairs(a, prop);
@@ -242,7 +246,24 @@ radius_req_cmp(void *adata, void *bdata)
 
 	avl_free(alist);
 	avl_free(blist);
-	return rc;
+	return rc == 0 ? RCMP_EQ : RCMP_NE;
+}
+
+void
+radius_req_update(void *req_ptr, void *data_ptr)
+{
+	RADIUS_REQ *req = req_ptr;
+	RADIUS_UPDATE *upd = data_ptr;
+	RADIUS_SERVER *server;
+	REALM *realm;
+	int i;
+	
+	req->server_id = upd->proxy_id;
+	realm = realm_lookup_name(upd->realmname);
+	server = realm->queue->first_server;
+	for (i = 0; i < upd->server_no && server; i++)
+		server = server->next;
+	req->server = server;
 }
 
 void
@@ -321,8 +342,7 @@ radius_respond(REQUEST *req)
         case RT_ACCOUNTING_REQUEST:
                 if (avl_find(radreq->request, DA_USER_NAME) == NULL)
                         break;
-                if (proxy_send(radreq, req->fd) != 0) {
-                        req->type = R_PROXY;
+                if (proxy_send(req) != 0) {
                         return 0;
                 }
 		break;
@@ -331,7 +351,17 @@ radius_respond(REQUEST *req)
 	case RT_AUTHENTICATION_REJECT:
 	case RT_ACCOUNTING_RESPONSE:
 	case RT_ACCESS_CHALLENGE:
-		if (proxy_receive(radreq, req->fd) < 0) {
+		if (!req->orig) {
+			char buf[MAX_SHORTNAME];
+			radlog_req(L_PROXY|L_ERR, radreq,
+				   _("Unrecognized proxy reply from server %s, proxy ID %d"),
+				   client_lookup_name(radreq->ipaddr,
+						      buf, sizeof buf), 
+				   radreq->id);
+			return 1;
+		}
+		
+		if (proxy_receive(radreq, req->orig->data, req->fd) < 0) {
 			return 1;
 		}
 		break;

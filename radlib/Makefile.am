@@ -34,6 +34,7 @@ radutmp.c \
 slist.c \
 symtab.c \
 sysdep.c \
+vasprintf.c \
 users_gram.c \
 users_lex.c \
 util.c

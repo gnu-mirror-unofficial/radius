@@ -207,14 +207,19 @@
                 strip-names
                 checkrad-assume-logged
                 password-expire-warning
-		compare-atribute-flag)
+		compare-atribute-flag
+		forward
+		trace-rules
+		reject-malformed-names)
     (acct       port
                 listen
                 spawn
                 max-requests
                 time-to-live
                 request-cleanup-delay
-		compare-atribute-flag)
+		compare-atribute-flag
+		forward
+		trace-rules)
     (snmp       port
                 spawn
                 max-requests

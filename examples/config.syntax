@@ -5,13 +5,17 @@ option {
 	# Source IP address. Can be omitted if the machine running
 	# radiusd has only one interface.
 	source-ip 127.0.0.1;
+
 	# Maximum number of request in queue
 	max-requests 127;
+
 	# Maximum number of children processes
 	max-processes 128;
+
 	# Child terminates if it does not receive any requests within
 	# this number of seconds:
 	process-idle-timeout 3600;
+
 	# The following two statements set timeout values for the 
 	# master process I/O operations. If the master is not able
 	# to perform the I/O within the corresponding interval
@@ -20,17 +24,22 @@ option {
 	# at all (the default).
 	master-read-timeout 0;
 	master-write-timeout 0;
+
 	# The following specifies the uid under which external processes
 	# (those triggered by Exec-Program and Exec-Program-Wait 
 	# attributes) should be run. The corresponding gid is determined
 	# from the user's passwd entry. Default is daemon.
 	exec-program-user "daemon";
+
 	# Specify the logging directory (-l command line option)
        	log-dir "/var/log";
+
 	# Specify the detailed accounting directory (-a command line option)
        	acct-dir "/var/acct";
+
 	# Resolve IP addresses to hostnames (default)
 	resolve yes;
+
 	# Set characters that may be used in a username.
 	username-chars "{}";
 };
@@ -49,12 +58,14 @@ logging {
 		print-severity yes;     # Synonim for the above
 		print-milliseconds yes; # Print timestamp with milliseconds
 		print-category yes;     # Print category description
-	};	
+	};
+
 	# This defines output channel that sends it info to syslog whith
 	# facility `auth' and priority `notice'
 	channel notice {
 		syslog auth.notice;
 	};
+
 	# Definitions of the logging categories
 	# auth 	-	Authentication info
 	category auth {
@@ -62,6 +73,7 @@ logging {
 		print-failed-pass yes;	# Output failed password
 		print-pass no;		# Output password (very insecure!)
 	};
+
 	# Send notice logs to another channel
 	category notice {
 		channel notice;
@@ -69,6 +81,7 @@ logging {
 	category info {
 		channel info;
 	};
+
 	# Debugging information
 	# Level is a comma-separated list of debugging levels. Each
 	# debugging level can be specified either as:
@@ -85,48 +98,89 @@ logging {
 
 ## This controls the authentication service:
 auth {
-	port 1645;		# default port number
-		# Listen statement can be used to listen to multiple
-		# interfaces/ports. By default radiusd listens to all
-		# interfaces available. Default port number can be overridden
-		# as shown in the example:
+	# default port number
+	port 1645;
+
+	# Listen statement can be used to listen to multiple
+	# interfaces/ports. By default radiusd listens to all
+	# interfaces available. Default port number can be overridden
+	# as shown in the example:
 	listen localhost, 192.168.10.1:1842;
+
 	forward remote, remote2:1645;
-	max-requests 127;	# Maximum number of AUTH requests in queue
-	time-to-live 25;	# Request time to live
-	request-cleanup-delay 10; # Number of seconds the request remains
-                                  # in queue after being processed
-	detail yes;		# Store detailed info about every auth request
-	strip-names yes;	# Strip username prefixes/suffixes
-	checkrad-assume-logged yes;	# Assume the user is logged in when
-					# checkrad returns don't-know answer
-	password-expire-warning 1440;   # Emit warning if user's password
-                                        # expires within the given interval
-                                        # (seconds).
-	compare-atribute-flag 1; # User-defined flag that marks in the
-                                 # dictionary the attributes that will
-                                 # be used when comparing two authentication
-                                 # requests. Allowed values are 1 through 9
-	trace-rules no;
+
+	# Maximum number of AUTH requests in queue
+	max-requests 127;
+
+	# Request time to live
+	time-to-live 25;
+
+	# Number of seconds the request remains
+        # in queue after being processed
+	request-cleanup-delay 10;
+
+	# Store detailed info about every auth request
+	detail yes;
+
+	# Strip username prefixes/suffixes
+	strip-names yes;
+
+	# Assume the user is logged in when checkrad returns don't-know answer
+	checkrad-assume-logged yes;
+
+	# Emit warning if user's password expires within the given interval
+	# (seconds).
+	password-expire-warning 1440;
+
+	# User-defined flag that marks in the
+        # dictionary the attributes that will
+        # be used when comparing two authentication
+        # requests. Allowed values are 1 through 9
+	compare-atribute-flag 1;
+
+	# Controls the rule tracing mode. If set to `yes', radiusd will
+	# log which rules were matched when processing each authentication
+	# request (log priority "info")
+	trace-rules no;          
+
+	# Should the server send access-reject message if the access-request
+	# contained a malformed user name?
+	# See also option/username-chars
+	reject-malformed-names no; 
 };
 
 ## This controls the accounting service
 acct {
-	port 1646;		# default port number
-		# Listen statement can be used to listen to multiple
-		# interfaces/ports. By default radiusd listens to all
-		# interfaces available.
+	# default port number
+	port 1646;
+
+	# Listen statement can be used to listen to multiple
+	# interfaces/ports. By default radiusd listens to all
+	# interfaces available.
 	listen localhost, 192.168.10.1:1843;
-	detail yes;             # Do the request detail accounting (default)
-	max-requests 24;	# Maximum number of ACCT requests in queue
-	time-to-live 60;	# Request time to live
-        request-cleanup-delay 10; # Number of seconds the request remains
-                                  # in queue after being processed
-	compare-atribute-flag 2; # User-defined flag that marks in the
-                                 # dictionary the attributes that will
-                                 # be used when comparing two accounting
-                                 # requests. Allowed values are 1 through 9
-	trace-rules no;
+
+        # Do the request detail accounting (default)
+	detail yes;
+
+	# Maximum number of ACCT requests in queue
+	max-requests 24;
+
+	# Request time to live
+	time-to-live 60;
+
+	# Number of seconds each request remains
+        # in queue after being processed
+        request-cleanup-delay 10;
+
+	# User-defined flag that marks in the dictionary the attributes
+	# that will be used when comparing two accounting requests.
+	# Allowed values are 1 through 9
+	compare-atribute-flag 2;
+
+	# Controls the rule tracing mode. If set to `yes', radiusd will
+	# log which rules were matched when processing each accounting
+	# request (log priority "info")
+	trace-rules no;          
 };
 
 # DBM handling. Can be one of
@@ -136,12 +190,21 @@ usedbm no;
 
 # SNMP sub-system configuration
 snmp {
-	port 4500;		# Port number
-	listen localhost:160;   # Same as in auth and acct.
-	max-requests 24;	# Maximum number of ACCT requests in queue
-	time-to-live 10;	# Request time to live
-        request-cleanup-delay 0; # Number of seconds the request remains
-                                 # in queue after being processed
+	# Port number
+	port 4500;
+
+	# Same as in auth and acct.
+	listen localhost:160;
+
+	# Maximum number of SNMP requests in queue
+	max-requests 24;
+
+	# Request time to live
+	time-to-live 10;
+
+	# Number of seconds the request remains in queue after being processed
+        request-cleanup-delay 0;
+
 	# SNMP storage management
 	storage {
 		file "radius.stat";	# Statistics file name
@@ -151,11 +214,14 @@ snmp {
 		max-port-count 1024;	# Overall number of ports
 					# to be monitored
 	};
+
 	# Server identifier
-	ident "RADIUS server";	
+	ident "RADIUS server";
+
 	# Communities
 	community public ro;
 	community admin rw;
+
 	# Access control lists
 	network localhost 127.0.0.1 1.2.3.4;
 	network trusted_hosts 1.2.3.0/255.255.255.224;
@@ -170,20 +236,32 @@ snmp {
 };
 
 rewrite {
+	# Set the runtime stack size
 	stack-size 4096;
-	load-path "/usr/share/rewrite";  # Add the directory to the Rewrite
-	                                 # load path
-	load "file.rw";                  # Load the given file. 
+
+	# Add the directory to the Rewrite load path
+	load-path "/usr/share/rewrite";
+
+	# Load the given file. 
+	load "file.rw";                  
 };
 
 # Guile interface configuration
 guile {
-	debug yes;              # Enable debug mode
-	gc-interval 3600;       # Perform GC each hour
-	load-path "/usr/local/libexec/guile"; # Add given path to guile's
-                                              # %load-list
-	load "lib.scm";         # Load given file
-	outfile	"guile.out";	# Redirect the guile output to the given file.
+	# Enable debug mode
+	debug yes;
+
+	# Perform garbage collection once an hour
+	gc-interval 3600;
+
+	# Add given path to guile's %load-list
+	load-path "/usr/local/libexec/guile";
+
+	# Load given file
+	load "lib.scm";
+
+	# Redirect the guile output to the given file.
+	outfile	"guile.out";	
 };
 
 message {

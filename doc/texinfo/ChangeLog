@@ -1,3 +1,8 @@
+2003-11-25  Sergey Poznyakoff
+
+	* configure.texi (realms file): Document ignorecase
+	option.
+
 2003-11-08  Sergey Poznyakoff 
 
 	* debug.texi: Documented rule tracing mode.

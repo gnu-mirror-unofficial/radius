@@ -1,10 +1,10 @@
-GNU Radius NEWS -- history of user-visible changes. 2003-11-07
+GNU Radius NEWS -- history of user-visible changes. 2003-11-25
 Copyright (C) 2002,2003 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
 
-Version 1.1.93:
+Version 1.1.94:
 
 * New features:
 
@@ -69,20 +69,23 @@ Default is `-extended -icase -newline'.
 
 ** Realms
 
-*** New flags auth and acct allow to select which type of requests is to be
-proxied to the remote server. For example, the statement:
+*** New flags "auth" and "acct" allow to select which type of requests is
+to be proxied to the remote server. For example, the statement:
 
 some.realm   remote.server.net	  auth
 
 will send only authentication requests to the server `remote.server.net'
+
+*** New boolean flag "ignorecase". When set, enables case-insensitive
+comparison for realm names.
 
 ** New configuration file statements
 
 *** forward ip[:port]...
 
 This statement can be used in `auth' and `acct' blocks to request
-forwarding of the requests to remote server or servers. The syntax
-is the same as of `listen' statement. Forwarding differs from proxying
+forwarding of the requests to remote server or servers. It has the
+same syntax as `listen' statement. Forwarding differs from proxying
 in that the requests are sent to the remote server *and* processed
 locally. The remote server is not expected to reply. This mode is
 intended primarily for debugging purposes. It could also be useful in
@@ -98,7 +101,7 @@ The example of information appearing in trace mode:
 Oct 31 11:37:17 [28322]: Auth.info: (AUTHREQ foo 170 bar):
 rule trace: /etc/raddb/users:157,22,3; huntgroups:72; hints:34
 
-This means that when processing the authentication request
+This means that when processing an authentication request
 from server `foo' for user `bar' with ID 170, the following rules
 lead to the decision on whether to accept or reject the requests:
 

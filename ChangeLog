@@ -1,3 +1,26 @@
+2003-11-25  Sergey Poznyakoff
+
+	* configure.ac: Raised version number to 1.1.94 
+
+	* NEWS: Updated
+	* lib/realms.c (realm_lookup_name): Allow new keyword
+	"ignorecase". Proposed by Maurice.
+	* radiusd/sql.c (sql_check_config): Be more robust against
+	eventual errors.
+
+	* lib/iputil.c (ip_gethostaddr,p_strtoip,ip_getnetaddr)
+	(ip_addr_in_net_p): Use const keyword wherever appropriate
+	* include/radius.h: Likewise. 
+	* radiusd/auth.c (sfn_validate): Do not log user password with
+	account/password expired messages.
+
+	* include/radsql.h (doauth,doacct): Removed defines
+	* lib/list.c: Removed useless assertions
+	
+2003-11-25  Sergey Poznyakoff  
+
+	* lib/Makefile.am (librad_la_LIBADD): Use LTLIBOBJS directly.
+
 2003-11-25  Sergey Poznyakoff  
 
 	* lib/Makefile.am (librad_la_LIBADD): Use LTLIBOBJS directly.

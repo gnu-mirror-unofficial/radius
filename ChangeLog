@@ -1,3 +1,27 @@
+2001-12-20 Sergey Poznyakoff
+
+	Reorganized test suite.
+	
+	* test/dejagnu/s.radiusd: removed
+	* test/dejagnu/s.radiusd.proxy: removed
+
+	* test/radiusd.m4: (new) Generic source file for basic tests.
+	* test/proxy.m4: (new) Source file for proxy-related tests.
+	* test/dejagnu.m4: (new) Dejagnu-specific definitions. 
+	* test/Makefile.am: Reorganized.
+	* test/dejagnu/Makefile.am: Removed s. directories
+	* configure.in: Likewise. Increased patchlevel.
+	
+2001-12-19 Vlad Lungu
+	
+	* acconfig.h: Added ODBC-related stuff.
+	* configure.in: Likewise.
+	* include/radsql.h: Likewise.
+	* radiusd/version.c: Likewise.
+	* sql/Makefile.am: Likewise.
+	* sql/disp.c: Likewise.
+	* sql/odbc.c: (new)
+	
 2001-12-19 Sergey Poznyakoff
 
 	Changes to make it work on alpha (thanks to
@@ -3120,3 +3144,5 @@ fill-column: 74
 version-control: never
 End:
 
+
+	

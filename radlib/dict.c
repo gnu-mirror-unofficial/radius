@@ -253,7 +253,7 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 	/*
 	 *	Add to the front of the list, so that
 	 *	values at the end of the file override
-	 *	those in the begin.
+	 *	those in the beginning.
 	 */
 	attr->next = dictionary_attributes;
 	dictionary_attributes = attr;

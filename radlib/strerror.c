@@ -21,8 +21,6 @@
 # include <config.h>
 #endif
 
-#if !defined(HAVE_STRERROR)
-
 #ifndef lint
 static char rcsid[] = 
 "$Id$";
@@ -63,5 +61,4 @@ strerror(err)
 
 #endif /* HAVE_SYS_ERRLIST */
 
-#endif /* HAVE_STRERROR */
 

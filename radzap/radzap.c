@@ -34,10 +34,8 @@ static char rcsid[] =
 #include <time.h>
 #include <errno.h>
 #include <netinet/in.h>
-#if defined(HAVE_GETOPT_LONG)
-# include <getopt.h>
-#endif
 
+#include <getopt1.h>
 #include <radiusd.h>
 #include <radutmp.h>
 
@@ -54,7 +52,7 @@ void usage();
 void license();
 
 #define OPTSTR "cd:hl:Ln:p:qw"
-#ifdef HAVE_GETOPT_LONG
+
 struct option longopt[] = {       
 	"confirm",             no_argument, 0, 'c',
 	"directory",     required_argument, 0, 'd',
@@ -66,10 +64,6 @@ struct option longopt[] = {
 	"quiet",               no_argument, 0, 'q',
 	0
 };
-#else
-# define longopt 0
-# define getopt_long(ac,av,os,lo,li) getopt(ac,av,os)
-#endif
 
 /*
  *	Zap a user from the radutmp and radwtmp file.
@@ -325,7 +319,6 @@ nas_find(ipaddr)
 }
 
 char usage_text[] =
-#ifdef HAVE_GETOPT_LONG
 "usage: radzap [-c][-q][-d raddb][-L][-l log_dir] [-n nas][-p port] [user]\n"
 "either nas or port or user must be specified\n"
 "\n"
@@ -336,22 +329,7 @@ char usage_text[] =
 "       -l, --log-directory DIR  Specify logging directory.\n"
 "       -n, --nas NASNAME        NAS from which to zap the user.\n"
 "       -p, --port PORT          Port to zap from.\n"
-"       -q, --quiet              Do not ask for confirmation before zapping.\n"
-;
-#else
-"usage: radzap [-c][-q][-d raddb][-L][-l log_dir] [-n nas][-p port] [user]\n"
-"either nas or port or user must be specified\n"
-"\n"
-"Options are:\n"
-"       -c                       Ask for confirmation before zapping.\n"
-"       -d DIR                   Specify Radius configuration directory.\n"
-"       -L                       Display GNU license and exit.\n"
-"       -l DIR                   Specify logging directory.\n"
-"       -n NASNAME               NAS from which to zap the user.\n"
-"       -p PORT                  Port to zap from.\n"
-"       -q                       Do not ask for confirmation before zapping.\n"
-;
-#endif
+"       -q, --quiet              Do not ask for confirmation before zapping.\n";
 
 void
 usage()

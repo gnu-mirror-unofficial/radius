@@ -1,9 +1,8 @@
 #if defined(HAVE_CONFIG_H)
 # include <config.h>
 #endif
-#if defined(HAVE_GETOPT_LONG)
-# include <getopt.h>
-#endif
+
+#include <getopt1.h>
 #include <libguile.h>
 #include <radiusd.h>
 

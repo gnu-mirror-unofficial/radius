@@ -43,9 +43,8 @@ static char rcsid[] =
 #include <signal.h>
 #include <errno.h>
 #include <sys/wait.h>
-#if defined(HAVE_GETOPT_H)
-# include <getopt.h>
-#endif
+
+#include <getopt1.h>
 #include <radiusd.h>
 #include <radsql.h>
 #include <log.h>
@@ -227,7 +226,7 @@ static void reread_config(int reload);
 static UINT4 getmyip(void);
 
 #define OPTSTR "Aa:bd:fhl:Lm:ni:p:P:Ssvx:yz"
-#ifdef HAVE_GETOPT_LONG
+
 struct option longopt[] = {
 	"log-auth-detail",    no_argument,       0, 'A',
 	"acct-directory",     required_argument, 0, 'a',
@@ -252,11 +251,6 @@ struct option longopt[] = {
 	"log-auth-pass",      no_argument,       0, 'z',
 	0
 };
-# define GETOPT getopt_long
-#else
-# define longopt 0
-# define GETOPT(ac,av,os,lo,li) getopt(ac,av,os)
-#endif
 
 #define MODE_DAEMON    0
 #define MODE_CHECKCONF 1
@@ -315,7 +309,7 @@ main(argc, argv)
 	/*
 	 *	Process the options.
 	 */
-	while ((argval = GETOPT(argc, argv, OPTSTR, longopt, NULL)) != EOF) {
+	while ((argval = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF) {
 		switch (argval) {
 		case 'A':
 			auth_detail++;
@@ -1369,7 +1363,6 @@ usage()
 	static char ustr[] =
 "usage: radiusd [options]\n\n"
 "options are:\n"
-#ifdef HAVE_GETOPT_LONG
 "    -A, --log-auth-detail       Do detailed authentication logging.\n"
 "    -a, --acct-directory DIR    Specify accounting directory.\n"
 #ifdef USE_DBM
@@ -1395,38 +1388,7 @@ usage()
 "                                parameters and exit.\n"
 "    -x, --debug debug_level     Set debugging level.\n"
 "    -y, --log-auth              Log authentications.\n"
-"    -z, --log-auth-pass         Log passwords used.\n"
-#else
-"    -A                          Do detailed authentication logging.\n"
-"    -a DIR                      Specify accounting directory.\n"
-"    -c                          Do configuration files syntax check\n"
-"                                and exit.\n"
-#ifdef USE_DBM
-"    -b                          Enable DBM support.\n"
-#endif
-"    -d DIR                      Specify alternate configuration directory\n"
-"                                (default " RADIUS_DIR ").\n"
-"    -f                          Stay in foreground.\n"
-"    -L                          Display GNU license and exit.\n"
-"    -l DIR                      Specify alternate logging directory\n"
-"                                (default " RADLOG_DIR ").\n"
-"    -m {t|c|b}                  Select operation mode: test, checkconf,\n"
-"                                builddbm.\n"
-"    -n                          Start only authentication process.\n"
-"    -i IP                       Use this IP as source address.\n"
-"    -p PORTNO                   Use alternate port number.\n" 
-"    -P DIR                      Store pidfile in DIR.\n"
-"                                (default " RADPID_DIR ")\n"
-"    -S                          Log usernames stripped off any\n"
-"                                prefixes/suffixes.\n"
-"    -s                          Run in single process mode.\n"
-"    -v                          Display program version and configuration\n"
-"                                parameters and exit.\n"
-"    -x debug_level              Set debugging level.\n"
-"    -y                          Log authentications.\n"
-"    -z                          Log passwords used.\n"
-#endif
-;
+"    -z, --log-auth-pass         Log passwords used.\n" ;
 	fprintf(stdout, "%s", ustr);
 	exit(1);
 }

@@ -17,12 +17,13 @@ endif
 
 noinst_LTLIBRARIES=librad.la $(LIBSQL) liblog.la libdebug.la 
 librad_la_SOURCES=intl.c radpaths.c sysdep.c alloc.c radprintf.c \
-		 raddb.c dict.c avl.c iputil.c strerror.c \
-		 strncasecmp.c md5.c md5crypt.c mem.c leakdetect.c \
+		 raddb.c dict.c avl.c iputil.c \
+		 md5.c md5crypt.c mem.c leakdetect.c \
                  users_gram.c users_lex.c util.c client.c \
-		 insist.c debug.c slist.c dbm.c obstack.c \
+		 insist.c debug.c slist.c dbm.c \
 		 radutmp.c
-
+LIBADD=@LIBOBJS@
+librad_la_LIBADD = $(LIBADD:.o=.lo)
 liblog_la_SOURCES=log.c 
 libdebug_la_SOURCES=debugmod.c
 LDFLAGS=-all-static
@@ -32,7 +33,9 @@ BUILT_SOURCES=users_gram.c users_lex.c
 noinst_HEADERS=users_gram.h 
 DISTCLEANFILES=users_gram.c users_gram.h users_lex.c
 INCLUDES= -I$(srcdir) -I$(top_srcdir)/include @INCLUDEPATH@
-EXTRA_DIST=users.y users.l mysql.c postgres.c
+EXTRA_DIST=users.y users.l mysql.c postgres.c strncasecmp.c strerror.c \
+           obstack.c obstack.h rx.c rx.h regex.h regexp.h \
+	   getopt.c getopt1.c getopt.h
 YLWRAP=$(SHELL) $(top_srcdir)/ylwrap
 
 users_gram.c users_gram.h: $(srcdir)/users.y

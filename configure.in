@@ -97,7 +97,6 @@ AC_MSG_RESULT($INCLUDEPATH)
 AC_CHECK_LIB(socket, main)
 AC_CHECK_LIB(nsl, main)
 AC_CHECK_LIB(intl, gettext)
-AC_CHECK_LIB(rx, regcomp)
 AC_CHECK_LIB(crypt, crypt)
 
 ## * Checks for header files.
@@ -115,6 +114,7 @@ AC_TYPE_UID_T
 AC_TYPE_OFF_T
 AC_TYPE_PID_T
 AC_TYPE_SIZE_T
+AC_TYPE_SIGNAL
 AC_CHECK_TYPE(u_char, unsigned char)
 AC_CHECK_TYPE(u_int, unsigned int)
 AC_CHECK_TYPE(u_long, unsigned long)
@@ -122,17 +122,17 @@ AC_HEADER_TIME
 AC_STRUCT_TM
 
 ## * Checks for library functions.
-AC_FUNC_MEMCMP
-AC_TYPE_SIGNAL
+#AC_FUNC_MEMCMP
 AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  mkdir mktime select socket strdup strtol lockf \
- strncasecmp setlocale strerror bzero \
- regcomp inet_ntoa inet_aton setvbuf seteuid setreuid getdtablesize) 
-
-## Check for getopt_long.
-rad_FUNC_GETOPT_LONG
+ setlocale bzero \
+ inet_ntoa inet_aton setvbuf seteuid setreuid getdtablesize) 
+AM_FUNC_OBSTACK
+AC_REPLACE_FUNCS(strerror strncasecmp)
+rad_REPLACE_GNU_GETOPT
+rad_LIB_REGEX
 
 AC_MSG_CHECKING(for sys_errlist and sys_nerr)
 AC_TRY_RUN(

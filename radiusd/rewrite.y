@@ -3569,7 +3569,6 @@ COMP_REGEX *
 compile_regexp(str)
 	char *str;
 {
-#ifdef HAVE_REGCOMP		
 	char     *p;
 	regex_t  regex;
 	int      nmatch;
@@ -3595,14 +3594,6 @@ compile_regexp(str)
 	}
 	
 	return rx_alloc(&regex, nmatch);
-#else
-	radlog(L_ERR, "%s:%d: regexp support not compiled in",
-	       input_filename, input_line);
-	errcnt++;
-	nmatch = 0;
-	return NULL;
-#endif
-	
 }
 
 void

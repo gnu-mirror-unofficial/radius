@@ -61,7 +61,7 @@
 #undef u_long
 /* ************************************************************************** */
 
-#undef HAVE_GETOPT_LONG
+#undef HAVE_GNU_GETOPT
 
 #undef HAVE_SYS_ERRLIST
 

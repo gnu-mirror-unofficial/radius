@@ -114,7 +114,7 @@ ATTRIBUTE	Match-Profile		2004	string	- CR
 ## ATTRIBUTE	Include-Profile		2005	string 
 ATTRIBUTE	Auth-Data		2006	string	- C
 
-ATTRIBUTE	Log-Mode-Mask		2007	integer	- C
+ATTRIBUTE	Log-Mode-Mask		2007	integer	- C+
 VALUE		Log-Mode-Mask		Log-Auth		1
 VALUE		Log-Mode-Mask		Log-Auth-Pass		2
 VALUE		Log-Mode-Mask		Log-Failed-Pass		4

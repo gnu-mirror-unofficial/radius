@@ -45,9 +45,8 @@ static char rcsid[] =
 #include <radutmp.h>
 #include <radlast.h>
 #include <log.h>
-#if defined(HAVE_GETOPT_LONG)
-# include <getopt.h>
-#endif
+
+#include <getopt1.h>
 #include "display.h"
 #include "screen.h"
 
@@ -108,7 +107,7 @@ void select_nas();
 void dump(int);
 
 #define OPTSTR "bd:DhIilLns:wx"
-#ifdef HAVE_GETOPT_LONG
+
 struct option longopt[] = {
 	"brief",         no_argument,       0, 'b',
         "display",       required_argument, 0, 'd',
@@ -123,10 +122,6 @@ struct option longopt[] = {
 	"help",          no_argument,       0, 'h',
 	0,
 };
-#else
-# define longopt 0
-# define getopt_long(ac,av,os,lo,li) getopt(ac,av,os)
-#endif
 
 /*
  * Debugging hook.
@@ -786,7 +781,6 @@ dump(fd)
 
 
 char usage_str[] = 
-#ifdef HAVE_GETOPT_LONG
 "usage: raduse [options] [nas [nas...]]\n"
 "The options are:\n"
 "       -b, --brief               Brief mode.\n"
@@ -804,21 +798,6 @@ char usage_str[] =
 "                                 network access servers and then exit.\n"
 "       -L, --license             Display GNU lisense and exit\n"
 "	-h, --help                Display short usage summary.\n";
-#else
-"usage: raduse [options] [nas [nas...]]\n"
-"The options are:\n"
-"       -b          Brief mode.\n"
-"       -d COUNT    Show only COUNT displays.\n"
-"       -D          Dump the statistics database to stdout and exit.\n"
-"       -I          Do not display idle lines.\n"
-"       -i          Interactive mode.\n"
-"       -n          Non-interactive mode.\n"
-"       -s NUM      Specify delay in seconds between screen updates.\n"
-"       -w          Widen the time display fields to show the seconds.\n"
-"       -l          List the names and IP numbers of NASes and exit\n"
-"       -L          Display GNU license and exit\n"
-"       -h          Display short usage summary.\n";
-#endif
 
 void 
 usage()

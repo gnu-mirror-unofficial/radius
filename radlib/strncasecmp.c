@@ -26,8 +26,6 @@ static char rcsid[] =
 # include <config.h>
 #endif
 
-#if !defined(HAVE_STRNCASECMP)
-
 int
 strncasecmp(a, b, n)
 	char *a;
@@ -47,5 +45,5 @@ strncasecmp(a, b, n)
 	return 0;		
 }
 		
-#endif /* HAVE_STRNCASECMP */
+
 

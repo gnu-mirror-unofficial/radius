@@ -39,10 +39,8 @@ static char rcsid[] =
 #include <assert.h>
 #include <signal.h>
 #include <netinet/in.h>
-#ifdef HAVE_GETOPT_LONG
-# include <getopt.h>
-#endif
 
+#include <getopt1.h>
 #include <sysdep.h>
 #include <radiusd.h>
 #include <radutmp.h>
@@ -116,7 +114,7 @@ WTMP *login_list;
 WTMP *nas_updown_list;
 
 #define OPTSTR "?0123456789c:d:f:h:mn:lLp:st:w"
-#ifdef HAVE_GETOPT_LONG
+
 struct option longopt[] = {
 	"count",              required_argument, 0, 'c',
 	"config-directory",   required_argument, 0, 'd',
@@ -132,11 +130,6 @@ struct option longopt[] = {
 	"wide",               no_argument,       0, 'w',
 	0
 };
-# define GETOPT getopt_long
-#else
-# define longopt 0
-# define GETOPT(ac,av,os,lo,li) getopt(ac,av,os)
-#endif
 
 int
 main(argc, argv)
@@ -147,7 +140,7 @@ main(argc, argv)
 	char *p;
 
 	initlog(argv[0]);
-	while ((c = GETOPT(argc, argv, OPTSTR, longopt, NULL)) != EOF)
+	while ((c = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF)
 		switch (c) {
 		case '0': case '1': case '2': case '3': case '4':
 		case '5': case '6': case '7': case '8': case '9':
@@ -750,7 +743,6 @@ print_reboot_entry(bp)
 
 
 char usage_str[] =
-#ifdef HAVE_GETOPT_LONG
 "usage: radlast [options] [user ...]\n"
 "Options are:\n"
 "    -c, --count NUMBER          show at most NUMBER records\n"
@@ -764,24 +756,7 @@ char usage_str[] =
 "    -p, --port PORT             show logins from given PORT\n"
 "    -s, --show-seconds          show the login session duration in seconds\n"
 "    -w, --wide                  widen the duration field to show seconds\n"
-"    -?, --help                  show this help info"
-#else
-"usage: radlast [options] [user ...]\n"
-"Options are:\n"
-"    -c NUMBER                   show at most NUMBER records\n"
-"    -NUMBER                     the same as above\n"
-"    -f FILENAME                 use FILENAME as radwtmp\n"
-"    -h IPADDR                   show logins with IPADDR\n"
-"    -m                          mark records with missed stops with bump (!)\n"
-"    -n NAS                      show logins from given NAS\n"
-"    -l                          use long output format\n"
-"    -L                          display license and exit\n"
-"    -p PORT                     show logins from given PORT\n"
-"    -s                          show the login session duration in seconds\n"
-"    -w                          widen the duration field to show seconds\n"
-"    -?                          show this help info"
-#endif
-;
+"    -?, --help                  show this help info" ;
 
 void
 usage(void)

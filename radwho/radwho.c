@@ -34,10 +34,8 @@ static char rcsid[] =
 #include <sys/utsname.h>
 #include <ctype.h>
 #include <netinet/in.h>
-#if defined(HAVE_GETOPT_LONG)
-# include <getopt.h>
-#endif
 
+#include <getopt1.h>
 #include <sysdep.h>
 #include <radutmp.h>
 #include <radiusd.h>
@@ -200,7 +198,7 @@ FORMAT realm_fmt = {
 FORMAT radwho_fmt[MAX_FMT];
 
 #define OPTSTR "Acd:D:e:f:FhHiI:lLno:su"
-#ifdef HAVE_GETOPT_LONG
+
 struct option longopt[] = {       
 	"all",               no_argument, 0, 'A',
 	"calling-id",        no_argument, 0, 'c',
@@ -221,10 +219,6 @@ struct option longopt[] = {
 	"secure",            no_argument, 0, 's',
 	0
 };
-#else
-# define longopt 0
-# define getopt_long(ac,av,os,lo,li) getopt(ac,av,os)
-#endif
 
 #define SIP_SMART    0
 #define SIP_NODOMAIN 1
@@ -1114,7 +1108,6 @@ realm_name(ip)
  */
 
 char usage_str[] =
-#ifdef HAVE_GETOPT_LONG
 "usage: radwho [options] username\n"
 "Options are:\n"
 "       -A, --all            Print all entries, not only active ones.\n" 
@@ -1138,31 +1131,6 @@ char usage_str[] =
 "       -s, --secure         Secure mode: requires that the username be\n"
 "                            specified.\n"
 "       -u, --local-also     Display also local users.\n";
-#else
-"usage: radwho [options] username\n"
-"Options are:\n"
-"       -A                   Print all entries, not only active ones.\n" 
-"       -c                   Display CLID in second column.\n"
-"       -D {short|abbr|full}\n"
-"                            Change date representation format.\n"
-"       -d DIR               Specify Radius configuration directory.\n"
-"       -e STRING            Print STRING instead of an empty column.\n"
-"       -F                   Act as a finger daemon.\n"
-"       -f FILE              Use FILE instead of /var/log/radwtmp\n"
-"       -H                   Do not display header line.\n"
-"       -h                   Display this help.\n"
-"       -i                   Display session ID in the second column.\n"
-"       -I {smart|ip|nodomain}\n"
-"                            Change IP address representation format.\n"
-"       -L                   Display GNU license and exit.\n"
-"       -l                   Long output. All fields will be printed.\n"
-"                            Implies -D full -I smart.\n"
-"       -n                   Do not resolve hostnames. The same as -I ip.\n"
-"       -o                   Specify format line.\n"
-"       -s                   Secure mode: requires that the username be\n"
-"                            specified.\n"
-"       -u                   Display also local users.\n";
-#endif
 
 void
 usage()

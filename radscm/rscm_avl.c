@@ -35,7 +35,7 @@ SCM_DEFINE(rscm_avl_delete, "avl-delete", 2, 0, 0,
 {
 	VALUE_PAIR *pairlist;
 	int attr;
-	
+	SCM RETVAL;
 	SCM_ASSERT(SCM_NIMP(LIST) && SCM_CONSP(LIST),
 		   LIST, SCM_ARG1, FUNC_NAME);
 	pairlist = radscm_list_to_avl(LIST);
@@ -52,7 +52,9 @@ SCM_DEFINE(rscm_avl_delete, "avl-delete", 2, 0, 0,
 		attr = SCM_INUM(ATTR);
 	}
 	avl_delete(&pairlist, attr);
-	return radscm_avl_to_list(pairlist);
+	RETVAL = radscm_avl_to_list(pairlist);
+	avl_free(pairlist);
+	return RETVAL;
 }
 #undef FUNC_NAME
 
@@ -78,10 +80,10 @@ SCM_DEFINE(rscm_avl_merge, "avl-merge", 2, 0, 0,
 }
 #undef FUNC_NAME
 
-SCM_DEFINE(rscm_avl_match, "avl-match", 2, 0, 0,
+SCM_DEFINE(rscm_avl_match_p, "avl-match?", 2, 0, 0,
 	   (SCM TARGET, SCM LIST),
 "Return #t if all pairs from LIST are present in TARGET")	   
-#define FUNC_NAME s_rscm_avl_match
+#define FUNC_NAME s_rscm_avl_match_p
 {
 	VALUE_PAIR *target, *pair;
 	VALUE_PAIR *list, *check_pair;

@@ -17,11 +17,14 @@
    along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-#define SQLT_NONE     0
-#define SQLT_MYSQL    1
-#define SQLT_POSTGRES 2
-#define SQLT_ODBC     3
-#define SQLT_MAX      4
+#ifdef HAVE_LIBLTDL
+# define DECL_SQL_DISPATCH_TAB(mod) \
+  SQL_DISPATCH_TAB RDL_EXPORT(mod,dispatch_tab)
+#else
+# define __s_cat2__(a,b) a ## b 
+# define DECL_SQL_DISPATCH_TAB(mod) \
+  SQL_DISPATCH_TAB __s_cat2__(mod,_dispatch_tab)
+#endif
 
 #ifdef USE_SQL
 
@@ -31,27 +34,6 @@
 
 # define SQL_CACHE_SIZE 16
 typedef char **SQL_TUPLE;
-
-typedef struct {
-	char *query;
-	size_t ntuples;
-	size_t nfields;
-	SQL_TUPLE *tuple;
-} SQL_RESULT;
-
-struct sql_connection {
-	int    interface;        /* One of SQLT_ values */
-        int    type;             /* One of SQL_ values */
-        int    connected;        /* Connected to the database? */
-        int    destroy_on_close; /* Should the connection be closed upon
-				    the end of a transaction */
-        time_t last_used;        /* Time it was lastly used */
-        void   *data;            /* connection-specific data */
-	
-	SQL_RESULT *cache[SQL_CACHE_SIZE];
-	size_t head;
-	size_t tail;
-};
 
 enum radius_sql_query {
 	auth_query,
@@ -85,7 +67,27 @@ typedef struct {
         int      active[SQL_NSERVICE];
 } SQL_cfg;
 
-extern SQL_cfg sql_cfg;
+typedef struct {
+	char *query;
+	size_t ntuples;
+	size_t nfields;
+	SQL_TUPLE *tuple;
+} SQL_RESULT;
+
+struct sql_connection {
+	SQL_cfg *cfg;
+	int    interface;        /* One of SQLT_ values */
+        int    type;             /* One of SQL_ values */
+        int    connected;        /* Connected to the database? */
+        int    destroy_on_close; /* Should the connection be closed upon
+				    the end of a transaction */
+        time_t last_used;        /* Time it was lastly used */
+        void   *data;            /* connection-specific data */
+	
+	SQL_RESULT *cache[SQL_CACHE_SIZE];
+	size_t head;
+	size_t tail;
+};
 
 int radiusd_sql_config();
 void radiusd_sql_shutdown();
@@ -104,6 +106,7 @@ SCM sql_exec_query(int type, char *query);
 # endif
 
 /* Dispatcher routines */
+void disp_init();
 int disp_sql_interface_index(char *name);
 int disp_sql_reconnect(int interface, int conn_type, struct sql_connection *conn);
 void disp_sql_disconnect(struct sql_connection *conn);
@@ -130,22 +133,6 @@ typedef struct {
 	int (*n_tuples)(struct sql_connection *conn, void *data, size_t *np);
 	int (*n_columns)(struct sql_connection *conn, void *data, size_t *np);
 } SQL_DISPATCH_TAB;
-
-# ifdef USE_SQL_MYSQL
-extern SQL_DISPATCH_TAB mysql_dispatch_tab[];
-# else
-#  define mysql_dispatch_tab NULL
-# endif
-# ifdef USE_SQL_POSTGRES
-extern SQL_DISPATCH_TAB postgres_dispatch_tab[];
-#else
-#  define postgres_dispatch_tab NULL
-#endif
-# ifdef USE_SQL_ODBC
-extern SQL_DISPATCH_TAB odbc_dispatch_tab[];
-# else
-#  define odbc_dispatch_tab NULL
-# endif
 
 #else
 # define sql_init()

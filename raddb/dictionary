@@ -261,11 +261,5 @@ VALUE		Fall-Through		Yes			1
 VALUE		Add-Port-To-IP-Address	No			0
 VALUE		Add-Port-To-IP-Address	Yes			1
 
-#
-#	Configuration Values
-##	comment out these two lines to turn account expiration off
-#
 
-VALUE		Server-Config		Password-Expiration	30
-VALUE		Server-Config		Password-Warning	5
 

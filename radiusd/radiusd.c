@@ -109,8 +109,8 @@ static void request_drop(int type, void *data, char *status_str);
 static void request_xmit(int type, int code, void *data, int fd);
 void rad_spawn_child(int type, void *data, int activefd);
 static int flush_request_list();
-static int request_setup(int type, qid_t qid);
-static void request_cleanup(int type, qid_t qid);
+static int request_setup(int type, void *data);
+static void request_cleanup(int type, void *data);
 
 static void unlink_pidfile();
 
@@ -1052,22 +1052,22 @@ request_cmp(type, a, b)
 }
 
 int
-request_setup(type, qid)
+request_setup(type, data)
 	int type;
-	qid_t qid;
+	void *data;
 {
 	if (request_class[type].setup) 
-		return request_class[type].setup(type, qid);
+		return request_class[type].setup(type, data);
 	return 0;
 }
 
 void
-request_cleanup(type, qid)
+request_cleanup(type, data)
 	int type;
-	qid_t qid;
+	void *data;
 {
 	if (request_class[type].cleanup)
-		request_class[type].cleanup(type, qid);
+		request_class[type].cleanup(type, data);
 }
 
 void *
@@ -1162,8 +1162,7 @@ rad_spawn_child(type, data, activefd)
 				 *	This request seems to have hung -
 				 *	kill it
 				 */
-				request_cleanup(curreq->type,
-						(qid_t)curreq->data);
+				request_cleanup(curreq->type, curreq->data);
 				child_pid = curreq->child_pid;
 				radlog(L_NOTICE,
 				     _("Killing unresponsive %s child pid %d"),
@@ -1219,7 +1218,7 @@ rad_spawn_child(type, data, activefd)
 
 	/* First, setup the request
 	 */
-	if (request_setup(type, (qid_t)data)) {
+	if (request_setup(type, data)) {
 		request_drop(type, data, _("request setup failed"));
 
 		request_list_unblock();
@@ -1264,7 +1263,7 @@ rad_spawn_child(type, data, activefd)
 		 */
 		curreq->child_return =
 			request_class[type].handler(data, activefd);
-		request_cleanup(type, (qid_t)curreq->data);
+		request_cleanup(type, curreq->data);
 		request_list_unblock();
 		log_close();
 		return;
@@ -1334,8 +1333,7 @@ rad_child_cleanup()
 				curreq->child_pid = -1;
 				curreq->child_return = WEXITSTATUS(status);
 				curreq->timestamp = time(NULL);
-				request_cleanup(curreq->type,
-						(qid_t)curreq->data);
+				request_cleanup(curreq->type, curreq->data);
 				break;
 			}
 			curreq = curreq->next;

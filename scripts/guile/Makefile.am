@@ -10,7 +10,4 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-EXTRA_DIST = \
- guile-doc-snarf\
- guile-func-name-check\
- guile-snarf.awk
+SUBDIRS = 1.4 1.6

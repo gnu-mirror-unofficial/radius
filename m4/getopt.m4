@@ -27,7 +27,7 @@ struct option longopt[] = {
 main(argc, argv)
 int argc; char **argv;
 {
-	getopt_long(argc, argv, "h", longopt, (int*)0);
+	getopt_long_only(argc, argv, "h", longopt, (int*)0);
 	return 0;
 }             ],
               ra_cv_have_gnu_getopt=yes,

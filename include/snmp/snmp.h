@@ -56,10 +56,7 @@ extern int snmp_errno;
 #define SMI_TIMETICKS   ASN_TIMETICKS
 #define SMI_OPAQUE      ASN_OPAQUE
 #define SMI_COUNTER64   ASN_COUNTER64
-#define SMI_INTEGER     ASN_INTEGER
-#define SMI_STRING      ASN_OCTET_STR
-#define SMI_OBJID       ASN_OBJECT_ID
-#define SMI_NULLOBJ     ASN_NULL
+
 /* PDU types */
 #define SNMP_PDU_GET        (ASN_CONTEXT | ASN_CONSTRUCTOR | 0x0)
 #define SNMP_PDU_GETNEXT    (ASN_CONTEXT | ASN_CONSTRUCTOR | 0x1)

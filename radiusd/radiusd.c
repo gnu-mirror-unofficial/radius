@@ -1315,6 +1315,8 @@ struct cfg_stmt option_stmt[] = {
 	{ "username-chars", CS_STMT, NULL, cfg_get_string,
 	  &username_valid_chars,
 	  NULL, NULL },
+	/* Obsolete statements */
+	{ "usr2delay", CS_STMT, NULL, cfg_obsolete, NULL, NULL, NULL },
 	{ NULL, }
 };
 
@@ -1368,6 +1370,8 @@ struct cfg_stmt auth_stmt[] = {
 	{ "compare-attribute-flag", CS_STMT, NULL,
 	  cfg_get_integer, &auth_comp_flag,
 	  NULL, NULL },
+	/* Obsolete statements */
+	{ "spawn", CS_STMT, NULL, cfg_obsolete, NULL, NULL, NULL },
 	{ NULL, }
 };
 	
@@ -1388,6 +1392,15 @@ struct cfg_stmt acct_stmt[] = {
 	{ "compare-attribute-flag", CS_STMT, NULL,
 	  cfg_get_integer, &acct_comp_flag,
 	  NULL, NULL },
+	/* Obsolete statements */
+	{ "spawn", CS_STMT, NULL, cfg_obsolete, NULL, NULL, NULL },
+	{ NULL, }
+};
+
+struct cfg_stmt proxy_stmt[] = {
+	{ "max-requests", CS_STMT, NULL, cfg_obsolete, NULL, NULL, NULL },
+	{ "request-cleanup-delay", CS_STMT, NULL,
+	  cfg_obsolete, NULL, NULL, NULL },
 	{ NULL, }
 };
 
@@ -1398,6 +1411,7 @@ struct cfg_stmt config_syntax[] = {
 	  logging_stmt, logging_stmt_end },
 	{ "auth", CS_BLOCK, auth_stmt_begin, NULL, NULL, auth_stmt, NULL },
 	{ "acct", CS_BLOCK, acct_stmt_begin, NULL, NULL, acct_stmt, NULL  },
+	{ "proxy", CS_BLOCK, NULL, NULL, NULL, proxy_stmt, NULL  },
 	{ "rewrite", CS_BLOCK, NULL, NULL, NULL, rewrite_stmt, NULL },
 	{ "filters", CS_BLOCK, filters_stmt_term, NULL, NULL, filters_stmt,
 	  NULL },

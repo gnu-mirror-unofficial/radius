@@ -24,7 +24,6 @@
 #include <errno.h>
 #include <radiusd.h>
 #include <list.h>
-#include <assert.h>
 
 struct input_system {
 	LIST *methods;    /* List of METHOD structures */
@@ -211,7 +210,6 @@ input_select(INPUT *input, struct timeval *tv)
 	int status;
 	int count = 0;
 
-	/*FIXME*/tv=NULL;
 	debug(100,("enter"));
 	if (!input->citr)
 		input->citr = iterator_create(input->channels);
@@ -254,7 +252,7 @@ input_select(INPUT *input, struct timeval *tv)
 			}
 		} 
 	}
-	assert(count > 0);
+	insist(count > 0);
 	
 	debug(100,("exit"));
 	return status;

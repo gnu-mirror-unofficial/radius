@@ -443,7 +443,7 @@ radiusd_daemon()
 #endif
         /* SIGHUP is ignored because when the session leader terminates
            all process in the session are sent the SIGHUP.  */
-        signal(SIGHUP, SIG_IGN);
+        rad_set_signal(SIGHUP, SIG_IGN);
 
         /* fork() again so the parent, can exit. This means that we, as a
            non-session group leader, can never regain a controlling
@@ -931,7 +931,7 @@ sig_handler(int sig)
 	default:
 		abort();
 	}
-	signal(sig, sig_handler);
+	rad_reset_signal(sig, sig_handler);
 }
 
 void
@@ -945,7 +945,7 @@ radiusd_signal_init(RETSIGTYPE (*hp)(int sig))
 	int i;
 
 	for (i = 0; i < sizeof(signum)/sizeof(signum[0]); i++)
-		signal(signum[i], hp);
+		rad_set_signal(signum[i], hp);
 }
 
 

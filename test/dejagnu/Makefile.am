@@ -15,7 +15,7 @@ DEJATOOL = radiusd
 RUNTESTFLAGS = 
 SUBDIRS = lib
 EXTRA_DIST = dejagnu.m4 radiusd-stamp proxy-stamp radiusd radiusd.proxy
-DISTCLEANFILES = radiusd-stamp proxy-stamp 
+DISTCLEANFILES = radiusd-stamp proxy-stamp remote.exp site.exp
 
 M4_DEFINES=-DBUILDDIR=`cd $(top_builddir); pwd` \
            -DSOURCEDIR=`cd $(top_srcdir); pwd`

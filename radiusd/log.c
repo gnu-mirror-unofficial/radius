@@ -1,5 +1,5 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
+ * Copyright (C) 2000,2001, Sergey Poznyakoff
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -178,7 +178,16 @@ register_category(cat, chanlist)
 	int cat;
 	Chanlist *chanlist;
 {
-	category[cat].chanlist = chanlist;
+	Chanlist *cp;
+	
+	if (chanlist) {
+		if (category[cat].chanlist) {
+			for (cp = chanlist; cp->next; cp = cp->next)
+				;
+			cp->next = category[cat].chanlist;
+		}
+		category[cat].chanlist = chanlist;
+	}
 }
 
 void
@@ -252,7 +261,31 @@ log_stdout()
 		category[i].chanlist = cp;
 	}
 }
+
+void
+log_disconnect()
+{
+	int i;
+	Chanlist *cp, *prev;
 	
+	for (i = 1; i < NCAT; i++) {
+		prev = NULL;
+		for (cp = category[i].chanlist; cp && cp->next; cp = cp->next)
+			prev = cp;
+		if (!cp)
+			continue; 
+		if (cp->channel->mode == LM_FILE &&
+		    strcmp(cp->channel->id.file, "stdout")==0) {
+			if (prev)
+				prev->next = cp->next;
+			else
+				category[i].chanlist = cp->next;
+			free_entry(cp);
+		}
+	}
+	fixup_categories();
+}
+
 int
 vlog(lvl, fmt, ap)
 	int lvl;

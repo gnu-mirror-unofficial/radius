@@ -1,6 +1,7 @@
 @c This is part of the Radius manual.
 @c Copyright (C) 1999,2000 Sergey Poznyakoff
 @c See file radius.texinfo for copying conditions.
+@setfilename radius.info
 
 @comment **L3***************************************************************
 @node Attribute list, , , Top

@@ -1,8 +1,15 @@
+2001-03-31  gray  <gray@farlep.net>
+	Fixed bug in radiusd/proxy.c that caused A/V pairs to be freed
+	twice. Improved debug()s. 
+	Inserted calls to insist() in critical places of radlib/mem.c.
+	Probably these should be enabled only when in maintainer mode...
+
 2001-03-30  gray  <gray@farlep.net>
 	Fixes in snmplib/snmp_sess.c.
+	Moved private SNMP MIBs to the enterprise number assigned by IANA.
 
 2001-03-27  gray  <gray@farlep.net>
-	Changed Stat MIBs and snmpserv.c so that prevoious ..Date
+	Changed Stat MIBs and snmpserv.c so that previous ..Date
         variables be returned as unix timestamp values.
 
 2001-03-25  gray  <gray@farlep.net>

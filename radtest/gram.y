@@ -42,8 +42,7 @@
 #include <radtest.h>
 #include <debugmod.h>
 
-int source_line_num;
-char *source_filename = "";
+extern LOCUS source_locus;
 
 char *print_ident(Variable *var);
 int subscript(Variable *var, char *attr_name, int all, Variable *ret_var);
@@ -288,9 +287,7 @@ pair_list     : pair
 
 pair          : NAME op string
                 {
-                        $$ = install_pair(source_filename,
-                                          source_line_num, 
-                                          $1, $2, $3);
+                        $$ = install_pair(&source_locus, $1, $2, $3);
                         efree($3);
                 }
               ;
@@ -397,31 +394,18 @@ pritem        : expr
 int
 yyerror(char *s)
 {
-        fprintf(stderr, "%s:%d: %s\n",
-                source_filename,
-                source_line_num,
+        fprintf(stderr, "%s:%lu: %s\n",
+                source_locus.file, (unsigned long) source_locus.line,
                 s);
 }
 
 void
-parse_error
-#if STDC_HEADERS
-           (const char *fmt, ...)
-#else
-           (va_alist)
-        va_dcl
-#endif
+parse_error(const char *fmt, ...)
 {
         va_list ap;
-#if !STDC_HEADERS
-        char *fmt;
-        
-        va_start(ap);
-        fmt = va_arg(ap, char*);
-#else
+
 	va_start(ap, fmt);
-#endif
-        fprintf(stderr, "%s:%d: ", source_filename, source_line_num);
+        fprintf(stderr, "%s:%lu: ", source_locus.file, source_locus.line);
         vfprintf(stderr, fmt, ap);
         va_end(ap);
         fprintf(stderr, "\n");

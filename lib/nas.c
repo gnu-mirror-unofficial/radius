@@ -49,13 +49,12 @@ nas_free_list(NAS *list)
  */
 /*ARGSUSED*/
 int
-read_naslist_entry(void *unused, int fc, char **fv, char *file,
-		   int lineno)
+read_naslist_entry(void *unused ARG_UNUSED, int fc, char **fv, LOCUS *loc)
 {
         NAS nas, *nasp;
 
         if (fc < 2) {
-                radlog(L_ERR, "%s:%d: %s", file, lineno, _("too few fields"));
+                radlog_loc(L_ERR, loc, "%s", _("too few fields"));
                 return -1;
         }
 

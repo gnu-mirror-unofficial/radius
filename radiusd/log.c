@@ -64,7 +64,7 @@ log_close()
 
 void
 vlog(int level,
-     const char *file, int line,
+     const char *file, size_t line,
      const char *func_name, int en,
      const char *fmt, va_list ap)
 {
@@ -80,8 +80,15 @@ vlog(int level,
                 cat = log_get_category();
         pri = L_PRI(level);
         
-        if (file) 
-                asprintf(&buf1, "%s:%d:%s: ", file, line, SP(func_name));
+        if (file) {
+		if (func_name)
+			asprintf(&buf1,
+				 "%s:%d:%s: ", file, line, func_name);
+		else
+			asprintf(&buf1,
+				 "%s:%d: ", file, line);
+	}
+	
         if (en)
                 asprintf(&buf3, ": %s", strerror(en));
 

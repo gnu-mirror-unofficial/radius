@@ -53,6 +53,35 @@
 #include <raddbm.h>
 #include <obstack1.h>
 
+typedef struct locus_name {
+	struct locus_name *next;
+	char *filename;
+	size_t refcnt;
+} Locus_symbol;
+
+static Symtab *locus_tab;
+
+void
+locus_dup(LOCUS *dst, LOCUS *src)
+{
+	Locus_symbol *sp;
+	
+	if (!locus_tab)
+                locus_tab = symtab_create(sizeof(Locus_symbol), NULL);
+	sp = (Locus_symbol*) sym_lookup_or_install(locus_tab, src->file, 1);
+	sp->refcnt++;
+	dst->file = sp->filename;
+	dst->line = src->line;
+}
+
+void
+locus_free(LOCUS *loc)
+{
+	Locus_symbol *sp = (Locus_symbol*) sym_lookup(locus_tab, loc->file);
+	if (--sp->refcnt == 0)
+		symtab_delete(locus_tab, (Symbol*) sp);
+}
+
 /*
  * Symbol tables and lists
  */
@@ -139,9 +168,10 @@ comp_op(int op, int result)
  * parser
  */
 int
-add_user_entry(Symtab *symtab, char *filename, int line,
+add_user_entry(void *closure, LOCUS *loc,
 	       char *name, VALUE_PAIR *check, VALUE_PAIR *reply)
 {
+	Symtab *symtab = closure;
         User_symbol *sym;
 
         /* Special handling for DEFAULT names: strip any trailing
@@ -153,12 +183,11 @@ add_user_entry(Symtab *symtab, char *filename, int line,
                 name = "BEGIN";
 
         if ((check == NULL && reply == NULL)
-            || fix_check_pairs(CF_USERS, filename, line, name, &check)
-            || fix_reply_pairs(CF_USERS, filename, line, name, &reply)) {
-                radlog(L_ERR,
-                       _("%s:%d: discarding user `%s'"),
-                       filename,
-                       line, name);
+            || fix_check_pairs(CF_USERS, loc, name, &check)
+            || fix_reply_pairs(CF_USERS, loc, name, &reply)) {
+                radlog_loc(L_ERR, loc,
+			   _("discarding user `%s'"),
+			   name);
                 avl_free(check);
                 avl_free(reply);
                 return 0;
@@ -168,13 +197,14 @@ add_user_entry(Symtab *symtab, char *filename, int line,
         
         sym->check = check;
         sym->reply = reply;
-        sym->lineno = line;
+        locus_dup(&sym->loc, loc);
         return 0;
 }
 
 static int
 free_user_entry(User_symbol *sym)
 {
+	locus_free(&sym->loc);
         avl_free(sym->check);
         avl_free(sym->reply);
         return 0;
@@ -187,18 +217,16 @@ struct temp_list {
 };
 
 int
-add_pairlist(struct temp_list *closure, char *filename, int line,
-             char *name, VALUE_PAIR *lhs, VALUE_PAIR *rhs)
+add_pairlist(void *closure, LOCUS *loc,
+	     char *name, VALUE_PAIR *lhs, VALUE_PAIR *rhs)
 {
+	struct temp_list *tlist = closure;
         MATCHING_RULE *pl;
         
         if ((lhs == NULL && rhs == NULL)
-            || fix_check_pairs(closure->cf_file, filename, line, name, &lhs)
-            || fix_reply_pairs(closure->cf_file, filename, line, name, &rhs)) {
-                radlog(L_ERR,
-                       _("%s:%d: discarding entry `%s'"),
-                       filename,
-                       line, name);
+            || fix_check_pairs(tlist->cf_file, loc, name, &lhs)
+            || fix_reply_pairs(tlist->cf_file, loc, name, &rhs)) {
+                radlog_loc(L_ERR, loc, _("discarding entry `%s'"), name);
                 avl_free(lhs);
                 avl_free(rhs);
                 return 0;
@@ -208,12 +236,12 @@ add_pairlist(struct temp_list *closure, char *filename, int line,
         pl->name = estrdup(name);
         pl->lhs = lhs;
         pl->rhs = rhs;
-        pl->lineno = line;
-        if (closure->tail)
-                closure->tail->next = pl;
+        locus_dup(&pl->loc, loc);
+        if (tlist->tail)
+                tlist->tail->next = pl;
         else
-                closure->head = pl;
-        closure->tail = pl;
+                tlist->head = pl;
+        tlist->tail = pl;
         return  0;
 }
 
@@ -376,7 +404,8 @@ match_user(User_symbol *sym, RADIUS_REQ *req,
                 }
                 if (!fallthrough(sym->reply))
                         break;
-                debug(1, ("fall through near line %d", sym->lineno));
+                debug(1, ("fall through near %s:%lu",
+			  sym->loc.file, (unsigned long) sym->loc.line));
         } while (sym = sym_next((Symbol*)sym));
 
         return found;
@@ -520,7 +549,11 @@ userparse(char *buffer, VALUE_PAIR **first_pair, char **errmsg)
         int             op;
         static char errbuf[512];
         char token[256];
+	LOCUS loc;
 
+	loc.file = "<stdin>"; /* FIXME */
+	loc.line = 0;
+	
         state = PS_LHS;
         while (nextkn(&buffer, token, sizeof(token))) {
                 switch (state) {
@@ -550,8 +583,7 @@ userparse(char *buffer, VALUE_PAIR **first_pair, char **errmsg)
                         break;
                         
                 case PS_RHS:
-                        pair = install_pair("<stdin>", 0, attr->name, 
-                                             op, token);
+                        pair = install_pair(&loc, attr->name, op, token);
                         if (!pair) {
                                 snprintf(errbuf, sizeof(errbuf),
                                          _("install_pair failed on %s"),
@@ -606,10 +638,9 @@ hints_eval_compat(RADIUS_REQ *req, VALUE_PAIR *name_pair, MATCHING_RULE *i)
 	if ((tmp = avl_find(i->rhs, DA_REWRITE_FUNCTION))
 	    || (tmp = avl_find(i->lhs, DA_REWRITE_FUNCTION))) {
 		if (rewrite_eval(tmp->avp_strvalue, req, NULL, NULL)) {
-			radlog(L_ERR, "hints:%d: %s(): %s",
-			       i->lineno,
-			       tmp->avp_strvalue,
-			       _("not defined"));
+			radlog_loc(L_ERR, &i->loc, "%s(): %s",
+				   tmp->avp_strvalue,
+				   _("not defined"));
 		}
 	}
 }
@@ -678,7 +709,8 @@ hints_setup(RADIUS_REQ *req)
 
                 matched++;
                 
-                debug(1, ("matched %s at hints:%d", i->name, i->lineno));
+                debug(1, ("matched %s at %s:%lu", i->name, i->loc.file,
+			  (unsigned long) i->loc.line));
         
                 add = avl_dup(i->rhs);
         
@@ -751,8 +783,9 @@ huntgroup_match(RADIUS_REQ *req, char *huntgroup)
                 if (strcmp(pl->name, huntgroup) != 0)
                         continue;
                 if (paircmp(req, pl->lhs, NULL) == 0) {
-                        debug(1, ("matched %s at huntgroups:%d",
-                                 pl->name, pl->lineno));
+                        debug(1, ("matched %s at %s:%lu",
+				  pl->name, pl->loc.file,
+				  (unsigned long) pl->loc.line));
                         break;
                 }
         }
@@ -783,7 +816,8 @@ huntgroup_access(RADIUS_REQ *radreq)
                  */
                 if (paircmp(radreq, pl->lhs, NULL) != 0)
                         continue;
-                debug(1, ("matched huntgroup at huntgroups:%d", pl->lineno));
+                debug(1, ("matched huntgroup at %s:%lu", pl->loc.file,
+			  (unsigned long) pl->loc.line));
                 r = paircmp(radreq, pl->rhs, NULL) == 0;
                 break;
         }
@@ -792,10 +826,9 @@ huntgroup_access(RADIUS_REQ *radreq)
         if (pl &&
             (pair = avl_find(pl->lhs, DA_REWRITE_FUNCTION)) != NULL) {
                 if (rewrite_eval(pair->avp_strvalue, radreq, NULL, NULL)) {
-                        radlog(L_ERR, "huntgroups:%d: %s(): %s",
-                               pl->lineno,
-                               pair->avp_strvalue,
-                               _("not defined"));
+                        radlog_loc(L_ERR, &pl->loc, "%s(): %s",
+				   pair->avp_strvalue,
+				   _("not defined"));
                 }
         }
 #endif  
@@ -822,15 +855,12 @@ read_naslist_file(char *file)
  */
 /*ARGSUSED*/
 int
-read_clients_entry(void *u ARG_UNUSED, int fc, char **fv,
-                   char *file, int lineno)
+read_clients_entry(void *u ARG_UNUSED, int fc, char **fv, LOCUS *loc)
 {
         CLIENT *cp;
         
         if (fc != 2) {
-                radlog(L_ERR, "%s:%d: %s",
-                       file, lineno,
-                       _("wrong number of fields"));
+                radlog_loc(L_ERR, loc, "%s", _("wrong number of fields"));
                 return -1;
         }
 
@@ -912,15 +942,13 @@ client_lookup_name(UINT4 ipaddr, char *buf, size_t bufsize)
  */
 /*ARGSUSED*/
 int
-read_nastypes_entry(void *u ARG_UNUSED, int fc, char **fv,
-                    char *file, int lineno)
+read_nastypes_entry(void *u ARG_UNUSED, int fc, char **fv, LOCUS *loc)
 {
         RADCK_TYPE *mp;
         int method;
 
         if (fc < 2) {
-                radlog(L_ERR, "%s:%d: %s", file, lineno,
-                       _("too few fields"));
+                radlog_loc(L_ERR, loc, "%s", _("too few fields"));
                 return -1;
         }
 
@@ -931,7 +959,7 @@ read_nastypes_entry(void *u ARG_UNUSED, int fc, char **fv,
         else if (strcmp(fv[1], "ext") == 0)
                 method = METHOD_EXT;
         else {
-                radlog(L_ERR, "%s:%d: %s", file, lineno, _("unknown method"));
+                radlog_loc(L_ERR, loc, "%s", _("unknown method"));
                 return -1;
         }
                         
@@ -997,19 +1025,17 @@ add_deny(char *user)
 
 /*ARGSUSED*/
 int
-read_denylist_entry(int *denycnt, int fc, char **fv, char *file, int lineno)
+read_denylist_entry(void *closure, int fc, char **fv, LOCUS *loc)
 {
-        if (fc != 1) {
-                radlog(L_ERR,
-		       "%s:%d: %s",
-                       file, lineno,
-		       _("wrong number of fields"));
+	int *denycnt = closure;
+	if (fc != 1) {
+                radlog_loc(L_ERR, loc, "%s", _("wrong number of fields"));
                 return -1;
         }
 
         if (get_deny(fv[0]))
-                radlog(L_ERR, _("user `%s' already found in %s"),
-                    fv[0], RADIUS_DENY);
+                radlog_loc(L_ERR, loc, _("user `%s' already found in %s"),
+			   fv[0], RADIUS_DENY);
         else {
                 add_deny(fv[0]);
                 (*denycnt)++;

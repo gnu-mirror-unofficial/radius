@@ -220,9 +220,7 @@ typedef struct function_def {
         int        nparm;        /* Number of parameters */
         PARAMETER  *parm;        /* List of parameters */
         stkoff_t   stack_alloc;  /* required stack allocation */
-	char       *source_file; /* Source file where the function
-				    was declared */
-        int        line;         /* source line where the function
+        LOCUS      loc;          /* source location where the function
                                   * was declared
                                   */
 } FUNCTION;
@@ -257,7 +255,7 @@ typedef union mtx MTX;
 # define COMMON_MTX \
         OBJ(MTX);\
         int      id;\
-        int      line;\
+        LOCUS    loc;\
         Mtxtype  type;
 #else
 # define COMMON_MTX \
@@ -526,8 +524,7 @@ void loop_unwind_all();
  * Lexical analyzer stuff
  */
 static FILE *infile;               /* Input file */ 
-static char *input_filename;       /* Input location: file */
-static int   input_line;           /* ------------- : line */
+static LOCUS locus;                /* Input location */
 
 static char *inbuf;                /* Input string */
 static char *curp;                 /* Current pointer */
@@ -801,7 +798,7 @@ fundecl : TYPE IDENT dclparm
                   f.name    = $2;
                   f.rettype = $1;
                   f.entry   = 0;
-                  f.line    = input_line;
+                  f.loc     = locus;
                   
                   f.nparm   = 0;
                   f.parm    = NULL;
@@ -826,6 +823,15 @@ fundecl : TYPE IDENT dclparm
                           last = parm;
                   }
                   function = function_install(&f);
+          }
+        | TYPE FUN dclparm
+          {
+		  radlog_loc(L_ERR, &locus,
+			     _("redefinition of function `%s'"), $2->name);
+		  radlog_loc(L_ERR, &$2->loc,
+			     _("previously defined here"));
+		  errcnt++;
+		  YYERROR;
           }
         ;
 
@@ -1007,10 +1013,9 @@ stmt    : begin list end
         | BREAK ';'
           {
                   if (!loop_last) {
-                          radlog(L_ERR,
-                                 "%s:%d: %s",
-                                 input_filename, input_line,
-				 _("nothing to break from"));
+                          radlog_loc(L_ERR, &locus,
+				     "%s",
+				     _("nothing to break from"));
                           errcnt++;
                           YYERROR;
                   }
@@ -1022,10 +1027,9 @@ stmt    : begin list end
         | CONTINUE ';'
           {
                   if (!loop_last) {
-                          radlog(L_ERR,
-                                 "%s:%d: %s",
-                                 input_filename, input_line,
-				 _("nothing to continue"));
+                          radlog_loc(L_ERR, &locus,
+				     "%s",
+				     _("nothing to continue"));
                           errcnt++;
                           YYERROR;
                   }
@@ -1094,8 +1098,7 @@ expr    : NUMBER
           }
         | IDENT
           {
-                  radlog(L_ERR, _("%s:%d: undefined variable: %s"),
-                         input_filename, input_line, $1);
+                  radlog_loc(L_ERR, &locus, _("undefined variable: %s"), $1);
                   errcnt++;
                   YYERROR;
           }
@@ -1252,8 +1255,7 @@ expr    : NUMBER
 int
 yyerror(char *s)
 {
-        radlog(L_ERR, "%s:%d: %s",
-               input_filename, input_line, s);
+        radlog_loc(L_ERR, &locus, "%s", s);
         errcnt++;
 	return 0;
 }
@@ -1265,22 +1267,22 @@ yyerror(char *s)
 int
 parse_rewrite(char *path)
 {
-        input_filename = path;
-        infile = fopen(input_filename, "r");
+        locus.file = path;
+        infile = fopen(locus.file, "r");
         if (!infile) {
                 if (errno != ENOENT) {
                         radlog(L_ERR|L_PERROR,
                                _("can't open file `%s'"),
-                               input_filename);
+                               locus.file);
 			return -1;
                 }
                 return -2;
         }
 
-	debug(1,("Loading file %s", input_filename));
+	debug(1,("Loading file %s", locus.file));
         rw_code_lock();
         yyeof = 0;
-        input_line = 1;
+        locus.line = 1;
 	errcnt = 0;
         obstack_init(&input_stk);
 
@@ -1300,7 +1302,7 @@ parse_rewrite(char *path)
         fclose(infile);
         obstack_free(&input_stk, NULL);
         rw_code_unlock();
-        return 0;
+        return errcnt;
 }
 
 static int
@@ -1309,8 +1311,8 @@ parse_rewrite_string(char *str)
         rw_code_lock();
 	code_check();
         yyeof = 0;
-	input_filename = "<string>";
-	input_line = 1;
+	locus.file = "<string>";
+	locus.line = 1;
 	errcnt = 0;
         obstack_init(&input_stk);
 
@@ -1574,18 +1576,17 @@ c_comment()
         if (yychar != '/')
                 return 0;
         if (input() == '*') {
-                int keep_line = input_line;
+                size_t keep_line = locus.line;
 
                 do {
                         while (input() != '*') {
                                 if (yychar == 0) {
-                                        radlog(L_ERR, 
-                                               _("%s:%d: unexpected EOF in comment started at line %d"),
-                                               input_filename,
-                                               input_line, keep_line);
+                                        radlog_loc(L_ERR, &locus,
+		       _("unexpected EOF in comment started at line %lu"),
+						   (unsigned long) keep_line);
                                         return 0;
                                 } else if (yychar == '\n')
-                                        input_line++;
+                                        locus.line++;
                         }
                 } while (input() != '/');
                 return 1;
@@ -1630,7 +1631,7 @@ yylex()
                 nl = 0;
                 while (input() && isspace(yychar))
                         if (yychar == '\n')
-                                input_line++;
+                                locus.line++;
         
                 if (!yychar)
                         return 0;
@@ -1660,10 +1661,9 @@ yylex()
                 else
                         c = yychar;
                 if (input() != '\'') {
-                        radlog(L_ERR,
-			       "%s:%d: %s",
-                               input_filename, input_line,
-			       _("unterminated character constant"));
+                        radlog_loc(L_ERR, &locus,
+				   "%s",
+				   _("unterminated character constant"));
                         errcnt++;
                 }
                 yylval.number = c;
@@ -1706,9 +1706,9 @@ yylex()
                         return '%';
                 }
                 if (!attr) {
-                        radlog(L_ERR,
-			       _("%s:%d: unknown attribute %s"),
-                               input_filename, input_line, attr_name);
+                        radlog_loc(L_ERR, &locus,
+				   _("unknown attribute %s"),
+				   attr_name);
                         errcnt++;
                         return BOGUS;
                 }
@@ -1842,7 +1842,7 @@ void
 yysync()
 {
         while (skip_to_nl() == '\n' && !isalpha(input()))
-                input_line++;
+                locus.line++;
         unput(yychar);
 }
 
@@ -2289,7 +2289,7 @@ mtx_alloc(Mtxtype type)
         MTX *mtx = obj_alloc(&mtx_bucket);
 
         mtx->gen.type  = type;
-        mtx->gen.line  = input_line;
+        mtx->gen.loc   = locus;
 #if defined(MAINTAINER_MODE)
         mtx->gen.id    = mtx_current_id++;
 #endif
@@ -2401,12 +2401,11 @@ mtx_attr_check(DICT_ATTR *attr,	MTX *index)
 void
 rw_coercion_warning(Datatype from, Datatype to, char *pref)
 {
-	radlog(L_WARN,
-	       _("%s:%d: %s implicit coercion %s %s"),
-	       input_filename, input_line,
-	       pref ? pref : "",
-	       datatype_str_abl(from),
-	       datatype_str_acc(to));
+	radlog_loc(L_WARN, &locus,
+		   _("%s implicit coercion %s %s"),
+		   pref ? pref : "",
+		   datatype_str_abl(from),
+		   datatype_str_acc(to));
 }
 
 
@@ -2466,10 +2465,9 @@ mtx_bin(Bopcode opcode, MTX *arg1, MTX *arg2)
                         mtx->datatype = Integer;
                         break;
                 default:
-                        radlog(L_ERR,
-                               "%s:%d: %s",
-                               input_filename, input_line,
-			       _("operation not applicable for strings"));
+                        radlog_loc(L_ERR, &locus,
+				   "%s",
+				   _("operation not applicable to strings"));
                         errcnt++;
                         return (MTX*)mtx;
                 }
@@ -2587,15 +2585,13 @@ mtx_call(FUNCTION *fun, MTX *args)
          * Note that the argument count mismatch is not an error!
          */
         if (argp) {
-                radlog(L_WARN,
-                       _("%s:%d: too many arguments in call to %s"),
-                       input_filename, input_line,
-                       fun->name);
+                radlog_loc(L_WARN, &locus,
+			   _("too many arguments in call to %s"),
+			   fun->name);
         } else if (parmp) {
-                radlog(L_WARN,
-                       _("%s:%d: too few arguments in call to %s"),
-                       input_filename, input_line,
-                       fun->name);
+                radlog_loc(L_WARN, &locus,
+			   _("too few arguments in call to %s"),
+			   fun->name);
         }
 
         call = (CALL_MTX*) mtx_alloc(Call);
@@ -2649,16 +2645,14 @@ mtx_builtin(builtin_t *bin, MTX *args)
         }
 
         if (argp) {
-                radlog(L_ERR,
-                       _("%s:%d: too many arguments in call to %s"),
-                       input_filename, input_line,
-                       bin->name);
+                radlog_loc(L_ERR, &locus,
+			   _("too many arguments in call to %s"),
+			   bin->name);
                 errcnt++;
         } else if (*parmp) {
-                radlog(L_ERR,
-                       _("%s:%d: too few arguments in call to %s"),
-                       input_filename, input_line,
-                       bin->name);
+                radlog_loc(L_ERR, &locus,
+			   _("too few arguments in call to %s"),
+			   bin->name);
                 errcnt++;
         }
 
@@ -3040,9 +3034,9 @@ pass1()
          */
         if (mtx_last->gen.type != Return) {
                 Datum datum;
-                radlog(L_WARN,
-                       _("%s:%d: missing return statement"),
-                       input_filename, mtx_last->gen.line);
+                radlog_loc(L_WARN, &mtx_last->gen.loc,
+			   _("missing return statement"));
+
                 switch (function->rettype) {
                 case Integer:
                         datum.ival = 0;
@@ -3189,10 +3183,8 @@ pass2_binary(MTX *mtx)
 		
         case Div:
                 if (arg1->cnst.datum.ival == 0) {
-                        radlog(L_ERR,
-			       _("%s:%d: divide by zero"),
-                               input_filename,
-                               arg1->cnst.line);
+                        radlog_loc(L_ERR, &arg1->cnst.loc,
+				   _("divide by zero"));
                         errcnt++;
                 } else
                         dat.ival =
@@ -3201,10 +3193,8 @@ pass2_binary(MTX *mtx)
 		
         case Rem:
                 if (arg1->cnst.datum.ival == 0) {
-                        radlog(L_ERR,
-			       _("%s:%d: divide by zero"),
-                               input_filename,
-                               arg1->cnst.line);
+                        radlog_loc(L_ERR, &arg1->cnst.loc,
+				   _("divide by zero"));
                         errcnt++;
                 } else
                         dat.ival =
@@ -3826,9 +3816,9 @@ compile_regexp(char *str)
         if (rc) {
                 char errbuf[512];
                 regerror(rc, &regex, errbuf, sizeof(errbuf));
-                radlog(L_ERR,
-		       _("%s:%d: regexp error: %s"),
-                       input_filename, input_line, errbuf);
+                radlog_loc(L_ERR, &locus,
+			   _("regexp error: %s"),
+			   errbuf);
                 return NULL;
         }
         /* count the number of matches */
@@ -5168,12 +5158,10 @@ function_install(FUNCTION *fun)
         FUNCTION *fp;
 
         if (fp = (FUNCTION *)sym_lookup(rewrite_tab, fun->name)) {
-                radlog(L_ERR,
-                       _("%s:%d: redefinition of function %s"),
-                       input_filename, fun->line, fun->name);
-                radlog(L_ERR,
-                       _("%s:%d: previously defined here"),
-                       fun->source_file, fun->line);
+                radlog_loc(L_ERR, &fun->loc,
+			   _("redefinition of function %s"));
+                radlog_loc(L_ERR, &fp->loc,
+			   _("previously defined here"));
                 errcnt++;
                 return fp;
         }  
@@ -5185,6 +5173,7 @@ function_install(FUNCTION *fun)
         fp->nparm   = fun->nparm;        
         fp->parm    = fun->parm;
         fp->stack_alloc = fun->stack_alloc;
+	fp->loc     = fun->loc;
         return fp;
 }
 

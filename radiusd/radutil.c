@@ -120,7 +120,10 @@ attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
                         break;
                 case '=':
                         if (pairlist) {
-                                pair = install_pair(__FILE__, __LINE__,
+				LOCUS loc;
+				loc.file = __FILE__; /*FIXME*/
+				loc.line = __LINE__;
+                                pair = install_pair(&loc,
                                                     attr->name,
                                                     OPERATOR_EQUAL,
                                                     defval);

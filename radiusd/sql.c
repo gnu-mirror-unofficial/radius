@@ -964,6 +964,7 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
 {
 	SQL_RESULT *res;
 	size_t i;
+	LOCUS loc;
 	
 	res = sql_cache_lookup(conn, query);
 	if (!res) {
@@ -992,7 +993,9 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
 		} else
 			op = OPERATOR_EQUAL;
 
-                pair = install_pair(__FILE__, __LINE__,
+		loc.file = __FILE__;
+		loc.line = __LINE__;
+                pair = install_pair(&loc,
 				    res->tuple[i][0],
 				    op,
 				    res->tuple[i][1]);

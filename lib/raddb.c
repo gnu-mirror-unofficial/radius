@@ -36,11 +36,11 @@ read_raddb_file(char *filename, int vital, int (*fun)(), void *closure)
         int    argc;
         char **argv;
         FILE *input;
-        int  line = 0;
         char *lineptr = NULL;
         size_t bsize = 0;
         int nread;
-        
+        LOCUS loc;
+	
         input = fopen(filename, "r");
         if (!input) {
                 if (vital) {
@@ -54,12 +54,14 @@ read_raddb_file(char *filename, int vital, int (*fun)(), void *closure)
                 }
         }
 
+	loc.file = filename;
+        loc.line = 0;
         while (getline(&lineptr, &bsize, input) > 0) {
                 nread = strlen(lineptr);
                 if (nread == 0)
                         break;
                 if (lineptr[nread-1] == '\n') {
-			line++;
+			loc.line++;
 			lineptr[nread-1] = 0;
 		}
 		if (lineptr[0] == 0)
@@ -69,9 +71,9 @@ read_raddb_file(char *filename, int vital, int (*fun)(), void *closure)
                         for (n = 0; n < argc && argv[n][0] != '#'; n++)
                                 ;
                         if (n)
-                                fun(closure, n, argv, filename, line);
+                                fun(closure, n, argv, &loc);
                 }
-                line++;
+                loc.line++;
                 if (argv)
                         argcv_free(argc, argv);
         }

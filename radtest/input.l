@@ -47,8 +47,7 @@
 int getline (char **lineptr, size_t *n, FILE *stream);
 #endif
 
-int source_line_num;
-char *source_filename;
+LOCUS source_locus;
 static int interactive;
 static struct obstack string_stk;
  
@@ -70,7 +69,7 @@ DQ {D3}\.{D3}\.{D3}\.{D3}
 
 %%
 #.*\n   { /* a comment */
-        source_line_num++;
+        source_locus.line++;
         return EOL;
 }       
 #.*     /* end-of-file comment */;
@@ -129,13 +128,13 @@ exit    return EXIT;
 }
 \"[^\\"]*\n {
         BEGIN(STRING);
-        source_line_num++;
+        source_locus.line++;
         add_str(yytext+1, yyleng-1);
 }
 \"[^\\"]*\\. {
         BEGIN(STRING);
         if (yytext[yyleng-1] == '\n')
-                source_line_num++;
+                source_locus.line++;
         add_str(yytext+1, yyleng - 3);
         add_chr(backspace(yytext[yyleng-1]));
 }
@@ -155,12 +154,12 @@ exit    return EXIT;
 }
 <STRING>[^\\"]*\\. {
         if (yytext[yyleng-1] == '\n')
-                source_line_num++;
+                source_locus.line++;
         add_str(yytext, yyleng - 2);
         add_chr(backspace(yytext[yyleng-1]));
 }
 <STRING>[^\\"]*\n {
-        source_line_num++;
+        source_locus.line++;
         add_str(yytext, yyleng);
         add_chr(backspace(yytext[yyleng-1]));
 }
@@ -179,8 +178,8 @@ exit    return EXIT;
         return NUMBER;
 }
 {WS}    ;
-\\\n    source_line_num++;
-\n      { source_line_num++; return EOL; }
+\\\n    source_locus.line++;
+\n      { source_locus.line++; return EOL; }
 ;       return EOL;
 "="     return EQ;
 "!="    return NE;
@@ -205,7 +204,7 @@ open_input(char *name)
 
         obstack_init(&string_stk);
         if (name && strcmp(name, "-")) {
-                source_filename = name;
+                source_locus.file = name;
                 fp = fopen(name, "r");
                 if (!fp) {
                         radlog(L_ERR|L_PERROR,
@@ -213,12 +212,12 @@ open_input(char *name)
                         return 1;
                 }
         } else {
-                source_filename = "<teletype>";
+                source_locus.file = "<teletype>";
                 fp = stdin;
         }
 
         interactive = isatty(fileno(fp));
-        source_line_num = 0;
+        source_locus.line = 0;
 #ifdef FLEX_SCANNER
         yyrestart(fp);
 #else
@@ -383,9 +382,9 @@ deref_var(char *name, char *p)
                 if (*p)
                         printf("%s", p);
                 else
-                        printf("(%s:%d)%s? ",
-                               source_filename,
-                               source_line_num,
+                        printf("(%s:%lu)%s? ",
+                               source_locus.file,
+                               (unsigned long)source_locus.line,
                                name);
                 p = NULL;
                 n = 0;
@@ -397,9 +396,9 @@ deref_var(char *name, char *p)
                 
         case '&':
                 if (!*p)
-                        asprintf(&p, "(%s:%d)%s? ",
-                                 source_filename,
-                                 source_line_num,
+                        asprintf(&p, "(%s:%lu)%s? ",
+                                 source_locus.file,
+                                 source_locus.line,
                                  name);
                 p = getpass(p);
                 if (!p)
@@ -453,9 +452,9 @@ deref_parm(unsigned num, char *p)
                 if (*p)
                         printf("%s", p);
                 else
-                        printf("(%s:%d)%d? ",
-                               source_filename,
-                               source_line_num,
+                        printf("(%s:%lu)%d? ",
+                               source_locus.file,
+                               (unsigned long) source_locus.line,
                                num);
                 p = NULL;
                 n = 0;
@@ -466,9 +465,9 @@ deref_parm(unsigned num, char *p)
                 
         case '&':
                 if (!*p)
-                        asprintf(&p, "(%s:%d)%d? ",
-                                 source_filename,
-                                 source_line_num,
+                        asprintf(&p, "(%s:%lu)%d? ",
+                                 source_locus.file,
+                                 (unsigned long) source_locus.line,
                                  num);
                 p = getpass(p);
                 if (!p)

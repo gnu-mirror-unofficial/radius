@@ -50,7 +50,7 @@ static void mark_list(struct check_datum *datum, User_symbol *sym,
                       VALUE_PAIR *list);
 static int pass1(struct check_datum *datum, User_symbol *sym);
 static int pass2(struct check_datum *datum, User_symbol *sym);
-static void check_dup_attr(VALUE_PAIR **prev, VALUE_PAIR *ptr, int line);
+static void check_dup_attr(VALUE_PAIR **prev, VALUE_PAIR *ptr, LOCUS *loc);
 
 
 int
@@ -78,9 +78,9 @@ mark_profile(struct check_datum *datum, User_symbol *sym, char *target_name)
         User_symbol *target = (User_symbol*)sym_lookup(datum->symtab, target_name);
 
         if (!target) {
-                radlog(L_ERR,
-                       _("users:%d: Match-Profile refers to non-existing profile (%s)"),
-                       sym->lineno, target_name);
+                radlog_loc(L_ERR, &sym->loc,
+			   _("Match-Profile refers to non-existing profile (%s)"),
+			   target_name);
                 return;
         }
         
@@ -125,12 +125,13 @@ int
 pass1(struct check_datum *datum, User_symbol *sym)
 {
 	if (compile_pairs(sym->reply)) {
-                radlog(L_ERR,
-                       _("users:%d: discarding entry %s"),
-                       sym->lineno, sym->name);
+                radlog_loc(L_ERR, &sym->loc,
+			   _("discarding entry %s"),
+			   sym->name);
                 symtab_delete(datum->symtab, (Symbol *)sym);
                 datum->count--;
 	}
+	
         mark_list(datum, sym, sym->check);
         mark_list(datum, sym, sym->reply);
         return 0;
@@ -140,9 +141,9 @@ int
 pass2(struct check_datum *datum, User_symbol *sym)
 {
         if (radck_bitisset(datum->r, datum->rlen, sym->ordnum, sym->ordnum)) {
-                radlog(L_ERR,
-                       _("users:%d: circular dependency for %s"),
-                       sym->lineno, sym->name);
+                radlog_loc(L_ERR, &sym->loc,
+			   _("circular dependency for %s"),
+			   sym->name);
                 symtab_delete(datum->symtab, (Symbol *)sym);
                 datum->count--;
         }
@@ -196,21 +197,19 @@ radck()
                 radlog(L_ERR, _("USER LIST IS EMPTY"));
 }
 
-void
-check_dup_attr(VALUE_PAIR **prev, VALUE_PAIR *ptr, int line)
+static void
+check_dup_attr(VALUE_PAIR **prev, VALUE_PAIR *ptr, LOCUS *loc)
 {
         if (*prev) {
-                radlog(L_WARN,
-                       _("users:%d: duplicate %s attribute"),
-                       line, ptr->name);
+                radlog_loc(L_WARN, loc,
+			   _("duplicate %s attribute"), ptr->name);
         } else
                 *prev = ptr;
 }
 
 /*ARGSUSED*/
 int
-fix_check_pairs(int cf_file, char *filename, int line, char *name,
-                VALUE_PAIR **pairs)
+fix_check_pairs(int cf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs)
 {
         VALUE_PAIR *p;
         VALUE_PAIR *auth_type = NULL;
@@ -228,9 +227,9 @@ fix_check_pairs(int cf_file, char *filename, int line, char *name,
                 dict = attr_number_to_dict(p->attribute);
                 if (dict) {
                         if (!(dict->prop & AF_LHS(cf_file))) {
-                                radlog(L_ERR,
-                        _("%s:%d: attribute %s not allowed in LHS"),
-                                       filename, line, dict->name);
+                                radlog_loc(L_ERR, loc,
+					 _("attribute %s not allowed in LHS"),
+					   dict->name);
                                 errcnt++;
                                 continue;
                         }
@@ -239,39 +238,38 @@ fix_check_pairs(int cf_file, char *filename, int line, char *name,
                 /* Specific attribute checks */
                 switch (p->attribute) {
                 case DA_AUTH_TYPE:
-                        check_dup_attr(&auth_type, p, line);
+                        check_dup_attr(&auth_type, p, loc);
                         break;
                         
                 case DA_AUTH_DATA:
-                        check_dup_attr(&auth_data, p, line);
+                        check_dup_attr(&auth_data, p, loc);
                         break;
                         
                 case DA_PAM_AUTH:
-                        check_dup_attr(&pam_auth, p, line);
+                        check_dup_attr(&pam_auth, p, loc);
                         break;
 
                 case DA_USER_PASSWORD:
-                        check_dup_attr(&password, p, line);
+                        check_dup_attr(&password, p, loc);
                         break;
 
                 case DA_CRYPT_PASSWORD:
-                        check_dup_attr(&crypt_password, p, line);
+                        check_dup_attr(&crypt_password, p, loc);
                         break;
                         
                 case DA_PASSWORD_LOCATION:
-                        check_dup_attr(&pass_loc, p, line);
+                        check_dup_attr(&pass_loc, p, loc);
                         break;
 
                 case DA_CHAP_PASSWORD:
-                        check_dup_attr(&chap_password, p, line);
+                        check_dup_attr(&chap_password, p, loc);
                         break;
 
                 case DA_MATCH_PROFILE:
                         if (strncmp(p->avp_strvalue, "DEFAULT", 7) == 0 ||
                             strncmp(p->avp_strvalue, "BEGIN", 5) == 0) {
-                                radlog(L_ERR,
-				       "%s:%d: %s",
-                                       filename, line,
+                                radlog_loc(L_ERR, loc,
+					   "%s",
 				       _("Match-Profile refers to a DEFAULT entry"));
                                 errcnt++;
                         }
@@ -312,10 +310,9 @@ fix_check_pairs(int cf_file, char *filename, int line, char *name,
         switch (auth_type->avp_lvalue) {
         case DV_AUTH_TYPE_LOCAL:
                 if (!password && !chap_password && !pass_loc) {
-                        radlog(L_ERR,
-			       "%s:%d: %s",
-                               filename, line,
-			       _("No User-Password attribute in LHS"));
+                        radlog_loc(L_ERR, loc,
+				   "%s",
+				   _("No User-Password attribute in LHS"));
                         errcnt++;
                 }
                 break;
@@ -324,42 +321,37 @@ fix_check_pairs(int cf_file, char *filename, int line, char *name,
         case DV_AUTH_TYPE_REJECT:
         case DV_AUTH_TYPE_ACCEPT:
                 if (password) {
-                        radlog(L_WARN,
-			       "%s:%d: %s",
-                               filename, line,
+                        radlog_loc(L_WARN, loc,
+				   "%s",
 			       _("User-Password attribute ignored for this Auth-Type"));
                 }
                 if (pass_loc) {
-                        radlog(L_WARN,
-			       "%s:%d: %s",
-			       filename, line,
+                        radlog_loc(L_WARN, loc,
+				   "%s",
 			       _("Password-Location attribute ignored for this Auth-Type"));
                 }
                 break;
                 
         case DV_AUTH_TYPE_CRYPT_LOCAL:
                 if (!password && !crypt_password && !pass_loc) {
-                        radlog(L_ERR,
-			       "%s:%d: %s",
-                               filename, line,
+                        radlog_loc(L_ERR, loc,
+				   "%s",
 			       _("No User-Password attribute in LHS"));
                         errcnt++;
                 }
                 break;
 
         case DV_AUTH_TYPE_SECURID:
-                radlog(L_ERR,
-                       "%s:%d: %s",
-                       filename, line,
-		       _("Authentication type not supported"));
+                radlog_loc(L_ERR, loc,
+			   "%s",
+			   _("Authentication type not supported"));
                 errcnt++;
                 break;
                 
         case DV_AUTH_TYPE_SQL:
                 if (password || crypt_password) {
-                        radlog(L_WARN,
-			       "%s:%d: %s",
-                               filename, line,
+                        radlog_loc(L_WARN, loc,
+				   "%s",
 			       _("User-Password attribute ignored for this Auth-Type"));
                 }
 
@@ -376,9 +368,8 @@ fix_check_pairs(int cf_file, char *filename, int line, char *name,
                 
         case DV_AUTH_TYPE_PAM:
                 if (pam_auth && auth_data) {
-                        radlog(L_WARN,
-			       "%s:%d: %s",
-                               filename, line,
+                        radlog_loc(L_WARN, loc,
+			       "%s",
 			       _("Both Auth-Data and PAM-Auth attributes present"));
                         auth_data = NULL;
                 } else 
@@ -390,8 +381,7 @@ fix_check_pairs(int cf_file, char *filename, int line, char *name,
 }
 
 int
-fix_reply_pairs(int cf_file, char *filename, int line,
-                char *name, VALUE_PAIR **pairs)
+fix_reply_pairs(int cf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs)
 {
         VALUE_PAIR *p;
         int fall_through = 0;
@@ -402,9 +392,9 @@ fix_reply_pairs(int cf_file, char *filename, int line,
                 dict = attr_number_to_dict(p->attribute);
                 if (dict) {
                         if (!(dict->prop & AF_RHS(cf_file))) {
-                                radlog(L_ERR,
-                        _("%s:%d: attribute %s not allowed in RHS"),
-                                       filename, line, dict->name);
+                                radlog_loc(L_ERR, loc,
+					  _("attribute %s not allowed in RHS"),
+					   dict->name);
                                 errcnt++;
                                 continue;
                         }
@@ -419,10 +409,9 @@ fix_reply_pairs(int cf_file, char *filename, int line,
         }
 
         if (strncmp(name, "BEGIN", 5) == 0 && fall_through == 0) {
-                radlog(L_WARN,
-                       "%s:%d: %s",
-                       filename, line,
-		       _("BEGIN without Fall-Through"));
+                radlog_loc(L_WARN, loc,
+			   "%s",
+			   _("BEGIN without Fall-Through"));
         }
         return errcnt;
 }

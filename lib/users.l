@@ -54,10 +54,10 @@ static int preproc();
 static void read_number(char *text, int len, int base);
 
 static struct obstack stack; /* Obstack for keeping string values */ 
-char *source_filename;       /* Current filename */
+LOCUS source_locus;
 ino_t source_inode;          /* Inode of the current source (for preventing
                                 recursive inclusion */
-int source_line_num;         /* Current line number */
+
         
 #ifdef FLEX_SCANNER
 #define xinput() (yyin ? getc(yyin) : EOF)
@@ -195,8 +195,7 @@ xunput(int c)
 
 struct buffer_ctx {
         struct buffer_ctx *prev;
-        char *filename;
-        int line;
+	LOCUS loc;
         ino_t i_node;
         FILE *yyin;
         LEX_BUFFER_STATE state;
@@ -233,15 +232,16 @@ push_source(char *name)
                 return 1;
         }
 
-        if (source_filename && st.st_ino == source_inode) {
+        if (source_locus.file && st.st_ino == source_inode) {
                 yyerror("recursive inclusion");
                 return 1;
         }
         if (ctx = ctx_lookup(st.st_ino)) {
                 yyerror("recursive inclusion");
                 if (ctx->prev)
-                        radlog(L_ERR, _("%s:%d: `%s' already included here"),
-                               ctx->prev->filename, ctx->prev->line, name);
+                        radlog_loc(L_ERR, &ctx->prev->loc,
+				   _("`%s' already included here"),
+				   name);
                 else
                         radlog(L_ERR, _("`%s' already included at top level"),
                                name);
@@ -256,10 +256,9 @@ push_source(char *name)
         }
 
         /* Push current context */
-        if (source_filename) {
+        if (source_locus.file) {
                 ctx = emalloc(sizeof(*ctx));
-                ctx->filename = source_filename;
-                ctx->line = source_line_num;
+                ctx->loc = source_locus;
                 ctx->i_node = source_inode;
                 ctx->yyin = yyin;
                 ctx->prev = context_stack;
@@ -276,8 +275,8 @@ push_source(char *name)
                 lex_set_buffer(yyin);
 #endif
         }
-        source_filename = name;
-        source_line_num = 1;
+        source_locus.file = name;
+        source_locus.line = 1;
         source_inode = st.st_ino;
         return 0;
 }
@@ -299,8 +298,7 @@ pop_source()
                 return 1;
         }
 	/* Restore previous context */
-        source_filename = context_stack->filename;
-        source_line_num = context_stack->line;
+        source_locus = context_stack->loc;
         source_inode = context_stack->i_node;
         RESTORE_BUFFER_STATE(context_stack->state);
         ctx = context_stack->prev;
@@ -321,7 +319,7 @@ D [0-9]{1,3}
 #.*\n   {
           if (strncmp(yytext+1, "debug", 5) == 0)
                   enable_usr_dbg(1);
-          source_line_num++; /* a comment */
+          source_locus.line++; /* a comment */
         }
 #.*     /* end-of-file comment */;
 \$.*$   preproc();
@@ -398,7 +396,7 @@ NULL    return NUL;
 }
 {WS}    ;
 \n      {
-          source_line_num++;
+          source_locus.line++;
         }
 "="     return EQ;
 "!="    return NE;
@@ -440,7 +438,7 @@ init_lex(char *name)
         obstack_init(&stack);
         
         context_stack = NULL;
-        source_filename = NULL;
+        source_locus.file = NULL;
         return push_source(name);
 }
 

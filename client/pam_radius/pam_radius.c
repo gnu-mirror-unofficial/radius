@@ -170,7 +170,7 @@ int priority[] = {
 
 void
 vlog(int level,
-     const char *file, int line,
+     const char *file, size_t line,
      const char *func_name, int en,
      const char *fmt, va_list ap)
 {
@@ -390,7 +390,8 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
         VALUE_PAIR *pairs, *namepair, *add_pair = NULL;
         RADIUS_REQ *authreq;
         DICT_VALUE *dv;
-        
+	LOCUS loc = { __FILE__, __LINE__ }; /* FIXME */
+
         retval = pam_get_data(pamh,
                               "radius_server_queue", 
                               (const void **)&queue);
@@ -420,7 +421,7 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
 					        queue->source_ip));
 	/* Add any additional attributes */
 	for (; add_pair; add_pair = add_pair->next) {
-		VALUE_PAIR *p = install_pair(__FILE__, __LINE__,
+		VALUE_PAIR *p = install_pair(&loc,
                                              add_pair->name, 
                                              OPERATOR_EQUAL,
 				             add_pair->avp_strvalue);
@@ -494,6 +495,7 @@ _radius_acct(pam_handle_t *pamh, struct radutmp *ut)
         RADIUS_REQ *req;
         DICT_VALUE *dv;
         int type;
+	LOCUS loc = { __FILE__, __LINE__ }; /* FIXME */
 	
         retval = pam_get_data(pamh,
                               "radius_server_queue", 
@@ -529,7 +531,7 @@ _radius_acct(pam_handle_t *pamh, struct radutmp *ut)
 	
 	/* Add any additional attributes */
 	for (; add_pair; add_pair = add_pair->next) {
-		VALUE_PAIR *p = install_pair(__FILE__, __LINE__,
+		VALUE_PAIR *p = install_pair(&loc,
                                              add_pair->name, 
                                              OPERATOR_EQUAL,
 				             add_pair->avp_strvalue);

@@ -76,13 +76,13 @@ dict_free()
 }
 
 static int
-nfields(int fc, int minf, int maxf, char *file, int lineno)
+nfields(int fc, int minf, int maxf, LOCUS *loc)
 {
         if (fc < minf) {
-                radlog(L_ERR, "%s:%d: %s", file, lineno, _("too few fields"));
+                radlog_loc(L_ERR, loc, "%s", _("too few fields"));
                 return -1;
         } else if (fc > maxf) {
-                radlog(L_ERR, "%s:%d: %s", file, lineno, _("too many fields"));
+                radlog_loc(L_ERR, loc, "%s", _("too many fields"));
                 return -1;
         }
         return 0;
@@ -159,11 +159,11 @@ dict_register_parser(int attr, attr_parser_fp fun)
 #define VENDOR_NAME  fv[1]
 #define VENDOR_VALUE fv[2]
 
-static int _dict_include(int *, int, char **, char *, int);
-static int _dict_attribute(int *, int, char **, char *, int);
-static int _dict_value(int *, int, char **, char *, int);
-static int _dict_vendor(int *, int, char **, char *, int);
-static int parse_dict_entry(int *, int, char **, char *, int);
+static int _dict_include(int *, int, char **, LOCUS *);
+static int _dict_attribute(int *, int, char **, LOCUS *);
+static int _dict_value(int *, int, char **, LOCUS *);
+static int _dict_vendor(int *, int, char **, LOCUS *);
+static int parse_dict_entry(void *, int, char **, LOCUS *);
 static int parse_dict(char *name);
 
 static struct keyword type_kw[] = {
@@ -175,25 +175,23 @@ static struct keyword type_kw[] = {
 
 /*ARGSUSED*/
 int
-_dict_include(int *errcnt, int fc, char **fv, char *file, int lineno)
+_dict_include(int *errcnt, int fc, char **fv, LOCUS *loc)
 {
-        if (nfields(fc, 2, 2, file, lineno)) 
+        if (nfields(fc, 2, 2, loc)) 
                 return 0;
         parse_dict(fv[1]);
         return 0;
 }
 
 int
-parse_flags(char **ptr, int *flags, char *filename, int line)
+parse_flags(char **ptr, int *flags, LOCUS *loc)
 {
         int i;
         char *p;
         
         for (p = *ptr+1, i = 0; i < CF_MAX; i++) {
                 if (*p == 0) {
-                        radlog(L_ERR,
-                               _("%s:%d: missing ]"),
-                               filename, line, *p);
+                        radlog_loc(L_ERR, loc, _("missing ]"), *p);
                         return 1;
                 }
                 switch (*p++) {
@@ -208,9 +206,9 @@ parse_flags(char **ptr, int *flags, char *filename, int line)
                         p--;
                         goto stop;
                 default:
-                        radlog(L_ERR,
-                               _("%s:%d: invalid syntax flag %c"),
-                               filename, line, p[-1]);
+                        radlog_loc(L_ERR, loc,
+				   _("invalid syntax flag %c"),
+				   p[-1]);
                         return 1;
                 }
                 switch (*p++) {
@@ -221,9 +219,9 @@ parse_flags(char **ptr, int *flags, char *filename, int line)
                         *flags &= ~AF_RHS(i);
                         break;
                 default:
-                        radlog(L_ERR,
-                               _("%s:%d: invalid syntax flag %c"),
-                               filename, line, p[-1]);
+                        radlog_loc(L_ERR, loc,
+				   _("invalid syntax flag %c"),
+				   p[-1]);
                         return 1;
                 }
         }
@@ -235,7 +233,7 @@ parse_flags(char **ptr, int *flags, char *filename, int line)
 }
 
 int
-_dict_attribute(int *errcnt, int fc, char **fv, char *file, int lineno)
+_dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
 {
         DICT_ATTR *attr;
         int type;
@@ -246,7 +244,7 @@ _dict_attribute(int *errcnt, int fc, char **fv, char *file, int lineno)
         int prop  = AP_DEFAULT_ADD;
 	attr_parser_fp fp = NULL;
         
-        if (nfields(fc, 4, 6, file, lineno))
+        if (nfields(fc, 4, 6, loc))
                 return 0;
         /*
          * Validate all entries
@@ -254,9 +252,9 @@ _dict_attribute(int *errcnt, int fc, char **fv, char *file, int lineno)
         
         value = strtol(ATTR_VALUE, &p, 0);
         if (*p) {
-                radlog(L_ERR,
-                       _("%s:%d: value not a number (near %s)"),
-                       file, lineno, p);
+                radlog_loc(L_ERR, loc,
+			   _("value not a number (near %s)"),
+			   p);
                 (*errcnt)++;
                 return 0;
         }
@@ -265,29 +263,25 @@ _dict_attribute(int *errcnt, int fc, char **fv, char *file, int lineno)
 		type = TYPE_STRING;
 		fp = dict_find_parser(value);
 		if (!fp) {
-			radlog(L_WARN,
-		       _("%s:%d: no parser registered for this attribute"),
-			       file, lineno);
+			radlog_loc(L_WARN, loc,
+			      _("no parser registered for this attribute"));
 			return 0;
 		}
 	} else
 		type = xlat_keyword(type_kw, ATTR_TYPE, TYPE_INVALID);
 	
         if (type == TYPE_INVALID) {
-                radlog(L_ERR,
-                       "%s:%d: %s",
-                       file, lineno,
-		       _("invalid type"));
+                radlog_loc(L_ERR, loc,
+			   "%s",
+			   _("invalid type"));
                 (*errcnt)++;
                 return 0;
         }
 
         if (HAS_VENDOR(fc, fv)) {
                 if ((vendor = vendor_name_to_id(ATTR_VENDOR)) == 0) {
-                        radlog(L_ERR,
-                               _("%s:%d: unknown vendor"),
-                               file, lineno);
-                        (*errcnt)++;
+                        radlog_loc(L_ERR, loc, _("unknown vendor"));
+			(*errcnt)++;
                         return 0;
                 }
         }
@@ -309,7 +303,7 @@ _dict_attribute(int *errcnt, int fc, char **fv, char *file, int lineno)
                                         |AF_RHS(CF_HUNTGROUPS);
                                 break;
                         case '[':
-                                if (parse_flags(&p, &flags, file, lineno)) {
+                                if (parse_flags(&p, &flags, loc)) {
                                         while (*++p);
                                         --p;
                                         ++(*errcnt);
@@ -345,9 +339,9 @@ _dict_attribute(int *errcnt, int fc, char **fv, char *file, int lineno)
 				prop |= AP_BINARY_STRING;
                                 break;
                         default:
-                                radlog(L_ERR,
-                                       _("%s:%d: invalid flag %c"),
-                                       file, lineno, *p);
+                                radlog_loc(L_ERR, loc,
+					   _("invalid flag %c"),
+					   *p);
                                 (*errcnt)++;
                                 return 0;
                         }
@@ -369,21 +363,21 @@ _dict_attribute(int *errcnt, int fc, char **fv, char *file, int lineno)
 }
 
 int
-_dict_value(int *errcnt, int fc, char **fv, char *file, int lineno)
+_dict_value(int *errcnt, int fc, char **fv, LOCUS *loc)
 {
         DICT_VALUE *dval;
         DICT_ATTR *attr;
         char *p;
         int value;
         
-        if (nfields(fc, 4, 4, file, lineno))
+        if (nfields(fc, 4, 4, loc))
                 return 0;
 
         value = strtol(VALUE_NUM, &p, 0);
         if (*p) {
-                radlog(L_ERR,
-                       _("%s:%d: value not a number (near %s)"),
-                       file, lineno, p);
+                radlog_loc(L_ERR, loc,
+			   _("value not a number (near %s)"),
+			   p);
                 (*errcnt)++;
                 return 0;
         }
@@ -406,19 +400,19 @@ _dict_value(int *errcnt, int fc, char **fv, char *file, int lineno)
 }
 
 int
-_dict_vendor(int *errcnt, int fc, char **fv, char *file, int lineno)
+_dict_vendor(int *errcnt, int fc, char **fv, LOCUS *loc)
 {
         int value;
         char *p;
 
-        if (nfields(fc, 3, 3, file, lineno))
+        if (nfields(fc, 3, 3, loc))
                 return 0;
 
         value = strtol(VENDOR_VALUE, &p, 0);
         if (*p) {
-                radlog(L_ERR,
-                       _("%s:%d: value not a number (near %s)"),
-                       file, lineno, p);
+                radlog_loc(L_ERR, loc,
+			   _("value not a number (near %s)"),
+			   p);
                 (*errcnt)++;
                 return 0;
         }
@@ -447,26 +441,24 @@ static struct keyword dict_kw[] = {
 };
 
 int
-parse_dict_entry(int *errcnt, int fc, char **fv, char *file, int lineno)
+parse_dict_entry(void *closure, int fc, char **fv, LOCUS *loc)
 {
+	int *errcnt = closure;
         switch (xlat_keyword(dict_kw, KEYWORD, -1)) {
         case KW_INCLUDE:
-                _dict_include(errcnt, fc, fv, file, lineno);
+                _dict_include(errcnt, fc, fv, loc);
                 break;
         case KW_ATTRIBUTE:
-                _dict_attribute(errcnt, fc, fv, file, lineno);
+                _dict_attribute(errcnt, fc, fv, loc);
                 break;
         case KW_VALUE:
-                _dict_value(errcnt, fc, fv, file, lineno);
+                _dict_value(errcnt, fc, fv, loc);
                 break;
         case KW_VENDOR:
-                _dict_vendor(errcnt, fc, fv, file, lineno);
+                _dict_vendor(errcnt, fc, fv, loc);
                 break;
         default:
-                radlog(L_ERR,
-                       "%s:%d: %s",
-                       file, lineno,
-		       _("unknown keyword"));
+                radlog_loc(L_ERR, loc, "%s", _("unknown keyword"));
                 break;
         }
         return 0;

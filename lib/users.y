@@ -42,10 +42,10 @@
 
 #define YYMAXDEPTH 10
 
-int old_lineno;
+static LOCUS start_loc;
 
 static void *closure;
-static int (*add_entry)(void*, char *, int, char *, VALUE_PAIR *, VALUE_PAIR *);
+static register_rule_fp add_entry;
 static VALUE_PAIR *install_pair0(char *name, int op, char *valstr);
 
 int yyerror(char *s);
@@ -92,9 +92,7 @@ list     : entry
 
 entry    : user descr
            {
-                   add_entry(closure,
-                             source_filename,
-                             old_lineno, $1, $2.lhs, $2.rhs);
+                   add_entry(closure, &start_loc, $1, $2.lhs, $2.rhs);
            }
          | user error
            {
@@ -110,7 +108,7 @@ entry    : user descr
 
 user     : value
            {
-                   old_lineno = source_line_num;
+		   start_loc = source_locus;
            }
          ;
 
@@ -185,19 +183,18 @@ value    : STRING
 int
 yyerror(char *s)
 {
-        radlog(L_ERR, "%s:%d: %s", source_filename, source_line_num, s);
+	radlog_loc(L_ERR, &source_locus, "%s", s);
 	return 0;
 }
 
 VALUE_PAIR *
 install_pair0(char *name, int op, char *valstr)
 {
-	return install_pair(source_filename, source_line_num, 
-			    name, op, valstr);
+	return install_pair(&source_locus, name, op, valstr);
 }
 
 VALUE_PAIR *
-install_pair(char *file, int line, char *name, int op, char *valstr)
+install_pair(LOCUS *loc, char *name, int op, char *valstr)
 {
         DICT_ATTR       *attr = NULL;
         DICT_VALUE      *dval;
@@ -208,8 +205,8 @@ install_pair(char *file, int line, char *name, int op, char *valstr)
         struct tm *tm, tms;
         
         if ((attr = attr_name_to_dict(name)) == (DICT_ATTR *)NULL) {
-                radlog(L_ERR, _("%s:%d: unknown attribute `%s'"),
-                       file, line, name);
+                radlog_loc(L_ERR, loc, _("unknown attribute `%s'"),
+			   name);
                 return NULL;
         }
 
@@ -236,9 +233,9 @@ install_pair(char *file, int line, char *name, int op, char *valstr)
                 if (pair->attribute == DA_EXEC_PROGRAM ||
                     pair->attribute == DA_EXEC_PROGRAM_WAIT) {
                         if (valstr[0] != '/' && valstr[0] != '|') {
-                                radlog(L_ERR,
-				     _("%s:%d: %s: not an absolute pathname"),
-                                       file, line, name);
+                                radlog_loc(L_ERR, loc,
+					   _("%s: not an absolute pathname"),
+					   name);
                                 avp_free(pair);
                                 return NULL;
                         }
@@ -248,10 +245,10 @@ install_pair(char *file, int line, char *name, int op, char *valstr)
                 pair->avp_strlength = strlen(pair->avp_strvalue);
 		
 		if (attr->parser && attr->parser(pair, &s)) {
-			radlog(L_ERR, "%s:%d: %s %s: %s",
-			       file, line,
-			       _("attribute"),
-			       pair->name, s);
+			radlog_loc(L_ERR, loc,
+				   "%s %s: %s",
+				   _("attribute"),
+				   pair->name, s);
 			free(s);
 			avp_free(pair);
 			return NULL;
@@ -279,9 +276,9 @@ install_pair(char *file, int line, char *name, int op, char *valstr)
                         pair->avp_lvalue = atoi(valstr);
                 } else if ((dval = value_name_to_value(valstr, pair->attribute)) == NULL) {
                         avp_free(pair);
-                        radlog(L_ERR,
-		       _("%s:%d: value %s is not declared for attribute %s"),
-			       file, line, valstr, name);
+                        radlog_loc(L_ERR, loc,
+				_("value %s is not declared for attribute %s"),
+				   valstr, name);
                         return NULL;
                 } else {
                         pair->avp_lvalue = dval->value;
@@ -324,9 +321,8 @@ install_pair(char *file, int line, char *name, int op, char *valstr)
                 timeval = time(0);
                 tm = localtime_r(&timeval, &tms);
                 if (user_gettime(valstr, tm)) {
-                        radlog(L_ERR,
-                                _("%s:%d: %s: can't parse date"),
-                               file, line, name);
+                        radlog_loc(L_ERR, loc, _("%s: can't parse date"),
+				   name);
                         avp_free(pair);
                         return NULL;
                 }
@@ -338,8 +334,9 @@ install_pair(char *file, int line, char *name, int op, char *valstr)
                 break;
 
         default:
-                radlog(L_ERR, _("%s:%d: %s: unknown attribute type %d"),
-		       file, line, name, pair->type);
+                radlog_loc(L_ERR, loc,
+			   _("%s: unknown attribute type %d"),
+			   name, pair->type);
                 avp_free(pair);
                 return NULL;
         }
@@ -350,7 +347,7 @@ install_pair(char *file, int line, char *name, int op, char *valstr)
 extern int yydebug;
 
 int
-parse_file(char *file, void *c, int (*f)())
+parse_file(char *file, void *c, register_rule_fp f)
 {
         int rc;
         
@@ -369,10 +366,7 @@ void
 enable_usr_dbg(int val)
 {
         yydebug = val;
-        if (yydebug)
-                radlog(L_NOTICE, _("%s:%d: enabled userfile parser debugging"),
-                       source_filename, source_line_num);
-        else
-                radlog(L_NOTICE, _("%s:%d: disabled userfile parser debugging"),
-                       source_filename, source_line_num);
+	radlog_loc(L_NOTICE, &source_locus,
+		   yydebug ? _("enabled userfile parser debugging") :
+             		     _("disabled userfile parser debugging"));
 }

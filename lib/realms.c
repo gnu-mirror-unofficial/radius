@@ -31,8 +31,7 @@ static RAD_LIST /* of REALM */ *realms;
 struct _parse_data {
 	int (*fun)();
 	int ports[PORT_MAX];
-	char *file;
-	int line;
+	LOCUS *loc;
 };
 
 int
@@ -57,9 +56,9 @@ _parse_server(int argc, char **argv, struct _parse_data *pd, int *np,
 		srv->port[PORT_ACCT] = pd->ports[PORT_ACCT];
 	}
 	if (pd->fun && pd->fun(srv)) {
-		radlog(L_ERR,
-		       _("%s:%d: can't find secret for %s"),
-		       pd->file, pd->line, srv->name);
+		radlog_loc(L_ERR, pd->loc,
+			   _("can't find secret for %s"),
+			   srv->name);
 		return 1; 
 	}
 	return 0;
@@ -80,9 +79,9 @@ _parse_server_list(RADIUS_SERVER_QUEUE *qp, char *str, struct _parse_data *pd)
 			rad_clt_append_server(qp, rad_clt_alloc_server(&srv));
 
 		if (i < argc && argv[i][0] != ',') {
-			radlog(L_ERR,
-			       _("%s:%d: expected , but found %s"),
-			       pd->file, pd->line, argv[i]);
+			radlog_loc(L_ERR, pd->loc,
+				   _("expected , but found %s"),
+				   argv[i]);
 			argcv_free(argc, argv);
 			return 1;
 		}
@@ -95,20 +94,18 @@ _parse_server_list(RADIUS_SERVER_QUEUE *qp, char *str, struct _parse_data *pd)
 /* read realms entry */
 /*ARGSUSED*/
 int
-read_realms_entry(struct _parse_data *pd, int fc, char **fv,
-		  char *file,int lineno)
+read_realms_entry(void *closure, int fc, char **fv, LOCUS *loc)
 {
+	struct _parse_data *pd = closure;
         REALM *rp;
 	int i;
 	
         if (fc < 2) {
-                radlog(L_ERR, _("%s:%d: too few fields (%d)"),
-                       file, lineno, fc);
+                radlog_loc(L_ERR, loc, _("too few fields (%d)"), fc);
                 return -1;
         }
 
-        pd->file = file;
-	pd->line = lineno;
+        pd->loc = loc;
 	
         rp = emalloc(sizeof(REALM));
 	rp->queue = NULL;
@@ -126,9 +123,7 @@ read_realms_entry(struct _parse_data *pd, int fc, char **fv,
 		i++;
 		
 		if (list_count(rp->queue->servers) == 0) {
-			radlog(L_ERR,
-			       _("%s:%d: cannot parse"),
-			       file, lineno);
+			radlog_loc(L_ERR, loc, _("cannot parse"));
 			rad_clt_destroy_queue(rp->queue);
 			efree(rp);
 			return 0;

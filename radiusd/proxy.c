@@ -352,6 +352,10 @@ proxy_send(REQUEST *req)
 	   should remain the same */
 	radreq->remote_user = grad_estrdup(username); 
 
+	/* Add a Realm-Name pair */
+	grad_avl_add_pair(&radreq->request,
+			  grad_avp_create_string(DA_REALM_NAME, realm->realm));
+	
         /* If there is a DA_CHAP_PASSWORD attribute, there is
 	   also a DA_CHAP_CHALLENGE. If you change the code of
 	   radius_auth_req_decode(), you will have

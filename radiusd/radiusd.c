@@ -141,13 +141,13 @@ int snmp_respond(int fd, struct sockaddr *sa, int salen,
 
 /* *************************** Global variables. ************************** */
 
-char			*progname;
+char	   *progname;
 
 int        debug_flag; /* can be raised from debugger only */
 int        log_mode;
 
-static int foreground;
-static int spawn_flag;
+static int foreground; /* Stay in the foreground */
+static int spawn_flag; 
 int	   use_dbm = 0;
 int        open_acct = 1;
 int        auth_detail = 0;
@@ -164,68 +164,54 @@ Config config = {
 	NULL,            /* exec_program_user */
 };
 
-UINT4			warning_seconds;
+UINT4 warning_seconds;
 int use_guile;
+char *message_text[MSG_COUNT];
 
-UINT4			myip = INADDR_ANY;
-int			auth_port;
-int			acct_port;
+UINT4 myip = INADDR_ANY;
+int auth_port;
+int acct_port;
 #ifdef USE_SNMP
-int                     snmp_port;
+int snmp_port;
 #endif
 
 
-/*
- *	Make sure recv_buffer is aligned properly.
- */
-static int		i_recv_buffer[RAD_BUFFER_SIZE];
-static u_char		*recv_buffer = (u_char *)i_recv_buffer;
+/* Make sure recv_buffer is aligned properly. */
+static int i_recv_buffer[RAD_BUFFER_SIZE];
+static u_char *recv_buffer = (u_char *)i_recv_buffer;
 
-/*
- * The PID of the main process
- */
-int		        radius_pid;
+int radius_pid; /* The PID of the main process */
 
-/*
- * This flag signals that there is a need to sweep out the dead children,
- * and clean up the request structures associated with them.
- */
-static int              need_child_cleanup = 0;
+/* This flag signals that there is a need to sweep out the dead children,
+   and clean up the request structures associated with them. */
+static int need_child_cleanup = 0;
 #define schedule_child_cleanup()  need_child_cleanup = 1
 #define clear_child_cleanup()     need_child_cleanup = 0
 
 static void rad_child_cleanup();
 
-/*
- * This flag means the reload of the configuration is needed
- */
-static int		need_reload = 0;
-/*
- * When set to 1 radiusd will try to restart itself
- */
-static int              need_restart = 0;
+static int need_reload = 0;  /* the reload of the configuration is needed */
+static int need_restart = 0; /* try to restart ourselves when set to 1 */
 
-static void     check_reload();
+static void check_reload();
 
-/*
- * Keeps the timestamp of the last USR2 signal. The need_reload flag gets
- * raised when time(NULL) - delayed_hup_time >= config.delayed_hup_wait.
- * This allows for buffering re-configuration requests.
- */
-static time_t           delayed_hup_time = 0;
+/* Keeps the timestamp of the last USR2 signal. The need_reload flag gets
+   raised when time(NULL) - delayed_hup_time >= config.delayed_hup_wait.
+   This allows for buffering re-configuration requests. */
+static time_t delayed_hup_time = 0;
 
 
-static int	config_init(void);
-static void	usage(void);
-void   rad_exit(int);
+static void set_config_defaults();
+static void usage(void);
+void rad_exit(int);
 static RETSIGTYPE sig_fatal (int);
 static RETSIGTYPE sig_hup (int);
 static RETSIGTYPE sig_usr1 (int);
 static RETSIGTYPE sig_usr2 (int);
 static RETSIGTYPE sig_dumpdb (int);
 
-static int  radrespond (RADIUS_REQ *, int);
-static int  open_socket(UINT4 ipaddr, int port, char *type);
+static int radrespond (RADIUS_REQ *, int);
+static int open_socket(UINT4 ipaddr, int port, char *type);
 static void open_socket_list(HOSTDECL *hostlist, int defport, char *descr,
 			     int (*s)(), int (*r)(), int (*f)());
 
@@ -245,8 +231,8 @@ struct option longopt[] = {
 	"logging-directory",  no_argument,       0, 'l',
 	"license",            no_argument,       0, 'L',
 	"mode",               required_argument, 0, 'm',
-	"auth-only",          no_argument,       0, 'n',
-	"do-not-resolve",     no_argument,       0, 'N',
+	"auth-only",          no_argument,       0, 'N',
+	"do-not-resolve",     no_argument,       0, 'n',
 	"ip-address",	      required_argument, 0, 'i',	
 	"port",               required_argument, 0, 'p',
 	"pid-file-dir",       required_argument, 0, 'P',
@@ -281,10 +267,9 @@ main(argc, argv)
 		progname++;
 
 	/* debug_flag can be set only from debugger.
-	 * It means developer is taking control in his hands, so
-	 * we won't modify any variables that could prevent him
-	 * from doing so.
-	 */
+	   It means developer is taking control in his hands, so
+	   we won't modify any variables that could prevent him
+	   from doing so. */
 	if (debug_flag == 0) {
 		foreground = 0;
 		spawn_flag = 1;
@@ -296,15 +281,10 @@ main(argc, argv)
 	xargc = argc;
 	xargv = argv;
 
-	/*
-	 * Set up some default values
-	 */
-	config.exec_user  = make_string("daemon");
-	username_valid_chars = make_string(".-_!@#$%^&");
+	/* Set up some default values */
+	set_config_defaults();
 
-	/*
-	 *	Process the options.
-	 */
+	/* Process the options.	 */
 	while ((argval = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF) {
 		switch (argval) {
 		case 'A':
@@ -352,11 +332,11 @@ main(argc, argv)
 				       _("unknown mode: %s"), optarg);
 			}
 			break;
-		case 'n':
+		case 'N':
 			open_acct = 0;
 			break;
-		case 'N':
-			do_not_resolv = 1; 
+		case 'n':
+			do_not_resolve = 1; 
 			break;
 		case 'i':
 			if ((myip = get_ipaddr(optarg)) == 0)
@@ -424,9 +404,7 @@ main(argc, argv)
 	for (t = getmaxfd(); t >= 3; t--)
 		close(t);
 
-	/* 
-	 * Determine default port numbers for authentication and accounting
-	 */
+	/* Determine default port numbers for authentication and accounting */
 	if (radius_port)
 		auth_port = radius_port;
 	else {
@@ -447,6 +425,28 @@ main(argc, argv)
 	rad_main(argv[optind]);
 }
 
+void
+set_config_defaults()
+{
+        config.exec_user  = make_string("daemon");
+        username_valid_chars = make_string(".-_!@#$%^&");
+	message_text[MSG_ACCOUNT_CLOSED] =
+		make_string("Sorry, your account is currently closed\r\n");
+	message_text[MSG_PASSWORD_EXPIRED] =
+		make_string("Password Has Expired\r\n");
+	message_text[MSG_PASSWORD_EXPIRE_WARNING] =
+		make_string("Password Will Expire in %R{Password-Expire-Days} Days\r\n");
+	message_text[MSG_ACCESS_DENIED] =
+		make_string("\r\nAccess denied\r\n");
+	message_text[MSG_REALM_QUOTA] =
+		make_string("\r\nRealm quota exceeded - access denied\r\n");
+	message_text[MSG_MULTIPLE_LOGIN] =
+		make_string("\r\nYou are already logged in %R{Simultaneous-Use} times - access denied\r\n");
+	message_text[MSG_SECOND_LOGIN] =
+		make_string("\r\nYou are already logged in - access denied\r\n");
+	message_text[MSG_TIMESPAN_VIOLATION] =
+		make_string("You are calling outside your allowed timespan\r\n");
+}
 
 void
 rad_daemon()

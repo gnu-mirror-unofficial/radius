@@ -207,14 +207,14 @@ alloc_entry(size)
 		class_ptr = alloc_class(size);
 		if (!class_ptr) {
 			radlog(L_ERR, _("low core: exiting"));
-			exit(1);
+			abort();
 		}
 	}
 	
 	if (!class_ptr->free) {
 		if (!alloc_bucket(class_ptr)) {
 			radlog(L_ERR, _("low core: exiting"));
-			exit(1);
+			abort();
 		}
 	}
 
@@ -232,6 +232,7 @@ put_back(class, ptr)
 {
 	Entry eptr = (Entry)ptr;
 	class->allocated_cnt--;
+	insist(class->allocated_cnt <= class->bucket_cnt * class->elcnt);
 	bzero(ptr, class->elsize);
 	eptr->next = class->free;
 	class->free = eptr;
@@ -286,7 +287,7 @@ calloc_entry(count, size)
 		class_ptr = alloc_class(size);
 		if (!class_ptr) {
 			radlog(L_ERR, _("low core: exiting"));
-			exit(1);
+			abort();
 		}
 		class_ptr->cont = 1;
 	}
@@ -345,7 +346,7 @@ again:
 		}
 		if (!alloc_bucket(class_ptr)) {
 			radlog(L_ERR, _("low core: exiting"));
-			exit(1);
+			abort();
 		}
 		goto again;
 	}
@@ -577,6 +578,8 @@ meminfo(report)
 		total_bytes +=  class->bucket_cnt * class->elcnt *
 			        class->elsize;
 		total_used  +=  class->allocated_cnt * class->elsize;
+		/* sanity check */
+		insist(class->allocated_cnt <= class->bucket_cnt * class->elcnt);	
 	}
 	radsprintf(buffer, sizeof(buffer),
 		_("memory utilization: %ld.%1ld%%"),

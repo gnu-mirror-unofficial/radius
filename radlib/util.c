@@ -1,21 +1,19 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
+   Copyright (C) 2000, 2001 Sergey Poznyakoff
+  
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+  
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+  
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #ifndef lint
 static char rcsid[] = 
@@ -193,101 +191,6 @@ mkfilename3(dir, subdir, name)
 }
 
 
-#if 0
-int
-parse_exec_program(cmd, program, uid, gid)
-	char *cmd;
-	char **program;
-	int  *uid;
-	int  *gid;
-{
-	char *start;
-	char *user_ptr = NULL;
-	char *group_ptr = NULL;
-	char *user, *group;
-	int user_len;
-	int group_len;
-	struct passwd *pwd;
-	struct group  *grp;
-	
-	if (*cmd == '(') {
-		user_ptr = start = ++cmd;
-		while (*cmd && *cmd != ')') {
-			if (*cmd == ':') {
-				user_len = cmd - start;
-				break;
-			}
-			cmd++;
-		}
-		if (*cmd == ':') 
-			group_ptr = start = ++cmd;
-		while (*cmd && *cmd != ')')
-			cmd++;
-		if (*cmd == 0)
-			return -1;
-		group_len = cmd - start;
-		if (!group_ptr)
-			user_len = group_len;
-		cmd++;
-	}
-
-	if (user_ptr && user_len) {
-		user = emalloc(user_len+1);
-		strncpy(user, user_ptr, user_len);
-		user[user_len] = 0;
-		pwd = getpwnam(user);
-		if (!pwd) {
-			radlog(L_ERR,
-			       _("no such user in the system: `%s'"), user);
-			efree(user);
-			return -1;
-		}
-		efree(user);
-		*uid = pwd->pw_uid;
-		*gid = pwd->pw_gid;
-	} else {
-		pwd = getpwnam("root");
-		*uid = *gid = 0;
-	}
-
-	if (group_ptr && group_len) {
-		group = emalloc(group_len+1);
-		strncpy(group, group_ptr, group_len);
-		group[group_len] = 0;
-		grp = getgrnam(group);
-		if (!grp) {
-			radlog(L_ERR,
-			       _("no such group in the system: `%s'"), group);
-			efree(group);
-			return -1;
-		}
-		if (pwd) {
-			int ok = 0;
-			char **mp;
-			
-			for (mp = grp->gr_mem; mp; mp++)
-				if (strcmp(*mp, pwd->pw_name) == 0) {
-					ok++;
-					break;
-				}
-			if (!ok) {
-				radlog(L_ERR,
-				       _("user %s not member of the group %s"),
-				       pwd->pw_name, grp->gr_name);
-				return -1;
-			}
-		}
-
-		*gid = grp->gr_gid;
-	}
-
-	if (program)
-		*program = cmd;
-
-	return 0;
-}
-#endif				
-
 int
 backslash(c)
         int c;
@@ -356,3 +259,170 @@ parse_radck_args(str)
 	}
 	return prev;
 }
+
+char *
+op_str(op)
+        int op;
+{
+        switch (op) {
+        case PW_OPERATOR_EQUAL:         return "=";
+        case PW_OPERATOR_NOT_EQUAL:     return "!=";
+        case PW_OPERATOR_LESS_THAN:     return "<";
+        case PW_OPERATOR_GREATER_THAN:  return ">";
+        case PW_OPERATOR_LESS_EQUAL:    return "<=";
+        case PW_OPERATOR_GREATER_EQUAL: return ">=";
+        }
+        return "?";
+}
+
+int
+pairstr_format(buf, pair)
+	char *buf;
+	VALUE_PAIR *pair;
+{
+	int n, ret = 0;
+	UINT4		vendor;
+	u_char *ptr = (u_char*)pair->strvalue;
+	char buf1[64];
+	char *bufp = buf;
+	u_int left, i, len;
+	
+	memcpy(&vendor, ptr, 4);
+	ptr += 4;
+	n = snprintf(buf1, sizeof(buf1), "V%d", (int)ntohl(vendor));
+	if (n < 0)
+		return -1;
+	ret += n;
+
+	if (bufp) {
+		memcpy(bufp, buf1, n);
+		bufp += n;
+	}
+	
+	left = pair->strlength - 4;
+	while (left >= 2) {
+		n = snprintf(buf1, sizeof(buf1), ":T%d:L%d:", ptr[0], ptr[1]);
+		if (n < 0)
+			return n;
+		if (bufp) {
+			memcpy(bufp, buf1, n);
+			bufp += n;
+		}
+	
+		left -= 2;
+		ptr += 2;
+		i = ptr[1] - 2;
+
+		len = 0;
+		do {
+			while (i > 0 && left > 0 && isprint(ptr[len])) {
+				len++;
+				i--;
+				left--;
+			}
+			if (bufp) {
+				memcpy(bufp, ptr, len);
+				bufp += len;
+			}
+			ret += len;
+			ptr += len;
+			if (i > 0 && left > 0) {
+				if (bufp) {
+					sprintf(bufp, "\\%03o", *ptr);
+					bufp += 4;
+				}
+				ptr++;
+				ret += 4;
+			}
+		} while (i > 0 && left > 0);
+	}
+	return ret;      
+}
+
+
+char *
+format_pair(pair)
+	VALUE_PAIR *pair;
+{
+	static char *buf1;
+	char *buf2ptr = NULL, buf2[AUTH_STRING_LEN+1];
+	DICT_VALUE *dval;
+	
+	if (buf1)
+		free(buf1);
+	buf1 = NULL;
+
+	switch (pair->eval ? PW_TYPE_STRING : pair->type) {
+	case PW_TYPE_STRING:
+		if (pair->attribute != DA_VENDOR_SPECIFIC) 
+			snprintf(buf2, sizeof(buf2), "\"%s\"", pair->strvalue);
+		else if (pair->strlength < 6) 
+			snprintf(buf2, sizeof(buf2),
+				 "[invalid length: %d]", pair->strlength);
+		else {
+			int len = pairstr_format(NULL, pair);
+			buf2ptr = malloc(len+1);
+			if (buf2ptr)
+				abort();/*FIXME*/
+			pairstr_format(buf2ptr, pair);
+		}
+		break;
+					
+	case PW_TYPE_INTEGER:
+		if (pair->name)
+			dval = value_lookup(pair->lvalue, pair->name);
+		else
+			dval = NULL;
+		
+		if (!dval)
+			snprintf(buf2, sizeof(buf2), "%ld", pair->lvalue);
+		else
+			snprintf(buf2, sizeof(buf2), "%s", dval->name);
+		break;
+		
+	case PW_TYPE_IPADDR:
+		ipaddr2str(buf2, pair->lvalue);
+		break;
+		
+	case PW_TYPE_DATE:
+		strftime(buf2, sizeof(buf2), "\"%b %e %Y\"",
+			 localtime((time_t *)&pair->lvalue));
+		break;
+	default:
+		strncpy(buf2, "[UNKNOWN DATATYPE]", sizeof(buf2));
+	}
+
+	if (pair->name)
+		asprintf(&buf1, "%s %s %s",
+			 pair->name,
+			 op_str(pair->operator),
+			 buf2);
+	else
+		asprintf(&buf1, "%d %s %s",
+			 pair->attribute,
+			 op_str(pair->operator),
+			 buf2ptr ? buf2ptr : buf2);
+
+	if (buf2ptr)
+		free(buf2ptr);
+	
+	return buf1;
+}
+
+char *
+format_ipaddr(ipaddr)
+	UINT4 ipaddr;
+{
+	static char buf[DOTTED_QUAD_LEN];
+	ipaddr2str(buf, ipaddr);
+	return buf;
+}
+
+void
+debug_pair(prefix, pair)
+	char *prefix;
+	VALUE_PAIR *pair;
+{
+	fprintf(stdout, "%10.10s: %s\n", prefix, format_pair(pair));
+}
+

@@ -74,7 +74,7 @@ radius_change_uid(struct passwd *pwd)
    Return the exit code of the called program if exec_wait != 0. */
 int
 radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
-		    int exec_wait, char **user_msg)
+		    int exec_wait)
 {
         int p[2];
         int n;

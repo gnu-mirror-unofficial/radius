@@ -36,28 +36,6 @@
 #include <radtest.h>
 #include <radius/argcv.h>
 
-grad_symtab_t *vartab;
-int verbose;
-extern int grad_client_debug;
-grad_server_queue_t *srv_queue;
-int reply_code;
-grad_avp_t *reply_list;
-
-void init_symbols();
-static void assign(char *);
-
-int x_argmax;
-int x_argc;
-char **x_argv;
-
-int quick = 0;
-char *filename = NULL;
-char *server = NULL;
-int retry = 0;
-int timeout = 0;
-int disable_readline;
-int dry_run;
-
 const char *argp_program_version = "radtest (" PACKAGE ") " VERSION;
 static char doc[] = N_("Radius client shell");
 
@@ -86,6 +64,41 @@ static struct argp_option options[] = {
 	 N_("Check the input file syntax and exit"), 0 },
         {NULL, 0, NULL, 0, NULL, 0}
 };
+
+int verbose;                   /* -v (--verbose) option */
+int quick = 0;                 /* -q (--quick). A misnomer! */
+char *filename = NULL;         /* Name of the input file to execute.
+				  -f (--file) */
+/* These three are set from -s (--server) option */
+char *server = NULL;           /* Server name */
+int retry = 0;                 /* Retry count */
+int timeout = 0;               /* Timeout */
+
+int disable_readline;          /* --no-interactive */
+int dry_run;                   /* --dry-run (-n) */
+
+static void
+assign(char *s)
+{
+        char *p;
+        radtest_variable_t *var;
+        radtest_datum_t datum;
+        radtest_data_type type = rtv_undefined;
+        
+        p = strchr(s, '=');
+        if (!p) {
+                fprintf(stderr, _("assign: expected `='\n"));
+                return;
+        }
+        *p++ = 0;
+
+        type = parse_datum(p, &datum);
+        if (type == rtv_undefined)
+                return;
+        var = (radtest_variable_t*)grad_sym_install(vartab, s);
+        var->type = type;
+        var->datum = datum;
+}
 
 static error_t
 parse_opt(int key, char *arg, struct argp_state *state)
@@ -156,6 +169,32 @@ radtest_parse_options(int argc, char **argv)
 {
         int index;
 	return argp_parse (&argp, argc, argv, ARGP_NO_EXIT, NULL, &index);
+}
+
+grad_server_queue_t *srv_queue; /* Server queue */
+
+grad_symtab_t *vartab;          /* Variable table */
+grad_symtab_t *functab;         /* Function table */
+ 
+int reply_code;                 /* Last radius reply code */
+grad_avp_t *reply_list;         /* Last radius reply pairs */
+
+grad_list_t *toplevel_env;      /* Top level environment */
+
+static void
+init_symbols()
+{
+        radtest_variable_t *var;
+        
+        vartab = grad_symtab_create(sizeof(radtest_variable_t), NULL);
+        var = (radtest_variable_t*) grad_sym_install(vartab, "REPLY_CODE");
+        var->type = rtv_integer;
+        var = (radtest_variable_t*) grad_sym_install(vartab, "REPLY");
+        var->type = rtv_avl;
+	var = (radtest_variable_t*) grad_sym_install(vartab, "SOURCEIP");
+	var->type = rtv_ipaddress;
+
+	functab = grad_symtab_create(sizeof(radtest_function_t), NULL);
 }
 
 int
@@ -273,60 +312,22 @@ main(int argc, char **argv)
                          _("No servers specfied. Use -s option.\n"));
                 exit(1);
         }
-        
-        x_argmax = argc + 2;
-        x_argv = grad_emalloc(sizeof(x_argv[0]) * x_argmax);
-        x_argc = 0;
-        x_argv[x_argc++] = filename;
+
+	toplevel_env = grad_list_create();
+	radtest_env_add_string(toplevel_env, filename);
 
         for (; argc; argv++, argc--) {
                 if ((p = strchr(*argv, '=')) != NULL &&
 		    !(p > *argv && p[-1] == '\\')) 
                         assign(*argv);
-                else 
-                        x_argv[x_argc++] = *argv;
+                else
+			radtest_env_add_string(toplevel_env, *argv);
         }
-        x_argv[x_argc] = NULL;
 
 	return read_and_eval(filename);
 }
 
-void
-init_symbols()
-{
-        radtest_variable_t *var;
-        
-        vartab = grad_symtab_create(sizeof(radtest_variable_t), NULL);
-        var = (radtest_variable_t*) grad_sym_install(vartab, "REPLY_CODE");
-        var->type = rtv_integer;
-        var = (radtest_variable_t*) grad_sym_install(vartab, "REPLY");
-        var->type = rtv_avl;
-	var = (radtest_variable_t*) grad_sym_install(vartab, "SOURCEIP");
-	var->type = rtv_ipaddress;
-}
-
-void
-assign(char *s)
-{
-        char *p;
-        radtest_variable_t *var;
-        radtest_datum_t datum;
-        radtest_data_type type = rtv_undefined;
-        
-        p = strchr(s, '=');
-        if (!p) {
-                fprintf(stderr, _("assign: expected `='\n"));
-                return;
-        }
-        *p++ = 0;
-
-        type = parse_datum(p, &datum);
-        if (type == rtv_undefined)
-                return;
-        var = (radtest_variable_t*)grad_sym_install(vartab, s);
-        var->type = type;
-        var->datum = datum;
-}
+
 
 radtest_data_type
 parse_datum(char *p, radtest_datum_t *dp)

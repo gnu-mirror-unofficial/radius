@@ -19,7 +19,7 @@
 ;;;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;;;;
 changequote([,])dnl
-
+undefine([define])
 ;;; Export symbols defined in the server module
 (export L_MAIN L_AUTH L_ACCT L_PROXY
         L_SNMP L_EMERG L_ALERT L_CRIT

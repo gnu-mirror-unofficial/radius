@@ -1,4 +1,4 @@
-divert(-1)dnl
+divert(-1)
 dnl This file is part of GNU RADIUS.
 dnl Copyright (C) 2001 Sergey Poznyakoff
 dnl  
@@ -15,8 +15,7 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software Foundation,
 dnl Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
-divert{}dnl
-define({ARGS},ifdef({server}, -hserver) ifdef({port}, -P port)  ifdef({CREATOR},-u CREATOR) ifdef({CREATOR_PASSWORD}, -p CREATOR_PASSWORD))
+define({ARGS},ifdef({server}, -h server) ifdef({port}, -P port)  ifdef({CREATOR},-u CREATOR) ifdef({CREATOR_PASSWORD}, -p{}CREATOR_PASSWORD))
 define({CREATEDATABASE},
 ifelse(MODE,{STRUCT},{
 CREATE DATABASE $1;
@@ -36,6 +35,7 @@ define({CHAR_T},{char($1)})dnl
 define({VARCHAR_T},{varchar($1)})dnl
 define({CI},{binary})dnl
 define({TIME_T},{datetime{}ifelse({$#}, {1},{ DEFAULT $1})})dnl
+define({ENUM_T},{enum (shift($@))})
 
 define({INDEX},{{INDEX} {$1} (shift($@))})
 define({UNIQUE}, {{UNIQUE} {$1} (shift($@))})
@@ -54,3 +54,4 @@ GRANT SELECT on RADIUS.attrib to DB_USER@'%';
 UPDATE user set password=password('DB_PWD') where user='DB_USER';
 FLUSH PRIVILEGES;
 })})
+divert{}dnl

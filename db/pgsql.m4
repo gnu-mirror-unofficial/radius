@@ -15,9 +15,8 @@ dnl
 dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software Foundation,
 dnl Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
-divert{}dnl
-define({ARGS},ifdef({server},{ -hserver})ifdef({port},{ -pport})dnl
-ifdef({CREATOR_PASSWORD},{ -W}))
+define({ARGS},{ifdef({server}, -h{}server){}ifdef({port}, -p{}port)})dnl
+ifdef({CREATOR_PASSWORD},{ -W})
 
 define({CREATEDATABASE},ifelse(MODE,{CREATE}, {
 createdb ARGS {$1}
@@ -38,6 +37,7 @@ define({CHAR_T},{character($1)})dnl
 define({VARCHAR_T},{character($1)})dnl
 define({CI})dnl
 define({TIME_T},{timestamp})dnl
+define({ENUM_T},{ifelse({$1},1,char,character({$1}))})
 
 define({INDEX},{divert(1)
 CREATE {INDEX} $1 on TABLENAME (shift($@));
@@ -60,3 +60,4 @@ GRANT SELECT on "groups" to "DB_USER";
 REVOKE ALL on "attrib" from PUBLIC;
 GRANT SELECT on "attrib" to "DB_USER";
 })})
+divert{}dnl

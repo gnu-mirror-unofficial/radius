@@ -354,8 +354,8 @@ main(argc, argv)
         else
                 acct_port = ntohs(svp->s_port);
 
-	srand(time(NULL));
-	
+        srand(time(NULL));
+        
         snmp_init(0, 0, emalloc, efree);
 
         rad_main(argv[optind]);
@@ -438,6 +438,7 @@ rad_daemon()
         signal(SIGQUIT, sig_fatal);
         signal(SIGTERM, sig_fatal);
         signal(SIGCHLD, SIG_IGN);
+        signal(SIGPIPE, SIG_IGN);
         signal(SIGBUS, sig_fatal);
         signal(SIGTRAP, sig_fatal);
         signal(SIGFPE, sig_fatal);
@@ -878,27 +879,27 @@ getmyip()
 void
 check_reload()
 {
-	switch (daemon_command) {
-	case CMD_RELOAD:
-        	radlog(L_INFO, _("Reloading configuration now"));
+        switch (daemon_command) {
+        case CMD_RELOAD:
+                radlog(L_INFO, _("Reloading configuration now"));
                 reread_config(1);
                 break;
-	case CMD_RESTART:
+        case CMD_RESTART:
                 rad_restart();
-		break;
-	case CMD_MEMINFO:
-		meminfo();
-		break;
-	case CMD_DUMPDB:
-        	radlog(L_INFO, _("Dumping users db to `%s'"),
-               		RADIUS_DUMPDB_NAME);
-		dump_users_db();
-		break;
-	default:
-		check_snmp_request();
-		break;
+                break;
+        case CMD_MEMINFO:
+                meminfo();
+                break;
+        case CMD_DUMPDB:
+                radlog(L_INFO, _("Dumping users db to `%s'"),
+                        RADIUS_DUMPDB_NAME);
+                dump_users_db();
+                break;
+        default:
+                check_snmp_request();
+                break;
         }
-	daemon_command = CMD_NONE;
+        daemon_command = CMD_NONE;
 }
 
 void
@@ -915,11 +916,11 @@ check_snmp_request()
                         }
                         rad_restart();
                         break;
-			
+                        
                 case serv_init:
                         reread_config(1);
                         break;
-			
+                        
                 case serv_running:
                         if (suspend_flag) {
                                 suspend_flag = 0;
@@ -1091,7 +1092,7 @@ RETSIGTYPE
 sig_dumpdb(sig)
         int sig;
 {
-	daemon_command = CMD_DUMPDB;
+        daemon_command = CMD_DUMPDB;
         signal(sig, sig_dumpdb);
 }
 

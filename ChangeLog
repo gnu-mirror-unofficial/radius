@@ -1,3 +1,29 @@
+2004-02-24  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* TODO: Updated
+	* db/db.m4 (calls): Add new field 'realm_name'
+	* raddb/sqlserver (acct_start_query): Store Realm-Name
+	(mlc_user_query,mlc_realm_query,mlc_stop_query): New queries
+	* include/radiusd.h (radutmp_mlc_collect_user)
+	(radutmp_mlc_collect_realm)
+	(radius_mlc_user,radius_mlc_realm): Changed prototypes.
+	* include/radsql.h (enum radius_sql_query): New data type.
+	(SQL_cfg): Store the queries in an array.
+	* radiusd/sql.c: Likewise.
+	* raddb/dict/standard (Realm-Name): New attribute.
+	* radiusd/acct.c (radutmp_mlc_collect_user)
+	(radutmp_mlc_collect_realm): Changed declarations
+	* radiusd/auth.c (sfn_realmuse): Update call to
+	radius_mlc_realm();
+	(sfn_simuse): Update call to radius_mlc_user().
+	* radiusd/mlc.c (radius_mlc_user,radius_mlc_collect_realm)
+	(radius_mlc_user,radius_mlc_realm): Changed declarations
+	* radiusd/proxy.c (proxy_send): Add a Realm-Name pair.
+	* radiusd/rewrite.y (mtx_call): Treat argument count
+	mismatch as an error.
+	* include/radius/radutmp.h (struct radutmp): Fixed types of
+	nas_address, framed_address and realm_address. 
+	
 2004-02-05  Sergey Poznyakoff
 
 	* radiusd/mlc.c: New file. Interface for multiple login checking.
@@ -469,7 +495,7 @@
 	* NEWS: Placeholder for new version
 	* radiusd/testsuite/proxy/Makefile.am: rm before ln
 	* radiusd/testsuite/raddb/Makefile.am: Likewise.
-	* radscm/Makefile.am: Excempt radscm from std-options 
+	* radscm/Makefile.am: Exempt radscm from std-options 
 	check (it prints --help output to stderr, which griefs std-options)
 	* radscm/radscm.c: Bugfix
 	

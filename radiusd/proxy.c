@@ -181,7 +181,7 @@ proxy_send_request(int fd, grad_request_t *radreq)
 	int rc;
 	PROXY_STATE *proxy_state;
 	
-	if (radreq->attempt_no > radreq->realm->queue->retries) {
+	if (radreq->attempt_no >= radreq->realm->queue->retries) {
 		radreq->server_no++;
 		radreq->attempt_no = 0;
 	}

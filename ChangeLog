@@ -11,6 +11,10 @@
 	* test/Makefile.am: Reorganized.
 	* test/dejagnu/Makefile.am: Removed s. directories
 	* configure.in: Likewise. Increased patchlevel.
+	* test/dejagnu/lib/radiusd.exp: Modified to better support
+	  the new test suite layout.
+	* radtest/input.l: Allow for newlines in strings.
+	* test/test.sh.m4: Updated the copyleft header.
 	
 2001-12-19 Vlad Lungu
 	

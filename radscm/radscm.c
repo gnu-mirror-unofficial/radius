@@ -25,12 +25,11 @@
 #include <libguile.h>
 #include <radius.h>
 #include <radutmp.h>
-#include <radclient.h>
 #include <radscm.h>
 
-static RADCLIENT *radclient;
+static RADIUS_SERVER_QUEUE *srv_queue;
 
-static SERVER *scheme_to_server(SCM g_list, const char *func);
+static RADIUS_SERVER *scheme_to_server(SCM g_list, const char *func);
 
 static void
 die(msg)
@@ -101,7 +100,7 @@ SCM_DEFINE(rad_send_internal, "rad-send-internal", 3, 0, 0,
         else
                 pairlist = radscm_list_to_avl(PAIRS);
 
-        auth = radclient_send(radclient, port, code, pairlist);
+        auth = rad_clt_send(srv_queue, port, code, pairlist);
         if (!auth)
                 return SCM_EOL;
         /*
@@ -120,11 +119,11 @@ SCM_DEFINE(rad_client_list_servers, "rad-client-list-servers", 0, 0, 0,
 "Server ID and IP address.\n")
 #define FUNC_NAME s_rad_client_list_servers        
 {
-        SERVER *s;
+        RADIUS_SERVER *s;
         char p[DOTTED_QUAD_LEN+1];
         SCM tail = SCM_EOL;
          
-        for (s = radclient->first_server; s; s = s->next) {
+        for (s = srv_queue->first_server; s; s = s->next) {
                 ip_iptostr(s->addr, p);
                 tail = scm_cons(SCM_LIST2(scm_makfrom0str(s->name),
                                           scm_makfrom0str(p)),
@@ -139,16 +138,16 @@ SCM_DEFINE(rad_get_server, "rad-get-server", 0, 0, 0,
            "Returns the ID of the currently selected server.")
 #define FUNC_NAME s_rad_get_server      
 {
-        return scm_makfrom0str(radclient->first_server->name);
+        return scm_makfrom0str(srv_queue->first_server->name);
 }
 #undef FUNC_NAME
 
-SERVER *
+RADIUS_SERVER *
 scheme_to_server(LIST, func)
         SCM LIST;
         const char *func;
 {
-        SERVER serv;
+        RADIUS_SERVER serv;
         SCM scm;
         
         SCM_ASSERT((SCM_NIMP(LIST) && SCM_CONSP(LIST)),
@@ -183,7 +182,7 @@ scheme_to_server(LIST, func)
                    scm, SCM_ARG1, func);
         serv.port[PORT_ACCT] = SCM_INUM(scm);
 
-        return radclient_alloc_server(&serv);
+        return rad_clt_alloc_server(&serv);
 }
 
 SCM_DEFINE(rad_client_add_server, "rad-client-add-server", 1, 0, 0,
@@ -191,8 +190,8 @@ SCM_DEFINE(rad_client_add_server, "rad-client-add-server", 1, 0, 0,
            "Add a server to the list of configured radius servers")
 #define FUNC_NAME s_rad_client_add_server
 {
-        radclient->first_server =
-                radclient_append_server(radclient->first_server,
+        srv_queue->first_server =
+                rad_clt_append_server(srv_queue->first_server,
                                         scheme_to_server(LIST, FUNC_NAME));
         return SCM_UNSPECIFIED;
 }
@@ -211,10 +210,10 @@ SCM_DEFINE(rad_client_set_server, "rad-client-set-server", 1, 0, 0,
 "       ACCT-NUM        Accounting port number\n")
 #define FUNC_NAME s_rad_client_set_server
 {
-        SERVER *s = scheme_to_server(LIST, FUNC_NAME);
+        RADIUS_SERVER *s = scheme_to_server(LIST, FUNC_NAME);
         
-        radclient_clear_server_list(radclient->first_server);
-        radclient->first_server = radclient_append_server(NULL, s);
+        rad_clt_clear_server_list(srv_queue->first_server);
+        srv_queue->first_server = rad_clt_append_server(NULL, s);
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
@@ -229,7 +228,7 @@ SCM_DEFINE(rad_client_source_ip, "rad-client-source-ip", 1, 0, 0,
         SCM_ASSERT((SCM_NIMP(IP) && SCM_STRINGP(IP)), IP, SCM_ARG1, FUNC_NAME);
         ip = ip_gethostaddr(SCM_CHARS(IP));
         if (ip)
-                radclient->source_ip = ip;
+                srv_queue->source_ip = ip;
         else {
                 scm_misc_error(FUNC_NAME,
                                "Invalid IP/hostname: ~S",
@@ -246,7 +245,7 @@ SCM_DEFINE(rad_client_timeout, "rad-client-timeout", 1, 0, 0,
 #define FUNC_NAME s_rad_client_timeout
 {
         SCM_ASSERT(SCM_IMP(TO) && SCM_INUMP(TO), TO, SCM_ARG1, FUNC_NAME);
-        radclient->timeout = SCM_INUM(TO);
+        srv_queue->timeout = SCM_INUM(TO);
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
@@ -258,7 +257,7 @@ SCM_DEFINE(rad_client_retry, "rad-client-retry", 1, 0, 0,
 {
         SCM_ASSERT(SCM_IMP(RETRY) && SCM_INUMP(RETRY),
                    RETRY, SCM_ARG1, FUNC_NAME);
-        radclient->retries = SCM_INUM(RETRY);
+        srv_queue->retries = SCM_INUM(RETRY);
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
@@ -331,7 +330,7 @@ rad_scheme_init(argc, argv)
                 radlog(L_ERR, _("error reading dictionary file"));
                 exit(1);
         }
-        radclient = radclient_alloc(1, 0, 0);
+        srv_queue = rad_clt_create_queue(1, 0, 0);
 
         /*
          * Provide basic primitives

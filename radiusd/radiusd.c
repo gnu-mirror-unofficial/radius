@@ -1197,10 +1197,10 @@ auth_respond(fd, sa, salen, buf, size)
         RADIUS_REQ *radreq;
         struct sockaddr_in *sin = (struct sockaddr_in *) sa;
         
-        radreq = radrecv(ntohl(sin->sin_addr.s_addr),
-                         ntohs(sin->sin_port),
-                         buf,
-                         size);
+        radreq = rad_decode_pdu(ntohl(sin->sin_addr.s_addr),
+				ntohs(sin->sin_port),
+				buf,
+				size);
         if (radrespond(radreq, fd)) 
                 radreq_free(radreq);
 

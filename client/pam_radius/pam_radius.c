@@ -33,7 +33,6 @@
 
 #include <radius.h> 
 #include <radpaths.h> 
-#include <radclient.h>
 
 /* indicate the following groups are defined */
 #define PAM_SM_AUTH
@@ -163,7 +162,6 @@ vlog(level, file, line, func_name, en, fmt, ap)
 static int cntl_flags;
 static char *radius_confdir = RADDB_DIR;
 static char *service_type = NULL;
-static RADCLIENT *radclient;
 
 #define DEBUG(m,c) if (CNTL_DEBUG_LEV()>=(m)) _pam_debug c
 #define AUDIT(c) if (cntl_flags&CNTL_AUDIT) _pam_debug c
@@ -226,21 +224,10 @@ _pam_parse(pam_handle_t *pamh, int argc, const char **argv)
         cntl_flags = ctrl;
 }
 
-/* FIXME: move this to radlib/client.c
- */
-void
-radclient_free(radclient)
-        RADCLIENT *radclient;
-{
-        radclient_clear_server_list(radclient->first_server);
-        efree(radclient->data_buffer);
-        efree(radclient);
-}
-
 static void
-_cleanup_radclient(pam_handle_t *pamh, void *x, int error_status)
+_cleanup_server_queue(pam_handle_t *pamh, void *x, int error_status)
 {
-        radclient_free(x);
+        rad_clt_destroy_queue(x);
 }
 
 static void
@@ -259,38 +246,38 @@ int
 _read_client_config(pam_handle_t *pamh)
 {
         int errcnt = 0;
-        RADCLIENT *radclient;
+        RADIUS_SERVER_QUEUE *queue;
         
-        radclient = radclient_alloc(1, 0, 0);
-        if (!radclient)
+        queue = rad_clt_create_queue(1, 0, 0);
+        if (!queue)
                 return -1;
         /*
          * Consistency check
          */
-        if (radclient->first_server == NULL) {
+        if (queue->first_server == NULL) {
                 _pam_log(LOG_ERR, "config: no server selected");
                 errcnt++;
         }
 
-        if (radclient->timeout == 0) {
+        if (queue->timeout == 0) {
                 _pam_log(LOG_ERR, "config: zero timeout value");
                 errcnt++;
         }
 
         if (errcnt) {
                 /* free allocated memory */
-                radclient_free(radclient);
+                rad_clt_free(queue);
         } else {
                 errcnt = pam_set_data(pamh,
-                                      "radclient", \
-                                      (void *)radclient,
-                                      _cleanup_radclient);
+                                      "radius_server_queue", \
+                                      (void *)queue,
+                                      _cleanup_server_queue);
                 if (errcnt != PAM_SUCCESS) {
                         _pam_log(LOG_CRIT, 
                                  "can't keep data [%s]: %s",
-                                 "radclient",
+                                 "radius_server_queue",
                                  pam_strerror(pamh, errcnt));
-                        radclient_free(radclient);
+                        rad_clt_free(queue);
                         errcnt = 1;
                 }
         }
@@ -321,17 +308,18 @@ _pam_init_radius_client(pam_handle_t *pamh)
 static int
 _radius_auth(pam_handle_t *pamh, char *name, char *password)
 {
-        RADCLIENT *radclient;
+        RADIUS_SERVER_QUEUE *queue;
         int retval;
         VALUE_PAIR *pairs, *namepair;
         RADIUS_REQ *authreq;
         DICT_VALUE *dv;
         
         retval = pam_get_data(pamh,
-                              "radclient", (const void **)&radclient);
+                              "radius_server_queue", 
+                              (const void **)&queue);
         if (retval != PAM_SUCCESS) {
                 _pam_log(LOG_CRIT, 
-                         "can't get radclient: %s",
+                         "can't get [radius_server_queue]: %s",
                          pam_strerror(pamh, retval));
                 return PAM_AUTHINFO_UNAVAIL;
         }
@@ -352,8 +340,8 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
         }
         avl_add_pair(&pairs, avp_create(DA_NAS_IP_ADDRESS,
                                     0, NULL,
-                                    radclient->source_ip));
-        authreq = radclient_send(radclient,
+                                    queue->source_ip));
+        authreq = rad_clt_send(queue,
                                  PORT_AUTH, RT_AUTHENTICATION_REQUEST, pairs);
         if (authreq == NULL) {
                 _pam_log(LOG_ERR,

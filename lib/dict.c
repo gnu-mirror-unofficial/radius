@@ -381,8 +381,6 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
         }
 
         attr = sym_lookup_or_install(dict_attr_tab, ATTR_NAME, 1);
-        if (value < DICT_INDEX_SIZE) 
-                dict_attr_index[value] = attr;
                         
         attr->value = value;
         attr->type = type;
@@ -390,6 +388,8 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 	attr->parser = fp;
         if (vendor)
                 attr->value |= (vendor << 16);
+        if (attr->value < DICT_INDEX_SIZE) 
+                dict_attr_index[attr->value] = attr;
         
         return 0;
 }

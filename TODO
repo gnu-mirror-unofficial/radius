@@ -1,4 +1,6 @@
-URGNT: Add \ line continuation to read_raddb_files.
+-100 : Reflect new sqlserver directive reply_attr_query in the documentation
+       and examples. 
+-100 : Add \ line continuation to read_raddb_files.
        do_not_resolve is global. Possibly could be used in radwho (-n)
 -100 : Document broken_pass flag. 
 -100 : Document Auth-Type = (Crypt-)Local, Password-Location

@@ -1,3 +1,31 @@
+2001-11-13 Sergey Poznyakoff
+
+	* configure.in: Fixed bug in handling --with-lib-path arguments.
+
+	* doc/texinfo/radius.texi: Properly generate variable index.
+	Placed Concept Index at the end. Added pagination directives.
+	* doc/texinfo/radscm.texi: Fixed use of @deffn.
+
+	Initial support for retrieving check pairs from SQL (untested):
+
+	* include/radius.h: Added protos for op_to_str() and str_to_op().
+	* include/radsql.h: New member check_attr_query. Renamed attr_query
+	to reply_attr_query.
+	Renamed rad_.*query() functions for consistency.
+	* radiusd/files.c: match_user(): Try to retrieve check pairs
+	from the database.
+	* radiusd/sql.c: New function rad_sql_retrieve_pairs(). Renamed
+	rad_sql_attr_query() to rad_sql_reply_attr_query(). New function:
+	rad_sql_check_attr_query().
+	* radlib/util.c: Renamed op_str() to op_to_str(). New function:
+	str_to_op().
+
+	* TODO: Updated.
+
+2001-11-09 Sergey Poznyakoff
+
+	-== Version 0.95.92 released ==-
+
 2001-11-09 Sergey Poznyakoff
 
 	* radlib/dict.c: Fixed a very gross bug in valnum_cmp:

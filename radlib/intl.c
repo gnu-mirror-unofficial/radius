@@ -22,7 +22,8 @@ app_setup()
 #ifdef HAVE_SETLOCALE
         setlocale(LC_ALL, "");
 #endif
-#ifdef HAVE_LIBINTL
-        textdomain(PACKAGE);
+#ifdef ENABLE_NLS
+	bindtextdomain (PACKAGE, LOCALEDIR);
+	textdomain(PACKAGE);
 #endif
 }

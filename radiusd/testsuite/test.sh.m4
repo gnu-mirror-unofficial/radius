@@ -81,6 +81,7 @@ s^@PROXY_AUTH_PORT@^%d^;\
 s^@PROXY_ACCT_PORT@^%d^;\
 s^@USER@^%u^;\
 s^@[BUILDDIR]@^$[BUILDDIR]^;\
+s^@[SOURCEDIR]@^$[SOURCEDIR]^;\
 s^@GUILE@^$GUILE^"`
 
 make_raddb() {

@@ -47,6 +47,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
+#include <pwd.h>
 
 void output(int);
 char *format = NULL;
@@ -125,6 +126,15 @@ main(argc, argv)
 	return 0;
 }
 
+char *
+who_am_i()
+{
+	struct passwd *pw = getpwuid(getuid());
+	if (pw)
+		return pw->pw_name;
+	return "nobody";
+}
+
 void
 output(port)
 	int port;
@@ -140,6 +150,9 @@ output(port)
 			printf("%d", port);
 			format += 2;
 			break;
+		} else if (format[0] == '%' && format[1] == 'u') {
+			printf("%s", who_am_i());
+			format += 2;
 		} else if (format[0] == '\\' && format[1]) {
 			switch (format[1]) {
 			case 'a':

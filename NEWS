@@ -6,8 +6,34 @@ Please send radius bug reports to <bug-gnu-radius@gnu.org>
 ^L
 Version 1.2.2:
 
+* libgnuradius
+
+This is a library of functions for creation, handling and sending
+requests using RADIUS protocol.
+
+All programs have been rewritten to link with libgnuradius. On most
+sites this will mean linking against a shared library, which will
+reduce the size of the executables.
+
+* gnuradius.scm
+
+This is a guile module allowing to use libgnuradius functions. It
+supercedes radscm program, which has been removed.
+
 * Rewrite
 ** Added i18n support
+
+* radiusd
+
+** Improved checking for multiple logins. Previous versions relied entirely
+on the contents of /var/log/radutmp file. Starting from this version,
+radiusd offers at least two methods of checking for multiple logins:
+using the traditional radutmp file and using the SQL database. New
+keywords has been added to the sqlserver file that declare the SQL
+queries to be used when retrieving the information about currently
+active sessions.
+
+More methods of checking will be added in future versions.
 
 
 Version 1.2:

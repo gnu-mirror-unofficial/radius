@@ -1,4 +1,14 @@
-2004-02-24  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+2004-02-27  Sergey Poznyakoff
+
+	* radiusd/rewrite.y (input): Bugfix.
+	(pushstr): Use const for the first argument.
+	Added interfaces to gettext functions.
+	* radiusd/proxy.c (proxy_send): Minor rewording of the comment.
+	
+	* NEWS: Updated
+	* TODO: Updated
+
+2004-02-24  Sergey Poznyakoff
 
 	* TODO: Updated
 	* db/db.m4 (calls): Add new field 'realm_name'

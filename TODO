@@ -42,8 +42,6 @@ altogether?
 * Write radctl substitute which would use SNMP.
 * Revise radtest to make it more useful.
 
-* DOCS:
-** Document LOCAL realm
 
 
 Local variables:

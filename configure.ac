@@ -20,7 +20,7 @@
 AC_PREREQ(2.57)
 
 AC_REVISION($Revision$)
-AC_INIT(GNU Radius, 1.1.92, bug-gnu-radius@gnu.org)
+AC_INIT(GNU Radius, 1.1.93, bug-gnu-radius@gnu.org)
 AC_CONFIG_SRCDIR(radiusd/radiusd.c)
 AC_CONFIG_AUX_DIR([scripts])
 AC_CANONICAL_SYSTEM
@@ -156,6 +156,11 @@ AC_CHECK_HEADERS(argp.h fcntl.h malloc.h strings.h\
  ctype.h sys/socket.h netinet/in.h arpa/inet.h\
  netdb.h stdarg.h varargs.h termcap.h termios.h termio.h sgtty.h\
  crypt.h sys/uio.h sys/select.h sys/resources.h getopt.h libintl.h)
+
+AC_CHECK_MEMBERS([struct passwd.pw_expire], , ,
+                 [#include <pwd.h>])
+AC_CHECK_MEMBERS([struct passwd.pw_change], , ,
+                 [#include <pwd.h>])
 
 ## Check for shadow support
 AC_CHECK_HEADER([shadow.h],

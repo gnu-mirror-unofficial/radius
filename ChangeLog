@@ -1,3 +1,18 @@
+2002-07-23  Sergey Poznyakoff 
+
+	* THANKS: Added Krzysztof Kopera.
+	* ABOUT-NLS: Mention pl.po
+	* po/pl.po: (new) Polish localization.
+	* po/no.po: Updated.
+	* po/es.po: Updated.
+	* po/LINGUAS: Added pl
+	* radiusd/config.y (obsolete): Removed
+	* radiusd/exec.c (radius_exec_program): Fixed typo in
+	  diagnostics.
+	* radiusd/version.c (version): Do not mention "deny shell".
+
+	* scripts/dot.emacs: Updated.
+
 2002-07-19  Sergey Poznyakoff 
 
 	* radiusd/log.c (channel_syslog_handler): Bugfix. Thanks to

@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
 "POT-Creation-Date: 2002-07-22 16:58+0300\n"
-"PO-Revision-Date: 2002-07-23 13:04+0300\n"
+"PO-Revision-Date: 2002-07-23 13:16+0300\n"
 "Last-Translator: Krzysztof Kopera <Krzysztof_Kopera/HeadQ@netia.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -676,7 +676,7 @@ msgstr "setreuid(%d) nie powiód³ siê (ruid=%d, euid=%d)"
 #: radiusd/exec.c:142
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
-msgstr "radius_exec_program(): nie mo¿na uruchomiæ, nazwa programu nie rozpoczêta ¶cie¿k± absolutn±"
+msgstr "radius_exec_program(): nie mo¿na uruchomiæ, nazwa programu nie rozpoczêta ¶cie¿k± absolutn±: %s"
 
 #: radiusd/exec.c:153
 #, c-format
@@ -799,7 +799,7 @@ msgstr "niewiadoma warto¶æ %s"
 #: radiusd/files.c:675
 #, c-format
 msgid "%s: error parsing date %s"
-msgstr "%s: b³±d przy przetworzeniu daty"
+msgstr "%s: b³±d przy przetworzeniu daty: %s"
 
 #: radiusd/files.c:688
 #, c-format
@@ -1021,7 +1021,7 @@ msgstr "Niezrozpoznana odpowied¼ od serwera %s, proxy ID %d"
 #: radiusd/radck.c:88
 #, c-format
 msgid "users:%d: Match-Profile refers to non-existing profile (%s)"
-msgstr "users:%d: Match-Profile odnosi siê do nieistniej±cego profila"
+msgstr "users:%d: Match-Profile odnosi siê do nieistniej±cego profila (%s)"
 
 #: radiusd/radck.c:134
 #, c-format
@@ -1044,7 +1044,7 @@ msgstr "users:%d: wielokrotne wyst±pienie atrybuta %s"
 #: radiusd/radck.c:229
 #, c-format
 msgid "%s:%d: attribute %s not allowed in LHS"
-msgstr "%s:%d: atrybut niedozwolony w LHS"
+msgstr "%s:%d: atrybut %s jest niedozwolony w LHS"
 
 #: radiusd/radck.c:272
 msgid "Match-Profile refers to a DEFAULT entry"
@@ -1941,12 +1941,12 @@ msgstr "podstawienie: wymagany `='\n"
 
 #: radtest/main.c:324
 msgid "assign: missing closing quote\n"
-msgstr "podstawienie: brakuj±cy zamykaj±cy cudzys³ów"
+msgstr "podstawienie: brakuj±cy zamykaj±cy cudzys³ów\n"
 
 #: radtest/main.c:343 radtest/main.c:352
 #, c-format
 msgid "assign: invalid IP address: %s\n"
-msgstr "podstawienie: b³êdny adres IP" %s\n"
+msgstr "podstawienie: b³êdny adres IP: %s\n"
 
 #: radtest/main.c:482
 msgid "wrong datatype: expected vector"

@@ -10,8 +10,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-07-19 12:27+0300\n"
-"PO-Revision-Date: 2002-07-19 12:03+0300\n"
+"POT-Creation-Date: 2002-07-22 16:58+0300\n"
+"PO-Revision-Date: 2002-07-22 17:01+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Norwegian-bokmål <no@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -701,7 +701,7 @@ msgstr "<standard ut av %s>:%d: %s"
 #, fuzzy, c-format
 msgid ""
 "can't run external program `%s' (reason reported via syslog channel user."
-"errs)"
+"err)"
 msgstr ""
 "kan ikke kjøre subprocess «%s» (årsaken rapportert gjennom syslogkanalen "
 "«user.err»)"
@@ -1839,15 +1839,10 @@ msgstr "acct katalog:           %s\n"
 
 #: radiusd/version.c:187
 #, c-format
-msgid " deny shell:              %s\n"
-msgstr ""
-
-#: radiusd/version.c:191
-#, c-format
 msgid " pidfile:                 %s\n"
 msgstr " pidfil:                %s\n"
 
-#: radiusd/version.c:193
+#: radiusd/version.c:189
 msgid " no pidfile\n"
 msgstr " intet pidfil\n"
 
@@ -2182,9 +2177,3 @@ msgstr ""
 #, c-format
 msgid "PQexec returned %s"
 msgstr ""
-
-#~ msgid "radius_exec_program(): abnormal child exit"
-#~ msgstr "radius_exec_program(): ugyldig avslutning av underprosess"
-
-#~ msgid "failed in select() - exit."
-#~ msgstr "feil under select() - avslutning."

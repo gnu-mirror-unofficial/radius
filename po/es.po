@@ -1,7 +1,9 @@
 # Spanish messages for GNU Radius
 # Copyright (C) 2002 Free Software Foundation, Inc.
 # This file is distributed under the same license as the GNU Radius package.
-# Sergey Poznyakoff <gray@gnu.org>, 2002.
+#
+# Sergey Poznyakoff       <gray@gnu.org>, 2002.
+# Jaime Tellez Sanchez    <jtellez@telereunion.com.mx>, 2002.       
 #
 # Local Variables:
 # Local IspellDict: espa~nol
@@ -10,8 +12,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-07-19 12:27+0300\n"
-"PO-Revision-Date: 2002-07-19 12:03+0300\n"
+"POT-Creation-Date: 2002-07-22 16:58+0300\n"
+"PO-Revision-Date: 2002-07-23 13:04+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -704,7 +706,7 @@ msgstr "<salida de %s>:%d: %s"
 #, c-format
 msgid ""
 "can't run external program `%s' (reason reported via syslog channel user."
-"errs)"
+"err)"
 msgstr ""
 "no se puede ejecutar programa externo `%s': la razón reportado a través del "
 "canal syslog `user.err'"
@@ -1834,15 +1836,10 @@ msgstr " directorio de archivos de contabilidad: %s\n"
 
 #: radiusd/version.c:187
 #, c-format
-msgid " deny shell:              %s\n"
-msgstr " shell de negación:           %s\n"
-
-#: radiusd/version.c:191
-#, c-format
 msgid " pidfile:                 %s\n"
 msgstr " archivo pid:                 %s\n"
 
-#: radiusd/version.c:193
+#: radiusd/version.c:189
 msgid " no pidfile\n"
 msgstr " sin archivo pid\n"
 

@@ -224,6 +224,9 @@ list_remove(struct list *list, void *data, list_comp_t cmp)
 	for (p = list->head, prev = NULL; p; prev = p, p = p->next)
 		if (cmp(p->data, data) == 0)
 			break;
+
+	if (!p)
+		return 0;
 	_iterator_advance(list->itr, p);
 	if (p == list->head) {
 		list->head = list->head->next;
@@ -231,10 +234,10 @@ list_remove(struct list *list, void *data, list_comp_t cmp)
 			list->tail = NULL;
 	} else 
 		prev->next = p->next;
-
+	
 	if (p == list->tail)
 		list->tail = prev;
-
+	
 	efree(p);
 	list->count--;
 	

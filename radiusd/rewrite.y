@@ -4474,9 +4474,9 @@ va_run_init(name, request, typestr, va_alist)
 }
 
 int
-interpret(fcall, request, type, datum)
+interpret(fcall, req, type, datum)
 	char *fcall;
-	VALUE_PAIR *request;
+	RADIUS_REQ *req;
 	Datatype *type;
 	Datum *datum;
 {
@@ -4484,12 +4484,19 @@ interpret(fcall, request, type, datum)
 	FUNCTION *fun;
 	PARAMETER *parm;
 	int nargs;
-	char **argv;
+	char **argv = NULL;
 	int argc;
 	int i, errcnt = 0;
-
-	if (argcv_get(fcall, "(),", &argc, &argv) || argc < 3) {
+	struct obstack obs;
+	char *args;
+	
+	obstack_init(&obs);
+	args = radius_xlate(&obs, fcall, req, NULL);
+	if (argcv_get(args, "(),", &argc, &argv) || argc < 3) {
 		radlog(L_ERR, _("malformed function call: %s"), fcall);
+		obstack_free(&obs, NULL);
+		if (argv)
+			argcv_free(argc, argv);
 		return 1;
 	}
 
@@ -4509,14 +4516,12 @@ interpret(fcall, request, type, datum)
 	}
 
 	if (errcnt) {
+		obstack_free(&obs, NULL);
 		argcv_free(argc, argv);
 		return 1;
 	}
 	
-	if (setjmp(rw_rt.jmp))
-		return -1;
-	
-	rw_rt.request = request;
+	rw_rt.request = req ? req->request : NULL;
 	if (debug_on(2)) {
 		fp = debug_open_file();
 		fprintf(fp, "Before rewriting:\n");
@@ -4535,11 +4540,24 @@ interpret(fcall, request, type, datum)
 		int n;
 		char *p;
 		
-		if (++nargs > fun->nparm) {
-			radlog(L_ERR, "too many arguments for %s", argv[0]);
+		if (i % 2) {
+			if (argv[i][0] == ',')
+				continue;
+			radlog(L_ERR,
+		        "calling %s: expected ',' but found %s after arg %d",
+			       argv[0], argv[i], parm);
+			obstack_free(&obs, NULL);
 			argcv_free(argc, argv);
 			return -1;
 		}
+
+		if (++nargs > fun->nparm) {
+			radlog(L_ERR, "too many arguments for %s", argv[0]);
+			obstack_free(&obs, NULL);
+			argcv_free(argc, argv);
+			return -1;
+		}
+
 		switch (parm->datatype) {
 		case Integer:
 			n = strtol(argv[i], &p, 0);
@@ -4555,7 +4573,8 @@ interpret(fcall, request, type, datum)
 		}
 		parm++;
 	}
-
+	obstack_free(&obs, NULL);
+	
 	if (fun->nparm != nargs) {
 		radlog(L_ERR,
 		       _("too few arguments for %s"),
@@ -4567,6 +4586,8 @@ interpret(fcall, request, type, datum)
 	argcv_free(argc, argv);
 	
         /* Imitate a function call */
+	if (setjmp(rw_rt.jmp))
+		return -1;
 	rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
 	pushn(0);                         /* Push on stack */
 	run(fun->entry);                  /* call function */

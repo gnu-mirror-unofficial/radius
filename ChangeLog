@@ -1,4 +1,30 @@
-2003-06-12  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+2003-06-13  Sergey Poznyakoff 
+
+	* db/db.m4: Create ippool table
+	* db/mysql.m4: Set privs for ippool
+	* db/pgsql.m4: Likewise.
+	* include/radsql.h: Revised
+	* sql/disp.c: Likewise.
+	* sql/mysql.c: Likewise.
+	* sql/odbc.c: Likewise.
+	* sql/postgres.c: Likewise.
+	* include/rewrite.h (radscm_datum_to_scm)
+	(radscm_scm_to_ival,radscm_rewrite_execute): New declarations.
+	* radiusd/auth.c (sfn_scheme): Explicitly emit warning
+	if the scheme procedure denies authentication.
+	* radiusd/request.c (request_handle): Use request_drop
+	when the maximum number of children is reached.
+	* radiusd/scheme.c (catch_body): Call rscm_server_init
+	(scheme_auth,scheme_acct): Emit a notice if the procedure had
+	failed.
+	* radiusd/sql.c: Revised
+	(sql_exec_query): New function
+	* radscm/ipalloc.scm: New file
+	* radscm/rscm_sql.c: New file
+	* radscm/Makefile.am: Added new files.
+	* radscm/rscm_rewrite.c (rscm_server_init): New function
+	
+2003-06-12  Sergey Poznyakoff
 
 	* configure.ac: Switched to gettext 0.12.1. Raised patchlevel.
 	* include/radius.h (AP_BINARY_STRING): New flag.

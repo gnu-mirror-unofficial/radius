@@ -9,7 +9,8 @@
 	* radiusd/radiusd.c (common_init): Moved
 	the call to system_acct_init() to a postconfig hook,
 	which is executed only in daemon mode.
-
+	* radiusd/sql.c (sql_auth_avail_p): New function
+	
 2004-04-09  Sergey Poznyakoff
 
 	Implemented disabling of system accounting and

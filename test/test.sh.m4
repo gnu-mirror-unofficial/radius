@@ -86,7 +86,7 @@ make_raddb() {
     [[ -d $NAME/acct ]] || mkdir $NAME/acct
     for file in radwtmp radutmp radius.log radius.info radius.debug radius.stderr 
     do
-        cat /dev/null > $NAME/$file
+        cat /dev/null > $NAME/log/$file
     done    
 }
 

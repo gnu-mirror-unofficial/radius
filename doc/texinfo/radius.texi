@@ -136,6 +136,7 @@ Obtaining GNU Radius
 * Glossary::            The glossary
 * Copying::             The GNU General Public License gives you permission
                         to redistribute the program on certain terms
+* Acknowledgements::
 
 Indices
 * Program Index::       Index of programs
@@ -255,7 +256,7 @@ provided and parameters of these services.
 @end table
 
 @comment *******************************************************************
-@node Copying, , Glossary, Top
+@node Copying, Acknowledgements, Glossary, Top
 @unnumbered GNU GENERAL PUBLIC LICENSE
 @center Version 2, June 1991
 
@@ -650,6 +651,33 @@ proprietary programs.  If your program is a subroutine library, you may
 consider it more useful to permit linking proprietary applications with the
 library.  If this is what you want to do, use the GNU Library General
 Public License instead of this License.
+
+@comment *******************************************************************
+@node Acknowledgements, , Copying, Top
+@unnumbered Acknowledgements
+
+I'd like to acknowledge Oswaldo E. Aguirre M. and Francisco J. Obispo S.
+who invested a lot of their time and efforts in debugging and testing
+the program. They also wrote @command{web-radact} --- a web interface
+to the radius database.
+
+Alexandre Oliva provided a lot of good advices and
+offered valuable help in testing Radius on various platforms.
+
+The following people provided many helpful comments, bug reports and
+patches: Dustin Mitchell, Jody Owens, Andrey Y. Mosienko, Oleg Gawriloff,
+Adrian P. van Bloois, Michael Samuel, Michael Smirnov, Andrey Pavlenko,
+Michael Weiser, Eric Salom@'e, Clement Gerouville, Dave Restall,
+Vlad Lungu, Robert Abbate, Jaime Tellez Sanchez, Cornel Cristea,
+Krzysztof Kopera, David Friedman.
+
+Many people need to be thanked for their assistance in producing this
+manual. Lisa M. Goldstein coordinated the edition preparation.
+Joseph C. Fineman and Daniel Barowy did a remarcable job of editing the
+manual.
+
+And of course, thanks to Richard M. Stallman for founding the FSF and
+starting the GNU project.
 
 @node Program Index, Keyword Index, , Top
 @unnumbered Program Index

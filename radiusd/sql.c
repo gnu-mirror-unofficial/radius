@@ -1017,23 +1017,32 @@ rad_sql_acct(authreq)
 
 
 int
-rad_sql_pass(req, passwd)
+rad_sql_pass(req, authdata, passwd)
 	AUTH_REQ *req;
+	char *authdata;
 	char *passwd;
 {
 	int   rc;
 	char *mysql_passwd;
 	struct sql_connection *conn;
-	
+
 	if (sql_cfg.doauth == 0) {
 		radlog(L_ERR,
 		       _("SQL Auth specified in users file, but not in sqlserver file"));
 		return AUTH_FAIL;
 	}
+	
+	if (authdata) {
+		pairadd(&req->request,
+			create_pair(DA_AUTH_DATA,
+				    strlen(authdata),
+				    authdata, 0));
+	}
 	radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
 		     sql_cfg.auth_query,
 		     req->request, NULL);
-
+	pairdelete(&req->request, DA_AUTH_DATA);
+	
 	conn = attach_sql_connection(SQL_AUTH, (qid_t)req);
 	mysql_passwd = rad_sql_getpwd(conn, sql_cfg.buf.ptr);
 	

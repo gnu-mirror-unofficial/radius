@@ -1724,6 +1724,6 @@ VALUE      Proxy-Replied     No                   0
 VALUE      Proxy-Replied     Yes                  1       
 @end smallexample
 
-The @command{radiusd} adds this attribute to the incoming request if it
+@command{radiusd} adds this attribute to the incoming request if it
 was already processed by a remote radius server.
 

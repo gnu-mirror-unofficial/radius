@@ -185,7 +185,7 @@ the constructed entry is also appended to WTMP_FILE.")
                                 ut.proto = dv->value;
                         } else
                                 scm_misc_error(FUNC_NAME,
-                                               "~S: Proto should be integert or\ string",
+                                    "~S: Proto should be integer or string",
                                                SCM_LIST1(elt));
                         break;
                         

@@ -11,21 +11,18 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # $Id$
 
-if expr ${SOURCEDIR:?} : '\..*' 2>/dev/null 1>&2; then
-    SOURCEDIR="`pwd`/$SOURCEDIR"
-fi
-if expr ${BUILDDIR:?} : '\..*' 2>/dev/null 1>&2; then
-    BUILDDIR="`pwd`/$BUILDDIR"
-fi
-
 PROG=$0
-RADTEST=$BUILDDIR/radtest/radtest
-RADIUSD=$BUILDDIR/radiusd/radiusd
+RADTEST=
+RADIUSD=
 DRIVER=
 
 while [ $# -gt 0 ]
 do
     case $1 in
+    --srcdir)
+	SOURCEDIR=$2; shift 2;;
+    --builddir)
+	BUILDDIR=$2; shift 2;;
     --radiusd)
 	RADIUSD=$2; shift 2;;
     --radtest)
@@ -38,6 +35,20 @@ do
     esac
 done
 
+if expr ${SOURCEDIR:?} : '\..*' 2>/dev/null 1>&2; then
+    SOURCEDIR="`pwd`/$SOURCEDIR"
+fi
+if expr ${BUILDDIR:?} : '\..*' 2>/dev/null 1>&2; then
+    BUILDDIR="`pwd`/$BUILDDIR"
+fi
+
+if [ "$RADTEST" = "" ]; then
+    RADTEST=$BUILDDIR/radtest/radtest
+fi
+if [ "$RADIUSD" = "" ]; then    
+    RADIUSD=$BUILDDIR/radiusd/radiusd
+fi
+    
 cd $BUILDDIR/test
 
 if [ ! -f raddb/config.in ]; then

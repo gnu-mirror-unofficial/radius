@@ -120,20 +120,38 @@ _pam_debug(format, va_alist)
 	va_end(args);
 }
 
-void
-radlog(unused, format, va_alist)
-	int unused;
-	char *format;
-	va_dcl
-{
-	char buf[128];
-	va_list args;
 
-	va_start(args);
-	vsnprintf(buf, sizeof(buf), format, args);
-	va_end(args);
-	_pam_log(LOG_ERR, "%s", buf);
+/* Maps radius priorities into syslog ones */
+int priority[] = {
+	LOG_EMERG,
+	LOG_ALERT,
+	LOG_CRIT,
+	LOG_ERR,
+	LOG_WARNING,
+	LOG_NOTICE,
+	LOG_INFO,
+	LOG_DEBUG
+};
+
+
+void
+vlog(level, file, line, func_name, errno, fmt, ap)
+	int level;
+	char *file;
+	int line;
+	char *func_name;
+	int errno;
+	char *fmt;
+	va_list ap;
+{
+	openlog("pam_radius", LOG_CONS|LOG_PID, LOG_AUTH);
+	vsyslog(priority[level & L_PRIMASK], fmt, ap);
+	if (errno)
+		syslog(priority[L_MASK(level)], "syserr: %s (%d)",
+		       strerror(errno), errno);
+	closelog();
 }
+
 
 
 #define CNTL_DEBUG       0x0001

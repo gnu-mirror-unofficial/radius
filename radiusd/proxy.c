@@ -523,7 +523,6 @@ proxy_send(authreq, activefd)
 		       what, client_name(authreq->ipaddr),
 		       namepair->strvalue);
 		efree(saved_username);
-		authfree(authreq);
 		return -1;
 	}
 
@@ -569,6 +568,7 @@ proxy_send(authreq, activefd)
 	if (pp->next) {
 		VALUE_PAIR *p = pp->next;
 		pp->next = p->next;
+		p->next = NULL;  /* be sure to delete *only* this pair */
 		pairfree(p);
 	}
 #if 1	
@@ -603,7 +603,8 @@ proxy_compare_request(data, oldreq)
 	struct proxy_data *data;
 	AUTH_REQ *oldreq;
 {
-	debug(1, ("oldreq->id %d", oldreq->id));
+	debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x", 
+		oldreq->id,data->state->id,myip,data->state->ipaddr));
 	
 	if (data->state->ipaddr     == myip &&
 	    data->state->id         == oldreq->id) 
@@ -625,8 +626,12 @@ proxy_compare_request_no_state(data, oldreq)
 	struct proxy_data *data;
 	AUTH_REQ *oldreq;
 {
-	debug(1, ("oldreq->id %d", oldreq->id));
-		
+	debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x",
+		oldreq->server_id,
+		data->authreq->id,
+		oldreq->server_ipaddr,
+		data->authreq->ipaddr));
+			
 	if (data->authreq->ipaddr == oldreq->server_ipaddr &&
 	    data->authreq->id     == oldreq->server_id)
 		return 0;

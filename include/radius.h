@@ -180,7 +180,6 @@ typedef struct radius_req {
         int                     data_len;     /* Length of raw data */
         int                     data_alloced; /* Was the data malloced */
         void                    *conn;        /* SQL connection */
-        int                     fd;           /* socket desc */
         /* Proxy support fields */
         char                    *realm;       /* stringobj, actually */
         int                     validated;    /* Already md5 checked */

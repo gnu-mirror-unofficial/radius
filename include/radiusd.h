@@ -73,16 +73,30 @@ typedef struct request_class {
         int  max_requests;    /* Max.number of pending requests of this type */
         int  ttl;             /* Request time-to-live */
         int  cleanup_delay;   /* Delay before cleaning the completed request */
-        int  spawn;           /* execute handler as a separate process */
+	int  (*setup)();      /* Setup function */
         int  (*handler)();    /* Handler function */
         void (*xmit)();       /* Retransmit function */
         int  (*comp)();       /* Compare function */
         void (*free)();       /* Free */
         void (*drop)();       /* Drop request error message */
-        int  (*setup)();      /* Setup function */
         void (*cleanup)();    /* Cleanup function */
 } REQUEST_CLASS;
 
+
+#define RS_WAITING   0
+#define RS_PENDING   1
+#define RS_COMPLETED 2
+
+typedef struct request {
+        struct request *next;         /* Link to the next request */
+        int             type;         /* request type */
+	int             status;       /* request status */
+        time_t          timestamp;    /* when was the request accepted */
+        pthread_t       child_id;     /* ID of the handling process (or -1) */
+        int             child_return; /* Child return code if completed */
+        void           *data;         /* Request-specific data */
+	int             fd;           /* socket the request came from */
+} REQUEST;
 
 typedef int QUEUE_STAT[R_MAX][2];
         
@@ -249,6 +263,9 @@ extern char *message_text[MSG_COUNT];
 extern char *username_valid_chars;
 extern unsigned long stat_start_time;
 extern REQUEST_CLASS    request_class[];
+extern pthread_attr_t thread_attr;
+extern int max_threads;
+extern int num_threads;
 
 #ifdef USE_SNMP
 extern int snmp_port;
@@ -420,3 +437,13 @@ void scheme_debug(int val);
 int scheme_auth(char *procname, RADIUS_REQ *req,
                 VALUE_PAIR *user_check, VALUE_PAIR **user_reply_ptr);
 int scheme_acct(char *procname, RADIUS_REQ *req);
+
+int request_start_thread();
+void request_signal();
+REQUEST *request_put(int type, void *data, int fd, unsigned *numpending);
+REQUEST *request_get();
+int request_flush_list();
+int request_stat_list(QUEUE_STAT stat);
+void request_handle(REQUEST *req);
+void *request_scan_list(int type, int (*handler)(), void *closure);
+	

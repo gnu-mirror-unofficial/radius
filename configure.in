@@ -12,7 +12,7 @@
 AC_REVISION($Revision$)
 AC_INIT(radiusd/radiusd.c)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(gnu-radius, 0.94.6)
+AM_INIT_AUTOMAKE(gnu-radius, 0.95-pre)
 AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 
@@ -124,8 +124,39 @@ AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  mkdir mktime select socket strdup strtol lockf \
- strncasecmp getopt_long setlocale strerror bzero \
+ strncasecmp setlocale strerror bzero \
  regcomp inet_ntoa inet_aton setvbuf seteuid setreuid getdtablesize) 
+
+## Check for getopt_long. This can't be done in AC_CHECK_FUNCS since
+## the function can be present in different libraries (namely, libmysqlclient)
+## but the necessary header files can be absent, thus AC_CHECK_FUNCS will
+## mark function as existent, wherease the compilation will bail out.
+AC_CACHE_CHECK([for getopt_long], rad_cv_func_getopt_long,
+ [AC_TRY_RUN([
+#include <unistd.h>
+#ifdef HAVE_GETOPT_H
+# include <getopt.h>
+#endif
+
+struct option longopt[] = {
+	"help",    no_argument,       0, 'h',
+        (char*)0
+};
+
+main(argc, argv)
+int argc; char **argv;
+{
+	getopt_long(argc, argv, "h", longopt, (int*)0);
+	return 0;
+}],
+rad_cv_func_getopt_long=yes,
+rad_cv_func_getopt_long=no,
+rad_cv_func_getopt_long=no)])
+
+if test x$rad_cv_func_getopt_long = xyes ; then
+	AC_DEFINE(HAVE_GETOPT_LONG)
+fi
+    
 
 AC_MSG_CHECKING(for sys_errlist and sys_nerr)
 AC_TRY_RUN(

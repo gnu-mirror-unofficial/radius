@@ -18,7 +18,7 @@
 AC_PREREQ(2.57)
 
 AC_REVISION($Revision$)
-AC_INIT(GNU Radius, 0.99.101, bug-gnu-radius@gnu.org)
+AC_INIT(GNU Radius, 0.99.102, bug-gnu-radius@gnu.org)
 AC_CONFIG_SRCDIR(radiusd/radiusd.c)
 AC_CONFIG_AUX_DIR([scripts])
 AC_CANONICAL_SYSTEM
@@ -164,7 +164,7 @@ AC_CHECK_HEADERS(argp.h fcntl.h malloc.h strings.h\
 
 ## * Check for national language support
 AM_GNU_GETTEXT(no-libtool, need-ngettext)
-AM_GNU_GETTEXT_VERSION(0.11.5)
+AM_GNU_GETTEXT_VERSION(0.12.1)
 if test ".$BUILD_INCLUDED_LIBINTL" = ".yes" ; then
 	AC_DEFINE(WITH_INCLUDED_LIBINTL,1,
                   [Define if the included libintl is used])

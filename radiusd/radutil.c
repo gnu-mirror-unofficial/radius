@@ -145,7 +145,6 @@ attr_to_str(obp, req, pairlist, attr, defval)
 			int len;
 			decrypt_password(string, pair,
 					 req->vector, req->secret);
-			string[AUTH_STRING_LEN] = '\0';
 			len = strlen(string);
 			obstack_grow(obp, string, len);
 		} else {

@@ -1,3 +1,67 @@
+2002-06-07  Sergey Poznyakoff  
+
+	* configure.ac: Check for declarations of (v)asprintf and getline
+
+	* lib/Makefile.am: Fixed lint rules.
+	* radiusd/Makefile.am: Likewise
+	* radlast/Makefile.am: Likewise
+	* radtest/Makefile.am: Likewise.
+
+	Linted and cleaned up some bugs. Files affected:
+
+	* include/obstack1.h,
+	* include/radius.h,
+	* include/radiusd.h,
+	* include/radscm.h,
+	* include/rewrite.h,
+	* include/symtab.h,
+	* include/sysdep.h,
+	* include/snmp/snmp.h,
+	* lib/ascend.c,
+	* lib/client.c,
+	* lib/debug.c,
+	* lib/dict.c,
+	* lib/envar.c,
+	* lib/iputil.c,
+	* lib/logger.c,
+	* lib/nas.c,
+	* lib/radargp.c,
+	* lib/raddb.c,
+	* lib/radpdu.c,
+	* lib/radsrv.c,
+	* lib/radutmp.c,
+	* lib/realms.c,
+	* lib/slist.c,
+	* lib/symtab.c,
+	* lib/users.y,
+	* lib/util.c,
+	* radiusd/acct.c,
+	* radiusd/auth.c,
+	* radiusd/config.y,
+	* radiusd/exec.c,
+	* radiusd/files.c,
+	* radiusd/log.c,
+	* radiusd/menu.c,
+	* radiusd/proxy.c,
+	* radiusd/radck.c,
+	* radiusd/radius.c,
+	* radiusd/radiusd.c,
+	* radiusd/snmpserv.c,
+	* radiusd/sql.c,
+	* radiusd/stat.c,
+	* radlast/radlast.c,
+	* radtest/gram.y,
+	* radtest/input.l,
+	* radtest/main.c,
+	* radtest/radtest.h,
+	* snmplib/snmp_oid.c,
+	* snmplib/snmp_recv.c,
+	* snmplib/snmp_send.c,
+	* test/findport.c.
+
+	* po/es.po: Updated
+	* po/no.po: Updated
+	
 2002-06-06  Sergey Poznyakoff
 
 	* TODO: Updated.

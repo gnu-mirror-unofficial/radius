@@ -807,7 +807,7 @@ huntgroup_match(RADIUS_REQ *req, char *huntgroup)
  *         -1 on error.
  */
 int
-huntgroup_access(RADIUS_REQ *radreq)
+huntgroup_access(RADIUS_REQ *radreq, LOCUS *loc)
 {
         VALUE_PAIR      *pair;
         MATCHING_RULE   *rule;
@@ -832,6 +832,8 @@ huntgroup_access(RADIUS_REQ *radreq)
 	iterator_destroy(&itr);
 	
         if (rule) {
+		if (loc)
+			*loc = rule->loc;
 		radius_req_register_locus(radreq, &rule->loc);
 #ifdef DA_REWRITE_FUNCTION
 		if ((pair = avl_find(rule->lhs, DA_REWRITE_FUNCTION)) != NULL

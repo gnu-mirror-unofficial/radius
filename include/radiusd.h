@@ -481,7 +481,7 @@ int user_find(char *name, RADIUS_REQ *, VALUE_PAIR **, VALUE_PAIR **);
 int userparse(char *buf, VALUE_PAIR **first_pair, char **errmsg);
 void presuf_setup(VALUE_PAIR *request_pairs);
 int hints_setup(RADIUS_REQ *request);
-int huntgroup_access(RADIUS_REQ *radreq);
+int huntgroup_access(RADIUS_REQ *radreq, LOCUS *loc);
 CLIENT *client_lookup_ip(UINT4 ipno);
 char *client_lookup_name(UINT4 ipno, char *buf, size_t size);
 int read_clients_file(char *);

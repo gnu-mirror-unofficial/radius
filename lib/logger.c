@@ -97,20 +97,20 @@ rad_print_request(req, outbuf, size)
 	if (stat_pair) {
 		VALUE_PAIR *sid_pair = avl_find(req->request,
 						DA_ACCT_SESSION_ID);
-		DICT_VALUE *dval = value_lookup(stat_pair->lvalue,
+		DICT_VALUE *dval = value_lookup(stat_pair->avp_lvalue,
 						"Acct-Status-Type");
 		char nbuf[64], *stat;
 
 		if (dval)
 			stat = dval->name;
 		else {
-			snprintf(nbuf, sizeof nbuf, "%ld", sid_pair->lvalue);
+			snprintf(nbuf, sizeof nbuf, "%ld", sid_pair->avp_lvalue);
 			stat = sbuf;
 		}
 				 
 		snprintf(sbuf, sizeof sbuf,
 			 " %s %s",
-			 stat, sid_pair ? sid_pair->strvalue : "(none)");
+			 stat, sid_pair ? sid_pair->avp_strvalue : "(none)");
 	}
 
 	name_pair = avl_find(req->request, DA_USER_NAME);
@@ -118,7 +118,7 @@ rad_print_request(req, outbuf, size)
 		 auth_code_abbr(req->code),
 		 nas_request_to_name(req, nasbuf, sizeof nasbuf),
 		 req->id,
-		 name_pair ? name_pair->strvalue : "[none]",
+		 name_pair ? name_pair->avp_strvalue : "[none]",
 		 sbuf);
 	return outbuf;
 }

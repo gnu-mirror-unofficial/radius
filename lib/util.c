@@ -47,7 +47,7 @@ static char rcsid[] =
 RADIUS_REQ *
 radreq_alloc()
 {
-        return Alloc_entry(RADIUS_REQ);
+        return mem_alloc(sizeof(RADIUS_REQ));
 }
 
 /* Free a RADIUS_REQ struct.
@@ -56,12 +56,12 @@ void
 radreq_free(radreq)
         RADIUS_REQ *radreq;
 {
-	free_string(radreq->remote_user);
+	string_free(radreq->remote_user);
         avl_free(radreq->reply_pairs);
         efree(radreq->reply_msg);
         avl_free(radreq->server_reply);
         avl_free(radreq->request);
-        free_request(radreq);
+        mem_free(radreq);
 }
 
 
@@ -355,7 +355,7 @@ format_vendor_pair(buf, pair)
 {
         int n;
         UINT4 vendor;
-        u_char *ptr = (u_char*)pair->strvalue;
+        u_char *ptr = (u_char*)pair->avp_strvalue;
         char buf1[64];
         char *bufp = buf;
         
@@ -370,7 +370,7 @@ format_vendor_pair(buf, pair)
                 bufp += n;
         }
         
-        return n + format_string_visual(bufp, 4, ptr, pair->strlength - 4);
+        return n + format_string_visual(bufp, 4, ptr, pair->avp_strlength - 4);
 }
                 
 char *
@@ -391,14 +391,14 @@ format_pair(pair, savep)
         switch (pair->eval ? TYPE_STRING : pair->type) {
         case TYPE_STRING:
                 if (pair->attribute != DA_VENDOR_SPECIFIC) {
-                        int len = strlen (pair->strvalue);
-                        if (len != pair->strlength-1)
-                                len = pair->strlength;
+                        int len = strlen (pair->avp_strvalue);
+                        if (len != pair->avp_strlength-1)
+                                len = pair->avp_strlength;
                         format_string_visual(buf2, 4,
-                                             pair->strvalue, len);
-                } else if (pair->strlength < 6) 
+                                             pair->avp_strvalue, len);
+                } else if (pair->avp_strlength < 6) 
                         snprintf(buf2, sizeof(buf2),
-                                 "[invalid length: %d]", pair->strlength);
+                                 "[invalid length: %d]", pair->avp_strlength);
                 else {
                         int len = format_vendor_pair(NULL, pair);
                         buf2ptr = malloc(len+1);
@@ -414,23 +414,23 @@ format_pair(pair, savep)
                                         
         case TYPE_INTEGER:
                 if (pair->name)
-                        dval = value_lookup(pair->lvalue, pair->name);
+                        dval = value_lookup(pair->avp_lvalue, pair->name);
                 else
                         dval = NULL;
                 
                 if (!dval)
-                        snprintf(buf2, sizeof(buf2), "%lu", pair->lvalue);
+                        snprintf(buf2, sizeof(buf2), "%lu", pair->avp_lvalue);
                 else
                         snprintf(buf2, sizeof(buf2), "%s", dval->name);
                 break;
                 
         case TYPE_IPADDR:
-                ip_iptostr(pair->lvalue, buf2);
+                ip_iptostr(pair->avp_lvalue, buf2);
                 break;
                 
         case TYPE_DATE:
                 strftime(buf2, sizeof(buf2), "\"%b %e %Y\"",
-                         localtime_r((time_t *)&pair->lvalue, &tm));
+                         localtime_r((time_t *)&pair->avp_lvalue, &tm));
                 break;
         default:
                 strncpy(buf2, "[UNKNOWN DATATYPE]", sizeof(buf2));

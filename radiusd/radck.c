@@ -107,7 +107,7 @@ mark_list(datum, sym, list)
 
         if (p = avl_find(list, DA_MATCH_PROFILE)) {
                 do {
-                        mark_profile(datum, sym, p->strvalue);
+                        mark_profile(datum, sym, p->avp_strvalue);
                 } while (p->next &&
                          (p = avl_find(p->next, DA_MATCH_PROFILE)));
         }
@@ -264,8 +264,8 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
                         break;
 
                 case DA_MATCH_PROFILE:
-                        if (strncmp(p->strvalue, "DEFAULT", 7) == 0 ||
-                            strncmp(p->strvalue, "BEGIN", 5) == 0) {
+                        if (strncmp(p->avp_strvalue, "DEFAULT", 7) == 0 ||
+                            strncmp(p->avp_strvalue, "BEGIN", 5) == 0) {
                                 radlog(L_ERR,
 				       "%s:%d: %s",
                                        filename, line,
@@ -290,12 +290,12 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
                         type = DV_AUTH_TYPE_CRYPT_LOCAL;
                         crypt_password->attribute = DA_USER_PASSWORD;
                 } else if (password) {
-                        if (!strcmp(password->strvalue, "UNIX"))
+                        if (!strcmp(password->avp_strvalue, "UNIX"))
                                 type = DV_AUTH_TYPE_SYSTEM;
-                        else if (!strcmp(password->strvalue, "PAM"))
+                        else if (!strcmp(password->avp_strvalue, "PAM"))
                                 type = DV_AUTH_TYPE_PAM;
-                        else if (!strcmp(password->strvalue, "MYSQL")
-                                 || !strcmp(password->strvalue, "SQL"))
+                        else if (!strcmp(password->avp_strvalue, "MYSQL")
+                                 || !strcmp(password->avp_strvalue, "SQL"))
                                 type = DV_AUTH_TYPE_MYSQL;
                         else
                                 type = DV_AUTH_TYPE_LOCAL;
@@ -306,7 +306,7 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
                 avl_add_pair(pairs, auth_type);
         }
         
-        switch (auth_type->lvalue) {
+        switch (auth_type->avp_lvalue) {
         case DV_AUTH_TYPE_LOCAL:
                 if (!password && !pass_loc) {
                         radlog(L_ERR,

@@ -78,10 +78,10 @@ append_symbol(closure, sym)
                 *q++ = vp->type;
                 *q++ = vp->operator;
                 if (vp->type == TYPE_STRING) {
-                        strcpy((char*)q, vp->strvalue);
-                        q += NINT(vp->strlength+1);
+                        strcpy((char*)q, vp->avp_strvalue);
+                        q += NINT(vp->avp_strlength+1);
                 } else
-                        *q++ = vp->lvalue;
+                        *q++ = vp->avp_lvalue;
         }
         *q++ = reply_len;
         for (vp = sym->reply; vp; vp = vp->next) {
@@ -89,10 +89,10 @@ append_symbol(closure, sym)
                 *q++ = vp->type;
                 *q++ = vp->operator;
                 if (vp->type == TYPE_STRING) {
-                        strcpy((char*)q, vp->strvalue);
-                        q += NINT(vp->strlength+1);
+                        strcpy((char*)q, vp->avp_strvalue);
+                        q += NINT(vp->avp_strlength+1);
                 } else
-                        *q++ = vp->lvalue;
+                        *q++ = vp->avp_lvalue;
         }
         
         if (strncmp(sym->name, "DEFAULT", 7) == 0) 
@@ -123,7 +123,7 @@ list_length(vp)
         for (len = 0; vp; vp = vp->next) {
                 len += 3;
                 if (vp->type == TYPE_STRING)
-                        len += NINT(vp->strlength + 1);
+                        len += NINT(vp->avp_strlength + 1);
                 else
                         len++;
         }
@@ -196,11 +196,11 @@ decode_dbm(pptr)
                 next_pair->type = *ptr++;
                 next_pair->operator = *ptr++;
                 if (next_pair->type == TYPE_STRING) {
-                        next_pair->strvalue = make_string((char*)ptr);
-                        next_pair->strlength = strlen(next_pair->strvalue);
-                        ptr += NINT(next_pair->strlength+1);
+                        next_pair->avp_strvalue = string_create((char*)ptr);
+                        next_pair->avp_strlength = strlen(next_pair->avp_strvalue);
+                        ptr += NINT(next_pair->avp_strlength+1);
                 } else
-                        next_pair->lvalue = *ptr++;
+                        next_pair->avp_lvalue = *ptr++;
                 next_pair->name = NULL;
                 if (last_pair)
                         last_pair->next = next_pair;
@@ -267,13 +267,13 @@ dbm_find(file, name, req, check_pairs, reply_pairs)
                         int dummy;
                         char *name;
                         
-                        debug(1, ("submatch: %s", p->strvalue));
-                        name = dup_string(p->strvalue);
+                        debug(1, ("submatch: %s", p->avp_strvalue));
+                        name = string_dup(p->avp_strvalue);
                         if (!dbm_match(file, name, _dbm_dup_name,
                                        req,
                                        &check_tmp, &reply_tmp, &dummy))
                                 ret = 0;
-                        free_string(name);
+                        string_free(name);
                 } 
                 
                 if (ret == 1) {
@@ -352,13 +352,13 @@ dbm_match(dbmfile, name, fn, req, check_pairs, reply_pairs, fallthru)
                         int dummy;
                         char *name;
                         
-                        debug(1, ("next: %s", p->strvalue));
-                        name = dup_string(p->strvalue);
+                        debug(1, ("next: %s", p->avp_strvalue));
+                        name = string_dup(p->avp_strvalue);
                         avl_delete(reply_pairs, DA_MATCH_PROFILE);
                         dbm_match(dbmfile, name, _dbm_dup_name,
                                   req,
                                   check_pairs, reply_pairs, &dummy);
-                        free_string(name);
+                        string_free(name);
                 }
 
                 if (!fallthrough(*reply_pairs))

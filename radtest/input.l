@@ -84,7 +84,7 @@ send    return SEND;
 expect  return EXPECT;
 exit    return EXIT;
 {IDENTIFIER} {
-        yylval.string = make_string(yytext);
+        yylval.string = string_create(yytext);
         return NAME;
 }
 \${IDENTIFIER} return deref_var(yytext+1, NULL);
@@ -123,7 +123,7 @@ exit    return EXIT;
         return type;
 }
 \"[^\\"]*\" {
-        yylval.string = alloc_string(yyleng - 1);
+        yylval.string = string_alloc(yyleng - 1);
         memcpy(yylval.string, yytext+1, yyleng - 2);
         yylval.string[yyleng-2] = 0;
         return QUOTE;
@@ -168,7 +168,7 @@ exit    return EXIT;
 <STRING>[^\\"]*\" {
         BEGIN(INITIAL);
         add_str(yytext, yyleng - 1);
-        yylval.string = make_string(end_str());
+        yylval.string = string_create(end_str());
         return QUOTE;
 }
 {DQ} {
@@ -403,7 +403,7 @@ deref_var(name, p)
                 p = NULL;
                 n = 0;
                 getline(&p, &n, stdin);
-                yylval.string = make_string(p);
+                yylval.string = string_create(p);
                 free(p);
                 type = QUOTE;
                 break;
@@ -417,7 +417,7 @@ deref_var(name, p)
                 p = getpass(p);
                 if (!p)
                         exit(0);
-                yylval.string = make_string(p);
+                yylval.string = string_create(p);
                 type = QUOTE;
                 break;
         }
@@ -433,12 +433,12 @@ deref_parm(num, p)
         size_t n;
         
         if (num < x_argc && x_argv[num]) {
-                yylval.string = make_string(x_argv[num]);
+                yylval.string = string_create(x_argv[num]);
                 return QUOTE;
         }
         
         if (!p) {
-                yylval.string = make_string("");
+                yylval.string = string_create("");
                 return QUOTE;
         }
         
@@ -448,13 +448,13 @@ deref_parm(num, p)
                         x_argmax = num;
                         x_argv = erealloc(x_argv, sizeof(x_argv[0])*(num+1));
                 }
-                x_argv[num] = make_string(p);
+                x_argv[num] = string_create(p);
                 x_argc = num+1;
                 yylval.string = x_argv[num];
                 break;
                 
         case '-':
-                yylval.string = make_string(p);
+                yylval.string = string_create(p);
                 break;
                 
         case '?':
@@ -475,7 +475,7 @@ deref_parm(num, p)
                 p = NULL;
                 n = 0;
                 getline(&p, &n, stdin);
-                yylval.string = make_string(p);
+                yylval.string = string_create(p);
                 free(p);
                 break;
                 
@@ -488,7 +488,7 @@ deref_parm(num, p)
                 p = getpass(p);
                 if (!p)
                         exit(0);
-                yylval.string = make_string(p);
+                yylval.string = string_create(p);
                 break;
         }
         return QUOTE;

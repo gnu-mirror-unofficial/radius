@@ -254,7 +254,7 @@ pair          : NAME op string
                         $$ = install_pair(source_filename,
                                           source_line_num, 
                                           $1, $2, $3);
-                        free_string($3);
+                        string_free($3);
                 }
               ;
 
@@ -264,7 +264,7 @@ string        : QUOTE
                 {
                         char buf[64];
                         sprintf(buf, "%d", $1);
-                        $$ = make_string(buf);
+                        $$ = string_create(buf);
                 }
               | IDENT
                 {
@@ -274,7 +274,7 @@ string        : QUOTE
                 {
                         char buf[DOTTED_QUAD_LEN];
                         ip_iptostr($1, buf);
-                        $$ = make_string(buf);
+                        $$ = string_create(buf);
                 }
               ;
 
@@ -320,7 +320,7 @@ value         : NUMBER
                 {
                         $$.name = NULL;
                         $$.type = String;
-                        $$.datum.string = make_string($1);
+                        $$.datum.string = string_create($1);
                 }
               | IDENT
                 {
@@ -435,26 +435,26 @@ subscript(var, attr_name, all, ret_var)
                         /* First, count total length of all attribute
                            instances in the packet */
                         for (p = pair; p; p = avl_find(p->next, dict->value)) 
-                                length += p->strlength;
+                                length += p->avp_strlength;
 
-                        cp = ret_var->datum.string = alloc_string(length+1);
+                        cp = ret_var->datum.string = string_alloc(length+1);
                         /* Fill in the string contents */
                         for (p = pair; p; p = avl_find(p->next, dict->value)) {
-                                memcpy(cp, p->strvalue, p->strlength);
-                                cp += p->strlength;
+                                memcpy(cp, p->avp_strvalue, p->avp_strlength);
+                                cp += p->avp_strlength;
                         }
                         *cp = 0;
                 } else
-                        ret_var->datum.string = dup_string(pair->strvalue);
+                        ret_var->datum.string = string_dup(pair->avp_strvalue);
                 break;
         case TYPE_INTEGER:
         case TYPE_DATE:
                 ret_var->type = Integer;
-                ret_var->datum.number = pair->lvalue;
+                ret_var->datum.number = pair->avp_lvalue;
                 break;
         case TYPE_IPADDR:
                 ret_var->type = Ipaddress;
-                ret_var->datum.ipaddr = pair->lvalue;
+                ret_var->datum.ipaddr = pair->avp_lvalue;
                 break;
         default:
                 radlog(L_CRIT,

@@ -229,8 +229,8 @@ install_pair(file, line, name, op, valstr)
 
         if (valstr[0] == '=') {
                 pair->eval = 1;
-                pair->strvalue = make_string(valstr+1);
-                pair->strlength = strlen(pair->strvalue);
+                pair->avp_strvalue = string_create(valstr+1);
+                pair->avp_strlength = strlen(pair->avp_strvalue);
                 return pair;
         }
 
@@ -249,8 +249,8 @@ install_pair(file, line, name, op, valstr)
                         }
                 }
 
-		pair->strvalue = make_string(valstr);
-                pair->strlength = strlen(pair->strvalue);
+		pair->avp_strvalue = string_create(valstr);
+                pair->avp_strlength = strlen(pair->avp_strvalue);
 		
 		if (attr->parser && attr->parser(pair, &s)) {
 			radlog(L_ERR, "%s:%d: %s %s: %s",
@@ -275,13 +275,13 @@ install_pair(file, line, name, op, valstr)
                                         break;
                         if (*s) {
                                 pair->type = TYPE_STRING;
-                                pair->strvalue = make_string(valstr);
-                                pair->strlength = strlen(pair->strvalue);
+                                pair->avp_strvalue = string_create(valstr);
+                                pair->avp_strlength = strlen(pair->avp_strvalue);
                                 break;
                         }
                 }
                 if (isdigit(*valstr)) {
-                        pair->lvalue = atoi(valstr);
+                        pair->avp_lvalue = atoi(valstr);
                 } else if ((dval = value_name_to_value(valstr, pair->attribute)) == NULL) {
                         avp_free(pair);
                         radlog(L_ERR,
@@ -289,13 +289,13 @@ install_pair(file, line, name, op, valstr)
 			       file, line, valstr, name);
                         return NULL;
                 } else {
-                        pair->lvalue = dval->value;
+                        pair->avp_lvalue = dval->value;
                 }
                 break;
 
         case TYPE_IPADDR:
                 if (pair->attribute != DA_FRAMED_IP_ADDRESS) {
-                        pair->lvalue = ip_gethostaddr(valstr);
+                        pair->avp_lvalue = ip_gethostaddr(valstr);
                 } else {
                         /*
                          *      We allow a "+" at the end to
@@ -311,7 +311,7 @@ install_pair(file, line, name, op, valstr)
                                         x = 1;
                                 }
                         }
-                        pair->lvalue = ip_gethostaddr(valstr);
+                        pair->avp_lvalue = ip_gethostaddr(valstr);
 
                         /*
                          *      Add an extra (hidden) attribute.
@@ -321,7 +321,7 @@ install_pair(file, line, name, op, valstr)
                         pair2->name = "Add-Port-To-IP-Address";
                         pair2->attribute = DA_ADD_PORT_TO_IP_ADDRESS;
                         pair2->type = TYPE_INTEGER;
-                        pair2->lvalue = x;
+                        pair2->avp_lvalue = x;
                         pair2->next = pair;
                         pair = pair2;
                 }
@@ -338,9 +338,9 @@ install_pair(file, line, name, op, valstr)
                         return NULL;
                 }
 #ifdef TIMELOCAL
-                pair->lvalue = (UINT4)timelocal(tm);
+                pair->avp_lvalue = (UINT4)timelocal(tm);
 #else /* TIMELOCAL */
-                pair->lvalue = (UINT4)mktime(tm);
+                pair->avp_lvalue = (UINT4)mktime(tm);
 #endif /* TIMELOCAL */
                 break;
 

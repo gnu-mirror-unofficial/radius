@@ -300,7 +300,7 @@ channel_free(chan)
         efree(chan->name);
         if (chan->mode == LM_FILE)
                 efree(chan->id.file);
-        free_entry(chan);
+        mem_free(chan);
 }
 
 void
@@ -409,7 +409,7 @@ register_channel(chan)
         } else if (chan->mode == LM_SYSLOG) {
         } 
 
-        channel = alloc_entry(sizeof(*channel));
+        channel = mem_alloc(sizeof(*channel));
         channel->name = estrdup(chan->name);
         channel->mode = chan->mode;
         if (chan->mode == LM_FILE)
@@ -450,7 +450,7 @@ Chanlist *
 make_chanlist(chan)
         Channel *chan;
 {
-        Chanlist *cl = alloc_entry(sizeof(*cl));
+        Chanlist *cl = mem_alloc(sizeof(*cl));
         cl->next = NULL;
         cl->chan = chan;
         return cl;

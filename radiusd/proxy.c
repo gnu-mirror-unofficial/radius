@@ -79,7 +79,7 @@ next_proxy_id(ipaddr)
                 if (p->ipaddr == ipaddr)
                         break;
         if (!p) {
-                p = alloc_entry(sizeof *p);
+                p = mem_alloc(sizeof *p);
                 p->ipaddr = ipaddr;
                 p->id = 0;
                 p->next = proxy_id;
@@ -103,7 +103,7 @@ proxy_cleanup()
                                 prev->next = next;
                         else
                                 proxy_id = next;
-                        free_entry(p);
+                        mem_free(p);
                 }
                 p = next;
         }
@@ -185,10 +185,10 @@ proxy_send_request(fd, radreq)
         p->name = "Proxy-State";
         p->attribute = DA_PROXY_STATE;
         p->type = TYPE_STRING;
-        p->strlength = sizeof(PROXY_STATE);
-        p->strvalue = alloc_string(p->strlength);
+        p->avp_strlength = sizeof(PROXY_STATE);
+        p->avp_strvalue = string_alloc(p->avp_strlength);
         
-        proxy_state = (PROXY_STATE *)p->strvalue;
+        proxy_state = (PROXY_STATE *)p->avp_strvalue;
 	       
         proxy_state->ipaddr = get_socket_addr(fd);
         proxy_state->id = radreq->id;
@@ -253,7 +253,7 @@ passwd_recode(pass_pair, new_secret, new_vector, req)
 {
         char    password[AUTH_STRING_LEN+1];
         req_decrypt_password(password, req, pass_pair);
-        free_string(pass_pair->strvalue);
+        string_free(pass_pair->avp_strvalue);
         encrypt_password(pass_pair, password, new_vector, new_secret);
         /* Don't let the cleantext hang around */
         memset(password, 0, AUTH_STRING_LEN);
@@ -286,8 +286,8 @@ proxy_send(radreq, activefd)
         if (namepair == NULL)
                 return 0;
 
-        saved_username = estrdup(namepair->strvalue);
-        username = namepair->strvalue;
+        saved_username = estrdup(namepair->avp_strvalue);
+        username = namepair->avp_strvalue;
 
         /* Find the realm from the _end_ so that we can cascade realms:
            user@realm1@realm2. Two special realms are handled separately:
@@ -310,7 +310,7 @@ proxy_send(radreq, activefd)
         } else if (realm->queue == NULL) { /* This is a LOCAL realm */
                 if (realm->striprealm) {
                         *realmname = 0;
-                        namepair->strlength = strlen(namepair->strvalue);
+                        namepair->avp_strlength = strlen(namepair->avp_strvalue);
                 }
                 efree(saved_username);
                 return 0;
@@ -322,13 +322,13 @@ proxy_send(radreq, activefd)
                         *realmname = 0;
         }
         
-        replace_string(&namepair->strvalue, username);
-        namepair->strlength = strlen(namepair->strvalue);
+        string_replace(&namepair->avp_strvalue, username);
+        namepair->avp_strlength = strlen(namepair->avp_strvalue);
 
         radreq->server = realm->queue->first_server;
 	radreq->attempt_no = 0;
         radreq->server_id = next_proxy_id(radreq->server->addr);
-	radreq->remote_user = make_string(username);
+	radreq->remote_user = string_create(username);
 	
         /* Is this a valid & signed request ? */
         switch (radreq->code) {
@@ -363,9 +363,9 @@ proxy_send(radreq, activefd)
                 vp->name = "CHAP-Challenge";
                 vp->attribute = DA_CHAP_CHALLENGE;
                 vp->type = TYPE_STRING;
-                vp->strlength = AUTH_VECTOR_LEN;
-                vp->strvalue = alloc_string(AUTH_VECTOR_LEN);
-                memcpy(vp->strvalue, radreq->vector, AUTH_VECTOR_LEN);
+                vp->avp_strlength = AUTH_VECTOR_LEN;
+                vp->avp_strvalue = string_alloc(AUTH_VECTOR_LEN);
+                memcpy(vp->avp_strvalue, radreq->vector, AUTH_VECTOR_LEN);
                 avl_add_pair(&radreq->request, vp);
         }
 
@@ -374,8 +374,8 @@ proxy_send(radreq, activefd)
         
 #if 1   
         /* And restore username. */
-        replace_string(&namepair->strvalue, saved_username);
-        namepair->strlength = strlen(namepair->strvalue);
+        string_replace(&namepair->avp_strvalue, saved_username);
+        namepair->avp_strlength = strlen(namepair->avp_strvalue);
 #endif
         efree(saved_username);
 
@@ -405,15 +405,15 @@ proxy_retry(type, radreq, orig_req, fd, status_str)
         if (namepair == NULL)
                 return;
 
-        saved_username = namepair->strvalue;
-        namepair->strvalue = orig_req->remote_user;
-        namepair->strlength = strlen(namepair->strvalue);
+        saved_username = namepair->avp_strvalue;
+        namepair->avp_strvalue = orig_req->remote_user;
+        namepair->avp_strlength = strlen(namepair->avp_strvalue);
 
 	proxy_send_request(fd, orig_req);
 
 	/* restore username */
-	namepair->strvalue = saved_username;
-        namepair->strlength = strlen(namepair->strvalue);
+	namepair->avp_strvalue = saved_username;
+        namepair->avp_strlength = strlen(namepair->avp_strvalue);
 }
 
 /* ************************************************************************* */
@@ -512,7 +512,7 @@ proxy_receive(radreq, activefd)
         }
 
         state = proxy_state_pair ?
-                   (PROXY_STATE *)proxy_state_pair->strvalue : NULL;
+                   (PROXY_STATE *)proxy_state_pair->avp_strvalue : NULL;
 
         if (state)
           debug(1, ("state: ipaddr %08x, id %u, proxy_id %u, rem_ipaddr %08x",

@@ -12,8 +12,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-07-30 12:24+0300\n"
-"PO-Revision-Date: 2002-07-30 12:28+0300\n"
+"POT-Creation-Date: 2002-08-02 13:46+0300\n"
+"PO-Revision-Date: 2002-08-02 14:00+0300\n"
 "Last-Translator: Krzysztof Kopera <Krzysztof_Kopera/HeadQ@netia.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -166,37 +166,38 @@ msgstr "%s: opcja `-W %s' jest niejednoznaczna\n"
 msgid "%s: option `-W %s' doesn't allow an argument\n"
 msgstr "%s: opcja `-W %s' nie mo¿e mieæ argumentów\n"
 
-#: lib/leakdetect.c:104 lib/leakdetect.c:117 lib/mem.c:216 lib/mem.c:223
-#: lib/mem.c:317 lib/mem.c:376
+#: lib/leakdetect.c:104 lib/leakdetect.c:117 lib/mem.c:227 lib/mem.c:234
+#: lib/mem.c:328 lib/mem.c:387
 msgid "low core: aborting"
 msgstr "Brak pamiêci: przerwane"
 
 # FIXME: number?
-#: lib/mem.c:126
+#: lib/mem.c:138
 #, c-format
 msgid "Page too small to alloc %d-byte objects"
 msgstr "Strona pamiêci za ma³a do przydzielania obiektów rozmiarem %d bajtów"
 
-#: lib/mem.c:131
+#: lib/mem.c:143
 msgid "can't allocate bucket class"
 msgstr "przydzielenie nowej klasy pojemnika jest niemo¿liwe"
 
-#: lib/mem.c:163
+#: lib/mem.c:175
 msgid "can't allocate bucket page"
 msgstr "przydzielenie strony dla pojemnika pamiêci jest niemo¿liwe"
 
-#: lib/mem.c:328
+#: lib/mem.c:339
 #, c-format
-msgid "calloc_entry(): too many contiguous objects requested (%d/%d)"
-msgstr "calloc_entry(): ¿±danie zbyt wielu obiektów ci±g³ych (%d/%d)"
+msgid "mem_calloc(): too many contiguous objects requested (%d/%d)"
+msgstr "mem_calloc(): ¿±danie zbyt wielu obiektów ci±g³ych (%d/%d)"
 
-#: lib/mem.c:372
-msgid "calloc_entry(): infinite loop detected"
-msgstr "calloc_entry(): wykry³em pêtlê nieskoñczon±"
+#: lib/mem.c:383
+#, fuzzy
+msgid "mem_calloc(): infinite loop detected"
+msgstr "mem_calloc(): wykry³em pêtlê nieskoñczon±"
 
-#: lib/mem.c:493
-msgid "alloc_string(): string too long"
-msgstr "alloc_string(): ³añcuch za d³ugi"
+#: lib/mem.c:504
+msgid "string_alloc(): string too long"
+msgstr "string_alloc(): ³añcuch za d³ugi"
 
 #: lib/raddb.c:56 lib/raddb.c:60 radiusd/rewrite.y:1232 radiusd/rewrite.y:2680
 #, c-format
@@ -775,7 +776,7 @@ msgstr "nie mogê zamkn±æ potoku"
 msgid "can't dup stdout"
 msgstr "nie mogê zduplikowaæ stdout"
 
-#: radiusd/exec.c:234 radiusd/exec.c:823
+#: radiusd/exec.c:234 radiusd/exec.c:821
 #, c-format
 msgid "<stdout of %s>:%d: %s"
 msgstr "<wyj¶cie standardowe %s>:%d: %s"
@@ -798,52 +799,52 @@ msgstr "program zewnêtrzny `%s' %s"
 msgid "won't execute, no such user: %s"
 msgstr "nie mogê wykonaæ: nie ma takiego u¿ytkownika: %s"
 
-#: radiusd/exec.c:517
+#: radiusd/exec.c:515
 #, c-format
 msgid "filter %s (pid %d) %s (in: %u, out: %u)"
 msgstr "filtr %s (pid %d) %s (wej¶cie: %u, wyj¶cie: %u)"
 
-#: radiusd/exec.c:552
+#: radiusd/exec.c:550
 #, c-format
 msgid "Too many (%d) threads waiting for filter %s."
 msgstr "Za du¿o w±tków (%d) w oczekiwaniu na filtr %s."
 
-#: radiusd/exec.c:630
+#: radiusd/exec.c:628
 #, c-format
 msgid "filter %s is not declared"
 msgstr "filtr %s nie jest zadeklarowany"
 
-#: radiusd/exec.c:665
+#: radiusd/exec.c:663
 #, c-format
 msgid "cannot run filter %s"
 msgstr "nie mogê uruchomiæ filtra %s"
 
-#: radiusd/exec.c:682
+#: radiusd/exec.c:680
 #, c-format
 msgid "filter %s"
 msgstr "filtr %s"
 
-#: radiusd/exec.c:714
+#: radiusd/exec.c:712
 #, fuzzy
 msgid "wrong return type"
 msgstr "zwracany typ jest b³êdny"
 
-#: radiusd/exec.c:809 radiusd/exec.c:876
+#: radiusd/exec.c:807 radiusd/exec.c:874
 #, c-format
 msgid "reading from filter %s"
 msgstr "czytanie z filtru %s"
 
-#: radiusd/exec.c:832
+#: radiusd/exec.c:830
 #, c-format
 msgid "filter %s (auth): bad output: %s"
 msgstr "filter %s (auth): niepoprawne wyj¶cie: %s"
 
-#: radiusd/exec.c:889
+#: radiusd/exec.c:887
 #, c-format
 msgid "filter %s (acct): bad output: %s"
 msgstr "filter %s (acct): niepoprawne wyj¶cie: %s"
 
-#: radiusd/exec.c:974
+#: radiusd/exec.c:972
 #, c-format
 msgid "%s:%d: filter already declared at %s:%d"
 msgstr "%s:%d: filtr ju¿ deklarowany w %s:%d"
@@ -1276,23 +1277,23 @@ msgstr "nieznany tryb: %s"
 msgid "invalid IP address: %s"
 msgstr "niew³a¶ciwy adres IP: %s"
 
-#: radiusd/radiusd.c:441
+#: radiusd/radiusd.c:443
 msgid "can't create watcher: not started as absolute pathname"
 msgstr "nie mo¿na utworzyæ obserwatora: nie rozpoczête ¶cie¿k± absolutn±"
 
-#: radiusd/radiusd.c:468
+#: radiusd/radiusd.c:470
 msgid "Sorry, your account is currently closed\n"
 msgstr "Przykro mi, Twoje konto jest zamkniête\n"
 
-#: radiusd/radiusd.c:470
+#: radiusd/radiusd.c:472
 msgid "Password has expired\n"
 msgstr "Has³o wygas³o\n"
 
-#: radiusd/radiusd.c:472
+#: radiusd/radiusd.c:474
 msgid "Password will expire in %R{Password-Expire-Days} Days\n"
 msgstr "Has³o wyga¶nie w ci±gu %R{Password-Expire-Days} dni\n"
 
-#: radiusd/radiusd.c:474
+#: radiusd/radiusd.c:476
 msgid ""
 "\n"
 "Access denied\n"
@@ -1300,7 +1301,7 @@ msgstr ""
 "\n"
 "Odmowa dostêpu\n"
 
-#: radiusd/radiusd.c:476
+#: radiusd/radiusd.c:478
 msgid ""
 "\n"
 "Realm quota exceeded - access denied\n"
@@ -1308,7 +1309,7 @@ msgstr ""
 "\n"
 "Osi±gniête ograniczenie realm'a - odmowa dostêpu\n"
 
-#: radiusd/radiusd.c:478
+#: radiusd/radiusd.c:480
 msgid ""
 "\n"
 "You are already logged in %R{Simultaneous-Use} times - access denied\n"
@@ -1316,7 +1317,7 @@ msgstr ""
 "\n"
 "Jeste¶ ju¿ zalogowany %R{Simultaneous-Use} razy - odmowa dostêpu\n"
 
-#: radiusd/radiusd.c:480
+#: radiusd/radiusd.c:482
 msgid ""
 "\n"
 "You are already logged in - access denied\n"
@@ -1324,124 +1325,124 @@ msgstr ""
 "\n"
 "Jeste¶ ju¿ zalogowany - odmowa dostêpu\n"
 
-#: radiusd/radiusd.c:482
+#: radiusd/radiusd.c:484
 msgid "You are calling outside your allowed timespan\n"
 msgstr "Wywo³anie poza Twoim dopuszczalnym okresem czasu\n"
 
-#: radiusd/radiusd.c:604
+#: radiusd/radiusd.c:606
 msgid "Starting"
 msgstr "Uruchamianie"
 
-#: radiusd/radiusd.c:631
+#: radiusd/radiusd.c:633
 msgid "Ready"
 msgstr "Gotów"
 
-#: radiusd/radiusd.c:643
+#: radiusd/radiusd.c:645
 msgid "Ready to process requests."
 msgstr "Gotowy do obs³ugi wywo³añ."
 
-#: radiusd/radiusd.c:821
+#: radiusd/radiusd.c:823
 msgid "Normal shutdown."
 msgstr "Normalne zamkniêcie."
 
-#: radiusd/radiusd.c:841
+#: radiusd/radiusd.c:843
 msgid "flushing request queues"
 msgstr "opró¿nianie kolejki wywo³añ"
 
-#: radiusd/radiusd.c:857
+#: radiusd/radiusd.c:859
 msgid "restart initiated"
 msgstr "ponowne uruchomienie zapocz±tkowane"
 
-#: radiusd/radiusd.c:860
+#: radiusd/radiusd.c:862
 msgid "can't restart: not started as absolute pathname"
 msgstr "nie mo¿na ponownie uruchomiæ: nie rozpoczête ¶cie¿k± absolutn±"
 
-#: radiusd/radiusd.c:909
+#: radiusd/radiusd.c:911
 msgid "restarting radius"
 msgstr "ponowny uruchomienie radiusa"
 
-#: radiusd/radiusd.c:911
+#: radiusd/radiusd.c:913
 msgid "RADIUS NOT RESTARTED: exec failed"
 msgstr "RADIUS NIE ZOSTA£ PONOWNIE URUCHOMIONY: uruchomienie zawiod³o"
 
-#: radiusd/radiusd.c:1222
+#: radiusd/radiusd.c:1224
 msgid "Radiusd is not listening on any port. Trying to continue anyway..."
 msgstr "Radiusd nie nas³uchuje na ¿adnym porcie. Mimo to contynuujê..."
 
-#: radiusd/radiusd.c:1234
+#: radiusd/radiusd.c:1236
 #, fuzzy
 msgid "Loading configuration files."
 msgstr "Prze³adowanie plików konfiguracyjnych."
 
-#: radiusd/radiusd.c:1247
+#: radiusd/radiusd.c:1249
 msgid "Errors reading config file - EXITING"
 msgstr "B³êdy przy odczycie pliku konfiguracyjnego - WYJ¦CIE"
 
-#: radiusd/radiusd.c:1273
+#: radiusd/radiusd.c:1275
 msgid "can't find out my own IP address"
 msgstr "nie mogê rozpoznaæ w³asnego adresu IP"
 
-#: radiusd/radiusd.c:1287
+#: radiusd/radiusd.c:1289
 msgid "Reloading configuration now"
 msgstr "Prze³adowywanie konfiguracji"
 
-#: radiusd/radiusd.c:1300
+#: radiusd/radiusd.c:1302
 #, c-format
 msgid "Dumping users db to `%s'"
 msgstr "Zapis bazy u¿ytkowników do `%s'"
 
-#: radiusd/radiusd.c:1324
+#: radiusd/radiusd.c:1326
 msgid "can't restart: radiusd not started as absolute pathname"
 msgstr ""
 "nie mo¿na ponownie uruchomiæ: radiusd nie poprzedzony ¶cie¿k± absolutn±"
 
-#: radiusd/radiusd.c:1337
+#: radiusd/radiusd.c:1339
 msgid "RADIUSD RUNNING"
 msgstr "RADIUSD URUCHOMIONY"
 
-#: radiusd/radiusd.c:1344
+#: radiusd/radiusd.c:1346
 msgid "RADIUSD SUSPENDED"
 msgstr "RADIUSD U¦PIONY"
 
-#: radiusd/radiusd.c:1381
+#: radiusd/radiusd.c:1383
 #, c-format
 msgid "%u classes, %u buckets are using %u bytes of memory"
 msgstr "%u klas, %u pojemników u¿ywa %u bajtów pamiêci"
 
-#: radiusd/radiusd.c:1388
+#: radiusd/radiusd.c:1390
 #, c-format
 msgid "memory utilization: %u.%1u%%"
 msgstr "wykorzystanie pamiêci: %u.%1u%%"
 
-#: radiusd/radiusd.c:1393
+#: radiusd/radiusd.c:1395
 msgid "    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"
 msgstr ""
 
-#: radiusd/radiusd.c:1398
+#: radiusd/radiusd.c:1400
 #, c-format
 msgid "malloc statistics: %d blocks, %d bytes"
 msgstr "statystyka malloc: %d bloków, %d bajtów"
 
-#: radiusd/radiusd.c:1410
+#: radiusd/radiusd.c:1412
 #, c-format
 msgid "exit on signal %d"
 msgstr "zakoñczenie na sygna³ %d"
 
-#: radiusd/radiusd.c:1518
+#: radiusd/radiusd.c:1520
 msgid "Dropping packet"
 msgstr "Zrzut pakietu"
 
-#: radiusd/radiusd.c:1541
+#: radiusd/radiusd.c:1543
 #, c-format
 msgid "Retransmitting %s reply"
 msgstr "Retransmisja odpowiedzi %s"
 
 # FIXME: the message is hazy
-#: radiusd/radiusd.c:1546
+#: radiusd/radiusd.c:1548
 msgid "request failed"
 msgstr "¿±danie nie powiod³o siê"
 
-#: radiusd/radiusd.c:1666
+#: radiusd/radiusd.c:1668
 #, c-format
 msgid "unknown request code %d"
 msgstr "nieznany kod ¿±dania %d"

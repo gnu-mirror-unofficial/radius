@@ -190,9 +190,9 @@ typedef struct value_pair {
                 } string;
         } v;
         
-#define lvalue v.ival
-#define strvalue v.string.s_value
-#define strlength v.string.s_length
+#define avp_lvalue v.ival
+#define avp_strvalue v.string.s_value
+#define avp_strlength v.string.s_length
 
 } VALUE_PAIR;
 
@@ -345,9 +345,7 @@ int realm_verify_ip(REALM *realm, UINT4 ip);
 void realm_iterate(int (*fun)());
 
 /* fixalloc.c */
-#define Alloc_entry(t) alloc_entry(sizeof(t))
 RADIUS_REQ *radreq_alloc();
-#define free_request free_entry
 
 /* raddb.c */
 int read_raddb_file(char *name, int vital, int (*fun)(), void *closure);

@@ -121,7 +121,7 @@ read_realms_entry(pd, fc, fv, file, lineno)
         pd->file = file;
 	pd->line = lineno;
 	
-        rp = Alloc_entry(REALM);
+        rp = mem_alloc(sizeof(REALM));
 	rp->queue = NULL;
         if (strcmp(fv[1], "LOCAL") == 0) {
 		i = 2;
@@ -141,7 +141,7 @@ read_realms_entry(pd, fc, fv, file, lineno)
 			radlog(L_ERR,
 			       "%s:%d: cannot parse",
 			       file, lineno);
-			free_entry(rp);
+			mem_free(rp);
 			return 0;
 		}
 		rp->queue = rad_clt_create_queue(0, 0, 0);
@@ -174,7 +174,7 @@ read_realms_entry(pd, fc, fv, file, lineno)
 }
 
 static void
-_realm_free_entry(r)
+_realm_mem_free(r)
 	REALM *r;
 {
 	rad_clt_destroy_queue(r->queue);
@@ -192,7 +192,7 @@ realm_read_file(file, auth_port, acct_port, set_secret)
 {
 	struct _parse_data pd;
 	
-        free_slist((struct slist*)realms, _realm_free_entry);
+        free_slist((struct slist*)realms, _realm_mem_free);
         realms = NULL;
 	pd.fun = set_secret;
 	pd.ports[PORT_AUTH] = auth_port;

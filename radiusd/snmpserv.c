@@ -228,7 +228,7 @@ snmp_cfg_network(argc, argv, block_data, handler_data)
 			       cfg_filename, cfg_line_num,
 			       i);
 		} else {
-			ACL *acl = alloc_entry(sizeof(*acl));
+			ACL *acl = mem_alloc(sizeof(*acl));
 			acl->ipaddr = argv[i].v.network.ipaddr;
 			acl->netmask = argv[i].v.network.netmask;
 			if (tail)
@@ -378,7 +378,7 @@ snmp_add_community(str, access)
         char *str;
         int access;
 {
-        Community *p = alloc_entry(sizeof(*p));
+        Community *p = mem_alloc(sizeof(*p));
         p->name = estrdup(str);
         p->access = access;
         if (commlist_tail)
@@ -407,7 +407,7 @@ snmp_free_communities()
         while (p) {
                 next = p->next;
                 efree(p->name);
-                free_entry(p);
+                mem_free(p);
                 p = next;
         }
         commlist = commlist_tail = NULL;
@@ -439,7 +439,7 @@ snmp_add_acl(acl, community)
         ACL *new_acl;
         
         for (; acl; acl = acl->next) {
-                new_acl = alloc_entry(sizeof(*new_acl));
+                new_acl = mem_alloc(sizeof(*new_acl));
                 memcpy(new_acl, acl, sizeof(ACL));
                 new_acl->community = community;
 		new_acl->ipaddr = ntohl(new_acl->ipaddr);
@@ -467,7 +467,7 @@ free_acl(acl)
 
         while (acl) {
                 next = acl->next;
-                free_entry(acl);
+                mem_free(acl);
                 acl = next;
         }
 }
@@ -847,7 +847,7 @@ rad_snmp_respond(buf, len, sa)
         SNMP_REQ *req;
         char ipbuf[DOTTED_QUAD_LEN];
 
-        req = alloc_entry(sizeof *req);
+        req = mem_alloc(sizeof *req);
         req->sa = *sa;
 
         debug(1,
@@ -856,7 +856,7 @@ rad_snmp_respond(buf, len, sa)
                  ip_iptostr(ntohl(req->sa.sin_addr.s_addr), ipbuf)));
         
         if (snmp_decode(req, buf, len)) {
-                free_entry(req);
+                mem_free(req);
                 req = NULL;
         }
         return req;
@@ -921,7 +921,7 @@ snmp_req_free(req)
 {
         snmp_pdu_free(req->pdu);
         efree(req->community);
-        free_entry(req);
+        mem_free(req);
 }
 
 /*ARGSUSED*/

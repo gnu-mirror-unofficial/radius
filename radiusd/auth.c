@@ -253,7 +253,7 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
 
         /* Process immediate authentication types */
         if ((tmp = avl_find(check_item, DA_AUTH_TYPE)) != NULL)
-                auth_type = tmp->lvalue;
+                auth_type = tmp->avp_lvalue;
 
 	switch (auth_type) {
 	case DV_AUTH_TYPE_ACCEPT:
@@ -276,7 +276,7 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
         
         /* Decrypt the password. */
         if (auth_item) {
-                if (auth_item->strlength == 0)
+                if (auth_item->avp_strlength == 0)
                         userpass[0] = 0;
                 else
                         req_decrypt_password(userpass, radreq,
@@ -286,14 +286,14 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
         
         /* Set up authentication data */
         if ((tmp = avl_find(check_item, DA_AUTH_DATA)) != NULL) 
-                authdata = tmp->strvalue;
+                authdata = tmp->avp_strvalue;
 
         /* Find the 'real' password */
         tmp = avl_find(check_item, DA_USER_PASSWORD);
         if (tmp)
-                real_password = estrdup(tmp->strvalue);
+                real_password = estrdup(tmp->avp_strvalue);
         else if (tmp = avl_find(check_item, DA_PASSWORD_LOCATION)) {
-                switch (tmp->lvalue) {
+                switch (tmp->avp_lvalue) {
                 case DV_PASSWORD_LOCATION_SQL:
 #ifdef USE_SQL
                         real_password = rad_sql_pass(radreq, authdata);
@@ -309,13 +309,13 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
                 default:
                         radlog(L_ERR,
                                _("unknown Password-Location value: %ld"),
-                               tmp->lvalue);
+                               tmp->avp_lvalue);
                         return AUTH_FAIL;
                 }
         }
 
         /* Process any prefixes/suffixes. */
-        strip_username(1, namepair->strvalue, check_item, name);
+        strip_username(1, namepair->avp_strvalue, check_item, name);
 
         debug(1,
                 ("auth_type=%d, userpass=%s, name=%s, password=%s",
@@ -335,7 +335,7 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
                 /* Provide defaults for authdata */
                 if (authdata == NULL &&
                     (tmp = avl_find(check_item, DA_PAM_AUTH)) != NULL) {
-                        authdata = tmp->strvalue;
+                        authdata = tmp->avp_strvalue;
                 }
                 authdata = authdata ? authdata : PAM_DEFAULT_TYPE;
                 if (pam_pass(name, userpass, authdata, user_msg) != 0)
@@ -396,8 +396,8 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
                 length = strlen(real_password);
 		
                 if (tmp = avl_find(radreq->request, DA_CHAP_CHALLENGE)) {
-                        challenge = tmp->strvalue;
-                        challenge_len = tmp->strlength;
+                        challenge = tmp->avp_strvalue;
+                        challenge_len = tmp->avp_strlength;
                 } else {
                         challenge = radreq->vector;
                         challenge_len = AUTH_VECTOR_LEN;
@@ -407,7 +407,7 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
 		pwbuf = emalloc(pwlen);
 		
                 ptr = pwbuf;
-                *ptr++ = *auth_item->strvalue;
+                *ptr++ = *auth_item->avp_strvalue;
                 memcpy(ptr, real_password, length);
                 ptr += length;
                 memcpy(ptr, challenge, challenge_len);
@@ -417,7 +417,7 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
                 efree(pwbuf);
 		
                 /* Compare them */
-                if (memcmp(pw_digest, auth_item->strvalue + 1,
+                if (memcmp(pw_digest, auth_item->avp_strvalue + 1,
 			   CHAP_VALUE_LENGTH) != 0)
                         result = AUTH_FAIL;
                 else
@@ -455,13 +455,13 @@ rad_auth_init(radreq, activefd)
         namepair = avl_find(radreq->request, DA_USER_NAME);
 
         if ((namepair == (VALUE_PAIR *)NULL) || 
-           (strlen(namepair->strvalue) <= 0)) {
+           (strlen(namepair->avp_strvalue) <= 0)) {
                 radlog_req(L_ERR, radreq, _("No username"));
                 stat_inc(auth, radreq->ipaddr, num_bad_req);
                 return -1;
         }
-        debug(1,("checking username: %s", namepair->strvalue));
-        if (check_user_name(namepair->strvalue)) {
+        debug(1,("checking username: %s", namepair->avp_strvalue));
+        if (check_user_name(namepair->avp_strvalue)) {
                 radlog_req(L_ERR, radreq, _("Malformed username"));
                 stat_inc(auth, radreq->ipaddr, num_bad_req);
                 return -1;
@@ -642,7 +642,7 @@ auth_log(m, diag, pass, reason, addstr)
                 radlog_req(L_NOTICE, m->req,
 			   "%s [%s%s%s]: %s%s, CLID %s",
 			   diag,
-			   m->namepair->strvalue,
+			   m->namepair->avp_strvalue,
 			   pass ? "/" : "",
 			   pass ? pass : "",
 			   reason,
@@ -652,7 +652,7 @@ auth_log(m, diag, pass, reason, addstr)
                 radlog_req(L_NOTICE, m->req,
 			   "%s [%s%s%s], CLID %s",
 			   diag,
-			   m->namepair->strvalue,
+			   m->namepair->avp_strvalue,
 			   pass ? "/" : "",
 			   pass ? pass : "",
 			   m->clid);
@@ -671,11 +671,11 @@ is_log_mode(m, mask)
         for (p = avl_find(m->user_check, DA_LOG_MODE_MASK);
              p;
              p = p->next ? avl_find(p->next, DA_LOG_MODE_MASK) : NULL)
-                xmask |= p->lvalue;
+                xmask |= p->avp_lvalue;
         for (p = avl_find(m->req->request, DA_LOG_MODE_MASK);
              p;
              p = p->next ? avl_find(p->next, DA_LOG_MODE_MASK) : NULL)
-                xmask |= p->lvalue;
+                xmask |= p->avp_lvalue;
 #endif
         return (mode & ~xmask) & mask;
 }
@@ -713,7 +713,7 @@ check_expiration(m)
         
         result = AUTH_OK;
         if (pair = avl_find(m->user_check, DA_EXPIRATION)) {
-                rc = pw_expired(pair->lvalue);
+                rc = pw_expired(pair->avp_lvalue);
                 if (rc < 0) {
                         result = AUTH_FAIL;
                         auth_format_msg(m, MSG_PASSWORD_EXPIRED);
@@ -749,7 +749,7 @@ rad_authenticate(radreq, activefd)
          * If the request is processing a menu, service it here.
          */
         if ((pair_ptr = avl_find(radreq->request, DA_STATE)) != NULL &&
-            strncmp(pair_ptr->strvalue, "MENU=", 5) == 0) {
+            strncmp(pair_ptr->avp_strvalue, "MENU=", 5) == 0) {
             process_menu(radreq, activefd);
             return 0;
         }
@@ -766,7 +766,7 @@ rad_authenticate(radreq, activefd)
         /*FIXME: this should have been cached by rad_auth_init */
         m.namepair = avl_find(m.req->request, DA_USER_NAME);
 
-        debug(1, ("auth: %s", m.namepair->strvalue)); 
+        debug(1, ("auth: %s", m.namepair->avp_strvalue)); 
         m.state = as_init;
 
         while (m.state != as_stop) {
@@ -839,9 +839,9 @@ sfn_init(m)
                 proxied = 1;
         }
         if (radreq->server_code == RT_AUTHENTICATION_REJECT)
-                m->user_check->lvalue = DV_AUTH_TYPE_REJECT;
+                m->user_check->avp_lvalue = DV_AUTH_TYPE_REJECT;
         if (radreq->server_code == RT_AUTHENTICATION_ACK)
-                m->user_check->lvalue = DV_AUTH_TYPE_ACCEPT;
+                m->user_check->avp_lvalue = DV_AUTH_TYPE_ACCEPT;
 
         if (radreq->server_reply) {
                 m->user_reply = radreq->server_reply;
@@ -849,14 +849,14 @@ sfn_init(m)
         }
 
         if (pair_ptr = avl_find(radreq->request, DA_CALLING_STATION_ID)) 
-                m->clid = pair_ptr->strvalue;
+                m->clid = pair_ptr->avp_strvalue;
         else
                 m->clid = _("unknown");
 
         /*
          * Get the user from the database
          */
-        if (user_find(m->namepair->strvalue, radreq,
+        if (user_find(m->namepair->avp_strvalue, radreq,
                       &m->user_check, &m->user_reply) != 0
             && !proxied) {
 
@@ -882,18 +882,18 @@ sfn_eval_reply(m)
                         Datatype type;
                         Datum datum;
  
-                        if (interpret(p->strvalue, m->req, &type, &datum)) {
+                        if (interpret(p->avp_strvalue, m->req, &type, &datum)) {
                                 errcnt++;
                                 continue;
                         }
-                        free_string(p->strvalue);
+                        string_free(p->avp_strvalue);
                         switch (type) {
                         case Integer:
-                                p->lvalue = datum.ival;
+                                p->avp_lvalue = datum.ival;
                                 break;
                         case String:
-                                p->strvalue = datum.sval;
-                                p->strlength = strlen(p->strvalue);
+                                p->avp_strvalue = datum.sval;
+                                p->avp_strlength = strlen(p->avp_strvalue);
                                 break;
                         default:
                                 abort();
@@ -924,7 +924,7 @@ sfn_scheme(m)
         for (p = avl_find(reply, DA_SCHEME_PROCEDURE);
              p;
              p = avl_find(p->next, DA_SCHEME_PROCEDURE)) {
-                if (scheme_auth(p->strvalue,
+                if (scheme_auth(p->avp_strvalue,
                                 m->req, m->user_check, &m->user_reply)) {
                         newstate(as_reject);
                         break;
@@ -1012,7 +1012,7 @@ sfn_service(m)
         /* FIXME: Other service types should also be handled,
          *        I suppose     
          */
-        if (m->check_pair->lvalue != DV_SERVICE_TYPE_AUTHENTICATE_ONLY)
+        if (m->check_pair->avp_lvalue != DV_SERVICE_TYPE_AUTHENTICATE_ONLY)
                 return;
         newstate(as_ack);
 }
@@ -1021,7 +1021,7 @@ void
 sfn_disable(m)
         AUTH_MACH *m;
 {
-        if (get_deny(m->namepair->strvalue)) {
+        if (get_deny(m->namepair->avp_strvalue)) {
                 auth_format_msg(m, MSG_ACCOUNT_CLOSED);
                 auth_log(m, _("Account disabled"), NULL, NULL, NULL);
                 newstate(as_reject);
@@ -1032,7 +1032,7 @@ void
 sfn_service_type(m)
         AUTH_MACH *m;
 {
-        if (m->check_pair->lvalue == DV_SERVICE_TYPE_AUTHENTICATE_ONLY) {
+        if (m->check_pair->avp_lvalue == DV_SERVICE_TYPE_AUTHENTICATE_ONLY) {
                 auth_log(m, _("Login rejected"), NULL,
                          _("Authenticate only user"), NULL);
                 auth_format_msg(m, MSG_ACCESS_DENIED);
@@ -1064,22 +1064,22 @@ sfn_simuse(m)
         int count;
         
         strip_username(strip_names,
-                       m->namepair->strvalue, m->user_check, name);
+                       m->namepair->avp_strvalue, m->user_check, name);
         rc = rad_check_multi(name, m->req->request,
-                             m->check_pair->lvalue, &count);
+                             m->check_pair->avp_lvalue, &count);
         avl_add_pair(&m->user_reply,
                      avp_create(DA_SIMULTANEOUS_USE, 0, NULL, count));
         if (!rc)
                 return;
 
         auth_format_msg(m,
-                        (m->check_pair->lvalue > 1) ?
+                        (m->check_pair->avp_lvalue > 1) ?
                         MSG_MULTIPLE_LOGIN : MSG_SECOND_LOGIN);
 
         radlog_req(L_WARN, m->req,
 		   _("Multiple logins: [%s] max. %ld%s, CLID %s"),
-               m->namepair->strvalue,
-               m->check_pair->lvalue,
+               m->namepair->avp_strvalue,
+               m->check_pair->avp_lvalue,
 		   rc == 2 ? _(" [MPP attempt]") : "",
 		   m->clid);
         newstate(as_reject);
@@ -1107,7 +1107,7 @@ sfn_time(m)
         unsigned rest;
         
         time(&t);
-        rc = ts_check(m->check_pair->strvalue, &t, &rest, NULL);
+        rc = ts_check(m->check_pair->avp_strvalue, &t, &rest, NULL);
         if (rc == 1) {
                 /*
                  * User called outside allowed time interval.
@@ -1116,16 +1116,16 @@ sfn_time(m)
                 radlog_req(L_ERR,
 			   m->req,
 			   _("Outside allowed timespan (%s)"),
-			   m->check_pair->strvalue);
+			   m->check_pair->avp_strvalue);
                 newstate(as_reject);
         } else if (rc == 0) {
                 /*
                  * User is allowed, but set Session-Timeout.
                  */
-                timeout_pair(m)->lvalue = rest;
+                timeout_pair(m)->avp_lvalue = rest;
                 debug(2, ("user %s, span %s, timeout %d",
-                          m->namepair->strvalue,
-                          m->check_pair->strvalue,
+                          m->namepair->avp_strvalue,
+                          m->check_pair->avp_strvalue,
                           rest));
         }
 }
@@ -1142,7 +1142,7 @@ sfn_ipaddr(m)
                 /* **************************************************
                  * Keep it here until IP allocation is ready
                  */
-                if (p = alloc_ip_pair(m->namepair->strvalue, m->req))
+                if (p = alloc_ip_pair(m->namepair->avp_strvalue, m->req))
                         avl_add_pair(&m->user_reply, p);
                 else
 #endif  
@@ -1157,12 +1157,12 @@ sfn_ipaddr(m)
         
         if ((p = avl_find(m->user_reply, DA_FRAMED_IP_ADDRESS)) &&
             (tmp = avl_find(m->user_reply, DA_ADD_PORT_TO_IP_ADDRESS)) &&
-            tmp->lvalue &&
+            tmp->avp_lvalue &&
             (pp = avl_find(m->req->request, DA_NAS_PORT_ID)))
                 /* NOTE: This only works because IP numbers are stored in
                  * host order throughout the program.
                  */
-                p->lvalue += pp->lvalue;
+                p->avp_lvalue += pp->avp_lvalue;
                 
         avl_delete(&m->user_reply, DA_ADD_PORT_TO_IP_ADDRESS);
 }
@@ -1173,13 +1173,13 @@ sfn_exec_wait(m)
 {
 	int rc;
 	
-	switch (m->check_pair->strvalue[0]) {
+	switch (m->check_pair->avp_strvalue[0]) {
 	case '/':
 		/* radius_exec_program() returns -1 on
 		   fork/exec errors, or >0 if the exec'ed program
 		   had a non-zero exit status.
 		*/
-		rc = radius_exec_program(m->check_pair->strvalue,
+		rc = radius_exec_program(m->check_pair->avp_strvalue,
 					 m->req,
 					 &m->user_reply,
 					 1,
@@ -1187,7 +1187,7 @@ sfn_exec_wait(m)
 		break;
 
 	case '|':
-		rc = filter_auth(m->check_pair->strvalue+1,
+		rc = filter_auth(m->check_pair->avp_strvalue+1,
 				 m->req,
 				 &m->user_reply);
 		break;
@@ -1214,7 +1214,7 @@ sfn_exec_nowait(m)
         AUTH_MACH *m;
 {
         /*FIXME: do we need to pass user_reply here? */
-        radius_exec_program(m->check_pair->strvalue,
+        radius_exec_program(m->check_pair->avp_strvalue,
                             m->req, &m->user_reply,
                             0, NULL);
 }
@@ -1249,14 +1249,14 @@ sfn_menu(m)
         char *msg;
         char state_value[MAX_STATE_VALUE];
                 
-        msg = get_menu(m->check_pair->strvalue);
+        msg = get_menu(m->check_pair->avp_strvalue);
         snprintf(state_value, sizeof(state_value),
-                   "MENU=%s", m->check_pair->strvalue);
+                   "MENU=%s", m->check_pair->avp_strvalue);
         send_challenge(m->req, msg, state_value, m->activefd);
         
         debug(1,
               ("sending challenge (menu %s) to %s",
-               m->check_pair->strvalue, m->namepair->strvalue));
+               m->check_pair->avp_strvalue, m->namepair->avp_strvalue));
         newstate(as_stop);
 #endif  
 }
@@ -1265,7 +1265,7 @@ void
 sfn_ack(m)
         AUTH_MACH *m;
 {
-        debug(1, ("ACK: %s", m->namepair->strvalue));
+        debug(1, ("ACK: %s", m->namepair->avp_strvalue));
         
         stat_inc(auth, m->req->ipaddr, num_accepts);
 
@@ -1284,7 +1284,7 @@ sfn_ack(m)
         if (timeout_pair(m)) {
                 debug(5,
                         ("timeout for [%s] is set to %ld sec",
-                         m->namepair->strvalue, timeout_pair(m)->lvalue));
+                         m->namepair->avp_strvalue, timeout_pair(m)->avp_lvalue));
         }
 }
 
@@ -1292,7 +1292,7 @@ void
 sfn_reject(m)
         AUTH_MACH *m;
 {
-        debug(1, ("REJECT: %s", m->namepair->strvalue));
+        debug(1, ("REJECT: %s", m->namepair->avp_strvalue));
         rad_send_reply(RT_AUTHENTICATION_REJECT,
                        m->req,
                        m->user_reply,

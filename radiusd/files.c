@@ -220,7 +220,7 @@ add_pairlist(closure, filename, line, name, lhs, rhs)
                 return 0;
         }
 
-        pl = Alloc_entry(MATCHING_RULE);
+        pl = mem_alloc(sizeof(MATCHING_RULE));
         pl->name = estrdup(name);
         pl->lhs = lhs;
         pl->rhs = rhs;
@@ -374,9 +374,9 @@ match_user(sym, req, check_pairs, reply_pairs)
                 for (p = avl_find(sym->check, DA_MATCH_PROFILE);
                      p; 
                      p = avl_find(p->next, DA_MATCH_PROFILE)) {
-                        debug(1, ("submatch: %s", p->strvalue));
+                        debug(1, ("submatch: %s", p->avp_strvalue));
 
-                        found = match_user(sym_lookup(user_tab, p->strvalue),
+                        found = match_user(sym_lookup(user_tab, p->avp_strvalue),
                                            req, check_pairs, reply_pairs);
                 }                       
 
@@ -398,8 +398,8 @@ match_user(sym, req, check_pairs, reply_pairs)
                 for (p = avl_find(sym->reply, DA_MATCH_PROFILE);
                      p;
                      p = avl_find(p->next, DA_MATCH_PROFILE)) {
-                        debug(1, ("next: %s", p->strvalue));
-                        match_user(sym_lookup(user_tab, p->strvalue),
+                        debug(1, ("next: %s", p->avp_strvalue));
+                        match_user(sym_lookup(user_tab, p->avp_strvalue),
                                    req, check_pairs, reply_pairs);
                 }
                 if (!fallthrough(sym->reply))
@@ -599,8 +599,8 @@ userparse(buffer, first_pair, errmsg)
                         switch (pair->type) {
 
                         case TYPE_STRING:
-                                pair->strvalue = make_string(token);
-                                pair->strlength = strlen(pair->strvalue);
+                                pair->avp_strvalue = string_create(token);
+                                pair->avp_strlength = strlen(pair->avp_strvalue);
                                 break;
 
                         case TYPE_INTEGER:
@@ -614,13 +614,13 @@ userparse(buffer, first_pair, errmsg)
                                                         break;
                                         if (*s) {
                                                 pair->type = TYPE_STRING;
-                                                pair->strvalue = make_string(token);
-                                                pair->strlength = strlen(pair->strvalue);
+                                                pair->avp_strvalue = string_create(token);
+                                                pair->avp_strlength = strlen(pair->avp_strvalue);
                                                 break;
                                         }
                                 }
                                 if (isdigit(*token)) {
-                                        pair->lvalue = atoi(token);
+                                        pair->avp_lvalue = atoi(token);
                                 } else if (!(dval = value_name_to_value(token, pair->attribute))) {
                                         avp_free(pair);
                                         snprintf(errbuf, sizeof(errbuf),
@@ -629,13 +629,13 @@ userparse(buffer, first_pair, errmsg)
                                         *errmsg = errbuf;
                                         return -1;
                                 } else {
-                                        pair->lvalue = dval->value;
+                                        pair->avp_lvalue = dval->value;
                                 }
                                 break;
 
                         case TYPE_IPADDR:
                                 if (pair->attribute != DA_FRAMED_IP_ADDRESS) {
-                                        pair->lvalue = ip_gethostaddr(token);
+                                        pair->avp_lvalue = ip_gethostaddr(token);
                                         break;
                                 }
 
@@ -652,7 +652,7 @@ userparse(buffer, first_pair, errmsg)
                                                 x = 1;
                                         }
                                 }
-                                pair->lvalue = ip_gethostaddr(token);
+                                pair->avp_lvalue = ip_gethostaddr(token);
 
                                 /*
                                  *      Add an extra (hidden) attribute.
@@ -662,7 +662,7 @@ userparse(buffer, first_pair, errmsg)
                                 pair2->name = "Add-Port-To-IP-Address";
                                 pair2->attribute = DA_ADD_PORT_TO_IP_ADDRESS;
                                 pair2->type = TYPE_INTEGER;
-                                pair2->lvalue = x;
+                                pair2->avp_lvalue = x;
                                 pair2->next = pair;
                                 pair = pair2;
                                 break;
@@ -677,9 +677,9 @@ userparse(buffer, first_pair, errmsg)
                                         goto error;
                                 }
 #ifdef TIMELOCAL
-                                pair->lvalue = (UINT4)timelocal(tm);
+                                pair->avp_lvalue = (UINT4)timelocal(tm);
 #else /* TIMELOCAL */
-                                pair->lvalue = (UINT4)mktime(tm);
+                                pair->avp_lvalue = (UINT4)mktime(tm);
 #endif /* TIMELOCAL */
                                 break;
 
@@ -742,7 +742,7 @@ hints_setup(req)
                 name = NULL;
                 orig_name_pair = NULL;
         } else {
-                name = name_pair->strvalue;
+                name = name_pair->avp_strvalue;
                 orig_name_pair = avp_dup(name_pair);
                 orig_name_pair->attribute = DA_ORIG_USER_NAME;
                 orig_name_pair->name = "Orig-User-Name";
@@ -768,7 +768,7 @@ hints_setup(req)
                 int do_strip;
                 VALUE_PAIR *add;
                 
-                name = name_pair->strvalue;
+                name = name_pair->avp_strvalue;
 
                 if (matches(req, name, i, newname))
                         continue;
@@ -783,10 +783,10 @@ hints_setup(req)
                 do_strip = 1;
                 if ((tmp = avl_find(i->rhs, DA_STRIP_USER_NAME)) != NULL
                     || (tmp = avl_find(i->lhs, DA_STRIP_USER_NAME)) != NULL)
-                        do_strip = tmp->lvalue;
+                        do_strip = tmp->avp_lvalue;
                 
                 if (do_strip) 
-                        replace_string(&name_pair->strvalue, newname);
+                        string_replace(&name_pair->avp_strvalue, newname);
 
                 /* Ok, let's see if we need to further modify the username */
                 if ((tmp = avl_find(i->rhs, DA_REPLACE_USER_NAME))
@@ -795,29 +795,29 @@ hints_setup(req)
                         struct obstack hints_stk;
  
                         obstack_init(&hints_stk);
-                        ptr = radius_xlate(&hints_stk, tmp->strvalue,
+                        ptr = radius_xlate(&hints_stk, tmp->avp_strvalue,
                                            req, NULL);
                         if (ptr) 
-                                replace_string(&name_pair->strvalue, ptr);
+                                string_replace(&name_pair->avp_strvalue, ptr);
                         obstack_free(&hints_stk, NULL);
                 }
                 
                 /* Is the rewrite function specified? */
                 if ((tmp = avl_find(i->rhs, DA_REWRITE_FUNCTION))
                     || (tmp = avl_find(i->lhs, DA_REWRITE_FUNCTION))) {
-                        if (run_rewrite(tmp->strvalue, req)) {
+                        if (run_rewrite(tmp->avp_strvalue, req)) {
                                 radlog(L_ERR, "hints:%d: %s(): %s",
                                        i->lineno,
-                                       tmp->strvalue,
+                                       tmp->avp_strvalue,
 				       _("not defined"));
                         }
                 }
 
                 debug(1, ("newname is `%s', username is `%s'",
-                         newname, name_pair->strvalue));
+                         newname, name_pair->avp_strvalue));
 
                 /* fix-up the string length */
-                name_pair->strlength = strlen(name_pair->strvalue);
+                name_pair->avp_strlength = strlen(name_pair->avp_strvalue);
 
                 /* Add all attributes to the request list, except
                  * DA_STRIP_USER_NAME and DA_REPLACE_USER_NAME */
@@ -831,7 +831,7 @@ hints_setup(req)
                    hint's rules */
                 if (((tmp = avl_find(i->rhs, DA_FALL_THROUGH)) != NULL
                      || (tmp = avl_find(i->lhs, DA_FALL_THROUGH)) != NULL)
-                    && tmp->lvalue)
+                    && tmp->avp_lvalue)
                         continue;
                 break;
         }
@@ -903,10 +903,10 @@ huntgroup_access(radreq)
 #ifdef DA_REWRITE_FUNCTION
         if (pl &&
             (pair = avl_find(pl->lhs, DA_REWRITE_FUNCTION)) != NULL) {
-                if (run_rewrite(pair->strvalue, radreq)) {
+                if (run_rewrite(pair->avp_strvalue, radreq)) {
                         radlog(L_ERR, "huntgroups:%d: %s(): %s",
                                pl->lineno,
-                               pair->strvalue,
+                               pair->avp_strvalue,
 			       _("not defined"));
                 }
         }
@@ -961,7 +961,7 @@ read_clients_entry(unused, fc, fv, file, lineno)
                 return -1;
         }
 
-        cp = Alloc_entry(CLIENT);
+        cp = mem_alloc(sizeof(CLIENT));
 
         cp->ipaddr = ip_gethostaddr(fv[0]);
         cp->secret = estrdup(fv[1]);
@@ -1074,7 +1074,7 @@ read_nastypes_entry(unused, fc, fv, file, lineno)
                 return -1;
         }
                         
-        mp = alloc_entry(sizeof(*mp));
+        mp = mem_alloc(sizeof(*mp));
         mp->type = estrdup(fv[0]);
         mp->method = method;
         if (fc > 2)
@@ -1201,7 +1201,7 @@ fallthrough(vp)
 {
         VALUE_PAIR *tmp;
 
-        return (tmp = avl_find(vp, DA_FALL_THROUGH)) ? tmp->lvalue : 0;
+        return (tmp = avl_find(vp, DA_FALL_THROUGH)) ? tmp->avp_lvalue : 0;
 }
 
 /*
@@ -1215,9 +1215,9 @@ portcmp(check, request)
         char buf[AUTH_STRING_LEN];
         char *s, *p, *save;
         int lo, hi;
-        int port = request->lvalue;
+        int port = request->avp_lvalue;
 
-        strcpy(buf, check->strvalue);
+        strcpy(buf, check->avp_strvalue);
         s = strtok_r(buf, ",", &save);
         while(s) {
                 if ((p = strchr(s, '-')) != NULL)
@@ -1247,7 +1247,7 @@ uidcmp(check, username)
         if (!(pwd = rad_getpwnam_r(username, &pw, buffer, sizeof buffer)))
                 return -1;
 
-        return pwd->pw_uid - check->lvalue;
+        return pwd->pw_uid - check->avp_lvalue;
 }
 
 /*
@@ -1301,12 +1301,12 @@ presufcmp(check, name, rest)
         int ret = -1;
 
         debug(1, ("comparing %s and %s, check->attr is %d",
-                 name, check->strvalue, check->attribute));
+                 name, check->avp_strvalue, check->attribute));
 
-        len = strlen(check->strvalue);
+        len = strlen(check->avp_strvalue);
         switch (check->attribute) {
                 case DA_PREFIX:
-                        ret = strncmp(name, check->strvalue, len);
+                        ret = strncmp(name, check->avp_strvalue, len);
                         if (ret == 0 && rest)
                                 strcpy(rest, name + len);
                         break;
@@ -1314,7 +1314,7 @@ presufcmp(check, name, rest)
                         namelen = strlen(name);
                         if (namelen < len)
                                 break;
-                        ret = strcmp(name + namelen - len, check->strvalue);
+                        ret = strcmp(name + namelen - len, check->avp_strvalue);
                         if (ret == 0 && rest) {
                                 strncpy(rest, name, namelen - len);
                                 rest[namelen - len] = 0;
@@ -1418,8 +1418,8 @@ paircmp(request, check)
                         case DA_HINT:
                                 if (auth_item->attribute != check_item->attribute)
                                         continue;
-                                if (strcmp(check_item->strvalue,
-                                           auth_item->strvalue) != 0)
+                                if (strcmp(check_item->avp_strvalue,
+                                           auth_item->avp_strvalue) != 0)
                                         continue;
                                 break;
                         default:
@@ -1451,9 +1451,9 @@ paircmp(request, check)
                         switch (check_item->attribute) {
                         case DA_PREFIX:
                         case DA_SUFFIX:
-                                strcpy(username, auth_item->strvalue);
+                                strcpy(username, auth_item->avp_strvalue);
                                 compare = presufcmp(check_item,
-                                                    auth_item->strvalue,
+                                                    auth_item->avp_strvalue,
                                                     username);
                                 break;
                         case DA_NAS_PORT_ID:
@@ -1461,18 +1461,18 @@ paircmp(request, check)
                                 break;
                         case DA_GROUP_NAME:
                         case DA_GROUP:
-                                strcpy(username, auth_item->strvalue);
+                                strcpy(username, auth_item->avp_strvalue);
                                 compare = groupcmp(request,
-                                                   check_item->strvalue,
+                                                   check_item->avp_strvalue,
                                                    username);
                                 break;
                         case DA_HUNTGROUP_NAME:
                                 compare = !huntgroup_match(request,
-                                                         check_item->strvalue);
+                                                         check_item->avp_strvalue);
                                 break;
                         default:
-                                compare = strcmp(auth_item->strvalue,
-                                                 check_item->strvalue);
+                                compare = strcmp(auth_item->avp_strvalue,
+                                                 check_item->avp_strvalue);
                         }
                         break;
 
@@ -1484,7 +1484,7 @@ paircmp(request, check)
                         }
                         /*FALLTHRU*/
                 case TYPE_IPADDR:
-                        compare = auth_item->lvalue - check_item->lvalue;
+                        compare = auth_item->avp_lvalue - check_item->avp_lvalue;
                         break;
                         
                 default:
@@ -1522,7 +1522,7 @@ matchrule_free(pl)
                 if (p->rhs)
                         avl_free(p->rhs);
                 next = p->next;
-                free_entry(p);
+                mem_free(p);
         }
         *pl = NULL;
 }
@@ -1553,7 +1553,7 @@ hints_pairmatch(pl, req, name, ret_name)
                         compare = uidcmp(pair, username);
                         break;
                 case DA_GROUP:
-                        compare = groupcmp(req, pair->strvalue, username);
+                        compare = groupcmp(req, pair->avp_strvalue, username);
                         break;
                 default:
                         continue;
@@ -1948,19 +1948,19 @@ dump_pairs(fp, pair)
                 
                 switch (etype) {
                 case TYPE_STRING:
-                        fprintf(fp, "%s", pair->strvalue);
+                        fprintf(fp, "%s", pair->avp_strvalue);
                         break;
 
                 case TYPE_INTEGER:
-                        fprintf(fp, "%ld", pair->lvalue);
+                        fprintf(fp, "%ld", pair->avp_lvalue);
                         break;
 
                 case TYPE_IPADDR:
-                        fprintf(fp, "%lx", pair->lvalue);
+                        fprintf(fp, "%lx", pair->avp_lvalue);
                         break;
                 
                 case TYPE_DATE:
-                        fprintf(fp, "%ld", pair->lvalue);
+                        fprintf(fp, "%ld", pair->avp_lvalue);
                         break;
                         
                 }
@@ -2055,22 +2055,22 @@ presuf_setup(request_pairs)
         if ((name_pair = avl_find(request_pairs, DA_USER_NAME)) == NULL)
                 return ;
 
-        for (sym = user_lookup(name_pair->strvalue, &lu); sym;
+        for (sym = user_lookup(name_pair->avp_strvalue, &lu); sym;
              sym = user_next(&lu)) {
 
                 if ((presuf_pair = avl_find(sym->check, DA_PREFIX)) == NULL &&
                     (presuf_pair = avl_find(sym->check, DA_SUFFIX)) == NULL)
                         continue;
-                if (presufcmp(presuf_pair, name_pair->strvalue, name) != 0)
+                if (presufcmp(presuf_pair, name_pair->avp_strvalue, name) != 0)
                         continue;
                 /*
                  *      See if username must be stripped.
                  */
                 if ((tmp = avl_find(sym->check, DA_STRIP_USER_NAME)) != NULL &&
-                    tmp->lvalue == 0)
+                    tmp->avp_lvalue == 0)
                         continue;
-                replace_string(&name_pair->strvalue, name);
-                name_pair->strlength = strlen(name_pair->strvalue);
+                string_replace(&name_pair->avp_strvalue, name);
+                name_pair->avp_strlength = strlen(name_pair->avp_strvalue);
                 break;
         }
 }
@@ -2093,7 +2093,7 @@ strip_username(do_strip, name, check_item, stripped_name)
                 presuf_item = avl_find(check_item, DA_SUFFIX);
         if (presuf_item) {
                 if (tmp = avl_find(check_item, DA_STRIP_USER_NAME))
-                        do_strip = tmp->lvalue;
+                        do_strip = tmp->avp_lvalue;
                 if (do_strip) { 
                         if (presufcmp(presuf_item, name, tmpname) == 0)
                                 source_ptr = tmpname;

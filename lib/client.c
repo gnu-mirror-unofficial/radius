@@ -105,9 +105,9 @@ _encode_pairlist(p, vector, secret)
 	for (p = ret; p; p = p->next)
 		if (p->attribute == DA_USER_PASSWORD
 		    || p->attribute == DA_CHAP_PASSWORD) {
-			char *pass = p->strvalue;
+			char *pass = p->avp_strvalue;
 			encrypt_password(p, pass, vector, secret);
-			free_string(pass);
+			string_free(pass);
 		}
 	return ret;
 }
@@ -413,12 +413,12 @@ rad_clt_alloc_server(src)
 {
         RADIUS_SERVER *server;
 
-        server = alloc_entry(sizeof(*server));
-        server->name = make_string(src->name);
+        server = mem_alloc(sizeof(*server));
+        server->name = string_create(src->name);
         server->addr = src->addr;
         server->port[0] = src->port[0];
         server->port[1] = src->port[1];
-        server->secret = make_string(src->secret);
+        server->secret = string_create(src->secret);
         return server;
 }
 
@@ -428,12 +428,12 @@ rad_clt_dup_server(src)
 {
         RADIUS_SERVER *dest;
 
-        dest = alloc_entry(sizeof(*dest));
+        dest = mem_alloc(sizeof(*dest));
         dest->addr = src->addr;
-        dest->name = dup_string(src->name);
+        dest->name = string_dup(src->name);
         dest->port[0] = src->port[0];
         dest->port[1] = src->port[1];
-        dest->secret = dup_string(src->secret);
+        dest->secret = string_dup(src->secret);
         return dest;
 }
 
@@ -445,9 +445,9 @@ void
 rad_clt_free_server(server)
         RADIUS_SERVER *server;
 {
-        free_string(server->name);
-        free_string(server->secret);
-        free_entry(server);
+        string_free(server->name);
+        string_free(server->secret);
+        mem_free(server);
 }
 
 RADIUS_SERVER *
@@ -463,8 +463,8 @@ static void
 rad_clt_internal_free_server(server)
         RADIUS_SERVER *server;
 {
-        free_string(server->name);
-        free_string(server->secret);
+        string_free(server->name);
+        string_free(server->secret);
 }
 
 void

@@ -487,10 +487,8 @@ filter_cleanup_proc(unused, sym)
 	pthread_t tid = pthread_self();
 	
 	for (filter = sym->filter; filter; filter = filter->next) {
-		if (filter->tid == tid) {
+		if (filter->tid == tid) 
 			filter_close(filter);
-			break;
-		}
 	}
 }
 
@@ -502,7 +500,7 @@ filter_cleanup()
 }
 
 static int
-_close_filter(data, sym)
+filter_cleanup_pid_proc(data, sym)
 	struct filter_sigchild_data *data;
 	Filter_symbol *sym;
 {
@@ -592,7 +590,7 @@ filter_sigchild(pid, status)
 	struct filter_sigchild_data data;
 	data.pid = pid;
 	data.status = status;
-	symtab_iterate(filter_tab, _close_filter, &data);
+	symtab_iterate(filter_tab, filter_cleanup_pid_proc, &data);
 	return data.pid;
 }
 	
@@ -646,7 +644,7 @@ filter_open(name, req, type, errp)
 	} else
 		filter = sym->filter;
 	if (!filter) {
-		filter = alloc_entry(sizeof(*filter));
+		filter = mem_alloc(sizeof(*filter));
 		filter->tid = pthread_self();
 		filter->sym = sym;
 		filter->input = filter->output = -1;
@@ -715,7 +713,7 @@ filter_xlate(sp, fmt, radreq)
 			return NULL;
 		}
 		obstack_grow(sp, datum.sval, strlen(datum.sval)+1);
-		free_string(datum.sval);
+		string_free(datum.sval);
 		str = obstack_finish(sp);
 	} else {
 		str = radius_xlate(sp, fmt, radreq, NULL);
@@ -910,7 +908,7 @@ free_symbol_entry(sym)
 		Filter *next = filter->next;
 		if (filter->pid > 0)
 			filter_close(filter);
-		free_entry(filter);
+		mem_free(filter);
 		filter = next;
 	}
 	pthread_mutex_destroy(&sym->mutex);

@@ -170,22 +170,22 @@ attr_to_str(obp, req, pairlist, attr, defval)
                 } else {
                         /* strvalue might include terminating zero character,
                            so we need to recalculate it */
-                        int length = strlen(pair->strvalue);
-                        obstack_grow_quoted(obp, pair->strvalue, length);
+                        int length = strlen(pair->avp_strvalue);
+                        obstack_grow_quoted(obp, pair->avp_strvalue, length);
                 }
                 break;
         case TYPE_INTEGER:
-                snprintf(tmp, sizeof(tmp), "%ld", pair->lvalue);
+                snprintf(tmp, sizeof(tmp), "%ld", pair->avp_lvalue);
                 len = strlen(tmp);
                 obstack_grow(obp, tmp, len);
                 break;
         case TYPE_IPADDR:
-                ip_iptostr(pair->lvalue, tmp);
+                ip_iptostr(pair->avp_lvalue, tmp);
                 len = strlen(tmp);
                 obstack_grow(obp, tmp, len);
                 break;
         case TYPE_DATE:
-                snprintf(tmp, sizeof(tmp), "%ld", pair->lvalue);
+                snprintf(tmp, sizeof(tmp), "%ld", pair->avp_lvalue);
                 len = strlen(tmp);
                 obstack_grow(obp, tmp, len);
                 break;
@@ -212,7 +212,7 @@ curtime_to_str(obp, request, gmt)
         
         curtime = time(NULL);
         if (pair = avl_find(request, DA_ACCT_DELAY_TIME))
-                curtime -= pair->lvalue;
+                curtime -= pair->avp_lvalue;
         if (gmt)
                 tm = gmtime(&curtime);
         else

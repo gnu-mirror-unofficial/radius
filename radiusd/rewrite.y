@@ -771,7 +771,7 @@ fundecl : TYPE IDENT dclparm
 
                   f.parm = last = NULL;
                   for (var = $3; var; var = var->next) {
-                          parm = alloc_entry(sizeof(*parm));
+                          parm = mem_alloc(sizeof(*parm));
                           parm->datatype = var->datatype;
                           var->offset = -(STACK_BASE+
                                           f.nparm - var->offset);
@@ -1850,7 +1850,7 @@ obj_alloc(bucket)
 {
         OBJECT *optr;
 
-        optr = alloc_entry(bucket->size);
+        optr = mem_alloc(bucket->size);
 
         optr->alloc        = bucket->alloc_list;
         bucket->alloc_list = optr;
@@ -1870,7 +1870,7 @@ obj_free_all(bucket)
                 next = obj->alloc;
                 if (bucket->free)
                         bucket->free(obj);
-                free_entry(obj);
+                mem_free(obj);
                 obj = next;
         }
         bucket->alloc_list = NULL;
@@ -3705,7 +3705,7 @@ rx_alloc(regex, nmatch)
 {
         COMP_REGEX *rx;
 
-        rx = alloc_entry(sizeof(*rx));
+        rx = mem_alloc(sizeof(*rx));
         rx->regex  = *regex;
         rx->nmatch = nmatch;
         list_insert(&function->rx_list, NULL, function->rx_list, rx, 1);
@@ -3721,7 +3721,7 @@ rx_free(rx)
         while (rx) {
                 next = rx->next;
                 regfree(&rx->regex);
-                free_entry(rx);
+                mem_free(rx);
                 rx = next;
         }
 }
@@ -4115,13 +4115,13 @@ attrasgn_internal(mach, attr, pair, val)
 	switch (pair->type) {
 	case TYPE_STRING:
 	case TYPE_DATE:
-		replace_string(&pair->strvalue, (char*)val);
-		pair->strlength = strlen((char*) val);
+		string_replace(&pair->avp_strvalue, (char*)val);
+		pair->avp_strlength = strlen((char*) val);
 		break;
 		
 	case TYPE_INTEGER:
 	case TYPE_IPADDR:
-		pair->lvalue = val;
+		pair->avp_lvalue = val;
 		break;
 	}
 	
@@ -4170,7 +4170,7 @@ rw_attrs0(mach)
 		len = strlen(string);
 		pushstr(mach, string, len);
 	} else
-                pushstr(mach, pair->strvalue, pair->strlength);
+                pushstr(mach, pair->avp_strvalue, pair->avp_strlength);
 }
 
 void
@@ -4183,7 +4183,7 @@ rw_attrn0(mach)
         if ((pair = avl_find(AVPLIST(mach), attr)) == NULL)
                 pushn(mach, 0);
         else
-                pushn(mach, pair->lvalue);
+                pushn(mach, pair->avp_lvalue);
 }
 
 void
@@ -4198,7 +4198,7 @@ rw_attrs(mach)
         if ((pair = avl_find_n(AVPLIST(mach), attr, index)) == NULL) 
                 pushs(mach, &nil, 1);
         else
-                pushstr(mach, pair->strvalue, pair->strlength);
+                pushstr(mach, pair->avp_strvalue, pair->avp_strlength);
 }
 
 void
@@ -4213,7 +4213,7 @@ rw_attrn(mach)
         if ((pair = avl_find_n(AVPLIST(mach), attr, index)) == NULL)
                 pushn(mach, 0);
         else
-                pushn(mach, pair->lvalue);
+                pushn(mach, pair->avp_lvalue);
 }
 
 void
@@ -4915,7 +4915,7 @@ function_free(f)
         parm = f->parm;
         while (parm) {
                 next = parm->next;
-                free_entry(parm);
+                mem_free(parm);
                 parm = next;
         }
         return 0;
@@ -5228,7 +5228,7 @@ interpret(fcall, req, type, datum)
                 datum->ival = mach.rA;
                 break;
         case String:
-                datum->sval = make_string((char*) mach.rA);
+                datum->sval = string_create((char*) mach.rA);
                 break;
         default:
                 abort();

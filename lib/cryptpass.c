@@ -69,9 +69,9 @@ encrypt_password(pair, password, vector, secret)
         nchunks = (passlen + AUTH_VECTOR_LEN - 1) / AUTH_VECTOR_LEN;
         buflen = nchunks * AUTH_VECTOR_LEN;
 
-        pair->strvalue = alloc_string(buflen);
-        pair->strlength = buflen;
-        passbuf = pair->strvalue;
+        pair->avp_strvalue = string_alloc(buflen);
+        pair->avp_strlength = buflen;
+        passbuf = pair->avp_strvalue;
 
         /* Prepare passbuf */
         memset(passbuf, 0, buflen);
@@ -113,8 +113,8 @@ decrypt_password(password, pair, vector, secret)
         
         /* Initialize password buffer */
         /* FIXME: control length */
-        memcpy(password, pair->strvalue, pair->strlength);
-        passlen = pair->strlength;
+        memcpy(password, pair->avp_strvalue, pair->avp_strlength);
+        passlen = pair->avp_strlength;
         
         /* Prepare md5buf */
         secretlen = strlen(secret);
@@ -128,7 +128,7 @@ decrypt_password(password, pair, vector, secret)
                 memcpy(md5buf + secretlen, cp, AUTH_VECTOR_LEN);
                 md5_calc(digest, md5buf, md5len);
                 /* Save hash start */
-                cp = pair->strvalue + i;
+                cp = pair->avp_strvalue + i;
                 /* Decrypt next chunk */
                 for (j = 0; j < AUTH_VECTOR_LEN; j++, i++)
                         password[i] ^= digest[j];
@@ -155,8 +155,8 @@ decrypt_password_broken(password, pair, vector, secret)
         
         /* Initialize password buffer */
         /* FIXME: control length */
-        memcpy(password, pair->strvalue, pair->strlength);
-        passlen = pair->strlength;
+        memcpy(password, pair->avp_strvalue, pair->avp_strlength);
+        passlen = pair->avp_strlength;
         
         /* Prepare md5buf */
         secretlen = strlen(secret);

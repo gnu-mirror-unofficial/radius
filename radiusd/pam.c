@@ -90,7 +90,7 @@ rad_pam_conv(num_msg, msg, resp, closure)
                         break;
                 case PAM_ERROR_MSG:
                 case PAM_TEXT_INFO: 
-                        data->reply_msg = make_string((char*)msg[count]->msg);
+                        data->reply_msg = string_create((char*)msg[count]->msg);
                         break;
                 default:
                         data->error++;

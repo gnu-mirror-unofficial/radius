@@ -1,6 +1,6 @@
 dnl define({server},{localhost})
 dnl define({port},{5432})
-define({CREATOR},{root})
+dnl define({CREATOR},{root})
 dnl define({CREATOR_PASSWORD},{PASS})
 dnl define({DB_USER},radius)
 dnl define({DB_PWD},test)

@@ -41,7 +41,7 @@ nas_free_list(list)
         while (list) {
                 next = list->next;
                 envar_free_list(list->args);
-                free_entry(list);
+                mem_free(list);
                 list = next;
         }
 }
@@ -81,7 +81,7 @@ read_naslist_entry(unused, fc, fv, file, lineno)
         if (fc >= 4)
                 nas.args = envar_parse_argcv(fc-3, &fv[3]);
         
-        nasp = Alloc_entry(NAS);
+        nasp = mem_alloc(sizeof(NAS));
 
         memcpy(nasp, &nas, sizeof(nas));
 
@@ -170,7 +170,7 @@ nas_request_to_nas(radreq)
         VALUE_PAIR *pair;
 
         if ((pair = avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
-                ipaddr = pair->lvalue;
+                ipaddr = pair->avp_lvalue;
         else
                 ipaddr = radreq->ipaddr;
 
@@ -188,7 +188,7 @@ nas_request_to_name(radreq, buf, size)
         VALUE_PAIR *pair;
 
         if ((pair = avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
-                ipaddr = pair->lvalue;
+                ipaddr = pair->avp_lvalue;
         else
                 ipaddr = radreq->ipaddr;
 

@@ -49,7 +49,7 @@ envar_parse_internal(str, phead, ptail)
                 
                 if (argv[i][0] == ',')
                         continue;
-                env = alloc_entry(sizeof(*env));
+                env = mem_alloc(sizeof(*env));
                 p = strchr(argv[i], '=');
                 if (p) {
                         int len = p - argv[i];
@@ -163,7 +163,7 @@ envar_dup(env)
 {
         envar_t *ep;
 
-        ep = alloc_entry(sizeof(*ep));
+        ep = mem_alloc(sizeof(*ep));
         ep->name  = estrdup(env->name);
         ep->value = estrdup(env->value);
         return ep;

@@ -9,8 +9,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-07-30 12:24+0300\n"
-"PO-Revision-Date: 2002-07-30 12:29+0300\n"
+"POT-Creation-Date: 2002-08-02 13:46+0300\n"
+"PO-Revision-Date: 2002-08-02 14:01+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -159,38 +159,36 @@ msgstr "%s: опция `-W %s' неоднозначна\n"
 msgid "%s: option `-W %s' doesn't allow an argument\n"
 msgstr "%s: опция `-W %s' не берет аргументов\n"
 
-#: lib/leakdetect.c:104 lib/leakdetect.c:117 lib/mem.c:216 lib/mem.c:223
-#: lib/mem.c:317 lib/mem.c:376
+#: lib/leakdetect.c:104 lib/leakdetect.c:117 lib/mem.c:227 lib/mem.c:234
+#: lib/mem.c:328 lib/mem.c:387
 msgid "low core: aborting"
 msgstr "недостаточно памяти: завершение работы"
 
-#: lib/mem.c:126
+#: lib/mem.c:138
 #, c-format
 msgid "Page too small to alloc %d-byte objects"
 msgstr "Страница слишком мала для размещения объектов размерон %d байт"
 
-#: lib/mem.c:131
+#: lib/mem.c:143
 msgid "can't allocate bucket class"
 msgstr "невозможно разместить класс контейнера"
 
-#: lib/mem.c:163
+#: lib/mem.c:175
 msgid "can't allocate bucket page"
 msgstr "невозможно разместить страницу контейнера"
 
-#: lib/mem.c:328
+#: lib/mem.c:339
 #, c-format
-msgid "calloc_entry(): too many contiguous objects requested (%d/%d)"
-msgstr ""
-"calloc_entry(): затребовано слишком много непрерывно расположенных объектов "
-"(%d/%d)"
+msgid "mem_calloc(): too many contiguous objects requested (%d/%d)"
+msgstr "mem_calloc(): затребовано слишком много непрерывно расположенных объектов (%d/%d)"
 
-#: lib/mem.c:372
-msgid "calloc_entry(): infinite loop detected"
-msgstr "calloc_entry(): обнаружено зацикливание"
+#: lib/mem.c:383
+msgid "mem_calloc(): infinite loop detected"
+msgstr "mem_calloc(): обнаружено зацикливание"
 
-#: lib/mem.c:493
-msgid "alloc_string(): string too long"
-msgstr "alloc_string(): слишком длинная строка"
+#: lib/mem.c:504
+msgid "string_alloc(): string too long"
+msgstr "string_alloc(): слишком длинная строка"
 
 #: lib/raddb.c:56 lib/raddb.c:60 radiusd/rewrite.y:1232 radiusd/rewrite.y:2680
 #, c-format
@@ -767,7 +765,7 @@ msgstr "невозможно закрыть канал"
 msgid "can't dup stdout"
 msgstr ""
 
-#: radiusd/exec.c:234 radiusd/exec.c:823
+#: radiusd/exec.c:234 radiusd/exec.c:821
 #, c-format
 msgid "<stdout of %s>:%d: %s"
 msgstr ""
@@ -790,51 +788,51 @@ msgstr "внешняя программа `%s' %s"
 msgid "won't execute, no such user: %s"
 msgstr "невозможно выполнить; нет такого пользователя: %s"
 
-#: radiusd/exec.c:517
+#: radiusd/exec.c:515
 #, c-format
 msgid "filter %s (pid %d) %s (in: %u, out: %u)"
 msgstr "фильтр %s (pid %d) %s (считано: %u, записано: %u)"
 
-#: radiusd/exec.c:552
+#: radiusd/exec.c:550
 #, c-format
 msgid "Too many (%d) threads waiting for filter %s."
 msgstr "Слишком много (%d) потоков ожидает освобождения фильтра %s."
 
-#: radiusd/exec.c:630
+#: radiusd/exec.c:628
 #, c-format
 msgid "filter %s is not declared"
 msgstr "фильтр %s не объявлен"
 
-#: radiusd/exec.c:665
+#: radiusd/exec.c:663
 #, c-format
 msgid "cannot run filter %s"
 msgstr "невозможно выполнить фильтр %s"
 
-#: radiusd/exec.c:682
+#: radiusd/exec.c:680
 #, c-format
 msgid "filter %s"
 msgstr "фильтр %s"
 
-#: radiusd/exec.c:714
+#: radiusd/exec.c:712
 msgid "wrong return type"
 msgstr "неправильный тип возврата"
 
-#: radiusd/exec.c:809 radiusd/exec.c:876
+#: radiusd/exec.c:807 radiusd/exec.c:874
 #, c-format
 msgid "reading from filter %s"
 msgstr "чтение из фильтра %s"
 
-#: radiusd/exec.c:832
+#: radiusd/exec.c:830
 #, c-format
 msgid "filter %s (auth): bad output: %s"
 msgstr "фильтр %s (auth): плохой выход %s"
 
-#: radiusd/exec.c:889
+#: radiusd/exec.c:887
 #, c-format
 msgid "filter %s (acct): bad output: %s"
 msgstr "фильтр %s (auth): плохой выход %s"
 
-#: radiusd/exec.c:974
+#: radiusd/exec.c:972
 #, c-format
 msgid "%s:%d: filter already declared at %s:%d"
 msgstr "%s:%d: фильтр уже объявлен в %s:%d"
@@ -1266,24 +1264,24 @@ msgstr "неизвестный режим: %s"
 msgid "invalid IP address: %s"
 msgstr "недействительный IP адрес: %s"
 
-#: radiusd/radiusd.c:441
+#: radiusd/radiusd.c:443
 msgid "can't create watcher: not started as absolute pathname"
 msgstr ""
 "невозможно создать контрольный процесс: имя программы не абсолютный путь"
 
-#: radiusd/radiusd.c:468
+#: radiusd/radiusd.c:470
 msgid "Sorry, your account is currently closed\n"
 msgstr "Сожалею, вас счет в настоящее время закрыт\n"
 
-#: radiusd/radiusd.c:470
+#: radiusd/radiusd.c:472
 msgid "Password has expired\n"
 msgstr "Срок действия пароля истек\n"
 
-#: radiusd/radiusd.c:472
+#: radiusd/radiusd.c:474
 msgid "Password will expire in %R{Password-Expire-Days} Days\n"
 msgstr "Срок действия пароля истечет через %R{Password-Expire-Days} дней\n"
 
-#: radiusd/radiusd.c:474
+#: radiusd/radiusd.c:476
 msgid ""
 "\n"
 "Access denied\n"
@@ -1291,7 +1289,7 @@ msgstr ""
 "\n"
 "Отказ в доступе\n"
 
-#: radiusd/radiusd.c:476
+#: radiusd/radiusd.c:478
 msgid ""
 "\n"
 "Realm quota exceeded - access denied\n"
@@ -1299,7 +1297,7 @@ msgstr ""
 "\n"
 "Превышена квота зоны -- отказано в доступе\n"
 
-#: radiusd/radiusd.c:478
+#: radiusd/radiusd.c:480
 msgid ""
 "\n"
 "You are already logged in %R{Simultaneous-Use} times - access denied\n"
@@ -1307,7 +1305,7 @@ msgstr ""
 "\n"
 "На вас уже открыты %R{Simultaneous-Use} сессии -- отказано в доступе\n"
 
-#: radiusd/radiusd.c:480
+#: radiusd/radiusd.c:482
 msgid ""
 "\n"
 "You are already logged in - access denied\n"
@@ -1315,125 +1313,125 @@ msgstr ""
 "\n"
 "На вас уже открыта сессия -- отказано в доступе\n"
 
-#: radiusd/radiusd.c:482
+#: radiusd/radiusd.c:484
 msgid "You are calling outside your allowed timespan\n"
 msgstr "Попытка подключения вне разрешенного интервала времени\n"
 
-#: radiusd/radiusd.c:604
+#: radiusd/radiusd.c:606
 msgid "Starting"
 msgstr "Начало работы"
 
-#: radiusd/radiusd.c:631
+#: radiusd/radiusd.c:633
 #, fuzzy
 msgid "Ready"
 msgstr "Готов"
 
-#: radiusd/radiusd.c:643
+#: radiusd/radiusd.c:645
 msgid "Ready to process requests."
 msgstr "Готов к обработке запросов"
 
-#: radiusd/radiusd.c:821
+#: radiusd/radiusd.c:823
 msgid "Normal shutdown."
 msgstr "Нормальное завершение."
 
-#: radiusd/radiusd.c:841
+#: radiusd/radiusd.c:843
 msgid "flushing request queues"
 msgstr "сброс очередей запросов"
 
-#: radiusd/radiusd.c:857
+#: radiusd/radiusd.c:859
 msgid "restart initiated"
 msgstr "начата подготовка к перезапуску"
 
-#: radiusd/radiusd.c:860
+#: radiusd/radiusd.c:862
 msgid "can't restart: not started as absolute pathname"
 msgstr "перезапуск невозможен: имя программы не абсолютный путь"
 
-#: radiusd/radiusd.c:909
+#: radiusd/radiusd.c:911
 msgid "restarting radius"
 msgstr "перезапуск radius"
 
-#: radiusd/radiusd.c:911
+#: radiusd/radiusd.c:913
 msgid "RADIUS NOT RESTARTED: exec failed"
 msgstr "ПЕРЕЗАПУСК НЕУДАЧЕН: ошибка exec"
 
-#: radiusd/radiusd.c:1222
+#: radiusd/radiusd.c:1224
 msgid "Radiusd is not listening on any port. Trying to continue anyway..."
 msgstr "Radiusd не обслуживает ни один порт. Продолжаем, тем не менее..."
 
-#: radiusd/radiusd.c:1234
+#: radiusd/radiusd.c:1236
 #, fuzzy
 msgid "Loading configuration files."
 msgstr "Повторная загрузка конфигурационных файлов"
 
-#: radiusd/radiusd.c:1247
+#: radiusd/radiusd.c:1249
 msgid "Errors reading config file - EXITING"
 msgstr "Ошибки при обработке файла config - завершение работы"
 
-#: radiusd/radiusd.c:1273
+#: radiusd/radiusd.c:1275
 msgid "can't find out my own IP address"
 msgstr "невозможно определить мой IP адрес"
 
-#: radiusd/radiusd.c:1287
+#: radiusd/radiusd.c:1289
 msgid "Reloading configuration now"
 msgstr "Начинаю перезагрузку конфигурационных файлов"
 
-#: radiusd/radiusd.c:1300
+#: radiusd/radiusd.c:1302
 #, c-format
 msgid "Dumping users db to `%s'"
 msgstr "База данных по пользователям сброшена в `%s'"
 
-#: radiusd/radiusd.c:1324
+#: radiusd/radiusd.c:1326
 msgid "can't restart: radiusd not started as absolute pathname"
 msgstr "перезапуск невозможен: имя программы не абсолютный путь"
 
-#: radiusd/radiusd.c:1337
+#: radiusd/radiusd.c:1339
 msgid "RADIUSD RUNNING"
 msgstr "RADIUSD В РАБОТЕ"
 
-#: radiusd/radiusd.c:1344
+#: radiusd/radiusd.c:1346
 msgid "RADIUSD SUSPENDED"
 msgstr "RADIUSD ОСТАНОВЛЕН"
 
 # Should I handle plurals here, or just leave them as they are?
-#: radiusd/radiusd.c:1381
+#: radiusd/radiusd.c:1383
 #, c-format
 msgid "%u classes, %u buckets are using %u bytes of memory"
 msgstr "%u классов, %u контейнеров используют %u байт памяти"
 
-#: radiusd/radiusd.c:1388
+#: radiusd/radiusd.c:1390
 #, c-format
 msgid "memory utilization: %u.%1u%%"
 msgstr "использование памяти: %u.%1u%%"
 
-#: radiusd/radiusd.c:1393
+#: radiusd/radiusd.c:1395
 msgid "    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"
 msgstr ""
 
 # plural again...
-#: radiusd/radiusd.c:1398
+#: radiusd/radiusd.c:1400
 #, c-format
 msgid "malloc statistics: %d blocks, %d bytes"
 msgstr "статистика malloc: %d блоков, %d байт"
 
-#: radiusd/radiusd.c:1410
+#: radiusd/radiusd.c:1412
 #, c-format
 msgid "exit on signal %d"
 msgstr "выход по сигналу %d"
 
-#: radiusd/radiusd.c:1518
+#: radiusd/radiusd.c:1520
 msgid "Dropping packet"
 msgstr "Пакет отброшен"
 
-#: radiusd/radiusd.c:1541
+#: radiusd/radiusd.c:1543
 #, c-format
 msgid "Retransmitting %s reply"
 msgstr "Повторная передача ответа %s"
 
-#: radiusd/radiusd.c:1546
+#: radiusd/radiusd.c:1548
 msgid "request failed"
 msgstr "неудавшийся запрос"
 
-#: radiusd/radiusd.c:1666
+#: radiusd/radiusd.c:1668
 #, c-format
 msgid "unknown request code %d"
 msgstr "неизвестный код запроса %d"

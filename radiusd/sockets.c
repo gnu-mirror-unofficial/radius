@@ -54,7 +54,7 @@ socket_list_alloc(type, ipaddr, port)
 	UINT4 ipaddr;
 	int port;
 {
-	SOCKET_LIST *s = alloc_entry(sizeof(*s));
+	SOCKET_LIST *s = mem_alloc(sizeof(*s));
 	s->type = type;
 	s->ipaddr = ipaddr;
 	s->port = port;
@@ -154,7 +154,7 @@ socket_list_open(slist)
 				*slist = next;
 			if (p->fd != -1)
 				close(p->fd);
-			free_entry(p);
+			mem_free(p);
 		}
 		p = next;
 	}
@@ -174,7 +174,7 @@ socket_list_open(slist)
 					prev->next = next;
 				else
 					*slist = next;
-				free_entry(p);
+				mem_free(p);
 			} else
 				count++;
 		} else
@@ -194,7 +194,7 @@ socket_list_close(slist)
 	for (p = *slist; p;) {
 		SOCKET_LIST *next = p->next;
 		close(p->fd);
-		free_entry(p);
+		mem_free(p);
 		p = next;
 	}
 	*slist = NULL;

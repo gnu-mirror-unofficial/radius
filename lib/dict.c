@@ -116,7 +116,7 @@ addvendor(name, value)
 {
         DICT_VENDOR *vval;
 
-        vval = Alloc_entry(DICT_VENDOR);
+        vval = mem_alloc(sizeof(DICT_VENDOR));
         
         vval->vendorname = estrdup(name);
         vval->vendorpec  = value;
@@ -157,7 +157,7 @@ dict_register_parser(attr, fun)
 	int attr;
 	attr_parser_fp fun;
 {
-	ATTR_PARSER_TAB *e = alloc_entry(sizeof(*e));
+	ATTR_PARSER_TAB *e = mem_alloc(sizeof(*e));
 	e->attr = attr;
 	e->fun = fun;
 	e->next = attr_parser_tab;
@@ -422,7 +422,7 @@ _dict_value(errcnt, fc, fv, file, lineno)
         attr = sym_lookup_or_install(dict_attr_tab, VALUE_ATTR, 1);
         
         /* Create a new VALUE entry for the list */
-        dval = Alloc_entry(DICT_VALUE);
+        dval = mem_alloc(sizeof(DICT_VALUE));
                         
         dval->name = estrdup(VALUE_NAME);
         dval->attr = attr;

@@ -113,7 +113,7 @@ rad_mysql_reconnect(type, conn)
                 break;
         }
         
-        mysql = conn->data = alloc_entry(sizeof(MYSQL));
+        mysql = conn->data = mem_alloc(sizeof(MYSQL));
         mysql_init(mysql);
 	if (!mysql_real_connect(mysql, 
 				sql_cfg.server, sql_cfg.login,
@@ -124,7 +124,7 @@ rad_mysql_reconnect(type, conn)
 		       sql_cfg.server,
 		       sql_cfg.login,
 		       mysql_error((MYSQL*)conn->data));
-		free_entry(conn->data);
+		mem_free(conn->data);
 		conn->data = NULL;
 		conn->connected = 0;
 		return -1;
@@ -140,8 +140,8 @@ rad_mysql_disconnect(conn, drop)
         struct sql_connection *conn;
 	int drop; /* currently unused */
 {
-        mysql_close(conn->data);
-        free_entry(conn->data);
+	mysql_close(conn->data);
+        mem_free(conn->data);
 	conn->data = NULL;  
         conn->connected = 0;
 }

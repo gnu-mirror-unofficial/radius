@@ -327,7 +327,7 @@ parse_datum(p, dp)
                 p[length-1] = 0;
                 
                 type = String;
-                dp->string = make_string(p);
+                dp->string = string_create(p);
         } else if (isdigit(*p)) {
                 char *endp;
                 
@@ -354,7 +354,7 @@ parse_datum(p, dp)
                 }
         } else {
                 type = String;
-                dp->string = make_string(p);
+                dp->string = string_create(p);
         }
         return type;
 }
@@ -366,19 +366,19 @@ print_ident(var)
         char buf[64];
         switch (var->type) {
         case Undefined:
-                return make_string("UNDEFINED");
+                return string_create("UNDEFINED");
                 break;
         case Integer:
                 sprintf(buf, "%d", var->datum.number);
-                return make_string(buf);
+                return string_create(buf);
         case Ipaddress:
                 ip_iptostr(var->datum.ipaddr, buf);
-                return make_string(buf);
+                return string_create(buf);
         case String:
-                return dup_string(var->datum.string);
+                return string_dup(var->datum.string);
                 break;
         case Vector:
-                return make_string("VECTOR");
+                return string_create("VECTOR");
         }
 	return NULL;
 }
@@ -392,19 +392,19 @@ print_pairs(fp, pair)
                 fprintf(fp, " %s = ", pair->name);
                 switch (pair->type) {
                 case TYPE_STRING:
-                        fprintf(fp, "(STRING) %s", pair->strvalue);
+                        fprintf(fp, "(STRING) %s", pair->avp_strvalue);
                         break;
 
                 case TYPE_INTEGER:
-                        fprintf(fp, "(INTEGER) %ld", pair->lvalue);
+                        fprintf(fp, "(INTEGER) %ld", pair->avp_lvalue);
                         break;
 
                 case TYPE_IPADDR:
-                        fprintf(fp, "(IP) %lx", pair->lvalue);
+                        fprintf(fp, "(IP) %lx", pair->avp_lvalue);
                         break;
                 
                 case TYPE_DATE:
-                        fprintf(fp, "(DATE) %ld", pair->lvalue);
+                        fprintf(fp, "(DATE) %ld", pair->avp_lvalue);
                         break;
                         
                 default:
@@ -457,7 +457,7 @@ var_free(var)
                 return; /* named variables are not freed */
         switch (var->type) {
         case String:
-                free_string(var->datum.string);
+                string_free(var->datum.string);
                 break;
         case Vector:
                 avl_free(var->datum.vector);
@@ -561,11 +561,11 @@ compare_lists(reply, sample)
                         return -1;
                 switch (p->type) {
                 case TYPE_STRING:
-                        result = strcmp(sample->strvalue, p->strvalue);
+                        result = strcmp(sample->avp_strvalue, p->avp_strvalue);
                         break;
                 case TYPE_INTEGER:
                 case TYPE_IPADDR:
-                        result = sample->lvalue - p->lvalue;
+                        result = sample->avp_lvalue - p->avp_lvalue;
                         break;
                 default:
                         result = -1;

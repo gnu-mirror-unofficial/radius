@@ -45,12 +45,12 @@ process_menu(radreq, activefd)
         char *msg;
 
         if ((pair = avl_find(radreq->request, DA_STATE)) == NULL ||
-            pair->strvalue == NULL ||           
-            strncmp(pair->strvalue, "MENU=", 5) != 0) 
+            pair->avp_strvalue == NULL ||           
+            strncmp(pair->avp_strvalue, "MENU=", 5) != 0) 
                 return;
                 
 
-        strcpy(menu_name, pair->strvalue + 5);
+        strcpy(menu_name, pair->avp_strvalue + 5);
 
         /* The menu input is in the Password Field */
         pair = avl_find(radreq->request, DA_USER_PASSWORD);
@@ -69,10 +69,10 @@ process_menu(radreq, activefd)
         if ((term_pair = avl_find(pair, DA_TERMINATION_MENU)) != NULL) {
                 /* Change this to a menu state */
                 snprintf(state_value, sizeof(state_value),
-                                "MENU=%s", term_pair->strvalue);
+                                "MENU=%s", term_pair->avp_strvalue);
                 term_pair->attribute = DA_STATE;
-                replace_string(&term_pair->strvalue, state_value);
-                term_pair->strlength = strlen(state_value);
+                string_replace(&term_pair->avp_strvalue, state_value);
+                term_pair->avp_strlength = strlen(state_value);
                 term_pair->name = "Challenge-State";
 
                 /* Insert RADIUS termination option */
@@ -86,14 +86,14 @@ process_menu(radreq, activefd)
         }
 
         if ((term_pair = avl_find(pair, DA_MENU)) != NULL &&
-            strcmp(term_pair->strvalue, "EXIT") == 0) {
+            strcmp(term_pair->avp_strvalue, "EXIT") == 0) {
                 rad_send_reply(RT_AUTHENTICATION_REJECT, radreq,
                                radreq->request, NULL, activefd);
         } else if (pair) {
                 if (new_pair = avl_find(pair, DA_MENU)) {
-                        msg = get_menu(new_pair->strvalue);
+                        msg = get_menu(new_pair->avp_strvalue);
                         snprintf(state_value, sizeof(state_value),
-                                        "MENU=%s", new_pair->strvalue);
+                                        "MENU=%s", new_pair->avp_strvalue);
                         send_challenge(radreq, msg, state_value, activefd);
                 } else {
                         rad_send_reply(RT_AUTHENTICATION_ACK, radreq,

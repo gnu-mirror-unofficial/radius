@@ -127,7 +127,7 @@ statfile_read_nas_stat(fd, hdr)
 
         server_stat.nas_count = 0;
         for (n = 0; n < hdr->nas_count; n++) {
-                np = alloc_entry(sizeof(*np));
+                np = mem_alloc(sizeof(*np));
                 if (read(fd, np, sizeof(*np)) != sizeof(*np))
                         return -1;
                 np->next = NULL;
@@ -151,7 +151,7 @@ statfile_read_port_stat(fd, hdr)
 
         server_stat.port_count = 0;
         for (n = 0; n < hdr->port_count; n++) {
-                port = alloc_entry(sizeof(*port));
+                port = mem_alloc(sizeof(*port));
                 if (read(fd, port, sizeof(*port)) != sizeof(*port))
                         return -1;
                 port->next = NULL;
@@ -279,7 +279,7 @@ stat_alloc_port()
 {
         PORT_STAT *port;
         
-        port = alloc_entry(sizeof(*port));
+        port = mem_alloc(sizeof(*port));
         pthread_mutex_lock(&stat_mutex);
         if (!server_stat.port_head)
                 server_stat.port_head = port;
@@ -511,7 +511,7 @@ snmp_attach_nas_stat(nas)
 
         np = find_nas_stat(nas->ipaddr);
         if (!np) {
-                np = alloc_entry(sizeof(*np));
+                np = mem_alloc(sizeof(*np));
                 if (!server_stat.nas_head)
                         server_stat.nas_head = np;
                 else

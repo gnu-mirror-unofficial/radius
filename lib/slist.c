@@ -28,7 +28,7 @@ free_slist(s, f)
                 next = s->next;
                 if (f)
                         (*f)(s);
-                free_entry(s);
+                mem_free(s);
                 s = next;
         }
 }

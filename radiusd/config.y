@@ -739,7 +739,7 @@ _get_value(arg, type, base)
                 break;
 		
         case CFG_STRING:
-                replace_string((char**)base, value.v.string);
+                string_replace((char**)base, value.v.string);
                 break;
 		
         case CFG_IPADDR:

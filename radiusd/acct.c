@@ -179,7 +179,7 @@ check_attribute(check_pairs, pair_attr, pair_value, def)
         if ((pair = avl_find(check_pairs, pair_attr)) == NULL)
                 return def;
         do {
-                if (pair->lvalue == pair_value)
+                if (pair->avp_lvalue == pair_value)
                         return 1;
                 check_pairs = pair->next;
         } while (check_pairs && (pair = avl_find(check_pairs, pair_attr)));
@@ -216,7 +216,7 @@ rad_acct_system(radreq, dowtmp)
                            _("no Acct-Status-Type attribute"));
                 return -1;
         }
-        status = vp->lvalue;
+        status = vp->avp_lvalue;
         if (status == DV_ACCT_STATUS_TYPE_ACCOUNTING_ON ||
             status == DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF)
                 rb_record = 1;
@@ -236,10 +236,10 @@ rad_acct_system(radreq, dowtmp)
                    DV_ACCT_STATUS_TYPE_ACCOUNTING_{ON|OFF} */
                 
                 if ((!(vp = avl_find(radreq->request, DA_ACCT_SESSION_TIME))
-                     || vp->lvalue == 0) &&
+                     || vp->avp_lvalue == 0) &&
                     (!(vp = avl_find(radreq->request, DA_ACCT_SESSION_ID))
-                     && vp->strlength == 8
-                     && memcmp(vp->strvalue, "00000000", 8) == 0)) {
+                     && vp->avp_strlength == 8
+                     && memcmp(vp->avp_strvalue, "00000000", 8) == 0)) {
 
                         radlog_req(L_INFO, radreq, 
                                    _("converting reboot records"));
@@ -269,41 +269,41 @@ rad_acct_system(radreq, dowtmp)
         for (vp = radreq->request; vp; vp = vp->next) {
                 switch (vp->attribute) {
                 case DA_USER_NAME:
-                        backslashify(ut.login, vp->strvalue, RUT_NAMESIZE);
+                        backslashify(ut.login, vp->avp_strvalue, RUT_NAMESIZE);
                         break;
 			
                 case DA_ORIG_USER_NAME:
-                        backslashify(ut.orig_login, vp->strvalue, RUT_NAMESIZE);
+                        backslashify(ut.orig_login, vp->avp_strvalue, RUT_NAMESIZE);
                         break;
 			
                 case DA_LOGIN_IP_HOST:
                 case DA_FRAMED_IP_ADDRESS:
-                        ut.framed_address = htonl(vp->lvalue);
+                        ut.framed_address = htonl(vp->avp_lvalue);
                         break;
 			
                 case DA_FRAMED_PROTOCOL:
-                        protocol = vp->lvalue;
+                        protocol = vp->avp_lvalue;
                         break;
 			
                 case DA_NAS_IP_ADDRESS:
-                        nas_address = vp->lvalue;
-                        ut.nas_address = htonl(vp->lvalue);
+                        nas_address = vp->avp_lvalue;
+                        ut.nas_address = htonl(vp->avp_lvalue);
                         break;
 			
                 case DA_NAS_PORT_ID:
-                        ut.nas_port = vp->lvalue;
+                        ut.nas_port = vp->avp_lvalue;
                         port_seen = 1;
                         break;
 			
                 case DA_ACCT_DELAY_TIME:
-                        ut.delay = vp->lvalue;
+                        ut.delay = vp->avp_lvalue;
                         break;
 			
                 case DA_CALLING_STATION_ID:
                         store_session_id(ut.caller_id,
                                          sizeof(ut.caller_id),
-                                         vp->strvalue,
-                                         vp->strlength);
+                                         vp->avp_strvalue,
+                                         vp->avp_strlength);
                         break;
 			
                 case DA_CALLED_STATION_ID:
@@ -312,12 +312,12 @@ rad_acct_system(radreq, dowtmp)
                 case DA_ACCT_SESSION_ID:
                         store_session_id(ut.session_id,
                                          sizeof(ut.session_id),
-                                         vp->strvalue,
-                                         vp->strlength);
+                                         vp->avp_strvalue,
+                                         vp->avp_strlength);
                         break;
 			
                 case DA_NAS_PORT_TYPE:
-			ut.porttype = vp->lvalue;
+			ut.porttype = vp->avp_lvalue;
                         break;
                 }
         }
@@ -481,7 +481,7 @@ write_detail(radreq, authtype, f)
         cl = NULL;
         nas = radreq->ipaddr;
         if ((pair = avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
-                nas = pair->lvalue;
+                nas = pair->avp_lvalue;
         if (radreq->server)
                 nas = radreq->server->addr;
 
@@ -595,18 +595,18 @@ rad_acct_ext(radreq)
         for (p = avl_find(radreq->request, DA_SCHEME_ACCT_PROCEDURE);
 	     p;
 	     p = avl_find(p->next, DA_SCHEME_ACCT_PROCEDURE))
-                scheme_acct(p->strvalue, radreq);
+                scheme_acct(p->avp_strvalue, radreq);
 #endif
         for (p = avl_find(radreq->request, DA_ACCT_EXT_PROGRAM);
 	     p;
 	     p = avl_find(p->next, DA_ACCT_EXT_PROGRAM)) {
-    		switch (p->strvalue[0]) {
+    		switch (p->avp_strvalue[0]) {
 		case '/':
-                	radius_exec_program(p->strvalue, radreq,
+                	radius_exec_program(p->avp_strvalue, radreq,
 					    NULL, 0, NULL);
 			break;
 		case '|':
-                	filter_acct(p->strvalue+1, radreq);
+                	filter_acct(p->avp_strvalue+1, radreq);
                 }
         }
         return 0;
@@ -802,7 +802,7 @@ rad_check_multi(name, request, maxsimul, pcount)
 
 
         if ((fra = avl_find(request, DA_FRAMED_IP_ADDRESS)) != NULL)
-                ipno = htonl(fra->lvalue);
+                ipno = htonl(fra->avp_lvalue);
 
         /* Pass II. Check all registered logins. */
 

@@ -277,7 +277,7 @@ sql_conn_destroy(void *data)
 {
 	struct sql_connection *conn = data;
 	disp_sql_disconnect(sql_cfg.interface, conn);
-	free_entry(conn);
+	mem_free(conn);
 }
 
 static void
@@ -634,7 +634,7 @@ attach_sql_connection(type)
         if (!conn) {
                 debug(1, ("allocating new %d sql connection", type));
 
-                conn = alloc_entry(sizeof(struct sql_connection));
+                conn = mem_alloc(sizeof(struct sql_connection));
                 conn->owner = NULL;
                 conn->connected = 0;
                 conn->last_used = now;
@@ -668,7 +668,7 @@ detach_sql_connection(type)
                           conn));
                 if (conn->connected)
                         disp_sql_disconnect(sql_cfg.interface, conn);
-                free_entry(conn);
+                mem_free(conn);
                 pthread_setspecific(sql_conn_key[type], NULL);
         }
 }
@@ -708,7 +708,7 @@ rad_sql_acct(radreq)
                            _("no Acct-Status-Type attribute in rad_sql_acct()"));
                 return ;
         }
-        status = pair->lvalue;
+        status = pair->avp_lvalue;
 
         conn = attach_sql_connection(SQL_ACCT);
         obstack_init(&stack);
@@ -741,9 +741,9 @@ rad_sql_acct(radreq)
                         char *session_id;
 
                         pair = avl_find(radreq->request, DA_USER_NAME);
-                        name = pair ? pair->strvalue : _("unknown");
+                        name = pair ? pair->avp_strvalue : _("unknown");
                         pair = avl_find(radreq->request, DA_ACCT_SESSION_ID);
-                        session_id = pair ? pair->strvalue : _("unknown");
+                        session_id = pair ? pair->avp_strvalue : _("unknown");
 			log_facility = L_WARN;
                 }
                 break;

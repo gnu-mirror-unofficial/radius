@@ -261,7 +261,7 @@ parse_opt (key, arg, state)
                 auth_detail++;
                 break;
         case 'a':
-                radacct_dir = make_string(optarg);
+                radacct_dir = string_create(optarg);
                 break;
 #ifdef USE_DBM
         case 'b':
@@ -272,7 +272,7 @@ parse_opt (key, arg, state)
                 foreground = 1;
                 break;
         case 'l':
-                radlog_dir = make_string(optarg);
+                radlog_dir = string_create(optarg);
                 break;
         case 'm':
                 switch (arg[0]) {
@@ -419,7 +419,9 @@ main(argc, argv)
 	register_after_config_hook(radiusd_after_config_hook, NULL);
 
         snmp_init(0, 0, (snmp_alloc_t)emalloc, (snmp_free_t)efree);
+#ifdef USE_SNMP
         snmpserv_init(&saved_status);
+#endif
 
         switch (radius_mode) {
         case MODE_CHECKCONF:
@@ -462,24 +464,24 @@ main(argc, argv)
 void
 set_config_defaults()
 {
-        exec_user  = make_string("daemon");
-        username_valid_chars = make_string(".-_!@#$%^&\\/");
+        exec_user  = string_create("daemon");
+        username_valid_chars = string_create(".-_!@#$%^&\\/");
         message_text[MSG_ACCOUNT_CLOSED] =
-                make_string(_("Sorry, your account is currently closed\n"));
+                string_create(_("Sorry, your account is currently closed\n"));
         message_text[MSG_PASSWORD_EXPIRED] =
-                make_string(_("Password has expired\n"));
+                string_create(_("Password has expired\n"));
         message_text[MSG_PASSWORD_EXPIRE_WARNING] =
-                make_string(_("Password will expire in %R{Password-Expire-Days} Days\n"));
+                string_create(_("Password will expire in %R{Password-Expire-Days} Days\n"));
         message_text[MSG_ACCESS_DENIED] =
-                make_string(_("\nAccess denied\n"));
+                string_create(_("\nAccess denied\n"));
         message_text[MSG_REALM_QUOTA] =
-                make_string(_("\nRealm quota exceeded - access denied\n"));
+                string_create(_("\nRealm quota exceeded - access denied\n"));
         message_text[MSG_MULTIPLE_LOGIN] =
-                make_string(_("\nYou are already logged in %R{Simultaneous-Use} times - access denied\n"));
+                string_create(_("\nYou are already logged in %R{Simultaneous-Use} times - access denied\n"));
         message_text[MSG_SECOND_LOGIN] =
-                make_string(_("\nYou are already logged in - access denied\n"));
+                string_create(_("\nYou are already logged in - access denied\n"));
         message_text[MSG_TIMESPAN_VIOLATION] =
-                make_string(_("You are calling outside your allowed timespan\n"));
+                string_create(_("You are calling outside your allowed timespan\n"));
 }
 
 void

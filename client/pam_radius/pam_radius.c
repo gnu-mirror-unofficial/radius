@@ -89,7 +89,7 @@ _cleanup_fake_pairlist(VALUE_PAIR *p)
 	VALUE_PAIR *next;
 	while (p) {
 		next = p->next;
-		free_entry(p);
+		mem_free(p);
 		p = next;
 	}
 }
@@ -246,10 +246,10 @@ _pam_parse(pam_handle_t *pamh, int argc, const char **argv)
 			}
 			*p++ = 0;
 			
-			pair = alloc_entry(sizeof(*pair));
+			pair = mem_alloc(sizeof(*pair));
 			pair->next = NULL;
 			pair->name = (char *) *argv;
-			pair->strvalue = p;
+			pair->avp_strvalue = p;
 			if (tail)
 				tail->next = pair;
 			else
@@ -423,7 +423,7 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
 		VALUE_PAIR *p = install_pair(__FILE__, __LINE__,
                                              add_pair->name, 
                                              OPERATOR_EQUAL,
-				             add_pair->strvalue);
+				             add_pair->avp_strvalue);
 		avl_add_pair(&pairs, p);
 	}
 	/* For compatibility with previous versions handle service_type */

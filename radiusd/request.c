@@ -139,7 +139,7 @@ request_free(req)
         REQUEST *req;
 {
         request_class[req->type].free(req->data);
-        free_entry(req);
+        mem_free(req);
 }
 
 void
@@ -369,7 +369,7 @@ request_put(type, data, activefd, numpending)
          * Add this request to the list
          */
         if (to_replace == NULL) {
-                curreq = alloc_entry(sizeof *curreq);
+                curreq = mem_alloc(sizeof *curreq);
                 curreq->next = first_request;
                 first_request = curreq;
         } else {

@@ -679,12 +679,12 @@ ascend_parse_filter(pair, errp)
 {
 	ASCEND_FILTER flt;
 	
-	if (_ascend_parse_filter(pair->strvalue, &flt, errp))
+	if (_ascend_parse_filter(pair->avp_strvalue, &flt, errp))
 		return 1;
-	free_string(pair->strvalue);
-	pair->strlength = sizeof(flt);
-	pair->strvalue = alloc_string(pair->strlength);
-	memcpy(pair->strvalue, &flt, sizeof(flt));
+	string_free(pair->avp_strvalue);
+	pair->avp_strlength = sizeof(flt);
+	pair->avp_strvalue = string_alloc(pair->avp_strlength);
+	memcpy(pair->avp_strvalue, &flt, sizeof(flt));
 	return 0;
 }
      

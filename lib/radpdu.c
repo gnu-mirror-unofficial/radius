@@ -195,18 +195,18 @@ rad_encode_pair(ap, pair)
         switch (pair->type) {
         case TYPE_STRING:
                 /* Do we need it? */
-                if (pair->strlength == 0 && pair->strvalue[0] != 0)
-                        pair->strlength = strlen(pair->strvalue);
+                if (pair->avp_strlength == 0 && pair->avp_strvalue[0] != 0)
+                        pair->avp_strlength = strlen(pair->avp_strvalue);
 
-                len = pair->strlength;
+                len = pair->avp_strlength;
                 if (len >= AUTH_STRING_LEN) 
                         len = AUTH_STRING_LEN - 1;
-                rc = rad_attr_write(ap, pair->strvalue, len);
+                rc = rad_attr_write(ap, pair->avp_strvalue, len);
                 break;
                 
         case TYPE_INTEGER:
         case TYPE_IPADDR:
-                lval = htonl(pair->lvalue);
+                lval = htonl(pair->avp_lvalue);
                 rc = rad_attr_write(ap, &lval, sizeof(UINT4));
                 break;
 
@@ -439,7 +439,7 @@ rad_decode_pdu(host, udp_port, buffer, length)
         {
                 VALUE_PAIR *p = avl_find(radreq->request, DA_NAS_IP_ADDRESS);
                 if (p)
-                        radreq->ipaddr = p->lvalue;
+                        radreq->ipaddr = p->avp_lvalue;
         }
 #endif
         return radreq;
@@ -478,10 +478,10 @@ rad_decode_pair(attrno, ptr, attrlen)
 
         case TYPE_STRING:
                 /* attrlen always < AUTH_STRING_LEN */
-                pair->strlength = attrlen;
-                pair->strvalue = alloc_string(attrlen + 1);
-                memcpy(pair->strvalue, ptr, attrlen);
-                pair->strvalue[attrlen] = 0;
+                pair->avp_strlength = attrlen;
+                pair->avp_strvalue = string_alloc(attrlen + 1);
+                memcpy(pair->avp_strvalue, ptr, attrlen);
+                pair->avp_strvalue[attrlen] = 0;
 
                 if (debug_on(10)) {
                         char *save;
@@ -495,7 +495,7 @@ rad_decode_pair(attrno, ptr, attrlen)
         case TYPE_INTEGER:
         case TYPE_IPADDR:
                 memcpy(&lval, ptr, sizeof(UINT4));
-                pair->lvalue = ntohl(lval);
+                pair->avp_lvalue = ntohl(lval);
 
                 if (debug_on(10)) {
                         char *save;

@@ -118,13 +118,13 @@ radscm_avp_to_cons(pair)
         switch (pair->type) {
         case TYPE_STRING:
         case TYPE_DATE:
-                scm_value = scm_makfrom0str(pair->strvalue);
+                scm_value = scm_makfrom0str(pair->avp_strvalue);
                 break;
         case TYPE_INTEGER:
-                scm_value = scm_long2num(pair->lvalue);
+                scm_value = scm_long2num(pair->avp_lvalue);
                 break;
         case TYPE_IPADDR:
-                scm_value = scm_ulong2num(pair->lvalue);
+                scm_value = scm_ulong2num(pair->avp_lvalue);
                 break;
         default:
                 abort();
@@ -175,16 +175,16 @@ radscm_cons_to_avp(scm)
         switch (pair.type) {
         case TYPE_INTEGER:
                 if (SCM_IMP(cdr) && SCM_INUMP(cdr)) {
-                        pair.lvalue = SCM_INUM(cdr);
+                        pair.avp_lvalue = SCM_INUM(cdr);
                 } else if (SCM_BIGP(cdr)) {
-                        pair.lvalue = (UINT4) scm_i_big2dbl(cdr);
+                        pair.avp_lvalue = (UINT4) scm_i_big2dbl(cdr);
                 } else if (SCM_NIMP(cdr) && SCM_STRINGP(cdr)) {
                         char *name = SCM_STRING_CHARS(cdr);
                         val = value_name_to_value(name, pair.attribute);
                         if (val) {
-                                pair.lvalue = val->value;
+                                pair.avp_lvalue = val->value;
                         } else {
-                                pair.lvalue = strtol(name, &name, 0);
+                                pair.avp_lvalue = strtol(name, &name, 0);
                                 if (*name)
                                         return NULL;
                         }
@@ -194,11 +194,11 @@ radscm_cons_to_avp(scm)
                 
         case TYPE_IPADDR:
                 if (SCM_IMP(cdr) && SCM_INUMP(cdr)) {
-                        pair.lvalue = SCM_INUM(cdr);
+                        pair.avp_lvalue = SCM_INUM(cdr);
                 } else if (SCM_BIGP(cdr)) {
-                        pair.lvalue = (UINT4) scm_i_big2dbl(cdr);
+                        pair.avp_lvalue = (UINT4) scm_i_big2dbl(cdr);
                 } else if (SCM_NIMP(cdr) && SCM_STRINGP(cdr)) {
-                        pair.lvalue = ip_gethostaddr(SCM_STRING_CHARS(cdr));
+                        pair.avp_lvalue = ip_gethostaddr(SCM_STRING_CHARS(cdr));
                 } else
                         return NULL;
                 break;
@@ -206,14 +206,14 @@ radscm_cons_to_avp(scm)
         case TYPE_DATE:
                 if (!(SCM_NIMP(cdr) && SCM_STRINGP(cdr)))
                         return NULL;
-                pair.strvalue = make_string(SCM_STRING_CHARS(cdr));
-                pair.strlength = strlen(pair.strvalue);
+                pair.avp_strvalue = string_create(SCM_STRING_CHARS(cdr));
+                pair.avp_strlength = strlen(pair.avp_strvalue);
                 break;
         default:
                 abort();
         }
 
-        p = alloc_entry(sizeof(VALUE_PAIR));
+        p = mem_alloc(sizeof(VALUE_PAIR));
         *p = pair;
         
         return p;

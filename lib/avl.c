@@ -48,7 +48,7 @@ static char rcsid[] =
 VALUE_PAIR *
 avp_alloc()
 {
-        return Alloc_entry(VALUE_PAIR);
+        return mem_alloc(sizeof(VALUE_PAIR));
 }
 
 void
@@ -58,8 +58,8 @@ avp_free(p)
         if (!p)
                 return;
         if (p->type == TYPE_STRING || p->eval) 
-                free_string(p->strvalue);
-        free_entry(p);
+                string_free(p->avp_strvalue);
+        mem_free(p);
 }
 
 /* A/V pair functions */
@@ -74,7 +74,7 @@ avp_dup(vp)
         memcpy(ret, vp, sizeof(VALUE_PAIR));
         ret->next = NULL;
         if (ret->type == TYPE_STRING || ret->eval)
-                ret->strvalue = dup_string(vp->strvalue);
+                ret->avp_strvalue = string_dup(vp->avp_strvalue);
         return ret;
 }
 
@@ -101,10 +101,10 @@ avp_create(attr, length, strval, lval)
         pair->type = dict->type;
         pair->prop = dict->prop;
         if (strval) {
-                pair->strlength = length;
-                pair->strvalue = make_string(strval);
+                pair->avp_strlength = length;
+                pair->avp_strvalue = string_create(strval);
         } else
-                pair->lvalue = lval;
+                pair->avp_lvalue = lval;
 
         return pair;
 }
@@ -172,15 +172,16 @@ avp_cmp(a, b)
 	
 	switch (a->type) {
 	case TYPE_STRING:
-		if (a->strlength != b->strlength)
+		if (a->avp_strlength != b->avp_strlength)
 			rc = 1;
 		else
-			rc = memcmp(a->strvalue, b->strvalue, a->strlength);
+			rc = memcmp(a->avp_strvalue, b->avp_strvalue, 
+                                    a->avp_strlength);
 		break;
 
 	case TYPE_INTEGER:
 	case TYPE_IPADDR:
-		rc = a->lvalue != b->lvalue;
+		rc = a->avp_lvalue != b->avp_lvalue;
 		break;
 	}
 	return rc;
@@ -418,7 +419,7 @@ avl_dup(from)
                 temp = avp_alloc();
                 memcpy(temp, from, sizeof(VALUE_PAIR));
                 if (temp->type == TYPE_STRING || temp->eval)
-                        temp->strvalue = dup_string(temp->strvalue);
+                        temp->avp_strvalue = string_dup(temp->avp_strvalue);
                 temp->next = NULL;
                 if (last)
                         last->next = temp;

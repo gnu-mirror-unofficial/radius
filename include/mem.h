@@ -49,10 +49,10 @@ typedef struct {
 } CLASS_STAT;
 
 
-void *alloc_entry(size_t size);
-void free_entry(void *ptr);
-void *calloc_entry(count_t count, size_t size);
-void cfree_entry(void *ptr, count_t count);
+void *mem_alloc(size_t size);
+void mem_free(void *ptr);
+void *mem_calloc(count_t count, size_t size);
+void mem_cfree(void *ptr, count_t count);
 
 void *radxmalloc(size_t);
 void *emalloc(size_t);
@@ -61,11 +61,11 @@ void *erealloc(void *, size_t);
 void efree(void *);
 char *estrdup(char *);
 
-char *alloc_string(size_t length);
-char *make_string(char *str);
-char *dup_string(char *str);
-void free_string(char *str);
-char *replace_string(char **str, char *value);
+char *string_alloc(size_t length);
+char *string_create(char *str);
+char *string_dup(char *str);
+void string_free(char *str);
+char *string_replace(char **str, char *value);
 
 void mem_get_stat(MEM_STAT *stat);
 int mem_stat_enumerate(int (*fun)(), void *closure);

@@ -11,7 +11,7 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 noinst_LIBRARIES=@LIBRADSCM@
-EXTRA_LIBRARIES=libradscm.a libradlog.a
+EXTRA_LIBRARIES=libradscm.a libservscm.a
 bin_PROGRAMS=@RADSCM@
 EXTRA_PROGRAMS=radscm
 
@@ -24,13 +24,22 @@ libradscm_a_SOURCES= \
  radscm.c\
  radscm.h
 
-libradlog_a_SOURCES= \
- rscm_radlog.c
+libservscm_a_SOURCES= \
+ rscm_radlog.c \
+ rscm_rewrite.c
 
 radscm_SOURCES=main.c radscm.c
 
 pkgdata_DATA=boot.scm session.scm ttl.scm @GUILE_PROCEDURES_TXT@
-DOT_X_FILES=rscm_avl.x rscm_dict.x rscm_syslog.x rscm_utmp.x rscm_lib.x radscm.x
+DOT_X_FILES=\
+ rscm_avl.x\
+ rscm_dict.x\
+ rscm_radlog.x\
+ rscm_rewrite.x\
+ rscm_syslog.x\
+ rscm_utmp.x\
+ rscm_lib.x\
+ radscm.x
 DOT_DOC_FILES=$(DOT_X_FILES:.x=.doc)
 BUILT_SOURCES=@RADSCM_BUILT_SOURCES@
 EXTRA_DIST=boot.scm session.scm ttl.scm

@@ -125,19 +125,21 @@ unix_pass(name, passwd)
         char *name;
         char *passwd;
 {
-        struct passwd   *pwd;
-        char            *encpw;
-        char            *encrypted_pass;
+	int rc;
+        struct passwd *pwd;
+        char *encpw;
+	int pwlen;
+        char *encrypted_pass;
 #if defined(PWD_SHADOW)
 # if defined(M_UNIX)
-        struct passwd   *spwd;
+        struct passwd *spwd;
 # else
-        struct spwd     *spwd;
+        struct spwd *spwd;
 # endif
 #endif /* PWD_SHADOW */
 #ifdef OSFC2
         struct pr_passwd *pr_pw;
-
+	
         if ((pr_pw = getprpwnam(name)) == NULL)
                 return -1;
         encrypted_pass = pr_pw->ufld.fd_encrypt;
@@ -203,8 +205,12 @@ unix_pass(name, passwd)
         /*
          * Check encrypted password.
          */
-        encpw = md5crypt(passwd, encrypted_pass);
-        if (strcmp(encpw, encrypted_pass))
+	pwlen = strlen(encrypted_pass)+1;
+	encpw = emalloc(pwlen);
+        rc = md5crypt(passwd, encrypted_pass, encpw, pwlen) == NULL
+		|| strcmp(encpw, encrypted_pass);
+	efree(encpw);
+        if (rc)
                 return -1;
 
         return 0;
@@ -239,7 +245,9 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
         int result;
         char *authdata = NULL;
         char pw_digest[AUTH_VECTOR_LEN];
-        
+        int pwlen;
+	char *pwbuf;
+	
         result = AUTH_OK;
         userpass[0] = 0;
 
@@ -341,9 +349,14 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
                         result = AUTH_FAIL;
                         break;
                 }
-                if (strcmp(real_password,
-                           md5crypt(userpass, real_password)) != 0)
+		pwlen = strlen(real_password)+1;
+		pwbuf = emalloc(pwlen);
+		if (!md5crypt(userpass, real_password, pwbuf, pwlen))
+			result = AUTH_FAIL;
+		else if (strcmp(real_password, pwbuf) != 0)
                         result = AUTH_FAIL;
+		debug(1,("pwbuf: %s", pwbuf));
+		efree(pwbuf);
                 break;
                 
         case DV_AUTH_TYPE_LOCAL:

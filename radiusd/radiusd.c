@@ -684,10 +684,11 @@ auth_respond(fd, sa, salen, buf, size)
 	struct sockaddr_in *sin = (struct sockaddr_in *) sa;
 	
 	radreq = radrecv(ntohl(sin->sin_addr.s_addr),
-			  ntohs(sin->sin_port),
-			  buf,
-			  size);
-	radrespond(radreq, fd);
+			 ntohs(sin->sin_port),
+			 buf,
+			 size);
+	if (radrespond(radreq, fd))
+		radreq_free(radreq);
 	return 0;
 }
 
@@ -929,7 +930,12 @@ radrespond(radreq, activefd)
 	int e;
 
 	if (suspend_flag)
-		return 0;
+		return 1;
+	
+	if (validate_client(radreq)) {
+		/*FIXME: update stats */
+		return -1;
+	}
 	
 	/*
 	 *	First, see if we need to proxy this request.

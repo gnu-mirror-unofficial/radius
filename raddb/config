@@ -10,6 +10,11 @@ option {
 };
 
 logging {
+	channel default {
+		file "radius.log";
+		print-category yes;
+		print-level yes;
+	};
 	channel info {
 		file "radius.info";
 		print-pid yes;
@@ -24,8 +29,11 @@ logging {
 	category info {
 		channel info;
 	};
-	category debug {
+	category =debug {
 		channel debug;
+	};
+	category * {
+		channel default;
 	};
 };
 

@@ -529,7 +529,7 @@ rad_auth_init(radreq, activefd)
 	/*
 	 * Add any specific attributes for this username.
 	 */
-	hints_setup(radreq->request);
+	hints_setup(radreq);
 
 	if (auth_detail)
 		write_detail(radreq, -1, "detail.auth");
@@ -872,7 +872,7 @@ sfn_init(m)
 	 * Get the user from the database
 	 */
 	if (!proxied &&
-	    user_find(m->namepair->strvalue, radreq->request,
+	    user_find(m->namepair->strvalue, radreq,
 		      &m->user_check, &m->user_reply) != 0) {
 
 		auth_log(m, _("Invalid user"), NULL, NULL, NULL);
@@ -1177,7 +1177,7 @@ sfn_exec_wait(m)
 	MACH *m;
 {
 	if (radius_exec_program(m->check_pair->strvalue,
-				m->req->request,
+				m->req,
 				&m->user_reply,
 				1,
 				&m->user_msg) != 0) {
@@ -1206,7 +1206,7 @@ sfn_exec_nowait(m)
 {
 	/*FIXME: do we need to pass user_reply here? */
 	radius_exec_program(m->check_pair->strvalue,
-			    m->req->request, &m->user_reply,
+			    m->req, &m->user_reply,
 			    0, NULL);
 }
 

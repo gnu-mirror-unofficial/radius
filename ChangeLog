@@ -42,6 +42,8 @@
 	* radiusd/files.c: Fixed wild_match(): it returned 0
 	on partial matches.
 
+	* scripts/config-conv: (new) A shell wrapper for config-conv.awk
+
 	* doc/texinfo/acct.texi: Reorganised structure. 
 	* doc/texinfo/attributes.texi: Likewise.
 	* doc/texinfo/auth.texi: Likewise.

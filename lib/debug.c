@@ -65,6 +65,34 @@ auth_code_str(code)
         return NULL;
 }
 
+static struct keyword auth_codes_abbr[] = {
+        "AUTHREQ", RT_AUTHENTICATION_REQUEST, 
+        "AUTHACK", RT_AUTHENTICATION_ACK,     
+        "AUTHREJ", RT_AUTHENTICATION_REJECT,  
+        "ACCTREQ", RT_ACCOUNTING_REQUEST,     
+        "ACCTRES", RT_ACCOUNTING_RESPONSE,    
+        "ACCTSTA", RT_ACCOUNTING_STATUS,      
+        "PASSREQ", RT_PASSWORD_REQUEST,       
+	"PASSACK", RT_PASSWORD_ACK,           
+        "PASSREJ", RT_PASSWORD_REJECT,        
+        "ACCTMSG", RT_ACCOUNTING_MESSAGE,     
+        "CHALNGE", RT_ACCESS_CHALLENGE,       
+        0
+};
+
+char *
+auth_code_abbr(code)
+        int code;
+{
+        struct keyword *p;
+	char buf[64];
+        for (p = auth_codes_abbr; p->name; p++)
+                if (p->tok == code)
+                        return p->name;
+	snprintf(buf, sizeof buf, "%d", code);
+	return buf;
+}
+
 #if RADIUS_DEBUG
 
 

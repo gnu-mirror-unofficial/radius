@@ -18,24 +18,6 @@
 #ifndef _RADUTMP_H
 #define _RADUTMP_H
 
-/*
- *      Types of connection.
- */
-#ifndef P_UNKNOWN
-#  define P_UNKNOWN       0
-#  define P_LOCAL         'L'
-#  define P_RLOGIN        'R'
-#  define P_SLIP          'S'
-#  define P_CSLIP         'C'
-#  define P_PPP           'P'
-#  define P_AUTOPPP       'A'
-#  define P_TELNET        'E'
-#  define P_TCPCLEAR      'T'
-#  define P_TCPLOGIN      'U'
-#  define P_CONSOLE       '!'
-#  define P_SHELL         'X'
-#endif
-
 #define P_IDLE          0
 #define P_LOGIN         1
 #define P_NAS_START     128

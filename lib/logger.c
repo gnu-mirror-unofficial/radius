@@ -29,9 +29,57 @@
 #include <string.h>
 #include <radius.h>
 
+int debug_flag;
+
+#define SP(p) ((p)?(p):"")
+
+static char *priname[] = { /* priority names */
+        "emerg",
+        "alert",
+        "crit",
+        "error",
+        "warning",
+        "notice",
+        "info",
+        "debug"
+};
+
+void
+grad_default_logger(int level, 
+     const RADIUS_REQ *req,
+     const LOCUS *loc,
+     const char *func_name, int en,
+     const char *fmt, va_list ap)
+{
+        fprintf(stderr, "%s: %s: ", program_invocation_short_name,
+		priname[level & L_PRIMASK]);
+        if (loc) {
+                fprintf(stderr, "%s:%lu:", loc->file, (unsigned long) loc->line);
+		if (func_name)
+			fprintf(stderr, "%s:", func_name);
+		fprintf(stderr, " ");
+	}
+        vfprintf(stderr, fmt, ap);
+        if (en)
+                fprintf(stderr, ": %s", strerror(en));
+        fprintf(stderr, "\n");
+}
+
+
+
+static grad_logger_fp _grad_logger = grad_default_logger;
+
+grad_logger_fp
+grad_set_logger(grad_logger_fp fp)
+{
+	grad_logger_fp tmp = _grad_logger;
+	_grad_logger = fp;
+	return tmp;
+}
+
 /*PRINTFLIKE2*/
 void
-radlog (int lvl, const char *msg, ...)
+radlog(int lvl, const char *msg, ...)
 {
         va_list ap;
         int ec = 0;
@@ -39,7 +87,7 @@ radlog (int lvl, const char *msg, ...)
         if (lvl & L_PERROR)
                 ec = errno;
         va_start(ap, msg);
-        vlog(lvl, NULL, NULL, NULL, ec, msg, ap);
+        _grad_logger(lvl, NULL, NULL, NULL, ec, msg, ap);
         va_end(ap);
 }
 
@@ -53,7 +101,7 @@ radlog_req(int lvl, RADIUS_REQ *req, const char *msg, ...)
         if (lvl & L_PERROR)
                 ec = errno;
         va_start(ap, msg);
-        vlog(lvl, req, NULL, NULL, ec, msg, ap);
+        _grad_logger(lvl, req, NULL, NULL, ec, msg, ap);
         va_end(ap);
 }
 
@@ -67,7 +115,7 @@ radlog_loc(int lvl, LOCUS *loc, const char *msg, ...)
 		ec = errno;
 
 	va_start(ap, msg);
-	vlog(lvl, NULL, loc, NULL, ec, msg, ap);
+	_grad_logger(lvl, NULL, loc, NULL, ec, msg, ap);
 	va_end(ap);
 }
 
@@ -83,7 +131,7 @@ _dolog(int level, char *file, size_t line, char *func_name, char *fmt, ...)
 	loc.file = file;
 	loc.line = line;
 	va_start(ap, fmt);
-        vlog(level, NULL, &loc, func_name, ec, fmt, ap);
+        _grad_logger(level, NULL, &loc, func_name, ec, fmt, ap);
         va_end(ap);
 }
 

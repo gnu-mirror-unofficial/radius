@@ -53,7 +53,8 @@ static char *end_str();
 static void add_num(int skip, int base, char *text, int leng);
 
 static int backspace(int c);
-
+static int deref_var(char *name, char *p);
+static int deref_parm(unsigned num, char *p);
 %}
 
 WS [ \t][ \t]*
@@ -80,14 +81,40 @@ exit    return EXIT;
 	yylval.string = make_string(yytext);
 	return NAME;
 }
-\${IDENTIFIER} {
-	yylval.ident = (Variable*) sym_lookup(vartab, yytext+1);
-	if (yylval.ident == NULL) {
-		parse_error("variable %s used before definition", yytext+1);
-		yylval.ident = (Variable*) sym_install(vartab, yytext+1);
-		yylval.ident->type = Undefined;
-	}
-	return IDENT;
+\${IDENTIFIER} return deref_var(yytext+1, NULL);
+\$\{{IDENTIFIER}\} {
+	int type;
+	char *name = estrdup(yytext+2);
+	name[yyleng-3] = 0;
+	type = deref_var(yytext+2, NULL);
+	efree(name);
+	return type;
+}
+\$\{{IDENTIFIER}:[=:?\-&].*\} {
+	char *name, *p;
+	int type;
+	
+	name = estrdup(yytext+2);
+	name[yyleng-3] = 0;
+	p = strchr(name, ':');
+	*p++ = 0;
+	type = deref_var(name, p);
+	efree(name);
+	return type;
+}
+\${D}  return deref_parm(strtoul(yytext+1, NULL, 0), NULL);
+\$\{{D}\} return deref_parm(strtoul(yytext+2, NULL, 0), NULL);
+\$\{{D}:[=:?\-&].*\} {
+	char *name, *p;
+	int type;
+	
+	name = estrdup(yytext+2);
+	name[yyleng-3] = 0;
+	p = strchr(name, ':');
+	*p++ = 0;
+	type = deref_parm(strtoul(name, NULL, 0), p);
+	efree(name);
+	return type;
 }
 \"[^\\"]*\" {
         yylval.string = alloc_string(yyleng - 1);
@@ -288,4 +315,170 @@ backspace(c)
 		return '\033';
 	}
 	return c;
+}
+
+int
+deref_var(name, p)
+	char *name, *p;
+{
+	int type;
+	union datum datum;
+	size_t n;
+	
+	yylval.ident = (Variable*) sym_lookup(vartab, name);
+	if (yylval.ident) 
+		return IDENT;
+	else if (!p) {
+		parse_error("variable %s used before definition", name);
+		yylval.ident = sym_install(vartab, name);
+		yylval.ident->type = Undefined;
+		return IDENT;
+	}
+
+	switch (*p++) {
+	case '=':
+		yylval.ident = (Variable*) sym_install(vartab, name);
+		yylval.ident->type = parse_datum(p, &yylval.ident->datum);
+		type = IDENT;
+		break;
+		
+	case '-':
+		switch (parse_datum(p, &datum)) {
+		case Undefined:
+			parse_error("variable %s used before definition", name);
+			yylval.ident = sym_install(vartab, name);
+			yylval.ident->type = Undefined;
+			type = IDENT;
+			break;
+			
+		case Integer:
+			yylval.number = datum.number;
+			type = NUMBER;
+			break;
+			
+		case Ipaddress:
+			yylval.ipaddr = datum.ipaddr;
+			type = IPADDRESS;
+			break;
+			
+		case String:
+			yylval.string = datum.string;
+			type = QUOTE;
+			break;
+			
+		default:
+			radlog(L_CRIT,
+			       "%s:%d: FATAL ERROR",
+			       __FILE__, __LINE__);
+			abort();
+		}
+		break;
+		
+	case '?':
+		if (*p) 
+			fprintf(stderr, "%s\n", p);
+		else
+			fprintf(stderr, "%s: variable unset\n",	name);
+		exit(1);
+				
+	case ':':
+		if (*p)
+			printf("%s", p);
+		else
+			printf("(%s:%d)%s? ",
+			       source_filename,
+			       source_line_num,
+			       name);
+		p = NULL;
+		n = 0;
+		getline(&p, &n, stdin);
+		yylval.string = make_string(p);
+		free(p);
+		type = QUOTE;
+		break;
+		
+	case '&':
+		if (!*p)
+			asprintf(&p, "(%s:%d)%s? ",
+				 source_filename,
+				 source_line_num,
+				 name);
+		p = getpass(p);
+		if (!p)
+			exit(0);
+		yylval.string = make_string(p);
+		type = QUOTE;
+		break;
+	}
+	
+	return type;
+}
+
+int
+deref_parm(num, p)
+	unsigned num;
+	char *p;
+{
+	size_t n;
+	
+	if (num < x_argc && x_argv[num]) {
+		yylval.string = make_string(x_argv[num]);
+		return QUOTE;
+	}
+	
+	if (!p) {
+		yylval.string = make_string("");
+		return QUOTE;
+	}
+	
+	switch (*p++) {
+	case '=':
+		if (num > x_argmax) {
+			x_argmax = num;
+			x_argv = erealloc(x_argv, sizeof(x_argv[0])*(num+1));
+		}
+		x_argv[num] = make_string(p);
+		x_argc = num+1;
+		yylval.string = x_argv[num];
+		break;
+		
+	case '-':
+		yylval.string = make_string(p);
+		break;
+		
+	case '?':
+		if (*p) 
+			fprintf(stderr, "%s\n", p);
+		else
+			fprintf(stderr, "parameter %d unset\n",	num);
+		exit(1);
+				
+	case ':':
+		if (*p)
+			printf("%s", p);
+		else
+			printf("(%s:%d)%d? ",
+			       source_filename,
+			       source_line_num,
+			       num);
+		p = NULL;
+		n = 0;
+		getline(&p, &n, stdin);
+		yylval.string = make_string(p);
+		free(p);
+		break;
+		
+	case '&':
+		if (!*p)
+			asprintf(&p, "(%s:%d)%d? ",
+				 source_filename,
+				 source_line_num,
+				 num);
+		p = getpass(p);
+		if (!p)
+			exit(0);
+		yylval.string = make_string(p);
+		break;
+	}
+	return QUOTE;
 }

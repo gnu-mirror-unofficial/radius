@@ -1,3 +1,11 @@
+2004-03-19  Sergey Poznyakoff
+
+	* include/radsql.h (struct SQL_cfg): Removed leftover auth_query
+	and group_query
+	* radiusd/radiusd.c (rad_cfg_user):Bugfix
+	* radiusd/sql.c (STMT_QUERY_P): Bugfix. Returned false for
+	auth_query
+
 2004-03-18  Sergey Poznyakoff
 
 	* NEWS: Minor fix

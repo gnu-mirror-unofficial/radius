@@ -1,3 +1,24 @@
+
+2001-12-16 Sergey Poznyakoff
+
+	* README: Updated.
+	* TODO: Updated.
+
+	* include/radclient.h: Changed declaration of radlient_alloc:
+	  first argument tells whether to read the configuration
+	  file, second one sets the default source IP, third is the
+	  buffer size.
+	* radlib/client.c: Likewise.
+	* client/pam_radius/pam_radius.c: Likewise.
+	* radscm/radscm.c: Likewise.
+
+	* radtest/main.c: Removed legacy "radtestrc" parsing. Added
+	  new option, -S (--shell), for use with '#! prog' shell
+	  mechanism.
+	* radtest/input.l: Added '\' line continuation.
+
+	* test/test.sh.m4: Removed -x option to radtest.
+	
 2001-12-14 Sergey Poznyakoff
 
 	* radscm/radsession.in: (new) Source for radsession script

@@ -1,0 +1,4 @@
+Makefile
+Makefile.in
+config.c
+rewrite.c

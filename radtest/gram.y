@@ -47,11 +47,12 @@ extern int yylex();
 
 static int current_nesting_level; /* Nesting level of WHILE/DO statements */
 static int error_count;
- 
+
+static void run_statement(radtest_node_t *node);
 %}
 
 %token EOL AUTH ACCT SEND EXPECT T_BEGIN T_END
-%token IF ELSE WHILE DO BREAK CONTINUE
+%token IF ELSE WHILE DO BREAK CONTINUE INPUT
 %token PRINT 
 %token EXIT
 %token <deref> IDENT
@@ -73,9 +74,11 @@ static int error_count;
 %type <pair> pair
 %type <list> pair_list prlist list
 %type <i> closure req_code nesting_level port_type
-%type <node> stmt lstmt expr maybe_expr value bool cond expr_or_pair_list pritem
+%type <node> stmt lstmt expr maybe_expr value bool cond expr_or_pair_list
+             pritem 
 %type <var> send_flag imm_value
 %type <symtab> send_flags send_flag_list
+%type <string> name
 
 %union {
 	int i;
@@ -100,17 +103,11 @@ program       : /* empty */
 
 input         : lstmt
                 {
-			if (!error_count)
-				radtest_eval($1);
-			radtest_free_mem();
-			error_count = 0;
+			run_statement($1)
 		}
               | input lstmt
                 {
-			if (!error_count)
-				radtest_eval($2);
-			radtest_free_mem();
-			error_count = 0;
+			run_statement($2);
 		}
               ;
 
@@ -159,19 +156,19 @@ stmt          : T_BEGIN list T_END
 			$$->v.cond.iftrue = $4;
 			$$->v.cond.iffalse = $6;
 		}
-              | WHILE cond { current_nesting_level++; } stmt
+              | WHILE cond { current_nesting_level++; } EOL stmt
                 {
 			current_nesting_level--;
 			$$ = radtest_node_alloc(radtest_node_loop);
 			$$->v.loop.cond = $2;
-			$$->v.loop.body = $4;
+			$$->v.loop.body = $5;
 			$$->v.loop.first_pass = 0;
 		}
-              | DO { current_nesting_level++; } stmt WHILE {current_nesting_level--;} cond  
+              | DO { current_nesting_level++; } EOL stmt WHILE {current_nesting_level--;} cond  
                 {
 			$$ = radtest_node_alloc(radtest_node_loop);
-			$$->v.loop.cond = $6;
-			$$->v.loop.body = $3;
+			$$->v.loop.cond = $7;
+			$$->v.loop.body = $4;
 			$$->v.loop.first_pass = 1;
                 } 
               | PRINT prlist 
@@ -222,7 +219,20 @@ stmt          : T_BEGIN list T_END
 			$$ = radtest_node_alloc(radtest_node_continue);
 			$$->v.level = $2;
 		}
+              | INPUT maybe_expr name
+                {
+			$$ = radtest_node_alloc(radtest_node_input);
+			$$->v.input.expr = $2;
+			$$->v.input.name = $3;
+		}
               ;
+
+name          : /* empty */
+                {
+			$$ = "INPUT";
+		}
+              | NAME
+	      ;
 
 nesting_level : /* empty */
                 {
@@ -604,3 +614,21 @@ set_yydebug()
         }
 }
 
+static void
+run_statement(radtest_node_t *node)
+{
+	if (!dry_run) {
+		if (!error_count)
+			radtest_eval(node);
+		error_count = 0;
+	}
+	radtest_free_mem();
+}
+
+int
+read_and_eval(char *filename)
+{
+        if (open_input(filename))
+                return 1;
+        return (yyparse() || error_count) ? 1 : 0;
+}

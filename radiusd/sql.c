@@ -807,9 +807,7 @@ rad_sql_checkgroup(req, groupname)
         query = radius_xlate(&stack, sql_cfg.group_query, req, NULL);
 
         data = disp_sql_exec(conn, query);
-	if (!data) {
-		radlog(L_ERR, _("Query returned no tuples: %s"), query);
-	} else {
+	if (data) {
 		while (rc != 0
 		       && disp_sql_next_tuple(conn, data) == 0) {
 			if ((p = disp_sql_column(conn, data, 0)) == NULL)

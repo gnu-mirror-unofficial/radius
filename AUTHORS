@@ -6,7 +6,6 @@ Portions of the code were used from following sources:
 
 Miquel Van Smoorenberg 	<miquels@cistron.nl>:
 	radiusd/radius.c
-	radiusd/acct.c
 
 Poul-Henning Kamp 	<phk@login.dknet.dk> 
 	radlib/md5crypt.c

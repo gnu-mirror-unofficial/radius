@@ -57,8 +57,6 @@ pipe_write(int fd, void *ptr, size_t size, struct timeval *tv)
 			if (rc == 0)
 				break;
 			else if (rc < 0) {
-				if (errno == EINTR)
-					continue;
 				break;
 			} else if (rc > 0) {
 				rc = write(fd, data, 1);
@@ -86,7 +84,7 @@ pipe_read(int fd, void *ptr, size_t size, struct timeval *tv)
 				data += rc;
 				size -= rc;
 				rdbytes += rc;
-			} else if (errno != EINTR)
+			} else 
 				break;
 		} while (size > 0);
 		return rdbytes;
@@ -103,8 +101,6 @@ pipe_read(int fd, void *ptr, size_t size, struct timeval *tv)
 			if (rc == 0)
 				break;
 			if (rc < 0) {
-				if (errno == EINTR)
-					continue;
 				break;
 			} else if (rc > 0) {
 				rc = read(fd, data, 1);

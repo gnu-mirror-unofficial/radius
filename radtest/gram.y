@@ -117,6 +117,7 @@ static void run_statement(radtest_node_t *node);
 
 program       : /* empty */
               | input
+              | input stmt
               ; 
 
 input         : lstmt
@@ -178,6 +179,7 @@ stmt          : T_BEGIN list T_END
               | CASE expr in caselist T_END
                 {
 			$$ = radtest_node_alloc(radtest_node_case);
+			$$->locus = $2->locus;
 			$$->v.branch.expr = $2;
 			$$->v.branch.branchlist = $4;
 		}
@@ -229,7 +231,7 @@ stmt          : T_BEGIN list T_END
 	      | BREAK nesting_level 
                 {
 			if ($2 > current_nesting_level) {
-				parse_error(_("Not enough 'while's to break from"));
+				parse_error(_("not enough 'while's to break from"));
 				YYERROR;
 			}
 			$$ = radtest_node_alloc(radtest_node_break);
@@ -238,7 +240,7 @@ stmt          : T_BEGIN list T_END
 	      | CONTINUE nesting_level 
                 {
 			if ($2 > current_nesting_level) {
-				parse_error(_("Not enough 'while's to continue"));
+				parse_error(_("not enough 'while's to continue"));
 				YYERROR;
 			}
 			$$ = radtest_node_alloc(radtest_node_continue);
@@ -296,7 +298,7 @@ stmt          : T_BEGIN list T_END
 			fun = (radtest_function_t*)
 				grad_sym_lookup(functab, $1);
 			if (!fun) {
-				parse_error(_("Undefined function %s"), $1);
+				parse_error(_("undefined function `%s'"), $1);
 				YYERROR;
 			}
 			$$ = radtest_node_alloc(radtest_node_call);
@@ -310,12 +312,11 @@ function_def  : NAME EOL T_BEGIN EOL
 			radtest_function_t *fun;
 			
 			if (defn.function) {
-				parse_error(_("Nested function definitions "
+				parse_error(_("nested function definitions "
 					      "are not allowed"));
 				parse_error_loc(&defn.locus,
-						_("This is the location of "
-						  "the current function "
-						  "definition"));
+						_("the current function "
+						  "definition begins here"));
 				YYERROR;
 			}
 			defn.function = $1;
@@ -323,10 +324,11 @@ function_def  : NAME EOL T_BEGIN EOL
 			fun = (radtest_function_t*)
 				grad_sym_lookup_or_install(functab, $1, 1);
 			if (fun->body) {
-				parse_error(_("Redefinition of function %s"), $1);
+				parse_error(_("redefinition of function `%s'"), $1);
 				parse_error_loc(&fun->locus,
-						_("This is the location of "
-						  "the actual definition"));
+					     _("`%s' previously defined here"),
+						$1);
+
 				YYERROR;
 			}
 			fun->locus = source_locus;
@@ -554,7 +556,7 @@ expr          : value
                 {
 			grad_dict_attr_t *dict = grad_attr_name_to_dict($3);
 			if (!dict) {
-				parse_error(_("Unknown attribute: %s"), $3);
+				parse_error(_("unknown attribute `%s'"), $3);
 				YYERROR;
 			}
 			$$ = radtest_node_alloc(radtest_node_attr);
@@ -640,7 +642,7 @@ value         : imm_value
 			fun = (radtest_function_t*)
 				grad_sym_lookup(functab, $1);
 			if (!fun) {
-				parse_error(_("Undefined function %s"), $1);
+				parse_error(_("undefined function `%s'"), $1);
 				YYERROR;
 			}
 			$$ = radtest_node_alloc(radtest_node_call);
@@ -715,7 +717,7 @@ pair          : NAME op expr
                 {
 			grad_dict_attr_t *attr = grad_attr_name_to_dict($1);
 			if (!attr) {
-				parse_error(_("Unknown attribute '%s'"), $1);
+				parse_error(_("unknown attribute `%s'"), $1);
 				YYERROR;
 			}
 					    

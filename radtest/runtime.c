@@ -161,13 +161,13 @@ radtest_eval(radtest_node_t *stmt, grad_list_t *env)
 		                                    \
 	case radtest_op_div:                        \
                 if (b == 0)                         \
-                   runtime_error(locus, _("Division by zero")); \
+                   runtime_error(locus, _("division by zero")); \
           	result->datum.number = a / b;       \
 		break;                              \
 		                                    \
 	case radtest_op_mod:                        \
                 if (b == 0)                         \
-                   runtime_error(locus, _("Division by zero")); \
+                   runtime_error(locus, _("division by zero")); \
 		result->datum.number = a % b;       \
 		break;                              \
 		                                    \
@@ -224,13 +224,13 @@ rt_eval_bin_uint(grad_locus_t *locus,
 static void
 bin_type_error(grad_locus_t *locus)
 {
-	runtime_error(locus, _("Invalid data type in binary operation"));
+	runtime_error(locus, _("invalid data type in binary operation"));
 }
 
 static void
 unary_type_error(grad_locus_t *locus)
 {
-	runtime_error(locus, _("Invalid data type in unary operation"));
+	runtime_error(locus, _("invalid data type in unary operation"));
 }
 
 static void
@@ -299,7 +299,7 @@ cast_to_string(grad_locus_t *locus, radtest_variable_t *var)
 		break;
 		
 	default:
-		runtime_error(locus, _("Data type cannot be cast to string"));
+		runtime_error(locus, _("data type cannot be cast to string"));
 	}
 	return buf;
 }
@@ -395,7 +395,7 @@ rt_eval_deref(radtest_node_t *node, radtest_variable_t *result)
                 switch (result->type = parse_datum(p, &datum)) {
                 case rtv_undefined:
                         runtime_error(&node->locus,
-				      _("variable %s used before definition"),
+				      _("variable `%s' used before definition"),
 				      node->v.deref.name);
                         break;
                         
@@ -407,7 +407,7 @@ rt_eval_deref(radtest_node_t *node, radtest_variable_t *result)
 
 		default:
 			runtime_error(&node->locus,
-				      _("%s:%d: Unknown data type"),
+				      _("%s:%d: unknown data type"),
 				      __FILE__, __LINE__);
 		}
                 break;
@@ -453,7 +453,7 @@ rt_eval_deref(radtest_node_t *node, radtest_variable_t *result)
         }
 	if (result->type == rtv_undefined)
 		runtime_error(&node->locus,
-			      _("Variable %s used before definition"),
+			      _("variable `%s' used before definition"),
 			      node->v.deref.name);
 }
 
@@ -473,6 +473,7 @@ rt_eval_parm(radtest_node_t *node, radtest_variable_t *result)
         
         if (!node->v.parm.repl) {
 		radtest_start_string("");
+		result->type = rtv_string;
 		result->datum.string = radtest_end_string();
                 return;
         }
@@ -550,11 +551,12 @@ rt_eval_pairlist(grad_locus_t *locus,
 		rt_eval_expr(p->node, &val);
 		switch (val.type) {
 		default:
-			grad_insist_fail("invalid data type in rt_eval_pairlist");
+			grad_insist_fail("invalid data type in "
+					 "rt_eval_pairlist");
 			
 		case rtv_pairlist:
 		case rtv_avl:
-			runtime_error(locus, _("Invalid data type"));
+			runtime_error(locus, _("invalid data type"));
 			break;
 			
 		case rtv_integer:
@@ -747,8 +749,9 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 					if (*p)
 						runtime_error(&node->locus,
 				    _("cannot convert string to integer: %s"),
-							      right.datum.string);
-				} else if ((v = grad_request_name_to_code(right.datum.string)) == 0)
+							   right.datum.string);
+				} else if ((v = grad_request_name_to_code(
+						    right.datum.string)) == 0)
 					runtime_error(&node->locus,
 				 _("cannot convert string to integer: %s"),
 						      right.datum.string);
@@ -767,7 +770,8 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 				break;
 				
 			case rtv_pairlist:
-				grad_insist_fail("a value cannot evaluate to rtv_pairlist");
+				grad_insist_fail("a value cannot evaluate "
+						 "to rtv_pairlist");
 			}
 			break;
 				
@@ -816,7 +820,8 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 			break;
 				
 		case rtv_pairlist:
-			grad_insist_fail("a value cannot evaluate to rtv_pairlist");
+			grad_insist_fail("a value cannot evaluate to "
+					 "rtv_pairlist");
 
 		case rtv_avl:
 			if (right.type != rtv_avl) 
@@ -864,7 +869,7 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 		
 		rt_eval_expr(node->v.attr.node, &left);
 		if (left.type != rtv_avl)
-			runtime_error(&node->locus, _("Not a pair list"));
+			runtime_error(&node->locus, _("not a pair list"));
 		p = grad_avl_find(left.datum.avl, node->v.attr.dict->value);
 		switch (node->v.attr.dict->type) {
 		case TYPE_STRING:
@@ -872,18 +877,21 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 			if (node->v.attr.all) {
 				size_t len = 1;
 				for (p = left.datum.avl; p; p = p->next) {
-					if (p->attribute == node->v.attr.dict->value)
+					if (p->attribute ==
+					          node->v.attr.dict->value)
 						len += p->avp_strlength;
 				}
 				result->datum.string = grad_emalloc(len);
 				result->datum.string[0] = 0;
 				for (p = left.datum.avl; p; p = p->next) {
-					if (p->attribute == node->v.attr.dict->value)
+					if (p->attribute ==
+					          node->v.attr.dict->value)
 						strcat(result->datum.string,
 						       p->avp_strvalue);
 				}
 			} else
-				result->datum.string = p ? p->avp_strvalue : "";
+				result->datum.string = p ?
+					                 p->avp_strvalue : "";
 			break;
 			
 		case TYPE_DATE:    
@@ -979,9 +987,8 @@ rt_asgn(radtest_node_t *node)
 	
 	rt_eval_expr(node->v.asgn.expr, &result);
 	
-	var = (radtest_variable_t*) grad_sym_lookup_or_install(vartab,
-							       node->v.asgn.name,
-							       1);
+	var = (radtest_variable_t*)
+		grad_sym_lookup_or_install(vartab, node->v.asgn.name, 1);
 	
 	var->type = result.type;
 	switch (result.type) {
@@ -1018,7 +1025,8 @@ rt_send(radtest_node_t *node)
 		rt_eval_expr(send->expr, &val);
 		if (val.type != rtv_avl)
 			runtime_error(&node->locus,
-				      _("Invalid data type in send statement (expected A/V list"));
+				      _("invalid data type in send statement "
+					"(expected A/V list)"));
 		avl = val.datum.avl;
 	}
 	
@@ -1036,15 +1044,15 @@ rt_expect(radtest_node_t *node)
 		printf("expect %d\n", exp->code);
 		printf("got    %d\n", reply_code);
 	}
-	if (reply_code != exp->code) {
+	if (reply_code != exp->code) 
 		pass = 0;
-	}
+
 	if (exp->expr) {
 		radtest_variable_t result;
 		rt_eval_expr(exp->expr, &result);
 		if (result.type != rtv_avl)
 			runtime_error(&node->locus,
-				      _("Expected A/V pair list"));
+				      _("expected A/V pair list"));
 		if (compare_lists(reply_list, result.datum.avl))
 			pass = 0;
 		grad_avl_free(result.datum.avl);
@@ -1072,7 +1080,7 @@ rt_exit(radtest_node_t *expr)
 		default:
 			/* Use parse_error_loc() so we don't longjump */
 			parse_error_loc(&expr->locus,
-					_("Invalid data type in exit statement"));
+					_("invalid data type in exit statement"));
 			break; /* exit anyway */
 		}
 	}
@@ -1287,14 +1295,14 @@ rt_eval(radtest_node_t *stmt)
 			rt_eval_expr(stmt->v.expr, &result);
 			if (result.type != rtv_integer)
 				runtime_error(&stmt->locus,
-					      _("Invalid data type in 'shift'"));
+					      _("invalid data type in `shift'"));
 			level = result.datum.number;
 		}
 		if (level == 0)
 			break;
 		if (radtest_env_shift(curenv, level))
 			runtime_error(&stmt->locus,
-				      _("Not enough arguments to shift"));
+				      _("not enough arguments to shift"));
 		break;
 	}
 

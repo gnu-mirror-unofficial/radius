@@ -1,3 +1,36 @@
+2002-12-18  Sergey Poznyakoff 
+
+	* autogen.sh: Use autoreconf
+	* configure.ac: Check for argp.h. If it is not present, force
+	  using included argp library.
+	  Fixed inclusion of libgnuintl.h vs. libintl.h
+
+	* include/regex1.h: New file. A dispatcher between system
+	  <regex.h> and included <rx.h> depending on configuration
+	  settings.
+	* include/Makefile.am: Added regex1.h
+	* include/radargp.h: Fixed inclusion of <../lib/argp.h> vs.
+	  system's <argp.h>
+	* include/radiusd.h (rad_sigid_t,rad_signal_t): New data types.
+	  (rad_signal_install,rad_signal_remove): New functions.
+
+	* lib/Makefile.am: Use AM_LDFLAGS instead of LDFLAGS.
+	* radscm/Makefile.am: Use AM_CPPFLAGS instead of CPPFLAGS.
+	* m4/rx.m4: Define WITH_INCLUDED_REGEX.
+	
+	* radiusd/signal.c: New file. Contains functions for the signal
+	  handling thread. 
+	* radiusd/Makefile.am: Added signal.c
+	* radiusd/exec.c: Changed SIGCHLD handling. This enables
+	  Exec-Program-Wait to work on non-posix systems.
+	* radiusd/radiusd.c: Use new signal handling functions.
+	* radiusd/rewrite.y: Include <regex1.h>
+	* scripts/pofilter.c: Handle [] in po files.
+	* test/radiusd.m4: Allow to override AWK variable in
+	  the shel version of stress test.
+	* test/shell/runtest.sh (runtest): Fixed scanning for
+	  testcases.
+	
 2002-12-16  Sergey Poznyakoff
 
 	* doc/texinfo/radlast.texi: Updated

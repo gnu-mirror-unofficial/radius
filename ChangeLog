@@ -1,3 +1,29 @@
+2004-04-13  Sergey Poznyakoff 
+
+	* radscm/ttl.scm: Rewritten as module
+	* radiusd/scheme.c: Reorganized. Main points:
+	** Turn on scheme debugging by default
+	** Use additional catch when trying to load scheme files
+	or modules
+	** Allow any number of additional parameters to 'load-module'
+	statement. Such parameters are supposed to be valid Scheme
+	expressions and are executed in order, after loading the
+	module.
+
+	* include/radiusd.h: Removed unused declarations
+	* radscm/rscm_hash.c: Added docstrings
+	
+	* configure.ac: Removed support for Guile 1.4
+	* m4/guile.m4: Likewise.
+	* scripts/guile/Makefile.am: Likewise.
+	
+	* scripts/guile/1.4: Removed	
+	* scripts/guile/1.4/Makefile.am: Removed
+	* scripts/guile/1.4/guile-doc-snarf: Removed
+	* scripts/guile/1.4/guile-snarf.awk: Removed
+	* scripts/guile/1.4/guile-func-name-check: Removed
+	* scripts/guile/1.4/.cvsignore: Removed	
+
 2004-04-12  Sergey Poznyakoff
 
 	* configure.ac: Modified assignement to RADSCM_PKGDATA so

@@ -1,3 +1,30 @@
+2001-12-26 Sergey Poznyakoff
+
+	* configure.in: Added EXPERIMENTAL mark for untested features.
+	* radiusd/acct.c: Indentation changes.
+
+	* radiusd/config.y: Put int fields at the start of %union,
+	  otherwise they may be initialized improperly 
+	  in config_kw.c:in_word_set:wordlist. Noticed on Spark.
+	* radlib/radutmp.c: (rut_rewind): Fixed bug: did not
+	  clear file->eof.
+
+	* test/radiusd.m4: Capitalized test descriptions, fixed
+	  a typo (een instead of en).
+	* test/proxy.m4: Likewise.
+	* test/test.sh.m4: Conditionally clear logs.
+	* test/dejagnu/Makefile.am: Added *-stamp to DISTCLEANFILES.
+	* test/proxy/client.conf.in: Use server IP 127.0.0.1.
+	* test/raddb/client.conf.in: Likewise.
+	* test/raddb/users.in: Typo.
+	* test/shell/Makefile.am: Pass environment variables to
+	  runtest.sh. Added *-stamp to DISTCLEANFILES.
+		
+	* test/shell/runtest.sh: Tested on various architectures and
+	  fixed appropriately.
+	* test/shell/shell.m4: Use cat instead of echo. The latter
+	  handles escaped symbols inconsistently on different systems.
+	
 2001-12-25 Sergey Poznyakoff
 	
 	* NEWS: Updated

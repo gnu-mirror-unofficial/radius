@@ -521,13 +521,6 @@ rad_sql_shutdown()
 }
 
 void
-rad_sql_need_reconnect(type)
-        int type;
-{
-        /*FIXME*/
-}
-
-void
 sql_check_config(cfg)
         SQL_cfg *cfg;
 {
@@ -602,6 +595,7 @@ sql_flush()
         rad_flush_queues();
 }
 
+/*FIXME: radreq not needed */
 struct sql_connection *
 attach_sql_connection(type, radreq)
         int type;
@@ -610,10 +604,6 @@ attach_sql_connection(type, radreq)
         struct sql_connection *conn;
         time_t now;
         
-        conn = radreq->conn;
-        if (conn)
-                return conn;
-
         time(&now);
         conn = pthread_getspecific(sql_conn_key[type]);
         if (!conn) {
@@ -634,11 +624,11 @@ attach_sql_connection(type, radreq)
                 disp_sql_reconnect(sql_cfg.interface, type, conn);
         }
         conn->last_used = now;
-        radreq->conn = conn;
         debug(1, ("attaching %p->%p [%d]", radreq, conn, type));
         return conn;
 }
 
+/*FIXME: radreq not needed */
 void
 detach_sql_connection(type, radreq)
         int type;
@@ -646,7 +636,7 @@ detach_sql_connection(type, radreq)
 {
         struct sql_connection *conn;
 
-        conn = radreq->conn;
+        conn = pthread_getspecific(sql_conn_key[type]);
         if (!conn)
                 return;
         debug(1, ("detaching %p->%p [%d]", radreq, conn, type));
@@ -658,7 +648,6 @@ detach_sql_connection(type, radreq)
                 free_entry(conn);
                 pthread_setspecific(sql_conn_key[type], NULL);
         }
-        radreq->conn = NULL;
 }
 
 void

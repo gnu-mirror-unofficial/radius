@@ -327,7 +327,7 @@ _dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
                                 prop |= AP_PROPAGATE;
                                 break;
 			case 'l':
-				prop &= ~AP_INTERNAL;
+				flags &= ~AP_INTERNAL;
 				break;
 			case '1':
 			case '2':

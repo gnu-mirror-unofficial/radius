@@ -1308,8 +1308,8 @@ flush_request_list()
 }
 
 int
-stat_request_list(report)
-	int (*report)();
+stat_request_list(stat)
+	QUEUE_STAT stat;
 {
 	int     pending_count[R_MAX] = {0};
 	int     completed_count[R_MAX] = {0};
@@ -1334,13 +1334,10 @@ stat_request_list(report)
 
 	/* Report the results */
 	for (i = 0; i < NITEMS(request_class); i++) {
-		radsprintf(tbuf, sizeof(tbuf), "%4.4s  %4d  %4d  %4d",
-			request_class[i].name,
-			pending_count[i],
-			completed_count[i],
-			pending_count[i] + completed_count[i]);
-		report(tbuf);
+		stat[i][0] = pending_count[i];
+		stat[i][1] = completed_count[i];
 	}
+
 	return 0;
 }
 
@@ -1608,28 +1605,50 @@ static RETSIGTYPE
 sig_hup(sig)
 	int sig;
 {
-	signal(SIGHUP, sig_hup);
 	radlog(L_INFO, _("got HUP. Reloading configuration now"));
 	need_reload = 1;
+	signal(SIGHUP, sig_hup);
 }
 
 int
-report_info(s)
-	char *s;
+meminfo_report(stat)
+	CLASS_STAT *stat;
 {
-	radlog(L_INFO, "%s", s);
+	radlog(L_INFO,
+	       "%9d   %1d    %9d %9d %9d %9d",
+	       stat->elsize,
+	       stat->cont, 
+	       stat->elcnt,
+	       stat->bucket_cnt,
+	       stat->allocated_cnt,
+	       stat->bucket_cnt * stat->elcnt);
 	return 0;
 }
 
-/*ARGSUSED*/
-RETSIGTYPE
-sig_usr1(sig)
-	int sig;
+void
+meminfo()
 {
-	signal(SIGUSR1, sig_usr1);
-	radlog(L_INFO, _("got USR1. Dumping memory usage statistics"));
-	flush_request_list();
-	meminfo(report_info);
+	MEM_STAT stat;
+	
+	mem_get_stat(&stat);
+
+	radlog(L_INFO,
+	       _("%lu classes, %lu buckets are using %lu bytes of memory"),
+	       stat.class_cnt,
+	       stat.bucket_cnt,
+	       stat.bytes_allocated);
+	
+	if (stat.bytes_allocated) 
+		radlog(L_INFO,
+		       _("memory utilization: %ld.%1ld%%"),
+		       stat.bytes_used * 100 / stat.bytes_allocated,
+		       (stat.bytes_used * 1000 / stat.bytes_allocated) % 10);
+
+	radlog(L_INFO,
+	       _("    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"));
+	
+	mem_stat_enumerate(meminfo_report);
+
 #ifdef LEAK_DETECTOR
 	radlog(L_INFO, _("malloc statistics: %d blocks, %d bytes"),
 	       mallocstat.count, mallocstat.size);
@@ -1638,13 +1657,24 @@ sig_usr1(sig)
 
 /*ARGSUSED*/
 RETSIGTYPE
+sig_usr1(sig)
+	int sig;
+{
+	radlog(L_INFO, _("got USR1. Dumping memory usage statistics"));
+	flush_request_list();
+	meminfo();
+	signal(SIGUSR1, sig_usr1);
+}
+
+/*ARGSUSED*/
+RETSIGTYPE
 sig_usr2(sig)
 	int sig;
 {
-	signal(SIGUSR2, sig_usr2);
 	radlog(L_INFO, _("got USR2. Reloading configuration in %u sec."),
 	       config.delayed_hup_wait);
 	delayed_hup_time = time(NULL);
+	signal(SIGUSR2, sig_usr2);
 }
 
 /*ARGSUSED*/
@@ -1652,10 +1682,10 @@ RETSIGTYPE
 sig_dumpdb(sig)
 	int sig;
 {
-	signal(sig, sig_dumpdb);
 	radlog(L_INFO, _("got INT. Dumping users db to `%s'"),
 	       RADIUS_DUMPDB_NAME);
 	dump_users_db();
+	signal(sig, sig_dumpdb);
 }
 
 int
@@ -1808,7 +1838,7 @@ test_shell()
 			}
 			break;
 		case 'm': /*memory statistics */
-			meminfo(puts);
+			meminfo();
 			break;
 		default:
 			printf("no command\n");

@@ -142,8 +142,7 @@ attr_to_str(obp, req, pairlist, attr, defval)
 		if (attr->value == DA_PASSWORD && req) {
 			char string[AUTH_STRING_LEN+1];
 			int len;
-			decrypt_password(string, pair,
-					 req->vector, req->secret);
+			req_decrypt_password(string, req, pair);
 			len = strlen(string);
 			obstack_grow(obp, string, len);
 		} else {

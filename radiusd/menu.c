@@ -60,8 +60,7 @@ process_menu(radreq, activefd)
 		*menu_input = 0;
 	else {
 		/* Decrypt the password in the request. */
-		decrypt_password(menu_input, pair,
-				 radreq->vector, radreq->secret);
+		req_decrypt_password(menu_input, radreq, pair);
 	}
 
 	pair = menu_pairs(menu_name, menu_input);

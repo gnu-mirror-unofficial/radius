@@ -53,11 +53,9 @@ static void random_vector(char *vector);
 static VALUE_PAIR *proxy_addinfo(RADIUS_REQ *radreq, int proxy_id, UINT4 remip);
 void proxy_addrequest(RADIUS_REQ *radreq);
 static void passwd_recode(VALUE_PAIR *pair,
-			  char *old_secret, char *new_secret,
-			  char *old_vector, char *new_vector);
+			  char *new_secret, char *new_vector, RADIUS_REQ *req);
 static void rad_send_request(int fd, UINT4 ipaddr, int port, int id,
-			     int code, char *old_vector, char *old_secret,
-			     char *new_secret, VALUE_PAIR *request);
+			     char *secret, RADIUS_REQ *req);
 
 
 /* ************************************************************************* */
@@ -167,17 +165,13 @@ random_vector(vector)
 }
 
 void
-rad_send_request(fd, ipaddr, port, id, code, old_vector, old_secret,
-		 new_secret, request)
+rad_send_request(fd, ipaddr, port, id, secret, req)
 	int   fd;
 	UINT4 ipaddr;
 	int   port;
 	int   id;
-	int   code;
-	char  *old_vector;
-	char  *old_secret;
-	char  *new_secret;
-	VALUE_PAIR *request;
+	char  *secret;
+	RADIUS_REQ *req;
 {
 	AUTH_HDR		*auth;
 	VALUE_PAIR		*vp;
@@ -196,7 +190,7 @@ rad_send_request(fd, ipaddr, port, id, code, old_vector, old_secret,
 	random_vector(vector);
 	auth = (AUTH_HDR *)send_buffer;
 	memset(auth, 0, sizeof(AUTH_HDR));
-	auth->code = code;
+	auth->code = req->code;
 	auth->id = id;
 	if (auth->code == RT_AUTHENTICATION_REQUEST)
 		memcpy(auth->vector, vector, AUTH_VECTOR_LEN);
@@ -207,7 +201,7 @@ rad_send_request(fd, ipaddr, port, id, code, old_vector, old_secret,
 	 *	Put all the attributes into a buffer.
 	 */
 	ptr = auth->data;
-	for (vp = request; vp; vp = vp->next) {
+	for (vp = req->request; vp; vp = vp->next) {
 
 		if (debug_on(10))
 			debug_pair("proxy_send", vp);
@@ -237,8 +231,7 @@ rad_send_request(fd, ipaddr, port, id, code, old_vector, old_secret,
 			 *	Re-encode passwd on the fly.
 			 */
 			if (vp->attribute == DA_PASSWORD)
-				passwd_recode(vp, old_secret, new_secret,
-					      old_vector, vector);
+				passwd_recode(vp, secret, vector, req);
 			
                         checkovf(vp->strlength + 2);
 
@@ -273,9 +266,9 @@ rad_send_request(fd, ipaddr, port, id, code, old_vector, old_secret,
 	/* If this is not an authentication request, we	need to calculate
 	   the md5 hash over the entire packet and put it in the vector. */
 	if (auth->code != RT_AUTHENTICATION_REQUEST) {
-		len = strlen(new_secret);
+		len = strlen(secret);
 		if (total_length + len < sizeof(i_send_buffer)) {
-			strcpy(send_buffer + total_length, new_secret);
+			strcpy(send_buffer + total_length, secret);
 			md5_calc(auth->vector, send_buffer, total_length+len);
 		}
 	}
@@ -337,15 +330,14 @@ proxy_addinfo(radreq, proxy_id, remip)
  *	Decode a password and encode it again.
  */
 static void
-passwd_recode(pass_pair, old_secret, new_secret, old_vector, new_vector)
+passwd_recode(pass_pair, new_secret, new_vector, req)
 	VALUE_PAIR *pass_pair;
-	char *old_secret;
 	char *new_secret;
-	char *old_vector;
 	char *new_vector;
+	RADIUS_REQ *req;
 {
 	char	password[AUTH_STRING_LEN+1];
-	decrypt_password(password, pass_pair, old_vector, old_secret);
+	req_decrypt_password(password, req, pass_pair);
 	free_string(pass_pair->strvalue);
 	encrypt_password(pass_pair, password, new_vector, new_secret);
 	/* Don't let the cleantext hang around */
@@ -506,12 +498,8 @@ proxy_send(radreq, activefd)
 		 what, proxy_id, realm->ipaddr, realm->server, rport));
 
 	/* Now build a new request and send it to the remote radiusd. */
-	rad_send_request(activefd, realm->ipaddr, rport,
-			 proxy_id, radreq->code,
-			 radreq->vector,
-			 radreq->secret,
-			 secret_key,
-			 radreq->request);
+	rad_send_request(activefd, realm->ipaddr, rport, proxy_id,
+			 secret_key, radreq);
 	
 	/* Remove proxy-state from list. */
 	if (pp->next) {

@@ -1,5 +1,5 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
+ * Copyright (C) 2000,2001, Sergey Poznyakoff
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
-/*
- * auth.c	User authentication.
- *
- *
- * Version:	@(#)auth.c  1.83  21-Mar-1999  miquels@cistron.nl
- *              @(#) $Id$ 
- */
+
 #define RADIUS_MODULE 6
 #ifndef lint
 static char rcsid[] =
@@ -70,8 +64,7 @@ static char rcsid[] =
 
 static int pw_expired(UINT4 exptime);
 static int check_disable(char *username, char **user_msg);
-static int check_expiration(VALUE_PAIR *check_item,
-			    char *umsg, char **user_msg);
+static int check_expiration(VALUE_PAIR *check_item, char **user_msg);
 static int unix_pass(char *name, char *passwd);
 
 /*
@@ -125,7 +118,8 @@ check_disable(username, user_msg)
 	char **user_msg;
 {
 	if (get_deny(username)) {
-		*user_msg = _("Sorry, your account is currently closed\r\n");
+		*user_msg = make_string(
+			    _("Sorry, your account is currently closed\r\n"));
 		return -1;
 	}
 	return 0;
@@ -135,25 +129,25 @@ check_disable(username, user_msg)
  *	Check if account has expired, and if user may login now.
  */
 int
-check_expiration(check_item, umsg, user_msg)
+check_expiration(check_item, user_msg)
 	VALUE_PAIR *check_item;
-	char *umsg;
 	char **user_msg;
 {
 	int result, rc;
 	VALUE_PAIR *pair;
-
+	char umsg[80];
+	
 	result = AUTH_OK;
 	if (pair = pairfind(check_item, DA_EXPIRATION)) {
 		rc = pw_expired(pair->lvalue);
 		if (rc < 0) {
 			result = AUTH_FAIL;
-			*user_msg = _("Password Has Expired\r\n");
+			*user_msg = make_string(_("Password Has Expired\r\n"));
 		} else if (rc > 0) {
 			radsprintf(umsg, sizeof(umsg),
-				_("Password Will Expire in %d Days\r\n"),
-				rc);
-			*user_msg = umsg;
+				   _("Password Will Expire in %d Days\r\n"),
+				   rc);
+			*user_msg = make_string(umsg);
 		}
 	}
 
@@ -337,23 +331,6 @@ rad_check_password(authreq, activefd, check_item, namepair,
 	strip_username(1, namepair->strvalue, check_item, name);
 
 	/*
-	 *	For backward compatibility, we check the
-	 *	password to see if it is the magic value
-	 *	UNIX if auth_type was not set.
-	 */
-	if (auth_type < 0 && password_pair) {
-		if (!strcmp(password_pair->strvalue, "UNIX"))
-			auth_type = DV_AUTH_TYPE_SYSTEM;
-		else if (!strcmp(password_pair->strvalue, "PAM"))
-			auth_type = DV_AUTH_TYPE_PAM;
-		else if (!strcmp(password_pair->strvalue, "MYSQL") ||
-			 !strcmp(password_pair->strvalue, "SQL"))
-			auth_type = DV_AUTH_TYPE_MYSQL;
-		else
-			auth_type = DV_AUTH_TYPE_LOCAL;
-	}
-
-	/*
 	 *	Decrypt the password.
 	 */
 	if (auth_item != NULL && auth_item->attribute == DA_PASSWORD) {
@@ -397,7 +374,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 				authdata = p->strvalue;
 			}
 			authdata = authdata ? authdata : PAM_DEFAULT_TYPE;
-			if (pam_pass(name, string, authdata) != 0)
+			if (pam_pass(name, string, authdata, user_msg) != 0)
 				result = AUTH_FAIL;
 #else
 			radlog(L_ERR,
@@ -622,7 +599,6 @@ typedef struct auth_mach {
 	VALUE_PAIR *timeout_pair;
 	char       userpass[AUTH_STRING_LEN];
 	char       *user_msg;
-	char       umsg[AUTH_STRING_LEN];
 	
 	char       *clid;
 	enum auth_state state;
@@ -780,6 +756,8 @@ rad_authenticate(authreq, activefd)
 	pairfree(m.user_check);
 	pairfree(m.user_reply);
 	pairfree(m.proxy_pairs);
+	if (m.user_msg)
+		free_string(m.user_msg);
 	bzero(m.userpass, sizeof(m.userpass));
 	return 0;
 }
@@ -862,7 +840,7 @@ sfn_validate(m)
 	/*
 	 *	Validate the user
 	 */
-	if ((rc = check_expiration(m->user_check, m->umsg, &m->user_msg)) >= 0) {
+	if ((rc = check_expiration(m->user_check, &m->user_msg)) >= 0) {
 		rc = rad_check_password(authreq, m->activefd,
 					m->user_check,
 					m->namepair, authreq->digest,
@@ -893,8 +871,8 @@ sfn_validate(m)
 				break;
 			}
 		}		
-		if (p = pairfind(m->user_reply, DA_REPLY_MESSAGE))
-			m->user_msg = p->strvalue;
+              /*if (p = pairfind(m->user_reply, DA_REPLY_MESSAGE))
+			m->user_msg = dup_string(p->strvalue);*/
 	}
 
 	pairmove2(&m->user_reply, &m->proxy_pairs, DA_PROXY_STATE);
@@ -964,7 +942,7 @@ sfn_service_type(m)
 		radlog(L_AUTH,
 		       "Login rejected [%s]. Authenticate only user.",
 		       m->namepair->strvalue); 
-		m->user_msg = _("\r\nAccess denied\r\n");
+		m->user_msg = make_string(_("\r\nAccess denied\r\n"));
 		newstate(as_reject);
 	}
 }
@@ -978,7 +956,8 @@ sfn_realmuse(m)
 	
 	if (rad_check_realm(m->req->realm) == 0)
 		return;
-	m->user_msg = _("\r\nRealm quota exceeded - access denied\r\n");
+	m->user_msg = make_string(
+		_("\r\nRealm quota exceeded - access denied\r\n"));
 	radlog(L_AUTH,
    _("Login failed: [%s]: realm quota exceeded for %s: CLID %s (from nas %s)"),
 	       m->namepair->strvalue,
@@ -994,7 +973,8 @@ sfn_simuse(m)
 {
 	char  name[AUTH_STRING_LEN];
 	int   rc;
-	
+	char  umsg[AUTH_STRING_LEN];
+
 	strip_username(strip_names,
 		       m->namepair->strvalue, m->user_check, name);
 	if ((rc = rad_check_multi(name, m->req->request,
@@ -1002,13 +982,13 @@ sfn_simuse(m)
 		return;
 	
 	if (m->check_pair->lvalue > 1) {
-		radsprintf(m->umsg, sizeof(m->umsg),
+		radsprintf(umsg, sizeof(umsg),
 	      _("\r\nYou are already logged in %d times  - access denied\r\n"),
 			(int)m->check_pair->lvalue);
-		m->user_msg = m->umsg;
+		m->user_msg = make_string(umsg);
 	} else {
-		m->user_msg =
-	      _("\r\nYou are already logged in - access denied\r\n");
+		m->user_msg = make_string(
+		      _("\r\nYou are already logged in - access denied\r\n"));
 	}
 
 	radlog(L_WARN,
@@ -1047,8 +1027,8 @@ sfn_time(m)
 		/*
 		 *	User called outside allowed time interval.
 		 */
-		m->user_msg =
-			_("You are calling outside your allowed timespan\r\n");
+		m->user_msg = make_string(
+		      _("You are calling outside your allowed timespan\r\n"));
 		radlog(L_ERR,
        _("Outside allowed timespan: [%s] (from nas %s) time allowed: %s"),
 		       m->namepair->strvalue,
@@ -1080,8 +1060,8 @@ sfn_ttl(m)
 		} else {
 			radlog(L_AUTH, _("Zero time to live: [%s]"),
 			       m->namepair->strvalue); 
-			m->user_msg =
-			  _("\r\nSorry, your account is currently closed\r\n");
+			m->user_msg = make_string(
+			 _("\r\nSorry, your account is currently closed\r\n"));
 			newstate(as_reject);
 		}
 	}
@@ -1143,8 +1123,8 @@ sfn_exec_wait(m)
 		newstate(as_reject);
 
 		if (!m->user_msg)
-			m->user_msg =
-			      _("\r\nAccess denied (external check failed).");
+			m->user_msg = make_string(
+			     _("\r\nAccess denied (external check failed)."));
 
 		if (log_mode & RLOG_AUTH) {
 			radlog(L_AUTH,

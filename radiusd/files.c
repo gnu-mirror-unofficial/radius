@@ -2163,10 +2163,10 @@ paircmp(request, check)
 		compare = 0;	/* default result */
 		switch (check_item->type) {
 		case PW_TYPE_STRING:
-			strcpy(username, auth_item->strvalue);
 			switch (check_item->attribute) {
 			case DA_PREFIX:
 			case DA_SUFFIX:
+				strcpy(username, auth_item->strvalue);
 				compare = presufcmp(check_item,
 						    auth_item->strvalue,
 						    username);
@@ -2176,6 +2176,7 @@ paircmp(request, check)
 				break;
 			case DA_GROUP_NAME:
 			case DA_GROUP:
+				strcpy(username, auth_item->strvalue);
 				compare = groupcmp(request,
 						   check_item->strvalue,
 						   username);

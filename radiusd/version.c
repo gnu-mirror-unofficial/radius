@@ -24,6 +24,7 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <radiusd.h>
+#include <radargp.h>
 
 static char *sys_def[] = {
 #if defined(__alpha)
@@ -155,73 +156,53 @@ make_server_ident()
  * Display the version number and built-in defaults.
  */
 void
-version()
+version(stream, state)
+	FILE *stream;
+	struct argp_state *state;
 {
         int i;
         
-        printf(_("%s: GNU Radius version %s"), progname, VERSION);
+        fprintf(stream, _("%s: GNU Radius version %s"), progname, VERSION);
 #ifdef BUILD_TARGET
-        printf(" (%s)", BUILD_TARGET);
+        fprintf(stream, " (%s)", BUILD_TARGET);
 #endif
-        printf("\n");
+        fprintf(stream, "\n");
 
-        printf(_("Compilation platform: "));
+        fprintf(stream, _("Compilation platform: "));
         for (i = 0; sys_def[i]; i++)
-                printf("%s ", sys_def[i]);
+                fprintf(stream, "%s ", sys_def[i]);
 
-        printf(_("\nDebugging flags: "));
+        fprintf(stream, _("\nDebugging flags: "));
         for (i = 0; debug_flag_str[i]; i++) {
-                printf("%s ", debug_flag_str[i]);
+                fprintf(stream, "%s ", debug_flag_str[i]);
         }
 
-        printf(_("\nCompilation flags: "));
+        fprintf(stream, _("\nCompilation flags: "));
         for (i = 0; compile_flag_str[i]; i++) {
-                printf("%s ", compile_flag_str[i]);
+                fprintf(stream, "%s ", compile_flag_str[i]);
         }
-        printf("\n");
-        printf("Ports in use:\n");
-        printf(" AUTH: %d\n", DEF_AUTH_PORT);
-        printf(" ACCT: %d\n", DEF_ACCT_PORT);
+        fprintf(stream, "\n");
+        fprintf(stream, "Ports in use:\n");
+        fprintf(stream, " AUTH: %d\n", DEF_AUTH_PORT);
+        fprintf(stream, " ACCT: %d\n", DEF_ACCT_PORT);
 #if defined(USE_MYSQL)
-        printf(" SQL : %d\n", RAD_SQL_PORT);
+        fprintf(stream, " SQL : %d\n", RAD_SQL_PORT);
 #endif
-        printf("Paths:\n");
-        printf(_(" configuration directory: %s\n"), RADIUS_DIR);
-        printf(_(" logging directory:       %s\n"), RADLOG_DIR);
-        printf(_(" accounting directory:    %s\n"), RADACCT_DIR);
+        fprintf(stream, "Paths:\n");
+        fprintf(stream, _(" configuration directory: %s\n"), RADIUS_DIR);
+        fprintf(stream, _(" logging directory:       %s\n"), RADLOG_DIR);
+        fprintf(stream, _(" accounting directory:    %s\n"), RADACCT_DIR);
 #if defined(DENY_SHELL)
-        printf(_(" deny shell:              %s\n"), DENY_SHELL);
+        fprintf(stream, _(" deny shell:              %s\n"), DENY_SHELL);
 #endif
 
 #ifdef RADIUS_PID
-        printf(_(" pidfile:                 %s\n"), RADIUS_PID);
+        fprintf(stream, _(" pidfile:                 %s\n"), RADIUS_PID);
 #else
-        printf(_(" no pidfile\n"));
+        fprintf(stream, _(" no pidfile\n"));
 #endif
 
-        printf("\nReport bugs to <%s>\n", bug_report_address);
+        fprintf(stream, "\nReport bugs to <%s>\n", bug_report_address);
         exit(0);
 }
 
-char license_text[] =
-"   This program is free software; you can redistribute it and/or modify\n"
-"   it under the terms of the GNU General Public License as published by\n"
-"   the Free Software Foundation; either version 2, or (at your option)\n"
-"   any later version.\n"
-"\n"
-"   This program is distributed in the hope that it will be useful,\n"
-"   but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
-"   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
-"   GNU General Public License for more details.\n"
-"\n"
-"   You should have received a copy of the GNU General Public License\n"
-"   along with this program; if not, write to the Free Software\n"
-"   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n";
-
-void
-license()
-{
-        printf("%s: Copyright 1999,2000,2001 Sergey Poznyakoff\n", progname);
-        printf("\nThis program is part of GNU Radius\n");
-        printf("%s", license_text);
-}

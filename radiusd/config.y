@@ -95,7 +95,7 @@ static char *curp;
 static int expect_string; 
 static int in_category;
 
-Channel channel;
+static Channel channel;
 
 static void skipws();
 static void skipline();

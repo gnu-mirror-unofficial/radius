@@ -499,13 +499,110 @@ random_vector(vector)
 /* ************************************************************************* */
 /* Initialization. */
 
+#define TOK_INVALID    0
+#define TOK_SOURCE_IP  1
+#define TOK_SERVER     2
+#define TOK_TIMEOUT    3
+#define TOK_RETRY      4
+
+static struct keyword kwd[] = {
+	"source_ip", TOK_SOURCE_IP,
+	"source-ip", TOK_SOURCE_IP,
+	"server", TOK_SERVER,
+	"timeout", TOK_TIMEOUT,
+	"retry", TOK_RETRY,
+	NULL
+};
+
+static int
+parse_client_config(client, argc, argv, file, lineno)
+	RADCLIENT *client;
+	int argc;
+	char **argv;
+	char *file;
+	int lineno;
+{
+	char *p;
+	SERVER serv;
+	
+	switch (xlat_keyword(kwd, argv[0], TOK_INVALID)) {
+	case TOK_INVALID:
+		radlog(L_ERR, "%s:%d: unknown keyword", file, lineno);
+		break;
+		
+	case TOK_SOURCE_IP:
+		client->source_ip = get_ipaddr(argv[1]);
+		break;
+		
+	case TOK_SERVER:
+		if (argc != 6) {
+			radlog(L_ERR, "%s:%d: wrong number of fields",
+			       file, lineno);
+			break;
+		}
+		memset(&serv, 0, sizeof serv);
+
+		serv.name = argv[1];
+		serv.addr = get_ipaddr(argv[2]);
+		if (!serv.addr) {
+			radlog(L_ERR,
+			       "%s:%d: bad IP address or host name",
+			       file, lineno);
+			break;
+		}
+		
+		serv.secret = argv[3];
+
+		serv.port[0] = strtol(argv[4], &p, 0);
+		if (*p) {
+			radlog(L_ERR,
+			       "%s:%d: bad port number %s",
+			       file, lineno, argv[4]);
+			break;
+		}
+
+		serv.port[1] = strtol(argv[5], &p, 0);
+		if (*p) {
+			radlog(L_ERR,
+			       "%s:%d: bad port number %s",
+			       file, lineno, argv[4]);
+			break;
+		}
+		
+		client->first_server =
+			radclient_append_server(client->first_server,
+						radclient_alloc_server(&serv));
+		break;
+		
+	case TOK_TIMEOUT:
+		client->timeout = strtol(argv[1], &p, 0);
+		if (*p) {
+			radlog(L_ERR,
+			       "%s:%d: bad timeout value", file, lineno);
+		}
+		break;
+		
+	case TOK_RETRY:
+		client->retries = strtol(argv[1], &p, 0);
+		if (*p) {
+			radlog(L_ERR,
+			       "%s:%d: bad retry value", file, lineno);
+		}
+		break;
+	}
+	return 0;
+}
+
+
 RADCLIENT *
 radclient_alloc(source_ip, bufsize)
 	UINT4 source_ip;
 	size_t bufsize;
 {
 	RADCLIENT *client;
-
+	struct timeval tv;
+	char *filename;
+	
 	client = emalloc(sizeof *client);
 
 	/* Provide default values */
@@ -515,8 +612,15 @@ radclient_alloc(source_ip, bufsize)
 	client->bufsize = bufsize ? bufsize : 4096;
 	client->first_server = NULL;
 	client->data_buffer = emalloc(client->bufsize);
-	client->messg_id = getpid() % 256;
 
+	gettimeofday(&tv, NULL);
+	srand(tv.tv_usec);
+	client->messg_id = random() % 256;
+
+	filename = mkfilename(radius_dir, "client.conf");
+	read_raddb_file(filename, 1, parse_client_config, client);
+	efree(filename);
+	
 	return client;
 }
 

@@ -19,9 +19,6 @@ AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
 
-## * Available linguas
-ALL_LINGUAS="no"
-
 AC_SUBST(BUILD_TARGET)
 AC_SUBST(INCLUDEPATH)
 AC_SUBST(YACC_OPTS)
@@ -51,7 +48,7 @@ AH_TOP([
 
 AH_BOTTOM([
 /* Internationalization support */
-#if defined(USE_NLS) && defined(HAVE_LIBINTL)
+#if defined(ENABLE_NLS)
 # include <libintl.h>
 # define _(s) gettext(s)
 #else
@@ -172,7 +169,6 @@ AC_MSG_RESULT($LIBS)
 ## * Checks for libraries.
 AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(nsl, gethostbyaddr)
-AC_CHECK_LIB(intl, gettext)
 AC_CHECK_LIB(crypt, crypt)
 
 HAVE_PTHREAD=no
@@ -218,19 +214,27 @@ AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  mkdir mktime select socket strdup strtol lockf \
  setlocale bzero \
  inet_ntoa inet_aton setvbuf seteuid setreuid getdtablesize) 
-#AM_FUNC_OBSTACK
+AC_FUNC_OBSTACK
 
-AC_CHECK_FUNCS(argp_parse, :,
-               AC_LIBOBJ([argp-ba])
-               AC_LIBOBJ([argp-eexst])
-               AC_LIBOBJ([argp-fmtstream])
-               AC_LIBOBJ([argp-fs-xinl])
-               AC_LIBOBJ([argp-help])
-               AC_LIBOBJ([argp-parse])
-               AC_LIBOBJ([argp-pv])
-               AC_LIBOBJ([argp-pvh])
-               AC_LIBOBJ([argp-xinl])
-               AC_LIBOBJ([pin]))
+AC_ARG_WITH(included-argp,
+	[  --with-included-argp           Use included argp library],
+        [USE_INCLUDED_ARGP=$withval],
+        [USE_INCLUDED_ARGP=no])
+
+AC_CHECK_FUNCS(argp_parse, :, USE_INCLUDED_ARGP=yes)
+
+if test $USE_INCLUDED_ARGP = yes; then
+	AC_LIBOBJ([argp-ba])
+        AC_LIBOBJ([argp-eexst])
+        AC_LIBOBJ([argp-fmtstream])
+        AC_LIBOBJ([argp-fs-xinl])
+        AC_LIBOBJ([argp-help])
+        AC_LIBOBJ([argp-parse])
+        AC_LIBOBJ([argp-pv])
+        AC_LIBOBJ([argp-pvh])
+        AC_LIBOBJ([argp-xinl])
+        AC_LIBOBJ([pin])
+fi
 
 AC_REPLACE_FUNCS(getline strerror strncasecmp strcspn snprintf vasprintf\
  strtok_r localtime_r strchrnul strndup strnlen)
@@ -628,79 +632,6 @@ AC_ARG_ENABLE(osfc2,
 				exit 1;;
 	esac])
 
-## * Check for national language support
-
-LANGLIST="no"
-USE_NLS=no
-
-AC_SUBST(USE_NLS)
-AC_SUBST(LANGUAGES)
-
-checklang() {
-	for i in $*
-	do
-		for j in $LANGLIST
-		do
-			if test "$i" = "$j"; then
-				break
-			fi
-		done
-
-		if test "$i" != "$j"; then
-			AC_MSG_ERROR([Sorry, language $i is not supported])
-		fi
-	done
-}
-
-AC_ARG_ENABLE(nls,
-	[  --enable-nls		         enable national language support],
-	[case $enableval in
-		yes)	USE_NLS=yes
-			LANGUAGES=$LANGLIST
-			;;
-		no)	USE_NLS=no
-			;;
-		*)	AC_MSG_ERROR(unsupported option value: $enableval)
-			;;
-	esac])
-
-AC_ARG_WITH(languages,
-	[  --with-languages=LIST          list of languages to include in NLS],
-	checklang $withval
-	USE_NLS=yes
-	LANGUAGES="$LANGUAGES $withval")
-
-if test "$USE_NLS" = "yes"; then
-	AC_DEFINE(USE_NLS,1,[Enable National Language Support])
-fi
-
-AC_SUBST(CATOBJEXT)
-AC_ARG_WITH(catobjext,
-	[  --with-catobjext=EXT           override default .po extension],
-	CATOBJEXT=$withval,
-	CATOBJEXT=.po)
-
-AC_SUBST(INSTOBJEXT)
-AC_ARG_WITH(instobjext,
-	[  --with-instobjext=EXT          override default .mo extension],
-	INSTOBJEXT=$withval,
-	INSTOBJEXT=.mo)
-
-AC_SUBST(MSGFMT)
-AC_ARG_WITH(msgfmt,
-	[  --with-msgfmt=PROG             use PROG instead of msgfmt],
-	PROG=$withval,
-	PROG=msgfmt)
-AC_PATH_PROG(MSGFMT, $PROG, missing, $PATH:/usr/bin)
-
-AC_SUBST(GMSGFMT)
-AC_ARG_WITH(gnu-msgfmt,
-	[  --with-gnu-msgfmt=PROG         use PROG instead of GNU msgfmt],
-	PROG=$withval,
-	PROG=msgfmt)
-AC_PATH_PROG(GMSGFMT, $PROG, missing, $PATH:/usr/bin)
-
-
 ## ***********************************************************************
 ## *           Do some final checks and create Makefiles                 *
 ## ***********************************************************************
@@ -723,7 +654,13 @@ if test "$EMACS" != "no"; then
 fi
 AC_SUBST(lisp_LISP)
 
-AC_OUTPUT(Makefile m4/Makefile 
+## * Check for national language support
+AM_GNU_GETTEXT(use-libtool)
+if test ".$USE_NLS" = ".yes"; then
+	AC_DEFINE(HAVE_LIBINTL_H,1,[Define if your system has libintl])
+fi
+
+AC_OUTPUT(Makefile m4/Makefile  intl/Makefile po/Makefile.in 
           include/Makefile include/snmp/Makefile
           radlib/Makefile sql/Makefile snmplib/Makefile 
 	  radscm/Makefile 

@@ -106,9 +106,11 @@ enum {
 #define AP_ADD_APPEND    1
 #define AP_ADD_NONE      2
 
-#define AP_PROPAGATE     0x10
-#define AP_REQ_CMP       0x20
-#define AP_BINARY_STRING 0x40
+#define AP_PROPAGATE     0x10 /* Propagate attribute through the proxy chain */
+#define AP_REQ_CMP       0x20 /* Not used */ 
+#define AP_BINARY_STRING 0x40 /* Binary string value. A special interpreter
+				 must be registered for this attribute */
+#define AP_INTERNAL      0x80 /* Internal attribute. */
 #define AP_USER_FLAG(n) (0x4000<<(n))
 
 #define ADDITIVITY(val) ((val) & 0x3)

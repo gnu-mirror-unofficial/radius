@@ -148,8 +148,13 @@ parse_opt (int key, char *arg, struct argp_state *state)
         case '5': case '6': case '7': case '8': case '9':
                 if (maxrec == -1) {
                         char *p;
-                        
-                        maxrec = strtoul(state->argv[state->next-1]+1, &p, 0);
+			int i;
+			
+			if (state->argv[state->next-1][1] == key)
+				i = state->next-1;
+			else
+				i = state->next;
+                        maxrec = strtoul(state->argv[i]+1, &p, 0);
                         if (!maxrec) {
                                 radlog(L_ERR,
                                        "invalid number (near %s)",

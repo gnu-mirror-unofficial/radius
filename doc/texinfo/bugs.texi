@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Bugs, Info, , Top
-@chapter Reporting Bugs
+@section Reporting Bugs
 
 It is possible you will encounter a bug in one of Radius programs. If this
 happens we would like to hear about it. As the purpose of bug reporting
@@ -26,7 +26,7 @@ days to answer.
 
 @comment *******************************************************************
 @node Info, , Bugs, Top
-@chapter Where to get info about GNU Radius
+@section Where to get info about GNU Radius
 
 To obtain announcements and progress information about GNU Radius
 project subscribe to the mailing list info-gnu-radius. To subscribe

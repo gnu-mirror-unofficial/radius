@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Invocation, Configuration files, Operation, Top
-@chapter How to start the daemon.
+@section How to start the daemon.
 @cindex Radius daemon invocation
 @cindex Invoking the radius daemon
 @pindex radiusd

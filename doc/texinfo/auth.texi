@@ -3,6 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Authentication, Accounting, Configuration files, Top
+@section Authentication
 
 Several authentication types are supported. The use of a particular
 authentication type for a given user is determined by the value
@@ -21,7 +22,7 @@ of @code{Auth-Type} attribute in his profile.
 
 @comment *L2****************************************************************
 @node Accept Auth, Reject Auth, , Authentication
-@chapter Accept Authentication Type
+@subsection Accept Authentication Type
 @cindex Accept Authentication Type
 @cindex guest accounts, setting up
 
@@ -53,7 +54,7 @@ non-empty password.
 
 @comment *L2****************************************************************
 @node Reject Auth, Local Password Auth, Accept Auth, Authentication
-@chapter Reject Authentication Type
+@subsection Reject Authentication Type
 @cindex Reject Authentication Type
 @cindex disabling user accounts
 
@@ -68,7 +69,7 @@ unconditionally. It can be used to disable a user account @ref{access.deny}.
 
 @comment *L2****************************************************************
 @node Local Password Auth, Encrypted Password Auth, Reject Auth, Authentication
-@chapter Local Password Authentication Type
+@subsection Local Password Authentication Type
 @cindex Local Password Auth
 
 @subheading Synopsis
@@ -88,7 +89,7 @@ file is owned by root and its permissions are 0600.
 
 @comment *L2****************************************************************
 @node Encrypted Password Auth, System Auth, Local Password Auth, Authentication
-@chapter Encrypted Password Authentication Type
+@subsection Encrypted Password Authentication Type
 @cindex Encrypted Password Authentication Type
 
 @subheading Synopsis
@@ -112,7 +113,7 @@ is authenticated.
 
 @comment *L2****************************************************************
 @node System Auth, SQL Auth, Encrypted Password Auth, Authentication
-@chapter System Authentication Type
+@subsection System Authentication Type
 @cindex System Authentication Type
 
 @subheading Synopsis
@@ -127,7 +128,7 @@ machine where the radius server is running.
 
 @comment *L2****************************************************************
 @node SQL Auth, PAM Auth, System Auth, Authentication
-@chapter SQL Authentication Type
+@subsection SQL Authentication Type
 @cindex SQL Authentication Type
 
 @subheading Synopsis
@@ -154,7 +155,7 @@ coincide, the user will be authenticated.
 
 @comment *L2****************************************************************
 @node PAM Auth, Checking Simultaneous Logins, SQL Auth, Authentication
-@chapter PAM Authentication Type
+@subsection PAM Authentication Type
 @cindex PAM Authentication Type
 
 @subheading Synopsis
@@ -178,7 +179,7 @@ If it is not specified, @samp{radius} will be used.
 
 @comment *L2****************************************************************
 @node Checking Simultaneous Logins, , PAM Auth, Authentication
-@chapter Checking Simultaneous Logins
+@subsection Checking Simultaneous Logins
 @cindex Checking Simultaneous Logins
 @cindex simultaneous logins, checking for
 

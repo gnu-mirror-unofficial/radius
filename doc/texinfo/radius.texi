@@ -106,7 +106,7 @@ The radius daemon
 * Operation::           How radius operates.
 * Invocation::          How to start the daemon.
 * Configuration files:: Radius configuration files.
-* Authentication::      How the users are authenticated
+* Authentication::      How the users are authenticated.
 * Accounting::          Accounting methods.
 * Logging::             What gets logged and where.
 * Debugging::           An extensive logging information.

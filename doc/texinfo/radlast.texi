@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Radlast, Raduse, Radwho, Top
-@chapter Radlast
+@section Radlast
 @pindex radlast
 
 The @code{radlast} utility lists sessions of specified users, NASes,
@@ -37,7 +37,7 @@ output. It includes following fields:
 
 @comment *******************************************************************
 @node radlast options, , , Radlast
-@chapter @code{radlast} command line options
+@subsection @code{radlast} command line options
 @pindex @code{radlast}, options
 
 Use following command line options to control the behavior of

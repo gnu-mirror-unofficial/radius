@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Accounting, Logging, Authentication, Top
-@chapter Accounting
+@section Accounting
 @cindex Accounting Types
 
 GNU Radius supports three types of accounting. By default Unix and
@@ -17,7 +17,7 @@ Detailed request accounting types are always enabled.
 
 @comment *L2****************************************************************
 @node Unix Accounting, Detailed Request Accounting, , Accounting
-@chapter Unix Accounting
+@subsection Unix Accounting
 @cindex Unix Accounting
 
 This accounting method is always enabled.
@@ -35,7 +35,7 @@ users' sessions.
 
 @comment *L2****************************************************************
 @node Detailed Request Accounting, SQL Accounting, Unix Accounting, Accounting
-@chapter Detailed Request Accounting
+@subsection Detailed Request Accounting
 @cindex Detailed Request Accounting
 
 This accounting method is always enabled.
@@ -83,7 +83,7 @@ Fri Dec 15 18:32:09 2000
 
 @comment *L2****************************************************************
 @node SQL Accounting, , Detailed Request Accounting, Accounting
-@chapter SQL Accounting
+@subsection SQL Accounting
 @cindex SQL Accounting
 
 The SQL accounting method is enabled when Radius is configured with

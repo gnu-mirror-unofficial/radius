@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Operation, Invocation, Naming conventions, Top
-@chapter  How Radius operates.
+@section How Radius operates.
 @cindex NAS
 @cindex Network Access Server
 
@@ -61,7 +61,7 @@ server}.
 
 @comment *L2****************************************************************
 @node Attributes, User Profile, Operation, Operation
-@chapter Attributes
+@subsection Attributes
 @cindex Attribute
 @cindex Attribute-Value pair
 @cindex A/V pair
@@ -100,7 +100,7 @@ attributes. @ref{Vendor-Specific,, Vendor-Specific attribute}.
 
 @comment *L2****************************************************************
 @node User Profile, Requests, Attributes, Operation
-@chapter User Profile
+@subsection User Profile
 
 A record in the radius database containing all the authentication and
 authorization data for a given user is called a @dfn{User Profile}.
@@ -152,7 +152,7 @@ Radius keeps users' profile database in file @file{raddb/users} (@xref{users}).
 
 @comment *L2****************************************************************
 @node Requests, Processing requests, User Profile, Operation
-@chapter Radius requests
+@subsection Radius requests
 @cindex Request
 
 The term @dfn{request} means both the authentication/accounting request
@@ -189,7 +189,7 @@ request.
 
 @comment **L3***************************************************************
 @node Authentication requests, Accounting requests, , Requests
-@chapter Authentication requests
+@subsubsection Authentication requests
 @cindex Authentication requests
 @cindex requests, authentication
 
@@ -258,7 +258,7 @@ Access-Challenge, if any.
 
 @comment **L3***************************************************************
 @node Accounting requests, , Authentication requests, Requests
-@chapter Accounting requests
+@subsubsection Accounting requests
 @cindex Accounting requests
 @cindex requests, accounting
 
@@ -295,6 +295,7 @@ that attribute MUST contain the actual IP address of the user.
 
 @comment *L2****************************************************************
 @node Processing requests, Realms, Requests, Operation
+@subsection Processing requests
 
 @chapter Processing requests
 @cindex Request processing

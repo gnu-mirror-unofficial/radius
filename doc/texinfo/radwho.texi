@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Radwho, Radlast, Debugging, Top
-@chapter Radwho
+@section Radwho
 @pindex radwho
 
 @code{Radwho} displays the list of users currently logged in by the
@@ -44,7 +44,7 @@ Duration of the session.
 
 @comment *L2****************************************************************
 @node radwho options, , , Radwho
-@chapter Radwho command line options
+@subsection Radwho command line options
 @cindex radwho, command line options
 
 The following command line options can be used to modify the behavior

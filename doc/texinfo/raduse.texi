@@ -3,22 +3,22 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Raduse, Radzap, Radlast, Top
-@chapter Raduse
+@section Raduse
 @pindex raduse
 
 The @code{raduse} utility shows the usage of dialup lines in the
 realtime.
 
 @menu
-* Display:raduse display.       What is displayed.
-* Options:raduse options.       Command line options modify the default
+* Display: raduse display.      What is displayed.
+* Options: raduse options.      Command line options modify the default
                                 display.
-* Commands:raduse commands.     Interactive mode commands. 
+* Commands: raduse commands.    Interactive mode commands. 
 @end menu
 
 @comment *L2****************************************************************
 @node raduse display, raduse options, , Raduse
-@chapter Display
+@subsection Display
 @cindex raduse display
 @cindex display, raduse
 
@@ -78,7 +78,7 @@ interactive commands
 
 @comment *L2****************************************************************
 @node raduse options, raduse commands, raduse display, Raduse
-@chapter Raduse Command Line Options
+@subsection Raduse Command Line Options
 @cindex raduse, command line options
 
 The following options modify the behavior of @code{raduse}:
@@ -128,6 +128,7 @@ Display short usage summary.
 
 @comment *L2****************************************************************
 @node raduse commands, , raduse options, Raduse
+@subsection Raduse Interactive Commands
 
 The following commands are understood when @code{raduse} is in
 interactive mode. Some commands require an argument. Such commands

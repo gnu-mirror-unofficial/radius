@@ -46,8 +46,8 @@ static void guile_boot1(void *closure, int argc, char **argv);
 
 struct call_data {
         struct call_data *next;
-        pthread_cond_t cond;
         pthread_mutex_t mutex;
+        pthread_cond_t cond;
         int ready;
         int retval;
         int (*fun)(struct call_data*);
@@ -58,9 +58,8 @@ struct call_data {
 };
 
 pthread_t guile_tid;
-static pthread_mutex_t call_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t call_cond = PTHREAD_COND_INITIALIZER;
-static pthread_mutex_t queue_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_mutex_t server_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t server_cond = PTHREAD_COND_INITIALIZER;
 struct call_data *queue_head, *queue_tail;
 static int scheme_inited;
 unsigned scheme_gc_interval = 3600;
@@ -69,14 +68,12 @@ void
 call_place(cp)
         struct call_data *cp;
 {
-        pthread_mutex_lock(&queue_mutex);
         cp->next = NULL;
         if (!queue_head)
                 queue_head = cp;
         else
                 queue_tail->next = cp;
         queue_tail = cp;
-        pthread_mutex_unlock(&queue_mutex);
 }
 
 void
@@ -85,7 +82,6 @@ call_remove(cp)
 {
         struct call_data *p, *prev = NULL;
 
-        pthread_mutex_lock(&queue_mutex);
         for (p = queue_head; p; ) {
                 if (p == cp)
                         break;
@@ -101,7 +97,6 @@ call_remove(cp)
                 if (p == queue_tail)
                         queue_tail = prev;
         }
-        pthread_mutex_unlock(&queue_mutex);
 }
 
 /* ************************************************************************* */
@@ -134,38 +129,44 @@ guile_boot0(arg)
 static SCM
 boot_body (void *data)
 {
-        struct call_data *p, *next;
-	time_t last_gc_time;
-	
+        time_t last_gc_time;
+        
         scm_init_load_path();
         radscm_init();
         rscm_radlog_init();
         rscm_rewrite_init();
 
-        scheme_inited=1;
-        pthread_mutex_lock(&call_mutex);
-
+        time(&last_gc_time);
+        scheme_inited = 1;
+        
+        pthread_mutex_lock(&server_mutex);
+        debug(50,("SRV: Acquired server mutex"));
         while (1) {
-		time_t t;
-		if (time(&t) - last_gc_time > scheme_gc_interval) {
-			radlog(L_INFO, "starting guile garbage collection");
-			scm_gc();
-			radlog(L_INFO, "finished guile garbage collection");
-			last_gc_time = t;
-		}
-		
-		debug(1, ("SRV: Waiting"));
-                pthread_cond_wait(&call_cond, &call_mutex);
-                for (p = queue_head; p; ) {
-                        next = p->next;
+                struct call_data *p;
+                time_t t;
+
+                if (time(&t) - last_gc_time > scheme_gc_interval) {
+                        radlog(L_INFO, "starting guile garbage collection");
+                        scm_gc();
+                        radlog(L_INFO, "finished guile garbage collection");
+                        last_gc_time = t;
+                }
+                
+                debug(1, ("SRV: Waiting"));
+                pthread_cond_wait(&server_cond, &server_mutex);
+                
+                debug(1, ("SRV: Processing queue"));
+                for (p = queue_head; p; p = p->next) {
                         if (!p->ready) {
-				debug(1, ("SRV: Handling request"));
+                                debug(1, ("SRV: Handling request"));
                                 p->retval = p->fun(p);
                                 p->ready = 1;
                         }
-			debug(1, ("SRV: Signalling"));
+                        debug(50, ("SRV: Acquiring client mutex"));
+                        pthread_mutex_lock(&p->mutex);
                         pthread_cond_signal(&p->cond);
-                        p = next;
+                        pthread_mutex_unlock(&p->mutex);
+                        debug(50, ("SRV: Released client mutex"));
                 }
         }
         
@@ -346,26 +347,45 @@ scheme_generic_call(fun, procname, req, user_check, user_reply_ptr)
         p->ready = 0;
         pthread_cond_init(&p->cond, NULL);
         pthread_mutex_init(&p->mutex, NULL);
-        call_place(p);
-	debug(1, ("APP: Placed call"));
-
-        pthread_mutex_lock(&p->mutex);
-
-        while (!p->ready) {
-                struct timeval tv;
-                gettimeofday(&tv, NULL);
-                timeout.tv_sec = tv.tv_sec;
-                timeout.tv_nsec = (tv.tv_usec + 1) * 1000;
-                pthread_cond_signal(&call_cond);
-                if (p->ready)
-                        break;
-                pthread_cond_timedwait(&p->cond, &p->mutex, &timeout);
-        }
-	debug(1, ("APP: Done"));
         
+        debug(50, ("APP: Acquiring server mutex"));
+        pthread_mutex_lock(&server_mutex);
+        call_place(p);
+        debug(1, ("APP: Placed call"));
+
+        debug(50, ("APP: Acquiring client mutex"));
+        pthread_mutex_lock(&p->mutex);
+        debug(50, ("APP: Acquired client mutex"));
+
+        debug(50, ("APP: Signalling"));
+        pthread_cond_signal(&server_cond);
+        debug(50, ("APP: Releasing server mutex"));
+        pthread_mutex_unlock(&server_mutex);
+        while (!p->ready) {
+                struct timespec atime;
+                struct timeval now;
+                gettimeofday(&now, NULL);
+                atime.tv_sec = now.tv_sec + 1;
+                atime.tv_nsec = 0;
+                debug(50, ("APP: Waiting"));
+//              pthread_cond_timedwait(&p->cond, &p->mutex, &atime);
+                pthread_cond_wait(&p->cond, &p->mutex);
+        }
+        
+        debug(50, ("APP: Releasing client mutex"));
         pthread_mutex_unlock(&p->mutex);
-        pthread_mutex_unlock(&call_mutex);
+        debug(1, ("APP: Done"));
+        
+        debug(50, ("APP: Re-acquiring server mutex"));
+        pthread_mutex_lock(&server_mutex);
         call_remove(p);
+        debug(50, ("APP: Releasing server mutex"));
+        pthread_mutex_unlock(&server_mutex);
+        debug(50, ("APP: Released server mutex"));
+
+        pthread_mutex_destroy(&p->mutex);
+        pthread_cond_destroy(&p->cond);
+        
         rc = p->retval;
         efree(p);
         return rc;

@@ -133,7 +133,7 @@ acct_stop_query      UPDATE calls \
                          acct_input_octets=%C{Acct-Input-Octets},\
                          acct_output_octets=%C{Acct-Output-Octets},\
                          connect_term_reason=%C{Acct-Terminate-Cause} \
-                         WHERE user_name='%C{User-Name}' 
+                         WHERE user_name='%C{User-Name}' \
 			       AND status = 1 \
 			       AND acct_session_id=%C{Acct-Session-Id} 	
 

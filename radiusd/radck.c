@@ -287,7 +287,7 @@ fix_check_pairs(int cf_file, char *filename, int line, char *name,
         
         switch (auth_type->avp_lvalue) {
         case DV_AUTH_TYPE_LOCAL:
-                if (!password && !pass_loc) {
+                if (!password && !chap_password && !pass_loc) {
                         radlog(L_ERR,
 			       "%s:%d: %s",
                                filename, line,

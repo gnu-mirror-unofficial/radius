@@ -300,7 +300,6 @@ stmt          : T_BEGIN list T_END
                 {
 			if ($2 > current_nesting_level) {
 				parse_error(_("not enough 'while's to break from"));
-				YYERROR;
 			}
 			$$ = radtest_node_alloc(radtest_node_break);
 			$$->v.level = $2;
@@ -309,7 +308,6 @@ stmt          : T_BEGIN list T_END
                 {
 			if ($2 > current_nesting_level) {
 				parse_error(_("not enough 'while's to continue"));
-				YYERROR;
 			}
 			$$ = radtest_node_alloc(radtest_node_continue);
 			$$->v.level = $2;
@@ -354,7 +352,6 @@ stmt          : T_BEGIN list T_END
                 {
 			if (!defn.function) {
 				parse_error(_("return outside of a function definition"));
-				YYERROR;
 			}
 			$$ = radtest_node_alloc(radtest_node_return);
 			$$->v.expr = $2;
@@ -367,7 +364,6 @@ stmt          : T_BEGIN list T_END
 				grad_sym_lookup(functab, $1);
 			if (!fun) {
 				parse_error(_("undefined function `%s'"), $1);
-				YYERROR;
 			}
 			$$ = radtest_node_alloc(radtest_node_call);
 			$$->v.call.fun = fun;
@@ -385,7 +381,7 @@ function_def  : NAME EOL T_BEGIN EOL
 				parse_error_loc(&defn.locus,
 						_("the current function "
 						  "definition begins here"));
-				YYERROR;
+				YYERROR; /* FIXME */
 			}
 			defn.function = $1;
 			defn.locus = source_locus;
@@ -397,7 +393,7 @@ function_def  : NAME EOL T_BEGIN EOL
 					     _("`%s' previously defined here"),
 						$1);
 
-				YYERROR;
+				YYERROR; /* FIXME */
 			}
 			fun->locus = source_locus;
 			$$ = fun;
@@ -454,13 +450,17 @@ caselist      : casecond
 		}
               ;
 
-casecond      : expr ')' stmt EOL
+casecond      : expr ')' stmt nls
                 {
 			radtest_case_branch_t *p = radtest_branch_alloc();
 			p->cond = $1;
 			p->node = $3;
 			$$ = p;
 		}
+              ;
+
+nls           : EOL
+              | nls EOL
               ;
 
 name          : /* empty */
@@ -501,10 +501,8 @@ req_code      : NUMBER
               | NAME
                 {
 			$$ = grad_request_name_to_code($1);
-			if ($$ == 0) {
+			if ($$ == 0) 
 				parse_error(_("expected integer value or request code name"));
-				YYERROR;
-			}
 		}
               ;
 
@@ -655,14 +653,16 @@ expr          : value
 			grad_dict_attr_t *dict = grad_attr_name_to_dict($3);
 			if (!dict) {
 				parse_error(_("unknown attribute `%s'"), $3);
-				YYERROR;
+				$$ = NULL;
+			} else {
+				$$ = radtest_node_alloc(radtest_node_attr);
+				$$->v.attr.node = $1;
+				$$->v.attr.dict = dict;
+				$$->v.attr.all = $4;
+				if ($4 && dict->type != TYPE_STRING) 
+					parse_error(
+		     _("warning: '*' is meaningless for this attribute type"));
 			}
-			$$ = radtest_node_alloc(radtest_node_attr);
-			$$->v.attr.node = $1;
-			$$->v.attr.dict = dict;
-			$$->v.attr.all = $4;
-			if ($4 && dict->type != TYPE_STRING) 
-				parse_error(_("warning: '*' is meaningless for this attribute type"));
 		}
               | expr '+' expr
                 {
@@ -741,11 +741,12 @@ value         : imm_value
 				grad_sym_lookup(functab, $1);
 			if (!fun) {
 				parse_error(_("undefined function `%s'"), $1);
-				YYERROR;
+				$$ = NULL;
+			} else {
+				$$ = radtest_node_alloc(radtest_node_call);
+				$$->v.call.fun = fun;
+				$$->v.call.args = $3;
 			}
-			$$ = radtest_node_alloc(radtest_node_call);
-			$$->v.call.fun = fun;
-			$$->v.call.args = $3;
 		}
               ;
 
@@ -814,11 +815,9 @@ pair_list     : pair
 pair          : NAME op expr
                 {
 			grad_dict_attr_t *attr = grad_attr_name_to_dict($1);
-			if (!attr) {
+			if (!attr) 
 				parse_error(_("unknown attribute `%s'"), $1);
-				YYERROR;
-			}
-					    
+
 			$$ = radtest_pair_alloc();
 			$$->attr = attr;
 			$$->op = $2;
@@ -877,6 +876,8 @@ pritem        : expr %prec PRITEM
 int
 yyerror(char *s)
 {
+	if (defn.function)
+		parse_error(_("In function `%s':"), defn.function);
 	if (strcmp(s, "parse error") == 0
 	    || strcmp(s, "syntax error") == 0) {
 		if (yychar == T_END)

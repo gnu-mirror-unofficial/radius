@@ -920,6 +920,10 @@ reread_config(reload)
         server_stat.acct.status = serv_init;
 #endif  
 
+#ifdef USE_SERVER_GUILE
+        scheme_before_reconfig();
+#endif
+
         /* Read the options */
         get_config();
         if (!reload) {
@@ -957,7 +961,9 @@ reread_config(reload)
                        _("Errors reading config file - EXITING"));
                 exit(1);
         }
-
+#ifdef USE_SERVER_GUILE
+        scheme_after_reconfig();
+#endif
 }
 
 /*
@@ -1111,8 +1117,8 @@ void
 listen_auth(host)
         HOSTDECL *host;
 {
-        if (radius_mode != MODE_DAEMON)
-                return;
+	if (radius_mode != MODE_DAEMON)
+	    	return;
         open_socket_list(host, auth_port, "auth", NULL, auth_respond, NULL);
 }
 
@@ -1121,7 +1127,7 @@ void
 listen_acct(host)
         HOSTDECL *host;
 {
-        if (!open_acct || radius_mode != MODE_DAEMON)
+  	if (!open_acct || radius_mode != MODE_DAEMON)
                 return;
         open_socket_list(host, acct_port, "acct",
                          acct_success, auth_respond, acct_failure);
@@ -1523,6 +1529,17 @@ socket_list_close(list)
                 free_entry(list);
                 list = next;
         }
+}
+
+void
+socket_list_iterate(fun)
+	void (*fun)();
+{
+        struct socket_list *p;
+
+	for (p = socket_first; p; p = p->next) {
+		fun(p->fd);
+	}
 }
 
 int

@@ -1,5 +1,11 @@
 2001-11-15 Sergey Poznyakoff
 
+	* test/dejagnu/Makefile.in: removed
+	* test/dejagnu/Makefile.am: (new)
+	* test/dejagnu/.cvsignore: Updated
+	  
+2001-11-15 Sergey Poznyakoff
+
 	* NEWS: Updated
 
 	Added dejagnu test suite framework. Removed radctl.rc

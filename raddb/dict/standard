@@ -15,162 +15,162 @@
 ## in the header, begin them with ##.
 
 ## syntax flags: [us-hi-hu]
-ATTRIBUTE	User-Name		1	string	- [LR-RLR]
-ATTRIBUTE	User-Password		2	string	- [L-----]E
-ATTRIBUTE	CHAP-Password		3	string	- [L-----]b
-ATTRIBUTE	NAS-IP-Address		4	ipaddr	- [L--RLR]
-ATTRIBUTE	NAS-Port-Id		5	integer	- [LR-RLR]
-ATTRIBUTE	Service-Type		6	integer	- [LR-RLR]=P	
-ATTRIBUTE	Framed-Protocol		7	integer	- [LR-RLR]=P	
-ATTRIBUTE	Framed-IP-Address	8	ipaddr	- [LR-RLR]=	
-ATTRIBUTE	Framed-IP-Netmask	9	ipaddr	- [LR-RLR]=
-ATTRIBUTE	Framed-Routing		10	integer	- [-R-R-R]=
-ATTRIBUTE	Filter-Id		11	string	- [-R-R-R]=P
-ATTRIBUTE	Framed-MTU		12	integer	- [LR-R-R]=P
-ATTRIBUTE	Framed-Compression	13	integer	- [LR-RLR]=P
-ATTRIBUTE	Login-IP-Host		14	ipaddr	- [LR-R-R]=P
-ATTRIBUTE	Login-Service		15	integer	- [-R-R-R]=P
-ATTRIBUTE	Login-TCP-Port		16	integer	- [-R-R-R]=
-ATTRIBUTE	Reply-Message		18	string	- [-R----]+P
-ATTRIBUTE	Callback-Number		19	string	- [-R----]=
-ATTRIBUTE	Callback-Id		20	string	- [-R----]=	
-ATTRIBUTE	Framed-Route		22	string	- [-R----]+
-ATTRIBUTE	Framed-IPX-Network	23	ipaddr	- [-R----]=
-ATTRIBUTE	State			24	string	- [LRLRLR]P
-ATTRIBUTE	Class			25	string	- [LRLRLR]
-ATTRIBUTE	Vendor-Specific		26	string	- [LRLR-R]
-ATTRIBUTE	Session-Timeout		27	integer	- [-R----]=P
-ATTRIBUTE	Idle-Timeout		28	integer	- [-R----]=P
-ATTRIBUTE	Termination-Action	29	integer	- [LR-R-R]=P
-ATTRIBUTE	Called-Station-Id	30	string	- [L-LRLR]
-ATTRIBUTE	Calling-Station-Id	31	string	- [L-LRLR]
-ATTRIBUTE	NAS-Identifier		32	string	- [L-LRLR]
-ATTRIBUTE	Proxy-State		33	string	- [------]
-ATTRIBUTE	Login-LAT-Service	34	string	- [-R---R]=
-ATTRIBUTE	Login-LAT-Node		35	string	- [-R---R]=
-ATTRIBUTE	Login-LAT-Group		36	string	- [-R---R]=
-ATTRIBUTE	Framed-AppleTalk-Link	37	integer	- [-R---R]=
-ATTRIBUTE	Framed-AppleTalk-Network 38	integer	- [-R---R]=
-ATTRIBUTE	Framed-AppleTalk-Zone	39	string	- [-R---R]=
+ATTRIBUTE	User-Name		1	string	[LR-RLR]
+ATTRIBUTE	User-Password		2	string	[L-----]E
+ATTRIBUTE	CHAP-Password		3	string	[L-----]b
+ATTRIBUTE	NAS-IP-Address		4	ipaddr	[L--RLR]
+ATTRIBUTE	NAS-Port-Id		5	integer	[LR-RLR]
+ATTRIBUTE	Service-Type		6	integer	[LR-RLR]=P	
+ATTRIBUTE	Framed-Protocol		7	integer	[LR-RLR]=P	
+ATTRIBUTE	Framed-IP-Address	8	ipaddr	[LR-RLR]=	
+ATTRIBUTE	Framed-IP-Netmask	9	ipaddr	[LR-RLR]=
+ATTRIBUTE	Framed-Routing		10	integer	[-R-R-R]=
+ATTRIBUTE	Filter-Id		11	string	[-R-R-R]=P
+ATTRIBUTE	Framed-MTU		12	integer	[LR-R-R]=P
+ATTRIBUTE	Framed-Compression	13	integer	[LR-RLR]=P
+ATTRIBUTE	Login-IP-Host		14	ipaddr	[LR-R-R]=P
+ATTRIBUTE	Login-Service		15	integer	[-R-R-R]=P
+ATTRIBUTE	Login-TCP-Port		16	integer	[-R-R-R]=
+ATTRIBUTE	Reply-Message		18	string	[-R----]+P
+ATTRIBUTE	Callback-Number		19	string	[-R----]=
+ATTRIBUTE	Callback-Id		20	string	[-R----]=	
+ATTRIBUTE	Framed-Route		22	string	[-R----]+
+ATTRIBUTE	Framed-IPX-Network	23	ipaddr	[-R----]=
+ATTRIBUTE	State			24	string	[LRLRLR]P
+ATTRIBUTE	Class			25	string	[LRLRLR]
+ATTRIBUTE	Vendor-Specific		26	string	[LRLR-R]
+ATTRIBUTE	Session-Timeout		27	integer	[-R----]=P
+ATTRIBUTE	Idle-Timeout		28	integer	[-R----]=P
+ATTRIBUTE	Termination-Action	29	integer	[LR-R-R]=P
+ATTRIBUTE	Called-Station-Id	30	string	[L-LRLR]
+ATTRIBUTE	Calling-Station-Id	31	string	[L-LRLR]
+ATTRIBUTE	NAS-Identifier		32	string	[L-LRLR]
+ATTRIBUTE	Proxy-State		33	string	[------]
+ATTRIBUTE	Login-LAT-Service	34	string	[-R---R]=
+ATTRIBUTE	Login-LAT-Node		35	string	[-R---R]=
+ATTRIBUTE	Login-LAT-Group		36	string	[-R---R]=
+ATTRIBUTE	Framed-AppleTalk-Link	37	integer	[-R---R]=
+ATTRIBUTE	Framed-AppleTalk-Network 38	integer	[-R---R]=
+ATTRIBUTE	Framed-AppleTalk-Zone	39	string	[-R---R]=
 
-ATTRIBUTE	Acct-Status-Type	40	integer	- []
-ATTRIBUTE	Acct-Delay-Time		41	integer	- []
-ATTRIBUTE	Acct-Input-Octets	42	integer	- []
-ATTRIBUTE	Acct-Output-Octets	43	integer	- []
-ATTRIBUTE	Acct-Session-Id		44	string	- []
-ATTRIBUTE	Acct-Authentic		45	integer	- []
-ATTRIBUTE	Acct-Session-Time	46	integer	- []
-ATTRIBUTE       Acct-Input-Packets	47	integer	- []
-ATTRIBUTE       Acct-Output-Packets	48	integer	- []
-ATTRIBUTE	Acct-Terminate-Cause	49	integer	- []
-ATTRIBUTE	Acct-Multi-Session-Id	50	integer	- []
-ATTRIBUTE	Acct-Link-Count		51	integer	- []
-ATTRIBUTE	Acct-Input-Gigawords	52	integer	- []
-ATTRIBUTE	Acct-Output-Gigawords	53	integer	- []
-ATTRIBUTE       Event-Timestamp         55      integer - []
+ATTRIBUTE	Acct-Status-Type	40	integer	[]
+ATTRIBUTE	Acct-Delay-Time		41	integer	[]
+ATTRIBUTE	Acct-Input-Octets	42	integer	[]
+ATTRIBUTE	Acct-Output-Octets	43	integer	[]
+ATTRIBUTE	Acct-Session-Id		44	string	[]
+ATTRIBUTE	Acct-Authentic		45	integer	[]
+ATTRIBUTE	Acct-Session-Time	46	integer	[]
+ATTRIBUTE       Acct-Input-Packets	47	integer	[]
+ATTRIBUTE       Acct-Output-Packets	48	integer	[]
+ATTRIBUTE	Acct-Terminate-Cause	49	integer	[]
+ATTRIBUTE	Acct-Multi-Session-Id	50	integer	[]
+ATTRIBUTE	Acct-Link-Count		51	integer	[]
+ATTRIBUTE	Acct-Input-Gigawords	52	integer	[]
+ATTRIBUTE	Acct-Output-Gigawords	53	integer	[]
+ATTRIBUTE       Event-Timestamp         55      integer []
 
-ATTRIBUTE	CHAP-Challenge		60	string	- []b
-ATTRIBUTE	NAS-Port-Type		61	integer	- []
-ATTRIBUTE	Port-Limit		62	integer	- []P
-ATTRIBUTE	Login-LAT-Port		63	integer	- []
+ATTRIBUTE	CHAP-Challenge		60	string	[]b
+ATTRIBUTE	NAS-Port-Type		61	integer	[]
+ATTRIBUTE	Port-Limit		62	integer	[]P
+ATTRIBUTE	Login-LAT-Port		63	integer	[]
 
-ATTRIBUTE	ARAP-Password		70	string	- []
-ATTRIBUTE	ARAP-Features		71	string	- []
-ATTRIBUTE	ARAP-Zone-Access	72	integer	- []
-ATTRIBUTE	ARAP-Security		73	integer	- []
-ATTRIBUTE	ARAP-Security-Data	74	string	- []
-ATTRIBUTE	Password-Retry		75	integer	- []
-ATTRIBUTE	Prompt			76	integer	- []
+ATTRIBUTE	ARAP-Password		70	string	[]
+ATTRIBUTE	ARAP-Features		71	string	[]
+ATTRIBUTE	ARAP-Zone-Access	72	integer	[]
+ATTRIBUTE	ARAP-Security		73	integer	[]
+ATTRIBUTE	ARAP-Security-Data	74	string	[]
+ATTRIBUTE	Password-Retry		75	integer	[]
+ATTRIBUTE	Prompt			76	integer	[]
 VALUE		Prompt			NoEcho	0
 VALUE		Prompt			Echo	1
-ATTRIBUTE	Connect-Info		77	string	- []
-ATTRIBUTE	Configuration-Token	78	string	- []
-ATTRIBUTE	EAP-Message		79	string	- []
-ATTRIBUTE	Message-Authenticator	80	string  - []
-ATTRIBUTE	ARAP-Challenge-Response	84	string	- []
-ATTRIBUTE	Acct-Interim-Interval	85	integer	- []
+ATTRIBUTE	Connect-Info		77	string	[]
+ATTRIBUTE	Configuration-Token	78	string	[]
+ATTRIBUTE	EAP-Message		79	string	[]
+ATTRIBUTE	Message-Authenticator	80	string  []
+ATTRIBUTE	ARAP-Challenge-Response	84	string	[]
+ATTRIBUTE	Acct-Interim-Interval	85	integer	[]
 # Note: according to rfc2869, this attribute is named NAS-Port-Id
 # which conflicts with the name for attribute 5. The latter should
 # be called NAS-Port!
-ATTRIBUTE	NAS-Port-Id-String	87	integer - []
-ATTRIBUTE	Framed-Pool		88	string	- []
+ATTRIBUTE	NAS-Port-Id-String	87	integer []
+ATTRIBUTE	Framed-Pool		88	string	[]
 
-ATTRIBUTE       User-UID                99      integer	- [LRLRLR]
-ATTRIBUTE	User-GID		100	integer	- [LRLRLR]
+ATTRIBUTE       User-UID                99      integer	[LRLRLR]
+ATTRIBUTE	User-GID		100	integer	[LRLRLR]
 
 #
 # Cistron-Radius compatibility
 #
-ATTRIBUTE	Huntgroup-Name		221	string	- [L--RLR]
-ATTRIBUTE	User-Category		1029	string	- [L--R-R]
-ATTRIBUTE	Group-Name		1030	string	- [L--R-R]
-ATTRIBUTE	Simultaneous-Use	1034	integer	- [L--R-R]
-ATTRIBUTE	Strip-User-Name		1035	integer	- [LRLR-R]
-ATTRIBUTE	Fall-Through		1036	integer	- [LRLR--]
+ATTRIBUTE	Huntgroup-Name		221	string	[L--RLR]
+ATTRIBUTE	User-Category		1029	string	[L--R-R]
+ATTRIBUTE	Group-Name		1030	string	[L--R-R]
+ATTRIBUTE	Simultaneous-Use	1034	integer	[L--R-R]
+ATTRIBUTE	Strip-User-Name		1035	integer	[LRLR-R]
+ATTRIBUTE	Fall-Through		1036	integer	[LRLR--]
 # Use of this attribute is deprecated
-ATTRIBUTE	Add-Port-To-IP-Address	1037	integer	- [------]
-ATTRIBUTE	Exec-Program		1038	string	- [-R----]
-ATTRIBUTE	Exec-Program-Wait	1039	string	- [-R----]
-ATTRIBUTE	Hint			1040	string	- [L-LRLR]
-ATTRIBUTE	Pam-Auth		1041	string	- [L--R-R]=
-ATTRIBUTE	Login-Time		1042	string	- [L-----]
+ATTRIBUTE	Add-Port-To-IP-Address	1037	integer	[------]
+ATTRIBUTE	Exec-Program		1038	string	[-R----]
+ATTRIBUTE	Exec-Program-Wait	1039	string	[-R----]
+ATTRIBUTE	Hint			1040	string	[L-LRLR]
+ATTRIBUTE	Pam-Auth		1041	string	[L--R-R]=
+ATTRIBUTE	Login-Time		1042	string	[L-----]
 
 # Attributes used by GNU Radius
-ATTRIBUTE	Replace-User-Name	2001	string	- [LRLR--]
-ATTRIBUTE	Rewrite-Function	2002	string	- [LRLRLR]
+ATTRIBUTE	Replace-User-Name	2001	string	[LRLR--]
+ATTRIBUTE	Rewrite-Function	2002	string	[LRLRLR]
 
-ATTRIBUTE	Acct-Type		2003	integer	- [L--R-R]
+ATTRIBUTE	Acct-Type		2003	integer	[L--R-R]
 VALUE		Acct-Type		None	0
 VALUE		Acct-Type		System	1
 VALUE		Acct-Type		Detail	2
 VALUE		Acct-Type		SQL	3
 
-ATTRIBUTE	Match-Profile		2004	string	- [LR-R-R]
+ATTRIBUTE	Match-Profile		2004	string	[LR-R-R]
 ## ATTRIBUTE	Include-Profile		2005	string 
-ATTRIBUTE	Auth-Data		2006	string	- [L--R-R]=
+ATTRIBUTE	Auth-Data		2006	string	[L--R-R]=
 
-ATTRIBUTE	Log-Mode-Mask		2007	integer	- [L--R-R]+
+ATTRIBUTE	Log-Mode-Mask		2007	integer	[L--R-R]+
 VALUE		Log-Mode-Mask		Log-Auth		1
 VALUE		Log-Mode-Mask		Log-Auth-Pass		2
 VALUE		Log-Mode-Mask		Log-Failed-Pass		4
 VALUE		Log-Mode-Mask		Log-Pass		6
 VALUE		Log-Mode-Mask		Log-All			7
 
-ATTRIBUTE	Acct-Ext-Program	2008	string	- [---R--]
-ATTRIBUTE	Scheme-Procedure	2009	string	- [-R----]
-ATTRIBUTE	Scheme-Acct-Procedure	2010	string	- [---R--]
+ATTRIBUTE	Acct-Ext-Program	2008	string	[---R--]
+ATTRIBUTE	Scheme-Procedure	2009	string	[-R----]
+ATTRIBUTE	Scheme-Acct-Procedure	2010	string	[---R--]
 
-ATTRIBUTE       Password-Location       2011    integer - [L-----]
+ATTRIBUTE       Password-Location       2011    integer [L-----]
 VALUE           Password-Location       SQL			1
 
-ATTRIBUTE	Proxy-Replied		2012	integer	- [L-L-L-]=
-VALUE           Proxy-Replied	        No                      0
-VALUE           Proxy-Replied	        Yes                     1
+ATTRIBUTE	Proxy-Replied		2012	integer	[L-L-L-]=
+VALUE           Proxy-Replied	        No                    0
+VALUE           Proxy-Replied	        Yes                   1
 
-ATTRIBUTE	Realm-Name		2013	string	- [L-L-L-]
+ATTRIBUTE	Realm-Name		2013	string	[L-L-L-]
 
-ATTRIBUTE	Auth-Failure-Trigger	2014	string	- [-R----]
+ATTRIBUTE	Auth-Failure-Trigger	2014	string	[-R----]
 
 # These are used by rewriting functions:
-ATTRIBUTE	Orig-User-Name		2101	string	- [L--R-R]
-ATTRIBUTE	Orig-NAS-Port-Id	2105	integer	- [L--R-R]
-ATTRIBUTE	Orig-Acct-Session-Id	2144	integer	- [L--R-R]
+ATTRIBUTE	Orig-User-Name		2101	string	[L--R-R]
+ATTRIBUTE	Orig-NAS-Port-Id	2105	integer	[L--R-R]
+ATTRIBUTE	Orig-Acct-Session-Id	2144	integer	[L--R-R]
 
-ATTRIBUTE	Password-Expire-Days	2145	integer - [------]
+ATTRIBUTE	Password-Expire-Days	2145	integer [------]
 
 #
 # Non-Protocol Attributes
 # These attributes are used internally by the server
 #
-ATTRIBUTE	Expiration		  21	date	- [L-----]
-ATTRIBUTE	Auth-Type		1000	integer	- [L--R-R]	
-ATTRIBUTE	Menu			1001	string	- [-R----]=
-ATTRIBUTE	Termination-Menu	1002	string	- [-R----]=
-ATTRIBUTE	Prefix			1003	string	- [L-L-LR]
-ATTRIBUTE	Suffix			1004	string	- [L-L-LR]
-ATTRIBUTE	Group			1005	string	- [L-L-LR]
-ATTRIBUTE	Crypt-Password		1006	string	- [L-----]
-ATTRIBUTE	Connect-Rate		1007	integer	- [------]
+ATTRIBUTE	Expiration		  21	date	[L-----]
+ATTRIBUTE	Auth-Type		1000	integer	[L--R-R]	
+ATTRIBUTE	Menu			1001	string	[-R----]=
+ATTRIBUTE	Termination-Menu	1002	string	[-R----]=
+ATTRIBUTE	Prefix			1003	string	[L-L-LR]
+ATTRIBUTE	Suffix			1004	string	[L-L-LR]
+ATTRIBUTE	Group			1005	string	[L-L-LR]
+ATTRIBUTE	Crypt-Password		1006	string	[L-----]
+ATTRIBUTE	Connect-Rate		1007	integer	[------]
 
 #
 # Integer Translations

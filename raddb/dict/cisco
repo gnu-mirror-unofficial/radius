@@ -13,41 +13,41 @@
 #
 #
 
-VENDOR		Cisco		9
+BEGIN VENDOR Cisco 9
 
 #
 #	Standard attribute
 #
-ATTRIBUTE	Cisco-AVPair		1	string		Cisco
-ATTRIBUTE	Cisco-PRI-Circuit	2	string		Cisco
+ATTRIBUTE	Cisco-AVPair		1	string		
+ATTRIBUTE	Cisco-PRI-Circuit	2	string		
 #
 #	Extra attributes sent by the Cisco, if you configure
 #	"radius-server vsa accounting" (requires IOS11.2+).
 #
-ATTRIBUTE       Cisco-Multilink-ID              187     integer		Cisco
-ATTRIBUTE       Cisco-Num-In-Multilink          188     integer		Cisco
-ATTRIBUTE       Cisco-Pre-Input-Octets          190     integer		Cisco
-ATTRIBUTE       Cisco-Pre-Output-Octets         191     integer		Cisco
-ATTRIBUTE       Cisco-Pre-Input-Packets         192     integer		Cisco
-ATTRIBUTE       Cisco-Pre-Output-Packets        193     integer		Cisco
-ATTRIBUTE       Cisco-Maximun-Time              194     integer		Cisco
-ATTRIBUTE       Cisco-Disconnect-Cause          195     integer		Cisco
-ATTRIBUTE       Cisco-Data-Rate                 197     integer		Cisco
-ATTRIBUTE       Cisco-PreSession-Time           198     integer		Cisco
-ATTRIBUTE       Cisco-PW-Lifetime               208     integer		Cisco
-ATTRIBUTE       Cisco-IP-Direct                 209     integer		Cisco
-ATTRIBUTE       Cisco-PPP-VJ-Slot-Comp          210     integer		Cisco
-ATTRIBUTE       Cisco-PPP-Async-Map             212     integer		Cisco
-ATTRIBUTE       Cisco-IP-Pool-Definition        217     integer		Cisco
-ATTRIBUTE       Cisco-Asing-IP-Pool             218     integer		Cisco
-ATTRIBUTE       Cisco-Route-IP                  228     integer		Cisco
-ATTRIBUTE       Cisco-Link-Compression          233     integer		Cisco
-ATTRIBUTE       Cisco-Target-Util               234     integer		Cisco
-ATTRIBUTE       Cisco-Maximun-Channels          235     integer		Cisco
-ATTRIBUTE       Cisco-Data-Filter               242     integer		Cisco
-ATTRIBUTE       Cisco-Call-Filter               243     integer		Cisco
-ATTRIBUTE       Cisco-Idle-Limit                244     integer		Cisco
-ATTRIBUTE       Cisco-Xmit-Rate                 255     integer		Cisco
+ATTRIBUTE       Cisco-Multilink-ID              187     integer		
+ATTRIBUTE       Cisco-Num-In-Multilink          188     integer		
+ATTRIBUTE       Cisco-Pre-Input-Octets          190     integer		
+ATTRIBUTE       Cisco-Pre-Output-Octets         191     integer		
+ATTRIBUTE       Cisco-Pre-Input-Packets         192     integer		
+ATTRIBUTE       Cisco-Pre-Output-Packets        193     integer		
+ATTRIBUTE       Cisco-Maximun-Time              194     integer		
+ATTRIBUTE       Cisco-Disconnect-Cause          195     integer		
+ATTRIBUTE       Cisco-Data-Rate                 197     integer		
+ATTRIBUTE       Cisco-PreSession-Time           198     integer		
+ATTRIBUTE       Cisco-PW-Lifetime               208     integer		
+ATTRIBUTE       Cisco-IP-Direct                 209     integer		
+ATTRIBUTE       Cisco-PPP-VJ-Slot-Comp          210     integer		
+ATTRIBUTE       Cisco-PPP-Async-Map             212     integer		
+ATTRIBUTE       Cisco-IP-Pool-Definition        217     integer		
+ATTRIBUTE       Cisco-Asing-IP-Pool             218     integer		
+ATTRIBUTE       Cisco-Route-IP                  228     integer		
+ATTRIBUTE       Cisco-Link-Compression          233     integer		
+ATTRIBUTE       Cisco-Target-Util               234     integer		
+ATTRIBUTE       Cisco-Maximun-Channels          235     integer		
+ATTRIBUTE       Cisco-Data-Filter               242     integer		
+ATTRIBUTE       Cisco-Call-Filter               243     integer		
+ATTRIBUTE       Cisco-Idle-Limit                244     integer		
+ATTRIBUTE       Cisco-Xmit-Rate                 255     integer		
 
 VALUE           Cisco-Disconnect-Cause        Unknown                 2
 VALUE           Cisco-Disconnect-Cause        CLID-Authentication-Failure     4
@@ -75,3 +75,4 @@ VALUE           Cisco-Disconnect-Cause        Session-Failed-Security 101
 VALUE           Cisco-Disconnect-Cause        Session-End-Callback    102
 VALUE           Cisco-Disconnect-Cause        Invalid-Protocol        120
 
+END

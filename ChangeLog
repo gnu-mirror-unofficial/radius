@@ -1,3 +1,45 @@
+2001-08-10 Sergey Poznyakoff
+	* ylwrap: New option -stdout allows to run programs that send
+	their output to stdout (e.g. gperf)
+	* configure.in: Added check for gperf
+	* radiusd/config.y: Split off keyword recognizer into a separate
+	module.
+	* radiusd/config.kw: (new) Keywords for config.y. To be processed
+	by gperf.
+	* radiusd/Makefile.am: Added rules for config.kw.
+
+	* configure.in: Changed version number (0.96-alpha.1)
+
+	* include/radiusd.h: Removed definitions specific for librad.
+	* inlcude/radius.h: Added librad-specific definitions.
+	struct NAS: changed last member.
+
+	All sources: changes due to the above.
+
+	* raduse/raduse.c: Removed duplication of nas_ functions.
+	* radzap/radzap.c: Likewise.
+
+2001-08-07 Sergey Poznyakoff
+	* radlib/argcv.c: Fixed bug in argcv_get: it was filling an extra
+	argv slot.
+	* radiusd/sql.c: Execute group_query and attr_query only if doauth
+	is yes.
+
+	* radiusd/symtab.c: Moved to radlib.
+
+	* radlib/symtab.c: (new from ../radiusd): Added re-hashing.
+	Changed return value of install/lookup functions from Symbol*
+	to void* to eliminate superfluous typecasts.
+	* include/symtab.h: New prototypes.
+
+	* radlib/dict.c: Use symtabs for attributes and values. Removed
+	length limit on symbol names.
+
+	* include/radiusd.h: Changed DICT_ATTR and DICT_VALUE to fit the
+	new allocation mechanism (symtabs instead of slists).
+
+	* test/raddb/sqlserver: removed query_buffer-size clause.
+
 2001-07-31 Sergey Poznyakoff <gray@farlep.net>
 	Bunch of changes to make %C{Password} substitution return plaintext
 	password. In the meantime, unified calling conventions a bit:
@@ -104,7 +146,7 @@
 	* radwho/radwho.c: Likewise.
 	* radzap/radzap.c: Likewise.
 
-	* configure.in: Changed version number.
+	* configure.in: Changed version number (0.96-alpha.1).
 
 2001-07-09 Sergey Poznyakoff <gray@farlep.net>
 	* m4/Makefile.am: (new)

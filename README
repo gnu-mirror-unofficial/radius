@@ -74,27 +74,6 @@
     --enable-deny-shell=SHELL
 	Always reject users with given shell.
 
-    The following is designed for future use. Currently the Norwegian locale
-    (bokmal) is being finished.
-
-    --enable-nls
-        Enable national language support. 
-
-    --with-languages=LIST
-        Set a list of languages to include in NLS.
-
-    --with-catobjext=EXT
-        Override default .po extension.
-
-    --with-instobjext=EXT
-	Override default .mo extension.
-
-    --with-msgfmt=PROG
-	Use PROG instead of msgfmt.
-
-    --with-gnu-msgfmt=PROG
-	Use PROG instead of GNU msgfmt.
-
     2. Run make.
 
     The GNU make is preferred.

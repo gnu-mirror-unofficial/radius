@@ -183,8 +183,8 @@ _extract_pairs(RADIUS_REQ *req, int prop)
 			if (pair->attribute == attrlist[i]
 			    && (pair->prop & prop)) {
 				req_decrypt_password(password, req, pair);
-				string_free(pair->avp_strvalue);
-				pair->avp_strvalue = string_create(password);
+				efree(pair->avp_strvalue);
+				pair->avp_strvalue = estrdup(password);
 				pair->avp_strlength = strlen(pair->avp_strvalue);
 			}
 		}
@@ -257,10 +257,12 @@ radius_req_update(void *req_ptr, void *data_ptr)
 	RADIUS_SERVER *server;
 	REALM *realm;
 	int i;
-	
+
 	req->server_id = upd->proxy_id;
 	req->realm = realm_lookup_name(upd->realmname);
 	req->server_no = upd->server_no;
+	debug(1, ("Update request %d: proxy_id=%d, realm=%s, server_no=%d",
+		  req->id,upd->proxy_id,upd->realmname,upd->server_no));
 }
 
 void

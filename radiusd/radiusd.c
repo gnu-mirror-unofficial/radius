@@ -156,7 +156,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 break;
 		
         case 'a':
-                radacct_dir = string_create(optarg);
+                radacct_dir = estrdup(optarg);
                 break;
 		
 #ifdef USE_DBM
@@ -170,7 +170,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 break;
 		
         case 'l':
-                radlog_dir = string_create(optarg);
+                radlog_dir = estrdup(optarg);
                 break;
 		
         case 'm':
@@ -260,24 +260,24 @@ static struct argp argp = {
 void
 set_config_defaults()
 {
-        exec_user  = string_create("daemon");
-        username_valid_chars = string_create(".-_!@#$%^&\\/");
+        exec_user  = estrdup("daemon");
+        username_valid_chars = estrdup(".-_!@#$%^&\\/");
         message_text[MSG_ACCOUNT_CLOSED] =
-                string_create(_("Sorry, your account is currently closed\n"));
+                estrdup(_("Sorry, your account is currently closed\n"));
         message_text[MSG_PASSWORD_EXPIRED] =
-                string_create(_("Password has expired\n"));
+                estrdup(_("Password has expired\n"));
         message_text[MSG_PASSWORD_EXPIRE_WARNING] =
-                string_create(_("Password will expire in %R{Password-Expire-Days} Days\n"));
+                estrdup(_("Password will expire in %R{Password-Expire-Days} Days\n"));
         message_text[MSG_ACCESS_DENIED] =
-                string_create(_("\nAccess denied\n"));
+                estrdup(_("\nAccess denied\n"));
         message_text[MSG_REALM_QUOTA] =
-                string_create(_("\nRealm quota exceeded - access denied\n"));
+                estrdup(_("\nRealm quota exceeded - access denied\n"));
         message_text[MSG_MULTIPLE_LOGIN] =
-                string_create(_("\nYou are already logged in %R{Simultaneous-Use} times - access denied\n"));
+                estrdup(_("\nYou are already logged in %R{Simultaneous-Use} times - access denied\n"));
         message_text[MSG_SECOND_LOGIN] =
-                string_create(_("\nYou are already logged in - access denied\n"));
+                estrdup(_("\nYou are already logged in - access denied\n"));
         message_text[MSG_TIMESPAN_VIOLATION] =
-                string_create(_("You are calling outside your allowed timespan\n"));
+                estrdup(_("You are calling outside your allowed timespan\n"));
 }
 
 static int

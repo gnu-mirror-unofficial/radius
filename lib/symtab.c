@@ -181,7 +181,7 @@ Symbol *
 alloc_sym(char *s, unsigned size)
 {
         Symbol *ptr;
-        ptr = mem_alloc(size);
+        ptr = emalloc(size);
         ptr->name = estrdup(s);
         return ptr;
 }
@@ -238,7 +238,7 @@ void
 sym_free(Symbol *sp)
 {
         efree(sp->name);
-        mem_free(sp);
+        efree(sp);
 }
 
 void

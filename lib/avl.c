@@ -43,7 +43,7 @@
 VALUE_PAIR *
 avp_alloc()
 {
-        return mem_alloc(sizeof(VALUE_PAIR));
+        return emalloc(sizeof(VALUE_PAIR));
 }
 
 void
@@ -52,8 +52,8 @@ avp_free(VALUE_PAIR *p)
         if (!p)
                 return;
         if (p->type == TYPE_STRING || p->eval) 
-                string_free(p->avp_strvalue);
-        mem_free(p);
+                efree(p->avp_strvalue);
+        efree(p);
 }
 
 /* A/V pair functions */
@@ -66,8 +66,13 @@ avp_dup(VALUE_PAIR *vp)
 
         memcpy(ret, vp, sizeof(VALUE_PAIR));
         ret->next = NULL;
-        if (ret->type == TYPE_STRING || ret->eval)
-                ret->avp_strvalue = string_dup(vp->avp_strvalue);
+        if (ret->type == TYPE_STRING || ret->eval) {
+		ret->avp_strlength = vp->avp_strlength;
+                ret->avp_strvalue = emalloc(ret->avp_strlength+1);
+		memcpy(ret->avp_strvalue, vp->avp_strvalue,
+		       ret->avp_strlength);
+		ret->avp_strvalue[ret->avp_strlength] = 0;
+	}
         return ret;
 }
 
@@ -91,7 +96,7 @@ avp_create(int attr, int length, char *strval, int lval)
         pair->prop = dict->prop;
         if (strval) {
                 pair->avp_strlength = length;
-                pair->avp_strvalue = string_create(strval);
+                pair->avp_strvalue = estrdup(strval);
         } else
                 pair->avp_lvalue = lval;
 
@@ -388,8 +393,12 @@ avl_dup(VALUE_PAIR *from)
         for ( ; from; from = from->next) {
                 temp = avp_alloc();
                 memcpy(temp, from, sizeof(VALUE_PAIR));
-                if (temp->type == TYPE_STRING || temp->eval)
-                        temp->avp_strvalue = string_dup(temp->avp_strvalue);
+                if (temp->type == TYPE_STRING || temp->eval) {
+			char *p = emalloc(temp->avp_strlength+1);
+			memcpy(p, temp->avp_strvalue, temp->avp_strlength);
+			p[temp->avp_strlength] = 0;
+			temp->avp_strvalue = p;
+		}
                 temp->next = NULL;
                 if (last)
                         last->next = temp;

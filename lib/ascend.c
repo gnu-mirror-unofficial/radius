@@ -655,9 +655,9 @@ ascend_parse_filter(VALUE_PAIR *pair, char **errp)
 	
 	if (_ascend_parse_filter(pair->avp_strvalue, &flt, errp))
 		return 1;
-	string_free(pair->avp_strvalue);
+	efree(pair->avp_strvalue);
 	pair->avp_strlength = sizeof(flt);
-	pair->avp_strvalue = string_alloc(pair->avp_strlength);
+	pair->avp_strvalue = emalloc(pair->avp_strlength);
 	memcpy(pair->avp_strvalue, &flt, sizeof(flt));
 	return 0;
 }

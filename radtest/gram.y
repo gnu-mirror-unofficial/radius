@@ -250,7 +250,7 @@ pair          : NAME op string
                         $$ = install_pair(source_filename,
                                           source_line_num, 
                                           $1, $2, $3);
-                        string_free($3);
+                        efree($3);
                 }
               ;
 
@@ -260,7 +260,7 @@ string        : QUOTE
                 {
                         char buf[64];
                         sprintf(buf, "%d", $1);
-                        $$ = string_create(buf);
+                        $$ = estrdup(buf);
                 }
               | IDENT
                 {
@@ -270,7 +270,7 @@ string        : QUOTE
                 {
                         char buf[DOTTED_QUAD_LEN];
                         ip_iptostr($1, buf);
-                        $$ = string_create(buf);
+                        $$ = estrdup(buf);
                 }
               ;
 
@@ -316,7 +316,7 @@ value         : NUMBER
                 {
                         $$.name = NULL;
                         $$.type = String;
-                        $$.datum.string = string_create($1);
+                        $$.datum.string = estrdup($1);
                 }
               | IDENT
                 {
@@ -428,7 +428,7 @@ subscript(Variable *var, char *attr_name, int all, Variable *ret_var)
                         for (p = pair; p; p = avl_find(p->next, dict->value)) 
                                 length += p->avp_strlength;
 
-                        cp = ret_var->datum.string = string_alloc(length+1);
+                        cp = ret_var->datum.string = emalloc(length+1);
                         /* Fill in the string contents */
                         for (p = pair; p; p = avl_find(p->next, dict->value)) {
                                 memcpy(cp, p->avp_strvalue, p->avp_strlength);
@@ -436,7 +436,7 @@ subscript(Variable *var, char *attr_name, int all, Variable *ret_var)
                         }
                         *cp = 0;
                 } else
-                        ret_var->datum.string = string_dup(pair->avp_strvalue);
+                        ret_var->datum.string = estrdup(pair->avp_strvalue);
                 break;
         case TYPE_INTEGER:
         case TYPE_DATE:

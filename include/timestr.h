@@ -29,5 +29,5 @@ int ts_match(TIMESPAN *timespan, time_t *time_now, unsigned *rest);
 int ts_check(char *str, time_t *time, unsigned *rest, char **endp);
 
 #include <mem.h>
-#define ALLOC mem_alloc
-#define FREE mem_free
+#define ALLOC emalloc
+#define FREE efree

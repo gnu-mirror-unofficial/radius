@@ -39,7 +39,7 @@ nas_free_list(NAS *list)
         while (list) {
                 next = list->next;
                 envar_free_list(&list->args);
-                mem_free(list);
+                efree(list);
                 list = next;
         }
 }
@@ -75,7 +75,7 @@ read_naslist_entry(void *unused, int fc, char **fv, char *file,
         if (fc >= 4)
                 nas.args = envar_parse_argcv(fc-3, &fv[3]);
         
-        nasp = mem_alloc(sizeof(NAS));
+        nasp = emalloc(sizeof(NAS));
 
         memcpy(nasp, &nas, sizeof(nas));
 

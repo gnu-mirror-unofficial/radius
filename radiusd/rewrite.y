@@ -766,7 +766,7 @@ fundecl : TYPE IDENT dclparm
 
                   f.parm = last = NULL;
                   for (var = $3; var; var = var->next) {
-                          parm = mem_alloc(sizeof(*parm));
+                          parm = emalloc(sizeof(*parm));
                           parm->datatype = var->datatype;
                           var->offset = -(STACK_BASE+
                                           f.nparm - var->offset);
@@ -1835,7 +1835,7 @@ obj_alloc(OBUCKET *bucket)
 {
         OBJECT *optr;
 
-        optr = mem_alloc(bucket->size);
+        optr = emalloc(bucket->size);
 
         optr->alloc        = bucket->alloc_list;
         bucket->alloc_list = optr;
@@ -1854,7 +1854,7 @@ obj_free_all(OBUCKET *bucket)
                 next = obj->alloc;
                 if (bucket->free)
                         bucket->free(obj);
-                mem_free(obj);
+                efree(obj);
                 obj = next;
         }
         bucket->alloc_list = NULL;
@@ -3609,7 +3609,7 @@ rx_alloc(regex_t *regex, int nmatch)
 {
         COMP_REGEX *rx;
 
-        rx = mem_alloc(sizeof(*rx));
+        rx = emalloc(sizeof(*rx));
         rx->regex  = *regex;
         rx->nmatch = nmatch;
         list_insert(&function->rx_list, NULL, function->rx_list, rx, 1);
@@ -3624,7 +3624,7 @@ rx_free(COMP_REGEX *rx)
         while (rx) {
                 next = rx->next;
                 regfree(&rx->regex);
-                mem_free(rx);
+                efree(rx);
                 rx = next;
         }
 }
@@ -4715,7 +4715,7 @@ function_free(FUNCTION *f)
         parm = f->parm;
         while (parm) {
                 next = parm->next;
-                mem_free(parm);
+                efree(parm);
                 parm = next;
         }
         return 0;
@@ -5018,7 +5018,7 @@ interpret(char *fcall, RADIUS_REQ *req, Datatype *type, Datum *datum)
                 datum->ival = mach.rA;
                 break;
         case String:
-                datum->sval = string_create((char*) mach.rA);
+                datum->sval = estrdup((char*) mach.rA);
                 break;
         default:
                 abort();

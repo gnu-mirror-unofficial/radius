@@ -129,7 +129,7 @@ read_realms_entry(struct _parse_data *pd, int fc, char **fv,
 			       "%s:%d: cannot parse",
 			       file, lineno);
 			rad_clt_destroy_queue(rp->queue);
-			mem_free(rp);
+			efree(rp);
 			return 0;
 		}
 	}

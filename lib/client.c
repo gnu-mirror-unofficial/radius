@@ -150,7 +150,7 @@ _encode_pairlist(VALUE_PAIR *p, u_char *vector, u_char *secret)
 		    || p->attribute == DA_CHAP_PASSWORD) {
 			char *pass = p->avp_strvalue;
 			encrypt_password(p, pass, vector, secret);
-			string_free(pass);
+			efree(pass);
 		}
 	return ret;
 }
@@ -442,11 +442,11 @@ rad_clt_alloc_server(RADIUS_SERVER *src)
         RADIUS_SERVER *server;
 
         server = emalloc(sizeof(*server));
-        server->name = string_create(src->name);
+        server->name = estrdup(src->name);
         server->addr = src->addr;
         server->port[0] = src->port[0];
         server->port[1] = src->port[1];
-        server->secret = string_create(src->secret);
+        server->secret = estrdup(src->secret);
 	server->id_offset = (off_t)-1;
         return server;
 }
@@ -458,10 +458,10 @@ rad_clt_dup_server(RADIUS_SERVER *src)
 
         dest = emalloc(sizeof(*dest));
         dest->addr = src->addr;
-        dest->name = string_dup(src->name);
+        dest->name = estrdup(src->name);
         dest->port[0] = src->port[0];
         dest->port[1] = src->port[1];
-        dest->secret = string_dup(src->secret);
+        dest->secret = estrdup(src->secret);
         return dest;
 }
 
@@ -472,8 +472,8 @@ rad_clt_dup_server(RADIUS_SERVER *src)
 void
 rad_clt_free_server(RADIUS_SERVER *server)
 {
-        string_free(server->name);
-        string_free(server->secret);
+        efree(server->name);
+        efree(server->secret);
         efree(server);
 }
 
@@ -489,8 +489,8 @@ static int
 rad_clt_internal_free_server(void *item, void *data)
 {
 	RADIUS_SERVER *server = item;
-        string_free(server->name);
-        string_free(server->secret);
+        efree(server->name);
+        efree(server->secret);
 	efree(server);
 	return 0;
 }

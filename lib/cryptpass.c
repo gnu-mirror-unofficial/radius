@@ -68,7 +68,7 @@ encrypt_password(VALUE_PAIR *pair,
         nchunks = (passlen + AUTH_VECTOR_LEN - 1) / AUTH_VECTOR_LEN;
         buflen = nchunks * AUTH_VECTOR_LEN;
 
-        pair->avp_strvalue = string_alloc(buflen);
+        pair->avp_strvalue = emalloc(buflen);
         pair->avp_strlength = buflen;
         passbuf = pair->avp_strvalue;
 

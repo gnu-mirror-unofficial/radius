@@ -197,14 +197,14 @@ radscm_cons_to_avp(SCM scm)
         case TYPE_DATE:
                 if (!(SCM_NIMP(cdr) && SCM_STRINGP(cdr)))
                         return NULL;
-                pair.avp_strvalue = string_create(SCM_STRING_CHARS(cdr));
+                pair.avp_strvalue = estrdup(SCM_STRING_CHARS(cdr));
                 pair.avp_strlength = strlen(pair.avp_strvalue);
                 break;
         default:
                 abort();
         }
 
-        p = mem_alloc(sizeof(VALUE_PAIR));
+        p = emalloc(sizeof(VALUE_PAIR));
         *p = pair;
         
         return p;

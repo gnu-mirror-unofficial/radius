@@ -80,7 +80,7 @@ rad_pam_conv(int num_msg, const struct pam_message **msg,
                         break;
                 case PAM_ERROR_MSG:
                 case PAM_TEXT_INFO: 
-                        data->reply_msg = string_create((char*)msg[count]->msg);
+                        data->reply_msg = estrdup((char*)msg[count]->msg);
                         break;
                 default:
                         data->error++;

@@ -134,7 +134,7 @@ dict_find_parser(int attr)
 void
 dict_register_parser(int attr, attr_parser_fp fun)
 {
-	ATTR_PARSER_TAB *e = mem_alloc(sizeof(*e));
+	ATTR_PARSER_TAB *e = emalloc(sizeof(*e));
 	e->attr = attr;
 	e->fun = fun;
 	e->next = attr_parser_tab;

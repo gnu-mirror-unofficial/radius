@@ -215,7 +215,7 @@ install_pair(char *file, int line, char *name, int op, char *valstr)
 
         if (valstr[0] == '=') {
                 pair->eval = 1;
-                pair->avp_strvalue = string_create(valstr+1);
+                pair->avp_strvalue = estrdup(valstr+1);
                 pair->avp_strlength = strlen(pair->avp_strvalue);
                 return pair;
         }
@@ -235,7 +235,7 @@ install_pair(char *file, int line, char *name, int op, char *valstr)
                         }
                 }
 
-		pair->avp_strvalue = string_create(valstr);
+		pair->avp_strvalue = estrdup(valstr);
                 pair->avp_strlength = strlen(pair->avp_strvalue);
 		
 		if (attr->parser && attr->parser(pair, &s)) {
@@ -261,7 +261,7 @@ install_pair(char *file, int line, char *name, int op, char *valstr)
                                         break;
                         if (*s) {
                                 pair->type = TYPE_STRING;
-                                pair->avp_strvalue = string_create(valstr);
+                                pair->avp_strvalue = estrdup(valstr);
                                 pair->avp_strlength = strlen(pair->avp_strvalue);
                                 break;
                         }

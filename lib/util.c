@@ -42,7 +42,7 @@
 RADIUS_REQ *
 radreq_alloc()
 {
-        return mem_alloc(sizeof(RADIUS_REQ));
+        return emalloc(sizeof(RADIUS_REQ));
 }
 
 /* Free a RADIUS_REQ struct.
@@ -50,12 +50,12 @@ radreq_alloc()
 void 
 radreq_free(RADIUS_REQ *radreq)
 {
-	string_free(radreq->remote_user);
+	efree(radreq->remote_user);
         avl_free(radreq->reply_pairs);
         efree(radreq->reply_msg);
         avl_free(radreq->server_reply);
         avl_free(radreq->request);
-        mem_free(radreq);
+        efree(radreq);
 }
 
 

@@ -17,7 +17,6 @@
 
 noinst_LTLIBRARIES=librad.la liblog.la libdebug.la 
 librad_la_SOURCES= \
-alloc.c \
 argcv.c \
 ascend.c \
 avl.c \
@@ -38,7 +37,6 @@ list.c \
 logger.c \
 md5.c \
 md5crypt.c \
-mem.c \
 nas.c \
 printutmp.c \
 radargp.c \

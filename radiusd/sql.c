@@ -486,7 +486,7 @@ sql_conn_destroy(struct sql_connection **conn)
 {
 	if (*conn) {
 		disp_sql_disconnect(sql_cfg.interface, *conn);
-		mem_free(*conn);
+		efree(*conn);
 		*conn = NULL;
 	}
 }
@@ -584,7 +584,7 @@ attach_sql_connection(int type)
         if (!conn) {
                 debug(1, ("allocating new %d sql connection", type));
 
-                conn = mem_alloc(sizeof(struct sql_connection));
+                conn = emalloc(sizeof(struct sql_connection));
                 conn->owner = NULL;
                 conn->connected = 0;
                 conn->last_used = now;
@@ -617,7 +617,7 @@ detach_sql_connection(int type)
                           conn));
                 if (conn->connected)
                         disp_sql_disconnect(sql_cfg.interface, conn);
-                mem_free(conn);
+                efree(conn);
                 sql_conn[type] = NULL;
         }
 }

@@ -260,7 +260,7 @@ push_source(char *name)
 
         /* Push current context */
         if (source_filename) {
-                ctx = mem_alloc(sizeof(*ctx));
+                ctx = emalloc(sizeof(*ctx));
                 ctx->filename = source_filename;
                 ctx->line = source_line_num;
                 ctx->i_node = source_inode;
@@ -304,7 +304,7 @@ pop_source()
         source_inode = context_stack->i_node;
         RESTORE_BUFFER_STATE(context_stack->state);
         ctx = context_stack->prev;
-        mem_free(context_stack);
+        efree(context_stack);
         context_stack = ctx;
         return 0;
 }

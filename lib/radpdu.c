@@ -319,7 +319,7 @@ rad_decode_pair(int attrno, char *ptr, int attrlen)
         case TYPE_STRING:
                 /* attrlen always <= AUTH_STRING_LEN */
                 pair->avp_strlength = attrlen;
-                pair->avp_strvalue = string_alloc(attrlen + 1);
+                pair->avp_strvalue = emalloc(attrlen + 1);
                 memcpy(pair->avp_strvalue, ptr, attrlen);
                 pair->avp_strvalue[attrlen] = 0;
 

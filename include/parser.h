@@ -18,7 +18,6 @@
 #include <symtab.h>
 
 struct matching_rule {
-        struct matching_rule *next;
         char *name;
         VALUE_PAIR *lhs;
         VALUE_PAIR *rhs;
@@ -29,9 +28,7 @@ typedef struct matching_rule MATCHING_RULE;
 extern LOCUS source_locus;
 
 extern Symtab *user_tab;
-extern MATCHING_RULE *hints;
 
-extern MATCHING_RULE *pair_result();
 int init_parse(char *name, int complain);
 int init_lex(char *name);
 void done_lex();

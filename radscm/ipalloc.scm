@@ -16,13 +16,52 @@
 ;;;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 ;;;;
 
+;;;; These two functions implement a "pseudo-static" IP allocation strategy.
+;;;; The IP pool is kept in a database table of the following structure:
+;;;;
+;;;; CREATE TABLE ippool (
+;;;;  # Current entry status:
+;;;;  status enum ('FREE', # Entry is free to use
+;;;;               'BLCK', # Entry is blocked and cannot be used
+;;;;               'FIXD', # Entry represents a fixed IP address
+;;;;               'ASGN', # Entry represents an IP assigned to the user
+;;;;               'RSRV') # Entry is reserved
+;;;;       default 'FREE' not null,
+;;;;  # Timestamp of the last update of the entry
+;;;;  time datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+;;;;  # A user that is or recently was using this IP
+;;;;  user_name varchar(32) binary default '' not null,
+;;;;  # NAS IP address
+;;;;  nas char(17) default '0.0.0.0' not null 
+;;;;  # IP address
+;;;;  ipaddr char(17) default '' not null)
+;;;;
+;;;;  Usage:
+;;;;  #raddb/hints:
+;;;;  DEFAULT Scheme-Acct-Procedure = "ip-alloc-update"  NULL
+;;;;  #raddb/users
+;;;;  BEGIN   Scheme-Procedure = "ip-alloc"	Fall-Through = Yes
+
+;; Define this to 'postgres if you use PostgreSQL. For other DBMS you will
+;; have to modify the *abstime* definition below.
+(define dbtype 'mysql)
+(define *abstime* (case dbtype
+		    ((mysql) "unix_timestamp()")
+		    ((postgres) "abstime('now')")
+		    (else
+		     (error (string-append
+			     (port-filename (current-input-port)) ":"
+			     (number->string (port-line (current-input-port)))
+			     " "
+			     "unknown SQL interface")))))
+
 (define (ip-alloc req check reply)
   (let ((nas-ip (inet-ntoa (cdr (assoc "NAS-IP-Address" req))))
 	(user-name (cdr (assoc "User-Name" req))))
     (radius-sql-query SQL_AUTH
 		      (string-append
 		       "UPDATE ippool "
-		       "SET status='RSRV',time=unix_timestamp(),nas='"
+		       "SET status='RSRV',time=" *abstime* ",nas='"
 		       nas-ip
 		       "' WHERE user_name='" user-name
 		       "' AND (status='FREE' OR status='RSRV')"))
@@ -31,7 +70,7 @@
 		  SQL_AUTH
 		  (string-append
 		   "SELECT ipaddr,status FROM ippool WHERE user_name='"
-		   user-name "'"))))
+		   user-name "' AND status <> 'BLCK'"))))
 	(cond
 	 (res
 	  (rad-log L_DEBUG "HIT")
@@ -53,7 +92,7 @@
 		   SQL_AUTH
 		   (string-append
 		    "UPDATE ippool SET user_name='" user-name
-		    "',status='RSRV',time=unix_timestamp(),nas='"
+		    "',status='RSRV',time=" *abstime* ",nas='"
 		    nas-ip "' WHERE ipaddr='" (caar temp-ip)
 		    "' AND (status='FREE' OR status='RSRV')"))
 		  (if (radius-sql-query
@@ -80,13 +119,14 @@ WHERE (status='RSRV' OR status='ASGN') AND user_name='" user-name "'"))
        (radius-sql-query
 	SQL_AUTH
 	(string-append
-	 "UPDATE ippool SET time=unix_timestamp(), status='ASGN' \
-WHERE user_name = '" user-name "' AND (status='FREE' OR status='RSRV')")))
+	 "UPDATE ippool SET time=" *abstime*
+	 ", status='ASGN' WHERE user_name = '"
+	 user-name "' AND (status='FREE' OR status='RSRV')")))
       ((2) ; Stop
        (radius-sql-query
 	SQL_AUTH
 	(string-append
-	 "UPDATE ippool SET time=unix_timestamp(), status='FREE' \
-WHERE user_name = '" user-name
-        "' AND (status='ASGN' OR status='RSRV')")))))
+	 "UPDATE ippool SET time=" *abstime*
+	 ", status='FREE' WHERE user_name = '"
+	 user-name "' AND (status='ASGN' OR status='RSRV')")))))
   #t)

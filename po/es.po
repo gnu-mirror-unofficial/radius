@@ -10,8 +10,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-07-10 13:16+0300\n"
-"PO-Revision-Date: 2002-07-10 10:50+0300\n"
+"POT-Creation-Date: 2002-07-12 12:06+0300\n"
+"PO-Revision-Date: 2002-07-12 12:09+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -698,7 +698,7 @@ msgstr "no se puede cerrar la tubería"
 msgid "can't dup stdout"
 msgstr "no se puede duplicar la salida estándar (stdout)"
 
-#: radiusd/exec.c:232 radiusd/exec.c:550
+#: radiusd/exec.c:232 radiusd/exec.c:553
 #, c-format
 msgid "<stdout of %s>:%d: %s"
 msgstr "<salida de %s>:%d: %s"
@@ -720,22 +720,22 @@ msgstr "radius_exec_program(): el proceso hijo terminó anormalmente"
 msgid "won't execute, no such user: %s"
 msgstr "no se puede ejecutar: el usuario `%s' no existe"
 
-#: radiusd/exec.c:441
+#: radiusd/exec.c:443
 #, c-format
 msgid "filter `%s' is not declared"
 msgstr "filtro `%s' no declarado"
 
-#: radiusd/exec.c:451
+#: radiusd/exec.c:453
 #, c-format
 msgid "cannot run filter `%s'"
 msgstr "no se puede ejecutar filtro `%s'"
 
-#: radiusd/exec.c:464
+#: radiusd/exec.c:466
 #, c-format
 msgid "filter `%s'"
 msgstr "filtro `%s'"
 
-#: radiusd/exec.c:663
+#: radiusd/exec.c:666
 #, c-format
 msgid "%s:%d: filter already declared at %s:%d"
 msgstr "%s:%d: filtro ya declarado en %s:%d"
@@ -1310,21 +1310,26 @@ msgstr "    Clase Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"
 msgid "malloc statistics: %d blocks, %d bytes"
 msgstr "estadística de malloc: %d bloques, %d bytes"
 
-#: radiusd/radiusd.c:1488
+#: radiusd/radiusd.c:1381
+#, fuzzy, c-format
+msgid "exit on signal %d"
+msgstr "se ha recibido señal %d: abortando"
+
+#: radiusd/radiusd.c:1489
 msgid "Dropping packet"
 msgstr "Descartando petición"
 
-#: radiusd/radiusd.c:1511
+#: radiusd/radiusd.c:1512
 #, c-format
 msgid "Retransmitting %s reply"
 msgstr "Retransmitiendo respuesta %s"
 
 # FIXME: fallida?
-#: radiusd/radiusd.c:1516
+#: radiusd/radiusd.c:1517
 msgid "request failed"
 msgstr "petición falló"
 
-#: radiusd/radiusd.c:1634
+#: radiusd/radiusd.c:1635
 #, c-format
 msgid "unknown request code %d"
 msgstr "código de petición desconocido: %d"
@@ -1339,25 +1344,25 @@ msgstr "ERROR INTERNO (%s:%d): tipo de atributo %d es incorrecto (%d)"
 msgid "Can't spawn new thread: %s"
 msgstr "no se puede crear hilo: %s"
 
-#: radiusd/request.c:247
+#: radiusd/request.c:249
 msgid "request timed out in queue"
 msgstr "Expiró el tiempo de espera en cola"
 
 # FUZZY
-#: radiusd/request.c:262 radiusd/request.c:418
+#: radiusd/request.c:264 radiusd/request.c:423
 #, c-format
 msgid "Killing unresponsive %s thread %d"
 msgstr "Terminando petición %s de hilo %d no respondido"
 
-#: radiusd/request.c:290
+#: radiusd/request.c:292
 msgid "duplicate request"
 msgstr "petición duplicada"
 
-#: radiusd/request.c:315
+#: radiusd/request.c:317
 msgid "too many requests in queue"
 msgstr "demasiadas peticiones en cola"
 
-#: radiusd/request.c:325
+#: radiusd/request.c:327
 msgid "too many requests of this type"
 msgstr "demasiadas peticiones de este tipo"
 

@@ -10,8 +10,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-07-10 13:16+0300\n"
-"PO-Revision-Date: 2002-07-10 10:54+0300\n"
+"POT-Creation-Date: 2002-07-12 12:06+0300\n"
+"PO-Revision-Date: 2002-07-12 12:10+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Norwegian-bokmål <no@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -696,7 +696,7 @@ msgstr "kan ikke stenge røret"
 msgid "can't dup stdout"
 msgstr "kan ikke duplisere standard utgang"
 
-#: radiusd/exec.c:232 radiusd/exec.c:550
+#: radiusd/exec.c:232 radiusd/exec.c:553
 #, c-format
 msgid "<stdout of %s>:%d: %s"
 msgstr "<standard ut av %s>:%d: %s"
@@ -718,23 +718,23 @@ msgid "won't execute, no such user: %s"
 msgstr ""
 "radius_exec_program(): ville ikke kjøre kommando: ingen slik bruker: %s"
 
-#: radiusd/exec.c:441
+#: radiusd/exec.c:443
 #, c-format
 msgid "filter `%s' is not declared"
 msgstr ""
 
 # FUZZY
-#: radiusd/exec.c:451
+#: radiusd/exec.c:453
 #, fuzzy, c-format
 msgid "cannot run filter `%s'"
 msgstr "kan ikke åpne filter «%s»"
 
-#: radiusd/exec.c:464
+#: radiusd/exec.c:466
 #, c-format
 msgid "filter `%s'"
 msgstr ""
 
-#: radiusd/exec.c:663
+#: radiusd/exec.c:666
 #, c-format
 msgid "%s:%d: filter already declared at %s:%d"
 msgstr ""
@@ -1316,20 +1316,25 @@ msgstr ""
 msgid "malloc statistics: %d blocks, %d bytes"
 msgstr ""
 
-#: radiusd/radiusd.c:1488
+#: radiusd/radiusd.c:1381
+#, fuzzy, c-format
+msgid "exit on signal %d"
+msgstr "avslutning under signal %d"
+
+#: radiusd/radiusd.c:1489
 msgid "Dropping packet"
 msgstr "Slet forespørselen"
 
-#: radiusd/radiusd.c:1511
+#: radiusd/radiusd.c:1512
 #, c-format
 msgid "Retransmitting %s reply"
 msgstr "Sender %s svaret på nytt"
 
-#: radiusd/radiusd.c:1516
+#: radiusd/radiusd.c:1517
 msgid "request failed"
 msgstr ""
 
-#: radiusd/radiusd.c:1634
+#: radiusd/radiusd.c:1635
 #, c-format
 msgid "unknown request code %d"
 msgstr "ukjent forespørselkode %d"
@@ -1344,25 +1349,25 @@ msgstr "INTERN FEIL (%s:%d): attributt %d har ulovlig type (%d)"
 msgid "Can't spawn new thread: %s"
 msgstr "Kan ikke starter ny tråd: %s"
 
-#: radiusd/request.c:247
+#: radiusd/request.c:249
 #, fuzzy
 msgid "request timed out in queue"
 msgstr "Forespørsel overskred tidsgrensen mens i køen"
 
-#: radiusd/request.c:262 radiusd/request.c:418
+#: radiusd/request.c:264 radiusd/request.c:423
 #, c-format
 msgid "Killing unresponsive %s thread %d"
 msgstr ""
 
-#: radiusd/request.c:290
+#: radiusd/request.c:292
 msgid "duplicate request"
 msgstr "duplisert forespørsel"
 
-#: radiusd/request.c:315
+#: radiusd/request.c:317
 msgid "too many requests in queue"
 msgstr "for mange forespørsler i køen"
 
-#: radiusd/request.c:325
+#: radiusd/request.c:327
 msgid "too many requests of this type"
 msgstr "for mange forespørsler av denne typen"
 

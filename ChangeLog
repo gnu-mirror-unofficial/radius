@@ -1,3 +1,15 @@
+2002-07-12  Sergey Poznyakoff 
+
+	* radiusd/exec.c (filter_open): Return the filter unlocked.
+	  (filter_auth,filter_acct): Install cleanup handler before
+	  actually locking the filter.
+	* radiusd/request.c (request_flush_list): Take into account
+	  RS_WAITING requests.
+	* radiusd/radiusd.c (sig_fatal): Restored diagnostics output.
+
+	* po/es.po: Updated
+	* po/no.po: Updated
+	
 2002-07-11  Sergey Poznyakoff  
 
 	* lib/util.c (flush_seg): Missed cast to u_char.

@@ -5,7 +5,6 @@ users_lex.c
 y.tab.[ch]
 lex.yy.c
 y.output
-debugmod.c
 *.la
 *.lo
 .deps

@@ -5,7 +5,6 @@ rewrite.c
 config.y.output
 rewrite.y.output
 y.output
-debugmod.c
 .deps
 radiusd
 .libs

@@ -1,6 +1,5 @@
 Makefile
 Makefile.in
-debugmod.c
 gram.c
 gram.h
 input.c

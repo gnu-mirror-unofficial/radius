@@ -139,7 +139,7 @@ grad_unlock_file(int fd, size_t size, off_t offset, int whence)
  * number if found. Otherwise return default value `def'.
  */
 int
-grad_xlat_keyword(struct keyword *kw, char *str, int def)
+grad_xlat_keyword(struct keyword *kw, const char *str, int def)
 {
         for ( ; kw->name; kw++) 
                 if (strcmp(str, kw->name) == 0)

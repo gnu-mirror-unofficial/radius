@@ -1,5 +1,31 @@
 2003-04-30  Sergey Poznyakoff 
 
+	* include/Makefile.am: Added list.h
+	* include/list.h: Implemented list iterators.
+	* lib/list.c: Likewise.
+	* lib/client.c: Use iterators.
+	* lib/envar.c: Likewise.
+	* lib/realms.c: Likewise.
+	* radiusd/config.y: Likewise.
+	* radiusd/files.c: Likewise.
+	* radiusd/input.c: Likewise.
+	* radiusd/log.c: Likewise.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/request.c: Likewise.
+	* radiusd/rpp.c: Likewise.
+	* radscm/radscm.c: Likewise.
+	
+	* radiusd/rewrite.y (radscm_rewrite_execute): Fixed improper
+	return type.
+	* lib/leakdetect.c: Do not use debug(). Under the new frame-
+	work it causes infinite recursion.
+	  
+	* include/cfg.h: Updated copyleft headers.
+	* include/checkrad.h: Likewise.
+	* include/envar.h: Likewise.
+	
+2003-04-30  Sergey Poznyakoff 
+
 	Somewhat regretfully moved from K&R to ANSI syntax.
 	Updated copyleft headers.
 

@@ -21,9 +21,6 @@
  */
 
 #include <stdio.h>
-#ifdef HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
 #include <sysdep.h>
 #include <radius.h>
 #include <radpaths.h>
@@ -224,6 +221,18 @@ typedef struct realm {
 	int			striprealm;
 	int                     maxlogins;
 } REALM;
+
+/*
+ * Internal representation of a user's profile
+ */
+typedef struct user_symbol {
+	struct user_symbol *next;
+	char *name;
+	int lineno;
+	int ordnum;
+	VALUE_PAIR *check;
+	VALUE_PAIR *reply;
+} User_symbol;
 
 struct keyword {
 	char *name;
@@ -509,7 +518,8 @@ void		version();
 
 /* pam.c */
 #ifdef USE_PAM
-int		pam_pass(char *name, char *passwd, const char *pamauth);
+int		pam_pass(char *name, char *passwd, const char *pamauth,
+			 char **reply_msg);
 # define PAM_DEFAULT_TYPE    "radius"
 #endif
 

@@ -323,7 +323,8 @@ user_find_sym(char *name, grad_request_t *req,
         debug(1,("looking for %s", name));
         for (sym = user_lookup(name, &lu); sym; sym = user_next(&lu)) {
                 if (match_user(sym, req, check_pairs, reply_pairs)) {
-                        found = 1;
+			if (lu.state != LU_begin)
+				found = 1;
                         if (!fallthrough(sym->reply))
                                 break;
                         debug(1, ("fall through"));

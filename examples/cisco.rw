@@ -24,6 +24,10 @@
  *                NULL
  *        where <IPADDR> is the cisco IP address.
  */
+
+# The functions below assume basic case-sensitive regular expressions
+#pragma regex -extended -icase
+
 /* 
  * The port rewriting function for cisco AS5300 used for voip.
  * This function is used to generate NAS-Port-Id pair on the basis

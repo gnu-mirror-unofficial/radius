@@ -60,12 +60,11 @@ static int
 parse_facility(list)
 	SCM list;
 {
-	SCM car;
 	int accval = 0;
-	int val;
-	do {
-		car = SCM_CAR(list);
-		val = 0;
+	
+	for (; list != SCM_EOL; list = SCM_CDR(list)) {
+		SCM car = SCM_CAR(list);
+		int val = 0;
 		
 		if (SCM_IMP(car) && SCM_INUMP(car)) 
 			val = SCM_INUM(car);
@@ -74,13 +73,13 @@ parse_facility(list)
 		else
 			continue;
 		accval |= val;
-	} while ((list = SCM_CDR(list)) != SCM_EOL);
+	} 
 	return accval;
 }
 
 SCM_DEFINE(rad_openlog, "rad-openlog", 3, 0, 0,
 	   (SCM IDENT, SCM OPTION, SCM FACILITY),
-"FIXME: rad-openlog docstring")	   
+"Scheme interface to the system openlog() call.")	   
 #define FUNC_NAME s_rad_openlog
 {
 	char *ident;
@@ -121,7 +120,7 @@ SCM_DEFINE(rad_openlog, "rad-openlog", 3, 0, 0,
 
 SCM_DEFINE(rad_syslog, "rad-syslog", 2, 0, 0,
 	   (SCM PRIO, SCM TEXT),
-"FIXME: rad-syslog docstring")	   
+"Scheme interface to the system syslog() call.")	   
 #define FUNC_NAME s_rad_syslog
 {
 	int prio;
@@ -147,7 +146,7 @@ SCM_DEFINE(rad_syslog, "rad-syslog", 2, 0, 0,
 
 SCM_DEFINE(rad_closelog, "rad-closelog", 0, 0, 0,
 	   (),
-"FIXME: rad-closelog docstring")	   
+"Scheme interface to the system closelog() call.")	   
 #define FUNC_NAME s_rad_closelog
 {
 	closelog();

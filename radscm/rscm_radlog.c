@@ -54,7 +54,7 @@ parse_facility(list)
 	SCM list;
 {
 	int accval = 0;
-	do {
+	for (; list != SCM_EOL; list = SCM_CDR(list)) {
 		SCM car = SCM_CAR(list);
 		int val = 0;
 		
@@ -62,16 +62,18 @@ parse_facility(list)
 			val = SCM_INUM(car);
 		else if (SCM_NIMP(car) && SCM_STRINGP(car))
 			val = xlat_keyword(radlog_kw, SCM_CHARS(car), 0);
+		else if (SCM_BIGP(car)) 
+			val = (UINT4) scm_big2dbl(car);
 		else
 			continue;
 		accval |= val;
-	} while ((list = SCM_CDR(list)) != SCM_EOL);
+	} 
 	return accval;
 }
 
 SCM_DEFINE(rad_log_open, "rad-log-open", 1, 0, 0,
 	   (SCM PRIO),
-"FIXME: rad-log-open docstring")	   
+"Open radius logging to the severity level PRIO.")	   
 #define FUNC_NAME s_rad_log_open
 {
 	int prio;
@@ -93,7 +95,8 @@ SCM_DEFINE(rad_log_open, "rad-log-open", 1, 0, 0,
 
 SCM_DEFINE(rad_log, "rad-log", 2, 0, 0,
 	   (SCM PRIO, SCM TEXT),
-	   "FIXME")
+"Output TEXT to the radius logging channel corresponding to\n"
+"category/severity given by PRIO.\n")
 #define FUNC_NAME s_rad_log
 {
 	int prio;
@@ -118,7 +121,7 @@ SCM_DEFINE(rad_log, "rad-log", 2, 0, 0,
 
 SCM_DEFINE(rad_log_close, "rad-log-close", 0, 0, 0,
 	   (),
-"FIXME: rad-log-close docstring")	   
+"Close radius logging channel open by a previous call to rad-log-open.\n")
 #define FUNC_NAME s_rad_log_close
 {
 	log_close();

@@ -1,0 +1,525 @@
+#! BINDIR/radscm -s
+!#
+
+;;;; This file is part of GNU RADIUS.
+;;;; Copyright (C) 2001, Sergey Poznyakoff
+;;;;
+;;;; This program is free software; you can redistribute it and/or modify
+;;;; it under the terms of the GNU General Public License as published by
+;;;; the Free Software Foundation; either version 2 of the License, or
+;;;; (at your option) any later version.
+;;;;
+;;;; This program is distributed in the hope that it will be useful,
+;;;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;;;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;;;; GNU General Public License for more details.
+;;;;
+;;;; You should have received a copy of the GNU General Public License
+;;;; along with this program; if not, write to the Free Software
+;;;; Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+;;;;
+;;;; $Id$
+
+(use-modules (ice-9 popen))
+(define *pppd-path* "/usr/sbin/pppd")
+
+(define nas-log-facility LOG_LOCAL3)
+(define *acct-dir* "/tmp")
+(define *session-base* 16)
+(define *acct-dir* "/var/account/port")
+(define *login-timeout* 60)
+(define pppd-args '())
+(define welcome-banner #f)
+(define login-prompt "login:")
+(define password-prompt "password:")
+(define nas-ip "127.0.0.1")
+(define port-id -1)
+(define flag-verbose #f)
+(define max-attempt 0)
+(define port-list '())
+(define nas-port-speed #f)
+(define start-ip-pool #x7f000002)
+
+(define *login* #f)
+(define *remote-ip*  "")
+(define *framed-route* "")
+(define *service-type* "")
+(define *framed-protocol* "")
+(define *session-id* "")
+(define *clid* "unknown")
+
+(define (getline prompt)
+  (format #t "~A" prompt)
+  (read-line))
+
+(define (getpass prompt)
+  (alarm *login-timeout*)
+  (let ((pwd (rad-read-no-echo prompt)))
+    (alarm 0)
+    pwd))
+
+(define (nth lst n)
+  (car (list-tail lst n)))
+
+(define (get-port)
+  (let ((pair (assoc (ttyname (current-input-port)) port-list)))
+    (if pair
+	(cdr pair)
+	pair)))
+
+(define (find-attr name attrlist)
+  (let ((pair (assoc name attrlist)))
+    (if pair
+	(cdr pair)
+	pair)))
+
+(define (session-id)
+  (string-append
+   (number->string (current-time) *session-base*)
+   (number->string (getpid) *session-base*)))
+
+(define (radutmp-file)
+  (string-append *acct-dir* "/radutmp"))
+
+(define (radwtmp-file)
+  (string-append *acct-dir* "/radwtmp"))
+
+(define (make-ipparam)
+  (let ((clid (getenv "CALLER_ID")))
+    (string-append (session-id) ":"
+		   *login* ":"
+		   (ttyname (current-input-port)) ":"
+		   (number->string port-id) ":"
+		   *service-type* ":"
+		   *framed-protocol* ":"
+		   (or clid "") ":"
+		   (or *framed-route* "")  )))
+
+(define (string-colon str)
+  (let* ((len (string-length str))
+	 (i (do ((index (1- len) (1- index)))
+		((or (< index 0)
+		     (char=? (string-ref str index) #\:))
+		 index))))
+    (cond
+     ((< i 0)
+      #f)
+     (else
+      i))))
+
+(define (string->list str)
+  (let loop ((fields '())
+	     (str str))
+    (cond
+     ((string-colon str)
+      => (lambda (w)
+	   (if w
+	       (loop
+		(let ((s (substring str (+ 1 w))))
+		  (cond
+		   ((= (string-length s) 0)
+		    (cons #f fields))
+		   (else
+		    (cons s fields))))
+		(substring str 0 w))
+	       fields)))
+     ((= (string-length str) 0)
+      fields)
+     (else (append (list str) fields)))))
+
+(define (decode-ipparam ipparam)
+  (do ((paramlist (string->list ipparam) (cdr paramlist))
+       (num 0 (1+ num))
+       (attrlist '()))
+      ((or (null? paramlist) (= num 8)) attrlist)
+    (if (car paramlist)
+	(let* ((val (car paramlist))
+	       (attr (case num
+		       ((0)
+			(set! *session-id* val)
+			(cons "Acct-Session-Id" val))
+		       ((1)
+			(set! *login* val)
+			(cons "User-Name" val))
+		       ((2)
+			#f)
+		       ((3)
+			(set! port-id (string->number val))
+			(cons "NAS-Port-Id" val))
+		       ((4)
+			(set! *service-type* val)
+			(cons "Service-Type" val))
+		       ((5)
+			(set! *framed-protocol* val)
+			(cons "Framed-Protocol" val))
+		       ((6)
+			(set! *clid* val)
+			(cons "Calling-Station-Id" val))
+		       (else
+			#f))))
+	  (if attr
+	      (set! attrlist (append (list attr) attrlist)))))))
+
+(define (die dest . text)
+  (for-each (lambda (s)
+	      (format #t "~A" s))
+	    text)
+  (format #t "\n")
+  (if dest
+      (apply logit (list LOG_EMERG text)))
+  (exit 0))
+
+(define (logit level . text)
+  (let loop ((tlist text)
+	     (mesg ""))
+    (cond
+     ((null? tlist)
+      (rad-syslog level mesg))
+     (else
+      (loop (cdr tlist)
+	    (string-append mesg " " (format #f "~A" (car tlist))))))))
+
+(define (get-value name plist)
+  (do ((tail plist (cdr tail)))
+      ((or (null? tail) (string=? (car (car tail)) name))
+       (cond
+	((null? tail)
+	 tail)
+	(else
+	 (cdr (car tail)))))))
+
+;;;; ======================================================================
+;;;; Handle different service types
+
+;;; Handler for a not implemented type
+(define (not-implemented name)
+  (format #t "Sorry ~A is currently not implemented\n" name))
+
+(define (radius-attributes-to-ppp auth)
+  (do ((ptr auth (cdr ptr))
+       (addlist '()))
+      ((null? ptr) addlist)
+    (let ((parm
+	   (let ((pair (car ptr)))
+	     (case (string->symbol (car pair))
+	       ((Service-Type)
+		(set! *service-type* (rad-dict-value->name "Service-Type"
+							   (cdr pair)))
+		#f)
+	       ((Framed-Protocol)
+		(set! *framed-protocol* (rad-dict-value->name "Framed-Protocol"
+							      (cdr pair)))
+		#f)
+	       ((Framed-IP-Address)
+		(let ((ip (cdr pair)))
+		  (case ip
+		    ((#xfffffffe)
+		     ;; We must determine IP address
+		     ;; FIXME: add error checking
+		     (set! ip (+ start-ip-pool port-id)))
+		    ((#xffffffff)
+		     (set! ip 0)))
+		  (list (string-append
+			 nas-ip ":"
+			 (if (= ip 0)
+			     ""
+			     (inet-ntoa ip))))))
+	       ((Framed-Compression)
+		(case (cdr pair)
+		  ((0) ;; None
+		   (list "-vj"))
+		  (else
+		   #f)))
+	       ((Idle-Timeout)
+		(list "idle" (cdr pair)))
+	       ((Session-Timeout)
+		(list "maxconnect" (cdr pair)))
+	       ((Framed-MTU)
+		(list "mtu" (cdr pair)))
+	       ((Framed-MRU)
+		(list "mru" (cdr pair)))
+	       ((Framed-Route)
+		(set! *framed-route* (cdr pair))
+		#f)
+	       (else
+		#f)))))
+      (if parm
+	  (set! addlist (append addlist parm))))))
+
+;;; Framed-User (PPP)
+(define (framed-ppp auth)
+;;  (logit LOG_DEBUG (format #f "starting framed-ppp\n"))
+  (let ((args (append
+	       (list *pppd-path*
+		     *pppd-path*
+		     (ttyname (current-input-port)))
+	       (radius-attributes-to-ppp auth)
+	       (list "ipparam" (make-ipparam))
+	       pppd-args)))
+;;    (logit LOG_DEBUG (format #f "framed-ppp: ~A\n" args))
+;;    (format #t "~A\n" args)
+    (apply execl
+	   (map (lambda (x)
+		  (cond
+		   ((number? x)
+		    (number->string x))
+		   (else x)))
+		args) )
+    (die #f "EXECL!") ))
+
+(define (string-ws str)
+  (let ((len (string-length str)))
+    (cond
+     ((and (> len 0)
+	   (char=? (string-ref str (1- len)) #\")
+	   (string-rindex (substring str 1 (1- len)) #\" ))
+      (string-index (substring str 1 (1- len)) #\"))
+     (else
+      (let ((i (do ((index (1- len) (1- index)))
+		   ((or (< index 0)
+			(char-whitespace? (string-ref str index)))
+		    index))))
+	(cond
+	 ((< i 0)
+	  #f)
+	 (else
+	  i)))))))
+
+(define (string-tokenize str)
+  (let loop ((fields '())
+	     (str str))
+    (cond
+     ((string-ws str)
+      => (lambda (w)
+	   (if w
+	       (loop
+		(let ((s (substring str (+ 1 w))))
+		  (cond
+		   ((= (string-length s) 0)
+		    fields)
+		   (else
+		    (cons s fields))))
+		(substring str 0 w))
+	       fields)))
+     ((= (string-length str) 0)
+      fields)
+     (else (append (list str) fields)))))
+
+(define (nas-auth)
+  (let ((login (or *login* (getline login-prompt)))
+	(passwd (getpass password-prompt)) )
+    (set! *login* login)
+    (let ((auth (rad-send :port-auth :auth-req
+			  (list
+			   (cons "User-Name" login)
+			   (cons "Password" passwd)
+			   (cons "NAS-IP-Address" nas-ip)
+			   (cons "NAS-Port-Id" port-id))
+			  flag-verbose)))
+      (let loop ((auth auth))
+	(cond
+	 ((null? auth)
+	  (format #t "Authentication failed\n")
+	  auth)
+	 (else
+	  (cond
+	   ((= (car auth) :auth-ack)
+	    (format #t "Authentication OK\n")
+	    (cdr auth))
+	   ((= (car auth) :auth-rej)
+	    (format #t "Authentication failed\n")
+	    (rad-format-reply-msg (cdr auth) "Reason:")
+	    '())
+	   ((= (car auth) :access-challenge)
+	    (rad-format-reply-msg (cdr auth))
+	    (let ((menu (get-value "State" (cdr auth)))
+		  (line (read-line (current-input-port))))
+	      (loop
+	       (rad-send :port-auth :auth-req (list
+					       (cons "User-Name" login)
+					       (cons "Password" line)
+					       (cons "State" menu))
+			 flag-verbose)))))))))))
+  
+
+(define (nas)
+  (if welcome-banner
+      (format #t "~A\n" welcome-banner))
+  (let ((auth (nas-auth)))
+   ;; (logit LOG_DEBUG (format #f "got ~A\n" auth)) 
+    (cond
+     ((null? auth)
+      (exit 0))
+     (else
+      (case (find-attr "Service-Type" auth)
+	((1) ;;	Login-User
+	  (not-implemented "Login-User"))
+	((2) ;; Framed-User
+	 (case (find-attr "Framed-Protocol" auth)
+	   ((1) ;; PPP
+	    (framed-ppp auth))
+	   ((2) ;; SLIP
+	    (framed-slip auth))))
+	((3) ;; Callback-Login-User    
+	 (not-implemented "Callback-Login-User"))
+	((4) ;; Callback-Framed-User	
+	 (not-implemented "Callback-Framed-User"))
+	((5) ;; Outbound-User		
+	 (not-implemented "Outbound-User"))
+	((6) ;; Administrative-User
+	 (not-implemented "Administrative-User"))
+	((7) ;; NAS-Prompt-User
+	 (not-implemented "NAS-Prompt-User"))
+	((8)
+	 (not-implemented "Authenticate-Only"))
+	((10)
+	 (not-implemented "Call-Check"))
+	(else
+	 (format #t "Unknown service-type ~A\n" (find-attr "Service-Type" auth))) )))))
+
+(define (login args)
+  ;; Determine port number
+  (set! port-id (get-port))
+  (if (not port-id)
+      (die #f "can't decode port"))
+  ;; Do main work
+  (if (not (= (length args) 0))
+      (set! *login* (car args)))
+  (nas))
+
+(define (netstat iface)
+  (cons 0 0))
+;  (catch 'system-error
+;	 (lambda ()
+;	   (let* ((port (open-pipe "netstat -i" OPEN_READ))
+;		  (res (do ((line (read-line port) (read-line port))
+;			    (ret #f))
+;			   ((or ret (eof-object? line)) (or ret (cons 0 0)))
+;			 (let ((llist (string-tokenize line)))
+;			   (if (string=? (car llist) iface)
+;			       (set! ret (cons (nth llist 3)
+;					       (nth llist 7))))))))
+;	     (close-pipe port)
+;	     res))
+;	 (lambda args
+;	   (cons 0 0))))
+
+(define (nas-utmp-list av-pairs)
+  (let ((login "")
+	(port 0)
+	(port-type #\A)
+	(session-id "none")
+	(caller-id "")
+	(framed-ip-addr "")
+	(nas-ip-addr nas-ip))
+    (do ((p av-pairs (cdr p)))
+	(#f (null p))
+      (let ((attr (car (car p)))
+	    (val (cdr (car p))))
+	(cond
+	 ((string=? attr "User-Name")
+	  (set! login val))
+	 ((string=? attr "NAS-Port-Id")
+	  (set! port val))
+	 ((string=? attr "Service-Type")
+	  ;;FIXME: set port_type
+	  )
+	 ((string=? attr "Acct-Session-ID")
+	  (set! session-id val))
+	 ((string=? attr "Calling-Station-ID")
+	  (set! caller-id val))
+	 ((string=? attr "Framed-IP-Address")
+	  (set! framed-ip-addr val))
+	 ((string=? attr "NAS-IP-Address")
+	  (set! nas-ip-addr val)))))
+       (list
+	login
+	login
+        port
+	port-type
+	session-id
+	caller-id 
+	framed-ip-addr 
+	nas-ip-addr
+	proto)))
+
+(define (nas-login iface av-pairs)
+  (let ((ut (nas-utmp-list av-pairs)))
+    (rad-utmp-putent 1 0 ut (radutmp-file) (radwtmp-file))))
+       
+(define (nas-logout iface av-pairs)
+  (let* ((ut (nas-utmp-list av-pairs))
+	 (diff (rad-utmp-putent 2 0 ut (radutmp-file) (radwtmp-file))))
+    (list
+     (cons "Acct-Session-Time" (nth diff 1))
+     (cons "Acct-Input-Packets" (nth diff 2))
+     (cons "Acct-Output-Packets" (nth diff 3)))))
+
+(define (acct-start args)
+  (cond
+   ((not (= (length args) 6))
+    (die #t "arg count")))
+  (let* ((iface (car args))
+	 (tail (list-tail args 4))
+	 (remote-ip (car tail))
+	 (ipparam (decode-ipparam (cadr tail)))
+	 (av-pairs (append (list
+			    (cons "NAS-IP-Address" nas-ip)
+		            (cons "Framed-IP-Address" remote-ip)
+		            (cons "Acct-Status-Type" "Start")
+		            (cons "Acct-Authentic" "RADIUS"))
+		            ipparam))
+;;    (format #t "~A" ipparam)
+    (rad-send :port-acct :acct-req 
+	      av-pairs
+	      flag-verbose)
+    (nas-login iface av-pairs)))
+    
+
+(define (acct-stop args)
+  (cond
+   ((not (= (length args) 6))
+    (die #t "arg count")))
+  (let* ((iface (car args))
+	 (tail (list-tail args 4))
+	 (remote-ip (car tail))
+	 (ipparam (decode-ipparam (cadr tail)))
+	 (av-pairs (append (list
+			    (cons "NAS-IP-Address" nas-ip)
+			    (cons "Framed-IP-Address" remote-ip)
+			    (cons "Acct-Status-Type" "Stop")
+			    (cons "Acct-Authentic" "RADIUS"))
+			    ipparam))
+	 (logout (nas-logout iface av-pairs)))
+    (rad-send :port-acct :acct-req 
+	      (append av-pairs logout)
+	      flag-verbose)))    
+
+;; Load profiles
+(load (string-append %raddb-path "/nas.rc"))
+(let ((localrc (string-append (passwd:dir (getpwuid (getuid))) ".nas")))
+  (if (file-exists? localrc)
+      (load localrc)))
+
+;;; Fire it up:
+
+(let* ((args (program-arguments))
+       (argc (length args))
+       (progname (basename (car args))))
+  (rad-openlog (format #f "~A" progname) LOG_PID nas-log-facility)
+  (logit LOG_DEBUG (format #f "~A\n" args))
+  (let ((rest (cdr args)))
+    (if (not (null? rest))
+	(cond
+	 ((string=? (car rest) "--")
+	  (set! rest (cdr rest)))))
+    (cond
+     ((string=? progname "ip-up")
+      (acct-start rest))
+     ((string=? progname "ip-down")
+      (acct-stop rest))
+     (else
+      (login rest)))))
+
+;;END
+

@@ -1,21 +1,19 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000,2001, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
+   Copyright (C) 2000,2001, Sergey Poznyakoff
+  
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+  
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+  
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #define RADIUS_MODULE_SQL_C
 #ifndef lint
@@ -77,8 +75,9 @@ SQL_cfg sql_cfg;
 #define STMT_MAX_AUTH_CONNECTIONS  18
 #define STMT_MAX_ACCT_CONNECTIONS  19
 #define STMT_GROUP_QUERY           20
-#define STMT_ATTR_QUERY            21
+#define STMT_REPLY_ATTR_QUERY            21
 #define STMT_INTERFACE             22
+#define STMT_CHECK_ATTR_QUERY      23
 
 static FILE  *sqlfd;
 static int line_no;
@@ -102,7 +101,9 @@ struct keyword sql_keyword[] = {
 	"acct_db",            STMT_ACCT_DB,
 	"auth_query",         STMT_AUTH_QUERY,
 	"group_query",        STMT_GROUP_QUERY,
-	"attr_query",         STMT_ATTR_QUERY, 
+	"attr_query",         STMT_REPLY_ATTR_QUERY,
+	"reply_attr_query",   STMT_REPLY_ATTR_QUERY,
+	"check_attr_query",   STMT_CHECK_ATTR_QUERY,
 	"acct_start_query",   STMT_ACCT_START_QUERY,
 	"acct_stop_query",    STMT_ACCT_STOP_QUERY,
 	"acct_alive_query",   STMT_ACCT_KEEPALIVE_QUERY,
@@ -465,10 +466,14 @@ rad_sql_init()
 			new_cfg.acct_nasdown_query = estrdup(cur_ptr);
 			break;
 			
-		case STMT_ATTR_QUERY:
-			new_cfg.attr_query = estrdup(cur_ptr);
+		case STMT_REPLY_ATTR_QUERY:
+			new_cfg.reply_attr_query = estrdup(cur_ptr);
 			break;
 
+		case STMT_CHECK_ATTR_QUERY:
+			new_cfg.check_attr_query = estrdup(cur_ptr);
+			break;
+			
 		case STMT_QUERY_BUFFER_SIZE:
 			radlog(L_WARN, "%s:%d: query_buffer_size is obsolete",
 				       sqlfile, line_no);
@@ -509,8 +514,9 @@ rad_sql_init()
 	FREE(sql_cfg.acct_nasup_query);
 	FREE(sql_cfg.acct_nasdown_query);
 	FREE(sql_cfg.acct_keepalive_query);
-	FREE(sql_cfg.attr_query);
-
+	FREE(sql_cfg.reply_attr_query);
+	FREE(sql_cfg.check_attr_query);
+	
 	/* copy new config */
 	sql_cfg = new_cfg;
 		
@@ -1171,23 +1177,76 @@ rad_sql_checkgroup(req, groupname)
 	return rc;
 }
 
+static int rad_sql_retrieve_pairs(struct sql_connection *conn,
+				  char *query,
+				  VALUE_PAIR **return_pairs,
+				  int op_too);
+
 int
-rad_sql_attr_query(req, reply_pairs)
+rad_sql_retrieve_pairs(conn, query, return_pairs, op_too)
+	struct sql_connection *conn;
+	char *query;
+	VALUE_PAIR **return_pairs;
+	int op_too;
+{
+	void *data;
+	int i;
+	
+        data = disp_sql_exec(sql_cfg.interface, conn, query);
+	if (!data)
+		return 0;
+	
+	for (i = 0; disp_sql_next_tuple(sql_cfg.interface, conn, data) == 0;
+	     i++) {
+		VALUE_PAIR *pair;
+		char *attribute;
+		char *value;
+		int op;
+		
+		if (!(attribute = disp_sql_column(sql_cfg.interface, data, 0))
+		    || !(value =  disp_sql_column(sql_cfg.interface, data, 1)))
+			break;
+		if (op_too) {
+			char *opstr;
+			opstr = disp_sql_column(sql_cfg.interface, data, 2);
+			if (!opstr)
+				break;
+			chop(opstr);
+			op = str_to_op(opstr);
+			if (op == NUM_OPERATORS) {
+				radlog(L_NOTICE,
+				       _("SQL: invalid operator: %s"), opstr);
+				continue;
+			}
+		} else
+			op = OPERATOR_EQUAL;
+
+		chop(attribute);
+		chop(value);
+		
+		pair = install_pair(attribute, op, value);
+		
+		if (pair)
+			avl_add_list(return_pairs, pair);
+	}
+
+	disp_sql_free(sql_cfg.interface, conn, data);
+	return i;
+}
+
+int
+rad_sql_reply_attr_query(req, reply_pairs)
         RADIUS_REQ *req;
         VALUE_PAIR **reply_pairs;
 {
         VALUE_PAIR *request_pairs = req->request;
-	struct sql_connection	*conn;
-	void			*data;
-	char			*attribute;
-	char			*value;
-	char			*cols_array[2];
-	VALUE_PAIR		*pair;
-	int			i = 0;
-	qid_t                   qid;
+	VALUE_PAIR *pair;
+	struct sql_connection *conn;
+	qid_t qid;
 	char *query;
-
-	if (sql_cfg.doauth == 0 || !sql_cfg.attr_query)
+	int rc;
+	
+	if (sql_cfg.doauth == 0 || !sql_cfg.reply_attr_query)
 		return 0;
 	
 	if ((pair = avl_find(request_pairs, DA_QUEUE_ID)) == NULL) {
@@ -1198,39 +1257,51 @@ rad_sql_attr_query(req, reply_pairs)
 	qid = (qid_t)pair->lvalue;
 	conn = attach_sql_connection(SQL_AUTH, qid);
 	
-	query = radius_xlate(&stack, sql_cfg.attr_query, req, NULL);
-	
-        data = disp_sql_exec(sql_cfg.interface, conn, query);
-	if (data) {
-		for (i = 0;
-		     disp_sql_next_tuple(sql_cfg.interface, conn, data) == 0;
-		     i++) {
-			if (!(attribute =
-			      disp_sql_column(sql_cfg.interface, data, 0))
-			    || !(value =
-				 disp_sql_column(sql_cfg.interface, data, 1)))
-				break;
-			chop(attribute);
-			chop(value);
+	query = radius_xlate(&stack, sql_cfg.reply_attr_query, req, NULL);
 
-			pair = install_pair(attribute,
-					    OPERATOR_EQUAL, value);
- 
-			if (pair)
-				avl_add_list(reply_pairs, pair);
-		}
- 
-		disp_sql_free(sql_cfg.interface, conn, data);
-	}
+	rc = rad_sql_retrieve_pairs(conn, query, reply_pairs, 0);
 	
         if (!sql_cfg.keepopen) 
                 unattach_sql_connection(SQL_AUTH, qid);
 
 	if (query)
 		obstack_free(&stack, query);
-	return i == 0;
+	return rc == 0;
 }
 
+int
+rad_sql_check_attr_query(req, return_pairs)
+        RADIUS_REQ *req;
+        VALUE_PAIR **return_pairs;
+{
+        VALUE_PAIR *request_pairs = req->request;
+	VALUE_PAIR *pair;
+	struct sql_connection *conn;
+	qid_t qid;
+	char *query;
+	int rc;
+	
+	if (sql_cfg.doauth == 0 || !sql_cfg.check_attr_query)
+		return 0;
+	
+	if ((pair = avl_find(request_pairs, DA_QUEUE_ID)) == NULL) {
+		/* this should never happen, but just in case... */
+		radlog(L_ERR, "No queue ID in request");
+		return -1;
+	}
+	qid = (qid_t)pair->lvalue;
+	conn = attach_sql_connection(SQL_AUTH, qid);
+	
+	query = radius_xlate(&stack, sql_cfg.check_attr_query, req, NULL);
 
+	rc = rad_sql_retrieve_pairs(conn, query, return_pairs, 1);
+	
+        if (!sql_cfg.keepopen) 
+                unattach_sql_connection(SQL_AUTH, qid);
+
+	if (query)
+		obstack_free(&stack, query);
+	return rc == 0;
+}
 
 #endif

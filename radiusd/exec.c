@@ -450,8 +450,9 @@ filter_xlate(struct obstack *sp, char *fmt, RADIUS_REQ *radreq)
 	if (fmt[0] == '=') {
 		Datatype type;
 		Datum datum;
-		
-		if (interpret(fmt+1, radreq, &type, &datum)) 
+
+		/*FIXME: Should be compiled!*/
+		if (rewrite_interpret(fmt+1, radreq, &type, &datum)) 
 			return NULL;
 		if (type != String) {
 			radlog(L_ERR, "%s: %s",

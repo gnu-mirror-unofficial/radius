@@ -519,7 +519,6 @@ typedef struct auth_mach {
         RADIUS_REQ *req;
         VALUE_PAIR *user_check;
         VALUE_PAIR *user_reply;
-        VALUE_PAIR *proxy_pairs;
         int        activefd;
         
         VALUE_PAIR *namepair;
@@ -758,7 +757,6 @@ rad_authenticate(radreq, activefd)
         m.activefd = activefd;
         m.user_check = NULL;
         m.user_reply = NULL;
-        m.proxy_pairs= NULL;
         m.check_pair = NULL;
         m.timeout_pair = NULL;
         m.user_msg   = NULL;
@@ -804,7 +802,6 @@ rad_authenticate(radreq, activefd)
         /* Cleanup */
         avl_free(m.user_check);
         avl_free(m.user_reply);
-        avl_free(m.proxy_pairs);
         if (m.user_msg)
                 free(m.user_msg);
         obstack_free(&m.msg_stack, NULL);
@@ -830,17 +827,10 @@ sfn_init(m)
         RADIUS_REQ *radreq = m->req;
         VALUE_PAIR *pair_ptr;
         
-        /*
-         *      Move the proxy_state A/V pairs somewhere else.
-         */
-        avl_move_attr(&m->proxy_pairs, &radreq->request, DA_PROXY_STATE);
-
-        /*
-         * If this request got proxied to another server, we need
-         * to add an initial Auth-Type: Auth-Accept for success,
-         * Auth-Reject for fail. We also need to add the reply
-         * pairs from the server to the initial reply.
-         */
+        /* If this request got proxied to another server, we need
+	   to add an initial Auth-Type: Auth-Accept for success,
+	   Auth-Reject for fail. We also need to add the reply
+	   pairs from the server to the initial reply. */
         if (radreq->server_code == RT_AUTHENTICATION_REJECT ||
             radreq->server_code == RT_AUTHENTICATION_ACK) {
                 m->user_check = avp_create(DA_AUTH_TYPE, 0, NULL, 0);
@@ -874,8 +864,7 @@ sfn_init(m)
                 /* Send reject packet with proxy-pairs as a reply */
                 newstate(as_reject);
                 avl_free(m->user_reply);
-                m->user_reply = m->proxy_pairs;
-                m->proxy_pairs = NULL;
+                m->user_reply = NULL;
         }
 }
 
@@ -990,8 +979,6 @@ sfn_validate(m)
               /*if (p = avl_find(m->user_reply, DA_REPLY_MESSAGE))
                         m->user_msg = dup_string(p->strvalue);*/
         }
-
-        avl_move_attr(&m->user_reply, &m->proxy_pairs, DA_PROXY_STATE);
 
         if (rc != AUTH_OK) {
                 /*

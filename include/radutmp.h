@@ -95,4 +95,18 @@ typedef struct port_stat {
 /* stat.c */
 PORT_STAT * findportbyindex(int ind);
 
+typedef struct _radut_file *radut_file_t;
+
+radut_file_t rut_setent(char *name, int append);
+void rut_endent(radut_file_t file);
+struct radutmp *rut_getent(radut_file_t file);
+int rut_putent(radut_file_t file, struct radutmp *ent);
+void rut_rewind(radut_file_t file);
+
+#define PUTENT_SUCCESS 0
+#define PUTENT_NOENT   1
+#define PUTENT_UPDATE  2
+
+int radutmp_putent(char *filename, struct radutmp *ut, int status);
+
 #endif /* _RADUTMP_H */

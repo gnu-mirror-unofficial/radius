@@ -260,8 +260,13 @@ scheme_eval_boolean_expr(char *expr)
 static SCM
 catch_body(void *data)
 {
+        SCM orig_load_path;
+         
 	scm_init_load_path();
 	grad_scm_init();
+	orig_load_path = RAD_SCM_SYMBOL_VALUE("%load-path");
+	radiusd_set_preconfig_hook(scheme_before_config_hook, orig_load_path,
+				   0);
 	rscm_server_init();
 	scheme_load_module("radiusd");
 	radiusd_main();
@@ -286,10 +291,6 @@ scheme_before_config_hook(void *data, void *b ARG_UNUSED)
 void
 scheme_boot(void *closure, int argc, char **argv)
 {
-        SCM orig_load_path = RAD_SCM_SYMBOL_VALUE("%load-path");
-         
-	radiusd_set_preconfig_hook(scheme_before_config_hook, orig_load_path,
-				   0);
 	scm_internal_catch(SCM_BOOL_T,
 			   catch_body, closure,
 			   catch_handler, NULL);

@@ -25,6 +25,21 @@
 #include <radpaths.h>
 #include <signal.h>
 
+/* Debugging macros */
+#define Pthread_mutex_lock(m) \
+ do { \
+      debug(100,("locking " #m)); \
+      pthread_mutex_lock(m);\
+      debug(100,("locked " #m)); \
+ } while (0)
+
+#define Pthread_mutex_unlock(m) \
+ do { \
+      debug(100,("unlocking " #m)); \
+      pthread_mutex_unlock(m);\
+      debug(100,("unlocked " #m)); \
+ } while (0)
+
 /* Server data structures */
 struct radutmp; /* declared in radutmp.h */
 struct obstack;
@@ -457,7 +472,10 @@ void scheme_add_load_path(char *path);
 void scheme_read_eval_loop();
 void scheme_end_reconfig();
 void start_guile();
-	
+
+/* request.c */
+typedef void (*request_thread_command_fp)(void *);
+
 int request_start_thread();
 void request_signal();
 REQUEST *request_put(int type, void *data, int fd, unsigned *numpending);
@@ -466,6 +484,8 @@ int request_flush_list();
 int request_stat_list(QUEUE_STAT stat);
 void request_handle(REQUEST *req);
 void *request_scan_list(int type, int (*handler)(), void *closure);
+void request_thread_command(request_thread_command_fp fun, void *data);
+
 
 /* checkrad.c */
 int checkrad(NAS *nas, struct radutmp *up);

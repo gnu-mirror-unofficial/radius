@@ -39,6 +39,7 @@
 static void sql_check_config(SQL_cfg *);
 static struct sql_connection *attach_sql_connection(int type);
 static void detach_sql_connection(int type);
+static void sql_conn_destroy(struct sql_connection **conn);
 
 static char *getline();
 static int get_boolean(char *str, int *retval);
@@ -74,6 +75,9 @@ static struct sql_connection *sql_conn[SQL_NSERVICE];
 #define STMT_REPLY_ATTR_QUERY      21
 #define STMT_INTERFACE             22
 #define STMT_CHECK_ATTR_QUERY      23
+
+
+/* *********************** Configuration File Parser *********************** */
 
 static FILE  *sqlfd;
 static int line_no;
@@ -482,16 +486,6 @@ rad_sql_init()
         return 0;
 }
 
-static void
-sql_conn_destroy(struct sql_connection **conn)
-{
-	if (*conn) {
-		disp_sql_disconnect(*conn);
-		efree(*conn);
-		*conn = NULL;
-	}
-}
-
 void
 radiusd_sql_shutdown()
 {
@@ -564,7 +558,6 @@ sql_check_config(SQL_cfg *cfg)
                cfg->doauth));
 }
 
-
 void
 sql_flush()
 {
@@ -573,6 +566,127 @@ sql_flush()
         radiusd_flush_queue();
 	radiusd_sql_shutdown();
 }
+
+
+/* ********************************* SQL Cache ***************************** */
+static void
+sql_result_destroy(SQL_RESULT *res)
+{
+	size_t i;
+	
+	if (!res)
+		return;
+	efree(res->query);
+	for (i = 0; i < res->ntuples; i++) {
+		size_t j;
+		for (j = 0; j < res->nfields; j++) 
+			efree(res->tuple[i][j]);
+		efree(res->tuple[i]);
+	}
+	efree(res->tuple);
+	efree(res);
+}
+
+static size_t
+sql_cache_level(struct sql_connection *conn)
+{
+	if (conn->tail < conn->head)
+		return conn->tail + SQL_CACHE_SIZE - conn->head;
+	else
+		return conn->tail - conn->head;
+}
+
+static void
+sql_cache_destroy(struct sql_connection *conn)
+{
+	size_t i;
+
+	for (; sql_cache_level(conn) > 0;
+	     conn->head = (conn->head + 1) % SQL_CACHE_SIZE)
+		sql_result_destroy(conn->cache[conn->head]);
+}
+
+static void
+sql_cache_insert(struct sql_connection *conn, SQL_RESULT *res)
+{
+	debug(1,("cache: %d,(%d,%d)",sql_cache_level(conn),conn->head,conn->tail));
+	if (sql_cache_level(conn) >= SQL_CACHE_SIZE-1) {
+		sql_result_destroy(conn->cache[conn->head]);
+		conn->head = (conn->head + 1) % SQL_CACHE_SIZE;
+	        debug(1,("head: %d,%d", conn->head,conn->tail));
+	}
+	debug(1,("inserting at pos %d", conn->tail));
+	conn->cache[conn->tail] = res;
+	conn->tail = (conn->tail + 1) % SQL_CACHE_SIZE;
+	debug(1,("tail: %d,%d", conn->head,conn->tail));
+}
+
+static SQL_RESULT *
+sql_cache_retrieve(struct sql_connection *conn, char *query)
+{
+        void *data;
+	SQL_RESULT *res;
+	size_t i;
+	
+	debug(1,("query: %s",query));
+	res = emalloc(sizeof(*res));
+	res->query = estrdup(query);
+	res->nfields = res->ntuples = 0;
+	res->tuple = NULL;
+        data = disp_sql_exec(conn, query);
+        if (!data) {
+		sql_cache_insert(conn, res);
+                return res;
+	}
+	
+	if (disp_sql_num_tuples(conn, data, &res->ntuples)
+	    || disp_sql_num_columns(conn, data, &res->nfields)) {
+		disp_sql_free(conn, data);
+		res->nfields = res->ntuples = 0;
+		sql_cache_insert(conn, res);
+		return res;
+	}
+
+	res->tuple = emalloc(sizeof(res->tuple[0]) * res->ntuples);
+        for (i = 0; i < res->ntuples
+		     && disp_sql_next_tuple(conn, data) == 0; i++) {
+		int j;
+
+		res->tuple[i] = emalloc(sizeof(res->tuple[0][0]) * res->nfields);
+			
+		for (j = 0; j < res->nfields; j++) {
+			char *p = disp_sql_column(conn, data, j);
+			chop(p);
+			res->tuple[i][j] = estrdup(p);
+		}
+	}
+		
+        disp_sql_free(conn, data);
+
+	sql_cache_insert(conn, res);
+	
+        return res;
+}
+
+static SQL_RESULT *
+sql_cache_lookup(struct sql_connection *conn, char *query)
+{
+	size_t i;
+
+	debug(1,("looking up %s", query));
+	for (i = conn->head; i != conn->tail;
+	     i = (i + 1) % SQL_CACHE_SIZE) {
+		if (strcmp(conn->cache[i]->query, query) == 0) {
+			debug(1,("found at %d", i));
+			return conn->cache[i];
+		}
+	}
+	debug(1,("NOT FOUND"));
+	return NULL;
+}
+
+
+/* *********************** SQL Connection Handling ************************* */
 
 struct sql_connection *
 attach_sql_connection(int type)
@@ -590,6 +704,8 @@ attach_sql_connection(int type)
                 conn->last_used = now;
                 conn->type = type;
 
+		conn->head = 0;
+		conn->tail = 0;
                 sql_conn[type] = conn;
         }
 
@@ -621,6 +737,20 @@ detach_sql_connection(int type)
                 sql_conn[type] = NULL;
         }
 }
+
+static void
+sql_conn_destroy(struct sql_connection **conn)
+{
+	if (*conn) {
+		disp_sql_disconnect(*conn);
+		sql_cache_destroy(*conn);
+		efree(*conn);
+		*conn = NULL;
+	}
+}
+
+
+/* ************************* Interface Functions *************************** */
 
 /*ARGSUSED*/
 void
@@ -780,10 +910,10 @@ rad_sql_checkgroup(req, groupname)
 {
         int   rc = -1;
         struct sql_connection *conn;
-        void *data;
-        char *p;
         char *query;
         struct obstack stack;
+	SQL_RESULT *res;
+	size_t i;
 	
         if (sql_cfg.doauth == 0 || sql_cfg.group_query == NULL) 
                 return -1;
@@ -795,21 +925,22 @@ rad_sql_checkgroup(req, groupname)
         obstack_init(&stack);
 	
         query = radius_xlate(&stack, sql_cfg.group_query, req, NULL);
+	res = sql_cache_lookup(conn, query);
+	if (!res) {
+		res = sql_cache_retrieve(conn, query);
+		if (!res)
+			return rc;
+	}
+        obstack_free(&stack, NULL);
 
-        data = disp_sql_exec(conn, query);
-	if (data) {
-		while (rc != 0
-		       && disp_sql_next_tuple(conn, data) == 0) {
-			if ((p = disp_sql_column(conn, data, 0)) == NULL)
-				break;
-			chop(p);
-			if (strcmp(p, groupname) == 0)
-				rc = 0;
-		}
-		disp_sql_free(conn, data);
+	if (res->ntuples == 0 || res->nfields == 0)
+		return rc;
+
+	for (i = 0; rc != 0 && i < res->ntuples; i++) {
+		if (strcmp(res->tuple[i][0], groupname) == 0)
+			rc = 0;
 	}
 	
-        obstack_free(&stack, NULL);
         return rc;
 }
 
@@ -819,52 +950,50 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
 		       VALUE_PAIR **return_pairs,
 		       int op_too)
 {
-        void *data;
-        int i;
-        
-        data = disp_sql_exec(conn, query);
-        if (!data) 
-                return 0;
-        
-        for (i = 0; disp_sql_next_tuple(conn, data) == 0; i++) {
-                VALUE_PAIR *pair;
-                char *attribute;
-                char *value;
-                int op;
-                
-                if (!(attribute = disp_sql_column(conn, data, 0))
-                    || !(value =  disp_sql_column(conn, data, 1)))
-                        break;
-                if (op_too) {
-                        char *opstr;
-                        opstr = disp_sql_column(conn, data, 2);
-                        if (!opstr)
-                                break;
-                        chop(opstr);
+	SQL_RESULT *res;
+	size_t i;
+	
+	res = sql_cache_lookup(conn, query);
+	if (!res) {
+		res = sql_cache_retrieve(conn, query);
+		if (!res)
+			return 0;
+	}
+
+	if (res->ntuples == 0
+	    || res->nfields < 2
+	    || (op_too && res->nfields < 3))
+		return 0;
+	
+        for (i = 0; i < res->ntuples; i++) {
+		int op;
+		VALUE_PAIR *pair;
+		
+		if (op_too) {
+			char *opstr = res->tuple[i][2];
                         op = str_to_op(opstr);
                         if (op == NUM_OPERATORS) {
                                 radlog(L_NOTICE,
                                        _("SQL: invalid operator: %s"), opstr);
                                 continue;
                         }
-                } else
-                        op = OPERATOR_EQUAL;
+		} else
+			op = OPERATOR_EQUAL;
 
-                chop(attribute);
-                chop(value);
-                
-                pair = install_pair(__FILE__, __LINE__, attribute, op, value);
+                pair = install_pair(__FILE__, __LINE__,
+				    res->tuple[i][0],
+				    op,
+				    res->tuple[i][1]);
                 
                 if (pair) {
                         avl_merge(return_pairs, &pair);
                         avl_free(pair);
                 }
-        }
+	}		
 
-        disp_sql_free(conn, data);
-        return i;
+	return i;
 }
-
+			
 int
 rad_sql_reply_attr_query(RADIUS_REQ *req, VALUE_PAIR **reply_pairs)
 {

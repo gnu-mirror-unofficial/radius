@@ -1,0 +1,69 @@
+# This file is part of GNU RADIUS test suite.
+# Copyright (C) 2000,2001 Sergey Poznyakoff
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
+
+BEGIN   NAS-IP-Address = 127.0.0.2
+	Framed-IP-Address = 127.10.0.1+,
+		Fall-Through = Yes
+
+DEFAULT NAS-IP-Address = 127.0.0.1,
+		Auth-Type = Accept
+	Reply-Message = "OK. Come in."
+
+DEFAULT NAS-IP-Address = 127.0.0.2,
+		Auth-Type = Reject
+	Reply-Message = "Wrong NAS"
+	
+## Auth.exp: Test Authentication Types
+accept  Auth-Type = Accept     NULL 
+reject  Auth-Type = Reject     NULL
+local   Auth-Type = Local,
+		Password = "guessme"
+	NULL
+crypt   Auth-Type = Crypt-Local,
+		Password = "$1$gHpfo$0BuBYjWmmM6E4l00ZFqVI1" # hamlet
+	NULL
+
+## Access.exp: bad-one should be rejected.
+bad-one Auth-Type = Accept     NULL
+	
+## Reply.exp: Test Reply Attributes
+reply   Auth-Type = Local,
+		Password = "guessme"
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+		
+framed-ip Auth-Type = Accept
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP,
+		Framed-IP-Address = 127.0.0.1+
+
+## Menu.exp: Test Livingston menus
+menu    Auth-Type = Accept
+	Menu = "menu1"
+
+## Acct-{on|off}.exp: Test simultaneous use
+simuse  Auth-Type = Accept,
+		Simultaneous-Use = 1
+	Service-Type = Framed-User
+
+## Execwait.exp: Check for working Exec-Program-Wait attribute
+execwait Auth-Type = Accept
+	Exec-Program-Wait = "@BUILDDIR@/test/raddb/auth.bin %C{NAS-Port-Id} %C{User-Name}"
+		
+
+
+

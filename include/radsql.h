@@ -57,7 +57,6 @@ typedef struct {
         char     *reply_attr_query;
         int      keepopen;
         time_t   idle_timeout;
-        unsigned max_connections[SQL_NSERVICE];
         int      active[SQL_NSERVICE];
 #define doauth   active[SQL_AUTH]
 #define doacct   active[SQL_ACCT]

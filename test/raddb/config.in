@@ -60,3 +60,8 @@ proxy {
 	request-cleanup-delay 2;
 };
 
+@GUILE@guile {
+@GUILE@        debug yes;
+@GUILE@        load-path "@BUILDDIR@/test/raddb";
+@GUILE@        load "auth.scm";
+@GUILE@};

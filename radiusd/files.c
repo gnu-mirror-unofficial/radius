@@ -1045,12 +1045,12 @@ read_clients_entry(unused, fc, fv, file, lineno)
 {
 	CLIENT *cp;
 	
-	if (fc < 2) {
-		radlog(L_ERR, _("%s:%d: too few fields (%d)"),
+	if (fc != 2) {
+		radlog(L_ERR, _("%s:%d: wrong number of fields (%d)"),
 		       file, lineno, fc);
 		return -1;
 	}
-		
+
 	cp = Alloc_entry(CLIENT);
 
 	cp->ipaddr = get_ipaddr(fv[0]);
@@ -1082,7 +1082,7 @@ read_clients_file(file)
 	free_slist((struct slist*)clients, client_free);
 	clients = NULL;
 
-	return read_raddb_file(file, 1, 3, read_clients_entry, NULL);
+	return read_raddb_file(file, 1, read_clients_entry, NULL);
 }
 
 
@@ -1144,7 +1144,7 @@ read_nastypes_entry(unused, fc, fv, file, lineno)
 {
 	RADCK_TYPE *mp;
 	int method;
-		
+
 	if (fc < 2) {
 		radlog(L_ERR, _("%s:%d: too few fields"), file, lineno);
 		return -1;
@@ -1162,10 +1162,10 @@ read_nastypes_entry(unused, fc, fv, file, lineno)
 	}
 			
 	mp = alloc_entry(sizeof(*mp));
-	mp->type = estrdup(fv[0]);
+        mp->type = estrdup(fv[0]);
 	mp->method = method;
-	if (fc == 3)
-		mp->args = envar_parse(fv[2]);
+	if (fc > 2)
+		mp->args = envar_parse_argcv(fc-2, &fv[2]);
 	else
 		mp->args = NULL;
 	mp->next = radck_type;
@@ -1177,6 +1177,7 @@ void
 free_radck_type(rp)
 	RADCK_TYPE *rp;
 {
+	efree(rp->type);
 	envar_free_list(rp->args);
 }
 
@@ -1186,7 +1187,7 @@ read_nastypes_file(file)
 {
 	free_slist((struct slist *)radck_type, free_radck_type);
 	radck_type = NULL;
-	return read_raddb_file(file, 0, 3, read_nastypes_entry, NULL);
+	return read_raddb_file(file, 0, read_nastypes_entry, NULL);
 }
 
 RADCK_TYPE *
@@ -1224,6 +1225,12 @@ read_realms_entry(unused, fc, fv, file, lineno)
 
 	if (fc < 2) {
 		radlog(L_ERR, _("%s:%d: too few fields (%d)"),
+		       file, lineno, fc);
+		return -1;
+	}
+	if (fc > 4) {
+		/*FIXME: Allow for variable number of fields */
+		radlog(L_ERR, _("%s:%d: too many fields (%d)"),
 		       file, lineno, fc);
 		return -1;
 	}
@@ -1269,7 +1276,7 @@ read_realms_file(file)
 	free_slist((struct slist*)realms, NULL);
 	realms = NULL;
 	
-	return read_raddb_file(file, 1, 4, read_realms_entry, NULL);
+	return read_raddb_file(file, 1, read_realms_entry, NULL);
 }
 
 /*
@@ -1316,6 +1323,12 @@ read_denylist_entry(denycnt, fc, fv, file, lineno)
 	char *file;
 	int lineno;
 {
+        if (fc != 1) {
+                radlog(L_ERR, _("%s:%d: wrong number of fields (%d)"),
+                       file, lineno, fc);
+                return -1;
+        }
+
 	if (get_deny(fv[0]))
 		radlog(L_ERR, _("user `%s' already found in %s"),
 		    fv[0], RADIUS_DENY);
@@ -1339,7 +1352,7 @@ read_deny_file()
 		deny_tab = symtab_create(sizeof(Symbol), NULL);
 	denycnt = 0;
 
-	read_raddb_file(name, 0, 1, read_denylist_entry, &denycnt);
+	read_raddb_file(name, 0, read_denylist_entry, &denycnt);
 	efree(name);
 	if (denycnt)
 		radlog(L_INFO, _("%d users disabled"), denycnt);

@@ -70,8 +70,8 @@ read_naslist_entry(unused, fc, fv, file, lineno)
 	STRING_COPY(nas.shortname, fv[1]);
 	STRING_COPY(nas.nastype, fv[2]);
 	STRING_COPY(nas.longname, ip_hostname(nas.ipaddr));
-	if (fc == 4)
-		nas.args = envar_parse(fv[3]);
+	if (fc >= 4)
+		nas.args = envar_parse_argcv(fc-3, &fv[3]);
 	
 	nasp = Alloc_entry(NAS);
 
@@ -95,7 +95,7 @@ nas_read_file(file)
 	nas_free_list(naslist);
 	naslist = NULL;
 
-	return read_raddb_file(file, 1, 4, read_naslist_entry, NULL);
+	return read_raddb_file(file, 1, read_naslist_entry, NULL);
 }
 
 /*

@@ -1,3 +1,21 @@
+2002-12-24  Sergey Poznyakoff
+
+	* configure.ac: Require need-ngettext for AM_GNU_GETTEXT.
+	* include/radiusd.h: New signal handler state SH_DELETED.
+	* radiusd/exec.c (filter_runtime_data): New member 'stopped'
+	  (filter_close): Do not remove signal handler until SIGCHLD
+	  arrives.
+	  (filter_kill): New function.
+	  (filter_open): Handle stopped filters.
+	  
+	* radiusd/signal.c: Changed the way of removing the
+	  handlers. rad_signal_remove() marks the handler with
+	  SH_DELETED, then it is actually deleted when signal
+	  thread awakes and processes the signal queue.
+	  (_signal_entry_runqueue): Remove deleted handlers.
+	  Do not stop when a handler returns success.
+	  (_signal_deliver): Reflect the above changes.
+	
 2002-12-23  Sergey Poznyakoff 
 
 	* configure.ac: Got rid of ETC_DIR. Usual sysconfdir is used

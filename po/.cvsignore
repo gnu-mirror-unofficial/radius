@@ -6,3 +6,9 @@ POTFILES
 *.gmo
 *.po~
 *.sed
+po/Makefile.in.in
+po/Rules-quot
+po/en@boldquot.header
+po/en@quot.header
+po/insert-header.sin
+po/remove-potcdate.sin

@@ -14,7 +14,7 @@ It will be processed by the first thread that finishes its job.
 The radius-specific MIBs use the MIB subtree allocated for GNU project:
 .iso.org.dod.internet.private.enterprises.gnu.radius (.1.3.6.1.4.1.11591.1).
 Previous versions have used the radius-specific subtree for this purpose
-(.iso.org.dod.internet.private.enterprises.gnu-radius = .1.3.6.1.4.1.11591.1)
+(.iso.org.dod.internet.private.enterprises.gnu-radius = .1.3.6.1.4.1.9163)
 Specifying --enable-snmp=compat enables support of this subtree along with
 the official GNU subtree.
 

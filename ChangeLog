@@ -1,3 +1,18 @@
+2002-06-05  Sergey Poznyakoff
+
+	* NEWS: Updated.
+	* README: Updated.
+	* doc/texinfo/attributes.texi: Updated.
+	* doc/texinfo/auth.texi: Updated.
+	* doc/texinfo/client.texi: Updated.
+	* doc/texinfo/configure.texi: Updated.
+	* doc/texinfo/extensions.texi: Updated.
+	* doc/texinfo/invoke.texi: Updated.
+	* doc/texinfo/radzap.texi: Updated.
+
+	* raddb/config: Updated.
+	* raddb/config.syntax: Updated.
+
 2002-06-04  Sergey Poznyakoff 
 
 	* configure.ac: Override a bug in autoconf's AC_PATH_PROG
@@ -616,7 +631,7 @@
 	
 2002-03-29  Sergey Poznyakoff 
 
-*	* radzap/radzap.c: New option: --file. --log-directory retained
+	* radzap/radzap.c: New option: --file. --log-directory retained
 	  for compatibility.
 	* radscripts/radctl.m4: Removed potentially dangerous commands:
 	  dumpdb and status.
@@ -893,7 +908,7 @@
 2002-02-19  Sergey Poznyakoff  
 
 	* include/radiusd.h: added extern for scheme_gc_interval.
-*	* radiusd/config.kw: New keyword gc-interval
+	* radiusd/config.kw: New keyword gc-interval
 	* radiusd/config.y: Handle gc-interval statements.
 	* radiusd/log.c: Thread-safety: keep log-category in the thread-
 	  specific memory.
@@ -950,10 +965,10 @@
 	* radiusd/sql.c: Got rid of connection queue stuff: each tread now
 	  has (at most) two SQL connections associated with it. These are
 	  stored in thread specific memory.
-*	  Parameters auth_max_connections and acct_max_connections are
+	  Parameters auth_max_connections and acct_max_connections are
 	  deprecated.
-*	* radiusd/config.kw: new keyword max-threads
-*         new keyword: print-milliseconds.	
+	* radiusd/config.kw: new keyword max-threads
+          new keyword: print-milliseconds.	
 	* radiusd/config.y: Handle max-threads keyword (`option' block).
 	  Handle print-millisecons (`channel' statement).
 	* include/log.h: Added LO_MSEC flag.
@@ -998,7 +1013,7 @@
 2002-01-28  Sergey Poznyakoff  
 
 	* radiusd/radiusd.c (rad_daemon): Force the safe umask.
-*	* test/radiusd.m4: Make number of subtests in stress test
+	* test/radiusd.m4: Make number of subtests in stress test
 	  configurable via environment variable STRESS_COUNT.
 	* test/test.sh.m4: Sleep until daemon really starts up
 	  instead of sleeping an arbitrary amount of time.
@@ -1034,7 +1049,7 @@
 
 	* include/radius.h: Renamed do_not_resolve to resolve_hostnames,
 	  reversed its sense accordingly.
-*	* radiusd/config.y: Added new keyword `resolve [bool]'.	Determines
+	* radiusd/config.y: Added new keyword `resolve [bool]'.	Determines
 	  whether IP numbers should be resolved to hostnames.
 	* radiusd/config.kw: Likewise.
 	* raddb/config.syntax: Added sample `resolve' statement.
@@ -1229,7 +1244,7 @@
 
 2002-01-10  Sergey Poznyakoff  
 
-*	* configure.in: --enable-snmp=compat enables support for
+	* configure.in: --enable-snmp=compat enables support for
 	  enterprises subtree compatible with version 0.96
 	* acconfig.h: undef SNMP_COMPAT_0_96.
 	* radiusd/version.c: Reflect SNMP_COMPAT_0_96 settings.
@@ -1243,7 +1258,7 @@
 
 	* radiusd/stat.c: (stat_init): Bugfix.
 	
-*	* radiusd/config.kw: Removed T_USR2DELAY.
+	* radiusd/config.kw: Removed T_USR2DELAY.
 	* radiusd/config.y: Likewise.
 	* include/radiusd.h: (typedef Config): Removed delayed_hup_wait
 	  member.
@@ -1291,7 +1306,7 @@
 
 	* include/log.h: New log option: LOG_TID -- print thread
 	  identifier.
-*	* radiusd/config.kw: New keyword 'print-tid'.
+	* radiusd/config.kw: New keyword 'print-tid'.
 	* radiusd/log.c: Handle LOG_TID bit.
 	
 2002-01-08  Sergey Poznyakoff  
@@ -1328,7 +1343,7 @@
 	  (rad_sql_setup): Removed declaration.
 	* include/sysdep.h: Added protos for strtok_r(), localtime_r().
 	* radiusd/acct.c: Use thread-safe format_pair().
-*	* radiusd/config.y: spawn statement is obsoleted.
+	* radiusd/config.y: spawn statement is obsoleted.
 	* raddb/config.syntax: Removed spawn statements.
 	
 	* radiusd/files.c: Use thread-safe functions.

@@ -112,15 +112,40 @@ rad_postgres_query(struct sql_connection *conn, char *query, int *return_count)
         
         stat = PQresultStatus(res);
 
-        debug(1,
-              ("status: %s",
-              PQresStatus(stat)));
+        debug(1, ("status: %s", PQresStatus(stat)));
 
-        if (stat == PGRES_COMMAND_OK) {
+	switch (stat) {
+	case PGRES_COMMAND_OK:
                 if (return_count)
                         *return_count = atoi(PQcmdTuples(res));
                 rc = 0;
-        } else {
+		break;
+
+	case PGRES_TUPLES_OK:
+		/* Oleg Gawriloff writes:
+
+		   "Sometimes Acct-Start does not reach radiusd, whereas
+		    subsequent Acct-Alive or Acct-Stop does. In this case
+		    radiusd runs acct_alive_query or acct_stop_query which
+		    try to update non-existing data. So, we chose to use
+		    a stored procedure in these queries, such that updates
+		    the record if it already exists or inserts a new record
+		    otherwise. The procedure, however, returns
+		    PGRES_TUPLES_OK, instead of PGRES_COMMAND_OK which
+		    makes radius to bail out..."
+		    
+		    hence the need for this code: */
+		
+		if (return_count) {
+			if (PQntuples(res) > 0 && PQnfields(res) > 0) 
+				*return_count = atoi(PQgetvalue(res, 0, 0));
+			else
+				*return_count = 0;
+		}
+		rc = 0;
+		break;
+
+	default:
                 grad_log(L_ERR,
                          _("PQexec returned %s"),
                          PQresStatus(stat));

@@ -20,7 +20,7 @@ SUFFIXES=.S .c .ln .o .s
 
 if MAINTAINER_MODE
 CLEANFILES=*.ln
-LINTFLAGS=-gzra -fAI -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
+LINTFLAGS=-gzra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
 
 .c.ln:
 	$(LINT.c) -i $<

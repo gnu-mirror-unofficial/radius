@@ -21,7 +21,7 @@ SUFFIXES=.S .c .ln .o .s
 if MAINTAINER_MODE
 MAINTAINERCLEANFILES=core *~ err out
 
-LINTFLAGS=-gezra -fAI -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
+LINTFLAGS=-gezra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
 
 .c.ln:
 	$(LINT.c) -i $<

@@ -1,7 +1,17 @@
+2001-09-06 Sergey Poznyakoff
+
+	* radiusd/radiusd.c: Hold previous value of server_stat->auth.status
+	in a global; trigger corresponding actions when it changes.
+	* radiusd/snmpserv.c: Use auth.status for both AuthConfigReset
+	and AcctConfigResetObjects. Make sure this variables always
+	return RFC-prescribed values. GNU extensions are returned by
+	radiusServerState variable.
+
+
 2001-09-05 Sergey Poznyakoff
 
 	* include/mem.h: Prefix xmalloc,xrealloc with "rad": they are
-	apt to conflict with identifiers when from other libs or
+	apt to conflict with identifiers from other libs or
 	programs (when used in pam_radius.so).
 	* radiusd/radck.c: Likewise.
 	* radlib/leakdetect.c: Likewise.

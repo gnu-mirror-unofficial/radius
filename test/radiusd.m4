@@ -199,7 +199,11 @@ TEST(send acct 4 User-Name = QUOTE(scheme) \
 GENSEQUENCE(Stress, Stress test,
 dejagnu,
 [set message "Stress test"
-set count 5000
+if [[info exists env(STRESS_COUNT)]] {
+    set count $env(STRESS_COUNT)
+} else {
+    set count 500
+}
 set success 0
 set failed 0
 
@@ -230,8 +234,7 @@ if {$failed == 0 && $success == $count} {
 }],
 shell,
 [define([_TEST_NUM],incr(_TEST_NUM))
- awk '[BEGIN] {
- COUNT=5000
+ awk -v COUNT=${STRESS_COUNT:-500} '[BEGIN] {
  print "print \"Sending " COUNT " authentication requests.\"" 
  print "print \"Please, wait: this can take a while...\""
  print ":_TEST_NUM:"

@@ -1,3 +1,43 @@
+2004-08-02  Sergey Poznyakoff
+
+	* contrib/Makefile.am: Updated
+	* contrib/README: Rewritten
+	* contrib/call_table.en: Moved to web-radact
+	* contrib/call_table.es: Likewise
+	* contrib/radact.cgi: Likewise
+	* contrib/radius.css: Likewise
+
+	* contrib/web-radact: New directory
+	* contrib/web-radact/Makefile.am
+	* contrib/web-radact/README
+	* contrib/web-radact/call_table.en
+	* contrib/web-radact/call_table.es
+	* contrib/web-radact/radact.cgi
+	* contrib/web-radact/radius.css	
+	
+	* contrib/passcvt: New directory
+	* contrib/passcvt/README
+	* contrib/passcvt/Makefile.am
+	* contrib/passcvt/passcvt
+	
+	* contrib/passwd_to_db: New directory
+	* contrib/passwd_to_db/Makefile.am
+	* contrib/passwd_to_db/README
+	* contrib/passwd_to_db/passwd_to_db.pl
+	* contrib/passwd_to_db/users.sql
+	
+	* contrib/radsend: New directory
+	* contrib/radsend/Makefile.am
+	* contrib/radsend/README
+	* contrib/radsend/paquetes.conf
+	* contrib/radsend/radsend.pl	
+
+	* configure.ac: Updated. Raised version number to 1.2.94
+	* NEWS: Likewise.
+	* THANKS: Minor fix.
+	* examples/README: Likewise.
+	* radscripts/radauth.m4: Likewise.
+	
 2004-07-31  Sergey Poznyakoff
 
 	* radtest/runtime.c (rt_eval_expr): Implemented default typecast

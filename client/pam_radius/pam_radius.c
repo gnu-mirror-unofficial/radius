@@ -82,6 +82,24 @@ _cleanup_string(pam_handle_t *pamh, void *x, int error_status)
         _pam_delete(x);
 }
 
+/* Clean up the temporary A/V pair list */
+static void
+_cleanup_fake_pairlist(VALUE_PAIR *p)
+{
+	VALUE_PAIR *next;
+	while (p) {
+		next = p->next;
+		free_entry(p);
+		p = next;
+	}
+}
+
+static void
+_cleanup_pairlist(pam_handle_t *pamh, void *x, int error_status)
+{
+	_cleanup_fake_pairlist(x); 
+}
+
 /* logging */
 static void
 _pam_vlog(int err, const char *format, va_list args)
@@ -211,13 +229,40 @@ static void
 _pam_parse(pam_handle_t *pamh, int argc, const char **argv)
 {
         int ctrl=0;
-
+	int in_attr = 0;
+	VALUE_PAIR *head = NULL, *tail = NULL;
+	
         /* step through arguments */
         for (ctrl=0; argc-- > 0; ++argv) {
+		
+		if (in_attr) {
+			char *p = strchr(*argv, '=');
+			VALUE_PAIR *pair;
+			
+			if (!p) {
+				_pam_log(LOG_ERR,
+					 "pam_parse: error near %s", *argv);
+				continue;
+			}
+			*p++ = 0;
+			
+			pair = alloc_entry(sizeof(*pair));
+			pair->next = NULL;
+			pair->name = (char *) *argv;
+			pair->strvalue = p;
+			if (tail)
+				tail->next = pair;
+			else
+				head = pair;
+			tail = pair;
+		}
 
+		else if (!strcmp(*argv,"attr:"))
+			in_attr = 1;
+		
                 /* generic options */
 
-                if (!strncmp(*argv,"debug",5)) {
+                else if (!strncmp(*argv,"debug",5)) {
                         ctrl |= CNTL_DEBUG;
                         if ((*argv)[5] == '=') 
                                 CNTL_SET_DEBUG_LEV(ctrl,atoi(*argv+6));
@@ -231,13 +276,25 @@ _pam_parse(pam_handle_t *pamh, int argc, const char **argv)
                         ctrl |= CNTL_AUTHTOK;
                 else if (!strncmp(*argv,"confdir=",8)) 
                         MAKE_STR(pamh, *argv+8, radius_confdir);
-                else if (!strncmp(*argv,"service_type=",13))
+                else if (!strncmp(*argv,"service_type=",13)) 
                         MAKE_STR(pamh, *argv+13, service_type);
                 else {
-                        _pam_log(LOG_ERR,"pam_parse: unknown option; %s",*argv);
+                        _pam_log(LOG_ERR,"pam_parse: unknown option; %s",
+				 *argv);
                 }
         }
 
+	if (head) {
+		int retval = pam_set_data(pamh, "radius_pairlist",
+					  head, _cleanup_pairlist);
+		if (retval != PAM_SUCCESS) {
+			_pam_log(LOG_CRIT, 
+				 "can't keep data [%s]: %s",
+				 "radius_pairlist",
+				 pam_strerror(pamh, retval));
+			_cleanup_fake_pairlist(head);
+		}
+	}
         cntl_flags = ctrl;
 }
 
@@ -283,7 +340,7 @@ _read_client_config(pam_handle_t *pamh)
 
         if (errcnt) {
                 /* free allocated memory */
-                rad_clt_free(queue);
+                rad_clt_destroy_queue(queue);
         } else {
                 errcnt = pam_set_data(pamh,
                                       "radius_server_queue", \
@@ -294,7 +351,7 @@ _read_client_config(pam_handle_t *pamh)
                                  "can't keep data [%s]: %s",
                                  "radius_server_queue",
                                  pam_strerror(pamh, errcnt));
-                        rad_clt_free(queue);
+                        rad_clt_destroy_queue(queue);
                         errcnt = 1;
                 }
         }
@@ -327,7 +384,7 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
 {
         RADIUS_SERVER_QUEUE *queue;
         int retval;
-        VALUE_PAIR *pairs, *namepair;
+        VALUE_PAIR *pairs, *namepair, *add_pair = NULL;
         RADIUS_REQ *authreq;
         DICT_VALUE *dv;
         
@@ -340,26 +397,43 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
                          pam_strerror(pamh, retval));
                 return PAM_AUTHINFO_UNAVAIL;
         }
+        retval = pam_get_data(pamh,
+                              "radius_pairlist", 
+                              (const void **)&add_pair);
+        if (retval != PAM_SUCCESS && retval != PAM_NO_MODULE_DATA) {
+                _pam_log(LOG_CRIT, 
+                         "can't get [radius_attrlist]: %s",
+                         pam_strerror(pamh, retval));
+                return PAM_AUTHINFO_UNAVAIL;
+        }
         /*
          * Create authentication request
          */
         pairs = NULL;
         avl_add_pair(&pairs,
-                namepair = avp_create(DA_USER_NAME, strlen(name), name, 0));
+		     namepair = avp_create(DA_USER_NAME,
+					   strlen(name), name, 0));
         avl_add_pair(&pairs, avp_create(DA_USER_PASSWORD, strlen(password),
-                                    password, 0));
+					password, 0));
+        avl_add_pair(&pairs, avp_create(DA_NAS_IP_ADDRESS,
+					0, NULL,
+					queue->source_ip));
+	/* Add any additional attributes */
+	for (; add_pair; add_pair = add_pair->next) {
+		VALUE_PAIR *p = install_pair(add_pair->name, OPERATOR_EQUAL,
+					     add_pair->strvalue);
+		avl_add_pair(&pairs, p);
+	}
+	/* For compatibility with previous versions handle service_type */
         if (service_type &&
             (dv = value_name_to_value(service_type, DA_SERVICE_TYPE))) {
                 DEBUG(10, ("adding Service-Type=%d", dv->value));
-                avl_add_pair(&pairs, avp_create(DA_SERVICE_TYPE,
-                                            0, NULL,
-                                            dv->value));
+                avl_add_pair(&pairs,
+			     avp_create(DA_SERVICE_TYPE,
+					0, NULL, dv->value));
         }
-        avl_add_pair(&pairs, avp_create(DA_NAS_IP_ADDRESS,
-                                    0, NULL,
-                                    queue->source_ip));
         authreq = rad_clt_send(queue,
-                                 PORT_AUTH, RT_AUTHENTICATION_REQUEST, pairs);
+			       PORT_AUTH, RT_AUTHENTICATION_REQUEST, pairs);
         if (authreq == NULL) {
                 _pam_log(LOG_ERR,
                          "no response from radius server");

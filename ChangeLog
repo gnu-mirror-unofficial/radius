@@ -1,3 +1,23 @@
+2002-12-26  Sergey Poznyakoff
+
+	* doc/texinfo/comp.texi: New file.
+	* doc/texinfo/Makefile.am: Added comp.texi
+	* doc/texinfo/acct.texi: Updated.
+	* doc/texinfo/attributes.texi: Updated.
+	* doc/texinfo/auth.texi: Updated.
+	* doc/texinfo/client.texi: Updated.
+	* doc/texinfo/configure.texi: Updated.
+	* doc/texinfo/extensions.texi: Updated.
+	* doc/texinfo/intro.texi: Updated.
+	* doc/texinfo/naming.texi: Updated.
+	* doc/texinfo/operation.texi: Updated.
+	* doc/texinfo/programs.texi: Updated.
+	* doc/texinfo/radauth.texi: Updated.
+	* doc/texinfo/radius.texi: Updated.
+	* doc/texinfo/radlast.texi: Updated.
+	* doc/texinfo/radwho.texi: Updated.
+	* doc/texinfo/radzap.texi: Updated.
+
 2002-12-24  Sergey Poznyakoff  
 
 	* doc/texinfo/Makefile.am: Changed rules for creating web
@@ -146,7 +166,7 @@
 
 	* radiusd/exec.c: Simplified waiting for exec-program-wait
 	  program.
-*	* radiusd/radiusd.c: Removed --watcher mode. Install default
+	* radiusd/radiusd.c: Removed --watcher mode. Install default
 	  SIGCHLD handler for waitpid to work.
 	* radiusd/request.c: Fixed comment.
 	* radiusd/signal.c: Removed RADIUS_MODULE_ define. Calling
@@ -339,10 +359,10 @@
 	* lib/avl.c (avl_cmp): Take third argument: flags (attribute
 	  properties) that should be present in order for the attribute
 	  to take part in comparison.
-*	* lib/dict.c (_dict_attribute): Allow user-defined attribute
+	* lib/dict.c (_dict_attribute): Allow user-defined attribute
 	  properties.
 	* radiusd/radiusd.c (rad_req_cmp): Rewritten.
-*	  Implemented {auth,acct}->compare-atribute-flag in config.	
+	  Implemented {auth,acct}->compare-atribute-flag in config.	
 	* examples/config.syntax: Sample compare-atribute-flag statement.
 	
 2002-08-02  Sergey Poznyakoff 
@@ -436,7 +456,7 @@
 	* radiusd/Makefile.am: Added sockets.c
 	* radiusd/sockets.c: New file. Functions for handling socket lists.
 	* radiusd/radiusd.c: Removed socket_list_.* functions
-*	* radiusd/snmpserv.c: Implement "listen" statement.
+	* radiusd/snmpserv.c: Implement "listen" statement.
 	* examples/config.syntax: Sample snmp.listen statement.
 
 	* radlast/radlast.c: Restored state->next-1. Have to analyze it
@@ -593,7 +613,7 @@
 
 	* radiusd/exec.c: Implemented reading filter accounting
 	  replies, use of rewrite functions as input generators, and
-*	  redirection of a process stderr into a file (error-log
+	  redirection of a process stderr into a file (error-log
 	  statement).
 
 	* test/proto.m4 (TOOLDIR): Clear the directory if it exists.
@@ -613,7 +633,7 @@
 	* radiusd/radiusd.c: Renamed reread_config -> reconfigure.
 	* radiusd/request.c (request_process_command,
 	  request_thread_command): eliminated sleep.
-*	* radiusd/rewrite.y: New built-in functions: inet_ntoa,
+	* radiusd/rewrite.y: New built-in functions: inet_ntoa,
 	  inet_aton, htonl, ntohl, htons, ntohs.
 	
 	* TODO: Updated
@@ -721,8 +741,8 @@
 	* radiusd/radiusd.c: Handle SIGCHLD.
 	  (acct_stmt_begin): Bugfix.
 	  (config_syntax) Added "filters" statement.
-*	* radiusd/exec.c: Added support for filter programs.
-*	* lib/users.y (install_pair): Allow Exec-Program attribute
+	* radiusd/exec.c: Added support for filter programs.
+	* lib/users.y (install_pair): Allow Exec-Program attribute
 	  value to start with |, meaning filter-id.
 	* radiusd/acct.c (rad_acct_ext): Interpret the value of
 	  Acct-Ext-Program attribute: if it starts with / it
@@ -854,21 +874,21 @@
 
 	* radiusd/rewrite.y: Rewritten to allow for simultaneous
 	  execution.
-*	* radiusd/config.y: New statements: rewrite, stack-size
+	* radiusd/config.y: New statements: rewrite, stack-size
 	* radiusd/config.kw: Likewise.
 	* include/radiusd.h (request_stack_size): extern decl.
 	* raddb/config.syntax: Example of rewrite statement.
 
 2002-06-26  Sergey Poznyakoff 
 
-*	* client/pam_radius/pam_radius.c: Allow user to pass arbitrary
+	* client/pam_radius/pam_radius.c: Allow user to pass arbitrary
 	  A/V pairs from the command line.
 
 2002-06-26  Sergey Poznyakoff
 
 	* radiusd/scheme.c: An attempt to work around the bottleneck
 	  problem (see comment at the top of the file).
-*	* radiusd/config.y (guile_def): new configuration statement
+	* radiusd/config.y (guile_def): new configuration statement
 	  `task-timeout' 
 	* radiusd/config.kw: Likewise.
 	* include/radiusd.h (scheme_task_timeout): extern declaration.
@@ -958,7 +978,7 @@
 	
 2002-06-14  Sergey Poznyakoff 
 
-*	* radiusd/radiusd.c: Added `watcher' feature. When radiusd
+	* radiusd/radiusd.c: Added `watcher' feature. When radiusd
 	  is started with the command line option --watcher, it
 	  creates a watcher process which wakes up periodically to
 	  check if the daemon is running. If it is not, the watcher
@@ -1157,8 +1177,8 @@
 	  (avl_cmp): New function. Compares two A/V lists using
 	  avp_cmp. Only attributes marked with AP_REQ_CMP are involved
 	  in comparison.
-*	* lib/dict.c: New property flag 'c'. Sets AP_REQ_CMP bit.
-*	* lib/nas.c (read_naslist_entry): Allow two fields for
+	* lib/dict.c: New property flag 'c'. Sets AP_REQ_CMP bit.
+	* lib/nas.c (read_naslist_entry): Allow two fields for
 	  compatibility with previous versions. Set default nas type to
 	  `true'
 	* raddb/dictionary: Mark attributes that can be used for
@@ -1328,7 +1348,7 @@
 	  MAXIDBUFSIZE (the latter should certainly be fixed).
 	* include/radius.h: Proto for rad_print_request.
 
-*	* radiusd/acct.c: Use radlog_req where appropriate.
+	* radiusd/acct.c: Use radlog_req where appropriate.
 	* radiusd/auth.c: Likewise.
 	* radiusd/proxy.c: Likewise.
 	* radiusd/radius.c: Likewise.
@@ -1364,7 +1384,7 @@
 	* lib/mem.c (make_string): Handle NULL argument.
 	* lib/radargp.c: Removed dubious assignment.
 	* lib/raddb.c: Bugfix: count empty lines.
-*	* lib/realms.c: Reflect changes to REALM structure. Allow for
+	* lib/realms.c: Reflect changes to REALM structure. Allow for
 	  multiple servers per line.
 	* radiusd/acct.c: Reflect changes to REALM structure.
 	* radiusd/files.c: LIkewise.
@@ -1373,7 +1393,7 @@
 	* lib/client.c: Redesigned.
 	* lib/debug.c (auth_code_str): New function.
 	
-*	* radiusd/proxy.c: Rewritten using new server/client functions.
+	* radiusd/proxy.c: Rewritten using new server/client functions.
 	  Implemented multiple servers per realm. Proposed by Rasmus
    	  Aveskogh <rasmus.aveskogh@utfors.se>.
 	* radiusd/radius.c: Rewritten using new server/client functions.
@@ -1452,7 +1472,7 @@
 	* include/radiusd.h: Removed realm_find() proto.
 	* include/radutmp.h: Added protos for functions from
 	  lib/printutmp.c
-*	* radwho/radwho.c: Use functions from lib/printutmp.c.
+	* radwho/radwho.c: Use functions from lib/printutmp.c.
 	  Provide several predefined formats.
 	  
 	* radscripts/radping.m4: Use new format syntax.
@@ -1463,7 +1483,7 @@
 
 	* TODO: Updated.
 
-*	* include/radutmp.h: Changed semantics of porttype member. Now
+	* include/radutmp.h: Changed semantics of porttype member. Now
 	  it keeps the value of NAS-Port-Type verbatim.
 	* radiusd/acct.c: Likewise.
 	* radlast/radlast.c: Likewise.
@@ -1733,7 +1753,7 @@
 	* radscm/rscm_syslog.c: Likewise.
 	* radscm/rscm_utmp.c: Likewise.
 	
-*	* radiusd/auth.c (rad_check_password): Attempt to autodetect
+	* radiusd/auth.c (rad_check_password): Attempt to autodetect
 	  CHAP authentication.
 	* radiusd/radius.c (rad_send_reply): Fixed silly bug.
 	* radlib/debug.c: Provide clear_debug() in the #else branch.

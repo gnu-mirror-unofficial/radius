@@ -1,3 +1,60 @@
+2003-04-18  Sergey Poznyakoff
+
+	Multithreaded version is considered a failed experiment,
+	since it implies too many restrictions (the principal one
+	being the impossibility to use Guile in the server). The
+	multithreaded sources are tagged `radius-pthread' (branchpoint).
+	This commit uses modified multiprocess approach (a "process
+	pool"). 
+	
+	New files:
+	* include/list.h: 
+	* lib/list.c: 
+	* radiusd/input.c: 
+	* radiusd/rpp.c: 
+
+	Removed files:
+	* radiusd/signal.c: 
+	* radiusd/sockets.c:
+
+	Modified files:
+	* Makefile.am:
+	* NEWS:
+	* TODO:
+	* configure.ac:
+	* include/radius.h:
+	* include/radiusd.h:
+	* include/radpaths.h:
+	* include/radsql.h:
+	* lib/Makefile.am:
+	* lib/getgr.c:
+	* lib/gethost_r.c:
+	* lib/getpw_r.c:
+	* lib/localtime_r.c:
+	* lib/md5crypt.c:
+	* lib/mem.c:
+	* lib/radpdu.c:
+	* lib/radsrv.c:
+	* lib/sysdep.c:
+	* radiusd/Makefile.am:
+	* radiusd/acct.c:
+	* radiusd/auth.c:
+	* radiusd/checkrad.c:
+	* radiusd/exec.c:
+	* radiusd/log.c:
+	* radiusd/menu.c:
+	* radiusd/proxy.c:
+	* radiusd/radius.c:
+	* radiusd/radiusd.c:
+	* radiusd/request.c:
+	* radiusd/rewrite.y:
+	* radiusd/scheme.c:
+	* radiusd/sql.c:
+	* radiusd/stat.c:
+	* radiusd/testsuite/proxy/config.in:
+	* radiusd/testsuite/radiusd/radiusd.exp:
+	* snmplib/snmp_sess.c:
+
 2003-02-06  Sergey Poznyakoff
 
 	* include/Makefile.am: Added debugmod.h to MAINTAINERCLEANFILES

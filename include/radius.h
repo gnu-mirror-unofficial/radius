@@ -94,24 +94,38 @@ enum {
 #define MAX_LONGNAME  256
 #define MAX_SHORTNAME 32
 
-#define AF_CHECKLIST   0x0001  /* The attribute is valid in checklist */
-#define AF_REPLYLIST   0x0002  /* The attribute is valid in replylist */
-#define AF_ADD_REPLACE 0
-#define AF_ADD_APPEND  1
-#define AF_ADD_NONE    2
+/* Attribute properties */
+#define AP_ADD_REPLACE   0
+#define AP_ADD_APPEND    1
+#define AP_ADD_NONE      2
 
-#define AF_DEFAULT_FLAGS (AF_CHECKLIST|AF_REPLYLIST)
-#define AF_DEFAULT_ADD   AF_ADD_APPEND
+#define AP_PROPAGATE   0x10
+
+#define ADDITIVITY(val) ((val) & 0x3)
+#define SET_ADDITIVITY(val,a) ((val) = ((val) & ~0x3) | (a))
+
+/* Configuration files types */
+#define CF_USERS      0
+#define CF_HINTS      1
+#define CF_HUNTGROUPS 2
+#define CF_MAX        3
+
+#define AF_CHECKLIST(cf) (0x0100<<(2*cf))
+#define AF_REPLYLIST(cf) (0x0200<<(2*cf))
+
+#define AF_DEFAULT_FLAGS (AF_CHECKLIST(0)|AF_CHECKLIST(1)|AF_CHECKLIST(2)\
+			 |AF_REPLYLIST(0)|AF_REPLYLIST(1)|AF_REPLYLIST(2))
+#define AP_DEFAULT_ADD   AP_ADD_APPEND
+
 
 /* Dictionary attribute */
 typedef struct dict_attr {
-        struct dict_attr        *next;
-        char                    *name;
-        int                     value;
-        int                     type;
-        int                     vendor;
-        int                     flags;
-        int                     additivity;
+        struct dict_attr        *next;      /* Link to the next attribute */
+        char                    *name;      /* Attribute name */
+        int                     value;      /* Attribute value */
+        int                     type;       /* Data type */
+        int                     vendor;     /* Vendor index */
+        int                     prop;       /* Properties */
 } DICT_ATTR;
 
 /* Dictionary value */
@@ -137,7 +151,7 @@ typedef struct value_pair {
 	int			attribute;  /* Attribute value */
 	int			type;       /* Data type */
 	int                     eval;       /* Evaluation flag */
-	int                     additivity; 
+	int                     prop;       /* Properties */ 
 	int			operator;   /* Comparison operator */
 	union {
 		UINT4		ival;       /* integer value */
@@ -250,6 +264,8 @@ VALUE_PAIR     *avp_dup(VALUE_PAIR *vp);
 void            avl_merge(VALUE_PAIR **dst_ptr, VALUE_PAIR **src_ptr);
 VALUE_PAIR     *avp_create(int attr, int length, char *strval, int lval);
 void		avl_move_attr(VALUE_PAIR **to, VALUE_PAIR **from, int attr);
+void            avl_move_pairs(VALUE_PAIR **to, VALUE_PAIR **from,
+			       int (*fun)(), void *closure);
 
 char *		ip_hostname (UINT4);
 UINT4		get_ipaddr (char *);

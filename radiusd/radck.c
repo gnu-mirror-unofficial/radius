@@ -230,6 +230,7 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
 	VALUE_PAIR *password = NULL;
 	VALUE_PAIR *crypt_password = NULL;
 	VALUE_PAIR *chap_password = NULL;
+	VALUE_PAIR *pass_loc = NULL;
 	DICT_ATTR *dict;
 	int errcnt = 0;
 	
@@ -268,6 +269,10 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
 			check_dup_attr(&crypt_password, p, line);
 			break;
 			
+		case DA_PASSWORD_LOCATION:
+			check_dup_attr(&pass_loc, p, line);
+			break;
+
 		case DA_CHAP_PASSWORD:
 			check_dup_attr(&chap_password, p, line);
 			break;
@@ -296,6 +301,7 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
 		
 		if (crypt_password) {
 			type = DV_AUTH_TYPE_CRYPT_LOCAL;
+			crypt_password->attribute = DA_PASSWORD;
 		} else if (password) {
 			if (!strcmp(password->strvalue, "UNIX"))
 				type = DV_AUTH_TYPE_SYSTEM;
@@ -315,7 +321,7 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
 	
 	switch (auth_type->lvalue) {
 	case DV_AUTH_TYPE_LOCAL:
-		if (!password) {
+		if (!password && !pass_loc) {
 			radlog(L_ERR,
 			 _("%s:%d: No Password attribute in the checklist"),
 			       filename, line);
@@ -331,10 +337,15 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
 		  _("%s:%d: Password attribute ignored for this Auth-Type"),
 			       filename, line);
 		}
+		if (pass_loc) {
+			radlog(L_WARN,
+		  _("%s:%d: Password-Location attribute ignored for this Auth-Type"),
+			       filename, line);
+		}
 		break;
 		
 	case DV_AUTH_TYPE_CRYPT_LOCAL:
-		if (!password && !crypt_password) {
+		if (!password && !crypt_password && !pass_loc) {
 			radlog(L_ERR,
 		       _("%s:%d: No Password attribute in the checklist"),
 			       filename, line);
@@ -355,7 +366,16 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
 		  _("%s:%d: Password attribute ignored for this Auth-Type"),
 			       filename, line);
 		}
-		auth_data = NULL;
+
+		avl_delete(pairs, DA_AUTH_TYPE);
+		p = avp_create(DA_AUTH_TYPE, 0,
+			       NULL, DV_AUTH_TYPE_CRYPT_LOCAL);
+		avl_add_pair(pairs, p);
+		
+		p = avp_create(DA_PASSWORD_LOCATION, 0,
+			       NULL, DV_PASSWORD_LOCATION_SQL);
+		avl_add_pair(pairs, p);
+		
 		break;
 		
 	case DV_AUTH_TYPE_PAM:

@@ -20,8 +20,10 @@ ATTRIBUTE	MS-CHAP-MPPE-Keys	 12	string  Microsoft []bE
 ATTRIBUTE	MS-BAP-Usage		 13	integer Microsoft
 ATTRIBUTE	MS-Link-Utilization-Threshold 14 integer # values are 1-100
 ATTRIBUTE	MS-Link-Drop-Time-Limit	 15	integer Microsoft
+# FIXME: These two are encrypted (T encryption?)
 ATTRIBUTE	MS-MPPE-Send-Key	 16	string  Microsoft []b	
 ATTRIBUTE	MS-MPPE-Recv-Key	 17	string  Microsoft []b	
+
 ATTRIBUTE	MS-RAS-Version		 18	string  Microsoft
 ATTRIBUTE	MS-Old-ARAP-Password	 19	string  Microsoft []b
 ATTRIBUTE	MS-New-ARAP-Password	 20	string  Microsoft []b

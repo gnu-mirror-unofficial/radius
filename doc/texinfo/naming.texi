@@ -1,5 +1,5 @@
-@c This is part of the Radius manual.
-@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c This is part of the GNU Radius manual.
+@c Copyright (C) 2003 Free Software Foundation
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Naming Conventions, Operation, Glossary, Top
@@ -17,10 +17,10 @@ to store various configuration and log files:
 A directory where all configuration files are stored.
 
 @item Log directory
-A directory where @command{radiusd} stores its log files.
+A directory where @radiusd{} stores its log files.
 
 @item Accounting directory
-A directory where @command{radiusd} stores accounting detail files
+A directory where @radiusd{} stores accounting detail files
 @ref{Detailed Request Accounting}.
 
 @end table
@@ -51,10 +51,10 @@ time. Usually these are:
 
 @end multitable
 
-These location may differ depending on your local site configuration.
+These locations may differ depending on your local site configuration.
 
 Throughout this document we will refer to these directories by their
-short names, e.g. saying
+short names.  For example, when we say:
 
 @example
 ... this information is contained in file @file{raddb/sqlserver} 
@@ -63,11 +63,11 @@ short names, e.g. saying
 @noindent
 we actually mean @file{@value{RADDB}/sqlserver}.
 
-To get the default directory names your version of Radius was
+To get the default directory names that your version of Radius was
 compiled with run @command{radiusd --version}.
 
-If necessary, locations of these directories may be overridden by
-specifying appropriate command line options to a program. For
+Locations of these directories may be overridden by
+specifying the appropriate command line options. For
 example, any program from the GNU Radius package accepts command
 line option @option{-d} or @option{--directory}, which introduces
 the configuration directory path. 

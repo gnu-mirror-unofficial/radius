@@ -20,6 +20,7 @@ cryptpass.c \
 dbm.c \
 debug.c \
 dict.c \
+envar.c \
 insist.c \
 intl.c \
 iputil.c \

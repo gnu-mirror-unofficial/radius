@@ -25,8 +25,9 @@ libradscm_a_SOURCES= \
  radscm.c
 
 libservscm_a_SOURCES= \
- rscm_radlog.c \
- rscm_rewrite.c
+ rscm_radlog.c\
+ rscm_rewrite.c\
+ rscm_sql.c
 
 radscm_SOURCES=main.c radscm.c
 
@@ -37,12 +38,13 @@ DOT_X_FILES=\
  rscm_radlog.x\
  rscm_rewrite.x\
  rscm_syslog.x\
+ rscm_sql.x\
  rscm_utmp.x\
  rscm_lib.x\
  radscm.x
 DOT_DOC_FILES=$(DOT_X_FILES:.x=.doc)
 BUILT_SOURCES=@RADSCM_BUILT_SOURCES_LIST@
-EXTRA_DIST=boot.scm ttl.scm radsession.in
+EXTRA_DIST=boot.scm ttl.scm ipalloc.scm radsession.in
 CLEANFILES = *.x *.doc radsession guile-procedures.txt
 
 radsession: $(srcdir)/radsession.in

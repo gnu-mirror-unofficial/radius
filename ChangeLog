@@ -1,3 +1,14 @@
+2004-06-14  Sergey Poznyakoff
+
+	* radiusd/files.c (rule_eval_rewrite): New function. Used
+	by hints_eval_compat() and huntgroup_access(). It provides a
+	uniform way of evaluating Rewrite-Function attributes. Notice,
+	that in contrast with the previous versions, the function allows
+	to have several Rewrite-Function attributes in both LHS and
+	RHS. 
+	* elisp/radconf-mode.el: Recognize the new keywords.
+	* NEWS: Updated
+	
 2004-05-28  Sergey Poznyakoff 
 
 	* radiusd/auth.c (rad_auth_check_username): Bugfix:

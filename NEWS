@@ -1,4 +1,4 @@
-GNU Radius NEWS -- history of user-visible changes. 2004-05-01
+GNU Radius NEWS -- history of user-visible changes. 2004-06-14
 Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
@@ -61,8 +61,8 @@ statements in `auth' and `acct' sections of raddb/config.
 
 ** Support for Guile versions prior to 1.6 has been withdrawn.
 
-** Support for locking user accounts based on the number of authentication
-failures:
+** Implemented support for locking user accounts based on the number
+of authentication failures:
 
 *** New attribute Auth-Failure-Trigger specifies an external program or
 a Scheme expression to be run upon an authentication failure. It can
@@ -73,6 +73,12 @@ Exec-Program-Wait or Scheme-Procedure.
 SQL queries to be executed upon authentication success and failure,
 respectively. These may maintain failure counts, that can be
 used by group_query to control the authentication.
+
+** Rewrite-Function attributes are handled uniformly in hints and
+huntgroups. First, the Rewrite-Function attributes from the RHS list
+are processed, then the ones from the LHS list. Notice, that in
+contrast with the previous versions, any number of Rewrite-Function
+attributes is allowed in both lists.
 
 * Bugfixes
 

@@ -331,7 +331,7 @@ rad_scheme_init(argc, argv)
 		radlog(L_ERR, _("error reading dictionary file"));
 		exit(1);
 	}
-	radclient = radclient_alloc(0, 0);
+	radclient = radclient_alloc(1, 0, 0);
 
 	/*
 	 * Provide basic primitives

@@ -38,7 +38,7 @@ typedef struct {
 	SERVER *first_server;
 } RADCLIENT;	
 
-RADCLIENT *radclient_alloc(UINT4, size_t);
+RADCLIENT *radclient_alloc(int read_cfg, UINT4 source_ip, size_t bufsize);
 RADIUS_REQ *radclient_send(RADCLIENT *config, int port_type,
 			 int code, VALUE_PAIR *pair);
 

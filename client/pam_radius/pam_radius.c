@@ -261,7 +261,7 @@ _read_client_config(pam_handle_t *pamh)
 	int errcnt = 0;
 	RADCLIENT *radclient;
 	
-	radclient = radclient_alloc(0x7f000001, 0);
+	radclient = radclient_alloc(1, 0, 0);
 	if (!radclient)
 		return -1;
 	/*

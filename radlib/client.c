@@ -135,6 +135,12 @@ radclient_send(config, port_type, code, pair)
 		if (server->port[port_type] <= 0)
 			continue;
 		
+		if (radclient_debug) {
+			printf("server %s:%d\n",
+			       format_ipaddr(server->addr),
+			       server->port[port_type]);
+		}
+		
 		total_length = radclient_build_request(config, server,
 						       code, pair);
 	
@@ -150,10 +156,16 @@ radclient_send(config, port_type, code, pair)
 		sin->sin_family = AF_INET;
 		sin->sin_addr.s_addr = htonl(server->addr);
 		sin->sin_port = htons(server->port[port_type]);
-		
+
 		for (i = 0; i < config->retries; i++) {
-			sendto(sockfd, config->data_buffer, total_length, 0,
-			       &saremote, sizeof(struct sockaddr_in));
+			if (sendto(sockfd, config->data_buffer,
+				   total_length, 0,
+				   &saremote,
+				   sizeof(struct sockaddr_in)) == -1) {
+				radlog(L_ERR,
+				       "sendto: %s", strerror(errno));
+				break;
+			}
 
 			salen = sizeof (saremote);
 
@@ -191,6 +203,9 @@ radclient_send(config, port_type, code, pair)
 				break;
 			}
 		}
+
+		if (radclient_debug && !req)
+			printf("no reply\n");
 	} while (!req && (server = server->next) != NULL);
 	
 	close(sockfd);
@@ -602,7 +617,8 @@ parse_client_config(client, argc, argv, file, lineno)
 
 
 RADCLIENT *
-radclient_alloc(source_ip, bufsize)
+radclient_alloc(read_cfg, source_ip, bufsize)
+	int read_cfg;
 	UINT4 source_ip;
 	size_t bufsize;
 {
@@ -624,10 +640,11 @@ radclient_alloc(source_ip, bufsize)
 	srand(tv.tv_usec);
 	client->messg_id = random() % 256;
 
-	filename = mkfilename(radius_dir, "client.conf");
-	read_raddb_file(filename, 1, parse_client_config, client);
-	efree(filename);
-	
+	if (read_cfg) {
+		filename = mkfilename(radius_dir, "client.conf");
+		read_raddb_file(filename, 1, parse_client_config, client);
+		efree(filename);
+	}
 	return client;
 }
 

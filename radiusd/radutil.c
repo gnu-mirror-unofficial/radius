@@ -142,9 +142,10 @@ attr_to_str(obp, pw_digest, request, attr, defval)
 			
 			memcpy(string, pair->strvalue, AUTH_PASS_LEN);
 			for (i = 0; i < AUTH_PASS_LEN; i++) 
-				string[i] ^= pw_digest[i];
-			string[AUTH_PASS_LEN] = '\0';
-			obstack_grow(obp, string, AUTH_PASS_LEN);
+				if ((string[i] ^= pw_digest[i]) == 0)
+					break;
+			string[i] = '\0';
+			obstack_grow(obp, string, i);
 		} else
 			obstack_grow(obp, pair->strvalue, pair->strlength);
 		break;

@@ -1,3 +1,39 @@
+2002-12-24  Sergey Poznyakoff 
+
+	* configure.ac: Require gettext version 0.11.5
+	* autogen.sh: Removed -I m4 from the autoreconf command line.
+
+	* po/es.po: Updated.
+	* po/no.po: Updated.
+	* po/pl.po: Updated.
+	* po/ru.po: Updated.
+	
+	* po/Makefile.am: Removed.
+	* po/Makefile.in.in: Removed.
+	* po/Rules-quot: Removed.
+	* po/boldquot.sed: Removed.
+	* po/en@boldquot.header: Removed.
+	* po/en@quot.header: Removed.
+	* po/insert-header.sin: Removed.
+	* po/quot.sed: Removed.
+	* po/remove-potcdate.sin: Removed.
+
+	* intl/*: Removed.
+
+	* m4/codeset.m4: Removed.
+	* m4/gettext.m4: Removed.
+	* m4/glibc21.m4: Removed.
+	* m4/iconv.m4: Removed.
+	* m4/isc-posix.m4: Removed.
+	* m4/lcmessage.m4: Removed.
+	* m4/lib-ld.m4: Removed.
+	* m4/lib-link.m4: Removed.
+	* m4/lib-prefix.m4: Removed.
+	* m4/progtest.m4: Removed.
+	
+	* m4/.cvsignore: Updated
+	* po/.cvsignore: Updated
+	
 2002-12-24  Sergey Poznyakoff
 
 	* configure.ac: Require need-ngettext for AM_GNU_GETTEXT.

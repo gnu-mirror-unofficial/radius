@@ -31,6 +31,7 @@ md5.c \
 md5crypt.c \
 mem.c \
 nas.c \
+radargp.c \
 raddb.c \
 radpaths.c \
 radutmp.c \
@@ -54,8 +55,13 @@ INCLUDES= -I$(top_srcdir)/include @INCLUDEPATH@
 EXTRA_DIST=users.y users.l strncasecmp.c strerror.c \
            obstack.c obstack.h rx.c \
 	   getline.c getopt.c getopt1.c getopt.h \
-	   vasprintf.c snprintf.c strcspn.c strtok_r.c localtime_r.c
-noinst_HEADERS=users_gram.h rx.h regex.h regexp.h getopt.h snprintf.h
+	   vasprintf.c snprintf.c strcspn.c strtok_r.c localtime_r.c \
+           argp-ba.c argp-eexst.c argp-fmtstream.c argp-fs-xinl.c \
+           argp-help.c argp-parse.c argp-pv.c argp-pvh.c argp-xinl.c pin.c \
+           strchrnul.c strndup.c strnlen.c
+
+noinst_HEADERS=users_gram.h rx.h regex.h regexp.h getopt.h snprintf.h \
+               argp-fmtstream.h argp-namefrob.h argp.h
 
 YLWRAP=$(SHELL) $(top_srcdir)/ylwrap
 

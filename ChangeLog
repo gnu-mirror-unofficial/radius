@@ -1,4 +1,9 @@
-2002-04-25  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+2002-04-26  Sergey Poznyakoff 
+
+	* radiusd/radius.c (rad_send_reply): Cleaned up handling of
+	  reply attributes in authentication rejects.
+
+2002-04-25  Sergey Poznyakoff 
 
 	* radiusd/acct.c (rad_acct_system): Ignore only requests
 	  without NAS-Port-Id or with Acct-Type!=System

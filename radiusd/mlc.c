@@ -64,18 +64,25 @@ int
 radius_mlc_collect_user(char *name, grad_request_t *request,
 			grad_list_t **sess_list)
 {
+	debug(20,("Entered"));
 	return mlc_disptab->collect_user(name, request, sess_list);
 }
 
 int
 radius_mlc_collect_realm(grad_request_t *request, grad_list_t **sess_list)
 {
+	debug(20,("Entered"));
 	return mlc_disptab->collect_realm(request, sess_list);
 }
 
 void
 radius_mlc_close(struct radutmp *up)
 {
+        char ipbuf[DOTTED_QUAD_LEN];
+	
+	debug(20,("Closing session: NAS %s port %d",
+	      grad_ip_iptostr(ntohl(up->nas_address), ipbuf),
+	      up->nas_port));
 	mlc_disptab->close(up);
 }
 
@@ -158,12 +165,17 @@ radius_mlc_user(char *name, grad_request_t *request,
                         the session is NOT an MPP one */
         grad_list_t *sess_list = NULL;
 	size_t count;
-	
-        if (radius_mlc_collect_user(name, request, &sess_list))
+
+	debug(1, ("User %s, maxsimul %lu", name, (u_long) maxsimul));
+        if (radius_mlc_collect_user(name, request, &sess_list)) {
+		debug(1,("radius_mlc_collect_user() failed"));
 		return 0;
+	}
 	
         count = grad_list_count(sess_list);
-        
+        debug(1, ("Found %lu active sessions for user %s",
+		  (u_long) count, name));
+	      
         if (count >= maxsimul) {
 		grad_iterator_t *itr;
 		grad_uint32_t ipno = 0;
@@ -198,6 +210,7 @@ radius_mlc_user(char *name, grad_request_t *request,
 
 	grad_list_destroy(&sess_list, utmp_free, NULL);
 	
+        debug(1, ("%lu sessions really active", (u_long) count));
         *pcount = count;
         return (count < maxsimul) ? 0 : mpp;
 }
@@ -215,10 +228,15 @@ radius_mlc_realm(grad_request_t *request)
         if (!realm || (maxlogins = grad_realm_get_quota(realm)) == 0)
                 return 0;
 
-	if (radius_mlc_collect_realm(request, &sess_list))
+	if (radius_mlc_collect_realm(request, &sess_list)) {
+		debug(1,("radius_mlc_collect_realm() failed"));
 		return 0;
+	}
 
 	count = grad_list_count(sess_list);
+	debug(1, ("Found %lu active sessions for realm %s",
+		  (u_long) count, realm->realm));
+
         if (count >= maxlogins) {
 		grad_iterator_t *itr;
 
@@ -234,6 +252,9 @@ radius_mlc_realm(grad_request_t *request)
 		grad_iterator_destroy(&itr);
 	}
 	grad_list_destroy(&sess_list, utmp_free, NULL);
+
+	debug(1, ("%lu sessions really active", (u_long) count));
+
         return count >= maxlogins;
 }
 

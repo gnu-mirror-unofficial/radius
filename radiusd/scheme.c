@@ -110,7 +110,8 @@ static SCM boot_handler(void *data, SCM tag, SCM throw_args);
 static SCM eval_catch_body(void *list);
 static SCM eval_catch_handler(void *data, SCM tag, SCM throw_args); 
 
-static int scheme_generic_call(scheme_task_fp fun,
+static int scheme_generic_call(int type,
+                               scheme_task_fp fun,
 			       char *procname, RADIUS_REQ *req,
 			       VALUE_PAIR *user_check,
 			       VALUE_PAIR **user_reply_ptr,
@@ -187,7 +188,7 @@ guile_boot0(arg)
         void *arg;
 {
         char *argv[] = { "radiusd", NULL };
-        rad_thread_init();
+        radiusd_thread_init();
         scm_boot_guile (1, argv, guile_boot1, arg);
         return NULL;
 }       
@@ -443,7 +444,8 @@ scheme_client_cleanup(arg)
 }
 
 int
-scheme_generic_call(fun, procname, req, user_check, user_reply_ptr, timeout)
+scheme_generic_call(type, fun, procname, req, user_check, user_reply_ptr, timeout)
+        int type;
         int (*fun)();
         char *procname;
         RADIUS_REQ *req;
@@ -467,39 +469,39 @@ scheme_generic_call(fun, procname, req, user_check, user_reply_ptr, timeout)
         pthread_cond_init(&p->cond, NULL);
         pthread_mutex_init(&p->mutex, NULL);
         
-        Pthread_mutex_lock(&server_mutex);
-        rad_scheme_place_task(p);
-        debug(1, ("APP: Placed call"));
+        if (radiusd_mutex_lock(&server_mutex, type) == 0) {
+		rad_scheme_place_task(p);
+		debug(1, ("APP: Placed call"));
 
-        Pthread_mutex_lock(&p->mutex);
+		Pthread_mutex_lock(&p->mutex);
 
-        debug(50, ("APP: Signalling"));
-        pthread_cond_signal(&server_cond);
-        Pthread_mutex_unlock(&server_mutex);
+		debug(50, ("APP: Signalling"));
+		pthread_cond_signal(&server_cond);
+		radiusd_mutex_unlock(&server_mutex);
 
-	pthread_cleanup_push(scheme_client_cleanup, p);
+		pthread_cleanup_push(scheme_client_cleanup, p);
 
-	gettimeofday(&now, NULL);
-	atime.tv_sec = now.tv_sec + timeout;
-	atime.tv_nsec = 0;
-	
-        while (p->state == RSCM_TASK_WAITING) {
-                debug(50, ("APP: Waiting"));
-                if (timeout) {
-			if (pthread_cond_timedwait(&p->cond, &p->mutex, &atime)
-			    == ETIMEDOUT)
-				break;
-		} else
-			pthread_cond_wait(&p->cond, &p->mutex);
-        }
+		gettimeofday(&now, NULL);
+		atime.tv_sec = now.tv_sec + timeout;
+		atime.tv_nsec = 0;
+		
+		while (p->state == RSCM_TASK_WAITING) {
+			debug(50, ("APP: Waiting"));
+			if (timeout) {
+				if (pthread_cond_timedwait(&p->cond, &p->mutex, &atime)
+				    == ETIMEDOUT)
+					break;
+			} else
+				pthread_cond_wait(&p->cond, &p->mutex);
+		}
 
-	if (p->state == RSCM_TASK_WAITING) {
-		radlog(L_NOTICE, "%s: %s",
-		       _("scheme task timed out"), procname);
-	}
-	rc = p->retval; /*FIXME*/
-
-	pthread_cleanup_pop(1);
+		if (p->state == RSCM_TASK_WAITING) {
+			radlog(L_NOTICE, "%s: %s",
+		       		_("scheme task timed out"), procname);
+		}
+		rc = p->retval; /*FIXME*/
+		pthread_cleanup_pop(1);
+	}	
         
         return rc;
 }
@@ -508,21 +510,21 @@ void
 scheme_load(filename)
         char *filename;
 {
-        scheme_generic_call(scheme_load_internal, filename,
+        scheme_generic_call(R_AUTH, scheme_load_internal, filename,
 			    NULL, NULL, NULL, 0);
 }
 
 void
 scheme_before_reconfig()
 {
-        scheme_generic_call(scheme_before_reconfig_internal,
+        scheme_generic_call(R_AUTH, scheme_before_reconfig_internal,
                             NULL, NULL, NULL, NULL, 0);
 }
 
 void
 scheme_after_reconfig()
 {
-        scheme_generic_call(scheme_after_reconfig_internal,
+        scheme_generic_call(R_AUTH, scheme_after_reconfig_internal,
                             NULL, NULL, NULL, NULL, 0);
 }
 
@@ -543,7 +545,8 @@ scheme_auth(procname, req, user_check, user_reply_ptr)
         VALUE_PAIR *user_check;
         VALUE_PAIR **user_reply_ptr;
 {
-        return scheme_generic_call(scheme_auth_internal,
+        return scheme_generic_call(R_AUTH,
+                                   scheme_auth_internal,
                                    procname, req, user_check, user_reply_ptr,
 				   scheme_compute_timeout(R_AUTH));
 }
@@ -553,7 +556,8 @@ scheme_acct(procname, req)
         char *procname;
         RADIUS_REQ *req;
 {
-        return scheme_generic_call(scheme_acct_internal,
+        return scheme_generic_call(R_ACCT,
+                                   scheme_acct_internal,
                                    procname, req, NULL, NULL,
 				   scheme_compute_timeout(R_ACCT));
 }
@@ -561,7 +565,8 @@ scheme_acct(procname, req)
 void
 scheme_read_eval_loop()
 {
-        scheme_generic_call(scheme_read_eval_loop_internal,
+        scheme_generic_call(R_AUTH,
+                            scheme_read_eval_loop_internal,
                             NULL, NULL, NULL, NULL, 0);
 }
 
@@ -569,7 +574,7 @@ void
 scheme_add_load_path(path)
 	char *path;
 {
-        scheme_generic_call(scheme_add_load_path_internal,
+        scheme_generic_call(R_AUTH, scheme_add_load_path_internal,
                             path, NULL, NULL, NULL, 0);
 }
 

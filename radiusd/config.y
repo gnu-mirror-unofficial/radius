@@ -84,6 +84,7 @@ void _cfg_free_argv(int argc, cfg_value_t *argv);
 
 struct cfg_stmt *_cfg_find_keyword(struct cfg_stmt *stmt, char *str);
 static int _get_value(cfg_value_t *arg, int type, void *base);
+
 static struct obstack cfg_obstack;
 char *cfg_filename;
 int cfg_line_num;
@@ -124,6 +125,10 @@ list        : line
             | list line
             ;
 
+opt_list    : /* empty */
+            | list
+            ;
+
 line        : /* empty */ T_EOL
             | stmt 
             | error T_EOL
@@ -136,7 +141,7 @@ stmt        : simple_stmt
             | block_stmt
             ;
 
-block_stmt  : block_open list block_close T_EOL
+block_stmt  : block_open opt_list block_close T_EOL
             ;
 
 block_open  : keyword tag '{'

@@ -26,3 +26,5 @@ void rscm_syslog_init();
 void rscm_utmp_init();
 void rscm_avl_init();
 void rscm_dict_init();
+
+char *rscm_load_path(char *);

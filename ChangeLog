@@ -1,3 +1,8 @@
+2002-06-26  Sergey Poznyakoff 
+
+*	* client/pam_radius/pam_radius.c: Allow user to pass arbitrary
+	  A/V pairs from the command line.
+
 2002-06-26  Sergey Poznyakoff
 
 	* radiusd/scheme.c: An attempt to work around the bottleneck

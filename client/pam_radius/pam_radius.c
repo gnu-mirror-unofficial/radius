@@ -420,8 +420,10 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
 					queue->source_ip));
 	/* Add any additional attributes */
 	for (; add_pair; add_pair = add_pair->next) {
-		VALUE_PAIR *p = install_pair(add_pair->name, OPERATOR_EQUAL,
-					     add_pair->strvalue);
+		VALUE_PAIR *p = install_pair(__FILE__, __LINE__,
+                                             add_pair->name, 
+                                             OPERATOR_EQUAL,
+				             add_pair->strvalue);
 		avl_add_pair(&pairs, p);
 	}
 	/* For compatibility with previous versions handle service_type */

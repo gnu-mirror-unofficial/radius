@@ -132,7 +132,8 @@ attr_to_str(obp, req, pairlist, attr, defval)
                         break;
                 case '=':
                         if (pairlist) {
-                                pair = install_pair(attr->name,
+                                pair = install_pair(__FILE__, __LINE__,
+                                                    attr->name,
                                                     OPERATOR_EQUAL,
                                                     defval);
                                 if (pair)

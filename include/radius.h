@@ -361,7 +361,8 @@ void radpath_init();
 /* users.y */
 int parse_file(char *file, void *c, int (*f)());
 int user_gettime(char *valstr, struct tm *tm);
-VALUE_PAIR *install_pair(char *name, int op, char *valstr);
+VALUE_PAIR *install_pair(char *file, int line,
+			 char *name, int op, char *valstr);
 
 
 /* util.c */

@@ -659,13 +659,13 @@ rad_check_ts(ut)
                 /* The default return value is a question of policy.
                    It is defined in /etc/raddb/config */
         default:
-                if (config.checkrad_assume_logged) 
+                if (checkrad_assume_logged) 
                         radlog(L_NOTICE, _("assuming `%s' is logged in"),
                                ut->login);
                 else
                         radlog(L_NOTICE, _("assuming `%s' is NOT logged in"),
                                ut->login);
-                return config.checkrad_assume_logged;
+                return checkrad_assume_logged;
         }
         /*NOTREACHED*/
 }

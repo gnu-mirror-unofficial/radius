@@ -792,6 +792,7 @@ radiusd_main_loop()
         radlog(L_INFO, _("Ready to process requests."));
 
         for (;;) {
+		log_open(L_MAIN);
 		check_reload();
 		input_select(radius_input, NULL);
 	}

@@ -351,13 +351,6 @@ enum {
 
 #define VENDOR(x) (x >> 16)
 
-/* DBM usage flags
- */
-#define DBM_NEVER                       0
-#define DBM_ONLY                        1
-#define DBM_ALSO                        2
-
-
 /*
  * Authentication results
  */

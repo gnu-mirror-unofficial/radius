@@ -49,19 +49,30 @@
 int getline (char **lineptr, size_t *n, FILE *stream);
 #endif
 
-grad_locus_t source_locus;
-static int interactive;
-static struct obstack string_stk;
+int interactive;                   /* Are we in interactive mode? */
+char prompt_str[] = "radtest> ";   /* Prompt string for interactive mode */
+grad_locus_t source_locus;         /* Current location in the source file */
+static struct obstack string_stk;  /* Keeps all string literals. Gets freed
+				      after compilation and (eventual)
+				      execution of the statement */
 
-static char *heredoc_delimiter;
-static int strip_tabs; 
+size_t string_start_line;          /* In STRING and HEREDOC mode keeps
+				      the line where the string definition
+				      has started */
+
+/* Here document support */ 
+static char *heredoc_delimiter;    /* End delimiter for here document */ 
+static int strip_tabs;             /* Strip leading tab characters */
  
-char prompt_str[] = "radtest> ";
+
+/* Input buffer */
 
-static char *input_line;
-static size_t input_length;
-static size_t input_pos;
+/* The variables below are used only in interactive mode */ 
+static char *input_line;           /* Input line */
+static size_t input_length;        /* Size of input_line */
+static size_t input_pos;           /* Current position in input_line */
 
+/* Read from the input stream at most `bufsize' character into buffer `buf' */
 static int
 fill_input_buffer(char *buf, int bufsize)
 {
@@ -115,13 +126,14 @@ fill_input_buffer(char *buf, int bufsize)
 }
 			
 #ifdef FLEX_SCANNER
-
+/* Input support for flex */
+ 
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size) \
   result = fill_input_buffer(buf, max_size)
 
 #else /* !FLEX_SCANNER */
-/* AT&T Lex */
+/* Input processing for AT&T Lex. Untested. */
 
 static int
 xinput()
@@ -147,6 +159,7 @@ xunput(int c)
 
 #endif /* FLEX_SCANNER */ 
 
+/* Forward declarations */
 static void add_str(char *str, int  len);
 static void add_chr(int c);
 static char *end_str();
@@ -155,8 +168,8 @@ static void add_num(int skip, int base, char *text, int leng);
 static int backspace(int c);
 
 static int isemptystr(char *text);
-char *heredoc_strip_tabs(char *text);
-void heredoc_begin();
+static char *heredoc_strip_tabs(char *text);
+static void heredoc_begin();
 
 %}
 
@@ -207,8 +220,26 @@ exit    return EXIT;
 begin   return T_BEGIN; 
 end     return T_END;
 if      return IF;
-else    return ELSE;
-while   return WHILE;
+else    {
+	switch (peek_ctx()) {
+	case ctx_if:
+	          return ELSE;
+
+	case ctx_iferr:
+		pop_ctx();
+		break;
+
+	default:
+		  parse_error(_("Misplaced 'else'"));
+		  /* Skip the token */
+	}
+} 
+while   {
+	if (peek_ctx() == ctx_doerr) 
+		pop_ctx();
+	else
+		return WHILE;
+}
 do      return DO;
 break   return BREAK;
 continue return CONTINUE;
@@ -323,11 +354,12 @@ set{WS}.*\n {
 }
 \"[^\\"]*\n {
         BEGIN(STRING);
-        source_locus.line++;
+	string_start_line = source_locus.line++;
         add_str(yytext+1, yyleng-1);
 }
 \"[^\\"]*\\. {
         BEGIN(STRING);
+        string_start_line = source_locus.line;
         if (yytext[yyleng-1] == '\n')
                 source_locus.line++;
         add_str(yytext+1, yyleng - 3);
@@ -366,7 +398,7 @@ set{WS}.*\n {
 }
 "<<"-?{IDENTIFIER}.*\n {
 	BEGIN(HEREDOC);
-	source_locus.line++;
+	string_start_line = source_locus.line++;
 	heredoc_begin();
 }
 <HEREDOC>.*\n {
@@ -410,6 +442,13 @@ set{WS}.*\n {
 int
 yywrap()
 {
+	if (YYSTATE == STRING) 
+		parse_error(_("Unexpected end of file in string started on line %lu"),
+			    string_start_line);
+	else if (YYSTATE == HEREDOC)
+		parse_error(_("Unexpected end of file in multiline string started on line %lu"),
+			    string_start_line);
+		
 	grad_write_history_file();
         return 1;
 }
@@ -460,6 +499,16 @@ close_input()
 }
 
 
+/* String processing functions */
+
+/* Read string segment ending with a numeric escape (\0.. or \x),
+   and append it to the current string object.
+   Arguments:
+     skip     Number of characters to skip when processing the escape:
+              0 for octal escapes, 1 -- for hex ones.
+     base     Conversion base for the escape.
+     text     Start of the string segment.
+     leng     Length of the string segment. */
 void
 add_num(int skip, int base, char *text, int leng)
 {
@@ -475,6 +524,7 @@ add_num(int skip, int base, char *text, int leng)
 
 static char string_len;
 
+/* Append simple string segment to the current string object */
 void
 add_str(char *str, int len)
 {
@@ -482,6 +532,7 @@ add_str(char *str, int len)
         string_len += len;
 }
 
+/* Append a single character */
 void
 add_chr(int c)
 {
@@ -489,6 +540,7 @@ add_chr(int c)
         string_len++;
 }
 
+/* Finish the string being constructed. Return pointer to its beginning. */
 char *
 end_str()
 {
@@ -496,6 +548,7 @@ end_str()
         return obstack_finish(&string_stk);
 }
 
+/* Translate a second part of a C escape */
 int
 backspace(int c)
 {
@@ -520,24 +573,7 @@ backspace(int c)
         return c;
 }
 
-char *
-number_to_str(long num)
-{
-	char buf[64];
-	sprintf(buf, "%lu", num);
-	add_str(buf, strlen(buf));
-	return end_str();
-}
-
-char *
-ipaddr_to_str(grad_uint32_t ipaddr)
-{
-	char buf[DOTTED_QUAD_LEN];
-	grad_ip_iptostr(ipaddr, buf);
-	add_str(buf, strlen(buf));
-	return end_str();	
-}
-
+/* External interfaces to the above functions */
 void
 radtest_start_string(char *str)
 {
@@ -557,6 +593,7 @@ radtest_end_string()
 	return end_str();
 }
 
+/* Free all string literals */
 void
 radtest_free_strings()
 {
@@ -564,12 +601,28 @@ radtest_free_strings()
 	obstack_init(&string_stk);
 }
 
+/* This function is called when we have to remember all collected
+   string literals (e.g. for a function definition).
+   Current implementation simply re-initializes string stack. A
+   (possibly) better approach:
+   use some start_ptr and do obstack_free(&string_stk, start_ptr) in
+   radtest_free_strings(). Then it should suffice to do
+
+   obstack_1grow(&string_stk, 0);
+   start_ptr = obstack_finish(&string_stk)
+
+   here. */
+
 void
 radtest_fix_strings()
 {
 	obstack_init(&string_stk);
 }
 
+
+/* "Here document" support */
+
+/* Return 1 if `text' is an empty string */
 static int
 isemptystr(char *text)
 {
@@ -578,7 +631,8 @@ isemptystr(char *text)
 	return *text == 0;
 }
 
-char *
+/* Strip initial tab characters from `text' */
+static char *
 heredoc_strip_tabs(char *text)
 {
 	if (strip_tabs)
@@ -587,7 +641,8 @@ heredoc_strip_tabs(char *text)
 	return text;
 }
 
-void
+/* Begin processing of a "here document" construct */
+static void
 heredoc_begin()
 {
 	char *p = yytext + 2; /* past the << marker */
@@ -616,3 +671,4 @@ heredoc_begin()
 	}
 }
 
+/* End of input.l */

@@ -41,18 +41,70 @@
 #include <common.h>
 #include <radtest.h>
 
-int yyerror(char *s);
-
+#define YYERROR_VERBOSE 1
+	
 extern int yylex();
 
+/* Local variables */ 
 static int current_nesting_level; /* Nesting level of WHILE/DO statements */
-static int error_count;
-static struct {
-	 char *function;
-	 grad_locus_t locus;
-} defn;
+static int error_count;           /* In interactive mode: number of errors
+				     in the statement being compiled. Gets
+				     reset to 0 after each statement.
+				     In batch mode: total number of errors
+				     encountered so far */
  
+static struct {                   /* Definition of the function currently
+				     being compiled */
+	char *function;           /* Function name */
+	grad_locus_t locus;       /* Location of the beginning of
+				     the definition */
+} defn;
+
+/* Context stack support. This is used for improving diagnostic
+   messages and after-error synchronization */
+   
+struct context_stack {
+	struct context_stack *next;
+	enum context ctx;
+};
+
+static struct context_stack *context_stack;
+ 
+static enum context 
+push_ctx(enum context ctx)
+{
+	struct context_stack *p = grad_emalloc(sizeof(*p));
+	p->ctx = ctx;
+	p->next = context_stack;
+	context_stack = p;
+	return ctx;
+}
+
+enum context
+pop_ctx()
+{
+	enum context ctx;
+	struct context_stack *p = context_stack;
+	
+	if (!context_stack)
+		return ctx_none;
+	ctx = p->ctx;
+	context_stack = p->next;
+	grad_free(p);
+	return ctx;
+}
+
+enum context
+peek_ctx()
+{
+	return context_stack ? context_stack->ctx : ctx_none;
+}
+
+/* Forward declarations */
 static void run_statement(radtest_node_t *node);
+static void errsync();
+int yyerror(char *s);
+ 
 %}
 
 %token EOL AUTH ACCT SEND EXPECT T_BEGIN T_END
@@ -61,7 +113,7 @@ static void run_statement(radtest_node_t *node);
 %token <set> SET
 %token PRINT 
 %token EXIT
-%token T_UNBALANCED
+%token T_BOGUS
 %token ARGCOUNT
 %token <deref> IDENT
 %token <parm> PARM
@@ -149,8 +201,19 @@ lstmt         : /* empty */ EOL
 			$$ = NULL;
 		}
               | stmt EOL
+                {
+			switch (peek_ctx()) {
+			case ctx_iferr:
+			case ctx_doerr:
+				pop_ctx();
+				break;
+			default:
+				break;
+			}
+		}
               | error EOL
                 {
+			errsync();
 			defn.function = NULL;
                         yyclearin;
                         yyerrok;
@@ -162,42 +225,47 @@ stmt          : T_BEGIN list T_END
 			$$ = radtest_node_alloc(radtest_node_stmt);
 			$$->v.list = $2;			
 		}
-              | IF cond EOL stmt 
+              | if cond EOL stmt 
                 {
+			pop_ctx();
 			$$ = radtest_node_alloc(radtest_node_cond);
 			$$->v.cond.cond = $2;
 			$$->v.cond.iftrue = $4;
 			$$->v.cond.iffalse = NULL;
 		}
-              | IF cond EOL stmt else stmt 
+              | if cond EOL stmt else stmt 
                 {
+			pop_ctx();
 			$$ = radtest_node_alloc(radtest_node_cond);
 			$$->v.cond.cond = $2;
 			$$->v.cond.iftrue = $4;
 			$$->v.cond.iffalse = $6;
 		}
-              | CASE expr in caselist T_END
+              | case expr in caselist T_END
                 {
+			pop_ctx();
 			$$ = radtest_node_alloc(radtest_node_case);
 			$$->locus = $2->locus;
 			$$->v.branch.expr = $2;
 			$$->v.branch.branchlist = $4;
 		}
-              | WHILE cond { current_nesting_level++; } EOL stmt
+              | while { current_nesting_level++; } cond EOL stmt
                 {
+			pop_ctx();
 			current_nesting_level--;
 			$$ = radtest_node_alloc(radtest_node_loop);
-			$$->v.loop.cond = $2;
+			$$->v.loop.cond = $3;
 			$$->v.loop.body = $5;
 			$$->v.loop.first_pass = 0;
 		}
-              | DO { current_nesting_level++; } EOL stmt WHILE {current_nesting_level--;} cond  
+              | do EOL { current_nesting_level++; } stmt EOL WHILE { current_nesting_level--; } cond  
                 {
+			pop_ctx();
 			$$ = radtest_node_alloc(radtest_node_loop);
-			$$->v.loop.cond = $7;
+			$$->v.loop.cond = $8;
 			$$->v.loop.body = $4;
 			$$->v.loop.first_pass = 1;
-                } 
+		} 
               | PRINT prlist 
                 {
 			$$ = radtest_node_alloc(radtest_node_print);
@@ -335,9 +403,39 @@ function_def  : NAME EOL T_BEGIN EOL
 			$$ = fun;
 		}
               ;
-					
+
+if            : IF
+                {
+			push_ctx(ctx_if);
+		}
+              ;
+
+case          : CASE
+                {
+			push_ctx(ctx_case);
+		}
+              ;
+
+do            : DO
+                {
+			push_ctx(ctx_do);
+		}
+              ;
+
+while         : WHILE
+                {
+			push_ctx(ctx_while);
+		}
+              ;  
+
 else          : ELSE
+                {
+			pop_ctx();
+		}
               | ELSE EOL
+                {
+			pop_ctx();
+		}
               ;
 
 in            : IN
@@ -404,7 +502,7 @@ req_code      : NUMBER
                 {
 			$$ = grad_request_name_to_code($1);
 			if ($$ == 0) {
-				yyerror(_("expected integer value or request code name"));
+				parse_error(_("expected integer value or request code name"));
 				YYERROR;
 			}
 		}
@@ -779,7 +877,20 @@ pritem        : expr %prec PRITEM
 int
 yyerror(char *s)
 {
-	parse_error(s);
+	if (strcmp(s, "parse error") == 0
+	    || strcmp(s, "syntax error") == 0) {
+		if (yychar == T_END)
+			parse_error(_("Misplaced `end'"));
+		else if (yychar == EOL) {
+			grad_locus_t loc = source_locus;
+			loc.line--;
+			parse_error_loc(&loc, _("Unexpected end of line"));
+		} else if (peek_ctx() == ctx_doerr)
+			;
+		else
+			parse_error(s);
+	} else
+		parse_error(s);
 }
 
 void
@@ -826,7 +937,11 @@ run_statement(radtest_node_t *node)
 	if (!dry_run) {
 		if (!error_count)
 			radtest_eval(node, toplevel_env);
-		error_count = 0;
+		/* Clear error_count only if we are in interactive
+		   mode. There is no use continuing executing of a script
+		   after an erroneous statement. */
+		if (interactive)
+			error_count = 0;
 	}
 	radtest_free_mem();
 }
@@ -837,4 +952,30 @@ read_and_eval(char *filename)
         if (open_input(filename))
                 return 1;
         return (yyparse() || error_count) ? 1 : 0;
+}
+
+static void
+errsync()
+{
+	enum context ctx = pop_ctx();
+	switch (ctx) {
+	case ctx_none:
+		break;
+		
+	case ctx_if:
+		push_ctx(ctx_iferr);
+		break;
+		
+	case ctx_do:
+		current_nesting_level--;
+		push_ctx(ctx_doerr);
+		break;
+
+	case ctx_while:
+		current_nesting_level--;
+		break;
+		
+	case ctx_case:
+		;
+	}
 }

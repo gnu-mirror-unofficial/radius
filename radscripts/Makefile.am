@@ -20,7 +20,7 @@ M4_DEFINES=-DSRCDIR=$(srcdir) -DPROGNAME=$(sbindir)/radiusd \
            -DPACKAGE_STRING="$(PACKAGE_STRING)" \
            -DBINDIR=$(bindir) -DSBINDIR=$(sbindir) -DDATADIR=$(pkgdatadir) \
            -DPIDFILE=$(RADPID_DIR)/radiusd.pid -DPS=$(PS) \
-	   -DAWK=$(AWK) -DGETOPT=$(GETOPT)
+	   -DAWK=$(AWK) 
 
 AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = radauth
 

@@ -188,7 +188,7 @@ typedef struct radius_req {
 	int			server_code;	/* Reply code from other srv */
 } RADIUS_REQ;
 
-struct radck_arg;
+struct envar_t;
 
 typedef struct nas {
 	struct nas		*next;
@@ -196,7 +196,7 @@ typedef struct nas {
 	char			longname[MAX_LONGNAME+1];
 	char			shortname[MAX_SHORTNAME+1];
 	char			nastype[MAX_DICTNAME+1];
-	struct radck_arg        *args;
+	struct envar_t          *args;
 	void                    *app_data;
 } NAS;
 
@@ -277,6 +277,7 @@ int nas_read_file(char *file);
 NAS *nas_lookup_name(char *name);
 NAS *nas_lookup_ip(UINT4 ipaddr);
 char *nas_ip_to_name(UINT4 ipaddr);
+NAS *nas_request_to_nas(RADIUS_REQ *radreq);
 char *nas_request_to_name(RADIUS_REQ *radreq);
 
 /* fixalloc.c */
@@ -321,4 +322,6 @@ void encrypt_password(VALUE_PAIR *pair, char *password,
 		      char *vector, char *secret);
 void decrypt_password(char *password, VALUE_PAIR *pair,
 		      char *vector, char *secret);
+void decrypt_password_broken(char *password, VALUE_PAIR *pair,
+			     char *vector, char *secret);
 

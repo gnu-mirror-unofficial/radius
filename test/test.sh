@@ -23,7 +23,7 @@ if [ ! -f raddb/config.in ]; then
 fi
 EXPR=`./findport -c2 -s1644 "-fs/@AUTH_PORT@/%d/;s/@ACCT_PORT@/%d/"`
 sed $EXPR raddb/config.in > raddb/config
-sed $EXPR raddb/radctl.rc.in > raddb/radctl.rc
+sed $EXPR raddb/client.conf.in > raddb/client.conf
 
 [ -d log ] || mkdir log
 [ -d acct ] || mkdir acct
@@ -31,6 +31,6 @@ cat /dev/null > log/radwtmp
 cat /dev/null > log/radutmp
 RADSCM_BOOTPATH=${SOURCEDIR}/radscm \
   ../radscm/radscm --debug --directory raddb \
-                   -s ${SOURCEDIR}/test/test.scm \
+                   -s ${SOURCEDIR}/test/guile/test.scm \
                     --build-dir $BUILDDIR
 

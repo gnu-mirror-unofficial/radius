@@ -1,8 +1,10 @@
 This directory contains some possibly useful examples.
 
-1) Sample configuration file
+* Sample configuration file
 
-2) Rewrite modules.
+config.syntax
+
+* Rewrite modules.
 
 These sources contain rewrite functions for various NAS types. To
 use a file, copy its contents to your raddb/rewrite file and
@@ -10,13 +12,21 @@ follow the instructions given in the file.
 
  File                Purpose
 ascend.rw           Handle MAX Ascend coded port numbers
+c3620.rw            Create a uniq NAS-Port-Id for PPPoE/PPTP/L2TP connections.
 cisco.rw            Handle various anomalies of Cisco AS5300
+comos.rw	    Handle the use of Start/Stop accounting packets 
+		    instead of Acct-Status-Type=Accounting-{On|Off}
+filter.rw	    Sample filter input processor. Used by the testsuite.
 jetstream.rw        Handle various anomalies of Jetstream 8500
 nt.rw               Decode compound usernames sent by some Windows NT
                     stations
 
-3) Sample PAM configuration file
+* Sample PAM configuration file
 
 The file pam.conf contains a sample PAM stack for use with pam_radius.so
 authentication module.
+
+* hints-0.96
+
+Mimics GNU Radius 0.96 series way of handling the accounting packets.
 

@@ -848,100 +848,6 @@ hints_setup(req)
  */
 
 /*
- * Compare two pair lists. At least one of the check pairs
- * has to be present in the request.
- */
-int
-huntgroup_paircmp(request, check)
-	VALUE_PAIR *request;
-	VALUE_PAIR *check;
-{
-	VALUE_PAIR *check_item = check;
-	VALUE_PAIR *auth_item;
-	int result = -1;
-
-	if (check == NULL)
-		return 0;
-
-	while (result != 0 && check_item != (VALUE_PAIR *)NULL) {
-		if (server_attr(check_item->attribute)) {
-			check_item = check_item->next;
-			continue;
-		}
-
-		debug(20, ("check_item: %s", format_pair(check_item)));
-
-		/*
-		 *	See if this item is present in the request.
-		 */
-		auth_item = request;
-		while (auth_item != (VALUE_PAIR *)NULL) {
-			debug(30, ("trying %d", auth_item->attribute));
-	
-			if (check_item->attribute == auth_item->attribute ||
-			    ((check_item->attribute == DA_GROUP_NAME ||
-			      check_item->attribute == DA_GROUP) &&
-			     auth_item->attribute  == DA_USER_NAME))
-				break;
-			auth_item = auth_item->next;
-		}
-		if (auth_item == (VALUE_PAIR *)NULL) {
-			check_item = check_item->next;
-			continue;
-		}
-
-		debug(20, ("auth_item: %s", format_pair(auth_item)));
-
-		/*
-		 *	OK it is present now compare them.
-		 */
-	
-		switch (check_item->type) {
-
-		case TYPE_STRING:
-			switch (check_item->attribute) {
-			case DA_NAS_PORT_ID:
-				result = portcmp(check_item, auth_item);
-				break;
-			case DA_GROUP_NAME:
-			case DA_GROUP:
-				result = groupcmp(request,
-						  check_item->strvalue,
-						  auth_item->strvalue);
-				break;
-			case DA_HUNTGROUP_NAME:
-				result = !huntgroup_match(request,
-							check_item->strvalue);
-				break;
-			default:
-				result = strcmp(check_item->strvalue,
-						auth_item->strvalue);
-			}
-			break;
-
-		case TYPE_INTEGER:
-		case TYPE_IPADDR:
-			if (check_item->lvalue == auth_item->lvalue) {
-				result = 0;
-			}
-			break;
-			
-		default:
-			break;
-		}
-
-		debug(20, ("compare: %d", result));
-
-		result = comp_op(check_item->operator, result);
-		check_item = check_item->next;
-	}
-
-	debug(20, ("returning %d", result));
-	return result;
-
-}
-
-/*
  * See if the huntgroup matches.
  */
 int
@@ -960,7 +866,6 @@ huntgroup_match(request_pairs, huntgroup)
 			break;
 		}
 	}
-
 
 	return (pl != NULL);
 }
@@ -991,7 +896,7 @@ huntgroup_access(radreq)
 		if (paircmp(request_pairs, pl->check) != 0)
 			continue;
 		debug(1, ("matched huntgroup at huntgroups:%d", pl->lineno));
-		r = huntgroup_paircmp(request_pairs, pl->reply) == 0;
+		r = paircmp(request_pairs, pl->reply) == 0;
 		break;
 	}
 

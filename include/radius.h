@@ -269,10 +269,10 @@ void avl_move_pairs(VALUE_PAIR **to, VALUE_PAIR **from,
 		    int (*fun)(), void *closure);
 
 extern int do_not_resolve;
-char *ip_hostname (UINT4);
+char *ip_hostname (UINT4, char *buf, size_t size);
 UINT4 get_ipaddr (char *);
 int good_ipaddr(char *);
-char *ipaddr2str(char *, UINT4);
+char *ipaddr2str(UINT4, char *);
 UINT4 ipstr2long(char *);
 
 /* nas.c */
@@ -280,9 +280,9 @@ NAS *nas_next(NAS *p);
 int nas_read_file(char *file);
 NAS *nas_lookup_name(char *name);
 NAS *nas_lookup_ip(UINT4 ipaddr);
-char *nas_ip_to_name(UINT4 ipaddr);
+char *nas_ip_to_name(UINT4 ipaddr, char *buf, size_t size);
 NAS *nas_request_to_nas(RADIUS_REQ *radreq);
-char *nas_request_to_name(RADIUS_REQ *radreq);
+char *nas_request_to_name(RADIUS_REQ *radreq, char *buf, size_t size);
 
 /* fixalloc.c */
 #define Alloc_entry(t) alloc_entry(sizeof(t))
@@ -317,7 +317,6 @@ int backslash(int c);
 void string_copy(char *d, char *s, int  len);
 #define STRING_COPY(s,d) string_copy(s,d,sizeof(s)-1)
 char *format_pair(VALUE_PAIR *pair, char **save);
-char *format_ipaddr(UINT4 ipaddr);
 int format_string_visual(char *buf, int runlen, char *str, int len);
 char *op_to_str(int op);
 int str_to_op(char *str);

@@ -309,6 +309,13 @@ fix_check_pairs(int cf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs)
                 break;
                 
         case DV_AUTH_TYPE_SYSTEM:
+		if (radiusd_user.username) {
+			radlog_loc(L_ERR, loc,
+				   _("Auth-Type = System can only be used when running with root privileges"));
+			errcnt++;
+		}
+		/*FALLTHROUGH*/
+		
         case DV_AUTH_TYPE_REJECT:
         case DV_AUTH_TYPE_ACCEPT:
                 if (password) {

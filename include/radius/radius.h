@@ -364,6 +364,13 @@ int grad_vendor_pec_to_id(int);
 char *grad_vendor_pec_to_name(int);
 int grad_vendor_name_to_id(char *);
 
+typedef int (*dict_iterator_fp)(void *data,
+				char const *, grad_dict_attr_t const *);
+void grad_dictionary_iterate(dict_iterator_fp fp, void *closure);
+
+typedef int (*dict_value_iterator_fp)(void *, grad_dict_value_t*);
+void grad_dictionary_value_iterate(dict_value_iterator_fp fp, void *closure);
+
 /* md5crypt.c */
 char *grad_md5crypt(const char *pw, const char *salt, char *pwbuf,
 		    size_t pwlen);
@@ -451,7 +458,7 @@ char *grad_format_pair(grad_avp_t *pair, int typeflag, char **save);
 int grad_format_string_visual(char *buf, int runlen, char *str, int len);
 char *grad_op_to_str(enum grad_operator op);
 enum grad_operator grad_str_to_op(char *str);
-int grad_xlat_keyword(struct keyword *kw, char *str, int def);
+int grad_xlat_keyword(struct keyword *kw, const char *str, int def);
 void grad_obstack_grow_backslash_num(struct obstack *stk, char *text,
 				     int len, int base);
 void grad_obstack_grow_backslash(struct obstack *stk, char *text,
@@ -597,11 +604,15 @@ void grad_log_loc(int lvl, grad_locus_t *loc, const char *msg, ...);
 int grad_debug_p(char *name, int level);
 void _debug_print(char *file, size_t line, char *func_name, char *str);
 char *_debug_format_string(char *fmt, ...);
-const char *grad_request_code_name(int code);
-const char *grad_request_code_to_string(int code);
+const char *grad_request_code_to_name(int code);
+int grad_request_name_to_code(const char *);
 void set_debug_levels(char *str);
 int set_module_debug_level(char *name, int level);
 void clear_debug();
+
+const char *grad_next_matching_code_name(void *data);
+const char *grad_first_matching_code_name(const char *name, void **ptr);
+
 
 /* sysdep.h */
 int grad_set_nonblocking(int fd);

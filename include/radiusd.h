@@ -473,9 +473,11 @@ void menu_reply(RADIUS_REQ *radreq, int fd);
 char *menu_read_text(char *menu_name);
 
 /* acct.c */
+void acct_init();
 int rad_accounting(RADIUS_REQ *, int, int);
 int radzap(UINT4 nas, int port, char *user, time_t t);
-int rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul, int *pcount);
+int rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul,
+		    int *pcount);
 int rad_check_realm(REALM *realm);
 int write_detail(RADIUS_REQ *radreq, int authtype, char *f);
 

@@ -373,23 +373,28 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
         return ret;
 }
 
-int
+static int
 check_acct_dir()
 {
-        struct stat     st;
+        struct stat st;
 
         if (stat(radacct_dir, &st) == 0) {
-                if (S_ISDIR(st.st_mode))
+                if (S_ISDIR(st.st_mode)) {
+			if (access(radacct_dir, W_OK)) {
+				radlog(L_ERR,
+				       _("%s: directory not writable"),
+				       radacct_dir);
+				return 1;
+			}
                         return 0;
-                else {
-                        radlog(L_ERR,
-                                _("%s: not a directory"),
-                                radacct_dir);
+		} else {
+                        radlog(L_ERR, _("%s: not a directory"),
+			       radacct_dir);
                         return 1;
                 }
         }
         if (mkdir(radacct_dir, 0755)) {
-                radlog(L_CRIT|L_PERROR,
+                radlog(L_ERR|L_PERROR,
                         _("can't create accounting directory `%s'"),
                         radacct_dir);
                 return 1;
@@ -397,23 +402,43 @@ check_acct_dir()
         return 0;
 }
 
+static int acct_dir_status;
+
+static void
+acct_after_config_hook(void *arg ARG_UNUSED, void *data ARG_UNUSED)
+{
+	if (auth_detail || acct_detail) {
+		acct_dir_status = check_acct_dir();
+		if (acct_dir_status) {
+			radlog(L_NOTICE,
+			       _("Detailed accounting is disabled"));
+			auth_detail = acct_detail = 0;
+		}
+	}
+}
+
+void
+acct_init()
+{
+	radiusd_set_postconfig_hook(acct_after_config_hook, NULL, 0);
+}
+
 int
 write_detail(RADIUS_REQ *radreq, int authtype, char *f)
 {
-        FILE            *outfd;
-        char            nasname[MAX_LONGNAME];
-        char            *dir, *path;
-        char            *save;
-        VALUE_PAIR      *pair;
-        UINT4           nas;
-        NAS             *cl;
-        time_t          curtime;
-        int             ret = 0;
-        struct stat     st;
+        FILE *outfd;
+        char nasname[MAX_LONGNAME];
+        char *dir, *path;
+        char *save;
+        VALUE_PAIR *pair;
+        UINT4 nas;
+        NAS *cl;
+        time_t curtime;
+        int ret = 0;
 
-        /* A superfluous precaution, maybe: */
-        if (stat(radacct_dir, &st) < 0)
-                return 0;
+	if (acct_dir_status)
+		return;
+	
         curtime = time(0);
         
         /* Find out the name of this terminal server. We try to find

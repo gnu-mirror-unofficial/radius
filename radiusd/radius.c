@@ -261,40 +261,23 @@ err:
 }
 
 
-/*
- *	Validates the requesting client NAS.  Calculates the
- *	digest to be used for decrypting the users password
- *	based on the clients private key.
- */
+/* Validates the requesting client NAS. */
 int
-calc_digest(digest, radreq)
-	u_char *digest;
+validate_client(radreq)
 	RADIUS_REQ *radreq;
 {
-	u_char	buffer[128];
-	int	secretlen;
 	CLIENT	*cl;
 
-	/*
-	 *	See if we know this client.
-	 */
 	if ((cl = client_lookup_ip(radreq->ipaddr)) == NULL) {
 		radlog(L_ERR, _("request from unknown client: %s"),
 			client_lookup_name(radreq->ipaddr));
 		return -1;
 	}
 
-	/*
-	 *	Use the secret to setup the decryption digest
-	 */
-	secretlen = strlen(cl->secret);
-	strcpy(buffer, cl->secret);
-	memcpy(buffer + secretlen, radreq->vector, AUTH_VECTOR_LEN);
-	md5_calc(digest, buffer, secretlen + AUTH_VECTOR_LEN);
-	strcpy(radreq->secret, cl->secret);
-	memset(buffer, 0, sizeof(buffer));
+	/* Save the secret key */
+	radreq->secret = cl->secret;
 
-	return(0);
+	return 0;
 }
 
 /*
@@ -302,48 +285,29 @@ calc_digest(digest, radreq)
  *	signature based on the clients private key.
  */
 int
-calc_acctdigest(digest, radreq)
-	u_char *digest;
+calc_acctdigest(radreq)
 	RADIUS_REQ *radreq;
 {
 	int	secretlen;
-	CLIENT	*cl;
 	char zero[AUTH_VECTOR_LEN];
 	u_char	* recvbuf = (u_char*) radreq->data;
 	int	len = radreq->data_len;
+	u_char digest[AUTH_VECTOR_LEN];
 
-	/*
-	 *	See if we know this client.
-	 */
-	if ((cl = client_lookup_ip(radreq->ipaddr)) == NULL) {
-		radlog(L_ERR, _("request from unknown client: %s"),
-			client_lookup_name(radreq->ipaddr));
-		return -1;
-	}
+	secretlen = strlen(radreq->secret);
 
-	/*
-	 *	Copy secret into radreq->secret so that we can
-	 *	use it with send_acct_reply()
-	 */
-	secretlen = strlen(cl->secret);
-	strcpy(radreq->secret, cl->secret);
-
-	/*
-	 *	Older clients have the authentication vector set to
-	 *	all zeros. Return `1' in that case.
-	 */
+	/* Older clients have the authentication vector set to
+	   all zeros. Return `1' in that case. */
 	memset(zero, 0, sizeof(zero));
 	if (memcmp(radreq->vector, zero, AUTH_VECTOR_LEN) == 0)
 		return 1;
 
-	/*
-	 *	Zero out the auth_vector in the received packet.
-	 *	Then append the shared secret to the received packet,
-	 *	and calculate the MD5 sum. This must be the same
-	 *	as the original MD5 sum (radreq->vector).
-	 */
+	/* Zero out the auth_vector in the received packet.
+	   Then append the shared secret to the received packet,
+	   and calculate the MD5 sum. This must be the same
+	   as the original MD5 sum (radreq->vector). */
 	memset(recvbuf + 4, 0, AUTH_VECTOR_LEN);
-	memcpy(recvbuf + len, cl->secret, secretlen);
+	memcpy(recvbuf + len, radreq->secret, secretlen);
 	md5_calc(digest, recvbuf, len + secretlen);
 
 	/*

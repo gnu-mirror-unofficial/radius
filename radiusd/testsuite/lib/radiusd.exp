@@ -350,12 +350,13 @@ proc default_radius_test { args } {
 #                    COMMAND EXPECT [PATTERN]
 # COMMAND   - Command to send to radtest.
 # EXPECT    - Expect command.
-# PATTERN   - Sequence to expect in return. If ommitted, defaults to "PASS".
+# PATTERN   - Sequence to expect in return. If omitted, defaults to "PASS".
 # MESSAGE   - [optional] message to output
 proc simple_radius_test { args } {
     global verbose
     global radtest_prompt
     global suppress_flag;
+    global CAPABILITY
     upvar timeout timeout
 
     set default ""

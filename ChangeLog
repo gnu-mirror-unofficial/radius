@@ -1,3 +1,27 @@
+2002-07-29  Sergey Poznyakoff  
+
+	* NEWS: Changed format to match GNU current practice.
+	* configure.ac: Raised patchlevel to 0.99.97
+
+	Rewritten socket low-level functions and moved them into a
+	separate module. When reconfiguring, only those sockets are
+	closed that need to be removed. All the rest remains untouched.
+	
+	* include/radiusd.h: (SOCKET_LIST, struct request_handler_tab):
+  	  new types.
+	  (R_NONE): New define
+	* radiusd/Makefile.am: Added sockets.c
+	* radiusd/sockets.c: New file. Functions for handling socket lists.
+	* radiusd/radiusd.c: Removed socket_list_.* functions
+*	* radiusd/snmpserv.c: Implement "listen" statement.
+	* examples/config.syntax: Sample snmp.listen statement.
+	
+	* po/POTFILES.in: Added radiusd/sockets.c
+	* po/es.po: Updated
+	* po/no.po: Updated
+	* po/pl.po: Updated
+	* po/ru.po: Updated
+
 2002-07-29  Sergey Poznyakoff
 
 	* po/POTFILES.in: Added missed modules.

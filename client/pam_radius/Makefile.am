@@ -1,6 +1,6 @@
 # $Id$
 # This file is part of GNU RADIUS.
-# Copyright (C) 2001, Sergey Poznyakoff
+# Copyright (C) 2001, 2002, Sergey Poznyakoff
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -11,17 +11,12 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 pamdir=@PAMDIR@
-pam_PROGRAMS = @BUILD_PAM_RADIUS_LA@
-EXTRA_PROGRAMS = pam_radius.la
+pam_LTLIBRARIES = @BUILD_PAM_RADIUS_LA@
+EXTRA_LTLIBRARIES = pam_radius.la
 pam_radius_la_SOURCES = pam_radius.c
-pam_radius_la_LDADD = -lpam ../../lib/librad.la ../../lib/libdebug.la @LTLIBINTL@
+pam_radius_la_LIBADD = -lpam ../../lib/librad.la ../../lib/libdebug.la @LTLIBINTL@
 INCLUDES = -I$(top_builddir) -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp @INCLUDEPATH@
 
-pam_radius.lo: $(srcdir)/pam_radius.c
-	$(LIBTOOL) --mode=compile $(CC) -c -DHAVE_CONFIG_H \
-                $(CFLAGS) $(AM_CFLAGS) $(INCLUDES) $(srcdir)/pam_radius.c
+pam_radius_la_LDFLAGS = -module -avoid-version -no-undefined -rpath $(pamdir) \
+ -Wl,-Bsymbolic
 
-pam_radius.la$(EXEEXT): pam_radius.lo
-	$(LIBTOOL) --mode=link $(CC) -module -export-dynamic \
-                 -o pam_radius.la pam_radius.lo $(pam_radius_la_LDADD) \
-                 -rpath $(pamdir)

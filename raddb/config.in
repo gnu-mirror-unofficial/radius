@@ -10,20 +10,19 @@ option {
 };
 
 logging {
+	prefix-hook "default_log_prefix";
+	suffix-hook "default_log_suffix";
 	channel default {
 		file "radius.log";
 		print-category yes;
 		print-level yes;
-		prefix-hook "default_log_prefix";
 	};
 	channel info {
 		file "radius.info";
 		print-pid yes;
-		prefix-hook "default_log_prefix";
 	};	
 	channel debug {
 		file "radius.debug";
-		prefix-hook "default_log_prefix";
 	};
 	category auth {
 		print-auth yes;

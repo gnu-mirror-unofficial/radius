@@ -37,7 +37,8 @@
 #  define RADPID_DIR "/var/run"
 # endif
 #endif
-#define RADIUS_PID              RADPID_DIR "/radiusd.pid"
+#define RADIUSD_PID_FILE "radiusd.pid"
+#define RADIUSD_WATCHER_FILE "radiusd.watcher"
 
 #define RADIUS_DIR              RADDB_DIR
 

@@ -59,6 +59,10 @@ static int write_wtmp(struct radutmp *ut);
 static int write_nas_restart(int status, UINT4 addr);
 static int check_ts(struct radutmp *ut);
 
+int rad_acct_system(RADIUS_REQ *radreq, int dowtmp);
+int rad_acct_db(RADIUS_REQ *radreq, int authtype);
+int rad_acct_ext(RADIUS_REQ *radreq);
+
 
 /* Zap a user, or all users on a NAS, from the radutmp file. */
 int
@@ -190,9 +194,10 @@ check_attribute(check_pairs, pair_attr, pair_value, def)
 # define ACCT_TYPE(req,t) 1
 #endif
 
+
 /*  Store logins in the RADIUS utmp file. */
 int
-rad_accounting_new(radreq, dowtmp)
+rad_acct_system(radreq, dowtmp)
 	RADIUS_REQ *radreq;
 	int dowtmp;
 {
@@ -576,7 +581,7 @@ write_detail(radreq, authtype, f)
 }
 
 int
-rad_accounting_orig(radreq, authtype)
+rad_acct_db(radreq, authtype)
 	RADIUS_REQ *radreq;
 	int authtype;
 {
@@ -591,8 +596,30 @@ rad_accounting_orig(radreq, authtype)
 	return rc;
 }
 
+volatile int _s=0;
+m()
+{
+	while (!_s) {
+		sleep(1);
+		_s = _s;
+	}
+}
 
-/* rad_accounting: call both the old and new style accounting functions. */
+int
+rad_acct_ext(radreq)
+	RADIUS_REQ *radreq;
+{
+	VALUE_PAIR *p;
+
+	if (p = avl_find(radreq->request, DA_ACCT_EXT_PROGRAM)) {
+		radius_exec_program(p->strvalue,
+				    radreq->request, NULL,
+				    0, NULL);
+	}
+	return 0;
+}
+
+/* run accounting modules */
 int
 rad_accounting(radreq, activefd)
 	RADIUS_REQ *radreq;
@@ -621,8 +648,9 @@ rad_accounting(radreq, activefd)
 	}
 #endif
 	
-	if (rad_accounting_new(radreq, doradwtmp) == 0 &&
-	    rad_accounting_orig(radreq, auth) == 0) {
+	if (rad_acct_system(radreq, doradwtmp) == 0 &&
+	    rad_acct_db(radreq, auth) == 0 &&
+	    rad_acct_ext(radreq) == 0) {
 		/* Now send back an ACK to the NAS. */
 		rad_send_reply(PW_ACCOUNTING_RESPONSE,
 			       radreq, NULL, NULL, activefd);

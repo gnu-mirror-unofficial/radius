@@ -31,6 +31,14 @@ static char rcsid[] =
 #include <ctype.h>
 #include <sysdep.h>
 #include <radiusd.h>
+#include <obstack1.h>
+
+static void attr_to_str(struct obstack *obp, VALUE_PAIR *request,
+		       DICT_ATTR  *attr, char *defval);
+static void curtime_to_str(struct obstack *obp, VALUE_PAIR *request, int gmt);
+static void attrno_to_str(struct obstack *obp, VALUE_PAIR *request,
+			 int attr_no, char *defval);
+static DICT_ATTR *parse_dict_attr(char *p, char **endp, char **defval);
 
 /*
  *	Replace %<whatever> in a string.
@@ -61,66 +69,110 @@ static char rcsid[] =
  * Return length of the resulting buffer not counting terminating zero.
  * NOTE: buffer should be AUTH_STRING_LEN+1 bytes long.
  */
-static int
-attr_to_str(buf, request, attr)
-	char *buf;
+void
+attr_to_str(obp, request, attr, defval)
+	struct obstack *obp;
 	VALUE_PAIR *request;
 	DICT_ATTR  *attr;
+	char *defval;
 {
 	VALUE_PAIR *pair;
-	char tmp[AUTH_STRING_LEN+1];
+	int len;
+	char tmp[AUTH_STRING_LEN];
 	
 	if (!attr) {
-		strcpy(buf, _("unknown"));
-		return strlen(buf);
+		radlog(L_ERR, "attribute not found");
+		return;
 	}
 	
 	if ((pair = avl_find(request, attr->value)) == NULL) {
-		debug(1, ("attribute %d not found in packet",
-		    	attr->value));
+		if (!defval) {
 		if (attr->type == PW_TYPE_STRING)
-			strcpy(buf, _("unknown"));
+				defval = ":-";
+			else
+				defval = ":-0";
+		}
+		
+		switch (*defval++) {
+		case '-':
+			len = strlen(defval);
+			obstack_grow(obp, defval, len);
+			break;
+		case '+':
+			break;
+		case '?':
+			if (*defval == 0)
+				defval = "Attribute is not present";
+			radlog(L_ERR, "%s: %s",
+			       attr->name, defval);
+			break;
+		case '=':
+			if (request) {
+				pair = install_pair(attr->name,
+						    PW_OPERATOR_EQUAL,
+						    defval);
+				if (pair)
+					avl_add_list(&request, pair);
+			}
+			break;
+		default:
+			if (defval)
+				radlog(L_ERR, "invalid : substitution: %s",
+				       defval);
 		else
-			strcpy(buf, "0");
-		return strlen(buf);
+				radlog(L_ERR, "null : substitution");
+			break;
+		}
+		
+		if (!pair)
+			return;
+	} else if (defval && *defval == '+') {
+		defval++;
+		len = strlen(defval);
+		obstack_grow(obp, defval, len);
+		return;
 	}
 
 	tmp[AUTH_STRING_LEN] = 0;
 	switch (attr->type) {
 	case PW_TYPE_STRING:
-		strncpy(tmp, pair->strvalue, AUTH_STRING_LEN);
+		obstack_grow(obp, pair->strvalue, pair->strlength);
 		break;
 	case PW_TYPE_INTEGER:
 		radsprintf(tmp, sizeof(tmp), "%ld", pair->lvalue);
+		len = strlen(tmp);
+		obstack_grow(obp, tmp, len);
 		break;
 	case PW_TYPE_IPADDR:
 		ipaddr2str(tmp, pair->lvalue);
+		len = strlen(tmp);
+		obstack_grow(obp, tmp, len);
 		break;
 	case PW_TYPE_DATE:
 		radsprintf(tmp, sizeof(tmp), "%ld", pair->lvalue);
+		len = strlen(tmp);
+		obstack_grow(obp, tmp, len);
 		break;
 	default:
 		radlog(L_CRIT,
 		    _("INTERNAL ERROR (%s:%d): attribute %d has bad type (%d)"),
 		    __FILE__, __LINE__,
 		    attr->value, attr->type);
-		strcpy(tmp, _("unknown"));
 		break;
 	}
-	strcpy(buf, tmp);
-	return strlen(buf);
 }
 
-int
-curtime_to_str(tbuf, request, gmt)
-	char *tbuf;
+void
+curtime_to_str(obp, request, gmt)
+	struct obstack *obp;
 	VALUE_PAIR *request;
 	int gmt;
 {
 	time_t curtime;
 	struct tm *tm;
 	VALUE_PAIR *pair;
-	
+	char tbuf[AUTH_STRING_LEN];
+	int len;
 	
 	curtime = time(NULL);
 	if (pair = avl_find(request, DA_ACCT_DELAY_TIME))
@@ -130,8 +182,8 @@ curtime_to_str(tbuf, request, gmt)
 	else
 		tm = localtime(&curtime);
 				
-	strftime(tbuf, AUTH_STRING_LEN, "%Y-%m-%d %H:%M:%S", tm);
-	return strlen(tbuf);
+	len = strftime(tbuf, AUTH_STRING_LEN, "%Y-%m-%d %H:%M:%S", tm);
+	obstack_grow(obp, tbuf, len);
 }
 
 /* Find attribute number `attr_no' in pairlist `request' and store it's
@@ -140,36 +192,61 @@ curtime_to_str(tbuf, request, gmt)
  * Return length of the resulting buffer not counting terminating zero.
  * NOTE: buffer should be AUTH_STRING_LEN+1 bytes long.
  */
-static int
-attrno_to_str(buf, request, attr_no)
-	char *buf;
+void
+attrno_to_str(obp, request, attr_no, defval)
+	struct obstack *obp;
 	VALUE_PAIR *request;
 	int attr_no;
+	char *defval;
 {
-	return attr_to_str(buf, request, attr_number_to_dict(attr_no));
+	return attr_to_str(obp, request, attr_number_to_dict(attr_no), defval);
 }
 
 static DICT_ATTR *
-parse_dict_attr(p, endp)
+parse_dict_attr(p, endp, defval)
 	char *p;
 	char **endp;
+	char **defval;
 {
 	char namebuf[MAX_DICTNAME];
+	char *ret;
 	
+	*defval = NULL;
 	if (isdigit(*p)) {
 		return attr_number_to_dict(strtol(p, endp, 10));
 	}
+
 	if (*p == '{') {
-		int len;
-		char *stop = strchr(p, '}');
-		if (stop == NULL) 
+		int len, off;
+		
+		p++;
+		len = strlen(p);
+		off = strcspn(p, ":}");
+
+		if (off == len || off >= sizeof namebuf)
 			return NULL;
-		*endp = stop + 1;
-		len = stop-p-1;
-		if (len >= sizeof namebuf)
+
+		strncpy(namebuf, p, off);
+		namebuf[off] = 0;
+
+		p += off;
+		if (*p == ':') {
+			int size;
+			char *start = p+1;
+
+			for (; *p && *p != '}'; p++) {
+				if (*p == '\\' && *++p == 0)
+					break;
+			}
+			if (*p == 0)
 			return NULL;
-		strncpy(namebuf, p+1, len);
-		namebuf[len] = 0;
+
+			size = p - start + 1;
+			*defval = emalloc(size);
+			memcpy(*defval, start, size-1);
+			(*defval)[size] = 0;
+		}
+		*endp = p + 1;
 		return attr_name_to_dict(namebuf);
 	}
 	*endp = p;
@@ -177,170 +254,128 @@ parse_dict_attr(p, endp)
 }
 
 char *
-radius_xlate(buf, bufsize, str, request, reply)
-	char *buf;
-	int bufsize;
+radius_xlate(obp, str, request, reply)
+	struct obstack *obp;
 	char *str;
 	VALUE_PAIR *request;
 	VALUE_PAIR *reply;
 {
-	char tbuf[AUTH_STRING_LEN+1];
-	int i = 0, c, len;
+	int c;
 	char *p;
+	DICT_ATTR *da;
+	char *defval;
 
-#define CHECK(n) if (i + (n) >= bufsize) goto overflow;
-	
 	for (p = str; *p; ) {
-		if (i >= bufsize)
-			goto overflow;
 		switch (c = *p++) {
 		default:
-			buf[i++] = c;
+			obstack_1grow(obp, c);
 			break;
 		case 0:
 			goto end;
 		case '%':
-			len = 0;
 			switch (c = *p++) {
 			case '%':
-				CHECK(1);
-				buf[i++] = c;
+				obstack_1grow(obp, c);
 				break;
 			case 'D':
-				len = curtime_to_str(tbuf, request, 0);
+				curtime_to_str(obp, request, 0);
 				break;
 			case 'G':
-				len = curtime_to_str(tbuf, request, 1);
+				curtime_to_str(obp, request, 1);
 				break;
 			case 'f': /* Framed IP address */
-				len = attrno_to_str(tbuf, reply,
-						    DA_FRAMED_IP_ADDRESS);
+				attrno_to_str(obp, reply,
+					      DA_FRAMED_IP_ADDRESS, NULL);
 				break;
 			case 'n': /* NAS IP address */
-				len = attrno_to_str(tbuf, request,
-						    DA_NAS_IP_ADDRESS);
+				attrno_to_str(obp, request,
+					      DA_NAS_IP_ADDRESS, NULL);
 				break;
 			case 't': /* MTU */
-				len = attrno_to_str(tbuf, reply,
-						    DA_FRAMED_MTU);
+				attrno_to_str(obp, reply,
+					      DA_FRAMED_MTU, NULL);
 				break;
 			case 'p': /* Port number */
-				len = attrno_to_str(tbuf, request,
-						    DA_NAS_PORT_ID);
+				attrno_to_str(obp, request,
+					      DA_NAS_PORT_ID, NULL);
 				break;
 			case 'u': /* User name */
-				len = attrno_to_str(tbuf, request,
-						    DA_USER_NAME);
+				attrno_to_str(obp, request,
+					      DA_USER_NAME, NULL);
 				break;
 			case 'c': /* Callback-Number */
-				len = attrno_to_str(tbuf, reply,
-						    DA_CALLBACK_NUMBER);
+				attrno_to_str(obp, reply,
+					      DA_CALLBACK_NUMBER, NULL);
 				break;
 			case 'i': /* Calling station ID */
-				len = attrno_to_str(tbuf, request,
-						    DA_CALLING_STATION_ID);
+				attrno_to_str(obp, request,
+					      DA_CALLING_STATION_ID, NULL);
 				break;
 			case 'a': /* Protocol: SLIP/PPP */
-				len = attrno_to_str(tbuf, reply,
-						    DA_FRAMED_PROTOCOL);
+				attrno_to_str(obp, reply,
+					      DA_FRAMED_PROTOCOL, NULL);
 				break;
 			case 's': /* Speed */
-				len = attrno_to_str(tbuf, request,
-						    DA_CONNECT_INFO);
+				attrno_to_str(obp, request,
+					      DA_CONNECT_INFO, NULL);
 				break;
 			case 'C':
 				/* Check pair */
-				len = attr_to_str(tbuf, request,
-						  parse_dict_attr(p, &p));
+				da = parse_dict_attr(p, &p, &defval);
+				attr_to_str(obp, request, da, defval);
+				efree(defval);
 				break;
 			case 'R':
 				/* Reply pair */
-				len = attr_to_str(tbuf, request,
-						  parse_dict_attr(p, &p));
+				da = parse_dict_attr(p, &p, &defval);
+				attr_to_str(obp, request, da, defval);
 				break;
 			default:					
-				CHECK(2);
-				buf[i++] = '%';
-				buf[i++] = c;
+				obstack_1grow(obp, '%');
+				obstack_1grow(obp, c);
 				break;
-			}
-			if (len > 0) {
-				CHECK(len);
-				strcpy(buf + i, tbuf);
-				i += len;
 			}
 			break;
 			
 		case '\\':
 			switch (c = *p++) {
 			case 'a':
-				buf[i++] = '\a';
+				obstack_1grow(obp, '\a');
 				break;
 			case 'b':
-				buf[i++] = '\b';
+				obstack_1grow(obp, '\b');
 				break;
 			case 'f':
-				buf[i++] = '\f';
+				obstack_1grow(obp, '\f');
 				break;
 			case 'e':
-				buf[i++] = '\033';
+				obstack_1grow(obp, '\033');
 				break;
 			case 'n':
-				buf[i++] = '\n';
+				obstack_1grow(obp, '\n');
 				break;
 			case 'r':
-				buf[i++] = '\r';
+				obstack_1grow(obp, '\r');
 				break;
 			case 't':
-				buf[i++] = '\t';
+				obstack_1grow(obp, '\t');
 				break;
 			case 0:
 				goto end;
 			default:
-				CHECK(2);
-				buf[i++] = '\\';
-				buf[i++] = c;
+				obstack_1grow(obp, '%');
+				obstack_1grow(obp, c);
 				break;
 			}
 		}
 	}
 	
 end:
-	buf[i] = 0;
-	return buf;
-
-overflow:
-	radlog(L_ERR, _("radius_xlat: result truncated while expanding `%s'"),
-	    str);
-	buf[i] = 0;
-	return buf;
+	obstack_1grow(obp, 0);
+	return obstack_finish(obp);
 }
 
 
 
-void
-alloc_buffer(buf, newsize)
-	BUFFER *buf;
-	int newsize;
-{
-	if (!buf->ptr) {
-		if (newsize)
-			buf->size = newsize;
-		buf->ptr = emalloc(buf->size);
-	} else if (newsize && newsize != buf->size) {
-		void *p;
-
-		p = xmalloc(newsize);
-		if (!p) {
-			radlog(L_ERR,
-			       _("can't reallocate buffer from %d to %d bytes"),
-			       buf->size, newsize);
-			return;
-		} 
-		efree(buf->ptr);
-		buf->ptr = p;
-		buf->size = newsize;
-	}
-}
 
 

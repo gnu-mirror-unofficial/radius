@@ -83,6 +83,7 @@ static FILE  *sqlfd;
 static int line_no;
 static char *cur_line, *cur_ptr;
 static struct obstack stack;
+static int obstack_ready;
 static int stmt_type;
 
 struct keyword sql_keyword[] = {
@@ -308,11 +309,10 @@ rad_sql_init()
 	size_t bufsize = 0;
 	time_t timeout;
 	SQL_cfg new_cfg;
-	
+
 #define FREE(a) if (a) efree(a); a = NULL
 
 	bzero(&new_cfg, sizeof(new_cfg));
-	new_cfg.buf.size = 1024; 
 	new_cfg.keepopen = 0;
 	new_cfg.idle_timeout = 4*3600; /* four hours */
 	new_cfg.max_connections[SQL_AUTH] = 16;
@@ -329,7 +329,10 @@ rad_sql_init()
 	}
 	line_no = 0;
 	cur_line = NULL;
-	obstack_init(&stack);
+	if (!obstack_ready) {
+		obstack_init(&stack);
+		obstack_ready = 1;
+	} 
 	while (getline()) {
 		if (stmt_type == -1) {
 			radlog(L_ERR,
@@ -463,17 +466,16 @@ rad_sql_init()
 			break;
 
 		case STMT_QUERY_BUFFER_SIZE:
-			bufsize = strtol(cur_ptr, &ptr, 0);
-			if (*ptr != 0 && !isspace(*ptr)) {
-				radlog(L_ERR, _("%s:%d: number parse error"),
+			radlog(L_WARN, "%s:%d: query_buffer_size is obsolete",
 				       sqlfile, line_no);
-				bufsize = 0;
-			}
 			break;
 		}
 		
 	}
-	obstack_free(&stack, NULL);
+
+	if (cur_line)
+		obstack_free(&stack, cur_line);
+//	obstack_free(&stack,NULL);
 	fclose(sqlfd);
 	efree(sqlfile);
 
@@ -496,11 +498,9 @@ rad_sql_init()
 	FREE(sql_cfg.acct_nasdown_query);
 	FREE(sql_cfg.acct_keepalive_query);
 	FREE(sql_cfg.attr_query);
-	FREE(sql_cfg.buf.ptr);
 
 	/* copy new config */
 	sql_cfg = new_cfg;
-	alloc_buffer(&sql_cfg.buf, bufsize);
 		
 	return 0;
 }
@@ -1000,7 +1000,7 @@ rad_sql_acct(radreq)
 	case DV_ACCT_STATUS_TYPE_START:
 		if (!sql_cfg.acct_start_query)
 			break;
-		query = radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
+		query = radius_xlate(&stack,
 				     sql_cfg.acct_start_query,
 				     radreq->request, NULL);
 		rc = rad_sql_query(conn, query, NULL);
@@ -1010,7 +1010,7 @@ rad_sql_acct(radreq)
 	case DV_ACCT_STATUS_TYPE_STOP:
 		if (!sql_cfg.acct_stop_query)
 			break;
-		query = radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
+		query = radius_xlate(&stack,
 				     sql_cfg.acct_stop_query,
 				     radreq->request, NULL);
 		rc = rad_sql_query(conn, query, &count);
@@ -1032,7 +1032,7 @@ rad_sql_acct(radreq)
 	case DV_ACCT_STATUS_TYPE_ACCOUNTING_ON:
 		if (!sql_cfg.acct_nasup_query)
 			break;
-		query = radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
+		query = radius_xlate(&stack,
 				     sql_cfg.acct_nasup_query,
 				     radreq->request, NULL);
 		rc = rad_sql_query(conn, query, &count);
@@ -1048,7 +1048,7 @@ rad_sql_acct(radreq)
 	case DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF:
 		if (!sql_cfg.acct_nasdown_query)
 			break;
-		query = radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
+		query = radius_xlate(&stack,
 				     sql_cfg.acct_nasdown_query,
 				     radreq->request, NULL);
 		rc = rad_sql_query(conn, query, &count);
@@ -1064,7 +1064,7 @@ rad_sql_acct(radreq)
 	case DV_ACCT_STATUS_TYPE_ALIVE:
 		if (!sql_cfg.acct_keepalive_query)
 			break;
-		query = radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
+		query = radius_xlate(&stack,
 				     sql_cfg.acct_keepalive_query,
 				     radreq->request, NULL);
 		rc = rad_sql_query(conn, query, &count);
@@ -1081,6 +1081,9 @@ rad_sql_acct(radreq)
 
 	if (!sql_cfg.keepopen)
 		unattach_sql_connection(SQL_ACCT, (qid_t)radreq);
+
+	if (query)
+		obstack_free(&stack, query);
 }
 
 
@@ -1093,6 +1096,7 @@ rad_sql_pass(req, authdata, passwd)
 	int   rc;
 	char *mysql_passwd;
 	struct sql_connection *conn;
+	char *query;
 
 	if (sql_cfg.doauth == 0) {
 		radlog(L_ERR,
@@ -1106,13 +1110,11 @@ rad_sql_pass(req, authdata, passwd)
 				    strlen(authdata),
 				    authdata, 0));
 	}
-	radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
-		     sql_cfg.auth_query,
-		     req->request, NULL);
+	query = radius_xlate(&stack, sql_cfg.auth_query, req->request, NULL);
 	avl_delete(&req->request, DA_AUTH_DATA);
 	
 	conn = attach_sql_connection(SQL_AUTH, (qid_t)req);
-	mysql_passwd = rad_sql_getpwd(conn, sql_cfg.buf.ptr);
+	mysql_passwd = rad_sql_getpwd(conn, query);
 	
 	if (!mysql_passwd) {
 		rc = AUTH_NOUSER;
@@ -1128,6 +1130,9 @@ rad_sql_pass(req, authdata, passwd)
 	if (!sql_cfg.keepopen)
 		unattach_sql_connection(SQL_AUTH, (qid_t)req);
 	
+	if (!query)
+		obstack_free(&stack, query);
+	
 	return rc;
 }
 
@@ -1140,16 +1145,17 @@ rad_sql_checkgroup(req, groupname)
 	struct sql_connection *conn;
 	void *data;
 	char *p;
+	char *query;
 	
 	if (sql_cfg.group_query == NULL) 
 		return -1;
 
-	radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
+	query = radius_xlate(&stack,
 		     sql_cfg.group_query,
 		     req->request, NULL);
 
 	conn = attach_sql_connection(SQL_AUTH, (qid_t)req);
-	data = rad_sql_exec(conn, sql_cfg.buf.ptr);
+	data = rad_sql_exec(conn, query);
 	while (rc != 0 && rad_sql_next_tuple(conn, data) == 0) {
 		if ((p = rad_sql_column(data,0)) == NULL)
 			break;
@@ -1162,6 +1168,8 @@ rad_sql_checkgroup(req, groupname)
 	if (!sql_cfg.keepopen)
 		unattach_sql_connection(SQL_AUTH, (qid_t)req);
 	
+	if (query)
+		obstack_free(&stack, query);
 	return rc;
 }
 
@@ -1178,6 +1186,7 @@ rad_sql_attr_query(request_pairs, reply_pairs)
 	VALUE_PAIR		*pair;
 	int			i;
 	qid_t                   qid;
+	char *query;
 
 	if (!sql_cfg.attr_query)
 		return 0;
@@ -1190,10 +1199,9 @@ rad_sql_attr_query(request_pairs, reply_pairs)
 	qid = (qid_t)pair->lvalue;
 	conn = attach_sql_connection(SQL_AUTH, qid);
 	
-	radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size, sql_cfg.attr_query,
-		     request_pairs, NULL);
+	query = radius_xlate(&stack, sql_cfg.attr_query, request_pairs, NULL);
 	
-        data = rad_sql_exec(conn, sql_cfg.buf.ptr);
+        data = rad_sql_exec(conn, query);
 	if (!data)
 		return 0;
 	
@@ -1216,6 +1224,8 @@ rad_sql_attr_query(request_pairs, reply_pairs)
         if (!sql_cfg.keepopen) 
                 unattach_sql_connection(SQL_AUTH, qid);
 
+	if (query)
+		obstack_free(&stack, query);
 	return i == 0;
 }
 

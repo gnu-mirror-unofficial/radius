@@ -57,6 +57,7 @@ static char rcsid[] =
 # include <radsql.h>
 #endif
 #include <raddbm.h>
+#include <obstack1.h>
 
 /*
  * Symbol tables and lists
@@ -712,6 +713,9 @@ userparse(buffer, first_pair, errmsg)
  * raddb/hints
  */
 
+static struct obstack hints_stk;
+static int hints_stk_ready;
+
 /*
  *	Add hints to the info sent by the terminal server
  *	based on the pattern of the username.
@@ -803,12 +807,15 @@ hints_setup(request_pairs)
 		    (tmp = avl_find(i->check, DA_REPLACE_USER_NAME)) != NULL) {
 			char *ptr;
 			
-			ptr = radius_xlate(newname, sizeof(newname),
-					   tmp->strvalue,
-					   request_pairs, NULL);
-			if (ptr) {
-				replace_string(&name_pair->strvalue, newname);
+			if (!hints_stk_ready) {
+				obstack_init(&hints_stk);
+				hints_stk_ready = 1;
 			}
+			ptr = radius_xlate(&hints_stk, tmp->strvalue,
+					   request_pairs, NULL);
+			if (ptr) 
+				replace_string(&name_pair->strvalue, ptr);
+			obstack_free(&hints_stk, ptr);
 		}
 		
 		/* Is the rewrite function specified? */
@@ -1896,13 +1903,6 @@ checkdbm(users, ext)
 
 
 static int reload_data(enum reload_what what, int *do_radck);
-int
-m(char *s, int d)
-{
-	int fd = dup(0);
-	radlog(L_ERR, "%s:%d: next fd: %d", s, d, fd);
-	close(fd);
-}
 
 int
 reload_data(what, do_radck)
@@ -1916,7 +1916,6 @@ reload_data(what, do_radck)
 	case reload_all:
                 /* This implies reloading users, huntgroups and hints */
 		rc += reload_data(reload_dict, do_radck);
-
 		rc += reload_data(reload_clients, do_radck);
 		rc += reload_data(reload_naslist, do_radck);
 		rc += reload_data(reload_realms, do_radck);
@@ -1962,6 +1961,7 @@ reload_data(what, do_radck)
 		 */
 		if (dict_init())
 			rc = 1;
+
 		/* Users, huntgroups and hints should be reloaded after
 		 * changing dictionary.
 		 */

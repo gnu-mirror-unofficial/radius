@@ -44,7 +44,7 @@ static char rcsid[] =
 #include <string.h>
 #include <syslog.h>
 #include <radiusd.h>
-
+#include <obstack1.h>
 
 #define MAXARGS 64
 
@@ -66,8 +66,6 @@ radius_exec_program(cmd, request, reply, exec_wait, user_msg)
 	int p[2];
 	RETSIGTYPE (*oldsig)();
 	pid_t pid;
-	int argc;
-	char *argv[MAXARGS];
 	int n;
 	char *ptr, *errp;
 	int status;
@@ -128,30 +126,27 @@ radius_exec_program(cmd, request, reply, exec_wait, user_msg)
 			p[0] = p[1] = 0;
 			return -1;
 		}
-		if ((oldsig = signal(SIGCHLD, SIG_DFL)) == SIG_ERR) {
+		}
+
+	if ((oldsig = signal(SIGCHLD, SIG_IGN)) == SIG_ERR) {
 			radlog(L_ERR|L_PERROR, _("can't reset SIGCHLD"));
 			return -1;
 		}
-	}
 
 	if ((pid = fork()) == 0) {
+		int argc;
+		char **argv;
+		struct obstack s;
+
+		obstack_init(&s);
+		
 		/* child branch */
-		ptr = radius_xlate(buffer, sizeof(buffer), cmd, request, *reply);
+		ptr = radius_xlate(&s, cmd, request, reply ? *reply : NULL);
 
 		debug(1,
 			("command line: %s", ptr));
 
-		argc = 0;
-		for (ptr = strtok(ptr, " \t"); ptr; ptr=strtok(NULL, " \t")) {
-			if (argc > MAXARGS) {
-				radlog(L_ERR,
-				    _("radius_exec_program(): too many arguments"));
-				return -1;
-			}
-			debug(10, ("argv[%d] = %s", argc, ptr));
-			argv[argc++] = ptr;
-		}
-		argv[argc++] = NULL;
+		argcv_get(ptr, "", &argc, &argv);
 
 		if (exec_wait) {
 			if (close(p[0]))

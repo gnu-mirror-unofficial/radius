@@ -418,6 +418,7 @@ grad_request_t *grad_request_alloc();
 
 /* raddb.c */
 int grad_read_raddb_file(char *name, int vital,
+			 char *delim,
 			 int (*fun)(void*,int,char**,grad_locus_t*),
 			 void *closure);
 

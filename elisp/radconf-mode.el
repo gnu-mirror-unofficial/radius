@@ -1,12 +1,12 @@
 ;;; radconf-mode.el --- major mode for editing GNU radius raddb/config file
 
-;; Authors: 2001,2003 Sergey Poznyakoff
+;; Authors: 2001,2003,2004 Sergey Poznyakoff
 ;; Version:  1.1
 ;; Keywords: radius
 ;; $Id$
 
 ;; This file is part of GNU Radius.
-;; Copyright (c) 2001,2003 Free Software Foundation, Inc.
+;; Copyright (c) 2001,2003,2004 Free Software Foundation, Inc.
 
 ;; GNU Radius is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -164,6 +164,7 @@
                 guile
 		rewrite
 		message
+		mlc
 		filters)
     (option     source-ip 
                 max-requests
@@ -204,7 +205,6 @@
 			    level))
     (auth       port
                 listen
-                spawn
                 max-requests
                 time-to-live
                 request-cleanup-delay
@@ -215,18 +215,20 @@
 		compare-atribute-flag
 		forward
 		trace-rules
-		reject-malformed-names)
+		reject-malformed-names
+		detail-file-name)
     (acct       port
                 listen
-                spawn
                 max-requests
                 time-to-live
                 request-cleanup-delay
 		compare-atribute-flag
 		forward
-		trace-rules)
+		trace-rules
+		system
+		detail
+		detail-file-name)
     (snmp       port
-                spawn
                 max-requests
                 time-to-live
                 request-cleanup-delay
@@ -239,12 +241,18 @@
 		            perms
 		            max-nas-count
 		            max-port-count))
+    (mlc        method
+		checkrad-assume-logged)
     (guile      debug
                 load-path
+		load-module
                 load
+		eval
 		outfile
 		gc-interval)
-    (rewrite	stack-size)
+    (rewrite	stack-size
+		load-path
+		load)
     (filters	filter
                 (filter     exec-path
 		            error-log
@@ -282,7 +290,10 @@
     (print-severity             yes no)
     (print-auth			yes no)
     (print-failed-pass		yes no)
-    (print-pass			yes no)))
+    (print-pass			yes no)
+    (system                     yes no)
+    (trace-rules                yes no)
+    (reject-malformed-names     yes no)))
 
 (defconst radconf-keyword-nodes
   ;; Block kwd  Info file       Info node
@@ -296,7 +307,8 @@
     (guile      "radius"        "guile")
     (filters	"radius"	"filters")
     (message	"radius"	"message")
-    (rewrite	"radius"	"rewrite") ))
+    (rewrite	"radius"	"rewrite")
+    (mlc        "radius"        "mlc")))
 
 ;; Complete a given keyword
 (defun radconf-complete-keyword (word &optional prompt require-match)

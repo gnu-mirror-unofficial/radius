@@ -3,7 +3,7 @@ dnl * $Id$
 AC_REVISION($Revision$)
 AC_INIT(radiusd/radiusd.c)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(gnu-radius, 0.93.1)
+AM_INIT_AUTOMAKE(gnu-radius, 0.94-beta)
 AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 
@@ -62,6 +62,7 @@ AC_CHECK_LIB(socket, main)
 AC_CHECK_LIB(nsl, main)
 AC_CHECK_LIB(intl, gettext)
 AC_CHECK_LIB(rx, regcomp)
+AC_CHECK_LIB(crypt, crypt)
 
 ## * Checks for header files.
 AC_HEADER_STDC
@@ -467,7 +468,6 @@ if test x$GUILE_CONFIG != xno; then
 fi
 
 AM_CONDITIONAL(DBM, test x$USE_DBM = xyes)
-AM_CONDITIONAL(SNMP, test x$USE_SNMP = xyes)
 AM_CONDITIONAL(SQL, test x$USE_SQL != xno)
 AM_CONDITIONAL(GUILE, test x$GUILE_CONFIG != xno)
 

@@ -165,9 +165,6 @@ radius_exec_program(cmd, request, reply, exec_wait, user_msg)
 		saved_uid = geteuid();
 		saved_gid = getegid();
 		
-		radlog(L_NOTICE,
-		       "radius_exec_program(): setting %d:%d",
-		       pwd->pw_uid,grp->gr_gid);
 		if (setegid(grp->gr_gid)) {
 			radlog(L_CRIT|L_PERROR,
 			       _("radius_exec_program(): setegid failed"));

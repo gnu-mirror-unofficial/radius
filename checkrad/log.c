@@ -17,9 +17,10 @@
  *
  */
 
-/* log.c	Logging module. */
+#ifndef lint
 static char rcsid[] = 
 "$Id$";
+#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -73,7 +74,7 @@ do_log(lvl, syserr, fmt, ap)
 	char *fmt;
 	va_list ap;
 {
-	unsigned char *s = "";
+	char *s = "";
 	int errnum = errno;
 	time_t timeval;
 	struct tm *tm;
@@ -122,6 +123,7 @@ do_log(lvl, syserr, fmt, ap)
 	return 0;
 }
 
+/*PRINTFLIKE2*/
 int
 radlog(lvl, msg, va_alist)
 	int lvl;
@@ -140,6 +142,7 @@ radlog(lvl, msg, va_alist)
 	return 0;
 }
 
+/*PRINTFLIKE1*/
 int
 debug_printf(msg, va_alist)
 	char *msg;

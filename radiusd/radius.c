@@ -233,7 +233,7 @@ rad_send_reply(code, authreq, oreply, msg, activefd)
 	 */
 	secretlen = strlen(authreq->secret);
 	memcpy(send_buffer + total_length, authreq->secret, secretlen);
-	md5_calc(digest, (char *)auth, total_length + secretlen);
+	md5_calc(digest, (u_char *)auth, total_length + secretlen);
 	memcpy(auth->vector, digest, AUTH_VECTOR_LEN);
 	memset(send_buffer + total_length, 0, secretlen);
 
@@ -312,7 +312,7 @@ calc_acctdigest(digest, authreq)
 	int	secretlen;
 	CLIENT	*cl;
 	char zero[AUTH_VECTOR_LEN];
-	char	* recvbuf = authreq->data;
+	u_char	* recvbuf = (u_char*) authreq->data;
 	int	len = authreq->data_len;
 
 	/*
@@ -597,7 +597,7 @@ send_challenge(authreq, msg, state, activefd)
 	 */
 	secretlen = strlen(authreq->secret);
 	memcpy(send_buffer + total_length, authreq->secret, secretlen);
-	md5_calc(digest, (char *)auth, total_length + secretlen);
+	md5_calc(digest, (u_char *)auth, total_length + secretlen);
 	memcpy(auth->vector, digest, AUTH_VECTOR_LEN);
 	memset(send_buffer + total_length, 0, secretlen);
 

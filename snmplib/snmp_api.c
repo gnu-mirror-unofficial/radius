@@ -82,6 +82,8 @@
 #if 0
 #include <mibii.h>
 #include <snmp_dump.h>
+#else
+#define snmp_dump(packet, length, str, addr)
 #endif
 #include <snmp_error.h>
 #include <snmp_vars.h>
@@ -442,7 +444,7 @@ snmp_parse(struct snmp_session * session,
  * On any error, 0 is returned.
  * The pdu is freed by snmp_send() unless a failure occured.
  */
-#if 0
+
 int 
 snmp_send(struct snmp_session *session, struct snmp_pdu *pdu)
 {
@@ -882,4 +884,6 @@ snmp_api_stats(void *outP)
     fprintf(out, "LIBSNMP: Session List: %d active, %d have requests pending.\n",
 	active, requests);
 }
-#endif
+
+
+

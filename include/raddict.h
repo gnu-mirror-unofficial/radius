@@ -84,6 +84,13 @@
  */
 #define DA_REPLACE_USER_NAME 2001
 #define DA_REWRITE_FUNCTION 2002
+#define DA_ACCT_TYPE 2003
+#define DA_MATCH_PROFILE 2004
+#define DA_INCLUDE_PROFILE 2005
+#define DV_ACCT_TYPE_NONE 0
+#define DV_ACCT_TYPE_SYSTEM 1
+#define DV_ACCT_TYPE_DETAIL 2
+#define DV_ACCT_TYPE_SQL 3
 /*  These are used by rewriting functions:
  */
 #define DA_ORIG_USER_NAME 2101

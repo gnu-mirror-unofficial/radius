@@ -58,6 +58,7 @@ add_match(match)
 	else
 		match_first = mp;
 	match_last = mp;
+	return 0;
 }
 		
 void
@@ -84,7 +85,6 @@ select_offset(str, off)
 	int off;
 {
 	int len = strlen(str);
-	int size;
 	char *p, *q;
 	
 	if (len <= off)
@@ -139,7 +139,6 @@ int
 parse_header(str)
 	char *str;
 {
-	char *p;
 	char *q = str;
 	int field = 0;
 	int match = 0;
@@ -167,9 +166,9 @@ parse_header(str)
 		/* Check the fixed program */
 		for (p = match_first; p; p = p->next) 
 			if (p->type == MATCH_OFFSET && p->hdr) {
-				logit(L_ERR,
+				radlog(L_ERR,
 				      _("can't determine offset for field %s"),
-				      p->hdr);
+				       p->hdr);
 				return -1;
 			}
 		

@@ -1,3 +1,16 @@
+2001-02-14  gray  <gray@farlep.net>
+	Introduced Match-Profile and Include-Profile attributes
+
+2001-02-12  gray  <gray@farlep.net>
+	Modified checkrad to use snmplib instead of calling external
+	process.
+
+2001-02-08  gray  <gray@farlep.net>
+	Introduced realm quotas. Added extra entry to radutmp structure
+	to keep the realm's handling server. Size of the structure did
+	not change, so it should be compatible with previous versions.
+	Added extra format flag `realm' to radwho. 
+
 2001-02-06  gray  <gray@farlep.net>
 	Fixed handling of integer objects in radscm/radscm.c (added
 	bignums). Improved test/test.scm. 

@@ -116,17 +116,18 @@ format_reply(s)
 	*reply_ptr = 0;
 }
 
+/*ARGSUSED*/
 int
 cntl_respond(fd, sa, salen, buf, size)
 	int fd;
 	struct sockaddr *sa;
 	int salen;
-	char *buf;
+	u_char *buf;
 	int size;
 {
 	AUTH_REQ           *authreq;
 	VALUE_PAIR         *pair, *namepair;
-	char	   	   pw_digest[AUTH_PASS_LEN];
+	u_char	   	   pw_digest[AUTH_PASS_LEN];
 	struct sockaddr_in *sin = (struct sockaddr_in *) sa;
 	int                reply_code = PW_AUTHENTICATION_REJECT;
 	int                code, rc;

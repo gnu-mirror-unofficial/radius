@@ -8,4 +8,6 @@ raddict.h: ../raddb/dictionary
 radmibs.h: ../mibs/radmibs.h.in
 	$(AWK) -f ../scripts/mksnmp-h.awk ../mibs/radmibs.h.in > radmibs.h
 
+lint:;
+
 endif

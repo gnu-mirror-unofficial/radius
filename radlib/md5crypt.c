@@ -34,8 +34,6 @@ to64(s, v, n)
 	unsigned long v;
 	int n;
 {
-static void to64 (char *, unsigned long, int);
-
 	while (--n >= 0) {
 		*s++ = itoa64[v&0x3f];
 		v >>= 6;
@@ -85,19 +83,19 @@ md5crypt(pw, salt)
 	MD5Init(&ctx);
 
 	/* The password first, since that is what is most unknown */
-	MD5Update(&ctx, (char*) pw, strlen(pw));
+	MD5Update(&ctx, (unsigned char*) pw, strlen(pw));
 
 	/* Then our magic string */
-	MD5Update(&ctx,magic,strlen(magic));
+	MD5Update(&ctx,(unsigned char*) magic,strlen(magic));
 
 	/* Then the raw salt */
-	MD5Update(&ctx, (char*)sp, sl);
+	MD5Update(&ctx, (unsigned char*)sp, sl);
 
 	/* Then just as many characters of the MD5(pw,salt,pw) */
 	MD5Init(&ctx1);
-	MD5Update(&ctx1, (char*)pw, strlen(pw));
-	MD5Update(&ctx1, (char*)sp, sl);
-	MD5Update(&ctx1, (char*)pw, strlen(pw));
+	MD5Update(&ctx1, (unsigned char*)pw, strlen(pw));
+	MD5Update(&ctx1, (unsigned char*)sp, sl);
+	MD5Update(&ctx1, (unsigned char*)pw, strlen(pw));
 	MD5Final(final,&ctx1);
 	for(pl = strlen(pw); pl > 0; pl -= 16)
 		MD5Update(&ctx,final,pl>16 ? 16 : pl);
@@ -110,7 +108,7 @@ md5crypt(pw, salt)
 		if(i&1)
 		    MD5Update(&ctx, final, 1);
 		else
-		    MD5Update(&ctx, (char*)pw, 1);
+		    MD5Update(&ctx, (unsigned char*)pw, 1);
 
 	/* Now make the output string */
 	strcpy(passwd,magic);
@@ -127,20 +125,20 @@ md5crypt(pw, salt)
 	for(i=0;i<1000;i++) {
 		MD5Init(&ctx1);
 		if(i & 1)
-			MD5Update(&ctx1, (char*)pw, strlen(pw));
+			MD5Update(&ctx1, (unsigned char*)pw, strlen(pw));
 		else
 			MD5Update(&ctx1,final,16);
 
 		if(i % 3)
-			MD5Update(&ctx1, (char*)sp, sl);
+			MD5Update(&ctx1, (unsigned char*)sp, sl);
 
 		if(i % 7)
-			MD5Update(&ctx1, (char*)pw, strlen(pw));
+			MD5Update(&ctx1, (unsigned char*)pw, strlen(pw));
 
 		if(i & 1)
 			MD5Update(&ctx1,final,16);
 		else
-			MD5Update(&ctx1, (char*)pw, strlen(pw));
+			MD5Update(&ctx1, (unsigned char*)pw, strlen(pw));
 		MD5Final(final,&ctx1);
 	}
 

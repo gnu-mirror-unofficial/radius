@@ -19,8 +19,10 @@
 
 /* debug.c	Debugging module. */
 
+#ifndef lint
 static char rcsid[] = 
 "$Id$";
+#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -59,7 +61,7 @@ set_module_debug_level(name, level)
 	return 1;
 }
 
-int
+void
 set_debug_levels(str)
 	char *str;
 {
@@ -88,7 +90,7 @@ set_debug_levels(str)
 	}
 }
 
-int
+void
 clear_debug()
 {
 	int  i;
@@ -97,7 +99,7 @@ clear_debug()
 		debug_level[ debug_module[i].modnum ] = 0;
 }
 
-int
+void
 debug_output(module, line, function, msg)
 	char *module;
 	int  line;
@@ -110,6 +112,7 @@ debug_output(module, line, function, msg)
 		radlog(L_DBG, "%s:%d:%s", module, line, msg);
 }	
 
+/*PRINTFLIKE1*/
 char *
 debug_sprintf(msg, va_alist)
 	char *msg;

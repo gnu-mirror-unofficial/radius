@@ -1,3 +1,8 @@
+1. Realm quota support.
+
+------------------------------
+NEWS for version 0.93
+
 The Guile interface to Radius functions has been added. The program
 radscm (radius scheme) is actually a Guile Scheme interpreter with
 some special functions added.

@@ -39,6 +39,7 @@ radtest: $(srcdir)/radtest.m4
 # Maintainer-specific part
 if MAINTAINER_MODE
 
+lint:;
 
 endif
 

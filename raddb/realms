@@ -9,11 +9,15 @@
 # 	ii.  Hostname. Optional is :port to use a non-standard port. 
 #	     In that case, port is the authenication port and the 
 #	     accounting port is taken as port + 1.
-# 	iii. (optional) flag. Currently only one flag is supported: nostrip, 
-#	     meaning the realm should not be stripped off the full user name.
-#
+#            A reserved word LOCAL means the logins for this realm must
+#            be processed locally.
+# 	iii. (optional) flag. This can be either strip, meaning to strip
+#	     the realm name off the full user name (the default), or
+#            nostrip, meaning the realm should not be stripped. 
+#	iv.  (optional) Maximum number of simultaneous sessions for this 
+#	     realm. 
 
-# Realm                 Remote server [:port]		flags
-#----------------	---------------------		--------
-#isp2.com		radius.isp2.com			nostrip
+# Realm                 Remote server [:port]		flags		Max
+#----------------	---------------------		--------	----
+#isp2.com		radius.isp2.com			nostrip		20
 #company.com		radius.company.com:1600

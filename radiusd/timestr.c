@@ -2,7 +2,9 @@
  * timestr.c	See if a string like 'Su2300-0700' matches (UUCP style).
  *
  * Version:	@(#)timestr.c  0.10  21-Mar-1999 miquels@cistron.nl
- *
+ *                                   2000-11-12  gray@farlep.net
+ *                                   2001-01-31  gray@farlep.net
+ *                                   2001-02-04  gray@farlep.net
  */
 
 #ifndef lint

@@ -102,6 +102,15 @@ ATTRIBUTE	Login-Time		1042	string
 # Attributes used by GNU Radius
 ATTRIBUTE	Replace-User-Name	2001	string
 ATTRIBUTE	Rewrite-Function	2002	string
+ATTRIBUTE	Acct-Type		2003	integer
+ATTRIBUTE	Match-Profile		2004	string
+ATTRIBUTE	Include-Profile		2005	string 
+
+VALUE		Acct-Type		None	0
+VALUE		Acct-Type		System	1
+VALUE		Acct-Type		Detail	2
+VALUE		Acct-Type		SQL	3
+
 # These are used by rewriting functions:
 ATTRIBUTE	Orig-User-Name		2101	string
 ATTRIBUTE	Orig-NAS-Port-Id	2105	integer

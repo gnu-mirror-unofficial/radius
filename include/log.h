@@ -81,7 +81,7 @@ extern int log_mode;
 void            initlog(char*);
 int		radlog(/*int, char *, ...*/);
 char           *debug_sprintf(/*char *, ...*/);
-int             debug_output(char *, int, char *, char *);
+void            debug_output(char *, int, char *, char *);
 int             __insist_failure(char *, char *, int);
 
 #ifndef MAX_DEBUG_LEVEL
@@ -112,8 +112,8 @@ Channel *install_channel(char *name, int mode, int prio, char *file, int opt);
 void register_category(int level, Channel *channel);
 Channel *channel_lookup(char *name);
 
-int set_debug_levels(char *str);
+void set_debug_levels(char *str);
 int set_module_debug_level(char *name, int level);
-int clear_debug();
+void clear_debug();
 
 #endif

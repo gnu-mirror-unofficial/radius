@@ -130,6 +130,7 @@ static struct keyword type_kw[] = {
 	"date", PW_TYPE_DATE
 };
 
+/*ARGSUSED*/
 int
 _dict_include(errcnt, fc, fv, file, lineno)
 	int    *errcnt;
@@ -236,13 +237,13 @@ _dict_value(errcnt, fc, fv, file, lineno)
 	if (strlen(VALUE_NAME) > MAX_DICTNAME) {
 		radlog(L_ERR|L_CONS,
 		       _("%s:%d: value name too long"),
-		       fileno, lineno);
+		       file, lineno);
 		return 0;
 	}
 	if (strlen(VALUE_ATTR) > MAX_DICTNAME) {
 		radlog(L_ERR|L_CONS,
 		       _("%s:%d: value attribute name too long"),
-		       fileno, lineno);
+		       file, lineno);
 		return 0;
 	}
 	
@@ -279,14 +280,13 @@ _dict_vendor(errcnt, fc, fv, file, lineno)
 {
 	int             value;
 	char            *p;
-	DICT_VENDOR	*v;
 
 	if (nfields(fc, 3, 3, file, lineno))
 		return 0;
 	if (strlen(VENDOR_NAME) > MAX_DICTNAME) {
 		radlog(L_ERR|L_CONS,
 		       _("%s:%d: vendor name too long"),
-		       fileno, lineno);
+		       file, lineno);
 		return 0;
 	}
 	value = strtol(VENDOR_VALUE, &p, 0);

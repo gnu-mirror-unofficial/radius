@@ -63,7 +63,8 @@ struct radutmp {
 	char res1,res2,res3;		/* Fills up to one int */
 	time_t duration;
 	char caller_id[RUT_PNSIZE];      /* calling station ID */
-	char reserved[14];		
+	unsigned int realm_address;
+	char reserved[10];		
 };
 
 #define LOCK_LEN sizeof(struct radutmp)

@@ -11,9 +11,9 @@
 #if RADIUS_DEBUG
 #include <log.h>
 
-int debug_level[17];
+int debug_level[16];
 
-struct debug_module debug_module[17+1] = {
+struct debug_module debug_module[16+1] = {
 
        "leakdetect.c", 0,
        "mem.c", 1,
@@ -29,11 +29,10 @@ struct debug_module debug_module[17+1] = {
        "pam.c", 9,
        "proxy.c", 10,
        "radius.c", 11,
-       "ippool.c", 12,
-       "stat.c", 13,
-       "snmpserv.c", 14,
-       "radutil.c", 15,
-       "rewrite.y", 16,
+       "stat.c", 12,
+       "snmpserv.c", 13,
+       "radutil.c", 14,
+       "rewrite.y", 15,
 
 	(char*)0, 0
 };

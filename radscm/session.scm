@@ -76,11 +76,7 @@
 (define (rad-auth)
   (let ((pack (list (cons "User-Name"  opt-login)
 		    (cons "Password"  opt-passwd)
-		    (cons "NAS-IP-Address"  (cond
-					     ((string? 'opt-nas)
-					      opt-nas)
-					     (else
-					      "127.0.0.1"))))))
+		    (cons "NAS-IP-Address" opt-nas))))
     (cond
      ((and (defined? 'opt-port) (number? opt-port))
       (set! pack (append pack (list (cons "NAS-Port-Id" opt-port))))))
@@ -209,6 +205,7 @@
 						      (symbol->string (car x))))
 				(cdr x)))))))
 	  cmd-list)
+
 ;; Select and perform appropriate action
 (case action
   ((help nil)

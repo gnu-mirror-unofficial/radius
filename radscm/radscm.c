@@ -23,6 +23,7 @@
 #include <libguile.h>
 #include <radiusd.h>
 #include <radclient.h>
+#include <pwd.h>
 
 static RADCLIENT *radclient;
 
@@ -44,7 +45,7 @@ static SCM scm_makenum(unsigned long val);
 static int scheme_to_pair(SCM scm, VALUE_PAIR *pair);
 static VALUE_PAIR *scheme_to_list(SCM list);
 static SCM list_to_scheme(VALUE_PAIR *pair);
-static SERVER *sheme_to_server(SCM g_list, char *func);
+static SERVER *scheme_to_server(SCM g_list, char *func);
 
 static void
 die(msg)
@@ -61,7 +62,7 @@ rad_scheme_init(argc, argv)
 {
 	int di, si;
 	int double_dash = 0;
-	SCM *scm_loc, scm;
+	SCM *scm_loc;
 	char *bootpath;
 	char *p;
 	
@@ -525,10 +526,7 @@ scheme_to_pair(scm, pair)
 	SCM scm;
 	VALUE_PAIR *pair;
 {
-	SCM car, cdr, *vect;
-	int length;
-	int inum;
-	int vendor_id;
+	SCM car, cdr;
 	DICT_ATTR *dict;
 	DICT_VALUE *val;
 	

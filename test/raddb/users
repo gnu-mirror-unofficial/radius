@@ -1,0 +1,127 @@
+ROOT	Auth-Type = Crypt-Local,
+		Password = "$1$r22sA$AfVF2TR2ETWaknXsAZAc41",
+		Huntgroup-Name = "ROOT"
+	Service-Type = RADIUS-Administrative-User
+
+OPERATOR	Auth-Type = Local,
+		Password = "test",
+		Huntgroup-Name = "OPERATOR"
+	Service-Type = RADIUS-Administrative-User
+
+claudius	Auth-Type = Crypt-Local,
+		Password = "$1$gHpum$PvsdB6vnsTt.wC0xPDkar/",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+
+hamlet	Auth-Type = Crypt-Local,
+		Password = "$1$gHpfo$0BuBYjWmmM6E4l00ZFqVI1",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+
+Mhamlet	Auth-Type = Crypt-Local,
+		Password = "$1$gHpfo$0BuBYjWmmM6E4l00ZFqVI1"
+	Menu="menu1"
+
+hamlet3	 Auth-Type = Crypt-Local,
+		Password = "$1$gHpfo$0BuBYjWmmM6E4l00ZFqVI1",
+		Suffix = "3",
+		Simultaneous-Use = 3
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+
+fortinbras	Auth-Type = Crypt-Local,
+		Password = "$1$gHpYr$nIHwPIijEgrhEhEKXtZ420",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+
+polonius	Auth-Type = Crypt-Local,
+		Password = "$1$gHpss$s21bTQMaPZ69CQyOPVfQZ1",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+
+horatio	Auth-Type = Crypt-Local,
+		Password = "$1$gHp2v$pCbcRQCks9NM69nTl82Ak/",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+
+laertes	Auth-Type = Crypt-Local,
+		Password = "$1$gHpoy$P6.PkxuELNKfRSx.F3Xxc/",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+
+voltimand	Auth-Type = Crypt-Local,
+		Password = "$1$gHpZ.$cG0smSTwLhLutv64ZqdMK.",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+
+cornelius	Auth-Type = Crypt-Local,
+		Password = "$1$gHpg0$jVpwlyZNd7jgrT6y7z3MS1",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+
+rosencrantz	Auth-Type = Crypt-Local,
+		Password = "$1$XMTqx$lnYvD422VLCTmEV73PZYu/",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+
+guildenstern	Auth-Type = Crypt-Local,
+		Password = "$1$XMTA.$53RtK9lff9bVoGoZ5m2791",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+
+osric	Auth-Type = Crypt-Local,
+		Password = "$1$XMT/1$aAaJ9lSN5L5OmfXPBhBVz1",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+
+marcellus	Auth-Type = Crypt-Local,
+		Password = "$1$XMTq2$rp/ty9Ia4aVtlD2ULHDYd.",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+
+bernardo	Auth-Type = Crypt-Local,
+		Password = "$1$XMTa5$MzjOZaz3EhBlpYsaj03c2/",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+
+francisco	Auth-Type = Crypt-Local,
+		Password = "$1$XMTx6$ZrmPAo9UNvuQZCL6yzANB.",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+
+reynaldo	Auth-Type = Crypt-Local,
+		Password = "$1$XMTa9$usV9.tje9i8Y763Lf8sSd0",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP,
+		Fall-Through = Yes
+
+gertrude	Auth-Type = Crypt-Local,
+		Password = "$1$XMTfB$OtHueLHgtAJWPYZRrBpbs0",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP,
+		Fall-Through = Yes
+
+ophelia	Auth-Type = Crypt-Local,
+		Password = "$1$XMTBD$Cc1W1wqyimbhaOAvV/XiY.",
+		Simultaneous-Use = 1
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP,
+		Fall-Through = Yes
+
+DEFAULT	NULL	Framed-IP-Address = "127.0.1.1+"

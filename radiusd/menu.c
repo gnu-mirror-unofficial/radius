@@ -40,7 +40,7 @@ void
 process_menu(authreq, activefd, pw_digest)
 	AUTH_REQ        *authreq;
 	int             activefd;
-	char            *pw_digest;
+	u_char          *pw_digest;
 {
         VALUE_PAIR *pair, *term_pair, *new_pair;
 	char menu_name[MAX_MENU_NAME];
@@ -178,7 +178,6 @@ menu_pairs(menu_name, menu_selection)
 	char    selection[MAX_MENU_INPUT];
 	int     mode;
 	char    *ptr, *errp;
-	int     nread;
 	VALUE_PAIR      *reply_first;
 	int line_num;
 	

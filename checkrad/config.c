@@ -65,10 +65,9 @@ static int (*config_match)() = config_error;
 #define T_HEADER    259
 #define T_STRING    260
 #define T_NUMBER    261
-#define T_COMMUNITY 262
-#define T_OID       263
-#define T_LOGFILE   264
-#define T_DEBUG     265
+#define T_OID       262
+#define T_LOGFILE   263
+#define T_DEBUG     264
 
 static struct keyword keyword_list[] = {
 	"logfile",   T_LOGFILE,
@@ -77,7 +76,6 @@ static struct keyword keyword_list[] = {
 	"method",    T_METHOD,
 	"match",     T_MATCH,
 	"header",    T_HEADER,
-	"community", T_COMMUNITY,
 	"oid",       T_OID,
 	0
 };
@@ -171,7 +169,7 @@ putback(tok, length)
 	int length;
 {
 	if (length > curp - buffer) {
-		logit(L_CRIT,
+		radlog(L_CRIT,
 		      _("INTERNAL ERROR parsing %s near %d: out of putback space"),
 		      source_name, source_line);
 		return;
@@ -233,7 +231,7 @@ copy_string()
 			break;
 		}
 		if (p >= token.string + sizeof(token.string)) {
-			logit(L_ERR, _("%s:%d: token too long"),
+			radlog(L_ERR, _("%s:%d: token too long"),
 			      source_name, source_line);
 			break;
 		}
@@ -256,7 +254,7 @@ copy_digit()
 	
 	do {
 		if (p >= token.string + sizeof(token.string)) {
-			logit(L_ERR, _("%s:%d: token too long"),
+			radlog(L_ERR, _("%s:%d: token too long"),
 			      source_name, source_line);
 			break;
 		}
@@ -277,18 +275,18 @@ read_config()
 
 	source_name = mkfilename(radius_dir, CONFIG_FILE);
 	if (stat(source_name, &st)) {
-		logit(L_ERR|L_PERROR, _("can't stat `%s'"), source_name);
-		return;
+		radlog(L_ERR|L_PERROR, _("can't stat `%s'"), source_name);
+		return NULL;
 	}
 	fd = open(source_name, O_RDONLY);
 	if (fd == -1) {
-		logit(L_ERR|L_PERROR,
+		radlog(L_ERR|L_PERROR,
 		      _("can't open config file `%s'"), source_name);
 		return NULL;
 	}
 	buffer = emalloc(st.st_size+1);
 	if (!buffer) {
-		logit(L_ERR,
+		radlog(L_ERR,
 		      _("not enough memory to read config file `%s'"),
 		      source_name);
 		close(fd);
@@ -324,19 +322,16 @@ read_config()
 			case T_MATCH:
 				config_match();
 				break;
-			case T_COMMUNITY:
-				config_community();
-				break;
 			case T_OID:
 				config_oid();
 				break;
 			default:
-				logit(L_ERR, _("%s:%d: syntax error"),
+				radlog(L_ERR, _("%s:%d: syntax error"),
 				      source_name, source_line);
 				exit(-1);
 			}
 			if (token.type && token.type != T_EOL) {
-				logit(L_WARN, _("%s:%d: junk at end of line: %s"),
+				radlog(L_WARN, _("%s:%d: junk at end of line: %s"),
 				      source_name, source_line, curp);
 				skipline();
 			}
@@ -371,11 +366,12 @@ config_method()
 		config_match = config_snmp_match;
 		nextkn();
 	} else {
-		logit(L_ERR, _("%s:%d: unknown method: %s"),
+		radlog(L_ERR, _("%s:%d: unknown method: %s"),
 		      source_name, source_line,
 		      token.string);
 		exit(-1);
 	}
+	return 0;
 }
 
 int
@@ -401,6 +397,7 @@ config_header()
 		add_header(str);
 		str = s;
 	}
+	return 0;
 }
 
 int
@@ -427,7 +424,7 @@ config_finger_match()
 
 		nextkn();
 		if (token.type != '=') {
-			logit(L_ERR, _("%s:%d: expected '=' but found %s"),
+			radlog(L_ERR, _("%s:%d: expected '=' but found %s"),
 			      source_name, source_line,
 			      token.string);
 			exit(-1);
@@ -439,7 +436,7 @@ config_finger_match()
 
 		nextkn();
 	} while (token.type == ',');
-	
+	return 0;
 }
 
 int
@@ -449,16 +446,7 @@ config_snmp_match()
 	debug(5,("%s:%d: snmp_match = %s",
 		 source_name, source_line, snmp_match));
 	nextkn();
-}
-
-int
-config_community()
-{
-	nextkn();
-	snmp_community = estrdup(token.string);
-	debug(5,("%s:%d: snmp_community = %s",
-		 source_name, source_line, snmp_community));
-	nextkn();
+	return 0;
 }
 
 int
@@ -468,11 +456,79 @@ config_oid()
 	debug(5,("%s:%d: snmp_oid = %s",
 		 source_name, source_line, snmp_oid));
 	nextkn();
+	return 0;
 }
 		
 int
 config_error()
 {
-	logit(L_ERR, _("%s:%d: shouldn't happen: don't know how to handle match here"),
+	radlog(L_ERR, _("%s:%d: shouldn't happen: don't know how to handle match here"),
 	      source_name, source_line);
+	return 0;
+}
+
+char *
+read_clients(host)
+	char *host;
+{
+	char *path;
+	FILE *fp;
+	char buf[128];
+	struct stat st;
+	int lineno;
+	int found = 0;
+	char *pwd = NULL;
+	char *str, *tok;
+	int len, field;
+	UINT4 host_ip ;
+
+	host_ip = get_ipaddr(host);
+	
+	path = mkfilename(radius_dir, "naspasswd");
+	fp = fopen(path, "r");
+	if (!fp) {
+		radlog(L_ERR|L_PERROR,
+		      _("can't open config file `%s'"), path);
+		efree(path);
+		return NULL;
+	}
+
+	lineno = 0;
+	while (!found && (str = fgets(buf, sizeof(buf), fp))) {
+		lineno++;
+		len = strlen(str);
+		if (len > 1) {
+			if (str[len-1] == '\n')
+				str[len-1] = 0;
+			else {
+				radlog(L_ERR,
+				       _("%s:%d: unterminated line"),
+				       path, lineno);
+			}
+		} else
+			continue;
+		while (*str && isspace(*str))
+			str++;
+		if (!*str || *str == '#')
+			continue;
+		field = 0;
+		for (tok = strtok(str, " \t"); tok; tok = strtok(NULL, " \t"))
+			switch (field++) {
+			case 0:
+				found = get_ipaddr(tok) == host_ip;
+				break;
+			case 1:
+				if (found)
+					pwd = estrdup(tok);
+				break;
+			default:
+				radlog(L_ERR,
+				       _("%s:%d: extra field"),
+				       path, lineno);
+				tok = NULL;
+			}
+	}
+
+	efree(path);
+	return pwd;
 }

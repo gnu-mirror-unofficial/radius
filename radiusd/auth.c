@@ -129,7 +129,7 @@ check_expiration(check_item, umsg, user_msg)
 
 	result = 0;
 	if (pair = pairfind(check_item, DA_EXPIRATION)) {
-		rc = pw_expired(check_item->lvalue);
+		rc = pw_expired(pair->lvalue);
 		if (rc < 0) {
 			result = -1;
 			*user_msg = _("Password Has Expired\r\n");
@@ -253,7 +253,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 	int        activefd;
 	VALUE_PAIR *check_item;
 	VALUE_PAIR *namepair;
-	char       *pw_digest;
+	u_char     *pw_digest;
 	char       **user_msg;
 	char       *userpass;
 {
@@ -459,7 +459,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 				memcpy(ptr, authreq->vector, AUTH_VECTOR_LEN);
 				i += AUTH_VECTOR_LEN;
 			}
-			md5_calc(pw_digest, string, i);
+			md5_calc(pw_digest, (u_char*) string, i);
 
 			/*
 			 *	Compare them
@@ -549,6 +549,34 @@ rad_auth_init(authreq, activefd)
  * Authentication state machine.
  */
 
+enum auth_state {
+	as_init,
+	as_validate,
+	as_service, 
+	as_disable, 
+	as_service_type,
+	as_realmuse,
+	as_simuse, 
+	as_time, 
+	as_ttl, 
+	as_ipaddr, 
+	as_exec_wait, 
+	as_cleanup_cbkid, 
+	as_menu,
+	as_ack, 
+	as_exec_nowait, 
+	as_stop, 
+	as_reject,
+	AS_COUNT
+};
+
+enum list_id {
+	L_null,
+	L_req,
+	L_reply,
+	L_check
+};
+
 typedef struct auth_mach {
 	AUTH_REQ   *req;
 	VALUE_PAIR *user_check;
@@ -564,40 +592,15 @@ typedef struct auth_mach {
 	char       umsg[AUTH_STRING_LEN];
 	
 	char       *clid;
-	int        state;
+	enum auth_state state;
 } MACH;
-
-enum auth_state {
-	as_init,
-	as_validate,
-	as_service, 
-	as_disable, 
-	as_service_type,
-	as_simuse, 
-	as_time, 
-	as_ttl, 
-	as_ipaddr, 
-	as_exec_wait, 
-	as_cleanup_cbkid, 
-	as_menu,
-	as_ack, 
-	as_exec_nowait, 
-	as_stop, 
-	as_reject,
-	AS_COUNT
-};
-
-enum {
-	L_req,
-	L_reply,
-	L_check,
-};
 
 static void sfn_init(MACH*);
 static void sfn_validate(MACH*);
 static void sfn_service(MACH*);
 static void sfn_disable(MACH*);
 static void sfn_service_type(MACH*);
+static void sfn_realmuse(MACH*);
 static void sfn_simuse(MACH*);
 static void sfn_time(MACH*);
 static void sfn_ttl(MACH*);
@@ -615,25 +618,28 @@ struct auth_state_s {
 	enum auth_state this;
 	enum auth_state next;
 	int             attr;
-	int             list;
+	enum list_id    list;
 	void            (*sfn)(MACH*);
 };
 
 struct auth_state_s states[] = {
 	as_init,         as_validate,
-	                 0,               0,     sfn_init,
+	                 0,               L_null,     sfn_init,
 
 	as_validate,     as_service,
-	                 0,               0,     sfn_validate,
+	                 0,               L_null,     sfn_validate,
 	
 	as_service,      as_disable,
 	                 DA_SERVICE_TYPE, L_req, sfn_service,
 	
 	as_disable,      as_service_type,
-	                 0,               0,     sfn_disable,
+	                 0,               L_null,     sfn_disable,
 	
-	as_service_type, as_simuse,
+	as_service_type, as_realmuse,
 	                 DA_SERVICE_TYPE, L_reply, sfn_service_type,
+
+	as_realmuse,     as_simuse,
+	                 0,               L_null,     sfn_realmuse, 
 	
 	as_simuse,       as_time,
 	                 DA_SIMULTANEOUS_USE, L_check, sfn_simuse,
@@ -642,10 +648,10 @@ struct auth_state_s states[] = {
 	                 DA_LOGIN_TIME,   L_check, sfn_time,
 	
 	as_ttl,          as_ipaddr,
-	                 0,               0, sfn_ttl,
+	                 0,               L_null, sfn_ttl,
 	
 	as_ipaddr,       as_exec_wait,
-	                 0,               0, sfn_ipaddr,
+	                 0,               L_null, sfn_ipaddr,
 	
 	as_exec_wait,    as_cleanup_cbkid,
 	                 DA_EXEC_PROGRAM_WAIT, L_reply, sfn_exec_wait,
@@ -657,16 +663,16 @@ struct auth_state_s states[] = {
 	                 DA_MENU,         L_reply, sfn_menu,
 	
 	as_ack,          as_exec_nowait,
-	                 0,               0, sfn_ack,
+	                 0,               L_null, sfn_ack,
 	
 	as_exec_nowait,  as_stop,
 	                 DA_EXEC_PROGRAM, L_reply, sfn_exec_nowait,
 	
-	as_stop,         -1,
-	                 0,               0, NULL,
+	as_stop,         as_stop,
+	                 0,               L_null, NULL,
 	
 	as_reject,       as_stop,
-	                 0,               0, sfn_reject,
+	                 0,               L_null, sfn_reject,
 };
 
 int
@@ -912,6 +918,25 @@ sfn_service_type(m)
 }
 
 void
+sfn_realmuse(m)
+	MACH *m;
+{
+	if (!m->req->realm)
+		return;
+	
+	if (rad_check_realm(m->req->realm) == 0)
+		return;
+	m->user_msg = _("\r\nRealm quota exceeded - access denied\r\n");
+	radlog(L_AUTH,
+   _("Login failed: [%s]: realm quota exceeded for %s: CLID %s (from nas %s)"),
+	       m->namepair->strvalue,
+	       m->req->realm,
+	       m->clid,
+	       nas_name2(m->req));
+	newstate(as_reject);
+}
+
+void
 sfn_simuse(m)
 	MACH *m;
 {
@@ -923,7 +948,7 @@ sfn_simuse(m)
 	if ((rc = rad_check_multi(name, m->req->request,
 				  m->check_pair->lvalue)) == 0)
 		return;
-
+	
 	if (m->check_pair->lvalue > 1) {
 		sprintf(m->umsg,
 	      _("\r\nYou are already logged in %d times  - access denied\r\n"),
@@ -947,8 +972,6 @@ VALUE_PAIR *
 timeout_pair(m)
 	MACH *m;
 {
-	VALUE_PAIR *p;
-
 	if (!m->timeout_pair &&
 	    !(m->timeout_pair = pairfind(m->user_reply, DA_SESSION_TIMEOUT))) {
 		m->timeout_pair = create_pair(DA_SESSION_TIMEOUT,
@@ -992,7 +1015,7 @@ sfn_ttl(m)
 	MACH *m;
 {
 #ifdef USE_NOTIFY	
-	int r;
+	long r;
 	if (timetolive(m->namepair->strvalue, &r) == 0) {
 		if (r > 0) {
 			timeout_pair(m)->lvalue = r;
@@ -1015,9 +1038,15 @@ sfn_ipaddr(m)
 	
 	/* Assign an IP if necessary */
 	if (!pairfind(m->user_reply, DA_FRAMED_IP_ADDRESS)) {
+#if 0
+		/* **************************************************
+		 * Keep it here until IP allocation is ready
+		 */
 		if (p = alloc_ip_pair(m->namepair->strvalue, m->req))
 			pairadd(&m->user_reply, p);
-		else if (p = pairfind(m->req->request, DA_FRAMED_IP_ADDRESS)) {
+		else
+#endif	
+		if (p = pairfind(m->req->request, DA_FRAMED_IP_ADDRESS)) {
 			/* termserver hint */
 			pairadd(&m->user_reply, pairdup(p));
 			if (p = pairfind(m->req->request,

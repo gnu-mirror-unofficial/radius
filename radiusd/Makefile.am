@@ -9,7 +9,7 @@ endif
 sbin_PROGRAMS   = radiusd
 radiusd_SOURCES = radiusd.c acct.c auth.c exec.c files.c menu.c sql.c\
                   notify.c config.c pam.c proxy.c radius.c\
-                  symtab.c timestr.c version.c log.c ippool.c stat.c\
+                  symtab.c timestr.c version.c log.c stat.c\
                   snmpserv.c shmem.c radutil.c radctl.c\
                   rewrite.c debugmod.c
 radiusd_LDADD   = @LEXLIB@ -L ../radlib -lrad $(LIBSQL) @RADIUSD_LDADD@
@@ -22,7 +22,7 @@ config.c: $(srcdir)/config.y
 	$(YACC) -v @YACC_OPTS@ $(srcdir)/config.y
 	sed -e 's/y\.tab\.\([ch]\)/config\.\1/g;s/yy/conf_yy/g' y.tab.c > config.c
 
-config.o: config.c ../include/radiusd.h ../include/ippool.h
+config.o: config.c ../include/radiusd.h 
 
 rewrite.c: $(srcdir)/rewrite.y
 	$(YACC) -v @YACC_OPTS@ $(srcdir)/rewrite.y
@@ -36,18 +36,18 @@ if MAINTAINER_MODE
 MCFLAGS=-ggdb -DMAINTAINER_MODE=1
 MAINTAINERCLEANFILES=core *~ err out 
 CLEANFILES=*.ln
-LINTFLAGS=-gezr -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -DCHECKRAD=\"${libexecdir}/checkrad\" $(INCLUDES)
+LINTFLAGS=-gezra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -DCHECKRAD=\"${libexecdir}/checkrad\" $(INCLUDES)
 radiusd_LNS=$(radiusd_SOURCES:.c=.ln)
 
 .c.ln:
 	$(LINT.c) -i $<
 
 lint:  $(radiusd_LNS)
-	$(LINT.c) -u $(radiusd_LNS)
+	$(LINT.c) -u $(radiusd_LNS) -L ../radlib -lrad
 
 SRCS=radiusd.c acct.c auth.c exec.c files.c menu.c sql.c\
          notify.c config.y pam.c proxy.c radius.c\
-         symtab.c timestr.c version.c log.c ippool.c stat.c\
+         symtab.c timestr.c version.c log.c stat.c\
          snmpserv.c shmem.c radutil.c radctl.c rewrite.y
 
 FILELIST:; @echo $(SRCS) > .list

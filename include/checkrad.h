@@ -36,15 +36,18 @@ typedef struct match_list {
 	char *value;
 } MATCH_LIST;
 
-typedef int (*Check)(char*, int);
+typedef int (*Check)(char*);
 
 char * select_offset(char *str, int off);
 char * select_field(char *str, int num);
 int compare(char *str);
 char * checkrad_xlat(char *str);
 Check read_config();
-int netfinger(char*, int);
-int snmp_check(char*, int);
+char *read_clients(char *);
+
+int netfinger(char*);
+int snmp_check(char*);
+
 void set_debug_level(char *);
 void set_logfile(char *);
 
@@ -57,5 +60,6 @@ extern char *snmp_community;
 extern char *snmp_oid;
 extern char *snmp_match;
 
-/* temporary kludge */
-#define logit radlog
+int ilookup(char *name, int defval);
+char *slookup(char *name, char *defval);
+

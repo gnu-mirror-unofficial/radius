@@ -360,7 +360,7 @@ radclient_recv(host, udp_port, secret, vector, buffer, length)
 	memcpy(auth->vector, vector, AUTH_VECTOR_LEN);
 	secretlen = strlen(secret);
 	memcpy(buffer + length, secret, secretlen);
-	md5_calc(calc_digest, (char *)auth, length + secretlen);
+	md5_calc(calc_digest, (unsigned char *)auth, length + secretlen);
 
 	if (memcmp(reply_digest, calc_digest, AUTH_VECTOR_LEN) != 0) {
 		radlog(L_WARN, _("Received invalid reply digest from server"));

@@ -17,7 +17,7 @@
  *
  */
 %{
-#define RADIUS_MODULE 16
+#define RADIUS_MODULE 15
         #if defined(HAVE_CONFIG_H)
 	# include <config.h>
 	#endif
@@ -75,7 +75,7 @@
 	
 	typedef int stkoff_t;          /* Offset on stack */
 	typedef unsigned int pctr_t;   /* Program counter */
-	typedef int (*INSTR)();        /* program instruction */
+	typedef void (*INSTR)();        /* program instruction */
 
 	/* Compiled regular expression
 	 */
@@ -730,7 +730,7 @@ fundecl : TYPE IDENT dclparm
 		  bzero(&f, sizeof(f));
 		  f.name    = $2;
 		  f.rettype = $1;
-		  f.entry   = -1;
+		  f.entry   = 0;
 		  f.line    = input_line;
 		  
 		  f.nparm   = 0;
@@ -1873,8 +1873,6 @@ frame_free_all()
 void
 frame_unwind_all()
 {
-	FRAME *frame;
-
 	while (frame_last)
 		list_remove(&frame_first, &frame_last, frame_last);
 	frame_push();
@@ -1904,6 +1902,7 @@ loop_unwind_all()
 	loop_first = loop_last = NULL;
 }
 
+/*ARGSUSED*/
 void
 loop_push(mtx)
 	MTX *mtx;
@@ -2232,6 +2231,7 @@ attr_datatype(type)
 	default:
 		insist_fail("unknown attribute type");
 	}
+	/*NOTREACHED*/
 }
 
 MTX *
@@ -3083,7 +3083,7 @@ pass2()
 							optcnt++;
 						break;
 					case String:
-						/*NO STRING OPS SO FAR */
+						/*NO STRING OPS SO FAR */;
 					}
 				} else if (mtx->bin.opcode == And ||
 					   mtx->bin.opcode == Or) {
@@ -3190,56 +3190,54 @@ static int popn();
 static int checkpop(int cnt);
 static int pushref(char *str, int from, int to);
 
-static int rw_pushn();
-static int rw_pushs();
-static int rw_pushref();
-static int rw_pushv();
-static int rw_int();
-static int rw_string();
-static int rw_eq();
-static int rw_ne();
-static int rw_lt();
-static int rw_le();
-static int rw_gt();
-static int rw_ge();
-static int rw_eqs();
-static int rw_nes();
-static int rw_lts();
-static int rw_les();
-static int rw_gts();
-static int rw_ges();
-static int rw_b_xor();
-static int rw_b_and();
-static int rw_b_or();
-static int rw_shl();
-static int rw_shr();
-static int rw_add();
-static int rw_sub();
-static int rw_mul();
-static int rw_div();
-static int rw_rem();
-static int rw_not();
-static int rw_neg();
-static int rw_asgn();
-static int rw_enter();
-static int rw_leave();
-static int rw_match();
-static int rw_jmp();
-static int rw_jne();
-static int rw_je();
-static int rw_jtne();
-static int rw_jte();
-static int rw_adds();
-static int rw_adjstk();
-static int rw_popn();
-static int rw_pusha();
-static int rw_popa();
-static int rw_call();
-static int rw_builtin();
-static int rw_attrs();
-static int rw_attrn();
-static int rw_attrcheck();
-static int rw_attrasgn();
+static void rw_pushn();
+static void rw_pushs();
+static void rw_pushref();
+static void rw_pushv();
+static void rw_int();
+static void rw_string();
+static void rw_eq();
+static void rw_ne();
+static void rw_lt();
+static void rw_le();
+static void rw_gt();
+static void rw_ge();
+static void rw_eqs();
+static void rw_nes();
+static void rw_lts();
+static void rw_les();
+static void rw_gts();
+static void rw_ges();
+static void rw_b_xor();
+static void rw_b_and();
+static void rw_b_or();
+static void rw_shl();
+static void rw_shr();
+static void rw_add();
+static void rw_sub();
+static void rw_mul();
+static void rw_div();
+static void rw_rem();
+static void rw_not();
+static void rw_neg();
+static void rw_asgn();
+static void rw_enter();
+static void rw_leave();
+static void rw_match();
+static void rw_jmp();
+static void rw_jne();
+static void rw_je();
+static void rw_adds();
+static void rw_adjstk();
+static void rw_popn();
+static void rw_pusha();
+static void rw_popa();
+static void rw_call();
+static void rw_builtin();
+static void rw_attrs();
+static void rw_attrn();
+static void rw_attrcheck();
+static void rw_attrasgn();
 
 INSTR bin_codetab[] = {
 	rw_eq,
@@ -3318,7 +3316,6 @@ pctr_t
 codegen()
 {
 	MTX       *mtx;
-	TGT_MTX   *tgt;
 
 	function->entry = rw_rt.pc;
 	for (mtx = mtx_first; mtx; mtx = mtx->gen.next) {
@@ -3644,7 +3641,7 @@ pushn(n)
 /*
  * Push a string on stack
  */
-int
+void
 pushs(sptr, len)
 	int   *sptr;
 	int   len;
@@ -3717,6 +3714,7 @@ checkpop(cnt)
 	if (rw_rt.st >= cnt)
 		return 0;
 	rw_error("rw: out of popup");
+	/*NOTREACHED*/
 }
 	
 /*
@@ -3787,9 +3785,10 @@ rw_error(msg)
 	radlog(L_ERR,
 	       "rewrite runtime error: %s", msg);
 	longjmp(rw_rt.jmp, 1);
+	/*NOTREACHED*/
 }
 		
-int
+void
 rw_call()
 {
 	pctr_t  pc = (pctr_t) rw_rt.code[rw_rt.pc++];
@@ -3797,7 +3796,7 @@ rw_call()
 	rw_rt.pc = pc;
 }
 
-int
+void
 rw_adjstk()
 {
 	int delta = (int) rw_rt.code[rw_rt.pc++];
@@ -3805,7 +3804,7 @@ rw_adjstk()
 	pushn(rw_rt.rA);   /* Push the return back on stack */
 }
 
-int
+void
 rw_enter()
 {
 	/*FIXME: runtime checking */
@@ -3813,7 +3812,7 @@ rw_enter()
 	enter(n);
 }
 
-int
+void
 rw_leave()
 {
 	leave();
@@ -3822,37 +3821,36 @@ rw_leave()
 /*
  * Push a number on stack
  */
-int
+void
 rw_pushn()
 {
 	int  n = (int) rw_rt.code[rw_rt.pc++];
-	return pushn(n);
+	pushn(n);
 }
 
 /*
  * Push a reference value on stack
  */
-int
+void
 rw_pushref()
 {
 	int  i = (int) rw_rt.code[rw_rt.pc++];
 
-	return pushref(rw_rt.sA,
-		       rw_rt.pmatch[i].rm_so, rw_rt.pmatch[i].rm_eo);
+	pushref(rw_rt.sA, rw_rt.pmatch[i].rm_so, rw_rt.pmatch[i].rm_eo);
 }
 
 /*
  * Push a variable on stack
  */
-int
+void
 rw_pushv()
 {
 	stkoff_t n = (stkoff_t) rw_rt.code[rw_rt.pc++];
 
-	return pushn(rw_rt.stack[rw_rt.sb + n]);
+	pushn(rw_rt.stack[rw_rt.sb + n]);
 }
 
-int
+void
 rw_pushs()
 {
 	int   len = (int) rw_rt.code[rw_rt.pc++];
@@ -3865,7 +3863,7 @@ rw_pushs()
 /*
  * Assign a value to a variable
  */
-int
+void
 rw_asgn()
 {
 	stkoff_t off = (stkoff_t) rw_rt.code[rw_rt.pc++];
@@ -3880,7 +3878,7 @@ rw_asgn()
 /*
  * Check if the A/V pair is supplied in the request
  */
-int
+void
 rw_attrcheck()
 {
 	int attr = (int) rw_rt.code[rw_rt.pc++];
@@ -3891,7 +3889,7 @@ rw_attrcheck()
 /*
  * Assign a value to an A/V pair
  */
-int
+void
 rw_attrasgn()
 {
 	int attr = (int) rw_rt.code[rw_rt.pc++];
@@ -3918,7 +3916,7 @@ rw_attrasgn()
 	pushn(val);
 }
 
-int
+void
 rw_attrs()
 {
 	int attr = (int) rw_rt.code[rw_rt.pc++];
@@ -3930,7 +3928,7 @@ rw_attrs()
 		pushs(pair->strvalue, pair->strlength);
 }
 
-int
+void
 rw_attrn()
 {
 	int attr = (int) rw_rt.code[rw_rt.pc++];
@@ -3945,7 +3943,7 @@ rw_attrn()
 /*
  * Pop (and discard) a value from stack
  */
-int
+void
 rw_popn()
 {
 	int n;
@@ -3955,7 +3953,7 @@ rw_popn()
 /*
  * Pop a value from stack into the accumulator
  */
-int
+void
 rw_popa()
 {
 	cpopn(&rw_rt.rA);
@@ -3964,7 +3962,7 @@ rw_popa()
 /*
  * Push accumulator on stack
  */
-int
+void
 rw_pusha()
 {
 	pushn(rw_rt.rA);
@@ -3973,7 +3971,7 @@ rw_pusha()
 /*
  * String concatenation
  */
-int
+void
 rw_adds()
 {
 	char *s1, *s2, *s;
@@ -3989,11 +3987,9 @@ rw_adds()
 /*
  * Unary negation
  */
-int
+void
 rw_neg()
 {
-	int n;
-
 	checkpop(1);
 	pushn(-popn());
 }
@@ -4001,7 +3997,7 @@ rw_neg()
 /*
  * Bitwise operations
  */
-int
+void
 rw_b_and()
 {
 	int n1, n2;
@@ -4012,7 +4008,7 @@ rw_b_and()
 	pushn(n1 & n2);
 }
 
-int
+void
 rw_b_or()
 {
 	int n1, n2;
@@ -4023,7 +4019,7 @@ rw_b_or()
 	pushn(n1 | n2);
 }
 
-int
+void
 rw_b_xor()
 {
 	int n1, n2;
@@ -4034,7 +4030,7 @@ rw_b_xor()
 	pushn(n1 ^ n2);
 }
 
-int
+void
 rw_shl()
 {
 	int n1, n2;
@@ -4045,7 +4041,7 @@ rw_shl()
 	pushn(n1 << n2);
 }
 
-int
+void
 rw_shr()
 {
 	int n1, n2;
@@ -4059,7 +4055,7 @@ rw_shr()
 /*
  * Addition
  */
-int
+void
 rw_add()
 {
 	int n1, n2;
@@ -4073,7 +4069,7 @@ rw_add()
 /*
  * Subtraction
  */
-int
+void
 rw_sub()
 {
 	int n1, n2;
@@ -4087,7 +4083,7 @@ rw_sub()
 /*
  * Multiplication
  */
-int
+void
 rw_mul()
 {
 	int n1, n2;
@@ -4101,7 +4097,7 @@ rw_mul()
 /*
  * Division
  */
-int
+void
 rw_div()
 {
 	int n1, n2;
@@ -4117,7 +4113,7 @@ rw_div()
 /*
  * Remainder
  */
-int
+void
 rw_rem()
 {
 	int n1, n2;
@@ -4130,14 +4126,14 @@ rw_rem()
 	pushn(n1%n2);
 }
 
-int
+void
 rw_int()
 {
 	char *s = (char *)popn();
 	pushn(atoi(s));
 }
 
-int
+void
 rw_string()
 {
 	int n = popn();
@@ -4147,7 +4143,7 @@ rw_string()
 	pushs(buf, 64);
 }
 
-int
+void
 rw_eq()
 {
 	int n1, n2;
@@ -4158,7 +4154,7 @@ rw_eq()
 	pushn(n1 == n2);
 }
 
-int
+void
 rw_ne()
 {
 	int n1, n2;
@@ -4169,7 +4165,7 @@ rw_ne()
 	pushn(n1 != n2);
 }
 
-int
+void
 rw_lt()
 {
 	int n1, n2;
@@ -4180,7 +4176,7 @@ rw_lt()
 	pushn(n1 < n2);
 }
 
-int
+void
 rw_le()
 {
 	int n1, n2;
@@ -4191,7 +4187,7 @@ rw_le()
 	pushn(n1 <= n2);
 }
 
-int
+void
 rw_gt()
 {
 	int n1, n2;
@@ -4202,7 +4198,7 @@ rw_gt()
 	pushn(n1 > n2);
 }
 
-int
+void
 rw_ge()
 {
 	int n1, n2;
@@ -4213,7 +4209,7 @@ rw_ge()
 	pushn(n1 >= n2);
 }
 
-int
+void
 rw_eqs()
 {
 	char *s1, *s2;
@@ -4224,7 +4220,7 @@ rw_eqs()
 	pushn(strcmp(s1, s2) == 0);
 }
 
-int
+void
 rw_nes()
 {
 	char *s1, *s2;
@@ -4235,7 +4231,7 @@ rw_nes()
 	pushn(strcmp(s1, s2) != 0);
 }
 
-int
+void
 rw_lts()
 {
 	char *s1, *s2;
@@ -4246,7 +4242,7 @@ rw_lts()
 	pushn(strcmp(s1, s2) < 0);
 }
 
-int
+void
 rw_les()
 {
 	char *s1, *s2;
@@ -4257,7 +4253,7 @@ rw_les()
 	pushn(strcmp(s1, s2) <= 0);
 }
 
-int
+void
 rw_gts()
 {
 	char *s1, *s2;
@@ -4268,7 +4264,7 @@ rw_gts()
 	pushn(strcmp(s1, s2) > 0);
 }
 
-int
+void
 rw_ges()
 {
 	char *s1, *s2;
@@ -4279,7 +4275,7 @@ rw_ges()
 	pushn(strcmp(s1, s2) >= 0);
 }
 
-int
+void
 rw_not()
 {
 	int n;
@@ -4289,7 +4285,7 @@ rw_not()
 	pushn(!n);
 }
 
-int
+void
 rw_match()
 {
 	COMP_REGEX *rx = (COMP_REGEX *)rw_rt.code[rw_rt.pc++];
@@ -4317,15 +4313,14 @@ rw_match()
 	pushn(rc == 0);
 }
 
-int
+void
 rw_jmp()
 {
 	pctr_t pc = (pctr_t) rw_rt.code[rw_rt.pc++];
 	rw_rt.pc = pc;
-	return 0;
 } 
 
-int
+void
 rw_jne()
 {
 	int n;
@@ -4334,10 +4329,9 @@ rw_jne()
 	n = popn();
 	if (n != 0)
 		rw_rt.pc = pc;
-	return 0;
 }
 
-int
+void
 rw_je()
 {
 	int n;
@@ -4346,35 +4340,9 @@ rw_je()
 	n = popn();
 	if (n == 0)
 		rw_rt.pc = pc;
-	return 0;
 }
 
-/*
- * Jump if top of stak value is not zero
- */
-int
-rw_jtne()
-{
-	int n;
-	pctr_t pc = (pctr_t) rw_rt.code[rw_rt.pc++];
-	
-	if (tos() != 0)
-		rw_rt.pc = pc;
-	return 0;
-}
-
-int
-rw_jte()
-{
-	int n;
-	pctr_t pc = (pctr_t) rw_rt.code[rw_rt.pc++];
-	
-	if (tos() == 0)
-		rw_rt.pc = pc;
-	return 0;
-}
- 
-int
+void
 rw_builtin()
 {
 	INSTR fun = (INSTR) rw_rt.code[rw_rt.pc++];
@@ -4460,18 +4428,15 @@ gc()
  * Built-in functions
  */
 
-static int bi_length();
-static int bi_index();
-static int bi_rindex();
-static int bi_substr();
-static int bi_getav();
-static int bi_setav();
-
+static void bi_length();
+static void bi_index();
+static void bi_rindex();
+static void bi_substr();
 
 /*
  * integer length(string s)
  */
-int
+void
 bi_length()
 {
 	pushn(strlen((char*)getarg(1)));
@@ -4480,7 +4445,7 @@ bi_length()
 /*
  * integer index(string s, integer a)
  */
-int
+void
 bi_index()
 {
 	char *s, *p;
@@ -4495,7 +4460,7 @@ bi_index()
 /*
  * integer rindex(string s, integer a)
  */
-int
+void
 bi_rindex()
 {
 	char *s, *p;
@@ -4509,7 +4474,7 @@ bi_rindex()
 /*
  * integer substr(string s, int start, int length)
  */
-int
+void
 bi_substr()
 {
 	char *src, *dest;

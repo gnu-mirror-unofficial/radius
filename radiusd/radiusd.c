@@ -121,7 +121,7 @@ struct socket_list {
 	struct socket_list *next;
 	int fd;
 	int (*success)(struct sockaddr *, int);
-	int (*respond)(int fd, struct sockaddr *, int, char *, int);
+	int (*respond)(int fd, struct sockaddr *, int, u_char *, int);
 	int (*failure)(struct sockaddr *, int);
 };
 
@@ -131,11 +131,14 @@ static void add_socket_list(int fd, int (*s)(), int (*r)(), int (*f)());
 static void rad_select();
 
 /* Implementation functions */
-int auth_respond(int fd, struct sockaddr *sa, int salen, char *buf, int size);
+int auth_respond(int fd, struct sockaddr *sa, int salen,
+		 u_char *buf, int size);
 int acct_success(struct sockaddr *sa, int salen);
 int acct_failure(struct sockaddr *sa, int salen);
-int snmp_respond(int fd, struct sockaddr *sa, int salen, char *buf, int size);
-int cntl_respond(int fd, struct sockaddr *sa, int salen, char *buf, int size);
+int snmp_respond(int fd, struct sockaddr *sa, int salen,
+		 u_char *buf, int size);
+int cntl_respond(int fd, struct sockaddr *sa, int salen,
+		 u_char *buf, int size);
 
 /* *************************** Global variables. ************************** */
 
@@ -506,7 +509,8 @@ main(argc, argv)
 		setlinebuf(stdout);
 
 	if (!foreground) {
-		t = open(RADLOG_DIR "/radius.stderr", O_WRONLY);
+		char *p = mkfilename(radlog_dir, "radius.stderr");
+		t = open(p, O_CREAT|O_WRONLY, 0644);
 		if (t != -1) {
 			if (t != 2) 
 				dup2(t, 2);
@@ -517,6 +521,7 @@ main(argc, argv)
 			fflush(stdout);
 			fflush(stderr);
 		}
+		efree(p);
 	}
 
 	radlog(L_INFO, _("Ready to process requests."));
@@ -599,7 +604,7 @@ auth_respond(fd, sa, salen, buf, size)
 	int fd;
 	struct sockaddr *sa;
 	int salen;
-	char *buf;
+	u_char *buf;
 	int size;
 {
 	AUTH_REQ *authreq;
@@ -640,7 +645,7 @@ snmp_respond(fd, sa, salen, buf, size)
 	int fd;
 	struct sockaddr *sa;
 	int salen;
-	char *buf;
+	u_char *buf;
 	int size;
 {
 	struct snmp_req *req;
@@ -1040,7 +1045,7 @@ rad_spawn_child(type, data, activefd)
 	}
 
 	/*
-	 *	This is a new request
+	 * This is a new request
 	 */
 	if (request_count >= config.max_requests) {
 		request_drop(type, data, _("too many requests in queue"));
@@ -1072,7 +1077,7 @@ rad_spawn_child(type, data, activefd)
 	}
 		
 	/*
-	 *	Add this request to the list
+	 * Add this request to the list
 	 */
 	curreq = alloc_entry(sizeof *curreq);
 	curreq->next = NULL;
@@ -1102,7 +1107,7 @@ rad_spawn_child(type, data, activefd)
 	}
 
 	/*
-	 *	fork our child
+	 * fork the child
 	 */
 	if ((child_pid = fork()) < 0) {
 		request_drop(type, data, _("cannot fork"));
@@ -1428,6 +1433,7 @@ usage()
  *	These values are read from the SERVER_CONFIG part of the
  *	dictionary (of all places!)
  */
+/*UNUSED*/
 int
 config_init()
 {
@@ -1512,7 +1518,7 @@ rad_restart()
 	if (xargv[0][0] != '/') {
 		radlog(L_ERR,
 		       _("can't restart: not started as absolute pathname"));
-		return;
+		return -1;
 	}
 	
 	/* Flush request queues */
@@ -1564,6 +1570,7 @@ rad_restart()
 	execvp(xargv[0], xargv);
 	radlog(L_CRIT|L_PERROR, _("RADIUS NOT RESTARTED: exec failed"));
 	exit(1);
+	/*NOTREACHED*/
 }
 
 
@@ -1596,6 +1603,7 @@ report_info(s)
 	char *s;
 {
 	radlog(L_INFO, "%s", s);
+	return 0;
 }
 
 /*ARGSUSED*/
@@ -1619,7 +1627,7 @@ sig_usr2(sig)
 	int sig;
 {
 	signal(SIGUSR2, sig_usr2);
-	radlog(L_INFO, _("got USR2. Reloading configuration in %ld sec."),
+	radlog(L_INFO, _("got USR2. Reloading configuration in %u sec."),
 	       config.delayed_hup_wait);
 	delayed_hup_time = time(NULL);
 }

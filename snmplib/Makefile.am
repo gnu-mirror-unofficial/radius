@@ -2,7 +2,7 @@
 if MAINTAINER_MODE
 CFLAGS=-ggdb -DMAINTAINER_MODE=1
 MAINTAINERCLEANFILES=core *~ err out
-
+lint:;
 endif
 
 noinst_LIBRARIES=libsnmp.a

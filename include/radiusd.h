@@ -29,7 +29,6 @@
 #include <radpaths.h>
 #include <mem.h>
 #include <log.h>
-#include <ippool.h>
 
 #define NITEMS(a) sizeof(a)/sizeof((a)[0])
 
@@ -38,7 +37,7 @@ struct radutmp; /* declared in radutmp.h */
 
 
 typedef struct {
-	int delayed_hup_wait;
+	unsigned delayed_hup_wait;
 	int checkrad_assume_logged;
 	int max_requests;
 	char *exec_user;
@@ -169,7 +168,7 @@ typedef struct auth_req {
 	int			data_len;       /* Length of raw data */
 	int                     data_alloced;   /* Was the data malloced */
         /* Proxy support fields */
-	u_char			*realm;         /* stringobj, actually */
+	char			*realm;         /* stringobj, actually */
 	int			validated;	/* Already md5 checked */
 	UINT4			server_ipaddr;
 	UINT4			server_id;
@@ -208,7 +207,7 @@ typedef struct nas {
 	char			longname[MAX_LONGNAME+1];
 	char			shortname[MAX_SHORTNAME+1];
 	char			nastype[MAX_DICTNAME+1];
-	IP_POOL                 *ip_pool;
+	char                    *checkrad_args;
 #ifdef USE_SNMP
 	struct nas_stat         *nas_stat;
 #endif	
@@ -222,6 +221,7 @@ typedef struct realm {
 	int			auth_port;
 	int			acct_port;
 	int			striprealm;
+	int                     maxlogins;
 } REALM;
 
 struct keyword {
@@ -402,7 +402,7 @@ extern int              notify_port;
 /* acct.c */
 int		rad_accounting(AUTH_REQ *, int);
 int		rad_account_transfer(AUTH_REQ *, int);
-int		rad_accounting_orig(AUTH_REQ *, int, char *);
+int		rad_accounting_orig(AUTH_REQ *, int);
 int		rad_account_slice(AUTH_REQ *, int);
 int		radzap(UINT4 nas, int port, char *user, time_t t);
 char		*uue(void *);
@@ -486,7 +486,7 @@ NAS		*nas_find(UINT4 ipno);
 char		*nas_name(UINT4 ipno);
 char		*nas_name2(AUTH_REQ *r);
 int		read_naslist_file(char *);
-int		reload_config_file(int);
+int		reload_config_file(enum reload_what);
 int		presufcmp(VALUE_PAIR *check, char *name, char *rest);
 void		pairmove(VALUE_PAIR **to, VALUE_PAIR **from);
 void		pairmove2(VALUE_PAIR **to, VALUE_PAIR **from, int attr);
@@ -521,14 +521,14 @@ int		rad_authenticate (AUTH_REQ *, int);
 int  rad_check_password(AUTH_REQ *authreq, int activefd,
 			VALUE_PAIR *check_item,
 			VALUE_PAIR *namepair,
-			char *pw_digest, char **user_msg, char *userpass);
+			u_char *pw_digest, char **user_msg, char *userpass);
 
 /* exec.c */
 int		radius_exec_program(char *, VALUE_PAIR *,
 				    VALUE_PAIR **, int, char **user_msg);
 
 /* menu.c */
-void process_menu(AUTH_REQ *authreq, int fd, char *pw_digest);
+void process_menu(AUTH_REQ *authreq, int fd, u_char *pw_digest);
 char * get_menu(char *menu_name);
 
 /* fixalloc.c */
@@ -552,9 +552,6 @@ int		timestr_match(char *, time_t);
 /* notify.c */
 int notify(char *login, int what, long *ttl_ptr);
 int timetolive(char *user_name, long *ttl);
-
-/* ippool.c */
-VALUE_PAIR * alloc_ip_pair(char *name, AUTH_REQ *authreq);
 
 /* shmem.c */
 int shmem_alloc(unsigned size);
@@ -605,7 +602,8 @@ int user_gettime(char *valstr, struct tm *tm);
 
 /* snmpserver.c */
 struct sockaddr_in;
-struct snmp_req * rad_snmp_respond(char *buf, int len, struct sockaddr_in *sa);
+struct snmp_req * rad_snmp_respond(u_char *buf, int len,
+				   struct sockaddr_in *sa);
 int snmp_req_cmp(struct snmp_req *a, struct snmp_req *b);
 void snmp_req_free(struct snmp_req  *req);
 void snmp_req_drop(int type, struct snmp_req *req, char *status_str);

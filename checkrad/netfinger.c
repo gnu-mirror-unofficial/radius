@@ -16,8 +16,11 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
+
+#ifndef lint
 static char rcsid[] = 
 "$Id$";
+#endif
 
 #define RADIUS_MODULE 3
 #if defined(HAVE_CONFIG_H)
@@ -43,7 +46,6 @@ static char rcsid[] =
 #include <radutmp.h>
 #include <checkrad.h>
 
-int Tflag = 1;
 #define MIN(a,b) ((a)<(b))?(a):(b)
 
 /* Return values:
@@ -52,11 +54,9 @@ int Tflag = 1;
  *       -1 == don't know
  */
 int
-netfinger(host, port)
+netfinger(host)
 	char *host;
-	int port;
 {
-	extern int Tflag;
 	char namebuf[RUT_NAMESIZE+1];
 	int namelen;
 	register FILE *fp;
@@ -64,7 +64,7 @@ netfinger(host, port)
 	struct in_addr defaddr;
 	struct hostent *hp, def;
 	struct sockaddr_in sin;
-	int i;
+	int i, port;
 	int s;
 	char *alist[1];
 	struct iovec iov[3];
@@ -89,15 +89,15 @@ netfinger(host, port)
 		def.h_aliases = 0;
 		hp = &def;
 	} else if (!(hp = gethostbyname(host))) {
-		logit(L_ERR, _("unknown host: %s"), host);
+		radlog(L_ERR, _("unknown host: %s"), host);
 		return -1;
 	}
 
-	if (!port) {
+	if ((port = ilookup("port", 0)) == 0) {
 		struct servent *sp;
 		
 		if (!(sp = getservbyname("finger", "tcp"))) {
-			logit(L_ERR, _("tcp/finger: unknown service"));
+			radlog(L_ERR, _("tcp/finger: unknown service"));
 			return -1;
 		}
 		port = sp->s_port;
@@ -109,7 +109,7 @@ netfinger(host, port)
 	       MIN(hp->h_length,sizeof(sin.sin_addr)));
 	sin.sin_port = port;
 	if ((s = socket(hp->h_addrtype, SOCK_STREAM, 0)) < 0) {
-		logit(L_ERR|L_PERROR, "socket");
+		radlog(L_ERR|L_PERROR, "socket");
 		return -1;
 	}
 
@@ -130,30 +130,28 @@ netfinger(host, port)
 	iov[msg.msg_iovlen].iov_base = "\r\n";
 	iov[msg.msg_iovlen++].iov_len = 2;
 
-	/* -T disables T/TCP: compatibility option to finger broken hosts */
-	if (Tflag && connect(s, (struct sockaddr *)&sin, sizeof (sin))) {
-		logit(L_ERR|L_PERROR, "connect");
+	/* "tcp=0" can be used to disable T/TCP compatibility to finger
+	 * broken hosts
+	 */
+	if (ilookup("tcp", 1) &&
+	    connect(s, (struct sockaddr *)&sin, sizeof (sin))) {
+		radlog(L_ERR|L_PERROR, "connect");
 		return -1;
 	}
 
 	if (sendmsg(s, &msg, 0) < 0) {
-		logit(L_ERR|L_PERROR, "sendmsg");
+		radlog(L_ERR|L_PERROR, "sendmsg");
 		close(s);
 		return -1;
 	}
 
 	obstack_init(&stk);
 	/*
-	 * Read from the remote system; once we're connected, we assume some
-	 * data.  If none arrives, we hang until the user interrupts.
+	 * Read from the remote system; If no data arrives, we hang until
+	 * interrupted by the caller. There is no use in setting alarm,
+	 * since radiusd will take care of it anyway.
 	 *
-	 * If we see a <CR> or a <CR> with the high bit set, treat it as
-	 * a newline; if followed by a newline character, only output one
-	 * newline.
-	 *
-	 * Otherwise, all high bits are stripped; if it isn't printable and
-	 * it isn't a space, we can simply set the 7th bit.  Every ASCII
-	 * character with bit 7 set is printable.
+	 * All high bits get stripped, newlines are skipped.
 	 */
 	lastc = 0;
 	if ((fp = fdopen(s, "r")) != NULL) {
@@ -200,7 +198,7 @@ netfinger(host, port)
 			/*
 			 * Assume that whatever it was set errno...
 			 */
-			logit(L_ERR|L_PERROR, "finger");
+			radlog(L_ERR|L_PERROR, "finger");
 		}
 		fclose(fp);
 	}

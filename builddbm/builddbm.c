@@ -79,7 +79,6 @@ main(argc, argv)
 	int argc;
 	char **argv;
 {
-	char	name[128];
 	char    *dict_file;
 	int     c;
 	DBM_closure closure;
@@ -110,8 +109,7 @@ main(argc, argv)
 	if (!users_file && argv[optind])
 		users_file = argv[optind];
 
-	dict_file = mkfilename(radius_dir, RADIUS_DICTIONARY);
-	if (dict_init(dict_file)) {
+	if (dict_init()) {
 		radlog(L_ERR, _("error reading dictionary file"));
 		return 1;
 	}
@@ -163,6 +161,7 @@ main(argc, argv)
 	return 0;
 }
 
+/*ARGSUSED*/
 int
 add_user(closure, line, name, check, reply)
 	DBM_closure *closure;
@@ -227,6 +226,7 @@ add_user(closure, line, name, check, reply)
 		radlog(L_ERR, _("can't store datum for %s"), name);
 		exit(1);
 	}
+	return 0;
 }
 
 

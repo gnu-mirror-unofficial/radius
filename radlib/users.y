@@ -17,8 +17,11 @@
  *
  */
 %{
+        #ifndef lint
 	static char rcsid[] = 
 	"$Id$";
+        #endif
+	
         #if defined(HAVE_CONFIG_H)
         # include <config.h>
         #endif
@@ -100,7 +103,7 @@ entry    : user descr
     	   }   
          ;
 
-user     : STRING
+user     : value
            {
 		   old_lineno = source_line_num;
 	   }

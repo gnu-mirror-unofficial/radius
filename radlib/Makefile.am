@@ -1,12 +1,4 @@
 # $Id$
-if MAINTAINER_MODE
-CFLAGS=-ggdb -DMAINTAINER_MODE=1
-MAINTAINERCLEANFILES=core *~ err out
-
-LIBSRC=leakdetect.c mem.c $(libsql_a_SOURCES)
-
-LIBLIST:; @echo $(LIBSRC) > .list
-endif
 
 if SQL
 LIBSQL=libsql.a
@@ -38,3 +30,30 @@ users_lex.c: $(srcdir)/users.l
 
 users_lex.o: users_lex.c users_gram.h $(top_srcdir)/include/parser.h
 users_gram.o: users_gram.c users_gram.h $(top_srcdir)/include/parser.h
+
+SUFFIXES=.S .c .ln .o .s
+if MAINTAINER_MODE
+CFLAGS=-ggdb -DMAINTAINER_MODE=1
+MAINTAINERCLEANFILES=core *~ err out
+
+CLEANFILES=*.ln
+LINTFLAGS=-gzra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
+
+.c.ln:
+	$(LINT.c) -i $<
+
+llib-llog.ln: $(liblog_a_SOURCES:.c=.ln)
+	$(LINT.c) -Clog $(liblog_a_SOURCES:.c=.ln)
+
+llib-lrad.ln: $(librad_a_SOURCES:.c=.ln)  llib-llog.ln
+	$(LINT.c) -Crad $(librad_a_SOURCES:.c=.ln) -L . -llog
+
+llib-ldebug.ln: $(libdebug_a_SOURCES:.c=.ln) llib-llog.ln
+	$(LINT.c) -Cdebug $(libdebug_a_SOURCES:.c=.ln) -L . -llog
+
+lint:: llib-llog.ln llib-lrad.ln llib-ldebug.ln
+
+LIBSRC=leakdetect.c mem.c $(libsql_a_SOURCES)
+
+LIBLIST:; @echo $(LIBSRC) > .list
+endif

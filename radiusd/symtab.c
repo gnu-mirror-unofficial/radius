@@ -78,7 +78,7 @@ sym_install(symtab, name)
 	char *name;
 {
 	Symbol *sp;
-	unsigned int h = hashval(name, symtab->hashsize);
+	unsigned int h = hashval((unsigned char *)name, symtab->hashsize);
 
 	sp = alloc_sym(name, symtab->elsize);
 	sp->next = symtab->sym[h];
@@ -92,7 +92,7 @@ sym_lookup(symtab, name)
 	char *name;
 {
 	Symbol *sp;
-	unsigned h = hashval(name, symtab->hashsize);
+	unsigned h = hashval((unsigned char *)name, symtab->hashsize);
 
 	for (sp = symtab->sym[h]; sp; sp = sp->next) {
 		if (strcmp(sp->name, name) == 0)
@@ -133,7 +133,7 @@ symtab_delete(symtab, sym)
 	Symbol *sym;
 {
 	Symbol *sp, *prev;
-	unsigned h = hashval(sym->name, symtab->hashsize);
+	unsigned h = hashval((unsigned char *)sym->name, symtab->hashsize);
 
 	/*
 	 * Lookup the symbol

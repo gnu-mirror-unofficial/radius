@@ -1,0 +1,9 @@
+;; This is a sample configuration file for radctl and session
+;; scripts.
+(set! rad-server-list
+      '(("local" "localhost" "foobar" 1645 1646 5000)))
+(rad-client-source-ip "127.0.0.1")
+(rad-client-timeout 3)
+(rad-client-retry 1)
+(rad-select-server "local")
+

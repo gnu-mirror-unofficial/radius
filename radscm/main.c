@@ -9,11 +9,8 @@
 
 
 static void radscm_shell(void *closure, int argc, char **argv);
-static void print_usage();
-static void print_license();
-static void print_version();
-static void assign(char *);
 
+/*ARGSUSED*/
 void
 radscm_shell(closure, argc, argv)
 	void *closure;
@@ -28,14 +25,11 @@ main(argc, argv)
 	int argc;
 	char **argv;
 {
-	int c;
-	
 	/*app_setup();*/
 	initlog(argv[0]);
 	
 	scm_boot_guile(argc, argv, radscm_shell, 0);
 	/*NOTREACHED*/
-	return 0;
 }
 
 

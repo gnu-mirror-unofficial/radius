@@ -44,9 +44,7 @@ static char rcsid[] =
 #include <signal.h>
 #include <errno.h>
 #include <sys/wait.h>
-#ifdef sun
-# include <fcntl.h>
-#endif
+#include <fcntl.h>
 #include <sysdep.h>
 #include <radiusd.h>
 #include <radutmp.h>
@@ -57,7 +55,7 @@ static char rcsid[] =
 int	doradwtmp = 1;
 
 static char porttypes[] = "ASITX";
-static int write_wtmp(struct radutmp *ut, int status);
+static int write_wtmp(struct radutmp *ut);
 static int write_nas_restart(int status, UINT4 addr);
 static int check_ts(struct radutmp *ut);
 
@@ -113,7 +111,7 @@ radzap(nasaddr, port, user, t)
 			/*
 			 *	Add a logout entry to the wtmp file.
 			 */
-			write_wtmp(&u, DV_ACCT_STATUS_TYPE_STOP);
+			write_wtmp(&u);
 		}
 		close(fd);
 	}
@@ -178,11 +176,9 @@ decode_phone_number(buf, size, nstr)
 }
 
 
-
 int
-write_wtmp(ut, status)
+write_wtmp(ut)
 	struct radutmp *ut;
-	int status;
 {
 	FILE *fp;
 		
@@ -244,9 +240,6 @@ end:
 	*dst = 0;
 }
 
-#if 0
-/* FIXME: still not needed */
-   
 int
 check_attribute(check_pairs, pair_attr, pair_value, def)
 	VALUE_PAIR *check_pairs;
@@ -256,14 +249,20 @@ check_attribute(check_pairs, pair_attr, pair_value, def)
 {
 	VALUE_PAIR *pair;
 
-	pair = check_pairs;
-	while (check_pairs && pair = pairfind(check_pairs, pair_attr)) {
+	if ((pair = pairfind(check_pairs, pair_attr)) == NULL)
+		return def;
+	do {
 		if (pair->lvalue == pair_value)
 			return 1;
 		check_pairs = pair->next;
-	}
-	return def;
+	} while (check_pairs && (pair = pairfind(check_pairs, pair_attr)));
+	return 0;
 }
+
+#ifdef DA_ACCT_TYPE
+# define ACCT_TYPE(req,t) check_attribute(req, DA_ACCT_TYPE, t, 1)
+#else
+# define ACCT_TYPE(req,t) 1
 #endif
 
 /*
@@ -279,7 +278,6 @@ rad_accounting_new(authreq, dowtmp)
 	int		rb_record = 0;
 	int		status = -1;
 	int		nas_address = 0;
-	int		framed_address = 0;
 	int		protocol = -1;
 	time_t		t;
 	int		fd;
@@ -351,6 +349,12 @@ rad_accounting_new(authreq, dowtmp)
 	memset(&ut, 0, sizeof(ut));
 	ut.porttype = 'A';
 
+	if (authreq->realm) {
+		REALM *realm = realm_find(authreq->realm);
+		if (realm)
+			ut.realm_address = realm->ipaddr;
+	}
+	
 	/*
 	 *	First, find the interesting attributes.
 	 */
@@ -364,7 +368,6 @@ rad_accounting_new(authreq, dowtmp)
 			break;
 		case DA_LOGIN_IP_HOST:
 		case DA_FRAMED_IP_ADDRESS:
-			framed_address = vp->lvalue;
 			ut.framed_address = htonl(vp->lvalue);
 			break;
 		case DA_FRAMED_PROTOCOL:
@@ -495,6 +498,9 @@ rad_accounting_new(authreq, dowtmp)
 	    nas_port_type == DV_NAS_PORT_TYPE_SYNC)
 		return 0;
 
+	if (!ACCT_TYPE(authreq->request, DV_ACCT_TYPE_SYSTEM))
+		return 0;
+	
 	/*
 	 *	Enter into the radutmp file.
 	 */
@@ -625,7 +631,7 @@ rad_accounting_new(authreq, dowtmp)
 	 */
 	if (dowtmp) {
 		stat_update(&ut, status);
-		write_wtmp(&ut, status);
+		write_wtmp(&ut);
 	} else if (just_an_update) {
 		stat_update(&ut, status);
 	} else {
@@ -795,18 +801,18 @@ write_detail(authreq, authtype, f)
 }
 
 int
-rad_accounting_orig(authreq, authtype, f)
+rad_accounting_orig(authreq, authtype)
 	AUTH_REQ *authreq;
 	int authtype;
-	char *f;
 {
-	int rc;
+	int rc = 0;
 
-	rc = write_detail(authreq, authtype, "detail");
+	if (ACCT_TYPE(authreq->request, DV_ACCT_TYPE_DETAIL))
+		rc = write_detail(authreq, authtype, "detail");
 #ifdef USE_SQL
-	rad_sql_acct(authreq);
+	if (ACCT_TYPE(authreq->request, DV_ACCT_TYPE_SQL))
+		rad_sql_acct(authreq);
 #endif
-	
 	return rc;
 }
 
@@ -820,7 +826,7 @@ rad_accounting(authreq, activefd)
 	int activefd;
 {
 	int auth;
-	char pw_digest[AUTH_PASS_LEN];
+	u_char pw_digest[AUTH_PASS_LEN];
 
 	/*
 	 *	See if we know this client, then check the
@@ -847,7 +853,7 @@ rad_accounting(authreq, activefd)
 #endif
 	
 	if (rad_accounting_new(authreq, doradwtmp) == 0 &&
-	    rad_accounting_orig(authreq, auth, NULL) == 0) {
+	    rad_accounting_orig(authreq, auth) == 0) {
 		/*
 		 *	Now send back an ACK to the NAS.
 		 */
@@ -860,6 +866,7 @@ rad_accounting(authreq, activefd)
 	return -1;
 }
 
+/*ARGSUSED*/
 void
 rad_acct_xmit(type, code, data, fd)
 	int type;
@@ -950,6 +957,14 @@ check_ts(ut)
 	}
 
 	/*
+	 * Handle two special types
+	 */
+	if (strcmp(nas->nastype, "true") == 0)
+		return 1;
+	else if (strcmp(nas->nastype, "false") == 0)
+		return 0;
+	
+	/*
 	 *	Fork.
 	 */
 	handler = signal(SIGCHLD, SIG_DFL);
@@ -1001,24 +1016,90 @@ check_ts(ut)
 	session_id[RUT_IDSIZE] = 0;
 
 	debug(10,
-		("starting checkrad -d %s -t %s -h %s -p %s -u %s -s %s",
+		("starting checkrad -d %s -t %s -h %s -p %s -u %s -s %s %s",
 		radius_dir,
-	    	nas->nastype, address, port, ut->login, session_id));
+	    	nas->nastype, address, port, ut->login, session_id,
+	        nas->checkrad_args ? nas->checkrad_args : ""));
 	execl(CHECKRAD, "checkrad", 
 		"-d", radius_dir,	
 		"-t", nas->nastype, 
 		"-h", address, 
 		"-p", port,
 		"-u", ut->orig_login, 
-		"-s", session_id, NULL);
+		"-s", session_id,
+	        nas->checkrad_args,
+	        NULL);
 	radlog(L_ERR, "check_ts(): exec %s: %s", CHECKRAD, strerror(errno));
 
 	/*
 	 *	Exit - 2 means "some error occured".
 	 */
 	exit(2);
+	/*NOTREACHED*/
 }
 
+int
+rad_check_realm(realmname)
+	char *realmname;
+{
+	REALM *realm;
+	int count;
+	int fd;
+	struct radutmp	u;
+	
+	realm = realm_find(realmname);
+	if (!realm || realm->maxlogins == 0)
+		return 0;
+
+	if ((fd = open(radutmp_path, O_CREAT|O_RDWR, 0644)) < 0)
+		return 0;
+
+	/*
+	 * Pass I: scan radutmp file
+	 */
+	count = 0;
+	while (read(fd, &u, sizeof(u)) == sizeof(u))
+		if (u.realm_address == realm->ipaddr && u.type == P_LOGIN) 
+			count++;
+
+	if (count < realm->maxlogins) {
+		close(fd);
+		return 0;
+	}
+
+	/*
+	 * Pass II: verify logins
+	 */
+	lseek(fd, (off_t)0, SEEK_SET);
+	count = 0;
+
+	while (read(fd, &u, sizeof(u)) == sizeof(u)) {
+		if (!(u.realm_address == realm->ipaddr && u.type == P_LOGIN)) 
+			continue;
+
+		if (rad_check_ts(&u) == 1) {
+			count++;
+		} else {
+			/*
+			 *	False record - zap it.
+			 */
+			u.type = P_IDLE;
+			u.time = time(NULL);
+				
+			lseek(fd, -(off_t)sizeof(u), SEEK_CUR);
+
+                        /* lock the file while writing. */
+			rad_lock(fd, sizeof(u), 0, SEEK_CUR);
+			write(fd, &u, sizeof(u));
+			rad_unlock(fd, sizeof(u),
+				   -(off_t)sizeof(u), SEEK_CUR);
+
+			write_wtmp(&u);
+		}
+	}
+	close(fd);
+	return !(count < realm->maxlogins);
+}
 
 /*
  *	See if a user is already logged in.
@@ -1037,7 +1118,7 @@ rad_check_multi(name, request, maxsimul)
 {
 	int		fd;
 	int		count;
-	struct radutmp	u, empty;
+	struct radutmp	u;
 	VALUE_PAIR	*fra;
 	int		mpp = 1;
 	UINT4		ipno = 0;
@@ -1049,7 +1130,7 @@ rad_check_multi(name, request, maxsimul)
 	 *	We don't lock in the first pass.
 	 */
 	count = 0;
-	while(read(fd, &u, sizeof(u)) == sizeof(u))
+	while (read(fd, &u, sizeof(u)) == sizeof(u))
 		if (strncmp(name, u.login, RUT_NAMESIZE) == 0
 		    && u.type == P_LOGIN) {
 			count++;
@@ -1066,8 +1147,6 @@ rad_check_multi(name, request, maxsimul)
 	 */
 	if ((fra = pairfind(request, DA_FRAMED_IP_ADDRESS)) != NULL)
 		ipno = htonl(fra->lvalue);
-	memset(&empty, 0, sizeof(empty));
-
 
 	/*
 	 *	Allright, there are too many concurrent logins.
@@ -1092,15 +1171,18 @@ rad_check_multi(name, request, maxsimul)
 				 *	False record - zap it.
 				 */
 
+				u.type = P_IDLE;
+				u.time = time(NULL);
+				
 				lseek(fd, -(off_t)sizeof(u), SEEK_CUR);
 
                                 /* lock the file while writing. */
-	                        rad_lock(fd, sizeof(empty), 0, SEEK_CUR);
-                                write(fd, &empty, sizeof(empty));
-                                rad_unlock(fd, sizeof(empty),
-					   -(off_t)sizeof(empty), SEEK_CUR);
+	                        rad_lock(fd, sizeof(u), 0, SEEK_CUR);
+                                write(fd, &u, sizeof(u));
+                                rad_unlock(fd, sizeof(u),
+					   -(off_t)sizeof(u), SEEK_CUR);
 
-				write_wtmp(&u, DV_ACCT_STATUS_TYPE_STOP);
+				write_wtmp(&u);
 			}
 		}
 	}
@@ -1123,7 +1205,7 @@ write_nas_restart(status, addr)
 		ut.type = P_NAS_SHUTDOWN;
 	ut.nas_address = addr;
 	time(&ut.time);
-	return write_wtmp(&ut, status);
+	return write_wtmp(&ut);
 }
 
 

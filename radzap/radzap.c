@@ -17,8 +17,10 @@
  *
  */
 
+#ifndef lint
 static char rcsid[] = 
 "$Id$";
+#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -45,7 +47,7 @@ static char rcsid[] =
 NAS *naslist;
 #define LOCK_LEN sizeof(struct radutmp)
 
-static int write_wtmp(struct radutmp *ut, int status);
+static int write_wtmp(struct radutmp *ut);
 int radzap(UINT4 nasaddr, int port, char *user, time_t t);
 int radzap_wtmp(UINT4 nasaddr, int port, char *user, time_t t);
 static int confirm(struct radutmp *ut);
@@ -225,7 +227,7 @@ radzap(nasaddr, port, user, t)
 		/*
 		 *	Add a logout entry to the wtmp file.
 		 */
-		write_wtmp(&u, DV_ACCT_STATUS_TYPE_STOP);
+		write_wtmp(&u);
 	}
 	close(fd);
 
@@ -412,9 +414,8 @@ confirm(utp)
 }
 
 int
-write_wtmp(ut, status)
+write_wtmp(ut)
 	struct radutmp *ut;
-	int status;
 {
 	FILE *fp;
 		

@@ -91,7 +91,7 @@ RADLOG_DIR = /usr/adm
 RADPID_DIR = /usr/local/etc/raddb
 RANLIB = ranlib
 USE_NLS = no
-VERSION = 0.93.1
+VERSION = 0.94-beta
 YACC = byacc
 YACC_OPTS = -t
 

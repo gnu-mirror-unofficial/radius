@@ -25,7 +25,9 @@
  */
 #define RADIUS_MODULE 2
 
+#ifndef lint
 static char rcsid[] = "$Id$";
+#endif
 
 #if defined(HAVE_CONFIG_H)
 # include <config.h>
@@ -37,6 +39,9 @@ static char rcsid[] = "$Id$";
 #include <ctype.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <sysdep.h>
 #include <radiusd.h>
@@ -45,28 +50,30 @@ static char rcsid[] = "$Id$";
 #include <log.h>
 #include <checkrad.h>
 
+#include <snmp.h>
+#include <snmp_impl.h>
+#include <asn1.h>
+#include <snmp_api.h>
+#include <snmp_vars.h>
+
 char *nas_type = NULL;
 char *nas_port = NULL;
 char *username = NULL;
 char *session_id = NULL;
-char *snmp_community = NULL;
 char *snmp_oid = NULL;
 char *snmp_match = NULL;
+char *password = NULL;
 struct obstack stk;
 
-/* Sorry, this is the only non-configurable define.
- * The reason it is still there is that I plan to get rid of calling
- * snmpget in the next release.
- */
-#define SNMPGET "/usr/local/bin/snmpget"
+static void install(char *s);
 
 int
 main(argc, argv)
 	int argc;
 	char **argv;
 {
- 	struct check_list *cp;
 	int c;
+	char *p;
 	char *host = NULL;
 	Check checkfun = NULL;
 	int port = 0;
@@ -100,10 +107,18 @@ main(argc, argv)
 			set_debug_levels(optarg);
 			break;
 		default:
-			logit(L_ERR, _("bad argument"));
+			radlog(L_ERR, _("bad argument"));
 		}
 	}
 
+	/*
+	 * Parse extra args
+	 */
+	for ( ; optind < argc; optind++) {
+		for (p = strtok(argv[optind], ","); p; p = strtok(NULL, ",")) 
+			install(p);
+	}
+	
 	radpath_init();
 	
 	if (!nas_type || !host || !nas_port || !username || !session_id) {
@@ -112,14 +127,15 @@ main(argc, argv)
 	}
 
 	checkfun = read_config();
+	password = read_clients(host);
 	
 	debug(1, ("started: host %s, type %s, user %s, port %s, sid %s",
 		   host, nas_type, username, nas_port, session_id));
 
 	if (checkfun)
-		return checkfun(host, port);
+		return checkfun(host);
 
-	logit(L_ERR, _("unknown NAS type: %s"), nas_type);
+	radlog(L_ERR, _("unknown NAS type: %s"), nas_type);
 	return -1; /* unknown type */
 }
 
@@ -174,80 +190,205 @@ checkrad_xlat(str)
 	return obstack_finish(&stk);
 }
 
-/* ********* Compatibility stuff **************** */
-
+/*ARGSUSED*/
 int
-snmp_check(nas_ip, port_unused)
-	char *nas_ip;
-	int port_unused;
+callback(type, sp, requid, pdu, closure)
+	int type;
+	struct snmp_session *sp;
+	int requid;
+	struct snmp_pdu *pdu;
+	void *closure;
 {
-	int port;
-	char *ptr;
-	char buffer[1024];
-	FILE *fp;
+	int rc = 0;
+	struct variable_list *vlist;
+	UINT4 ip;
+	
+	if (type != RECEIVED_MESSAGE)
+		return 1;
 
-	if (!snmp_community) {
-		logit(L_ERR, _("no snmp_community"));
+	for (vlist = pdu->variables; rc == 0 && vlist;
+				     vlist = vlist->next_variable)  
+		switch (vlist->type) {
+		case SMI_STRING:
+			rc = strncmp(snmp_match, vlist->val.string,
+				     strlen(snmp_match)) == 0;
+			debug(2, ("(STRING) %s: %d", vlist->val.string, rc));
+			break;
+		case SMI_INTEGER:
+		case SMI_COUNTER32:
+		case SMI_COUNTER64:
+			rc = atoi(snmp_match) == *vlist->val.integer;
+			debug(2, ("(INT) %d: %d", *vlist->val.integer, rc));
+			break;
+		case SMI_IPADDRESS:
+			ip = htonl(get_ipaddr(snmp_match));
+			rc = memcmp(&ip, vlist->val.string, sizeof(ip)) == 0;
+			debug(2, ("(IPADDR) %d: %d",
+				  *(UINT4*)vlist->val.string, rc));
+			break;
+		}
+
+	*(int*)closure = rc;
+	
+	return 1;
+}
+
+/*ARGSUSED*/
+int
+snmp_check(nas_ip)
+	char *nas_ip;
+{
+	int rc = -1;
+	struct snmp_pdu *pdu;
+        struct snmp_session *sp, session;
+	struct variable_list *vlist;
+	int namelen;
+	oid *name;
+	int numfds;
+	fd_set fdset;
+	struct timeval timeout;
+	int block = 0;
+	oid * create_oid(char *str, int *length);
+	
+	if (!password) {
+		radlog(L_ERR, _("no snmp_community"));
 		return -1;
 	}
 	if (!snmp_oid) {
-		logit(L_ERR, _("no snmp_oid"));
+		radlog(L_ERR, _("no snmp_oid"));
 		return -1;
 	}
 	if (!snmp_match) {
-		logit(L_ERR, _("no snmp_match"));
+		radlog(L_ERR, _("no snmp_match"));
 		return -1;
 	}
 
-	sprintf(buffer, "%s %s %s %s",
-		SNMPGET,
-		nas_ip,
-		snmp_community,
-		snmp_oid);
+	debug(5, ("matching %s", snmp_match));
 
-	debug(3, ("SNMP: calling %s", buffer));
+	bzero(&session, sizeof(session));
+	session.Version = SNMP_VERSION_1;
+	session.community = password;
+	session.community_len = strlen(session.community);
+	session.retries = ilookup("retries", 3);
+	session.timeout = ilookup("timeout", 2);
+	session.peername = nas_ip;
+	session.remote_port = ilookup("port", 161);
+	session.local_port = 0;
+	session.callback = callback;
+	session.callback_magic = &rc;
 	
-	fp = popen(buffer, "r");
-	if (!fp) {
- 		logit(L_ERR|L_PERROR, _("can't run %s"), SNMPGET);
-		return -1;
+	sp = snmp_open(&session);
+
+	pdu = snmp_pdu_create(SNMP_PDU_GET);
+
+	name = create_oid(snmp_oid, &namelen);
+	vlist = snmp_var_new(name, namelen);
+	pdu->variables = vlist;
+
+	snmp_send(sp, pdu);
+
+	timeout.tv_usec = 0;
+	timeout.tv_sec = 1; /* FIXME: should be configurable? */
+	if (snmp_select_info(&numfds, &fdset, &timeout, &block)) {
+		snmp_read(&fdset);
 	}
-	ptr = fgets(buffer, sizeof(buffer), fp);
-	pclose(fp);
 
-	if (!ptr) {
-		logit(L_ERR, _("No response from %s"), SNMPGET);
-		return -1;
-	}
-	debug(3,("got %s", ptr));
-
-	/* Skip variable name */
-	while (*ptr && *ptr != '=')
-		ptr++;
-
-	if (!*ptr)
-		return -1;
-	
-	/* skip spaces */
-	++ptr;
-	while (*ptr && isspace(*ptr))
-		++ptr;
-	
-	if (!*ptr)
-		return -1;
-
-	if (*ptr == '\"') {
-		int len;
-		
-		++ptr;
-		len = strlen(ptr);
-		if (len) {
-			if (ptr[len-1] == '\n')
-				ptr[--len] = 0;
-			if (ptr[len-1] == '\"')
-				ptr[len-1] = 0;
-		}
-	}
-	return strncmp(snmp_match, ptr, sizeof(snmp_match)) == 0;
+	debug(5, ("result: %d", rc));
+	snmp_close(sp);
+	return rc;
 }
+
+oid *
+create_oid(str, length)
+	char *str;
+	int *length;
+{
+	char *tok;
+	int len;
+	oid *name, *p;
+
+	if (*str == '.')
+		str++;
+	
+	for (tok = str, len = 0; *tok; tok++)
+		if (*tok == '.')
+			len++;
+	name = emalloc(sizeof(*name) * (len+1));
+
+	p = name;
+	tok = str;
+	for (;;) {
+		*p++ = strtol(tok, &tok, 10);
+		if (*tok == 0)
+			break;
+		if (*tok++ != '.') {
+			radlog(L_ERR, "malformed oid near %s", tok-1);
+			break;
+		}
+	} 
+
+	*length = p-name;
+	return name;
+}
+
+/* additional args */
+struct xarg {
+	struct xarg *next;
+	char *name;
+	char *value;
+};
+
+struct xarg *xargs;
+
+struct xarg *
+lookup(name)
+	char *name;
+{
+	struct xarg *p;
+
+	for (p = xargs; p; p = p->next)
+		if (strcmp(p->name, name) == 0)
+			break;
+	return p;
+}
+
+int
+ilookup(name, defval)
+	char *name;
+	int defval;
+{
+	struct xarg *p = lookup(name);
+	return p ? atoi(p->value) : defval;
+}
+
+char *
+slookup(name, defval)
+	char *name;
+	char *defval;
+{
+	struct xarg *p = lookup(name);
+	return p ? p->value : defval;
+}
+
+void
+install(s)
+	char *s;
+{
+	struct xarg *p;
+
+	p = emalloc(sizeof(*p));
+	s = estrdup(s);
+	p->name = s;
+	if (s = strchr(s, '=')) {
+		*s++ = 0;
+		p->value = s;
+	} else
+		p->value = NULL;
+	p->next = xargs;
+	xargs = p;
+}
+
+
+
+
 

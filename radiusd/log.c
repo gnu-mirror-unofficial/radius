@@ -509,13 +509,14 @@ debug_print_pair(pair)
 		break;
 	}
 
-	ptr = debug_finish_string();
+	ptr = (u_char*) debug_finish_string();
 	return ptr;
 }
 
 #endif
 
 #ifdef USE_SQL
+/*PRINTFLIKE2*/
 void
 sqllog(status, msg, va_alist)
 	int status;

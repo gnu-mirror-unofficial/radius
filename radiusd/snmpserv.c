@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
-#define RADIUS_MODULE 14
+#define RADIUS_MODULE 13
 #if defined(HAVE_CONFIG_H)
 # include <config.h>
 #endif
@@ -56,7 +56,7 @@ oid * dup_oid(oid *, int);
 oid * snmp_create_oid();
 char * sprint_oid(char *buf, int buflen, oid *name, int len);
 
-int snmp_decode(SNMP_REQ *req, char *buf, int len);
+int snmp_decode(SNMP_REQ *req, u_char *buf, int len);
 int variable_cmp(variable_list *v1, variable_list *v2);
 
 	
@@ -693,7 +693,7 @@ static char		*send_buffer = (char *)i_send_buffer;
 
 SNMP_REQ *
 rad_snmp_respond(buf, len, sa)
-	char *buf;
+	u_char *buf;
 	int len;
 	struct sockaddr_in *sa;
 {
@@ -718,7 +718,7 @@ rad_snmp_respond(buf, len, sa)
 int
 snmp_decode(req, buf, len)
 	SNMP_REQ *req;
-	char *buf;
+	u_char *buf;
 	int len;
 {
 	struct snmp_pdu *pdu;

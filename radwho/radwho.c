@@ -17,8 +17,10 @@
  *
  */
 
+#ifndef lint
 static char rcsid[] = 
 "$Id$";
+#endif
 
 #if defined(HAVE_CONFIG_H)
 # include <config.h>
@@ -69,8 +71,11 @@ void format_delay(char *buf, FORMAT *fmt, struct radutmp *ut);
 void format_type(char *buf, FORMAT *fmt, struct radutmp *ut);
 void format_time(char *buf, FORMAT *fmt, struct radutmp *ut);
 void format_clid(char *buf, FORMAT *fmt, struct radutmp *ut);
+void format_realm(char *buf, FORMAT *fmt, struct radutmp *ut);
 
 NAS * my_read_naslist_file(char *file);
+void my_read_realms(char *file);
+char *realm_name(UINT4 ip);
 void local_who();
 void radius_who();
 void print_header();
@@ -79,7 +84,7 @@ char * proto(struct radutmp *rt);
 char * nasname(UINT4 ipaddr);
 char * hostname(UINT4 ipaddr);
 void parse_fmtspec(char *str);
-void set_data_format(char *s);
+void set_date_format(char *s);
 void set_ip_format(char *s);
 void usage();
 void license();
@@ -184,6 +189,12 @@ FORMAT clid_fmt = {
 	"CLID"
 };
 
+FORMAT realm_fmt = {
+	ALIGN_LEFT,
+	16,
+	format_realm,
+	"Realm"
+};
 
 #define MAX_FMT 20
 FORMAT radwho_fmt[MAX_FMT];
@@ -237,6 +248,7 @@ char *filename = NULL;    /* radutmp filename */
 char *empty = "";         /* empty field replacement */
 char *eol = "\n";         /* line delimiter */
 NAS  *naslist;            /* List of known NASes */
+REALM *realms;            /* List of realms */
 
 #define DEFFMT "login:10:Login,"\
                "uname:17:Name,"\
@@ -270,8 +282,8 @@ NAS  *naslist;            /* List of known NASes */
 	        "nas:32,"\
 	        "clid:17,"\
 	        "time:7,"\
-		"ip:16:Location"
-
+		"ip:16:Location,"\
+	        "realm:16"
 	       
 char *fmtspec = NULL;
 
@@ -280,9 +292,6 @@ main(argc, argv)
 	int  argc;
 	char **argv;
 {
-	FILE *fp;
-	struct radutmp rt;
-	struct utmp ut;
 	char inbuf[128];
 	char *path;
 	char *p, *q;
@@ -303,7 +312,7 @@ main(argc, argv)
 			radius_dir = optarg;
 			break;
 		case 'D': /* Date format */
-			set_data_format(optarg);
+			set_date_format(optarg);
 			break;
 		case 'e': /* empty field replacement */
 			empty = estrdup(optarg);
@@ -369,7 +378,12 @@ main(argc, argv)
 	path = mkfilename(radius_dir, RADIUS_NASLIST);
 	if ((naslist = my_read_naslist_file(path)) == NULL)
 		exit(1);
+	efree(path);
 
+	path = mkfilename(radius_dir, RADIUS_REALMS);
+	my_read_realms(path);
+	efree(path);
+	
 
 	/*
 	 *	See if we are "fingerd".
@@ -414,7 +428,7 @@ main(argc, argv)
 }
 
 void
-set_data_format(s)
+set_date_format(s)
 	char *s;
 {
 	if (strcmp(s, "short") == 0)
@@ -540,8 +554,6 @@ want_rad_record(rt)
 	default:
 		return (rt->type == P_IDLE && rt->login[0] != 0);
 	}
-
-	return rt->login[0] != 0;
 }
 
 /* ***************************************************************************
@@ -609,6 +621,7 @@ format_header(fmt)
 	printf("%s", eol);
 }
 
+/*ARGSUSED*/
 void
 format_login(buf, fmt, up)
 	char           *buf;
@@ -618,6 +631,7 @@ format_login(buf, fmt, up)
 	strcpy(buf, up->login);
 }
 
+/*ARGSUSED*/
 void
 format_username(buf, fmt, up)
 	char           *buf;
@@ -636,6 +650,7 @@ format_username(buf, fmt, up)
 	strcpy(buf, s);
 }
 
+/*ARGSUSED*/
 void
 format_porttype(buf, fmt, up)
 	char           *buf; 
@@ -645,6 +660,7 @@ format_porttype(buf, fmt, up)
 	sprintf(buf, "%c", up->porttype);
 }
 
+/*ARGSUSED*/
 void
 format_port(buf, fmt, up)
 	char           *buf; 
@@ -657,6 +673,7 @@ format_port(buf, fmt, up)
 /*
  *	Return a time in the form day hh:mm
  */
+/*ARGSUSED*/
 void
 format_date(buf, fmt, up)
 	char           *buf; 
@@ -703,6 +720,19 @@ format_address(buf, fmt, up)
 }
 
 void
+format_realm(buf, fmt, up)
+	char           *buf; 
+	FORMAT         *fmt;
+	struct radutmp *up;
+{
+	if (up->realm_address == 0)
+		strncpy(buf, empty, fmt->width);
+	else
+		strncpy(buf, realm_name(up->realm_address), fmt->width);
+}
+
+/*ARGSUSED*/
+void
 format_orig(buf, fmt, up)
 	char           *buf; 
 	FORMAT         *fmt;
@@ -711,7 +741,9 @@ format_orig(buf, fmt, up)
 	strcpy(buf, up->orig_login);
 }
 
-void format_sid(buf, fmt, up)
+/*ARGSUSED*/
+void
+format_sid(buf, fmt, up)
 	char           *buf; 
 	FORMAT         *fmt;
 	struct radutmp *up;
@@ -719,6 +751,7 @@ void format_sid(buf, fmt, up)
 	strcpy(buf, up->session_id);
 }	
 
+/*ARGSUSED*/
 void
 format_proto(buf, fmt, up)
 	char           *buf; 
@@ -728,6 +761,7 @@ format_proto(buf, fmt, up)
 	strcpy(buf, proto(up));
 }	
 
+/*ARGSUSED*/
 void
 format_delay(buf, fmt, up)
 	char           *buf; 
@@ -737,6 +771,7 @@ format_delay(buf, fmt, up)
 	time_str(buf, up->delay);
 }	
 
+/*ARGSUSED*/
 void
 format_type(buf, fmt, up)
 	char           *buf; 
@@ -746,6 +781,7 @@ format_type(buf, fmt, up)
 	sprintf(buf, "%d", up->type);
 }	
 
+/*ARGSUSED*/
 void
 format_time(buf, fmt, up)
 	char           *buf; 
@@ -755,6 +791,7 @@ format_time(buf, fmt, up)
 	time_str(buf, up->duration);
 }	
 
+/*ARGSUSED*/
 void
 format_clid(buf, fmt, up)
 	char           *buf; 
@@ -857,6 +894,7 @@ hostname(ipaddr)
 		if ((p = strchr(s, '.')) != NULL)
 			*p = 0;
 		return s;
+	default:
 	case SIP_IPADDR:
 		ipaddr2str(ipbuf, ntohl(ipaddr));
 		return ipbuf;
@@ -885,7 +923,8 @@ Keyword kwd[] = {
 	"ptype",  &porttype_fmt,
 	"time",   &time_fmt,
 	"clid",   &clid_fmt,
-	"uname",  &name_fmt
+	"uname",  &name_fmt,
+	"realm",  &realm_fmt
 };
 
 #define NKW sizeof(kwd)/sizeof(kwd[0])
@@ -990,7 +1029,7 @@ my_read_naslist_file(file)
 		fprintf(stderr, "\n");
 		return NULL;
 	}
-	while(fgets(buffer, 256, fp) != NULL) {
+	while(fgets(buffer, sizeof(buffer), fp) != NULL) {
 		lineno++;
 		if (buffer[0] == '#' || buffer[0] == '\n')
 			continue;
@@ -1012,6 +1051,58 @@ my_read_naslist_file(file)
 	fclose(fp);
 
 	return cl;
+}
+
+void
+my_read_realms(file)
+	char *file;
+{
+	FILE *fp;
+	REALM rb, *rp;
+	char *tok, *p;
+	int lineno;
+	
+	if ((fp = fopen(file, "r")) == NULL) {
+		fprintf(stderr, _("can't open %s"), file);
+		fprintf(stderr, "\n");
+		return;
+	}
+	lineno = 0;
+	while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+		lineno++;
+		if (buffer[0] == '#' || buffer[0] == '\n')
+			continue;
+		memset(&rb, 0, sizeof(rb));
+		tok = strtok(buffer, " \t");
+		if (!tok)
+			continue;
+		strncpy(rb.realm, tok, sizeof(rb.realm));
+		rb.realm[sizeof(rb.realm)-1] = 0;
+		if (!tok)
+			continue;
+		tok = strtok(NULL, " \t");
+		p = strtok(tok, ":");
+		if (!p)
+			continue;
+		rb.ipaddr = get_ipaddr(p);
+		rp = Alloc_entry(REALM);
+		memcpy(rp, &rb, sizeof(*rp));
+		rp->next = realms;
+		realms = rp;
+	}
+	fclose(fp);
+}
+
+char *
+realm_name(ip)
+	UINT4 ip;
+{
+	REALM *rp;
+
+	for (rp = realms; rp; rp = rp->next)
+		if (rp->ipaddr == ip)
+			return rp->realm;
+	return hostname(ip);
 }
 
 /* ***************************************************************************

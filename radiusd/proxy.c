@@ -47,7 +47,7 @@ static char rcsid[] =
  *	Make sure send_buffer is aligned properly.
  */
 static int i_send_buffer[RAD_BUFFER_SIZE];
-static char *send_buffer = (char *)i_send_buffer;
+static u_char *send_buffer = (u_char *)i_send_buffer;
 
 static PROXY_ID *proxy_id;
 
@@ -137,6 +137,7 @@ proxy_cleanup()
  * list. The function just creates a dynamic copy of raw request data and
  * attaches it to the request.
  */
+/*ARGSUSED*/
 int
 rad_proxy(authreq, activefd)
 	AUTH_REQ *authreq;
@@ -192,12 +193,12 @@ rad_send_request(fd, ipaddr, port, id, code, pw_digest, secret_key, request)
 {
 	AUTH_HDR		*auth;
 	VALUE_PAIR		*vp;
-	char			*length_ptr;
+	u_char			*length_ptr;
 	int			len, total_length;
 	int			vendorcode, vendorpec;
 	UINT4			lval;
 	char			vector[AUTH_VECTOR_LEN];
-	char                    *ptr;
+	u_char                  *ptr;
 	struct sockaddr_in	saremote, *sin;
 
 #define checkovf(len) \
@@ -477,7 +478,8 @@ proxy_send(authreq, activefd)
 	}
 
 	if (realm->striprealm)
-		*realmname++ = 0;
+		*realmname = 0;
+	realmname++;
 	authreq->realm = make_string(realmname);
 
 	replace_string(&namepair->strvalue, username);
@@ -569,12 +571,13 @@ proxy_send(authreq, activefd)
 		pp->next = p->next;
 		pairfree(p);
 	}
-
+#if 1	
 	/*
 	 *	And restore username.
 	 */
 	replace_string(&namepair->strvalue, saved_username);
 	namepair->strlength = strlen(namepair->strvalue);
+#endif
 	efree(saved_username);
 
 	return 1;
@@ -756,7 +759,4 @@ proxy_receive(authreq, activefd)
 	
 	return 0;
 }
-
-
-
 

@@ -46,9 +46,6 @@ static char rcsid[] =
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
-#ifdef __solaris__
-# include <sys/file.h>
-#endif
 
 #ifdef DBM
 #  include <dbm.h>
@@ -62,7 +59,6 @@ static char rcsid[] =
 #include <radutmp.h>
 #include <parser.h>
 #include <symtab.h>
-#include <ippool.h>
 #ifdef USE_SQL
 # include <radsql.h>
 #endif
@@ -109,6 +105,7 @@ static struct keyword op_tab[] = {
  */
 static int portcmp(VALUE_PAIR *check, VALUE_PAIR *request);
 static int groupcmp(VALUE_PAIR *check, char *username);
+static int uidcmp(VALUE_PAIR *check, char *username);
 static int paircmp(VALUE_PAIR *request, VALUE_PAIR *check);
 static int hunt_paircmp(VALUE_PAIR *request, VALUE_PAIR *check);
 static void pairlist_free(PAIR_LIST **pl);
@@ -118,6 +115,12 @@ static int huntgroup_match(VALUE_PAIR *request_pairs, char *huntgroup);
 static void clients_free(CLIENT *cl);
 static void nas_free(NAS *cl);
 static void realm_free(REALM *cl);
+static int user_find_sym(char *name, VALUE_PAIR *request_pairs, 
+			 VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
+#ifdef USE_DBM
+static int user_find_db(char *name, VALUE_PAIR *request_pairs,
+			VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
+#endif
 
 /* ***************************************************************************
  * string copy
@@ -140,6 +143,46 @@ string_copy(d, s, len)
 
 #define STRING_COPY(s,d) string_copy(s,d,sizeof(s)-1)
 
+int
+comp_op(op, result)
+	int op;
+	int result;
+{
+	switch (op) {
+	default:
+	case PW_OPERATOR_EQUAL:
+		if (result != 0)
+			return -1;
+		break;
+
+	case PW_OPERATOR_NOT_EQUAL:
+		if (result == 0)
+			return -1;
+		break;
+
+	case PW_OPERATOR_LESS_THAN:
+		if (result >= 0)
+			return -1;
+		break;
+
+	case PW_OPERATOR_GREATER_THAN:
+		if (result <= 0)
+			return -1;
+		break;
+		    
+	case PW_OPERATOR_LESS_EQUAL:
+		if (result > 0)
+			return -1;
+		break;
+			
+	case PW_OPERATOR_GREATER_EQUAL:
+		if (result < 0)
+			return -1;
+		break;
+	}
+	return 0;
+}
+
 /* ***************************************************************************
  * raddb/users
  */
@@ -161,6 +204,8 @@ add_user_entry(symtab, line, name, check, reply)
 	 */
 	if (strncmp(name, "DEFAULT", 7) == 0) 
 		name = "DEFAULT";
+	if (strncmp(name, "BEGIN", 5) == 0) 
+		name = "BEGIN";
 		
 	/* See if there are already any entries of this type. If so,
 	 * add to the end of such entries
@@ -243,37 +288,63 @@ file_read(name)
 	return tmp.head;
 }
 
+enum lookup_state {
+	LU_begin,
+	LU_match,
+	LU_default
+};
+
+typedef struct {
+	char *name;
+	enum lookup_state state;
+	User_symbol *sym;
+} USER_LOOKUP;
+
+
+static User_symbol * user_lookup(char *name, USER_LOOKUP *lptr);
+static User_symbol * user_next(USER_LOOKUP *lptr);
+
 /*
  * Hash lookup
  */
 User_symbol *
-user_lookup(name)
+user_lookup(name, lptr)
 	char *name;
+	USER_LOOKUP *lptr;
 {
 	User_symbol *sym;
 
-	if ((sym = (User_symbol*)sym_lookup(user_tab, name)) == NULL) 
-		sym = (User_symbol*)sym_lookup(user_tab, "DEFAULT");
-	return sym;
+	lptr->name = name;
+	lptr->state = LU_begin;
+	lptr->sym = (User_symbol*)sym_lookup(user_tab, "BEGIN");
+	return lptr->sym ? lptr->sym : user_next(lptr);
 }
 
 User_symbol *
-user_next(sym)
-	User_symbol *sym;
+user_next(lptr)
+	USER_LOOKUP *lptr;
 {
-	User_symbol *next;
-	if ((next = (User_symbol*)sym_next((Symbol*)sym)) == NULL) {
-		if (strcmp(sym->name, "DEFAULT"))
-			next = (User_symbol*)sym_lookup(user_tab, "DEFAULT");
-	        else {
-			while (next = sym->next) {
-				if (strcmp(next->name, "DEFAULT") == 0)
-					break;
-				sym = next;
-			}
+	if (lptr->sym &&
+	    (lptr->sym = (User_symbol*)sym_next((Symbol*)lptr->sym)))
+		return lptr->sym;
+	
+	switch (lptr->state) {
+	case LU_begin:
+		lptr->sym = (User_symbol*)sym_lookup(user_tab, lptr->name);
+		if (lptr->sym) {
+			lptr->state = LU_match;
+			break;
 		}
+		/*FALLTHRU*/
+	case LU_match:
+		lptr->state = LU_default;
+		lptr->sym = (User_symbol*)sym_lookup(user_tab, "DEFAULT");
+		break;
+		
+	case LU_default:
+		break;
 	}
-	return next;
+	return lptr->sym;
 }
 
 /*
@@ -371,44 +442,98 @@ dbm_find(name, request_pairs, check_pairs, reply_pairs)
 }
 #endif /* DBM */
 
+static int match_user(User_symbol *sym, VALUE_PAIR *request_pairs,
+		      VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
+
 /*
  * Find matching profile in the hash table
  */
 int
-user_find_sym(name, nas_port, request_pairs, check_pairs, reply_pairs)
+user_find_sym(name, request_pairs, check_pairs, reply_pairs)
 	char       *name;
-	int        nas_port;
 	VALUE_PAIR *request_pairs;
 	VALUE_PAIR **check_pairs;
 	VALUE_PAIR **reply_pairs;
 {
 	int found = 0;
 	User_symbol *sym;
-	VALUE_PAIR *check_tmp;
-	VALUE_PAIR *reply_tmp;
+	USER_LOOKUP lu;
 	
-	for (sym = user_lookup(name); sym; sym = user_next(sym)) {
-
-		if (paircmp(request_pairs, sym->check) == 0) {
-			debug(1, ("matched %s at users:%d",
-				 sym->name, sym->lineno));
+	for (sym = user_lookup(name, &lu); sym; sym = user_next(&lu)) {
+		if (match_user(sym, request_pairs, check_pairs, reply_pairs)) {
 			found = 1;
-			check_tmp = paircopy(sym->check);
-			reply_tmp = paircopy(sym->reply);
-			pairmove(reply_pairs, &reply_tmp);
-			pairmove(check_pairs, &check_tmp);
-			pairfree(reply_tmp);
-			pairfree(check_tmp);
-
-			/*
-			 *	Fallthrough?
-			 */
 			if (!fallthrough(sym->reply))
 				break;
 			debug(1, ("fall through"));
+			lu.sym = NULL; /* force jump to next state */
 		}
 	}
 	debug(1, ("returning %d", found));
+	return found;
+}
+
+int
+match_user(sym, request_pairs, check_pairs, reply_pairs)
+	User_symbol *sym;
+	VALUE_PAIR *request_pairs;
+	VALUE_PAIR **check_pairs;
+	VALUE_PAIR **reply_pairs;
+{
+	VALUE_PAIR *p;
+	VALUE_PAIR *check_tmp;
+	VALUE_PAIR *reply_tmp;
+	int found;
+	
+	if (!sym)
+		return 0;
+
+	found = 0;
+	do {
+		if (paircmp(request_pairs, sym->check)) 
+			continue;
+		
+		if (p = pairfind(sym->check, DA_MATCH_PROFILE)) {
+			debug(1, ("submatch: %s", p->strvalue));
+
+			if (!match_user((User_symbol*)sym_lookup(user_tab,
+								 p->strvalue),
+					request_pairs, check_pairs,
+					reply_pairs))
+				continue;
+		}			
+
+		found = 1;
+
+		check_tmp = paircopy(sym->check);
+		reply_tmp = paircopy(sym->reply);
+		pairmove(reply_pairs, &reply_tmp);
+		pairmove(check_pairs, &check_tmp);
+		pairfree(reply_tmp);
+		pairfree(check_tmp);
+
+		if (p = pairfind(request_pairs, DA_INCLUDE_PROFILE)) {
+			User_symbol *nsym;
+			VALUE_PAIR *pl;
+			
+			nsym = (User_symbol*)sym_lookup(user_tab,
+							p->strvalue);
+			debug(1, ("include: %s", p->strvalue));
+			pl = paircopy(request_pairs);
+			pairdelete(&pl, DA_INCLUDE_PROFILE);
+			match_user(nsym, pl, check_pairs, reply_pairs);
+			pairfree(pl);
+		}
+		if (p = pairfind(sym->reply, DA_MATCH_PROFILE)) {
+			debug(1, ("next: %s", p->strvalue));
+			match_user((User_symbol*)sym_lookup(user_tab,
+							    p->strvalue),
+				   request_pairs, check_pairs, reply_pairs);
+		}
+		if (!fallthrough(sym->reply))
+			break;
+		debug(1, ("fall through"));
+	} while (sym = (User_symbol*)sym_next((Symbol*)sym));
+
 	return found;
 }
 
@@ -417,9 +542,8 @@ user_find_sym(name, nas_port, request_pairs, check_pairs, reply_pairs)
  * Find matching profile in the DBM database
  */
 int
-user_find_db(name, nas_port, request_pairs, check_pairs, reply_pairs)
+user_find_db(name, request_pairs, check_pairs, reply_pairs)
 	char *name;
-	int nas_port;
 	VALUE_PAIR *request_pairs;
 	VALUE_PAIR **check_pairs;
 	VALUE_PAIR **reply_pairs;
@@ -493,8 +617,6 @@ user_find(name, request_pairs, check_pairs, reply_pairs)
 	VALUE_PAIR **check_pairs;
 	VALUE_PAIR **reply_pairs;
 {
-	int		nas_port = 0;
-	VALUE_PAIR	*tmp;
 	int		found = 0;
 
 	/* 
@@ -506,34 +628,28 @@ user_find(name, request_pairs, check_pairs, reply_pairs)
 	}
 
 	/*
-	 *	Find the NAS port ID.
-	 */
-	if ((tmp = pairfind(request_pairs, DA_NAS_PORT_ID)) != NULL)
-		nas_port = tmp->lvalue;
-
-	/*
 	 *	Find the entry for the user.
 	 */
 #ifdef USE_DBM
 	switch (use_dbm) {
 	case DBM_ONLY:
-		found = user_find_db(name, nas_port,
+		found = user_find_db(name,
 				     request_pairs, check_pairs, reply_pairs);
 		break;
 	case DBM_ALSO:
-		found = user_find_sym(name, nas_port,
+		found = user_find_sym(name, 
 				      request_pairs, check_pairs, reply_pairs);
 		if (!found)
-			found = user_find_db(name, nas_port,
+			found = user_find_db(name, 
 					     request_pairs, check_pairs,
 					     reply_pairs);
 		break;
 	default:
-		found = user_find_sym(name, nas_port,
+		found = user_find_sym(name, 
 				      request_pairs, check_pairs, reply_pairs);
 	} 
 #else
-	found = user_find_sym(name, nas_port,
+	found = user_find_sym(name, 
 			      request_pairs, check_pairs, reply_pairs);
 #endif
 	/*
@@ -546,7 +662,8 @@ user_find(name, request_pairs, check_pairs, reply_pairs)
 	 *	Remove server internal parameters.
 	 */
 	pairdelete(reply_pairs, DA_FALL_THROUGH);
-
+	pairdelete(reply_pairs, DA_MATCH_PROFILE);
+	
 	return 0;
 }
 
@@ -850,7 +967,7 @@ hints_setup(request_pairs)
 	debug(1, ("called for `%s'", name));
 	
 	/*
-	 * if Framed-Protocol present but Service-Type is missing, add
+	 * if Framed-Protocol is present but Service-Type is missing, add
 	 * Service-Type = Framed-User.
 	 */
 	if (pairfind(request_pairs, DA_FRAMED_PROTOCOL) != NULL &&
@@ -864,7 +981,7 @@ hints_setup(request_pairs)
 
 
 	for (i = hints; i; i = i->next) {
-		if (matches(name, i, newname)) {
+		if (matches(name, i, newname) == 0) {
 			debug(1, ("matched %s at hints:%d",
 				 i->name, i->lineno));
 			break;
@@ -996,20 +1113,22 @@ hunt_paircmp(request, check)
 		switch (check_item->type) {
 
 		case PW_TYPE_STRING:
-			if (check_item->attribute == DA_NAS_PORT_ID) {
-				if (portcmp(check_item, auth_item) == 0)
-					result = 0;
-			} else if (check_item->attribute == DA_GROUP_NAME ||
-				   check_item->attribute == DA_GROUP) {
-				if (groupcmp(check_item, auth_item->strvalue)==0)
-					result = 0;
-			} else if (check_item->attribute == DA_HUNTGROUP_NAME){
-				if (huntgroup_match(request,
-						    check_item->strvalue))
-					result = 0;
-			} else if (strcmp(check_item->strvalue,
-					  auth_item->strvalue) == 0) {
-				result = 0;
+			switch (check_item->attribute) {
+			case DA_NAS_PORT_ID:
+				result = portcmp(check_item, auth_item);
+				break;
+			case DA_GROUP_NAME:
+			case DA_GROUP:
+				result = groupcmp(check_item,
+						  auth_item->strvalue);
+				break;
+			case DA_HUNTGROUP_NAME:
+				result = !huntgroup_match(request,
+							check_item->strvalue);
+				break;
+			default:
+				result = strcmp(check_item->strvalue,
+						auth_item->strvalue);
 			}
 			break;
 
@@ -1026,39 +1145,7 @@ hunt_paircmp(request, check)
 
 		debug(20, ("compare: %d", result));
 
-		switch (check_item->operator) {
-		default:
-		case PW_OPERATOR_EQUAL:
-			if (result != 0)
-				return -1;
-			break;
-
-		case PW_OPERATOR_NOT_EQUAL:
-			if (result == 0)
-				return -1;
-			break;
-
-		case PW_OPERATOR_LESS_THAN:
-			if (result >= 0)
-				return -1;
-			break;
-
-		case PW_OPERATOR_GREATER_THAN:
-			if (result <= 0)
-				return -1;
-			break;
-		    
-		case PW_OPERATOR_LESS_EQUAL:
-			if (result > 0)
-				return -1;
-			break;
-			
-		case PW_OPERATOR_GREATER_EQUAL:
-			if (result < 0)
-				return -1;
-			break;
-		}
-
+		result = comp_op(check_item->operator, result);
 		check_item = check_item->next;
 	}
 
@@ -1075,20 +1162,20 @@ huntgroup_match(request_pairs, huntgroup)
 	VALUE_PAIR      *request_pairs;
 	char            *huntgroup;
 {
-	PAIR_LIST	*i;
+	PAIR_LIST *pl;
 	
-	for (i = huntgroups; i; i = i->next) {
-		if (strcmp(i->name, huntgroup) != 0)
+	for (pl = huntgroups; pl; pl = pl->next) {
+		if (strcmp(pl->name, huntgroup) != 0)
 			continue;
-		if (paircmp(request_pairs, i->check) == 0) {
+		if (paircmp(request_pairs, pl->check) == 0) {
 			debug(1, ("matched %s at huntgroups:%d",
-				 i->name, i->lineno));
+				 pl->name, pl->lineno));
 			break;
 		}
 	}
 
 
-	return (i != NULL);
+	return (pl != NULL);
 }
 
 
@@ -1103,32 +1190,31 @@ huntgroup_access(authreq)
 	AUTH_REQ *authreq;
 {
 	VALUE_PAIR      *request_pairs, *pair;
-	PAIR_LIST	*i;
+	PAIR_LIST	*pl;
 	int		r = 1;
 
 	if (huntgroups == NULL)
 		return 1;
 
 	request_pairs = authreq->request;
-	for (i = huntgroups; i; i = i->next) {
+	for (pl = huntgroups; pl; pl = pl->next) {
 		/*
 		 *	See if this entry matches.
 		 */
-		if (paircmp(request_pairs, i->check) != 0)
+		if (paircmp(request_pairs, pl->check) != 0)
 			continue;
-		debug(1, ("matched huntgroup at huntgroups:%d", i->lineno));
-		r = 0;
-		if (hunt_paircmp(request_pairs, i->reply) == 0) {
-			r = 1;
-		}
+		debug(1, ("matched huntgroup at huntgroups:%d", pl->lineno));
+		r = hunt_paircmp(request_pairs, pl->reply) == 0;
 		break;
 	}
 
 #ifdef DA_REWRITE_FUNCTION
-	if (i && (pair = pairfind(i->check, DA_REWRITE_FUNCTION)) != NULL) {
+	if (pl &&
+	    r  &&
+	    (pair = pairfind(pl->check, DA_REWRITE_FUNCTION)) != NULL) {
 		if (run_rewrite(pair->strvalue, authreq->request)) {
 			radlog(L_ERR, _("huntgroups:%d: %s(): not defined"),
-			       i->lineno,
+			       pl->lineno,
 			       pair->strvalue);
 		}
 	}
@@ -1160,7 +1246,7 @@ clients_free(cl)
 /*
  * parser
  */
-
+/*ARGSUSED*/
 int
 read_clients_entry(unused, fc, fv, file, lineno)
 	void *unused;
@@ -1173,7 +1259,7 @@ read_clients_entry(unused, fc, fv, file, lineno)
 	
 	if (fc < 2) {
 		radlog(L_ERR, _("%s:%d: too few fields (%d)"),
-		       file, lineno, fv[3]);
+		       file, lineno, fc);
 		return -1;
 	}
 		
@@ -1253,7 +1339,7 @@ nas_free(cl)
 
 	while(cl) {
 		next = cl->next;
-		free_pool(cl->ip_pool);
+		free_string(cl->checkrad_args);
 		free_entry(cl);
 		cl = next;
 	}
@@ -1262,44 +1348,7 @@ nas_free(cl)
 /*
  * parser
  */
-int
-get_range(p, start, cnt, file, lineno)
-	char *p;
-	int *start;
-	int *cnt;
-	char *file;
-	int lineno;
-{
-	int i;
-	
-	*cnt = *start = strtol(p, &p, 0);
-	switch (*p) {
-	case ':': /* number */
-		*cnt = strtol(p+1, &p, 0);
-		break;
-	case '-': /* range */
-		i = strtol(p+1, &p, 0);
-		if (*p && !isspace(*p)) {
-			radlog(L_ERR, _("%s:%d: (near %s) expected number"),
-			    file, lineno, p);
-			return -1;
-		}
-		if (i <= *cnt) {
-			radlog(L_ERR, _("%s:%d: bad range"),
-			    file, lineno);
-			return -1;
-		}
-		*cnt = i - *cnt + 1;
-		break;
-	default:
-		radlog(L_ERR, _("%s:%d: range expected"),
-		    file, lineno);
-		return -1;
-	}
-	return 0;
-}
-
-/* read and parse one entry from the naslist */
+/*ARGSUSED*/
 int
 read_naslist_entry(unused, fc, fv, file, lineno)
 	void *unused;
@@ -1320,52 +1369,9 @@ read_naslist_entry(unused, fc, fv, file, lineno)
 	STRING_COPY(nas.shortname, fv[1]);
 	STRING_COPY(nas.nastype, fv[2]);
 	STRING_COPY(nas.longname, ip_hostname(nas.ipaddr));
+	if (fc == 4)
+		nas.checkrad_args = make_string(fv[3]);
 	
-	if (fc > 3 && strcmp(fv[3], "none")) {
-		UINT4 start_ip;
-		int ch;
-		int start, ip_cnt, port_cnt=0;
-		char * p = fv[3];
-			
-		while (*p && (isdigit(*p) || *p == '.'))
-			p++;
-		ch = *p;
-		*p = 0;
-
-		if ((start_ip = get_ipaddr(fv[3])) == (UINT4) 0) {
-			radlog(L_ERR, _("%s:%d: unknown hostname: %s"),
-			    file, lineno, fv[3]);
-			return -1;
-		}
-		*p = ch;
-		while (p > fv[3] && *p != '.')
-			p--;
-		if (p == fv[3]) {
-			radlog(L_CRIT, _("%s:%d: internal error?"),
-			       __FILE__, __LINE__);
-			return -1;
-		}
-		p++;
-		if (get_range(p, &start, &ip_cnt, file, lineno))
-			return -1;
-		if (fc == 5) {
-			if (get_range(fv[4], &start, &port_cnt, file, lineno))
-				if (port_cnt != ip_cnt) {
-					radlog(L_ERR, _("%s:%d: count mismatch: %d vs. %d"),
-					    file, lineno,
-					    ip_cnt, port_cnt);
-					return -1;
-				}
-		} else
-			start = 1;
-		nas.ip_pool = alloc_pool(start_ip, ip_cnt, start);
-		debug(1,
-			("%s IP pool: %#x: %d addresses, ports %d - %d",
-			 nas.shortname, start_ip, ip_cnt,
-			 start, start + ip_cnt - 1));
-
-	}
-
 	nasp = Alloc_entry(NAS);
 
 	memcpy(nasp, &nas, sizeof(nas));
@@ -1397,7 +1403,7 @@ read_naslist_file(file)
 	}
 #endif
 
-	rc = read_raddb_file(file, 1, 5, read_naslist_entry, NULL);
+	rc = read_raddb_file(file, 1, 4, read_naslist_entry, NULL);
 
 	stat_create();
 
@@ -1501,6 +1507,7 @@ realm_free(cl)
  */
 
 /* read realms entry */
+/*ARGSUSED*/
 int
 read_realms_entry(unused, fc, fv, file, lineno)
 	void *unused;
@@ -1514,7 +1521,7 @@ read_realms_entry(unused, fc, fv, file, lineno)
 
 	if (fc < 2) {
 		radlog(L_ERR, _("%s:%d: too few fields (%d)"),
-		       file, lineno, fv[3]);
+		       file, lineno, fc);
 		return -1;
 	}
 	
@@ -1532,8 +1539,18 @@ read_realms_entry(unused, fc, fv, file, lineno)
 		rp->ipaddr = get_ipaddr(fv[1]);
 	STRING_COPY(rp->realm, fv[0]);
 	STRING_COPY(rp->server, fv[1]);
-	if (fc == 3)
-		rp->striprealm = strcmp(fv[2], "nostrip") != 0;
+	if (fc >= 3) {
+		if (strcmp(fv[2], "nostrip") == 0)
+			rp->striprealm = 0;
+		else if (strcmp(fv[2], "strip") == 0)
+			rp->striprealm = 1;
+		else {
+			radlog(L_ERR, _("%s:%d: invalid flag"),
+			       file, lineno);
+		}
+	}
+	if (fc == 4) 
+		rp->maxlogins = atoi(fv[3]);
 	rp->next = realms;
 	realms = rp;
 	return 0;
@@ -1549,7 +1566,7 @@ read_realms_file(file)
 	realm_free(realms);
 	realms = NULL;
 	
-	return read_raddb_file(file, 1, 3, read_realms_entry, NULL);
+	return read_raddb_file(file, 1, 4, read_realms_entry, NULL);
 }
 
 /*
@@ -1587,6 +1604,7 @@ add_deny(user)
 	sym_install(deny_tab, user);
 }
 
+/*ARGSUSED*/
 int
 read_denylist_entry(denycnt, fc, fv, file, lineno)
 	int *denycnt;
@@ -1649,6 +1667,7 @@ fallthrough(vp)
 
 	return (tmp = pairfind(vp, DA_FALL_THROUGH)) ? tmp->lvalue : 0;
 }
+
 
 /*
  * Move attributes from one list to the other if not already present there.
@@ -1811,6 +1830,19 @@ portcmp(check, request)
 }
 
 
+int
+uidcmp(check, username)
+	VALUE_PAIR *check;
+	char *username;
+{
+	struct passwd *pwd;
+
+        if ((pwd = getpwnam(username)) == NULL)
+                return -1;
+
+	return pwd->pw_uid - check->lvalue;
+}
+	
 /*
  *	See if user is member of a group.
  *	We also handle additional groups.
@@ -1908,10 +1940,14 @@ static int server_check_items[] = {
 #ifdef DA_REWRITE_FUNCTION
 	DA_REWRITE_FUNCTION,
 #endif	
-	/*DA_ORIG_USER_NAME,*/
-	DA_GROUP,
+#ifdef DA_ACCT_TYPE
+	DA_ACCT_TYPE,
+#endif
 	DA_MENU,
 	DA_TERMINATION_MENU,
+	DA_GROUP_NAME,
+	DA_MATCH_PROFILE,
+	DA_INCLUDE_PROFILE
 };
 
 int
@@ -1961,7 +1997,9 @@ paircmp(request, check)
 			case DA_GROUP_NAME:
 				if (auth_item->attribute != DA_USER_NAME)
 					continue;
+				/*FALLTHRU*/
 			case DA_HUNTGROUP_NAME:
+			case DA_USER_UID:
 				break;
 			case DA_HINT:
 				if (auth_item->attribute != check_item->attribute)
@@ -1992,27 +2030,37 @@ paircmp(request, check)
 		switch (check_item->type) {
 		case PW_TYPE_STRING:
 			strcpy(username, auth_item->strvalue);
-			if (check_item->attribute == DA_PREFIX ||
-			    check_item->attribute == DA_SUFFIX) {
-				if (presufcmp(check_item,
-					      auth_item->strvalue, username) != 0)
-					return -1;
-			} else if (check_item->attribute == DA_NAS_PORT_ID) {
-				if (portcmp(check_item, auth_item) != 0)
-					return -1;
-			} else if (check_item->attribute == DA_GROUP_NAME ||
-				   check_item->attribute == DA_GROUP) {
+			switch (check_item->attribute) {
+			case DA_PREFIX:
+			case DA_SUFFIX:
+				compare = presufcmp(check_item,
+						    auth_item->strvalue,
+						    username);
+				break;
+			case DA_NAS_PORT_ID:
+				compare = portcmp(check_item, auth_item);
+				break;
+			case DA_GROUP_NAME:
+			case DA_GROUP:
 				compare = groupcmp(check_item, username);
-			} else
-				if (check_item->attribute == DA_HUNTGROUP_NAME){
-					compare = !huntgroup_match(request,
-							     check_item->strvalue);
-				} else
-					compare = strcmp(auth_item->strvalue,
+				break;
+			case DA_HUNTGROUP_NAME:
+				compare = !huntgroup_match(request,
 							 check_item->strvalue);
+				break;
+			default:
+				compare = strcmp(auth_item->strvalue,
+						 check_item->strvalue);
+			}
 			break;
 
 		case PW_TYPE_INTEGER:
+			switch (check_item->attribute) {
+			case DA_USER_UID:
+				compare = uidcmp(check_item, username);
+				break;
+			}
+			/*FALLTHRU*/
 		case PW_TYPE_IPADDR:
 			compare = auth_item->lvalue - check_item->lvalue;
 			break;
@@ -2024,38 +2072,7 @@ paircmp(request, check)
 
 		debug(20, ("compare: %d", compare));
 
-		switch (check_item->operator) {
-		default:
-		case PW_OPERATOR_EQUAL:
-			if (compare != 0)
-				return -1;
-			break;
-
-		case PW_OPERATOR_NOT_EQUAL:
-			if (compare == 0)
-				return -1;
-			break;
-
-		case PW_OPERATOR_LESS_THAN:
-			if (compare >= 0)
-				return -1;
-			break;
-
-		case PW_OPERATOR_GREATER_THAN:
-			if (compare <= 0)
-				return -1;
-			break;
-		    
-		case PW_OPERATOR_LESS_EQUAL:
-			if (compare > 0)
-				return -1;
-			break;
-			
-		case PW_OPERATOR_GREATER_EQUAL:
-			if (compare < 0)
-				return -1;
-			break;
-		}
+		result = comp_op(check_item->operator, compare);
 
 		if (result == 0)
 			check_item = check_item->next;
@@ -2131,9 +2148,172 @@ pairlist_free(pl)
 	*pl = NULL;
 }
 
+int
+hints_pairmatch(pl, name, ret_name)
+	PAIR_LIST *pl;
+	char *name;
+	char *ret_name;
+{
+	VALUE_PAIR *pair;
+	char username[AUTH_STRING_LEN];
+	int compare;
+	
+	strcpy(ret_name, name);
+	strncpy(username, name, AUTH_STRING_LEN);
+
+	compare = 0;
+	for (pair = pl->check; compare == 0 && pair; pair = pair->next) {
+		switch (pair->attribute) {
+		case DA_PREFIX:
+		case DA_SUFFIX:
+			compare = presufcmp(pair, username, ret_name);
+			strncpy(username, ret_name, AUTH_STRING_LEN);
+			break;
+		case DA_USER_UID:
+			compare = uidcmp(pair, username);
+			break;
+		case DA_GROUP:
+			compare = groupcmp(pair, username);
+			break;
+		default:
+			continue;
+		}
+		compare = comp_op(pair->operator, compare);
+	}
+
+	return compare;
+}
+
+/* ***************************************************************************
+ * a *very* restricted version  of wildmat
+ */
+char *
+wild_start(str)
+	char *str;
+{
+	char *p;
+
+	p = str;
+	while (*p) {
+		switch (*p) {
+		case '*':
+		case '?':
+			return p;
+			
+		case '\\':
+			if (p[1] == '(' || p[1] == ')')
+				return p;
+			/*FALLTHRU*/
+		default:
+			p++;
+		}
+	}
+	return NULL;
+}
+
+int
+match_any_chars(expr, name)
+	char **expr;
+	char **name;
+{
+	char *exprp, *expr_start, *p, *namep;
+	int length;
+	
+	exprp = *expr;
+	while (*exprp && *exprp == '*')
+		exprp++;
+	
+	expr_start = exprp;
+	while (exprp[0] == '\\' && (exprp[1] == '(' || exprp[1] == ')'))
+		exprp += 2;
+	
+	p = wild_start(exprp);
+	
+	if (p) 
+		length = p - exprp;
+	else
+		length = strlen(exprp);
+
+	if (length == 0) {
+		*name += strlen(*name);
+	} else {
+		namep = *name + strlen(*name) - 1;
+		while (namep > *name) {
+			if (strncmp(namep, exprp, length) == 0) {
+				*name = namep;
+				break;
+			}
+			namep--;
+		}
+	}
+	*expr = (exprp == expr_start) ? p : expr_start;
+	return 0;
+}
+
+int
+wild_match(expr, name, return_name)
+	char *expr;
+	char *name;
+	char *return_name;
+{
+	char *curp;
+	char *start_pos, *end_pos;
+	int c;
+	
+	strcpy(return_name, name);
+	start_pos = end_pos = NULL;
+	curp = name;
+	while (expr && *expr) {
+		switch (*expr) {
+		case '*':
+			expr++;
+			if (match_any_chars(&expr, &curp))
+				return curp - name + 1;
+			break;
+			
+		case '?':
+			expr++;
+			if (*curp == 0)
+				return curp - name + 1;
+			curp++;
+			break;
+			
+		case '\\':
+			if (expr[1] == 0) 
+				goto def;
+			c = *++expr; expr++;
+			if (c == '(') {
+				start_pos = curp;
+			} else if (c == ')') {
+				end_pos = curp;
+				if (start_pos) {
+					int len = end_pos - start_pos;
+					strncpy(return_name, start_pos, len);
+					return_name += len;
+					*return_name = 0;
+				}
+			} else {
+				if (*curp != c)
+					return curp - name + 1;
+				curp++;
+			}
+			break;
+			
+		default:
+		def:
+			if (*expr != *curp)
+				return curp - name + 1;
+			expr++;
+			curp++;
+		}
+	}
+	return 0;
+}
+
+/* ************************************************************************* */
+
 /*
  * Match a username with a wildcard expression.
- * Is very limited for now.
  */
 int
 matches(name, pl, matchpart)
@@ -2141,64 +2321,12 @@ matches(name, pl, matchpart)
 	PAIR_LIST *pl;
 	char *matchpart;
 {
-	int len, wlen;
-	int ret = 0;
-	char *wild = pl->name;
-	VALUE_PAIR *tmp;
-
-	/*
-	 *	We now support both:
-	 *
-	 *		DEFAULT	Prefix = "P"
-	 *
-	 *	and
-	 *		P*
-	 */
-	if ((tmp = pairfind(pl->check, DA_PREFIX)) != NULL ||
-	    (tmp = pairfind(pl->check, DA_SUFFIX)) != NULL) {
-
-		if (strncmp(pl->name, "DEFAULT", 7) == 0 ||
-		    strcmp(pl->name, name) == 0)
-			return !presufcmp(tmp, name, matchpart);
-	}
-
-	/*
-	 *	Shortcut if there's no '*' in pl->name.
-	 */
-	if (strchr(pl->name, '*') == NULL &&
-	    (strncmp(pl->name, "DEFAULT", 7) == 0 ||
-	     strcmp(pl->name, name) == 0)) {
-		strcpy(matchpart, name);
-		return 1;
-	}
-
-	/*
-	 *	Normally, we should return 0 here, but we
-	 *	support the old * stuff.
-	 */
-	len = strlen(name);
-	wlen = strlen(wild);
-
-	if (len == 0 || wlen == 0) return 0;
-
-	if (wild[0] == '*') {
-		wild++;
-		wlen--;
-		if (wlen <= len && strcmp(name + (len - wlen), wild) == 0) {
-			strcpy(matchpart, name);
-			matchpart[len - wlen] = 0;
-			ret = 1;
-		}
-	} else if (wild[wlen - 1] == '*') {
-		if (wlen <= len && strncmp(name, wild, wlen - 1) == 0) {
-			strcpy(matchpart, name + wlen - 1);
-			ret = 1;
-		}
-	}
-
-	return ret;
-}
-
+	if (strncmp(pl->name, "DEFAULT", 7) == 0 ||
+	    wild_match(pl->name, name, matchpart) == 0)
+	    return hints_pairmatch(pl, name, matchpart);
+	return 1;
+}	
+	
 /* ****************************************************************************
  * Read all configuration files
  */
@@ -2226,7 +2354,7 @@ checkdbm(users, ext)
 
 int
 reload_config_file(what)
-	int what;
+	enum reload_what what;
 {
 	char *path;
 	int   rc = 0;
@@ -2284,14 +2412,14 @@ reload_config_file(what)
 	case reload_huntgroups:
 		pairlist_free(&huntgroups);
 		path = mkfilename(radius_dir, RADIUS_HUNTGROUPS);
-		huntgroups = file_read(path, 0);
+		huntgroups = file_read(path);
 		efree(path);
 		break;
 		
 	case reload_hints:
 		pairlist_free(&hints);
 		path = mkfilename(radius_dir, RADIUS_HINTS);
-		hints = file_read(path, 0);
+		hints = file_read(path);
 		efree(path);
 		break;
 		
@@ -2443,8 +2571,6 @@ dump_users_db()
 	efree(name);
 }
 
-/*@@*/
-
 /* ***************************************************************************
  * Various utils exported to other modules
  */
@@ -2458,6 +2584,7 @@ presuf_setup(request_pairs)
 	VALUE_PAIR *request_pairs;
 {
 	User_symbol *sym;
+	USER_LOOKUP lu;
 	VALUE_PAIR  *presuf_pair;
 	VALUE_PAIR  *name_pair;
 	VALUE_PAIR  *tmp;
@@ -2466,8 +2593,8 @@ presuf_setup(request_pairs)
 	if ((name_pair = pairfind(request_pairs, DA_USER_NAME)) == NULL)
 		return ;
 
-	for (sym = user_lookup(name_pair->strvalue); sym;
-	     sym = user_next(sym)) {
+	for (sym = user_lookup(name_pair->strvalue, &lu); sym;
+	     sym = user_next(&lu)) {
 
 		if ((presuf_pair = pairfind(sym->check, DA_PREFIX)) == NULL &&
 		    (presuf_pair = pairfind(sym->check, DA_SUFFIX)) == NULL)

@@ -906,8 +906,7 @@ send [@var{flags}] @var{port-type} @var{code} [@var{expr-or-pair-list}]
 
 Optional @var{flags} can be used for fine-tuning the internals of
 @code{send}. You will seldom need to use these, unless you are
-developing GNU Radius. @xref{send-flags}, for the detailed
-description of these.
+developing GNU Radius. @xref{Built-in Primitives,send}, for the detailed description of these.
 
 The first obligatory argument, @var{port-type}, specifies which
 @RADIUS{} port to send the request to. Specifying @samp{auth} will
@@ -1082,7 +1081,7 @@ end
 Two looping constructs are provided: @code{while} and
 @code{do...while}.
 
-@subsection While loop
+@subheading While loop
 
 The syntax of a while loop is:
 

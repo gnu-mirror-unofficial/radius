@@ -235,7 +235,7 @@ rscm_add_load_path(char *path)
 }
 
 void
-radscm_init()
+grad_scm_init()
 {
         rscm_syslog_init();
         rscm_utmp_init();

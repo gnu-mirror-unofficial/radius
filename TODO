@@ -1,5 +1,18 @@
+     Switching to multithread server:
+-100 :  format_pair() is not thread-safe.
+        use strtok_r instead of strtok.
+        gethosbyname() is not thread-safe.
+-100 :  sql.c (comprises ex-`Revise sql.c. See ChangeLog for 2001-12-21.')
+-100 :  rewrite.y
+-100 :  stat.c and stat-related issuses: get rid of mmap, compile in the
+	stat support only if USE_SNMP is true; redesign raduse to use
+	snmp queries instead of peeking in radstat.
+-50  :  Include pth library in the distribution, update configure.in
+	accordingly.
+-30  :  retransmit proxy (and possibly auth?) requests
+	
+     General:	
 -100 : Provide a scheme function for setting radclient_debug variable.
--100 : Revise sql.c. See ChangeLog for 2001-12-21.	
 -50  : Add \ line continuation to read_raddb_files.
 -50  : do_not_resolve is global. Possibly could be used in radwho (-n)
 -50  : Get rid of radscm (or build it only on systems that do not support

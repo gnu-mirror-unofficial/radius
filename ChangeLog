@@ -1,3 +1,40 @@
+2002-01-08 Sergey Poznyakoff
+
+	Started redesigning radiusd to multithreaded model. Initially
+	basing on GNU Pth.
+
+	* configure.in: Added check for Pth. Removed --enable-yydebug.
+	  Yacc is always called with -t flag.
+
+	* include/radius.h: New field of RADIUS_REQ: fd keeps the
+	  socket descriptor to send the reply through.
+	* include/radiusd.h: include <pth.h>
+	* radiusd/radiusd.c: Introduced threading support.
+	* radiusd/scheme.c: Likewise.
+	
+	* radiusd/Makefile.am: Pass -t to yacc.
+	* radiusd/config.y: Got rid of #ifdef YACC_DEBUG blocks.
+	* radiusd/rewrite.y: Likewise.
+	* radiusd/version.c: Likewise.
+	* radlib/Makefile.am: Likewise.
+	* radlib/users.y: Likewise.
+	* radtest/Makefile.am: Likewise.
+	* radtest/gram.y: Likewise.
+	* acconfig.h: Removed YACC_DEBUG.
+	* README: Removed --enable-yydebug.
+
+	* radiusd/acct.c: Marked code to be revised with FIXME.
+	* radiusd/files.c: (read_naslist_file) removed superfluous
+	  if (master_process()).
+	* radiusd/sql.c: Fixed typo.
+	
+	* TODO: Updated.
+	
+2002-01-08 Sergey Poznyakoff
+
+	Tag 0.96p1. This will serve as a branchpoint for fork-based
+	versions.
+	
 2002-01-05 Sergey Poznyakoff
 	
 	* db/db.m4: Use ENUM_T instead of enum.

@@ -18,7 +18,9 @@ TESTS_ENVIRONMENT=\
  SOURCEDIR=`cd $(top_srcdir); pwd`
 
 EXTRA_DIST = runtest.sh shell.m4 radiusd-stamp proxy-stamp radiusd radiusd.proxy
-DISTCLEANFILES = radiusd-stamp proxy-stamp
+MAINTAINERCLEANFILES = radiusd-stamp proxy-stamp
+
+maintainer-clean-local:; -rm -rf radiusd radiusd.proxy
 
 M4_DEFINES=-DBUILDDIR=`cd $(top_builddir); pwd` \
            -DSOURCEDIR=`cd $(top_srcdir); pwd`

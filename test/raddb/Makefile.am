@@ -54,5 +54,5 @@ rewrite: $(RADDB)/rewrite.full
 
 CLEANFILES=$(ALLTARGETS) config client.conf users acct.scm realms
 
-distclean-local:; -rm -rf log acct
+distclean-local:; -rm -rf log acct dict
 

@@ -26,6 +26,7 @@
 #include <sysdep.h>
 #include <radiusd.h>
 #include <obstack1.h>
+#include <rewrite.h>
 
 /* obstack_grow with quoting of potentially dangerous characters */
 static void
@@ -432,5 +433,61 @@ radius_xlate(struct obstack *obp, char *str, RADIUS_REQ *req, VALUE_PAIR *reply)
         return obstack_finish(obp);
 }
 
+static void
+pair_set_value(VALUE_PAIR *p, Datatype type, Datum *datum)
+{
+	efree(p->avp_strvalue);
+	switch (type) {
+	case Integer:
+		p->avp_lvalue = datum->ival;
+		break;
+		
+	case String:
+		p->avp_strvalue = datum->sval;
+		p->avp_strlength = strlen(p->avp_strvalue);
+		break;
+		
+	default:
+		insist_fail("bad Datatype");
+	}
+	p->eval_type = eval_const;
+}
 
+int
+radius_eval_avl(RADIUS_REQ *req, VALUE_PAIR *p)
+{
+	int errcnt = 0;
+	for (; p; p = p->next) {
+		Datatype type;
+		Datum datum;
+		
+		switch (p->eval_type) {
+		case eval_const:
+			break;
+			
+		case eval_interpret:
+			if (rewrite_interpret(p->avp_strvalue,
+					      req, &type, &datum)) {
+                                errcnt++;
+                                continue;
+                        }
+			pair_set_value(p, type, &datum);
+			break;
+
+		case eval_compiled:
+			if (rewrite_eval(p->avp_strvalue,
+					 req, &type, &datum)) {
+                                errcnt++;
+                                continue;
+                        }
+			pair_set_value(p, type, &datum);
+			break;
+
+		default:
+			insist_fail("bad eval_type");
+                }
+        }
+
+	return errcnt++;
+}
 

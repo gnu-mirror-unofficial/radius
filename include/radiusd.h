@@ -540,6 +540,7 @@ int snmp_req_respond(REQUEST *request);
 /* radutil.c */
 char *radius_xlate(struct obstack *obp, char *str,
                    RADIUS_REQ *req, VALUE_PAIR *reply_pairs);
+int radius_eval_avl(RADIUS_REQ *req, VALUE_PAIR *p);
 
 /* rewrite.y */
 extern struct cfg_stmt rewrite_stmt[];

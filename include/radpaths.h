@@ -38,7 +38,6 @@
 # endif
 #endif
 #define RADIUSD_PID_FILE "radiusd.pid"
-#define RADIUSD_WATCHER_FILE "radiusd.watcher"
 
 #define RADIUS_DIR              RADDB_DIR
 

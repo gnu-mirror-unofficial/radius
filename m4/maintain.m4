@@ -28,4 +28,5 @@ AC_DEFUN(RA_MAINTAINER_MODE,
 		       AC_MSG_RESULT(no)])
        CFLAGS="$CFLAGS -DMAINTAINER_MODE"
      fi
+     $1
    fi])

@@ -204,12 +204,6 @@ AC_ARG_WITH(client,
 	[BUILD_CLIENT=$withval],
 	[BUILD_CLIENT=no])
 AC_MSG_RESULT($BUILD_CLIENT)
-if test x$BUILD_CLIENT = xyes; then
-	AC_CHECK_LIB(pam, pam_start,
-			[ ],
-			[ AC_MSG_ERROR(-lpam not found) 
-			  exit 1])
-fi
 
 ## **************
 ## auth port no
@@ -504,13 +498,24 @@ AC_SUBST(GUILE_LIBS)
 if test x$GUILE_CONFIG != xno; then
 	GUILE_INCLUDES=`guile-config compile`
 	GUILE_LIBS=`guile-config link`
-else
-	BUILD_CLIENT=no
+fi
+
+AC_SUBST(BUILD_NAS_SCM)
+AC_SUBST(BUILD_PAM_RADIUS_LA)
+if test x$BUILD_CLIENT = xyes; then
+	AC_CHECK_LIB(pam, pam_start,
+			[ BUILD_PAM_RADIUS_LA=pam_radius.la ],
+			[ AC_MSG_WARN([-lpam not found. Won't build pam_radius.so]) 
+			  exit 1])
+	if test x$GUILE_CONFIG != xno; then
+		BUILD_NAS_SCM=nas.scm
+	else
+		AC_MSG_WARN([GUILE not installed. Won't build nas.scm])
+	fi
 fi
 
 AM_CONDITIONAL(SQL, test x$USE_SQL != xno)
 AM_CONDITIONAL(GUILE, test x$GUILE_CONFIG != xno)
-AM_CONDITIONAL(BUILD_CLIENT, test x$BUILD_CLIENT = xyes)
 
 AC_OUTPUT(Makefile m4/Makefile \
           include/Makefile include/snmp/Makefile \

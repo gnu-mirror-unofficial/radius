@@ -42,6 +42,10 @@ crypt   Auth-Type = Crypt-Local,
 		User-Password = "$1$gHpfo$0BuBYjWmmM6E4l00ZFqVI1" # hamlet
 	NULL
 
+chap	Auth-Type = Local,
+		User-Password = "test"
+	NULL
+
 ## Access.exp: bad-one should be rejected.
 bad-one Auth-Type = Accept     NULL
 

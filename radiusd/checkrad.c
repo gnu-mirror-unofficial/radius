@@ -229,7 +229,7 @@ checkrad_xlat(struct check_instance *checkp, char *str)
 	if (str[0] == '=')
 		return checkrad_xlat_new(checkp, str+1);
 	
-	return checkrad_xlat_old(checkp, str+1);
+	return checkrad_xlat_old(checkp, str);
 }
 
 /*ARGSUSED*/

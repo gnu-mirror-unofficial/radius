@@ -29,17 +29,20 @@ struct symbol {
 
 typedef struct {
 	int elsize;
-	int hashsize;
+	int elcnt;
+	int hash_num;
 	Symbol **sym;
 	int (*elfree)();
 } Symtab;
 
-Symtab * symtab_create(unsigned esize, unsigned hsize, int (*)());
-void symtab_free(Symtab *symtab);
+Symtab * symtab_create(unsigned esize, int (*)());
+void symtab_free(Symtab **symtab);
+void symtab_clear(Symtab *symtab);
 
-Symbol * sym_install(Symtab *symtab, char *name);
-Symbol * sym_lookup(Symtab *symtab, char *name);
-Symbol * sym_next(Symbol *sym);
+void *sym_install(Symtab *symtab, char *name);
+void *sym_lookup(Symtab *symtab, char *name);
+void *sym_lookup_or_install(Symtab *symtab, char *name, int install);
+void *sym_next(Symbol *sym);
 void symtab_iterate(Symtab *symtab, int (*fn)(), void *closure);
 
 Symbol * alloc_sym(char *, unsigned);

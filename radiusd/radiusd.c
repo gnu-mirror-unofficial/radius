@@ -79,20 +79,6 @@ struct request_class request_class[] = {
         { NULL, }
 };
 
-/* Socket lists */
-struct socket_list {
-        struct socket_list *next;
-        int fd;
-        int (*success)(struct sockaddr *, int);
-        int (*respond)(int fd, struct sockaddr *, int, u_char *, int);
-        int (*failure)(struct sockaddr *, int);
-};
-
-int socket_list_select(struct socket_list *list, struct timeval *tv);
-void socket_list_close(struct socket_list *list);
-void socket_list_add(struct socket_list **list, int fd,
-                     int (*s)(), int (*r)(), int (*f)());
-
 /* Implementation functions */
 int auth_respond(int fd, struct sockaddr *sa, int salen,
                  u_char *buf, int size);
@@ -100,7 +86,16 @@ int acct_success(struct sockaddr *sa, int salen);
 int acct_failure(struct sockaddr *sa, int salen);
 int snmp_respond(int fd, struct sockaddr *sa, int salen,
                  u_char *buf, int size);
-int radiusd_respond(RADIUS_REQ *radreq, int activefd);
+int radiusd_respond(int fd, RADIUS_REQ *radreq, u_char *buf, size_t size);
+
+struct request_handler_tab request_handler_tab[] = {
+	/* AUTH */  { NULL, auth_respond, NULL },
+	/* ACCT */  { acct_success, auth_respond, acct_failure },
+	/* PROXY */ { NULL, NULL, NULL },/* not used currently */
+#ifdef USE_SNMP
+	/* SNMP */  { NULL, snmp_respond, NULL }, 
+#endif
+};
 
 /* *************************** Global variables. ************************** */
 
@@ -136,11 +131,7 @@ int acct_port;
 #ifdef USE_SNMP
 int snmp_port;
 #endif
-struct socket_list *socket_first;
-
-/* Make sure recv_buffer is aligned properly. */
-static int i_recv_buffer[RAD_BUFFER_SIZE];
-static u_char *recv_buffer = (u_char *)i_recv_buffer;
+SOCKET_LIST *socket_first;
 
 pthread_t radius_tid;       /* Thread ID of the main thread */
 pthread_attr_t thread_attr; /* Attribute for creating child threads */
@@ -189,10 +180,6 @@ static struct signal_list {
 
 sigset_t rad_signal_set;
 
-static int open_socket(UINT4 ipaddr, int port, char *type);
-static void open_socket_list(int argc, cfg_value_t *argv,
-			     int defport, char *descr,
-                             int (*s)(), int (*r)(), int (*f)());
 static int rad_cfg_listen_auth(int argc, cfg_value_t *argv,
 			       void *block_data, void *handler_data);
 static int rad_cfg_listen_acct(int argc, cfg_value_t *argv,
@@ -412,13 +399,12 @@ main(argc, argv)
                 auth_port = radius_port;
         else {
                 svp = getservbyname ("radius", "udp");
-                if (svp != (struct servent *) 0)
+                if (svp)
                         auth_port = ntohs(svp->s_port);
                 else
                         auth_port = DEF_AUTH_PORT;
         }
-        if (radius_port ||
-            (svp = getservbyname ("radacct", "udp")) == (struct servent *) 0)
+        if (radius_port || (svp = getservbyname ("radacct", "udp")) == NULL)
                 acct_port = auth_port + 1;
         else
                 acct_port = ntohs(svp->s_port);
@@ -649,7 +635,10 @@ radiusd_main_loop()
                 check_reload();
                 tv.tv_sec = 2;
                 tv.tv_usec = 0;
-                socket_list_select(socket_first, &tv);
+                socket_list_select(socket_first,
+				   request_handler_tab,
+				   NITEMS(request_handler_tab),
+				   &tv);
         }
         /*NOTREACHED*/
 }
@@ -783,7 +772,7 @@ test_shell()
 void
 radiusd_fork_child_handler()
 {
-        socket_list_close(socket_first);
+        socket_list_close(&socket_first);
 }
 
 void
@@ -885,7 +874,7 @@ radiusd_primitive_restart(cont)
         }
 
         /* Close all channels we were listening to */
-        socket_list_close(socket_first);
+        socket_list_close(&socket_first);
 
         if (pid > 0) {
                 /* Parent */
@@ -920,9 +909,10 @@ auth_stmt_begin(finish, block_data, handler_data)
 {
 	if (!finish) 
 		_opened_auth_sockets = 0;
-	else if (radius_mode == MODE_DAEMON && !_opened_auth_sockets)
-		open_socket_list(0, NULL, auth_port,
-				 "auth", NULL, auth_respond, NULL);
+	else if (radius_mode == MODE_DAEMON && !_opened_auth_sockets) 
+		socket_list_add(&socket_first,
+				R_AUTH,
+				INADDR_ANY, auth_port);
 	return 0;
 }
 
@@ -934,9 +924,21 @@ rad_cfg_listen_auth(argc, argv, block_data, handler_data)
 	void *block_data;
 	void *handler_data;
 {
-	if (radius_mode == MODE_DAEMON) 
-		open_socket_list(argc-1, argv+1, auth_port,
-				 "auth", NULL, auth_respond, NULL);
+	int i, errcnt = 0;
+	
+	for (i = 1; i < argc; i++)  
+		if (argv[i].type != CFG_HOST) {
+			cfg_type_error(CFG_HOST);
+			errcnt++;
+		}
+	
+	if (errcnt == 0 && radius_mode == MODE_DAEMON)
+		for (i = 1; i < argc; i++) 
+			socket_list_add(&socket_first,
+					R_AUTH,
+					argv[i].v.host.ipaddr,
+					argv[i].v.host.port > 0 ?
+					argv[i].v.host.port : auth_port);
 	_opened_auth_sockets++;
 	return 0;
 }
@@ -951,8 +953,9 @@ acct_stmt_begin(finish, block_data, handler_data)
 	if (!finish) 
 		_opened_acct_sockets = 0;
 	else if (radius_mode == MODE_DAEMON && !_opened_acct_sockets)
-		open_socket_list(0, NULL, acct_port, "acct",
-				 acct_success, auth_respond, acct_failure);
+		socket_list_add(&socket_first,
+				R_ACCT,
+				INADDR_ANY, acct_port);
 	return 0;
 }
 
@@ -964,14 +967,24 @@ rad_cfg_listen_acct(argc, argv, block_data, handler_data)
 	void *block_data;
 	void *handler_data;
 {
-  	if (open_acct && radius_mode == MODE_DAEMON)
-		open_socket_list(argc-1, argv+1, acct_port, "acct",
-				 acct_success, auth_respond, acct_failure);
+	int i, errcnt = 0;
+	
+	for (i = 1; i < argc; i++) 
+		if (argv[i].type != CFG_HOST) {
+			cfg_type_error(CFG_HOST);
+			errcnt++;
+		}
+	
+	if (errcnt == 0 && open_acct && radius_mode == MODE_DAEMON)
+		for (i = 1; i < argc; i++) 
+			socket_list_add(&socket_first,
+					R_ACCT,
+					argv[i].v.host.ipaddr,
+					argv[i].v.host.port > 0 ?
+					argv[i].v.host.port : acct_port);
 	_opened_acct_sockets++;
 	return 0;
 }
-
-
 
 struct cfg_stmt option_stmt[] = {
 	{ "source-ip", CS_STMT, NULL, cfg_get_ipaddr, &myip,
@@ -1094,9 +1107,17 @@ struct cfg_stmt config_syntax[] = {
 	{ NULL, },
 };	
 
-/*
- *      Read config files.
- */
+void
+socket_after_reconfig(type, fd)
+	int type;
+	int fd;
+{
+#ifdef USE_SNMP
+	if (type == R_SNMP)
+		set_nonblocking(fd);
+#endif
+}
+
 void
 reconfigure(reload)
         int reload;
@@ -1109,11 +1130,9 @@ reconfigure(reload)
         } else {
                 radlog(L_INFO, _("Reloading configuration files."));
                 radiusd_flush_queues();
-                socket_list_close(socket_first);
+		socket_list_init(socket_first);
         }
 
-        socket_first = NULL;
-        
 #ifdef USE_SNMP
         server_stat.auth.status = serv_init;
         server_stat.acct.status = serv_init;
@@ -1134,14 +1153,6 @@ reconfigure(reload)
                 stat_init();
         }
 
-#ifdef USE_SNMP
-        if (radius_mode == MODE_DAEMON) {
-                int fd = open_socket(myip, snmp_port, "SNMP");
-                set_nonblocking(fd);
-                socket_list_add(&socket_first, fd, NULL, snmp_respond, NULL);
-        }
-#endif
-        
         res = reload_config_file(reload_all);
         
 #ifdef USE_SNMP
@@ -1156,7 +1167,6 @@ reconfigure(reload)
         saved_status = server_stat.auth.status;
                 
 #endif  
-
         if (res != 0) {
                 radlog(L_CRIT,
                        _("Errors reading config file - EXITING"));
@@ -1165,6 +1175,13 @@ reconfigure(reload)
 #ifdef USE_SERVER_GUILE
         scheme_after_reconfig();
 #endif
+	if (radius_mode == MODE_DAEMON) {
+		if (socket_list_open(&socket_first) == 0) {
+			radlog(L_ALERT,
+			       _("Radiusd is not listening on any port. Trying to continue anyway..."));
+		}
+		socket_list_iterate(socket_first, socket_after_reconfig);
+	}
 }
 
 /*
@@ -1314,68 +1331,6 @@ meminfo()
         radlog(L_INFO, _("malloc statistics: %d blocks, %d bytes"),
                mallocstat.count, mallocstat.size);
 #endif
-}
-
-/* ************************************************************************* */
-/* Application-specific sockets */
-
-int
-open_socket(ipaddr, port, type)
-        UINT4 ipaddr;
-        int port;
-        char *type;
-{
-        struct  sockaddr        salocal;
-        struct  sockaddr_in     *sin;
-
-        int fd = socket (AF_INET, SOCK_DGRAM, 0);
-        if (fd < 0) {
-                radlog(L_CRIT|L_PERROR, "%s socket", type);
-                exit(1);
-        }
-
-        sin = (struct sockaddr_in *) & salocal;
-        memset ((char *) sin, '\0', sizeof (salocal));
-        sin->sin_family = AF_INET;
-        sin->sin_addr.s_addr = htonl(ipaddr);
-        sin->sin_port = htons(port);
-
-        if (bind (fd, & salocal, sizeof (*sin)) < 0) {
-                radlog(L_CRIT|L_PERROR, "%s bind", type);
-                exit(1);
-        }
-        return fd;
-}
-
-void
-open_socket_list(argc, argv, defport, descr, s, r, f)
-	int argc;
-	cfg_value_t *argv;
-        int defport;
-        char *descr;
-        int (*s)();
-        int (*r)();
-        int (*f)();
-{
-        int fd;
-
-        if (argc == 0) {
-                fd = open_socket(myip, defport, descr);
-                socket_list_add(&socket_first, fd, s, r, f);
-                return;
-        }
-        
-        for (; argc > 0; argc--, argv++) {
-		if (argv->type != CFG_HOST)
-			cfg_type_error(CFG_HOST);
-		else {
-			fd = open_socket(argv->v.host.ipaddr,
-					 argv->v.host.port > 0 ?
-					      argv->v.host.port : defport,
-					 descr);
-		}
-                socket_list_add(&socket_first, fd, s, r, f);
-        }
 }
 
 /* ************************************************************************* */
@@ -1541,7 +1496,7 @@ auth_respond(fd, sa, salen, buf, size)
 				ntohs(sin->sin_port),
 				buf,
 				size);
-        if (radiusd_respond(radreq, fd)) 
+        if (radiusd_respond(fd, radreq, buf, size)) 
                 radreq_free(radreq);
 
         return 0;
@@ -1609,9 +1564,11 @@ rad_request_handle(type, data, fd)
                                Relay reply back to original NAS. */
 
 int
-radiusd_respond(radreq, activefd)
-        RADIUS_REQ *radreq;
+radiusd_respond(activefd, radreq, buf, size)
         int activefd;
+        RADIUS_REQ *radreq;
+	u_char *buf;
+	size_t size;
 {
         int type;
         
@@ -1646,7 +1603,7 @@ radiusd_respond(radreq, activefd)
         
         /* Copy the static data into malloc()ed memory. */
         radreq->data = emalloc(radreq->data_len);
-        memcpy(radreq->data, recv_buffer, radreq->data_len);
+        memcpy(radreq->data, buf, radreq->data_len);
         radreq->data_alloced = 1;
 
         return rad_request_handle(type, radreq, activefd);
@@ -1714,105 +1671,6 @@ snmp_respond(fd, sa, salen, buf, size)
 #endif
 
 /* ************************************************************************* */
-/* Socket list functions */
-
-void
-socket_list_add(list, fd, s, r, f)
-        struct socket_list **list;
-        int fd;
-        int (*s)();
-        int (*r)();
-        int (*f)();
-{
-        struct socket_list *ctl;
-
-        ctl = alloc_entry(sizeof(struct socket_list));
-        ctl->fd = fd;
-        ctl->success = s;
-        ctl->respond = r;
-        ctl->failure = f;
-        ctl->next = *list;
-        *list = ctl;
-}
-
-void
-socket_list_close(list)
-        struct socket_list *list;
-{
-        struct socket_list *next;
-        while (list) {
-                next = list->next;
-                close(list->fd);
-                free_entry(list);
-                list = next;
-        }
-}
-
-void
-socket_list_iterate(fun)
-	void (*fun)();
-{
-        struct socket_list *p;
-
-	for (p = socket_first; p; p = p->next) {
-		fun(p->fd);
-	}
-}
-
-int
-socket_list_select(list, tv)
-        struct socket_list *list;
-        struct timeval *tv;
-{
-        int result;
-        int status;
-        int salen;
-        struct sockaddr saremote;
-        fd_set readfds;
-        struct socket_list *ctl;
-        int max_fd = 0;
-
-        FD_ZERO(&readfds);
-        for (ctl = list; ctl; ctl = ctl->next) {
-                FD_SET(ctl->fd, &readfds);
-                if (ctl->fd > max_fd)
-                        max_fd = ctl->fd;
-        }
-
-        debug(100,("selecting (%d fds)", max_fd+1));
-        status = select(max_fd + 1, &readfds, NULL, NULL, tv);
-        
-        if (status == -1) {
-                if (errno == EINTR) 
-                        return 0;
-                return -1;
-        } else if (status == 0) 
-                return 0;
-        debug(100,("processing..."));
-        for (ctl = list; ctl; ctl = ctl->next) {
-                if (FD_ISSET(ctl->fd, &readfds)) {
-                        salen = sizeof (saremote);
-                        result = recvfrom (ctl->fd, (char *) recv_buffer,
-                                               (int) sizeof(i_recv_buffer),
-                                               (int) 0, &saremote, &salen);
-
-                        if (ctl->success)
-                                ctl->success(&saremote, salen);
-                        if (result > 0) {
-                                debug(100,("calling respond"));
-                                ctl->respond(ctl->fd,
-                                             &saremote, salen,
-                                             recv_buffer, result);
-                                debug(100,("finished respond"));
-                        } else if (result < 0 && errno == EINTR) {
-                                if (ctl->failure)
-                                        ctl->failure(&saremote, salen);
-                                result = 0;
-                        }
-                }
-        }
-        return 0;
-}
 
 int
 radiusd_mutex_lock(mutex, type)

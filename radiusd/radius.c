@@ -37,86 +37,238 @@ static char rcsid[] =
 #include <time.h>
 #include <ctype.h>
 #include <radiusd.h>
+#include <obstack1.h>
+
+/* Structure for building radius PDU. */
+struct radius_pdu {
+	size_t size;        /* Size of the data, collected so far */
+	struct obstack st;  /* Data buffer */
+};
+
+/* Structure for building single attribute */
+struct radius_attr {
+	u_char attrno;       /* Attribute number */
+	u_char length;       /* Length of the data collected so far */
+	u_char data[AUTH_STRING_LEN];    
+};
+
+static size_t rad_create_pdu(void **rptr, int code, int id,
+			     u_char *vector, u_char *secret,
+			     VALUE_PAIR *pairlist, char *msg);
+static int rad_pdu_init(struct radius_pdu *pdu);
+static VALUE_PAIR *rad_decode_pair(int attrno, char *ptr, int attrlen);
+size_t rad_pdu_finish(void **ptr, struct radius_pdu *pdu, int code,
+		      int id, u_char *vector, u_char *secret);
+size_t rad_pdu_finish_request(void **ptr, struct radius_pdu *pdu,
+			      int code,	int id,	u_char *vector,
+			      u_char *secret);
+
+void * rad_pdu_destroy(struct radius_pdu *pdu);
+int rad_attr_write(struct radius_attr *ap, void *data, size_t size);
+int rad_encode_pair(struct radius_attr *ap, VALUE_PAIR *pair);
 
 
-#define SEND_BUFFER_SIZE sizeof(i_send_buffer)
-
-/*
- *      Reply to the request.  Also attach
- *      reply attribute value pairs and any user message provided.
- */
+/* Initialize a PDU */
 int
-rad_send_reply(code, radreq, oreply, msg, activefd)
-        int code;
-        RADIUS_REQ *radreq;
-        VALUE_PAIR *oreply;
-        char *msg;
-        int activefd;
+rad_pdu_init(pdu)
+	struct radius_pdu *pdu;
 {
-        AUTH_HDR *auth;
-        u_short total_length;
-        struct sockaddr saremote;
-        struct sockaddr_in *sin;
-        u_char *ptr, *length_ptr;
-        char *what;
-        int len;
-        UINT4 lval;
-        u_char digest[AUTH_DIGEST_LEN];
-        int secretlen;
-        VALUE_PAIR *reply, *pair;
-        int vendorcode, vendorpec;
-        char buf[MAX_LONGNAME];
-        int i_send_buffer[RAD_BUFFER_SIZE];
-        char *send_buffer = (char *)i_send_buffer;
-        
-        auth = (AUTH_HDR *)send_buffer;
-        reply = oreply;
+	pdu->size = 0;
+	obstack_init(&pdu->st);
+}
 
-        switch (code) {
-                case RT_PASSWORD_REJECT:
-                case RT_AUTHENTICATION_REJECT:
-                        what = _("Reject");
-                        /*
-                         *      Also delete all reply attributes
-                         *      except proxy-pair and port-message.
-                         */
-                        reply = NULL;
-                        avl_move_attr(&reply, &oreply, DA_REPLY_MESSAGE);
-                        avl_move_attr(&reply, &oreply, DA_PROXY_STATE);
-                        break;
-                case RT_ACCESS_CHALLENGE:
-                        what = _("Challenge");
-                        stat_inc(auth, radreq->ipaddr, num_challenges);
-                        break;
-                case RT_AUTHENTICATION_ACK:
-                        what = _("Ack");
-                        break;
-                case RT_ACCOUNTING_RESPONSE:
-                        what = _("Accounting Ack");
-                        break;
-                default:
-                        what = _("Reply");
-                        break;
-        }
+/* Finalize the PDU.
+   Input: pdu    -- PDU structure.
+          code   -- Reply code.
+	  id     -- Request ID.
+	  vector -- Request authenticator.
+   Output:
+          *ptr   -- Radius reply.
+   Return value: length of the data on *ptr. */	  
+size_t
+rad_pdu_finish(ptr, pdu, code, id, vector, secret)
+	void **ptr;
+	struct radius_pdu *pdu;
+	int code;
+	int id;
+	u_char *vector;
+	u_char *secret;
+{
+	AUTH_HDR *hdr;
+	void *p;
+	size_t secretlen = strlen(secret);
+	size_t len = sizeof(AUTH_HDR) + pdu->size;
+	u_char digest[AUTH_DIGEST_LEN];
+	
+	obstack_grow(&pdu->st, secret, secretlen);
 
-        /*
-         *      Build standard header
-         */
-        auth->code = code;
-        auth->id = radreq->id;
-        memcpy(auth->vector, radreq->vector, AUTH_VECTOR_LEN);
+	/* Create output array */
+	p = obstack_finish(&pdu->st);
+	hdr = emalloc(len + secretlen);
+        hdr->code = code;
+        hdr->id = id;
+        memcpy(hdr->vector, vector, AUTH_VECTOR_LEN);
+	hdr->length = htons(len);
 
-        debug(1, ("Sending %s of id %d to %lx (nas %s)",
-                  what, radreq->id, (u_long)radreq->ipaddr,
-                  nas_request_to_name(radreq, buf, sizeof buf)));
+	memcpy(hdr + 1, p, pdu->size + secretlen);
+	
+	/* Calculate the response digest */
+	md5_calc(digest, (u_char *)hdr, len + secretlen);
+	memcpy(hdr->vector, digest, AUTH_VECTOR_LEN);
+	memset((char*)hdr + len, 0, secretlen);
+	*ptr = hdr;
+	return len;
+}
 
-        total_length = AUTH_HDR_LEN;
+/* Finalize the PDU.
+   Input: pdu    -- PDU structure.
+          code   -- Reply code.
+	  id     -- Request ID.
+	  vector -- Request authenticator.
+   Output:
+          *ptr   -- Radius reply.
+   Return value: length of the data on *ptr. */	  
+size_t
+rad_pdu_finish_request(ptr, pdu, code, id, vector, secret)
+	void **ptr;
+	struct radius_pdu *pdu;
+	int code;
+	int id;
+	u_char *vector;
+	u_char *secret;
+{
+	AUTH_HDR *hdr;
+	void *p;
+	size_t secretlen = 0;
+	size_t len = sizeof(AUTH_HDR) + pdu->size;
+	u_char digest[AUTH_DIGEST_LEN];
+	
+	if (code == RT_AUTHENTICATION_REQUEST) {
+		secretlen = strlen(secret);
+		obstack_grow(&pdu->st, secret, secretlen);
+	}
+	/* Create output array */
+	p = obstack_finish(&pdu->st);
+	hdr = emalloc(len + secretlen);
+        hdr->code = code;
+        hdr->id = id;
+	hdr->length = htons(len);
+	if (code == RT_AUTHENTICATION_REQUEST) 
+                memcpy(hdr->vector, vector, AUTH_VECTOR_LEN);
 
-        /*
-         *      Load up the configuration values for the user
-         */
-        ptr = auth->data;
-        for (pair = reply; pair; pair = pair->next) {
+	memcpy(hdr + 1, p, pdu->size + secretlen);
+	
+        /* If this is not an authentication request, we need to calculate
+           the md5 hash over the entire packet and put it in the vector. */
+        if (code != RT_AUTHENTICATION_REQUEST) {
+                secretlen = strlen(secret);
+		md5_calc(hdr->vector, (u_char *)hdr, len + secretlen);
+		memset((char*)hdr + len, 0, secretlen);
+	}
+	*ptr = hdr;
+	return len;
+}
+
+/* Destroy the PDU */
+void *
+rad_pdu_destroy(pdu)
+	struct radius_pdu *pdu;
+{
+	obstack_free(&pdu->st, NULL);
+}
+
+/* Append attribute A to the PDU P */
+#define rad_pdu_add(p,a) \
+ do { obstack_grow(&(p)->st,&(a),(a).length); \
+      (p)->size+=(a).length; } while (0)
+
+/* Initialize the attribute structure. */	
+#define rad_attr_init(a) (a)->length = 2
+
+/* Append SIZE bytes from DATA to radius_attr AP. */	
+int
+rad_attr_write(ap, data, size)
+	struct radius_attr *ap;
+	void *data;
+	size_t size;
+{
+	if (sizeof(ap->data) - ap->length + 2 < size)
+		return 0;
+	memcpy(ap->data + ap->length - 2, data, size);
+	ap->length += size;
+	return size;
+}
+
+/* Encode a single A/V pair into struct radius_attr.
+   Input: ap   -- Target attribute structure.
+          pair -- The pair to be encoded.
+   Return value: length of the encoded data or 0 if an error occurred */
+   
+int
+rad_encode_pair(ap, pair)
+	struct radius_attr *ap;
+	VALUE_PAIR *pair;
+{
+	UINT4 lval;
+	size_t len;
+	int rc;
+	
+	switch (pair->type) {
+	case TYPE_STRING:
+		/* Do we need it? */
+		if (pair->strlength == 0 && pair->strvalue[0] != 0)
+			pair->strlength = strlen(pair->strvalue);
+
+		len = pair->strlength;
+		if (len >= AUTH_STRING_LEN) 
+			len = AUTH_STRING_LEN - 1;
+		rc = rad_attr_write(ap, pair->strvalue, len);
+		break;
+		
+	case TYPE_INTEGER:
+	case TYPE_IPADDR:
+		lval = htonl(pair->lvalue);
+		rc = rad_attr_write(ap, &lval, sizeof(UINT4));
+		break;
+
+	default:
+		rc = 0;
+	}
+	return rc;
+}
+
+/* Create a radius PDU.
+   Input:  code     -- Radius reply code
+           pairlist -- List of A/V pairs to be encoded in the reply
+	   msg      -- User message.
+   Output: *rptr    -- PDU
+   Return value: lenght of the data in *rptr. 0 on error */
+   
+size_t
+rad_create_pdu(rptr, code, id, vector, secret, pairlist, msg)
+	void **rptr;
+	int code;
+	int id;
+	u_char *vector;
+	u_char *secret;
+	VALUE_PAIR *pairlist;
+	char *msg;
+{
+	AUTH_HDR *hdr;
+	struct radius_pdu pdu;
+	size_t attrlen = 1; /* attrlen is initialized to 1 in case
+			       pairlist == NULL */
+	int len;
+	VALUE_PAIR *pair;
+	
+	rad_pdu_init(&pdu);
+
+	for (pair = pairlist; pair; pair = pair->next) {
+		struct radius_attr attr;
+		u_char *ptr;
+		UINT4 lval;
+		int vendorcode, vendorpec;
+		
                 if (debug_on(10)) {
                         char *save;
                         radlog(L_DEBUG,
@@ -124,142 +276,191 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
                         free(save);
                 }
 
-                /*
-                 *      This could be a vendor-specific attribute.
-                 */
-                length_ptr = NULL;
-                if ((vendorcode = VENDOR(pair->attribute)) > 0 &&
-                    (vendorpec  = vendor_id_to_pec(vendorcode)) > 0) {
-                        if (total_length + 6 >= SEND_BUFFER_SIZE)
-                                goto err;
-                        *ptr++ = DA_VENDOR_SPECIFIC;
-                        length_ptr = ptr;
-                        *ptr++ = 6;
+		rad_attr_init(&attr);
+		if ((vendorcode = VENDOR(pair->attribute)) > 0
+		    && (vendorpec  = vendor_id_to_pec(vendorcode)) > 0) {
+			u_char c;
+			
+			attr.attrno = DA_VENDOR_SPECIFIC;
                         lval = htonl(vendorpec);
-                        memcpy(ptr, &lval, 4);
-                        ptr += 4;
-                        total_length += 6;
-                } else if (pair->attribute > 0xff) {
-                        /*
-                         *      Ignore attributes > 0xff
-                         */
-                        continue;
-                } else
-                        vendorpec = 0;
+			rad_attr_write(&attr, &lval, 4);
+			c = pair->attribute & 0xff;
+			rad_attr_write(&attr, &c, 1); 
+			rad_attr_write(&attr, &lval, 1); /* Reserve a byte */
+			attrlen = rad_encode_pair(&attr, pair);
+			attr.data[5] = attrlen;
+		} else if (pair->attribute <= 0xff) {
+			attr.attrno = pair->attribute;
+			attrlen = rad_encode_pair(&attr, pair);
+		}
+		if (attrlen < 0)
+			break;
+		rad_pdu_add(&pdu, attr);
+	}
 
-                *ptr++ = (pair->attribute & 0xFF);
-
-                switch (pair->type) {
-
-                case TYPE_STRING:
-                        /*
-                         *      FIXME: this is just to make sure but
-                         *      should NOT be needed. In fact I have no
-                         *      idea if it is needed :)
-                         */
-                        if (pair->strlength == 0 && pair->strvalue[0] != 0)
-                                pair->strlength = strlen(pair->strvalue);
-
-                        len = pair->strlength;
-                        if (len >= AUTH_STRING_LEN) {
-                                len = AUTH_STRING_LEN - 1;
-                        }
-                        if (total_length + len + 2 >= SEND_BUFFER_SIZE)
-                                goto err;
-
-                        *ptr++ = len + 2;
-                        if (length_ptr) *length_ptr += len + 2;
-                        memcpy(ptr, pair->strvalue, len);
-                        ptr += len;
-                        total_length += len + 2;
-                        break;
-
-                case TYPE_INTEGER:
-                case TYPE_IPADDR:
-                        if (total_length + sizeof(UINT4) + 2 >= SEND_BUFFER_SIZE)
-                                goto err;
-                                
-                        *ptr++ = sizeof(UINT4) + 2;
-                        if (length_ptr) *length_ptr += sizeof(UINT4)+ 2;
-                        lval = htonl(pair->lvalue);
-                        memcpy(ptr, &lval, sizeof(UINT4));
-                        ptr += sizeof(UINT4);
-                        total_length += sizeof(UINT4) + 2;
-                        break;
-
-                default:
-                        break;
-                }
-        }
-
-        /*
-         *      Append the user message
-         *      Add multiple DA_REPLY_MESSAGEs if it
-         *      doesn't fit into one.
-         */
-        if (msg != NULL && (len = strlen(msg)) > 0) {
+        /* Append the user message
+	   Add multiple DA_REPLY_MESSAGEs if it doesn't fit into one. */
+	if (attrlen > 0
+	    && msg != NULL
+	    && (len = strlen(msg)) > 0) {
                 int block_len;
+		struct radius_attr attr;
                 
-                while (len > 0) {
-                        if (len > AUTH_STRING_LEN) {
+                while (attrlen > 0 && len > 0) {
+                        if (len > AUTH_STRING_LEN) 
                                 block_len = AUTH_STRING_LEN;
-                        } else {
+			else 
                                 block_len = len;
-                        }
 
-                        if (total_length + block_len + 2 >= SEND_BUFFER_SIZE) {
-                                radlog(L_ERR,
-                                       _("user message too long in rad_send_reply"));
-                                return -1; /* be on the safe side */
-                        }
-                        
-                        *ptr++ = DA_REPLY_MESSAGE;
-                        *ptr++ = block_len + 2;
-                        memcpy(ptr, msg, block_len);
-                        msg += block_len;
-                        ptr += block_len;
-                        total_length += block_len + 2;
-                        len -= block_len;
+			rad_attr_init(&attr);
+			attr.attrno = DA_REPLY_MESSAGE;
+			attrlen = rad_attr_write(&attr, msg, block_len);
+			rad_pdu_add(&pdu, attr);
+			msg += block_len;
+			len -= block_len;
                 }
         }
 
-        auth->length = htons(total_length);
-
-        /* Append secret and calculate the response digest */
-        secretlen = strlen(radreq->secret);
-        if (total_length + secretlen >= SEND_BUFFER_SIZE)
-            goto err;
-        memcpy(send_buffer + total_length, radreq->secret, secretlen);
-        md5_calc(digest, (u_char *)auth, total_length + secretlen);
-        memcpy(auth->vector, digest, AUTH_VECTOR_LEN);
-        memset(send_buffer + total_length, 0, secretlen);
-
-        sin = (struct sockaddr_in *) &saremote;
-        memset ((char *) sin, '\0', sizeof (saremote));
-        sin->sin_family = AF_INET;
-        sin->sin_addr.s_addr = htonl(radreq->ipaddr);
-        sin->sin_port = htons(radreq->udp_port);
-
-        /*
-         *      Send it to the user
-         */
-        sendto(activefd, (char *)auth, (int)total_length, (int)0,
-                   &saremote, sizeof(struct sockaddr_in));
-
-        /*
-         *      Just to be tidy move pairs back.
-         */
-        if (reply != oreply) {
-                avl_move_attr(&oreply, &reply, DA_PROXY_STATE);
-                avl_move_attr(&oreply, &reply, DA_REPLY_MESSAGE);
-        }
-
-        return 0;
-err:
-        radlog(L_ERR, _("send buffer overflow"));
-        return -1;
+	if (attrlen > 0)
+		attrlen = rad_pdu_finish(rptr, &pdu, code, id, vector, secret);
+	rad_pdu_destroy(&pdu);
+	return attrlen;
 }
 
+/* Build and send a reply to the incoming request.
+   Input: code        -- Reply code.
+          radreq      -- The request.
+	  reply_pairs -- List of A/V pairs to be encoded in the reply
+	  msg         -- User message
+	  fd          -- Socket descriptor.
+    NOTE: If radreq contains cached reply information, this information
+          is used instead of the supplied arguments. */
+
+void
+rad_send_reply(code, radreq, reply_pairs, msg, fd)
+        int code;
+        RADIUS_REQ *radreq;
+        VALUE_PAIR *reply_pairs;
+        char *msg;
+        int fd;
+{
+	void *pdu;
+	char *what;
+	VALUE_PAIR *reply;
+	size_t length;
+	
+	if (radreq->reply_code == 0) {
+		/* Save the data */
+		radreq->reply_code = code;
+		radreq->reply_pairs = avl_dup(reply_pairs);
+		radreq->reply_msg = estrdup(msg);
+	} 
+
+	switch (code) {
+	case RT_PASSWORD_REJECT:
+	case RT_AUTHENTICATION_REJECT:
+		what = _("Reject");
+		reply = NULL;
+		avl_move_attr(&reply, &radreq->reply_pairs,
+			      DA_REPLY_MESSAGE);
+		avl_move_attr(&reply, &radreq->reply_pairs,
+			      DA_PROXY_STATE);
+		break;
+			
+	case RT_ACCESS_CHALLENGE:
+		what = _("Challenge");
+		reply = radreq->reply_pairs;
+		stat_inc(auth, radreq->ipaddr, num_challenges);
+		break;
+			
+	case RT_AUTHENTICATION_ACK:
+		what = _("Ack");
+		reply = radreq->reply_pairs;
+		break;
+		
+	case RT_ACCOUNTING_RESPONSE:
+		what = _("Accounting Ack");
+		reply = radreq->reply_pairs;
+		break;
+			
+	default:
+		what = _("Reply");
+		reply = radreq->reply_pairs;
+		break;
+        }
+
+	length = rad_create_pdu(&pdu, code,
+				radreq->id, radreq->vector, radreq->secret,
+				reply, radreq->reply_msg);
+	if (length > 0) {
+		struct sockaddr saremote;
+		struct sockaddr_in *sin;
+		char buf[MAX_LONGNAME];
+
+		debug(1, ("Sending %s of id %d to %lx (nas %s)",
+			  what, radreq->id, (u_long)radreq->ipaddr,
+			  nas_request_to_name(radreq, buf, sizeof buf)));
+		
+		sin = (struct sockaddr_in *) &saremote;
+		memset ((char *) sin, '\0', sizeof (saremote));
+		sin->sin_family = AF_INET;
+		sin->sin_addr.s_addr = htonl(radreq->ipaddr);
+		sin->sin_port = htons(radreq->udp_port);
+		sendto(fd, pdu, length, 0,
+		       &saremote, sizeof(struct sockaddr_in));
+		efree(pdu);
+	}
+	
+	if (reply != radreq->reply_pairs) {
+		avl_move_attr(&radreq->reply_pairs, &reply, DA_PROXY_STATE);
+		avl_move_attr(&radreq->reply_pairs, &reply, DA_REPLY_MESSAGE);
+	}
+}
+
+#ifdef USE_LIVINGSTON_MENUS
+/* Reply to the request with a CHALLENGE. Also attach any user message
+   provided and a state value.
+   Input: radreq      -- The request.
+	  msg         -- User message.
+	  state       -- Value of the State attribute.
+	  fd          -- Socket descriptor. */
+void
+send_challenge(radreq, msg, state, fd)
+        RADIUS_REQ *radreq;
+        char *msg;
+        char *state;
+        int fd;
+{
+	void *pdu;
+	size_t length;
+	VALUE_PAIR *p = avp_create(DA_STATE, 0, state, 0);
+
+	length = rad_create_pdu(&pdu, RT_ACCESS_CHALLENGE, radreq->id,
+				radreq->vector, radreq->secret, p, msg);
+	if (length > 0) {
+		struct sockaddr saremote;
+		struct sockaddr_in *sin;
+		char buf[MAX_LONGNAME];
+
+		debug(1, ("Sending Challenge of id %d to %lx (nas %s)",
+			  radreq->id, (u_long)radreq->ipaddr,
+			  nas_request_to_name(radreq, buf, sizeof buf)));
+        
+		stat_inc(auth, radreq->ipaddr, num_challenges);
+        
+		sin = (struct sockaddr_in *) &saremote;
+		memset ((char *) sin, '\0', sizeof (saremote));
+		sin->sin_family = AF_INET;
+		sin->sin_addr.s_addr = htonl(radreq->ipaddr);
+		sin->sin_port = htons(radreq->udp_port);
+
+		sendto(fd, pdu, length, 0,
+		       &saremote, sizeof(struct sockaddr_in));
+		efree(pdu);
+	}
+	avp_free(p);
+}
+#endif
 
 /* Validates the requesting client NAS. */
 int
@@ -281,10 +482,7 @@ validate_client(radreq)
         return 0;
 }
 
-/*
- *      Validates the requesting client NAS.  Calculates the
- *      signature based on the clients private key.
- */
+/* Validates the requesting NAS */
 int
 calc_acctdigest(radreq)
         RADIUS_REQ *radreq;
@@ -315,9 +513,6 @@ calc_acctdigest(radreq)
         md5_calc(digest, recvbuf, len + secretlen);
         efree(recvbuf);
         
-        /*
-         *      Return 0 if OK, 2 if not OK.
-         */
         return memcmp(digest, radreq->vector, AUTH_VECTOR_LEN) ?
 		          REQ_AUTH_BAD : REQ_AUTH_OK;
 }
@@ -336,37 +531,29 @@ radrecv(host, udp_port, buffer, length)
 {
         u_char          *ptr;
         AUTH_HDR        *auth;
-        unsigned        totallen;
-        unsigned        attribute;
-        unsigned        attrlen;
-        DICT_ATTR       *attr;
-        UINT4           lval;
-        UINT4           vendorcode;
-        UINT4           vendorpec;
         VALUE_PAIR      *first_pair;
         VALUE_PAIR      *prev;
         VALUE_PAIR      *pair;
         RADIUS_REQ      *radreq;
-
-        /*
-         *      Pre-allocate the new request data structure
-         */
-
+	UINT4 reported_len;
+	u_char *endp;
+	int stop;
+	
         radreq = radreq_alloc();
         debug(1,("allocated radreq: %p",radreq));
-        memset(radreq, 0, sizeof(RADIUS_REQ));
 
         auth = (AUTH_HDR *)buffer;
-        totallen = ntohs(auth->length);
-        if (length > totallen) {
+	reported_len = ntohs(auth->length);
+	if (length > reported_len) { /* FIXME: != ? */
                 radlog(L_WARN,
                        _("Received message length > packet length (%d, %d)"),
-                    length, totallen);
-                length = totallen;
+		       length, reported_len);
+                length = reported_len;
         }
                 
         debug(1, ("Request from host %lx code=%d, id=%d, length=%d",
-                                (u_long)host, auth->code, auth->id, totallen));
+                                (u_long)host, auth->code, auth->id,
+		  ntohs(auth->length)));
 
         /*
          *      Fill header fields
@@ -379,234 +566,143 @@ radrecv(host, udp_port, buffer, length)
         radreq->data = buffer;
         radreq->data_len = length;
 
-        /*
-         *      Extract attribute-value pairs
-         */
-        ptr = auth->data;
-        length -= AUTH_HDR_LEN;
+        /* Extract attribute-value pairs  */
+        ptr = (u_char*) (auth + 1);
         first_pair = NULL;
         prev = NULL;
-
-        while (length > 0) {
-
-                attribute = *ptr++;
+	endp = (u_char*)auth + length;
+	stop = 0;
+	
+	while (ptr < endp && !stop) {
+		UINT4 attrno, attrlen, lval, vendorcode, vendorpec;
+				
+                attrno = *ptr++;
                 attrlen = *ptr++;
                 if (attrlen < 2) {
-                        length = 0;
+			stop = 1;
                         continue;
                 }
                 attrlen -= 2;
                 length  -= 2;
-
-                /*
-                 *      FIXME:
-                 *      For now we ignore the length in the vendor-specific
-                 *      part, and assume only one entry.
-                 */
-                if (attribute == DA_VENDOR_SPECIFIC && attrlen > 6) {
+		
+                if (attrno == DA_VENDOR_SPECIFIC) {
+			if (attrlen <= 6) { /*FIXME*/
+				stop = 1;
+				continue;
+			}
                         memcpy(&lval, ptr, 4);
                         vendorpec = ntohl(lval);
-                        if ((vendorcode = vendor_pec_to_id(vendorpec)) != 0) {
-                                ptr += 4;
-                                attribute = *ptr | (vendorcode << 16);
-                                ptr += 2;
-                                attrlen -= 6;
-                                length -= 6;
+                        if ((vendorcode = vendor_pec_to_id(vendorpec)) == 0) {
+				stop = 1;
+				continue;
+			}
+			
+			ptr += 4;
+			attrlen -= 4;
+			while (attrlen > 0) {
+				UINT4 len;
+				attrno = *ptr++ | (vendorcode << 16);
+				len = *ptr++ - 2;
+				pair = rad_decode_pair(attrno, ptr, len);
+				if (!pair) {
+					stop = 1;
+					break;
+				}
+				if (first_pair == NULL) 
+					first_pair = pair;
+				else 
+					prev->next = pair;
+				prev = pair;
+				ptr += len;
+                                attrlen -= len + 2;
                         }
-                }
-
-                if ((attr = attr_number_to_dict(attribute)) == NULL) {
-                        debug(1, ("Received unknown attribute %d", attribute));
-                } else if ( attrlen >= AUTH_STRING_LEN ) {
-                        debug(1, ("attribute %d too long, %d >= %d", attribute,
-                                attrlen, AUTH_STRING_LEN));
-                } else if ( attrlen > length ) {
-                        debug(1,
-                              ("attribute %d longer then buffer left, %d > %d",
-                                attribute, attrlen, length));
                 } else {
-                        pair = avp_alloc();
-                        
-                        pair->name = attr->name;
-                        pair->attribute = attr->value;
-                        pair->type = attr->type;
-                        pair->prop = attr->prop;
-                        pair->next = NULL;
+			pair = rad_decode_pair(attrno, ptr, attrlen);
+			ptr += attrlen;
+			if (!pair) {
+				stop = 1;
+				break;
+			}
+			if (first_pair == NULL) 
+				first_pair = pair;
+			else 
+				prev->next = pair;
+			prev = pair;
+		}
+	}
 
-                        switch (attr->type) {
-
-                        case TYPE_STRING:
-                                /* attrlen always < AUTH_STRING_LEN */
-                                pair->strlength = attrlen;
-                                pair->strvalue = alloc_string(attrlen + 1);
-                                memcpy(pair->strvalue, ptr, attrlen);
-                                pair->strvalue[attrlen] = 0;
-
-                                if (debug_on(10)) {
-                                        char *save;
-                                        radlog(L_DEBUG, "recv: %s",
-                                               format_pair(pair, &save));
-                                        free(save);
-                                }
-
-                                if (first_pair == NULL) 
-                                        first_pair = pair;
-                                else 
-                                        prev->next = pair;
-                                prev = pair;
-                                break;
-                        
-                        case TYPE_INTEGER:
-                        case TYPE_IPADDR:
-                                memcpy(&lval, ptr, sizeof(UINT4));
-                                pair->lvalue = ntohl(lval);
-
-                                if (debug_on(10)) {
-                                        char *save;
-                                        radlog(L_DEBUG, 
-                                               "recv: %s", 
-                                               format_pair(pair, &save));
-                                        free(save);
-                                }
-
-                                if (first_pair == NULL) 
-                                        first_pair = pair;
-                                else 
-                                        prev->next = pair;
-                                prev = pair;
-                                break;
-                        
-                        default:
-                                debug(1, ("    %s (Unknown Type %d)",
-                                        attr->name,attr->type));
-                                avp_free(pair);
-                                break;
-                        }
-
-                }
-                ptr += attrlen;
-                length -= attrlen;
-        }
         radreq->request = first_pair;
-        return(radreq);
+        return radreq;
 }
 
-#ifdef USE_LIVINGSTON_MENUS
-/*
- *      Reply to the request with a CHALLENGE.  Also attach
- *      any user message provided and a state value.
- */
-void
-send_challenge(radreq, msg, state, activefd)
-        RADIUS_REQ *radreq;
-        char *msg;
-        char *state;
-        int activefd;
+VALUE_PAIR *
+rad_decode_pair(attrno, ptr, attrlen)
+	int attrno;
+	char *ptr;
+	int attrlen;
 {
-        AUTH_HDR *auth;
-        struct sockaddr saremote;
-        struct sockaddr_in *sin;
-        char digest[AUTH_VECTOR_LEN];
-        int secretlen;
-        int total_length;
-        int block_len;
-        u_char *ptr;
-        int len;
-        char buf[MAX_LONGNAME];
-        int i_send_buffer[RAD_BUFFER_SIZE];
-        char *send_buffer = (char *)i_send_buffer;
-        
-        auth = (AUTH_HDR *)send_buffer;
+	DICT_ATTR *attr;
+	VALUE_PAIR *pair;
+	UINT4 lval;
+	
+	if ((attr = attr_number_to_dict(attrno)) == NULL) {
+		debug(1, ("Received unknown attribute %d", attrno));
+		return NULL;
+	}
 
-        /*
-         *      Build standard response header
-         */
-        auth->code = RT_ACCESS_CHALLENGE;
-        auth->id = radreq->id;
-        memcpy(auth->vector, radreq->vector, AUTH_VECTOR_LEN);
-        total_length = AUTH_HDR_LEN;
-        ptr = auth->data;
+	if ( attrlen >= AUTH_STRING_LEN ) {
+		debug(1, ("attribute %d too long, %d >= %d", attrno,
+			  attrlen, AUTH_STRING_LEN));
+		return NULL;
+	}
 
-        /*
-         *      Append the user message
-         */
-        if (msg != NULL && (len = strlen(msg)) > 0) {
-                while (len > 0) {
-                        if (len > AUTH_STRING_LEN) {
-                                block_len = AUTH_STRING_LEN;
-                        } else {
-                                block_len = len;
-                        }
+	pair = avp_alloc();
+	
+	pair->name = attr->name;
+	pair->attribute = attr->value;
+	pair->type = attr->type;
+	pair->prop = attr->prop;
+	pair->next = NULL;
 
-                        if (total_length + block_len + 2 >= SEND_BUFFER_SIZE) {
-                                radlog(L_ERR,
-                                    _("user message too long in send_challenge"));
-                                return;
-                        }
+	switch (attr->type) {
+
+	case TYPE_STRING:
+		/* attrlen always < AUTH_STRING_LEN */
+		pair->strlength = attrlen;
+		pair->strvalue = alloc_string(attrlen + 1);
+		memcpy(pair->strvalue, ptr, attrlen);
+		pair->strvalue[attrlen] = 0;
+
+		if (debug_on(10)) {
+			char *save;
+			radlog(L_DEBUG, "recv: %s",
+			       format_pair(pair, &save));
+			free(save);
+		}
+
+		break;
                         
-                        *ptr++ = DA_REPLY_MESSAGE;
-                        *ptr++ = block_len + 2;
-                        memcpy(ptr, msg, block_len);
-                        msg += block_len;
-                        ptr += block_len;
-                        total_length += block_len + 2;
-                        len -= block_len;
-                }
-        }
+	case TYPE_INTEGER:
+	case TYPE_IPADDR:
+		memcpy(&lval, ptr, sizeof(UINT4));
+		pair->lvalue = ntohl(lval);
 
-        /*
-         *      Append the state info
-         */
-        if ((state != NULL) && (strlen(state) > 0)) {
-                len = strlen(state);
-                *ptr++ = DA_STATE;
-                *ptr++ = len + 2;
-                memcpy(ptr, state, len);
-                ptr += len;
-                total_length += len + 2;
-        }
-
-        /*
-         *      Set total length in the header
-         */
-        auth->length = htons(total_length);
-
-        /* Calculate the response digest */
-        secretlen = strlen(radreq->secret);
-        if (total_length + secretlen >= SEND_BUFFER_SIZE) {
-                radlog(L_ERR,
-                       _("send buffer overflow in send_challenge"));
-                return;
-        }
-        memcpy(send_buffer + total_length, radreq->secret, secretlen);
-        md5_calc(digest, (u_char *)auth, total_length + secretlen);
-        memcpy(auth->vector, digest, AUTH_VECTOR_LEN);
-        memset(send_buffer + total_length, 0, secretlen);
-
-        sin = (struct sockaddr_in *) &saremote;
-        memset ((char *) sin, '\0', sizeof (saremote));
-        sin->sin_family = AF_INET;
-        sin->sin_addr.s_addr = htonl(radreq->ipaddr);
-        sin->sin_port = htons(radreq->udp_port);
-
-        debug(1, ("Sending Challenge of id %d to %lx (nas %s)",
-                  radreq->id, (u_long)radreq->ipaddr,
-                  nas_request_to_name(radreq, buf, sizeof buf)));
-        
-        stat_inc(auth, radreq->ipaddr, num_challenges);
-        
-        /*
-         *      Send it to the user
-         */
-        sendto(activefd, (char *)auth, (int)total_length, (int)0,
-                        &saremote, sizeof(struct sockaddr_in));
+		if (debug_on(10)) {
+			char *save;
+			radlog(L_DEBUG, 
+			       "recv: %s", 
+			       format_pair(pair, &save));
+			free(save);
+		}
+		break;
+                        
+	default:
+		debug(1, ("    %s (Unknown Type %d)",
+			  attr->name,attr->type));
+		avp_free(pair);
+		pair = NULL;
+		break;
+	}
+	
+	return pair;
 }
-
-#endif
-
-
-
-
-
-
-

@@ -95,7 +95,7 @@ typedef struct request_class {
 	int  (*decode)(struct sockaddr_in *sa,
 		       void *input, size_t inputsize, void **output);
         int  (*respond)(REQUEST *r);          /* Handler function */
-        void (*xmit)(REQUEST *r, void *d);    /* Retransmit function */
+        void (*xmit)(REQUEST *r);             /* Retransmit function */
         int  (*comp)(void *a, void *b);       /* Compare function */
         void (*free)(void *data);             /* Free the associated data */
         void (*drop)(int type, void *data, void *old_data, int fd, char *msg);
@@ -415,7 +415,7 @@ int radius_req_cmp(void *a, void *b);
 void radius_req_free(void *req);
 void radius_req_drop(int type, void *radreq, void *origreq,
 		     int fd, char *status_str);
-void radius_req_xmit(REQUEST *request, void *data);
+void radius_req_xmit(REQUEST *request);
 int radius_req_failure(int type, struct sockaddr_in *addr);
 void radius_req_update(void *req_ptr, void *data_ptr);
 int radius_respond(REQUEST *req);
@@ -434,7 +434,7 @@ int rad_proxy(REQUEST *req);
 void rad_proxy_free(RADIUS_REQ *req);
 int proxy_send(REQUEST *req);
 int proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int activefd);
-void proxy_retry(RADIUS_REQ *radreq, RADIUS_REQ *orig_req, int fd);
+void proxy_retry(RADIUS_REQ *radreq, int fd);
 
 /*FIXME*/
 /* acct.c */

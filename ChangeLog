@@ -2,6 +2,8 @@
 
 	* radiusd/radiusd.c (radiusd_main_loop): Put back the timeout.
 	It is necessary for rpp channels.
+	* radiusd/stat.c: New `storage' statements: file and perms.
+	* examples/config.syntax: Example file and perms statements
 
 2003-06-05  Sergey Poznyakoff 
 

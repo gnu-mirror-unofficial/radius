@@ -26,6 +26,7 @@ RADIUSD=
 DRIVER=
 PROXY=0
 GUILE="#"
+SNMP="#"
 
 while test $# -gt 0 
 do
@@ -42,6 +43,8 @@ do
 	DRIVER=$2; [shift] 2;;
     --guile)
         GUILE=""; [shift];;
+    --snmp)
+	SNMP=""; [shift];;
     --proxy)
         PROXY=1; [shift];;
     --zero-logs)
@@ -75,14 +78,16 @@ if test ! -f proxy/config.in ; then
     cp -r ${[SOURCEDIR]}/proxy .
 fi
 
-EXPR=`./findport -c4 -s1644 "-fs^@AUTH_PORT@^%d^;\
+EXPR=`./findport -c5 -s1644 "-fs^@AUTH_PORT@^%d^;\
 s^@ACCT_PORT@^%d^;\
+s^@SNMP_PORT@^%d^;\
 s^@PROXY_AUTH_PORT@^%d^;\
 s^@PROXY_ACCT_PORT@^%d^;\
 s^@USER@^%u^;\
 s^@[BUILDDIR]@^$[BUILDDIR]^;\
 s^@[SOURCEDIR]@^$[SOURCEDIR]^;\
-s^@GUILE@^$GUILE^"`
+s^@GUILE@^$GUILE^;\
+s^@SNMP@^$SNMP^;"`
 
 make_raddb() {
     NAME=$1

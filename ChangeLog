@@ -1,5 +1,18 @@
 2002-12-21  Sergey Poznyakoff
 
+	* include/radiusd.h (rad_signal_t): Added extra argument: the
+	  identifier of this handler.
+	* radiusd/signal.c (_signal_entry_runqueue): Pass id to the
+	  handler.
+	* radiusd/exec.c (exec_sigchld): Signal handler for exec-program.
+	  Removes the rests of the zombi process.
+	  (radius_exec_program): Install a handler for exec-program
+	  binaries. 
+	* radiusd/radiusd.c (sig_exit,sig_fatal,sig_hup,sig_dumpdb):
+	  Reflect changes in include/radiusd.h.
+	
+2002-12-21  Sergey Poznyakoff
+
 	* NEWS: Merged news entries from 0.96 maintenance series.
 	* configure.ac: Removed --enable-notify altogether.
 	  Added warning about --with-server-guile

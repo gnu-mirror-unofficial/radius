@@ -75,7 +75,7 @@ auth {
 				# request (the default)
 	max-requests 127;	# Maximum number of AUTH requests in queue
 	time-to-live 25;	# Request time to live
-	request-cleanup delay 10; # Number of seconds the request remains
+	request-cleanup-delay 10; # Number of seconds the request remains
                                   # in queue after being processed
 	detail yes;		# Store detailed info about every auth request
 	strip-names yes;	# Strip username prefixes/suffixes
@@ -90,14 +90,14 @@ acct {
 				# request (the default)
 	max-requests 24;	# Maximum number of ACCT requests in queue
 	time-to-live 60;	# Request time to live
-        request-cleanup delay 10; # Number of seconds the request remains
+        request-cleanup-delay 10; # Number of seconds the request remains
                                   # in queue after being processed
 };
 
 ## This controls the proxy service
 proxy {
 	max-requests 24;	# Maximum number of ACCT requests in queue
-        request-cleanup delay 60; # Number of seconds the request remains
+        request-cleanup-delay 60; # Number of seconds the request remains
                                   # in queue after being processed
 };
 

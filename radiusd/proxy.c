@@ -708,7 +708,7 @@ proxy_receive(authreq, activefd)
 	
 	if (oldreq == NULL) {
 		radlog(L_PROXY,
-		       _("Unreckognized proxy reply from server %s - ID %d"),
+		       _("Unrecognized proxy reply from server %s - ID %d"),
 		       client_name(authreq->ipaddr), authreq->id);
 		return -1;
 	}

@@ -371,12 +371,10 @@ snmp_init_nas_stat()
 	server_stat->nas_index = 1;
 }
 
-/* Attach NAS stat info to a given NAS structure. FIXME: master is 1 if called
-   from a master process: probably can be eliminated */ 
+/* Attach NAS stat info to a given NAS structure. */
 void
-snmp_attach_nas_stat(nas, master)
+snmp_attach_nas_stat(nas)
 	NAS *nas;
-	int master;
 {
 	struct nas_stat *nasstat;
 
@@ -390,8 +388,7 @@ snmp_attach_nas_stat(nas, master)
 		nasstat = snmp_nasstat(server_stat->nas_count++);
 		nasstat->ipaddr = nas->ipaddr;
 	}
-	if (master)
-		nasstat->index = server_stat->nas_index++;
+	nasstat->index = server_stat->nas_index++;
 	nas->nas_stat = nasstat;
 }
 

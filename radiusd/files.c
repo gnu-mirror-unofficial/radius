@@ -1297,7 +1297,7 @@ read_naslist_entry(unused, fc, fv, file, lineno)
 	memcpy(nasp, &nas, sizeof(nas));
 	
 #ifdef USE_SNMP
-	snmp_attach_nas_stat(nasp, master_process());
+	snmp_attach_nas_stat(nasp);
 #endif
 	nasp->next = naslist;
 	naslist = nasp;

@@ -153,105 +153,105 @@
 #define MIB_AccServUnknownTypes 1,3,6,1,2,1,67,2,1,1,1,14,1,11,-1
 #define LEN_AccServUnknownTypes 15
 #define MIB_KEY_AccServUnknownTypes 11
-#define MIB_StatIdent 1,3,6,1,2,1,67,3,1,1
+#define MIB_StatIdent 1,3,6,1,4,1,9163,3,1,1
 #define LEN_StatIdent 10
 #define MIB_KEY_StatIdent 1
-#define MIB_StatUpTime 1,3,6,1,2,1,67,3,1,2
+#define MIB_StatUpTime 1,3,6,1,4,1,9163,3,1,2
 #define LEN_StatUpTime 10
 #define MIB_KEY_StatUpTime 2
-#define MIB_StatConfigReset 1,3,6,1,2,1,67,3,1,3
+#define MIB_StatConfigReset 1,3,6,1,4,1,9163,3,1,3
 #define LEN_StatConfigReset 10
 #define MIB_KEY_StatConfigReset 3
-#define MIB_StatTotalLines 1,3,6,1,2,1,67,3,1,4
+#define MIB_StatTotalLines 1,3,6,1,4,1,9163,3,1,4
 #define LEN_StatTotalLines 10
 #define MIB_KEY_StatTotalLines 4
-#define MIB_StatTotalLinesInUse 1,3,6,1,2,1,67,3,1,5
+#define MIB_StatTotalLinesInUse 1,3,6,1,4,1,9163,3,1,5
 #define LEN_StatTotalLinesInUse 10
 #define MIB_KEY_StatTotalLinesInUse 5
-#define MIB_StatTotalLinesIdle 1,3,6,1,2,1,67,3,1,6
+#define MIB_StatTotalLinesIdle 1,3,6,1,4,1,9163,3,1,6
 #define LEN_StatTotalLinesIdle 10
 #define MIB_KEY_StatTotalLinesIdle 6
-#define MIB_NASIndex1 1,3,6,1,2,1,67,3,1,7,1,1,-1
+#define MIB_NASIndex1 1,3,6,1,4,1,9163,3,1,7,1,1,-1
 #define LEN_NASIndex1 13
 #define MIB_KEY_NASIndex1 1
-#define MIB_NASIndex2 1,3,6,1,2,1,67,3,1,7,1,1,-1,-1
+#define MIB_NASIndex2 1,3,6,1,4,1,9163,3,1,7,1,1,-1,-1
 #define LEN_NASIndex2 14
 #define MIB_KEY_NASIndex2 -1
-#define MIB_NASIndex3 1,3,6,1,2,1,67,3,1,7,1,1,-1,-1,-1
+#define MIB_NASIndex3 1,3,6,1,4,1,9163,3,1,7,1,1,-1,-1,-1
 #define LEN_NASIndex3 15
 #define MIB_KEY_NASIndex3 -1
-#define MIB_NASIndex4 1,3,6,1,2,1,67,3,1,7,1,1,-1,-1,-1,-1
+#define MIB_NASIndex4 1,3,6,1,4,1,9163,3,1,7,1,1,-1,-1,-1,-1
 #define LEN_NASIndex4 16
 #define MIB_KEY_NASIndex4 -1
-#define MIB_NASAddress 1,3,6,1,2,1,67,3,1,7,1,2,-1
+#define MIB_NASAddress 1,3,6,1,4,1,9163,3,1,7,1,2,-1
 #define LEN_NASAddress 13
 #define MIB_KEY_NASAddress 2
-#define MIB_NASID 1,3,6,1,2,1,67,3,1,7,1,3,-1
+#define MIB_NASID 1,3,6,1,4,1,9163,3,1,7,1,3,-1
 #define LEN_NASID 13
 #define MIB_KEY_NASID 3
-#define MIB_NASLines 1,3,6,1,2,1,67,3,1,7,1,4,-1
+#define MIB_NASLines 1,3,6,1,4,1,9163,3,1,7,1,4,-1
 #define LEN_NASLines 13
 #define MIB_KEY_NASLines 4
-#define MIB_NASLinesInUse 1,3,6,1,2,1,67,3,1,7,1,5,-1
+#define MIB_NASLinesInUse 1,3,6,1,4,1,9163,3,1,7,1,5,-1
 #define LEN_NASLinesInUse 13
 #define MIB_KEY_NASLinesInUse 5
-#define MIB_NASLinesIdle 1,3,6,1,2,1,67,3,1,7,1,6,-1
+#define MIB_NASLinesIdle 1,3,6,1,4,1,9163,3,1,7,1,6,-1
 #define LEN_NASLinesIdle 13
 #define MIB_KEY_NASLinesIdle 6
-#define MIB_StatPortIndex1 1,3,6,1,2,1,67,3,1,8,1,1,-1
+#define MIB_StatPortIndex1 1,3,6,1,4,1,9163,3,1,8,1,1,-1
 #define LEN_StatPortIndex1 13
 #define MIB_KEY_StatPortIndex1 1
-#define MIB_StatPortIndex2 1,3,6,1,2,1,67,3,1,8,1,1,-1,-1
+#define MIB_StatPortIndex2 1,3,6,1,4,1,9163,3,1,8,1,1,-1,-1
 #define LEN_StatPortIndex2 14
 #define MIB_KEY_StatPortIndex2 -1
-#define MIB_StatNASIndex 1,3,6,1,2,1,67,3,1,8,1,2,-1
+#define MIB_StatNASIndex 1,3,6,1,4,1,9163,3,1,8,1,2,-1
 #define LEN_StatNASIndex 13
 #define MIB_KEY_StatNASIndex 2
-#define MIB_StatPortID 1,3,6,1,2,1,67,3,1,8,1,3,-1
+#define MIB_StatPortID 1,3,6,1,4,1,9163,3,1,8,1,3,-1
 #define LEN_StatPortID 13
 #define MIB_KEY_StatPortID 3
-#define MIB_StatPortFramedAddress 1,3,6,1,2,1,67,3,1,8,1,4,-1
+#define MIB_StatPortFramedAddress 1,3,6,1,4,1,9163,3,1,8,1,4,-1
 #define LEN_StatPortFramedAddress 13
 #define MIB_KEY_StatPortFramedAddress 4
-#define MIB_StatPortTotalLogins 1,3,6,1,2,1,67,3,1,8,1,5,-1
+#define MIB_StatPortTotalLogins 1,3,6,1,4,1,9163,3,1,8,1,5,-1
 #define LEN_StatPortTotalLogins 13
 #define MIB_KEY_StatPortTotalLogins 5
-#define MIB_StatPortStatus 1,3,6,1,2,1,67,3,1,8,1,6,-1
+#define MIB_StatPortStatus 1,3,6,1,4,1,9163,3,1,8,1,6,-1
 #define LEN_StatPortStatus 13
 #define MIB_KEY_StatPortStatus 6
-#define MIB_StatPortStatusDate 1,3,6,1,2,1,67,3,1,8,1,7,-1
-#define LEN_StatPortStatusDate 13
-#define MIB_KEY_StatPortStatusDate 7
-#define MIB_StatPortUpTime 1,3,6,1,2,1,67,3,1,8,1,8,-1
+#define MIB_StatPortStatusChangeTimestamp 1,3,6,1,4,1,9163,3,1,8,1,7,-1
+#define LEN_StatPortStatusChangeTimestamp 13
+#define MIB_KEY_StatPortStatusChangeTimestamp 7
+#define MIB_StatPortUpTime 1,3,6,1,4,1,9163,3,1,8,1,8,-1
 #define LEN_StatPortUpTime 13
 #define MIB_KEY_StatPortUpTime 8
-#define MIB_StatPortLastLoginName 1,3,6,1,2,1,67,3,1,8,1,9,-1
+#define MIB_StatPortLastLoginName 1,3,6,1,4,1,9163,3,1,8,1,9,-1
 #define LEN_StatPortLastLoginName 13
 #define MIB_KEY_StatPortLastLoginName 9
-#define MIB_StatPortLastLoginDate 1,3,6,1,2,1,67,3,1,8,1,10,-1
-#define LEN_StatPortLastLoginDate 13
-#define MIB_KEY_StatPortLastLoginDate 10
-#define MIB_StatPortLastLogoutDate 1,3,6,1,2,1,67,3,1,8,1,11,-1
-#define LEN_StatPortLastLogoutDate 13
-#define MIB_KEY_StatPortLastLogoutDate 11
-#define MIB_StatPortIdleTotalTime 1,3,6,1,2,1,67,3,1,8,1,12,-1
+#define MIB_StatPortLastLoginTimestamp 1,3,6,1,4,1,9163,3,1,8,1,10,-1
+#define LEN_StatPortLastLoginTimestamp 13
+#define MIB_KEY_StatPortLastLoginTimestamp 10
+#define MIB_StatPortLastLogoutTimestamp 1,3,6,1,4,1,9163,3,1,8,1,11,-1
+#define LEN_StatPortLastLogoutTimestamp 13
+#define MIB_KEY_StatPortLastLogoutTimestamp 11
+#define MIB_StatPortIdleTotalTime 1,3,6,1,4,1,9163,3,1,8,1,12,-1
 #define LEN_StatPortIdleTotalTime 13
 #define MIB_KEY_StatPortIdleTotalTime 12
-#define MIB_StatPortIdleMaxTime 1,3,6,1,2,1,67,3,1,8,1,13,-1
+#define MIB_StatPortIdleMaxTime 1,3,6,1,4,1,9163,3,1,8,1,13,-1
 #define LEN_StatPortIdleMaxTime 13
 #define MIB_KEY_StatPortIdleMaxTime 13
-#define MIB_StatPortIdleMaxDate 1,3,6,1,2,1,67,3,1,8,1,14,-1
-#define LEN_StatPortIdleMaxDate 13
-#define MIB_KEY_StatPortIdleMaxDate 14
-#define MIB_StatPortInUseTotalTime 1,3,6,1,2,1,67,3,1,8,1,15,-1
+#define MIB_StatPortIdleMaxTimestamp 1,3,6,1,4,1,9163,3,1,8,1,14,-1
+#define LEN_StatPortIdleMaxTimestamp 13
+#define MIB_KEY_StatPortIdleMaxTimestamp 14
+#define MIB_StatPortInUseTotalTime 1,3,6,1,4,1,9163,3,1,8,1,15,-1
 #define LEN_StatPortInUseTotalTime 13
 #define MIB_KEY_StatPortInUseTotalTime 15
-#define MIB_StatPortInUseMaxTime 1,3,6,1,2,1,67,3,1,8,1,16,-1
+#define MIB_StatPortInUseMaxTime 1,3,6,1,4,1,9163,3,1,8,1,16,-1
 #define LEN_StatPortInUseMaxTime 13
 #define MIB_KEY_StatPortInUseMaxTime 16
-#define MIB_StatPortInUseMaxDate 1,3,6,1,2,1,67,3,1,8,1,17,-1
-#define LEN_StatPortInUseMaxDate 13
-#define MIB_KEY_StatPortInUseMaxDate 17
+#define MIB_StatPortInUseMaxTimestamp 1,3,6,1,4,1,9163,3,1,8,1,17,-1
+#define LEN_StatPortInUseMaxTimestamp 13
+#define MIB_KEY_StatPortInUseMaxTimestamp 17
 
 #ifdef SERVER
 subid_t oid_AuthServIdent[] = { LEN_AuthServIdent, MIB_AuthServIdent };
@@ -326,15 +326,15 @@ subid_t oid_StatPortID[] = { LEN_StatPortID, MIB_StatPortID };
 subid_t oid_StatPortFramedAddress[] = { LEN_StatPortFramedAddress, MIB_StatPortFramedAddress };
 subid_t oid_StatPortTotalLogins[] = { LEN_StatPortTotalLogins, MIB_StatPortTotalLogins };
 subid_t oid_StatPortStatus[] = { LEN_StatPortStatus, MIB_StatPortStatus };
-subid_t oid_StatPortStatusDate[] = { LEN_StatPortStatusDate, MIB_StatPortStatusDate };
+subid_t oid_StatPortStatusChangeTimestamp[] = { LEN_StatPortStatusChangeTimestamp, MIB_StatPortStatusChangeTimestamp };
 subid_t oid_StatPortUpTime[] = { LEN_StatPortUpTime, MIB_StatPortUpTime };
 subid_t oid_StatPortLastLoginName[] = { LEN_StatPortLastLoginName, MIB_StatPortLastLoginName };
-subid_t oid_StatPortLastLoginDate[] = { LEN_StatPortLastLoginDate, MIB_StatPortLastLoginDate };
-subid_t oid_StatPortLastLogoutDate[] = { LEN_StatPortLastLogoutDate, MIB_StatPortLastLogoutDate };
+subid_t oid_StatPortLastLoginTimestamp[] = { LEN_StatPortLastLoginTimestamp, MIB_StatPortLastLoginTimestamp };
+subid_t oid_StatPortLastLogoutTimestamp[] = { LEN_StatPortLastLogoutTimestamp, MIB_StatPortLastLogoutTimestamp };
 subid_t oid_StatPortIdleTotalTime[] = { LEN_StatPortIdleTotalTime, MIB_StatPortIdleTotalTime };
 subid_t oid_StatPortIdleMaxTime[] = { LEN_StatPortIdleMaxTime, MIB_StatPortIdleMaxTime };
-subid_t oid_StatPortIdleMaxDate[] = { LEN_StatPortIdleMaxDate, MIB_StatPortIdleMaxDate };
+subid_t oid_StatPortIdleMaxTimestamp[] = { LEN_StatPortIdleMaxTimestamp, MIB_StatPortIdleMaxTimestamp };
 subid_t oid_StatPortInUseTotalTime[] = { LEN_StatPortInUseTotalTime, MIB_StatPortInUseTotalTime };
 subid_t oid_StatPortInUseMaxTime[] = { LEN_StatPortInUseMaxTime, MIB_StatPortInUseMaxTime };
-subid_t oid_StatPortInUseMaxDate[] = { LEN_StatPortInUseMaxDate, MIB_StatPortInUseMaxDate };
+subid_t oid_StatPortInUseMaxTimestamp[] = { LEN_StatPortInUseMaxTimestamp, MIB_StatPortInUseMaxTimestamp };
 #endif

@@ -580,7 +580,7 @@ void * shmem_get(unsigned size, int zero);
 void snmp_tree_init();
 void snmp_auth_server_reset();
 void snmp_acct_server_reset();
-void snmp_attach_nas_stat(NAS *nas, int master);
+void snmp_attach_nas_stat(NAS *nas);
 void snmp_init_nas_stat();
 int check_acl(UINT4 ipaddr, char *community);
 void snmp_free_acl();

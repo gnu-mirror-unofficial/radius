@@ -346,10 +346,8 @@ void
 enable_usr_dbg()
 {
 #ifdef YACC_DEBUG
-	if (master_process()) {
-		yydebug = 1;
-		radlog(L_NOTICE, _("enabled userfile parser debugging"));
-	}
+	yydebug = 1;
+	radlog(L_NOTICE, _("enabled userfile parser debugging"));
 #else
 	radlog(L_WARN,
 	    _("%s:%d: radiusd compiled without parser debugging"),

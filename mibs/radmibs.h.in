@@ -76,44 +76,44 @@
 ~ AccServNoRecords			1,3,6,1,2,1,67,2,1,1,1,14,1,10
 ~ AccServUnknownTypes			1,3,6,1,2,1,67,2,1,1,1,14,1,11
 					
-/* Statistics */			
+/* Enterprises subtree */			
 					
 /* Fixed oids */			
-= StatIdent				1,3,6,1,2,1,67,3,1,1
-= StatUpTime				1,3,6,1,2,1,67,3,1,2
-= StatConfigReset			1,3,6,1,2,1,67,3,1,3
-= StatTotalLines			1,3,6,1,2,1,67,3,1,4
-= StatTotalLinesInUse		        1,3,6,1,2,1,67,3,1,5
-= StatTotalLinesIdle          		1,3,6,1,2,1,67,3,1,6
+= StatIdent				1,3,6,1,4,1,9163,3,1,1
+= StatUpTime				1,3,6,1,4,1,9163,3,1,2
+= StatConfigReset			1,3,6,1,4,1,9163,3,1,3
+= StatTotalLines			1,3,6,1,4,1,9163,3,1,4
+= StatTotalLinesInUse		        1,3,6,1,4,1,9163,3,1,5
+= StatTotalLinesIdle          		1,3,6,1,4,1,9163,3,1,6
 					
 /* Variable oids */			
-~ NASIndex1				1,3,6,1,2,1,67,3,1,7,1,1
-~ NASIndex2				1,3,6,1,2,1,67,3,1,7,1,1,-1
-~ NASIndex3				1,3,6,1,2,1,67,3,1,7,1,1,-1,-1
-~ NASIndex4				1,3,6,1,2,1,67,3,1,7,1,1,-1,-1,-1
-~ NASAddress				1,3,6,1,2,1,67,3,1,7,1,2
-~ NASID					1,3,6,1,2,1,67,3,1,7,1,3
-~ NASLines				1,3,6,1,2,1,67,3,1,7,1,4
-~ NASLinesInUse				1,3,6,1,2,1,67,3,1,7,1,5
-~ NASLinesIdle				1,3,6,1,2,1,67,3,1,7,1,6
+~ NASIndex1				1,3,6,1,4,1,9163,3,1,7,1,1
+~ NASIndex2				1,3,6,1,4,1,9163,3,1,7,1,1,-1
+~ NASIndex3				1,3,6,1,4,1,9163,3,1,7,1,1,-1,-1
+~ NASIndex4				1,3,6,1,4,1,9163,3,1,7,1,1,-1,-1,-1
+~ NASAddress				1,3,6,1,4,1,9163,3,1,7,1,2
+~ NASID					1,3,6,1,4,1,9163,3,1,7,1,3
+~ NASLines				1,3,6,1,4,1,9163,3,1,7,1,4
+~ NASLinesInUse				1,3,6,1,4,1,9163,3,1,7,1,5
+~ NASLinesIdle				1,3,6,1,4,1,9163,3,1,7,1,6
 
-~ StatPortIndex1			1,3,6,1,2,1,67,3,1,8,1,1
-~ StatPortIndex2			1,3,6,1,2,1,67,3,1,8,1,1,-1
+~ StatPortIndex1			1,3,6,1,4,1,9163,3,1,8,1,1
+~ StatPortIndex2			1,3,6,1,4,1,9163,3,1,8,1,1,-1
 
-~ StatNASIndex				1,3,6,1,2,1,67,3,1,8,1,2
-~ StatPortID				1,3,6,1,2,1,67,3,1,8,1,3
-~ StatPortFramedAddress			1,3,6,1,2,1,67,3,1,8,1,4 
-~ StatPortTotalLogins			1,3,6,1,2,1,67,3,1,8,1,5 
-~ StatPortStatus			1,3,6,1,2,1,67,3,1,8,1,6 
-~ StatPortStatusChangeTimestamp		1,3,6,1,2,1,67,3,1,8,1,7 
-~ StatPortUpTime			1,3,6,1,2,1,67,3,1,8,1,8 
-~ StatPortLastLoginName			1,3,6,1,2,1,67,3,1,8,1,9 
-~ StatPortLastLoginTimestamp		1,3,6,1,2,1,67,3,1,8,1,10
-~ StatPortLastLogoutTimestamp		1,3,6,1,2,1,67,3,1,8,1,11
-~ StatPortIdleTotalTime			1,3,6,1,2,1,67,3,1,8,1,12
-~ StatPortIdleMaxTime			1,3,6,1,2,1,67,3,1,8,1,13
-~ StatPortIdleMaxTimestamp		1,3,6,1,2,1,67,3,1,8,1,14
-~ StatPortInUseTotalTime		1,3,6,1,2,1,67,3,1,8,1,15
-~ StatPortInUseMaxTime			1,3,6,1,2,1,67,3,1,8,1,16
-~ StatPortInUseMaxTimestamp		1,3,6,1,2,1,67,3,1,8,1,17
+~ StatNASIndex				1,3,6,1,4,1,9163,3,1,8,1,2
+~ StatPortID				1,3,6,1,4,1,9163,3,1,8,1,3
+~ StatPortFramedAddress			1,3,6,1,4,1,9163,3,1,8,1,4 
+~ StatPortTotalLogins			1,3,6,1,4,1,9163,3,1,8,1,5 
+~ StatPortStatus			1,3,6,1,4,1,9163,3,1,8,1,6 
+~ StatPortStatusChangeTimestamp		1,3,6,1,4,1,9163,3,1,8,1,7 
+~ StatPortUpTime			1,3,6,1,4,1,9163,3,1,8,1,8 
+~ StatPortLastLoginName			1,3,6,1,4,1,9163,3,1,8,1,9 
+~ StatPortLastLoginTimestamp		1,3,6,1,4,1,9163,3,1,8,1,10
+~ StatPortLastLogoutTimestamp		1,3,6,1,4,1,9163,3,1,8,1,11
+~ StatPortIdleTotalTime			1,3,6,1,4,1,9163,3,1,8,1,12
+~ StatPortIdleMaxTime			1,3,6,1,4,1,9163,3,1,8,1,13
+~ StatPortIdleMaxTimestamp		1,3,6,1,4,1,9163,3,1,8,1,14
+~ StatPortInUseTotalTime		1,3,6,1,4,1,9163,3,1,8,1,15
+~ StatPortInUseMaxTime			1,3,6,1,4,1,9163,3,1,8,1,16
+~ StatPortInUseMaxTimestamp		1,3,6,1,4,1,9163,3,1,8,1,17
 

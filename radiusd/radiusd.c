@@ -1654,12 +1654,6 @@ sig_dumpdb(sig)
 }
 
 int
-master_process()
-{
-	return radius_pid == 0 || getpid() == radius_pid;
-}
-
-int
 open_socket(port, type)
 	int port;
 	char *type;
@@ -1787,4 +1781,10 @@ test_shell()
 		}
 	}
 	return 0;
+}
+
+int
+master_process()
+{
+ 	return radius_pid == 0 || getpid() == radius_pid;
 }

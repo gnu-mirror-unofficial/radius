@@ -3,7 +3,7 @@
 	* radiusd/radiusd.c (rad_req_recode): New function. Recode
 	  all password attributes in the request.
 	  (rad_req_cmp): Rewritten again (ouff!)
-	* radscripts/radscripts.m4: Change comment starter to --
+	* radscripts/radscripts.m4: Change comment starter to %%
 	  (to enable substitutions in #! lines).
 	* radtest/main.c (main): Fixed bug: too few elements were
 	  allocated for x_argv.

@@ -49,7 +49,7 @@ Is the attribute propagated back to the @NAS{} if the server works
 in proxy mode.
 @end table
 
-The value of @acronym{N/A} in any of this fields signifies ``not
+The value of @acronym{n/a} in any of this fields signifies ``not
 applicable''.
 
 
@@ -123,7 +123,7 @@ in order to bring username to its ``normal'' form (@pxref{rewrite file}).
 @subsection User-Password
 @atindex User-Password
 
-@defattr{User-Password,2,string,L-,--,--,@acronym{N/A},No}
+@defattr{User-Password,2,string,L-,--,--,@acronym{n/a},No}
 
 This User-Password attribute indicates the password of the user to be
 authenticated, or the user's input following an Access-Challenge.
@@ -154,7 +154,7 @@ characters.
 @subsection CHAP-Password
 @atindex CHAP-Password
 
-@defattr{CHAP-Password,3,string,L-,--,--,@acronym{N/A},No}
+@defattr{CHAP-Password,3,string,L-,--,--,@acronym{n/a},No}
 
 This Attribute indicates the response value provided by a PPP
 Challenge-Handshake Authentication Protocol (CHAP) user in
@@ -609,7 +609,7 @@ These attributes can not be used in matching rules.
 @subsection Acct-Status-Type
 @atindex Acct-Status-Type
 
-@defattr{Acct-Status-Type,40,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
+@defattr{Acct-Status-Type,40,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
 
 @example
 VALUE           Acct-Status-Type        Start                   1
@@ -636,7 +636,7 @@ last Alive record.
 @subsection Acct-Delay-Time
 @atindex Acct-Delay-Time
 
-@defattr{Acct-Delay-Time,41,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
+@defattr{Acct-Delay-Time,41,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
 
 This attribute indicates how many seconds the client has been
 trying to send this record for, and can be subtracted from the
@@ -649,7 +649,7 @@ is ignored.)
 @subsection Acct-Input-Octets
 @atindex Acct-Input-Octets
 
-@defattr{Acct-Input-Octets,42,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
+@defattr{Acct-Input-Octets,42,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
 
 This attribute indicates how many octets have been received from
 the port over the course of this service being provided, and can
@@ -661,7 +661,7 @@ Acct-Status-Type is set to Stop.
 @subsection Acct-Output-Octets
 @atindex Acct-Output-Octets
 
-@defattr{Acct-Output-Octets,43,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
+@defattr{Acct-Output-Octets,43,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
 
 This attribute indicates how many octets have been sent to the
 port in the course of delivering this service, and can only be
@@ -673,7 +673,7 @@ is set to Stop.
 @subsection Acct-Session-Id
 @atindex Acct-Session-Id
 
-@defattr{Acct-Session-Id,44,string,--,--,--,@acronym{N/A},@acronym{N/A}}
+@defattr{Acct-Session-Id,44,string,--,--,--,@acronym{n/a},@acronym{n/a}}
 
 This attribute is a unique Accounting @sc{id} to make it easy to match
 start and stop records in a log file.  The start and stop records
@@ -688,7 +688,7 @@ packets for that session.
 @subsection Acct-Authentic
 @atindex Acct-Authentic
 
-@defattr{Acct-Authentic,45,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
+@defattr{Acct-Authentic,45,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
 
 @example
 VALUE           Acct-Authentic          RADIUS          1
@@ -707,7 +707,7 @@ generate Accounting records.
 @subsection Acct-Session-Time
 @atindex Acct-Session-Time
 
-@defattr{Acct-Session-Time,46,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
+@defattr{Acct-Session-Time,46,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
 
 This attribute indicates how many seconds the user has received
 service for, and can only be present in Accounting-Request records
@@ -718,7 +718,7 @@ where the Acct-Status-Type is set to Stop.
 @subsection Acct-Input-Packets
 @atindex Acct-Input-Packets
 
-@defattr{Acct-Input-Packets,47,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
+@defattr{Acct-Input-Packets,47,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
 
 This attribute indicates how many packets have been received from
 the port over the course of this service being provided to a
@@ -730,7 +730,7 @@ where the Acct-Status-Type is set to Stop.
 @subsection Acct-Output-Packets
 @atindex Acct-Output-Packets
 
-@defattr{Acct-Output-Packets,48,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
+@defattr{Acct-Output-Packets,48,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
 
 This attribute indicates how many packets have been sent to the
 port in the course of delivering this service to a Framed User,
@@ -742,7 +742,7 @@ Acct-Status-Type is set to Stop.
 @subsection Acct-Terminate-Cause
 @atindex Acct-Terminate-Cause
 
-@defattr{Acct-Terminate-Cause,49,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
+@defattr{Acct-Terminate-Cause,49,integer,--,--,--,@acronym{n/a},@acronym{n/a}}
 
 @example
 VALUE           Acct-Terminate-Cause    User-Request            1
@@ -867,7 +867,7 @@ The username/password combination is checked using PAM.
 @subsection Auth-Data
 @atindex Auth-Data
 
-@defattr{Auth-Data,2006,string,L-,-R,-R,Replace,@acronym{N/A}}
+@defattr{Auth-Data,2006,string,L-,-R,-R,Replace,@acronym{n/a}}
 
 The @attr{Auth-Data} can be used to pass additional data to the
 authentication methods that need them. In version @value{VERSION}
@@ -1319,7 +1319,7 @@ authorized to use login service.
 @subsection Acct-Ext-Program
 @atindex Acct-Ext-Program
 
-@defattr{Acct-Ext-Program,2008,string,--,-R,--,Replace,@acronym{N/A}}
+@defattr{Acct-Ext-Program,2008,string,--,-R,--,Replace,@acronym{n/a}}
 
 The @attr{Acct-Ext-Program} attribute can be used in @RHS{} of an
 @file{raddb/hints} entry to specify the full path and attributes
@@ -1543,7 +1543,7 @@ assigned @IP{} @code{10.10.10.2}, otherwise if he is coming from @NAS{}
 @subsection Scheme-Procedure
 @atindex Scheme-Procedure
 
-@defattr{Scheme-Procedure,2009,string,-R,--,--,Append,@acronym{N/A}}
+@defattr{Scheme-Procedure,2009,string,-R,--,--,Append,@acronym{n/a}}
 
 The @attr{Scheme-Procedure} attribute is used to set the name
 of Scheme authentication procedure. @xref{Authentication with Scheme}, for
@@ -1553,7 +1553,7 @@ the information about how to write Scheme authentication procedures.
 @subsection Scheme-Acct-Procedure
 @atindex Scheme-Acct-Procedure
 
-@defattr{Scheme-Acct-Procedure,2010,string,--,-R,--,Replace,@acronym{N/A}} 
+@defattr{Scheme-Acct-Procedure,2010,string,--,-R,--,Replace,@acronym{n/a}} 
 
 The @attr{Scheme-Acct-Procedure} attribute is used to set the name
 of Scheme accounting procedure. @xref{Accounting with Scheme}, for
@@ -1563,7 +1563,7 @@ the information about how to write Scheme accounting procedures.
 @subsection Log-Mode-Mask
 @atindex Log-Mode-Mask
 
-@defattr{Log-Mode-Mask,2007,integer,L-,-R,-R,Append,@acronym{N/A}}
+@defattr{Log-Mode-Mask,2007,integer,L-,-R,-R,Append,@acronym{n/a}}
 
 @example
 VALUE		Log-Mode-Mask		Log-Auth		1
@@ -1600,7 +1600,7 @@ mode. The value thus obtained is used as effective log mode.
 @subsection Acct-Type
 @atindex Acct-Type
 
-@defattr{Acct-Type,2003,integer,L-,-R,-R,Append,@acronym{N/A}}
+@defattr{Acct-Type,2003,integer,L-,-R,-R,Append,@acronym{n/a}}
 
 @example
 VALUE		Acct-Type		None	0

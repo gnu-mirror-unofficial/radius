@@ -57,16 +57,14 @@ translation approved by the Free Software Foundation instead of in the
 original English.
 @end ifinfo
 
-@settitle GNU Radius Manual
+@settitle GNU Radius Reference Manual
 
 @iftex
-@shorttitlepage GNU Radius Manual
+@shorttitlepage GNU Radius Reference Manual
 @end iftex
 @titlepage
-@sp 6
-@center @titlefont{GNU Radius Manual}
-@sp 4
-@center for Radius version @value{VERSION}
+@title GNU Radius Reference Manual
+@subtitle version @value{VERSION}, @value{UPDATED}
 @sp5
 @sp 1
 Permission is granted to make and distribute verbatim copies of

@@ -1,5 +1,14 @@
 2004-11-02  Sergey Poznyakoff
 
+	* scripts/gud-wrapper: A wrapper for debugging radiusd from
+	Emacs
+	* scripts/radius-devel.el: Some useful functions
+	* scripts/request.list: List of radius requests and their numbers
+	* scripts/Makefile.am: Added new files
+	* radiusd/.gdbinit: Updated
+
+2004-11-02  Sergey Poznyakoff
+
 	* TODO: Updated
 	
 	* include/radiusd.h (scheme_eval_unspecified_expr): New function.

@@ -1,5 +1,5 @@
 @c This is part of the Radius manual.
-@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c Copyright (C) 1999,2000,2001,2002,2003 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Extensions, Utility Programs, Problem Tracking, Top
@@ -735,6 +735,7 @@ get_ip_address(integer base)
 * Identifiers::
 * Declarations::
 * Statements::
+* Regular Expressions::
 * Built-in Functions::
 @end menu
 
@@ -769,8 +770,9 @@ These are: @samp{==}, @samp{!=}, @samp{<}, @samp{<=}, @samp{>},
 @samp{>=} with the same meaning they have in C. Special operators
 are provided for regular-expression matching. The binary
 operator @samp{=~} returns true if its left-hand-side operand
-matches the regular expression on its right-hand side. @samp{!~}
-returns true if its left-hand-side operand does @emph{not} match
+matches the regular expression on its right-hand side
+(@pxref{Regular Expressions}). @samp{!~} returns true if its
+left-hand-side operand does @emph{not} match
 the regexp on its right-hand side. The right-hand-side operand of
 @samp{!~} or @samp{=~} must be a literal string, i.e., the regular
 expression must be known at compile time.
@@ -792,6 +794,10 @@ a sequence of digits is taken to be octal if it begins with @samp{0}
 (digit zero), and decimal otherwise. If the sequence of digits is
 preceded by @samp{0x} or @samp{0X}, it is taken to be a hexadecimal
 integer.
+@item IP Numbers
+IP numbers are represented by a standard numbers-and-dots notation.
+IP numbers do not constitute a separate data type, rather they are
+in all respects similar to initeger numbers.
 @item Characters
 These follow the usual C convention for characters, i.e., they consist
 either of
@@ -802,7 +808,46 @@ consists either of three octal or of two hexadecimal digits.
 A character does not form a special data type; it is represented
 internally by an integer.
 @item Quoted strings
-These follow usual C conventions for strings.
+These follow slightly modified C conventions for strings. A string is
+a sequence of characters surrounded by double quotes, as in
+@samp{"..."}. In a string, the double quote character @samp{"} must be
+preceeded by a backslash @samp{\}. A @samp{\} and an immediately following
+newline are ignored. Following escape sequences have special meaning:
+
+@table @asis
+@item \a
+Audible bell character (ASCII 7)
+@item \b
+Backspace (ASCII 8)
+@item \e
+Escape character (ASCII 27)
+@item \f
+Form feed (ASCII 12)
+@item \n
+Newline (ASCII 10)
+@item \r
+Carriage return (ASCII 13)
+@item \t
+Horizontal tab (ASCII 9)
+@item \\
+Backslash
+@item \ooo
+(@samp{o} represents an octal digit)
+A character whose ASCII value is represented by the octal number @samp{ooo}.
+@item \xHH
+@itemx \XHH
+(@samp{H} represents a hex digit)
+A character whose ASCII value is represented by the hex number @samp{HH}.
+@item \(
+Two characters @samp{\(}.
+@item \)
+Two characters @samp{\)}.
+@end table
+
+If the character following the backslash is not one of those
+specified, the backslash is ignored.
+
+
 @item Attribute values
 The incoming request is passed implicitly to functions invoked via the
 @attr{Rewrite-Function} attribute. It is kept as an associative array,
@@ -1029,6 +1074,85 @@ The second variant deletes only the @var{n}th occurrence of the matching
 attribute.
 
 @comment **L4***************************************************************
+@node Regular Expressions
+@subsubsection Regular Expressions
+@cindex Regular Expressions, Rewrite
+
+Rewrite uses POSIX regular expressions
+(@xref{Top,,Regular Expression Library,regex,Regular Expression
+Library}, for the detailed description of these).
+
+You control the exact type of regular expressions by the use of the
+pragmatic comment @code{regex}. Its syntax is as follows:
+
+@smallexample
+#pragma regex @var{option-list}
+@end smallexample
+
+@noindent
+@var{Option-list} is a whitespace-separated list of options. Each option
+is one of the following words prefixed with @samp{+} or @samp{-}:
+
+@table @code
+@item extended
+Use POSIX extended regular expression syntax when interpreting regular
+expressions.
+
+@item icase
+Do not differentiate case. Subsequent regular expression comparisons
+will be case insensitive.
+                            
+@item newline
+Match-any-character operators don't match a newline.
+
+A non-matching list (@samp{[^...]}) not containing a newline does
+not match a newline.
+
+Match-beginning-of-line  operator  (@samp{^}) matches the empty string
+immediately after a newline.
+
+Match-end-of-line operator (@samp{$}) matches the empty string
+immediately before a newline.
+
+@end table
+
+Prefixing an option with @samp{+} means to enable the corresponding
+behavior. Prefixing it with @samp{-} means to disable it. Thus,
+the following statement:
+
+@smallexample
+#pragma regex +extended +icase
+@end smallexample
+
+@noindent
+will enable extended POSIX regular expressions using case-insensitive
+comparison. 
+
+Using the following comment:
+
+@smallexample
+#pragma regex -extended 
+@end smallexample
+
+@noindent
+will switch to the basic POSIX regular expressions.
+
+The settings of a @code{regex} pragmatic comment remain in force up to
+the end of current source file, or to the next @code{regex} comment,
+whichever occurs first.
+
+For compatibility with previous versions, GNU Radius uses
+the following defaults:
+
+@smallexample
+#pragma regex -extended -icase -newline
+@end smallexample
+
+@noindent
+i.e. all regular expressions are treated as basic POSIX, comparison
+is case-sensitive.
+
+@comment **L4***************************************************************
 @node Built-in Functions
 @subsubsection Rewrite Built-in Functions
 @cindex Built-in functions, Rewrite
@@ -1037,21 +1161,39 @@ The following built-in functions are provided:
 
 @deftypefn Function integer length (string @var{s})
 Returns the length of the string @var{s}.
+
+@smallexample
+length("string") @result{} 6
+@end smallexample
 @end deftypefn
 
 @deftypefn Function integer index (string @var{s}, integer @var{c})
 Returns the index of the first occurrence of the character @var{c} in
 the string @var{s}. Returns @minus{}1 if no such occurrence is found.
+
+@smallexample
+index("/raddb/users", 47) @result{} 0
+
+index("/raddb/users", 45) @result{} @minus{}1
+@end smallexample
 @end deftypefn
 
 @deftypefn Function integer rindex (string @var{s}, integer @var{i})
 Returns the index of the last occurrence of the character @var{c} in
 the string @var{s}. Returns @minus{}1 if no such occurrence is found.
+
+@smallexample
+rindex("/raddb/users", 47) @result{} 6
+@end smallexample
 @end deftypefn
 
 @deftypefn Function string substr (string @var{s}, integer @var{start}, integer @var{length})
 Returns the substring of @var{s} of length at most @var{length} starting at
 position @var{start}.
+
+@smallexample
+substr("foo-bar-baz", 3, 5) @result{} "-bar-"
+@end smallexample
 @end deftypefn
 
 All character positions in strings are counted from 0.
@@ -1060,6 +1202,13 @@ All character positions in strings are counted from 0.
 This function regards the @var{buffer} argument as consisting of
 fields separated with any amount of whitespace. It extracts and
 returns the @var{n}th field. @var{n} is counted from 1.
+
+@smallexample
+field("GNU's not UNIX", 1) @result{} "GNU's"
+field("GNU's not UNIX", 2) @result{} "not"
+field("GNU's not UNIX", 3) @result{} "UNIX"
+field("GNU's not UNIX", 4) @result{} ""
+@end smallexample
 @end deftypefn
 
 @deftypefn Function integer logit (string @var{msg})
@@ -1071,11 +1220,19 @@ For debugging purposes.
 Converts the Internet host address @var{str} from the
 standard numbers-and-dots notation into the equivalent integer in
 host byte order.
+
+@smallexample
+inet_aton("127.0.0.1") @result{} 2130706433
+@end smallexample
 @end deftypefn
 
 @deftypefn Function string inet_ntoa (integer @var{ip})
 Converts the Internet host address @var{ip} given
 in host byte order to a string in standard numbers-and-dots notation.
+
+@smallexample
+inet_ntoa(2130706433) @result{} "127.0.0.1"
+@end smallexample
 @end deftypefn
 
 @deftypefn Function integer htonl (integer @var{n})
@@ -1096,6 +1253,32 @@ order.
 @deftypefn Function integer ntohs (integer @var{n})
 Converts the integer @var{n}, regarded as short, from network to host byte
 order.
+@end deftypefn
+
+@deftypefn Function string gsub (string @var{regex}, string @var{repl}, string @var{str})
+For each substring matching the regular expression @var{regex} in the string
+@var{str}, substitute the string @var{repl}, and return the resulting
+string.
+
+@smallexample
+gsub("s","S","strings")
+    @result{} "StringS"
+gsub("[0-9][0-9]*","N","28 or 29 days")
+    @result{} "N or N days"
+gsub("[()'\"]","/","\"a\" (quoted) 'string'")
+    @result{} "/a/ /quoted/ /string/"
+@end smallexample
+@end deftypefn
+
+@deftypefn Function string qprn (string @var{str})
+Replace all non-printable characters in string S by their
+corresponding hex value preceeded by a percent sign. Return the
+resulting string. For example:
+
+@smallexample
+qprn("a string/value") @result{} "a%20string%2Fvalue"
+@end smallexample
+@noindent
 @end deftypefn
 
 @comment *L1****************************************************************

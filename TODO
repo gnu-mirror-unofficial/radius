@@ -1,4 +1,6 @@
      Switching to multithread server:
+-100 :  radiusd/request.c (request_put): forced thread cancellation.
+-100 :  rad_sql_shutdown is non-functional	
 -100 :  redesign raduse to use snmp queries instead of peeking in radstat.
 -50  :  Fall back to pth if POSIX threads are not available?
 

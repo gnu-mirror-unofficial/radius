@@ -10,8 +10,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-06-07 02:36+0300\n"
-"PO-Revision-Date: 2002-06-07 13:21+0300\n"
+"POT-Creation-Date: 2002-06-12 14:09+0300\n"
+"PO-Revision-Date: 2002-06-12 14:12+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -460,7 +460,7 @@ msgstr "Nombre mal escrito"
 msgid "No huntgroup access"
 msgstr "Acceso denegado por `huntgroup'"
 
-#: radiusd/auth.c:840 radiusd/sql.c:724 radiusd/sql.c:726
+#: radiusd/auth.c:840 radiusd/sql.c:713 radiusd/sql.c:715
 msgid "unknown"
 msgstr "desconocido"
 
@@ -1293,21 +1293,20 @@ msgstr ""
 msgid "malloc statistics: %d blocks, %d bytes"
 msgstr "estadística de malloc: %d bloques, %d bytes"
 
-#: radiusd/radiusd.c:1177
-#, c-format
-msgid "Dropping %s packet from client %s, ID: %d: %s"
-msgstr "Descartando petición %s de cliente %s, ID %d: %s"
+#: radiusd/radiusd.c:1178
+msgid "Dropping packet"
+msgstr "Descartando petición"
 
-#: radiusd/radiusd.c:1204
+#: radiusd/radiusd.c:1201
 #, c-format
 msgid "Retransmitting %s reply"
 msgstr "Retransmitiendo respuesta %s"
 
-#: radiusd/radiusd.c:1208
+#: radiusd/radiusd.c:1205
 msgid "request failed"
 msgstr "petición falló"
 
-#: radiusd/radiusd.c:1326
+#: radiusd/radiusd.c:1323
 #, c-format
 msgid "unknown request code %d"
 msgstr "código de petición desconocido: %d"
@@ -1327,21 +1326,21 @@ msgstr "no se puede crear hilo: %s"
 msgid "request timed out in queue"
 msgstr "Expiró el tiempo de esperada en fila"
 
-#: radiusd/request.c:234 radiusd/request.c:387
+#: radiusd/request.c:233 radiusd/request.c:389
 #, c-format
 msgid "Killing unresponsive %s thread %d"
 msgstr ""
 
-#: radiusd/request.c:259
+#: radiusd/request.c:261
 msgid "duplicate request"
 msgstr "petición duplicada"
 
-#: radiusd/request.c:284
+#: radiusd/request.c:286
 #, fuzzy
 msgid "too many requests in queue"
 msgstr "demasiadas peticiones en fila"
 
-#: radiusd/request.c:294
+#: radiusd/request.c:296
 msgid "too many requests of this type"
 msgstr "demasiadas peticiones de este tipo"
 
@@ -1614,66 +1613,66 @@ msgstr "query_buffer_size cayó en desuso"
 msgid "Unsupported SQL interface"
 msgstr "Interfaz SQL no soportado"
 
-#: radiusd/sql.c:545
+#: radiusd/sql.c:538
 msgid "disabling SQL auth: no auth_query specified"
 msgstr "desactivando autentificación SQL: auth_query no especificada"
 
-#: radiusd/sql.c:550
+#: radiusd/sql.c:543
 msgid "SQL auth: no group_query specified"
 msgstr "autentificación SQL: group_query no especificada"
 
-#: radiusd/sql.c:560
+#: radiusd/sql.c:553
 msgid "SQL acct: no acct_start_query specified"
 msgstr "accounting SQL: acct_start_query no especificada"
 
-#: radiusd/sql.c:566
+#: radiusd/sql.c:559
 msgid "disabling SQL acct: no acct_stop_query specified"
 msgstr "desactivando accounting SQL: acct_stop_query no especificada"
 
-#: radiusd/sql.c:573
+#: radiusd/sql.c:566
 msgid "SQL acct: no acct_nasdown_query specified"
 msgstr "accounting SQL: acct_nasdown_query no especificada"
 
-#: radiusd/sql.c:579
+#: radiusd/sql.c:572
 msgid "SQL acct: no acct_nasup_query specified"
 msgstr "accounting SQL: acct_nasup_query no especificada"
 
-#: radiusd/sql.c:601
+#: radiusd/sql.c:594
 msgid "SQL configuration changed: closing existing connections"
 msgstr "configuración SQL se ha cambiado: cerrando conexiones."
 
-#: radiusd/sql.c:693
+#: radiusd/sql.c:682
 msgid "no Acct-Status-Type attribute in rad_sql_acct()"
 msgstr "rad_sql_acct(): falta atributo Acct-Status-Type"
 
 # FIXME: plural
-#: radiusd/sql.c:728
+#: radiusd/sql.c:717
 #, c-format
 msgid "acct_stop_query: %d rows changed"
 msgstr "acct_stop_query: cambiado %d registros"
 
-#: radiusd/sql.c:743
+#: radiusd/sql.c:732
 #, c-format
 msgid "acct_nasup_query updated %d records"
 msgstr "acct_nasup_query modificó %d registros"
 
-#: radiusd/sql.c:758
+#: radiusd/sql.c:747
 #, c-format
 msgid "acct_nasdown_query updated %d records"
 msgstr "acct_nasdown_query modificó %d registros"
 
-#: radiusd/sql.c:773
+#: radiusd/sql.c:762
 #, c-format
 msgid "acct_keepalive_query updated %d records"
 msgstr "acct_keepalive_query modificó %d registros"
 
-#: radiusd/sql.c:796
+#: radiusd/sql.c:785
 msgid "SQL Auth specified in users file, but not in sqlserver file"
 msgstr ""
 "Autentificación SQL se requiere por archivo `users' pero no esta activada en "
 "archivo `sqlserver'"
 
-#: radiusd/sql.c:897
+#: radiusd/sql.c:886
 #, c-format
 msgid "SQL: invalid operator: %s"
 msgstr "SQL: operador inválido: %s"
@@ -2037,53 +2036,26 @@ msgstr "radzap: borrando registro de %s, NAS %s, puerto %d"
 msgid "Not confirmed\n"
 msgstr "No confirmado\n"
 
-#: sql/mysql.c:109
-#, c-format
-msgid "MYSQL error: %s"
-msgstr "Error MYSQL: %s"
+#: sql/disp.c:90
+#, fuzzy
+msgid "Failed query was"
+msgstr "petición fallada"
 
-#: sql/mysql.c:110
-#, c-format
-msgid "Failed query was: %s"
-msgstr "petición fallada: %s"
+#: sql/mysql.c:93
+msgid "gave up on connect"
+msgstr ""
 
 #: sql/mysql.c:123
-msgid "MYSQL Error: giving up"
-msgstr ""
+#, fuzzy, c-format
+msgid "[MYSQL] cannot connect to %s as %s: %s"
+msgstr "[MYSQL] no se puede conectar a %s como usuario %s: %s"
 
-#: sql/mysql.c:150
-#, c-format
-msgid "MYSQL: cannot connect to %s as %s"
-msgstr "MYSQL: no se puede conectar a %s como usuario %s"
+#: sql/mysql.c:183 sql/mysql.c:222
+#, fuzzy
+msgid "[MYSQL]: can't get result"
+msgstr "[MYSQL] no se puede obtener resultado"
 
-#: sql/mysql.c:173
-#, c-format
-msgid "MYSQL: cannot select db %s"
-msgstr "MYSQL: no se puede escoger BD %s"
-
-#: sql/mysql.c:175
-#, c-format
-msgid "MYSQL: error: %s"
-msgstr "MYSQL: error: %s"
-
-#: sql/mysql.c:187
-msgid "MYSQL: Giving up on connect"
-msgstr ""
-
-#: sql/mysql.c:211
-#, c-format
-msgid "MYSQL Error: query %s"
-msgstr "MYSQL Error: petición %s"
-
-#: sql/mysql.c:240
-msgid "MYSQL Error: can't get result for authentication"
-msgstr "MYSQL Error: no se puede obtener resultado para autentificación"
-
-#: sql/mysql.c:280
-msgid "MYSQL Error: can't get result"
-msgstr "MYSQL Error: no se puede obtener resultado"
-
-#: sql/mysql.c:306 sql/odbc.c:341 sql/postgres.c:370
+#: sql/mysql.c:248 sql/odbc.c:341 sql/postgres.c:370
 #, c-format
 msgid "too few columns returned (%d req'd)"
 msgstr "número de columnas insuficiente (debe ser %d)"

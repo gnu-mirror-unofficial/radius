@@ -1,3 +1,33 @@
+2002-06-12  Sergey Poznyakoff 
+
+	* TODO: Updated.
+*	* configure.ac (--with-mysql): Try to link to libmysqlclient_r.
+	  If that fails, fall back to using (possibly non thread-safe)
+	  libmysqlclient.
+	  Removed legacy --enable-sql option.
+
+	* include/radius.h (typedef struct radius_req): Removed conn
+	  member. Its use was not thread-safe.
+	* include/radsql.h (rad_sql_need_reconnect): Removed.
+	* radiusd/sql.c: Don't use radreq->conn member.
+  	  (rad_sql_need_reconnect): Removed.
+	* sql/disp.c (disp_sql_query): Print diagnostics.
+	* sql/mysql.c: Lots of fixes. Do not use rad_sql_need_reconnect().
+	  Fixed diagnostics.
+	* sql/postgres.c: Likewise.
+	* radiusd/radiusd.c (rad_req_drop): Use radlog_req when
+	  printing duplicate request diagnostics.
+	* radiusd/request.c (request_put): Disabled pthread_cancel block.
+	
+	* radiusd/auth.c (rad_check_password): Rewritten CHAP part: it
+	  used to left garbage in `userpass', which then produced
+	  confusing log output.
+	  
+	
+	* po/POTFILES.in: Added sql/disp.c
+	* po/es.po: Updated.
+	* po/no.po: Updated.
+	
 2002-06-07  Sergey Poznyakoff 
 
 	* configure.ac: Include <stdio.h> when testing for strncasecmp

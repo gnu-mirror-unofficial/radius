@@ -48,6 +48,7 @@ radwho/radwho.c
 
 radzap/radzap.c
 
+sql/disp.c
 sql/mysql.c
 sql/odbc.c
 sql/postgres.c

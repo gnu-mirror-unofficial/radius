@@ -10,8 +10,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-06-07 02:36+0300\n"
-"PO-Revision-Date: 2002-06-03 16:08+0300\n"
+"POT-Creation-Date: 2002-06-12 14:09+0300\n"
+"PO-Revision-Date: 2002-06-12 14:20+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Norwegian-bokmål <no@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -455,7 +455,7 @@ msgstr "Feilaktig brukernavn"
 msgid "No huntgroup access"
 msgstr "Tilgang nektet av «huntgroup»"
 
-#: radiusd/auth.c:840 radiusd/sql.c:724 radiusd/sql.c:726
+#: radiusd/auth.c:840 radiusd/sql.c:713 radiusd/sql.c:715
 msgid "unknown"
 msgstr "ukjent"
 
@@ -1297,21 +1297,20 @@ msgstr ""
 msgid "malloc statistics: %d blocks, %d bytes"
 msgstr ""
 
-#: radiusd/radiusd.c:1177
-#, c-format
-msgid "Dropping %s packet from client %s, ID: %d: %s"
-msgstr "Slet %s forespørsler fra klient %s, ID: %d: %s"
+#: radiusd/radiusd.c:1178
+msgid "Dropping packet"
+msgstr "Slet forespørselen"
 
-#: radiusd/radiusd.c:1204
+#: radiusd/radiusd.c:1201
 #, c-format
 msgid "Retransmitting %s reply"
 msgstr "Sender %s svaret på nytt"
 
-#: radiusd/radiusd.c:1208
+#: radiusd/radiusd.c:1205
 msgid "request failed"
 msgstr ""
 
-#: radiusd/radiusd.c:1326
+#: radiusd/radiusd.c:1323
 #, c-format
 msgid "unknown request code %d"
 msgstr "ukjent forespørselkode %d"
@@ -1331,20 +1330,20 @@ msgstr "Kan ikke starter ny tråd: %s"
 msgid "request timed out in queue"
 msgstr "Forespørsel overskred tidsgrensen mens i køen"
 
-#: radiusd/request.c:234 radiusd/request.c:387
+#: radiusd/request.c:233 radiusd/request.c:389
 #, c-format
 msgid "Killing unresponsive %s thread %d"
 msgstr ""
 
-#: radiusd/request.c:259
+#: radiusd/request.c:261
 msgid "duplicate request"
 msgstr "duplisert forespørsel"
 
-#: radiusd/request.c:284
+#: radiusd/request.c:286
 msgid "too many requests in queue"
 msgstr "for mange forespørsler i køen"
 
-#: radiusd/request.c:294
+#: radiusd/request.c:296
 msgid "too many requests of this type"
 msgstr "for mange forespørsler av denne typen"
 
@@ -1619,66 +1618,66 @@ msgstr "query_buffer_size er foreldet"
 msgid "Unsupported SQL interface"
 msgstr ""
 
-#: radiusd/sql.c:545
+#: radiusd/sql.c:538
 #, fuzzy
 msgid "disabling SQL auth: no auth_query specified"
 msgstr "slå av SQL autentisering: intet auth_query"
 
-#: radiusd/sql.c:550
+#: radiusd/sql.c:543
 msgid "SQL auth: no group_query specified"
 msgstr "SQL autentisering: intet group_query"
 
-#: radiusd/sql.c:560
+#: radiusd/sql.c:553
 msgid "SQL acct: no acct_start_query specified"
 msgstr "SQL autentisering: intet acct_start_query"
 
-#: radiusd/sql.c:566
+#: radiusd/sql.c:559
 msgid "disabling SQL acct: no acct_stop_query specified"
 msgstr "slå av SQL acct: intet acct_stop_query"
 
-#: radiusd/sql.c:573
+#: radiusd/sql.c:566
 msgid "SQL acct: no acct_nasdown_query specified"
 msgstr "SQL acct: intet acct_nasdown_query"
 
-#: radiusd/sql.c:579
+#: radiusd/sql.c:572
 msgid "SQL acct: no acct_nasup_query specified"
 msgstr "SQL acct: intet acct_nasup_query"
 
-#: radiusd/sql.c:601
+#: radiusd/sql.c:594
 msgid "SQL configuration changed: closing existing connections"
 msgstr "SQL konfigurasjon vekslet: lukke av eksisterende tilkoblinger"
 
-#: radiusd/sql.c:693
+#: radiusd/sql.c:682
 msgid "no Acct-Status-Type attribute in rad_sql_acct()"
 msgstr "intet Acct-Status-Type attributt i rad_sql_acct()"
 
-#: radiusd/sql.c:728
+#: radiusd/sql.c:717
 #, c-format
 msgid "acct_stop_query: %d rows changed"
 msgstr ""
 
-#: radiusd/sql.c:743
+#: radiusd/sql.c:732
 #, c-format
 msgid "acct_nasup_query updated %d records"
 msgstr ""
 
-#: radiusd/sql.c:758
+#: radiusd/sql.c:747
 #, c-format
 msgid "acct_nasdown_query updated %d records"
 msgstr ""
 
-#: radiusd/sql.c:773
+#: radiusd/sql.c:762
 #, c-format
 msgid "acct_keepalive_query updated %d records"
 msgstr ""
 
-#: radiusd/sql.c:796
+#: radiusd/sql.c:785
 msgid "SQL Auth specified in users file, but not in sqlserver file"
 msgstr ""
 "SQL autentisering er brukt i «users»-filen men ikke krevet i «sqlserver»-"
 "filen"
 
-#: radiusd/sql.c:897
+#: radiusd/sql.c:886
 #, c-format
 msgid "SQL: invalid operator: %s"
 msgstr ""
@@ -2064,54 +2063,27 @@ msgstr ""
 msgid "Not confirmed\n"
 msgstr "Bekreftet ikke\n"
 
-#: sql/mysql.c:109
-#, c-format
-msgid "MYSQL error: %s"
-msgstr "MYSQL feil: %s"
+#: sql/disp.c:90
+#, fuzzy
+msgid "Failed query was"
+msgstr "Feilet forespørsel var"
 
-#: sql/mysql.c:110
-#, c-format
-msgid "Failed query was: %s"
-msgstr "Feilet forespørsel var: %s"
+#: sql/mysql.c:93
+#, fuzzy
+msgid "gave up on connect"
+msgstr "Kan ikke koble. Gitt opp."
 
 #: sql/mysql.c:123
-#, fuzzy
-msgid "MYSQL Error: giving up"
-msgstr "MYSQL feil: gitt opp"
-
-#: sql/mysql.c:150
-#, c-format
-msgid "MYSQL: cannot connect to %s as %s"
-msgstr "MYSQL: feil under kobling til %s som bruker %s"
-
-#: sql/mysql.c:173
-#, c-format
-msgid "MYSQL: cannot select db %s"
-msgstr "MYSQL: kan ikke velge db %s"
-
-#: sql/mysql.c:175
 #, fuzzy, c-format
-msgid "MYSQL: error: %s"
-msgstr "MYSQL feil: forespørsel %s"
+msgid "[MYSQL] cannot connect to %s as %s: %s"
+msgstr "[MYSQL] feil under kobling til %s som bruker %s: %s"
 
-#: sql/mysql.c:187
-msgid "MYSQL: Giving up on connect"
-msgstr "MYSQL: Kan ikke koble. Gitt opp."
+#: sql/mysql.c:183 sql/mysql.c:222
+#, fuzzy
+msgid "[MYSQL]: can't get result"
+msgstr "[MYSQL]: kan ikke få resultat"
 
-#: sql/mysql.c:211
-#, c-format
-msgid "MYSQL Error: query %s"
-msgstr "MYSQL feil: forespørsel %s"
-
-#: sql/mysql.c:240
-msgid "MYSQL Error: can't get result for authentication"
-msgstr "MYSQL feil: kan ikke få resultat for autentisering"
-
-#: sql/mysql.c:280
-msgid "MYSQL Error: can't get result"
-msgstr "MYSQL feil: kan ikke få resultat"
-
-#: sql/mysql.c:306 sql/odbc.c:341 sql/postgres.c:370
+#: sql/mysql.c:248 sql/odbc.c:341 sql/postgres.c:370
 #, fuzzy, c-format
 msgid "too few columns returned (%d req'd)"
 msgstr "for få kolonner fått (%d kreves)"

@@ -107,11 +107,11 @@ grad_lock_file(int fd, size_t size, off_t offset, int whence)
 {
         struct flock fl;
 
-        fl.l_type = F_RDLCK;
+        fl.l_type = F_WRLCK;
         fl.l_whence = whence;
         fl.l_start = offset;
         fl.l_len = size;
-        fcntl(fd, F_SETLKW, &fl);
+        fcntl(fd, F_SETLKW, &fl); /* FIXME: Handle EINTR */
 }
 
 /* Unlock `size' bytes on the file descriptor `fd' starting from `offset'.

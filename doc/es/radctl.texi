@@ -1,0 +1,56 @@
+@c Este archivo forma parte del Manual de GNU Radius.
+@c Copyright (C) 1999,2000,2001,2002 Sergey Poznyakoff
+@c Copyright (C) 2002 Jose Vicente Sarmiento
+@c Las condiciones de copiar -- vease el archivo radius.texi.
+@comment *******************************************************************
+@node Radctl, Builddbm, Radauth, Los programas de utilidad
+@section Radctl
+@pindex radctl
+
+@command{Radctl} es una interfaz de controla del demonio radiusd. Permite al
+usuario preguntar al radiusd sobre los varios aspectos de su
+funcionamiento y enviar a él las peticiones administrativas.
+   
+@smallexample    
+radctl -s @var{comando} [@var{argumentos}]
+@end smallexample 
+
+El @var{comando} es un comando al radctl que determina que acciones
+para tomar, y @var{argumentos} son los argumentos optativos a la
+comando.
+   
+Los comandos válidos son: 
+
+@table @code   
+
+@item start [@var{argumentos}] 
+Si radiusd no es esta corriendo, invócalo. Los @var{argumentos}
+se pasan en la línea del comando al servidor. 
+   
+@item stop 
+Para @command{radiusd}.
+   
+@item restart [@var{argumentos}] 
+Para @command{radiusd} y lo invoca de nuevo. Los @var{argumentos}
+se pasan en la línea del comando al servidor. 
+   
+@item reload 
+Manda al radiusd leer sus archivos de la
+configuración.
+   
+@item dumpdb
+Guarda la tabla interna de los usuarios en el archivo
+@file{radlog/radius.parse} para depurar los archivos de la configuración. 
+   
+@item status 
+Reporta las estadísticas de uso de memoria del servidor. La información es
+anotada bajo el nivel @code{info}.  
+   
+@item which 
+Reporta la información sobre el proceso corriendo del radiusd. 
+@end table
+   
+@c Local variables:
+@c buffer-file-coding-system: iso-8859-1
+@c default-input-method: latin-1-prefix
+@c end:

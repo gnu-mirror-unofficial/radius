@@ -1,0 +1,7 @@
+Este directorio contiene un borrador de la traducción española de la
+documentación GNU Radius.
+
+Local Variables:
+buffer-file-coding-system: iso-8859-1
+default-input-method: latin-1-prefix
+end:

@@ -1,0 +1,43 @@
+@c Este archivo forma parte del Manual de GNU Radius.
+@c Copyright (C) 1999,2000,2001,2002 Sergey Poznyakoff
+@c Copyright (C) 2002 Jose Vicente Sarmiento
+@c Las condiciones de copiar -- vease el archivo radius.texi.
+@comment *******************************************************************
+@c @node Los programas de utilidad, *Client Package, *Extensions, Top
+@node Los programas de utilidad, , Top, Top
+@chapter Los programas de utilidad
+@cindex Los programas de utilidad
+
+@menu
+Controlando quién y cuando esta logeado
+* Radwho::      Muestre quien esta logeado en el radius.
+* Radlast::     Muestre la historia de inicios de sesión en el radius.
+
+Comandos de mantenimiento
+* Radzap::      Modifique los archivos del inicio de sesión.
+* Radgrep::     Rápidamente encuentre el registro del inicio de sesión.
+* Radping::     El ping a la máquina remota por el username.
+* Radauth::     Revisa si un usuario puede autenticarse. 
+* Radctl::      Supervise el Radctl.
+* Builddbm::    Cree la versión de DBM del el archivo `raddb/users'.
+
+La interfaz Guile
+* Radscm::      Una interfaz de Guile a las funciones del radius.
+@end menu
+
+@include radwho.texi
+@include radlast.texi
+@include radzap.texi
+@include radgrep.texi
+@include radping.texi
+@include radauth.texi
+@include radctl.texi
+@include builddbm.texi
+@include radscm.texi
+       
+@c Local variables:
+@c buffer-file-coding-system: iso-8859-1
+@c default-input-method: latin-1-prefix
+@c end:
+   
+   

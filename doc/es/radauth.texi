@@ -1,0 +1,23 @@
+@c Este archivo forma parte del Manual de GNU Radius.
+@c Copyright (C) 1999,2000,2001,2002 Sergey Poznyakoff
+@c Copyright (C) 2002 Jose Vicente Sarmiento
+@c Las condiciones de copiar -- vease el archivo radius.texi.
+@comment *******************************************************************
+@node Radauth, Radctl, Radping, Los programas de utilidad
+@section Radauth
+@pindex radauth
+
+La utilidad radauth envía al servidor Radius paquetes @samp{Access-Request}
+y despliega el resultado que consigue. Puede usarse para probar los
+archivos de la configuración. El uso es: 
+   
+@smallexample    
+raduse [-v] @var{nombre-usuario} @var{contraseña}
+@end smallexample 
+
+La opcion  @option{-v} o @option{--verbose} activa la salida detallada. 
+   
+@c Local variables:
+@c buffer-file-coding-system: iso-8859-1
+@c default-input-method: latin-1-prefix
+@c end:

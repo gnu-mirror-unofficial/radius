@@ -1,0 +1,26 @@
+@c Este archivo forma parte del Manual de GNU Radius.
+@c Copyright (C) 1999,2000,2001,2002 Sergey Poznyakoff
+@c Copyright (C) 2002 Jose Vicente Sarmiento
+@c Las condiciones de copiar -- vease el archivo radius.texi.
+@comment *******************************************************************
+@node Radping, Radauth, Radgrep, Los programas de utilidad
+@section Radping
+@pindex radping
+
+Esta utilidad es un programa del shell que determina la dirección IP
+del usuario y corre un ping a esa dirección.
+   
+@subheading Sa sintaxis
+
+@smallexample
+radping @var{nombre-del-usuario}
+radping -c @var{calling-station-id}
+@end smallexample
+
+La segunda manera de invocar el programa permite usar la
+identificación de estación para indicar al usuario. 
+   
+@c Local variables:
+@c buffer-file-coding-system: iso-8859-1
+@c default-input-method: latin-1-prefix
+@c end:

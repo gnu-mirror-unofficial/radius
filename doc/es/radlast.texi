@@ -1,0 +1,106 @@
+@c Este archivo forma parte del Manual de GNU Radius.
+@c Copyright (C) 1999,2000,2001,2002 Sergey Poznyakoff
+@c Copyright (C) 2002 Jose Vicente Sarmiento
+@c Las condiciones de copiar -- vease el archivo radius.texi.
+@comment *******************************************************************
+@node Radlast, Radzap, Radwho, Los programas de utilidad
+@section Radlast
+@pindex radlast
+
+La utilidad lista las sesiones de usuarios especificados, @NAS{}es,
+puertos @NAS{} y nombres de estaciones. Por defecto, cada línea de
+salida contiene el nombre del inicio de sesión, puerto del @NAS{} y el
+host, los tiempos de inicio y fin de la sesión, y la duración de la
+sesión. Si la sesión está continuando todavía, @command{radlast}
+indicará ésto.
+   
+Cuando se usa la opción @samp{-l}, @command{radlast} produce el salida
+detallada. Ésta salida incluye los campos siguientes:
+
+@itemize @bullet
+@item el nombre del inicio de sesión
+@item el nombre corto del NAS
+@item el número del puerto
+@item el protócolo de conexión
+@item el tipo del puerto
+@item la identificación de la sesión
+@item la identificación de la estación
+@item la dirección ip
+@item el tiempo de inicio de la sesión
+@item el tiempo de la parada de la sesión
+@item la duración de la sesión
+@end itemize
+
+@menu
+* Opciones radlast::    Las opciones de línea de comando.
+@end menu
+
+@comment *******************************************************************
+@node Opciones radlast
+@subsection Las opciones de línea de comando de radlast
+@pindex @command{radlast}, las opciones de línea de comando
+
+Las opciones siguientes modifican la conducta del programa:
+
+@table @option
+@item -@var{número}
+@itemx -c @var{número}
+@itemx --count @var{número}
+Esta opción limita la salida al número dado de líneas.
+
+@item -f @var{archivo}
+@itemx --file @var{archivo}
+Lea el @var{archivo} especificado en lugar del valor predeterminado
+@file{/var/log/radwtmp}.
+   
+@item -h @var{host}
+@itemx --host @var{host}
+Informe los inicios de sesiónes iniciados con la dirección IP o el nombre
+de host expecificado.
+
+@item -n @var{NAS}
+@itemx --nas @var{NAS}
+Informe los sesiones iniciados desde el @var{NAS}.
+   
+@item -l
+@itemx --long-format
+El formato detallado de salida. Incluye toda la información guardada en el
+archivo @file{radwtmp}.
+   
+@item -p @var{puerto}
+@itemx --port @var{puerto}
+Informe los inicios de sesiones desde el puerto dado. El @var{puerto} puede
+ser la especificación completa o abreviada, por ejemplo: @code{radlast -p S03}
+o @code{radlast -p 3}.
+   
+@item -s
+@itemx --show-seconds
+Informe la duración de la sesión en segundos en lugar de los
+días, horas y minutos.
+   
+@item -t
+Igual que @option{-p}. Esta opción se proporciona para la compatibilidad con
+@command{last(1)}.
+   
+@item -w
+@itemx --wide
+Ensanche el campo de duración para mostrar segundos así como los días,
+horas y minutos.
+@end table
+
+Si se especifican varios argumentos múltiples, se supone la operación
+lógica @code{O} entre ellas, es decir la información seleccionada por cada
+argumento está impresa. Esto, sin embargo, no aplica a la opción @option{-c}.
+Esta opción siempre se combina con el resto de las opciones por lógico
+@code{Y}.
+   
+El pseudo-usuario @samp{~reboot} se despliega en cada reinicio de servidor de
+acceso de red.
+   
+Si @command{radlast} se interrumpe, se indica hasta qué fecha la búsqueda fue
+progresada.
+   
+@c Local variables:
+@c buffer-file-coding-system: iso-8859-1
+@c default-input-method: latin-1-prefix
+@c end:

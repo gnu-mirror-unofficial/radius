@@ -1,0 +1,372 @@
+@c Este archivo forma parte del Manual de GNU Radius.
+@c Copyright (C) 1999,2000,2001,2002 Sergey Poznyakoff
+@c Copyright (C) 2002 Jose Vicente Sarmiento
+@c Las condiciones de copiar -- vease el archivo radius.texi.
+@comment *******************************************************************
+
+@node Lista de atributos, , , Top
+@chapter Lista de atributos
+
+Las secciones siguientes describen los atributos del Radius
+frecuentemente usados. Cada atributo se describe como sigue:
+
+@defattr{@var{nombre},@var{valor},@var{tipo},@var{user-op},@var{hints-op},@var{huntgroup-op},@var{aditividad},@var{prop}}
+   
+Estos valores tienen el siguiente significado:
+
+@table @var
+@item nombre   
+El nombre del atributo.
+
+@item valor   
+El valor númerico del atributo.
+   
+@item tipo
+El tipo del atributo.
+
+@item user-op
+Opciones que definen en que parte de la entrada del
+@file{raddb/users} este atributo puede usarse. Las opciones consisten en
+dos símbolos: @samp{L} significa que el atributo puede usarse en @LHS{},
+@samp{R} que puede usarse en @RHS{}.
+
+@item hints-op   
+Opciones que definen en que parte de la entrada del   
+@file{raddb/hints} este atributo puede usarse.
+   
+@item huntgroups-op   
+Opciones que definen en que parte de la entrada del   
+@file{raddb/huntgroups} este atributo puede usarse.
+
+@item aditividad
+Aditividad del atributo determina lo que pasa si una regla intenta
+agregar a la lista el atributo que ya está presente en esta lista.
+Dependiendo de su valor, las acciones del servidor son:
+
+@table @asis
+@item Append   
+El nuevo atributo se añade al fin de la lista.
+
+@item Replace   
+El nuevo atributo reemplaza el viejo.
+
+@item Drop
+El nuevo atributo se pasa por alto. El viejo permanece en la lista.
+@end table   
+
+@item prop
+La propagación del atributo. Controla si el atributo es propagado al
+@NAS{} cuando el servidor trabaja en el modo proxy.
+@end table   
+   
+El valor de @acronym{N/A} en cualquiera de estos campos significa @samp{No
+aplicable}.
+
+@menu
+* Los atributos de la autenticación:: 
+@c * Los atributos de los informes:: 
+@c * Atributos Internos del Radius:: 
+@end menu
+
+@node Los atributos de la autenticación
+@section Los atributos de la autenticación
+
+Éstos son los atributos que el @NAS{} usa en las peticiones de
+autentificación y espera a recibir en las contestaciones del
+servidor. Éstos atributos pueden usarse en las reglas de
+comparación.
+
+@menu
+* User-Name::
+* Password::
+* CHAP-Password::
+* NAS-IP-Address::
+* NAS-Port-Id::
+* Service-Type::
+* Framed-Protocol::
+* Framed-IP-Address::
+* Framed-IP-Netmask::
+* Framed-Routing::
+@ignore
+* Framed-MTU::
+* Framed-Compression::
+* Reply-Message::
+* Callback-Number::
+* Callback-Id::
+* Framed-Route::
+* State::
+* Class::
+* Vendor-Specific::
+* Session-Timeout::
+* Idle-Timeout::
+* Termination-Action::
+* Called-Station-Id::
+* Calling-Station-Id::
+* NAS-Identifier::
+* NAS-Port-Type::
+@end ignore
+@end menu
+
+
+@comment **************************************************************
+@node User-Name
+@subsection User-Name
+@atindex User-Name
+
+@defattr{User-Name,1,string,LR,-R,LR,Replace,Yes}
+   
+Este atributo indica el nombre del usuario a ser autenticado o
+considerado. Se usa en las peticiones tipo @samp{Access-Request}
+y las de contabilidad. La longitud del nombre del usuario está normalmente
+limitada por algún valor arbitrario. Por defecto, el Radius soporta
+los nombres con una longitud hasta 32 caracteres. Este valor puede modificarse
+redefiniendo la macro @code{RUT_USERNAME} en el archivo
+@file{include/radutmp.h} en el directorio de la distribución y
+recompilando el programa.
+   
+Algunos @NAS{}es tienen las peculiaridades en enviar los nombres
+de usuarios largos. Por ejemplo, el servidor de aceso ``Specialix
+Jetstream 8500 24'' inserta el carácter @samp{/} después del décimo
+carácter si el nombre del usuario es más largo que 10 carácteres.
+En estos casos se recomienda usar las funciones @samp{Rewrite}
+para convertir el nombre del usuario a su formato normal
+@c FIXME (@pxref{rewrite file}).
+
+@comment **************************************************************
+@node Password
+@subsection Password
+@atindex Password
+
+@defattr{Password,2,string,L-,--,--,@acronym{NÅ},No}
+
+Este atributo contiene la contraseña del usuario o la cadena de entrada
+del usuario después de recibir el paquete tipo @samp{Access-Challenge}.
+El atributo sólo se usa en las peticiones @samp{Access-Request}.
+
+Antes de enviar el paquete, este atributo se cifra. Primero, el
+valor de atributo se rellena con los nulos a un múltiplo de 16 octetos
+de longitud. Luego se calcula una suma MD5 de la cadena de octetos
+que consiste en el secreto compartido seguido por el authenticator
+de la petición. El valor recibido se combina con los primeros
+16 octetos de contraseña por la operación @sc{xor} y se pone en
+los primeros 16 octetos del atributo @attr{Password}.
+
+Si la contraseña es más larga que 16 carácteres, se calcula la suma MD5
+de la cadena de octetos formada por el secreto compartido seguido por
+el resultado de la primera operación @sc{xor}. El valor así recibido
+se combina con los segundos 16 octetos de contraseña por la operación
+@sc{xor} y se pone en los segundos 16 octetos del atributo @attr{Password}.
+
+Si es necesario, este funcionamiento se repite, usando cada resultado
+del @sc{xor} y el secreto compartido para formar la suma MD5 con que
+se cifra cada segmento de la contraseña.
+
+La longitud del valor de este atributo no puede ser más que 128
+octetos.
+
+@comment **************************************************************
+@node CHAP-Password
+@subsection CHAP-Password
+@atindex CHAP-Password
+   
+@defattr{CHAP-Password,3,string,L-,--,--,@acronym{NÅ},No}
+
+Este Atributo indica el valor de la contestación proporcionado por el
+usuario del protocolo CHAP como la respuesta a la peticion 
+@samp{Access-Challenge} del servidor. El atributo sólo se usa en los
+paquetes @samp{Access-Request}.
+   
+El valor de desafío del servidor se encuentra en el atributo
+@attr{CHAP-Challenge} si este se presenta en el paquete, o en el campo del
+autentificador de la petición.
+
+@comment **************************************************************
+@node NAS-IP-Address
+@subsection NAS-IP-Address
+@atindex NAS-IP-Address
+
+@defattr{NAS-IP-Address,4,ipaddr,L-,-R,LR,Append,No}
+
+Este Atributo indica la dirección IP del NAS que está pidiendo
+autenticación del usuario. El atributo sólo se usa en los paquetes
+@samp{Access-Request}. Cada paquete de la @samp{Access-Request} debe
+contener el atributo @attr{NAS-IP-Address} o
+@attr{NAS-Identifier} @c FIXME (@pxref{NAS-Identifier}).
+
+@comment **************************************************************
+@node NAS-Port-Id
+@subsection NAS-Port-Id
+@atindex NAS-Port-Id
+
+@defattr{NAS-Port-Id,5,integer,LR,-R,LR,Append,No}
+
+Este atributo indica el número del puerto físico del @NAS{} que está
+autenticando el usuario. Sólo se usa en los paquetes
+@samp{Access-Request}. Notese que la palabra ``puerto'' significa aquí
+una conexión física en el @NAS{}, y no un número de puerto TCP o UDP.
+   
+Algunos @NAS{}os intentan codificar harta información en el valor del
+atributo @attr{NAS-Port-Id}. Por ejemplo, los @NAS{}os tipo ``MAX
+Ascend'' construyen este atributo encadenando el tipo de la línea (dos
+dígitos), número de la línea (dos dígitos), y el numero del canal (dos
+dígitos) produciendo así un número de puerto de 5-dígitos. Para
+decifrar estos números de puertos se puede usar una funcion
+@samp{Rewrite}. La función para decifrar los puertos de MAX Ascend
+se proporciona en la distribución.
+   
+@comment **************************************************************
+@node Service-Type
+@subsection Service-Type
+@atindex Service-Type
+
+@defattr{Service-Type,6,integer,LR,-R,LR,Replace,Yes}
+
+@smallexample
+VALUE      Service-Type      Login-User           1
+VALUE      Service-Type      Framed-User          2
+VALUE      Service-Type      Callback-Login-User  3
+VALUE      Service-Type      Callback-Framed-User 4
+VALUE      Service-Type      Outbound-User        5
+VALUE      Service-Type      Administrative-User  6
+VALUE      Service-Type      NAS-Prompt-User      7
+VALUE      Service-Type      Authenticate-Only    8
+VALUE      Service-Type      Call-Check           10
+@end smallexample
+
+Este atributo indica el tipo de servicio que el usuario ha pedido, o
+el tipo de servicio a ser proporcionado. Puede usarse en los paquetes
+@samp{Access-Request} y @samp{Access-Accept}.
+   
+Cuando se usa en un paquete @samp{Access-Request} el atributo representa una
+indicación al servidor Radius que el @NAS{} tiene algun razón para
+creer que el usuario preferiría el tipo de servicio indicado.
+   
+Cuando se usa en un paquete @samp{Access-Accept}, el atributo es una
+indicación al NAS que este tipo de servicio debe ser proporcionado al
+usuario.
+   
+ El significado de varios tipos de servicio se describe a continuacion:
+   
+@table @code
+@item Login-User
+El usuario debe conectarse a un host.
+
+@item Framed-User
+Debe ser iniciado un protócolo @samp{cuadrado}, como PPP o SLIP.
+El atributo @attr{Framed-IP-Address} (@pxref{Framed-IP-Address})
+proporcionaría la dirección IP.
+   
+@item Callback-Login-User
+El usuario debe ser desconectado y el @NAS{} debe llamarle para iniciar
+la conexión.
+   
+@item Callback-Framed-User
+El usuario debe ser desconectado y el @NAS{} debe llamarle para iniciar
+una conexión PPP o SLIP.
+   
+@item Outbound-User
+El usuario debe concederse el acceso a los dispositivos de salida.
+   
+@item Administrative-User
+El usuario debe concederse el acceso a la interfaz administrativa al
+@NAS{} de que pueden ejecutarse las órdenes privilegiadas.
+   
+@item NAS-Prompt
+El usuario debe proporcionarse el acceso a la interfaz del @NAS{} de
+que pueden ejecutarse las órdenes non-privilegiadas.
+   
+@item Authenticate-Only
+Se pide sólo Autenticación, no se necesita ninguna información de la
+autorización.
+
+@item Call-Check
+@itemx Callback-NAS-Prompt
+El usuario debe ser desconectado y el @NAS{} debe llamarle para
+proporcionarle el acceso a la interfaz del @NAS{} de
+que pueden ejecutarse las órdenes non-privilegiadas.
+
+@end table
+
+@comment **************************************************************
+@node Framed-Protocol
+@subsection Framed-Protocol
+@atindex Framed-Protocol
+
+@defattr{Framed-Protocol,7,integer,LR,-R,LR,Replace,Yes}
+
+@smallexample
+VALUE      Framed-Protocol   PPP                  1
+VALUE      Framed-Protocol   SLIP                 2
+@end smallexample
+
+Este Atributo indica el tipo del protócolo. Puede usarse en
+los paquetes @samp{Access-Request} y @samp{Access-Accept}.
+
+@comment **************************************************************
+@node Framed-IP-Address
+@subsection Framed-IP-Address
+@atindex Framed-IP-Address
+
+@defattr{Framed-IP-Address,8,ipaddr,LR,-R,LR,Replace,No}
+
+Este atributo indica la dirección IP para designar a la sesión del usuario.
+Puede usarse en los paquetes @samp{Access-Accept}. Se admite su uso
+en paquetes @samp{Access-Request} como una indicación al servidor que
+el @NAS{} preferiría esa dirección, pero el servidor no se exige honrar la
+indicación.
+   
+El valor @code{0xFFFFFFFF} (@code{255.255.255.255}) indica que el @NAS{}
+debe permitirle al usuario seleccionar una dirección. El valor
+@code{0xFFFFFFFE} (@code{255.255.255.254}) indica que el @NAS{} mismo
+debe seleccionar una dirección para el usuario (por ejemplo asignarle
+una dirección de un grupo de direcciones guardada por el @NAS{}). Otros
+valores válidos indican que el @NAS{} debe usar el valor dado como la
+dirección IP del usuario.
+   
+Cuando se usa en @RHS{}, el valor de este atributo puede seguirse
+opcionalmente por una señal @samp{+}. Este uso significa que el valor del
+atributo @attr{NAS-Port-Id} debe ser agregado a esta dirección IP antes de
+contestar. Por ejemplo
+
+@smallexample
+Framed-IP-Address = 10.10.0.1+
+@end smallexample
+
+@c FIXME @xref{Add-Port-To-IP-Address}.
+
+@comment **************************************************************
+@node Framed-IP-Netmask
+@subsection Framed-IP-Netmask
+@atindex Framed-IP-Netmask
+
+@defattr{Framed-IP-Netmask,9,ipaddr,LR,-R,LR,Replace,No}
+
+Este atributo indica la máscara de red ser configurado para el
+usuario cuando el usuario es un ruteador. Puede usarse en los
+paquetes @samp{Access-Accept}. Puede usarse en paquetes @samp{Access-Request} 
+como una indicacion al servidor que el @NAS{} preferiría este valor
+de la máscara, pero el servidor no se exige honrar la indicación.
+   
+@comment **************************************************************
+@node Framed-Routing
+@subsection Framed-Routing
+@atindex Framed-Routing
+
+@defattr{Framed-Routing,10,integer,-R,-R,-R,Replace,No}
+
+@smallexample
+VALUE      Framed-Routing    None                 0
+VALUE      Framed-Routing    Broadcast            1
+VALUE      Framed-Routing    Listen               2
+VALUE      Framed-Routing    Broadcast-Listen     3
+@end smallexample
+
+Este atributo indica el método de la asignación de ruta para el
+usuario, cuando el usuario es un router en  una red. Sólo se usa los
+paquetes @samp{Access-Accept}.
+
+@c Local variables:
+@c buffer-file-coding-system: iso-8859-1
+@c default-input-method: latin-1-prefix
+@c end:
+

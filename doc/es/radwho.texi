@@ -1,0 +1,287 @@
+@c Este archivo forma parte del Manual de GNU Radius.
+@c Copyright (C) 1999,2000,2001,2002 Sergey Poznyakoff
+@c Copyright (C) 2002 Jose Vicente Sarmiento
+@c Las condiciones de copiar -- vease el archivo radius.texi.
+@comment *******************************************************************
+@node Radwho, Radlast, , Los programas de utilidad
+@section @command{radwho}
+@pindex radwho
+
+@command{Radwho} despliega la lista de usuarios actualmente logeados en el
+servidor Radius.
+   
+Por defecto el programa produce una salida compatible con la del
+programa estandar @command{finger(1)}. Para cada usuario se despliega
+la información siguiente: el nombre del inicio de sesión, nombre del
+usuario, protocolo de conexión, puerto @NAS{}, fecha del inicio de sesión,
+nombre del @NAS{}, dirección IP asignada o nombre simbólico de la máquina.
+   
+La opción @option{-l} activa el formato largo de la salida:
+
+@table @samp
+@item Login
+El nombre del inicio de sesión del usuario
+@item SessionID 
+La identificación única de la sesión asignada por el servidor.
+@item Proto 
+El protócolo de conexión.
+@item Port 
+El número del puerto
+@item When 
+La fecha del inicio de sesión y tiempo
+@item From 
+El nombre del @NAS{} que aceptó la conexión.
+@item Location 
+Dirección IP o el nombre de la estación correspondiente.
+@item Caller 
+La identificación de la estación remota reportada por el @NAS{}.
+@item Duration 
+La duración de la sesión.
+
+@end table
+
+@menu
+* Opciones radwho::     Las opciones de línea de comando.
+@end menu
+
+@comment
+*L2****************************************************************
+@node Opciones radwho
+@subsection Opciones de la línea de commando de radwho 
+@cindex @command{radwho}, opciones de la línea de commando
+
+Las opciones siguientes modifican la conducta del programa:
+
+@table @option   
+@item -A
+@itemx --all
+Despliegue también la información acerca de los usuarios que han
+terminado sus sesiones. Tales usuarios se muestran con el valor
+de `HUP' en la columna `Proto'. 
+
+@item -c
+@itemx --calling-id
+   
+Despliegue la identificación de estación en la segunda columna.
+   
+@item -d NAME
+@itemx --directory NAME
+   
+Establesca el nombre del directorio de la configuración del radius.
+   
+@item -D @{short|abbr|full@}
+@itemx --date-format @{short|abbr|full@}
+   
+Establesca la representación de la fecha. Por defecto las fechas de
+salida son DDS HH:MM, dónde DDS quiere decir el día de la semana en
+su forma abreviada, HH y MM son las horas y los minutos respectivamente.
+Este defecto corresponde a la opción @option{-D short}. Otros formatos
+disponibles son:
+
+@table @samp
+@item abbr   
+La fecha abreviada: MM/DD HH:MM dónde el MM es el número de mes,
+DD --- el día del mes.
+
+@item full 
+La representacíon completa, por ejemplo:
+
+@smallexample
+sáb may 24 15:49:28 EEST 2003
+@end smallexample
+@end table
+
+@item -e @var{cadena}
+@itemx --empty @var{cadena}
+Despliegue @var{cadena} en lugar de cualquier campo vacío. Esto es útil
+cuando la salida del radwho sirve de la entrada para algun programa
+analizador, ya que esto ayuda a guardar el mismo número de columnas en
+cada línea de la salida.
+   
+@item -F
+@itemx --finger
+   
+Establece el modo de funcionamiento @samp{fingerd}. En este modo radwho
+emula la conducta de la utilidad fingerd(8). Esta opción se usa si el
+programa se invoca desde el archivo @file{etc/inetd.conf}. Por ejemplo:
+
+@smallexample
+finger stream tcp nowait nobody /usr/sbin/radwho radwho -fL
+@end smallexample
+
+Este modo se habilita por defecto si @command{radwho} se invoca con
+el nombre de @command{fingerd} o @command{in.fingerd}.
+   
+@item -H
+@itemx --no-header
+   
+No despliegue la línea del título.
+   
+@item -i
+@itemx --session-id
+   
+Despliegue la identificación de la sesión en lugar de @sc{gecos} en la
+segunda columna.
+   
+@item -I @{smart|ip|nodomain@}
+@itemx --ip-format @{smart|ip|nodomain@}
+   
+Cambie la representación de la dirección IP. El significado del
+argumento es el siguiente:
+
+@table @samp   
+@item smart 
+   
+Seleccione la major representación. Se aplican las reglas siguientes:
+
+@enumerate 1
+@item Para un @NAS{} use su nombre corto del archivo @file{naslist}. Si
+no hay ningún nombre corto, use su nombre largo. Si no hay ningún nombre
+largo, va al punto 2.
+
+@item Resuelva la dirección IP al nombre simbólico.
+
+@item Si el IP no puede resolverse, use la representación estandar
+del IP.
+@end enumerate
+   
+@item ip 
+   
+Despliegue el IP en la forma estandar.
+   
+@item nodomain 
+   
+Si el IP puede resolverse a un nombre del dominio totalmente
+calificado, use el hostname que parten de él, es decir la parte
+del nombre hasta el primer punto.
+@end table
+   
+@item -u
+@itemx --local-also
+   
+Despliegue la información sobre los usuarios locales del sistema
+(desde el archivo @file{utmp}. Esto puede ser útil al correr radwho
+como un demonio @command{fingerd}.
+   
+@item -n
+@itemx --no-resolve
+
+No resuelva direcciones IP. Es un sinónimo para @option{-I ip}.
+   
+@item -o @var{formato}
+@item --format @var{formato}
+   
+Seleccione el formato personalizado de la salida. El @var{formato} es
+una lista de especificaciones separadas por comas. Cada especificación
+es:
+
+@table @asis
+@item @var{campo}   
+Desplegue @var{campo} con su anchura, título y
+alineación predefinidos. El nombre del @var{campo} y los valores
+correspondientes predefinidos se discuten en detalle debajo.
+
+@item @var{campo}:@var{anchura}
+Desplegue @var{campo}, usando la @var{anchura} de la columna
+especificada. Si la anchura empieza con @samp{+}, el campo será
+alineado a la derecha, si empieza con @samp{-}, el campo será
+alineado a la izquierda. Si la anchura no empieza con estos símbolos,
+se usa la alineación predefinida.
+   
+@item @var{campo}:@var{anchura}:@var{título}
+   
+Igual que el anterior, pero también suministra el título para la
+columna
+@end table
+
+Los nombres válidos del @var{campo} son:
+
+@table @code
+@item login
+El nombre del inicio de sesión
+   
+@item orig
+El nombre original del inicio de sesión proporcionado con la petición.
+   
+@item port
+Número del puerto @NAS{}.
+   
+@item sid
+La identificación de la sesión
+   
+@item nas
+El nombre de o dirección IP del @NAS{}. 
+   
+@item ip
+Dirección IP asignada al usuario.
+   
+@item proto
+El protocolo de conexión. Sus posibles valores son:
+@itemize @bullet
+@item @samp{PPP} para un enlace punto a punto (ingles: "point-to-point").
+@item @samp{SLIP} para un enlace slip.
+@item @samp{HUP} para la sesión cerrada
+@item @samp{shell} para el usuario del shell
+@end itemize
+   
+@item date
+Fecha y tiempo del inicio de la sesión.
+   
+@item delay
+El tiempo de retraso @c FIXME (@pxref{Acct-Delay-Time}).
+   
+@item type
+El tipo de la entrada (número decimal).
+   
+@item ptype
+El tipo del puerto. Éste es una de las letras siguientes:
+
+@multitable @columnfractions .15 .50
+@item Tipo @tab Significando
+@item @samp{L}   
+@tab La conexión local
+@item @samp{R}
+@tab La conexión de Rlogin
+@item @samp{S}   
+@tab La conexión del SLIP
+@item @samp{S}
+@tab La conexión de CSLIP
+@item @samp{P}
+@tab La conexión de PPP
+@item @samp{A}   
+@tab La conexión de PPP auto
+@item @samp{E}
+@tab La sesión de Telnet
+@item @samp{T}
+@tab la conexión ``ClearTCP''
+@item @samp{U}
+@tab La sesión TCP login.
+@item @samp{!}
+@tab la sesión consola
+@item @samp{X}
+@tab Shell
+@end multitable
+
+@item time
+El tiempo total de la duración de la sesión.
+   
+@item clid
+la identificación de la estación.
+   
+@item uname
+El valor del campo @sc{gecos} del archivo local @file{/etc/passwd},
+correspondiendo al nombre del inicio de sesión. Si el usuario no tiene
+una cuenta local, se desplega su nombre del inicio de sesión.
+@end table
+   
+@item -s
+@itemx --secure
+Habilita el modo seguro. Las preguntas sin un nombre del usuario son
+rechazadas.
+@end table
+
+@c Local variables:
+@c buffer-file-coding-system: iso-8859-1
+@c default-input-method: latin-1-prefix
+@c end:
+   

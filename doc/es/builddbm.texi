@@ -1,0 +1,48 @@
+@c Este archivo forma parte del Manual de GNU Radius.
+@c Copyright (C) 1999,2000,2001,2002 Sergey Poznyakoff
+@c Copyright (C) 2002 Jose Vicente Sarmiento
+@c Las condiciones de copiar -- vease el archivo radius.texi.
+@comment *******************************************************************
+@node Builddbm, Radscm, Radctl, Los programas de utilidad
+@section Builddbm
+@pindex buildbm
+
+@subheading El uso
+
+@command{Builddbm} convierte la base de usuarios de Radius en los archivos
+en fromato DBM. Algunas versiones del demonio Radius han usado esto para
+acelerar el acceso a la base de datos de los usuarios. 
+   
+Sin embargo, con el GNU Radius las cosas van de otra manera. El
+servidor lee la base de usuarios, la convierte en forma interna la
+cual se usa para búsquedas. Po eso, el uso de la versión de DBM
+reduce la velocidad del acceso, a menos que la máquina que ejecuta
+el demonio @command{radiusd} sea corta de memória para que el daemon
+guarde la base de usuarios.
+   
+@subheading La sintaxis
+
+Cuando se usa sin argumentos, la utilidad @command{builddbm} intenta
+convertir el archivo @file{raddb/users} en @file{raddb/users.db} o
+en el par de archivos @file{raddb/users.pag} y @file{raddb/users.dir},
+dependiendo de la versión de biblioteca de DBM usada.
+   
+Si se utiliza con un argumento, el argumento se toma como el
+nombre del archivo de base de datos.
+   
+Las siguientes opciones de línea de comando modifican el
+funcionamiento de @command{buildbm}: 
+
+@table @option
+@item -d @var{dir}
+Especifica el directorio para los archivos de configuración
+del Radius. Por defecto es @file{/usr/local/etc/raddb}.
+   
+@item -h 
+Despliega el corto resumen del uso.
+@end table
+   
+@c Local variables:
+@c buffer-file-coding-system: iso-8859-1
+@c default-input-method: latin-1-prefix
+@c end:

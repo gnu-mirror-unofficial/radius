@@ -1,0 +1,23 @@
+@c Este archivo forma parte del Manual de GNU Radius.
+@c Copyright (C) 1999,2000,2001,2002 Sergey Poznyakoff
+@c Copyright (C) 2002 Jose Vicente Sarmiento
+@c Las condiciones de copiar -- vease el archivo radius.texi.
+@comment *******************************************************************
+@node Radgrep, Radping, Radzap, Los programas de utilidad
+@section Radgrep
+@pindex radgrep
+
+Esta utilidad busca en la base de datos interna del radius una sesión
+que corresponde a la dada expresión regular. 
+   
+@subheading La sintaxis
+
+@command{Radgrep} acepta dos conjuntos de opciones separados por el signo
+@samp{--}. El conjunto primero se pasa como la línea de comando
+a la utilidad @command{radwho}. El conjunto segundo forma la línea de
+comando de la utilidad @command{grep(1)}.
+   
+@c Local variables:
+@c buffer-file-coding-system: iso-8859-1
+@c default-input-method: latin-1-prefix
+@c end:

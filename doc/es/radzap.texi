@@ -1,0 +1,64 @@
+@c Este archivo forma parte del Manual de GNU Radius.
+@c Copyright (C) 1999,2000,2001,2002 Sergey Poznyakoff
+@c Copyright (C) 2002 Jose Vicente Sarmiento
+@c Las condiciones de copiar -- vease el archivo radius.texi.
+@comment *******************************************************************
+@node Radzap, Radgrep, Radlast, Los programas de utilidad
+@section Los programas de utilidad
+@pindex radzap
+
+@command{Radzap} busca las sesiónes en la base de datos interna del
+Radius y las cierra.
+
+En la invocación del programa se debe usar por lo menos una de las
+opciones @option{-n}, @option{-p} o el nombre del usuario.
+Si ellos se usan en conjunción, ellos se unen por operador lógico @code{Y}.
+
+@command{radzap} tiene dos modos de operacón: el modo silencioso y el
+modo de confirmación. El modo silencioso se habilita por defecto. Cuando
+el programa corre en este modo, se anula cada registro que coincide con
+la condiciones de búsqueda dadas en la línea del comando.
+   
+En el modo de confirmación, @command{radzap} pedirá una confirmación antes de
+cerrar cada registro. Cada línea que empieza con un `y' se toma como la
+contestación positiva, por otra parte se toma como la contestación negativa. 
+   
+El modo de confirmación se habilita por la opción @option{-c}. 
+   
+@subheading La sintaxis
+
+@smallexample
+radzap [options] [username]
+@end smallexample 
+
+@noindent
+Las opciones son: 
+   
+@table @option
+@item -c 
+@itemx --confirm 
+Habilite el modo de confirmación.
+
+@item -q 
+@itemx --quiet 
+Desactive el modo de confirmación.
+
+@item -h 
+@itemx --help 
+Muestre el resumen corto de ayuda. 
+   
+@item -n @var{nombre}
+@itemx --nas @var{nombre}
+Especifique el @NAS{}. 
+   
+@item -p @var{puerto}
+@itemx --port @var{puerto}
+Especifique el número del puerto de la sesión a ser desintegrada. El
+número del puerto puede especificarse en su formulario completo, por
+ejemplo @code{radzap -p S02} o en su forma corta, como @code{radzap -p 2}.
+@end table
+   
+@c Local variables:
+@c buffer-file-coding-system: iso-8859-1
+@c default-input-method: latin-1-prefix
+@c end:

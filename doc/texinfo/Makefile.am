@@ -10,5 +10,5 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-info_TEXINFOS=radius.texinfo version.texi
+info_TEXINFOS=radius.texinfo 
 

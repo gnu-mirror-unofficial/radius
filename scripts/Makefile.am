@@ -18,6 +18,7 @@ EXTRA_DIST=\
  dot.emacs\
  dict.awk\
  mksnmp-h.awk\
+ sqlmod.sh\
  texi2html.diff\
  update-dict.awk\
  ylwrap

@@ -42,6 +42,33 @@ static char rcsid[] =
 void local_who();
 void radius_who();
 
+/* UTMP stuff. Uses utmpx on svr4 */
+#if defined(__svr4__) || defined(__sgi)  
+#  include <utmpx.h>
+#  include <sys/fcntl.h>
+#  define utmp utmpx
+#  define UT_NAMESIZE   32
+#  define UT_LINESIZE   32
+#  define UT_HOSTSIZE   257
+#  undef UTMP_FILE
+#  define UTMP_FILE UTMPX_FILE
+#  undef WTMP_FILE
+#  define WTMP_FILE WTMPX_FILE
+#else
+#  include <utmp.h>
+#endif
+#ifdef __osf__
+#  define UT_NAMESIZE   32
+#  define UT_LINESIZE   32
+#  define UT_HOSTSIZE   64
+#endif
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(bsdi)
+#  ifndef UTMP_FILE
+#    define UTMP_FILE "/var/run/utmp"
+#  endif
+#  define ut_user ut_name
+#endif
+
 #define P_CONSOLE -1  /* Special radutmp type value for local users */
 
 int  fingerd;             /* Are we run as fingerd */

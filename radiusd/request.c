@@ -82,11 +82,7 @@ void *
 request_thread0(arg)
         void *arg;
 {
-        sigset_t sig;
-
-        sigemptyset(&sig);
-        pthread_sigmask(SIG_SETMASK, &sig, NULL);
-        pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+	rad_thread_init();
         
         while (1) {
                 REQUEST *req;

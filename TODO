@@ -1,7 +1,4 @@
-URGNT: Determine the fate of fcnt argument to read_raddb_files.
-       Add \ line continuation and non-whitespace delimiters to it.
-       Modify callers to allow for variable number of fields.
-       Test the stuff.
+URGNT: Add \ line continuation to read_raddb_files.
 -100 : Document broken_pass flag. 
 -100 : Document Auth-Type = (Crypt-)Local, Password-Location
 -100 : Docs for Scheme- attributes and server guile interface.

@@ -1,5 +1,25 @@
 2001-10-18 Sergey Poznyakoff
 
+	* radlib/envar.c: New function envar_parse_argcv().
+	* include/envar.h: Proto for envar_parse_argcv().
+
+	* include/radius.h: Removed fcnt argument from the read_raddb_file
+	proto.
+	* radlib/raddb.c: Likewise.
+	* radlib/dict.c: Likewise.
+	* radiusd/files.c: Likewise. Added checks for maximum number of
+	fields, where applicable. Possibly should use nfields() from
+	fict.c for this.
+	Use envar_parse_argcv instead of envar_parse.
+	* radlib/nas.c: Likewise. 
+	
+	* radiusd/.gdbinit: Synchronized with namespace cleanup from
+	2001-10-16.
+
+	* TODO: Updated.
+
+2001-10-18 Sergey Poznyakoff
+
 	Changed way of reading raddb/ files. Not thoroughly tested, though.
 
 	* radlib/getline.c: (new) Read line of arbitrary length from

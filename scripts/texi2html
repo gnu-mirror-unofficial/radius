@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 'di ';
 'ig 00 ';
 #+##############################################################################
@@ -136,6 +136,11 @@ $html2_doctype = '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0 Strict Level 2//E
 # texinfo "things" (@foo{}) to HTML ones
 #
 %things_map = (
+               'IP', 'IP address',
+               'LHS', 'LHS',
+               'NAS', 'NAS',
+               'RADIUS', 'RADIUS',
+               'RHS', 'RHS',
 	       'TeX', 'TeX',
 	       'br', '<P>',		# paragraph break
 	       'bullet', '*',
@@ -156,9 +161,11 @@ $html2_doctype = '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0 Strict Level 2//E
 #
 %style_map = (
 	      'asis', '',
+              'attr', 'CODE',
 	      'b', 'B',
 	      'cite', 'CITE',
 	      'code', 'CODE',
+              'command', 'CODE',
 	      'ctrl', '&do_ctrl',	# special case
 	      'dfn', 'EM',		# DFN tag is illegal in the standard
 	      'dmn', '',		# useless
@@ -169,6 +176,7 @@ $html2_doctype = '<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0 Strict Level 2//E
 	      'kbd', 'KBD',
 	      'key', 'KBD',
 	      'math', 'EM',
+              'option', 'CODE',
 	      'r', '',			# unsupported
 	      'samp', '"SAMP',		# will put quotes, cf. &apply_style
 	      'sc', '&do_sc',		# special case

@@ -13,6 +13,7 @@ EXTRA_DIST = \
  access.deny\
  checkrad.conf\
  clients\
+ client.conf.in\
  config.in\
  dictionary\
  dictionary.ascend\
@@ -29,7 +30,6 @@ EXTRA_DIST = \
  menus/menu2\
  naslist\
  nastypes\
- radctl.rc.in\
  realms\
  rewrite\
  sqlserver\

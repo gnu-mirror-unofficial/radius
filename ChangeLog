@@ -1,3 +1,11 @@
+2004-07-19  Sergey Poznyakoff 
+
+	* radtest/completion.c: Added new keywords
+	* radtest/gram.y: Bugfixes
+	* radtest/runtime.c: Likewise
+	
+	* radscripts/radauth.m4: Use functions.
+	
 2004-07-19  Sergey Poznyakoff
 
 	* radtest/gram.y: Implemented functions.

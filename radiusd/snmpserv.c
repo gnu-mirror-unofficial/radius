@@ -218,7 +218,9 @@ snmp_stmt_begin(int finish, void *data, void *up_data)
 		snmp_free_communities();
 		snmp_free_acl();
 		_opened_snmp_sockets = 0;
-	} else if (radius_mode == MODE_DAEMON && !_opened_snmp_sockets) 
+	} else if (radius_mode == MODE_DAEMON
+		   && !_opened_snmp_sockets
+		   && snmp_port) 
 		udp_open(R_SNMP, INADDR_ANY, snmp_port, 1);
 	return 0;
 }
@@ -287,6 +289,12 @@ snmp_cfg_listen(int argc, cfg_value_t *argv,
 		void *block_data, void *handler_data)
 {
 	int i, errcnt = 0;
+	
+	if (argc == 2 && argv[1].type == CFG_BOOLEAN) {
+		if (argv[1].v.bool == 0)
+			snmp_port = 0;
+		return 0;
+	}
 	
 	for (i = 1; i < argc; i++) 
 		if (argv[i].type != CFG_HOST) {

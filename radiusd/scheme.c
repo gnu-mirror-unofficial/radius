@@ -119,7 +119,8 @@ static void rad_scheme_place_task(struct rad_scheme_task *cp);
 static void rad_scheme_remove_task(struct rad_scheme_task *cp);
 static int scheme_auth_internal(struct rad_scheme_task *p);
 static int scheme_acct_internal(struct rad_scheme_task *p);
-static int scheme_end_reconfig_internal(struct rad_scheme_task *p);
+static int scheme_before_reconfig_internal(struct rad_scheme_task *p);
+static int scheme_after_reconfig_internal(struct rad_scheme_task *p);
 static int scheme_load_internal(struct rad_scheme_task *p);
 static int scheme_add_load_path_internal(struct rad_scheme_task *p);
 static int scheme_read_eval_loop_internal(struct rad_scheme_task *unused);
@@ -191,6 +192,45 @@ guile_boot0(arg)
         return NULL;
 }       
 
+static char radius_sockets_name[] = "%radius-sockets";
+
+void
+inherit_socket(fd)
+	int fd;
+{
+	SCM sock_scm = RAD_SCM_SYMBOL_VALUE(radius_sockets_name);
+	SCM port = scm_fdes_to_port(fd, "r+0",
+				    scm_makfrom0str("radius-socket"));
+
+#if GUILE_VERSION == 14
+        scm_c_define (radius_sockets_name,
+		      scm_append(scm_list_3(sock_scm,
+					    scm_list_1(port),
+					    SCM_EOL)));
+#else
+	{
+		SCM *scm = SCM_VARIABLE_LOC(scm_c_lookup(radius_sockets_name));
+		*scm = scm_append(scm_list_3(sock_scm,
+					    scm_list_1(port),
+					    SCM_EOL));
+	}
+#endif
+}
+
+void
+create_radius_port_list()
+{
+#if GUILE_VERSION == 14
+        scm_c_define (radius_sockets_name, SCM_EOL);
+#else
+	{
+		SCM *scm = SCM_VARIABLE_LOC(scm_c_lookup(radius_sockets_name));
+		*scm = SCM_EOL;
+	}
+#endif
+}  
+
+
 /*ARGSUSED*/
 static SCM
 boot_body (void *data)
@@ -202,6 +242,7 @@ boot_body (void *data)
         rscm_radlog_init();
         rscm_rewrite_init();
 
+	
         time(&last_gc_time);
         scheme_inited = 1;
         
@@ -375,13 +416,22 @@ scheme_acct_internal(p)
         return 1;
 }
 
+int
+scheme_before_reconfig_internal(p)
+	struct rad_scheme_task *p;
+{
+	create_radius_port_list();
+	scm_gc();
+}
+
 /*ARGSUSED*/
 int
-scheme_end_reconfig_internal(p)
+scheme_after_reconfig_internal(p)
         struct rad_scheme_task *p;
 {
-        scm_gc();
-        return 0;
+	socket_list_iterate(inherit_socket);
+	scm_gc();
+	return 0;
 }
 
 int
@@ -503,9 +553,16 @@ scheme_load(filename)
 }
 
 void
-scheme_end_reconfig()
+scheme_before_reconfig()
 {
-        scheme_generic_call(scheme_end_reconfig_internal,
+        scheme_generic_call(scheme_before_reconfig_internal,
+                            NULL, NULL, NULL, NULL, 0);
+}
+
+void
+scheme_after_reconfig()
+{
+        scheme_generic_call(scheme_after_reconfig_internal,
                             NULL, NULL, NULL, NULL, 0);
 }
 

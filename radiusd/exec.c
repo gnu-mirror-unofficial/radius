@@ -256,7 +256,7 @@ radius_run_filter(int argc, char **argv, char *errfile, int *p)
 		close(leftp[1]);
 
 		/* Error output */
-		i = open(errfile, O_CREAT|O_WRONLY, 0644);
+		i = open(errfile, O_CREAT|O_WRONLY|O_APPEND, 0644);
                 if (i > 0 && i != 2) {
                         dup2(i, 2);
 			close(i);

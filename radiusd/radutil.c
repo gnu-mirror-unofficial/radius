@@ -146,8 +146,12 @@ attr_to_str(obp, pw_digest, request, attr, defval)
 					break;
 			string[i] = '\0';
 			obstack_grow(obp, string, i);
-		} else
-			obstack_grow(obp, pair->strvalue, pair->strlength);
+		} else {
+			/* strvalue might include terminating zero character,
+			   so we need to recalculate it */
+			int length = strlen(pair->strvalue);
+			obstack_grow(obp, pair->strvalue, length);
+		}
 		break;
 	case PW_TYPE_INTEGER:
 		snprintf(tmp, sizeof(tmp), "%ld", pair->lvalue);

@@ -12,11 +12,11 @@ AC_DEFUN(RA_CHECK_LIB,
   [
    for path in $6
    do
-      LIBS="$save_LIBS -L$path"
-      AC_CHECK_LIB($1, $2,
-                   [ra_cv_lib_$1="$3 -L$path -l$1"
-                    break],
-                   [ra_cv_lib_$1=no],$3)
+      LIBS="$save_LIBS $3 -L$path -l$1"
+      AC_TRY_LINK_FUNC($2,
+                       [ra_cv_lib_$1="$3 -L$path -l$1"
+                        break],
+                       [ra_cv_lib_$1=no],$3)
    done
   ])
   RA_RESULT_ACTIONS([ra_cv_lib_$1],[LIB$1],[$4],[$5])

@@ -52,7 +52,8 @@ static char rcsid[] =
 /* ********************** Request list handling **************************** */
         
 void rad_req_free(RADIUS_REQ *req);
-void rad_req_drop(int type, RADIUS_REQ *ptr, char *status_str);
+void rad_req_drop(int type, RADIUS_REQ *req, RADIUS_REQ *orig, int fd,
+		  char *status_str);
 int rad_req_cmp(RADIUS_REQ *a, RADIUS_REQ *b);
 int rad_req_setup(REQUEST *radreq);
 void rad_req_xmit(int type, int code, void *data, int fd);
@@ -65,8 +66,8 @@ struct request_class request_class[] = {
           rad_req_setup, rad_accounting, rad_req_xmit, rad_req_cmp,
           rad_req_free, rad_req_drop, rad_sql_cleanup },
         { "PROXY",0, MAX_REQUEST_TIME, CLEANUP_DELAY,
-          NULL, rad_proxy, NULL, rad_req_cmp,
-          rad_req_free, rad_req_drop, NULL },
+          NULL, rad_proxy, rad_req_xmit, rad_req_cmp,
+          rad_req_free, proxy_retry, NULL },
 #ifdef USE_SNMP
         { "SNMP", 0, MAX_REQUEST_TIME, 0, 
           NULL, snmp_answer, NULL, snmp_req_cmp,
@@ -1134,13 +1135,16 @@ rad_req_free(req)
 }
 
 void
-rad_req_drop(type, radreq, status_str)
+rad_req_drop(type, radreq, origreq, fd, status_str)
         int type;
-        RADIUS_REQ *radreq;
-        char *status_str;
+        RADIUS_REQ *radreq, *origreq;
+	int fd;
+        char *status_str; 
 {
         char buf[MAX_LONGNAME];
 
+	if (!radreq)
+		radreq = origreq;
         radlog(L_NOTICE,
                _("Dropping %s packet from client %s, ID: %d: %s"),
                request_class[type].name,
@@ -1177,7 +1181,8 @@ rad_req_xmit(type, code, data, fd)
                        req->id,
                        req->reply_code);
         } else {
-                rad_req_drop(type, req, "Request failed");
+		/* FIXME: resend it too? */
+                rad_req_drop(type, NULL, req, fd, _("request failed"));
         }
 }
 

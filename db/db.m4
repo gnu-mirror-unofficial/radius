@@ -38,8 +38,9 @@ CREATETABLE(groups, {
 CREATETABLE(attrib, {
   user_name           VARCHAR_T(32) CI default '' not null,
   attr                CHAR_T(32) default '' not null,
-  value               CHAR_T(128) COMMA
-  INDEX(uattr,user_name,attr)
+  value               CHAR_T(128),
+  op                  enum('=','!=','<','>','<=','>=') default NULL COMMA
+  INDEX(uattr,user_name,attr,op)
 })
 CREATETABLE(calls, {
   status              SHORTINT_T not null,

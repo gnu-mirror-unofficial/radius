@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Radauth, Radctl, Radping, Utility Programs
-@section Radauth
+@section @command{radauth}
 @pindex radauth
 
 The @command{radauth} utility sends the Radius server an Access-Request

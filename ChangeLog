@@ -6,7 +6,8 @@
 	* scripts/request.list: List of radius requests and their numbers
 	* scripts/Makefile.am: Added new files
 	* radiusd/.gdbinit: Updated
-
+	* README-alpha: Updated
+	
 2004-11-02  Sergey Poznyakoff
 
 	* TODO: Updated

@@ -1,5 +1,7 @@
 This is the GNU Radius package.
 
+* Introduction
+
 This is a *pre-release* version, and not ready for production use yet. If you
 are taking source from CVS, you will need to have libtool, automake, and
 autoconf installed to help contribute. The script autogen.sh is provided to
@@ -19,6 +21,8 @@ a list of latest user-visible changes:
 
 Report bugs to <bug-gnu-radius@gnu.org>
 
+* Checking Out the Sources
+
 The following instructions apply if you wish to obtain sources from
 the CVS repository:
 
@@ -32,8 +36,73 @@ Make sure SSHv2 is used.
 This will give you read-only access.  If you think you need write access,
 contact <gray@mirddin.farlep.net>
 
+* Building
+
 In order to build this you will need to call the auto* tools with
 the right arguments, see or run autogen.sh. After this, make sure
 you run the first configure with --enable-maintainer-mode option.
 This is needed for make to correctly rebuild the dependencies.
+
+* Debugging
+
+Unless you compile Radius statically, use the following command to debug it
+(from radiusd directory):
+
+	libtool --mode execute gdb radiusd [args]
+
+If you run the command from /radiusd subdirectory, the file .gdbinit will
+authomatically be loaded that contains many useful debugging functions (see
+below).
+
+For debugging from Emacs run:
+
+	M-x gdb RET gud-wrapper radiusd RET
+
+(the script gud-wrapper is located in /scripts subdirectory)
+
+* .gdbinit
+
+The default radiusd/.gdbinit ensures that radiusd will be started
+in foreground single-process mode. It sets breakpoints at several
+critical locations. It also provides following macros:
+
+Macro:         pt arg
+Argument type: grad_avp_t *
+Description:   Prints the type of the A/V pair in symbolic form
+
+Macro:         print_iptostr
+Argument type: long
+Description:   Print argument (IPv4 address in host order) in a conventional
+               (dotted-quad) form.
+
+Macro:         pv
+Argument type: grad_avp_t *
+Description:   Prints the value of the given A/V pair
+
+Macro:         po
+Argument type: grad_avp_t *
+Description:   Prints the operator of the given A/V pair
+
+Macro:         pp
+Argument type: grad_avp_t *
+Description:   Pretty-print given A/V pair
+
+Macro:         plist
+Argument type: grad_avp_t *
+Description:   Pretty-print the list of A/V pairs
+
+Macro:         print_reqcode
+Argument type: grad_request_t *
+Description:   Print RFC code name of the given grad_request_t 
+
+Macro:         preq
+Argument type: grad_request_t *
+Description:   Print contents of the given grad_request_t 
+
+
+Local Variables:
+mode: outline
+paragraph-separate: "[ 	]*$"
+version-control: never
+End:
 

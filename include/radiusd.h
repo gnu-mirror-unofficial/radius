@@ -221,107 +221,114 @@ void snmp_req_drop(int type, SNMP_REQ *req, char *status_str);
 #define MODE_TEST      2
 #define MODE_BUILDDBM  3
 
+/* Message IDs */
+#define MSG_ACCOUNT_CLOSED          0
+#define MSG_PASSWORD_EXPIRED        1
+#define MSG_PASSWORD_EXPIRE_WARNING 2
+#define MSG_ACCESS_DENIED           3
+#define MSG_REALM_QUOTA             4
+#define MSG_MULTIPLE_LOGIN          5
+#define MSG_SECOND_LOGIN            6
+#define MSG_TIMESPAN_VIOLATION      7
+#define MSG_COUNT                   8
+
 /*
  *	Global variables.
  */
 extern int radius_mode;
-extern Config           config;
-extern Notify           notify_cfg;
-extern int		debug_flag;
-extern int              verbose;
-extern int              auth_detail;
-extern int              strip_names;
-extern UINT4		expiration_seconds;
-extern UINT4		warning_seconds;
-extern int		radius_pid;
-extern int		use_dbm;
-extern UINT4		myip;
-extern UINT4		warning_seconds;
-extern int		auth_port;
-extern int		acct_port;
-extern int              suspend_flag;
-extern int              log_mode;
-extern int              use_guile;
+extern Config config;
+extern Notify notify_cfg;
+extern int debug_flag;
+extern int auth_detail;
+extern int strip_names;
+extern UINT4 expiration_seconds;
+extern UINT4 warning_seconds;
+extern int radius_pid;
+extern int use_dbm;
+extern UINT4 myip;
+extern UINT4 warning_seconds;
+extern int auth_port;
+extern int acct_port;
+extern int suspend_flag;
+extern int log_mode;
+extern int use_guile;
+extern char *message_text[MSG_COUNT];
 extern char *username_valid_chars;
-
 extern unsigned long stat_start_time;
 extern REQUEST_CLASS    request_class[];
 
 #ifdef USE_SNMP
-extern int              snmp_port;
+extern int snmp_port;
 extern char *server_id;
 extern Server_stat *server_stat;
 #endif
 
-extern UINT4            notify_ipaddr;
-extern int              notify_port;
+extern UINT4 notify_ipaddr;
+extern int notify_port;
 
 /*
  *	Function prototypes.
  */
 
 /* acct.c */
-int		rad_accounting(RADIUS_REQ *, int);
-int		radzap(UINT4 nas, int port, char *user, time_t t);
-int		rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul);
-int             write_detail(RADIUS_REQ *radreq, int authtype, char *f);
-void            rad_acct_xmit(int type, int code, void *data, int fd);
+int rad_accounting(RADIUS_REQ *, int);
+int radzap(UINT4 nas, int port, char *user, time_t t);
+int rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul, int *pcount);
+int write_detail(RADIUS_REQ *radreq, int authtype, char *f);
+void rad_acct_xmit(int type, int code, void *data, int fd);
 
 /* radiusd.c */
-void		debug_pair(char *, VALUE_PAIR *);
-void		sig_cleanup(int);
-int             server_type();
-int             stat_request_list(QUEUE_STAT);
-void *          scan_request_list(int type, int (*handler)(), void *closure);
-int             set_nonblocking(int fd);
-int             master_process();
-int             rad_flush_queues();
-void            schedule_restart();
-void            rad_mainloop();
+void debug_pair(char *, VALUE_PAIR *);
+void sig_cleanup(int);
+int stat_request_list(QUEUE_STAT);
+void *scan_request_list(int type, int (*handler)(), void *closure);
+int set_nonblocking(int fd);
+int master_process();
+int rad_flush_queues();
+void schedule_restart();
+void rad_mainloop();
 
 
 /* radius.c */
-int		rad_send_reply(int, RADIUS_REQ *, VALUE_PAIR *, char *, int);
-RADIUS_REQ	*radrecv (UINT4, u_short, u_char *, int);
+int rad_send_reply(int, RADIUS_REQ *, VALUE_PAIR *, char *, int);
+RADIUS_REQ *radrecv (UINT4, u_short, u_char *, int);
 int validate_client(RADIUS_REQ *radreq);
-int		calc_acctdigest(RADIUS_REQ *radreq);
-void            send_challenge(RADIUS_REQ *radreq, char *msg, char *state, int activefd);
+int calc_acctdigest(RADIUS_REQ *radreq);
+void send_challenge(RADIUS_REQ *radreq, char *msg, char *state, int activefd);
 
 
 /* files.c */
-int		user_find(char *name, RADIUS_REQ *,
-			  VALUE_PAIR **, VALUE_PAIR **);
-int		userparse(char *buf, VALUE_PAIR **first_pair, char **errmsg);
-void		presuf_setup(VALUE_PAIR *request_pairs);
-int		hints_setup(RADIUS_REQ *request);
-int		huntgroup_access(RADIUS_REQ *radreq);
-CLIENT		*client_lookup_ip(UINT4 ipno);
-char		*client_lookup_name(UINT4 ipno);
-int		read_clients_file(char *);
-REALM		*realm_find(char *);
-NAS		*nas_find(UINT4 ipno);
-NAS             *nas_by_name(char *name);
-char		*nas_name(UINT4 ipno);
-char		*nas_name2(RADIUS_REQ *r);
-int		read_naslist_file(char *);
-int		reload_config_file(enum reload_what);
-int		presufcmp(VALUE_PAIR *check, char *name, char *rest);
-int             get_config();
-int             get_deny(char *user);
-NAS *           findnasbyindex(int);
-char *          make_server_ident();
-void            dump_users_db();
-void            strip_username(int do_strip, char *name,
-			       VALUE_PAIR *check_item, char *stripped_name);
+int user_find(char *name, RADIUS_REQ *, VALUE_PAIR **, VALUE_PAIR **);
+int userparse(char *buf, VALUE_PAIR **first_pair, char **errmsg);
+void presuf_setup(VALUE_PAIR *request_pairs);
+int hints_setup(RADIUS_REQ *request);
+int huntgroup_access(RADIUS_REQ *radreq);
+CLIENT *client_lookup_ip(UINT4 ipno);
+char *client_lookup_name(UINT4 ipno);
+int read_clients_file(char *);
+REALM *realm_find(char *);
+NAS *nas_find(UINT4 ipno);
+NAS *nas_by_name(char *name);
+char *nas_name(UINT4 ipno);
+char *nas_name2(RADIUS_REQ *r);
+int read_naslist_file(char *);
+int reload_config_file(enum reload_what);
+int presufcmp(VALUE_PAIR *check, char *name, char *rest);
+int get_config();
+int get_deny(char *user);
+NAS *findnasbyindex(int);
+char *make_server_ident();
+void dump_users_db();
+void strip_username(int do_strip, char *name,
+		    VALUE_PAIR *check_item, char *stripped_name);
 
 /* version.c */
-void		version();
+void version();
 
 
 /* pam.c */
 #ifdef USE_PAM
-int		pam_pass(char *name, char *passwd, const char *pamauth,
-			 char **reply_msg);
+int pam_pass(char *name, char *passwd, const char *pamauth, char **reply_msg);
 # define PAM_DEFAULT_TYPE    "radius"
 #endif
 
@@ -333,10 +340,9 @@ int proxy_receive(RADIUS_REQ *radreq, int activefd);
 void proxy_cleanup();
 
 /* auth.c */
-int		rad_auth_init(RADIUS_REQ *radreq, int activefd);
-int		rad_authenticate (RADIUS_REQ *, int);
-void            req_decrypt_password(char *password, RADIUS_REQ *req,
-				     VALUE_PAIR *pair);
+int rad_auth_init(RADIUS_REQ *radreq, int activefd);
+int rad_authenticate (RADIUS_REQ *, int);
+void req_decrypt_password(char *password, RADIUS_REQ *req, VALUE_PAIR *pair);
 
 /* exec.c */
 int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **,
@@ -356,7 +362,7 @@ char * get_menu(char *menu_name);
 
 
 /* timestr.c */
-int		timestr_match(char *, time_t);
+int timestr_match(char *, time_t);
 
 /* notify.c */
 int notify(char *login, int what, long *ttl_ptr);

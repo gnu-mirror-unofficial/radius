@@ -11,15 +11,15 @@
 ##      %D             current date/time (localtime)
 ##      %G             current date/time (GMT)
 ##      Shortcuts:
-##	%p             Port number
-##	%n             NAS IP address
-##	%f             Framed IP address
-##	%u             User name
-##	%c             Callback-Number
+##      %p             Port number
+##      %n             NAS IP address
+##      %f             Framed IP address
+##      %u             User name
+##      %c             Callback-Number
 ##      %i             Calling-Station-Id
-##	%t             MTU
-##	%a             Protocol (SLIP/PPP)
-##	%s             Speed (Connect-Info attribute)
+##      %t             MTU
+##      %a             Protocol (SLIP/PPP)
+##      %s             Speed (Connect-Info attribute)
 ##
 ##############################################################################
 
@@ -67,21 +67,24 @@ auth_max_connections 16
 auth_db RADIUS
 
 # Query to select the password for the given user. Should return one string.
-auth_query  SELECT password FROM passwd WHERE user_name='%u'
+auth_query  SELECT password \
+            FROM passwd \
+            WHERE user_name='%u' \
+            AND active='Y'
 
 # This query returns groups the user belongs to
 group_query SELECT user_group FROM groups where user_name='%u'
 
 # This query returns a list of a/v pairs to be added to user's check pairs.
 check_attr_query  SELECT attr,value,op \
-                    FROM attrib \
-                   WHERE user_name='%u' AND op IS NOT NULL
+                  FROM attrib \
+                  WHERE user_name='%u' AND op IS NOT NULL
 
 # This query returns a list of a/v pairs to be included in reply packet.
 # The query is used only if the user is authorized successfully.
 reply_attr_query  SELECT attr,value \
-                    FROM attrib \
-                   WHERE user_name='%u' AND op IS NULL
+                  FROM attrib \
+                  WHERE user_name='%u' AND op IS NULL
 
 #########
 # Accounting-relevant settings
@@ -99,11 +102,11 @@ acct_db RADIUS
 
 # Query to be used on session start
 acct_start_query     INSERT INTO calls \
-		     VALUES(%C{Acct-Status-Type},\
+                     VALUES(%C{Acct-Status-Type},\
                             '%u',\
                             '%G',\
                             '%C{NAS-IP-Address}',\
-			    %C{NAS-Port-Id},\
+                            %C{NAS-Port-Id},\
                             '%C{Acct-Session-Id}',\
                             0,\
                             0,\
@@ -120,34 +123,34 @@ acct_stop_query      UPDATE calls \
                          acct_input_octets=%C{Acct-Input-Octets},\
                          acct_output_octets=%C{Acct-Output-Octets},\
                          connect_term_reason=%C{Acct-Terminate-Cause} \
-                         WHERE user_name='%C{User-Name}' \
-			       AND status = 1 \
-			       AND acct_session_id='%C{Acct-Session-Id}' 
+                     WHERE user_name='%C{User-Name}' \
+                       AND status = 1 \
+                       AND acct_session_id='%C{Acct-Session-Id}' 
 
 # Query to be used on receiving a keepalive record
 acct_alive_query     UPDATE calls \
                      SET acct_session_time=%C{Acct-Session-Time},\
                          acct_input_octets=%C{Acct-Input-Octets},\
                          acct_output_octets=%C{Acct-Output-Octets},\
-                         framed_ip_address=%C{Framed-IP-Address} \
-                         WHERE user_name='%C{User-Name}' \
-                               AND status = 1 \
-                               AND acct_session_id='%C{Acct-Session-Id}'
+                         framed_ip_address='%C{Framed-IP-Address}' \
+                     WHERE user_name='%C{User-Name}' \
+                       AND status = 1 \
+                       AND acct_session_id='%C{Acct-Session-Id}'
 
 # Query to be used when a NAS goes down, i.e. when it sends 
 # Accounting-Off packet
 acct_nasdown_query   UPDATE calls \
-                        SET status=2,\
+                     SET status=2,\
                         acct_session_time=unix_timestamp(now())-unix_timestamp(event_date_time) \
-                      WHERE status=1 AND nas_ip_address='%C{NAS-IP-Address}'
+                     WHERE status=1 AND nas_ip_address='%C{NAS-IP-Address}'
 
 
 # Query to be used when a NAS goes up, i.e. when it sends 
 # Accounting-On packet
 acct_nasup_query   UPDATE calls \
-                        SET status=3,\
+                   SET status=3,\
                         acct_session_time=unix_timestamp(now())-unix_timestamp(event_date_time) \
-                      WHERE status=1 AND nas_ip_address='%C{NAS-IP-Address}'
+                   WHERE status=1 AND nas_ip_address='%C{NAS-IP-Address}'
 
 
 

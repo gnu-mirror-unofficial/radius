@@ -1,10 +1,14 @@
 2001-12-28 Vlad Lungu
 
-	* sql/odbc.c: 1. Apparently, there is no Postgres ODBC driver
+	* sql/odbc.c: Apparently, there is no Postgres ODBC driver
 	  bug. According to the SQL3 draft, SQLRowCount is defined only
 	  for INSERT, UPDATE and DELETE, for all other statements it is
 	  implementation dependent. So I was lucky it worked at all.
 	  2. The curtuple and ntuples members of EXEC_DATA are not needed.
+
+2001-12-28 Sergey Poznyakoff
+	
+	-== Version 0.96 released ==-
 	
 2001-12-27 Sergey Poznyakoff
 

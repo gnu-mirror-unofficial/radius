@@ -16,5 +16,6 @@ include(SRCDIR/radscripts.m4)dnl
 
 send auth 1 User-Name = ${1:?} \
             User-Password = ${2:&Password: } \
+	    NAS-IP-Address = $SOURCEIP \
             NAS-Port-Id = ${pid:-0}
 expect 2

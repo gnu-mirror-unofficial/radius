@@ -1,6 +1,6 @@
 2001-05-24  gray  <gray@farlep.net>
 	* client/pam/pam_radius.c: finished namespace houskeeping.
-	  Added debugging hook.
+	  Added debugging hook. Fixed trivial bugs in DEBUG macros.
 
 2001-05-22  gray  <gray@farlep.net>
 	* radlib/radutmp.c: fall back to readonly mode if the file can't

@@ -151,15 +151,6 @@
 		0
 	};
 		
-#ifdef USE_DBM
-	struct keyword dbm_tab[] = {
-		"never", 		DBM_NEVER,
-		"also",  		DBM_ALSO,
-		"only",  		DBM_ONLY,
-		NULL
-	};
-#endif
-	
 	Variable top_vars[] = {
 		"source-ip", AT_IPADDR, &myip, 1,
 		"usr2delay", AT_INT,    &config.delayed_hup_wait, 0,
@@ -264,14 +255,6 @@
 	static int tie_in;
 	static int in_debug;
 	
-#ifdef USE_DBM
-	static char *dbmstr[] = {
-		"never",
-		"only",
-		"also"
-	};
-#endif
-	
 	static Channel channel;
 	
 	static void skipws();
@@ -348,7 +331,6 @@
 %type <netlist> netlist
 %type <acl> acl network
 %type <number> port port_asgn
-%type <number> dbm_mode
 %type <asgn> asgn_stmt value
 %type <number> severity
 %type <category> category_name
@@ -721,13 +703,12 @@ level           : T_STRING
 		  }
                 ;
 
-usedbm_stmt     : T_USEDBM dbm_mode
+usedbm_stmt     : T_USEDBM T_BOOL
                   {
                    #ifdef USE_DBM
 			  use_dbm = $2;
 			  if (debug_config)
-				  radlog(L_DBG, _("use dbm: %s"),
-					 dbmstr[use_dbm]);
+				  radlog(L_DBG, _("use dbm: %d"), use_dbm);
 		   #else
 			  radlog(L_WARN,
 				 _("%s:%d: usedbm statement ignored: radiusd compiled without DBM support"),
@@ -782,24 +763,6 @@ notify_def      : asgn_stmt EOL
                    #endif
 		  }
                 | /* empty */ EOL
-                ;
-
-
-	/* DBM usage mode */
-dbm_mode        : T_STRING
-                  {
-                   #ifdef USE_DBM
-			  int n = xlat_keyword(dbm_tab, $1, -1);
-			  if (n < 0) {
-				  radlog(L_ERR,
-					 _("%s:%d: unknown dbm mode"),
-					 filename, line_num);
-				  $$ = 0;
-		          } else
-				  $$ = n;
-                   #endif
-		  }
-                | T_NUMBER
                 ;
 
 	/* SNMP server parameters */

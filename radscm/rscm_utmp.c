@@ -28,6 +28,7 @@ static char rcsid[] =
 #include <libguile.h>
 #include <radius.h>
 #include <radutmp.h>
+#include <radscm.h>
 
 #define RADUTMP_FIELD_LOGIN       0
 #define RADUTMP_FIELD_ORIG_LOGIN  1

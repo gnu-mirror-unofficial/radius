@@ -26,6 +26,7 @@ static char rcsid[] =
 
 #include <libguile.h>
 #include <radius.h>
+#include <radscm.h>
 
 SCM_DEFINE(rad_dict_name_to_attr, "rad-dict-name->attr", 1, 0, 0,
            (SCM NAME),

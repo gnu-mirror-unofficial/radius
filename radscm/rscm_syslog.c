@@ -27,6 +27,7 @@ static char rcsid[] =
 #include <libguile.h>
 #include <radius.h>
 #include <syslog.h>
+#include <radscm.h>
 
 static struct keyword syslog_kw[] = {
         "LOG_USER",     LOG_USER,   

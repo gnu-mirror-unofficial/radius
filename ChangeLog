@@ -1,3 +1,16 @@
+2002-12-20  Sergey Poznyakoff  
+
+	* configure.ac: Raised version number to 0.99.98
+	* lib/radpdu.c (rad_create_pdu): Added debugging message
+	* lib/radsrv.c (rad_srv_send_challenge): Honour
+	  radreq->reply_pairs.
+	* radiusd/radius.c (send_challenge): Preserve Proxy-State
+	  in challenges.
+
+	* radiusd/testsuite/radiusd/proxy.exp: New file.
+	* radiusd/testsuite/radiusd/radiusd.exp: Added comments 
+	* radiusd/testsuite/radiusd/DISTFILES: Added proxy.exp
+
 2002-12-19  Sergey Poznyakoff  
 
 	* Makefile.am: Removed test subdirectory.

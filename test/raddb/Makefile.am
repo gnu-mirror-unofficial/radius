@@ -14,26 +14,45 @@ EXTRA_DIST = \
  auth.bin\
  auth.scm\
  acct.scm.in\
- checkrad.conf\
  clients\
  client.conf.in\
  config.in\
- dictionary\
- dictionary.ascend\
- dictionary.cisco\
- dictionary.compat\
- dictionary.livingston\
- dictionary.merit\
- dictionary.tunnel\
- dictionary.usr\
- dictionary.voip\
  hints\
  huntgroups\
  menus/menu1\
  menus/menu2\
  naslist\
- nastypes\
  realms\
- rewrite\
  sqlserver\
  users.in
+
+ALLTARGETS= \
+ dictionary\
+ dictionary.voip\
+ dictionary.cisco\
+ nastypes\
+ rewrite
+
+all: $(ALLTARGETS)
+
+RADDB=$(top_srcdir)/raddb
+
+dictionary: $(RADDB)/dictionary
+	sed 's/\$$INCLUDE dictionary.compat/#\$$INCLUDE dictionary.compat/;\
+             s/\$$INCLUDE dictionary.livingston/#\$$INCLUDE dictionary.livingston/;\
+             s/#\$$INCLUDE dictionary.cisco/\$$INCLUDE dictionary.cisco/;\
+             s/#\$$INCLUDE dictionary.voip/\$$INCLUDE dictionary.voip/' $< > $@
+
+dictionary.voip: $(RADDB)/dictionary.voip
+	$(LN_S) $< $@
+
+dictionary.cisco: $(RADDB)/dictionary.cisco
+	$(LN_S) $< $@
+
+nastypes: $(RADDB)/nastypes
+	$(LN_S) $< $@
+
+rewrite: $(RADDB)/rewrite.full
+	$(LN_S) $< $@
+
+CLEANFILES=$(ALLTARGETS)

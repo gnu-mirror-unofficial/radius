@@ -491,6 +491,7 @@ auth @{
         [ checkrad-assume-logged @var{bool} ; ]
         [ password-expire-warning @var{number} ; ]
         [ compare-atribute-flag @var{character} ; ]
+        [ trace-rules @var{bool} ; ]
 @} ;
 @end smallexample
 
@@ -565,6 +566,11 @@ does not responds to checkrad queries (@pxref{Checking Simultaneous Logins}).
 If this variable is set to @code{yes}, the daemon will proceed as if
 the @NAS{} returned ``yes'', i.e. it will assume the user is logged in.
 Otherwise @command{radiusd} assumes the user @emph{is not} logged in.
+
+@item trace-rules
+Enables tracing of the configuration rules that were matched during
+processing of each received authentication request.
+@c FIXME: More detail. Possibly a separate section is needed
 @end table
 
 @subheading Character statement
@@ -603,6 +609,7 @@ acct @{
         [ time-to-live @var{number} ; ]
         [ request-cleanup-delay @var{number} ; ]
         [ compare-atribute-flag @var{character} ; ]
+        [ trace-rules @var{bool} ; ]
 @} ;
 @end smallexample
 
@@ -659,6 +666,10 @@ the completed account request reside in the queue.
 @item detail
 When set to @code{false}, disables detailed accounting
 (@pxref{Detailed Request Accounting}). 
+
+@item trace-rules
+Enables tracing of the configuration rules that were matched during
+processing of each received accounting request.
 @end table
 
 @subheading Character statement

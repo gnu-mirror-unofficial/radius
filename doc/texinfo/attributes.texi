@@ -223,8 +223,6 @@ replying. For example,
         Framed-IP-Address = 10.10.0.1+
 @end smallexample
 
-See also @ref{Add-Port-To-IP-Address}.
-
 @comment **************************************************************
 @node Framed-IP-Netmask
 @subsection @attr{Framed-IP-Netmask}
@@ -782,7 +780,6 @@ used in matching rules.
 @menu
 * Acct-Ext-Program::
 * Acct-Type::
-* Add-Port-To-IP-Address::
 * Auth-Data::
 * Auth-Type::
 * Crypt-Password::
@@ -853,42 +850,6 @@ The @attr{Acct-Type} allows one to control which accounting methods
 must be used for a given user or group of users. In the absence
 of this attribute, all currently enabled accounting types are used.
 @xref{Accounting}, for more information about accounting types.
-
-@comment **************************************************************
-@node Add-Port-To-IP-Address
-@subsection @attr{Add-Port-To-IP-Address}
-@atindex Add-Port-To-IP-Address
-
-@defattr{Add-Port-To-IP-Address,1037,integer,-R,-R,--,Replace,No}
-
-@smallexample
-VALUE      Add-Port-To-IP-Address  No                   0       
-VALUE      Add-Port-To-IP-Address  Yes                  1       
-@end smallexample
-
-If this attribute is present in the @RHS{} and has the value
-@code{Yes}, then the value of the @attr{NAS-Port-Id} attribute from
-the authentication request will be added to the value of the
-@attr{Framed-IP-Address} attribute from the @RHS{}, and the
-resulting value will be returned in the @attr{Framed-IP-Address}
-attribute to the @NAS{}.
-
-This provides the simplest form of organizing IP pools.
-
-This attribute is implicitly added to the @RHS{} when the
-value of a @attr{Framed-IP-Address} attribute ends with @samp{+}
-sign. For example,
-
-@smallexample
-        Framed-IP-Address = 10.10.0.1+
-@end smallexample
-@noindent
-is equivalent to
-
-@smallexample
-        Framed-IP-Address = 10.10.0.1,
-        Add-Port-To-IP-Address = Yes
-@end smallexample
 
 @comment **************************************************************
 @node Auth-Data

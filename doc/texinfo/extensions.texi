@@ -440,8 +440,8 @@ channel number
 The following rewrite functions are intended to compute the integer
 port number in the range (1 .. @var{portcnt}), where @var{portcnt}
 represents the real number of physical ports available on the @NAS{}.
-Such a port number can be used, for example, with the
-@attr{Add-Port-To-IP-Address} attribute (@pxref{Add-Port-To-IP-Address}):
+Such a port number can be used, for example, to create a dynamic pool
+of IP addresses (@pxref{Framed-IP-Address}).
 
 @smallexample
 @group

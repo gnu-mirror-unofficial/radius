@@ -503,15 +503,78 @@ AC_DEFINE_UNQUOTED(BUILD_TARGET,
                    "$target", [Target the package is built for])
 
 ## ***************
-## client programs
+## server vs. client 
 ## ***************
+AC_MSG_CHECKING(whether to build radius daemon)
+AC_ARG_ENABLE(server,
+	AC_HELP_STRING([--disable-server],
+	[do not compile radius daemon (radiusd) and accompanying programs (implies --enable-client]),
+	[case $enableval in
+         yes|no) BUILD_SERVER=$enableval;;
+	 *)      AC_MSG_ERROR([Invalid argument for --enable-server]);;
+         esac],
+	[BUILD_SERVER=yes])
+AC_MSG_RESULT($BUILD_SERVER)
+
 AC_MSG_CHECKING(whether to build client programs)
-AC_ARG_WITH(client,
-	AC_HELP_STRING([--with-client],
+AC_ARG_ENABLE(client,
+	AC_HELP_STRING([--enable-client],
 	[compile client programs]),
-	[BUILD_CLIENT=$withval],
-	[BUILD_CLIENT=no])
+	[case $enableval in
+         yes) BUILD_CLIENT=$enableval;;
+         no)  if test $BUILD_SERVER = yes; then
+		AC_MSG_WARN([--disable-server implies --enable-client])
+                enableval=yes
+              fi
+              BUILD_CLIENT=$enableval;;
+         *)   AC_MSG_ERROR([Invalid argument for --enable-client]);;
+         esac],
+	[case $BUILD_SERVER in
+         yes)	BUILD_CLIENT=no;;
+	 no)    BUILD_CLIENT=yes;;
+         esac])
 AC_MSG_RESULT($BUILD_CLIENT)
+
+## **************
+## Contributions
+## **************
+
+AC_ARG_WITH(php,
+            AC_HELP_STRING([--enable-php=PATH],
+                           [Enable PHP module]),
+            [case $withval in
+             no)	PHP_PREFIX=
+			;;
+             yes)       PHP_PREFIX=
+			;;
+             /*)	PHP_PREFIX=$withval
+			;;
+	     *)		AC_MSG_ERROR([Invalid prefix in --enable-php])
+	     esac],
+             [PHP_PREFIX=])
+
+if test "$PHP_PREFIX" != ""; then
+  AC_SUBST(PHP_INCLUDES)
+  PHP_INCLUDES="-I${PHP_PREFIX}/include/php/main -I${PHP_PREFIX}/include/php/Zend -I${PHP_PREFIX}/include/php -I${PHP_PREFIX}/include/php/TSRM"
+
+  php_save_CPPFLAGS=$CPPFLAGS
+  CPPFLAGS="$CPPFLAGS $PHP_INCLUDES"
+  AC_CHECK_HEADER([php.h],[:],AC_MSG_ERROR([php.h not found]))
+  CPPFLAGS=$php_save_CPPFLAGS
+
+  AC_SUBST(PHPMODDIR)
+  AC_ARG_WITH([php-moddir],
+              AC_HELP_STRING([--with-php-moddir=PATH],
+                             [Set install prefix for PHP extension modules]),
+              [case $withval in
+               /*)	PHPMODDIR=$withval;;
+	       *)	AC_MSG_ERROR([--with-php-moddir requires absolute file name as its argument]);;
+	       esac],
+               [PHPMODDIR='$(libdir)/php/extensions'])
+
+  AC_SUBST(BUILD_MOD_RADIUS_LA)
+  BUILD_MOD_RADIUS_LA=mod_radius.la
+fi
 
 ## **************
 ## auth port no
@@ -870,6 +933,12 @@ AC_ARG_ENABLE(deny_shell,
 
 AC_SUBST(BUILD_NAS_SCM)
 AC_SUBST(BUILD_PAM_RADIUS_LA)
+
+AC_SUBST(RADIUS_DAEMON)
+if test x$BUILD_SERVER = xyes; then
+	RADIUS_DAEMON=radiusd
+fi
+
 if test x$BUILD_CLIENT = xyes; then
 	AC_CHECK_LIB(pam, pam_start,
 			[ BUILD_PAM_RADIUS_LA='pam_radius.la$(EXEEXT)' ],
@@ -948,7 +1017,8 @@ AC_CONFIG_FILES(Makefile
           contrib/web-radact/Makefile
           contrib/passcvt/Makefile
           contrib/passwd_to_db/Makefile
-          contrib/radsend/Makefile)
+          contrib/radsend/Makefile
+          contrib/php/Makefile)
 AC_OUTPUT
 
 # EOF

@@ -54,7 +54,7 @@ INCLUDES= -I$(top_srcdir)/include @INCLUDEPATH@
 EXTRA_DIST=users.y users.l strncasecmp.c strerror.c \
            obstack.c obstack.h rx.c \
 	   getopt.c getopt1.c getopt.h \
-	   vasprintf.c snprintf.c strcspn.c
+	   vasprintf.c snprintf.c strcspn.c strtok_r.c localtime_r.c
 noinst_HEADERS=users_gram.h rx.h regex.h regexp.h getopt.h snprintf.h
 
 YLWRAP=$(SHELL) $(top_srcdir)/ylwrap

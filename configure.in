@@ -12,7 +12,7 @@
 AC_REVISION($Revision$)
 AC_INIT(radiusd/radiusd.c)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(gnu-radius, 0.96)
+AM_INIT_AUTOMAKE(gnu-radius, 0.96t)
 AM_CONFIG_HEADER(config.h)
 
 ## * Available linguas
@@ -169,7 +169,8 @@ AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  setlocale bzero \
  inet_ntoa inet_aton setvbuf seteuid setreuid getdtablesize) 
 AM_FUNC_OBSTACK
-AC_REPLACE_FUNCS(strerror strncasecmp strcspn snprintf vasprintf)
+AC_REPLACE_FUNCS(strerror strncasecmp strcspn snprintf vasprintf strtok_r \
+ localtime_r)
 rad_REPLACE_GNU_GETOPT
 rad_REPLACE_REGEX
 

@@ -52,7 +52,7 @@ verbose "using RADTEST = $RADTEST" 2
 # The variable runtest_prompt is a regexp which matches the radtest prompt.
 global radtest_prompt
 if ![info exists radtest_prompt] then {
-    set radtest_prompt "> "
+    set radtest_prompt "radtest> "
 }
 
 ### Only procedures should come after this point.

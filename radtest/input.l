@@ -188,7 +188,7 @@ close_input()
 }
 
 
-char prompt_str[] = "> ";
+char prompt_str[] = "radtest> ";
 
 void
 prompt()

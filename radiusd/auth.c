@@ -243,7 +243,6 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
         VALUE_PAIR *auth_item;
         VALUE_PAIR *tmp;
         int auth_type = -1;
-        int i;
         int length;
         int result;
         char *authdata = NULL;
@@ -413,7 +412,7 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
                 memcpy(ptr, challenge, challenge_len);
 
 		/* Compute the MD5 hash */
-                md5_calc(pw_digest, (u_char*) pwbuf, i);
+                md5_calc(pw_digest, (u_char*) pwbuf, pwlen);
                 efree(pwbuf);
 		
                 /* Compare them */

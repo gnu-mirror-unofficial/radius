@@ -48,7 +48,7 @@ AH_TOP([
 
 AH_BOTTOM([
 /* Internationalization support */
-#if defined(ENABLE_NLS)
+#if defined(ENABLE_NLS) && !defined(lint)
 # include <libintl.h>
 # define _(s) gettext(s)
 #else
@@ -63,9 +63,6 @@ AH_BOTTOM([
 
 #ifdef MAINTAINER_MODE
 # define LEAK_DETECTOR 1
-# ifdef lint
-#  define __extension__(c) 1
-# endif
 #endif
 
 #ifdef RADIUS_DEBUG
@@ -229,7 +226,7 @@ AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  inet_ntoa inet_aton setvbuf seteuid setreuid getdtablesize) 
 AC_FUNC_OBSTACK
 
-AC_CHECK_DECLS([strncasecmp, strtok_r, localtime_r], , ,
+AC_CHECK_DECLS([strncasecmp, strtok_r, localtime_r, asprintf, vasprintf, getline], , ,
                [
 #define _REENTRANT
 #include <string.h>

@@ -20,14 +20,14 @@ EXTRA_SCRIPTS=nas.scm
 CLEANFILES=$(libexec_SCRIPTS)
 EXTRA_DIST=nas.rc nas.scm.in
 pppdir=/etc/ppp
-raddbdir=@ETC_DIR@/raddb
+raddbdir=$(sysconfdir)/raddb
 raddb_DATA=nas.rc
 
 nas.scm: $(srcdir)/nas.scm.in
 	sed "s,BINDIR,$(bindir)," $(srcdir)/nas.scm.in > nas.scm
 
 install-exec-hook:
-	@if [ -d $(pppdir) ]; then \
+	@if [ -d $(DESTDIR)$(pppdir) ]; then \
 		echo "***************************************************"; \
 		echo "If you wish to use nas.scm for accounting purposes,"; \
 		echo "create the following symbolic links:"; \

@@ -1,3 +1,22 @@
+2003-06-07  Sergey Poznyakoff 
+
+	* include/list.h (list_insert_sorted): New function.
+	* lib/list.c: Likewise. 
+	* include/radiusd.h (struct request): Removed update and
+	update_size members.
+	(RADIUSD_UPDATE.id): New member
+	* radiusd/input.c (struct input_method.prio): New member.
+	(input_register_method): Added prio parameter.
+	(input_select): Handle descriptors according to their method's
+	priorities.
+	* radiusd/proxy.c (proxy_send_request): Send the update to the
+	master before sending the request.
+	* radiusd/radius.c (radius_req_update): Check if the request
+	IDs match.
+	* radiusd/radiusd.c (radiusd_main_loop): Reverted yesterday's
+	change.
+	* radiusd/testsuite/proxy/config.in: Updated.
+
 2003-06-06  Sergey Poznyakoff
 
 	* radiusd/radiusd.c (radiusd_main_loop): Put back the timeout.

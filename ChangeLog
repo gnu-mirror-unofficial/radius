@@ -1,3 +1,11 @@
+2004-08-03  Sergey Poznyakoff
+
+	* lib/readline.c (grad_readline_init): Always initialize
+	_interactive.
+	* radtest/gram.y: Improved error handling 
+	* radtest/input.l: Likewise.
+	* radtest/radtest.h: New declarations
+
 2004-08-02  Sergey Poznyakoff
 
 	* Makefile.am: Removed lint-related MAINTAINER_MODE part

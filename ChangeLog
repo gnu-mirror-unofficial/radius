@@ -1,3 +1,33 @@
+2003-04-26  Sergey Poznyakoff 
+
+	Proxy requests re-implemented.
+	
+	* include/radiusd.h (R_PROXY): Removed
+	  (RS_PROXY): New request state.
+	  (RCMP_NE,RCMP_EQ,RCMP_PROXY): Request comparison results.
+	  (struct request): New member `orig'
+	  (struct request_class): New member `update'
+	  (RADIUS_UPDATE): New type
+	  (radius_req_update): New prototype
+	  (proxy_send,proxy_receive): Changed declaration
+	* radiusd/input.c: The order of input methods in the
+	  list defines the the order of polling the
+	  file descriptors.
+	* radiusd/proxy.c: Lots of changes.
+	* radiusd/radius.c (radius_req_cmp): Compare proxy requests.
+	  Updated return values.
+	  (radius_req_update): New function.
+	* radiusd/radiusd.c (spawn_flag): Removed `static' qualifier.
+	  (common_init): Register "rpp" method first (Note: very
+	  important for proxying).
+*	  (proxy_stmt): Removed.
+	* radiusd/request.c: Handle proxy requests.
+	* radiusd/rpp.c (rpp_start_process): Raise ready flag
+	  (rpp_ready): Changed declaration
+	  (rpp_request_handler,rpp_input_handler): Changed reply algorithm
+
+	* sql/postgres.c (postgres_conninfo): Bugfix.
+	
 2003-04-18  Sergey Poznyakoff
 
 	Multithreaded version is considered a failed experiment,

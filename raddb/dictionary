@@ -122,6 +122,7 @@ VALUE		Log-Mode-Mask		Log-Pass		6
 VALUE		Log-Mode-Mask		Log-All			7
 
 ATTRIBUTE	Acct-Ext-Program	2008	string	- [---R--]=
+ATTRIBUTE	Scheme-Procedure	2009	string	- [-R----]
 
 # These are used by rewriting functions:
 ATTRIBUTE	Orig-User-Name		2101	string	- [C--R-R]

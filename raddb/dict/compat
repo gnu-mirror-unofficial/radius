@@ -4,6 +4,7 @@
 # these names to be used in the "details" logfile.
 #
 #
+ATTRIBUTE       Password                2       string 
 ATTRIBUTE	Client-Id		4	ipaddr
 ATTRIBUTE	Client-Port-Id		5	integer
 ATTRIBUTE	User-Service-Type	6	integer

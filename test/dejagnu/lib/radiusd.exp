@@ -45,33 +45,44 @@ if ![info exists radtest_prompt] then {
 proc default_radiusd_version {} {
     global RADIUSD
     global RADIUSFLAGS
+    global RADIUSVERSION
+    global RADIUSFLAGS
+    global CAPABILITY
+    
     set output [remote_exec host "$RADIUSD --version"]
 
     set tmp [split [lindex $output 1] '\n'];
-    regsub ".*GNU Radius version (\[0-9.\]+).*" [lindex $tmp 0] "\\1" version
+    regsub ".*GNU Radius version (\[0-9.\]+).*" [lindex $tmp 0] "\\1" RADIUSVERSION
     set flags ""
-    regexp "Compilation flags: (.*)\r" [lindex $tmp 3] m flags
-    set RADIUSFLAGS [split $flags]
-    if ![is_remote host] {
-	clone_output "[which $RADIUSD] version $version \[$flags\]"
-    } else {
-	clone_output "$RADIUSD on remote host version $version \[$flags\]"
+    regexp "Compilation flags: (.*)\r" [lindex $tmp 3] m RADIUSFLAGS
+    set flg [split $RADIUSFLAGS]
+    for {set i 0} {$i < [llength $flg]} {incr i} {
+	set CAPABILITY([lindex $flg $i]) 1
     }
 }
 
 proc radiusd_version {} {
-    return [default_radiusd_version];
+    global RADIUSVERSION
+    global RADIUSFLAGS
+    
+    default_radiusd_version
+    if ![is_remote host] {
+	clone_output "[which $RADIUSD] version $RADIUSVERSION \[$RADIUSFLAGS\]"
+    } else {
+	clone_output "$RADIUSD on remote host version $RADIUSVERSION \[$RADIUSFLAGS\]"
+    }
 }
 
 proc default_radiusd_start {} {
     global base_dir
+    global srcdir
     global verbose
     global RADIUSD
     global RADIUSFLAGS
     global RADTEST
     global radtest_prompt
     
-    set radiusd_cmd "$base_dir/../test.sh --radiusd $RADIUSD --radtest $RADTEST --driver dejagnu"
+    set radiusd_cmd "$srcdir/../test.sh --srcdir $srcdir/../.. --builddir $base_dir/../.. --radiusd $RADIUSD --radtest $RADTEST --driver dejagnu"
 
     verbose "Spawning $radiusd_cmd"
 
@@ -127,7 +138,9 @@ proc radius_send { string } {
 }
 
 proc radius_exit {} {
-    return [radius_send "exit"];
+    set res [radius_send "exit\n"]
+    sleep 5
+    return res
 }
 
 proc radius_expect { args } {
@@ -204,7 +217,7 @@ proc radius_expect { args } {
     }
 }
 
-# radius_test [-message MESSAGE][-default DEF] COMMAND EXPECT 
+# radius_test [-message MESSAGE][-default (FAIL|XFAIL)] COMMAND EXPECT 
 # COMMAND   - Command to send to radtest
 # EXPECT    - Sequence to expect in return
 # MESSAGE   - [optional] message to output
@@ -214,6 +227,7 @@ proc radius_test { args } {
     global suppress_flag;
     upvar timeout timeout
 
+    set default ""
     set message ""
     for {set i 0} {$i < [llength $args]} {incr i} {
 	set a [lindex $args $i]
@@ -276,6 +290,10 @@ proc radius_test { args } {
 	    fail "$message (timeout)"
 	    set result 1
 	}
+	eof {
+	    fail "$message (eof)"
+	    set result 1
+	}   
     }
 
     set string "${pattern}\n"
@@ -294,13 +312,22 @@ proc radius_test { args } {
 	    set result 0
 	}
 	-re "FAIL" {
-	    fail "$message";
-	    set result 0
+	    send_user "DEF is $default\n"
+	    if { "$default" == "" || "$default" != "FAIL" } {
+		fail "$message"
+	    } else {
+		xfail "$message"
+	    }
+	    set result 1
 	}
 	timeout	{
 	    fail "$message (timeout)"
 	    set result 1
 	}
+	eof {
+	    fail "$message (eof)"
+	    set result 1
+	}   
     }
     return result
 }

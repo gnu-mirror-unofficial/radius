@@ -1,3 +1,31 @@
+2002-01-24  Sergey Poznyakoff 
+
+	Moved to POSIX threads. Tested basic functionality of
+	the daemon. Still have to prove that some calls in radlib
+	are thread-safe. radlib/mem.c surely isn't.
+
+	* README: Fixed typo.
+	* m4/pth.m4: Removed.
+	* m4/Makefile.am: Removed pth.m4
+	* configure.in: Removed pth- and added libpthread-realted stuff.
+	* include/radiusd.h: Likewise.
+	* radiusd/log.c: LIkewise.
+	* radiusd/radius.c: Likewise.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/scheme.c: Likewise.
+	* sql/disp.c: Likewise.
+	
+	* radiusd/config.y: Call scheme_add_load_path instead of
+	  rscm_add_load_path.
+
+	* test/test.sh.m4 (drv_dejagnu): Sleep 5 seconds before
+	  starting radtest, so that radiusd finishes configuring
+	  itself.
+
+2002-01-24  Sergey Poznyakoff  
+
+	-- tag: v_0_96_pth --
+
 2002-01-16  Sergey Poznyakoff  
 
 	* radiusd/files.c (nextkn): Bugfix: do not require a '=' in

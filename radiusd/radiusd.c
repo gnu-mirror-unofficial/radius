@@ -100,6 +100,7 @@ int auth_trace_rules = 0;
 int acct_trace_rules = 0;
 int strip_names;
 int suspend_flag;
+int auth_reject_malformed_names = 0;
 
 #define CMD_NONE     0 /* No command */
 #define CMD_CLEANUP  1 /* Cleanup finished children */
@@ -1259,6 +1260,9 @@ struct cfg_stmt auth_stmt[] = {
 	  NULL, NULL },
 	{ "checkrad-assume-logged", CS_STMT, NULL,
 	  cfg_get_boolean, &checkrad_assume_logged,
+	  NULL, NULL },
+	{ "reject-malformed-names", CS_STMT, NULL,
+	  cfg_get_boolean, &auth_reject_malformed_names,
 	  NULL, NULL },
 	{ "password-expire-warning", CS_STMT, NULL,
 	  cfg_get_integer, &warning_seconds,

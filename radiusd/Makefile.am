@@ -74,7 +74,12 @@ radiusd_LNS=$(radiusd_SOURCES:.c=.ln)
 lint:  $(radiusd_LNS)
 	$(LINT.c) -u $(radiusd_LNS) -L../lib -lrad
 
-FILELIST:; -@grep -l '#define *RADIUS_MODULE' $(radiusd_SOURCES) > .list
+FILELIST:
+	-echo $(radiusd_SOURCES) $(BUILT_SOURCES) $(EXTRA_DIST)|\
+	tr -s ' ' '\n'|\
+	sort|\
+	uniq -u|\
+	xargs grep -l '#define *RADIUS_MODULE' > .list
 
 endif
 

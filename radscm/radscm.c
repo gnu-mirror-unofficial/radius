@@ -339,8 +339,9 @@ rad_scheme_init(argc, argv)
 
         radscm_init();
         
-#include <radscm.x>
-
+#ifndef SCM_MAGIC_SNARFER
+# include <radscm.x>
+#endif
         scm_loc = SCM_CDRLOC (scm_sysintern ("%raddb-path", SCM_EOL));
         *scm_loc = scm_makfrom0str(radius_dir);
 

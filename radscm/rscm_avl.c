@@ -140,5 +140,7 @@ SCM_DEFINE(rscm_avl_match_p, "avl-match?", 2, 0, 0,
 void
 rscm_avl_init()
 {
-#include <rscm_avl.x>
+#ifndef SCM_MAGIC_SNARFER
+# include <rscm_avl.x>
+#endif
 }

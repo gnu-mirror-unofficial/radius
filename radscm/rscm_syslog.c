@@ -161,5 +161,7 @@ rscm_syslog_init()
         for (i = 0; syslog_kw[i].name; i++)
                 scm_sysintern(syslog_kw[i].name,
                               SCM_MAKINUM(syslog_kw[i].tok));
-#include <rscm_syslog.x>
+#ifndef SCM_MAGIC_SNARFER
+# include <rscm_syslog.x>
+#endif
 }

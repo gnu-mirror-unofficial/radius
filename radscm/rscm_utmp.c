@@ -244,5 +244,7 @@ the constructed entry is also appended to WTMP_FILE.")
 void
 rscm_utmp_init()
 {
-#include <rscm_utmp.x>
+#ifndef SCM_MAGIC_SNARFER
+# include <rscm_utmp.x>
+#endif
 }

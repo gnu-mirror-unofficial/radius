@@ -143,5 +143,7 @@ SCM_DEFINE(rad_dict_pec_to_vendor, "rad-dict-pec->vendor", 1, 0, 0,
 void
 rscm_dict_init()
 {
-#include <rscm_dict.x>
+#ifndef SCM_MAGIC_SNARFER
+# include <rscm_dict.x>
+#endif
 }

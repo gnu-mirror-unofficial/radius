@@ -72,5 +72,7 @@ SCM_DEFINE(rad_rewrite_execute, "rad-rewrite-execute", 1, 0, 0,
 void
 rscm_rewrite_init()
 {
-#include <rscm_rewrite.x>
+#ifndef SCM_MAGIC_SNARFER
+# include <rscm_rewrite.x>
+#endif
 }

@@ -136,5 +136,7 @@ rscm_radlog_init()
         for (i = 0; radlog_kw[i].name; i++)
                 scm_sysintern(radlog_kw[i].name,
                               SCM_MAKINUM(radlog_kw[i].tok));
-#include <rscm_radlog.x>
+#ifndef SCM_MAGIC_SNARFER
+# include <rscm_radlog.x>
+#endif
 }

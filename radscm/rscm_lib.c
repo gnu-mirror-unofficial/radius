@@ -229,6 +229,8 @@ radscm_init()
         rscm_utmp_init();
         rscm_avl_init();
         rscm_dict_init();
-#include <rscm_lib.x>
+#ifndef SCM_MAGIC_SNARFER
+# include <rscm_lib.x>
+#endif
         rscm_add_load_path(DATADIR);
 }

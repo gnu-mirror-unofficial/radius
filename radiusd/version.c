@@ -69,9 +69,6 @@ static char *debug_flag_str[] = {
 #if defined(MAINTAINER_MODE)
 	"MAINTAINER_MODE",
 #endif
-#if defined(YACC_DEBUG)
-	"YACC_DEBUG",
-#endif
 	NULL
 };
 

@@ -1192,10 +1192,8 @@ parse_rewrite(path)
         
         frame_push();
         
-#if defined(MAINTAINER_MODE) && defined(YACC_DEBUG)
         if (debug_on(50))
                 yydebug++;
-#endif
 
         yyparse();
 

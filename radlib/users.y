@@ -345,9 +345,7 @@ parse_file(file, c, f)
 	closure = c;
 	add_entry = f;
 
-#ifdef YACC_DEBUG
 	yydebug = 0;
-#endif
 	rc = yyparse();
 	done_lex();
 	return rc;
@@ -357,7 +355,6 @@ void
 enable_usr_dbg(val)
 	int val;
 {
-#ifdef YACC_DEBUG
 	yydebug = val;
 	if (yydebug)
 		radlog(L_NOTICE, _("%s:%d: enabled userfile parser debugging"),
@@ -365,9 +362,4 @@ enable_usr_dbg(val)
 	else
 		radlog(L_NOTICE, _("%s:%d: disabled userfile parser debugging"),
 		       source_filename, source_line_num);
-#else
-	radlog(L_WARN,
-	    _("%s:%d: radiusd compiled without parser debugging"),
-	    source_filename, source_line_num);
-#endif
 }

@@ -62,7 +62,7 @@ YLWRAP=$(SHELL) $(top_srcdir)/ylwrap
 users_gram.c users_gram.h: $(srcdir)/users.y
 	$(YLWRAP) "$(YACC)" $(srcdir)/users.y \
                   y.tab.c users_gram.c y.tab.h users_gram.h \
-                  -- -yy uyy -vd @YACC_OPTS@ 
+                  -- -yy uyy -vdt
 
 users_lex.c: $(srcdir)/users.l
 	$(YLWRAP) "$(LEX)" $(srcdir)/users.l \

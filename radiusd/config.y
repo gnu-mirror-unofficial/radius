@@ -154,7 +154,7 @@ static void asgn(void *base, Value *value, int type, int once);
 %token T_USEDBM T_CHECKRAD_ASSUME_LOGGED T_DELAY T_DETAIL T_HOST           
 %token T_EXEC_PROGRAM_GROUP T_EXEC_PROGRAM_USER T_LOAD T_LOAD_PATH T_LOG_DIR
 %token T_MAX_REQUESTS T_PORT T_REQUEST_CLEANUP_DELAY T_RETRY T_SPAWN 
-%token T_STRIP_NAMES T_TTL T_USR2DELAY              
+%token T_STRIP_NAMES T_TTL T_USERNAME_CHARS T_USR2DELAY              
 
 %token T_SOURCE_IP T_ACCT_DIR T_ACCT T_CNTL T_PROXY T_CHANNEL
 %token T_SYSLOG T_NOTIFY T_SNMP T_COMMUNITY T_ACL
@@ -251,6 +251,10 @@ option_def      : T_SOURCE_IP value
 			  radlog(L_WARN,
 				 _("%s:%d: exec-program-group is obsolete:"),
 				 filename, line_num);
+		  }
+                | T_USERNAME_CHARS value
+                  {
+			  asgn(&username_valid_chars, &$2, AT_STRING, 0);
 		  }
                 ;
 

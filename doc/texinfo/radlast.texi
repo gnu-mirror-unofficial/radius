@@ -17,11 +17,11 @@ When specified the @option{-l} option, @command{radlast} produces long
 output. It includes following fields:
 
 @itemize @bullet
-@item login name
-@item NAS short name
-@item port number
-@item prototype
-@item port type
+@item Login name
+@item @NAS{} short name
+@item Port number
+@item Connection protocol
+@item Port type
 @item Session @sc{id}
 @item Caller @sc{id}
 @item Framed IP address

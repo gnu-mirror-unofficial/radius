@@ -1,3 +1,24 @@
+2002-12-16  Sergey Poznyakoff
+
+	* doc/texinfo/radlast.texi: Updated
+	* doc/texinfo/radwho.texi: Updated
+	* doc/texinfo/radzap.texi: Updated
+	* lib/raddb.c (read_raddb_file): Fix counting of the input lines.
+	* lib/radpdu.c (rad_decode_pdu): Hack for non-compliant USR VSA
+	* lib/users.l: Allow octal and hex char representations in
+	  strings.
+	* raddb/dictionary (Hint): Fixed syntax flags.
+	* radiusd/exec.c (radius_exec_program): Call avl_free() after
+	  merging the two lists.
+	* radiusd/files.c (userparse): Use install_pair.
+	* radiusd/radutil.c (attr_to_str): Decode DA_CHAP_PASSWORD.
+	  Use %lu when printing numeric attributes.
+	* test/radiusd.m4: Added testcase for getting Ascend-Data-Filter
+	  attribute from exec-program-wait.
+	* test/raddb/ascend.bin: New file.
+	* test/raddb/Makefile.am: Added ascend.bin  
+	* test/raddb/users.in (execwait1): New user.
+	
 2002-09-20  Sergey Poznyakoff 
 
 	* configure.ac: Override CPPFLAGS when checking for the headers.

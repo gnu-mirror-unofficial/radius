@@ -19,7 +19,7 @@ mode is enabled by default. When run in this mode, radzap deletes
 every record that matched the search conditions given.
 
 In confirm mode @samp{radzap} will ask for a confirmation
-before zapping each matching record. Every line beginning with a `y'
+before zapping each matching record. Every line beginning with a @samp{y}
 is taken as positive response, otherwise it is taken as negative
 response.
 
@@ -56,11 +56,11 @@ Disable confirm mode.
 @item -h
 @itemx --help
 Display short help summary and exit.
-@item -n @var{NAME}
-@itemx --nas @var{NAME}
+@item -n @var{name}
+@itemx --nas @var{name}
 Specify @NAS{} name to zap user from.
-@item -p @var{PORT}
-@itemx --port @var{PORT}
+@item -p @var{port}
+@itemx --port @var{port}
 Specify the port number of the session to be zapped. The port number
 can be specified either in its full form, i.e @code{radzap -p S02} or in
 its short form, like @code{radzap -p 2}.

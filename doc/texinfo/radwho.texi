@@ -125,15 +125,15 @@ Select the best representation. The following rules apply:
 short name, use its long name. If there is no long name either, go to
 2.
 @item Resolve @IP{} to FQDN.
-@item If the IP cannot be resolved, use dotted-quad representation of
-the IP
+@item If the @sc{ip} cannot be resolved, use dotted-quad representation of
+the @sc{ip}.
 @end enumerate
 
 @item ip
-Display IP in dotted-quad form.
+Display @sc{ip} in dotted-quad form.
 
 @item nodomain
-If the IP can be resolved to a fully qualified domain name, use the
+If the @sc{ip} can be resolved to a fully qualified domain name, use the
 hostname part of it, i.e. any characters up to the first dot.
 @end table
 
@@ -144,10 +144,10 @@ May prove useful when running @command{radwho} as a finger daemon.
 
 @item -n
 @itemx --no-resolve
-Do not resolve @IP{}. It is a synonym for -I ip.
+Do not resolve @IP{}. It is a synonym for @option{-I ip}.
 
-@item -o FORMAT
-@itemx --format FORMAT
+@item -o @var{format}
+@itemx --format @var{format}
 Select customized output format. This can also be changed by setting
 the value of environment variable @code{RADWHO_FORMAT}.
 The format string is a comma-separated list of format specifications
@@ -202,7 +202,7 @@ Connection protocol. Its possible values are:
 Date/time when the session started
 
 @item delay
-Delay time @ref{Acct-Delay-Time}.
+Delay time (@pxref{Acct-Delay-Time}).
 
 @item type
 Entry type in decimal.
@@ -217,19 +217,19 @@ Port type. This is one of the following letters:
 @item @samp{R}
 @tab Rlogin connection
 @item @samp{S}
-@tab SLIP connection
+@tab @sc{slip} connection
 @item @samp{C}
-@tab CSLIP connection
+@tab @sc{cslip} connection
 @item @samp{P}
-@tab PPP connection
+@tab @sc{ppp} connection
 @item @samp{A}
-@tab Auto PPP connection
+@tab Auto @sc{ppp} connection
 @item @samp{E}
 @tab Telnet session
 @item @samp{T}
-@tab ``Clear TCP'' connection
+@tab ``Clear @sc{tcp}'' connection
 @item @samp{U}
-@tab TCP login service
+@tab @sc{tcp} login service
 @item @samp{!}
 @tab Console session
 @item @samp{X}

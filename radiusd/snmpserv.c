@@ -53,8 +53,8 @@ static NAS *nas_lookup_index(int ind);
 
 ACL *snmp_acl, *snmp_acl_tail;
 Community *commlist, *commlist_tail;
-Server_stat *server_stat;
-extern PORT_STAT *stat_base;
+Server_stat server_stat;
+struct radstat radstat;
 
 
 /* ************************************************************************ */
@@ -390,82 +390,6 @@ snmp_tree_init()
 	}
 }
 
-/* For a given ip_address return NAS statistics info associated with it.
-   if no NAS with this address is known, return NULL */
-struct nas_stat *
-find_nas_stat(ip_addr)
-	UINT4 ip_addr;
-{
-	int i;
-	struct nas_stat *nasstat = (struct nas_stat *)(server_stat + 1);
-	
-	for (i = 0; i < server_stat->nas_count; i++, nasstat++)
-		if (nasstat->ipaddr == ip_addr)
-			return nasstat;
-	return NULL;
-}
-
-struct nas_stat *
-snmp_nasstat(num)
-	int num;
-{
-	return (struct nas_stat *)(server_stat + 1) + num;
-}
-
-void
-snmp_init_nas_stat()
-{
-	server_stat->nas_index = 1;
-}
-
-/* Attach NAS stat info to a given NAS structure. */
-void
-snmp_attach_nas_stat(nas)
-	NAS *nas;
-{
-	struct nas_stat *nasstat;
-
-	nasstat = find_nas_stat(nas->ipaddr);
-	if (!nasstat) {
-		if (server_stat->nas_count >= STAT_MAX_NAS_COUNT) {
-			radlog(L_ERR,
-			       _("too many NASes: increase STAT_MAX_NAS_COUNT"));
-			return;
-		}
-		nasstat = snmp_nasstat(server_stat->nas_count++);
-		nasstat->ipaddr = nas->ipaddr;
-	}
-	nasstat->index = server_stat->nas_index++;
-	nas->app_data = nasstat;
-}
-
-static int
-nas_ip_cmp(a, b)
-	struct nas_stat **a, **b;
-{
-	return (*a)->ipaddr - (*b)->ipaddr;
-}
-
-void
-snmp_sort_nas_stat()
-{
-	struct nas_stat **nsarray, *nsp;
-	int i;
-
-	nsarray = emalloc(server_stat->nas_count*sizeof(nsarray[0]));
-	for (i = 0, nsp = (struct nas_stat*)(server_stat + 1); 
-		i < server_stat->nas_count; 
-		i++, nsp++) 
-		nsarray[i] = nsp;	
-	qsort(nsarray, server_stat->nas_count,
-	      sizeof(struct nas_stat*), nas_ip_cmp);
-	for (i = 0, nsp = (struct nas_stat*)(server_stat + 1); 
-		i < server_stat->nas_count; 
-		i++, nsp++) 
-		nsarray[i]->index = i+1;
-	efree(nsarray);
-}
-
 /* Mark reset of the auth server. Do not do any real work, though.
  */
 void
@@ -475,7 +399,7 @@ snmp_auth_server_reset()
 	struct timezone tz;
 
 	gettimeofday(&tv, &tz);
-	server_stat->auth.reset_time = tv;
+	server_stat.auth.reset_time = tv;
 }
 
 /* Mark reset of the acct server. Again, no real work, please.
@@ -487,7 +411,7 @@ snmp_acct_server_reset()
 	struct timezone tz;
 
 	gettimeofday(&tv, &tz);
-	server_stat->acct.reset_time = tv;
+	server_stat.acct.reset_time = tv;
 }
 
 static int		i_send_buffer[1024];
@@ -994,10 +918,10 @@ timeval_diff(tva, tvb)
 serv_stat
 abridge_server_state()
 {
-	switch (server_stat->auth.status) {
+	switch (server_stat.auth.status) {
 	case serv_init:
 	case serv_running:
-		return server_stat->auth.status;
+		return server_stat.auth.status;
 	case serv_other:
 	default:
 		return serv_other;
@@ -1073,7 +997,7 @@ snmp_auth_var_get(subid, oid, errp)
 		gettimeofday(&tv, &tz);
 		ret->type = SMI_TIMETICKS;
 		ret->val_length = sizeof(counter);
-		ret->var_int = timeval_diff(&tv, &server_stat->start_time);
+		ret->var_int = timeval_diff(&tv, &server_stat.start_time);
 		break;
 
 	case MIB_KEY_AuthServResetTime:
@@ -1081,7 +1005,7 @@ snmp_auth_var_get(subid, oid, errp)
 		ret->type = SMI_TIMETICKS;
 		ret->val_length = sizeof(counter);
 		ret->var_int = timeval_diff(&tv,
-					    &server_stat->auth.reset_time);
+					    &server_stat.auth.reset_time);
 		break;
 
 	case MIB_KEY_AuthServConfigReset:
@@ -1093,61 +1017,61 @@ snmp_auth_var_get(subid, oid, errp)
 	case MIB_KEY_AuthServTotalAccessRequests:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->auth.num_access_req;
+		ret->var_int = server_stat.auth.num_access_req;
 		break;
 
 	case MIB_KEY_AuthServTotalInvalidRequests:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->auth.num_invalid_req;
+		ret->var_int = server_stat.auth.num_invalid_req;
 		break;
 
 	case MIB_KEY_AuthServTotalDupAccessRequests:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->auth.num_dup_req;
+		ret->var_int = server_stat.auth.num_dup_req;
 		break;
 
 	case MIB_KEY_AuthServTotalAccessAccepts:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->auth.num_accepts;
+		ret->var_int = server_stat.auth.num_accepts;
 		break;
 
 	case MIB_KEY_AuthServTotalAccessRejects:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->auth.num_rejects;
+		ret->var_int = server_stat.auth.num_rejects;
 		break;
 
 	case MIB_KEY_AuthServTotalAccessChallenges:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->auth.num_challenges;
+		ret->var_int = server_stat.auth.num_challenges;
 		break;
 
 	case MIB_KEY_AuthServTotalMalformedAccessRequests:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->auth.num_bad_req;
+		ret->var_int = server_stat.auth.num_bad_req;
 		break;
 
 	case MIB_KEY_AuthServTotalBadAuthenticators:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->auth.num_bad_auth;
+		ret->var_int = server_stat.auth.num_bad_auth;
 		break;
 		
 	case MIB_KEY_AuthServTotalPacketsDropped:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->auth.num_dropped;
+		ret->var_int = server_stat.auth.num_dropped;
 		break;
 
 	case MIB_KEY_AuthServTotalUnknownTypes:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->auth.num_unknowntypes;
+		ret->var_int = server_stat.auth.num_unknowntypes;
 		break;
 		
 	default:
@@ -1186,7 +1110,7 @@ snmp_auth_var_set(subid, vp, errp)
 		switch (subid) {
 			
 		case MIB_KEY_AccServConfigReset:
-			server_stat->auth.status = serv_init;
+			server_stat.auth.status = serv_init;
 			radlog(L_INFO,
 			     _("acct server re-initializing on SNMP request"));
 			break;
@@ -1452,14 +1376,14 @@ snmp_acct_var_get(subid, oid, errp)
 		gettimeofday(&tv, &tz);
 		ret->type = SMI_TIMETICKS;
 		ret->val_length = sizeof(counter);
-		ret->var_int = timeval_diff(&tv, &server_stat->start_time);
+		ret->var_int = timeval_diff(&tv, &server_stat.start_time);
 		break;
 		
 	case MIB_KEY_AccServResetTime:
 		gettimeofday(&tv, &tz);
 		ret->type = SMI_TIMETICKS;
 		ret->val_length = sizeof(counter);
-		ret->var_int = timeval_diff(&tv, &server_stat->acct.reset_time);
+		ret->var_int = timeval_diff(&tv, &server_stat.acct.reset_time);
 		break;
 
 	case MIB_KEY_AccServConfigReset:
@@ -1471,55 +1395,55 @@ snmp_acct_var_get(subid, oid, errp)
 	case MIB_KEY_AccServTotalRequests:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->acct.num_req;
+		ret->var_int = server_stat.acct.num_req;
 		break;
 		
 	case MIB_KEY_AccServTotalInvalidRequests:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->acct.num_invalid_req;
+		ret->var_int = server_stat.acct.num_invalid_req;
 		break;
 		
 	case MIB_KEY_AccServTotalDupRequests:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->acct.num_dup_req;
+		ret->var_int = server_stat.acct.num_dup_req;
 		break;
 		
 	case MIB_KEY_AccServTotalResponses:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->acct.num_resp;
+		ret->var_int = server_stat.acct.num_resp;
 		break;
 		
 	case MIB_KEY_AccServTotalMalformedRequests:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->acct.num_bad_req;
+		ret->var_int = server_stat.acct.num_bad_req;
 		break;
 		
 	case MIB_KEY_AccServTotalBadAuthenticators:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->acct.num_bad_sign;
+		ret->var_int = server_stat.acct.num_bad_sign;
 		break;
 		
 	case MIB_KEY_AccServTotalPacketsDropped:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->acct.num_dropped;
+		ret->var_int = server_stat.acct.num_dropped;
 		break;
 		
 	case MIB_KEY_AccServTotalNoRecords:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->acct.num_norecords;
+		ret->var_int = server_stat.acct.num_norecords;
 		break;
 		
 	case MIB_KEY_AccServTotalUnknownTypes:
 		ret->type = SMI_COUNTER32;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->acct.num_unknowntypes;
+		ret->var_int = server_stat.acct.num_unknowntypes;
 		break;
 		
 	default:
@@ -1558,7 +1482,7 @@ snmp_acct_var_set(subid, vp, errp)
 		switch (subid) {
 
 		case MIB_KEY_AuthServConfigReset:
-			server_stat->auth.status = serv_init;
+			server_stat.auth.status = serv_init;
 			radlog(L_INFO,
 			     _("auth server re-initializing on SNMP request"));
 			break;
@@ -1793,7 +1717,7 @@ snmp_serv_var_get(subid, oid, errp)
 		gettimeofday(&tv, &tz);
 		ret->type = SMI_TIMETICKS;
 		ret->val_length = sizeof(counter);
-		ret->var_int = timeval_diff(&tv, &server_stat->start_time);
+		ret->var_int = timeval_diff(&tv, &server_stat.start_time);
 		break;
 
 	case MIB_KEY_radiusServerResetTime:
@@ -1801,13 +1725,13 @@ snmp_serv_var_get(subid, oid, errp)
 		ret->type = SMI_TIMETICKS;
 		ret->val_length = sizeof(counter);
 		ret->var_int = timeval_diff(&tv,
-					    &server_stat->auth.reset_time);
+					    &server_stat.auth.reset_time);
 		break;
 
 	case MIB_KEY_radiusServerState:
 		ret->type = ASN_INTEGER;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->auth.status;/*FIXME*/
+		ret->var_int = server_stat.auth.status;/*FIXME*/
 		break;
 	default:
 		*errp = SNMP_ERR_NOSUCHNAME;
@@ -1856,7 +1780,7 @@ snmp_serv_var_set(subid, vp, errp)
 		switch (subid) {
 
 		case MIB_KEY_radiusServerState:
-			server_stat->auth.status = (*vp)->var_int;
+			server_stat.auth.status = (*vp)->var_int;
 			switch ((*vp)->var_int) {
 			case serv_reset:
 				radlog(L_NOTICE,

@@ -750,8 +750,8 @@ rad_cont()
 {
 	suspend_flag = 0;
 #ifdef USE_SNMP
-	server_stat->auth.status = serv_running;
-	server_stat->acct.status = serv_running;
+	server_stat.auth.status = serv_running;
+	server_stat.acct.status = serv_running;
 #endif	
 }
 /* ************************************************************************  */
@@ -775,10 +775,8 @@ reread_config(reload)
 	}
 
 #ifdef USE_SNMP
-	if (server_stat) {
-		server_stat->auth.status = serv_init;
-		server_stat->acct.status = serv_init;
-	}
+	server_stat.auth.status = serv_init;
+	server_stat.acct.status = serv_init;
 #endif	
 
 	/* Read the options */
@@ -802,14 +800,14 @@ reread_config(reload)
 	
 #ifdef USE_SNMP
 	
-	server_stat->auth.status = suspend_flag ?
+	server_stat.auth.status = suspend_flag ?
 		                                serv_suspended : serv_running;
 	snmp_auth_server_reset();
 
-	server_stat->acct.status = server_stat->auth.status;
+	server_stat.acct.status = server_stat.auth.status;
 	snmp_acct_server_reset();
 		
-	saved_status = server_stat->auth.status;
+	saved_status = server_stat.auth.status;
 		
 #endif	
 
@@ -866,8 +864,8 @@ check_reload()
 		need_reload = 0;
 	}
 #ifdef USE_SNMP
-	else if (server_stat->auth.status != saved_status) {
-		switch (server_stat->auth.status) {
+	else if (server_stat.auth.status != saved_status) {
+		switch (server_stat.auth.status) {
 		case serv_reset: /* Hard reset */
 			if (xargv[0][0] != '/') {
 				radlog(L_NOTICE,
@@ -901,7 +899,7 @@ check_reload()
 			rad_exit(SIGTERM);
 			break;
 		}
-		saved_status = server_stat->auth.status;
+		saved_status = server_stat.auth.status;
 	}
 #endif		
 }	

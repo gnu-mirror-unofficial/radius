@@ -12,7 +12,7 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 AUTOMAKE_OPTIONS = dejagnu
-DEJATOOL = radiusd
+DEJATOOL = @RADIUS_DAEMON@
 RUNTESTFLAGS = 
 CLEANFILES = *.log test.sh
 test_dirs = config lib radiusd

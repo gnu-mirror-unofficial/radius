@@ -12,8 +12,8 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 SUBDIRS = testsuite
-
-sbin_PROGRAMS   = radiusd
+sbin_PROGRAMS = @RADIUS_DAEMON@
+EXTRA_PROGRAMS  = radiusd
 radiusd_SOURCES = \
  acct.c\
  auth.c\

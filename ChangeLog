@@ -1,5 +1,29 @@
 2001-08-18 Sergey Poznyakoff
 
+	* mibs/GNU-RADIUS-SERVER-MIB.txt: Updated.
+	* mibs/GNU-RADIUS-SERVER-MIB.chart: Graphical representation
+	of radiusServerMIB subtree.
+	* mibs/radmibs.h.in: Updated.
+
+	* radlib/mem.c: mem_stat_enumerate() accepts extra argument
+	(closure).
+	* include/mem.h: Likewise.
+	* radiusd/radiusd.c: Likewise.
+
+	* radiusd/snmpserv.c: Implemented whole radiusServerMIB subtree.
+	snmp_sort_nas_stat(): Sort nas_stat structures so that GET NEXT
+	on .NASIndex.<IP> returns next lexicografically greater oid.
+	* radiusd/files.c: read_naslist_file(): call snmp_sort_nas_stat().
+	* include/radiusd.h: Proto for snmp_sort_nas_stat().
+
+	* radiusd/config.y: Set 'once' argument in calls to asgn() to 0,
+	except when setting radlog_dir and radacct_dir. Possibly I can
+	get rid of fourth argument to asgn() altogether?
+
+	* TODO: Updated.
+
+2001-08-18 Sergey Poznyakoff
+
 	* radiusd/radiusd.c: sig_usr1(): changed due to the changes
 	in underlying library functions.
 	* radiusd/snmpserv.c: Implemented radiusServerQueueTable

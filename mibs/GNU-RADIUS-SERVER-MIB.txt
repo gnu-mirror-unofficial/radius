@@ -173,7 +173,7 @@ memoryNumBuckets OBJECT-TYPE
              "Number of memory object buckets currently allocated."
        ::= { radiusServerMemoryUsage 2 }
 
-memoryNumBytes OBJECT-TYPE
+memoryBytesAllocated OBJECT-TYPE
        SYNTAX Counter32
        MAX-ACCESS read-only
        STATUS     current
@@ -181,12 +181,19 @@ memoryNumBytes OBJECT-TYPE
              "Number of memory bytes currently allocated."
        ::= { radiusServerMemoryUsage 3 }
 
+memoryBytesUsed OBJECT-TYPE
+       SYNTAX     Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "Number of bytes currently in use."
+       ::= { radiusServerMemoryUsage 4 }
+
 MemoryClassEntry ::= SEQUENCE {
        classIndex		Integer32,
        classSize		Integer32,
        classElsPerBucket	Counter32,
        classNumBuckets          Counter32,
-       classElsTotal            Counter32,
        classElsUsed             Counter32
 }
        
@@ -197,7 +204,7 @@ memoryClassTable OBJECT-TYPE
        STATUS     current
        DESCRIPTION
              "The (conceptual) table listing the server memory usage."
-       ::= { radiusServerMemoryUsage 4 }
+       ::= { radiusServerMemoryUsage 5 }
 
 memoryClassEntry OBJECT-TYPE
        SYNTAX     MemoryClassEntry
@@ -240,29 +247,13 @@ classNumBuckets OBJECT-TYPE
              "Number of buckets in a memory class."
        ::= { memoryClassEntry 4 }
 
-classElsTotal OBJECT-TYPE
-       SYNTAX     Counter32
-       MAX-ACCESS read-only
-       STATUS     current
-       DESCRIPTION
-             "Total number of elements available for use in a memory class."
-       ::= { memoryClassEntry 5 }
-
 classElsUsed OBJECT-TYPE
        SYNTAX     Counter32
        MAX-ACCESS read-only
        STATUS     current
        DESCRIPTION
              "Number of elements currently allocated from a memory class."
-       ::= { memoryClassEntry 6 }
-
-memoryUtilization OBJECT-TYPE
-       SYNTAX     Counter32
-       MAX-ACCESS read-only
-       STATUS     current
-       DESCRIPTION
-             "Overall memory utilization (percents multiplied by 10)."
-       ::= { radiusServerMemoryUsage 5 }
+       ::= { memoryClassEntry 5 }
 
 memoryMallocBlocks OBJECT-TYPE
        SYNTAX     Counter32

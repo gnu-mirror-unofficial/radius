@@ -1,3 +1,4 @@
+-100 : Clean up the semantics of log_init/log_done.
 -100 : Extend functionality of snmp subsystem to cover that of radctl.c module.
 -100 : Add documentation for multiple interfaces/ports (listen statement, etc.)
 -100 : Add documentation for NOREALM.
@@ -12,52 +13,3 @@
        and do not make lint angry.
 5    : Write a unified configuration utility in guile.
 10   : Need a more flexible IP allocation strategy
-
-
-URGENT! Restore the functionality of late radiusd/radctl.c module:
-
-getpid:
-	Add OID:
-
-		radiusStatPID.
-
-get-m-stat:
-	Add OIDs:
-                +- NumClasses
-	        +- NumBuckets
-                +- NumBytes
-		+- MemTable
-                   +- Index
-                   +- MemEntry
-                   +- Class
-		   +- ElsPerBucket
-	           +- Buckets
-	           +- ElsUsed
-                   +- ElsTotal
-		+- MemUtilization (per 1000)
-		+- MallocBlocks
-		+- MallocBytes
-		
-get-q-stat:
-	Add OIDs:
-		+- QueueTable
-	           +- QueueEntry
-                      +- QueueIndex
-                      +- QueueName (optional)
-	              +- QueueActive
-		      +- QueueHeld
-	              +- QueueTotal
-
-dumpdb:?
-remark:?
-
-
-*reload:
-	Functional via radius{}ServConfigReset=reset
-
-restart:
-shutdown:
-	Add to radius{}ServConfigReset new values:
-
-		restart(5)	--	Cold restart.
-		shutdown(6)	--	Shutdown.

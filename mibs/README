@@ -6,12 +6,11 @@ RFCs can be found in subdirectory doc/rfc of the package. Both
 RFCs allow unlimited distribution of the information contained
 therein.
 
-GNU-RADIUS-STAT-MIB.txt represents the GNU RADIUS private extensions
-to the above RFCs. It is in its beta stage.
+GNU-RADIUS-SERVER-MIB.txt and GNU-RADIUS-STAT-MIB.txt represent the
+GNU RADIUS private extensions to the above RFCs. 
 
 *.chart files contain the graphic representation of the corresponding
 MIB trees.
-
 
 radmibs.h.in is the source file used to build include/radmibs.h header.
 

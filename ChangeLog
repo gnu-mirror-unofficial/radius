@@ -1,11 +1,20 @@
-2001-06-11  gray  <gray@farlep.net>
+2001-05-18  gray  <gray@farlep.net>
+	* Made backslash() global
+	* Modified raddb.c to accept \<newline> continuation sequence.
+
+2001-05-17  gray  <gray@farlep.net>
+	* rad_sql_reconnect did not clear conn->connected on failure. 
+	  Probably conn->connected is not needed after all: can just 
+	  use conn->data != NULL instead.
+
+2001-05-11  gray  <gray@farlep.net>
 	Debugged radscm/nas.scm interaction.
 
-2001-06-11  Michael Samuel   <michael@miknet.net>
+2001-05-11  Michael Samuel   <michael@miknet.net>
         Added possibility to retrieve arbitrary reply pairs from
         the SQL database.
 
-2001-06-10  gray  <gray@farlep.net>
+2001-05-10  gray  <gray@farlep.net>
 	* Added Guile functions for dealing with rad[uw]tmp files.
 	* radlib/log.c: use rad?printf() functions instead of ?printf().
 	* radscripts/Makefile.am: use of _SCRIPTS instead of _PROGRAMS.

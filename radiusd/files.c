@@ -839,7 +839,7 @@ hints_setup(req)
         if (matched)
                 avl_add_pair (&request_pairs, orig_name_pair);
         else
-                avl_free (orig_name_pair);
+                avp_free (orig_name_pair);
         
         return 0;
 }

@@ -1,0 +1,3 @@
+server local localhost foobar @AUTH_PORT@ @ACCT_PORT@
+timeout 3
+retry 1

@@ -1,0 +1,5 @@
+Makefile
+site.exp
+*.log
+*.sum
+*.bak

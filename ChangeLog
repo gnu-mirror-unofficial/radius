@@ -1,3 +1,17 @@
+2002-06-21  Sergey Poznyakoff
+
+	* include/radsql.h (SQL_DISPATCH_TAB): new argument to disconnect
+	  member.
+	* sql/mysql.c: Likewise.
+	* sql/odbc.c: Likewise.
+	* sql/postgres.c: Likewise.
+	* sql/disp.c (disp_sql_drop): new function.
+	
+	* radiusd/radiusd.c (rad_thread_init): start threads in deferred
+	  cancel mode.
+	* radiusd/request.c (rad_cleanup_thread0): decrement num_threads.
+	* radiusd/sql.c: handle eventual cancellation.
+	
 2002-06-20  Sergey Poznyakoff  
 
 	* include/radius.h (avl_find_n, avl_delete_n): New functions.

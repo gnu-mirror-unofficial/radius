@@ -54,13 +54,12 @@ char *source_filename = "";
 void print_ident(char *str, Variable *var);
 int subscript(Variable *var, char *attr_name, Variable *ret_var);
 
-void print_exprlist(Variable *list);
-void free_exprlist(Variable *list);
 %}
 
 %token EOL AUTH ACCT SEND EXPECT
 %token EQ LT GT NE LE GE
 %token PRINT ALL VARS
+%token EXIT
 %token <ident> IDENT
 %token <string> NAME
 %token <number> NUMBER
@@ -69,10 +68,10 @@ void free_exprlist(Variable *list);
 
 %type <number> op code 
 %type <variable> value expr
+%type <ident> maybe_expr
 %type <vector> vector 
 %type <pair_list> pair_list
 %type <pair> pair
-%type <exprlist> exprlist
 %type <string> string 
 %type <number> port_type
 
@@ -86,9 +85,6 @@ void free_exprlist(Variable *list);
 	struct {
 		VALUE_PAIR *head, *tail;
 	} pair_list;
-	struct {
-		Variable *head, *tail;
-	} exprlist;
 	Variable variable;
 }
 
@@ -129,25 +125,41 @@ stmt          : /* empty */ EOL
                 {
 			radtest_send($2, $3, &$4);
 		}
-              | EXPECT code exprlist EOL
+              | EXPECT code maybe_expr EOL
                 {
+			int pass = 1;
 			if (verbose) {
 				printf("expect %d\n", $2);
 				printf("got    %d\n", reply_code);
 			}
 			if (reply_code != $2) {
-				if ($3.head)
-					print_exprlist($3.head);
 				parse_error("expect failed: got %d\n",
 					    reply_code);
-				YYACCEPT;
+				if (abort_on_failure)
+					YYACCEPT;
+				pass = 0;
 			}
-			free_exprlist($3.head);
+			if ($3) {
+				if ($3->type != Vector) {
+					parse_error("expecting vector");
+					YYERROR;
+				}
+				if (compare_lists(reply_list,
+						  $3->datum.vector))
+					pass = 0;
+				/*FIXME: free $3 */
+			}
+			fprintf(stderr, "RET: %s", pass ? "PASS" : "FAIL");
+			printf("%s\n", pass ? "PASS" : "FAIL");
 		} 
               | error EOL
                 {
 			yyclearin;
 			yyerrok;
+		}
+              | EXIT
+                {
+			YYACCEPT;
 		}
               ;
 
@@ -174,7 +186,7 @@ code          : NUMBER
               ;
 
 expr          : value
-              | expr '+' value
+              | expr '+' value 
                 {
 			if ($1.type != Vector) {
 				parse_error("bad datatype of larg in +");
@@ -187,13 +199,20 @@ expr          : value
 		}
               ;
 
-vector        : '{' pair_list '}'
+maybe_expr    : /* empty */
                 {
-			$$ = $2.head;
+			$$ = NULL;
 		}
-              | '{' pair_list ',' '}' /* C-like syntactic sugar */
+              | expr
                 {
-			$$ = $2.head;
+			$$ = emalloc(sizeof(*$$));
+			*$$ = $1;
+		}
+              ;
+
+vector        : pair_list
+                {
+			$$ = $1.head;
 		}
               ;
 
@@ -278,72 +297,45 @@ op            : EQ
 		}
               ;
 
-value       : NUMBER
-              {
-		      $$.type = Integer;
-		      $$.datum.number = $1;
-	      }
-            | IPADDRESS
-              {
-		      $$.type = Ipaddress;
-		      $$.datum.ipaddr = $1;
-	      }
-            | QUOTE
-              {
-		      $$.type = String;
-		      strcpy($$.datum.string, $1);
-	      }
-            | IDENT
-              {
-		      $$ = *$1;
-	      }
-            | IDENT '[' NAME ']'
-              {
-		      subscript($1, $3, &$$);
-	      }
-            | vector
-              {
-		      $$.type = Vector;
-		      $$.datum.vector = $1;
-	      }
-            ;
+value         : NUMBER
+                {
+			$$.type = Integer;
+			$$.datum.number = $1;
+		}
+              | IPADDRESS
+                {
+			$$.type = Ipaddress;
+			$$.datum.ipaddr = $1;
+		}
+              | QUOTE
+                {
+			$$.type = String;
+			strcpy($$.datum.string, $1);
+		}
+              | IDENT
+                {
+			$$ = *$1;
+		}
+              | IDENT '[' NAME ']'
+                {
+			subscript($1, $3, &$$);
+		}
+              | vector
+                {
+			$$.type = Vector;
+			$$.datum.vector = $1;
+		}
+              ;
 
-prlist      : pritem
-            | prlist pritem
-            ;
+prlist        : pritem
+              | prlist pritem
+              ;
 
-pritem      : expr
-              {
-		      print(&$1);
-	      }
-	    ;
-
-exprlist    : /* empty */
-              {
-		      $$.head = $$.tail = NULL;
-	      }
-            | expr
-              {
-		      Variable *var = emalloc(sizeof(*var));
-		      *var = $1;
-		      var->next = NULL;
-		      $$.head = $$.tail = var;
-	      }
-            | exprlist expr
-              {
-		      Variable *var = emalloc(sizeof(*var));
-		      *var = $2;
-		      var->next = NULL;
-		      $$.tail->next = (Symbol*)var;
-		      $$.tail = var;
-	      }
-            | exprlist error EOL
-              {
-		      yyerrok;
-		      yyclearin;
-		      putback(";");
-	      }
-            ;
+pritem        : expr
+                {
+		        print(&$1);
+	        }
+	      ;
 
 %%
 
@@ -430,26 +422,4 @@ subscript(var, attr_name, ret_var)
 	return 0;
 }
 
-void
-print_exprlist(list)
-	Variable *list;
-{
-	while (list) {
-		print(list);
-		list = (Variable*) list->next;
-	}
-	printf("\n");
-}
 
-void
-free_exprlist(list)
-	Variable *list;
-{
-	Variable *next;
-
-	while (list) {
-		next = (Variable*)list->next;
-		efree(list);
-		list = next;
-	}
-}

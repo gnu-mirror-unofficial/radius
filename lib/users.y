@@ -228,7 +228,7 @@ install_pair(name, op, valstr)
         case TYPE_STRING:
                 if (pair->attribute == DA_EXEC_PROGRAM ||
                     pair->attribute == DA_EXEC_PROGRAM_WAIT) {
-                        if (valstr[0] != '/') {
+                        if (valstr[0] != '/' && valstr[0] != '|') {
                                 radlog(L_ERR,
                                    _("%s:%d: %s: not an absolute pathname"),
                                        source_filename, source_line_num, name);

@@ -1,5 +1,15 @@
 2003-06-05  Sergey Poznyakoff 
 
+	* include/radiusd.h (struct request_class.xmit): Extra argument:
+	the original request data.
+	(radius_req_xmit): Likewise.
+	* radiusd/request.c: Likewise.
+	* radiusd/proxy.c (proxy_retry): Changed declaration.
+	* radiusd/radius.c (radius_req_xmit): Take an extra argument. Call
+	proxy_retry() when appropriate.
+
+2003-06-05  Sergey Poznyakoff 
+
 	* radiusd/input.c: Do not use assert().
 	* radiusd/snmpserv.c (snmpserv_after_config_hook): Call
 	snmp_init_nas_stat()

@@ -23,6 +23,11 @@
 #include <list.h>
 #include <envar.h>
 
+/* Internationalization support */
+#include <gettext.h>
+#define _(s) gettext(s)
+#define N_(s) (s)
+
 #define DOTTED_QUAD_LEN         16
 
 #define AUTH_VECTOR_LEN         16

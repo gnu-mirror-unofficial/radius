@@ -73,22 +73,22 @@ Print the value of the A/V pair $arg0
 end
 
 define _po
- if $arg0->operator == PW_OPERATOR_EQUAL
+ if $arg0->operator == OPERATOR_EQUAL
 	echo =
  else
-  if $arg0->operator == PW_OPERATOR_NOT_EQUAL
+  if $arg0->operator == OPERATOR_NOT_EQUAL
 	echo !=
   else
-   if $arg0->operator == PW_OPERATOR_LESS_THAN
+   if $arg0->operator == OPERATOR_LESS_THAN
 	echo <
    else
-    if $arg0->operator == PW_OPERATOR_GREATER_THAN
+    if $arg0->operator == OPERATOR_GREATER_THAN
 	echo >
     else
-     if $arg0->operator == PW_OPERATOR_LESS_EQUAL
+     if $arg0->operator == OPERATOR_LESS_EQUAL
 	echo <=
      else
-      if $arg0->operator == PW_OPERATOR_GREATER_EQUAL
+      if $arg0->operator == OPERATOR_GREATER_EQUAL
 	echo >=
       else
 	output $arg0->operator

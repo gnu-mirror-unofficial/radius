@@ -1,5 +1,31 @@
 2002-12-23  Sergey Poznyakoff 
 
+	* configure.ac: Got rid of ETC_DIR. Usual sysconfdir is used
+	  instead.
+	* client/pam_radius/Makefile.am: Likewise.
+	* include/radpaths.h: Likewise.
+	* lib/Makefile.am: Likewise.
+	* raddb/Makefile.am: Likewise.
+	* radiusd/Makefile.am: Likewise.
+	* radiusd/version.c: Likewise.
+	* radwho/Makefile.am: Likewise.
+
+	* radiusd/testsuite/lib/radiusd.exp (simple_radius_test): Output
+	  timestamp along with the diagnostics.
+
+	* radiusd/testsuite/proxy/Makefile.am: Add radiusd.pid to
+	  distclean-local.
+	* radiusd/testsuite/raddb/Makefile.am: Likewise.
+	* radtest/main.c: Removed radpaths.h and radius_dir.
+	* raduse/raduse.h: Removed radpaths.h
+	
+	* po/es.po: Updated.
+	* po/no.po: Updated.
+	* po/pl.po: Updated.
+	* po/ru.po: Updated.
+
+2002-12-23  Sergey Poznyakoff 
+
 	* client/pam_radius/Makefile.am: Rewritten using pam_LTLIBRARIES.
 	  Pass -Bsymbolic to the loader in order to prevent the resulting
 	  module from resolving the references using the caller executable.

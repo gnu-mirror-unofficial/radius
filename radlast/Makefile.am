@@ -14,6 +14,7 @@ bin_PROGRAMS    = radlast
 radlast_SOURCES = radlast.c 
 radlast_LDADD   = ../lib/liblog.la ../lib/librad.la ../lib/libdebug.la @LIBINTL@
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/lib @INCLUDEPATH@
+AM_CPPFLAGS=@PATHFLAGS@
 
 SUFFIXES=.S .c .ln .o .s
 

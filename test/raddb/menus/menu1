@@ -1,22 +1,5 @@
 menu
-
-*** This is a test Menu coming from RADIUS ***
-
-Menus can contain up to 1500 bytes of data.  They can contain
-any non-null characters.  Option selections require an exact match.
-If case insensitivity is required, enter the menu choices twice,
-once in upper and once in lower case.
-
-Please enter an option:
-
-1 Start PPP session
-2 Start CSLIP session
-3 Start SLIP session
-4 Start login session
-5 Go to second menu
-6 Exit
-
-Option: 
+MENU1(1-PPP, 2-CSLIP, 3-SLIP, 4-Login, 5-Second, 6-Exit)
 end
 
 1

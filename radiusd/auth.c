@@ -1183,39 +1183,46 @@ sfn_exec_wait(m)
         AUTH_MACH *m;
 {
 	int rc;
+	VALUE_PAIR *p;
 	
-	switch (m->check_pair->avp_strvalue[0]) {
-	case '/':
-		/* radius_exec_program() returns -1 on
-		   fork/exec errors, or >0 if the exec'ed program
-		   had a non-zero exit status.
-		*/
-		rc = radius_exec_program(m->check_pair->avp_strvalue,
-					 m->req,
-					 &m->user_reply,
-					 1,
-					 &m->user_msg);
-		break;
+	for (p = m->check_pair;
+             p;
+             p = avl_find(p->next, DA_EXEC_PROGRAM_WAIT)) {
+		switch (p->avp_strvalue[0]) {
+		case '/':
+			/* radius_exec_program() returns -1 on
+		   	   fork/exec errors, or >0 if the exec'ed program
+		   	   had a non-zero exit status.
+			 */
+			rc = radius_exec_program(p->avp_strvalue,
+					         m->req,
+					         &m->user_reply,
+					         1,
+					         &m->user_msg);
+			break;
 
-	case '|':
-		rc = filter_auth(m->check_pair->avp_strvalue+1,
-				 m->req,
-				 &m->user_reply);
-		break;
+		case '|':
+			rc = filter_auth(p->avp_strvalue+1,
+				         m->req,
+				         &m->user_reply);
+			break;
 
-	default:
-		rc = 1;
-	}
+		default:
+			rc = 1;
+		}
 
-	if (rc != 0) {
-		newstate(as_reject);
+		if (rc != 0) {
+			newstate(as_reject);
 
-		auth_format_msg(m, MSG_ACCESS_DENIED);
+			auth_format_msg(m, MSG_ACCESS_DENIED);
 		
-		if (is_log_mode(m, RLOG_AUTH)) {
-			auth_log(m, _("Login incorrect"),
-				 NULL,
-				 _("external check failed"), NULL);
+			if (is_log_mode(m, RLOG_AUTH)) {
+				auth_log(m, _("Login incorrect"),
+				         NULL,
+				         _("external check failed: "), 
+                                         p->avp_strvalue);
+		        }
+			break;
 		}
 	}
 }
@@ -1224,10 +1231,18 @@ void
 sfn_exec_nowait(m)
         AUTH_MACH *m;
 {
+	VALUE_PAIR *p;
+	
         /*FIXME: do we need to pass user_reply here? */
-        radius_exec_program(m->check_pair->avp_strvalue,
-                            m->req, &m->user_reply,
-                            0, NULL);
+	for (p = m->check_pair;
+             p;
+             p = avl_find(p->next, DA_EXEC_PROGRAM)) {
+		
+		radius_exec_program(m->check_pair->avp_strvalue,
+				    m->req, &m->user_reply,
+				    0, NULL);
+
+	}
 }
 
 void

@@ -1,3 +1,8 @@
+2003-12-23  Sergey Poznyakoff  
+
+	* lib/sysdep.c (rad_reset_signal): Removed ARG_UNUSED qualifier
+	* radzap/radzap.c (confirm): Initialize s;
+
 2003-12-17  Sergey Poznyakoff 
 
 	* radiusd/files.c: Added translators comments

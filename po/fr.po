@@ -5,7 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU radius 1.2\n"
-"POT-Creation-Date: 2003-12-04 14:27+0200\n"
+"Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
+"POT-Creation-Date: 2003-12-13 20:06+0200\n"
 "PO-Revision-Date: 2003-12-12 08:00-0500\n"
 "Last-Translator: Michel Robitaille <robitail@IRO.UMontreal.CA>\n"
 "Language-Team: French <traduc@traduc.org>\n"
@@ -22,7 +23,9 @@ msgstr "make_pair(): attribut %d non repéré dans le dictionnaire"
 #: lib/client.c:126
 #, c-format
 msgid "Actual request length does not match reported length (%d, %d)"
-msgstr "Longueur de la requête actuelle ne concorde pas avec la longueur rapportée (%d, %d)"
+msgstr ""
+"Longueur de la requête actuelle ne concorde pas avec la longueur rapportée (%"
+"d, %d)"
 
 #: lib/client.c:140
 msgid "Received invalid reply digest from server"
@@ -199,7 +202,7 @@ msgstr "mémoire basse: arrêt"
 #: radiusd/scheme.c:270 radiusd/stat.c:76
 #, c-format
 msgid "can't open file `%s'"
-msgstr "mne peut ouvrir le fichier « %s »"
+msgstr "ne peut ouvrir le fichier « %s »"
 
 #: lib/radutmp.c:51
 #, c-format
@@ -219,7 +222,9 @@ msgstr "login: l'entrée pour le NAS %s port %d est dans le mauvais ordre"
 #: lib/radutmp.c:177
 #, c-format
 msgid "logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"
-msgstr "logout: l'entrée pour le NAS %s port %d a un mauvais ID (attendait %s a reçu %s)"
+msgstr ""
+"logout: l'entrée pour le NAS %s port %d a un mauvais ID (attendait %s a reçu "
+"%s)"
 
 #: lib/radutmp.c:200
 #, c-format
@@ -318,8 +323,12 @@ msgid "Garbage in ARGP_HELP_FMT: %s"
 msgstr "Rebus dans ARGP_HELP_FMT: %s"
 
 #: lib/argp-help.c:1200
-msgid "Mandatory or optional arguments to long options are also mandatory or optional for any corresponding short options."
-msgstr "Les arguments obligatoires ou optionels des options de formes longues lesont aussi obligatoires ou optionnels pour les options de formes courtes."
+msgid ""
+"Mandatory or optional arguments to long options are also mandatory or "
+"optional for any corresponding short options."
+msgstr ""
+"Les arguments obligatoires ou optionels des options de formes longues lesont "
+"aussi obligatoires ou optionnels pour les options de formes courtes."
 
 #: lib/argp-help.c:1580
 msgid "Usage:"
@@ -431,7 +440,8 @@ msgid ""
 msgstr ""
 "Ce programme est un logiciel libre; vous pouvez le redistribuer ou le\n"
 "modifier selon les termes de la License Publique Générale de GNU, publiée\n"
-"par la Free Software Foundation (soit la version 2 ou soit ou soit selon votre\n"
+"par la Free Software Foundation (soit la version 2 ou soit ou soit selon "
+"votre\n"
 "choix, toute version ultérieure).\n"
 "\n"
 "Ce programme est distribué dans l'espoir qu'il soit utile,\n"
@@ -660,7 +670,8 @@ msgstr "hôte inconnu: %s"
 #: radiusd/checkrad.c:443
 #, c-format
 msgid "timed out in waiting for finger response from NAS %s"
-msgstr "délai expiré lors de l'attente de la réponse de finger depuis le NAS %s"
+msgstr ""
+"délai expiré lors de l'attente de la réponse de finger depuis le NAS %s"
 
 #: radiusd/config.y:171
 msgid "unknown block statement"
@@ -780,7 +791,8 @@ msgstr "ne laisser tomber les privilèges non-root"
 #: radiusd/exec.c:183
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
-msgstr "radius_exec_program(): ne peut exécuter, n'est pas un chemin absolu: %s"
+msgstr ""
+"radius_exec_program(): ne peut exécuter, n'est pas un chemin absolu: %s"
 
 #: radiusd/exec.c:190
 msgid "couldn't open pipe"
@@ -809,8 +821,11 @@ msgstr "ne peut restaurer SIGCHLD"
 
 #: radiusd/exec.c:280
 #, c-format
-msgid "can't run external program `%s' (reason reported via syslog channel user.err)"
-msgstr "ne peut exécuter le programme externe « %s » (raison fournie via le canal de syslog user.err)"
+msgid ""
+"can't run external program `%s' (reason reported via syslog channel user.err)"
+msgstr ""
+"ne peut exécuter le programme externe « %s » (raison fournie via le canal de "
+"syslog user.err)"
 
 #: radiusd/exec.c:287
 #, c-format
@@ -875,20 +890,19 @@ msgstr "longueur zéro du nom d'usager interdite"
 msgid "unknown attribute `%s/%s'"
 msgstr "attribut inconnue « %s/%s »"
 
-#: radiusd/files.c:576
-#, c-format
-msgid "expected opcode but found %s"
-msgstr "opcode attendu mais a trouvé %s"
+#: radiusd/files.c:576 radiusd/files.c:599
+#, fuzzy, c-format
+msgid "expected %s, but found %s"
+msgstr "attendait %s mais a trouvé %s"
+
+#: radiusd/files.c:577
+msgid "opcode"
+msgstr ""
 
 #: radiusd/files.c:588
 #, c-format
 msgid "install_pair failed on %s"
 msgstr "échec de install_pair sur %s"
-
-#: radiusd/files.c:599
-#, c-format
-msgid "expected , but found %s"
-msgstr "attendait mais a trouvé %s"
 
 #: radiusd/files.c:642 radiusd/files.c:845
 msgid "not defined"
@@ -916,7 +930,8 @@ msgstr "utilise seulement dbm: USAGERS NON CHARGÉS"
 
 #: radiusd/files.c:1630
 msgid "DBM files found but no -b flag given - NOT using DBM"
-msgstr "Fichiers DBM repéré mais aucune option -b fournie - n'utilisera pas DBM"
+msgstr ""
+"Fichiers DBM repéré mais aucune option -b fournie - n'utilisera pas DBM"
 
 #: radiusd/files.c:1634
 #, c-format
@@ -1139,7 +1154,9 @@ msgstr "Pas d'attribut User-Password dans LHS"
 
 #: radiusd/radck.c:314
 msgid "Auth-Type = System can only be used when running with root privileges"
-msgstr "Auth-Type = System peut seulement être utilisé lorsqu'exécuté avec les privilèges root"
+msgstr ""
+"Auth-Type = System peut seulement être utilisé lorsqu'exécuté avec les "
+"privilèges root"
 
 #: radiusd/radck.c:324 radiusd/radck.c:353
 msgid "User-Password attribute ignored for this Auth-Type"
@@ -1357,7 +1374,8 @@ msgstr "Radiusd n'écoute plus sur aucun port."
 
 #: radiusd/radiusd.c:378
 msgid "Radiusd is not listening on any port. Trying to continue anyway..."
-msgstr "Radiusd ne fait plus d'écoute sur aucun port. Tentative de poursuite..."
+msgstr ""
+"Radiusd ne fait plus d'écoute sur aucun port. Tentative de poursuite..."
 
 #: radiusd/radiusd.c:412
 msgid "Starting"
@@ -1418,7 +1436,8 @@ msgstr "Chargement des fichiers de configuration."
 
 #: radiusd/radiusd.c:917
 msgid "Errors reading config file - EXITING"
-msgstr "Erreurs lors de la lecture du fichier de configuration -- fin d'exécution"
+msgstr ""
+"Erreurs lors de la lecture du fichier de configuration -- fin d'exécution"
 
 #: radiusd/radiusd.c:1087
 #, c-format
@@ -1434,29 +1453,29 @@ msgstr "exec-program-user est ignoré"
 msgid "INTERNAL ERROR (%s:%d): attribute %d has bad type (%d)"
 msgstr "ERREUR INTERNE (%s:%d): attribut %d a un mauvais type (%d)"
 
-#: radiusd/request.c:212
+#: radiusd/request.c:220
 #, c-format
 msgid "Proxy %s request expired in queue"
 msgstr "La requête proxy %s est expirée dans la file"
 
-#: radiusd/request.c:228
+#: radiusd/request.c:236
 #, c-format
 msgid "Killing unresponsive %s child %lu"
 msgstr "Avortement du processus %s qui ne répond pas enfant %lu"
 
-#: radiusd/request.c:256
+#: radiusd/request.c:264
 msgid "duplicate request"
 msgstr "double requête"
 
-#: radiusd/request.c:326
+#: radiusd/request.c:335
 msgid "too many requests in queue"
 msgstr "trop de requêtes dans la file"
 
-#: radiusd/request.c:331
+#: radiusd/request.c:340
 msgid "too many requests of this type"
 msgstr "trop de requête de ce type"
 
-#: radiusd/request.c:338
+#: radiusd/request.c:347
 msgid "Maximum number of children active"
 msgstr "Nombre maximum d'enfants actifs"
 
@@ -1718,17 +1737,20 @@ msgstr "%s n'est pas un objet de procédure"
 #: radiusd/scheme.c:128 radiusd/scheme.c:179
 #, c-format
 msgid "Procedure `%s' failed: see error output for details"
-msgstr "Échec de la procédure « %s »: voir la sortie d'erreurs pour les détails"
+msgstr ""
+"Échec de la procédure « %s »: voir la sortie d'erreurs pour les détails"
 
 #: radiusd/scheme.c:158
 #, c-format
 msgid "Unexpected return value from Guile authentication function `%s'"
-msgstr "Valeur inattendue au retour de la fonction d'authentification Guile « %s »"
+msgstr ""
+"Valeur inattendue au retour de la fonction d'authentification Guile « %s »"
 
 #: radiusd/scheme.c:195
 #, c-format
 msgid "Unexpected return value from Guile accounting function `%s'"
-msgstr "Valeur inattendue au retour de la fonction de comptabilité Guile « %s »"
+msgstr ""
+"Valeur inattendue au retour de la fonction de comptabilité Guile « %s »"
 
 #: radiusd/snmpserv.c:280
 #, c-format
@@ -1855,7 +1877,9 @@ msgstr[1] "%s a mis à jour %d enregistrements"
 
 #: radiusd/sql.c:932
 msgid "SQL Auth specified in users file, but not in sqlserver file"
-msgstr "Auth SQL spécifié dans le fichier des usagers mais pas dans le fichier sqlserver"
+msgstr ""
+"Auth SQL spécifié dans le fichier des usagers mais pas dans le fichier "
+"sqlserver"
 
 #: radiusd/sql.c:1028
 #, c-format
@@ -1883,8 +1907,12 @@ msgid "stat_init failed"
 msgstr "échec de stat_init"
 
 #: radiusd/stat.c:231
-msgid "reached SNMP storage limit for the number of monitored ports: increase max-port-count"
-msgstr "capacité limite de stockage SNMP atteinte pour le nombre de port monitorés:augmenter le paramètre max-port-count"
+msgid ""
+"reached SNMP storage limit for the number of monitored ports: increase max-"
+"port-count"
+msgstr ""
+"capacité limite de stockage SNMP atteinte pour le nombre de port monitorés:"
+"augmenter le paramètre max-port-count"
 
 #: radiusd/stat.c:291
 #, c-format
@@ -1905,8 +1933,12 @@ msgid "negative port session time"
 msgstr "temps de session du port est négatif"
 
 #: radiusd/stat.c:469
-msgid "reached SNMP storage limit for the number of monitored NASes: increase max-nas-count"
-msgstr "capacité limite de stockage SNMP atteinte pour le nombre de NAS monitorés:augmenter le paramètre max-nas-count"
+msgid ""
+"reached SNMP storage limit for the number of monitored NASes: increase max-"
+"nas-count"
+msgstr ""
+"capacité limite de stockage SNMP atteinte pour le nombre de NAS monitorés:"
+"augmenter le paramètre max-nas-count"
 
 #: radiusd/version.c:138
 msgid "GNU RADIUS server version "
@@ -1985,12 +2017,14 @@ msgstr "Arrêt du processus %lu qui ne répond pas"
 
 #: radiusd/rpp.c:446
 msgid "Child exiting on timeout."
-msgstr "Fin d'exécution du processus enfant après expiration du délai d'oisiveté"
+msgstr ""
+"Fin d'exécution du processus enfant après expiration du délai d'oisiveté"
 
 #: radiusd/rpp.c:495
 #, c-format
 msgid "Child received malformed header (len = %d, error = %s)"
-msgstr "Le processus enfant a reçu une en-tête mal composée (len = %d, erreur = %s)"
+msgstr ""
+"Le processus enfant a reçu une en-tête mal composée (len = %d, erreur = %s)"
 
 #: radiusd/rpp.c:507
 msgid "Child received malformed data"
@@ -2198,8 +2232,13 @@ msgid "set debugging level"
 msgstr "sélectionner le niveau de mise au point"
 
 #: radtest/main.c:73
-msgid "Read input from FILE. When this option is used, all unknown options in the form --VAR=VALUE are treated as variable assignments"
-msgstr "Lire à partir du FICHIER. Lorsque cette option est utilisée, toutes les options inconnuesde la forme --VAR=VALEUR sont traitées comme des affectations de variables"
+msgid ""
+"Read input from FILE. When this option is used, all unknown options in the "
+"form --VAR=VALUE are treated as variable assignments"
+msgstr ""
+"Lire à partir du FICHIER. Lorsque cette option est utilisée, toutes les "
+"options inconnuesde la forme --VAR=VALEUR sont traitées comme des "
+"affectations de variables"
 
 #: radtest/main.c:79
 msgid "set number of retries"
@@ -2416,3 +2455,6 @@ msgstr[1] "la requête a retourné %d tuples: %s"
 #, c-format
 msgid "PQexec returned %s"
 msgstr "PQexec a retourné %s"
+
+#~ msgid "expected opcode but found %s"
+#~ msgstr "opcode attendu mais a trouvé %s"

@@ -1,3 +1,12 @@
+2003-12-15  Sergey Poznyakoff
+
+	* Makevars: Added MSGID_BUGS_ADDRESS
+	* ca.po: Updated
+	* es.po: Likewise.
+	* fr.po: Likewise.
+	* pl.po: Likewise.
+	* ru.po: Likewise.
+
 2003-12-12  Sergey Poznyakoff 
 
 	* fr.po: French translation by Michel Robitaille 

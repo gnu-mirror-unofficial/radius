@@ -160,6 +160,85 @@ radius_switch_to_user(RADIUS_USER *usr)
 	return rc;
 }
 
+int
+radius_exec_command(char *cmd)
+{
+        int n;
+        grad_avp_t *vp;
+	pid_t pid;
+	int status;
+	RETSIGTYPE (*oldsig)();
+	
+        if (cmd[0] != '/') {
+                grad_log(L_ERR,
+   _("radius_exec_program(): won't execute, not an absolute pathname: %s"),
+                         cmd);
+                return -1;
+        }
+
+	if ((oldsig = grad_set_signal(SIGCHLD, SIG_DFL)) == SIG_ERR) {
+		grad_log(L_ERR|L_PERROR, _("can't reset SIGCHLD"));
+		return -1;
+        } 
+
+        if ((pid = fork()) == 0) {
+                int argc;
+                char **argv;
+
+                argcv_get(cmd, "", NULL, &argc, &argv);
+                
+                for (n = grad_max_fd(); n >= 3; n--)
+                        close(n);
+
+                chdir("/tmp");
+
+                if (radius_switch_to_user(&exec_user))
+			exit(2);
+		
+                execvp(argv[0], argv);
+
+                /* Report error via syslog: we might not be able
+		   to restore initial privileges if we were started
+		   as non-root. */
+                openlog("radiusd", LOG_PID, LOG_USER);
+                syslog(LOG_ERR, "can't run %s (ruid=%lu, euid=%lu): %m",
+                       argv[0], (u_long) getuid(), (u_long) geteuid());
+                exit(2);
+        }
+
+        /* Parent branch */ 
+        if (pid < 0) {
+                grad_log(L_ERR|L_PERROR, "fork");
+                return -1;
+        }
+
+	waitpid(pid, &status, 0);
+	if (grad_set_signal(SIGCHLD, oldsig) == SIG_ERR)
+		grad_log(L_CRIT|L_PERROR,
+			 _("can't restore SIGCHLD"));
+
+        if (WIFEXITED(status)) {
+                status = WEXITSTATUS(status);
+                debug(1, ("returned: %d", status));
+                if (status == 2) {
+                        grad_log(L_ERR,
+                                 _("can't run external program `%s' "
+                                   "(reason reported via syslog channel "
+                                   "user.err)"),
+			         cmd);
+                }
+        } else {
+		char buffer[RAD_BUFFER_SIZE];
+		
+		format_exit_status(buffer, sizeof buffer, status);
+		
+		grad_log(L_ERR,
+		         _("external program `%s' %s"), cmd, buffer);
+	}
+	
+        return status;
+}
+
 /* Execute a program on successful authentication.
    Return 0 if exec_wait == 0.
    Return the exit code of the called program if exec_wait != 0. */
@@ -508,30 +587,10 @@ filter_open(char *name, grad_request_t *req, int type, int *errp)
 	return filter;
 }
 
-static char *
+char *
 filter_xlate(struct obstack *sp, char *fmt, grad_request_t *radreq)
 {
-	char *str;
-	
-	if (fmt[0] == '=') {
-		Datatype type;
-		Datum datum;
-
-		/*FIXME: Should be compiled!*/
-		if (rewrite_interpret(fmt+1, radreq, &type, &datum)) 
-			return NULL;
-		if (type != String) {
-			grad_log(L_ERR, "%s: %s",
-			         fmt+1, _("wrong return type"));
-			return NULL;
-		}
-		obstack_grow(sp, datum.sval, strlen(datum.sval)+1);
-		grad_free(datum.sval);
-		str = obstack_finish(sp);
-	} else {
-		str = radius_xlate(sp, fmt, radreq, NULL);
-	}
-	return str;
+	return util_xlate(sp, fmt, radreq);
 }
 
 static int

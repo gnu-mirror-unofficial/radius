@@ -1,5 +1,9 @@
 2002-12-21  Sergey Poznyakoff
 
+	-- tag: v_0_99_98 --
+
+2002-12-21  Sergey Poznyakoff
+
 	* include/radiusd.h (rad_signal_t): Added extra argument: the
 	  identifier of this handler.
 	* radiusd/signal.c (_signal_entry_runqueue): Pass id to the

@@ -24,6 +24,7 @@ changequote([,])dnl
 (export L_MAIN L_AUTH L_ACCT L_PROXY
         L_SNMP L_EMERG L_ALERT L_CRIT
         L_ERR L_WARN L_NOTICE L_INFO L_DEBUG)
+(export SQL_AUTH SQL_ACCT)
 
 (export include(BUILDDIR/rscm_radlog.exp))
 (export include(BUILDDIR/rscm_rewrite.exp))
@@ -48,6 +49,7 @@ changequote([,])dnl
   :re-export (L_MAIN L_AUTH L_ACCT L_PROXY
 	      L_SNMP L_EMERG L_ALERT L_CRIT
 	      L_ERR L_WARN L_NOTICE L_INFO L_DEBUG
+	      SQL_AUTH SQL_ACCT
               include(BUILDDIR/rscm_radlog.exp)
               include(BUILDDIR/rscm_rewrite.exp)
               include(BUILDDIR/rscm_sql.exp)))

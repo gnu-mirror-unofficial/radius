@@ -325,6 +325,9 @@ _dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
 			case 'c':
 				prop |= AP_REQ_CMP;
 				break;
+			case 'l':
+				prop &= ~AP_INTERNAL;
+				break;
 			case '1':
 			case '2':
 			case '3':

@@ -75,8 +75,6 @@ if test $USE_GUILE = yes; then
 	rad_CHECK_GUILE(,
 			[LIBRADSCM=libradscm.a
                          RADSCM=radscm
-			 RADTEST=radtest
-			 TESTDIR=test.sh
 			 RADSCM_BUILT_SOURCES='$(DOT_X_FILES) $(DOT_DOC_FILES)'
 			 GUILE_PROCEDURES_TXT=guile-procedures.txt
 			 if test $USE_SERVER_GUILE = yes; then
@@ -92,8 +90,6 @@ AC_SUBST(LIBRADSCM)
 AC_SUBST(RADSCM)
 AC_SUBST(RADSCM_BUILT_SOURCES)
 AC_SUBST(GUILE_PROCEDURES_TXT)
-AC_SUBST(RADTEST)
-AC_SUBST(TESTDIR)
 
 ### Check for Emacs site-lisp directory
 AM_PATH_LISPDIR

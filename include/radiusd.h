@@ -27,11 +27,12 @@
 #include <mem.h>
 #include <log.h>
 
+
 #define NITEMS(a) sizeof(a)/sizeof((a)[0])
 
 /* Server data structures */
 struct radutmp; /* declared in radutmp.h */
-
+struct obstack;
 
 typedef struct {
 	unsigned delayed_hup_wait;
@@ -47,11 +48,6 @@ typedef struct {
 	int   timeout;
 	int   retry;
 } Notify;
-
-typedef struct {
-	int size;
-	void *ptr;
-} BUFFER;
 
 enum reload_what {
 	reload_config,
@@ -428,9 +424,6 @@ extern int              notify_port;
 
 /* acct.c */
 int		rad_accounting(RADIUS_REQ *, int);
-int		rad_account_transfer(RADIUS_REQ *, int);
-int		rad_accounting_orig(RADIUS_REQ *, int);
-int		rad_account_slice(RADIUS_REQ *, int);
 int		radzap(UINT4 nas, int port, char *user, time_t t);
 int		rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul);
 int             write_detail(RADIUS_REQ *radreq, int authtype, char *f);
@@ -651,8 +644,7 @@ void snmp_req_drop(int type, struct snmp_req *req, char *status_str);
 int snmp_answer(struct snmp_req *req, int fd);
 	
 /* radutil.c */
-void alloc_buffer(BUFFER *, int);
-char *radius_xlate(char *buf, int bufsize, char *str,
+char *radius_xlate(struct obstack *obp, char *str,
 		   VALUE_PAIR *req, VALUE_PAIR *reply);
 
 /* intl.c */

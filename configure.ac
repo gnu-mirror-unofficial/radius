@@ -20,7 +20,7 @@
 AC_PREREQ(2.57)
 
 AC_REVISION($Revision$)
-AC_INIT(GNU Radius, 1.1.94, bug-gnu-radius@gnu.org)
+AC_INIT(GNU Radius, 1.1.95, bug-gnu-radius@gnu.org)
 AC_CONFIG_SRCDIR(radiusd/radiusd.c)
 AC_CONFIG_AUX_DIR([scripts])
 AC_CANONICAL_SYSTEM
@@ -240,7 +240,8 @@ AC_FUNC_MMAP
 AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  mkdir mktime select socket strdup strtol lockf \
  setlocale bzero \
- inet_ntoa inet_aton setvbuf seteuid setreuid getdtablesize sigaction) 
+ inet_ntoa inet_aton \
+ setvbuf setegid setregid setresgid seteuid setreuid getdtablesize sigaction) 
 AC_FUNC_OBSTACK
 
 AC_CHECK_DECLS([strncasecmp, strtok_r, localtime_r, asprintf, vasprintf,

@@ -77,8 +77,6 @@ typedef struct {
         char     *password;
         char     *acct_db;
         char     *auth_db;
-        char     *auth_query;
-        char     *group_query;
 	char     *query[num_radius_sql_query];
         int      keepopen;
         time_t   idle_timeout;

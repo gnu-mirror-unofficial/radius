@@ -1,3 +1,38 @@
+2003-10-14  Sergey Poznyakoff 
+
+	* include/radius.h (LOCUS): New datatype.
+	(read_raddb_file,parse_file,install_pair)
+	(vlog,_debug_print): Changed proto.
+	(radlog_loc): New function.
+	* include/radiusd.h (struct user_symbol): Keep full source
+	location information.
+	(fix_check_pairs,fix_reply_pairs): Changed declaration.
+	* include/parser.h (struct matching_rule): Keep full source
+	location information.
+		
+	* client/pam_radius/pam_radius.c: Updated to reflect recent
+	changes to vlog and install_pair.
+	* lib/applog.c: Likewise.
+	* lib/dict.c: Likewise.
+	* lib/nas.c: Likewise.
+	* lib/raddb.c: Likewise.
+	* lib/realms.c: Likewise.
+	* lib/users.l: Likewise.
+	* lib/users.y: Likewise.
+	* radiusd/files.c: Likewise.
+	* radiusd/log.c: Likewise.
+	* radiusd/radck.c: Likewise.
+	* radiusd/radutil.c: Likewise.
+	* radiusd/rewrite.y: Likewise.
+	* radiusd/sql.c: Likewise.
+	* radtest/gram.y: Likewise.
+	* radtest/input.l: Likewise.
+	
+	* lib/logger.c: Removed va_dcl stuff.
+
+	* radiusd/auth.c: Removed support for Add-Port-To-IP-Address
+	* raddb/dictionary: Warning comment before Add-Port-To-IP-Address
+
 2003-10-09  Sergey Poznyakoff 
 
 	* lib/ascend.c: Fixed handling of generic Ascend-.*-Filter

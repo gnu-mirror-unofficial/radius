@@ -36,6 +36,7 @@ ALLTARGETS= \
 all: $(ALLTARGETS)
 
 RADDB=$(top_srcdir)/raddb
+EXDIR=$(top_srcdir)/examples
 
 dictionary: $(RADDB)/dictionary
 	sed '/\$$INCLUDE dict\/compat/d;/\$$INCLUDE dict\/livingston/d;s/#\$$INCLUDE dict\/cisco/\$$INCLUDE dict.cisco/;s/#\$$INCLUDE dict\/voip/\$$INCLUDE dict.voip/' $(RADDB)/dictionary > dictionary
@@ -49,8 +50,8 @@ dict.cisco: $(RADDB)/dict/cisco
 nastypes: $(RADDB)/nastypes
 	$(LN_S) $? $@
 
-rewrite: $(RADDB)/rewrite.full
-	$(LN_S) $? $@
+rewrite: $(RADDB)/rewrite $(EXDIR)/ascend.rw $(EXDIR)/cisco.rw $(EXDIR)/jetstream.rw $(EXDIR)/nt.rw
+	cat $(EXDIR)/*.rw $(RADDB)/rewrite > $@
 
 CLEANFILES=$(ALLTARGETS) config client.conf users acct.scm realms
 

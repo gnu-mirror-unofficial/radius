@@ -186,10 +186,13 @@ radius_exec_command(char *cmd)
                 char **argv;
 
                 argcv_get(cmd, "", NULL, &argc, &argv);
-                
-                for (n = grad_max_fd(); n >= 3; n--)
-                        close(n);
 
+		/* Leave open only stderr */
+                for (n = grad_max_fd(); n > 2; n--)
+                        close(n);
+		close(0);
+		close(1);
+		
                 chdir("/tmp");
 
                 if (radius_switch_to_user(&exec_user))

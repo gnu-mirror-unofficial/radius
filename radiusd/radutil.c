@@ -160,7 +160,7 @@ attr_to_str(obp, req, pairlist, attr, defval)
         tmp[AUTH_STRING_LEN] = 0;
         switch (attr->type) {
         case TYPE_STRING:
-                if (attr->value == DA_PASSWORD && req) {
+                if (attr->value == DA_USER_PASSWORD && req) {
                         char string[AUTH_STRING_LEN+1];
                         int len;
                         req_decrypt_password(string, req, pair);

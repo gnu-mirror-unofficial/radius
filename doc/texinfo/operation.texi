@@ -183,7 +183,7 @@ that user.
 An Access-Request must contain a @attr{User-Name} attribute
 @ref{User-Name}. It should contain either a @attr{NAS-IP-Address}
 attribute or @attr{NAS-Identifier} attribute, or both of them.
-It also must contain either a @attr{Password} attribute or @attr{CHAP-Password}
+It also must contain either a @attr{User-Password} attribute or @attr{CHAP-Password}
 attribute. These attributes are passed encoded using a method based
 on the RSA Message Digest Algorithm MD5.
 
@@ -233,7 +233,7 @@ Otherwise, upon receipt of a valid Access-Challenge the @NAS{} prompts the
 user for a response, possibly displaying the text message provided in
 @attr{Reply-Message} attributes of the request. It then sends its
 original Access-Request with a new request @sc{id} and Request Authenticator,
-with the @attr{Password} attribute replaced by the encrypted user's
+with the @attr{User-Password} attribute replaced by the encrypted user's
 response, and including the @attr{State} attribute from the
 Access-Challenge, if any. 
 
@@ -399,7 +399,7 @@ the request is rejected.
 @item Compute the encryption key
 Using the data from the packet and the shared key value from the @file{clients}
 file, Radius computes the MD5 encryption key that will be used to decrypt
-the value of the @attr{Password} attribute.
+the value of the @attr{User-Password} attribute.
 @item Process user-name hints.
 @dfn{User-name hints} are special rules that modify the request
 depending on user name and his credentials. These rules allow to divide

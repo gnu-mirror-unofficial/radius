@@ -341,7 +341,7 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
         pairs = NULL;
         avl_add_pair(&pairs,
                 namepair = avp_create(DA_USER_NAME, strlen(name), name, 0));
-        avl_add_pair(&pairs, avp_create(DA_PASSWORD, strlen(password),
+        avl_add_pair(&pairs, avp_create(DA_USER_PASSWORD, strlen(password),
                                     password, 0));
         if (service_type &&
             (dv = value_name_to_value(service_type, DA_SERVICE_TYPE))) {

@@ -68,7 +68,7 @@ be used in matching rules.
 
 @menu
 * User-Name:: 
-* Password:: 
+* User-Password:: 
 * CHAP-Password:: 
 * NAS-IP-Address:: 
 * NAS-Port-Id:: 
@@ -119,13 +119,13 @@ in order to bring username to its ``normal'' form (@pxref{rewrite file}).
 
 
 @comment **************************************************************
-@node Password
-@subsection Password
-@atindex Password
+@node User-Password
+@subsection User-Password
+@atindex User-Password
 
-@defattr{Password,2,string,L-,--,--,@acronym{N/A},No}
+@defattr{User-Password,2,string,L-,--,--,@acronym{N/A},No}
 
-This Password attribute indicates the password of the user to be
+This User-Password attribute indicates the password of the user to be
 authenticated, or the user's input following an Access-Challenge.
 It is only used in Access-Request packets.
 
@@ -134,7 +134,7 @@ padded at the end with nulls to a multiple of 16 octets.  A one-
 way MD5 hash is calculated over a stream of octets consisting of
 the shared secret followed by the Request Authenticator.  This
 value is XORed with the first 16 octet segment of the password and
-placed in the first 16 octets of the String field of the Password
+placed in the first 16 octets of the String field of the User-Password
 Attribute.
 
 If the password is longer than 16 characters, a second one-way MD5
@@ -142,7 +142,7 @@ hash is calculated over a stream of octets consisting of the
 shared secret followed by the result of the first xor.  That hash
 is XORed with the second 16 octet segment of the password and
 placed in the second 16 octets of the String field of the 
-Password Attribute.
+User-Password Attribute.
 
 If necessary, this operation is repeated, with each xor result
 being used along with the shared secret to generate the next hash
@@ -831,8 +831,8 @@ Radius interprets values of @attr{Auth-Type} attribute as follows:
 
 @table @code
 @item Local
-The value of the @attr{Password} attribute from the record is taken
-as a cleantext password and is compared against the @attr{Password} value
+The value of the @attr{User-Password} attribute from the record is taken
+as a cleantext password and is compared against the @attr{User-Password} value
 from the input packet. 
 
 @item System
@@ -841,9 +841,9 @@ Radius queries the operating system to determine if the username/password
 supplied in the incoming packet are OK.
 
 @item Crypt-Local
-The value of the @attr{Password} attribute from the record is taken
+The value of the @attr{User-Password} attribute from the record is taken
 as an MD5 hash on the user's password. Radius generates MD5 hash
-on the supplied @attr{Password} value and compares both strings.
+on the supplied @attr{User-Password} value and compares both strings.
 
 @item Reject
 Authentication fails.
@@ -1018,7 +1018,7 @@ following attributes:
 
 @example
 User-Name = "john",
-Password = "guess",
+User-Password = "guess",
 NAS-IP-Address = 10.11.11.1,
 NAS-Port-Id = 24
 @end example

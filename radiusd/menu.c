@@ -55,7 +55,7 @@ process_menu(radreq, activefd)
         strcpy(menu_name, pair->strvalue + 5);
 
         /* The menu input is in the Password Field */
-        pair = avl_find(radreq->request, DA_PASSWORD);
+        pair = avl_find(radreq->request, DA_USER_PASSWORD);
         if (!pair) 
                 *menu_input = 0;
         else {

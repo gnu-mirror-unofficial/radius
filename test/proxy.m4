@@ -23,11 +23,11 @@ SEQUENCE(Auth,
 Checking Proxy Basic Authentication Types,
 TEST(send auth 1 User-Name = QUOTE(accept@remote), expect 2) 
 TEST(send auth 1 User-Name = QUOTE(reject@remote), expect 3) 
-TEST(send auth 1 User-Name = QUOTE(local@remote) Password = QUOTE(guessme),
+TEST(send auth 1 User-Name = QUOTE(local@remote) User-Password = QUOTE(guessme),
      expect 2)
-TEST(send auth 1 User-Name = QUOTE(local@remote) Password = QUOTE(bad),
+TEST(send auth 1 User-Name = QUOTE(local@remote) User-Password = QUOTE(bad),
      expect 3)
-TEST(send auth 1 User-Name = QUOTE(crypt@remote) Password = QUOTE(hamlet),
+TEST(send auth 1 User-Name = QUOTE(crypt@remote) User-Password = QUOTE(hamlet),
      expect 2)) 
 
 SEQUENCE(Nest,

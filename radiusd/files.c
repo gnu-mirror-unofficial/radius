@@ -1431,7 +1431,7 @@ presufcmp(check, name, rest)
 static int server_check_items[] = {
         DA_EXPIRATION,
         DA_LOGIN_TIME,
-        DA_PASSWORD,
+        DA_USER_PASSWORD,
         DA_CRYPT_PASSWORD,
         DA_PASSWORD_LOCATION,
         DA_AUTH_TYPE,

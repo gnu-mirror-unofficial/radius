@@ -25,7 +25,7 @@ $INCLUDE dict/livingston		## Livingston compatibility
 ##	Following are the proper new names. Use these.
 ## syntax flags: [us-hi-hu]
 ATTRIBUTE	User-Name		1	string	- [LR-RLR]
-ATTRIBUTE	Password		2	string	- [L-----]	
+ATTRIBUTE	User-Password		2	string	- [L-----]	
 ATTRIBUTE	CHAP-Password		3	string	- [L-----]
 ATTRIBUTE	NAS-IP-Address		4	ipaddr	- [L--RLR]	
 ATTRIBUTE	NAS-Port-Id		5	integer	- [LR-RLR]

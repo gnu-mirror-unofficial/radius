@@ -34,10 +34,10 @@ DEFAULT NAS-IP-Address = 127.0.0.4,
 accept  Auth-Type = Accept     NULL 
 reject  Auth-Type = Reject     NULL
 local   Auth-Type = Local,
-		Password = "guessme"
+		User-Password = "guessme"
 	NULL
 crypt   Auth-Type = Crypt-Local,
-		Password = "$1$gHpfo$0BuBYjWmmM6E4l00ZFqVI1" # hamlet
+		User-Password = "$1$gHpfo$0BuBYjWmmM6E4l00ZFqVI1" # hamlet
 	NULL
 
 ## Access.exp: bad-one should be rejected.
@@ -45,7 +45,7 @@ bad-one Auth-Type = Accept     NULL
 	
 ## Reply.exp: Test Reply Attributes
 reply   Auth-Type = Local,
-		Password = "guessme"
+		User-Password = "guessme"
 	Service-Type = Framed-User,
 		Framed-Protocol = PPP
 		

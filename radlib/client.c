@@ -295,7 +295,7 @@ radclient_build_request(config, server, code, pair)
                                 goto overflow;
                         }
                         /* attrlen always < AUTH_STRING_LEN */
-                        if (pair->attribute == DA_PASSWORD) {
+                        if (pair->attribute == DA_USER_PASSWORD) {
                                 VALUE_PAIR *ppair;
                                 ppair = avp_alloc();
                                 encrypt_password(ppair, pair->strvalue,

@@ -116,7 +116,7 @@ vlog(level, file, line, func_name, en, fmt, ap)
         if (buf2)
                 free(buf2);
         if (buf3)
-                free(buf3);
+                free(buf3);	
 }
 
 static char *catname[] = { /* category names */

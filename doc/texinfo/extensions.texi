@@ -864,7 +864,7 @@ the following Radius pair list
 @example
 @group
         User-Name = "jsmith",
-                Password = "guessme",
+                User-Password = "guessme",
                 NAS-IP-Address = 10.10.10.1,
                 NAS-Port-Id = 10
 @end group
@@ -877,7 +877,7 @@ is written in Scheme as:
 @group
         (list
           (cons "User-Name" "jsmith")
-          (cons "Password" "guessme")
+          (cons "User-Password" "guessme")
           (cons "NAS-IP-Address" "10.10.10.1")
           (cons "NAS-Port-Id" 10))
 @end group

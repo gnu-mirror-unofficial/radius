@@ -77,7 +77,7 @@
 
 (define (rad-auth)
   (let ((pack (list (cons "User-Name"  opt-login)
-		    (cons "Password"  opt-passwd)
+		    (cons "User-Password"  opt-passwd)
 		    (cons "NAS-IP-Address" opt-nas))))
     (cond
      ((and (defined? 'opt-port) (number? opt-port))
@@ -149,7 +149,7 @@
 	    (loop
 	     (rad-send :port-auth :auth-req (list
 					     (cons "User-Name"  opt-login)
-					     (cons "Password" line)
+					     (cons "User-Password" line)
 					     (cons "State" menu))
 		       flag-verbose))))
 	 (else

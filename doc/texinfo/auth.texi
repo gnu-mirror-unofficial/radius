@@ -96,7 +96,7 @@ entry must follow this pattern:
 @example
 @group
 @var{user-name}  Auth-Type = Local,
-                     Password = @var{plaintext}
+                     User-Password = @var{plaintext}
 @end group
 @end example
 
@@ -130,7 +130,7 @@ two ways of using this authentication type.
 
 @example
 @var{user-name}  Auth-Type = Crypt-Local,
-                     Password = @var{crypt-pass}
+                     User-Password = @var{crypt-pass}
 @end example
 @noindent
 

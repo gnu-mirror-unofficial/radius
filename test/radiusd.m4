@@ -23,13 +23,13 @@ SEQUENCE(Auth,
 Checking Basic Authentication Types,
 TEST(send auth 1 User-Name = QUOTE(accept), expect 2)
 TEST(send auth 1 User-Name = QUOTE(reject), expect 3)
-TEST(send auth 1 User-Name = QUOTE(local) Password = QUOTE(guessme), expect 2)
-TEST(send auth 1 User-Name = QUOTE(local) Password = QUOTE(bad), expect 3)
-TEST(send auth 1 User-Name = QUOTE(crypt) Password = QUOTE(hamlet), expect 2))
+TEST(send auth 1 User-Name = QUOTE(local) User-Password = QUOTE(guessme), expect 2)
+TEST(send auth 1 User-Name = QUOTE(local) User-Password = QUOTE(bad), expect 3)
+TEST(send auth 1 User-Name = QUOTE(crypt) User-Password = QUOTE(hamlet), expect 2))
 
 SEQUENCE(Reply,
 Checking Reply Attributes,
-TEST(send auth 1 User-Name = QUOTE(reply) Password = QUOTE(guessme),
+TEST(send auth 1 User-Name = QUOTE(reply) User-Password = QUOTE(guessme),
      expect 2 Service-Type = 2 Framed-Protocol = 1)
 TEST(send auth 1 User-Name = QUOTE(framed-ip) NAS-Port-Id = 10,
      expect 2 Service-Type = 2 Framed-Protocol = 1 Framed-IP-Address = 127.0.0.11))
@@ -120,11 +120,11 @@ Checking Menus,
      print DEREF(REPLY,Reply-Message*),
      [MENU1(1-PPP, 2-CSLIP, 3-SLIP, 4-Login, 5-Second, 6-Exit)])
 TEST(send auth 1 User-Name = QUOTE(menu) \
-                     Password = QUOTE(5) State = QUOTE(MENU=menu1),
+                     User-Password = QUOTE(5) State = QUOTE(MENU=menu1),
      print DEREF(REPLY,Reply-Message*),
      [MENU2(ra,sol,weevil,top,quit)]) 
 TEST(send auth 1 User-Name = QUOTE(menu) \
-                     Password = QUOTE(sol) \
+                     User-Password = QUOTE(sol) \
                      State = QUOTE(MENU=menu2),
         expect 2 Service-Type = 1 \
                   Login-IP-Host = 127.0.0.1 \

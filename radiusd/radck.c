@@ -261,7 +261,7 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
                         check_dup_attr(&pam_auth, p, line);
                         break;
 
-                case DA_PASSWORD:
+                case DA_USER_PASSWORD:
                         check_dup_attr(&password, p, line);
                         break;
 
@@ -301,7 +301,7 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
                 
                 if (crypt_password) {
                         type = DV_AUTH_TYPE_CRYPT_LOCAL;
-                        crypt_password->attribute = DA_PASSWORD;
+                        crypt_password->attribute = DA_USER_PASSWORD;
                 } else if (password) {
                         if (!strcmp(password->strvalue, "UNIX"))
                                 type = DV_AUTH_TYPE_SYSTEM;

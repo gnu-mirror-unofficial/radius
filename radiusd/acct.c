@@ -536,7 +536,7 @@ write_detail(radreq, authtype, f)
                 pair = radreq->request;
                 while (pair != (VALUE_PAIR *)NULL) {
                         switch (pair->attribute) {
-                        case DA_PASSWORD:
+                        case DA_USER_PASSWORD:
                                 break;
                         case DA_USER_NAME:
                         case DA_ORIG_USER_NAME:

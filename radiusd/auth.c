@@ -265,7 +265,7 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
            authentication fails. */
         
         if (!(auth_item = avl_find(radreq->request, DA_CHAP_PASSWORD))) {
-                auth_item = avl_find(radreq->request, DA_PASSWORD);
+                auth_item = avl_find(radreq->request, DA_USER_PASSWORD);
                 /* Decrypt the password. */
                 if (auth_item) {
                         if (auth_item->strlength == 0)
@@ -284,7 +284,7 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
                 authdata = tmp->strvalue;
 
         /* Find the 'real' password */
-        tmp = avl_find(check_item, DA_PASSWORD);
+        tmp = avl_find(check_item, DA_USER_PASSWORD);
         if (tmp)
                 real_password = estrdup(tmp->strvalue);
         else if (tmp = avl_find(check_item, DA_PASSWORD_LOCATION)) {
@@ -1302,7 +1302,7 @@ req_decrypt_password(password, req, pair)
         char *s;
         
         if (!pair) {
-                pair = avl_find(req->request, DA_PASSWORD);
+                pair = avl_find(req->request, DA_USER_PASSWORD);
                 if (!pair)
                         return;
         }

@@ -230,7 +230,7 @@ rad_send_request(fd, ipaddr, port, id, secret, req)
                         /*
                          *      Re-encode passwd on the fly.
                          */
-                        if (vp->attribute == DA_PASSWORD)
+                        if (vp->attribute == DA_USER_PASSWORD)
                                 passwd_recode(vp, secret, vector, req);
                         
                         checkovf(vp->strlength + 2);

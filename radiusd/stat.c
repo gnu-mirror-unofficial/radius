@@ -419,7 +419,7 @@ snmp_init_nas_stat()
 {
 	if (!server_stat)
 		return;
-        server_stat->nas_index = 1;
+        server_stat->nas_index = 0;
 }
 
 /* For a given ip_address return NAS statistics info associated with it.
@@ -457,7 +457,6 @@ snmp_attach_nas_stat(NAS *nas)
 		++server_stat->nas_index;
                 np->ipaddr = nas->ipaddr;
         }
-        np->index = server_stat->nas_index;
         nas->app_data = np;
 }
 
@@ -476,7 +475,7 @@ snmp_sort_nas_stat()
 
 	if (!server_stat)
 		return;
-        qsort(nas_stat, server_stat->nas_index,
+        qsort(nas_stat, server_stat->nas_index + 1,
               sizeof(struct nas_stat*), nas_ip_cmp);
 	i = 1;
 	FOR_EACH_NAS(np) {

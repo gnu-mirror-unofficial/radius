@@ -71,9 +71,10 @@ static char license_text[] = N_(
     "   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
     "   GNU General Public License for more details.\n"
     "\n"
-    "   You should have received a copy of the GNU General Public License\n"
-    "   along with this program; if not, write to the Free Software\n"
-    "   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n");
+    "You should have received a copy of the GNU General Public License\n"
+    "along with GNU Radius; if not, write to the Free Software Foundation,\n"
+    "Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.\n";
+
 
 static error_t 
 rad_common_argp_parser(int key, char *arg, struct argp_state *state)

@@ -31,6 +31,7 @@ argcv.h \
 debugmod.h \
 checkrad.h \
 display.h \
+envar.h \
 getopt1.h \
 log.h \
 md5.h \

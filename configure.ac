@@ -544,7 +544,7 @@ AC_ARG_WITH(mysql,
 	AC_HELP_STRING([--with-mysql],
 	[Configure to work with MySQL]),
 	[case $withval in
-	 yes)   RA_CHECK_LIB(mysqlclient, mysql_real_connect, "-lm -lz",
+	 yes)   RA_CHECK_LIB(mysqlclient, mysql_real_connect, [-lm -lz],
                             [ USE_SQL=1
                               AC_DEFINE(USE_SQL_MYSQL)
                               AC_DEFINE(HAVE_LIBMYSQL)

@@ -140,7 +140,7 @@ ATTRIBUTE	Password-Expire-Days	2145	integer - [------]
 # Non-Protocol Attributes
 # These attributes are used internally by the server
 #
-ATTRIBUTE	Expiration		  21	date	- [------]
+ATTRIBUTE	Expiration		  21	date	- [L-----]
 ATTRIBUTE	Auth-Type		1000	integer	- [L--R-R]	
 ATTRIBUTE	Menu			1001	string	- [-R----]=
 ATTRIBUTE	Termination-Menu	1002	string	- [-R----]=

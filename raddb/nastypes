@@ -1,0 +1,9 @@
+# Type     Method          Args
+# ----     ------          ----
+unix	   finger	function=check_unix
+max-f	   finger	function=check_max_finger
+max	   snmp	        oid=.1.3.6.1.4.1.529.12.3.1.4.%d,function=check_snmp_u
+as5300-f   finger	function=check_as5300_finger
+as5300     snmp         oid=.1.3.6.1.4.1.9.9.150.1.1.3.1.2.%d,function=check_snmp_u
+livingston snmp         oid=.1.3.6.1.4.1.307.3.2.1.1.1.5.%P,function=check_snmp_s
+

@@ -128,6 +128,41 @@ addvendor(name, value)
 }
 
 /* **************************************************************************
+   Parser table for built-in abinary attributes
+ */
+
+typedef struct attr_parser_tab ATTR_PARSER_TAB;
+struct attr_parser_tab {
+	ATTR_PARSER_TAB *next;
+	int attr;
+	attr_parser_fp fun;
+};
+static ATTR_PARSER_TAB *attr_parser_tab;
+static attr_parser_fp dict_find_parser(int);
+
+attr_parser_fp
+dict_find_parser(attr)
+{
+	ATTR_PARSER_TAB *ep;
+	for (ep = attr_parser_tab; ep; ep = ep->next)
+		if (ep->attr == attr)
+			return ep->fun;
+	return NULL;
+}
+
+void
+dict_register_parser(attr, fun)
+	int attr;
+	attr_parser_fp fun;
+{
+	ATTR_PARSER_TAB *e = alloc_entry(sizeof(*e));
+	e->attr = attr;
+	e->fun = fun;
+	e->next = attr_parser_tab;
+	attr_parser_tab = e;
+}
+
+/* **************************************************************************
  * Parser
  */
 #define KEYWORD      fv[0]
@@ -244,6 +279,7 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
         char *p;
         int flags = AF_DEFAULT_FLAGS;
         int prop  = AP_DEFAULT_ADD;
+	attr_parser_fp fp = NULL;
         
         if (nfields(fc, 4, 6, file, lineno))
                 return 0;
@@ -260,8 +296,19 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
                 return 0;
         }
 
-        if ((type = xlat_keyword(type_kw, ATTR_TYPE, TYPE_INVALID)) ==
-            TYPE_INVALID) {
+	if (strcmp(ATTR_TYPE, "abinary") == 0) {
+		type = TYPE_STRING;
+		fp = dict_find_parser(value);
+		if (!fp) {
+			radlog(L_WARN,
+		       _("%s:%d: no parser registered for this attribute"),
+			       file, lineno);
+			return 0;
+		}
+	} else
+		type = xlat_keyword(type_kw, ATTR_TYPE, TYPE_INVALID);
+	
+        if (type == TYPE_INVALID) {
                 radlog(L_ERR,
                        _("%s:%d: invalid type"),
                        file, lineno);
@@ -334,6 +381,7 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
         attr->value = value;
         attr->type = type;
         attr->prop = flags|prop;
+	attr->parser = fp;
         if (vendor)
                 attr->value |= (vendor << 16);
         
@@ -476,6 +524,11 @@ parse_dict(name)
 int
 dict_init()
 {
+	if (!attr_parser_tab) {
+		/* Register ascend filters */
+		dict_register_parser(242, ascend_parse_filter);
+		dict_register_parser(243, ascend_parse_filter);
+	}
         dict_free();
         return parse_dict(RADIUS_DICTIONARY);
 }

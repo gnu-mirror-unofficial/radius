@@ -1,3 +1,31 @@
+2004-04-09  Sergey Poznyakoff
+
+	Implemented disabling of the system accounting and
+	additional consistency checking of raddb/users.
+	
+	* include/radiusd.h (acct_system): New extern
+	(system_acct_init, radutmp_mlc_enabled_p): New declaration
+	(mlc_register_method): New declaration
+	* include/radius/radutmp.h (P_ACCT_DISABLED,P_ACCT_ENABLED): New
+	macros
+	* radiusd/acct.c: Allow for disabling system accounting
+	* radiusd/files.c (reload_data): Reload sql configuration before
+	dictionaries and matching rules. This is necessary for proper
+	consistency checking (Simultaneous-Use vs. mlc)
+	* radiusd/mlc.c (radius_mlc_enabled_p): New interface
+	(mlc_after_config_hook): Removed. The functionality is moved
+	to mlc_init(), so that it is possible to check for the proper use
+	of Simultaneous-Use.
+	* radiusd/radck.c (fix_check_pairs): Check the use of
+	Simultaneous-Use attribute.
+	* radiusd/radiusd.c (common_init): Call system_acct_init()
+	(acct_stmt): Added "system" statement.
+	* radiusd/sql.c (rad_sql_mlc_enabled_p): New function
+	
+	* radlast/radlast.c: Correctly handle accounting enable/disable
+	records.
+	* radwho/radwho.c: Likewise.
+
 2004-04-09  Sergey Poznyakoff 
 
 	* radiusd/request.c (request_handle,_request_iterator): Restored

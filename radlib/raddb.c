@@ -48,13 +48,38 @@ static int nextkn(struct raddb_file *file);
 static void skip_to_eol(FILE *input);
 
 int
+nextchar(file)
+	struct raddb_file *file;
+{
+	int c;
+
+	c = getc(file->input);
+	/* Fake loop. */
+	while (1) {
+		if (c == '\\') {
+			c = backslash(getc(file->input));
+			if (c == '\n') {
+				do {
+					c = getc(file->input);
+				} while (isws(c));
+				continue;
+			}
+		}
+		break;
+	}
+
+	return c;
+}
+	
+
+int
 nextkn(file)
 	struct raddb_file *file;
 {
 	int    c;
 	static char tokbuf[2];
 	
-	while ((c = getc(file->input)) != EOF && isws(c))
+	while ((c = nextchar(file)) != EOF && isws(c))
 		;
 	if (c == EOF)
 		return 0;
@@ -70,7 +95,7 @@ nextkn(file)
 	do {
 		obstack_1grow(&file->tokstk, c);
 		file->toklen++;
-	} while ((c = getc(file->input)) != EOF && !isspace(c));
+	} while ((c = nextchar(file)) != EOF && !isspace(c));
 	if (c != EOF)
 		ungetc(c, file->input);
 

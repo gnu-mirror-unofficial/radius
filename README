@@ -3,6 +3,9 @@
 Before installing, take a glance at doc/MACHINES, it may describe some
 issues, specific to your configuration.
 
+If you are upgrading from a previous version of GNU Radius, make
+sure to read the section `Upgrading from earlier versions' below.
+
 To install the package, do:
 
 ** ./configure [options]
@@ -108,14 +111,6 @@ it. To do so, run
 
 ** Run `make install'
 
-** If you wish to install manual pages, do 
-
-    make install-man.
-
-Please note, that the information in man pages is no longer being
-maintained and can therefore be inaccurate or incomplete. The
-Info files are the authoritative documentation. 
-
 * Creating SQL database.
 
 If you have configured Radius with SQL support, you may wish
@@ -152,9 +147,9 @@ To get the database structure without creating it, run
     
 * Upgrading from earlier versions of GNU Radius
 
-Please, read file NEWS. It describes all the new features,
-introduced with version 1.0 as well as its basic differences
-from the 0.96 series.
+Please, read file NEWS. It contains important information
+about upgrading from earlier versions, as well as an
+exhaustive list of all the new features.
                
 * Configuring
 

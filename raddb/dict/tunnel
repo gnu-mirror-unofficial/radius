@@ -21,6 +21,11 @@ ATTRIBUTE	Tunnel-Server-Endpoint		67	string
 ATTRIBUTE	Acct-Tunnel-Connection		68	string
 ATTRIBUTE	Tunnel-Password			69	string	- []TP
 ATTRIBUTE	Private-Group-Id		75	integer
+ATTRIBUTE       Tunnel-Private-Group-Id         81      string
+ATTRIBUTE       Tunnel-Assignment-Id            82      string
+ATTRIBUTE       Tunnel-Preference               83      integer
+ATTRIBUTE       Tunnel-Client-Auth-Id           90      string
+ATTRIBUTE       Tunnel-Server-Auth-Id           91      string
 
 VALUE		Framed-Protocol		PPTP			9
 

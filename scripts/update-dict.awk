@@ -51,9 +51,9 @@ ARGIND == 2 && /^\$INCLUDE/ {
 	        print "#" $0
 	next
 }
-ARGIND == 2 && /^\#$INCLUDE/ {
+ARGIND == 2 && /^#\$INCLUDE/ {
 	if (include[$2]) {
-		print substr($0, 1)
+		print substr($0, 2)
 		delete include[$2]
 	} else
 	        print
@@ -88,13 +88,20 @@ END {
 	print "# User customizations"
 	for (n in attribute)
 		print attribute[n]
+	print ""
+	print "# Alternative properties. Uncomment these if you know what you're doing"
 	for (n in property) {
 		if (n != "User-Password" && n != "Password"\
 		    && n != "CHAP-Password" && property[n] != "")
-			print "PROPERTY " n " " property[n]
+			print "# PROPERTY " n " " property[n]
 	}
+	print "# End of properties section"
+        print ""
+        print "# Alias section"
 	for (n in alias)
 		print "ALIAS " n " " alias[n]
+        print ""
+        print "# Values section"
 	for (n in value)
 		print value[n]
 	print "# End of dictionary"

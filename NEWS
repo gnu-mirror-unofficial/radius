@@ -6,30 +6,72 @@ Please send radius bug reports to <bug-gnu-radius@gnu.org>
 
 Version 1.1.95:
 
-* Important notes for upgrading from versions 1.0 - 1.1
+* Important notes for upgrading from earlier versions of GNU Radius
 
-** Run make update-dictionary after make install.
+** Upgrade your dictionaries.
 
 This version does a very strict semantic checking on the dictionary
 files. Old dictionaries may produce lots of warnings and
-errors, therefore, new dictionaries are always installed by `make
-install'. The default main dictionary file, raddb/dictionary, does
-not contain any attribute declarations, instead it merely includes
-the necessary dictionaries.
+errors, therefore you are advised to upgrade them. To do so,
+run `make update-dictionary'. It will update your main 
+(raddb/dictionary) and secondary dictionaries (raddb/dict/*),
+preserving any changes you did to the former. 
+
+Notice, that, starting from this version, the default main dictionary
+file will not contain any attribute declarations, instead it will
+merely include the necessary dictionaries. However, you may add your
+declarations to it and modify it to your linking.
 
 Any modifications to the dictionary files in raddb/dict are now
 strongly discouraged, as these files will be updated by each new
-release. Put your modifications to the main dictionary file,
-raddb/dictionary. This file will remain unchanged during subsequent
-installs.
+release. Put your modifications to the main dictionary file only.
+This file will remain unchanged during subsequent installs.
 
 Two new statements are provided to help you customize your dictionary.
 See section `** Dictionary' below.
 
-Running `make update-dictionary' updates your main dictionary
-(raddb/dictionary) and secondary dictionaries (raddb/dict/*),
-preserving any changes you did to the former. 
+** Update your raddb/config and raddb/rewrite
 
+The rewrite procedures are no longer stored in a single file
+`radiusd/rewrite', instead they may occupy several source file.
+The rewrite procedures shipped with this version of GNU Radius
+are installed in ${prefix}/share/radius/1.2/rewrite. We strongly
+advise you to add the following statement to your raddb/config:
+
+rewrite {
+        load "checknas.rw";
+        load "log-hook.rw";
+};
+
+You may then remove the old raddb/rewrite file, *unless* you have
+modified it.
+
+If you have modified it, follow the procedure described below:
+
+1. Load this file, by adding the following statement to the above
+`rewrite' block:
+
+	load "rewrite";
+
+2. Make sure to remove from this file or rename the following functions:
+check_snmp_u, check_snmp_s, decimal, check_max_finger, check_unix.
+
+** Tailor log file format.
+
+The format of log file is now fully customizable via a special Rewrite
+procedures, called "hooks" (search for logging-hook in the text below
+for the detailed description). To revert to logfile format used in
+versions 1.0-1.1, add the following two statements to your raddb/config,
+right after `logging {' line:
+
+       	prefix-hook "compat_log_prefix";
+	suffix-hook "compat_log_suffix";
+
+** Using Guile extensions
+
+If you are using Guile extensions, notice that the default location
+for Radius scheme modules is now ${prefix}/share/radius/1.2/scheme.
+	
 * New features:
 
 ** Support for Status-Server request.
@@ -158,9 +200,7 @@ The logging-hook rewrite function should take three arguments and return
 a string. See examples/config.syntax and raddb/log-hook.rw for an example.
 
 ** File raddb/rewrite is no longer installed. The Rewrite sources are
-installed under $prefix/share/radius/1.1.92/rewrite. [FIXME: This
-could cause name-clashes with  functions declared in old-version
-raddb/rewrite. Configure should take care of this]
+installed under $prefix/share/radius/1.2/rewrite. 
 
 ** Dictionary
 

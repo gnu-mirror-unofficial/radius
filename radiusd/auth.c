@@ -447,7 +447,13 @@ rad_auth_init(RADIUS_REQ *radreq, int activefd)
         debug(1,("checking username: %s", namepair->avp_strvalue));
         if (check_user_name(namepair->avp_strvalue)) {
                 radlog_req(L_ERR, radreq, _("Malformed username"));
-                stat_inc(auth, radreq->ipaddr, num_bad_req);
+		if (auth_reject_malformed_names) 
+			radius_send_reply(RT_AUTHENTICATION_REJECT, radreq,
+					  radreq->request,
+					  message_text[MSG_ACCESS_DENIED],
+					  activefd);
+		else
+			stat_inc(auth, radreq->ipaddr, num_bad_req);
                 return -1;
         }
                 
@@ -883,8 +889,6 @@ sfn_validate(AUTH_MACH *m)
 
 
 	if (rc != AUTH_OK) { 
-		stat_inc(auth, radreq->ipaddr, num_rejects);
-
 		if (is_log_mode(m, RLOG_AUTH)) {
 			switch (rc) {
 			case AUTH_REJECT:
@@ -1168,8 +1172,6 @@ sfn_ack(AUTH_MACH *m)
 {
         debug(1, ("ACK: %s", m->namepair->avp_strvalue));
         
-        stat_inc(auth, m->req->ipaddr, num_accepts);
-
 	radius_eval_avl(m->req, m->user_reply);
 
         radius_send_reply(RT_AUTHENTICATION_ACK,
@@ -1203,7 +1205,6 @@ sfn_reject(AUTH_MACH *m)
                           m->user_reply,
                           auth_finish_msg(m),
                           m->activefd);
-        stat_inc(auth, m->req->ipaddr, num_rejects);
 }
 
 void

@@ -226,18 +226,18 @@ radclient_build_request(config, server, code, pair)
         char     *ptr, *length_ptr;
         long     lval;
         int      vendorcode, vendorpec;
-        
+	
 #define CHECKSIZE(l) if (ptr + l >= config->data_buffer + config->bufsize) \
                          goto overflow;
         
+	random_vector(config->vector);
         /*
          *      Build an authentication request
          */
         auth = (AUTH_HDR *)config->data_buffer;
         auth->code = code;
         auth->id = config->messg_id++ % 256;
-        random_vector(config->vector);
-        memcpy(auth->vector, config->vector, AUTH_VECTOR_LEN);
+        memset(auth->vector, 0, AUTH_VECTOR_LEN);
         total_length = AUTH_HDR_LEN;
         ptr = auth->data;
 
@@ -297,7 +297,8 @@ radclient_build_request(config, server, code, pair)
                                 VALUE_PAIR *ppair;
                                 ppair = avp_alloc();
                                 encrypt_password(ppair, pair->strvalue,
-                                                 auth->vector, server->secret);
+                                                 config->vector,
+						 server->secret);
                                 
                                 attrlen = ppair->strlength;
                                 CHECKSIZE(attrlen+2);
@@ -330,6 +331,18 @@ radclient_build_request(config, server, code, pair)
         }
 
         auth->length = htons(total_length);
+
+        /* If this is not an authentication request, we need to calculate
+           the md5 hash over the entire packet and put it in the vector. */
+        if (auth->code != RT_AUTHENTICATION_REQUEST) {
+                int len = strlen(server->secret);
+		CHECKSIZE(len);
+		strcpy(config->data_buffer + total_length, server->secret);
+		md5_calc(config->vector, config->data_buffer,
+			 total_length+len);
+	} 
+	memcpy(auth->vector, config->vector, AUTH_VECTOR_LEN);
+	
         return total_length;
         
 overflow:
@@ -352,7 +365,7 @@ radclient_recv(host, udp_port, secret, vector, buffer, length)
         char            reply_digest[AUTH_VECTOR_LEN];
         char            calc_digest[AUTH_VECTOR_LEN];
         int             secretlen;
-        
+
         auth = (AUTH_HDR *)buffer;
         totallen = ntohs(auth->length);
 
@@ -364,12 +377,12 @@ radclient_recv(host, udp_port, secret, vector, buffer, length)
         }
 
         /* Verify the reply digest */
-        memcpy(reply_digest, auth->vector, AUTH_VECTOR_LEN);
-        memcpy(auth->vector, vector, AUTH_VECTOR_LEN);
-        secretlen = strlen(secret);
-        memcpy(buffer + length, secret, secretlen);
-        md5_calc(calc_digest, (unsigned char *)auth, length + secretlen);
-
+	secretlen = strlen(secret);
+	memcpy(reply_digest, auth->vector, AUTH_VECTOR_LEN);
+	memcpy(auth->vector, vector, AUTH_VECTOR_LEN);
+	memcpy(buffer + length, secret, secretlen);
+	md5_calc(calc_digest, (unsigned char *)auth, length + secretlen);
+	
         if (memcmp(reply_digest, calc_digest, AUTH_VECTOR_LEN) != 0) {
                 radlog(L_WARN, _("Received invalid reply digest from server"));
         }
@@ -515,7 +528,6 @@ random_vector(vector)
         int     randno;
         int     i;
 
-        srand(time(NULL));
         for (i = 0; i < AUTH_VECTOR_LEN; ) {
                 randno = rand();
                 memcpy(vector, &randno, sizeof(int));

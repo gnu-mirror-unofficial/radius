@@ -205,7 +205,7 @@ backslash(c)
 	}
         return c;
 }
-	
+
 void
 string_copy(d, s, len)
 	char *d;
@@ -213,16 +213,15 @@ string_copy(d, s, len)
 	int  len;
 {
 	int slen = strlen(s);
-
-	if (slen > len) {
+	
+	if (slen > len) 
 		radlog(L_ERR, _("string too long: %s"), s);
-	}
 	strncpy(d, s, len);
 	d[len] = 0;
 }
 
 char *
-op_str(op)
+op_to_str(op)
         int op;
 {
         switch (op) {
@@ -234,6 +233,37 @@ op_str(op)
         case OPERATOR_GREATER_EQUAL: return ">=";
         }
         return "?";
+}
+
+int
+str_to_op(str)
+	char *str;
+{
+	int op = NUM_OPERATORS;
+	switch (*str++) {
+	case '=':
+		op = OPERATOR_EQUAL;
+		break;
+	case '!':
+		if (*str++ == "=")
+			op = OPERATOR_NOT_EQUAL;
+		break;
+	case '<':
+		if (*str == 0)
+			op = OPERATOR_LESS_THAN;
+		else if (*str++ == '=')
+			op = OPERATOR_LESS_EQUAL;
+		break;
+	case '>':
+		if (*str == 0)
+			op = OPERATOR_GREATER_THAN;
+		else if (*str++ == '=')
+			op = OPERATOR_GREATER_EQUAL;
+		break;
+        }
+	if (*str)
+		op = NUM_OPERATORS;
+	return op;
 }
 
 static int flush_seg(char **bufp, char *seg, char *ptr, int runlen);
@@ -403,12 +433,12 @@ format_pair(pair)
 	if (pair->name)
 		asprintf(&buf1, "%s %s %s",
 			 pair->name,
-			 op_str(pair->operator),
+			 op_to_str(pair->operator),
 			 buf2);
 	else
 		asprintf(&buf1, "%d %s %s",
 			 pair->attribute,
-			 op_str(pair->operator),
+			 op_to_str(pair->operator),
 			 buf2ptr ? buf2ptr : buf2);
 
 	if (buf2ptr)

@@ -80,7 +80,7 @@ scheme_debug(int val)
 static SCM
 eval_catch_body (void *list)
 {
-	return scm_primitive_eval_x((SCM)list);
+	return scm_primitive_eval((SCM)list);
 }
 
 static SCM
@@ -213,7 +213,7 @@ scheme_read_eval_loop()
         SCM sym_begin = RAD_SCM_SYMBOL_VALUE("begin");
 
         list = scm_cons(sym_begin, scm_list_1(scm_cons(sym_top_repl, SCM_EOL)));
-	status = scm_exit_status(scm_primitive_eval_x(list));
+	status = scm_exit_status(scm_primitive_eval(list));
         printf("%d\n", status);
 }
 

@@ -178,6 +178,8 @@ int snmp_stat_nas3(enum mib_node_cmd cmd, void *closure, subid_t subid,
 		   struct snmp_var **varp, int *errp);
 int snmp_stat_nas4(enum mib_node_cmd cmd, void *closure, subid_t subid,
 		   struct snmp_var **varp, int *errp);
+int snmp_nas_table(enum mib_node_cmd cmd, void *closure, subid_t subid,
+		   struct snmp_var **varp, int *errp);
 
 struct auth_mib_closure {
 	int nas_index;
@@ -188,8 +190,13 @@ struct nas_closure {
 	subid_t quad[4];
 };
 
+struct nas_table {
+	int row;
+};
+
 struct auth_mib_closure auth_closure, acct_closure;
 struct nas_closure nas_closure;
+struct nas_table nas_table;
 
 static struct mib_data {
 	oid_t oid;
@@ -270,7 +277,13 @@ static struct mib_data {
 	oid_NASIndex2,                       snmp_stat_nas2, &nas_closure,
 	oid_NASIndex3,                       snmp_stat_nas3, &nas_closure,
 	oid_NASIndex4,                       snmp_stat_nas4, &nas_closure,
-	
+
+	oid_NASAddress,		             snmp_nas_table, &nas_table,
+	oid_NASID,			     snmp_nas_table, &nas_table,
+	oid_NASLines,			     snmp_nas_table, &nas_table,
+	oid_NASLinesInUse,		     snmp_nas_table, &nas_table,
+	oid_NASLinesIdle,		     snmp_nas_table, &nas_table,
+
 };					    
 					    
 void
@@ -627,9 +640,9 @@ mib_get_next(node, varp, errp)
 				mib_reset(node);
 				if (node->down && node->down != found_node)
 					break;
-				if (node->subid == SUBID_X &&
+				/*if (node->subid == SUBID_X &&
 				    mib_down(node, oid))
-					break;
+					break;*/
 				found_node = node;
 			}
 
@@ -1803,8 +1816,6 @@ snmp_stat_nas(num, cmd, closure, subid, varp, errp)
 		return 0;
 		
 	case MIB_NODE_NEXT:
-/*		if (num == 3)
-			closure->last_index++;*/
 		if ((nas = findnasbyindex(1+closure->last_index)) == NULL) {
 			return -1;
 		}
@@ -1873,6 +1884,140 @@ snmp_stat_nas4(cmd, closure, subid, varp, errp)
 	int *errp;
 {
 	return snmp_stat_nas(3, cmd, closure, subid, varp, errp);
+}
+
+
+void get_stat_nasstat(NAS *nas, struct snmp_var *var, int ind);
+struct snmp_var *snmp_nas_table_get(subid_t subid, oid_t oid, int *errp);
+
+int
+snmp_nas_table(cmd, closure, subid, varp, errp)
+	enum mib_node_cmd cmd;
+	void *closure;
+	subid_t subid;
+	struct snmp_var **varp;
+	int *errp;
+{
+	
+	switch (cmd) {
+	case MIB_NODE_GET:
+		if ((*varp = snmp_nas_table_get(subid, (*varp)->name, errp))
+		    == NULL)
+			return -1;
+		break;
+		
+	case MIB_NODE_SET:
+	case MIB_NODE_SET_TRY:
+		/* None of these can be set */
+		if (errp)
+			*errp = SNMP_ERR_NOSUCHNAME;
+		return -1;
+		
+	case MIB_NODE_NEXT:
+		if (!findnasbyindex(subid+1))
+			return -1;
+		((struct nas_table*)closure)->row = subid+1;
+		break;
+			
+	case MIB_NODE_RESET:
+		((struct nas_table*)closure)->row = 1; 
+		break;
+
+	case MIB_NODE_GET_SUBID:
+		return ((struct nas_table*)closure)->row;
+
+	case MIB_NODE_COMPARE:
+		return 0;
+		
+	default: /* unused: should never get there */
+		abort();
+
+	}
+	
+	return 0;
+	
+}
+
+
+struct snmp_var *
+snmp_nas_table_get(subid, oid, errp)
+	subid_t subid;
+	oid_t oid;
+	int *errp;
+{
+	struct snmp_var *ret;
+	struct timeval tv;
+	struct timezone tz;
+	char *p;
+	subid_t key;
+	NAS *nas;
+	
+	ret = snmp_var_create(oid);
+	*errp = SNMP_ERR_NOERROR;
+
+	switch (key = SUBID(oid, OIDLEN(oid)-2)) {
+	case MIB_KEY_NASAddress:
+	case MIB_KEY_NASID:
+	case MIB_KEY_NASLines:
+	case MIB_KEY_NASLinesInUse:
+	case MIB_KEY_NASLinesIdle:
+		if ((nas = findnasbyindex(subid)) != NULL &&
+		     nas->nas_stat) {
+ 			get_stat_nasstat(nas, ret, key);
+			break;
+		}
+		/*FALLTHRU*/
+	default:
+		*errp = SNMP_ERR_NOSUCHNAME;
+		snmp_var_free(ret);
+		return NULL;
+	}
+	return ret;
+}
+
+void
+get_stat_nasstat(nas, var, ind)
+	NAS *nas;
+	struct snmp_var *var;
+	int ind;
+{
+	switch (ind) {
+	case MIB_KEY_NASAddress:
+		var->type = SMI_IPADDRESS;
+		var->val_length = sizeof(UINT4);
+		var->var_str = snmp_alloc(sizeof(UINT4));
+		*(UINT4*)var->var_str = ntohl(nas->nas_stat->ipaddr);
+		break;
+
+	case MIB_KEY_NASID:
+		var->type = ASN_OCTET_STR;
+		var->val_length = strlen(nas->longname);
+		var->var_str = snmp_strdup(nas->longname);
+		break;
+
+	case MIB_KEY_NASLines:
+		stat_count_ports();
+		var->type = SMI_COUNTER32;
+		var->val_length = sizeof(counter);
+		var->var_int = nas->nas_stat->ports_active +
+			       nas->nas_stat->ports_idle;
+		break;
+
+	case MIB_KEY_NASLinesInUse:
+		stat_count_ports();
+		var->type = SMI_COUNTER32;
+		var->val_length = sizeof(counter);
+		var->var_int = nas->nas_stat->ports_active;
+		break;
+
+	case MIB_KEY_NASLinesIdle:
+		stat_count_ports();
+		var->type = SMI_COUNTER32;
+		var->val_length = sizeof(counter);
+		var->var_int = nas->nas_stat->ports_idle;
+		break;
+
+	}
 }
 
 #endif

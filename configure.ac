@@ -231,7 +231,7 @@ AC_CHECK_TYPE(u_int, unsigned int)
 AC_CHECK_TYPE(u_long, unsigned long)
 AC_HEADER_TIME
 AC_STRUCT_TM
-RA_CHECK_MEMBERS([struct sockaddr_in.sin_len], , ,
+AC_CHECK_MEMBERS([struct sockaddr_in.sin_len], , ,
     [ #include <sys/types.h>
       #include <netinet/in.h> ])
 RA_CHECK_INADDR_LOOPBACK

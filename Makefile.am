@@ -42,5 +42,6 @@ EXTRA_DIST=include m4 doc mibs scripts contrib ylwrap
 dist-hook:
 	-(cd $(distdir); \
 	 find . \( -name CVS -o -name .emacs.desktop -o -name .deps -o \
-                   -name '*~' -o -name core \) -exec rm -rf {} \; )
+                   -name .cvsignore -o -name '*~' -o -name core \) \
+		   -exec rm -rf {} \; )
 

@@ -1,3 +1,9 @@
+2001-05-08  gray  <gray@farlep.net>
+	radscm/ sources: added autogeneration of *.x, *.doc files.
+	Changed function declarations in radscm/radscm.c accordingly.
+	Also added scripts/guile directory: see comment at the start of
+	scripts/guile/guile-doc-snarf to find out why.
+
 2001-05-06  gray  <gray@farlep.net>
 	* Added m4 directory and modified configure.in.
 	* create_dbm() in DBM_DBM mode used malformed filenames.

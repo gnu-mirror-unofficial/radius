@@ -12,10 +12,10 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-12-24 13:04+0200\n"
-"PO-Revision-Date: 2002-12-23 14:17+0200\n"
-"Last-Translator: Krzysztof Kopera <Krzysztof_Kopera/HeadQ@netia.pl>\n"
-"Language-Team: Polish <pl@li.org>\n"
+"POT-Creation-Date: 2003-01-23 19:13+0200\n"
+"PO-Revision-Date: 2003-01-23 19:17+0200\n"
+"Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
+"Language-Team: none\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -405,8 +405,8 @@ msgstr "z³a liczba argumentów do formy %s"
 msgid "form `%s' not closed"
 msgstr "forma `%s' nie jest zamkniêta"
 
-#: lib/radargp.c:38 radiusd/radiusd.c:215 radiusd/radiusd.c:223
-#: radiusd/radiusd.c:235
+#: lib/radargp.c:38 radiusd/radiusd.c:216 radiusd/radiusd.c:224
+#: radiusd/radiusd.c:236
 msgid "DIR"
 msgstr "KATALOG"
 
@@ -564,7 +564,7 @@ msgstr "Odrzucony"
 msgid "Ignored"
 msgstr "Pominiêty"
 
-#: radiusd/auth.c:991 radiusd/auth.c:1011 radiusd/auth.c:1220
+#: radiusd/auth.c:991 radiusd/auth.c:1011 radiusd/auth.c:1221
 msgid "Login incorrect"
 msgstr "Login nieprawid³owy"
 
@@ -592,25 +592,25 @@ msgstr "Login nie powiód³ siê"
 msgid "realm quota exceeded for "
 msgstr "ograniczenie realm'a osi±gniête dla "
 
-#: radiusd/auth.c:1091
+#: radiusd/auth.c:1092
 #, c-format
 msgid "Multiple logins: [%s] max. %ld%s, CLID %s"
 msgstr "Wielokrotne logowanie: [%s] max. %ld%s, CLID %s"
 
-#: radiusd/auth.c:1094
+#: radiusd/auth.c:1095
 msgid " [MPP attempt]"
 msgstr " [próba MPP]"
 
-#: radiusd/auth.c:1129
+#: radiusd/auth.c:1130
 #, c-format
 msgid "Outside allowed timespan (%s)"
 msgstr "Poza dopuszczalnym zakresem czasu (%s)"
 
-#: radiusd/auth.c:1222
+#: radiusd/auth.c:1223
 msgid "external check failed: "
 msgstr "zewnêtrzna kontrola nie powiod³a siê: "
 
-#: radiusd/auth.c:1305
+#: radiusd/auth.c:1306
 msgid "Login OK"
 msgstr "Login podtwierdzony"
 
@@ -1069,20 +1069,20 @@ msgstr "rad_pam_conv(): brak przekazanych danych aplikacji"
 msgid "couldn't send request to realm %s"
 msgstr "nie mo¿na wys³aæ ¿±dania do realm %s"
 
-#: radiusd/proxy.c:339
+#: radiusd/proxy.c:342
 msgid "digest mismatch"
 msgstr "niezgodno¶æ odcisków"
 
-#: radiusd/proxy.c:343
+#: radiusd/proxy.c:346
 msgid "unknown request code"
 msgstr "nieznany kod ¿±dania"
 
-#: radiusd/proxy.c:349
+#: radiusd/proxy.c:352
 #, c-format
 msgid "Possible Security Breach: %s"
 msgstr "Mo¿liwe naruszenie bezpieczeñstwa: %s"
 
-#: radiusd/proxy.c:550
+#: radiusd/proxy.c:556
 #, c-format
 msgid "Unrecognized proxy reply from server %s, proxy ID %d"
 msgstr "Nierozpoznana odpowied¼ od serwera %s, proxy ID %d"
@@ -1152,115 +1152,119 @@ msgstr "BEGIN bez Fall-Through"
 msgid "request from unknown client"
 msgstr "¿±danie od nieznanego klienta"
 
-#: radiusd/radiusd.c:208
+#: radiusd/radiusd.c:209
 msgid "GNU radius daemon"
 msgstr "Demon GNU radius"
 
-#: radiusd/radiusd.c:212
+#: radiusd/radiusd.c:213
 msgid "radiusd specific switches:"
 msgstr "Opcje specyficzne dla radiusd:"
 
-#: radiusd/radiusd.c:214
+#: radiusd/radiusd.c:215
 msgid "Do detailed authentication logging"
 msgstr "Prowad¼ dok³adn± rejestacjê uwierzytelnienia"
 
-#: radiusd/radiusd.c:216
+#: radiusd/radiusd.c:217
 msgid "Set accounting directory"
 msgstr "Podaj nazwê katalogu rozliczeniowego"
 
-#: radiusd/radiusd.c:219
+#: radiusd/radiusd.c:220
 msgid "Enable DBM support"
 msgstr "W³±cz obs³ugê DBM"
 
-#: radiusd/radiusd.c:222
+#: radiusd/radiusd.c:223
 msgid "Stay in foreground"
 msgstr "Zostañ w tle"
 
-#: radiusd/radiusd.c:224
+#: radiusd/radiusd.c:225
 msgid "Set logging directory name"
 msgstr "Podaj nazwê kalalogu logowania"
 
-#: radiusd/radiusd.c:226
+#: radiusd/radiusd.c:227
 msgid "Select operation mode: test, checkconf, builddbm."
 msgstr "Wybierz tryb operacji: test, checkout, builddbm."
 
-#: radiusd/radiusd.c:228
+#: radiusd/radiusd.c:229
 msgid "Do only authentication"
 msgstr "Tylko autentykacja"
 
-#: radiusd/radiusd.c:230
+#: radiusd/radiusd.c:231
 msgid "Do not resolve IP addresses"
 msgstr "Nie rozwijaj adresu IP"
 
 # HELPMSG
-#: radiusd/radiusd.c:231 radlast/radlast.c:129
+#: radiusd/radiusd.c:232 radlast/radlast.c:129
 msgid "IPADDR"
 msgstr "IPADRES"
 
-#: radiusd/radiusd.c:232
+#: radiusd/radiusd.c:233
 msgid "Listen on IPADDR"
 msgstr "Nas³uchuj na IPADRES"
 
-#: radiusd/radiusd.c:234
+#: radiusd/radiusd.c:235
 msgid "Set authentication port number"
 msgstr "Ustaw numer portu autentykacji"
 
-#: radiusd/radiusd.c:236
+#: radiusd/radiusd.c:237
 msgid "Store pidfile in DIR"
 msgstr "Zapisz pidfile w KATALOG"
 
-#: radiusd/radiusd.c:238
+#: radiusd/radiusd.c:239
 msgid "Strip prefixes/suffixes off user names before logging"
 msgstr "Przed logowaniem oddziel przedrostki/przyrostki z nazw u¿ytkownika"
 
-#: radiusd/radiusd.c:240
+#: radiusd/radiusd.c:241
 msgid "Run in single process mode"
 msgstr "Uruchom w trybie pojedynczego procesu"
 
 # HELPMSG
-#: radiusd/radiusd.c:241
+#: radiusd/radiusd.c:242
 msgid "DEBUGSPEC"
 msgstr "POZIOM"
 
-#: radiusd/radiusd.c:242
+#: radiusd/radiusd.c:243
 msgid "Set debugging level"
 msgstr "Ustaw poziom odpluskwiania"
 
-#: radiusd/radiusd.c:244
+#: radiusd/radiusd.c:245
 msgid "Log authentications"
 msgstr "Notuj autentykacje"
 
-#: radiusd/radiusd.c:246
+#: radiusd/radiusd.c:247
 msgid "Log users' passwords"
 msgstr "Notuj has³a u¿ytkowników"
 
-#: radiusd/radiusd.c:285
+#: radiusd/radiusd.c:286
 msgid "radiusd compiled without DBM support"
 msgstr "radiusd skompilowany bez wsparcia DBM"
 
-#: radiusd/radiusd.c:294
+#: radiusd/radiusd.c:295
 #, c-format
 msgid "unknown mode: %s"
 msgstr "nieznany tryb: %s"
 
-#: radiusd/radiusd.c:306
+#: radiusd/radiusd.c:307
 #, c-format
 msgid "invalid IP address: %s"
 msgstr "niew³a¶ciwy adres IP: %s"
 
-#: radiusd/radiusd.c:450
+#: radiusd/radiusd.c:435
+msgid "can't find out my own IP address"
+msgstr "nie mogê rozpoznaæ w³asnego adresu IP"
+
+#: radiusd/radiusd.c:458
 msgid "Sorry, your account is currently closed\n"
 msgstr "Przykro mi, Twoje konto jest zamkniête\n"
 
-#: radiusd/radiusd.c:452
+#: radiusd/radiusd.c:460
 msgid "Password has expired\n"
 msgstr "Has³o wygas³o\n"
 
-#: radiusd/radiusd.c:454
+#: radiusd/radiusd.c:462
 msgid "Password will expire in %R{Password-Expire-Days} Days\n"
 msgstr "Has³o wyga¶nie w ci±gu %R{Password-Expire-Days} dni\n"
 
-#: radiusd/radiusd.c:456
+#: radiusd/radiusd.c:464
 msgid ""
 "\n"
 "Access denied\n"
@@ -1268,7 +1272,7 @@ msgstr ""
 "\n"
 "Odmowa dostêpu\n"
 
-#: radiusd/radiusd.c:458
+#: radiusd/radiusd.c:466
 msgid ""
 "\n"
 "Realm quota exceeded - access denied\n"
@@ -1276,7 +1280,7 @@ msgstr ""
 "\n"
 "Osi±gniête ograniczenie realm'a - odmowa dostêpu\n"
 
-#: radiusd/radiusd.c:460
+#: radiusd/radiusd.c:468
 msgid ""
 "\n"
 "You are already logged in %R{Simultaneous-Use} times - access denied\n"
@@ -1284,7 +1288,7 @@ msgstr ""
 "\n"
 "Jeste¶ ju¿ zalogowany %R{Simultaneous-Use} razy - odmowa dostêpu\n"
 
-#: radiusd/radiusd.c:462
+#: radiusd/radiusd.c:470
 msgid ""
 "\n"
 "You are already logged in - access denied\n"
@@ -1292,119 +1296,119 @@ msgstr ""
 "\n"
 "Jeste¶ ju¿ zalogowany - odmowa dostêpu\n"
 
-#: radiusd/radiusd.c:464
+#: radiusd/radiusd.c:472
 msgid "You are calling outside your allowed timespan\n"
 msgstr "Wywo³anie poza Twoim dopuszczalnym okresem czasu\n"
 
-#: radiusd/radiusd.c:527
+#: radiusd/radiusd.c:535
 msgid "Starting"
 msgstr "Uruchamianie"
 
-#: radiusd/radiusd.c:560
+#: radiusd/radiusd.c:568
 msgid "Ready"
 msgstr "Gotów"
 
-#: radiusd/radiusd.c:572
+#: radiusd/radiusd.c:580
 msgid "Ready to process requests."
 msgstr "Gotowy do obs³ugi wywo³añ."
 
-#: radiusd/radiusd.c:751
+#: radiusd/radiusd.c:759
 msgid "Normal shutdown."
 msgstr "Normalne zamkniêcie."
 
-#: radiusd/radiusd.c:771
+#: radiusd/radiusd.c:779
 msgid "flushing request queues"
 msgstr "opró¿nianie kolejki wywo³añ"
 
-#: radiusd/radiusd.c:784
+#: radiusd/radiusd.c:792
 msgid "restart initiated"
 msgstr "ponowne uruchomienie zapocz±tkowane"
 
-#: radiusd/radiusd.c:787
+#: radiusd/radiusd.c:795
 msgid "can't restart: not started as absolute pathname"
 msgstr "nie mo¿na ponownie uruchomiæ: nie rozpoczête ¶cie¿k± absolutn±"
 
-#: radiusd/radiusd.c:836
+#: radiusd/radiusd.c:844
 msgid "restarting radius"
 msgstr "ponowny uruchomienie radiusa"
 
-#: radiusd/radiusd.c:838
+#: radiusd/radiusd.c:846
 msgid "RADIUS NOT RESTARTED: exec failed"
 msgstr "RADIUS NIE ZOSTA£ PONOWNIE URUCHOMIONY: uruchomienie zawiod³o"
 
-#: radiusd/radiusd.c:1155
+#: radiusd/radiusd.c:1163
 msgid "Radiusd is not listening on any port. Trying to continue anyway..."
 msgstr "Radiusd nie nas³uchuje na ¿adnym porcie. Mimo to contynuujê..."
 
-#: radiusd/radiusd.c:1167
+#: radiusd/radiusd.c:1175
 msgid "Loading configuration files."
 msgstr "Prze³adowanie plików konfiguracyjnych."
 
-#: radiusd/radiusd.c:1180
+#: radiusd/radiusd.c:1188
 msgid "Errors reading config file - EXITING"
 msgstr "B³êdy przy odczycie pliku konfiguracyjnego - WYJ¦CIE"
 
-#: radiusd/radiusd.c:1192
+#: radiusd/radiusd.c:1200
 msgid "Reloading configuration now"
 msgstr "Prze³adowywanie konfiguracji"
 
-#: radiusd/radiusd.c:1205
+#: radiusd/radiusd.c:1213
 #, c-format
 msgid "Dumping users db to `%s'"
 msgstr "Zapis bazy u¿ytkowników do `%s'"
 
-#: radiusd/radiusd.c:1229
+#: radiusd/radiusd.c:1237
 msgid "can't restart: radiusd not started as absolute pathname"
 msgstr ""
 "nie mo¿na ponownie uruchomiæ: radiusd nie poprzedzony ¶cie¿k± absolutn±"
 
-#: radiusd/radiusd.c:1242
+#: radiusd/radiusd.c:1250
 msgid "RADIUSD RUNNING"
 msgstr "RADIUSD URUCHOMIONY"
 
-#: radiusd/radiusd.c:1249
+#: radiusd/radiusd.c:1257
 msgid "RADIUSD SUSPENDED"
 msgstr "RADIUSD U¦PIONY"
 
-#: radiusd/radiusd.c:1286
+#: radiusd/radiusd.c:1294
 #, c-format
 msgid "%u classes, %u buckets are using %u bytes of memory"
 msgstr "%u klas, %u pojemników u¿ywa %u bajtów pamiêci"
 
-#: radiusd/radiusd.c:1293
+#: radiusd/radiusd.c:1301
 #, c-format
 msgid "memory utilization: %u.%1u%%"
 msgstr "wykorzystanie pamiêci: %u.%1u%%"
 
-#: radiusd/radiusd.c:1298
+#: radiusd/radiusd.c:1306
 msgid "    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"
 msgstr ""
 
-#: radiusd/radiusd.c:1303
+#: radiusd/radiusd.c:1311
 #, c-format
 msgid "malloc statistics: %d blocks, %d bytes"
 msgstr "statystyka malloc: %d bloków, %d bajtów"
 
-#: radiusd/radiusd.c:1318
+#: radiusd/radiusd.c:1326
 #, c-format
 msgid "exit on signal %d"
 msgstr "zakoñczenie na sygna³ %d"
 
-#: radiusd/radiusd.c:1474
+#: radiusd/radiusd.c:1482
 msgid "Dropping packet"
 msgstr "Zrzut pakietu"
 
-#: radiusd/radiusd.c:1497
+#: radiusd/radiusd.c:1505
 #, c-format
 msgid "Retransmitting %s reply"
 msgstr "Retransmisja odpowiedzi %s"
 
 # FIXME: the message is hazy
-#: radiusd/radiusd.c:1502
+#: radiusd/radiusd.c:1510
 msgid "request failed"
 msgstr "¿±danie nie powiod³o siê"
 
-#: radiusd/radiusd.c:1623
+#: radiusd/radiusd.c:1631
 #, c-format
 msgid "unknown request code %d"
 msgstr "nieznany kod ¿±dania %d"
@@ -2225,27 +2229,3 @@ msgstr[2] "zapytanie zwróci³o %d wierszy: %s"
 #, c-format
 msgid "PQexec returned %s"
 msgstr "PQexec zwróci³o %s"
-
-#~ msgid "timed out in waiting for finger response from NAS %s"
-#~ msgstr "przekroczony czas oczekiwania na odpowied¼ finger od NASa %s"
-
-#~ msgid "Start watcher process"
-#~ msgstr "Uruchom proces obserwatora"
-
-#~ msgid "can't create watcher: not started as absolute pathname"
-#~ msgstr "nie mo¿na utworzyæ obserwatora: nie rozpoczête ¶cie¿k± absolutn±"
-
-#~ msgid "can't find out my own IP address"
-#~ msgstr "nie mogê rozpoznaæ w³asnego adresu IP"
-
-#~ msgid "unknown value %s"
-#~ msgstr "niewiadoma warto¶æ %s"
-
-#~ msgid "%s: error parsing date %s"
-#~ msgstr "%s: b³±d przy przetworzeniu daty: %s"
-
-#~ msgid "unknown attribute type %d"
-#~ msgstr "nieznany typ atrybutu %d"
-
-#~ msgid "Starting - reading configuration files ..."
-#~ msgstr "Uruchamianie - odczyt plików konfiguracyjnych ..."

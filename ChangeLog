@@ -1,3 +1,9 @@
+2003-01-23  Sergey Poznyakoff 
+
+	* client/pam_radius/pam_radius.c: Define PAM_SM_SESSION.
+	* snmplib/snmp_sess.c (snmp_session_create): Fixed memory
+	  leak.
+
 2003-01-08  Sergey Poznyakoff 
 
 	* configure.ac: Raised prerequisite autoconf version to 2.57

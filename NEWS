@@ -121,25 +121,19 @@ description in texinfo documentation (Configuration files/config file/guile).
 The Guile functions can be called on authentication or accounting
 using the following special reply-pairs:
 
- 1. Scheme-Procedure. 
-    This attribute can be used in reply-pairs of raddb/users entry.
-    Its value is the name of Guile function to be called on
-    authentication.
- 2. Scheme-Acct-Procedure.
-    This attribute can be used in reply-pairs of raddb/hints entry.
-    Its value is the name of Guile function to be called on
-    accounting.
-
-Both functions should be defined in Guile source as
+1. Scheme-Procedure. 
+This attribute can be used in reply-pairs of raddb/users entry.
+Its value is the name of Guile function to be called on
+authentication. The function defininition should look like:
 
 (define (auth-function-name request-list check-list reply-list)
   ...
 
 The arguments are:
 
- request-list -- The list of A/V pairs received in the request.
- check-list   -- The check list from the user's profile entry (raddb/users).
- reply-list   -- The reply list collected this far.
+request-list -- The list of A/V pairs received in the request.
+check-list   -- The check list from the user's profile entry (raddb/users).
+reply-list   -- The reply list collected this far.
 
 The authentication function (i.e., the one specified in Scheme-Procedure
 pair) should return cons in the form:
@@ -150,8 +144,15 @@ where BOOL is #t if authentication succeeds, and #f otherwise.
       reply-pair-list is the list of A/V pairs to be added to the
       reply packet.
 
-The accounting function (the one set by Scheme-Acct-Procedure attribute)
-should return #t on success and #f on failure.
+2. Scheme-Acct-Procedure.
+This attribute can be used in reply-pairs of raddb/hints entry.
+Its value is the name of Guile function to be called on
+accounting. The function definition should look like:
+
+(define (auth-function-name request-list)
+  ...
+
+The function should return #t on success and #f on failure.
 
 An A/V list is represented as a scheme list of conses in the form
 
@@ -220,7 +221,7 @@ check_attr_query  select attr,value,op \
 
 ** raddb/sqlserver: query_buffer_size clause is obsolete.
 
-** radiusd can be compiled with support for both MySQL and PostgreSQL support.
+** radiusd can be compiled with support for both MySQL and PostgreSQL.
 
 In this case the actual database to be used is controlled by `interface'
 statement in raddb/sqlserver file, e.g.:

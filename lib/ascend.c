@@ -262,7 +262,7 @@ _get_hex_string(struct ascend_parse_buf *pb, u_char *buf)
 
 /* Generic filter is:
 
-  "generic" dir action offset mask value {"=="|"!="} [ "more" ]
+  "generic" dir action offset mask ["=="|"!="] value [ "more" ]
   where dir    is {"in"|"out"}
         action is {"forward"|"drop"}
 	offset is number
@@ -289,6 +289,18 @@ _ascend_parse_generic(struct ascend_parse_buf *pb)
 		return 1;
 	pb->flt->v.generic.len = htons(len);
 
+	tok = _lookahead(pb);
+	if (!tok) 
+		return 1;
+
+	if (strcmp(tok, "==") == 0) {
+		pb->flt->v.generic.neq = 0;
+		_get_token(pb, 1);
+	} else if (strcmp(tok, "!=") == 0) {
+		pb->flt->v.generic.neq = 1;
+		_get_token(pb, 1);
+	}
+	
 	if ((num = _get_hex_string(pb, pb->flt->v.generic.value)) < 0)
 		return 1;
 	if (num != len) {
@@ -297,19 +309,6 @@ _ascend_parse_generic(struct ascend_parse_buf *pb)
 		return 1;
 	}
 	
-	tok = _get_token(pb, 1);
-	if (!tok)
-		return 1;
-	if (strcmp(tok, "==") == 0)
-		pb->flt->v.generic.neq = 0;
-	else if (strcmp(tok, "!=") == 0)
-		pb->flt->v.generic.neq = 1;
-	else {
-		asprintf(pb->errmsg, "%s: %s",
-			 _("Bad operator"), tok);
-		return 1;
-	}
-
 	tok = _get_token(pb, 0);
 	if (!tok)
 		return 0;
@@ -645,6 +644,8 @@ _ascend_parse_filter(const char *input, ASCEND_FILTER *flt, char **errp)
 	pb.errmsg = errp;
 	rc = _ascend_parse(&pb);
 	argcv_free(pb.tokc, pb.tokv);
+	if (rc && !*errp) 
+		asprintf(errp, _("Malformed attribute value"));
 	return rc;
 }
 
@@ -653,7 +654,7 @@ ascend_parse_filter(VALUE_PAIR *pair, char **errp)
 {
 	ASCEND_FILTER flt;
 	
-	if (_ascend_parse_filter(pair->avp_strvalue, &flt, errp))
+	if (_ascend_parse_filter(pair->avp_strvalue, &flt, errp)) 
 		return 1;
 	efree(pair->avp_strvalue);
 	pair->avp_strlength = sizeof(flt);

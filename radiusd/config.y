@@ -1410,9 +1410,6 @@ get_config()
 #ifdef USE_SNMP
         free_netlist();
 #endif
-#ifdef USE_SERVER_GUILE
-        scheme_end_reconfig();
-#endif
         first_time = 0;
         radlog(L_INFO, _("ready"));
         return 0;

@@ -10,7 +10,8 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-libexec_SCRIPTS=nas.scm
+libexec_SCRIPTS=@BUILD_NAS_SCM@
+EXTRA_SCRIPTS=nas.scm
 CLEANFILES=$(libexec_SCRIPTS)
 EXTRA_DIST=nas.rc nas.scm.in
 pppdir=/etc/ppp

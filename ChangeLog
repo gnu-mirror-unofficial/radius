@@ -1,3 +1,15 @@
+2001-08-15 Sergey Poznyakoff
+
+	* radiusd/radutil.c: Do not add extra spaces after expanding
+	%C{Password}. 
+	* radiusd/proxy.c: Fixup string length after stripping off
+	LOCAL realm (Reported by Michael Smirnov). Handle NOREALM
+	special realm.
+	* radiusd/files.c: Handle NOREALM special realm.
+
+	* THANKS: Added Michael Smirnov.
+	* TODO: Updated.
+
 2001-08-10 Sergey Poznyakoff
 	* ylwrap: New option -stdout allows to run programs that send
 	their output to stdout (e.g. gperf)

@@ -1,6 +1,8 @@
 2001-03-14  gray  <gray@farlep.net>
 	Added @ to the array of symbols allowed in a username.
 	Thanks to Jody Owens for reporting the bug.
+        Added NULL pointer check to rad_pam_conv: Solaris does 
+	not pass appdata_ptr if the server is not running euid 0. Why?
 
 2001-03-13  gray  <gray@farlep.net>
 	Added ! to the array of symbols allowed in a username.

@@ -69,7 +69,6 @@ static int check_expiration(VALUE_PAIR *check_item, char **user_msg);
 static int unix_pass(char *name, char *passwd);
 static int rad_check_password(RADIUS_REQ *radreq, 
 			      VALUE_PAIR *check_item, VALUE_PAIR *namepair,
-			      u_char *pw_digest,
 			      char **user_msg,
 			      char *userpass);
 
@@ -264,15 +263,13 @@ unix_pass(name, passwd)
  *			
  */
 int
-rad_check_password(radreq, check_item, namepair, pw_digest, user_msg, userpass)
+rad_check_password(radreq, check_item, namepair, user_msg, userpass)
 	RADIUS_REQ   *radreq;
 	VALUE_PAIR *check_item;
 	VALUE_PAIR *namepair;
-	u_char     *pw_digest;
 	char       **user_msg;
 	char       *userpass;
 {
-	char string[AUTH_STRING_LEN];
 	char *ptr;
 	char *real_password = NULL;
 	char name[AUTH_STRING_LEN];
@@ -283,10 +280,10 @@ rad_check_password(radreq, check_item, namepair, pw_digest, user_msg, userpass)
 	int length;
 	int result;
 	char *authdata = NULL;
+	char pw_digest[AUTH_VECTOR_LEN];
 	
 	result = AUTH_OK;
 	userpass[0] = 0;
-	string[0] = 0;
 
 	/* Process immediate authentication types */
 	if ((tmp = avl_find(check_item, DA_AUTH_TYPE)) != NULL)
@@ -306,16 +303,12 @@ rad_check_password(radreq, check_item, namepair, pw_digest, user_msg, userpass)
 		/* Decrypt the password. */
 		if (auth_item) {
 			if (auth_item->strlength == 0)
-				string[0] = 0;
-			else {
-				memcpy(string, auth_item->strvalue,
-				       AUTH_PASS_LEN);
-				for (i = 0;i < AUTH_PASS_LEN;i++) 
-					string[i] ^= pw_digest[i];
-				string[AUTH_PASS_LEN] = '\0';
-			}
+				userpass[0] = 0;
+			else 
+				decrypt_password(userpass, auth_item,
+						 radreq->vector,
+						 radreq->secret);
 		}
-		strcpy(userpass, string);
 	}
 		
 	if (auth_item == NULL)
@@ -354,14 +347,14 @@ rad_check_password(radreq, check_item, namepair, pw_digest, user_msg, userpass)
 	strip_username(1, namepair->strvalue, check_item, name);
 
 	debug(1,
-		("auth_type=%d, string=%s, name=%s, password=%s",
-		 auth_type, string, name,
+		("auth_type=%d, userpass=%s, name=%s, password=%s",
+		 auth_type, userpass, name,
 		 real_password ? real_password : "NONE"));
 
 	switch (auth_type) {
 	case DV_AUTH_TYPE_SYSTEM:
 		debug(1, ("  auth: System"));
-		if (unix_pass(name, string) != 0)
+		if (unix_pass(name, userpass) != 0)
 			result = AUTH_FAIL;
 		break;
 	case DV_AUTH_TYPE_PAM:
@@ -373,7 +366,7 @@ rad_check_password(radreq, check_item, namepair, pw_digest, user_msg, userpass)
 			authdata = tmp->strvalue;
 		}
 		authdata = authdata ? authdata : PAM_DEFAULT_TYPE;
-		if (pam_pass(name, string, authdata, user_msg) != 0)
+		if (pam_pass(name, userpass, authdata, user_msg) != 0)
 			result = AUTH_FAIL;
 #else
 		radlog(L_ERR,
@@ -386,11 +379,11 @@ rad_check_password(radreq, check_item, namepair, pw_digest, user_msg, userpass)
 	case DV_AUTH_TYPE_CRYPT_LOCAL:
 		debug(1, ("  auth: Crypt"));
 		if (real_password == NULL) {
-			result = string[0] ? AUTH_FAIL : AUTH_OK;
+			result = userpass[0] ? AUTH_FAIL : AUTH_OK;
 			break;
 		}
 		if (strcmp(real_password,
-			   md5crypt(string, real_password)) != 0)
+			   md5crypt(userpass, real_password)) != 0)
 			result = AUTH_FAIL;
 		break;
 		
@@ -399,7 +392,7 @@ rad_check_password(radreq, check_item, namepair, pw_digest, user_msg, userpass)
 		/* Local password is just plain text. */
 		if (auth_item->attribute != DA_CHAP_PASSWORD) {
 			if (real_password == NULL ||
-			    strcmp(real_password, string) != 0)
+			    strcmp(real_password, userpass) != 0)
 				result = AUTH_FAIL;
 			break;
 		}
@@ -412,13 +405,13 @@ rad_check_password(radreq, check_item, namepair, pw_digest, user_msg, userpass)
 		   we use vp->strlength, and Ascend gear likes
 		   to send an extra '\0' in the string! */
 		
-		strcpy(string, "{chap-password}");
+		strcpy(userpass, "{chap-password}");
 		if (real_password == NULL) {
 			result = AUTH_FAIL;
 			break;
 		}
 		i = 0;
-		ptr = string;
+		ptr = userpass;
 		*ptr++ = *auth_item->strvalue;
 		i++;
 		length = strlen(real_password);
@@ -435,7 +428,7 @@ rad_check_password(radreq, check_item, namepair, pw_digest, user_msg, userpass)
 			memcpy(ptr, radreq->vector, AUTH_VECTOR_LEN);
 			i += AUTH_VECTOR_LEN;
 		}
-		md5_calc(pw_digest, (u_char*) string, i);
+		md5_calc(pw_digest, (u_char*) userpass, i);
 		
 		/* Compare them */
 		if (memcmp(pw_digest, auth_item->strvalue + 1,
@@ -482,7 +475,6 @@ rad_auth_init(radreq, activefd)
 		radlog(L_ERR, _("No username: [] (from nas %s)"),
 		       nas_request_to_name(radreq));
 		stat_inc(auth, radreq->ipaddr, num_bad_req);
-		radreq_free(radreq);
 		return -1;
 	}
 	debug(1,("checking username: %s", namepair->strvalue));
@@ -491,25 +483,9 @@ rad_auth_init(radreq, activefd)
 		       namepair->strvalue,
 		       nas_request_to_name(radreq));
 		stat_inc(auth, radreq->ipaddr, num_bad_req);
-		radreq_free(radreq);
 		return -1;
 	}
 		
-	/*
-	 * Verify the client and Calculate the MD5 Password Digest
-	 */
-	if (calc_digest(radreq->digest, radreq) != 0) {
-		/*
-		 * We don't respond when this fails
-		 */
-		radlog(L_NOTICE,
-		       _("from client %s - Security Breach: %s"),
-		       client_lookup_name(radreq->ipaddr), namepair->strvalue);
-		stat_inc(auth, radreq->ipaddr, num_bad_auth);
-		radreq_free(radreq);
-		return -1;
-	}
-
 #ifdef USE_SQL
 	if (p = avp_create(DA_QUEUE_ID, 0, NULL, (qid_t)radreq))
 		avl_add_pair(&radreq->request, p);
@@ -530,7 +506,6 @@ rad_auth_init(radreq, activefd)
 			namepair->strvalue, nas_request_to_name(radreq));
 		rad_send_reply(PW_AUTHENTICATION_REJECT, radreq,
 			       radreq->request, NULL, activefd);
-		radreq_free(radreq);
 		return -1;
 	}
 
@@ -752,7 +727,7 @@ rad_authenticate(radreq, activefd)
 	 */
 	if ((pair_ptr = avl_find(radreq->request, DA_STATE)) != NULL &&
 	    strncmp(pair_ptr->strvalue, "MENU=", 5) == 0) {
-	    process_menu(radreq, activefd, radreq->digest);
+	    process_menu(radreq, activefd);
 	    return 0;
 	}
 #endif
@@ -965,7 +940,6 @@ sfn_validate(m)
 	if ((rc = check_expiration(m->user_check, &m->user_msg)) >= 0) {
 		rc = rad_check_password(radreq,
 					m->user_check, m->namepair,
-					radreq->digest,
 					&m->user_msg,
 					m->userpass);
 

@@ -1,14 +1,19 @@
+2004-11-02  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* attributes.texi: Updated
+	* radtest.texi: Updated
+
 2004-11-01  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
- 	* doc/texinfo/Makefile.am: Updated copyright date
-	* doc/texinfo/acct.texi: Untabify
-	* doc/texinfo/attributes.texi: Likewise
-	* doc/texinfo/auth.texi: Likewise
-	* doc/texinfo/comp.texi: Likewise
-	* doc/texinfo/configure.texi: Likewise
-	* doc/texinfo/extensions.texi: Likewise
-	* doc/texinfo/gradient.texi: Likewise
-	* doc/texinfo/radtest.texi: Likewise
+ 	* Makefile.am: Updated copyright date
+	* acct.texi: Untabify
+	* attributes.texi: Likewise
+	* auth.texi: Likewise
+	* comp.texi: Likewise
+	* configure.texi: Likewise
+	* extensions.texi: Likewise
+	* gradient.texi: Likewise
+	* radtest.texi: Likewise
 
 2004-11-01  Sergey Poznyakoff  
 

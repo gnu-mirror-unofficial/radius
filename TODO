@@ -24,6 +24,10 @@ separate function
 ** Support rfc2433.txt  rfc2548.txt  rfc2759.txt
 ** Support for LDAP
 ** Add \ line continuation to read_raddb_files.
+** Scheme-Program and Scheme-Acct-Program must be able to accept arbitrary
+s-exps as well as function names
+** Move GNU attributes into a separate namespace. This will require
+registering a vendor id...
 ** Clean up the semantics of log_init/log_done.
 ** Enable use of port number in rewrite:check_unix()?
 ** Add include feature to config files that don't have it.

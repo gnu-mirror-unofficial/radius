@@ -1,5 +1,13 @@
 2004-11-02  Sergey Poznyakoff
 
+	* TODO: Updated
+	
+	* include/radiusd.h (scheme_eval_unspecified_expr): New function.
+	* radiusd/auth.c (auth_failure): Removed useless variable. Use
+	scheme_eval_unspecified_expr() instead of
+	scheme_eval_boolean_expr(). Provide a default branch.
+	* radiusd/scheme.c (scheme_eval_unspecified_expr): New function.
+	
 	* radiusd/rpp.c (pipe_read, pipe_write): Set errno = ETIMEDOUT
 	if select returned 0.
 	* radiusd/rewrite.y (rw_mach_destroy): Fix memory leak: pmatch was

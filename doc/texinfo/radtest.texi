@@ -822,7 +822,7 @@ consisting of pairs from @var{x}, which are not found in @var{y}.
 @end smallexample
 
 Notice, that only attribute name matters, its value is
-ignored@FIXME{Is this correct? Is there a better way to put it?
+ignored.@FIXME{Is this correct? Is there a better way to put it?
 should we provide an operation that whould compare both attribute
 number and its value?}
 

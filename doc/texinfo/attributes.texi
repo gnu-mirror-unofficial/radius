@@ -860,10 +860,35 @@ of this attribute, all currently enabled accounting types are used.
 @atindex Auth-Failure-Trigger
 @UNREVISED{}
 
-@FIXME{This attribute specifies an external program or
-a Scheme expression to be run upon an authentication failure. It can
-update failure counts that subsequently will be used by
-@attr{Exec-Program-Wait} or @attr{Scheme-Procedure}.}
+This attribute specifies an external program or a Scheme expression to
+be run upon an authentication failure. The handling of this attribute
+depends upon its value:
+
+If the value of @attr{Auth-Failure-Trigger} begins with @samp{/}, it
+is taken to contain a command line for invoking an external
+program. In this case @command{radiusd} invokes the program much the
+same way it does when handling @attr{Exec-Program} attribute, i.e. the
+program is invoked with standard input closed, its standard output and
+standard error are captured and redirected to
+@file{@var{radlog}/radius.stderr} file, the return value of the
+program is ignored.
+
+If the value of @attr{Auth-Failure-Trigger} begins with @samp{(}, it
+is executed it as a @code{Scheme} expression. The return value of the
+expression is ignored.
+
+This attribute is designed as a means to provide special handling for
+authentication failures. It can be used, for example, to increase
+failure counters and to block accounts after a specified number of
+authentication failures occurs.
+
+@FIXME{Provide examples.}
+@FIXME{There is no corresponding @attr{Auth-Success-Trigger}...
+@attr{Exec-Program} or @attr{Scheme-Procedure} may be used for the
+purpose, the latter, however, is not able to execute @emph{s-exps}. At
+the time of this writing the release 1.3 is being prepared, so I do
+not want to introduce any possibly destabilizing changes. This will be
+fixed in future releases.}
 
 @comment **************************************************************
 @node Auth-Data
@@ -1513,7 +1538,11 @@ was already processed by a remote radius server.
 @atindex Realm-Name
 @UNREVISED{}
 
-@FIXME{This attribute keeps the realm name of the user.}
+@defattr{Realm-Name,2013,string,L-,L-,L-,Append,No}
+
+@FIXME{This is an @samp{internal attribute}. It keeps the realm name
+of the user. The @attr{Realm-Name} attribute is added to the proxied
+request after receiving a reply from the realm server. @xref{Proxy-Replied}.}
 
 @comment **************************************************************
 @node Replace-User-Name
@@ -1544,7 +1573,7 @@ guest   NAS-IP-Address = 11.10.10.11,
 
 @noindent
 allows the use of PPP service for user name @code{guest}, coming from @NAS{}
-@samp{11.10.10.11} with nonempty @attr{Calling-Station-Id} attribute.
+@samp{11.10.10.11} with a nonempty @attr{Calling-Station-Id} attribute.
 A string consisting of a @samp{#} character followed by the
 @attr{Calling-Station-Id} value is appended to the user name.
 

@@ -1,3 +1,12 @@
+2004-11-20  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* acct.texi: Updated
+	* attributes.texi: Updated
+	* auth.texi: Updated
+	* configure.texi: Updated
+	* gradient.texi: Updated
+	* radctl.texi: Updated
+
 2004-11-03  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* auth.texi: Updated

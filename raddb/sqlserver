@@ -47,18 +47,26 @@ auth_query  SELECT password \
 
 # This query returns groups the user belongs to
 group_query        SELECT user_group FROM groups WHERE user_name='%u'
+
+## Uncomment the following three queries and comment out the above definition
+## of group_query if you wish to control authentication probes using failure
+## counters. Make sure you read `info --node 'Auth Probing' radius' before
+## doing so.
+
 #group_query       SELECT user_group FROM groups \
 #                    WHERE user_name='%u' \
 #                  UNION \
-#                  SELECT CASE WHEN (SELECT count>3 FROM authfail \
-#                                                   WHERE user_name='%u')
+#                  SELECT CASE WHEN (SELECT count > 8 FROM authfail \
+#                                                     WHERE user_name='%u')
 #                         THEN '*LOCKED_ACCOUNT*' END
 
-auth_success_query REPLACE authfail VALUES('%C{User-Name}',0,now())
+#auth_success_query UPDATE authfail \
+#                   SET count=0,time=now() \
+#                   WHERE user_name='%C{User-Name}'
 
-auth_failure_query UPDATE authfail \
-                   SET count=count+1,time=now() \
-                   WHERE user_name='%C{User-Name}'
+#auth_failure_query UPDATE authfail \
+#                   SET count=count+1,time=now() \
+#                   WHERE user_name='%C{User-Name}'
 
 # This query returns a list of a/v pairs to be added to user's check pairs.
 check_attr_query  SELECT attr,value,op \

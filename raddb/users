@@ -1,11 +1,17 @@
 # For detailed description, run:
 #       info Radius users
 
+
+## The following entry is supposed to be used with authentication probe
+## control. Please read `info --node 'Auth Probing' radius' for the detailed
+## description of it
 DEFAULT Group = "*LOCKED_ACCOUNT*",
 		Auth-Type = Reject
 	Reply-Message = "Your account is currently locked.\n\
 Please, contact your system administrator\n"
 
+
+## Default entry. 
 DEFAULT	Auth-Type = SQL,
 		Simultaneous-Use = 1	
 	Service-Type = Framed-User,

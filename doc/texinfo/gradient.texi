@@ -9,7 +9,10 @@
 This document presents a draft describing new approach for
 processing @RADIUS{} requests. It is intended as a @dfn{request
 for comments}, and, in the long run, as a guide for GNU Radius
-developers.
+developers. In its current state it is far from being complete.
+Please check @url{http://www.gnu.org/@/software/@/radius/@/manual} for
+updated versions. Feel free to send your comments and suggestions to
+@email{bug-gnu-radius@@gnu.org}.
 
 @menu
 * Present State::             A brief description of Currently Used Approach

@@ -1030,7 +1030,7 @@ absolute pathname, it will be searched in directories set up by
 @subheading Loading
 
 The default load path is @code{@file{RADDB}:@file{DATADIR}/rewrite}. @FIXME{
-I should describe in detail the loading process. Also, some kind of
+Describe the loading process in detail. Also, some kind of
 autoloading is necessary for Rewrite.}
 
 @comment **L3***************************************************************
@@ -1045,6 +1045,7 @@ autoloading is necessary for Rewrite.}
 @kwindex load
 @kwindex gc-interval
 @kwindex outfile
+@kwindex eval
 @UNREVISED{}
 
 The @code{guile} statement allows to configure server interface with
@@ -1091,14 +1092,27 @@ and garbage collections in particular, see @ref{Memory Management,,Memory Manage
 
 @subheading String statements
 @table @code
+@item eval
+Evaluates its argument as @code{Scheme} expression.
+
 @item load-path
-Add specified pathname to @code{%load-path} variable.
+Adds specified pathname to @code{%load-path} variable.
+
 @item load
 Loads the specified source file on startup.
+
 @item load-module
-Loads the specified Scheme module on startup. @FIXME{Describe the
+Loads the specified Scheme module on startup. This statement takes an
+arbitrary number of arguments. The first argument specifies the name
+of the module to load, the rest of arguments is passed to the
+@dfn{module initialization} funtion. Module initialization function
+is a function named @samp{@var{module}-init}, where @var{module} is
+the module name. Arguments are converted using usual @code{Guile}
+rules, except that the ones starting with a dash (@samp{-}) are
+converted to keyword arguments.  @FIXME{Describe the
 loading sequence in more detail. Why are modules preferred over plain
 SCM programs, etc.}
+
 @item outfile
 Redirects the standard output and standard error streams of the @code{Guile}
 functions to the given file. Unless the filename starts with @samp{/},
@@ -1499,7 +1513,6 @@ attribute will be propagated through the proxy chain.
 @kwindex END
 @kwindex BEGIN-VENDOR
 @kwindex END-VENDOR
-@UNREVISED{}
 
 @subheading Syntax
 @smallexample
@@ -2383,8 +2396,13 @@ of time.
 @comment **L3***************************************************************
 @node Authentication Server Parameters
 @subsection Authentication Server Parameters
+@kwindex doauth
+@kwindex auth_db
+@kwindex auth_query
+@kwindex group_query
+@kwindex auth_success_query
+@kwindex auth_failure_query
 @UNREVISED{}
-@FIXME{kwindices.}
 
 These parameters configure the @sc{sql} authentication. The general
 syntax is:
@@ -2393,20 +2411,30 @@ syntax is:
 @item doauth @var{bool}
 When set to @code{yes}, enables authentication via @sc{sql}. All @code{auth_}
 keywords are ignored if @code{doauth} is set to @code{no}.
+
 @item auth_db @var{string}
 Specifies the name of the database containing authentication information.
+
 @item auth_query @var{string}
 Specifies the @sc{sql} query to be used to obtain user's password from the
 database. The query should return exactly one string value --- the
 password.
+
 @item group_query @var{string}
 Specifies the query that retrieves the list of user groups the user
 belongs to. This query is used when @attr{Group} or @attr{Group-Name}
 attribute appears in the @LHS{} of a user's or hint's profile.
+
 @item auth_success_query @var{string}
-@FIXME{Description}
+This query is executed when an authentication
+succeeds. @xref{Auth Probing}, for the detailed
+discussion of its purpose.
+
 @item auth_failure_query @var{string}
-@FIXME{Description}
+This query is executed upon an authentication
+failure. @xref{Auth Probing}, for the detailed
+discussion of its purpose.
+
 @end table
 
 @subheading Example of Authentication Server Parameters

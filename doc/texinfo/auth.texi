@@ -21,6 +21,8 @@ of @attr{Auth-Type} attribute in @LHS{} of a @file{users} entry.
 * PAM Auth::                      Authenticate using PAM.
 * Custom Auth::                   Defining Custom Authentication Types.
 * Multiple Login Checking::       Checking for Simultaneous Logins.
+* Auth Probing::                  Controlling Authentication Probes 
+
 @end menu
 
 @comment *L2****************************************************************
@@ -432,4 +434,243 @@ output is reached, it is taken to mean the user's session is not active.
 
 The syntax conventions for user-supplied functions are described in
 detail in @ref{Login Verification Functions}.
+
+@comment *L2****************************************************************
+@node Auth Probing
+@section Controlling Authentication Probes
+@cindex Controlling Authentication Probes
+@cindex authentication probes
+
+@dfn{Authentication probe} is an attempt of a user to use other user's
+account, by guessing his password. The obvious indication of an
+authentication probe is appearence of several consecutive
+authentication failures for the same user. Of course, if the intruder
+is given sufficient number of such probes he will sooner or later
+succeed in finding the actual password. The conventional method
+to prevent this from occurring is to keep @dfn{failure counters} for
+each user and to lock the account when its failure countrer reaches a
+predefined limit. Notice that a legitimate user may fail (sometimes
+even several times in sequence) in entering his password so, two
+important points should always be observed. First, failure counters
+record the number of consecutive authentication failures and they are
+reset after each successive authentication. Secondly, the maximum number
+of allowed consecutive failures should be set sufficiantly high.
+
+The version @value{VERSION} offers two ways for controlling 
+authentication probes: using external programs and using special
+@acronym{SQL} queries.
+
+To control authentication probes using external programs, use the
+combination of @attr{Exec-Program-Wait} and
+@attr{Auth-Failure-Trigger}. The program specified by
+@attr{Auth-Failure-Trigger} is executed each time an authentication
+attempt failed. When both attributes are used together, the program
+invoked by @attr{Auth-Failure-Trigger} can update the failure
+counter, and the one invoked by @attr{Exec-Program-Wait} can compare
+the counter value with the predefined limit and reject authentication
+when both values become equal. Such approach is most useful in
+conjunction with @code{BEGIN} profile.
+
+Let's suppose the program @file{/sbin/check_failure} accepts a user name
+and returns 1 if the failure counter for this user has reached maximum
+allowed value. Otherwise it returns 0 and clears the counter. Another program,
+@file{/sbin/count_failure} increases failure counter value for the
+given user name. Assuming our basic authentication type is @samp{PAM},
+the @file{raddb/users} file will look as follows:
+
+@smallexample
+@group
+BEGIN   NULL
+        Exec-Program-Wait = "/sbin/check_failure  %C@{User-Name@}",
+        Auth-Failure-Trigger = "/sbin/count_failure %C@{User-Name@}",
+                Fall-Through = Yes
+
+DEFAULT Auth-Type = PAM
+        Service-Type = Framed-User,
+                Framed-Protocol = PPP
+
+[@dots{} Other profiles @dots{}]                
+@end group
+@end smallexample
+
+The @code{BEGIN} profile will be executed before any other profile.
+It will add to the @RHS{} @attr{Exec-Program-Wait} and
+@attr{Auth-Failure-Trigger} attributes and then @command{radiusd} will
+proceed to finding a matching profile (due to @attr{Fall-Through}
+attribute). When such profile is found, the user will be authenticated
+according to the method set up by the profile's @attr{Auth-Type}
+attribute. If authentication fails, @file{/sbin/count_failure}
+will be called and the user name passed to it as the argument. Otherwise,
+@file{/sbin/check_failure} will be invoked. 
+
+To complete the example, here are working versions of both programs.
+Failure counters for each user name are kept in separate file in 
+@file{/var/log/radius/fails} directory. Both programs are written
+in @command{bash}.
+
+@subheading The /sbin/count_failure program
+
+@smallexample
+@group
+#! /bin/bash
+
+test $# -eq 1 || exit 1
+
+MAXFAIL=8
+REGDIR=/var/log/radius/fails
+
+if [ -r "$REGDIR/$1" ]; then
+  read COUNT < "$REGDIR/$1"
+  COUNT=$((COUNT+1))
+else
+  COUNT=1
+fi
+echo $COUNT > "$REGDIR/$1"      
+# End of /sbin/count_failure
+@end group
+@end smallexample
+
+@subheading The /sbin/check_failure program
+
+@smallexample
+@group
+#! /bin/bash
+
+test $# -eq 1 || exit 1
+
+MAXFAIL=8
+REGDIR=/var/log/radius/fails
+
+if [ -r "$REGDIR/$1" ]; then
+  read COUNT < "$REGDIR/$1"
+  if [ $COUNT -ge $MAXFAIL ]; then
+    echo "Reply-Message=\"Too many login failures. Your account is locked\""
+    exit 1
+  else
+    rm "$REGDIR/$1"
+  fi
+fi
+exit 0
+
+# End of check_failure
+@end group
+@end smallexample
+
+
+Another way of controlling authentication probes is by using
+@acronym{SQL} database to store failure counters. Two queries are
+provided for this purpose in @file{raddb/sqlserver} file:
+@code{auth_success_query} is executed upon each successful
+authentication, and @code{auth_failure_query} is executed upon
+each authentication failure. Both queries are not expected to return
+any values. One obvious purpose of @code{auth_failure_query} would be to
+update failure counters and that of @code{auth_success_query} would be
+to clear them. The @code{auth_query} or @code{group_query} should then
+be modified to take into account the number of authentication
+failures.
+
+The default @acronym{SQL} configuration GNU Radius is shipped with
+provides a working example of using these queries. Let's consider this
+example.
+
+First, we create a special table for keeping authentication failure
+counters for each user:
+
+@smallexample
+@group
+CREATE TABLE authfail (
+  # User name this entry refers to
+  user_name           varchar(32) binary default '' not null,
+  # Number of successive authentication failures for this user
+  count               int,
+  # Timestamp when this entry was last updated
+  time                datetime DEFAULT '1970-01-01 00:00:00' NOT NULL,
+  # Create a unique index on user_name
+  UNIQUE uname (user_name)
+);
+@end group
+@end smallexample
+
+The query @code{auth_fail_query} will increment the value of
+@code{count} column for the user in question:
+
+@smallexample
+@group
+auth_failure_query UPDATE authfail \
+                   SET count=count+1,time=now() \
+                   WHERE user_name='%C@{User-Name@}'
+@end group
+@end smallexample
+
+The query @code{auth_success_query} will clear @code{count}:
+
+@smallexample
+@group
+auth_success_query UPDATE authfail \
+                   SET count=0,time=now() \
+                   WHERE user_name='%C@{User-Name@}'
+@end group
+@end smallexample
+
+Now, the question is: how to use this counter in authentication? The
+answer is quite simple. First, let's create a special group for all the
+users whose authentication failure counter has reached its maximum
+value. Let this group be called @samp{*LOCKED_ACCOUNT*}. We'll add the
+following entry to @file{raddb/users}:
+
+@smallexample
+@group
+DEFAULT Group = "*LOCKED_ACCOUNT*",
+                Auth-Type = Reject
+        Reply-Message = "Your account is currently locked.\n\
+Please, contact your system administrator\n"
+@end group
+@end smallexample
+
+@noindent
+which will reject all such users with an appropriate reply message.
+
+The only thing left now is to rewrite @code{group_query} so that it
+returns @samp{*LOCKED_ACCOUNT*} when @code{authfail.count} reaches its
+maximum value. Let's say this maximum value is 8. Then the following
+query will do the job:
+
+
+@smallexample
+@group
+group_query       SELECT user_group FROM groups \
+                  WHERE user_name='%u' \
+                  UNION \
+                  SELECT CASE WHEN (SELECT count > 8 FROM authfail \
+                                                 WHERE user_name='%u')
+                         THEN '*LOCKED_ACCOUNT*' END
+@end group
+@end smallexample
+
+The default configuration comes with these queries commented out. It
+is up to you to uncomment them if you wish to use @acronym{SQL}-based
+control over authentication failures.
+
+Notice the following important points when using this approach:
+
+@enumerate 1
+@item Your @acronym{SQL} server must support @code{UNION}. Earlier
+versions of @code{MySQL} lacked this support, so if you run
+@code{MySQL} make sure you run a reasonably new version (at least
+4.0.18).
+
+@item Both @code{auth_failure_query} and @code{auth_success_query}
+assume the database already contains an entry for each user. So,
+when adding a new user to the database, make sure to insert
+an appropriate record into @code{authfails} table, e.g.
+
+@smallexample
+INSERT INTO authfail VALUES('new-user',0,now());
+@end smallexample
+@end enumerate
+
+
+
+
+                
 

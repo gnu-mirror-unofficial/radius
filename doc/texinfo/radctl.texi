@@ -1,12 +1,11 @@
 @c This is part of the Radius manual.
-@c Copyright (C) 1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+@c Copyright (C) 1999,2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 @c Written by Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Radctl, Builddbm, Radauth, Utility Programs
 @section @command{radctl}
 @pindex radctl
-@UNREVISED{}
 
 @command{Radctl} is a control interface to the @command{radiusd}
 daemon. It allows the
@@ -14,7 +13,7 @@ user running it to query @command{radiusd} about various aspects of its
 work and to issue administrative commands to it. The syntax is
 
 @smallexample
-radctl -s @var{command} [@var{args}]
+radctl @var{command} [@var{args}]
 @end smallexample
 
 @noindent
@@ -46,13 +45,30 @@ Tells @command{radiusd} to dump its user hash table into the file
 @file{@var{radlog}/radius.parse}. This can be used for debugging 
 configuration files.
 
-@item status
-@command{radiusd} reports its memory usage statistics. The information is
-logged at the @code{Info} log level.
+@c @item status
+@c @command{radiusd} reports its memory usage statistics. The information is
+@c logged at the @code{Info} log level.
 
 @item which
-Reports the running version of @command{radiusd}. @FIXME{What does
-it report, exactly? Give a reference to ps(1) for more info.}
+Reports the running version of @command{radiusd}. This command shows
+the line of @command{ps(1)} describing the running copy of
+@command{radiusd} program. The exact look depends on the version of
+operating system you are running. Please refer to ``man ps'' for more
+detail on @command{ps} output.
+
+Here is an example of what @command{radctl which} prints on
+@code{GNU/Linux}:
+
+@smallexample
+19692 ?        01:53:11 radiusd
+@end smallexample
+
+Here, first field is the @acronym{PID} of the process, second field
+(@samp{?}) indicates that the running program has detached from the
+controlling terminal, the third field gives total amount of
+@acronym{CPU} time used by the program, and, finally, the last field
+shows the full name under which the command was invoked.
 @end table
+
 
 

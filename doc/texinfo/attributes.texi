@@ -858,7 +858,6 @@ of this attribute, all currently enabled accounting types are used.
 @node Auth-Failure-Trigger
 @subsection @attr{Auth-Failure-Trigger}
 @atindex Auth-Failure-Trigger
-@UNREVISED{}
 
 This attribute specifies an external program or a Scheme expression to
 be run upon an authentication failure. The handling of this attribute
@@ -880,9 +879,9 @@ expression is ignored.
 This attribute is designed as a means to provide special handling for
 authentication failures. It can be used, for example, to increase
 failure counters and to block accounts after a specified number of
-authentication failures occurs.
+authentication failures occurs. @xref{Auth Probing}, for the detailed
+discussion of its usage.
 
-@FIXME{Provide examples.}
 @FIXME{There is no corresponding @attr{Auth-Success-Trigger}...
 @attr{Exec-Program} or @attr{Scheme-Procedure} may be used for the
 purpose, the latter, however, is not able to execute @emph{s-exps}. At

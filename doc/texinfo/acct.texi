@@ -6,7 +6,6 @@
 @node Accounting, Logging, Authentication, Top
 @chapter Accounting
 @cindex Accounting Types
-@UNREVISED{}
 
 By default GNU Radius supports three types of accounting. Any
 additional accounting methods can be defined using extension
@@ -47,13 +46,16 @@ is deemed to fail and all subsequent methods are not invoked.
 @node System Accounting
 @section System Accounting
 @cindex System Accounting
-@UNREVISED{}
-
-This accounting method is always enabled.
 
 Radius keeps files @file{radutmp} and @file{radwtmp} in its logging
 directory  and stores the accounting data there. The utilities
-@command{radwho} and @command{radlast} can be used to list information about users' sessions. @FIXME{Should they work if other mlc method is used?}
+@command{radwho} and @command{radlast} can be used to list information 
+about users' sessions. @FIXME{Should they work if other mlc method is used?}
+
+This accounting method is enabled by default. To disable it, use 
+@code{system no} statement in @file{raddb/config}. @xref{acct}, for more
+information. Please notice that disabling this authentication method will
+disable multiple login checking as well. Refer to @ref{Multiple Login Checking}, for the detailed discussion of this.  
 
 @comment *L2****************************************************************
 @node Detailed Request Accounting

@@ -94,6 +94,8 @@ typedef struct request_class {
 } REQUEST_CLASS;
 
 
+typedef int QUEUE_STAT[R_MAX][2];
+	
 typedef struct client {
 	struct client		*next;
 	UINT4			ipaddr;
@@ -255,7 +257,7 @@ void            rad_acct_xmit(int type, int code, void *data, int fd);
 void		debug_pair(char *, VALUE_PAIR *);
 void		sig_cleanup(int);
 int             server_type();
-int             stat_request_list(int (*report)());
+int             stat_request_list(QUEUE_STAT);
 void *          scan_request_list(int type, int (*handler)(), void *closure);
 int             set_nonblocking(int fd);
 int             master_process();

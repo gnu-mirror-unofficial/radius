@@ -927,25 +927,29 @@ auth_failure(AUTH_MACH *m)
 {
 	grad_avp_t *pair;
 	char *cmd;
-	struct obstack stk;
 	
 	pair = grad_avl_find(m->user_reply, DA_AUTH_FAILURE_TRIGGER);
 	if (!pair) 
 		return;
 
-	obstack_init(&stk);
 	cmd = util_xlate(&m->msg_stack, pair->avp_strvalue, m->req->request);
 	switch (cmd[0]) {
 	case '(':
-		scheme_eval_boolean_expr(cmd);
+		scheme_eval_unspecified_expr(cmd);
 		break;
 
 	case '/':
 		radius_exec_command(cmd);
 		break;
 
+	default:
+		grad_log_req(L_ERR,
+			     m->req->request,
+			     _("Invalid Auth-Failure-Trigger value: %s"),
+			     cmd);
+		grad_log(L_INFO,
+			 _("The value of Auth-Failure-Trigger attribute must begin with '/' or '('."));
 	}
-	obstack_free(&stk, NULL);
 }
 
 void

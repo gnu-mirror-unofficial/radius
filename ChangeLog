@@ -1,4 +1,71 @@
 2001-11-21 Sergey Poznyakoff
+
+	Further modification to the testsuite. Since the tests in
+	subdirectories should be executed in proper order, they
+	are given names per following scheme: NNN<NAME>.exp, where
+	NNN is ordinal test number, NAME is the test name. However,
+	the ordinal numbers are subject to changes with addition
+	(or removal) of the tests. This makes it hard to keep the
+	files in CVS. To overcome this difficulty, the following
+	approach is used:
+	 1. The files NAME.exp are kept in the directories named
+	    s.TOOLNAME.
+	 2. Each s.TOOLNAME directory contains Makefile.am with
+	    `all' goal aimed to create a corresponding TOOLNAME directory
+	    and populate it with properly numbered NAME.exp files.
+	    The file Testlist contains the list of tests in proper orded.
+	    /scripts/mktest.awk is used to number tests.
+	 3. Only s-directories are included in the distribution and are
+	    kept under CVS.
+	
+	* test/dejagnu/radiusd/*: Removed
+	* test/dejagnu/s.radiusd: (new)
+	* test/dejagnu/s.radiusd/Makefile.am: (new)
+	* test/dejagnu/s.radiusd/.cvsignore: (new)
+	* test/dejagnu/s.radiusd/Testlist: (new)
+	  New tests:
+	* test/dejagnu/s.radiusd/Start.exp: Start up the server/radtest 
+	* test/dejagnu/s.radiusd/Auth.exp:  Basic authentication types
+	* test/dejagnu/s.radiusd/Begin.exp: BEGIN keyword
+	* test/dejagnu/s.radiusd/Default.exp: DEFAULT keyword
+	* test/dejagnu/s.radiusd/Access.exp: access.deny list
+	* test/dejagnu/s.radiusd/Reply.exp: reply pairs
+	* test/dejagnu/s.radiusd/Menu.exp: Livingston menus
+	* test/dejagnu/s.radiusd/Acct-start.exp: Start messages &
+	Simultaneous-Use
+	* test/dejagnu/s.radiusd/Acct-stop.exp: Stop messages &
+	Simultaneous-Use
+	* test/dejagnu/s.radiusd/Execwait.exp: Exec-Program-Wait
+	attribute
+	* test/dejagnu/s.radiusd/Stop.exp: Shut the server down.
+
+	* configure.in: Use s.radiusd instead of radiusd.
+	* scripts/mktest.awk: Modified. 
+	* test/Makefile.am: Temporarly commented out TESTS assignment.
+	* test/findport.c: Substitute %u in format string with user
+	login name (useful for testing Exec-Program attributes).
+	* test/test.sh: Modified EXPR. Zero out logfiles before starting.
+	* test/dejagnu/.cvsignore: Added radiusd
+	* test/dejagnu/Makefile.am: Use s.radiusd instead of radiusd.
+	* test/dejagnu/lib/radiusd.exp: Added missing global to
+	proc radiusd_version.
+
+	* test/raddb/users: removed.
+	* test/raddb/users.in: (new) template for test suite users file.
+	* test/raddb/auth.bin: (new): Test program for testing
+	Exec-Program-Wait attribute.
+	* test/raddb/Makefile.am: Added auth.bin, users.in. Removed
+	users.
+	* test/raddb/.cvsignore: Added users file.
+	* test/raddb/access.deny: Added username for testing.	
+	* test/raddb/config.in: Added exec-program-user and debugging
+	statements.
+	
+	* raddb/dictionary: Fixed properties of Add-Port-To-IP-Address
+	attribute.
+	* test/raddb/dictionary: Likewise.
+	
+2001-11-21 Sergey Poznyakoff
 	
 	* configure.in: AC_OUTPUT test/dejagnu/radiusd/Makefile
 	* radlib/client.c: radclient_build_request(): Check the length

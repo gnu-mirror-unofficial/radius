@@ -53,6 +53,7 @@ err, T_SEVERITY, _Y(L_ERR)
 error, T_SEVERITY, _Y(L_ERR)
 exec-program-group, T_EXEC_PROGRAM_GROUP
 exec-program-user, T_EXEC_PROGRAM_USER
+guile, T_GUILE,
 main, T_MAIN,
 file, T_FILE,
 host, T_HOST
@@ -60,6 +61,8 @@ ident, T_IDENT
 info, T_SEVERITY, _Y(L_INFO),
 level, T_LEVEL,
 listen, T_LISTEN,
+load, T_LOAD,
+load-path, T_LOAD_PATH,
 local0, T_FACILITY, _Y(LOG_LOCAL0)
 local1, T_FACILITY, _Y(LOG_LOCAL1)
 local2, T_FACILITY, _Y(LOG_LOCAL2)

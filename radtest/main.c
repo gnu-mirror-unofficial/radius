@@ -106,8 +106,6 @@ parse_opt(int key, char *arg, struct argp_state *state)
 		
         case 'f':
                 filename = optarg;
-                *(int *)state->input = state->next;
-                state->next = state->argc;
                 break;
 		
         case 't':
@@ -123,7 +121,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 		set_module_debug_level("radpdu", 100);
 		set_module_debug_level("client", 100);
                 break;
-		
+
         default:
                 return ARGP_ERR_UNKNOWN;
         }
@@ -144,12 +142,12 @@ main(int argc, char **argv)
 {
         char *p;
         int index;
-        
+
         grad_app_setup();
         init_symbols();
 
         index = argc;
-        if (grad_argp_parse(&argp, &argc, &argv, 0, NULL, &index))
+        if (grad_argp_parse(&argp, &argc, &argv, 0, &index, NULL))
                 return 1;
 
         argv += index;
@@ -178,12 +176,12 @@ main(int argc, char **argv)
                 char **argv;
 
                 if (argcv_get(server, ":", NULL, &argc, &argv)) {
-                        grad_log(L_ERR, "can't parse server definition");
+                        grad_log(L_ERR, _("can't parse server definition"));
                         exit(1);
                 }
 
                 if (argc < 3) {
-                        grad_log(L_ERR, "no shared secret for the server");
+                        grad_log(L_ERR, _("no shared secret for the server"));
                         exit(1);
                 }
 
@@ -195,7 +193,7 @@ main(int argc, char **argv)
                                 serv.addr = grad_ip_gethostaddr(argv[i]);
                                 if (!serv.addr) {
                                         grad_log(L_ERR,
-                                                 "bad IP address or host name: %s",
+                                                 _("bad IP address or host name: %s"),
                                                  argv[i]);
                                         exit(1);
                                 }
@@ -207,7 +205,7 @@ main(int argc, char **argv)
                                 serv.port[0] = strtol(argv[i], &p, 0);
                                 if (*p) {
                                         grad_log(L_ERR,
-                                                 "bad port number %s",
+                                                 _("bad port number %s"),
                                                  argv[i]);
                                         break;
                                 }
@@ -216,7 +214,7 @@ main(int argc, char **argv)
                                 serv.port[1] = strtol(argv[i], &p, 0);
                                 if (*p) {
                                         grad_log(L_ERR,
-                                                 "bad port number %s",
+                                                 _("bad port number %s"),
                                                  argv[i]);
                                         break;
                                 }
@@ -224,7 +222,7 @@ main(int argc, char **argv)
                         default:
                                 if (argv[i][0] != ':') {
                                         grad_log(L_ERR,
-                                                 "bad separator near %s",
+                                                 _("bad separator near %s"),
                                                  argv[i]);
                                         exit(1);
                                 }
@@ -243,7 +241,7 @@ main(int argc, char **argv)
 
         if (grad_list_count(srv_queue->servers) == 0) {
                 grad_log(L_ERR,
-                         "No servers specfied. Use -s option.\n");
+                         _("No servers specfied. Use -s option.\n"));
                 exit(1);
         }
         

@@ -1,3 +1,14 @@
+2001-05-06  gray  <gray@farlep.net>
+	* Added m4 directory and modified configure.in.
+	* create_dbm() in DBM_DBM mode used malformed filenames.
+	* implemented ylwrap in makefiles
+	* Added radlib/radutmp.c. Changed related sources accordingly.
+	* Cleaned up rad_accounting_new().
+
+2001-05-05  gray  <gray@farlep.net>
+	Added client suite. Converted Makefile.am's to use libtool.
+	Added Makefile.am to raddb subdirectory.
+
 2001-04-28  gray  <gray@farlep.net>
 	Fixed errors in acct_stop_query and acct_keepalive_query in
 	the default sqlserver file. Reported by Oleg Gawriloff 

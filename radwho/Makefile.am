@@ -11,7 +11,7 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 bin_PROGRAMS    = radwho
 radwho_SOURCES = radwho.c 
-radwho_LDADD   = -L../radlib -lrad -llog -ldebug
+radwho_LDADD   = ../radlib/librad.la ../radlib/liblog.la ../radlib/libdebug.la
 INCLUDES        = -I$(top_srcdir) -I$(top_srcdir)/include -I$(srcdir) @INCLUDEPATH@
 
 

@@ -33,6 +33,10 @@
 #define SQL_MYSQL    1
 #define SQL_POSTGRES 2
 
+#define DBM_DBM  1
+#define DBM_NDBM 2
+
+
 @TOP@
 
 @BOTTOM@
@@ -105,10 +109,6 @@
 
 /* Define this if you wish the DBM support */
 #undef USE_DBM
-
-#undef DBM
-
-#undef NDBM
 
 #undef YACC_DEBUG
 

@@ -13,7 +13,7 @@
 
 bin_PROGRAMS    = radlast
 radlast_SOURCES = radlast.c nasutil.c
-radlast_LDADD   = -L../radlib -lrad -llog -ldebug
+radlast_LDADD   = ../radlib/librad.la ../radlib/liblog.la ../radlib/libdebug.la
 INCLUDES = -I$(srcdir) -I$(top_srcdir) -I$(top_srcdir)/include @INCLUDEPATH@
 
 SUFFIXES=.S .c .ln .o .s

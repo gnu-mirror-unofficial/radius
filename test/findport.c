@@ -59,7 +59,7 @@ main(argc, argv)
 	int local_port, max_port, num_ports;
 	struct	sockaddr	salocal;
 	struct	sockaddr_in	*sin;
-	int fd, salen;
+	int fd;
 	
 	/* Process command line */
 	local_port = 1024;

@@ -24,10 +24,19 @@ default_log_prefix(string reqtype, string nas, integer id)
 
 	result = "(" + reqtype + " " + nas + " " + (string)id + " " +
                  %[User-Name];
-	if (*%[Calling-Station-Id])
-		result = result + " CLID=" + %[Calling-Station-Id];
-	if (*%[Called-Station-Id])
-		result = result + " CSID=" + %[Called-Station-Id];
+	if (*%[Acct-Session-Id])
+		result = result + + %[Acct-Session-Id];
 	return result + "): ";
+}
+
+string
+default_log_suffix(string reqtype, string nas, integer id)
+{
+	string result;
+	if (*%[Calling-Station-Id])
+		result = ", CLID " + %[Calling-Station-Id];
+	else
+		result = ", CLID unknown";	
+	return result;
 }
 	

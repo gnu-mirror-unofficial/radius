@@ -112,6 +112,8 @@ static int flush_request_list();
 static int request_setup(int type, qid_t qid);
 static void request_cleanup(int type, qid_t qid);
 
+static void unlink_pidfile();
+
 /* ************************ Socket control queue ************************** */
 
 struct socket_list {
@@ -272,11 +274,8 @@ main(argc, argv)
 	int pid;
 	int radius_port = 0;
 	int mode = MODE_DAEMON;    
-#ifdef RADIUS_PID
 	FILE *fp;
-	char *radpid_dir = RADPID_DIR;
 	char *p;
-#endif
 	
 	if ((progname = strrchr(argv[0], '/')) == NULL)
 		progname = argv[0];
@@ -486,14 +485,12 @@ main(argc, argv)
 	log_disconnect();
 
 	radius_pid = getpid();
-#ifdef RADIUS_PID
 	p = mkfilename(radpid_dir, "radiusd.pid");
 	if ((fp = fopen(p, "w")) != NULL) {
 		fprintf(fp, "%d\n", radius_pid);
 		fclose(fp);
 	}
 	efree(p);
-#endif
 
 	if (!foreground) {
 		char *p = mkfilename(radlog_dir, "radius.stderr");
@@ -523,6 +520,14 @@ main(argc, argv)
 		rad_select();
 	}
 	/*NOTREACHED*/
+}
+
+void
+unlink_pidfile()
+{
+	char *p = mkfilename(radpid_dir, "radiusd.pid");
+	unlink(p);
+	efree(p);
 }
 
 /* Open authentication sockets. */
@@ -1482,9 +1487,7 @@ rad_exit(sig)
 		 *      FIXME: kill all children.
 		 */
 		stat_done();
-#ifdef RADIUS_PID		
-		unlink(RADIUS_PID);
-#endif		
+		unlink_pidfile();
 	} else {
 		me = _("CHILD: ");
 	}

@@ -4,3 +4,5 @@ Makefile.in
 .libs
 findport
 test.sh
+proxy-stamp
+radiusd-stamp

@@ -10,7 +10,8 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-bin_PROGRAMS=radscm
+bin_PROGRAMS=@RADSCM@
+EXTRA_PROGRAMS=radscm
 radscm_SOURCES=main.c radscm.c
 INCLUDES  = -I$(top_srcdir)/include @INCLUDEPATH@ @GUILE_INCLUDES@
 CPPFLAGS=-DDATADIR=\"$(pkgdatadir)\"
@@ -21,7 +22,7 @@ radscm_LDADD=@GUILE_LIBS@ ../radlib/liblog.la ../radlib/librad.la ../radlib/libd
 pkgdata_DATA=boot.scm session.scm guile-procedures.txt
 BUILT_SOURCES=radscm.x radscm.doc 
 
-EXTRA_DIST=boot.scm session.scm radctl.scm radscm.x radscm.doc 
+EXTRA_DIST=boot.scm session.scm 
 
 GUILE_DOC_SNARF=$(top_srcdir)/scripts/guile/guile-doc-snarf
 
@@ -35,14 +36,13 @@ SUFFIXES=.x .doc
 	$(GUILE_DOC_SNARF) $< $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) \
                            $< > /dev/null || { rm $@; false; }
 
-guile-procedures.txt: $(srcdir)/radscm.doc
-	cat $(srcdir)/radscm.doc > $@
-
-if MAINTAINER_MODE
+guile-procedures.txt: radscm.doc
+	cat radscm.doc > $@
 
 ## Add -MG to make the .x magic work with auto-dep code.
 MKDEP = $(CC) -M -MG $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)
 
+if MAINTAINER_MODE
 
 LINTFLAGS=-gezra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
 

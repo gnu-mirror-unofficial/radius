@@ -180,6 +180,12 @@ int snmp_stat_nas4(enum mib_node_cmd cmd, void *closure, subid_t subid,
 		   struct snmp_var **varp, int *errp);
 int snmp_nas_table(enum mib_node_cmd cmd, void *closure, subid_t subid,
 		   struct snmp_var **varp, int *errp);
+int snmp_port_index1(enum mib_node_cmd cmd, void *closure, subid_t subid,
+		     struct snmp_var **varp, int *errp);
+int snmp_port_index2(enum mib_node_cmd cmd, void *closure, subid_t subid,
+		     struct snmp_var **varp, int *errp);
+int snmp_port_table(enum mib_node_cmd cmd, void *closure, subid_t subid,
+		    struct snmp_var **varp, int *errp);
 
 struct auth_mib_closure {
 	int nas_index;
@@ -194,9 +200,20 @@ struct nas_table {
 	int row;
 };
 
+struct port_closure {
+	int nas_index;
+	int port_no;
+};
+
+struct port_table_closure {
+	int port_index;
+};
+
 struct auth_mib_closure auth_closure, acct_closure;
 struct nas_closure nas_closure;
 struct nas_table nas_table;
+struct port_closure port_closure;
+struct port_table_closure port_table;
 
 static struct mib_data {
 	oid_t oid;
@@ -284,6 +301,27 @@ static struct mib_data {
 	oid_NASLinesInUse,		     snmp_nas_table, &nas_table,
 	oid_NASLinesIdle,		     snmp_nas_table, &nas_table,
 
+	oid_StatPortIndex1,                  snmp_port_index1, &port_closure,
+	oid_StatPortIndex2,                  snmp_port_index2, &port_closure,
+
+	/* port table */
+	oid_StatNASIndex,		     snmp_port_table, &port_table,
+	oid_StatPortID,			     snmp_port_table, &port_table,
+	oid_StatPortFramedAddress,	     snmp_port_table, &port_table,
+	oid_StatPortTotalLogins,             snmp_port_table, &port_table,
+	oid_StatPortStatus,		     snmp_port_table, &port_table,
+	oid_StatPortStatusDate,		     snmp_port_table, &port_table,
+	oid_StatPortUpTime,		     snmp_port_table, &port_table,
+	oid_StatPortLastLoginName,	     snmp_port_table, &port_table,
+	oid_StatPortLastLoginDate,	     snmp_port_table, &port_table,
+	oid_StatPortLastLogoutDate,	     snmp_port_table, &port_table,
+	oid_StatPortIdleTotalTime,	     snmp_port_table, &port_table,
+	oid_StatPortIdleMaxTime,	     snmp_port_table, &port_table,
+	oid_StatPortIdleMaxDate,	     snmp_port_table, &port_table,
+	oid_StatPortInUseTotalTime,	     snmp_port_table, &port_table,
+	oid_StatPortInUseMaxTime,	     snmp_port_table, &port_table,
+	oid_StatPortInUseMaxDate,	     snmp_port_table, &port_table,
+	
 };					    
 					    
 void
@@ -640,9 +678,9 @@ mib_get_next(node, varp, errp)
 				mib_reset(node);
 				if (node->down && node->down != found_node)
 					break;
-				/*if (node->subid == SUBID_X &&
-				    mib_down(node, oid))
-					break;*/
+				if (node->subid == SUBID_X &&
+				    mib_down(node, oid) == 0) 
+					break;
 				found_node = node;
 			}
 
@@ -892,37 +930,6 @@ timeval_diff(tva, tvb)
 {
 	return  (tva->tv_sec - tvb->tv_sec)*100 +
 		(tva->tv_usec - tvb->tv_usec)/10000;
-}
-
-/* Compare two oids. FIXME: Probalbly can be eliminated */
-int
-oidcmp(a, b, len)
-	subid_t *a, *b;
-	int len;
-{
-	for (; len; len--) {
-		if (*a++ != *b++)
-			return len;
-	}
-	return 0;
-}
-
-/* Compare oids of two variable lists. Order is significant.
- * Return 0 if both lists match, 1 otherwise.
- */
-int
-variable_cmp(v1, v2)
-	struct snmp_var *v1, *v2;
-{
-	while (v1) {
-		if (OIDLEN(v1->name) != OIDLEN(v2->name) ||
-		    oidcmp(OIDPTR(v1->name), OIDPTR(v2->name),
-			   OIDLEN(v1->name)))
-		    return 1;
-		v1 = v1->next;
-		v2 = v2->next;
-	}
-	return !(v1 == NULL && v2 == NULL);
 }
 
 /* ************************************************************************* */
@@ -1816,6 +1823,8 @@ snmp_stat_nas(num, cmd, closure, subid, varp, errp)
 		return 0;
 		
 	case MIB_NODE_NEXT:
+		if (num != 3)
+			return  -1; 
 		if ((nas = findnasbyindex(1+closure->last_index)) == NULL) {
 			return -1;
 		}
@@ -2019,6 +2028,357 @@ get_stat_nasstat(nas, var, ind)
 
 	}
 }
+
+int
+snmp_port_index1(cmd, closure, subid, varp, errp)
+	enum mib_node_cmd cmd;
+	void *closure;
+	subid_t subid;
+	struct snmp_var **varp;
+	int *errp;
+{
+	NAS *nas;
+	struct nas_stat *nsp;
+	UINT4 ip;
+	struct snmp_var *var;
+	struct port_closure *pind = (struct port_closure*)closure;
+	
+	switch (cmd) {
+	case MIB_NODE_GET:
+		*errp = SNMP_ERR_NOSUCHNAME;
+		return -1;
+		
+	case MIB_NODE_SET:
+	case MIB_NODE_SET_TRY:
+		/* None of these can be set */
+		if (errp)
+			*errp = SNMP_ERR_NOSUCHNAME;
+		return -1;
+		
+	case MIB_NODE_COMPARE:
+		pind->nas_index = subid;
+		return 0;
+		
+	case MIB_NODE_NEXT:
+		return  -1; 
+		
+	case MIB_NODE_GET_SUBID:
+		return pind->nas_index;
+		
+	case MIB_NODE_RESET:
+		pind->nas_index = 1;
+		if (nas = findnasbyindex(pind->nas_index)) 
+			pind->port_no = stat_get_next_port_no(nas, 0);
+		break; 
+	}
+	
+	return 0;
+}
+
+int
+snmp_port_index2(cmd, closure, subid, varp, errp)
+	enum mib_node_cmd cmd;
+	void *closure;
+	subid_t subid;
+	struct snmp_var **varp;
+	int *errp;
+{
+	NAS *nas;
+	int index;
+	struct snmp_var *var;
+	struct port_closure *pind = (struct port_closure*)closure;
+	
+	switch (cmd) {
+	case MIB_NODE_GET:
+		if ((nas = findnasbyindex(pind->nas_index)) == NULL ||
+		    (index = stat_get_port_index(nas, pind->port_no)) == 0) {
+			*errp = SNMP_ERR_NOSUCHNAME;
+			return -1;
+		}
+		*errp = SNMP_ERR_NOERROR;
+		var = snmp_var_create((*varp)->name);
+		var->type = ASN_INTEGER;
+		var->val_length = sizeof(int);
+		var->var_int = index;
+		*varp = var;
+		break;
+		
+	case MIB_NODE_SET:
+	case MIB_NODE_SET_TRY:
+		/* None of these can be set */
+		if (errp)
+			*errp = SNMP_ERR_NOSUCHNAME;
+		return -1;
+		
+	case MIB_NODE_COMPARE:
+		pind->port_no = subid;
+		return 0;
+		
+	case MIB_NODE_NEXT:
+		if ((nas = findnasbyindex(pind->nas_index)) == NULL)
+			return -1;
+		index = stat_get_next_port_no(nas, pind->port_no);
+		if (index > 0) {
+			pind->port_no = index;
+			break;
+		}
+		/* move to next nas */
+		if ((nas = findnasbyindex(pind->nas_index+1)) == NULL)
+			return -1;
+		index = stat_get_next_port_no(nas, 0);
+		if (index > 0) {
+			pind->nas_index++;
+			pind->port_no = index;
+			break;
+		}
+		return -1;
+		
+	case MIB_NODE_GET_SUBID:
+		return pind->port_no;
+		
+	case MIB_NODE_RESET:
+		break; 
+	}
+	
+	return 0;
+}
+
+struct snmp_var *snmp_port_get(subid_t subid, struct snmp_var *var, int *errp);
+void get_port_stat(PORT_STAT *port, struct snmp_var *var, subid_t key);
+
+int
+snmp_port_table(cmd, closure, subid, varp, errp)
+	enum mib_node_cmd cmd;
+	void *closure;
+	subid_t subid;
+	struct snmp_var **varp;
+	int *errp;
+{
+	NAS *nas;
+	struct port_table_closure *p = (struct port_table_closure*)closure;
+	
+	switch (cmd) {
+	case MIB_NODE_GET:
+		if ((*varp = snmp_port_get(subid, *varp, errp)) == NULL)
+			return -1;
+		break;
+		
+	case MIB_NODE_SET:
+	case MIB_NODE_SET_TRY:
+		/* None of these can be set */
+		if (errp)
+			*errp = SNMP_ERR_NOSUCHNAME;
+		return -1;
+		
+	case MIB_NODE_COMPARE: 
+		return 0;
+		
+	case MIB_NODE_NEXT:
+		if (findportbyindex(subid+1)) {
+			p->port_index = subid+1;
+			return 0;
+		}
+		return -1;
+		
+	case MIB_NODE_GET_SUBID:
+		return p->port_index;
+		
+	case MIB_NODE_RESET:
+		p->port_index = 1;
+		break;
+
+	}
+	
+	return 0;
+}
+
+struct snmp_var *
+snmp_port_get(subid, var, errp)
+	subid_t subid;
+	struct snmp_var *var;
+	int *errp;
+{
+	struct snmp_var *ret;
+	subid_t key;
+	oid_t oid = var->name;
+	PORT_STAT *port;
+	
+	ret = snmp_var_create(oid);
+	*errp = SNMP_ERR_NOERROR;
+
+	switch (key = SUBID(oid, OIDLEN(oid)-2)) {
+
+	case MIB_KEY_StatNASIndex:
+	case MIB_KEY_StatPortID:
+	case MIB_KEY_StatPortFramedAddress:
+	case MIB_KEY_StatPortTotalLogins:                 
+	case MIB_KEY_StatPortStatus:        
+	case MIB_KEY_StatPortStatusDate:             
+	case MIB_KEY_StatPortUpTime:         
+	case MIB_KEY_StatPortLastLoginName:             
+	case MIB_KEY_StatPortLastLoginDate:      
+	case MIB_KEY_StatPortLastLogoutDate:      
+	case MIB_KEY_StatPortIdleTotalTime:     
+	case MIB_KEY_StatPortIdleMaxTime:      
+	case MIB_KEY_StatPortIdleMaxDate:        
+	case MIB_KEY_StatPortInUseTotalTime:        
+	case MIB_KEY_StatPortInUseMaxTime:     
+	case MIB_KEY_StatPortInUseMaxDate:       
+		if (port = findportbyindex(subid)) {
+ 			get_port_stat(port, ret, key);
+			break;
+		}
+		/*FALLTHRU*/
+		
+	default:
+		*errp = SNMP_ERR_NOSUCHNAME;
+		snmp_var_free(ret);
+		return NULL;
+	}
+	return ret;
+}
+
+#define TDIFF(tv, time) (tv.tv_sec - time)*100 + tv.tv_usec/10000;
+
+/*FIXME: remove?*/
+char *
+timestr(time)
+	time_t time;
+{
+	char *p;
+	int len;
+
+	if (time == 0)
+		return "N/A";
+	p = ctime(&time);
+	len = strlen(p);
+	if (len > 1) 
+		p[--len] = 0;
+	return p;
+}
+
+void
+get_port_stat(port, var, key)
+	PORT_STAT *port;
+	struct snmp_var *var;
+	subid_t key;
+{
+	struct timeval tv;
+	struct timezone tz;
+	char *p;
+	NAS *nas;
+	
+	switch (key) {
+
+	case MIB_KEY_StatNASIndex:
+		nas = nas_find(port->ip);
+		var->type = ASN_INTEGER;
+		var->val_length = sizeof(counter);
+		if (nas)
+			var->var_int = nas->nas_stat->index;
+		else
+			var->var_int = 0;
+		break;
+
+	case MIB_KEY_StatPortID:
+		var->type = ASN_INTEGER;
+		var->val_length = sizeof(counter);
+		var->var_int = port->port_no;
+		break;
+
+	case MIB_KEY_StatPortFramedAddress:
+		var->type = SMI_IPADDRESS;
+		var->val_length = sizeof(UINT4);
+		var->var_str = snmp_alloc(sizeof(UINT4));
+		*(UINT4*)var->var_str = port->framed_address;
+		break;
+
+	case MIB_KEY_StatPortTotalLogins:                 
+		var->type = SMI_COUNTER32;
+		var->val_length = sizeof(counter);
+		var->var_int = port->count;
+		break;
+		
+	case MIB_KEY_StatPortStatus:        
+		var->type = ASN_INTEGER;
+		var->val_length = sizeof(counter);
+		var->var_int = port->active ? port_active : port_idle;
+		break;
+
+	case MIB_KEY_StatPortStatusDate:
+		p = timestr(port->start);
+		var->type = ASN_OCTET_STR;
+		var->val_length = strlen(p);
+		var->var_str = snmp_strdup(p);
+		break;
+
+	case MIB_KEY_StatPortUpTime:         
+		gettimeofday(&tv, &tz);
+		var->type = SMI_TIMETICKS;
+		var->val_length = sizeof(counter);
+		var->var_int = TDIFF(tv, port->start);
+		break;
+		
+	case MIB_KEY_StatPortLastLoginName:             
+		var->type = ASN_OCTET_STR;
+		var->val_length = strlen(port->login)+1;
+		var->var_str = snmp_strdup(port->login);
+		break;
+
+	case MIB_KEY_StatPortLastLoginDate:
+		p = timestr(port->lastin);
+		var->type = ASN_OCTET_STR;
+		var->val_length = strlen(p);
+		var->var_str = snmp_strdup(p);
+		break;
+
+	case MIB_KEY_StatPortLastLogoutDate:      
+		p = timestr(port->lastout);
+		var->type = ASN_OCTET_STR;
+		var->val_length = strlen(p);
+		var->var_str = snmp_strdup(p);
+		break;
+
+	case MIB_KEY_StatPortIdleTotalTime:     
+		var->type = SMI_TIMETICKS;
+		var->val_length = sizeof(counter);
+		var->var_int = port->idle * 100;
+		break;
+		
+	case MIB_KEY_StatPortIdleMaxTime:      
+		var->type = SMI_TIMETICKS;
+		var->val_length = sizeof(counter);
+		var->var_int = port->maxidle.time * 100;
+		break;
+		
+	case MIB_KEY_StatPortIdleMaxDate:
+		p = timestr(port->maxidle.start);
+		var->type = ASN_OCTET_STR;
+		var->val_length = strlen(p);
+		var->var_str = snmp_strdup(p);
+		break;
+
+	case MIB_KEY_StatPortInUseTotalTime:        
+		var->type = SMI_TIMETICKS;
+		var->val_length = sizeof(counter);
+		var->var_int = port->inuse * 100;
+		break;
+		
+	case MIB_KEY_StatPortInUseMaxTime:     
+		var->type = SMI_TIMETICKS;
+		var->val_length = sizeof(counter);
+		var->var_int = port->maxinuse.time * 100;
+		break;
+		
+	case MIB_KEY_StatPortInUseMaxDate:
+		p = timestr(port->maxinuse.start);
+		var->type = ASN_OCTET_STR;
+		var->val_length = strlen(p);
+		var->var_str = snmp_strdup(p);
+		break;
+	}
+}
+
 
 #endif
 

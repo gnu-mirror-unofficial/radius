@@ -1,5 +1,5 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
+ * Copyright (C) 2000,2001, Sergey Poznyakoff
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,12 +22,11 @@
 # include <config.h>
 #endif
 
-#include        <sys/types.h>
-#include	<stdio.h>
-#include	<radiusd.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <radiusd.h>
 
 static char *sys_def[] = {
-	/* here are all the system definitions compilation uses */
 #if defined(__alpha)
 	"__alpha",
 #endif
@@ -118,7 +117,6 @@ static char *compile_flag_str[] = {
 #endif
 };
 
-#define NITEMS(a) sizeof(a)/sizeof((a)[0])
 
 char *server_id;
 
@@ -145,7 +143,7 @@ make_server_ident()
 }
 
 /*
- * Display the version number and build particulars.
+ * Display the version number and built-in defaults.
  */
 void
 version()
@@ -179,14 +177,15 @@ version()
 	fprintf(stderr, " SQL : %d\n", RAD_SQL_PORT);
 #endif
 	fprintf(stderr, "Paths:\n");
-	fprintf(stderr, _(" logging directory:    %s\n"), RADLOG_DIR);
-	fprintf(stderr, _(" accounting directory: %s\n"), RADACCT_DIR);
+	fprintf(stderr, _(" configuration directory: %s\n"), RADIUS_DIR);
+	fprintf(stderr, _(" logging directory:       %s\n"), RADLOG_DIR);
+	fprintf(stderr, _(" accounting directory:    %s\n"), RADACCT_DIR);
 #if defined(DENY_SHELL)
-	fprintf(stderr, _(" deny shell: %s\n"), DENY_SHELL);
+	fprintf(stderr, _(" deny shell:              %s\n"), DENY_SHELL);
 #endif
 
 #ifdef RADIUS_PID
-	fprintf(stderr, _(" pidfile: %s\n"), RADIUS_PID);
+	fprintf(stderr, _(" pidfile:                 %s\n"), RADIUS_PID);
 #else
 	fprintf(stderr, _(" no pidfile\n"));
 #endif
@@ -212,7 +211,7 @@ char license_text[] =
 void
 license()
 {
-	printf("%s: Copyright 1999,2000 Sergey Poznyakoff\n", progname);
+	printf("%s: Copyright 1999,2000,2001 Sergey Poznyakoff\n", progname);
 	printf("\nThis program is part of GNU Radius\n");
 	printf("%s", license_text);
 }

@@ -17,7 +17,6 @@
  *
  */
 
-/* log.c	Logging module. */
 #ifndef lint
 static char rcsid[] = 
 "$Id$";
@@ -50,10 +49,10 @@ initlog(name)
 		progname = name;
 }
 
-static int do_log(int lvl, int syserr, char *fmt, va_list ap);
+static int vlog(int lvl, int syserr, char *fmt, va_list ap);
 
 int
-do_log(lvl, syserr, fmt, ap)
+vlog(lvl, syserr, fmt, ap)
 	int lvl;
 	int syserr;
 	char *fmt;
@@ -108,7 +107,7 @@ radlog(lvl, msg, va_alist)
 	r = lvl & L_PERROR;
 	lvl &= L_MASK;
 	va_start(ap);
-	do_log(lvl, r, msg, ap);
+	vlog(lvl, r, msg, ap);
 	va_end(ap);
 
 	return 0;

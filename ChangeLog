@@ -1,3 +1,13 @@
+2001-03-10  gray  <gray@farlep.net>
+	Rewritten radiusd/pam.c. 
+	Modified radiusd/log.c so that it echoes log messages to
+	console until the program detaches from it. Improved string
+	handling in radlib/users.l
+
+2001-03-09  gray  <gray@farlep.net>
+	Added semantic checks for `users' and `hints' files.
+	Integrated builddbm into radiusd.
+
 2001-03-05  gray  <gray@farlep.net>
 	Fixed DBM file handling. Now it provides the same functionality
 	as plaintext user database.

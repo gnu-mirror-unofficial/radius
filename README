@@ -163,7 +163,9 @@ See accompanying documentation (Ref. "rewrite").
 
 		IV. Testing.		
            ------------------------------------------------
-Use radtest. 
+
+Use radtest. Note that you will need guile version 1.4 or later installed
+on your system.
 
 1. To test authentication do
 

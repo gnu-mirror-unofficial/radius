@@ -1,5 +1,5 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
+ * Copyright (C) 2000,2001, Sergey Poznyakoff
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,7 +77,9 @@ radius_exec_program(cmd, request, reply, exec_wait, user_msg)
 	char buffer[RAD_BUFFER_SIZE];
 	struct passwd *pwd;
 	struct group  *grp;
+#if 0
 	int saved_uid, saved_gid;
+#endif
 	
 	if (cmd[0] != '/') {
 		radlog(L_ERR,
@@ -163,9 +165,11 @@ radius_exec_program(cmd, request, reply, exec_wait, user_msg)
 
 		chdir("/tmp");
 		
+		#if 0
 		saved_uid = geteuid();
 		saved_gid = getegid();
-
+		#endif
+		
 		if (grp->gr_gid && setgid(grp->gr_gid)) {
 			radlog(L_ERR|L_PERROR,
 			       _("setgid(%d) failed"), pwd->pw_gid);

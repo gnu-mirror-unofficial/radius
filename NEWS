@@ -1,6 +1,153 @@
-1. Realm quota support.
+I. Changes to radiusd
+----------------------
 
+Added realm quota support. This feature allows to limit number of
+users coming from a certain realm.
+
+-i runtime option sets IP address radiusd binds to. It is useful in
+case there are several network interfaces on the machine running radiusd.
+
+The checkrad program is now gone. Its functionality is integrated in
+the daemon itself. 
+
+II. Changes to configuration files
+-----------------------------------
+
+A special username, BEGIN or BEGIN%d, where %d is any decimal number,
+may be used in raddb/users. It matches any username, just like DEFAULT
+does, but BEGIN profiles are tried *before* any other profiles. Thus
+they can be used to provide defaults for all other profiles. For example:
+
+	BEGIN	NULL	Framed-IP-Address = "10.10.10.1+", Fall-Through = Yes
+
+The effect of this statement is that Framed-IP-Address = "10.10.10.1+"
+is added to reply pairs of a matching profile. Please note the use of
+Fall-Through attribute. If it were not present, the matching
+would stop at this entry.
+
+Several internal attributes have been added. They are:
+
+1. Match-Profile
+
+The Match-Profile attribute can be used in check and reply lists of a
+user profile. Its value is the name of another user's profile (target
+profile). When Match-Profile is used in the check list, the incoming
+packet will match this profile only if it matches the target profile.
+In this case the reply pairs will be formed concatenating the reply
+lists from both profiles.
+When used in the reply list, this attribute causes the reply pairs
+from the target profile to be appended to the reply from the current
+profile if the target profile matches the incoming request.
+
+2. Auth-Data
+
+Auth-Data attribute can be used to provide additional authentication
+data for SQL and PAM authentication methods. When used with PAM
+authentication method it provides the same functionality as PAM-Auth
+attribute.
+
+III. Querying terminal servers
 ------------------------------
+
+GNU Radius version 0.94 is able to query a NAS about whether a given
+user's session is active at the moment. Such querying takes place when
+a user is trying to log in when the maximum number of open sessions
+for his login has been reached. NASes can be queried using either
+SNMP or finger protocols. Methods for querying any particular type
+of NAS as well as functions to parse NAS output are defined in
+configuration files raddb/nastype and raddb/rewrite. Thus if the files
+shipped with the distribution do not provide support for some particular
+type of NAS, such support can easily be added without having to recompile
+radiusd. If you supply such additional support, the author would appreciate
+sending him the patches so that they can be included in the subsequent
+distributions.
+
+The following describes briefly the basic idea.
+
+Some definitions:
+ 1. *method* is the method to use for querying NAS. Currently it can be
+    either SNMP or finger.
+ 2. *method arguments* are the arguments needed by the method. These are
+    basic arguments, specific for a method, such as community and OID
+    for SNMP and optional arguments, such as timeout, number of retries,
+    etc.
+ 3. *type* is a symbolic name denoting the method along with the set of
+    its arguments.
+ 4. *NAS-specific arguments* are those method arguments which are
+    specific for a given NAS.
+ 5. *session specific data* are data uniquely identifying the user's
+    session on a given NAS. This is a triplet (username,NAS-Port-id,
+    Session-Id).
+
+When it is necessary to check whether a session is actually active on
+a NAS, radiusd first picks up the NAS type and NAS specific arguments
+from the third and fourth columns of raddb/naslist file. Two special
+NAS types are predefined. These are `true' and `false' types. Each of
+them means that no querying should be done. Type `true' means that the
+session is always deemed active, `false' means the session is always
+deemed inactive. For any other type its method and arguments are looked 
+up in raddb/nastypes database. Each record in the database consists of
+three fields: type, method and argument list. When the matching record
+is found, radiusd appends NAS specific arguments to the method argument
+list. If an argument occurs in both lists, the value supplied by the NAS
+specific list takes precedence over the one supplied by the method argument
+list. After all these data is gathered radiusd finally queries the NAS.
+For example, suppose the naslist contains the following:
+
+# NAS Name		Short Name	Type		Checkrad flags
+#----------------	----------	----		---------------
+remote.dom.ain		REMOTE		unix		timeout=20,retries=2
+
+and raddb/nastypes contains:
+
+# Type     Method          Args
+# ----     ------          ----
+unix	   finger          function=check_unix,port=79,timeout=3
+
+Then to check the activity of a session on the NAS `REMOTE', radiusd
+will connect to it on port 79 using finger protocol. It will retry 2
+times and will timeout in 20 seconds (not 3, because the value from the
+naslist overrides this from nastypes). The function check_unix will
+be used to parse the output from NAS.
+
+Some words about the `function=' argument. It *must* be present in any
+type definition. This argument specifies the function to be used for
+parsing the NAS reply. If this function returns 1, it means the user
+session is really active. The parsing of the NAS output continues while
+the function returns 0. The function should be declared as:
+
+	integer fun(string str, string name, integer pid, string sid)
+
+The meaning of its arguments is:
+	str          --  a line of NAS output
+	name,pid,sid --  session specific data.
+
+In the above example, assuming usual UNIX finger output format, the
+function check_unix can be defined as:
+
+	integer
+	check_unix(string str, string name, integer pid, string sid)
+	{
+		return field(str, 1) == name &&
+		       (integer) field(str, 3) == pid &&
+	               field(str, 7) == sid;
+	}
+
+
+IV. SQL support
+------------------
+
+User's group can now be obtained from the SQL database. The group_query
+statement in raddb/sqlserver file specifies the query to be used to
+retrieve the group. The query may return multiple rows. The Group
+attribute is matched when used in the check pair list of a hints
+profile.
+
+The acct_keepalive_query keyword specifies the query to be used
+on the arrival of a keepalive packet.
+
+
+=============================================================================
 NEWS for version 0.93
 
 The Guile interface to Radius functions has been added. The program
@@ -15,7 +162,7 @@ SQL accounting to a Postrgres server run
 	./configure --enable-mysql=postgres
 
 
-------------------------------
+=============================================================================
 NEWS for version 0.92.1
 
 The major differences between this implementation of radius and

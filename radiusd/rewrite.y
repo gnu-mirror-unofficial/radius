@@ -1,5 +1,5 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
+ * Copyright (C) 2000,2001 Sergey Poznyakoff
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -2832,6 +2832,10 @@ debug_print_function()
 # define DEBUG_MTX(c) 
 # define DEBUG_FUN()
 #endif
+
+static void pass1();
+static int pass2_unary(MTX *mtx);
+static int pass2_binary(MTX *mtx);
 
 void
 pass1()

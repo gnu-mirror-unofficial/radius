@@ -87,7 +87,6 @@
 #define DA_REWRITE_FUNCTION 2002
 #define DA_ACCT_TYPE 2003
 #define DA_MATCH_PROFILE 2004
-#define DA_INCLUDE_PROFILE 2005
 #define DA_AUTH_DATA 2006
 #define DA_QUEUE_ID 65534
 #define DV_ACCT_TYPE_NONE 0
@@ -202,7 +201,6 @@
 #define DV_AUTH_TYPE_SECURID 2
 #define DV_AUTH_TYPE_CRYPT_LOCAL 3
 #define DV_AUTH_TYPE_REJECT 4
-#define DV_AUTH_TYPE_ACTIVCARD 4
 /* 
  *  Extensions introduced by Cistron
  * 

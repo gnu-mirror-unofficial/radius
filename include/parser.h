@@ -16,21 +16,25 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
+#include <symtab.h>
+
 struct pair_list {
+	struct pair_list *next;
 	char *name;
 	VALUE_PAIR *check;
 	VALUE_PAIR *reply;
 	int lineno;
-	struct pair_list *next;
 };
 typedef struct pair_list PAIR_LIST;
 
 extern char *source_filename;
 extern int source_line_num;
 
+extern Symtab *user_tab;
+extern PAIR_LIST *hints;
+
 extern PAIR_LIST *pair_result();
 int init_parse(char *name, int complain);
 int init_lex(char *name);
-void auth_type_fixup(VALUE_PAIR *check);
 void done_lex();
 void users_sync();

@@ -26,7 +26,7 @@
  *         -m P        Finish when port P is reached (default 65535)
  *         -f F        Use format string F for output.
  * Any subsequent occurence of characters %d in format string is replaced
- * by the found port number. Usual C backslash sequences are recognized.
+ * with the found port number. Usual C backslash sequences are recognized.
  * All other characters encountered in format string are reproduced
  * verbatim.
  * If no format string is specified, the port numbers are printed one per

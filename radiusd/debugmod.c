@@ -22,9 +22,9 @@
 #if RADIUS_DEBUG
 #include <log.h>
 
-int debug_level[19];
+int debug_level[20];
 
-struct debug_module debug_module[19+1] = {
+struct debug_module debug_module[20+1] = {
 
        "leakdetect.c", 0,
        "mem.c", 1,
@@ -47,6 +47,7 @@ struct debug_module debug_module[19+1] = {
        "radutil.c", 16,
        "rewrite.y", 17,
        "checkrad.c", 18,
+       "builddbm.c", 19,
 
 	(char*)0, 0
 };

@@ -1,5 +1,5 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
+ * Copyright (C) 2000,2001, Sergey Poznyakoff
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -644,7 +644,8 @@ category_def    : T_CHANNEL T_STRING EOL
 					 filename, line_num);
 			  }
 		  }
-		| T_DEBUG_LEVEL { tie_in++; clear_debug(); } debug_level_list EOL
+		| T_DEBUG_LEVEL { tie_in++;
+		                  clear_debug(); } debug_level_list EOL
                   {
 			  tie_in = 0;
 		  }			  
@@ -1344,10 +1345,19 @@ get_config()
 #endif
 		debug_config = 0;
 	}
-	
-	clear_debug();
+
+	/*
+	 * Initialize logging module. Add logging to stdout if we
+	 * have not yet detached from console.
+	 */
 	log_init();
+	if (first_time)
+		log_stdout();
+	
+	/* Parse configuration */
 	yyparse();
+
+	/* Clean up the things */
 	efree(filename);
 	efree(buffer);
 	log_done();

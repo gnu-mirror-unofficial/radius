@@ -100,7 +100,7 @@ int acct_success(struct sockaddr *sa, int salen);
 int acct_failure(struct sockaddr *sa, int salen);
 int snmp_respond(int fd, struct sockaddr *sa, int salen,
                  u_char *buf, int size);
-int radrespond(RADIUS_REQ *radreq, int activefd);
+int radiusd_respond(RADIUS_REQ *radreq, int activefd);
 
 /* *************************** Global variables. ************************** */
 
@@ -109,8 +109,9 @@ int        log_mode;
 
 static int foreground; /* Stay in the foreground */
 static int spawn_flag;
-static int watch_interval; /* Delay in seconds between watcher wake-ups.
-			      If zero, watcher process will not be started */
+static int watch_interval = 0; /* Delay in seconds between watcher wake-ups.
+				  If zero, watcher process will not be
+				  started */
 int use_dbm = 0;
 int open_acct = 1;
 int auth_detail = 0;
@@ -160,7 +161,7 @@ static void check_reload();
 static void check_snmp_request();
 
 static void set_config_defaults();
-void rad_exit();
+void radiusd_exit();
 static RETSIGTYPE sig_exit (int);
 static RETSIGTYPE sig_fatal (int);
 static RETSIGTYPE sig_hup (int);
@@ -198,11 +199,11 @@ static int rad_cfg_listen_acct(int argc, cfg_value_t *argv,
 			       void *block_data, void *handler_data);
 
 static void reconfigure(int reload);
-static void rad_daemon();
-static void rad_watcher();
+static void radiusd_daemon();
+static void radiusd_watcher();
 static void common_init();
-static void rad_main_loop();
-static void rad_fork_child_handler();
+static void radiusd_main_loop();
+static void radiusd_fork_child_handler();
 static void meminfo();
 
 int radius_mode = MODE_DAEMON;    
@@ -382,6 +383,7 @@ main(argc, argv)
         if (debug_flag == 0) {
                 foreground = 0;
                 spawn_flag = 1;
+		watch_interval = 0;
         }
 
         app_setup();
@@ -398,6 +400,9 @@ main(argc, argv)
         if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, NULL))
                 return 1;
 
+	if (!foreground)
+		foreground = radiusd_is_watched();
+		
         log_set_default("default.log", -1, -1);
         if (radius_mode != MODE_DAEMON)
                 log_set_to_console();
@@ -449,24 +454,16 @@ main(argc, argv)
                 snmp_tree_init();
 #endif
                 if (!foreground)
-                        rad_daemon();
-		if (watch_interval)
-			rad_watcher();
+                        radiusd_daemon();
+		
+		if (watch_interval && !radiusd_is_watched())
+			radiusd_watcher();
                 common_init();
-#ifdef HAVE_PTHREAD_ATFORK
-		pthread_atfork(NULL, NULL, rad_fork_child_handler);
-#endif
         }
 
-        pid = getpid();
-        p = mkfilename(radpid_dir, "radiusd.pid");
-        if ((fp = fopen(p, "w")) != NULL) {
-                fprintf(fp, "%d\n", pid);
-                fclose(fp);
-        }
-        efree(p);
+	radiusd_pidfile_write(RADIUSD_PID_FILE);
 
-        rad_main_loop();
+        radiusd_main_loop();
 	/*NOTREACHED*/
 }
 
@@ -494,7 +491,7 @@ set_config_defaults()
 }
 
 void
-rad_daemon()
+radiusd_daemon()
 {
         FILE *fp;
         char *p;
@@ -562,23 +559,20 @@ sig_watcher(sig)
 	signal(SIGCHLD, sig_watcher);
 }
 
-void
-rad_watcher()
+RETSIGTYPE
+sig_watcher_exit(sig)
+	int sig;
 {
-	int i;
-	char **pargv;
+	radiusd_pidfile_remove(RADIUSD_WATCHER_FILE);
+	exit(0);
+}
+
+void
+radiusd_watcher()
+{
 	pid_t pid;
 
-	/* Fix-up the xargv array */
-	pargv = emalloc((xargc + 3) * sizeof(pargv[0]));
-	for (i = 0; i < xargc; i++)
-		pargv[i] = xargv[i];
-	pargv[i++] = "-w0";
-	pargv[i++] = "-f";
-	pargv[i] = NULL;
-
-	xargv = pargv;
-	xargc = i;
+	radiusd_pidfile_write(RADIUSD_WATCHER_FILE);
 	
 	pid = fork();
 	/* Child returns immediately */
@@ -593,6 +587,10 @@ rad_watcher()
 	/* Master: */
  
 	signal(SIGCHLD, sig_watcher);
+	signal(SIGTERM, sig_watcher_exit);
+	signal(SIGQUIT, sig_watcher_exit);
+	signal(SIGINT, sig_watcher_exit);
+
 	while (1) {
 		sleep(watch_interval);
 		if (child_died) {
@@ -606,8 +604,7 @@ rad_watcher()
 				       WTERMSIG(child_exit_status));
 			} else 
 				radlog(L_NOTICE, _("radiusd terminated"));
-			rad_restart(1);
-			signal(SIGCHLD, sig_watcher);
+			radiusd_primitive_restart(1);
 			child_died = 0;
 		}
 	}
@@ -632,6 +629,9 @@ common_init()
         radius_tid = pthread_self();
         pthread_attr_init(&thread_attr);
         pthread_attr_setdetachstate(&thread_attr, PTHREAD_CREATE_DETACHED);
+#ifdef HAVE_PTHREAD_ATFORK
+	pthread_atfork(NULL, NULL, radiusd_fork_child_handler);
+#endif
 #ifdef USE_SERVER_GUILE
         start_guile();
 #endif
@@ -639,13 +639,13 @@ common_init()
 }       
 
 void
-rad_thread_init()
+radiusd_thread_init()
 {
         pthread_sigmask(SIG_SETMASK, &rad_signal_set, NULL);
 }
 
 void
-rad_main_loop()
+radiusd_main_loop()
 {
         radlog(L_INFO, _("Ready to process requests."));
 
@@ -660,13 +660,6 @@ rad_main_loop()
         /*NOTREACHED*/
 }
 
-void
-unlink_pidfile()
-{
-        char *p = mkfilename(radpid_dir, "radiusd.pid");
-        unlink(p);
-        efree(p);
-}
 
 /* ************************************************************************* */
 /* Test shell */
@@ -794,19 +787,19 @@ test_shell()
 
 /* Called in the child process just before fork() returns. */
 void
-rad_fork_child_handler()
+radiusd_fork_child_handler()
 {
         socket_list_close(socket_first);
 }
 
 void
-rad_susp()
+radiusd_suspend()
 {
         suspend_flag = 1;
 }
 
 void
-rad_cont()
+radiusd_continue()
 {
         suspend_flag = 0;
 #ifdef USE_SNMP
@@ -816,27 +809,35 @@ rad_cont()
 }
 
 void
-schedule_restart()
+radiusd_schedule_restart()
 {
         daemon_command = CMD_RESTART;
 }
 
 /* Clean up and exit. */
 void
-rad_exit()
+radiusd_exit()
 {
         stat_done();
-        unlink_pidfile();
+	radiusd_pidfile_remove(RADIUSD_PID_FILE);
 
-	rad_flush_queues();
+	radiusd_flush_queues();
 	radlog(L_CRIT, _("Normal shutdown."));
 
-        rad_sql_shutdown();
+        radiusd_sql_shutdown();
         exit(0);
 }
 
+void
+radiusd_abort()
+{
+        stat_done();
+	radiusd_pidfile_remove(RADIUSD_PID_FILE);
+	exit(1);
+}
+
 int
-rad_flush_queues()
+radiusd_flush_queues()
 {
         /* Flush request queues */
         radlog(L_NOTICE, _("flushing request queues"));
@@ -850,13 +851,12 @@ rad_flush_queues()
 /* Restart RADIUS process
  */
 int
-rad_restart(cont)
-	int cont;
+radiusd_restart()
 {
-	int i;
-        pid_t pid;
-        
-        radlog(L_NOTICE, _("restart initiated"));
+	if (radiusd_is_watched())
+		radiusd_exit();
+	
+	radlog(L_NOTICE, _("restart initiated"));
         if (xargv[0][0] != '/') {
                 radlog(L_ERR,
                        _("can't restart: not started as absolute pathname"));
@@ -864,9 +864,19 @@ rad_restart(cont)
         }
         
         /* Flush request queues */
-        rad_flush_queues();
-        rad_sql_shutdown();
-	
+        radiusd_flush_queues();
+        radiusd_sql_shutdown();
+
+	return radiusd_primitive_restart(0);
+}
+
+int
+radiusd_primitive_restart(cont)
+	int cont;
+{
+	int i;
+        pid_t pid;
+        
         if (foreground)
                 pid = 0; /* make-believe we're child */
         else 
@@ -880,10 +890,6 @@ rad_restart(cont)
         /* Close all channels we were listening to */
         socket_list_close(socket_first);
 
-        /* Restore signals */
-	for (i = 0; i < NITEMS(rad_signal_list); i++) 
-		signal(rad_signal_list[i].sig, SIG_DFL);
-        
         if (pid > 0) {
                 /* Parent */
 		if (!cont) {
@@ -893,6 +899,10 @@ rad_restart(cont)
 		return 0;
         }
 
+        /* Restore signals */
+	for (i = 0; i < NITEMS(rad_signal_list); i++) 
+		signal(rad_signal_list[i].sig, SIG_DFL);
+        
         /* Let the things settle */
         sleep(10);
 
@@ -1101,7 +1111,7 @@ reconfigure(reload)
                 radlog(L_INFO, _("Starting - reading configuration files ..."));
         } else {
                 radlog(L_INFO, _("Reloading configuration files."));
-                rad_flush_queues();
+                radiusd_flush_queues();
                 socket_list_close(socket_first);
         }
 
@@ -1198,7 +1208,7 @@ check_reload()
                 break;
 		
         case CMD_RESTART:
-                rad_restart(0);
+                radiusd_restart();
                 break;
 		
         case CMD_MEMINFO:
@@ -1212,7 +1222,7 @@ check_reload()
                 break;
 		
 	case CMD_SHUTDOWN:
-		rad_exit();
+		radiusd_exit();
 		
         default:
                 check_snmp_request();
@@ -1233,7 +1243,7 @@ check_snmp_request()
                                        _("can't restart: radiusd not started as absolute pathname"));
                                 break;
                         }
-                        rad_restart(0);
+                        radiusd_restart();
                         break;
                         
                 case serv_init:
@@ -1244,19 +1254,19 @@ check_snmp_request()
                         if (suspend_flag) {
                                 suspend_flag = 0;
                                 radlog(L_NOTICE, _("RADIUSD RUNNING"));
-                                rad_cont();
+                                radiusd_continue();
                         }
                         break;
                         
                 case serv_suspended:
                         if (!suspend_flag) {
                                 radlog(L_NOTICE, _("RADIUSD SUSPENDED"));
-                                rad_susp();
+                                radiusd_suspend();
                         }
                         break;
                         
                 case serv_shutdown:
-                        rad_exit();
+                        radiusd_exit();
                         break;
                 }
                 saved_status = server_stat.auth.status;
@@ -1534,7 +1544,7 @@ auth_respond(fd, sa, salen, buf, size)
 				ntohs(sin->sin_port),
 				buf,
 				size);
-        if (radrespond(radreq, fd)) 
+        if (radiusd_respond(radreq, fd)) 
                 radreq_free(radreq);
 
         return 0;
@@ -1602,7 +1612,7 @@ rad_request_handle(type, data, fd)
                                Relay reply back to original NAS. */
 
 int
-radrespond(radreq, activefd)
+radiusd_respond(radreq, activefd)
         RADIUS_REQ *radreq;
         int activefd;
 {
@@ -1807,3 +1817,94 @@ socket_list_select(list, tv)
         return 0;
 }
 
+#ifndef timercmp
+#define       timercmp(tvp, uvp, cmp)\
+                      ((tvp)->tv_sec cmp (uvp)->tv_sec ||\
+                      (tvp)->tv_sec == (uvp)->tv_sec &&\
+                      (tvp)->tv_usec cmp (uvp)->tv_usec)
+#endif
+
+int
+radiusd_mutex_lock(mutex, type)
+	pthread_mutex_t *mutex;
+	int type;
+{
+	int rc;
+	struct timeval now, end, tv;
+
+	radiusd_get_timeout(type, &end);
+	while ((rc = pthread_mutex_trylock(mutex)) == EBUSY) {
+		gettimeofday(&now, NULL);
+		if (timercmp(&now, &end, >=))
+			break;
+		tv.tv_sec = 0;
+		tv.tv_usec = 10;
+		select(0, NULL, NULL, NULL, &tv);
+	}
+	return rc;
+}
+
+int
+radiusd_mutex_unlock(mutex)
+	pthread_mutex_t *mutex;
+{
+	return pthread_mutex_unlock(mutex);
+}
+
+void
+radiusd_pidfile_write(name)
+	char *name;
+{
+        pid_t pid = getpid();
+        char *p = mkfilename(radpid_dir, name);
+	FILE *fp = fopen(p, "w"); 
+	if (fp) {
+                fprintf(fp, "%d\n", pid);
+                fclose(fp);
+        }
+        efree(p);
+}	
+
+pid_t
+radiusd_pidfile_read(name)
+	char *name;
+{
+	long val;
+	char *p = mkfilename(radpid_dir, name);
+	FILE *fp = fopen(p, "r");
+	if (!fp)
+		return -1;
+	if (fscanf(fp, "%ld", &val) != 1)
+		val = -1;
+	fclose(fp);
+	efree(p);
+	return (pid_t) val;
+}
+
+void
+radiusd_pidfile_remove(name)
+	char *name;
+{
+	char *p = mkfilename(radpid_dir, name);
+	unlink(p);
+	efree(p);
+}
+
+int
+radiusd_is_watched()
+{
+	pid_t ppid = radiusd_pidfile_read(RADIUSD_WATCHER_FILE);
+	if (ppid == -1)
+		return 0;
+	return kill(ppid, 0) == 0;
+}
+
+int
+radiusd_get_timeout(type, tv)
+	int type;
+	struct timeval *tv;
+{
+	gettimeofday(tv, NULL);
+	tv->tv_sec += request_class[type].ttl;
+	return 0;
+}

@@ -13,7 +13,9 @@
 noinst_LIBRARIES=@LIBRADSCM@
 EXTRA_LIBRARIES=libradscm.a libservscm.a
 bin_PROGRAMS=@RADSCM@
+bin_SCRIPTS=@RADSESSION@
 EXTRA_PROGRAMS=radscm
+EXTRA_SCRIPTS=radsession
 
 libradscm_a_SOURCES= \
  rscm_avl.c\
@@ -30,7 +32,7 @@ libservscm_a_SOURCES= \
 
 radscm_SOURCES=main.c radscm.c
 
-pkgdata_DATA=boot.scm session.scm ttl.scm @GUILE_PROCEDURES_TXT@
+pkgdata_DATA=boot.scm ttl.scm @GUILE_PROCEDURES_TXT@
 DOT_X_FILES=\
  rscm_avl.x\
  rscm_dict.x\
@@ -42,8 +44,11 @@ DOT_X_FILES=\
  radscm.x
 DOT_DOC_FILES=$(DOT_X_FILES:.x=.doc)
 BUILT_SOURCES=@RADSCM_BUILT_SOURCES@
-EXTRA_DIST=boot.scm session.scm ttl.scm
-CLEANFILES = *.x *.doc
+EXTRA_DIST=boot.scm ttl.scm radsession.in
+CLEANFILES = *.x *.doc radsession
+
+radsession: $(srcdir)/radsession.in
+	sed 's,BINDIR,$(bindir),' $? > $@
 
 radscm_LDADD=@GUILE_LIBS@ ./libradscm.a ../radlib/liblog.la ../radlib/librad.la ../radlib/libdebug.la 
 

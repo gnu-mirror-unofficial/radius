@@ -32,6 +32,7 @@ char	*radacct_dir;
 char    *radutmp_path;
 char    *radwtmp_path;
 char    *radstat_path;
+char    *radpid_dir;
 char    *bug_report_address = "bug-gnu-radius@gnu.org";
 
 void
@@ -43,7 +44,9 @@ radpath_init()
 		radlog_dir = make_string(RADLOG_DIR);
 	if (!radacct_dir)
 		radacct_dir = make_string(RADACCT_DIR);
-
+	if (!radpid_dir)
+		radpid_dir = make_string(RADPID_DIR);
+	
 	efree(radutmp_path);
 	radutmp_path = mkfilename(radlog_dir, RADUTMP);
 

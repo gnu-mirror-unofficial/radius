@@ -15,6 +15,7 @@
    along with this program; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
+#define RADIUS_MODULE_CLIENT_C
 #ifndef lint
 static char rcsid[] = 
 "$Id$";
@@ -35,325 +36,26 @@ static char rcsid[] =
 #include <ctype.h>
 
 #include <radius.h>
-#include <radclient.h>
 #include <slist.h>
+#include <debugmod.h>
 
-int radclient_debug;
-
-static int radclient_build_request(RADCLIENT *config, SERVER *server, int code,
-                                   VALUE_PAIR *pair);
-static RADIUS_REQ * radclient_recv(UINT4 host, u_short udp_port,
-                                 char *secret, char *vector,
-                                 char *buffer,
-                                 int length);
-static RADIUS_REQ * decode_buffer(UINT4 host, u_short udp_port, char *buffer,
-                                int length);
-static void random_vector(char *vector);
-static char * auth_code_str(int code);
-
-static struct keyword auth_codes[] = {
-#define D(a) #a, a      
-        D(RT_AUTHENTICATION_REQUEST),
-        D(RT_AUTHENTICATION_ACK),
-        D(RT_AUTHENTICATION_REJECT),
-        D(RT_ACCOUNTING_REQUEST),
-        D(RT_ACCOUNTING_RESPONSE),
-        D(RT_ACCOUNTING_STATUS),
-        D(RT_PASSWORD_REQUEST),
-        D(RT_PASSWORD_ACK),
-        D(RT_PASSWORD_REJECT),
-        D(RT_ACCOUNTING_MESSAGE),
-        D(RT_ACCESS_CHALLENGE),
-        D(RT_ASCEND_TERMINATE_SESSION),
-        0
-#undef D        
-};
-
-char *
-auth_code_str(code)
-        int code;
+void
+rad_clt_random_vector(vector)
+        char *vector;
 {
-        struct keyword *p;
-
-        for (p = auth_codes; p->name; p++)
-                if (p->tok == code)
-                        return p->name;
-        return NULL;
-}
-
-RADIUS_REQ *
-radclient_send(config, port_type, code, pair)
-        RADCLIENT *config;
-        int port_type;
-        int code;
-        VALUE_PAIR *pair;
-{
-        struct  sockaddr        salocal;
-        struct  sockaddr        saremote;
-        struct  sockaddr_in     *sin;
-        int local_port;
-        int sockfd;
-        int salen;
-        int total_length;
-        fd_set readfds;
-        struct timeval tm;
-        int result;
+        int randno;
         int i;
-        RADIUS_REQ *req = NULL;
-        SERVER *server;
-        char ipbuf[DOTTED_QUAD_LEN];
 
-        if (port_type < 0 || port_type > 2) {
-                radlog(L_ERR, _("invalid port type"));
-                return NULL;
+        for (i = 0; i < AUTH_VECTOR_LEN; ) {
+                randno = rand();
+                memcpy(vector, &randno, sizeof(int));
+                vector += sizeof(int);
+                i += sizeof(int);
         }
-        sockfd = socket (AF_INET, SOCK_DGRAM, 0);
-        if (sockfd < 0) {
-                radlog(L_ERR|L_PERROR, "socket");
-                return NULL;
-        }
-
-        sin = (struct sockaddr_in *) &salocal;
-        memset (sin, 0, sizeof (salocal));
-        sin->sin_family = AF_INET;
-        sin->sin_addr.s_addr = config->source_ip ?
-                                   htonl(config->source_ip) : INADDR_ANY;
-
-        local_port = 1025;
-        do {
-                local_port++;
-                sin->sin_port = htons((u_short)local_port);
-        } while ((bind(sockfd, &salocal, sizeof (struct sockaddr_in)) < 0) &&
-                                                local_port < 64000);
-        if (local_port >= 64000) {
-                radlog(L_ERR|L_PERROR, "bind");
-                close(sockfd);
-                return NULL;
-        }
-
-        server = config->first_server;
-        do {
-                if (server->port[port_type] <= 0)
-                        continue;
-                
-                if (radclient_debug) {
-                        printf("server %s:%d\n",
-                               ip_iptostr(server->addr, ipbuf),
-                               server->port[port_type]);
-                }
-                
-                total_length = radclient_build_request(config, server,
-                                                       code, pair);
-        
-                if (total_length <= 0) 
-                        break;
-        
-                /*
-                 *      Send the request we've built.
-                 */
-                
-                sin = (struct sockaddr_in *) &saremote;
-                memset(sin, 0, sizeof (saremote));
-                sin->sin_family = AF_INET;
-                sin->sin_addr.s_addr = htonl(server->addr);
-                sin->sin_port = htons(server->port[port_type]);
-
-                for (i = 0; i < config->retries; i++) {
-                        if (sendto(sockfd, config->data_buffer,
-                                   total_length, 0,
-                                   &saremote,
-                                   sizeof(struct sockaddr_in)) == -1) {
-                                radlog(L_ERR|L_PERROR, "sendto");
-                                break;
-                        }
-
-                        salen = sizeof (saremote);
-
-                        tm.tv_usec = 0L;
-                        tm.tv_sec = (long) config->timeout;
-                        FD_ZERO(&readfds);
-                        FD_SET(sockfd, &readfds);
-                        if (select(sockfd+1, &readfds, NULL, NULL, &tm) < 0) {
-                                if (errno == EINTR) {
-                                        i--;
-                                        continue;
-                                }
-                                radlog(L_NOTICE, _("select() interrupted"));
-                                break;
-                        }
-
-                        if (FD_ISSET (sockfd, &readfds)) {
-                                result = recvfrom(sockfd,
-                                                  config->data_buffer,
-                                                  config->bufsize,
-                                                  0, &saremote, &salen);
-
-                                if (result > 0) 
-                                        req = radclient_recv(
-                                                sin->sin_addr.s_addr,
-                                                sin->sin_port,
-                                                server->secret,
-                                                config->vector,
-                                                config->data_buffer,
-                                                result);
-                                else 
-                                        radlog(L_ERR|L_PERROR,
-                                               _("error receiving data from %s:%d"),
-                                               ip_iptostr(server->addr, ipbuf),
-                                               server->port[port_type]);
-                                
-                                break;
-                        }
-                }
-
-                if (radclient_debug && !req)
-                        printf("no reply\n");
-        } while (!req && (server = server->next) != NULL);
-        
-        close(sockfd);
-        return req;
 }
-
-int
-radclient_build_request(config, server, code, pair)
-        RADCLIENT *config;
-        SERVER *server;
-        int code;
-        VALUE_PAIR *pair;
-{
-        int      total_length;
-        int      attrlen;
-        AUTH_HDR *auth;
-        char     *ptr, *length_ptr;
-        long     lval;
-        int      vendorcode, vendorpec;
-        
-#define CHECKSIZE(l) if (ptr + l >= config->data_buffer + config->bufsize) \
-                         goto overflow;
-        
-        random_vector(config->vector);
-        /*
-         *      Build an authentication request
-         */
-        auth = (AUTH_HDR *)config->data_buffer;
-        auth->code = code;
-        auth->id = config->messg_id++ % 256;
-        memset(auth->vector, 0, AUTH_VECTOR_LEN);
-        total_length = AUTH_HDR_LEN;
-        ptr = (char*)(auth + 1);
-
-        if (radclient_debug) {
-                char *name = auth_code_str(auth->code);
-                printf("send code ");
-                if (name) 
-                        printf("%d (%s)\n", auth->code, name);
-                else
-                        printf("%d\n", auth->code);
-        }
-        for (; pair; pair = pair->next) {
-
-                if (radclient_debug) {
-                        char *save;
-                        fprintf(stdout, "%10.10s: %s\n", 
-                                   _("send"), format_pair(pair, &save));
-                        free(save);
-                }
-
-                /*
-                 *      This could be a vendor-specific attribute.
-                 */
-                length_ptr = NULL;
-                if ((vendorcode = VENDOR(pair->attribute)) > 0 &&
-                    (vendorpec  = vendor_id_to_pec(vendorcode)) > 0) {
-                        CHECKSIZE(6);
-                        *ptr++ = DA_VENDOR_SPECIFIC;
-                        length_ptr = ptr;
-                        *ptr++ = 6;
-                        lval = htonl(vendorpec);
-                        memcpy(ptr, &lval, 4);
-                        ptr += 4;
-                        total_length += 6;
-                } else if (pair->attribute > 0xff) {
-                        /*
-                         *      Ignore attributes > 0xff
-                         */
-                        pair = pair->next;
-                        continue;
-                } else
-                        vendorpec = 0;
-
-                *ptr++ = (pair->attribute & 0xFF);
-
-                switch (pair->type) {
-                case TYPE_STRING:
-                        if (pair->strlength >= AUTH_STRING_LEN) {
-                                radlog(L_ERR,
-  "radclient_build_request(): Attribute %d string value too long (%d bytes)",
-                                       pair->attribute,
-                                       pair->strlength);
-                                goto overflow;
-                        }
-                        /* attrlen always < AUTH_STRING_LEN */
-                        if (pair->attribute == DA_USER_PASSWORD) {
-                                VALUE_PAIR *ppair;
-                                ppair = avp_alloc();
-                                encrypt_password(ppair, pair->strvalue,
-                                                 config->vector,
-                                                 server->secret);
-                                
-                                attrlen = ppair->strlength;
-                                CHECKSIZE(attrlen+2);
-                                *ptr++ = attrlen + 2;
-                                memcpy(ptr, ppair->strvalue, attrlen);
-                                avp_free(ppair);
-                        } else {
-                                attrlen = pair->strlength;
-                                CHECKSIZE(attrlen+2);
-                                *ptr++ = attrlen + 2;
-                                memcpy(ptr, pair->strvalue, attrlen);
-                        }
-                        break;
-                case TYPE_INTEGER:
-                case TYPE_IPADDR:
-                        attrlen = sizeof(UINT4);
-                        CHECKSIZE(attrlen+2);
-                        *ptr++ = attrlen + 2;
-                        lval = htonl(pair->lvalue);
-                        memcpy(ptr, &lval, sizeof(UINT4));
-                        break;
-                default:
-                        radlog(L_ERR, _("unknown attribute type"));
-                        return -1;
-                }
-                if (length_ptr)
-                        *length_ptr += attrlen + 2;
-                ptr += attrlen;
-                total_length += attrlen + 2;
-        }
-
-        auth->length = htons(total_length);
-
-        /* If this is not an authentication request, we need to calculate
-           the md5 hash over the entire packet and put it in the vector. */
-        if (auth->code != RT_AUTHENTICATION_REQUEST) {
-                int len = strlen(server->secret);
-                CHECKSIZE(len);
-                strcpy(config->data_buffer + total_length, server->secret);
-                md5_calc(config->vector, config->data_buffer,
-                         total_length+len);
-        } 
-        memcpy(auth->vector, config->vector, AUTH_VECTOR_LEN);
-        
-        return total_length;
-        
-overflow:
-        radlog(L_ERR, _("build_request(): data buffer overflow"));
-        return -1;
-}
-
 
 RADIUS_REQ *
-radclient_recv(host, udp_port, secret, vector, buffer, length)
+rad_clt_recv(host, udp_port, secret, vector, buffer, length)
         UINT4 host;
         u_short udp_port;
         char *secret;
@@ -361,18 +63,18 @@ radclient_recv(host, udp_port, secret, vector, buffer, length)
         char *buffer;
         int length;
 {
-        AUTH_HDR        *auth;
-        int             totallen;
-        char            reply_digest[AUTH_VECTOR_LEN];
-        char            calc_digest[AUTH_VECTOR_LEN];
-        int             secretlen;
+        AUTH_HDR *auth;
+        int totallen;
+        char reply_digest[AUTH_VECTOR_LEN];
+        char calc_digest[AUTH_VECTOR_LEN];
+        int  secretlen;
 
         auth = (AUTH_HDR *)buffer;
         totallen = ntohs(auth->length);
 
         if (totallen != length) {
                 radlog(L_ERR,
-                       _("Actual request length does not match reported length (%d, %d)"),
+           _("Actual request length does not match reported length (%d, %d)"),
                        totallen, length);
                 return NULL;
         }
@@ -384,157 +86,186 @@ radclient_recv(host, udp_port, secret, vector, buffer, length)
         memcpy(buffer + length, secret, secretlen);
         md5_calc(calc_digest, (unsigned char *)auth, length + secretlen);
         
+	debug(1, ("received %s", auth_code_str(auth->code)));
         if (memcmp(reply_digest, calc_digest, AUTH_VECTOR_LEN) != 0) {
                 radlog(L_WARN, _("Received invalid reply digest from server"));
         }
 
-        return decode_buffer(host, udp_port, buffer, length);
+        return rad_decode_pdu(host, udp_port, buffer, length);
+}
+
+static VALUE_PAIR *
+_encode_pairlist(p, vector, secret)
+	VALUE_PAIR *p;
+	u_char *vector;
+	u_char *secret;
+{
+	VALUE_PAIR *ret = avl_dup(p);
+
+	for (p = ret; p; p = p->next)
+		if (p->attribute == DA_USER_PASSWORD
+		    || p->attribute == DA_CHAP_PASSWORD) {
+			char *pass = p->strvalue;
+			encrypt_password(p, pass, vector, secret);
+			free_string(pass);
+		}
+	return ret;
 }
 
 
 RADIUS_REQ *
-decode_buffer(host, udp_port, buffer, length)
-        UINT4 host;
-        u_short udp_port;
-        char *buffer;
-        int length;
+rad_clt_send(config, port_type, code, pairlist)
+        RADIUS_SERVER_QUEUE *config;
+        int port_type;
+        int code;
+        VALUE_PAIR *pairlist;
 {
-        u_char          *ptr;
-        AUTH_HDR        *auth;
-        int             attribute;
-        int             attrlen;
-        DICT_ATTR       *attr;
-        UINT4           lval;
-        VALUE_PAIR      *first_pair;
-        VALUE_PAIR      *prev;
-        VALUE_PAIR      *pair;
-        RADIUS_REQ      *radreq;
-
-        /*
-         *      Pre-allocate the new request data structure
-         */
-
-        radreq = radreq_alloc();
-
-        auth = (AUTH_HDR *)buffer;
-
-        /*
-         *      Fill header fields
-         */
-        radreq->ipaddr = host;
-        radreq->udp_port = udp_port;
-        radreq->id = auth->id;
-        radreq->code = auth->code;
-        memcpy(radreq->vector, auth->vector, AUTH_VECTOR_LEN);
-
-        /*
-         *      Extract attribute-value pairs
-         */
-        ptr = (u_char *)(auth + 1);
-        length -= AUTH_HDR_LEN;
-        first_pair = (VALUE_PAIR *)NULL;
-        prev = (VALUE_PAIR *)NULL;
-
-        if (radclient_debug) {
-                char *name = auth_code_str(auth->code);
-                printf("recv code ");
-                if (name) 
-                        printf("%d (%s)\n", auth->code, name);
-                else
-                        printf("%d\n", auth->code);
+	struct sockaddr salocal;
+	struct sockaddr saremote;
+	struct sockaddr_in *sin;
+        int local_port;
+        int sockfd;
+        int salen;
+        int i;
+        RADIUS_REQ *req = NULL;
+        RADIUS_SERVER *server;
+        char ipbuf[DOTTED_QUAD_LEN];
+	char *recv_buf;
+	
+        if (port_type < 0 || port_type > 2) {
+                radlog(L_ERR, _("invalid port type"));
+                return NULL;
         }
-        
-        while (length > 0) {
+        sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+        if (sockfd < 0) {
+                radlog(L_ERR|L_PERROR, "socket");
+                return NULL;
+        }
 
-                attribute = *ptr++;
-                attrlen = *ptr++;
-                if (attrlen < 2) {
-                        length = 0;
+        sin = (struct sockaddr_in *) &salocal;
+        memset (sin, 0, sizeof (salocal));
+        sin->sin_family = AF_INET;
+        sin->sin_addr.s_addr = config->source_ip ?
+                                   htonl(config->source_ip) : INADDR_ANY;
+
+	/*FIXME: not necessary?*/
+        local_port = 1025;
+        do {
+                local_port++;
+                sin->sin_port = htons((u_short)local_port);
+        } while ((bind(sockfd, &salocal, sizeof (struct sockaddr_in)) < 0)
+		 && local_port < 65535);
+        if (local_port >= 65535) {
+                radlog(L_ERR|L_PERROR, "bind");
+                close(sockfd);
+                return NULL;
+        }
+
+	debug(1,
+	      ("sending %s", auth_code_str(code)));
+	recv_buf = emalloc(config->buffer_size);
+        server = config->first_server;
+        do {
+		fd_set readfds;
+		struct timeval tm;
+		int result;
+		u_char vector[AUTH_VECTOR_LEN];
+		void *pdu;
+		size_t size;
+		VALUE_PAIR *pair;
+		
+                if (server->port[port_type] <= 0)
                         continue;
+                
+                if (debug_on(10)) {
+                        radlog(L_DEBUG, "server %s:%d",
+                               ip_iptostr(server->addr, ipbuf),
+                               server->port[port_type]);
                 }
-                attrlen -= 2;
-                if ((attr = attr_number_to_dict(attribute)) == (DICT_ATTR *)NULL) {
-                        radlog(L_ERR,
-                               _("Received unknown attribute %d"), attribute);
-                } else if ( attrlen > AUTH_STRING_LEN ) {
-                        radlog(L_ERR,
-                               _("attribute %d too long, %d > %d"), attribute,
-                               attrlen, AUTH_STRING_LEN);
-                } else {
-                        pair = avp_alloc();
-                        
-                        pair->name = attr->name;
-                        pair->attribute = attr->value;
-                        pair->type = attr->type;
-                        pair->next = (VALUE_PAIR *)NULL;
+                
+		rad_clt_random_vector(vector);
+		pair = _encode_pairlist(pairlist, vector, server->secret);
+		size = rad_create_pdu(&pdu, code,
+				      config->messg_id,
+				      vector,
+				      server->secret,
+				      pair,
+				      NULL);
 
-                        switch (attr->type) {
+		avl_free(pair);
+		
+                if (size <= 0) 
+                        break; /*FIXME: continue anyway?*/
+        
+                /* Now send the request. */
+                
+                sin = (struct sockaddr_in *) &saremote;
+                memset(sin, 0, sizeof (saremote));
+                sin->sin_family = AF_INET;
+                sin->sin_addr.s_addr = htonl(server->addr);
+                sin->sin_port = htons(server->port[port_type]);
 
-                        case TYPE_STRING:
-                                pair->strvalue = alloc_string(attrlen + 1);
-                                memcpy(pair->strvalue, ptr, attrlen);
-                                pair->strvalue[attrlen] = '\0';
-                                pair->strlength = attrlen;
-                                if (first_pair == (VALUE_PAIR *)NULL) {
-                                        first_pair = pair;
-                                } else {
-                                        prev->next = pair;
+                for (i = 0; i < config->retries; i++) {
+                        if (sendto(sockfd, pdu, size, 0,
+                                   &saremote,
+                                   sizeof(struct sockaddr_in)) == -1) {
+                                radlog(L_ERR|L_PERROR, "sendto");
+                        }
+
+                        salen = sizeof (saremote);
+
+                        tm.tv_usec = 0L;
+                        tm.tv_sec = (long) config->timeout;
+                        FD_ZERO(&readfds);
+                        FD_SET(sockfd, &readfds);
+                        if (select(sockfd+1, &readfds, NULL, NULL, &tm) < 0) {
+                                if (errno == EINTR) {
+                                        i--;
+					debug(20,
+					      ("select interrupted. retrying."));
+                                        continue;
                                 }
-                                prev = pair;
-                                break;
-                        
-                        case TYPE_INTEGER:
-                        case TYPE_IPADDR:
-                                memcpy(&lval, ptr, sizeof(UINT4));
-                                pair->lvalue = ntohl(lval);
-                                if (first_pair == (VALUE_PAIR *)NULL) {
-                                        first_pair = pair;
-                                } else {
-                                        prev->next = pair;
-                                }
-                                prev = pair;
-                                break;
-                        
-                        default:
-                                radlog(L_ERR,
-                                       _("    %s (Unknown type %d)"),
-                                       attr->name, attr->type);
-                                avp_free(pair);
+                                radlog(L_NOTICE, _("select() interrupted"));
                                 break;
                         }
 
-                        if (radclient_debug && pair) {
-                                char *save;
-                                fprintf(stdout, "%10.10s: %s\n", 
-                                                _("recv"), 
-                                                format_pair(pair, &save));
-                                free(save);
+                        if (FD_ISSET (sockfd, &readfds)) {
+                                result = recvfrom(sockfd,
+                                                  recv_buf,
+                                                  config->buffer_size,
+                                                  0, &saremote, &salen);
+
+                                if (result > 0) 
+                                        req = rad_clt_recv(
+						sin->sin_addr.s_addr,
+                                                sin->sin_port,
+                                                server->secret,
+                                                vector,
+                                                recv_buf,
+                                                result);
+                                else 
+                                        radlog(L_ERR|L_PERROR,
+                                        _("error receiving data from %s:%d"),
+                                               ip_iptostr(server->addr, ipbuf),
+                                               server->port[port_type]);
+                                
+                                break;
                         }
-
+			debug(10,("no response. retrying."));
                 }
-                ptr += attrlen;
-                length -= attrlen + 2;
-        }
-        radreq->request = first_pair;
-        return radreq;
-}
+		
+		efree(pdu);
+		
+                if (!req)
+                        debug(10,("no reply from %s:%d",
+				  ip_iptostr(server->addr, ipbuf),
+				  server->port[port_type]));
+		
+        } while (!req && (server = server->next) != NULL);
 
-/*
- *      Generate a random vector.
- */
-void
-random_vector(vector)
-        char *vector;
-{
-        int     randno;
-        int     i;
-
-        for (i = 0; i < AUTH_VECTOR_LEN; ) {
-                randno = rand();
-                memcpy(vector, &randno, sizeof(int));
-                vector += sizeof(int);
-                i += sizeof(int);
-        }
+	efree(recv_buf);
+        close(sockfd);
+        return req;
 }
 
 /* ************************************************************************* */
@@ -557,14 +288,14 @@ static struct keyword kwd[] = {
 
 static int
 parse_client_config(client, argc, argv, file, lineno)
-        RADCLIENT *client;
+        RADIUS_SERVER_QUEUE *client;
         int argc;
         char **argv;
         char *file;
         int lineno;
 {
         char *p;
-        SERVER serv;
+        RADIUS_SERVER serv;
         
         switch (xlat_keyword(kwd, argv[0], TOK_INVALID)) {
         case TOK_INVALID:
@@ -611,8 +342,8 @@ parse_client_config(client, argc, argv, file, lineno)
                 }
                 
                 client->first_server =
-                        radclient_append_server(client->first_server,
-                                                radclient_alloc_server(&serv));
+                        rad_clt_append_server(client->first_server,
+                                                rad_clt_alloc_server(&serv));
                 break;
                 
         case TOK_TIMEOUT:
@@ -635,13 +366,13 @@ parse_client_config(client, argc, argv, file, lineno)
 }
 
 
-RADCLIENT *
-radclient_alloc(read_cfg, source_ip, bufsize)
+RADIUS_SERVER_QUEUE *
+rad_clt_create_queue(read_cfg, source_ip, bufsize)
         int read_cfg;
         UINT4 source_ip;
         size_t bufsize;
 {
-        RADCLIENT *client;
+        RADIUS_SERVER_QUEUE *client;
         struct timeval tv;
         char *filename;
         
@@ -651,9 +382,8 @@ radclient_alloc(read_cfg, source_ip, bufsize)
         client->source_ip = source_ip;
         client->timeout = 1;
         client->retries = 3;
-        client->bufsize = bufsize ? bufsize : 4096;
+        client->buffer_size = bufsize ? bufsize : 4096;
         client->first_server = NULL;
-        client->data_buffer = emalloc(client->bufsize);
 
         gettimeofday(&tv, NULL);
         srand(tv.tv_usec);
@@ -667,11 +397,21 @@ radclient_alloc(read_cfg, source_ip, bufsize)
         return client;
 }
 
-SERVER *
-radclient_alloc_server(src)
-        SERVER *src;
+void
+rad_clt_destroy_queue(queue)
+        RADIUS_SERVER_QUEUE *queue;
 {
-        SERVER *server;
+	if (queue) {
+		rad_clt_clear_server_list(queue->first_server);
+		efree(queue);
+	}
+}
+
+RADIUS_SERVER *
+rad_clt_alloc_server(src)
+        RADIUS_SERVER *src;
+{
+        RADIUS_SERVER *server;
 
         server = alloc_entry(sizeof(*server));
         server->name = make_string(src->name);
@@ -682,11 +422,11 @@ radclient_alloc_server(src)
         return server;
 }
 
-SERVER *
-radclient_dup_server(src)
-        SERVER *src;
+RADIUS_SERVER *
+rad_clt_dup_server(src)
+        RADIUS_SERVER *src;
 {
-        SERVER *dest;
+        RADIUS_SERVER *dest;
 
         dest = alloc_entry(sizeof(*dest));
         dest->addr = src->addr;
@@ -702,51 +442,52 @@ radclient_dup_server(src)
  */
 
 void
-radclient_free_server(server)
-        SERVER *server;
+rad_clt_free_server(server)
+        RADIUS_SERVER *server;
 {
         free_string(server->name);
         free_string(server->secret);
         free_entry(server);
 }
 
-SERVER *
-radclient_append_server(list, server)
-        SERVER *list;
-        SERVER *server;
+RADIUS_SERVER *
+rad_clt_append_server(list, server)
+        RADIUS_SERVER *list;
+        RADIUS_SERVER *server;
 {
-        return (SERVER*)append_slist((struct slist*)list,
+        return (RADIUS_SERVER*)append_slist((struct slist*)list,
                                      (struct slist*)server);
 }
 
-void
-radclient_internal_free_server(server)
-        SERVER *server;
+static void
+rad_clt_internal_free_server(server)
+        RADIUS_SERVER *server;
 {
         free_string(server->name);
+        free_string(server->secret);
 }
 
 void
-radclient_clear_server_list(list)
-        SERVER *list;
+rad_clt_clear_server_list(list)
+        RADIUS_SERVER *list;
 {
-        free_slist((struct slist *)list, radclient_internal_free_server);
+        free_slist((struct slist *)list, rad_clt_internal_free_server);
 }
 
-int
+static int
 server_cmp(serv, id)
-        SERVER *serv;
+        RADIUS_SERVER *serv;
         char *id;
 {
         return strcmp(serv->name, id);
 }
 
-SERVER *
-radclient_find_server(list, name)
-        SERVER *list;
+RADIUS_SERVER *
+rad_clt_find_server(list, name)
+        RADIUS_SERVER *list;
         char *name;
 {
-        return (SERVER*)find_slist((struct slist *)list,
+        return (RADIUS_SERVER*)find_slist((struct slist *)list,
                                    server_cmp,
                                    name);
 }

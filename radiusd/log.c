@@ -33,12 +33,98 @@
 #include <rewrite.h>
 
 static int logging_category = L_CAT(L_MAIN);
-static grad_list_t /* of Channel*/ *chanlist;     /* List of defined channels */
+static grad_list_t /* of Channel*/ *chanlist;   /* List of defined channels */
 static char *log_prefix_hook;             /* Name of the global prefix hook */
 static char *log_suffix_hook;             /* Name of the global suffix hook */
 
 #define SP(p) ((p)?(p):"")
 
+struct log_data {
+	int cat;
+	int pri;
+	const grad_request_t *req;
+	const char *prefix;
+	const char *text;
+	const char *errtext;
+};
+
+
+
+struct logbuf {
+	char *ptr;
+	size_t size;
+	size_t pos;
+};
+
+#define LOGBUF_INIT(b) { (b), sizeof(b), 0 }
+#define _log_s_cat2__(a,b) a ## b 
+#define LOGBUF_DECL(name,size) \
+  static char _log_s_cat2__(name,_buffer)[ size ];\
+  struct logbuf name = LOGBUF_INIT(_log_s_cat2__(name,_buffer))
+
+void
+logbuf_append(struct logbuf *buf, const char *str)
+{
+	size_t length = strlen(str);
+	size_t rest = buf->size - buf->pos;
+
+	if (rest <= 1) 
+		buf->ptr[buf->pos-1] = '>';
+	else if (rest == 2)
+		buf->ptr[buf->pos++] = '>';
+	else if (length >= rest) {
+		if (--rest > 1) {
+			if (rest >= 2)
+				rest--;
+			memcpy(buf->ptr + buf->pos, str, rest);
+			buf->pos += rest;
+		} 
+		buf->ptr[buf->pos++] = '>';
+	} else {
+		memcpy(buf->ptr + buf->pos, str, length);
+		buf->pos += length;
+	}
+}
+
+void
+logbuf_append_line(struct logbuf *buf, size_t line)
+{
+	char linestr[64];
+	snprintf(linestr, sizeof(linestr), "%lu", (unsigned long)line);
+	logbuf_append(buf, linestr);
+}
+
+void
+logbuf_vformat(struct logbuf *buf, const char *fmt, va_list ap)
+{
+	size_t rest = buf->size - buf->pos;
+	size_t length;
+	int n;
+	
+	if (rest <= 1)
+		return;
+
+	n = vsnprintf(buf->ptr + buf->pos, rest, fmt, ap);
+	length = strlen (buf->ptr + buf->pos);
+	buf->pos += length;
+	if (n == -1 || length < n)
+		buf->ptr[buf->pos-1] = '>';
+}
+
+char *
+logbuf_ptr(struct logbuf *buf)
+{
+	buf->ptr[buf->pos] = 0;
+	return buf->ptr;
+}
+
+size_t
+logbuf_printable_length(struct logbuf *buf)
+{
+	return buf->pos;
+}
+
+
 static int
 log_get_category()
 {
@@ -107,7 +193,8 @@ run_log_hook(const grad_request_t *req, const char *hook_name)
 }
 
 static void
-channel_format_prefix(char **bufp, Channel *chan, const grad_request_t *req)
+channel_format_prefix(struct logbuf *bufp,
+		      Channel *chan, const grad_request_t *req)
 {
 	char **hook_name_ptr = &(chan->prefix_hook ? 
 		                   chan->prefix_hook : log_prefix_hook);
@@ -119,12 +206,13 @@ channel_format_prefix(char **bufp, Channel *chan, const grad_request_t *req)
 			*hook_name_ptr = NULL;
 	}
 
-	if (hook_res)  
-		asprintf(bufp, "%s", hook_res);
+	if (hook_res)
+		logbuf_append(bufp, hook_res);
 }
 
 static void
-channel_format_suffix(char **bufp, Channel *chan, const grad_request_t *req)
+channel_format_suffix(struct logbuf *bufp,
+		      Channel *chan, const grad_request_t *req)
 {
 	char **hook_name_ptr = &(chan->suffix_hook ? 
 		                   chan->suffix_hook : log_suffix_hook);
@@ -136,8 +224,8 @@ channel_format_suffix(char **bufp, Channel *chan, const grad_request_t *req)
 			*hook_name_ptr = NULL;
 	}
 
-	if (hook_res)  
-		asprintf(bufp, "%s", hook_res);
+	if (hook_res)
+		logbuf_append(bufp, hook_res);
 }
 
 static FILE *
@@ -158,40 +246,35 @@ channel_close_file(Channel *chan, FILE *fp)
                 fclose(fp);
 }
 
-void
-log_to_channel(Channel *chan, int cat, int pri,
-	       const grad_request_t *req,
-	       char *buf1, char *buf2, char *buf3)
+int
+log_to_channel(void *item, void *pdata)
 {
-        char *cat_pref = NULL;
-        char *prefix = NULL;
-	char *req_prefix_buf = NULL, *req_suffix_buf = NULL;
+	Channel *chan = item;
+	struct log_data *data = pdata;
+
+	LOGBUF_DECL(pri_prefix, 64);
+	LOGBUF_DECL(req_prefix, 256);
+	LOGBUF_DECL(req_suffix, 256);
+	
         time_t  timeval;
         char buffer[256];
         struct tm *tm, tms;
         int spri;
         FILE *fp;
-        
-        if (chan->options & LO_CAT)
-                asprintf(&cat_pref, "%s", _(catname[cat]));
-        if (chan->options & LO_PRI) {
-                if (cat_pref)
-                        asprintf(&prefix, "%s.%s",
-				 cat_pref,
-				 _(priname[pri]));
-                else
-                        asprintf(&prefix, "%s", _(priname[pri]));
-        } else if (cat_pref) {
-                prefix = cat_pref;
-                cat_pref = NULL;
-        }
 
-        if (cat_pref)
-                free(cat_pref);
+	if (!(chan->pmask[data->cat] & L_MASK(data->pri)))
+		return 0;
+	
+        if (chan->options & LO_CAT) {
+		logbuf_append(&pri_prefix, _(catname[data->cat]));
+		logbuf_append(&pri_prefix, ".");
+	}
+        if (chan->options & LO_PRI)
+		logbuf_append(&pri_prefix, _(priname[data->pri]));
 
-  	if (req) {
-		channel_format_prefix(&req_prefix_buf, chan, req);
-		channel_format_suffix(&req_suffix_buf, chan, req);
+  	if (data->req) {
+		channel_format_prefix(&req_prefix, chan, data->req);
+		channel_format_suffix(&req_suffix, chan, data->req);
 	}
 	
         switch (chan->mode) {
@@ -217,18 +300,18 @@ log_to_channel(Channel *chan, int cat, int pri,
                 fprintf(fp, "%s ", buffer);
                 if (chan->options & LO_PID) 
                         fprintf(fp, "[%lu]: ", (u_long) getpid());
-                if (prefix)
-                        fprintf(fp, "%s: ", prefix);
-                if (buf1)
-                        fprintf(fp, "%s", buf1);
-		if (req_prefix_buf)
-			fprintf(fp, "%s", req_prefix_buf);
-                if (buf2)
-                        fprintf(fp, "%s", buf2);
-                if (buf3)
-                        fprintf(fp, "%s", buf3);
-		if (req_suffix_buf)
-			fprintf(fp, "%s", req_suffix_buf);
+                if (logbuf_printable_length(&pri_prefix))
+                        fprintf(fp, "%s: ", logbuf_ptr(&pri_prefix));
+                if (data->prefix)
+                        fprintf(fp, "%s", data->prefix);
+		if (logbuf_printable_length(&req_prefix))
+			fprintf(fp, "%s", logbuf_ptr(&req_prefix));
+                if (data->text)
+                        fprintf(fp, "%s", data->text);
+                if (data->errtext)
+                        fprintf(fp, ": %s", data->errtext);
+		if (logbuf_printable_length(&req_suffix))
+			fprintf(fp, "%s", logbuf_ptr(&req_suffix));
                 fprintf(fp, "\n");
                 channel_close_file(chan, fp);
                 break;
@@ -237,28 +320,40 @@ log_to_channel(Channel *chan, int cat, int pri,
                 spri = chan->id.prio;
                 if (chan->options & LO_PID)
                         spri |= LOG_PID;
-                if (prefix)
-                        syslog(spri, "%s: %s%s%s%s%s",
-			       prefix,
-			       SP(buf1),
-			       SP(req_prefix_buf),
-			       SP(buf2), SP(buf3),
-			       SP(req_suffix_buf));
-                else
-                        syslog(spri, "%s%s%s%s%s",
-                               SP(buf1),
-			       SP(req_prefix_buf),
-			       SP(buf2), SP(buf3),
-			       SP(req_suffix_buf));
+                if (logbuf_printable_length(&pri_prefix)) {
+			if (data->errtext)
+				syslog(spri, "%s: %s%s%s: %s%s",
+				       logbuf_ptr(&pri_prefix),
+				       SP(data->prefix),
+				       logbuf_ptr(&req_prefix),
+				       SP(data->text),
+				       data->errtext,
+				       logbuf_ptr(&req_suffix));
+			else
+				syslog(spri, "%s: %s%s%s%s",
+				       logbuf_ptr(&pri_prefix),
+				       SP(data->prefix),
+				       logbuf_ptr(&req_prefix),
+				       SP(data->text),
+				       logbuf_ptr(&req_suffix));
+		} else {
+			if (data->errtext)
+				syslog(spri, "%s%s%s: %s%s",
+				       SP(data->prefix),
+				       logbuf_ptr(&req_prefix),
+				       SP(data->text),
+				       data->errtext,
+				       logbuf_ptr(&req_suffix));
+			else
+				syslog(spri, "%s%s%s%s",
+				       SP(data->prefix),
+				       logbuf_ptr(&req_prefix),
+				       SP(data->text),
+				       logbuf_ptr(&req_suffix));
+		}
                 break;
         }
-        
-        if (prefix)
-                free(prefix);
-	if (req_prefix_buf)
-		free(req_prefix_buf);
-	if (req_suffix_buf)
-		free(req_suffix_buf);
+	return 0;
 }
 
 void
@@ -271,10 +366,12 @@ radiusd_logger(int level,
 {
         Channel *chan;
         int cat, pri;
-        char *buf1 = NULL;
-        char *buf2 = NULL;
-        char *buf3 = NULL;
-        grad_iterator_t *itr = grad_iterator_create(chanlist);
+	struct log_data log_data;
+	
+	LOGBUF_DECL(buf1, 256);
+	LOGBUF_DECL(buf2, 1024);
+	
+        char *errstr = NULL;
 
         cat = L_CAT(level);
         if (cat == 0)
@@ -282,33 +379,29 @@ radiusd_logger(int level,
         pri = L_PRI(level);
         
         if (loc) {
-		if (func_name)
-			asprintf(&buf1,
-				 "%s:%d:%s: ", loc->file, loc->line,
-				 func_name);
-		else
-			asprintf(&buf1,
-				 "%s:%d: ", loc->file, loc->line);
+		logbuf_append(&buf1, loc->file);
+		logbuf_append(&buf1, ":");
+		logbuf_append_line(&buf1, loc->line);
+		if (func_name) {
+			logbuf_append(&buf1, ":");			
+			logbuf_append(&buf1, func_name);
+		}
+		logbuf_append(&buf1, ": ");			
 	}
 	
         if (en)
-                asprintf(&buf3, ": %s", strerror(en));
+                errstr = strerror(en);
 
-        vasprintf(&buf2, fmt, ap);
-        
-        for (chan = grad_iterator_first(itr); chan; chan = grad_iterator_next(itr)) {
-                /* Skip channels whith incorrect priority */
-                if (chan->pmask[cat] & L_MASK(pri))
-                        log_to_channel(chan, cat, pri, req, buf1, buf2, buf3);
-        }
-        grad_iterator_destroy(&itr);
+        logbuf_vformat(&buf2, fmt, ap);
 
-        if (buf1)
-                free(buf1);
-        if (buf2)
-                free(buf2);
-        if (buf3)
-                free(buf3);     
+        log_data.cat = cat;
+	log_data.pri = pri;
+	log_data.req = req;
+	log_data.prefix = logbuf_ptr(&buf1);
+	log_data.text = logbuf_ptr(&buf2);
+	log_data.errtext = errstr;
+
+ 	grad_list_iterate(chanlist, log_to_channel, &log_data);
 }
 
 /* Interface */

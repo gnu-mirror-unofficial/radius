@@ -32,12 +32,12 @@ debugmod.h \
 checkrad.h \
 display.h \
 envar.h \
-getopt1.h \
 log.h \
 md5.h \
 mem.h \
 obstack1.h \
 parser.h \
+radargp.h \
 radclient.h \
 raddbm.h \
 raddict.h \

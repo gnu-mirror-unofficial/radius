@@ -204,6 +204,25 @@ radscm_cons_to_avp(scm)
 }
 
 void
+rscm_add_load_path(path)
+	char *path;
+{
+	SCM scm, path_scm;
+	path_scm = scm_symbol_value0("%load-path");
+	for (scm = path_scm; scm != SCM_EOL; scm = SCM_CDR(scm)) {
+		SCM val = SCM_CAR(scm);
+		if (SCM_NIMP(val) && SCM_STRINGP(val))
+			if (strcmp(SCM_CHARS(val), path) == 0)
+				return;
+	}
+	scm_sysintern ("%load-path",
+		       scm_append(scm_listify(path_scm,
+				   scm_listify(scm_makfrom0str(path),
+					       SCM_UNDEFINED),
+					      SCM_UNDEFINED)));
+}
+
+void
 radscm_init()
 {
 	rscm_syslog_init();
@@ -211,4 +230,5 @@ radscm_init()
 	rscm_avl_init();
 	rscm_dict_init();
 #include <rscm_lib.x>
+	rscm_add_load_path(DATADIR);
 }

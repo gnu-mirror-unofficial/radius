@@ -1,6 +1,7 @@
 @set RADDB /usr/local/etc/raddb
 @set RADLOG /var/log
 @set RADACCT /var/log/radacct
+@set DATADIR /usr/local/share/radius/@value{VERSION}
 
 @macro attr{name}
 @code{\name\}

@@ -23,6 +23,10 @@ A directory where @radiusd{} stores its log files.
 A directory where @radiusd{} stores accounting detail files
 (@pxref{Detailed Request Accounting}).
 
+@item Data directory
+A directory where shared data files are stored, such as @code{Rewrite}
+or @code{Scheme} source files.
+
 @end table
 
 The default locations of these directories are determined at compile
@@ -49,6 +53,12 @@ time. Usually these are:
 @cindex @file{radacct}, accounting directory
 @tab @file{radacct}
 @tab @value{RADACCT}
+
+@item Data directory
+@cindex Data directory
+@cindex @file{datadir}, directory for shared data files
+@tab @file{datadir}
+@tab @value{DATADIR}
 
 @end multitable
 

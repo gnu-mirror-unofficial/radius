@@ -1339,7 +1339,7 @@ rad_req_drop(type, radreq, status_str)
 	radlog(L_NOTICE,
 	       _("Dropping %s packet from client %s, ID: %d: %s"),
 	       request_class[type].name,
-	       client_name(radreq->ipaddr),
+	       client_lookup_name(radreq->ipaddr),
 	       radreq->id,
 	       status_str);
 
@@ -1712,7 +1712,7 @@ test_shell()
 			return 0;
 		case 'c': /* checkrad */
 			chktkn();
-			nas = nas_by_name(tok);
+			nas = nas_lookup_name(tok);
 			if (!nas) {
 				printf("bad nas\n");
 				continue;

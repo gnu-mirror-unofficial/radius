@@ -209,7 +209,7 @@ stat_update(ut, status)
 	PORT_STAT *port;
 	long dt;
 	
-	nas = nas_find(ntohl(ut->nas_address));
+	nas = nas_lookup_ip(ntohl(ut->nas_address));
 	if (!nas) {
 		radlog(L_WARN,
 		    _("stat_update(): portno %d: can't find nas for IP %I"),
@@ -292,9 +292,8 @@ stat_count_ports()
 {
 	NAS *nas;
 	PORT_STAT *port;
-	extern NAS *naslist;
 	
-	for (nas = naslist; nas; nas = nas->next) {
+	for (nas = nas_next(NULL); nas; nas = nas_next(nas)) {
 		nas->nas_stat->ports_active = nas->nas_stat->ports_idle = 0;
 	}
 	
@@ -304,7 +303,7 @@ stat_count_ports()
 		if (port->ip == 0)
 			break;
 
-		nas = nas_find(port->ip);
+		nas = nas_lookup_ip(port->ip);
 		if (!nas) {
 			/* Silently ignore */
 			continue;

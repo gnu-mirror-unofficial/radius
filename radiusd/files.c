@@ -67,7 +67,6 @@ Symtab          *deny_tab;     /* raddb/access.deny */
 PAIR_LIST	*huntgroups;   /* raddb/huntgroups */ 
 PAIR_LIST	*hints;        /* raddb/hints */
 CLIENT		*clients;      /* raddb/clients */
-NAS		*naslist;      /* raddb/naslist */
 REALM		*realms;       /* raddb/realms */ 
 RADCK_TYPE      *radck_type;   /* raddb/nastypes */
 
@@ -89,13 +88,11 @@ int fallthrough(VALUE_PAIR *vp);
 static int portcmp(VALUE_PAIR *check, VALUE_PAIR *request);
 static int groupcmp(VALUE_PAIR *request, char *groupname, char *username);
 static int uidcmp(VALUE_PAIR *check, char *username);
-static int hunt_paircmp(VALUE_PAIR *request, VALUE_PAIR *check);
+static int huntgroup_paircmp(VALUE_PAIR *request, VALUE_PAIR *check);
 static void pairlist_free(PAIR_LIST **pl);
 static int matches(VALUE_PAIR *req, char *name, PAIR_LIST *pl, char *matchpart);
 static int huntgroup_match(VALUE_PAIR *request_pairs, char *huntgroup);
 static void clients_free(CLIENT *cl);
-static void nas_free(NAS *cl);
-static void realm_free(REALM *cl);
 static int user_find_sym(char *name, VALUE_PAIR *request_pairs, 
 			 VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 #ifdef USE_DBM
@@ -103,26 +100,6 @@ int user_find_db(char *name, VALUE_PAIR *request_pairs,
 			VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 #endif
 
-/* ***************************************************************************
- * string copy
- */
-
-void
-string_copy(d, s, len)
-	char *d;
-	char *s;
-	int  len;
-{
-	int slen = strlen(s);
-
-	if (slen > len) {
-		radlog(L_ERR, _("string too long: %s"), s);
-	}
-	strncpy(d, s, len);
-	d[len] = 0;
-}
-
-#define STRING_COPY(s,d) string_copy(s,d,sizeof(s)-1)
 
 int
 comp_op(op, result)
@@ -874,7 +851,7 @@ hints_setup(request_pairs)
  * has to be present in the request.
  */
 int
-hunt_paircmp(request, check)
+huntgroup_paircmp(request, check)
 	VALUE_PAIR *request;
 	VALUE_PAIR *check;
 {
@@ -1013,7 +990,7 @@ huntgroup_access(radreq)
 		if (paircmp(request_pairs, pl->check) != 0)
 			continue;
 		debug(1, ("matched huntgroup at huntgroups:%d", pl->lineno));
-		r = hunt_paircmp(request_pairs, pl->reply) == 0;
+		r = huntgroup_paircmp(request_pairs, pl->reply) == 0;
 		break;
 	}
 
@@ -1032,24 +1009,30 @@ huntgroup_access(radreq)
 	return r;
 }
 
+int
+read_naslist_file(file)
+	char *file;
+{
+	int rc;
+	NAS *nas;
+#ifdef USE_SNMP	
+	if (master_process()) {
+		snmp_init_nas_stat();
+	}
+#endif
+	rc = nas_read_file(file);
+	
+#ifdef USE_SNMP	
+	for (nas = nas_next(NULL); nas; nas = nas_next(nas))
+		snmp_attach_nas_stat(nas);
+#endif	
+	stat_create();
+	return rc;
+}
+
 /* ***************************************************************************
  * raddb/clients
  */
-/*
- *	Free a CLIENT list.
- */
-void
-clients_free(cl)
-	CLIENT *cl;
-{
-	CLIENT *next;
-
-	while (cl) {
-		next = cl->next;
-		free_entry(cl);
-		cl = next;
-	}
-}
 
 /*
  * parser
@@ -1092,7 +1075,7 @@ int
 read_clients_file(file)
 	char *file;
 {
-	clients_free(clients);
+	free_slist((struct slist*)clients, NULL);
 	clients = NULL;
 
 	return read_raddb_file(file, 1, 3, read_clients_entry, NULL);
@@ -1103,7 +1086,7 @@ read_clients_file(file)
  * Find a client in the CLIENTS list.
  */
 CLIENT *
-client_find(ipaddr)
+client_lookup_ip(ipaddr)
 	UINT4 ipaddr;
 {
 	CLIENT *cl;
@@ -1120,12 +1103,12 @@ client_find(ipaddr)
  * Find the name of a client (prefer short name).
  */
 char *
-client_name(ipaddr)
+client_lookup_name(ipaddr)
 	UINT4 ipaddr;
 {
 	CLIENT *cl;
 
-	if ((cl = client_find(ipaddr)) != NULL) {
+	if ((cl = client_lookup_ip(ipaddr)) != NULL) {
 		if (cl->shortname[0])
 			return cl->shortname;
 		else
@@ -1138,52 +1121,10 @@ client_name(ipaddr)
  * raddb/nastypes
  */
 
-static void free_radck_arg(RADCK_ARG *arg);
-static RADCK_ARG *parse_radck_args(char *str);
-static void free_radck_type(RADCK_TYPE *rp);
 int read_nastypes_entry(void *unused, int fc, char **fv, char *file,
 			int lineno);
 int read_nastypes_file(char *file);
 
-void
-free_radck_arg(arg)
-	RADCK_ARG *arg;
-{
-	efree(arg->name);
-}
-
-RADCK_ARG *
-parse_radck_args(str)
-	char *str;
-{
-	char *p, *s;
-	RADCK_ARG *arg;
-	RADCK_ARG *prev;
-
-	prev = NULL;
-	for (p = strtok(str, ","); p; p = strtok(NULL, ",")) {
-		s = strchr(p, '=');
-		if (s) {
-			arg = alloc_entry(sizeof(*arg));
-			arg->name = estrdup(p);
-			s = strchr(arg->name, '=');
-			*s++ = 0;
-			arg->value = s;
-			arg->next  = prev;
-			prev = arg;
-		} else 
-			radlog(L_ERR, _("bad flag: %s"), p);
-	}
-	return prev;
-}
-
-void
-free_radck_type(rp)
-	RADCK_TYPE *rp;
-{
-	efree(rp->type);
-	free_slist((struct slist*)rp->args, free_radck_arg);
-}
 
 /*
  * parser
@@ -1248,194 +1189,10 @@ find_radck_type(name)
 	return tp;
 }
 		
-/* ****************************************************************************
- * raddb/naslist
- */
-
-/* Free a NAS list */
-void
-nas_free(cl)
-	NAS *cl;
-{
-	NAS *next;
-
-	while(cl) {
-		next = cl->next;
-		free_slist((struct slist*)cl->args, free_radck_arg);
-		free_entry(cl);
-		cl = next;
-	}
-}
-
-/*
- * parser
- */
-/*ARGSUSED*/
-int
-read_naslist_entry(unused, fc, fv, file, lineno)
-	void *unused;
-	int fc;
-	char **fv;
-	char *file;
-	int lineno;
-{
-	NAS nas, *nasp;
-
-	if (fc < 3) {
-		radlog(L_ERR, _("%s:%d: too few fields"), file, lineno);
-		return -1;
-	}
-
-	bzero(&nas, sizeof(nas));
-	nas.ipaddr = get_ipaddr(fv[0]);
-	STRING_COPY(nas.shortname, fv[1]);
-	STRING_COPY(nas.nastype, fv[2]);
-	STRING_COPY(nas.longname, ip_hostname(nas.ipaddr));
-	if (fc == 4)
-		nas.args = parse_radck_args(fv[3]);
-	
-	nasp = Alloc_entry(NAS);
-
-	memcpy(nasp, &nas, sizeof(nas));
-	
-#ifdef USE_SNMP
-	snmp_attach_nas_stat(nasp);
-#endif
-	nasp->next = naslist;
-	naslist = nasp;
-	
-	return 0;
-}
-
-/*
- * Read naslist file
- */
-int
-read_naslist_file(file)
-	char *file;
-{
-	int rc;
-
-	nas_free(naslist);
-	naslist = NULL;
-
-#ifdef USE_SNMP	
-	if (master_process()) {
-		snmp_init_nas_stat();
-	}
-#endif
-
-	rc = read_raddb_file(file, 1, 4, read_naslist_entry, NULL);
-
-	stat_create();
-
-	return rc;
-}
-
-/*
- * NAS lookup functions:
- */
-
-NAS *
-nas_by_name(name)
-	char *name;
-{
-	NAS *nas;
-
-	for (nas = naslist; nas; nas = nas->next)
-		if (strcmp(nas->shortname, name) == 0 ||
-		    strcmp(nas->longname, name) == 0)
-			break;
-	return nas;
-}
-
-/* Find a nas in the NAS list */
-NAS *
-nas_find(ipaddr)
-	UINT4 ipaddr;
-{
-	NAS *cl;
-
-	for(cl = naslist; cl; cl = cl->next)
-		if (ipaddr == cl->ipaddr)
-			break;
-
-	return cl;
-}
-
-#ifdef USE_SNMP
-NAS *
-findnasbyindex(ind)
-	int ind;
-{
-	NAS *cl;
-
-	for(cl = naslist; cl; cl = cl->next)
-		if (cl->nas_stat && cl->nas_stat->index == ind)
-			break;
-
-	return cl;
-}
-#endif
-
-/* Find the name of a nas (prefer short name) */
-char *
-nas_name(ipaddr)
-	UINT4 ipaddr;
-{
-	NAS *cl;
-
-	if ((cl = nas_find(ipaddr)) != NULL) {
-		if (cl->shortname[0])
-			return cl->shortname;
-		else
-			return cl->longname;
-	}
-	return ip_hostname(ipaddr);
-}
-
-/* Find the name of a nas (prefer short name) based on the request */
-char *
-nas_name2(radreq)
-	RADIUS_REQ *radreq;
-{
-	UINT4	ipaddr;
-	NAS	*cl;
-	VALUE_PAIR	*pair;
-
-	if ((pair = avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
-		ipaddr = pair->lvalue;
-	else
-		ipaddr = radreq->ipaddr;
-
-	if ((cl = nas_find(ipaddr)) != NULL) {
-		if (cl->shortname[0])
-			return cl->shortname;
-		else
-			return cl->longname;
-	}
-	return ip_hostname(ipaddr);
-}
 
 /* ****************************************************************************
  * raddb/realms
  */
-
-/*
- * Free a REALM list.
- */
-void
-realm_free(cl)
-	REALM *cl;
-{
-	REALM *next;
-
-	while(cl) {
-		next = cl->next;
-		free_entry(cl);
-		cl = next;
-	}
-}
 
 /*
  * parser
@@ -1498,7 +1255,7 @@ int
 read_realms_file(file)
 	char *file;
 {
-	realm_free(realms);
+	free_slist((struct slist*)realms, NULL);
 	realms = NULL;
 	
 	return read_raddb_file(file, 1, 4, read_realms_entry, NULL);
@@ -1512,17 +1269,17 @@ REALM *
 realm_find(realm)
 	char *realm;
 {
-	REALM *cl;
+	REALM *p;
 
-	for (cl = realms; cl; cl = cl->next)
-		if (strcmp(cl->realm, realm) == 0)
+	for (p = realms; p; p = p->next)
+		if (strcmp(p->realm, realm) == 0)
 			break;
-	if (!cl) {
-		for (cl = realms; cl; cl = cl->next)
-			if (strcmp(cl->realm, "DEFAULT") == 0)
+	if (!p) {
+		for (p = realms; p; p = p->next)
+			if (strcmp(p->realm, "DEFAULT") == 0)
 				break;
 	}
-	return cl;
+	return p;
 }
 
 /* ****************************************************************************

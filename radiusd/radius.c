@@ -111,7 +111,7 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
 
 	debug(1, ("Sending %s of id %d to %lx (nas %s)",
 		what, radreq->id, (u_long)radreq->ipaddr,
-		nas_name2(radreq)));
+		nas_request_to_name(radreq)));
 
 	total_length = AUTH_HDR_LEN;
 
@@ -280,9 +280,9 @@ calc_digest(digest, radreq)
 	/*
 	 *	See if we know this client.
 	 */
-	if ((cl = client_find(radreq->ipaddr)) == NULL) {
+	if ((cl = client_lookup_ip(radreq->ipaddr)) == NULL) {
 		radlog(L_ERR, _("request from unknown client: %s"),
-			client_name(radreq->ipaddr));
+			client_lookup_name(radreq->ipaddr));
 		return -1;
 	}
 
@@ -317,9 +317,9 @@ calc_acctdigest(digest, radreq)
 	/*
 	 *	See if we know this client.
 	 */
-	if ((cl = client_find(radreq->ipaddr)) == NULL) {
+	if ((cl = client_lookup_ip(radreq->ipaddr)) == NULL) {
 		radlog(L_ERR, _("request from unknown client: %s"),
-			client_name(radreq->ipaddr));
+			client_lookup_name(radreq->ipaddr));
 		return -1;
 	}
 
@@ -612,7 +612,7 @@ send_challenge(radreq, msg, state, activefd)
 
 	debug(1, ("Sending Challenge of id %d to %lx (nas %s)",
 		radreq->id, (u_long)radreq->ipaddr,
-		nas_name2(radreq)));
+		nas_request_to_name(radreq)));
 	
 	stat_inc(auth, radreq->ipaddr, num_challenges);
 	

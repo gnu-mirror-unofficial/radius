@@ -210,7 +210,7 @@ rad_accounting_new(radreq, dowtmp)
 	/* A packet should have Acct-Status-Type attribute */
 	if ((vp = avl_find(radreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
 		radlog(L_ERR, _("no Acct-Status-Type record (from nas %s)"),
-			nas_name2(radreq));
+			nas_request_to_name(radreq));
 		return -1;
 	}
 	status = vp->lvalue;
@@ -349,7 +349,7 @@ rad_accounting_new(radreq, dowtmp)
 	if (status == DV_ACCT_STATUS_TYPE_ACCOUNTING_ON && nas_address) {
 		radlog(L_NOTICE, 
 			_("NAS %s restarted (Accounting-On packet seen)"),
-			nas_name(nas_address));
+			nas_ip_to_name(nas_address));
 		radzap(nas_address, -1, NULL, ut.time);
 		write_nas_restart(status, ut.nas_address);
 		return 0;
@@ -357,7 +357,7 @@ rad_accounting_new(radreq, dowtmp)
 	if (status == DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF && nas_address) {
 		radlog(L_NOTICE, 
 			_("NAS %s rebooted (Accounting-Off packet seen)"),
-			nas_name(nas_address));
+			nas_ip_to_name(nas_address));
 		radzap(nas_address, -1, NULL, ut.time);
 		write_nas_restart(status, ut.nas_address);
 		return 0;
@@ -368,7 +368,7 @@ rad_accounting_new(radreq, dowtmp)
 	    status != DV_ACCT_STATUS_TYPE_STOP &&
 	    status != DV_ACCT_STATUS_TYPE_ALIVE) {
 		radlog(L_NOTICE, _("NAS %s port %d unknown packet type (%d)"),
-			nas_name(nas_address), ut.nas_port, status);
+			nas_ip_to_name(nas_address), ut.nas_port, status);
 		return 0;
 	} else if (status == DV_ACCT_STATUS_TYPE_START ||
 		   status == DV_ACCT_STATUS_TYPE_STOP) {
@@ -376,7 +376,7 @@ rad_accounting_new(radreq, dowtmp)
 		    ("%s: User %s at NAS %s port %d session %-*.*s",
 		     status == DV_ACCT_STATUS_TYPE_START ? "start" : "stop",
 		     ut.login,
-		     nas_name(nas_address),
+		     nas_ip_to_name(nas_address),
 		     ut.nas_port,
 		     sizeof(ut.session_id),
 		     sizeof(ut.session_id),
@@ -429,7 +429,7 @@ rad_accounting_new(radreq, dowtmp)
 		stat_inc(acct, radreq->ipaddr, num_norecords);
 		radlog(L_NOTICE,
 		    _("NOT writing wtmp record (%d) for `%s',NAS %s,port %d"),
-		    status, ut.login, nas_name(nas_address), ut.nas_port);
+		    status, ut.login, nas_ip_to_name(nas_address), ut.nas_port);
 	}
 	return ret;
 }
@@ -491,7 +491,7 @@ write_detail(radreq, authtype, f)
 	if (radreq->server_ipaddr)
 		nas = radreq->server_ipaddr;
 
-	if ((cl = nas_find(nas)) != NULL) {
+	if ((cl = nas_lookup_ip(nas)) != NULL) {
 		if (cl->shortname[0])
 			strcpy(nasname, cl->shortname);
 		else
@@ -647,12 +647,12 @@ rad_acct_xmit(type, code, data, fd)
 		rad_send_reply(PW_ACCOUNTING_RESPONSE, req, NULL, NULL, fd);
 		radlog(L_NOTICE,
 		       _("Retransmitting ACCT reply: client %s, ID: %d"),
-		       client_name(req->ipaddr),
+		       client_lookup_name(req->ipaddr),
 		       req->id);
 	} else {
 		radlog(L_NOTICE,
 		       _("Dropping ACCT packet: client %s, ID: %d: duplicate packet"),
-		       client_name(req->ipaddr),
+		       client_lookup_name(req->ipaddr),
 		       req->id);
 	}
 }
@@ -696,7 +696,7 @@ check_ts(ut)
 	NAS	*nas;
 
 	/* Find NAS type. */
-	if ((nas = nas_find(ntohl(ut->nas_address))) == NULL) {
+	if ((nas = nas_lookup_ip(ntohl(ut->nas_address))) == NULL) {
 		radlog(L_NOTICE, _("check_ts(): unknown NAS"));
 		return 0; 
 	}

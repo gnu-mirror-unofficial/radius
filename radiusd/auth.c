@@ -491,7 +491,7 @@ rad_auth_init(radreq, activefd)
 	if ((namepair == (VALUE_PAIR *)NULL) || 
 	   (strlen(namepair->strvalue) <= 0)) {
 		radlog(L_ERR, _("No username: [] (from nas %s)"),
-		       nas_name2(radreq));
+		       nas_request_to_name(radreq));
 		stat_inc(auth, radreq->ipaddr, num_bad_req);
 		radreq_free(radreq);
 		return -1;
@@ -500,7 +500,7 @@ rad_auth_init(radreq, activefd)
 	if (check_user_name(namepair->strvalue)) {
 		radlog(L_AUTH, _("Malformed username: [%s] (from nas %s)"),
 		       namepair->strvalue,
-		       nas_name2(radreq));
+		       nas_request_to_name(radreq));
 		stat_inc(auth, radreq->ipaddr, num_bad_req);
 		radreq_free(radreq);
 		return -1;
@@ -515,7 +515,7 @@ rad_auth_init(radreq, activefd)
 		 */
 		radlog(L_NOTICE,
 		       _("from client %s - Security Breach: %s"),
-		       client_name(radreq->ipaddr), namepair->strvalue);
+		       client_lookup_name(radreq->ipaddr), namepair->strvalue);
 		stat_inc(auth, radreq->ipaddr, num_bad_auth);
 		radreq_free(radreq);
 		return -1;
@@ -538,7 +538,7 @@ rad_auth_init(radreq, activefd)
 	 */
 	if (!huntgroup_access(radreq)) {
 		radlog(L_AUTH, _("No huntgroup access: [%s] (from nas %s)"),
-			namepair->strvalue, nas_name2(radreq));
+			namepair->strvalue, nas_request_to_name(radreq));
 		rad_send_reply(PW_AUTHENTICATION_REJECT, radreq,
 			       radreq->request, NULL, activefd);
 		radreq_free(radreq);
@@ -699,7 +699,7 @@ auth_log(m, diag, pass, reason, addstr)
 		       reason,
 		       addstr ? addstr : "",
 		       m->clid,
-		       nas_name2(m->req));
+		       nas_request_to_name(m->req));
 	else
 		radlog(L_AUTH,
 		       _("%s: [%s%s%s]: CLID %s (from nas %s)"),
@@ -708,7 +708,7 @@ auth_log(m, diag, pass, reason, addstr)
 		       pass ? "/" : "",
 		       pass ? pass : "",
 		       m->clid,
-		       nas_name2(m->req));
+		       nas_request_to_name(m->req));
 }
 
 int
@@ -1015,7 +1015,7 @@ sfn_simuse(m)
 	       _("Multiple logins: [%s] CLID %s (from nas %s) max. %ld%s"),
 	       m->namepair->strvalue,
                m->clid,		
-	       nas_name2(m->req),
+	       nas_request_to_name(m->req),
 	       m->check_pair->lvalue,
 	       rc == 2 ? _(" [MPP attempt]") : "");
 	newstate(as_reject);
@@ -1053,7 +1053,7 @@ sfn_time(m)
 		radlog(L_ERR,
        _("Outside allowed timespan: [%s] (from nas %s) time allowed: %s"),
 		       m->namepair->strvalue,
-		       nas_name2(m->req),
+		       nas_request_to_name(m->req),
 		       m->check_pair->strvalue);
 		newstate(as_reject);
 	} else if (rc == 0) {

@@ -164,7 +164,7 @@ cntl_respond(fd, sa, salen, buf, size)
 		      &user_check, &user_reply) != 0) {
 		radlog(L_NOTICE, _("Invalid user: [%s] (from %s) trying to access control channel"),
 		       namepair->strvalue,
-		       nas_name2(radreq));
+		       nas_request_to_name(radreq));
 		rad_send_reply(PW_AUTHENTICATION_REJECT, radreq,
 			       NULL, _("Access denied"), fd);
 		radreq_free(radreq);
@@ -183,12 +183,12 @@ cntl_respond(fd, sa, salen, buf, size)
 			       _("control channel: Login incorrect: [%s/%s] (from %s)"),
 			       namepair->strvalue,
 			       userpass,
-			       nas_name2(radreq));
+			       nas_request_to_name(radreq));
 		} else {			
 			radlog(L_AUTH,
 			       _("control channel: Login incorrect: [%s] (from %s)"),
 			       namepair->strvalue,
-			       nas_name2(radreq));
+			       nas_request_to_name(radreq));
 		}
 		avl_free(user_check);
 		avl_free(user_reply);

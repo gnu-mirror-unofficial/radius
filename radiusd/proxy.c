@@ -119,7 +119,7 @@ proxy_cleanup()
 	prev = NULL;
 	for (p = proxy_id; p; ) {
 		next = p->next;
-		if (!client_find(p->ipaddr)) {
+		if (!client_lookup_ip(p->ipaddr)) {
 			if (prev) 
 				prev->next = next;
 			else
@@ -469,7 +469,7 @@ proxy_send(radreq, activefd)
 		return 0;
 	}
 
-	if ((client = client_find(realm->ipaddr)) == NULL) {
+	if ((client = client_lookup_ip(realm->ipaddr)) == NULL) {
 		radlog(L_PROXY,
 		       _("cannot find secret for server %s in clients file"),
 		       realm->server);
@@ -520,7 +520,7 @@ proxy_send(radreq, activefd)
 	if (rc) {
 		radlog(L_NOTICE,
 		       _("%s request from client %s for user %s - Security Breach"),
-		       what, client_name(radreq->ipaddr),
+		       what, client_lookup_name(radreq->ipaddr),
 		       namepair->strvalue);
 		efree(saved_username);
 		return -1;
@@ -714,7 +714,7 @@ proxy_receive(radreq, activefd)
 	if (oldreq == NULL) {
 		radlog(L_PROXY,
 		       _("Unrecognized proxy reply from server %s - ID %d"),
-		       client_name(radreq->ipaddr), radreq->id);
+		       client_lookup_name(radreq->ipaddr), radreq->id);
 		return -1;
 	}
 

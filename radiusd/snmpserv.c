@@ -1164,7 +1164,7 @@ snmp_auth_var_next(subid, closure)
 	subid_t subid;
 	struct auth_mib_closure *closure;
 {
-	if (!findnasbyindex(subid)) 
+	if (!nas_lookup_index(subid)) 
 		return -1;
 
 	closure->nas_index = subid;
@@ -1197,7 +1197,7 @@ snmp_auth_var_v_get(subid, var, errp)
 	case MIB_KEY_AuthServBadAuthenticators:
 	case MIB_KEY_AuthServPacketsDropped:
 	case MIB_KEY_AuthServUnknownTypes:
-		if ((nas = findnasbyindex(subid)) != NULL &&
+		if ((nas = nas_lookup_index(subid)) != NULL &&
 		    nas->nas_stat) {
  			get_auth_nasstat(nas, ret, key);
 			break;
@@ -1552,7 +1552,7 @@ snmp_acct_var_v_get(subid, var, errp)
 	case MIB_KEY_AccServMalformedRequests:
 	case MIB_KEY_AccServNoRecords:
 	case MIB_KEY_AccServUnknownTypes:         
-		if ((nas = findnasbyindex(subid)) != NULL &&
+		if ((nas = nas_lookup_index(subid)) != NULL &&
 		     nas->nas_stat) {
  			get_acct_nasstat(nas, ret, key);
 			break;
@@ -1808,11 +1808,11 @@ snmp_stat_nas(num, cmd, closure, subid, varp, errp)
 			(closure->quad[2]<<8) +
 			closure->quad[3];
 
-		if ((nas = nas_find(ip)) == NULL) {
+		if ((nas = nas_lookup_ip(ip)) == NULL) {
 			return -1;
 		}
 
-		if ((nas = findnasbyindex(nas->nas_stat->index+1)) == NULL) {
+		if ((nas = nas_lookup_index(nas->nas_stat->index+1)) == NULL) {
 			return -1;
 		}
 
@@ -1827,7 +1827,7 @@ snmp_stat_nas(num, cmd, closure, subid, varp, errp)
 		
 	case MIB_NODE_RESET:
 		if (num == 0) {
-			if (nas = findnasbyindex(1))
+			if (nas = nas_lookup_index(1))
 				for (num = 0; num < 4; num++)
 					closure->quad[num] = (nas->ipaddr >>
 							      (8*(3-num))) & 0xff;
@@ -1911,7 +1911,7 @@ snmp_nas_table(cmd, closure, subid, varp, errp)
 		return -1;
 		
 	case MIB_NODE_NEXT:
-		if (!findnasbyindex(subid+1))
+		if (!nas_lookup_index(subid+1))
 			return -1;
 		((struct nas_table*)closure)->row = subid+1;
 		break;
@@ -1955,7 +1955,7 @@ snmp_nas_table_get(subid, oid, errp)
 	case MIB_KEY_NASLines:
 	case MIB_KEY_NASLinesInUse:
 	case MIB_KEY_NASLinesIdle:
-		if ((nas = findnasbyindex(subid)) != NULL &&
+		if ((nas = nas_lookup_index(subid)) != NULL &&
 		     nas->nas_stat) {
  			get_stat_nasstat(nas, ret, key);
 			break;
@@ -2050,7 +2050,7 @@ snmp_port_index1(cmd, closure, subid, varp, errp)
 		
 	case MIB_NODE_RESET:
 		pind->nas_index = 1;
-		while ((nas = findnasbyindex(pind->nas_index)) && 
+		while ((nas = nas_lookup_index(pind->nas_index)) && 
 		       (pind->port_no = stat_get_next_port_no(nas, 0)) == 0)
 			pind->nas_index++;
 		break; 
@@ -2074,7 +2074,7 @@ snmp_port_index2(cmd, closure, subid, varp, errp)
 	
 	switch (cmd) {
 	case MIB_NODE_GET:
-		if ((nas = findnasbyindex(pind->nas_index)) == NULL ||
+		if ((nas = nas_lookup_index(pind->nas_index)) == NULL ||
 		    (index = stat_get_port_index(nas, pind->port_no)) == 0) {
 			*errp = SNMP_ERR_NOSUCHNAME;
 			return -1;
@@ -2099,7 +2099,7 @@ snmp_port_index2(cmd, closure, subid, varp, errp)
 		return 0;
 		
 	case MIB_NODE_NEXT:
-		if ((nas = findnasbyindex(pind->nas_index)) == NULL)
+		if ((nas = nas_lookup_index(pind->nas_index)) == NULL)
 			return -1;
 		index = stat_get_next_port_no(nas, pind->port_no);
 		if (index > 0) {
@@ -2107,7 +2107,7 @@ snmp_port_index2(cmd, closure, subid, varp, errp)
 			break;
 		}
 		/* move to next nas */
-		while ((nas = findnasbyindex(++pind->nas_index)) && 
+		while ((nas = nas_lookup_index(++pind->nas_index)) && 
 		       (pind->port_no = stat_get_next_port_no(nas, 0)) == 0)
 			;
 
@@ -2235,7 +2235,7 @@ get_port_stat(port, var, key)
 	switch (key) {
 
 	case MIB_KEY_StatPortNASIndex:
-		nas = nas_find(port->ip);
+		nas = nas_lookup_ip(port->ip);
 		var->type = ASN_INTEGER;
 		var->val_length = sizeof(counter);
 		if (nas)

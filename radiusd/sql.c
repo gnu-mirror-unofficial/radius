@@ -1041,7 +1041,7 @@ rad_sql_acct(radreq)
 			radlog(L_INFO,
 			       _("SQL: %d records updated writing acct-on info for NAS %s"),
 			       count,
-			       nas_name2(radreq));
+			       nas_request_to_name(radreq));
 		}
 		break;
 
@@ -1057,7 +1057,7 @@ rad_sql_acct(radreq)
 			radlog(L_INFO,
 			       _("SQL: %d records updated writing acct-off info for NAS %s"),
 			       count,
-			       nas_name2(radreq));
+			       nas_request_to_name(radreq));
 		}
 		break;
 
@@ -1073,7 +1073,7 @@ rad_sql_acct(radreq)
 			radlog(L_INFO,
 			       _("SQL: %d records updated writing keepalive info for NAS %s"),
 			       count,
-			       nas_name2(radreq));
+			       nas_request_to_name(radreq));
 		}
 		break;
 		

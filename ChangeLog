@@ -1,3 +1,10 @@
+2003-07-21  Sergey Poznyakoff
+
+	* radiusd/files.c (hints_setup): Bugfix. Failed to update
+	req->request. Thanks to Lewis Watson <watson@visionsix.com>
+	for helping to trace the bug.
+	* THANKS: Added Lewis Watson
+
 2003-07-20  Sergey Poznyakoff
 
 	* configure.ac: New option --without-readline

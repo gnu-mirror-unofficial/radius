@@ -5,3 +5,4 @@ POTFILES
 *.pot~
 *.gmo
 *.po~
+*.sed

@@ -1,3 +1,16 @@
+2002-06-13  Sergey Poznyakoff
+
+	* radiusd/auth.c (rad_check_password): Fixed bug introduced
+	  yesterday.
+	* radiusd/radiusd.c: Changed signal blocking.
+	  (rad_thread_init): New function.
+	* radiusd/request.c (request_thread0): use rad_thread_init(). 
+	* radiusd/scheme.c (guile_boot0): Likewise.
+	* include/radiusd.h (rad_thread_init): prototype declaration.
+	
+	* po/es.po: Updated.
+	* po/no.po: Likewise.
+
 2002-06-12  Sergey Poznyakoff  
 
 	Fixed all varargs declarations (stdarg vs. varargs).

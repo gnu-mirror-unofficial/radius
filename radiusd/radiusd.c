@@ -155,10 +155,10 @@ static void check_snmp_request();
 
 static void set_config_defaults();
 void radiusd_exit();
-static int sig_exit (int, void *, const void *);
-static int sig_fatal (int, void *, const void *);
-static int sig_hup (int, void *, const void *);
-static int sig_dumpdb (int, void *, const void *);
+static int sig_exit (int, void *, rad_sigid_t, const void *);
+static int sig_fatal (int, void *, rad_sigid_t, const void *);
+static int sig_hup (int, void *, rad_sigid_t, const void *);
+static int sig_dumpdb (int, void *, rad_sigid_t, const void *);
 
 static struct signal_list {
 	int mask;  /* 1 if the signal should be masked in the threads */
@@ -1309,9 +1309,10 @@ meminfo()
 /* Signal handling */
 
 static int
-sig_fatal(sig, data, owner)
+sig_fatal(sig, data, id, owner)
         int sig;
 	void *data;
+	rad_sigid_t id;
 	const void *owner;
 {
 	radlog(L_CRIT, _("exit on signal %d"), sig);
@@ -1320,9 +1321,10 @@ sig_fatal(sig, data, owner)
 }
 
 static int
-sig_exit(sig, data, owner)
+sig_exit(sig, data, id, owner)
         int sig;
 	void *data;
+	rad_sigid_t id;
 	const void *owner;
 {
 	daemon_command = CMD_SHUTDOWN;
@@ -1331,9 +1333,10 @@ sig_exit(sig, data, owner)
 
 /*ARGSUSED*/
 static int
-sig_hup(sig, data, owner)
+sig_hup(sig, data, id, owner)
         int sig;
 	void *data;
+	rad_sigid_t id;
 	const void *owner;
 {
         daemon_command = CMD_RELOAD;
@@ -1342,9 +1345,10 @@ sig_hup(sig, data, owner)
 
 /*ARGSUSED*/
 static int
-sig_dumpdb(sig, data, owner)
+sig_dumpdb(sig, data, id, owner)
         int sig;
 	void *data;
+	rad_sigid_t id;
 	const void *owner;
 {
         daemon_command = CMD_DUMPDB;

@@ -65,8 +65,10 @@ read_raddb_file(filename, vital, fun, closure)
                         break;
                 if (lineptr[nread-1] == '\n')
                         lineptr[nread-1] = 0;
-                if (lineptr[0] == 0)
-                        continue;
+                if (lineptr[0] == 0) {
+                        line++;
+			continue;
+		}
                 if (argcv_get(lineptr, "", &argc, &argv) == 0) {
                         int n;
                         for (n = 0; n < argc && argv[n][0] != '#'; n++)

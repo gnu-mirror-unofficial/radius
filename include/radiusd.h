@@ -476,6 +476,7 @@ void            rad_lock(int fd, size_t size, off_t off, int whence);
 void            rad_unlock(int fd, size_t size, off_t off, int whence);
 char           *mkfilename(char *, char*);
 char           *mkfilename3(char *dir, char *subdir, char *name);
+int             backslash(int c);
 
 /* radius.c */
 int		rad_send_reply(int, AUTH_REQ *, VALUE_PAIR *, char *, int);

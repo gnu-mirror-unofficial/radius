@@ -61,5 +61,5 @@ rewrite: $(RADDB)/rewrite $(EXDIR)/ascend.rw $(EXDIR)/cisco.rw $(EXDIR)/jetstrea
 
 CLEANFILES=$(ALLTARGETS) config client.conf users acct.scm realms
 
-distclean-local:; -rm -rf log acct dict
+distclean-local:; -rm -rf radiusd.pid log acct dict
 

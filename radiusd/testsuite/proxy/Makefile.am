@@ -53,5 +53,5 @@ naslist: ../raddb/naslist
 
 CLEANFILES=$(ALLTARGETS) client.conf config realms
 
-distclean-local:; -rm -rf log acct
+distclean-local:; -rm -rf radiusd.pid log acct
 

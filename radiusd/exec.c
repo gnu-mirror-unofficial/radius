@@ -46,9 +46,6 @@ static char rcsid[] =
 #include <radiusd.h>
 #include <obstack1.h>
 
-#define MAXARGS 64
-
-
 /*
  *	Execute a program on successful authentication.
  *	Return 0 if exec_wait == 0.

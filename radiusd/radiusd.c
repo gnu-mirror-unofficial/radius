@@ -85,7 +85,7 @@ int        debug_flag; /* can be raised from debugger only */
 int        log_mode;
 
 static int foreground; /* Stay in the foreground */
-static int spawn_flag; 
+int spawn_flag; 
 
 int use_dbm = 0;
 int auth_detail = 0;
@@ -324,14 +324,14 @@ common_init()
 
 	radiusd_pid = getpid();
 	radius_input = input_create();
-	input_register_method(radius_input, "udp",
-			      udp_input_handler,
-			      udp_input_close,
-			      udp_input_cmp);
 	input_register_method(radius_input, "rpp",
 			      rpp_input_handler,
 			      rpp_input_close,
 			      NULL);
+	input_register_method(radius_input, "udp",
+			      udp_input_handler,
+			      udp_input_close,
+			      udp_input_cmp);
 #ifdef HAVE_SETVBUF
         setvbuf(stdout, NULL, _IOLBF, 0);
 #endif
@@ -1131,16 +1131,6 @@ struct cfg_stmt acct_stmt[] = {
 	{ NULL, }
 };
 
-struct cfg_stmt proxy_stmt[] = {
-	{ "max-requests", CS_STMT, NULL,
-	  cfg_get_integer, &request_class[R_PROXY].max_requests,
-	  NULL, NULL },
-	{ "request-cleanup-delay", CS_STMT, NULL,
-	  cfg_get_integer, &request_class[R_PROXY].cleanup_delay,
-	  NULL, NULL },
-	{ NULL, }
-};
-
 struct cfg_stmt config_syntax[] = {
 	{ "option", CS_BLOCK, NULL, NULL, NULL, option_stmt, NULL },
 	{ "message", CS_BLOCK, NULL, NULL, NULL, message_stmt, NULL },
@@ -1148,7 +1138,6 @@ struct cfg_stmt config_syntax[] = {
 	  logging_stmt, logging_stmt_end },
 	{ "auth", CS_BLOCK, auth_stmt_begin, NULL, NULL, auth_stmt, NULL },
 	{ "acct", CS_BLOCK, acct_stmt_begin, NULL, NULL, acct_stmt, NULL  },
-	{ "proxy", CS_BLOCK, NULL, NULL, NULL, proxy_stmt, NULL  },
 	{ "rewrite", CS_BLOCK, NULL, NULL, NULL, rewrite_stmt, NULL },
 	{ "filters", CS_BLOCK, filters_stmt_term, NULL, NULL, filters_stmt,
 	  NULL },

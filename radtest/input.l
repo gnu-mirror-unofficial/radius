@@ -185,30 +185,30 @@ DQ {D3}\.{D3}\.{D3}\.{D3}
         return EOL;
 }       
 #.*     /* end-of-file comment */;
-\"auth\"     |
-\"acct\"     |
-\"print\"    |
-\"send\"     |
-\"expect\"   |
-\"exit\"     |
-\"begin\"    |
-\"end\"      |
-\"if\"       |
-\"else\"     |
-\"while\"    |
-\"do\"       |
-\"break\"    |
-\"continue\" |
-\"not\"      |
-\"input\"    |
-\"set\"      |
-\"shift\"    |
-\"getopt\"   |
-\"case\"     |
-\"in\"       |
-\"return\"   |
-\"or\"       |
-\"and\"      {
+'auth'     |
+'acct'     |
+'print'    |
+'send'     |
+'expect'   |
+'exit'     |
+'begin'    |
+'end'      |
+'if'       |
+'else'     |
+'while'    |
+'do'       |
+'break'    |
+'continue' |
+'not'      |
+'input'    |
+'set'      |
+'shift'    |
+'getopt'   |
+'case'     |
+'in'       |
+'return'   |
+'or'       |
+'and'      {
 	add_str(yytext+1,yyleng-2);
         yylval.string = end_str();
         return NAME;

@@ -55,8 +55,6 @@ extern UINT4 auth_server;
 extern int   auth_port;
 extern UINT4 acct_server;
 extern int   acct_port;
-extern long  timeout;
-extern int nretries;
 extern u_char messg_id;
 extern int reply_code;
 extern VALUE_PAIR *reply_list;

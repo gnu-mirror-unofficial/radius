@@ -376,6 +376,12 @@ radiusd_postconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 	}
 }
 
+static void
+daemon_postconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
+{        system_acct_init();
+ 
+}
+
 void
 radiusd_setup()
 {
@@ -430,8 +436,6 @@ common_init()
 #endif
 	acct_init();
 	radiusd_reconfigure();
-	grad_path_init();
-	system_acct_init();
 	grad_log(L_INFO, _("Ready"));
 }
 
@@ -532,7 +536,9 @@ radiusd_main()
 
                 if (!foreground)
                         radiusd_daemon();
-		
+		/* Install daemon-specific hook */
+		radiusd_set_postconfig_hook(daemon_postconfig_hook,
+					    NULL, 0);
                 common_init();
         }
 
@@ -920,6 +926,7 @@ radiusd_reconfigure()
                 exit(1);
         }
 
+	grad_path_init();
 	radiusd_run_postconfig_hooks(NULL);
 }
 

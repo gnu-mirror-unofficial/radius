@@ -121,15 +121,15 @@ SCM_DEFINE(rad_client_list_servers, "rad-client-list-servers", 0, 0, 0,
         RADIUS_SERVER *s;
         char p[DOTTED_QUAD_LEN+1];
         SCM tail = SCM_EOL;
-         
-        for (s = list_first(srv_queue->servers);
-	     s;
-	     s = list_next(srv_queue->servers)) {
+        ITERATOR *itr = iterator_create(srv_queue->servers);
+
+        for (s = iterator_first(itr); s; s = iterator_next(itr)) {
                 ip_iptostr(s->addr, p);
                 tail = scm_cons(scm_list_2(scm_makfrom0str(s->name),
                                           scm_makfrom0str(p)),
                                 tail);
         }
+        iterator_destroy(&itr);
         return scm_reverse_x(tail, SCM_UNDEFINED);
 }
 #undef FUNC_NAME
@@ -139,7 +139,8 @@ SCM_DEFINE(rad_get_server, "rad-get-server", 0, 0, 0,
            "Returns the ID of the currently selected server.")
 #define FUNC_NAME s_rad_get_server      
 {
-	RADIUS_SERVER *s = list_current(srv_queue->servers);
+	/*FIXME*/
+	RADIUS_SERVER *s = list_item(srv_queue->servers, 0);
 	return s ? scm_makfrom0str(s->name) : SCM_BOOL_F;
 }
 #undef FUNC_NAME

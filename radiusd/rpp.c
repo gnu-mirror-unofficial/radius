@@ -189,11 +189,11 @@ rpp_proc_t *
 rpp_lookup_fd(int fd)
 {
 	rpp_proc_t *p;
-
-	for (p = list_first(process_list); p;
-	     p = list_next(process_list))
+	ITERATOR *itr = iterator_create(process_list);
+	for (p = iterator_first(itr); p; p = iterator_next(itr))
 		if (p->p[0] == fd)
 			break;
+	iterator_destroy(&itr);
 	return p;
 }
 
@@ -203,9 +203,11 @@ rpp_lookup_ready(int (*proc_main)(void *), void *data)
 	rpp_proc_t *p;
 
 	if (process_list) {
-		for (p = list_first(process_list); p && !p->ready;
-		     p = list_next(process_list))
+		ITERATOR *itr = iterator_create(process_list);
+		for (p = iterator_first(itr); p && !p->ready;
+		     p = iterator_next(itr))
 			;
+		iterator_destroy(&itr);
 	} else
 		process_list = list_create();
 	
@@ -227,10 +229,12 @@ rpp_proc_t *
 rpp_lookup_pid(pid_t pid)
 {
 	rpp_proc_t *p;
-	for (p = list_first(process_list); p; p = list_next(process_list)) {
+	ITERATOR *itr = iterator_create(process_list);
+	for (p = iterator_first(itr); p; p = iterator_next(itr)) {
 		if (p->pid == pid)
 			break;
 	}
+	iterator_destroy(&itr);
 	return p;
 }
 	
@@ -258,8 +262,9 @@ rpp_fdset(fd_set *read_fds, fd_set *write_fds)
 {
 	int max = 0;
 	rpp_proc_t *p;
+	ITERATOR *itr = iterator_create(process_list);
 	
-	for (p = list_first(process_list); p; p = list_next(process_list)) {
+	for (p = iterator_first(itr); p; p = iterator_next(itr)) {
 		if (read_fds) {
 			FD_SET(p->p[0], read_fds);
 			if (max < p->p[0])
@@ -271,6 +276,7 @@ rpp_fdset(fd_set *read_fds, fd_set *write_fds)
 				max = p->p[1];
 		}
 	}
+	iterator_destroy(&itr);
 	return max;
 }
 
@@ -278,10 +284,13 @@ int
 rpp_read(int fd, void *data, size_t size)
 {
 	rpp_proc_t *p;
+	ITERATOR *itr = iterator_create(process_list);
 
-	for (p = list_first(process_list); p && p->p[0] != fd;
-	     p = list_next(process_list))
+	for (p = iterator_first(itr); 
+	     p && p->p[0] != fd; 
+	     p = iterator_next(itr)) 
 		;
+	iterator_destroy(&itr);
 	if (!p)
 		return -1;
 	return rpp_fd_read(p->p[0], data, size);
@@ -291,10 +300,13 @@ int
 rpp_read_set(fd_set *fds, void *data, size_t size)
 {
 	rpp_proc_t *p;
+	ITERATOR *itr = iterator_create(process_list);
 
-	for (p = list_first(process_list); p && !FD_ISSET(p->p[0], fds);
-	     p = list_next(process_list))
+	for (p = iterator_first(itr); 
+	     p && !FD_ISSET(p->p[0], fds);
+	     p = iterator_next(itr))
 		;
+	iterator_destroy(&itr);
 	if (!p)
 		return -1;
 	FD_CLR(p->p[0], fds);
@@ -312,16 +324,16 @@ rpp_ready(pid_t pid)
 			return 1;
 	} else {
 		rpp_proc_t *p;
+		ITERATOR *itr = iterator_create(process_list);
 
-		for (p = list_first(process_list);
-		     p;
-		     p = list_next(process_list)) {
+		for (p = iterator_first(itr); p; p = iterator_next(itr)) {
 			if (p->pid == pid) {
-				if (p->ready)
-					return 1;
 				break;
 			}
 		}
+	        iterator_destroy(&itr);
+		if (p && p->ready)
+			return 1;
 	}
 	return 0;
 }
@@ -331,16 +343,19 @@ rpp_flush()
 {
 	time_t t;
 	unsigned count;
+	ITERATOR *itr = iterator_create(process_list);
+
 	time(&t);
 
 	do {
 		rpp_proc_t *p;
-		for (count = 0, p = list_first(process_list);
+		for (count = 0, p = iterator_first(itr);
 		     p;
-		     p = list_next(process_list))
+		     p = iterator_next(itr))
 			if (!p->ready)
 				count++;
 	} while (count > 0 && time(NULL) - t <= 10);
+	iterator_destroy(&itr);
 }
 
 static int

@@ -109,12 +109,16 @@ char *
 envar_lookup(envar_t *env, char *name)
 {
 	ENVAR *p;
+	ITERATOR *itr = iterator_create(env);
 
-	for (p = list_first(env); p; p = list_next(env)) {
+	if (!itr)
+		return NULL;
+	for (p = iterator_first(itr); p; p = iterator_next(itr)) {
                 if (strcmp(p->name, name) == 0)
-                        return p->value;
+                        break;
         }
-        return NULL;
+        iterator_destroy(&itr);
+        return p ? p->value : NULL;
 }
 
 char *
@@ -153,14 +157,22 @@ envar_merge_lists(envar_t *prim, envar_t *sec)
 {
         envar_t *list;
 	ENVAR *p;
-
+	ITERATOR *itr;
+        
         list = list_create();
-	for (p = list_first(sec); p; p = list_next(sec))
-                if (!envar_lookup(prim, p->name)) {
-			list_append(list, envar_dup(p));
-                }
-        for (p = list_first(prim); p; p = list_next(prim)) {
-                list_append(list, envar_dup(p));
+	itr = iterator_create(sec);
+	if (itr) {
+		for (p = iterator_first(itr); p; p = iterator_next(itr))
+                	if (!envar_lookup(prim, p->name)) {
+				list_append(list, envar_dup(p));
+                	}
+                iterator_destroy(&itr);
+        }
+        itr = iterator_create(prim);
+        if (itr) {
+        	for (p = iterator_first(itr); p; p = iterator_next(itr)) 
+                	list_append(list, envar_dup(p));
+                iterator_destroy(&itr);
         }
         return list;
 }

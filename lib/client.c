@@ -171,6 +171,7 @@ rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
         RADIUS_SERVER *server;
         char ipbuf[DOTTED_QUAD_LEN];
 	char *recv_buf;
+	ITERATOR *itr;
 	
         if (port_type < 0 || port_type > 2) {
                 radlog(L_ERR, _("invalid port type"));
@@ -204,7 +205,8 @@ rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 	debug(1,
 	      ("sending %s", auth_code_str(code)));
 	recv_buf = emalloc(config->buffer_size);
-        server = list_first(config->servers);
+        itr = iterator_create(config->servers);
+        server = iterator_first(itr);
         do {
 		fd_set readfds;
 		struct timeval tm;
@@ -213,7 +215,8 @@ rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 		void *pdu;
 		size_t size;
 		VALUE_PAIR *pair;
-		
+		ITERATOR *itr;
+
                 if (server->port[port_type] <= 0)
                         continue;
                 
@@ -301,7 +304,8 @@ rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 				  ip_iptostr(server->addr, ipbuf),
 				  server->port[port_type]));
 		
-        } while (!req && (server = list_next(config->servers)) != NULL);
+        } while (!req && (server = iterator_next(itr)) != NULL);
+	iterator_destroy(&itr);
 
 	efree(recv_buf);
         close(sockfd);
@@ -503,13 +507,12 @@ server_cmp(void *item, void *data)
 	RADIUS_SERVER *serv = item;
 	char *id = data;
 
-        return strcmp(serv->name, id) == 0;
+        return strcmp(serv->name, id);
 }
 
 RADIUS_SERVER *
 rad_clt_find_server(RADIUS_SERVER_QUEUE *qp, char *name)
 {
-	list_iterate(qp->servers, server_cmp, name);
-	return list_current(qp->servers);
+	return list_locate(qp->servers, name, server_cmp);
 }
 

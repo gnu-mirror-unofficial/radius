@@ -37,27 +37,17 @@
 #define YYMAXDEPTH 16
 
 struct cfg_memblock {
-	struct cfg_memblock *next;
 	void (*destructor)();
 	int line_num;
 };
 
-static struct cfg_memblock *cfg_memory_pool;
+static LIST /* of struct cfg_memblock */ *cfg_memory_pool;
  
-struct value_list {
-	struct value_list *next;
-	cfg_value_t val;
-};
+static LIST *_cfg_vlist_create(cfg_value_t *val);
+static void _cfg_vlist_append(LIST *vlist, cfg_value_t *val);
 
-typedef struct vlist VLIST;
-struct vlist {
-	struct value_list *head;
-	struct value_list *tail;
-};
-
-static VLIST *_cfg_vlist_create(cfg_value_t *val);
-static VLIST *_cfg_vlist_append(VLIST *vlist, cfg_value_t *val);
-static void _cfg_vlist_destroy(void*);
+void *cfg_malloc(size_t size, void (*destructor)(void *));
+ 
 static void _cfg_free_memory_pool();
 static void _cfg_run_begin(struct cfg_stmt *stmt, void *up_data);
 
@@ -85,7 +75,7 @@ static struct syntax_block *block;
 static void _cfg_push_block(struct cfg_stmt *stmt, cfg_end_fp end, void *data);
 static struct syntax_block *_cfg_pop_block();
 
-int _cfg_make_argv(cfg_value_t **argv, char *keyword, VLIST *vlist);
+int _cfg_make_argv(cfg_value_t **argv, char *keyword, LIST *vlist);
 void _cfg_free_argv(int argc, cfg_value_t *argv);
 
 struct cfg_stmt *_cfg_find_keyword(struct cfg_stmt *stmt, char *str);
@@ -105,7 +95,7 @@ static char *curp;
         char *string;
         cfg_value_t value;
         cfg_network_t network;
-	VLIST *vlist;
+	LIST *vlist;
 	struct cfg_stmt *stmt;
 };
 
@@ -217,11 +207,13 @@ value_list  : value
 	      }
             | value_list value
               {
-		      $$ = _cfg_vlist_append($1, &$2);
+		      _cfg_vlist_append($1, &$2);
+		      $$ = $1;
 	      }
             | value_list ',' value
               {
-		      $$ = _cfg_vlist_append($1, &$3);
+		      _cfg_vlist_append($1, &$3);
+		      $$ = $1;
 	      }
             ;
 
@@ -520,39 +512,46 @@ _cfg_run_finish(struct cfg_stmt *stmt, void *up_data)
 	}
 }
 
+static int
+_cfg_free_item(void *item, void *data)
+{
+	struct cfg_memblock *p = item;
+	if (p->destructor)
+		p->destructor(p+1);
+	efree(p);
+	return 0;
+}
+
 void
 _cfg_free_memory_pool()
 {
-	struct cfg_memblock *p, *next;
-
-	p = cfg_memory_pool;
-	while (p) {
-		next = p->next;
-                /*radlog(L_ERR, "%d, %p",p->line_num, p);*/
-		if (p->destructor)
-			p->destructor(p+1);
-		efree(p);
-		p = next;
-	}
+	list_destroy(&cfg_memory_pool, _cfg_free_item, NULL);
 }
 
 int
-_cfg_make_argv(cfg_value_t **argv, char *keyword, VLIST *vlist)
+_cfg_make_argv(cfg_value_t **argv, char *keyword, LIST *vlist)
 {
-	int i, argc;
-	struct value_list *p;
+	int argc;
 
 	if (vlist)
-		for (argc = 1, p = vlist->head; p; argc++, p = p->next)
-			;
+		argc = list_count(vlist) + 1;
 	else
 		argc = 1;
 	*argv = emalloc(sizeof(**argv)*argc);
 	(*argv)[0].type = CFG_STRING;
 	(*argv)[0].v.string = keyword;
-	if (vlist)
-		for (i = 1, p = vlist->head; p; i++, p = p->next)
-			(*argv)[i] = p->val;
+	if (vlist) {
+		int i;
+		cfg_value_t *val;
+		ITERATOR *itr = iterator_create(vlist);
+
+		if (itr) {
+			for (i = 1, val = iterator_first(itr); val;
+		     	     i++, val = iterator_next(itr))
+				(*argv)[i] = *val;
+			iterator_destroy(&itr);
+		}
+	}
 	return argc;
 }
 
@@ -561,42 +560,31 @@ _cfg_free_argv(int argc, cfg_value_t *argv)
 {
 	efree(argv);
 }
-		
-VLIST *
-_cfg_vlist_create(cfg_value_t *val)
-{
-	VLIST *vlist = cfg_malloc(sizeof(*vlist), _cfg_vlist_destroy);
-	struct value_list *p = emalloc(sizeof(*p));
 
-	p->val = *val;
-	p->next = NULL;
-	vlist->head = vlist->tail = p;
-	return vlist;
-}
-
-VLIST *
-_cfg_vlist_append(VLIST *vlist,	cfg_value_t *val)
+static void
+_cfg_vlist_destroy(void *arg)
 {
-	struct value_list *p = emalloc(sizeof(*p));
-	p->val = *val;
-	p->next = NULL;
-	vlist->tail->next = p;
-	vlist->tail = p;
-	return vlist;
+	LIST **pl = arg;
+	list_destroy(pl, NULL, NULL);
 }
 
 void
-_cfg_vlist_destroy(void *arg)
+_cfg_vlist_append(LIST *vlist, cfg_value_t *val)
 {
-	VLIST *vlist = arg;
-	struct value_list *p, *next;
+	cfg_value_t *vp = cfg_malloc(sizeof(*vp), NULL);
+	*vp = *val;
+	list_append(vlist, vp);
+}
 
-	p = vlist->head;
-	while (p) {
-		next = p->next;
-		efree(p);
-		p = next;
-	}
+LIST *
+_cfg_vlist_create(cfg_value_t *val)
+{
+	cfg_value_t *vp;
+	LIST *vlist = list_create();
+	LIST **lp = cfg_malloc(sizeof(*lp), _cfg_vlist_destroy);
+	*lp = vlist;
+	_cfg_vlist_append(vlist, val);
+	return vlist;
 }
 
 void
@@ -739,10 +727,11 @@ void *
 cfg_malloc(size_t size,	void (*destructor)(void *))
 {
 	struct cfg_memblock *p = emalloc(size + sizeof(*p));
-	p->next = cfg_memory_pool;
 	p->destructor = destructor;
 	p->line_num = cfg_line_num;
-	cfg_memory_pool = p;
+	if (!cfg_memory_pool)
+		cfg_memory_pool = list_create();
+	list_append(cfg_memory_pool, p);
 	return p+1;
 }
 

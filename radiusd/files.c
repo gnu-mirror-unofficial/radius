@@ -854,11 +854,14 @@ CLIENT *
 client_lookup_ip(UINT4 ipaddr)
 {
         CLIENT *cl;
+	ITERATOR *itr = iterator_create(clients);
 
-        for (cl = list_first(clients); cl; cl = list_next(clients))
+	if (!itr)
+		return NULL;
+        for (cl = iterator_first(itr); cl; cl = iterator_next(itr))
                 if (ipaddr == cl->ipaddr)
                         break;
-
+	iterator_destroy(&itr);
         return cl;
 }
 
@@ -947,11 +950,15 @@ RADCK_TYPE *
 find_radck_type(char *name)
 {
         RADCK_TYPE *tp;
-        
-        for (tp = list_first(radck_type);
+       	ITERATOR *itr = iterator_create(radck_type);
+
+        if (!itr)
+        	return NULL;
+        for (tp = iterator_first(itr);
 	     tp && strcmp(tp->type, name);
-	     tp = list_next(radck_type))
+	     tp = iterator_next(itr))
                 ;
+        iterator_destroy(&itr);
         return tp;
 }
                 

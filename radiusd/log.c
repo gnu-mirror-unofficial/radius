@@ -73,6 +73,7 @@ vlog(int level, char *file, int line, char *func_name,
         char *buf1 = NULL;
         char *buf2 = NULL;
         char *buf3 = NULL;
+	ITERATOR *itr = iterator_create(chanlist);
 
         cat = L_CAT(level);
         if (cat == 0)
@@ -86,11 +87,12 @@ vlog(int level, char *file, int line, char *func_name,
 
         vasprintf(&buf2, fmt, ap);
         
-        for (chan = list_first(chanlist); chan; chan = list_next(chanlist)) {
+        for (chan = iterator_first(itr); chan; chan = iterator_next(itr)) {
                 /* Skip channels whith incorrect priority */
                 if (chan->pmask[cat] & L_MASK(pri))
                         log_to_channel(chan, cat, pri, buf1, buf2, buf3);
         }
+        iterator_destroy(&itr);
 
         if (buf1)
                 free(buf1);
@@ -261,7 +263,7 @@ channel_free(Channel *chan)
 Channel *
 log_mark()
 {
-        return list_first(chanlist);
+        return list_item(chanlist, 0);
 }
 
 void
@@ -269,15 +271,16 @@ log_release(Channel *chan)
 {
         Channel *cp, *prev = NULL;
         int emerg, alert, crit;
+	ITERATOR *itr = iterator_create(chanlist);
 
-	cp = list_locate(chanlist, chan, NULL);
-
-        while (cp) {
+	for (cp = iterator_first(itr); cp; cp = iterator_next(itr))
+		if (cp == chan)
+			break;
+        for (; cp; cp = iterator_next(itr)) {
                 if (!(cp->options & LO_PERSIST)) {
-			list_remove_current(chanlist);
+			list_remove(chanlist, cp, NULL);
                         channel_free(cp);
                 }
-		cp = list_next(chanlist);
         }
 
         /* Make sure we have at least a channel for categories below
@@ -285,7 +288,7 @@ log_release(Channel *chan)
         emerg = L_EMERG;
         alert = L_ALERT;
         crit  = L_CRIT;
-        for (cp = list_first(chanlist); cp; cp = list_next(chanlist)) {
+	for (cp = iterator_first(itr); cp; cp = iterator_next(itr)) {
                 int i;
                 for (i = 1; i < L_NCAT; i++) {
                         if (emerg && (cp->pmask[i] & L_MASK(emerg)))
@@ -296,21 +299,23 @@ log_release(Channel *chan)
                                 crit = 0;
                 }
         }
-
+	iterator_destroy(&itr);
         if (emerg || alert || crit)
                 log_set_default("##emerg##", -1, emerg|alert|crit);
+}
+
+static int
+_chancmp(const void *item, const void *data)
+{
+	const Channel *chan = item;
+	const char *name = data;
+        return strcmp(chan->name, name);
 }
 
 Channel *
 channel_lookup(char *name)
 {
-        Channel *chan;
-
-        for (chan = list_first(chanlist); chan; chan = list_next(chanlist)) {
-                if (strcmp(chan->name, name) == 0)
-                        break ;
-        }
-        return chan;
+        return list_locate(chanlist, name, _chancmp);
 }
 
 void
@@ -365,16 +370,32 @@ register_category0(int cat, int pri, Channel *chan)
 		chan->pmask[L_CAT(cat)] |= pri;
 }
 
+struct category_closure {
+	int cat;
+	int pri;
+};
+
+static int 
+_regcat(void *item, void *data)
+{
+	Channel *chan = item;
+	struct category_closure *cp = data;
+	register_category0(cp->cat, cp->pri, chan);
+	return 0;
+}
+
 void
 register_category(int cat, int pri, LIST *clist)
 {
         Channel *chan;
+	struct category_closure clos;
 
         if (pri == -1)
                 pri = L_UPTO(L_DEBUG);
 
-	for (chan = list_first(clist); chan; chan = list_next(clist))
-		register_category0(cat, pri, chan);
+	clos.cat = cat;
+	clos.pri = pri;
+	list_iterate(clist, _regcat, &clos);
 }
 
 /* Auxiliary calls */

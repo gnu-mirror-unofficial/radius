@@ -193,15 +193,20 @@ REALM *
 realm_lookup_name(char *realm)
 {
         REALM *p;
+	ITERATOR *itr = iterator_create(realms);
 
-        for (p = list_first(realms); p; p = list_next(realms))
+	if (!itr)
+		return NULL;
+
+        for (p = iterator_first(itr); p; p = iterator_next(itr))
                 if (strcmp(p->realm, realm) == 0)
                         break;
         if (!p && strcmp(realm, "NOREALM")) {
-		for (p = list_first(realms); p; p = list_next(realms))
+        	for (p = iterator_first(itr); p; p = iterator_next(itr))
                         if (strcmp(p->realm, "DEFAULT") == 0)
                                 break;
         }
+        iterator_destroy(&itr);
         return p;
 }
 
@@ -209,25 +214,30 @@ int
 realm_verify_ip(REALM *realm, UINT4 ip)
 {
 	RADIUS_SERVER *serv;
-	
-	if (!realm->queue)
+	ITERATOR *itr;
+
+	if (!realm->queue
+	    || (itr = iterator_create(realm->queue->servers)) == NULL)
 		return 0;
-	for (serv = list_first(realm->queue->servers);
-	     serv;
-	     serv = list_next(realm->queue->servers))
-	     if (serv->addr == ip)
-		     return 1;
-	return 0;
+	for (serv = iterator_first(itr); serv; serv = iterator_next(itr))
+	     	if (serv->addr == ip)
+			break;
+	iterator_destroy(&itr);
+	return serv != NULL;
 }
 
 REALM *
 realm_lookup_ip(UINT4 ip)
 {
 	REALM *p;
+	ITERATOR *itr;
 
-        for (p = list_first(realms); p; p = list_next(realms))
+        if (!(itr = iterator_create(realms)))
+	    return NULL;
+        for (p = iterator_first(itr); p; p = iterator_next(itr))
 		if (realm_verify_ip(p, ip))
 			break;
+	iterator_destroy(&itr);
 	return p;
 }
 

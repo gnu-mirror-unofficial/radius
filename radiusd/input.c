@@ -25,7 +25,9 @@
 
 struct input_system {
 	LIST *methods;    /* List of METHOD structures */
+	ITERATOR *mitr;
 	LIST *channels;   /* List of CHANNEL structures */
+	ITERATOR *citr;
 };
 
 typedef struct input_method METHOD;
@@ -148,12 +150,16 @@ input_close_channels(INPUT *input)
 {
 	CHANNEL *p;
 
-	for (p = list_first(input->channels); p;
-	     p = list_next(input->channels)) {
+	if (!input->citr)
+		input->citr = iterator_create(input->channels);
+
+	for (p = iterator_first(input->citr); p;
+	     p = iterator_next(input->citr)) {
+		list_remove(input->channels, p, NULL);
 		channel_close(p);
 		efree(p);
-		list_remove_current(input->channels);
 	}
+	iterator_destroy(&input->citr);
 }
 
 void
@@ -162,8 +168,8 @@ input_close_channel_fd(INPUT *input, int fd)
 	CHANNEL *p = list_locate(input->channels, &fd, _channel_cmp_fd);
 	
 	if (p) {
+		list_remove(input->channels, p, NULL);
 		channel_close(p);
-		list_remove_current(input->channels);
 	}
 }
 
@@ -189,9 +195,9 @@ input_close_channel_data(INPUT *input, char *name, void *data)
 	clos.data = data;
 	p = list_locate(input->channels, &clos, _channel_cmp);
 	if (p) {
+		list_remove(input->channels, p, NULL);
 		channel_close(p);
 		efree(p);
-		list_remove_current(input->channels);
 	}
 }
 
@@ -201,14 +207,19 @@ input_select(INPUT *input, struct timeval *tv)
 	METHOD *m;
 	int status;
 
-	for (m = list_first(input->methods); m;
-	     m = list_next(input->methods)) {
+	if (!input->citr)
+		input->citr = iterator_create(input->channels);
+	if (!input->mitr)
+		input->mitr = iterator_create(input->methods);
+		
+	for (m = iterator_first(input->mitr); m;
+	     m = iterator_next(input->mitr)) {
 		CHANNEL *p;
 		fd_set readfds;
 
 		if (m->fd_max == -2) {
-			for (p = list_first(input->channels); p;
-			     p = list_next(input->channels)) {
+			for (p = iterator_first(input->citr); p;
+			     p = iterator_next(input->citr)) {
 				if (p->method == m && p->fd > m->fd_max)
 					m->fd_max = p->fd;
 			}
@@ -227,8 +238,8 @@ input_select(INPUT *input, struct timeval *tv)
 			if (errno == EINTR) 
 				return 0;
 		} else if (status > 0) {
-			for (p = list_first(input->channels); p;
-			     p = list_next(input->channels)) {
+			for (p = iterator_first(input->citr); p;
+			     p = iterator_next(input->citr)) {
 				if (FD_ISSET(p->fd, &readfds)) 
 					channel_handle(p);
 			}

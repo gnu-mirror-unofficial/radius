@@ -160,7 +160,7 @@ _request_iterator(void *item, void *clos)
 		             <= rp->curtime) {
 			debug(1, ("deleting completed %s request",
 				  request_class[req->type].name));
-			list_remove_current(request_list);
+			list_remove(request_list, req, NULL);
 			request_free(req);
 			return 0;
 		}
@@ -170,14 +170,14 @@ _request_iterator(void *item, void *clos)
 				  request_class[req->type].name,
 				  (u_long) req->child_id));
 			(*rp->handler)(req);
-			list_remove_current(request_list);
+			list_remove(request_list, req, NULL);
 			request_free(req);
 		} else if (req->timestamp + request_class[req->type].ttl
 			   <= rp->curtime) {
 			radlog(L_NOTICE,
 			       _("Proxy %s request expired in queue"),
 			       request_class[req->type].name);
-			list_remove_current(request_list);
+			list_remove(request_list, req, NULL);
 			request_free(req);
 		}
 	} else if (req->timestamp + request_class[req->type].ttl
@@ -314,15 +314,20 @@ void
 request_update(pid_t pid, int status, void *ptr)
 {
 	REQUEST *p;
-
+	ITERATOR *itr;
+	
 	debug(100,("enter"));
-	for (p = list_first(request_list); p; p = list_next(request_list))
+	itr = iterator_create(request_list);
+	if (!itr)
+		return;
+	for (p = iterator_first(itr); p; p = iterator_next(itr))
 		if (p->child_id == pid) {
 			p->status = status;
 			if (ptr && request_class[p->type].update)
 				request_class[p->type].update(p->data, ptr);
 			break;
 		}
+	iterator_destroy(&itr);
 	debug(100,("exit"));
 }
 			
@@ -348,16 +353,20 @@ request_init_queue()
 }
 
 void *
-request_scan_list(int type, list_iterator_t itr, void *closure)
+request_scan_list(int type, list_iterator_t fn, void *closure)
 {
 	REQUEST *p;
+	ITERATOR *itr;
 
-	for (p = list_first(request_list); p; p = list_next(request_list)) {
-                if (p->type == type
-		    && itr(p->data, closure) == 0)
-                        return p->data;
-        }
-        return NULL;
+	itr = iterator_create(request_list);
+	if (!itr)
+		return NULL;
+	for (p = iterator_first(itr); p; p = iterator_next(itr)) {
+                if (p->type == type && fn(p->data, closure) == 0)
+			break;
+	}
+	iterator_destroy(&itr);
+        return p ? p->data : NULL;
 }
 
 static int

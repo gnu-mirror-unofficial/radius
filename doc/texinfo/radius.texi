@@ -23,6 +23,7 @@
 
 @include version.texi
 @include config.texi
+@include rendition.texi
 @settitle GNU Radius Reference Manual
 
 @copying
@@ -128,6 +129,10 @@ Obtaining GNU Radius
 * Distrib::             How to Obtain the GNU Radius
 * Glossary::            The glossary
 * Acknowledgements::
+
+What Next?
+
+* GNU configuration::   New configuration 
 
 Appendices
 
@@ -269,7 +274,7 @@ provided and parameters of these services.
 @end table
 
 @comment *******************************************************************
-@node Acknowledgements, Copying This Manual, Glossary, Top
+@node Acknowledgements, GNU configuration, Glossary, Top
 @unnumbered Acknowledgements
 
 I would like to acknowledge Oswaldo Aguirre and Francisco
@@ -295,7 +300,11 @@ And of course, thanks to Richard M. Stallman for founding the FSF and
 starting the GNU project.
 
 @comment *******************************************************************
-@node Copying This Manual, Index, Acknowledgements, Top
+@node GNU configuration, Copying This Manual, Acknowledgements, Top
+@include gradient.texi
+
+@comment *******************************************************************
+@node Copying This Manual, Index, GNU configuration, Top
 @include fdl.texi
 
 @node Index, , Copying This Manual, Top

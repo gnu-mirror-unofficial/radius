@@ -1,3 +1,35 @@
+2001-10-17 Sergey Poznyakoff
+
+	* radlib/cryptpass.c: New function decrypt_password_broken()
+	for decrypting long passwords (>16), sent by some
+	brain-damaged termservers (MAX ascend in particular).
+	
+	* radlib/envar.c: (new) 'Environment variable' functions.
+	* radlib/Makefile.am: Added envar.c
+	* include/envar.h: (new) Envar protos.
+	* include/Makefile.am: Added envar.h
+	* include/checkrad.h: Use envar_t instead of RADCK_ARG
+	* radiusd/checkrad.c: Likewise.
+	* radiusd/files.c: Likewise.
+	* radlib/nas.c: Likewise.
+	New function nas_request_to_nas().
+
+	* radlib/util.c: Removed RADCK_ARG-related stuff.
+
+	* include/radius.h: Use envar_t instead of RADCK_ARG in
+	struct NAS. Added proto for nas_request_to_nas(),
+	decrypt_password_broken().
+	* include/radiusd.h: Proto for req_decrypt_password().
+	* radiusd/auth.c: New function req_decrypt_password().
+	Checks for 'broken_passwd' var in NAS environment variables
+	and if this variable is set, decrypt_password_broken() is
+	used for decrypting the password.
+	rad_check_password(): Use req_decrypt_password().
+	* radiusd/menu.c: Use req_decrypt_password().
+	* radiusd/radutil.c: Likewise.
+	* radiusd/proxy.c: Fixed protos of passwd_recode() and
+	rad_send_request(). Use req_decrypt_password().
+
 2001-10-16 Sergey Poznyakoff
 
 	* doc/texinfo/configure.texi: Cleaned up to to make tex happy.

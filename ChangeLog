@@ -1,4 +1,8 @@
-2003-11-14  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+2003-11-19  Sergey Poznyakoff
+
+	* autogen.sh: Modified. Thanks Gerald for the suggestion.
+
+2003-11-14  Sergey Poznyakoff
 
 	* configure.ac: Do not request -lz when testing for MySQL
 

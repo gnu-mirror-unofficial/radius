@@ -78,16 +78,16 @@ rad_check_ts(struct radutmp *ut)
 }
 
 int
-radius_mlc_collect_user(char *name, grad_avp_t *request,
+radius_mlc_collect_user(char *name, grad_request_t *request,
 			grad_list_t **sess_list)
 {
 	return radutmp_mlc_collect_user(name, request, sess_list);
 }
 
 int
-radius_mlc_collect_realm(grad_realm_t *realm, grad_list_t **sess_list)
+radius_mlc_collect_realm(grad_request_t *request, grad_list_t **sess_list)
 {
-	return radutmp_mlc_collect_realm(realm, sess_list);
+	return radutmp_mlc_collect_realm(request, sess_list);
 }
 
 void
@@ -114,7 +114,7 @@ utmp_free(void *item, void *data ARG_UNUSED)
       0 == OK,
       1 == user exceeds its simultaneous-use parameter */
 int
-radius_mlc_user(char *name, grad_avp_t *request,
+radius_mlc_user(char *name, grad_request_t *request,
 		size_t maxsimul, size_t *pcount)
 {
 	void *mlc;
@@ -132,7 +132,8 @@ radius_mlc_user(char *name, grad_avp_t *request,
         if (count >= maxsimul) {
 		grad_iterator_t *itr;
 		grad_uint32_t ipno = 0;
-		grad_avp_t *fra = grad_avl_find(request, DA_FRAMED_IP_ADDRESS);
+		grad_avp_t *fra = grad_avl_find(request->request,
+						DA_FRAMED_IP_ADDRESS);
 		if (fra)
 			ipno = htonl(fra->avp_lvalue);
 
@@ -167,18 +168,19 @@ radius_mlc_user(char *name, grad_avp_t *request,
 }
 
 int
-radius_mlc_realm(grad_realm_t *realm)
+radius_mlc_realm(grad_request_t *request)
 {
         size_t count;
         struct radutmp *up;
         radut_file_t file;
         size_t maxlogins;
 	grad_list_t *sess_list = NULL;
+	grad_realm_t *realm = request->realm;
 	
         if (!realm || (maxlogins = grad_realm_get_quota(realm)) == 0)
                 return 0;
 
-	if (radius_mlc_collect_realm(realm, &sess_list))
+	if (radius_mlc_collect_realm(request, &sess_list))
 		return 0;
 
 	count = grad_list_count(sess_list);

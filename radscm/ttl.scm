@@ -17,6 +17,43 @@
 ;;;;
 ;;;; $Id$
 
+;;;; This is a framework for computing the Session-Timeout attribute on
+;;;; the fly. The module queries a remote host about a timeout value for
+;;;; each user about to login and sets Session-Timeout pair in the user's
+;;;; authentication-reply packet. The transport used is UDP. The format
+;;;; of query packets is:
+;;;;
+;;;;  0                   1                   2                   3
+;;;;  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+;;;; +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+;;;; |     Length    |      Code     |  User-Name ...                |
+;;;; +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+;;;;
+;;;; Length contains the overall length of the packet.
+;;;; Code   contains the operation code:
+;;;;     ?  Query the remote party about a timeout value
+;;;;     +  Notify the remote party about session start for a given user.
+;;;;     -  Notify the remote party about session stop.
+;;;; User-Name contains a zero-terminated user name.
+;;;;
+;;;; The reply packet is:
+;;;;  0                   1                   2                   3
+;;;;  0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+;;;; +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+;;;; |     Length    |      Code     |  String...                    |
+;;;; +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+;;;;
+;;;; Code is ignored. String contains a timeout value for the user
+;;;; converted to ASCII. If it starts with '-', no timeout is set.
+;;;;
+;;;; usage:
+;;;;
+;;;; raddb/hints:
+;;;; DEFAULT    NULL  Scheme-Acct-Procedure = "ttl-session"
+;;;;
+;;;; raddb/users:
+;;;; BEGIN      NULL  Scheme-Procedure = "ttl-query", Fall-Through = Yes
+
 (define ttl-source-ip-address INADDR_ANY)
 (define ttl-source-port 0)
 (define ttl-dest-ip-address 0)

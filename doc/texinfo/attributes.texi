@@ -1363,7 +1363,7 @@ filters @{
 @noindent
 Then, upon successful authentication, the program
 @command{/usr/libexec/myfilter} will be invoked, if it wasn't already
-started for this thread. Any output it sends to its standard error
+started for this process. Any output it sends to its standard error
 will be redirected to the file @file{myfilter.log} in the current
 logging directory. A string consisting of the user login name and
 his calling station ID followed by a newline will be sent to the

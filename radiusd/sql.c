@@ -275,12 +275,9 @@ sql_cfg_comp(a, b)
 static void
 sql_conn_destroy(void *data)
 {
-        if (data) {
-                struct sql_connection *conn = data;
-                if (conn->connected)
-                        disp_sql_disconnect(sql_cfg.interface, conn);
-                free_entry(conn);
-        }
+	struct sql_connection *conn = data;
+	disp_sql_disconnect(sql_cfg.interface, conn);
+	free_entry(conn);
 }
 
 static void
@@ -294,17 +291,14 @@ void
 rad_sql_thread_cleanup(arg)
 	void *arg;
 {
-	struct sql_connection *conn;
 	struct obstack *stk = arg;
 	
 	obstack_free(stk, NULL);
 
-	conn = pthread_getspecific(sql_conn_key[SQL_AUTH]);
-	disp_sql_drop(sql_cfg.interface, conn);
-	free_entry(conn);
-	conn = pthread_getspecific(sql_conn_key[SQL_ACCT]);
-	disp_sql_drop(sql_cfg.interface, conn);
-	free_entry(conn);
+	disp_sql_drop(sql_cfg.interface, 
+		      pthread_getspecific(sql_conn_key[SQL_AUTH]));
+	disp_sql_drop(sql_cfg.interface,
+		      pthread_getspecific(sql_conn_key[SQL_ACCT]));
 }
 
 int 

@@ -54,10 +54,10 @@ group_query        SELECT user_group FROM groups WHERE user_name='%u'
 #                                                   WHERE user_name='%u')
 #                         THEN '*LOCKED_ACCOUNT*' END
 
-auth_success_query REPLACE authfail VALUES('%C{User-Name}',0,'%G')
+auth_success_query REPLACE authfail VALUES('%C{User-Name}',0,now())
 
 auth_failure_query UPDATE authfail \
-                   SET count=count+1,time='%G' \
+                   SET count=count+1,time=now() \
                    WHERE user_name='%C{User-Name}'
 
 # This query returns a list of a/v pairs to be added to user's check pairs.
@@ -85,7 +85,7 @@ acct_start_query     INSERT INTO calls \
                      VALUES(%C{Acct-Status-Type},\
                             '%u',\
                             '%C{Realm-Name}',\
-                            '%G',\
+                            now(),\
                             '%C{NAS-IP-Address}',\
                             %C{NAS-Port-Id},\
                             '%C{Acct-Session-Id}',\

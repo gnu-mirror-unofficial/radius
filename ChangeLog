@@ -1,3 +1,12 @@
+2002-05-12  Sergey Poznyakoff 
+
+	* po/no.po: New translations.
+	* radiusd/auth.c: Likewise.
+	* radiusd/scheme.c (boot_body): Changed some spurious info's to
+	  debug's.
+	* scripts/dot.emacs: (new) 
+	* scripts/Makefile.am: Added dot.emacs
+
 2002-05-06  Sergey Poznyakof
 
 	* radiusd/radutil.c: Expand \n to \r\n. 

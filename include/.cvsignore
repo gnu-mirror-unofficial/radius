@@ -2,3 +2,4 @@ Makefile
 Makefile.in
 radmibs.h
 raddict.h
+debugmod.h

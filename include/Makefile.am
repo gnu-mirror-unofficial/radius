@@ -28,6 +28,7 @@ SUBDIRS=snmp
 
 EXTRA_DIST = \
 argcv.h \
+debugmod.h \
 checkrad.h \
 display.h \
 getopt1.h \

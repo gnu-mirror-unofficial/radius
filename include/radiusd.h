@@ -445,6 +445,7 @@ int scheme_auth(char *procname, radiusd_request_t *req,
                 grad_avp_t *user_check, grad_avp_t **user_reply_ptr);
 int scheme_acct(char *procname, radiusd_request_t *req);
 int scheme_eval_boolean_expr(char *expr);
+void scheme_eval_unspecified_expr(char *expr);
 void scheme_read_eval_loop();
 void scheme_redirect_output();
 void start_guile();

@@ -355,7 +355,7 @@ radwtmp()
         /*time(&buf[0].ut_time);*/
         
         while (!stop && --bl >= 0) {
-                if (lseek(wfd, (off_t)(bl * sizeof(buf)), L_SET) == -1 ||
+                if (lseek(wfd, (off_t)(bl * sizeof(buf)), SEEK_SET) == -1 ||
                     (bytes = read(wfd, buf, sizeof(buf))) == -1)
                         grad_log(L_ERR, "%s", file);
                 for (bp = &buf[bytes / sizeof(buf[0]) - 1]; !stop && bp >= buf;

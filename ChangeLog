@@ -1,3 +1,22 @@
+2003-11-14  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac: Do not request -lz when testing for MySQL
+
+	* radiusd/acct.c (acct_init): New function.
+	* include/radiusd.h: Likewise.
+	* radiusd/radiusd.c (common_init): Call acct_init().
+
+	* radiusd/auth.c: Changed wording of the AUTH_NOUSER
+	diagnostics, now it reads "No such user".
+	
+	* lib/dict.c (parse_dict): Honor absolute filenames. Change
+	proposed by Maurice.
+	* lib/sysdep.c (set_nonblocking): Fix typo
+	* radiusd/log.c (register_channel): Minor change in diagnostic
+	message.
+	
+	* m4/lib.m4: Use AC_TRY_LINK_FUNC
+
 2003-11-08  Sergey Poznyakoff
 
 	* README: Updated

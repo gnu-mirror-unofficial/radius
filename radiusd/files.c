@@ -879,11 +879,14 @@ read_clients_entry(void *u ARG_UNUSED, int fc, char **fv, LOCUS *loc)
 
         cp = emalloc(sizeof(CLIENT));
 
-        cp->ipaddr = ip_gethostaddr(fv[0]);
+	if (strcmp(fv[0], "DEFAULT") == 0) 
+		cp->netdef.ipaddr = cp->netdef.netmask = 0;
+	else
+		ip_getnetaddr(fv[0], &cp->netdef);
         cp->secret = estrdup(fv[1]);
         if (fc == 3)
                 STRING_COPY(cp->shortname, fv[2]);
-        ip_gethostname(cp->ipaddr, cp->longname, sizeof(cp->longname));
+        ip_gethostname(cp->netdef.ipaddr, cp->longname, sizeof(cp->longname));
         list_append(clients, cp);
         return 0;
 }
@@ -921,7 +924,7 @@ client_lookup_ip(UINT4 ipaddr)
         if (!itr)
                 return NULL;
         for (cl = iterator_first(itr); cl; cl = iterator_next(itr))
-                if (ipaddr == cl->ipaddr)
+		if (ip_addr_in_net_p(&cl->netdef, ipaddr))
                         break;
         iterator_destroy(&itr);
         return cl;

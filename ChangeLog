@@ -1,3 +1,9 @@
+2004-06-18  Sergey Poznyakoff 
+
+	* lib/ascend.c (_ascend_parse_ip): Bugfix: port specification after
+	protocol type is optional. Thanks Erik Olson
+	<erik@evodialer.com> for noticing.
+
 2004-06-16  Sergey Poznyakoff
 
 	* db/db.m4: Minor fix. Added authfail table

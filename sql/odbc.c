@@ -45,15 +45,6 @@ typedef struct {
         SQLHDBC         dbc;
 } ODBCconn;
 
-static int rad_odbc_reconnect(int type, struct sql_connection *conn);
-static void rad_odbc_disconnect(struct sql_connection *conn, int drop);
-static int rad_odbc_query(struct sql_connection *conn, char *query, int *return_count);
-static char *rad_odbc_getpwd(struct sql_connection *conn, char *query);
-static void *rad_odbc_exec(struct sql_connection *conn, char *query);
-static char *rad_odbc_column(void *data, int ncol);
-static int rad_odbc_next_tuple(struct sql_connection *conn, void *data);
-static void rad_odbc_free(struct sql_connection *conn, void *data);
-
 static void
 rad_odbc_diag(SQLSMALLINT handle_type, SQLHANDLE handle, char *what)
 {

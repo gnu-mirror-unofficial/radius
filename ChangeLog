@@ -1,3 +1,7 @@
+2001-06-20  Sergey Poznyakoff <gray@farlep.net>
+	* radscm/session.scm: added NAS-IP-Address to the packet
+	  sent by rad-acct.
+
 2001-06-07  Sergey Poznyakoff <gray@farlep.net>
 	* radiusd/rewrite.y: fixed potential heap overflow in pushn().
           Fix in interpret (coredumped when missed '(').

@@ -486,8 +486,11 @@ parse_dict(char *name)
         char *path;
         int   rc;
         int   errcnt = 0;
-        
-        path = mkfilename(radius_dir, name);
+
+	if (name[0] == '/')
+		path = estrdup(name);
+	else
+		path = mkfilename(radius_dir, name);
         rc = read_raddb_file(path, 1, parse_dict_entry, &errcnt);
         if (errcnt)
                 radlog(L_NOTICE,

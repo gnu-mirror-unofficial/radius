@@ -79,6 +79,10 @@ simuse  Auth-Type = Accept,
 execwait Auth-Type = Accept
 	Exec-Program-Wait = "@BUILDDIR@/test/raddb/auth.bin %C{NAS-Port-Id} %C{User-Name}"
 
+execwait1 Auth-Type = Accept
+	  Service-Type = Framed-User,
+		Exec-Program-Wait = "@BUILDDIR@/test/raddb/ascend.bin"
+		
 # Match.exp: Check for working Match-Profile attributes		
 REQ0    NAS-Identifier = "en"
 	Framed-IP-Address = 127.10.10.1

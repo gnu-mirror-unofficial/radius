@@ -544,7 +544,7 @@ category_name   : category
 		  }
                 | category '.' severity
                   {
-			  in_category = $1;
+			  in_category = $1|$3;
 			  $$.cat = $1;
 			  $$.pri = $3;
 		  }
@@ -639,34 +639,28 @@ category_def    : T_CHANNEL { expect_string = 1; } T_STRING EOL
                 | T_LOGLEVEL T_BOOL EOL
                   {
 			  if ($2)
-					  $$.level |= $1;
-				  else
+				  $$.level |= $1;
+			  else
 				  $$.level &= ~$1;
 		  }
 		| begin_level level_list EOL
                   {
 			  expect_string = 0;
-			  if (in_category == L_AUTH) 
+			  if (L_CAT(in_category) == L_AUTH) 
 				  $$.level |= $2;
 		  }			  
                 ;
 
 begin_level     : T_LEVEL
                   {
-			  switch (in_category) {
-			  case L_MASK(L_DEBUG):
+			  if (in_category & L_MASK(L_DEBUG)) {
 				  expect_string = 1;
 				  clear_debug();
-				  break;
-			  case L_AUTH:
+			  } else if (L_CAT(in_category) == L_AUTH) {
 				  expect_string = 1;
 				  radlog(L_WARN,
 			      _("%s:%d: auth:level statement is obsolete"),
 					 filename, line_num);
-				  break;
-			  default:
-				  yyerror("level not applicable");
-				  YYERROR;
 			  }
 		  }
                 ;
@@ -707,7 +701,7 @@ level           : T_STRING
 		  }
                 | T_STRING '=' T_NUMBER
                   {
-			  if (in_category != L_DEBUG) {
+			  if (!(in_category & L_MASK(L_DEBUG))) {
 				  yyerror("level syntax");
 				  YYERROR;
 			  }

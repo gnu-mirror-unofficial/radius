@@ -16,7 +16,7 @@ BEGIN {
 	if (!SRCDIR)
 		SRCDIR="."
 	if (!DSTDIR) {
-		if (match(SRCDIR,"/s\..*")) {
+		if (match(SRCDIR,"/s\\..*")) {
 			DSTDIR=substr(SRCDIR, 1, RSTART) substr(SRCDIR,RSTART+3)
 		}
 	}

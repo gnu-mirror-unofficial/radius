@@ -59,7 +59,9 @@ extern long  timeout;
 extern int nretries;
 extern u_char messg_id;
 extern int reply_code;
+extern VALUE_PAIR *reply_list;
 extern int verbose;
+extern int abort_on_failure;
 
 int open_input(char *name);
 void close_input();

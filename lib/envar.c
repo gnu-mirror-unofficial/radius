@@ -83,7 +83,7 @@ grad_envar_parse_argcv_internal(int argc, char **argv, grad_list_t **plist)
                         continue;
                 p = strchr(argv[i], '=');
                 if (p) 
-			grad_envar_assign_internal(p, p - argv[i],
+			grad_envar_assign_internal(argv[i], p - argv[i],
 						   p + 1, strlen(p + 1),
 						   plist);
 		else

@@ -619,5 +619,11 @@ int grad_set_nonblocking(int fd);
 int grad_max_fd();
 grad_uint32_t grad_first_ip();
 
+/* Loadable Modules Suppert */
+#define __s_cat3__(a,b,c) a ## b ## c
+#define RDL_EXPORT(module,name) __s_cat3__(module,_LTX_,name)
+
+typedef int (*rdl_init_t) (void);
+typedef void (*rdl_done_t) (void);
 
 #endif /* !_gnu_radius_radius_h */

@@ -623,6 +623,12 @@ int rad_cfg_forward_acct(int argc, cfg_value_t *argv,
 void forward_init();
 void forward_request(int type, grad_request_t *req);
 
+/* dynload.c */
+extern struct cfg_stmt dynload_stmt[];
+int dynload_stmt_term(int finish, void *block_data, void *handler_data);
+void *radiusd_load_ext(const char *name, const char *ident, void **symbol);
+void dynload_init();
+
 /* Logging */
 
 /* log output modes */

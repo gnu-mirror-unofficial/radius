@@ -1,3 +1,4 @@
+-100 : Document username-chars statement.
 -100 : Document new logging system.
 -100 : Clean up the semantics of log_init/log_done.
 -100 : Add documentation for multiple interfaces/ports (listen statement, etc.)

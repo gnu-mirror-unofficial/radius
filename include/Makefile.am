@@ -50,7 +50,6 @@ radscm.h \
 radsnmp.h \
 radsql.h \
 radutmp.h \
-radwho.h \
 rewrite.h \
 slist.h \
 symtab.h \

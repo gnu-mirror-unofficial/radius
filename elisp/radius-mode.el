@@ -1,4 +1,4 @@
-;;; radius-mode.el -- - major mode for editing GNU radius configuration files
+;;; radius-mode.el --- major mode for editing GNU radius configuration files
 
 ;; Authors: 2000 Sergey Poznyakoff
 ;; Version:  1.0
@@ -43,7 +43,7 @@
 ;;   radius-initial-pair-indent -- Amount of indentation for the first A/V
 ;;                                 pair in the list.
 ;;   radius-cont-pair-indent    -- Additional amount of indentation for the
-;;                                 subsequent A/V pairs in the list
+;;                                 subsequent A/V pairs in the list.
 
 (defvar rad-mode-syntax-table nil
   "Syntax table used in radius-mode buffers.")

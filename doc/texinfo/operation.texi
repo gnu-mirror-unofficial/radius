@@ -388,7 +388,7 @@ The value of this attribute is expanded (@pxref{Macro substitution}),
 and replaces the value of @code{User-Name} attribute from the request.
 @end table
 
-@xref{hints file}.
+@ref{hints file}
 
 @comment **L3***************************************************************
 @node Huntgroups, Users, Hints, Request processing
@@ -401,8 +401,17 @@ from. The rules are stored as a list of @dfn{User profiles}
 (@pxref{User Profile}). Upon receiving a request, @code{radiusd}
 scans this list sequentially until it finds an entry, such that
 the conditions set forth in its check list are matched by the
-request. If such an entry is found, @code{radiusd} verifies 
+request. If such an entry is found, @code{radiusd} verifies that
+the request meet the conditions described by reply pairs. If it
+does not, the request is rejected. In short, a huntgroup requires
+that any request matching its check pairs must match also its
+reply pairs. The @dfn{User Name} part of an entry is not used in
+comparisons, instead it is used to label huntgroups. All entries
+with same names form a single huntgroup. The special attribute
+@code{Huntgroup-Name} can be used to request a match against a
+particular huntgroup (@pxref{Huntgroup-Name}). 
 
+@ref{huntgroups file}
 
 @comment **L3***************************************************************
 @node Users, , Huntgroups, Request processing

@@ -1432,6 +1432,39 @@ refer to @ref{Plural forms,,Additional functions for plural forms,gettext,GNU @c
 Similar to @code{ngettext}, but searches translation in the given @var{domain}.
 @end deftypefn
 
+@subheading Request Accessors
+
+The following functions are used to read some internal fields of a
+@RADIUS{} request.
+
+@deftypefn Function Integer request_source_ip ()
+Returns source @IP{} of the currently processed request. This function
+can be used to add @attr{NAS-IP-Address} attribute to the requests
+lacking one, e.g.:
+
+@smallexample
+integer
+restore_nas_ip()
+@{
+        if (!*%[NAS-IP-Address])
+                %[NAS-IP-Address] = request_source_ip();
+        return 0;
+@}
+@end smallexample
+@end deftypefn
+
+@deftypefn Function Integer request_source_port ()
+Returns the source @sc{udp} port.
+@end deftypefn
+
+@deftypefn Function Integer request_id ()
+Returns the request identifier.
+@end deftypefn
+
+@deftypefn Function Integer request_code ()
+Returns the request code.
+@end deftypefn
+
 @comment *L1****************************************************************
 @node Guile
 @section Guile

@@ -39,37 +39,6 @@ case $target in
         *)              ST="BSD";;
 esac
 
-## * Provide top and bottom parts of config.h.
-AH_TOP([
-#ifndef _REENTRANT
-# define _REENTRANT
-#endif
-])
-
-AH_BOTTOM([
-/* Internationalization support */
-#if defined(ENABLE_NLS) && !defined(lint)
-# include <libintl.h>
-# define _(s) gettext(s)
-#else
-# define _(s) s
-#endif
-#define N_(s) s
-
-/*FIXME*/
-#if defined(sun) && !defined(__EXTENSIONS__)
-# define __EXTENSIONS__
-#endif
-
-#ifdef MAINTAINER_MODE
-# define LEAK_DETECTOR 1
-#endif
-
-#ifdef RADIUS_DEBUG
-# include <debugmod.h>
-#endif
-])
-
 ## * Checks for programs.
 AC_PROG_CC
 AM_PROG_CC_STDC
@@ -187,6 +156,8 @@ if test $HAVE_PTHREAD != yes; then
 	AC_MSG_ERROR("POSIX threads library not found. Please install one and then reconfigure")
 fi
 
+AC_CHECK_FUNCS(pthread_atfork)
+
 ## * Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
@@ -194,7 +165,49 @@ AC_CHECK_HEADERS(fcntl.h malloc.h strings.h\
  sys/file.h sys/time.h sys/types.h unistd.h\
  ctype.h sys/socket.h netinet/in.h arpa/inet.h\
  netdb.h stdarg.h varargs.h termcap.h termios.h termio.h sgtty.h\
- crypt.h sys/uio.h sys/select.h sys/resources.h getopt.h)
+ crypt.h sys/uio.h sys/select.h sys/resources.h getopt.h libintl.h)
+
+## * Check for national language support
+AM_GNU_GETTEXT(use-libtool)
+if test ".$BUILD_INCLUDED_LIBINTL" = ".yes" ; then
+	INCLUDEPATH="$INCLUDEPATH -I\$(top_srcdir)/intl"
+fi
+
+## * Provide top and bottom parts of config.h.
+AH_TOP([
+#ifndef _REENTRANT
+# define _REENTRANT
+#endif
+])
+
+AH_BOTTOM([
+/* Internationalization support */
+#if defined(ENABLE_NLS) && !defined(lint)
+# ifdef HAVE_LIBINTL_H
+#  include <libintl.h>
+# else
+#  include <libgnuintl.h>
+# endif
+# define _(s) gettext(s)
+#else
+# define _(s) s
+# define dgettext(domain,msgid) msgid
+#endif
+#define N_(s) s
+
+/*FIXME*/
+#if defined(sun) && !defined(__EXTENSIONS__)
+# define __EXTENSIONS__
+#endif
+
+#ifdef MAINTAINER_MODE
+# define LEAK_DETECTOR 1
+#endif
+
+#ifdef RADIUS_DEBUG
+# include <debugmod.h>
+#endif
+])
 
 ## * Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -655,12 +668,6 @@ if test "$EMACS" != "no"; then
 	lisp_LISP='$(LISPSRC)'
 fi
 AC_SUBST(lisp_LISP)
-
-## * Check for national language support
-AM_GNU_GETTEXT(use-libtool)
-if test ".$USE_NLS" = ".yes"; then
-	AC_DEFINE(HAVE_LIBINTL_H,1,[Define if your system has libintl])
-fi
 
 AC_OUTPUT(Makefile m4/Makefile  intl/Makefile po/Makefile.in 
           include/Makefile include/snmp/Makefile

@@ -213,6 +213,7 @@ extern char      	*radacct_dir;
 extern char             *radutmp_path;
 extern char             *radwtmp_path;
 extern char             *radstat_path;
+extern char             *radpid_dir;
 extern char             *bug_report_address;
 
 

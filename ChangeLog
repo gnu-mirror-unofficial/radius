@@ -1,3 +1,16 @@
+2002-06-26  Sergey Poznyakoff
+
+	* radiusd/scheme.c: An attempt to work around the bottleneck
+	  problem (see comment at the top of the file).
+*	* radiusd/config.y (guile_def): new configuration statement
+	  `task-timeout' 
+	* radiusd/config.kw: Likewise.
+	* include/radiusd.h (scheme_task_timeout): extern declaration.
+	* raddb/config.syntax: Example of task-timeout statement.
+	
+	* po/es.po: Updated.
+	* po/no.po: Updated.
+	
 2002-06-25  Sergey Poznyakoff 
 
 	* radiusd/radiusd.c: Set SIGCHLD to SIG_DFL (needed by exec.c)

@@ -305,8 +305,6 @@ Add the category name to the logging information.
 @item print-priority
 @itemx print-level
 Add the priority name to the logging information.
-@item print-tid
-Print the @sc{id} of the current thread.
 @item print-milliseconds
 Print timestamp with milliseconds.
 @end table
@@ -917,13 +915,6 @@ Absolute path to the filter program.
 Redirect error output from the filter program to @var{filename}. If the
 @var{filename} does not start with a slash, it is taken relative to
 the current logging directory (@pxref{option,log-dir}).
-
-@item common @var{bool} [@var{max-wait}]
-By default each program thread runs its own copy of filter. If
-@code{common yes} is set, this behaviour is inverted, i.e. a single
-instance of the filter server all program threads. In this case
-the optional parameter @var{max-wait} defines maximum number of
-requests waiting to acquire the filter attention. 
 
 @item auth
 @itemx acct

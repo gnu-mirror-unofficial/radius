@@ -177,22 +177,7 @@ add_user_entry(symtab, filename, line, name, check, reply)
 		return 0;
 	}
 
-	
-	/* See if there are already any entries of this type. If so,
-	 * add after the last of them.
-	 */
-	prev = sym_lookup(symtab, name);
-	if (prev) {
-		p = prev;
-		while ((p = p->next) != NULL && strcmp(p->name, name) == 0) 
-			prev = p;
-			
-		sym = (User_symbol*)alloc_sym(name, symtab->elsize);
-		sym->next = prev->next;
-		prev->next = sym;
-	} else {
-		sym = sym_install(symtab, name);
-	}
+	sym = sym_install(symtab, name);
 	
 	sym->check = check;
 	sym->reply = reply;
@@ -736,6 +721,7 @@ hints_setup(req)
 	char		*name;
 	VALUE_PAIR      *name_pair;
 	VALUE_PAIR      *orig_name_pair;
+	VALUE_PAIR      *tmp;
 	PAIR_LIST	*i;
 	int		matched = 0;
 
@@ -773,7 +759,7 @@ hints_setup(req)
 
 	for (i = hints; i; i = i->next) {
 		int do_strip;
-		VALUE_PAIR *add, *tmp;
+		VALUE_PAIR *add;
 		
 		name = name_pair->strvalue;
 
@@ -832,8 +818,9 @@ hints_setup(req)
 		avl_delete(&add, DA_STRIP_USER_NAME);
 		avl_delete(&add, DA_REPLACE_USER_NAME);
 		avl_delete(&add, DA_REWRITE_FUNCTION);
-		avl_add_list(&request_pairs, add);
-
+		avl_merge(&request_pairs, &add);
+		avl_free(add);
+		
                 /* Ok, let's see if we need to further check the
 		   hint's rules */
 		if (((tmp = avl_find(i->reply, DA_FALL_THROUGH)) != NULL

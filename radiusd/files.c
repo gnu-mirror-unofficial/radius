@@ -458,7 +458,7 @@ nextkn(char **sptr, char *token, int toksize)
         start = token;
         if (**sptr == '"') {
                 (*sptr)++;
-                while (toksize && **sptr && **sptr != '"') {
+                while (toksize && **sptr) {
                         if (**sptr == '\\' && (*sptr)[1]) {
                                 switch (*++*sptr) {
                                 default:
@@ -487,6 +487,9 @@ nextkn(char **sptr, char *token, int toksize)
                                 }
                                 ++*sptr;
                                 toksize--;
+			} else if (**sptr == '"') {
+				++*sptr;
+				break;
                         } else 
                                 *token++ = *(*sptr)++;
                 }

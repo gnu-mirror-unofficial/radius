@@ -513,20 +513,21 @@ local_who()
 void
 radius_who()
 {
-	FILE          *fp;
-	struct radutmp rt;
+	radut_file_t file;
+	struct radutmp *up;
 	print_header();
 
 	/*
 	 *	Show the users logged in on the terminal server(s).
 	 */
-	if ((fp = fopen(filename, "r")) == NULL)
+	if ((file = rut_setent(filename, 0)) == NULL)
 		return ;
 
-	while(fread(&rt, sizeof(rt), 1, fp) == 1) {
-		if (want_rad_record(&rt)) 
-			format_radutmp_entry(radwho_fmt, &rt);
+	while (up = rut_getent(file)) {
+		if (want_rad_record(up)) 
+			format_radutmp_entry(radwho_fmt, up);
 	}
+	rut_endent(file);
 }
 
 void

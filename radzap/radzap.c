@@ -32,10 +32,7 @@ static char rcsid[] =
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <errno.h>
-#include <stdarg.h>
 #include <netinet/in.h>
 #if defined(HAVE_GETOPT_LONG)
 # include <getopt.h>
@@ -49,9 +46,7 @@ NAS *naslist;
 
 static int write_wtmp(struct radutmp *ut);
 int radzap(UINT4 nasaddr, int port, char *user, time_t t);
-int radzap_wtmp(UINT4 nasaddr, int port, char *user, time_t t);
 static int confirm(struct radutmp *ut);
-int find_logout(int fd, struct radutmp *utp);
 UINT4 findnas(char *nasname);
 
 int confirm_flag;
@@ -92,7 +87,6 @@ main(argc, argv)
 	time_t	t;
 	char    *path;
 	char *s;	
-	int force_wtmp = 0;
 
 	app_setup();
 	initlog(argv[0]);
@@ -127,9 +121,6 @@ main(argc, argv)
 		case 'L':
 			license();
 			return 0;
-		case 'w':
-			force_wtmp ++;
-			break;
 		default :
 			usage();
 			return 0;
@@ -168,8 +159,6 @@ main(argc, argv)
 		
 	t = time(NULL);
 	radzap(ip, nas_port, user, t);
-	if (force_wtmp)
-		radzap_wtmp(ip, nas_port, user, t);
 	return 0;
 }
 
@@ -183,8 +172,8 @@ radzap(nasaddr, port, user, t)
 	char *user;
 	time_t t;
 {
-	struct radutmp	u;
-	int		fd;
+	struct radutmp	*up;
+	radut_file_t    file;
 	UINT4		netaddr;
 
 	if (t == 0) 
@@ -192,134 +181,32 @@ radzap(nasaddr, port, user, t)
 
 	netaddr = htonl(nasaddr);
 
-	if ((fd = open(radutmp_path, O_RDWR|O_CREAT, 0644)) < 0) {
+	if ((file = rut_setent(radutmp_path, 0)) == NULL) {
 		radlog(L_ERR|L_PERROR, "can't open %s", radutmp_path);
 		exit(1);
 	}	
 	/*
 	 *	Find the entry for this NAS / portno combination.
 	 */
-	while (read(fd, &u, sizeof(u)) == sizeof(u)) {
-		if ((nasaddr != 0 && netaddr != u.nas_address) ||
-		      (port >= 0   && port    != u.nas_port) ||
-		      (user != NULL && strcmp(u.login, user))!= 0 ||
-		       u.type != P_LOGIN) {
+	while (up = rut_getent(file)) {
+		if ((nasaddr != 0 && netaddr != up->nas_address) ||
+		      (port >= 0   && port    != up->nas_port) ||
+		      (user != NULL && strcmp(up->login, user))!= 0 ||
+		       up->type != P_LOGIN) {
 			continue;
 		}
-		if (!confirm(&u))
+		if (!confirm(up))
 			continue;
-		/*
-		 *	Match. Zap it.
-		 */
-		if (lseek(fd, -(int)sizeof(u), SEEK_CUR) < 0) {
-			fprintf(stderr,
-				_("radzap: can't lseek -%d bytes\n"),
-				sizeof(u));
-			exit(1);
-		}
-		rad_lock(fd, LOCK_LEN, 0, SEEK_CUR);
-		u.type = P_IDLE;
-		u.time = t;
-		write(fd, &u, sizeof(u));
-		rad_unlock(fd, LOCK_LEN, -(off_t)sizeof(u), SEEK_CUR);
 
-
-		u.type = P_IDLE;
-		/*
-		 *	Add a logout entry to the wtmp file.
-		 */
-		write_wtmp(&u);
+		up->type = P_IDLE;
+		up->time = t;
+		rut_putent(file, up);
+		write_wtmp(up);
 	}
-	close(fd);
+	rut_endent(file);
 
 	return 0;
 }
-
-/* find a logout record for given radutmp entry
- * When called, the file pointer should point right past the utp.  
- * On exit returns 1 if a logout record was found.
- * If logout is not found, returns 0 and leaves file pointer at end-of-file
- */
-int
-find_logout(fd, utp)
-	int fd;
-	struct radutmp *utp;
-{
-	struct radutmp	u;
-	int count = 0;
-
-	while (read(fd, &u, sizeof(u)) == sizeof(u)) {
-		if (utp->nas_address == u.nas_address &&
-		    utp->nas_port == u.nas_port &&
-		    strncmp(utp->login, u.login, sizeof(u.login)) == 0) {
-			if (u.type == P_LOGIN) 
-				count++;
-		    	else if (u.type == P_IDLE && count-- <= 0) 
-				return 1;
-		}
-	}
-	return 0;
-}
-
-/*
- *	Zap a user, or all users on a NAS, from the radwtmp file.
- */
-int
-radzap_wtmp(nasaddr, port, user, t)
-	UINT4 nasaddr;
-	int port;
-	char *user;
-	time_t t;
-{
-	struct radutmp	u;
-	int		fd;
-	UINT4		netaddr;
-	long            here;
-	
-	if (t == 0) 
-		time(&t);
-
-	netaddr = htonl(nasaddr);
-
-	if ((fd = open(radwtmp_path, O_RDWR|O_CREAT, 0644)) >= 0) {
-	 	/*
-		 *	Find the entry for this NAS / portno combination.
-		 */
-		while (read(fd, &u, sizeof(u)) == sizeof(u)) {
-
-			if ((nasaddr != 0 && netaddr != u.nas_address) ||
-			      (port >= 0   && port    != u.nas_port) ||
-		   	      (user != NULL && strcmp(u.login, user))!= 0 ||
-			       u.type != P_LOGIN) {
-				continue;
-			}
-
-			here = lseek(fd, 0, SEEK_CUR);
-			
-			if (!find_logout(fd, &u) && confirm(&u)) {
-				/*  Match. Zap it.
-				 * Note that find_logout leaves fd at eof.   
-				 */
-
-				rad_lock(fd, LOCK_LEN, 0, SEEK_CUR);
-				u.type = P_IDLE;
-				u.time = t;
-				write(fd, &u, sizeof(u));
-				rad_unlock(fd, LOCK_LEN, -(off_t)sizeof(u), SEEK_CUR);
-			}
-			if (lseek(fd, here, SEEK_SET) < 0) {
-				fprintf(stderr,
-					_("radzap: can't return to position %ld\n"),
-					here);
-				exit(1);
-			}
-				
-		}
-		close(fd);
-	}
-	return 0;
-}
-
 
 /*
  *	Read the nas file.
@@ -418,16 +305,15 @@ int
 write_wtmp(ut)
 	struct radutmp *ut;
 {
-	FILE *fp;
+	radut_file_t file;
 		
-	fp = fopen(radwtmp_path, "a");
-	if (fp == NULL)
-		return -1;
-	fwrite(ut, sizeof(*ut), 1, fp);
-	fclose(fp);
+	file = rut_setent(radwtmp_path, 1);
+	if (file == NULL) 
+		return 1;
+	rut_putent(file, ut);
+	rut_endent(file);
 	return 0;
 }
-
 
 /*
  *	Find a nas in the NAS list.

@@ -473,7 +473,8 @@ grad_client_create_queue(int read_cfg, grad_uint32_t source_ip, size_t bufsize)
 
         if (read_cfg) {
                 filename = grad_mkfilename(radius_dir, "client.conf");
-                grad_read_raddb_file(filename, 1, parse_client_config, client);
+                grad_read_raddb_file(filename, 1, NULL,
+                                     parse_client_config, client);
                 grad_free(filename);
         }
         return client;

@@ -46,6 +46,7 @@ _nas_mem_free(void *item, void *data ARG_UNUSED)
 static int
 read_naslist_entry(void *unused ARG_UNUSED, int fc, char **fv, grad_locus_t *loc)
 {
+	int i;
         grad_nas_t nas, *nasp;
 
         if (fc < 2) {
@@ -70,9 +71,20 @@ read_naslist_entry(void *unused ARG_UNUSED, int fc, char **fv, grad_locus_t *loc
 		if (nas.longname[0])
 			GRAD_STRING_COPY(nas.longname, fv[0]);
         }
-        if (fc >= 4)
-                nas.args = grad_envar_parse_argcv(fc-3, &fv[3]);
-        
+
+	nas.args = NULL;
+	for (i = 3; i < fc; i++) {
+		if (fv[i][0] == ',')
+			continue;
+		
+		if (fc - i > 2 && fv[i+1][0] == '=') {
+			grad_envar_assign(fv[i], fv[i+2], &nas.args);
+			i += 2;
+		} else {
+			grad_envar_assign(fv[i], NULL, &nas.args);
+		}
+	}
+	
         nasp = grad_emalloc(sizeof(grad_nas_t));
 	
         memcpy(nasp, &nas, sizeof(nas));
@@ -89,7 +101,7 @@ int
 grad_nas_read_file(char *file)
 {
 	grad_list_destroy(&naslist, _nas_mem_free, NULL);
-        return grad_read_raddb_file(file, 1, read_naslist_entry, NULL);
+        return grad_read_raddb_file(file, 1, ",=", read_naslist_entry, NULL);
 }
 
 /*

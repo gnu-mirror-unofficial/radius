@@ -678,7 +678,7 @@ parse_dict(char *name)
 		path = grad_estrdup(name);
 	else
 		path = grad_mkfilename(radius_dir, name);
-        rc = grad_read_raddb_file(path, 1, parse_dict_entry, &errcnt);
+        rc = grad_read_raddb_file(path, 1, NULL, parse_dict_entry, &errcnt);
         if (errcnt)
                 grad_log(L_NOTICE,
 		         ngettext("%s: %d error", "%s: %d errors",

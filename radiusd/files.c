@@ -911,7 +911,7 @@ read_clients_file(char *file)
 {
         grad_list_destroy(&clients, client_free, NULL);
         clients = grad_list_create();
-        return grad_read_raddb_file(file, 1, read_clients_entry, NULL);
+        return grad_read_raddb_file(file, 1, NULL, read_clients_entry, NULL);
 }
 
 
@@ -976,7 +976,8 @@ read_nastypes_entry(void *u ARG_UNUSED, int fc, char **fv, grad_locus_t *loc)
 {
         RADCK_TYPE *mp;
         int method;
-
+	int i;
+	
         if (fc < 2) {
                 grad_log_loc(L_ERR, loc, "%s", _("too few fields"));
                 return -1;
@@ -988,6 +989,8 @@ read_nastypes_entry(void *u ARG_UNUSED, int fc, char **fv, grad_locus_t *loc)
                 method = METHOD_SNMP;
         else if (strcmp(fv[1], "ext") == 0)
                 method = METHOD_EXT;
+	else if (strcmp(fv[1], "guile") == 0)
+		method = METHOD_GUILE;
         else {
                 grad_log_loc(L_ERR, loc, "%s", _("unknown method"));
                 return -1;
@@ -996,10 +999,19 @@ read_nastypes_entry(void *u ARG_UNUSED, int fc, char **fv, grad_locus_t *loc)
         mp = grad_emalloc(sizeof(*mp));
         mp->type = grad_estrdup(fv[0]);
         mp->method = method;
-        if (fc > 2)
-                mp->args = grad_envar_parse_argcv(fc-2, &fv[2]);
-	else
-                mp->args = NULL;
+	mp->args = NULL;
+
+	for (i = 2; i < fc; i++) {
+		if (fv[i][0] == ',')
+			continue;
+		
+		if (fc - i > 2 && fv[i+1][0] == '=') {
+			grad_envar_assign(fv[i], fv[i+2], &mp->args);
+			i += 2;
+		} else {
+			grad_envar_assign(fv[i], NULL, &mp->args);
+		}
+	}
 	grad_list_append(radck_type, mp);
         return 0;
 }
@@ -1020,7 +1032,7 @@ read_nastypes_file(char *file)
 {
 	grad_list_destroy(&radck_type, free_radck_type, NULL);
 	radck_type = grad_list_create();
-        return grad_read_raddb_file(file, 0, read_nastypes_entry, NULL);
+        return grad_read_raddb_file(file, 0, ",=", read_nastypes_entry, NULL);
 }
 
 RADCK_TYPE *
@@ -1086,7 +1098,7 @@ read_deny_file()
                 deny_tab = grad_symtab_create(sizeof(grad_symbol_t), NULL);
         denycnt = 0;
 
-        grad_read_raddb_file(name, 0, read_denylist_entry, &denycnt);
+        grad_read_raddb_file(name, 0, NULL, read_denylist_entry, &denycnt);
         grad_free(name);
         if (denycnt)
                 grad_log(L_INFO,

@@ -169,7 +169,7 @@ grad_read_realms(char *file, int auth_port, int acct_port, int (*set_secret)())
 	pd.fun = set_secret;
 	pd.ports[PORT_AUTH] = auth_port;
 	pd.ports[PORT_ACCT] = acct_port;
-        return grad_read_raddb_file(file, 1, read_realms_entry, &pd);
+        return grad_read_raddb_file(file, 1, NULL, read_realms_entry, &pd);
 }
 
 /* Realm Lookup Functions */

@@ -236,7 +236,6 @@ main(argc, argv)
 	char **argv;
 {
 	struct servent *svp;
-	int argval;
 	int radius_port = 0;
 	int t;
 
@@ -264,8 +263,8 @@ main(argc, argv)
 	set_config_defaults();
 
 	/* Process the options.	 */
-	while ((argval = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF) {
-		switch (argval) {
+	while ((t = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF) {
+		switch (t) {
 		case 'A':
 			auth_detail++;
 			break;

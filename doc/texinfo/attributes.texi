@@ -1468,7 +1468,7 @@ be the only reply item.
 
 The @attr{Menu} attribute specifies the name of the menu to be presented
 to the user. The corresponding menu code is looked up in the
-@file{RADIUS_DIR/menus/} directory (@pxref{menus file}).
+@file{RADIUS_DIR/menus/} directory (@pxref{menus directory}).
 
 @comment **************************************************************
 @node Pam-Auth
@@ -1715,7 +1715,7 @@ be the only reply item.
 The @attr{Termination-Menu} specifies the name of the menu file to be
 presented to the user after finishing his session. The corresponding
 menu code is looked up in the @file{RADIUS_DIR/menus/} directory
-(@pxref{menus file}).
+(@pxref{menus directory}).
 
 
 

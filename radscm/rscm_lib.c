@@ -69,6 +69,8 @@ radscm_list_to_avl(list)
 {
 	VALUE_PAIR *first, *last, *p;
 
+	if (list == SCM_EOL)
+		return NULL;
 	first = last = NULL;
 	do {
 		p = radscm_cons_to_avp(SCM_CAR(list));

@@ -72,7 +72,13 @@ static struct keyword auth_codes_abbr[] = {
 	{ "PASSACK", RT_PASSWORD_ACK },           
         { "PASSREJ", RT_PASSWORD_REJECT },        
         { "ACCTMSG", RT_ACCOUNTING_MESSAGE },     
-        { "CHALNGE", RT_ACCESS_CHALLENGE },       
+        { "CHALNGE", RT_ACCESS_CHALLENGE },
+	{ "SRVSTAT", RT_STATUS_SERVER },
+        { "ASCEND_TERM",   RT_ASCEND_TERMINATE_SESSION },
+	{ "ASCEND_EVTREQ", RT_ASCEND_EVENT_REQUEST },
+	{ "ASCEND_EVTRES", RT_ASCEND_EVENT_RESPONSE },
+        { "ASCEND_ALLCIP", RT_ASCEND_ALLOCATE_IP },
+        { "ASCEND_RELSIP", RT_ASCEND_RELEASE_IP },
         { NULL }
 };
 

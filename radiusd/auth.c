@@ -1012,8 +1012,9 @@ sfn_simuse(m)
 	}
 
 	radlog(L_WARN,
-	       _("Multiple logins: [%s] (from nas %s) max. %ld%s"),
+	       _("Multiple logins: [%s] CLID %s (from nas %s) max. %ld%s"),
 	       m->namepair->strvalue,
+               m->clid,		
 	       nas_name2(m->req),
 	       m->check_pair->lvalue,
 	       rc == 2 ? _(" [MPP attempt]") : "");

@@ -581,10 +581,42 @@ userparse(char *buffer, VALUE_PAIR **first_pair, char **errmsg)
  * raddb/hints
  */
 
-/*
- *      Add hints to the info sent by the terminal server
- *      based on the pattern of the username.
- */
+/* Provide a support for backward-compatible attributes Replace-User-Name
+   and Rewrite-Function */
+static void
+hints_eval_compat(RADIUS_REQ *req, VALUE_PAIR *name_pair, MATCHING_RULE *i)
+{
+        VALUE_PAIR      *tmp;
+
+	/* Let's see if we need to further modify the username */
+	if ((tmp = avl_find(i->rhs, DA_REPLACE_USER_NAME))
+	    || (tmp = avl_find(i->lhs, DA_REPLACE_USER_NAME))) {
+		char *ptr;
+		struct obstack hints_stk;
+ 
+		obstack_init(&hints_stk);
+		ptr = radius_xlate(&hints_stk, tmp->avp_strvalue,
+				   req, NULL);
+		if (ptr) 
+			string_replace(&name_pair->avp_strvalue, ptr);
+		obstack_free(&hints_stk, NULL);
+	}
+                
+	/* Is the rewrite function specified? */
+	if ((tmp = avl_find(i->rhs, DA_REWRITE_FUNCTION))
+	    || (tmp = avl_find(i->lhs, DA_REWRITE_FUNCTION))) {
+		if (rewrite_eval(tmp->avp_strvalue, req, NULL, NULL)) {
+			radlog(L_ERR, "hints:%d: %s(): %s",
+			       i->lineno,
+			       tmp->avp_strvalue,
+			       _("not defined"));
+		}
+	}
+}
+
+/* Add hints to the info sent by the terminal server
+   based on the pattern of the username and the contents of the incoming
+   request */
 int
 hints_setup(RADIUS_REQ *req)
 {
@@ -659,38 +691,18 @@ hints_setup(RADIUS_REQ *req)
                 if (do_strip) 
                         string_replace(&name_pair->avp_strvalue, newname);
 
-                /* Ok, let's see if we need to further modify the username */
-                if ((tmp = avl_find(i->rhs, DA_REPLACE_USER_NAME))
-                    || (tmp = avl_find(i->lhs, DA_REPLACE_USER_NAME))) {
-                        char *ptr;
-                        struct obstack hints_stk;
- 
-                        obstack_init(&hints_stk);
-                        ptr = radius_xlate(&hints_stk, tmp->avp_strvalue,
-                                           req, NULL);
-                        if (ptr) 
-                                string_replace(&name_pair->avp_strvalue, ptr);
-                        obstack_free(&hints_stk, NULL);
-                }
-                
-                /* Is the rewrite function specified? */
-                if ((tmp = avl_find(i->rhs, DA_REWRITE_FUNCTION))
-                    || (tmp = avl_find(i->lhs, DA_REWRITE_FUNCTION))) {
-                        if (rewrite_eval(tmp->avp_strvalue, req, NULL, NULL)) {
-                                radlog(L_ERR, "hints:%d: %s(): %s",
-                                       i->lineno,
-                                       tmp->avp_strvalue,
-                                       _("not defined"));
-                        }
-                }
-
+		/* Handle Rewrite-Function and Replace-User-Name */
+		hints_eval_compat(req, name_pair, i);
+		/* Evaluate hints */
+		radius_eval_avl(req, add); /*FIXME: return value?*/
+		
                 debug(1, ("new name is `%s'", name_pair->avp_strvalue));
 
                 /* fix-up the string length */
                 name_pair->avp_strlength = strlen(name_pair->avp_strvalue);
 
                 /* Add all attributes to the request list, except
-                 * DA_STRIP_USER_NAME and DA_REPLACE_USER_NAME */
+		   DA_STRIP_USER_NAME and DA_REPLACE_USER_NAME */
                 avl_delete(&add, DA_STRIP_USER_NAME);
                 avl_delete(&add, DA_REPLACE_USER_NAME);
                 avl_delete(&add, DA_REWRITE_FUNCTION);

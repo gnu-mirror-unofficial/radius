@@ -48,7 +48,6 @@
 #endif
 
 #include <radiusd.h>
-#include <rewrite.h>
 #if defined(USE_SQL)
 # include <radsql.h>
 #endif
@@ -835,63 +834,10 @@ sfn_init(AUTH_MACH *m)
         }
 }
 
-static void
-pair_set_value(VALUE_PAIR *p, Datatype type, Datum *datum)
-{
-	efree(p->avp_strvalue);
-	switch (type) {
-	case Integer:
-		p->avp_lvalue = datum->ival;
-		break;
-		
-	case String:
-		p->avp_strvalue = datum->sval;
-		p->avp_strlength = strlen(p->avp_strvalue);
-		break;
-		
-	default:
-		insist_fail("bad Datatype");
-	}
-	p->eval_type = eval_const;
-}
-
 void
 sfn_eval_reply(AUTH_MACH *m)
 {
-        VALUE_PAIR *p;
-        int errcnt = 0;
-        
-        for (p = m->user_reply; p; p = p->next) {
-		Datatype type;
-		Datum datum;
-		
-		switch (p->eval_type) {
-		case eval_const:
-			break;
-
-		case eval_interpret:
-			if (rewrite_interpret(p->avp_strvalue,
-					      m->req, &type, &datum)) {
-                                errcnt++;
-                                continue;
-                        }
-			pair_set_value(p, type, &datum);
-			break;
-
-		case eval_compiled:
-			if (rewrite_eval(p->avp_strvalue,
-					      m->req, &type, &datum)) {
-                                errcnt++;
-                                continue;
-                        }
-			pair_set_value(p, type, &datum);
-			break;
-
-		default:
-			insist_fail("bad eval_type");
-                }
-        }
-        if (errcnt)
+	if (radius_eval_avl(m->req, m->user_reply))
                 newstate(as_reject);
 }               
 

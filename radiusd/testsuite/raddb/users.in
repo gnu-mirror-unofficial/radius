@@ -147,3 +147,12 @@ frw-ok     Auth-Type = Accept
 
 frw-bad    Auth-Type = Accept
 	   Exec-Program-Wait = "|filter_rw"
+
+# Tunnel attributes
+tunnel 	   Auth-Type = Local,
+		User-Password = test
+	   Service-Type = Framed-User,
+		Framed-Protocol = PPTP,
+		Tunnel-Password = tUnnEl
+
+# End of users.in

@@ -171,7 +171,7 @@ AC_CHECK_HEADERS(argp.h fcntl.h malloc.h strings.h\
  crypt.h sys/uio.h sys/select.h sys/resources.h getopt.h libintl.h)
 
 ## * Check for national language support
-AM_GNU_GETTEXT(use-libtool)
+AM_GNU_GETTEXT(use-libtool, need-ngettext)
 if test ".$BUILD_INCLUDED_LIBINTL" = ".yes" ; then
 	AC_DEFINE(WITH_INCLUDED_LIBINTL,1,
                   [Define if the included libintl is used])

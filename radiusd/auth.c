@@ -205,7 +205,7 @@ unix_pass(name, passwd)
 	 * Users with a certain shell are always denied access.
 	 */
 	if (strcmp(pwd->pw_shell, DENY_SHELL) == 0) {
-		radlog(L_AUTH, _("unix_pass: [%s]: invalid shell"), name);
+		radlog(L_NOTICE, _("unix_pass: [%s]: invalid shell"), name);
 		return -1;
 	}
 #endif
@@ -216,7 +216,7 @@ unix_pass(name, passwd)
 	 */
 	if (spwd && spwd->sp_expire > 0 &&
 	    (time(NULL) / 86400) > spwd->sp_expire) {
-		radlog(L_AUTH, _("unix_pass: [%s]: password has expired"), name);
+		radlog(L_NOTICE, _("unix_pass: [%s]: password has expired"), name);
 		return -1;
 	}
 #endif
@@ -226,7 +226,7 @@ unix_pass(name, passwd)
 	 * Check if the account is locked.
 	 */
 	if (pr_pw->uflg.fg_lock != 1) {
-		radlog(L_AUTH, _("unix_pass: [%s]: account locked"), name);
+		radlog(L_NOTICE, _("unix_pass: [%s]: account locked"), name);
 		return -1;
 	}
 #endif /* OSFC2 */
@@ -499,7 +499,7 @@ rad_auth_init(radreq, activefd)
 	}
 	debug(1,("checking username: %s", namepair->strvalue));
 	if (check_user_name(namepair->strvalue)) {
-		radlog(L_AUTH, _("Malformed username: [%s] (from nas %s)"),
+		radlog(L_ERR, _("Malformed username: [%s] (from nas %s)"),
 		       namepair->strvalue,
 		       nas_request_to_name(radreq));
 		stat_inc(auth, radreq->ipaddr, num_bad_req);
@@ -538,7 +538,7 @@ rad_auth_init(radreq, activefd)
 	 * See if the user has access to this huntgroup.
 	 */
 	if (!huntgroup_access(radreq)) {
-		radlog(L_AUTH, _("No huntgroup access: [%s] (from nas %s)"),
+		radlog(L_NOTICE, _("No huntgroup access: [%s] (from nas %s)"),
 			namepair->strvalue, nas_request_to_name(radreq));
 		rad_send_reply(PW_AUTHENTICATION_REJECT, radreq,
 			       radreq->request, NULL, activefd);
@@ -696,7 +696,7 @@ auth_log(m, diag, pass, reason, addstr)
 	char *addstr;
 {
 	if (reason)
-		radlog(L_AUTH,
+		radlog(L_NOTICE,
 		       _("%s: [%s%s%s]: %s%s: CLID %s (from nas %s)"),
 		       diag,
 		       m->namepair->strvalue,
@@ -707,7 +707,7 @@ auth_log(m, diag, pass, reason, addstr)
 		       m->clid,
 		       nas_request_to_name(m->req));
 	else
-		radlog(L_AUTH,
+		radlog(L_NOTICE,
 		       _("%s: [%s%s%s]: CLID %s (from nas %s)"),
 		       diag,
 		       m->namepair->strvalue,
@@ -747,10 +747,13 @@ rad_authenticate(radreq, activefd)
 	enum auth_state oldstate;
 	struct auth_state_s *sp;
 	struct auth_mach m;
-
 #ifdef USE_LIVINGSTON_MENUS
 	VALUE_PAIR *pair_ptr;
+#endif
 
+	log_open(L_AUTH);
+	
+#ifdef USE_LIVINGSTON_MENUS
 	/*
 	 * If the request is processing a menu, service it here.
 	 */

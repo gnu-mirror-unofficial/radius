@@ -111,9 +111,9 @@ request_signal()
 int
 request_process_command()
 {
-	if (request_command) {
+	if (request_command_count > 0 && request_command) {
 		(*request_command)(request_command_arg);
-		request_command_count++;
+		request_command_count--;
 		return 1;
 	}
 	return 0;
@@ -127,17 +127,10 @@ request_thread_command(fun, data)
         Pthread_mutex_lock(&request_mutex);
 	request_command = fun;
 	request_command_arg = data;
-	request_command_count = 0;
+	request_command_count = num_threads;
         debug(100,("Signalling"));
         pthread_cond_broadcast(&request_cond);
         Pthread_mutex_unlock(&request_mutex);
-#if 0
-	while (request_command_count < num_threads)
-		;
-#else
-	sleep(5);/*FIXME*/
-#endif
-	request_command = NULL;
 }
 
 void

@@ -1274,6 +1274,8 @@ century.
 * $INCLUDE::            Include a file.
 * VENDOR::              Define a vendor-id.
 * ATTRIBUTE::           Define an attribute translation.
+* ALIAS::               Define alternative name for an attribute.
+* PROPERTY::            Define attribute properties.
 * VALUE::               Define a value translation.
 @end menu
 
@@ -1296,7 +1298,7 @@ $INCLUDE @file{filename}
 @subheading Usage
 The @code{$INCLUDE} statement causes the contents of the file @file{filename}
 to be read in and processed. The file is looked up in the Radius database
-directory. @xref{Configuration Files}.
+directory, unless its name starts with a slash. 
 
 @comment **L3***************************************************************
 @node VENDOR
@@ -1414,6 +1416,46 @@ integer data type and it may be used  in any part of matching rules,
 except in @LHS{} of a @file{raddb/hints} rule. The
 additivity of @attr{Service-Type} is set to @samp{Replace}. The
 attribute will be propagated through the proxy chain.
+
+@comment **L3***************************************************************
+@node ALIAS
+@subsection ALIAS statement
+@kwindex ALIAS
+@subheading Syntax
+@smallexample
+ALIAS @var{name}  @var{alt-name}
+@end smallexample
+
+@subheading Usage
+The @code{ALIAS} statement defines an altenative name @var{alt-name}
+for attribute @var{name}. The latter should already be defined,
+otherwise an error occurs.
+
+@subheading Example
+
+@smallexample
+ALIAS User-Password Password
+@end smallexample
+
+@comment **L3***************************************************************
+@node PROPERTY
+@subsection PROPERTY statement
+@kwindex PROPERTY
+@subheading Syntax
+@smallexample
+PROPERTY  @var{name}  @var{flags}
+@end smallexample
+
+@subheading Usage
+The @code{PROPERTY} statement redefines property flags for attribute
+@var{name}. The attribute must be defined, otherwise an error occurs.
+@xref{ATTRIBUTE}, for the discussion of attribute property flags.
+
+@subheading Example
+
+@smallexample
+PROPERTY  User-Password [L-----]E
+@end smallexample
 
 @comment **L3***************************************************************
 @node VALUE

@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+# Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -31,13 +31,12 @@ lint:;
 
 endif
 
-MAINTAINERCLEANFILES = raddict.h radmibs.h debugmod.h
+MAINTAINERCLEANFILES = raddict.h radmibs.h
 
 SUBDIRS=snmp
 
 EXTRA_DIST = \
 argcv.h \
-debugmod.h \
 cfg.h \
 checkrad.h \
 envar.h \

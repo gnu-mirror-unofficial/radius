@@ -226,9 +226,6 @@ AH_BOTTOM([
 # define LEAK_DETECTOR 1
 #endif
 
-#ifdef RADIUS_DEBUG
-# include <debugmod.h>
-#endif
 ])
 
 ## * Checks for typedefs, structures, and compiler characteristics.

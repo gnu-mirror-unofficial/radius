@@ -447,3 +447,18 @@ parse_exec_program(cmd, program, uid, gid)
 	return 0;
 }
 #endif				
+
+int
+backslash(c)
+        int c;
+{
+	static char transtab[] = "b\bf\fn\nr\rt\t";
+	char *p;
+
+	for (p = transtab; *p; p += 2) {
+		if (*p == c)
+			return p[1];
+	}
+        return c;
+}
+	

@@ -42,6 +42,10 @@ static unsigned shmem_size;
 
 #define PERM S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP
 
+#ifndef MAP_FAILED
+# define MAP_FAILED (void*)-1
+#endif
+
 int
 shmem_alloc(size)
 	unsigned size;
@@ -57,8 +61,9 @@ shmem_alloc(size)
 					      O_RDWR|O_CREAT|O_TRUNC, PERM);
 			
 			if (tempfd == -1) {
-				radlog(L_ERR|L_PERROR, _("can't open file `%s'"),
-				    radstat_path);
+				radlog(L_ERR|L_PERROR, 
+					_("can't open file `%s'"),
+				        radstat_path);
 				return -1;
 			}
 		}
@@ -79,7 +84,7 @@ shmem_alloc(size)
 	shmem_base = mmap((caddr_t)0, size, PROT_READ|PROT_WRITE, MAP_SHARED,
 			  tempfd, 0);
 	
-	if (!shmem_base) {
+	if (shmem_base == MAP_FAILED) {
 		radlog(L_ERR|L_PERROR, _("mmap failed"));
 		return -1;
 	} else {

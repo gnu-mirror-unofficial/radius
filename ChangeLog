@@ -1,3 +1,10 @@
+2002-12-23  Sergey Poznyakoff 
+
+	* client/pam_radius/Makefile.am: Rewritten using pam_LTLIBRARIES.
+	  Pass -Bsymbolic to the loader in order to prevent the resulting
+	  module from resolving the references using the caller executable.
+	* client/pam_radius/pam_radius.c: Removed stray backslash.
+
 2002-12-21  Sergey Poznyakoff
 
 	-- tag: v_0_99_98 --

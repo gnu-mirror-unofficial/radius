@@ -21,6 +21,7 @@ dbm.c \
 debug.c \
 dict.c \
 envar.c \
+getline.c \
 insist.c \
 intl.c \
 iputil.c \

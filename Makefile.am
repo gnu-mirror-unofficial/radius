@@ -31,4 +31,5 @@ endif
 EXTRA_DIST=ylwrap
 
 
-
+alpha: 
+	$(MAKE) dist distdir=$(PACKAGE)-$(VERSION)-`date +'%Y%m%d'`

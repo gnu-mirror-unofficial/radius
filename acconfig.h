@@ -75,6 +75,8 @@
 
 #undef HAVE_LIBODBC
 
+#undef HAVE_HOSTENT_H_ADDR_LIST
+
 /* Define this to disable shadow support */
 #undef PWD_SHADOW
 
@@ -121,13 +123,6 @@
 
 #if defined(sun) && !defined(__EXTENSIONS__)
 # define __EXTENSIONS__
-#endif
-
-#ifndef STAT_MAX_NAS_COUNT
-# define STAT_MAX_NAS_COUNT 128
-#endif
-#ifndef STAT_MAX_PORT_COUNT
-# define STAT_MAX_PORT_COUNT 1024
 #endif
 
 #undef RADIUS_DEBUG

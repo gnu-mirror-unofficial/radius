@@ -464,7 +464,7 @@ parse_dict(name)
 	int   errcnt = 0;
 	
 	path = mkfilename(radius_dir, name);
-	rc = read_raddb_file(path, 1, 6, parse_dict_entry, &errcnt);
+	rc = read_raddb_file(path, 1, parse_dict_entry, &errcnt);
 	if (errcnt)
 		radlog(L_NOTICE, _("%s: %d errors"), path, errcnt);
 	efree(path);

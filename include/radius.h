@@ -286,8 +286,7 @@ RADIUS_REQ *radreq_alloc();
 #define free_request free_entry
 
 /* raddb.c */
-int read_raddb_file(char *name, int vital, int fcnt, int (*fun)(),
-		    void *closure);
+int read_raddb_file(char *name, int vital, int (*fun)(), void *closure);
 
 /* mem.c */
 void *emalloc(size_t);

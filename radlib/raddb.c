@@ -30,13 +30,11 @@ static char rcsid[] =
 #include <ctype.h>
 #include <radius.h>
 
-/*FIXME: fcnt is unused */
 int
-read_raddb_file(filename, vital, fcnt, fun, closure)
+read_raddb_file(filename, vital, fun, closure)
 	char *filename;   /* file name */
-	int vital;    /* is the file vital */
-	int fcnt;
-	int (*fun)(); /* handler */
+	int vital;        /* is the file vital */
+	int (*fun)();     /* handler */
 	void *closure;
 {
 	int    argc;

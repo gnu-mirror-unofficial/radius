@@ -38,9 +38,10 @@ radiusd_SOURCES = \
  sql.c\
  stat.c\
  timestr.c\
+ tsh.c\
  version.c
 
-radiusd_LDADD = @LEXLIB@ @SQLLIB@ ../snmplib/libradsnmp.a @RADIUSD_LDADD_LIST@ ../lib/librad.la @LIBINTL@
+radiusd_LDADD = @LEXLIB@ @SQLLIB@ ../snmplib/libradsnmp.a @RADIUSD_LDADD_LIST@ ../lib/librad.la @READLINE_LIBS@ @LIBINTL@
 BUILT_SOURCES   = config.c rewrite.c
 MAINTAINERCLEANFILES=config.c rewrite.c y.output
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp -I$(top_srcdir)/lib @INCLUDEPATH@ @GUILE_INCLUDES@

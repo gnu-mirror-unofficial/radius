@@ -90,7 +90,7 @@ PAIR_LIST	*hints;        /* raddb/hints */
 CLIENT		*clients;      /* raddb/clients */
 NAS		*naslist;      /* raddb/naslist */
 REALM		*realms;       /* raddb/realms */ 
-RADCK_TYPE      *radck_type;   /* raddb/checkrad.conf */
+RADCK_TYPE      *radck_type;   /* raddb/nastypes */
 
 static struct keyword op_tab[] = {
 	"=", PW_OPERATOR_EQUAL,
@@ -1210,7 +1210,6 @@ huntgroup_access(authreq)
 
 #ifdef DA_REWRITE_FUNCTION
 	if (pl &&
-	    r  &&
 	    (pair = pairfind(pl->check, DA_REWRITE_FUNCTION)) != NULL) {
 		if (run_rewrite(pair->strvalue, authreq->request)) {
 			radlog(L_ERR, _("huntgroups:%d: %s(): not defined"),
@@ -1327,15 +1326,15 @@ client_name(ipaddr)
 }
 
 /* ****************************************************************************
- * raddb/checkrad.conf
+ * raddb/nastypes
  */
 
 static void free_radck_arg(RADCK_ARG *arg);
 static RADCK_ARG *parse_radck_args(char *str);
 static void free_radck_type(RADCK_TYPE *rp);
-int read_checkrad_entry(void *unused, int fc, char **fv, char *file,
+int read_nastypes_entry(void *unused, int fc, char **fv, char *file,
 			int lineno);
-int read_checkrad_file(char *file);
+int read_nastypes_file(char *file);
 
 void
 free_radck_arg(arg)
@@ -1364,7 +1363,7 @@ parse_radck_args(str)
 			arg->next  = prev;
 			prev = arg;
 		} else 
-			radlog(L_ERR, _("bad flag: %s"), s);
+			radlog(L_ERR, _("bad flag: %s"), p);
 	}
 	return prev;
 }
@@ -1382,7 +1381,7 @@ free_radck_type(rp)
  */
 /*ARGSUSED*/
 int
-read_checkrad_entry(unused, fc, fv, file, lineno)
+read_nastypes_entry(unused, fc, fv, file, lineno)
 	void *unused;
 	int fc;
 	char **fv;
@@ -1421,12 +1420,12 @@ read_checkrad_entry(unused, fc, fv, file, lineno)
 }
 	
 int
-read_checkrad_file(file)
+read_nastypes_file(file)
 	char *file;
 {
 	free_slist((struct slist *)radck_type, free_radck_type);
 	radck_type = NULL;
-	return read_raddb_file(file, 0, 3, read_checkrad_entry, NULL);
+	return read_raddb_file(file, 0, 3, read_nastypes_entry, NULL);
 }
 
 RADCK_TYPE *
@@ -2560,8 +2559,8 @@ reload_config_file(what)
 
 	case reload_naslist:
 		/*FIXME*/
-		path = mkfilename(radius_dir, "checkrad.conf");
-		read_checkrad_file(path);
+		path = mkfilename(radius_dir, "nastypes");
+		read_nastypes_file(path);
 		efree(path);
 		/*END*/
 		

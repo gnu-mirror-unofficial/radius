@@ -122,6 +122,7 @@ rad_scheme_init(argc, argv)
 	scm_make_gsubr("rad-client-source-ip", 1, 0, 0, rad_client_source_ip);
 	scm_make_gsubr("rad-client-timeout", 1, 0, 0, rad_client_timeout);
 	scm_make_gsubr("rad-client-retry", 1, 0, 0, rad_client_retry);
+
 	scm_make_gsubr("rad-client-set-server", 1, 0, 0, rad_client_set_server);
 	scm_make_gsubr("rad-client-add-server", 1, 0, 0, rad_client_add_server);
 	scm_make_gsubr("rad-client-list-servers", 0, 0, 0, rad_client_list_servers);
@@ -269,7 +270,7 @@ scheme_to_server(g_list, func)
 	SCM_ASSERT(SCM_NIMP(scm) && SCM_STRINGP(scm) &&
 		   SCM_LENGTH(scm) <= AUTH_PASS_LEN,
 		   scm, SCM_ARG1, func);
-	strcpy(serv.secret, SCM_CHARS(scm));
+	strncpy(serv.secret, SCM_CHARS(scm), sizeof(serv.secret));
 
 	scm = SCM_CADDDR(g_list);
 	SCM_ASSERT(SCM_IMP(scm) && SCM_INUMP(scm),
@@ -306,7 +307,7 @@ SCM
 rad_client_set_server(g_list)
 	SCM g_list;
 {
-	SERVER *s = scheme_to_server(g_list, FUNC_NAME);
+        SERVER *s = scheme_to_server(g_list, FUNC_NAME);
 
 	radclient_clear_server_list(radclient->first_server);
 	radclient->first_server = radclient_append_server(NULL, s);

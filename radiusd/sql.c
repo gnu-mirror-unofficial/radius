@@ -471,12 +471,13 @@ rad_sql_init()
 	FREE(sql_cfg.acct_stop_query);
 	FREE(sql_cfg.acct_nasup_query);
 	FREE(sql_cfg.acct_nasdown_query);
+	FREE(new_cfg.acct_keepalive_query);
 	FREE(sql_cfg.buf.ptr);
 
 	/* copy new config */
 	sql_cfg = new_cfg;
 	alloc_buffer(&sql_cfg.buf, bufsize);
-	
+		
 	return 0;
 }
 

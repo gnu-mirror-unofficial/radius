@@ -3177,6 +3177,9 @@ static int cpopn(int *np);
 static int popn();
 static int checkpop(int cnt);
 static int pushref(char *str, int from, int to);
+static char *heap_reserve(int size);
+static void pushs(int *sptr, int len);
+static void pushstr(char *str, int len);
 
 static void rw_pushn();
 static void rw_pushs();
@@ -3657,7 +3660,8 @@ pushstr(str, len)
 	int len;
 {
 	char *s;
-	strcpy(s = heap_reserve(len), str);
+	strncpy(s = heap_reserve(len+1), str, len);
+	s[len] = 0;
 	pushn((int)s);
 }
 
@@ -3928,7 +3932,7 @@ rw_attrs()
 	if ((pair = pairfind(rw_rt.request, attr)) == NULL) 
 		pushs(&nil, 1);
 	else
-		pushs(pair->strvalue, pair->strlength);
+		pushstr(pair->strvalue, pair->strlength);
 }
 
 void
@@ -4442,7 +4446,7 @@ va_run_init(name, request, typestr, va_alist)
 			break;
 		case 's':
 			s = va_arg(ap, char*);
-			pushs(s, strlen(s));
+			pushstr(s, strlen(s));
 			break;
 		default:
 			insist_fail("bad datatype");
@@ -4484,6 +4488,7 @@ tokbegin(buf, str)
 	buf->ptr = str;
 	buf->tok = str;
 	buf->delim = -1;
+	return 0;
 }
 
 #define tokend(buf)

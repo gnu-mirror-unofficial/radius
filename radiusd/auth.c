@@ -992,7 +992,7 @@ sfn_time(m)
 	
 	time(&t);
 	rc = ts_check(m->check_pair->strvalue, &t, &rest, NULL);
-	if (rc > 0) {
+	if (rc == 1) {
 		/*
 		 *	User called outside allowed time interval.
 		 */
@@ -1005,7 +1005,7 @@ sfn_time(m)
 		       nas_name2(m->req),
 		       m->check_pair->strvalue);
 		newstate(as_reject);
-	} else if (rest > 0) {
+	} else if (rc == 0) {
 		/*
 		 *	User is allowed, but set Session-Timeout.
 		 */

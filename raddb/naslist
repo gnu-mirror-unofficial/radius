@@ -7,15 +7,16 @@
 # 	i. 	A valid hostname or IP address for the client.
 #	ii. 	The short name to use in the logfiles for this NAS.
 #	iii.	Type of device. Valid values are those listed in 
-#		/etc/raddb/checkrad.conf file. Two types are predefined:
+#		/etc/raddb/nastypes file. Two types are predefined:
 #		true 		Means no check will be made and 1 code
 #				will be returned,
 #		false		Means no check will be made and 0 code
 #				will be returned.		
 #       ** The following is optional:
-#       iv.	Additional arguments to checkrad. Multiple arguments should
-#		be separated by commas (,) with no intervening whitespace.
-#		Currently checkrad recognizes following arguments (S means
+#       iv.	Additional arguments to query NAS with. Multiple arguments 
+#		should be separated by commas (,) with no intervening 
+#		whitespace.
+#		Currently radiusd recognizes following arguments (S means
 #		string, N - number):
 #		a. Common arguments:
 #		  port=N	Use port number N instead of the default
@@ -31,4 +32,4 @@
 
 # NAS Name		Short Name	Type		Checkrad flags
 #----------------	----------	----		---------------
-localhost		local		unix
+localhost		local		true

@@ -1,9 +1,10 @@
+Authors of GNU Radius.
+
 Sergey Poznyakoff	<gray@farlep.net>
 
 Portions of the code were used from following sources:
 
 Miquel Van Smoorenberg 	<miquels@cistron.nl>:
-	radiusd/timestr.c
 	radiusd/radius.c
 	radiusd/acct.c
 
@@ -12,3 +13,7 @@ Jeph Blaize 		<jab@kiva.net>
 
 Poul-Henning Kamp 	<phk@login.dknet.dk> 
 	radlib/md5crypt.c
+
+WEB-RADACT is written by 
+	Oswaldo E. Aguirre M. 	<oaguirre@reacciun.ve>
+	Francisco J. Obispo S.	<fobispo@reacciun.ve>

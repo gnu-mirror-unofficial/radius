@@ -484,6 +484,7 @@ char		*client_name(UINT4 ipno);
 int		read_clients_file(char *);
 REALM		*realm_find(char *);
 NAS		*nas_find(UINT4 ipno);
+NAS             *nas_by_name(char *name);
 char		*nas_name(UINT4 ipno);
 char		*nas_name2(AUTH_REQ *r);
 int		read_naslist_file(char *);

@@ -22,7 +22,7 @@ static char rcsid[] =
 "$Id$";
 #endif
 
-#define RADIUS_MODULE 3
+#define RADIUS_MODULE 18
 
 #if defined(HAVE_CONFIG_H)
 # include <config.h>
@@ -356,11 +356,11 @@ snmp_check(checkp, nas)
 	
 	snmp_send(sp, pdu);
 
-	timeout.tv_usec = 0;
-	timeout.tv_sec = 1; /* FIXME: should be configurable? */
 	numfds = 0;
 	if (snmp_select_info(&numfds, &fdset, &timeout, &block)) {
 		while (!checkp->timeout) {
+			timeout.tv_usec = 0;
+			timeout.tv_sec = 1; 
 			rc = select(numfds, &fdset, NULL, NULL, &timeout);
 			if (rc < 0) {
 				if (errno == EINTR)

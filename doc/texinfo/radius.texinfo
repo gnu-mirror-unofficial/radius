@@ -111,10 +111,6 @@ The radius daemon
 * Logging::             What gets logged and where.
 * Debugging::           An extensive logging information.
 
-The checkrad program
-* Checkrad Overview::   Purpose of checkrad.
-* checkrad.conf::       Configuring checkrad.
-
 Controlling who and when was logged in
 * Radwho::              Show who is logged in by radius now.
 * Radlast::             Show the history of logins by radius.
@@ -1378,6 +1374,8 @@ directory by @file{raddb} @ref{Naming conventions}.
                         communicate with radius.
 * naslist::             The naslist file keeps general information about
                         the NASes.
+* nastypes::            Information about how to query the NASes about
+                        active user sessions.
 * hints::               Important user information that is common for the
                         users whose names match some pattern.
 * huntgroups::          Group users by the NAS (and, possibly, a port
@@ -1582,12 +1580,11 @@ Determines whether @code{radiusd} should strip any prefixes/suffixes
 off the username before logging.
 
 @item checkrad-assume-logged
-@code{radiusd} consults the value of this variable when @code{checkrad}
-program returns ``don't know'' answer for a particular user
-@ref{Checkrad Overview}.
+@code{radiusd} consults the value of this variable when the NAS
+does not responds to checkrad queries @ref{Checking Simultaneous Logins}.
 If this variable is set to @code{yes}, the daemon will proceed as if
-@code{checkrad} returned ``yes'', i.e. it will assume the user is logged in.
-Otherwise @code{radiusd} assumes the user @emph{is} logged in.
+the NAS returned ``yes'', i.e. it will assume the user is logged in.
+Otherwise @code{radiusd} assumes the user @emph{is not} logged in.
 
 @end table
 
@@ -2016,7 +2013,7 @@ merlin                  emrys
 @end example
 
 @comment *L2****************************************************************
-@node  naslist, hints, clients ,Configuration files
+@node  naslist, nastypes, clients ,Configuration files
 @chapter naslist
 @cindex @file{naslist} file
 @cindex @file{raddb/naslist} file
@@ -2034,9 +2031,21 @@ where the detailed logs are stored.
 @item Type
 Specifies the type of this NAS. Using this value @code{radiusd} determines
 the way to query NAS about the presence of a given user on it
-@ref{Checkrad Overview}, @ref{Checking Simultaneous Logins}.
-This type should be listed in a @code{type} statement somewhere in
-@file{checkrad.conf} file @ref{checkrad.conf}.
+@ref{Checking Simultaneous Logins}.
+Two reserved types @samp{true} and @samp{false} disable NAS
+querying. When @samp{true} is specified @code{radiusd} assumes the
+user is logged in to the NAS, when @samp{false} is specified it
+assumes the user @emph{is not} logged in. Otherwise, the type
+is used as a link to @file{nastypes} entry @ref{nastypes}.
+
+@item Checkrad arguments
+Additional arguments for querying a NAS. Multiple arguments should be
+separated by commas. No itervening whitespace is allowed in this field.
+@emph{Please note}, that these arguments override the ones specified in
+@file{nastypes} and can thus be used to override the default
+values. @ref{nastypes,,Full list of allowed arguments}.
+
+
 @end table
 
 @menu
@@ -2055,8 +2064,8 @@ This type should be listed in a @code{type} statement somewhere in
 #
 # 	i. 	A valid hostname or IP address for the client.
 #	ii. 	The short name to use in the logfiles for this NAS.
-#	iii.	Type of device. Valid values are those listed in 
-#		@value{RADDB}/checkrad.conf file.
+#	iii.	Type of device. Valid values are `true', `false' and
+#               those defined in @value{RADDB}/nastypes file.
 
 # NAS Name              Short Name      Type
 #----------------       ----------      ----
@@ -2065,9 +2074,286 @@ merlin                  merlin          max
 11.10.10.10             arthur          livingston
 @end example
 
+@comment *L2****************************************************************
+@node  nastypes, hints, naslist, Configuration files
+@chapter nastypes
+@cindex nastypes
+
+The @file{raddb/nastypes} file describes the ways to
+query NASes about active user sessions.
+
+@menu
+* syntax:nastypes syntax.       Syntax described.
+* example:nastypes example.     Example of nastypes file.
+* check functions::             The check functions.
+* standard types::              NAS types defined in standard nastypes file.
+@end menu
+
+@comment **L3***************************************************************
+@node nastypes syntax, nastypes example,, nastypes
+@chapter nastypes syntax
+@cindex @file{nastypes} file, syntax of
+
+@heading Syntax
+Each record consists of three fields separated by any amount of
+whitespace. The fields are:
+
+@table @asis
+
+@item Type
+Type of the NAS which is described in this record.
+
+@item Method
+Method to use to query a NAS of given type.
+
+@item Arguments
+Arguments to pass to this method. Each argument is a pair
+@var{arg}=@var{VALUE}, where @var{arg} is its name and @var{VALUE} is
+a value assigned to it. The list of predefined argument names follows.
+@emph{Please note}, that no intervening whitespace is allowed in this
+field.
+
+@end table
+
+@heading Methods
+
+Version @value{VERSION} of GNU Radius supports two querying methods:
+finger and snmp.
+
+@heading Arguments
+
+In the discussion below @var{n} means numberic and @var{s} string value.
+
+The following arguments are predefined:
+
+@subheading Common for all methods
+
+@table @asis
+
+@item function=@var{s}
+Specifies the check function to use with this method. @ref{check functions}.
+This argument must be present. @ref{Checking Simultaneous Logins}, for
+description of how this function is applied.
+
+@item port=@var{n}
+Use port number @var{n} instead of the default for the given method.
+
+@end table
+
+@subheading Method snmp
+
+@table @asis
+
+@item password=@var{s}
+Use community @var{s} instead of the default. This argument must be
+present.
+
+@item retries=@var{n}
+Retry @var{n} times before giving up.
+
+@item timeout=@var{n}
+Timeout @var{n} seconds on each retry.
+
+@end table
+
+@subheading Method finger
+
+@table @asis
+
+@item timeout=@var{n}
+Give up if the NAS does not respond within @var{n} seconds.
+
+@item tcp=0
+Disable the use of T/TCP for hosts with a broken TCP implementation.
+
+@end table
+
+@subheading Substitution rules
+
+The following macro-variables are recognized and substituted when
+encountered in the @var{value} pair of an argument:
+
+@table @samp
+
+@item %u
+Expands to username.
+
+@item %s
+Expands to session id.
+
+@item %d
+Expands to session id converted to decimal representation.
+
+@item %p
+Expands to port number.
+
+@item %P
+Expands to port number + 1.
+
+@end table
+
+@comment **L3***************************************************************
+@node nastypes example, check functions, nastypes syntax, nastypes
+@chapter Example of nastypes file.
+
+@example
+# Type     Method          Args
+# ----     ------          ----
+unix       finger       function=check_unix
+max-f      finger       function=check_max_finger
+max        snmp         oid=.1.3.6.1.4.1.529.12.3.1.4.%d,function=check_snmp_u
+as5300-f   finger       function=check_as5300_finger
+as5300     snmp         oid=.1.3.6.1.4.1.9.9.150.1.1.3.1.2.%d,function=check_snmp_u
+livingston snmp         oid=.1.3.6.1.4.1.307.3.2.1.1.1.5.%P,function=check_snmp_s
+@end example
+
+@comment **L3***************************************************************
+@node check functions, standard types, nastypes example, nastypes
+@chapter Nastypes functions
+
+@heading Syntax requirements
+
+A function listed in @code{function=} argument must be declared as
+follows:
+
+@example
+integer check(string str, string name, integer pid, string sid)
+@end example
+
+@noindent
+Its arguments are:
+
+@table @var
+
+@item str
+Input string. If the query method is @code{finger}, this is the string
+of output received from the NAS with trailing newline stripped off. If
+the query method is @code{snmp}, this is the received variable value
+converted to its string representation.
+
+@item name
+User name.
+
+@item pid
+Port Id of the session.
+
+@item sid
+
+Session ID.
+
+@end table
+
+The function should return non-0 if the @var{str} argument matches user's
+session and 0 otherwise.
+
+@heading Examples
+
+Below are some examples of check functions:
+
+@subheading Checking UNIX finger output
+
+This function checks the line of output of a standard UNIX finger
+service. Field 1 contains username, field 3 --- Port ID (tty), and
+field 7 --- session ID.
+
+@example
+integer
+check_unix(string str, string name, integer pid, string sid)
+@{
+	return field(str, 1) == name &&
+               field(str, 3) == pid &&
+               field(str, 7) == sid;
+@}
+@end example
+
+To use this function, the following line must be present in
+@file{naslist}:
+
+@example
+#Type      Method       Arguments
+#----      ------       ---------
+unix	   finger	function=check_unix
+@end example
+
+@noindent
+and the NAS must be defined in @file{naslist} as follows:
+
+@example
+#Hostname       Shortname       Type    Arguments
+#---------      ---------       ----    ----------
+some.nas        A-NAS           unix
+@end example
+
+@subheading Checking user name
+
+SNMP queries to NASes of MAX Ascend and Cisco AS5300 series return
+a username. To check for it the following fuction can be used:
+
+@example
+integer
+check_username(string str, string name, integer pid, string sid)
+@{
+	return str == name;
+@}
+@end example
+
+@noindent
+
+The function is applied using following statements in
+@file{nastypes} file:
+
+@example
+#Type   Method   Arguments
+#----   ------  -------------
+max     snmp    oid=.1.3.6.1.4.1.529.12.3.1.4.%d,function=check_username
+as5300  snmp    oid=.1.3.6.1.4.1.9.9.150.1.1.3.1.2.%d,function=check_username
+@end example
+
+To apply it to a given NAS, the following must be specified in
+@file{naslist} file:
+
+@example
+#Hostname       Shortname       Type    Arguments
+#---------      ---------       ----    ----------
+some.nas        A-NAS           max     community=guessme
+@end example
+
+@comment **L3***************************************************************
+@node standard types, , check functions, nastypes
+@chapter Standard NAS types
+@cindex NAS types, standard
+
+The configuration files shipped with GNU radius contain information
+about following types of NASes:
+
+@table @asis
+@item unix
+Unix boxes are supposed to run finger service able to return information
+about dial-up users active on them. To enable finger checking of a unix
+host add following to your @file{naslist} file:
+@example
+#Hostname       Shortname   Type
+#--------       ---------   ----
+nas.name        T           unix    
+@end example
+
+@item MAX Ascend servers.
+There are two NAS types defined to query MAX Ascend servers. Type
+@code{max} uses SNMP querying, type @code{max-f} uses finger. We
+recommend you to use SNMP querying. Do not forget to specify
+your community in the @code{password=} argument.
+
+@item Cisco AS5300 series
+Type @code{as5300} supports SNMP queries, type @code{as5200-f} supports
+finger.
+
+@item Livingston Portmaster
+Type @code{livingston} queries portmaster using SNMP.
+
+@end table
 
 @comment *L2****************************************************************
-@node hints, huntgroups, naslist, Configuration files
+@node hints, huntgroups, nastypes, Configuration files
 @chapter The @file{hints} configuration file.
 @cindex Hints
 @cindex @file{hints} file
@@ -3748,28 +4034,36 @@ If the value is @code{yes}, Radius assumes the session is still
 active and increases the session count, otherwise it proceeds as
 if the NAS returned negative reply.
 
-Usually, different NASes should be queried in different ways. It would
-be unwise to make Radius server know all protocols for communicating
-with every existing NAS type. Instead of querying NAS directly, Radius
-calls external process @code{checkrad} and passes it all the information
-necessary to query a particular NAS about a particular session
-@ref{Checkrad Overview}. The @code{checkrad} program then performs
-the actual work of querying and returns one of the following
-exit codes:
+To query a NAS, Radius first looks up its type and additional parameters
+in @file{naslist} file @ref{naslist}. If the NAS type is @samp{true},
+Radius acts as if the NAS returned 1, if the type is @samp{false}, it
+acts as if the NAS returned 0, otherwise it looks up the entry
+in the @file{nastypes} which has matching type @ref{nastypes}.
+If such entry does not exist, Radius issues the error message and
+acts accordingly to the value of configuration variable
+@code{checkrad-assume-logged}.
+Otherwise, Radius determines the query method to use from the second
+field of this entry, and constructs its arguments by appending
+arguments from the @file{naslist} entry to those of @code{nastypes}
+entry. @emph{Please note}, that the former take precedence over the
+latter, and can thus be used to override default values specified
+in @file{nastypes}.
 
-@itemize @bullet
-@item 0, when the NAS replies negative
-@item 1, when the NAS replies positive
-@item -1, when the NAS cannot be reached or some error occurs.
-@end itemize
+Having determined the query method and its argument, Radius queries
+NAS and analises its output. To analise it Radius uses user-supplied
+functions defined in file @file{raddb/rewrite}. The function to use
+is specified by the @code{function=} argument to the method. It is
+called each time a line of output is received from the NAS (for
+finger queries) or a variable is received (for SNMP queries). The
+process continues until the function returns 1 or the last line
+of output is read or a timeout occurs whichever comes first.
 
-@code{checkrad} determines the way to query a given NAS by its type,
-which radius passes to it along with other arguments
-@ref{Checkrad Overview}. Radius knows the type from a corresponding
-line in @file{naslist} file @ref{naslist}.
+If during processing NAS reply the user-function returns 1 it is taken
+to mean the user's session is now active at the NAS, if the end of
+output was reached during scanning it is taken to mean the user's
+session is not active.
 
-The NAS types @code{checkrad} knows about and ways of communicating
-with them are fully configurable @ref{checkrad.conf,,Configuring checkrad}.
+[FIXME]
 
 @comment *******************************************************************
 @node Accounting, Logging, Authentication, Top
@@ -3921,7 +4215,7 @@ can be overridden using @code{logging} statement in @file{raddb/config} file
 
 
 @comment *******************************************************************
-@node Debugging, Checkrad Overview, Logging, Top
+@node Debugging, Radwho, Logging, Top
 @chapter Debugging
 @cindex Debugging
 
@@ -3957,276 +4251,9 @@ to release.
 @c @include debug.texinfo
 
 
-@comment *******************************************************************
-@node Checkrad Overview, checkrad.conf, Debugging, Top
-@chapter Checkrad Overview
-@pindex checkrad
-
-When Radius needs to query a particular NAS about the presence of a
-given user, it calls the @code{checkrad} program and analizes its
-exit code @ref{Checking Simultaneous Logins}.
-
-The @code{checkrad} accepts the following command line options:
-
-@table @samp
-@item -d RADDB_DIR
-Sets the name of radius configuration directory
-@ref{Naming conventions}.
-
-@item -h HOST
-The IP address or domain name of the NAS to query.
-
-@item -p PORT
-The NAS port number the user seems to be in.
-
-@item -t TYPE
-The NAS type. This is used to determine the method of conversation
-with the NAS.
-
-@item -u USERNAME
-Username to check.
-
-@item -s SID
-The session ID to check for.
-
-@item -x DEBUG
-The debug level.
-
-@end table
-
-The @code{checkrad} program exits with following exit codes:
-
-@table @asis
-@item 0
-No session with the specified parameters was found to be active on the
-NAS.
-
-@item 1
-The specified session is currently active on the NAS.
-
-@item -1
-@samp{Don't know}. This means that either NAS did not respond, or
-@code{checkrad} was unable to parse its answer.
-@end table
-
-For example if @code{radiusd} needs to verify presence of user
-@samp{foo} with session ID @samp{001} on port 23 of NAS @samp{myhost}
-@ref{naslist example} it would run @code{checkrad} as follows:
-
-@example
-checkrad -t unix -h myhost.dom.ain -u foo -s 001 -p 23
-@end example
-
-@noindent
 
 @comment *******************************************************************
-@node checkrad.conf, Radwho, Checkrad Overview, Top
-@chapter Configuring checkrad: @file{checkrad.conf} file
-@cindex checkrad.conf
-@cindex checkrad, configuring
-@cindex Configuring checkrad.
-
-The @file{raddb/checkrad.conf} file describes the ways to
-communicate with NASes of different types and the way of parsing
-their requests.
-
-@subheading Syntax
-
-The file follows simple @code{@var{keyword} @var{value}} oriented
-syntax. Empty lines are ignored. The @samp{#} character introduces
-an end-of-line comment.
-
-The file consists of definition blocks. Each definition block starts
-with a @code{type} keyword and continues up to the next @code{type}
-keyword or to the end of file.
-
-The definition block describes ways of communicating with the NAS of
-given type.
-
-@subheading Statements
-
-@table @code
-@item logfile @var{filename}
-Specifies the filename to use for logging. Default is stderr.
-
-@item debug @var{debug_spec}
-Specifies debug level @ref{Debugging}.
-
-@item type @var{type}
-Introduces new definition block. @var{type} is a type of NAS which is
-described by the block. Every NAS marked with this @var{type} in
-@file{naslist} configuration file @ref{naslist} will be queried using
-rules described in this block.
-
-@item method @var{finger|snmp}
-Specify the method to use while communicating with the NAS.
-
-@item header @var{line} @var{header_string}
-(Applies to @code{method finger}.) This statement describes the header
-to be expected in the NAS reply.
-
-The @var{line} argument specifies the response line number where
-the header string should be present. Response lines are counted starting
-from 1 and are separated from each other by a @code{\r\n} characters.
-
-The @var{header_string} argument describes the format of a header line.
-It is a string of header titles delimited by @samp{:}. If the string
-starts with a punctuation character, this character is used as a
-delimiter instead of a @samp{:}.
-
-@item oid @var{oid_string}
-(Applies to @samp{method snmp}.) This statement specifies the OID to
-be queried when using SNMP method. The OID string can contain
-@code{checkrad} metacharacters described below.
-
-@item community @var{ident}
-(Applies to @samp{method snmp}.) Specifies the community name to be
-used while querying NAS.
-
-@item match @var{match_definition}
-Specifies the conditions to be met to identify the session as being
-active. The format of @var{match_definition} string depends on query
-method:
-
-@table @code
-
-@item finger
-The comma-separated list of the statements in the form:
-
-@example
-@var{var}=@var{macro}
-@end example
-
-@noindent
-where @var{var} is either a @code{$@var{number}} notation, meaning
-@var{number}th column from the NAS output, or a name meaning the column
-identified by this heading in the @code{header} statement. @var{macro}
-is one of the @code{checkrad} macros.
-
-For example, consider the usual UNIX finger output. It starts with a
-header line saying:
-
-@example
-Login  Name   TTY   Idle    Login Time   Where
-@end example
-
-@noindent
-
-then we could write the following rules:
-
-@example
-header 1 Login:Name:TTY:Idle:Login Time:Where
-match Login=%u,TTY=%p
-@end example
-
-@noindent
-the @code{header} string describes the headings to be found on the first
-line of output, the @code{match} statements says that the value listed
-in column 1 (heading @samp{Login}) must coincide with username and
-column 3 (heading @samp{TTY}) must coincide with the NAS port number.
-
-The same example can be rewritten as
-
-@example
-match $1=%u,$3=%p
-@end example
-
-@noindent
-using column numbers instead of column names.
-
-@item snmp
-In this case @var{match_definition} should be a string containing
-@code{checkrad} macros. For example, the following statement
-
-@example
-oid .1.3.6.1.4.1.307.3.2.1.1.1.5.%p
-match %s
-@end example
-
-@noindent
-tells @code{checkrad} that it should query the given oid, replacing
-the @samp{%p} sequense by actual port number and expect a session
-ID (@samp{%s}) in reply.
-
-@end table
-
-@end table
-
-@subheading Macros
-
-Following macros can be used in @code{match} and @code{oid} statements:
-
-@table @code
-
-@item %u
-Expands to username as given by @code{-u} command line option.
-
-@item %s
-Expands to session id as given by @code{-s} command line option.
-
-@item %d
-Expands to session id converted to decimal representation.
-
-@item %p
-Expands to port number as given by @code{-p} command line option.
-
-@item %P
-Expands to port number + 1.
-
-@end table
-
-@menu
-* Example:checkrad.conf example.         An example of checkrad configuration.
-@end menu
-
-@comment *******************************************************************
-@node checkrad.conf example, , , checkrad.conf
-@chapter An example of checkrad configuration
-@cindex checkrad.conf, an example
-
-@example
-######
-# Configuration file for checkrad 
-# 
-logfile "/var/log/checkrad.conf"
-
-####
-# How to query unix network access servers
-# We suppose that unix boxes run fingerd service.
-type unix
-method finger
-header 1 Login:Name:TTY:Idle:Login Time:Where
-match Login=%u,TTY=%p,Where=%s
-
-####
-# Ascend MAX networks servers
-# Field 2 is session_id (here we convert it to decimal),
-# Field 9 is user name
-# Port is not matched
-type max
-method finger
-match $2=%d,$9=%u
-
-####
-# Cisco AS5300 terminal server
-# No session_id in finger output. We match on username and port number.
-type as5300
-method finger
-match $1=%p,$4=%u 
-
-####
-# Livingston terminal server
-# Answers on SNMP queries
-type livingston
-method snmp
-community public
-oid .1.3.6.1.4.1.307.3.2.1.1.1.5.%P
-match %s
-
-@end example
-
-@comment *******************************************************************
-@node Radwho, Radlast, checkrad.conf, Top
+@node Radwho, Radlast, Debugging, Top
 @chapter Radwho
 @pindex radwho
 

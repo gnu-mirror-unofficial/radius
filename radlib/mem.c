@@ -201,7 +201,7 @@ alloc_entry(size)
 	if (size < ENTRY_SIZE)
 		size = ENTRY_SIZE;
 	for (class_ptr = bucket_class; class_ptr; class_ptr = class_ptr->next) 
-		if (class_ptr->elsize == size) 
+		if (class_ptr->elsize == size && !class_ptr->cont) 
 			break;
 	if (!class_ptr) {
 		class_ptr = alloc_class(size);

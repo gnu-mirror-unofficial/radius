@@ -257,16 +257,14 @@ ts_match(timespan, time_now, rest)
 	unsigned now;
 	
 	if (!timespan) {
-		if (rest)
-			*rest = 0;
-		return 0;
+		return 2;
 	}
 
 	tm = localtime(time_now);
 	now = tm->tm_wday * DAYMIN + tm->tm_hour * 60 + tm->tm_min;
 
 	for (tp = timespan; tp; tp = tp->next) {
-		if (tp->start <= now && now <= tp->stop) {
+		if (tp->start <= now && now < tp->stop) {
 			if (rest)
 				*rest = (tp->stop - now)*60;
 			return 0;
@@ -276,7 +274,7 @@ ts_match(timespan, time_now, rest)
 	if (!rest)
 		return 1;
 	
-	for (tp = timespan; tp && tp->stop < now; tp = tp->next)
+	for (tp = timespan; tp && tp->stop <= now; tp = tp->next)
 		;
 	if (!tp)
 		tp = timespan;

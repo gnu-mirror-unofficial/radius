@@ -179,11 +179,6 @@
   (format #t "     -P, --port NUMBER\n"))
 
 ;;; Main
-;; Load profiles
-(load (string-append %raddb-path "/radctl.rc"))
-(let ((localrc (string-append (passwd:dir (getpwuid (getuid))) ".radctl")))
-  (if (file-exists? localrc)
-      (load localrc)))
 ;; Parse command line
 (define cmd-list (getopt-long (command-line) grammar))
 (for-each (lambda (x)
@@ -205,6 +200,12 @@
 						      (symbol->string (car x))))
 				(cdr x)))))))
 	  cmd-list)
+
+;; Load profiles
+(load (string-append %raddb-path "/radctl.rc"))
+(let ((localrc (string-append (passwd:dir (getpwuid (getuid))) ".radctl")))
+  (if (file-exists? localrc)
+      (load localrc)))
 
 ;; Select and perform appropriate action
 (case action

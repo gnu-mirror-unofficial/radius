@@ -12,7 +12,7 @@ radiusd_SOURCES = radiusd.c acct.c auth.c exec.c files.c menu.c sql.c\
                   symtab.c timestr.c version.c log.c stat.c\
                   snmpserv.c shmem.c radutil.c radctl.c\
                   rewrite.c checkrad.c debugmod.c
-radiusd_LDADD   = @LEXLIB@ -L ../radlib -lrad -L ../snmplib -lsnmp $(LIBSQL)
+radiusd_LDADD   = @LEXLIB@ -L ../radlib -lrad -L ../snmplib -lsnmp $(LIBSQL) @RADIUSD_LDADD@
 BUILT_SOURCES   = config.c rewrite.c
 DISTCLEANFILES  = config.c y.output
 INCLUDES        = -I$(top_srcdir) -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp @INCLUDEPATH@

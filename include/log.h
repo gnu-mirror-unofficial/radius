@@ -62,7 +62,10 @@
 	
 #define RADIUS_DEBUG_BUFFER_SIZE 1024
 
-typedef struct channel {
+typedef struct chanlist Chanlist;
+typedef struct channel Channel;
+
+struct channel {
 	struct channel *next;
 	int ucnt;
 	char *name;
@@ -72,8 +75,13 @@ typedef struct channel {
 		char *file;
 	} id;
 	int options;
-} Channel;
- 
+};
+
+struct chanlist {
+	struct chanlist *next;
+	Channel *channel;
+};
+
 /* log.c */
 extern int debug_level[];
 extern int log_mode;
@@ -109,7 +117,8 @@ void log_init();
 void log_cleanup();
 Channel *register_channel(Channel *);
 Channel *install_channel(char *name, int mode, int prio, char *file, int opt);
-void register_category(int level, Channel *channel);
+void register_category(int cat, Chanlist *chanlist);
+
 Channel *channel_lookup(char *name);
 
 void set_debug_levels(char *str);

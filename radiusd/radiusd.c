@@ -440,14 +440,7 @@ main(argc, argv)
 		exit(0);
 	if (test_mode)
 		exit(test_shell());
-	
-#if 0
-/*DEBUG ONLY*/
-	test_rewrite();
-	exit(1);
-/*END*/
-#endif
-	
+
 	if (myip == 0 && (myip = getmyip()) == 0) {
 		radlog(L_CRIT, _("can't find out my own IP address"));
 		exit(1);
@@ -1734,8 +1727,9 @@ test_shell()
 #define nextkn() if ((tok = strtok(NULL, " \t")) == NULL) {\
  printf("arg count\n");\
  continue; }  
-	
-	printf("TEST MODE\n");
+
+	log_stdout();
+	printf("** TEST MODE **\n");
 	doprompt = isatty(fileno(stdin));
 	while (tok = moreinput(buf, sizeof(buf))) {
 		while (*tok && isspace(*tok))
@@ -1751,11 +1745,12 @@ test_shell()
 			continue;
 		case 'h':
 		case '?':
-			printf("h,?                help\n");
-			printf("q,<EOF>            quit\n");
-			printf("c LOGIN SID NAS    checkrad\n");
-			printf("r FUNCALL          function call\n");
-			printf("d LEVEL[,LEVEL]    set debug level\n");
+			printf("h,?                     help\n");
+			printf("q,<EOF>                 quit\n");
+			printf("c LOGIN SID PORT NAS    checkrad\n");
+			printf("r FUNCALL               function call\n");
+			printf("d LEVEL[,LEVEL]         set debug level\n");
+			printf("m                       display memory usage\n"); 
 			break;
 		case 'd':
 			set_debug_levels(tok);
@@ -1778,7 +1773,7 @@ test_shell()
 			printf("%d\n", checkrad(nas, &ut));
 			break;
 		case 'r':
-			/* r fun types args */
+			/* r funcall */
 			if (interpret(tok, NULL, &type, &datum))
 				printf("?\n");
 			else {
@@ -1793,6 +1788,9 @@ test_shell()
 				}
 				printf("\n");
 			}
+			break;
+		case 'm': /*memory statistics */
+			meminfo(puts);
 			break;
 		default:
 			printf("no command\n");

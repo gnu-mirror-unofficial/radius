@@ -90,13 +90,12 @@ static char *compile_flag_str[] = {
 	"USE_DBM=NDBM",
 # endif
 #endif /* USE_DBM */
-#if defined(USE_SQL)	
-# if USE_SQL == SQL_MYSQL
-	"USE_SQL=SQL_MYSQL",
-# elif USE_SQL == SQL_POSTGRES
-	"USE_SQL=SQL_POSTGRES",
-# endif	
-#endif /* defined(USE_SQL) */
+#ifdef USE_SQL_MYSQL
+	"USE_SQL_MYSQL",
+#endif	    
+#ifdef USE_SQL_POSTGRES
+	"USE_SQL_POSTGRES",
+#endif	
 #if defined(USE_SNMP)
 	"USE_SNMP",
 #endif

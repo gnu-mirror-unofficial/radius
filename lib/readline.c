@@ -138,9 +138,9 @@ grad_readline_init(char *name,
 		   int interactive,
 		   char **(*completion_fp)(char *cmd, int start, int end))
 {
+	_interactive = interactive;
 	if (!interactive)
 		return;
-	_interactive = interactive;
 #ifdef WITH_READLINE
 	rl_readline_name = name;
 	rl_attempted_completion_function = (CPPFunction *) completion_fp;

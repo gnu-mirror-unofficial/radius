@@ -1,3 +1,13 @@
+2002-06-20  Sergey Poznyakoff  
+
+	* include/radius.h (avl_find_n, avl_delete_n): New functions.
+	* lib/avl.c: Likewise.
+	* radiusd/rewrite.y: Implemented `delete' and `%[attr](n)'.
+	* doc/texinfo/extensions.texi: Documented new rewrite features.
+	
+	* po/es.po: Updated
+	* po/no.po: Updated
+	
 2002-06-18  Sergey Poznyakoff 
 
 	* configure.ac: Raised patchlevel

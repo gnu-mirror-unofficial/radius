@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-06-14 12:37+0300\n"
+"POT-Creation-Date: 2002-06-20 17:17+0300\n"
 "PO-Revision-Date: 2002-06-12 14:20+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Norwegian-bokmål <no@li.org>\n"
@@ -187,7 +187,7 @@ msgstr ""
 msgid "alloc_string(): string too long"
 msgstr "alloc_string(): strengen er for lang"
 
-#: lib/raddb.c:56 lib/raddb.c:60 radiusd/rewrite.y:1180 radiusd/rewrite.y:2575
+#: lib/raddb.c:56 lib/raddb.c:60 radiusd/rewrite.y:1203 radiusd/rewrite.y:2618
 #, c-format
 msgid "can't open file `%s'"
 msgstr "kan ikke åpne filen «%s»"
@@ -227,7 +227,7 @@ msgstr "kan ikke åpne «%s»"
 msgid "not enough memory"
 msgstr "minnet oppbrukt"
 
-#: lib/users.l:239 radiusd/config.y:1338
+#: lib/users.l:239 radiusd/config.y:1339
 #, c-format
 msgid "can't stat `%s'"
 msgstr "«stat» feilet for «%s»"
@@ -586,116 +586,116 @@ msgstr "overskred tidsgrensen mens forventning til «finger» svaret fra NAS %s"
 msgid "%s:%d: no channel mode for `%s'"
 msgstr "%s:%d: intet modus for kanal «%s»"
 
-#: radiusd/config.y:540
+#: radiusd/config.y:541
 msgid "no levels applicable for this category"
 msgstr ""
 
-#: radiusd/config.y:642
+#: radiusd/config.y:643
 #, c-format
 msgid "%s:%d: channel `%s' not defined"
 msgstr "%s:%d: kanal «%s» ikke definert"
 
-#: radiusd/config.y:692 radiusd/config.y:722
+#: radiusd/config.y:693 radiusd/config.y:723
 #, c-format
 msgid "%s:%d: no such module name: %s"
 msgstr "%s:%d: intet slik modul: %s"
 
-#: radiusd/config.y:705
+#: radiusd/config.y:706
 #, c-format
 msgid "%s:%d: invalid level: %s"
 msgstr "%s:%d: ugyldig nivå: %s"
 
-#: radiusd/config.y:736
+#: radiusd/config.y:737
 msgid "usedbm statement ignored: radiusd compiled without DBM support"
 msgstr "usedbm ignorert: radiusd ble kompilert uten støtte for DBM"
 
-#: radiusd/config.y:749
+#: radiusd/config.y:750
 msgid "snmp statement ignored: radiusd compiled without snmp support"
 msgstr "snmp ignorert: radiusd ble kompilert uten støtte for SNMP"
 
-#: radiusd/config.y:758
+#: radiusd/config.y:759
 #, c-format
 msgid "invalid netmask length: %d"
 msgstr "ugyldig nettmask lengde: %d"
 
 # FIXME: This is not an acl at all. The message is ambiguous
-#: radiusd/config.y:807
+#: radiusd/config.y:808
 #, c-format
 msgid "%s:%d: no such acl: %s"
 msgstr "%s:%d: intet slik ACL: %s"
 
-#: radiusd/config.y:873
+#: radiusd/config.y:874
 #, c-format
 msgid "%s:%d: community %s already declared"
 msgstr "%s:%d: felleskapen «%s» ble allerede definert"
 
-#: radiusd/config.y:911
+#: radiusd/config.y:912
 #, c-format
 msgid "%s:%d: undefined community %s"
 msgstr "%s:%d: felleskapen «%s» er ikke definert"
 
-#: radiusd/config.y:1006
+#: radiusd/config.y:1007
 msgid "guile statement ignored: radiusd compiled without guile support"
 msgstr "guile ignorert: radiusd ble kompilert uten støtte for guile"
 
-#: radiusd/config.y:1023 radiusd/config.y:1035
+#: radiusd/config.y:1024 radiusd/config.y:1036
 msgid "wrong datatype (should be string)"
 msgstr "feil datatype (forventet streng)"
 
-#: radiusd/config.y:1181 radiusd/rewrite.y:1435
+#: radiusd/config.y:1182 radiusd/rewrite.y:1458
 #, c-format
 msgid "%s:%d: unexpected EOF in comment started at line %d"
 msgstr "%s:%d: uventet slutt-på-fil i kommentar begynt på linje %d"
 
-#: radiusd/config.y:1231
+#: radiusd/config.y:1232
 #, c-format
 msgid "INTERNAL ERROR parsing %s near %d: out of putback space"
 msgstr "INTERN FEIL ved kjøring av %s nær linje %d: Ikke ledig plass"
 
-#: radiusd/config.y:1273 radiusd/config.y:1294 radiusd/config.y:1318
+#: radiusd/config.y:1274 radiusd/config.y:1295 radiusd/config.y:1319
 #, fuzzy
 msgid "token too long"
 msgstr "strengen for lang"
 
-#: radiusd/config.y:1346
+#: radiusd/config.y:1347
 #, c-format
 msgid "can't open config file `%s'"
 msgstr "kan ikke åpne konfigurasjonsfil «%s»"
 
-#: radiusd/config.y:1363
+#: radiusd/config.y:1364
 #, c-format
 msgid "reading %s"
 msgstr "lese %s"
 
-#: radiusd/config.y:1392
+#: radiusd/config.y:1393
 msgid "ready"
 msgstr "klar"
 
-#: radiusd/config.y:1418
+#: radiusd/config.y:1419
 #, c-format
 msgid "%s:%d: no such service: %s"
 msgstr "%s:%d: ingen slik tjeneste: %s"
 
-#: radiusd/config.y:1441 radiusd/sql.c:344
+#: radiusd/config.y:1442 radiusd/sql.c:344
 #, c-format
 msgid "%s:%d: unknown host: %s"
 msgstr "%s:%d: ukjent vert: %s"
 
-#: radiusd/config.y:1455
+#: radiusd/config.y:1456
 #, c-format
 msgid "%s:%d: wrong datatype (should be %s)"
 msgstr "%s:%d: feil datatype (forventet %s)"
 
-#: radiusd/config.y:1484
+#: radiusd/config.y:1485
 #, c-format
 msgid "INTERNAL ERROR at %s:%d: unknown datatype %d"
 msgstr "INTERN FEIL (%s:%d): ukjent datatype %d"
 
-#: radiusd/config.y:1553
+#: radiusd/config.y:1554
 msgid "Statement has no effect."
 msgstr ""
 
-#: radiusd/config.y:1555
+#: radiusd/config.y:1556
 #, c-format
 msgid "%s:%d: `%s' is obsolete. %s"
 msgstr "%s:%d: «%s» er utdatert. %s"
@@ -1163,24 +1163,24 @@ msgstr "ukjent modus: %s"
 msgid "invalid IP address: %s"
 msgstr "ulovlig IP adresse: %s"
 
-#: radiusd/radiusd.c:432
+#: radiusd/radiusd.c:435
 #, fuzzy
 msgid "can't create watcher: not started as absolute pathname"
 msgstr "Kan ikke starte om: programnavnet er ikke et absolutt filnavn"
 
-#: radiusd/radiusd.c:455
+#: radiusd/radiusd.c:469
 msgid "Sorry, your account is currently closed\n"
 msgstr "Beklager, Deres konto er stengt\n"
 
-#: radiusd/radiusd.c:457
+#: radiusd/radiusd.c:471
 msgid "Password has expired\n"
 msgstr "Passordet er ikke lenger gyldig\n"
 
-#: radiusd/radiusd.c:459
+#: radiusd/radiusd.c:473
 msgid "Password will expire in %R{Password-Expire-Days} Days\n"
 msgstr "Passordet må endres innen %R{Password-Expire-Days} dager\n"
 
-#: radiusd/radiusd.c:461
+#: radiusd/radiusd.c:475
 msgid ""
 "\n"
 "Access denied\n"
@@ -1188,7 +1188,7 @@ msgstr ""
 "\n"
 "Tilgang nektet\n"
 
-#: radiusd/radiusd.c:463
+#: radiusd/radiusd.c:477
 msgid ""
 "\n"
 "Realm quota exceeded - access denied\n"
@@ -1196,7 +1196,7 @@ msgstr ""
 "\n"
 "«realm» kvoten er overskredet - tilgang nektet\n"
 
-#: radiusd/radiusd.c:465
+#: radiusd/radiusd.c:479
 msgid ""
 "\n"
 "You are already logged in %R{Simultaneous-Use} times - access denied\n"
@@ -1204,7 +1204,7 @@ msgstr ""
 "\n"
 "De er allerede innlogget %R{Simultaneous-Use} ganger - tilgang nektet\n"
 
-#: radiusd/radiusd.c:467
+#: radiusd/radiusd.c:481
 msgid ""
 "\n"
 "You are already logged in - access denied\n"
@@ -1212,119 +1212,119 @@ msgstr ""
 "\n"
 "De er allerede innlogget - tilgang nektet\n"
 
-#: radiusd/radiusd.c:469
+#: radiusd/radiusd.c:483
 msgid "You are calling outside your allowed timespan\n"
 msgstr "Forespørsel utenfor gyldig tidsintervall\n"
 
-#: radiusd/radiusd.c:628
+#: radiusd/radiusd.c:631
 msgid "Ready to process requests."
 msgstr "Klar for tilkoblinger."
 
-#: radiusd/radiusd.c:813
+#: radiusd/radiusd.c:816
 msgid "failed in select() - exit."
 msgstr "feil under select() - avslutning."
 
-#: radiusd/radiusd.c:817
+#: radiusd/radiusd.c:820
 msgid "Normal shutdown."
 msgstr "Normal avslutning."
 
-#: radiusd/radiusd.c:820
+#: radiusd/radiusd.c:823
 #, c-format
 msgid "exit on signal (%d)"
 msgstr "avslutning under signal (%d)"
 
-#: radiusd/radiusd.c:831
+#: radiusd/radiusd.c:834
 msgid "flushing request queues"
 msgstr "tømmer forespørsel-køer"
 
-#: radiusd/radiusd.c:848
+#: radiusd/radiusd.c:851
 msgid "restart initiated"
 msgstr "omstart påbegynt"
 
-#: radiusd/radiusd.c:851
+#: radiusd/radiusd.c:854
 msgid "can't restart: not started as absolute pathname"
 msgstr "Kan ikke starte om: programnavnet er ikke et absolutt filnavn"
 
-#: radiusd/radiusd.c:888
+#: radiusd/radiusd.c:891
 msgid "restarting radius"
 msgstr "starter tjenesten på nytt"
 
-#: radiusd/radiusd.c:890
+#: radiusd/radiusd.c:893
 msgid "RADIUS NOT RESTARTED: exec failed"
 msgstr "RADIUSD STARTET IKKE: feil under exec"
 
-#: radiusd/radiusd.c:906
+#: radiusd/radiusd.c:909
 msgid "Starting - reading configuration files ..."
 msgstr "Starter - leser konfigurasjonsfiler"
 
-#: radiusd/radiusd.c:908
+#: radiusd/radiusd.c:911
 msgid "Reloading configuration files."
 msgstr "Omleser konfiguratjonsfiler"
 
-#: radiusd/radiusd.c:954
+#: radiusd/radiusd.c:957
 msgid "Errors reading config file - EXITING"
 msgstr "Feil ved lesing av konfigurasjonsfiler - avslutter!"
 
-#: radiusd/radiusd.c:979
+#: radiusd/radiusd.c:982
 msgid "can't find out my own IP address"
 msgstr "kan ikke finne min egen IP adresse"
 
-#: radiusd/radiusd.c:993
+#: radiusd/radiusd.c:996
 msgid "Reloading configuration now"
 msgstr "Nå leser konfigurasjonsfiler på nytt"
 
-#: radiusd/radiusd.c:1003
+#: radiusd/radiusd.c:1006
 #, c-format
 msgid "Dumping users db to `%s'"
 msgstr "bruker database lagret til «%s»"
 
-#: radiusd/radiusd.c:1023
+#: radiusd/radiusd.c:1026
 msgid "can't restart: radiusd not started as absolute pathname"
 msgstr "Kan ikke starte om: programnavnet er ikke et absolutt filnavn"
 
-#: radiusd/radiusd.c:1036
+#: radiusd/radiusd.c:1039
 msgid "RADIUSD RUNNING"
 msgstr "RADIUSD KJØRER"
 
 # FIXME: Suspendert?
-#: radiusd/radiusd.c:1043
+#: radiusd/radiusd.c:1046
 #, fuzzy
 msgid "RADIUSD SUSPENDED"
 msgstr "RADIUSD STANSET"
 
-#: radiusd/radiusd.c:1081
+#: radiusd/radiusd.c:1084
 #, c-format
 msgid "%u classes, %u buckets are using %u bytes of memory"
 msgstr "%u klasser, %u sider bruker %u byter av minnet"
 
-#: radiusd/radiusd.c:1088
+#: radiusd/radiusd.c:1091
 #, fuzzy, c-format
 msgid "memory utilization: %u.%1u%%"
 msgstr "minneutnyttelse: %u.%1u%%"
 
-#: radiusd/radiusd.c:1093
+#: radiusd/radiusd.c:1096
 msgid "    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"
 msgstr ""
 
-#: radiusd/radiusd.c:1098
+#: radiusd/radiusd.c:1101
 #, c-format
 msgid "malloc statistics: %d blocks, %d bytes"
 msgstr ""
 
-#: radiusd/radiusd.c:1270
+#: radiusd/radiusd.c:1273
 msgid "Dropping packet"
 msgstr "Slet forespørselen"
 
-#: radiusd/radiusd.c:1293
+#: radiusd/radiusd.c:1296
 #, c-format
 msgid "Retransmitting %s reply"
 msgstr "Sender %s svaret på nytt"
 
-#: radiusd/radiusd.c:1297
+#: radiusd/radiusd.c:1300
 msgid "request failed"
 msgstr ""
 
-#: radiusd/radiusd.c:1415
+#: radiusd/radiusd.c:1418
 #, c-format
 msgid "unknown request code %d"
 msgstr "ukjent forespørselkode %d"
@@ -1339,198 +1339,198 @@ msgstr "INTERN FEIL (%s:%d): attributt %d har ulovlig type (%d)"
 msgid "Can't spawn new thread: %s"
 msgstr "Kan ikke starter ny tråd: %s"
 
-#: radiusd/request.c:214
+#: radiusd/request.c:225
 #, fuzzy
 msgid "request timed out in queue"
 msgstr "Forespørsel overskred tidsgrensen mens i køen"
 
-#: radiusd/request.c:229 radiusd/request.c:385
+#: radiusd/request.c:240 radiusd/request.c:396
 #, c-format
 msgid "Killing unresponsive %s thread %d"
 msgstr ""
 
-#: radiusd/request.c:257
+#: radiusd/request.c:268
 msgid "duplicate request"
 msgstr "duplisert forespørsel"
 
-#: radiusd/request.c:282
+#: radiusd/request.c:293
 msgid "too many requests in queue"
 msgstr "for mange forespørsler i køen"
 
-#: radiusd/request.c:292
+#: radiusd/request.c:303
 msgid "too many requests of this type"
 msgstr "for mange forespørsler av denne typen"
 
-#: radiusd/rewrite.y:940
+#: radiusd/rewrite.y:943
 msgid "nothing to break from"
 msgstr ""
 
-#: radiusd/rewrite.y:955
+#: radiusd/rewrite.y:958
 msgid "nothing to continue"
 msgstr ""
 
-#: radiusd/rewrite.y:1016
+#: radiusd/rewrite.y:1027
 #, c-format
 msgid "%s:%d: undefined variable: %s"
 msgstr "%s:%d: variabel «%s» er ikke definert"
 
-#: radiusd/rewrite.y:1515
+#: radiusd/rewrite.y:1539
 msgid "unterminated character constant"
 msgstr ""
 
-#: radiusd/rewrite.y:1559
+#: radiusd/rewrite.y:1583
 #, fuzzy, c-format
 msgid "%s:%d: unknown attribute %s"
 msgstr "%s:%d: ukjent attributt «%s»"
 
-#: radiusd/rewrite.y:2274 radiusd/rewrite.y:2905
+#: radiusd/rewrite.y:2303 radiusd/rewrite.y:2958
 #, c-format
 msgid "%s:%d: implicit %s to %s coercion"
 msgstr ""
 
-#: radiusd/rewrite.y:2294 radiusd/rewrite.y:2347
+#: radiusd/rewrite.y:2337 radiusd/rewrite.y:2390
 #, c-format
 msgid "%s:%d: implicit string to integer coercion"
 msgstr ""
 
-#: radiusd/rewrite.y:2320
+#: radiusd/rewrite.y:2363
 msgid "operation not applicable for strings"
 msgstr ""
 
-#: radiusd/rewrite.y:2369
+#: radiusd/rewrite.y:2412
 #, c-format
 msgid "%s:%d: implicit integer to string coercion"
 msgstr ""
 
-#: radiusd/rewrite.y:2438 radiusd/rewrite.y:2508
+#: radiusd/rewrite.y:2481 radiusd/rewrite.y:2551
 #, c-format
 msgid "%s:%d: (arg %d) implicit %s to %s coercion"
 msgstr ""
 
-#: radiusd/rewrite.y:2455 radiusd/rewrite.y:2522
+#: radiusd/rewrite.y:2498 radiusd/rewrite.y:2565
 #, fuzzy, c-format
 msgid "%s:%d: too many arguments in call to %s"
 msgstr "%s:%d: for mange attributter til %s"
 
-#: radiusd/rewrite.y:2460 radiusd/rewrite.y:2528
+#: radiusd/rewrite.y:2503 radiusd/rewrite.y:2571
 #, fuzzy, c-format
 msgid "%s:%d: too few arguments in call to %s"
 msgstr "%s:%d: for få argumenter til %s"
 
-#: radiusd/rewrite.y:2556
+#: radiusd/rewrite.y:2599
 msgid "Undefined"
 msgstr "Ikke definert"
 
-#: radiusd/rewrite.y:2558
+#: radiusd/rewrite.y:2601
 msgid "integer"
 msgstr ""
 
-#: radiusd/rewrite.y:2560
+#: radiusd/rewrite.y:2603
 #, fuzzy
 msgid "string"
 msgstr "streng"
 
-#: radiusd/rewrite.y:2562
+#: radiusd/rewrite.y:2605
 msgid "UNKNOWN"
 msgstr "UKJENT"
 
-#: radiusd/rewrite.y:2879
+#: radiusd/rewrite.y:2932
 #, c-format
 msgid "%s:%d: missing return statement"
 msgstr ""
 
-#: radiusd/rewrite.y:3007 radiusd/rewrite.y:3018
+#: radiusd/rewrite.y:3060 radiusd/rewrite.y:3071
 #, c-format
 msgid "%s:%d: divide by zero"
 msgstr ""
 
-#: radiusd/rewrite.y:3603
+#: radiusd/rewrite.y:3691
 #, c-format
 msgid "%s:%d: regexp error: %s"
 msgstr ""
 
-#: radiusd/rewrite.y:3651
+#: radiusd/rewrite.y:3739
 msgid "out of pushdown space"
 msgstr ""
 
-#: radiusd/rewrite.y:3668 radiusd/rewrite.y:3698
+#: radiusd/rewrite.y:3756 radiusd/rewrite.y:3786
 msgid "heap overrun"
 msgstr ""
 
-#: radiusd/rewrite.y:3712 radiusd/rewrite.y:3743
+#: radiusd/rewrite.y:3800 radiusd/rewrite.y:3831
 msgid "out of popup"
 msgstr ""
 
-#: radiusd/rewrite.y:3813
+#: radiusd/rewrite.y:3901
 msgid "rewrite runtime error"
 msgstr ""
 
-#: radiusd/rewrite.y:3930
+#: radiusd/rewrite.y:4026
 msgid "can't create A/V pair"
 msgstr ""
 
-#: radiusd/rewrite.y:4138 radiusd/rewrite.y:4154
+#: radiusd/rewrite.y:4302 radiusd/rewrite.y:4318
 msgid "division by zero!"
 msgstr ""
 
-#: radiusd/rewrite.y:4340
+#: radiusd/rewrite.y:4504
 #, c-format
 msgid "rewrite regex failure: %s. Input: %s"
 msgstr ""
 
-#: radiusd/rewrite.y:4392
+#: radiusd/rewrite.y:4556
 msgid "pc out of range"
 msgstr ""
 
-#: radiusd/rewrite.y:4564
+#: radiusd/rewrite.y:4728
 #, c-format
 msgid "%s:%d: redefinition of function %s"
 msgstr ""
 
-#: radiusd/rewrite.y:4567
+#: radiusd/rewrite.y:4731
 #, c-format
 msgid "%s:%d: previously defined here"
 msgstr ""
 
-#: radiusd/rewrite.y:4645 radiusd/rewrite.y:4751
+#: radiusd/rewrite.y:4809 radiusd/rewrite.y:4915
 #, c-format
 msgid "function %s not defined"
 msgstr "Funksjonen %s er ikke definert"
 
-#: radiusd/rewrite.y:4691
+#: radiusd/rewrite.y:4855
 #, fuzzy, c-format
 msgid "%s(): wrong number of arguments (should be %d, passed %d)"
 msgstr "%s(): feil antall argumenter (forventet %d, overført %d)"
 
-#: radiusd/rewrite.y:4733
+#: radiusd/rewrite.y:4897
 #, c-format
 msgid "malformed function call: %s"
 msgstr "feilaktig funksjonkall: %s"
 
-#: radiusd/rewrite.y:4741
+#: radiusd/rewrite.y:4905
 msgid "missing '(' in function call"
 msgstr "mangler '(' i funksjonkall"
 
-#: radiusd/rewrite.y:4745
+#: radiusd/rewrite.y:4909
 msgid "missing ')' in function call"
 msgstr "mangler ')' i funksjonkall"
 
-#: radiusd/rewrite.y:4786
+#: radiusd/rewrite.y:4950
 #, c-format
 msgid "calling %s: expected ',' but found %s after arg %d"
 msgstr ""
 
-#: radiusd/rewrite.y:4796
+#: radiusd/rewrite.y:4960
 #, c-format
 msgid "too many arguments for %s"
 msgstr "for mange argumenter til %s"
 
-#: radiusd/rewrite.y:4822
+#: radiusd/rewrite.y:4986
 #, c-format
 msgid "too few arguments for %s"
 msgstr "for få argumenter til %s"
 
-#: radiusd/rewrite.y:4873
+#: radiusd/rewrite.y:5037
 #, c-format
 msgid "function %s() requires %d parameters"
 msgstr ""

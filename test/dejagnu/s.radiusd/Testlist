@@ -32,4 +32,5 @@ Acct-stop.exp
 Rewrite.exp
 Execwait.exp
 Scheme-acct.exp
+Stress.exp
 Stop.exp

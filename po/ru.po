@@ -17,7 +17,7 @@ msgstr ""
 "Project-Id-Version: radius 1.2.94\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
 "POT-Creation-Date: 2004-09-16 11:03+0300\n"
-"PO-Revision-Date: 2004-09-16 12:58+0300\n"
+"PO-Revision-Date: 2004-09-16 16:03+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -1378,7 +1378,7 @@ msgstr "Регистрировать пароли пользователей"
 
 #: radiusd/radiusd.c:83
 msgid "Show compilation defaults"
-msgstr "Показать настройки компиляции:\n"
+msgstr "Показать настройки компиляции"
 
 #: radiusd/radiusd.c:209
 msgid "radiusd compiled without DBM support"

@@ -358,7 +358,7 @@ radrecv(host, udp_port, buffer, length)
          */
 
         radreq = radreq_alloc();
-        
+        debug(1,("allocated radreq: %p",radreq));
         memset(radreq, 0, sizeof(RADIUS_REQ));
 
         auth = (AUTH_HDR *)buffer;

@@ -59,5 +59,7 @@ REVOKE ALL on "groups" from PUBLIC;
 GRANT SELECT on "groups" to "DB_USER";
 REVOKE ALL on "attrib" from PUBLIC;
 GRANT SELECT on "attrib" to "DB_USER";
+REVOKE ALL on "ippool" from PUBLIC;
+GRANT SELECT,UPDATE on "ippool" to "DB_USER";
 })})
 divert{}dnl

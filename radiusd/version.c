@@ -45,6 +45,9 @@ static char *sys_def[] = {
 #if defined(__NetBSD__)
 	"NetBSD",
 #endif
+#if defined(__OpenBSD__)
+        "OpenBSD",
+#endif
 #if defined(sun)
 	"sun",
 #endif

@@ -56,7 +56,7 @@ void
 radreq_free(radreq)
         RADIUS_REQ *radreq;
 {
-        free_string(radreq->realm);
+	free_string(radreq->remote_user);
         avl_free(radreq->reply_pairs);
         efree(radreq->reply_msg);
         avl_free(radreq->server_reply);

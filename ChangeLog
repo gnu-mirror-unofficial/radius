@@ -1,3 +1,20 @@
+2003-10-14  Sergey Poznyakoff
+
+	* include/parser.h (struct matching_rule): Removed `next'
+	* include/radius.h (format_pair): Changed declaration.
+	* lib/avl.c (avl_fprint): Added new argument: typeflag
+	* lib/radpdu.c: Updated calls to format_pair().
+	* radiusd/acct.c: Likewise.
+	* radiusd/rewrite.y: Likewise.
+	* radiusd/tsh.c: Likewise.
+	* lib/util.c (format_pair): New argument typeflag.
+	* radiusd/files.c (huntgroups,hints): Changed from explicit lists
+	to RAD_LIST.
+	* radiusd/radck.c (fix_reply_pairs): Call compile_pair(). Warn
+	about eventual use of Add-Port-To-IP-Address.
+
+	* radscripts/radctl.m4: Restored dump option
+	
 2003-10-14  Sergey Poznyakoff 
 
 	* include/radius.h (LOCUS): New datatype.

@@ -10,15 +10,11 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-sbin_PROGRAMS=radctl radauth radtest
-radctl_SOURCES=radctl.m4
-radauth_SOURCES=radauth.m4
-bin_PROGRAMS=radping radgrep builddbm
-radping_SOURCES=radping.m4
-radgrep_SOURCES=radgrep.m4
-radtest_SOURCES=radtest.m4
-builddbm_SOURCES=builddbm.m4
-EXTRA_DIST=radscripts.m4
+sbin_SCRIPTS=radctl radauth radtest
+bin_SCRIPTS=radping radgrep builddbm
+EXTRA_DIST=radscripts.m4 radctl.m4 radauth.m4 radtest.m4 \
+           radping.m4 radgrep.m4 builddbm.m4
+CLEANFILES=$(sbin_SCRIPTS) $(bin_SCRIPTS)
 
 if GUILE
 GUILE_ENABLE=-DGUILE=1

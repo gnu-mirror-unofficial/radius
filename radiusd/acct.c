@@ -553,13 +553,13 @@ write_detail(radreq, authtype, f)
                 /* Add non-protocol attibutes. */
                 fprintf(outfd, "\tTimestamp = %ld\n", curtime);
                 switch (authtype) {
-                    case 0:
+                    case REQ_AUTH_OK:
                         fprintf( outfd, "\tRequest-Authenticator = Verified\n");
                         break;
-                    case 1:
+                    case REQ_AUTH_ZERO:
                         fprintf( outfd, "\tRequest-Authenticator = None\n");
                         break;
-                    case 2:
+                    case REQ_AUTH_BAD:
                         fprintf( outfd, "\tRequest-Authenticator = Unverified\n");
                         break;
                     default:
@@ -616,10 +616,8 @@ rad_accounting(radreq, activefd)
         log_open(L_ACCT);
         /* See if we know this client, then check the request authenticator. */
         auth = calc_acctdigest(radreq);
-        if (auth < 0) {
+	if (auth == REQ_AUTH_BAD) 
                 stat_inc(acct, radreq->ipaddr, num_bad_sign);
-                return -1;
-        }
 
         huntgroup_access(radreq);
 

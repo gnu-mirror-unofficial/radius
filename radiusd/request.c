@@ -304,7 +304,7 @@ request_put(type, data, activefd, numpending)
         }
 
         /* This is a new request */
-        if (request_count >= config.max_requests) {
+        if (request_count >= max_requests) {
                 if (!to_replace) {
                         request_drop(type, data, NULL,
 				     activefd,

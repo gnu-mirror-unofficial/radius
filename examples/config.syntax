@@ -91,6 +91,7 @@ auth {
 		# interfaces available. Default port number can be overridden
 		# as shown in the example:
 	listen localhost, 192.168.10.1:1842;
+	forward remote, remote2:1645;
 	max-requests 127;	# Maximum number of AUTH requests in queue
 	time-to-live 25;	# Request time to live
 	request-cleanup-delay 10; # Number of seconds the request remains

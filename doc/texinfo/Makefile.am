@@ -102,7 +102,10 @@ radius.dvi.gz: radius.dvi
 
 radius.ps.gz: radius.ps
 	gzip -c radius.ps > radius.ps.gz
-	
+
+radius.pdf.gz: radius.pdf
+	gzip -c radius.pdf > radius.pdf.gz
+
 radius.texi.tar.gz:
 	tar cfz radius.texi.tar.gz *.texi
 
@@ -114,6 +117,7 @@ WEB_HTML=\
 WEB_BIN=\
  radius.info.tar.gz\
  radius.dvi.gz\
+ radius.pdf.gz\
  radius.ps.gz\
  radius.texi.tar.gz\
  radius.text

@@ -1,3 +1,10 @@
+2001-12-06 Sergey Poznyakoff
+
+	* doc/texinfo/attributes.texi: Restructured; Documented
+	  new attributes.
+	* raddb/dictionary: Fixed additivity of Pam-Auth and
+	  Auth-Data attributes: both must be '=' (replace)
+	
 2001-12-05 Sergey Poznyakoff
 
 	* Makefile.am: Fixed invocation of debugmod.

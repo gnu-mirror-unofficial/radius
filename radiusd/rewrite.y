@@ -5100,6 +5100,71 @@ bi_request_code()
 }
 
 static void
+bi_nas_name()
+{
+        grad_nas_t *nas;
+	grad_uint32_t ip = (grad_uint32_t) getarg(1);
+
+	if ((nas = grad_nas_lookup_ip(ip)) != NULL) {
+		char *s = nas->shortname[0] ? nas->shortname : nas->longname;
+		pushstr(s, strlen(s));
+        } else {
+		char nasname[MAX_LONGNAME];
+		
+		grad_ip_gethostname(ip, nasname, sizeof(nasname));
+		pushstr(nasname, strlen(nasname));
+	}
+}
+
+static void
+bi_nas_short_name()
+{
+        grad_nas_t *nas;
+	grad_uint32_t ip = (grad_uint32_t) getarg(1);
+
+	if ((nas = grad_nas_lookup_ip(ip)) && nas->shortname[0]) {
+		pushstr(nas->shortname, strlen(nas->shortname));
+        } else {
+		char nasname[MAX_LONGNAME];
+		
+		grad_ip_gethostname(ip, nasname, sizeof(nasname));
+		pushstr(nasname, strlen(nasname));
+	}
+}
+
+static void
+bi_nas_full_name()
+{
+        grad_nas_t *nas;
+	grad_uint32_t ip = (grad_uint32_t) getarg(1);
+
+	if ((nas = grad_nas_lookup_ip(ip)) != NULL) {
+		pushstr(nas->longname, strlen(nas->longname));
+        } else {
+		char nasname[MAX_LONGNAME];
+		
+		grad_ip_gethostname(ip, nasname, sizeof(nasname));
+		pushstr(nasname, strlen(nasname));
+	}
+}
+
+static void
+bi_gethostbyaddr()
+{
+	grad_uint32_t ip = (grad_uint32_t) getarg(1);
+	char nasname[MAX_LONGNAME];
+		
+	grad_ip_gethostname(ip, nasname, sizeof(nasname));
+	pushstr(nasname, strlen(nasname));
+}
+
+static void
+bi_gethostbyname()
+{
+	pushn((RWSTYPE) grad_ip_gethostaddr((char *) getarg(1)));
+}
+
+static void
 rw_regerror(const char *prefix, regex_t *rx, int rc)
 {
 	size_t sz = regerror(rc, rx, NULL, 0);
@@ -5449,7 +5514,13 @@ static builtin_t builtin[] = {
 	{ bi_request_source_port, "request_source_port", Integer, "" },
 	{ bi_request_id, "request_id", Integer, "" },
 	{ bi_request_code, "request_code", Integer, "" },
-	
+	/* Radius database */
+	{ bi_nas_name, "nas_name", String, "i" },
+	{ bi_nas_short_name, "nas_short_name", String, "i" },
+	{ bi_nas_full_name, "nas_full_name", String, "i" },
+	/* DNS lookups */
+	{ bi_gethostbyaddr, "gethostbyaddr", Integer, "s" },
+	{ bi_gethostbyname, "gethostbyname", String, "i" },
 	{ NULL }
 };
 

@@ -58,7 +58,7 @@ void
 avp_free(p)	
 	VALUE_PAIR *p;
 {
-	if (p->type == PW_TYPE_STRING) {
+	if (p->type == PW_TYPE_STRING || p->eval) {
 		free_string(p->strvalue);
 	}
 	free_entry(p);

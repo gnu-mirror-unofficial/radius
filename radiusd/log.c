@@ -257,12 +257,12 @@ log_to_channel(Channel *chan, int cat, int pri,
 }
 
 void
-vlog(int level,
-     const RADIUS_REQ *req,
-     const LOCUS *loc,
-     const char *func_name,
-     int en,
-     const char *fmt, va_list ap)
+radiusd_logger(int level,
+	       const RADIUS_REQ *req,
+	       const LOCUS *loc,
+	       const char *func_name,
+	       int en,
+	       const char *fmt, va_list ap)
 {
         Channel *chan;
         int cat, pri;

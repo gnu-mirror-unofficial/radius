@@ -60,6 +60,7 @@
 #  endif
 # endif				    
 #else
+# define STRUCT_SHADOW_PASSWD struct passwd
 # define GETSPNAM(n) NULL
 # define SHADOW_PASSWD_ENCRYPTED(s) NULL
 #endif
@@ -86,34 +87,56 @@ check_user_name(char *p)
         return *p;
 }
 
-/* Tests to see if the users password has expired.
-   Returns the number of days before expiration if a warning is
-   required, otherwise 0 for success and -1 for failure. */
-static int
-pw_expired(UINT4 exptime)
-{
-        struct timeval  tp;
-        struct timezone tzp;
-        UINT4 exp_remain;
-        int exp_remain_int;
-
-        gettimeofday(&tp, &tzp);
-        if (tp.tv_sec > exptime)
-                return -1;
-
-        if (warning_seconds != 0) {
-                if (tp.tv_sec > exptime - warning_seconds) {
-                        exp_remain = exptime - tp.tv_sec;
-                        exp_remain /= (UINT4)SECONDS_PER_DAY;
-                        exp_remain_int = exp_remain;
-                        return exp_remain_int;
-                }
-        }
-        return 0;
-}
-
 LOCK_DECLARE(lock)
 
+static enum auth_status
+unix_expiration(char *name, time_t *exp)
+{
+	enum auth_status status = auth_ok;
+#ifdef SHADOW_PASSWD_EXPIRE
+	STRUCT_SHADOW_PASSWD *spwd = GETSPNAM(name);
+
+	if (spwd && SHADOW_PASSWD_EXPIRE(spwd) > 0) {
+		time_t t = time(NULL);
+		if (t > SHADOW_PASSWD_EXPIRE(spwd) * SECONDS_PER_DAY)
+			status = auth_account_expired;
+		else {
+			*exp = SHADOW_PASSWD_EXPIRE(spwd) * SECONDS_PER_DAY - t;
+			status = auth_valid;
+		}
+	}
+#elif defined(HAVE_STRUCT_PASSWD_PW_EXPIRE)
+	struct passwd *pwd;
+	struct timeval tv;
+	time_t t = 0;
+	
+	if (pwd = getpwnam(name)) {
+		gettimeofday(&tv, NULL);
+		if (pwd->pw_expire) {
+			if (tv.tv_sec >= pwd->pw_expire)
+				status = auth_account_expired;
+			else {
+				t = pwd->pw_change - tv.tv_sec;
+				status = auth_valid;
+			}
+		}
+# if defined(HAVE_STRUCT_PASSWD_PW_CHANGE)
+		if (pwd->pw_change) {
+			if (tv.tv_sec >= pwd->pw_change)
+				status = auth_password_expired;
+			else if (status == auth_ok
+				 || pwd->pw_change - tv.tv_sec < t) {
+				t = pwd->pw_change - tv.tv_sec;
+				status = auth_valid;
+			}
+		}
+		*exp = t;
+# endif
+	}
+#endif
+	return status;
+}
+	
 static int
 unix_pass(char *name, char *passwd)
 {
@@ -133,20 +156,8 @@ unix_pass(char *name, char *passwd)
 			encrypted_pass = pwd->pw_passwd;
 	}
 
-	if (encrypted_pass) {
-#ifdef SHADOW_PASSWD_EXPIRE
-		/* Check if password has expired. */
-		if (spwd
-		    && SHADOW_PASSWD_EXPIRE(spwd) > 0
-		    && (time(NULL) / SECONDS_PER_DAY) > SHADOW_PASSWD_EXPIRE(spwd)) {
-			radlog(L_NOTICE,
-			       "unix_pass: [%s]: %s",
-			       name, _("password has expired"));
-			encrypted_pass = NULL;
-		}
-#endif
-
 #ifdef SHADOW_PASSWD_LOCK
+	if (encrypted_pass) {
 		/* Check if the account is locked. */
 		if (SHADOW_PASSWD_LOCK(spwd) != 1) {
 			radlog(L_NOTICE,
@@ -154,8 +165,8 @@ unix_pass(char *name, char *passwd)
 			       name, _("account locked"));
 			encrypted_pass = NULL;
 		}
-#endif 
 	}
+#endif 
 
 	if (encrypted_pass) {
 		if (encrypted_pass[0] == 0)
@@ -185,18 +196,12 @@ unix_pass(char *name, char *passwd)
 }
 
 
-/*
- *      Check password.
- *
- *      Returns:        AUTH_OK      OK
- *                      AUTH_FAIL    Password fail
- *                      AUTH_NOUSER  No such user 
- *                      AUTH_REJECT  Rejected
- *                      AUTH_IGNORE  Silently ignored                 
- */
-static int
+/* Check password. */
+static enum auth_status 
 rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
-                   VALUE_PAIR *namepair, char **user_msg, char *userpass)
+                   VALUE_PAIR *namepair, char **user_msg,
+		   char *userpass,
+		   time_t *exp)
 {
         char *ptr;
         char *real_password = NULL;
@@ -205,7 +210,7 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
         VALUE_PAIR *tmp;
         int auth_type = -1;
         int length;
-        int result;
+        enum auth_status result = auth_ok;
         char *authdata = NULL;
         char pw_digest[AUTH_VECTOR_LEN];
         int pwlen;
@@ -213,7 +218,6 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
         char *challenge;
 	int challenge_len;
 	
-        result = AUTH_OK;
         userpass[0] = 0;
 
         /* Process immediate authentication types */
@@ -222,13 +226,13 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
 
 	switch (auth_type) {
 	case DV_AUTH_TYPE_ACCEPT:
-                return AUTH_OK;
+                return auth_ok;
 
 	case DV_AUTH_TYPE_REJECT:
-                return AUTH_REJECT;
+                return auth_reject;
 
 	case DV_AUTH_TYPE_IGNORE:
-		return AUTH_IGNORE;
+		return auth_ignore;
 	}
 
         /* Find the password sent by the user. If it's not present,
@@ -247,7 +251,7 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
                         req_decrypt_password(userpass, radreq,
                                              auth_item);
         } else /* if (auth_item == NULL) */
-                return AUTH_FAIL;
+                return auth_fail;
         
         /* Set up authentication data */
         if ((tmp = avl_find(check_item, DA_AUTH_DATA)) != NULL) 
@@ -263,11 +267,11 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
 #ifdef USE_SQL
                         real_password = rad_sql_pass(radreq, authdata);
                         if (!real_password)
-                                return AUTH_NOUSER;
+                                return auth_nouser;
 #else
                         radlog_req(L_ERR, radreq,
                                    _("SQL authentication not available"));
-                        return AUTH_NOUSER;
+                        return auth_nouser;
 #endif
                         break;
                 /*NOTE: add any new location types here */
@@ -275,7 +279,7 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
                         radlog(L_ERR,
                                _("unknown Password-Location value: %ld"),
                                tmp->avp_lvalue);
-                        return AUTH_FAIL;
+                        return auth_fail;
                 }
         }
 
@@ -291,7 +295,9 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
         case DV_AUTH_TYPE_SYSTEM:
                 debug(1, ("  auth: System"));
                 if (unix_pass(name, userpass) != 0)
-                        result = AUTH_FAIL;
+                        result = auth_fail;
+		else
+			result = unix_expiration(name, exp);
                 break;
 		
         case DV_AUTH_TYPE_PAM:
@@ -304,26 +310,26 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
                 }
                 authdata = authdata ? authdata : PAM_DEFAULT_TYPE;
                 if (pam_pass(name, userpass, authdata, user_msg) != 0)
-                        result = AUTH_FAIL;
+                        result = auth_fail;
 #else
                 radlog_req(L_ERR, radreq,
                            _("PAM authentication not available"));
-                result = AUTH_NOUSER;
+                result = auth_nouser;
 #endif
                 break;
 
         case DV_AUTH_TYPE_CRYPT_LOCAL:
                 debug(1, ("  auth: Crypt"));
                 if (real_password == NULL) {
-                        result = AUTH_FAIL;
+                        result = auth_fail;
                         break;
                 }
                 pwlen = strlen(real_password)+1;
                 pwbuf = emalloc(pwlen);
                 if (!md5crypt(userpass, real_password, pwbuf, pwlen))
-                        result = AUTH_FAIL;
+                        result = auth_fail;
                 else if (strcmp(real_password, pwbuf) != 0)
-                        result = AUTH_FAIL;
+                        result = auth_fail;
                 debug(1,("pwbuf: %s", pwbuf));
                 efree(pwbuf);
                 break;
@@ -334,7 +340,7 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
                 if (auth_item->attribute != DA_CHAP_PASSWORD) {
                         if (real_password == NULL ||
                             strcmp(real_password, userpass) != 0)
-                                result = AUTH_FAIL;
+                                result = auth_fail;
                         break;
                 }
 
@@ -352,7 +358,7 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
                 strcpy(userpass, "{chap-password}");
 		
                 if (real_password == NULL) {
-                        result = AUTH_FAIL;
+                        result = auth_fail;
                         break;
                 }
 
@@ -384,13 +390,13 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
                 /* Compare them */
                 if (memcmp(pw_digest, auth_item->avp_strvalue + 1,
 			   CHAP_VALUE_LENGTH) != 0)
-                        result = AUTH_FAIL;
+                        result = auth_fail;
                 else
                         strcpy(userpass, real_password);
                 break;
 		
         default:
-                result = AUTH_FAIL;
+                result = auth_fail;
                 break;
         }
 
@@ -665,32 +671,21 @@ auth_finish_msg(AUTH_MACH *m)
                             m->req, m->user_reply);
 }
 
-
-/*
- * Check if account has expired, and if user may login now.
- */
-int
-check_expiration(AUTH_MACH *m)
+/* Check if account has expired, and if user may login now. */
+enum auth_status 
+radius_check_expiration(AUTH_MACH *m, time_t *exp)
 {
-        int result, rc;
         VALUE_PAIR *pair;
         
-        result = AUTH_OK;
         if (pair = avl_find(m->user_check, DA_EXPIRATION)) {
-                rc = pw_expired(pair->avp_lvalue);
-                if (rc < 0) {
-                        result = AUTH_FAIL;
-                        auth_format_msg(m, MSG_PASSWORD_EXPIRED);
-                } else if (rc > 0) {
-                        VALUE_PAIR *pair;
-                        pair = avp_create_integer(DA_PASSWORD_EXPIRE_DAYS,
-                                                  rc/86400);
-                        avl_add_pair(&m->user_reply, pair);
-                        auth_format_msg(m, MSG_PASSWORD_EXPIRE_WARNING);
-                }
+		struct timeval tv;
+		gettimeofday(&tv, NULL);
+		if (tv.tv_sec > pair->avp_lvalue)
+			return auth_account_expired;
+		*exp = pair->avp_lvalue - tv.tv_sec;
+		return auth_valid;
         }
-
-        return result;
+	return auth_ok;
 }
 
 
@@ -882,57 +877,81 @@ void
 sfn_validate(AUTH_MACH *m)
 {
         RADIUS_REQ *radreq = m->req;
-        int rc;
+	enum auth_status rc;
+	time_t exp;
+	VALUE_PAIR *pair;
 	
 	rc = rad_check_password(radreq,
 				m->user_check, m->namepair,
 				&m->user_msg,
-				m->userpass);
+				m->userpass,
+				&exp);
 
+	if (rc == auth_ok) 
+		rc = radius_check_expiration(m, &exp);
+	
+	switch (rc) {
+	case auth_ok:
+		break;
 
-	if (rc != AUTH_OK) { 
-		switch (rc) {
-		case AUTH_REJECT:
-			if (is_log_mode(m, RLOG_AUTH)) 
-				auth_log(m, _("Rejected"),
-					 NULL, NULL, NULL);  
-			newstate(as_reject);
-			break;
-
-		case AUTH_IGNORE:
-			if (is_log_mode(m, RLOG_AUTH)) 
-				auth_log(m, _("Ignored"),
-					 NULL, NULL, NULL);
-			newstate(as_stop);
-			return; /*NOTE: do not break!*/
-                                
-		case AUTH_NOUSER:
-			if (is_log_mode(m, RLOG_AUTH)) 
-				auth_log(m, _("No such user"),
-					 NULL, NULL, NULL);
-			newstate(as_reject_cleanup);
-			break;
-                                
-		case AUTH_FAIL:
-			if (is_log_mode(m, RLOG_AUTH)) 
-				auth_log(m,
-					 _("Login incorrect"),
-					 is_log_mode(m, RLOG_FAILED_PASS) ?
-					 m->userpass : NULL,
-					 NULL, NULL);
-			newstate(as_reject_cleanup);
-			break;
-
-		default:
-			insist_fail("sfn_validate");
+	case auth_valid:
+		exp /= SECONDS_PER_DAY;
+		if (warning_seconds != 0 && exp < warning_seconds) {
+			pair = avp_create_integer(DA_PASSWORD_EXPIRE_DAYS,
+						  exp);
+			avl_add_pair(&m->user_reply, pair);
+			auth_format_msg(m, MSG_PASSWORD_EXPIRE_WARNING);
 		}
+		break;
+		
+	case auth_reject:
+		if (is_log_mode(m, RLOG_AUTH)) 
+			auth_log(m, _("Rejected"),
+				 NULL, NULL, NULL);  
+		newstate(as_reject);
 		auth_format_msg(m, MSG_ACCESS_DENIED);
-		return;
-	}
+		break;
 
-	rc = check_expiration(m);
+	case auth_ignore:
+		if (is_log_mode(m, RLOG_AUTH)) 
+			auth_log(m, _("Ignored"),
+				 NULL, NULL, NULL);
+		newstate(as_stop);
+		break;
+                                
+	case auth_nouser:
+		if (is_log_mode(m, RLOG_AUTH)) 
+			auth_log(m, _("No such user"),
+				 NULL, NULL, NULL);
+		newstate(as_reject_cleanup);
+		auth_format_msg(m, MSG_ACCESS_DENIED);
+		break;
+                                
+	case auth_fail:
+		if (is_log_mode(m, RLOG_AUTH)) 
+			auth_log(m,
+				 _("Login incorrect"),
+				 is_log_mode(m, RLOG_FAILED_PASS) ?
+				 m->userpass : NULL,
+				 NULL, NULL);
+		newstate(as_reject_cleanup);
+		auth_format_msg(m, MSG_ACCESS_DENIED);
+		break;
 
-	if (rc != AUTH_OK) {
+	case auth_account_expired:
+		auth_format_msg(m, MSG_PASSWORD_EXPIRED);
+                newstate(as_reject_cleanup);
+                if (is_log_mode(m, RLOG_AUTH)) {
+                        auth_log(m,
+                                 _("Login incorrect"),
+                                 is_log_mode(m, RLOG_FAILED_PASS) ?
+				 m->userpass : NULL,
+                                 _("Account expired"), NULL);
+                }
+		break;
+		
+	case auth_password_expired:
+		auth_format_msg(m, MSG_PASSWORD_EXPIRED);
                 newstate(as_reject_cleanup);
                 if (is_log_mode(m, RLOG_AUTH)) {
                         auth_log(m,
@@ -941,7 +960,12 @@ sfn_validate(AUTH_MACH *m)
 				 m->userpass : NULL,
                                  _("Password expired"), NULL);
                 }
-        }
+		break;
+
+	default:
+		insist_fail("sfn_validate");
+	}
+	return;
 }
 
 void

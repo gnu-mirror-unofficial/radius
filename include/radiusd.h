@@ -500,6 +500,7 @@ void snmp_attach_nas_stat(NAS *nas);
 void snmp_init_nas_stat();
 void snmp_sort_nas_stat();
 int snmp_stmt_begin(int finish, void *data, void *up_data);
+extern struct cfg_stmt storage_stmt[];
 #endif
 
 /* stat.c */

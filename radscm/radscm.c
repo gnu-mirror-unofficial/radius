@@ -125,7 +125,7 @@ SCM_DEFINE(rad_client_list_servers, "rad-client-list-servers", 0, 0, 0,
 	SCM tail = SCM_EOL;
          
 	for (s = radclient->first_server; s; s = s->next) {
-		ipaddr2str(p, s->addr);
+		ipaddr2str(s->addr, p);
 		tail = scm_cons(SCM_LIST2(scm_makfrom0str(s->name),
 					  scm_makfrom0str(p)),
 				tail);

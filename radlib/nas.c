@@ -73,7 +73,7 @@ read_naslist_entry(unused, fc, fv, file, lineno)
 		STRING_COPY(nas.longname, fv[0]);
 	} else {
 		nas.ipaddr = get_ipaddr(fv[0]);
-		STRING_COPY(nas.longname, ip_hostname(nas.ipaddr));
+		ip_hostname(nas.ipaddr, nas.longname, sizeof(nas.longname));
 	}
 	if (fc >= 4)
 		nas.args = envar_parse_argcv(fc-3, &fv[3]);
@@ -142,11 +142,12 @@ nas_lookup_ip(ipaddr)
 
 /* Find the name of a nas (prefer short name) */
 char *
-nas_ip_to_name(ipaddr)
+nas_ip_to_name(ipaddr, buf, size)
 	UINT4 ipaddr;
+	char *buf;
+	size_t size;
 {
 	NAS *nas;
-
 	
 	if ((nas = nas_lookup_ip(ipaddr)) != NULL) {
 		if (nas->shortname[0])
@@ -154,7 +155,7 @@ nas_ip_to_name(ipaddr)
 		else
 			return nas->longname;
 	}
-	return ip_hostname(ipaddr);
+	return ip_hostname(ipaddr, buf, size);
 }
 
 /* Find the name of a nas (prefer short name) based on the request */
@@ -174,8 +175,10 @@ nas_request_to_nas(radreq)
 }
 
 char *
-nas_request_to_name(radreq)
+nas_request_to_name(radreq, buf, size)
 	RADIUS_REQ *radreq;
+	char *buf;
+	size_t size;
 {
 	UINT4 ipaddr;
 	NAS *nas;
@@ -192,7 +195,7 @@ nas_request_to_name(radreq)
 		else
 			return nas->longname;
 	}
-	return ip_hostname(ipaddr);
+	return ip_hostname(ipaddr, buf, size);
 }
 
 NAS *

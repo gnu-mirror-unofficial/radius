@@ -423,7 +423,7 @@ format_pair(pair, savep)
 		break;
 		
 	case TYPE_IPADDR:
-		ipaddr2str(buf2, pair->lvalue);
+		ipaddr2str(pair->lvalue, buf2);
 		break;
 		
 	case TYPE_DATE:
@@ -451,15 +451,4 @@ format_pair(pair, savep)
 	*savep = buf1;
 	return buf1;
 }
-
-char *
-format_ipaddr(ipaddr)
-	UINT4 ipaddr;
-{
-	static char buf[DOTTED_QUAD_LEN];
-	ipaddr2str(buf, ipaddr);
-	return buf;
-}
-
-
 

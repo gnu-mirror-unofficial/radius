@@ -971,7 +971,7 @@ read_clients_entry(unused, fc, fv, file, lineno)
 	cp->secret = estrdup(fv[1]);
 	if (fc == 3)
 		STRING_COPY(cp->shortname, fv[2]);
-	STRING_COPY(cp->longname, ip_hostname(cp->ipaddr));
+	ip_hostname(cp->ipaddr, cp->longname, sizeof(cp->longname));
 
 	cp->next = clients;
 	clients = cp;
@@ -1021,8 +1021,10 @@ client_lookup_ip(ipaddr)
  * Find the name of a client (prefer short name).
  */
 char *
-client_lookup_name(ipaddr)
+client_lookup_name(ipaddr, buf, bufsize)
 	UINT4 ipaddr;
+	char *buf;
+	size_t bufsize;
 {
 	CLIENT *cl;
 
@@ -1032,7 +1034,7 @@ client_lookup_name(ipaddr)
 		else
 			return cl->longname;
 	}
-	return ip_hostname(ipaddr);
+	return ip_hostname(ipaddr, buf, bufsize);
 }
 
 /* ****************************************************************************

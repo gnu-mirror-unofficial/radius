@@ -362,7 +362,7 @@ print_ident(var)
 		sprintf(buf, "%d", var->datum.number);
 		return make_string(buf);
 	case Ipaddress:
-		ipaddr2str(buf, var->datum.ipaddr);
+		ipaddr2str(var->datum.ipaddr, buf);
 		return make_string(buf);
 	case String:
 		return dup_string(var->datum.string);
@@ -422,7 +422,7 @@ var_print(var)
 		printf("%d", var->datum.number);
 		break;
 	case Ipaddress:
-		printf("%s", ipaddr2str(buf, var->datum.ipaddr));
+		printf("%s", ipaddr2str(var->datum.ipaddr, buf));
 		break;
 	case String:
 		printf("%s", var->datum.string);

@@ -58,19 +58,20 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
 	char *msg;
 	int activefd;
 {
-	AUTH_HDR		*auth;
-	u_short			total_length;
-	struct	sockaddr	saremote;
-	struct	sockaddr_in	*sin;
-	u_char			*ptr, *length_ptr;
-	char			*what;
-	int			len;
-	UINT4			lval;
-	u_char			digest[AUTH_DIGEST_LEN];
-	int			secretlen;
-	VALUE_PAIR		*reply;
-	int			vendorcode, vendorpec;
-
+	AUTH_HDR *auth;
+	u_short	total_length;
+	struct sockaddr	saremote;
+	struct sockaddr_in *sin;
+	u_char *ptr, *length_ptr;
+	char *what;
+	int len;
+	UINT4 lval;
+	u_char digest[AUTH_DIGEST_LEN];
+	int secretlen;
+	VALUE_PAIR *reply;
+	int vendorcode, vendorpec;
+	char buf[MAX_LONGNAME];
+	
 	auth = (AUTH_HDR *)send_buffer;
 	reply = oreply;
 
@@ -109,8 +110,8 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
 	memcpy(auth->vector, radreq->vector, AUTH_VECTOR_LEN);
 
 	debug(1, ("Sending %s of id %d to %lx (nas %s)",
-		what, radreq->id, (u_long)radreq->ipaddr,
-		nas_request_to_name(radreq)));
+		  what, radreq->id, (u_long)radreq->ipaddr,
+		  nas_request_to_name(radreq, buf, sizeof buf)));
 
 	total_length = AUTH_HDR_LEN;
 
@@ -272,10 +273,11 @@ validate_client(radreq)
 	RADIUS_REQ *radreq;
 {
 	CLIENT	*cl;
-
+	char buf[MAX_LONGNAME];
+	
 	if ((cl = client_lookup_ip(radreq->ipaddr)) == NULL) {
 		radlog(L_ERR, _("request from unknown client: %s"),
-			client_lookup_name(radreq->ipaddr));
+		       client_lookup_name(radreq->ipaddr, buf, sizeof buf));
 		return -1;
 	}
 
@@ -506,16 +508,17 @@ send_challenge(radreq, msg, state, activefd)
 	char *state;
 	int activefd;
 {
-	AUTH_HDR		*auth;
-	struct	sockaddr	saremote;
-	struct	sockaddr_in	*sin;
-	char			digest[AUTH_VECTOR_LEN];
-	int			secretlen;
-	int			total_length;
+	AUTH_HDR *auth;
+	struct sockaddr	saremote;
+	struct sockaddr_in *sin;
+	char digest[AUTH_VECTOR_LEN];
+	int secretlen;
+	int total_length;
 	int block_len;
-	u_char			*ptr;
-	int			len;
-
+	u_char *ptr;
+	int len;
+	char buf[MAX_LONGNAME];
+	
 	auth = (AUTH_HDR *)send_buffer;
 
 	/*
@@ -590,8 +593,8 @@ send_challenge(radreq, msg, state, activefd)
 	sin->sin_port = htons(radreq->udp_port);
 
 	debug(1, ("Sending Challenge of id %d to %lx (nas %s)",
-		radreq->id, (u_long)radreq->ipaddr,
-		nas_request_to_name(radreq)));
+		  radreq->id, (u_long)radreq->ipaddr,
+		  nas_request_to_name(radreq, buf, sizeof buf)));
 	
 	stat_inc(auth, radreq->ipaddr, num_challenges);
 	

@@ -1404,10 +1404,12 @@ rad_req_drop(type, radreq, status_str)
 	RADIUS_REQ *radreq;
 	char *status_str;
 {
+	char buf[MAX_LONGNAME];
+	
 	radlog(L_NOTICE,
 	       _("Dropping %s packet from client %s, ID: %d: %s"),
 	       request_class[type].name,
-	       client_lookup_name(radreq->ipaddr),
+	       client_lookup_name(radreq->ipaddr, buf, sizeof buf),
 	       radreq->id,
 	       status_str);
 

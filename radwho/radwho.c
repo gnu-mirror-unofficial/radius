@@ -72,14 +72,14 @@ void format_realm(char *buf, FORMAT *fmt, struct radutmp *ut);
 
 NAS * my_read_naslist_file(char *file);
 void my_read_realms(char *file);
-char *realm_name(UINT4 ip);
+char *realm_name(UINT4 ip, char *buf, size_t size);
 void local_who();
 void radius_who();
 void print_header();
 char * time_str(char *buffer, time_t t);
 char * proto(struct radutmp *rt);
-char * nasname(UINT4 ipaddr);
-char * hostname(UINT4 ipaddr);
+char * nasname(UINT4 ipaddr, char *buf, size_t size);
+char * hostname(UINT4 ipaddr, char *buf, size_t size);
 void parse_fmtspec(char *str);
 void set_date_format(char *s);
 void set_ip_format(char *s);
@@ -699,7 +699,7 @@ format_nas(buf, fmt, up)
 {
 	if (showip == SIP_IPADDR)
 		fmt->width = DOTTED_QUAD_LEN;
-	strcpy(buf, nasname(up->nas_address));
+	nasname(up->nas_address, buf, fmt->width);
 }
 
 void
@@ -710,7 +710,7 @@ format_address(buf, fmt, up)
 {
 	if (showip == SIP_IPADDR)
 		fmt->width = DOTTED_QUAD_LEN;
-	strcpy(buf, hostname(up->framed_address));
+	hostname(up->framed_address, buf, fmt->width);
 }
 
 void
@@ -722,7 +722,7 @@ format_realm(buf, fmt, up)
 	if (up->realm_address == 0)
 		strncpy(buf, empty, fmt->width);
 	else
-		strncpy(buf, realm_name(up->realm_address), fmt->width);
+		realm_name(up->realm_address, buf, fmt->width);
 }
 
 /*ARGSUSED*/
@@ -845,21 +845,23 @@ proto(rt)
  *	Find name of NAS
  */
 char *
-nasname(ipaddr)
+nasname(ipaddr, buf, size)
 	UINT4 ipaddr;
+	char *buf;
+	size_t size;
 {
 	NAS *cl;
 	UINT4 ip;
 	
 	if (showip != SIP_SMART)
-		return hostname(ipaddr);
+		return hostname(ipaddr, buf, size);
 
 	ip = ntohl(ipaddr);
 	for(cl = naslist; cl; cl = cl->next)
 		if (cl->ipaddr == ip)
 			break;
 	if (cl == NULL)
-		return hostname(ipaddr);
+		return hostname(ipaddr, buf, size);
 	if (cl->shortname[0])
 		return cl->shortname;
 	return cl->longname;
@@ -870,8 +872,10 @@ nasname(ipaddr)
  *	Print address of NAS.
  */
 char *
-hostname(ipaddr)
+hostname(ipaddr, buf, size)
 	UINT4 ipaddr;
+	char *buf;
+	size_t size;
 {
 	char *s, *p;
 	static char ipbuf[DOTTED_QUAD_LEN];
@@ -881,9 +885,9 @@ hostname(ipaddr)
 
 	switch (showip) {
 	case SIP_SMART:
-		return ip_hostname(ntohl(ipaddr));
+		return ip_hostname(ntohl(ipaddr), buf, size);
 	case SIP_NODOMAIN:
-		s = ip_hostname(ntohl(ipaddr));
+		s = ip_hostname(ntohl(ipaddr), buf, size);
 		for (p = s; *p && (isdigit(*p) || *p == '.'); p++)
 			;
 		if (*p == 0)
@@ -893,7 +897,7 @@ hostname(ipaddr)
 		return s;
 	default:
 	case SIP_IPADDR:
-		ipaddr2str(ipbuf, ntohl(ipaddr));
+		ipaddr2str(ntohl(ipaddr), ipbuf);
 		return ipbuf;
 	}
 }
@@ -1040,7 +1044,7 @@ my_read_naslist_file(file)
 		c->ipaddr = get_ipaddr(hostnm);
 		strcpy(c->nastype, nastype);
 		strcpy(c->shortname, shortnm);
-		strcpy(c->longname, ip_hostname(c->ipaddr));
+		ip_hostname(c->ipaddr, c->longname, sizeof(c->longname));
 
 		c->next = cl;
 		cl = c;
@@ -1091,15 +1095,17 @@ my_read_realms(file)
 }
 
 char *
-realm_name(ip)
+realm_name(ip, buf, size)
 	UINT4 ip;
+	char *buf;
+	size_t size;
 {
 	REALM *rp;
 
 	for (rp = realms; rp; rp = rp->next)
 		if (rp->ipaddr == ip)
 			return rp->realm;
-	return hostname(ip);
+	return hostname(ip, buf, size);
 }
 
 /* ***************************************************************************

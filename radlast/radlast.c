@@ -257,7 +257,7 @@ rawread()
 		strftime(ct, sizeof(ct), "%c", tm);
 
 		ipaddr = ut.framed_address;
-		ipaddr2str(ip_str, ntohl(ipaddr));
+		ipaddr2str(ntohl(ipaddr), ip_str);
 		
 		printf("%d %-*.*s %-*.*s %3.3d %-4.4s %c %-*.*s %-*.*s %-*.*s %10.10s %5.5s\n",
 		       ut.type,
@@ -647,6 +647,7 @@ print_entry(pp, bp, mark)
 	char ip_str[IP_ADDR_LEN+1];
 	time_t delta;
 	UINT4 ipaddr;
+	char buf[MAX_LONGNAME];
 	
 	tm = localtime(&bp->time);
 	strftime(ct, sizeof(ct), "%c", tm);
@@ -654,7 +655,7 @@ print_entry(pp, bp, mark)
 	ipaddr = bp->framed_address;
 	if (ipaddr == 0 && pp)
 		ipaddr = pp->ut.framed_address;
-	ipaddr2str(ip_str, ntohl(ipaddr));
+	ipaddr2str(ntohl(ipaddr), ip_str);
 
 	if (long_fmt) {                                   
 		printf("%-*.*s %-*.*s %3.3d %-4.4s %c %-*.*s %-*.*s %-*.*s %10.10s %5.5s ",
@@ -662,7 +663,7 @@ print_entry(pp, bp, mark)
 		       bp->login,
 		       
 		       nas_name_len, nas_name_len,
-		       nas_ip_to_name(ntohl(bp->nas_address)),
+		       nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
 
 		       bp->nas_port,
 
@@ -687,7 +688,7 @@ print_entry(pp, bp, mark)
 		       bp->login,
 		       
 		       nas_name_len, nas_name_len,
-		       nas_ip_to_name(ntohl(bp->nas_address)),
+		       nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
 
 		       bp->nas_port,
 
@@ -732,7 +733,8 @@ print_reboot_entry(bp)
 	char *s;
 	struct tm *tm;
 	char ct[256];
-
+	char buf[MAX_LONGNAME];
+	
 	tm = localtime(&bp->time);
 	strftime(ct, sizeof(ct), "%c", tm);
 
@@ -744,7 +746,7 @@ print_reboot_entry(bp)
 	       namesize, namesize,
 	       s,
 		       
-	       nas_ip_to_name(ntohl(bp->nas_address)),
+	       nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
 	       ct, ct + 11);
 }
 

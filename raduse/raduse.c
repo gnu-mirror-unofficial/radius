@@ -49,7 +49,8 @@ struct option longopt[] = {
 	
 	"host",          required_argument, 0, 'H',
 	"port",          required_argument, 0, 'p',
-	"community",     required_argument, 0, 'C', 
+	"community",     required_argument, 0, 'C',
+	"format",        required_argument, 0, 'f',
         0,
 };
 
@@ -79,6 +80,8 @@ main(argc, argv)
 			break;
 		case 'C':
 			community = optarg;
+			break;
+		case 'f':
 			break;
 			
                 case 'b':

@@ -46,21 +46,31 @@ int do_not_resolve = 0;
  *	for the supplied IP address.
  */
 char * 
-ip_hostname(ipaddr)
+ip_hostname(ipaddr, namebuf, size)
 	UINT4 ipaddr;
+	char *namebuf;
+	size_t size;
 {
-	struct		hostent *hp;
-	static char	hstname[DOTTED_QUAD_LEN];
-	UINT4		n_ipaddr;
-
+	struct hostent *hp, hent;
+	char buffer[512];
+	UINT4 n_ipaddr;
+	int h_err, len;
+	
 	n_ipaddr = htonl(ipaddr);
 	hp = (struct hostent *) NULL;
 	if (do_not_resolve == 0) 
-		hp = gethostbyaddr((char *)&n_ipaddr, sizeof (struct in_addr), AF_INET);
+		hp = gethostbyaddr_r((char *)&n_ipaddr,
+				     sizeof (struct in_addr), AF_INET,
+				     &hent, buffer, sizeof buffer, &h_err);
 	if (hp == (struct hostent *) NULL) 
-		return ipaddr2str(hstname, ipaddr);
+		return ipaddr2str(ipaddr, namebuf);
 
-	return (char *)hp->h_name;
+	len = strlen((char *)hp->h_name);
+	if (len > size)
+		len = size - 1;
+	memcpy(namebuf, (char *)hp->h_name, len);
+	namebuf[len] = 0;
+	return namebuf;
 }
 
 /*
@@ -71,13 +81,16 @@ UINT4
 get_ipaddr(host)
 	char *host;
 {
-	struct hostent	*hp;
-
+	struct hostent	*hp, hent;
+	char buffer[512];
+	int h_err;
+	
 	if (good_ipaddr(host) == 0) {
 		return ipstr2long(host);
-	} else if ((hp = gethostbyname(host)) == (struct hostent *)NULL) {
-		return((UINT4)0);
 	}
+	hp = gethostbyname_r(host, &hent, buffer, sizeof(buffer), &h_err);
+	if (!hp)
+		return 0;
 	return ntohl(*(UINT4 *)hp->h_addr);
 }
 
@@ -112,9 +125,9 @@ good_ipaddr(addr)
  * provided address in host long notation.
  */
 char *
-ipaddr2str(buffer, ipaddr)
-	char *buffer; 
+ipaddr2str(ipaddr, buffer)
 	UINT4 ipaddr;
+	char *buffer; 
 #ifdef HAVE_INET_NTOA
 {
 	struct in_addr in;

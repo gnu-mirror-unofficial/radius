@@ -203,14 +203,14 @@ int
 confirm(utp)
 	struct radutmp *utp;
 {
-	char buf[10];
+	char buf[MAX_LONGNAME];
 	NAS *cl;
 	char *s;
 	
 	if (cl = nas_lookup_ip(ntohl(utp->nas_address)))
 		s = cl->shortname;
 	if (s == NULL || s[0] == 0) 
-		s = ip_hostname(ntohl(utp->nas_address));
+		s = ip_hostname(ntohl(utp->nas_address), buf, sizeof(buf));
 	
 	printf(_("radzap: zapping %s from %s, port %d"),
 	       utp->login,

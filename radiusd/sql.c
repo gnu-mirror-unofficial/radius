@@ -947,6 +947,7 @@ rad_sql_acct(radreq)
 	VALUE_PAIR *pair;
 	char *query;
 	struct sql_connection *conn;
+	char buf[MAX_LONGNAME];
 	
 	if (!sql_cfg.doacct)
 		return;
@@ -1005,7 +1006,7 @@ rad_sql_acct(radreq)
 			radlog(L_INFO,
 			       _("SQL: %d records updated writing acct-on info for NAS %s"),
 			       count,
-			       nas_request_to_name(radreq));
+			       nas_request_to_name(radreq, buf, sizeof buf));
 		}
 		break;
 
@@ -1021,7 +1022,7 @@ rad_sql_acct(radreq)
 			radlog(L_INFO,
 			       _("SQL: %d records updated writing acct-off info for NAS %s"),
 			       count,
-			       nas_request_to_name(radreq));
+			       nas_request_to_name(radreq, buf, sizeof buf));
 		}
 		break;
 
@@ -1037,7 +1038,7 @@ rad_sql_acct(radreq)
 			radlog(L_INFO,
 			       _("SQL: %d records updated writing keepalive info for NAS %s"),
 			       count,
-			       nas_request_to_name(radreq));
+			       nas_request_to_name(radreq, buf, sizeof buf));
 		}
 		break;
 		

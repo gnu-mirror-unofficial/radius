@@ -273,7 +273,7 @@ string        : QUOTE
               | IPADDRESS
                 {
                         char buf[DOTTED_QUAD_LEN];
-                        ipaddr2str(buf, $1);
+                        ipaddr2str($1, buf);
                         $$ = make_string(buf);
                 }
               ;

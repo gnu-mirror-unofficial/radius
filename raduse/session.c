@@ -113,7 +113,7 @@ process_var(var, ptr)
 		break;
 	case SMI_IPADDRESS:
 		*(UINT4*)ptr = *(unsigned int*)var->var_str;
-		DEBUG(("%s", ipaddr2str(buf, ntohl(*(UINT4*)ptr))));
+		DEBUG(("%s", ipaddr2str(ntohl(*(UINT4*)ptr), buf)));
 		break;
 	case SMI_OPAQUE:
 		sptr = (char**)ptr;
@@ -143,10 +143,11 @@ converse(type, sp, pdu, closure)
 	struct snmp_var *var;
 	int ind;
 	SNMP_GET_TAB *tab;
+	char ipbuf[DOTTED_QUAD_LEN];
 	
 	if (type == SNMP_CONV_TIMEOUT) {
 		radlog(L_ERR, "timed out in waiting SNMP response from %s\n",
-		       ip_hostname(sp->remote_sin.sin_addr.s_addr));
+		       ipaddr2str(sp->remote_sin.sin_addr.s_addr, ipbuf));
 		/*FIXME: inform main that the timeout has occured */
 		return 1;
 	}
@@ -255,12 +256,13 @@ walk_converse(type, sp, pdu, closure)
 	SNMP_WALK_TAB *tab;
 	struct snmp_walk_data *data = (struct snmp_walk_data *) closure;
 	int err = 0;
+	char ipbuf[DOTTED_QUAD_LEN];
 	
 	data->varlist = NULL;
 
 	if (type == SNMP_CONV_TIMEOUT) {
 		radlog(L_ERR, "timed out in waiting SNMP response from %s\n",
-		       ip_hostname(sp->remote_sin.sin_addr.s_addr));
+		       ipaddr2str(sp->remote_sin.sin_addr.s_addr, ipbuf));
 		/*FIXME: inform main that the timeout has occured */
 		return 1;
 	}

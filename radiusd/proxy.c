@@ -364,18 +364,19 @@ proxy_send(radreq, activefd)
 	RADIUS_REQ *radreq;
 	int activefd;
 {
-	int                     rc;
-	char                    *saved_username;
-	char                    *username;
-	VALUE_PAIR		*namepair;
-	VALUE_PAIR		*vp, *pp;
-	char			*realmname;
-	REALM			*realm;
-	CLIENT			*client;
-	short			rport;
-	char                    *what;
-	char                    *secret_key;
-	u_char                  proxy_id;
+	int rc;
+	char *saved_username;
+	char *username;
+	VALUE_PAIR *namepair;
+	VALUE_PAIR *vp, *pp;
+	char *realmname;
+	REALM *realm;
+	CLIENT *client;
+	short rport;
+	char *what;
+	char *secret_key;
+	u_char proxy_id;
+	char buf[MAX_LONGNAME];
 	
 	/*
 	 *	Look up name.
@@ -468,7 +469,8 @@ proxy_send(radreq, activefd)
 	if (rc) {
 		radlog(L_NOTICE,
 		       _("%s request from client %s for user %s - Security Breach"),
-		       what, client_lookup_name(radreq->ipaddr),
+		       what,
+		       client_lookup_name(radreq->ipaddr, buf, sizeof buf),
 		       namepair->strvalue);
 		efree(saved_username);
 		return -1;
@@ -601,6 +603,7 @@ proxy_receive(radreq, activefd)
 	RADIUS_REQ	*oldreq;
 	PROXY_STATE	*state;
 	struct proxy_data data;
+	char buf[MAX_LONGNAME];
 	
 	/* FIXME: calculate md5 checksum! */
 
@@ -652,7 +655,8 @@ proxy_receive(radreq, activefd)
 	if (oldreq == NULL) {
 		radlog(L_PROXY|L_ERR,
 		       _("Unrecognized proxy reply from server %s - ID %d"),
-		       client_lookup_name(radreq->ipaddr), radreq->id);
+		       client_lookup_name(radreq->ipaddr, buf, sizeof buf),
+		       radreq->id);
 		return -1;
 	}
 

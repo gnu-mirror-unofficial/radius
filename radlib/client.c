@@ -101,6 +101,7 @@ radclient_send(config, port_type, code, pair)
 	int i;
 	RADIUS_REQ *req = NULL;
 	SERVER *server;
+	char ipbuf[DOTTED_QUAD_LEN];
 
 	if (port_type < 0 || port_type > 2) {
 		radlog(L_ERR, _("invalid port type"));
@@ -137,7 +138,7 @@ radclient_send(config, port_type, code, pair)
 		
 		if (radclient_debug) {
 			printf("server %s:%d\n",
-			       format_ipaddr(server->addr),
+			       ipaddr2str(server->addr, ipbuf),
 			       server->port[port_type]);
 		}
 		
@@ -197,7 +198,7 @@ radclient_send(config, port_type, code, pair)
 				else 
 					radlog(L_ERR|L_PERROR,
 					       _("error receiving data from %s:%d"),
-					       ip_hostname(server->addr),
+					       ipaddr2str(server->addr, ipbuf),
 					       server->port[port_type]);
 				
 				break;

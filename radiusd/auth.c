@@ -419,11 +419,12 @@ rad_auth_init(radreq, activefd)
 	RADIUS_REQ *radreq;
 	int       activefd;
 {
-	VALUE_PAIR	*namepair;
+	VALUE_PAIR *namepair;
 #ifdef USE_SQL
-	VALUE_PAIR	*p;
+	VALUE_PAIR *p;
 #endif
-
+	char buf[MAX_LONGNAME];
+	
 	/*
 	 * Get the username from the request
 	 */
@@ -432,7 +433,7 @@ rad_auth_init(radreq, activefd)
 	if ((namepair == (VALUE_PAIR *)NULL) || 
 	   (strlen(namepair->strvalue) <= 0)) {
 		radlog(L_ERR, _("No username: [] (from nas %s)"),
-		       nas_request_to_name(radreq));
+		       nas_request_to_name(radreq, buf, sizeof buf));
 		stat_inc(auth, radreq->ipaddr, num_bad_req);
 		return -1;
 	}
@@ -440,7 +441,7 @@ rad_auth_init(radreq, activefd)
 	if (check_user_name(namepair->strvalue)) {
 		radlog(L_ERR, _("Malformed username: [%s] (from nas %s)"),
 		       namepair->strvalue,
-		       nas_request_to_name(radreq));
+		       nas_request_to_name(radreq, buf, sizeof buf));
 		stat_inc(auth, radreq->ipaddr, num_bad_req);
 		return -1;
 	}
@@ -458,7 +459,8 @@ rad_auth_init(radreq, activefd)
 	 */
 	if (!huntgroup_access(radreq)) {
 		radlog(L_NOTICE, _("No huntgroup access: [%s] (from nas %s)"),
-			namepair->strvalue, nas_request_to_name(radreq));
+		       namepair->strvalue,
+		       nas_request_to_name(radreq, buf, sizeof buf));
 		rad_send_reply(RT_AUTHENTICATION_REJECT, radreq,
 			       radreq->request, NULL, activefd);
 		return -1;
@@ -618,6 +620,8 @@ auth_log(m, diag, pass, reason, addstr)
 	char *reason;
 	char *addstr;
 {
+	char buf[MAX_LONGNAME];
+	
 	if (reason)
 		radlog(L_NOTICE,
 		       _("%s: [%s%s%s]: %s%s: CLID %s (from nas %s)"),
@@ -628,7 +632,7 @@ auth_log(m, diag, pass, reason, addstr)
 		       reason,
 		       addstr ? addstr : "",
 		       m->clid,
-		       nas_request_to_name(m->req));
+		       nas_request_to_name(m->req, buf, sizeof buf));
 	else
 		radlog(L_NOTICE,
 		       _("%s: [%s%s%s]: CLID %s (from nas %s)"),
@@ -637,7 +641,7 @@ auth_log(m, diag, pass, reason, addstr)
 		       pass ? "/" : "",
 		       pass ? pass : "",
 		       m->clid,
-		       nas_request_to_name(m->req));
+		       nas_request_to_name(m->req, buf, sizeof buf));
 }
 
 int
@@ -1045,6 +1049,7 @@ sfn_simuse(m)
 	MACH *m;
 {
 	char  name[AUTH_STRING_LEN];
+	char buf[MAX_LONGNAME];
 	int rc;
 	int count;
 	
@@ -1065,7 +1070,7 @@ sfn_simuse(m)
 	       _("Multiple logins: [%s] CLID %s (from nas %s) max. %ld%s"),
 	       m->namepair->strvalue,
                m->clid,		
-	       nas_request_to_name(m->req),
+	       nas_request_to_name(m->req, buf, sizeof buf),
 	       m->check_pair->lvalue,
 	       rc == 2 ? _(" [MPP attempt]") : "");
 	newstate(as_reject);
@@ -1091,6 +1096,7 @@ sfn_time(m)
 	int rc;
 	time_t t;
 	unsigned rest;
+	char buf[MAX_LONGNAME];
 	
 	time(&t);
 	rc = ts_check(m->check_pair->strvalue, &t, &rest, NULL);
@@ -1102,7 +1108,7 @@ sfn_time(m)
 		radlog(L_ERR,
        _("Outside allowed timespan: [%s] (from nas %s) time allowed: %s"),
 		       m->namepair->strvalue,
-		       nas_request_to_name(m->req),
+		       nas_request_to_name(m->req, buf, sizeof buf),
 		       m->check_pair->strvalue);
 		newstate(as_reject);
 	} else if (rc == 0) {

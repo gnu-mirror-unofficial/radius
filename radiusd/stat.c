@@ -348,13 +348,14 @@ stat_update(ut, status)
 	NAS *nas;
 	PORT_STAT *port;
 	long dt;
-	
+	char ipbuf[DOTTED_QUAD_LEN];
+
 	nas = nas_lookup_ip(ntohl(ut->nas_address));
 	if (!nas) {
 		radlog(L_WARN,
 		    _("stat_update(): portno %d: can't find nas for IP %s"),
 		    ut->nas_port,
-		    format_ipaddr(ntohl(ut->nas_address)));
+		    ipaddr2str(ntohl(ut->nas_address), ipbuf));
 		return;
 	}
 	if (nas->ipaddr == 0) /* DEFAULT nas */
@@ -365,7 +366,7 @@ stat_update(ut, status)
 		radlog(L_WARN,
 		    _("stat_update(): port %d not found on NAS %s"),
 		    ut->nas_port,
-		    format_ipaddr(ntohl(ut->nas_address)));
+		    ipaddr2str(ntohl(ut->nas_address), ipbuf));
 		return;
 	}
 

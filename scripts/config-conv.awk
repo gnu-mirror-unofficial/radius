@@ -39,6 +39,7 @@ function chanoption(s) {
 ##     2   --  'category auth' block
 ##     3   --  'channel' block
 ##     4   --  'cntl' block
+##     5   --  'option' block
 
 # skip comments
 / *#/ {print; next}
@@ -76,6 +77,9 @@ state == 3 && $1 == "option" {
 	}
 	next
 }		
+
+state == 0 && $1 == "option" { state = 5 }
+state == 5 && $1 == "exec-program-group" { next }
 
 state == 0 && $1 == "cntl" { state = 4; }
 

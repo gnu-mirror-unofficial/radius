@@ -45,12 +45,11 @@
 /* ************************************************************************* */
 /* Shared memory interface */
 
+static int statfile_perms = S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP;
 static int tempfd = -1;
 static unsigned offset;
 static char *shmem_base;
 static unsigned shmem_size;
-
-#define PERM S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP
 
 #ifndef MAP_FAILED
 # define MAP_FAILED (void*)-1
@@ -67,7 +66,8 @@ shmem_alloc(size_t size)
 		if (tempfd == -1) {
 			if (errno == ENOENT) 
 				tempfd = open(radstat_path,
-					      O_RDWR|O_CREAT|O_TRUNC, PERM);
+					      O_RDWR|O_CREAT|O_TRUNC,
+					      statfile_perms);
 			
 			if (tempfd == -1) {
 				radlog(L_ERR|L_PERROR, 
@@ -82,6 +82,14 @@ shmem_alloc(size_t size)
 			close(tempfd);
 			return -1;
 		}
+		if ((sb.st_mode & statfile_perms) != sb.st_mode) {
+			radlog(L_ERR,
+			       _("refusing to use file `%s': file has incorrect permissions"),
+			       radstat_path);
+			close(tempfd);
+			return -1;
+		}
+		
 		if (sb.st_size < size) {
 			int c = 0;
 			init = 1;
@@ -486,7 +494,32 @@ snmp_sort_nas_stat()
 
 /* ************************************************************************* */
 /* Configuration */
+static int
+stat_cfg_file(int argc, cfg_value_t *argv,
+	      void *block_data ARG_UNUSED, void *handler_data ARG_UNUSED)
+{
+	if (argc != 2) {
+		cfg_argc_error(argc < 2);
+		return 0;
+	}
+
+ 	if (argv[1].type != CFG_STRING) {
+		cfg_type_error(CFG_STRING);
+		return 0;
+	}
+
+	efree(radstat_path);
+	if (argv[1].v.string[0] != '/')
+		radstat_path = estrdup(argv[1].v.string);
+	else
+		radstat_path = mkfilename(radlog_dir, argv[1].v.string); 
+	
+	return 0;
+}
+
 struct cfg_stmt storage_stmt[] = {
+	{ "file", CS_STMT, NULL, stat_cfg_file, NULL, NULL, NULL },
+	{ "perms", CS_STMT, NULL, cfg_get_integer, &statfile_perms, NULL, NULL },
 	{ "max-port-count", CS_STMT, NULL,
 	  cfg_get_integer, &stat_port_count, NULL, NULL },
 	{ "max-nas-count", CS_STMT, NULL,

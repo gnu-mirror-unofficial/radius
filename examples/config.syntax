@@ -129,6 +129,9 @@ snmp {
                                  # in queue after being processed
 	# SNMP storage management
 	storage {
+		file "radius.stat";	# Statistics file name
+		perms 0600;		# Permission bits (Notice: usual C
+					# conventions apply!)
 		max-nas-count 512;	# Overall number of NASes 
 		max-port-count 1024;	# Overall number of ports
 					# to be monitored

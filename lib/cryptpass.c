@@ -254,20 +254,24 @@ encrypt_tunnel_password(VALUE_PAIR *pair,
 {
 	u_char *encr_text;
 	size_t encr_size;
-	unsigned short salt;
+	char *plaintext;
+	size_t length = strlen(password);
+	unsigned short salt = htons( (((long)pair ^ *(long *)vector) & 0xffff)
+				     | 0x8000 );
 	
-	salt = htons( (((long)pair ^ *(long *)vector) & 0xffff) | 0x8000 );
-	
+	plaintext = emalloc(length+2);
+	plaintext[0] = length;
+	memcpy(&plaintext[1], password, length + 1);
 	encrypt_text(&encr_text, &encr_size,
-		     password, vector, secret, 
-		     &salt, 2);
-
-	pair->avp_strlength = 4 + encr_size;
+		     plaintext, vector, secret, 
+		     (u_char*) &salt, 2);
+	efree(plaintext);
+	
+	pair->avp_strlength = 3 + encr_size;
 	pair->avp_strvalue = emalloc(pair->avp_strlength);
 	pair->avp_strvalue[0] = tag;
-	pair->avp_strvalue[1] = strlen(password);
-	memcpy(&pair->avp_strvalue[2], &salt, 2);
-	memcpy(&pair->avp_strvalue[4], encr_text, encr_size);
+	memcpy(&pair->avp_strvalue[1], &salt, 2);
+	memcpy(&pair->avp_strvalue[3], encr_text, encr_size);
 	efree(encr_text);
 }
 
@@ -279,13 +283,16 @@ decrypt_tunnel_password(char *password,   /* At least AUTH_STRING_LEN+1
 			char *vector,     /* Request authenticator */
 			char *secret)     /* Shared secret */
 {
+	size_t length;
 	decrypt_text(password,
-		     pair->avp_strvalue + 4,
-		     pair->avp_strlength - 4,
+		     pair->avp_strvalue + 3,
+		     pair->avp_strlength - 3,
 		     vector,
 		     secret, 
-		     &pair->avp_strvalue[2],
+		     &pair->avp_strvalue[1],
 		     2);
-	password[pair->avp_strvalue[1]] = 0;
+	length = *(u_char*) password;
+	memmove(password, password + 1, length);
+	password[length] = 0;
 	*tag = pair->avp_strvalue[0];
 }

@@ -927,8 +927,19 @@ client_lookup_ip(grad_uint32_t ipaddr)
         if (!itr)
                 return NULL;
         for (cl = grad_iterator_first(itr); cl; cl = grad_iterator_next(itr))
-		if (grad_ip_in_net_p(&cl->netdef, ipaddr))
-                        break;
+		if (grad_ip_in_net_p(&cl->netdef, ipaddr)) {
+			char ipbuf[DOTTED_QUAD_LEN];
+			char maskbuf[DOTTED_QUAD_LEN];
+
+			debug(10,
+			      ("Found secret for %s/%s (%s): %s",
+			       grad_ip_iptostr(cl->netdef.ipaddr, ipbuf),
+			       grad_ip_iptostr(cl->netdef.netmask, maskbuf),
+			       cl->longname,
+			       cl->secret));  
+			break;
+		}
+	
         grad_iterator_destroy(&itr);
         return cl;
 }

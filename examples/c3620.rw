@@ -21,6 +21,12 @@
    to NAS-Port-Id. */
 
 integer
+decimal(string s)
+{
+        return (integer)("0x" + s);
+}
+
+integer
 c3620_decode(string P)
 {
         integer tmp,len,port;
@@ -43,3 +49,4 @@ c3620_fixup()
 }
 
 # end of c3620.rw
+

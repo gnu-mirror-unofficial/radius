@@ -136,7 +136,7 @@ mlc_realm_query    SELECT user_name,nas_port_id,acct_session_id \
 
 mlc_stop_query     UPDATE calls \
                      SET status=4,\
-                         acct_session_time=unix_timestamp(now())-unix_timestamp(event_date_time) 
+                         acct_session_time=unix_timestamp(now())-unix_timestamp(event_date_time) \
                      WHERE user_name='%C{User-Name}' \
                        AND status = 1 \
                        AND acct_session_id='%C{Acct-Session-Id}' 

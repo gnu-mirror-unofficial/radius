@@ -1,0 +1,73 @@
+Joseph C. Fineman                          GNU Radius Reference Manual
+495 Pleasant St., #1, Malden, MA 02148     
+(781) 324-6899; jcf@TheWorld.com           STYLE NOTES
+
+Exceptions to the generalities below, and special cases, are collected
+alphabetically at the end.
+
+(c/e) means a decision by me.  (Texinfo) means following the
+  recommendation or usage of the Texinfo manual.
+
+Spelling:  U.S.
+
+Serial comma is used:  user login name, user password, and NAS IP.
+  (Texinfo)
+
+Quotation marks:  
+  Logical style is used for punctuation:  Only what belongs to the
+    quotation goes inside.
+  Singlequotes are normally used to form names of strings.
+
+Hyphens:
+  Prefixes are not normally hyphenated:  sublist (c/e)
+  Noun phrase used as adjective or verb is sometimes hyphenated; I
+    have followed the author's usage if consistent & clear.
+  Noun + participle or other adjective is hyphenated as adjective:
+    user-defined
+  Symbol + noun is hyphenated as noun:  IP-number
+  Yoke between grammatically equivalent words:  Ordinary hyphen is
+    used unless one or the other side contains a space or hyphen:
+    attribute-value pair
+
+Possessives:  Chicago rules:  Jones's (c/e)
+Contractions allowed:  Let's
+
+Acronyms & the like:  Most are small cap (& have special coding), but
+  a few are full cap.  The latter are listed in the alphabetical
+  section below, as are all in which the MS is inconsistent and I have
+  chosen one or the other.
+
+"Which" vs. "that":  "That" preferred in restrictive clauses (c/e)
+
+Common-gender pronouns:  Trade off unobtrusively between masculine &
+  feminine, in a ratio of about 3:1 (spec).
+
+Below, "[ -]" means hyphenated if used attributively, spaced
+  otherwise.
+
+acknowledgement
+attribute-value pair
+boolean
+cleantext 148
+command line (a)
+data  plural 128
+dialog
+due to, adv, allowed
+GNU, full cap
+huntgroup 29
+ID, sm cap
+Internet
+IP, full cap
+ISP, full cap
+keepalive (n)
+netmask  138
+plaintext  78
+PPP, full cap
+run[ -]time 45
+SLIP, full cap
+telnet
+timeout  81
+time-to-live (n)  42
+user[ -]name
+user session (a)
+Web

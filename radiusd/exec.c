@@ -141,7 +141,8 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
                                 radlog(L_ERR|L_PERROR, _("can't close pipe"));
                         if (dup2(p[1], 1) != 1)
                                 radlog(L_ERR|L_PERROR, _("can't dup stdout"));
-                }
+                } else
+			close(1);
 
                 for (n = getmaxfd(); n >= 3; n--)
                         close(n);

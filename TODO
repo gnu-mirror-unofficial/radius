@@ -6,8 +6,6 @@
 
      General:
 -100 : Provide a scheme function for setting radclient_debug variable.
--60  : acct.c: hints and prefix handling depends on whether rad_acct_system
-       succedes. Fix it.
 -50  : Add \ line continuation to read_raddb_files.
 -50  : do_not_resolve is global. Possibly could be used in radwho (-n)
 -50  : Get rid of radscm (or build it only on systems that do not support

@@ -1,3 +1,10 @@
+2003-10-16  Sergey Poznyakoff  
+
+	* attributes.texi: Removed description of the deprecated
+	attribute Add-Port-To-IP-Address.
+	* configure.texi: Initial documentation of trace-rules attribute.
+	* extensions.texi: Minor change.
+	
 2003-09-29  Sergey Poznyakoff
 
 	* radius.texi: List particular radius utilities in the

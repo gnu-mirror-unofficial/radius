@@ -218,7 +218,7 @@ rpp_fd_write(int fd, void *data, size_t size, struct timeval *tv)
 
 
 /* Start a handler process. PROC_MAIN is the handler function (process'
-   main loop. DATA is passed to PROC_MAIN verbatim.
+   main loop). DATA is passed to PROC_MAIN verbatim.
 
    On success return 0 and fill in PROC structure. */
 int
@@ -248,9 +248,10 @@ rpp_start_process(rpp_proc_t *proc, int (*proc_main)(void *), void *data)
 		/* Close remote side of pipes */
 		close(inp[0]);
 		close(outp[1]);
-		/* Close stdio */
+		/* Close stdin */
 		close(0);
-		close(1);
+		/* Redirect stdout to stderr */
+		dup2(2, 1);
 
 		rpp_stdin = outp[0];
 		rpp_stdout = inp[1];

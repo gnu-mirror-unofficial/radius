@@ -1,3 +1,7 @@
+2003-06-23  Sergey Poznyakoff 
+
+	* doc/texinfo/configure.texi: Documented missing keywords.
+
 2003-06-16  Sergey Poznyakoff  
 
 	* fdl.texi: New file

@@ -30,6 +30,8 @@ doc/README.ipalloc for more info.
 
 ** Radwho supports several predefined output formats.
 
+** NLS support.
+
 * Important differences in behaviour compared to the 0.96 series
 
 ** Additional information in logs.

@@ -1,12 +1,30 @@
+2003-06-23  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* NEWS: Updated
+	* configure.ac: Raised version number to 1.0
+	* doc/texinfo/configure.texi: Documented missing keywords.
+	* examples/hints-0.96: New file.
+	* examples/Makefile.am: Added hints-0.96
+	* examples/pam.conf: Added copyleft header
+	* include/radiusd.h: Minor change
+	* radiusd/radiusd.c: Likewise.
+	* raddb/hints: Minor change
+	* raddb/huntgroups: Likewise.
+	* raddb/naslist: Likewise.
+	* raddb/realms: Likewise.
+	* raddb/users: Likewise.
+
 2003-06-23  Sergey Poznyakoff 
 
 	* lib/avl.c: Fixed wording in diagnostic.
-	* lib/radargp.c: 
-	* radiusd/radiusd.c:
-	* radiusd/rewrite.y:
-	* radiusd/rpp.c
-	* radiusd/stat.c
-	* radiusd/testsuite/radiusd/radiusd.exp
+	* lib/radargp.c: Likewise.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/rewrite.y: Likewise.
+	* radiusd/rpp.c: Likewise.
+	* radiusd/stat.c: Likewise.
+	* radiusd/testsuite/radiusd/radiusd.exp: Fixed to work
+	on systems with a limit on the length of input line
+	to the shell.
 
 2003-06-19  Sergey Poznyakoff  
 

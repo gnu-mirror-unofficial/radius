@@ -23,19 +23,20 @@
                +-(1) radiusStatPortIndex
                +-(2) radiusStatNASIndex
                +-(3) radiusStatPortID
-               +-(4) radiusStatPortTotalLogins
-               +-(5) radiusStatPortStatus
-               +-(6) radiusStatPortStatusDate
-               +-(7) radiusStatPortUpTime
-               +-(8) radiusStatPortLastLoginName
-               +-(9) radiusStatPortLastLoginDate
-               +-(10) radiusStatPortLastLogoutDate
-               +-(11) radiusStatPortIdleTotalTime
-	       +-(12) radiusStatPortIdleMaxTime
-               +-(13) radiusStatPortIdleMaxDate
-               +-(14) radiusStatPortInUseTotalTime
-	       +-(15) radiusStatPortInUseMaxTime
-               +-(16) radiusStatPortInUseMaxDate        
+               +-(4) radiusStatPortFramedAddress
+               +-(5) radiusStatPortTotalLogins
+               +-(6) radiusStatPortStatus
+               +-(7) radiusStatPortStatusDate
+               +-(8) radiusStatPortUpTime
+               +-(9) radiusStatPortLastLoginName
+               +-(10) radiusStatPortLastLoginDate
+               +-(11) radiusStatPortLastLogoutDate
+               +-(12) radiusStatPortIdleTotalTime
+	       +-(13) radiusStatPortIdleMaxTime
+               +-(14) radiusStatPortIdleMaxDate
+               +-(15) radiusStatPortInUseTotalTime
+	       +-(16) radiusStatPortInUseMaxTime
+               +-(17) radiusStatPortInUseMaxDate        
 
 
 

@@ -39,6 +39,7 @@ RADDB=$(top_srcdir)/raddb
 EXDIR=$(top_srcdir)/examples
 
 nastypes: $(RADDB)/nastypes
+	rm -f $@
 	$(LN_S) $? $@
 
 CLEANFILES=$(ALLTARGETS) config dictionary client.conf users acct.scm realms 

@@ -28,15 +28,17 @@ all: $(ALLTARGETS)
 RADDB=$(top_srcdir)/raddb
 
 nastypes: $(RADDB)/nastypes
+	rm -f $@
 	$(LN_S) $? $@
 
 clients: ../raddb/clients
+	rm -f $@
 	$(LN_S) $? $@
 
 naslist: ../raddb/naslist
+	rm -f $@
 	$(LN_S) $? $@
 
 CLEANFILES=$(ALLTARGETS) dictionary client.conf config realms
 
 distclean-local:; -rm -rf radiusd.pid log acct
-

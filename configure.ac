@@ -478,17 +478,30 @@ AH_TEMPLATE(USE_SQL_ODBC,[When defined, enable ODBC support])
 AH_TEMPLATE(HAVE_LIBODBC,[Define if you have libodbc or libiodbc]) 
 AH_TEMPLATE(USE_SQL,[Enables SQL support])
 
+USE_SQL=0
 AC_ARG_WITH(mysql,
         [  --with-mysql          Configure to work with MySQL],
 	[case $withval in
-	 yes)    RA_CHECK_LIB(mysqlclient, mysql_connect, "-lm",
+	 yes)    RA_CHECK_LIB(mysqlclient_r, mysql_real_connect, "-lm",
                             [ USE_SQL=1
                               AC_DEFINE(USE_SQL_MYSQL)
                               AC_DEFINE(HAVE_LIBMYSQL)
-                              RA_RADIUSD_LDADD($ra_cv_lib_mysqlclient)
+                              RA_RADIUSD_LDADD($ra_cv_lib_mysqlclient_r)
                             ],
-			    [ AC_MSG_ERROR(-lmysqlclient not found)],
+			    [ AC_MSG_ERROR(-lmysqlclient_r not found) ],
                             [/usr/local/lib/mysql /usr/lib/mysql])
+
+	         if test "$USE_SQL" != "1"; then
+	             RA_CHECK_LIB(mysqlclient, mysql_real_connect, "-lm",
+                                  [ AC_MSG_WARN([libmysqlclient_r not found. Will use libmysqlclient. Consider upgrading your MySQL.])
+                                    USE_SQL=1
+                                    AC_DEFINE(USE_SQL_MYSQL)
+                                    AC_DEFINE(HAVE_LIBMYSQL)
+                                    RA_RADIUSD_LDADD($ra_cv_lib_mysqlclient)
+                                  ],
+			          [ AC_MSG_ERROR(-lmysqlclient not found)],
+                                  [/usr/local/lib/mysql /usr/lib/mysql])
+                 fi
 		;;
 	 no)    ;;
         esac])
@@ -541,38 +554,6 @@ AC_ARG_WITH(odbc,
 	 *)	    		AC_MSG_ERROR(unsupported option value: $enableval)
 
         esac])
-
-## Backward compatibility
-AC_ARG_ENABLE(sql,
-        [],
-	[case $enableval in
-	mysql|mySQL|MySQL)
-                RA_CHECK_LIB(mysqlclient, mysql_connect, "-lm",
-                            [ USE_SQL=1
-                              AC_DEFINE(USE_SQL_MYSQL)
-                              AC_DEFINE(HAVE_LIBMYSQL)
-                              RA_RADIUSD_LDADD($ra_cv_lib_mysqlclient) ],
-			    [ AC_MSG_ERROR(-lmysqlclient not found)],
-                            [/usr/local/lib/mysql /usr/lib/mysql])
-		;;
-	postgres|Postgres)
-                RA_CHECK_LIB(pq, PQconnectStart, [],
-			    [ USE_SQL=1
-                              AC_DEFINE(USE_SQL_POSTGRES)
-                              AC_DEFINE(HAVE_LIBPQ) 
-                              RA_RADIUSD_LDADD($ra_cv_lib_pq) ],
-		            [ AC_MSG_ERROR(-lpq not found) ],
-                            [/usr/local/pgsql/lib /usr/pgsql/lib])
-		;;
-	odbc|ODBC)
-		rad_lib_odbc
-		;;
-	iodbc|iODBC|IODBC)
-		rad_lib_iodbc
-		;;
-	*)	AC_MSG_ERROR(unsupported SQL server: $enablevale)
-		;;
-	esac])
 
 if test "$USE_SQL" = "1"; then
         AC_DEFINE(USE_SQL)

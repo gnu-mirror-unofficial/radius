@@ -1,0 +1,729 @@
+o@c This is part of the Radius manual.
+@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
+@node Extensions, Utility Programs, Debugging, Top
+@chapter Extensions
+@cindex Extensions
+
+@menu
+* Rewrite::
+* Guile::
+@end menu
+
+@comment *L1****************************************************************
+@node Rewrite, Guile, , Extensions
+@section Rewrite
+@cindex Rewrite
+
+Rewrite is the GNU Radius extension language. Its name reflects the
+fact that it was originally designed to rewrite the broken request packets,
+so they could be processed as usual (@pxref{Rewriting incoming
+requests}). Beside this basic use, however, Rewrite functions are used
+in verifying the activity of user sessions
+(@pxref{Checking Simultaneous Logins}).
+
+@menu
+* Syntax Overview::
+* Quick Start::
+* Interaction with Radius::
+* Rewriting incoming requests::
+* Login verification functions::
+* Attribute creation functions::
+* Formal Syntax Description::
+@end menu
+
+
+@comment *L2****************************************************************
+@node Syntax Overview, Quick Start, , Rewrite
+@subsection Syntax Overview
+@cindex Rewrite, syntax overview
+
+@comment *L2****************************************************************
+@node Quick Start, Interaction with Radius, Syntax Overview, Rewrite
+@subsection Quick Start
+@cindex Rewrite, quick start introduction
+
+@comment *L2****************************************************************
+@node Interaction with Radius, Rewriting incoming requests, Quick Start, Rewrite
+@subsection Interaction with Radius
+@cindex Rewrite, usage
+@cindex Rewrite, applying functions
+
+A Rewrite function can be invoked in several ways, depending on its
+purpose. There are three major kinds of Rewrite functions:
+
+@itemize @bullet
+@item Functions used to rewrite the incoming requests.
+@item Functions designed for simultaneous login verification.
+@item Functions used to generate @sc{radius} attribute values.
+@end itemize
+
+@comment *L3****************************************************************
+@node Rewriting incoming requests, Login verification functions,Interaction with Radius, Rewrite
+@subsection Rewriting incoming requests
+@cindex Rewriting incoming requests
+
+The need of rewriting the incoming requests arises from the fact that
+some @NAS{}es are very particular about the information they send with
+the requests. There are cases when the information they send
+is hardly usable or even just unusable. For example, a
+Cisco @sc{as5300} terminal server used as a voice over @sc{ip} router packs
+a lot of information into its @attr{Acct-Session-Id} attribute. Though
+the information stored there is otherwise relevant, it makes proper
+accounting impossible since the @attr{Acct-Session-Id} attributes
+in the start and stop packets of the same session become different, and
+thus Radius cannot determine the @dfn{Session Start} to which the given
+@dfn{Session Stop} request corresponds (@pxref{Acct-Session-Id}).
+
+In order to cope with such @NAS{}es, GNU Radius is able to invoke
+a Rewrite function upon arrival of the packet and before further
+processing it. This function can transform the packet so, that
+it obtains the form prescribed by @sc{rfc}s and its further processing
+becomes possible.
+
+For example, in the case of @sc{as5300} router, a corresponding rewrite
+function parses the @attr{Acct-Session-Id} attribute, breaks it
+down into fields, stores them into proper attributes, creating
+them if necessary, and, finally replaces @attr{Acct-Session-Id} with
+its real value, which is the same for start and stop records
+corresponding to a single session. Thus all the information that
+came with the packet is preserved, but the packet itself is made
+usable for proper accounting.
+
+A special attribute, @attr{Rewrite-Function}, is used to trigger
+invocation of a Rewrite function. Its value is a name of the
+function to be invoked.
+
+When used in a @file{naslist} profile, the attribute causes the function
+to be invoked when the incoming request matches the huntgroup
+(@pxref{Huntgroups}). For example, to have a function @code{fixup}
+invoked for each packet from the @NAS{} @code{10.10.10.11}, the
+following huntgroup rule may be used:
+
+@example
+@group
+DEFAULT  NAS-IP-Address = 11.10.10.11
+         Rewrite-Function = "fixup"
+@end group
+@end example
+
+The @attr{Rewrite-Function} attribute may also be used in a @file{hints}
+rule. In this case, it will invoke the function if the request matches
+the rule (@pxref{Hints}). For example, this @file{hints} rule will
+cause the function to be invoked for each request containing the username
+starting with @samp{P}:
+
+@example
+@group
+DEFAULT  Prefix = "P"
+         Rewrite-Function = "fixup"
+@end group
+@end example
+
+@emph{Please note}, that in both cases the attribute can be used
+either in @LHS{} or in @RHS{} pairs of a rule.
+
+The packet rewrite function must be declared as having no arguments,
+and returning integer value:
+
+@example
+@group
+integer fixup()
+@{
+@}
+@end group
+@end example
+
+The actual return value from such a function is ignored, the integer
+return type is just a matter of convention.
+
+The following subsection present some examples of packet rewriting
+functions.
+
+@menu
+* Example:Rewrite Examples.
+@end menu
+
+@comment **L3***************************************************************
+@node Rewrite Examples, , , Rewriting incoming requests
+@subsubsection Examples of various rewrite functions.
+@cindex Rewrite, examples
+@exindex Rewrite
+
+The examples found in this chapter are working functions that can be
+used with various existing @NAS{} types. They are taken from the
+@file{rewrite} file contained in distribution of GNU Radius.
+
+@subheading 1. Port rewriting for MAX Ascend terminal servers
+
+Some @sc{max a}scend terminal servers pack additional information
+into @attr{NAS-Port-Id} attribute. The port number is constructed as
+XYYZZ, where X = 1 for digital, X = 2 for analog, YY is line number
+(1 for first PRI/T1/E1, 2 for second, so on), and ZZ = channel number
+(on the PRI or Channelized T1/E1).
+
+The following rewrite functions are intended to compute the integer
+port number in the range (1 .. @var{portcnt}), where @var{portcnt}
+represents the real number of physical ports available on the @NAS{}.
+Such port number can be used, for example, with
+@attr{Add-Port-To-IP-Address} attribute (@pxref{Add-Port-To-IP-Address}).
+
+@example
+@group
+/*
+ * decode MAX port number
+ * input: P        --  The value of NAS-Port-Id attribute
+ *        portcnt  --  number of physical ports on the NAS
+ */
+integer
+max_decode_port(integer P, integer portcnt)
+@{
+    if (P > 9999) @{
+        integer s, l, c;
+
+        s = P / 10000;
+        l = (P - (10000 * s))/100; 
+        c = P - ((10000 * s) + (100 * l)); 
+        return (c-1) + (l-1) * portcnt;
+    @}
+    return P;
+@}
+@end group
+
+@group
+/*
+ * Interface function for MAX terminal server with 23 ports.
+ * Note that it saves the received NAS-Port-Id attribute in the
+ * Orig-NAS-Port-Id attribute. The latter must be defined somewhere
+ * in the dictionary
+ */
+integer
+max_fixup()
+@{
+    %[Orig-NAS-Port-Id] = %[NAS-Port-Id]; # Preserve original data
+    %[NAS-Port-Id] = max_decode_port(%[NAS-Port-Id], 23);
+    return 0;
+@}
+@end group
+@end example
+
+@subheading 2. Session ID parsing for Cisco AS 5300 series
+
+Cisco @sc{voip ios} encodes a lot of other information into its
+@attr{Acct-Session-Id}. The pieces of information are separated by
+@samp{/} character. The part of @attr{Acct-Session-Id} up to first
+@samp{/} character is the actual session @sc{id}.
+
+On the other hand, its accounting packets lack @attr{NAS-Port-Id},
+though they may contain the vendor-specific pair with code 2
+(vendor @sc{pec} 9), which is the string in the form @samp{ISDN 9:D:999}
+(@samp{9} represents a decimal digit). The number after the last
+@samp{:} character can be used as a port number.
+
+The following code parses @attr{Acct-Session-Id} attribute and stores
+the information it contains in various other attributes, generates
+normal @attr{Acct-Session-Id} and attempts to generate
+@attr{NAS-Port-Id} attribute.
+
+@example
+@group
+/* 
+ * The port rewriting function for Cisco AS5300 used for VoIP.
+ * This function is used to generate NAS-Port-Id pair on the basis
+ * of vendor-specific pair 2. If the latter is in the form 
+ * "ISDN 9:D:999" (where each 9 represents a decimal digit), then 
+ * the function returns the number after the last colon. This is
+ * used as a port number.
+ */
+integer
+cisco_pid(string A)
+@{
+    if (A =~ 
+        ".*\([0-9][0-9]*\):[A-Z0-9][A-Z0-9]*:\([0-9][0-9]*\)") @{
+        return (integer)\2;
+    @}
+    return -1;
+@}
+@end group
+
+@group
+/*
+ * This function parses the packed session id.
+ * The actual sid is the number before the first slash character.
+ * Other possibly relevant fields are also parsed out and saved 
+ * in the Voip-* A/V pairs. The latter should be defined somewhere
+ * in the dictionary.
+ * Please note, that the regular expression in this example
+ * spans several lines for readability. It should be on one 
+ * line in real file.
+ */
+string
+cisco_sid(string S)
+@{
+   if (S =~ "\(.[^/]*\)/[^/]*/[^/]*/\([^/]*\)/\([^/]*\)/
+             \([^/]*\)/\([^/]*\)/\([^/]*\)/\([^/]*\)
+             /\([^/]*\).*") @{
+       %[Voip-Connection-ID] = \2;
+       %[Voip-Call-Leg-Type] = \3;
+       %[Voip-Connection-Type] = \4;
+       %[Voip-Connect-Time] = \5;
+       %[Voip-Disconnect-Time] = \6;
+       %[Voip-Disconnect-Cause] = \7;
+       %[Voip-Remote-IP] = \8;
+       return \1;
+   @} 
+   return S;
+@}
+@end group
+
+@group
+/*
+ * Normalize cisco AS5300 packets
+ */
+integer
+cisco_fixup()
+@{
+    integer pid;
+
+    if ((pid = cisco_pid(%[Cisco-PRI-Circuit])) != -1) @{
+        if (*%[NAS-Port-Id])
+           %[Orig-NAS-Port-Id] = %[NAS-Port-Id];
+        %[NAS-Port-Id] = pid;
+    @}
+    if (*%[Acct-Session-Id]) @{
+        %[Orig-Acct-Session-Id] = %[Acct-Session-Id];
+        %[Acct-Session-Id] = cisco_sid(%[Acct-Session-Id]);
+    @}
+    return 0;
+@}
+@end group
+@end example
+
+@subheading 3. Username rewriting for NT machines.
+
+Users coming from Windows @sc{nt} machines often authenticate themselves as
+@samp{NT_DOMAIN\username}. The following function selects the username part
+and stores it in the @attr{User-Name} attribute:
+
+@example
+@group
+integer
+login_nt(string uname)
+@{
+    integer i;
+        
+    if ((i = index(uname, '\\')) != -1)
+        return substr(uname, i+1, -1);
+    return uname;
+@}
+
+integer
+nt_rewrite()
+@{
+    %[Orig-User-Name] = %[User-Name];
+    %[User-Name] = login_nt(%[User-Name]);
+    return 0;
+@}
+@end group
+@end example
+
+@comment *L2**************************************************************
+@node Login verification functions, Attribute creation functions,Rewriting incoming requests, Rewrite
+@subsection Login verification functions
+@cindex Rewrite, login verification functions
+
+A login verification function is invoked to process the output from the
+@NAS{}. This process is described in @ref{Checking Simultaneous Logins}.
+The function to be invoked for given @NAS{} is defined by
+@code{function} flag in @file{raddb/nastypes} or @file{raddb/naslist}
+files (@pxref{nastypes file}). It must be defined as follows:
+
+@example
+@group
+integer check(string str, string name, integer pid, string sid)
+@{
+@}
+@end group
+@end example
+
+@noindent
+Its arguments are:
+
+@table @var
+@item str
+Input string. If the query method is @code{finger}, this is the string
+of output received from the @NAS{} with trailing newline stripped off. If
+the query method is @code{snmp}, this is the received variable value
+converted to its string representation.
+@item name
+User name.
+@item pid
+Port Id of the session.
+@item sid
+Session @sc{id}.
+@end table
+
+The function should return non-0 if its arguments match user's
+session and 0 otherwise.
+
+@menu
+* Example:Examples of login verification functions.
+@end menu
+
+@comment **L4*************************************************************
+@node Examples of login verification functions,,,Login verification functions
+@subsubsection Examples of login verification functions
+@exindex Login verification functions
+
+@exindex Checking UNIX finger output
+As an example, let's consider the function for analyzing a line
+line of output from a standard @acronym{UNIX} finger service. In each line
+of finger output the first field contains username, the third field ---
+tty number (Port @sc{id}), and the seventh field contains session @sc{id}.
+The function must return 1 if the three fields match the input
+user name, port and session @sc{id}s.
+
+@example
+integer
+check_unix(string str, string name, integer pid, string sid)
+@{
+        return field(str, 1) == name &&
+               field(str, 3) == pid &&
+               field(str, 7) == sid;
+@}
+@end example
+
+@c @xref{UNIX Finger}.
+
+@exindex Analyzing SNMP output
+Next example is a function to analyze a line of output from an @acronym{SNMP}
+query returning a user name. This function must return 1 if entire input
+line matches the user name.
+
+@example
+integer
+check_username(string str, string name, integer pid, string sid)
+@{
+        return str == name;
+@}
+@end example
+
+@comment **L3***************************************************************
+@node Attribute creation functions,Formal Syntax Description, Login verification functions, Rewrite
+@subsection Attribute creation functions
+@cindex Rewrite, attribute creation functions
+
+These are the functions, used to create @RADIUS{} reply attributes. An
+attribute creation function can take any number of arguments. The type
+of its return is determined by the type of @RADIUS{} attribute the
+value will be assigned to. To invoke the function, write its name
+in the A/V pair of @RHS{} in @file{raddb/users} file, e.g.:
+
+@example
+@group
+DEFAULT Auth-Type = SQL
+        Service-Type = Framed-User,
+                Framed-IP-Address = "=get_ip_addr(10.10.10.1)"
+@end group
+@end example
+
+@noindent
+The function @code{get_ip_addr} will be invoked after successful
+authentication and it will be passed @IP{} @code{10.10.10.1} as its
+argument. An example of a useful function, that can be invoked this
+way:
+
+@example
+@group
+@exindex IP pools for MAX Ascend 
+integer
+get_ip_address(integer base)
+@{
+        return base + %[NAS-Port-Id] - %[NAS-Port-Id]/16;
+@}
+@end group
+@end example
+
+@comment *L2****************************************************************
+@node Formal Syntax Description, , Attribute creation functions, Rewrite
+@subsection Formal Syntax Description
+@cindex Rewrite, syntax of the language
+
+[FIXME]The syntax of Rewrite is similar to C syntax.
+
+@menu
+* Data types::
+* Symbols::
+* Identifiers::
+* Declarations::
+* Statements::
+* Built-in Functions::
+@end menu
+
+@comment **L4***************************************************************
+@node Data types, Symbols, , Formal Syntax Description
+@subsubsection Rewrite Data Types
+@cindex data types, Rewrite
+@cindex Rewrite, data types
+
+There are only two data types: @code{integer} and @code{string}, 
+the two being coercible to each other in the sense that a string
+can be coerced to an integer if it contains a valid @sc{ascii} representation
+of a decimal, octal or hex number, and the integer can always be coerced
+to a string, the result of such coercion being the @sc{ascii} string with
+decimal representation of the number.
+
+@comment **L4***************************************************************
+@node Symbols, Identifiers, Data types, Formal Syntax Description
+@subsubsection Rewrite Symbols
+@cindex symbols, Rewrite
+@cindex Rewrite, symbols
+
+A symbol is a lexical token. The following symbols are recognized:
+
+@table @asis
+@item Arithmetical operators
+These are @samp{+}, @samp{-}, @samp{*}, @samp{/} representing the basic
+arithmetical operations and @samp{%} meaning remainder.
+@item Comparison operators
+These are: @samp{==}, @samp{!=}, @samp{<}, @samp{<=}, @samp{>},
+@samp{>=} with the same meaning they have in C, @samp{=~}
+meaning ``matches a regular expression'' and @samp{!~} meaning
+``does not match a regular expression''.
+@item Unary operators.
+Unary operators are @samp{-} and @samp{+} for unary plus and minus,
+@samp{!} for boolean negation and @samp{*} for testing for the
+existence of an attribute.
+@item Boolean operators.
+These are: @samp{&&} and @samp{||}.
+@item Parentheses @samp{(} and @samp{)}
+These are used to change the precedence of operators, to introduce
+type casts (type coercions), to declare functions and to pass actual
+arguments to functions.
+@item Curly braces (@samp{@{} and @samp{@}})
+These are used to delimit blocks of code.
+@item Numbers
+Numbers follow usual C convention for integers. A number consisting of
+a sequence of digits, is taken to be octal if it begins with @samp{0}
+(digit zero) and decimal otherwise. If the sequence of digits is
+preceded by @samp{0x} or @samp{0X}, it is taken to be a hexadecimal
+integer.
+@item Characters
+These follow usual C convention for characters, i.e. either
+an @sc{ascii} character or its value enclosed in a pair of single
+quotes. The character value begins with @samp{\} (backslash) and
+consists either of three octal or of two hexadecimal digits.
+A character does not form a special data type, it is represented
+internally by an integer.
+@item Quoted strings
+These follow usual C conventions for strings.
+@item Attribute values
+The incoming request is passed implicitly to functions, invoked via
+@attr{Rewrite-Function} attribute. It is kept as an associative array,
+whose entries can be accessed using the following syntax:
+
+@example
+@samp{%[} @var{attribute-name} @samp{]}
+@end example
+
+@noindent
+Thus notation returns the value of the attribute @var{attribute-name}.
+@var{attribute-name} should be a valid Radius dictionary name
+(@pxref{dictionary file}).
+@item Identifiers
+Identifiers represent functions and variables. These are described in
+the next section.
+@item Previous regexp match references
+The results of the execution of the last @samp{=~} command are kept
+in register variables, and can be referenced using the following
+notation:
+
+@example
+@samp{\@var{number}}
+@end example
+
+@noindent
+This means the @var{number}th subexpression from the recent regexp
+match. The match references are always string expressions.
+@end table
+
+@comment **L4***************************************************************
+@node Identifiers, Declarations, Symbols, Formal Syntax Description
+@subsubsection Rewrite Identifiers
+@cindex identifiers, Rewrite
+@cindex Rewrite identifiers
+
+A valid identifier is a string of characters meeting the following
+requirements:
+
+@enumerate 1
+@item It starts with either a lower- or uppercase letter of the Latin
+alphabet or any of the following symbols: @samp{_}, @samp{$}.
+@item It consists of alphanumeric characters, underscores(@samp{_}) and
+dollar signs (@samp{$}).
+@end enumerate
+
+
+@comment **L4***************************************************************
+@node Declarations, Statements, Identifiers, Formal Syntax Description
+@subsubsection Rewrite Declarations
+@cindex declarations, Rewrite
+
+@subheading Function declarations
+
+The Rewrite function is declared as follows:
+
+@example
+@var{type} @var{function-name} (@var{parameter-list})
+@end example
+
+@noindent
+where @var{type} specifies the return type of the function,
+@var{function-name} declares the symbolic name of the function and
+@var{parameter-list} declares the formal parameters to the function.
+It is a comma-separated list of declarations in the form:
+
+@example
+@var{type} @var{parm-name}
+@end example
+
+@noindent
+@var{type} being the parameter type, and @var{parm-name} being its
+symbolic name. Both @var{function-name} and @var{parm-name} should
+be valid identifiers.
+
+@subheading Variable declarations
+
+There are no global variables in Rewrite. All variables are local.
+The local variables are declared right after the opening curly brace
+(@samp{@{}) and before any executable statements. The declaration
+syntax is:
+
+@example
+@var{type} @var{ident_list} ;
+@end example
+
+@noindent
+Here @var{ident_list} is either a valid Rewrite identifier, or a comma-
+separated list of such identifiers. @emph{Please note} that, unlike in
+C, no assignments are allowed in variable declarations.
+
+@comment **L4***************************************************************
+@node Statements, Built-in Functions, Declarations, Formal Syntax Description
+@subsubsection Rewrite Statements
+@cindex statements, Rewrite
+
+The Rewrite statements are: expressions, assignments, conditional
+statements and return statements. A statement is terminated by semicolon.
+
+@subheading Expressions
+
+An @dfn{expression} is:
+
+@itemize @bullet
+@item A variable identifier
+@item A type coercion expression
+@item An arithmetic expression
+@item A boolean expression
+@item An assignment
+@item A function call
+@end itemize
+
+@subheading Type coercion
+The type coercion is like a type cast in C. Its syntax is
+
+@example
+@samp{(} @var{type} @samp{)} @var{ident}
+@end example
+
+@noindent
+the result of type coercion is as follows:
+
+@multitable @columnfractions .20 .20 .60
+@item @var{type} @tab Variable type @tab Resulting conversion
+
+@item integer
+@tab integer
+@tab No conversion. This results in the same integer value.
+
+@item integer
+@tab string
+@tab If the string value of the variable is a valid @sc{ascii} representation
+of the integer number (either decimal, octal or hex) it is converted to
+the integer, otherwise the result of the conversion is undefined.
+
+@item string
+@tab integer
+@tab The @sc{ascii} representation (in decimal) of the integer number. 
+
+@item string
+@tab string
+@tab No conversion. This results in the same string value.
+
+@end multitable
+
+@subheading Assignment
+An assignment is:
+
+@example
+@var{ident} = @var{expression} ;
+@end example
+
+@noindent
+The variable @var{ident} is assigned the value of @var{expression}.
+
+@subheading Function calls
+These take the form:
+
+@example
+@var{ident} ( @var{arg-list} )
+@end example
+
+@noindent
+where @var{ident} is the identifier representing the function,
+@var{arg-list} is a comma-separated list of expressions supplying
+actual arguments to the function. The function @var{ident} 
+references can be either a compiled function or a built-in
+function.
+
+@emph{Please note} that, unlike in C, the mismatch between the
+number of actual arguments and number of formal parameters in the
+compiled function declaration is not an error but rather a warning.
+
+@comment **L4***************************************************************
+@node Built-in Functions, , Statements, Formal Syntax Description
+@subsubsection Rewrite Built-in Functions
+@cindex built-in functions, Rewrite
+
+The following built-in functions are provided:
+
+@deftypefn Function integer length (string @var{s})
+Returns the length of string @var{s}.
+@end deftypefn
+
+@deftypefn Function integer index (string @var{s}, integer @var{c})
+Returns the index of the first occurrence of the character @var{c} in
+the string @var{s}. Returns -1 if no such occurrence is found.
+@end deftypefn
+
+@deftypefn Function integer rindex (string @var{s}, integer @var{i})
+Returns the index of the last occurrence of the character @var{c} in
+the string @var{s}. Returns -1 if no such occurrence is found.
+@end deftypefn
+
+@deftypefn Function string substr(string @var{s}, integer @var{start}, integer @var{length})
+Returns the at most @var{length} substring of @var{s} starting at
+position @var{start}.
+@end deftypefn
+
+All character positions in strings are counted from 0.
+
+
+
+@comment *L1****************************************************************
+@node Guile, , Rewrite, Extensions
+@section Guile
+@cindex Guile
+
+[FIXME]

@@ -1,0 +1,36 @@
+o@c This is part of the Radius manual.
+@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
+@node Utility Programs, , Extensions, Top
+@chapter Utility Programs
+@cindex Utility Programs
+
+@menu
+Controlling who and when was logged in
+* Radwho::              Show who is logged in by radius now.
+* Radlast::             Show the history of logins by radius.
+* Raduse::              Monitor the users in real time.
+
+Maintenance commands
+* Radzap::              Modify the login records.
+* Radgrep::             Quickly find the login record.
+* Radping::             Ping the remote machine by the username.
+* Radauth::             Check if a user can be authenticated.
+* Radctl::              Radctl monitor.
+* Builddbm::            Create DBM version of the @file{raddb/users} file.
+
+Guile interface
+* Radscm::              A guile interface to radius functions.
+@end menu
+
+@include radwho.texi
+@include radlast.texi
+@include raduse.texi
+@include radzap.texi
+@include radgrep.texi
+@include radping.texi
+@include radauth.texi
+@include radctl.texi
+@include builddbm.texi
+@include radscm.texi

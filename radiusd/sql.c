@@ -757,10 +757,7 @@ detach_sql_connection(int type)
         if (conn->destroy_on_close) {
                 debug(1, ("destructing sql connection %p",
                           conn));
-                if (conn->connected)
-                        disp_sql_disconnect(conn);
-                grad_free(conn);
-                sql_conn[type] = NULL;
+		sql_conn_destroy(&sql_conn[type]);
         }
 }
 
@@ -768,7 +765,8 @@ static void
 sql_conn_destroy(struct sql_connection **conn)
 {
 	if (*conn) {
-		disp_sql_disconnect(*conn);
+	        if ((*conn)->connected)
+		        disp_sql_disconnect(*conn);
 		sql_cache_destroy(*conn);
 		grad_free(*conn);
 		*conn = NULL;
@@ -955,8 +953,10 @@ rad_sql_checkgroup(req, groupname)
 	res = sql_cache_lookup(conn, query);
 	if (!res) {
 		res = sql_cache_retrieve(conn, query);
-		if (!res)
-			return rc;
+		if (!res) {
+			obstack_free(&stack, NULL);
+			return -1;
+		}
 	}
         obstack_free(&stack, NULL);
 

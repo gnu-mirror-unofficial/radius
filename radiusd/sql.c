@@ -763,9 +763,7 @@ rad_sql_pass(RADIUS_REQ *req, char *authdata)
         
         if (authdata) {
                 avl_add_pair(&req->request,
-                             avp_create(DA_AUTH_DATA,
-                                        strlen(authdata),
-                                        authdata, 0));
+                             avp_create_string(DA_AUTH_DATA, authdata));
         }
         
         obstack_init(&stack);

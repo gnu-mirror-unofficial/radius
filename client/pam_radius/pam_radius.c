@@ -412,13 +412,10 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
          */
         pairs = NULL;
         avl_add_pair(&pairs,
-		     namepair = avp_create(DA_USER_NAME,
-					   strlen(name), name, 0));
-        avl_add_pair(&pairs, avp_create(DA_USER_PASSWORD, strlen(password),
-					password, 0));
-        avl_add_pair(&pairs, avp_create(DA_NAS_IP_ADDRESS,
-					0, NULL,
-					queue->source_ip));
+		     namepair = avp_create_string(DA_USER_NAME, name));
+        avl_add_pair(&pairs, avp_create_string(DA_USER_PASSWORD, password));
+        avl_add_pair(&pairs, avp_create_integer(DA_NAS_IP_ADDRESS,
+					        queue->source_ip));
 	/* Add any additional attributes */
 	for (; add_pair; add_pair = add_pair->next) {
 		VALUE_PAIR *p = install_pair(__FILE__, __LINE__,
@@ -432,8 +429,7 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
             (dv = value_name_to_value(service_type, DA_SERVICE_TYPE))) {
                 DEBUG(10, ("adding Service-Type=%d", dv->value));
                 avl_add_pair(&pairs,
-			     avp_create(DA_SERVICE_TYPE,
-					0, NULL, dv->value));
+			     avp_create_integer(DA_SERVICE_TYPE, dv->value));
         }
         authreq = rad_clt_send(queue,
 			       PORT_AUTH, RT_AUTHENTICATION_REQUEST, pairs);
@@ -520,20 +516,14 @@ _radius_acct(pam_handle_t *pamh, struct radutmp *ut)
          * Create accounting request
          */
         pairs = NULL;
-        avl_add_pair(&pairs, avp_create(DA_USER_NAME,
-					strlen(ut->login), ut->login, 0));
+        avl_add_pair(&pairs, avp_create_string(DA_USER_NAME, ut->login));
 
-	avl_add_pair(&pairs, avp_create(DA_NAS_IP_ADDRESS,
-					0, NULL,
-					queue->source_ip));
-	avl_add_pair(&pairs, avp_create(DA_NAS_PORT_ID,
-					0, NULL,
-					ut->nas_port));
+	avl_add_pair(&pairs, avp_create_integer(DA_NAS_IP_ADDRESS,
+					        queue->source_ip));
+	avl_add_pair(&pairs, avp_create_integer(DA_NAS_PORT_ID, ut->nas_port));
 	
 	avl_add_pair(&pairs,
-		     avp_create(DA_ACCT_SESSION_ID,
-				strlen(ut->session_id), ut->session_id,
-				0));
+		     avp_create_string(DA_ACCT_SESSION_ID, ut->session_id));
 	
 	/* Add any additional attributes */
 	for (; add_pair; add_pair = add_pair->next) {
@@ -572,16 +562,12 @@ _radius_acct(pam_handle_t *pamh, struct radutmp *ut)
 		type = DV_ACCT_STATUS_TYPE_STOP;
 		radutmp_putent(radutmp_path, ut, type);
 		avl_add_pair(&pairs,
-			     avp_create(DA_ACCT_SESSION_TIME,
-					0, NULL,
-					ut->duration));
+			     avp_create_integer(DA_ACCT_SESSION_TIME,
+					        ut->duration));
 		add_stat_pairs(pairs);
 	}
 					
-	avl_add_pair(&pairs,
-		     avp_create(DA_ACCT_STATUS_TYPE,
-				0, NULL,
-				type));
+	avl_add_pair(&pairs, avp_create_integer(DA_ACCT_STATUS_TYPE, type));
 
 	req = rad_clt_send(queue, PORT_ACCT, RT_ACCOUNTING_REQUEST, pairs);
         if (req == NULL) {

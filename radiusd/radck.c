@@ -281,7 +281,7 @@ fix_check_pairs(int cf_file, char *filename, int line, char *name,
                 } else {
                         return 0;
                 }
-                auth_type = avp_create(DA_AUTH_TYPE, 0, NULL, type);
+                auth_type = avp_create_integer(DA_AUTH_TYPE, type);
                 avl_add_pair(pairs, auth_type);
         }
         
@@ -340,12 +340,12 @@ fix_check_pairs(int cf_file, char *filename, int line, char *name,
                 }
 
                 avl_delete(pairs, DA_AUTH_TYPE);
-                p = avp_create(DA_AUTH_TYPE, 0,
-                               NULL, DV_AUTH_TYPE_CRYPT_LOCAL);
+                p = avp_create_integer(DA_AUTH_TYPE, 
+                                       DV_AUTH_TYPE_CRYPT_LOCAL);
                 avl_add_pair(pairs, p);
                 
-                p = avp_create(DA_PASSWORD_LOCATION, 0,
-                               NULL, DV_PASSWORD_LOCATION_SQL);
+                p = avp_create_integer(DA_PASSWORD_LOCATION, 
+                                       DV_PASSWORD_LOCATION_SQL);
                 avl_add_pair(pairs, p);
                 
                 break;

@@ -85,7 +85,7 @@ rad_srv_send_challenge(int fd, RADIUS_REQ *radreq, char *msg, char *state)
 {
         void *pdu;
         size_t length;
-        VALUE_PAIR *p = avp_create(DA_STATE, 0, state, 0);
+        VALUE_PAIR *p = avp_create_string(DA_STATE, state);
 	VALUE_PAIR *reply;
 
 	reply = avl_dup(radreq->reply_pairs);

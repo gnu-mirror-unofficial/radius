@@ -604,7 +604,7 @@ hints_setup(RADIUS_REQ *req)
 	case RT_AUTHENTICATION_REJECT:
 	case RT_ACCOUNTING_RESPONSE:
 	case RT_ACCESS_CHALLENGE:
-		tmp = avp_create(DA_PROXY_REPLIED, 0, NULL, 1);
+		tmp = avp_create_integer(DA_PROXY_REPLIED, 1);
 		avl_merge(&request_pairs, &tmp);
 		avp_free(tmp);
 		break;
@@ -617,7 +617,7 @@ hints_setup(RADIUS_REQ *req)
          *      Check for valid input, zero length names not permitted 
          */
         if ((name_pair = avl_find(request_pairs, DA_USER_NAME)) == NULL) {
-		name_pair = avp_create(DA_USER_NAME, 0, "", 0);
+		name_pair = avp_create_string(DA_USER_NAME, "");
                 orig_name_pair = NULL;
         } else {
                 orig_name_pair = avp_dup(name_pair);
@@ -631,8 +631,8 @@ hints_setup(RADIUS_REQ *req)
            Service-Type = Framed-User. */
         if (avl_find(request_pairs, DA_FRAMED_PROTOCOL) != NULL &&
             avl_find(request_pairs, DA_SERVICE_TYPE) == NULL) {
-                tmp = avp_create(DA_SERVICE_TYPE, 0, NULL,
-                                 DV_SERVICE_TYPE_FRAMED_USER);
+                tmp = avp_create_integer(DA_SERVICE_TYPE,
+                                         DV_SERVICE_TYPE_FRAMED_USER);
                 if (tmp) 
                         avl_merge(&request_pairs, &tmp);
         }

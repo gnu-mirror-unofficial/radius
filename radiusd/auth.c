@@ -678,8 +678,8 @@ check_expiration(AUTH_MACH *m)
                         auth_format_msg(m, MSG_PASSWORD_EXPIRED);
                 } else if (rc > 0) {
                         VALUE_PAIR *pair;
-                        pair = avp_create(DA_PASSWORD_EXPIRE_DAYS, 0, NULL,
-                                          rc/86400);
+                        pair = avp_create_integer(DA_PASSWORD_EXPIRE_DAYS,
+                                                  rc/86400);
                         avl_add_pair(&m->user_reply, pair);
                         auth_format_msg(m, MSG_PASSWORD_EXPIRE_WARNING);
                 }
@@ -771,13 +771,13 @@ sfn_init(AUTH_MACH *m)
 
 	switch (radreq->server_code) {
 	case RT_AUTHENTICATION_REJECT:
-		m->user_check = avp_create(DA_AUTH_TYPE, 0,
-					   NULL, DV_AUTH_TYPE_REJECT);
+		m->user_check = avp_create_integer(DA_AUTH_TYPE, 
+					           DV_AUTH_TYPE_REJECT);
 		break;
 
 	case RT_AUTHENTICATION_ACK:
-		m->user_check = avp_create(DA_AUTH_TYPE, 0,
-					   NULL, DV_AUTH_TYPE_ACCEPT);
+		m->user_check = avp_create_integer(DA_AUTH_TYPE, 
+					           DV_AUTH_TYPE_ACCEPT);
 		break;
 
 	case 0:
@@ -800,9 +800,9 @@ sfn_init(AUTH_MACH *m)
 	if (radreq->server_code == 0
 	    && (pair_ptr = avl_find(m->req->request, DA_STATE)) != NULL
 	    && strncmp(pair_ptr->avp_strvalue, "MENU=", 5) == 0) {
-	    process_menu(m->req, m->activefd);
-	    newstate(as_stop);
-	    return;
+		menu_reply(m->req, m->activefd);
+		newstate(as_stop);
+		return;
 	}
 #endif
 
@@ -1004,7 +1004,7 @@ sfn_simuse(AUTH_MACH *m)
         rc = rad_check_multi(name, m->req->request,
                              m->check_pair->avp_lvalue, &count);
         avl_add_pair(&m->user_reply,
-                     avp_create(DA_SIMULTANEOUS_USE, 0, NULL, count));
+                     avp_create_integer(DA_SIMULTANEOUS_USE, count));
         if (!rc)
                 return;
 
@@ -1026,8 +1026,7 @@ timeout_pair(AUTH_MACH *m)
 {
         if (!m->timeout_pair &&
             !(m->timeout_pair = avl_find(m->user_reply, DA_SESSION_TIMEOUT))) {
-                m->timeout_pair = avp_create(DA_SESSION_TIMEOUT,
-                                              0, NULL, 0);
+                m->timeout_pair = avp_create_integer(DA_SESSION_TIMEOUT, 0);
                 avl_add_pair(&m->user_reply, m->timeout_pair);
         }
         return m->timeout_pair;
@@ -1190,11 +1189,12 @@ sfn_menu_challenge(AUTH_MACH *m)
         char *msg;
         char state_value[MAX_STATE_VALUE];
                 
-        msg = get_menu(m->check_pair->avp_strvalue);
+        msg = menu_read_text(m->check_pair->avp_strvalue);
         snprintf(state_value, sizeof(state_value),
                    "MENU=%s", m->check_pair->avp_strvalue);
         radius_send_challenge(m->req, msg, state_value, m->activefd);
-        
+        efree(msg);
+	
         debug(1,
               ("sending challenge (menu %s) to %s",
                m->check_pair->avp_strvalue, m->namepair->avp_strvalue));

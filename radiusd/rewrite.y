@@ -3965,7 +3965,7 @@ attrasgn_internal(RWMACH *mach, int attr, VALUE_PAIR *pair, RWSTYPE val)
 {
 	assert_request_presence(mach);
 	if (!pair) {
-                 pair = avp_create(attr, 0, NULL, 0);
+                 pair = avp_create(attr);
                  if (!pair)
                         rw_error(mach, _("can't create A/V pair"));
                  avl_add_pair(&mach->req->request, pair);

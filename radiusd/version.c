@@ -197,6 +197,7 @@ version()
 	fprintf(stderr, _(" no pidfile\n"));
 #endif
 
+	fprintf(stderr, "\nReport bugs to <%s>\n", bug_report_address);
 	exit(0);
 }
 

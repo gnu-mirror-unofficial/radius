@@ -1,0 +1,286 @@
+-- This file is part of GNU RADIUS.
+-- Copyright (C) 2000,2001, Sergey Poznyakoff
+--
+-- This program is free software; you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation; either version 2 of the License, or
+-- (at your option) any later version.
+--
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with this program; if not, write to the Free Software
+-- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+GNU-RADIUS-SERVER-MIB DEFINITIONS ::= BEGIN
+
+IMPORTS
+       enterprises FROM RFC1155-SMI
+       MODULE-IDENTITY, OBJECT-TYPE, OBJECT-IDENTITY,
+       Counter32, Integer32,
+       IpAddress, TimeTicks, mib-2      FROM SNMPv2-SMI
+       SnmpAdminString                  FROM SNMP-FRAMEWORK-MIB;
+
+UnixTimestamp ::= TEXTUAL-CONVENTION
+       STATUS  current	
+       DESCRIPTION "Regular Unix timestamp encoded as an integer"
+       SYNTAX Integer32 (1..'ffffffff'h)
+
+gnu-radius OBJECT-IDENTITY
+       STATUS  current
+       DESCRIPTION
+             "The OID assigned to GNU Radius project by the IANA."
+        ::= { enterprises 9163 }
+
+radiusServerMIB MODULE-IDENTITY
+       LAST-UPDATED "0108171800Z"
+       ORGANIZATION "Free Software Foundation"
+       CONTACT-INFO
+              " Sergey Poznyakoff
+                email: gray@farlep.net"
+       DESCRIPTION
+             "The MIB module for entities implementing the server internal
+              statistics agent of GNU Radius project."
+       REVISION "$Revision$"
+       DESCRIPTION "Experimental Version"
+       ::= { gnu-radius 1 }
+
+radiusServerUpTime OBJECT-TYPE
+       SYNTAX      TimeTicks
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION
+             "Time (in hundredths of a second) since the server was
+	      started"
+       ::= {radiusServerMIB 1}
+
+radiusServerResetTime OBJECT-TYPE
+       SYNTAX      TimeTicks
+       MAX-ACCESS  read-only
+       STATUS      current
+       DESCRIPTION
+             "The time (in hundredths of a second) elapsed since the
+              server was `reset.'"
+       ::= {radiusServerMIB 2}
+
+radiusServerState OBJECT-TYPE
+       SYNTAX INTEGER { other(1),
+                        reset(2),
+                        initializing(3),
+                        running(4),
+			suspended(5),
+			shutdown(6) }
+       MAX-ACCESS  read-write
+       STATUS      current
+       DESCRIPTION
+		"Status/action object to reinitialize any persistent
+		server state. The semantics is as follows:
+
+			Value		Set	Ret	Meaning
+			other		 -       +      Undefined
+                        reset  		 +       -      Server is re-reading
+					                its configuration files
+			initializing	 +       +      Hard reset
+                        running		 +       +	Server is running
+			suspended	 +       +      Server is suspended 
+                        shutdown	 +       -      Shutdown the server"
+	::= { radiusServerMIB 3 }	
+	
+RadiusServerQueueEntry ::= SEQUENCE {
+       QueueIndex                    Integer32,
+       QueueName                     SnmpAdminString,
+       QueueActive                   Counter32,
+       QueueHeld                     Counter32,
+       QueueTotal                    Counter32,
+}
+
+radiusServerQueueTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF RadiusServerQueueEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+             "The (conceptual) table listing the state of the message
+	      queues"
+       ::= { radiusServerMIB 4 }
+
+radiusServerQueueEntry OBJECT-TYPE
+       SYNTAX     RadiusServerQueueEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+             "An entry (conceptual row) representing a message queue."
+       INDEX      { queueIndex }
+       ::= { radiusServerQueueTable 1 }
+
+queueIndex OBJECT-TYPE
+       SYNTAX     Integer32 (1..2147483647)
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "A number uniquely identifying each message queue."
+       ::= { radiusServerQueueEntry 1 }
+
+queueName OBJECT-TYPE
+       SYNTAX SnmpAdminString
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "A string describing the type of messages the queue contains."
+       ::= { radiusServerQueueEntry 2 }
+
+queueActive OBJECT-TYPE
+       SYNTAX Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "Number of messages currently being processed."
+       ::= { radiusServerQueueEntry 3 }
+
+queueHeld OBJECT-TYPE
+       SYNTAX Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "Number of processed messages the queue holds."
+       ::= { radiusServerQueueEntry 4 }
+
+queueTotal OBJECT-TYPE
+       SYNTAX Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "Total number of messages the queue holds."
+       ::= { radiusServerQueueEntry 5 }
+
+radiusServerMemoryUsage OBJECT IDENTIFIER ::= { radiusServerMIB 5 }
+
+memoryNumClasses OBJECT-TYPE
+       SYNTAX Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "Number of memory object classes currently allocated."
+       ::= { radiusServerMemoryUsage 1 }
+
+memoryNumBuckets OBJECT-TYPE
+       SYNTAX Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "Number of memory object buckets currently allocated."
+       ::= { radiusServerMemoryUsage 2 }
+
+memoryNumBytes OBJECT-TYPE
+       SYNTAX Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "Number of memory bytes currently allocated."
+       ::= { radiusServerMemoryUsage 3 }
+
+MemoryClassEntry ::= SEQUENCE {
+       classIndex		Integer32,
+       classSize		Integer32,
+       classElsPerBucket	Counter32,
+       classNumBuckets          Counter32,
+       classElsTotal            Counter32,
+       classElsUsed             Counter32
+}
+       
+
+memoryClassTable OBJECT-TYPE
+       SYNTAX     SEQUENCE OF MemoryClassEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+             "The (conceptual) table listing the server memory usage."
+       ::= { radiusServerMemoryUsage 4 }
+
+memoryClassEntry OBJECT-TYPE
+       SYNTAX     MemoryClassEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+             "An entry (conceptual row) representing a memory class."
+       INDEX      { classIndex }
+       ::= { memoryClassTable 1 }
+
+classIndex OBJECT-TYPE
+       SYNTAX     Integer32 (1..2147483647)
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "A number uniquely identifying each memory class."
+       ::= { memoryClassEntry 1 }
+
+classSize OBJECT-TYPE
+       SYNTAX     Integer32 (1..2147483647)
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "Size of an element in a memory class."
+       ::= { memoryClassEntry 2 }
+
+classElsPerBucket OBJECT-TYPE
+       SYNTAX     Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "Number of elements per bucket in a memory class."
+       ::= { memoryClassEntry 3 }
+
+classNumBuckets OBJECT-TYPE
+       SYNTAX     Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "Number of buckets in a memory class."
+       ::= { memoryClassEntry 4 }
+
+classElsTotal OBJECT-TYPE
+       SYNTAX     Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "Total number of elements available for use in a memory class."
+       ::= { memoryClassEntry 5 }
+
+classElsUsed OBJECT-TYPE
+       SYNTAX     Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "Number of elements currently allocated from a memory class."
+       ::= { memoryClassEntry 6 }
+
+memoryUtilization OBJECT-TYPE
+       SYNTAX     Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "Overall memory utilization (percents multiplied by 10)."
+       ::= { radiusServerMemoryUsage 5 }
+
+memoryMallocBlocks OBJECT-TYPE
+       SYNTAX     Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "Number of blocks allocated via malloc."
+       ::= { radiusServerMemoryUsage 6 }
+
+memoryMallocBytes OBJECT-TYPE
+       SYNTAX     Counter32
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "Number of bytes allocated via malloc."
+       ::= { radiusServerMemoryUsage 7 }
+
+END
+
+
+

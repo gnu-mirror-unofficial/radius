@@ -215,8 +215,9 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
                    DV_ACCT_STATUS_TYPE_ACCOUNTING_{ON|OFF} */
                 
                 if ((!(vp = avl_find(radreq->request, DA_ACCT_SESSION_TIME))
-                     || vp->avp_lvalue == 0) &&
-                    (!(vp = avl_find(radreq->request, DA_ACCT_SESSION_ID))
+                     || vp->avp_lvalue == 0) 
+                    &&
+                    ((vp = avl_find(radreq->request, DA_ACCT_SESSION_ID)) != NULL
                      && vp->avp_strlength == 8
                      && memcmp(vp->avp_strvalue, "00000000", 8) == 0)) {
 

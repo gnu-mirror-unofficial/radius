@@ -556,7 +556,7 @@ typedef struct auth_mach {
 	VALUE_PAIR *namepair;
 	VALUE_PAIR *check_pair;
 	VALUE_PAIR *timeout_pair;
-	char       userpass[AUTH_STRING_LEN];
+	char       userpass[AUTH_STRING_LEN+1];
 	char       *user_msg;
 	
 	char       *clid;

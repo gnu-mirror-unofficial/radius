@@ -505,8 +505,7 @@ AC_SUBST(BUILD_PAM_RADIUS_LA)
 if test x$BUILD_CLIENT = xyes; then
 	AC_CHECK_LIB(pam, pam_start,
 			[ BUILD_PAM_RADIUS_LA=pam_radius.la ],
-			[ AC_MSG_WARN([-lpam not found. Won't build pam_radius.so]) 
-			  exit 1])
+			[ AC_MSG_WARN([-lpam not found. Won't build pam_radius.so])])
 	if test x$GUILE_CONFIG != xno; then
 		BUILD_NAS_SCM=nas.scm
 	else

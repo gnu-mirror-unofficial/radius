@@ -12,7 +12,7 @@
 if MAINTAINER_MODE
 MAINTAINERCLEANFILES=core *~ err out
 endif
-
+INCLUDES=-I$(top_srcdir)/include
 noinst_PROGRAMS=findport
 findport_SOURCES=findport.c
 EXTRA_DIST=raddb test.sh test.scm

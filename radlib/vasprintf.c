@@ -111,8 +111,7 @@ int_vasprintf (result, format, args)
 #endif
   *result = malloc (total_width);
   if (*result != NULL)
-/*    return vsprintf (*result, format, *args);*/
-    return radvsprintf (*result, total_width, format, *args);
+    return vsprintf (*result, format, *args);
   else
     return 0;
 }

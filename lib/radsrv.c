@@ -98,9 +98,15 @@ rad_srv_send_challenge(fd, radreq, msg, state)
         void *pdu;
         size_t length;
         VALUE_PAIR *p = avp_create(DA_STATE, 0, state, 0);
+	VALUE_PAIR *reply;
 
+	reply = avl_dup(radreq->reply_pairs);
+	avl_merge(&reply, &p);
         length = rad_create_pdu(&pdu, RT_ACCESS_CHALLENGE, radreq->id,
-                                radreq->vector, radreq->secret, p, msg);
+                                radreq->vector, radreq->secret, reply, msg);
+	avl_free(reply);
+	avl_free(p);
+	
         if (length > 0) {
                 struct sockaddr saremote;
                 struct sockaddr_in *sin;

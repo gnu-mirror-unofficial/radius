@@ -62,16 +62,20 @@ read_naslist_entry(void *unused ARG_UNUSED, int fc, char **fv, LOCUS *loc)
 
         bzero(&nas, sizeof(nas));
         STRING_COPY(nas.shortname, fv[1]);
-	if (fv[2][0] == 0)
+	if (!fv[2])
 		STRING_COPY(nas.nastype, "true");
 	else
 		STRING_COPY(nas.nastype, fv[2]);
         if (strcmp(fv[0], "DEFAULT") == 0) {
-                nas.ipaddr = 0;
+                nas.netdef.ipaddr = nas.netdef.netmask = 0;
                 STRING_COPY(nas.longname, fv[0]);
         } else {
-                nas.ipaddr = ip_gethostaddr(fv[0]);
-                ip_gethostname(nas.ipaddr, nas.longname, sizeof(nas.longname));
+		ip_getnetaddr(fv[0], &nas.netdef);
+		/*FIXME: Do we still need that? */
+                ip_gethostname(nas.netdef.ipaddr,
+			       nas.longname, sizeof(nas.longname));
+		if (nas.longname[0])
+			STRING_COPY(nas.longname, fv[0]);
         }
         if (fc >= 4)
                 nas.args = envar_parse_argcv(fc-3, &fv[3]);
@@ -109,7 +113,7 @@ nas_lookup_name(char *name)
         NAS *defnas = NULL;
         
         for (nas = naslist; nas; nas = nas->next) {
-                if (nas->ipaddr == 0)
+                if (nas->netdef.ipaddr == 0 && nas->netdef.netmask == 0)
                         defnas = nas;
                 else if (strcmp(nas->shortname, name) == 0
                          || strcmp(nas->longname, name) == 0)
@@ -126,9 +130,7 @@ nas_lookup_ip(UINT4 ipaddr)
         NAS *defnas = NULL;
         
         for (nas = naslist; nas; nas = nas->next) {
-                if (nas->ipaddr == 0) 
-                        defnas = nas;
-                else if (nas->ipaddr == ipaddr)
+                if (ip_addr_in_net_p(&nas->netdef, ipaddr))
                         break;
         }
         return nas ? nas : defnas;

@@ -167,12 +167,19 @@ tsh_query_nas(int argc, char **argv, char *cmd ARG_UNUSED)
 		return;
 	}
 	nas = nas_lookup_name(argv[1]);
-	if (!nas) {
-		fprintf(stderr, _("%s: unknown nas\n"), argv[0]);
-		return;
+	if (nas) {
+		if (nas->netdef.netmask != 32) {
+			fprintf(stderr, _("%s: is a network name\n"), argv[0]);
+			return;
+		}
+		ut.nas_address = nas->netdef.ipaddr;
+	} else {
+		ut.nas_address = ip_gethostaddr(argv[0]);
+		if (!ut.nas_address) {
+			fprintf(stderr, _("%s: unknown nas\n"), argv[0]);
+			return;
+		}
 	}
-
-	ut.nas_address = nas->ipaddr;
 
 	strncpy(ut.orig_login, argv[2], sizeof(ut.orig_login));
 	strncpy(ut.session_id, argv[3], sizeof(ut.session_id));

@@ -149,7 +149,7 @@ _netdef_cmp(const void *item, const void *data)
 	const NETDEF *nd = item;
 	const struct acl_closure *clos = data;
 
-	if (nd->ipaddr == (clos->ip & nd->netmask))
+	if (ip_addr_in_net_p(nd, clos->ip))
 		return 0;
 	return 1;
 }
@@ -2151,8 +2151,9 @@ snmp_stat_nas(int num, enum mib_node_cmd cmd, struct nas_data *closure,
                         return -1;
                 }
 
+		/* FIXME: MIBS do not reflect netmask */
                 for (num = 0; num < 4; num++)
-                        closure->quad[num] = (nas->ipaddr >>
+                        closure->quad[num] = (nas->netdef.ipaddr >>
                                               (8*(3-num))) & 0xff;
                 
                 break;
@@ -2164,8 +2165,9 @@ snmp_stat_nas(int num, enum mib_node_cmd cmd, struct nas_data *closure,
                 if (num == 0) {
                         if (nas = nas_lookup_index(1))
                                 for (num = 0; num < 4; num++)
-                                        closure->quad[num] = (nas->ipaddr >>
-                                                              (8*(3-num))) & 0xff;
+                                        closure->quad[num] =
+						(nas->netdef.ipaddr >>
+                                                          (8*(3-num))) & 0xff;
                 }
                 break;
 

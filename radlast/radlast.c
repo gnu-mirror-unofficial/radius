@@ -73,7 +73,7 @@ WTMP *find_wtmp_nas_port(WTMP *first, struct radutmp *bp);
 WTMP *find_wtmp_nas_port_sid(WTMP *first, struct radutmp *bp);
 
 UINT4 host_ip = 0;
-UINT4 nas_ip = 0;
+NETDEF nas_ip = { 0, 0 } ;
 int port = 0;
 int width = 5;
 int show_seconds = 0;
@@ -243,17 +243,13 @@ main(int argc, char **argv)
         read_naslist();
 
         if (nas_name) {
-                nas_ip = ip_gethostaddr(nas_name);
-                if (!nas_ip) {
-                        NAS *nas = nas_lookup_name(nas_name);
-                        if (nas)
-                                nas_ip = nas->ipaddr;
-                        else {
+		NAS *nas = nas_lookup_name(nas_name);
+		if (!nas) {
+			if (ip_getnetaddr(nas_name, &nas_ip)) {
                                 radlog(L_ERR, "unknown nas: %s", nas_name);
                                 return 1;
                         }
                 }       
-                nas_ip = htonl(nas_ip);
         }
         radwtmp();
         return 0;
@@ -430,10 +426,12 @@ want(struct radutmp *ut)
          */  
         if (ut->type == P_NAS_START) {
                 if (show_reboot_rec) 
-                        return (nas_ip == 0 || ut->nas_address == nas_ip) ;
+                        return ip_addr_in_net_p(&nas_ip,
+						ntohl(ut->nas_address));
         } else if (ut->type == P_NAS_SHUTDOWN) {
-                if (show_shutdown_rec) 
-                        return (nas_ip == 0 || ut->nas_address == nas_ip) ;
+                if (show_shutdown_rec)
+			return ip_addr_in_net_p(&nas_ip,
+						ntohl(ut->nas_address));
         } else {
                 /* Process ususal login/logout entry */
         
@@ -444,8 +442,11 @@ want(struct radutmp *ut)
                                 if (strcmp(cp->name, ut->login) == 0) {
                                         if (host_ip != 0)
                                                 return ut->framed_address == host_ip ;
-                                        if (nas_ip != 0)
-                                                return ut->nas_address == nas_ip;
+                                        if (nas_ip.ipaddr != 0)
+                                                return ip_addr_in_net_p(
+						       &nas_ip,
+						       ntohl(ut->nas_address));
+
                                         if (port != 0)
                                                 return ut->nas_port == port;
                                         return 1;
@@ -458,13 +459,17 @@ want(struct radutmp *ut)
                 if (host_ip != 0 && ut->framed_address == host_ip) 
                         return 1;
 
-                if (nas_ip != 0 && ut->nas_address == nas_ip)
+                if (nas_ip.ipaddr != 0 &&
+		    ip_addr_in_net_p(&nas_ip,  ntohl(ut->nas_address)))
                         return 1;
         
                 if (port != 0 && ut->nas_port == port)
                         return 1;
         }
-        return host_ip == 0 && nas_ip == 0 && user_chain == 0 && port == 0;
+        return host_ip == 0
+		&& nas_ip.ipaddr == 0
+		&& user_chain == 0
+		&& port == 0;
 }
 
 void

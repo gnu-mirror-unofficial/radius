@@ -37,11 +37,6 @@
 
 #define LOCK_LEN sizeof(struct radutmp)
 
-static int write_wtmp(struct radutmp *ut);
-int radzap(UINT4 nasaddr, int port, char *user, time_t t);
-static int confirm(struct radutmp *ut);
-UINT4 findnas(char *nasname);
-
 int confirm_flag;
 
 struct arguments {
@@ -123,57 +118,10 @@ static struct argp argp = {
 
 
 /*
- *      Zap a user from the radutmp and radwtmp file.
- */
-int
-main(int argc, char **argv)
-{
-        UINT4   ip = 0;
-        time_t  t;
-        char    *path;
-        char *s;        
-        struct arguments args;
-        
-        app_setup();
-        initlog(argv[0]);
-
-        if (s = getenv("RADZAP_CONFIRM"))
-                confirm_flag = atoi(s);
-        args.user = NULL;
-        args.nas  = NULL;
-        args.port = -1;
-        if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, &args))
-                return 1;
-
-        /*
-         *      Read the "naslist" file.
-         */
-        path = mkfilename(radius_dir, RADIUS_NASLIST);
-        if (nas_read_file(path) < 0)
-                exit(1);
-        efree(path);
-
-        if (args.nas) {
-                NAS *np;
-                np = nas_lookup_name(args.nas);
-                if (np)
-                        ip = np->ipaddr;
-                else if ((ip = ip_gethostaddr(args.nas)) == 0) {
-                        fprintf(stderr, "%s: host not found.\n", args.nas);
-                        return 1;
-                }
-        }
-                
-        t = time(NULL);
-        radzap(ip, args.port, args.user, t);
-        return 0;
-}
-
-/*
  *      Zap a user, or all users on a NAS, from the radutmp file.
  */
 int
-radzap(UINT4 nasaddr, int port, char *user, time_t t)
+radzap(NETDEF *netdef, int port, char *user, time_t t)
 {
         struct radutmp  *up;
         radut_file_t    file;
@@ -181,8 +129,6 @@ radzap(UINT4 nasaddr, int port, char *user, time_t t)
 
         if (t == 0) 
                 time(&t);
-
-        netaddr = htonl(nasaddr);
 
         if ((file = rut_setent(radutmp_path, 0)) == NULL) {
                 radlog(L_ERR|L_PERROR, "can't open %s", radutmp_path);
@@ -192,10 +138,10 @@ radzap(UINT4 nasaddr, int port, char *user, time_t t)
          *      Find the entry for this NAS / portno combination.
          */
         while (up = rut_getent(file)) {
-                if ((nasaddr != 0 && netaddr != up->nas_address) ||
-                      (port >= 0   && port    != up->nas_port) ||
-                      (user != NULL && strcmp(up->login, user))!= 0 ||
-                       up->type != P_LOGIN) {
+                if ((netdef && !ip_addr_in_net_p(netdef, htonl(up->nas_address)))
+		    || (port >= 0 && port != up->nas_port)
+		    || (user != NULL && strcmp(up->login, user))!= 0
+		    ||  up->type != P_LOGIN) {
                         continue;
                 }
                 if (!confirm(up))
@@ -244,5 +190,56 @@ int
 write_wtmp(struct radutmp *ut)
 {
         return radwtmp_putent(radwtmp_path, ut);
+}
+
+/*
+ *      Zap a user from the radutmp and radwtmp file.
+ */
+int
+main(int argc, char **argv)
+{
+        NETDEF netdef, *netdefp = NULL;
+        time_t  t;
+        char    *path;
+        char *s;        
+        struct arguments args;
+        
+        app_setup();
+        initlog(argv[0]);
+
+        if (s = getenv("RADZAP_CONFIRM"))
+                confirm_flag = atoi(s);
+        args.user = NULL;
+        args.nas  = NULL;
+        args.port = -1;
+        if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, &args))
+                return 1;
+
+        /*
+         *      Read the "naslist" file.
+         */
+        path = mkfilename(radius_dir, RADIUS_NASLIST);
+        if (nas_read_file(path) < 0)
+                exit(1);
+        efree(path);
+
+        if (args.nas) {
+                NAS *np;
+                np = nas_lookup_name(args.nas);
+		if (np) {
+                        netdefp = &np->netdef;
+		} else {
+			if (ip_getnetaddr(args.nas, &netdef)) {
+				fprintf(stderr,
+					_("%s: host not found.\n"), args.nas);
+				return 1;
+			}
+			netdefp = &netdef;
+                } 
+        }
+                
+        t = time(NULL);
+        radzap(netdefp, args.port, args.user, t);
+        return 0;
 }
 

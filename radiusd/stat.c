@@ -220,7 +220,8 @@ stat_find_port(NAS *nas, int port_no)
 	FOR_EACH_PORT(port) {
 		if (port->ip == 0)
 			break;
-		if (port->ip == nas->ipaddr && port->port_no == port_no)
+		if (ip_addr_in_net_p(&nas->netdef, port->ip)
+		    && port->port_no == port_no)
 			return port;
 	}
 
@@ -230,7 +231,7 @@ stat_find_port(NAS *nas, int port_no)
 		       _("reached SNMP storage limit for the number of monitored ports: increase max-port-count"));
 		return NULL;
 	}
-	port->ip = nas->ipaddr;
+	port->ip = nas->netdef.ipaddr;
 	port->port_no = port_no;
 	
 	debug(1, ("next offset %d", port - port_stat));
@@ -248,7 +249,8 @@ stat_get_port_index(NAS *nas, int port_no)
 	FOR_EACH_PORT(port) {
 		if (port->ip == 0)
 			break;
-		if (port->ip == nas->ipaddr && port->port_no == port_no)
+		if (ip_addr_in_net_p(&nas->netdef, port->ip)
+		    && port->port_no == port_no)
 			return port - port_stat + 1;
 	}
 	return 0;
@@ -265,9 +267,9 @@ stat_get_next_port_no(NAS *nas, int port_no)
 	FOR_EACH_PORT(port) {
 		if (port->ip == 0)
 			break;
-		if (port->ip == nas->ipaddr &&
-		    port->port_no > port_no &&
-		    port->port_no < next)
+		if (ip_addr_in_net_p(&nas->netdef, port->ip)
+		    && port->port_no > port_no 
+		    && port->port_no < next)
 			next = port->port_no;
 	}
 	return (next == stat_port_count) ? 0 : next; 
@@ -291,7 +293,7 @@ stat_update(struct radutmp *ut, int status)
 		       ip_iptostr(ntohl(ut->nas_address), ipbuf));
 		return;
 	}
-	if (nas->ipaddr == 0) /* DEFAULT nas */
+	if (nas->netdef.ipaddr == 0) /* DEFAULT nas */
 		return;
 	
 	port = stat_find_port(nas, ut->nas_port);
@@ -460,7 +462,7 @@ snmp_attach_nas_stat(NAS *nas)
 
 	if (!server_stat)
 		return;
-        np = find_nas_stat(nas->ipaddr);
+        np = find_nas_stat(nas->netdef.ipaddr); 
         if (!np) {
 		if (server_stat->nas_index >= server_stat->nas_count) {
 			radlog(L_WARN,
@@ -469,7 +471,7 @@ snmp_attach_nas_stat(NAS *nas)
 		}
 		np = nas_stat + server_stat->nas_index;
 		++server_stat->nas_index;
-                np->ipaddr = nas->ipaddr;
+                np->ipaddr = nas->netdef.ipaddr;
         }
         nas->app_data = np;
 }

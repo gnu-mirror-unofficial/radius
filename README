@@ -10,19 +10,6 @@
     For the list of available options consult file INSTALL.
     The applications-specific options are:
 			      			      	
-    --enable-yydebug
-	Enable parser debugging. The parser debugging can be useful to
-	track down errors in configuration files such as /etc/raddb/users
-	and /etc/raddb/config.
-	
-	To enable the debugging on a given file, its first line should
-	start with the following statement:
-    
-		#debug
-
-	Debugging output goes to stderr or to the file
-	/var/log/radius.stderr if such file exists.
-
     --disable-debug
 	Disable debugging functions. This results in slightly more compact
     	code, but makes configuration issues difficult to debug. Use at

@@ -123,7 +123,7 @@ read_realms_entry(void *closure, int fc, char **fv, LOCUS *loc)
 		i++;
 		
 		if (list_count(rp->queue->servers) == 0) {
-			radlog_loc(L_ERR, loc, _("cannot parse"));
+			radlog_loc(L_NOTICE, loc, _("discarding entry"));
 			rad_clt_destroy_queue(rp->queue);
 			efree(rp);
 			return 0;

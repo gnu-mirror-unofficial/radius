@@ -3622,7 +3622,9 @@ int
 pushn(n)
 	int n;
 {
-	if (rw_rt.st >= rw_rt.stacksize) {
+	if (rw_rt.st >= rw_rt.ht) {
+		/*FIXME: gc();*/
+		debug(1, ("st=%d, ht=%d", rw_rt.st, rw_rt.ht));
 		rw_error("rewrite: out of pushdown space");
 	}
 	rw_rt.stack[rw_rt.st++] = n;
@@ -4543,7 +4545,11 @@ interpret(fcall, request, type, datum)
 
 	tokbegin(&tokbuf, fcall);
 	name = toknext(&tokbuf, "(");
-	
+        if (!name) {
+	        radlog(L_ERR, _("missing '(' in function call"));
+		return -1;
+	}	
+
 	fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
 	if (!fun) {
 		radlog(L_ERR, _("function %s not defined"), name);

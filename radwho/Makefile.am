@@ -12,7 +12,7 @@
 bin_PROGRAMS    = radwho
 radwho_SOURCES = radwho.c 
 radwho_LDADD   = ../radlib/liblog.la ../radlib/librad.la ../radlib/libdebug.la 
-INCLUDES        = -I$(top_srcdir)/include @INCLUDEPATH@
+INCLUDES        = -I$(top_srcdir)/include -I$(top_srcdir)/radlib @INCLUDEPATH@
 
 
 SUFFIXES=.S .c .ln .o .s

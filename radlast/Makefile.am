@@ -1,5 +1,4 @@
 # $Id$
-# $Id$
 # This file is part of GNU RADIUS.
 # Copyright (C) 2000,2001, Sergey Poznyakoff
 #
@@ -14,7 +13,7 @@
 bin_PROGRAMS    = radlast
 radlast_SOURCES = radlast.c 
 radlast_LDADD   = ../radlib/liblog.la ../radlib/librad.la ../radlib/libdebug.la
-INCLUDES = -I$(top_srcdir)/include @INCLUDEPATH@
+INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/radlib @INCLUDEPATH@
 
 SUFFIXES=.S .c .ln .o .s
 

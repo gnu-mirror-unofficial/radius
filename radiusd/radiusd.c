@@ -337,12 +337,10 @@ common_init()
 #endif
 	radiusd_signal_init(sig_handler);
 	radiusd_reconfigure();
-	if (x_debug_spec)
-		set_debug_levels(x_debug_spec);
 	radpath_init();
 	stat_init();
 	radlog(L_INFO, _("Ready"));
-}       
+}
 
 
 /* ************************** Core of radiusd ****************************** */
@@ -410,37 +408,9 @@ radiusd_master()
 
 /* ****************************** Main function **************************** */
 
-int
-main(int argc, char **argv)
+void
+radiusd_main()
 {
-        /* debug_flag can be set only from debugger.
-           It means developer is taking control in his hands, so
-           we won't modify any variables that could prevent him
-           from doing so. */
-        if (debug_flag == 0) {
-                foreground = 0;
-                spawn_flag = 1;
-        }
-        app_setup();
-
-        /* save the invocation */
-        xargc = argc;
-        xargv = argv;
-
-        /* Set up some default values */
-        set_config_defaults();
-
-        /* Process the options.  */
-        argp_program_version_hook = version;
-        if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, NULL))
-                return 1;
-
-        log_set_default("default.log", -1, -1);
-        if (radius_mode != MODE_DAEMON)
-                log_set_to_console();
-
-	radiusd_setup();
-
         switch (radius_mode) {
         case MODE_CHECKCONF:
                 common_init();
@@ -476,6 +446,50 @@ main(int argc, char **argv)
 	radiusd_pidfile_write(RADIUSD_PID_FILE);
 
         radiusd_main_loop();
+}
+
+void
+radiusd_start()
+{
+#ifdef USE_SERVER_GUILE
+	char *argv[] = { "radiusd", NULL };
+	scm_boot_guile (1, argv, scheme_boot, NULL);
+#else
+	radiusd_main();
+#endif
+}
+
+int
+main(int argc, char **argv)
+{
+        /* debug_flag can be set only from debugger.
+           It means developer is taking control in his hands, so
+           we won't modify any variables that could prevent him
+           from doing so. */
+        if (debug_flag == 0) {
+                foreground = 0;
+                spawn_flag = 1;
+        }
+        app_setup();
+
+        /* save the invocation */
+        xargc = argc;
+        xargv = argv;
+
+        /* Set up some default values */
+        set_config_defaults();
+
+        /* Process the options.  */
+        argp_program_version_hook = version;
+        if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, NULL))
+                return 1;
+
+        log_set_default("default.log", -1, -1);
+        if (radius_mode != MODE_DAEMON)
+                log_set_to_console();
+
+	radiusd_setup();
+	radiusd_start();
 	/*NOTREACHED*/
 }
 

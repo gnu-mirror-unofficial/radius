@@ -1758,6 +1758,9 @@ test_shell()
 #define nextkn() if ((tok = strtok(NULL, " \t")) == NULL) {\
  printf("arg count\n");\
  continue; }  
+#define chktkn() if (!tok) { \
+ printf("arg count\n");\
+ continue; }
 
 	printf("** TEST MODE **\n");
 	doprompt = isatty(fileno(stdin));
@@ -1783,11 +1786,13 @@ test_shell()
 			printf("m                       display memory usage\n"); 
 			break;
 		case 'd':
+			chktkn();
 			set_debug_levels(tok);
 			break;
 		case 'q':
 			return 0;
 		case 'c': /* checkrad */
+			chktkn();
 			strncpy(ut.orig_login, tok, sizeof(ut.orig_login));
 			nextkn();
 			strncpy(ut.session_id, tok, sizeof(ut.session_id));
@@ -1804,6 +1809,7 @@ test_shell()
 			break;
 		case 'r':
 			/* r funcall */
+			chktkn();
 			if (interpret(tok, NULL, &type, &datum))
 				printf("?\n");
 			else {

@@ -68,7 +68,6 @@ int rad_sql_init();
 void rad_sql_acct(RADIUS_REQ *req);
 char *rad_sql_pass(RADIUS_REQ *req, char *data);
 void rad_sql_check_connect(int type);
-void rad_sql_need_reconnect(int type);
 void rad_sql_cleanup(int type, RADIUS_REQ *req);
 int rad_sql_checkgroup(RADIUS_REQ *req, char *groupname);
 int rad_sql_check_attr_query(RADIUS_REQ *req, VALUE_PAIR **check_pairs);

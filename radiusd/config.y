@@ -69,7 +69,8 @@ static char *typestr[] = {
 	"numeric",
 	"string",
 	"IP address",
-	"boolean"
+	"boolean",
+	"port"
 };
 
 static int syslog_severity[] = {
@@ -648,7 +649,7 @@ category_def    : T_CHANNEL { expect_string = 1; } T_STRING EOL
 		| begin_level level_list EOL
                   {
 			  expect_string = 0;
-			  if (L_CAT(in_category) == L_AUTH) 
+			  if ((in_category & L_CATMASK) == L_AUTH) 
 				  $$.level |= $2;
 		  }			  
                 ;
@@ -658,7 +659,7 @@ begin_level     : T_LEVEL
 			  if (in_category & L_MASK(L_DEBUG)) {
 				  expect_string = 1;
 				  clear_debug();
-			  } else if (L_CAT(in_category) == L_AUTH) {
+			  } else if ((in_category & L_CATMASK) == L_AUTH) {
 				  expect_string = 1;
 				  radlog(L_WARN,
 			      _("%s:%d: auth:level statement is obsolete"),
@@ -1380,7 +1381,7 @@ asgn(base, value, type, once)
 					 value->v.string);
 				  return;
 			  }
-			  value->type = AT_INT;
+			  type = value->type = AT_INT;
 			  break;
 		default:
 			break;

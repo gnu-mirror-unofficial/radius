@@ -1,3 +1,8 @@
+2001-11-01 Sergey Poznyakoff
+
+	* radiusd/rewrite.y: Fixed bug in yylex() which prevented
+	binary % from being recognized. Thanks to Clement Gerouville.
+	
 2001-10-31 Sergey Poznyakoff
 
 	* radlib/util.c: removed debug_pair().

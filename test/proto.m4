@@ -32,4 +32,21 @@ define([_fmtnum],[_print_zero(eval($2-len($1)))$1])
 dnl ***
 dnl FILENAME(NAME,NUM,SUFFIX)
 define([FILENAME],[_FULL_PATH/_TOOLDIR/[]_fmtnum(_SEQ_NUM,3)[]$1.$3])
+
+dnl ***
+dnl _GENTEXT(NAME,GENERIC[,NAME,GENERIC...])
+define([_GENTEXT],[ifelse($1,,,_SUITEDIR,[$1],[$2],
+[_GENTEXT(shift(shift($@)))])])
+
+define([GENSEQUENCE],[_BEGIN_SEQUENCE($1,$2)
+_GENTEXT(shift(shift($@)))
+_END_SEQUENCE])
+
+dnl ***
+dnl SEQUENCE(NAME,COMMENT,tests...)
+define([SEQUENCE],[_BEGIN_SEQUENCE($1,$2)
+$3
+_END_SEQUENCE])
+
+
 divert[]dnl

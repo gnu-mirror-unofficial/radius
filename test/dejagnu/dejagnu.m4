@@ -27,29 +27,36 @@ define([ESC],[ifelse($1,,,[\$1[]ESC(shift($@))])])
 dnl ***
 define([BEGIN],[SEQUENCE(Start,,default_radiusd_start $1)])
 
-define([END],[SEQUENCE(Stop,,radius_exit)])
+define([END],[SEQUENCE(Stop,,radius_exit)
+])
+
+dnl ***
+dnl _BEGIN_SEQUENCE(name, comment)
+define([_BEGIN_SEQUENCE],[define([_SEQ_NUM],incr(_SEQ_NUM))
+cat > FILENAME($1,3,exp) <<'EOF'
+_HEADER(__file__,__line__)
+clone_output "[$2]"])
+
+dnl ***
+dnl _END_SEQUENCE
+define([_END_SEQUENCE],[EOF[]dnl])
 
 dnl ***
 dnl SEQUENCE(NAME,COMMENT,tests...)
-define([SEQUENCE],[define([_SEQ_NUM],incr(_SEQ_NUM))
-cat > FILENAME($1,3,exp) <<'EOF'
-_HEADER(__file__,__line__)
-clone_output "[$2]"
+define([SEQUENCE],[_BEGIN_SEQUENCE($1,$2)
 $3
-EOF[]dnl])
+_END_SEQUENCE])
 
 dnl ***
 dnl IFSEQUENCE(NAME,CAPA,COMMENT,tests...)
-define([IFSEQUENCE],[define([_SEQ_NUM],incr(_SEQ_NUM))
-cat > FILENAME($1,3,exp) <<'EOF'
-_HEADER(__file__,__line__)
+define([IFSEQUENCE],[_BEGIN_SEQUENCE($1,$3)
 default_radiusd_version
 if { [[info exists CAPABILITY($2)]] } {
    $4
 } else {
    unsupported "$3"
 }
-EOF[]dnl])
+_END_SEQUENCE])
 
 dnl ***
 dnl TEST(SEND,EXPECT,[PATTERN])

@@ -151,7 +151,7 @@
     radsession script to send authentication/accounting requests
     to the server. To do so, you will first need to edit your
     raddb/client.conf file. The template installed from the distribution
-    will suffice to test the server in default configuration.
+    should suffice to test the server in default configuration.
 
 
     1. To test authentication do
@@ -205,8 +205,7 @@ radwtmp begins Fri Dec 01 16:36:59 2000
 		       IV. Bug reporting.		
                       ---------------------
 
-    Send bug reports to bug-gnu-radius@gnu.org. Be sure
-
+    Send bug reports to bug-gnu-radius@gnu.org. 
 	
 
 Local Variables:

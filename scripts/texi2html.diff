@@ -1,0 +1,20 @@
+@@ -3050,6 +3050,8 @@ INPUT_LINE: while ($_ = &next_line) {
+     # value substitution before macro expansion, so that
+     # it works in macro arguments			    
+     s/\@value{($VARRE)}/$value{$1}/eg;
++    s/\@var{($VARRE)}/$1/eg;
++    s/\@acronym{($VARRE)}/&do_sc($1)/eg;
+ 			    
+     #############################################################
+     # macro substitution
+@@ -3074,6 +3076,10 @@ INPUT_LINE: while ($_ = &next_line) {
+ 	  $args =~ s/\s*$//;
+ 	  $after = '';
+ 	}
++        else
++        {
++          $after = '';
++        }
+ 	$args =~ s|\\\\|\\|g;
+ 	$args =~ s|\\{|{|g;
+         $args =~ s|\\}|}|g;

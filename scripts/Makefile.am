@@ -15,6 +15,7 @@ SUBDIRS=guile
 EXTRA_DIST=\
  config-conv\
  config-conv.awk\
+ comptab.awk\
  dot.emacs\
  dict.awk\
  mksnmp-h.awk\

@@ -355,13 +355,13 @@ NULL    return NUL;
 \"[^"\\\n]*\\[xX]{X} |
 \"[^"\\\n]*\\[xX]{X}{X} {
 	  BEGIN(in_string);
-	  read_number(yytext + 1, yyleng - 1, 16);
+	  obstack_grow_backslash_num(&stack, yytext + 1, yyleng - 1, 16);
 }
 \"[^"\\\n]*\\{O} |
 \"[^"\\\n]*\\{O}{O} |
 \"[^"\\\n]*\\{O}{O}{O} {
           BEGIN(in_string);
-          read_number(yytext + 1, yyleng - 1, 8); 
+          obstack_grow_backslash_num(&stack, yytext + 1, yyleng - 1, 8); 
 }
 <in_string>[^"\\\n]*\\\n {
           obstack_grow(&stack, yytext, yyleng-2);
@@ -379,12 +379,12 @@ NULL    return NUL;
 }
 <in_string>[^"\\\n]*\\[xX]{X} |
 <in_string>[^"\\\n]*\\[xX]{X}{X} {
-	  read_number(yytext, yyleng, 16);
+	  obstack_grow_backslash_num(&stack, yytext, yyleng, 16);
 }
 <in_string>[^"\\\n]*\\{O} |
 <in_string>[^"\\\n]*\\{O}{O} |
 <in_string>[^"\\\n]*\\{O}{O}{O} {
-          read_number(yytext, yyleng, 8);
+          obstack_grow_backslash_num(&stack, yytext, yyleng, 8);
 }
 <in_string>[^"\\\n]*\" {
           BEGIN(INITIAL);
@@ -547,21 +547,3 @@ preproc()
 }
 
 
-#define to_num(c) (isdigit(c) ? c - '0' : (isxdigit(c) ? toupper(c) - 'A' + 10 : -1 ))
-
-void
-read_number(char *text, int len, int base)
-{
-	int i;
-	int c = 0;
-
-	for (i = len-1; i >= 0 && text[i] != '\\'; i--)
-		;
-	if (i)
-		obstack_grow(&stack, text, i);
-	if (base == 16)
-		i++;
-	for (i++; i < len; i++) 
-		c = c*base + to_num(text[i]);
-	obstack_1grow(&stack, c);
-}

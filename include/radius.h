@@ -403,3 +403,6 @@ RADIUS_SERVER *rad_clt_append_server(RADIUS_SERVER *list,
 				     RADIUS_SERVER *server);
 void rad_clt_clear_server_list(RADIUS_SERVER *list);
 RADIUS_SERVER *rad_clt_find_server(RADIUS_SERVER *list, char *name);
+
+/* log.c */
+char *rad_print_request(RADIUS_REQ *req, char *outbuf, size_t size);

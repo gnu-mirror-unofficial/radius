@@ -379,7 +379,7 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
 	case DV_AUTH_TYPE_CRYPT_LOCAL:
 		debug(1, ("  auth: Crypt"));
 		if (real_password == NULL) {
-			result = userpass[0] ? AUTH_FAIL : AUTH_OK;
+			result = AUTH_FAIL;
 			break;
 		}
 		if (strcmp(real_password,

@@ -32,7 +32,7 @@ static char rcsid[] =
 #include <fcntl.h>
 #include <raddbm.h>
 
-#ifdef NDBM
+#if USE_DBM == USE_NDBM
 
 int
 open_dbm(name, dbmfile)
@@ -77,7 +77,7 @@ insert_dbm(dbmfile, key, contents)
 	return dbm_store(dbmfile, key, contents, DBM_INSERT);
 }
 
-#else
+#else /* DBM_DBM */
 
 /*ARGSUSED*/
 int
@@ -96,14 +96,16 @@ create_dbm(name, dbmfile)
 	int fd;
 	char *p;
 
-	p = mkfilename(name, ".pag");
+	p = emalloc(strlen(name)+5);
+	strcat(strcpy(p, name), ".pag");
 	fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0600);
 	efree(p);
 	if (fd < 0) 
 		return 1;
 	close(fd);
 
-	p = mkfilename(name, ".dir");
+	p = emalloc(strlen(name)+5);
+	strcat(strcpy(p, name), ".dir");
 	fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0600);
 	efree(p);
 	if (fd < 0) 

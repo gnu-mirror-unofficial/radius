@@ -77,6 +77,7 @@ void rad_sql_need_reconnect(int type);
 int rad_sql_setup(int type, qid_t qid);
 void rad_sql_cleanup(int type, qid_t qid);
 int rad_sql_checkgroup(RADIUS_REQ *req, char *groupname);
+int rad_sql_attr_query(RADIUS_REQ *req, VALUE_PAIR **reply_pairs);
 void rad_sql_shutdown();
 
 /* Lower level routines: */

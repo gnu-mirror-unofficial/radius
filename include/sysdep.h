@@ -49,18 +49,6 @@ extern char *strtok_r (char *s, const char *delim, char **save_ptr);
 extern struct tm *localtime_r(const time_t *timep, struct tm *res);
 #endif
 
-#ifndef HAVE_GETHOSTBYNAME_R
-struct hostent *
-gethostbyname_r(const char *name, struct hostent *result,
-		char *buffer, int buflen, int *h_errnop);
-#endif
-
-#ifndef HAVE_GETHOSTBYADDR_R
-struct hostent *
-gethostbyaddr_r(const char *addr, int length, int type, struct hostent *result,
-		char *buffer, int buflen, int *h_errnop);
-#endif
-
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
 # ifdef TIME_WITH_SYS_TIME

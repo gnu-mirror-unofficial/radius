@@ -59,9 +59,9 @@ ip_gethostname(ipaddr, namebuf, size)
 	n_ipaddr = htonl(ipaddr);
 	hp = (struct hostent *) NULL;
 	if (resolve_hostnames) 
-		hp = gethostbyaddr_r((char *)&n_ipaddr,
-				     sizeof (struct in_addr), AF_INET,
-				     &hent, buffer, sizeof buffer, &h_err);
+		hp = rad_gethostbyaddr_r((char *)&n_ipaddr,
+					 sizeof (struct in_addr), AF_INET,
+					 &hent, buffer, sizeof buffer, &h_err);
 	if (hp == (struct hostent *) NULL) 
 		return ip_iptostr(ipaddr, namebuf);
 
@@ -88,7 +88,7 @@ ip_gethostaddr(host)
 	if (good_ipaddr(host) == 0) {
 		return ip_strtoip(host);
 	}
-	hp = gethostbyname_r(host, &hent, buffer, sizeof(buffer), &h_err);
+	hp = rad_gethostbyname_r(host, &hent, buffer, sizeof(buffer), &h_err);
 	if (!hp)
 		return 0;
 	return ntohl(*(UINT4 *)hp->h_addr);

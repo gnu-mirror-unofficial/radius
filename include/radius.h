@@ -329,3 +329,10 @@ void decrypt_password(char *password, VALUE_PAIR *pair,
 void decrypt_password_broken(char *password, VALUE_PAIR *pair,
 			     char *vector, char *secret);
 
+/* gethost_r.c */
+struct hostent *rad_gethostbyname_r(const char *name, struct hostent *result,
+				    char *buffer, int buflen, int *h_errnop);
+struct hostent *rad_gethostbyaddr_r(const char *addr, int length,
+				    int type, struct hostent *result,
+				    char *buffer, int buflen, int *h_errnop);
+

@@ -22,7 +22,6 @@
 #include <netdb.h>
 #include <string.h>
 
-#if !defined(HAVE_GETHOSTBYNAME_R) && !defined(HAVE_GETHOSTBYADDR_R)
 static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int
@@ -96,9 +95,8 @@ store_hostent(h_in, h_out, buf, buflen, h_errnop)
 	return 0;
 }
 	
-#ifndef HAVE_GETHOSTBYNAME_R
 struct hostent *
-gethostbyname_r(name, result, buffer, buflen, h_errnop)
+rad_gethostbyname_r(name, result, buffer, buflen, h_errnop)
 	const char *name;
 	struct hostent *result;
 	char *buffer;
@@ -114,11 +112,9 @@ gethostbyname_r(name, result, buffer, buflen, h_errnop)
 	pthread_mutex_unlock(&mutex);
 	return result;
 }
-#endif
 
-#ifndef HAVE_GETHOSTBYADDR_R
 struct hostent *
-gethostbyaddr_r(addr, length, type, result, buffer, buflen, h_errnop)
+rad_gethostbyaddr_r(addr, length, type, result, buffer, buflen, h_errnop)
 	const char *addr;
 	int length;
 	int type;
@@ -136,7 +132,5 @@ gethostbyaddr_r(addr, length, type, result, buffer, buflen, h_errnop)
 	pthread_mutex_unlock (&mutex);
 	return result;
 }
-#endif
 
-#endif /*!defined*/
 

@@ -19,6 +19,7 @@
 EXTRA_DIST=\
  README \
  ascend.rw \
+ c3620.rw \
  cisco.rw \
  comos.rw\
  jetstream.rw \

@@ -5,7 +5,12 @@
 	* lib/Makefile.am: Fixed lint rules.
 	* radiusd/Makefile.am: Likewise
 	* radlast/Makefile.am: Likewise
-	* radtest/Makefile.am: Likewise.
+	* radtest/Makefile.am: Likewise
+	* radscm/Makefile.am: Likewise
+	* radwho/Makefile.am: Likewise
+	* radzap/Makefile.am: Likewise
+	* radzap/Makefile.am: Likewise
+	* sql/Makefile.am: Likewise
 
 	Linted and cleaned up some bugs. Files affected:
 
@@ -57,7 +62,20 @@
 	* snmplib/snmp_oid.c,
 	* snmplib/snmp_recv.c,
 	* snmplib/snmp_send.c,
-	* test/findport.c.
+	* test/findport.c,
+	* lib/printutmp.c,
+	* radiusd/radutil.c,
+	* radiusd/request.c,
+	* radiusd/rewrite.y,
+	* radiusd/scheme.c,
+	* radscm/rscm_avl.c,
+	* radscm/rscm_lib.c,
+	* radscm/rscm_utmp.c,
+	* raduse/raduse.c,
+	* radwho/radwho.c,
+	* sql/disp.c,
+	* sql/mysql.c,
+	* sql/odbc.c.
 
 	* po/es.po: Updated
 	* po/no.po: Updated

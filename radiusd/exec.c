@@ -212,7 +212,6 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
 	if (signal(SIGCHLD, oldsig) == SIG_ERR)
 		radlog(L_CRIT|L_PERROR,
 			_("can't restore SIGCHLD"));
-	sig_cleanup(SIGCHLD);
 
 	if (WIFEXITED(status)) {
 		status = WEXITSTATUS(status);

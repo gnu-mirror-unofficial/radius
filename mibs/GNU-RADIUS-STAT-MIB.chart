@@ -20,7 +20,7 @@
           +-(8) radiusStatNASPortTable
              +-(1) radiusStatNASPortEntry
                +-(1) radiusStatPortIndex
-               +-(2) radiusStatNASIndex
+               +-(2) radiusStatPortNASIndex
                +-(3) radiusStatPortID
                +-(4) radiusStatPortFramedAddress
                +-(5) radiusStatPortTotalLogins

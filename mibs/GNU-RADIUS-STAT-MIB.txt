@@ -114,12 +114,12 @@ radiusStatTotalLinesIdle OBJECT-TYPE
         ::= { radiusStatMIB 6 }
 
 RadiusStatNASEntry ::= SEQUENCE {
-       StatNASIndex                      Integer32,
-       StatNASAddress                    IpAddress,
-       StatNASID                         SnmpAdminString,
-       StatNASLines                      Counter32,
-       StatNASLinesInUse                 Counter32,
-       StatNASLinesIdle                  Counter32,
+       NASIndex                      Integer32,
+       NASAddress                    IpAddress,
+       NASID                         SnmpAdminString,
+       NASLines                      Counter32,
+       NASLinesInUse                 Counter32,
+       NASLinesIdle                  Counter32,
 }
 
 radiusStatNASTable OBJECT-TYPE
@@ -141,7 +141,7 @@ radiusStatNASEntry OBJECT-TYPE
        INDEX      { NASIndex }
        ::= { radiusStatNASTable 1 }
 
-StatNASIndex OBJECT-TYPE
+NASIndex OBJECT-TYPE
        SYNTAX     Integer32 (1..2147483647)
        MAX-ACCESS not-accessible
        STATUS     current
@@ -151,7 +151,7 @@ StatNASIndex OBJECT-TYPE
               be appended to StatNASIndex OID."
        ::= { radiusStatNASEntry 1 }
 
-StatNASAddress OBJECT-TYPE
+NASAddress OBJECT-TYPE
        SYNTAX     IpAddress
        MAX-ACCESS read-only
        STATUS     current
@@ -160,7 +160,7 @@ StatNASAddress OBJECT-TYPE
               table."
        ::= { radiusStatNASEntry 2 }
 
-StatNASID OBJECT-TYPE
+NASID OBJECT-TYPE
        SYNTAX     SnmpAdminString
        MAX-ACCESS read-only
        STATUS     current
@@ -170,7 +170,7 @@ StatNASID OBJECT-TYPE
               the NAS longname from <sysconfdir>/raddb/naslist."
        ::= { radiusStatNASEntry 3 }
 
-StatNASLines OBJECT-TYPE
+NASLines OBJECT-TYPE
        SYNTAX Counter32
        MAX-ACCESS read-only
        STATUS current
@@ -178,7 +178,7 @@ StatNASLines OBJECT-TYPE
              "The number of lines (ports) registered so far on the NAS."
        ::= { radiusStatNASEntry 4 }
 
-StatNASLinesInUse OBJECT-TYPE
+NASLinesInUse OBJECT-TYPE
        SYNTAX Counter32
        MAX-ACCESS read-only
        STATUS current
@@ -186,7 +186,7 @@ StatNASLinesInUse OBJECT-TYPE
              "The number of lines (ports) currently in use on this NAS"
        ::= { radiusStatNASEntry 5 }
 
-StatNASLinesIdle OBJECT-TYPE
+NASLinesIdle OBJECT-TYPE
        SYNTAX Counter32
        MAX-ACCESS read-only
        STATUS current
@@ -240,7 +240,7 @@ StatPortIndex OBJECT-TYPE
               the description for PortID."
        ::= { StatNASPortEntry 1 }
 
-StatNASIndex OBJECT-TYPE
+StatPortNASIndex OBJECT-TYPE
        SYNTAX     Integer32 (1..2147483647)
        MAX-ACCESS read-only
        STATUS     current
@@ -258,7 +258,7 @@ StatPortID OBJECT-TYPE
               The following relation between the three OID values
               holds true:
 
-		StatPortIndex.$(StatNASIndex.N).$(StatPortID.N) = N
+		StatPortIndex.$(StatPortNASIndex.N).$(StatPortID.N) = N
 
               where $() represents the value of corresponding oid
               and N is an arbitrary integer representing number

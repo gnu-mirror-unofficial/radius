@@ -1249,12 +1249,13 @@ rad_sql_reply_attr_query(req, reply_pairs)
 	if (sql_cfg.doauth == 0 || !sql_cfg.reply_attr_query)
 		return 0;
 	
-	if ((pair = avl_find(request_pairs, DA_QUEUE_ID)) == NULL) {
+	qid = req->qid;
+	if (!qid) {
 		/* this should never happen, but just in case... */
 		radlog(L_ERR, "No queue ID in request");
 		return -1;
 	}
-	qid = (qid_t)pair->lvalue;
+
 	conn = attach_sql_connection(SQL_AUTH, qid);
 	
 	query = radius_xlate(&stack, sql_cfg.reply_attr_query, req, NULL);
@@ -1284,12 +1285,13 @@ rad_sql_check_attr_query(req, return_pairs)
 	if (sql_cfg.doauth == 0 || !sql_cfg.check_attr_query)
 		return 0;
 	
-	if ((pair = avl_find(request_pairs, DA_QUEUE_ID)) == NULL) {
+	qid = req->qid;	
+	if (!qid) {
 		/* this should never happen, but just in case... */
 		radlog(L_ERR, "No queue ID in request");
 		return -1;
 	}
-	qid = (qid_t)pair->lvalue;
+
 	conn = attach_sql_connection(SQL_AUTH, qid);
 	
 	query = radius_xlate(&stack, sql_cfg.check_attr_query, req, NULL);

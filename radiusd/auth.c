@@ -446,8 +446,8 @@ rad_auth_init(radreq, activefd)
 	}
 		
 #ifdef USE_SQL
-	if (p = avp_create(DA_QUEUE_ID, 0, NULL, (qid_t)radreq))
-		avl_add_pair(&radreq->request, p);
+	/* A kludge, but it does its job */
+	radreq->qid = radreq;
 #endif
 	/*
 	 * Add any specific attributes for this username.

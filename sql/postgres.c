@@ -80,7 +80,7 @@ postgres_conninfo(type)
                 strlen(sql_cfg.password) + 1;
         conninfo = emalloc(len);
 
-        snprintf(conninfo, sizeof(conninfo),
+        snprintf(conninfo, len - 1,
                 "%s%s %s%s %s%s %s%s",
                 CI_HOST, sql_cfg.server,
                 CI_DBNAME, dbname,

@@ -2911,6 +2911,58 @@ This is replaced by current date/time (localtime).
 This is replaced by current date/time in GMT.
 @end table
 
+The exact substitution procedure varies depending on the type
+of the attribute referenced by macro. If the attribute is of
+string or date type, @radiusd{} first checks if the resulting
+substitution should be quoted. It does so by looking at the character
+immediately preceeding @samp{%}. If it is a single or double quote,
+then @radiusd{} assumes the macro must be quoted and replaces it
+by an appropriately modified attribute value. The purpose of the
+modification is to ensure that no characters within the expanded
+string would conflict with the quoting characters. In particular,
+@radiusd{} searches the attribute value for any of the
+characters @samp{\}, @samp{'}, @samp{"} and prepends
+a @samp{\} to any occurrence of these. For example, suppose that
+attribute @attr{NAS-Identifier} has the value @samp{A "new" host}.
+Then:
+
+@smallexample
+@group
+nasid=%C@{NAS-Identifier@} @expansion{} nasid=A "new" host
+nasid="%C@{NAS-Identifier@}" @expansion{} nasid="A \"new\" host"
+nasid=%\C@{NAS-Identifier@} @expansion{} nasid=A \"new\" host
+@end group
+@end smallexample
+
+The last example illustrates the use of backslash character to force
+string quoting in the absense of explicit quotation marks.
+
+If an integer attribute reference is quoted, @radiusd{} looks
+up the string translation of its value in the dictionary
+(@pxref{VALUE}) and uses this string as a replacement. If no
+translation is found, the numeric value is used. The following
+example assumes that the value of @attr{Acct-Terminate-Cause}
+attribute is 10:
+
+@smallexample
+@group
+reason=%C@{Acct-Terminate-Cause@} @expansion{} reason=10
+reason='%C@{Acct-Terminate-Cause@}' @expansion{} reason='NAS-Request'
+reason=%\C@{Acct-Terminate-Cause@} @expansion{} reason=NAS-Request
+@end group
+@end smallexample
+
+Again, a backslash after percent sign can be used to force
+dictionary lookup.
+
+@FIXME{The quoting rules are not flexible enough. For example,
+a string 'isn\'t it a string' may be produced, but backslash escape
+within a singly quoted string is useless in most implementations (e.g.
+in shell or SQL). Besides, quoting unconditionally replaces
+unprintable characters with their octal values, where the notion
+of ``unprintable'' is determined by the current locale. Is it always
+the right thing to do?}
+
 The ``@samp{@{@}} form'' allows to specify default value for the
 substitution. The default value will be used when no such attribute
 is encountered in the pairlist. The syntax for specifying the default
@@ -2927,6 +2979,9 @@ request pairlist, and to @var{defval} otherwise. For example:
 @noindent
 will return the value of Acct-Session-Time attribute or 0 if it
 doesn't exist in the request pairlist.
+
+@FIXME{Should the quoting rules apply for @var{defval} as well? I'd
+say they should...}
 
 The substitution @code{%C@{@var{attr-name}:=@var{defval}@}} is expanded
 to the value of @var{attr-name} attribute. If this attribute is not

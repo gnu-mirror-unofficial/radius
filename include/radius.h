@@ -375,7 +375,7 @@ void avl_move_pairs(VALUE_PAIR **to, VALUE_PAIR **from,
                     int (*fun)(), void *closure);
 int avp_cmp(VALUE_PAIR *a, VALUE_PAIR *b);
 int avl_cmp(VALUE_PAIR *a, VALUE_PAIR *b, int prop);
-int avp_null_string(VALUE_PAIR *pair);
+int avp_null_string_p(VALUE_PAIR *pair);
 	
 extern int resolve_hostnames;
 char *ip_gethostname (UINT4, char *buf, size_t size);

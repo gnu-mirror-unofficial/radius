@@ -314,7 +314,7 @@ proxy_send(REQUEST *req)
 
         /* Look up name. */
         namepair = avl_find(radreq->request, DA_USER_NAME);
-        if (avp_null_string(namepair))
+        if (avp_null_string_p(namepair))
                 return 0;
 
         username = namepair->avp_strvalue;

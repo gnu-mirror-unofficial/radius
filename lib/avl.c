@@ -209,7 +209,7 @@ avp_cmp(VALUE_PAIR *a, VALUE_PAIR *b)
 }
 
 int
-avp_null_string(VALUE_PAIR *pair)
+avp_null_string_p(VALUE_PAIR *pair)
 {
 	if (!pair)
 		return 1;

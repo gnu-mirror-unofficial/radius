@@ -62,6 +62,7 @@ proc default_radiusd_version {} {
 }
 
 proc radiusd_version {} {
+    global RADIUSD
     global RADIUSVERSION
     global RADIUSFLAGS
     

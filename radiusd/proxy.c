@@ -237,6 +237,9 @@ get_socket_addr(fd)
 	   
 	if (getsockname(fd, (struct sockaddr*)&sin, &len) == 0)
 		ip = sin.sin_addr.s_addr;
+
+	if (ip == INADDR_ANY)
+		ip = ref_ip;
 	return ip;
 }
 
@@ -436,11 +439,16 @@ proxy_compare_request(data, oldreq)
         struct proxy_data *data;
         RADIUS_REQ *oldreq;
 {
-        debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x", 
-                oldreq->id,data->state->id,data->ipaddr,data->state->ipaddr));
+        debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x, proxy_id %d %d, server_addr %#8x %#8x", 
+		   oldreq->id, data->state->id,
+		   data->ipaddr, data->state->ipaddr,
+		   oldreq->server_id, data->state->proxy_id,
+		   oldreq->server->addr, data->state->rem_ipaddr));
         
         if (data->state->ipaddr     == data->ipaddr
-	    && data->state->id      == oldreq->id) 
+	    && data->state->id      == oldreq->id
+	    && data->state->proxy_id == oldreq->server_id
+	    && data->state->rem_ipaddr == oldreq->server->addr)
                 return 0;
 
         return 1;
@@ -496,8 +504,6 @@ proxy_receive(radreq, activefd)
         PROXY_STATE     *state;
         struct proxy_data data;
         
-        /* FIXME: calculate md5 checksum! */
-
         /* Find the last PROXY_STATE attribute. */
 
         oldreq  = NULL;

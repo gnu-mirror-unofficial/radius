@@ -1,0 +1,474 @@
+dnl * Process this file with autoconf to produce a configure script.
+dnl * $Id$
+AC_REVISION($Revision$)
+AC_INIT(radiusd/radiusd.c)
+AC_CANONICAL_SYSTEM
+AM_INIT_AUTOMAKE(gnu-radius, 0.92.1)
+AM_CONFIG_HEADER(config.h)
+AM_MAINTAINER_MODE
+
+dnl * Available linguas
+ALL_LINGUAS="no"
+
+AC_SUBST(RADIUSD_LDADD)
+AC_SUBST(BUILD_TARGET)
+AC_SUBST(INCLUDEPATH)
+AC_SUBST(YACC_OPTS)
+AC_SUBST(RADLOG_DIR)
+AC_SUBST(RADDB_DIR)
+AC_SUBST(RADIUS_PID)
+AC_SUBST(PS)
+AC_SUBST(GETOPT)
+
+case $target in
+	*-*-linux*)	SHADOW_SUPPORT=yes
+			ST="BSD";;
+
+	*-*-solaris*)	ADDLIBS="-lnsl -lsocket"; 
+			LIBS="$LIBS $ADDLIBS -L/usr/ucblib"
+			SHADOW_SUPPORT=yes
+                        ST="SYSV";;
+
+	*-*-*bsd*)	ST="BSD";;
+
+        *)              ST="BSD";;
+esac
+
+dnl * Checks for programs.
+AC_PROG_CC
+AC_PROG_RANLIB
+AC_PROG_YACC
+AM_PROG_LEX
+AC_PROG_AWK
+AC_PATH_PROG(M4, m4, no, $PATH:/usr/ccs/bin:/usr/bin:/usr/local/bin)
+AC_PATH_PROG(PS, ps, no, $PATH:/usr/bin:/usr/local/bin)
+AC_PATH_PROG(GETOPT, getopt, no, $PATH:/usr/bin)
+
+if test "$PS" = "no" ; then
+  AC_MSG_WARN(radctl.sh will not be built since ps is not found on the system)
+fi	
+
+dnl * Check for preprocessor capabilities
+AC_MSG_CHECKING(whether compiler defines __FUNCTION__)
+AC_TRY_RUN(
+main() { return strcmp(__FUNCTION__,"main"); },
+	AC_MSG_RESULT(yes),
+	AC_DEFINE_UNQUOTED(__FUNCTION__, (char*)0)
+	AC_MSG_RESULT(no),
+	AC_MSG_RESULT(don't know))
+
+dnl * Checks for libraries.
+AC_CHECK_LIB(intl, gettext)
+AC_CHECK_LIB(rx, regcomp)
+
+dnl * Checks for header files.
+AC_HEADER_STDC
+AC_HEADER_SYS_WAIT
+AC_CHECK_HEADERS(fcntl.h malloc.h strings.h\
+ sys/file.h sys/time.h sys/types.h unistd.h\
+ ctype.h sys/socket.h netinet/in.h arpa/inet.h\
+ netdb.h stdarg.h varargs.h termcap.h termios.h termio.h sgtty.h\
+ crypt.h sys/uio.h)
+
+dnl * Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_TYPE_UID_T
+AC_TYPE_OFF_T
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_HEADER_TIME
+AC_STRUCT_TM
+
+dnl * Checks for library functions.
+AC_FUNC_MEMCMP
+AC_TYPE_SIGNAL
+AC_FUNC_STRFTIME
+AC_FUNC_VPRINTF
+AC_CHECK_FUNCS(setsid gethostname gettimeofday \
+ mkdir mktime select socket strdup strtol lockf \
+ strncasecmp vsnprintf getopt_long setlocale strerror bzero \
+ regcomp) 
+
+AC_MSG_CHECKING(for sys_errlist and sys_nerr)
+AC_TRY_RUN(
+extern char *sys_errlist[[]];
+extern int sys_nerr;
+main() { char *s = sys_errlist[[0]]; return 0; },
+	AC_DEFINE(HAVE_SYS_ERRLIST)
+	AC_MSG_RESULT(Ok),
+	AC_MSG_RESULT(No),
+	AC_MSG_RESULT(don't know))
+
+dnl ********************************************************************
+dnl *                     User-configurable options                    *
+dnl ********************************************************************
+
+dnl **************
+dnl debug
+dnl **************
+RADIUS_DEBUG=1
+AC_ARG_ENABLE(debug,                     
+	[  --disable-debug               disable debugging functions],
+	[case $enableval in
+		yes)	RADIUS_DEBUG=1;;
+		no)	RADIUS_DEBUG=0;;
+	 esac])
+
+AC_DEFINE_UNQUOTED(RADIUS_DEBUG, $RADIUS_DEBUG)
+
+dnl **************
+dnl yydebug
+dnl **************
+AC_ARG_ENABLE(yydebug,
+	[  --enable-yydebug	         enable parser debugging],
+	[case $enableval in
+		yes) 	AC_DEFINE(YACC_DEBUG)		
+			YACC_OPTS="-t";;
+		*)	;;
+	esac])
+
+dnl **************
+dnl etcdir
+dnl **************
+AC_MSG_CHECKING(etcdir)
+AC_ARG_WITH(etcdir,
+        [  --with-etcdir                  directory containing raddb files],
+	[case $withval in
+		no)		AC_MSG_ERROR(--with-etcdir requires an argument)
+				;;
+		yes)		ETC_DIR="/etc"
+				;;
+		*)		ETC_DIR="$withval"
+				;;
+	esac],
+	ETC_DIR=/etc)
+AC_MSG_RESULT($ETC_DIR)
+AC_SUBST(ETC_DIR)
+AC_DEFINE_UNQUOTED(ETC_DIR, "$ETC_DIR")
+RADDB_DIR=${ETC_DIR}/raddb
+
+case "$ST" in
+        "BSD")		RADLOG_DIR="/var/log"
+			RADPID_DIR="/var/run"
+			;;
+	"SYSV")		RADLOG_DIR="/usr/adm"           
+			RADPID_DIR="$ETC_DIR/raddb"
+			;;
+esac
+
+AC_SUBST(RADPID_DIR)
+AC_DEFINE_UNQUOTED(RADLOG_DIR, "$RADLOG_DIR")
+AC_DEFINE_UNQUOTED(RADPID_DIR, "$RADPID_DIR")
+AC_DEFINE_UNQUOTED(BUILD_TARGET, "$target")
+	
+dnl **************
+dnl auth port no
+dnl **************
+AC_MSG_CHECKING(authentication port number)
+AC_ARG_WITH(auth-port,
+	[  --with-auth-port=NUMBER	 specify port number to use for authentication],
+	[case $withval in
+		[[0-9]][[0-9]]*)	AUTH_PORT=$withval
+				;;
+		rfc|RFC)	AUTH_PORT=1812
+				;;	
+		old|OLD)	AUTH_PORT=1645
+				;;			
+		*)		AC_MSG_ERROR(invalid port number)
+				;;
+	esac],
+	AUTH_PORT=1645)
+AC_MSG_RESULT($AUTH_PORT)
+AC_DEFINE_UNQUOTED(PW_AUTH_UDP_PORT,$AUTH_PORT)
+AC_DEFINE_UNQUOTED(PW_ACCT_UDP_PORT,`expr $AUTH_PORT + 1`)		
+		
+dnl *****************************
+dnl additional libraries/includes
+dnl *****************************
+AC_MSG_CHECKING(for additional libraries)
+AC_ARG_ENABLE(add_libs,
+	[  --enable-add-libs=STRING 	 additional libraries],
+	[case $enableval in
+		yes|no)		AC_MSG_ERROR(--enable-add-libs requires an argument)
+				exit 1;;
+		*)		LIBS="$LIBS $enableval";;
+	esac])
+AC_MSG_RESULT($LIBS)
+
+AC_MSG_CHECKING(for additional includes)
+AC_ARG_ENABLE(add_includes,
+	[  --enable-add-includes=STRING   additional include files],
+	[case $withval in
+		yes|no)		AC_MSG_ERROR(--enable-add-includes requires an argument)
+				exit 1;;
+		*)		INCLUDEPATH="$INCLUDEPATH $enableval";;
+	esac])
+AC_MSG_RESULT($INCLUDEPATH)
+
+
+dnl **************
+dnl shadow support
+dnl **************
+AC_MSG_CHECKING(whether to enable shadow support)
+AC_ARG_ENABLE(shadow,
+	[  --enable-shadow	         enable shadow support],
+	[case $enableval in
+		yes) 	SHADOW_SUPPORT=yes;;
+		*)	SHADOW_SUPPORT=no;;
+	esac])
+AC_MSG_RESULT($SHADOW_SUPPORT)
+
+if test x$SHADOW_SUPPORT = xyes; then
+	AC_DEFINE(PWD_SHADOW)
+fi
+
+dnl **************
+dnl PAM support
+dnl **************
+AC_ARG_ENABLE(pam,
+	[  --enable-pam		         enable pam support],
+	[case $enableval in
+		yes)		USE_PAM=yes; AC_DEFINE(USE_PAM);;
+		no)		;;
+		*)		AC_MSG_ERROR(--enable-pam can't be used with an argument)
+				exit 1;;
+	esac])
+if test x$USE_PAM = xyes; then
+	AC_CHECK_LIB(pam, pam_start,
+			[ AC_DEFINE(HAVE_LIBPAM) 
+               		  RADIUSD_LDADD="$RADIUSD_LDADD -lpam" ],
+		[ AC_MSG_ERROR(-lpam not found) 
+		  exit 1])
+fi
+
+
+dnl **************
+dnl DBM 
+dnl **************
+
+use_dbm() {
+	USE_DBM=yes
+	AC_DEFINE(USE_DBM)
+	AC_DEFINE(DBM)
+	AC_CHECK_HEADER(dbm.h,,
+			[ AC_MSG_ERROR(can't find header dbm.h)
+			exit 0] )
+	AC_CHECK_FUNC(dbminit,,			
+		AC_CHECK_LIB(dbm, dbminit,
+			[ AC_DEFINE(HAVE_LIBDBM) 
+			  RADIUSD_LDADD="$RADIUSD_LDADD -ldbm" ],
+		 [ AC_MSG_ERROR(-ldbm not found) ])) 
+}
+
+use_ndbm() {
+	USE_DBM=yes
+	AC_DEFINE(USE_DBM)
+	AC_DEFINE(NDBM)
+	AC_CHECK_HEADER(ndbm.h,,
+			[ AC_MSG_ERROR(can't find header ndbm.h)
+			exit 0] )
+	AC_CHECK_FUNC(dbm_open,, 					
+		AC_CHECK_LIB(ndbm, dbm_open,
+			[ AC_DEFINE(HAVE_LIBNDBM) 
+			  RADIUSD_LDADD="$RADIUSD_LDADD -lndbm" ],
+		[ AC_MSG_ERROR(-lndbm not found) ]))
+}
+
+AC_ARG_ENABLE(dbm,
+	[  --enable-dbm][[={dbm|ndbm}]][      include dbm support],
+	[case $enableval in
+		yes)	    use_ndbm;; 
+
+		no)	    USE_DBM=no; USE_NDBM=no;;	
+
+		DBM|dbm)    use_dbm;;
+
+		NDBM|ndbm)  use_ndbm;;
+
+		*)	    AC_MSG_ERROR(unsupported option value: $enableval)
+	esac])	
+
+
+dnl **************
+dnl SQL
+dnl **************
+AC_ARG_ENABLE(mysql,
+	[  --ensble-mysql                 enable mysql support (at given port)],
+	[case $enableval in
+		yes)		USE_MYSQL=yes	
+				AC_DEFINE(USE_SQL)
+				AC_DEFINE(USE_SQL_MYSQL);;
+		no)		;;
+		*)		USE_MYSQL=yes	
+				AC_DEFINE(USE_SQL)
+				AC_DEFINE(USE_SQL_MYSQL)
+				AC_DEFINE_UNQUOTED(RAD_MYSQL_PORT, $enableval);;
+	esac])
+
+
+if test x$USE_MYSQL = xyes; then
+	old_LIBS=$LIBS
+	STR="-L /usr/local/lib/mysql -L /usr/lib/mysql -lm -lmysqlclient"	
+	LIBS="$LIBS $STR"	
+	AC_CHECK_LIB(mysqlclient, mysql_connect,
+			[ AC_DEFINE(HAVE_LIBMYSQL) 
+                          RADIUSD_LDADD="$RADIUSD_LDADD $STR" ],
+		[ AC_MSG_ERROR(-lmysqlclient not found neither in /usr/local/lib/mysql nor in /usr/lib/mysql) 
+			  exit 1])
+	LIBS=$old_LIBS
+fi
+
+
+dnl **************
+dnl SNMP
+dnl **************
+
+AC_ARG_ENABLE(snmp,
+	[  --enable-snmp                  enable SNMP support],
+	[case $enableval in
+		yes)		USE_SNMP=yes
+				AC_DEFINE(USE_SNMP)
+               		  	RADIUSD_LDADD="$RADIUSD_LDADD -L ../snmplib -lsnmp";;
+		no)		;;
+		*)		AC_MSG_ERROR(--enable-snmp can't be used with an argument)				
+				exit 1;;
+	esac])
+	
+dnl **************
+dnl TTL
+dnl **************
+
+AC_ARG_ENABLE(notify,
+	[  --enable-notify	         enable TTL notification],
+	[case $enableval in
+		yes)		AC_DEFINE(USE_NOTIFY);;
+		no)		;;
+	 esac])
+
+
+dnl ***********************************************************************
+dnl *          Compatibility options and some special hacks               *
+dnl ***********************************************************************
+
+AC_ARG_ENABLE(livingston-menus,
+	[  --enable-livingston-menus	 enable Livingston-compatible menus],
+	[case $enableval in
+		yes) 	AC_DEFINE(USE_LIVINGSTON_MENUS);;		
+		*)	;;
+	esac])
+
+AC_ARG_ENABLE(deny_shell,
+	[  --enable-deny-shell=STRING 	 always reject users with given shell],
+	[case $enableval in
+		yes|no)		AC_MSG_ERROR(--enable-deny-shell requires an argument)
+				exit 1;;
+		"*")		AC_DEFINE_UNQUOTED(DENY_SHELL, $enableval);;
+		*)		AC_DEFINE_UNQUOTED(DENY_SHELL, "$enableval");;
+	esac])
+
+AC_ARG_ENABLE(attrib_nmc,
+	[  --enable-attrib-nmc	         vendor-specific attributes],
+	[case $enableval in
+		yes)		AC_DEFINE(ATTRIB_NMC);;
+		no)		AC_DEFINE(NO_ATTRIB_NMC);;
+		*)		AC_MSG_ERROR(--enable-attrib-nmc can't be used with an argument)
+				exit 1;;
+	esac])
+
+AC_ARG_ENABLE(osfc2,
+	[  --enable-osfc2	         enable OSFC2 support],
+	[case $enableval in
+		yes)		AC_DEFINE(OSFC2);;
+		no)		;;
+		*)		AC_MSG_ERROR(--enable-osfc2 can't be used with an argument)
+				exit 1;;
+	esac])
+
+dnl * Check for national language support
+
+LANGLIST="no"
+USE_NLS=no
+
+AC_SUBST(USE_NLS)
+AC_SUBST(LANGUAGES)
+
+checklang() {
+	for i in $*
+	do
+		for j in $LANGLIST
+		do
+			if test "$i" = "$j"; then
+				break
+			fi
+		done
+
+		if test "$i" != "$j"; then
+			AC_MSG_ERROR([Sorry, language $i is not supported])
+		fi
+	done
+}
+
+AC_ARG_ENABLE(nls,
+	[  --enable-nls		         enable national language support],
+	[case $enableval in
+		yes)	USE_NLS=yes
+			LANGUAGES=$LANGLIST
+			;;
+		no)	USE_NLS=no
+			;;
+		*)	AC_MSG_ERROR(unsupported option value: $enableval)
+			;;
+	esac])
+
+AC_ARG_WITH(languages,
+	[  --with-languages=LIST          list of languages to include in NLS],
+	checklang $withval
+	USE_NLS=yes
+	LANGUAGES="$LANGUAGES $withval")
+
+if test "$USE_NLS" = "yes"; then
+	AC_DEFINE(USE_NLS)
+fi
+
+AC_SUBST(CATOBJEXT)
+AC_ARG_WITH(catobjext,
+	[  --with-catobjext=EXT           override default .po extension],
+	CATOBJEXT=$withval,
+	CATOBJEXT=.po)
+
+AC_SUBST(INSTOBJEXT)
+AC_ARG_WITH(instobjext,
+	[  --with-instobjext=EXT          override default .mo extension],
+	INSTOBJEXT=$withval,
+	INSTOBJEXT=.mo)
+
+AC_SUBST(MSGFMT)
+AC_ARG_WITH(msgfmt,
+	[  --with-msgfmt=PROG             use PROG instead of msgfmt],
+	PROG=$withval,
+	PROG=msgfmt)
+AC_PATH_PROG(MSGFMT, $PROG, missing, $PATH:/usr/bin)
+
+AC_SUBST(GMSGFMT)
+AC_ARG_WITH(gnu-msgfmt,
+	[  --with-gnu-msgfmt=PROG         use PROG instead of GNU msgfmt],
+	PROG=$withval,
+	PROG=msgfmt)
+AC_PATH_PROG(GMSGFMT, $PROG, missing, $PATH:/usr/bin)
+
+
+dnl ***********************************************************************
+dnl *           Do some final checks and create Makefiles                 *
+dnl ***********************************************************************
+
+AM_CONDITIONAL(DBM, test x$USE_DBM = xyes)
+AM_CONDITIONAL(SNMP, test x$USE_SNMP = xyes)
+
+AC_OUTPUT(Makefile include/Makefile radlib/Makefile snmplib/Makefile \
+          radiusd/Makefile radtest/Makefile radlast/Makefile \
+          radwho/Makefile raduse/Makefile radzap/Makefile \
+          checkrad/Makefile builddbm/Makefile radctl/Makefile \
+          radscripts/Makefile doc/Makefile \
+	  doc/texinfo/Makefile doc/man/Makefile po/Makefile \
+          doc/texinfo/config.texi doc/man/config.so)
+

@@ -1,0 +1,40 @@
+-- Enterprises tree:
+
+     +-(67) radiusMIB
+       +-(3) radiusStatistics
+        +-(1) radiusStatMIB
+          +-(1) radiusStatIdent            -- System ID
+          +-(2) radiusStatUpTime           -- Statistics uptime
+          +-(3) radiusStatConfigReset      -- (wr) to reset statistics
+          +-(4) radiusStatTotalLines       -- Total number of d.u. lines
+          +-(5) radiusStatTotalLinesInUse  -- dialups currently in use
+          +-(6) radiusStatTotalLinesIdle   -- dialups currently idle
+          +-(7) radiusStatNASTable               
+            +-(1) radiusStatNASEntry
+              +-(1) NASIndex               
+              +-(2) NASAddress
+              +-(3) NASID
+              +-(4) NASLines
+              +-(5) NASLinesInUse
+              +-(6) NASLinesIdle
+          +-(8) radiusStatNASPortTable
+             +-(1) radiusStatNASPortEntry
+               +-(1) radiusStatPortIndex
+               +-(2) radiusStatNASIndex
+               +-(3) radiusStatPortID
+               +-(4) radiusStatPortTotalLogins
+               +-(5) radiusStatPortStatus
+               +-(6) radiusStatPortStatusDate
+               +-(7) radiusStatPortUpTime
+               +-(8) radiusStatPortLastLoginName
+               +-(9) radiusStatPortLastLoginDate
+               +-(10) radiusStatPortLastLogoutDate
+               +-(11) radiusStatPortIdleTotalTime
+	       +-(12) radiusStatPortIdleMaxTime
+               +-(13) radiusStatPortIdleMaxDate
+               +-(14) radiusStatPortInUseTotalTime
+	       +-(15) radiusStatPortInUseMaxTime
+               +-(16) radiusStatPortInUseMaxDate        
+
+
+

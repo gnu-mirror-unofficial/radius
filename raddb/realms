@@ -1,0 +1,19 @@
+#
+# This file contains a list of realms. When a user logs in with @realm 
+# as the last part of the loginname, the realm part is looked up in this 
+# file. If found, the request is sent to the listed remote radius server.
+#
+# Each record consists of following fields:
+#
+# 	i.   Realm name.
+# 	ii.  Hostname. Optional is :port to use a non-standard port. 
+#	     In that case, port is the authenication port and the 
+#	     accounting port is taken as port + 1.
+# 	iii. (optional) flag. Currently only one flag is supported: nostrip, 
+#	     meaning the realm should not be stripped off the full user name.
+#
+
+# Realm                 Remote server [:port]		flags
+#----------------	---------------------		--------
+#isp2.com		radius.isp2.com			nostrip
+#company.com		radius.company.com:1600

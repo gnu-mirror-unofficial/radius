@@ -1,0 +1,33 @@
+.\" $Id$
+.ds RD /etc/raddb
+.ds RL /usr/adm
+.ds RP /etc/raddb
+.TH radgrep 1 "March 10, 2000" "FSF"
+.SH NAME
+radgrep - find a user by regular expression
+
+.SH SYNOPSIS
+\fBradgrep\fR
+[\fBradwho-options\fR][\fB-- grep-options\fB] regexp
+
+.SH NOTE
+The information in this manpage may be obsolete or incomplete. Please
+refer to texinfo documentation for full information about GNU Radius
+tools.
+
+.SH DESCRIPTION
+\fBradgrep\fR scans the output of radwho(1rad) utility and outputs
+only the lines that match given grep(1) regular expressions.
+
+.SH OPTIONS
+\fBradgrep\fR accepts two sets of options separated by \fB--\fR
+(double-dash) sign.
+.PP
+First subset is passed as command line to radwho(1rad) utility. The
+second one is passed to grep(1).
+
+.SH AUTHORS
+Sergey Poznyakoff, gray@farlep.net
+
+.SH SEE ALSO
+radiusd(8rad), radwho(1rad), grep(1)

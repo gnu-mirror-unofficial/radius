@@ -1,0 +1,42 @@
+.\" $Id$
+.ds RD /etc/raddb
+.ds RL /usr/adm
+.ds RP /etc/raddb
+.TH radctl 8 "March 10, 2000" "FSF"
+.SH NAME
+radctl.sh - Radius daemon control interface
+.SH SYNOPSIS
+\fBradctl.sh\fR directive [options]
+
+.SH NOTE
+The information in this manpage may be obsolete or incomplete. Please
+refer to texinfo documentation for full information about GNU Radius
+tools.
+.SH DESCRIPTION
+This command allows the administrator to send various signals to
+Radius server or to restart it. One of the following directives can be
+used:
+.IP \fBstart\fR
+Causes \fBradiusd\fR to be started if it is not running already. The
+rest of the arguments is passed as command line to the server.
+.IP \fBstop\fR
+Causes \fBradiusd\fR to be stopped if it is running.
+.IP \fBrestart\fR
+Restarts \fBradiusd\fR server. The rest of the arguments is passed as
+command line to the server.
+.IP \fBreload\fR
+Causes running \fBradiusd\fR server to re-read its configuration files.
+.IP \fBdumpdb\fR
+Causes \fBradiusd\fR to dump its user hash table into the file
+\fB\*(RL/radius.parse\fR
+.IP \fBstatus\fR
+Causes \fBradiusd\fR to report its memory usage statistics. The
+information is logged under \fBInfo\fR log level.
+.IP \fBwhich\fR
+Reports the information about running \fBradiusd\fR.
+
+.SH AUTHORS
+Sergey Poznyakoff, gray@farlep.net
+
+.SH SEE ALSO
+radiusd(8rad)

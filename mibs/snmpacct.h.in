@@ -1,0 +1,92 @@
+
+radiusMIB					1,3,6,1,2,1,67
+radiusAuthentication				1,3,6,1,2,1,67,1
+radiusAuthServMIB				1,3,6,1,2,1,67,1,1
+radiusAuthServMIBObjects			1,3,6,1,2,1,67,1,1,1
+
+--#define MIB_POS_radiusAuthServ 11
+
+radiusAuthServ					1,3,6,1,2,1,67,1,1,1,1
+radiusAuthServIdent				1,3,6,1,2,1,67,1,1,1,1,1
+radiusAuthServUpTime				1,3,6,1,2,1,67,1,1,1,1,2
+radiusAuthServResetTime				1,3,6,1,2,1,67,1,1,1,1,3
+radiusAuthServConfigReset			1,3,6,1,2,1,67,1,1,1,1,4
+radiusAuthServTotalAccessRequests		1,3,6,1,2,1,67,1,1,1,1,5
+radiusAuthServTotalInvalidRequests		1,3,6,1,2,1,67,1,1,1,1,6
+radiusAuthServTotalDupAccessRequests		1,3,6,1,2,1,67,1,1,1,1,7
+radiusAuthServTotalAccessAccepts		1,3,6,1,2,1,67,1,1,1,1,8
+radiusAuthServTotalAccessRejects		1,3,6,1,2,1,67,1,1,1,1,9
+radiusAuthServTotalAccessChallenges		1,3,6,1,2,1,67,1,1,1,1,10
+radiusAuthServTotalMalformedAccessRequests	1,3,6,1,2,1,67,1,1,1,1,11
+radiusAuthServTotalBadAuthenticators		1,3,6,1,2,1,67,1,1,1,1,12
+radiusAuthServTotalPacketsDropped		1,3,6,1,2,1,67,1,1,1,1,13
+radiusAuthServTotalUnknownTypes			1,3,6,1,2,1,67,1,1,1,1,14
+
+--#define MIB_POS_radiusAuthClient 12
+radiusAuthClientTable				1,3,6,1,2,1,67,1,1,1,1,15
+radiusAuthClientEntry				1,3,6,1,2,1,67,1,1,1,1,15,1
+radiusAuthClientIndex				1,3,6,1,2,1,67,1,1,1,1,15,1,1
+radiusAuthClientAddress				1,3,6,1,2,1,67,1,1,1,1,15,1,2
+radiusAuthClientID				1,3,6,1,2,1,67,1,1,1,1,15,1,3
+radiusAuthServAccessRequests			1,3,6,1,2,1,67,1,1,1,1,15,1,4
+radiusAuthServDupAccessRequests			1,3,6,1,2,1,67,1,1,1,1,15,1,5
+radiusAuthServAccessAccepts			1,3,6,1,2,1,67,1,1,1,1,15,1,6
+radiusAuthServAccessRejects			1,3,6,1,2,1,67,1,1,1,1,15,1,7
+radiusAuthServAccessChallenges			1,3,6,1,2,1,67,1,1,1,1,15,1,8
+radiusAuthServMalformedAccessRequests		1,3,6,1,2,1,67,1,1,1,1,15,1,9
+radiusAuthServBadAuthenticators			1,3,6,1,2,1,67,1,1,1,1,15,1,10
+radiusAuthServPacketsDropped			1,3,6,1,2,1,67,1,1,1,1,15,1,11
+radiusAuthServUnknownTypes			1,3,6,1,2,1,67,1,1,1,1,15,1,12
+
+radiusAuthServMIBConformance			1,3,6,1,2,1,67,1,2
+radiusAuthServMIBCompliances			1,3,6,1,2,1,67,1,2,1
+radiusAuthServMIBCompliance			1,3,6,1,2,1,67,1,2,1,1
+
+radiusAuthServMIBGroups				1,3,6,1,2,1,67,1,2,2
+radiusAuthServMIBGroup				1,3,6,1,2,1,67,1,2,2,1
+
+/* Accounting */
+radiusAccounting				1,3,6,1,2,1,67,2 
+radiusAccServMIB				1,3,6,1,2,1,67,2,1
+radiusAccServMIBObjects				1,3,6,1,2,1,67,2,1,1
+radiusAccServ					1,3,6,1,2,1,67,2,1,1,1
+
+--#define MIB_POS_radiusAccServ 11
+radiusAccServIdent				1,3,6,1,2,1,67,2,1,1,1,1
+radiusAccServUpTime				1,3,6,1,2,1,67,2,1,1,1,2
+radiusAccServResetTime				1,3,6,1,2,1,67,2,1,1,1,3
+radiusAccServConfigReset			1,3,6,1,2,1,67,2,1,1,1,4
+radiusAccServTotalRequests			1,3,6,1,2,1,67,2,1,1,1,5
+radiusAccServTotalInvalidRequests		1,3,6,1,2,1,67,2,1,1,1,6
+radiusAccServTotalDupRequests			1,3,6,1,2,1,67,2,1,1,1,7
+radiusAccServTotalResponses			1,3,6,1,2,1,67,2,1,1,1,8
+radiusAccServTotalMalformedRequests		1,3,6,1,2,1,67,2,1,1,1,9
+radiusAccServTotalBadAuthenticators		1,3,6,1,2,1,67,2,1,1,1,10
+radiusAccServTotalPacketsDropped		1,3,6,1,2,1,67,2,1,1,1,11
+radiusAccServTotalNoRecords			1,3,6,1,2,1,67,2,1,1,1,12
+radiusAccServTotalUnknownTypes			1,3,6,1,2,1,67,2,1,1,1,13
+radiusAccClientTable				1,3,6,1,2,1,67,2,1,1,1,14
+
+--#define MIB_POS_radiusAccClient 12
+radiusAccClientEntry				1,3,6,1,2,1,67,2,1,1,1,14,1
+radiusAccClientIndex				1,3,6,1,2,1,67,2,1,1,1,14,1,1
+radiusAccClientAddress				1,3,6,1,2,1,67,2,1,1,1,14,1,2
+radiusAccClientID				1,3,6,1,2,1,67,2,1,1,1,14,1,3
+radiusAccServPacketsDropped			1,3,6,1,2,1,67,2,1,1,1,14,1,4
+radiusAccServRequests				1,3,6,1,2,1,67,2,1,1,1,14,1,5
+radiusAccServDupRequests			1,3,6,1,2,1,67,2,1,1,1,14,1,6
+radiusAccServResponses				1,3,6,1,2,1,67,2,1,1,1,14,1,7
+radiusAccServBadAuthenticators			1,3,6,1,2,1,67,2,1,1,1,14,1,8
+radiusAccServMalformedRequests			1,3,6,1,2,1,67,2,1,1,1,14,1,9
+radiusAccServNoRecords				1,3,6,1,2,1,67,2,1,1,1,14,1,10
+radiusAccServUnknownTypes			1,3,6,1,2,1,67,2,1,1,1,14,1,11
+
+radiusAccServMIBConformance			1,3,6,1,2,1,67,2,1,2
+radiusAccServMIBCompliances			1,3,6,1,2,1,67,2,1,2,1
+radiusAccServMIBCompliance			1,3,6,1,2,1,67,2,1,2,1,1
+
+radiusAccServMIBGroups				1,3,6,1,2,1,67,2,1,2,2
+radiusAccServMIBGroup				1,3,6,1,2,1,67,2,1,2,2,1
+       
+
+

@@ -1,0 +1,69 @@
+# 
+# This is the hints file. Matching can take place with the the Prefix and 
+# Suffix attributes, just like in the "users" file, but ONLY on the username.
+#
+# On the match the reply pairs get added to the request pairs sent by the
+# terminal server, thus allowing to continue the match on "users" file.
+#
+# In addiction, a matching entry can transform a username for authentication
+# purposes. This can be done with attributes Strip-User-Name,Replace-User-Name
+# and Rewrite-Function. If all three attributes are present, they are applied
+# in the same order as listed above.
+#
+# The Replace-User-Name can use any request pairs to produce the transformed
+# username. 
+#
+# To use in check-pairs of the "users" file a special attribute "Hint" can
+# be used.
+#
+
+# These are some examples:
+
+#DEFAULT	Prefix = "U", Strip-User-Name = No
+#	Hint = "UUCP"
+#
+#DEFAULT	Prefix = "P", Strip-User-Name = Yes
+#	Hint = "PPP",
+#	Service-Type = Framed-User,
+#	Framed-Protocol = PPP
+#
+#DEFAULT	Prefix = "S", Strip-User-Name = Yes
+#	Hint = "SLIP",
+#	Service-Type = Framed-User,
+#	Framed-Protocol = SLIP
+#
+#DEFAULT	Prefix = "C", Strip-User-Name = Yes
+#	Hint = "CSLIP",
+#	Service-Type = Framed-User,
+#	Framed-Protocol = SLIP,
+#	Framed-Compression = Van-Jacobson-TCP-IP
+#
+#DEFAULT	Suffix = ".ppp", Strip-User-Name = Yes
+#	Hint = "PPP",
+#	Service-Type = Framed-User,
+#	Framed-Protocol = PPP
+#
+#DEFAULT	Suffix = ".slip", Strip-User-Name = Yes
+#	Hint = "SLIP",
+#	Service-Type = Framed-User,
+#	Framed-Protocol = SLIP
+#
+#DEFAULT	Suffix = ".cslip", Strip-User-Name = Yes
+#	Hint = "CSLIP",
+#	Service-Type = Framed-User,
+#	Framed-Protocol = SLIP,
+#	Framed-Compression = Van-Jacobson-TCP-IP
+
+##
+## Examples of hints which modify packets.
+##
+
+## 1. This appends a calling-station-id value to the username
+
+#DEFAULT	Replace-User-Name = "%C{User-Name}-%C{Calling-Station-Id}"
+#		Hint = "CLID"
+
+## 2. This applies "nt_fixup" function to any packets (see raddb/rewrite)
+
+#DEFAULT	Rewrite-Function = "nt_fixup"	NULL
+#

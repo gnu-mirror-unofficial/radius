@@ -1,0 +1,61 @@
+.\" $Id$
+.ds RD /etc/raddb
+.ds RL /usr/adm
+.ds RP /etc/raddb
+.TH BUILDDBM 8 "March 10, 2000" "FSF"
+.SH NAME
+builddbm - build a DBM version of Radius users database
+.SH SYNOPSIS
+\fBbuilddbm\fR
+[\fB-d\fR config_dir]
+[input_file]
+.PP
+\fBbuilddbm\fR
+\fB-h\fR
+.SH NOTE
+The information in this manpage may be obsolete or incomplete. Please
+refer to texinfo documentation for full information about GNU Radius
+tools.
+.SH DESCRIPTION
+\fBBuilddbm\fR converts the plaintext \fBRadius\fR users database into
+DBM files. Some versions of \fBRadius\fR daemon have used this to
+speed up the access to the users database.
+.PP
+Howewer in this implementation of \fBRadius\fR daemon things go the
+other way around. The server reads entire plaintext database, converts
+it into internal form and stores into hash table which provides for
+fast access. Actually, using DBM version of the users database slows
+down the access unless the machine which runs \fBRadius\fR daemon is
+short of address space for the daemon to store the users database into.
+.PP
+Optionally, \fBRadius\fR daemon can use both plaintext and DBM
+databases, in which case it first looks up the user in the former, and
+if not found, continues search in the latter.
+.SH OPERATION
+When used without arguments, \fBbuilddbm\fR utility attempts to
+convert file \fB\*(RD/users\fR into \fB\*(RD/users.db\fR or
+\fB\*(RD/users.pag, \*(RD/users.dir\fR pair depending on the
+version of DBM library used.
+.PP
+If used with one argument, the argument is taken as the name of the
+plaintext database file to operate upon.
+.SH OPTIONS
+.IP -d
+Specifies alternate directory for the \fBRadius\fR users database
+files. This defaults to \*(RD.
+.IP -i
+Specifies alternate input file.
+.IP -h
+Outputs short usage summary and exits with 0 exit code.
+.SH FILES
+.IP \*(RD/users
+Default plaintext database.
+.IP \*(RD/users.db
+Default output file.
+.SH AUTHORS
+Sergey Poznyakoff, gray@farlep.net
+
+.SH SEE ALSO
+users(5rad), radiusd(8rad), config(5rad)
+
+

@@ -1,0 +1,14 @@
+Sergey Poznyakoff	<gray@farlep.net>
+
+Portions of the code were used from following sources:
+
+Miquel Van Smoorenberg 	<miquels@cistron.nl>:
+	radiusd/timestr.c
+	radiusd/radius.c
+	radiusd/acct.c
+
+Jeph Blaize 		<jab@kiva.net>
+	radiusd/pam.c
+
+Poul-Henning Kamp 	<phk@login.dknet.dk> 
+	radlib/md5crypt.c

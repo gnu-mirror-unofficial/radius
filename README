@@ -1,0 +1,178 @@
+              I. Installation
+           ---------------------		
+  To install do:
+
+1. ./configure [options]
+  For the list of available options consult INSTALL file.
+  The applications-specific options are:
+
+  --enable-yydebug	         
+     Enable parser debugging. The parser deugging can be useful to track down
+  errors in configuration files such as /etc/raddb/users and /etc/raddb/config.
+  To enable the debugging on a given file, the first line of it should contain
+  the statement #debug starting on the first colon. Debugging output goes to
+  stderr or to the file /var/log/radius.stderr if such file exists.
+
+  --with-etcdir                  
+     Specify the directory containing raddb files instead of the default 
+  /etc/raddb.
+
+  --with-auth-port=NUMBER	 
+     Specify port number to use for authentication. Default is 1645. The
+  default port number for accounting is computed as auth_port + 1.
+
+  --enable-add-libs=STRING 	 
+     Specify any additional libraries/libpaths your system might require.
+
+  --enable-add-includes=STRING   
+     Specify any additional include files/include paths.
+ 
+  --enable-shadow	         
+     Enable shadow support. Use this only if ./configure was unable to 
+  correctly determine if it should use the shadow support.
+
+  --enable-pam		         
+     Enable pam support.
+
+  --enable-dbm[={dbm|ndbm}]      
+     Enable dbm support. If no argument is specified, an usual DBM is enabled.
+  The `ndbm' argument instructs to enable support of NDBM.
+
+  --ensble-mysql                 
+     Enable mysql support. If an argument is specified it is supposed to 
+  mean the default port to connect to. The port can be overridden in
+  /etc/raddb/sqlserver.
+
+  --enable-snmp                  
+     Enable SNMP support.
+
+  --enable-notify	         
+     Enable TTL notification. This can be used to set the per-user session
+  timeouts depending on their accounts.
+
+  --enable-livingston-menus	 
+     Enable support for Livingston-compatible menus.
+
+  --enable-deny-shell=SHELL
+     Always reject users with given shell.
+
+  --enable-attrib-nmc	         
+     Enable vendor-specific attributes (ATTRIB_NMC) keyword in dictionaries.
+
+  --enable-osfc2	          
+     Enable OSFC2 support.
+
+     The following is designed for future use. Currently the norwegian locale
+  (bokmal) is being finished.
+
+  --enable-nls		         
+     Enable national language support. 
+
+  --with-languages=LIST          
+     Set a list of languages to include in NLS.
+
+  --with-catobjext=EXT          
+     Override default .po extension.
+
+  --with-instobjext=EXT          
+     Override default .mo extension.
+
+  --with-msgfmt=PROG             
+     Use PROG instead of msgfmt.
+
+  --with-gnu-msgfmt=PROG         
+     Use PROG instead of GNU msgfmt.
+
+2. make
+3. make install
+
+
+              II. Some configuration issues:
+           ------------------------------------		
+
+  Files raddb/users raddb/hints and raddb/huntgroups all follow the same
+syntax:
+
+input       : username check_pairs reply_pairs
+	    ;
+
+check_pairs : pairs
+            ;
+
+reply_pairs : pairs
+            ;
+
+pairs       : NULL
+            | pairlist
+            ;
+
+pairlist    : pair
+            | pairlist ',' pair
+            ;
+
+pair        : attribute op value
+            ;
+
+op          : '=' | '!=' | '<' | '>' | '<=' | '>='
+            ;
+
+value       : NUMBER
+            | IPADDR
+            | DATE
+            | QUOTE
+            ;
+
+username    : STRING
+            ;
+
+attribute   : STRING
+            ;
+
+  Terminal symbols are as follows:
+STRING   is a character string consisting of alphanumeric characters,
+         underscore, dash and a dot. Note that it is not required to
+         start with an alphabetic character.
+NUMBER   is any decimal number.
+IPADDR   is either a hostname or an IP address in dotted quad notation.
+         When a hostname is specified it must be enclosed in a pair of
+         double quotes, e.g. "host.dom.ain". An IP address may be specified
+         either as is, or in a pair of double quotes.
+DATE     date in a form:
+		"Mon DM YEAR"
+	 where
+		Mon  is a three-letter abbreviation of a month name
+		DM   is a two-digit day-of-month number
+		YEAR is a full year number. 
+QUOTE    is any character string enclosed in a pair of double-quotes.
+NULL     is a word NULL, meaning empty pairlist.
+
+  Special usernames DEFAULT and DEFAULT%d, where %d means any decimal number,
+are reserved. When authenticating a request, radius first tries to find
+the exact match on username and check_pairs. If such a match cannot be found
+it tries to find a DEFAULT entry matching the check_pairs. All DEFAULT
+entries are tried in the order of their appearance in the file.
+  When compairing pairlists, order of pairs is not significant. Special
+attributes (the ones with number > 254) appearing in a pairlist are ignored.
+
+              III. Special hacks for some peculiar NASes		
+           ------------------------------------------------
+
+GNU Radius includes packet rewriting support which makes it possible
+to cope with some NASes which do not follow the protocol. The support
+for following NASes is already included:
+
+	1. MAX Ascend which sends packed NAS-Port-Id attributes
+	2. Specialix Jetstream with peculiarities in handling
+           usernames longer than 10 characters.
+	3. Cisco AS5300	used for VoIP.
+
+Support for another NASes can easily be added without recompiling Radius. 
+See accompanying documentation (Ref. "rewrite").
+
+		IV. Bug reporting.		
+           ------------------------------------------------
+
+Bug reports are velcome. Should you find any bugs please report them 
+to bug-gnu-radius@gnu.org. 
+
+	

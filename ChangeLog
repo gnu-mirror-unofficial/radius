@@ -1,0 +1,312 @@
+2000-12-20  gray  <gray@farlep.net>
+	Replaced radlib/md5.c and raduse/screen.c
+
+2000-12-18  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/test
+        In directory Mirddin:/export/home/gray/radius/test
+        
+        Modified Files:
+        	acct.off.t acct.on.t acct.start.t acct.stop.t auth.t
+        Log Message:
+
+2000-12-18  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/scripts
+        In directory Mirddin:/export/home/gray/radius/scripts
+        
+        Modified Files:
+        	dict.awk
+        Log Message:
+        Modified comment handling
+        
+2000-12-18  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/radzap
+        In directory Mirddin:/export/home/gray/radius/radzap
+        
+        Modified Files:
+        	radzap.c
+        Log Message:
+
+2000-12-18  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/radwho
+        In directory Mirddin:/export/home/gray/radius/radwho
+        
+        Modified Files:
+        	radwho.c
+        Log Message:
+        Completely rewritten.
+        
+2000-12-18  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/raduse
+        In directory Mirddin:/export/home/gray/radius/raduse
+        
+        Modified Files:
+        	raduse.c
+
+2000-12-18  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/radtest
+        In directory Mirddin:/export/home/gray/radius/radtest
+        
+        Modified Files:
+        	debugmod.c gram.y input.l main.c radtest.c symtab.c
+        Log Message:
+        Addedd assignments in command line (without any option). Modified
+        type handling in command line assignments. Added VSA handling.
+
+2000-12-18  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/radscripts
+        In directory Mirddin:/export/home/gray/radius/radscripts
+        
+        Modified Files:
+        	Makefile.in radauth.m4
+        Log Message:
+        Adapted radauth.m4 to changes made in radtest
+
+2000-12-18  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/radiusd
+        In directory Mirddin:/export/home/gray/radius/radiusd
+        
+        Modified Files:
+        	config.y debugmod.c files.c menu.c radiusd.c sql.c symtab.c
+
+2000-12-18  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/raddb
+        In directory Mirddin:/export/home/gray/radius/raddb
+        
+        Modified Files:
+        	config config.syntax dictionary dictionary.cisco
+        	dictionary.compat dictionary.livingston dictionary.merit
+        	dictionary.tunnel dictionary.usr hints huntgroups users
+        Added Files:
+        	access.deny dictionary.voip
+        Removed Files:
+        	ippool radius.deny
+        Log Message:
+        Browsed and cleaned up all files. Also renamed radius.deny to
+        access.deny
+
+2000-12-18  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/radctl
+        In directory Mirddin:/export/home/gray/radius/radctl
+        
+        Modified Files:
+        	radctl.c
+        Log Message:
+        Commands and options are made consistent
+
+2000-12-12  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/test
+        In directory Mirddin:/export/home/gray/radius/test
+        
+        Modified Files:
+        	auth.t portmap2.t
+
+2000-12-12  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/radtest
+        In directory Mirddin:/export/home/gray/radius/radtest
+        
+        Modified Files:
+        	input.l main.c
+        Log Message:
+        Fixed string handling in input.l. It is now able to
+        read strings with escaped char sequences.
+        Added special feature to main.c: if argument contains
+        equal sign it is supposed to be an assignment. This obsoletes
+        the -a option.
+
+2000-12-12  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/radscripts
+        In directory Mirddin:/export/home/gray/radius/radscripts
+        
+        Modified Files:
+        	Makefile.in
+        Log Message:
+
+2000-12-12  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/radiusd
+        In directory Mirddin:/export/home/gray/radius/radiusd
+        
+        Modified Files:
+        	config.y files.c radiusd.c rewrite.y sql.c symtab.c
+        Log Message:
+        Removed portmapping support. Its functionality is now
+        provided by a rewrite feature, which is much more clever :)
+
+2000-12-12  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/raddb
+        In directory Mirddin:/export/home/gray/radius/raddb
+        
+        Modified Files:
+        	config.syntax dictionary dictionary.cisco
+        Added Files:
+        	rewrite
+        Removed Files:
+        	portmap
+        Log Message:
+        Removed portmapping support. Its functionality is now
+        provided by a rewrite feature, which is much more clever :)
+        
+2000-12-12  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/include
+        In directory Mirddin:/export/home/gray/radius/include
+        
+        Modified Files:
+        	radiusd.h
+        Log Message:
+        
+2000-12-12  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/doc/texinfo
+        In directory Mirddin:/export/home/gray/radius/doc/texinfo
+        
+        Added Files:
+        	Makefile.am mdate-sh radius.texinfo version.texi
+        Log Message:
+        Started writing texinfo doc.
+
+2000-12-12  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/doc
+        In directory Mirddin:/export/home/gray/radius/doc
+        
+        Removed Files:
+        	1 Makefile.am builddbm.8.m4 builddbm.8rad config.m4 include.m4
+        	mkconfig.sed r.8rad radctl.8.m4 radctl.8rad radgrep.1.m4
+        	radgrep.1rad radiusd.8.m4 radiusd.8rad radlast.1.m4
+        	radlast.1rad radping.8.m4 radping.8rad radtest.8.m4
+        	radtest.8rad raduse.1.m4 raduse.1rad radwho.1.m4 radwho.1rad
+        	radzap.8.m4 radzap.8rad rfc1157.txt rfc2138.txt rfc2618.txt
+        	rfc2619.txt rfc2620.txt rfc2621.txt rfc2865.txt rfc2866.txt
+        	rfc2867.txt rfc2868.txt rfc2869.txt rfc2882.txt template
+        Log Message:
+        Documentation files are now distributed to corresponding
+        directories. Started writing texinfo doc.
+        
+2000-12-12  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius
+        In directory Mirddin:/export/home/gray/radius
+        
+        Modified Files:
+        	acconfig.h configure configure.in
+        Log Message:
+        Removed --enable-decode-ascend-ports, since it is now provided
+        by raddb/rewrite
+        
+2000-12-08  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/doc/html
+        In directory Mirddin:/export/home/gray/radius/doc/html
+        
+        Log Message:
+        Directory /export/cvsroot/radius/doc/html added to the repository
+        
+2000-12-08  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/doc/texinfo
+        In directory Mirddin:/export/home/gray/radius/doc/texinfo
+        
+        Log Message:
+        Directory /export/cvsroot/radius/doc/texinfo added to the repository
+
+2000-12-08  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/doc/man
+        In directory Mirddin:/export/home/gray/radius/doc/man
+        
+        Log Message:
+        Directory /export/cvsroot/radius/doc/man added to the repository
+        
+2000-12-07  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/radiusd
+        In directory Mirddin:/export/home/gray/radius/radiusd
+        
+        Modified Files:
+        	rewrite.y
+        Log Message:
+        Fixed some errors in multiline #define's
+
+2000-12-07  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/doc
+        In directory Mirddin:/export/home/gray/radius/doc
+        
+        Removed Files:
+        	builddbm.8 radctl.8 radgrep.1 radiusd.8 radlast.1 radping.8
+        	radtest.8 raduse.1 radwho.1 radzap.8
+        Log Message:
+        Removed unnecessary files. These should be generated on build stage.
+        
+2000-12-07  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/radiusd
+        In directory Mirddin:/export/home/gray/radius/radiusd
+        
+        Modified Files:
+        	Makefile.am acct.c auth.c config.y debugmod.c exec.c files.c
+        	ippool.c log.c menu.c mysql.c notify.c oldconfig.c proxy.c
+        	radctl.c radiusd.c radutil.c snmpserv.c sql.c stat.c symtab.c
+        	version.c
+        Added Files:
+        	rewrite.y
+        Removed Files:
+        	portmap.y
+        Log Message:
+        radiusd.c:      Added request_cleanup call to rad_spawn_child (when
+        		sending signal to the child, the parent does not
+        		receive any SIGCHLD, thus all the house-keeping
+        		should be done immediately after calling kill())
+        sql.c           request_setup always returns 0 (Ok), thus allowing
+        		the daemon to proceed with another accounting method
+        		when SQL fails.
+        Added rewriting module. If the request matches a huntgroup with
+        Rewrite-Function attribute, the value of the latter is taken as
+        a name of a function to apply to the check packet. The rewriting
+        functions are defined in the file `raddb/rewrite'. The language
+        is similar to C, though much more primitive.
+        
+2000-12-07  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/raddb
+        In directory Mirddin:/export/home/gray/radius/raddb
+        
+        Modified Files:
+        	dictionary
+        Log Message:
+        First official GNU version.
+        Added special attribute: Rewrite-Function. It is used to specify the
+        name
+        of the rewriting function for the packets matching the huntgroup.
+        
+2000-12-07  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/include
+        In directory Mirddin:/export/home/gray/radius/include
+        
+        Modified Files:
+        	display.h ippool.h log.h mem.h msg.h nas.h parser.h radctl.h
+        	raddict.h radius.h radiusd.h radlast.h radlog.h radutmp.h
+        	radwho.h symtab.h
+        Removed Files:
+        	portmap.h
+        Log Message:
+        First official GNU version.
+        Portmapping support has been removed and replaced by generalized
+        rewriting functions.
+        
+2000-12-01  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/radiusd
+        In directory Mirddin:/export/home/gray/radius/radiusd
+        
+        Modified Files:
+        	portmap.y
+        Log Message:
+        
+2000-12-01  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/checkrad
+        In directory Mirddin:/export/home/gray/radius/checkrad
+        
+        Modified Files:
+        	log.c
+        Log Message:
+        Fixed assignment error:
+        	logfile = stderr;
+
+2000-12-01  gray  <gray@farlep.net>
+        Update of /export/cvsroot/radius/raddb
+        In directory Mirddin:/export/home/gray/radius/raddb
+        
+        Modified Files:
+        	portmap
+        Log Message:
+        
+

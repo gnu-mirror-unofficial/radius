@@ -1,0 +1,13 @@
+# These A/V pairs are used to hold the values from the garbled session
+# id Cisco VoIP IOS produces.
+# See accompanying rewrite source for details.
+# 
+# $Id$
+#
+ATTRIBUTE       Voip-Connection-ID	3000	string
+ATTRIBUTE	Voip-Call-Leg-Type	3001	string
+ATTRIBUTE	Voip-Connection-Type	3002	string
+ATTRIBUTE	Voip-Connect-Time	3003	string
+ATTRIBUTE	Voip-Disconnect-Time	3004	string
+ATTRIBUTE	Voip-Remote-IP		3005	string
+ATTRIBUTE	Voip-Disconnect-Cause	3006	string

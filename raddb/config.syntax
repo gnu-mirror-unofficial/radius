@@ -1,0 +1,138 @@
+## This file is intended to be an explanation on configuration syntax
+## issues. It cannot possibly be used as a configuration file.
+options {
+	# Delay before reconfiguration on USR2 signal
+	usr2delay 30;
+	# Maximum number of request in queue
+	max-requests 127;
+	# The following specify the user and group to switch to
+	# before executing external process (via Exec-Program and
+	# Exec-Program-Wait attributes). Default is daemon:daemon
+	exec-program-user "daemon";
+	exec-program-group "other";
+};
+
+logging {
+	# This defines output channel `info'. The output will go to a file
+	# named <radlog_dir>/radius.info. (<radlog_dir> is /var/log on BSD-
+	# like systems and /usr/adm on System-V systems. It's value
+	# can be determined from output of radiusd -v.)
+	#
+	# Options signify:
+	#	pid	-	Output pid along with the info
+	#	level	-	Output severity level description 
+	#	cons	-	Duplicate output to /dev/console
+	channel info {
+		file "radius.info";
+		option pid,cons,level;
+	};
+	# This defines output channel that sends it info to syslog whith
+	# facility `auth' and priority `notice'
+	channel notice {
+		syslog auth.notice;
+	};
+	# Definitions of the logging categories
+	# auth 	-	Authentication info
+	# Admissible levels are
+	#	auth		-	Output any authentication info
+	#	pass		-	Output password (very insecure!)
+	#	failed_pass	-	Output failed password
+	category auth {
+		level auth,failed_pass;
+	};
+	# Send notice logs to another channel
+	category notice {
+		channel notice;
+	};
+	category info {
+		channel info;
+	};
+	# Debugging information
+	# Level is a comma-separated list of debugging levels. Each
+	# debugging level can be specified either as:
+	#	module=level	-- which sets the level for the given module
+	# or
+	#	module		-- which is the same as module=100.
+	# The list of module names can be found in radiusd/debugmod.c
+	# Any non-ambiguous abbreviation of a module name is allowed.	
+	category debug {
+		channel info;
+		level radiusd=1,files;
+	};
+};
+
+## This controls the authentication service:
+auth {
+	port 1645;		# port number 
+	spawn yes;              # Spawn the child process to handle the
+				# request (the default)
+	max-requests 127;	# Maximum number of AUTH requests in queue
+	time-to-live 25;	# Request time to live
+	request-cleanup delay 10; # Number of seconds the request remains
+                                  # in queue after being processed
+	detail yes;		# Store detailed info about every auth request
+	strip-names yes;	# Strip username prefixes/suffixes
+	checkrad-assume-logged yes;	# Assume the user is logged in when
+					# checkrad returns don't-know answer
+};
+
+## This controls the accounting service
+acct {
+	port 1646;		# port number
+	spawn yes;              # Spawn the child process to handle the
+				# request (the default)
+	max-requests 24;	# Maximum number of ACCT requests in queue
+	time-to-live 60;	# Request time to live
+        request-cleanup delay 10; # Number of seconds the request remains
+                                  # in queue after being processed
+};
+
+## This controls the proxy service
+proxy {
+	max-requests 24;	# Maximum number of ACCT requests in queue
+        request-cleanup delay 60; # Number of seconds the request remains
+                                  # in queue after being processed
+};
+
+## Set up the notification service
+notify {
+	host ttl.domain.com;	# Hostname or IP address
+	port radnotify;		# Port (service name or number)
+	retry 3; 		# Number of retries before giving up
+	delay 1;		# Delay in seconds between retries
+};
+## This can be used to turn notification off
+#notify off;
+
+# DBM handling. Can be one of
+#	never	-	Never to use DBM database
+#	only	-	Use only DBM database and ignore users
+#	also	-	Use both databases
+usedbm also;
+
+# SNMP sub-system configuration
+snmp {
+	port 4500;		# Port number
+	spawn yes;              # Spawn the child process to handle the
+				# request (the default)
+	max-requests 24;	# Maximum number of ACCT requests in queue
+	time-to-live 10;	# Request time to live
+        request-cleanup delay 0; # Number of seconds the request remains
+                                 # in queue after being processed
+	# Server identifier
+	ident "RADIUS server";	
+	# Communities
+	community public ro;
+	community admin rw;
+	# Access control lists
+	network localhost 127.0.0.1 1.2.3.4;
+	network trusted_hosts 1.2.3.0/255.255.255.224;
+	network admin_hosts 1.2.3.1;
+	network any 0.0.0.0/0.0.0.0;
+	acl {
+		allow localhost public;
+		allow trusted_hosts public;
+		allow admin_hosts admin;
+		deny any;
+	};
+};

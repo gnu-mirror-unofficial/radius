@@ -1,0 +1,21 @@
+.\" $Id$
+.ds RD /etc/raddb
+.ds RL /usr/adm
+.ds RP /etc/raddb
+.TH radping 8 "March 10, 2000" "FSF"
+.SH NAME
+radping - send ICMP ECHO_REQUEST packets to a dial-up host.
+
+.SH SYNOPSIS
+\fBradping\fR username
+
+.SH DESCRIPTION
+\fBRadping\fR determines the framed IP address of the given user and
+starts ping(8) utility to send ICMP ECHO_REQUEST packets to this address.
+
+.SH AUTHORS
+Sergey Poznyakoff, gray@farlep.net
+
+.SH SEE ALSO
+radiusd(8rad), radwho(1rad), ping(8)
+

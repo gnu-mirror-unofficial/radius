@@ -1,0 +1,1577 @@
+This is Info file radius.info, produced by Makeinfo version 1.68 from
+the input file radius.texinfo.
+
+INFO-DIR-SECTION GNU radius
+START-INFO-DIR-ENTRY
+* Radius: (radius).     The GNU radius
+END-INFO-DIR-ENTRY
+
+   This file documents the GNU radius
+
+   Published by the Free Software Foundation 59 Temple Place, Suite 330
+Boston, MA  02111-1307 USA
+
+   Copyright (C) 1999 Sergey Poznyakoff Permission is granted to make
+and distribute verbatim copies of this manual provided the copyright
+notice and this permission notice are preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the sections entitled "The GNU Manifesto", "Distribution" and "GNU
+General Public License" are included exactly as in the original, and
+rovided that the entire resulting derived work is distributed under the
+terms of a permission notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the sections entitled "The GNU Manifesto",
+"Distribution" and "GNU General Public License" may be included in a
+translation approved by the Free Software Foundation instead of in the
+original English.
+
+
+File: radius.info,  Node: Radzap,  Next: Radgrep,  Prev: Raduse,  Up: Top
+
+Radzap
+******
+
+   `radzap' searches the Radius accounting database for matching login
+records and closes them.
+
+   At least one of `-n', `-p' options or username must be specified. If
+they are used in conjunction, they are taken as if joined by logical
+AND operation.
+
+   `radzap' operates in two modes: silent and confirm. The silent mode
+is enabeld by default. When run in this mode, radzap deletes every
+record that matched the search conditions given.
+
+   In confirm mode `radzap' will ask for a confirmation before zapping
+each matching record. Every line beginning with a `y' is taken as
+positive response, otherwise it is taken as negative response.
+
+   The confirm mode is toggled by the command line option `-c'.
+
+Syntax
+------
+
+     radzap [options] [username]
+
+Options are:
+
+`-c'
+`--confirm'
+     Enable confirm mode.
+
+`-q'
+`--quiet'
+     Disable confirm mode.
+
+`-h'
+`--help'
+     Display short help summary and exit.
+
+`-n NAME'
+`--nas NAME'
+     Specify NAS name to zap user from.
+
+`-p PORT'
+`--port PORT'
+     Specify the port number of the session to be zapped. The port
+     number can be specified either in its full form, i.e `radzap -p
+     S02' or in its short form, like `radzap -p 2'.
+
+
+File: radius.info,  Node: Radgrep,  Next: Radping,  Prev: Radzap,  Up: Top
+
+Radgrep
+*******
+
+   This utility allows to quickly lookup the user in the radius
+accounting database using a regular expression match.
+
+   `radgrep' scans the output of `radwho' utility and outputs only the
+lines that match given `grep' regular expressions.
+
+Syntax
+------
+
+   `radgrep' accepts two sets of options separated by `--'
+(double-dash) sign. First subset is passed as command line to `radwho'
+utility. The second one is passed to `grep'.
+
+
+File: radius.info,  Node: Radping,  Next: Radauth,  Prev: Radgrep,  Up: Top
+
+Radping
+*******
+
+   This utility is a shell program that determines the user's framed IP
+address and runs `ping' on that address.
+
+Syntax
+------
+
+     radping USERNAME
+     radping -c CALLING-STATION-ID
+
+   The second way of invoking the program allows to use calling station
+ID in order to indicate the user.
+
+
+File: radius.info,  Node: Radauth,  Next: Radtest,  Prev: Radping,  Up: Top
+
+Radauth
+*******
+
+   The `radauth' utility sends the Radius server Access-Request packet
+and displays the result it gets. It can be used to test the
+configuration files. The usage is:
+
+     raduse [options] username password
+
+   Actually the program is a wrapper that collects its arguments and
+calls `radtest' *Note Radtest:: with the options collected and passes it
+the following script ($LOGIN and $PASSWORD variables contain the
+username and password):
+
+             auth_packet = {
+                     User-Name = $LOGIN,
+                     Password = $PASSWD
+     	};
+             send auth 1 $auth_packet;
+             expect 2 "rejected (" $REPLY_CODE \
+                       "); Reply-Message = " $REPLY[Reply-Message];
+     	print "Authentity confirmed, reply pairs: " $REPLY;
+
+   The program determines which Radius server to use, the authentication
+port number and shared secret following the procedure common for all
+client programs *Note Client Overview::. *Note radtest usage:: for a
+list of accepted command line options.
+
+
+File: radius.info,  Node: Radtest,  Next: Radctl,  Prev: Radauth,  Up: Top
+
+Radtest
+*******
+
+   `radtest' program is designed to test the functionality of the
+Radius daemon. It sends the daemon arbitrary requests and displays the
+replies it gets.
+
+* Menu:
+
+* Usage: radtest usage.         Invocation and command line options.
+* Syntax: radtest syntax.       The input language syntax.
+* Examples: radtest examples.   Examples of using `radtest'.
+
+
+File: radius.info,  Node: radtest usage,  Next: radtest syntax,  Up: Radtest
+
+Invocation and command line options.
+************************************
+
+   The `radtest' is invoked using the following syntax:
+
+     radtest [OPTIONS] [FILENAME ...]
+
+   When started without filename argument, `radtest' enters interactive
+mode. In this mode the user is allowed to input arbitrary commands and
+execute them interactively. The program prompts the user by `> '
+characters.
+
+   If the filenames are supplied, `radtest' treats them as names of the
+files containing scripts and executes these files.
+
+   The variables used in scripts can be set from command line using this
+syntax:
+
+     VARIABLE=VALUE
+
+Note, that no spaces are allowed on either side of the equal sign.
+
+   Following options can be used to control the behaviour of `radtest'.
+
+`-d PATH'
+`--directory PATH'
+     Specifies the directory where Radius startup files reside.
+
+`-x DEBUG_LEVEL'
+`--debug DEBUG_LEVEL'
+     Specifies the debugging level *Note Debugging::.
+
+`-p PORTNO'
+`--port PORTNO'
+     Sets the port number to use when sending authentication requests.
+     PORTNO can be either a decimal number or string representing a
+     valid service from `/etc/services'. Accounting port is computed as
+     PORTNO + 1.
+
+`-q'
+`--quick'
+     Quick startup. When given this flag `radtest' does not process
+     startup files.
+
+`-r NUMBER'
+`--retry NUMBER'
+     Specifies how many times `radtest' should retry sending requests if
+     the server does not respond within the timeout interval.
+
+`-t NUMBER'
+`--timeout NUMBER'
+     Specifies the amount of time `radtest' should wait for the reply
+     before giving up.
+
+`-h'
+`--help'
+     Display short usage summary and exit.
+
+`-l'
+`--license'
+     Display the license and exit.
+
+`-v'
+`--version'
+     Display the version and exit.
+
+
+File: radius.info,  Node: radtest syntax,  Next: radtest examples,  Prev: radtest usage,  Up: Radtest
+
+The input language syntax
+*************************
+
+   The `radtest' program gets as its argument the filename of the test
+script to run. Currently its syntax is very simple: It consists of the
+statements of three kinds:
+
+  1. Assignment statements
+
+  2. Send statements
+
+  3. Expect statements
+
+   Each statement is terminated by a semicolon. The statements are
+discussed in detail below.
+
+Expressions
+-----------
+
+   The term "expression" in the discussion below means one of the
+following:
+
+1. Dereferenced variable name.
+     This is the name of a previously defined variable with a `$' sign
+     prepended to it, e.g: `$VAR'. In this case the resulting value is
+     that of the variable being dereferenced.
+
+2. String enclosed in double quotes
+     E.g. `"a string"'
+
+3. Integer value
+
+4. IP address
+     IP addresses are specified in `dotted quad' notation, e.g.
+     `127.0.0.1'
+
+5. An A/V pair list.
+     A comma-separated list of A/V pairs. The whole list is enclosed in
+     curly braces. Each pair is represented by the following construct:
+
+          		DICT_NAME = VALUE
+
+     where DICT_NAME is a valid radius dictionary name, i.e.  the name
+     which is listed in `ATTRIBUTE' statement in one of the radius
+     dictionary files.
+
+     For example the following is a valid value-pair list:
+
+          { NAS-Name = "localhost", NAS-IP-Address = 127.0.0.1,
+             NAS-Port-Id = 1, User-Name = $name }
+
+6. Concatenation
+     This means a concatenation of the two or more value-pair lists. The
+     sign for such concatenation is `+'. For example, assuming
+
+          a = { NAS-Name = "localhost,
+                 NAS-IP-Address = 127.0.0.1 };
+          b = { NAS-Port-Id = 1, User-Name = $name };
+
+     the statement:
+
+          		$a + $b
+
+     would produce the same list as in the example above, except that
+     the `$name' will be already substituted by its value.
+
+7. Dictionary name
+     This means a valid radius dictionary value name, i.e. the name
+     which is listed in a `VALUE' statement in one of the radius
+     dictionary files.
+
+An assignment statement
+-----------------------
+
+   This statement assigns a value to a variable. Syntax is:
+
+     VARIABLE_NAME = EXPRESSION ;
+
+where VARIABLE_NAME is a name of a variable, VALUE is its value. The
+`=' and `;' are required.
+
+Send statement
+--------------
+
+   This statement sends the packet to the radius server.
+
+   The syntax is:
+
+     send auth PACKET_CODE PAIRLIST
+     send acct PACKET_CODE PAIRLIST
+
+where PACKET_CODE is the integer value of the radius packet code,
+PAIRLIST is a value-pair list to be sent to the server.
+
+   The following statement:
+
+     send auth 1 { User-Name = "hamlet", Password = "pwd",
+                    NAS-IP-Address = 127.0.0.1, NAS-Port-Id = 1 } ;
+
+sends the radius authentication request (code 1) to authenticate the
+user `hamlet' with password `pwd' coming from the port 1 on the NAS
+127.0.0.1.
+
+   The statement:
+
+     send acct 4 { Acct-Status-Type = Start,
+                    Acct-Session-Id = "00" } +
+                 { User-Name = "hamlet", Password = "pwd",
+                    NAS-IP-Address = 127.0.0.1, NAS-Port-Id = 1 } ;
+
+sends the accounting record (code 4) for the above user, querying
+server to mark the start of his session.
+
+Expect statement
+----------------
+
+   The expect statement follows the syntax:
+
+     expect CODE ;
+     expect CODE FAILURE_MESSAGE ;
+
+where CODE is an integer number of the response packet to expect from
+the radius server. If the server replies with this code, the statement
+succeeds, otherwise it fails, prints the diagnostics on stderr and
+`radtest' finishes its execution.
+
+   The FAILURE_MESSAGE is a string to display when the expect fails
+instead of the standard message;
+
+
+File: radius.info,  Node: radtest examples,  Prev: radtest syntax,  Up: Radtest
+
+Examples of `radtest' scripts
+*****************************
+
+Authentication test
+-------------------
+
+   The following script sends the authentication request to the server
+
+
+     auth_packet = { User-Name = $username, Password = $password,
+     		 NAS-Port-Id = $port,
+     		 NAS-Identifier = "localhost",
+     		 NAS-IP-Address = 127.0.0.1 };
+     
+     send auth 1 $auth_packet;
+     expect 2 "Returned " $REPLY_CODE ", Reply-Message = " $REPLY[Reply-Message] ;
+     
+     ## EOF
+
+   Before calling this script, the variables `username', `password' and
+`port' must be assigned corresponding values.  If the above script is
+saved in the file `auth.t', then it can be run as:
+
+     % radtest username=\"gray\" password=\"foo\" port=1 auth.t
+
+Note the use of quotes to assign string values and the use of escape
+characters (`\') to prevent the quotes from being interpreted by the
+shell.
+
+Accounting test
+---------------
+
+
+     send acct 4 { User-Name = $username,
+     		Acct-Status-Type = $type,
+     		Acct-Session-Id = $sid,
+     		NAS-Port-Id = $port,
+     		NAS-Identifier = "localhost",
+     		NAS-IP-Address = 127.0.0.1 };
+     expect 5;
+
+   This script can be run as:
+
+     % radtest username=\"gray\" sid=\"abc\" port=1 type=Start acct.t
+
+to send a start request or as:
+
+     % radtest username=\"gray\" sid=\"abc\" port=1 type=Stop acct.t
+
+to send a stop request.
+
+
+File: radius.info,  Node: Radctl,  Next: Radctl.sh,  Prev: Radtest,  Up: Top
+
+Radctl
+******
+
+   `radctl' is a control interface to `radiusd' daemon. It allows user
+running it to query `radiusd' about various aspects of its work and
+issue administrative commands to it. It is planned to replace usual
+signal interface.
+
+* Menu:
+
+* Configuring:radctl configuration.     Configuring `radctl'.
+* Invocation:radctl invocation.         How to invoke `radctl'.
+* Commands:radctl commands.             Commands available.
+
+
+File: radius.info,  Node: radctl configuration,  Next: radctl invocation,  Up: Radctl
+
+Configuring `radctl'.
+*********************
+
+   To configure Radius to use `radctl' control channel the following
+actions must be performed:
+
+Configure the port number to listen to.
+     The port number to listen to incoming control requests is set in
+     `cntl' statement in `config' file.
+
+Create administrative huntgroup.
+     Since `radctl' interface provides some potentially dangerous
+     commands, we recommend to restrict its usage to some trusted
+     hosts. This can be done using huntgroups mechanism *Note
+     huntgroups::.  The administrative huntgroup definition should
+     include the trusted host IP address and name of a command which is
+     allowed from this host. The command name must be listed in `State'
+     attribute.  See example below.
+
+Create administrative user.
+     The administrative user profile should be created in the `users'
+     file. It should be restricted to administrative huntgroup.
+
+Example `radctl' configuration.
+===============================
+
+   In the example below, we suppose that port 5000 is chosen as Radius
+administrative port, administrative user name is ROOT, and he is
+allowed to connect only from localhost. Then the following modifications
+would be needed:
+
+`config' file
+-------------
+
+     cntl {
+             port 5000;
+     };
+
+`huntgroups' file
+-----------------
+
+     ROOT    NAS-IP-Address = 127.0.0.1, State = "getpid"            NULL
+     ROOT    NAS-IP-Address = 127.0.0.1, State = "get-m-stat"        NULL
+     ROOT    NAS-IP-Address = 127.0.0.1, State = "get-q-stat"        NULL
+     ROOT    NAS-IP-Address = 127.0.0.1, State = "reload"            NULL
+     ROOT    NAS-IP-Address = 127.0.0.1, State = "restart"           NULL
+     ROOT    NAS-IP-Address = 127.0.0.1, State = "shutdown"          NULL
+     ROOT    NAS-IP-Address = 127.0.0.1, State = "dumpdb"            NULL
+
+`users'
+-------
+
+     ROOT    Auth-Type = System,
+                     Huntgroup-Name = "ROOT"
+             Service-Type = RADIUS-Administrative-User
+
+
+File: radius.info,  Node: radctl invocation,  Next: radctl commands,  Prev: radctl configuration,  Up: Radctl
+
+How to invoke `radctl'.
+***********************
+
+   Radctl understands following command line options:
+
+`-d DIR'
+`--directory DIR'
+     Specifies the directory where client configuration files reside
+     *Note Client Overview::.
+
+`-s HOST'
+`--server HOST'
+     Specifies the name of the server to connect to. *Please note* that
+     this is not a domain name, but rather the name under which server
+     is listed in `client.shadow' file *Note client.shadow::.
+
+`-u USERNAME'
+`--user USERNAME'
+     Specifies the username. If started without this option, `radctl'
+     will prompt for the username.
+
+`-p PASSWORD'
+`--password PASSWORD'
+     Specifies the password to be used while connecting to the server.
+     If started without this option, `radctl' will prompt user for the
+     password.
+
+`-v'
+`--verbose'
+     Enable verbose mode. In verbose mode all conversation with the
+     Radius server is echoed on stderr.
+
+`-?'
+`--help'
+     Display short usage help and exit.
+
+
+File: radius.info,  Node: radctl commands,  Prev: radctl invocation,  Up: Radctl
+
+Radctl commands
+***************
+
+Internal commands
+-----------------
+
+   These commands modify the behaviour of radctl itself.
+
+`-?'
+`-help'
+     Output short help information.
+
+`-q'
+`-quit'
+     Exit the program.
+
+`-s'
+`-server'
+     Set the name of radius server to query *Note Client Overview::.
+
+`-v'
+`-verbose'
+     Toggle verbose mode on/off. When verbose mode is on, `radctl'
+     displays to stderr detailed log of its conversation with Radius
+     server.
+
+Server commands
+---------------
+
+   These are sent directly to the server:
+
+`getpid'
+     Output the PID of the master Radius process.
+
+`get-m-stat'
+     Display detailed memory usage statistics.
+
+`get-q-stat'
+     Display detailed queue statistics. Four fields are displayed for
+     each queue:
+       1. Queue number
+
+       2. Number of pending requests
+
+       3. Number of processed requests still residing in the queue
+
+       4. Total number of requests in queue
+
+`dumpdb'
+     Tells `radiusd' to dump its user database, i.e. the parsed
+     contents of files `hints', `huntgroups' and `users' to disk file.
+     The filename is `radlog/radius.parse' *Note Naming conventions::.
+
+`reload WHAT'
+     Instructs the server to reload a particular part of its
+     configuration.  The WHAT part specifies which configuration file
+     to reload:
+
+    `all'
+          Reload all configuration files.
+
+    `users'
+          Reload the `users' file.
+
+    `dict'
+          Reload `dictionary' file. This implies reloading of `users',
+          `huntgroups' and `hints'.
+
+    `huntgroups'
+          Reload `huntgroups' file.
+
+    `hints'
+          Reload `hints' file.
+
+    `clients'
+          Reload `clients' file.
+
+    `naslist'
+          Reload `naslist' file.
+
+    `realms'
+          Reload `realms' file.
+
+    `deny'
+          Reload `access.deny' file.
+
+    `sql'
+          Reload `sqlserver' file.
+
+    `rewrite'
+          Reload `rewrite' file.
+
+`restart'
+     Instructs Radius to flush all request queues and restart itself. In
+     order to use this command, the `radiusd' program should have been
+     started with its full pathname.
+
+`shutdown'
+     Instructs Radius to flush all pending requests and shut down.
+
+
+File: radius.info,  Node: Radctl.sh,  Next: Builddbm,  Prev: Radctl,  Up: Top
+
+Radctl.sh
+*********
+
+   The `radctl.sh' utility provides the alternative way to communicate
+with the radius server. It uses the signal mechanism in order to do so.
+It is invoked as:
+
+     radctl.sh COMMAND
+
+   The valid COMMANDs are as follows:
+
+`start'
+     If `radiusd' is not running already, it is started. The rest of
+     the command line arguments is passed as command line to the server.
+
+`stop'
+     Stops running `radiusd'.
+
+`restart'
+     Stops the server and then starts it again. The rest of the
+     arguments is passed as command line to the server.
+
+`reload'
+     Causes running `radiusd' server to re-read its configuration files.
+
+`dumpdb'
+     Tells `radiusd' to dump its user hash table into the file
+     `/var/log/radius.parse'. This can be used for debugging the
+     configuration files.
+
+`status'
+     `radiusd' reports its memory usage statistics. The information is
+     logged under `Info' log level.
+
+`which'
+     Reports the information about running copy of `radiusd'.
+
+
+File: radius.info,  Node: Builddbm,  Prev: Radctl.sh,  Up: Top
+
+Builddbm
+********
+
+Usage
+-----
+
+   `Builddbm' converts the plaintext Radius users database into DBM
+files. Some versions of Radius daemon have used this to speed up the
+access to the users database.
+
+   Howewer in this implementation things go the other way around.  The
+server reads entire plaintext database, converts it into internal form
+and stores into hash table which provides for fast access. Actually,
+using DBM version of the users database slows down the access unless
+the machine which runs Radius daemon is short of address space for the
+daemon to store the users database into.
+
+Syntax
+------
+
+   When used without arguments, `builddbm' utility attempts to convert
+file `raddb/users' into `raddb/users.db' or `raddb/users.pag',
+`raddb/users.dir' pair, depending on the version of DBM library used.
+
+   If used with one argument, the argument is taken as the name of the
+plaintext database file to operate upon.
+
+   Use the following command line options to modify the operation of
+`buildbm':
+
+`-d DIR'
+     Specifies alternate directory for the Radius configuration files.
+     This defaults to `{No Value For "raddb"}'.
+
+`-i FILENAME'
+     Specifies alternate input file instead of default `raddb/users'.
+     The `-i' option is provided for compatibility with other versions
+     of `builddm'. It can safely be omitted.
+
+`-h'
+     Outputs short usage summary and exits with 0 exit code.
+
+
+File: radius.info,  Node: Attribute list,  Up: Top
+
+Attribute list
+**************
+
+   The following chapters describe the most frequently used RADIUS
+attributes.
+
+* Menu:
+
+Authentication Attributes
+* User-Name::
+* Password::
+* CHAP-Password::
+* NAS-IP-Address::
+* NAS-Port-Id::
+* Service-Type::
+* Framed-Protocol::
+* Framed-IP-Address::
+* Framed-IP-Netmask::
+* Framed-Routing::
+* Framed-MTU::
+* Framed-Compression::
+* Reply-Message::
+* Callback-Number::
+* Callback-Id::
+* Framed-Route::
+* State::
+* Class::
+* Vendor-Specific::
+* Session-Timeout::
+* Idle-Timeout::
+* Termination-Action::
+* Called-Station-Id::
+* Calling-Station-Id::
+* NAS-Identifier::
+* NAS-Port-Type::
+
+Accounting Attributes
+* Acct-Status-Type::
+* Acct-Delay-Time::
+* Acct-Input-Octets::
+* Acct-Output-Octets::
+* Acct-Session-Id::
+* Acct-Authentic::
+* Acct-Session-Time::
+* Acct-Input-Packets::
+* Acct-Output-Packets::
+* Acct-Terminate-Cause::
+
+Radius Internal Attributes
+* Auth-Type::
+* Menu::
+* Termination-Menu::
+* Prefix::
+* Suffix::
+* Group::
+* Crypt-Password::
+* Huntgroup-Name::
+* Simultaneous-Use::
+* Strip-User-Name::
+* Fall-Through::
+* Add-Port-To-IP-Address::
+* Exec-Program::
+* Exec-Program-Wait::
+* Hint::
+* Pam-Auth::
+* Login-Time::
+* Replace-User-Name::
+* Rewrite-Function::
+
+
+File: radius.info,  Node: User-Name,  Next: Password,  Up: Attribute list
+
+User-Name
+*********
+
+     ATTRIBUTE  User-Name         1                    string
+
+   This Attribute indicates the name of the user to be authenticated or
+accounted. It is used in Access-Request and Accounting attributes.  The
+length of the username is usually limited by some arbitrary value.  By
+default, Radius supports usernames up to 32 characters long. This value
+can be modified by redefining `RUT_USERNAME' macro in include/radutmp.h
+file in the distribution directory and recompiling the program.
+
+   Some NASes have peculiarities about sending long usernames. For
+example, Specialix Jetstream 8500 24 port access server inserts a `/'
+character after the 10th character if the username is longer than 10
+characters. In such cases, we recommend to apply rewrite functions in
+order to bring username to its "normal" form *Note rewrite::.
+
+
+File: radius.info,  Node: Password,  Next: CHAP-Password,  Prev: User-Name,  Up: Attribute list
+
+Password
+********
+
+     ATTRIBUTE  Password          2                    string
+
+   This Password attribute indicates the password of the user to be
+authenticated, or the user's input following an Access-Challenge.  It
+is only used in Access-Request packets.
+
+   On transmission, the password is hidden.  The password is first
+padded at the end with nulls to a multiple of 16 octets.  A one- way
+MD5 hash is calculated over a stream of octets consisting of the shared
+secret followed by the Request Authenticator.  This value is XORed with
+the first 16 octet segment of the password and placed in the first 16
+octets of the String field of the Password Attribute.
+
+   If the password is longer than 16 characters, a second one-way MD5
+hash is calculated over a stream of octets consisting of the shared
+secret followed by the result of the first xor.  That hash is XORed
+with the second 16 octet segment of the password and placed in the
+second 16 octets of the String field of the Password Attribute.
+
+   If necessary, this operation is repeated, with each xor result being
+used along with the shared secret to generate the next hash to xor the
+next segment of the password, to no more than 128 characters.
+
+
+File: radius.info,  Node: CHAP-Password,  Next: NAS-IP-Address,  Prev: Password,  Up: Attribute list
+
+CHAP-Password
+*************
+
+     ATTRIBUTE  CHAP-Password     3                    string
+
+   This Attribute indicates the response value provided by a PPP
+Challenge-Handshake Authentication Protocol (CHAP) user in response to
+the challenge.  It is only used in Access-Request packets.
+
+   The CHAP challenge value is found in the CHAP-Challenge Attribute
+(60) if present in the packet, otherwise in the Request Authenticator
+field.
+
+
+File: radius.info,  Node: NAS-IP-Address,  Next: NAS-Port-Id,  Prev: CHAP-Password,  Up: Attribute list
+
+NAS-IP-Address
+**************
+
+     ATTRIBUTE  NAS-IP-Address    4                    ipaddr
+
+   This Attribute indicates the identifying IP Address of the NAS which
+is requesting authentication of the user.  It is only used in
+Access-Request packets. Each Access-Request packet should contain
+either `NAS-IP-Address' or `NAS-Identifier' attribute *Note
+NAS-Identifier::.
+
+
+File: radius.info,  Node: NAS-Port-Id,  Next: Service-Type,  Prev: NAS-IP-Address,  Up: Attribute list
+
+NAS-Port-Id
+***********
+
+     ATTRIBUTE  NAS-Port-Id       5                    integer
+
+   This attribute indicates the physical port number of the NAS which
+is authenticating the user.  It is only used in Access-Request packets.
+Note that this is using "port" in its sense of a physical connection
+on the NAS, not in the sense of a TCP or UDP port number.
+
+   Some NASes try to encode various information in the NAS-Port-Id
+attribute value. For example MAX Ascend terminal server constructs
+`NAS-Port-Id' concatenating line type (one-digit), line number
+(two-digits), and the channel number (two-digits) thus producing a
+5-digit port number. In order to "normalize" such encoded port numbers
+we recommend to use a rewrite function *Note rewrite::.  A rewrite
+function for MAX Ascend servers is provided in the distribution.
+
+
+File: radius.info,  Node: Service-Type,  Next: Framed-Protocol,  Prev: NAS-Port-Id,  Up: Attribute list
+
+Service-Type
+************
+
+     ATTRIBUTE  Service-Type      6                    integer
+     VALUE      Service-Type      Login-User           1
+     VALUE      Service-Type      Framed-User          2
+     VALUE      Service-Type      Callback-Login-User  3
+     VALUE      Service-Type      Callback-Framed-User 4
+     VALUE      Service-Type      Outbound-User        5
+     VALUE      Service-Type      Administrative-User  6
+     VALUE      Service-Type      NAS-Prompt-User      7
+     VALUE      Service-Type      Authenticate-Only    8
+     VALUE      Service-Type      Call-Check           10
+     
+     VALUE      Service-Type      RADIUS-Administrative-User 20
+
+   This attribute indicates the type of service the user has requested,
+or the type of service to be provided.  It may be used in both
+Access-Request and Access-Accept packets.
+
+   When used in an Access-Request the Service type represents a hint
+Radius server that the NAS has reason to believe the user would prefer
+the kind of service indicated.
+
+   When used in an Access-Accept, the Service type is an indication to
+the NAS that the user must be provided this type of service.
+
+   The meaning of various service-types is as follows:
+
+`Login-User'
+     The user should be connected to a host.
+
+`Framed-User'
+     A Framed Protocol should be started for the User, such as PPP or
+     SLIP.  The `Framed-IP-Address' attribute *Note Framed-IP-Address::
+     would supply the IP address to be used.
+
+`Callback-Login-User'
+     The user should be disconnected and called back, then connected to
+     a host.
+
+`Callback-Framed-User'
+     The user should be disconnected and called back, then a Framed
+     Protocol should be started for the User, such as PPP or SLIP.
+
+`Outbound-User'
+     The user should be granted access to outgoing devices.
+
+`Administrative-User'
+     The user should be granted access to the administrative interface
+     to the NAS from which privileged commands can be executed.
+
+`NAS-Prompt'
+     The user should be provided a command prompt on the NAS from which
+     non-privileged commands can be executed.
+
+`Authenticate-Only'
+     Only Authentication is requested, and no authorization information
+     needs to be returned in the Access-Accept
+
+`Call-Check'
+`Callback-NAS-Prompt'
+     The user should be disconnected and called back, then provided a
+     command prompt on the NAS from which non-privileged commands can
+     be executed.
+
+`RADIUS-Administrative-User'
+     FIXME
+
+
+File: radius.info,  Node: Framed-Protocol,  Next: Framed-IP-Address,  Prev: Service-Type,  Up: Attribute list
+
+Framed-Protocol
+***************
+
+     ATTRIBUTE  Framed-Protocol   7                    integer
+     VALUE      Framed-Protocol   PPP                  1
+     VALUE      Framed-Protocol   SLIP                 2
+
+   This Attribute indicates the framing to be used for framed access.
+It may be used in both Access-Request and Access-Accept packets.
+
+
+File: radius.info,  Node: Framed-IP-Address,  Next: Framed-IP-Netmask,  Prev: Framed-Protocol,  Up: Attribute list
+
+Framed-IP-Address
+*****************
+
+     ATTRIBUTE  Framed-IP-Address  8                    ipaddr
+
+   This Attribute indicates the address to be configured for the user.
+It may be used in Access-Accept packets.  It may be used in an
+Access-Request packet as a hint by the NAS to the server that it would
+prefer that address, but the server is not required to honor the hint.
+
+   The value 0xFFFFFFFF indicates that the NAS should allow the user to
+select an address (e.g. Negotiated). The value 0xFFFFFFFE indicates
+that the NAS should select an address for the user (e.g. assigned from
+a pool of addresses kept by the NAS).  Other valid values indicate that
+the NAS should use that value as the user's IP address.
+
+
+File: radius.info,  Node: Framed-IP-Netmask,  Next: Framed-Routing,  Prev: Framed-IP-Address,  Up: Attribute list
+
+Framed-IP-Netmask
+*****************
+
+     ATTRIBUTE  Framed-IP-Netmask  9                    ipaddr
+
+   This Attribute indicates the IP netmask to be configured for the
+user when the user is a router to a network.  It may be used in
+Access-Accept packets.  It may be used in an Access-Request packet as a
+hint by the NAS to the server that it would prefer that netmask, but
+the server is not required to honor the hint.
+
+
+File: radius.info,  Node: Framed-Routing,  Next: Framed-MTU,  Prev: Framed-IP-Netmask,  Up: Attribute list
+
+Framed-Routing
+**************
+
+     ATTRIBUTE  Framed-Routing    10                   integer
+     VALUE      Framed-Routing    None                 0
+     VALUE      Framed-Routing    Broadcast            1
+     VALUE      Framed-Routing    Listen               2
+     VALUE      Framed-Routing    Broadcast-Listen     3
+
+   This Attribute indicates the routing method for the user, when the
+user is a router to a network.  It is only used in Access-Accept
+packets.
+
+
+File: radius.info,  Node: Framed-MTU,  Next: Framed-Compression,  Prev: Framed-Routing,  Up: Attribute list
+
+Framed-MTU
+**********
+
+     ATTRIBUTE  Framed-MTU        12                   integer
+
+   This Attribute indicates the Maximum Transmission Unit to be
+configured for the user, when it is not negotiated by some other means
+(such as PPP).  It is only used in Access-Accept packets.
+
+
+File: radius.info,  Node: Framed-Compression,  Next: Reply-Message,  Prev: Framed-MTU,  Up: Attribute list
+
+Framed-Compression
+******************
+
+     ATTRIBUTE  Framed-Compression  13                   integer
+     VALUE      Framed-Compression  None                 0
+     VALUE      Framed-Compression  Van-Jacobson-TCP-IP  1
+
+   This Attribute indicates a compression protocol to be used for the
+link.  It may be used in Access-Accept packets.  It may be used in an
+Access-Request packet as a hint to the server that the NAS would prefer
+to use that compression, but the server is not required to honor the
+hint.
+
+   More than one compression protocol Attribute may be sent.  It is the
+responsibility of the NAS to apply the proper compression protocol to
+appropriate link traffic.
+
+
+File: radius.info,  Node: Reply-Message,  Next: Callback-Number,  Prev: Framed-Compression,  Up: Attribute list
+
+Reply-Message
+*************
+
+     ATTRIBUTE  Reply-Message     18                   string
+
+   This Attribute indicates text which may be displayed to the user.
+
+   When used in an Access-Accept, it is the success message.
+
+   When used in an Access-Reject, it is the failure message.  It may
+indicate a dialog message to prompt the user before another
+Access-Request attempt.
+
+   When used in an Access-Challenge, it may indicate a dialog message
+to prompt the user for a response.
+
+   Multiple `Reply-Message' attributes may be included and if any are
+displayed, they must be displayed in the same order as they appear in
+the packet.
+
+
+File: radius.info,  Node: Callback-Number,  Next: Callback-Id,  Prev: Reply-Message,  Up: Attribute list
+
+Callback-Number
+***************
+
+     ATTRIBUTE  Callback-Number   19                   string
+
+   This Attribute indicates a dialing string to be used for callback.
+It may be used in Access-Accept packets.  It may be used in an
+Access-Request packet as a hint to the server that a Callback service
+is desired, but the server is not required to honor the hint.
+
+
+File: radius.info,  Node: Callback-Id,  Next: Framed-Route,  Prev: Callback-Number,  Up: Attribute list
+
+Callback-Id
+***********
+
+     ATTRIBUTE  Callback-Id       20                   string
+
+   This Attribute indicates the name of a place to be called, to be
+interpreted by the NAS.  It may be used in Access-Accept packets.
+
+
+File: radius.info,  Node: Framed-Route,  Next: State,  Prev: Callback-Id,  Up: Attribute list
+
+Framed-Route
+************
+
+     ATTRIBUTE  Framed-Route      22                   string
+
+   This Attribute provides routing information to be configured for the
+user on the NAS.  It is used in the Access-Accept packet and can appear
+multiple times.
+
+
+File: radius.info,  Node: State,  Next: Class,  Prev: Framed-Route,  Up: Attribute list
+
+State
+*****
+
+     ATTRIBUTE  State             24                   string
+
+   This Attribute is available to be sent by the server to the client
+in an Access-Challenge and MUST be sent unmodified from the client to
+the server in the new Access-Request reply to that challenge, if any.
+
+   This Attribute is available to be sent by the server to the client
+in an Access-Accept that also includes a Termination-Action Attribute
+with the value of RADIUS-Request.  If the NAS performs the
+Termination-Action by sending a new Access-Request upon termination of
+the current session, it MUST include the State attribute unchanged in
+that Access-Request.
+
+   In either usage, no interpretation by the client should be made.  A
+packet may have only one `State' Attribute.
+
+
+File: radius.info,  Node: Class,  Next: Vendor-Specific,  Prev: State,  Up: Attribute list
+
+Class
+*****
+
+     ATTRIBUTE  Class             25                   string
+
+   This Attribute is available to be sent by the server to the client
+in an Access-Accept and should be sent unmodified by the client to the
+accounting server as part of the Accounting-Request packet if
+accounting is supported.
+
+
+File: radius.info,  Node: Vendor-Specific,  Next: Session-Timeout,  Prev: Class,  Up: Attribute list
+
+Vendor-Specific
+***************
+
+     ATTRIBUTE  Vendor-Specific   26                   string
+
+   This Attribute is available to allow vendors to support their own
+extended Attributes not suitable for general usage.  FIXME
+
+
+File: radius.info,  Node: Session-Timeout,  Next: Idle-Timeout,  Prev: Vendor-Specific,  Up: Attribute list
+
+Session-Timeout
+***************
+
+     ATTRIBUTE  Session-Timeout   27                   integer
+
+   This Attribute sets the maximum number of seconds of service to be
+provided to the user before termination of the session or prompt.  The
+server may send this attribute to the client in an Access-Accept or
+Access-Challenge.
+
+
+File: radius.info,  Node: Idle-Timeout,  Next: Termination-Action,  Prev: Session-Timeout,  Up: Attribute list
+
+Idle-Timeout
+************
+
+     ATTRIBUTE  Idle-Timeout      28                   integer
+
+   This Attribute sets the maximum number of consecutive seconds of
+idle connection allowed to the user before termination of the session
+or prompt.  The server may send this attribute to the client in an
+Access-Accept or Access-Challenge.
+
+
+File: radius.info,  Node: Termination-Action,  Next: Called-Station-Id,  Prev: Idle-Timeout,  Up: Attribute list
+
+Termination-Action
+******************
+
+     ATTRIBUTE  Termination-Action  29                   integer
+     VALUE      Termination-Action  Default              0
+     VALUE      Termination-Action  RADIUS-Request       1
+
+   This Attribute indicates what action the NAS should take when the
+specified service is completed.  It is only used in Access-Accept
+packets.
+
+
+File: radius.info,  Node: Called-Station-Id,  Next: Calling-Station-Id,  Prev: Termination-Action,  Up: Attribute list
+
+Called-Station-Id
+*****************
+
+     ATTRIBUTE  Called-Station-Id  30                   string
+
+   This Attribute allows the NAS to send in the Access-Request packet
+the phone number that the user called, using Dialed Number
+Identification (DNIS) or similar technology.  Note that this may be
+different from the phone number the call comes in on.  It is only used
+in Access-Request packets.
+
+
+File: radius.info,  Node: Calling-Station-Id,  Next: NAS-Identifier,  Prev: Called-Station-Id,  Up: Attribute list
+
+Calling-Station-Id
+******************
+
+     ATTRIBUTE  Calling-Station-Id  31                   string
+
+   This Attribute allows the NAS to send in the Access-Request packet
+the phone number that the call came from, using Automatic Number
+Identification (ANI) or similar technology.  It is only used in
+Access-Request packets.
+
+
+File: radius.info,  Node: NAS-Identifier,  Next: NAS-Port-Type,  Prev: Calling-Station-Id,  Up: Attribute list
+
+NAS-Identifier
+**************
+
+     ATTRIBUTE  NAS-Identifier    32                   string
+
+   This Attribute contains a string identifying the NAS originating the
+Access-Request.  It is only used in Access-Request packets.  Either
+`NAS-IP-Address'  or `NAS-Identifier' should be present in an
+Access-Request packet.
+
+   *Note NAS-IP-Address::.
+
+
+File: radius.info,  Node: NAS-Port-Type,  Next: Acct-Status-Type,  Prev: NAS-Identifier,  Up: Attribute list
+
+NAS-Port-Type
+*************
+
+     ATTRIBUTE  NAS-Port-Type     61                   integer
+     VALUE      NAS-Port-Type     Async                0
+     VALUE      NAS-Port-Type     Sync                 1
+     VALUE      NAS-Port-Type     ISDN                 2
+     VALUE      NAS-Port-Type     ISDN-V120            3
+     VALUE      NAS-Port-Type     ISDN-V110            4
+
+   This Attribute indicates the type of the physical port of the NAS
+which is authenticating the user.  It can be used instead of or in
+addition to the `NAS-Port-Id' *Note NAS-Port-Id:: attribute.  It is
+only used in Access-Request packets.  Either `NAS-Port' or
+`NAS-Port-Type' or both should be present in an Access-Request packet,
+if the NAS differentiates among its ports.
+
+
+File: radius.info,  Node: Acct-Status-Type,  Next: Acct-Delay-Time,  Prev: NAS-Port-Type,  Up: Attribute list
+
+Acct-Status-Type
+****************
+
+     ATTRIBUTE       Acct-Status-Type        40      integer
+     VALUE           Acct-Status-Type        Start                   1
+     VALUE           Acct-Status-Type        Stop                    2
+     VALUE           Acct-Status-Type        Alive                   3
+     VALUE           Acct-Status-Type        Accounting-On           7
+     VALUE           Acct-Status-Type        Accounting-Off          8
+
+   This attribute indicates whether this Accounting-Request marks the
+beginning of the user service (Start) or the end (Stop).
+
+   It may also be used to mark the start of accounting (for example,
+upon booting) by specifying Accounting-On and to mark the end of
+accounting (for example, just before a scheduled reboot) by specifying
+Accounting-Off.
+
+   A special value Alive or Interim-Update indicates the packet that
+contains some additional data to the initial Start record or to the
+last Alive record.
+
+
+File: radius.info,  Node: Acct-Delay-Time,  Next: Acct-Input-Octets,  Prev: Acct-Status-Type,  Up: Attribute list
+
+Acct-Delay-Time
+***************
+
+     ATTRIBUTE       Acct-Delay-Time         41      integer
+
+   This attribute indicates how many seconds the client has been trying
+to send this record for, and can be subtracted from the time of arrival
+on the server to find the approximate time of the event generating this
+Accounting-Request.  (Network transit time is ignored.)
+
+
+File: radius.info,  Node: Acct-Input-Octets,  Next: Acct-Output-Octets,  Prev: Acct-Delay-Time,  Up: Attribute list
+
+Acct-Input-Octets
+*****************
+
+     ATTRIBUTE       Acct-Input-Octets       42      integer
+
+   This attribute indicates how many octets have been received from the
+port over the course of this service being provided, and can only be
+present in Accounting-Request records where the Acct-Status-Type is set
+to Stop.
+
+
+File: radius.info,  Node: Acct-Output-Octets,  Next: Acct-Session-Id,  Prev: Acct-Input-Octets,  Up: Attribute list
+
+Acct-Output-Octets
+******************
+
+     ATTRIBUTE       Acct-Output-Octets      43      integer
+
+   This attribute indicates how many octets have been sent to the port
+in the course of delivering this service, and can only be present in
+Accounting-Request records where the Acct-Status-Type is set to Stop.
+
+
+File: radius.info,  Node: Acct-Session-Id,  Next: Acct-Authentic,  Prev: Acct-Output-Octets,  Up: Attribute list
+
+Acct-Session-Id
+***************
+
+     ATTRIBUTE       Acct-Session-Id         44      string
+
+   This attribute is a unique Accounting ID to make it easy to match
+start and stop records in a log file.  The start and stop records for a
+given session must have the same Acct-Session-Id.  An
+Accounting-Request packet must have an Acct-Session-Id.  An
+Access-Request packet may have an Acct-Session-Id; if it does, then the
+NAS must use the same Acct-Session-Id in the Accounting-Request packets
+for that session.
+
+
+File: radius.info,  Node: Acct-Authentic,  Next: Acct-Session-Time,  Prev: Acct-Session-Id,  Up: Attribute list
+
+Acct-Authentic
+**************
+
+     ATTRIBUTE       Acct-Authentic          45              integer
+     VALUE           Acct-Authentic          RADIUS          1
+     VALUE           Acct-Authentic          Local           2
+     VALUE           Acct-Authentic          Remote          3
+
+   This attribute may be included in an Accounting-Request to indicate
+how the user was authenticated, whether by Radius, the NAS itself, or
+another remote authentication protocol.  Users who are delivered
+service without being authenticated should not generate Accounting
+records.
+
+
+File: radius.info,  Node: Acct-Session-Time,  Next: Acct-Input-Packets,  Prev: Acct-Authentic,  Up: Attribute list
+
+Acct-Session-Time
+*****************
+
+     ATTRIBUTE       Acct-Session-Time       46      integer
+
+   This attribute indicates how many seconds the user has received
+service for, and can only be present in Accounting-Request records
+where the Acct-Status-Type is set to Stop.
+
+
+File: radius.info,  Node: Acct-Input-Packets,  Next: Acct-Output-Packets,  Prev: Acct-Session-Time,  Up: Attribute list
+
+Acct-Input-Packets
+******************
+
+     ATTRIBUTE       Acct-Input-Packets      47      integer
+
+   This attribute indicates how many packets have been received from
+the port over the course of this service being provided to a Framed
+User, and can only be present in Accounting-Request records where the
+Acct-Status-Type is set to Stop.
+
+
+File: radius.info,  Node: Acct-Output-Packets,  Next: Acct-Terminate-Cause,  Prev: Acct-Input-Packets,  Up: Attribute list
+
+Acct-Output-Packets
+*******************
+
+     ATTRIBUTE       Acct-Output-Packets     48      integer
+
+   This attribute indicates how many packets have been sent to the port
+in the course of delivering this service to a Framed User, and can only
+be present in Accounting-Request records where the Acct-Status-Type is
+set to Stop.
+
+
+File: radius.info,  Node: Acct-Terminate-Cause,  Next: Auth-Type,  Prev: Acct-Output-Packets,  Up: Attribute list
+
+Acct-Terminate-Cause
+********************
+
+     ATTRIBUTE       Acct-Terminate-Cause    49      integer
+     VALUE           Acct-Terminate-Cause    User-Request            1
+     VALUE           Acct-Terminate-Cause    Lost-Carrier            2
+     VALUE           Acct-Terminate-Cause    Lost-Service            3
+     VALUE           Acct-Terminate-Cause    Idle-Timeout            4
+     VALUE           Acct-Terminate-Cause    Session-Timeout         5
+     VALUE           Acct-Terminate-Cause    Admin-Reset             6
+     VALUE           Acct-Terminate-Cause    Admin-Reboot            7
+     VALUE           Acct-Terminate-Cause    Port-Error              8
+     VALUE           Acct-Terminate-Cause    NAS-Error               9
+     VALUE           Acct-Terminate-Cause    NAS-Request             10
+     VALUE           Acct-Terminate-Cause    NAS-Reboot              11
+     VALUE           Acct-Terminate-Cause    Port-Unneeded           12
+     VALUE           Acct-Terminate-Cause    Port-Preempted          13
+     VALUE           Acct-Terminate-Cause    Port-Suspended          14
+     VALUE           Acct-Terminate-Cause    Service-Unavailable     15
+     VALUE           Acct-Terminate-Cause    Callback                16
+     VALUE           Acct-Terminate-Cause    User-Error              17
+     VALUE           Acct-Terminate-Cause    Host-Request            18
+
+   This attribute indicates how the session was terminated, and can
+only be present in Accounting-Request records where the Acct-
+Status-Type is set to Stop.
+
+
+File: radius.info,  Node: Auth-Type,  Next: Menu,  Prev: Acct-Terminate-Cause,  Up: Attribute list
+
+Auth-Type
+*********
+
+     ATTRIBUTE  Auth-Type         1000                 integer
+     VALUE      Auth-Type         Local                0
+     VALUE      Auth-Type         System               1
+     VALUE      Auth-Type         Crypt-Local          3
+     VALUE      Auth-Type         Reject               4
+     VALUE      Auth-Type         Mysql                252
+     VALUE      Auth-Type         Pam                  253
+     VALUE      Auth-Type         Accept               254
+
+   This attribute tells the server which type of authentication to
+apply to a paricular user. It can be used in check-pairs of the user's
+profile. *Note Authentication::.
+
+   Radius interprets values of `Auth-Type' attribute as follows:
+
+`Local'
+     The value of the `Password' attribute from the record is taken as
+     a cleantext password and is compaired against the `Password' value
+     from the input packet.
+
+`System'
+     This means that a user's password is stored in a system password
+     type.  Radius queries the operating system to determine if the
+     username/password supplied in the incoming packet are OK.
+
+`Crypt-Local'
+     The value of the `Password' attribute from the record is taken as
+     an MD5 hash on the user's password. Radius generates MD5 hash on
+     the supplied `Password' value and compares both strings.
+
+`Reject'
+     Authentication fails.
+
+`Accept'
+     Authentication succeeds.
+
+`Mysql'
+     The MD5-encrypted user's password is queried from the Mysql *Note
+     SQL Auth::.
+
+`Pam'
+     The username/password combination is checked using PAM.
+
+
+File: radius.info,  Node: Menu,  Next: Termination-Menu,  Prev: Auth-Type,  Up: Attribute list
+
+Menu
+****
+
+     ATTRIBUTE  Menu              1001                 string
+
+   This attribute should be used in the reply pairs. If it is used, it
+should be the only reply item.
+
+   The `Menu' attribute specifies the name of the menu to be presented
+to the user. The corresponding menu code is looked up in
+`RADIUS_DIR/menus/' directory. *Note menus::.
+
+
+File: radius.info,  Node: Termination-Menu,  Next: Prefix,  Prev: Menu,  Up: Attribute list
+
+Termination-Menu
+****************
+
+     ATTRIBUTE  Termination-Menu  1002                 string
+
+   This attribute should be used in the reply pairs. If it is used, it
+should be the only reply item.
+
+   The `Termination-Menu' specifies the name of the menu file to be
+presented to the user after finishing his session. The corresponding
+menu code is looked up in `RADIUS_DIR/menus/' directory. *Note menus::.
+
+
+File: radius.info,  Node: Prefix,  Next: Suffix,  Prev: Termination-Menu,  Up: Attribute list
+
+Prefix
+******
+
+     ATTRIBUTE  Prefix            1003                 string
+
+   The `Prefix' attribute indicates the prefix which the username
+should contain in order for a particular record in the profile to be
+matched. This attribute should be specified in check-pairs of the
+`users' or `hints' file.
+
+   For example, if the `users' file contained:
+
+     DEFAULT Prefix = "U", Auth-Type = System
+                     Service-Type = Login-User
+
+then usernames `Ugray' and `Uyoda' would match this record, whereas
+`gray' and `yoda' would not.
+
+   Both `Prefix' and `Suffix' attributes may be specified in a profile.
+In this case the record is matched only if the username contains both
+prefix and suffix specified.
+
+   *Note Suffix:: *Note Strip-User-Name::
+
+
+File: radius.info,  Node: Suffix,  Next: Group,  Prev: Prefix,  Up: Attribute list
+
+Suffix
+******
+
+     ATTRIBUTE  Suffix            1004                 string
+
+   The `Suffix' attribute indicates the suffix which the username
+should contain in order for a particular record in the profile to be
+matched. This attribute should be specified in check-pairs of the
+`users' or `hints' file.
+
+   For example, if the `users' file contained:
+
+     DEFAULT Suffix = ".ppp", Auth-Type = System, Strip-User-Name = Yes
+             Service-Type = Framed-User,
+                     Framed-Protocol = PPP
+
+then usernames `gray.ppp' and `yoda.ppp' would match this record,
+whereas `gray' and `yoda' would not.
+
+   Both `Prefix' and `Suffix' attributes may be specified in a profile.
+In this case the record is matched only if the username contains both
+prefix and suffix specified.
+
+   *Note Prefix:: *Note Strip-User-Name::
+
+
+File: radius.info,  Node: Group,  Next: Crypt-Password,  Prev: Suffix,  Up: Attribute list
+
+Group
+*****
+
+     ATTRIBUTE  Group             1005                 string
+

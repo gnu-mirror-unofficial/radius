@@ -1,0 +1,194 @@
+.\" $Id$
+.ds RD /etc/raddb
+.ds RL /usr/adm
+.ds RP /etc/raddb
+.TH radwho 1 "March 10, 2000" "FSF"
+.SH NAME
+radwho - display who is logged on by the Radius
+
+.SH SYNOPSIS
+\fBradwho\fR
+[\fB-A\fR, \fB--all\fR]
+[\fB-c\fR, \fB--calling-id\fR]
+[\fB-d,--directory\fR DIR]
+[\fB-D,--date-format\fR {short|abbr|full}]
+[\fB-e,--empty\fR STRING]
+[\fB-f,--file\fR FILE]
+[\fB-F,--finger\fR]
+[\fB-h,--help\fR]
+[\fB-H,--no-header\fR]
+[\fB-i,--session-id\fR]
+[\fB-I,--ip-format\fR {smart|ip|nodomain}]
+[\fB-o,--format\fR FORMAT]
+[\fB-s,--secure\fR]
+
+
+.SH NOTE
+The information in this manpage may be obsolete or incomplete. Please
+refer to texinfo documentation for full information about GNU Radius
+tools.
+.SH DESCRIPTION
+\fBRadwho\fR displays the list of users currently logged in by the
+\fBRadius\fR server.
+.PP
+Default output information is made compatible
+with that of the standard unix finger(1) utility. For each user the
+following information is displayed: login name, name, connection
+protocol, NAS port, login date, NAS name, assigned IP address or
+corresponding network name.
+.PP
+When used with \fB-l\fR option, the long output format is used. In
+this format the following information is output:
+.IP Login
+Login name of the user
+.IP SessionID
+Unique session ID assigned by the terminal server.
+.IP Proto
+Connection prototype.
+.IP Port
+Port number
+.IP When
+Login date and time
+.IP From
+The name of NAS that accepted the connection.
+.IP Location
+Framed IP address or the corresponding network name.
+.IP Caller
+Caller station ID ad reported by the NAS.
+.IP Duration
+Duration of the session.
+
+.SH OPTIONS
+.IP "-A, --all"
+Display the information about logged-out users as well. The logged-out
+users are shown with Proto field set to HUP.
+
+.IP "-c, --calling-id"
+Display the calling station ID in the second column.
+
+.IP "-d, --directory NAME"
+Set the radius configuration directory name.
+
+.IP "-D, --date-formap {short|abbr|full}"
+Set the date representation. By default dates are output as
+\fBDOW HH:MM\fR, where DOW means the day of week abbreviation,
+HH and MM mean hours and minutes respectively. This corresponds to
+option \fB-D short\fR. Other available formats are: \fBabbr\fR for
+abbreviated date: \fBMM/DD HH:MM\fR, where MM is a two-digit month number,
+DD --- a two-digit day of month, and \fBfull\f for full data output,
+like this: \fBMon Dec 18 12:29:38 EET 2000\fR.
+
+.IP "-e, --empty STRING"
+Display any empty field as STRING. This is useful when the output of
+\fBradwho\fR is fed to some analyzing program, as it helps to keep
+the same number of columns on each line of output.
+
+.IP "-F, --finger"
+Start in fingerd mode. In this mode \fBradwho\fR emulates the
+behaviour of fingerd(8) utility. Use this option if starting
+\fBradwho\fR from the /etc/inetd.conf line like this:
+.IP
+finger  stream  tcp   nowait  nobody   /usr/sbin/radwho radwho -fL
+.IP
+This mode is also enabled by default if \fBradwho\fR notices that its
+name (argv[0]) is \fBfingerd\fR or \fBin.fingerd\fR.
+
+.IP "-H, --no-header"
+Don't display header line.
+
+.IP "-i, --session-id"
+Display session ID instead of GECOS in the second column.
+
+.IP "-I, --ip-format" {smart|ip|nodomain}
+Change IP address representation. 
+
+.IP "-L, --local-also"
+Display information about local users from the system \fButmp\fR file.
+May prove useful when running \fBradwho\fR as a finger daemon.
+
+.IP "-n, --no-resolve"
+Do not resolve IP addresses. It is a synonim for \fB-I ip\fR.
+
+.IP "-o, --format FORMAT"
+Select customized output format. This can also be changed by setting
+the value of environment variable \fBRADWHO_FORMAT\fR. See \fBFORMAT STRING\fR
+section below.
+
+.IP "-s, --secure"
+Run in secure mode. Queries without a user name are rejected.
+
+.SH FORMAT STRING
+
+.PP
+The format string is a comma-separated list of format specifications
+in one of the following forms:
+
+.IP \fBfield\fR
+Output \fBfield\fR with its default width, heading and alignment. The
+field names and corresponding default values are discussed in detail below.
+.IP \fBfield\fR:\fBwidth\fR
+Output \fBfield\fR, use column width \fBwidth\fR. If \fBwidth\fR starts
+with a plus sign, the field will be right-aligned, if it starts with
+a minus sign, the field will be left-aligned. Otherwise the default
+alignment will be used
+.IP \fBfield\fR:\fBwidth\fR:\fBheading\fR
+The same as above, but also supplies the heading for the column
+.PP
+The field names are:
+
+.IP login
+Login name
+
+.IP orig
+Original login name as supplied with the request.
+
+.IP port
+NAS port number
+
+.IP sid
+The Session ID
+
+.IP nas
+The NAS name or IP address.
+
+.IP ip
+Framed IP address assigned to the user, if it is provided framed
+service.
+
+.IP proto
+Connection protocol. Its possible values are:
+
+.IP date
+Date/time when the session started
+
+.IP delay
+Delay time.
+
+.IP type
+Entry type in decimal.
+
+.IP ptype
+Port type. This is one of the following letters:
+
+.IP time
+Total time of the session duration.
+
+.IP clid
+The calling station ID.
+
+.IP uname
+The GECOS field from local /etc/passwd, corresponding to the login name.
+If the user does not have a local account, his login name is output.
+
+
+
+.SH FILES
+.IP \*(RD/naslist
+.IP \*(RL/radutmp
+
+.SH AUTHORS
+Sergey Poznyakoff, gray@farlep.net
+
+.SH SEE ALSO
+radiusd(8rad), radgrep(1rad),
+radping(8rad), naslist(5rad)

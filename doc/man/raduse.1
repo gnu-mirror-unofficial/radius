@@ -1,0 +1,145 @@
+.\" $Id$
+.ds RD /etc/raddb
+.ds RL /usr/adm
+.ds RP /etc/raddb
+.TH raduse 1 "March 10, 2000" "FSF"
+.SH NAME
+raduse - monitor the usage of dialup lines.
+.SH SYNOPSIS
+\fBraduse\fR
+[\fB-b\fR]
+[\fB-d\fR count]
+[\fB-D\fR]
+[\fB-I\fR]
+[\fB-i\fR|\fB-n\fR]
+[\fB-s\fR delay]
+[\fB-w\fR]
+[NAS ...]
+.PP
+\fBraduse -l\fR
+.PP
+\fBraduse -h\fR
+.SH NOTE
+The information in this manpage may be obsolete or incomplete. Please
+refer to texinfo documentation for full information about GNU Radius
+tools.
+.SH DESCRIPTION
+\fBRaduse\fR monitors the activity of dialup lines.
+.PP
+When used without arguments, it displays statistics about every dialup
+line served by \fBRadius\fR server. Otherwise, each argument is
+expected to be the name of the network access server for which the
+information is to be displayed.
+.PP
+At the top of output the summary information is displayed. It consists
+of two lines. First line shows the statistic collection uptime and
+current date/time. Second line shows total number of lines, number of
+active lines, number of idle (inactive) lines and load percentage.
+.PP
+The dialup statistics is displayed in the area below. For each dialup
+line three lines of data are shown.
+.PP
+First line shows the network access server name, port number on that
+server, number of logins registered on this line, status of the line,
+amount of time the line keeps the current status, and date and time
+where the line has switched to the current status.
+.PP
+If the line is currently active, the status field displays login
+name of the user logged in on this line. If the line is inactive, the
+word \fB[Idle]\fR is displayed.
+.PP
+Second and third lines display active and idle usage summary. They show
+following data: total time the line is in the given state, maximum
+amount of time in this state, and starting date and time when maximum
+duration was perceived.
+
+.SH OPTIONS
+.IP -b
+Start up in brief mode. In this mode only first line of information for
+each dialup line is displayed.
+.IP -d
+Show only count displays, then exit. A display is considered to be one
+update of the screen.
+.IP -D
+Dump the statistics database to the standard output and then
+exit. This is for debugging purposes only.
+.IP -I
+Do not display idle lines. By default \fBraduse\fR displays all dialup
+lines.
+.IP -i
+Use interactive mode. In this mode any input is immediately read for
+processing. See the \fBCOMMANDS\fR section for the description of
+commands usable in interactive mode. After processing each command the
+screen is updated immediately, no matter was the command understood or
+not. This mode is the default when the standard output is an
+intelligent terminal.
+.IP -n
+Use non-interactive mode.
+.IP -s
+Specify delay in seconds between screen updates.
+.IP -w
+Widen the time display fields to show the seconds.
+.IP -l
+List the names and IP numbers of network access servers and then exit.
+.IP -h
+Display short usage summary.
+
+.SH COMMANDS
+When in interactive mode, \fBraduse\fR reads commands from the
+terminal and acts upon them accordingly. Each command is either a
+single letter or a combination control+letter. The command is
+reacted upon immediately, unless it needs some additional information,
+in which case the user will be prompted to enter such
+information. While entering this information, erase and kill keys, as
+set up by stty command, are recognized and a newline terminates the
+input.
+.PP
+The following commands are understood (C-L means control-L):
+.PP
+.IP newline
+Refresh the screen immediately
+.IP space
+Refresh the screen immediately
+.IP C-L
+Clear and redraw the display.
+.IP ^
+(Caret) go to the first page.
+.IP b
+Toggle brief display mode.
+.IP C-b
+Move one page backwards.
+.IP C-f
+Move one page forwards.
+.IP i
+Toggle idle line display on or off.
+.IP j
+Move one line forwards.
+.IP k
+Move one line backwards.
+.IP G
+Move to the last page.
+.IP $
+Move to the last page.
+.IP q
+Quit the program
+.IP s
+Change the number of seconds to delay between screen updates. Prompts
+user to input the number desired.
+.IP t
+Display information about given Network Access Servers. Prompts user
+to input the NAS names. The names should be separated by
+whitespace. The word \fBall\fR returns to display of all NAS lines.
+
+.SH FILES
+.IP \*(RD/naslist
+The list of network access servers
+
+.IP \*(RL/radacct/radstat
+Radius statistics.
+
+.SH AUTHORS
+Sergey Poznyakoff, gray@farlep.net
+
+.SH SEE ALSO
+radiusd(8rad), radwho(1rad), radgrep(1rad), naslist(5rad)
+

@@ -1,0 +1,193 @@
+.\" $Id$
+.ds RD /etc/raddb
+.ds RL /usr/adm
+.ds RP /etc/raddb
+.TH RadiusD 8 "March 10, 2000" "FSF"
+.SH NAME
+radiusd - Authentication and accounting server
+.SH SYNOPSIS
+\fBradiusd\fR
+[\fB-A\fR]
+[\fB-a\fR acct_dir]
+[\fB-b\fR[\fBb\fR]]
+[\fB-d\fR config_dir]
+[\fB-f\fR]
+[\fB-l\fR log_dir]
+[\fB-N\fR]
+[\fB-n\fR]
+[\fB-p\fR port]
+[\fB-Ssv\fR]
+[\fB-x\fR debug_level]
+[\fB-yz\fR]
+.SH NOTE
+The information in this manpage may be obsolete or incomplete. Please
+refer to texinfo documentation for full information about GNU Radius
+tools.
+.SH DESCRIPTION
+\fBradiusd\fR is the server implementing \fBRADIUS\fR protocol.
+.PP
+\fBRADIUS\fR is a protocol spoken between the network access server
+(\fBNAS\fR) and the auhtentication server. The network access server
+is typically a device accepting connections from several modem lines
+and the authentication server is the server which decides whether some
+user has the right to log in or he has not. This is called authentication.
+.PP
+Also, when the user logs in or out, the \fBNAS\fR sends login and
+logout packets. These packets are received by the \fBradius\fR server
+and recorded appropriately. This is called accounting.
+.PP
+Upon startup, \fBradius\fR server listens the following two ports:
+authentication (default 1645), accounting (1646).
+When configured with \fB--enable-snmp\fR option, \fBradiusd\fR also starts
+listening on the specified SNMP port.
+.PP
+Upon receiving a packet from any of the above ports, the server performs
+the following:
+.IP "1. checks the authenticity of the request"
+Depending on the type of the request this check is based on the source
+IP address.
+.IP "2. looks up the request queue for duplicates"
+If a request is found in the queue, it gets dropped and the appropriate
+diagnostics is output to the Warning channel.
+.IP "3. registers request in the queue"
+This is needed to prevent any eventual duplicates of this packet from being
+processed.
+.IP "4. processes and answers the request"
+A child process may be forked during this stage to handle the request.
+.PP
+
+.SH OPTIONS
+.IP -A
+Write a file named \fBdetail.auth\fR in the same directory as
+\fBdetail\fR file. This file contains all the Attribute-Value pairs
+for each authentication packet. Normally this should be used for
+debugging purposes.
+.IP -a
+Specify alternate directory for accounting. Usually this defaults to
+\fB\*(RL/radacct\fR.
+.IP -b
+If the \fBradiusd\fR server was configured with \fB--enable-dbm\fR
+option, this flag instructs it to use the DBM version of the users
+database (\fB\*(RD/users.db\fR or \fB\*(RD/users.pag\fR,
+\fB\*(RD/users.dir\fR pair) instead of the plain text file
+(\fB\*(RD/users\fR).
+.IP
+Note that this makes the processing of each authentication request
+\fBmuch more slower\fR when the number of users grows beyong some
+limit.
+.IP
+If this option is used twice, i.e. [-\fBbb\fR], it instructs the
+server to use both databases. In this case it first searches the login
+name in the internal hash (== in the plain text database), and if
+not found there, the server looks up the DBM database. This can be
+used to use the plain text database for keeping the information for those
+users that require the quickest possible auhtentication, and the DBM files
+to keep the information about those that can tolerate some delays in
+processing.
+.IP -d
+Specifies alternate name for the configuration
+directory. \fBRadiusd\fR looks there for its configuration files. It
+defaults to \fB\*(RD\fR.
+.IP -f
+Instructs the server to not detach itself from the controlling
+terminal. This is used for debugging.
+.IP -l
+Specifies alternate name for logging directory. \fBRadiusd\fR writes
+there its logfile(s). The default is \fB\*(RL\fR.
+.IP -p
+Specifies alternate port for authentication requests. The port number
+for accounting requests is determined by adding 1 to this number. Port
+number should be specified in decimal. Defaults are 1645 and 1646.
+.IP -S
+Strip off the suffix and prefix from the username before writing it to
+the \fBdetail\fR file.
+.IP -s
+Tells the authentication server to operate in single process
+mode. When specified this flag, the authentications server will handle
+each request itself instead of forking child process to do that. This
+slows down the authentication processing to a crawl and should only be
+used for debugging purposes. The most convenient use is with the
+\fB-f\fR option.
+.IP -v
+When given this option \fBradiusd\fR prints on the standard output its
+version number, compilation flags and the file names it uses and exits
+with zero code.
+.IP -x
+Sets the debug level. The level should be specified as decimal, octal
+or hex number. The usage of this option is discouraged. Use
+\fBdebug\fR statement in the configuration file instead.
+.IP -y
+Write in the log file detailed information about each authentication
+request. The information is logged under \fBauth\fR loglevel.
+.IP -z
+Log the password along with user name for each login. This is very
+insecure.
+
+.SH CONFIGURATION
+\fBRadiusd\fR uses rather complicated configuration file suite. The
+files live in \fB\*(RD\fR directory. The place of their location
+can be overriden using \fB-d\fr option.
+.PP
+The configuration files are:
+.IP config
+This file contains all the configurable parameters of the server
+itself: logging options, debug levels, notification and SNMP options,
+etc.
+.IP users
+The plaintext users database. Contains the per-user authorization and
+accounting information.
+.IP users.db
+Or users.dir, users.pag pair. The DBM version of the users
+database. This is used when the server is compiled with
+\fB--enable-dbm\fR option and either \fB-b\fR flag is specified in the
+command line, or one of \fBusedbm always\fR, \fBusedbm also\fR options is
+used in \fBconfig\fR file.
+.IP radius.deny
+The list of users whose access is denied for some reason.
+.IP dictionary
+Defines the symbolic representation of the \fBRadius\fR attributes,
+attribute values, etc. Usually should not be modified.
+.IP naslist
+The list of network access servers that are allowed to use this
+\fBRadius\fR server. This file specifies for each \fBNAS\fR its long
+and short names, NAS type, and possibly its IP pool.
+.IP clients
+The list of IP addresses and secred keys for each \fBNAS\fR that wants
+to communicate to the server.
+.IP hints
+The \fBradius\fR server can alter its politics towards a user
+depending on its login name. It can, for example, supply a different
+kind of service, assign it the IP number, etc. To do so the server
+consults this file. This extends the Prefix/Suffix functionality of
+the \fILivingstone 2.0\fR server.
+.IP huntgroups
+Defines the huntgroups. The huntgroup is a class of users that have
+some common characteristics. 
+
+.SH FILES
+.IP \*(RD/
+Configuration files directory
+.PP
+.IP \*(RL/radius.log
+Default logfile.
+.IP \*(RL/radacct
+Accounting directory.
+.IP \*(RP/radius.pid
+Holds the PID number of the master \fBRadius\fR process.
+.PP
+
+.SH BUGS
+Hmm, probalbly there are some. Bug reports are welcome.
+.PP
+This manpage is very scarce. Refer to texinfo documentation for full
+info.
+
+.SH AUTHORS
+Sergey Poznyakoff, gray@farlep.net
+
+.SH SEE ALSO
+users(5rad), config(5rad), dictionary(5rad), naslist(5rad), clients(5rad),
+hints(5rad), huntgroups(5rad), builddbm(8rad), radlast(1rad), raduse(1rad),
+radwho(1rad), radzap(8rad), radctl(8rad), radgrep(1rad),
+radping(8rad), radtest(8rad), radsnmp(8rad)
+.PP

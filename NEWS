@@ -1,0 +1,21 @@
+The major differences between this implementation of radius and
+another existing ones are:
+
+1.	Configurable MySQL support
+
+You don't have to recompile anything if you change your database structure.
+All queries are completely configurable.
+
+2.	Fast lookup in the users database.
+
+3.	Support for NASes that don't honor RFC.
+
+Some NASes have particularities in sending Radius packets. These can
+be overridden by using special rewriting language which allows to 
+modify the contents of a packet on the fly. 
+
+4. 	Configurable support for VSA pairs.
+
+Vendor specific attributes can be added to dictionaries and Radius can
+be told the ways of handling them without recompiling.
+

@@ -1,0 +1,702 @@
+This is Info file radius.info, produced by Makeinfo version 1.68 from
+the input file radius.texinfo.
+
+INFO-DIR-SECTION GNU radius
+START-INFO-DIR-ENTRY
+* Radius: (radius).     The GNU radius
+END-INFO-DIR-ENTRY
+
+   This file documents the GNU radius
+
+   Published by the Free Software Foundation 59 Temple Place, Suite 330
+Boston, MA  02111-1307 USA
+
+   Copyright (C) 1999 Sergey Poznyakoff Permission is granted to make
+and distribute verbatim copies of this manual provided the copyright
+notice and this permission notice are preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the sections entitled "The GNU Manifesto", "Distribution" and "GNU
+General Public License" are included exactly as in the original, and
+rovided that the entire resulting derived work is distributed under the
+terms of a permission notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the sections entitled "The GNU Manifesto",
+"Distribution" and "GNU General Public License" may be included in a
+translation approved by the Free Software Foundation instead of in the
+original English.
+
+
+File: radius.info,  Node: Crypt-Password,  Next: Huntgroup-Name,  Prev: Group,  Up: Attribute list
+
+Crypt-Password
+**************
+
+     ATTRIBUTE  Crypt-Password    1006                 string
+
+   This attribute is intended to be used in user's profile check-pairs.
+It specifies the MD5 hash of the user's password. When this attribute
+is present, Auth-Type = Crypt-Local is assumed. If both `Auth-Type' and
+`Crypt-Password' are present, the value of `Auth-Type' is ignored.
+
+   *Note Auth-Type::.
+
+
+File: radius.info,  Node: Huntgroup-Name,  Next: Simultaneous-Use,  Prev: Crypt-Password,  Up: Attribute list
+
+Huntgroup-Name
+**************
+
+     ATTRIBUTE  Huntgroup-Name    221                  string
+
+   The `Huntgroup-Name' can be used either in check-pairs of the
+`users' file record or in reply-pairs of the `huntgroups' file record.
+
+   When encountered in check-pairlist of a particular `users' profile,
+this attribute indicates the huntgroup name to be matched. Radius looks
+up the corresponding record in the `huntgroups' file. If such record is
+found, each A/V pair from its reply-list is compaired against the
+corresponing pair from the request being processed. The request matches
+only if it contains all the attributes from the specified huntgroup,
+and their values satisfy the conditions listed in the huntgroup pairs.
+
+   For example, suppose that the athentication request contained the
+following attrbutes:
+
+     User-Name = "john",
+     Password = "guess",
+     NAS-IP-Address = 10.11.11.1,
+     NAS-Port-Id = 24
+
+Let us further suppose that the `users' file contains the following
+entry:
+
+     john    Huntgroup-Name = "users_group",
+                     Auth-Type = System
+             Service-Type = Login
+
+and, finally, `huntgroups' contains the following entry:
+
+     users_group     NAS-IP-Address = 10.11.11.1
+                     NAS-Port-Id < 32
+
+   Then the authentication request would succeed since it contains
+`NAS-Port-Id' attribute and its value is less than 32.
+
+   *Note huntgroups::.
+
+
+File: radius.info,  Node: Simultaneous-Use,  Next: Strip-User-Name,  Prev: Huntgroup-Name,  Up: Attribute list
+
+Simultaneous-Use
+****************
+
+     ATTRIBUTE  Simultaneous-Use  1034                 integer
+
+   This attribute specifies the maximum number of simultaneous logins a
+given user is permitted to have. When the user is logged in this number
+of times any surplus attempts to log in are rejected.
+
+   *Note Checking Simultaneous Logins::.
+
+
+File: radius.info,  Node: Strip-User-Name,  Next: Fall-Through,  Prev: Simultaneous-Use,  Up: Attribute list
+
+Strip-User-Name
+***************
+
+     ATTRIBUTE  Strip-User-Name   1035                 integer
+     VALUE      Strip-User-Name   No                   0
+     VALUE      Strip-User-Name   Yes                  1
+
+   The value of `Strip-User-Name' indicates whether Radius should strip
+any prefixes/suffixes specified in the user's profile from the user
+name. When set to `Yes' the usernames would be logged and accounted
+without any prefixes/suffixes.
+
+   A user may have several usernames for different kind of services. In
+this case differentiating the usernames by their prefixes and stripping
+them off before accounting would help keeping accounting records
+consistent.
+
+   For example, let's suppose the `users' file contains:
+
+     DEFAULT Suffix = ".ppp",
+                     Strip-User-Name = Yes,
+                     Auth-Type = Mysql
+             Service-Type = Framed-User,
+                     Framed-Protocol = PPP
+     
+     DEFAULT Suffix = ".slip",
+                     Strip-User-Name = Yes,
+                     Auth-Type = Mysql
+             Service-Type = Framed-User,
+                     Framed-Protocol = SLIP
+
+Now, user `johns' having a valid account in Mysql database logs in as
+`johns.ppp'. He then is provided the PPP service, and his PPP session
+is accounted under username `johns'.  Later on, he logs in as
+`johns.slip'. In this case he is provided the SLIP service and again
+his session is accounted under his real username `johns'.
+
+
+File: radius.info,  Node: Fall-Through,  Next: Add-Port-To-IP-Address,  Prev: Strip-User-Name,  Up: Attribute list
+
+Fall-Through
+************
+
+     ATTRIBUTE  Fall-Through      1036                 integer
+     VALUE      Fall-Through      No                   0
+     VALUE      Fall-Through      Yes                  1
+
+   The `Fall-Through' attribute should be used in reply-list.  If its
+value is set to `Yes' in a particular record, it indicates to Radius
+that it should continue looking up another records even when this
+record matches the request. It can be used to provide default values
+for several profiles.
+
+   Consider the following example. Let's suppose the `users' file
+contains the following:
+
+
+     johns   Auth-Type = Mysql
+                     Framed-IP-Address = 11.10.10.251,
+                     Fall-Through = Yes
+     
+     smith   Auth-Type = Mysql
+                     Framed-IP-Address = 11.10.10.252,
+                     Fall-Through = Yes
+     
+     DEFAULT NAS-IP-Address = 11.10.10.1
+             Service-Type = Framed-User,
+                     Framed-Protocol = PPP
+
+Then after successfull matching of a particular user's record, the
+matching will continue until it finds the DEFAULT entry, which would
+add its reply pairs to the reply pairs for this request. The effect is,
+that if user `johns' authenticates successfully it gets the following
+reply pairs:
+
+             Service-Type = Framed-User,
+             Framed-Protocol = PPP,
+             Framed-IP-Address = 11.10.10.251
+
+whereas user `smith' gets
+
+             Service-Type = Framed-User,
+             Framed-Protocol = PPP,
+             Framed-IP-Address = 11.10.10.252
+
+*Please note* that the attribute `Fall-Through' itself is never
+returned to the NAS.
+
+
+File: radius.info,  Node: Add-Port-To-IP-Address,  Next: Exec-Program,  Prev: Fall-Through,  Up: Attribute list
+
+Add-Port-To-IP-Address
+**********************
+
+     ATTRIBUTE  Add-Port-To-IP-Address  1037                 integer
+     VALUE      Add-Port-To-IP-Address  No                   0
+     VALUE      Add-Port-To-IP-Address  Yes                  1
+
+   If this attribute is present in the reply-pairs and has the value of
+`Yes', then the value of `NAS-Port-Id' attribute from the
+authentication request will be added to the value of
+`Framed-IP-Address' attribute from the reply pairs, and resulting value
+will be returned in `Framed-IP-Address' attribute to the NAS.
+
+   This provides the simplest form of organizing IP address pools.
+
+
+File: radius.info,  Node: Exec-Program,  Next: Exec-Program-Wait,  Prev: Add-Port-To-IP-Address,  Up: Attribute list
+
+Exec-Program
+************
+
+     ATTRIBUTE  Exec-Program      1038                 string
+
+   When present in reply-pairs, the `Exec-Program' attribute specifies
+the full pathname and arguments for the program to be executed when the
+entry matches.
+
+   The command line can reference any attributes from both check and
+reply pairlists using attribute macros *Note Macro substitution::.
+
+   Before the execution of the program `radiusd' switches to uid and
+gid of user `daemon', group `daemon'. You can override these defaults
+by setting variables `exec-program-user' and `exec-program-group' in
+configuration file to proper values *Note The option statement: option.
+
+   The daemon does not wait for the process to terminate.
+
+Example
+-------
+
+   Suppose the `users' file contains the following entry:
+
+     DEFAULT Auth-Type = System,
+                     Simultaneous-Use = 1
+             Exec-Program = "/usr/local/sbin/logauth %C{User-Name} %C{Calling-Station-Id}"
+
+Then, upon successful matching, the program `/usr/local/sbin/logauth'
+will be executed. It will get as its arguments the values of
+`User-Name' and `Calling-Station-Id' attributes from the request check
+pairs.
+
+
+File: radius.info,  Node: Exec-Program-Wait,  Next: Hint,  Prev: Exec-Program,  Up: Attribute list
+
+Exec-Program-Wait
+*****************
+
+     ATTRIBUTE  Exec-Program-Wait  1039                 string
+
+   When present in reply-pairs, the `Exec-Program-Wait' attribute
+specifies the full pathname and arguments for the program to be
+executed when the entry matches.
+
+   The command line can reference any attributes from both check and
+reply pairlists using attribute macros *Note Macro substitution::.
+
+   Before the execution of the program `radiusd' switches to uid and
+gid of user `daemon', group `daemon'. You can override these defaults
+by setting variables `exec-program-user' and `exec-program-group' in
+configuration file to proper values *Note The option statement: option.
+
+   The deamon will wait until the program terminates. The return value
+of its execution determines whether the entry matches. If the program
+exits with a non-zero code then the match fails. If it exits with a
+zero code, the match succeeds. In this case the standard output of the
+program is read and parsed as if it was a pairlist. The attributes thus
+obtained are added to the entry's reply attributes.
+
+Example
+-------
+
+   Suppose the `users' file contains the following entry:
+
+     DEFAULT Auth-Type = System,
+                     Simultaneous-Use = 1
+             Exec-Program-Wait = "/usr/local/sbin/telauth %C{User-Name} %C{Calling-Station-Id}"
+
+Then, upon successful matching, the program `/usr/local/sbin/telauth'
+will be executed. It will get as its arguments the values of
+`User-Name' and `Calling-Station-Id' attributes from the request check
+pairs.
+
+   The `/usr/local/sbin/telauth' can, for example, contain the
+following:
+
+     #! /bin/sh
+     
+     DB=/var/db/userlist
+     
+     if grep "$1:$2" $DB; then
+             echo "Service-Type = Login,"
+             echo "Session-Timeout = 1200"
+             exit 0
+     else
+             echo "Reply-Message = \"You are not authorized to log in\""
+             exit 1
+     fi
+
+It is assumed that `/var/db/userlist' contains a list of
+`username':`caller-id' pairs for those users that are authorized to use
+login service.
+
+
+File: radius.info,  Node: Hint,  Next: Pam-Auth,  Prev: Exec-Program-Wait,  Up: Attribute list
+
+Hint
+****
+
+     ATTRIBUTE  Hint              1040                 string
+
+   Use `Hint' attribute to specify additional matching criterium
+depending on the hint *Note The hints file: hints.
+
+   Let the `hints' contain:
+
+     DEFAULT         Prefix = "S", Strip-User-Name = No      Hint = "SLIP"
+
+and the `users' file contain:
+
+     DEFAULT Hint = "SLIP",
+                     NAS-IP-Address = 11.10.10.12,
+                     Auth-Type = System
+             Service-Type = Framed-User,
+                     Framed-Protocol = SLIP
+
+Then any user having a valid system account and coming from NAS
+`11.10.10.12' will be provided SLIP service if his username starts with
+`S'.
+
+
+File: radius.info,  Node: Pam-Auth,  Next: Login-Time,  Prev: Hint,  Up: Attribute list
+
+Pam-Auth
+********
+
+     ATTRIBUTE  Pam-Auth          1041                 string
+
+   The `Pam-Auth' attribute can be used in conjunction with
+
+     Auth-Type = Pam
+
+to supply the PAM service name instead of the default `radius'.  It is
+ignored if `Auth-Type' attribute is not set to `Pam'.
+
+
+File: radius.info,  Node: Login-Time,  Next: Replace-User-Name,  Prev: Pam-Auth,  Up: Attribute list
+
+Login-Time
+**********
+
+     ATTRIBUTE  Login-Time        1042                 string
+
+   The `Login-Time' attribute specifies the time range when the user is
+allowed to log in. The attribute should be specified in check-pairs.
+
+   Format of the `Login-Time' string is the same as that of UUCP time
+ranges. The following description of time range format is adopted from
+the documentation for Taylor UUCP package:
+
+   A time string may be a list of simple time strings separated with a
+vertical bar `|' or a comma `,'.
+
+   Each simple time string must begin either with a day of week
+abbreviation (one of: `Su', `Mo', `Tu', `We', `Th', `Fr', or `Sa'), or
+`Wk' for any day between Monday and Friday inclusive, or `Any' or `Al'
+for any day.
+
+   Following the day may be a range of hours separated with a hyphen
+using 24 hour time.  The range of hours may cross 0; for example
+`2300-0700' means any time except 7 AM to 11 PM.  If no time is given,
+calls may be made at any time on the specified day(s).
+
+   The time string may also be the single word `Never', which does not
+match any time.
+
+   Here are a few sample time strings with an explanation of what they
+mean.
+
+`Wk2305-0855,Sa,Su2305-1655'
+     This means weekdays before 8:55 AM or after 11:05 PM, any time
+     Saturday, or Sunday before 4:55 PM or after 11:05 PM.  These are
+     approximately the times during which night rates apply to phone
+     calls in the U.S.A.  Note that this time string uses, for example,
+     `2305' rather than `2300'; this will ensure a cheap rate phone
+     call even if the computer clock is running up to five minutes
+     ahead of the real time.
+
+`Wk0905-2255,Su1705-2255'
+     This means weekdays from 9:05 AM to 10:55 PM, or Sunday from 5:05
+     PM to 10:55 PM.  This is approximately the opposite of the
+     previous example.
+
+`Any'
+     This means any day.  Since no time is specified, it means any time
+     on any day.
+
+
+File: radius.info,  Node: Replace-User-Name,  Next: Rewrite-Function,  Prev: Login-Time,  Up: Attribute list
+
+Replace-User-Name
+*****************
+
+     ATTRIBUTE  Replace-User-Name  2001                 string
+     VALUE      Replace-User-Name  No                   0
+     VALUE      Replace-User-Name  Yes                  1
+
+   Use this attribute to modify username from the incoming packet. The
+`Replace-User-Name' can reference any attributes from both check and
+reply pairlists using attribute macros *Note Macro substitution::.
+
+   For example the following `users' entry
+
+     guest   NAS-IP-Address = 11.10.10.11,
+                     Calling-Station-Id != ""
+                     Auth-Type = Accept
+             Replace-User-Name = "guest#%C{Calling-Station-Id}",
+                     Service-Type = Framed-User,
+                     Framed-Protocol = PPP
+
+Allows usage of PPP service for username guest, coming from NAS
+`11.10.10.11' with non-empty `Calling-Station-Id' attribute.  The
+string consisting of `#' character followed by `Calling-Station-Id'
+value is appended to the username.
+
+
+File: radius.info,  Node: Rewrite-Function,  Prev: Replace-User-Name,  Up: Attribute list
+
+Rewrite-Function
+****************
+
+     ATTRIBUTE  Rewrite-Function  2004                 string
+
+   The `Rewrite-Function' attribute specifies the name of the rewriting
+function to be applied to the request. The attribute may be specified
+in either pairlist in the entries of `hints' or `huntgroups'
+configuration files.
+
+   The corresponding function should be defined in `rewrite' as
+
+     integer NAME()
+
+i.e. it should return integer value and should not take any arguments.
+
+   *Note Packet rewriting rules: rewrite.  *Note hints:: *Note
+huntgroups::
+
+
+File: radius.info,  Node: Bugs,  Up: Top
+
+Reporting Bugs
+**************
+
+   It is possible you will encounter a bug in one of Radius programs.
+If this happens we would like to hear about it. As the purpose of bug
+reporting is to improve software, please be sure to include maximum
+information when reporting a bug. The information needed is:
+
+   * Conditions under which the bug appears.
+
+   * Version of the package you are using.
+
+   * Compilation options used when configuring the package.
+
+   * If the bug is found in `radiusd' daemon, run `radiusd -v' and
+     include the output it produces.
+
+   * Contents of radius configuration directory (/etc/raddb or whatever
+     you have set it to while configuring).
+
+   * Log messages produced.
+
+   Send your report to bug-gnu-radius@gnu.org. Allow me a couple of
+days to answer.
+
+
+File: radius.info,  Node: Program Index,  Next: Attribute Index,  Up: Top
+
+Program Index
+*************
+
+* Menu:
+
+* buildbm:                               Builddbm.
+* checkrad:                              Checkrad Overview.
+* radauth:                               Radauth.
+* radctl:                                Radctl.
+* radctl.sh:                             Radctl.sh.
+* radgrep:                               Radgrep.
+* radiusd:                               Invocation.
+* radlast:                               Radlast.
+* radlast, options:                      radlast options.
+* radping:                               Radping.
+* radtest:                               Radtest.
+* raduse:                                Raduse.
+* radwho:                                Radwho.
+* radzap:                                Radzap.
+
+
+File: radius.info,  Node: Attribute Index,  Next: Concept Index,  Prev: Program Index,  Up: Top
+
+Attribute Index
+***************
+
+* Menu:
+
+* Acct-Authentic:                        Acct-Authentic.
+* Acct-Delay-Time:                       Acct-Delay-Time.
+* Acct-Input-Octets:                     Acct-Input-Octets.
+* Acct-Input-Packets:                    Acct-Input-Packets.
+* Acct-Output-Octets:                    Acct-Output-Octets.
+* Acct-Output-Packets:                   Acct-Output-Packets.
+* Acct-Session-Id:                       Acct-Session-Id.
+* Acct-Session-Time:                     Acct-Session-Time.
+* Acct-Status-Type:                      Acct-Status-Type.
+* Acct-Terminate-Cause:                  Acct-Terminate-Cause.
+* Add-Port-To-IP-Address:                Add-Port-To-IP-Address.
+* Auth-Type:                             Auth-Type.
+* Callback-Id:                           Callback-Id.
+* Callback-Number:                       Callback-Number.
+* Called-Station-Id:                     Called-Station-Id.
+* Calling-Station-Id:                    Calling-Station-Id.
+* CHAP-Password:                         CHAP-Password.
+* Class:                                 Class.
+* Crypt-Password:                        Crypt-Password.
+* Exec-Program:                          Exec-Program.
+* Exec-Program-Wait:                     Exec-Program-Wait.
+* Fall-Through:                          Fall-Through.
+* Framed-Compression:                    Framed-Compression.
+* Framed-IP-Address:                     Framed-IP-Address.
+* Framed-IP-Netmask:                     Framed-IP-Netmask.
+* Framed-MTU:                            Framed-MTU.
+* Framed-Protocol:                       Framed-Protocol.
+* Framed-Route:                          Framed-Route.
+* Framed-Routing:                        Framed-Routing.
+* Group:                                 Group.
+* Hint:                                  Hint.
+* Huntgroup-Name:                        Huntgroup-Name.
+* Idle-Timeout:                          Idle-Timeout.
+* Login-Time:                            Login-Time.
+* Menu:                                  Menu.
+* NAS-Identifier:                        NAS-Identifier.
+* NAS-IP-Address:                        NAS-IP-Address.
+* NAS-Port-Id:                           NAS-Port-Id.
+* NAS-Port-Type:                         NAS-Port-Type.
+* Pam-Auth:                              Pam-Auth.
+* Password:                              Password.
+* Prefix:                                Prefix.
+* Replace-User-Name:                     Replace-User-Name.
+* Reply-Message:                         Reply-Message.
+* Rewrite-Function:                      Rewrite-Function.
+* Service-Type:                          Service-Type.
+* Session-Timeout:                       Session-Timeout.
+* Simultaneous-Use:                      Simultaneous-Use.
+* State:                                 State.
+* Strip-User-Name:                       Strip-User-Name.
+* Suffix:                                Suffix.
+* Termination-Action:                    Termination-Action.
+* Termination-Menu:                      Termination-Menu.
+* User-Name:                             User-Name.
+* Vendor-Specific:                       Vendor-Specific.
+
+
+File: radius.info,  Node: Concept Index,  Prev: Attribute Index,  Up: Top
+
+Concept Index
+*************
+
+* Menu:
+
+* $INCLUDE statement (dictionary):       $INCLUDE.
+* A/V pair <1>:                          Glossary.
+* A/V pair:                              Attributes.
+* Accept Authentication Type:            Accept Auth.
+* access.deny file:                      access.deny.
+* Accounting directory:                  Naming conventions.
+* Accounting requests:                   Accounting requests.
+* Accounting Types:                      Accounting.
+* acct statement (raddb/config):         acct.
+* ATTRIB_NMC statement (dictionary):     ATTRIB_NMC.
+* Attribute <1>:                         Glossary.
+* Attribute:                             Attributes.
+* ATTRIBUTE statement (dictionary):      ATTRIBUTE.
+* Attribute-Value pair <1>:              Glossary.
+* Attribute-Value pair:                  Attributes.
+* auth statement (raddb/config):         auth.
+* Authentication requests:               Authentication requests.
+* Checking Simultaneous Logins:          Checking Simultaneous Logins.
+* checkrad, configuring:                 checkrad.conf.
+* checkrad.conf:                         checkrad.conf.
+* checkrad.conf, an example:             checkrad.conf example.
+* Client Overview:                       Client Overview.
+* clients file:                          clients.
+* clients file, an example:              clients example.
+* commands, radctl:                      radctl commands.
+* Configuration directory:               Naming conventions.
+* Configuring checkrad.:                 checkrad.conf.
+* configuring radctl:                    radctl configuration.
+* Debugging:                             Debugging.
+* Detailed Request Accounting:           Detailed Request Accounting.
+* Dial-In user:                          Glossary.
+* Dial-Up user:                          Glossary.
+* dictionary file:                       dictionary.
+* disabling user accounts:               Reject Auth.
+* display, raduse:                       raduse display.
+* Encrypted Password Authentication Type: Encrypted Password Auth.
+* guest accounts, setting up:            Accept Auth.
+* Hints <1>:                             hints matching.
+* Hints:                                 hints.
+* hints file:                            hints.
+* hints file, an example:                hints example.
+* hints, matching rules:                 hints matching.
+* Huntgroups:                            huntgroups.
+* huntgroups file:                       huntgroups.
+* huntgroups, an example:                huntgroups example.
+* huntgroups, matching rules:            huntgroups matching.
+* Invoking the radius daemon:            Invocation.
+* Local Password Auth:                   Local Password Auth.
+* Log directory:                         Naming conventions.
+* Logging:                               Logging.
+* logging statement (raddb/config file): logging.
+* Matching rules for hints:              hints matching.
+* Matching rules for huntgroups:         huntgroups matching.
+* menu, syntax:                          menu syntax.
+* menus:                                 menus.
+* menus, an example:                     menu example.
+* naming conventions:                    Naming conventions.
+* NAS <1>:                               Operation.
+* NAS:                                   Glossary.
+* naslist file:                          naslist.
+* naslist file, an example:              naslist example.
+* Network Access Server <1>:             Operation.
+* Network Access Server:                 Glossary.
+* notify statement (raddb/config):       notify.
+* option (raddb/config file):            option.
+* Packet:                                Packets.
+* Packet matching rules:                 Matching rules.
+* PAM Authentication Type:               PAM Auth.
+* Processing the request:                Processing the request.
+* proxy statement (raddb/config):        proxy.
+* radacct:                               Naming conventions.
+* radctl commands:                       radctl commands.
+* radctl, configuring:                   radctl configuration.
+* radctl, invocation:                    radctl invocation.
+* raddb:                                 Naming conventions.
+* raddb/access.deny file:                access.deny.
+* raddb/clients file:                    clients.
+* raddb/config file:                     config.
+* raddb/hints file:                      hints.
+* raddb/huntgroups file:                 huntgroups.
+* raddb/naslist file:                    naslist.
+* raddb/realms file:                     realms.
+* raddb/rewrite file:                    rewrite.
+* raddb/sqlserver file.:                 sqlserver.
+* raddb/users file:                      users.
+* Radius daemon invocation:              Invocation.
+* Radius dictionary:                     dictionary.
+* radiusd configuration:                 config.
+* radiusd configuration files:           Configuration files.
+* radiusd options:                       config.
+* radlog:                                Naming conventions.
+* raduse display:                        raduse display.
+* raduse, command line options:          raduse options.
+* radwho, command line options:          radwho options.
+* Realms:                                Realms.
+* realms file:                           realms.
+* realms, an example:                    realms example.
+* Reject Authentication Type:            Reject Auth.
+* Request processing:                    Processing the request.
+* requests, accounting:                  Accounting requests.
+* requests, authentication:              Authentication requests.
+* rewrite file:                          rewrite.
+* rewrite, applying functions:           rewrite usage.
+* rewrite, examples:                     rewrite examples.
+* rewrite, syntax:                       rewrite syntax.
+* rewrite, usage:                        rewrite usage.
+* Service:                               Glossary.
+* Session:                               Glossary.
+* Session ID:                            Glossary.
+* simultaneous logins, checking for:     Checking Simultaneous Logins.
+* snmp statement (raddb/config):         snmp.
+* SQL Accounting:                        SQL Accounting.
+* SQL Authentication Type:               SQL Auth.
+* SQL query templates:                   Queries.
+* sqlserver file.:                       sqlserver.
+* System Authentication Type:            System Auth.
+* Unix Accounting:                       Unix Accounting.
+* usedbm statement (raddb/config):       usedbm.
+* users file:                            users.
+* users file, an example:                users example.
+* VALUE statement (dictionary):          VALUE.
+* VENDOR statement (dictionary):         VENDOR.
+* writing SQL query templates:           Queries.
+
+

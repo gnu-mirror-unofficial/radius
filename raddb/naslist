@@ -1,0 +1,22 @@
+#
+# This file contains a list of Network Access Servers (NAS, aka 
+# terminal servers) which we know.
+#
+# Each record consists of following fields:
+#
+# 	i. 	A valid hostname or IP address for the client.
+#	ii. 	The short name to use in the logfiles for this NAS.
+#	iii.	Type of device. Valid values are those listed in 
+#		/etc/raddb/checkrad.conf file.
+#       ** The following two are optional:
+#       iv.	IP pool for the NAS. Can be specified either as
+#		nnn.nnn.nnn.nnn-mmm meaning IP addressess in the range
+#		from nnn.nnn.nnn.nnn to nnn.nnn.nnn.mmm inclusive, or
+#		as nnn.nnn.nnn.nnn:count meaning `count' IP addressess starting
+#		at nnn.nnn.nnn.nnn.
+#       v.	The range of ports to be associated with the IPs from the pool.
+#
+
+# NAS Name		Short Name	Type		IP pool		Ports
+#----------------	----------	----		-------		-----
+localhost		local		unix

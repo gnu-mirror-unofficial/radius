@@ -1,0 +1,87 @@
+.\" $Id$
+.ds RD /etc/raddb
+.ds RL /usr/adm
+.ds RP /etc/raddb
+.TH radlast 1 "March 10, 2000" "FSF"
+.SH NAME
+radlast - report last logins from Radius database.
+.SH SYNOPSIS
+\fBradlast\fR
+[\fB-f\fR file]
+[\fB-h\fR host]
+[\fB-n\fR nas]
+[\fB-l\fR]
+[\fB-p\fR port]
+[\fB-s\fR]
+[\fB-t\fR port]
+[\fB-w\fR]
+[\fB-#\fR]
+[user ...]
+.SH NOTE
+The information in this manpage may be obsolete or incomplete. Please
+refer to texinfo documentation for full information about GNU Radius
+tools.
+.SH DESCRIPTION
+\fBRadlast\fR lists the session of specified users, NASes, NAS ports
+and hosts, in reverse time order. By default, each line of output
+contains the login name, NAS short name and port number from where the
+session was conducted, host IP address or name, the start and stop
+times for the session, and the duration of the session. If the session
+is still continuing, \fBradlast\fR will so indicate.
+.PP
+When specified the \fB-l\fR option, the following fields are output:
+login name, NAS short name, port number, prototype, port type, Session
+ID, Caller ID, Framed IP address, start and stop time of the session,
+and the duration of the session.
+.SH OPTIONS
+.IP -#
+Where \fB#\fR represents any decimal number. When given this option
+\fBradlast\fR will output at most this many lines of information.
+For compatibility with some versions of last(1), the
+initial \fB-\fR sign can be omitted.
+.IP -f
+Read the specified file instead of the default \fB\*(RL/radwtmp\fR.
+
+.IP -h
+Report the logins from given host. Host can be either a name or a
+"dotted quad" internet address.
+
+.IP -n
+Report the logins from given Network Access Server (NAS).
+
+.IP -l
+"Long" output format. Report all the information stored in
+\fBradwtmp\fR file.
+
+.IP -p
+Report the logins on a given port. The port may be specified fully or
+abbreviated, e.g. ``radlast -p 3'' or ``radlast -p S03''.
+
+.IP -s
+Report the duration of the login session in seconds instead of the
+default days, hours and minutes.
+
+.IP -t
+See \fB-p\fR. This flag is provided for compatibility with last(1).
+
+.IP -w
+Widen the duration field to show seconds as well as the default days,
+hours and minutes.
+
+.PP
+If multiple arguments are given, the logical OR operation between them
+is assumed, i.e. the information that applies to any of the arguments
+is printed. This does not apply to \fB-#\fR option. This option is
+always combined with the rest of command line by logical AND.
+.PP
+The pseudo-user ~reboot logs in on every reboot of network access
+server.
+.PP
+If \fBradlast\fR is interrupted, it indicates to what date the search
+was progressed.
+
+.SH AUTHORS
+Sergey Poznyakoff, gray@farlep.net
+
+.SH SEE ALSO
+radiusd(8rad), radwho(1rad), radzap(8rad), radgrep(1rad)

@@ -1,0 +1,59 @@
+.\" $Id$
+.ds RD /etc/raddb
+.ds RL /usr/adm
+.ds RP /etc/raddb
+.TH radzap 8 "March 10, 2000" "FSF"
+.SH NAME
+radzap - delete Radius login record.
+
+.SH SYNOPSIS
+\fBradzap\fR
+[\fB-c\fR|\fB-q\fR]
+[\fB-h\fR]
+[\fB-n\fR NAS]
+[\fB-p\fR port]
+username
+
+.SH NOTE
+The information in this manpage may be obsolete or incomplete. Please
+refer to texinfo documentation for full information about GNU Radius
+tools.
+.SH DESCRIPTION
+\fBradzap\fR searches the Radius log files for matching login records
+and closes them.
+.PP
+At least one of \fB-n\fR, \fB-p\fR options or username must be
+specified. If they are used in conjunction, they are taken as if
+joined by logical AND operation.
+
+.SH OPTIONS
+.IP -c
+Enable confirm mode. In this mode \fBradzap\fR asks for a confirmation
+before zapping each matching record. Every line beginning with a `y'
+is taken as positive response, otherwise it is taken as negative
+response.
+.IP -q
+Disable confirm mode.
+.IP -h
+Display short help summary and exit.
+.IP -n
+Specify NAS name to zap user from.
+.IP -p
+Specify the port number of the session to be zapped. The port number
+can be specified either in its full form, i.e ``radzap -p S02'' or in
+its short form, i.e. ``radzap -p 2''.
+
+.SH ENVIRONMENT VARIABLE
+.IP RADZAP_CONFIRM
+Specifies the default behaviour of the \fBradzap\fR. When set to a
+positive value, \fBradzap\fR starts in confirm mode.
+
+.SH FILES
+.IP \*(RL/radwtmp
+.IP \*(RL/radutmp
+
+.SH AUTHORS
+Sergey Poznyakoff, gray@farlep.net
+
+.SH SEE ALSO
+radiusd(8rad), radwho(1rad)

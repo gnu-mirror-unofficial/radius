@@ -1,0 +1,4 @@
+@set RADDB /etc/raddb
+@set RADLOG /usr/adm
+@set RADACCT /usr/adm/radacct
+

@@ -1,0 +1,383 @@
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
+
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+# $Id$
+
+
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+DESTDIR =
+
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = ..
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+build_alias = @build_alias@
+build_triplet = @build@
+host_alias = @host_alias@
+host_triplet = @host@
+target_alias = @target_alias@
+target_triplet = @target@
+AWK = @AWK@
+BUILD_TARGET = @BUILD_TARGET@
+CATOBJEXT = @CATOBJEXT@
+CC = @CC@
+ETC_DIR = @ETC_DIR@
+GETOPT = @GETOPT@
+GMSGFMT = @GMSGFMT@
+INCLUDEPATH = @INCLUDEPATH@
+INSTOBJEXT = @INSTOBJEXT@
+LANGUAGES = @LANGUAGES@
+LEX = @LEX@
+M4 = @M4@
+MAINT = @MAINT@
+MAKEINFO = @MAKEINFO@
+MSGFMT = @MSGFMT@
+PACKAGE = @PACKAGE@
+PS = @PS@
+RADDB_DIR = @RADDB_DIR@
+RADIUSD_LDADD = @RADIUSD_LDADD@
+RADIUS_PID = @RADIUS_PID@
+RADLOG_DIR = @RADLOG_DIR@
+RADPID_DIR = @RADPID_DIR@
+RANLIB = @RANLIB@
+USE_NLS = @USE_NLS@
+VERSION = @VERSION@
+YACC = @YACC@
+YACC_OPTS = @YACC_OPTS@
+
+@MAINTAINER_MODE_TRUE@CFLAGS = -ggdb -DMAINTAINER_MODE=1
+@MAINTAINER_MODE_TRUE@MAINTAINERCLEANFILES = core *~ err out
+
+@MAINTAINER_MODE_TRUE@LIBSRC = intl.c radpaths.c alloc.c attrprint.c dict.c fixalloc.c         iputil.c strerror.c strncasecmp.c         md5.c md5crypt.c mem.c leakdetect.c obstack.c         users.y users.l util.c client.c         insist.c debug.c
+
+noinst_LIBRARIES = librad.a liblog.a libdebug.a 
+librad_a_SOURCES = intl.c radpaths.c alloc.c attrprint.c dict.c fixalloc.c                  iputil.c strerror.c strncasecmp.c                  md5.c md5crypt.c mem.c leakdetect.c obstack.c                  users_gram.c users_lex.c util.c client.c 		 insist.c debug.c 
+
+liblog_a_SOURCES = log.c 
+libdebug_a_SOURCES = debugmod.c
+BUILT_SOURCES = users_gram.c users_lex.c
+DISTCLEANFILES = users_gram.c users_lex.c
+INCLUDES = -I$(srcdir) -I$(top_srcdir)/include @INCLUDEPATH@
+EXTRA_DIST = users.y users.l
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../config.h
+CONFIG_CLEAN_FILES = 
+LIBRARIES =  $(noinst_LIBRARIES)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I..
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+librad_a_LIBADD = 
+librad_a_OBJECTS =  intl.o radpaths.o alloc.o attrprint.o dict.o \
+fixalloc.o iputil.o strerror.o strncasecmp.o md5.o md5crypt.o mem.o \
+leakdetect.o obstack.o users_gram.o users_lex.o util.o client.o \
+insist.o debug.o
+liblog_a_LIBADD = 
+liblog_a_OBJECTS =  log.o
+libdebug_a_LIBADD = 
+libdebug_a_OBJECTS =  debugmod.o
+AR = ar
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+DIST_COMMON =  Makefile.am Makefile.in
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = tar
+GZIP_ENV = --best
+SOURCES = $(librad_a_SOURCES) $(liblog_a_SOURCES) $(libdebug_a_SOURCES)
+OBJECTS = $(librad_a_OBJECTS) $(liblog_a_OBJECTS) $(libdebug_a_OBJECTS)
+
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .S .c .o .s
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps radlib/Makefile
+
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+mostlyclean-noinstLIBRARIES:
+
+clean-noinstLIBRARIES:
+	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
+
+distclean-noinstLIBRARIES:
+
+maintainer-clean-noinstLIBRARIES:
+
+.c.o:
+	$(COMPILE) -c $<
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+librad.a: $(librad_a_OBJECTS) $(librad_a_DEPENDENCIES)
+	-rm -f librad.a
+	$(AR) cru librad.a $(librad_a_OBJECTS) $(librad_a_LIBADD)
+	$(RANLIB) librad.a
+
+liblog.a: $(liblog_a_OBJECTS) $(liblog_a_DEPENDENCIES)
+	-rm -f liblog.a
+	$(AR) cru liblog.a $(liblog_a_OBJECTS) $(liblog_a_LIBADD)
+	$(RANLIB) liblog.a
+
+libdebug.a: $(libdebug_a_OBJECTS) $(libdebug_a_DEPENDENCIES)
+	-rm -f libdebug.a
+	$(AR) cru libdebug.a $(libdebug_a_OBJECTS) $(libdebug_a_LIBADD)
+	$(RANLIB) libdebug.a
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $$unique $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+subdir = radlib
+
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
+	done
+alloc.o: alloc.c ../config.h ../include/mem.h
+attrprint.o: attrprint.c ../config.h ../include/radiusd.h \
+	../include/sysdep.h ../include/radius.h ../include/raddict.h \
+	../include/radpaths.h ../include/mem.h ../include/log.h \
+	../include/ippool.h
+client.o: client.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h \
+	../include/radclient.h
+debug.o: debug.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+debugmod.o: debugmod.c ../config.h ../include/log.h
+dict.o: dict.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+fixalloc.o: fixalloc.c ../config.h ../include/radiusd.h \
+	../include/sysdep.h ../include/radius.h ../include/raddict.h \
+	../include/radpaths.h ../include/mem.h ../include/log.h \
+	../include/ippool.h
+insist.o: insist.c ../config.h ../include/log.h
+intl.o: intl.c ../config.h
+iputil.o: iputil.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+leakdetect.o: leakdetect.c ../config.h ../include/mem.h ../include/log.h \
+	../include/sysdep.h
+log.o: log.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+md5.o: md5.c ../config.h ../include/md5.h
+md5crypt.o: md5crypt.c ../config.h ../include/sysdep.h ../include/md5.h
+mem.o: mem.c ../config.h ../include/sysdep.h ../include/mem.h \
+	../include/log.h
+obstack.o: obstack.c ../include/obstack.h
+radpaths.o: radpaths.c ../config.h ../include/radiusd.h \
+	../include/sysdep.h ../include/radius.h ../include/raddict.h \
+	../include/radpaths.h ../include/mem.h ../include/log.h \
+	../include/ippool.h
+strerror.o: strerror.c ../config.h
+strncasecmp.o: strncasecmp.c ../config.h
+users_gram.o: users_gram.c ../config.h ../include/sysdep.h \
+	../include/radiusd.h ../include/radius.h ../include/raddict.h \
+	../include/radpaths.h ../include/mem.h ../include/log.h \
+	../include/ippool.h ../include/parser.h
+users_lex.o: users_lex.c ../config.h ../include/radiusd.h \
+	../include/sysdep.h ../include/radius.h ../include/raddict.h \
+	../include/radpaths.h ../include/mem.h ../include/log.h \
+	../include/ippool.h ../include/obstack1.h ../include/obstack.h \
+	../include/parser.h users_gram.h
+util.o: util.c ../config.h ../include/sysdep.h ../include/radiusd.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+
+info-am:
+info: info-am
+dvi-am:
+dvi: dvi-am
+check-am: all-am
+check: check-am
+installcheck-am:
+installcheck: installcheck-am
+install-exec-am:
+install-exec: install-exec-am
+
+install-data-am:
+install-data: install-data-am
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-am
+uninstall-am:
+uninstall: uninstall-am
+all-am: Makefile $(LIBRARIES)
+all-redirect: all-am
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
+installdirs:
+
+
+mostlyclean-generic:
+
+clean-generic:
+
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
+
+maintainer-clean-generic:
+	-test -z "$(BUILT_SOURCES)$(MAINTAINERCLEANFILES)" || rm -f $(BUILT_SOURCES) $(MAINTAINERCLEANFILES)
+mostlyclean-am:  mostlyclean-noinstLIBRARIES mostlyclean-compile \
+		mostlyclean-tags mostlyclean-generic
+
+mostlyclean: mostlyclean-am
+
+clean-am:  clean-noinstLIBRARIES clean-compile clean-tags clean-generic \
+		mostlyclean-am
+
+clean: clean-am
+
+distclean-am:  distclean-noinstLIBRARIES distclean-compile \
+		distclean-tags distclean-generic clean-am
+
+distclean: distclean-am
+
+maintainer-clean-am:  maintainer-clean-noinstLIBRARIES \
+		maintainer-clean-compile maintainer-clean-tags \
+		maintainer-clean-generic distclean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-am
+
+.PHONY: mostlyclean-noinstLIBRARIES distclean-noinstLIBRARIES \
+clean-noinstLIBRARIES maintainer-clean-noinstLIBRARIES \
+mostlyclean-compile distclean-compile clean-compile \
+maintainer-clean-compile tags mostlyclean-tags distclean-tags \
+clean-tags maintainer-clean-tags distdir info-am info dvi-am dvi check \
+check-am installcheck-am installcheck install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
+
+
+@MAINTAINER_MODE_TRUE@LIBLIST:; @echo $(LIBSRC) > .list
+
+users_gram.c users_gram.h: $(srcdir)/users.y
+	$(YACC) -vd @YACC_OPTS@ $(srcdir)/users.y
+	sed -e 's/y\.tab\.\([ch]\)/users_gram\.\1/g;s/yy/uyy/g' y.tab.c > users_gram.c
+	sed -e 's/y\.tab\.\([ch]\)/users_gram\.\1/g;s/yy/uyy/g' y.tab.h > users_gram.h
+
+users_lex.c: $(srcdir)/users.l
+	$(LEX) $(srcdir)/users.l
+	sed -e 's/lex\.yy\.c/users_lex\.c/g;s/yy/uyy/g' lex.yy.c > users_lex.c
+
+users_lex.o: users_lex.c users_gram.h $(top_srcdir)/include/parser.h
+users_gram.o: users_gram.c users_gram.h $(top_srcdir)/include/parser.h
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:

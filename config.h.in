@@ -1,0 +1,306 @@
+/* config.h.in.  Generated automatically from configure.in by autoheader.  */
+/* $Id$ */
+
+#undef PW_AUTH_UDP_PORT
+#undef PW_ACCT_UDP_PORT
+
+/* Target RADIUS was built for */
+#undef BUILD_TARGET 
+/* System configuration files directory */
+#undef ETC_DIR
+/* Directory where RADIUS stores its logfiles */
+#undef RADLOG_DIR
+/* Directory for pidfile */
+#undef RADPID_DIR
+
+
+/* Define to empty if the keyword does not work.  */
+#undef const
+
+/* Define to `int' if <sys/types.h> doesn't define.  */
+#undef gid_t
+
+/* Define if you don't have vprintf but do have _doprnt.  */
+#undef HAVE_DOPRNT
+
+/* Define if you have the strftime function.  */
+#undef HAVE_STRFTIME
+
+/* Define if you have <sys/wait.h> that is POSIX.1 compatible.  */
+#undef HAVE_SYS_WAIT_H
+
+/* Define if you have the vprintf function.  */
+#undef HAVE_VPRINTF
+
+/* Define to `long' if <sys/types.h> doesn't define.  */
+#undef off_t
+
+/* Define to `int' if <sys/types.h> doesn't define.  */
+#undef pid_t
+
+/* Define as the return type of signal handlers (int or void).  */
+#undef RETSIGTYPE
+
+/* Define to `unsigned' if <sys/types.h> doesn't define.  */
+#undef size_t
+
+/* Define if you have the ANSI C header files.  */
+#undef STDC_HEADERS
+
+/* Define if you can safely include both <sys/time.h> and <time.h>.  */
+#undef TIME_WITH_SYS_TIME
+
+/* Define if your <sys/time.h> declares struct tm.  */
+#undef TM_IN_SYS_TIME
+
+/* Define to `int' if <sys/types.h> doesn't define.  */
+#undef uid_t
+
+/* Define if lex declares yytext as a char * by default, not a char[].  */
+#undef YYTEXT_POINTER
+
+/* Define if you have the bzero function.  */
+#undef HAVE_BZERO
+
+/* Define if you have the gethostname function.  */
+#undef HAVE_GETHOSTNAME
+
+/* Define if you have the getopt_long function.  */
+#undef HAVE_GETOPT_LONG
+
+/* Define if you have the gettimeofday function.  */
+#undef HAVE_GETTIMEOFDAY
+
+/* Define if you have the lockf function.  */
+#undef HAVE_LOCKF
+
+/* Define if you have the mkdir function.  */
+#undef HAVE_MKDIR
+
+/* Define if you have the mktime function.  */
+#undef HAVE_MKTIME
+
+/* Define if you have the regcomp function.  */
+#undef HAVE_REGCOMP
+
+/* Define if you have the select function.  */
+#undef HAVE_SELECT
+
+/* Define if you have the setlocale function.  */
+#undef HAVE_SETLOCALE
+
+/* Define if you have the setsid function.  */
+#undef HAVE_SETSID
+
+/* Define if you have the socket function.  */
+#undef HAVE_SOCKET
+
+/* Define if you have the strdup function.  */
+#undef HAVE_STRDUP
+
+/* Define if you have the strerror function.  */
+#undef HAVE_STRERROR
+
+/* Define if you have the strncasecmp function.  */
+#undef HAVE_STRNCASECMP
+
+/* Define if you have the strtol function.  */
+#undef HAVE_STRTOL
+
+/* Define if you have the vsnprintf function.  */
+#undef HAVE_VSNPRINTF
+
+/* Define if you have the <arpa/inet.h> header file.  */
+#undef HAVE_ARPA_INET_H
+
+/* Define if you have the <crypt.h> header file.  */
+#undef HAVE_CRYPT_H
+
+/* Define if you have the <ctype.h> header file.  */
+#undef HAVE_CTYPE_H
+
+/* Define if you have the <fcntl.h> header file.  */
+#undef HAVE_FCNTL_H
+
+/* Define if you have the <malloc.h> header file.  */
+#undef HAVE_MALLOC_H
+
+/* Define if you have the <netdb.h> header file.  */
+#undef HAVE_NETDB_H
+
+/* Define if you have the <netinet/in.h> header file.  */
+#undef HAVE_NETINET_IN_H
+
+/* Define if you have the <sgtty.h> header file.  */
+#undef HAVE_SGTTY_H
+
+/* Define if you have the <stdarg.h> header file.  */
+#undef HAVE_STDARG_H
+
+/* Define if you have the <strings.h> header file.  */
+#undef HAVE_STRINGS_H
+
+/* Define if you have the <sys/file.h> header file.  */
+#undef HAVE_SYS_FILE_H
+
+/* Define if you have the <sys/socket.h> header file.  */
+#undef HAVE_SYS_SOCKET_H
+
+/* Define if you have the <sys/time.h> header file.  */
+#undef HAVE_SYS_TIME_H
+
+/* Define if you have the <sys/types.h> header file.  */
+#undef HAVE_SYS_TYPES_H
+
+/* Define if you have the <sys/uio.h> header file.  */
+#undef HAVE_SYS_UIO_H
+
+/* Define if you have the <termcap.h> header file.  */
+#undef HAVE_TERMCAP_H
+
+/* Define if you have the <termio.h> header file.  */
+#undef HAVE_TERMIO_H
+
+/* Define if you have the <termios.h> header file.  */
+#undef HAVE_TERMIOS_H
+
+/* Define if you have the <unistd.h> header file.  */
+#undef HAVE_UNISTD_H
+
+/* Define if you have the <varargs.h> header file.  */
+#undef HAVE_VARARGS_H
+
+/* Define if you have the intl library (-lintl).  */
+#undef HAVE_LIBINTL
+
+/* Define if you have the rx library (-lrx).  */
+#undef HAVE_LIBRX
+
+/* Name of package */
+#undef PACKAGE
+
+/* Version number of package */
+#undef VERSION
+
+
+#undef USE_NLS
+
+/* ************************************************************************** */
+/* Internationalization support */
+#if defined(USE_NLS) && defined(HAVE_LIBINTL)
+# include <libintl.h>
+# define _(s) gettext(s)
+#else
+# define _(s) s
+#endif
+#define N_(s) s
+
+/* ************************************************************************** */
+
+#undef HAVE_SYS_ERRLIST
+
+#undef HAVE_LIBDBM
+
+#undef HAVE_LIBNDBM
+
+#undef HAVE_LIBPAM
+
+#undef HAVE_LIBMYSQL
+
+/* Define this to disable shadow support */
+#undef PWD_SHADOW
+
+/* Enable OSFC2 */
+#undef OSFC2
+
+/* Vendor-specific attributes */
+#undef ATTRIB_NMC
+
+#undef NO_ATTRIB_NMC
+
+/* If defined users with Auth-Type=System and login shell = DENY_SHELL will */
+/* alwys be denied access */
+#undef DENY_SHELL
+
+/* Define this to enable SNMP support */
+#undef USE_SNMP
+
+/* Define this to enable SQL support */
+#undef USE_SQL 
+
+/* Define this to enable MYSQL subsystem of SQL support */
+#undef USE_SQL_MYSQL
+
+/* Define this to enable Livingston-compatible menus */
+#undef USE_LIVINGSTON_MENUS
+
+/* Define this to enable notification */
+#undef USE_NOTIFY
+
+/* Port to use to connect to MYSQL */
+/* leave undefined to use default one */
+#undef RAD_MYSQL_PORT
+
+/* Define this to enable PAM support */
+#undef USE_PAM
+
+/* Define this if you wish the DBM support */
+#undef USE_DBM
+
+#undef DBM
+
+#undef NDBM
+
+#undef YACC_DEBUG
+
+#if defined(sun)
+# define __EXTENSIONS__
+#endif
+
+#ifndef STAT_MAX_NAS_COUNT
+# define STAT_MAX_NAS_COUNT 128
+#endif
+#ifndef STAT_MAX_PORT_COUNT
+# define STAT_MAX_PORT_COUNT 1024
+#endif
+
+#ifndef ATTRIB_NMC
+# ifndef NO_ATTRIB_NMC
+#  define ATTRIB_NMC
+# endif
+#endif
+
+/* Hack for funky ascend ports on MAX 4048 (and probably others)
+ * The "NAS-Port-Id" value is "xyyzz" where "x" = 1 for digital, 2 for analog;
+ *  "yy" = line number (1 for first PRI/T1/E1, 2 for second, so on);
+ *  "zz" = channel number (on the PRI or Channelized T1/E1).
+ * This should work with normal terminal servers, unless you have a TS with
+ * more than 9999 ports ;^).
+ * The "ASCEND_CHANNELS_PER_LINE" is the number of channels for each line into
+ * the unit.  For my US/PRI that's 23.  A US/T1 would be 24, and a
+ * European E1 would be 30 (I think ... never had one ;^).
+ * This will NOT change the "NAS-Port-Id" reported in the detail log.  This
+ * is simply to fix the dynamic IP assignments a la Cistron.
+ * WARNING: This hack works for me, but I only have one PRI!!!  I've not
+ *          tested it on 2 or more (or with models other than the Max 4048)
+ * Use at your own risk!
+ * -- dgreer@austintx.com
+ */
+#undef ASCEND_PORT_HACK 
+#undef ASCEND_CHANNELS_PER_LINE 
+#ifdef ASCEND_PORT_HACK
+# ifndef ASCEND_CHANNELS_PER_LINE
+#  define ASCEND_CHANNELS_PER_LINE 23
+# endif
+#endif
+
+#undef RADIUS_DEBUG
+
+#undef __FUNCTION__
+
+#ifdef MAINTAINER_MODE
+# define LEAK_DETECTOR 1
+# ifdef lint
+#  define __extension__(c) 1
+# endif
+#endif

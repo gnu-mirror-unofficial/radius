@@ -1,0 +1,4 @@
+@set RADDB @ETC_DIR@/raddb
+@set RADLOG @RADLOG_DIR@
+@set RADACCT @RADLOG_DIR@/radacct
+

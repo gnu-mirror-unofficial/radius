@@ -1,0 +1,1680 @@
+This is Info file radius.info, produced by Makeinfo version 1.68 from
+the input file radius.texinfo.
+
+INFO-DIR-SECTION GNU radius
+START-INFO-DIR-ENTRY
+* Radius: (radius).     The GNU radius
+END-INFO-DIR-ENTRY
+
+   This file documents the GNU radius
+
+   Published by the Free Software Foundation 59 Temple Place, Suite 330
+Boston, MA  02111-1307 USA
+
+   Copyright (C) 1999 Sergey Poznyakoff Permission is granted to make
+and distribute verbatim copies of this manual provided the copyright
+notice and this permission notice are preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the sections entitled "The GNU Manifesto", "Distribution" and "GNU
+General Public License" are included exactly as in the original, and
+rovided that the entire resulting derived work is distributed under the
+terms of a permission notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the sections entitled "The GNU Manifesto",
+"Distribution" and "GNU General Public License" may be included in a
+translation approved by the Free Software Foundation instead of in the
+original English.
+
+
+File: radius.info,  Node: rewrite examples,  Prev: rewrite usage,  Up: rewrite
+
+Examples of various rewrite functions.
+**************************************
+
+   The examples found in this chapter are working functions that can be
+used with various existing NAS types. They are taken from the `rewrite'
+file contained in distribution of GNU Radius.
+
+1. Port rewriting for MAX Ascend terminal servers
+-------------------------------------------------
+
+   Some MAX Ascend terminal servers pack additional information into
+`NAS-Port-Id' attribute. The port number is constructed as as XYYZZ,
+where X = 1 for digital, X = 2 for analog, YY is line number (1 for
+first PRI/T1/E1, 2 for second, so on), and ZZ = channel number (on the
+PRI or Channelized T1/E1).
+
+   The following rewrite functions are intended to compute the integer
+port number in the range (1 .. PORTCNT), where PORTCNT represents the
+real number of physical ports available on the NAS.  Such port number
+can be used, for example, with `Add-Port-To-IP-Address' attribute *Note
+Add-Port-To-IP-Address::.
+
+     /*
+      * decode MAX port number
+      * input: P        --  The value of NAS-Port-Id attribute
+      *        portcnt  --  number of physical ports on the NAS
+      */
+     integer
+     max_decode_port(integer P, integer portcnt)
+     {
+     	if (P > 9999) {
+     		integer s, l, c;
+     
+     		s = P / 10000;
+     		l = (P - (10000 * s))/100;
+     		c = P - ((10000 * s) + (100 * l));
+     		return (c-1) + (l-1) * portcnt;
+     	}
+     	return P;
+     }
+     
+     /*
+      * Interface function for MAX terminal server with 23 ports.
+      * Note that it saves the received NAS-Port-Id attribute in the
+      * Orig-NAS-Port-Id attribute. The latter must be defined somewhere
+      * in the dictionary
+      */
+     integer
+     max_fixup()
+     {
+             %[Orig-NAS-Port-Id] = %[NAS-Port-Id]; # Preserve original data
+             %[NAS-Port-Id] = max_decode_port(%[NAS-Port-Id], 23);
+             return 0;
+     }
+
+2. Session ID parsing for Cisco AS 5300 series
+----------------------------------------------
+
+   Cisco AS 5300 with VoIP IOS encodes a lot of other information into
+its `Acct-Session-Id'. The pieces of information are separated by `/'
+character. The part of `Acct-Session-Id' up to first `/' character is
+the actual session ID.
+
+   On the other hand, its accounting packets lack `NAS-Port-Id', though
+they may contain the vendor-specific pair with code 2 (vendor PEC 9),
+which is the string in the form `ISDN 9:D:999' (`9' represents a
+decimal digit). The number after the last `:' character can be used as
+a port number.
+
+   The following code parses `Acct-Session-Id' attribute and stores the
+information it contains in various other attributes, generates normal
+`Acct-Session-Id' and attempts to generate `NAS-Port-Id' attribute.
+
+     /*
+      * The port rewriting function for cisco AS5300 used for voip.
+      * This function is used to generate NAS-Port-Id pair on the basis
+      * of vendor-specific pair 2. If the latter is in the form
+      * "ISDN 9:D:999" (where each 9 represents a decimal digit), then
+      * the function returns the number after the last colon. This is
+      * used as a port number.
+      */
+     integer
+     cisco_pid(string A)
+     {
+             if (A =~ ".*\([0-9][0-9]*\):[A-Z0-9][A-Z0-9]*:\([0-9][0-9]*\)") {
+                     return (integer)\2;
+             }
+             return -1;
+     }
+     
+     /*
+      * This function parses the packed session id.
+      * The actual sid is the number before the first slash character.
+      * Other possibly relevant fields are also parsed out and saved
+      * in the Voip-* A/V pairs. The latter should be defined somewhere
+      * in the dictionary.
+      */
+     string
+     cisco_sid(string S)
+     {
+             if (S =~ "\(.[^/]*\)/[^/]*/[^/]*/\([^/]*\)/\([^/]*\)/\([^/]*\)/\([^/]*\)/\([^/]*\)/\([^/]*\)/\([^/]*\).*") {
+                     %[Voip-Connection-ID] = \2;
+                     %[Voip-Call-Leg-Type] = \3;
+                     %[Voip-Connection-Type] = \4;
+                     %[Voip-Connect-Time] = \5;
+                     %[Voip-Disconnect-Time] = \6;
+                     %[Voip-Disconnect-Cause] = \7;
+                     %[Voip-Remote-IP] = \8;
+                     return \1;
+             }
+     	return S;
+     }
+     
+     /*
+      * Normalize cisco AS5300 packets
+      */
+     integer
+     cisco_fixup()
+     {
+             integer pid;
+     
+             if ((pid = cisco_pid(%[Cisco-PRI-Circuit])) != -1) {
+                     if (*%[NAS-Port-Id])
+                             %[Orig-NAS-Port-Id] = %[NAS-Port-Id];
+                     %[NAS-Port-Id] = pid;
+             }
+             if (*%[Acct-Session-Id]) {
+                     %[Orig-Acct-Session-Id] = %[Acct-Session-Id];
+                     %[Acct-Session-Id] = cisco_sid(%[Acct-Session-Id]);
+             }
+             return 0;
+     }
+
+3. Username rewriting for NT machines.
+--------------------------------------
+
+   Users coming from Windows NT machines often authenticate themselves
+as NT_DOMAIN\username. The following function selects the username part
+and stores it in the `User-Name' attribute:
+
+     integer
+     login_nt(string uname)
+     {
+             integer i;
+     
+             if ((i = index(uname, '\\')) != -1)
+                     return substr(uname, i+1, -1);
+             return uname;
+     }
+     
+     integer
+     nt_rewrite()
+     {
+             %[Orig-User-Name] = %[User-Name];
+             %[User-Name] = login_nt(%[User-Name]);
+             return 0;
+     }
+
+
+File: radius.info,  Node: menus,  Next: Macro substitution,  Prev: rewrite,  Up: Configuration files
+
+menus
+*****
+
+   The menus is a way to allow user the choice between various services
+he could be provided. The menu functionality is enabled when Radius is
+compiled with `--enable-livingston-menus' option.
+
+   A user is presented a menu after it is authenticated if the
+reply-pairs of his profile record consist of a single A/V pair in the
+form:
+
+     Menu = <menu-name>
+
+The menu files are stored in directory `raddb/menus'.
+
+* Menu:
+
+* Syntax:menu syntax.           A menu file syntax.
+* Example:menu example.         An example of menu files.
+
+
+File: radius.info,  Node: menu syntax,  Next: menu example,  Up: menus
+
+A menu file syntax.
+*******************
+
+   A menu file is a text file containing a menu declaration and any
+number of choice descriptions. It can be either a single-level menu or
+can reference other menus.
+
+   A comment is introduced by a `#' character. All characters from this
+one up to the end of line are discarded.
+
+   The menu declaration is contained between the words `menu' and
+`end'. Each of these must be the only word on a line and must start in
+column 1.
+
+   Choice descriptions follow the menu declaration. Each description
+starts with a line containing choice identifier. A choice identifier is
+an arbitrary word identifying this choice, or a word `DEFAULT'.  It is
+followed by comma-separated list of A/V pairs which will be returned to
+the server when a user selects this choice.
+
+
+File: radius.info,  Node: menu example,  Prev: menu syntax,  Up: menus
+
+An example of menu files
+************************
+
+Single-Level Menu
+=================
+
+   Suppose the following file is stored under `raddb/menus/menu1':
+
+     menu
+             *** Welcome EEE user! ***
+     Please select an option:
+     
+             1. Start CSLIP session
+             2. Start PPP session
+             3. Quit
+     
+             Option:
+     end
+     # CSLIP choice
+     # Framed-IP-Address of 255.255.255.254 indicates that the NAS should
+     # select an address for the user from its own IP pool.
+     1
+             Service-Type = Framed-User,
+             Framed-Protocol = SLIP,
+             Framed-IP-Address = 255.255.255.254,
+             Termination-Menu = "menu1"
+     # PPP choice
+     2
+             Service-Type = Framed-User,
+             Framed-Protocol = PPP,
+             Framed-IP-Address = 255.255.255.254,
+             Termination-Menu = "menu1"
+     # A special menu EXIT means abort the session
+     3
+             Menu = "EXIT"
+     # Return to this menu if no valid choice have been entered
+     DEFAULT
+             Menu = "menu1"
+
+   Now, suppose the `raddb/users' contains the following profile entry:
+
+     DEFAULT Auth-Type = System
+             Menu = "menu1"
+
+and user `jsmith' has a valid system account and tries to log in from
+some NAS. Upon authenticating the user, the Radius server sees that his
+reply pairs contain the `Menu' attribute. Radius then sends
+Access-Challenge packet to the NAS with the text of the menu in it.
+The `jsmith' then sees on his terminal:
+
+             *** Welcome EEE user! ***
+     Please select an option:
+     
+             1. Start CSLIP session
+             2. Start PPP session
+             3. Quit
+     
+             Option:
+
+   He then enters `2'. The NAS sends the Access-Request packet to the
+server, which sees that user wishes to use option 2 and replies to the
+NAS with an Access-Accept packet containing the following attributes:
+
+             Service-Type = Framed-User,
+             Framed-Protocol = PPP,
+             Framed-IP-Address = 255.255.255.254,
+             Termination-Menu = "menu1"
+
+The `Termination-Menu' in this list makes sure the same process will
+continue when `jsmith' logs out, i.e. he will be presented the same
+menu again until he enters choice `3' which will disconnect him.
+
+Nested menus
+============
+
+   In this example, the `other' choice refers to the menu above.
+
+     menu
+             *** Welcome here! ***
+     Please enter an option:
+             ppp     ---     Start PPP session
+             telnet  ---     Begin guest login session
+             other   ---     Select other option
+     
+             Enter your choice:
+     end
+     ppp
+             Service-Type = Framed-User,
+             Framed-Protocol = PPP
+     telnet
+             Service-Type = Login-User,
+             Login-IP-Host = 10.11.11.7,
+             Login-Service = Telnet,
+             Login-TCP-Port = 23
+     other
+             Menu = "menu1"
+     DEFAULT
+             menu = "menu2"
+
+
+File: radius.info,  Node: Macro substitution,  Prev: menus,  Up: Configuration files
+
+Substitution rules
+******************
+
+   Some statements in the configuration files need to use the actual
+values of the attributes supplied with the request. These are:
+
+   * `Exec-Program' and `Exec-Program-Wait' assignments in `users'
+     database
+
+   * SQL query templates in `sqlserver'
+
+   In these statements the following macros are replaced by the value
+of corresponding attributes:
+
+`%Cnum'
+     (num is a decimal number). This variable is replaced by the value
+     of attribute number `num'. The attribute is looked up in the check
+     pairlist.
+
+`%C{attr-name}'
+     This is replaced by the value of attribute named `attr-name'. The
+     attribute is looked up in the check pairlist.
+
+`%Rnum'
+     (num is a decimal number). This variable is replaced by the value
+     of attribute number `num'. The attribute is looked up in the reply
+     pairlist.
+
+`%R{attr-name}'
+     This is replaced by the value of attribute named `attr-name'. The
+     attribute is looked up in the reply pairlist.
+
+`%D'
+     This is replaced ny current date/time (localtime).
+
+`%G'
+     This is replaced by current date/time in GMT.
+
+   You can also use the following shortcuts:
+
+`%p'
+     Port number
+
+`%n'
+     NAS IP address
+
+`%f'
+     Framed IP address
+
+`%u'
+     User name
+
+`%c'
+     Callback-Number
+
+`%i'
+     Calling-Station-Id
+
+`%t'
+     MTU
+
+`%a'
+     Protocol (SLIP/PPP)
+
+`%s'
+     Speed (Connect-Info attribute)
+
+
+File: radius.info,  Node: Authentication,  Next: Accounting,  Prev: Configuration files,  Up: Top
+
+   Several authentication types are supported. The use of a particular
+authentication type for a given user is determined by the value of
+`Auth-Type' attribute in his profile.
+
+* Menu:
+
+* Accept Auth::                   Accept unconditionally.
+* Reject Auth::                   Reject unconditionally.
+* Local Password Auth::           Authenticate using plaintext password.
+* Encrypted Password Auth::       Authenticate using MD5 encrypted password.
+* System Auth::                   Authenticate using system account.
+* SQL Auth::                      Athenticate using SQL.
+* PAM Auth::                      Authenticate using PAM.
+* Checking Simultaneous Logins::
+
+
+File: radius.info,  Node: Accept Auth,  Next: Reject Auth,  Up: Authentication
+
+Accept Authentication Type
+**************************
+
+Synopsis
+--------
+
+     Auth-Type = Accept
+
+Usage
+-----
+
+   When a user has the above string in his profile he will be
+authenticated without any further checking. Actually this means that
+only username is required for authentication.
+
+   This authentication type can be used for guest accounts, e.g. the
+following profile in `users':
+
+     guest   Auth-Type = Accept,
+                     Password != "",
+                     Simultaneous-Use = 10
+             Service-Type = Framed-User,
+                     Framed-Protocol = PPP
+
+allows up to 10 simultaneous guest PPP accounts. To log in using such
+guest account it is sufficient to use username `guest' and any
+non-empty password.
+
+
+File: radius.info,  Node: Reject Auth,  Next: Local Password Auth,  Prev: Accept Auth,  Up: Authentication
+
+Reject Authentication Type
+**************************
+
+Synopsis
+--------
+
+     Auth-Type = Reject
+
+Usage
+-----
+
+   The `Reject' authentication type causes the request to be rejected
+unconditionally. It can be used to disable a user account *Note
+access.deny::.
+
+
+File: radius.info,  Node: Local Password Auth,  Next: Encrypted Password Auth,  Prev: Reject Auth,  Up: Authentication
+
+Local Password Authentication Type
+**********************************
+
+Synopsis
+--------
+
+     Auth-Type = Local,
+     Password = <plaintext password>
+
+Usage
+-----
+
+   The `Password' attribute in user's profile contains the *plaintext*
+password. If this password and the one supplied by the user coincide,
+then the user is authenticated.
+
+   We do not recommend the use of this authentication type, since
+keeping plaintext passwords in `users' is very unsecure, even though the
+file is owned by root and its permissions are 0600.
+
+
+File: radius.info,  Node: Encrypted Password Auth,  Next: System Auth,  Prev: Local Password Auth,  Up: Authentication
+
+Encrypted Password Authentication Type
+**************************************
+
+Synopsis
+--------
+
+     Auth-Type = Crypt-Local,
+     Password = <MD5 hash>
+
+or
+
+     Crypt-Password = <MD5 hash>
+
+Usage
+-----
+
+   The `Password' attribute in user's profile contains the MD5 hash of
+his password. The MD5 hash is computed over the password supplied by
+the user, both hashes are compared and if they coincide, the user is
+authenticated.
+
+
+File: radius.info,  Node: System Auth,  Next: SQL Auth,  Prev: Encrypted Password Auth,  Up: Authentication
+
+System Authentication Type
+**************************
+
+Synopsis
+--------
+
+     Auth-Type = System
+
+   When a user has the above string in his profile record, he will be
+authenticated using system /etc/passwd (/etc/shadow) files, i.e.  to be
+authenticated he has to have a valid system account on the machine
+where the radius server is running.
+
+
+File: radius.info,  Node: SQL Auth,  Next: PAM Auth,  Prev: System Auth,  Up: Authentication
+
+SQL Authentication Type
+***********************
+
+Synopsis
+--------
+
+     Auth-Type = Mysql
+
+Usage
+-----
+
+   This authentication type means that the MD5 hash of his password is
+kept in SQL database. To authenticate such user, `radiusd' will query
+the database using `auth_query' from the `sqlserver' file.  It will
+then compute the MD5 hash over the supplied password and compare it
+with the string returned by the query. If both strings coincide, the
+user will be authenticated.
+
+   *Note sqlserver::.  *Note Writing SQL query templates: Queries.
+
+
+File: radius.info,  Node: PAM Auth,  Next: Checking Simultaneous Logins,  Prev: SQL Auth,  Up: Authentication
+
+PAM Authentication Type
+***********************
+
+Synopsis
+--------
+
+     Auth-Type = PAM
+
+or
+
+     Auth-Type = PAM
+     PAM-Auth = <PAM service>
+
+Usage
+-----
+
+   This authentication type indicates that a user should be
+authenticated using PAM (Pluggable Authentication Module) framework.
+The value of `PAM-Auth' attribute specifies the PAM service to be used.
+If it is not specified, `radius' will be used.
+
+
+File: radius.info,  Node: Checking Simultaneous Logins,  Prev: PAM Auth,  Up: Authentication
+
+Checking Simultaneous Logins
+****************************
+
+   The number of sessions a user can have open simultaneously can be
+restricted by setting `Simultaneous-Use' attribute in the user's
+profile check-pairs *Note Simultaneous-Use::. By default the number of
+simultaneous sessions is unlimited.
+
+   When a user with limited number of simultaneous logins authenticates
+himself, Radius first sees how many sessions are already open for this
+user.  If this number is equal to the value of `Simultaneous-Use'
+attribute the authentication request is rejected.
+
+   To determine the number of open sessions, Radius scans the
+`radlog/radutmp' for any open entries marked with the user's login name
+*Note Unix Accounting::. Such entries are created when Radius receives
+an Accounting-Request packet with `Acct-Status-Type' attribute set to
+`Start'. An entry is marked closed when a corresponding
+Accounting-Request packet arrives with `Acct-Status-Type' attribute set
+to `Stop'.
+
+   Since an open entry might be a result of missing `Stop' packet,
+Radius queries the NAS whether the session listed in the entry is
+currently active. If the NAS replies positive, the session count is
+incremented, if it replies negative, such entry is marked as closed and
+is not counted. There may also be cases when the NAS is unreachable due
+to some reasons. In such cases the Radius behaviour is determined by
+the value of `checkrad-assume-logged' in `config' file *Note auth
+statement (raddb/config): auth.  If the value is `yes', Radius assumes
+the session is still active and increases the session count, otherwise
+it proceeds as if the NAS returned negative reply.
+
+   Usually, different NASes should be queried in different ways. It
+would be unwise to make Radius server know all protocols for
+communicating with every existing NAS type. Instead of querying NAS
+directly, Radius calls external process `checkrad' and passes it all
+the information necessary to query a particular NAS about a particular
+session *Note Checkrad Overview::. The `checkrad' program then performs
+the actual work of querying and returns one of the following exit codes:
+
+   * 0, when the NAS replies negative
+
+   * 1, when the NAS replies positive
+
+   * -1, when the NAS cannot be reached or some error occurs.
+
+   `checkrad' determines the way to query a given NAS by its type,
+which radius passes to it along with other arguments *Note Checkrad
+Overview::. Radius knows the type from a corresponding line in
+`naslist' file *Note naslist::.
+
+   The NAS types `checkrad' knows about and ways of communicating with
+them are fully configurable *Note Configuring checkrad: checkrad.conf.
+
+
+File: radius.info,  Node: Accounting,  Next: Logging,  Prev: Authentication,  Up: Top
+
+Accounting
+**********
+
+   GNU Radius supports three types of accounting. By default Unix and
+Detailed request ccounting types are always enabled.
+
+* Menu:
+
+* Unix Accounting::                     Unix style utmp/wtmp accounting.
+* Detailed Request Accounting::         Detailed requests.
+* SQL Accounting::                      Accounting to SQL server.
+
+
+File: radius.info,  Node: Unix Accounting,  Next: Detailed Request Accounting,  Up: Accounting
+
+Unix Accounting
+***************
+
+   This accounting method is always enabled.
+
+   Radius keeps files `radutmp' and `radwtmp' in its logging directory
+and stores the accounting data there. The utilities `radwho' and
+`radlast' can be used to list information about users' sessions.
+
+   *Note Naming conventions::.
+
+   *Note Radwho::.
+
+   *Note Radlast::.
+
+
+File: radius.info,  Node: Detailed Request Accounting,  Next: SQL Accounting,  Prev: Unix Accounting,  Up: Accounting
+
+Detailed Request Accounting
+***************************
+
+   This accounting method is always enabled.
+
+   Radius stores the detailed information about accounting packets
+received in files `radacct/NASNAME/detail' *Note Naming conventions::,
+where NASNAME means short nas name from the `raddb/naslist' file *Note
+naslist::.
+
+   The information stored there includes the timestamp and detailed
+dump of attributes from each packet, e.g.:
+
+     Fri Dec 15 18:00:24 2000
+     	Acct-Session-Id = "2193976896017"
+     	User-Name = "e2"
+     	Acct-Status-Type = Start
+     	Acct-Authentic = RADIUS
+     	Service-Type = Framed-User
+     	Framed-Protocol = PPP
+     	Framed-IP-Address = 11.10.10.125
+     	Calling-Station-Id = "+15678023561"
+     	NAS-IP-Address = 11.10.10.11
+     	NAS-Port-Id = 8
+     	Acct-Delay-Time = 0
+     	Timestamp = 976896024
+     	Request-Authenticator = Unverified
+     
+     Fri Dec 15 18:32:09 2000
+     	Acct-Session-Id = "2193976896017"
+     	User-Name = "e2"
+     	Acct-Status-Type = Stop
+     	Acct-Authentic = RADIUS
+     	Acct-Output-Octets = 5382
+     	Acct-Input-Octets = 7761
+     	Service-Type = Framed-User
+     	Framed-Protocol = PPP
+     	Framed-IP-Address = 11.10.10.125
+     	Acct-Session-Time = 1905
+     	NAS-IP-Address = 11.10.10.11
+     	NAS-Port-Id = 8
+     	Acct-Delay-Time = 0
+     	Timestamp = 976897929
+     	Request-Authenticator = Unverified
+
+
+File: radius.info,  Node: SQL Accounting,  Prev: Detailed Request Accounting,  Up: Accounting
+
+SQL Accounting
+**************
+
+   The SQL accounting method is enabled when Radius is configured with
+`--enable-mysql' option and `sqlserver' file in its configuration
+directory is properly set up *Note sqlserver::.
+
+   This version of GNU Radius (0.92) supports only MySQL servers.
+Support for other SQL servers will be added in future versions.
+
+   With this accounting method enabled, `radiusd' will store the
+information about accounting requests in the configured SQL database.
+The accounting method is fully configurable: the Radius administrator
+defines both the types of requests to be accounted and the information
+to be stored into the database. *Note sqlserver::.
+
+
+File: radius.info,  Node: Logging,  Next: Debugging,  Prev: Accounting,  Up: Top
+
+Logging
+*******
+
+   GNU Radius reports every event worth mentioning. The events are
+segregated by their severity level. Radius discerns the following
+levels (in order of increasing severity):
+
+`Debug'
+     The debug messages *Note Debugging::.
+
+`Auth'
+     Under this level every authentication attempt is logged. This is
+     enabled by setting
+          level auth;
+
+     in `category auth' statement of `config' file.
+
+`Proxy'
+     Messages regarding proxy requests *Note Realms::.
+
+`Info'
+     Informational messages.
+
+`Notice'
+     Normal, but significant conditions.
+
+`Warning'
+     Warning conditions. These mean some deviations from normal work.
+
+`Error'
+     Error conditions. Usually these require special attention.
+
+`CRIT'
+     Critical conditions due to which Radius is no longer able to
+     continue working. These require urgent actions from the site
+     administrator.
+
+   By default, all messages in all levels are output to file
+`radlog/radius.log'. In addition, messages in level `CRIT' are also
+duplicated to the system console. These defaults can be overridden
+using `logging' statement in `raddb/config' file *Note logging
+statement: logging, *Note Naming conventions::.
+
+
+File: radius.info,  Node: Debugging,  Next: Client Overview,  Prev: Logging,  Up: Top
+
+Debugging
+*********
+
+   GNU Radius provides extensive debugging features. These are enabled
+either by `-x' command option to the `radiusd' *Note Invocation::, or
+by `level' statement in debug category *Note logging statement:
+logging. Both cases require as an argument a valid debug specification.
+
+   A debug specification sets the module for which the debugging should
+be enabled and debugging level. The higher the level is, the more
+detailed information is provided. The module name and level are
+separated by an equal sign. If the level is omitted, the highest
+possible level (100) is assumed. The module name may be abbreviated to
+first N characters, in which case the first matching module is
+selected. Several such specifications can be specified, in which case
+they should be separated by a comma. For example, the following is a
+valid debug specification:
+             proxy.c=10,files.c,config.y=1
+
+It sets debug level 10 for module `proxy.c', level 100 for `files.c',
+and 1 for `config.y'.
+
+   The modules and debugging levels are subject to change from release
+to release.
+
+
+File: radius.info,  Node: Client Overview,  Next: client.config,  Prev: Debugging,  Up: Top
+
+Client Overview
+***************
+
+   Client programs are those which emulate the NAS. These are `radtest'
+*Note Radtest:: and `radctl' *Note Radctl::.
+
+   Since they have to connect to radius server, they should be provided
+information about server's IP address, ports to connect to and the
+shared secret key to use.
+
+   The two configuration files `raddb/client.config' and
+`raddb/client.shadow' provide this information for the client programs.
+
+   These configuration files are described in the following chapters.
+
+
+File: radius.info,  Node: client.config,  Next: client.shadow,  Prev: Client Overview,  Up: Top
+
+client.config
+*************
+
+   The `client.config' file determines the configuration values for
+client programs such as `radtest' and `radctl'.
+
+Syntax
+------
+
+   The syntax is quite simple: one statement per line, a statement
+consists of a keyword and a value separated by whitespace.
+
+   Following keywords are recognized:
+
+`timeout'
+     Sets the timeout in seconds for connection to radius server.
+
+`retry'
+     Determines how many times to retry connecting the server in case
+     of failure.  Each subsequent	attempt takes place after sleeping the
+     amount of time specified by `timeout' statement.
+
+`server'
+     The name of the Radius server to connect to. It is used as a
+     lookup key to client.shadow file, from where the corresponding
+     server parameters are obtained.
+
+Example
+-------
+
+     server local
+     timeout 3
+     retry 2
+
+
+File: radius.info,  Node: client.shadow,  Next: Checkrad Overview,  Prev: client.config,  Up: Top
+
+client.shadow
+*************
+
+   This file contains IP addresses, port numbers and secret keys to be
+used when connecting to Radius servers.
+
+Syntax
+------
+
+   The record for each server occupies one line. The format of the
+record is somewhat similar to that of the system /etc/passwd file: it
+contains six fields separated by colons. The fields are:
+
+  1. Server name
+
+  2. Server IP address or FQDN
+
+  3. Shared secret
+
+  4. Authentication port number
+
+  5. Accounting port number
+
+  6. Administrative portnumber
+
+Example
+-------
+
+     local:localhost:guessme:1645:1646:5000
+
+   This line states that server `local' has the hostname `localhost'.
+Its shared secret value is `guessme', authentication and accounting
+port numbers are 1645 and 1646 respectively, and the control channel is
+listening on port 5000.
+
+
+File: radius.info,  Node: Checkrad Overview,  Next: checkrad.conf,  Prev: client.shadow,  Up: Top
+
+Checkrad Overview
+*****************
+
+   When Radius needs to query a particular NAS about the presence of a
+given user, it calls the `checkrad' program and analizes its exit code
+*Note Checking Simultaneous Logins::.
+
+   The `checkrad' accepts the following command line options:
+
+`-d RADDB_DIR'
+     Sets the name of radius configuration directory *Note Naming
+     conventions::.
+
+`-h HOST'
+     The IP address or domain name of the NAS to query.
+
+`-p PORT'
+     The NAS port number the user seems to be in.
+
+`-t TYPE'
+     The NAS type. This is used to determine the method of conversation
+     with the NAS.
+
+`-u USERNAME'
+     Username to check.
+
+`-s SID'
+     The session ID to check for.
+
+`-x DEBUG'
+     The debug level.
+
+   The `checkrad' program exits with following exit codes:
+
+0
+     No session with the specified parameters was found to be active on
+     the NAS.
+
+1
+     The specified session is currently active on the NAS.
+
+-1
+     `Don't know'. This means that either NAS did not respond, or
+     `checkrad' was unable to parse its answer.
+
+   For example if `radiusd' needs to verify presence of user `foo' with
+session ID `001' on port 23 of NAS `myhost' *Note naslist example:: it
+would run `checkrad' as follows:
+
+     checkrad -t unix -h myhost.dom.ain -u foo -s 001 -p 23
+
+
+File: radius.info,  Node: checkrad.conf,  Next: Radwho,  Prev: Checkrad Overview,  Up: Top
+
+Configuring checkrad: `checkrad.conf' file
+******************************************
+
+The `raddb/checkrad.conf' file describes the ways to communicate with
+NASes of different types and the way of parsing their requests.
+
+Syntax
+------
+
+   The file follows simple `KEYWORD VALUE' oriented syntax. Empty lines
+are ignored. The `#' character introduces an end-of-line comment.
+
+   The file consists of definition blocks. Each definition block starts
+with a `type' keyword and continues up to the next `type' keyword or to
+the end of file.
+
+   The definition block describes ways of communicating with the NAS of
+given type.
+
+Statements
+----------
+
+`logfile FILENAME'
+     Specifies the filename to use for logging. Default is stderr.
+
+`debug DEBUG_SPEC'
+     Specifies debug level *Note Debugging::.
+
+`type TYPE'
+     Introduces new definition block. TYPE is a type of NAS which is
+     described by the block. Every NAS marked with this TYPE in
+     `naslist' configuration file *Note naslist:: will be queried using
+     rules described in this block.
+
+`method FINGER|SNMP'
+     Specify the method to use while communicating with the NAS.
+
+`header LINE HEADER_STRING'
+     (Applies to `method finger'.) This statement describes the header
+     to be expected in the NAS reply.
+
+     The LINE argument specifies the response line number where the
+     header string should be present. Response lines are counted
+     starting from 1 and are separated from each other by a `\r\n'
+     characters.
+
+     The HEADER_STRING argument describes the format of a header line.
+     It is a string of header titles delimited by `:'. If the string
+     starts with a punctuation character, this character is used as a
+     delimiter instead of a `:'.
+
+`oid OID_STRING'
+     (Applies to `method snmp'.) This statement specifies the OID to be
+     queried when using SNMP method. The OID string can contain
+     `checkrad' metacharacters described below.
+
+`community IDENT'
+     (Applies to `method snmp'.) Specifies the community name to be
+     used while querying NAS.
+
+`match MATCH_DEFINITION'
+     Specifies the conditions to be met to identify the session as being
+     active. The format of MATCH_DEFINITION string depends on query
+     method:
+
+    `finger'
+          The comma-separated list of the statements in the form:
+
+               VAR=MACRO
+
+          where VAR is either a `$NUMBER' notation, meaning NUMBERth
+          column from the NAS output, or a name meaning the column
+          identified by this heading in the `header' statement. MACRO
+          is one of the `checkrad' macros.
+
+          For example, consider the usual UNIX finger output. It starts
+          with a header line saying:
+
+               Login  Name   TTY   Idle    Login Time   Where
+
+          then we could write the following rules:
+
+               header 1 Login:Name:TTY:Idle:Login Time:Where
+               match Login=%u,TTY=%p
+
+          the `header' string describes the headings to be found on the
+          first line of output, the `match' statements says that the
+          value listed in column 1 (heading `Login') must coincide with
+          username and column 3 (heading `TTY') must coincide with the
+          NAS port number.
+
+          The same example can be rewritten as
+
+               match $1=%u,$3=%p
+
+          using column numbers instead of column names.
+
+    `snmp'
+          In this case MATCH_DEFINITION should be a string containing
+          `checkrad' macros. For example, the following statement
+
+               oid .1.3.6.1.4.1.307.3.2.1.1.1.5.%p
+               match %s
+
+          tells `checkrad' that it should query the given oid, replacing
+          the `%p' sequense by actual port number and expect a session
+          ID (`%s') in reply.
+
+Macros
+------
+
+   Following macros can be used in `match' and `oid' statements:
+
+`%u'
+     Expands to username as given by `-u' command line option.
+
+`%s'
+     Expands to session id as given by `-s' command line option.
+
+`%d'
+     Expands to session id converted to decimal representation.
+
+`%p'
+     Expands to port number as given by `-p' command line option.
+
+`%P'
+     Expands to port number + 1.
+
+* Menu:
+
+* Example:checkrad.conf example.         An example of checkrad configuration.
+
+
+File: radius.info,  Node: checkrad.conf example,  Up: checkrad.conf
+
+An example of checkrad configuration
+************************************
+
+     ######
+     # Configuration file for checkrad
+     #
+     logfile "/var/log/checkrad.conf"
+     
+     ####
+     # How to query unix network access servers
+     # We suppose that unix boxes run fingerd service.
+     type unix
+     method finger
+     header 1 Login:Name:TTY:Idle:Login Time:Where
+     match Login=%u,TTY=%p,Where=%s
+     
+     ####
+     # Ascend MAX networks servers
+     # Field 2 is session_id (here we convert it to decimal),
+     # Field 9 is user name
+     # Port is not matched
+     type max
+     method finger
+     match $2=%d,$9=%u
+     
+     ####
+     # Cisco AS5300 terminal server
+     # No session_id in finger output. We match on username and port number.
+     type as5300
+     method finger
+     match $1=%p,$4=%u
+     
+     ####
+     # Livingston terminal server
+     # Answers on SNMP queries
+     type livingston
+     method snmp
+     community public
+     oid .1.3.6.1.4.1.307.3.2.1.1.1.5.%P
+     match %s
+
+
+File: radius.info,  Node: Radwho,  Next: Radlast,  Prev: checkrad.conf,  Up: Top
+
+Radwho
+******
+
+   `Radwho' displays the list of users currently logged in by the
+Radius server.
+
+   Default output information is made compatible with that of the
+standard unix finger(1) utility. For each user the following
+information is displayed: login name, name, connection protocol, NAS
+port, login date, NAS name, assigned IP address or corresponding
+network name.
+
+   When used with `-l' option, the long output format is used. In this
+format the following information is output:
+
+`Login'
+     Login name of the user
+
+`SessionID'
+     Unique session ID assigned by the terminal server.
+
+`Proto'
+     Connection prototype.
+
+`Port'
+     Port number
+
+`When'
+     Login date and time
+
+`From'
+     The name of NAS that accepted the connection.
+
+`Location'
+     Framed IP address or the corresponding network name.
+
+`Caller'
+     Caller station ID ad reported by the NAS.
+
+`Duration'
+     Duration of the session.
+
+* Menu:
+
+* Options: radwho options.      Command line options.
+
+
+File: radius.info,  Node: radwho options,  Up: Radwho
+
+Radwho command line options
+***************************
+
+   The following command line options can be used to modify the
+behaviour of the program:
+
+`-A'
+`--all'
+     Display the information about logged-out users as well. The
+     logged-out users are shown with Proto field set to HUP.
+
+`-c'
+`--calling-id'
+     Display the calling station ID in the second column.
+
+`-d NAME'
+`--directory NAME'
+     Set the radius configuration directory name.
+
+`-D {short|abbr|full}'
+`--date-formap {short|abbr|full}'
+     Set the date representation. By default dates are output as `DOW
+     HH:MM', where DOW means the day of week abbreviation, HH and MM
+     mean hours and minutes respectively. This corresponds to option
+     `-D short'. Other available formats are:
+
+    `abbr'
+          Abbreviated date: MM/DD HH:MM, where MM is a two-digit month
+          number, DD -- a two-digit day of month.
+
+    `full'
+          Full data output, like this:
+
+               Mon Dec 18 12:29:38 EET 2000
+
+`-e STRING'
+`--empty STRING'
+     Display any empty field as STRING. This is useful when the output
+     of `radwho' is fed to some analyzing program, as it helps to keep
+     the same number of columns on each line of output.
+
+`-F'
+`--finger'
+     Start in fingerd mode. In this mode `radwho' emulates the
+     behaviour of fingerd(8) utility. Use this option if starting
+     `radwho' from the /etc/inetd.conf line like this:
+
+          finger  stream  tcp   nowait  nobody   /usr/sbin/radwho radwho -fL
+
+     This mode is also enabled by default if `radwho' notices that its
+     name (argv[0]) is `fingerd' or `in.fingerd'.
+
+`-H'
+`--no-header'
+     Don't display header line.
+
+`-i'
+`--session-id'
+     Display session ID instead of GECOS in the second column.
+
+`-I {smart|ip|nodomain}'
+`--ip-format {smart|ip|nodomain}'
+     Change IP address representation. The meaning of the argument is
+     as follows:
+
+    `smart'
+          Select the best representation. The following rules apply:
+
+            1. For a NAS use its short name from `naslist'. If there is
+               no short name, use its long name. If there is no long
+               name either, go to 2.
+
+            2. Resolve IP address to FQDN.
+
+            3. If the IP cannot be resolved, use dotted-quad
+               representation of the IP
+
+    `ip'
+          Display IP in dotted-quad form.
+
+    `nodomain'
+          If the IP can be resolved to a fully qualified domain name,
+          use the hostname part of it, i.e. any characters up to the
+          first dot.
+
+`-u'
+`--local-also'
+     Display information about local users from the system `utmp' file.
+     May prove useful when running `radwho' as a finger daemon.
+
+`-n'
+`--no-resolve'
+     Do not resolve IP addresses. It is a synonim for -I ip.
+
+`-o FORMAT'
+`--format FORMAT'
+     Select customized output format. This can also be changed by
+     setting the value of environment variable `RADWHO_FORMAT'.  The
+     format string is a comma-separated list of format specifications
+     in one of the following forms:
+
+    FIELD
+          Output FIELD with its default width, heading and alignment.
+          The field names and corresponding default values are
+          discussed in detail below.
+
+    FIELD:WIDTH
+          Output FIELD, use column width WIDTH. If WIDTH starts with
+          `+', the field will be right-aligned, if it starts with `-',
+          the field will be left-aligned. Otherwise the default
+          alignment will be used
+
+    FIELD:WIDTH:HEADING
+          The same as above, but also supplies the heading for the
+          column
+
+     The field names are:
+
+    `login'
+          Login name
+
+    `orig'
+          Original login name as supplied with the request.
+
+    `port'
+          NAS port number
+
+    `sid'
+          The Session ID
+
+    `nas'
+          The NAS name or IP address.
+
+    `ip'
+          Framed IP address assigned to the user, if it is provided
+          framed service.
+
+    `proto'
+          Connection protocol. Its possible values are:
+
+             * `PPP' for a point-to-point link
+
+             * `SLIP' for a SLIP link
+
+             * `HUP' for closed session
+
+             * `shell' for shell user
+
+    `date'
+          Date/time when the session started
+
+    `delay'
+          Delay time *Note Acct-Delay-Time::.
+
+    `type'
+          Entry type in decimal.
+
+    `ptype'
+          Port type. This is one of the following letters:
+
+          Type      Meaning                         
+          `L'       Local connection                
+          `R'       Rlogin connection               
+          `S'       SLIP connection                 
+          `C'       CSLIP connection                
+          `P'       PPP connection                  
+          `A'       Auto PPP connection             
+          `E'       Telnet session                  
+          `T'       "Clear TCP" connection          
+          `U'       TCP login service               
+          `!'       Console session                 
+          `X'       Shell                           
+
+    `time'
+          Total time of the session duration.
+
+    `clid'
+          The calling station ID.
+
+    `uname'
+          The GECOS field from local /etc/passwd, corresponding to the
+          login name.  If the user does not have a local account, his
+          login name is output.
+
+`-s'
+`--secure'
+     Run in secure mode. Queries without a user name are rejected.
+
+
+File: radius.info,  Node: Radlast,  Next: Raduse,  Prev: Radwho,  Up: Top
+
+Radlast
+*******
+
+   The `radlast' utility lists sessions of specified users, NASes, NAS
+ports and hosts, in reverse time order. By default, each line of output
+contains the login name, NAS short name and port number from where the
+session was conducted, host IP address or name, the start and stop
+times for the session, and the duration of the session. If the session
+is still continuing, `radlast' will so indicate.
+
+   When specified the `-l' option, `radlast' produces long output. It
+includes following fields:
+
+   * login name
+
+   * NAS short name
+
+   * port number
+
+   * prototype
+
+   * port type
+
+   * Session ID
+
+   * Caller ID
+
+   * Framed IP address
+
+   * Session Start Time
+
+   * Session Stop Time
+
+   * Duration of the Session
+
+* Menu:
+
+* Options: radlast options.      Command line options.
+
+
+File: radius.info,  Node: radlast options,  Up: Radlast
+
+`radlast' command line options
+******************************
+
+   Use following command line options to control the behaviour of
+`radlast' utility:
+
+`-NUMBER'
+`-c NUMBER'
+`--count NUMBER'
+     When given this option `radlast' will output at most this many
+     lines of information.
+
+`-f'
+`--file NAME'
+     Read the specified file instead of the default `/var/log/radwtmp'.
+
+`-h HOSTNAME'
+`--host HOSTNAME'
+     Report the logins from given host. Host can be either a name or a
+     "dotted quad" internet address.
+
+`-n SHORTNAME'
+`--nas SHORTNAME'
+     Report the logins from given Network Access Server (NAS).
+
+`-l'
+`--long-format'
+     "Long" output format. Report all the information stored in
+     `radwtmp' file.
+
+`-p NUMBER'
+`--port NUMBER'
+     Report the logins on a given port. The port may be specified
+     either fully or abbreviated, e.g. `radlast -p 3' or `radlast -p
+     S03'.
+
+`-s'
+`--show-seconds'
+     Report the duration of the login session in seconds instead of the
+     default days, hours and minutes.
+
+`-t'
+     The same as `-p'. This flag is provided for compatibility with
+     last(1).
+
+`-w'
+`--wide'
+     Widen the duration field to show seconds as well as the default
+     days, hours and minutes.
+
+   If multiple arguments are given, the logical OR operation between
+them is assumed, i.e. the information selected by each argument is
+printed. This, however, does not apply to `-c' option. This option is
+always combined with the rest of command line by logical AND.
+
+   The pseudo-user ~reboot logs in on every reboot of network access
+server.
+
+   If `radlast' is interrupted, it indicates to what date the search
+was progressed.
+
+
+File: radius.info,  Node: Raduse,  Next: Radzap,  Prev: Radlast,  Up: Top
+
+Raduse
+******
+
+   The `raduse' utility shows the usage of dialup lines in the realtime.
+
+* Menu:
+
+* Display:raduse display.       What is displayed.
+* Options:raduse options.       Command line options modify the default
+                                display.
+* Commands:raduse commands.     Interactive mode commands.
+
+
+File: radius.info,  Node: raduse display,  Next: raduse options,  Up: Raduse
+
+Display
+*******
+
+   At the top of output the summary information is displayed. It
+consists of two lines. First line shows the statistic collection uptime
+and current date/time. Second line shows total number of lines, number
+of active lines, number of idle (inactive) lines and load percentage.
+
+   The dialup statistics is displayed in the area below. For each dialup
+line three lines of data are shown.
+
+   First line shows the network access server name, port number on that
+server, number of logins registered on this line, status of the line,
+amount of time the line keeps the current status, and date and time
+where the line has switched to the current status.
+
+   If the line is currently active, the status field displays login
+name of the user logged in on this line. If the line is inactive, the
+word `[Idle]' is displayed.
+
+   Second and third lines display active and idle usage summary. They
+show following data: total time the line is in the given state, maximum
+amount of time in this state, and starting date and time when maximum
+duration was perceived.
+
+   The example of default display:
+
+     uptime    90+20:35         Sun Dec 17 12:21
+     235 lines,  71 active, 164 idle. Pool load 0.30
+     
+     
+     
+     max          001  2796 [idle]                 00:05 Sun Dec 17 12:16
+                  43+00:17     1+22:39 Fri Sep 22 18:04 - 16:44
+                  47+20:22       06:25 Thu Oct 05 02:24 - 08:50
+     max          002  2877 [idle]                 00:09 Sun Dec 17 12:11
+                  41+06:56       10:55 Sat Oct 28 21:20 - 07:15
+                  49+13:35       05:32 Mon Oct 02 00:33 - 06:05
+     max          003  3000 [idle]                 00:08 Sun Dec 17 12:12
+                  39+14:42       19:44 Thu Nov 02 14:52 - 10:36
+                  50+11:22       07:29 Wed Oct 11 23:30 - 06:59
+     max          004  2829 jsmith                 00:05 Sun Dec 17 12:15
+                  41+21:11     1+00:04 Sun Sep 24 12:17 - 12:21
+                  48+23:28       04:51 Sat Oct 07 03:42 - 08:33
+     max          005  2913 gray                   00:41 Sun Dec 17 11:40
+                  40+12:01       15:24 Mon Dec 11 19:18 - 10:43
+                  50+08:03       11:58 Wed Nov 29 13:43 - 01:41
+     max          006  3014 roland                 00:39 Sun Dec 17 11:41
+                  42+02:10       22:28 Sun Sep 24 13:46 - 12:15
+                  48+17:39       05:30 Fri Nov 24 01:57 - 07:28
+     max          007  2937 [idle]                 00:06 Sun Dec 17 12:15
+
+   This default display can be altered using command line options or
+interactive commands
+
+
+File: radius.info,  Node: raduse options,  Next: raduse commands,  Prev: raduse display,  Up: Raduse
+
+Raduse Command Line Options
+***************************
+
+   The following options modify the behaviour of `raduse':
+
+`-b'
+`--brief'
+     Start up in brief mode. In this mode only first line of
+     information for each dialup line is displayed.
+
+`-d COUNT'
+`--display COUNT'
+     Show only count displays, then exit. A display is considered to be
+     one update of the screen.
+
+`-D'
+`--dump'
+     Dump the statistics database to the standard output and then exit.
+     This is for debugging purposes only.
+
+`-I'
+`--no-idle-lines'
+     Do not display idle lines. By default `raduse' displays all dialup
+     lines.
+
+`-i'
+`--interactive'
+     Use interactive mode. In this mode any input is immediately read
+     for processing. *Note raduse commands:: section for the
+     description of commands usable in interactive mode. After
+     processing each command the screen is updated immediately, no
+     matter was the command understood or not. This mode is the default
+     when the standard output is an intelligent terminal.
+
+`-n'
+`-no-interactive'
+     Use non-interactive mode.
+
+`-s NUM'
+`--delay NUM'
+     Specify delay in seconds between screen updates.
+
+`-w'
+`--widen'
+     Widen the time display fields to show the seconds.
+
+`-l'
+
+`--list-nas'
+     List the names and IP numbers of network access servers and then
+     exit.
+
+`-h'
+`--help'
+     Display short usage summary.
+
+
+File: radius.info,  Node: raduse commands,  Prev: raduse options,  Up: Raduse
+
+   The following commands are understood when `raduse' is in
+interactive mode. Some commands require an argument. Such commands are
+followed by the word ARG. When `raduse' gets such command it displays a
+prompt and waits for user to enter the necessary data.
+
+   After processing each command the screen is updated immediately, no
+matter was the command understood or not.
+
+`RET'
+     Refresh the screen immediately
+
+`SPC'
+     Refresh the screen immediately
+
+`C-l'
+     Clear and redraw the display.
+
+`^'
+     (Caret) go to the first page.
+
+`b'
+     Toggle brief display mode.
+
+`C-b'
+     Move one page backwards.
+
+`C-f'
+     Move one page forwards.
+
+`i'
+     Toggle idle line display on or off.
+
+`j'
+     Move one line forwards.
+
+`k'
+     Move one line backwards.
+
+`G'
+     Move to the last page.
+
+`$'
+     Move to the last page.
+
+`q'
+     Quit the program
+
+`s ARG'
+     Change the number of seconds to delay between screen updates.
+
+`t ARG'
+     Display lines on a given Network Access Servers. The user is
+     prompted to input the NAS names. The names should be separated by
+     whitespace. The word `all' returns to display of all NAS lines.
+

@@ -1,0 +1,438 @@
+# Makefile.in generated automatically by automake 1.4 from Makefile.am
+
+# Copyright (C) 1994, 1995-8, 1999 Free Software Foundation, Inc.
+# This Makefile.in is free software; the Free Software Foundation
+# gives unlimited permission to copy and/or distribute it,
+# with or without modifications, as long as this notice is preserved.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY, to the extent permitted by law; without
+# even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.
+
+# $Id$
+
+
+SHELL = @SHELL@
+
+srcdir = @srcdir@
+top_srcdir = @top_srcdir@
+VPATH = @srcdir@
+prefix = @prefix@
+exec_prefix = @exec_prefix@
+
+bindir = @bindir@
+sbindir = @sbindir@
+libexecdir = @libexecdir@
+datadir = @datadir@
+sysconfdir = @sysconfdir@
+sharedstatedir = @sharedstatedir@
+localstatedir = @localstatedir@
+libdir = @libdir@
+infodir = @infodir@
+mandir = @mandir@
+includedir = @includedir@
+oldincludedir = /usr/include
+
+DESTDIR =
+
+pkgdatadir = $(datadir)/@PACKAGE@
+pkglibdir = $(libdir)/@PACKAGE@
+pkgincludedir = $(includedir)/@PACKAGE@
+
+top_builddir = ..
+
+ACLOCAL = @ACLOCAL@
+AUTOCONF = @AUTOCONF@
+AUTOMAKE = @AUTOMAKE@
+AUTOHEADER = @AUTOHEADER@
+
+INSTALL = @INSTALL@
+INSTALL_PROGRAM = @INSTALL_PROGRAM@ $(AM_INSTALL_PROGRAM_FLAGS)
+INSTALL_DATA = @INSTALL_DATA@
+INSTALL_SCRIPT = @INSTALL_SCRIPT@
+transform = @program_transform_name@
+
+NORMAL_INSTALL = :
+PRE_INSTALL = :
+POST_INSTALL = :
+NORMAL_UNINSTALL = :
+PRE_UNINSTALL = :
+POST_UNINSTALL = :
+build_alias = @build_alias@
+build_triplet = @build@
+host_alias = @host_alias@
+host_triplet = @host@
+target_alias = @target_alias@
+target_triplet = @target@
+AWK = @AWK@
+BUILD_TARGET = @BUILD_TARGET@
+CATOBJEXT = @CATOBJEXT@
+CC = @CC@
+ETC_DIR = @ETC_DIR@
+GETOPT = @GETOPT@
+GMSGFMT = @GMSGFMT@
+INCLUDEPATH = @INCLUDEPATH@
+INSTOBJEXT = @INSTOBJEXT@
+LANGUAGES = @LANGUAGES@
+LEX = @LEX@
+M4 = @M4@
+MAINT = @MAINT@
+MAKEINFO = @MAKEINFO@
+MSGFMT = @MSGFMT@
+PACKAGE = @PACKAGE@
+PS = @PS@
+RADDB_DIR = @RADDB_DIR@
+RADIUSD_LDADD = @RADIUSD_LDADD@
+RADIUS_PID = @RADIUS_PID@
+RADLOG_DIR = @RADLOG_DIR@
+RADPID_DIR = @RADPID_DIR@
+RANLIB = @RANLIB@
+USE_NLS = @USE_NLS@
+VERSION = @VERSION@
+YACC = @YACC@
+YACC_OPTS = @YACC_OPTS@
+
+CFLAGS = $(MCFLAGS) -DCHECKRAD=\"${sbindir}/checkrad\"
+
+sbin_PROGRAMS = radiusd
+radiusd_SOURCES = radiusd.c acct.c auth.c exec.c files.c menu.c sql.c                   notify.c config.c oldconfig.c pam.c proxy.c radius.c                   symtab.c timestr.c version.c log.c ippool.c stat.c                   snmpserv.c shmem.c radutil.c mysql.c radctl.c                   rewrite.c debugmod.c
+
+radiusd_LDADD = @LEXLIB@ -L ../radlib -lrad -llog @RADIUSD_LDADD@
+BUILT_SOURCES = config.c rewrite.c
+DISTCLEANFILES = config.c y.output
+INCLUDES = -I$(top_srcdir) -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp @INCLUDEPATH@
+EXTRA_DIST = config.y rewrite.y
+
+SUFFIXES = .S .c .ln .o .s
+
+# Maintainer-specific code
+
+@MAINTAINER_MODE_TRUE@MCFLAGS = -ggdb -DMAINTAINER_MODE=1
+@MAINTAINER_MODE_TRUE@MAINTAINERCLEANFILES = core *~ err out 
+@MAINTAINER_MODE_TRUE@CLEANFILES = *.ln
+@MAINTAINER_MODE_TRUE@LINTFLAGS = -gezr -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -DCHECKRAD=\"${sbindir}/checkrad\" $(INCLUDES)
+@MAINTAINER_MODE_TRUE@radiusd_LNS = $(radiusd_SOURCES:.c=.ln)
+
+@MAINTAINER_MODE_TRUE@SRCS = radiusd.c acct.c auth.c exec.c files.c menu.c sql.c         notify.c config.y oldconfig.c pam.c proxy.c radius.c         symtab.c timestr.c version.c log.c ippool.c stat.c         snmpserv.c shmem.c radutil.c mysql.c radctl.c rewrite.y
+mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
+CONFIG_HEADER = ../config.h
+CONFIG_CLEAN_FILES = 
+PROGRAMS =  $(sbin_PROGRAMS)
+
+
+DEFS = @DEFS@ -I. -I$(srcdir) -I..
+CPPFLAGS = @CPPFLAGS@
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+radiusd_OBJECTS =  radiusd.o acct.o auth.o exec.o files.o menu.o sql.o \
+notify.o config.o oldconfig.o pam.o proxy.o radius.o symtab.o timestr.o \
+version.o log.o ippool.o stat.o snmpserv.o shmem.o radutil.o mysql.o \
+radctl.o rewrite.o debugmod.o
+radiusd_DEPENDENCIES =  ../radlib
+radiusd_LDFLAGS = 
+COMPILE = $(CC) $(DEFS) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+CCLD = $(CC)
+LINK = $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(LDFLAGS) -o $@
+DIST_COMMON =  Makefile.am Makefile.in
+
+
+DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
+
+TAR = tar
+GZIP_ENV = --best
+SOURCES = $(radiusd_SOURCES)
+OBJECTS = $(radiusd_OBJECTS)
+
+all: all-redirect
+.SUFFIXES:
+.SUFFIXES: .S .c .ln .o .s
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps radiusd/Makefile
+
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+	cd $(top_builddir) \
+	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
+
+
+mostlyclean-sbinPROGRAMS:
+
+clean-sbinPROGRAMS:
+	-test -z "$(sbin_PROGRAMS)" || rm -f $(sbin_PROGRAMS)
+
+distclean-sbinPROGRAMS:
+
+maintainer-clean-sbinPROGRAMS:
+
+install-sbinPROGRAMS: $(sbin_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	$(mkinstalldirs) $(DESTDIR)$(sbindir)
+	@list='$(sbin_PROGRAMS)'; for p in $$list; do \
+	  if test -f $$p; then \
+	    echo "  $(INSTALL_PROGRAM) $$p $(DESTDIR)$(sbindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
+	     $(INSTALL_PROGRAM) $$p $(DESTDIR)$(sbindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	  else :; fi; \
+	done
+
+uninstall-sbinPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	list='$(sbin_PROGRAMS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(sbindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	done
+
+.c.o:
+	$(COMPILE) -c $<
+
+.s.o:
+	$(COMPILE) -c $<
+
+.S.o:
+	$(COMPILE) -c $<
+
+mostlyclean-compile:
+	-rm -f *.o core *.core
+
+clean-compile:
+
+distclean-compile:
+	-rm -f *.tab.c
+
+maintainer-clean-compile:
+
+radiusd: $(radiusd_OBJECTS) $(radiusd_DEPENDENCIES)
+	@rm -f radiusd
+	$(LINK) $(radiusd_LDFLAGS) $(radiusd_OBJECTS) $(radiusd_LDADD) $(LIBS)
+
+tags: TAGS
+
+ID: $(HEADERS) $(SOURCES) $(LISP)
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	here=`pwd` && cd $(srcdir) \
+	  && mkid -f$$here/ID $$unique $(LISP)
+
+TAGS:  $(HEADERS) $(SOURCES)  $(TAGS_DEPENDENCIES) $(LISP)
+	tags=; \
+	here=`pwd`; \
+	list='$(SOURCES) $(HEADERS)'; \
+	unique=`for i in $$list; do echo $$i; done | \
+	  awk '    { files[$$0] = 1; } \
+	       END { for (i in files) print i; }'`; \
+	test -z "$(ETAGS_ARGS)$$unique$(LISP)$$tags" \
+	  || (cd $(srcdir) && etags $(ETAGS_ARGS) $$tags  $$unique $(LISP) -o $$here/TAGS)
+
+mostlyclean-tags:
+
+clean-tags:
+
+distclean-tags:
+	-rm -f TAGS ID
+
+maintainer-clean-tags:
+
+distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
+
+subdir = radiusd
+
+distdir: $(DISTFILES)
+	@for file in $(DISTFILES); do \
+	  d=$(srcdir); \
+	  if test -d $$d/$$file; then \
+	    cp -pr $$d/$$file $(distdir)/$$file; \
+	  else \
+	    test -f $(distdir)/$$file \
+	    || ln $$d/$$file $(distdir)/$$file 2> /dev/null \
+	    || cp -p $$d/$$file $(distdir)/$$file || :; \
+	  fi; \
+	done
+acct.o: acct.c ../config.h ../include/sysdep.h ../include/radiusd.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h \
+	../include/radutmp.h ../include/radsql.h
+auth.o: auth.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h \
+	../include/radsql.h
+config.o: config.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+debugmod.o: debugmod.c ../config.h ../include/log.h
+exec.o: exec.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+files.o: files.c ../config.h ../include/sysdep.h ../include/radiusd.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h \
+	../include/radutmp.h ../include/parser.h ../include/symtab.h \
+	../include/radsql.h
+ippool.o: ippool.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+log.o: log.c ../config.h ../include/sysdep.h ../include/radiusd.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h \
+	../include/obstack1.h ../include/obstack.h
+menu.o: menu.c
+mysql.o: mysql.c ../config.h ../include/sysdep.h ../include/radiusd.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h \
+	../include/radutmp.h ../include/radsql.h
+notify.o: notify.c ../config.h
+oldconfig.o: oldconfig.c ../config.h ../include/radiusd.h \
+	../include/sysdep.h ../include/radius.h ../include/raddict.h \
+	../include/radpaths.h ../include/mem.h ../include/log.h \
+	../include/ippool.h
+pam.o: pam.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+proxy.o: proxy.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+radctl.o: radctl.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h \
+	../include/radutmp.h ../include/radctl.h
+radius.o: radius.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h
+radiusd.o: radiusd.c ../config.h ../include/radiusd.h \
+	../include/sysdep.h ../include/radius.h ../include/raddict.h \
+	../include/radpaths.h ../include/mem.h ../include/log.h \
+	../include/ippool.h ../include/radsql.h ../include/symtab.h
+radutil.o: radutil.c ../config.h ../include/sysdep.h \
+	../include/radiusd.h ../include/radius.h ../include/raddict.h \
+	../include/radpaths.h ../include/mem.h ../include/log.h \
+	../include/ippool.h
+rewrite.o: rewrite.c ../config.h ../include/radiusd.h \
+	../include/sysdep.h ../include/radius.h ../include/raddict.h \
+	../include/radpaths.h ../include/mem.h ../include/log.h \
+	../include/ippool.h ../include/symtab.h ../include/obstack1.h \
+	../include/obstack.h
+shmem.o: shmem.c ../config.h ../include/log.h ../include/mem.h \
+	../include/sysdep.h ../include/radiusd.h ../include/radius.h \
+	../include/raddict.h ../include/radpaths.h ../include/ippool.h
+snmpserv.o: snmpserv.c ../config.h ../include/snmp/snmp.h \
+	../include/snmp/asn1.h ../include/snmp/snmp_error.h \
+	../include/snmp/snmp_session.h ../include/snmp/snmp_vars.h \
+	../include/snmp/snmp_pdu.h ../include/snmp/snmp_msg.h \
+	../include/snmp/snmp_coexist.h ../include/snmp/snmp_api_error.h \
+	../include/snmp/snmp_impl.h ../include/snmp/snmp_api.h \
+	../include/snmp/snmp-internal.h ../include/snmp/parse.h \
+	../include/snmp/snmp_compat.h ../include/snmp/snmp_debug.h \
+	../include/sysdep.h ../include/radiusd.h ../include/radius.h \
+	../include/raddict.h ../include/radpaths.h ../include/mem.h \
+	../include/log.h ../include/ippool.h ../include/radutmp.h \
+	../include/radsnmp.h ../include/radmib.h
+sql.o: sql.c ../config.h ../include/radiusd.h ../include/sysdep.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h \
+	../include/radsql.h ../include/obstack1.h ../include/obstack.h
+stat.o: stat.c ../config.h ../include/sysdep.h ../include/radiusd.h \
+	../include/radius.h ../include/raddict.h ../include/radpaths.h \
+	../include/mem.h ../include/log.h ../include/ippool.h \
+	../include/radutmp.h
+symtab.o: symtab.c ../config.h ../include/sysdep.h ../include/symtab.h \
+	../include/mem.h
+timestr.o: timestr.c ../config.h ../include/sysdep.h
+version.o: version.c ../config.h ../include/radiusd.h \
+	../include/sysdep.h ../include/radius.h ../include/raddict.h \
+	../include/radpaths.h ../include/mem.h ../include/log.h \
+	../include/ippool.h
+
+info-am:
+info: info-am
+dvi-am:
+dvi: dvi-am
+check-am: all-am
+check: check-am
+installcheck-am:
+installcheck: installcheck-am
+install-exec-am: install-sbinPROGRAMS
+install-exec: install-exec-am
+
+install-data-am:
+install-data: install-data-am
+
+install-am: all-am
+	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
+install: install-am
+uninstall-am: uninstall-sbinPROGRAMS
+uninstall: uninstall-am
+all-am: Makefile $(PROGRAMS)
+all-redirect: all-am
+install-strip:
+	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
+installdirs:
+	$(mkinstalldirs)  $(DESTDIR)$(sbindir)
+
+
+mostlyclean-generic:
+
+clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
+
+distclean-generic:
+	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-rm -f config.cache config.log stamp-h stamp-h[0-9]*
+	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
+
+maintainer-clean-generic:
+	-test -z "$(BUILT_SOURCES)$(MAINTAINERCLEANFILES)" || rm -f $(BUILT_SOURCES) $(MAINTAINERCLEANFILES)
+mostlyclean-am:  mostlyclean-sbinPROGRAMS mostlyclean-compile \
+		mostlyclean-tags mostlyclean-generic
+
+mostlyclean: mostlyclean-am
+
+clean-am:  clean-sbinPROGRAMS clean-compile clean-tags clean-generic \
+		mostlyclean-am
+
+clean: clean-am
+
+distclean-am:  distclean-sbinPROGRAMS distclean-compile distclean-tags \
+		distclean-generic clean-am
+
+distclean: distclean-am
+
+maintainer-clean-am:  maintainer-clean-sbinPROGRAMS \
+		maintainer-clean-compile maintainer-clean-tags \
+		maintainer-clean-generic distclean-am
+	@echo "This command is intended for maintainers to use;"
+	@echo "it deletes files that may require special tools to rebuild."
+
+maintainer-clean: maintainer-clean-am
+
+.PHONY: mostlyclean-sbinPROGRAMS distclean-sbinPROGRAMS \
+clean-sbinPROGRAMS maintainer-clean-sbinPROGRAMS uninstall-sbinPROGRAMS \
+install-sbinPROGRAMS mostlyclean-compile distclean-compile \
+clean-compile maintainer-clean-compile tags mostlyclean-tags \
+distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
+dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
+install-exec install-data-am install-data install-am install \
+uninstall-am uninstall all-redirect all-am all installdirs \
+mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+
+
+config.c: $(srcdir)/config.y
+	$(YACC) -v @YACC_OPTS@ $(srcdir)/config.y
+	sed -e 's/y\.tab\.\([ch]\)/config\.\1/g;s/yy/conf_yy/g' y.tab.c > config.c
+
+config.o: config.c ../include/radiusd.h ../include/ippool.h
+
+rewrite.c: $(srcdir)/rewrite.y
+	$(YACC) -v @YACC_OPTS@ $(srcdir)/rewrite.y
+	sed -e 's/y\.tab\.\([ch]\)/rewrite\.\1/g;s/yy/rw_yy/g' y.tab.c > rewrite.c
+
+@MAINTAINER_MODE_TRUE@.c.ln:
+@MAINTAINER_MODE_TRUE@	$(LINT.c) -i $<
+
+@MAINTAINER_MODE_TRUE@lint:  $(radiusd_LNS)
+@MAINTAINER_MODE_TRUE@	$(LINT.c) -u $(radiusd_LNS)
+
+@MAINTAINER_MODE_TRUE@FILELIST:; @echo $(SRCS) > .list
+
+# Tell versions [3.59,3.63) of GNU make to not export all variables.
+# Otherwise a system limit (for SysV at least) may be exceeded.
+.NOEXPORT:

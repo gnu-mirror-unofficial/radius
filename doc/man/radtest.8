@@ -1,0 +1,147 @@
+.\" $Id$
+.ds RD /etc/raddb
+.ds RL /usr/adm
+.ds RP /etc/raddb
+.TH radtest 8 "March 10, 2000" "FSF"
+.SH NAME
+radtest - test the Radius daemon functionality
+
+.SH SYNOPSIS
+\fBradtest\fR [-d radius_dir][-x debug_level][-p port][-q][r retries][-s server][-t timeout][-v] [ filename ... ]
+.PP
+\fBradtest -h\fR
+.PP
+\fBradtest -l\fR
+.PP
+\fBradtest -V\fR
+
+.SH NOTE
+The information in this manpage may be obsolete or incomplete. Please
+refer to texinfo documentation for full information about GNU Radius
+tools.
+.SH DESCRIPTION
+\fBRadtest\fR sends Radius daemon arbitrary requests and displays the
+replies it gets.
+.PP
+After processing command line options, \fBradtest\fR
+checks the existence of two startup files: \fB\*(RD/radtestrc\fR  and
+\fB$HOME/.radtestrc\fR and processes them if they do exist. Then it processes
+in turn any filenames given. If no filenames are specified, \fBradtest\fR
+enters the interactive mode and reads its commands from the standard input.
+.SH OPTIONS
+A number of options can be used to alter the behaviour of the program. The
+options with their corresponding long equivalents are:
+.IP "-d radius_dir, --directory radius_dir"
+Specifies the directory where \fBRadius\fR startup files reside. The default
+is \fB\*(RD\fR.
+.IP "-x debug_level, --debug debug_level"
+Specifies the debugging level. The argument should consist of two decimal
+numbers separated by dot. The first number corresponds to the source module,
+and the second sets the debugging level itself.
+.IP "-p port, --port port"
+Sets the port number to use when sending authentication requests.
+\fBport\fR can be either a decimal number or string representing a valid
+service from \fB/etc/services\fR. Accounting port is computed as
+\fBport + 1\fR.
+.IP "-n, --quick"
+Quick startup. When given this flag \fBradtest\fR does not process startup
+files.
+.IP "-r number, --retry number"
+Sets the number of times \fBradtest\fR should retry sending requests if
+the server does not respond within the timeout interval.
+.IP "-t number, --timeout value"
+Specifies the amount of time \fBradtest\fR should wait for the reply before
+giving up.
+.IP "-v, --verbose"
+Verbose mode. When enabled, \fBradtest\fR verbosely lists the contents of
+the messages it sends and receives.
+.PP
+When given any of the following options, \fBradtest\fR displays the
+corresponding information and exits.
+.IP "-h, --help"
+Display short usage summary.
+.IP "-l, --license"
+Display the license.
+.IP "-V, --version"
+Display the program version.
+.SH INPUT LANGUAGE SYNTAX
+The input to \fBradtest\fR consists of a series of statements separated by
+semicolons. The following statements are recognized:
+.IP "Assignment statement"
+The assignment statement takes the form:
+.IP
+\fBNAME\fR = \fBvalue\fR
+.IP
+Where \fBNAME\fR is any admissible variable name. \fBValue\fR can be one of
+the following:
+.IP
+Decimal number.
+.IP
+IP address in dotted quad form.
+.IP
+String of characters enclosed in double quotes.
+.IP
+\fBVector\fR of attribute-value pairs
+.IP
+Dereferenced variable.
+.IP
+
+.IP "Print statement"
+Print statement takes the form:
+.IP
+print pritem [ pritem ...]
+.IP
+The statement prints on the standard output the values of the \fBpritem\fRs.
+Each \fBpritem\fR is either a value or a string.
+.IP "Send request statement"
+The statement takes two forms:
+.IP 
+send auth \fBcode\fR \fBpairs\fR
+.IP
+send acct \fBcode\fR \fBpairs\fR
+.IP
+Where \fBcode\fR is the request code. It can be either numeric or string
+representing a valid \fBRadius\fR dictionary value. \fBPairs\fR is a vector
+of attribute-value pairs to be sent.
+.IP
+The AUTH form of the statement sends the request to the authentication
+port, ACCT form of the statement sends it to the accounting port.
+.IP "Expect statement"
+The statement takes the forms:
+.IP
+expect \fBcode\fR 
+.IP
+expect \fBcode\fR \fBpritem\fR [ \fBpritem\fR ... ]
+.IP
+The statement instructs \fBradtest\fR to expect the \fBcode\fR in the reply
+to its previous request. If the expected code is received, the execution
+continues from the next statement. Otherwise the message is printed, and the
+execution is aborted. The kind of the message depends on the form of the
+statement used. In the first form, \fBradtest\fR displays the message
+"expect failed", in the second form, it prints the \fBpritem\fRs just as
+the \fBprint\fR command does.
+.SH PREDEFINED VARIABLES
+The following variables are predefined. The data type of each variable
+is given in parentheses.
+.IP "\fBauth_server\fR (IPADDRESS)"
+Keeps the IP address of the authentication server.
+.IP "\fBacct_server\fR (IPADDRESS)"
+Keeps the IP address of the accounting server.
+.IP "\fBauth_port\fR (INTEGER)"
+Keeps the authentication port number.
+.IP "\fBacct_port\fR (INTEGER)"
+Keeps the accounting port number.
+.IP "\fBtimeout\fR (INTEGER)"
+Keeps the timeout value.
+.IP "\fBretry\fR (INTEGER)"
+Keeps the number of retries before giving up.
+.IP "\fBsecret\fR (STRING)"
+Keeps the shared secret string.
+
+
+.SH AUTHORS
+Sergey Poznyakoff, gray@farlep.net
+
+.SH SEE ALSO
+radiusd(8rad)
+

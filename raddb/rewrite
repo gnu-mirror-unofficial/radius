@@ -1,0 +1,164 @@
+## $Id$
+##
+
+/* ************************************************************************ 
+ * Functions for normalizing packets coming from a cisco AS5300
+ * usage:
+ *     1. Uncomment $INCLUDE dictionary.voip in raddb/dictionary
+ *     2. Add following to your huntgroups file:
+ *        DEFAULT NAS-IP-Address = <IPADDR>, Rewrite-Function = "cisco_fixup"
+ *                NULL
+ *        where <IPADDR> is the cisco IP address.
+ */
+/* 
+ * The port rewriting function for cisco AS5300 used for voip.
+ * This function is used to generate NAS-Port-Id pair on the basis
+ * of vendor-specific pair 2. If the latter is in the form 
+ * "ISDN 9:D:999" (where each 9 represents a decimal digit), then 
+ * the function returns the number after the last colon. This is
+ * used as a port number.
+ */
+integer
+cisco_pid(string A)
+{
+	if (A =~ ".*\([0-9][0-9]*\):[A-Z]:\([0-9][0-9]*\)") {
+		return fact((integer)\2);
+	}
+	return -1;
+}
+
+/* This rewrites the brain-damaged cisco session id.
+ * The actual sid is the number before the first slash character.
+ * Other possibly relevant fields are also parsed out and saved 
+ * in the Voip-* A/V pairs.
+ */
+string
+cisco_sid(string S)
+{
+	if (S =~ "\(.[^/]*\)/[^/]*/[^/]*/\([^/]*\)/\([^/]*\)/\([^/]*\)/\([^/]*\)/\([^/]*\)/\([^/]*\)/\([^/]*\).*") {
+		%[Voip-Connection-ID] = \2;
+		%[Voip-Call-Leg-Type] = \3;
+		%[Voip-Connection-Type] = \4;
+		%[Voip-Connect-Time] = \5;
+		%[Voip-Disconnect-Time] = \6;
+		%[Voip-Disconnect-Cause] = \7;
+		%[Voip-Remote-IP] = \8;
+		return \1;
+	} 
+	return S;
+}
+
+/* *************************************************************************
+ * If you don't need other parts of cisco sid, you can just use this:
+string
+cisco_sid(string S)
+{
+	if (S =~ "\(.[^/]*\)/.*") {
+		return \1;
+	} 
+	return S;
+}
+ *
+ *************/
+
+/*
+ * Compensate for cisco AS5300 anomalies
+ */
+integer
+cisco_fixup()
+{
+	integer pid;
+
+	if ((pid = cisco_pid(%[Cisco-PRI-Circuit])) != -1) {
+		if (*%[NAS-Port-Id])
+			%[Orig-NAS-Port-Id] = %[NAS-Port-Id];
+		%[NAS-Port-Id] = pid;
+	}
+	if (*%[Acct-Session-Id])
+		%[Acct-Session-Id] = cisco_sid(%[Acct-Session-Id]);
+	return 0;
+}
+
+/* *************************************************************************
+ * This is for MAX Ascend with coded port numbers.
+ * The port number is coded as XYYZZ
+ *   where X = 1 for digital, X = 2 for analog;
+ *         YY = line number (1 for first PRI/T1/E1, 2 for second, so on);
+ *         ZZ = channel number (on the PRI or Channelized T1/E1).
+ * usage:
+ *     1. Add following to your huntgroups file:
+ *        DEFAULT NAS-IP-Address = <IPADDR>, Rewrite-Function = "max_fixup"
+ *                NULL
+ *        where <IPADDR> is the IP address of your MAX server.
+ */
+integer
+max_decode_port(integer P)
+{
+	if (P > 9999) {
+		integer s, l, c;
+
+		s = P / 10000; 
+		l = (P - (10000 * s))/100; 
+		c = P - ((10000 * s) + (100 * l)); 
+		return (c-1) + (l-1) * 23;
+	}
+	return P;
+}
+
+integer
+max_fixup()
+{
+	%[Orig-NAS-Port-Id] = %[NAS-Port-Id]; # Preserve original data
+	%[NAS-Port-Id] = max_decode_port(%[NAS-Port-Id]);
+	return 0;
+}
+
+/* ************************************************************************ 
+ * Windows NT machines often authenticate themselves as
+ * NT_DOMAIN\username. Strip off the domain part from the username.
+ * usage:
+ *     1. Add following to your hints file:
+ *        DEFAULT Rewrite-Function = "nt_fixup"
+ *                NULL
+ */
+
+integer
+nt_fixup()
+{
+	integer i;
+
+	if ((i = index(%[User-Name], '\\')) != -1) { 
+		%[Orig-User-Name] = %[User-Name];
+		%[User-Name] = substr(%[User-Name], i+1, -1);
+	}
+	return 0;
+}
+
+/* ************************************************************************ 
+ * Specialix Jetstream 8500 24 port access server.
+ * If the user name is 10 characters or longer, a "/" gets inserted
+ * after the 10th character.
+ *
+ * usage:
+ *     1. Add following to your huntgroups file:
+ *     DEFAULT NAS-IP-Address = <IPADDR>, Rewrite-Function = "jetstream_fixup"
+ *             NULL
+ *        where <IPADDR> is the IP address of your Jetstream server.
+ */
+string
+login_jetstream(string uname)
+{
+	if (length(uname) > 10)
+		if (substr(uname, 10, 1) == "/")
+			return substr(uname, 0, 10) + substr(uname, 11, -1);
+	return uname;
+}
+
+integer
+jetstream_fixup()
+{
+	%[Orig-User-Name] = %[User-Name];
+	%[User-Name] = login_jetstream(%[User-Name]);
+	return 0;
+}
+

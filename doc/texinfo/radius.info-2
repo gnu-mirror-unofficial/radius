@@ -1,0 +1,1668 @@
+This is Info file radius.info, produced by Makeinfo version 1.68 from
+the input file radius.texinfo.
+
+INFO-DIR-SECTION GNU radius
+START-INFO-DIR-ENTRY
+* Radius: (radius).     The GNU radius
+END-INFO-DIR-ENTRY
+
+   This file documents the GNU radius
+
+   Published by the Free Software Foundation 59 Temple Place, Suite 330
+Boston, MA  02111-1307 USA
+
+   Copyright (C) 1999 Sergey Poznyakoff Permission is granted to make
+and distribute verbatim copies of this manual provided the copyright
+notice and this permission notice are preserved on all copies.
+
+   Permission is granted to copy and distribute modified versions of
+this manual under the conditions for verbatim copying, provided also
+that the sections entitled "The GNU Manifesto", "Distribution" and "GNU
+General Public License" are included exactly as in the original, and
+rovided that the entire resulting derived work is distributed under the
+terms of a permission notice identical to this one.
+
+   Permission is granted to copy and distribute translations of this
+manual into another language, under the above conditions for modified
+versions, except that the sections entitled "The GNU Manifesto",
+"Distribution" and "GNU General Public License" may be included in a
+translation approved by the Free Software Foundation instead of in the
+original English.
+
+
+File: radius.info,  Node: option,  Next: logging,  Up: config
+
+The `option' statement
+**********************
+
+Syntax:
+-------
+
+     options {
+             [ usr2delay NUMBER ; ]
+             [ max-requests NUMBER ; ]
+             [ exec-program-user STRING ; ]
+             [ exec-program-group STRING ; ]
+     } ;
+
+Usage
+-----
+
+   The options statement defines the global options to be used by
+`radiusd'.
+
+Numeric statements
+------------------
+
+`usr2delay'
+     Sets the delay time in seconds between receiving the `SIGUSR2'
+     signal and re-reading configuration.
+
+`max-requests'
+     Sets the maximum number of the requests in queue.
+
+String statements
+-----------------
+
+`exec-program-user'
+     Sets effective user id for the programs executed as a result of
+     `Exec-Program' and `Exec-Program-Wait' to that of the given
+     username.
+
+`exec-program-group'
+     Sets effective group id for the programs executed as a result of
+     `Exec-Program' and `Exec-Program-Wait' to that of the given
+     groupname.
+
+
+File: radius.info,  Node: logging,  Next: auth,  Prev: option,  Up: config
+
+`logging' statement
+*******************
+
+Syntax:
+-------
+
+     logging {
+             [ channel channel_name {
+                    (  file STRING ;
+                     | syslog facility . priority ; )
+                    [ option (pid, cons, level) ; ]
+             }; ]
+             [ category category_name {
+                     [ channel channel_name ; ]
+                     [ level level_list ; ]
+             } ; ]
+     } ;
+
+
+File: radius.info,  Node: auth,  Next: acct,  Prev: logging,  Up: config
+
+`auth' statement
+****************
+
+Syntax:
+-------
+
+     auth {
+             [ port NUMBER ; ]
+             [ spawn BOOL ; ]
+             [ max-requests NUMBER ; ]
+             [ time-to-live NUMBER ; ]
+             [ request-cleanup-delay NUMBER ; ]
+             [ detail BOOL ; ]
+             [ strip-names BOOL ; ]
+             [ checkrad-assume-logged BOOL ; ]
+     } ;
+
+Usage:
+------
+
+   The `auth' statement configures the parameter of the authentication
+service.
+
+Numeric statements
+------------------
+
+`port'
+     Sets the port number to listen for the authentication requests.
+
+`max-requests'
+     Sets the maximum number of authentication requests in the queue.
+     Any surplus requests will be discarded.
+
+`time-to-live'
+     Sets the request time-to-live in seconds. The time-to-live is the
+     time to wait for the completion of the request. If the request job
+     isn't completed within this interval of time it is cleared, the
+     corresponding child process killed and the request removed from
+     the queue.
+
+`request-cleanup-delay'
+     Sets the request cleanup delay in seconds, i.e. determines how
+     long will the completed authentication request reside in the queue.
+
+Boolean statements
+------------------
+
+`spawn'
+     Determines if `radiusd' should spawn a child to process the
+     request.
+
+`detail'
+     When set to true, `radiusd' will produce the detailed log of each
+     received packet in the file `radacct/NASNAME/detail.auth' *Note
+     Naming conventions::.
+
+`strip-names'
+     Determines whether `radiusd' should strip any prefixes/suffixes
+     off the username before logging.
+
+`checkrad-assume-logged'
+     `radiusd' consults the value of this variable when `checkrad'
+     program returns "don't know" answer for a particular user *Note
+     Checkrad Overview::.  If this variable is set to `yes', the daemon
+     will proceed as if `checkrad' returned "yes", i.e. it will assume
+     the user is logged in.  Otherwise `radiusd' assumes the user *is*
+     logged in.
+
+
+File: radius.info,  Node: acct,  Next: proxy,  Prev: auth,  Up: config
+
+`acct' statement
+****************
+
+Syntax:
+-------
+
+     acct {
+             [ port NUMBER ; ]
+             [ spawn BOOL ; ]
+             [ max-requests NUMBER ; ]
+             [ time-to-live NUMBER ; ]
+             [ request-cleanup-delay NUMBER ; ]
+     } ;
+
+Usage:
+------
+
+   The `acct' statement configures the parameters of the accounting
+service.
+
+Numeric statements
+------------------
+
+`port'
+     Sets the port number to listen for the authentication requests.
+
+`max-requests'
+     Sets the maximum number of accounting requests in the queue. Any
+     surplus requests will be discarded.
+
+`time-to-live'
+     Sets the request time-to-live in seconds. The time-to-live is the
+     time to wait for the completion of the request. If the request job
+     isn't completed within this interval of time it is cleared, the
+     corresponding child process killed and the request removed from
+     the queue.
+
+`request-cleanup-delay'
+     Sets the request cleanup delay in seconds, i.e. determines how
+     long will the completed account request reside in the queue.
+
+Boolean statements
+------------------
+
+`spawn'
+     Determines if `radiusd' should spawn a child to process the
+     request.
+
+
+File: radius.info,  Node: proxy,  Next: notify,  Prev: acct,  Up: config
+
+`proxy' statement
+*****************
+
+Syntax:
+-------
+
+     proxy {
+             [ max-requests NUMBER ; ]
+             [ request-cleanup-delay NUMBER ; ]
+     } ;
+
+Usage:
+------
+
+   The `proxy' statement configures the parameters of the proxy service.
+
+Numeric statements
+------------------
+
+`max-requests'
+     Sets the maximum number of accounting requests in the queue. Any
+     surplus requests will be discarded.
+
+`request-cleanup-delay'
+     Sets the request cleanup delay in seconds, i.e. determines how
+     long will the completed account request reside in the queue.
+
+
+File: radius.info,  Node: notify,  Next: usedbm,  Prev: proxy,  Up: config
+
+`notify' statement (raddb/config)
+*********************************
+
+Syntax:
+-------
+
+     notify {
+             [ host IPADDR ; ]
+             [ port PORTNO ; ]
+             [ retry NUMBER ; ]
+             [ delay NUMBER ; ]
+     } ;
+     
+     notify off ;
+
+Usage
+-----
+
+   The `notify' statement configures the TTL notification service.
+
+Disabling the service
+---------------------
+
+   The `notify off;' form of the statement disables the service.
+
+Numeric statements
+------------------
+
+`port'
+     Specify the port number to send the TTL notifications to.
+
+`retry'
+     Specifies how many time `radiusd' should try to resend
+     notifications if the remote party doesn't respond.
+
+`delay'
+     Specifies the delay in seconds between each two successive resends.
+
+IP-Number statements
+--------------------
+
+`host'
+     Sets the hostname or IP address of the notification listener.
+
+
+File: radius.info,  Node: usedbm,  Next: snmp,  Prev: notify,  Up: config
+
+`usedbm' statement
+******************
+
+Syntax:
+-------
+
+     usedbm ( never | only | also ) ;
+
+Usage
+-----
+
+   The `usedbm' statement determines whether the DBM support should be
+enabled.
+
+`never'
+     Do not use DBM support at all.
+
+`only'
+     Use only the DBM database and ignore `raddb/users'.
+
+`also'
+     Use both `raddb/users' and DBM.
+
+
+File: radius.info,  Node: snmp,  Prev: usedbm,  Up: config
+
+`snmp' statement (raddb/config)
+*******************************
+
+Syntax:
+-------
+
+     snmp {
+             [ port PORTNO ; ]
+             [ spawn BOOL ; ]
+             [ max-requests NUMBER ; ]
+             [ time-to-live NUMBER ; ]
+             [ request-cleanup-delay NUMBER ; ]
+             [ ident STRING ; ]
+             [ community NAME ( rw | ro ) ; ]
+             [ network NAME NETWORK [ NETWORK ... ] ; ]
+             [ acl {
+                     [ allow NETWORK_NAME COMMUNITY_NAME ; ]
+                     [ deny NETWORK_NAME ; ]
+             } ; ]
+     };
+
+Usage
+-----
+
+   The `snmp' statement configures the SNMP service.
+
+Numeric statements
+------------------
+
+`port'
+     Sets the port number to listen for the SNMP requests.
+
+`max-requests'
+     Sets the maximum number of SNMP requests in the queue. Any surplus
+     requests will be discarded.
+
+`time-to-live'
+     Sets the request time-to-live in seconds. The time-to-live is the
+     time to wait for the completion of the request. If the request job
+     isn't completed within this interval of time it is cleared, the
+     corresponding child process killed and the request removed from
+     the queue.
+
+`request-cleanup-delay'
+     Sets the request cleanup delay in seconds, i.e. determines how
+     long will the completed SNMP request reside in the queue.
+
+Boolean statements
+------------------
+
+`spawn'
+     Determines if `radiusd' should spawn a child to process the SNMP
+     request.
+
+String statements
+-----------------
+
+`ident'
+     Sets the SNMP server identification string.
+
+Community and network definitions
+---------------------------------
+
+`community NAME ( rw | ro )'
+     Defines the community NAME as read-write (`rw') or read-only
+     (`ro').
+
+`network NAME NETWORK [ NETWORK ... ]'
+     Groups several networks or hosts under one logical network name.
+
+Access-Control List definitions
+-------------------------------
+
+`allow NETWORK_NAME COMMUNITY_NAME'
+     allow hosts from the group NETWORK_NAME access to community
+     COMMUNITY_NAME.
+
+`deny NETWORK_NAME'
+     Deny access to SNMP service from any host in the group
+     NETWORK_NAME.
+
+
+File: radius.info,  Node: dictionary,  Next: clients,  Prev: config,  Up: Configuration files
+
+Radius dictionary.
+******************
+
+   The dictionary file `raddb/dictionary' defines the symbolic names
+for radius attributes and their values *Note Attributes::. The file
+consists of a series of statements. Each statement occupies one line.
+
+   In the detailed discussion below we use the following meta-syntactic
+characters:
+
+NUMBER
+     Denotes a decimal, octal or hexagesimal number. Usual C
+     conventions are honored, i.e. if NUMBER starts with `0x' or `0X'
+     it is read as a hex number, if it starts with `0' it is read as an
+     octal one, otherwise it is read as a decimal one.
+
+TYPE
+     Denotes an attribute type. These are valid attribute types
+
+    `string'
+          A string type.
+
+    `integer'
+          An integer type.
+
+    `ipaddr'
+          IP address in a dotted-quad form.
+
+    `date'
+          A date in the format: "MON DD CCYY", where MON is the usual
+          three-character abbreviation, DD is day of month (1-31), CCYY
+          is the year, including the century.
+
+   There are 6 kinds of statements:
+
+* Menu:
+
+* Comment::             Introducing a comment line.
+* $INCLUDE::            Include a file.
+* VENDOR::              Define a vendor-id.
+* ATTRIBUTE::           Define an attribute translation.
+* ATTRIB_NMC::          Another way to define vendor-specific attributes.
+* VALUE::               Define a value translation.
+
+
+File: radius.info,  Node: Comment,  Next: $INCLUDE,  Prev: dictionary,  Up: dictionary
+
+Comments
+********
+
+   Comments are introduced by a pound sign (`#'). Everything starting
+from the first occurence of `#' up to the end of line is ignored.
+
+
+File: radius.info,  Node: $INCLUDE,  Next: VENDOR,  Prev: Comment,  Up: dictionary
+
+Inclusion statements
+********************
+
+Syntax
+------
+
+     $INCLUDE `filename'
+
+Usage
+-----
+
+   The `$INCLUDE' statement causes the contents of the file `filename'
+to be read in and processed. The file is looked up in the Radius
+database directory *Note Configuration files::.
+
+
+File: radius.info,  Node: VENDOR,  Next: ATTRIBUTE,  Prev: $INCLUDE,  Up: dictionary
+
+Define the Vendor-Id translation
+********************************
+
+Syntax
+------
+
+     VENDOR  Vendor-Name     NUMBER
+
+Usage
+-----
+
+   A `VENDOR' statement defines the symbolic name for a Vendor-Id.
+This name can subsequently be used in `ATTRIBUTE' statements to define
+Vendor-Specific attribute translations *Note Vendor-Specific::.
+
+Example
+-------
+
+     VENDOR		Livingston	307
+
+
+File: radius.info,  Node: ATTRIBUTE,  Next: ATTRIB_NMC,  Prev: VENDOR,  Up: dictionary
+
+ATTRIBUTE statement
+*******************
+
+Syntax
+------
+
+     ATTRIBUTE       Attribute-Name          NUMBER  TYPE
+     ATTRIBUTE       Attribute-Name          NUMBER  TYPE    Vendor-Name
+
+Usage
+-----
+
+   The `ATTRIBUTE' statement defines the translation for an attribute.
+The second form of defines the vendor-specific attribute *Note
+Vendor-Specific::.
+
+Example
+-------
+
+   The following assigns the translation string `Service-Type' to the
+attribute number 6:
+
+     ATTRIBUTE	Service-Type		6	integer
+
+   The following defines a vendor-specific attribute for vendor-id
+`Livingston', defined in the previous chapter:
+
+     ATTRIBUTE	LE-Terminate-Detail	2	string	Livingston
+
+
+File: radius.info,  Node: ATTRIB_NMC,  Next: VALUE,  Prev: ATTRIBUTE,  Up: dictionary
+
+ATTRIB_NMC statement
+********************
+
+Syntax
+------
+
+     ATTRIB_NMC      Attribute-Name          NUMBER  TYPE
+
+Usage
+-----
+
+   This statement defines the translation for a USR vendor-specific
+attribute (vendor PEC 429). The `ATTRIB_NMC' statement is provided for
+compatibility with existing dictionaries.
+
+
+File: radius.info,  Node: VALUE,  Prev: ATTRIB_NMC,  Up: dictionary
+
+ATTRIB_NMC statement
+********************
+
+Syntax
+------
+
+     VALUE   Attribute-Translation       Value-Translation       NUMBER
+
+Usage
+-----
+
+   The `VALUE' statement assigns a translation string to a given value
+of an integer attribute. `Attribute-Translation' specifies the
+attribute and the `Value-Translation' specifies the name assigned to
+the value NUMBER of this attribute.
+
+Example
+-------
+
+   The following assigns the translation string `Login-User' to the
+value 1 of the attribute `Service-Type'.
+
+     VALUE		Service-Type		Login-User		1
+
+
+File: radius.info,  Node: clients,  Next: naslist,  Prev: dictionary,  Up: Configuration files
+
+clients list
+************
+
+   The `raddb/clients' lists NASes which are allowed to make
+authentication requests. As usual, the `#' character introduces a
+comment. Each record in the file consists of two fields, separated by
+whitespace. The fields are:
+
+NAS name
+     Specifies a hostname or IP address of the NAS.
+
+Key
+     Lists the encryption key shared between the server and this NAS.
+
+* Menu:
+
+* Example: clients example.     An example of the clients file.
+
+
+File: radius.info,  Node: clients example,  Prev: clients,  Up: clients
+
+An example of the clients file
+******************************
+
+     # This is a list of clients which are allowed to make authentication
+     # requests.
+     # Each record consists of two fields:
+     #	i.  Valid hostname.
+     #	ii. The shared encryption key for this hostname.
+     #
+     #Client Name		Key
+     #----------------	-------------------
+     myhost.dom.ain          guessme
+     merlin                  emrys
+     11.10.10.10             secRet
+
+
+File: radius.info,  Node: naslist,  Next: hints,  Prev: clients,  Up: Configuration files
+
+naslist
+*******
+
+   The `raddb/naslist' file contains a list of NASes known to the Radius
+server. Each record in the file consist of three fields:
+
+NAS name
+     Specifies a hostname or IP address of the NAS.
+
+Short Name
+     This field defines a short name under which this NAS will be listed
+     in logfiles. The short name is also used as a name of the
+     subdirectory where the detailed logs are stored.
+
+Type
+     Specifies the type of this NAS. Using this value `radiusd'
+     determines the way to query NAS about the presence of a given user
+     on it *Note Checkrad Overview::, *Note Checking Simultaneous
+     Logins::.  This type should be listed in a `type' statement
+     somewhere in `checkrad.conf' file *Note checkrad.conf::.
+
+* Menu:
+
+* Example: naslist example.     Example of `naslist' file.
+
+
+File: radius.info,  Node: naslist example,  Prev: naslist,  Up: naslist
+
+Example of `naslist' file
+*************************
+
+     # /etc/raddb/naslist: contains a list of Network Access Servers
+     #
+     # Each record consists of following fields:
+     #
+     # 	i. 	A valid hostname or IP address for the client.
+     #	ii. 	The short name to use in the logfiles for this NAS.
+     #	iii.	Type of device. Valid values are those listed in
+     #		/etc/raddb/checkrad.conf file.
+     
+     # NAS Name              Short Name      Type
+     #----------------       ----------      ----
+     myhost.dom.ain          myhost          unix
+     merlin                  merlin          max
+     11.10.10.10             arthur          livingston
+
+
+File: radius.info,  Node: hints,  Next: huntgroups,  Prev: naslist,  Up: Configuration files
+
+The `hints' configuration file.
+*******************************
+
+   The `raddb/hints' file is used to modify the contents of the incoming
+request depending on the username.
+
+   The file contains data in "User Profile" format *Note User Profile::.
+
+   On receiving the incoming packet, Radius attempts to find a matching
+record in the `hints' file using the procedure described below.  If the
+matching record is found, then the reply-pairs from this record are
+appended to the end of the request's pairlist. Thus, these pairs will
+further be used just as if NAS has sent them alog with the request.
+
+* Menu:
+
+* Matching: hints matching.     The matching rules.
+* Example: hints example.       An example of `hints' file.
+
+
+File: radius.info,  Node: hints matching,  Next: hints example,  Prev: hints,  Up: hints
+
+The hints matching rules
+************************
+
+   Radius matches the packet against the contents of `hints' file using
+the following rules:
+
+Rule 1. Match the username
+     If the username from the packet does not match the one in the
+     record, the record does not match. *Please note* that the special
+     usernames `DEFAULT' or `DEFAULT%d' (%d means any decimal number)
+     match any username.
+
+Rule 2. Modify the attributes.
+     If the reply-pairs contain `Strip-User-Name' attribute and its
+     value is `Yes' (1), then any prefixes/suffixes are stripped off
+     the value of `User-Name' attribute.
+
+     If the reply-pairs contain the `Rewrite-Function' attribute, the
+     function specified in the value of this attribute is applied *Note
+     rewrite::.
+
+     If the reply pairs contain `Fall-Through' attribute and its value
+     is `Yes' (1) then Radius switches to the next record and goes back
+     to the rule 1. Otherwise the matching process stops and returns
+     the record found.
+
+
+File: radius.info,  Node: hints example,  Prev: hints matching,  Up: hints
+
+An example of `hints' file
+**************************
+
+     ## If the username starts with `U', append the UUCP hint
+     DEFAULT         Prefix = "U", Strip-User-Name = No      Hint = "UUCP"
+     ## If the username ends with `.slip', append the SLIP service data
+     DEFAULT         Suffix = ".slip", Strip-User-Name = Yes
+                     Hint = "SLIP",
+                        Service-Type = Framed-User,
+                        Framed-Protocol = SLIP
+
+
+File: radius.info,  Node: huntgroups,  Next: realms,  Prev: hints,  Up: Configuration files
+
+The `huntgroups' file
+*********************
+
+   The `raddb/huntgroups' file segregates the incoming requests by the
+contents of the request pairlist.
+
+   The file contains data in "User Profile" format *Note User Profile::.
+
+* Menu:
+
+* Matching: huntgroups matching.       The matching rules.
+* Example: huntgroups example.         An example of the `huntgroups' file.
+
+
+File: radius.info,  Node: huntgroups matching,  Next: huntgroups example,  Prev: huntgroups,  Up: huntgroups
+
+The huntgroup matching
+**********************
+
+   Radius matches the packet against the contents of `hints' file using
+the following rules:
+
+1. Compare the "Effective checklist" with the request pairlist.
+     For each pair from the "Effective checklist" find a pair with the
+     same attribute from the request pairlist. If no such pair is
+     found, the comparison fails. Otherwise, compare the values from
+     both attributes as if the value from the supplied list were at the
+     left side from the comparison operator of the Effective checklist
+     pair.
+
+     This may seem a bit complicated. Lets consider an example. Suppose
+     the check pair is:
+
+          NAS-Port-Id <= 20
+
+     and the supplied pair is:
+
+          NAS-Port-Id = 10
+
+     Then Radius will perform the following comparison:
+
+          10 <= 20
+
+     which will, of course, succeed.
+
+2. Record matches
+     If the reply-pairs contain `Strip-User-Name' attribute and its
+     value is `Yes' (1), then any prefixes/suffixes are stripped off
+     the value of `User-Name' attribute.
+
+     If the reply-pairs contain the `Rewrite-Function' attribute, the
+     function specified in the value of this attribute is applied *Note
+     rewrite::.
+
+     If the reply pairs contain `Fall-Through' attribute and its value
+     is `Yes' (1) then Radius switches to the next record and goes back
+     to the rule 1. Otherwise the matching process stops and returns
+     the reply pairs from the record.
+
+
+File: radius.info,  Node: huntgroups example,  Prev: huntgroups matching,  Up: huntgroups
+
+An example of `huntgroups' file.
+********************************
+
+     ## The following lines define administrative user huntgroup and the commands
+     ## it can use:
+     ROOT    NAS-IP-Address = 127.0.0.1, State = "getpid"            NULL
+     ROOT    NAS-IP-Address = 127.0.0.1, State = "get-m-stat"        NULL
+     ROOT	NAS-IP-Address = 127.0.0.1, State = "get-q-stat"        NULL
+     
+     ## This defines the packet rewriting function for the server 11.10.10.11
+     DEFAULT NAS-IP-Address = 11.10.10.11, Rewrite-Function = "max_fixup"
+             NULL
+
+
+File: radius.info,  Node: realms,  Next: users,  Prev: huntgroups,  Up: Configuration files
+
+The `realms' file
+*****************
+
+   The `raddb/realms' file lists remote Radius servers that are allowed
+to communicate with the local Radius server *Note Realms::.
+
+   Each record consists of up to three fields, separated by whitespace.
+Two of them are mandatory. The fields are:
+
+Realm name
+     Specifies the name of the realm being defined, i.e. part of the
+     login name after the `@' symbol.
+
+Remote server
+     Specifies the remote server to which the requests for this realm
+     should be forwarded. A port number can also be specified using
+     syntax HOSTNAME:PORT. In this case the accounting port is computed
+     as PORT + 1.
+
+Flags (optional)
+     Only `nostrip' flag is currently allowed in this field. This flag
+     means that the realm name should not be stripped off the username
+     when logging.
+
+* Menu:
+
+* Example: realms example.      An example of `realms' file.
+
+
+File: radius.info,  Node: realms example,  Prev: realms,  Up: realms
+
+An example of `realms' file
+***************************
+
+     # Realm                 Remote server[:port]            flags
+     #----------------       ---------------------           --------
+     that.net                radius.that.net                 nostrip
+     dom.ain                 server.dom.ain:3000
+
+
+File: radius.info,  Node: users,  Next: access.deny,  Prev: realms,  Up: Configuration files
+
+The `users' file
+****************
+
+   File `raddb/users' contains the database of Radius users.  *Note
+User Profile:: for a description of its syntax.
+
+   Each record in the file describes a user's profile. When trying to
+find a match for an input request, `radiusd' uses the following
+algorythm:
+
+Matching rules
+==============
+
+1. Match the username
+     If the username from the packet does not match the one in the
+     record, the record does not match. *Please note* that the special
+     usernames `DEFAULT' or `DEFAULT%d' (%d means any decimal number)
+     match any username.
+
+2. Determine the authentication type and verify the user
+     The value of the `Auth-Type' attribute determines how the user is
+     authenticated *Note Auth-Type::.
+
+3. Delete from the check-pair list A/V pairs internal to the server
+     The internal A/V pairs are those with the attribute number greater
+     than 255 and the attributes from the following list:
+
+          	
+
+        - Expiration 	
+
+        - Password
+
+     We will call the list thus generated an "Effective checklist".
+
+4. Compare the "Effective checklist" with the supplied pairlist.
+     For each pair from the "Effective checklist" find a pair with the
+     same attribute from the supplied pairlist. If no such pair is
+     found, the comparison fails. Otherwise, compare the values from
+     both attributes as if the value from the supplied list were at the
+     left side from the comparison operator of the Effective checklist
+     pair.
+
+     This may seem a bit complicated. Lets consider an example. Suppose
+     the check pair is:
+
+          NAS-Port-Id <= 20
+
+     and the supplied pair is:
+
+          NAS-Port-Id = 10
+
+     Then Radius will perform the following comparison:
+
+          10 <= 20
+
+     which will, of course, succeed.
+
+5. Process special reply attributes
+     If the reply-pairs contain `Strip-User-Name' attribute and its
+     value is `Yes' (1), then any prefixes/suffixes are stripped off
+     the value of `User-Name' attribute.
+
+     If the reply-pairs contain the `Rewrite-Function' attribute, the
+     function specified in the value of this attribute is applied *Note
+     rewrite::.
+
+     If the reply pairs contain `Fall-Through' attribute and its value
+     is `Yes' (1) then Radius switches to the next record and goes back
+     to the rule 1. Otherwise the matching process stops and returns
+     the reply pairs from the record.
+
+   *Note Special attributes: Attribute list.
+
+* Menu:
+
+* Example: users example.       An example of `users' file.
+
+
+File: radius.info,  Node: users example,  Up: users
+
+Example of `users' file
+***********************
+
+
+     ## Administrative user
+     ## His permissions are defined by huntgroup ROOT in the `huntgroups' file
+     ROOT    Auth-Type = Crypt-Local,
+                     Password = "$1$6wvmr$vucm4HQa7vIp6vFpAy3qm.",
+                     Huntgroup-Name = "ROOT"
+             Service-Type = RADIUS-Administrative-User
+     
+     ## The following entry is matched when the user appends ``.ppp'' to his
+     ## username when logging in.
+     ## The suffix is removed from the user name, then the password is
+     ## looked up in the mysql database.
+     ## Users may log in at any time. They get PPP service.
+     DEFAULT Suffix = ".ppp",
+                     Auth-Type = Mysql,
+                     Login-Time = "Al",
+                     Simultaneous-Use = 1,
+                     Strip-User-Name = Yes
+     	Service-Type = Framed-User,
+                     Framed-Protocol = PPP
+     
+     ## This is for SLIP users.
+     ## This entry is matched when the auth request matches ``SLIP'' hint
+     ## *Note huntgroups example::
+     DEFAULT Hint = "SLIP",
+                     Auth-Type = Mysql
+             Service-Type = Framed-User
+                     Framed-Protocol = SLIP
+     
+     ## The following authenticates users using system passwd files.
+     ## The users are allowed to log in from 7:55 to 23:05 on any weekday,
+     ## except the weekend, and from 07:55 to 12:00 on sunday.
+     ## Only one login is allowed per user.
+     ## The program telauth is used to further check the authentication
+     ## information and provide the reply pairs
+     DEFAULT Auth-Type = System,
+                     Login-Time = "Wk0755-2305,Su0755-1200",
+                     Simultaneous-Use = 1
+             Exec-Program-Wait = "/usr/local/sbin/telauth %C{User-Name} %C{Calling-Station-Id} %C{NAS-IP-Address} %C{NAS-Port-Id}"
+     
+     ## This particular user is authenticated via PAM. He is presented a
+     ## choice from `/etc/raddb/menus/menu1' file.
+     gray    Auth-Type = Pam
+             Menu = menu1
+
+
+File: radius.info,  Node: access.deny,  Next: sqlserver,  Prev: users,  Up: Configuration files
+
+The `access.deny' file
+**********************
+
+   The `raddb/access.deny' file contains a list of user names which are
+not allowed to log in via Radius. Each user name is listed on a
+separate line. As usual, the `#' character introduces an end-of-line
+comment.
+
+
+File: radius.info,  Node: sqlserver,  Next: rewrite,  Prev: access.deny,  Up: Configuration files
+
+sqlserver
+*********
+
+   The `raddb/sqlserver' file configures the connection to SQL server.
+
+   The file uses simple line-oriented `KEYWORD VALUE' format. Comments
+are introduces by `#' character.
+
+Syntax overview:
+================
+
+   The `sqlserver' statements can logically be subdivided into
+following groups:
+
+1. SQL client parameters
+------------------------
+
+   These specify the parameters for connecting to SQL server.  The
+keywords are as follows:
+
+`server STRING'
+     The name or IP address of the SQL server
+
+`port NUMBER'
+     SQL port number
+
+`login STRING'
+     The SQL user login name
+
+`password PASSWORD'
+     The password
+
+2. Configuration parameters
+---------------------------
+
+   These parameters set various aspects of the SQL engine:
+
+     query_buffer_size NUMBER
+     keepopen BOOL
+     idle_timeout NUMBER
+
+`query_buffer_size NUMBER'
+     Set the size of SQL query expansion buffer. Default is 1024 bytes.
+
+`keepopen BOOL'
+     Specify whether `radiusd' should try to keep the connection open.
+     When set to no (the default), `radiusd' will open new connection
+     before the transaction and close it right after finishing it.  We
+     recommend setting `keepopen' to `yes' since opening a new
+     connection can take a substantial amount of time and slow down the
+     operation considerably.
+
+`idle_timeout NUMBER'
+     Set idle timeout in seconds for an open SQL connection.  The
+     connection is closed if it remains inactive longer that this amount
+     of time.
+
+3. Authentication server parameters
+-----------------------------------
+
+     doauth BOOL
+     auth_max_connections BOOL
+     auth_db STRING
+     auth_query STRING
+
+`doauth BOOL'
+     When set to `yes' enables authentication via SQL. All `auth_'
+     keywords are ignored if `doauth' is set to `no'.
+
+`auth_max_connections BOOL'
+     Specifies the maximum number of authentication SQL connections to
+     keep open. This parameter is ignored if `keepopen' is set to `no'.
+
+`auth_db STRING'
+     Specifies the name of the database containing authentication
+     information.
+
+`auth_query STRING'
+     Specifies the SQL query to be used to obtain user's password from
+     the database. The query should return exactly one string value --
+     the password.
+
+4. Accounting parameters
+------------------------
+
+     doacct BOOL
+     acct_max_connections NUMBER
+     acct_db STRING
+     acct_start_query STRING
+     acct_stop_query STRING
+     acct_nasup_query STRING
+     acct_nasdown_query STRING
+
+`doacct BOOL'
+     When set to `yes' enables SQL accounting. All `acct_' keywords are
+     ignored if `doacct' is set to `no'.
+
+`acct_max_connections NUMBER'
+     Specifies the maximum number of accounting SQL connections to keep
+     open. This parameter is ignored if `keepopen' is set to `no'.
+
+`acct_db STRING'
+     Specifies the name of the database where the accounting
+     information is to be stored.
+
+`acct_start_query STRING'
+     Specifies the SQL query to be used when the `Start' accounting
+     packet is received. The query should not return any value.
+     Typically, this would be some `INSERT' statement *Note Queries::.
+
+`acct_stop_query STRING'
+     Specifies the SQL query to be used when the `Stop' accounting
+     packet is received. The query should not return any value.
+     Typically, this would be some `UPDATE' statement.
+
+`acct_nasup_query STRING'
+     Specifies the SQL query to be used when a NAS sends
+     `Accounting-On' packet *Note Accounting requests::. The query
+     should not return any value.
+
+`acct_nasdown_query STRING'
+     Specifies the SQL query to be used when a NAS sends
+     `Accounting-Off' packet *Note Accounting requests::. The query
+     should not return any value.
+
+* Menu:
+
+* Queries::                     Writing SQL query templates.
+* Example: sqlserver example.   An example of `sqlserver' file.
+
+
+File: radius.info,  Node: Queries,  Next: sqlserver example,  Up: sqlserver
+
+Writing SQL query templates
+***************************
+
+   The `radiusd' server sends SQL server a query on one of the
+following events:
+
+Authentication
+     SQL authentication is enabled *Note SQL Auth:: and a user having
+     `Auth-Type' of `Mysql' is being authenticated.
+
+Accounting
+     SQL accounting is enabled *Note SQL Accounting::, and the received
+     request has `Acct-Status-Type' attribute set to one of the
+     following values:
+
+        * Start
+
+        * Stop
+
+        * Accounting-On
+
+        * Accounting-Off
+
+   The queries to use for each of these types are set up in the file
+`sqlserver'. This chapter describes in detail how to write such queries.
+
+Autheniticaton
+==============
+
+`auth_query' template.
+----------------------
+
+   This specifies a template for the query to use when authenticating a
+user via SQL. This query will be used when authenticating a user which
+has
+
+     Auth-Type = Mysql
+
+set in his profile *Note users::. Radius expects this query to return
+the MD5 encrypted password for the given user. When no such user is
+found in the database, the query should return NULL. The following
+statement
+
+     auth_query select password from passwd where user_name='%u'
+
+is a valid query.
+
+Accounting
+==========
+
+   There are four templates:
+
+`acct_start_query'
+     A query to execute when receiving an accounting start request.
+
+`acct_stop_query'
+     A query to execute when receiving an accounting start request.
+
+`acct_nasup_query'
+     A query to execute when receiving an Accounting-On request.
+
+`acct_nasdown_query'
+     A query to execute when receiving an Accounting-Off request.
+
+   Let's suppose we have an accounting table of the following structure:
+
+     CREATE TABLE calls (
+       status              int(3),
+       user_name           char(32),
+       Event_Date_Time     datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+       nas_ip_address      char(17),
+       nas_port_id         int(6),
+       acct_session_id     char(16) DEFAULT NOT NULL,
+       acct_session_time   int(11),
+       acct_input_octets   int(11),
+       acct_output_octets  int(11),
+       connect_term_reason int(4),
+       framed_ip_address   char(17),
+       called_station_id   char(32),
+       calling_station_id  char(32),
+       KEY name_sess (user_name,acct_session_id)
+     );
+
+   On receiving the `Start' record we would insert a record into this
+table with `status' set to 1. At this point the columns
+`acct_session_time', `acct_input_octets', `acct_output_octets' as well
+as `connect_term_reason' are unknown, so we will set them to 0.
+
+   Then, when the `Stop' request arrives we will look up the record
+having `status' = 1 and `user_name' and `acct_session_id' coinciding
+with attributes `User-Name' and `Acct-Session-Id' of the request and
+update it setting
+
+     status = 2
+     acct_session_time = value of Acct-Session-Time attribute
+     acct_input_octets = value of Acct-Input-Octets attribute
+     acct_output_octets = value of Acct-Output-Octets attribute
+     connect_term_reason = value of Acct-Terminate-Cause attribute
+
+Thus every record with `status' = 1 will represent the active session
+and every record with `status' = 2 will represent the finished and
+correctly closed record.
+
+   Further, there may be times when it is necessary to bring some NAS
+down. To correctly close the currently active sessions on this NAS we
+will define a `acct_nasdown_query' so that it would set `status' column
+to 2 and update `acct_session_time' in all records having `status' = 1
+and `nas_ip_address' equal to IP address of the NAS. Thus, all sessions
+on a given NAS will be closed correctly even when it is reloaded. The
+`acct_session_time' can be computed as difference between the current
+time and the time stored in `event_date_time' column.
+
+   We have not covered only one case: when a NAS is crashed, e.g. due to
+a power failure. In this case it does not have a time to send
+`Accounting-Off' request and all its records remain open. But when the
+power supply is restored, the NAS will send an `Accounting-On' request,
+so we define a `acct_nasup_query' to set `status' column to 3 and
+update `acct_session_time' in all open records belonging to this NAS.
+Thus we will know that each record having `status' = 3 represents a
+crashed session.
+
+   The next chapter illustrates such approach *Note sqlserver example::.
+
+
+File: radius.info,  Node: sqlserver example,  Prev: Queries,  Up: sqlserver
+
+An example of `sqlquery' file.
+******************************
+
+   This example supposes you have the single database called RADIUS
+with the following tables in it:
+
+passwd
+------
+
+   This table keeps authentication information. It is created as
+
+     CREATE TABLE passwd(
+       user_name           char(32),
+       password            char(64),
+       UNIQUE (user_name)
+     );
+
+calls
+-----
+
+   This table accumulates user session statistics. Its structure is:
+
+     CREATE TABLE calls (
+       status              int(3),
+       user_name           char(32),
+       Event_Date_Time     datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+       nas_ip_address      char(17),
+       nas_port_id         int(6),
+       acct_session_id     char(16) DEFAULT NOT NULL,
+       acct_session_time   int(11),
+       acct_input_octets   int(11),
+       acct_output_octets  int(11),
+       connect_term_reason int(4),
+       framed_ip_address   char(17),
+       unused              int(1),
+       called_station_id   char(32),
+       calling_station_id  char(32),
+       KEY name_sess (user_name,acct_session_id)
+     );
+
+   Assuming this the `sqlserver' could contain:
+
+     ######
+     ## sqlserver configuration
+     
+     ## General settings
+     ##
+     server localhost
+     port 3306
+     login radius
+     password password
+     
+     # Size of SQL query expansion buffer. Default is 1024 bytes.
+     query_buffer_size 1024
+     
+     keepopen yes
+     idle_timeout 14400
+     
+     
+     #########
+     ## Authentication service
+     ##
+     
+     # Enable authentication via SQL
+     doauth yes
+     
+     auth_max_connections 16
+     auth_db RADIUS
+     auth_query select password from passwd where user_name='%u'
+     
+     #########
+     # Accounting-relevant settings
+     
+     # Enable SQL accounting
+     doacct yes
+     acct_max_connections 16
+     acct_db RADIUS
+     
+     # Query to be used on session start
+     acct_start_query     INSERT INTO calls \
+                          VALUES(%C{Acct-Status-Type},\
+                                 '%u',\
+                                 '%G',\
+                                 '%C{NAS-IP-Address}',\
+                                 %C{NAS-Port-Id},\
+                                 '%C{Acct-Session-Id}',\
+                                 0,\
+                                 0,\
+                                 0,\
+                                 0,\
+                                 '%C{Framed-IP-Address}',\
+                                 0,\
+                                 '%C{Called-Station-Id}',\
+                                 '%C{Calling-Station-Id}')
+     
+     # Query to be used on session end
+     acct_stop_query      UPDATE calls \
+                          SET status=%C{Acct-Status-Type},\
+                              acct_session_time=%C{Acct-Session-Time},\
+                              acct_input_octets=%C{Acct-Input-Octets},\
+                              acct_output_octets=%C{Acct-Output-Octets},\
+                              connect_term_reason=%C{Acct-Terminate-Cause} \
+                              WHERE user_name='%C{User-Name}' AND status = 1
+     
+     
+     # Query to be used when a NAS is brought up, i.e. when it sends
+     # Accounting-On packet
+     # NOTE: It sets status 3 so that we can always tell which records
+     #       have been closed due to NAS hard reset.
+     acct_nasdup_query   \
+         UPDATE calls \
+            SET status=3,\
+          acct_session_time=unix_timestamp(now())-unix_timestamp(event_date_time) \
+         WHERE status=1 AND nas_ip_address='%C{NAS-IP-Address}'
+     
+     # Query to be used when a NAS goes down, i.e. when it sends
+     # Accounting-Off packet
+     acct_nasdown_query   \
+         UPDATE calls \
+            SET status=2,\
+          acct_session_time=unix_timestamp(now())-unix_timestamp(event_date_time) \
+         WHERE status=1 AND nas_ip_address='%C{NAS-IP-Address}'
+     
+     ## EOF
+
+
+File: radius.info,  Node: rewrite,  Next: menus,  Prev: sqlserver,  Up: Configuration files
+
+The `rewrite' file
+******************
+
+   Some NASes are very particular about the information they send with
+the requests. There are cases when the information they send is hardly
+usable or even just unusable. For example, a cisco AS5300 terminal
+server used as a voice over IP router packs a lot of information into
+its `Acct-Session-Id' attribute. Though the information stored there is
+otherwise relevant, it makes proper accounting impossible since the
+`Acct-Session-Id' attributes in the start and stop packets of the same
+session become different, and thus Radius cannot determine which stop
+corresponds to which start *Note Acct-Session-Id::.
+
+   In order to cope with such NASes, GNU Radius provides a rewrite
+feature which can be applied to incoming packet in order to normalize
+it, i.e. to convert it to the form prescribed by RFCs and understandable
+by Radius.
+
+   This is done by writing special functions, storing them in the
+`raddb/rewrite' file and creating a huntgroup for the NAS *Note
+huntgroups::, which applies the function to any packet coming from that
+NAS.
+
+   For example, in the case of AS5300 router, a corresponding rewrite
+function parses the `Acct-Session-Id' attribute, selects various fields
+from it, stores them in proper attributes, creating them if necessary
+and, finally replaces `Acct-Session-Id' with its real value, which is
+the same for start and stop records corresponding to a single session.
+Thus all the information that came with the packet is preserved, but
+the packet itself is made usable for proper accounting.
+
+* Menu:
+
+* Syntax: rewrite syntax.       The syntax of rewrite functions.
+* Usage: rewrite usage.         Applying rewrite functions to packets
+                                coming from particular NAS.
+* Examples: rewrite examples.   Examples of various rewrite functions.
+
+
+File: radius.info,  Node: rewrite syntax,  Next: rewrite usage,  Up: rewrite
+
+The syntax of rewrite functions.
+********************************
+
+   The syntax of rewrite functions resembles closely the C syntax.
+
+Data types
+----------
+
+   There are only two datatypes: `integer' and `string', the two being
+coercible to each other in the sense that a string can be coerced to an
+integer if it contains a valid ASCII representation of a decimal, octal
+or hex number, and the integer can always be coerced to a string, the
+result of such coercion being the ASCII string with decimal
+representation of the number.
+
+Symbols
+-------
+
+   A symbol is a lexical token. The following symbols are recognized:
+
+Arithmetical operators
+     These are `+', `-', `*', `/' representing the basic arithmetical
+     operations and `%' meaning remainder.
+
+Comparison operators
+     These are: `==', `!=', `<', `<=', `>', `>=' with the meaning equal
+     to what they have in C, `=~' meaning "matches a regular
+     expression" and `!~' meaning "does not match a regular expression".
+
+Unary operators.
+     These are: `-' and `+' for unary plus and minus, `!' for boolean
+     negation and `*' for testing the existence of an attribute.
+
+Boolean operators.
+     These are: `&&' and `||'.
+
+Parentheses `(' and `)'
+     These are used to change the precedence of operators, to introduce
+     typecasts (type coercions), to declare functions and to pass actual
+     arguments to functions.
+
+Curly braces (`{' and `}')
+     These are used to delimit blocks of code.
+
+Numbers
+     Numbers follow usual C convention for integers.
+
+Characters
+     These follow usual C convention for characters. A character is
+     represented internally by an integer keeping its ASCII code.
+
+Quoted strings
+     These follow usual C conventions for strings.
+
+Attribute values
+     This are represented either as
+
+          `%'NUMBER
+
+     which returns the value of an attribute NUMBER from the request
+     packet, or
+
+          `%['ATTRIBUTE-NAME`]'
+
+     which returns the value of an attribute ATTRIBUTE-NAME from the
+     request packet. ATTRIBUTE-NAME should be a valid Radius dictionary
+     name *Note dictionary::.
+
+Identifiers
+     Represent functions and variables. These are described in the next
+     section.
+
+Previous regexp match references
+     This are the tokens in the form:
+
+          `\'NUMBER
+
+     This means the NUMBERth subexpression from the recent regexp
+     match. The match references are always string expressions.
+
+Identifiers
+-----------
+
+   A valid identifier is a string of characters meeting the following
+requirements:
+
+  1. It starts with either a lower- or uppercase letter of the latin
+     alphabet or any of the following symbols: `_', `$'.
+
+  2. It consists of alphanumeric characters, undersores(`_') and dollar
+     signs (`$').
+
+Function declarations
+---------------------
+
+   The function is declared as follows:
+
+     TYPE FUNCTION-NAME (PARAMETER-LIST)
+
+where TYPE specifies the return type of the function, FUNCTION-NAME
+declares the symbolic name of the function and PARAMETER-LIST declares
+the formal parameters to the function.  It is a comma-separated list of
+declarations in the form:
+
+     TYPE PARM-NAME
+
+TYPE being the parameter type, and PARM-NAME being its symbolic name.
+Both FUNCTION-NAME and PARM-NAME should be valid identifiers.
+
+Variable declarations
+---------------------
+
+   There is no global variables in rewrite code. All variables are
+local.  The local variables are declared right after the opening curly
+brace (`{') and before any executable statements. The declaration takes
+form:
+
+     TYPE IDENT_LIST ;
+
+Here IDENT_LIST is a list of variable names. *Please note* that, unlike
+in C, no assignments are allowed in variable declarations.
+
+Executable statements
+---------------------
+
+   These are: expressions, assignments, conditional statements and
+return statements.
+
+Expressions
+-----------
+
+   An expression is either of the following:
+
+   * A variable identifier
+
+   * A type coercion expression
+
+   * An arithmetic expression
+
+   * A boolean expression
+
+   * An assignment
+
+   * A function call
+
+Type coercion
+-------------
+
+   The type coercion is like a typecast in C. Its syntax is
+
+     `(' TYPE `)' IDENT
+
+the result of type coercion is as follows:
+
+TYPE           Variable type  Resulting conversion                        
+integer        integer        No conversion. This results in the same     
+                              integer value.                              
+integer        string         If the string value of the variable is a    
+                              valid ASCII representation of the integer   
+                              number (either decimal, octal or hex) it    
+                              is converted to the integer, otherwise the  
+                              result of the conversion is undefined.      
+string         integer        The ASCII representation (in decimal) of    
+                              the integer number.                         
+string         string         No conversion. This results in the same     
+                              string value.                               
+
+Assignment
+----------
+
+   An assignment is:
+
+     IDENT = EXPRESSION ;
+
+The variable IDENT is assigned the value of EXPRESSION.
+
+Function calls
+--------------
+
+   These take the form:
+
+     IDENT ( ARG-LIST )
+
+where IDENT is the identifier representing the function, ARG-LIST is a
+comma-separated list of expressions supplying actual arguments to the
+function. The function IDENT references can be either a compiled
+function or a built-in function.
+
+   *Please note* that, unlike in C, the mismatch between the number of
+actual arguments and number of formal parameters in the compiled
+function declaration is not an error but rather a warning.
+
+Built-in functions.
+-------------------
+
+   The following built-in functions are provided:
+
+integer length(string s);
+     Returns the length of string `s'.
+
+integer index(string s, integer c);
+     Returns the index of the first occurence of the character `c' in
+     the string `s'. Returns -1 if no such occurence is found.
+
+integer rindex(string s, integer i);
+     Returns the index of the last occurence of the character `c' in
+     the string `s'. Returns -1 if no such occurence is found.
+
+string substr(string s, integer start, integer length);
+     Returns the at most `length' substring of `s' starting at position
+     `start'.
+
+   All character positions in strings are counted from 0.
+
+
+File: radius.info,  Node: rewrite usage,  Next: rewrite examples,  Prev: rewrite syntax,  Up: rewrite
+
+Applying rewrite functions.
+***************************
+
+   To apply a rewrite function to packets coming from a particular NAS,
+the name of the function should be listed in `Rewrite-Function'
+attribute of the huntgroup for this NAS *Note Rewrite-Function::, *Note
+huntgroups::.
+
+   For example, suppose you need to apply function `max_fixup' to all
+packets coming from NAS 11.10.10.11. Then you would write the following
+in your `huntgroups' file:
+
+     ## This defines the packet rewriting function for the server 11.10.10.11
+     DEFAULT NAS-IP-Address = 11.10.10.11, Rewrite-Function = "max_fixup"
+             NULL
+
+   The function `max_fixup' must be declared as:
+
+     integer max_fixup()
+     {
+     }
+
+   *Note huntgroups example::
+

@@ -1,0 +1,52 @@
+# A minimum config file. See config.syntax for explanation of 
+# the syntax.
+#
+option {
+	usr2delay 30;
+	max-requests 1024;
+};
+
+logging {
+	channel info {
+		file "radius.info";
+		option pid;
+	};	
+	channel debug {
+		file "radius.debug";
+	};
+	category auth {
+		level auth,failed_pass;
+	};
+	category info {
+		channel info;
+	};
+	category debug {
+		channel debug;
+	};
+};
+
+auth {
+	max-requests 127;
+	request-cleanup-delay 2;
+	detail yes;
+	strip-names yes;
+	checkrad-assume-logged yes;
+};
+
+acct {
+	max-requests 127;
+	request-cleanup-delay 2;
+};
+
+proxy {
+	max-requests 127;
+	request-cleanup-delay 2;
+};
+
+#cntl {
+#	port 5000;
+#};
+
+#usedbm never;
+
+#notify off;

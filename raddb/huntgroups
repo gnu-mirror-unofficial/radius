@@ -1,0 +1,26 @@
+# This file defines the `huntgroups' that you have. 
+# A huntgroup is defined by specifying the IP address of the NAS and 
+# possibly a port range.
+#
+# Matching is done while RADIUS scans the user file; if it includes the 
+# selection criterium "Huntgroup-Name = XXX" the huntgroup is looked up 
+# in this file to see if it matches. If there are multiple definitions 
+# of the same huntgroup, then the first one that matches will be used.
+#
+
+## The following lines define administrative user huntgroup and the commands
+## it can use:
+ROOT		NAS-IP-Address = 127.0.0.1, State = "getpid"		NULL
+ROOT		NAS-IP-Address = 127.0.0.1, State = "get-m-stat"	NULL
+ROOT		NAS-IP-Address = 127.0.0.1, State = "get-q-stat"	NULL
+ROOT		NAS-IP-Address = 127.0.0.1, State = "reload"		NULL
+ROOT		NAS-IP-Address = 127.0.0.1, State = "restart"		NULL
+ROOT		NAS-IP-Address = 127.0.0.1, State = "shutdown"		NULL
+ROOT		NAS-IP-Address = 127.0.0.1, State = "dumpdb"		NULL
+
+## Use the following for NASes that need packet rewriting:
+##
+#DEFAULT	NAS-IP-Address = 10.0.15.1, Rewrite-Function = "func"	NULL
+##
+## Replace 10.0.15.1 with proper IP address and func with the name of
+## function to use.

@@ -1,5 +1,13 @@
 2001-10-15 Sergey Poznyakoff
 
+	* radiusd/auth.c: Allow for teminating \0 in mach->userpass.
+	* radiusd/proxy.c: Allow for teminating \0 in password buffer.
+	* radiusd/radutil.c: Removed superfluous string[AUTH_STRING_LEN] = 0. 
+	* radlib/cryptpass.c: decrypt_password(): Append terminating
+	null.
+
+2001-10-15 Sergey Poznyakoff
+
 	* configure.in: Removed superfluous backslashes in final AC_OUTPUT.
 	* radiusd/proxy.c: Fixed bugs introduced yesterday.
 	* radlib/client.c: Likewise (in function radclient_build_request).

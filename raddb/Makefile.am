@@ -17,7 +17,7 @@
 #
 
 raddbdir=@ETC_DIR@/raddb
-raddb_subdirs=dict menu
+raddb_subdirs=dict menus
 
 newdict=\
  dictionary\

@@ -615,6 +615,7 @@ void stat_count_ports();
 /* users.y */
 int parse_file(char *file, void *c, int (*f)());
 int user_gettime(char *valstr, struct tm *tm);
+VALUE_PAIR *install_pair(char *name, int op, char *valstr);
 
 /* snmpserver.c */
 struct sockaddr_in;

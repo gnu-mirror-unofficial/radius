@@ -260,7 +260,7 @@ main(argc, argv)
 	int argval;
 	int radius_port = 0;
 	int t;
-	
+
 	if ((progname = strrchr(argv[0], '/')) == NULL)
 		progname = argv[0];
 	else
@@ -429,7 +429,7 @@ void
 set_config_defaults()
 {
         config.exec_user  = make_string("daemon");
-        username_valid_chars = make_string(".-_!@#$%^&");
+        username_valid_chars = make_string(".-_!@#$%^&\\/");
 	message_text[MSG_ACCOUNT_CLOSED] =
 		make_string("Sorry, your account is currently closed\r\n");
 	message_text[MSG_PASSWORD_EXPIRED] =
@@ -1828,24 +1828,20 @@ test_shell()
 	struct radutmp ut;
 	Datatype type;
 	Datum datum;
-#define opttkn() (tok = strtok(NULL, " \t"))
-#define nextkn() if (opttkn() == NULL) {\
- printf("arg count\n");\
- continue; }  
-#define chktkn() if (!tok) { \
- printf("arg count\n");\
- continue; }
 
 	printf("** TEST MODE **\n");
 	doprompt = isatty(fileno(stdin));
 	while (tok = moreinput(buf, sizeof(buf))) {
-		while (*tok && isspace(*tok))
+		int argc;
+		char **argv;
+
+                while (*tok && isspace(*tok))
 			tok++;
 		c = strlen(tok);
 		if (c > 1 && tok[c-1] == '\n')
 			tok[c-1] = 0;
 		c = *tok++;
-		tok = strtok(tok, " \t");
+								
 		switch (c) {
 		case 0:
 		case '#':
@@ -1860,33 +1856,39 @@ test_shell()
 			printf("m                         display memory usage\n"); 
 			break;
 		case 'd':
-			chktkn();
 			set_debug_levels(tok);
 			break;
 		case 'q':
 			return 0;
 		case 'c': /* checkrad */
-			chktkn();
-			nas = nas_lookup_name(tok);
+			if (argcv_get(tok, "", &argc, &argv)) {
+				fprintf(stderr, "can't parse input\n");
+				argcv_free(argc, argv);
+				continue;
+			}
+
+			if (argc < 4 || argc > 5) {
+				fprintf(stderr, "arg count\n");
+				continue;
+			}
+			nas = nas_lookup_name(argv[0]);
 			if (!nas) {
 				printf("bad nas\n");
+				argcv_free(argc, argv);
 				continue;
 			}
 			ut.nas_address = nas->ipaddr;
 
-			nextkn();
-			strncpy(ut.orig_login, tok, sizeof(ut.orig_login));
-			nextkn();
-			strncpy(ut.session_id, tok, sizeof(ut.session_id));
-			nextkn();
-			ut.nas_port = atoi(tok);
-			if (opttkn()) 
-				ut.framed_address = ipstr2long(tok);
+			strncpy(ut.orig_login, argv[1], sizeof(ut.orig_login));
+			strncpy(ut.session_id, argv[2], sizeof(ut.session_id));
+			ut.nas_port = atoi(argv[3]);
+			if (argc == 5) 
+				ut.framed_address = ipstr2long(argv[5]);
+			argcv_free(argc, argv);
 			printf("%d\n", checkrad(nas, &ut));
 			break;
 		case 'r':
 			/* r funcall */
-			chktkn();
 			if (interpret(tok, NULL, &type, &datum))
 				printf("?\n");
 			else {

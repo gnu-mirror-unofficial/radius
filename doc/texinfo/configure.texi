@@ -147,7 +147,7 @@ for the given user.
 Determines characters that are valid within a username. The alphanumeric
 characters are always allowed in a username, it is not necessary to
 specify them in this statement. By default the following characters
-are allowed in a username: @samp{.-_!@@#$%^&"}.
+are allowed in a username: @samp{.-_!@@#$%^&\/"}.
 
 @item log-dir
 Specifies the logging directory.

@@ -2,7 +2,7 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Naming conventions, Invocation, Operation, Top
+@node Naming conventions, Operation, Glossary, Top
 @chapter Naming conventions.
 @cindex naming conventions
 

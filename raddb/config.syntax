@@ -8,11 +8,11 @@ option {
 	usr2delay 30;
 	# Maximum number of request in queue
 	max-requests 127;
-	# The following specify the user and group to switch to
-	# before executing external process (via Exec-Program and
-	# Exec-Program-Wait attributes). Default is daemon:daemon
+	# The following specifies the uid under which external processes
+	# (those triggered by Exec-Program and Exec-Program-Wait 
+	# attributes) should be run. The corresponding gid is determined
+	# from the user's passwd entry. Default is daemon.
 	exec-program-user "daemon";
-	exec-program-group "other";
 	# Specify the logging directory (-l command line option)
        	log-dir "/var/log";
 	# Specify the detailed accounting directory (-a command line option)

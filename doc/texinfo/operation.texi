@@ -2,7 +2,7 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Operation, Naming conventions, Glossary, Top
+@node Operation, Invocation, Naming conventions, Top
 @chapter  How Radius operates.
 @cindex NAS
 @cindex Network Access Server
@@ -29,7 +29,7 @@ On receiving such request Radius server retrieves from its database
 a profile corresponding to the user's login name. The profile basically
 consists of two parts: a checklist used for authentication and a reply
 list used for authorization. The server checks the authenticity of the
-user using first part of the retrieved profile. If this check succedes,
+user using first part of the retrieved profile. If this check succeeds,
 it uses second part of the profile to authorize the user, i.e. to
 determine which service he should be provided. Then, the server responds
 with the parameters of the service, such as connection speed, framed IP
@@ -37,17 +37,19 @@ address, etc. If any of the described checks had failed, the server sends
 the negative response.
 
 If the server needs some additional information in order to process the
-request, it asks such information from the NAS. Thus, for example, if
+request, it asks the NAS to supply such information. Thus, for example, if
 the user is allowed to use several services, he can be asked which one of
 them he wishes to use, etc.
 
-The Radius server can also be configured to perform session accounting.
-When NAS receives the positive Radius response, it initiates the connection
-and sends accounting start request to the Radius accounting server. On
-ending the connection the accounting stop request is sent. The NAS can also
-notify the server about other events, such as system shutdown or startup.
-The server receives these accounting requests and stores them in the
-database.
+When NAS receives the positive authentication response, it initiates the
+connection.
+
+The NAS can be configured to notify Radius server about such events as
+session start, session stop or changing some parameters during the
+session. It can also notify the server about other events, such as NAS
+shutdown or startup. This is called @dfn{accounting} and the radius server
+responsible for processing this information is called an @dfn{accounting
+server}. 
 
 @menu
 * Attributes::                  Attributes.
@@ -132,7 +134,7 @@ attribute is used to choose the method of verifying this password (See
 @xref{Authentication}.) If password check fails, the request
 gets negative response.
 @item 3. Compare request pairlist and checklist of the retrieved profile.
-The list of attribute-value pairs from the request is compaired against
+The list of attribute-value pairs from the request is compared against
 the checklist of the user's profile. If the lists do not match, then control
 passes to rule 1. The rules of comparison are described below.
 @item 4. Append A/V pairs from the reply list to the response packet.
@@ -144,7 +146,10 @@ is passed to rule 1 again. Otherwise the authentication stops.
 The authentication is successful if the request satisfied at least one
 of profiles retrieved in step 1.
 
-The 
+Radius keeps users' profile database in file @file{raddb/users} (@xref{users}).
+
+[FIXME: Some more explanations needed]
+
 @comment *L2****************************************************************
 @node Requests, Processing requests, User Profile, Operation
 @chapter Radius requests
@@ -288,7 +293,6 @@ If the Accounting-Request packet includes a Framed-IP-Address,
 that attribute MUST contain the actual IP address of the user.
 
 
-
 @comment *L2****************************************************************
 @node Processing requests, Realms, Requests, Operation
 
@@ -298,52 +302,34 @@ that attribute MUST contain the actual IP address of the user.
 
 Upon receiving the request Radius applies to it a number of checks to
 determine whether the request comes from the authorized source. If these
-checks succeed, the request is processed and responded. Otherwise, the
+checks succeed, the request is processed and answered. Otherwise, the
 request is dropped and corresponding error message is issued @ref{Logging}.
 
 The following checks are performed:
 
 @table @asis
-
 @item Check if the username is supplied
 If the packet lacks @code{User-Name} attribute it is not processed
-
 @item Check if the NAS is allowed to speak
 The source IP address of the machine that sent the packet is looked
 up in the @file{clients} file @ref{clients}. If no match is found,
 the request is not processed. 
-
 @item Compute the encryption key
 Using the data from the packet and the shared key value from the @file{clients}
 file, Radius computes the MD5 encryption key that will be used to decrypt
 the value of the @code{Password} attribute.
-
-@item Process @file{hints} file.
-Radius matches the packet against the contents of @file{hints} file
-using the following rules:
-
-Rule 1. Match the username
-If the username from the packet does not match the one in the record,
-the record does not match. @emph{Please note} that the special usernames
-@code{DEFAULT} or @code{DEFAULT%d} (%d means any decimal number) match
-any username.
-
-Rule 2. Modify the attributes.
-
-If the reply-pairs contain @code{Strip-User-Name} attribute and its
-value is @code{Yes} (1), then any prefixes/suffixes are stripped off
-the value of @code{User-Name} attribute.
-
-If the reply-pairs contain the @code{Rewrite-Function} attribute, the
-function specified in the value of this attribute is applied @ref{rewrite}.
-
-If the reply pairs contain @code{Fall-Through} attribute and its value is
-@code{Yes} (1) then Radius switches to the next record and goes back to
-the rule 1. Otherwise the matching process stops and returns the reply pairs
-from the record.
-
-@xref{hints}
-
+@item Determine the realm the request belongs to.
+[FIXME]
+@item Process user-name hints.
+@dfn{User-name hints} are special rules that modify the request
+depending on user name and his credentials. These rules allow to divide
+users into distinct groups, each group having its own authentication
+and/or accounting methods. The user-name hints are stored in
+@file{raddb/hints} (@xref{hints}).
+@item Process huntgroup rules.
+@dfn{Huntgroup rules} allow to segregate incoming requests depending
+on the NAS and/or port number they came from. These rules are stored in
+@file{raddb/huntgroups} (@xref{huntgroups}).
 @end table
 
 @comment *L2****************************************************************

@@ -102,8 +102,8 @@ This Info file documents the version @value{VERSION} of the package.
 * Glossary::            The glossary.
 
 The radius daemon
-* Operation::           How radius operates.
 * Naming conventions::  Conventions about naming files and directories.
+* Operation::           How radius operates.
 * Invocation::          How to start the daemon.
 * Configuration files:: Radius configuration files.
 * Authentication::      How the users are authenticated
@@ -568,8 +568,8 @@ Public License instead of this License.
 @comment *******************************************************************
 
 @include intro.texi
-@include operation.texi
 @include naming.texi
+@include operation.texi
 @include invoke.texi
 @include configure.texi
 @include auth.texi

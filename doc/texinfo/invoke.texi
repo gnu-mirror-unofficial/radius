@@ -2,7 +2,7 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Invocation, Configuration files, Naming conventions, Top
+@node Invocation, Configuration files, Operation, Top
 @chapter How to start the daemon.
 @cindex Radius daemon invocation
 @cindex Invoking the radius daemon
@@ -16,6 +16,9 @@ sources (in order of increasing precedence):
 @item @file{raddb/config} file.
 @item Command line arguments
 @end itemize
+
+Whenever a command line options has its equivalent in config file the
+use of this equivalent should be preferred (@xref{config}).
 
 The following command line options are accepted:
 
@@ -31,17 +34,23 @@ each authentication request is logged to the file
 short name of the NAS from @file{raddb/naslist}
 @ref{Naming conventions}.
 
+Config file equivalent: @code{auth @{ detail yes; @};}.
+
 @c ** -a option (radiusd)
 @c ** --acct-directory (radiusd)
 @item -a DIR
 @itemx --acct-directory DIR
 Specify accounting directory.
 
+Config file equivalent: @code{option @{ acct-dir DIR; @};}.
+
 @c ** -b option (radiusd)
 @c ** --dbm option (radiusd)
 @item -b
 @itemx --dbm
 Enable DBM support.
+
+Config file equivalent: @code{usedbm yes;}.
 
 @c ** -d (radiusd)
 @c ** --config-directory option (radiusd)
@@ -61,13 +70,25 @@ Stay in foreground. We recommend to use it for debugging purposes only.
 @itemx --ip-address
 Specifies a source IP address. @code{Radiusd} will listen to packets
 coming to this address. If this option is not specified, the program
-picks up the first IP address it sees on the machine.
+picks up the IP address of first non-loopback interface it sees on the
+machine.
+
+Config file equivalent: @code{option @{ source-ip IP; @};}. 
+FIXME: xref listen statement
+
+@c ** -L option (radiusd)
+@c ** --license option (radiusd)
+@item -L
+@itemx --license
+Display GNU General Public License and exit.
 
 @c ** -l option (radiusd)
 @c ** --logging-directory option (radiusd)
 @item -l DIR
 @itemx --logging-directory DIR
-Specify alternate logging directory. 
+Specify alternate logging directory.
+
+Config file equivalent: @code{option @{ log-dir DIR; @};}.
 
 @c ** -mb option (radiusd)
 @c ** --mode b (radiusd)
@@ -100,7 +121,7 @@ Process only authentication requests.
 @c ** --port option (radiusd)
 @item -p PORTNO
 @itemx --port PORTNO
-Listen the udp port PORTNO. The accounting port is computed as @var{PORTNO} + 1.
+Listen the UDP port PORTNO. The accounting port is computed as @var{PORTNO} + 1.
 
 @c ** -P (radiusd)
 @c ** --pid-file-dir (radiusd)
@@ -114,6 +135,8 @@ Specifies the alternate path for the pidfile.
 @itemx --log-stripped-names
 Log usernames stripped off any prefixes/suffixes.
 
+Config file equivalent: @code{auth @{ strip-names yes @};}.
+
 @c ** -s option (radiusd)
 @c ** --single-process option (radiusd)
 @item -s
@@ -126,7 +149,7 @@ necessary.
 @c ** --version option (radiusd)
 @item -v
 @itemx --version
-Display program version and exit
+Display program version and compilation options.
 
 @c ** -x option (radiusd)
 @c ** --debug option (radiusd)
@@ -143,6 +166,15 @@ MODULE = LEVEL
 where @var{MODULE} is the module name or any non-ambiguous assignment
 thereof, LEVEL is the debugging level in the range 0-100. @ref{Debugging}
 
+Config file equivalent:
+@example
+logging @{
+        category debug @{
+                level DEBUG_LEVEL;
+        @};
+@};
+@end example
+
 @c ** -y option (radiusd)
 @c ** --log-auth option (radiusd)
 @item -y
@@ -150,12 +182,25 @@ thereof, LEVEL is the debugging level in the range 0-100. @ref{Debugging}
 Log authentications. With this option enabled, Radius will log any
 authentication attempt into its logfile @ref{Logging}.
 
+Config file equivalent: @code{auth @{ detail yes; @};}.
+
 @item -z
 @itemx --log-auth-pass
 Log passwords along with authentication information. @emph{Do not use} this
 option. It is @emph{very} insecure, since all users' passwords will be
 echoed in the logfile. This option is provided only for debugging purposes.
 
+Config file equivalent:
+@example
+logging @{
+        category auth @{
+                print-pass yes;
+        @};
+@};
+@end example
+
 @end table
 
+@ref{config}.
 
+@c  LocalWords:  pid

@@ -1,3 +1,15 @@
+2001-10-04 Sergey Poznyakoff
+
+	* doc/texinfo/.ispell_english: (new)
+	* doc/texinfo/configure.texi: Updated.
+	* doc/texinfo/intro.texi: Likewise.
+	* doc/texinfo/invoke.texi: Likewise.
+	* doc/texinfo/naming.texi: Likewise.
+	* doc/texinfo/operation.texi: Likewise.
+	* doc/texinfo/radius.texi: Likewise.
+	* raddb/config.syntax: Likewise.
+	* TODO: Likewise.
+
 2001-09-30 Sergey Poznyakoff
 
 	* Makefile.am: Added alphadist rule. Put both alpha rules

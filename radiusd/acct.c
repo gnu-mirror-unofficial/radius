@@ -1,5 +1,5 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
+ * Copyright (C) 2000,2001, Sergey Poznyakoff
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -193,7 +193,7 @@ write_wtmp(ut)
 }
 
 void
-backslash(dst, src, len)
+backslashify(dst, src, len)
 	char *dst;
 	char *src;
 	int len;
@@ -360,10 +360,10 @@ rad_accounting_new(authreq, dowtmp)
 	for (vp = authreq->request; vp; vp = vp->next) {
 		switch (vp->attribute) {
 		case DA_USER_NAME:
-			backslash(ut.login, vp->strvalue, RUT_NAMESIZE);
+			backslashify(ut.login, vp->strvalue, RUT_NAMESIZE);
 			break;
 		case DA_ORIG_USER_NAME:
-			backslash(ut.orig_login, vp->strvalue, RUT_NAMESIZE);
+			backslashify(ut.orig_login, vp->strvalue, RUT_NAMESIZE);
 			break;
 		case DA_LOGIN_IP_HOST:
 		case DA_FRAMED_IP_ADDRESS:

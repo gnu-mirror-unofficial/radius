@@ -1,12 +1,40 @@
 2002-01-10  Sergey Poznyakoff  
 
+*	* configure.in: --enable-snmp=compat enables support for
+	  enterprises subtree compatible with version 0.96
+	* acconfig.h: undef SNMP_COMPAT_0_96.
+	* radiusd/version.c: Reflect SNMP_COMPAT_0_96 settings.
+	* radiusd/snmpserv.c: Switched to the new
+	  MIB tree (.iso.org.dod.internet.private.enterprises.gnu.radius).
+	* mibs/radmibs.h.in: Likewise.
+	* mibs/GNU-RADIUS-SERVER-MIB.chart: Likewise.
+	* mibs/GNU-RADIUS-SERVER-MIB.txt: Likewise.
+	* mibs/GNU-RADIUS-STAT-MIB.chart: Likewise.
+	* mibs/GNU-RADIUS-STAT-MIB.txt: Likewise.
+
+	* radiusd/stat.c: (stat_init): Bugfix.
+	
+*	* radiusd/config.kw: Removed T_USR2DELAY.
+	* radiusd/config.y: Likewise.
+	* include/radiusd.h: (typedef Config): Removed delayed_hup_wait
+	  member.
+	  (extern radius_pid): Removed.
+	* include/radpaths.h: Changed RADSTAT, so we may coexist with
+	  the previous versions without clobbering their statfile.
+
+	* radiusd/radiusd.c: Block asynchronous access to the request
+	  list.
+	* sql/disp.c: Inserted explicit cancellation points.
+	
+2002-01-10  Sergey Poznyakoff  
+
 	* include/radiusd.h: Changes to Server_stat structure
 	  and accompanying macros.
 	  (extern server_stat): Static structure.
 	  (stat_.* functions): Protected by USE_SNMP.
 	  Removed shmem_.* declarations.
 	* include/radsnmp.h: (struct nas_stat): New field 'next'.
-	* radiusd/shmem.c: (removed) Not needed in multi-thread version.
+	* radiusd/shmem.c: (removed) Not needed in multi-threaded version.
 	* radiusd/Makefile.am: Removed shmem.c
 	* radiusd/files.c: Removed call to stat_create().
 	* radiusd/radiusd.c: server_stat is a static structure, not

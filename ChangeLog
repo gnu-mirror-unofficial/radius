@@ -3,6 +3,7 @@
 	* radiusd/auth.c (rad_auth_check_username): Bugfix:
 	was sending request pairs back to the NAS
 	(sfn_scheme): Improved iteration over the attribute list.
+	* radiusd/files.c (groupcmp): Bugfix
 
 2004-05-27  Sergey Poznyakoff
 

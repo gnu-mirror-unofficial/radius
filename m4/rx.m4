@@ -59,6 +59,8 @@ AC_DEFUN(RA_REPLACE_REGEX,
       ra_with_regex=$ac_use_included_regex
     fi
     if test "$ra_with_regex" = yes; then
+      AC_DEFINE(WITH_INCLUDED_REGEX, 1,
+                [Define if the included regex is to be used])
       AC_LIBOBJ([rx])
     fi
  ]

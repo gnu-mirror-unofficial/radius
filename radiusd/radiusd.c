@@ -1235,7 +1235,7 @@ rad_cfg_user(int argc, cfg_value_t *argv,
 int
 option_stmt_end(void *block_data, void *handler_data)
 {
-	if (radiusd_user.username && radiusd_user.uid != 0) {
+	if (exec_user.username && radiusd_user.uid != 0) {
 		grad_log(L_WARN, _("Ignoring exec-program-user"));
 		grad_free(exec_user.username);
 		exec_user.username = NULL;

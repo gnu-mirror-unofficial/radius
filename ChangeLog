@@ -1,3 +1,18 @@
+2001-10-31 Sergey Poznyakoff
+
+	* radlib/util.c: removed debug_pair().
+	format_pair(): Use format_string_visual() to format string
+	attributes (useful for Password). Changed size of buf2
+	accordingly.
+	pairstr_format(): Renamed to format_vendor_pair().
+	* include/radius.h: removed debug_pair().
+	* include/radiusd.h: Likewise.
+
+	* radiusd/radius.c: Use regular debug() instead of debug_pair().
+	* radiusd/proxy.c: Likewise.
+	* radiusd/radiusd.c: Put a reminder before duping stdout to
+	file. It shall go away soon.
+
 2001-10-30 Sergey Poznyakoff
 
 	* client/pam_radius/pam_radius.c: Fixes forgotten to apply

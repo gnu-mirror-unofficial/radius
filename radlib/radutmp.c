@@ -31,6 +31,7 @@
 struct _radut_file {
 	int fd;
 	int eof;
+	int readonly;
 	struct radutmp ut;
 };
 
@@ -40,15 +41,24 @@ rut_setent(name, append)
 	int append;
 {
 	int fd;
+	int ro = 0;
 	radut_file_t fp;
 	
-	if ((fd = open(name, O_RDWR|O_CREAT, 0644)) < 0) 
+	if ((fd = open(name, O_RDWR|O_CREAT, 0644)) < 0) {
+		ro = 1;
+		fd = open(name, O_RDONLY);
+	}
+	if (!fd) {
+		radlog(L_ERR|L_PERROR, 
+		       _("rut_setent(): cannot open"));
 		return NULL;
+	}
 	if (append)
 		lseek(fd, 0, SEEK_END);
 	fp = emalloc(sizeof(*fp));
 	fp->fd = fd;
 	fp->eof = append;
+	fp->readonly = ro;
 	return fp;
 }
 
@@ -89,6 +99,10 @@ rut_putent(file, ent)
 	radut_file_t file;
 	struct radutmp *ent;
 {
+	if (file->readonly) {
+		radlog(L_ERR, "rut_putent(): file opened readonly");
+		return -1;
+	}
 	/* Step back one record unless we have reached eof */
 	if (!file->eof &&
 	    lseek(file->fd, -(off_t)sizeof(file->ut), SEEK_CUR) < 0) {

@@ -2,3 +2,8 @@ Makefile
 Makefile.in
 users_gram.[ch]
 users_lex.c
+y.tab.[ch]
+lex.yy.c
+y.output
+*.la
+*.lo

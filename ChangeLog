@@ -1,3 +1,19 @@
+2001-05-22  gray  <gray@farlep.net>
+	* radlib/radutmp.c: fall back to readonly mode if the file can't
+	  be opened read-write.
+	* doc/COPYING.FDL: added
+	* Changes in configure.in, */Makefile.am: provide replacements
+          for obstack.*, getopt_long, rx.c functions when not present.
+        * radiusd/radiusd.c, radwho/radwho.c, radlast/radlast.c,
+          raduse/raduse.c, radzap/radzap.c: 
+           Get rid of `#ifdef HAVE_GETOPT_LONG', since GNU getopt is
+          now always present.
+        * radiusd/radiusd.c: The same for HAVE_REGCOMP...
+
+2001-05-21  gray  <gray@farlep.net>
+	* radiusd/auth.c: fixed is_log_mode()
+	* raddb/Makefile.am: added config.syntax to the distribution
+
 2001-05-20  gray  <gray@farlep.net>
 	* Removed radlib/fixalloc.c
 	* Further namespace houskeeping:

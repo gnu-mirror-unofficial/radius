@@ -31,6 +31,7 @@ SUBDIRS=snmp
 EXTRA_DIST = \
 argcv.h \
 debugmod.h \
+cfg.h \
 checkrad.h \
 envar.h \
 md5.h \

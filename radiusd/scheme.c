@@ -135,7 +135,7 @@ scheme_auth(procname, req, user_check, user_reply_ptr)
 		VALUE_PAIR *list = radscm_list_to_avl(SCM_CDR(res));
 		avl_merge(user_reply_ptr, &list);
 		avl_free(list);
-		return res == SCM_BOOL_F;
+		return code == SCM_BOOL_F;
 	}
 	/*FIXME: message*/
 	return 1;

@@ -610,10 +610,10 @@ listnas()
 	NAS *p;
 	
 	for (p = nas_next(NULL); p; p = nas_next(p)) {
-		printf("%-32.32s %-10.10s %-16.16I\n",
+		printf("%-32.32s %-10.10s %-16.16s\n",
 		       p->longname,
 		       p->shortname,
-		       p->ipaddr);
+		       format_ipaddr(p->ipaddr));
 	}
 }
 

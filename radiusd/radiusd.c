@@ -153,6 +153,9 @@ int        open_acct = 1;
 int        auth_detail;
 int        strip_names;
 int        suspend_flag;
+#ifdef USE_SNMP
+serv_stat saved_status;
+#endif
 
 Config config = {
 	10,              /* delayed_hup_wait */
@@ -732,10 +735,6 @@ void
 rad_susp()
 {
 	suspend_flag = 1;
-#ifdef USE_SNMP
-	server_stat->auth.status = serv_other;
-	server_stat->acct.status = serv_other;
-#endif	
 }
 
 void
@@ -796,11 +795,13 @@ reread_config(reload)
 	
 #ifdef USE_SNMP
 	
-	server_stat->auth.status = serv_running;
+	server_stat->auth.status = suspend_flag ? serv_suspended : serv_running;
 	snmp_auth_server_reset();
 
-	server_stat->acct.status = serv_running;
+	server_stat->acct.status = server_stat->auth.status;
 	snmp_acct_server_reset();
+		
+	saved_status = server_stat->auth.status;
 		
 #endif	
 
@@ -863,9 +864,43 @@ check_reload()
 		need_reload = 0;
 	}
 #ifdef USE_SNMP
-	if (server_stat->auth.status == serv_init ||
-	    server_stat->acct.status == serv_init)
+	else if (server_stat->auth.status != saved_status) {
+		switch (server_stat->auth.status) {
+		case serv_reset: /* Hard reset */
+			if (xargv[0][0] != '/') {
+				radlog(L_NOTICE,
+				       _("can't restart: radiusd not started as absolute pathname"));
+				break;
+			}
+			schedule_restart();
+			break;
+		
+		case serv_init:
 		reread_config(1);
+			break;
+
+		case serv_running:
+			if (suspend_flag) {
+				suspend_flag = 0;
+				radlog(L_NOTICE, _("RADIUSD RUNNING"));
+				rad_cont();
+			}
+			break;
+			
+		case serv_suspended:
+			if (!suspend_flag) {
+				radlog(L_NOTICE, _("RADIUSD SUSPENDED"));
+				rad_susp();
+			}
+			break;
+			
+		case serv_shutdown:
+			rad_flush_queues();
+			rad_exit(SIGTERM);
+			break;
+		}
+		saved_status = server_stat->auth.status;
+	}
 #endif		
 }	
 

@@ -1,3 +1,15 @@
+2002-02-18  Sergey Poznyakoff 
+
+	* radiusd/rewrite.y (interpret): Thread-safety: always return
+	  allocated string value.
+	* radiusd/auth.c (sfn_eval_reply): Use datum.sval directly,
+	  instead of make_string() on it.
+	* radiusd/files.c (hints_setup) Thread-safety: use local
+	  obstack.
+	* radlib/avl.c (avl_dup): Bugfix: dup_string if eval flag is set.
+	  This caused difficult to trace coredumps.
+	* radlib/mem.c: Thread-safety: mutex-protected string functions.
+
 2002-02-16  Sergey Poznyakoff  
 
 	Changed the threading paradigm: instead of spawning a new

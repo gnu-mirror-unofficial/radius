@@ -1,3 +1,27 @@
+2002-06-23  Sergey Poznyakoff 
+
+	* include/radiusd.h (Pthread_mutex_lock,Pthread_mutex_unlock): new
+	  macros, taken from request.c
+	  (request_thread_command_fp): New typedef.
+	  (request_thread_command): New function prototype.
+	* radiusd/acct.c (rad_acct_system): Removed empty else block.
+	* radiusd/exec.c: Cleaned wording in comment.
+	* radiusd/radiusd.c (rad_req_xmit): Likewise.
+	  (rad_restart) Added call to rad_sql_shitdown.
+	* radiusd/request.c
+	  (request_thread_command,request_process_command): New functions
+	* radiusd/sql.c (rad_sql_shutdown_thread): Perform sql shutdown
+	  within a single thread.
+	  (rad_sql_shutdown): Implemented.
+	  (attach_sql_connection,detach_sql_connection): Removed unused
+	  second argument.
+	* radscripts/radauth.m4: Use User-Password instead of obsolete
+	  Password.
+	* sql/disp.c (disp_sql_disconnect): Check ->connected before
+	  proceeding.
+	* sql/mysql.c (rad_mysql_disconnect): set ->data to NULL.  
+	* TODO: Updated
+
 2002-06-22  Sergey Poznyakoff
 
 	* radiusd/acct.c (rad_check_multi): Fixed MPP validation.

@@ -10,21 +10,17 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-sbin_SCRIPTS=radctl radauth radtest
+sbin_SCRIPTS=radctl radauth @RADTEST@
+EXTRA_SCRIPTS=radtest
 bin_SCRIPTS=radping radgrep builddbm
 EXTRA_DIST=radscripts.m4 radctl.m4 radauth.m4 radtest.m4 \
            radping.m4 radgrep.m4 builddbm.m4
 CLEANFILES=$(sbin_SCRIPTS) $(bin_SCRIPTS)
 
-if GUILE
-GUILE_ENABLE=-DGUILE=1
-endif
-
 radctl: $(srcdir)/radctl.m4
 	$(M4) -DSRCDIR=$(srcdir) -DPROGNAME=$(sbindir)/radiusd \
               -DBINDIR=$(bindir) -DDATADIR=$(pkgdatadir) \
               -DPIDFILE=$(RADPID_DIR)/radiusd.pid -DPS=$(PS) \
-	      $(GUILE_ENABLE) \
 	      -DAWK=$(AWK) $(srcdir)/radctl.m4 > radctl
 
 radgrep: $(srcdir)/radgrep.m4
@@ -40,7 +36,7 @@ radauth: $(srcdir)/radauth.m4
 
 radtest: $(srcdir)/radtest.m4
 	$(M4) -DSRCDIR=$(srcdir) -DBINDIR=$(bindir) -DDATADIR=$(pkgdatadir) \
-              $(GUILE_ENABLE) $(srcdir)/radtest.m4 > radtest
+              $(srcdir)/radtest.m4 > radtest
 
 builddbm: $(srcdir)/builddbm.m4
 	$(M4) -DSRCDIR=$(srcdir) -DSBINDIR=$(sbindir) \

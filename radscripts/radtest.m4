@@ -17,10 +17,4 @@ if [ x$1 = x--debug ]; then
 	SHIFT
 fi
 
-ifdef(%GUILE@,
-BINDIR/radscm $DEBUG -s DATADIR/session.scm $*,
-%cat - <<EOF
-Sorry, Guile libraries are not installed on your system.
-Please install them, then reconfigure and recompile Radius.
-EOF
-@)
+BINDIR/radscm $DEBUG -s DATADIR/session.scm $*

@@ -1,3 +1,10 @@
+2004-09-14  Sergey Poznyakoff
+
+	* radiusd/auth.c (from_base64): Assume right to left
+	ordering of the input.
+	* sql/postgres.c: Disconnect if PQexec returns NULL.
+	* tests/atlocal.in (make_raddb): Bugfix
+	
 2004-09-12  Sergey Poznyakoff
 
 	* tests/atlocal.in (make_raddb): Bugfix

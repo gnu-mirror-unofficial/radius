@@ -168,6 +168,12 @@ typedef struct {
 	u_char id;              /* Current id */
 } SERVER_ID;
 
+typedef struct netdef NETDEF;
+struct netdef {
+        UINT4 ipaddr;        /* IP address */
+        UINT4 netmask;       /* Network mask */
+};
+
 typedef struct radius_server RADIUS_SERVER;
 struct radius_server {
         char   *name;           /* Symbolic name of this server */
@@ -249,7 +255,7 @@ struct envar_t;
 
 typedef struct nas {
         struct nas              *next;
-        UINT4                   ipaddr;
+	NETDEF                  netdef;
         char                    longname[MAX_LONGNAME+1];
         char                    shortname[MAX_SHORTNAME+1];
         char                    nastype[MAX_DICTNAME+1];
@@ -377,6 +383,8 @@ UINT4 ip_gethostaddr (char *);
 int good_ipaddr(char *);
 char *ip_iptostr(UINT4, char *);
 UINT4 ip_strtoip(char *);
+int ip_getnetaddr(char *str, NETDEF *netdef);
+int ip_addr_in_net_p(NETDEF *netdef, UINT4 ipaddr);
 
 /* nas.c */
 NAS *nas_next(NAS *p);

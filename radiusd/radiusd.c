@@ -1181,10 +1181,10 @@ rad_spawn_child(type, data, activefd)
 			if (curreq->type == type) {
 				request_type_count++;
 				if (type != R_PROXY
+				    && curreq->child_pid == -1
 				    && (to_replace == NULL
-					|| (to_replace->timestamp >
-					                    curreq->timestamp
-					    && curreq->child_pid == -1)))
+					|| to_replace->timestamp >
+					                   curreq->timestamp))
 					to_replace = curreq;
 			}
 			request_count++;
@@ -1196,28 +1196,30 @@ rad_spawn_child(type, data, activefd)
 	/*
 	 * This is a new request
 	 */
-	if (!to_replace) {
-		if (request_count >= config.max_requests) {
+	if (request_count >= config.max_requests) {
+		if (!to_replace) {
 			request_drop(type, data,
 				     _("too many requests in queue"));
 		
 			request_list_unblock();
 			schedule_child_cleanup();
-		
+			
 			return;
 		}
-		if (request_class[type].max_requests
-		    && request_type_count >= request_class[type].max_requests){
+	} else if (request_class[type].max_requests
+		   && request_type_count >= request_class[type].max_requests) {
+		if (!to_replace) {
 			request_drop(type, data,
 				     _("too many requests of this type"));
 
 			request_list_unblock();
 			schedule_child_cleanup();
-			
+		
 			return;
 		}
-	}
-	
+	} else
+		to_replace = NULL;
+
 	/* First, setup the request
 	 */
 	if (request_setup(type, (qid_t)data)) {
@@ -1245,6 +1247,9 @@ rad_spawn_child(type, data, activefd)
 		else
 			prevreq->next = curreq;
 	} else {
+		debug(1, ("replacing request dated %s",
+			  ctime(&to_replace->timestamp)));
+				
 		request_class[to_replace->type].free(to_replace->data);
 		curreq = to_replace;
 		curreq->timestamp = curtime;

@@ -1,3 +1,9 @@
+2003-08-30  Sergey Poznyakoff  
+
+	* configure.texi: Provide a brief summary of configuration
+	files.
+	* attributes.texi: Fixed cross-references.
+
 2003-08-14  Sergey Poznyakoff 
 
 	* configure.texi: Removed obsolete proxy statement
@@ -15,7 +21,7 @@
 
 2003-06-23  Sergey Poznyakoff 
 
-	* doc/texinfo/configure.texi: Documented missing keywords.
+	* configure.texi: Documented missing keywords.
 
 2003-06-16  Sergey Poznyakoff  
 

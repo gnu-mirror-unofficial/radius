@@ -139,6 +139,20 @@ proxy_send_pdu(int fd, RADIUS_SERVER *server, RADIUS_REQ *radreq,
 	return sendto(fd, pdu, size, 0, (struct sockaddr *)&sin, sizeof(sin));
 }
 
+VALUE_PAIR *
+proxy_request_recode(RADIUS_REQ *radreq, u_char *secret, u_char *vector)
+{
+	VALUE_PAIR *p, *plist = avl_dup(radreq->request);
+
+	/* Recode password pair(s) */
+	for (p = plist; p; p = p->next) {
+		if (p->attribute == DA_USER_PASSWORD
+		    || p->attribute == DA_CHAP_PASSWORD)
+			passwd_recode(p, secret, vector, radreq);
+	}
+	return plist;
+}
+
 int
 proxy_send_request(int fd, RADIUS_REQ *radreq)
 {
@@ -168,15 +182,7 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 
 	rad_clt_random_vector(vector);
 
-	/* Copy the list */
-	plist = avl_dup(radreq->request);
-
-	/* Recode password pair(s) */
-	for (p = plist; p; p = p->next) {
-		if (p->attribute == DA_USER_PASSWORD
-		    || p->attribute == DA_CHAP_PASSWORD)
-			passwd_recode(p, server->secret, vector, radreq);
-	}
+	plist = proxy_request_recode(radreq, server->secret, vector);
 
 	/* Add a proxy-pair to the end of the request. */
 	p = avp_alloc();

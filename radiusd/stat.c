@@ -48,7 +48,7 @@ static char rcsid[] =
 #ifdef USE_SNMP
 extern Server_stat server_stat;
 extern struct radstat radstat;
-
+static pthread_mutex_t stat_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 /* Statistics file format:
 
@@ -281,11 +281,13 @@ stat_alloc_port()
         PORT_STAT *port;
         
         port = alloc_entry(sizeof(*port));
+	pthread_mutex_lock(&stat_mutex);
         if (!server_stat.port_head)
                 server_stat.port_head = port;
         else
                 server_stat.port_tail->next = port;
         server_stat.port_tail = port;
+	pthread_mutex_unlock(&stat_mutex);
         return port;
 }
 

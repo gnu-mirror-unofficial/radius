@@ -53,6 +53,7 @@ static char rcsid[] =
 #endif
 
 #include <radiusd.h>
+#include <rewrite.h>
 #if defined(USE_SQL)
 # include <radsql.h>
 #endif
@@ -561,6 +562,7 @@ enum auth_state {
 	as_realmuse,
 	as_simuse, 
 	as_time, 
+	as_eval,
 	as_ttl, 
 	as_ipaddr, 
 	as_exec_wait, 
@@ -599,6 +601,7 @@ typedef struct auth_mach {
 
 static void sfn_init(MACH*);
 static void sfn_validate(MACH*);
+static void sfn_eval_reply(MACH*);
 static void sfn_service(MACH*);
 static void sfn_disable(MACH*);
 static void sfn_service_type(MACH*);
@@ -646,9 +649,12 @@ struct auth_state_s states[] = {
 	as_simuse,       as_time,
 	                 DA_SIMULTANEOUS_USE, L_check, sfn_simuse,
 	
-	as_time,         as_ttl,
+	as_time,         as_eval,
 	                 DA_LOGIN_TIME,   L_check, sfn_time,
 	
+	as_eval,         as_ttl,
+	                 0,               L_null,  sfn_eval_reply,
+
 	as_ttl,          as_ipaddr,
 	                 0,               L_null, sfn_ttl,
 	
@@ -820,6 +826,9 @@ rad_authenticate(radreq, activefd)
 # define newstate(s) m->state = s
 #endif
 
+				
+				
+	
 void
 sfn_init(m)
 	MACH *m;
@@ -875,6 +884,41 @@ sfn_init(m)
 		m->proxy_pairs = NULL;
 	}
 }
+
+void
+sfn_eval_reply(m)
+	MACH *m;
+{
+	VALUE_PAIR *p;
+	int errcnt = 0;
+	
+	for (p = m->user_reply; p; p = p->next) {
+		if (p->eval) {
+			Datatype type;
+			Datum datum;
+			
+			if (interpret(p->strvalue, m->req->request,
+				      &type, &datum)) {
+				errcnt++;
+				continue;
+			}
+			switch (type) {
+			case Integer:
+				p->lvalue = datum.ival;
+				break;
+			case String:
+				replace_string(&p->strvalue, datum.sval);
+				p->strlength = strlen(p->strvalue);
+				break;
+			default:
+				abort();
+			}
+			p->eval = 0;
+		}
+	}
+	if (errcnt)
+		newstate(as_reject);
+}		
 
 void
 sfn_validate(m)

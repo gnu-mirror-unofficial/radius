@@ -1853,11 +1853,19 @@ test_shell()
 			printf("c NAS LOGIN SID PORT [IP] checkrad\n");
 			printf("r FUNCALL                 function call\n");
 			printf("d LEVEL[,LEVEL]           set debug level\n");
-			printf("m                         display memory usage\n"); 
+#ifdef USE_SERVER_GUILE
+			printf("g                         enter guile shell\n");
+#endif
+                        printf("m                         display memory usage\n"); 
 			break;
 		case 'd':
 			set_debug_levels(tok);
 			break;
+#ifdef USE_SERVER_GUILE
+                case 'g':
+			scheme_read_eval_loop();
+			break;
+#endif
 		case 'q':
 			return 0;
 		case 'c': /* checkrad */

@@ -4,6 +4,8 @@
 	* include/radsql.h (SQL_TUPLE,SQL_RESULT): New datatypes.
 	(struct sql_connection): New members cache,head,tail
 	* radiusd/sql.c: Implemented caching for query results.
+	* configure.ac: Raised version number to 1.1
+	* NEWS: Update for eventual 1.1
 	
 2003-07-16  Sergey Poznyakoff 
 

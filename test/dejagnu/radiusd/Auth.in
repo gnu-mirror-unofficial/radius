@@ -1,9 +1,0 @@
-clone_output "Checking Basic Authentication Types"
-radius_test -message "Auth-Type = Accept" "auth 1 User-Name = \"accept\"" "2" 
-radius_test -message "Auth-Type = Reject" "auth 1 User-Name = \"reject\"" "3" 
-radius_test -message "Auth-Type = Local" "auth 1 User-Name = \"local\" Password = \"guessme\"" "2"
-radius_test -message "Auth-Type = Local" "auth 1 User-Name = \"local\" Password = \"bad\"" "3"
-radius_test -message "Auth-Type = Crypt-Local" "auth 1 User-Name = \"crypt\" Password = \"hamlet\"" "2" 
-
-
-

@@ -82,9 +82,7 @@ void
 rad_cleanup_thread0(arg)
         void *arg;
 {
-	/*FIXME: 1. unlock mutexes (if any)
-	         2. free any allocated memory
-		 3. flush pending i/o(???) */
+	num_threads--;
 }
 
 void *

@@ -1,3 +1,9 @@
+2001-11-07 Sergey Poznyakoff
+
+	* radiusd/radiusd.c: rad_spawn_child(): Fixed bug in selecting
+	a pretender for replacing.
+	* sql/mysql.c: rad_mysql_reconnect(): Be less verbose.
+
 2001-11-06 Sergey Poznyakoff
 
 	* radlib/envar.c: Syntax cleanup.

@@ -1,3 +1,71 @@
+2001-08-21 Sergey Poznyakoff
+
+	Further changes to log subsystem. This commit compiles
+	and runs fine. The rewriting of the logging stuff is
+	not finished, though. Things to be done are:
+		1. Make radiusd/log.c part of liblog library,
+		   split off application-dependent stuff from it.
+		2. Preserve "stdout" channel until exit(). Now
+		   it gets nuked by log_release().
+		3. Get rid of radprintf.c, use GNU snprintf instead.
+		4. Of course, document changes.
+
+	* include/log.h: Added L_UPTO() and some prototypes.
+	* radiusd/acct.c: Call to log_open().
+	* radiusd/auth.c: Call to log_open(). Use severity
+	specifications in calls to radlog().
+	* radiusd/proxy.c: Use severity	specifications in calls to radlog().
+	* radiusd/snmpserv.c: Use log_open().
+	* radiusd/config.y: Changed category <name> syntax. <Name>
+	can now be any of:
+		CATEGORY
+		SEVERITY
+		CATEGORY '.' SEVERITY
+	SEVERITY allows '=' and '!' prefixes to specify exact match
+	and exclusion of the given severity level.
+	* radiusd/log.c: Added log_open() and log_close().
+	vlog(): Fixed bug: asprintf() was erroneously called instead
+	of vasprintf().
+	Fixed declarations of catname[] and priname[].
+	Added _dolog() function and fixed _debug_print.
+	New functions:
+		channel_free()	--   free memory allocated for a channel
+		channel_free_list() -- free channel list starting from
+			the given channel.
+		log_mark()      --   return the head of the chanlist.
+		log_release()   --   release all channels starting
+			from the given one. Do all the necessary
+			housekeeping.
+		log_set_to_console() -- Request logging to the console
+			(stderr).
+		log_set_default() -- install default logging channel.
+	
+	channel_lookup(): Changed semantics of `pri' argument. 	
+
+	* radiusd/radiusd.c: Set default logging channel. Use log_close()
+	where appropriate.
+	* radiusd/rewrite.y: rw_attrasgn(): Check for null return of
+	avp_create() (happens only when raddb/dictionary and, consequently,
+	include/raddict.h is malformed).
+
+	* radlib/log.c: Fixed to match new logging subsystem.
+
+	* radlib/dict.c: Fixed attr_number_to_dict().
+
+	* radlib/vasprintf.c: Use radvsprintf() instead of
+	vsprintf(). This is temporary. I guess, I'll have to get rid
+	of radprintf.c and use GNU snprintf.c instead.
+
+	* radlast/Makefile.am: Changed library linking order.
+	* radscm/Makefile.am: Likewise.
+	* raduse/Makefile.am: Likewise.
+	* radwho/Makefile.am: Likewise.
+	* radzap/Makefile.am: Likewise.
+
+	* raddb/dictionary: Acct-Ext-Program and Log-Mode-Mask
+	were assigned the same number. Fixed.
+	* include/raddict.h: Likewise.
+
 2001-08-20 Sergey Poznyakoff
 
 	Started rewriting log subsystem. Log channels will now be

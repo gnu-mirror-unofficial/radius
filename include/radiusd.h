@@ -411,6 +411,7 @@ void scheme_load_path(char *pathname);
 int scheme_auth(char *procname, grad_request_t *req,
                 grad_avp_t *user_check, grad_avp_t **user_reply_ptr);
 int scheme_acct(char *procname, grad_request_t *req);
+int scheme_eval_boolean_expr(char *expr);
 void scheme_read_eval_loop();
 void scheme_redirect_output();
 void start_guile();

@@ -20,6 +20,7 @@ raddbdir=@ETC_DIR@/raddb
 raddb_files=access.deny \
 clients \
 config \
+config.syntax \
 dictionary \
 dictionary.ascend \
 dictionary.cisco \

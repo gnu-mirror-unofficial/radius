@@ -6,6 +6,7 @@ EXTRA_DIST=\
  Huntgroups.exp\
  Reply.exp\
  Stop.exp\
+ Stress.exp\
  Acct-stop.exp\
  Auth.exp\
  Match.exp\
@@ -19,4 +20,4 @@ EXTRA_DIST=\
  Testlist
 
 all:;
-	$(AWK) -v SRCDIR=`cd $(srcdir); pwd` -f $(top_srcdir)/scripts/mktest.awk $(srcdir)/Testlist|$(SHELL)
+	$(AWK) -v SRCDIR=`cd $(srcdir); pwd` -v CMD="$(LN_S)" -f $(top_srcdir)/scripts/mktest.awk $(srcdir)/Testlist|$(SHELL)

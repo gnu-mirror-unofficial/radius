@@ -1537,7 +1537,6 @@ DEFAULT Suffix = ".ppp",
 
 ## This is for SLIP users.
 ## This entry is matched when the auth request matches ``SLIP'' hint
-## @xref{huntgroups example}
 DEFAULT Hint = "SLIP",
                 Auth-Type = Mysql
         Service-Type = Framed-User

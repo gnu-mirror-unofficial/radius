@@ -21,7 +21,6 @@ A path to radius configuration directory.
 @end deffn
 
 @deffn rad-server-list
-@cindex rad-server-list, radscm variable
 A list of radius servers. Each element of the list is:
 
 @lisp

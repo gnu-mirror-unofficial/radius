@@ -110,13 +110,20 @@ scheme_auth(procname, req, user_check, user_reply_ptr)
 		return 1;
 	res = scm_internal_lazy_catch(SCM_BOOL_T,
 				      eval_catch_body,
-				      (void*)SCM_LIST4(procsym,
-						       scm_cons (SCM_IM_QUOTE,
-								 s_request),
-						       scm_cons (SCM_IM_QUOTE,
-								 s_check),
-						       scm_cons (SCM_IM_QUOTE,
-								 s_reply)),
+				      (void*)
+				      SCM_LIST4(procsym,
+						scm_listify(
+						  scm_copy_tree(SCM_IM_QUOTE),
+							    s_request,
+							    SCM_UNDEFINED),
+						scm_listify(
+						  scm_copy_tree(SCM_IM_QUOTE),
+							    s_check,
+							    SCM_UNDEFINED),
+						scm_listify(
+						  scm_copy_tree(SCM_IM_QUOTE),
+							    s_reply,
+							    SCM_UNDEFINED)),
 				      eval_catch_handler, &jmp_env);
 	if (SCM_IMP(res) && SCM_BOOLP(res)) 
 		return res == SCM_BOOL_F;
@@ -151,9 +158,11 @@ scheme_acct(procname, req)
 		return 1;
 	res = scm_internal_lazy_catch(SCM_BOOL_T,
 				      eval_catch_body,
-				      (void*)SCM_LIST2(procsym,
-						       scm_cons (SCM_IM_QUOTE,
-								 s_request)),
+				      (void*)
+				      SCM_LIST2(procsym,
+						scm_listify(SCM_IM_QUOTE,
+							    s_request,
+							    SCM_UNDEFINED)),
 				      eval_catch_handler, &jmp_env);
 	if (SCM_IMP(res) && SCM_BOOLP(res)) 
 		return res == SCM_BOOL_F;

@@ -38,18 +38,18 @@ static char rcsid[] =
 #include <log.h>
 #include <radtest.h>
 
-#define OPTSTR "a:d:hLp:qr:s:St:vx:V"
+#define OPTSTR "a:d:f:hLp:qr:s:t:vx:V"
 struct option longopt[] = {
 	"assign", required_argument, 0, 'a',
 	"debug", required_argument, 0, 'x',
 	"directory", required_argument, 0, 'd',
+	"file", required_argument, 0, 'f',
 	"help", no_argument, 0, 'h',
 	"license", no_argument, 0, 'L',
 	"port", required_argument, 0, 'p',
 	"quick", no_argument, 0, 'q',
 	"retry", required_argument, 0, 'r',
 	"server", required_argument, 0, 's',
-	"shell", no_argument, 0, 'S',
 	"timeout", required_argument, 0, 't',
 	"verbose", no_argument, 0, 'v', 
 	"version", no_argument, 0, 'V',
@@ -73,6 +73,10 @@ static void print_license();
 static void print_version();
 static void assign(char *);
 
+int x_argmax;
+int x_argc;
+char **x_argv;
+
 int
 main(argc, argv)
 	int argc;
@@ -80,7 +84,7 @@ main(argc, argv)
 {
 	int c;
 	int quick = 0;
-	int shell = 0;
+	char *filename = NULL;
 	char *p;
 	char *server = NULL;
 	int retry = 0;
@@ -116,8 +120,8 @@ main(argc, argv)
 		case 's':
 			server = optarg;
 			break;
-		case 'S':
-			shell++;
+		case 'f':
+			filename = optarg;
 			break;
 		case 't':
 			timeout = strtol(optarg, NULL, 0);
@@ -133,7 +137,7 @@ main(argc, argv)
 			print_version();
 			break;
 		default:
-			if (shell
+			if (filename
 			    && argv[optind-1][0] == '-'
 			    && argv[optind-1][1] == '-'
 			    && (p = strchr(argv[optind-1], '=')) != NULL
@@ -240,23 +244,23 @@ main(argc, argv)
 	argc -= optind;
 	argv += optind;
 
-	if (argc == 0) {
-		open_input(NULL);
-		return yyparse();
-	}
-	
+	x_argv = emalloc(sizeof(x_argv[0]) * argc);
+	x_argc = 0;
+	x_argmax = argc;
+	x_argv[x_argc++] = filename;
+
 	for (; argc; argc--, argv++) {
 		if ((p = strchr(*argv, '=')) != NULL &&
-		    !(p > *argv && p[-1] == '\\')) {
+		    !(p > *argv && p[-1] == '\\')) 
 			assign(*argv);
-		} else {
-			if (open_input(*argv))
-				continue;
-			yyparse();
-			close_input(*argv);
-		}
+		else 
+			x_argv[x_argc++] = *argv;
 	}
-	return 0;
+	x_argv[x_argc++] = NULL;
+	
+	if (open_input(filename))
+		return 1;
+	return yyparse();
 }
 
 void
@@ -288,52 +292,61 @@ assign(s)
 	}
 	*p++ = 0;
 
+	type = parse_datum(p, &datum);
+	if (type == Undefined)
+		return;
+	var = (Variable*)sym_install(vartab, s);
+	var->type = type;
+	var->datum = datum;
+}
+
+int
+parse_datum(p, dp)
+	char *p;
+	union datum *dp;
+{
+	int type = Undefined;
+	int length;
+	
 	if (*p == '"') {
 		length = strlen(++p);
 		if (length == 0 || p[length-1] != '"') {
 			fprintf(stderr, _("assign: missing closing quote\n"));
-			return;
+			return Undefined;
 		}
 		p[length-1] = 0;
 		
 		type = String;
-		datum.string = make_string(p);
+		dp->string = make_string(p);
 	} else if (isdigit(*p)) {
 		char *endp;
 		
 		/* This can be either an integer or an IP address */
-		datum.number = strtol(p, &endp, 0);
+		dp->number = strtol(p, &endp, 0);
 		if (*endp == 0) {
 			type = Integer;
 		} else {
 			/* IP address */
-			if ((datum.ipaddr = get_ipaddr(p)) != 0)
+			if ((dp->ipaddr = get_ipaddr(p)) != 0)
 				type = Ipaddress;
 			else {
 				fprintf(stderr, _("assign: invalid IP address: %s\n"), p);
-				return;
+				return Undefined;
 			}
 		} 
-	} else if (*p == '{') {
-		/* vector */
-		fprintf(stderr, _("assign: vector type not supported yet\n"));
-		return;
 	} else if (strchr(p, '.')) {
 		/* IP address */
-		if ((datum.ipaddr = get_ipaddr(p)) != 0)
+		if ((dp->ipaddr = get_ipaddr(p)) != 0)
 			type = Ipaddress;
 		else {
 			fprintf(stderr, _("assign: invalid IP address: %s\n"), p);
-			return;
+			return Undefined;
 		}
 	} else {
 		type = String;
-		datum.string = make_string(p);
+		dp->string = make_string(p);
 	}
-	
-	var = (Variable*)sym_install(vartab, s);
-	var->type = type;
-	var->datum = datum;
+	return type;
 }
 
 char *
@@ -395,7 +408,7 @@ print_pairs(fp, pair)
 }
 
 void
-print(var)
+var_print(var)
 	Variable *var;
 {
 	char buf[DOTTED_QUAD_LEN];
@@ -421,6 +434,22 @@ print(var)
 		break;
 	case Builtin:
 		var->datum.builtin.print();
+		break;
+	}
+}
+
+void
+var_free(var)
+	Variable *var;
+{
+	if (var->name)
+		return; /* named variables are not freed */
+	switch (var->type) {
+	case String:
+		free_string(var->datum.string);
+		break;
+	case Vector:
+		avl_free(var->datum.vector);
 		break;
 	}
 }
@@ -501,13 +530,14 @@ static char usage_str[] =
 "    -a, --assign VARIABLE=VALUE  Assign a VALUE to a VARIABLE\n"
 "    -d, --config-directory dir   Specify alternate configuration directory\n"
 "                                 (default " RADIUS_DIR ")\n"
+"    -f, --file FILE              Read input from FILE. When this option is\n"
+"                                 used, all unknown options in the form\n"
+"                                 --VAR=VALUE are treated as variable\n"
+"                                 assignments\n"
 "    -p, --port PORT-NUMBER       Set RADIUS authentication port to PORT-NUMBER\n"
 "    -q, --quick                  Quick mode\n"
 "    -r, --retry NUMBER           Set number of retries\n"
 "    -s, --server                 Set server name\n"
-"    -S, --shell                  Run in shell mode, i.e. treat all unknown\n"
-"                                 options in the form --VAR=VALUE as variable\n"
-"                                 assignments\n"
 "    -t, --timeout NUMBER         Set timeout in seconds\n"
 "    -v, --verbose                Verbose mode\n"
 "    -x, --debug DEBUG-LEVEL      Set debugging level\n"

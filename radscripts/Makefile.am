@@ -10,10 +10,9 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-sbin_SCRIPTS=radctl radauth @RADTEST@
-EXTRA_SCRIPTS=radtest
+sbin_SCRIPTS=radctl radauth 
 bin_SCRIPTS=radping radgrep builddbm
-EXTRA_DIST=radscripts.m4 radctl.m4 radauth.m4 radtest.m4 \
+EXTRA_DIST=radscripts.m4 radctl.m4 radauth.m4 \
            radping.m4 radgrep.m4 builddbm.m4
 CLEANFILES=$(sbin_SCRIPTS) $(bin_SCRIPTS)
 
@@ -33,10 +32,6 @@ radping: $(srcdir)/radping.m4
 radauth: $(srcdir)/radauth.m4
 	$(M4) -DSRCDIR=$(srcdir) -DBINDIR=$(bindir) -DDATADIR=$(pkgdatadir) \
               -DGETOPT=$(GETOPT) $(srcdir)/radauth.m4 > radauth
-
-radtest: $(srcdir)/radtest.m4
-	$(M4) -DSRCDIR=$(srcdir) -DBINDIR=$(bindir) -DDATADIR=$(pkgdatadir) \
-              $(srcdir)/radtest.m4 > radtest
 
 builddbm: $(srcdir)/builddbm.m4
 	$(M4) -DSRCDIR=$(srcdir) -DSBINDIR=$(sbindir) \

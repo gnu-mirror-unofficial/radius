@@ -261,6 +261,92 @@ proc radius_expect { args } {
     }
 }
 
+# radius_test COMMAND EXPECT 
+# COMMAND   - Command to send to radtest
+# EXPECT    - Sequence to expect in return
+# Return value:
+#        -3 - eof
+#        -2 - timeout
+#        -1 - generic failure
+#         1 - test fails
+#         0 - test succeeds
+proc default_radius_test { args } {
+    global verbose
+    global radtest_prompt
+    global suppress_flag;
+    upvar timeout timeout
+
+    set command [lindex $args 0]
+    set pattern [lindex $args 1]
+
+    if { [info exists suppress_flag] && $suppress_flag } {
+	set do_suppress 1
+    } else {
+	set do_suppress 0
+    }
+
+    if $verbose>2 then {
+	send_user "Sending \"$command\"\n"
+	send_user "Expecting to get \"$pattern\"\n"
+    }
+    
+    set result -1
+    set string "${command}\n";
+    if { [radius_send "send $string"] != "" } {
+	if { ! $do_suppress } {
+	    perror "Couldn't send $command.";
+	}
+	return $result;
+    }
+
+    if [info exists timeout] {
+	set tmt $timeout;
+    } else {
+	global timeout;
+	if [info exists timeout] {
+	    set tmt $timeout;
+	} else {
+	    set tmt 60;
+	}
+    }
+
+    radius_expect $tmt {
+	-re "$radtest_prompt" {
+	    verbose "GOT PROMPT" 2;
+	}
+	timeout	{
+	    return $result 
+	}
+	eof {
+	    return $result 
+	}   
+    }
+
+    set string "${pattern}\n"
+    if { [radius_send "expect ${string}"] != "" } {
+	if { [info exists suppress_flag] && ! $suppress_flag } {
+	    perror "Couldn't send expect command.";
+	}
+	return $result;
+    }
+
+    radius_expect $tmt {
+	-re "PASS" {
+	    set result 0
+	}
+	-re "FAIL" {
+	    set result 1
+	}
+	timeout	{
+	    set result -2
+	}
+	eof {
+	    set result -3
+	}   
+    }
+    return $result
+}
+
 # radius_test [-message MESSAGE][-default (FAIL|XFAIL)] COMMAND EXPECT 
 # COMMAND   - Command to send to radtest
 # EXPECT    - Sequence to expect in return
@@ -290,88 +376,29 @@ proc radius_test { args } {
     set command [lindex $args 0]
     set pattern [lindex $args 1]
     if {"$message" == ""}  {
-	set message $command
-    }
-
-    if { [info exists suppress_flag] && $suppress_flag } {
-	set do_suppress 1
-    } else {
-	set do_suppress 0
+	set message [lindex $args 0]
     }
 
     if $verbose>2 then {
-	send_user "Sending \"$command\"\n"
-	send_user "Expecting to get \"$pattern\"\n"
 	send_user "Message is \"$message\"\n"
     }
-    
-    set result -1
-    set string "${command}\n";
-    if { [radius_send "send $string"] != "" } {
-	if { ! $do_suppress } {
-	    perror "Couldn't send $command.";
-	}
-	fail "$message";
-	return $result;
-    }
-
-    if [info exists timeout] {
-	set tmt $timeout;
-    } else {
-	global timeout;
-	if [info exists timeout] {
-	    set tmt $timeout;
+    set result [default_radius_test $command $pattern]
+    if {$result == 0} {
+	pass "$message"
+    } elseif {$result == 1} {
+	if { "$default" == "" || "$default" != "FAIL" } {
+	    fail "$message"
 	} else {
-	    set tmt 60;
-	}
-    }
-
-    radius_expect $tmt {
-	-re "$radtest_prompt" {
-	    verbose "GOT PROMPT" 2;
-	}
-	timeout	{
-	    fail "$message (timeout)"
-	    set result 1
-	}
-	eof {
-	    fail "$message (eof)"
-	    set result 1
-	}   
-    }
-
-    set string "${pattern}\n"
-    if { [radius_send "expect ${string}"] != "" } {
-
-	if { [info exists suppress_flag] && ! $suppress_flag } {
-	    perror "Couldn't send expect command.";
-	}
-	fail "$message";
-	return $result;
-    }
-
-    radius_expect $tmt {
-	-re "PASS" {
-	    pass "$message";
+	    xfail "$message"
 	    set result 0
 	}
-	-re "FAIL" {
-	    if { "$default" == "" || "$default" != "FAIL" } {
-		fail "$message"
-	    } else {
-		xfail "$message"
-	    }
-	    set result 1
-	}
-	timeout	{
-	    fail "$message (timeout)"
-	    set result 1
-	}
-	eof {
-	    fail "$message (eof)"
-	    set result 1
-	}   
+    } elseif {$result == -2} {
+	fail "$message (timeout)"
+    } elseif {$result == -3} {
+	fail "$message (eof)"
+    } else {
+	fail "$message"
     }
-    return result
+    return $result
 }
 

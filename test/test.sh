@@ -15,6 +15,7 @@ PROG=$0
 RADTEST=
 RADIUSD=
 DRIVER=
+GUILE="#"
 
 while [ $# -gt 0 ]
 do
@@ -29,6 +30,8 @@ do
 	RADTEST=$2; shift 2;;
     --driver)
 	DRIVER=$2; shift 2;;
+    --guile)
+        GUILE=""; shift;;
     *)
 	echo "$PROG: wrong switch" >&2
 	exit 1;;
@@ -58,7 +61,8 @@ fi
 EXPR=`./findport -c2 -s1644 "-fs^@AUTH_PORT@^%d^;\
 s^@ACCT_PORT@^%d^;\
 s^@USER@^gray^;\
-s^@BUILDDIR@^$BUILDDIR^"`
+s^@BUILDDIR@^$BUILDDIR^;\
+s^@GUILE@^$GUILE^"`
 sed $EXPR raddb/config.in > raddb/config
 sed $EXPR raddb/client.conf.in > raddb/client.conf
 sed $EXPR raddb/users.in > raddb/users

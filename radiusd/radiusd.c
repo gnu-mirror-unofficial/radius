@@ -717,7 +717,8 @@ radiusd_cleanup()
                         break;
 
 		format_exit_status(buffer, sizeof buffer, status);
-		radlog(L_NOTICE, "child %d %s", pid, buffer);
+		radlog(L_NOTICE, _("child %lu %s"),
+		       (unsigned long) pid, buffer);
 
 		rpp_remove(pid);
 	}

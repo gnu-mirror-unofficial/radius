@@ -1,3 +1,10 @@
+2002-03-29  Sergey Poznyakoff 
+
+*	* radzap/radzap.c: New option: --file. --log-directory retained
+	  for compatibility.
+
+	* TODO: Updated.
+
 2002-03-25  Sergey Poznyakoff
 
 	Switched to GNU argp functions for parsing command line
@@ -93,7 +100,7 @@
 2002-03-19  Sergey Poznyakoff  
 
 	* configure.in: More elaborate checking for POSIX threads
-	  library: FreeBSD keeps posix_ functions in libc_r.
+	  library: FreeBSD keeps pthread_ functions in libc_r.
 
 2002-03-19  Sergey Poznyakoff
 	
@@ -246,7 +253,7 @@
 	
 	* radiusd/auth.c (sfn_eval_reply): Free strvalue before
 	  assigning evaluated value. This caused memory leaks.
-+	* radiusd/config.y (acct_def productions): Bugfix: R_AUTH
+	* radiusd/config.y (acct_def productions): Bugfix: R_AUTH
 	  was used instead of R_ACCT.
 
 	* radiusd/stat.c: Thread safety: mutexes around critical sections.

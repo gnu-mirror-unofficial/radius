@@ -5,8 +5,6 @@
 -30  :  retransmit proxy (and possibly auth?) requests
 
      General:
--100 : radzap: change --log-directory to --file.
-	
 -100 : Provide a scheme function for setting radclient_debug variable.
 -60  : acct.c: hints and prefix handling depends on whether rad_acct_system
        succedes. Fix it.

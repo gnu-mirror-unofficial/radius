@@ -41,6 +41,7 @@ static char rcsid[] =
 
 void local_who();
 void radius_who();
+void print_header();
 
 /* UTMP stuff. Uses utmpx on svr4 */
 #if defined(__svr4__) || defined(__sgi)  
@@ -264,7 +265,7 @@ main(argc, argv)
         efree(path);
         /* Read realms */
         path = mkfilename(radius_dir, RADIUS_REALMS);
-	realm_read_file(path, 0, 0);
+	realm_read_file(path, 0, 0, NULL);
         efree(path);
         
         /*
@@ -369,6 +370,7 @@ radius_who()
 {
         radut_file_t file;
         struct radutmp *up;
+	
         print_header();
 
         /*

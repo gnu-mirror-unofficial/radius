@@ -1727,6 +1727,18 @@ checkdbm(users, ext)
 
 static int reload_data(enum reload_what what, int *do_radck);
 
+static int
+realm_set_secret(srv)
+	RADIUS_SERVER *srv;
+{
+	CLIENT *client;
+
+	if ((client = client_lookup_ip(srv->addr)) == NULL) 
+		return 1;
+	srv->secret = client->secret;
+	return 0;
+}
+
 int
 reload_data(what, do_radck)
         enum reload_what what;
@@ -1834,7 +1846,8 @@ reload_data(what, do_radck)
 
         case reload_realms:
                 path = mkfilename(radius_dir, RADIUS_REALMS);
-                if (realm_read_file(path, auth_port, acct_port) < 0)
+                if (realm_read_file(path, auth_port, acct_port,
+				    realm_set_secret) < 0)
                         rc = 1;
                 efree(path);
                 break;

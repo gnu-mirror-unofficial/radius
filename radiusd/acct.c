@@ -265,8 +265,8 @@ rad_acct_system(radreq, dowtmp)
         memset(&ut, 0, sizeof(ut));
         ut.porttype = -1; /* Unknown so far */
 
-        if (radreq->realm) {
-                ut.realm_address = radreq->realm->ipaddr;
+        if (radreq->server) {
+                ut.realm_address = radreq->server->addr;
         }
         
         /* Fill in radutmp structure */
@@ -490,8 +490,8 @@ write_detail(radreq, authtype, f)
         nas = radreq->ipaddr;
         if ((pair = avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
                 nas = pair->lvalue;
-        if (radreq->server_ipaddr)
-                nas = radreq->server_ipaddr;
+        if (radreq->server)
+                nas = radreq->server->addr;
 
         if ((cl = nas_lookup_ip(nas)) != NULL) {
                 if (cl->shortname[0])
@@ -718,7 +718,8 @@ rad_check_realm(realm)
         /* Pass I: scan radutmp file */
         count = 0;
         while (up = rut_getent(file))
-                if (up->realm_address == realm->ipaddr && up->type == P_LOGIN) 
+                if (up->type == P_LOGIN
+		    && realm_verify_ip(realm, up->realm_address))
                         count++;
 
         if (count < realm->maxlogins) {
@@ -731,8 +732,8 @@ rad_check_realm(realm)
         count = 0;
 
         while (up = rut_getent(file)) {
-                if (!(up->realm_address == realm->ipaddr &&
-                      up->type == P_LOGIN)) 
+                if (!(up->type == P_LOGIN
+		      && realm_verify_ip(realm, up->realm_address)))
                         continue;
 
                 if (rad_check_ts(up) == 1) {

@@ -176,7 +176,7 @@ stat_get_port_index(nas, port_no)
 		if (port->ip == 0)
 			break;
 		if (port->ip == nas->ipaddr && port->port_no == port_no)
-			return port - stat_base + 1;
+			return port - stat_base;
 	}
 	return 0;
 }

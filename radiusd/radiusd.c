@@ -363,9 +363,14 @@ radiusd_preconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 static void
 radiusd_postconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 {
-	if (radius_mode = MODE_DAEMON && radius_count_channels() == 0) {
-		radlog(L_ALERT,
-		       _("Radiusd is not listening on any port. Trying to continue anyway..."));
+	if (radius_mode == MODE_DAEMON && radius_count_channels() == 0) {
+		if (foreground) {
+			radlog(L_ALERT,
+			       _("Radiusd is not listening on any port."));
+			exit(1);
+		} else
+			radlog(L_ALERT,
+			       _("Radiusd is not listening on any port. Trying to continue anyway..."));
 	}
 }
 

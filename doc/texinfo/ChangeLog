@@ -1,3 +1,8 @@
+2004-07-31  Sergey Poznyakoff
+
+	* radtest.texi (Conversion Between Data Types): Document
+	conversions of operands in unary operations.
+
 2004-07-20  Sergey Poznyakoff 
 
         * radtest.texi: New file.

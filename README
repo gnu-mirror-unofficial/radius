@@ -1,3 +1,20 @@
+GNU Radius README
+Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
+See the end of file for copying conditions.
+
+* Introduction
+
+This file contains brief information about configuring, testing
+and running GNU Radius. It is *not* intended as a replacement
+for the documentation, it is provided as a brief reference only.
+The complete documentation for GNU Radius is available in
+doc/texinfo subdirectory. To read it without installing the package
+run `info -f doc/texinfo/radius'. After the package is installed
+the documentation can be accessed running `info radius'.
+
+The online copy of the documentation in various formats is available
+at http://www.gnu.org/software/radius/manual.
+
 * Installation
 
 Before installing, take a glance at doc/MACHINES, it may describe some
@@ -153,7 +170,7 @@ exhaustive list of all the new features.
                
 * Configuring
 
-Be sure to read accompanying documentation. The online documentation
+Be sure to read the accompanying documentation. The online documentation
 is available at http://www.gnu.org/software/radius/manual.
 If you need help, subscribe to <help-gnu-radius@gnu.org> and send your
 questions there. To subscribe, visit
@@ -168,29 +185,67 @@ contain the answer.
 
 The commands described below use the configuration file
 raddb/client.conf. See the documentation for the detailed description
-of this file.
-    
-Use radauth to send authentication requests to the running
-server. The invocation syntax is:
-
-            radauth [-v][-sSERVER:SECRET[:PORT]] username [pass]
-
-The -v (--verbose) option produces verbose output. The -s (--server)
-option allows to override the parameters of the radius server to send
-the request to. Usually you don't need to use it, unless you wish
-to override the settings of your 'raddb/client.conf' file.
-		    
-If you have guile version 1.6.4 or better installed, you can use
-radsession script to send authentication/accounting requests
-to the server. To do so, you will first need to edit your
-raddb/client.conf file. The template installed from the distribution
+of this file. The default raddb/client.conf installed from the distribution
 should suffice to test the server in default configuration.
 
-** Authentication test
+** Using radauth
+    
+Use radauth to send various radius requests to the running
+server. The invocation syntax is:
+
+            radauth [OPTIONS] [COMMAND] username [pass]
+
+OPTIONS are:
+    -v          Print verbose descriptions of what is being done
+    -n IP	Set NAS IP address
+    -s SID      Set session ID
+    -P PORT     Set NAS port number
+COMMAND is one of:
+    auth        Send only Access-Request (default)
+    acct        Send Access-Request. If successfull, send
+                accounting start request
+    start       Send accounting start request
+    stop 	Send accounting stop request
+
+So, to test authentication, run:
+
+  radauth LOGIN PASSWD 
+
+You may omit PASSWD if you wish to prevent the password from being
+compromised. In this case, radauth will disable echoing on the screen,
+prompt you for the password, and turn the echoing on again.
+
+To test accounting, use
+
+  radauth -s SID -P PORT start LOGIN
+or
+  radauth -s SID -P PORT stop LOGIN  
+
+Options may be omitted. Radauth will prompt you for the value of
+any missing option, e.g.:
+
+$ radauth start gray
+Enter session ID: a001
+Enter NAS port ID: 1
+
+To fully simulate actions of a NAS when initiating user session, use
+acct command:
+
+  radauth -s SID -P PORT acct LOGIN PASSWD  
+
+Again, you may omit options as well as PASSWD.
+
+** Using radsession
+    
+If you have guile version 1.6.4 or better installed, you can use
+radsession script to send authentication/accounting requests
+to the server. 
+
+*** Authentication test
 
   radsession -l LOGIN -p PASSWD -P PORT-ID --auth
 
-** Accounting test
+*** Accounting test
 
 To test accounting do:
 
@@ -209,17 +264,25 @@ Where:
 			a session ID of a previously started session
 			when used with --stop option.
 
-For example, supposing user `hamlet' has an entry in the users file,
-the following would authenticate him and open a session for him:
+** Examples using radauth and radsession
 
-	radsession -l hamlet -p guessme -P 1 -s "0001" --start
+The examples below assume that you have your radius server up and
+running, your user database contains a record for user `hamlet' with
+password `guessme'. The examples show two alternative variants of testing
+commands: using radauth command and using radsession. 
 
-Now, if you run radwho, you would get something like:
+To authenticate `hamlet' and start a radius session, invoke:
+
+     radauth -P 1 -s 0001 acct hamlet guessme
+or
+     radsession -l hamlet -p guessme -P 1 -s 0001 --start
+
+Now, if you run radwho, you will get something like:
 
      Login             Name What  TTY     When     From        Location
 hamlet           hamlet      PPP  S001  Mon 07:22 localhost    255.255.255.254
 
-radlast shows the following;
+whereas radlast will show the following;
 
 hamlet      local    001 127.0.0.2       Thu Mon 07 07:22 - still logged in
 
@@ -227,19 +290,48 @@ radwtmp begins Fri Dec 01 16:36:59 2000
 
 Then, suppose you run:
 
-	radsession -l hamlet -P 1 -s "0001" --stop
+        radauth -P 1 -s 0001 stop hamlet
+or	
+	radsession -l hamlet -P 1 -s 0001 --stop
 
-This will send a stop record for session 0001. Radlast would then show
+This will send a stop record for session 0001. Radlast will then show
 something like:
 
 hamlet      local    001 127.0.0.2       Thu Mon 07 07:22 - 07:25  (00:03) 
 
 radwtmp begins Fri Dec 01 16:36:59 2000
 
+** Using radtest
+
+Radtest is a radius client shell providing simple yet powerful
+scripting language and allowing to send arbitrary radius requests
+and analize server replies. It allows you to write sophisticated
+procedures for interacting with the remote servers. It is not
+designed for newbies, so use it if you wish to test some non-standard
+configurations.
+
+See accompanying documentation (chapter "Radtest") for the detailed
+description of the tool.
+
 * Bug reporting.		
 
 Send bug reports to <bug-gnu-radius@gnu.org>. 
-	
+
+
+* Copyright information:
+
+Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
+
+   Permission is granted to anyone to make or distribute verbatim copies
+   of this document as received, in any medium, provided that the
+   copyright notice and this permission notice are preserved,
+   thus giving the recipient permission to redistribute in turn.
+
+   Permission is granted to distribute modified versions
+   of this document, or of portions of it,
+   under the above conditions, provided also that they
+   carry prominent notices stating who last changed them.
+
 
 Local Variables:
 mode: outline

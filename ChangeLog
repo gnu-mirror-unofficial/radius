@@ -6,6 +6,8 @@
 	* radwho/radwho.c (gnu format): Changed default time
 	representation to %c.
 
+	* README: Updated
+	
 2004-07-21  Sergey Poznyakoff
 
 	* radtest/input.l: Check if the literal is a request name

@@ -29,5 +29,11 @@ authentication module.
 
 * hints-0.96
 
-Mimics GNU Radius 0.96 series way of handling the accounting packets.
+Mimics GNU Radius 0.96 series way of handling accounting packets.
 
+
+Local Variables:
+mode: outline
+paragraph-separate: "[ 	]*$"
+version-control: never
+End:

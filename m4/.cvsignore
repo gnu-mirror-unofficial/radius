@@ -1,5 +1,6 @@
 Makefile.in
 Makefile
+Makevars.template
 iconv.m4
 codeset.m4
 gettext.m4
@@ -17,3 +18,5 @@ progtest.m4
 stdint_h.m4
 uintmax_t.m4
 ulonglong.m4
+nls.m4
+po.m4

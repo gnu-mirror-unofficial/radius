@@ -4,6 +4,12 @@
 	ANDing it with the netmask.
 	* lib/nas.c (grad_nas_lookup_ip): Select the closest
 	match.
+	* configure.ac: Raised version number to 1.2.90
+	* NEWS: Likewise.
+
+	* m4/.cvsignore: Updated
+	* lib/dict.c (_dict_property): Allow + and - operations
+	on properties.
 
 2004-04-23  Sergey Poznyakoff
 

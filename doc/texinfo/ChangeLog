@@ -1,3 +1,8 @@
+2004-04-26  Sergey Poznyakoff
+
+	* doc/texinfo/comp.texi: Documented new features.
+	* doc/texinfo/configure.texi: Likewise
+
 2004-04-13  Sergey Poznyakoff 
 
  	* doc/texinfo/configure.texi: Updated

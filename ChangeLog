@@ -44,6 +44,8 @@
 	* radiusd/input.c: Added debugging calls.
 	* radiusd/request.c: Likewise.
 	* radiusd/rpp.c: Likewise.
+
+	* po/POTFILES.in: Updated
 	
 2003-06-02  Sergey Poznyakoff
 

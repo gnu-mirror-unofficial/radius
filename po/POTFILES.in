@@ -4,7 +4,6 @@ lib/debug.c
 lib/dict.c
 lib/getopt.c
 lib/leakdetect.c
-lib/mem.c
 lib/nas.c
 lib/raddb.c
 lib/radutmp.c
@@ -38,6 +37,7 @@ radiusd/snmpserv.c
 radiusd/sql.c
 radiusd/stat.c
 radiusd/version.c
+radiusd/rpp.c
 radlast/radlast.c
 
 radscm/radscm.c

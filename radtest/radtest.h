@@ -48,6 +48,7 @@ typedef struct radtest_node_unary radtest_node_unary_t;
 typedef struct radtest_node_asgn radtest_node_asgn_t;
 typedef struct radtest_node_loop radtest_node_loop_t;
 typedef struct radtest_node_cond radtest_node_cond_t;
+typedef struct radtest_node_input radtest_node_input_t;
 
 struct radtest_pair {
 	grad_dict_attr_t *attr;
@@ -86,7 +87,8 @@ typedef enum {
 	radtest_node_continue,
 	radtest_node_break,
 	radtest_node_loop,
-	radtest_node_cond
+	radtest_node_cond,
+	radtest_node_input
 } radtest_node_type;
 
 struct radtest_node_send {
@@ -166,6 +168,11 @@ struct radtest_node_cond {
 	radtest_node_t *iffalse;
 };
 
+struct radtest_node_input {
+	radtest_node_t *expr;
+	char *name;
+};
+
 struct radtest_node {
 	radtest_node_t *next;
 	grad_locus_t locus;
@@ -187,6 +194,7 @@ struct radtest_node {
 		radtest_node_asgn_t asgn;
 		radtest_node_loop_t loop;
 		radtest_node_cond_t cond;
+		radtest_node_input_t input;
 	} v;
 };
 
@@ -207,6 +215,7 @@ extern int x_argmax;
 extern int x_argc;
 extern char **x_argv;
 extern int disable_readline;
+extern int dry_run;
 
 int open_input(char *name);
 void close_input();

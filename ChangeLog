@@ -1,3 +1,13 @@
+2004-07-17  Sergey Poznyakoff
+
+	* radtest/gram.y: New statement 'input'. Minor changes to loop
+	syntax.
+	* radtest/input.l: new keywords 'not', 'input'. Make '!' a
+	synonim for 'not'.
+	* radtest/runtime.c: Lots of improvements/fixes.
+	* radtest/main.c: New option --dry-run
+	* radtest/radtest.h: Updated
+	
 2004-07-16  Sergey Poznyakoff
 	
 	* radtest/completion.c: Added new keywords. Handle variable

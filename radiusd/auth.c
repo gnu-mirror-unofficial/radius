@@ -36,17 +36,32 @@
 #include <errno.h>
 #include <sys/wait.h>
 
-#if defined(PWD_SHADOW)
-#include <shadow.h>
-#endif /* PWD_SHADOW */
-
 #if defined(HAVE_CRYPT_H)
 # include <crypt.h>
 #endif
 
-#ifdef OSFC2
-# include <sys/security.h>
-# include <prot.h>
+#if defined(PWD_SHADOW)
+# if PWD_SHADOW == SHADOW
+#  include <shadow.h>
+#  define STRUCT_SHADOW_PASSWD struct spwd
+#  define SHADOW_PASSWD_ENCRYPTED(s) ((s)->sp_pwdp)
+#  define GETSPNAM getspnam
+#  if defined(HAVE_STRUCT_SPWD_SP_EXPIRE)
+#   define SHADOW_PASSWD_EXPIRE(s) ((s)->sp_expire)
+#  endif
+# else /*OSFC2*/
+#  include <sys/security.h>
+#  include <prot.h>
+#  define STRUCT_SHADOW_PASSWD struct pr_passwd
+#  define SHADOW_PASSWD_ENCRYPTED(s) ((s)->ufld.fd_encrypt)
+#  define GETSPNAM getprpwnam
+#  ifdef HAVE_STRUCT_PR_PASSWD_UFLG_FG_LOCK
+#   define SHADOW_PASSWD_LOCK(s) ((s)->->uflg.fg_lock)
+#  endif
+# endif				    
+#else
+# define GETSPNAM(n) NULL
+# define SHADOW_PASSWD_ENCRYPTED(s) NULL
 #endif
 
 #include <radiusd.h>
@@ -57,23 +72,24 @@
 #include <envar.h>
 #include <obstack1.h>
 
-#if !defined(__linux__) && !defined(__GLIBC__)
-  extern char *crypt();
-#endif
-
-static int pw_expired(UINT4 exptime);
-static int unix_pass(char *name, char *passwd);
-static int rad_check_password(RADIUS_REQ *radreq, 
-                              VALUE_PAIR *check_item, VALUE_PAIR *namepair,
-                              char **user_msg,
-                              char *userpass);
+char *username_valid_chars;
 
 /*
- * Tests to see if the users password has expired.
- *
- * Return: Number of days before expiration if a warning is required
- *         otherwise 0 for success and -1 for failure.
+ * Check if the username is valid. Valid usernames consist of 
+ * alphanumeric characters and symbols from username_valid_chars[]
+ * array
  */
+int
+check_user_name(char *p)
+{
+        for (; *p && (isalnum(*p) || strchr(username_valid_chars, *p)); p++)
+                ;
+        return *p;
+}
+
+/* Tests to see if the users password has expired.
+   Returns the number of days before expiration if a warning is
+   required, otherwise 0 for success and -1 for failure. */
 static int
 pw_expired(UINT4 exptime)
 {
@@ -97,74 +113,33 @@ pw_expired(UINT4 exptime)
         return 0;
 }
 
-char *username_valid_chars;
-
-/*
- * Check if the username is valid. Valid usernames consist of 
- * alphanumeric characters and symbols from username_valid_chars[]
- * array
- */
-int
-check_user_name(char *p)
-{
-        for (; *p && (isalnum(*p) || strchr(username_valid_chars, *p)); p++)
-                ;
-        return *p;
-}
-
 LOCK_DECLARE(lock)
 
-/*
- * Check the users password against UNIX password database.
- */
-int
+static int
 unix_pass(char *name, char *passwd)
 {
         int rc;
         char *encpw;
         int pwlen;
         char *encrypted_pass = NULL;
+	STRUCT_SHADOW_PASSWD *spwd;
 
-#if defined(PWD_SHADOW)
-# if defined(M_UNIX)
-        struct passwd *spwd;
-# else
-        struct spwd *spwd;
-# endif
-#endif /* PWD_SHADOW */
-#ifdef OSFC2
-        struct pr_passwd *pr_pw;
-#endif
-	
 	LOCK_SET(lock);
-
-#if defined(OSFC2)
-        if (pr_pw = getprpwnam(name))
-                encrypted_pass = pr_pw->ufld.fd_encrypt;
-#elif defined(PWD_SHADOW)
-        /* See if there is a shadow password. */
-        if (spwd = getspnam(name))
-# if defined(M_UNIX)
-                encrypted_pass = spwd->pw_passwd;
-# else
-       	        encrypted_pass = spwd->sp_pwdp;
-# endif /* M_UNIX */
-#else /* !OSFC2 && !PWD_SHADOW */
-	{
+	if (spwd = GETSPNAM(name))
+                encrypted_pass = SHADOW_PASSWD_ENCRYPTED(spwd);
+	else { /* Try to get encrypted password from password file */
 		struct passwd *pwd;
 
-		/* Get encrypted password from password file */
 		if (pwd = getpwnam(name)) 
 			encrypted_pass = pwd->pw_passwd;
 	}
-#endif /* OSFC2 */
 
 	if (encrypted_pass) {
-#if defined(PWD_SHADOW) && !defined(M_UNIX)
+#ifdef SHADOW_PASSWD_EXPIRE
 		/* Check if password has expired. */
 		if (spwd
-		    && spwd->sp_expire > 0
-		    && (time(NULL) / SECONDS_PER_DAY) > spwd->sp_expire) {
+		    && SHADOW_PASSWD_EXPIRE(spwd) > 0
+		    && (time(NULL) / SECONDS_PER_DAY) > SHADOW_PASSWD_EXPIRE(spwd)) {
 			radlog(L_NOTICE,
 			       "unix_pass: [%s]: %s",
 			       name, _("password has expired"));
@@ -172,15 +147,15 @@ unix_pass(char *name, char *passwd)
 		}
 #endif
 
-#ifdef OSFC2
+#ifdef SHADOW_PASSWD_LOCK
 		/* Check if the account is locked. */
-		if (pr_pw->uflg.fg_lock != 1) {
+		if (SHADOW_PASSWD_LOCK(spwd) != 1) {
 			radlog(L_NOTICE,
 			       "unix_pass: [%s]: %s",
 			       name, _("account locked"));
 			encrypted_pass = NULL;
 		}
-#endif /* OSFC2 */
+#endif 
 	}
 
 	if (encrypted_pass) {
@@ -220,7 +195,7 @@ unix_pass(char *name, char *passwd)
  *                      AUTH_REJECT  Rejected
  *                      AUTH_IGNORE  Silently ignored                 
  */
-int
+static int
 rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
                    VALUE_PAIR *namepair, char **user_msg, char *userpass)
 {

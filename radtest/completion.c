@@ -37,21 +37,21 @@ struct key_tab {
 };
 
 static struct key_tab key_tab[] = {
-	"auth",  4, AUTH,    0,
-	"print", 5, PRINT,   1,
-	"send",  4, SEND,    1,
-	"exit",  4, EXIT,    1,
-	"expect",6, EXPECT,  1,
-	"acct",  4, ACCT,    0,
-	"begin", 5, T_BEGIN, 0,
-	"end",   3, T_END,   0,
-	"while", 5, WHILE,   1,
-	"do",    2, DO,      1,
-	"break", 5, BREAK,   1,
-	"continue", 8, CONTINUE, 1,
-	"if",    2, IF,      1,
-	"else",  4, ELSE,    1,
-	NULL
+	{ "auth",  4, AUTH,    0 },
+	{ "print", 5, PRINT,   1 },
+	{ "send",  4, SEND,    1 },
+	{ "exit",  4, EXIT,    1 },
+	{ "expect",6, EXPECT,  1 },
+	{ "acct",  4, ACCT,    0 },
+	{ "begin", 5, T_BEGIN, 0 },
+	{ "end",   3, T_END,   0 },
+	{ "while", 5, WHILE,   1 },
+	{ "do",    2, DO,      1 },
+	{ "break", 5, BREAK,   1 },
+	{ "continue", 8, CONTINUE, 1 },
+	{ "if",    2, IF,      1 },
+	{ "else",  4, ELSE,    1 },
+	{ NULL }
 };
 
 static char *
@@ -60,7 +60,6 @@ gen_state0_list(const char *text, int state)
 	static int len;
 	static struct key_tab *cursor;
 	struct key_tab *kp;
-	char *str;
 	
 	if (!state) {
 		len = strlen(text);
@@ -91,20 +90,6 @@ gen_match_list(char *list[], const char *text, int state)
 	while ((str = *cursor++)) 
 		if (strlen (str) >= len && strncmp (str, text, len) == 0)
 			return strdup (str);
-
-	return NULL;
-}
-
-static char *
-gen_literal_list(char *list[], int state)
-{
-	static char **cursor;
-
-	if (!state)
-		cursor = list;
-
-	if (*cursor)
-		return strdup(*cursor++);
 
 	return NULL;
 }
@@ -274,7 +259,6 @@ complete_variable(int start, int end)
 char **
 radtest_command_completion(char *text, int start, int end)
 {
-	struct key_tab *prev;
 	if (start == 0) 
 		return rl_completion_matches(text, gen_state0_list);
 	else {

@@ -19,6 +19,7 @@
 option {
 	max-requests 1024;
 	exec-program-user "@USER@";	
+#	resolve no;
 };
 
 logging {
@@ -37,7 +38,7 @@ logging {
 	};
 	category debug {
 		channel debug;
-		level acct=1,"radius.c";
+		level acct=1,"radius.c",radiusd=2;
 	};
 	category !debug {
 		channel default;

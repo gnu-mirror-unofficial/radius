@@ -1,5 +1,5 @@
 ;;;; This file is part of GNU Radius.
-;;;; Copyright (C) 2001,2003 Sergey Poznyakoff
+;;;; Copyright (C) 2001,2002,2003 Sergey Poznyakoff
 ;;;;
 ;;;; GNU Radius is free software; you can redistribute it and/or modify
 ;;;; it under the terms of the GNU General Public License as published by
@@ -58,10 +58,10 @@
 
 (define ttl-source-ip-address INADDR_ANY)
 (define ttl-source-port 0)
-(define ttl-dest-ip-address 0)
+(define ttl-dest-ip-address INADDR_ANY)
 (define ttl-dest-port 0)
-(define ttl-max-retry 0)
-(define ttl-timeout 0)
+(define ttl-max-retry 1)
+(define ttl-timeout 3)
 
 (define (ttl-make-header code user-name)
   (let ((hdr (make-string 2 (integer->char 0))))
@@ -78,7 +78,7 @@
   (char->integer (string-ref packet 0)))
 
 (define (ttl-reply-string packet)
-  (make-shared-substring packet 1 (1- (ttl-reply-length packet))))
+  (substring packet 2 (1- (ttl-reply-length packet))))
 
 (define (ttl-message code user-name)
   (let ((packet (ttl-make-packet code user-name))
@@ -102,6 +102,9 @@
                  ((not (null? (car sel)))
                   (let* ((ret (recvfrom! fd packet))
                          (length (car ret)))
+		    (rad-log L_DEBUG (format #f "length ~A" length))
+		    (rad-log L_DEBUG (format #f "reply-length ~A"
+					     (ttl-reply-length packet)))
                     (if (not
                          (or
                           (< length 2)
@@ -115,6 +118,8 @@
                                       #\-)
                             (set! ttl #t)) ;; Force exit from loop
                            (else
+			    (rad-log L_DEBUG (format #f "text ~A"
+						     (ttl-reply-string packet)))
                             (let ((num (string->number
                                         (ttl-reply-string packet))))
                               (if (not num)

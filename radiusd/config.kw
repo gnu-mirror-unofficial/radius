@@ -88,6 +88,7 @@ proxy, T_PROXY
 read_only, T_SNMP_ACCESS, _Y(SNMP_RO)
 read_write, T_SNMP_ACCESS, _Y(SNMP_RW)
 request-cleanup-delay, T_REQUEST_CLEANUP_DELAY
+resolve, T_RESOLVE
 retry, T_RETRY
 ro, T_SNMP_ACCESS, _Y(SNMP_RO)
 rw, T_SNMP_ACCESS, _Y(SNMP_RW)

@@ -188,29 +188,32 @@ types:
 @deftp Instruction grad_instr_t
 @smallexample
 @group
-enum grad_instr_type @{
-     grad_instr_conditional,
-     grad_instr_call,
-     grad_instr_return,
-     grad_instr_action,
-     grad_instr_reply,
-     grad_instr_proxy,
-     grad_instr_forward
+enum grad_instr_type
+@{
+  grad_instr_conditional,
+  grad_instr_call,
+  grad_instr_return,
+  grad_instr_action,
+  grad_instr_reply,
+  grad_instr_proxy,
+  grad_instr_forward
 @};
 
 typedef struct grad_instr grad_instr_t;
 
-struct grad_instr @{
-       enum grad_instr_type type;
-       grad_instr_t *next;
-       union @{
-             grad_instr_conditional_t cond;
-             grad_instr_call_t call;
-             grad_instr_action_t action;
-             grad_instr_reply_t reply;
-             grad_instr_proxy_t proxy;
-             grad_instr_forward_t forward;
-       @} v;                                                             
+struct grad_instr
+@{
+  enum grad_instr_type type;
+  grad_instr_t *next;
+  union
+    @{
+      grad_instr_conditional_t cond;
+      grad_instr_call_t call;
+      grad_instr_action_t action;
+      grad_instr_reply_t reply;
+      grad_instr_proxy_t proxy;
+      grad_instr_forward_t forward;
+    @} v;                                                             
 @};
 @end group
 @end smallexample
@@ -234,11 +237,12 @@ be discussed in the following subsections.
 @deftp Instruction grad_instr_conditional_t cond iftrue iffalse
 @smallexample
 @group
-struct grad_instr_conditional @{
-       grad_entry_point_t cond;     /* Entry point to the compiled
-                                       Rewrite condition */
-       grad_instr_t *iftrue;        /* Points to the ``true'' branch  */
-       grad_instr_t *iffalse;       /* Points to the ``false'' branch  */
+struct grad_instr_conditional
+@{
+  grad_entry_point_t cond;  /* Entry point to the compiled
+                               Rewrite condition */
+  grad_instr_t *iftrue;     /* Points to the ``true'' branch  */
+  grad_instr_t *iffalse;    /* Points to the ``false'' branch  */
 @};
 typedef struct grad_instr_conditional grad_instr_conditional_t;
 @end group
@@ -464,8 +468,9 @@ as a @code{cons}: @code{(@var{name-or-number} . @var{value})}.
 @deftp Instruction grad_instr_proxy_t realm    
 @smallexample
 @group
-struct grad_instr_proxy @{
-       grad_realm_t realm;
+struct grad_instr_proxy
+@{
+  grad_realm_t realm;
 @};
 typedef struct grad_instr_proxy grad_instr_proxy_t;
 @end group
@@ -494,8 +499,9 @@ get rid of @file{raddb/*}!}
 @deftp Instruction grad_instr_forward_t server_list
 @smallexample
 @group
-struct grad_instr_forward @{
-       grad_list_t server_list; 
+struct grad_instr_forward
+@{
+  grad_list_t server_list; 
 @};
 typedef struct grad_instr_forward grad_instr_forward_t;
 @end group

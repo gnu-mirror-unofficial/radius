@@ -345,17 +345,20 @@ given realm. Each of them should return a list of 5-element
 tuples@footnote{This interface is likely to change in future versions}:
 
 @smallexample
-@var{user-name}, @var{nas-ip-address}, @var{nas-port-id}, @var{acct-session-id}@end smallexample
+@var{user-name}, @var{nas-ip-address}, @var{nas-port-id}, @var{acct-session-id}
+@end smallexample
 
 Here is an example of @code{mlc_user_query} and @code{mlc_realm_query}:
 
 @smallexample     
-mlc_user_query SELECT user_name,nas_ip_address,nas_port_id,acct_session_id \
+mlc_user_query SELECT user_name,nas_ip_address,\
+                      nas_port_id,acct_session_id \
                FROM calls \
                WHERE user_name='%C@{User-Name@}' \
                AND status = 1
 
-mlc_realm_query SELECT user_name,nas_ip_address,nas_port_id,acct_session_id \
+mlc_realm_query SELECT user_name,nas_ip_address,\
+                       nas_port_id,acct_session_id \
                 FROM calls \
                 WHERE realm_name='%C@{Realm-Name@}'     
 @end smallexample

@@ -32,7 +32,7 @@ or @code{Scheme} source files.
 The default locations of these directories are determined at compile
 time. Usually these are:
 
-@multitable @columnfractions .40 .20 .40
+@multitable @columnfractions .35 .20 .45
 
 @item Directory @tab Short name @tab Default location 
 

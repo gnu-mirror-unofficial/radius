@@ -2830,17 +2830,20 @@ Data}). Each of these queries must return a list consisting of
 5-element tuples:
 
 @smallexample
-@var{user-name}, @var{nas-ip-address}, @var{nas-port-id}, @var{acct-session-id}@end smallexample
+@var{user-name}, @var{nas-ip-address}, @var{nas-port-id}, @var{acct-session-id}
+@end smallexample
 
 For example, in our setup these queries will be:
 
 @smallexample     
-mlc_user_query SELECT user_name,nas_ip_address,nas_port_id,acct_session_id \
+mlc_user_query SELECT user_name,nas_ip_address,\
+                      nas_port_id,acct_session_id \
                FROM calls \
                WHERE user_name='%C@{User-Name@}' \
                AND status = 1
 
-mlc_realm_query SELECT user_name,nas_ip_address,nas_port_id,acct_session_id \
+mlc_realm_query SELECT user_name,nas_ip_address,\
+                       nas_port_id,acct_session_id \
                 FROM calls \
                 WHERE realm_name='%C@{Realm-Name@}'     
 @end smallexample

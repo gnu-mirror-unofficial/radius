@@ -227,9 +227,9 @@ Its format is as follows:
 @var{Delimiter} is any word you choose to delimit the text, @var{text}
 represent the text of the string. If @var{delimiter} is prepended by a
 dash, any leading tabulation characters will be removed from @var{text}. This
-allows for natural indentation of here document constructs.
+allows for natural indentation of @samp{here document} constructs.
 
-Here document construct is especially useful to represent strings
+The @samp{here document} construct is especially useful to represent strings
 containing embedded newlines, as shown in the example below:
 
 @smallexample
@@ -1603,7 +1603,7 @@ The next piece of code handles @option{-h} and erroneous options:
 @table @asis 
 @item 10 -- 26
 Print short description and exit, if the program is given @option{-h}.
-Notice that here document syntax is used to print the text
+Notice that @samp{here document} syntax is used to print the text
 (@xref{Strings}, for its description). The leading whitespace in
 lines 12 to 24 is composed of tabulation characters (ASCII 9), not
 usual space characters (ASCII 32), as required by @samp{<<-}
@@ -1613,10 +1613,10 @@ construct.
 These lines handle unrecognized options.
 
 @item 31
-Ends case statement started on line 5
+Closes case statement started on line 5
  
 @item 32
-Ends compound statement started on line 4
+Closes compound statement started on line 4
 @end table
 
 @subheading Checking Command Line Consistency
@@ -1645,8 +1645,8 @@ solve @dfn{minus ambiguity} (@pxref{minus-ambiguity}).
 
 @item 36 -- 41
 At this point we may have at most three arguments:
-a command, a user name, and a password. If there are more, display
-a diagnostic message and exit the program.
+command, user name, and password. If there are more, display
+the diagnostic message and exit the program.
 @end table 
 
 @noindent
@@ -1869,7 +1869,8 @@ the loop at line 77.
  91       print $REPLY[Reply-Message*]
  92       input 
  93       send auth Access-Request \
- 94         (User-Name = $LOGIN User-Password = $INPUT State = $REPLY[State])
+ 94         (User-Name = $LOGIN User-Password = $INPUT \
+             State = $REPLY[State])
 @end group
 @end smallexample
 
@@ -1911,14 +1912,14 @@ Final part of the function:
 Handle unknown reply codes.
 
 @item 99
-Ends the while loop started on line 77.
+Closes the while loop started on line 77.
 
 @item 100
 Exit to the shell indicating failure. This statement will be reached
 only if a @code{break} is executed either on line 88 or on line 97.
 
 @item 101
-Ends function definition started on lines 74 -- 75 
+Closes function definition started on lines 74 -- 75 
 @end table
 
 @subheading Final Part of Radauth Program
@@ -1963,7 +1964,7 @@ Call @code{acct} function for @samp{start} and @code{stop} commands.
 Handle an unknown command verb.
 
 @item 112
-Ends @code{case} statement from line 103.
+Closes @code{case} statement from line 103.
 @end table
 
 @c End of radtest.texi

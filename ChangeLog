@@ -1,3 +1,24 @@
+2002-06-03  Sergey Poznyakoff 
+
+	* lib/radargp.c: Bugfix.
+	* radiusd/config.y: Likewise. 
+	* radiusd/proxy.c: Likewise.
+	* radiusd/radck.c: Likewise.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/rewrite.y: Likewise.
+	* radiusd/sql.c: Likewise.
+	* radlast/radlast.c: Likewise.
+	* radtest/main.c: Likewise.
+	* radwho/radwho.c: Likewise.
+	* radzap/radzap.c: Likewise.
+	* lib/radargp.c: Likewise.
+
+	* po/no.po: Updated.
+	* po/es.po: Likewise.
+
+	* raddb/client.conf: Changed source IP to 127.0.0.1. Brought in
+	  sync with raddb/clients.
+	
 2002-06-02  Sergey Poznyakoff
 
 	* lib/mem.c: Fixed diagnostic output.

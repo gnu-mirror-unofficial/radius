@@ -114,17 +114,17 @@ msgstr "%s: la opción `%s' es ambigua\n"
 #: lib/getopt.c:711
 #, c-format
 msgid "%s: option `--%s' doesn't allow an argument\n"
-msgstr "%s: la opción `--%s'no admite ningún argumento\n"
+msgstr "%s: la opción `--%s' no admite ningún argumento\n"
 
 #: lib/getopt.c:716
 #, c-format
 msgid "%s: option `%c%s' doesn't allow an argument\n"
-msgstr "%s: la opción `%c%s'no admite ningún argumento\n"
+msgstr "%s: la opción `%c%s' no admite ningún argumento\n"
 
 #: lib/getopt.c:734 lib/getopt.c:907
 #, c-format
 msgid "%s: option `%s' requires an argument\n"
-msgstr "%s: la opción `%s'requiere un argumento\n"
+msgstr "%s: la opción `%s' requiere un argumento\n"
 
 #: lib/getopt.c:763
 #, c-format
@@ -154,12 +154,12 @@ msgstr "%s: la opción requiere un argumento --%c\n"
 #: lib/getopt.c:873
 #, c-format
 msgid "%s: option `-W %s' is ambiguous\n"
-msgstr "%s: la opción `-W %s'es ambigua\n"
+msgstr "%s: la opción `-W %s' es ambigua\n"
 
 #: lib/getopt.c:891
 #, c-format
 msgid "%s: option `-W %s' doesn't allow an argument\n"
-msgstr "%s: la opción `-W %s'no admite ningún argumento\n"
+msgstr "%s: la opción `-W %s' no admite ningún argumento\n"
 
 #: lib/leakdetect.c:105 lib/leakdetect.c:118 lib/mem.c:217 lib/mem.c:224
 #: lib/mem.c:318 lib/mem.c:377

@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
 "POT-Creation-Date: 2002-06-03 12:52+0300\n"
-"PO-Revision-Date: 2002-06-03 12:58+0300\n"
+"PO-Revision-Date: 2002-06-03 16:08+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Norwegian-bokmål <no@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -1823,7 +1823,7 @@ msgstr "merke poster uten stopper med et utropstegn"
 
 #: radlast/radlast.c:133 radzap/radzap.c:67
 msgid "NASNAME"
-msgstr "NASNAME"
+msgstr "NASNAVN"
 
 #: radlast/radlast.c:134
 msgid "show logins from given NAS"

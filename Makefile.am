@@ -17,8 +17,12 @@ TESTS=@top_srcdir@/test/test.sh
 TESTS_ENVIRONMENT=BUILDDIR=$(top_builddir) SOURCEDIR=$(top_srcdir)
 endif
 
+if BUILD_CLIENT
+CLIENT=client
+endif
+
 SUBDIRS=include radlib snmplib radiusd radwho radzap radlast raduse\
-        radscripts elisp $(SCMDIR) $(TESTDIR) doc po
+        radscripts elisp raddb $(CLIENT) $(SCMDIR) $(TESTDIR) doc po
 
 if MAINTAINER_MODE
 CFLAGS=-ggdb
@@ -31,18 +35,12 @@ lint::
 	do \
 		$(MAKE) -C $$dir lint; \
 	done
-	
 endif
 
-EXTRA_DIST=include raddb doc mibs scripts contrib
+EXTRA_DIST=include m4 doc mibs scripts contrib ylwrap
 
 dist-hook:
 	-(cd $(distdir); \
 	 find . \( -name CVS -o -name .emacs.desktop -o -name .deps -o \
                    -name '*~' -o -name core \) -exec rm -rf {} \; )
 
-install-data-local:
-	@if [ ! -d @ETC_DIR@/raddb ]; then \
-		${INSTALL} -d @ETC_DIR@ ; \
-		cp -r $(top_srcdir)/raddb @ETC_DIR@ ; \
-	fi

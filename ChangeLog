@@ -1,3 +1,32 @@
+2002-07-08  Sergey Poznyakoff  
+
+	* include/radiusd.h (snmp_stmt_begin): Bugfix
+	  (filters_stmt_term, filters_stmt): new externs.
+	* lib/dict.c (_dict_attribute): Bugfix, dict_attr_index[n]
+	  was set incorrectly for vendor-specific attributes.
+	* radiusd/log.c (get_priority): Bugfix
+	  (category_set_level): Clear debug levels before setting them.
+	* radiusd/snmpserv.c (snmp_stmt_begin): Bugfix
+	  (snmp_add_acl): Bugfix: ntohl to ipaddr and netmask. 
+
+	* radiusd/radiusd.c: Handle SIGCHLD.
+	  (acct_stmt_begin): Bugfix.
+	  (config_syntax) Added "filters" statement.
+*	* radiusd/exec.c: Added support for filter programs.
+*	* lib/users.y (install_pair): Allow Exec-Program attribute
+	  value to start with |, meaning filter-id.
+	* radiusd/acct.c (rad_acct_ext): Interpret the value of
+	  Acct-Ext-Program attribute: if it starts with / it
+	  is a name and command line of an external program to run,
+	  if it starts with a |, it is the identifier of a filter
+	  program to use.
+	* radiusd/auth.c (sfn_exec_wait): Likewise for
+	  Exec-Program-Wait.
+	* examples/config.syntax: Example of filters statement
+	
+	* po/es.po: Updated
+	* po/no.po: Updated
+
 2002-07-07  Sergey Poznyakoff  
 
 	Rewritten configuration file parser for radiusd. The new

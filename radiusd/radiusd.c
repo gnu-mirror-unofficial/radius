@@ -952,7 +952,6 @@ acct_stmt_begin(finish, block_data, handler_data)
 	else if (radius_mode == MODE_DAEMON && !_opened_acct_sockets)
 		open_socket_list(0, NULL, acct_port, "acct",
 				 acct_success, auth_respond, acct_failure);
-	_opened_acct_sockets++;
 	return 0;
 }
 
@@ -967,6 +966,7 @@ rad_cfg_listen_acct(argc, argv, block_data, handler_data)
   	if (open_acct && radius_mode == MODE_DAEMON)
 		open_socket_list(argc-1, argv+1, acct_port, "acct",
 				 acct_success, auth_respond, acct_failure);
+	_opened_acct_sockets++;
 	return 0;
 }
 

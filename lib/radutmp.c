@@ -25,8 +25,7 @@
 #include <fcntl.h>
 #include <netinet/in.h>
 
-#include <radius.h>
-#include <radutmp.h>
+#include <common.h>
 
 struct _radut_file {
         int fd;

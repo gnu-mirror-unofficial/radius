@@ -27,10 +27,7 @@
 #include <pwd.h>
 #include <ctype.h>
 
-#include <radius.h>
-#include <radpaths.h>
-#include <list.h>
-#include <symtab.h>
+#include <common.h>
 
 #ifndef DICT_INDEX_SIZE
 # define DICT_INDEX_SIZE 2048

@@ -24,9 +24,7 @@
 #if defined(USE_DBM)
 
 #include <radiusd.h>
-#include <raddbm.h>
-#include <symtab.h>
-#include <parser.h>
+#include <radius/raddbm.h>
 
 #define NINT(n) ((n) + sizeof(int) - 1)/sizeof(int)
 

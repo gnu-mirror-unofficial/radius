@@ -21,7 +21,7 @@
 # include <config.h>
 #endif
 
-#include <radius.h>
+#include <common.h>
 #include <radsql.h>
 
 static SQL_DISPATCH_TAB *sql_dispatch_tab[] = {

@@ -33,7 +33,7 @@
 #include <errno.h>
 #include <ctype.h>
 
-#include <radius.h>
+#include <common.h>
 
 void
 grad_client_random_vector(char *vector)
@@ -111,14 +111,14 @@ grad_request_t *
 grad_client_recv(grad_uint32_t host, u_short udp_port, char *secret, char *vector,
 	     char *buffer, int length)
 {
-        AUTH_HDR *auth;
+        grad_packet_header_t *auth;
         int totallen;
         u_char reply_digest[AUTH_VECTOR_LEN];
         u_char calc_digest[AUTH_VECTOR_LEN];
         int  secretlen;
 	grad_request_t *req;
 	
-        auth = (AUTH_HDR *)buffer;
+        auth = (grad_packet_header_t *)buffer;
         totallen = ntohs(auth->length);
 
         if (totallen != length) {

@@ -37,8 +37,8 @@
 #include <signal.h>
 #include <errno.h>
 #include <sys/wait.h>
-#include <sysdep.h>
-#include <radius.h>
+
+#include <common.h>
 #include <radtest.h>
 
 extern grad_locus_t source_locus;
@@ -61,7 +61,8 @@ int yyerror(char *s);
 %token <string> QUOTE
 %token <ipaddr> IPADDRESS
 
-%type <number> op code 
+%type <number> code 
+%type <op> op
 %type <variable> value expr send_flag
 %type <ident> maybe_expr 
 %type <symtab> send_flags send_flag_list
@@ -83,6 +84,7 @@ int yyerror(char *s);
         } pair_list;
         Variable variable;
 	Symtab *symtab;
+	enum grad_operator op;
 }
 
 %%
@@ -314,27 +316,27 @@ string        : QUOTE
 
 op            : EQ
                 {
-                        $$ = OPERATOR_EQUAL;
+                        $$ = grad_operator_equal;
                 } 
               | LT
                 {
-                        $$ = OPERATOR_LESS_THAN;
+                        $$ = grad_operator_less_than;
                 }
               | GT
                 { 
-                        $$ = OPERATOR_GREATER_THAN;
+                        $$ = grad_operator_greater_than;
                 }
               | NE
                 {
-                        $$ = OPERATOR_NOT_EQUAL;
+                        $$ = grad_operator_not_equal;
                 }
               | LE
                 {
-                        $$ = OPERATOR_LESS_EQUAL;
+                        $$ = grad_operator_less_equal;
                 }
               | GE
                 {
-                        $$ = OPERATOR_GREATER_EQUAL;
+                        $$ = grad_operator_greater_equal;
                 }
               ;
 

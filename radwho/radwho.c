@@ -30,11 +30,9 @@
 #include <ctype.h>
 #include <netinet/in.h>
 
-#include <sysdep.h>
-#include <radutmp.h>
-#include <radius.h>
-#include <radargp.h>
-#include <radpaths.h>
+#include <common.h>
+#include <radius/radutmp.h>
+#include <radius/radargp.h>
 
 void local_who();
 void radius_who();

@@ -30,6 +30,6 @@ int ts_parse(TIMESPAN **sp, char *str, char **endp);
 int ts_match(TIMESPAN *timespan, time_t *time_now, unsigned *rest);
 int ts_check(char *str, time_t *time, unsigned *rest, char **endp);
 
-#include <mem.h>
+#include <radius/mem.h>
 #define ALLOC grad_emalloc
 #define FREE grad_free

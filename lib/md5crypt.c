@@ -17,7 +17,7 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <sysdep.h>
-#include <md5.h>
+#include <radius/md5.h>
 #if defined(HAVE_CRYPT_H)
 # include <crypt.h>
 #endif

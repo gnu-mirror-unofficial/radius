@@ -22,9 +22,9 @@
 #endif
 
 #include <libguile.h>
-#include <radius.h>
+#include <radius/radius.h>
 #include <rewrite.h>
-#include <radscm.h>
+#include <radius/radscm.h>
 #define RADIUS_SERVER_GUILE
 #include <radsql.h>
 

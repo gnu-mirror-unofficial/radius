@@ -27,9 +27,10 @@
 #include <fcntl.h>
 #include <radiusd.h>
 #include <libguile.h>
-#include <radscm.h>
 #include <setjmp.h>
 #include <errno.h>
+
+#include <radius/radscm.h>
 
 static unsigned scheme_gc_interval = 3600;
 static char *scheme_outfile = NULL;

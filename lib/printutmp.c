@@ -27,12 +27,10 @@
 #include <sys/socket.h>
 #include <sys/time.h>
 #include <netinet/in.h>
-
-#include <radius.h>
-#include <obstack1.h>
-#include <radutmp.h>
 #include <pwd.h>
 #include <stdio.h>
+
+#include <common.h>
 
 #define TAB_SIZE 8 /* FIXME */
 

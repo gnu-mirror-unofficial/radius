@@ -67,7 +67,7 @@ extern struct tm *localtime_r(const time_t *timep, struct tm *res);
 #endif
 
 #if !HAVE_DECL_ASPRINTF
-int asprintf(/*char **result, const char *format, ...*/);
+int asprintf(char **result, const char *format, ...);
 #endif
 
 #if !HAVE_DECL_VASPRINTF
@@ -75,24 +75,8 @@ int vasprintf(char **result, const char *format, va_list args);
 #endif
 
 #if !HAVE_DECL_CRYPT
-extern char *crypt();
+extern char *crypt(const char *key, const char *salt);
 #endif
-
-#if SIZEOF_UINT32_T == 4
-typedef uint32_t grad_uint32_t;
-#elif SIZEOF_UNSIGNED_INT == 4
-typedef unsigned int grad_uint32_t;
-#elif SIZEOF_UNSIGNED_LONG == 4
-typedef unsigned long grad_uint32_t;
-#else
-# error "Cannot find any 32-bit integer data type"
-#endif
-
-typedef grad_uint32_t grad_counter_t;
-
-int grad_set_nonblocking(int fd);
-int grad_max_fd();
-grad_uint32_t grad_first_ip();
 
 typedef RETSIGTYPE (*grad_signal_handler_t)(int);
 

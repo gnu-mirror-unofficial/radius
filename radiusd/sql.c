@@ -28,10 +28,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <radiusd.h>
-#include <radsql.h>
-#include <obstack1.h>
 #include <ctype.h>
+
+#include <radiusd.h>
 #ifdef USE_SERVER_GUILE
 # include <libguile.h>
 #endif
@@ -1017,7 +1016,7 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
 		return 0;
 	
         for (i = 0; i < res->ntuples; i++) {
-		int op;
+		enum grad_operator op;
 		grad_avp_t *pair;
 		
 		if (op_too) {
@@ -1029,7 +1028,7 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
                                 continue;
                         }
 		} else
-			op = OPERATOR_EQUAL;
+			op = grad_operator_equal;
 
 		loc.file = __FILE__;
 		loc.line = __LINE__;

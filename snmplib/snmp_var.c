@@ -1,6 +1,6 @@
 /*
    This file is part of GNU Radius SNMP Library.
-   Copyright (C) 2001,2003 Free Software Foundation, Inc.
+   Copyright (C) 2001,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -24,8 +24,8 @@
 #endif
 
 #include <stdlib.h>
-#include <asn1.h>
-#include <snmp.h>
+#include <snmp/asn1.h>
+#include <snmp/snmp.h>
 
 /* free a *single* snmp variable */
 void

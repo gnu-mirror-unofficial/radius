@@ -17,11 +17,7 @@
    along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-#include <symtab.h>
-
-#define MAX_DEBUG_MODE 10
-#define dbg(m,l) if (debug_level[m] >= l) debug_printf
-extern int debug_level[];
+#include <radius/symtab.h>
 
 #define MAX_STRING 128
 

@@ -21,10 +21,7 @@
 #endif
 
 #include <stdlib.h>
-#include <argcv.h>
-#include <radius.h>
-#include <envar.h>
-#include <list.h>
+#include <common.h>
 
 static grad_list_t /* of grad_realm_t */ *realms; 
 
@@ -131,7 +128,7 @@ read_realms_entry(void *closure, int fc, char **fv, grad_locus_t *loc)
 		}
 	}
 
-        STRING_COPY(rp->realm, fv[0]);
+        GRAD_STRING_COPY(rp->realm, fv[0]);
         
         if (i < fc) {
                 rp->args = grad_envar_parse_argcv(fc-i, &fv[i]);

@@ -25,9 +25,10 @@
 #include <pwd.h>
 #include <syslog.h>
 #include <libguile.h>
-#include <radius.h>
-#include <radutmp.h>
-#include <radscm.h>
+
+#include <common.h>
+#include <radius/radutmp.h>
+#include <radius/radscm.h>
 
 static grad_server_queue_t *srv_queue;
 

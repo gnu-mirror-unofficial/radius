@@ -26,7 +26,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <raddbm.h>
+#include <radius/raddbm.h>
 
 #if USE_DBM == DBM_NDBM
 

@@ -42,10 +42,7 @@
 #include <errno.h>
 #include <sys/wait.h>
 
-#include <radius.h>
-
-#include <obstack1.h>
-#include <parser.h>
+#include <common.h>
 #include <users_gram.h>
 
 extern void grad_enable_rule_debug(int);
@@ -56,7 +53,7 @@ static int preproc();
 static void read_number(char *text, int len, int base);
 
 static struct obstack stack; /* Obstack for keeping string values */ 
-grad_locus_t source_locus;
+grad_locus_t grad_parser_source_locus;
 ino_t source_inode;          /* Inode of the current source (for preventing
                                 recursive inclusion */
 
@@ -234,7 +231,7 @@ push_source(char *name)
                 return 1;
         }
 
-        if (source_locus.file && st.st_ino == source_inode) {
+        if (grad_parser_source_locus.file && st.st_ino == source_inode) {
                 yyerror("recursive inclusion");
                 return 1;
         }
@@ -258,9 +255,9 @@ push_source(char *name)
         }
 
         /* Push current context */
-        if (source_locus.file) {
+        if (grad_parser_source_locus.file) {
                 ctx = grad_emalloc(sizeof(*ctx));
-                ctx->loc = source_locus;
+                ctx->loc = grad_parser_source_locus;
                 ctx->i_node = source_inode;
                 ctx->yyin = yyin;
                 ctx->prev = context_stack;
@@ -277,8 +274,8 @@ push_source(char *name)
                 lex_set_buffer(yyin);
 #endif
         }
-        source_locus.file = name;
-        source_locus.line = 1;
+        grad_parser_source_locus.file = name;
+        grad_parser_source_locus.line = 1;
         source_inode = st.st_ino;
         return 0;
 }
@@ -300,7 +297,7 @@ pop_source()
                 return 1;
         }
 	/* Restore previous context */
-        source_locus = context_stack->loc;
+        grad_parser_source_locus = context_stack->loc;
         source_inode = context_stack->i_node;
         RESTORE_BUFFER_STATE(context_stack->state);
         ctx = context_stack->prev;
@@ -321,7 +318,7 @@ D [0-9]{1,3}
 #.*\n   {
           if (strncmp(yytext+1, "debug", 5) == 0)
                   grad_enable_rule_debug(1);
-          source_locus.line++; /* a comment */
+          grad_parser_source_locus.line++; /* a comment */
         }
 #.*     /* end-of-file comment */;
 \$.*$   preproc();
@@ -398,7 +395,7 @@ NULL    return NUL;
 }
 {WS}    ;
 \n      {
-          source_locus.line++;
+          grad_parser_source_locus.line++;
         }
 "="     return EQ;
 "!="    return NE;
@@ -435,17 +432,17 @@ addquote(char *s)
 }
 
 int
-init_lex(char *name)
+grad_parser_lex_init(char *name)
 {
         obstack_init(&stack);
         
         context_stack = NULL;
-        source_locus.file = NULL;
+        grad_parser_source_locus.file = NULL;
         return push_source(name);
 }
 
 void
-done_lex()
+grad_parser_lex_finish()
 {
         obstack_free(&stack, NULL);
 #ifdef FLEX_SCANNER     
@@ -459,7 +456,7 @@ done_lex()
  * at column 0
  */
 int
-users_sync()
+grad_parser_lex_sync()
 {
         int c;
         while ((c = input()) > 0) {

@@ -24,8 +24,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <radius.h>
-#include <mem.h>
+#include <common.h>
 
 /* From rfc 2138:
       Call the shared secret S and the pseudo-random 128-bit Request

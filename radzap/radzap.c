@@ -30,10 +30,9 @@
 #include <errno.h>
 #include <netinet/in.h>
 
-#include <radius.h>
-#include <radargp.h>
-#include <radpaths.h>
-#include <radutmp.h>
+#include <common.h>
+#include <radius/radargp.h>
+#include <radius/radutmp.h>
 
 #define LOCK_LEN sizeof(struct radutmp)
 

@@ -35,7 +35,6 @@
 #include <ctype.h>
 	
 #include <radiusd.h>
-#include <obstack1.h>
 #include <cfg.h>
  
 #define YYMAXDEPTH 16

@@ -64,12 +64,7 @@
 #endif
 
 #include <radiusd.h>
-#if defined(USE_SQL)
-# include <radsql.h>
-#endif
 #include <timestr.h>
-#include <envar.h>
-#include <obstack1.h>
 #include <rewrite.h>
 
 char *username_valid_chars;

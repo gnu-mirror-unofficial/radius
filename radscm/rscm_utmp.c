@@ -21,13 +21,13 @@
 # include <config.h>
 #endif
 
-#include <radius.h>
 #include <stdlib.h>
 #include <netinet/in.h>
 
 #include <libguile.h>
-#include <radutmp.h>
-#include <radscm.h>
+#include <radius/radius.h>
+#include <radius/radutmp.h>
+#include <radius/radscm.h>
 
 #define RADUTMP_FIELD_LOGIN       0
 #define RADUTMP_FIELD_ORIG_LOGIN  1

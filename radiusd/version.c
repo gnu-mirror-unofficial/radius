@@ -26,8 +26,7 @@
 #include <sys/types.h>
 #include <stdio.h>
 #include <radiusd.h>
-#include <radargp.h>
-#include <radpaths.h>
+#include <radius/radargp.h>
 
 static char *sys_def[] = {
 #if defined(__alpha)

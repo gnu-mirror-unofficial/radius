@@ -39,14 +39,13 @@
 #endif
 #include <signal.h>
 
-#include <obstack1.h>
 #include <radiusd.h>
-#include <radutmp.h>
+#include <radius/radutmp.h>
 #include <checkrad.h>
 #include <rewrite.h>
 
-#include <asn1.h>
-#include <snmp.h>
+#include <snmp/asn1.h>
+#include <snmp/snmp.h>
 
 struct check_instance {
         char          *name;

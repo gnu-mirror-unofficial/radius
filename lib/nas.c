@@ -20,8 +20,7 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
-#include <radius.h>
-#include <checkrad.h>
+#include <common.h>
 
 static grad_list_t /* of grad_nas_t */ *naslist;      /* raddb/naslist */
 
@@ -55,21 +54,21 @@ read_naslist_entry(void *unused ARG_UNUSED, int fc, char **fv, grad_locus_t *loc
         }
 
         memset(&nas, 0, sizeof(nas));
-        STRING_COPY(nas.shortname, fv[1]);
+        GRAD_STRING_COPY(nas.shortname, fv[1]);
 	if (!fv[2])
-		STRING_COPY(nas.nastype, "true");
+		GRAD_STRING_COPY(nas.nastype, "true");
 	else
-		STRING_COPY(nas.nastype, fv[2]);
+		GRAD_STRING_COPY(nas.nastype, fv[2]);
         if (strcmp(fv[0], "DEFAULT") == 0) {
                 nas.netdef.ipaddr = nas.netdef.netmask = 0;
-                STRING_COPY(nas.longname, fv[0]);
+                GRAD_STRING_COPY(nas.longname, fv[0]);
         } else {
 		grad_ip_getnetaddr(fv[0], &nas.netdef);
 		/*FIXME: Do we still need that? */
                 grad_ip_gethostname(nas.netdef.ipaddr,
 				    nas.longname, sizeof(nas.longname));
 		if (nas.longname[0])
-			STRING_COPY(nas.longname, fv[0]);
+			GRAD_STRING_COPY(nas.longname, fv[0]);
         }
         if (fc >= 4)
                 nas.args = grad_envar_parse_argcv(fc-3, &fv[3]);

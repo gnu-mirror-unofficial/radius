@@ -40,8 +40,7 @@
 #include <errno.h>
 #include <sys/wait.h>
 
-#include <radius.h>
-#include <obstack1.h> 
+#include <common.h>
 #include <radtest.h>
 #include "gram.h"
 

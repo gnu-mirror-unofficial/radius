@@ -20,8 +20,7 @@
 #if defined(HAVE_CONFIG_H)
 # include <config.h>
 #endif
-#include <radius.h>
-#include <radpaths.h>
+#include <common.h>
 
 char    *radius_dir;
 char    *radlog_dir;

@@ -43,15 +43,8 @@
 
 #include <sysdep.h>
 #include <radiusd.h>
-#include <radutmp.h>
-#include <symtab.h>
-#include <parser.h>
 #include <checkrad.h>
-#ifdef USE_SQL
-# include <radsql.h>
-#endif
-#include <raddbm.h>
-#include <obstack1.h>
+#include <radius/raddbm.h>
 
 typedef struct locus_name {
 	struct locus_name *next;
@@ -88,18 +81,18 @@ locus_free(grad_locus_t *loc)
 Symtab          *user_tab;     /* raddb/users  */
 Symtab          *deny_tab;     /* raddb/access.deny */
 
-static grad_list_t /* of MATCHING_RULE */  *huntgroups;   /* raddb/huntgroups */ 
-static grad_list_t /* of MATCHING_RULE */  *hints;        /* raddb/hints */
+static grad_list_t /* of grad_matching_rule_t */  *huntgroups;   /* raddb/huntgroups */ 
+static grad_list_t /* of grad_matching_rule_t */  *hints;        /* raddb/hints */
 static grad_list_t /* of CLIENT */ *clients; /* raddb/clients */
 static grad_list_t /* of RADCK_TYPE */ *radck_type;   /* raddb/nastypes */
 
 static struct keyword op_tab[] = {
-        { "=", OPERATOR_EQUAL },
-        { "!=", OPERATOR_NOT_EQUAL },
-        { ">", OPERATOR_GREATER_THAN },
-        { "<", OPERATOR_LESS_THAN },
-        { ">=", OPERATOR_GREATER_EQUAL },
-        { "<=", OPERATOR_LESS_EQUAL },
+        { "=", grad_operator_equal },
+        { "!=", grad_operator_not_equal },
+        { ">", grad_operator_greater_than },
+        { "<", grad_operator_less_than },
+        { ">=", grad_operator_greater_equal },
+        { "<=", grad_operator_less_equal },
         { 0 }
 };
 
@@ -111,8 +104,8 @@ int fallthrough(grad_avp_t *vp);
 static int portcmp(grad_avp_t *check, grad_avp_t *request);
 static int groupcmp(grad_request_t *req, char *groupname, char *username);
 static int uidcmp(grad_avp_t *check, char *username);
-static void matchrule_free(MATCHING_RULE **pl);
-static int matches(grad_request_t *req, char *name, MATCHING_RULE *pl, char *matchpart);
+static void matchrule_free(grad_matching_rule_t **pl);
+static int matches(grad_request_t *req, char *name, grad_matching_rule_t *pl, char *matchpart);
 static int huntgroup_match(grad_request_t *req, char *huntgroup);
 static int user_find_sym(char *name, grad_request_t *req, 
                          grad_avp_t **check_pairs, grad_avp_t **reply_pairs);
@@ -123,36 +116,36 @@ int user_find_db(char *name, grad_request_t *req,
 static grad_list_t *file_read(int cf_file, char *name);
 
 int
-comp_op(int op, int result)
+comp_op(enum grad_operator op, int result)
 {
         switch (op) {
         default:
-        case OPERATOR_EQUAL:
+        case grad_operator_equal:
                 if (result != 0)
                         return -1;
                 break;
 
-        case OPERATOR_NOT_EQUAL:
+        case grad_operator_not_equal:
                 if (result == 0)
                         return -1;
                 break;
 
-        case OPERATOR_LESS_THAN:
+        case grad_operator_less_than:
                 if (result >= 0)
                         return -1;
                 break;
 
-        case OPERATOR_GREATER_THAN:
+        case grad_operator_greater_than:
                 if (result <= 0)
                         return -1;
                 break;
                     
-        case OPERATOR_LESS_EQUAL:
+        case grad_operator_less_equal:
                 if (result > 0)
                         return -1;
                 break;
                         
-        case OPERATOR_GREATER_EQUAL:
+        case grad_operator_greater_equal:
                 if (result < 0)
                         return -1;
                 break;
@@ -220,7 +213,7 @@ add_pairlist(void *closure, grad_locus_t *loc,
 	     char *name, grad_avp_t *lhs, grad_avp_t *rhs)
 {
 	struct temp_data *data = closure;
-        MATCHING_RULE *rule;
+        grad_matching_rule_t *rule;
         
         if ((lhs == NULL && rhs == NULL)
             || fix_check_pairs(data->cf_file, loc, name, &lhs)
@@ -231,7 +224,7 @@ add_pairlist(void *closure, grad_locus_t *loc,
                 return 0;
         }
 
-        rule = grad_emalloc(sizeof(MATCHING_RULE));
+        rule = grad_emalloc(sizeof(grad_matching_rule_t));
         rule->name = grad_estrdup(name);
         rule->lhs = lhs;
         rule->rhs = rhs;
@@ -616,7 +609,7 @@ userparse(char *buffer, grad_avp_t **first_pair, char **errmsg)
 /* Provide a support for backward-compatible attributes Replace-User-Name
    and Rewrite-Function */
 static void
-hints_eval_compat(grad_request_t *req, grad_avp_t *name_pair, MATCHING_RULE *rule)
+hints_eval_compat(grad_request_t *req, grad_avp_t *name_pair, grad_matching_rule_t *rule)
 {
         grad_avp_t      *tmp;
 
@@ -656,7 +649,7 @@ hints_setup(grad_request_t *req)
         grad_avp_t      *name_pair;
         grad_avp_t      *orig_name_pair;
         grad_avp_t      *tmp;
-        MATCHING_RULE   *rule;
+        grad_matching_rule_t   *rule;
         int             matched = 0;
 	grad_iterator_t *itr;
 	
@@ -786,7 +779,7 @@ hints_setup(grad_request_t *req)
 int
 huntgroup_match(grad_request_t *req, char *huntgroup)
 {
-        MATCHING_RULE *rule;
+        grad_matching_rule_t *rule;
 	grad_iterator_t *itr;
 
         if (!huntgroups)
@@ -817,7 +810,7 @@ int
 huntgroup_access(grad_request_t *radreq, grad_locus_t *loc)
 {
         grad_avp_t      *pair;
-        MATCHING_RULE   *rule;
+        grad_matching_rule_t   *rule;
 	grad_iterator_t *itr;
         int             r = 1;
 
@@ -891,7 +884,7 @@ read_clients_entry(void *u ARG_UNUSED, int fc, char **fv, grad_locus_t *loc)
 		grad_ip_getnetaddr(fv[0], &cp->netdef);
         cp->secret = grad_estrdup(fv[1]);
         if (fc == 3)
-                STRING_COPY(cp->shortname, fv[2]);
+                GRAD_STRING_COPY(cp->shortname, fv[2]);
         grad_ip_gethostname(cp->netdef.ipaddr, cp->longname, sizeof(cp->longname));
         grad_list_append(clients, cp);
         return 0;
@@ -1411,12 +1404,12 @@ paircmp(grad_request_t *request, grad_avp_t *check, char *pusername)
 }
 
 /*
- * Free a MATCHING_RULE
+ * Free a grad_matching_rule_t
  */
 static int
 matching_rule_free(void *item, void *data ARG_UNUSED)
 {
-	MATCHING_RULE *p = item;
+	grad_matching_rule_t *p = item;
 	
 	if (p->name)
 		grad_free(p->name);
@@ -1553,7 +1546,7 @@ wild_match(char *expr, char *name, char *return_name)
  * Match a username with a wildcard expression.
  */
 int
-matches(grad_request_t *req, char *name, MATCHING_RULE *pl, char *matchpart)
+matches(grad_request_t *req, char *name, grad_matching_rule_t *pl, char *matchpart)
 {
 	memcpy(matchpart, name, AUTH_STRING_LEN);
         if (strncmp(pl->name, "DEFAULT", 7) == 0
@@ -1752,7 +1745,7 @@ reload_config_file(enum reload_what what)
 void
 dump_matching_rules(FILE *fp, char *header, grad_list_t *list)
 {
-	MATCHING_RULE *rule;
+	grad_matching_rule_t *rule;
 	grad_iterator_t *itr = iterator_create(list);
 
         fprintf(fp, "%s {\n", header);

@@ -22,10 +22,7 @@
 #endif
 #include <stdlib.h>
 #include <string.h>
-#include <mem.h>
-#include <envar.h>
-#include <argcv.h>
-#include <list.h>
+#include <common.h>
 
 typedef struct envar {
         char *name;

@@ -114,6 +114,25 @@
         * sql/odbc.c:
         * sql/postgres.c:
 
+2004-02-01  Sergey Poznyakoff
+
+	* TODO: Updated
+	* configure.ac: Modified RA_CHECK_GUILE to suite
+	new Guile interface.
+	* lib/radpdu.c (grad_decode_pdu): Removed insertion
+	of NAS-IP-Address (introduced 2002-07-01). See TODO,
+	though.
+	* radiusd/scheme.c (catch_body): Renamed radscm_init to
+	grad_scm_init.
+	* radscm/boot.scm: Removed
+	* radscm/main.c: Removed
+	* radscm/gnuradius.scm.in: New file
+	* radscm/.cvsignore: Updated
+	* radscm/Makefile.am: Rewritten
+	* radscm/radscm.c (radscm_init): New function
+	* radscm/rscm_lib.c (radscm_init): Renamed to grad_scm_init
+	* radscm/radsession.in: Modified to use gnuradius module
+	
 2004-01-31  Sergey Poznyakoff
 
 	* Makefile.am (debugmod rule): Removed

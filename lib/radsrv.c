@@ -32,7 +32,8 @@
 #include <pwd.h>
 #include <time.h>
 #include <ctype.h>
-#include <radius.h>
+
+#include <common.h>
 
 /* Build and send a reply to the incoming request.
    Input: fd          -- Socket descriptor.

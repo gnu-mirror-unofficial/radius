@@ -62,7 +62,7 @@ AM_CPPFLAGS=-DLOCALEDIR=\"$(localedir)\" @PATHFLAGS@
 
 BUILT_SOURCES=users_gram.c users_lex.c
 MAINTAINERCLEANFILES=users_gram.c users_gram.h users_lex.c
-INCLUDES= -I$(top_srcdir)/include @INCLUDEPATH@
+INCLUDES= -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/include/radius @INCLUDEPATH@
 EXTRA_DIST=users.y users.l strncasecmp.c strerror.c \
            obstack.c obstack.h rx.c \
 	   getline.c getopt.c getopt1.c getopt.h \

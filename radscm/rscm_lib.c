@@ -22,8 +22,8 @@
 #endif
 
 #include <libguile.h>
-#include <radius.h>
-#include <radscm.h>
+#include <radius/radius.h>
+#include <radius/radscm.h>
 
 SCM 
 rad_scm_cell(SCM car, SCM cdr)
@@ -156,7 +156,7 @@ radscm_cons_to_avp(SCM scm)
                 return NULL;
         
         pair.type = dict->type;
-        pair.operator = OPERATOR_EQUAL;
+        pair.operator = grad_operator_equal;
         pair.type = dict->type;
         pair.prop = dict->prop;
 

@@ -54,7 +54,7 @@ radsession: $(srcdir)/radsession.in
 libradscm_la_LIBADD=@LIBGNURADIUS@ @LIBINTL@
 libradscm_la_LDFLAGS = -rpath $(libdir) -version-info 0:0:0
 
-INCLUDES  = -I$(top_builddir) -I$(top_srcdir)/include -I$(srcdir) -I. @INCLUDEPATH@ @GUILE_INCLUDES@
+INCLUDES  = -I$(top_builddir) -I$(top_srcdir)/include -I$(top_builddir)/include -I$(srcdir) -I. @INCLUDEPATH@ @GUILE_INCLUDES@
 AM_CPPFLAGS=-DDATADIR=\"$(schemedir)\"
 ETAGS_ARGS = --regex='/SCM_\(GLOBAL_\)?\(G?PROC\|G?PROC1\|SYMBOL\|VCELL\|CONST_LONG\).*\"\([^\"]\)*\"/\3/' \
    --regex='/[ \t]*SCM_[G]?DEFINE1?[ \t]*(\([^,]*\),[^,]*/\1/'

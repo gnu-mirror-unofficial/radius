@@ -22,7 +22,7 @@ pam_LTLIBRARIES = @BUILD_PAM_RADIUS_LA@
 EXTRA_LTLIBRARIES = pam_radius.la
 pam_radius_la_SOURCES = pam_radius.c
 pam_radius_la_LIBADD = -lpam @LIBGNURADIUS@ @LTLIBINTL@
-INCLUDES = -I$(top_builddir) -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp @INCLUDEPATH@
+INCLUDES = -I$(top_builddir) -I$(top_srcdir)/include -I$(top_builddir)/include @INCLUDEPATH@
 AM_CPPFLAGS=@PATHFLAGS@
 
 pam_radius_la_LDFLAGS = -module -avoid-version -no-undefined -rpath $(pamdir) \

@@ -27,9 +27,7 @@
 #include <time.h>
 #include <errno.h>
 #include <string.h>
-#include <radius.h>
-
-int debug_flag;
+#include <common.h>
 
 #define SP(p) ((p)?(p):"")
 

@@ -24,5 +24,5 @@ EXTRA_DIST=\
 
 EXTRA_PROGRAMS = pofilter
 
-noinst_PROGRAMS = @build_POFILTER@
+noinst_PROGRAMS = mktypes @build_POFILTER@
 pofilter_SOURCES = pofilter.c

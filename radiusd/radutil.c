@@ -23,9 +23,9 @@
 
 #include <stdlib.h>
 #include <ctype.h>
+
 #include <sysdep.h>
 #include <radiusd.h>
-#include <obstack1.h>
 #include <rewrite.h>
 
 /* obstack_grow with quoting of potentially dangerous characters */
@@ -125,7 +125,7 @@ attr_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
 				loc.line = __LINE__;
                                 pair = grad_create_pair(&loc,
 							attr->name,
-							OPERATOR_EQUAL,
+							grad_operator_equal,
 							defval);
                                 if (pair)
                                         grad_avl_add_list(&pairlist, pair);

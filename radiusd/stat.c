@@ -35,10 +35,8 @@
 #include <ctype.h>
 #include <netinet/in.h>
 #include <fcntl.h>
-#include <sysdep.h>
+
 #include <radiusd.h>
-#include <radutmp.h>
-#include <radpaths.h>
 
 #ifdef USE_SNMP
 

@@ -20,7 +20,7 @@ test_dirs = config lib radiusd
 if MAINTAINER_MODE
 MAINTAINERCLEANFILES=core *~ err out
 endif
-INCLUDES=-I$(top_srcdir)/include @INCLUDEPATH@
+INCLUDES=-I$(top_srcdir)/include -I$(top_builddir)/include @INCLUDEPATH@
 noinst_PROGRAMS=findport
 findport_SOURCES=findport.c
 SUBDIRS=raddb proxy 

@@ -40,12 +40,9 @@
 #include <errno.h>
 #include <sys/wait.h>
 #include <fcntl.h>
-#include <sysdep.h>
+
 #include <radiusd.h>
-#include <radutmp.h>
-#ifdef USE_SQL
-# include <radsql.h>
-#endif
+#include <radius/radutmp.h>
 
 int     doradwtmp = 1;
 

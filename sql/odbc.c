@@ -25,7 +25,8 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <radius.h>
+
+#include <common.h>
 #include <radsql.h>
 
 #ifdef USE_SQL_ODBC

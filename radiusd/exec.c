@@ -38,10 +38,10 @@
 #include <grp.h>
 #include <string.h>
 #include <syslog.h>
+
 #include <radiusd.h>
-#include <obstack1.h>
-#include <argcv.h>
-#include <symtab.h>
+#include <radius/argcv.h>
+#include <radius/symtab.h>
 #include <rewrite.h>
 
 int

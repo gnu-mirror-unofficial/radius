@@ -29,7 +29,7 @@
 #include <time.h>
 #include <errno.h>
 #include <string.h>
-#include <radius.h>
+#include <common.h>
 
 static struct keyword auth_codes[] = {
 #define D(a)  {#a, a}

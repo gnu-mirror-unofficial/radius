@@ -20,8 +20,8 @@
 #endif
 #include <sys/types.h>
 #include <stdlib.h>
-#include <mem.h>
-#include <list.h>
+#include <radius/radius.h>
+#include <radius/list.h>
 
 struct list_entry {
 	struct list_entry *next;

@@ -22,8 +22,7 @@
 #endif
 #include <stdio.h>
 #include <stdlib.h>
-#include <mem.h>
-#include <radius.h>
+#include <common.h>
 
 #ifdef LEAK_DETECTOR
 typedef union mem_header MHDR;

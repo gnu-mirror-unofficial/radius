@@ -17,10 +17,7 @@
 # along with GNU Radius; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-all: raddict.h radmibs.h
-
-raddict.h: $(top_srcdir)/raddb/dict/standard
-	$(AWK) -f $(top_srcdir)/scripts/dict.awk $(top_srcdir)/raddb/dict/standard > raddict.h
+all: radmibs.h
 
 radmibs.h: $(top_srcdir)/mibs/radmibs.h.in
 	$(AWK) -f $(top_srcdir)/scripts/mksnmp-h.awk $(top_srcdir)/mibs/radmibs.h.in > radmibs.h
@@ -29,37 +26,20 @@ if MAINTAINER_MODE
 lint:;
 endif
 
-MAINTAINERCLEANFILES = raddict.h radmibs.h
+MAINTAINERCLEANFILES = radmibs.h
 
-SUBDIRS=snmp
-
-pkginclude_HEADERS = \
- argcv.h\
- envar.h\
- list.h\
- md5.h\
- mem.h\
- radargp.h\
- raddbm.h\
- raddict.h\
- radius.h\
- radpaths.h\
- radscm.h\
- radutmp.h\
- symtab.h\
- sysdep.h
+SUBDIRS=radius snmp 
 
 EXTRA_DIST = \
  cfg.h\
  checkrad.h\
+ common.h\
  gettext.h\
- obstack1.h\
- parser.h\
  radiusd.h\
  radlast.h\
  radmibs.h\
  radsnmp.h\
  radsql.h\
- regex1.h\
  rewrite.h\
+ sysdep.h\
  timestr.h 

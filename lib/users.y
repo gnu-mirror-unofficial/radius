@@ -38,9 +38,7 @@
 #include <errno.h>
 #include <sys/wait.h>
 
-#include <sysdep.h>
-#include <radius.h>
-#include <parser.h>
+#include <common.h>
 
 #define YYMAXDEPTH 10
 
@@ -68,12 +66,12 @@ extern int yylex();
 
 %union {
         char *string;
-        MATCHING_RULE *rule;
+        grad_matching_rule_t *rule;
         struct {
                 grad_avp_t *lhs, *rhs;
         } descr;
         grad_avp_t *pair;
-        int op;
+        enum grad_operator op;
 } 
 
 %%
@@ -88,7 +86,7 @@ list     : entry
          | list entry
          | list error
            {
-                   users_sync(); yyerrok; yyclearin;
+                   grad_parser_lex_sync(); yyerrok; yyclearin;
            }
          ;
 
@@ -99,7 +97,7 @@ entry    : user descr
          | user error
            {
                    grad_log(L_ERR, _("discarding user `%s'"), $1);
-                   if (users_sync() <= 0)
+                   if (grad_parser_lex_sync() <= 0)
 			   yychar = 0; /* force end-of-file */
 		   else {
 			   yyerrok;
@@ -110,7 +108,7 @@ entry    : user descr
 
 user     : value
            {
-		   start_loc = source_locus;
+		   start_loc = grad_parser_source_locus;
            }
          ;
 
@@ -152,27 +150,27 @@ pair     : STRING op value
 
 op       : EQ
            {
-                   $$ = OPERATOR_EQUAL;
+                   $$ = grad_operator_equal;
            }
          | LT
            {
-                   $$ = OPERATOR_LESS_THAN;
+                   $$ = grad_operator_less_than;
            }
          | GT
            { 
-                   $$ = OPERATOR_GREATER_THAN;
+                   $$ = grad_operator_greater_than;
            }
          | NE
            {
-                   $$ = OPERATOR_NOT_EQUAL;
+                   $$ = grad_operator_not_equal;
            }
          | LE
            {
-                   $$ = OPERATOR_LESS_EQUAL;
+                   $$ = grad_operator_less_equal;
            }
          | GE
            {
-                   $$ = OPERATOR_GREATER_EQUAL;
+                   $$ = grad_operator_greater_equal;
            }
          ;
 
@@ -185,18 +183,19 @@ value    : STRING
 int
 yyerror(char *s)
 {
-	grad_log_loc(L_ERR, &source_locus, "%s", s);
+	grad_log_loc(L_ERR, &grad_parser_source_locus, "%s", s);
 	return 0;
 }
 
 grad_avp_t *
 grad_create_pair0(char *name, int op, char *valstr)
 {
-	return grad_create_pair(&source_locus, name, op, valstr);
+	return grad_create_pair(&grad_parser_source_locus, name, op, valstr);
 }
 
 grad_avp_t *
-grad_create_pair(grad_locus_t *loc, char *name, int op, char *valstr)
+grad_create_pair(grad_locus_t *loc, char *name, 
+                 enum grad_operator op, char *valstr)
 {
         grad_dict_attr_t *attr = NULL;
         grad_dict_value_t *dval;
@@ -355,14 +354,14 @@ grad_parse_rule_file(char *file, void *c, register_rule_fp f)
 {
         int rc;
         
-        if (init_lex(file))
+        if (grad_parser_lex_init(file))
                 return -1;
         closure = c;
         add_entry = f;
 
         yydebug = 0;
         rc = yyparse();
-        done_lex();
+        grad_parser_lex_finish();
         return rc;
 }
 
@@ -370,7 +369,7 @@ void
 grad_enable_rule_debug(int val)
 {
         yydebug = val;
-	grad_log_loc(L_NOTICE, &source_locus,
+	grad_log_loc(L_NOTICE, &grad_parser_source_locus,
 		     yydebug ? _("enabled userfile parser debugging") :
              	 	       _("disabled userfile parser debugging"));
 }

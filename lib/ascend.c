@@ -27,8 +27,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 #include <netdb.h>
-#include <radiusd.h>
-#include <argcv.h>
+#include <common.h>
+#include <radius/argcv.h>
 
 enum ascend_filter_type {
 	ascend_filter_generic,      /* 0 */

@@ -34,15 +34,11 @@
 #endif
 
 #include <radiusd.h>
-#include <radargp.h>
-#include <radutmp.h>
+#include <radius/radargp.h>
+#include <radius/radutmp.h>
 #include <rewrite.h>
-#include <argcv.h>
 #include <snmp/asn1.h>
 #include <snmp/snmp.h>
-#ifdef USE_SQL
-# include <radsql.h>
-#endif
 #include <timestr.h>
 
 static int interactive;

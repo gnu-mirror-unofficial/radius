@@ -28,9 +28,8 @@
 #include <time.h>
 #include <ctype.h>
 
-#include <sysdep.h>
-#include <radius.h>
-#include <radutmp.h>
+#include <common.h>
+#include <radius/radutmp.h>
 #include <radsql.h>
 
 #ifdef USE_SQL_MYSQL

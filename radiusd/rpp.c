@@ -26,8 +26,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <errno.h>
+
 #include <radiusd.h>
-#include <list.h>
 
 /* Process intercommunication primitives */
 

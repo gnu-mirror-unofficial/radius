@@ -17,20 +17,18 @@
    along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-#include <sysdep.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
-#include <radius.h>
-#include <radpaths.h>
 #include <signal.h>
+
+#include <common.h>
 #include <cfg.h>
-#include <list.h>
+#include <radsql.h>
 
 /* Server data structures */
 struct radutmp; /* declared in radutmp.h */
-struct obstack;
 
 enum reload_what {
         reload_config,
@@ -321,6 +319,7 @@ extern int auth_comp_flag;
 extern int acct_comp_flag; 
 extern RADIUS_USER exec_user;
 extern RADIUS_USER radiusd_user;
+extern Symtab *user_tab;
 
 /* Input subsystem (input.c) */
 
@@ -529,7 +528,8 @@ void version();
 int rad_auth_init(grad_request_t *radreq, int activefd);
 int rad_auth_check_username(grad_request_t *radreq, int activefd);
 int rad_authenticate (grad_request_t *, int);
-void req_decrypt_password(char *password, grad_request_t *req, grad_avp_t *pair);
+void req_decrypt_password(char *password, grad_request_t *req,
+			  grad_avp_t *pair);
 
 /* timestr.c */
 int timestr_match(char *, time_t);
@@ -595,4 +595,51 @@ int rad_cfg_forward_acct(int argc, cfg_value_t *argv,
 void forward_init();
 void forward_request(int type, grad_request_t *req);
 
+/* Logging */
+
+/* log output modes */
+#define LM_UNKNOWN -1
+#define LM_OFF 0
+#define LM_FILE 1
+#define LM_SYSLOG 2
+
+/* log options */
+#define LO_CONS  0x0001
+#define LO_PID   0x0002
+#define LO_CAT   0x0004
+#define LO_PRI   0x0008
+#define LO_MSEC  0x0010
+#define LO_PERSIST 0x8000
+
+#define RADIUS_DEBUG_BUFFER_SIZE 1024
+
+typedef struct channel Channel;
+
+struct channel {
+        char *name;
+        int  pmask[L_NCAT]; 
+        int mode;   /* LM_ constant */
+        union {
+                int prio;        /* syslog: facility|priority */
+                char *file;      /* file: output file name */
+        } id;
+        int options;
+	char *prefix_hook;       /* prefix hook function */
+	char *suffix_hook;       /* suffix hook function */
+};
+
+Channel *channel_lookup(char *name);
+void channel_free(Channel *chan);
+void channel_free_list(Channel *chan);
+Channel * log_mark();
+void log_release();
+
+void register_channel(Channel *chan);
+void register_category(int cat, int pri, grad_list_t *chanlist);
+
+void log_set_to_console();
+void log_set_default(char *name, int cat, int pri);
+
+void log_open(int cat);
+void log_close();
 

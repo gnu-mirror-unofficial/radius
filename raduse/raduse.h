@@ -3,13 +3,13 @@
 #endif
 #include <stdlib.h>
 #include <stdio.h>
-#include <sysdep.h>
-#include <radius.h>
-#include <radutmp.h>
+
+#include <common.h>
+#include <radius/radutmp.h>
 #include <radlast.h>
 
-#include <asn1.h>
-#include <snmp.h>
+#include <snmp/asn1.h>
+#include <snmp/snmp.h>
 #include <radsnmp.h>
 #include <radmibs.h>
 

@@ -22,8 +22,8 @@
 #endif
 
 #include <libguile.h>
-#include <radius.h>
-#include <radscm.h>
+#include <radius/radius.h>
+#include <radius/radscm.h>
 
 static struct keyword radlog_kw[] = {
 #define D(c) { #c, c }

@@ -16,7 +16,7 @@
 #endif
 
 #include <stdlib.h>
-#include <radius.h>
+#include <radius/radius.h>
 
 int
 __grad_insist_failure(const char *str, const char *file, int line)

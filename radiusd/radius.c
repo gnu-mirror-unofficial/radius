@@ -22,7 +22,6 @@
 #endif
 
 #include <radiusd.h>
-#include <obstack1.h>
 
 /* Build and send a reply to the incoming request.
    Input: code        -- Reply code.
@@ -166,7 +165,7 @@ radius_auth_req_decode(struct sockaddr_in *sa,
 				 inputsize);
 	if (!radreq)
 		return 1;
-        
+
         if (validate_client(radreq)) {
 		stat_inc(auth, radreq->ipaddr, num_dropped);
 		grad_request_free(radreq);

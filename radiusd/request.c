@@ -22,9 +22,8 @@
 #endif
 #include <sys/types.h>
 #include <errno.h>
+
 #include <radiusd.h>
-#include <radsql.h>
-#include <list.h>
 
 extern int spawn_flag; /* FIXME */
 struct request_class request_class[] = {

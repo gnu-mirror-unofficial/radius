@@ -25,8 +25,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <ctype.h>
-#include <argcv.h>
-#include <radius.h>
+#include <common.h>
 
 #if !HAVE_DECL_GETLINE
 int getline (char **lineptr, size_t *n, FILE *stream);

@@ -32,9 +32,8 @@
 #include <pwd.h>
 #include <time.h>
 #include <ctype.h>
-#include <radius.h>
-#include <obstack1.h>
 
+#include <common.h>
 
 /* Structure for building radius PDU. */
 struct radius_pdu {
@@ -74,10 +73,10 @@ static size_t
 grad_pdu_finish(void **ptr, struct radius_pdu *pdu,
 		int code, int id, u_char *vector, u_char *secret)
 {
-        AUTH_HDR *hdr;
+        grad_packet_header_t *hdr;
         void *p;
         size_t secretlen = 0;
-        size_t len = sizeof(AUTH_HDR) + pdu->size;
+        size_t len = sizeof(grad_packet_header_t) + pdu->size;
         u_char digest[AUTH_DIGEST_LEN];
         
 	if (code != RT_ACCESS_REQUEST && code != RT_STATUS_SERVER) {
@@ -390,7 +389,7 @@ grad_request_t *
 grad_decode_pdu(grad_uint32_t host, u_short udp_port, u_char *buffer, size_t length)
 {
         u_char          *ptr;
-        AUTH_HDR        *auth;
+        grad_packet_header_t        *auth;
         grad_avp_t      *first_pair;
         grad_avp_t      *prev;
         grad_avp_t      *pair;
@@ -402,7 +401,7 @@ grad_decode_pdu(grad_uint32_t host, u_short udp_port, u_char *buffer, size_t len
         radreq = grad_request_alloc();
         debug(1,("allocated radreq: %p",radreq));
 	
-        auth = (AUTH_HDR *)buffer;
+        auth = (grad_packet_header_t *)buffer;
         reported_len = ntohs(auth->length);
         if (length > reported_len) { /* FIXME: != ? */
                 grad_log(L_WARN,

@@ -35,10 +35,9 @@
 #include <signal.h>
 #include <netinet/in.h>
 
-#include <radius.h>
-#include <radpaths.h>
-#include <radutmp.h>
-#include <radargp.h>
+#include <common.h>
+#include <radius/radutmp.h>
+#include <radius/radargp.h>
 
 #define IP_ADDR_LEN 15
 

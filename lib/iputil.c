@@ -33,8 +33,8 @@
 #include <time.h>
 #include <ctype.h>
 #include <signal.h>
-#include <radius.h>
 
+#include <common.h>
 
 int resolve_hostnames = 1;
 

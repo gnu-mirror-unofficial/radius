@@ -22,8 +22,8 @@
 #endif
 #include <sys/types.h>
 #include <errno.h>
+
 #include <radiusd.h>
-#include <list.h>
 
 struct input_system {
 	fd_set fdset;

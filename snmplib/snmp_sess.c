@@ -1,6 +1,6 @@
 /*
    This file is part of GNU Radius SNMP Library.
-   Copyright (C) 2001,2003 Free Software Foundation, Inc.
+   Copyright (C) 2001,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -37,9 +37,9 @@
 #if defined(HAVE_SYS_SELECT_H)
 # include <sys/select.h>
 #endif
-#include <asn1.h>
-#include <snmp.h>
-#include <snmp_intern.h>
+#include <snmp/asn1.h>
+#include <snmp/snmp.h>
+#include <snmp/snmp_intern.h>
 
 
 int snmp_errno;

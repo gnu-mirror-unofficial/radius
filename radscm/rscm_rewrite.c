@@ -22,10 +22,10 @@
 #endif
 
 #include <libguile.h>
-#include <radius.h>
+#include <radius/radius.h>
 #define RADIUS_SERVER_GUILE
 #include <rewrite.h>
-#include <radscm.h>
+#include <radius/radscm.h>
 
 SCM_DEFINE(rad_rewrite_execute_string, "rad-rewrite-execute-string", 1, 0, 0,
            (SCM STRING),

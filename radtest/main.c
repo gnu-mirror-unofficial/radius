@@ -31,10 +31,10 @@
 #include <sys/stat.h>
 #include <time.h>
 
-#include <radius.h>
-#include <radargp.h>
+#include <common.h>
+#include <radius/radargp.h>
 #include <radtest.h>
-#include <argcv.h>
+#include <radius/argcv.h>
 
 Symtab *vartab;
 int verbose;
@@ -42,7 +42,6 @@ extern int grad_client_debug;
 grad_server_queue_t *srv_queue;
 int reply_code;
 grad_avp_t *reply_list;
-int debug_flag = 0;
 int abort_on_failure = 0;
 
 void init_symbols();
@@ -543,36 +542,36 @@ radtest_send(int port, int code, Variable *var, Symtab *cntl)
 
 /* FIXME: duplicated in radiusd/files.c */
 int
-comp_op(int op, int result)
+comp_op(enum grad_operator op, int result)
 {
         switch (op) {
         default:
-        case OPERATOR_EQUAL:
+        case grad_operator_equal:
                 if (result != 0)
                         return -1;
                 break;
 
-        case OPERATOR_NOT_EQUAL:
+        case grad_operator_not_equal:
                 if (result == 0)
                         return -1;
                 break;
 
-        case OPERATOR_LESS_THAN:
+        case grad_operator_less_than:
                 if (result >= 0)
                         return -1;
                 break;
 
-        case OPERATOR_GREATER_THAN:
+        case grad_operator_greater_than:
                 if (result <= 0)
                         return -1;
                 break;
                     
-        case OPERATOR_LESS_EQUAL:
+        case grad_operator_less_equal:
                 if (result > 0)
                         return -1;
                 break;
                         
-        case OPERATOR_GREATER_EQUAL:
+        case grad_operator_greater_equal:
                 if (result < 0)
                         return -1;
                 break;

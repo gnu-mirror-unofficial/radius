@@ -38,7 +38,7 @@
 #include <sys/file.h>
 #include <pwd.h>
 #include <grp.h>
-#include <radius.h>
+#include <common.h>
 
 /* Memory allocation interface */
 
@@ -300,8 +300,10 @@ grad_avl_delete_n(grad_avp_t **first, int attr, int n)
 
 /* Move all attributes of a given type from one list to another */
 void
-grad_avl_move_pairs(grad_avp_t **to, grad_avp_t **from, int (*fun)(),
-	       void *closure)
+grad_avl_move_pairs(grad_avp_t **to,
+		    grad_avp_t **from,
+		    int (*fun)(void *, grad_avp_t *),
+		    void *closure)
 {
         grad_avp_t *to_tail, *i, *next;
         grad_avp_t *iprev = NULL;
@@ -345,8 +347,9 @@ grad_avl_move_pairs(grad_avp_t **to, grad_avp_t **from, int (*fun)(),
 }
 
 static int
-cmp_attr(int *valp, grad_avp_t *pair)
+cmp_attr(void *data, grad_avp_t *pair)
 {
+	int *valp = data; 
         return *valp == pair->attribute;
 }
 

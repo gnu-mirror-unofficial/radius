@@ -22,8 +22,8 @@
 #endif
 
 #include <libguile.h>
-#include <radius.h>
-#include <radscm.h>
+#include <radius/radius.h>
+#include <radius/radscm.h>
 
 SCM_DEFINE(rscm_avl_delete, "avl-delete", 2, 0, 0,
            (SCM LIST, SCM ATTR),

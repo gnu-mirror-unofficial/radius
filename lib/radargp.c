@@ -32,7 +32,7 @@
 #include <unistd.h>
 #include <pwd.h>
 #include <argp.h>
-#include <radius.h>
+#include <common.h>
 
 const char *argp_program_bug_address = "<bug-gnu-radius@gnu.org>";
 

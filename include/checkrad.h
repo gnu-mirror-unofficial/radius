@@ -17,7 +17,7 @@
    along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-#include <envar.h>
+#include <radius/envar.h>
 
 #define METHOD_FINGER 0
 #define METHOD_SNMP   1 

@@ -26,8 +26,8 @@
 #include <stdio.h>
 #include <errno.h>
 #include <sysdep.h>
-#include <symtab.h>
-#include <mem.h>
+#include <radius/symtab.h>
+#include <radius/mem.h>
 
 /* Hash sizes. These are prime numbers, the distance between each
    pair of them grows exponentially, starting from 64.

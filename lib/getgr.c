@@ -23,7 +23,8 @@
 #include <sys/types.h>
 #include <stdlib.h>
 #include <grp.h>
-#include <mem.h>
+
+#include <radius/mem.h>
 
 LOCK_DECLARE(lock)
 

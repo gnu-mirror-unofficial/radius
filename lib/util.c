@@ -38,9 +38,8 @@
 #include <sys/file.h>
 #include <pwd.h>
 #include <grp.h>
-#include <radius.h>
-#include <checkrad.h>
-#include <obstack1.h>
+
+#include <common.h>
 
 grad_request_t *
 grad_request_alloc()
@@ -260,42 +259,44 @@ grad_string_copy(char *d, char *s, int len)
 }
 
 char *
-grad_op_to_str(int op)
+grad_op_to_str(enum grad_operator op)
 {
         switch (op) {
-        case OPERATOR_EQUAL:         return "=";
-        case OPERATOR_NOT_EQUAL:     return "!=";
-        case OPERATOR_LESS_THAN:     return "<";
-        case OPERATOR_GREATER_THAN:  return ">";
-        case OPERATOR_LESS_EQUAL:    return "<=";
-        case OPERATOR_GREATER_EQUAL: return ">=";
+        case grad_operator_equal:         return "=";
+        case grad_operator_not_equal:     return "!=";
+        case grad_operator_less_than:     return "<";
+        case grad_operator_greater_than:  return ">";
+        case grad_operator_less_equal:    return "<=";
+        case grad_operator_greater_equal: return ">=";
+	default:
+		break;
         }
         return "?";
 }
 
-int
+enum grad_operator
 grad_str_to_op(char *str)
 {
         int op = NUM_OPERATORS;
         switch (*str++) {
         case '=':
-                op = OPERATOR_EQUAL;
+                op = grad_operator_equal;
                 break;
         case '!':
                 if (*str++ == '=')
-                        op = OPERATOR_NOT_EQUAL;
+                        op = grad_operator_not_equal;
                 break;
         case '<':
                 if (*str == 0)
-                        op = OPERATOR_LESS_THAN;
+                        op = grad_operator_less_than;
                 else if (*str++ == '=')
-                        op = OPERATOR_LESS_EQUAL;
+                        op = grad_operator_less_equal;
                 break;
         case '>':
                 if (*str == 0)
-                        op = OPERATOR_GREATER_THAN;
+                        op = grad_operator_greater_than;
                 else if (*str++ == '=')
-                        op = OPERATOR_GREATER_EQUAL;
+                        op = grad_operator_greater_equal;
                 break;
         }
         if (*str)

@@ -16,7 +16,7 @@
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #include <raduse.h>
-#include <radargp.h>
+#include <radius/radargp.h>
 
 int width = 5;            /* width for time output (5 - hh:mm, 8 - hh:mm:ss) */
 int delay = 1;            /* delay between screen updates (seconds) */

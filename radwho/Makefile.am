@@ -13,7 +13,7 @@
 bin_PROGRAMS    = radwho
 radwho_SOURCES = radwho.c 
 radwho_LDADD   = @LIBGNURADIUS@ @LIBINTL@
-INCLUDES        = -I$(top_srcdir)/include -I$(top_srcdir)/lib @INCLUDEPATH@
+INCLUDES        = -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/lib @INCLUDEPATH@
 AM_CPPFLAGS=@PATHFLAGS@
 
 SUFFIXES=.S .c .ln .o .s

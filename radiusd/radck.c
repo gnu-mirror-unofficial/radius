@@ -21,9 +21,8 @@
 # include <config.h>
 #endif
 #include <limits.h>
-#include <symtab.h>
+
 #include <radiusd.h>
-#include <parser.h>
 #include <rewrite.h>
 
 #ifndef CHAR_BIT

@@ -13,7 +13,7 @@
 bin_PROGRAMS    = radzap
 radzap_SOURCES = radzap.c 
 radzap_LDADD   = @LIBGNURADIUS@ @LIBINTL@
-INCLUDES       = -I$(top_srcdir)/include -I$(top_srcdir)/lib @INCLUDEPATH@
+INCLUDES       = -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/lib @INCLUDEPATH@
 
 SUFFIXES=.S .c .ln .o .s
 

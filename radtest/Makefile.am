@@ -15,7 +15,7 @@ bin_PROGRAMS    = radtest
 radtest_SOURCES = main.c gram.y input.l radtest.h
 radtest_LDADD   = @LIBGNURADIUS@ @LIBINTL@
 noinst_HEADERS  = gram.h
-INCLUDES        = -I$(top_srcdir)/include -I$(top_srcdir)/lib -I$(srcdir) @INCLUDEPATH@
+INCLUDES        = -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_srcdir)/lib -I$(srcdir) @INCLUDEPATH@
 AM_YFLAGS = -vdt 
 
 if MAINTAINER_MODE

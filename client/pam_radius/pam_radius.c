@@ -32,9 +32,8 @@
 #include <syslog.h>
 #include <errno.h>
 
-#include <radius.h> 
-#include <radpaths.h> 
-#include <radutmp.h>
+#include <common.h> 
+#include <radius/radutmp.h>
 
 /* indicate the following groups are defined */
 #define PAM_SM_AUTH
@@ -405,7 +404,7 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
 	for (; add_pair; add_pair = add_pair->next) {
 		grad_avp_t *p = grad_create_pair(&loc,
 						 add_pair->name, 
-						 OPERATOR_EQUAL,
+						 grad_operator_equal,
 						 add_pair->avp_strvalue);
 		grad_avl_add_pair(&pairs, p);
 	}
@@ -521,7 +520,7 @@ _radius_acct(pam_handle_t *pamh, struct radutmp *ut)
 	for (; add_pair; add_pair = add_pair->next) {
 		grad_avp_t *p = grad_create_pair(&loc,
                                              add_pair->name, 
-                                             OPERATOR_EQUAL,
+                                             grad_operator_equal,
 				             add_pair->avp_strvalue);
 		switch (p->attribute) {
                 case DA_LOGIN_IP_HOST:

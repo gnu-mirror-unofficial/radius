@@ -22,7 +22,7 @@
 #endif
 
 #include <string.h>             /* for memcpy() */
-#include <md5.h>
+#include <radius/md5.h>
 
 void
 grad_md5_calc(unsigned char *output, unsigned char *input,

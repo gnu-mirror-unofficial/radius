@@ -25,16 +25,13 @@
 #include <sys/types.h>
 #include <ctype.h>
 #include <errno.h>
-#include <regex1.h>
+
 #include <radiusd.h>
-#include <symtab.h>
 #include <setjmp.h>
-#include <obstack1.h>
-#include <argcv.h>
 #include <rewrite.h>
 #ifdef USE_SERVER_GUILE 
 # include <libguile.h>
-# include <radscm.h>	
+# include <radius/radscm.h>	
 #endif
         
 typedef long RWSTYPE;

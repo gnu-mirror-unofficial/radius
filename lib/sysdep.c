@@ -35,7 +35,7 @@
 #include <netinet/in.h>
 #include <net/if.h>
 
-#include <radius.h>
+#include <common.h>
 
 #if defined(O_NONBLOCK)
 # define FCNTL_NONBLOCK O_NONBLOCK

@@ -25,13 +25,14 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <asn1.h>
-#include <snmp.h>
-#include <mib.h>
+
+#include <snmp/asn1.h>
+#include <snmp/snmp.h>
+#include <snmp/mib.h>
 
 #include <sysdep.h>
 #include <radiusd.h>
-#include <radutmp.h>
+#include <radius/radutmp.h>
 #include <radsnmp.h>
 #define SERVER
 #include <radmibs.h>

@@ -73,15 +73,16 @@ AC_ARG_WITH(server-guile,
 
 if test $USE_GUILE = yes; then
 	RA_CHECK_GUILE(,
-			[LIBRADSCM="libradscm.a libservscm.a"
+			[LIBRADSCM="libradscm.la libservscm.a"
                          RADSCM=radscm
 			 RADSESSION=radsession
-			 RADSCM_BUILT_SOURCES_LIST='$(DOT_X_FILES) $(DOT_DOC_FILES)'
-			 GUILE_PROCEDURES_TXT=guile-procedures.txt
+			 RADSCM_BUILT_SOURCES_LIST='gnuradius.scm $(DOT_X_FILES) $(DOT_DOC_FILES)'
+			 RADSCM_PKGDATA="guile-procedures.txt gnuradius.scm"
+                         GUILE_BINDIR=`guile-config info bindir`
 			 if test $USE_SERVER_GUILE = yes; then
 				AC_DEFINE(USE_SERVER_GUILE,1,
                                     [Define this to enable Guile interface])
-				RA_RADIUSD_LDADD(../radscm/libradscm.a ../radscm/libservscm.a $GUILE_LIBS)
+				RA_RADIUSD_LDADD(-L../radscm -lradscm ../radscm/libservscm.a $GUILE_LIBS)
 			 fi],
                         [USE_GUILE=no])
 fi
@@ -94,11 +95,12 @@ esac
 AC_SUBST(GUILE_INCLUDES)
 AC_SUBST(GUILE_LIBS)
 AC_SUBST(GUILE_SNARF_VERSION)
+AC_SUBST(GUILE_BINDIR)
 AC_SUBST(LIBRADSCM)
 AC_SUBST(RADSCM)
 AC_SUBST(RADSESSION)
 AC_SUBST(RADSCM_BUILT_SOURCES_LIST)
-AC_SUBST(GUILE_PROCEDURES_TXT)
+AC_SUBST(RADSCM_PKGDATA)
 
 ### Check for Emacs site-lisp directory
 AM_PATH_LISPDIR

@@ -39,10 +39,10 @@ radiusd_SOURCES = \
  timestr.c\
  version.c
 
-radiusd_LDADD = @LEXLIB@ @SQLLIB@ ../snmplib/libradsnmp.a @RADIUSD_LDADD_LIST@ ../radlib/librad.la @LIBINTL@
+radiusd_LDADD = @LEXLIB@ @SQLLIB@ ../snmplib/libradsnmp.a @RADIUSD_LDADD_LIST@ ../lib/librad.la @LIBINTL@
 BUILT_SOURCES   = config.c config_kw.c rewrite.c
 MAINTAINERCLEANFILES=config.c config_tok.h config_kw.c rewrite.c y.output
-INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp -I$(top_srcdir)/radlib @INCLUDEPATH@ @GUILE_INCLUDES@
+INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp -I$(top_srcdir)/lib @INCLUDEPATH@ @GUILE_INCLUDES@
 EXTRA_DIST      = config.y config.kw rewrite.y .gdbinit
 YLWRAP = $(SHELL) $(top_srcdir)/ylwrap
 GPERF=@GPERF@
@@ -76,7 +76,7 @@ radiusd_LNS=$(radiusd_SOURCES:.c=.ln)
 	$(LINT.c) -i $<
 
 lint:  $(radiusd_LNS)
-	$(LINT.c) -u $(radiusd_LNS) -L../radlib -lrad
+	$(LINT.c) -u $(radiusd_LNS) -L../lib -lrad
 
 SRCS=radiusd.c acct.c auth.c exec.c files.c menu.c sql.c\
          config.y pam.c proxy.c radius.c\

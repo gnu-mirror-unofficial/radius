@@ -13,7 +13,7 @@
 AUTOMAKE_OPTIONS = 1.6
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS= intl m4 include radlib sql snmplib radscm radiusd radwho radzap radlast\
+SUBDIRS= intl m4 include lib sql snmplib radscm radiusd radwho radzap radlast\
         raduse radscripts elisp raddb db client radtest test doc po mibs\
         scripts contrib
 
@@ -23,7 +23,7 @@ MAINTAINERCLEANFILES=core *~ err out
 debugmod:; here=`cd $(top_srcdir); pwd`; \
            MAKE=${MAKE} \
            $$here/scripts/debug.sh \
-                 $$here/scripts/debugmod.m4 radlib $(SUBDIRS)
+                 $$here/scripts/debugmod.m4 lib $(SUBDIRS)
 
 webdoc:;   $(MAKE) -C doc/texinfo webdoc
 

@@ -663,7 +663,7 @@ fi
 
 AC_OUTPUT(Makefile m4/Makefile  intl/Makefile po/Makefile.in 
           include/Makefile include/snmp/Makefile
-          radlib/Makefile sql/Makefile snmplib/Makefile 
+          lib/Makefile sql/Makefile snmplib/Makefile 
 	  radscm/Makefile 
           radiusd/Makefile radlast/Makefile radwho/Makefile 
           raduse/Makefile radzap/Makefile 

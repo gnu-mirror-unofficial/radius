@@ -76,7 +76,7 @@ process_menu(radreq, activefd, pw_digest)
 	
 	if ((term_pair = avl_find(pair, DA_TERMINATION_MENU)) != NULL) {
 		/* Change this to a menu state */
-		radsprintf(state_value, sizeof(state_value),
+		snprintf(state_value, sizeof(state_value),
 				"MENU=%s", term_pair->strvalue);
 		term_pair->attribute = DA_STATE;
 		replace_string(&term_pair->strvalue, state_value);
@@ -100,7 +100,7 @@ process_menu(radreq, activefd, pw_digest)
 	} else if (pair) {
 		if (new_pair = avl_find(pair, DA_MENU)) {
 			msg = get_menu(new_pair->strvalue);
-			radsprintf(state_value, sizeof(state_value),
+			snprintf(state_value, sizeof(state_value),
 					"MENU=%s", new_pair->strvalue);
 			send_challenge(radreq, msg, state_value, activefd);
 		} else {

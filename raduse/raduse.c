@@ -243,9 +243,9 @@ stat_insert_port(port)
 	
 	if (!nas) {
 		radlog(L_ERR,
-		    _("stat_insert_port(): portno %d: can't find nas for IP %I"),
+		    _("stat_insert_port(): portno %d: can't find nas for IP %s"),
 		    port->port_no,
-		    port->ip);
+		    format_ipaddr(port->ip));
 		free_entry(port);
 		return -1;
 	}
@@ -291,9 +291,9 @@ collect(fd)
 		nas = nas_lookup_ip(stat.ip);
 		if (!nas) {
 			radlog(L_ERR,
-			    _("collect(): port %d: can't find nas for IP %I"),
+			    _("collect(): port %d: can't find nas for IP %s"),
 			    stat.port_no,
-			    stat.ip);
+			    format_ipaddr(stat.ip));
 			return 1;
 		}
 

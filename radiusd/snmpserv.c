@@ -493,9 +493,9 @@ rad_snmp_respond(buf, len, sa)
 	req->sa = *sa;
 
 	debug(1,
-		("got %d bytes from %I",
+		("got %d bytes from %s",
 		 len,
-		 ntohl(req->sa.sin_addr.s_addr)));
+		 format_ipaddr(ntohl(req->sa.sin_addr.s_addr))));
 	
 	if (snmp_decode(req, buf, len)) {
 		free_entry(req);
@@ -535,10 +535,10 @@ snmp_decode(req, buf, len)
 	access = check_acl(req->sa.sin_addr.s_addr, comm);
 	if (!access) {
 		radlog(L_NOTICE,
-		       _("DENIED attempt to access community %s from %s (%I)"),
+		       _("DENIED attempt to access community %s from %s (%s)"),
 		       comm,
 		       ip_hostname(ntohl(req->sa.sin_addr.s_addr)),
-		       ntohl(req->sa.sin_addr.s_addr));
+		       format_ipaddr(ntohl(req->sa.sin_addr.s_addr)));
 		return 1;
 	}
 	req->pdu = pdu;
@@ -573,8 +573,8 @@ snmp_req_drop(type, req, status_str)
 	char *status_str;
 {
 	radlog(L_NOTICE,
-	       _("Dropping SNMP request from client %I: %s"),
-	       ntohl(req->sa.sin_addr.s_addr),
+	       _("Dropping SNMP request from client %s: %s"),
+	       format_ipaddr(ntohl(req->sa.sin_addr.s_addr)),
 	       status_str);
 }
 

@@ -224,23 +224,23 @@ checkrad_xlat(checkp, str)
 				ptr = checkp->sid;
 				break;
 			case 'd':
-				radsprintf(buf, sizeof(buf), "%lu",
+				snprintf(buf, sizeof(buf), "%lu",
 					   strtol(checkp->sid, NULL, 16));
 				ptr = buf;
 				break;
 			case 'p':
-				radsprintf(buf, sizeof(buf), "%d", 
+				snprintf(buf, sizeof(buf), "%d", 
 					checkp->port);
 				ptr = buf;
 				break;
 			case 'P':
-				radsprintf(buf, sizeof(buf), "%d",
+				snprintf(buf, sizeof(buf), "%d",
 					 checkp->port + 1);
 				ptr = buf;
 				break;
 			case 'i':
-				radsprintf(buf, sizeof(buf), "%I",
-					   checkp->ip);
+				snprintf(buf, sizeof(buf), "%s",
+					   format_ipaddr(checkp->ip));
 				ptr = buf;
 				break;
 			default:
@@ -298,7 +298,7 @@ converse(type, sp, pdu, closure)
 		case SMI_INTEGER:
 		case SMI_COUNTER32:
 		case SMI_COUNTER64:
-			radsprintf(buf, sizeof(buf), "%d", vlist->var_int);
+			snprintf(buf, sizeof(buf), "%d", vlist->var_int);
 			rc = compare(checkp, buf);
 			debug(2, ("(INT) %d: %d", vlist->var_int, rc));
 			break;

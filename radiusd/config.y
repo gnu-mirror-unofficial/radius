@@ -639,8 +639,8 @@ category_def    : T_CHANNEL { expect_string = 1; } T_STRING EOL
                 | T_LOGLEVEL T_BOOL EOL
                   {
 			  if ($2)
-				  $$.level |= $1;
-			  else
+					  $$.level |= $1;
+				  else
 				  $$.level &= ~$1;
 		  }
 		| begin_level level_list EOL
@@ -738,8 +738,8 @@ notify_stmt     : T_NOTIFY '{' notify_list '}'
                    #ifdef USE_NOTIFY
 			  if (debug_config)
 				  radlog(L_DEBUG, 
-					_("TTL server %I:%d %d, %d sec"),
-					 notify_cfg.ipaddr,
+					_("TTL server %s:%d %d, %d sec"),
+					 format_ipaddr(notify_cfg.ipaddr),
 					 notify_cfg.port,
 					 notify_cfg.retry,
 					 notify_cfg.timeout);

@@ -310,7 +310,7 @@ _dbm_number_name(buf, bufsize, name, ordnum)
 	char *name;
 	int ordnum;
 {
-	radsprintf(buf, bufsize, "%s%d", name, ordnum);
+	snprintf(buf, bufsize, "%s%d", name, ordnum);
 	return buf;
 }
 

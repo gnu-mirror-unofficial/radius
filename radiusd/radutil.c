@@ -150,7 +150,7 @@ attr_to_str(obp, pw_digest, request, attr, defval)
 			obstack_grow(obp, pair->strvalue, pair->strlength);
 		break;
 	case PW_TYPE_INTEGER:
-		radsprintf(tmp, sizeof(tmp), "%ld", pair->lvalue);
+		snprintf(tmp, sizeof(tmp), "%ld", pair->lvalue);
 		len = strlen(tmp);
 		obstack_grow(obp, tmp, len);
 		break;
@@ -160,7 +160,7 @@ attr_to_str(obp, pw_digest, request, attr, defval)
 		obstack_grow(obp, tmp, len);
 		break;
 	case PW_TYPE_DATE:
-		radsprintf(tmp, sizeof(tmp), "%ld", pair->lvalue);
+		snprintf(tmp, sizeof(tmp), "%ld", pair->lvalue);
 		len = strlen(tmp);
 		obstack_grow(obp, tmp, len);
 		break;

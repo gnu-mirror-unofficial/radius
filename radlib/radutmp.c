@@ -165,13 +165,13 @@ radutmp_putent(filename, ut, status)
 				break;
 			if (ent->type == P_LOGIN) {
 				radlog(L_INFO,
-		_("login: entry for NAS %I port %d duplicate"),
-				       ntohl(ent->nas_address),
+		_("login: entry for NAS %s port %d duplicate"),
+				       format_ipaddr(ntohl(ent->nas_address)),
 				       ent->nas_port);
 			} else {
 				radlog(L_INFO,
-	        _("login: entry for NAS %I port %d wrong order"),
-				       ntohl(ent->nas_address),
+	        _("login: entry for NAS %s port %d wrong order"),
+				       format_ipaddr(ntohl(ent->nas_address)),
 				       ent->nas_port);
 			}
 		}
@@ -181,8 +181,8 @@ radutmp_putent(filename, ut, status)
 		if (status == DV_ACCT_STATUS_TYPE_STOP) {
 			if (ent->type == P_LOGIN) {
 				radlog(L_ERR,
-   _("logout: entry for NAS %I port %d has wrong ID (expected %s found %s)"),
-				       ntohl(ut->nas_address),
+   _("logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"),
+				       format_ipaddr(ntohl(ut->nas_address)),
 				       ent->nas_port,
 				       ut->session_id,
 				       ent->session_id);
@@ -204,8 +204,8 @@ radutmp_putent(filename, ut, status)
 		ut->type = P_IDLE;
 		if (!ent) {
 			radlog(L_ERR,
-			 _("logout: login entry for NAS %I port %d not found"),
-			       ntohl(ut->nas_address), ut->nas_port);
+			 _("logout: login entry for NAS %s port %d not found"),
+			       format_ipaddr(ntohl(ut->nas_address)), ut->nas_port);
 		}
 		break;
 	}

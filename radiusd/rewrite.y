@@ -4144,7 +4144,7 @@ rw_string()
 	int n = popn();
 	int buf[64];
 	
-	radsprintf((char*)buf, sizeof(buf), "%d", n);
+	snprintf((char*)buf, sizeof(buf), "%d", n);
 	pushs(buf, 64);
 }
 

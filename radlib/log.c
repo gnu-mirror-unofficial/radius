@@ -83,13 +83,13 @@ vlog(level, file, line, func_name, errno, fmt, ap)
 		s = "CRIT: ";
 		break;
 	}
-	radfprintf(stderr, s);
+	fprintf(stderr, s);
 	if (file) 
-		radfprintf(stderr, "%s:%d:%s: ", file, line, SP(func_name));
-	radvfprintf(stderr, fmt, ap);
+		fprintf(stderr, "%s:%d:%s: ", file, line, SP(func_name));
+	fprintf(stderr, fmt, ap);
 	if (errno)
-		radfprintf(stderr, ": %s", strerror(errno));
-        radfprintf(stderr, "\n");
+		fprintf(stderr, ": %s", strerror(errno));
+        fprintf(stderr, "\n");
 }
 
 /*PRINTFLIKE2*/

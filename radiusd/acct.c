@@ -536,7 +536,7 @@ write_detail(radreq, authtype, f)
 			else
 				pair = avl_find(radreq->request, DA_USER_NAME);
 			if (pair) {
-				radfprintf(outfd, "\t%A\n", pair);
+				fprintf(outfd, "\t%s\n", format_pair(pair));
 			}
 		}
 
@@ -551,7 +551,7 @@ write_detail(radreq, authtype, f)
 				if (!strip_names)
 					break;
 			default:
-				radfprintf(outfd, "\t%A\n", pair);
+				fprintf(outfd, "\t%s\n", format_pair(pair));
 			} 
 			pair = pair->next;
 		}

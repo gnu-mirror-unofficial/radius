@@ -120,7 +120,7 @@ _pam_debug(format, va_alist)
 	va_end(args);
 }
 
-int
+void
 radlog(unused, format, va_alist)
 	int unused;
 	char *format;
@@ -130,10 +130,9 @@ radlog(unused, format, va_alist)
 	va_list args;
 
 	va_start(args);
-	radvsprintf(buf, sizeof(buf), format, args);
+	vsnprintf(buf, sizeof(buf), format, args);
 	va_end(args);
 	_pam_log(LOG_ERR, "%s", buf);
-	return 0;
 }
 
 

@@ -752,7 +752,7 @@ reread_config(reload)
 		radlog(L_CRIT, _("can't find out my own IP address"));
 		exit(1);
 	}
-	radlog(L_INFO, "using %I as my IP address", myip);
+	radlog(L_INFO, "using %s as my IP address", format_ipaddr(myip));
 
 #ifdef USE_SNMP	
 	fd = open_socket(myip, snmp_port, "SNMP");

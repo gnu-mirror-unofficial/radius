@@ -80,7 +80,7 @@ postgres_conninfo(type)
 		strlen(sql_cfg.password) + 1;
 	conninfo = emalloc(len);
 
-	radsprintf(conninfo, sizeof(conninfo),
+	snprintf(conninfo, sizeof(conninfo),
 		"%s%s %s%s %s%s %s%s",
 		CI_HOST, sql_cfg.server,
 		CI_DBNAME, dbname,
@@ -115,7 +115,7 @@ rad_postgres_reconnect(type, conn)
 		portstr = NULL;
 	else {
 		portstr = portbuf;
-		radsprintf(portbuf, sizeof(portbuf), "%d", sql_cfg.port);
+		snprintf(portbuf, sizeof(portbuf), "%d", sql_cfg.port);
 	}
 		
 	pgconn = PQsetdbLogin(sql_cfg.server, portstr, NULL, NULL,

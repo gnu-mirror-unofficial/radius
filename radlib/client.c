@@ -241,7 +241,8 @@ radclient_build_request(config, server, code, pair)
 	for (; pair; pair = pair->next) {
 
 		if (radclient_debug) {
-			radfprintf(stdout, "%10.10s: %A\n", _("send"), pair);
+			fprintf(stdout, "%10.10s: %s\n", 
+				   _("send"), format_pair(pair));
 		}
 
 		/*
@@ -482,8 +483,8 @@ decode_buffer(host, udp_port, buffer, length)
 			}
 
 			if (radclient_debug && pair) {
-				radfprintf(stdout, "%10.10s: %A\n", 
-						_("recv"), pair);
+				fprintf(stdout, "%10.10s: %s\n", 
+						_("recv"), format_pair(pair));
 			}
 
 		}

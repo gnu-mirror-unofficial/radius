@@ -145,7 +145,7 @@ check_expiration(check_item, user_msg)
 			result = AUTH_FAIL;
 			*user_msg = make_string(_("Password Has Expired\r\n"));
 		} else if (rc > 0) {
-			radsprintf(umsg, sizeof(umsg),
+			snprintf(umsg, sizeof(umsg),
 				   _("Password Will Expire in %d Days\r\n"),
 				   rc);
 			*user_msg = make_string(umsg);
@@ -1049,7 +1049,7 @@ sfn_simuse(m)
 		return;
 	
 	if (m->check_pair->lvalue > 1) {
-		radsprintf(umsg, sizeof(umsg),
+		snprintf(umsg, sizeof(umsg),
 	      _("\r\nYou are already logged in %d times  - access denied\r\n"),
 			(int)m->check_pair->lvalue);
 		m->user_msg = make_string(umsg);
@@ -1244,7 +1244,7 @@ sfn_menu(m)
 	char state_value[MAX_STATE_VALUE];
 		
 	msg = get_menu(m->check_pair->strvalue);
-	radsprintf(state_value, sizeof(state_value),
+	snprintf(state_value, sizeof(state_value),
 		   "MENU=%s", m->check_pair->strvalue);
 	send_challenge(m->req, msg, state_value, m->activefd);
 	

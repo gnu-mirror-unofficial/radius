@@ -352,6 +352,6 @@ avl_fprint(fp, avl)
 	VALUE_PAIR *avl;
 {
 	for (;avl; avl = avl->next) 
-		radfprintf(fp, "    %A\n", avl);
+		fprintf(fp, "    %s\n", format_pair(avl));
 }
 

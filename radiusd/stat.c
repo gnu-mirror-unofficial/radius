@@ -212,18 +212,18 @@ stat_update(ut, status)
 	nas = nas_lookup_ip(ntohl(ut->nas_address));
 	if (!nas) {
 		radlog(L_WARN,
-		    _("stat_update(): portno %d: can't find nas for IP %I"),
+		    _("stat_update(): portno %d: can't find nas for IP %s"),
 		    ut->nas_port,
-		    ntohl(ut->nas_address));
+		    format_ipaddr(ntohl(ut->nas_address)));
 		return;
 	}
 
 	port = stat_find_port(nas, ut->nas_port);
 	if (!port) {
 		radlog(L_WARN,
-		    _("stat_update(): port %d not found on NAS %I"),
+		    _("stat_update(): port %d not found on NAS %s"),
 		    ut->nas_port,
-		    ntohl(ut->nas_address));
+		    format_ipaddr(ntohl(ut->nas_address)));
 		return;
 	}
 

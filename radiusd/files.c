@@ -560,7 +560,7 @@ userparse(buffer, first_pair, errmsg)
 			if (token[0] == '\n' || token[0] == '#')
 				continue;
 			if (!(attr = attr_name_to_dict(token))) {
-				radsprintf(errbuf, sizeof(errbuf),
+				snprintf(errbuf, sizeof(errbuf),
 					_("unknown attribute `%s/%s'"), 
 					token, buffer);
 				*errmsg = errbuf; 
@@ -572,7 +572,7 @@ userparse(buffer, first_pair, errmsg)
 		case PS_OPS:
 			op = xlat_keyword(op_tab, token, -1);
 			if (op == -1) {
-				radsprintf(errbuf, sizeof(errbuf),
+				snprintf(errbuf, sizeof(errbuf),
 					_("expected opcode but found %s"),
 					token);
 				*errmsg = errbuf; 
@@ -615,7 +615,7 @@ userparse(buffer, first_pair, errmsg)
 					pair->lvalue = atoi(token);
 				} else if (!(dval = value_name_to_value(token))) {
 					avp_free(pair);
-					radsprintf(errbuf, sizeof(errbuf),
+					snprintf(errbuf, sizeof(errbuf),
 						_("unknown value %s"),
 						token);
 					*errmsg = errbuf;
@@ -663,7 +663,7 @@ userparse(buffer, first_pair, errmsg)
 				timeval = time(NULL);
 				tm = localtime(&timeval);
 				if (user_gettime(token, tm)) {
-					radsprintf(errbuf, sizeof(errbuf),
+					snprintf(errbuf, sizeof(errbuf),
 						_("%s: error parsing date %s"),
 						attr->name, token);	
 					goto error;
@@ -676,7 +676,7 @@ userparse(buffer, first_pair, errmsg)
 				break;
 
 			default:
-				radsprintf(errbuf, sizeof(errbuf),
+				snprintf(errbuf, sizeof(errbuf),
 					_("unknown attribute type %d"),
 					pair->type);
 			error:
@@ -690,7 +690,7 @@ userparse(buffer, first_pair, errmsg)
 			
 		case PS_END:
 			if (token[0] != ',' && token[0] != '\n') {
-				radsprintf(errbuf, sizeof(errbuf),
+				snprintf(errbuf, sizeof(errbuf),
 					_("expected , but found %s"),
 					token);
 				*errmsg = errbuf;
@@ -873,7 +873,7 @@ huntgroup_paircmp(request, check)
 			continue;
 		}
 
-		debug(20, ("check_item: %A", check_item));
+		debug(20, ("check_item: %s", format_pair(check_item)));
 
 		/*
 		 *	See if this item is present in the request.
@@ -894,7 +894,7 @@ huntgroup_paircmp(request, check)
 			continue;
 		}
 
-		debug(20, ("auth_item: %A", auth_item));
+		debug(20, ("auth_item: %s", format_pair(auth_item)));
 
 		/*
 		 *	OK it is present now compare them.
@@ -1564,7 +1564,7 @@ paircmp(request, check)
 			check_item = check_item->next;
 			continue;
 		}
-		debug(20, ("check_item: %A", check_item));
+		debug(20, ("check_item: %s", format_pair(check_item)));
 
 		/*
 		 *	See if this item is present in the request.
@@ -1603,7 +1603,7 @@ paircmp(request, check)
 			continue;
 		}
 
-		debug(20, ("auth_item: %A", auth_item));
+		debug(20, ("auth_item: %s", format_pair(auth_item)));
 
 		/*
 		 *	OK it is present now compare them.

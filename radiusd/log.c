@@ -270,14 +270,6 @@ _debug_format_string(va_alist)
 	return str;
 }
 
-void
-debug_pair(prefix, pair)
-	char *prefix;
-	VALUE_PAIR *pair;
-{
-	radfprintf(stdout, "%10.10s: %A\n", prefix, pair);
-}
-
 #ifdef USE_SQL
 /*PRINTFLIKE2*/
 void

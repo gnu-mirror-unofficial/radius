@@ -78,6 +78,36 @@ grad_iterator_current(grad_iterator_t *ip)
 	return ip->cur ? ip->cur->data : NULL;
 }
 
+static void
+grad_iterator_attach(grad_iterator_t *itr, grad_list_t *list)
+{
+	itr->list = list;
+	itr->cur = NULL;
+	itr->next = list->itr;
+	itr->advanced = 0;
+	list->itr = itr;	
+}
+
+static grad_iterator_t *
+grad_iterator_detach(grad_iterator_t *iter)
+{
+	grad_iterator_t *cur, *prev;
+
+	for (cur = iter->list->itr, prev = NULL;
+	     cur;
+	     prev = cur, cur = cur->next)
+		if (cur == iter)
+			break;
+	
+	if (cur) {
+		if (prev)
+			prev->next = cur->next;
+		else
+			cur->list->itr = cur->next;
+	}
+	return cur;
+}
+		     
 grad_iterator_t *
 grad_iterator_create(grad_list_t *list)
 {
@@ -86,35 +116,21 @@ grad_iterator_create(grad_list_t *list)
 	if (!list)
 		return NULL;
 	itr = grad_emalloc(sizeof(*itr));
-	itr->list = list;
-	itr->cur = NULL;
-	itr->next = list->itr;
-	itr->advanced = 0;
-	list->itr = itr;
+	grad_iterator_attach(itr, list);
 	return itr;
 }
 
 void
 grad_iterator_destroy(grad_iterator_t **ip)
 {
-	grad_iterator_t *itr, *prev;
-
+	grad_iterator_t *itr;
+	
 	if (!ip || !*ip)
 		return;
-	for (itr = (*ip)->list->itr, prev = NULL;
-	     itr;
-	     prev = itr, itr = itr->next)
-		if (*ip == itr)
-			break;
-	if (itr) {
-		if (prev)
-			prev->next = itr->next;
-		else
-			itr->list->itr = itr->next;
+	itr = grad_iterator_detach(*ip);
+	if (itr)
 		grad_free(itr);
-		*ip = NULL;
-	}
-		
+	*ip = NULL;
 }
 		
 void *
@@ -242,22 +258,22 @@ grad_list_remove(struct list *list, void *data, list_comp_t cmp)
 	return data;
 }
 
+/* Note: if modifying this function, make sure it does not allocate any
+   memory! */
 void
 grad_list_iterate(struct list *list, list_iterator_t func, void *data)
 {
-	grad_iterator_t *itr;
+	grad_iterator_t itr;
 	void *p;
 	
 	if (!list)
 		return;
-	itr = grad_iterator_create(list);
-	if (!itr)
-		return;
-	for (p = grad_iterator_first(itr); p; p = grad_iterator_next(itr)) {
+	grad_iterator_attach(&itr, list);
+	for (p = grad_iterator_first(&itr); p; p = grad_iterator_next(&itr)) {
 		if (func(p, data))
 			break;
 	}
-	grad_iterator_destroy(&itr);
+	grad_iterator_detach(&itr);
 }
 
 void *

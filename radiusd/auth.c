@@ -445,10 +445,6 @@ rad_auth_init(radreq, activefd)
 		return -1;
 	}
 		
-#ifdef USE_SQL
-	/* A kludge, but it does its job */
-	radreq->qid = radreq;
-#endif
 	/*
 	 * Add any specific attributes for this username.
 	 */

@@ -139,6 +139,7 @@ drv_dejagnu() {
         CONF=$LOCAL_CONF
     fi
     trap "stop_server $LOCAL_CONF $PROXY_CONF" 1 3 15
+    sleep 5
     $RADTEST -d $CONF 2>/tmp/radtest.err
     stop_server $LOCAL_CONF $PROXY_CONF
 }	     

@@ -19,7 +19,7 @@ changequote({,})
 include(config.m4)
 include(INCLUDE)
 ifdef({DB_USER},,{define(DB_USER,{radius})})
-ifdef({DB_PWD},,{define({DB_PWD},{test})})
+ifdef({DB_PWD},,{define({DB_PWD},{guessme})})
 divert{}dnl
 CREATEDATABASE(RADIUS)
 

@@ -345,7 +345,7 @@ snmp_check(checkp, nas)
 
 	retries = ilookup(checkp, "retries", 3);
 	timeout = ilookup(checkp, "timeout", 2);
-	peername = nas->longname;
+	peername = slookup(checkp, "host", nas->longname);
 	remote_port = ilookup(checkp, "port", 161);
 
 	sp = snmp_session_create(community, peername, remote_port, 
@@ -441,6 +441,7 @@ finger_check(checkp, nas)
 	struct iovec iov[3];
 	struct msghdr msg;
 	int found = 0;
+	char *peername;
 	struct obstack stk;
 	char *ptr;
 	RETSIGTYPE (*handler)() = SIG_IGN;
@@ -453,8 +454,9 @@ finger_check(checkp, nas)
 	namebuf[i] = 0;
 	namelen = i;
 
-	if (!(hp = gethostbyname(nas->longname))) {
-		radlog(L_ERR, _("unknown host: %s"), nas->longname);
+	peername = slookup(checkp, "host", nas->longname);
+	if (!(hp = gethostbyname(peername))) {
+		radlog(L_ERR, _("unknown host: %s"), peername);
 		return -1;
 	}
 

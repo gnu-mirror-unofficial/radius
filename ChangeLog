@@ -1,3 +1,33 @@
+2001-08-31 Sergey Poznyakoff
+
+	Further changes to the logging subsystem. The only left-to-do is 
+		1. document changes.
+
+	* radlib/log.c: Removed.
+	* radlib/logger.c: (new) Provide basic log functionality.
+	It is part of librad library. Programs willing to use
+	logger.c must define function vlog() which is suppsoed to
+	do the actual formatting and outputting job.
+	* radlib/applog.c: (new) Logger system for rad.* applications.
+	It is part of liblog library.
+	* radlib/Makefile.am: Added logger.c, applog.c.
+
+	* client/pam_radius/pam_radius.c: Implemented vlog().
+
+	* radiusd/log.c: Removed functions provided by logger.c.
+
+	* raddb/rewrite.full: Fixed bug in max_fixup() function: too
+	few arguments in call to max_decode_port.
+
+	Fixed handling of NAS-supplied attribute length. (See 2001-08-27)
+	
+	* radiusd/radius.c: Reverted changes introduced 2001-08-27. They
+	break proxy functionality. String attributes may contain arbitrary
+	binary data, so strlen() is not appropriate.
+	* radiusd/radutil.c: Recompute string length before adding string
+	contents to obstack.
+
+
 2001-08-27 Sergey Poznyakoff
 
 	* include/radiusd.h: Removed unused RLOG_PID define.

@@ -44,34 +44,38 @@
 #endif				/* LINUX_PAM */
 #include <security/pam_modules.h>
 
-#define _PAM_EXTERN_FUNCTIONS
-#ifdef HAVE__PAM_MACROS_H
-# include <security/_pam_macros.h>
-#endif
-
 #ifndef PAM_CONV_AGAIN
 # define PAM_CONV_AGAIN PAM_TRY_AGAIN
 #endif
 #ifndef PAM_AUTHTOK_RECOVER_ERR
-# define  PAM_AUTHTOK_RECOVER_ERR PAM_AUTHTOK_RECOVERY_ERR
+# define PAM_AUTHTOK_RECOVER_ERR PAM_AUTHTOK_RECOVERY_ERR
 #endif
 #ifndef PAM_EXTERN
 # define PAM_EXTERN
 #endif
 
-#ifndef HAVE__PAM_OVERWRITE
-# define _pam_overwrite(s)       \
+#define PAM_OVERWRITE(s)        \
   do {                           \
 	register char *p;        \
         if  ((p = s) != NULL)    \
 	    while (*p) *p++ = 0; \
   } while (0) 
-#endif
 
+#define PAM_DROP_REPLY(reply, nrepl)                 \
+  do {                                                \
+	int i;                                        \
+	for (i=0; i<nrepl; i++) {                     \
+            PAM_OVERWRITE(reply[i].resp);             \
+            free(reply[i].resp);                      \
+	}                                             \
+	if (reply)                                    \
+	    free(reply);                              \
+  } while (0)
+	
 static void
 _pam_delete(char *x)
 {
-	_pam_overwrite(x);
+	PAM_OVERWRITE(x);
 	free(x);
 }
 
@@ -135,6 +139,7 @@ radlog(unused, format, va_alist)
 #define CNTL_DEBUG       0x0001
 #define CNTL_AUDIT       0x0002
 #define CNTL_AUTHTOK     0x0004
+#define CNTL_WAITDEBUG   0x0008
 
 #define CNTL_DEBUG_LEV() (cntl_flags>>16)
 #define CNTL_SET_DEBUG_LEV(cntl,n) (cntl |= ((n)<<16))
@@ -189,6 +194,8 @@ _pam_parse(pam_handle_t *pamh, int argc, const char **argv)
 				CNTL_SET_DEBUG_LEV(ctrl,1);
 		} else if (!strcmp(*argv,"audit"))
 			ctrl |= CNTL_AUDIT;
+		else if (!strcmp(*argv,"waitdebug"))
+			ctrl |= CNTL_WAITDEBUG;
 		else if (!strcmp(*argv,"use_authtok"))
 			ctrl |= CNTL_AUTHTOK;
 		else if (!strncmp(*argv,"confdir=",8)) 
@@ -223,7 +230,7 @@ _cleanup_radclient(pam_handle_t *pamh, void *x, int error_status)
 static void
 _cleanup_request(pam_handle_t *pamh, void *x, int error_status)
 {
-	authfree((AUTH_REQ*)x);
+	radreq_free((RADIUS_REQ*)x);
 }
 
 #define TOK_SOURCE_IP  1
@@ -315,7 +322,7 @@ _read_client_config(pam_handle_t *pamh, char *name)
 				continue;\
 			}
 
-			serv.name = strdup(arg);
+			serv.name = strdup(arg);  /*FIXME: never freed */
 
 			NEXTARG();
 			serv.addr = get_ipaddr(arg);
@@ -431,7 +438,7 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
 	RADCLIENT *radclient;
 	int retval;
 	VALUE_PAIR *pairs, *namepair;
-	AUTH_REQ *authreq;
+	RADIUS_REQ *authreq;
 	DICT_VALUE *dv;
 	
 	retval = pam_get_data(pamh,
@@ -476,12 +483,12 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
 		/* FIXME: radius may have returned Reply-Message attribute.
 		 * we should return it to the caller
 		 */
-		authfree(authreq);
+		radreq_free(authreq);
 		return PAM_USER_UNKNOWN;
 	default:
 		_pam_log(LOG_CRIT,
 			 "received unexpected response: %d", authreq->code);
-		authfree(authreq);
+		radreq_free(authreq);
 		return PAM_AUTH_ERR;
 	}
 
@@ -496,7 +503,7 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
 		_pam_log(LOG_CRIT, 
 			 "can't keep data authreq: %s",
 			 pam_strerror(pamh, retval));
-		authfree(authreq);
+		radreq_free(authreq);
 	}
 	/* add username to the response (do we need it still?) */
 	avl_add_pair(&authreq->request, avp_dup(namepair));
@@ -591,9 +598,7 @@ _pam_get_password(pam_handle_t *pamh, char **password, const char *prompt)
 		if (retval == PAM_SUCCESS) { 	/* a good conversation */
 			token = XSTRDUP(resp[i - replies].resp);
 			DEBUG(10,("app returned [%s]", token));
-#ifdef HAVE__PAM_DROP_REPLY
-			_pam_drop_reply(resp, 1);
-#endif			
+			PAM_DROP_REPLY(resp, 1);
 		} else {
 			AUDIT(("conversation error: %s",
 					pam_strerror(pamh, retval)));
@@ -651,8 +656,19 @@ pam_sm_authenticate(pam_handle_t *pamh,
 	int retval;
 	char *name;
 	char *password;
+
 	
 	_pam_parse(pamh, argc, argv);
+	
+#ifdef MAINTAINER_MODE
+	if (cntl_flags & CNTL_WAITDEBUG) {
+		_pam_log(LOG_CRIT, "WAITING FOR DEBUG AT %s:%d",
+			 __FILE__, __LINE__);
+		retval = 0;
+		while (!retval)
+			retval=retval;
+	}
+#endif	
 	DEBUG(100,("enter pam_sm_authenticate"));
 
 	for (;;) {

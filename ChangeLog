@@ -1,3 +1,19 @@
+2002-07-19  Sergey Poznyakoff
+
+	* include/sysdep.h: Add definition of timercmp (just on case).
+	* radiusd/log.c (format_exit_status): New function. Properly
+	  format child exit status diagnostics. 
+	* radiusd/exec.c: Use format_exit_status to output exit status
+	  diagnostics.
+	* radiusd/radiusd.c (radiusd_watcher): Use format_exit_status to
+  	  output exit status diagnostics.
+	  (radiusd_exit,radiusd_restart): Protect radiusd_sql_shutdown()
+	  by #ifdef.
+	  Definition of timercmp moved to sysdep.h
+	  
+	* po/es.po: Updated.
+	* po/no.po: Updated.
+
 2002-07-17  Sergey Poznyakoff
 
 	* configure.ac: Do not build server guile support by default. Sad.

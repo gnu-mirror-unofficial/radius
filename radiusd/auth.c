@@ -510,7 +510,6 @@ typedef struct auth_mach {
         
         VALUE_PAIR *namepair;
         VALUE_PAIR *check_pair;
-        VALUE_PAIR *timeout_pair;
         char       userpass[AUTH_STRING_LEN+1];
 
         char       *user_msg;
@@ -535,7 +534,6 @@ static void sfn_menu_challenge(AUTH_MACH*);
 static void sfn_ack(AUTH_MACH*);
 static void sfn_exec_nowait(AUTH_MACH*);
 static void sfn_reject(AUTH_MACH*);
-static VALUE_PAIR *timeout_pair(AUTH_MACH *m);
 static int check_expiration(AUTH_MACH *m);
 
 
@@ -704,7 +702,6 @@ rad_authenticate(RADIUS_REQ *radreq, int activefd)
         m.user_check = NULL;
         m.user_reply = NULL;
         m.check_pair = NULL;
-        m.timeout_pair = NULL;
         m.user_msg   = NULL;
         obstack_init(&m.msg_stack);
 
@@ -1027,15 +1024,17 @@ sfn_simuse(AUTH_MACH *m)
         newstate(as_reject);
 }
 
-VALUE_PAIR *
-timeout_pair(AUTH_MACH *m)
+static UINT4
+set_session_timeout(AUTH_MACH *m, UINT4 val)
 {
-        if (!m->timeout_pair &&
-            !(m->timeout_pair = avl_find(m->user_reply, DA_SESSION_TIMEOUT))) {
-                m->timeout_pair = avp_create_integer(DA_SESSION_TIMEOUT, 0);
-                avl_add_pair(&m->user_reply, m->timeout_pair);
-        }
-        return m->timeout_pair;
+	VALUE_PAIR *p;
+	
+        if (!(p = avl_find(m->user_reply, DA_SESSION_TIMEOUT))) {
+                p = avp_create_integer(DA_SESSION_TIMEOUT, val);
+                avl_add_pair(&m->user_reply, p);
+        } else if (p->avp_lvalue > val)
+		p->avp_lvalue = val;
+        return p->avp_lvalue;
 }
 
 void
@@ -1061,11 +1060,12 @@ sfn_time(AUTH_MACH *m)
                 /*
                  * User is allowed, but set Session-Timeout.
                  */
-                timeout_pair(m)->avp_lvalue = rest;
-                debug(2, ("user %s, span %s, timeout %d",
+                UINT4 to = set_session_timeout(m, rest);
+                debug(2, ("user %s, span %s, timeout %d, real timeout %d",
                           m->namepair->avp_strvalue,
                           m->check_pair->avp_strvalue,
-                          rest));
+                          rest,
+			  to));
         }
 }
 
@@ -1225,12 +1225,6 @@ sfn_ack(AUTH_MACH *m)
                 auth_log(m, _("Login OK"),
                          is_log_mode(m, RLOG_AUTH_PASS) ? m->userpass : NULL,
                          NULL, NULL);
-        }
-
-        if (timeout_pair(m)) {
-                debug(5,
-                        ("timeout for [%s] is set to %ld sec",
-                         m->namepair->avp_strvalue, timeout_pair(m)->avp_lvalue));
         }
 }
 

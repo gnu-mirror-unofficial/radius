@@ -68,7 +68,7 @@ These flags determine the usage of the attribute in the configuration
 files @file{huntgroups}, @file{hints}, and @file{users}.
 @item Propagation
 When a @RADIUS{} server functions in proxy mode, it uses the @dfn{propagation
-bit} to determine which attributes from the reply packet should be passed
+flag} to determine which attributes from the reply packet should be passed
 back to the requesting @NAS{} (@pxref{Proxy Service}).
 @item additivity
 Some configuration rules may cause the addition of new @AVP{}s to the
@@ -304,7 +304,7 @@ startup, or after a major reconfiguration of the @NAS{}. It must
 contain at least the following attributes:
 
 @itemize @bullet
-@item @attr{Acct-Status-Type = Accounting-Off}
+@item @attr{Acct-Status-Type = Accounting-On}
 @item @attr{NAS-IP-Address}
 @end itemize
 @end table
@@ -484,7 +484,7 @@ which @NAS{} originated the request. Before passing the request back
 to the @NAS{}, the server removes information specific to the
 @samp{Remote} site, such as @attr{Framed-IP-Address},
 @attr{Framed-Netmask}, etc. Only the attributes marked with a
-@samp{propagate} flag (@pxref{Attributes}) are passed back to the
+@samp{propagation} flag (@pxref{Attributes}) are passed back to the
 @NAS{}. After removing site-specific attributes, the @samp{Local}
 @RADIUS{} server passes the request through its user profiles
 (@pxref{User Profiles}) to insert any local, site-specific information

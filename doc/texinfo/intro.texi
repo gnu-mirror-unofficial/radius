@@ -19,7 +19,7 @@ GNU Radius has several built-in authentication and accounting methods.
 When these methods are not enough, it allows the administrator to implement
 any new method she deems convenient. 
 
-The GNU Radius package includes the radius server program,
+The GNU Radius package includes the server program,
 @radiusd{}, which responds to authentication and accounting requests,
 and a set of accompanying programs designed to monitor the activity of
 the server and analyze the information it provides.

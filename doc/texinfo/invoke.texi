@@ -193,7 +193,7 @@ logging @{
 @item -y
 @itemx --log-auth
 Log authentications. With this option enabled, Radius will log any
-authentication attempt into its logfile @ref{Logging}.
+authentication attempt into its log file @ref{Logging}.
 
 Config file equivalent: @code{logging @{ category auth @{ detail yes;
 @}; @}; }.

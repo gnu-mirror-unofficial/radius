@@ -1,3 +1,17 @@
+2004-08-06  Sergey Poznyakoff
+
+	* radiusd/radiusd.c (struct cfg_stmt acct_stmt): Bugfix.
+	"forward" was setting auth forwarding, not acct.
+	* radscripts/radauth.m4: A couple of minor fixes.
+	* radtest/input.l: Use single quotes for quoting the reserved
+	keywords, as described in the docs.
+	* radtest/runtime.c (rt_eval_expr) <radtest_node_getopt>: Disable
+	getopt diagnostics. Return even unrecognized options
+	in OPTVAR.
+	<radtest_node_argcount>: Return actual number of arguments, not
+	counting $0.
+	* radzap/radzap.c: Fixed improper initialization of radutmp_path.
+
 2004-08-04  Sergey Poznyakoff
 
 	* NEWS: Updated

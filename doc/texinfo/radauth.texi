@@ -1,5 +1,5 @@
 @c This is part of the Radius manual.
-@c Copyright (C) 1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+@c Copyright (C) 1999,2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 @c Written by Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
@@ -7,24 +7,60 @@
 @section @command{radauth}
 @pindex radauth
 
-The @command{radauth} utility sends the Radius server an Access-Request
-packet and displays the result it gets. It can be used to test the
-configuration files. The usage is
+The @command{radauth} utility sends the Radius server an @code{Access-Request}
+packet and displays the result it gets. If the server responds with
+@code{Access-Accept} @command{radauth} can also send an
+@code{Accounting-Request} thereby initiating user's session.
+
+The utility is a @command{radtest} program. @xref{Sample Radtest
+Program}, for the detailed discussion of its internals.
+
+@subheading Invocation
 
 @smallexample
-radauth [-v] username password
+radauth [@var{options}] [@var{command}] @var{user-name} [@var{password}]
 @end smallexample
 
-The @option{-v} or @option{--verbose} option forces @command{radauth} to be
-verbose on output.
+@noindent
+Options are:
 
-If you enter @samp{.} (dot) instead of the password, the program
-will disable echoing on the screen, prompt you to enter the password,
-and turn the echoing on again, thus preventing the password from being
-compromised.
+@table @option
+@item -v
+Print verbose descriptions of what is being done.
+
+@item -n @var{nas-ip}
+Set @NAS{} @IP{}
+
+@item -s @var{sid}
+Set accounting session ID
+
+@item -P @var{port}
+Set @NAS{} port number.
+@end table
+
+@FIXME{GNU long options are not yet supported}
+
+@noindent
+Valid commands are:
+
+@table @asis
+@item auth
+Send only @code{Access-Request}. This is the default.
+
+@item acct
+Send @code{Access-Request}. If successfull, send
+@code{Accounting-Request} with @code{Acct-Status-Type = Start}.
+
+@item start
+Send @code{Accounting-Request} with @code{Acct-Status-Type = Start}.
+
+@item stop
+@code{Accounting-Request} with @code{Acct-Status-Type = Stop}.
+@end table
 
 The program determines which Radius server to use, the authentication
 port number, and the shared secret, following the procedure common to all
 client scripts (@pxref{client.conf}).
 
+@c End of radauth.texi
 

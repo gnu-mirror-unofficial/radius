@@ -41,6 +41,14 @@ typedef unsigned long	UINT4;
 extern int strncasecmp(char*, char*, int);
 #endif
 
+#ifndef HAVE_STRTOK_R
+extern char *strtok_r (char *s, const char *delim, char **save_ptr);
+#endif
+
+#ifndef HAVE_LOCALTIME_R
+extern struct tm *localtime_r(const time_t *timep, struct tm *res);
+#endif
+
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
 # ifdef TIME_WITH_SYS_TIME

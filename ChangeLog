@@ -1,3 +1,12 @@
+2002-06-04  Sergey Poznyakoff 
+
+	* configure.ac: Override a bug in autoconf's AC_PATH_PROG
+	  (see source for details).
+	* elisp/radius-mode.el (rad-electric-equal, rad-electric-comma):
+	  accept equal sign within a string attribute.
+	* po/es.po: Updated.
+	* radiusd/scheme.c: Removed debugging output.
+
 2002-06-03  Sergey Poznyakoff 
 
 	* lib/radargp.c: Bugfix.

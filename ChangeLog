@@ -1,5 +1,11 @@
 2004-08-03  Sergey Poznyakoff
 
+	* radtest/gram.y: Further improved error handling.
+	Allow arbitrary number of newlines between branches
+	of a case statement.
+
+2004-08-03  Sergey Poznyakoff
+
 	* lib/readline.c (grad_readline_init): Always initialize
 	_interactive.
 	* radtest/gram.y: Improved error handling 

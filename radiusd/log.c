@@ -647,7 +647,7 @@ get_priority(argv)
 		break;
 
 	case '=':
-		cat_def.pri = L_UPTO(cat_def.pri);
+		cat_def.pri = L_MASK(cat_def.pri);
 		break;
 
 	default:

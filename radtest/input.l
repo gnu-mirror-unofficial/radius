@@ -72,6 +72,7 @@ all     return ALL;
 vars    return VARS;
 send    return SEND;
 expect  return EXPECT;
+exit    return EXIT;
 {IDENTIFIER} {
 	strncpy(yylval.string, yytext, sizeof(yylval.string));
 	yylval.string[sizeof(yylval.string)-1] = 0;
@@ -174,7 +175,6 @@ open_input(name)
 
 	interactive = isatty(fileno(fp));
 	source_line_num = 0;
-//	newline();
 #ifdef FLEX_SCANNER
 	yyrestart(fp);
 #else

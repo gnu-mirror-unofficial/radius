@@ -119,16 +119,35 @@ proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r)
 /* ************************************************************************* */
 /* Reply functions. Possibly these should go to libclient? */
 
+/* Send the request */
+static int
+proxy_send_pdu(int fd, RADIUS_SERVER *server, RADIUS_REQ *radreq,
+	       void *pdu, size_t size)
+{
+	struct sockaddr_in sin;
+	
+	memset(&sin, 0, sizeof (sin));
+	sin.sin_family = AF_INET;
+	sin.sin_addr.s_addr = htonl(server->addr);
+	
+	sin.sin_port = htons((radreq->code == RT_AUTHENTICATION_REQUEST) ?
+			     server->port[PORT_AUTH] : server->port[PORT_ACCT]);
+
+	debug(1, ("Proxying id %d to %lx",
+		  radreq->id, (u_long)server->addr));
+
+	return sendto(fd, pdu, size, 0, (struct sockaddr *)&sin, sizeof(sin));
+}
+
 int
 proxy_send_request(int fd, RADIUS_REQ *radreq)
 {
 	VALUE_PAIR *plist, *p;
-        PROXY_STATE *proxy_state;
 	char vector[AUTH_VECTOR_LEN];
 	void *pdu;
 	size_t size;
-	struct sockaddr_in sin;
 	RADIUS_SERVER *server;
+	int rc;
 	
 	if (radreq->attempt_no > radreq->realm->queue->retries) {
 		radreq->server_no++;
@@ -157,25 +176,29 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 		    || p->attribute == DA_CHAP_PASSWORD)
 			passwd_recode(p, server->secret, vector, radreq);
 	}
+
+	if (!envar_lookup_int(radreq->realm->args, "retransmit", 0)) {
+		PROXY_STATE *proxy_state;
+		
+		/* Add a proxy-pair to the end of the request. */
+		p = avp_alloc();
+		p->name = "Proxy-State";
+		p->attribute = DA_PROXY_STATE;
+		p->type = TYPE_STRING;
+		p->avp_strlength = sizeof(PROXY_STATE);
+		p->avp_strvalue = emalloc(p->avp_strlength);
+		
+		proxy_state = (PROXY_STATE *)p->avp_strvalue;
+		
+		proxy_state->ref_ip = ref_ip;
+		proxy_state->client_ip = radreq->ipaddr;
+		proxy_state->id = radreq->id;
+		proxy_state->proxy_id = radreq->server_id;
+		proxy_state->remote_ip = server->addr;
+		
+		avl_add_pair(&plist, p);
+	}
 	
-	/* Add a proxy-pair to the end of the request. */
-        p = avp_alloc();
-        p->name = "Proxy-State";
-        p->attribute = DA_PROXY_STATE;
-        p->type = TYPE_STRING;
-        p->avp_strlength = sizeof(PROXY_STATE);
-        p->avp_strvalue = emalloc(p->avp_strlength);
-        
-        proxy_state = (PROXY_STATE *)p->avp_strvalue;
-
-	proxy_state->ref_ip = ref_ip;
-        proxy_state->client_ip = radreq->ipaddr;
-        proxy_state->id = radreq->id;
-        proxy_state->proxy_id = radreq->server_id;
-        proxy_state->remote_ip = server->addr;
-
-	avl_add_pair(&plist, p);
-
 	/* Create the pdu */
 	size = rad_create_pdu(&pdu, radreq->code,
 			      radreq->server_id,
@@ -206,26 +229,40 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 		efree(upd);
 	}
 	
-	if (size > 0) {
-		/* Send the request */
-		memset(&sin, 0, sizeof (sin));
-		sin.sin_family = AF_INET;
-		sin.sin_addr.s_addr = htonl(server->addr);
-	
-		sin.sin_port = htons(
-			(radreq->code == RT_AUTHENTICATION_REQUEST) ?
-			server->port[PORT_AUTH] : server->port[PORT_ACCT]);
-
-                debug(1, ("Proxying id %d to %lx",
-                          radreq->id, (u_long)server->addr));
-
-		sendto(fd, pdu, size, 0, (struct sockaddr *)&sin, sizeof(sin));
-	}
-	return size;
+	rc = proxy_send_pdu(fd, server, radreq, pdu, size);
+	efree(pdu);
+	return rc;
 }
 
 /* ************************************************************************* */
 /* Interface functions */
+
+static REALM *
+proxy_lookup_realm(RADIUS_REQ *req, char *name)
+{
+	REALM *realm = realm_lookup_name(name);
+
+	if (realm) {
+		char *var = NULL;
+		switch (req->code) {
+		case RT_AUTHENTICATION_REQUEST:
+			var = "auth";
+			break;
+		
+		case RT_ACCOUNTING_REQUEST:
+			var = "acct";
+			break;
+			
+		default:
+			/* Should not happen.. */
+			insist_fail("unexpected request code");
+		}
+
+		if (envar_lookup_int(realm->args, var, 1) == 0)
+			realm = NULL;
+	}
+	return realm;
+}
 
 /* Relay the request to a remote server
    Returns:  1 success (we reply, caller returns without replying)
@@ -236,7 +273,6 @@ int
 proxy_send(REQUEST *req)
 {
 	RADIUS_REQ *radreq = req->data;
-        char *saved_username;
         char *username;
         VALUE_PAIR *namepair;
         VALUE_PAIR *vp;
@@ -248,7 +284,6 @@ proxy_send(REQUEST *req)
         if (avp_null_string(namepair))
                 return 0;
 
-        saved_username = estrdup(namepair->avp_strvalue);
         username = namepair->avp_strvalue;
 
         /* Find the realm from the _end_ so that we can cascade realms:
@@ -262,38 +297,28 @@ proxy_send(REQUEST *req)
 
         if ((realmname = strrchr(username, '@')) == NULL) {
                 if ((realm = realm_lookup_name("NOREALM")) == NULL) {
-                        efree(saved_username);
                         return 0;
                 }
-        } else if ((realm = realm_lookup_name(realmname + 1)) == NULL) {
+        } else if ((realm = proxy_lookup_realm(radreq, realmname + 1))
+		     == NULL) {
                 /* If the realm is not found, we treat it as usual. */
-                efree(saved_username);
-                return 0;
-        } else if (realm->queue == NULL) { /* This is a LOCAL realm */
-                if (realm->striprealm) {
-                        *realmname = 0;
-                        namepair->avp_strlength = strlen(namepair->avp_strvalue);
-                }
-                efree(saved_username);
                 return 0;
         }
+
+	if (realmname && realm_strip_p(realm)) {
+		*realmname = 0;
+		namepair->avp_strlength = strlen(namepair->avp_strvalue);
+	}
+
+	if (realm->queue == NULL) /* This is a LOCAL realm */
+                return 0;
 
 	radreq->realm = realm;
-        if (realmname) {
-                if (realm->striprealm)
-                        *realmname = 0;
-        }
-        
-	if (username[0]==0)
-		abort();
-        string_replace(&namepair->avp_strvalue, username);
-	if (namepair->avp_strvalue[0]==0)
-		abort();
-        namepair->avp_strlength = strlen(namepair->avp_strvalue);
-
         radreq->server_no = 0;
 	radreq->attempt_no = 0;
-	radreq->remote_user = estrdup(username);
+	/* Actual user name may be altered, but the remote user name
+	   should remain the same */
+	radreq->remote_user = estrdup(username); 
 
         /* If there is no DA_CHAP_CHALLENGE attribute but there
            is a DA_CHAP_PASSWORD we need to add it since we can't
@@ -313,10 +338,11 @@ proxy_send(REQUEST *req)
                 avl_add_pair(&radreq->request, vp);
         }
 
-        efree(saved_username);
-	
 	proxy_send_request(req->fd, radreq);
 
+	if (envar_lookup_int(realm->args, "retransmit", 0))
+		return 0;
+	
         return 1;
 }
 

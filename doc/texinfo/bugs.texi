@@ -5,8 +5,8 @@
 @node Bugs, News, , Top
 @chapter Reporting Bugs
 
-It is possible you will encounter a bug in one of Radius programs. If this
-happens we would like to hear about it. As the purpose of bug reporting
+It is possible you will encounter a bug in one of the Radius programs. If this
+happens, we would like to hear about it. As the purpose of bug reporting
 is to improve software, please be sure to include maximum information
 when reporting a bug. The information needed is:
 
@@ -16,20 +16,21 @@ when reporting a bug. The information needed is:
 @item Compilation options used when configuring the package.
 @item If the bug is found in @command{radiusd} daemon, run
 @samp{radiusd -v} and include the output it produces.
-@item Contents of radius configuration directory (@value{RADDB} or whatever
+@item Contents of Radius configuration directory (@file{@value{RADDB}}
+or whatever
 you have set it to while configuring).
 @item Log messages produced.
 @end itemize
 
-Send your report to @email{bug-gnu-radius@@gnu.org}. Allow me a couple of
+Send your report to @email{bug-gnu-radius@@gnu.org}. Allow us a couple of
 days to answer.
 
 @comment *******************************************************************
 @node News, , Bugs, Top
-@chapter Where to Get Info About GNU Radius
+@chapter Where to Get Information about GNU Radius
 
-The two places to look for any news regarding GNU Radius are 
-the Radius homepage at @url{http://www.gnu.org/software/radius},
+The two places to look for news regarding GNU Radius are 
+the Radius homepage at @url{http://www.gnu.org/software/radius}
 and the Radius project page at @url{http://savannah.gnu.org/projects/radius}.
 
 The following mailing lists are related to GNU Radius:
@@ -37,8 +38,8 @@ The following mailing lists are related to GNU Radius:
 @table @email
 @item info-gnu-radius@@gnu.org
 This list distributes announcements and progress reports on GNU
-Radius. This is a moderated list. Please, do not send bug reports
-or requests for help to this list, there exist special mailing
+Radius. This is a moderated list. Please do not send bug reports
+or requests for help to this list; there exist special mailing
 lists for these purposes. To subscribe to the list, visit
 @url{http://mail.gnu.org/mailman/listinfo/info-gnu-radius}.
 @item help-gnu-radius@@gnu.org
@@ -47,9 +48,9 @@ for help. The list is not moderated, but postings are allowed for
 list members only. To subscribe to the list, visit
 @url{http://mail.gnu.org/mailman/listinfo/help-gnu-radius}.
 @item bug-gnu-radius@@gnu.org
-This list distributes bug reports, bugfixes, and suggestions for
+This list distributes bug reports, bug fixes, and suggestions for
 improvements in Radius. User discussion of Radius bugs also occurs here.
-The list is not moderated, postings are allowed for anybody.
+The list is not moderated; postings are allowed for anybody.
 To subscribe to the list, visit
 @url{http://mail.gnu.org/mailman/listinfo/bug-gnu-radius}.
 @end table

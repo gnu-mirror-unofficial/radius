@@ -21,7 +21,7 @@ Maintenance commands
 * Builddbm::            Create DBM version of the @file{raddb/users} file.
 
 Guile interface
-* Radscm::              A guile interface to radius functions.
+* Radscm::              A Guile interface to radius functions.
 @end menu
 
 @include radwho.texi

@@ -50,13 +50,21 @@
 ;;;;
 ;;;; usage:
 ;;;;
+;;;; raddb/config (section 'guile'):
+;;;;
+;;;; load-module "ttl"
+;;;;             "(ttl-init #:dest-ip \"<ip-addr>\" #:dest-port <port> p ..)";
+;;;; 
 ;;;; raddb/hints:
 ;;;; DEFAULT    NULL  Scheme-Acct-Procedure = "ttl-session"
 ;;;;
 ;;;; raddb/users:
 ;;;; BEGIN      NULL  Scheme-Procedure = "ttl-query", Fall-Through = Yes
 
-(use-modules (ice-9 format))
+(define-module (ttl)
+  :use-module (radiusd)
+  :use-module (gnuradius)
+  :use-module (ice-9 format))
 
 (define ttl-source-ip-address INADDR_ANY)
 (define ttl-source-port 0)
@@ -64,6 +72,52 @@
 (define ttl-dest-port 0)
 (define ttl-max-retry 1)
 (define ttl-timeout 3)
+
+(define-public (ttl-init . rest)
+  (call-with-current-continuation
+   (lambda (stop)
+     (letrec ((value #f)
+	      (checkval (lambda (key)
+			  (cond
+			   ((not value)
+			    (rad-log L_ERR
+				     (format
+				      #f
+				      "ttl-init: No value specified for keyword ~A"
+				      key))
+			    (stop))))))
+       (for-each
+	(lambda (key)
+	  (cond
+	   ((keyword? key)
+	     (checkval key)
+	     (case key
+	       ((#:dest-ip-address #:dest-ip)
+		(set! ttl-dest-ip-address (inet-aton value)))
+	       ((#:dest-port)
+		(set! ttl-dest-port value))
+	       ((#:source-ip-address #:source-ip)
+		(set! ttl-source-ip-address (inet-aton value)))
+	       ((#:source-port)
+		(set! ttl-source-port value))
+	       ((#:max-retry)
+		(set! ttl-max-retry value))
+	       ((#:timeout)
+		(set! ttl-timeout value))
+	       (else
+		(rad-log L_ERR
+			 (string-append
+			  (format #f
+				  "ttl-init: Undefined keyword ~A"
+				  key)))
+		(stop)))
+	     (set! value #f))
+	   ((not value)
+	    (set! value key))
+	   (else
+	    (rad-log L_ERR
+		     (format #f "ttl-init: stray argument near ~A" key)))))
+	(reverse rest))))))
 
 (define (ttl-make-header code user-name)
   (let ((hdr (make-string 2 (integer->char 0))))
@@ -86,7 +140,7 @@
   (let ((packet (ttl-make-packet code user-name))
         (fd (socket AF_INET SOCK_DGRAM 0))
         (ttl #f))
-    (rad-log L_DEBUG (format #f "Sending ~A, ~A" code user-name))
+    ;(rad-log L_DEBUG (format #f "Sending ~A, ~A" code user-name))
     (cond
      ((not fd)
       (rad-log L_ERR "can't open socket for ttl exchange"))
@@ -104,9 +158,9 @@
                  ((not (null? (car sel)))
                   (let* ((ret (recvfrom! fd packet))
                          (length (car ret)))
-		    (rad-log L_DEBUG (format #f "length ~A" length))
-		    (rad-log L_DEBUG (format #f "reply-length ~A"
-					     (ttl-reply-length packet)))
+		    ;(rad-log L_DEBUG (format #f "length ~A" length))
+		    ;(rad-log L_DEBUG (format #f "reply-length ~A"
+		    ;			     (ttl-reply-length packet)))
                     (if (not
                          (or
                           (< length 2)
@@ -120,8 +174,8 @@
                                       #\-)
                             (set! ttl #t)) ;; Force exit from loop
                            (else
-			    (rad-log L_DEBUG (format #f "text ~A"
-						     (ttl-reply-string packet)))
+			    ;(rad-log L_DEBUG (format #f "text ~A"
+			    ;			     (ttl-reply-string packet)))
                             (let ((num (string->number
                                         (ttl-reply-string packet))))
                               (if (not num)
@@ -136,13 +190,13 @@
           ;;FIXME: more verbose
           (rad-log L_ERR (format #f "~A" args))))
       (close-port fd)))
-    (rad-log L_DEBUG (format #f "returning ~A" ttl))
+    ;(rad-log L_DEBUG (format #f "returning ~A" ttl))
     ttl))
 
-(define (ttl-query req check reply)
+(define-public (ttl-query req check reply)
   (let* ((user-pair (assoc "User-Name" req))
          (ttl-pair (assoc "Session-Timeout" reply)))
-    (display "ttl-query:")(display user-pair)(display ttl-pair)(newline)
+    ;(display "ttl-query:")(display user-pair)(display ttl-pair)(newline)
     (cond
      ((not user-pair)
       #f)
@@ -167,7 +221,7 @@
           (rad-log L_NOTICE "Ignoring returned ttl")
           #t)))))))
 
-(define (ttl-session req)
+(define-public (ttl-session req)
   (let* ((user-pair (assoc "User-Name" req))
          (acct-pair (assoc "Acct-Status-Type" req)))
     (cond
@@ -179,5 +233,5 @@
       (ttl-message #\- (cdr user-pair)))))
   #t)
 
-;;;; Put any application-specific definifions here:
+;;;; End of ttl.scm
 

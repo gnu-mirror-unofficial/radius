@@ -25,7 +25,7 @@ AC_CONFIG_SRCDIR(radiusd/radiusd.c)
 AC_CONFIG_AUX_DIR([scripts])
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE(no-exeext)
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 
 AC_SUBST(BUILD_TARGET)
 AC_SUBST(INCLUDEPATH)
@@ -624,6 +624,8 @@ AC_SUBST(SQLLIB)
 ## **************
 
 AH_TEMPLATE(USE_SNMP, [Define this to enable SNMP support])
+AC_SUBST(SNMP_CONFIG)
+SNMP_CONFIG="# "
 AC_ARG_ENABLE(snmp,
 	AC_HELP_STRING([--enable-snmp[={yes|no|compat}]],
 	[enable SNMP support]),
@@ -632,9 +634,11 @@ AC_ARG_ENABLE(snmp,
 				AC_DEFINE(USE_SNMP)
 				AC_DEFINE(SNMP_COMPAT_0_96,1,
                    [Enable support for MIBS used in 0.96 branch])
+				SNMP_CONFIG=""
 				;;
 		yes)		USE_SNMP=yes
 				AC_DEFINE(USE_SNMP)
+				SNMP_CONFIG=""
 				;;
 		no)		;;
 		*)		AC_MSG_ERROR(--enable-snmp can't be used with an argument)				
@@ -720,12 +724,12 @@ AH_BOTTOM([
 #define LOCK_RELEASE(name)
 ])
 
-
 AC_OUTPUT(Makefile 
           m4/Makefile 
           intl/Makefile 
           po/Makefile.in
           raddb/client.conf
+          raddb/config
           include/Makefile 
           include/snmp/Makefile
           lib/Makefile

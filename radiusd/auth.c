@@ -1164,26 +1164,42 @@ void
 sfn_exec_wait(m)
         AUTH_MACH *m;
 {
-        if (radius_exec_program(m->check_pair->strvalue,
-                                m->req,
-                                &m->user_reply,
-                                1,
-                                &m->user_msg) != 0) {
-                /*
-                 * Error. radius_exec_program() returns -1 on
-                 * fork/exec errors, or >0 if the exec'ed program
-                 * had a non-zero exit status.
-                 */
+	int rc;
+	
+	switch (m->check_pair->strvalue[0]) {
+	case '/':
+		/* radius_exec_program() returns -1 on
+		   fork/exec errors, or >0 if the exec'ed program
+		   had a non-zero exit status.
+		*/
+		rc = radius_exec_program(m->check_pair->strvalue,
+					 m->req,
+					 &m->user_reply,
+					 1,
+					 &m->user_msg);
+		break;
 
-                newstate(as_reject);
+	case '|':
+		rc = filter_auth(m->check_pair->strvalue+1,
+				 m->req,
+				 &m->user_reply);
+		break;
 
-                auth_format_msg(m, MSG_ACCESS_DENIED);
+	default:
+		rc = 1;
+	}
 
-                if (is_log_mode(m, RLOG_AUTH)) {
-                        auth_log(m, _("Login incorrect"),
-                                 NULL, _("external check failed"), NULL);
-                }
-        }
+	if (rc != 0) {
+		newstate(as_reject);
+
+		auth_format_msg(m, MSG_ACCESS_DENIED);
+		
+		if (is_log_mode(m, RLOG_AUTH)) {
+			auth_log(m, _("Login incorrect"),
+				 NULL,
+				 _("external check failed"), NULL);
+		}
+	}
 }
 
 void

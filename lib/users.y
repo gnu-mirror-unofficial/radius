@@ -99,7 +99,12 @@ entry    : user descr
          | user error
            {
                    radlog(L_ERR, _("discarding user `%s'"), $1);
-                   users_sync(); yyerrok; yyclearin;
+                   if (users_sync() <= 0)
+			   yychar = 0; /* force end-of-file */
+		   else {
+			   yyerrok;
+			   yyclearin;
+		   }
            }   
          ;
 

@@ -1,3 +1,0 @@
-server local 127.0.0.1 foobar @PROXY_AUTH_PORT@ @PROXY_ACCT_PORT@
-timeout 3
-retry 1

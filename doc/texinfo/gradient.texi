@@ -3,7 +3,7 @@
 @c Written by Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@chapter New Configuration Approach (draft)
+@unnumbered New Configuration Approach (draft)
 @UNREVISED{}
 
 This document presents a draft describing new approach for
@@ -26,7 +26,7 @@ updated versions. Feel free to send your comments and suggestions to
 
 
 @node Present State
-@section A brief description of Currently Used Approach
+@unnumberedsec A brief description of Currently Used Approach
 
 When I started to write GNU Radius, back in 1998, I had two major aims.
 The first and primary aim was to create a flexible and robust
@@ -101,7 +101,7 @@ strong obstacles to the further development. The next section
 addresses its deficiencies.
 
 @node Deficiencies
-@section Deficiencies of Current Operation Model and Configuration Suite
+@unnumberedsec Deficiencies of Current Operation Model and Configuration Suite
 
 The main deficiencies are inherited with the traditional configuration
 file suite. The rules for processing each request are split among
@@ -141,7 +141,7 @@ of some @acronym{SQL} implementations that do not allow for
 nested queries, such a feature could come quite handy.
 
 @node Solution
-@section Proposed Solution
+@unnumberedsec Proposed Solution
 @UNREVISED{}
 
 Processing of incoming requests is controlled by
@@ -538,11 +538,11 @@ compatibility}.
 @end deffn
 
 @node New Rewrite
-@section Changes to Rewrite Language
+@unnumberedsec Changes to Rewrite Language
 @UNREVISED{}
 
 @node Traditional Configuration
-@section Support for Traditional Configuration Files.
+@unnumberedsec Support for Traditional Configuration Files.
 @UNREVISED{}
 
 Within the new configuration system, the traditional ``trio''
@@ -626,5 +626,5 @@ will produce
         
 
 @node New Configuration
-@section New Configuration Files
+@unnumberedsec New Configuration Files
 @UNREVISED{}

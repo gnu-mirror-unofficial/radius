@@ -16,4 +16,5 @@ EXTRA_DIST=\
  debug.sh\
  debugmod.m4\
  dict.awk\
- mksnmp-h.awk
+ mksnmp-h.awk\
+ texi2html

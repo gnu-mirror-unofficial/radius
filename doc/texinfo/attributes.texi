@@ -983,7 +983,7 @@ ignored.
 @subsection @attr{Exec-Program-Wait}
 @atindex Exec-Program-Wait
 
-@defattr{Exec-Program-Wait,1039,string,-R,--,--,Replace,No}
+@defattr{Exec-Program-Wait,1039,string,-R,-R--,Replace,No}
 
 When present in the @RHS{}, the @attr{Exec-Program-Wait} attribute specifies
 the program to be executed when the entry matches. If the attribute
@@ -1616,7 +1616,7 @@ information about how to write Scheme accounting procedures.
 @subsection @attr{Scheme-Procedure}
 @atindex Scheme-Procedure
 
-@defattr{Scheme-Procedure,2009,string,-R,--,--,Append,@acronym{N/A}}
+@defattr{Scheme-Procedure,2009,string,-R,-R--,Append,@acronym{N/A}}
 
 The @attr{Scheme-Procedure} attribute is used to set the name
 of the Scheme authentication procedure. @xref{Authentication with Scheme}, for

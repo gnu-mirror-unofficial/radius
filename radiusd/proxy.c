@@ -149,7 +149,6 @@ random_vector(vector)
         int     randno;
         int     i;
 
-        srand(time(0) + getpid());
         for(i = 0;i < AUTH_VECTOR_LEN;) {
                 randno = rand();
                 memcpy(vector, &randno, sizeof(int));
@@ -176,8 +175,8 @@ rad_send_request(fd, ipaddr, port, id, secret, req)
         char                    vector[AUTH_VECTOR_LEN];
         u_char                  *ptr;
         struct sockaddr_in      saremote, *sin;
-	int i_send_buffer[RAD_BUFFER_SIZE];
-	u_char *send_buffer = (u_char *)i_send_buffer;
+        int i_send_buffer[RAD_BUFFER_SIZE];
+        u_char *send_buffer = (u_char *)i_send_buffer;
         
 #define checkovf(len) \
         if (total_length + len >= sizeof(i_send_buffer)) goto ovf;

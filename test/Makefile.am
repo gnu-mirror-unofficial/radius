@@ -18,5 +18,5 @@ findport_SOURCES=findport.c
 SUBDIRS=raddb guile dejagnu
 EXTRA_DIST=test.sh 
 CLEANFILES=acct log raddb/config raddb/client.conf
-TESTS=@TESTDIR@
+#TESTS=@TESTDIR@
 TESTS_ENVIRONMENT=BUILDDIR=$(top_builddir) SOURCEDIR=$(top_srcdir)

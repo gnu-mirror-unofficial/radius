@@ -1,3 +1,26 @@
+2001-07-31 Sergey Poznyakoff <gray@farlep.net>
+	Bunch of changes to make %C{Password} substitution return plaintext
+	password. In the meantime, unified calling conventions a bit:
+
+	* include/radiusd.h: Fixed protos for user_find(), hints_setup(),
+	radius_exec_program(), radius_xlate().
+	* include/radsql.h: Added proto for rad_sql_attr_query().
+	* radiusd/acct.c: Fixed calls to hints_setup() and
+	radius_exec_program().
+	* radiusd/auth.c: Fixed calls to hints_setup(), user_find(),
+	radius_exec_program().
+	* radiusd/builddbm.c: Changed prototype of user_find_db().
+	* radiusd/exec.c: Changed prototype of radius_exec_program().
+	* radiusd/files.c: Changed protos of user_find(), user_find_sym(),
+	user_find_db(), match_user(), hints_setup().
+	* radiusd/radctl.c: Fixed call to user_find().
+	* radiusd/radutil.c: Changed proto of attr_to_str(), radius_xlate().
+	* radiusd/sql.c: Fixed calls to radius_xlate(). Changed proto of
+	rad_sql_attr_query().
+
+	* radlib/dbm.c: Fixed erroneous `#if' directive.
+
+
 2001-07-30 Sergey Poznyakoff <gray@farlep.net>
 	* radlib/argcv.c: argcv_get(): Terminate output argv with NULL
 	entry.

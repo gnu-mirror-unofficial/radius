@@ -1,3 +1,22 @@
+2003-09-12  Sergey Poznyakoff 
+
+	* include/radius.h (RT_STATUS_SERVER): New define
+	* radiusd/radius.c (radius_status_server): Added support for
+	Status-Server request. 	
+	* lib/debug.c (struct keyword auth_codes): Added RT_STATUS_SERVER.
+	* lib/radpdu.c (rad_pdu_finish): Handle RT_AUTHENTICATION_REQUEST.
+	* radiusd/files.c (hints_setup): Likewise.
+
+	* radtest/gram.y: Changed 4th argument to send to be optional.
+	* radtest/main.c (tempvar_free): Do nothing if var is NULL.
+	(radtest_send): var may be NULL.
+	
+	* radiusd/testsuite/radiusd/radiusd.exp: Test for Status-Server
+	request.
+	* radiusd/testsuite/test.sh.m4 (drv_dejagnu): Remove the redirection
+	of the radtest stderr.
+	* examples/README: Fixed a typo.
+	
 2003-08-14  Sergey Poznyakoff
 
 	* configure.ac: Raised version number to 1.1.1

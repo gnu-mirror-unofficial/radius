@@ -17,7 +17,7 @@
  *
  */
 
-#define RADIUS_MODULE 1
+#define RADIUS_MODULE 0
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>

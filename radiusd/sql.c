@@ -17,7 +17,7 @@
  *
  */
 
-#define RADIUS_MODULE 7
+#define RADIUS_MODULE 9
 #ifndef lint
 static char rcsid[] =
 "@(#) $Id$";
@@ -67,11 +67,12 @@ SQL_cfg sql_cfg;
 #define STMT_AUTH_QUERY            10
 #define STMT_ACCT_START_QUERY      11
 #define STMT_ACCT_STOP_QUERY       12
-#define STMT_ACCT_NASDOWN_QUERY    13
-#define STMT_QUERY_BUFFER_SIZE     14
-#define STMT_IDLE_TIMEOUT          15
-#define STMT_MAX_AUTH_CONNECTIONS  16
-#define STMT_MAX_ACCT_CONNECTIONS  17
+#define STMT_ACCT_NASUP_QUERY      13
+#define STMT_ACCT_NASDOWN_QUERY    14
+#define STMT_QUERY_BUFFER_SIZE     15
+#define STMT_IDLE_TIMEOUT          16
+#define STMT_MAX_AUTH_CONNECTIONS  17
+#define STMT_MAX_ACCT_CONNECTIONS  18
 
 static FILE  *sqlfd;
 static int line_no;
@@ -95,6 +96,7 @@ struct keyword sql_keyword[] = {
 	"auth_query",         STMT_AUTH_QUERY,
 	"acct_start_query",   STMT_ACCT_START_QUERY,
 	"acct_stop_query",    STMT_ACCT_STOP_QUERY,
+	"acct_nasup_query",   STMT_ACCT_NASUP_QUERY,
 	"acct_nasdown_query", STMT_ACCT_NASDOWN_QUERY,
 	"query_buffer_size",  STMT_QUERY_BUFFER_SIZE,
 	NULL,
@@ -416,6 +418,10 @@ rad_sql_init()
 			new_cfg.acct_stop_query = estrdup(cur_ptr);
 			break;
 			
+		case STMT_ACCT_NASUP_QUERY:
+			new_cfg.acct_nasup_query = estrdup(cur_ptr);
+			break;
+
 		case STMT_ACCT_NASDOWN_QUERY:
 			new_cfg.acct_nasdown_query = estrdup(cur_ptr);
 			break;
@@ -456,6 +462,7 @@ rad_sql_init()
 	FREE(sql_cfg.auth_query);
 	FREE(sql_cfg.acct_start_query);
 	FREE(sql_cfg.acct_stop_query);
+	FREE(sql_cfg.acct_nasup_query);
 	FREE(sql_cfg.acct_nasdown_query);
 	FREE(sql_cfg.buf.ptr);
 
@@ -484,24 +491,26 @@ sql_check_config(cfg)
 	 */
 	if (cfg->doacct) {
 		if (!cfg->acct_start_query) {
-			radlog(L_ERR,
-		     _("disabling SQL acct: no auth_start_query specified"));
-			cfg->doacct = 0;
+			radlog(L_WARN,
+			       _("SQL acct: no acct_start_query specified"));
 		}
 		if (!cfg->acct_stop_query) {
 			radlog(L_ERR,
-		     _("disabling SQL acct: no auth_stop_query specified"));
+		     _("disabling SQL acct: no acct_stop_query specified"));
 			cfg->doacct = 0;
 		}
 		if (!cfg->acct_nasdown_query) {
-			radlog(L_ERR,
-		     _("disabling SQL acct: no auth_nasdown_query specified"));
-			cfg->doacct = 0;
+			radlog(L_WARN,
+		     _("SQL acct: no acct_nasdown_query specified"));
+		}
+		if (!cfg->acct_nasup_query) {
+			radlog(L_WARN,
+		     _("SQL acct: no acct_nasup_query specified"));
 		}
 	}
 	
 	if (cfg->port == 0)
-		cfg->port = RAD_MYSQL_PORT;
+		cfg->port = RAD_SQL_PORT;
 	
 	radlog(L_INFO, _("SQL init using: %s:%d,%s,%s,%s,%d,%ld,%d,%d"),
 	       cfg->server,
@@ -868,9 +877,11 @@ rad_sql_acct(authreq)
 	status = pair->lvalue;
 
 	conn = attach_sql_connection(SQL_ACCT, (qid_t)authreq);
-	
+
 	switch (status) {
 	case DV_ACCT_STATUS_TYPE_START:
+		if (!sql_cfg.acct_start_query)
+			break;
 		query = radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
 				     sql_cfg.acct_start_query,
 				     authreq->request, NULL);
@@ -879,6 +890,8 @@ rad_sql_acct(authreq)
 		break;
 		
 	case DV_ACCT_STATUS_TYPE_STOP:
+		if (!sql_cfg.acct_stop_query)
+			break;
 		query = radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
 				     sql_cfg.acct_stop_query,
 				     authreq->request, NULL);
@@ -899,8 +912,24 @@ rad_sql_acct(authreq)
 		break;
 
 	case DV_ACCT_STATUS_TYPE_ACCOUNTING_ON:
-		/*FALLTHRU*/ /*FIXME: use another query here? */
+		if (!sql_cfg.acct_nasup_query)
+			break;
+		query = radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
+				     sql_cfg.acct_nasup_query,
+				     authreq->request, NULL);
+		rc = rad_sql_query(conn, query, &count);
+		sqllog(rc, query);
+		if (rc == 0) {
+			radlog(L_INFO,
+			       _("SQL: %d records updated writing acct-on info for NAS %s"),
+			       count,
+			       nas_name2(authreq));
+		}
+		break;
+
 	case DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF:
+		if (!sql_cfg.acct_nasdown_query)
+			break;
 		query = radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
 				     sql_cfg.acct_nasdown_query,
 				     authreq->request, NULL);
@@ -948,7 +977,7 @@ rad_sql_pass(req, passwd)
 	if (!mysql_passwd) {
 		rc = -1;
 	} else {
-		rc = strcmp(mysql_passwd, crypt(passwd, mysql_passwd));
+		rc = strcmp(mysql_passwd, md5crypt(passwd, mysql_passwd));
 		efree(mysql_passwd);
 	}
 	

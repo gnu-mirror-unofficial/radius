@@ -17,7 +17,7 @@
  *
  */
 
-#define RADIUS_MODULE 10
+#define RADIUS_MODULE 12
 #ifndef lint
 static char rcsid[] =
 "@(#) $Id$";
@@ -455,11 +455,7 @@ proxy_send(authreq, activefd)
 	/*
 	 *	Find the realm from the _end_ so that we can
 	 *	cascade realms: user@realm1@realm2.
-	 *	Use the original username if available.
 	 */
-	if (authreq->username[0]) {
-		username = authreq->username;
-	}
 
 	if ((realmname = strrchr(username, '@')) == NULL) {
 		efree(saved_username);
@@ -765,7 +761,6 @@ proxy_receive(authreq, activefd)
 	authreq->id           = oldreq->id;
 	memcpy(authreq->vector, oldreq->vector, sizeof authreq->vector);
 	memcpy(authreq->secret, oldreq->secret, sizeof authreq->secret);
-	memcpy(authreq->username, oldreq->username, sizeof authreq->username);
 	authreq->request      = paircopy(oldreq->request);
 	authreq->timestamp    = oldreq->timestamp;
 

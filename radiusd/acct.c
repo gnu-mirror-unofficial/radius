@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
-#define RADIUS_MODULE 3
+#define RADIUS_MODULE 5
 
 #ifndef lint
 static char rcsid[] =
@@ -54,9 +54,6 @@ static char rcsid[] =
 # include <radsql.h>
 #endif
 
-/*
- *	FIXME: this should be configurable.
- */
 int	doradwtmp = 1;
 
 static char porttypes[] = "ASITX";
@@ -342,18 +339,6 @@ rad_accounting_new(authreq, dowtmp)
 			status = DV_ACCT_STATUS_TYPE_ACCOUNTING_ON;
 		rb_record = 1;
 	} while (0);  /* hack to make break in the above code work */
-
-#ifdef NT_DOMAIN_HACK
-        if (!rb_record && vp) {
-		char buffer[AUTH_STRING_LEN];
-		char *ptr;
-		if ((ptr = strchr(vp->strvalue, '\\')) != NULL) {
-			strncpy(buffer, ptr + 1, sizeof(buffer));
-			buffer[sizeof(buffer) - 1] = 0;
-			strcpy(vp->strvalue, buffer);
-		}
-	}
-#endif
 
 	/*
 	 *	Add any specific attributes for this username.

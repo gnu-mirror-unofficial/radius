@@ -2,7 +2,7 @@
 # include <config.h>
 #endif
 #ifdef HAVE_SETLOCALE
-#include <locale.h>
+# include <locale.h>
 #endif
 
 void

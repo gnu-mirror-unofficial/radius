@@ -96,13 +96,17 @@ YACC_OPTS = @YACC_OPTS@
 @MAINTAINER_MODE_TRUE@CFLAGS = -ggdb -DMAINTAINER_MODE=1
 @MAINTAINER_MODE_TRUE@MAINTAINERCLEANFILES = core *~ err out
 
-@MAINTAINER_MODE_TRUE@LIBSRC = intl.c radpaths.c alloc.c attrprint.c dict.c fixalloc.c         iputil.c strerror.c strncasecmp.c         md5.c md5crypt.c mem.c leakdetect.c obstack.c         users.y users.l util.c client.c         insist.c debug.c
+@MAINTAINER_MODE_TRUE@LIBSRC = leakdetect.c mem.c $(libsql_a_SOURCES)
 
-noinst_LIBRARIES = librad.a liblog.a libdebug.a 
-librad_a_SOURCES = intl.c radpaths.c alloc.c attrprint.c dict.c fixalloc.c                  iputil.c strerror.c strncasecmp.c                  md5.c md5crypt.c mem.c leakdetect.c obstack.c                  users_gram.c users_lex.c util.c client.c 		 insist.c debug.c 
+@SQL_TRUE@LIBSQL = libsql.a
+@SQL_TRUE@libsql_a_SOURCES = mysql.c postgres.c
+
+noinst_LIBRARIES = librad.a $(LIBSQL) liblog.a libdebug.a 
+librad_a_SOURCES = intl.c radpaths.c alloc.c attrprint.c raddb.c dict.c                  fixalloc.c iputil.c strerror.c strncasecmp.c                  md5.c md5crypt.c mem.c leakdetect.c obstack.c                  users_gram.c users_lex.c util.c client.c 		 insist.c debug.c 
 
 liblog_a_SOURCES = log.c 
 libdebug_a_SOURCES = debugmod.c
+
 BUILT_SOURCES = users_gram.c users_lex.c
 DISTCLEANFILES = users_gram.c users_lex.c
 INCLUDES = -I$(srcdir) -I$(top_srcdir)/include @INCLUDEPATH@
@@ -118,10 +122,12 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 librad_a_LIBADD = 
-librad_a_OBJECTS =  intl.o radpaths.o alloc.o attrprint.o dict.o \
+librad_a_OBJECTS =  intl.o radpaths.o alloc.o attrprint.o raddb.o dict.o \
 fixalloc.o iputil.o strerror.o strncasecmp.o md5.o md5crypt.o mem.o \
 leakdetect.o obstack.o users_gram.o users_lex.o util.o client.o \
 insist.o debug.o
+libsql_a_LIBADD = 
+@SQL_TRUE@libsql_a_OBJECTS =  mysql.o postgres.o
 liblog_a_LIBADD = 
 liblog_a_OBJECTS =  log.o
 libdebug_a_LIBADD = 
@@ -137,16 +143,23 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
-SOURCES = $(librad_a_SOURCES) $(liblog_a_SOURCES) $(libdebug_a_SOURCES)
-OBJECTS = $(librad_a_OBJECTS) $(liblog_a_OBJECTS) $(libdebug_a_OBJECTS)
+DEP_FILES =  .deps/alloc.P .deps/attrprint.P .deps/client.P \
+.deps/debug.P .deps/debugmod.P .deps/dict.P .deps/fixalloc.P \
+.deps/insist.P .deps/intl.P .deps/iputil.P .deps/leakdetect.P \
+.deps/log.P .deps/md5.P .deps/md5crypt.P .deps/mem.P .deps/mysql.P \
+.deps/obstack.P .deps/postgres.P .deps/raddb.P .deps/radpaths.P \
+.deps/strerror.P .deps/strncasecmp.P .deps/users_gram.P \
+.deps/users_lex.P .deps/util.P
+SOURCES = $(librad_a_SOURCES) $(libsql_a_SOURCES) $(liblog_a_SOURCES) $(libdebug_a_SOURCES)
+OBJECTS = $(librad_a_OBJECTS) $(libsql_a_OBJECTS) $(liblog_a_OBJECTS) $(libdebug_a_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .o .s
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps radlib/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu radlib/Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -159,9 +172,6 @@ clean-noinstLIBRARIES:
 distclean-noinstLIBRARIES:
 
 maintainer-clean-noinstLIBRARIES:
-
-.c.o:
-	$(COMPILE) -c $<
 
 .s.o:
 	$(COMPILE) -c $<
@@ -183,6 +193,11 @@ librad.a: $(librad_a_OBJECTS) $(librad_a_DEPENDENCIES)
 	-rm -f librad.a
 	$(AR) cru librad.a $(librad_a_OBJECTS) $(librad_a_LIBADD)
 	$(RANLIB) librad.a
+
+libsql.a: $(libsql_a_OBJECTS) $(libsql_a_DEPENDENCIES)
+	-rm -f libsql.a
+	$(AR) cru libsql.a $(libsql_a_OBJECTS) $(libsql_a_LIBADD)
+	$(RANLIB) libsql.a
 
 liblog.a: $(liblog_a_OBJECTS) $(liblog_a_DEPENDENCIES)
 	-rm -f liblog.a
@@ -228,6 +243,11 @@ distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 subdir = radlib
 
 distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu radlib/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -238,60 +258,38 @@ distdir: $(DISTFILES)
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
-alloc.o: alloc.c ../config.h ../include/mem.h
-attrprint.o: attrprint.c ../config.h ../include/radiusd.h \
-	../include/sysdep.h ../include/radius.h ../include/raddict.h \
-	../include/radpaths.h ../include/mem.h ../include/log.h \
-	../include/ippool.h
-client.o: client.c ../config.h ../include/radiusd.h ../include/sysdep.h \
-	../include/radius.h ../include/raddict.h ../include/radpaths.h \
-	../include/mem.h ../include/log.h ../include/ippool.h \
-	../include/radclient.h
-debug.o: debug.c ../config.h ../include/radiusd.h ../include/sysdep.h \
-	../include/radius.h ../include/raddict.h ../include/radpaths.h \
-	../include/mem.h ../include/log.h ../include/ippool.h
-debugmod.o: debugmod.c ../config.h ../include/log.h
-dict.o: dict.c ../config.h ../include/radiusd.h ../include/sysdep.h \
-	../include/radius.h ../include/raddict.h ../include/radpaths.h \
-	../include/mem.h ../include/log.h ../include/ippool.h
-fixalloc.o: fixalloc.c ../config.h ../include/radiusd.h \
-	../include/sysdep.h ../include/radius.h ../include/raddict.h \
-	../include/radpaths.h ../include/mem.h ../include/log.h \
-	../include/ippool.h
-insist.o: insist.c ../config.h ../include/log.h
-intl.o: intl.c ../config.h
-iputil.o: iputil.c ../config.h ../include/radiusd.h ../include/sysdep.h \
-	../include/radius.h ../include/raddict.h ../include/radpaths.h \
-	../include/mem.h ../include/log.h ../include/ippool.h
-leakdetect.o: leakdetect.c ../config.h ../include/mem.h ../include/log.h \
-	../include/sysdep.h
-log.o: log.c ../config.h ../include/radiusd.h ../include/sysdep.h \
-	../include/radius.h ../include/raddict.h ../include/radpaths.h \
-	../include/mem.h ../include/log.h ../include/ippool.h
-md5.o: md5.c ../config.h ../include/md5.h
-md5crypt.o: md5crypt.c ../config.h ../include/sysdep.h ../include/md5.h
-mem.o: mem.c ../config.h ../include/sysdep.h ../include/mem.h \
-	../include/log.h
-obstack.o: obstack.c ../include/obstack.h
-radpaths.o: radpaths.c ../config.h ../include/radiusd.h \
-	../include/sysdep.h ../include/radius.h ../include/raddict.h \
-	../include/radpaths.h ../include/mem.h ../include/log.h \
-	../include/ippool.h
-strerror.o: strerror.c ../config.h
-strncasecmp.o: strncasecmp.c ../config.h
-users_gram.o: users_gram.c ../config.h ../include/sysdep.h \
-	../include/radiusd.h ../include/radius.h ../include/raddict.h \
-	../include/radpaths.h ../include/mem.h ../include/log.h \
-	../include/ippool.h ../include/parser.h
-users_lex.o: users_lex.c ../config.h ../include/radiusd.h \
-	../include/sysdep.h ../include/radius.h ../include/raddict.h \
-	../include/radpaths.h ../include/mem.h ../include/log.h \
-	../include/ippool.h ../include/obstack1.h ../include/obstack.h \
-	../include/parser.h users_gram.h
-util.o: util.c ../config.h ../include/sysdep.h ../include/radiusd.h \
-	../include/radius.h ../include/raddict.h ../include/radpaths.h \
-	../include/mem.h ../include/log.h ../include/ippool.h
 
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+
+-include $(DEP_FILES)
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+	-rm -rf .deps
+
+maintainer-clean-depend:
+
+%.o: %.c
+	@echo '$(COMPILE) -c $<'; \
+	$(COMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.c
+	@echo '$(LTCOMPILE) -c $<'; \
+	$(LTCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
 info-am:
 info: info-am
 dvi-am:
@@ -330,23 +328,25 @@ distclean-generic:
 maintainer-clean-generic:
 	-test -z "$(BUILT_SOURCES)$(MAINTAINERCLEANFILES)" || rm -f $(BUILT_SOURCES) $(MAINTAINERCLEANFILES)
 mostlyclean-am:  mostlyclean-noinstLIBRARIES mostlyclean-compile \
-		mostlyclean-tags mostlyclean-generic
+		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
-clean-am:  clean-noinstLIBRARIES clean-compile clean-tags clean-generic \
-		mostlyclean-am
+clean-am:  clean-noinstLIBRARIES clean-compile clean-tags clean-depend \
+		clean-generic mostlyclean-am
 
 clean: clean-am
 
 distclean-am:  distclean-noinstLIBRARIES distclean-compile \
-		distclean-tags distclean-generic clean-am
+		distclean-tags distclean-depend distclean-generic \
+		clean-am
 
 distclean: distclean-am
 
 maintainer-clean-am:  maintainer-clean-noinstLIBRARIES \
 		maintainer-clean-compile maintainer-clean-tags \
-		maintainer-clean-generic distclean-am
+		maintainer-clean-depend maintainer-clean-generic \
+		distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
@@ -356,12 +356,13 @@ maintainer-clean: maintainer-clean-am
 clean-noinstLIBRARIES maintainer-clean-noinstLIBRARIES \
 mostlyclean-compile distclean-compile clean-compile \
 maintainer-clean-compile tags mostlyclean-tags distclean-tags \
-clean-tags maintainer-clean-tags distdir info-am info dvi-am dvi check \
-check-am installcheck-am installcheck install-exec-am install-exec \
-install-data-am install-data install-am install uninstall-am uninstall \
-all-redirect all-am all installdirs mostlyclean-generic \
-distclean-generic clean-generic maintainer-clean-generic clean \
-mostlyclean distclean maintainer-clean
+clean-tags maintainer-clean-tags distdir mostlyclean-depend \
+distclean-depend clean-depend maintainer-clean-depend info-am info \
+dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
+install-exec install-data-am install-data install-am install \
+uninstall-am uninstall all-redirect all-am all installdirs \
+mostlyclean-generic distclean-generic clean-generic \
+maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
 @MAINTAINER_MODE_TRUE@LIBLIST:; @echo $(LIBSRC) > .list

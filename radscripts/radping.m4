@@ -28,13 +28,13 @@ if [ $# != 1 ]; then
 fi
 
 if [ "$CALLERID" = "1" ]; then
-    AWKFLAGS="-vVALUE=$1 -vRESULT=8 -vSEARCH=9"	
+    FORMAT="-oclid:20,ip:24"
 else
-    AWKFLAGS="-vVALUE=$1 -vRESULT=8 -vSEARCH=1"
+    FORMAT="-ologin:20,ip:24"
 fi 
 
-IPADDR=`radwho -l -e:NULL: |
- AWK  $AWKFLAGS '$SEARCH==VALUE { if ($RESULT != ":NULL:") print $RESULT; exit }'`
+IPADDR=`radwho $FORMAT -e:NULL: |
+ AWK -vVALUE=$1 '$1==VALUE { if ($2 != ":NULL:") print $2; exit }'`
 
 if [ x"$IPADDR" = x"" ]; then
     echo "user $1 is not online"

@@ -269,7 +269,8 @@ NAS  *naslist;            /* List of known NASes */
 	        "date:27,"\
 	        "nas:32,"\
 	        "clid:17,"\
-	        "time:7"
+	        "time:7,"\
+		"ip:16:Location"
 
 	       
 char *fmtspec = NULL;

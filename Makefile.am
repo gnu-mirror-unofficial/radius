@@ -1,16 +1,12 @@
 if SNMP
+SNMPDIR=snmplib
+endif
+
 if DBM
-SUBDIRS=include radlib snmplib radiusd radtest radwho radzap radlast raduse radctl radscripts checkrad builddbm doc po
-else
-SUBDIRS=include radlib snmplib radiusd radtest radwho radzap radlast raduse radctl radscripts checkrad doc po
+DBMDIR=builddbm
 endif
-else
-if DBM
-SUBDIRS=include radlib radiusd radtest radzap radwho radlast raduse radctl radscripts checkrad builddbm doc po
-else
-SUBDIRS=include radlib radiusd radtest radzap radwho radlast raduse radctl radscripts checkrad doc po
-endif
-endif
+
+SUBDIRS=include radlib $(SNMPDIR) radiusd radtest radwho radzap radlast raduse radctl radscripts checkrad $(DBMDIR) doc po
 
 if MAINTAINER_MODE
 CFLAGS=-ggdb
@@ -19,7 +15,7 @@ MAINTAINERCLEANFILES=core *~ err out
 debugmod:; MAKE=${MAKE} $(top_srcdir)/scripts/debug.sh $(top_srcdir)/scripts/debugmod.m4 radlib $(SUBDIRS)
 endif
 
-EXTRA_DIST=include raddb doc mibs scripts
+EXTRA_DIST=include raddb doc mibs scripts test
 
 dist-hook:
 	(cd $(distdir); \

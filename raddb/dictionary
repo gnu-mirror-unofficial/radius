@@ -227,7 +227,9 @@ VALUE		Auth-Type		ActivCard		4
 #
 # Extensions introduced by Cistron
 #
-VALUE		Auth-Type		Mysql			252	
+VALUE		Auth-Type		Mysql			252
+# A preferred alias for Mysql
+VALUE		Auth-Type		SQL			252
 VALUE		Auth-Type		Pam			253
 VALUE		Auth-Type		Accept			254
 
@@ -238,7 +240,7 @@ VALUE		Add-Port-To-IP-Address	Yes			1
 
 #
 #	Configuration Values
-#	comment out these two lines to turn account expiration off
+##	comment out these two lines to turn account expiration off
 #
 
 VALUE		Server-Config		Password-Expiration	30

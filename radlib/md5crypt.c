@@ -49,7 +49,7 @@ static void to64 (char *, unsigned long, int);
  */
 
 char *
-crypt(pw, salt)
+md5crypt(pw, salt)
 	register const char *pw;
 	register const char *salt;
 {
@@ -72,6 +72,8 @@ crypt(pw, salt)
 	/* If it starts with the magic string, then skip that */
 	if(!strncmp(sp,magic,strlen(magic)))
 		sp += strlen(magic);
+	else
+		return crypt(pw, salt);		/* pass on to system's crypt */
 
 	/* It stops at the first '$', max 8 chars */
 	for(ep=sp;*ep && *ep != '$' && ep < (sp+8);ep++)

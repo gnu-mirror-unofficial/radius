@@ -17,7 +17,7 @@
  *
  */
 %{
-#define RADIUS_MODULE 17
+#define RADIUS_MODULE 18
         #if defined(HAVE_CONFIG_H)
 	# include <config.h>
 	#endif

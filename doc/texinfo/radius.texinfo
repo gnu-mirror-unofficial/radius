@@ -1858,7 +1858,6 @@ There are 6 kinds of statements:
 * $INCLUDE::            Include a file.
 * VENDOR::              Define a vendor-id.
 * ATTRIBUTE::           Define an attribute translation.
-* ATTRIB_NMC::          Another way to define vendor-specific attributes.
 * VALUE::               Define a value translation.
 @end menu
 
@@ -1904,7 +1903,7 @@ VENDOR		Livingston	307
 @end example
 
 @comment **L3***************************************************************
-@node ATTRIBUTE, ATTRIB_NMC, VENDOR, dictionary
+@node ATTRIBUTE, VALUE, VENDOR, dictionary
 @chapter ATTRIBUTE statement
 @cindex ATTRIBUTE statement (dictionary)
 @subheading Syntax
@@ -1934,23 +1933,9 @@ ATTRIBUTE	LE-Terminate-Detail	2	string	Livingston
 @end example
 
 @comment **L3***************************************************************
-@node ATTRIB_NMC, VALUE, ATTRIBUTE, dictionary
-@chapter ATTRIB_NMC statement
-@cindex ATTRIB_NMC statement (dictionary)
-@subheading Syntax
-@example
-ATTRIB_NMC      Attribute-Name          @var{number}  @var{type}
-@end example
-
-@subheading Usage
-This statement defines the translation for a USR vendor-specific attribute
-(vendor PEC 429). The @code{ATTRIB_NMC} statement is provided for compatibility
-with existing dictionaries.
-
-@comment **L3***************************************************************
-@node VALUE, , ATTRIB_NMC, dictionary
+@node VALUE, , ATTRIBUTE, dictionary
 @cindex VALUE statement (dictionary)
-@chapter ATTRIB_NMC statement
+@chapter VALUE statement
 
 @subheading Syntax
 @example

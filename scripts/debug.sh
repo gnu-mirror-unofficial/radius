@@ -67,7 +67,7 @@ process_sources() {
 			mv $i $i~
 			sed -e "s/^\($ANCHOR\).*/\1 $MODNUM/" \
 			    $i~ > $i
-			echo "\t\"`basename $i`\", $MODNUM," >> $FILE
+			echo "       \"`basename $i`\", $MODNUM," >> $FILE
 			MODNUM=`expr $MODNUM + 1`
 		fi
 	done

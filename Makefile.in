@@ -90,15 +90,17 @@ USE_NLS = @USE_NLS@
 VERSION = @VERSION@
 YACC = @YACC@
 YACC_OPTS = @YACC_OPTS@
-@SNMP_TRUE@@DBM_TRUE@SUBDIRS = include radlib snmplib radiusd radtest radwho radzap radlast raduse radctl radscripts checkrad builddbm doc po
-@SNMP_TRUE@@DBM_FALSE@SUBDIRS = include radlib snmplib radiusd radtest radwho radzap radlast raduse radctl radscripts checkrad doc po
-@SNMP_FALSE@@DBM_TRUE@SUBDIRS = include radlib radiusd radtest radzap radwho radlast raduse radctl radscripts checkrad builddbm doc po
-@SNMP_FALSE@@DBM_FALSE@SUBDIRS = include radlib radiusd radtest radzap radwho radlast raduse radctl radscripts checkrad doc po
+
+@SNMP_TRUE@SNMPDIR = snmplib
+
+@DBM_TRUE@DBMDIR = builddbm
+
+SUBDIRS = include radlib $(SNMPDIR) radiusd radtest radwho radzap radlast raduse radctl radscripts checkrad $(DBMDIR) doc po
 
 @MAINTAINER_MODE_TRUE@CFLAGS = -ggdb
 @MAINTAINER_MODE_TRUE@MAINTAINERCLEANFILES = core *~ err out
 
-EXTRA_DIST = include raddb doc mibs scripts
+EXTRA_DIST = include raddb doc mibs scripts test
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
@@ -114,18 +116,13 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 TAR = tar
 GZIP_ENV = --best
 DIST_SUBDIRS =  include radlib snmplib radiusd radtest radwho radzap \
-radlast raduse radctl radscripts checkrad builddbm doc po include \
-radlib snmplib radiusd radtest radwho radzap radlast raduse radctl \
-radscripts checkrad doc po include radlib radiusd radtest radzap radwho \
-radlast raduse radctl radscripts checkrad builddbm doc po include \
-radlib radiusd radtest radzap radwho radlast raduse radctl radscripts \
-checkrad doc po
+radlast raduse radctl radscripts checkrad builddbm doc po
 all: all-redirect
 .SUFFIXES:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -292,6 +289,11 @@ distdir: $(DISTFILES)
 	-rm -rf $(distdir)
 	mkdir $(distdir)
 	-chmod 777 $(distdir)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \

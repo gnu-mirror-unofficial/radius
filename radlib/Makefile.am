@@ -3,23 +3,25 @@ if MAINTAINER_MODE
 CFLAGS=-ggdb -DMAINTAINER_MODE=1
 MAINTAINERCLEANFILES=core *~ err out
 
-LIBSRC=intl.c radpaths.c alloc.c attrprint.c dict.c fixalloc.c \
-        iputil.c strerror.c strncasecmp.c \
-        md5.c md5crypt.c mem.c leakdetect.c obstack.c \
-        users.y users.l util.c client.c \
-        insist.c debug.c
+LIBSRC=leakdetect.c mem.c $(libsql_a_SOURCES)
 
 LIBLIST:; @echo $(LIBSRC) > .list
 endif
 
-noinst_LIBRARIES=librad.a liblog.a libdebug.a 
-librad_a_SOURCES=intl.c radpaths.c alloc.c attrprint.c dict.c fixalloc.c \
-                 iputil.c strerror.c strncasecmp.c \
+if SQL
+LIBSQL=libsql.a
+libsql_a_SOURCES=mysql.c postgres.c
+endif
+
+noinst_LIBRARIES=librad.a $(LIBSQL) liblog.a libdebug.a 
+librad_a_SOURCES=intl.c radpaths.c alloc.c attrprint.c raddb.c dict.c \
+                 fixalloc.c iputil.c strerror.c strncasecmp.c \
                  md5.c md5crypt.c mem.c leakdetect.c obstack.c \
                  users_gram.c users_lex.c util.c client.c \
 		 insist.c debug.c 
 liblog_a_SOURCES=log.c 
 libdebug_a_SOURCES=debugmod.c
+
 BUILT_SOURCES=users_gram.c users_lex.c
 DISTCLEANFILES=users_gram.c users_lex.c
 INCLUDES= -I$(srcdir) -I$(top_srcdir)/include @INCLUDEPATH@

@@ -16,12 +16,13 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
-#define RADIUS_MODULE 16
+#define RADIUS_MODULE 2
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
 
-#if defined(USE_SQL) && defined(USE_SQL_MYSQL)
+#if defined(USE_SQL) 
+#if USE_SQL == SQL_MYSQL
 
 #ifndef lint
 static char rcsid[] =
@@ -248,4 +249,6 @@ rad_sql_getpwd(conn, query)
 }
 
 
-#endif /* defined (USE_SQL) && defined(USE_SQL_MYSQL) */
+#endif /* defined (USE_SQL) */
+
+#endif /* USE_SQL == SQL_MYSQL */

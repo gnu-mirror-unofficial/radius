@@ -23,7 +23,7 @@
  * Version:	@(#)auth.c  1.83  21-Mar-1999  miquels@cistron.nl
  *              @(#) $Id$ 
  */
-#define RADIUS_MODULE 4
+#define RADIUS_MODULE 6
 #ifndef lint
 static char rcsid[] =
 "@(#) $Id$";
@@ -124,35 +124,23 @@ check_expiration(check_item, umsg, user_msg)
 	char *umsg;
 	char **user_msg;
 {
-	int result;
-	int retval;
+	int result, rc;
+	VALUE_PAIR *pair;
 
 	result = 0;
-	while (result == 0 && check_item != (VALUE_PAIR *)NULL) {
-
-		/*
-		 *	Check expiration date if we are doing password aging.
-		 */
-		if (check_item->attribute == DA_EXPIRATION) {
-			/*
-			 *	Has this user's password expired
-			 */
-			retval = pw_expired(check_item->lvalue);
-			if (retval < 0) {
-				result = -1;
-				*user_msg = _("Password Has Expired\r\n");
-				break;
-			} else {
-				if (retval > 0) {
-					sprintf(umsg,
-					  _("Password Will Expire in %d Days\r\n"),
-					  retval);
-					*user_msg = umsg;
-				}
-			}
+	if (pair = pairfind(check_item, DA_EXPIRATION)) {
+		rc = pw_expired(check_item->lvalue);
+		if (rc < 0) {
+			result = -1;
+			*user_msg = _("Password Has Expired\r\n");
+		} else if (rc > 0) {
+			sprintf(umsg,
+				_("Password Will Expire in %d Days\r\n"),
+				rc);
+			*user_msg = umsg;
 		}
-		check_item = check_item->next;
 	}
+
 	return result;
 }
 /*
@@ -168,11 +156,11 @@ unix_pass(name, passwd)
 	char		*encpw;
 	char		*encrypted_pass;
 #if defined(PWD_SHADOW)
-#if defined(M_UNIX)
+# if defined(M_UNIX)
 	struct passwd	*spwd;
-#else
+# else
 	struct spwd	*spwd;
-#endif
+# endif
 #endif /* PWD_SHADOW */
 #ifdef OSFC2
 	struct pr_passwd *pr_pw;
@@ -195,17 +183,16 @@ unix_pass(name, passwd)
 	 *      See if there is a shadow password.
 	 */
 	if ((spwd = getspnam(name)) != NULL)
-#if defined(M_UNIX)
+# if defined(M_UNIX)
 		encrypted_pass = spwd->pw_passwd;
-#else
+# else
 		encrypted_pass = spwd->sp_pwdp;
-#endif	/* M_UNIX */
+# endif	/* M_UNIX */
 #endif	/* PWD_SHADOW */
-#
+
 #ifdef DENY_SHELL
 	/*
-	 *	Undocumented temporary compatibility for iphil.NET
-	 *	Users with a certain shell are always denied access.
+	 * Users with a certain shell are always denied access.
 	 */
 	if (strcmp(pwd->pw_shell, DENY_SHELL) == 0) {
 		radlog(L_AUTH, _("unix_pass: [%s]: invalid shell"), name);
@@ -228,22 +215,22 @@ unix_pass(name, passwd)
 	/*
 	 *	Check if account is locked.
 	 */
-	if (pr_pw->uflg.fg_lock!=1) {
+	if (pr_pw->uflg.fg_lock != 1) {
 		radlog(L_AUTH, _("unix_pass: [%s]: account locked"), name);
 		return -1;
 	}
 #endif /* OSFC2 */
 
 	/*
-	 *	We might have a passwordless account.
+	 * Forbid logins on passwordless accounts 
 	 */
 	if (encrypted_pass[0] == 0)
 		return 0;
 
 	/*
-	 *	Check encrypted password.
+	 * Check encrypted password.
 	 */
-	encpw = crypt(passwd, encrypted_pass);
+	encpw = md5crypt(passwd, encrypted_pass);
 	if (strcmp(encpw, encrypted_pass))
 		return -1;
 
@@ -341,12 +328,13 @@ rad_check_password(authreq, activefd, check_item, namepair,
 	 *	password to see if it is the magic value
 	 *	UNIX if auth_type was not set.
 	 */
-	if (auth_type < 0) {
-		if (password_pair && !strcmp(password_pair->strvalue, "UNIX"))
+	if (auth_type < 0 && password_pair) {
+		if (!strcmp(password_pair->strvalue, "UNIX"))
 			auth_type = DV_AUTH_TYPE_SYSTEM;
-		else if(password_pair && !strcmp(password_pair->strvalue,"PAM"))
+		else if (!strcmp(password_pair->strvalue, "PAM"))
 			auth_type = DV_AUTH_TYPE_PAM;
-		else if(password_pair && !strcmp(password_pair->strvalue,"MYSQL"))
+		else if (!strcmp(password_pair->strvalue, "MYSQL") ||
+			 !strcmp(password_pair->strvalue, "SQL"))
 			auth_type = DV_AUTH_TYPE_MYSQL;
 		else
 			auth_type = DV_AUTH_TYPE_LOCAL;
@@ -419,7 +407,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 				break;
 			}
 			if (strcmp(password_pair->strvalue,
-			    crypt(string, password_pair->strvalue)) != 0)
+			    md5crypt(string, password_pair->strvalue)) != 0)
 					result = -1;
 			break;
 		case DV_AUTH_TYPE_LOCAL:
@@ -504,7 +492,6 @@ rad_auth_init(authreq, activefd)
 	int       activefd;
 {
 	VALUE_PAIR	*namepair;
-	char		pw_digest[AUTH_PASS_LEN];
 
 	/*
 	 *	Get the username from the request
@@ -520,14 +507,10 @@ rad_auth_init(authreq, activefd)
 		return -1;
 	}
 
-	strncpy(authreq->username, namepair->strvalue,
-		sizeof(authreq->username));
-	authreq->username[sizeof(authreq->username) - 1] = 0;
-
 	/*
 	 *	Verify the client and Calculate the MD5 Password Digest
 	 */
-	if (calc_digest(pw_digest, authreq) != 0) {
+	if (calc_digest(authreq->digest, authreq) != 0) {
 		/*
 		 *	We dont respond when this fails
 		 */
@@ -581,7 +564,6 @@ rad_authenticate(authreq, activefd)
 	VALUE_PAIR      *pair_ptr;
 	int		result;
 	long            r;
-	char		pw_digest[AUTH_PASS_LEN];
 	char		userpass[AUTH_STRING_LEN];
 	char		umsg[AUTH_STRING_LEN];
 	char            name[AUTH_STRING_LEN];
@@ -602,19 +584,13 @@ rad_authenticate(authreq, activefd)
 	 */
 	namepair = pairfind(authreq->request, DA_USER_NAME);
 	
-	/*
-	 *	FIXME: we calculate the digest twice ...
-	 *	once here and once in rad_auth_init()
-	 */
-	calc_digest(pw_digest, authreq);
-
 #ifdef USE_LIVINGSTON_MENUS
 	/*
 	 * If the request is processing a menu, service it here.
 	 */
 	if ((pair_ptr = pairfind(authreq->request, DA_STATE)) != NULL &&
 	    strncmp(pair_ptr->strvalue, "MENU=", 5) == 0) {
-	    process_menu(authreq, activefd, pw_digest);
+	    process_menu(authreq, activefd, authreq->digest);
 	    return 0;
 	}
 #endif
@@ -686,7 +662,7 @@ rad_authenticate(authreq, activefd)
 	userpass[0] = 0;
 	if ((result = check_expiration(user_check, umsg, &user_msg)) >= 0) {
 		result = rad_check_password(authreq, activefd, user_check,
-					    namepair, pw_digest,
+					    namepair, authreq->digest,
 					    &user_msg, userpass);
 		if (result > 0) {
 			/*
@@ -714,7 +690,7 @@ rad_authenticate(authreq, activefd)
 		 *	Failed to validate the user.
 		 */
 		rad_send_reply(PW_AUTHENTICATION_REJECT, authreq,
-			user_reply, user_msg, activefd);
+			       user_reply, user_msg, activefd);
 		if (log_mode & RLOG_AUTH) {
 			if (log_mode & RLOG_FAILED_PASS) {
 				radlog(L_AUTH,
@@ -906,9 +882,6 @@ rad_authenticate(authreq, activefd)
 	/*
 	 *	See if we need to execute a program. Allow for coexistence
 	 *      of both DA_EXEC_PROGRAM and DA_EXEC_PROGRAM_WAIT attributes.
-	 *	FIXME: somehow cache this info, and only execute the
-	 *	program when we receive an Accounting-START packet.
-	 *	Only at that time we know dynamic IP etc.
 	 */
 	exec_program = NULL;
 	exec_program_wait = NULL;
@@ -972,14 +945,8 @@ rad_authenticate(authreq, activefd)
 
 	/*
 	 *	Delete "normal" A/V pairs when using callback.
-	 *
-	 *	FIXME: This is stupid. The portmaster should accept
-	 *	these settings instead of insisting on using a
-	 *	dialout location.
-	 *
-	 *	FIXME2: Move this into the above exec thingy?
-	 *	(if you knew how I use the exec_wait, you'd understand).
 	 */
+
 	if (seen_callback_id) {
 		pairdelete(&user_reply, DA_FRAMED_PROTOCOL);
 		pairdelete(&user_reply, DA_FRAMED_IP_ADDRESS);
@@ -993,7 +960,7 @@ rad_authenticate(authreq, activefd)
 	}
 
 	/*
-	 *	Filter Port-Message value through radius_xlate
+	 *	Filter Reply-Message value through radius_xlate
 	 */
 	if (user_msg == NULL) {
 		if ((reply_item = pairfind(user_reply,

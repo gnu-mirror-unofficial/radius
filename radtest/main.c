@@ -133,7 +133,7 @@ main(argc, argv)
 
 	set_yydebug();
 	radpath_init();
-	if (dict_init(NULL)) {
+	if (dict_init()) {
 		radlog(L_ERR, _("error reading dictionary file"));
 		return 1;
 	}

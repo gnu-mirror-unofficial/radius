@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
-#define RADIUS_MODULE 5
+#define RADIUS_MODULE 7
 #ifndef lint
 static char rcsid[] =
 "@(#) $Id$"; 

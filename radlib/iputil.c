@@ -24,20 +24,19 @@ static char rcsid[] =
 # include <config.h>
 #endif
 
-#include	<sys/types.h>
-#include	<sys/socket.h>
-#include	<sys/time.h>
-#include	<netinet/in.h>
-
-#include	<stdio.h>
-#include	<stdlib.h>
-#include	<netdb.h>
-#include	<pwd.h>
-#include	<time.h>
-#include	<ctype.h>
-#include	<signal.h>
-
-#include	"radiusd.h"
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <netdb.h>
+#include <pwd.h>
+#include <time.h>
+#include <ctype.h>
+#include <signal.h>
+#include <radiusd.h>
 
 /*
  *	Return a printable host name (or IP address in dot notation)
@@ -48,42 +47,37 @@ ip_hostname(ipaddr)
 	UINT4 ipaddr;
 {
 	struct		hostent *hp;
-	static char	hstname[128];
+	static char	hstname[DOTTED_QUAD_LEN];
 	UINT4		n_ipaddr;
 
 	n_ipaddr = htonl(ipaddr);
 	hp = gethostbyaddr((char *)&n_ipaddr, sizeof (struct in_addr), AF_INET);
-	if (hp == 0) {
-		ipaddr2str(hstname, ipaddr);
-		return(hstname);
-	}
+	if (hp == 0) 
+		return ipaddr2str(hstname, ipaddr);
+
 	return (char *)hp->h_name;
 }
 
-
 /*
- *	Return an IP address in host long notation from a host
- *	name or address in dot notation.
+ * Return an IP address in host long notation from a host
+ * name or address in dot notation.
  */
 UINT4 
 get_ipaddr(host)
 	char *host;
 {
 	struct hostent	*hp;
-	UINT4		ipstr2long();
 
 	if (good_ipaddr(host) == 0) {
 		return ipstr2long(host);
-	}
-	else if ((hp = gethostbyname(host)) == (struct hostent *)NULL) {
+	} else if ((hp = gethostbyname(host)) == (struct hostent *)NULL) {
 		return((UINT4)0);
 	}
 	return ntohl(*(UINT4 *)hp->h_addr);
 }
 
-
 /*
- *	Check for valid IP address in standard dot notation.
+ * Check for valid IP address in standard dot notation.
  */
 int 
 good_ipaddr(addr)
@@ -94,37 +88,41 @@ good_ipaddr(addr)
 
 	dot_count = 0;
 	digit_count = 0;
-	while (*addr != '\0' && *addr != ' ') {
+	while (*addr != 0 && *addr != ' ') {
 		if (*addr == '.') {
-			dot_count++;
+			if (++dot_count > 3)
+				break;
 			digit_count = 0;
-		}
-		else if (!isdigit(*addr)) {
-			dot_count = 5;
-		}
-		else {
-			digit_count++;
-			if(digit_count > 3) {
-				dot_count = 5;
-			}
+		} else if (!(isdigit(*addr) && ++digit_count <= 3)) {
+			return -1;
 		}
 		addr++;
 	}
-	if (dot_count != 3) 
-		return -1;
-	else 
-		return 0;
+
+	return (dot_count != 3);
 }
 
-
 /*
- *	Return an IP address in standard dot notation for the
- *	provided address in host long notation.
+ * Return an IP address in standard dot notation for the
+ * provided address in host long notation.
  */
 char *
 ipaddr2str(buffer, ipaddr)
 	char *buffer; 
 	UINT4 ipaddr;
+#ifdef HAVE_INET_NTOA
+{
+	struct in_addr in;
+	char           *p;
+
+	in.s_addr = ntohl(ipaddr);
+	if (p = inet_ntoa(in))
+		strncpy(buffer, p, DOTTED_QUAD_LEN);
+	else
+		strcpy(buffer, "0.0.0.0");
+	return buffer;
+}
+#else
 {
 	int	addr_byte[4];
 	int	i;
@@ -139,7 +137,7 @@ ipaddr2str(buffer, ipaddr)
 		addr_byte[1], addr_byte[0]);
 	return buffer;
 }
-
+#endif
 
 /*
  *	Return an IP address in host long notation from
@@ -148,6 +146,15 @@ ipaddr2str(buffer, ipaddr)
 UINT4 
 ipstr2long(ip_str)
 	char *ip_str;
+#ifdef HAVE_INET_ATON
+{
+	struct in_addr in;
+
+	if (inet_aton(ip_str, &in))
+		return ntohl(in.s_addr);
+	return 0;
+}
+#else
 {
 	char	buf[6];
 	char	*ptr;
@@ -181,4 +188,7 @@ ipstr2long(ip_str)
 	}
 	return ipaddr;
 }
+#endif
+
+
 

@@ -31,126 +31,134 @@ static char rcsid[] =
 #include <errno.h>
 #include <ctype.h>
 #include <radiusd.h>
+#include <obstack1.h>
 
-static FILE *infile;
-static int line;
-static char *filename;
-static char token[256];
-static int toklen;
+struct raddb_file {
+	FILE *input;
+	int  line;
+	char *filename;
+	char *token;
+	int toklen;
+	struct obstack tokstk;
+};
 
 #define isws(c) ((c) == ' ' || (c) == '\t')
 
-static int
-nextkn()
+static int nextkn(struct raddb_file *file);
+static void skip_to_eol(FILE *input);
+
+int
+nextkn(file)
+	struct raddb_file *file;
 {
-	int c;
-	char *p;
+	int    c;
+	static char tokbuf[2];
 	
-	while ((c = getc(infile)) != EOF && isws(c))
+	while ((c = getc(file->input)) != EOF && isws(c))
 		;
 	if (c == EOF)
 		return 0;
-	p = token;
-	toklen = 0;
+	file->toklen = 0;
 
 	if (c == '\n' || c == '#') {
-		token[0] = c;
-		token[1] = 0;
+		file->token = tokbuf;
+		file->token[0] = c;
+		file->token[1] = 0;
 		return c;
 	}
 	
 	do {
-		if (p >= token + sizeof(token)) {
-			radlog(L_ERR, _("%s:%d: token too long"),
-			    filename, line);
-			break;
-		}
-		*p++ = c;
-		toklen++;
-	} while ((c = getc(infile)) != EOF && !isspace(c));
+		obstack_1grow(&file->tokstk, c);
+		file->toklen++;
+	} while ((c = getc(file->input)) != EOF && !isspace(c));
 	if (c != EOF)
-		ungetc(c, infile);
-	*p = 0;
+		ungetc(c, file->input);
+
+	obstack_1grow(&file->tokstk, 0);
+	file->token = obstack_finish(&file->tokstk);
 	return 1;
 }
 
 void
-skip_to_eol()
+skip_to_eol(input)
+	FILE *input;
 {
 	int c;
 
-	while ((c = getc(infile)) != EOF) {
+	while ((c = getc(input)) != EOF) {
 		if (c == '\n') {
-			ungetc(c, infile);
+			ungetc(c, input);
 			return;
 		}
 	}
 }
 
 int
-read_old_config_file(name, vital, fcnt, flen, fv, fun, closure)
+read_raddb_file(name, vital, fcnt, fun, closure)
 	char *name;   /* file name */
 	int vital;    /* is the file vital */
-	int fcnt;     /* number of fields */
-	int *flen;    /* array of field length */
-	char **fv;    /* array of field pointers */
+	int fcnt;
 	int (*fun)(); /* handler */
 	void *closure;
 {
-	int nf;
+	int    nf;
+	char **fv;
+	struct raddb_file file;
 	
-	infile = fopen(name, "r");
-	if (!infile) {
+	file.input = fopen(name, "r");
+	if (!file.input) {
 		if (vital) {
 			radlog(L_ERR|L_PERROR, _("can't open file `%s'"),
-			    name);
+			       name);
 			return -1;
 		} else {
 			radlog(L_NOTICE|L_PERROR, _("can't open file `%s'"),
-			    name);
+			       name);
 			return 0;
 		}
 	}
-	filename = name;
-	line = 1;
+	file.filename = name;
+	file.line = 1;
 	
+	fv = emalloc(fcnt * sizeof(fv[0]));
 	nf = 0;
-	while (nextkn()) {
+	obstack_init(&file.tokstk);
+	
+	while (nextkn(&file)) {
 
-		if (token[0] == '\n') {
+		if (file.token[0] == '\n') {
 			if (nf) {
-				fun(closure, nf, fv, filename, line);
-				nf = 0;
+				fun(closure, nf, fv,
+				    file.filename, file.line);
+				obstack_free(&file.tokstk, fv[0]);
+				while (nf > 0)
+					fv[--nf] = NULL;
 			}
-			line++;
+			file.line++;
 			continue;
 		}
 			
-		if (token[0] == '#') {
-			skip_to_eol();
+		if (file.token[0] == '#') {
+			skip_to_eol(file.input);
 			continue;
 		}
 
 		if (nf < fcnt) {
-			strncpy(fv[nf], token, flen[nf]);
-			fv[nf][flen[nf]-1] = 0;
-			if (flen[nf] < toklen)
-				radlog(L_WARN, _("%s:%d: field %d too long"),
-				    name, line, nf);
-			nf++;
+			fv[nf++] = file.token;
 		} else {
 			radlog(L_NOTICE, _("%s:%d: excess fields ignored"),
-			    name, line);
-			skip_to_eol();
+			       file.filename, file.line);
+			skip_to_eol(file.input);
 		}
 	}			
 
 	if (nf) {
-		fun(closure, nf, fv, filename, line);
-		nf = 0;
+		fun(closure, nf, fv, file.filename, file.line);
 	}
 
-	fclose(infile);
+	efree(fv);
+	obstack_free(&file.tokstk, NULL);
+	fclose(file.input);
 
 	return 0;
 }

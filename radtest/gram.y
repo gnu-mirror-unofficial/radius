@@ -17,7 +17,7 @@
  *
  */
 %{
-#define RADIUS_MODULE 2
+#define RADIUS_MODULE 4
 
 #ifndef lint	
 	static char rcsid[] = 

@@ -1,30 +1,21 @@
-/*
+/* This file is part of GNU RADIUS.
+ * Copyright (C) 2000, Sergey Poznyakoff
  *
- *	RADIUS
- *	Remote Authentication Dial In User Service
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
  *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  *
- *	Livingston Enterprises, Inc.
- *	6920 Koll Center Parkway
- *	Pleasanton, CA   94566
- *
- *	Copyright 1992 Livingston Enterprises, Inc.
- *
- *	Permission to use, copy, modify, and distribute this software for any
- *	purpose and without fee is hereby granted, provided that this
- *	copyright and permission notice appear on all copies and supporting
- *	documentation, the name of Livingston Enterprises, Inc. not be used
- *	in advertising or publicity pertaining to distribution of the
- *	program without specific prior permission, and notice be given
- *	in supporting documentation that copying and distribution is by
- *	permission of Livingston Enterprises, Inc.   
- *
- *	Livingston Enterprises, Inc. makes no representations about
- *	the suitability of this software for any purpose.  It is
- *	provided "as is" without express or implied warranty.
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
-
 #ifndef lint
 static char rcsid[] = 
 "$Id$";
@@ -34,55 +25,86 @@ static char rcsid[] =
 # include <config.h>
 #endif
 
-#include	<stdio.h>
-#include	<stdlib.h>
-#include	<sys/types.h>
-#include	<pwd.h>
-#include	<ctype.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <pwd.h>
+#include <ctype.h>
 
-#include	<radiusd.h>
+#include <radiusd.h>
 
 static DICT_ATTR	*dictionary_attributes;
 static DICT_VALUE	*dictionary_values;
 static DICT_VENDOR	*dictionary_vendors;
+static int               vendorno;
 
-static int		vendorno = 1;
+struct slist {
+	struct slist *next;
+};
 
-#ifdef NOCASE
-#define DICT_STRCMP strcasecmp
-#else
-#define DICT_STRCMP strcmp
-#endif
+int nfields(int  fc, int  minf, int  maxfm, char *file, int  lineno);
+void free_slist(struct slist *s);
+struct slist * find_slist(struct slist *s, int (*f)(), void *v);
 
-static void dict_free(void);
-static int addvendor(char *name, int value);
-
-/*
- *	Free the dictionary_attributes and dictionary_values lists.
+/* **************************************************************************
+ * Internal use only
  */
-void 
+void
+free_slist(s)
+	struct slist *s;
+{
+	struct slist *next;
+
+	while (s) {
+		next = s->next;
+		free_entry(s);
+	}
+}
+
+struct slist *
+find_slist(s, f, v)
+	struct slist *s;
+	int (*f)();
+	void *v;
+{
+	for (; s && (*f)(s, v); s = s->next) 
+		;
+	return s;
+}
+
+void
 dict_free()
 {
-	DICT_ATTR	*dattr, *anext;
-	DICT_VALUE	*dval, *vnext;
-	DICT_VENDOR	*dvend, *enext;
+	free_slist((struct slist*)dictionary_attributes);
+	free_slist((struct slist*)dictionary_values);
+	free_slist((struct slist*)dictionary_vendors);
 
-	for (dattr = dictionary_attributes; dattr; dattr = anext) {
-		anext = dattr->next;
-		free_entry(dattr);
-	}
-	for (dval = dictionary_values; dval; dval = vnext) {
-		vnext = dval->next;
-		free_entry(dval);
-	}
-	for (dvend = dictionary_vendors; dvend; dvend = enext) {
-		enext = dvend->next;
-		free_entry(dvend);
-	}
 	dictionary_attributes = NULL;
 	dictionary_values = NULL;
 	dictionary_vendors = NULL;
 	vendorno = 1;
+}
+
+int
+nfields(fc, minf, maxf, file, lineno)
+	int  fc;
+	int  minf;
+	int  maxf;
+	char *file;
+	int  lineno;
+{
+	if (fc < minf) {
+		radlog(L_ERR|L_CONS,
+		       _("%s:%d: too few fields"),
+		       file, lineno);
+		return -1;
+	} else if (fc > maxf) {
+		radlog(L_ERR|L_CONS,
+		       _("%s:%d: too many fields"),
+		       file, lineno);
+		return -1;
+	}
+	return 0;
 }
 
 /*
@@ -108,417 +130,438 @@ addvendor(name, value)
 	return 0;
 }
 
-/*
- * Initialize the dictionary.
- * Read all ATTRIBUTES into the dictionary_attributes list.
- * Read all VALUES into the dictionary_values list.
- *
- * Return number of errors encountered or -1 in case of memory shortage.
+/* **************************************************************************
+ * Parser
  */
+#define KEYWORD      fv[0]
+#define ATTR_NAME    fv[1]
+#define ATTR_VALUE   fv[2]
+#define ATTR_TYPE    fv[3]
+#define ATTR_VENDOR  fv[4]
+#define HAS_VENDOR(c) (c==5)
+#define VALUE_ATTR   fv[1]
+#define VALUE_NAME   fv[2]
+#define VALUE_NUM    fv[3]
+#define VENDOR_NAME  fv[1]
+#define VENDOR_VALUE fv[2]
+
+static int _dict_include(int *, int, char **, char *, int);
+static int _dict_attribute(int *, int, char **, char *, int);
+static int _dict_value(int *, int, char **, char *, int);
+static int _dict_vendor(int *, int, char **, char *, int);
+static int parse_dict_entry(int *, int, char **, char *, int);
+static int parse_dict(char *name);
+
+static struct keyword type_kw[] = {
+	"string", PW_TYPE_STRING,
+	"integer", PW_TYPE_INTEGER,
+	"ipaddr", PW_TYPE_IPADDR,
+	"date", PW_TYPE_DATE
+};
+
 int
-dict_init(fn)
-	char *fn;
+_dict_include(errcnt, fc, fv, file, lineno)
+	int    *errcnt;
+	int     fc;
+	char    **fv;
+	char    *file;
+	int     lineno;
 {
-	char    *path;
-	FILE	*dictfd;
-	char	dummystr[64];
-	char	namestr[64];
-	char	valstr[64];
-	char	attrstr[64];
-	char	typestr[64];
-	char	vendorstr[64];
-	int	line_no;
-	int     errcnt;
-	DICT_ATTR	*attr;
-	DICT_VALUE	*dval;
-	DICT_VENDOR	*v;
-	char	buffer[256];
-	int	value;
-	int	type;
-	int	vendor;
-	int	is_attrib;
-#ifdef ATTRIB_NMC
-	int	vendor_usr_seen = 0;
-	int	is_nmc = 0;
-#endif
-
-	if (fn == NULL)
-		dict_free();
-
-	if (fn) {
-		if (fn[0] == '/')
-			path = estrdup(fn);
-		else
-			path = mkfilename(radius_dir, fn);
-	} else
-		path = mkfilename(radius_dir, RADIUS_DICTIONARY);
-
-	if ((dictfd = fopen(path, "r")) == (FILE *)NULL) {
-		radlog(L_CONS|L_ERR, _("dict_init: couldn't open dictionary: %s"),
-		       path);
-		efree(path);
-		return(-1);
-	}
-
-	line_no = 0;
-	errcnt = 0;
-	while (fgets(buffer, sizeof(buffer), dictfd) != (char *)NULL) {
-		line_no++;
-		
-		/* Skip empty space */
-		if (*buffer == '#' || *buffer == '\0' || *buffer == '\n') {
-			continue;
-		}
-
-		if (strncasecmp(buffer, "$INCLUDE", 8) == 0) {
-
-			/* Read the $INCLUDE line */
-			if (sscanf(buffer, "%s%s", dummystr, valstr) != 2) {
-				radlog(L_ERR, _("%s:%d: $INCLUDE syntax error"),
-				       path, line_no);
-				errcnt++;
-				continue;
-			}
-			errcnt += dict_init(valstr);
-			continue;
-		}
-
-		is_attrib = 0;
-		if (strncmp(buffer, "ATTRIBUTE", 9) == 0)
-			is_attrib = 1;
-#ifdef ATTRIB_NMC
-		is_nmc = 0;
-		if (strncmp(buffer, "ATTRIB_NMC", 10) == 0)
-			is_attrib = is_nmc = 1;
-#endif
-		if (is_attrib) {
-			/* Read the ATTRIBUTE line */
-			vendor = 0;
-			vendorstr[0] = 0;
-			if (sscanf(buffer, "%s%s%s%s%s", dummystr, namestr,
-					valstr, typestr, vendorstr) < 4) {
-				radlog(L_ERR,
-				       _("%s:%d: syntax error"), path, line_no);
-				errcnt++;
-				continue;
-			}
-
-#ifdef ATTRIB_NMC
-			/*
-			 *	Convert ATTRIB_NMC into our format.
-			 *	We might need to add USR to the list of
-			 *	vendors first.
-			 */
-			if (is_nmc && vendorstr[0] == 0) {
-				if (!vendor_usr_seen) {
-					if (addvendor("USR", VENDORPEC_USR) < 0) {
-						errcnt = -1;
-						break;
-					}
-					vendor_usr_seen = 1;
-				}
-				strcpy(vendorstr, "USR");
-			}
-#endif
-
-			/*
-			 * Validate all entries
-			 */
-			if (strlen(namestr) > 31) {
-				radlog(L_ERR|L_CONS,
-				       _("%s:%d: name too long"),
-				       path, line_no);
-				errcnt++;
-				continue;
-			}
-
-			if (!isdigit(*valstr)) {
-				radlog(L_ERR|L_CONS,
-				       _("%s:%d: value too long"),
-				       path, line_no);
-				errcnt++;
-				continue;
-			}
-			if (valstr[0] != '0')
-				value = atoi(valstr);
-			else
-				sscanf(valstr, "%i", &value);
-
-			if (strcmp(typestr, "string") == 0) 
-				type = PW_TYPE_STRING;
-			else if (strcmp(typestr, "integer") == 0) 
-				type = PW_TYPE_INTEGER;
-			else if (strcmp(typestr, "ipaddr") == 0) 
-				type = PW_TYPE_IPADDR;
-			else if (strcmp(typestr, "date") == 0) 
-				type = PW_TYPE_DATE;
-			else {
-				radlog(L_ERR|L_CONS,
-				       _("%s:%d: invalid type"),
-				       path, line_no);
-				errcnt++;
-				continue;
-			}
-
-			for (v = dictionary_vendors; v; v = v->next) {
-				if (strcmp(vendorstr, v->vendorname) == 0)
-					vendor = v->vendorcode;
-			}
-			if (vendorstr[0] && !vendor) {
-				radlog(L_ERR|L_CONS,
-				       _("%s:%d: unknown vendor"),
-				       path, line_no);
-				errcnt++;
-				continue;
-			}
-
-			/* Create a new attribute for the list */
-			attr = Alloc_entry(DICT_ATTR);
-			
-			strcpy(attr->name, namestr);
-			attr->value = value;
-			attr->type = type;
-			if (vendor)
-				attr->value |= (vendor << 16);
-
-			/*
-			 *	Add to the front of the list, so that
-			 *	values at the end of the file override
-			 *	those in the begin.
-			 */
-			attr->next = dictionary_attributes;
-			dictionary_attributes = attr;
-
-		} else if (strncmp(buffer, "VALUE", 5) == 0) {
-
-			/* Read the VALUE line */
-			if (sscanf(buffer, "%s%s%s%s", dummystr, attrstr,
-				   namestr, valstr) != 4) {
-				radlog(L_ERR|L_CONS,
-				       "%s:%d: syntax error",
-				       path, line_no);
-				errcnt++;
-				continue;
-			}
-
-			/*
-			 * Validate all entries
-			 */
-			if (strlen(attrstr) > 31) {
-				radlog(L_ERR|L_CONS,
-				       _("%s:%d: attribute too long"),
-				       path, line_no);
-				errcnt++;
-				continue;
-			}
-
-			if (strlen(namestr) > 31) {
-				radlog(L_ERR|L_CONS,
-				       _("%s:%d: name too long"),
-				       path, line_no);
-				errcnt++;
-				continue;
-			}
-
-			if (!isdigit(*valstr)) {
-				radlog(L_ERR|L_CONS,
-				       _("%s:%d: invalid value"),
-				       path, line_no);
-				errcnt++;
-				continue;
-			}
-			value = atoi(valstr);
-
-			/* Create a new VALUE entry for the list */
-			dval = Alloc_entry(DICT_VALUE);
-			
-			strcpy(dval->attrname, attrstr);
-			strcpy(dval->name, namestr);
-			dval->value = value;
-
-			/* Insert at front. */
-			dval->next = dictionary_values;
-			dictionary_values = dval;
-		} else if (strncmp(buffer, "VENDOR", 6) == 0) {
-
-			/* Read the VENDOR line */
-			if (sscanf(buffer, "%s%s%s", dummystr, attrstr,
-						valstr) != 3) {
-				radlog(L_ERR|L_CONS,
-				       _("%s:%d: syntax error"),
-				       path, line_no);
-				errcnt++;
-				continue;
-			}
-
-			/*
-			 * Validate all entries
-			 */
-			if (strlen(attrstr) > 31) {
-				radlog(L_ERR|L_CONS,
-				       _("%s:%d: attribute too long"),
-				       path, line_no);
-				errcnt++;
-				continue;
-			}
-
-			if (!isdigit(*valstr)) {
-				radlog(L_ERR|L_CONS,
-				       _("%s:%d: invalid value"),
-				       path, line_no);
-				errcnt++;
-				continue;
-			}
-			value = atoi(valstr);
-
-			/* Create a new VENDOR entry for the list */
-			if (addvendor(attrstr, value) < 0) {
-				errcnt = -1;
-				break;
-			}
-#ifdef ATTRIB_NMC
-			if (value == VENDORPEC_USR)
-				vendor_usr_seen = 1;
-#endif
-		}
-	}
-	fclose(dictfd);
-	efree(path);
-	return errcnt;
+	if (nfields(fc, 2, 2, file, lineno)) 
+		return 0;
+	parse_dict(fv[1]);
+	return 0;
 }
 
-/*************************************************************************
- *
- *	Function: dict_attrget
- *
- *	Purpose: Return the full attribute structure based on the
- *		 attribute id number.
- *
- *************************************************************************/
 
-DICT_ATTR	*
+int
+_dict_attribute(errcnt, fc, fv, file, lineno)
+	int    *errcnt;
+	int     fc;
+	char    **fv;
+	char    *file;
+	int     lineno;
+{
+	DICT_ATTR	*attr;
+	int              type;
+	int              vendor = 0;
+	int              value;
+	char            *p;
+	
+	if (nfields(fc, 4, 5, file, lineno))
+		return 0;
+	/*
+	 * Validate all entries
+	 */
+	if (strlen(ATTR_NAME) > MAX_DICTNAME) {
+		radlog(L_ERR|L_CONS,
+		       _("%s:%d: name too long"),
+		       file, lineno);
+		(*errcnt)++;
+		return 0;
+	}
+	
+	value = strtol(ATTR_VALUE, &p, 0);
+	if (*p) {
+		radlog(L_ERR|L_CONS,
+		       _("%s:%d: value not a number (near %s)"),
+		       file, lineno, p);
+		(*errcnt)++;
+		return 0;
+	}
+
+	if ((type = xlat_keyword(type_kw, ATTR_TYPE, PW_TYPE_INVALID)) ==
+	    PW_TYPE_INVALID) {
+		radlog(L_ERR|L_CONS,
+		       _("%s:%d: invalid type"),
+		       file, lineno);
+		(*errcnt)++;
+		return 0;
+	}
+
+	if (HAS_VENDOR(fc)) {
+		if ((vendor = dict_vendorname(ATTR_VENDOR)) == 0) {
+			radlog(L_ERR|L_CONS,
+			       _("%s:%d: unknown vendor"),
+			       file, lineno);
+			(*errcnt)++;
+			return 0;
+		}
+	}
+
+	attr = Alloc_entry(DICT_ATTR);
+			
+	strcpy(attr->name, ATTR_NAME);
+	attr->value = value;
+	attr->type = type;
+	if (vendor)
+		attr->value |= (vendor << 16);
+	
+	/*
+	 *	Add to the front of the list, so that
+	 *	values at the end of the file override
+	 *	those in the begin.
+	 */
+	attr->next = dictionary_attributes;
+	dictionary_attributes = attr;
+	return 0;
+}
+
+int
+_dict_value(errcnt, fc, fv, file, lineno)
+	int    *errcnt;
+	int     fc;
+	char    **fv;
+	char    *file;
+	int     lineno;
+{
+	DICT_VALUE	*dval;
+	char            *p;
+	int             value;
+	
+	if (nfields(fc, 4, 4, file, lineno))
+		return 0;
+
+	if (strlen(VALUE_NAME) > MAX_DICTNAME) {
+		radlog(L_ERR|L_CONS,
+		       _("%s:%d: value name too long"),
+		       fileno, lineno);
+		return 0;
+	}
+	if (strlen(VALUE_ATTR) > MAX_DICTNAME) {
+		radlog(L_ERR|L_CONS,
+		       _("%s:%d: value attribute name too long"),
+		       fileno, lineno);
+		return 0;
+	}
+	
+	value = strtol(VALUE_NUM, &p, 0);
+	if (*p) {
+		radlog(L_ERR|L_CONS,
+		       _("%s:%d: value not a number (near %s)"),
+		       file, lineno, p);
+		(*errcnt)++;
+		return 0;
+	}
+
+	/* Create a new VALUE entry for the list */
+	dval = Alloc_entry(DICT_VALUE);
+			
+	strcpy(dval->name, VALUE_NAME);
+	strcpy(dval->attrname, VALUE_ATTR);
+	dval->value = value;
+
+	/* Insert at front. */
+	dval->next = dictionary_values;
+	dictionary_values = dval;
+	
+	return 0;
+}
+
+int
+_dict_vendor(errcnt, fc, fv, file, lineno)
+	int    *errcnt;
+	int     fc;
+	char    **fv;
+	char    *file;
+	int     lineno;
+{
+	int             value;
+	char            *p;
+	DICT_VENDOR	*v;
+
+	if (nfields(fc, 3, 3, file, lineno))
+		return 0;
+	if (strlen(VENDOR_NAME) > MAX_DICTNAME) {
+		radlog(L_ERR|L_CONS,
+		       _("%s:%d: vendor name too long"),
+		       fileno, lineno);
+		return 0;
+	}
+	value = strtol(VENDOR_VALUE, &p, 0);
+	if (*p) {
+		radlog(L_ERR|L_CONS,
+		       _("%s:%d: value not a number (near %s)"),
+		       file, lineno, p);
+		(*errcnt)++;
+		return 0;
+	}
+
+	if (addvendor(VENDOR_NAME, value) < 0) {
+		(*errcnt)++;
+	}
+
+	return 0;
+
+}
+
+enum {
+	KW_INCLUDE,
+	KW_ATTRIBUTE,
+	KW_VALUE,
+	KW_VENDOR
+};
+
+static struct keyword dict_kw[] = {
+	"$INCLUDE", KW_INCLUDE,
+	"ATTRIBUTE", KW_ATTRIBUTE,
+	"VALUE", KW_VALUE,
+	"VENDOR", KW_VENDOR,
+	NULL, 0
+};
+
+int
+parse_dict_entry(errcnt, fc, fv, file, lineno)
+	int    *errcnt;
+	int     fc;
+	char    **fv;
+	char    *file;
+	int     lineno;
+{
+	switch (xlat_keyword(dict_kw, KEYWORD, -1)) {
+	case KW_INCLUDE:
+		_dict_include(errcnt, fc, fv, file, lineno);
+		break;
+	case KW_ATTRIBUTE:
+		_dict_attribute(errcnt, fc, fv, file, lineno);
+		break;
+	case KW_VALUE:
+		_dict_value(errcnt, fc, fv, file, lineno);
+		break;
+	case KW_VENDOR:
+		_dict_vendor(errcnt, fc, fv, file, lineno);
+		break;
+	default:
+		radlog(L_ERR|L_CONS,
+		       _("%s:%d: name too long"),
+		       file, lineno);
+		break;
+	}
+	return 0;
+}
+
+int
+parse_dict(name)
+	char *name;
+{
+	char *path;
+	int   rc;
+	int   errcnt = 0;
+	
+	path = mkfilename(radius_dir, name);
+	rc = read_raddb_file(path, 1, 5, parse_dict_entry, &errcnt);
+	if (errcnt)
+		radlog(L_NOTICE, _("%s: %d errors"), path, errcnt);
+	efree(path);
+	return rc;
+}
+
+int
+dict_init()
+{
+	dict_free();
+	return parse_dict(RADIUS_DICTIONARY);
+}
+
+/* **************************************************************************
+ * Lookup functions
+ */
+
+/*
+ * Return the full attribute structure based on the
+ * attribute id number.
+ */
+int
+attrval_cmp(a,attr)
+	DICT_ATTR *a;
+	int       attr;
+{
+	return a->value - attr;
+}
+
+DICT_ATTR *
 dict_attrget(attribute)
 	int	attribute;
 {
-	DICT_ATTR	*attr;
-
-	attr = dictionary_attributes;
-	while(attr != (DICT_ATTR *)NULL) {
-		if (attr->value == attribute) {
-			return(attr);
-		}
-		attr = attr->next;
-	}
-	return((DICT_ATTR *)NULL);
+	return (DICT_ATTR *)find_slist((struct slist*) dictionary_attributes,
+				       attrval_cmp,
+				       (void*)attribute);
 }
 
-/*************************************************************************
- *
- *	Function: dict_attrfind
- *
- *	Purpose: Return the full attribute structure based on the
- *		 attribute name.
- *
- *************************************************************************/
+/*
+ *  Return the full attribute structure based on the attribute name.
+ */
+int
+attrname_cmp(a,attr)
+	DICT_ATTR *a;
+	char      *attr;
+{
+	return strcmp(a->name, attr);
+}
 
-DICT_ATTR	*
+DICT_ATTR *
 dict_attrfind(attrname)
 	char	*attrname;
 {
-	DICT_ATTR	*attr;
-
-	attr = dictionary_attributes;
-	while(attr != (DICT_ATTR *)NULL) {
-		if (DICT_STRCMP(attr->name, attrname) == 0) {
-			return(attr);
-		}
-		attr = attr->next;
-	}
-	return((DICT_ATTR *)NULL);
+	return (DICT_ATTR *)find_slist((struct slist*) dictionary_attributes,
+				       attrname_cmp,
+				       attrname);
 }
 
-/*************************************************************************
- *
- *	Function: dict_valfind
- *
- *	Purpose: Return the full value structure based on the
- *		 value name.
- *
- *************************************************************************/
+/*
+ * Return the full value structure based on the value name.
+ */
+int
+valname_cmp(v, s)
+	DICT_VALUE *v;
+	char       *s;
+{
+	return strcmp(v->name, s);
+}
 
-DICT_VALUE	*
+DICT_VALUE *
 dict_valfind(valname)
 	char	*valname;
 {
-	DICT_VALUE	*val;
-
-	val = dictionary_values;
-	while(val != (DICT_VALUE *)NULL) {
-		if (DICT_STRCMP(val->name, valname) == 0) {
-			return(val);
-		}
-		val = val->next;
-	}
-	return((DICT_VALUE *)NULL);
+	return (DICT_VALUE *)find_slist((struct slist*) dictionary_values,
+					valname_cmp,
+					valname);
 }
 
-/*************************************************************************
- *
- *	Function: dict_valget
- *
- *	Purpose: Return the full value structure based on the
- *		 actual value and the associated attribute name.
- *
- *************************************************************************/
+/*
+ * Return the full value structure based on the actual value and
+ * the associated attribute name.
+ */
+int
+value_cmp(a, b)
+	DICT_VALUE *a, *b;
+{
+	return !(strcmp(a->attrname, b->attrname) == 0 &&
+		 a->value == b->value);
+}
 
-DICT_VALUE	*
+DICT_VALUE *
 dict_valget(value, attrname)
 	UINT4	value;
 	char	*attrname;
 {
-	DICT_VALUE	*val;
+	DICT_VALUE val;
 
-	val = dictionary_values;
-	while(val != (DICT_VALUE *)NULL) {
-		if (DICT_STRCMP(val->attrname, attrname) == 0 &&
-						val->value == value) {
-			return(val);
-		}
-		val = val->next;
-	}
-	return((DICT_VALUE *)NULL);
+	strcpy(val.attrname, attrname);
+	val.value = value;
+	return (DICT_VALUE *)find_slist((struct slist*) dictionary_values,
+					value_cmp,
+					&val);
 }
 
 /*
- *	Get the PEC (Private Enterprise Code) of the vendor
- *	based on it's internal number.
+ * Get the PEC (Private Enterprise Code) of the vendor
+ * based on it's internal number.
  */
+int
+code_cmp(v, code)
+	DICT_VENDOR *v;
+	int code;
+{
+	return v->vendorcode - code;
+}
+
 int 
 dict_vendorpec(code)
 	int code;
 {
-	DICT_VENDOR	*v;
+	DICT_VENDOR *vp;
 
-	for (v = dictionary_vendors; v; v = v->next)
-		if (v->vendorcode == code)
-			break;
-
-	return v ? v->vendorpec : 0;
+	vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
+				      code_cmp,
+				      (void*)code);
+	return vp ? vp->vendorpec : 0;
 }
 
 /*
- *	Get the internal code of the vendor based on its PEC.
+ * Get the internal code of the vendor based on its PEC.
  */
+int
+pec_cmp(v, pec)
+	DICT_VENDOR *v;
+	int pec;
+{
+	return v->vendorpec - pec;
+}
+
 int 
 dict_vendorcode(pec)
 	int pec;
 {
-	DICT_VENDOR	*v;
+	DICT_VENDOR *vp;
 
-	for (v = dictionary_vendors; v; v = v->next)
-		if (v->vendorpec == pec)
-			break;
+	vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
+				      pec_cmp,
+				      (void*)pec);
+	return vp ? vp->vendorcode : 0;
+}
+	
 
-	return v ? v->vendorcode : 0;
+/*
+ * Get the internal code of the vendor based on its name.
+ */
+int
+vendor_cmp(v, s)
+	DICT_VENDOR *v;
+	char        *s;
+{
+	return strcmp(v->vendorname, s);
 }
 
+int 
+dict_vendorname(name)
+	char *name;
+{
+	DICT_VENDOR *vp;
+
+	vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
+				      vendor_cmp,
+				      name);
+	return vp ? vp->vendorcode : 0;
+}
+	

@@ -86,8 +86,10 @@ static char *compile_flag_str[] = {
 	"NDBM",
 #endif
 #if defined(USE_SQL)	
-# if defined(USE_SQL_MYSQL)
-	"USE_SQL_MYSQL",
+# if USE_SQL == SQL_MYSQL
+	"USE_SQL=SQL_MYSQL",
+# elif USE_SQL == SQL_POSTGRES
+	"USE_SQL=SQL_POSTGRES",
 # endif	
 #endif /* defined(USE_SQL) */
 #if defined(USE_SNMP)
@@ -174,7 +176,7 @@ version()
 	}
 	fprintf(stderr, "\n");
 #if defined(USE_MYSQL)
-	fprintf(stderr, "using mysql port %d\n", RAD_MYSQL_PORT);
+	fprintf(stderr, "using sql port %d\n", RAD_SQL_PORT);
 #endif
 #if defined(DENY_SHELL)
 	fprintf(stderr, _("deny shell is %s\n"), DENY_SHELL);

@@ -1,3 +1,2 @@
-Cache NAS and (probably) digest into AUTH_REQ structure.
 Need a more flexible IP allocation strategy
 Write a unified configuration utility in guile.

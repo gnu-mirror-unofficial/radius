@@ -17,7 +17,7 @@
  *
  */
 
-#define RADIUS_MODULE 2
+#define RADIUS_MODULE 4
 
 #ifndef lint
 static char rcsid[] =
@@ -266,7 +266,7 @@ main(argc, argv)
 #ifdef RADIUS_PID
 	FILE			*fp;
 #endif
-	
+
 	if ((progname = strrchr(argv[0], '/')) == NULL)
 		progname = argv[0];
 	else

@@ -1,3 +1,17 @@
+2000-12-28  gray  <gray@farlep.net>
+	Removed radiusd/oldconfig.c. Its functionality moved to
+	radlib/raddb.c. raddb.c does not restrict input field lengths, 
+	though calling functions still restrict it.
+	radlib/dict.c rewritten from scratch.
+	Removed support for ATTRIB_NMC keyword in dictionaries. 
+	
+2000-12-26  gray  <gray@farlep.net>
+	Cached digest info in AUTH_REQ structure for authentication
+	requests.
+
+2000-12-25  gray  <gray@farlep.net>
+	Added support for PostgreSQL and fixed some bugs in sql.c
+
 2000-12-20  gray  <gray@farlep.net>
 	Replaced radlib/md5.c and raduse/screen.c
 

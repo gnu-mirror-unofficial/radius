@@ -136,8 +136,6 @@ request_xmit(type, code, data, fd)
 {
         if (request_class[type].xmit) 
                 request_class[type].xmit(type, code, data, fd);
-        else 
-                request_class[type].drop(type, data, _("duplicate request"));
 
         switch (type) {
         case R_AUTH:
@@ -245,13 +243,15 @@ request_put(type, data, activefd, numpending)
                         /* This is a duplicate request.
                            If the handling process has already finished --
                            retransmit its results, if possible.
-                           Otherwise just drop the request. */
+                           Otherwise drop the request. */
                         if (curreq->status == RS_COMPLETED) 
-                                request_xmit(type, curreq->child_return, data,
+                                request_xmit(type,
+					     curreq->child_return,
+					     curreq->data,
                                              activefd);
-                        else
-                                request_drop(type, data,
-                                             _("duplicate request"));
+			else
+				request_drop(type, data,
+					     _("duplicate request"));
                         request_list_unblock();
 
                         return NULL;

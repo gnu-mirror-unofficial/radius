@@ -1,3 +1,11 @@
+2003-02-06  Sergey Poznyakoff
+
+	* include/Makefile.am: Added debugmod.h to MAINTAINERCLEANFILES
+	* raddb/dict/ascend (Ascend-CBCP-Enable,Ascend-CBCP-Mode): Added
+	  attributes and the corresponding values.
+	* radiusd/exec.c (filter_kill): Fixed indentation.
+	* sql/odbc.c (rad_odbc_column): Bugfix.
+
 2003-01-23  Sergey Poznyakoff 
 
 	* client/pam_radius/pam_radius.c: Define PAM_SM_SESSION.

@@ -44,7 +44,7 @@ catch_body (void *data)
 	radscm_init();
 	rscm_radlog_init();
 	rscm_rewrite_init();
-	rad_mainloop();
+	rad_mainloop(data);
 	return SCM_BOOL_F;
 }
 
@@ -56,10 +56,13 @@ catch_handler (void *data, SCM tag, SCM throw_args)
 
 
 void
-rad_boot()
+rad_boot(closure, argc, argv)
+	void *closure;
+	int argc;
+	char **argv;
 {
 	scm_internal_catch(SCM_BOOL_T,
-			   catch_body, NULL,
+			   catch_body, closure,
 			   catch_handler, NULL);
 }
 
@@ -178,6 +181,12 @@ scheme_load(filename)
 	char *filename;
 {
 	scm_primitive_load_path(scm_makfrom0str(filename));
+}
+
+void
+scheme_end_reconfig()
+{
+	scm_gc();
 }
 
 void

@@ -122,6 +122,11 @@ exit    return EXIT;
 	yylval.string[yyleng-2] = 0;
         return QUOTE;
 }
+\"[^\\"]*\n {
+	BEGIN(STRING);
+	source_line_num++;
+        add_str(yytext+1, yyleng-1);
+}
 \"[^\\"]*\\. {
 	BEGIN(STRING);
 	if (yytext[yyleng-1] == '\n')
@@ -147,6 +152,11 @@ exit    return EXIT;
 	if (yytext[yyleng-1] == '\n')
 		source_line_num++;
 	add_str(yytext, yyleng - 2);
+	add_chr(backspace(yytext[yyleng-1]));
+}
+<STRING>[^\\"]*\n {
+        source_line_num++;
+	add_str(yytext, yyleng);
 	add_chr(backspace(yytext[yyleng-1]));
 }
 <STRING>[^\\"]*\" {

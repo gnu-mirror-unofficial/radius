@@ -532,27 +532,27 @@ typedef struct auth_mach {
         
         char       *clid;
         enum auth_state state;
-} MACH;
+} AUTH_MACH;
 
-static void sfn_init(MACH*);
-static void sfn_validate(MACH*);
-static void sfn_eval_reply(MACH*);
-static void sfn_scheme(MACH*);
-static void sfn_service(MACH*);
-static void sfn_disable(MACH*);
-static void sfn_service_type(MACH*);
-static void sfn_realmuse(MACH*);
-static void sfn_simuse(MACH*);
-static void sfn_time(MACH*);
-static void sfn_ipaddr(MACH*);
-static void sfn_exec_wait(MACH*);
-static void sfn_cleanup_cbkid(MACH*);
-static void sfn_menu(MACH*);
-static void sfn_ack(MACH*);
-static void sfn_exec_nowait(MACH*);
-static void sfn_reject(MACH*);
-static VALUE_PAIR *timeout_pair(MACH *m);
-static int check_expiration(MACH *m);
+static void sfn_init(AUTH_MACH*);
+static void sfn_validate(AUTH_MACH*);
+static void sfn_eval_reply(AUTH_MACH*);
+static void sfn_scheme(AUTH_MACH*);
+static void sfn_service(AUTH_MACH*);
+static void sfn_disable(AUTH_MACH*);
+static void sfn_service_type(AUTH_MACH*);
+static void sfn_realmuse(AUTH_MACH*);
+static void sfn_simuse(AUTH_MACH*);
+static void sfn_time(AUTH_MACH*);
+static void sfn_ipaddr(AUTH_MACH*);
+static void sfn_exec_wait(AUTH_MACH*);
+static void sfn_cleanup_cbkid(AUTH_MACH*);
+static void sfn_menu(AUTH_MACH*);
+static void sfn_ack(AUTH_MACH*);
+static void sfn_exec_nowait(AUTH_MACH*);
+static void sfn_reject(AUTH_MACH*);
+static VALUE_PAIR *timeout_pair(AUTH_MACH *m);
+static int check_expiration(AUTH_MACH *m);
 
 
 struct auth_state_s {
@@ -560,7 +560,7 @@ struct auth_state_s {
         enum auth_state next;
         int             attr;
         enum list_id    list;
-        void            (*sfn)(MACH*);
+        void            (*sfn)(AUTH_MACH*);
 };
 
 struct auth_state_s states[] = {
@@ -619,15 +619,15 @@ struct auth_state_s states[] = {
                          0,               L_null, sfn_reject,
 };
 
-static void auth_log(MACH *m, char *diag, char *pass, char *reason,
+static void auth_log(AUTH_MACH *m, char *diag, char *pass, char *reason,
                      char *addstr);
-static int is_log_mode(MACH *m, int mask);
-static void auth_format_msg(MACH *m, int msg_id);
-static char *auth_finish_msg(MACH *m);
+static int is_log_mode(AUTH_MACH *m, int mask);
+static void auth_format_msg(AUTH_MACH *m, int msg_id);
+static char *auth_finish_msg(AUTH_MACH *m);
 
 void
 auth_log(m, diag, pass, reason, addstr)
-        MACH *m;
+        AUTH_MACH *m;
         char *diag;
         char *pass;
         char *reason;
@@ -659,7 +659,7 @@ auth_log(m, diag, pass, reason, addstr)
 
 int
 is_log_mode(m, mask)
-        MACH *m;
+        AUTH_MACH *m;
         int mask;
 {
         int mode = log_mode;
@@ -681,7 +681,7 @@ is_log_mode(m, mask)
 
 void
 auth_format_msg(m, msg_id)
-        MACH *m;
+        AUTH_MACH *m;
         int msg_id;
 {
         int len = strlen(message_text[msg_id]);
@@ -690,7 +690,7 @@ auth_format_msg(m, msg_id)
 
 char *
 auth_finish_msg(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         if (m->user_msg)
                 obstack_grow(&m->msg_stack, m->user_msg, strlen(m->user_msg));
@@ -705,7 +705,7 @@ auth_finish_msg(m)
  */
 int
 check_expiration(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         int result, rc;
         VALUE_PAIR *pair;
@@ -824,7 +824,7 @@ rad_authenticate(radreq, activefd)
         
 void
 sfn_init(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         int proxied = 0;
         RADIUS_REQ *radreq = m->req;
@@ -881,7 +881,7 @@ sfn_init(m)
 
 void
 sfn_eval_reply(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         VALUE_PAIR *p;
         int errcnt = 0;
@@ -916,7 +916,7 @@ sfn_eval_reply(m)
 
 void
 sfn_scheme(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
 #ifdef USE_SERVER_GUILE
         VALUE_PAIR *p;
@@ -951,7 +951,7 @@ sfn_scheme(m)
 
 void
 sfn_validate(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         RADIUS_REQ *radreq = m->req;
         int rc;
@@ -1010,7 +1010,7 @@ sfn_validate(m)
 
 void
 sfn_service(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         /* FIXME: Other service types should also be handled,
          *        I suppose     
@@ -1022,7 +1022,7 @@ sfn_service(m)
 
 void
 sfn_disable(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         if (get_deny(m->namepair->strvalue)) {
                 auth_format_msg(m, MSG_ACCOUNT_CLOSED);
@@ -1033,7 +1033,7 @@ sfn_disable(m)
 
 void
 sfn_service_type(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         if (m->check_pair->lvalue == DV_SERVICE_TYPE_AUTHENTICATE_ONLY) {
                 auth_log(m, _("Login rejected"), NULL,
@@ -1045,7 +1045,7 @@ sfn_service_type(m)
 
 void
 sfn_realmuse(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         if (!m->req->realm)
                 return;
@@ -1060,7 +1060,7 @@ sfn_realmuse(m)
 
 void
 sfn_simuse(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         char  name[AUTH_STRING_LEN];
         char buf[MAX_LONGNAME];
@@ -1092,7 +1092,7 @@ sfn_simuse(m)
 
 VALUE_PAIR *
 timeout_pair(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         if (!m->timeout_pair &&
             !(m->timeout_pair = avl_find(m->user_reply, DA_SESSION_TIMEOUT))) {
@@ -1105,7 +1105,7 @@ timeout_pair(m)
 
 void
 sfn_time(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         int rc;
         time_t t;
@@ -1139,7 +1139,7 @@ sfn_time(m)
 
 void
 sfn_ipaddr(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         VALUE_PAIR *p, *tmp, *pp;
         
@@ -1176,7 +1176,7 @@ sfn_ipaddr(m)
 
 void
 sfn_exec_wait(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         if (radius_exec_program(m->check_pair->strvalue,
                                 m->req,
@@ -1202,7 +1202,7 @@ sfn_exec_wait(m)
 
 void
 sfn_exec_nowait(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         /*FIXME: do we need to pass user_reply here? */
         radius_exec_program(m->check_pair->strvalue,
@@ -1212,7 +1212,7 @@ sfn_exec_nowait(m)
 
 void
 sfn_cleanup_cbkid(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         static int delete_pairs[] = {
                 DA_FRAMED_PROTOCOL,
@@ -1234,7 +1234,7 @@ sfn_cleanup_cbkid(m)
 
 void
 sfn_menu(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
 #ifdef USE_LIVINGSTON_MENUS
         char *msg;
@@ -1254,7 +1254,7 @@ sfn_menu(m)
 
 void
 sfn_ack(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         debug(1, ("ACK: %s", m->namepair->strvalue));
         
@@ -1281,7 +1281,7 @@ sfn_ack(m)
 
 void
 sfn_reject(m)
-        MACH *m;
+        AUTH_MACH *m;
 {
         debug(1, ("REJECT: %s", m->namepair->strvalue));
         rad_send_reply(RT_AUTHENTICATION_REJECT,

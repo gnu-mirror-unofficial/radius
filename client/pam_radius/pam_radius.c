@@ -343,7 +343,7 @@ _read_client_config(pam_handle_t *pamh)
                 rad_clt_destroy_queue(queue);
         } else {
                 errcnt = pam_set_data(pamh,
-                                      "radius_server_queue", \
+                                      "radius_server_queue", 
                                       (void *)queue,
                                       _cleanup_server_queue);
                 if (errcnt != PAM_SUCCESS) {

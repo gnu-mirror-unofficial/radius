@@ -15,23 +15,52 @@ LIBSQL=../radlib/libsql.la
 endif
 
 sbin_PROGRAMS   = radiusd
-radiusd_SOURCES = radiusd.c acct.c auth.c exec.c files.c menu.c sql.c\
-                  notify.c config.c pam.c proxy.c radius.c\
-                  symtab.c timestr.c version.c log.c stat.c\
-                  snmpserv.c shmem.c radutil.c radctl.c\
-                  rewrite.c checkrad.c debugmod.c radck.c\
-                  builddbm.c
+radiusd_SOURCES = \
+ acct.c\
+ auth.c\
+ builddbm.c\
+ checkrad.c\
+ config.c\
+ config_kw.c\
+ config_tok.h\
+ debugmod.c\
+ exec.c\
+ files.c\
+ log.c\
+ menu.c\
+ notify.c\
+ pam.c\
+ proxy.c\
+ radck.c\
+ radctl.c\
+ radius.c\
+ radiusd.c\
+ radutil.c\
+ rewrite.c\
+ shmem.c\
+ snmpserv.c\
+ sql.c\
+ stat.c\
+ timestr.c\
+ version.c
 
 radiusd_LDADD   = @LEXLIB@ ../radlib/librad.la -L../snmplib -lsnmp $(LIBSQL) @RADIUSD_LDADD@
-BUILT_SOURCES   = config.c rewrite.c
-MAINTAINERCLEANFILES=config.c rewrite.c y.output
+BUILT_SOURCES   = config.c config_kw.c rewrite.c
+MAINTAINERCLEANFILES=config.c config_tok.h config_kw.c rewrite.c y.output
 INCLUDES        = -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp -I$(top_srcdir)/radlib @INCLUDEPATH@
-EXTRA_DIST      = config.y rewrite.y .gdbinit
+EXTRA_DIST      = config.y config.kw rewrite.y .gdbinit
 YLWRAP = $(SHELL) $(top_srcdir)/ylwrap
+GPERF=@GPERF@
 
-config.c: $(srcdir)/config.y
+config.c config_tok.h: $(srcdir)/config.y
 	$(YLWRAP) "$(YACC)" $(srcdir)/config.y \
-                  y.tab.c config.c -- -yy conf_yy -v @YACC_OPTS@
+                  y.tab.c config.c y.tab.h config_tok.h y.output y.output \
+                  -- -yy conf_yy -vd @YACC_OPTS@
+
+config_kw.c: $(srcdir)/config.kw
+	$(YLWRAP) "$(GPERF)" $(srcdir)/config.kw \
+	   	  config_kw.c config_kw.c \
+                  -- -stdout -k1,2,6,7,11,13,$$ -t 
 
 config.o: config.c ../include/radiusd.h 
 
@@ -56,7 +85,7 @@ lint:  $(radiusd_LNS)
 
 SRCS=radiusd.c acct.c auth.c exec.c files.c menu.c sql.c\
          notify.c config.y pam.c proxy.c radius.c\
-         symtab.c timestr.c version.c log.c stat.c\
+         timestr.c version.c log.c stat.c\
          snmpserv.c shmem.c radutil.c radctl.c rewrite.y\
          checkrad.c radck.c builddbm.c
 

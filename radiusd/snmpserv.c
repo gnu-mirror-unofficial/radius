@@ -1115,6 +1115,7 @@ get_acct_nasstat(nas, var, ind)
 
 	case MIB_KEY_radiusAccClientID:
 		var->type = ASN_OCTET_STR;
+		var->val_length = strlen(nas->longname);
 		var->var_str = snmp_strdup(nas->longname);
 		break;
 

@@ -1,4 +1,28 @@
-2001-12-10 Sergey Poznyakoff
+2001-12-03 Sergey Poznyakoff
+
+	* NEWS: Fixed typo.
+	* doc/texinfo/config.texi: New macro @AVP{} for A/V pair.
+	* doc/texinfo/attributes.texi: Updated.
+	* doc/texinfo/configure.texi: Updated.
+	* doc/texinfo/extensions.texi: Updated.
+	* doc/texinfo/operation.texi: Updated.
+	* doc/texinfo/programs.texi: Updated.
+	* doc/texinfo/radius.texi: Updated.
+	
+	* radscm/rscm_avl.c: Renamed avl-match to avl-match?. Fixed memory
+	  leak in rscm_avl_delete.
+	* test/raddb/auth.scm: Renamed avl-match to avl-match?
+	
+	* test/dejagnu/lib/radiusd.exp: Split radius_test into two
+	  procedures. default_radius_test returns the error code,
+	  radius_test calls it and prints diagnostics if necessary.
+	* test/dejagnu/s.radiusd/Stress.exp: (new) The stress test. Run
+	  a number of authentications as quickly as possible.
+	* test/dejagnu/s.radiusd/Makefile.am: Added Stress.exp. Pass CMD
+	  to AWK when handling `all' goal. 
+	* test/dejagnu/s.radiusd/Testlist: Added Stress.exp
+	
+2001-12-01 Sergey Poznyakoff
 
 	Updated and restructured documentation:
 	

@@ -521,7 +521,7 @@ fails. Otherwise, the contents of its @RHS{} is appended to @dfn{Reply
 List} being constructed. If the @RHS{} of the matched rule contains attribute
 @attr{Fall-Through} with the value @code{Yes}, the matching continues.
 When the list is exhausted, the authentication result is sent back
-to the @NAS{} along with the A/V pairs collected in the @dfn{Reply
+to the @NAS{} along with the @AVP{}s collected in the @dfn{Reply
 List}.
 
 [FIXME: links to the description of raddb/users and auth]

@@ -975,7 +975,7 @@ file record.
 When encountered in a @LHS{} of a particular @file{users} profile,
 this attribute indicates the huntgroup name to be matched. Radius looks
 up the corresponding record in the @file{huntgroups} file. If such
-record is found, each A/V pair from its reply-list is compared against
+record is found, each @AVP{} from its reply-list is compared against
 the corresponding pair from the request being processed. The request
 matches only if it contains all the attributes from the specified
 huntgroup, and their values satisfy the conditions listed in the

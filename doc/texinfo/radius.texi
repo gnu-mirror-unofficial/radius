@@ -599,7 +599,7 @@ Public License instead of this License.
 @page
 
 @node Variable Index, Attribute Index, Example Index, Top
-@unnumbered Index of Scheme Functions and Variables
+@unnumbered Index of Functions and Variables
 @printindex fn
 @page
 

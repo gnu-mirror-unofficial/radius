@@ -1968,7 +1968,7 @@ he could be provided. The menu functionality is enabled when Radius
 is compiled with @option{--enable-livingston-menus} option.
 
 A user is presented a menu after it is authenticated if the @RHS{}
-of his profile record consist of a single A/V pair in the form:
+of his profile record consists of a single @AVP{} in the form:
 
 @example
 Menu = <menu-name>
@@ -2001,7 +2001,7 @@ start in column 1.
 Choice descriptions follow the menu declaration. Each description
 starts with a line containing choice identifier. A choice identifier
 is an arbitrary word identifying this choice, or a word @samp{DEFAULT}.
-It is followed by comma-separated list of A/V pairs which will be
+It is followed by comma-separated list of @AVP{}s which will be
 returned to the server when a user selects this choice.
 
 @comment ***L3**************************************************************

@@ -6,9 +6,14 @@ o@c This is part of the Radius manual.
 @chapter Extensions
 @cindex Extensions
 
+The use of extension language allows to extend the functionality of
+GNU Radius without having to modify its source code. The two extension
+languages supported are Rewrite and Scheme. The use of Rewrite is always
+enabled. Use of Scheme requires Guile version 1.4 or higher.
+
 @menu
-* Rewrite::
-* Guile::
+* Rewrite::         The built-in extension language.
+* Guile::           Using Scheme.       
 @end menu
 
 @comment *L1****************************************************************
@@ -142,7 +147,7 @@ The following subsection present some examples of packet rewriting
 functions.
 
 @menu
-* Example:Rewrite Examples.
+* Example: Rewrite Examples.
 @end menu
 
 @comment **L3***************************************************************
@@ -264,14 +269,14 @@ cisco_sid(string S)
    if (S =~ "\(.[^/]*\)/[^/]*/[^/]*/\([^/]*\)/\([^/]*\)/
              \([^/]*\)/\([^/]*\)/\([^/]*\)/\([^/]*\)
              /\([^/]*\).*") @{
-       %[Voip-Connection-ID] = \2;
-       %[Voip-Call-Leg-Type] = \3;
-       %[Voip-Connection-Type] = \4;
-       %[Voip-Connect-Time] = \5;
-       %[Voip-Disconnect-Time] = \6;
-       %[Voip-Disconnect-Cause] = \7;
-       %[Voip-Remote-IP] = \8;
-       return \1;
+        %[Voip-Connection-ID] = \2;
+        %[Voip-Call-Leg-Type] = \3;
+        %[Voip-Connection-Type] = \4;
+        %[Voip-Connect-Time] = \5;
+        %[Voip-Disconnect-Time] = \6;
+        %[Voip-Disconnect-Cause] = \7;
+        %[Voip-Remote-IP] = \8;
+        return \1;
    @} 
    return S;
 @}
@@ -288,7 +293,7 @@ cisco_fixup()
 
     if ((pid = cisco_pid(%[Cisco-PRI-Circuit])) != -1) @{
         if (*%[NAS-Port-Id])
-           %[Orig-NAS-Port-Id] = %[NAS-Port-Id];
+            %[Orig-NAS-Port-Id] = %[NAS-Port-Id];
         %[NAS-Port-Id] = pid;
     @}
     if (*%[Acct-Session-Id]) @{
@@ -368,7 +373,7 @@ The function should return non-0 if its arguments match user's
 session and 0 otherwise.
 
 @menu
-* Example:Examples of login verification functions.
+* Example: Examples of login verification functions.
 @end menu
 
 @comment **L4*************************************************************
@@ -388,9 +393,9 @@ user name, port and session @sc{id}s.
 integer
 check_unix(string str, string name, integer pid, string sid)
 @{
-        return field(str, 1) == name &&
-               field(str, 3) == pid &&
-               field(str, 7) == sid;
+    return field(str, 1) == name
+           && field(str, 3) == pid
+           && field(str, 7) == sid;
 @}
 @end example
 
@@ -405,7 +410,7 @@ line matches the user name.
 integer
 check_username(string str, string name, integer pid, string sid)
 @{
-        return str == name;
+    return str == name;
 @}
 @end example
 
@@ -418,7 +423,7 @@ These are the functions, used to create @RADIUS{} reply attributes. An
 attribute creation function can take any number of arguments. The type
 of its return is determined by the type of @RADIUS{} attribute the
 value will be assigned to. To invoke the function, write its name
-in the A/V pair of @RHS{} in @file{raddb/users} file, e.g.:
+in the @AVP{} of @RHS{} in @file{raddb/users} file, e.g.:
 
 @example
 @group
@@ -440,7 +445,7 @@ way:
 integer
 get_ip_address(integer base)
 @{
-        return base + %[NAS-Port-Id] - %[NAS-Port-Id]/16;
+    return base + %[NAS-Port-Id] - %[NAS-Port-Id]/16;
 @}
 @end group
 @end example
@@ -712,7 +717,7 @@ Returns the index of the last occurrence of the character @var{c} in
 the string @var{s}. Returns -1 if no such occurrence is found.
 @end deftypefn
 
-@deftypefn Function string substr(string @var{s}, integer @var{start}, integer @var{length})
+@deftypefn Function string substr (string @var{s}, integer @var{start}, integer @var{length})
 Returns the at most @var{length} substring of @var{s} starting at
 position @var{start}.
 @end deftypefn
@@ -726,4 +731,345 @@ All character positions in strings are counted from 0.
 @section Guile
 @cindex Guile
 
-[FIXME]
+The name Guile stands for @dfn{GNU's Ubiquitous Intelligent Language for
+Extensions}. It provides the Scheme interpreter conforming to R4RS
+language specification. This section describes use of Guile as an
+extension language for GNU Radius. It assumes that the reader is
+sufficiently familiar with the Scheme language. Please, refer to
+@ref{Top,,,r4rs,Revised(4) Report on the Algorithmic Language Scheme},
+for the information about the language. If you wish to know more
+about the Guile, @xref{Top,,Overview,guile,The Guile Reference Manual}.
+
+Scheme procedures can be called for processing both authentication
+and accounting requests. The invocation of a scheme procedure for an
+authentication request is triggered by @attr{Scheme-Procedure}
+attribute, the invocation for an accounting request is triggered
+by @attr{Scheme-Acct-Procedure} attribute. The following sections
+address these issues in more detail.
+
+@menu
+* Data Representation::
+* Authentication with Scheme::
+* Accounting with Scheme::
+* Radius-Specific Functions::
+@end menu
+
+@comment **L2***************************************************************
+@node Data Representation, Authentication with Scheme, , Guile
+@subsection Data Representation
+@cindex Guile, representation of Radius data
+
+@AVP{} lists are the main object scheme functions operate upon. Scheme
+is extremely convenient for representation of such objects. A Radius @AVP{}
+is represented by a Scheme pair, e.g.
+
+@example
+        Session-Timeout = 10
+@end example
+
+@noindent
+is represented in Guile as
+
+@lisp
+        (cons "Session-Timeout" 10)
+@end lisp
+
+The @sc{car} of the pair can contain either the attribute dictionary
+name, or the attribute number. Thus, the above pair may also be
+written in Scheme as
+
+@lisp
+        (cons 27 10)
+@end lisp
+
+@noindent
+(@attr{Session-Timeout} corresponds to attribute number 27).
+
+Lists of @AVP{}s are represented by Scheme lists. For example,
+the following Radius pair list
+
+@example
+@group
+        User-Name = "jsmith",
+                Password = "guessme",
+                NAS-IP-Address = 10.10.10.1,
+                NAS-Port-Id = 10
+@end group
+@end example
+
+@noindent
+is written in Scheme as:
+
+@lisp
+@group
+        (list
+          (cons "User-Name" "jsmith")
+          (cons "Password" "guessme")
+          (cons "NAS-IP-Address" "10.10.10.1")
+          (cons "NAS-Port-Id" 10))
+@end group
+@end lisp
+        
+@comment **L2***************************************************************
+@node Authentication with Scheme, Accounting with Scheme, Data Representation, Guile
+@subsection Authentication with Scheme
+@cindex Authentication with Scheme
+
+The Scheme procedure used for authentication must be declared as
+follows:
+
+@deffn {Function Template} auth-function request-list check-list reply-list
+Its arguments are:
+@table @var
+@item request-list
+The list of @AVP{}s from the incoming request
+@item check-list
+The list of @AVP{}s from the @LHS{} of the profile entry that matched
+the request.
+@item reply-list
+The list of @AVP{}s from the @RHS{} of the profile entry that matched
+the request.
+@end table
+@end deffn
+
+The function return value determines whether the authentication will
+succeed. The function must return either a boolean value or a pair.
+The return of @code{#t} causes authentication to succeed. The return
+of @code{#f} causes it to fail.
+
+If the function wishes to add something to the reply @AVP{}s, it
+should return a pair in the form:
+
+@lisp
+    (cons @var{return-code} @var{list})
+@end lisp
+
+Where @var{return-code} is a boolean value of the same meaning as
+described above. The @var{list} is a list of @AVP{}s to be added
+to the reply list. For example, the following function will always
+deny the authentication, returning appropriate message to the user:
+
+@exindex "Scheme authentication function"
+@lisp
+@group
+(define (decline-auth request-list check-list reply-list)
+  (cons #f
+        (list
+         (cons "Reply-Message"
+               "\r\nSorry, you are not allowed to log in\r\n"))))
+@end group
+@end lisp
+
+As a more constructive example, let's consider a function that
+allows the authentication only if a user name is found in its
+internal database.
+
+@lisp
+@group
+(define staff-data
+  (list
+   (list "scheme"
+         (cons
+          (list (cons "NAS-IP-Address" "127.0.0.1"))
+          (list (cons "Framed-MTU" "8096")))
+         (cons
+          '()
+          (list (cons "Framed-MTU" "256"))))))
+  
+(define (auth req check reply)
+  (let* ((username (assoc "User-Name" req))
+         (reqlist (assoc username req))
+         (reply-list '()))
+    (if username
+        (let ((user-data (assoc (cdr username) staff-data)))
+          (rad-log L_INFO (format #f "~A" user-data))
+          (if user-data
+              (call-with-current-continuation
+               (lambda (xx)
+                 (for-each
+                  (lambda (pair)
+                    (cond
+                     ((avl-match? req (car pair))
+                      (set! reply-list (avl-merge reply-list (cdr pair)))
+                      (xx #t))))
+                  (cdr user-data))
+                 #f)))))
+    (cons
+     #t
+     reply-list)))
+@end group
+@end lisp
+
+To trigger the invocation of the Scheme authentication function, assign
+its name to @attr{Scheme-Procedure} attribute in @RHS{} of a
+corresponding @file{raddb/users} profile. E.g.:
+
+@exindex "Invoking Scheme authentication function"
+@exindex "Scheme authentication function, invocation"
+@example
+@group
+DEFAULT Auth-Type = SQL
+        Scheme-Procedure = "auth"
+@end group
+@end example
+
+@comment **L2***************************************************************
+@node Accounting with Scheme, Radius-Specific Functions, Authentication with Scheme, Guile
+@subsection Accounting with Scheme
+@cindex Accounting with Scheme
+
+The Scheme accounting procedure must be declared as follows:
+
+@deffn {Function Template} acct-function-name request-list
+Its arguments are:
+@table @var
+@item request-list
+The list of @AVP{}s from the incoming request
+@end table
+@end deffn
+
+The function must return a boolean value. The accounting succeeds only
+if it returned @code{#t}.
+
+Here is an example of Scheme accounting function. The function dumps
+the contents of the incoming request to a file:
+
+@exindex Scheme accounting function
+@lisp
+@group
+(define radius-acct-file "/var/log/acct/radius")
+
+(define (acct req)
+  (call-with-output-file radius-acct-file
+    (lambda (port)
+      (for-each (lambda (pair)
+                  (display (car pair) port)
+                  (display "=" port)
+                  (display (cdr pair) port)
+                  (newline port))
+                req)
+      (newline port)))
+  #t)
+@end group
+@end lisp
+
+@comment **L2***************************************************************
+@node Radius-Specific Functions, , Accounting with Scheme, Guile
+@subsection Radius-Specific Functions
+@cindex Radius-Specific Scheme Functions
+
+@deffn {Scheme Function} avl-delete av-list attr
+Delete from @var{av-list} the pairs with attribute @var{attr}.
+@end deffn
+
+@deffn {Scheme Function} avl-merge dst src
+Merge @var{src} into @var{dst}.
+@end deffn
+
+@deffn {Scheme Function} avl-match? target list
+Return @code{#t} if all pairs from @var{list} are present in @var{target}.
+@end deffn
+
+@deffn {Scheme Function} rad-dict-name->attr name
+Return a dictionary entry for the given attribute @var{name} or @code{#f} if
+no such name was found in the dictionary.
+
+A dictionary entry is a list in the form:
+
+@deffn {Scheme List} dict-entry name-string attr-number type-number vendor
+Where
+@table @var
+@item name-string
+The attribute name
+@item value-number
+The attribute number
+@item type-number
+The attribute type
+@item vendor
+is the vendor @acronym{PEC}, if the attribute is a Vendor-Specific one,
+or #f otherwise.
+@end table
+@end deffn
+@end deffn
+
+@deffn {Scheme Function} rad-dict-value->name attr value
+Returns a dictionary name of the given @var{value} for an integer-type
+attribute @var{attr}. @var{attr} can be either an attribute number
+or its dictionary name.
+@end deffn
+
+@deffn {Scheme Function} rad-dict-name->value attr value
+Convert a symbolic attribute value name into its integer representation
+@end deffn
+
+@deffn {Scheme Function} rad-dict-pec->vendor pec
+Convert @acronym{PEC} to the vendor name
+@end deffn
+
+@deffn {Scheme Function} rad-log-open prio
+Open radius logging to the severity level @var{prio}.
+@end deffn
+
+@deffn {Scheme Function} rad-log-close
+Close radius logging channel open by a previous call to @code{rad-log-open}.
+@end deffn
+
+@deffn {Scheme Function} rad-rewrite-execute-string string
+Interpret @var{string} as an invocation of a function in Rewrite language and
+execute it.
+
+Return value: return of the corresponding Rewrite call, translated to
+the Scheme data type.
+@end deffn
+
+@deffn {Scheme Function} rad-rewrite-execute arglist
+Execute a Rewrite language function.
+@code{(car @var{arglist})} is interpreted as a name of the Rewrite
+function to execute, and @code{(cdr @var{arglist})} as a list of
+arguments to be passed to it.
+
+Return value: return of the corresponding Rewrite call, translated to
+the Scheme data type.
+@end deffn
+
+@deffn {Scheme Function} rad-openlog ident option facility
+Scheme interface to the system @code{openlog()} call.
+@end deffn
+
+@deffn {Scheme Function} rad-syslog prio text
+Scheme interface to the system @code{syslog()} call.
+@end deffn
+
+@deffn {Scheme Function} rad-closelog
+Scheme interface to the system @code{closelog()} call.
+@end deffn
+
+@deffn {Scheme Function} rad-utmp-putent status delay list radutmp_file radwtmp_file
+Write the supplied data into the radutmp file. If RADWTMP_FILE is not nil
+the constructed entry is also appended to WTMP_FILE.
+@var{list} is:
+
+@deffn {Scheme List} utmp-entry user-name orig-name port-id port-type session-id caller-id framed-ip nas-ip proto
+
+@table @var
+@item user-name
+The user name
+@item orig-name
+Original user name from the request
+@item port-id
+The value of @attr{NAS-Port-Id} attribute.
+@item port-type
+A number or character indicating the port type.
+@item session-id
+Session @sc{id}.
+@item caller-id
+The value of @attr{Calling-Station-Id} attribute from the request.
+@item framed-ip
+The framed @IP{} assigned to the user.
+@item nas-ip
+The @NAS{} @IP{}.
+@item proto
+Number or character indicating type of the connection.
+@end table
+@end deffn
+@end deffn

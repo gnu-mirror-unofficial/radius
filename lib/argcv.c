@@ -150,13 +150,30 @@ argcv_string (int argc, char **argv, char **pstring)
 
   for (len = i = 0; i < argc; i++)
     {
+      int quote = 0;
+      char *p;
+
+      for (p = argv[i]; *p; p++)
+	if (isspace(*p))
+	  {
+	    quote = 1;
+	    break;
+	  }
+      
       len += strlen (argv[i]) + 2;
+      if (quote)
+	len += 2;
+      
       buffer = realloc (buffer, len);
       if (buffer == NULL)
         return 1;
       if (i != 0)
-        strcat (buffer, " ");
+	strcat (buffer, " ");
+      if (quote)
+	strcat (buffer, "\"");
       strcat (buffer, argv[i]);
+      if (quote)
+	strcat (buffer, "\"");
     }
 
   /* Strip off trailing space.  */

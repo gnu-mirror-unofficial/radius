@@ -315,7 +315,8 @@ request_handle(REQUEST *req, int (*handler)(REQUEST *))
 	
 	if (radiusd_master() && spawn_flag && !rpp_ready(0)) {
 		/* Do we have free handlers? */
-		radlog(L_NOTICE, _("Maximum number of children active"));
+		request_drop(req->type, req->data, NULL, req->fd,
+			     _("Maximum number of children active"));
 		return 1;
 	}
 		

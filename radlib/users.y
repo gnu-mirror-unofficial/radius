@@ -57,7 +57,8 @@
 %}
 %token EQ LT GT NE LE GE
 %token NUL
-%token <string> STRING QUOTE 
+%token BOGUS
+%token <string> STRING QUOTE  
 %type <string> user value
 %type <descr> descr
 %type <pair> npairlist pairlist pair
@@ -138,6 +139,10 @@ pairlist : pair
 pair     : STRING op value
            {
 		   $$ = install_pair($1, $2, $3);   
+	   }
+         | STRING op BOGUS
+           {
+		   YYERROR;
 	   }
          ;
 

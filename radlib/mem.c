@@ -184,6 +184,7 @@ alloc_bucket(class)
         if (class->cont) {
                 put_back_cont(class, ENTRY(bp, 0), class->elcnt);
                 class->allocated_cnt += class->elcnt;
+		insist(class->allocated_cnt <= class->bucket_cnt * class->elcnt);
         } else {
                 end_ptr = ENTRY(bp, class->elcnt);
                 prev = ENTRY(bp, 0);
@@ -240,6 +241,7 @@ alloc_entry(size)
         }
 
         class_ptr->allocated_cnt++;
+	insist(class_ptr->allocated_cnt <= class_ptr->bucket_cnt * class_ptr->elcnt);
         ptr = class_ptr->free;
         class_ptr->free = ptr->next;
         mem_unlock();
@@ -383,6 +385,7 @@ again:
         }
 
         class_ptr->allocated_cnt += count;
+	insist(class_ptr->allocated_cnt <= class_ptr->bucket_cnt * class_ptr->elcnt);
         if (pre_first)  
                 pre_first->next = last->next;
         else
@@ -428,6 +431,8 @@ put_back_cont(class, ptr, count)
         Entry this_p, prev_p;
 
         class->allocated_cnt -= count;
+	insist(class->allocated_cnt <= class->bucket_cnt * class->elcnt);
+
         bzero(ptr, class->elsize * count);
 
         /* Link the objects being freed into a list */

@@ -201,16 +201,18 @@ int
 main(int argc, char **argv)
 {
         char *p;
-        int index;
+        int index, argind;
 	radtest_variable_t *var;
 	
         grad_app_setup();
         init_symbols();
 
-        index = argc;
-        if (grad_argp_parse(&argp, &argc, &argv, ARGP_IN_ORDER, NULL, &index))
+        index = 0;
+        if (grad_argp_parse(&argp, &argc, &argv, ARGP_IN_ORDER, &argind, &index))
                 return 1;
-
+	if (index == 0)
+		index = argind;
+	
         argv += index;
         argc -= index;
 
@@ -314,7 +316,7 @@ main(int argc, char **argv)
         }
 
 	toplevel_env = grad_list_create();
-	radtest_env_add_string(toplevel_env, filename);
+	radtest_env_add_string(toplevel_env, filename ? filename : "");
 
         for (; argc; argv++, argc--) {
                 if ((p = strchr(*argv, '=')) != NULL &&

@@ -1,4 +1,10 @@
-2002-03-17  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+2002-03-18  Sergey Poznyakoff  
+
+	* radiusd/auth.c: Renamed MACH to AUTH_MACH. It caused
+	  trouble on Hurd.
+	* sql/disp.c: Removed stray pth.h
+
+2002-03-17  Sergey Poznyakoff  
 
 	* radiusd/files.c (hints_setup): Use avp_free instead
 	  of avl_free to free a single pair.
@@ -13,7 +19,7 @@
 	* radlib/mem.c: mem_lock/mem_unlock were completely broken.
 	  Fixed.
 
-2002-03-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+2002-03-11  Sergey Poznyakoff  
 
 	Fixed snmp_errno thread-safety. Second todo from the
 	previous entry remains in force, though I'm still not

@@ -1,3 +1,16 @@
+2003-10-25  Sergey Poznyakoff 
+
+	* NEWS: Updated
+	* radiusd/auth.c (sfn_exec_wait): Change to
+	as_reject on failure, since filter and exec
+	clean up the reply pairs on error.
+	* radiusd/exec.c (radius_exec_program, filter_auth):
+	Clean up the reply pairs on error.
+	* radiusd/rewrite.y: Implement pragmatic comments. Currently
+	only `#pragma regex' is defined, allowing to alter the
+	type of regular expressions used.
+	(bi_field): Return null string on error.
+	
 2003-10-24  Sergey Poznyakoff 
 
 	* radiusd/rewrite.y (bi_qprn): New builtin function.

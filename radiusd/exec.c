@@ -410,6 +410,7 @@ struct filter_runtime_data {
 	rad_sigid_t id;             /* Signal handler */ 
 	pid_t  oldpid;              /* Pid of the exited filter process */
 	int    status;              /* Exit status of it */
+	int    stopped;             /* SIGKILL has been sent to the filter */
 	
 	pthread_t tid;              /* Thread ID of the thread this filter
 				       belongs to */
@@ -565,6 +566,7 @@ filter_sigchld(sig, data, id, owner)
 		filter->pid = -1;
 		rad_signal_remove(SIGCHLD, filter->id, owner);
 		filter->id = 0;
+		filter->stopped = 0;
 		
 		return 0;
 	}
@@ -588,9 +590,22 @@ filter_close(filter)
 	}
 	if (filter->pid > 0)
 		kill(filter->pid, SIGTERM);
-	filter->pid = -1;
-	rad_signal_remove(SIGCHLD, filter->id, NULL);
-	filter->id = 0;
+
+	filter->stopped = 1;
+}
+
+void
+filter_kill(filter)
+	Filter *filter;
+{
+	if (filter->pid == -1 || !filter->stopped)  
+		return;
+	do
+	  {
+	    kill(filter->pid, SIGKILL);
+	    sleep(2);
+	  }
+	while (filter->pid != -1);
 }
 
 static Filter *
@@ -630,19 +645,29 @@ filter_open(name, req, type, errp)
 		pthread_mutex_init(&filter->mutex, NULL);
 		filter->next = sym->filter;
 		sym->filter = filter;
-	} else if (filter->pid <= 0) {
-		char buffer[80];
-		Filter_symbol *sym = filter->sym;
+	} else {
+		if (filter->stopped) {
+			radlog(L_ERR,
+			       _("Killing unresponsive filter %s (pid %d)"),
+			       filter->sym->name, filter->pid);
+			filter_kill(filter);
+		}
 		
-		format_exit_status(buffer, sizeof buffer, filter->status);
-		radlog(L_ERR,
-		       _("filter %s (pid %d) %s (in: %u, out: %u)"),
-		       sym->name, filter->oldpid,
-		       buffer,
-		       filter->lines_input, filter->lines_output);
+		if (filter->pid <= 0) {
+			char buffer[80];
+			Filter_symbol *sym = filter->sym;
+		
+			format_exit_status(buffer, sizeof buffer,
+					   filter->status);
+			radlog(L_ERR,
+			       _("filter %s (pid %d) %s (in: %u, out: %u)"),
+			       sym->name, filter->oldpid,
+			       buffer,
+			       filter->lines_input, filter->lines_output);
+		}
 	}
 	
-	if (filter->pid <= 0) {
+	if (filter && filter->pid <= 0) {
 		int pipe[2];
 
 		pthread_mutex_lock(&filter->mutex);

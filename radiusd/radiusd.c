@@ -355,7 +355,7 @@ static struct argp argp = {
         parse_opt,
         NULL,
         doc,
-        &rad_common_argp_child,
+        rad_common_argp_child,
         NULL, NULL
 };
 
@@ -451,7 +451,9 @@ main(argc, argv)
 		if (watch_interval)
 			rad_watcher();
                 common_init();
+#ifdef HAVE_PTHREAD_ATFORK
 		pthread_atfork(NULL, NULL, rad_fork_child_handler);
+#endif
         }
 
         pid = getpid();

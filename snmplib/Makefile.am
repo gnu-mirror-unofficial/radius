@@ -16,8 +16,8 @@ lint:;
 endif
 
 EXTRA_DIST=COPYING.LIB README
-noinst_LIBRARIES=libsnmp.a
-libsnmp_a_SOURCES=asn1.c snmp_mem.c snmp_oid.c snmp_pdu.c \
+noinst_LIBRARIES=libradsnmp.a
+libradsnmp_a_SOURCES=asn1.c snmp_mem.c snmp_oid.c snmp_pdu.c \
                   snmp_recv.c snmp_send.c snmp_sess.c snmp_var.c \
                   snmp_err.c snmp_mib.c
 

@@ -26,14 +26,13 @@ break main
 commands
  set variable debug_flag=1
  set variable foreground=1
- set variable spawn_flag=1
+ set variable spawn_flag=0
  continue
 end
 
 # Do not allow abort and exit run without our knowing it
 break abort
 break exit
-break sig_fatal
 
 ## Define some handy macros
 

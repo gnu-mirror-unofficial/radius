@@ -32,6 +32,7 @@ radiusd_SOURCES = \
  rewrite.c\
  scheme.c\
  snmpserv.c\
+ sockets.c\
  sql.c\
  stat.c\
  timestr.c\
@@ -75,7 +76,7 @@ SRCS=radiusd.c acct.c auth.c exec.c files.c menu.c sql.c\
          config.y pam.c proxy.c radius.c\
          timestr.c version.c log.c stat.c\
          snmpserv.c radutil.c request.c rewrite.y\
-         checkrad.c radck.c builddbm.c scheme.c
+         checkrad.c radck.c builddbm.c scheme.c sockets.c
 
 FILELIST:; @echo $(SRCS) > .list
 

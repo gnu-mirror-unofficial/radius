@@ -16,7 +16,7 @@
     	your own risk.
 
     --with-auth-port=NUMBER
-	Specify port number to use for authentication. Default is 1645.
+	Specify port number to use for authentication. Default is 1812.
         The default port number for accounting is computed as auth_port + 1.
 
     --with-include-path=STRING

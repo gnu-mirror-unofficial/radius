@@ -1,3 +1,13 @@
+2003-06-15  Sergey Poznyakoff  
+
+	* README: Updated
+	* db/db.m4: Minor change
+	* examples/config.syntax: Comment on read/write timeouts.
+	* lib/getgr.c (COPY): Fixed macro
+	* radiusd/rpp.c: Correctly handle zero returns from the
+	initial reads.
+	* radscm/ipalloc.scm: Made configurable for postgres.
+
 2003-06-15  Sergey Poznyakoff 
 
 	* radiusd/Makefile.am: Fixed FILELIST rule. Thanks Wojciech

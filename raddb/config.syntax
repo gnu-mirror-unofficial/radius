@@ -140,6 +140,10 @@ snmp {
 	};
 };
 
+rewrite {
+	stack-size 4096;
+};
+
 # Guile interface configuration
 guile {
 	debug yes;              # Enable debug mode

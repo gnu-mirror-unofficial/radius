@@ -233,11 +233,20 @@ _request_iterator(void *item, void *clos)
 
 			if (req->status == RS_XMIT)
 				req->status = RS_COMPLETED;
-			else if (rpp_kill(req->child_id, SIGKILL) == 0) 
+			else if (rpp_kill(req->child_id, SIGKILL) == 0) { 
 				grad_log(L_NOTICE,
 				         _("Killing unresponsive %s child %lu"),
 				         request_class[req->type].name,
 				         (unsigned long) req->child_id);
+				grad_list_remove(request_list, req, NULL);
+				request_free(req);
+			} else {
+				grad_log(L_CRIT,
+					 _("Cannot terminate child %lu. Attempting to kill inexisting process?"),
+					 (unsigned long) req->child_id);
+				grad_list_remove(request_list, req, NULL);
+				request_free(req);
+			}
 		}
 		return 0;
 	}

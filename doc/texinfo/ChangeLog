@@ -1,3 +1,10 @@
+2003-06-13  Sergey Poznyakoff 
+
+	* comp.texi: Fixed request-cleanup-delay formula
+	* intro.texi: Minor change.
+	* invoke.texi: Likewise.
+	* operation.texi: Fixed typo. 
+
 2003-06-10  Sergey Poznyakoff
 
 	* radius.texi (Acknowledgements): Minor change.

@@ -1,5 +1,10 @@
 2003-06-13  Sergey Poznyakoff 
 
+	* radiusd/sql.c (rad_sql_checkgroup): Do not print spurious
+	diagnostics.
+
+2003-06-13  Sergey Poznyakoff 
+
 	* db/db.m4: Create ippool table
 	* db/mysql.m4: Set privs for ippool
 	* db/pgsql.m4: Likewise.

@@ -44,6 +44,8 @@ do
         GUILE=""; [shift];;
     --proxy)
         PROXY=1; [shift];;
+    --zero-logs)
+	ZERO_LOGS=1; [shift];;
     *)
 	echo "$PROG: wrong switch ($1)" >&2
 	exit 1;;

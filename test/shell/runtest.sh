@@ -83,7 +83,7 @@ TESTLIST=""
 if [ "x$TOOL" = "x" ]; then
     TOOL=radiusd
 fi    
-TESTFILEMASK="*.sh"
+TESTFILEMASK='*.sh'
 START_SH=001Start.sh
 
 while [ $# -gt 0 ]
@@ -125,13 +125,14 @@ runtest() {
     do
 	for file in $TESTLIST
 	do
-	    find $dir -name $file -exec cat {} \; 
-	done | runtest $dir
+	    find $dir -name $file -print | sort | uniq 
+	done | xargs cat | runtest $dir
     done
 else
     for dir in $DIRLIST
     do
-	find $dir -name "$TESTFILEMASK" -exec cat {} \; | runtest $dir
+	find $dir -name "$TESTFILEMASK" -print | sort | uniq | 
+          xargs cat | runtest $dir
     done
 fi) |
  $AWK -v VERBOSE=$VERBOSE '

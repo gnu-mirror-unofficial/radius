@@ -250,9 +250,9 @@ main(argc, argv)
                 exit(1);
         }
         
-        x_argv = emalloc(sizeof(x_argv[0]) * argc);
+        x_argmax = argc + 2;
+        x_argv = emalloc(sizeof(x_argv[0]) * x_argmax);
         x_argc = 0;
-        x_argmax = argc;
         x_argv[x_argc++] = filename;
 
         for (; argc; argv++, argc--) {

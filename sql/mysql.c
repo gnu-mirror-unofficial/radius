@@ -47,12 +47,6 @@ static char rcsid[] =
 
 static int rad_mysql_reconnect(int type, struct sql_connection *conn);
 static void rad_mysql_disconnect(struct sql_connection *conn, int drop);
-static int rad_mysql_query(struct sql_connection *conn, char *query, int *return_count);
-static char *rad_mysql_getpwd(struct sql_connection *conn, char *query);
-static void *rad_mysql_exec(struct sql_connection *conn, char *query);
-static char *rad_mysql_column(void *data, int ncol);
-static int rad_mysql_next_tuple(struct sql_connection *conn, void *data);
-static void rad_mysql_free(struct sql_connection *conn, void *data);
 
 /*************************************************************************
  * Function: do_mysql_query
@@ -131,8 +125,7 @@ rad_mysql_reconnect(int type, struct sql_connection *conn)
 }
 
 static void 
-rad_mysql_disconnect(struct sql_connection *conn,
-		     int drop /* currently unused */)
+rad_mysql_disconnect(struct sql_connection *conn, int drop ARG_UNUSED)
 {
 	mysql_close(conn->data);
         efree(conn->data);
@@ -192,6 +185,29 @@ typedef struct {
         MYSQL_ROW       row;
 } RADMYSQL_DATA;
 
+static int
+rad_mysql_n_columns(struct sql_connection *conn, void *data, size_t *np)
+{
+        RADMYSQL_DATA *dp = (RADMYSQL_DATA *) data;
+
+        if (!data)
+                return -1;
+	
+        *np = mysql_num_fields(dp->result);
+	return 0;
+}
+
+static int
+rad_mysql_n_tuples(struct sql_connection *conn, void *data, size_t *np)
+{
+        RADMYSQL_DATA *dp = (RADMYSQL_DATA *) data;
+
+        if (!data)
+                return -1;
+	*np = mysql_num_rows(dp->result);
+	return 0;
+}
+
 static void *
 rad_mysql_exec(struct sql_connection *conn, char *query)
 {
@@ -207,10 +223,9 @@ rad_mysql_exec(struct sql_connection *conn, char *query)
         if (do_mysql_query(conn, query))
                 return NULL;
 
-        if (!(result = mysql_store_result((MYSQL*)conn->data))) {
-                radlog(L_ERR, _("[MYSQL]: can't get result"));
+        if (!(result = mysql_store_result((MYSQL*)conn->data)))
                 return NULL;
-        }
+
         nrows = mysql_num_rows(result);
         debug(1, ("got %d rows", nrows));
         if (nrows == 0) {
@@ -224,17 +239,15 @@ rad_mysql_exec(struct sql_connection *conn, char *query)
 }
 
 static char *
-rad_mysql_column(void *data, int ncol)
+rad_mysql_column(void *data, size_t ncol)
 {
         RADMYSQL_DATA  *dp = (RADMYSQL_DATA *) data;
 
         if (!data)
                 return NULL;
-        if (ncol >= mysql_num_fields(dp->result)) {
-                radlog(L_ERR,
-                       _("too few columns returned (%d req'd)"), ncol);
+        if (ncol >= mysql_num_fields(dp->result)) 
                 return NULL;
-        }
+
         return dp->row[ncol];
 }
 
@@ -272,7 +285,9 @@ SQL_DISPATCH_TAB mysql_dispatch_tab[] = {
         rad_mysql_exec,
         rad_mysql_column,
         rad_mysql_next_tuple,
-        rad_mysql_free
+        rad_mysql_free,
+	rad_mysql_n_tuples,
+	rad_mysql_n_columns,
 };
 
 #endif /* USE_SQL_MYSQL */

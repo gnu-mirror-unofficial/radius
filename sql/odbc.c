@@ -138,8 +138,7 @@ rad_odbc_reconnect(int type, struct sql_connection *conn)
 }
 
 static void 
-rad_odbc_disconnect(struct sql_connection *conn,
-		    int drop /* currently unused */)
+rad_odbc_disconnect(struct sql_connection *conn, int drop ARG_UNUSED)
 {
         ODBCconn *odata;
         if (!conn->data)
@@ -263,9 +262,32 @@ rad_odbc_getpwd(struct sql_connection *conn, char *query)
 }
 
 typedef struct {
-        void            *stmt;
-        int             nfields;
+        SQLHSTMT stmt;
+        int   nfields;
+	int   ntuples;
 } EXEC_DATA;
+
+static int
+rad_odbc_n_columns(struct sql_connection *conn, void *data, size_t *np)
+{
+        EXEC_DATA *edata = (EXEC_DATA*)data;
+
+        if (!data)
+		return -1;
+	*np = edata->nfields;
+	return 0;
+}
+
+static int
+rad_odbc_n_tuples(struct sql_connection *conn, void *data, size_t *np)
+{
+        EXEC_DATA *edata = (EXEC_DATA*)data;
+
+        if (!data)
+		return -1;
+	*np = edata->ntuples;
+	return 0;
+}
 
 static void *
 rad_odbc_exec(struct sql_connection *conn, char *query)
@@ -275,6 +297,7 @@ rad_odbc_exec(struct sql_connection *conn, char *query)
         long            result;
         SQLHSTMT        stmt;
         SQLSMALLINT     ccount;
+	SQLINTEGER      rcount;
         EXEC_DATA      *data;
         
         if (!conn || !conn->data)
@@ -282,7 +305,7 @@ rad_odbc_exec(struct sql_connection *conn, char *query)
 
         debug(1, ("query: %s", query));
 
-        odata = (ODBCconn*)(conn->data);
+        odata = (ODBCconn*)conn->data;
         result = SQLAllocHandle(SQL_HANDLE_STMT,odata->dbc, &stmt);     
         if (result != SQL_SUCCESS) {
                 rad_odbc_diag(SQL_HANDLE_DBC, odata->dbc,
@@ -298,17 +321,24 @@ rad_odbc_exec(struct sql_connection *conn, char *query)
                 return NULL;
         }
         
-        result = SQLNumResultCols(stmt, &ccount);       
-        if (result != SQL_SUCCESS) {
+        if (SQLNumResultCols(stmt, &ccount) != SQL_SUCCESS
+	    || SQLRowCount(stmt, &rcount) != SQL_SUCCESS) {
                 rad_odbc_diag(SQL_HANDLE_STMT, stmt,
                               "SQLNumResultCount");
                 SQLFreeHandle(SQL_HANDLE_STMT, stmt);
                 return NULL;
         }
 
+	if (rcount == 0) {
+		SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+                return NULL;
+        }
+		
+	
         data = emalloc(sizeof(*data));
         data->stmt = stmt;
         data->nfields = ccount;
+	data->ntuples = rcount;
         return (void*)data;
 }
 
@@ -359,8 +389,6 @@ rad_odbc_next_tuple(struct sql_connection *conn, void *data)
         rad_odbc_diag(SQL_HANDLE_STMT, edata->stmt,
                       "SQLFetch");
         return 1;
-
-
 }
 
 /*ARGSUSED*/
@@ -386,7 +414,9 @@ SQL_DISPATCH_TAB odbc_dispatch_tab[] = {
         rad_odbc_exec,
         rad_odbc_column,
         rad_odbc_next_tuple,
-        rad_odbc_free
+        rad_odbc_free,
+	rad_odbc_n_tuples,
+	rad_odbc_n_columns,
 };
 
 #endif

@@ -32,6 +32,9 @@
 #include <radsql.h>
 #include <obstack1.h>
 #include <ctype.h>
+#ifdef USE_SERVER_GUILE
+# include <libguile.h>
+#endif
 
 static void sql_check_config(SQL_cfg *);
 static struct sql_connection *attach_sql_connection(int type);
@@ -68,7 +71,7 @@ static struct sql_connection *sql_conn[SQL_NSERVICE];
 #define STMT_MAX_AUTH_CONNECTIONS  18
 #define STMT_MAX_ACCT_CONNECTIONS  19
 #define STMT_GROUP_QUERY           20
-#define STMT_REPLY_ATTR_QUERY            21
+#define STMT_REPLY_ATTR_QUERY      21
 #define STMT_INTERFACE             22
 #define STMT_CHECK_ATTR_QUERY      23
 
@@ -485,7 +488,7 @@ static void
 sql_conn_destroy(struct sql_connection **conn)
 {
 	if (*conn) {
-		disp_sql_disconnect(sql_cfg.interface, *conn);
+		disp_sql_disconnect(*conn);
 		efree(*conn);
 		*conn = NULL;
 	}
@@ -585,7 +588,6 @@ attach_sql_connection(int type)
                 debug(1, ("allocating new %d sql connection", type));
 
                 conn = emalloc(sizeof(struct sql_connection));
-                conn->owner = NULL;
                 conn->connected = 0;
                 conn->last_used = now;
                 conn->type = type;
@@ -597,7 +599,7 @@ attach_sql_connection(int type)
                 debug(1, ("connection %d timed out: reconnect", type));
                 disp_sql_reconnect(sql_cfg.interface, type, conn);
         }
-	conn->delete_on_close = !sql_cfg.keepopen;
+	conn->destroy_on_close = !sql_cfg.keepopen;
         conn->last_used = now;
         debug(1, ("attaching %p [%d]", conn, type));
         return conn;
@@ -612,11 +614,11 @@ detach_sql_connection(int type)
         if (!conn)
                 return;
         debug(1, ("detaching %p [%d]", conn, type));
-        if (conn->delete_on_close) {
+        if (conn->destroy_on_close) {
                 debug(1, ("destructing sql connection %p",
                           conn));
                 if (conn->connected)
-                        disp_sql_disconnect(sql_cfg.interface, conn);
+                        disp_sql_disconnect(conn);
                 efree(conn);
                 sql_conn[type] = NULL;
         }
@@ -667,7 +669,7 @@ rad_sql_acct(RADIUS_REQ *radreq)
                 query = radius_xlate(&stack,
                                      sql_cfg.acct_start_query,
                                      radreq, NULL);
-                rc = disp_sql_query(sql_cfg.interface, conn, query, NULL);
+                rc = disp_sql_query(conn, query, NULL);
                 sqllog(rc, query);
 		log_facility = 0;
                 break;
@@ -679,7 +681,7 @@ rad_sql_acct(RADIUS_REQ *radreq)
                 query = radius_xlate(&stack,
                                      sql_cfg.acct_stop_query,
                                      radreq, NULL);
-                rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
+                rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
                 if (rc == 0 && count != 1) {
                         char *name;
@@ -700,7 +702,7 @@ rad_sql_acct(RADIUS_REQ *radreq)
                 query = radius_xlate(&stack,
                                      sql_cfg.acct_nasup_query,
                                      radreq, NULL);
-                rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
+                rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
 		if (rc == 0)
 			log_facility = L_INFO;
@@ -713,7 +715,7 @@ rad_sql_acct(RADIUS_REQ *radreq)
                 query = radius_xlate(&stack,
                                      sql_cfg.acct_nasdown_query,
                                      radreq, NULL);
-                rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
+                rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
 		if (rc == 0)
 			log_facility = L_INFO;
@@ -726,7 +728,7 @@ rad_sql_acct(RADIUS_REQ *radreq)
                 query = radius_xlate(&stack,
                                      sql_cfg.acct_keepalive_query,
                                      radreq, NULL);
-                rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
+                rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
                 if (rc != 0) 
 			log_facility = L_INFO;
@@ -771,7 +773,7 @@ rad_sql_pass(RADIUS_REQ *req, char *authdata)
         avl_delete(&req->request, DA_AUTH_DATA);
         
         conn = attach_sql_connection(SQL_AUTH);
-        mysql_passwd = disp_sql_getpwd(sql_cfg.interface, conn, query);
+        mysql_passwd = disp_sql_getpwd(conn, query);
 	
         if (mysql_passwd) 
                 chop(mysql_passwd);
@@ -804,17 +806,20 @@ rad_sql_checkgroup(req, groupname)
 	
         query = radius_xlate(&stack, sql_cfg.group_query, req, NULL);
 
-        data = disp_sql_exec(sql_cfg.interface, conn, query);
-
-        while (rc != 0
-               && disp_sql_next_tuple(sql_cfg.interface, conn, data) == 0) {
-                if ((p = disp_sql_column(sql_cfg.interface, data, 0)) == NULL)
-                        break;
-                chop(p);
-                if (strcmp(p, groupname) == 0)
-                        rc = 0;
-        }
-        disp_sql_free(sql_cfg.interface, conn, data);
+        data = disp_sql_exec(conn, query);
+	if (!data) {
+		radlog(L_ERR, _("Query returned no tuples: %s"), query);
+	} else {
+		while (rc != 0
+		       && disp_sql_next_tuple(conn, data) == 0) {
+			if ((p = disp_sql_column(conn, data, 0)) == NULL)
+				break;
+			chop(p);
+			if (strcmp(p, groupname) == 0)
+				rc = 0;
+		}
+		disp_sql_free(conn, data);
+	}
 	
         obstack_free(&stack, NULL);
         return rc;
@@ -829,23 +834,22 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
         void *data;
         int i;
         
-        data = disp_sql_exec(sql_cfg.interface, conn, query);
-        if (!data)
+        data = disp_sql_exec(conn, query);
+        if (!data) 
                 return 0;
         
-        for (i = 0; disp_sql_next_tuple(sql_cfg.interface, conn, data) == 0;
-             i++) {
+        for (i = 0; disp_sql_next_tuple(conn, data) == 0; i++) {
                 VALUE_PAIR *pair;
                 char *attribute;
                 char *value;
                 int op;
                 
-                if (!(attribute = disp_sql_column(sql_cfg.interface, data, 0))
-                    || !(value =  disp_sql_column(sql_cfg.interface, data, 1)))
+                if (!(attribute = disp_sql_column(conn, data, 0))
+                    || !(value =  disp_sql_column(conn, data, 1)))
                         break;
                 if (op_too) {
                         char *opstr;
-                        opstr = disp_sql_column(sql_cfg.interface, data, 2);
+                        opstr = disp_sql_column(conn, data, 2);
                         if (!opstr)
                                 break;
                         chop(opstr);
@@ -869,7 +873,7 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
                 }
         }
 
-        disp_sql_free(sql_cfg.interface, conn, data);
+        disp_sql_free(conn, data);
         return i;
 }
 
@@ -914,5 +918,61 @@ rad_sql_check_attr_query(RADIUS_REQ *req, VALUE_PAIR **return_pairs)
         obstack_free(&stack, NULL);
         return rc == 0;
 }
+
+
+/* ****************************************************************************
+ * Guile interface
+ */
+#ifdef USE_SERVER_GUILE
+
+SCM
+sql_exec_query(int type, char *query)
+{
+	int i, j;
+        struct sql_connection *conn;
+	void *data;
+	SCM row_head = SCM_EOL, row_tail;
+	
+	if (type < 0 || type > SQL_NSERVICE)
+		return SCM_BOOL_F;
+	conn = attach_sql_connection(type);
+        data = disp_sql_exec(conn, query);
+        if (!data) 
+                return SCM_BOOL_F;
+	
+	for (i = 0; disp_sql_next_tuple(conn, data) == 0; i++) {
+		char *tuple;
+		SCM new_row;
+		SCM head = SCM_EOL, tail;
+		
+		for (j = 0; tuple = disp_sql_column(conn, data, j); j++) {
+			SCM new_elt;
+			SCM_NEWCELL(new_elt);
+			SCM_SETCAR(new_elt, scm_makfrom0str(tuple));
+			if (head == SCM_EOL)
+				head = new_elt;
+			else
+				SCM_SETCDR(tail, new_elt);
+			tail = new_elt;
+		}
+		if (head != SCM_EOL)
+			SCM_SETCDR(tail, SCM_EOL);
+		SCM_NEWCELL(new_row);
+		SCM_SETCAR(new_row, head);
+
+		if (row_head == SCM_EOL)
+			row_head = new_row;
+		else
+			SCM_SETCDR(row_tail, new_row);
+		row_tail = new_row;
+	}
+	if (row_head != SCM_EOL)
+		SCM_SETCDR(row_tail, SCM_EOL);
+
+	disp_sql_free(conn, data);
+	
+	return row_head;
+}
+#endif
 
 #endif

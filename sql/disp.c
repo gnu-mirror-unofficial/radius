@@ -57,75 +57,95 @@ disp_sql_entry(int type)
 }
 
 int
-disp_sql_reconnect(int type, int conn_type, struct sql_connection *conn)
+disp_sql_reconnect(int interface, int conn_type, struct sql_connection *conn)
 {
 	if (!conn)
 		return -1;
         if (conn->connected)
-                disp_sql_entry(type)->disconnect(conn, 0);
-        return disp_sql_entry(type)->reconnect(conn_type, conn);
+                disp_sql_entry(conn->interface)->disconnect(conn, 0);
+	conn->interface = interface;
+        return disp_sql_entry(conn->interface)->reconnect(conn_type, conn);
 }
 
 void
-disp_sql_drop(int type, struct sql_connection *conn)
+disp_sql_drop(struct sql_connection *conn)
 {
 	if (conn && conn->connected)
-		disp_sql_entry(type)->disconnect(conn, 1);
+		disp_sql_entry(conn->interface)->disconnect(conn, 1);
 }
 
 void
-disp_sql_disconnect(int type, struct sql_connection *conn)
+disp_sql_disconnect(struct sql_connection *conn)
 {
 	if (conn && conn->connected)
-		disp_sql_entry(type)->disconnect(conn, 0);
+		disp_sql_entry(conn->interface)->disconnect(conn, 0);
 }
 
 int
-disp_sql_query(int type, struct sql_connection *conn,
-	       char *query, int *report_cnt)
+disp_sql_query(struct sql_connection *conn, char *query, int *report_cnt)
 {
 	int rc;
 
 	if (!conn)
 		return -1;
-	rc = disp_sql_entry(type)->query(conn, query, report_cnt);
+	rc = disp_sql_entry(conn->interface)->query(conn, query, report_cnt);
 	if (rc) 
 		radlog(L_ERR, "%s: %s", _("Failed query was"), query);
 	return rc;
 }
 
 char *
-disp_sql_getpwd(int type, struct sql_connection *conn, char *query)
+disp_sql_getpwd(struct sql_connection *conn, char *query)
 {
 	if (!conn)
 		return NULL;
-        return disp_sql_entry(type)->getpwd(conn, query);
+        return disp_sql_entry(conn->interface)->getpwd(conn, query);
 }
 
 void *
-disp_sql_exec(int type, struct sql_connection *conn, char *query)
+disp_sql_exec(struct sql_connection *conn, char *query)
 {
-        return disp_sql_entry(type)->exec_query(conn, query);
+        return disp_sql_entry(conn->interface)->exec_query(conn, query);
 }
 
 char *
-disp_sql_column(int type, void *data, int ncol)
+disp_sql_column(struct sql_connection *conn, void *data, size_t ncol)
 {
-        return disp_sql_entry(type)->column(data, ncol);
+        return disp_sql_entry(conn->interface)->column(data, ncol);
 }
 
 int
-disp_sql_next_tuple(int type, struct sql_connection *conn, void *data)
+disp_sql_next_tuple(struct sql_connection *conn, void *data)
 {
 	if (!conn)
 		return -1;
-        return disp_sql_entry(type)->next_tuple(conn, data);
+        return disp_sql_entry(conn->interface)->next_tuple(conn, data);
 }
 
 /*ARGSUSED*/
 void
-disp_sql_free(int type, struct sql_connection *conn, void *data)
+disp_sql_free(struct sql_connection *conn, void *data)
 {
 	if (conn)
-		disp_sql_entry(type)->free(conn, data);
+		disp_sql_entry(conn->interface)->free(conn, data);
 }
+
+int
+disp_sql_num_tuples(struct sql_connection *conn, void *data, size_t *np)
+{
+	if (conn)
+		return disp_sql_entry(conn->interface)->n_tuples(conn,
+								 data, np);
+	return -1;
+}
+
+int
+disp_sql_num_columns(struct sql_connection *conn, void *data, size_t *np)
+{
+	if (conn)
+		return disp_sql_entry(conn->interface)->n_columns(conn,
+								  data, np);
+	return 0;
+}
+
+

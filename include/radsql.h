@@ -29,13 +29,13 @@
 
 
 struct sql_connection {
-        struct sql_connection *next;
-        int    type;
-        void   *owner;
-        int    connected;
-        int    delete_on_close;
-        time_t last_used;
-        void   *data;      /* connection - specific data */
+	int    interface;        /* One of SQLT_ values */
+        int    type;             /* One of SQL_ values */
+        int    connected;        /* Connected to the database? */
+        int    destroy_on_close; /* Should the connection be closed upon
+				    the end of a transaction */
+        time_t last_used;        /* When it was lastly used */
+        void   *data;            /* connection-specific data */
 };
 
 typedef struct {
@@ -75,16 +75,21 @@ int rad_sql_reply_attr_query(RADIUS_REQ *req, VALUE_PAIR **reply_pairs);
 void rad_sql_shutdown();
 int disp_sql_interface_index(char *name);
 
+#ifdef RADIUS_SERVER_GUILE
+SCM sql_exec_query(int type, char *query);
+#endif
+
 /* Dispatcher routines */
-int disp_sql_reconnect(int interface, int conn_type, struct sql_connection *);
-void disp_sql_disconnect(int interface, struct sql_connection *);
-int disp_sql_query(int interface, struct sql_connection *,
-                   char *query, int *report_cnt);
-char * disp_sql_getpwd(int interface, struct sql_connection *, char *query);
-void * disp_sql_exec(int interface, struct sql_connection *conn, char *query);
-char * disp_sql_column(int interface, void *data, int ncol);
-int disp_sql_next_tuple(int interface, struct sql_connection *conn, void *data);
-void disp_sql_free(int interface, struct sql_connection *conn, void *data);
+int disp_sql_reconnect(int interface, int conn_type, struct sql_connection *conn);
+void disp_sql_disconnect(struct sql_connection *conn);
+int disp_sql_query(struct sql_connection *conn, char *query, int *report_cnt);
+char *disp_sql_getpwd(struct sql_connection *conn, char *query);
+void *disp_sql_exec(struct sql_connection *conn, char *query);
+char *disp_sql_column(struct sql_connection *conn, void *data, size_t ncol);
+int disp_sql_next_tuple(struct sql_connection *conn, void *data);
+void disp_sql_free(struct sql_connection *conn, void *data);
+int disp_sql_num_tuples(struct sql_connection *conn, void *data, size_t *np);
+int disp_sql_num_columns(struct sql_connection *conn, void *data, size_t *np);
 
 typedef struct {
         char *name;
@@ -94,9 +99,11 @@ typedef struct {
         int (*query)(struct sql_connection *, char *query, int *report_cnt);
         char *(*getpwd)(struct sql_connection *, char *query);
         void *(*exec_query)(struct sql_connection *conn, char *query);
-        char *(*column)(void *data, int ncol);
+        char *(*column)(void *data, size_t ncol);
         int  (*next_tuple)(struct sql_connection *conn, void *data);
         void (*free)(struct sql_connection *conn, void *data);
+	int (*n_tuples)(struct sql_connection *conn, void *data, size_t *np);
+	int (*n_columns)(struct sql_connection *conn, void *data, size_t *np);
 } SQL_DISPATCH_TAB;
 
 #ifdef USE_SQL_MYSQL

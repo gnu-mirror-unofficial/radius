@@ -34,12 +34,6 @@
 
 static int rad_postgres_reconnect(int type, struct sql_connection *conn);
 static void rad_postgres_disconnect(struct sql_connection *conn, int drop);
-static int rad_postgres_query(struct sql_connection *conn, char *query, int *return_count);
-static char *rad_postgres_getpwd(struct sql_connection *conn, char *query);
-static void *rad_postgres_exec(struct sql_connection *conn, char *query);
-static char *rad_postgres_column(void *data, int ncol);
-static int rad_postgres_next_tuple(struct sql_connection *conn, void *data);
-static void rad_postgres_free(struct sql_connection *conn, void *data);
 
 /* ************************************************************************* */
 /* Interface routines */
@@ -191,6 +185,26 @@ typedef struct {
         int            curtuple;
 } EXEC_DATA;
 
+static int
+rad_postgres_n_columns(struct sql_connection *conn, void *data, size_t *np)
+{
+        EXEC_DATA *edata = (EXEC_DATA*)data;
+        if (!data)
+                return -1;
+	*np = edata->nfields;
+	return 0;
+}
+
+static int
+rad_postgres_n_tuples(struct sql_connection *conn, void *data, size_t *np)
+{
+        EXEC_DATA *edata = (EXEC_DATA*)data;
+        if (!data)
+                return -1;
+	*np = edata->ntuples;
+	return 0;
+}
+
 static void *
 rad_postgres_exec(struct sql_connection *conn, char *query)
 {
@@ -218,12 +232,13 @@ rad_postgres_exec(struct sql_connection *conn, char *query)
               PQresStatus(stat)));
 
         if (stat != PGRES_TUPLES_OK) {
-                radlog(L_ERR,
-                       _("PQexec returned %s"),
-                       PQresStatus(stat));
                 PQclear(res);
-                if (stat == PGRES_FATAL_ERROR)
+                if (stat == PGRES_FATAL_ERROR) {
+			radlog(L_ERR,
+			       _("PQexec returned %s"),
+			       PQresStatus(stat));
 			rad_postgres_disconnect(conn, 0);
+		}
                 return NULL;
         }
 
@@ -236,14 +251,12 @@ rad_postgres_exec(struct sql_connection *conn, char *query)
 }
 
 static char *
-rad_postgres_column(void *data, int ncol)
+rad_postgres_column(void *data, size_t ncol)
 {
         EXEC_DATA *edata = (EXEC_DATA*)data;
         if (!data)
                 return NULL;
         if (ncol >= edata->nfields) {
-                radlog(L_ERR,
-                       _("too few columns returned (%d req'd)"), ncol);
                 return NULL;
         }                                                       
         return PQgetvalue(edata->res, edata->curtuple, ncol);
@@ -286,7 +299,9 @@ SQL_DISPATCH_TAB postgres_dispatch_tab[] = {
         rad_postgres_exec,
         rad_postgres_column,
         rad_postgres_next_tuple,
-        rad_postgres_free
+        rad_postgres_free,
+	rad_postgres_n_tuples,
+	rad_postgres_n_columns,
 };
 
 #endif

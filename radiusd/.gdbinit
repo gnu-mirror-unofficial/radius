@@ -37,6 +37,7 @@ break exit
 
 ## Define some handy macros
 
+# Print type of the attribute/value pair
 define _pt
 if $arg0->type == 0
 	echo STRING
@@ -62,11 +63,12 @@ _pt $arg0
 echo \n
 end
 document pt
-Print type of the pair $
+Print type of the A/V pair $
 end
 
+# Print the value of an A/V pair
 define _pv
-output (($arg0->type == 0 || $arg0->type == 3) ? $arg0->v.string.s_value : (($arg0->type == 1) ? $arg0->v.ival : ip_gethostname($arg0->v.ival)))
+output (($arg0->type == 0 || $arg0->type == 3) ? $arg0->v.string.s_value : (($arg0->type == 1) ? $arg0->v.ival : grad_ip_iptostr($arg0->v.ival, (char*)0)))
 end
 
 define pv
@@ -78,22 +80,22 @@ Print the value of the A/V pair $arg0
 end
 
 define _po
- if $arg0->operator == OPERATOR_EQUAL
+ if $arg0->operator == grad_operator_equal
 	echo =
  else
-  if $arg0->operator == OPERATOR_NOT_EQUAL
+  if $arg0->operator == grad_operator_not_equal
 	echo !=
   else
-   if $arg0->operator == OPERATOR_LESS_THAN
+   if $arg0->operator == grad_operator_less_than
 	echo <
    else
-    if $arg0->operator == OPERATOR_GREATER_THAN
+    if $arg0->operator == grad_operator_greater_than
 	echo >
     else
-     if $arg0->operator == OPERATOR_LESS_EQUAL
+     if $arg0->operator == grad_operator_less_equal
 	echo <=
      else
-      if $arg0->operator == OPERATOR_GREATER_EQUAL
+      if $arg0->operator == grad_operator_greater_equal
 	echo >=
       else
 	output $arg0->operator
@@ -141,42 +143,10 @@ Print A/V pair list
 end
 
 define print_authcode
- if $arg0->code == 1
-	echo Auth-Request
- else
-  if $arg0->code == 2
-	echo Auth-Ack
-  else
-   if $arg0->code == 3
-	echo Auth-Reject
-   else
-    if $arg0->code == 4
-	echo Acct-Request
-    else
-     if $arg0->code == 5
-	echo Acct-Reply
-     else
-      if $arg0->code == 6
-	echo Acct-Status
-      else
-       if $arg0->code == 7
-	echo Pwd-Request
-       else
-        if $arg0->code == 8
-		echo Pwd-Ack
-	else
-		output $arg0->code
-        end
-       end
-      end
-     end
-    end
-   end
-  end
- end
+ output auth_code_str($arg0->code)
 end
 document print_authcode
-Print the code value of RADIUS_REQ $arg0
+Print the code value of grad_request_t $arg0
 end
 
 define preq
@@ -186,7 +156,7 @@ define preq
  printf "}\n"
 end
 document preq
-Print RADIUS_REQ structure $arg0
+Print grad_request_t structure $arg0
 end
 
 

@@ -35,7 +35,14 @@
 #include <snmp_intern.h>
 
 int snmp_errno;
-struct snmp_def snmp_def = { 0, NULL, 3, 3 };
+struct snmp_def snmp_def = {
+	0,     /* req_id */
+	NULL,  /* session_list */
+	3,     /* retries */
+	3,     /* timeout */
+	(snmp_alloc_t) malloc,  /* alloc */
+	(snmp_free_t) free,     /* free */
+};
 
 int
 snmp_req_id()
@@ -63,6 +70,23 @@ snmp_fdset(fdset)
 				fdmax = sp->sd;
 		}
 	return fdmax+1;
+}
+
+void
+snmp_init(retries, timeout, memalloc, memfree)
+	int retries;
+	int timeout;
+	snmp_alloc_t memalloc;
+	snmp_free_t memfree;
+{
+	if (retries)
+		snmp_def.retries = retries;
+	if (timeout)
+		snmp_def.timeout = timeout;
+	if (memalloc)
+		snmp_def.alloc = memalloc;
+	if (memfree)
+		snmp_def.free = memfree;
 }
 
 struct snmp_session *

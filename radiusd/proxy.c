@@ -15,6 +15,8 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
+/*FIXME!FIXME!FIXME! server timeout is not used */
+
 #define RADIUS_MODULE_PROXY_C
 #ifndef lint
 static char rcsid[] =
@@ -48,9 +50,8 @@ static VALUE_PAIR *proxy_addinfo(RADIUS_REQ *radreq, int proxy_id, int fd, UINT4
 void proxy_addrequest(RADIUS_REQ *radreq);
 static void passwd_recode(VALUE_PAIR *pair,
                           char *new_secret, char *new_vector, RADIUS_REQ *req);
-static void rad_send_request(int fd, UINT4 ipaddr, int port, int id,
-                             char *secret, RADIUS_REQ *req);
-
+static int proxy_send_request(int fd, RADIUS_REQ *radreq);
+static UINT4 get_socket_addr(int fd);
 
 /* ************************************************************************* */
 /* Proxy-Id functions */
@@ -141,155 +142,85 @@ rad_proxy(radreq, activefd)
 /* ************************************************************************* */
 /* Reply functions. Possibly these should go to libclient? */
 
-/* Generate a random vector. */
-static void
-random_vector(vector)
-        char *vector;
+int
+proxy_send_request(fd, radreq)
+	int fd;
+	RADIUS_REQ *radreq;
 {
-        int     randno;
-        int     i;
+	VALUE_PAIR *plist, *p;
+        PROXY_STATE *proxy_state;
+	char vector[AUTH_VECTOR_LEN];
+	void *pdu;
+	size_t size;
+	struct sockaddr_in sin;
+	RADIUS_SERVER *server;
+	
+	if (radreq->attempt_no > radreq->realm->queue->retries) {
+		radreq->server = radreq->server->next;
+		radreq->attempt_no = 0;
+	}
 
-        for(i = 0;i < AUTH_VECTOR_LEN;) {
-                randno = rand();
-                memcpy(vector, &randno, sizeof(int));
-                vector += sizeof(int);
-                i += sizeof(int);
-        }
-}
+	if (!radreq->server) {
+		radlog(L_NOTICE,
+		       _("couldn't send %s request to realm %s, id %d"),
+		       auth_code_str(radreq->code),
+		       radreq->realm->realm, radreq->server_id);
+		return 0;
+	}
+	radreq->attempt_no++;
 
-void
-rad_send_request(fd, ipaddr, port, id, secret, req)
-        int   fd;
-        UINT4 ipaddr;
-        int   port;
-        int   id;
-        char  *secret;
-        RADIUS_REQ *req;
-{
-        AUTH_HDR                *auth;
-        VALUE_PAIR              *vp;
-        u_char                  *length_ptr;
-        int                     len, total_length;
-        int                     vendorcode, vendorpec;
-        UINT4                   lval;
-        char                    vector[AUTH_VECTOR_LEN];
-        u_char                  *ptr;
-        struct sockaddr_in      saremote, *sin;
-        int i_send_buffer[RAD_BUFFER_SIZE];
-        u_char *send_buffer = (u_char *)i_send_buffer;
+	server = radreq->server;
+	rad_clt_random_vector(vector);
+
+	/* Copy the list */
+	plist = avl_dup(radreq->request);
+
+	/* Recode password pair(s) */
+	for (p = plist; p; p = p->next) {
+		if (p->attribute == DA_USER_PASSWORD
+		    || p->attribute == DA_CHAP_PASSWORD)
+			passwd_recode(p, server->secret,
+				      vector, radreq);
+	}
+	
+	/* Add a proxy-pair to the end of the request. */
+        p = avp_alloc();
+        p->name = "Proxy-State";
+        p->attribute = DA_PROXY_STATE;
+        p->type = TYPE_STRING;
+        p->strlength = sizeof(PROXY_STATE);
+        p->strvalue = alloc_string(p->strlength);
         
-#define checkovf(len) \
-        if (total_length + len >= sizeof(i_send_buffer)) goto ovf;
+        proxy_state = (PROXY_STATE *)p->strvalue;
+	       
+        proxy_state->ipaddr = get_socket_addr(fd);
+        proxy_state->id = radreq->id;
+        proxy_state->proxy_id = radreq->server_id;
+        proxy_state->rem_ipaddr = server->addr;
 
+	avl_add_pair(&plist, p);
 
-        random_vector(vector);
-        auth = (AUTH_HDR *)send_buffer;
-        memset(auth, 0, sizeof(AUTH_HDR));
-        auth->code = req->code;
-        auth->id = id;
-        if (auth->code == RT_AUTHENTICATION_REQUEST)
-                memcpy(auth->vector, vector, AUTH_VECTOR_LEN);
+	/* Create the pdu */
+	size = rad_create_pdu(&pdu, radreq->code,
+			      radreq->server_id,
+			      vector,
+			      server->secret,
+			      plist,
+			      NULL);
+	avl_free(plist);
 
-        total_length = AUTH_HDR_LEN;
-
-        /*
-         *      Put all the attributes into a buffer.
-         */
-        ptr = (u_char*)(auth + 1);
-        for (vp = req->request; vp; vp = vp->next) {
-
-                if (debug_on(10)) {
-                        char *save;
-                        radlog(L_DEBUG,
-                               "proxy_send: %s", 
-                               format_pair(vp, &save));
-                        free(save);
-                }
-
-                /* This could be a vendor-specific attribute. */
-                length_ptr = NULL;
-                if ((vendorcode = VENDOR(vp->attribute)) > 0 &&
-                    (vendorpec  = vendor_id_to_pec(vendorcode)) > 0) {
-                        checkovf(11);
-                        *ptr++ = DA_VENDOR_SPECIFIC;
-                        length_ptr = ptr;
-                        *ptr++ = 6;
-                        lval = htonl(vendorpec);
-                        memcpy(ptr, &lval, 4);
-                        ptr += 4;
-                        total_length += 6;
-                } else if (vp->attribute > 0xff) {
-                        continue;
-                } else
-                        vendorpec = 0;
-
-                *ptr++ = (vp->attribute & 0xFF);
-
-                switch (vp->type) {
-                case TYPE_STRING:
-                        /*
-                         *      Re-encode passwd on the fly.
-                         */
-                        if (vp->attribute == DA_USER_PASSWORD)
-                                passwd_recode(vp, secret, vector, req);
-                        
-                        checkovf(vp->strlength + 2);
-
-                        *ptr++ = vp->strlength + 2;
-
-                        if (length_ptr)
-                                *length_ptr += vp->strlength + 2;
-                        total_length += 2 + vp->strlength;
-                        memcpy(ptr, vp->strvalue, vp->strlength);
-
-                        ptr += vp->strlength;
-                        break;
-                case TYPE_INTEGER:
-                case TYPE_DATE:
-                case TYPE_IPADDR:
-                        checkovf(sizeof(UINT4) + 2); 
-
-                        *ptr++ = sizeof(UINT4) + 2;
-                        if (length_ptr)
-                                *length_ptr += sizeof(UINT4)+ 2;
-                        lval = htonl(vp->lvalue);
-                        memcpy(ptr, &lval, sizeof(UINT4));
-                        ptr += sizeof(UINT4);
-                        total_length += sizeof(UINT4) + 2;
-                        break;
-                default:
-                        break;
-                }
-        }
-        auth->length = htons(total_length);
-
-        /* If this is not an authentication request, we need to calculate
-           the md5 hash over the entire packet and put it in the vector. */
-        if (auth->code != RT_AUTHENTICATION_REQUEST) {
-                len = strlen(secret);
-                if (total_length + len < sizeof(i_send_buffer)) {
-                        strcpy(send_buffer + total_length, secret);
-                        md5_calc(auth->vector, send_buffer, total_length+len);
-                }
-        }
-
-        /*
-         *      And send it to the remote radius server.
-         */
-        sin = (struct sockaddr_in *) &saremote;
-        memset ((char *) sin, '\0', sizeof (saremote));
-        sin->sin_family = AF_INET;
-        sin->sin_addr.s_addr = htonl(ipaddr);
-        sin->sin_port = htons(port);
-
-        sendto(fd, auth, total_length, 0,
-               (struct sockaddr *)sin, sizeof(struct sockaddr_in));
-
-        return;
-
-ovf:
-        radlog(L_ERR, _("send buffer overflow"));
-
+	if (size > 0) {
+		/* Send the request */
+		memset(&sin, 0, sizeof (sin));
+		sin.sin_family = AF_INET;
+		sin.sin_addr.s_addr = htonl(server->addr);
+	
+		sin.sin_port = htons(
+			(radreq->code == RT_AUTHENTICATION_REQUEST) ?
+			server->port[PORT_AUTH] : server->port[PORT_ACCT]);
+		sendto(fd, pdu, size, 0, (struct sockaddr *)&sin, sizeof(sin));
+	}
+	return size;
 }
 
 /* ************************************************************************* */
@@ -312,38 +243,6 @@ get_socket_addr(fd)
 	return ip;
 }
 
-/*
- *      Add a proxy-pair to the end of the request.
- */
-static VALUE_PAIR *
-proxy_addinfo(radreq, proxy_id, fd, remip)
-        RADIUS_REQ *radreq;
-        int proxy_id;
-	int fd;
-        UINT4 remip;
-{
-        VALUE_PAIR              *proxy_pair, *vp;
-        PROXY_STATE             *proxy_state;
-	
-        proxy_pair = avp_alloc();
-        proxy_pair->name = "Proxy-State";
-        proxy_pair->attribute = DA_PROXY_STATE;
-        proxy_pair->type = TYPE_STRING;
-        proxy_pair->strlength = sizeof(PROXY_STATE);
-        proxy_pair->strvalue = alloc_string(proxy_pair->strlength);
-        
-        proxy_state = (PROXY_STATE *)proxy_pair->strvalue;
-	       
-        proxy_state->ipaddr = get_socket_addr(fd);
-        proxy_state->id = radreq->id;
-        proxy_state->proxy_id = proxy_id;
-        proxy_state->rem_ipaddr = remip;
-
-        for (vp = radreq->request; vp && vp->next; vp = vp->next)
-                ;
-        vp->next = proxy_pair;
-        return vp;
-}
 
 /*
  *      Decode a password and encode it again.
@@ -366,13 +265,11 @@ passwd_recode(pass_pair, new_secret, new_vector, req)
 /* ************************************************************************* */
 /* Interface functions */
 
-/*
- *      Relay the request to a remote server.
- *      Returns:  1 success (we reply, caller returns without replying)
- *                0 fail (caller falls through to normal processing)
- *               -1 fail (we don't reply, caller returns without replying)
- *
- */
+/* Relay the request to a remote server
+   Returns:  1 success (we reply, caller returns without replying)
+             0 fail (caller falls through to normal processing)
+             -1 fail (we don't reply, caller returns without replying) */
+
 int
 proxy_send(radreq, activefd)
         RADIUS_REQ *radreq;
@@ -389,12 +286,9 @@ proxy_send(radreq, activefd)
         short rport;
         char *what;
         char *secret_key;
-        u_char proxy_id;
         char buf[MAX_LONGNAME];
         
-        /*
-         *      Look up name.
-         */
+        /* Look up name. */
         namepair = avl_find(radreq->request, DA_USER_NAME);
         if (namepair == NULL)
                 return 0;
@@ -420,19 +314,11 @@ proxy_send(radreq, activefd)
                 /* If the realm is not found, we treat it as usual. */
                 efree(saved_username);
                 return 0;
-        } else if (strcmp(realm->server, "LOCAL") == 0) {
+        } else if (realm->queue == NULL) { /* This is a LOCAL realm */
                 if (realm->striprealm) {
                         *realmname = 0;
                         namepair->strlength = strlen(namepair->strvalue);
                 }
-                efree(saved_username);
-                return 0;
-        }
-
-        if ((client = client_lookup_ip(realm->ipaddr)) == NULL) {
-                radlog(L_PROXY|L_ERR,
-                       _("cannot find secret for server %s in clients file"),
-                       realm->server);
                 efree(saved_username);
                 return 0;
         }
@@ -446,17 +332,9 @@ proxy_send(radreq, activefd)
         replace_string(&namepair->strvalue, username);
         namepair->strlength = strlen(namepair->strvalue);
 
-        if (radreq->code == RT_AUTHENTICATION_REQUEST)
-                rport = realm->auth_port;
-        else
-                rport = realm->acct_port;
-
-        secret_key = client->secret;
-        proxy_id = next_proxy_id(client->ipaddr);
-
-        radreq->server_ipaddr = realm->ipaddr;
-	radreq->server_port = rport;
-        radreq->server_id = proxy_id;
+        radreq->server = realm->queue->first_server;
+	radreq->attempt_no = 0;
+        radreq->server_id = next_proxy_id(radreq->server->addr);
 	radreq->remote_user = make_string(username);
 	
         /* Is this a valid & signed request ? */
@@ -484,16 +362,9 @@ proxy_send(radreq, activefd)
                 return -1;
         }
 
-        /*
-         *      Add PROXY_STATE attribute.
-         */
-        pp = proxy_addinfo(radreq, proxy_id, activefd, realm->ipaddr);
-
-        /*
-         *      If there is no DA_CHAP_CHALLENGE attribute but there
-         *      is a DA_CHAP_PASSWORD we need to add it since we can't
-         *      use the request authenticator anymore - we changed it.
-         */
+        /* If there is no DA_CHAP_CHALLENGE attribute but there
+           is a DA_CHAP_PASSWORD we need to add it since we can't
+	   use the request authenticator anymore - we changed it. */
         if (avl_find(radreq->request, DA_CHAP_PASSWORD) &&
             avl_find(radreq->request, DA_CHAP_CHALLENGE) == NULL) {
                 vp = avp_alloc();
@@ -509,19 +380,9 @@ proxy_send(radreq, activefd)
                 avl_add_pair(&radreq->request, vp);
         }
 
-        debug(1, ("Sending %s request of id %d to %lx (server %s:%d)",
-                 what, proxy_id, realm->ipaddr, realm->server, rport));
-
         /* Now build a new request and send it to the remote radiusd. */
-        rad_send_request(activefd, realm->ipaddr, rport, proxy_id,
-                         secret_key, radreq);
+        proxy_send_request(activefd, radreq);
         
-        /* Remove proxy-state from list. */
-        if (pp->next) {
-                VALUE_PAIR *p = pp->next;
-                pp->next = p->next;
-                avp_free(p); /* be sure to delete *only* this pair */
-        }
 #if 1   
         /* And restore username. */
         replace_string(&namepair->strvalue, saved_username);
@@ -540,25 +401,16 @@ proxy_retry(type, radreq, orig_req, fd, status_str)
 	int fd;
         char *status_str;
 {
-	CLIENT *client;
 	VALUE_PAIR *namepair;
 	char *saved_username;
 	
 	if (!(orig_req && radreq)) {
-		rad_req_drop(type, radreq, orig_req, status_str);
+		rad_req_drop(type, radreq, orig_req, fd, status_str);
 		return;
 	}
 	
 	/* If both request and original request are given, try to retransmit
 	   the request */
-
-        if ((client = client_lookup_ip(orig_req->realm->ipaddr)) == NULL) {
-		/* shouldn't happen, but just in case... */
-		radlog(L_PROXY|L_ERR,
-		       _("cannot find secret for server %s in clients file"),
-		       orig_req->realm->server);
-		return;
-	}
 
         namepair = avl_find(radreq->request, DA_USER_NAME);
         if (namepair == NULL)
@@ -568,11 +420,7 @@ proxy_retry(type, radreq, orig_req, fd, status_str)
         namepair->strvalue = orig_req->remote_user;
         namepair->strlength = strlen(namepair->strvalue);
 
-	rad_send_request(fd,
-			 orig_req->server_ipaddr,
-			 orig_req->server_port,
-			 orig_req->server_id,
-                         client->secret, orig_req);
+	proxy_send_request(fd, orig_req);
 
 	/* restore username */
 	namepair->strvalue = saved_username;
@@ -622,12 +470,12 @@ proxy_compare_request_no_state(data, oldreq)
         RADIUS_REQ *oldreq;
 {
         debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x",
-                oldreq->server_id,
-                data->radreq->id,
-                oldreq->server_ipaddr,
-                data->radreq->ipaddr));
+		   oldreq->server_id,
+		   data->radreq->id,
+		   oldreq->server->addr,
+		   data->radreq->ipaddr));
                         
-        if (data->radreq->ipaddr == oldreq->server_ipaddr &&
+        if (data->radreq->ipaddr == oldreq->server->addr &&
             data->radreq->id     == oldreq->server_id)
                 return 0;
 
@@ -748,7 +596,7 @@ proxy_receive(radreq, activefd)
 
         /* Proxy support fields */
         radreq->realm         = oldreq->realm;
-        radreq->server_ipaddr = oldreq->server_ipaddr;
+        radreq->server        = oldreq->server;
         radreq->server_id     = oldreq->server_id;
         
         return 0;

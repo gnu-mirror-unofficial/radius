@@ -228,16 +228,23 @@ rad_create_pdu(void **rptr, int code, int id, u_char *vector,
                 rad_attr_init(&attr);
                 if ((vendorcode = VENDOR(pair->attribute)) > 0
                     && (vendorpec  = vendor_id_to_pec(vendorcode)) > 0) {
-                        u_char c;
-                        
                         attr.attrno = DA_VENDOR_SPECIFIC;
                         lval = htonl(vendorpec);
                         rad_attr_write(&attr, &lval, 4);
-                        c = pair->attribute & 0xff;
-                        rad_attr_write(&attr, &c, 1); 
-                        rad_attr_write(&attr, &lval, 1); /* Reserve a byte */
-                        attrlen = rad_encode_pair(&attr, pair);
-                        attr.data[5] = 2+attrlen; /* Fill in the length */
+			if (vendorpec == 429) {
+				/* Hack for non-compliant USR VSA */
+				UINT4 atval = htonl(pair->attribute & 0xffff);
+				rad_attr_write(&attr, &atval, 4);
+				attrlen = rad_encode_pair(&attr, pair);
+			} else {
+				u_char c = pair->attribute & 0xff;
+				rad_attr_write(&attr, &c, 1);
+				/* Reserve a length byte */
+				rad_attr_write(&attr, &lval, 1); 
+				attrlen = rad_encode_pair(&attr, pair);
+				/* Fill in the length */
+				attr.data[5] = 2+attrlen; 
+			}
                 } else if (pair->attribute > 0xff)
                         continue;
 		else {
@@ -453,9 +460,11 @@ rad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, size_t length)
 					ptr += 4;
 					attrlen -= 4;
 					len = attrlen;
+					attrlen = 0;
 				} else {
 					attrno = *ptr++ | (vendorcode << 16);
 					len = *ptr++ - 2;
+					attrlen -= len + 2;
 				}
 				
                                 pair = rad_decode_pair(attrno, ptr, len);
@@ -467,7 +476,6 @@ rad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, size_t length)
                                 	prev = pair;
 				} 
                                 ptr += len;
-                                attrlen -= len + 2;
                         }
                 } else {
                         pair = rad_decode_pair(attrno, ptr, attrlen);

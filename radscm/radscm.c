@@ -882,10 +882,12 @@ the constructed entry is also appended to WTMP_FILE.")
 		case RADUTMP_FIELD_PORT_TYPE:
 			/* Port type */
 			if (SCM_IMP(elt) && SCM_INUMP(elt)) 
-				ut.nas_port = SCM_INUM(elt);
+				ut.porttype = SCM_INUM(elt);
+			else if (SCM_IMP(elt) && SCM_CHARP(elt))
+				ut.porttype = SCM_CHAR(elt);
 			else
 				scm_misc_error(FUNC_NAME,
-					       "~S: Port type should be integer",
+					       "~S: Port type should be char or integer",
 					       SCM_LIST1(elt));
 			break;
 

@@ -173,8 +173,14 @@ realm_read_file(char *file, int auth_port, int acct_port, int (*set_secret)())
         return read_raddb_file(file, 1, read_realms_entry, &pd);
 }
 
-/*
- * Realm Lookup Functions */
+/* Realm Lookup Functions */
+
+static int
+realm_match_name_p(const REALM *realm, const char *name)
+{
+	return (envar_lookup_int(realm->args, "ignorecase", 0) ?
+		strcasecmp : strcmp) (realm->realm, name) == 0;
+}
 
 /* Find a realm in the REALM list */
 REALM *
@@ -187,8 +193,9 @@ realm_lookup_name(char *realm)
 		return NULL;
 
         for (p = iterator_first(itr); p; p = iterator_next(itr))
-                if (strcmp(p->realm, realm) == 0)
+		if (realm_match_name_p(p, realm))
                         break;
+	
         if (!p && strcmp(realm, "NOREALM")) {
         	for (p = iterator_first(itr); p; p = iterator_next(itr))
                         if (strcmp(p->realm, "DEFAULT") == 0)

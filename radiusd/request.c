@@ -205,8 +205,8 @@ request_cleanup(type, data)
    the request into RS_COMPLETED state and it will be eventually removed
    from the queue. Otherwise, if the thread is stuck for good and the
    request remains in RS_DEAD state for more than time-to-live seconds
-   the daemon either tries to restart itself or aborts, depending on its
-   current watching mode.
+   the daemon tries to restart itself.
+
    Finally, a request in RS_COMPLETED state remains in queue for
    request-cleanup-delay seconds, after which it is removed. */
 
@@ -300,10 +300,7 @@ request_put(type, data, activefd, numpending)
                                 break;
 
 			case RS_DEAD:
-				if (radiusd_is_watched())
-					radiusd_abort();
-				else
-					radiusd_primitive_restart(0);
+				radiusd_primitive_restart(0);
                         }
                         continue;
                 }
@@ -486,10 +483,7 @@ request_flush_list()
 			break;
 
 		case RS_DEAD:
-			if (radiusd_is_watched())
-				radiusd_abort();
-			else
-				radiusd_primitive_restart(0);
+			radiusd_primitive_restart(0);
 			break;
 
 		default:

@@ -52,27 +52,38 @@ enum reload_what {
 #define R_NONE -1
 #define R_AUTH  0        /* Radius authentication request */
 #define R_ACCT  1        /* Radius accounting request */
-#define R_PROXY 2        /* Radius auth/acct proxy request */
-#define R_SNMP  3        /* SNMP request */
-#define R_MAX   4
+#define R_SNMP  2        /* SNMP request */
+#define R_MAX   3
 
 #define RS_WAITING   0     /* Request waiting for processing */
 #define RS_COMPLETED 1     /* Request is completed */
+#define RS_PROXY     2     /* Proxy request waiting for its handler
+			      to become free */
 
-typedef struct request {
+/* Request comparison results */
+#define RCMP_NE     0      /* Requests not equal */
+#define RCMP_EQ     1      /* Requests equal */
+#define RCMP_PROXY  2      /* Requests are proxy request and corresponding
+			      reply */
+typedef struct request REQUEST;
+
+struct request {
         int             type;         /* request type */
         int             status;       /* request status */
         time_t          timestamp;    /* when was the request accepted */
         pid_t           child_id;     /* ID of the handling process */
         int             code;         /* Child return code if completed */
-        void           *data;         /* Request-specific data */
-	void           *rawdata;      /* Raw data as received from the
+        void            *data;        /* Request-specific data */
+	void            *rawdata;     /* Raw data as received from the
 					 socket */  
 	size_t          rawsize;      /* Size of the data */
         int             fd;           /* socket the request came from */
 	struct sockaddr_in addr;      /* Remote party address */
-	
-} REQUEST;
+	REQUEST         *orig;        /* Original request. For proxy */
+
+	void            *update;    
+	size_t          update_size;
+};
 
 /* Request class structure
  */
@@ -91,6 +102,7 @@ typedef struct request_class {
 	                                      /* Drop the request */
         void (*cleanup)(int type, void *data);/* Cleanup function */
         int (*failure)(int type, struct sockaddr_in *addr);
+	void (*update)(void *req, void *ptr);
 } REQUEST_CLASS;
 
 struct queue_stat {
@@ -120,6 +132,12 @@ typedef struct proxy_state {
         UINT4                   proxy_id;
         UINT4                   rem_ipaddr;
 } PROXY_STATE;
+
+typedef struct {
+	int proxy_id;
+	int server_no;
+	char realmname[1];
+} RADIUS_UPDATE;
 
 /*
  * Internal representation of a user's profile
@@ -383,6 +401,7 @@ void radius_req_drop(int type, void *radreq, void *origreq,
 		     int fd, char *status_str);
 void radius_req_xmit(REQUEST *request);
 int radius_req_failure(int type, struct sockaddr_in *addr);
+void radius_req_update(void *req_ptr, void *data_ptr);
 int radius_respond(REQUEST *req);
 
 /*FIXME*/
@@ -431,8 +450,8 @@ int pam_pass(char *name, char *passwd, const char *pamauth, char **reply_msg);
 /* proxy.c */
 int rad_proxy(REQUEST *req);
 void rad_proxy_free(RADIUS_REQ *req);
-int proxy_send(RADIUS_REQ *radreq, int activefd);
-int proxy_receive(RADIUS_REQ *radreq, int activefd);
+int proxy_send(REQUEST *req);
+int proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int activefd);
 void proxy_retry(int type, void *radreq, void *orig_req,
 		 int fd, char *status_str);
 

@@ -1,5 +1,23 @@
 2001-12-21 Sergey Poznyakoff
 
+	Still more changes due to the removal of Queue-Id.
+	
+	* include/radsql.h: Changed protos of rad_sql_cleanup, and
+	  rad_sql_setup.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/auth.c: Removed unnecessary kludge.
+	* radiusd/sql.c: Modified (un)attach_sql_connection. The problem
+	  is that sql functions can be called before rad_sql_setup,
+	  therefore (un)attach_sql_connection must be prepared to create
+	  a connection on the fly and release it immediately after
+	  executing a query. This all connection stuff needs a good
+	  rewrite.
+	* TODO: Updated
+	* radscripts/radctl.m4: Bugfix: continue in case context.
+	  Reported by Markus Sander.
+	
+2001-12-21 Sergey Poznyakoff
+
 	* NEWS: Updated.
 	* db/config.m4: renamed username and password, they caused
 	  too much quoting in *.m4 files.

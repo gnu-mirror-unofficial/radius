@@ -656,6 +656,13 @@ _get_value(cfg_value_t *arg, int type, void *base)
                         value.type = CFG_IPADDR;
                         break;
 
+		case CFG_NETWORK:
+			if (value.v.network.netmask != 0xffffffffL) 
+				break;
+			value.v.ipaddr = value.v.network.ipaddr;
+			value.type = CFG_IPADDR;
+			break;
+
                 default:
                         break;
                 }

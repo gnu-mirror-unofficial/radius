@@ -20,7 +20,8 @@ EXTRA_DIST=\
  dict.awk\
  mksnmp-h.awk\
  mktest.awk\
- texi2html
+ texi2html\
+ ylwrap
 
 EXTRA_PROGRAMS = pofilter
 

@@ -47,7 +47,7 @@ MAINTAINERCLEANFILES=config.c rewrite.c y.output
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp -I$(top_srcdir)/lib @INCLUDEPATH@ @GUILE_INCLUDES@
 AM_CPPFLAGS=@PATHFLAGS@
 EXTRA_DIST      = config.y rewrite.y .gdbinit
-YLWRAP = $(SHELL) $(top_srcdir)/ylwrap
+YLWRAP = $(SHELL) $(top_srcdir)/scripts/ylwrap
 
 config.c: $(srcdir)/config.y
 	$(YLWRAP) "$(YACC)" $(srcdir)/config.y \

@@ -41,8 +41,6 @@ alphacheck:
 
 endif
 
-EXTRA_DIST= config.rpath ylwrap ABOUT-NLS
-
 distcleancheck_listfiles = \
 	find . -type f -exec sh -c 'test -f $(top_srcdir)/{} || echo {}' \;
 

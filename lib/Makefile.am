@@ -73,7 +73,7 @@ EXTRA_DIST=users.y users.l strncasecmp.c strerror.c \
 noinst_HEADERS=users_gram.h rx.h regexp.h getopt.h snprintf.h \
                argp-fmtstream.h argp-namefrob.h argp.h
 
-YLWRAP=$(SHELL) $(top_srcdir)/ylwrap
+YLWRAP=$(SHELL) $(top_srcdir)/scripts/ylwrap
 
 users_gram.c users_gram.h: $(srcdir)/users.y
 	$(YLWRAP) "$(YACC)" $(srcdir)/users.y \

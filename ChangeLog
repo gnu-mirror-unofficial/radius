@@ -1,3 +1,9 @@
+2002-02-19  Sergey Poznyakoff  
+
+	* radlib/md5crypt.c (md5crypt): Made thread safe. 
+	* include/radius.h: Changed proto of md5crypt.
+	* radiusd/auth.c: Use thread-safe md5init.
+	
 2002-02-18  Sergey Poznyakoff 
 
 	* radiusd/radiusd.c (rad_daemon): Restore sighup.

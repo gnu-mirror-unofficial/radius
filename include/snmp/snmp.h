@@ -43,7 +43,8 @@ typedef u_int ip_addr_t;
 #define E_SNMP_UNKNOWN_REQ 12
 #define E_SNMP_BAD_VARTYPE 13
 
-extern int snmp_errno;
+extern int * __snmp_errno_location();
+#define snmp_errno (*__snmp_errno_location())
 #define SNMP_SET_ERRNO(e) snmp_errno = (e)
 
 #define SMI_INTEGER     ASN_INTEGER

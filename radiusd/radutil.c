@@ -281,7 +281,7 @@ parse_dict_attr(char *p, char **endp, char **defval)
                         size = p - start + 1;
                         *defval = grad_emalloc(size);
                         memcpy(*defval, start, size-1);
-                        (*defval)[size] = 0;
+                        (*defval)[size-1] = 0;
                 }
                 *endp = p + 1;
                 return grad_attr_name_to_dict(namebuf);

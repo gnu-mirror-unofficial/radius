@@ -1039,7 +1039,7 @@ sfn_realmuse(m)
                 return;
         auth_format_msg(m, MSG_REALM_QUOTA);
         auth_log(m, _("Login failed"), NULL,
-                 _("realm quota exceeded for "), m->req->realm);
+                 _("realm quota exceeded for "), m->req->realm->realm);
         newstate(as_reject);
 }
 

@@ -266,9 +266,7 @@ rad_acct_system(radreq, dowtmp)
         ut.porttype = -1; /* Unknown so far */
 
         if (radreq->realm) {
-                REALM *realm = realm_lookup_name(radreq->realm);
-                if (realm)
-                        ut.realm_address = realm->ipaddr;
+                ut.realm_address = radreq->realm->ipaddr;
         }
         
         /* Fill in radutmp structure */
@@ -704,15 +702,13 @@ check_ts(ut)
 }
 
 int
-rad_check_realm(realmname)
-        char *realmname;
-{
+rad_check_realm(realm)
         REALM *realm;
+{
         int count;
         struct radutmp *up;
         radut_file_t file;
         
-        realm = realm_lookup_name(realmname);
         if (!realm || realm->maxlogins == 0)
                 return 0;
 

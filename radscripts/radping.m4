@@ -37,12 +37,12 @@ if TEST($# != 1); then
 fi
 
 if TEST("$CALLERID" = "1"); then
-    FORMAT="-oclid:20,ip:16"
+    FORMAT="(clid)(tab)(framed-address)"
 else
-    FORMAT="-ologin:20,ip:16"
+    FORMAT="(login)(tab)(framed-address)"
 fi 
 
-IPADDR=`radwho -n $FORMAT -e:NULL: |
+IPADDR=`radwho -n -o $FORMAT -e:NULL: |
  AWK -vVALUE=$1 '$1==VALUE { if ($2 != ":NULL:") print $2; exit }'`
 
 if TEST(x"$IPADDR" = x""); then

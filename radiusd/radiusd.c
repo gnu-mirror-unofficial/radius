@@ -880,6 +880,7 @@ check_reload()
 {
 	switch (daemon_command) {
 	case CMD_RELOAD:
+        	radlog(L_INFO, _("Reloading configuration now"));
                 reread_config(1);
                 break;
 	case CMD_RESTART:
@@ -889,6 +890,8 @@ check_reload()
 		meminfo();
 		break;
 	case CMD_DUMPDB:
+        	radlog(L_INFO, _("Dumping users db to `%s'"),
+               		RADIUS_DUMPDB_NAME);
 		dump_users_db();
 		break;
 	default:
@@ -1079,7 +1082,6 @@ static RETSIGTYPE
 sig_hup(sig)
         int sig;
 {
-        radlog(L_INFO, _("got HUP. Reloading configuration now"));
         daemon_command = CMD_RELOAD;
         signal(SIGHUP, sig_hup);
 }
@@ -1089,8 +1091,6 @@ RETSIGTYPE
 sig_dumpdb(sig)
         int sig;
 {
-        radlog(L_INFO, _("got INT. Dumping users db to `%s'"),
-               RADIUS_DUMPDB_NAME);
 	daemon_command = CMD_DUMPDB;
         signal(sig, sig_dumpdb);
 }

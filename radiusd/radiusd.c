@@ -59,11 +59,12 @@ RETSIGTYPE (*sun_signal(int signo, void (*func)(int)))(int);
 /* ********************** Request list handling **************************** */
 	
 typedef struct request {
-	struct request *next;      /* Link to the next request */
-	int             type;      /* request type */
-	time_t          timestamp; /* when was the request accepted */
-	pid_t           child_pid; /* PID of the handling process (or -1) */
-	void           *data;      /* Request-specific data */
+	struct request *next;         /* Link to the next request */
+	int             type;         /* request type */
+	time_t          timestamp;    /* when was the request accepted */
+	pid_t           child_pid;    /* PID of the handling process (or -1) */
+	int             child_return; /* Child return code if child_pid = -1 */
+	void           *data;         /* Request-specific data */
 } REQUEST;
 
 void rad_req_free(AUTH_REQ *req);
@@ -72,18 +73,18 @@ int authreq_cmp(AUTH_REQ *a, AUTH_REQ *b);
 
 struct request_class request_class[] = {
 	{ "AUTH", 0, MAX_REQUEST_TIME, CLEANUP_DELAY, 1,
-	  rad_authenticate, authreq_cmp, rad_req_free, rad_req_drop,
-	  rad_sql_setup, rad_sql_cleanup },
+	  rad_authenticate, NULL, authreq_cmp, rad_req_free,
+	  rad_req_drop, rad_sql_setup, rad_sql_cleanup },
 	{ "ACCT", 0, MAX_REQUEST_TIME, CLEANUP_DELAY, 1,
-	  rad_accounting,   authreq_cmp, rad_req_free, rad_req_drop,
-	  rad_sql_setup, rad_sql_cleanup },
+	  rad_accounting, rad_acct_xmit, authreq_cmp, rad_req_free,
+	  rad_req_drop, rad_sql_setup, rad_sql_cleanup },
 	{ "PROXY",0, MAX_REQUEST_TIME, CLEANUP_DELAY, 0,
-	  rad_proxy, authreq_cmp, rad_req_free, rad_req_drop,
-	  NULL, NULL },
+	  rad_proxy, NULL, authreq_cmp, rad_req_free,
+	  rad_req_drop, NULL, NULL },
 #ifdef USE_SNMP
 	{ "SNMP", 0, MAX_REQUEST_TIME, 0, 1,
-	  snmp_answer, snmp_req_cmp, snmp_req_free, snmp_req_drop,
-	  NULL, NULL }
+	  snmp_answer, NULL, snmp_req_cmp, snmp_req_free,
+	  snmp_req_drop, NULL, NULL }
 #endif
 };
 
@@ -108,6 +109,7 @@ static REQUEST		*first_request;
 
 static void request_free(REQUEST *req);
 static void request_drop(int type, void *data, char *status_str);
+static void request_xmit(int type, int code, void *data, int fd);
 void rad_spawn_child(int type, void *data, int activefd);
 static int flush_request_list();
 static int request_setup(int type, qid_t qid);
@@ -407,7 +409,7 @@ main(argc, argv)
 	reread_config(0);
 	if (check_config) 
 		exit(0);
-#if 1
+#if 0
 /*DEBUG ONLY*/
 	test_rewrite();
 	exit(1);
@@ -846,6 +848,20 @@ request_drop(type, data, status_str)
 	request_class[type].free(data);
 }
 
+void
+request_xmit(type, code, data, fd)
+	int type;
+	int code;
+	void *data;
+	int fd;
+{
+	if (request_class[type].xmit) 
+		request_class[type].xmit(type, code, data, fd);
+	else
+		request_class[type].drop(type, data, _("duplicate request"));
+	request_class[type].free(data);
+}
+
 int
 request_cmp(type, a, b)
 	int type;
@@ -938,11 +954,19 @@ rad_spawn_child(type, data, activefd)
 		}
  
 		if (curreq->type == type &&
-			   request_cmp(type, curreq->data, data) == 0) {
+		    request_cmp(type, curreq->data, data) == 0) {
 			/*
-			 * This is a duplicate request - just drop it
+			 * This is a duplicate request.
+			 * If the handling process has already finished --
+			 * retransmit it's results, if possible.
+			 * Otherwise just drop the request.
 			 */
-			request_drop(type, data, _("duplicate request"));
+			if (curreq->child_pid == (pid_t)-1) 
+				request_xmit(type, curreq->child_return, data,
+					     activefd);
+			else
+				request_drop(type, data,
+					     _("duplicate request"));
 			request_list_unblock();
 			schedule_child_cleanup();
 
@@ -1031,7 +1055,8 @@ rad_spawn_child(type, data, activefd)
 		/* 
 		 * Execute handler function
 		 */
-		request_class[type].handler(data, activefd);
+		curreq->child_return =
+			request_class[type].handler(data, activefd);
 		request_cleanup(type, (qid_t)curreq->data);
 		request_list_unblock();
 		return;
@@ -1055,8 +1080,7 @@ rad_spawn_child(type, data, activefd)
 		signal(SIGUSR2, SIG_IGN);
 		signal(SIGINT, SIG_IGN);
 		chdir("/tmp");
-		request_class[type].handler(data, activefd);
-		exit(0);
+		exit(request_class[type].handler(data, activefd));
 	} else {
 		debug(1, ("started handler at pid %ld", child_pid));
 	}
@@ -1086,9 +1110,9 @@ rad_child_cleanup()
                 if (pid <= 0)
                         break;
 
-		debug(2, ("child %d died", pid));
+		debug(2, ("child %d exited: %d", pid, WEXITSTATUS(status)));
 
-#if defined (aix) /* Huh? */
+#if defined (aix) /* Some say it is necessary on aix :( */
 		kill(pid, SIGKILL);
 #endif
 
@@ -1096,10 +1120,8 @@ rad_child_cleanup()
 		while (curreq != NULL) {
 			if (curreq->child_pid == pid) {
 				curreq->child_pid = -1;
-				/*
-				 *	FIXME: UINT4 ?
-				 */
-				curreq->timestamp = (UINT4)time(NULL);
+				curreq->child_return = WEXITSTATUS(status);
+				curreq->timestamp = time(NULL);
 				request_cleanup(curreq->type,
 						(qid_t)curreq->data);
 				break;

@@ -104,7 +104,7 @@ SUBDIRS = include radlib $(SNMPDIR) radiusd  radwho radzap radlast raduse radscr
 @MAINTAINER_MODE_TRUE@CFLAGS = -ggdb
 @MAINTAINER_MODE_TRUE@MAINTAINERCLEANFILES = core *~ err out
 
-EXTRA_DIST = include raddb doc mibs scripts test
+EXTRA_DIST = include raddb doc mibs scripts 
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = config.h
@@ -399,8 +399,9 @@ mostlyclean distclean maintainer-clean
 
 dist-hook:
 	(cd $(distdir); \
-	 rm -f radlib/users_gram.c radlib/users_lex.c \
-	       radiusd/config.c )
+	 rm -f radlib/users_gram.c radlib/users_lex.c radiusd/config.c; \
+	 find . \( -name CVS -o -name .emacs.desktop -o -name .deps -o \
+                   -name '*~' -o -name core \) -exec rm -rf {} \; )
 
 install-data-local:
 	@if [ ! -d @ETC_DIR@/raddb ]; then \

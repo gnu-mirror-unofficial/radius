@@ -748,7 +748,6 @@ proxy_receive(authreq, activefd)
 	memcpy(authreq->vector, oldreq->vector, sizeof authreq->vector);
 	memcpy(authreq->secret, oldreq->secret, sizeof authreq->secret);
 	authreq->request      = paircopy(oldreq->request);
-	authreq->timestamp    = oldreq->timestamp;
 
 	/* Proxy support fields */
 	authreq->realm         = dup_string(oldreq->realm);

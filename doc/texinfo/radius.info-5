@@ -111,17 +111,17 @@ consistent.
 
      DEFAULT Suffix = ".ppp",
                      Strip-User-Name = Yes,
-                     Auth-Type = Mysql
+                     Auth-Type = SQL
              Service-Type = Framed-User,
                      Framed-Protocol = PPP
      
      DEFAULT Suffix = ".slip",
                      Strip-User-Name = Yes,
-                     Auth-Type = Mysql
+                     Auth-Type = SQL
              Service-Type = Framed-User,
                      Framed-Protocol = SLIP
 
-Now, user `johns' having a valid account in Mysql database logs in as
+Now, user `johns' having a valid account in SQL database logs in as
 `johns.ppp'. He then is provided the PPP service, and his PPP session
 is accounted under username `johns'.  Later on, he logs in as
 `johns.slip'. In this case he is provided the SLIP service and again
@@ -147,11 +147,11 @@ for several profiles.
 contains the following:
 
 
-     johns   Auth-Type = Mysql
+     johns   Auth-Type = SQL
                      Framed-IP-Address = 11.10.10.251,
                      Fall-Through = Yes
      
-     smith   Auth-Type = Mysql
+     smith   Auth-Type = SQL
                      Framed-IP-Address = 11.10.10.252,
                      Fall-Through = Yes
      

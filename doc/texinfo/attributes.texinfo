@@ -776,7 +776,7 @@ VALUE      Auth-Type         Local                0
 VALUE      Auth-Type         System               1       
 VALUE      Auth-Type         Crypt-Local          3       
 VALUE      Auth-Type         Reject               4       
-VALUE      Auth-Type         Mysql                252     
+VALUE      Auth-Type         SQL                  252     
 VALUE      Auth-Type         Pam                  253     
 VALUE      Auth-Type         Accept               254     
 @end example
@@ -809,8 +809,11 @@ Authentication fails.
 @item Accept
 Authentication succeeds.
 
-@item Mysql
-The MD5-encrypted user's password is queried from the Mysql @ref{SQL Auth}.
+@item SQL
+@itemx Mysql
+The MD5-encrypted user's password is queried from the SQL database
+@ref{SQL Auth}. @code{Mysql} is an alias maintained for compatibility
+with other versions of Radius.
 
 @item Pam
 The username/password combination is checked using PAM.
@@ -1039,19 +1042,19 @@ For example, let's suppose the @file{users} file contains:
 @example
 DEFAULT Suffix = ".ppp",
                 Strip-User-Name = Yes,
-                Auth-Type = Mysql
+                Auth-Type = SQL
         Service-Type = Framed-User,
                 Framed-Protocol = PPP
 
 DEFAULT Suffix = ".slip",
                 Strip-User-Name = Yes,
-                Auth-Type = Mysql
+                Auth-Type = SQL
         Service-Type = Framed-User,
                 Framed-Protocol = SLIP
 @end example
 
 @noindent
-Now, user @samp{johns} having a valid account in Mysql database
+Now, user @samp{johns} having a valid account in SQL database
 logs in as @samp{johns.ppp}. He then is provided the PPP service,
 and his PPP session is accounted under username @samp{johns}.
 Later on, he logs in as @samp{johns.slip}. In this case he is
@@ -1081,11 +1084,11 @@ contains the following:
 
 @example
 
-johns   Auth-Type = Mysql
+johns   Auth-Type = SQL
                 Framed-IP-Address = 11.10.10.251,
                 Fall-Through = Yes
 
-smith   Auth-Type = Mysql
+smith   Auth-Type = SQL
                 Framed-IP-Address = 11.10.10.252,
                 Fall-Through = Yes
 

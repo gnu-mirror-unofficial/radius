@@ -2359,10 +2359,10 @@ ROOT    Auth-Type = Crypt-Local,
 ## The following entry is matched when the user appends ``.ppp'' to his
 ## username when logging in.
 ## The suffix is removed from the user name, then the password is
-## looked up in the mysql database.
+## looked up in the SQL database.
 ## Users may log in at any time. They get PPP service.
 DEFAULT Suffix = ".ppp",
-                Auth-Type = Mysql,
+                Auth-Type = SQL,
                 Login-Time = "Al",
                 Simultaneous-Use = 1,
                 Strip-User-Name = Yes
@@ -2558,7 +2558,7 @@ following events:
 
 @item Authentication
 SQL authentication is enabled @ref{SQL Auth} and a user
-having @code{Auth-Type} of @code{Mysql} is being authenticated.
+having @code{Auth-Type} of @code{SQL} (or @code{Mysql}) is being authenticated.
 
 @item Accounting
 SQL accounting is enabled @ref{SQL Accounting}, and the received request
@@ -2585,9 +2585,8 @@ This specifies a template for the query to use when authenticating a
 user via SQL. This query will be used when authenticating a user which has
 
 @example
-Auth-Type = Mysql
+Auth-Type = SQL
 @end example
-
 @noindent
 set in his profile @ref{users}. Radius expects this query to return
 the MD5 encrypted password for the given user. When no such user
@@ -3642,6 +3641,12 @@ machine where the radius server is running.
 
 @subheading Synopsis
 @example
+Auth-Type = SQL
+@end example
+@noindent
+or
+
+@example
 Auth-Type = Mysql
 @end example
 
@@ -3825,12 +3830,12 @@ Fri Dec 15 18:32:09 2000
 @cindex SQL Accounting
 
 The SQL accounting method is enabled when Radius is configured with
-@code{--enable-mysql} option and @file{sqlserver} file in its
+@code{--enable-sql} option and @file{sqlserver} file in its
 configuration directory is properly set up @ref{sqlserver}.
 
-This version of GNU Radius (@value{VERSION}) supports only MySQL
-servers. Support for other SQL servers will be added in future
-versions.
+This version of GNU Radius (@value{VERSION}) supports MySQL and
+PostgreSQL servers. Support for Oracle servers will be added in the
+nearest future.
 
 With this accounting method enabled, @code{radiusd} will store the
 information about accounting requests in the configured SQL database.

@@ -46,7 +46,7 @@ if test "$PS" = "no" ; then
 fi	
 
 ### Make sure Guile is installed.
-AC_PATH_PROG(GUILE_CONFIG, guile-config, $PATH)
+AC_PATH_PROG(GUILE_CONFIG, guile-config, no, $PATH)
 
 ## * Check for preprocessor capabilities
 AC_MSG_CHECKING(whether compiler defines __FUNCTION__)

@@ -438,14 +438,16 @@ rad_accounting_new(authreq, dowtmp)
 	 *	See if this was a portmaster reboot.
 	 */
 	if (status == DV_ACCT_STATUS_TYPE_ACCOUNTING_ON && nas_address) {
-		radlog(L_INFO, _("NAS %s restarted (Accounting-On packet seen)"),
+		radlog(L_NOTICE, 
+			_("NAS %s restarted (Accounting-On packet seen)"),
 			nas_name(nas_address));
 		radzap(nas_address, -1, NULL, ut.time);
 		write_nas_restart(status, ut.nas_address);
 		return 0;
 	}
 	if (status == DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF && nas_address) {
-		radlog(L_INFO, _("NAS %s rebooted (Accounting-Off packet seen)"),
+		radlog(L_NOTICE, 
+			_("NAS %s rebooted (Accounting-Off packet seen)"),
 			nas_name(nas_address));
 		radzap(nas_address, -1, NULL, ut.time);
 		write_nas_restart(status, ut.nas_address);
@@ -858,6 +860,28 @@ rad_accounting(authreq, activefd)
 	return -1;
 }
 
+void
+rad_acct_xmit(type, code, data, fd)
+	int type;
+	int code;
+	void *data;
+	int fd;
+{
+	AUTH_REQ *req = (AUTH_REQ*)data;
+	
+	if (code == 0) {
+		rad_send_reply(PW_ACCOUNTING_RESPONSE, req, NULL, NULL, fd);
+		radlog(L_NOTICE,
+		       _("Retransmitting ACCT reply: client %s, ID: %d"),
+		       client_name(req->ipaddr),
+		       req->id);
+	} else {
+		radlog(L_NOTICE,
+		       _("Dropping ACCT packet: client %s, ID: %d"),
+		       client_name(req->ipaddr),
+		       req->id);
+	}
+}
 
 /*
  *	Timeout handler (10 secs)

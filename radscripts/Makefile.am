@@ -33,7 +33,7 @@ radauth: $(srcdir)/radauth.m4
 
 radtest: $(srcdir)/radtest.m4
 	$(M4) -DSRCDIR=$(srcdir) -DBINDIR=$(bindir) -DDATADIR=$(pkgdatadir) \
-              $(srcdir)/radtest.m4 > radtest
+              $(GUILE_ENABLE) $(srcdir)/radtest.m4 > radtest
 
 
 # Maintainer-specific part

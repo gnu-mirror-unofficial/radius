@@ -1,3 +1,3 @@
-@set UPDATED 23 January 2001
+@set UPDATED 24 January 2001
 @set EDITION 0.93
 @set VERSION 0.93

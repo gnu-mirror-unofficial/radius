@@ -88,6 +88,7 @@ typedef struct request_class {
 	int  cleanup_delay;   /* Delay before cleaning the completed request */
 	int  spawn;           /* execute handler as a separate process */
 	int  (*handler)();    /* Handler function */
+	void (*xmit)();       /* Retransmit function */
 	int  (*comp)();       /* Compare function */
 	void (*free)();       /* Free */
 	void (*drop)();       /* Drop request error message */
@@ -161,11 +162,10 @@ typedef struct auth_req {
 	u_char			secret[AUTH_PASS_LEN];
 	u_char		        digest[AUTH_PASS_LEN];
 	VALUE_PAIR		*request;
-	UINT4			timestamp;
 	u_char			*data;		/* Raw received data */
 	int			data_len;       /* Length of raw data */
 	int                     data_alloced;   /* Was the data malloced */
-	/* Proxy support fields */
+        /* Proxy support fields */
 	u_char			*realm;         /* stringobj, actually */
 	int			validated;	/* Already md5 checked */
 	UINT4			server_ipaddr;
@@ -405,6 +405,7 @@ int		radzap(UINT4 nas, int port, char *user, time_t t);
 char		*uue(void *);
 int		rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul);
 int             write_detail(AUTH_REQ *authreq, int authtype, char *f);
+void            rad_acct_xmit(int type, int code, void *data, int fd);
 
 /* attrprint.c */
 extern char *opstr[];

@@ -1360,7 +1360,7 @@ Auth-Type
      VALUE      Auth-Type         System               1
      VALUE      Auth-Type         Crypt-Local          3
      VALUE      Auth-Type         Reject               4
-     VALUE      Auth-Type         Mysql                252
+     VALUE      Auth-Type         SQL                  252
      VALUE      Auth-Type         Pam                  253
      VALUE      Auth-Type         Accept               254
 
@@ -1391,9 +1391,11 @@ profile. *Note Authentication::.
 `Accept'
      Authentication succeeds.
 
+`SQL'
 `Mysql'
-     The MD5-encrypted user's password is queried from the Mysql *Note
-     SQL Auth::.
+     The MD5-encrypted user's password is queried from the SQL database
+     *Note SQL Auth::. `Mysql' is an alias maintained for compatibility
+     with other versions of Radius.
 
 `Pam'
      The username/password combination is checked using PAM.

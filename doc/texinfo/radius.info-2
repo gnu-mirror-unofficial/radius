@@ -930,10 +930,10 @@ Example of `users' file
      ## The following entry is matched when the user appends ``.ppp'' to his
      ## username when logging in.
      ## The suffix is removed from the user name, then the password is
-     ## looked up in the mysql database.
+     ## looked up in the SQL database.
      ## Users may log in at any time. They get PPP service.
      DEFAULT Suffix = ".ppp",
-                     Auth-Type = Mysql,
+                     Auth-Type = SQL,
                      Login-Time = "Al",
                      Simultaneous-Use = 1,
                      Strip-User-Name = Yes
@@ -1119,7 +1119,7 @@ following events:
 
 Authentication
      SQL authentication is enabled *Note SQL Auth:: and a user having
-     `Auth-Type' of `Mysql' is being authenticated.
+     `Auth-Type' of `SQL' (or `Mysql') is being authenticated.
 
 Accounting
      SQL accounting is enabled *Note SQL Accounting::, and the received
@@ -1147,7 +1147,7 @@ Autheniticaton
 user via SQL. This query will be used when authenticating a user which
 has
 
-     Auth-Type = Mysql
+     Auth-Type = SQL
 
 set in his profile *Note users::. Radius expects this query to return
 the MD5 encrypted password for the given user. When no such user is

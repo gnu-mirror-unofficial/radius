@@ -23,11 +23,13 @@ Begin.exp
 Default.exp
 Match.exp
 Hint.exp
+Huntgroups.exp
 Scheme.exp
 Access.exp
 Menu.exp 
 Acct-start.exp
 Acct-stop.exp
+Rewrite.exp
 Execwait.exp
 Scheme-acct.exp
 Stop.exp

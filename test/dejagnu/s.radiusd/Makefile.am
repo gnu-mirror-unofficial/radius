@@ -3,12 +3,14 @@ EXTRA_DIST=\
  Acct-start.exp\
  Execwait.exp\
  Hint.exp\
+ Huntgroups.exp\
  Reply.exp\
  Stop.exp\
  Acct-stop.exp\
  Auth.exp\
  Match.exp\
  Menu.exp\
+ Rewrite.exp\
  Scheme.exp\
  Scheme-acct.exp\
  Start.exp\

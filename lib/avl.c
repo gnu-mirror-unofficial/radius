@@ -161,6 +161,31 @@ avp_move(first, new)
         return new;
 }
 
+int
+avp_cmp(a, b)
+	VALUE_PAIR *a, *b;
+{
+	int rc = 1;
+	
+	if (a->attribute != b->attribute || a->type != b->type)
+		return 1;
+	
+	switch (a->type) {
+	case TYPE_STRING:
+		if (a->strlength != b->strlength)
+			rc = 1;
+		else
+			rc = memcmp(a->strvalue, b->strvalue, a->strlength);
+		break;
+
+	case TYPE_INTEGER:
+	case TYPE_IPADDR:
+		rc = a->lvalue != b->lvalue;
+		break;
+	}
+	return rc;
+}
+
 /* A/V pairlist functions */
 
 /* Release the memory used by a list of attribute-value pairs.
@@ -380,3 +405,16 @@ avl_fprint(fp, avl)
         }
 }
 
+int
+avl_cmp(a, b)
+	VALUE_PAIR *a, *b;
+{
+	for (; a; a = a->next) {
+		if (a->prop & AP_REQ_CMP) {
+			VALUE_PAIR *p = avl_find(b, a->attribute);
+			if (!p || avp_cmp(a, p))
+				return 1;
+		}
+	}
+	return 0;
+}

@@ -1,0 +1,87 @@
+# This file is part of GNU RADIUS.
+# Copyright (C) 2000,2001, Sergey Poznyakoff
+#  
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#   
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#  
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
+
+if [info exists TOOL_EXECUTABLE] {
+    set RADIUSD $TOOL_EXECUTABLE
+}
+if ![info exists RADIUSD] {
+    if ![is_remote host] {
+	set RADIUSD [findfile $base_dir/../../radiusd/radiusd "$base_dir/../../radiusd/radiusd" [transform radiusd]]
+    } else {
+	set RADIUSD [transform radiusd]
+    }
+}
+verbose "using RADIUSD = $RADIUSD" 2
+
+set num [regsub "(.*)/radiusd/radiusd" $RADIUSD "\\1/radtest/radtest" RADTEST]
+if { $num != 1 } {
+    set num [regsub "(.*)/radiusd" $RADIUSD "\\1/../bin/radtest" RADTEST]
+}
+
+verbose "using RADTEST = $RADTEST" 2
+
+# The variable runtest_prompt is a regexp which matches the radtest prompt.
+global radtest_prompt
+if ![info exists radtest_prompt] then {
+    set radtest_prompt "> "
+}
+
+### Only procedures should come after this point.
+
+proc default_radiusd_version {} {
+    global RADIUSD
+    global RADIUSFLAGS
+    set output [remote_exec host "$RADIUSD --version"]
+
+    set tmp [split [lindex $output 1] '\n'];
+    regsub ".*GNU Radius version (\[0-9.\]+).*" [lindex $tmp 0] "\\1" version
+    set flags ""
+    regexp "Compilation flags: (.*)\r" [lindex $tmp 3] m flags
+    set RADIUSFLAGS [split $flags]
+    if ![is_remote host] {
+	clone_output "[which $RADIUSD] version $version \[$flags\]"
+    } else {
+	clone_output "$RADIUSD on remote host version $version \[$flags\]"
+    }
+}
+
+proc radiusd_version {} {
+    return [default_radiusd_version];
+}
+
+proc default_radiusd_start {} {
+    global base_dir
+    global verbose
+    global RADIUSD
+    global RADIUSFLAGS
+	
+    set radiusd_cmd "$RADIUSD -f -d $base_dir/../raddb -l $base_dir/../log -a $base_dir/../acct -P $base_dir/../log"
+    
+    verbose "Spawning $radiusd_cmd"
+exit
+    set res [remote_spawn host $radiusd_cmd]
+    if { $res < 0 || $res == "" } {
+	perror "Spawning $RADIUSD failed."
+	return 1;
+    }
+}
+
+proc radius_start {} {
+    return [default_radiusd_start];
+}
+    
+

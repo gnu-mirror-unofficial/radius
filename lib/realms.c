@@ -1,18 +1,18 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2002, Free Software Foundation
+/* This file is part of GNU Radius.
+   Copyright (C) 2002, 2003 Free Software Foundation
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
+   along with GNU Radius; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston,
    MA 02111-1307, USA. */
 
@@ -24,9 +24,9 @@
 #include <argcv.h>
 #include <radius.h>
 #include <envar.h>
-#include <slist.h>
+#include <list.h>
 
-static REALM *realms; 
+static LIST /* of REALM */ *realms; 
 
 struct _parse_data {
 	int (*fun)();
@@ -36,12 +36,8 @@ struct _parse_data {
 };
 
 int
-_parse_server(argc, argv, pd, np, srv)
-	int argc;
-	char **argv;
-	struct _parse_data *pd;
-	int *np;
-	RADIUS_SERVER *srv;
+_parse_server(int argc, char **argv, struct _parse_data *pd, int *np,
+	      RADIUS_SERVER *srv)
 {
 	memset(srv, 0, sizeof(*srv));
 	srv->name = argv[*np];
@@ -69,10 +65,7 @@ _parse_server(argc, argv, pd, np, srv)
 }
 
 int
-_parse_server_list(srvlist, str, pd)
-	RADIUS_SERVER **srvlist;
-	char *str;
-	struct _parse_data *pd;
+_parse_server_list(RADIUS_SERVER_QUEUE *qp, char *str, struct _parse_data *pd)
 {
 	int i, argc;
 	char **argv;
@@ -83,12 +76,11 @@ _parse_server_list(srvlist, str, pd)
 	for (i = 0; i < argc; i++) {
 		RADIUS_SERVER srv;
 		if (_parse_server(argc, argv, pd, &i, &srv) == 0) 
-			*srvlist = rad_clt_append_server(*srvlist,
-					      rad_clt_alloc_server(&srv));
+			rad_clt_append_server(qp, rad_clt_alloc_server(&srv));
 
 		if (i < argc && argv[i][0] != ',') {
 			radlog(L_ERR,
-			       "%s:%d: expected , but found %s",
+			       _("%s:%d: expected , but found %s"),
 			       pd->file, pd->line, argv[i]);
 			argcv_free(argc, argv);
 			return 1;
@@ -102,12 +94,8 @@ _parse_server_list(srvlist, str, pd)
 /* read realms entry */
 /*ARGSUSED*/
 int
-read_realms_entry(pd, fc, fv, file, lineno)
-        struct _parse_data *pd;
-        int fc;
-        char **fv;
-        char *file;
-        int lineno;
+read_realms_entry(struct _parse_data *pd, int fc, char **fv,
+		  char *file,int lineno)
 {
         REALM *rp;
 	int i;
@@ -121,31 +109,29 @@ read_realms_entry(pd, fc, fv, file, lineno)
         pd->file = file;
 	pd->line = lineno;
 	
-        rp = mem_alloc(sizeof(REALM));
+        rp = emalloc(sizeof(REALM));
 	rp->queue = NULL;
         if (strcmp(fv[1], "LOCAL") == 0) {
 		i = 2;
 	} else {
-		RADIUS_SERVER *server = NULL;
+		rp->queue = rad_clt_create_queue(0, 0, 0);
 		i = 0;
 		do {
-			if (_parse_server_list(&server, fv[++i], pd)) {
-				rad_clt_clear_server_list(server);
-				server = NULL;
+			if (_parse_server_list(rp->queue, fv[++i], pd)) {
+				rad_clt_clear_server_list(rp->queue);
 				break;
 			}
 		} while (fv[i][strlen(fv[i])-1] == ',') ;
 		i++;
 		
-		if (!server) {
+		if (list_count(rp->queue->servers) == 0) {
 			radlog(L_ERR,
 			       "%s:%d: cannot parse",
 			       file, lineno);
+			rad_clt_destroy_queue(rp->queue);
 			mem_free(rp);
 			return 0;
 		}
-		rp->queue = rad_clt_create_queue(0, 0, 0);
-		rp->queue->first_server = server;
 	}
 
         STRING_COPY(rp->realm, fv[0]);
@@ -166,33 +152,32 @@ read_realms_entry(pd, fc, fv, file, lineno)
 			rp->queue->retries = envar_lookup_int(args,
 							      "retries", 1);
 		}
-                envar_free_list(args);
+                envar_free_list(&args);
         }
-        rp->next = realms;
-        realms = rp;
+	if (!realms)
+		realms = list_create();
+        list_prepend(realms, rp);
         return 0;
 }
 
-static void
-_realm_mem_free(r)
-	REALM *r;
+static int
+_realm_mem_free(void *item, void *data ARG_UNUSED)
 {
+	REALM *r = item;
 	rad_clt_destroy_queue(r->queue);
+	efree(item);
+	return 0;
 }
 	
 /*
  * Read the realms file.
  */
 int
-realm_read_file(file, auth_port, acct_port, set_secret)
-        char *file;
-	int auth_port;
-	int acct_port;
-	int (*set_secret)();
+realm_read_file(char *file, int auth_port, int acct_port, int (*set_secret)())
 {
 	struct _parse_data pd;
-	
-        free_slist((struct slist*)realms, _realm_mem_free);
+
+	list_destroy(&realms, _realm_mem_free, NULL);
         realms = NULL;
 	pd.fun = set_secret;
 	pd.ports[PORT_AUTH] = auth_port;
@@ -205,16 +190,15 @@ realm_read_file(file, auth_port, acct_port, set_secret)
 
 /* Find a realm in the REALM list */
 REALM *
-realm_lookup_name(realm)
-        char *realm;
+realm_lookup_name(char *realm)
 {
         REALM *p;
 
-        for (p = realms; p; p = p->next)
+        for (p = list_first(realms); p; p = list_next(realms))
                 if (strcmp(p->realm, realm) == 0)
                         break;
         if (!p && strcmp(realm, "NOREALM")) {
-                for (p = realms; p; p = p->next)
+		for (p = list_first(realms); p; p = list_next(realms))
                         if (strcmp(p->realm, "DEFAULT") == 0)
                                 break;
         }
@@ -222,38 +206,28 @@ realm_lookup_name(realm)
 }
 
 int
-realm_verify_ip(realm, ip)
-	REALM *realm;
-	UINT4 ip;
+realm_verify_ip(REALM *realm, UINT4 ip)
 {
 	RADIUS_SERVER *serv;
 	
 	if (!realm->queue)
 		return 0;
-	for (serv = realm->queue->first_server; serv;  serv = serv->next)
-		if (serv->addr == ip)
-			return 1;
+	for (serv = list_first(realm->queue->servers);
+	     serv;
+	     serv = list_next(realm->queue->servers))
+	     if (serv->addr == ip)
+		     return 1;
 	return 0;
 }
 
 REALM *
-realm_lookup_ip(ip)
-	UINT4 ip;
+realm_lookup_ip(UINT4 ip)
 {
 	REALM *p;
 
-	for (p = realms; p; p = p->next)
+        for (p = list_first(realms); p; p = list_next(realms))
 		if (realm_verify_ip(p, ip))
 			break;
 	return p;
 }
 
-void
-realm_iterate(fun)
-	int (*fun)();
-{
-	REALM *p;
-
-	for (p = realms; p; p = p->next)
-		fun(p);
-}

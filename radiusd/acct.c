@@ -240,8 +240,11 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
         memset(&ut, 0, sizeof(ut));
         ut.porttype = -1; /* Unknown so far */
 
-        if (radreq->server) {
-                ut.realm_address = radreq->server->addr;
+        if (radreq->realm) {
+		RADIUS_SERVER *server = list_item(radreq->realm->queue->servers,
+						  radreq->server_no);
+		if (server)
+			ut.realm_address = server->addr;
         }
         
         /* Fill in radutmp structure */
@@ -458,8 +461,12 @@ write_detail(RADIUS_REQ *radreq, int authtype, char *f)
         nas = radreq->ipaddr;
         if ((pair = avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
                 nas = pair->avp_lvalue;
-        if (radreq->server)
-                nas = radreq->server->addr;
+        if (radreq->realm) {
+		RADIUS_SERVER *server = list_item(radreq->realm->queue->servers,
+						  radreq->server_no);
+		if (server)
+			nas = server->addr;
+	}
 
         if ((cl = nas_lookup_ip(nas)) != NULL) {
                 if (cl->shortname[0])

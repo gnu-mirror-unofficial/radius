@@ -85,11 +85,18 @@ proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r)
 {
 	VALUE_PAIR *p, *proxy_state_pair = NULL;
         PROXY_STATE *state;
+	RADIUS_SERVER *server;
 	
-	if (!qr->server) {
+	if (!qr->realm) {
+		debug(100,("no proxy realm"));
+		return 1;
+	}
+	server = list_item(qr->realm->queue->servers, qr->server_no);
+	if (!server) {
 		debug(100,("no proxy server"));
 		return 1;
 	}
+	
         /* Find the last PROXY_STATE attribute. */
         for (p = r->request; p; p = p->next) {
                 if (p->attribute == DA_PROXY_STATE) 
@@ -113,12 +120,12 @@ proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r)
 				   qr->id, state->id,
 				   qr->ipaddr, state->ipaddr,
 				   qr->server_id, state->proxy_id,
-				   qr->server->addr, state->rem_ipaddr));
+				   server->addr, state->rem_ipaddr));
         
 			if (state->ipaddr == qr->ipaddr
 			    && state->id  == qr->id
 			    && state->proxy_id == qr->server_id
-			    && state->rem_ipaddr == qr->server->addr) {
+			    && state->rem_ipaddr == server->addr) {
 				debug(1,("EQUAL!!!"));
 				return 0;
 			}
@@ -127,10 +134,10 @@ proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r)
 		debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x",
 			   qr->server_id,
 			   r->id,
-			   qr->server->addr,
+			   server->addr,
 			   r->ipaddr));
                         
-		if (r->ipaddr == qr->server->addr
+		if (r->ipaddr == server->addr
 		    && r->id == qr->server_id)
 			return 0;
 	}
@@ -152,19 +159,22 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 	RADIUS_SERVER *server;
 	
 	if (radreq->attempt_no > radreq->realm->queue->retries) {
-		radreq->server = radreq->server->next;
+		radreq->server_no++;
 		radreq->attempt_no = 0;
 	}
+	server = list_item(radreq->realm->queue->servers, radreq->server_no);
 
-	if (!radreq->server) {
+
+	if (!server) {
 		radlog_req(L_NOTICE, radreq,
 		           _("couldn't send request to realm %s"),
 		           radreq->realm->realm);
 		return 0;
 	}
+	if (radreq->attempt_no == 0)
+		radreq->server_id = rad_clt_message_id(server);
 	radreq->attempt_no++;
 
-	server = radreq->server;
 	rad_clt_random_vector(vector);
 
 	/* Copy the list */
@@ -288,15 +298,14 @@ proxy_send(REQUEST *req)
         string_replace(&namepair->avp_strvalue, username);
         namepair->avp_strlength = strlen(namepair->avp_strvalue);
 
-        radreq->server = realm->queue->first_server;
+        radreq->server_no = 0;
 	radreq->attempt_no = 0;
-        radreq->server_id = rad_clt_message_id(radreq->server);
 	radreq->remote_user = string_create(username);
 
 	req->update_size = sizeof(*upd) + strlen(realm->realm);
 	upd = emalloc(req->update_size);
 	upd->proxy_id = radreq->server_id;
-	upd->server_no = 0;
+	upd->server_no = radreq->server_no;
 	strcpy(upd->realmname, realm->realm);
 	req->update = upd;
 	
@@ -420,7 +429,7 @@ proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int fd)
 
         /* Proxy support fields */
         radreq->realm         = oldreq->realm;
-        radreq->server        = oldreq->server;
+        radreq->server_no     = oldreq->server_no;
         radreq->server_id     = oldreq->server_id;
         
         return 0;

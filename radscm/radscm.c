@@ -123,7 +123,9 @@ SCM_DEFINE(rad_client_list_servers, "rad-client-list-servers", 0, 0, 0,
         char p[DOTTED_QUAD_LEN+1];
         SCM tail = SCM_EOL;
          
-        for (s = srv_queue->first_server; s; s = s->next) {
+        for (s = list_first(srv_queue->servers);
+	     s;
+	     s = list_next(srv_queue->servers)) {
                 ip_iptostr(s->addr, p);
                 tail = scm_cons(scm_list_2(scm_makfrom0str(s->name),
                                           scm_makfrom0str(p)),
@@ -138,27 +140,28 @@ SCM_DEFINE(rad_get_server, "rad-get-server", 0, 0, 0,
            "Returns the ID of the currently selected server.")
 #define FUNC_NAME s_rad_get_server      
 {
-        return scm_makfrom0str(srv_queue->first_server->name);
+	RADIUS_SERVER *s = list_current(srv_queue->servers);
+	return s ? scm_makfrom0str(s->name) : SCM_BOOL_F;
 }
 #undef FUNC_NAME
 
 RADIUS_SERVER *
-scheme_to_server(LIST, func)
-        SCM LIST;
+scheme_to_server(SRVLIST, func)
+        SCM SRVLIST;
         const char *func;
 {
         RADIUS_SERVER serv;
         SCM scm;
         
-        SCM_ASSERT((SCM_NIMP(LIST) && SCM_CONSP(LIST)),
-                   LIST, SCM_ARG1, func);
+        SCM_ASSERT((SCM_NIMP(SRVLIST) && SCM_CONSP(SRVLIST)),
+                   SRVLIST, SCM_ARG1, func);
         
-        scm = SCM_CAR(LIST);
+        scm = SCM_CAR(SRVLIST);
         SCM_ASSERT(SCM_NIMP(scm) && SCM_STRINGP(scm),
                    scm, SCM_ARG1, func);
         serv.name = SCM_STRING_CHARS(scm);
 
-        scm = SCM_CADR(LIST);
+        scm = SCM_CADR(SRVLIST);
         SCM_ASSERT(SCM_NIMP(scm) && SCM_STRINGP(scm),
                    scm, SCM_ARG1, func);
         serv.addr = ip_gethostaddr(SCM_STRING_CHARS(scm));
@@ -167,17 +170,17 @@ scheme_to_server(LIST, func)
                                "Bad hostname or ip address ~S\n",
                                scm);
 
-        scm = SCM_CADDR(LIST);
+        scm = SCM_CADDR(SRVLIST);
         SCM_ASSERT(SCM_NIMP(scm) && SCM_STRINGP(scm),
                    scm, SCM_ARG1, func);
         serv.secret = SCM_STRING_CHARS(scm);
 
-        scm = SCM_CADDDR(LIST);
+        scm = SCM_CADDDR(SRVLIST);
         SCM_ASSERT(SCM_IMP(scm) && SCM_INUMP(scm),
                    scm, SCM_ARG1, func);
         serv.port[PORT_AUTH] = SCM_INUM(scm);
         
-        scm = SCM_CAR(SCM_CDDDDR(LIST));
+        scm = SCM_CAR(SCM_CDDDDR(SRVLIST));
         SCM_ASSERT(SCM_IMP(scm) && SCM_INUMP(scm),
                    scm, SCM_ARG1, func);
         serv.port[PORT_ACCT] = SCM_INUM(scm);
@@ -186,20 +189,18 @@ scheme_to_server(LIST, func)
 }
 
 SCM_DEFINE(rad_client_add_server, "rad-client-add-server", 1, 0, 0,
-           (SCM LIST),
+           (SCM SRVLIST),
            "Add a server to the list of configured radius servers")
 #define FUNC_NAME s_rad_client_add_server
 {
-        srv_queue->first_server =
-                rad_clt_append_server(srv_queue->first_server,
-                                        scheme_to_server(LIST, FUNC_NAME));
+	rad_clt_append_server(srv_queue, scheme_to_server(SRVLIST, FUNC_NAME));
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
 
 SCM_DEFINE(rad_client_set_server, "rad-client-set-server", 1, 0, 0, 
-           (SCM LIST),
-"Selects for use the server described by LIST. A LIST should be:\n"
+           (SCM SRVLIST),
+"Selects for use the server described by SRVLIST. A SRVLIST should be:\n"
 "\n"
 "       (list ID-STRING HOST-STRING SECRET-STRING AUTH-NUM ACCT-NUM)\n"
 "Where:\n"
@@ -210,10 +211,10 @@ SCM_DEFINE(rad_client_set_server, "rad-client-set-server", 1, 0, 0,
 "       ACCT-NUM        Accounting port number\n")
 #define FUNC_NAME s_rad_client_set_server
 {
-        RADIUS_SERVER *s = scheme_to_server(LIST, FUNC_NAME);
+        RADIUS_SERVER *s = scheme_to_server(SRVLIST, FUNC_NAME);
         
-        rad_clt_clear_server_list(srv_queue->first_server);
-        srv_queue->first_server = rad_clt_append_server(NULL, s);
+        rad_clt_clear_server_list(srv_queue);
+        rad_clt_append_server(srv_queue, s);
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME

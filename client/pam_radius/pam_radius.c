@@ -336,7 +336,7 @@ _read_client_config(pam_handle_t *pamh)
         /*
          * Consistency check
          */
-        if (queue->first_server == NULL) {
+        if (list_count(queue->servers) == 0) {
                 _pam_log(LOG_ERR, "config: no server selected");
                 errcnt++;
         }

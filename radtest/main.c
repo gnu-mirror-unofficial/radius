@@ -236,13 +236,11 @@ main(argc, argv)
                         serv.port[0] = DEF_AUTH_PORT;
                 if (argc < 6)
                         serv.port[1] = DEF_ACCT_PORT;
-                srv_queue->first_server =
-                        rad_clt_append_server(srv_queue->first_server,
-                                                rad_clt_alloc_server(&serv));
+		rad_clt_append_server(srv_queue, rad_clt_alloc_server(&serv));
                 argcv_free(argc, argv);
         }
 
-        if (!srv_queue->first_server) {
+        if (list_count(srv_queue->servers) == 0) {
                 radlog(L_ERR,
                        "No servers specfied. Use -s option.\n");
                 exit(1);

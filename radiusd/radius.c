@@ -259,11 +259,8 @@ radius_req_update(void *req_ptr, void *data_ptr)
 	int i;
 	
 	req->server_id = upd->proxy_id;
-	realm = realm_lookup_name(upd->realmname);
-	server = realm->queue->first_server;
-	for (i = 0; i < upd->server_no && server; i++)
-		server = server->next;
-	req->server = server;
+	req->realm = realm_lookup_name(upd->realmname);
+	req->server_no = upd->server_no;
 }
 
 void

@@ -127,6 +127,12 @@ snmp {
 	time-to-live 10;	# Request time to live
         request-cleanup-delay 0; # Number of seconds the request remains
                                  # in queue after being processed
+	# SNMP storage management
+	storage {
+		max-nas-count 512;	# Overall number of NASes 
+		max-port-count 1024;	# Overall number of ports
+					# to be monitored
+	};
 	# Server identifier
 	ident "RADIUS server";	
 	# Communities

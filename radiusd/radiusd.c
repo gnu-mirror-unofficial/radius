@@ -226,6 +226,7 @@ struct option longopt[] = {
 #ifdef USE_DBM
 	"dbm",                no_argument,       0, 'b',
 #endif
+	"directory",          required_argument, 0, 'd',
 	"config-directory",   required_argument, 0, 'd',
 	"foreground",         no_argument,       0, 'f',
 	"help",               no_argument,       0, 'h', 

@@ -173,6 +173,10 @@ int snmp_serv_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
 		      struct snmp_var **varp, int *errp);
 int snmp_serv_queue_handler(enum mib_node_cmd cmd, void *closure,
 			    subid_t subid, struct snmp_var **varp, int *errp);
+int snmp_serv_mem_summary(enum mib_node_cmd cmd, void *closure,
+			    subid_t subid, struct snmp_var **varp, int *errp);
+int snmp_serv_class_handler(enum mib_node_cmd cmd, void *closure,
+			    subid_t subid, struct snmp_var **varp, int *errp);
 
 int snmp_stat_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
 		      struct snmp_var **varp, int *errp);
@@ -219,12 +223,17 @@ struct queue_closure {
 	int queue_index;
 };
 
+struct mem_closure {
+	int mem_index;
+};
+
 static struct auth_mib_closure auth_closure, acct_closure;
 static struct nas_closure nas_closure;
 static struct nas_table nas_table;
 static struct port_closure port_closure;
 static struct port_table_closure port_table;
 static struct queue_closure queue_closure;
+static struct mem_closure mem_closure;
 
 static struct mib_data {
 	oid_t oid;
@@ -303,6 +312,20 @@ static struct mib_data {
 	oid_queueActive,       snmp_serv_queue_handler, &queue_closure,	
 	oid_queueHeld,         snmp_serv_queue_handler, &queue_closure,	
 	oid_queueTotal,        snmp_serv_queue_handler, &queue_closure,	
+
+	oid_memoryNumClasses,      snmp_serv_mem_summary,   NULL,
+	oid_memoryNumBuckets,      snmp_serv_mem_summary,   NULL,
+	oid_memoryBytesAllocated,  snmp_serv_mem_summary,   NULL,
+	oid_memoryBytesUsed,       snmp_serv_mem_summary,   NULL,
+	
+	oid_classIndex,	           snmp_serv_class_handler, &mem_closure,
+	oid_classSize,		   snmp_serv_class_handler, &mem_closure,
+	oid_classElsPerBucket,     snmp_serv_class_handler, &mem_closure,
+	oid_classNumBuckets,	   snmp_serv_class_handler, &mem_closure,
+	oid_classElsUsed,          snmp_serv_class_handler, &mem_closure,
+	
+	oid_memoryMallocBlocks,	   snmp_serv_mem_summary,   NULL,
+	oid_memoryMallocBytes,	   snmp_serv_mem_summary,   NULL,
 	
 	/* Statistics */
 	oid_StatIdent,                       snmp_stat_handler, NULL,
@@ -414,6 +437,20 @@ snmp_attach_nas_stat(nas)
 	}
 	nasstat->index = server_stat->nas_index++;
 	nas->app_data = nasstat;
+}
+
+static int
+nas_ip_cmp(a, b)
+	struct nas_stat *a, *b;
+{
+	return a->ipaddr - b->ipaddr;
+}
+
+void
+snmp_sort_nas_stat()
+{
+	qsort(server_stat + 1, server_stat->nas_count,
+	      sizeof(struct nas_stat), nas_ip_cmp);
 }
 
 /* Mark reset of the auth server. Do not do any real work, though.
@@ -1828,7 +1865,7 @@ snmp_serv_var_set(subid, vp, errp)
 /* Queue table */
 static struct snmp_var *snmp_queue_get(subid_t subid, struct snmp_var *var,
 				       int *errp);
-void get_queue_stat(int qno, struct snmp_var *var, subid_t key);
+static void get_queue_stat(int qno, struct snmp_var *var, subid_t key);
 
 int
 snmp_serv_queue_handler(cmd, closure, subid, varp, errp)
@@ -1918,7 +1955,6 @@ get_queue_stat(qno, var, key)
 {
 	struct timeval tv;
 	struct timezone tz;
-	NAS *nas;
 	QUEUE_STAT stat;
 	
 	stat_request_list(stat);
@@ -1951,6 +1987,258 @@ get_queue_stat(qno, var, key)
 		var->type = SMI_COUNTER32;
 		var->val_length = sizeof(counter);
 		var->var_int = stat[qno][0]+stat[qno][1];
+		break;
+	}
+}
+
+/* Memory table */
+static struct snmp_var *snmp_mem_get(subid_t subid, oid_t oid, int *errp);
+static void get_mem_stat(int no, struct snmp_var *var, subid_t key);
+static struct snmp_var *snmp_class_get(subid_t subid,
+				       struct snmp_var *varp, int *errp);
+static int _mem_get_class(subid_t, CLASS_STAT*);
+static void get_class_stat(CLASS_STAT *stat, struct snmp_var *var,
+			   subid_t key);
+
+int
+snmp_serv_mem_summary(cmd, closure, subid, varp, errp)
+	enum mib_node_cmd cmd;
+	void *closure;
+	subid_t subid;
+	struct snmp_var **varp;
+	int *errp;
+{
+	oid_t oid = (*varp)->name;
+	CLASS_STAT stat;
+	
+	switch (cmd) {
+	case MIB_NODE_GET:
+		if ((*varp = snmp_mem_get(subid, oid, errp)) == NULL)
+			return -1;
+		break;
+		
+	case MIB_NODE_SET:
+	case MIB_NODE_SET_TRY:
+		/* None of these can be set */
+		if (errp)
+			*errp = SNMP_ERR_NOSUCHNAME;
+		return -1;
+		
+	case MIB_NODE_RESET:
+		break;
+
+	default:
+		abort();
+
+	}
+	
+	return 0;
+}
+
+struct snmp_var *
+snmp_mem_get(subid, oid, errp)
+	subid_t subid;
+	oid_t oid;
+	int *errp;
+{
+	struct snmp_var *ret;
+	struct timeval tv;
+	struct timezone tz;
+	MEM_STAT stat;
+	
+	ret = snmp_var_create(oid);
+	*errp = SNMP_ERR_NOERROR;
+
+	mem_get_stat(&stat);
+	
+	switch (subid) {
+
+	case MIB_KEY_memoryNumClasses:
+		ret->type = SMI_COUNTER32;
+		ret->val_length = sizeof(counter);
+		ret->var_int = stat.class_cnt;
+		break;
+		
+	case MIB_KEY_memoryNumBuckets:
+		ret->type = SMI_COUNTER32;
+		ret->val_length = sizeof(counter);
+		ret->var_int = stat.bucket_cnt;
+		break;
+
+	case MIB_KEY_memoryBytesAllocated:
+		ret->type = SMI_COUNTER32;
+		ret->val_length = sizeof(counter);
+		ret->var_int = stat.bytes_allocated;
+		break;
+
+	case MIB_KEY_memoryBytesUsed:
+		ret->type = SMI_COUNTER32;
+		ret->val_length = sizeof(counter);
+		ret->var_int = stat.bytes_used;
+		break;
+		
+	case MIB_KEY_memoryMallocBlocks:
+		ret->type = SMI_COUNTER32;
+		ret->val_length = sizeof(counter);
+#ifdef LEAK_DETECTOR
+		ret->var_int = mallocstat.count;
+#else
+		ret->var_int = 0;
+#endif
+		break;
+		
+	case MIB_KEY_memoryMallocBytes:
+		ret->type = SMI_COUNTER32;
+		ret->val_length = sizeof(counter);
+#ifdef LEAK_DETECTOR
+		ret->var_int = mallocstat.size;
+#else
+		ret->var_int = 0;
+#endif
+		break;
+		
+	default:
+		*errp = SNMP_ERR_NOSUCHNAME;
+		snmp_var_free(ret);
+		return NULL;
+	}
+	return ret;
+}
+
+static int
+class_counter(stat, ret)
+	CLASS_STAT *stat;
+	CLASS_STAT *ret;
+{
+	if (stat->index == ret->index) {
+		*ret = *stat;
+		return 1;
+	}
+	return 0;
+}
+
+int
+_mem_get_class(subid, stat)
+	subid_t subid;
+	CLASS_STAT *stat;
+{
+	stat->index = subid;
+	return mem_stat_enumerate(class_counter, stat);
+}
+
+int
+snmp_serv_class_handler(cmd, closure, subid, varp, errp)
+	enum mib_node_cmd cmd;
+	void *closure;
+	subid_t subid;
+	struct snmp_var **varp;
+	int *errp;
+{
+	struct mem_closure *p = (struct mem_closure*)closure;
+	CLASS_STAT stat;
+	
+	switch (cmd) {
+	case MIB_NODE_GET:
+		if ((*varp = snmp_class_get(subid, *varp, errp)) == NULL)
+			return -1;
+		break;
+		
+	case MIB_NODE_SET:
+	case MIB_NODE_SET_TRY:
+		/* None of these can be set */
+		if (errp)
+			*errp = SNMP_ERR_NOSUCHNAME;
+		return -1;
+		
+	case MIB_NODE_COMPARE: 
+		return 0;
+		
+	case MIB_NODE_NEXT:
+		if (_mem_get_class(subid, &stat)) {
+			p->mem_index = subid+1;
+			return 0;
+		}
+		return -1;
+		
+	case MIB_NODE_GET_SUBID:
+		return p->mem_index;
+		
+	case MIB_NODE_RESET:
+		p->mem_index = 1;
+		break;
+
+	}
+	
+	return 0;
+}
+
+struct snmp_var *
+snmp_class_get(subid, var, errp)
+	subid_t subid;
+	struct snmp_var *var;
+	int *errp;
+{
+	struct snmp_var *ret;
+	subid_t key;
+	oid_t oid = var->name;
+	CLASS_STAT stat;
+	
+	ret = snmp_var_create(oid);
+	*errp = SNMP_ERR_NOERROR;
+
+	switch (key = SUBID(oid, OIDLEN(oid)-2)) {
+
+	case MIB_KEY_classIndex:
+	case MIB_KEY_classSize:			
+	case MIB_KEY_classElsPerBucket:
+	case MIB_KEY_classNumBuckets:
+	case MIB_KEY_classElsUsed:
+		if (_mem_get_class(subid-1, &stat)) {
+			get_class_stat(&stat, ret, key);
+			break;
+
+		}
+		/*FALLTHRU*/
+		
+	default:
+		*errp = SNMP_ERR_NOSUCHNAME;
+		snmp_var_free(ret);
+		return NULL;
+	}
+	return ret;
+}
+
+void
+get_class_stat(stat, var, key)
+	CLASS_STAT *stat;
+	struct snmp_var *var;
+	subid_t key;
+{
+	switch (key) {
+	case MIB_KEY_classIndex:
+		var->type = ASN_INTEGER;
+		var->val_length = sizeof(int);
+		var->var_int = stat->index+1;
+		break;
+	case MIB_KEY_classSize:
+		var->type = ASN_INTEGER;
+		var->val_length = sizeof(int);
+		var->var_int = stat->elsize;
+		break;
+	case MIB_KEY_classElsPerBucket:
+		var->type = SMI_COUNTER32;
+		var->val_length = sizeof(counter);
+		var->var_int = stat->elcnt;
+		break;
+	case MIB_KEY_classNumBuckets:
+		var->type = SMI_COUNTER32;
+		var->val_length = sizeof(counter);
+		var->var_int = stat->bucket_cnt;
+		break;
+	case MIB_KEY_classElsUsed:
+		var->type = SMI_COUNTER32;
+		var->val_length = sizeof(counter);
+		var->var_int = stat->allocated_cnt;
 		break;
 	}
 }

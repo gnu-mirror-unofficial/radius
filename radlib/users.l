@@ -47,7 +47,7 @@
 
         #include <obstack1.h>
         #include <parser.h>
-	#include "users_gram.h"
+	#include <users_gram.h>
 
 	extern void enable_usr_dbg();
 	static char *addstring();

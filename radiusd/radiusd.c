@@ -349,11 +349,11 @@ common_init()
 
 	radiusd_pid = getpid();
 	radius_input = input_create();
-	input_register_method(radius_input, "rpp",
+	input_register_method(radius_input, "rpp", 0,
 			      rpp_input_handler,
 			      rpp_input_close,
 			      NULL);
-	input_register_method(radius_input, "udp",
+	input_register_method(radius_input, "udp", 1,
 			      udp_input_handler,
 			      udp_input_close,
 			      udp_input_cmp);
@@ -721,13 +721,9 @@ radiusd_main_loop()
 {
         radlog(L_INFO, _("Ready to process requests."));
 
-        for(;;) {
-		struct timeval tv;
-		
+        for (;;) {
 		check_reload();
-		tv.tv_sec = 2;
-		tv.tv_usec = 0;
-		input_select(radius_input, &tv);
+		input_select(radius_input, NULL);
 	}
 }
 

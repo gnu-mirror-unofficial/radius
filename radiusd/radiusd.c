@@ -400,13 +400,13 @@ main(argc, argv)
 	signal(SIGFPE, sig_fatal);
 	signal(SIGSEGV, sig_fatal);
 	signal(SIGILL, sig_fatal);
-#if 0
-	signal(SIGIOT, sig_fatal);
-#endif
+	/* Do not handle SIGIOT, please! */
 
 	if (!foreground && !check_config)
 		signal(SIGINT, sig_dumpdb);
-
+	else
+		signal(SIGINT, sig_fatal);
+	
 	for (t = 32; t >= 3; t--)
 		close(t);
 
@@ -1356,9 +1356,7 @@ usage()
 "    -c, --check-config          Do configuration files syntax check\n"
 "                                and exit.\n"
 #ifdef USE_DBM
-"    -b, --dbm                   Enable DBM support. When used twice,\n"
-"                                allows to use both `users' file and\n"
-"                                DBM database.\n" 
+"    -b, --dbm                   Enable DBM support.\n"
 #endif
 "    -d, --config-directory DIR  Specify alternate configuration directory\n"
 "                                (default " RADIUS_DIR ").\n"
@@ -1385,9 +1383,7 @@ usage()
 "    -c                          Do configuration files syntax check\n"
 "                                and exit.\n"
 #ifdef USE_DBM
-"    -b                          Enable DBM support. When used twice,\n"
-"                                allows to use both `users' file and\n"
-"                                DBM database.\n" 
+"    -b                          Enable DBM support.\n"
 #endif
 "    -d DIR                      Specify alternate configuration directory\n"
 "                                (default " RADIUS_DIR ").\n"
@@ -1475,6 +1471,7 @@ rad_exit(sig)
 	case 101:
 		radlog(L_CRIT, _("%sfailed in select() - exit."), me);
 		break;
+	case SIGINT:  /* Foreground mode */
 	case SIGTERM:
 		radlog(L_CRIT, _("%sNormal shutdown."), me);
 		break;
@@ -1483,6 +1480,7 @@ rad_exit(sig)
 		abort();
 	}
 
+	rad_sql_shutdown();
 	exit(sig == SIGTERM ? 0 : 1);
 }
 

@@ -24,6 +24,7 @@ struct envar_t {
 };
 
 envar_t *envar_parse(char *str);
+envar_t *envar_parse_argcv(int argc, char **argv);
 void envar_free(envar_t *);
 void envar_free_list(envar_t *);
 char *envar_lookup(envar_t *, char *);

@@ -23,15 +23,18 @@
 #include <mem.h>
 #include <envar.h>
 
-envar_t *
-envar_parse(str)
+static void
+envar_parse_internal(str, phead, ptail)
 	char *str;
+	envar_t **phead;
+	envar_t **ptail;
 {
 	int i;
 	int argc;
 	char **argv;
 	envar_t *head = NULL, *tail;
-	
+
+	*phead = *ptail = NULL;
 	if (argcv_get(str, ",", &argc, &argv)) {
 		if (argv)
 			argcv_free(argc, argv);
@@ -42,6 +45,8 @@ envar_parse(str)
 		envar_t *env;
 		char *p;
 		
+		if (argv[i][0] == ',')
+			continue;
 		env = alloc_entry(sizeof(*env));
 		p = strchr(argv[i], '=');
 		if (p) {
@@ -66,6 +71,34 @@ envar_parse(str)
 	}
 
 	argcv_free(argc, argv);
+	*phead = head;
+	*ptail = tail;
+}
+
+envar_t *
+envar_parse(str)
+	char *str;
+{
+	envar_t *head, *tail;
+	envar_parse_internal(str, &head, &tail);
+	return head;
+}
+
+envar_t *
+envar_parse_argcv(argc, argv)
+	int argc;
+	char **argv;
+{
+	envar_t *head = NULL, *tail;
+	while (argc--) {
+		envar_t *ph, *pt;
+		envar_parse_internal(*argv++, &ph, &pt);
+		if (!head)
+			head = ph;
+		else
+			tail->next = ph;
+		tail = pt;
+	}
 	return head;
 }
 

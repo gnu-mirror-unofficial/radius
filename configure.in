@@ -417,7 +417,7 @@ rad_CHECK_LIB(iodbc, SQLAllocHandle, [],
 
 
 AC_ARG_WITH(odbc,
-	[  --with-odbc][[={odbc|iodbc}]][      Configure to work with ODBC],
+	[  --with-odbc][[={odbc|iodbc}]][      Configure to work with ODBC (EXPERIMENTAL)],
 	[case $withval in
 	 yes)			rad_lib_odbc
 		;;

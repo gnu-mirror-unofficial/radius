@@ -1,3 +1,7 @@
+2001-02-18  gray  <gray@farlep.net>
+	radiusd/timestr.c completely rewritten. The new version is
+	much faster and does a reliable error-checking.
+
 2001-02-17  gray  <gray@farlep.net>
 	Integrated checkrad into radiusd. Fixed some bugs in rewrite.y
 

@@ -1,3 +1,33 @@
+2002-07-17  Sergey Poznyakoff
+
+	* configure.ac: Do not build server guile support by default. Sad.
+	* include/radius.h: Include pwd.h and grp.h. Added protos for
+	  getpw/getgr functions.
+	* include/radiusd.h: New request states RS_HUNG and RS_DEAD.
+	* include/radpaths.h: New defines RADIUSD_PID_FILE and
+	  RADIUSD_WATCHER_FILE.
+
+	* lib/getgr.c: New. A thread-safe version of getgrnam.
+	* lib/getpw_r.c: New. A thread-safe version of getpwnam.
+	* lib/Makefile.am: Added getgr.c and getpw_r.c.
+	* lib/gethost_r.c: Cancel-safety.
+	* lib/localtime_r.c: Likewise.
+
+	* radiusd/exec.c: Do not use stream functions. Operate on
+	  file descriptors directly.
+	* radiusd/auth.c (unix_pass): Rewritten to be thread-safe.
+	* lib/printutmp.c: Use thread-safe functions.
+	* radiusd/files.c: Likewise.
+	* raddb/dictionary: Allow multiple Acct-Ext-Program attributes.
+	* radiusd/acct.c: Likewise.
+
+	* radiusd/radiusd.c: Changes to watcher mode.
+	* radiusd/request.c: Rewrite.
+	* radiusd/scheme.c: Use radiusd_mutex_lock.
+	* test/test.sh.m4: Pass -w0 to radiusd.
+	
+	* TODO: Updated.
+
 2002-07-14  Sergey Poznyakoff
 
 	* radiusd/exec.c: Implemented per-thread filters.

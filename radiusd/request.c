@@ -78,7 +78,7 @@ void *
 request_thread0(arg)
         void *arg;
 {
-	rad_thread_init();
+	radiusd_thread_init();
 
 	pthread_cleanup_push(rad_cleanup_thread0, NULL);
         while (1) {
@@ -254,16 +254,34 @@ request_put(type, data, activefd, numpending)
                                 
                         case RS_PENDING:
                                 radlog(L_NOTICE,
-                                     _("Killing unresponsive %s thread %d"),
+                                     _("thread %d (%s) did not respond within %d seconds"),
+                                       curreq->child_id,
                                        request_class[curreq->type].name,
-                                       curreq->child_id);
+				       request_class[curreq->type].ttl);
+				curreq->timestamp = curtime;
+				curreq->status = RS_HUNG;
+				prevreq = curreq;
+				curreq = curreq->next;
+				break;
+				
+			case RS_HUNG:
+				radlog(L_NOTICE,
+				       _("Killing unresponsive %s thread %d"),
+				       request_class[curreq->type].name,
+				       curreq->child_id);
+				curreq->status = RS_DEAD;
                                 /*FIXME: This causes much grief */
                                 pthread_cancel(curreq->child_id);
-				/* Prevent successive invocations of
-				   pthread_cancel */
 				curreq->timestamp = curtime;
+				prevreq = curreq;
                                 curreq = curreq->next;
                                 break;
+
+			case RS_DEAD:
+				if (radiusd_is_watched())
+					radiusd_abort();
+				else
+					radiusd_primitive_restart(0);
                         }
                         continue;
                 }
@@ -392,8 +410,9 @@ request_flush_list()
         request_list_block();
 
         while (curreq != NULL) {
-                if (curreq->status == RS_COMPLETED
-		    || curreq->status == RS_WAITING) {
+		switch (curreq->status) {
+		case RS_COMPLETED:
+		case RS_WAITING:
                         /* Request completed/waiting, delete it no matter how
                            long does it reside in the queue */
                         debug(1, (curreq->status == RS_COMPLETED ?
@@ -409,19 +428,49 @@ request_flush_list()
                                 request_free(curreq);
                                 curreq = prevreq->next;
                         }
-                } else if (curreq->timestamp +
-                           request_class[curreq->type].ttl <= curtime) {
-                        /* kill the request */
-                        radlog(L_NOTICE,
-                               _("Killing unresponsive %s thread %d"),
-                               request_class[curreq->type].name,
-                               curreq->child_id);
-                        pthread_cancel(curreq->child_id);
-                        curreq = curreq->next;
-                } else {
-                        prevreq = curreq;
-                        curreq = curreq->next;
-                        request_count++;
+			break;
+
+		case RS_PENDING:
+			if (curreq->timestamp +
+			    request_class[curreq->type].ttl <= curtime) {
+                                radlog(L_NOTICE,
+	       _("thread %d (%s) did not respond within %d seconds"),
+				       curreq->child_id,
+				       request_class[curreq->type].name,
+				       request_class[curreq->type].ttl);
+				curreq->timestamp = curtime;
+				curreq->status = RS_HUNG;
+			}
+			prevreq = curreq;
+			curreq = curreq->next;
+			break;
+			
+		case RS_HUNG:
+			if (curreq->timestamp +
+			    request_class[curreq->type].ttl <= curtime) {
+				radlog(L_NOTICE,
+				       _("Killing unresponsive %s thread %d"),
+				       request_class[curreq->type].name,
+				       curreq->child_id);
+				curreq->status = RS_DEAD;
+				/*FIXME: This causes much grief */
+				pthread_cancel(curreq->child_id);
+				curreq->timestamp = curtime;
+			}
+			prevreq = curreq;
+			curreq = curreq->next;
+			request_count++;
+			break;
+
+		case RS_DEAD:
+			if (radiusd_is_watched())
+				radiusd_abort();
+			else
+				radiusd_primitive_restart(0);
+			break;
+
+		default:
+			abort();
                 }
         }
 

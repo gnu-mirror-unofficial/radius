@@ -526,7 +526,7 @@ rad_sql_init()
 }
 
 static void
-rad_sql_shutdown_thread(unused)
+radiusd_sql_shutdown_thread(unused)
 	void *unused;
 {
 	struct sql_connection *conn;
@@ -541,9 +541,9 @@ rad_sql_shutdown_thread(unused)
 }
 
 void
-rad_sql_shutdown()
+radiusd_sql_shutdown()
 {
-	request_thread_command(rad_sql_shutdown_thread, NULL);
+	request_thread_command(radiusd_sql_shutdown_thread, NULL);
 }
 
 void
@@ -618,8 +618,8 @@ sql_flush()
 {
         radlog(L_NOTICE,
                _("SQL configuration changed: closing existing connections"));
-        rad_flush_queues();
-	rad_sql_shutdown();
+        radiusd_flush_queues();
+	radiusd_sql_shutdown();
 }
 
 struct sql_connection *

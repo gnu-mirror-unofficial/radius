@@ -197,7 +197,7 @@ static int rad_cfg_listen_auth(int argc, cfg_value_t *argv,
 static int rad_cfg_listen_acct(int argc, cfg_value_t *argv,
 			       void *block_data, void *handler_data);
 
-static void reread_config(int reload);
+static void reconfigure(int reload);
 static void rad_daemon();
 static void rad_watcher();
 static void common_init();
@@ -635,7 +635,7 @@ common_init()
 #ifdef USE_SERVER_GUILE
         start_guile();
 #endif
-        reread_config(0);
+        reconfigure(0);
 }       
 
 void
@@ -1091,7 +1091,7 @@ struct cfg_stmt config_syntax[] = {
  *      Read config files.
  */
 void
-reread_config(reload)
+reconfigure(reload)
         int reload;
 {
         int res = 0;
@@ -1194,7 +1194,7 @@ check_reload()
         switch (daemon_command) {
         case CMD_RELOAD:
                 radlog(L_INFO, _("Reloading configuration now"));
-                reread_config(1);
+                reconfigure(1);
                 break;
 		
         case CMD_RESTART:
@@ -1237,7 +1237,7 @@ check_snmp_request()
                         break;
                         
                 case serv_init:
-                        reread_config(1);
+                        reconfigure(1);
                         break;
                         
                 case serv_running:

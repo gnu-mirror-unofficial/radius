@@ -423,7 +423,8 @@ common_init()
 	forward_init();
 #ifdef USE_SNMP
         snmpserv_init(&saved_status);
-#endif		
+#endif
+	acct_init();
 	radiusd_reconfigure();
 	radpath_init();
 	radlog(L_INFO, _("Ready"));

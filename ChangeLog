@@ -1,3 +1,18 @@
+2002-07-31  Sergey Poznyakoff
+
+	* include/radiusd.h (config_hook_fp): new datatype.
+	  (.*_config_hook): New functions
+	* radiusd/config.y: Removed superfluous "ready" diagnostics.
+	* radiusd/radiusd.c (reconfigure): rewritten
+	* radiusd/scheme.c: Provide "before" and "after" configuration
+	  hooks
+	* radiusd/snmpserv.c: Likewise.
+
+	* po/es.po: Updated
+	* po/no.po: Updated
+	* po/pl.po: Updated
+	* po/ru.po: Updated
+	
 2002-07-29  Sergey Poznyakoff  
 
 	* NEWS: Changed format to match GNU current practice.

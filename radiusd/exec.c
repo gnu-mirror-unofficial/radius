@@ -519,9 +519,11 @@ filter_auth(name, req, reply_pairs)
 	int rc = -1;
 
 	sym = filter_open(name, req);
+	if (!sym)
+		return -1;
 	pthread_cleanup_push(filter_unlock, sym);
 	filter_lock(sym);
-	if (!sym || sym->pid == -1)
+	if (sym->pid == -1)
 		rc = -1;
 	else if (filter_write(sym, sym->auth.input_fmt, req)) 
 		rc = -1;
@@ -583,9 +585,11 @@ filter_acct(name, req)
 	char buffer[1024];
 	
 	sym = filter_open(name, req);
+	if (!sym)
+		return -1;
 	pthread_cleanup_push(filter_unlock, sym);
 	filter_lock(sym);
-	if (!sym || sym->pid == -1)
+	if (sym->pid == -1)
 		rc = -1;
 	else if (filter_write(sym, sym->acct.input_fmt, req)) 
 		rc = -1;

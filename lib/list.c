@@ -22,7 +22,6 @@
 #include <stdlib.h>
 #include <mem.h>
 #include <list.h>
-#include <assert.h>
 
 struct list_entry {
 	struct list_entry *next;
@@ -174,7 +173,6 @@ list_append(struct list *list, void *data)
 {
 	struct list_entry *ep;
 
-	assert(list!=NULL);
 	if (!list)
 		return;
 	ep = emalloc(sizeof(*ep));

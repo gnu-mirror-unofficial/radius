@@ -52,3 +52,8 @@ ALIAS		Strip-User-Name		User-Name-Is-Star
 
 VALUE		User-Name-Is-Star	No			0
 VALUE		User-Name-Is-Star	Yes			1
+
+# Compatibility with Cistron RADIUS
+VALUE           Auth-Type               Mysql                   252
+VALUE           Auth-Type               Pam                     253
+

@@ -737,6 +737,7 @@ size of stack in words. The default value is 4096.
 @kwindex load-path
 @kwindex load
 @kwindex gc-interval
+@kwindex outfile
 
 The @code{guile} statement allows to configure server interface with
 Guile. 
@@ -749,7 +750,7 @@ guile @{
         [ load-path @var{string} ; ]
         [ load @var{string} ; ]
         [ gc-interval @var{number} ; ]
-        [ task-timeout @var{number} ; ]
+        [ outfile @var{string} ; ]
 @};
 @end smallexample
 
@@ -771,12 +772,6 @@ Sets the interval in seconds between the two successive forced
 garbage collections. Setting this value to @code{0} disables forced
 garbage collections. This is the default.
 
-@item task-timeout
-Sets the maximum interval in seconds the execution of a scheme function is
-allowed to take.
-The default timeout is @var{ttl}/2+1, where @var{ttl} means time-to-live
-value for the given type of request.
-
 @end table
 
 @subheading String statements
@@ -785,6 +780,10 @@ value for the given type of request.
 Add specified pathname to @code{%load-path} variable.
 @item load
 Load the specified source file on startup.
+@item outfile
+Redirects the standard output and standard error streams of the @code{Guile}
+functions to the given file. Unless the filename starts with @samp{/},
+it is taken relative to the current logging directory.
 @end table
 
 For the detailed description of Guile extensions interface, @xref{Guile}.

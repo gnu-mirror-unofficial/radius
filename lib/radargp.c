@@ -102,7 +102,7 @@ rad_common_argp_parser(int key, char *arg, struct argp_state *state)
 
 error_t
 grad_argp_parse(const struct argp *argp, int *pargc, char **pargv[],
-	       unsigned flags, int *arg_index, void *input)
+		unsigned flags, int *arg_index, void *input)
 {
         error_t ret;
         ret = argp_parse (argp, *pargc, *pargv, flags, arg_index, input);

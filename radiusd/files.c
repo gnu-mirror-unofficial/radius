@@ -688,7 +688,7 @@ hints_setup(RADIUS_REQ *req)
                 orig_name_pair = NULL;
         } else {
                 orig_name_pair = grad_avp_create_string(DA_ORIG_USER_NAME,
-                                                   name_pair->avp_strvalue);
+						      name_pair->avp_strvalue);
         }
 
         debug(1, ("called for `%s'", name_pair->avp_strvalue));
@@ -698,7 +698,7 @@ hints_setup(RADIUS_REQ *req)
         if (grad_avl_find(request_pairs, DA_FRAMED_PROTOCOL) != NULL &&
             grad_avl_find(request_pairs, DA_SERVICE_TYPE) == NULL) {
                 tmp = grad_avp_create_integer(DA_SERVICE_TYPE,
-                                         DV_SERVICE_TYPE_FRAMED_USER);
+					      DV_SERVICE_TYPE_FRAMED_USER);
                 if (tmp) 
                         grad_avl_merge(&request_pairs, &tmp);
         }
@@ -721,8 +721,10 @@ hints_setup(RADIUS_REQ *req)
         
                 /* See if we need to adjust the name. */
                 do_strip = 1;
-                if ((tmp = grad_avl_find(rule->rhs, DA_STRIP_USER_NAME)) != NULL
-                    || (tmp = grad_avl_find(rule->lhs, DA_STRIP_USER_NAME)) != NULL)
+                if ((tmp = grad_avl_find(rule->rhs, DA_STRIP_USER_NAME))
+		         != NULL
+                    || (tmp = grad_avl_find(rule->lhs, DA_STRIP_USER_NAME))
+		            != NULL)
                         do_strip = tmp->avp_lvalue;
                 
                 if (do_strip) 
@@ -748,8 +750,10 @@ hints_setup(RADIUS_REQ *req)
                 
                 /* Ok, let's see if we need to further check the
                    hint's rules */
-                if (((tmp = grad_avl_find(rule->rhs, DA_FALL_THROUGH)) != NULL
-                     || (tmp = grad_avl_find(rule->lhs, DA_FALL_THROUGH)) != NULL)
+                if (((tmp = grad_avl_find(rule->rhs, DA_FALL_THROUGH))
+		          != NULL
+                     || (tmp = grad_avl_find(rule->lhs, DA_FALL_THROUGH))
+		             != NULL)
                     && tmp->avp_lvalue)
                         continue;
                 break;
@@ -841,7 +845,8 @@ huntgroup_access(RADIUS_REQ *radreq, LOCUS *loc)
 			*loc = rule->loc;
 		radius_req_register_locus(radreq, &rule->loc);
 #ifdef DA_REWRITE_FUNCTION
-		if ((pair = grad_avl_find(rule->lhs, DA_REWRITE_FUNCTION)) != NULL
+		if ((pair = grad_avl_find(rule->lhs, DA_REWRITE_FUNCTION))
+		          != NULL
 		    && rewrite_eval(pair->avp_strvalue, radreq, NULL, NULL)) {
                         radlog_loc(L_ERR, &rule->loc, "%s(): %s",
 				   pair->avp_strvalue,
@@ -1105,7 +1110,8 @@ fallthrough(VALUE_PAIR *vp)
 {
         VALUE_PAIR *tmp;
 
-        return (tmp = grad_avl_find(vp, DA_FALL_THROUGH)) ? tmp->avp_lvalue : 0;
+        return (tmp = grad_avl_find(vp, DA_FALL_THROUGH)) ?
+		         tmp->avp_lvalue : 0;
 }
 
 /*
@@ -1696,7 +1702,7 @@ reload_data(enum reload_what what, int *do_radck)
         case reload_realms:
                 path = grad_mkfilename(radius_dir, RADIUS_REALMS);
                 if (grad_read_realms(path, auth_port, acct_port,
-				    realm_set_secret) < 0)
+				     realm_set_secret) < 0)
                         rc = 1;
                 efree(path);
                 break;

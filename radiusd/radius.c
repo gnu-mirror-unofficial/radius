@@ -54,9 +54,9 @@ radius_send_reply(int code, RADIUS_REQ *radreq,
                 case RT_ACCESS_REJECT:
                         radreq->reply_pairs = NULL;
                         grad_avl_move_attr(&radreq->reply_pairs, &reply, 
-                                      DA_REPLY_MESSAGE);
+					   DA_REPLY_MESSAGE);
                         grad_avl_move_attr(&radreq->reply_pairs, &reply, 
-                                      DA_PROXY_STATE);
+					   DA_PROXY_STATE);
                         grad_avl_free(reply);
 			stat_inc(auth, radreq->ipaddr, num_rejects);
                         break;
@@ -68,8 +68,8 @@ radius_send_reply(int code, RADIUS_REQ *radreq,
                 default:
                         radreq->reply_pairs =
 				grad_client_encrypt_pairlist(reply,
-							 radreq->vector,
-							 radreq->secret);
+							     radreq->vector,
+							     radreq->secret);
                 }
         } 
 
@@ -87,7 +87,8 @@ void
 radius_send_challenge(RADIUS_REQ *radreq, char *msg, char *state, int fd)
 {
 	radreq->reply_pairs = NULL;
-	grad_avl_move_attr(&radreq->reply_pairs, &radreq->request, DA_PROXY_STATE);
+	grad_avl_move_attr(&radreq->reply_pairs, &radreq->request,
+			   DA_PROXY_STATE);
 	if (grad_server_send_challenge(fd, radreq, msg, state))
 		stat_inc(auth, radreq->ipaddr, num_challenges);
 }
@@ -162,9 +163,9 @@ radius_auth_req_decode(struct sockaddr_in *sa,
 	}
         
         radreq = grad_decode_pdu(ntohl(sa->sin_addr.s_addr),
-				ntohs(sa->sin_port),
-				input,
-				inputsize);
+				 ntohs(sa->sin_port),
+				 input,
+				 inputsize);
 	if (!radreq)
 		return 1;
         
@@ -183,8 +184,8 @@ radius_auth_req_decode(struct sockaddr_in *sa,
 	if (grad_avl_find(radreq->request, DA_CHAP_PASSWORD)
 	    && !grad_avl_find(radreq->request, DA_CHAP_CHALLENGE)) {
 		VALUE_PAIR *p = grad_avp_create_binary(DA_CHAP_CHALLENGE,
-					          AUTH_VECTOR_LEN,
-					          radreq->vector);
+						       AUTH_VECTOR_LEN,
+						       radreq->vector);
 		grad_avl_add_pair(&radreq->request, p);
 	}
 	
@@ -206,9 +207,9 @@ radius_acct_req_decode(struct sockaddr_in *sa,
 	}
         
         radreq = grad_decode_pdu(ntohl(sa->sin_addr.s_addr),
-				ntohs(sa->sin_port),
-				input,
-				inputsize);
+				 ntohs(sa->sin_port),
+				 input,
+				 inputsize);
 	if (!radreq)
 		return 1;
         

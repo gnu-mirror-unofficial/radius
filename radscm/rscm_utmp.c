@@ -141,9 +141,11 @@ the constructed entry is also appended to WTMP_FILE.")
                         else if (SCM_BIGP(elt)) 
                                 ut.nas_address = (UINT4) scm_i_big2dbl(elt);
                         else if (SCM_NIMP(elt) && SCM_STRINGP(elt)) 
-                                ut.nas_address = grad_ip_gethostaddr(SCM_STRING_CHARS(elt));
+                                ut.nas_address =
+				    grad_ip_gethostaddr(SCM_STRING_CHARS(elt));
                         else if (SCM_NIMP(elt) && SCM_STRINGP(elt))
-                                ut.nas_address = grad_ip_strtoip(SCM_STRING_CHARS(elt));
+                                ut.nas_address =
+					grad_ip_strtoip(SCM_STRING_CHARS(elt));
                         else 
                                 scm_misc_error(FUNC_NAME,
                                                "~S: NAS IP should be IP address",
@@ -158,9 +160,11 @@ the constructed entry is also appended to WTMP_FILE.")
                         else if (SCM_BIGP(elt)) 
                                 ut.framed_address = (UINT4) scm_i_big2dbl(elt);
                         else if (SCM_NIMP(elt) && SCM_STRINGP(elt)) 
-                                ut.framed_address = grad_ip_gethostaddr(SCM_STRING_CHARS(elt));
+                                ut.framed_address =
+				   grad_ip_gethostaddr(SCM_STRING_CHARS(elt));
                         else if (SCM_NIMP(elt) && SCM_STRINGP(elt))
-                                ut.framed_address = grad_ip_strtoip(SCM_STRING_CHARS(elt));
+                                ut.framed_address =
+				      grad_ip_strtoip(SCM_STRING_CHARS(elt));
                         else 
                                 scm_misc_error(FUNC_NAME,
                                                "~S: Framed IP should be IP address",
@@ -175,7 +179,8 @@ the constructed entry is also appended to WTMP_FILE.")
                         else if (SCM_IMP(elt) && SCM_CHARP(elt)) {
                                 DICT_VALUE *dv;
 
-                                dv = grad_value_name_to_value(SCM_STRING_CHARS(elt),
+                                dv = grad_value_name_to_value(
+					                 SCM_STRING_CHARS(elt),
                                                          DA_FRAMED_PROTOCOL);
 
                                 if (dv)

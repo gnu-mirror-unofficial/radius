@@ -165,7 +165,8 @@ check_attribute(VALUE_PAIR *check_pairs, int pair_attr,
                 if (pair->avp_lvalue == pair_value)
                         return 1;
                 check_pairs = pair->next;
-        } while (check_pairs && (pair = grad_avl_find(check_pairs, pair_attr)));
+        } while (check_pairs
+		 && (pair = grad_avl_find(check_pairs, pair_attr)));
         return 0;
 }
 
@@ -191,7 +192,8 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
         char buf[MAX_LONGNAME];
 
         /* A packet should have Acct-Status-Type attribute */
-        if ((vp = grad_avl_find(radreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
+        if ((vp = grad_avl_find(radreq->request, DA_ACCT_STATUS_TYPE))
+	        == NULL) {
                 radlog_req(L_ERR, radreq,
                            _("no Acct-Status-Type attribute"));
                 return -1;
@@ -204,8 +206,9 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
         ut.porttype = -1; /* Unknown so far */
 
         if (radreq->realm) {
-		RADIUS_SERVER *server = grad_list_item(radreq->realm->queue->servers,
-						  radreq->server_no);
+		RADIUS_SERVER *server =
+			grad_list_item(radreq->realm->queue->servers,
+				       radreq->server_no);
 		if (server)
 			ut.realm_address = server->addr;
         }
@@ -450,8 +453,9 @@ write_detail(RADIUS_REQ *radreq, int authtype, char *f)
         if ((pair = grad_avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
                 nas = pair->avp_lvalue;
         if (radreq->realm) {
-		RADIUS_SERVER *server = grad_list_item(radreq->realm->queue->servers,
-						  radreq->server_no);
+		RADIUS_SERVER *server =
+			grad_list_item(radreq->realm->queue->servers,
+				       radreq->server_no);
 		if (server)
 			nas = server->addr;
 	}
@@ -486,11 +490,13 @@ write_detail(RADIUS_REQ *radreq, int authtype, char *f)
                         /* user wants a full (non-stripped) name to appear
                            in detail */
                         
-                        pair = grad_avl_find(radreq->request, DA_ORIG_USER_NAME);
+                        pair = grad_avl_find(radreq->request,
+					     DA_ORIG_USER_NAME);
                         if (pair) 
                                 pair->name = "User-Name";
                         else
-                                pair = grad_avl_find(radreq->request, DA_USER_NAME);
+                                pair = grad_avl_find(radreq->request,
+						     DA_USER_NAME);
                         if (pair) {
                                 fprintf(outfd, "\t%s\n", 
                                         grad_format_pair(pair, 0, &save));

@@ -183,8 +183,8 @@ grad_encrypt_password(VALUE_PAIR *pair,
 	size_t encr_size;
 	
 	grad_encrypt_text(&encr_text, &encr_size,
-		     password, vector, secret, 
-		     NULL, 0);
+			  password, vector, secret, 
+			  NULL, 0);
         pair->avp_strvalue = encr_text;
         pair->avp_strlength = encr_size;
 }
@@ -197,11 +197,11 @@ grad_decrypt_password(char *password,   /* At least AUTH_STRING_LEN+1
 		      char *secret)     /* Shared secret */
 {
 	grad_decrypt_text(password,
-		     pair->avp_strvalue,
-		     pair->avp_strlength,
-		     vector,
-		     secret, 
-		     NULL,
+			  pair->avp_strvalue,
+			  pair->avp_strlength,
+			  vector,
+			  secret, 
+			  NULL,
 		     0);
 }
 
@@ -266,8 +266,8 @@ grad_encrypt_tunnel_password(VALUE_PAIR *pair,
 	plaintext[0] = length;
 	memcpy(&plaintext[1], password, length + 1);
 	grad_encrypt_text(&encr_text, &encr_size,
-		     plaintext, vector, secret, 
-		     (u_char*) &salt, 2);
+			  plaintext, vector, secret, 
+			  (u_char*) &salt, 2);
 	efree(plaintext);
 	
 	pair->avp_strlength = 3 + encr_size;
@@ -288,12 +288,12 @@ grad_decrypt_tunnel_password(char *password,   /* At least AUTH_STRING_LEN+1
 {
 	size_t length;
 	grad_decrypt_text(password,
-		     pair->avp_strvalue + 3,
-		     pair->avp_strlength - 3,
-		     vector,
-		     secret, 
-		     &pair->avp_strvalue[1],
-		     2);
+			  pair->avp_strvalue + 3,
+			  pair->avp_strlength - 3,
+			  vector,
+			  secret, 
+			  &pair->avp_strvalue[1],
+			  2);
 	length = *(u_char*) password;
 	memmove(password, password + 1, length);
 	password[length] = 0;

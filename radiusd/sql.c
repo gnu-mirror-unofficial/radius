@@ -325,7 +325,8 @@ rad_sql_init()
                 
                 switch (stmt_type) {
                 case STMT_SERVER:
-                       	if (cur_ptr[0] != '/' && !grad_ip_gethostaddr(cur_ptr)) {
+                       	if (cur_ptr[0] != '/'
+			    && !grad_ip_gethostaddr(cur_ptr)) {
                                 radlog(L_ERR,
                                        _("%s:%d: unknown host: %s"),
                                        sqlfile, line_no,
@@ -828,7 +829,7 @@ rad_sql_acct(RADIUS_REQ *radreq)
         if (!sql_cfg.active[SQL_ACCT])
                 return;
 
-        if ((pair = grad_avl_find(radreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
+        if (!(pair = grad_avl_find(radreq->request, DA_ACCT_STATUS_TYPE))) {
                 /* should never happen!! */
                 radlog_req(L_ERR, radreq,
                            _("no Acct-Status-Type attribute in rad_sql_acct()"));
@@ -935,7 +936,8 @@ rad_sql_pass(RADIUS_REQ *req, char *authdata)
         
         if (authdata) {
                 grad_avl_add_pair(&req->request,
-                             grad_avp_create_string(DA_AUTH_DATA, authdata));
+				  grad_avp_create_string(DA_AUTH_DATA,
+							 authdata));
         }
         
         obstack_init(&stack);
@@ -1034,9 +1036,9 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
 		loc.file = __FILE__;
 		loc.line = __LINE__;
                 pair = grad_create_pair(&loc,
-				    res->tuple[i][0],
-				    op,
-				    res->tuple[i][1]);
+					res->tuple[i][0],
+					op,
+					res->tuple[i][1]);
                 
                 if (pair) {
                         grad_avl_merge(return_pairs, &pair);

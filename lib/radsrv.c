@@ -48,8 +48,8 @@ grad_server_send_reply(int fd, RADIUS_REQ *radreq)
         size_t length;
 
         length = grad_create_pdu(&pdu, radreq->reply_code,
-                                radreq->id, radreq->vector, radreq->secret,
-                                radreq->reply_pairs, radreq->reply_msg);
+				 radreq->id, radreq->vector, radreq->secret,
+				 radreq->reply_pairs, radreq->reply_msg);
         if (length > 0) {
                 struct sockaddr saremote;
                 struct sockaddr_in *sin;
@@ -93,7 +93,7 @@ grad_server_send_challenge(int fd, RADIUS_REQ *radreq, char *msg, char *state)
 	reply = grad_avl_dup(radreq->reply_pairs);
 	grad_avl_merge(&reply, &p);
         length = grad_create_pdu(&pdu, RT_ACCESS_CHALLENGE, radreq->id,
-                                radreq->vector, radreq->secret, reply, msg);
+				 radreq->vector, radreq->secret, reply, msg);
 	grad_avl_free(reply);
 	grad_avl_free(p);
 	

@@ -64,12 +64,12 @@ tunnel_passwd_recode(VALUE_PAIR *pass_pair, char *new_secret, char *new_vector,
 	u_char tag;
 	
 	grad_decrypt_tunnel_password(password, 
-				&tag, pass_pair,
-				req->vector, req->secret);
+				     &tag, pass_pair,
+				     req->vector, req->secret);
         efree(pass_pair->avp_strvalue);
 	grad_encrypt_tunnel_password(pass_pair,
-				tag, password, 
-				new_vector, new_secret);
+				     tag, password, 
+				     new_vector, new_secret);
 	memset(password, 0, AUTH_STRING_LEN);
 }
 
@@ -187,7 +187,8 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 		radreq->server_no++;
 		radreq->attempt_no = 0;
 	}
-	server = grad_list_item(radreq->realm->queue->servers, radreq->server_no);
+	server = grad_list_item(radreq->realm->queue->servers,
+				radreq->server_no);
 
 	if (!server) {
 		radlog_req(L_NOTICE, radreq,
@@ -223,11 +224,11 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 	
 	/* Create the pdu */
 	size = grad_create_pdu(&pdu, radreq->code,
-			      radreq->server_id,
-			      radreq->remote_auth,
-			      server->secret,
-			      plist,
-			      NULL);
+			       radreq->server_id,
+			       radreq->remote_auth,
+			       server->secret,
+			       plist,
+			       NULL);
 	grad_avl_free(plist);
 
 	if (!radiusd_master()) {
@@ -325,8 +326,8 @@ proxy_send(REQUEST *req)
                LOCAL    -- process request locally.
                NOREALM  -- handle an empty realm name.
 
-           A realm with special name DEFAULT is returned by grad_realm_lookup_name()
-           if no other realm name matches. */
+           A realm with special name DEFAULT is returned by
+	   grad_realm_lookup_name() if no other realm name matches. */
 
         if ((realmname = strrchr(username, '@')) == NULL) {
                 if ((realm = grad_realm_lookup_name("NOREALM")) == NULL) {
@@ -425,7 +426,7 @@ proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int fd)
            the remote server back to the NAS, for security. */
         allowed_pairs = NULL;
         grad_avl_move_pairs(&allowed_pairs, &radreq->request,
-		       select_propagated, NULL);
+			    select_propagated, NULL);
         grad_avl_free(radreq->request);
 
         /* Rebuild the RADIUS_REQ struct, so that the normal functions

@@ -2682,7 +2682,8 @@ snmp_decode(SNMP_REQ *req, u_char *buf, size_t len)
         if (snmp_decode_request(&sess, pdu, buf, len, comm, &comm_len)) {
                 radlog(L_ERR,
                        _("can't decode SNMP packet from %s: %s"),
-		       grad_ip_iptostr(ntohl(req->addr.sin_addr.s_addr), ipbuf),
+		       grad_ip_iptostr(ntohl(req->addr.sin_addr.s_addr),
+				       ipbuf),
 		       snmp_strerror(snmp_errno));
                 return -1;
         }

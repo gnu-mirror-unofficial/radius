@@ -1995,27 +1995,27 @@ yysync()
 /* ****************************************************************************
  * Generalized list functions
  */
-static RWLIST *_grad_list_insert(RWLIST **first, RWLIST **last, RWLIST *prev,
+static RWLIST *_list_insert(RWLIST **first, RWLIST **last, RWLIST *prev,
                          RWLIST *obj, int before);
-static RWLIST *_grad_list_remove(RWLIST **first, RWLIST **last, RWLIST *obj);
-static RWLIST *_grad_list_append(RWLIST **first, RWLIST **last, RWLIST *obj);
+static RWLIST *_list_remove(RWLIST **first, RWLIST **last, RWLIST *obj);
+static RWLIST *_list_append(RWLIST **first, RWLIST **last, RWLIST *obj);
 
-#define rw_grad_list_insert(first, last, prev, obj, before) \
- _grad_list_insert((RWLIST**)first,(RWLIST**)last,(RWLIST*)prev,(RWLIST*)obj, before)
-#define rw_grad_list_remove(first, last, obj) \
- _grad_list_remove((RWLIST**)first,(RWLIST**)last,(RWLIST *)obj)
-#define rw_grad_list_append(first, last, obj) \
- _grad_list_append((RWLIST**)first, (RWLIST**)last, (RWLIST*)obj)
+#define rw_list_insert(first, last, prev, obj, before) \
+ _list_insert((RWLIST**)first,(RWLIST**)last,(RWLIST*)prev,(RWLIST*)obj, before)
+#define rw_list_remove(first, last, obj) \
+ _list_remove((RWLIST**)first,(RWLIST**)last,(RWLIST *)obj)
+#define rw_list_append(first, last, obj) \
+ _list_append((RWLIST**)first, (RWLIST**)last, (RWLIST*)obj)
         
 RWLIST *
-_grad_list_append(first, last, obj)
+_list_append(first, last, obj)
         RWLIST **first, **last, *obj;
 {
-        return rw_grad_list_insert(first, last, *last, obj, 0);
+        return rw_list_insert(first, last, *last, obj, 0);
 }
 
 RWLIST *
-_grad_list_insert(RWLIST **first, RWLIST **last, RWLIST *prev, RWLIST *obj,
+_list_insert(RWLIST **first, RWLIST **last, RWLIST *prev, RWLIST *obj,
 	     int before)
 {
         RWLIST   *next;
@@ -2035,9 +2035,9 @@ _grad_list_insert(RWLIST **first, RWLIST **last, RWLIST *prev, RWLIST *obj,
          * Insert before `prev'
          */
         if (before) {
-                _grad_list_insert(first, last, prev, obj, 0);
-                _grad_list_remove(first, last, prev);
-                _grad_list_insert(first, last, obj, prev, 0);
+                _list_insert(first, last, prev, obj, 0);
+                _list_remove(first, last, prev);
+                _list_insert(first, last, obj, prev, 0);
                 return obj;
         }
 
@@ -2059,7 +2059,7 @@ _grad_list_insert(RWLIST **first, RWLIST **last, RWLIST *prev, RWLIST *obj,
 }
 
 RWLIST *
-_grad_list_remove(RWLIST **first, RWLIST **last, RWLIST *obj)
+_list_remove(RWLIST **first, RWLIST **last, RWLIST *obj)
 {
         RWLIST *temp;
 
@@ -2144,13 +2144,13 @@ frame_push()
                         this_frame->stack_offset = frame_last->stack_offset;
                 this_frame->level = frame_last->level + 1;
         } 
-        rw_grad_list_append(&frame_first, &frame_last, this_frame);
+        rw_list_append(&frame_first, &frame_last, this_frame);
 }
 
 void
 frame_pop()
 {
-        rw_grad_list_remove(&frame_first, &frame_last, frame_last);
+        rw_list_remove(&frame_first, &frame_last, frame_last);
 }
 
 void
@@ -2173,7 +2173,7 @@ void
 frame_unwind_all()
 {
         while (frame_last)
-                rw_grad_list_remove(&frame_first, &frame_last, frame_last);
+                rw_list_remove(&frame_first, &frame_last, frame_last);
         frame_push();
 }
 
@@ -2207,13 +2207,13 @@ void
 loop_push(MTX *mtx)
 {
         LOOP *this_loop = obj_alloc(&loop_bkt);
-        rw_grad_list_append(&loop_first, &loop_last, this_loop);
+        rw_list_append(&loop_first, &loop_last, this_loop);
 }
 
 void
 loop_pop()
 {
-        rw_grad_list_remove(&loop_first, &loop_last, loop_last);
+        rw_list_remove(&loop_first, &loop_last, loop_last);
 }
 
 void
@@ -2244,7 +2244,7 @@ var_alloc(Datatype type, char *name, int grow)
         VAR *var;
 
         var = (VAR*) obj_alloc(&var_bucket);
-        rw_grad_list_append(&var_first, &var_last, var);
+        rw_list_append(&var_first, &var_last, var);
 
         /* Initialize fields */
         var->name     = name;
@@ -2263,7 +2263,7 @@ var_unwind_level()
         
         while (var_last && 
                var_last->level == curframe->level) {
-                rw_grad_list_remove(&var_first, &var_last, var_last);
+                rw_list_remove(&var_first, &var_last, var_last);
                 cnt++;
         }
 
@@ -2275,7 +2275,7 @@ void
 var_unwind_all()
 {
         while (var_last)
-                rw_grad_list_remove(&var_first, &var_last, var_last);
+                rw_list_remove(&var_first, &var_last, var_last);
 }
 
 void
@@ -2315,15 +2315,15 @@ int mtx_current_id ;
 /*
  * Insert a matrix into list
  */
-#define mtx_remove(mtx) rw_grad_list_remove(&mtx_first, &mtx_last, mtx)
-#define mtx_append(mtx) rw_grad_list_append(&mtx_first, &mtx_last, mtx)
+#define mtx_remove(mtx) rw_list_remove(&mtx_first, &mtx_last, mtx)
+#define mtx_append(mtx) rw_list_append(&mtx_first, &mtx_last, mtx)
 
 void
 mtx_insert(MTX *prev, MTX *mtx)
 {
         MTX *up;
 
-        rw_grad_list_insert(&mtx_first, &mtx_last, prev, mtx, 0);
+        rw_list_insert(&mtx_first, &mtx_last, prev, mtx, 0);
         if (up = prev->gen.uplink) {
                 switch (up->gen.type) {
                 case Unary:
@@ -2356,7 +2356,7 @@ void
 mtx_unwind_all()
 {
         while (mtx_last)
-                rw_grad_list_remove(&mtx_first, &mtx_last, mtx_last);
+                rw_list_remove(&mtx_first, &mtx_last, mtx_last);
 }
 
 void
@@ -3171,7 +3171,7 @@ pass1()
          * Create an entry matrix
          */
         mtx = mtx_alloc(Enter);
-        rw_grad_list_insert(&mtx_first, &mtx_last, mtx_first, mtx, 1);
+        rw_list_insert(&mtx_first, &mtx_last, mtx_first, mtx, 1);
         mtx->frame.stacksize = function->stack_alloc;
         
         /*
@@ -3205,7 +3205,7 @@ pass1()
          * Insert a no-op matrix before the `leave' one
          */
         end = mtx_alloc(Nop);
-        rw_grad_list_insert(&mtx_first, &mtx_last, mtx_last, end, 1);
+        rw_list_insert(&mtx_first, &mtx_last, mtx_last, end, 1);
         
         for (mtx = mtx_first; mtx; mtx = mtx->gen.next) {
                 if (mtx->gen.type == Return) {
@@ -3933,7 +3933,7 @@ rx_alloc(regex_t *regex, int nmatch)
         rx = emalloc(sizeof(*rx));
         rx->regex  = *regex;
         rx->nmatch = nmatch;
-        rw_grad_list_insert(&function->rx_list, NULL, function->rx_list, rx, 1);
+        rw_list_insert(&function->rx_list, NULL, function->rx_list, rx, 1);
         return rx;
 }
 
@@ -4372,7 +4372,8 @@ rw_attrasgn()
  
         cpopn(&val);
 	cpopn(&index);
-	attrasgn_internal(attr, grad_avl_find_n(AVPLIST(&mach), attr, index), val);
+	attrasgn_internal(attr, grad_avl_find_n(AVPLIST(&mach), attr, index),
+			  val);
 }
 
 void

@@ -230,7 +230,8 @@ expr          : value
                         } else if ($3.type != Vector) {
                                 parse_error("bad datatype of rarg in +");
                         } else {
-                                grad_avl_add_list(&$1.datum.vector, $3.datum.vector);
+                                grad_avl_add_list(&$1.datum.vector,
+						  $3.datum.vector);
                                 $$ = $1;
                         }
                 }
@@ -452,12 +453,14 @@ subscript(Variable *var, char *attr_name, int all, Variable *ret_var)
                         
                         /* First, count total length of all attribute
                            instances in the packet */
-                        for (p = pair; p; p = grad_avl_find(p->next, dict->value)) 
+                        for (p = pair; p;
+			     p = grad_avl_find(p->next, dict->value)) 
                                 length += p->avp_strlength;
 
                         cp = ret_var->datum.string = emalloc(length+1);
                         /* Fill in the string contents */
-                        for (p = pair; p; p = grad_avl_find(p->next, dict->value)) {
+                        for (p = pair; p;
+			     p = grad_avl_find(p->next, dict->value)) {
                                 memcpy(cp, p->avp_strvalue, p->avp_strlength);
                                 cp += p->avp_strlength;
                         }

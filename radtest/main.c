@@ -238,7 +238,8 @@ main(int argc, char **argv)
                         serv.port[0] = DEF_AUTH_PORT;
                 if (argc < 6)
                         serv.port[1] = DEF_ACCT_PORT;
-		grad_client_append_server(srv_queue, grad_client_alloc_server(&serv));
+		grad_client_append_server(srv_queue,
+					  grad_client_alloc_server(&serv));
                 argcv_free(argc, argv);
         }
 
@@ -505,22 +506,22 @@ radtest_send(int port, int code, Variable *var, Symtab *cntl)
 		if (p && p->datum.number) 
 			sflags |= RADCLT_AUTHENTICATOR;
 		auth = grad_client_send0(srv_queue,
-				     port,
-				     code,
-				     pair,
-				     0,
-				     &id,
-				     vector);
+					 port,
+					 code,
+					 pair,
+					 0,
+					 &id,
+					 vector);
 		while (--retry) {
 			if (delay)
 				sleep(delay->datum.number);
 			auth = grad_client_send0(srv_queue,
-					     port,
-					     code,
-					     var->datum.vector,
-					     sflags,
-					     &id,
-					     vector);
+						 port,
+						 code,
+						 var->datum.vector,
+						 sflags,
+						 &id,
+						 vector);
 		}
 	}
 
@@ -532,7 +533,7 @@ radtest_send(int port, int code, Variable *var, Symtab *cntl)
         var->datum.number = reply_code;
 
         reply_list = grad_client_decrypt_pairlist(grad_avl_dup(auth->request),
-					      auth->vector, auth->secret);
+						  auth->vector, auth->secret);
 
         var = (Variable*)sym_lookup(vartab, "REPLY");
         var->type = Vector;

@@ -191,7 +191,8 @@ grad_decode_backslash(int c)
   (isdigit(c) ? c - '0' : (isxdigit(c) ? toupper(c) - 'A' + 10 : -1 ))
 
 void
-grad_obstack_grow_backslash_num(struct obstack *stk, char *text, int len, int base)
+grad_obstack_grow_backslash_num(struct obstack *stk, char *text,
+				int len, int base)
 {
 	int i;
 	int c = 0;
@@ -392,7 +393,8 @@ grad_format_vendor_pair(char *buf, VALUE_PAIR *pair)
                 bufp += n;
         }
         
-        return n + grad_format_string_visual(bufp, 4, ptr, pair->avp_strlength - 4);
+        return n + grad_format_string_visual(bufp, 4, ptr,
+					     pair->avp_strlength - 4);
 }
                 
 char *
@@ -416,7 +418,7 @@ grad_format_pair(VALUE_PAIR *pair, int typeflag, char **savep)
                         if (len != pair->avp_strlength-1)
                                 len = pair->avp_strlength;
                         grad_format_string_visual(buf2, 4,
-                                             pair->avp_strvalue, len);
+						  pair->avp_strvalue, len);
                 } else if (pair->avp_strlength < 6) 
                         snprintf(buf2, sizeof(buf2),
                                  "[invalid length: %d]", pair->avp_strlength);

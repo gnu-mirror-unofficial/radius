@@ -116,7 +116,8 @@ rut_putent(radut_file_t file, struct radutmp *ent)
         memcpy(&file->ut, ent, sizeof(file->ut));
                
         /* Unlock the file */
-        grad_unlock_file(file->fd, sizeof(*ent), -(off_t)sizeof(file->fd), SEEK_CUR);
+        grad_unlock_file(file->fd, sizeof(*ent),
+			 -(off_t)sizeof(file->fd), SEEK_CUR);
 
         return 0;
 }
@@ -159,12 +160,14 @@ radutmp_putent(char *filename, struct radutmp *ut, int status)
                         if (ent->type == P_LOGIN) {
                                 radlog(L_INFO,
                 _("login: entry for NAS %s port %d duplicate"),
-                                       grad_ip_iptostr(ntohl(ent->nas_address), ipbuf),
+                                       grad_ip_iptostr(ntohl(ent->nas_address),
+						       ipbuf),
                                        ent->nas_port);
                         } else {
                                 radlog(L_INFO,
                 _("login: entry for NAS %s port %d wrong order"),
-                                       grad_ip_iptostr(ntohl(ent->nas_address), ipbuf),
+                                       grad_ip_iptostr(ntohl(ent->nas_address),
+						       ipbuf),
                                        ent->nas_port);
                         }
                 }
@@ -175,7 +178,8 @@ radutmp_putent(char *filename, struct radutmp *ut, int status)
                         if (ent->type == P_LOGIN) {
                                 radlog(L_ERR,
    _("logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"),
-                                       grad_ip_iptostr(ntohl(ut->nas_address), ipbuf),
+                                       grad_ip_iptostr(ntohl(ut->nas_address),
+						       ipbuf),
                                        ent->nas_port,
                                        ut->session_id,
                                        ent->session_id);

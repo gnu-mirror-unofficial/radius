@@ -41,7 +41,8 @@ menu_pairs(char *menu_name, char *menu_selection)
         
         menu_path = grad_mkfilename3(radius_dir, "menus", menu_name);
         if ((fp = fopen(menu_path, "r")) == NULL) {
-                radlog(L_NOTICE|L_PERROR, _("can't open menu `%s'"), menu_name);
+                radlog(L_NOTICE|L_PERROR, _("can't open menu `%s'"),
+		       menu_name);
                 efree(menu_path);
                 return NULL;
         }
@@ -198,7 +199,8 @@ menu_read_text(char *menu_name)
                 
         menu_path = grad_mkfilename3(radius_dir, "menus", menu_name);
         if ((fp = fopen(menu_path, "r")) == NULL) {
-                radlog(L_NOTICE|L_PERROR, _("can't open menu `%s'"), menu_name);
+                radlog(L_NOTICE|L_PERROR, _("can't open menu `%s'"),
+		       menu_name);
                 efree(menu_path);
                 return estrdup(_("\n*** User Menu is Not Available ***\n"));
         }

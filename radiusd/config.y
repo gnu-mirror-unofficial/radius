@@ -47,8 +47,8 @@ struct cfg_memblock {
 
 static RAD_LIST /* of struct cfg_memblock */ *cfg_memory_pool;
  
-static RAD_LIST *_cfg_vgrad_list_create(cfg_value_t *val);
-static void _cfg_vgrad_list_append(RAD_LIST *vlist, cfg_value_t *val);
+static RAD_LIST *_cfg_vlist_create(cfg_value_t *val);
+static void _cfg_vlist_append(RAD_LIST *vlist, cfg_value_t *val);
 
 void *cfg_malloc(size_t size, void (*destructor)(void *));
  
@@ -215,16 +215,16 @@ simple_stmt : keyword value_list T_EOL
 
 value_list  : value
               {
-		      $$ = _cfg_vgrad_list_create(&$1);
+		      $$ = _cfg_vlist_create(&$1);
 	      }
             | value_list value
               {
-		      _cfg_vgrad_list_append($1, &$2);
+		      _cfg_vlist_append($1, &$2);
 		      $$ = $1;
 	      }
             | value_list ',' value
               {
-		      _cfg_vgrad_list_append($1, &$3);
+		      _cfg_vlist_append($1, &$3);
 		      $$ = $1;
 	      }
             ;
@@ -559,7 +559,7 @@ _cfg_vlist_destroy(void *arg)
 }
 
 void
-_cfg_vgrad_list_append(RAD_LIST *vlist, cfg_value_t *val)
+_cfg_vlist_append(RAD_LIST *vlist, cfg_value_t *val)
 {
 	cfg_value_t *vp = cfg_malloc(sizeof(*vp), NULL);
 	*vp = *val;
@@ -567,12 +567,12 @@ _cfg_vgrad_list_append(RAD_LIST *vlist, cfg_value_t *val)
 }
 
 RAD_LIST *
-_cfg_vgrad_list_create(cfg_value_t *val)
+_cfg_vlist_create(cfg_value_t *val)
 {
 	RAD_LIST *vlist = grad_list_create();
 	RAD_LIST **lp = cfg_malloc(sizeof(*lp), _cfg_vlist_destroy);
 	*lp = vlist;
-	_cfg_vgrad_list_append(vlist, val);
+	_cfg_vlist_append(vlist, val);
 	return vlist;
 }
 

@@ -94,7 +94,8 @@ run_log_hook(const RADIUS_REQ *req, const char *hook_name)
 			   req,
 			   "isi",
 			   req->code,
-			   grad_nas_request_to_name(req, nasbuf, sizeof nasbuf),
+			   grad_nas_request_to_name(req,
+						    nasbuf, sizeof nasbuf),
 			   req->id))
 		return NULL;
 	return result;
@@ -433,8 +434,8 @@ register_channel(Channel *chan)
         if (chan->mode == LM_FILE) {
                 if (strcmp(chan->id.file, "stdout")) {
                         filename = grad_mkfilename(radlog_dir ?
-                                              radlog_dir : RADLOG_DIR,
-                                              chan->id.file);
+						   radlog_dir : RADLOG_DIR,
+						   chan->id.file);
                         
                         /* check the accessibility of the file */
                         fp = fopen(filename, "a");
@@ -681,8 +682,8 @@ get_priority(cfg_value_t *argv)
 	if (argv[0].type != CFG_CHAR || argv[1].type != CFG_STRING)
 		return 1;
 	cat_def.pri = grad_xlat_keyword(log_priorities,
-				   argv[1].v.string,
-				   -1);
+					argv[1].v.string,
+					-1);
 	if (cat_def.pri == -1)
 		return 1;
 
@@ -721,11 +722,11 @@ category_stmt_handler(int argc, cfg_value_t *argv,
 			
 		case CFG_STRING:
 			cat_def.cat = grad_xlat_keyword(log_categories,
-						   argv[1].v.string, -1);
+							argv[1].v.string, -1);
 			if (cat_def.cat == -1) {
 				cat_def.pri = grad_xlat_keyword(log_priorities,
-							   argv[1].v.string,
-							   -1);
+							      argv[1].v.string,
+								-1);
 				if (cat_def.pri == -1)
 					return 1;
 				cat_def.pri = L_UPTO(cat_def.pri);
@@ -752,7 +753,7 @@ category_stmt_handler(int argc, cfg_value_t *argv,
 			
 		case CFG_STRING:
 			cat_def.cat = grad_xlat_keyword(log_categories,
-						   argv[1].v.string, -1);
+							argv[1].v.string, -1);
 			if (cat_def.cat == -1) 
 				return 1;
 			break;
@@ -771,7 +772,7 @@ category_stmt_handler(int argc, cfg_value_t *argv,
 			
 		case CFG_STRING:
 			cat_def.pri = grad_xlat_keyword(log_priorities,
-						   argv[3].v.string, -1);
+							argv[3].v.string, -1);
 			if (cat_def.pri == -1) 
 				return 1;
 			cat_def.pri = L_UPTO(cat_def.pri);
@@ -796,7 +797,7 @@ category_stmt_handler(int argc, cfg_value_t *argv,
 			
 		case CFG_STRING:
 			cat_def.cat = grad_xlat_keyword(log_categories,
-						   argv[1].v.string, -1);
+							argv[1].v.string, -1);
 			if (cat_def.cat == -1) 
 				return 1;
 			break;
@@ -959,7 +960,8 @@ channel_syslog_handler(int argc, cfg_value_t *argv, void *block_data,
 		break;
 
 	case CFG_STRING:
-		facility = grad_xlat_keyword(syslog_facility, argv[1].v.string, -1);
+		facility = grad_xlat_keyword(syslog_facility,
+					     argv[1].v.string, -1);
 		break;
 
 	default:
@@ -978,7 +980,8 @@ channel_syslog_handler(int argc, cfg_value_t *argv, void *block_data,
 		break;
 
 	case CFG_STRING:
-		prio = grad_xlat_keyword(syslog_priority, argv[3].v.string, -1);
+		prio = grad_xlat_keyword(syslog_priority,
+					 argv[3].v.string, -1);
 		break;
 
 	default:

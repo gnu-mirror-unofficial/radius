@@ -68,19 +68,21 @@ grad_client_message_id(RADIUS_SERVER *server)
 		fstat(fd, &st);
 		if (server->id_offset != (off_t) -1
 		    && server->id_offset + sizeof(sid) <= st.st_size) {
-			grad_lock_file(fd, sizeof(sid), server->id_offset, SEEK_SET);
+			grad_lock_file(fd, sizeof(sid),
+				       server->id_offset, SEEK_SET);
 			lseek(fd, server->id_offset, SEEK_SET);
 			read(fd, &sid, sizeof(sid));
 			id = sid.id++;
 			lseek(fd, server->id_offset, SEEK_SET);
 			write(fd, &sid, sizeof(sid));
 			grad_unlock_file(fd, sizeof(sid),
-				   server->id_offset, SEEK_SET);
+					 server->id_offset, SEEK_SET);
 
 		} else {
 			off_t off = 0;
 			lseek(fd, 0, SEEK_SET);
-			grad_lock_file(fd, st.st_size + sizeof(sid), 0, SEEK_SET);
+			grad_lock_file(fd, st.st_size + sizeof(sid),
+				       0, SEEK_SET);
 			while (read(fd, &sid, sizeof(sid)) == sizeof(sid)) {
 				if (sid.addr == server->addr) {
 					id = sid.id++;
@@ -98,7 +100,8 @@ grad_client_message_id(RADIUS_SERVER *server)
 				server->id_offset = off;
 				id = 0;
 			} 
-			grad_unlock_file(fd, st.st_size + sizeof(sid), 0, SEEK_SET);
+			grad_unlock_file(fd, st.st_size + sizeof(sid),
+					 0, SEEK_SET);
 		}
 		close(fd);
 	} else {
@@ -158,7 +161,8 @@ grad_client_encrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
 			efree(pass);
 		} else if (p->prop & AP_ENCRYPT_RFC2868) {
 			char *pass = p->avp_strvalue;
-			grad_encrypt_tunnel_password(p, 0, pass, vector, secret);
+			grad_encrypt_tunnel_password(p, 0, pass,
+						     vector, secret);
 			efree(pass);
 		}
 	}
@@ -181,10 +185,10 @@ grad_client_decrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
 			u_char tag;
 			
 			grad_decrypt_tunnel_password(password,
-						&tag,
-						p,
-						vector,
-						secret);
+						     &tag,
+						     p,
+						     vector,
+						     secret);
 			efree(p->avp_strvalue);
 			p->avp_strvalue = estrdup(password);
 			p->avp_strlength = strlen(p->avp_strvalue);
@@ -195,9 +199,9 @@ grad_client_decrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
 
 RADIUS_REQ *
 grad_client_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
-	      VALUE_PAIR *pairlist,
-	      int flags,
-	      int *authid, u_char *authvec)
+		  VALUE_PAIR *pairlist,
+		  int flags,
+		  int *authid, u_char *authvec)
 {
 	struct sockaddr salocal;
 	struct sockaddr saremote;
@@ -274,13 +278,13 @@ grad_client_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 		else
 			id = grad_client_message_id(server);
 		pair = grad_client_encrypt_pairlist(grad_avl_dup(pairlist),
-						vector, server->secret);
+						    vector, server->secret);
 		size = grad_create_pdu(&pdu, code,
-				      id,
-				      vector,
-				      server->secret,
-				      pair,
-				      NULL);
+				       id,
+				       vector,
+				       server->secret,
+				       pair,
+				       NULL);
 		if (authid && !(flags & RADCLT_ID))
 			*authid = id;
 		if (authvec && !(flags & RADCLT_AUTHENTICATOR))
@@ -365,7 +369,7 @@ grad_client_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 
 RADIUS_REQ *
 grad_client_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
-	     VALUE_PAIR *pairlist)
+		 VALUE_PAIR *pairlist)
 {
 	return grad_client_send0(config, port_type, code, pairlist, 0, NULL, NULL);
 }
@@ -435,7 +439,8 @@ parse_client_config(void *closure, int argc, char **argv, LOCUS *loc)
                         break;
                 }
 
-		grad_client_append_server(client, grad_client_alloc_server(&serv));
+		grad_client_append_server(client,
+					  grad_client_alloc_server(&serv));
                 break;
                 
         case TOK_TIMEOUT:
@@ -548,7 +553,8 @@ grad_client_internal_free_server(void *item, void *data)
 void
 grad_client_clear_server_list(RADIUS_SERVER_QUEUE *qp)
 {
-	grad_list_destroy(&qp->servers, grad_client_internal_free_server, NULL);
+	grad_list_destroy(&qp->servers,
+			  grad_client_internal_free_server, NULL);
 }
 
 static int

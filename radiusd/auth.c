@@ -745,12 +745,12 @@ sfn_init(AUTH_MACH *m)
 	switch (radreq->server_code) {
 	case RT_ACCESS_REJECT:
 		m->user_check = grad_avp_create_integer(DA_AUTH_TYPE, 
-					           DV_AUTH_TYPE_REJECT);
+							DV_AUTH_TYPE_REJECT);
 		break;
 
 	case RT_ACCESS_ACCEPT:
 		m->user_check = grad_avp_create_integer(DA_AUTH_TYPE, 
-					           DV_AUTH_TYPE_ACCEPT);
+							DV_AUTH_TYPE_ACCEPT);
 		break;
 
 	case 0:
@@ -872,7 +872,7 @@ sfn_validate(AUTH_MACH *m)
 		exp /= SECONDS_PER_DAY;
 		if (warning_seconds != 0 && exp < warning_seconds) {
 			pair = grad_avp_create_integer(DA_PASSWORD_EXPIRE_DAYS,
-						  exp);
+						       exp);
 			grad_avl_add_pair(&m->user_reply, pair);
 			auth_format_msg(m, MSG_PASSWORD_EXPIRE_WARNING);
 		}
@@ -976,7 +976,7 @@ sfn_simuse(AUTH_MACH *m)
         rc = rad_check_multi(name, m->req->request,
                              m->check_pair->avp_lvalue, &count);
         grad_avl_add_pair(&m->user_reply,
-                     grad_avp_create_integer(DA_SIMULTANEOUS_USE, count));
+			  grad_avp_create_integer(DA_SIMULTANEOUS_USE, count));
         if (!rc)
                 return;
 
@@ -1228,14 +1228,14 @@ req_decrypt_password(char *password, RADIUS_REQ *req, VALUE_PAIR *pair)
 		    && (s = grad_envar_lookup(nas->args, "broken_pass")) != NULL
 		    && s[0] == '1')
 			grad_decrypt_password_broken(password, pair,
-						req->vector, req->secret);
+						     req->vector, req->secret);
 		else
 			grad_decrypt_password(password, pair,
-					 req->vector, req->secret);
+					      req->vector, req->secret);
 	} else if (pair->prop & AP_ENCRYPT_RFC2868) {
 		u_char tag; /* FIXME: not accessible for user */
 		grad_decrypt_tunnel_password(password, 
-					&tag, pair,
-					req->vector, req->secret);
+					     &tag, pair,
+					     req->vector, req->secret);
 	}
 }

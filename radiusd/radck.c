@@ -355,11 +355,11 @@ fix_check_pairs(int cf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs)
 
                 grad_avl_delete(pairs, DA_AUTH_TYPE);
                 p = grad_avp_create_integer(DA_AUTH_TYPE, 
-                                       DV_AUTH_TYPE_CRYPT_LOCAL);
+					    DV_AUTH_TYPE_CRYPT_LOCAL);
                 grad_avl_add_pair(pairs, p);
                 
                 p = grad_avp_create_integer(DA_PASSWORD_LOCATION, 
-                                       DV_PASSWORD_LOCATION_SQL);
+					    DV_PASSWORD_LOCATION_SQL);
                 grad_avl_add_pair(pairs, p);
                 
                 break;

@@ -79,8 +79,9 @@ grad_ip_gethostname(UINT4 ipaddr, char *namebuf, size_t size)
         hp = (struct hostent *) NULL;
         if (resolve_hostnames) 
                 hp = grad_gethostbyaddr_r((char *)&n_ipaddr,
-                                         sizeof (struct in_addr), AF_INET,
-                                         &hent, buffer, sizeof buffer, &h_err);
+					  sizeof (struct in_addr), AF_INET,
+					  &hent, buffer, sizeof buffer,
+					  &h_err);
         if (hp == (struct hostent *) NULL) 
                 return grad_ip_iptostr(ipaddr, namebuf);
 

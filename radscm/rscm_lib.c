@@ -186,7 +186,8 @@ radscm_cons_to_avp(SCM scm)
                 } else if (SCM_BIGP(cdr)) {
                         pair.avp_lvalue = (UINT4) scm_i_big2dbl(cdr);
                 } else if (SCM_NIMP(cdr) && SCM_STRINGP(cdr)) {
-                        pair.avp_lvalue = grad_ip_gethostaddr(SCM_STRING_CHARS(cdr));
+                        pair.avp_lvalue =
+				grad_ip_gethostaddr(SCM_STRING_CHARS(cdr));
                 } else
                         return NULL;
                 break;

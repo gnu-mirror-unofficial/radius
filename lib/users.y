@@ -276,7 +276,9 @@ grad_create_pair(LOCUS *loc, char *name, int op, char *valstr)
                 }
                 if (isdigit(*valstr)) {
                         pair->avp_lvalue = atoi(valstr);
-                } else if ((dval = grad_value_name_to_value(valstr, pair->attribute)) == NULL) {
+                } else if ((dval = grad_value_name_to_value(valstr,
+							    pair->attribute))
+			         == NULL) {
                         grad_avp_free(pair);
                         radlog_loc(L_ERR, loc,
 				_("value %s is not declared for attribute %s"),

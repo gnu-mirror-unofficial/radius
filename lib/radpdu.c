@@ -74,7 +74,7 @@ grad_pdu_init(struct radius_pdu *pdu)
    Return value: length of the data on *ptr. */   
 static size_t
 grad_pdu_finish(void **ptr, struct radius_pdu *pdu,
-	       int code, int id, u_char *vector, u_char *secret)
+		int code, int id, u_char *vector, u_char *secret)
 {
         AUTH_HDR *hdr;
         void *p;
@@ -205,7 +205,7 @@ grad_encode_pair(struct radius_attr *ap, VALUE_PAIR *pair)
    
 size_t
 grad_create_pdu(void **rptr, int code, int id, u_char *vector,
-	       u_char *secret, VALUE_PAIR *pairlist, char *msg)
+		u_char *secret, VALUE_PAIR *pairlist, char *msg)
 {
         struct radius_pdu pdu;
         size_t attrlen = 0;
@@ -502,7 +502,8 @@ grad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, size_t length)
         radreq->request = first_pair;
 #ifdef DEBUG_ONLY
         {
-                VALUE_PAIR *p = grad_avl_find(radreq->request, DA_NAS_IP_ADDRESS);
+                VALUE_PAIR *p = grad_avl_find(radreq->request,
+					      DA_NAS_IP_ADDRESS);
                 if (p)
                         radreq->ipaddr = p->avp_lvalue;
         }

@@ -108,8 +108,9 @@ scheme_auth(char *procname, RADIUS_REQ *req,
 	SCM res;
 	SCM procsym;
  	jmp_buf jmp_env;
-	VALUE_PAIR *tmp = radius_decrypt_request_pairs(req,
-						       grad_avl_dup(req->request));
+	VALUE_PAIR *tmp =
+		radius_decrypt_request_pairs(req,
+					     grad_avl_dup(req->request));
 	
 	s_request = radscm_avl_to_list(tmp);
 	radius_destroy_pairs(&tmp);
@@ -262,8 +263,8 @@ scheme_redirect_output()
 			filename = estrdup(scheme_outfile);
 		else
 			filename = grad_mkfilename(radlog_dir ?
-					      radlog_dir : RADLOG_DIR,
-					      scheme_outfile);
+						   radlog_dir : RADLOG_DIR,
+						   scheme_outfile);
 		fd = open(filename, O_RDWR|O_CREAT|O_APPEND, 0600);
 		if (fd == -1) {
 			radlog(L_ERR|L_PERROR,

@@ -114,44 +114,21 @@ _pam_vlog(int err, const char *format, va_list args)
 }
 
 static void
-_pam_log 
-#if STDC_HEADERS
-        (int err, const char *format, ...)
-#else
-        (err, format, va_alist)
-        int err;
-        const char *format;
-        va_dcl
-#endif
+_pam_log(int err, const char *format, ...)
 {
         va_list args;
 
-#if STDC_HEADERS
         va_start(args, format);
-#else
-	va_start(args);
-#endif
         _pam_vlog(err, format, args);
         va_end(args);
 }
 
 static void
-_pam_debug
-#if STDC_HEADERS
-          (char *format, ...)
-#else
-          (format, va_alist)
-        char *format;
-        va_dcl
-#endif
+_pam_debug(char *format, ...)
 {
         va_list args;
 
-#if STDC_HEADERS
 	va_start(args, format);
-#else
-        va_start(args);
-#endif
         _pam_vlog(LOG_DEBUG, format, args);
         va_end(args);
 }
@@ -417,17 +394,19 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
          * Create authentication request
          */
         pairs = NULL;
+	namepair = grad_avp_create_string(DA_USER_NAME, name);
+        grad_avl_add_pair(&pairs, namepair);
         grad_avl_add_pair(&pairs,
-		     namepair = grad_avp_create_string(DA_USER_NAME, name));
-        grad_avl_add_pair(&pairs, grad_avp_create_string(DA_USER_PASSWORD, password));
-        grad_avl_add_pair(&pairs, grad_avp_create_integer(DA_NAS_IP_ADDRESS,
-					        queue->source_ip));
+			  grad_avp_create_string(DA_USER_PASSWORD, password));
+        grad_avl_add_pair(&pairs,
+			  grad_avp_create_integer(DA_NAS_IP_ADDRESS,
+						  queue->source_ip));
 	/* Add any additional attributes */
 	for (; add_pair; add_pair = add_pair->next) {
 		VALUE_PAIR *p = grad_create_pair(&loc,
-                                             add_pair->name, 
-                                             OPERATOR_EQUAL,
-				             add_pair->avp_strvalue);
+						 add_pair->name, 
+						 OPERATOR_EQUAL,
+						 add_pair->avp_strvalue);
 		grad_avl_add_pair(&pairs, p);
 	}
 	/* For compatibility with previous versions handle service_type */
@@ -435,10 +414,11 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
             (dv = grad_value_name_to_value(service_type, DA_SERVICE_TYPE))) {
                 DEBUG(10, ("adding Service-Type=%d", dv->value));
                 grad_avl_add_pair(&pairs,
-			     grad_avp_create_integer(DA_SERVICE_TYPE, dv->value));
+				  grad_avp_create_integer(DA_SERVICE_TYPE,
+							  dv->value));
         }
         authreq = grad_client_send(queue,
-			       PORT_AUTH, RT_ACCESS_REQUEST, pairs);
+				   PORT_AUTH, RT_ACCESS_REQUEST, pairs);
         if (authreq == NULL) {
                 _pam_log(LOG_ERR,
                          "no response from radius server");
@@ -523,14 +503,19 @@ _radius_acct(pam_handle_t *pamh, struct radutmp *ut)
          * Create accounting request
          */
         pairs = NULL;
-        grad_avl_add_pair(&pairs, grad_avp_create_string(DA_USER_NAME, ut->login));
+        grad_avl_add_pair(&pairs,
+			  grad_avp_create_string(DA_USER_NAME, ut->login));
 
-	grad_avl_add_pair(&pairs, grad_avp_create_integer(DA_NAS_IP_ADDRESS,
-					        queue->source_ip));
-	grad_avl_add_pair(&pairs, grad_avp_create_integer(DA_NAS_PORT_ID, ut->nas_port));
+	grad_avl_add_pair(&pairs,
+			  grad_avp_create_integer(DA_NAS_IP_ADDRESS,
+						  queue->source_ip));
+	grad_avl_add_pair(&pairs,
+			  grad_avp_create_integer(DA_NAS_PORT_ID,
+						  ut->nas_port));
 	
 	grad_avl_add_pair(&pairs,
-		     grad_avp_create_string(DA_ACCT_SESSION_ID, ut->session_id));
+			  grad_avp_create_string(DA_ACCT_SESSION_ID,
+						 ut->session_id));
 	
 	/* Add any additional attributes */
 	for (; add_pair; add_pair = add_pair->next) {
@@ -569,12 +554,14 @@ _radius_acct(pam_handle_t *pamh, struct radutmp *ut)
 		type = DV_ACCT_STATUS_TYPE_STOP;
 		radutmp_putent(radutmp_path, ut, type);
 		grad_avl_add_pair(&pairs,
-			     grad_avp_create_integer(DA_ACCT_SESSION_TIME,
-					        ut->duration));
+				  grad_avp_create_integer(DA_ACCT_SESSION_TIME,
+							  ut->duration));
 		add_stat_pairs(pairs);
 	}
 					
-	grad_avl_add_pair(&pairs, grad_avp_create_integer(DA_ACCT_STATUS_TYPE, type));
+	grad_avl_add_pair(&pairs,
+			  grad_avp_create_integer(DA_ACCT_STATUS_TYPE,
+						  type));
 
 	req = grad_client_send(queue, PORT_ACCT, RT_ACCOUNTING_REQUEST, pairs);
         if (req == NULL) {

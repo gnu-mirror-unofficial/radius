@@ -70,7 +70,7 @@ read_naslist_entry(void *unused ARG_UNUSED, int fc, char **fv, LOCUS *loc)
 		grad_ip_getnetaddr(fv[0], &nas.netdef);
 		/*FIXME: Do we still need that? */
                 grad_ip_gethostname(nas.netdef.ipaddr,
-			       nas.longname, sizeof(nas.longname));
+				    nas.longname, sizeof(nas.longname));
 		if (nas.longname[0])
 			STRING_COPY(nas.longname, fv[0]);
         }

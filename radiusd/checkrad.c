@@ -51,16 +51,16 @@
 #include <snmp.h>
 
 struct check_instance {
-        char      *name;
-        int       port;
-        char      *sid;
-        UINT4     ip;
-        int       result;
-        int       timeout;
-        int       method;
-        char      *func;
-        grad_envar_t   *args;
-        char      *hostname;
+        char          *name;
+        int           port;
+        char          *sid;
+        UINT4         ip;
+        int           result;
+        int           timeout;
+        int           method;
+        char          *func;
+        grad_envar_t  *args;
+        char          *hostname;
 };
 
 char *
@@ -96,7 +96,8 @@ create_instance(struct check_instance *cptr, NAS *nas, struct radutmp *up)
         cptr->hostname = nas->shortname ? nas->shortname : nas->longname;
         
         cptr->method = radck_type->method;
-        cptr->args = grad_envar_merge_lists((grad_envar_t*) nas->args, radck_type->args);
+        cptr->args = grad_envar_merge_lists((grad_envar_t*) nas->args,
+					    radck_type->args);
         cptr->func = slookup(cptr, "function", NULL);
         return cptr;
 }

@@ -1,3 +1,73 @@
+2004-01-29  Sergey Poznyakoff  
+
+	* Makefile.am (distuninstallcheck_listfiles): Override the
+	variable
+	(distcheck): Removed
+	* lib/Makefile.am (LIBLIST): Fixed
+	* configure.ac (AC_PREREQ): Raised to 2.59
+	(AC_CHECK_HEADERS): check for socket.h
+	Added checks for various data types
+	
+	* radiusd/testsuite/Makefile.am: added distclean-local to remove
+	eventually created raddb/ and proxy/ subdirectories
+	* radiusd/testsuite/test.sh.m4: Set write permissions on raddb
+	and proxy
+
+	* radscm/Makefile.am (radsession rule): Minor update
+	* radscm/radsession.in: Support --version option
+	* radscripts/Makefile.am: Exempt radauth from std-options
+	check
+	* radscripts/builddbm.m4: Support --help and --version
+	* radscripts/radctl.m4: Likewise
+	* radscripts/radgrep.m4: Likewise
+	* radscripts/radping.m4: Likewise
+	* radscripts/radscripts.m4: Likewise
+	
+	* m4/getopt.m4: Quoted the defun
+	* m4/guile.m4: Likewise
+	* m4/inaddr.m4: Likewise
+	* m4/lib.m4: Likewise
+	* m4/maintain.m4: Likewise
+	* m4/rx.m4: Likewise
+
+	Minor formatting fixes:
+	
+	* client/pam_radius/pam_radius.c
+	* lib/client.c
+	* lib/cryptpass.c
+	* lib/iputil.c
+	* lib/nas.c
+	* lib/radargp.c
+	* lib/radpdu.c
+	* lib/radsrv.c
+	* lib/radutmp.c
+	* lib/realms.c
+	* lib/users.y
+	* lib/util.c
+	* radiusd/acct.c
+	* radiusd/auth.c
+	* radiusd/checkrad.c
+	* radiusd/config.y
+	* radiusd/files.c
+	* radiusd/log.c
+	* radiusd/menu.c
+	* radiusd/proxy.c
+	* radiusd/radck.c
+	* radiusd/radius.c
+	* radiusd/radutil.c
+	* radiusd/rewrite.y
+	* radiusd/scheme.c
+	* radiusd/snmpserv.c
+	* radiusd/sql.c
+	* radlast/radlast.c
+	* radscm/rscm_lib.c
+	* radscm/rscm_radlog.c
+	* radscm/rscm_syslog.c
+	* radscm/rscm_utmp.c
+	* radtest/gram.y
+	* radtest/main.c
+	* radzap/radzap.c
+	
 2004-01-28  Sergey Poznyakoff  
 
 	* NEWS: Placeholder for new version

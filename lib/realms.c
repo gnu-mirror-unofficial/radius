@@ -76,7 +76,8 @@ _parse_server_list(RADIUS_SERVER_QUEUE *qp, char *str, struct _parse_data *pd)
 	for (i = 0; i < argc; i++) {
 		RADIUS_SERVER srv;
 		if (_parse_server(argc, argv, pd, &i, &srv) == 0) 
-			grad_client_append_server(qp, grad_client_alloc_server(&srv));
+			grad_client_append_server(qp,
+					      grad_client_alloc_server(&srv));
 
 		if (i < argc && argv[i][0] != ',') {
 			radlog_loc(L_ERR, pd->loc,

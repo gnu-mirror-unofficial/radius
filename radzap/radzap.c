@@ -138,7 +138,8 @@ radzap(NETDEF *netdef, int port, char *user, time_t t)
          *      Find the entry for this NAS / portno combination.
          */
         while (up = rut_getent(file)) {
-                if ((netdef && !grad_ip_in_net_p(netdef, htonl(up->nas_address)))
+                if ((netdef
+		     && !grad_ip_in_net_p(netdef, htonl(up->nas_address)))
 		    || (port >= 0 && port != up->nas_port)
 		    || (user != NULL && strcmp(up->login, user))!= 0
 		    ||  up->type != P_LOGIN) {
@@ -167,7 +168,8 @@ confirm(struct radutmp *utp)
         if (cl = grad_nas_lookup_ip(ntohl(utp->nas_address)))
                 s = cl->shortname;
         if (s == NULL || s[0] == 0) 
-                s = grad_ip_gethostname(ntohl(utp->nas_address), buf, sizeof(buf));
+                s = grad_ip_gethostname(ntohl(utp->nas_address),
+					buf, sizeof(buf));
         
         printf(_("radzap: zapping %s from %s, port %d"),
                utp->login,

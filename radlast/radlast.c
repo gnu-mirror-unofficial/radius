@@ -699,7 +699,8 @@ print_entry(WTMP *pp, struct radutmp *bp, int mark)
                        bp->login,
                        
                        nas_name_len, nas_name_len,
-                       grad_nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
+                       grad_nas_ip_to_name(ntohl(bp->nas_address),
+					   buf, sizeof buf),
 
                        bp->nas_port,
 
@@ -723,7 +724,8 @@ print_entry(WTMP *pp, struct radutmp *bp, int mark)
                        bp->login,
                        
                        nas_name_len, nas_name_len,
-                       grad_nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
+                       grad_nas_ip_to_name(ntohl(bp->nas_address),
+					   buf, sizeof buf),
 
                        bp->nas_port,
 

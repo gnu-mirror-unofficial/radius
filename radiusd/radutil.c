@@ -126,9 +126,9 @@ attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
 				loc.file = __FILE__; /*FIXME*/
 				loc.line = __LINE__;
                                 pair = grad_create_pair(&loc,
-                                                    attr->name,
-                                                    OPERATOR_EQUAL,
-                                                    defval);
+							attr->name,
+							OPERATOR_EQUAL,
+							defval);
                                 if (pair)
                                         grad_avl_add_list(&pairlist, pair);
                         }

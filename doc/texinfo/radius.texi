@@ -142,12 +142,12 @@ Reporting Bugs and getting information
 * Info::                Where to get info about GNU radius.
 
 Indices
-* Concept Index::       Index of concepts.
 * Program Index::       Index of programs.
 * Keyword Index::       Index of keywords.
 * Example Index::       Index of examples.
 * Variable Index::      Index of variables.
 * Attribute Index::     Index of RADIUS attributes.
+* Concept Index::       Index of concepts.
 
 
 @end menu
@@ -602,29 +602,35 @@ Public License instead of this License.
 @include bugs.texi
 
 
-@node Concept Index, Program Index, , Top
-@unnumbered Concept Index
-@printindex cp
-
-@node Program Index, Keyword Index, Concept Index, Top
+@node Program Index, Keyword Index, , Top
 @unnumbered Program Index
 @printindex pg
+@page
 
 @node Keyword Index, Example Index, Program Index, Top
 @unnumbered Keyword Index
 @printindex kw
+@page
 
 @node Example Index, Variable Index, Keyword Index, Top
 @unnumbered Examples Index
 @printindex ex
+@page
 
 @node Variable Index, Attribute Index, Example Index, Top
 @unnumbered Index of Scheme Functions and Variables
-@printindex vr
+@printindex fn
+@page
 
-@node Attribute Index, , Variable Index , Top
+@node Attribute Index, Concept Index, Variable Index , Top
 @unnumbered Attribute Index
 @printindex at
+@page
+
+@node Concept Index, , Attribute Index, Top
+@unnumbered Concept Index
+@printindex cp
+@page
 
 @contents
 

@@ -1,6 +1,6 @@
 #! /bin/sh
 
-autoreconf -I m4 -f -i -s
+autoreconf -f -i -s
 
 if [ ! -r include/debugmod.h ]; then
     echo "NOTE: Now you should do the following:"

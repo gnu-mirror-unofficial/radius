@@ -117,6 +117,17 @@ Used in `auth' block. Normally radiusd does not send access-reject
 message if access-request contained invalid user name. Setting
 this option to `yes' alters this behavior.
 
+*** listen no
+
+This is a special form of `listen' statement that disables a
+particular service. Placing
+
+acct {
+     listen no;
+};
+
+will effectively disable the accounting server.
+
 ** Dictionary
 
 Flag 'E' marks attributes encrypted as per RFC 2138. Currently

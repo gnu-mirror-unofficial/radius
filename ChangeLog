@@ -1,3 +1,19 @@
+2003-11-06  Sergey Poznyakoff 
+
+	* radiusd/auth.c (sfn_validate): Fixed the bug introduced 2003-11-02
+	* radiusd/testsuite/raddb/users.in: Added testcase for
+	Log-Mode-Mask bug
+	* radiusd/testsuite/radiusd/radiusd.exp: Likewise.
+
+	* NEWS: Updated
+	* radiusd/config.y: Allow empty block statements.
+	* radiusd/exec.c (radius_run_filter): Open log in append mode.
+	Thanks Maurice for the patch.
+	* radiusd/radiusd.c (rad_cfg_listen_auth,auth_stmt_begin)
+	(rad_cfg_listen_acct,acct_stmt_begin): Allow boolean argument
+	for `listen'. 
+	* radiusd/snmpserv.c (snmp_stmt_begin,snmp_cfg_listen): Likewise.
+
 2003-11-03  Sergey Poznyakoff
 
 	Two more bugfixes. Thanks Maurice for pointing.

@@ -491,7 +491,7 @@ rad_sql_init()
                         if (!new_cfg.interface) {
                                 radlog(L_WARN, "%s:%d: %s",
                                        sqlfile, line_no,
-				       _("Unsupported SQL interface");
+				       _("Unsupported SQL interface"));
                         }
                         break;
                 }

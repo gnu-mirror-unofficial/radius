@@ -552,9 +552,10 @@ proxy_receive(radreq, activefd)
         }
         
         if (oldreq == NULL) {
+		char buf[MAX_LONGNAME];
                 radlog_req(L_PROXY|L_ERR, radreq,
                            _("Unrecognized proxy reply from server %s, proxy ID %d"),
-			   client_lookup_name(radreq->ipaddr), 
+			   client_lookup_name(radreq->ipaddr, buf, sizeof buf), 
 			   radreq->id);
                 return -1;
         }

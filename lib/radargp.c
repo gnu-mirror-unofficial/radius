@@ -35,7 +35,7 @@
 const char *argp_program_bug_address = "<bug-gnu-radius@gnu.org>";
 
 static struct argp_option rad_common_argp_option[] = {
-        {"directory", 'd', "DIR", 0,
+        {"directory", 'd', N_("DIR"), 0,
          N_("Set path to the configuration directory"), 0},
         { "license", 'L', NULL, 0, N_("print license and exit"), 0 },
         { NULL,      0, NULL, 0, NULL, 0 }

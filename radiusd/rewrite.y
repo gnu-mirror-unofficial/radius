@@ -1513,7 +1513,7 @@ yylex()
                         radlog(L_ERR,
 			       "%s:%d: %s",
                                input_filename, input_line,
-			       _("unterminated character constant"),
+			       _("unterminated character constant"));
                         errcnt++;
                 }
                 yylval.number = c;

@@ -536,7 +536,7 @@ category_stmt   : T_CATEGORY category_name begin category_list end
                                   if (cat_def.level)
                                           radlog(L_WARN,
 						 "%s:%d: %s",
-                                                 filename, line_num
+                                                 filename, line_num,
 				 _("no levels applicable for this category"));
                           }
                           in_category = 0;

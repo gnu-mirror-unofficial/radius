@@ -438,7 +438,7 @@ fix_reply_pairs(cf_file, filename, line, name, pairs)
                 radlog(L_WARN,
                        "%s:%d: %s",
                        filename, line,
-		       _("BEGIN without Fall-Through"),
+		       _("BEGIN without Fall-Through"));
         }
         return errcnt;
 }

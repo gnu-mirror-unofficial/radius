@@ -812,7 +812,7 @@ sfn_init(AUTH_MACH *m)
             && !radreq->server_code) {
 
                 if (is_log_mode(m, RLOG_AUTH)) 
-                        auth_log(m, _("Invalid user"), NULL, NULL, NULL);
+                        auth_log(m, _("No such user"), NULL, NULL, NULL);
 
 		auth_format_msg(m, MSG_ACCESS_DENIED);
                 /* Send reject packet with proxy-pairs as a reply */
@@ -889,7 +889,7 @@ sfn_validate(AUTH_MACH *m)
                                 
 		case AUTH_NOUSER:
 			if (is_log_mode(m, RLOG_AUTH)) 
-				auth_log(m, _("Invalid user"),
+				auth_log(m, _("No such user"),
 					 NULL, NULL, NULL);
 			newstate(as_reject_cleanup);
 			break;

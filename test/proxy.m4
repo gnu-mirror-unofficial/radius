@@ -30,6 +30,23 @@ TEST(send auth 1 User-Name = QUOTE(local@remote) User-Password = QUOTE(bad),
 TEST(send auth 1 User-Name = QUOTE(crypt@remote) User-Password = QUOTE(hamlet),
      expect 2)) 
 
+IFSEQUENCE(Menu, USE_LIVINGSTON_MENUS,
+Checking Menus,
+[TEST(send auth 1 User-Name = QUOTE(menu),
+     print DEREF(REPLY,Reply-Message*),
+     [MENU1(1-PPP, 2-CSLIP, 3-SLIP, 4-Login, 5-Second, 6-Exit)])
+TEST(send auth 1 User-Name = QUOTE(menu) \
+                     User-Password = QUOTE(5) State = QUOTE(MENU=menu1),
+     print DEREF(REPLY,Reply-Message*),
+     [MENU2(ra,sol,weevil,top,quit)]) 
+TEST(send auth 1 User-Name = QUOTE(menu) \
+                     User-Password = QUOTE(sol) \
+                     State = QUOTE(MENU=menu2),
+        expect 2 Service-Type = 1 \
+                  Login-IP-Host = 127.0.0.1 \
+                  State = QUOTE(MENU=menu2) \
+                  Termination-Action = 1)]) 
+
 SEQUENCE(Nest,
 Checking Nested Realms,
 TEST(send auth 1 User-Name = QUOTE(accept@local@remote), expect 2))

@@ -1,71 +1,31 @@
-# 
-# This is the hints file. Matching can take place with the the Prefix and 
-# Suffix attributes, just like in the "users" file, but ONLY on the username.
+# -*- radius -*-
+# This file is part of GNU RADIUS test suite.
+# Copyright (C) 2000,2001 Sergey Poznyakoff
 #
-# On the match the reply pairs get added to the request pairs sent by the
-# terminal server, thus allowing to continue the match on "users" file.
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 #
-# In addiction, a matching entry can transform a username for authentication
-# purposes. This can be done with attributes Strip-User-Name,Replace-User-Name
-# and Rewrite-Function. If all three attributes are present, they are applied
-# in the same order as listed above.
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
 #
-# The Replace-User-Name can use any request pairs to produce the transformed
-# username. 
-#
-# To use in check-pairs of the "users" file a special attribute "Hint" can
-# be used.
-#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software Foundation,
+# Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
 
-DEFAULT	NULL	Framed-IP-Address = "127.0.1.1+"
+# Hints.exp
 
-# These are some examples:
+hint    NULL    Hint = "0"
+DEFAULT Suffix = ".1"
+        Hint = "1",
+		Strip-User-Name = Yes
+             
+DEFAULT Suffix = ".2"
+        Hint = "2",
+		Strip-User-Name = Yes
 
-#DEFAULT	Prefix = "U", Strip-User-Name = No
-#	Hint = "UUCP"
-#
-#DEFAULT	Prefix = "P", Strip-User-Name = Yes
-#	Hint = "PPP",
-#	Service-Type = Framed-User,
-#	Framed-Protocol = PPP
-#
-#DEFAULT	Prefix = "S", Strip-User-Name = Yes
-#	Hint = "SLIP",
-#	Service-Type = Framed-User,
-#	Framed-Protocol = SLIP
-#
-#DEFAULT	Prefix = "C", Strip-User-Name = Yes
-#	Hint = "CSLIP",
-#	Service-Type = Framed-User,
-#	Framed-Protocol = SLIP,
-#	Framed-Compression = Van-Jacobson-TCP-IP
-#
-#DEFAULT	Suffix = ".ppp", Strip-User-Name = Yes
-#	Hint = "PPP",
-#	Service-Type = Framed-User,
-#	Framed-Protocol = PPP
-#
-#DEFAULT	Suffix = ".slip", Strip-User-Name = Yes
-#	Hint = "SLIP",
-#	Service-Type = Framed-User,
-#	Framed-Protocol = SLIP
-#
-#DEFAULT	Suffix = ".cslip", Strip-User-Name = Yes
-#	Hint = "CSLIP",
-#	Service-Type = Framed-User,
-#	Framed-Protocol = SLIP,
-#	Framed-Compression = Van-Jacobson-TCP-IP
-
-##
-## Examples of hints which modify packets.
-##
-
-## 1. This appends a calling-station-id value to the username
-
-#DEFAULT	Replace-User-Name = "%C{User-Name}-%C{Calling-Station-Id}"
-#		Hint = "CLID"
-
-## 2. This applies "nt_fixup" function to any packets (see raddb/rewrite)
-
-#DEFAULT	Rewrite-Function = "nt_fixup"	NULL
-#
+# Scheme-acct.exp
+scheme NULL  Scheme-Acct-Procedure = "acct"

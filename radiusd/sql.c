@@ -21,8 +21,6 @@
 # include <config.h>
 #endif
 
-#if defined(USE_SQL)
-
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
@@ -34,6 +32,8 @@
 #ifdef USE_SERVER_GUILE
 # include <libguile.h>
 #endif
+
+#if defined(USE_SQL)
 
 static void sql_check_config(const char *, SQL_cfg *);
 static struct sql_connection *attach_sql_connection(int type);

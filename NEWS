@@ -1,4 +1,4 @@
-GNU Radius NEWS -- history of user-visible changes. 2003-11-25
+GNU Radius NEWS -- history of user-visible changes. 2003-11-27
 Copyright (C) 2002,2003 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
@@ -132,20 +132,16 @@ acct {
 
 will effectively disable the accounting server.
 
-** The amount of information output in logs for category "Auth"
-is configurable via the use of "logging-hook" rewrite function. The
-function is declared using special statement "hook" in "category auth"
-section of raddb/config, e.g.:
+** The amount of information output in logs is configurable via the
+use of logging-hook rewrite functions. There are two kinds of such hooks:
+prefix hooks that generate text to be displayed before the diagnostics
+message, and suffix hooks that produce text to be displayed after it.
+There are two kinds of such hooks: global ones, that will affect any
+logging messages that deal with incoming requests, and category-specific
+ones, which affect only messages pertaining to the given category. 
 
-logging {
-	category auth {
-		print-auth yes;
-		hook "my-logging-hook";
-	};
-};
-
-The logging-hook rewrite function should take no arguments and return
-a string. See raddb/log-hook.rw for an example.
+The logging-hook rewrite function should take three arguments and return
+a string. See examples/config.syntax and raddb/log-hook.rw for an example.
 
 ** File raddb/rewrite is no longer installed. The Rewrite sources are
 installed under $prefix/share/radius/1.1.92/rewrite. [FIXME: This

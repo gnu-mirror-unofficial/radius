@@ -1,3 +1,14 @@
+2003-11-27  Sergey Poznyakoff
+
+	* NEWS: Updated
+	* lib/realms.c (_realm_mem_free): Fixed memory leak.
+	* raddb/config.in: Declare global hooks.
+	* raddb/log-hook.rw (default_log_prefix): Rewritten
+	(default_log_suffix): New function.
+	* radiusd/log.c: Implement global hooks
+
+	* radiusd/checkrad.c (compare): Return -1 if rewrite_invoke fails.
+
 2003-11-26  Sergey Poznyakoff
 
 	* radiusd/testsuite/proxy/realms.in (ignorecase): New

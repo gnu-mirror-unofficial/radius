@@ -437,7 +437,7 @@ grad_format_pair(grad_avp_t *pair, int typeflag, char **savep)
                 break;
                                         
         case TYPE_INTEGER:
-                if (pair->name)
+                if (pair->name && (pair->prop & AP_TRANSLATE))
                         dval = grad_value_lookup(pair->avp_lvalue, pair->name);
                 else
                         dval = NULL;

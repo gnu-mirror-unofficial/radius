@@ -293,6 +293,7 @@ int write_detail(RADIUS_REQ *radreq, int authtype, char *f);
 int stat_request_list(QUEUE_STAT);
 void *scan_request_list(int type, int (*handler)(), void *closure);
 int set_nonblocking(int fd);
+void rad_thread_init();
 int rad_flush_queues();
 void schedule_restart();
 void rad_mainloop();

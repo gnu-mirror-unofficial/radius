@@ -1908,6 +1908,9 @@ test_shell()
 				printf("\n");
 			}
 			break;
+		case 's':
+			printf("%d\n", parse_rewrite(tok));
+			break;
 		case 'm': /*memory statistics */
 			meminfo();
 			break;

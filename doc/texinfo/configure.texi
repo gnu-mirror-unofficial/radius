@@ -1752,8 +1752,7 @@ And the @code{attrib} table contains following rows:
 @code{=}
 @item @code{jsmith} @tab @code{NAS-Port-Id} @tab @code{20} @tab @code{<=}
 @item @code{jsmith} @tab @code{Framed-Protocol} @tab @code{PPP} @tab @code{NULL}
-@item @code{jsmith} @tab @code{Framed-IP-Address} @tab
-@code{10.10.10.11} @tab @code{NULL}
+@item @code{jsmith} @tab @code{Framed-IP-Address} @tab @code{10.10.10.11} @tab @code{NULL}
 @end multitable
 
 @noindent

@@ -26,8 +26,6 @@ static char rcsid[] =
 # include <config.h>
 #endif
 
-#if RADIUS_DEBUG
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -36,6 +34,39 @@ static char rcsid[] =
 #include <errno.h>
 #include <string.h>
 #include <radius.h>
+
+static struct keyword auth_codes[] = {
+#define D(a) #a, a      
+        D(RT_AUTHENTICATION_REQUEST),
+        D(RT_AUTHENTICATION_ACK),
+        D(RT_AUTHENTICATION_REJECT),
+        D(RT_ACCOUNTING_REQUEST),
+        D(RT_ACCOUNTING_RESPONSE),
+        D(RT_ACCOUNTING_STATUS),
+        D(RT_PASSWORD_REQUEST),
+        D(RT_PASSWORD_ACK),
+        D(RT_PASSWORD_REJECT),
+        D(RT_ACCOUNTING_MESSAGE),
+        D(RT_ACCESS_CHALLENGE),
+        D(RT_ASCEND_TERMINATE_SESSION),
+        0
+#undef D        
+};
+
+char *
+auth_code_str(code)
+        int code;
+{
+        struct keyword *p;
+
+        for (p = auth_codes; p->name; p++)
+                if (p->tok == code)
+                        return p->name;
+        return NULL;
+}
+
+#if RADIUS_DEBUG
+
 
 int
 set_module_debug_level(name, level)

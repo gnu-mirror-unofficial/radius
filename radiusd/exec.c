@@ -255,7 +255,7 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
                 debug(1, ("returned: %d", status));
                 if (status == 2) {
                         radlog(L_ERR,
-                               _("can't run external program `%s' (reason reported via syslog channel user.errs)"),
+                               _("can't run external program `%s' (reason reported via syslog channel user.err)"),
 			       cmd);
                 }
                 return status;

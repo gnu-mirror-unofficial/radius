@@ -24,15 +24,6 @@
 #include <config_tok.h>
 #define _Y(x) (int)(x)
 
-#define S_ALERT   0
-#define S_CRIT    1
-#define S_DEBUG   2
-#define S_EMERG   3
-#define S_ERR     4
-#define S_INFO    5
-#define S_NOTICE  6
-#define S_WARNING 7
-
 %}
 struct conf_tok {
 	char *name;
@@ -43,7 +34,7 @@ struct conf_tok {
 acct, T_ACCT
 acct-dir, T_ACCT_DIR
 acl, T_ACL
-alert, T_SEVERITY, _Y(S_ALERT)
+alert, T_SEVERITY, _Y(L_ALERT)
 allow, T_ALLOW,
 auth, T_AUTH,
 category, T_CATEGORY,
@@ -51,21 +42,22 @@ channel, T_CHANNEL
 checkrad-assume-logged, T_CHECKRAD_ASSUME_LOGGED
 cntl, T_CNTL
 community, T_COMMUNITY
-crit, T_SEVERITY, _Y(S_CRIT)
+crit, T_SEVERITY, _Y(L_CRIT)
 daemon, T_FACILITY, _Y(LOG_DAEMON),
-debug, T_SEVERITY, _Y(S_DEBUG)
+debug, T_SEVERITY, _Y(L_DEBUG)
 delay, T_DELAY 
 deny, T_DENY,
 detail, T_DETAIL
-emerg, T_SEVERITY, _Y(S_EMERG),
-err, T_SEVERITY, _Y(S_ERR)
-error, T_SEVERITY, _Y(S_ERR)
+emerg, T_SEVERITY, _Y(L_EMERG),
+err, T_SEVERITY, _Y(L_ERR)
+error, T_SEVERITY, _Y(L_ERR)
 exec-program-group, T_EXEC_PROGRAM_GROUP
 exec-program-user, T_EXEC_PROGRAM_USER
+main, T_MAIN,
 file, T_FILE,
 host, T_HOST
 ident, T_IDENT
-info, T_SEVERITY, _Y(S_INFO),
+info, T_SEVERITY, _Y(L_INFO),
 level, T_LEVEL,
 listen, T_LISTEN,
 local0, T_FACILITY, _Y(LOG_LOCAL0)
@@ -82,7 +74,7 @@ logging, T_LOGGING,
 max-requests, T_MAX_REQUESTS
 network, T_NETWORK,
 no, T_BOOL, _Y(0),
-notice, T_SEVERITY, _Y(S_NOTICE)
+notice, T_SEVERITY, _Y(L_NOTICE)
 notify, T_NOTIFY
 off, T_BOOL, _Y(0)
 on, T_BOOL, _Y(1)
@@ -104,11 +96,13 @@ time-to-live, T_TTL
 usedbm, T_USEDBM
 user, T_FACILITY, _Y(LOG_USER)
 usr2delay, T_USR2DELAY
-warning, T_SEVERITY, _Y(S_WARNING)
+warning, T_SEVERITY, _Y(L_WARN)
 yes, T_BOOL, _Y(1)
 print-pid, T_LOGOPT, _Y(LO_PID)
+print-category, T_LOGOPT, _Y(LO_CAT)
 print-cons, T_LOGOPT, _Y(LO_CONS)
-print-level, T_LOGOPT, _Y(LO_LEVEL),
+print-level, T_LOGOPT, _Y(LO_PRI),
+print-priority, T_LOGOPT, _Y(LO_PRI)
 print-auth, T_LOGLEVEL, _Y(RLOG_AUTH)
 print-pass, T_LOGLEVEL, _Y(RLOG_AUTH_PASS)
 print-failed-pass, T_LOGLEVEL, _Y(RLOG_FAILED_PASS)

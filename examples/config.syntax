@@ -167,6 +167,9 @@ snmp {
 
 rewrite {
 	stack-size 4096;
+	load-path "/usr/share/rewrite";  # Add the directory to the Rewrite
+	                                 # load path
+	load "file.rw";                  # Load the given file. 
 };
 
 # Guile interface configuration

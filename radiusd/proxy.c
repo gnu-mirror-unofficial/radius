@@ -51,20 +51,6 @@ static u_char *send_buffer = (u_char *)i_send_buffer;
 
 static PROXY_ID *proxy_id;
 
-static int allowed[] = {
-	DA_SERVICE_TYPE,
-	DA_FRAMED_PROTOCOL,
-	DA_FILTER_ID,
-	DA_FRAMED_MTU,
-	DA_FRAMED_COMPRESSION,
-	DA_LOGIN_SERVICE,
-	DA_REPLY_MESSAGE,
-	DA_SESSION_TIMEOUT,
-	DA_IDLE_TIMEOUT,
-	DA_PORT_LIMIT,
-	0,
-};
-
 static void random_vector(char *vector);
 static VALUE_PAIR *proxy_addinfo(RADIUS_REQ *radreq, int proxy_id, UINT4 remip);
 void proxy_addrequest(RADIUS_REQ *radreq);
@@ -640,6 +626,14 @@ proxy_compare_request_no_state(data, oldreq)
 }
 
 
+int
+select_allowed(unused, pair)
+	void *unused;
+	VALUE_PAIR *pair;
+{
+	return pair->prop & AP_PROPAGATE;
+}
+
 /*
  *	We received a response from a remote radius server.
  *	Find the original request, then return.
@@ -735,8 +729,7 @@ proxy_receive(radreq, activefd)
 	 *	the remote server back to the NAS, for security.
 	 */
 	allowed_pairs = NULL;
-	for(i = 0; allowed[i]; i++)
-		avl_move_attr(&allowed_pairs, &radreq->request, allowed[i]);
+	avl_move_pairs(&allowed_pairs, &radreq->request, select_allowed, NULL);
 	avl_free(radreq->request);
 
 	/*

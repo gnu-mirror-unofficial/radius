@@ -17,7 +17,7 @@
    along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-/* RPP is a Radius Process Pool */
+/* RPP stands for Radius Process Pool */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -64,7 +64,7 @@ recompute_timeout(struct timeval *start, struct timeval *tval)
 		timersub(tval, &diff, &tmp);
 		*tval = tmp;
 		return 0;
-	}
+	} 
 	return 1;
 }
 
@@ -75,6 +75,7 @@ recompute_timeout(struct timeval *start, struct timeval *tval)
 static int
 pipe_write(int fd, void *ptr, size_t size, struct timeval *tv)
 {
+	errno = 0;
 	if (!tv)
 		return write(fd, ptr, size);
 	else {
@@ -84,33 +85,39 @@ pipe_write(int fd, void *ptr, size_t size, struct timeval *tv)
 		fd_set wr_set;
 		size_t n;
 
-		tval = *tv;
 		gettimeofday(&start, NULL);
 		for (n = 0; n < size;) {
-			struct timeval to;
-			
+
 			FD_ZERO(&wr_set);
 			FD_SET(fd, &wr_set);
 
-			if (recompute_timeout (&start, &tval))
+			tval = *tv;
+			if (recompute_timeout (&start, &tval)) {
+				errno = ETIMEDOUT;
 				break;
-			to = tval;
+			}
 			
-			rc = select(fd + 1, NULL, &wr_set, NULL, &to);
-			if (rc == 0)
+			rc = select(fd + 1, NULL, &wr_set, NULL, &tval);
+			if (rc == 0) {
+				debug(100, ("rc = 0"));
 				break;
-			else if (rc < 0) {
+			} else if (rc < 0) {
 				if (errno == EINTR) 
 					continue;
+				debug(100, ("rc = %d, errno = %d", rc, errno));
 				break;
 			} else if (rc > 0) {
 				rc = write(fd, data, 1);
-				if (rc != 1) 
+				if (rc != 1) {
+					debug(100, ("rc = %d, errno = %d", rc,
+                                              errno));
 					break;
+				}
 				data++;
 				n++;
 			}
 		}
+		debug(100,("n = %d",n));
 		return n;
 	}
 }
@@ -125,6 +132,7 @@ pipe_read(int fd, void *ptr, size_t size, struct timeval *tv)
 	char *data = ptr;
 	int rc;
 
+	errno = 0;
 	if (!tv) {
 		int rdbytes = 0;
 		do {
@@ -142,19 +150,19 @@ pipe_read(int fd, void *ptr, size_t size, struct timeval *tv)
 		fd_set rd_set;
 		size_t n;
 		
-		tval = *tv;
 		gettimeofday(&start, NULL);
 		for (n = 0; n < size;) {
-			struct timeval to;
 
 			FD_ZERO(&rd_set);
 			FD_SET(fd, &rd_set);
 
-			if (recompute_timeout (&start, &tval))
+			tval = *tv;
+			if (recompute_timeout (&start, &tval)) {
+				errno = ETIMEDOUT;
 				break;
-			to = tval;
+			}
 
-			rc = select(fd + 1, &rd_set, NULL, NULL, &to);
+			rc = select(fd + 1, &rd_set, NULL, NULL, &tval);
 			if (rc == 0)
 				break;
 			if (rc < 0) {
@@ -194,12 +202,11 @@ rpp_fd_read(int fd, void *data, size_t size, struct timeval *tv)
 		return -2;
 	for (;nbytes > size; nbytes--) {
 		char c;
-		if (pipe_read(fd, &c, 1, tv) != 1) {
-			debug(1,("pipe_read failed"));
+		if (pipe_read(fd, &c, 1, tv) != 1) 
 			return -3;
-		}
 	}
 	
+	debug(100,("return %lu", (unsigned long)sz));
 	return sz;
 }
 
@@ -207,11 +214,13 @@ rpp_fd_read(int fd, void *data, size_t size, struct timeval *tv)
 static int
 rpp_fd_write(int fd, void *data, size_t size, struct timeval *tv)
 {
+	int rc;
 	debug(100,("size=%lu",size));
-	if (pipe_write(fd, &size, sizeof(size), tv) != sizeof(size))
+	if (pipe_write(fd, &size, sizeof(size), tv) != sizeof(size)) 
 		return -1;
-	if (pipe_write(fd, data, size, tv) != size)
+	if (pipe_write(fd, data, size, tv) != size) 
 		return -2;
+	debug(1,("return %lu", (unsigned long)size));
 	return size;
 }
 
@@ -479,9 +488,10 @@ rpp_kill(pid_t pid, int signo)
 
 /* Slay the child */
 static void
-_rpp_slay(rpp_proc_t *p)
+_rpp_slay(rpp_proc_t *p, char *msg)
 {
-	grad_log(L_NOTICE, _("Killing unresponding process %lu"), (u_long) p->pid);
+	grad_log(L_NOTICE, _("Killing process %lu: %s"), 
+                 (u_long) p->pid, msg);
 	kill(p->pid, SIGKILL);
 	_rpp_remove(p);
 }
@@ -544,9 +554,12 @@ rpp_forward_request(REQUEST *req)
 	} else
 		tvp = NULL;
 	
- 	if (rpp_fd_write(p->p[1], &frq, sizeof frq, tvp) != sizeof frq
-	    || rpp_fd_write(p->p[1], req->rawdata, req->rawsize, tvp) != req->rawsize) {
-		_rpp_slay(p);
+ 	if (rpp_fd_write(p->p[1], &frq, sizeof frq, tvp) != sizeof frq) {
+		_rpp_slay(p, _("error writing header"));
+		return 1;
+	}
+	if (rpp_fd_write(p->p[1], req->rawdata, req->rawsize, tvp) != req->rawsize) {
+		_rpp_slay(p, _("error writing data"));
 		return 1;
 	}
 	return 0;
@@ -685,7 +698,7 @@ rpp_input_handler(int fd, void *data)
 			data = grad_emalloc(repl.size);
 			if (rpp_fd_read(fd, data, repl.size, tvp)
 			    != repl.size) {
-				_rpp_slay(p);
+				_rpp_slay(p, _("error reading data"));
 				grad_free(data);
 				return 1;
 			}
@@ -698,7 +711,7 @@ rpp_input_handler(int fd, void *data)
 		} 
 		grad_free(data);
 	} else if (sz != 0) {
-		_rpp_slay(p);
+		_rpp_slay(p, _("error reading data; wrong data size returned"));
 		return 1;
 	}
 	

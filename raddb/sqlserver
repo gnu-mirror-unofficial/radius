@@ -60,6 +60,12 @@
 #########
 ## General settings
 ##
+
+# The interface statement specifies which SQL interface to use. It is
+# needed only if the package is configured with both --with-mysql and
+# --with-postgres options. 
+interface mysql
+
 server localhost
 port 3306
 login radius

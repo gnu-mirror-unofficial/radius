@@ -1,3 +1,58 @@
+2002-06-02  Sergey Poznyakoff  
+
+	Added support for Guile 1.6. At the time of the writing
+	guile 1.6 is still not released, but it seems that the
+	problems with its snarfer will continue, since it does
+	not install doc snarfer. Again, I have to provide my own
+	snarfer...
+	
+	* scripts/guile/guile-doc-snarf: Moved to 1.4
+	* scripts/guile/guile-func-name-check: Likewise.
+	* scripts/guile/guile-snarf.awk: Likewise
+
+	* scripts/guile/1.4: new directory
+	* scripts/guile/1.4/guile-doc-snarf: new
+	* scripts/guile/1.4/guile-func-name-check: new
+	* scripts/guile/1.4/guile-snarf.awk: new
+	* scripts/guile/1.4/Makefile.am: new
+	* scripts/guile/1.4/.cvsignore: new
+
+	* scripts/guile/1.6: new
+	* scripts/guile/1.6/guile-doc-snarf: new
+	* scripts/guile/1.6/guile-doc-snarf.awk: new
+	* scripts/guile/1.6/Makefile.am: new
+	* scripts/guile/1.6/.cvsignore: new
+
+	* scripts/guile/Makefile.am: Updated
+
+	* configure.ac: AC_SUBST(GUILE_SNARF_VERSION). The variable is
+	  used to determine which snarfer to use.
+	* m4/guile.m4: Additional checks for functions introduced in
+	  guile 1.6
+	* radiusd/rewrite.y: include <radscm.h>
+	* radscm/main.c: Likewise.
+
+	* radscm/radscm.c: Use functions, defined in guile 1.6 and
+	  compatibility wrappers.
+	* radscm/rscm_avl.c: Likewise.
+	* radscm/rscm_dict.c: Likewise.
+	* radscm/rscm_lib.c: Likewise.
+	* radscm/rscm_syslog.c: Likewise.
+	* radscm/rscm_radlog.c: Likewise.
+	* radscm/rscm_utmp.c: Likewise.
+	* radscm/rscm_rewrite.c: Likewise.
+	
+	* radscm/Makefile.am: Changed invocation of the snarfers.
+
+	* radscm/boot.scm: use-modules format
+	* radscm/ttl.scm: Likewise.
+	  
+	* lib/debug.c (auth_code_abbr): Bugfix
+
+	* radscm/radscm.h: Moved to...
+	* include/radscm.h: ...here. 
+	* include/Makefile.am: Removed display.h. Added radscm.h
+
 2002-05-31  Sergey Poznyakoff 
 
 	* lib/mem.c: Again fixed mem_lock/mem_unlock. Previous

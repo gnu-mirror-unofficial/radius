@@ -84,14 +84,15 @@ enum reload_what {
 #define R_SNMP  2        /* SNMP request */
 #define R_MAX   3
 
-#define RS_WAITING   0     /* Request waiting for processing */
-#define RS_COMPLETED 1     /* Request is completed */
-#define RS_PROXY     2     /* Proxy request waiting for its handler
-			      to become free */
-#define RS_XMIT      3     /* The request is to be retransmitted to its
-			      handler and is waiting for it to
-			      become free */
-
+#define RS_WAITING    0     /* Request waiting for processing */
+#define RS_COMPLETED  1     /* Request is completed */
+#define RS_PROXY      2     /* Proxy request waiting for its handler
+			       to become free */
+#define RS_XMIT       3     /* The request is to be retransmitted to its
+			       handler and is waiting for it to
+			       become free */
+#define RS_TERMINATED 4     /* TERM has been sent to the handler */
+			      
 /* Request comparison results */
 #define RCMP_NE     0      /* Requests not equal */
 #define RCMP_EQ     1      /* Requests equal */
@@ -386,6 +387,7 @@ int rpp_input_close(int fd, void *data);
 int rpp_kill(pid_t pid, int signo);
 size_t rpp_count();
 int rpp_update(void *data, size_t size);
+pid_t rpp_check_pid(pid_t pid);
 
 /* request.c */
 REQUEST *request_create(int type, int fd, struct sockaddr_in *sa,

@@ -101,7 +101,7 @@ FORMAT name_fmt = {
 
 FORMAT porttype_fmt = {
         ALIGN_LEFT,        
-        1,
+        2,
         format_porttype,
         "PType"
 };
@@ -478,8 +478,8 @@ tty_to_port(rt, tty)
         p = tty + strlen(tty) - 1; 
         while (p >= tty && isdigit(*p))
                 p--;
-        rt->porttype = *p;
         rt->nas_port = atoi(p+1);
+        rt->porttype = "tty";
 }
 
 void
@@ -671,7 +671,12 @@ format_porttype(buf, fmt, up)
         FORMAT         *fmt;
         struct radutmp *up;
 {
-        sprintf(buf, "%c", up->porttype);
+	DICT_VALUE *dval = value_lookup(up->porttype, "NAS-Port-Type");
+
+        if (!dval)
+                snprintf(buf, fmt->width, "%lu", up->porttype);
+        else
+                snprintf(buf, fmt->width, "%s", dval->name);
 }
 
 /*ARGSUSED*/

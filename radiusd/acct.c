@@ -53,7 +53,6 @@ static char rcsid[] =
 
 int     doradwtmp = 1;
 
-static char porttypes[] = "ASITX";
 static int write_wtmp(struct radutmp *ut);
 static int write_nas_restart(int status, UINT4 addr);
 static int check_ts(struct radutmp *ut);
@@ -209,7 +208,6 @@ rad_acct_system(radreq, dowtmp)
         time_t t;
         int ret = 0, rc;
         int port_seen = 0;
-        int nas_port_type = 0;
         char buf[MAX_LONGNAME];
         
         /* A packet should have Acct-Status-Type attribute */
@@ -265,7 +263,7 @@ rad_acct_system(radreq, dowtmp)
         }
         time(&t);
         memset(&ut, 0, sizeof(ut));
-        ut.porttype = 'A';
+        ut.porttype = -1; /* Unknown so far */
 
         if (radreq->realm) {
                 REALM *realm = realm_find(radreq->realm);
@@ -279,45 +277,53 @@ rad_acct_system(radreq, dowtmp)
                 case DA_USER_NAME:
                         backslashify(ut.login, vp->strvalue, RUT_NAMESIZE);
                         break;
+			
                 case DA_ORIG_USER_NAME:
                         backslashify(ut.orig_login, vp->strvalue, RUT_NAMESIZE);
                         break;
+			
                 case DA_LOGIN_IP_HOST:
                 case DA_FRAMED_IP_ADDRESS:
                         ut.framed_address = htonl(vp->lvalue);
                         break;
+			
                 case DA_FRAMED_PROTOCOL:
                         protocol = vp->lvalue;
                         break;
+			
                 case DA_NAS_IP_ADDRESS:
                         nas_address = vp->lvalue;
                         ut.nas_address = htonl(vp->lvalue);
                         break;
+			
                 case DA_NAS_PORT_ID:
                         ut.nas_port = vp->lvalue;
                         port_seen = 1;
                         break;
+			
                 case DA_ACCT_DELAY_TIME:
                         ut.delay = vp->lvalue;
                         break;
+			
                 case DA_CALLING_STATION_ID:
                         store_session_id(ut.caller_id,
                                          sizeof(ut.caller_id),
                                          vp->strvalue,
                                          vp->strlength);
                         break;
+			
                 case DA_CALLED_STATION_ID:
                         break;
+			
                 case DA_ACCT_SESSION_ID:
                         store_session_id(ut.session_id,
                                          sizeof(ut.session_id),
                                          vp->strvalue,
                                          vp->strlength);
                         break;
+			
                 case DA_NAS_PORT_TYPE:
-                        if (vp->lvalue >= 0 && vp->lvalue <= 4)
-                                ut.porttype = porttypes[vp->lvalue];
-                        nas_port_type = vp->lvalue;
+			ut.porttype = vp->lvalue;
                         break;
                 }
         }

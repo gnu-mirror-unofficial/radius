@@ -39,10 +39,9 @@ struct radutmp {
         time_t time;                    /* Time the entry was last updated. */
         time_t delay;                   /* Delay time of request */
         int type;                       /* Type of entry (login/logout) */
-        char porttype;         /* Porttype (I=ISDN A=Async T=Async-ISDN) */
-        char res1,res2,res3;            /* Fills up to one int */
+        int porttype;                   /* Value of NAS-Port-Type attr */
         time_t duration;
-        char caller_id[RUT_PNSIZE];      /* calling station ID */
+        char caller_id[RUT_PNSIZE];     /* calling station ID */
         unsigned int realm_address;
         char reserved[10];              
 };

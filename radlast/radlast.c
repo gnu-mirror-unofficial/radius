@@ -299,7 +299,7 @@ rawread()
                 ipaddr = ut.framed_address;
                 ip_iptostr(ntohl(ipaddr), ip_str);
                 
-                printf("%d %-*.*s %-*.*s %3.3d %-4.4s %c %-*.*s %-*.*s %-*.*s %10.10s %5.5s\n",
+                printf("%d %-*.*s %-*.*s %3.3d %-4.4s %2s %-*.*s %-*.*s %-*.*s %10.10s %5.5s\n",
                        ut.type,
                        
                        namesize, namesize,
@@ -701,7 +701,7 @@ print_entry(pp, bp, mark)
         ip_iptostr(ntohl(ipaddr), ip_str);
 
         if (long_fmt) {                                   
-                printf("%-*.*s %-*.*s %3.3d %-4.4s %c %-*.*s %-*.*s %-*.*s %10.10s %5.5s ",
+                printf("%-*.*s %-*.*s %3.3d %-4.4s %2s %-*.*s %-*.*s %-*.*s %10.10s %5.5s ",
                        namesize, namesize,
                        bp->login,
                        

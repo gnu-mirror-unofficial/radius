@@ -99,6 +99,7 @@ pipe_write(int fd, void *ptr, size_t size, struct timeval *tv)
 			
 			rc = select(fd + 1, NULL, &wr_set, NULL, &tval);
 			if (rc == 0) {
+				errno = ETIMEDOUT;
 				debug(100, ("rc = 0"));
 				break;
 			} else if (rc < 0) {
@@ -163,8 +164,10 @@ pipe_read(int fd, void *ptr, size_t size, struct timeval *tv)
 			}
 
 			rc = select(fd + 1, &rd_set, NULL, NULL, &tval);
-			if (rc == 0)
+			if (rc == 0) {
+				errno = ETIMEDOUT;
 				break;
+			}
 			if (rc < 0) {
 				if (errno == EINTR)
 					continue;

@@ -28,8 +28,8 @@
 #include <radiusd.h>
 #include <log.h>
 
-static int log_category;      /* Default logging category */
-Channel *chanlist;            /* List of defined channels */
+static int log_category = L_CAT(L_MAIN);  /* Default logging category */
+Channel *chanlist;                  /* List of defined channels */
 
 static void log_to_channel(Channel *chan, int cat, int pri,
 			   char *buf1, char *buf2, char *buf3);
@@ -39,6 +39,19 @@ static FILE *channel_open_file(Channel *chan);
 static void channel_close_file(Channel *chan, FILE *fp);
 
 #define SP(p) ((p)?(p):"")
+
+void
+log_open(cat)
+	int cat;
+{
+	log_category = L_CAT(cat);
+}
+
+void
+log_close()
+{
+	log_category = L_CAT(L_MAIN);
+}
 
 void
 vlog(level, file, line, func_name, errno, fmt, ap)
@@ -66,7 +79,7 @@ vlog(level, file, line, func_name, errno, fmt, ap)
 	if (errno)
 		asprintf(&buf3, ": %s", strerror(errno));
 
-	asprintf(&buf2, fmt, ap);
+	vasprintf(&buf2, fmt, ap);
 	
 	for (chan = chanlist; chan; chan = chan->next) {
 		/* Skip channels whith incorrect priority */
@@ -82,7 +95,7 @@ vlog(level, file, line, func_name, errno, fmt, ap)
 		free(buf3);
 }
 
-char catname[] = { /* category names */
+char *catname[] = { /* category names */
 	"none",
 	"Main",
 	"Auth",
@@ -91,7 +104,7 @@ char catname[] = { /* category names */
 	"SNMP"
 };
 
-char priname[] = { /* priority names */
+char *priname[] = { /* priority names */
 	"emerg",
 	"alert",
 	"crit",
@@ -176,9 +189,10 @@ FILE *
 channel_open_file(chan)
 	Channel *chan;
 {
-	FILE *fp;
+	FILE *fp = NULL;
 
-	fp = fopen(chan->id.file, "a");
+	if (strcmp(chan->id.file, "stdout"))
+		fp = fopen(chan->id.file, "a");
 	return fp ? fp : stderr;
 }
 
@@ -212,13 +226,32 @@ radlog(level, msg, va_alist)
 }
 
 void
+_dolog(level, file, line, func_name, fmt, va_alist)
+	int level;
+	char *file;
+	int line;
+	char *func_name;
+	char *fmt;
+	va_dcl
+{
+	va_list ap;
+	int ec = 0;
+	
+	if (level & L_PERROR)
+		ec = errno;
+	va_start(ap);
+	vlog(level, file, line, func_name, ec, fmt, ap);
+	va_end(ap);
+}
+
+void
 _debug_print(file, line, func_name, str)
 	char *file;
 	int line;
 	char *func_name;
 	char *str;
 {
-	vlog(L_DEBUG, file, line, func_name, 0, "%s", str);
+	_dolog(L_DEBUG, file, line, func_name, "%s", str);
 	free(str);
 }
 
@@ -276,6 +309,68 @@ sqllog(status, msg, va_alist)
 
 /* Registering functions */
 
+void
+channel_free(chan)
+	Channel *chan;
+{
+	if (chan->mode == LM_FILE)
+		efree(chan->id.file);
+	free_entry(chan);
+}
+
+void
+channel_free_list(chan)
+	Channel *chan;
+{
+	Channel *next;
+
+	while (chan) {
+		next = chan->next;
+		channel_free(chan);
+		chan = next;
+	}
+}
+
+Channel *
+log_mark()
+{
+	return chanlist;
+}
+
+void
+log_release(chan)
+	Channel *chan;
+{
+	Channel *cp, *prev = NULL;
+	int emerg, alert, crit;
+	
+	for (cp = chanlist; cp; prev = cp, cp = cp->next)
+		if (cp == chan) {
+			channel_free_list(chan);
+			if (prev)
+				prev->next = NULL;
+		}
+	/* Make sure we have at least a channel for categories below
+	   L_CRIT */
+	emerg = L_EMERG;
+	alert = L_ALERT;
+	crit  = L_CRIT;
+	for (cp = chanlist; cp; cp = cp->next) {
+		int i;
+		for (i = 1; i < L_NCAT; i++) {
+			if (emerg && (cp->pmask[i] & L_MASK(emerg)))
+				emerg = 0;
+			if (alert && (cp->pmask[i] & L_MASK(alert)))
+				alert = 0;
+			if (crit && (cp->pmask[i] & L_MASK(crit)))
+				crit = 0;
+		}
+	}
+
+	if (emerg || alert || crit)
+		log_set_default("##emerg##", -1, emerg|alert|crit);
+}
+
 Channel *
 channel_lookup(name)
 	char *name;
@@ -299,7 +394,9 @@ register_channel(chan)
 	
 	if (chan->mode == LM_FILE) {
 		if (strcmp(chan->id.file, "stdout")) {
-			filename = mkfilename(radlog_dir, chan->id.file);
+			filename = mkfilename(radlog_dir ?
+					      radlog_dir : RADLOG_DIR,
+					      chan->id.file);
 			
 			/* check the accessibility of the file */
 			fp = fopen(filename, "a");
@@ -335,11 +432,9 @@ register_category(cat, pri, chanlist)
 {
 	Channel *chan;
 	int primask;
-
+	
 	if (pri == -1)
-		primask = L_PRIMASK;
-	else
-		primask = L_MASK(pri);
+		pri = L_UPTO(L_DEBUG);
 	
 	for (; chanlist; chanlist = chanlist->next) {
 		chan = chanlist->chan ? chanlist->chan
@@ -348,9 +443,9 @@ register_category(cat, pri, chanlist)
 		if (cat == -1) {
 			int i;
 			for (i = 0; i < L_NCAT; i++)
-				chan->pmask[i] |= primask;
+				chan->pmask[i] |= pri;
 		} else
-			chan->pmask[cat] |= primask;
+			chan->pmask[L_CAT(cat)] |= pri;
 	}
 }
 
@@ -371,3 +466,44 @@ free_chanlist(cp)
 {
 	free_slist((struct slist*)cp, NULL);
 }
+
+/* Auxiliary calls */
+void
+log_set_to_console()
+{
+	Channel chan, *cp;
+	Chanlist chanlist;
+	
+	chan.mode = LM_FILE;
+	chan.name = "stdout";
+	chan.id.file = "stdout";
+	chan.options = LO_CAT|LO_PRI;
+	register_channel(&chan);
+
+	chanlist.next = NULL;
+	chanlist.chan = channel_lookup("stdout");
+	register_category(-1, -1, &chanlist);
+}
+
+void
+log_set_default(name, cat, pri)
+	char *name;
+	int cat;
+	int pri;
+{
+	Channel chan, *cp;
+	Chanlist chanlist;
+	
+	chan.mode = LM_FILE;
+	chan.name = name;
+	chan.id.file = "radius.log";
+	chan.options = LO_CAT|LO_PRI;
+
+	if (!channel_lookup(name))
+		register_channel(&chan);
+
+	chanlist.next = NULL;
+	chanlist.chan = channel_lookup(name);
+	register_category(cat, pri, &chanlist);
+}
+

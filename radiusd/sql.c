@@ -1068,6 +1068,15 @@ rad_sql_check_attr_query(grad_request_t *req, grad_avp_t **return_pairs)
         return rc == 0;
 }
 
+int
+sql_auth_avail_p(const char **msg)
+{
+	if (sql_cfg.active[SQL_AUTH] && sql_cfg.query[auth_query])
+		return 1;
+	*msg = _("SQL authentication is not enabled in raddb/sqlserver");
+	return 0;
+}
+
 
 /* ****************************************************************************
  * Multiple login checking
@@ -1258,5 +1267,14 @@ sql_exec_query(int type, char *query)
 	return row_head;
 }
 #endif
+
+#else
+
+int
+sql_auth_avail_p(const char **msg)
+{
+	*msg = _("Radiusd is compiled without SQL support");
+	return 0;
+}
 
 #endif

@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+# Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -23,10 +23,13 @@ EXTRA_DIST = \
  rfc1901.txt\
  rfc1905.txt\
  rfc2138.txt\
+ rfc2433.txt\
+ rfc2548.txt\
  rfc2618.txt\
  rfc2619.txt\
  rfc2620.txt\
  rfc2621.txt\
+ rfc2759.txt\
  rfc2865.txt\
  rfc2866.txt\
  rfc2867.txt\

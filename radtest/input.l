@@ -153,15 +153,10 @@ static char *end_str();
 static void add_num(int skip, int base, char *text, int leng);
 
 static int backspace(int c);
-static int deref_var(char *name, char *p);
-static int deref_parm(unsigned num, char *p);
 
 static int isemptystr(char *text);
 char *heredoc_strip_tabs(char *text);
 void heredoc_begin();
-
-static int push_bracket(int tok);
-static int pop_bracket(int tok);
 
 %}
 
@@ -195,7 +190,9 @@ DQ {D3}\.{D3}\.{D3}\.{D3}
 \"input\"    |
 \"set\"      |
 \"shift\"    |
-\"getopt\" {
+\"getopt\"   |
+\"case\"     |
+\"in\"       {
 	add_str(yytext+1,yyleng-2);
         yylval.string = end_str();
         return NAME;
@@ -206,8 +203,8 @@ print   return PRINT;
 send    return SEND;
 expect  return EXPECT;
 exit    return EXIT;
-begin   return push_bracket(T_BEGIN); 
-end     return pop_bracket(T_BEGIN) == 0 ? T_END : T_UNBALANCED;
+begin   return T_BEGIN; 
+end     return T_END;
 if      return IF;
 else    return ELSE;
 while   return WHILE;
@@ -218,6 +215,8 @@ not     return NOT;
 input   return INPUT;
 shift   return SHIFT;
 getopt  return GETOPT;
+case    return CASE;
+in      return IN;
 set{WS}.*\n {
 	int i, argc;
 	char **argv;
@@ -396,10 +395,6 @@ set{WS}.*\n {
 ">="    return GE;
 "<="    return LE;
 "!"     return NOT;
-"("     return push_bracket('(');
-")"     return pop_bracket('(') == 0 ? yytext[0] : T_UNBALANCED;
-"["     return push_bracket('[');
-"]"     return pop_bracket('[') == 0 ? yytext[0] : T_UNBALANCED; 
 .       return yytext[0];
 
 %%
@@ -607,93 +602,3 @@ heredoc_begin()
 	}
 }
 
-
-
-struct bracket {
-	int token;
-	grad_locus_t locus;
-};
-
-static grad_list_t *bracket_stack;
-
-static int
-push_bracket(int tok)
-{
-	struct bracket *p = grad_emalloc(sizeof *p);
-	p->token = tok;
-	p->locus = source_locus;
-	if (!bracket_stack)
-		bracket_stack = grad_list_create();
-	grad_list_prepend(bracket_stack, p);
-	return tok;
-}
-
-struct bracket_info {
-	int open_tok;
-	int close_tok;
-	char *open_name;
-	char *close_name;
-} bracket_info[] = {
-	{ '(', ')', "(", ")" },
-	{ T_BEGIN, T_END, "begin", "end" },
-	{ '[', ']', "[", "]" },
-	{ 0 }
-};
-
-static struct bracket_info *
-find_bracket(int tok)
-{
-	struct bracket_info *p;
-	for (p = bracket_info; p->open_tok; p++)
-		if (p->open_tok == tok)
-			return p;
-	grad_insist_fail("Unknown opening bracket");
-	return NULL;
-}
-
-static char *
-opening_bracket_name(int tok)
-{
-	struct bracket_info *p = find_bracket(tok);
-	return p->open_name;
-}
-
-static char *
-closing_bracket_name(int tok)
-{
-	struct bracket_info *p = find_bracket(tok);
-	return p->close_name;
-}
-
-static int
-pop_bracket(int tok)
-{
-	struct bracket *p = grad_list_item(bracket_stack, 0);
-
-	if (tok == p->token) {
-		grad_list_remove(bracket_stack, p, NULL);
-		grad_free(p);
-		return 0;
-	}
-
-	parse_error(_("Unbalanced '%s'"), closing_bracket_name(tok));
-	if (p)
-		parse_error_loc(&p->locus,
-			    _("This '%s' does not have matching '%s'"),
-			    opening_bracket_name(p->token),
-			    closing_bracket_name(p->token));
-	grad_list_destroy(&bracket_stack, _free_item, NULL);
-	return 1;
-}
-
-void
-bracket_error()
-{
-	struct bracket *p = grad_list_item(bracket_stack, 0);
-	if (p)
-		parse_error_loc(&p->locus,
-				_("This '%s' does not have matching '%s'"),
-				opening_bracket_name(p->token),
-				closing_bracket_name(p->token));
-	grad_list_destroy(&bracket_stack, _free_item, NULL);
-}

@@ -86,17 +86,18 @@ symtab_rehash(symtab)
 	Symtab *symtab;
 {
 	Symbol **old_table = symtab->sym;
-	size_t old_size = hash_size[symtab->hash_num];
 	int i;
   
 	if (++symtab->hash_num >= max_rehash) {
-//		util_error("alias hash table full");
-		exit(1);
+		/*FIXME: report error*/
+		abort();
 	}
 
 	symtab->sym = emalloc(hash_size[symtab->hash_num] * symtab->elsize);
 
 	if (old_table) {
+		size_t old_size = hash_size[symtab->hash_num-1];
+		
 		for (i = 0; i < old_size; i++) {
 			Symbol *sym, *next;
 			

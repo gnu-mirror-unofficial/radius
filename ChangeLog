@@ -5,6 +5,8 @@
 	  requests as possible before going to cond_wait.
 	* test/proxy/config.in: Enable proxy debug level.
 	* configure.in: Raised patchlevel.
+	* radiusd/request.c: Number of bugfixes: child_id was used
+	  instead of status.
 	
 2002-02-18  Sergey Poznyakoff 
 

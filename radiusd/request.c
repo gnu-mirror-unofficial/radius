@@ -327,7 +327,7 @@ request_flush_list()
         request_list_block();
 
         while (curreq != NULL) {
-                if (curreq->child_id == RS_COMPLETED) {
+                if (curreq->status == RS_COMPLETED) {
                         /* Request completed, delete it no matter how
                            long does it reside in the queue */
                         debug(1, ("deleting completed %s request",
@@ -376,7 +376,7 @@ request_stat_list(stat)
         request_list_block();
 
         while (curreq != NULL) {
-                if (curreq->child_id == RS_COMPLETED) 
+                if (curreq->status == RS_COMPLETED) 
                         completed_count[curreq->type]++;
                 else
                         pending_count[curreq->type]++;

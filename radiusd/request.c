@@ -399,11 +399,14 @@ request_flush_list()
         request_list_block();
 
         while (curreq != NULL) {
-                if (curreq->status == RS_COMPLETED) {
-                        /* Request completed, delete it no matter how
+                if (curreq->status == RS_COMPLETED
+		    || curreq->status == RS_WAITING) {
+                        /* Request completed/waiting, delete it no matter how
                            long does it reside in the queue */
-                        debug(1, ("deleting completed %s request",
-                                 request_class[curreq->type].name));
+                        debug(1, (curreq->status == RS_COMPLETED ?
+				  "deleting completed %s request" :
+				  "deleting waiting %s request",
+				  request_class[curreq->type].name));
                         if (prevreq == NULL) {
                                 first_request = curreq->next;
                                 request_free(curreq);

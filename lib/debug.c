@@ -126,7 +126,7 @@ debug_mod_cmp(const void *item, const void *data)
 static int
 free_debug_module(void *item, void *data)
 {
-	efree(item);
+	grad_free(item);
 	return 0;
 }
 
@@ -143,8 +143,8 @@ set_module_debug_level(char *name, int level)
 
 	lp = grad_list_locate(_grad_debug_list, name, debug_name_cmp);
 	if (!lp) {
-		lp = emalloc(sizeof(*lp));
-		lp->name = estrdup(name);
+		lp = grad_emalloc(sizeof(*lp));
+		lp->name = grad_estrdup(name);
 		grad_list_append(_grad_debug_list, lp);
 	}
 
@@ -196,14 +196,14 @@ grad_debug_p(char *name, int level)
 int
 set_module_debug_level(char *name, int level)
 {
-        radlog(L_ERR, _("compiled without debugging support"));
+        grad_log(L_ERR, _("compiled without debugging support"));
 }
 
 /*ARGSUSED*/
 void
 set_debug_levels(char *str)
 {
-        radlog(L_ERR, _("compiled without debugging support"));
+        grad_log(L_ERR, _("compiled without debugging support"));
 }
 
 void

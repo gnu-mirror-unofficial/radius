@@ -67,8 +67,9 @@ rad_postgres_reconnect(int type, struct sql_connection *conn)
                               sql_cfg.login, sql_cfg.password);
         
         if (PQstatus(pgconn) == CONNECTION_BAD) {
-                radlog(L_ERR,
-                       _("PQconnectStart failed: %s"), PQerrorMessage(pgconn));
+                grad_log(L_ERR,
+                         _("PQconnectStart failed: %s"), 
+                         PQerrorMessage(pgconn));
                 PQfinish(pgconn);
                 return -1;
         }
@@ -103,9 +104,9 @@ rad_postgres_query(struct sql_connection *conn, char *query, int *return_count)
         
         res = PQexec((PGconn*)conn->data, query);
         if (res == NULL) {
-                radlog(L_ERR,
-                       "PQexec: %s",
-                       PQerrorMessage((PGconn*)conn->data));
+                grad_log(L_ERR,
+                         "PQexec: %s",
+                         PQerrorMessage((PGconn*)conn->data));
                 return -1;
         }
         
@@ -120,9 +121,9 @@ rad_postgres_query(struct sql_connection *conn, char *query, int *return_count)
                         *return_count = atoi(PQcmdTuples(res));
                 rc = 0;
         } else {
-                radlog(L_ERR,
-                       ("PQexec returned %s"),
-                       PQresStatus(stat));
+                grad_log(L_ERR,
+                         _("PQexec returned %s"),
+                         PQresStatus(stat));
                 if (stat == PGRES_FATAL_ERROR) 
 			rad_postgres_disconnect(conn, 0);
                 rc = -1;
@@ -145,9 +146,9 @@ rad_postgres_getpwd(struct sql_connection *conn, char *query)
         
         res = PQexec((PGconn*)conn->data, query);
         if (res == NULL) {
-                radlog(L_ERR,
-                       "PQexec: %s",
-                       PQerrorMessage((PGconn*)conn->data));
+                grad_log(L_ERR,
+                         "PQexec: %s",
+                         PQerrorMessage((PGconn*)conn->data));
                 return NULL;
         }
         
@@ -160,18 +161,18 @@ rad_postgres_getpwd(struct sql_connection *conn, char *query)
         if (stat == PGRES_TUPLES_OK) {
                 int ntuples = PQntuples(res);
                 if (ntuples > 1 && PQnfields(res)) {
-                        radlog(L_NOTICE,
-			       ngettext("query returned %d tuple: %s",
-					"query returned %d tuples: %s",
-					ntuples),
-                               ntuples, query);
+                        grad_log(L_NOTICE,
+			         ngettext("query returned %d tuple: %s",
+				  	  "query returned %d tuples: %s",
+					  ntuples),
+                                 ntuples, query);
                 } else if (ntuples == 1) {
-                        return_passwd = estrdup(PQgetvalue(res, 0, 0));
+                        return_passwd = grad_estrdup(PQgetvalue(res, 0, 0));
                 }
         } else {
-                radlog(L_ERR,
-                       _("PQexec returned %s"),
-                       PQresStatus(stat));
+                grad_log(L_ERR,
+                         _("PQexec returned %s"),
+                         PQresStatus(stat));
                 if (stat == PGRES_FATAL_ERROR)
 			rad_postgres_disconnect(conn, 0);
         }
@@ -220,9 +221,9 @@ rad_postgres_exec(struct sql_connection *conn, char *query)
         
         res = PQexec((PGconn*)conn->data, query);
         if (res == NULL) {
-                radlog(L_ERR,
-                       "PQexec: %s",
-                       PQerrorMessage((PGconn*)conn->data));
+                grad_log(L_ERR,
+                         "PQexec: %s",
+                         PQerrorMessage((PGconn*)conn->data));
                 return NULL;
         }
         
@@ -235,15 +236,15 @@ rad_postgres_exec(struct sql_connection *conn, char *query)
         if (stat != PGRES_TUPLES_OK) {
                 PQclear(res);
                 if (stat == PGRES_FATAL_ERROR) {
-			radlog(L_ERR,
-			       _("PQexec returned %s"),
-			       PQresStatus(stat));
+			grad_log(L_ERR,
+			         _("PQexec returned %s"),
+			         PQresStatus(stat));
 			rad_postgres_disconnect(conn, 0);
 		}
                 return NULL;
         }
 
-        data = emalloc(sizeof(*data));
+        data = grad_emalloc(sizeof(*data));
         data->res = res;
         data->ntuples = PQntuples(res);
         data->curtuple = -1;
@@ -287,7 +288,7 @@ rad_postgres_free(struct sql_connection *conn, void *data)
                 return;
         
         PQclear(edata->res);
-        efree(edata);
+        grad_free(edata);
 }
 
 SQL_DISPATCH_TAB postgres_dispatch_tab[] = {

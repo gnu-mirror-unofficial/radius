@@ -66,7 +66,7 @@ grad_server_send_reply(int fd, RADIUS_REQ *radreq)
                 sendto(fd, pdu, length, 0,
                        &saremote, sizeof(struct sockaddr_in));
 #endif
-                efree(pdu);
+                grad_free(pdu);
         }
 	return length;
 }
@@ -113,7 +113,7 @@ grad_server_send_challenge(int fd, RADIUS_REQ *radreq, char *msg, char *state)
                 sendto(fd, pdu, length, 0,
                        &saremote, sizeof(struct sockaddr_in));
 #endif
-                efree(pdu);
+                grad_free(pdu);
         }
         grad_avp_free(p);
 	return length;

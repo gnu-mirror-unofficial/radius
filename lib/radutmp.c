@@ -47,13 +47,13 @@ rut_setent(char *name, int append)
                 fd = open(name, O_RDONLY);
         }
         if (fd == -1) {
-                radlog(L_ERR|L_PERROR, 
-                       _("rut_setent(): cannot open `%s'"), name);
+                grad_log(L_ERR|L_PERROR, 
+                         _("rut_setent(): cannot open `%s'"), name);
                 return NULL;
         }
         if (append)
                 lseek(fd, 0, SEEK_END);
-        fp = emalloc(sizeof(*fp));
+        fp = grad_emalloc(sizeof(*fp));
         fp->fd = fd;
         fp->eof = append;
         fp->readonly = ro;
@@ -73,7 +73,7 @@ rut_endent(radut_file_t file)
         if (!file)
                 return;
         close(file->fd);
-        efree(file);
+        grad_free(file);
 }
 
 struct radutmp *
@@ -94,14 +94,14 @@ int
 rut_putent(radut_file_t file, struct radutmp *ent)
 {
         if (file->readonly) {
-                radlog(L_ERR, "rut_putent(): file opened readonly");
+                grad_log(L_ERR, "rut_putent(): file opened readonly");
                 return -1;
         }
         /* Step back one record unless we have reached eof */
         if (!file->eof &&
             lseek(file->fd, -(off_t)sizeof(file->ut), SEEK_CUR) < 0) {
-                radlog(L_ERR|L_PERROR, 
-                       "rut_putent(): lseek");
+                grad_log(L_ERR|L_PERROR, 
+                         "rut_putent(): lseek");
                 lseek(file->fd, (off_t)0, SEEK_SET);
                 return -1;
         }
@@ -109,8 +109,8 @@ rut_putent(radut_file_t file, struct radutmp *ent)
         grad_lock_file(file->fd, sizeof(*ent), 0, SEEK_CUR);
 
         if (write(file->fd, ent, sizeof(*ent)) != sizeof(*ent)) {
-                radlog(L_ERR|L_PERROR, 
-                       "rut_putent(): write");
+                grad_log(L_ERR|L_PERROR, 
+                         "rut_putent(): write");
         }
 
         memcpy(&file->ut, ent, sizeof(file->ut));
@@ -158,13 +158,13 @@ radutmp_putent(char *filename, struct radutmp *ut, int status)
                         if (ent->time < ut->time)
                                 break;
                         if (ent->type == P_LOGIN) {
-                                radlog(L_INFO,
+                                grad_log(L_INFO,
                 _("login: entry for NAS %s port %d duplicate"),
                                        grad_ip_iptostr(ntohl(ent->nas_address),
 						       ipbuf),
                                        ent->nas_port);
                         } else {
-                                radlog(L_INFO,
+                                grad_log(L_INFO,
                 _("login: entry for NAS %s port %d wrong order"),
                                        grad_ip_iptostr(ntohl(ent->nas_address),
 						       ipbuf),
@@ -176,13 +176,13 @@ radutmp_putent(char *filename, struct radutmp *ut, int status)
                         
                 if (status == DV_ACCT_STATUS_TYPE_STOP) {
                         if (ent->type == P_LOGIN) {
-                                radlog(L_ERR,
+                                grad_log(L_ERR,
    _("logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"),
-                                       grad_ip_iptostr(ntohl(ut->nas_address),
-						       ipbuf),
-                                       ent->nas_port,
-                                       ut->session_id,
-                                       ent->session_id);
+                                         grad_ip_iptostr(ntohl(ut->nas_address),
+					 	         ipbuf),
+                                         ent->nas_port,
+                                         ut->session_id,
+                                         ent->session_id);
                         }
                 }
                 
@@ -200,7 +200,7 @@ radutmp_putent(char *filename, struct radutmp *ut, int status)
         case DV_ACCT_STATUS_TYPE_STOP:
                 ut->type = P_IDLE;
                 if (!ent) {
-                        radlog(L_ERR,
+                        grad_log(L_ERR,
                          _("logout: login entry for NAS %s port %d not found"),
                                grad_ip_iptostr(ntohl(ut->nas_address), ipbuf), 
                                ut->nas_port);
@@ -219,7 +219,7 @@ radwtmp_putent(char *filename, struct radutmp *ut)
                 
         file = rut_setent(filename, 1);
         if (file == NULL) {
-                radlog(L_ERR|L_PERROR, _("can't open %s"), radwtmp_path);
+                grad_log(L_ERR|L_PERROR, _("can't open %s"), radwtmp_path);
                 return 1;
         }
         rut_putent(file, ut);

@@ -83,9 +83,9 @@ format_key_free(format_key_t *key)
 	format_key_t *next;
 	while (key) {
 		next = key->next;
-		efree(key->name);
-		efree(key->value);
-		efree(key);
+		grad_free(key->name);
+		grad_free(key->value);
+		grad_free(key);
 		key = next;
 	}
 }
@@ -111,15 +111,15 @@ form_free(format_data_t *form)
 		format_key_free(form->key);
 		switch (form->type) {
 		case FDATA_STRING:
-			efree(form->v.string);
+			grad_free(form->v.string);
 			break;
 		case FDATA_FH:
-			efree(form->v.fh.header);
+			grad_free(form->v.fh.header);
 			break;
 		default:
 			break;
 		}
-		efree(form);
+		grad_free(form);
 
 		form = next;
 	}
@@ -470,7 +470,7 @@ parse_string0(char *fmt, format_data_t *form, int (*cond)(), void *closure)
 	}
 
 	form->type = FDATA_STRING;
-	form->v.string = estrdup(obstack_finish(&stk));
+	form->v.string = grad_estrdup(obstack_finish(&stk));
 	return p;
 }
 
@@ -486,9 +486,9 @@ parse_quote(char **fmtp, format_data_t *form)
 	char *p;
 	p = parse_string0(*fmtp + 1, form, _is_closing_quote, *fmtp);	
 	if (!*p) {
-		radlog(L_ERR,
-		       _("missing closing quote in string started near `%s'"),
-		       *fmtp);
+		grad_log(L_ERR,
+		         _("missing closing quote in string started near `%s'"),
+		         *fmtp);
 		return 1;
 	}
 	*fmtp = p + 1;
@@ -562,9 +562,9 @@ parse_form(char **fmtp, format_data_t *form)
 		
 		fh = _lookup(formname);
 		if (!fh) {
-			radlog(L_ERR,
-			       _("error in format spec: unknown format %s"),
-			       formname);
+			grad_log(L_ERR,
+			         _("error in format spec: unknown format %s"),
+			         formname);
 			return 1;
 		}
 		
@@ -581,12 +581,12 @@ parse_form(char **fmtp, format_data_t *form)
 				form->v.fh.width = strtol(p, NULL, 0);
 				break;
 			case 2: /* header */
-				form->v.fh.header = estrdup(p);
+				form->v.fh.header = grad_estrdup(p);
 				break;
 			default:
-				radlog(L_ERR,
-				    _("wrong number of arguments to form %s"),
-				       formname);
+				grad_log(L_ERR,
+				     _("wrong number of arguments to form %s"),
+				         formname);
 				return 1;
 			}
 		}
@@ -594,18 +594,18 @@ parse_form(char **fmtp, format_data_t *form)
 		/* Collect keyword arguments */
 		key_head = NULL;
 		while (p && p[0] == ':') {
-			format_key_t *key = emalloc(sizeof(*key));
+			format_key_t *key = grad_emalloc(sizeof(*key));
 			if (!key_head)
 				key_head = key;
 			else
 				key_tail->next = key;
 			key_tail = key;
-			key->name = estrdup(p+1);
+			key->name = grad_estrdup(p+1);
 			p = get_token(fmtp);
 			if (p[0] == ')' || p[0] == ':')
-				key->value = estrdup("t");
+				key->value = grad_estrdup("t");
 			else {
-				key->value = estrdup(p);
+				key->value = grad_estrdup(p);
 				p = get_token(fmtp);
 			}
 		}
@@ -613,7 +613,7 @@ parse_form(char **fmtp, format_data_t *form)
 	}
 	
 	if (p[0] != ')') {
-		radlog(L_ERR, _("form `%s' not closed"), formname);
+		grad_log(L_ERR, _("form `%s' not closed"), formname);
 		return 1;
 	}
 	return 0;
@@ -628,7 +628,7 @@ grad_utent_compile_form(char *fmt)
 	while (*fmt) {
 		int rc;
 		
-		format_data_t *form = emalloc(sizeof(*form));
+		format_data_t *form = grad_emalloc(sizeof(*form));
 		if (!form_head)
 			form_head = form;
 		else

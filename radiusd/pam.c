@@ -59,8 +59,8 @@ rad_pam_conv(int num_msg, const struct pam_message **msg,
         int rc;
 
         if (!data) {
-                radlog(L_ERR,
-                       _("rad_pam_conv(): no application-specific data passed"));
+                grad_log(L_ERR,
+                         _("rad_pam_conv(): no application-specific data passed"));
                 return PAM_CONV_ERR;
         }
         
@@ -80,7 +80,7 @@ rad_pam_conv(int num_msg, const struct pam_message **msg,
                         break;
                 case PAM_ERROR_MSG:
                 case PAM_TEXT_INFO: 
-                        data->reply_msg = estrdup((char*)msg[count]->msg);
+                        data->reply_msg = grad_estrdup((char*)msg[count]->msg);
                         break;
                 default:
                         data->error++;

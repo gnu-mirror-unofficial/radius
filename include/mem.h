@@ -29,13 +29,13 @@ struct mallocstat {
 };
 extern struct mallocstat mallocstat;
 
-void *radxmalloc(size_t);
-void *emalloc(size_t);
-void *radxrealloc(void *, size_t);
-void *erealloc(void *, size_t);
-void efree(void *);
-char *estrdup(const char *);
+void *grad_malloc(size_t);
+void *grad_emalloc(size_t);
+void *grad_realloc(void *, size_t);
+void *grad_erealloc(void *, size_t);
+void grad_free(void *);
+char *grad_estrdup(const char *);
 
-char *string_replace(char **str, const char *value);
+char *grad_string_replace(char **str, const char *value);
 
 #endif

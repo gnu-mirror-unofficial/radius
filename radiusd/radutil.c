@@ -93,7 +93,7 @@ attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
         char *str;
 	
         if (!attr) {
-                radlog_req(L_ERR, req, "attribute not found");
+                grad_log_req(L_ERR, req, "attribute not found");
                 return;
         }
         
@@ -115,8 +115,8 @@ attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
                 case '?':
                         if (*defval == 0)
                                 defval = "Attribute is not present";
-                        radlog_req(L_ERR, req, "%s: %s",
-				   attr->name, defval);
+                        grad_log_req(L_ERR, req, "%s: %s",
+				     attr->name, defval);
                         break;
                 case '=':
                         if (pairlist) {
@@ -133,10 +133,10 @@ attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
                         break;
                 default:
                         if (defval)
-                                radlog(L_ERR, "invalid : substitution: %s",
-                                       defval);
+                                grad_log(L_ERR, "invalid : substitution: %s",
+                                         defval);
                         else
-                                radlog(L_ERR, "null : substitution");
+                                grad_log(L_ERR, "null : substitution");
                         break;
                 }
                 
@@ -186,10 +186,10 @@ attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
                 break;
 		
         default:
-                radlog(L_CRIT,
-                    _("INTERNAL ERROR (%s:%d): attribute %d has bad type (%d)"),
-                    __FILE__, __LINE__,
-                    attr->value, attr->type);
+                grad_log(L_CRIT,
+                         _("INTERNAL ERROR (%s:%d): attribute %d has bad type (%d)"),
+                         __FILE__, __LINE__,
+                         attr->value, attr->type);
                 break;
         }
 }
@@ -264,7 +264,7 @@ parse_dict_attr(char *p, char **endp, char **defval)
                                 return NULL;
 
                         size = p - start + 1;
-                        *defval = emalloc(size);
+                        *defval = grad_emalloc(size);
                         memcpy(*defval, start, size-1);
                         (*defval)[size] = 0;
                 }
@@ -366,7 +366,7 @@ radius_xlate0(struct obstack *obp, char *str, RADIUS_REQ *req,
                                 da = parse_dict_attr(p, &p, &defval);
                                 attr_to_str(obp, req, req->request,
                                             da, defval);
-                                efree(defval);
+                                grad_free(defval);
                                 break;
 				
                         case 'R':
@@ -438,7 +438,7 @@ radius_xlate(struct obstack *obp, char *str, RADIUS_REQ *req, VALUE_PAIR *reply)
 static void
 pair_set_value(VALUE_PAIR *p, Datatype type, Datum *datum)
 {
-	efree(p->avp_strvalue);
+	grad_free(p->avp_strvalue);
 	switch (type) {
 	case Integer:
 		p->avp_lvalue = datum->ival;

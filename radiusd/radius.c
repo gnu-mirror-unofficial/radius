@@ -42,7 +42,7 @@ radius_send_reply(int code, RADIUS_REQ *radreq,
                 
                 /* Save the data */
                 radreq->reply_code = code;
-                radreq->reply_msg = estrdup(msg);
+                radreq->reply_msg = grad_estrdup(msg);
 
                 reply = grad_avl_dup(reply_pairs);
                 grad_avl_move_attr(&reply, &radreq->request, DA_PROXY_STATE);
@@ -99,7 +99,7 @@ validate_client(RADIUS_REQ *radreq)
         CLIENT  *cl;
         
         if ((cl = client_lookup_ip(radreq->ipaddr)) == NULL) {
-                radlog_req(L_ERR, radreq, _("request from unknown client"));
+                grad_log_req(L_ERR, radreq, _("request from unknown client"));
                 return -1;
         }
 
@@ -122,7 +122,7 @@ radius_verify_digest(REQUEST *req)
 
         secretlen = strlen(radreq->secret);
 
-        recvbuf = emalloc(len + secretlen);
+        recvbuf = grad_emalloc(len + secretlen);
         memcpy(recvbuf, req->rawdata, len + secretlen);
         
         /* Older clients have the authentication vector set to
@@ -137,8 +137,8 @@ radius_verify_digest(REQUEST *req)
            as the original MD5 sum (radreq->vector). */
         memset(recvbuf + 4, 0, AUTH_VECTOR_LEN);
         memcpy(recvbuf + len, radreq->secret, secretlen);
-        md5_calc(digest, recvbuf, len + secretlen);
-        efree(recvbuf);
+        grad_md5_calc(digest, recvbuf, len + secretlen);
+        grad_free(recvbuf);
         
         return memcmp(digest, radreq->vector, AUTH_VECTOR_LEN) ?
                           REQ_AUTH_BAD : REQ_AUTH_OK;
@@ -227,8 +227,8 @@ decrypt_pair(RADIUS_REQ *req, VALUE_PAIR *pair)
 	if (pair->prop & AP_ENCRYPT) {
 		char password[AUTH_STRING_LEN+1];
 		req_decrypt_password(password, req, pair);
-		efree(pair->avp_strvalue);
-		pair->avp_strvalue = estrdup(password);
+		grad_free(pair->avp_strvalue);
+		pair->avp_strvalue = grad_estrdup(password);
 		pair->avp_strlength = strlen(pair->avp_strvalue);
 	}
 }
@@ -398,8 +398,8 @@ radius_req_drop(int type, void *data, void *orig_data,
 {
 	RADIUS_REQ *radreq = data ? data : orig_data;
 
-        radlog_req(L_NOTICE, radreq,
-		   "%s: %s", _("Dropping packet"),  status_str);
+        grad_log_req(L_NOTICE, radreq,
+		     "%s: %s", _("Dropping packet"),  status_str);
 
         switch (type) {
         case R_AUTH:
@@ -421,9 +421,9 @@ radius_req_xmit(REQUEST *request)
 		} else {
 			radius_send_reply(0, req,
 					  NULL, NULL, request->fd);
-			radlog_req(L_NOTICE, req,
-				   _("Retransmitting %s reply"),
-				   request_class[request->type].name);
+			grad_log_req(L_NOTICE, req,
+				     _("Retransmitting %s reply"),
+				     request_class[request->type].name);
 		} 
 	} else
 		radius_req_drop(request->type, NULL, req, request->fd,
@@ -495,11 +495,11 @@ radius_respond(REQUEST *req)
 	case RT_ACCESS_CHALLENGE:
 		if (!req->orig) {
 			char buf[MAX_SHORTNAME];
-			radlog_req(L_PROXY|L_ERR, radreq,
-				   _("Unrecognized proxy reply from server %s, proxy ID %d"),
-				   client_lookup_name(radreq->ipaddr,
-						      buf, sizeof buf), 
-				   radreq->id);
+			grad_log_req(L_PROXY|L_ERR, radreq,
+				     _("Unrecognized proxy reply from server %s, proxy ID %d"),
+				     client_lookup_name(radreq->ipaddr,
+						        buf, sizeof buf), 
+				     radreq->id);
 			return 1;
 		}
 		
@@ -528,8 +528,8 @@ radius_respond(REQUEST *req)
 					
         default:
                 stat_inc(acct, radreq->ipaddr, num_unknowntypes);
-                radlog_req(L_NOTICE, radreq, _("unknown request code %d"), 
-                           radreq->code); 
+                grad_log_req(L_NOTICE, radreq, _("unknown request code %d"), 
+                             radreq->code); 
                 return -1;
         }       
 
@@ -628,6 +628,6 @@ radius_trace_path(RADIUS_REQ *req)
 	td.file = NULL;
 	grad_list_iterate(req->locus_list, _trace_path_compose, &td);
 	p = obstack_finish(&td.stk);
-	radlog_req(L_INFO, req, _("rule trace: %s"), p);
+	grad_log_req(L_INFO, req, _("rule trace: %s"), p);
 	obstack_free(&td.stk, NULL);
 }

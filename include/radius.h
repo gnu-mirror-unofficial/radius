@@ -346,12 +346,9 @@ int grad_vendor_pec_to_id(int);
 char *grad_vendor_pec_to_name(int);
 int grad_vendor_name_to_id(char *);
 
-
-/* md5.c */
-
-void md5_calc(u_char *, u_char *, u_int);
 /* md5crypt.c */
-char *md5crypt(const char *pw, const char *salt, char *pwbuf, size_t pwlen);
+char *grad_md5crypt(const char *pw, const char *salt, char *pwbuf,
+		    size_t pwlen);
 
 /* avl.c */
 VALUE_PAIR *grad_avp_alloc();
@@ -411,9 +408,9 @@ RADIUS_REQ *grad_request_alloc();
 int grad_read_raddb_file(char *name, int vital, int (*fun)(void*,int,char**,LOCUS*), void *closure);
 
 /* mem.c */
-void *emalloc(size_t);
-void efree(void*);
-char *estrdup(const char *);
+void *grad_emalloc(size_t);
+void grad_free(void*);
+char *grad_estrdup(const char *);
 
 /* radpaths.c */
 void grad_path_init();
@@ -427,7 +424,6 @@ VALUE_PAIR *grad_create_pair(LOCUS *loc, char *name, int op, char *valstr);
 
 
 /* util.c */
-struct passwd *rad_getpwnam(char *);
 void grad_request_free(RADIUS_REQ *radreq);
 void grad_lock_file(int fd, size_t size, off_t off, int whence);
 void grad_unlock_file(int fd, size_t size, off_t off, int whence);
@@ -573,9 +569,6 @@ struct channel {
 	char *suffix_hook;       /* suffix hook function */
 };
 
-/* Global variables */
-extern int debug_level[];
-
 /* Function prototypes */
 typedef void (*grad_logger_fp) (int lvl,
 				const RADIUS_REQ *req,
@@ -591,12 +584,12 @@ void grad_app_logger(int level,
 		     const char *func_name, int en,
 		     const char *fmt, va_list ap);
 
-void radlog_open(int category);
-void radlog_close();
-void radlog __PVAR((int level, const char *fmt, ...));
+void grad_log_open(int category);
+void grad_log_close();
+void grad_log __PVAR((int level, const char *fmt, ...));
 int __grad_insist_failure(const char *, const char *, int);
-void radlog_req __PVAR((int level, RADIUS_REQ *req, const char *fmt, ...));
-void radlog_loc __PVAR((int lvl, LOCUS *loc, const char *msg, ...));
+void grad_log_req __PVAR((int level, RADIUS_REQ *req, const char *fmt, ...));
+void grad_log_loc __PVAR((int lvl, LOCUS *loc, const char *msg, ...));
 
 #define MAXIDBUFSIZE \
  4+1+MAX_LONGNAME+1+4+2*AUTH_STRING_LEN+3+1+AUTH_STRING_LEN+1+1

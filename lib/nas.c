@@ -38,7 +38,7 @@ nas_free_list(NAS *list)
         while (list) {
                 next = list->next;
                 grad_envar_free_list(&list->args);
-                efree(list);
+                grad_free(list);
                 list = next;
         }
 }
@@ -53,7 +53,7 @@ read_naslist_entry(void *unused ARG_UNUSED, int fc, char **fv, LOCUS *loc)
         NAS nas, *nasp;
 
         if (fc < 2) {
-                radlog_loc(L_ERR, loc, "%s", _("too few fields"));
+                grad_log_loc(L_ERR, loc, "%s", _("too few fields"));
                 return -1;
         }
 
@@ -77,7 +77,7 @@ read_naslist_entry(void *unused ARG_UNUSED, int fc, char **fv, LOCUS *loc)
         if (fc >= 4)
                 nas.args = grad_envar_parse_argcv(fc-3, &fv[3]);
         
-        nasp = emalloc(sizeof(NAS));
+        nasp = grad_emalloc(sizeof(NAS));
 
         memcpy(nasp, &nas, sizeof(nas));
 

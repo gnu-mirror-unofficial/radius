@@ -21,8 +21,8 @@
 int
 __grad_insist_failure(const char *str, const char *file, int line)
 {
-        radlog(L_CRIT,
-               "INSIST FAILURE: %s at %s:%d", str, file, line);
+        grad_log(L_CRIT,
+                 "INSIST FAILURE: %s at %s:%d", str, file, line);
         abort();
         /*NOTREACHED*/
 }

@@ -157,18 +157,18 @@ rpp_start_process(rpp_proc_t *proc, int (*proc_main)(void *), void *data)
 	pid_t pid;
 	
 	if (pipe(inp)) {
-		radlog(L_ERR, "pipe(inp): %s", strerror(errno));
+		grad_log(L_ERR, "pipe(inp): %s", strerror(errno));
 		return -1;
 	}
 	
 	if (pipe(outp)) {
-		radlog (L_ERR, "pipe(outp): %s", strerror(errno));
+		grad_log (L_ERR, "pipe(outp): %s", strerror(errno));
 		return -1;
 	}
 
 	pid = fork();
 	if (pid == -1) {
-		radlog (L_ERR, "fork: %s", strerror(errno));
+		grad_log (L_ERR, "fork: %s", strerror(errno));
 		return -1;
 	}
 	if (pid == 0) {
@@ -239,7 +239,7 @@ rpp_lookup_ready(int (*proc_main)(void *), void *data)
 		if (rpp_start_process(&proc, proc_main, data)) 
 			return NULL;
 		radiusd_register_input_fd("rpp", proc.p[0], NULL);
-		p = emalloc(sizeof(*p));
+		p = grad_emalloc(sizeof(*p));
 		*p = proc;
 		grad_list_append(process_list, p);
 	}
@@ -266,7 +266,7 @@ _rpp_remove(rpp_proc_t *p)
 	close(p->p[1]);
 	radiusd_close_channel(p->p[0]);
 	if (grad_list_remove(process_list, p, NULL))
-		efree(p);
+		grad_free(p);
 }
 
 void
@@ -348,7 +348,7 @@ rpp_kill(pid_t pid, int signo)
 static void
 _rpp_slay(rpp_proc_t *p)
 {
-	radlog(L_NOTICE, _("Killing unresponding process %lu"), (u_long) p->pid);
+	grad_log(L_NOTICE, _("Killing unresponding process %lu"), (u_long) p->pid);
 	kill(p->pid, SIGKILL);
 	_rpp_remove(p);
 }
@@ -441,7 +441,7 @@ sig_handler(int sig)
 		break;
 		
 	case SIGALRM:
-		radlog(L_INFO, _("Child exiting on timeout."));
+		grad_log(L_INFO, _("Child exiting on timeout."));
 		/*FALLTHRU*/
 		
 	case SIGTERM:
@@ -489,20 +489,20 @@ rpp_request_handler(void *arg ARG_UNUSED)
 		if (len != sizeof frq) {
 			if (errno == EINTR)
 				continue;
-			radlog(L_ERR,
-			       _("Child received malformed header (len = %d, error = %s)"),
-			       len, strerror(errno));
+			grad_log(L_ERR,
+			         _("Child received malformed header (len = %d, error = %s)"),
+			         len, strerror(errno));
 			radiusd_exit0();
 		}
 
 		if (datasize < frq.size) {
 			datasize = frq.size;
-			data = erealloc(data, datasize);
+			data = grad_erealloc(data, datasize);
 		}
 		
 		if (rpp_fd_read(0, data, frq.size, NULL) != frq.size) {
-			radlog(L_ERR,
-			       _("Child received malformed data"));
+			grad_log(L_ERR,
+			         _("Child received malformed data"));
 			radiusd_exit0();
 		}
 		
@@ -545,11 +545,11 @@ rpp_input_handler(int fd, void *data)
 		void *data = NULL;
 
 		if (repl.size) {
-			data = emalloc(repl.size);
+			data = grad_emalloc(repl.size);
 			if (rpp_fd_read(fd, data, repl.size, tvp)
 			    != repl.size) {
 				_rpp_slay(p);
-				efree(data);
+				grad_free(data);
 				return 1;
 			}
 		}
@@ -559,7 +559,7 @@ rpp_input_handler(int fd, void *data)
 			p->ready = 1;
 			request_update(p->pid, RS_COMPLETED, data);
 		} 
-		efree(data);
+		grad_free(data);
 	} else if (sz != 0) {
 		_rpp_slay(p);
 		return 1;

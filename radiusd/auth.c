@@ -158,9 +158,9 @@ unix_pass(char *name, char *passwd)
 	if (encrypted_pass) {
 		/* Check if the account is locked. */
 		if (SHADOW_PASSWD_LOCK(spwd) != 1) {
-			radlog(L_NOTICE,
-			       "unix_pass: [%s]: %s",
-			       name, _("account locked"));
+			grad_log(L_NOTICE,
+			         "unix_pass: [%s]: %s",
+			         name, _("account locked"));
 			encrypted_pass = NULL;
 		}
 	}
@@ -170,7 +170,7 @@ unix_pass(char *name, char *passwd)
 		if (encrypted_pass[0] == 0)
 			encrypted_pass = NULL;
 		else
-			encrypted_pass = estrdup(encrypted_pass);
+			encrypted_pass = grad_estrdup(encrypted_pass);
 	}
 	
 	LOCK_RELEASE(lock);
@@ -182,11 +182,11 @@ unix_pass(char *name, char *passwd)
          * Check encrypted password.
          */
         pwlen = strlen(encrypted_pass)+1;
-        encpw = emalloc(pwlen);
-        rc = md5crypt(passwd, encrypted_pass, encpw, pwlen) == NULL
+        encpw = grad_emalloc(pwlen);
+        rc = grad_md5crypt(passwd, encrypted_pass, encpw, pwlen) == NULL
                 || strcmp(encpw, encrypted_pass);
-        efree(encpw);
-	efree(encrypted_pass);
+        grad_free(encpw);
+	grad_free(encrypted_pass);
         if (rc)
                 return -1;
 
@@ -258,7 +258,7 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
         /* Find the 'real' password */
         tmp = grad_avl_find(check_item, DA_USER_PASSWORD);
         if (tmp)
-                real_password = estrdup(tmp->avp_strvalue);
+                real_password = grad_estrdup(tmp->avp_strvalue);
         else if (tmp = grad_avl_find(check_item, DA_PASSWORD_LOCATION)) {
                 switch (tmp->avp_lvalue) {
                 case DV_PASSWORD_LOCATION_SQL:
@@ -267,16 +267,16 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
                         if (!real_password)
                                 return auth_nouser;
 #else
-                        radlog_req(L_ERR, radreq,
-                                   _("SQL authentication not available"));
+                        grad_log_req(L_ERR, radreq,
+                                     _("SQL authentication not available"));
                         return auth_nouser;
 #endif
                         break;
                 /*NOTE: add any new location types here */
                 default:
-                        radlog(L_ERR,
-                               _("unknown Password-Location value: %ld"),
-                               tmp->avp_lvalue);
+                        grad_log(L_ERR,
+                                 _("unknown Password-Location value: %ld"),
+                                 tmp->avp_lvalue);
                         return auth_fail;
                 }
         }
@@ -310,8 +310,8 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
                 if (pam_pass(name, userpass, authdata, user_msg) != 0)
                         result = auth_fail;
 #else
-                radlog_req(L_ERR, radreq,
-                           _("PAM authentication not available"));
+                grad_log_req(L_ERR, radreq,
+                             _("PAM authentication not available"));
                 result = auth_nouser;
 #endif
                 break;
@@ -323,13 +323,13 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
                         break;
                 }
                 pwlen = strlen(real_password)+1;
-                pwbuf = emalloc(pwlen);
-                if (!md5crypt(userpass, real_password, pwbuf, pwlen))
+                pwbuf = grad_emalloc(pwlen);
+                if (!grad_md5crypt(userpass, real_password, pwbuf, pwlen))
                         result = auth_fail;
                 else if (strcmp(real_password, pwbuf) != 0)
                         result = auth_fail;
                 debug(1,("pwbuf: %s", pwbuf));
-                efree(pwbuf);
+                grad_free(pwbuf);
                 break;
                 
         case DV_AUTH_TYPE_LOCAL:
@@ -373,7 +373,7 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
                 }
 
                 pwlen = 1 + length + challenge_len;
-		pwbuf = emalloc(pwlen);
+		pwbuf = grad_emalloc(pwlen);
 		
                 ptr = pwbuf;
                 *ptr++ = *auth_item->avp_strvalue;
@@ -382,8 +382,8 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
                 memcpy(ptr, challenge, challenge_len);
 
 		/* Compute the MD5 hash */
-                md5_calc(pw_digest, (u_char*) pwbuf, pwlen);
-                efree(pwbuf);
+                grad_md5_calc(pw_digest, (u_char*) pwbuf, pwlen);
+                grad_free(pwbuf);
 		
                 /* Compare them */
                 if (memcmp(pw_digest, auth_item->avp_strvalue + 1,
@@ -401,7 +401,7 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
         if (real_password) {
                 /* just in case: */
                 memset(real_password, 0, strlen(real_password)); 
-                efree(real_password);
+                grad_free(real_password);
         }
         return result;
 }
@@ -414,9 +414,9 @@ rad_auth_check_username(RADIUS_REQ *radreq, int activefd)
 	log_open(L_AUTH);
 
         if (grad_avp_null_string_p(namepair)) 
-                radlog_req(L_ERR, radreq, _("No username"));
+                grad_log_req(L_ERR, radreq, _("No username"));
 	else if (check_user_name(namepair->avp_strvalue)) 
-                radlog_req(L_ERR, radreq, _("Malformed username"));
+                grad_log_req(L_ERR, radreq, _("Malformed username"));
 	else
 		return 0;
 
@@ -446,9 +446,9 @@ rad_auth_init(RADIUS_REQ *radreq, int activefd)
          * See if the user has access to this huntgroup.
          */
         if (!huntgroup_access(radreq, &loc)) {
-                radlog_req(L_NOTICE, radreq,
-			   _("Access denied by huntgroup %s:%d"),
-			   loc.file, loc.line);
+                grad_log_req(L_NOTICE, radreq,
+			     _("Access denied by huntgroup %s:%d"),
+			     loc.file, loc.line);
                 radius_send_reply(RT_ACCESS_REJECT, radreq,
                                   radreq->request, NULL, activefd);
                 return -1;
@@ -589,21 +589,21 @@ auth_log(AUTH_MACH *m, const char *diag, const char *pass,
 	 const char *reason, const char *addstr)
 {
         if (reason)
-                radlog_req(L_NOTICE, m->req,
-			   "%s [%s%s%s]: %s%s",
-			   diag,
-			   m->namepair->avp_strvalue,
-			   pass ? "/" : "",
-			   pass ? pass : "",
-			   reason,
-			   addstr ? addstr : "");
+                grad_log_req(L_NOTICE, m->req,
+			     "%s [%s%s%s]: %s%s",
+			     diag,
+			     m->namepair->avp_strvalue,
+			     pass ? "/" : "",
+			     pass ? pass : "",
+			     reason,
+			     addstr ? addstr : "");
         else
-                radlog_req(L_NOTICE, m->req,
-			   "%s [%s%s%s]",
-			   diag,
-			   m->namepair->avp_strvalue,
-			   pass ? "/" : "",
-			   pass ? pass : "");
+                grad_log_req(L_NOTICE, m->req,
+			     "%s [%s%s%s]",
+			     diag,
+			     m->namepair->avp_strvalue,
+			     pass ? "/" : "",
+			     pass ? pass : "");
 }
 
 int
@@ -814,8 +814,8 @@ sfn_scheme(AUTH_MACH *m)
         VALUE_PAIR *reply;
         
         if (!use_guile) {
-                radlog_req(L_ERR, m->req,
-                       _("Guile authentication disabled in config"));
+                grad_log_req(L_ERR, m->req,
+                             _("Guile authentication disabled in config"));
                 newstate(as_reject_cleanup);
                 return;
         }
@@ -838,8 +838,8 @@ sfn_scheme(AUTH_MACH *m)
         grad_avl_delete(&m->user_reply, DA_SCHEME_PROCEDURE);
         grad_avl_free(reply);
 #else
-        radlog_req(L_ERR, m->req,
-               _("Guile authentication not available"));
+        grad_log_req(L_ERR, m->req,
+                     _("Guile authentication not available"));
         newstate(as_reject_cleanup);
         return;
 #endif
@@ -982,11 +982,11 @@ sfn_simuse(AUTH_MACH *m)
                         (m->check_pair->avp_lvalue > 1) ?
                         MSG_MULTIPLE_LOGIN : MSG_SECOND_LOGIN);
 
-        radlog_req(L_WARN, m->req,
-		   _("Multiple logins: [%s] max. %ld%s"),
-		   m->namepair->avp_strvalue,
-		   m->check_pair->avp_lvalue,
-		   rc == 2 ? _(" [MPP attempt]") : "");
+        grad_log_req(L_WARN, m->req,
+		     _("Multiple logins: [%s] max. %ld%s"),
+		     m->namepair->avp_strvalue,
+		     m->check_pair->avp_lvalue,
+		     rc == 2 ? _(" [MPP attempt]") : "");
         newstate(as_reject_cleanup);
 }
 
@@ -1017,10 +1017,10 @@ sfn_time(AUTH_MACH *m)
                  * User called outside allowed time interval.
                  */
                 auth_format_msg(m, MSG_TIMESPAN_VIOLATION);
-                radlog_req(L_ERR,
-			   m->req,
-			   _("Outside allowed timespan (%s)"),
-			   m->check_pair->avp_strvalue);
+                grad_log_req(L_ERR,
+			     m->req,
+			     _("Outside allowed timespan (%s)"),
+			     m->check_pair->avp_strvalue);
                 newstate(as_reject_cleanup);
         } else if (rc == 0) {
                 /*
@@ -1158,7 +1158,7 @@ sfn_menu_challenge(AUTH_MACH *m)
         snprintf(state_value, sizeof(state_value),
                    "MENU=%s", m->check_pair->avp_strvalue);
         radius_send_challenge(m->req, msg, state_value, m->activefd);
-        efree(msg);
+        grad_free(msg);
 	
         debug(1,
               ("sending challenge (menu %s) to %s",

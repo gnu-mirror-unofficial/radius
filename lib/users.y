@@ -98,7 +98,7 @@ entry    : user descr
            }
          | user error
            {
-                   radlog(L_ERR, _("discarding user `%s'"), $1);
+                   grad_log(L_ERR, _("discarding user `%s'"), $1);
                    if (users_sync() <= 0)
 			   yychar = 0; /* force end-of-file */
 		   else {
@@ -185,7 +185,7 @@ value    : STRING
 int
 yyerror(char *s)
 {
-	radlog_loc(L_ERR, &source_locus, "%s", s);
+	grad_log_loc(L_ERR, &source_locus, "%s", s);
 	return 0;
 }
 
@@ -207,8 +207,8 @@ grad_create_pair(LOCUS *loc, char *name, int op, char *valstr)
         struct tm *tm, tms;
         
         if ((attr = grad_attr_name_to_dict(name)) == (DICT_ATTR *)NULL) {
-                radlog_loc(L_ERR, loc, _("unknown attribute `%s'"),
-			   name);
+                grad_log_loc(L_ERR, loc, _("unknown attribute `%s'"),
+			     name);
                 return NULL;
         }
 
@@ -223,7 +223,7 @@ grad_create_pair(LOCUS *loc, char *name, int op, char *valstr)
 
         if (valstr[0] == '=') {
                 pair->eval_type = eval_interpret;
-                pair->avp_strvalue = estrdup(valstr+1);
+                pair->avp_strvalue = grad_estrdup(valstr+1);
                 pair->avp_strlength = strlen(pair->avp_strvalue);
                 return pair;
         }
@@ -235,22 +235,22 @@ grad_create_pair(LOCUS *loc, char *name, int op, char *valstr)
                 if (pair->attribute == DA_EXEC_PROGRAM ||
                     pair->attribute == DA_EXEC_PROGRAM_WAIT) {
                         if (valstr[0] != '/' && valstr[0] != '|') {
-                                radlog_loc(L_ERR, loc,
-					   _("%s: not an absolute pathname"),
-					   name);
+                                grad_log_loc(L_ERR, loc,
+					     _("%s: not an absolute pathname"),
+					     name);
                                 grad_avp_free(pair);
                                 return NULL;
                         }
                 }
 
-		pair->avp_strvalue = estrdup(valstr);
+		pair->avp_strvalue = grad_estrdup(valstr);
                 pair->avp_strlength = strlen(pair->avp_strvalue);
 		
 		if (attr->parser && attr->parser(pair, &s)) {
-			radlog_loc(L_ERR, loc,
-				   "%s %s: %s",
-				   _("attribute"),
-				   pair->name, s);
+			grad_log_loc(L_ERR, loc,
+				     "%s %s: %s",
+				     _("attribute"),
+				     pair->name, s);
 			free(s);
 			grad_avp_free(pair);
 			return NULL;
@@ -269,7 +269,7 @@ grad_create_pair(LOCUS *loc, char *name, int op, char *valstr)
                                         break;
                         if (*s) {
                                 pair->type = TYPE_STRING;
-                                pair->avp_strvalue = estrdup(valstr);
+                                pair->avp_strvalue = grad_estrdup(valstr);
                                 pair->avp_strlength = strlen(pair->avp_strvalue);
                                 break;
                         }
@@ -280,9 +280,9 @@ grad_create_pair(LOCUS *loc, char *name, int op, char *valstr)
 							    pair->attribute))
 			         == NULL) {
                         grad_avp_free(pair);
-                        radlog_loc(L_ERR, loc,
+                        grad_log_loc(L_ERR, loc,
 				_("value %s is not declared for attribute %s"),
-				   valstr, name);
+				     valstr, name);
                         return NULL;
                 } else {
                         pair->avp_lvalue = dval->value;
@@ -313,7 +313,7 @@ grad_create_pair(LOCUS *loc, char *name, int op, char *valstr)
 				char *s;
 				asprintf(&s, "%lu+%%{NAS-Port-Id}",
 					 pair->avp_lvalue);
-				pair->avp_strvalue = estrdup(s);
+				pair->avp_strvalue = grad_estrdup(s);
 				pair->avp_strlength = strlen(pair->avp_strvalue);
 				pair->eval_type = eval_interpret;
 				free(s);
@@ -325,8 +325,8 @@ grad_create_pair(LOCUS *loc, char *name, int op, char *valstr)
                 timeval = time(0);
                 tm = localtime_r(&timeval, &tms);
                 if (grad_parse_time_string(valstr, tm)) {
-                        radlog_loc(L_ERR, loc, _("%s: can't parse date"),
-				   name);
+                        grad_log_loc(L_ERR, loc, _("%s: can't parse date"),
+				     name);
                         grad_avp_free(pair);
                         return NULL;
                 }
@@ -338,9 +338,9 @@ grad_create_pair(LOCUS *loc, char *name, int op, char *valstr)
                 break;
 
         default:
-                radlog_loc(L_ERR, loc,
-			   _("%s: unknown attribute type %d"),
-			   name, pair->type);
+                grad_log_loc(L_ERR, loc,
+			     _("%s: unknown attribute type %d"),
+			     name, pair->type);
                 grad_avp_free(pair);
                 return NULL;
         }
@@ -370,7 +370,7 @@ void
 grad_enable_rule_debug(int val)
 {
         yydebug = val;
-	radlog_loc(L_NOTICE, &source_locus,
-		   yydebug ? _("enabled userfile parser debugging") :
-             		     _("disabled userfile parser debugging"));
+	grad_log_loc(L_NOTICE, &source_locus,
+		     yydebug ? _("enabled userfile parser debugging") :
+             	 	       _("disabled userfile parser debugging"));
 }

@@ -58,9 +58,9 @@ append_symbol(DBM_closure *closure, User_symbol *sym)
         reply_len = list_length(sym->reply);
 
         if (2 + check_len + reply_len > closure->pair_buffer_size) {
-                radlog(L_ERR, "%s:%d: %s",
-                       closure->filename, sym->lineno,
-		       _("too many attributes"));
+                grad_log(L_ERR, "%s:%d: %s",
+                         closure->filename, sym->lineno,
+		         _("too many attributes"));
                 return -1;
         }
 
@@ -100,7 +100,7 @@ append_symbol(DBM_closure *closure, User_symbol *sym)
         contentd.dptr = (char*)closure->pair_buffer;
         contentd.dsize = (2 + check_len + reply_len) * sizeof(int);
         if (grad_dbm_insert(closure->dbmfile, named, contentd)) {
-                radlog(L_ERR, _("can't store datum for %s"), name);
+                grad_log(L_ERR, _("can't store datum for %s"), name);
                 exit(1);
         }
         return 0;
@@ -137,10 +137,10 @@ builddbm(char *name)
          */
         closure.filename = db_file;
         closure.pair_buffer_size = RAD_BUFFER_SIZE;
-        closure.pair_buffer = emalloc(closure.pair_buffer_size*sizeof(int));
+        closure.pair_buffer = grad_emalloc(closure.pair_buffer_size*sizeof(int));
         closure.defno = closure.begno = 0;
         if (grad_dbm_create(db_file, &closure.dbmfile)) {
-                radlog(L_ERR|L_PERROR, _("can't open `%s'"), db_file);
+                grad_log(L_ERR|L_PERROR, _("can't open `%s'"), db_file);
                 return 1;
         }
 
@@ -186,7 +186,7 @@ decode_dbm(int **pptr)
                 next_pair->type = *ptr++;
                 next_pair->operator = *ptr++;
                 if (next_pair->type == TYPE_STRING) {
-                        next_pair->avp_strvalue = estrdup((char*)ptr);
+                        next_pair->avp_strvalue = grad_estrdup((char*)ptr);
                         next_pair->avp_strlength = strlen(next_pair->avp_strvalue);
                         ptr += NINT(next_pair->avp_strlength+1);
                 } else
@@ -254,12 +254,12 @@ dbm_find(DBM_FILE file, char *name, RADIUS_REQ *req,
                         char *name;
                         
                         debug(1, ("submatch: %s", p->avp_strvalue));
-                        name = estrdup(p->avp_strvalue);
+                        name = grad_estrdup(p->avp_strvalue);
                         if (!dbm_match(file, name, _dbm_dup_name,
                                        req,
                                        &check_tmp, &reply_tmp, &dummy))
                                 ret = 0;
-                        efree(name);
+                        grad_free(name);
                 } 
                 
                 if (ret == 1) {
@@ -325,12 +325,12 @@ dbm_match(DBM_FILE dbmfile, char *name, char *(*fn)(), RADIUS_REQ *req,
                         char *name;
                         
                         debug(1, ("next: %s", p->avp_strvalue));
-                        name = estrdup(p->avp_strvalue);
+                        name = grad_estrdup(p->avp_strvalue);
                         grad_avl_delete(reply_pairs, DA_MATCH_PROFILE);
                         dbm_match(dbmfile, name, _dbm_dup_name,
                                   req,
                                   check_pairs, reply_pairs, &dummy);
-                        efree(name);
+                        grad_free(name);
                 }
 
                 if (!fallthrough(*reply_pairs))
@@ -355,8 +355,8 @@ user_find_db(char *name, RADIUS_REQ *req,
         
         path = grad_mkfilename(radius_dir, RADIUS_USERS);
         if (grad_dbm_open(path, &dbmfile)) {
-                radlog(L_ERR, _("cannot open dbm file %s"), path);
-                efree(path);
+                grad_log(L_ERR, _("cannot open dbm file %s"), path);
+                grad_free(path);
                 return 0;
         }
 
@@ -385,7 +385,7 @@ user_find_db(char *name, RADIUS_REQ *req,
         }
 
         grad_dbm_close(dbmfile);
-        efree(path);
+        grad_free(path);
 
         debug(1, ("returning %d", found));
 

@@ -79,10 +79,10 @@ create_instance(struct check_instance *cptr, NAS *nas, struct radutmp *up)
         RADCK_TYPE *radck_type;
                 
         if ((radck_type = find_radck_type(nas->nastype)) == NULL) {
-                radlog(L_ERR,
-                       _("unknown NAS type: %s (nas %s)"),
-                       nas->nastype,
-                       nas->shortname);
+                grad_log(L_ERR,
+                         _("unknown NAS type: %s (nas %s)"),
+                         nas->nastype,
+                         nas->shortname);
                 return NULL;
         }
         cptr->name = up->orig_login;
@@ -180,7 +180,7 @@ checkrad_xlat(struct check_instance *checkp, char *str)
                 }
         }
         obstack_1grow(&stk, 0);
-        str = estrdup(obstack_finish(&stk));
+        str = grad_estrdup(obstack_finish(&stk));
         obstack_free(&stk, NULL);
         return str;
 }
@@ -195,9 +195,9 @@ converse(int type, struct snmp_session *sp, struct snmp_pdu *pdu, void *closure)
         char buf[64];
 
         if (type == SNMP_CONV_TIMEOUT) {
-                radlog(L_NOTICE,
-                       _("timed out in waiting SNMP response from NAS %s"),
-                       checkp->hostname);
+                grad_log(L_NOTICE,
+                         _("timed out in waiting SNMP response from NAS %s"),
+                         checkp->hostname);
                 checkp->timeout++;
                 return 1;
         }
@@ -246,15 +246,15 @@ snmp_check(struct check_instance *checkp, NAS *nas)
         char *snmp_oid;
         
         if ((snmp_oid = slookup(checkp, "oid", NULL)) == NULL) {
-                radlog(L_ERR, _("no snmp_oid"));
+                grad_log(L_ERR, _("no snmp_oid"));
                 return -1;
         }
         snmp_oid = checkrad_xlat(checkp, snmp_oid);
         oid = oid_create_from_string(snmp_oid);
         if (!oid) {
-                radlog(L_ERR,
-                       _("invalid OID: %s"), snmp_oid);
-                efree(snmp_oid);
+                grad_log(L_ERR,
+                         _("invalid OID: %s"), snmp_oid);
+                grad_free(snmp_oid);
                 return -1;
         }
         
@@ -270,38 +270,38 @@ snmp_check(struct check_instance *checkp, NAS *nas)
         sp = snmp_session_create(community, peername, remote_port, 
                                  converse, checkp);
         if (!sp) {
-                radlog(L_ERR,
-                       _("can't create snmp session: %s"),
+                grad_log(L_ERR,
+                         _("can't create snmp session: %s"),
                          snmp_strerror(snmp_errno));
-                efree(snmp_oid);
+                grad_free(snmp_oid);
                 snmp_free(oid);
                 return -1;
         }
         
         if (snmp_session_open(sp, myip, 0, timeout, retries)) {
-                radlog(L_ERR,
-                       _("can't open snmp session: %s"),
+                grad_log(L_ERR,
+                         _("can't open snmp session: %s"),
                          snmp_strerror(snmp_errno));
-                efree(snmp_oid);                
+                grad_free(snmp_oid);                
                 snmp_free(oid);
                 return -1;
         }
 
         if ((pdu = snmp_pdu_create(SNMP_PDU_GET)) == NULL) {
-                radlog(L_ERR,
-                       _("can't create SNMP PDU: %s"),
+                grad_log(L_ERR,
+                         _("can't create SNMP PDU: %s"),
                          snmp_strerror(snmp_errno));
-                efree(snmp_oid);
+                grad_free(snmp_oid);
                 snmp_free(oid);
                 snmp_session_close(sp);
                 return -1;
         }
                 
         if ((var = snmp_var_create(oid)) == NULL) {
-                radlog(L_ERR,
-                       _("can't create SNMP PDU: %s"),
+                grad_log(L_ERR,
+                         _("can't create SNMP PDU: %s"),
                          snmp_strerror(snmp_errno));
-                efree(snmp_oid);
+                grad_free(snmp_oid);
                 snmp_free(oid);
                 snmp_session_close(sp);
                 snmp_pdu_free(pdu);
@@ -317,7 +317,7 @@ snmp_check(struct check_instance *checkp, NAS *nas)
                   community,
                   snmp_oid));
 
-        efree(snmp_oid);
+        grad_free(snmp_oid);
 
         checkp->result = rc;
         
@@ -369,11 +369,11 @@ finger_check(struct check_instance *checkp, NAS *nas)
                 namebuf[i] = *ptr;
         namebuf[i] = 0;
         namelen = i;
-        efree(arg);
+        grad_free(arg);
         
         peername = slookup(checkp, "host", nas->longname);
         if (!(hp = gethostbyname(peername))) {
-                radlog(L_ERR, _("unknown host: %s"), peername);
+                grad_log(L_ERR, _("unknown host: %s"), peername);
                 return -1;
         }
 
@@ -392,7 +392,7 @@ finger_check(struct check_instance *checkp, NAS *nas)
                MIN(hp->h_length,sizeof(sin.sin_addr)));
         sin.sin_port = port;
         if ((s = socket(hp->h_addrtype, SOCK_STREAM, 0)) < 0) {
-                radlog(L_ERR|L_PERROR, "socket");
+                grad_log(L_ERR|L_PERROR, "socket");
                 return -1;
         }
 
@@ -417,12 +417,12 @@ finger_check(struct check_instance *checkp, NAS *nas)
          */
         if (ilookup(checkp, "tcp", 1) &&
             connect(s, (struct sockaddr *)&sin, sizeof (sin))) {
-                radlog(L_ERR|L_PERROR, "connect");
+                grad_log(L_ERR|L_PERROR, "connect");
                 return -1;
         }
 
         if (sendmsg(s, &msg, 0) < 0) {
-                radlog(L_ERR|L_PERROR, "sendmsg");
+                grad_log(L_ERR|L_PERROR, "sendmsg");
                 close(s);
                 return -1;
         }
@@ -438,7 +438,7 @@ finger_check(struct check_instance *checkp, NAS *nas)
         lastc = 0;
         if ((fp = fdopen(s, "r")) != NULL) {
 		if (setjmp(to_env)) {
-			radlog(L_NOTICE,
+			grad_log(L_NOTICE,
 			       _("timed out in waiting for finger response from NAS %s"),
 			       checkp->hostname);
 			fclose(fp);
@@ -508,7 +508,7 @@ finger_check(struct check_instance *checkp, NAS *nas)
                 obstack_free(&stk, NULL);
                 
                 if (ferror(fp)) {
-                        radlog(L_ERR|L_PERROR, "finger");
+                        grad_log(L_ERR|L_PERROR, "finger");
                 }
                 fclose(fp);
         }
@@ -525,7 +525,7 @@ finger_check(struct check_instance *checkp, NAS *nas)
 int
 ext_check(struct check_instance *checkp, NAS *nas)
 {
-        radlog(L_ERR, "ext_check not implemented");
+        grad_log(L_ERR, "ext_check not implemented");
         return -1;
 }
 

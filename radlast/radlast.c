@@ -156,9 +156,9 @@ parse_opt (int key, char *arg, struct argp_state *state)
 				i = state->next;
                         maxrec = strtoul(state->argv[i]+1, &p, 0);
                         if (!maxrec) {
-                                radlog(L_ERR,
-                                       "invalid number (near %s)",
-                                       p);
+                                grad_log(L_ERR,
+                                         "invalid number (near %s)",
+                                         p);
                                 exit(1);
                         }
                 }
@@ -166,7 +166,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
         case 'c':
                 maxrec = atol(arg);
                 if (!maxrec) {
-                        radlog(L_ERR, "invalid number of records");
+                        grad_log(L_ERR, "invalid number of records");
                         exit(1);
                 }
                 break;
@@ -204,8 +204,8 @@ parse_opt (int key, char *arg, struct argp_state *state)
 
         case ARGP_KEY_FINI:
                 if (show_seconds && width == 8) {
-                        radlog(L_ERR,
-                             _("--width is incompatible with --show-seconds"));
+                        grad_log(L_ERR,
+                                 _("--width is incompatible with --show-seconds"));
                         exit (1);
                 }
                 break;
@@ -250,7 +250,7 @@ main(int argc, char **argv)
 		NAS *nas = grad_nas_lookup_name(nas_name);
 		if (!nas) {
 			if (grad_ip_getnetaddr(nas_name, &nas_ip)) {
-                                radlog(L_ERR, "unknown nas: %s", nas_name);
+                                grad_log(L_ERR, "unknown nas: %s", nas_name);
                                 return 1;
                         }
                 }       
@@ -265,7 +265,7 @@ read_naslist()
         int rc;
         char *path = grad_mkfilename(radius_dir, RADIUS_NASLIST);
         rc = grad_nas_read_file(path);
-        efree(path);
+        grad_free(path);
         return rc;
 }
 
@@ -281,7 +281,7 @@ rawread()
         char ip_str[DOTTED_QUAD_LEN];
         
         if ((wfd = open(file, O_RDONLY, 0)) < 0) {
-                radlog(L_ERR|L_PERROR, "can't open %s", file);
+                grad_log(L_ERR|L_PERROR, "can't open %s", file);
                 exit(1);
         }
         while (read(wfd, &ut, sizeof ut) == sizeof ut) {
@@ -343,7 +343,7 @@ radwtmp()
         WTMP *pp;
 
         if ((wfd = open(file, O_RDONLY, 0)) < 0 || fstat(wfd, &stb) == -1) {
-                radlog(L_ERR|L_PERROR, "can't open %s", file);
+                grad_log(L_ERR|L_PERROR, "can't open %s", file);
                 exit(1);
         }
         bl = (stb.st_size + sizeof(buf) - 1) / sizeof(buf);
@@ -356,7 +356,7 @@ radwtmp()
         while (!stop && --bl >= 0) {
                 if (lseek(wfd, (off_t)(bl * sizeof(buf)), L_SET) == -1 ||
                     (bytes = read(wfd, buf, sizeof(buf))) == -1)
-                        radlog(L_ERR, "%s", file);
+                        grad_log(L_ERR, "%s", file);
                 for (bp = &buf[bytes / sizeof(buf[0]) - 1]; bp >= buf; --bp) {
                         switch (bp->type) {
                         case P_LOGIN:
@@ -488,13 +488,13 @@ adduser(char *s)
                         show_shutdown_rec = 1;
         }
 
-        uc = emalloc(sizeof(*uc));
+        uc = grad_emalloc(sizeof(*uc));
         uc->next = NULL;
         if (user_last) 
                 user_last->next = uc;
         else
                 user_chain = uc;
-        uc->name = estrdup(s);
+        uc->name = grad_estrdup(s);
         user_last = uc;
 }
 
@@ -577,13 +577,13 @@ add_logout(struct radutmp *bp)
 {
         WTMP *wp;
 
-        wp = emalloc(sizeof(*wp));
+        wp = grad_emalloc(sizeof(*wp));
         wp->ut = *bp;
         add_wtmp_entry(&logout_list, wp);
         /* purge deleted queue */
         if (wp = find_wtmp_nas_port(login_list, bp)) {
                 delete_wtmp_entry(&login_list, wp);
-                efree(wp);
+                grad_free(wp);
         }
 }
 
@@ -594,10 +594,10 @@ add_nas_restart(struct radutmp *bp)
 
         if (wp = find_wtmp_nas(nas_updown_list, bp)) {
                 delete_wtmp_entry(&nas_updown_list, wp);
-                efree(wp);
+                grad_free(wp);
         }
                     
-        wp = emalloc(sizeof(*wp));
+        wp = grad_emalloc(sizeof(*wp));
         wp->ut = *bp;
         add_wtmp_entry(&nas_updown_list, wp);
 }

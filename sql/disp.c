@@ -92,7 +92,7 @@ disp_sql_query(struct sql_connection *conn, char *query, int *report_cnt)
 		return -1;
 	rc = disp_sql_entry(conn->interface)->query(conn, query, report_cnt);
 	if (rc) 
-		radlog(L_ERR, "%s: %s", _("Failed query was"), query);
+		grad_log(L_ERR, "%s: %s", _("Failed query was"), query);
 	return rc;
 }
 

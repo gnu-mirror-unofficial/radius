@@ -13,6 +13,7 @@
 
 sbin_SCRIPTS=radctl radauth 
 bin_SCRIPTS=radping radgrep builddbm
+AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = radctl radauth radping radgrep builddbm
 EXTRA_DIST=radscripts.m4 radctl.m4 radauth.m4 \
            radping.m4 radgrep.m4 builddbm.m4
 CLEANFILES=$(sbin_SCRIPTS) $(bin_SCRIPTS)

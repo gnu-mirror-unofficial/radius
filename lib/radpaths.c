@@ -37,23 +37,23 @@ void
 grad_path_init()
 {
         if (!radius_dir)
-                radius_dir = estrdup(RADIUS_DIR);
+                radius_dir = grad_estrdup(RADIUS_DIR);
         if (!radlog_dir)
-                radlog_dir = estrdup(RADLOG_DIR);
+                radlog_dir = grad_estrdup(RADLOG_DIR);
         if (!radacct_dir)
-                radacct_dir = estrdup(RADACCT_DIR);
+                radacct_dir = grad_estrdup(RADACCT_DIR);
         if (!radpid_dir)
-                radpid_dir = estrdup(RADPID_DIR);
+                radpid_dir = grad_estrdup(RADPID_DIR);
 
-        efree(radutmp_path);
+        grad_free(radutmp_path);
         radutmp_path = grad_mkfilename(radlog_dir, RADUTMP);
 
-        efree(radwtmp_path);
+        grad_free(radwtmp_path);
         radwtmp_path = grad_mkfilename(radlog_dir, RADWTMP);
 
-        efree(radstat_path);
+        grad_free(radstat_path);
         radstat_path = grad_mkfilename(radlog_dir, RADSTAT);
 
-	efree(radmsgid_path);
+	grad_free(radmsgid_path);
 	radmsgid_path = grad_mkfilename(radlog_dir, RADMSGID);
 }

@@ -47,7 +47,7 @@ add_forward(int type, UINT4 ip, int port)
 			return; /* FIXME */
 	}
 		
-	srv = emalloc(sizeof(*srv));
+	srv = grad_emalloc(sizeof(*srv));
 	srv->name = NULL;
 	srv->addr = ip;
 	srv->port[type] = port;
@@ -106,10 +106,10 @@ forward_data(RADIUS_SERVER *srv, int type, void *data, size_t size)
 	if (rc < 0) {
 		char buffer[DOTTED_QUAD_LEN];
 
-		radlog(L_ERR|L_PERROR,
-		       _("Can't forward to %s:%d"),
-		       grad_ip_iptostr(srv->addr, buffer),
-		       srv->port[type]);
+		grad_log(L_ERR|L_PERROR,
+		         _("Can't forward to %s:%d"),
+		         grad_ip_iptostr(srv->addr, buffer),
+		         srv->port[type]);
 	}
 }
 
@@ -149,7 +149,7 @@ forwarder(void *item, void *data)
 				      NULL);
 		grad_avl_free(vp);
 		forward_data(srv, r->type, pdu, size);
-		efree(pdu);
+		grad_free(pdu);
 	}
 	return 0;
 }
@@ -157,7 +157,7 @@ forwarder(void *item, void *data)
 static int
 free_mem(void *item, void *data ARG_UNUSED)
 {
-	efree(item);
+	grad_free(item);
 	return 0;
 }
 
@@ -176,9 +176,9 @@ fixup_forward_server(void *item, void *data)
 	CLIENT *cl = client_lookup_ip(srv->addr);
 	if (!cl) {
 		char buffer[DOTTED_QUAD_LEN];
-		radlog(L_NOTICE,
-		       _("Forwarding host %s not listed in clients"),
-		       grad_ip_iptostr(srv->addr, buffer));
+		grad_log(L_NOTICE,
+		         _("Forwarding host %s not listed in clients"),
+		         grad_ip_iptostr(srv->addr, buffer));
 	} else
 		srv->secret = cl->secret;
 	return 0;
@@ -195,8 +195,8 @@ forward_after_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 	forward_fd = socket(PF_INET, SOCK_DGRAM, 0);
 
 	if (forward_fd == -1) {
-		radlog(L_ERR|L_PERROR,
-		       _("Can't open forwarding socket"));
+		grad_log(L_ERR|L_PERROR,
+		         _("Can't open forwarding socket"));
 		return;
 	}
 
@@ -205,7 +205,7 @@ forward_after_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
         s.sin_addr.s_addr = htonl(ref_ip);
 	s.sin_port = 0;
 	if (bind(forward_fd, (struct sockaddr*)&s, sizeof (s)) < 0) 
-		radlog(L_ERR|L_PERROR, _("Can't bind forwarding socket"));
+		grad_log(L_ERR|L_PERROR, _("Can't bind forwarding socket"));
 	
 	grad_list_iterate(forward_list, fixup_forward_server, NULL);
 }

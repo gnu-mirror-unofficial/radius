@@ -148,7 +148,7 @@ stmt          : /* empty */ EOL
                                                   $3->datum.vector))
                                         pass = 0;
                                 tempvar_free($3);
-                                efree($3);
+                                grad_free($3);
                         }
                         printf("%s\n", pass ? "PASS" : "FAIL");
                 } 
@@ -240,7 +240,7 @@ maybe_expr    : /* empty */
                 }
               | expr
                 {
-			$$ = emalloc(sizeof(*$$));
+			$$ = grad_emalloc(sizeof(*$$));
                         *$$ = $1;
                 }
               ;
@@ -288,7 +288,7 @@ pair_list     : pair
 pair          : NAME op string
                 {
                         $$ = grad_create_pair(&source_locus, $1, $2, $3);
-                        efree($3);
+                        grad_free($3);
                 }
               ;
 
@@ -298,7 +298,7 @@ string        : QUOTE
                 {
                         char buf[64];
                         sprintf(buf, "%d", $1);
-                        $$ = estrdup(buf);
+                        $$ = grad_estrdup(buf);
                 }
               | IDENT
                 {
@@ -308,7 +308,7 @@ string        : QUOTE
                 {
                         char buf[DOTTED_QUAD_LEN];
                         grad_ip_iptostr($1, buf);
-                        $$ = estrdup(buf);
+                        $$ = grad_estrdup(buf);
                 }
               ;
 
@@ -354,7 +354,7 @@ value         : NUMBER
                 {
                         $$.name = NULL;
                         $$.type = String;
-                        $$.datum.string = estrdup($1);
+                        $$.datum.string = grad_estrdup($1);
                 }
               | IDENT
                 {
@@ -454,7 +454,7 @@ subscript(Variable *var, char *attr_name, int all, Variable *ret_var)
 			     p = grad_avl_find(p->next, dict->value)) 
                                 length += p->avp_strlength;
 
-                        cp = ret_var->datum.string = emalloc(length+1);
+                        cp = ret_var->datum.string = grad_emalloc(length+1);
                         /* Fill in the string contents */
                         for (p = pair; p;
 			     p = grad_avl_find(p->next, dict->value)) {
@@ -463,7 +463,7 @@ subscript(Variable *var, char *attr_name, int all, Variable *ret_var)
                         }
                         *cp = 0;
                 } else
-                        ret_var->datum.string = estrdup(pair->avp_strvalue);
+                        ret_var->datum.string = grad_estrdup(pair->avp_strvalue);
                 break;
         case TYPE_INTEGER:
         case TYPE_DATE:
@@ -475,9 +475,9 @@ subscript(Variable *var, char *attr_name, int all, Variable *ret_var)
                 ret_var->datum.ipaddr = pair->avp_lvalue;
                 break;
         default:
-                radlog(L_CRIT,
-                       _("attribute %s has unknown type"),
-                       dict->name);
+                grad_log(L_CRIT,
+                         _("attribute %s has unknown type"),
+                         dict->name);
                 exit(1);
         }
         return 0;

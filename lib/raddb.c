@@ -46,12 +46,12 @@ grad_read_raddb_file(char *filename, int vital, int (*fun)(), void *closure)
         input = fopen(filename, "r");
         if (!input) {
                 if (vital) {
-                        radlog(L_ERR|L_PERROR, _("can't open file `%s'"),
-                               filename);
+                        grad_log(L_ERR|L_PERROR, _("can't open file `%s'"),
+                                 filename);
                         return -1;
                 } else {
-                        radlog(L_NOTICE|L_PERROR, _("can't open file `%s'"),
-                               filename);
+                        grad_log(L_NOTICE|L_PERROR, _("can't open file `%s'"),
+                                 filename);
                         return 0;
                 }
         }

@@ -143,7 +143,7 @@ nas_usage_insert(hdr, usg)
         struct nas_usage_header *hdr;
         struct nas_usage *usg;
 {
-        struct nas_usage *ptr = emalloc(sizeof(*ptr));
+        struct nas_usage *ptr = grad_emalloc(sizeof(*ptr));
         memcpy(ptr, usg, sizeof(*ptr));
         ptr->next = NULL;
         if (!hdr->head)
@@ -169,7 +169,7 @@ portcopy(dst, src)
 {
         struct port_usage *next;
         if (dst->login)
-                efree(dst->login);
+                grad_free(dst->login);
         next = dst->next;
         memcpy(dst, src, sizeof(*dst));
         dst->next = next;
@@ -194,7 +194,7 @@ port_usage_insert(hdr, data)
                 prev = ptr;
         }
         if (!ptr) {
-                ptr = emalloc(sizeof(*ptr));
+                ptr = grad_emalloc(sizeof(*ptr));
                 if (!prev) {
                         ptr->next = hdr->head;
                         hdr->head = ptr;

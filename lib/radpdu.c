@@ -86,7 +86,7 @@ grad_pdu_finish(void **ptr, struct radius_pdu *pdu,
         }
         /* Create output array */
         p = obstack_finish(&pdu->st);
-        hdr = emalloc(len + secretlen);
+        hdr = grad_emalloc(len + secretlen);
         hdr->code = code;
         hdr->id = id;
         hdr->length = htons(len);
@@ -106,7 +106,7 @@ grad_pdu_finish(void **ptr, struct radius_pdu *pdu,
 		   the md5 hash over the entire packet and put it in the
 		   vector. */
                 secretlen = strlen(secret);
-                md5_calc(hdr->vector, (u_char *)hdr, len + secretlen);
+                grad_md5_calc(hdr->vector, (u_char *)hdr, len + secretlen);
 		memcpy(vector, hdr->vector, AUTH_VECTOR_LEN);
                 memset((char*)hdr + len, 0, secretlen);
 		break;
@@ -121,7 +121,7 @@ grad_pdu_finish(void **ptr, struct radius_pdu *pdu,
 	default:
 		/* This is a reply message. Calculate the response digest
 		   and store it in the pdu */
-		md5_calc(digest, (u_char *)hdr, len + secretlen);
+		grad_md5_calc(digest, (u_char *)hdr, len + secretlen);
 		memcpy(hdr->vector, digest, AUTH_VECTOR_LEN);
 		memset((char*)hdr + len, 0, secretlen);
 		break;
@@ -188,7 +188,7 @@ grad_encode_pair(struct radius_attr *ap, VALUE_PAIR *pair)
                 break;
 
         default:
-                radlog(L_ERR, "Unknown pair type %d", pair->type);
+                grad_log(L_ERR, "Unknown pair type %d", pair->type);
                 rc = 0;
         }
         return rc;
@@ -220,8 +220,8 @@ grad_create_pdu(void **rptr, int code, int id, u_char *vector,
                 
                 if (debug_on(10)) {
                         char *save;
-                        radlog(L_DEBUG,
-                               "send: %s", grad_format_pair(pair, 1, &save));
+                        grad_log(L_DEBUG,
+                                 "send: %s", grad_format_pair(pair, 1, &save));
                         free(save);
                 }
 
@@ -252,7 +252,7 @@ grad_create_pdu(void **rptr, int code, int id, u_char *vector,
 			attrlen = grad_encode_pair(&attr, pair);
 		}
                 if (attrlen < 0) {
-                        radlog(L_ERR, "attrlen = %d", attrlen);
+                        grad_log(L_ERR, "attrlen = %d", attrlen);
                         status = 1;
                         break;
                 }
@@ -327,14 +327,14 @@ grad_decode_pair(UINT4 attrno, char *ptr, size_t attrlen)
         case TYPE_STRING:
                 /* attrlen always <= AUTH_STRING_LEN */
                 pair->avp_strlength = attrlen;
-                pair->avp_strvalue = emalloc(attrlen + 1);
+                pair->avp_strvalue = grad_emalloc(attrlen + 1);
                 memcpy(pair->avp_strvalue, ptr, attrlen);
                 pair->avp_strvalue[attrlen] = 0;
 
                 if (debug_on(10)) {
                         char *save;
-                        radlog(L_DEBUG, "recv: %s",
-                               grad_format_pair(pair, 1, &save));
+                        grad_log(L_DEBUG, "recv: %s",
+                                 grad_format_pair(pair, 1, &save));
                         free(save);
                 }
 
@@ -347,9 +347,9 @@ grad_decode_pair(UINT4 attrno, char *ptr, size_t attrlen)
 
                 if (debug_on(10)) {
                         char *save;
-                        radlog(L_DEBUG, 
-                               "recv: %s", 
-                               grad_format_pair(pair, 1, &save));
+                        grad_log(L_DEBUG, 
+                                 "recv: %s", 
+                                 grad_format_pair(pair, 1, &save));
                         free(save);
                 }
                 break;
@@ -371,8 +371,8 @@ decode_vsa(u_char *ptr, UINT4 attrlen, UINT4 *vendorpec, UINT4 *vendorcode)
 	UINT4 x;
 	
 	if (attrlen <= 6) { /*FIXME*/
-		radlog(L_NOTICE,
-		       _("Received a vendor-specific attribute with length <= 6"));
+		grad_log(L_NOTICE,
+		    _("Received a vendor-specific attribute with length <= 6"));
 		return 1;
 	}
 	memcpy(&x, ptr, 4);
@@ -405,9 +405,9 @@ grad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, size_t length)
         auth = (AUTH_HDR *)buffer;
         reported_len = ntohs(auth->length);
         if (length > reported_len) { /* FIXME: != ? */
-                radlog(L_WARN,
-                       _("Actual request length does not match reported length (%d, %d)"),
-                       length, reported_len);
+                grad_log(L_WARN,
+             _("Actual request length does not match reported length (%d, %d)"),
+                         length, reported_len);
                 length = reported_len;
         }
                 

@@ -48,11 +48,7 @@ LOCK_DECLARE(lock)
  */
 
 char *
-md5crypt(pw, salt, passwd, size)
-        register const char *pw;
-        register const char *salt;
-        char *passwd;
-        size_t size;
+grad_md5crypt(const char *pw, const char *salt, char *passwd, size_t size)
 {
         static char magic[] = "$1$"; /* This string is magic for
                                       * this algorithm.  Having
@@ -91,25 +87,25 @@ md5crypt(pw, salt, passwd, size)
         if (sizeof(magic)+sl+1+22 > size)
                 return NULL;
         
-        MD5Init(&ctx);
+        grad_MD5Init(&ctx);
 
         /* The password first, since that is what is most unknown */
-        MD5Update(&ctx, (unsigned char*) pw, strlen(pw));
+        grad_MD5Update(&ctx, (unsigned char*) pw, strlen(pw));
 
         /* Then our magic string */
-        MD5Update(&ctx,(unsigned char*) magic,strlen(magic));
+        grad_MD5Update(&ctx,(unsigned char*) magic,strlen(magic));
 
         /* Then the raw salt */
-        MD5Update(&ctx, (unsigned char*)sp, sl);
+        grad_MD5Update(&ctx, (unsigned char*)sp, sl);
 
         /* Then just as many characters of the MD5(pw,salt,pw) */
-        MD5Init(&ctx1);
-        MD5Update(&ctx1, (unsigned char*)pw, strlen(pw));
-        MD5Update(&ctx1, (unsigned char*)sp, sl);
-        MD5Update(&ctx1, (unsigned char*)pw, strlen(pw));
-        MD5Final(final,&ctx1);
+        grad_MD5Init(&ctx1);
+        grad_MD5Update(&ctx1, (unsigned char*)pw, strlen(pw));
+        grad_MD5Update(&ctx1, (unsigned char*)sp, sl);
+        grad_MD5Update(&ctx1, (unsigned char*)pw, strlen(pw));
+        grad_MD5Final(final,&ctx1);
         for(pl = strlen(pw); pl > 0; pl -= 16)
-                MD5Update(&ctx,final,pl>16 ? 16 : pl);
+                grad_MD5Update(&ctx,final,pl>16 ? 16 : pl);
 
         /* Don't leave anything around in vm they could use. */
         memset(final,0,sizeof final);
@@ -117,16 +113,16 @@ md5crypt(pw, salt, passwd, size)
         /* Then something really weird... */
         for (i = strlen(pw); i ; i >>= 1)
                 if(i&1)
-                    MD5Update(&ctx, final, 1);
+                    grad_MD5Update(&ctx, final, 1);
                 else
-                    MD5Update(&ctx, (unsigned char*)pw, 1);
+                    grad_MD5Update(&ctx, (unsigned char*)pw, 1);
 
         /* Now make the output string */
         strcpy(passwd,magic);
         strncat(passwd,sp,sl);
         strcat(passwd,"$");
 
-        MD5Final(final,&ctx);
+        grad_MD5Final(final,&ctx);
 
         /*
          * and now, just to make sure things don't run too fast
@@ -134,23 +130,23 @@ md5crypt(pw, salt, passwd, size)
          * need 30 seconds to build a 1000 entry dictionary...
          */
         for(i=0;i<1000;i++) {
-                MD5Init(&ctx1);
+                grad_MD5Init(&ctx1);
                 if(i & 1)
-                        MD5Update(&ctx1, (unsigned char*)pw, strlen(pw));
+                        grad_MD5Update(&ctx1, (unsigned char*)pw, strlen(pw));
                 else
-                        MD5Update(&ctx1,final,16);
+                        grad_MD5Update(&ctx1,final,16);
 
                 if(i % 3)
-                        MD5Update(&ctx1, (unsigned char*)sp, sl);
+                        grad_MD5Update(&ctx1, (unsigned char*)sp, sl);
 
                 if(i % 7)
-                        MD5Update(&ctx1, (unsigned char*)pw, strlen(pw));
+                        grad_MD5Update(&ctx1, (unsigned char*)pw, strlen(pw));
 
                 if(i & 1)
-                        MD5Update(&ctx1,final,16);
+                        grad_MD5Update(&ctx1,final,16);
                 else
-                        MD5Update(&ctx1, (unsigned char*)pw, strlen(pw));
-                MD5Final(final,&ctx1);
+                        grad_MD5Update(&ctx1, (unsigned char*)pw, strlen(pw));
+                grad_MD5Final(final,&ctx1);
         }
 
         p = passwd + strlen(passwd);

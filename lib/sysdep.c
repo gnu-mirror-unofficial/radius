@@ -54,11 +54,11 @@ grad_set_nonblocking(int fd)
         int flags;
 
         if ((flags = fcntl(fd, F_GETFL, 0)) < 0) {
-                radlog(L_ERR|L_PERROR, "F_GETFL");
+                grad_log(L_ERR|L_PERROR, "F_GETFL");
                 return -1;
         }
         if (fcntl(fd, F_SETFL, flags | FCNTL_NONBLOCK) < 0) {
-                radlog(L_ERR|L_PERROR, "F_SETFL");
+                grad_log(L_ERR|L_PERROR, "F_SETFL");
                 return -1;
         }
         return 0;
@@ -159,16 +159,16 @@ grad_first_ip_hostname()
 	int name_len = 256;
 	int status;
 
-	name = emalloc(name_len);
+	name = grad_emalloc(name_len);
 	while (name
 	       && (status = gethostname(name, name_len)) == 0
 	       && !memchr(name, 0, name_len)) {
 		name_len *= 2;
-		name = erealloc(name, name_len);
+		name = grad_erealloc(name, name_len);
 	}
 	if (status == 0) 
 		ip = grad_ip_gethostaddr(name);
-	efree(name);
+	grad_free(name);
 	return ip;
 }
 

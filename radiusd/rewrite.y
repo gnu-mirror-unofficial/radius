@@ -815,7 +815,7 @@ fundecl : TYPE IDENT dclparm
 
                   f.parm = last = NULL;
                   for (var = $3; var; var = var->next) {
-                          parm = emalloc(sizeof(*parm));
+                          parm = grad_emalloc(sizeof(*parm));
                           parm->datatype = var->datatype;
                           var->offset = -(STACK_BASE+
                                           f.nparm - var->offset);
@@ -832,10 +832,10 @@ fundecl : TYPE IDENT dclparm
           }
         | TYPE FUN dclparm
           {
-		  radlog_loc(L_ERR, &locus,
-			     _("redefinition of function `%s'"), $2->name);
-		  radlog_loc(L_ERR, &$2->loc,
-			     _("previously defined here"));
+		  grad_log_loc(L_ERR, &locus,
+			       _("redefinition of function `%s'"), $2->name);
+		  grad_log_loc(L_ERR, &$2->loc,
+			       _("previously defined here"));
 		  errcnt++;
 		  YYERROR;
           }
@@ -1019,9 +1019,9 @@ stmt    : begin list end
         | BREAK ';'
           {
                   if (!loop_last) {
-                          radlog_loc(L_ERR, &locus,
-				     "%s",
-				     _("nothing to break from"));
+                          grad_log_loc(L_ERR, &locus,
+				       "%s",
+				       _("nothing to break from"));
                           errcnt++;
                           YYERROR;
                   }
@@ -1033,9 +1033,9 @@ stmt    : begin list end
         | CONTINUE ';'
           {
                   if (!loop_last) {
-                          radlog_loc(L_ERR, &locus,
-				     "%s",
-				     _("nothing to continue"));
+                          grad_log_loc(L_ERR, &locus,
+				       "%s",
+				       _("nothing to continue"));
                           errcnt++;
                           YYERROR;
                   }
@@ -1104,7 +1104,7 @@ expr    : NUMBER
           }
         | IDENT
           {
-                  radlog_loc(L_ERR, &locus, _("undefined variable: %s"), $1);
+                  grad_log_loc(L_ERR, &locus, _("undefined variable: %s"), $1);
                   errcnt++;
                   YYERROR;
           }
@@ -1261,7 +1261,7 @@ expr    : NUMBER
 int
 yyerror(char *s)
 {
-        radlog_loc(L_ERR, &locus, "%s", s);
+        grad_log_loc(L_ERR, &locus, "%s", s);
         errcnt++;
 	return 0;
 }
@@ -1277,9 +1277,9 @@ parse_rewrite(char *path)
         infile = fopen(locus.file, "r");
         if (!infile) {
                 if (errno != ENOENT) {
-                        radlog(L_ERR|L_PERROR,
-                               _("can't open file `%s'"),
-                               locus.file);
+                        grad_log(L_ERR|L_PERROR,
+                                 _("can't open file `%s'"),
+                                 locus.file);
 			return -1;
                 }
                 return -2;
@@ -1594,9 +1594,9 @@ c_comment()
                 do {
                         while (input() != '*') {
                                 if (yychar == 0) {
-                                        radlog_loc(L_ERR, &locus,
+                                        grad_log_loc(L_ERR, &locus,
 		       _("unexpected EOF in comment started at line %lu"),
-						   (unsigned long) keep_line);
+						     (unsigned long) keep_line);
                                         return 0;
                                 } else if (yychar == '\n')
                                         locus.line++;
@@ -1656,7 +1656,7 @@ regex_pragma (enum pragma_handler_phase phase)
 		break;
 	}
 	if (!isword(yychar)) {
-		radlog_loc(L_ERR, &locus, _("Malformed pragma"));
+		grad_log_loc(L_ERR, &locus, _("Malformed pragma"));
 		return 1;
 	}
 	
@@ -1669,8 +1669,8 @@ regex_pragma (enum pragma_handler_phase phase)
 	else if (strcmp (s, "newline") == 0)
 		bit = REG_NEWLINE;
 	else {
-		radlog_loc(L_ERR, &locus,
-			   _("Unknown regexp flag: %s"), s);
+		grad_log_loc(L_ERR, &locus,
+			     _("Unknown regexp flag: %s"), s);
 		return 1;
 	}
 
@@ -1805,9 +1805,9 @@ yylex()
                 else
                         c = yychar;
                 if (input() != '\'') {
-                        radlog_loc(L_ERR, &locus,
-				   "%s",
-				   _("unterminated character constant"));
+                        grad_log_loc(L_ERR, &locus,
+				     "%s",
+				     _("unterminated character constant"));
                         errcnt++;
                 }
                 yylval.number = c;
@@ -1850,9 +1850,9 @@ yylex()
                         return '%';
                 }
                 if (!attr) {
-                        radlog_loc(L_ERR, &locus,
-				   _("unknown attribute %s"),
-				   attr_name);
+                        grad_log_loc(L_ERR, &locus,
+				     _("unknown attribute %s"),
+				     attr_name);
                         errcnt++;
                         return BOGUS;
                 }
@@ -2091,7 +2091,7 @@ obj_alloc(OBUCKET *bucket)
 {
         OBJECT *optr;
 
-        optr = emalloc(bucket->size);
+        optr = grad_emalloc(bucket->size);
 
         optr->alloc        = bucket->alloc_list;
         bucket->alloc_list = optr;
@@ -2110,7 +2110,7 @@ obj_free_all(OBUCKET *bucket)
                 next = obj->alloc;
                 if (bucket->free)
                         bucket->free(obj);
-                efree(obj);
+                grad_free(obj);
                 obj = next;
         }
         bucket->alloc_list = NULL;
@@ -2545,11 +2545,11 @@ mtx_attr_check(DICT_ATTR *attr,	MTX *index)
 void
 rw_coercion_warning(Datatype from, Datatype to, char *pref)
 {
-	radlog_loc(L_WARN, &locus,
-		   _("%s implicit coercion %s %s"),
-		   pref ? pref : "",
-		   datatype_str_abl(from),
-		   datatype_str_acc(to));
+	grad_log_loc(L_WARN, &locus,
+		     _("%s implicit coercion %s %s"),
+		     pref ? pref : "",
+		     datatype_str_abl(from),
+		     datatype_str_acc(to));
 }
 
 
@@ -2609,9 +2609,9 @@ mtx_bin(Bopcode opcode, MTX *arg1, MTX *arg2)
                         mtx->datatype = Integer;
                         break;
                 default:
-                        radlog_loc(L_ERR, &locus,
-				   "%s",
-				   _("operation not applicable to strings"));
+                        grad_log_loc(L_ERR, &locus,
+				     "%s",
+				     _("operation not applicable to strings"));
                         errcnt++;
                         return (MTX*)mtx;
                 }
@@ -2729,13 +2729,13 @@ mtx_call(FUNCTION *fun, MTX *args)
          * Note that the argument count mismatch is not an error!
          */
         if (argp) {
-                radlog_loc(L_WARN, &locus,
-			   _("too many arguments in call to %s"),
-			   fun->name);
+                grad_log_loc(L_WARN, &locus,
+			     _("too many arguments in call to %s"),
+			     fun->name);
         } else if (parmp) {
-                radlog_loc(L_WARN, &locus,
-			   _("too few arguments in call to %s"),
-			   fun->name);
+                grad_log_loc(L_WARN, &locus,
+			     _("too few arguments in call to %s"),
+			     fun->name);
         }
 
         call = (CALL_MTX*) mtx_alloc(Call);
@@ -2789,14 +2789,14 @@ mtx_builtin(builtin_t *bin, MTX *args)
         }
 
         if (argp) {
-                radlog_loc(L_ERR, &locus,
-			   _("too many arguments in call to %s"),
-			   bin->name);
+                grad_log_loc(L_ERR, &locus,
+			     _("too many arguments in call to %s"),
+			     bin->name);
                 errcnt++;
         } else if (*parmp) {
-                radlog_loc(L_ERR, &locus,
-			   _("too few arguments in call to %s"),
-			   bin->name);
+                grad_log_loc(L_ERR, &locus,
+			     _("too few arguments in call to %s"),
+			     bin->name);
                 errcnt++;
         }
 
@@ -2869,11 +2869,11 @@ debug_open_file()
         
         path = grad_mkfilename(radlog_dir, "radius.mtx");
         if ((fp = fopen(path, "a")) == NULL) {
-                radlog(L_ERR|L_PERROR,
-                       _("can't open file `%s'"),
-                       path);
+                grad_log(L_ERR|L_PERROR,
+                         _("can't open file `%s'"),
+                         path);
         }
-        efree(path);
+        grad_free(path);
         return fp;
 }
 
@@ -3178,8 +3178,8 @@ pass1()
          */
         if (mtx_last->gen.type != Return) {
                 Datum datum;
-                radlog_loc(L_WARN, &mtx_last->gen.loc,
-			   _("missing return statement"));
+                grad_log_loc(L_WARN, &mtx_last->gen.loc,
+			     _("missing return statement"));
 
                 switch (function->rettype) {
                 case Integer:
@@ -3327,8 +3327,8 @@ pass2_binary(MTX *mtx)
 		
         case Div:
                 if (arg1->cnst.datum.ival == 0) {
-                        radlog_loc(L_ERR, &arg1->cnst.loc,
-				   _("divide by zero"));
+                        grad_log_loc(L_ERR, &arg1->cnst.loc,
+				     _("divide by zero"));
                         errcnt++;
                 } else
                         dat.ival =
@@ -3337,8 +3337,8 @@ pass2_binary(MTX *mtx)
 		
         case Rem:
                 if (arg1->cnst.datum.ival == 0) {
-                        radlog_loc(L_ERR, &arg1->cnst.loc,
-				   _("divide by zero"));
+                        grad_log_loc(L_ERR, &arg1->cnst.loc,
+				     _("divide by zero"));
                         errcnt++;
                 } else
                         dat.ival =
@@ -3494,7 +3494,7 @@ code_check()
 {
         if (rw_code == NULL) {
                 rw_codesize  = 4096;
-                rw_code  = emalloc(rw_codesize * sizeof(rw_code[0]));
+                rw_code  = grad_emalloc(rw_codesize * sizeof(rw_code[0]));
         }
 }
 
@@ -3683,8 +3683,8 @@ codegen()
                 case Generic:
                 case Return:
                 default:
-                        radlog(L_CRIT,
-                               "INTERNAL ERROR: codegen stumbled accross generic matrix!");
+                        grad_log(L_CRIT,
+                                 "INTERNAL ERROR: codegen stumbled accross generic matrix!");
                         errcnt++;
                         return 0;
                 case Nop:
@@ -3884,9 +3884,9 @@ void
 check_codesize(int delta)
 {
         if (rw_pc + delta >= rw_codesize) {
-                INSTR *p = emalloc((rw_codesize + 4096) * sizeof(rw_code[0]));
+                INSTR *p = grad_emalloc((rw_codesize + 4096) * sizeof(rw_code[0]));
                 memcpy(p, rw_code, rw_codesize * sizeof(rw_code[0]));
-                efree(rw_code);
+                grad_free(rw_code);
                 rw_code = p;
                 rw_codesize += 4096;
         }
@@ -3929,7 +3929,7 @@ rx_alloc(regex_t *regex, int nmatch)
 {
         COMP_REGEX *rx;
 
-        rx = emalloc(sizeof(*rx));
+        rx = grad_emalloc(sizeof(*rx));
         rx->regex  = *regex;
         rx->nmatch = nmatch;
         rw_list_insert(&function->rx_list, NULL, function->rx_list, rx, 1);
@@ -3944,7 +3944,7 @@ rx_free(COMP_REGEX *rx)
         while (rx) {
                 next = rx->next;
                 regfree(&rx->regex);
-                efree(rx);
+                grad_free(rx);
                 rx = next;
         }
 }
@@ -3960,9 +3960,9 @@ compile_regexp(char *str)
         if (rc) {
                 char errbuf[512];
                 regerror(rc, &regex, errbuf, sizeof(errbuf));
-                radlog_loc(L_ERR, &locus,
-			   _("regexp error: %s"),
-			   errbuf);
+                grad_log_loc(L_ERR, &locus,
+			     _("regexp error: %s"),
+			     errbuf);
                 return NULL;
         }
         /* count the number of matches */
@@ -4190,9 +4190,9 @@ static RWSTYPE nil = 0;
 static int
 rw_error(const char *msg)
 {
-        radlog(L_ERR,
-	       "%s: %s",
-               _("rewrite runtime error"), msg);
+        grad_log(L_ERR,
+	         "%s: %s",
+                 _("rewrite runtime error"), msg);
         longjmp(mach.jmp, 1);
         /*NOTREACHED*/
 }
@@ -4200,9 +4200,9 @@ rw_error(const char *msg)
 static int
 rw_error_free(char *msg)
 {
-        radlog(L_ERR,
-	       "%s: %s",
-               _("rewrite runtime error"), msg);
+        grad_log(L_ERR,
+	         "%s: %s",
+                 _("rewrite runtime error"), msg);
 	free(msg);
         longjmp(mach.jmp, 1);
         /*NOTREACHED*/
@@ -4339,7 +4339,7 @@ attrasgn_internal(int attr, VALUE_PAIR *pair, RWSTYPE val)
 	switch (pair->type) {
 	case TYPE_STRING:
 	case TYPE_DATE:
-		string_replace(&pair->avp_strvalue, (char*)val);
+		grad_string_replace(&pair->avp_strvalue, (char*)val);
 		pair->avp_strlength = strlen((char*) val);
 		break;
 		
@@ -4801,9 +4801,9 @@ need_pmatch(size_t n)
 {
 	n++;
         if (mach.nmatch < n) {
-                efree(mach.pmatch);
+                grad_free(mach.pmatch);
                 mach.nmatch = n;
-                mach.pmatch = emalloc(n * sizeof(mach.pmatch[0]));
+                mach.pmatch = grad_emalloc(n * sizeof(mach.pmatch[0]));
         }
 }
 
@@ -4823,9 +4823,9 @@ rw_match()
                 char errbuf[512];
                 regerror(rc, &rx->regex,
                          errbuf, sizeof(errbuf));
-                radlog(L_DEBUG,
-		       _("rewrite regex failure: %s. Input: %s"),
-                       errbuf, (char*)mach.rA);
+                grad_log(L_DEBUG,
+		         _("rewrite regex failure: %s. Input: %s"),
+                         errbuf, (char*)mach.rA);
         }
         pushn(rc == 0);
 }
@@ -4992,7 +4992,7 @@ static void
 bi_logit()
 {
         char *msg = (char*) getarg(1);
-        radlog(L_INFO, "%s", msg);
+        grad_log(L_INFO, "%s", msg);
         pushn(0);
 }
 
@@ -5108,7 +5108,7 @@ add_text_segment(RAD_LIST *lst, char *ptr, char *end)
 	struct subst_segment *seg;
 	if (ptr >= end)
 		return;
-	seg = emalloc(sizeof(*seg));
+	seg = grad_emalloc(sizeof(*seg));
 	seg->type = subst_text;
 	seg->v.text.ptr = ptr;
 	seg->v.text.len = end - ptr;
@@ -5118,7 +5118,7 @@ add_text_segment(RAD_LIST *lst, char *ptr, char *end)
 static void
 add_match_segment(RAD_LIST *lst)
 {
-	struct subst_segment *seg = emalloc(sizeof(*seg));
+	struct subst_segment *seg = grad_emalloc(sizeof(*seg));
 	seg->type = subst_match;
 	grad_list_append(lst, seg);
 }
@@ -5126,7 +5126,7 @@ add_match_segment(RAD_LIST *lst)
 static void
 add_ref_segment(RAD_LIST *lst, size_t ref)
 {
-	struct subst_segment *seg = emalloc(sizeof(*seg));
+	struct subst_segment *seg = grad_emalloc(sizeof(*seg));
 	seg->type = subst_ref;
 	seg->v.ref = ref;
 	grad_list_append(lst, seg);
@@ -5177,7 +5177,7 @@ subst_create(char *text)
 int
 seg_free(void *item, void *data ARG_UNUSED)
 {
-	efree(item);
+	grad_free(item);
 	return 0;
 }
 
@@ -5393,7 +5393,7 @@ function_free(FUNCTION *f)
         parm = f->parm;
         while (parm) {
                 next = parm->next;
-                efree(parm);
+                grad_free(parm);
                 parm = next;
         }
         return 0;
@@ -5405,10 +5405,10 @@ function_install(FUNCTION *fun)
         FUNCTION *fp;
 
         if (fp = (FUNCTION *)sym_lookup(rewrite_tab, fun->name)) {
-                radlog_loc(L_ERR, &fun->loc,
-			   _("redefinition of function %s"));
-                radlog_loc(L_ERR, &fp->loc,
-			   _("previously defined here"));
+                grad_log_loc(L_ERR, &fun->loc,
+			     _("redefinition of function %s"));
+                grad_log_loc(L_ERR, &fp->loc,
+			     _("previously defined here"));
                 errcnt++;
                 return fp;
         }  
@@ -5437,7 +5437,7 @@ rw_mach_init()
 	memset(&mach, 0, sizeof(mach));
 
 	if (!runtime_stack)
-		runtime_stack = emalloc(rewrite_stack_size *
+		runtime_stack = grad_emalloc(rewrite_stack_size *
 					sizeof(runtime_stack[0]));
 	
 	mach.stack = runtime_stack;
@@ -5458,36 +5458,36 @@ rewrite_check_function(char *name, Datatype rettype, char *typestr)
 	
 	FUNCTION *fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
         if (!fun) {
-                radlog(L_ERR, _("function %s not defined"), name);
+                grad_log(L_ERR, _("function %s not defined"), name);
                 return NULL;
         }
 	if (fun->rettype != rettype) {
-		radlog(L_ERR, _("function %s returns wrong data type"), name);
+		grad_log(L_ERR, _("function %s returns wrong data type"), name);
 		return NULL;
 	}
 
 	for (i = 0, p = fun->parm; i < fun->nparm; i++, p = p->next) {
                 switch (typestr[i]) {
 		case 0:
-			radlog(L_ERR,
-			       _("function %s takes too many arguments"),
-			       name);
+			grad_log(L_ERR,
+			         _("function %s takes too many arguments"),
+			         name);
 			return NULL;
 			
                 case 'i':
                         if (p->datatype != Integer) {
-				radlog(L_ERR,
-				       _("function %s: argument %d must be integer"),
-				       name, i+1);
+				grad_log(L_ERR,
+				         _("function %s: argument %d must be integer"),
+				         name, i+1);
 				return NULL;
 			}
                         break;
 			
                 case 's':
                         if (p->datatype != String) {
-				radlog(L_ERR,
-				       _("function %s: argument %d must be string"),
-				       name, i+1);
+				grad_log(L_ERR,
+				         _("function %s: argument %d must be string"),
+				         name, i+1);
 				return NULL;
 			}
                         break;
@@ -5498,9 +5498,9 @@ rewrite_check_function(char *name, Datatype rettype, char *typestr)
         }
 
 	if (typestr[i]) {
-		radlog(L_ERR,
-		       _("function %s takes too few arguments"),
-		       name);
+		grad_log(L_ERR,
+		         _("function %s takes too few arguments"),
+		         name);
 		return NULL;
 	}
 
@@ -5551,7 +5551,7 @@ evaluate(pctr_t pc, RADIUS_REQ *req, Datatype rettype, Datum *datum)
 			break;
 			
 		case String:
-			datum->sval = estrdup((char*) mach.rA);
+			datum->sval = grad_estrdup((char*) mach.rA);
 			break;
 			
 		default:
@@ -5638,14 +5638,14 @@ rewrite_compile(char *expr)
 {
 	int rc;
 	FUNCTION *fun;
-	char *name = emalloc(strlen(expr) + 3); 
+	char *name = grad_emalloc(strlen(expr) + 3); 
 
 	sprintf(name, "$%s$", expr);
         fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
         if (!fun) {
 		rc = parse_rewrite_string(expr);
 		if (rc) {
-			efree(name);
+			grad_free(name);
 			return NULL;
 		}
 		function->name = name;
@@ -5684,11 +5684,11 @@ rewrite_eval(char *symname, RADIUS_REQ *req, Datatype *type, Datum *datum)
 		return -1;
 	
 	if (fun->nparm) {
-		radlog(L_ERR,
-		       ngettext("function %s() requires %d parameter",
-				"function %s() requires %d parameters",
-				fun->nparm),
-		       fun->name, fun->nparm);
+		grad_log(L_ERR,
+		         ngettext("function %s() requires %d parameter",
+				  "function %s() requires %d parameters",
+				  fun->nparm),
+		         fun->name, fun->nparm);
 		return -1;
 	}
 
@@ -5711,7 +5711,7 @@ rewrite_add_load_path(const char *str)
 {
 	if (!rewrite_load_path)
 		rewrite_load_path = grad_list_create();
-	grad_list_append(rewrite_load_path, estrdup(str));
+	grad_list_append(rewrite_load_path, grad_estrdup(str));
 }
 
 void
@@ -5742,7 +5742,7 @@ try_load(void *item, void *data)
 		register_source_name(path);
 		rc = 1;
 	} else
-		efree(path);
+		grad_free(path);
 	return rc;
 }
 
@@ -5752,7 +5752,7 @@ rewrite_load_module(char *name)
 {
 	int rc;
 	if (name[0] == '/') {
-		register_source_name(estrdup(name));
+		register_source_name(grad_estrdup(name));
 		rc = parse_rewrite(name);
 	} else {
 		struct load_data ld;
@@ -5767,7 +5767,7 @@ rewrite_load_module(char *name)
 static int
 free_path(void *item, void *data ARG_UNUSED)
 {
-	efree(item);
+	grad_free(item);
 	return 0;
 }
 
@@ -5786,7 +5786,7 @@ rewrite_stmt_term(int finish, void *block_data, void *handler_data)
 		rewrite_add_load_path(radius_dir);
 		rewrite_add_load_path(RADIUS_DATADIR "/rewrite");
 
-		efree(runtime_stack);
+		grad_free(runtime_stack);
 		runtime_stack = NULL;
 	} 
 	return 0;
@@ -5824,7 +5824,7 @@ rewrite_cfg_load(int argc, cfg_value_t *argv,
 		return 0;
 	}
 
-	grad_list_append(source_candidate_list, estrdup(argv[1].v.string));
+	grad_list_append(source_candidate_list, grad_estrdup(argv[1].v.string));
 	return 0;
 }
 
@@ -5842,7 +5842,7 @@ static int
 _load_module(void *item, void *data ARG_UNUSED)
 {
 	if (rewrite_load_module(item) == -2)
-		radlog(L_ERR, _("file not found: %s"), item);
+		grad_log(L_ERR, _("file not found: %s"), item);
 	return 0;
 }
 
@@ -5893,7 +5893,7 @@ rewrite_set_stack_size(size_t s)
 	if (s == rewrite_stack_size)
 		return;
 	rewrite_stack_size = s;
-	efree(runtime_stack);
+	grad_free(runtime_stack);
 	runtime_stack = NULL;
 }
 				       

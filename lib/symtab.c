@@ -52,7 +52,7 @@ symtab_create(unsigned esize, int (*elfree)())
 {
         Symtab *symtab;
         
-        symtab = emalloc(sizeof(*symtab));
+        symtab = grad_emalloc(sizeof(*symtab));
         symtab->elsize = esize;
         symtab->elcnt = 0;
         symtab->hash_num = -1;
@@ -97,7 +97,7 @@ symtab_rehash(Symtab *symtab)
                 abort();
         }
 
-        symtab->sym = emalloc(hash_size[symtab->hash_num] * symtab->elsize);
+        symtab->sym = grad_emalloc(hash_size[symtab->hash_num] * symtab->elsize);
 
         if (old_table) {
                 size_t old_size = hash_size[symtab->hash_num-1];
@@ -117,7 +117,7 @@ symtab_rehash(Symtab *symtab)
                                 sym = next;
                         }
                 }
-                efree (old_table);
+                grad_free (old_table);
         }
         return 0;
 }
@@ -183,8 +183,8 @@ Symbol *
 alloc_sym(char *s, unsigned size)
 {
         Symbol *ptr;
-        ptr = emalloc(size);
-        ptr->name = estrdup(s);
+        ptr = grad_emalloc(size);
+        ptr->name = grad_estrdup(s);
         return ptr;
 }
 
@@ -239,8 +239,8 @@ symtab_delete(Symtab *symtab, Symbol *sym)
 void
 sym_free(Symbol *sp)
 {
-        efree(sp->name);
-        efree(sp);
+        grad_free(sp->name);
+        grad_free(sp);
 }
 
 void
@@ -270,8 +270,8 @@ symtab_free(Symtab **symtab)
 	if (!symtab || !*symtab)
 		return;
         symtab_clear(*symtab);
-        efree((*symtab)->sym);
-        efree(*symtab);
+        grad_free((*symtab)->sym);
+        grad_free(*symtab);
         *symtab = NULL;
 }
 

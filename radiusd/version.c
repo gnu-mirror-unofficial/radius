@@ -133,11 +133,11 @@ char *
 make_server_ident()
 {
         if (server_id)
-                return estrdup(server_id);
+                return grad_estrdup(server_id);
         else {
                 const char *msg = _("GNU RADIUS server version ");
                 int len = strlen(msg) + sizeof(VERSION);
-                char *p = emalloc(len);
+                char *p = grad_emalloc(len);
                 sprintf(p, "%s%s", msg, VERSION);
                 return p;
         }

@@ -80,12 +80,12 @@ request_create(int type, int fd, struct sockaddr_in *sa,
 
 	if (request_class[type].decode(sa, buf, bufsize, &data))
 		return NULL;
-	req = emalloc(sizeof *req);
+	req = grad_emalloc(sizeof *req);
 	req->data = data;
 	time(&req->timestamp);
         req->type = type;
 	req->addr = *sa;
-	req->rawdata = emalloc(bufsize);
+	req->rawdata = grad_emalloc(bufsize);
 	memcpy(req->rawdata, buf, bufsize);
 	req->rawsize = bufsize;
         req->child_id = 0;
@@ -99,8 +99,8 @@ request_free(REQUEST *req)
 {
 	if (req) {
 		request_class[req->type].free(req->data);
-		efree(req->rawdata);
-		efree(req);
+		grad_free(req->rawdata);
+		grad_free(req);
 	}
 }
 
@@ -160,8 +160,8 @@ request_forward(REQUEST *req)
 int
 request_retransmit(REQUEST *req, void *rawdata, size_t rawsize)
 {
-	efree(req->rawdata);
-	req->rawdata = emalloc(rawsize);
+	grad_free(req->rawdata);
+	req->rawdata = grad_emalloc(rawsize);
 	memcpy(req->rawdata, rawdata, rawsize);
 	req->rawsize = rawsize;
 	return request_forward(req);
@@ -214,9 +214,9 @@ _request_iterator(void *item, void *clos)
 			request_free(req);
 		} else if (req->timestamp + request_class[req->type].ttl
 			   <= rp->curtime) {
-			radlog(L_NOTICE,
-			       _("Proxy %s request expired in queue"),
-			       request_class[req->type].name);
+			grad_log(L_NOTICE,
+			         _("Proxy %s request expired in queue"),
+			         request_class[req->type].name);
 			grad_list_remove(request_list, req, NULL);
 			request_free(req);
 		}
@@ -230,10 +230,10 @@ _request_iterator(void *item, void *clos)
 			if (req->status == RS_XMIT)
 				req->status = RS_COMPLETED;
 			else if (rpp_kill(req->child_id, SIGKILL) == 0) 
-				radlog(L_NOTICE,
-				       _("Killing unresponsive %s child %lu"),
-				       request_class[req->type].name,
-				       (unsigned long) req->child_id);
+				grad_log(L_NOTICE,
+				         _("Killing unresponsive %s child %lu"),
+				         request_class[req->type].name,
+				         (unsigned long) req->child_id);
 		}
 		return 0;
 	}

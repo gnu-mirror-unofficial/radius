@@ -90,7 +90,7 @@ main(argc, argv)
                 return 1;
         
         grad_path_init();
-        snmp_init(0, 0, emalloc, efree);
+        snmp_init(0, 0, grad_emalloc, grad_free);
         test();
 }
 
@@ -98,7 +98,7 @@ int
 unimplemented(c)
         int c;
 {
-        radlog(L_ERR, "option %c is not implemented", c);
+        grad_log(L_ERR, "option %c is not implemented", c);
         exit(1);
 }
 

@@ -174,7 +174,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 break;
 		
         case 'a':
-                radacct_dir = estrdup(optarg);
+                radacct_dir = grad_estrdup(optarg);
                 break;
 		
 #ifdef USE_DBM
@@ -188,7 +188,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 break;
 		
         case 'l':
-                radlog_dir = estrdup(optarg);
+                radlog_dir = grad_estrdup(optarg);
                 break;
 		
         case 'm':
@@ -278,23 +278,23 @@ static struct argp argp = {
 void
 set_config_defaults()
 {
-        username_valid_chars = estrdup(".-_!@#$%^&\\/");
+        username_valid_chars = grad_estrdup(".-_!@#$%^&\\/");
         message_text[MSG_ACCOUNT_CLOSED] =
-                estrdup(_("Sorry, your account is currently closed\n"));
+                grad_estrdup(_("Sorry, your account is currently closed\n"));
         message_text[MSG_PASSWORD_EXPIRED] =
-                estrdup(_("Password has expired\n"));
+                grad_estrdup(_("Password has expired\n"));
         message_text[MSG_PASSWORD_EXPIRE_WARNING] =
-                estrdup(_("Password will expire in %R{Password-Expire-Days} Days\n"));
+                grad_estrdup(_("Password will expire in %R{Password-Expire-Days} Days\n"));
         message_text[MSG_ACCESS_DENIED] =
-                estrdup(_("\nAccess denied\n"));
+                grad_estrdup(_("\nAccess denied\n"));
         message_text[MSG_REALM_QUOTA] =
-                estrdup(_("\nRealm quota exceeded - access denied\n"));
+                grad_estrdup(_("\nRealm quota exceeded - access denied\n"));
         message_text[MSG_MULTIPLE_LOGIN] =
-                estrdup(_("\nYou are already logged in %R{Simultaneous-Use} times - access denied\n"));
+                grad_estrdup(_("\nYou are already logged in %R{Simultaneous-Use} times - access denied\n"));
         message_text[MSG_SECOND_LOGIN] =
-                estrdup(_("\nYou are already logged in - access denied\n"));
+                grad_estrdup(_("\nYou are already logged in - access denied\n"));
         message_text[MSG_TIMESPAN_VIOLATION] =
-                estrdup(_("You are calling outside your allowed timespan\n"));
+                grad_estrdup(_("You are calling outside your allowed timespan\n"));
 }
 
 static int
@@ -332,7 +332,7 @@ terminate_subprocesses()
 	request_init_queue();
 	
 	/* Terminate all subprocesses */
-	radlog(L_INFO, _("Terminating the subprocesses"));
+	grad_log(L_INFO, _("Terminating the subprocesses"));
 	rpp_kill(-1, SIGTERM);
 	
 	max_ttl(&t);
@@ -343,11 +343,11 @@ terminate_subprocesses()
 		if (time(NULL) >= t) {
 			if (kill_sent) {
 				int n = rpp_count();
-				radlog(L_CRIT,
-				       ngettext("%d process left!",
-						"%d processes left!",
-						n),
-				       n);
+				grad_log(L_CRIT,
+				         ngettext("%d process left!",
+					 	  "%d processes left!",
+						  n),
+				         n);
 				break;
 			}
 			max_ttl(&t);
@@ -369,12 +369,12 @@ radiusd_postconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 {
 	if (radius_mode == MODE_DAEMON && radius_count_channels() == 0) {
 		if (foreground) {
-			radlog(L_ALERT,
-			       _("Radiusd is not listening on any port."));
+			grad_log(L_ALERT,
+			         _("Radiusd is not listening on any port."));
 			exit(1);
 		} else
-			radlog(L_ALERT,
-			       _("Radiusd is not listening on any port. Trying to continue anyway..."));
+			grad_log(L_ALERT,
+			         _("Radiusd is not listening on any port. Trying to continue anyway..."));
 	}
 }
 
@@ -402,13 +402,13 @@ radiusd_setup()
 	radiusd_set_postconfig_hook(radiusd_postconfig_hook, NULL, 0);
 
 	rewrite_init();
-        snmp_init(0, 0, (snmp_alloc_t)emalloc, (snmp_free_t)efree);
+        snmp_init(0, 0, (snmp_alloc_t)grad_emalloc, (snmp_free_t)grad_free);
 }
 
 void
 common_init()
 {
-	radlog(L_INFO, _("Starting"));
+	grad_log(L_INFO, _("Starting"));
 
 	radiusd_pid = getpid();
 	radius_input = input_create();
@@ -431,7 +431,7 @@ common_init()
 	acct_init();
 	radiusd_reconfigure();
 	grad_path_init();
-	radlog(L_INFO, _("Ready"));
+	grad_log(L_INFO, _("Ready"));
 }
 
 
@@ -445,7 +445,7 @@ radiusd_daemon()
         
         switch (pid = fork()) {
         case -1:
-                radlog(L_CRIT|L_PERROR, "fork");
+                grad_log(L_CRIT|L_PERROR, "fork");
                 exit(1);
         case 0: /* Child */
                 break;
@@ -467,7 +467,7 @@ radiusd_daemon()
         case 0:
                 break;
         case -1:
-                radlog(L_CRIT|L_PERROR, "fork");
+                grad_log(L_CRIT|L_PERROR, "fork");
                 exit(1);
         default:
                 exit(0);
@@ -488,7 +488,7 @@ radiusd_daemon()
                 fflush(stderr);
         }
 	
-        efree(p);
+        grad_free(p);
 }
 
 int
@@ -524,7 +524,7 @@ radiusd_main()
 		else
 			ref_ip = grad_first_ip();
 		if (ref_ip == INADDR_ANY)
-		    radlog(L_ALERT, _("can't find out my own IP address"));
+		    grad_log(L_ALERT, _("can't find out my own IP address"));
 		
 		chdir("/");
 		umask(022);
@@ -542,7 +542,7 @@ radiusd_main()
 		log_change_owner(&radiusd_user);
 		p = grad_mkfilename(radlog_dir, "radius.stderr");
 		chown(p, radiusd_user.uid, radiusd_user.gid);
-		efree(p);
+		grad_free(p);
 		radius_switch_to_user(&radiusd_user);
 	}
 
@@ -629,7 +629,7 @@ radiusd_suspend()
 {
 	if (suspend_flag == 0) {
 		terminate_subprocesses();
-		radlog(L_NOTICE, _("RADIUSD SUSPENDED"));
+		grad_log(L_NOTICE, _("RADIUSD SUSPENDED"));
 		suspend_flag = 1;
 	}
 }
@@ -659,7 +659,7 @@ check_reload()
 		break;
 		
         case CMD_RELOAD:
-                radlog(L_INFO, _("Reloading configuration now"));
+                grad_log(L_INFO, _("Reloading configuration now"));
                 radiusd_reconfigure();
                 break;
 		
@@ -671,7 +671,7 @@ check_reload()
                 break;
 		
         case CMD_DUMPDB:
-                radlog(L_INFO, _("Dumping users db to `%s'"),
+                grad_log(L_INFO, _("Dumping users db to `%s'"),
 		       RADIUS_DUMPDB_NAME);
                 dump_users_db();
                 break;
@@ -717,8 +717,8 @@ radiusd_cleanup()
                         break;
 
 		format_exit_status(buffer, sizeof buffer, status);
-		radlog(L_NOTICE, _("child %lu %s"),
-		       (unsigned long) pid, buffer);
+		grad_log(L_NOTICE, _("child %lu %s"),
+		         (unsigned long) pid, buffer);
 
 		rpp_remove(pid);
 	}
@@ -729,10 +729,10 @@ radiusd_restart()
 {
 	pid_t pid;
 	
-	radlog(L_NOTICE, _("restart initiated"));
+	grad_log(L_NOTICE, _("restart initiated"));
 	if (xargv[0][0] != '/') {
-		radlog(L_ERR,
-		       _("can't restart: not started as absolute pathname"));
+		grad_log(L_ERR,
+		         _("can't restart: not started as absolute pathname"));
 		return;
 	}
 
@@ -743,8 +743,8 @@ radiusd_restart()
 	else 
 		pid = fork();
 	if (pid < 0) {
-		radlog(L_CRIT|L_PERROR,
-		       _("radiusd_restart: cannot fork"));
+		grad_log(L_CRIT|L_PERROR,
+		         _("radiusd_restart: cannot fork"));
 		return;
 	}
 	
@@ -759,9 +759,9 @@ radiusd_restart()
 	sleep(10);
 
 	/* Child */
-	radlog(L_NOTICE, _("restarting radius"));
+	grad_log(L_NOTICE, _("restarting radius"));
 	execvp(xargv[0], xargv);
-	radlog(L_CRIT|L_PERROR, _("RADIUS NOT RESTARTED: exec failed"));
+	grad_log(L_CRIT|L_PERROR, _("RADIUS NOT RESTARTED: exec failed"));
 	exit(1);
 	/*NOTREACHED*/
 }
@@ -798,7 +798,7 @@ radiusd_exit()
 	radiusd_pidfile_remove(RADIUSD_PID_FILE);
 	
 	radiusd_flush_queue();
-	radlog(L_CRIT, _("Normal shutdown."));
+	grad_log(L_CRIT, _("Normal shutdown."));
 
 	rpp_kill(-1, SIGTERM);
 	radiusd_exit0();
@@ -816,7 +816,7 @@ radiusd_exit0()
 void
 radiusd_main_loop()
 {
-        radlog(L_INFO, _("Ready to process requests."));
+        grad_log(L_INFO, _("Ready to process requests."));
 
         for (;;) {
 		log_open(L_MAIN);
@@ -840,7 +840,7 @@ static RAD_LIST /* of struct hook_rec */ *postconfig;
 void
 radiusd_set_preconfig_hook(void (*f)(void *, void *), void *p, int once)
 {
-	struct hook_rec *hp = emalloc(sizeof(*hp));
+	struct hook_rec *hp = grad_emalloc(sizeof(*hp));
 	hp->function = f;
 	hp->data = p;
 	hp->once = once;
@@ -852,7 +852,7 @@ radiusd_set_preconfig_hook(void (*f)(void *, void *), void *p, int once)
 void
 radiusd_set_postconfig_hook(void (*f)(void *, void *), void *p, int once)
 {
-	struct hook_rec *hp = emalloc(sizeof(*hp));
+	struct hook_rec *hp = grad_emalloc(sizeof(*hp));
 	hp->function = f;
 	hp->data = p;
 	hp->once = once;
@@ -874,7 +874,7 @@ _hook_call(void *item, void *data)
 	hp->function(hp->data, clos->call_data);
 	if (hp->once) {
 		grad_list_remove(clos->list, hp, NULL);
-		efree(hp);
+		grad_free(hp);
 	}
 	return 0;
 }
@@ -905,17 +905,17 @@ radiusd_reconfigure()
 
 	radiusd_run_preconfig_hooks(NULL);
 	
-	radlog(L_INFO, _("Loading configuration files."));
+	grad_log(L_INFO, _("Loading configuration files."));
 	/* Read main configuration file */
         filename = grad_mkfilename(radius_dir, RADIUS_CONFIG);
         cfg_read(filename, config_syntax, NULL);
-	efree(filename);
+	grad_free(filename);
 
 	/* Read other files */
         rc = reload_config_file(reload_all);
         
         if (rc) {
-                radlog(L_CRIT, _("Errors reading config file - EXITING"));
+                grad_log(L_CRIT, _("Errors reading config file - EXITING"));
                 exit(1);
         }
 
@@ -988,7 +988,7 @@ radiusd_pidfile_write(char *name)
                 fprintf(fp, "%lu\n", (u_long) pid);
                 fclose(fp);
         }
-        efree(p);
+        grad_free(p);
 }	
 
 pid_t
@@ -1002,7 +1002,7 @@ radiusd_pidfile_read(char *name)
 	if (fscanf(fp, "%lu", &val) != 1)
 		val = -1;
 	fclose(fp);
-	efree(p);
+	grad_free(p);
 	return (pid_t) val;
 }
 
@@ -1011,7 +1011,7 @@ radiusd_pidfile_remove(char *name)
 {
 	char *p = grad_mkfilename(radpid_dir, name);
 	unlink(p);
-	efree(p);
+	grad_free(p);
 }
 
 
@@ -1054,7 +1054,7 @@ int
 udp_input_close(int fd, void *data)
 {
 	close(fd);
-	efree(data);
+	grad_free(data);
 	return 0;
 }
 
@@ -1084,11 +1084,11 @@ udp_open(int type, UINT4 ipaddr, int port, int nonblock)
         s.sin_port = htons(port);
 	if (p = input_find_channel(radius_input, "udp", &s)) {
 		char buffer[DOTTED_QUAD_LEN];
-		radlog(L_ERR,
-		       _("socket %s:%d is already assigned for %s"),
-		       grad_ip_iptostr(ipaddr, buffer),
-		       port,
-		       request_class[p->type].name);
+		grad_log(L_ERR,
+		         _("socket %s:%d is already assigned for %s"),
+		         grad_ip_iptostr(ipaddr, buffer),
+		         port,
+		         request_class[p->type].name);
 		return 1;
 	}
 
@@ -1096,17 +1096,17 @@ udp_open(int type, UINT4 ipaddr, int port, int nonblock)
 	if (nonblock) 
 		grad_set_nonblocking(fd);
         if (fd < 0) {
-                radlog(L_CRIT|L_PERROR, "%s socket",
-		       request_class[type].name);
+                grad_log(L_CRIT|L_PERROR, "%s socket",
+		         request_class[type].name);
 		return 1;
         }
         if (bind(fd, (struct sockaddr*) &s, sizeof(s)) < 0) {
-                radlog(L_CRIT|L_PERROR, "%s bind", request_class[type].name);
+                grad_log(L_CRIT|L_PERROR, "%s bind", request_class[type].name);
 		close(fd);
 		return 1;
 	}
 
-	p = emalloc(sizeof(*p));
+	p = grad_emalloc(sizeof(*p));
 	p->type = type;
 	p->addr = s;
 	input_register_channel(radius_input, "udp", fd, p);
@@ -1239,8 +1239,8 @@ int
 option_stmt_end(void *block_data, void *handler_data)
 {
 	if (radiusd_user.username && radiusd_user.uid != 0) {
-		radlog(L_WARN, _("Ignoring exec-program-user"));
-		efree(exec_user.username);
+		grad_log(L_WARN, _("Ignoring exec-program-user"));
+		grad_free(exec_user.username);
 		exec_user.username = NULL;
 	} else if (exec_user.username == NULL)
 		radius_get_user_ids(&exec_user, "daemon");

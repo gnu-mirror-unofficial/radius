@@ -79,7 +79,7 @@ grad_set_logger(grad_logger_fp fp)
 
 /*PRINTFLIKE2*/
 void
-radlog(int lvl, const char *msg, ...)
+grad_log(int lvl, const char *msg, ...)
 {
         va_list ap;
         int ec = 0;
@@ -93,7 +93,7 @@ radlog(int lvl, const char *msg, ...)
 
 /*PRINTFLIKE3*/
 void
-radlog_req(int lvl, RADIUS_REQ *req, const char *msg, ...)
+grad_log_req(int lvl, RADIUS_REQ *req, const char *msg, ...)
 {
         va_list ap;
         int ec = 0;
@@ -106,7 +106,7 @@ radlog_req(int lvl, RADIUS_REQ *req, const char *msg, ...)
 }
 
 void
-radlog_loc(int lvl, LOCUS *loc, const char *msg, ...)
+grad_log_loc(int lvl, LOCUS *loc, const char *msg, ...)
 {
 	va_list ap;
 	int ec = 0;

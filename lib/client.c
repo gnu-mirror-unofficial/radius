@@ -122,9 +122,9 @@ grad_client_recv(UINT4 host, u_short udp_port, char *secret, char *vector,
         totallen = ntohs(auth->length);
 
         if (totallen != length) {
-                radlog(L_ERR,
+                grad_log(L_ERR,
            _("Actual request length does not match reported length (%d, %d)"),
-                       totallen, length);
+                         totallen, length);
                 return NULL;
         }
 
@@ -133,11 +133,11 @@ grad_client_recv(UINT4 host, u_short udp_port, char *secret, char *vector,
         memcpy(reply_digest, auth->vector, AUTH_VECTOR_LEN);
         memcpy(auth->vector, vector, AUTH_VECTOR_LEN);
         memcpy(buffer + length, secret, secretlen);
-        md5_calc(calc_digest, (unsigned char *)auth, length + secretlen);
+        grad_md5_calc(calc_digest, (unsigned char *)auth, length + secretlen);
         
 	debug(1, ("received %s", auth_code_str(auth->code)));
         if (memcmp(reply_digest, calc_digest, AUTH_VECTOR_LEN) != 0) {
-                radlog(L_WARN, _("Received invalid reply digest from server"));
+                grad_log(L_WARN, _("Received invalid reply digest from server"));
         }
 
         req = grad_decode_pdu(host, udp_port, buffer, length);
@@ -155,12 +155,12 @@ grad_client_encrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
 		if (p->prop & AP_ENCRYPT_RFC2138) {
 			char *pass = p->avp_strvalue;
 			grad_encrypt_password(p, pass, vector, secret);
-			efree(pass);
+			grad_free(pass);
 		} else if (p->prop & AP_ENCRYPT_RFC2868) {
 			char *pass = p->avp_strvalue;
 			grad_encrypt_tunnel_password(p, 0, pass,
 						     vector, secret);
-			efree(pass);
+			grad_free(pass);
 		}
 	}
 	return plist;
@@ -175,8 +175,8 @@ grad_client_decrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
 	for (p = plist; p; p = p->next) {
 		if (p->prop & AP_ENCRYPT_RFC2138) {
 			grad_decrypt_password(password, p, vector, secret);
-			efree(p->avp_strvalue);
-			p->avp_strvalue = estrdup(password);
+			grad_free(p->avp_strvalue);
+			p->avp_strvalue = grad_estrdup(password);
 			p->avp_strlength = strlen(p->avp_strvalue);
 		} else if (p->prop & AP_ENCRYPT_RFC2868) {
 			u_char tag;
@@ -186,8 +186,8 @@ grad_client_decrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
 						     p,
 						     vector,
 						     secret);
-			efree(p->avp_strvalue);
-			p->avp_strvalue = estrdup(password);
+			grad_free(p->avp_strvalue);
+			p->avp_strvalue = grad_estrdup(password);
 			p->avp_strlength = strlen(p->avp_strvalue);
 		}
 	}
@@ -215,12 +215,12 @@ grad_client_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 	int id;
 	
         if (port_type < 0 || port_type > 2) {
-                radlog(L_ERR, _("invalid port type"));
+                grad_log(L_ERR, _("invalid port type"));
                 return NULL;
         }
         sockfd = socket(PF_INET, SOCK_DGRAM, 0);
         if (sockfd < 0) {
-                radlog(L_ERR|L_PERROR, "socket");
+                grad_log(L_ERR|L_PERROR, "socket");
                 return NULL;
         }
 
@@ -238,14 +238,14 @@ grad_client_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
         } while ((bind(sockfd, &salocal, sizeof (struct sockaddr_in)) < 0)
 		 && local_port < 65535);
         if (local_port >= 65535) {
-                radlog(L_ERR|L_PERROR, "bind");
+                grad_log(L_ERR|L_PERROR, "bind");
                 close(sockfd);
                 return NULL;
         }
 
 	debug(1,
 	      ("sending %s", auth_code_str(code)));
-	recv_buf = emalloc(config->buffer_size);
+	recv_buf = grad_emalloc(config->buffer_size);
         itr = iterator_create(config->servers);
         server = iterator_first(itr);
         do {
@@ -261,9 +261,9 @@ grad_client_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
                         continue;
                 
                 if (debug_on(10)) {
-                        radlog(L_DEBUG, "server %s:%d",
-                               grad_ip_iptostr(server->addr, ipbuf),
-                               server->port[port_type]);
+                        grad_log(L_DEBUG, "server %s:%d",
+                                 grad_ip_iptostr(server->addr, ipbuf),
+                                 server->port[port_type]);
                 }
 
                 if (authid && (flags & RADCLT_AUTHENTICATOR))
@@ -304,7 +304,7 @@ grad_client_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
                         if (sendto(sockfd, pdu, size, 0,
                                    &saremote,
                                    sizeof(struct sockaddr_in)) == -1) {
-                                radlog(L_ERR|L_PERROR, "sendto");
+                                grad_log(L_ERR|L_PERROR, "sendto");
                         }
 
                         salen = sizeof (saremote);
@@ -320,7 +320,7 @@ grad_client_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 					      ("select interrupted. retrying."));
                                         continue;
                                 }
-                                radlog(L_NOTICE, _("select() interrupted"));
+                                grad_log(L_NOTICE, _("select() interrupted"));
                                 break;
                         }
 
@@ -339,17 +339,17 @@ grad_client_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
                                                 recv_buf,
                                                 result);
                                 else 
-                                        radlog(L_ERR|L_PERROR,
+                                        grad_log(L_ERR|L_PERROR,
                                         _("error receiving data from %s:%d"),
-                                               grad_ip_iptostr(server->addr, ipbuf),
-                                               server->port[port_type]);
+                                                 grad_ip_iptostr(server->addr, ipbuf),
+                                                 server->port[port_type]);
                                 
                                 break;
                         }
 			debug(10,("no response. retrying."));
                 }
 		
-		efree(pdu);
+		grad_free(pdu);
 		
                 if (!req)
                         debug(10,("no reply from %s:%d",
@@ -359,7 +359,7 @@ grad_client_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
         } while (!req && (server = iterator_next(itr)) != NULL);
 	iterator_destroy(&itr);
 
-	efree(recv_buf);
+	grad_free(recv_buf);
         close(sockfd);
         return req;
 }
@@ -398,7 +398,7 @@ parse_client_config(void *closure, int argc, char **argv, LOCUS *loc)
         
         switch (grad_xlat_keyword(kwd, argv[0], TOK_INVALID)) {
         case TOK_INVALID:
-                radlog_loc(L_ERR, loc, _("unknown keyword"));
+                grad_log_loc(L_ERR, loc, _("unknown keyword"));
                 break;
                 
         case TOK_SOURCE_IP:
@@ -407,7 +407,7 @@ parse_client_config(void *closure, int argc, char **argv, LOCUS *loc)
                 
         case TOK_SERVER:
                 if (argc != 6) {
-                        radlog_loc(L_ERR, loc, _("wrong number of fields"));
+                        grad_log_loc(L_ERR, loc, _("wrong number of fields"));
                         break;
                 }
                 memset(&serv, 0, sizeof serv);
@@ -415,8 +415,8 @@ parse_client_config(void *closure, int argc, char **argv, LOCUS *loc)
                 serv.name = argv[1];
                 serv.addr = grad_ip_gethostaddr(argv[2]);
                 if (!serv.addr) {
-                        radlog_loc(L_ERR, loc,
-				   _("bad IP address or host name"));
+                        grad_log_loc(L_ERR, loc,
+				     _("bad IP address or host name"));
                         break;
                 }
                 
@@ -424,15 +424,15 @@ parse_client_config(void *closure, int argc, char **argv, LOCUS *loc)
 
                 serv.port[0] = strtol(argv[4], &p, 0);
                 if (*p) {
-                        radlog_loc(L_ERR, loc, _("bad port number %s"),
-				   argv[4]);
+                        grad_log_loc(L_ERR, loc, _("bad port number %s"),
+				     argv[4]);
                         break;
                 }
 
                 serv.port[1] = strtol(argv[5], &p, 0);
                 if (*p) {
-                        radlog_loc(L_ERR, loc, _("bad port number %s"),
-				   argv[4]);
+                        grad_log_loc(L_ERR, loc, _("bad port number %s"),
+				     argv[4]);
                         break;
                 }
 
@@ -443,13 +443,13 @@ parse_client_config(void *closure, int argc, char **argv, LOCUS *loc)
         case TOK_TIMEOUT:
                 client->timeout = strtol(argv[1], &p, 0);
                 if (*p) 
-                        radlog_loc(L_ERR, loc,  _("bad timeout value"));
+                        grad_log_loc(L_ERR, loc,  _("bad timeout value"));
                 break;
                 
         case TOK_RETRY:
                 client->retries = strtol(argv[1], &p, 0);
                 if (*p) 
-                        radlog_loc(L_ERR, loc, _("bad retry value"));
+                        grad_log_loc(L_ERR, loc, _("bad retry value"));
                 break;
         }
         return 0;
@@ -462,7 +462,7 @@ grad_client_create_queue(int read_cfg, UINT4 source_ip, size_t bufsize)
         RADIUS_SERVER_QUEUE *client;
         char *filename;
         
-        client = emalloc(sizeof *client);
+        client = grad_emalloc(sizeof *client);
 
         /* Provide default values */
         client->source_ip = source_ip;
@@ -474,7 +474,7 @@ grad_client_create_queue(int read_cfg, UINT4 source_ip, size_t bufsize)
         if (read_cfg) {
                 filename = grad_mkfilename(radius_dir, "client.conf");
                 grad_read_raddb_file(filename, 1, parse_client_config, client);
-                efree(filename);
+                grad_free(filename);
         }
         return client;
 }
@@ -484,7 +484,7 @@ grad_client_destroy_queue(RADIUS_SERVER_QUEUE *queue)
 {
 	if (queue) {
 		grad_client_clear_server_list(queue);
-		efree(queue);
+		grad_free(queue);
 	}
 }
 
@@ -493,12 +493,12 @@ grad_client_alloc_server(RADIUS_SERVER *src)
 {
         RADIUS_SERVER *server;
 
-        server = emalloc(sizeof(*server));
-        server->name = estrdup(src->name);
+        server = grad_emalloc(sizeof(*server));
+        server->name = grad_estrdup(src->name);
         server->addr = src->addr;
         server->port[0] = src->port[0];
         server->port[1] = src->port[1];
-        server->secret = estrdup(src->secret);
+        server->secret = grad_estrdup(src->secret);
 	server->id_offset = (off_t)-1;
         return server;
 }
@@ -508,12 +508,12 @@ grad_client_dup_server(RADIUS_SERVER *src)
 {
         RADIUS_SERVER *dest;
 
-        dest = emalloc(sizeof(*dest));
+        dest = grad_emalloc(sizeof(*dest));
         dest->addr = src->addr;
-        dest->name = estrdup(src->name);
+        dest->name = grad_estrdup(src->name);
         dest->port[0] = src->port[0];
         dest->port[1] = src->port[1];
-        dest->secret = estrdup(src->secret);
+        dest->secret = grad_estrdup(src->secret);
         return dest;
 }
 
@@ -524,9 +524,9 @@ grad_client_dup_server(RADIUS_SERVER *src)
 void
 grad_client_free_server(RADIUS_SERVER *server)
 {
-        efree(server->name);
-        efree(server->secret);
-        efree(server);
+        grad_free(server->name);
+        grad_free(server->secret);
+        grad_free(server);
 }
 
 void
@@ -541,9 +541,9 @@ static int
 grad_client_internal_free_server(void *item, void *data)
 {
 	RADIUS_SERVER *server = item;
-        efree(server->name);
-        efree(server->secret);
-	efree(server);
+        grad_free(server->name);
+        grad_free(server->secret);
+	grad_free(server);
 	return 0;
 }
 

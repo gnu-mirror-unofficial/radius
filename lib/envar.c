@@ -51,21 +51,21 @@ grad_envar_parse_internal(char *str, RAD_LIST **plist)
                 
                 if (argv[i][0] == ',')
                         continue;
-                env = emalloc(sizeof(*env));
+                env = grad_emalloc(sizeof(*env));
                 p = strchr(argv[i], '=');
                 if (p) {
                         int len = p - argv[i];
-                        env->name = emalloc(len + 1);
+                        env->name = grad_emalloc(len + 1);
                         memcpy(env->name, argv[i], len);
                         env->name[len] = 0;
-                        env->value = estrdup(p+1);
+                        env->value = grad_estrdup(p+1);
                 } else if (strlen(argv[i]) > 2
                            && memcmp(argv[i], "no", 2) == 0) {
-                        env->name = estrdup(argv[i]+2);
-                        env->value = estrdup("0");
+                        env->name = grad_estrdup(argv[i]+2);
+                        env->value = grad_estrdup("0");
                 } else {
-                        env->name = estrdup(argv[i]);
-                        env->value = estrdup("1");
+                        env->name = grad_estrdup(argv[i]);
+                        env->value = grad_estrdup("1");
                 }
 		if (!*plist)
 			*plist = grad_list_create();
@@ -96,9 +96,9 @@ static int
 grad_envar_free(void *item, void *data)
 {
         ENVAR *env = item;
-        efree(env->name);
-        efree(env->value);
-	efree(env);
+        grad_free(env->name);
+        grad_free(env->value);
+	grad_free(env);
 	return 0;
 }
 
@@ -149,9 +149,9 @@ grad_envar_dup(ENVAR *env)
 {
         ENVAR *ep;
 
-        ep = emalloc(sizeof(*ep));
-        ep->name  = estrdup(env->name);
-        ep->value = estrdup(env->value);
+        ep = grad_emalloc(sizeof(*ep));
+        ep->name  = grad_estrdup(env->name);
+        ep->value = grad_estrdup(env->value);
         return ep;
 }
 

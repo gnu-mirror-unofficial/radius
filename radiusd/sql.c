@@ -212,7 +212,7 @@ sql_digest(SQL_cfg *cfg)
                 + STRLEN(cfg->acct_db)
                 + 1;
 
-        digest = emalloc(length);
+        digest = grad_emalloc(length);
         p = digest;
         
         *(int*)p = length;
@@ -273,8 +273,8 @@ sql_cfg_comp(SQL_cfg *a, SQL_cfg *b)
         dig1 = sql_digest(a);
         dig2 = sql_digest(b);
         rc = sql_digest_comp(dig1, dig2);
-        efree(dig1);
-        efree(dig2);
+        grad_free(dig1);
+        grad_free(dig2);
         return rc;
 }
 
@@ -286,7 +286,7 @@ rad_sql_init()
         time_t timeout;
         SQL_cfg new_cfg;
 
-#define FREE(a) if (a) efree(a); a = NULL
+#define FREE(a) if (a) grad_free(a); a = NULL
 
         bzero(&new_cfg, sizeof(new_cfg));
         new_cfg.keepopen = 0;
@@ -297,8 +297,8 @@ rad_sql_init()
         sqlfile = grad_mkfilename(radius_dir, "sqlserver");
         /* Open source file */
         if ((sqlfd = fopen(sqlfile, "r")) == (FILE *) NULL) {
-                radlog(L_ERR, _("could not read sqlserver file %s"), sqlfile);
-                efree(sqlfile);
+                grad_log(L_ERR, _("could not read sqlserver file %s"), sqlfile);
+                grad_free(sqlfile);
                 return -1;
         }
         line_no = 0;
@@ -306,18 +306,18 @@ rad_sql_init()
         obstack_init(&parse_stack);
         while (getline()) {
                 if (stmt_type == -1) {
-                        radlog(L_ERR,
-                               "%s:%d: %s",
-                               sqlfile, line_no,
-			       _("unrecognized keyword"));
+                        grad_log(L_ERR,
+                                 "%s:%d: %s",
+                                 sqlfile, line_no,
+			         _("unrecognized keyword"));
                         continue;
                 }
                 /* Each keyword should have an argument */
                 if (cur_ptr == NULL) {
-                        radlog(L_ERR,
-                               "%s:%d: %s",
-                               sqlfile, line_no,
-			       _("required argument missing"));
+                        grad_log(L_ERR,
+                                 "%s:%d: %s",
+                                 sqlfile, line_no,
+			         _("required argument missing"));
                         continue;
                 }
                 
@@ -325,142 +325,142 @@ rad_sql_init()
                 case STMT_SERVER:
                        	if (cur_ptr[0] != '/'
 			    && !grad_ip_gethostaddr(cur_ptr)) {
-                                radlog(L_ERR,
-                                       _("%s:%d: unknown host: %s"),
-                                       sqlfile, line_no,
-                                       cur_ptr);
+                                grad_log(L_ERR,
+                                         _("%s:%d: unknown host: %s"),
+                                         sqlfile, line_no,
+                                         cur_ptr);
                                 new_cfg.active[SQL_ACCT] = 0;
                                 new_cfg.active[SQL_AUTH] = 0;
                         } else {
-                                new_cfg.server = estrdup(cur_ptr);
+                                new_cfg.server = grad_estrdup(cur_ptr);
                         }
                         break;
                         
                 case STMT_PORT:
                         new_cfg.port = strtol(cur_ptr, &ptr, 0);
                         if (*ptr != 0 && !isspace(*ptr)) {
-                                radlog(L_ERR,
-				       "%s:%d: %s",
-                                       sqlfile, line_no,
-				       _("number parse error"));
+                                grad_log(L_ERR,
+				         "%s:%d: %s",
+                                         sqlfile, line_no,
+				         _("number parse error"));
                                 new_cfg.active[SQL_ACCT] = 0;
                                 new_cfg.active[SQL_AUTH] = 0;
                         }
                         break;
                         
                 case STMT_LOGIN:
-                        new_cfg.login = estrdup(cur_ptr);
+                        new_cfg.login = grad_estrdup(cur_ptr);
                         break;
                         
                 case STMT_PASSWORD:
-                        new_cfg.password = estrdup(cur_ptr);
+                        new_cfg.password = grad_estrdup(cur_ptr);
                         break;
                         
                 case STMT_KEEPOPEN:
                         if (get_boolean(cur_ptr, &new_cfg.keepopen))
-                                radlog(L_ERR,
-                                       "%s:%d: %s",
-                                       sqlfile, line_no,
-				       _("expected boolean value"));
+                                grad_log(L_ERR,
+                                         "%s:%d: %s",
+                                         sqlfile, line_no,
+				         _("expected boolean value"));
                         break;
 
                 case STMT_IDLE_TIMEOUT:
                         timeout = strtol(cur_ptr, &ptr, 0);
                         if ((*ptr != 0 && !isspace(*ptr)) || timeout <= 0) {
-                                radlog(L_ERR, "%s:%d: %s",
-                                       sqlfile, line_no,
-				       _("number parse error"));
+                                grad_log(L_ERR, "%s:%d: %s",
+                                         sqlfile, line_no,
+				         _("number parse error"));
                         } else 
                                 new_cfg.idle_timeout = timeout;
                         break;
                         
                 case STMT_DOAUTH:       
                         if (get_boolean(cur_ptr, &new_cfg.active[SQL_AUTH]))
-                                radlog(L_ERR,
-                                       "%s:%d: %s",
-                                       sqlfile, line_no,
-				       _("expected boolean value"));
+                                grad_log(L_ERR,
+                                         "%s:%d: %s",
+                                         sqlfile, line_no,
+				         _("expected boolean value"));
                         break;
                         
                 case STMT_DOACCT:
                         if (get_boolean(cur_ptr, &new_cfg.active[SQL_ACCT]))
-                                radlog(L_ERR,
-                                       "%s:%d: %s", 
-                                       sqlfile, line_no,
-				       _("expected boolean value"));
+                                grad_log(L_ERR,
+                                         "%s:%d: %s", 
+                                         sqlfile, line_no,
+				         _("expected boolean value"));
                         break;
                         
                 case STMT_AUTH_DB:
-                        new_cfg.auth_db = estrdup(cur_ptr);
+                        new_cfg.auth_db = grad_estrdup(cur_ptr);
                         break;
 
                 case STMT_ACCT_DB:
-                        new_cfg.acct_db = estrdup(cur_ptr);
+                        new_cfg.acct_db = grad_estrdup(cur_ptr);
                         break;
                         
                 case STMT_AUTH_QUERY:
-                        new_cfg.auth_query = estrdup(cur_ptr);
+                        new_cfg.auth_query = grad_estrdup(cur_ptr);
                         break;
 
                 case STMT_GROUP_QUERY:
-                        new_cfg.group_query = estrdup(cur_ptr);
+                        new_cfg.group_query = grad_estrdup(cur_ptr);
                         break;
                         
                 case STMT_ACCT_START_QUERY:
-                        new_cfg.acct_start_query = estrdup(cur_ptr);
+                        new_cfg.acct_start_query = grad_estrdup(cur_ptr);
                         break;
                         
                 case STMT_ACCT_STOP_QUERY:
-                        new_cfg.acct_stop_query = estrdup(cur_ptr);
+                        new_cfg.acct_stop_query = grad_estrdup(cur_ptr);
                         break;
                         
                 case STMT_ACCT_KEEPALIVE_QUERY:
-                        new_cfg.acct_keepalive_query = estrdup(cur_ptr);
+                        new_cfg.acct_keepalive_query = grad_estrdup(cur_ptr);
                         break;
                         
                 case STMT_ACCT_NASUP_QUERY:
-                        new_cfg.acct_nasup_query = estrdup(cur_ptr);
+                        new_cfg.acct_nasup_query = grad_estrdup(cur_ptr);
                         break;
 
                 case STMT_ACCT_NASDOWN_QUERY:
-                        new_cfg.acct_nasdown_query = estrdup(cur_ptr);
+                        new_cfg.acct_nasdown_query = grad_estrdup(cur_ptr);
                         break;
                         
                 case STMT_REPLY_ATTR_QUERY:
-                        new_cfg.reply_attr_query = estrdup(cur_ptr);
+                        new_cfg.reply_attr_query = grad_estrdup(cur_ptr);
                         break;
 
                 case STMT_CHECK_ATTR_QUERY:
-                        new_cfg.check_attr_query = estrdup(cur_ptr);
+                        new_cfg.check_attr_query = grad_estrdup(cur_ptr);
                         break;
                         
                 case STMT_MAX_AUTH_CONNECTIONS:
-                        radlog(L_WARN,
-                               "%s:%d: %s",
-                               sqlfile, line_no,
-			       _("auth_max_connections is obsolete"));
+                        grad_log(L_WARN,
+                                 "%s:%d: %s",
+                                 sqlfile, line_no,
+			         _("auth_max_connections is obsolete"));
                         break;
                         
                 case STMT_MAX_ACCT_CONNECTIONS:
-                        radlog(L_WARN,
-                               "%s:%d: %s",
-                               sqlfile, line_no,
-			       _("acct_max_connections is obsolete"));
+                        grad_log(L_WARN,
+                                 "%s:%d: %s",
+                                 sqlfile, line_no,
+			         _("acct_max_connections is obsolete"));
                         break;
                         
                 case STMT_QUERY_BUFFER_SIZE:
-                        radlog(L_WARN,
-			       "%s:%d: %s",
-			       sqlfile, line_no,
-			       _("query_buffer_size is obsolete"));
+                        grad_log(L_WARN,
+			         "%s:%d: %s",
+			         sqlfile, line_no,
+			         _("query_buffer_size is obsolete"));
                         break;
                         
                 case STMT_INTERFACE:
                         new_cfg.interface = disp_sql_interface_index(cur_ptr);
                         if (!new_cfg.interface) {
-                                radlog(L_WARN, "%s:%d: %s",
-                                       sqlfile, line_no,
-				       _("Unsupported SQL interface"));
+                                grad_log(L_WARN, "%s:%d: %s",
+                                         sqlfile, line_no,
+				         _("Unsupported SQL interface"));
                         }
                         break;
                 }
@@ -472,7 +472,7 @@ rad_sql_init()
         fclose(sqlfd);
 
         sql_check_config(sqlfile, &new_cfg);
-        efree(sqlfile);
+        grad_free(sqlfile);
 
         if (!sql_cfg_empty_p(&sql_cfg)
 	    && sql_cfg_comp(&new_cfg, &sql_cfg)) 
@@ -517,8 +517,8 @@ radiusd_sql_shutdown()
 static void
 missing_statement(int prio, const char *filename, char *stmt)
 {
-	radlog(prio, _("%s: missing `%s' statement"),
-	       filename, stmt);
+	grad_log(prio, _("%s: missing `%s' statement"),
+	         filename, stmt);
 }
 
 void
@@ -528,7 +528,7 @@ sql_check_config(const char *filename, SQL_cfg *cfg)
 	int doacct = cfg->active[SQL_ACCT];
 
 #define FREE_IF_EMPTY(s) if (s && strcmp(s, "none") == 0) {\
-                                efree(s);\
+                                grad_free(s);\
                                 s = NULL;\
                          }
 
@@ -598,16 +598,16 @@ sql_check_config(const char *filename, SQL_cfg *cfg)
 
 	/* Inform the user */
 	if (cfg->active[SQL_AUTH] != doauth)
-		radlog(L_NOTICE, _("disabling SQL authentication"));
+		grad_log(L_NOTICE, _("disabling SQL authentication"));
 	if (cfg->active[SQL_ACCT] != doacct)
-		radlog(L_NOTICE, _("disabling SQL accounting"));
+		grad_log(L_NOTICE, _("disabling SQL accounting"));
 }
 
 void
 sql_flush()
 {
-        radlog(L_NOTICE,
-               _("SQL configuration changed: closing existing connections"));
+        grad_log(L_NOTICE,
+                 _("SQL configuration changed: closing existing connections"));
         radiusd_flush_queue();
 	radiusd_sql_shutdown();
 }
@@ -621,15 +621,15 @@ sql_result_destroy(SQL_RESULT *res)
 	
 	if (!res)
 		return;
-	efree(res->query);
+	grad_free(res->query);
 	for (i = 0; i < res->ntuples; i++) {
 		size_t j;
 		for (j = 0; j < res->nfields; j++) 
-			efree(res->tuple[i][j]);
-		efree(res->tuple[i]);
+			grad_free(res->tuple[i][j]);
+		grad_free(res->tuple[i]);
 	}
-	efree(res->tuple);
-	efree(res);
+	grad_free(res->tuple);
+	grad_free(res);
 }
 
 static size_t
@@ -678,8 +678,8 @@ sql_cache_retrieve(struct sql_connection *conn, char *query)
 	size_t i;
 	
 	debug(20,("query: %s",query));
-	res = emalloc(sizeof(*res));
-	res->query = estrdup(query);
+	res = grad_emalloc(sizeof(*res));
+	res->query = grad_estrdup(query);
 	res->nfields = res->ntuples = 0;
 	res->tuple = NULL;
         data = disp_sql_exec(conn, query);
@@ -696,17 +696,17 @@ sql_cache_retrieve(struct sql_connection *conn, char *query)
 		return res;
 	}
 
-	res->tuple = emalloc(sizeof(res->tuple[0]) * res->ntuples);
+	res->tuple = grad_emalloc(sizeof(res->tuple[0]) * res->ntuples);
         for (i = 0; i < res->ntuples
 		     && disp_sql_next_tuple(conn, data) == 0; i++) {
 		int j;
 
-		res->tuple[i] = emalloc(sizeof(res->tuple[0][0]) * res->nfields);
+		res->tuple[i] = grad_emalloc(sizeof(res->tuple[0][0]) * res->nfields);
 			
 		for (j = 0; j < res->nfields; j++) {
 			char *p = disp_sql_column(conn, data, j);
 			chop(p);
-			res->tuple[i][j] = estrdup(p);
+			res->tuple[i][j] = grad_estrdup(p);
 		}
 	}
 		
@@ -748,7 +748,7 @@ attach_sql_connection(int type)
         if (!conn) {
                 debug(1, ("allocating new %d sql connection", type));
 
-                conn = emalloc(sizeof(struct sql_connection));
+                conn = grad_emalloc(sizeof(struct sql_connection));
                 conn->connected = 0;
                 conn->last_used = now;
                 conn->type = type;
@@ -782,7 +782,7 @@ detach_sql_connection(int type)
                           conn));
                 if (conn->connected)
                         disp_sql_disconnect(conn);
-                efree(conn);
+                grad_free(conn);
                 sql_conn[type] = NULL;
         }
 }
@@ -793,7 +793,7 @@ sql_conn_destroy(struct sql_connection **conn)
 	if (*conn) {
 		disp_sql_disconnect(*conn);
 		sql_cache_destroy(*conn);
-		efree(*conn);
+		grad_free(*conn);
 		*conn = NULL;
 	}
 }
@@ -829,8 +829,8 @@ rad_sql_acct(RADIUS_REQ *radreq)
 
         if (!(pair = grad_avl_find(radreq->request, DA_ACCT_STATUS_TYPE))) {
                 /* should never happen!! */
-                radlog_req(L_ERR, radreq,
-                           _("no Acct-Status-Type attribute in rad_sql_acct()"));
+                grad_log_req(L_ERR, radreq,
+                             _("no Acct-Status-Type attribute in rad_sql_acct()"));
                 return;
         }
         status = pair->avp_lvalue;
@@ -906,12 +906,12 @@ rad_sql_acct(RADIUS_REQ *radreq)
         }
 
 	if (log_facility) {
-		radlog_req(log_facility, radreq,
-			   ngettext("%s updated %d record",
-				    "%s updated %d records",
-				    count),
-			   query_name,
-			   count);
+		grad_log_req(log_facility, radreq,
+			     ngettext("%s updated %d record",
+				      "%s updated %d records",
+				      count),
+			     query_name,
+			     count);
 	}
 
         obstack_free(&stack, NULL);
@@ -927,8 +927,8 @@ rad_sql_pass(RADIUS_REQ *req, char *authdata)
         struct obstack stack;
         
         if (sql_cfg.active[SQL_AUTH] == 0) {
-                radlog(L_ERR,
-                       _("SQL Auth specified in users file, but not in sqlserver file"));
+                grad_log(L_ERR,
+                         _("SQL Auth specified in users file, but not in sqlserver file"));
                 return NULL;
         }
         
@@ -1024,8 +1024,8 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
 			char *opstr = res->tuple[i][2];
                         op = grad_str_to_op(opstr);
                         if (op == NUM_OPERATORS) {
-                                radlog(L_NOTICE,
-                                       _("SQL: invalid operator: %s"), opstr);
+                                grad_log(L_NOTICE,
+                                         _("SQL: invalid operator: %s"), opstr);
                                 continue;
                         }
 		} else

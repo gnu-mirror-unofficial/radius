@@ -53,9 +53,9 @@ rad_odbc_diag(SQLSMALLINT handle_type, SQLHANDLE handle, char *what)
                       state,
                       &nerror,
                       message, sizeof message, &msglen);
-        radlog(L_ERR,
-               "%s: %s %d %s",
-               what, state, nerror, message);
+        grad_log(L_ERR,
+                 "%s: %s %d %s",
+                 what, state, nerror, message);
 }
 
 /* ************************************************************************* */
@@ -86,7 +86,7 @@ rad_odbc_reconnect(int type, struct sql_connection *conn)
                 snprintf(portbuf, sizeof(portbuf), "%d", sql_cfg.port);
         }
 
-        oconn = emalloc(sizeof(ODBCconn));
+        oconn = grad_emalloc(sizeof(ODBCconn));
         result = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &oconn->env);
         if (result != SQL_SUCCESS) {
                 rad_odbc_diag(SQL_HANDLE_ENV, oconn->env,
@@ -131,7 +131,7 @@ rad_odbc_disconnect(struct sql_connection *conn, int drop ARG_UNUSED)
         odata = (ODBCconn*)(conn->data);        
         SQLDisconnect(odata->dbc);
         SQLFreeHandle(SQL_HANDLE_ENV, odata->env);
-        efree(conn->data);
+        grad_free(conn->data);
         conn->data = NULL;
         conn->connected = 0;
 }
@@ -226,9 +226,9 @@ rad_odbc_getpwd(struct sql_connection *conn, char *query)
         result = SQLFetch(stmt);
 
         if (result == SQL_SUCCESS) {
-                radlog(L_NOTICE,
-               _("query returned more tuples: %s"),
-                query);
+                grad_log(L_NOTICE,
+                         _("query returned more tuples: %s"),
+                         query);
                 SQLFreeHandle(SQL_HANDLE_STMT, stmt);
                 return NULL;
         }
@@ -240,7 +240,7 @@ rad_odbc_getpwd(struct sql_connection *conn, char *query)
                 return NULL;
         }
 
-        return_passwd = estrdup(passwd);
+        return_passwd = grad_estrdup(passwd);
 
         SQLFreeHandle(SQL_HANDLE_STMT, stmt);
         return return_passwd;
@@ -320,7 +320,7 @@ rad_odbc_exec(struct sql_connection *conn, char *query)
         }
 		
 	
-        data = emalloc(sizeof(*data));
+        data = grad_emalloc(sizeof(*data));
         data->stmt = stmt;
         data->nfields = ccount;
 	data->ntuples = rcount;
@@ -338,8 +338,8 @@ rad_odbc_column(void *data, size_t ncol)
         if (!data)
                 return NULL;
         if (ncol >= edata->nfields) {
-                radlog(L_ERR,
-                       _("too few columns returned (%d req'd)"), ncol);
+                grad_log(L_ERR,
+                         _("too few columns returned (%d req'd)"), ncol);
                 return NULL;
         }
         
@@ -350,7 +350,7 @@ rad_odbc_column(void *data, size_t ncol)
                               "SQLGetData");
                 return NULL;
         }
-        return estrdup(buffer);
+        return grad_estrdup(buffer);
 }
 
 /*ARGSUSED*/
@@ -386,7 +386,7 @@ rad_odbc_free(struct sql_connection *conn, void *data)
                 return;
         
         SQLFreeHandle(SQL_HANDLE_STMT, edata->stmt);
-        efree(edata);
+        grad_free(edata);
 }
 
 SQL_DISPATCH_TAB odbc_dispatch_tab[] = {

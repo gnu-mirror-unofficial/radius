@@ -70,21 +70,21 @@ shmem_alloc(size_t size)
 					      statfile_perms);
 			
 			if (tempfd == -1) {
-				radlog(L_ERR|L_PERROR, 
-					_("can't open file `%s'"),
-				        radstat_path);
+				grad_log(L_ERR|L_PERROR, 
+					 _("can't open file `%s'"),
+				         radstat_path);
 				return -1;
 			}
 		}
 		if (fstat(tempfd, &sb)) {
-			radlog(L_ERR|L_PERROR, _("can't stat `%s'"),
-			       radstat_path);
+			grad_log(L_ERR|L_PERROR, _("can't stat `%s'"),
+			         radstat_path);
 			close(tempfd);
 			return -1;
 		}
 		if ((sb.st_mode & statfile_perms) != statfile_perms) {
-			radlog(L_ERR,
-			       _("SNMP system disabled: file `%s' has incorrect permissions"),
+			grad_log(L_ERR,
+			         _("SNMP system disabled: file `%s' has incorrect permissions"),
 			       radstat_path);
 			close(tempfd);
 			return -1;
@@ -103,7 +103,7 @@ shmem_alloc(size_t size)
 			  tempfd, 0);
 	
 	if (shmem_base == MAP_FAILED) {
-		radlog(L_ERR|L_PERROR, _("mmap failed"));
+		grad_log(L_ERR|L_PERROR, _("mmap failed"));
 		return -1;
 	} else {
 		shmem_size = size;
@@ -128,11 +128,11 @@ shmem_get(size_t size, int zero)
 	if (!shmem_base && shmem_alloc(size))
 		return NULL;
 	if (shmem_size - offset < size) {
-		radlog(L_ERR,
-		       ngettext("shmem_get(): can't allocate %d byte",
-				"shmem_get(): can't allocate %d bytes",
-				size),
-		       size);
+		grad_log(L_ERR,
+		         ngettext("shmem_get(): can't allocate %d byte",
+			  	  "shmem_get(): can't allocate %d bytes",
+				  size),
+		         size);
 	} else {
 		ptr = shmem_base + offset;
 		offset += size;
@@ -165,7 +165,7 @@ stat_init()
 	if (shmem_alloc(stat_port_count * sizeof(PORT_STAT) +
 			sizeof(*server_stat) +
 			stat_nas_count * sizeof(struct nas_stat))) {
-		radlog(L_NOTICE, _("stat_init failed"));
+		grad_log(L_NOTICE, _("stat_init failed"));
 		return;
 	}
 
@@ -225,8 +225,8 @@ stat_find_port(NAS *nas, int port_no)
 
 	/* Port not found */
 	if ((port = stat_alloc_port()) == NULL) {
-		radlog(L_WARN,
-		       _("reached SNMP storage limit for the number of monitored ports: increase max-port-count"));
+		grad_log(L_WARN,
+		         _("reached SNMP storage limit for the number of monitored ports: increase max-port-count"));
 		return NULL;
 	}
 	port->ip = nas->netdef.ipaddr;
@@ -285,10 +285,10 @@ stat_update(struct radutmp *ut, int status)
 		return;
 	nas = grad_nas_lookup_ip(ntohl(ut->nas_address));
 	if (!nas) {
-		radlog(L_WARN,
-		       _("stat_update(): portno %d: can't find nas for IP %s"),
-		       ut->nas_port,
-		       grad_ip_iptostr(ntohl(ut->nas_address), ipbuf));
+		grad_log(L_WARN,
+		         _("stat_update(): portno %d: can't find nas for IP %s"),
+		         ut->nas_port,
+		         grad_ip_iptostr(ntohl(ut->nas_address), ipbuf));
 		return;
 	}
 	if (nas->netdef.ipaddr == 0) /* DEFAULT nas */
@@ -296,10 +296,10 @@ stat_update(struct radutmp *ut, int status)
 	
 	port = stat_find_port(nas, ut->nas_port);
 	if (!port) {
-		radlog(L_WARN,
-		       _("stat_update(): port %d not found on NAS %s"),
-		       ut->nas_port,
-		       grad_ip_iptostr(ntohl(ut->nas_address), ipbuf));
+		grad_log(L_WARN,
+		         _("stat_update(): port %d not found on NAS %s"),
+		         ut->nas_port,
+		         grad_ip_iptostr(ntohl(ut->nas_address), ipbuf));
 		return;
 	}
 
@@ -308,10 +308,10 @@ stat_update(struct radutmp *ut, int status)
 		if (port->start) {
 			dt = ut->time - port->start;
 			if (dt < 0) {
-                                radlog(L_NOTICE,
-				       "stat_update(START,%s,%s,%d): %s",
-				       ut->login, nas->shortname, ut->nas_port,
-				       _("negative port idle time"));
+                                grad_log(L_NOTICE,
+				         "stat_update(START,%s,%s,%d): %s",
+				         ut->login, nas->shortname, ut->nas_port,
+				         _("negative port idle time"));
 			} else {
 				port->idle += dt;
 			}
@@ -332,7 +332,7 @@ stat_update(struct radutmp *ut, int status)
 		if (port->start) {
 			dt = ut->time - port->start;
 			if (dt < 0) {
-                                radlog(L_NOTICE,
+                                grad_log(L_NOTICE,
 				       "stat_update(STOP,%s,%s,%d): %s",
 				       ut->login, nas->shortname, ut->nas_port,
 				       _("negative port session time"));
@@ -463,8 +463,8 @@ snmp_attach_nas_stat(NAS *nas)
         np = find_nas_stat(nas->netdef.ipaddr); 
         if (!np) {
 		if (server_stat->nas_index >= server_stat->nas_count) {
-			radlog(L_WARN,
-			       _("reached SNMP storage limit for the number of monitored NASes: increase max-nas-count"));
+			grad_log(L_WARN,
+			         _("reached SNMP storage limit for the number of monitored NASes: increase max-nas-count"));
 			return;
 		}
 		np = nas_stat + server_stat->nas_index;
@@ -514,9 +514,9 @@ stat_cfg_file(int argc, cfg_value_t *argv,
 		return 0;
 	}
 
-	efree(radstat_path);
+	grad_free(radstat_path);
 	if (argv[1].v.string[0] != '/')
-		radstat_path = estrdup(argv[1].v.string);
+		radstat_path = grad_estrdup(argv[1].v.string);
 	else
 		radstat_path = grad_mkfilename(radlog_dir, argv[1].v.string); 
 	

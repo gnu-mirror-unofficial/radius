@@ -47,7 +47,7 @@ passwd_recode(VALUE_PAIR *pass_pair, char *new_secret, char *new_vector,
 {
         char password[AUTH_STRING_LEN+1];
         req_decrypt_password(password, req, pass_pair);
-        efree(pass_pair->avp_strvalue);
+        grad_free(pass_pair->avp_strvalue);
         grad_encrypt_password(pass_pair, password, new_vector, new_secret);
         /* Don't let the cleantext hang around */
         memset(password, 0, AUTH_STRING_LEN);
@@ -64,7 +64,7 @@ tunnel_passwd_recode(VALUE_PAIR *pass_pair, char *new_secret, char *new_vector,
 	grad_decrypt_tunnel_password(password, 
 				     &tag, pass_pair,
 				     req->vector, req->secret);
-        efree(pass_pair->avp_strvalue);
+        grad_free(pass_pair->avp_strvalue);
 	grad_encrypt_tunnel_password(pass_pair,
 				     tag, password, 
 				     new_vector, new_secret);
@@ -189,9 +189,9 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 				radreq->server_no);
 
 	if (!server) {
-		radlog_req(L_NOTICE, radreq,
-		           _("couldn't send request to realm %s"),
-		           radreq->realm->realm);
+		grad_log_req(L_NOTICE, radreq,
+		             _("couldn't send request to realm %s"),
+		             radreq->realm->realm);
 		return 0;
 	}
 	if (radreq->attempt_no == 0)
@@ -208,7 +208,7 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 	p->attribute = DA_PROXY_STATE;
 	p->type = TYPE_STRING;
 	p->avp_strlength = sizeof(PROXY_STATE);
-	p->avp_strvalue = emalloc(p->avp_strlength);
+	p->avp_strvalue = grad_emalloc(p->avp_strlength);
 	
 	proxy_state = (PROXY_STATE *)p->avp_strvalue;
 	
@@ -235,7 +235,7 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 		
                 /* Prepare update data. */
 		size = sizeof(*upd) + strlen(radreq->realm->realm) + 1;
-		upd = emalloc(size);
+		upd = grad_emalloc(size);
 		upd->id = radreq->id;
 		upd->proxy_id = radreq->server_id;
 		upd->server_no = radreq->server_no;
@@ -247,11 +247,11 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 		       upd->server_no));
 
 		rpp_update(upd, size);
-		efree(upd);
+		grad_free(upd);
 	}
 	
 	rc = proxy_send_pdu(fd, server, radreq, pdu, size);
-	efree(pdu);
+	grad_free(pdu);
 	return rc;
 }
 
@@ -350,7 +350,7 @@ proxy_send(REQUEST *req)
 	radreq->attempt_no = 0;
 	/* Actual user name may be altered, but the remote user name
 	   should remain the same */
-	radreq->remote_user = estrdup(username); 
+	radreq->remote_user = grad_estrdup(username); 
 
         /* If there is a DA_CHAP_PASSWORD attribute, there is
 	   also a DA_CHAP_CHALLENGE. If you change the code of

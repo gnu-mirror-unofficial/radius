@@ -72,7 +72,7 @@ netname_find(char *name)
 static int
 _netdef_destroy(void *item, void *data ARG_UNUSED)
 {
-	efree(item);
+	grad_free(item);
 	return 0;
 }
 
@@ -80,9 +80,9 @@ static int
 _netname_destroy(void *item, void *data ARG_UNUSED)
 {
 	NETNAME *p = item;
-	efree(p->name);
+	grad_free(p->name);
 	grad_list_destroy(&p->netlist, _netdef_destroy, NULL);
-	efree(p);
+	grad_free(p);
 	return 0;
 }
 
@@ -98,8 +98,8 @@ netgrad_list_destroy()
 void
 snmp_add_community(char *str, int access)
 {
-        Community *p = emalloc(sizeof(*p));
-        p->name = estrdup(str);
+        Community *p = grad_emalloc(sizeof(*p));
+        p->name = grad_estrdup(str);
         p->access = access;
 	if (!commlist)
 		commlist = grad_list_create();
@@ -125,8 +125,8 @@ static int
 _community_destroy(void *item, void *data)
 {
 	Community *p = item;
-	efree(p->name);
-	efree(p);
+	grad_free(p->name);
+	grad_free(p);
 	return 0;
 }
 
@@ -186,7 +186,7 @@ snmp_add_acl(Community *community, RAD_LIST /* of NETDEF */ *netlist)
 {
         ACL *acl;
 
-	acl = emalloc(sizeof(*acl));
+	acl = grad_emalloc(sizeof(*acl));
 	acl->community = community;
 	acl->netlist = netlist;
 	if (!snmp_acl)
@@ -197,7 +197,7 @@ snmp_add_acl(Community *community, RAD_LIST /* of NETDEF */ *netlist)
 static int
 _acl_destroy(void *item, void *data)
 {
-	efree(item);
+	grad_free(item);
 	return 0;
 }
 		
@@ -240,8 +240,8 @@ snmp_cfg_ident(int argc, cfg_value_t *argv, void *block_data,
 		return 0;
 	}
 	if (server_id)
-		efree(server_id);
-	server_id = estrdup(argv[1].v.string);
+		grad_free(server_id);
+	server_id = grad_estrdup(argv[1].v.string);
 	return 0;
 }
 
@@ -275,9 +275,9 @@ snmp_cfg_community(int argc, cfg_value_t *argv,
 		return 1;
 		
 	if (snmp_find_community(argv[1].v.string)) {
-		radlog(L_ERR,
-		       _("%s:%d: community %s already declared"),
-		       cfg_filename, cfg_line_num, argv[1].v.string);
+		grad_log(L_ERR,
+		         _("%s:%d: community %s already declared"),
+		         cfg_filename, cfg_line_num, argv[1].v.string);
 		return 0;
 	}
 	
@@ -331,21 +331,21 @@ snmp_cfg_network(int argc, cfg_value_t *argv,
 		return 0;
 	}
 
-        np = emalloc(sizeof(*np));
+        np = grad_emalloc(sizeof(*np));
 	if (!netlist) 
 		netlist = grad_list_create(netlist);
 		
 	grad_list_append(netlist, np);
-        np->name = estrdup(argv[1].v.string);
+        np->name = grad_estrdup(argv[1].v.string);
 	np->netlist = grad_list_create();
 	for (i = 2; i < argc; i++) {
 		if (argv[i].type != CFG_NETWORK) {
-			radlog(L_ERR,
-			       _("%s:%d: list item %d has wrong datatype"),
-			       cfg_filename, cfg_line_num,
-			       i);
+			grad_log(L_ERR,
+			         _("%s:%d: list item %d has wrong datatype"),
+			         cfg_filename, cfg_line_num,
+			         i);
 		} else {
-			NETDEF *net = emalloc(sizeof(*net));
+			NETDEF *net = grad_emalloc(sizeof(*net));
 			net->ipaddr = argv[i].v.network.ipaddr;
 			net->netmask = argv[i].v.network.netmask;
 			grad_list_append(np->netlist, net);
@@ -372,16 +372,16 @@ snmp_cfg_allow(int argc, cfg_value_t *argv,
 	}
 
 	if ((nn = netname_find(argv[1].v.string)) == NULL) {
-		radlog(L_ERR, _("%s:%d: no such network: %s"),
-		       cfg_filename, cfg_line_num, argv[1].v.string);
+		grad_log(L_ERR, _("%s:%d: no such network: %s"),
+		         cfg_filename, cfg_line_num, argv[1].v.string);
 		return 0;
 	}
 
 	comm = snmp_find_community(argv[2].v.string);
 	if (!comm) {
-		radlog(L_ERR, 
-		       _("%s:%d: undefined community %s"),
-		       cfg_filename, cfg_line_num, argv[2].v.string);
+		grad_log(L_ERR, 
+		         _("%s:%d: undefined community %s"),
+		         cfg_filename, cfg_line_num, argv[2].v.string);
 		return 0;
 	} 
 
@@ -406,8 +406,8 @@ snmp_cfg_deny(int argc, cfg_value_t *argv,
 	}
 
 	if ((nn = netname_find(argv[1].v.string)) == NULL) {
-		radlog(L_ERR, _("%s:%d: no such network: %s"),
-		       cfg_filename, cfg_line_num, argv[1].v.string);
+		grad_log(L_ERR, _("%s:%d: no such network: %s"),
+		         cfg_filename, cfg_line_num, argv[1].v.string);
 		return 0;
 	}
 
@@ -556,7 +556,7 @@ static void *
 snmpserv_get_data()
 {
         if (!__snmpserv_data) {
-                __snmpserv_data = emalloc(sizeof(*__snmpserv_data));
+                __snmpserv_data = grad_emalloc(sizeof(*__snmpserv_data));
                 __snmpserv_data->auth_mib.nas_index = 1;
         }
         return __snmpserv_data;
@@ -733,7 +733,7 @@ snmp_tree_init()
         struct mib_data *p;
         struct mib_node_t *node;
         
-        snmp_init(0, 0, (snmp_alloc_t)emalloc, (snmp_free_t)efree);
+        snmp_init(0, 0, (snmp_alloc_t)grad_emalloc, (snmp_free_t)grad_free);
 
         for (p = mib_data; p < mib_data + NITEMS(mib_data); p++) {
                 mib_insert(&mib_tree, p->oid, &node);
@@ -1203,7 +1203,7 @@ snmp_auth_var_get(subid_t subid, oid_t oid, int *errp)
                 ret->type = ASN_OCTET_STR;
                 ret->val_length = strlen(p);
                 ret->var_str = snmp_strdup(p);
-                efree(p);
+                grad_free(p);
                 break;
 
         case MIB_KEY_AuthServUpTime:
@@ -1321,8 +1321,8 @@ snmp_auth_var_set(subid_t subid, struct snmp_var **vp, int *errp)
                         
                 case MIB_KEY_AccServConfigReset:
                         server_stat->auth.status = serv_init;
-                        radlog(L_INFO,
-                             _("acct server re-initializing on SNMP request"));
+                        grad_log(L_INFO,
+                                 _("acct server re-initializing on SNMP request"));
                         break;
 
                 }
@@ -1562,7 +1562,7 @@ snmp_acct_var_get(subid_t subid, oid_t oid, int *errp)
                 ret->type = ASN_OCTET_STR;
                 ret->val_length = strlen(p);
                 ret->var_str = snmp_strdup(p);
-                efree(p);
+                grad_free(p);
                 break;
 
         case MIB_KEY_AccServUpTime:
@@ -1673,8 +1673,8 @@ snmp_acct_var_set(subid_t subid, struct snmp_var **vp, int *errp)
 
                 case MIB_KEY_AuthServConfigReset:
                         server_stat->auth.status = serv_init;
-                        radlog(L_INFO,
-                             _("auth server re-initializing on SNMP request"));
+                        grad_log(L_INFO,
+                                 _("auth server re-initializing on SNMP request"));
                         break;
 
                 }
@@ -1953,24 +1953,24 @@ snmp_serv_var_set(subid_t subid, struct snmp_var **vp, int *errp)
                         server_stat->auth.status = (*vp)->var_int;
                         switch ((*vp)->var_int) {
                         case serv_reset:
-                                radlog(L_NOTICE,
-                                       _("server re-initializing on SNMP request"));
+                                grad_log(L_NOTICE,
+                                         _("server re-initializing on SNMP request"));
                                 break;
                         case serv_init:
-                                radlog(L_NOTICE,
-                                       _("server restart on SNMP request"));
+                                grad_log(L_NOTICE,
+                                         _("server restart on SNMP request"));
                                 break;
                         case serv_running:
-                                radlog(L_NOTICE,
-                                       _("server continuing on SNMP request"));
+                                grad_log(L_NOTICE,
+                                         _("server continuing on SNMP request"));
                                 break;
                         case serv_suspended:
-                                radlog(L_NOTICE,
-                                       _("server suspending on SNMP request"));
+                                grad_log(L_NOTICE,
+                                         _("server suspending on SNMP request"));
                                 break;
                         case serv_shutdown:
-                                radlog(L_NOTICE,
-                                       _("server shutting down on SNMP request"));
+                                grad_log(L_NOTICE,
+                                         _("server shutting down on SNMP request"));
                                 break;
                         }
                         break;
@@ -2035,7 +2035,7 @@ snmp_stat_var_get(subid_t subid, oid_t oid, int *errp)
                 ret->type = ASN_OCTET_STR;
                 ret->val_length = strlen(p);
                 ret->var_str = snmp_strdup(p);
-                efree(p);
+                grad_free(p);
                 break;
 
         case MIB_KEY_StatUpTime:
@@ -2672,31 +2672,32 @@ snmp_decode(SNMP_REQ *req, u_char *buf, size_t len)
         log_open(L_SNMP);
 	
         if ((pdu = snmp_pdu_create(0)) == NULL) {
-                radlog(L_ERR,
-                       _("can't create SNMP PDU: %s"),
+                grad_log(L_ERR,
+                         _("can't create SNMP PDU: %s"),
                          snmp_strerror(snmp_errno));
                 return -1;
         }
         comm_len = sizeof(comm);
         if (snmp_decode_request(&sess, pdu, buf, len, comm, &comm_len)) {
-                radlog(L_ERR,
-                       _("can't decode SNMP packet from %s: %s"),
-		       grad_ip_iptostr(ntohl(req->addr.sin_addr.s_addr),
-				       ipbuf),
-		       snmp_strerror(snmp_errno));
+                grad_log(L_ERR,
+                         _("can't decode SNMP packet from %s: %s"),
+		         grad_ip_iptostr(ntohl(req->addr.sin_addr.s_addr),
+				         ipbuf),
+		         snmp_strerror(snmp_errno));
                 return -1;
         }
 
         access = check_acl(req->addr.sin_addr.s_addr, comm);
         if (!access) {
-                radlog(L_NOTICE,
-                       _("DENIED attempt to access community %s from %s"),
-                       comm,
-                       grad_ip_iptostr(ntohl(req->addr.sin_addr.s_addr), ipbuf));
+                grad_log(L_NOTICE,
+                         _("DENIED attempt to access community %s from %s"),
+                         comm,
+                         grad_ip_iptostr(ntohl(req->addr.sin_addr.s_addr), 
+                                         ipbuf));
                 return 1;
         }
         req->pdu = pdu;
-        req->community = estrdup(comm);
+        req->community = grad_estrdup(comm);
         req->access = access;
         return 0;
 }
@@ -2707,10 +2708,10 @@ snmp_req_decode(struct sockaddr_in *sa,
 {
         SNMP_REQ *req;
 
-	req = emalloc(sizeof *req);
+	req = grad_emalloc(sizeof *req);
 	req->addr = *sa;
         if (snmp_decode(req, input, inputsize)) {
-                efree(req);
+                grad_free(req);
                 return 1;
         }
 	*output = req;
@@ -2731,8 +2732,8 @@ snmp_req_free(void *ptr)
 {
         SNMP_REQ *req = ptr;
         snmp_pdu_free(req->pdu);
-        efree(req->community);
-        efree(req);
+        grad_free(req->community);
+        grad_free(req);
 }
 
 void
@@ -2742,10 +2743,10 @@ snmp_req_drop(int type, void *data, void *orig_data,
         SNMP_REQ *req = data ? data : orig_data;
         char ipbuf[DOTTED_QUAD_LEN];
 
-        radlog(L_NOTICE,
-               _("Dropping SNMP request from client %s: %s"),
-               grad_ip_iptostr(ntohl(req->addr.sin_addr.s_addr), ipbuf),
-               status_str);
+        grad_log(L_NOTICE,
+                 _("Dropping SNMP request from client %s: %s"),
+                 grad_ip_iptostr(ntohl(req->addr.sin_addr.s_addr), ipbuf),
+                 status_str);
 }
 
 static u_char send_buffer[RAD_BUFFER_SIZE];

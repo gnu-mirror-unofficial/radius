@@ -111,7 +111,7 @@ SCM_DEFINE(rad_log, "rad-log", 2, 0, 0,
 
         SCM_ASSERT(SCM_NIMP(TEXT) && SCM_STRINGP(TEXT),
                    TEXT, SCM_ARG1, FUNC_NAME);
-        radlog(prio, "%s", SCM_STRING_CHARS(TEXT));
+        grad_log(prio, "%s", SCM_STRING_CHARS(TEXT));
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME

@@ -52,7 +52,7 @@ struct input_channel {
 INPUT *
 input_create()
 {
-	INPUT *p = emalloc(sizeof(*p));
+	INPUT *p = grad_emalloc(sizeof(*p));
 	p->methods = grad_list_create();
 	p->channels = grad_list_create();
 	FD_ZERO(&p->fdset);
@@ -74,7 +74,7 @@ input_register_method(INPUT *input,
 		      int (*close)(int, void *),
 		      int (*cmp)(const void *, const void *))
 {
-	METHOD *m = emalloc(sizeof(*m));
+	METHOD *m = grad_emalloc(sizeof(*m));
 	m->name = name;
 	m->prio = prio;
 	m->handler = handler;
@@ -109,7 +109,7 @@ input_register_channel(INPUT *input, char *name, int fd, void *data)
 	if (!m)
 		return -1;
 	
-	c = emalloc(sizeof(*c));
+	c = grad_emalloc(sizeof(*c));
 	c->fd = fd;
 	c->data = data;
 	c->method = m;
@@ -127,7 +127,7 @@ channel_close(INPUT *input, CHANNEL *chan)
 		chan->method->close(chan->fd, chan->data);
 	FD_CLR(chan->fd, &input->fdset);
 	input->fd_max = -2;
-	efree(chan);
+	grad_free(chan);
 }
 
 static int

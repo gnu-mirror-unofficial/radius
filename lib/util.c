@@ -45,7 +45,7 @@
 RADIUS_REQ *
 grad_request_alloc()
 {
-        return emalloc(sizeof(RADIUS_REQ));
+        return grad_emalloc(sizeof(RADIUS_REQ));
 }
 
 /* Free a RADIUS_REQ struct.
@@ -54,12 +54,12 @@ void
 grad_request_free(RADIUS_REQ *radreq)
 {
 	grad_list_destroy(&radreq->locus_list, NULL, NULL);
-	efree(radreq->remote_user);
+	grad_free(radreq->remote_user);
         grad_avl_free(radreq->reply_pairs);
-        efree(radreq->reply_msg);
+        grad_free(radreq->reply_msg);
         grad_avl_free(radreq->server_reply);
         grad_avl_free(radreq->request);
-        efree(radreq);
+        grad_free(radreq);
 }
 
 
@@ -154,7 +154,7 @@ char *
 grad_mkfilename(char *dir, char *name)
 {
         int len = strlen(dir) + strlen(name);
-        char *p = emalloc(len+2);
+        char *p = grad_emalloc(len+2);
         sprintf(p, "%s/%s", dir, name);
         return p;
 }
@@ -165,7 +165,7 @@ char *
 grad_mkfilename3(char *dir, char *subdir, char *name)
 {
         int len = strlen(dir) + strlen(subdir) + strlen(name);
-        char *p = emalloc(len+3); /* two intermediate slashes and
+        char *p = grad_emalloc(len+3); /* two intermediate slashes and
                                    * terminating zero
                                    */
         sprintf(p, "%s/%s/%s", dir, subdir, name);
@@ -254,7 +254,7 @@ grad_string_copy(char *d, char *s, int len)
         int slen = strlen(s);
         
         if (slen > len) 
-                radlog(L_ERR, _("string too long: %s"), s);
+                grad_log(L_ERR, _("string too long: %s"), s);
         strncpy(d, s, len);
         d[len] = 0;
 }
@@ -426,9 +426,9 @@ grad_format_pair(VALUE_PAIR *pair, int typeflag, char **savep)
                         int len = grad_format_vendor_pair(NULL, pair);
                         buf2ptr = malloc(len+1);
                         if (!buf2ptr) {
-                                radlog(L_ERR,
-                                       "%s:%d: can't alloc %d bytes",
-                                       __FILE__, __LINE__, len+1);
+                                grad_log(L_ERR,
+                                         "%s:%d: can't alloc %d bytes",
+                                         __FILE__, __LINE__, len+1);
                                 buf2[0] = 0;
                         } else
                                 grad_format_vendor_pair(buf2ptr, pair);

@@ -118,14 +118,14 @@ scheme_auth(char *procname, RADIUS_REQ *req,
 	/* Evaluate the procedure */
 	procsym = RAD_SCM_SYMBOL_VALUE(procname);
 	if (scm_procedure_p(procsym) != SCM_BOOL_T) {
-		radlog(L_ERR,
-		       _("%s is not a procedure object"), procname);
+		grad_log(L_ERR,
+		         _("%s is not a procedure object"), procname);
 		return 1;
 	}
 	if (setjmp(jmp_env)) {
-		radlog(L_NOTICE,
-		       _("Procedure `%s' failed: see error output for details"),
-		       procname);
+		grad_log(L_NOTICE,
+		         _("Procedure `%s' failed: see error output for details"),
+		         procname);
 		return 1;
 	}
 	
@@ -153,9 +153,9 @@ scheme_auth(char *procname, RADIUS_REQ *req,
 		grad_avl_free(list);
 		return code == SCM_BOOL_F;
 	}
-	radlog(L_ERR,
-	       _("Unexpected return value from Guile authentication function `%s'"),
-	       procname);
+	grad_log(L_ERR,
+	         _("Unexpected return value from Guile authentication function `%s'"),
+	         procname);
 	return 1;
 }
 
@@ -169,14 +169,14 @@ scheme_acct(char *procname, RADIUS_REQ *req)
 	/* Evaluate the procedure */
 	procsym = RAD_SCM_SYMBOL_VALUE(procname);
 	if (scm_procedure_p(procsym) != SCM_BOOL_T) {
-		radlog(L_ERR,
-		       _("%s is not a procedure object"), procname);
+		grad_log(L_ERR,
+		         _("%s is not a procedure object"), procname);
 		return 1;
 	}
 	if (setjmp(jmp_env)) {
-		radlog(L_NOTICE,
-		       _("Procedure `%s' failed: see error output for details"),
-		       procname);
+		grad_log(L_NOTICE,
+		         _("Procedure `%s' failed: see error output for details"),
+		         procname);
 		return 1;
 	}
 	res = scm_internal_lazy_catch(
@@ -190,9 +190,9 @@ scheme_acct(char *procname, RADIUS_REQ *req)
 	if (SCM_IMP(res) && SCM_BOOLP(res)) 
 		return res == SCM_BOOL_F;
 	else
-		radlog(L_ERR,
-		       _("Unexpected return value from Guile accounting function `%s'"),
-		       procname);
+		grad_log(L_ERR,
+		         _("Unexpected return value from Guile accounting function `%s'"),
+		         procname);
 
 	return 1;
 }
@@ -258,19 +258,19 @@ scheme_redirect_output()
 		char *filename;
 
 		if (scheme_outfile[0] == '/')
-			filename = estrdup(scheme_outfile);
+			filename = grad_estrdup(scheme_outfile);
 		else
 			filename = grad_mkfilename(radlog_dir ?
 						   radlog_dir : RADLOG_DIR,
 						   scheme_outfile);
 		fd = open(filename, O_RDWR|O_CREAT|O_APPEND, 0600);
 		if (fd == -1) {
-			radlog(L_ERR|L_PERROR,
-			       _("can't open file `%s'"),
-			       filename);
+			grad_log(L_ERR|L_PERROR,
+			         _("can't open file `%s'"),
+			         filename);
 			fd = 2;
 		}
-		efree(filename);
+		grad_free(filename);
 	}
 
 	port = scheme_error_port;
@@ -358,8 +358,8 @@ scheme_cfg_outfile(int argc, cfg_value_t *argv,
 		cfg_type_error(CFG_STRING);
 		return 0;
 	}
-	efree(scheme_outfile);
-	scheme_outfile = estrdup(argv[1].v.string);
+	grad_free(scheme_outfile);
+	scheme_outfile = grad_estrdup(argv[1].v.string);
 	return 0;
 }
 

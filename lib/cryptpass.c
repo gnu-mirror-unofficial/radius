@@ -94,7 +94,7 @@ grad_encrypt_text(u_char **encr_text,
         nchunks = (passlen + AUTH_VECTOR_LEN - 1) / AUTH_VECTOR_LEN;
         buflen = nchunks * AUTH_VECTOR_LEN;
 
-        *encr_text = emalloc(buflen);
+        *encr_text = grad_emalloc(buflen);
         *encr_size = buflen;
         passbuf = *encr_text;
 
@@ -104,7 +104,7 @@ grad_encrypt_text(u_char **encr_text,
 
         secretlen = strlen(secret);
         md5len = secretlen + AUTH_VECTOR_LEN;
-        md5buf = emalloc(md5len + saltlen);
+        md5buf = grad_emalloc(md5len + saltlen);
         memcpy(md5buf, secret, secretlen);
 
         cp = vector;
@@ -113,16 +113,16 @@ grad_encrypt_text(u_char **encr_text,
                 memcpy(md5buf + secretlen, cp, AUTH_VECTOR_LEN);
 		if (i == 0 && saltlen) {
 			memcpy(md5buf + md5len, salt, saltlen);
-			md5_calc(digest, md5buf, md5len + saltlen);
+			grad_md5_calc(digest, md5buf, md5len + saltlen);
 		} else
-			md5_calc(digest, md5buf, md5len);
+			grad_md5_calc(digest, md5buf, md5len);
                 /* Save hash start */
                 cp = passbuf + i;
                 /* Encrypt next chunk */
                 for (j = 0; j < AUTH_VECTOR_LEN; j++, i++)
                         passbuf[i] ^= digest[j];
         }
-        efree(md5buf);
+        grad_free(md5buf);
 }
 
 void
@@ -149,7 +149,7 @@ grad_decrypt_text(u_char *password,   /* At least AUTH_STRING_LEN+1
         /* Prepare md5buf */
         secretlen = strlen(secret);
         md5len = secretlen + AUTH_VECTOR_LEN;
-        md5buf = emalloc(md5len);
+        md5buf = grad_emalloc(md5len);
         memcpy(md5buf, secret, secretlen);
 
         cp = vector;
@@ -158,9 +158,9 @@ grad_decrypt_text(u_char *password,   /* At least AUTH_STRING_LEN+1
                 memcpy(md5buf + secretlen, cp, AUTH_VECTOR_LEN);
 		if (i == 0 && saltsize) {
 			memcpy(md5buf + md5len, salt, saltsize);
-			md5_calc(digest, md5buf, md5len + saltsize);
+			grad_md5_calc(digest, md5buf, md5len + saltsize);
 		} else
-			md5_calc(digest, md5buf, md5len);
+			grad_md5_calc(digest, md5buf, md5len);
                 /* Save hash start */
                 cp = encr_text + i;
                 /* Decrypt next chunk */
@@ -168,7 +168,7 @@ grad_decrypt_text(u_char *password,   /* At least AUTH_STRING_LEN+1
                         password[i] ^= digest[j];
         }
         password[encr_size] = 0;
-        efree(md5buf);
+        grad_free(md5buf);
 }
 
 
@@ -230,19 +230,19 @@ grad_decrypt_password_broken(char *password, /* At least AUTH_STRING_LEN+1
         /* Prepare md5buf */
         secretlen = strlen(secret);
         md5len = secretlen + AUTH_VECTOR_LEN;
-        md5buf = emalloc(md5len);
+        md5buf = grad_emalloc(md5len);
         memcpy(md5buf, secret, secretlen);
 
         /* Compute next MD5 hash */
         memcpy(md5buf + secretlen, vector, AUTH_VECTOR_LEN);
-        md5_calc(digest, md5buf, md5len);
+        grad_md5_calc(digest, md5buf, md5len);
 
         for (i = 0; i < passlen; ) {
                 /* Decrypt next chunk */
                 for (j = 0; j < AUTH_VECTOR_LEN; j++, i++)
                         password[i] ^= digest[j];
         }
-        efree(md5buf);
+        grad_free(md5buf);
 }
 	
 
@@ -262,20 +262,20 @@ grad_encrypt_tunnel_password(VALUE_PAIR *pair,
 	unsigned short salt = htons( (((long)pair ^ *(long *)vector) & 0xffff)
 				     | 0x8000 );
 	
-	plaintext = emalloc(length+2);
+	plaintext = grad_emalloc(length+2);
 	plaintext[0] = length;
 	memcpy(&plaintext[1], password, length + 1);
 	grad_encrypt_text(&encr_text, &encr_size,
 			  plaintext, vector, secret, 
 			  (u_char*) &salt, 2);
-	efree(plaintext);
+	grad_free(plaintext);
 	
 	pair->avp_strlength = 3 + encr_size;
-	pair->avp_strvalue = emalloc(pair->avp_strlength);
+	pair->avp_strvalue = grad_emalloc(pair->avp_strlength);
 	pair->avp_strvalue[0] = tag;
 	memcpy(&pair->avp_strvalue[1], &salt, 2);
 	memcpy(&pair->avp_strvalue[3], encr_text, encr_size);
-	efree(encr_text);
+	grad_free(encr_text);
 }
 
 void

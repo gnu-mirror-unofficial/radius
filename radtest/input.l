@@ -84,28 +84,28 @@ send    return SEND;
 expect  return EXPECT;
 exit    return EXIT;
 {IDENTIFIER} {
-        yylval.string = estrdup(yytext);
+        yylval.string = grad_estrdup(yytext);
         return NAME;
 }
 \${IDENTIFIER} return deref_var(yytext+1, NULL);
 \$\{{IDENTIFIER}\} {
         int type;
-        char *name = estrdup(yytext+2);
+        char *name = grad_estrdup(yytext+2);
         name[yyleng-3] = 0;
         type = deref_var(yytext+2, NULL);
-        efree(name);
+        grad_free(name);
         return type;
 }
 \$\{{IDENTIFIER}:[=:?\-&].*\} {
         char *name, *p;
         int type;
         
-        name = estrdup(yytext+2);
+        name = grad_estrdup(yytext+2);
         name[yyleng-3] = 0;
         p = strchr(name, ':');
         *p++ = 0;
         type = deref_var(name, p);
-        efree(name);
+        grad_free(name);
         return type;
 }
 \${D}  return deref_parm(strtoul(yytext+1, NULL, 0), NULL);
@@ -114,16 +114,16 @@ exit    return EXIT;
         char *name, *p;
         int type;
         
-        name = estrdup(yytext+2);
+        name = grad_estrdup(yytext+2);
         name[yyleng-3] = 0;
         p = strchr(name, ':');
         *p++ = 0;
         type = deref_parm(strtoul(name, NULL, 0), p);
-        efree(name);
+        grad_free(name);
         return type;
 }
 \"[^\\"]*\" {
-        yylval.string = emalloc(yyleng - 1);
+        yylval.string = grad_emalloc(yyleng - 1);
         memcpy(yylval.string, yytext+1, yyleng - 2);
         yylval.string[yyleng-2] = 0;
         return QUOTE;
@@ -168,7 +168,7 @@ exit    return EXIT;
 <STRING>[^\\"]*\" {
         BEGIN(INITIAL);
         add_str(yytext, yyleng - 1);
-        yylval.string = estrdup(end_str());
+        yylval.string = grad_estrdup(end_str());
         return QUOTE;
 }
 {DQ} {
@@ -209,8 +209,8 @@ open_input(char *name)
                 source_locus.file = name;
                 fp = fopen(name, "r");
                 if (!fp) {
-                        radlog(L_ERR|L_PERROR,
-                               _("can't open input file `%s'"), name);
+                        grad_log(L_ERR|L_PERROR,
+                                 _("can't open input file `%s'"), name);
                         return 1;
                 }
         } else {
@@ -366,9 +366,9 @@ deref_var(char *name, char *p)
                         break;
                         
                 default:
-                        radlog(L_CRIT,
-                               "%s:%d: FATAL ERROR",
-                               __FILE__, __LINE__);
+                        grad_log(L_CRIT,
+                                 "%s:%d: FATAL ERROR",
+                                 __FILE__, __LINE__);
                         abort();
                 }
                 break;
@@ -391,7 +391,7 @@ deref_var(char *name, char *p)
                 p = NULL;
                 n = 0;
                 getline(&p, &n, stdin);
-                yylval.string = estrdup(p);
+                yylval.string = grad_estrdup(p);
                 free(p);
                 type = QUOTE;
                 break;
@@ -405,7 +405,7 @@ deref_var(char *name, char *p)
                 p = getpass(p);
                 if (!p)
                         exit(0);
-                yylval.string = estrdup(p);
+                yylval.string = grad_estrdup(p);
                 type = QUOTE;
                 break;
         }
@@ -419,12 +419,12 @@ deref_parm(unsigned num, char *p)
         size_t n;
         
         if (num < x_argc && x_argv[num]) {
-                yylval.string = estrdup(x_argv[num]);
+                yylval.string = grad_estrdup(x_argv[num]);
                 return QUOTE;
         }
         
         if (!p) {
-                yylval.string = estrdup("");
+                yylval.string = grad_estrdup("");
                 return QUOTE;
         }
         
@@ -432,15 +432,15 @@ deref_parm(unsigned num, char *p)
         case '=':
                 if (num > x_argmax) {
                         x_argmax = num;
-                        x_argv = erealloc(x_argv, sizeof(x_argv[0])*(num+1));
+                        x_argv = grad_erealloc(x_argv, sizeof(x_argv[0])*(num+1));
                 }
-                x_argv[num] = estrdup(p);
+                x_argv[num] = grad_estrdup(p);
                 x_argc = num+1;
                 yylval.string = x_argv[num];
                 break;
                 
         case '-':
-                yylval.string = estrdup(p);
+                yylval.string = grad_estrdup(p);
                 break;
                 
         case '?':
@@ -461,7 +461,7 @@ deref_parm(unsigned num, char *p)
                 p = NULL;
                 n = 0;
                 getline(&p, &n, stdin);
-                yylval.string = estrdup(p);
+                yylval.string = grad_estrdup(p);
                 free(p);
                 break;
                 
@@ -474,7 +474,7 @@ deref_parm(unsigned num, char *p)
                 p = getpass(p);
                 if (!p)
                         exit(0);
-                yylval.string = estrdup(p);
+                yylval.string = grad_estrdup(p);
                 break;
         }
         return QUOTE;

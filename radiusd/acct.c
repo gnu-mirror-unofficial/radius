@@ -192,8 +192,8 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
         /* A packet should have Acct-Status-Type attribute */
         if ((vp = grad_avl_find(radreq->request, DA_ACCT_STATUS_TYPE))
 	        == NULL) {
-                radlog_req(L_ERR, radreq,
-                           _("no Acct-Status-Type attribute"));
+                grad_log_req(L_ERR, radreq,
+                             _("no Acct-Status-Type attribute"));
                 return -1;
         }
 
@@ -293,17 +293,17 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
 
         /* Process Accounting-On/Off records */
         if (status == DV_ACCT_STATUS_TYPE_ACCOUNTING_ON && nas_address) {
-                radlog(L_NOTICE, 
-                        _("NAS %s started (Accounting-On packet seen)"),
-                        grad_nas_ip_to_name(nas_address, buf, sizeof buf));
+                grad_log(L_NOTICE, 
+                         _("NAS %s started (Accounting-On packet seen)"),
+                         grad_nas_ip_to_name(nas_address, buf, sizeof buf));
                 radzap(nas_address, -1, NULL, ut.time);
                 write_nas_restart(status, ut.nas_address);
                 return 0;
         }
         if (status == DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF && nas_address) {
-                radlog(L_NOTICE, 
-                        _("NAS %s shut down (Accounting-Off packet seen)"),
-                        grad_nas_ip_to_name(nas_address, buf, sizeof buf));
+                grad_log(L_NOTICE, 
+                         _("NAS %s shut down (Accounting-Off packet seen)"),
+                         grad_nas_ip_to_name(nas_address, buf, sizeof buf));
                 radzap(nas_address, -1, NULL, ut.time);
                 write_nas_restart(status, ut.nas_address);
                 return 0;
@@ -313,9 +313,9 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
         if (status != DV_ACCT_STATUS_TYPE_START &&
             status != DV_ACCT_STATUS_TYPE_STOP &&
             status != DV_ACCT_STATUS_TYPE_ALIVE) {
-                radlog_req(L_NOTICE, 
-                           radreq, _("unknown packet type (%d)"),
-                           status);
+                grad_log_req(L_NOTICE, 
+                             radreq, _("unknown packet type (%d)"),
+                             status);
                 return 0;
         } else if (status == DV_ACCT_STATUS_TYPE_START ||
                    status == DV_ACCT_STATUS_TYPE_STOP) {
@@ -369,7 +369,7 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
         } else {
                 ret = -1;
                 stat_inc(acct, radreq->ipaddr, num_norecords);
-                radlog_req(L_NOTICE, radreq, _("NOT writing wtmp record"));
+                grad_log_req(L_NOTICE, radreq, _("NOT writing wtmp record"));
         }
         return ret;
 }
@@ -382,22 +382,22 @@ check_acct_dir()
         if (stat(radacct_dir, &st) == 0) {
                 if (S_ISDIR(st.st_mode)) {
 			if (access(radacct_dir, W_OK)) {
-				radlog(L_ERR,
-				       _("%s: directory not writable"),
-				       radacct_dir);
+				grad_log(L_ERR,
+				         _("%s: directory not writable"),
+				         radacct_dir);
 				return 1;
 			}
                         return 0;
 		} else {
-                        radlog(L_ERR, _("%s: not a directory"),
-			       radacct_dir);
+                        grad_log(L_ERR, _("%s: not a directory"),
+			         radacct_dir);
                         return 1;
                 }
         }
         if (mkdir(radacct_dir, 0755)) {
-                radlog(L_ERR|L_PERROR,
-                        _("can't create accounting directory `%s'"),
-                        radacct_dir);
+                grad_log(L_ERR|L_PERROR,
+                         _("can't create accounting directory `%s'"),
+                         radacct_dir);
                 return 1;
         }
         return 0;
@@ -411,8 +411,8 @@ acct_after_config_hook(void *arg ARG_UNUSED, void *data ARG_UNUSED)
 	if (auth_detail || acct_detail) {
 		acct_dir_status = check_acct_dir();
 		if (acct_dir_status) {
-			radlog(L_NOTICE,
-			       _("Detailed accounting is disabled"));
+			grad_log(L_NOTICE,
+			         _("Detailed accounting is disabled"));
 			auth_detail = acct_detail = 0;
 		}
 	}
@@ -474,9 +474,9 @@ write_detail(RADIUS_REQ *radreq, int authtype, char *f)
 
         /* Write Detail file. */
         path = grad_mkfilename(dir, f);
-        efree(dir);
+        grad_free(dir);
         if ((outfd = fopen(path, "a")) == (FILE *)NULL) {
-                radlog(L_ERR|L_PERROR, _("can't open %s"), path);
+                grad_log(L_ERR|L_PERROR, _("can't open %s"), path);
                 ret = -1;
         } else {
 
@@ -541,7 +541,7 @@ write_detail(RADIUS_REQ *radreq, int authtype, char *f)
                 fclose(outfd);
                 ret = 0;
         }
-        efree(path);
+        grad_free(path);
         
         return ret;
 }
@@ -636,11 +636,11 @@ rad_check_ts(struct radutmp *ut)
                    It is defined in /etc/raddb/config */
         default:
                 if (checkrad_assume_logged) 
-                        radlog(L_NOTICE, _("assuming `%s' is logged in"),
-                               ut->login);
+                        grad_log(L_NOTICE, _("assuming `%s' is logged in"),
+                                 ut->login);
                 else
-                        radlog(L_NOTICE, _("assuming `%s' is NOT logged in"),
-                               ut->login);
+                        grad_log(L_NOTICE, _("assuming `%s' is NOT logged in"),
+                                 ut->login);
                 return checkrad_assume_logged;
         }
         /*NOTREACHED*/
@@ -655,7 +655,7 @@ check_ts(struct radutmp *ut)
 
         /* Find NAS type. */
         if ((nas = grad_nas_lookup_ip(ntohl(ut->nas_address))) == NULL) {
-                radlog(L_NOTICE, _("check_ts(): unknown NAS"));
+                grad_log(L_NOTICE, _("check_ts(): unknown NAS"));
                 return -1; 
         }
 

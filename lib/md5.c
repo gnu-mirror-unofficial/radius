@@ -21,20 +21,18 @@
 # include <config.h>
 #endif
 
-#define MD5_CRYPT
-
-#ifdef MD5_CRYPT
 #include <string.h>             /* for memcpy() */
 #include <md5.h>
 
 void
-md5_calc(unsigned char *output, unsigned char *input, unsigned int inlen)  
+grad_md5_calc(unsigned char *output, unsigned char *input,
+	      unsigned int inlen)  
 {
         MD5_CTX context;
-
-        MD5Init(&context);
-        MD5Update(&context, input, inlen);
-        MD5Final(output, &context);
+	
+        grad_MD5Init(&context);
+        grad_MD5Update(&context, input, inlen);
+        grad_MD5Final(output, &context);
 }
 
 
@@ -68,7 +66,7 @@ bytes_decode(uint32 *output, unsigned char *input, unsigned int len)
  * initialization constants.
  */
 void
-MD5Init(struct MD5Context *ctx)
+grad_MD5Init(struct MD5Context *ctx)
 {
     ctx->buf[0] = 0x67452301;
     ctx->buf[1] = 0xefcdab89;
@@ -84,7 +82,7 @@ MD5Init(struct MD5Context *ctx)
  * of bytes.
  */
 void
-MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len)
+grad_MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len)
 {
     uint32 t;
 
@@ -106,7 +104,7 @@ MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len)
             return;
         }
         memcpy(p, buf, t);
-        MD5Transform(ctx->buf, (uint32 *) ctx->in);
+        grad_MD5Transform(ctx->buf, (uint32 *) ctx->in);
         buf += t;
         len -= t;
     }
@@ -114,7 +112,7 @@ MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len)
 
     while (len >= 64) {
         memcpy(ctx->in, buf, 64);
-        MD5Transform(ctx->buf, (uint32 const *) buf);
+        grad_MD5Transform(ctx->buf, (uint32 const *) buf);
         buf += 64;
         len -= 64;
     }
@@ -129,7 +127,7 @@ MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len)
  * 1 0* (64-bit count of bits processed, MSB-first)
  */
 void
-MD5Final(unsigned char digest[16], struct MD5Context *ctx)
+grad_MD5Final(unsigned char digest[16], struct MD5Context *ctx)
 {
     unsigned count;
     unsigned char *p;
@@ -149,7 +147,7 @@ MD5Final(unsigned char digest[16], struct MD5Context *ctx)
     if (count < 8) {
         /* Two lots of padding:  Pad the first block to 64 bytes */
         memset(p, 0, count);
-        MD5Transform(ctx->buf, (uint32 *) ctx->in);
+        grad_MD5Transform(ctx->buf, (uint32 *) ctx->in);
 
         /* Now fill the next block with 56 bytes */
         memset(ctx->in, 0, 56);
@@ -160,12 +158,10 @@ MD5Final(unsigned char digest[16], struct MD5Context *ctx)
 
     /* Append length in bits and transform */
     bytes_encode((unsigned char*)((uint32 *) ctx->in + 14), ctx->bits, 8);
-    MD5Transform(ctx->buf, (uint32 *) ctx->in);
+    grad_MD5Transform(ctx->buf, (uint32 *) ctx->in);
     bytes_encode(digest,ctx->buf,16);   
     memset((char *) ctx, 0, sizeof(ctx));       /* In case it's sensitive */
 }
-
-#ifndef ASM_MD5
 
 /* The four core functions - F1 is optimized somewhat */
 
@@ -198,7 +194,7 @@ dump(char *label,unsigned char *p, int len)
  * the data and converts bytes into longwords for this routine.
  */
 void
-MD5Transform(uint32 buf[4], uint32 const cin[16])
+grad_MD5Transform(uint32 buf[4], uint32 const cin[16])
 {
     register uint32 a, b, c, d;
     uint32 in[16];
@@ -284,5 +280,3 @@ MD5Transform(uint32 buf[4], uint32 const cin[16])
     buf[3] += d;
 }
 
-#endif
-#endif  /* MD5_CRYPT */

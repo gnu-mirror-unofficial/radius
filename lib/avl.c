@@ -45,7 +45,7 @@
 VALUE_PAIR *
 grad_avp_alloc()
 {
-        return emalloc(sizeof(VALUE_PAIR));
+        return grad_emalloc(sizeof(VALUE_PAIR));
 }
 
 void
@@ -54,8 +54,8 @@ grad_avp_free(VALUE_PAIR *p)
         if (!p)
                 return;
         if (p->type == TYPE_STRING || p->eval_type != eval_const) 
-                efree(p->avp_strvalue);
-        efree(p);
+                grad_free(p->avp_strvalue);
+        grad_free(p);
 }
 
 /* A/V pair functions */
@@ -70,7 +70,7 @@ grad_avp_dup(VALUE_PAIR *vp)
         ret->next = NULL;
         if (ret->type == TYPE_STRING || ret->eval_type != eval_const) {
 		ret->avp_strlength = vp->avp_strlength;
-                ret->avp_strvalue = emalloc(ret->avp_strlength+1);
+                ret->avp_strvalue = grad_emalloc(ret->avp_strlength+1);
 		memcpy(ret->avp_strvalue, vp->avp_strvalue,
 		       ret->avp_strlength);
 		ret->avp_strvalue[ret->avp_strlength] = 0;
@@ -87,8 +87,9 @@ grad_avp_create(int attr)
 
         dict = grad_attr_number_to_dict(attr);
         if (!dict) {
-                radlog(L_ERR, _("make_pair(): attribute %d not found in dictionary"),
-                       attr);
+                grad_log(L_ERR,
+                         _("make_pair(): attribute %d not found in dictionary"),
+                         attr);
                 return NULL;
         }
         pair = grad_avp_alloc();
@@ -114,7 +115,7 @@ grad_avp_create_string(int attr, char *value)
 {
 	VALUE_PAIR *pair = grad_avp_create(attr);
 	if (pair) {
-		pair->avp_strvalue = estrdup(value);
+		pair->avp_strvalue = grad_estrdup(value);
                 pair->avp_strlength = strlen(value);
 	}
 	return pair;
@@ -126,7 +127,7 @@ grad_avp_create_binary(int attr, int length, u_char *value)
 	VALUE_PAIR *pair = grad_avp_create(attr);
 	if (pair) {
                 pair->avp_strlength = length;
-                pair->avp_strvalue = emalloc(length + 1);
+                pair->avp_strvalue = grad_emalloc(length + 1);
 		memcpy(pair->avp_strvalue, value, length);
 		pair->avp_strvalue[length] = 0;
 	}
@@ -424,7 +425,7 @@ grad_avl_dup(VALUE_PAIR *from)
                 temp = grad_avp_alloc();
                 memcpy(temp, from, sizeof(VALUE_PAIR));
                 if (temp->type == TYPE_STRING || temp->eval_type != eval_const) {
-			char *p = emalloc(temp->avp_strlength+1);
+			char *p = grad_emalloc(temp->avp_strlength+1);
 			memcpy(p, temp->avp_strvalue, temp->avp_strlength);
 			p[temp->avp_strlength] = 0;
 			temp->avp_strvalue = p;

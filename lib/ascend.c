@@ -641,9 +641,9 @@ grad_ascend_parse_filter(VALUE_PAIR *pair, char **errp)
 	
 	if (_ascend_parse_filter(pair->avp_strvalue, &flt, errp)) 
 		return 1;
-	efree(pair->avp_strvalue);
+	grad_free(pair->avp_strvalue);
 	pair->avp_strlength = sizeof(flt);
-	pair->avp_strvalue = emalloc(pair->avp_strlength);
+	pair->avp_strvalue = grad_emalloc(pair->avp_strlength);
 	memcpy(pair->avp_strvalue, &flt, sizeof(flt));
 	return 0;
 }

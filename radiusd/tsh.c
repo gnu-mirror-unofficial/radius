@@ -349,7 +349,7 @@ tsh_req_define(int argc, char **argv, char *cmd)
 			cmd++;
 
 		if (userparse(cmd, &vp, &errp)) {
-                        radlog(L_ERR, "%s", errp);
+                        grad_log(L_ERR, "%s", errp);
 			return;
 		}
 	} else {
@@ -358,7 +358,7 @@ tsh_req_define(int argc, char **argv, char *cmd)
 		while ((cmd = tsh_readline(tsh_ps2)) != NULL
 		       && cmd[0]) {
 			if (userparse(cmd, &vp, &errp)) {
-				radlog(L_ERR, "%s", errp);
+				grad_log(L_ERR, "%s", errp);
 				free(cmd);
 				grad_avl_free(vp);
 				return;

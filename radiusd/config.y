@@ -165,10 +165,10 @@ block_open  : keyword tag '{'
 			      _cfg_push_block($1->block, $1->end, $1->data);
 		      } else {
 			      if (block->stmt) {
-				      radlog(L_ERR,
-					     "%s:%d: %s",
-					     cfg_filename, cfg_line_num,
-					     _("unknown block statement"));
+				      grad_log(L_ERR,
+					       "%s:%d: %s",
+					       cfg_filename, cfg_line_num,
+					       _("unknown block statement"));
 			      }
 			      _cfg_push_block(NULL, NULL, NULL);
 		      }
@@ -206,10 +206,10 @@ simple_stmt : keyword value_list T_EOL
 					      yyerror("syntax error");
 			      }
 		      } else if (block->stmt)
-			      radlog(L_ERR,
-				     "%s:%d: %s",
-				     cfg_filename, cfg_line_num,
-				     _("unknown keyword"));
+			      grad_log(L_ERR,
+				       "%s:%d: %s",
+				       cfg_filename, cfg_line_num,
+				       _("unknown keyword"));
 	      }
             ;
 
@@ -296,8 +296,8 @@ netmask     : T_IPADDR
             | T_NUMBER
               {
 		      if ($1 > 32) {
-			      radlog(L_ERR,
-				     _("invalid netmask length: %d"), $1);
+			      grad_log(L_ERR,
+				       _("invalid netmask length: %d"), $1);
 			      YYERROR;
 		      }
 		      $$ = (0xfffffffful >> (32-$1)) << (32-$1);
@@ -423,9 +423,11 @@ again:
                 do {
                         while (*curp != '*') {
                                 if (*curp == 0) {
-                                        radlog(L_ERR, 
-                                               _("%s:%d: unexpected EOF in comment started at line %d"),
-                                                cfg_filename, cfg_line_num, keep_line);
+                                        grad_log(L_ERR, 
+                       _("%s:%d: unexpected EOF in comment started at line %d"),
+                                                 cfg_filename, 
+                                                 cfg_line_num, 
+                                                 keep_line);
                                         return 0;
                                 } else if (*curp == '\n')
                                         cfg_line_num++;
@@ -474,7 +476,7 @@ again:
 static int
 yyerror(char *s)
 {
-        radlog(L_ERR, "%s:%d: %s", cfg_filename, cfg_line_num, s);
+        grad_log(L_ERR, "%s:%d: %s", cfg_filename, cfg_line_num, s);
 }
                 
 /* ************************************************************************* */
@@ -508,7 +510,7 @@ _cfg_free_item(void *item, void *data)
 	struct cfg_memblock *p = item;
 	if (p->destructor)
 		p->destructor(p+1);
-	efree(p);
+	grad_free(p);
 	return 0;
 }
 
@@ -527,7 +529,7 @@ _cfg_make_argv(cfg_value_t **argv, char *keyword, RAD_LIST *vlist)
 		argc = grad_list_count(vlist) + 1;
 	else
 		argc = 1;
-	*argv = emalloc(sizeof(**argv)*argc);
+	*argv = grad_emalloc(sizeof(**argv)*argc);
 	(*argv)[0].type = CFG_STRING;
 	(*argv)[0].v.string = keyword;
 	if (vlist) {
@@ -548,7 +550,7 @@ _cfg_make_argv(cfg_value_t **argv, char *keyword, RAD_LIST *vlist)
 void
 _cfg_free_argv(int argc, cfg_value_t *argv)
 {
-	efree(argv);
+	grad_free(argv);
 }
 
 static void
@@ -579,7 +581,7 @@ _cfg_vlist_create(cfg_value_t *val)
 void
 _cfg_push_block(struct cfg_stmt *stmt, cfg_end_fp end, void *block_data)
 {
-	struct syntax_block *p = emalloc(sizeof(*p));
+	struct syntax_block *p = grad_emalloc(sizeof(*p));
 	p->stmt = stmt;
 	p->end  = end;
 	p->data = block_data;
@@ -596,7 +598,7 @@ _cfg_pop_block()
 		block = p->prev;
 		if (p->end)
 			p->end(block ? block->data : NULL, p->data);
-		efree(p);
+		grad_free(p);
 	}
 	return block;
 }
@@ -632,10 +634,10 @@ _get_value(cfg_value_t *arg, int type, void *base)
                           if (s) 
                                   value.v.number = ntohs(s->s_port);
                           else {
-                                  radlog(L_ERR, 
-                                         _("%s:%d: no such service: %s"),
-                                         cfg_filename, cfg_line_num,
-                                         value.v.string);
+                                  grad_log(L_ERR, 
+                                           _("%s:%d: no such service: %s"),
+                                           cfg_filename, cfg_line_num,
+                                           value.v.string);
                                   return 0;
                           }
                           type = value.type = CFG_INTEGER;
@@ -658,10 +660,10 @@ _get_value(cfg_value_t *arg, int type, void *base)
                 case CFG_STRING:
                         ipaddr = grad_ip_gethostaddr(value.v.string);
                         if (ipaddr == 0) {
-                                radlog(L_ERR, 
-                                       _("%s:%d: unknown host: %s"),
-                                       cfg_filename, cfg_line_num,
-                                       value.v.string);
+                                grad_log(L_ERR, 
+                                         _("%s:%d: unknown host: %s"),
+                                         cfg_filename, cfg_line_num,
+                                         value.v.string);
                         }
                         value.v.ipaddr = ipaddr;
                         value.type = CFG_IPADDR;
@@ -692,7 +694,7 @@ _get_value(cfg_value_t *arg, int type, void *base)
                 break;
 		
         case CFG_STRING:
-                string_replace((char**)base, value.v.string);
+                grad_string_replace((char**)base, value.v.string);
                 break;
 		
         case CFG_IPADDR:
@@ -708,9 +710,9 @@ _get_value(cfg_value_t *arg, int type, void *base)
 		break;
 		
         default:
-                radlog(L_CRIT,
-                       _("INTERNAL ERROR at %s:%d: unknown datatype %d"),
-                       __FILE__, __LINE__, type);
+                grad_log(L_CRIT,
+                         _("INTERNAL ERROR at %s:%d: unknown datatype %d"),
+                         __FILE__, __LINE__, type);
         }
 	return 0;
 }
@@ -722,7 +724,7 @@ _get_value(cfg_value_t *arg, int type, void *base)
 void *
 cfg_malloc(size_t size,	void (*destructor)(void *))
 {
-	struct cfg_memblock *p = emalloc(size + sizeof(*p));
+	struct cfg_memblock *p = grad_emalloc(size + sizeof(*p));
 	p->destructor = destructor;
 	p->line_num = cfg_line_num;
 	if (!cfg_memory_pool)
@@ -734,23 +736,24 @@ cfg_malloc(size_t size,	void (*destructor)(void *))
 void
 cfg_type_error(int type)
 {
-	radlog(L_ERR, 
-	       _("%s:%d: wrong datatype (should be %s)"),
-	       cfg_filename, cfg_line_num, typestr[type]);
+	grad_log(L_ERR, 
+	         _("%s:%d: wrong datatype (should be %s)"),
+	         cfg_filename, cfg_line_num, typestr[type]);
 }
 
 void
 cfg_argc_error(int few)
 {
-	radlog(L_ERR,
-	       "%s:%d: %s",
-	       cfg_filename, cfg_line_num,
-	       few ? _("too few arguments") : _("too many arguments"));
+	grad_log(L_ERR,
+	         "%s:%d: %s",
+	         cfg_filename, cfg_line_num,
+	         few ? _("too few arguments") : _("too many arguments"));
 }
 
 #define _check_argc(argc, max) \
  if (argc-1 > max) {\
-     radlog(L_ERR, "%s:%d: %s", cfg_filename, cfg_line_num, _("too many arguments"));\
+     grad_log(L_ERR, "%s:%d: %s", \
+              cfg_filename, cfg_line_num, _("too many arguments"));\
      return 0;\
  }		
 
@@ -765,7 +768,7 @@ int
 cfg_obsolete(int argc ARG_UNUSED, cfg_value_t *argv ARG_UNUSED,
 	     void *block_data ARG_UNUSED, void *handler_data ARG_UNUSED)
 {
-	radlog(L_WARN, _("%s:%d: obsolete statement"),
+	grad_log(L_WARN, _("%s:%d: obsolete statement"),
 	       cfg_filename, cfg_line_num);
 	return 0;
 }
@@ -844,13 +847,13 @@ cfg_read(char *fname, struct cfg_stmt *syntax, void *data)
         cfg_filename = fname;
 	_cfg_push_block(syntax, NULL, data);
         if (stat(cfg_filename, &st)) {
-                radlog(L_ERR|L_PERROR, _("can't stat `%s'"), cfg_filename);
+                grad_log(L_ERR|L_PERROR, _("can't stat `%s'"), cfg_filename);
                 return -1;
         }
         fd = open(cfg_filename, O_RDONLY);
         if (fd == -1) {
                 if (errno != ENOENT)
-                        radlog(L_ERR|L_PERROR, 
+                        grad_log(L_ERR|L_PERROR, 
                                 _("can't open config file `%s'"), cfg_filename);
                 return -1;
         }
@@ -861,7 +864,7 @@ cfg_read(char *fname, struct cfg_stmt *syntax, void *data)
         close(fd);
         curp = buffer;
 
-        radlog(L_INFO, _("reading %s"), cfg_filename);
+        grad_log(L_INFO, _("reading %s"), cfg_filename);
         cfg_line_num = 1;
 
         if (strncmp(curp, "#debug", 6) == 0) {

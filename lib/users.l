@@ -129,10 +129,10 @@ lex_set_buffer(FILE *fp)
         size_t size;
         
         for (size = LEX_BUF_SIZE; size > 1; size /= 2)
-                if (buf = radxmalloc(size))
+                if (buf = grad_malloc(size))
                         break;
         if (!buf) {
-                radlog(L_CRIT, _("not enough memory"));
+                grad_log(L_CRIT, _("not enough memory"));
                 abort();
         }
 
@@ -148,9 +148,9 @@ lex_set_buffer(FILE *fp)
 void
 lex_delete_buffer(LEX_BUFFER_STATE buf)
 {
-        efree(buf.buffer);
+        grad_free(buf.buffer);
         if (buf.putback)
-                efree(buf.putback);
+                grad_free(buf.putback);
 }
 
 int
@@ -183,10 +183,10 @@ xunput(int c)
         if (current_buffer.pb_level == current_buffer.pb_size) {
                 char *putback;
                 current_buffer.pb_size += LEX_PUTBACK_SIZE;
-                putback = emalloc(current_buffer.pb_size);
+                putback = grad_emalloc(current_buffer.pb_size);
                 memcpy(putback, current_buffer.putback,
                        current_buffer.pb_level);
-                efree(current_buffer.putback);
+                grad_free(current_buffer.putback);
                 current_buffer.putback = putback;
         }
         current_buffer.putback[current_buffer.pb_level++] = c;
@@ -228,8 +228,8 @@ push_source(char *name)
         struct stat st;
         
         if (stat(name, &st)) {
-                radlog(L_ERR|L_PERROR,
-		       _("can't stat `%s'"), name);
+                grad_log(L_ERR|L_PERROR,
+		         _("can't stat `%s'"), name);
                 yyerror("can't include file");
                 return 1;
         }
@@ -241,25 +241,25 @@ push_source(char *name)
         if (ctx = ctx_lookup(st.st_ino)) {
                 yyerror("recursive inclusion");
                 if (ctx->prev)
-                        radlog_loc(L_ERR, &ctx->prev->loc,
-				   _("`%s' already included here"),
-				   name);
+                        grad_log_loc(L_ERR, &ctx->prev->loc,
+				     _("`%s' already included here"),
+				     name);
                 else
-                        radlog(L_ERR, _("`%s' already included at top level"),
-                               name);
+                        grad_log(L_ERR, _("`%s' already included at top level"),
+                                 name);
                 return 1;
         }
                 
         fp = fopen(name, "r");
         if (!fp) {
-                radlog(L_ERR|L_PERROR, _("can't open `%s'"),  name);
+                grad_log(L_ERR|L_PERROR, _("can't open `%s'"),  name);
                 yyerror("can't include file");
                 return 1;
         }
 
         /* Push current context */
         if (source_locus.file) {
-                ctx = emalloc(sizeof(*ctx));
+                ctx = grad_emalloc(sizeof(*ctx));
                 ctx->loc = source_locus;
                 ctx->i_node = source_inode;
                 ctx->yyin = yyin;
@@ -304,7 +304,7 @@ pop_source()
         source_inode = context_stack->i_node;
         RESTORE_BUFFER_STATE(context_stack->state);
         ctx = context_stack->prev;
-        efree(context_stack);
+        grad_free(context_stack);
         context_stack = ctx;
         return 0;
 }

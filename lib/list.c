@@ -44,7 +44,7 @@ struct iterator {
 struct list *
 grad_list_create()
 {
-	struct list *p = emalloc(sizeof(*p));
+	struct list *p = grad_emalloc(sizeof(*p));
 	p->head = p->tail = NULL;
 	p->itr = NULL;
 	return p;
@@ -63,10 +63,10 @@ grad_list_destroy(struct list **plist, list_iterator_t user_free, void *data)
 		struct list_entry *next = p->next;
 		if (user_free)
 			user_free(p->data, data);
-		efree(p);
+		grad_free(p);
 		p = next;
 	}
-	efree(*plist);
+	grad_free(*plist);
 	*plist = NULL;
 }
 
@@ -85,7 +85,7 @@ iterator_create(RAD_LIST *list)
 
 	if (!list)
 		return NULL;
-	itr = emalloc(sizeof(*itr));
+	itr = grad_emalloc(sizeof(*itr));
 	itr->list = list;
 	itr->cur = NULL;
 	itr->next = list->itr;
@@ -111,7 +111,7 @@ iterator_destroy(ITERATOR **ip)
 			prev->next = itr->next;
 		else
 			itr->list->itr = itr->next;
-		efree(itr);
+		grad_free(itr);
 		*ip = NULL;
 	}
 		
@@ -175,7 +175,7 @@ grad_list_append(struct list *list, void *data)
 
 	if (!list)
 		return;
-	ep = emalloc(sizeof(*ep));
+	ep = grad_emalloc(sizeof(*ep));
 	ep->next = NULL;
 	ep->data = data;
 	if (list->tail)
@@ -193,7 +193,7 @@ grad_list_prepend(struct list *list, void *data)
 
 	if (!list)
 		return;
-	ep = emalloc(sizeof(*ep));
+	ep = grad_emalloc(sizeof(*ep));
 	ep->data = data;
 	ep->next = list->head;
 	list->head = ep;
@@ -236,7 +236,7 @@ grad_list_remove(struct list *list, void *data, list_comp_t cmp)
 	if (p == list->tail)
 		list->tail = prev;
 	
-	efree(p);
+	grad_free(p);
 	list->count--;
 	
 	return data;
@@ -293,7 +293,7 @@ grad_list_insert_sorted(struct list *list, void *data, list_comp_t cmp)
 	} else if (!cur) {
 		grad_list_append(list, data);
 	} else {
-		struct list_entry *ep = emalloc(sizeof(*ep));
+		struct list_entry *ep = grad_emalloc(sizeof(*ep));
 		ep->data = data;
 		ep->next = cur;
 		prev->next = ep;

@@ -96,8 +96,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 break;
         case ARGP_KEY_FINI:
                 if (!args->user && !args->nas && args->port == -1) {
-                        radlog(L_ERR,
-                               _("at least one port, nas or user must be specified"));
+                        grad_log(L_ERR,
+                                 _("at least one port, nas or user must be specified"));
                         exit(1);
                 }
                 break;
@@ -131,7 +131,7 @@ radzap(NETDEF *netdef, int port, char *user, time_t t)
                 time(&t);
 
         if ((file = rut_setent(radutmp_path, 0)) == NULL) {
-                radlog(L_ERR|L_PERROR, "can't open %s", radutmp_path);
+                grad_log(L_ERR|L_PERROR, "can't open %s", radutmp_path);
                 exit(1);
         }       
         /*
@@ -222,7 +222,7 @@ main(int argc, char **argv)
         path = grad_mkfilename(radius_dir, RADIUS_NASLIST);
         if (grad_nas_read_file(path) < 0)
                 exit(1);
-        efree(path);
+        grad_free(path);
 
         if (args.nas) {
                 NAS *np;

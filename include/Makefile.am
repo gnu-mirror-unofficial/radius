@@ -17,8 +17,6 @@
 # along with GNU Radius; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-if MAINTAINER_MODE
-
 all: raddict.h radmibs.h
 
 raddict.h: $(top_srcdir)/raddb/dict/standard
@@ -27,39 +25,41 @@ raddict.h: $(top_srcdir)/raddb/dict/standard
 radmibs.h: $(top_srcdir)/mibs/radmibs.h.in
 	$(AWK) -f $(top_srcdir)/scripts/mksnmp-h.awk $(top_srcdir)/mibs/radmibs.h.in > radmibs.h
 
+if MAINTAINER_MODE
 lint:;
-
 endif
 
 MAINTAINERCLEANFILES = raddict.h radmibs.h
 
 SUBDIRS=snmp
 
+pkginclude_HEADERS = \
+ argcv.h\
+ envar.h\
+ list.h\
+ md5.h\
+ mem.h\
+ radargp.h\
+ raddbm.h\
+ raddict.h\
+ radius.h\
+ radpaths.h\
+ radscm.h\
+ radutmp.h\
+ symtab.h\
+ sysdep.h
+
 EXTRA_DIST = \
-argcv.h \
-cfg.h \
-checkrad.h \
-envar.h \
-gettext.h \
-list.h \
-md5.h \
-mem.h \
-obstack1.h \
-parser.h \
-radargp.h \
-raddbm.h \
-raddict.h \
-radius.h \
-radiusd.h \
-radlast.h \
-radmibs.h \
-radpaths.h \
-radscm.h \
-radsnmp.h \
-radsql.h \
-radutmp.h \
-regex1.h \
-rewrite.h \
-symtab.h \
-sysdep.h \
-timestr.h 
+ cfg.h\
+ checkrad.h\
+ gettext.h\
+ obstack1.h\
+ parser.h\
+ radiusd.h\
+ radlast.h\
+ radmibs.h\
+ radsnmp.h\
+ radsql.h\
+ regex1.h\
+ rewrite.h\
+ timestr.h 

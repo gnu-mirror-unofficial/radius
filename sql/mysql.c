@@ -70,13 +70,13 @@ do_mysql_query(struct sql_connection *conn, char *query)
                 if (!ret) 
                         return ret;
                 
-		radlog(L_ERR, "[MYSQL] %s", mysql_error(mysql));
+		grad_log(L_ERR, "[MYSQL] %s", mysql_error(mysql));
 
 		rad_mysql_disconnect(conn, 0);
 		return ret;
         }
         debug(1,("FAILURE"));
-        radlog(L_ERR, "[MYSQL] %s", _("gave up on connect"));
+        grad_log(L_ERR, "[MYSQL] %s", _("gave up on connect"));
         return ret;
 }
 
@@ -97,18 +97,18 @@ rad_mysql_reconnect(int type, struct sql_connection *conn)
                 break;
         }
         
-        mysql = conn->data = emalloc(sizeof(MYSQL));
+        mysql = conn->data = grad_emalloc(sizeof(MYSQL));
         mysql_init(mysql);
 	if (!mysql_real_connect(mysql, 
 				sql_cfg.server, sql_cfg.login,
 				sql_cfg.password, dbname, sql_cfg.port,
 				NULL, 0)) {
-		radlog(L_ERR,
-		       _("[MYSQL] cannot connect to %s as %s: %s"),
-		       sql_cfg.server,
-		       sql_cfg.login,
-		       mysql_error((MYSQL*)conn->data));
-		efree(conn->data);
+		grad_log(L_ERR,
+		         _("[MYSQL] cannot connect to %s as %s: %s"),
+		         sql_cfg.server,
+		         sql_cfg.login,
+		         mysql_error((MYSQL*)conn->data));
+		grad_free(conn->data);
 		conn->data = NULL;
 		conn->connected = 0;
 		return -1;
@@ -123,7 +123,7 @@ static void
 rad_mysql_disconnect(struct sql_connection *conn, int drop ARG_UNUSED)
 {
 	mysql_close(conn->data);
-        efree(conn->data);
+        grad_free(conn->data);
 	conn->data = NULL;  
         conn->connected = 0;
 }
@@ -159,7 +159,7 @@ rad_mysql_getpwd(struct sql_connection *conn, char *query)
                 return NULL;
 
         if (!(result = mysql_store_result((MYSQL*)conn->data))) {
-                radlog(L_ERR, _("[MYSQL]: can't get result"));
+                grad_log(L_ERR, _("[MYSQL]: can't get result"));
                 return NULL;
         }
         if (mysql_num_rows(result) != 1) {
@@ -169,7 +169,7 @@ rad_mysql_getpwd(struct sql_connection *conn, char *query)
         }
         row = mysql_fetch_row(result);
 
-        return_passwd = estrdup(row[0]);
+        return_passwd = grad_estrdup(row[0]);
         mysql_free_result(result);
 
         return return_passwd;
@@ -228,7 +228,7 @@ rad_mysql_exec(struct sql_connection *conn, char *query)
                 return NULL;
         }
 
-        data = emalloc(sizeof(*data));
+        data = grad_emalloc(sizeof(*data));
         data->result = result;
         return (void*)data;
 }
@@ -267,7 +267,7 @@ rad_mysql_free(struct sql_connection *conn, void *data)
                 return;
 
         mysql_free_result(dp->result);
-        efree(dp);
+        grad_free(dp);
 }
 
 SQL_DISPATCH_TAB mysql_dispatch_tab[] = {

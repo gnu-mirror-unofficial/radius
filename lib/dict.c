@@ -86,8 +86,8 @@ free_vendor(void *ptr, void *closure ARG_UNUSED)
 {
         DICT_VENDOR *vp = ptr;
         if (vp->vendorname)
-                efree(vp->vendorname);
-	efree(vp);
+                grad_free(vp->vendorname);
+	grad_free(vp);
 	return 0;
 }
 
@@ -95,8 +95,8 @@ static int
 free_value(void *ptr, void *closure ARG_UNUSED)
 {
         DICT_VALUE *vp = ptr;
-        efree(vp->name);
-	efree(vp);
+        grad_free(vp->name);
+	grad_free(vp);
 	return 0;
 }
 
@@ -118,10 +118,10 @@ static int
 nfields(int fc, int minf, int maxf, LOCUS *loc)
 {
         if (fc < minf) {
-                radlog_loc(L_ERR, loc, "%s", _("too few fields"));
+                grad_log_loc(L_ERR, loc, "%s", _("too few fields"));
                 return -1;
         } else if (fc > maxf) {
-                radlog_loc(L_ERR, loc, "%s", _("too many fields"));
+                grad_log_loc(L_ERR, loc, "%s", _("too many fields"));
                 return -1;
         }
         return 0;
@@ -135,9 +135,9 @@ addvendor(char *name, int value)
 {
         DICT_VENDOR *vval;
 
-        vval = emalloc(sizeof(DICT_VENDOR));
+        vval = grad_emalloc(sizeof(DICT_VENDOR));
         
-        vval->vendorname = estrdup(name);
+        vval->vendorname = grad_estrdup(name);
         vval->vendorpec  = value;
         vval->vendorcode = vendorno++;
 	if (!dictionary_vendors)
@@ -172,7 +172,7 @@ dict_find_parser(int attr)
 void
 dict_register_parser(int attr, attr_parser_fp fun)
 {
-	ATTR_PARSER_TAB *e = emalloc(sizeof(*e));
+	ATTR_PARSER_TAB *e = grad_emalloc(sizeof(*e));
 	e->attr = attr;
 	e->fun = fun;
 	e->next = attr_parser_tab;
@@ -224,7 +224,7 @@ parse_flags(char **ptr, int *flags, LOCUS *loc)
         
         for (p = *ptr+1, i = 0; i < CF_MAX; i++) {
                 if (*p == 0) {
-                        radlog_loc(L_ERR, loc, _("missing ]"), *p);
+                        grad_log_loc(L_ERR, loc, _("missing ]"), *p);
                         return 1;
                 }
                 switch (*p++) {
@@ -239,9 +239,9 @@ parse_flags(char **ptr, int *flags, LOCUS *loc)
                         p--;
                         goto stop;
                 default:
-                        radlog_loc(L_ERR, loc,
-				   _("invalid syntax flag %c"),
-				   p[-1]);
+                        grad_log_loc(L_ERR, loc,
+				     _("invalid syntax flag %c"),
+				     p[-1]);
                         return 1;
                 }
                 switch (*p++) {
@@ -252,9 +252,9 @@ parse_flags(char **ptr, int *flags, LOCUS *loc)
                         *flags &= ~AF_RHS(i);
                         break;
                 default:
-                        radlog_loc(L_ERR, loc,
-				   _("invalid syntax flag %c"),
-				   p[-1]);
+                        grad_log_loc(L_ERR, loc,
+				     _("invalid syntax flag %c"),
+				     p[-1]);
                         return 1;
                 }
         }
@@ -330,9 +330,9 @@ parse_attr_properties(LOCUS *loc, char *str, int *flags, int *prop)
 			/* Retained for compatibility */
 			break;
 		default:
-			radlog_loc(L_ERR, loc,
-				   _("invalid flag %c"),
-				   *p);
+			grad_log_loc(L_ERR, loc,
+				     _("invalid flag %c"),
+				     *p);
 			errcnt++;
 			break;
 		}
@@ -378,9 +378,9 @@ _dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
         
         value = strtol(ATTR_VALUE, &p, 0);
         if (*p) {
-                radlog_loc(L_ERR, loc,
-			   _("value not a number (near %s)"),
-			   p);
+                grad_log_loc(L_ERR, loc,
+			     _("value not a number (near %s)"),
+			     p);
                 (*errcnt)++;
                 return 0;
         }
@@ -389,7 +389,7 @@ _dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
 		type = TYPE_STRING;
 		fp = dict_find_parser(value);
 		if (!fp) {
-			radlog_loc(L_WARN, loc,
+			grad_log_loc(L_WARN, loc,
 			      _("no parser registered for this attribute"));
 			return 0;
 		}
@@ -397,16 +397,16 @@ _dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
 		type = grad_xlat_keyword(type_kw, ATTR_TYPE, TYPE_INVALID);
 	
         if (type == TYPE_INVALID) {
-                radlog_loc(L_ERR, loc,
-			   "%s",
-			   _("invalid type"));
+                grad_log_loc(L_ERR, loc,
+			     "%s",
+			     _("invalid type"));
                 (*errcnt)++;
                 return 0;
         }
 
         if (HAS_VENDOR(fc, fv)) {
                 if ((vendor = grad_vendor_name_to_id(ATTR_VENDOR)) == 0) {
-                        radlog_loc(L_ERR, loc, _("unknown vendor"));
+                        grad_log_loc(L_ERR, loc, _("unknown vendor"));
 			(*errcnt)++;
                         return 0;
                 }
@@ -430,16 +430,16 @@ _dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
 		break;
 
 	case dict_symbol_attribute:
-		radlog_loc(L_WARN, loc,
-			   _("Redefining attribute %s"),
-			   ATTR_NAME);
+		grad_log_loc(L_WARN, loc,
+			     _("Redefining attribute %s"),
+			     ATTR_NAME);
 		attr = &sym->v.attr;
 		break;
 		
 	case dict_symbol_alias:
-		radlog_loc(L_WARN, loc,
-			   _("Redefining alias %s"),
-			   ATTR_NAME);
+		grad_log_loc(L_WARN, loc,
+			     _("Redefining alias %s"),
+			     ATTR_NAME);
 		attr = sym->v.alias;
 	}
 
@@ -467,17 +467,17 @@ _dict_alias(int *errcnt, int fc, char **fv, LOCUS *loc)
 
         attr = dict_attr_lookup(fv[1]);
 	if (!attr) {
-		radlog_loc(L_ERR, loc,
-			   _("Attribute %s is not defined"),
-			   fv[1]);
+		grad_log_loc(L_ERR, loc,
+			     _("Attribute %s is not defined"),
+			     fv[1]);
 		return 0;
 	}
 		
 	sym = sym_lookup_or_install(dict_attr_tab, fv[2], 1);
 	if (sym->type != dict_symbol_uninitialized) {
-		radlog_loc(L_ERR, loc,
-			   _("Symbol %s already declared"),
-			   fv[2]);
+		grad_log_loc(L_ERR, loc,
+			     _("Symbol %s already declared"),
+			     fv[2]);
 		/*FIXME: location of the previous declaration*/
 		/* Not a fatal error: do not increase error count */
 		return 0;
@@ -502,9 +502,9 @@ _dict_property(int *errcnt, int fc, char **fv, LOCUS *loc)
 
         attr = dict_attr_lookup(fv[1]);
 	if (!attr) {
-		radlog_loc(L_ERR, loc,
-			   _("Attribute %s is not defined"),
-			   fv[1]);
+		grad_log_loc(L_ERR, loc,
+			     _("Attribute %s is not defined"),
+			     fv[1]);
 		return 0;
 	}
 	set_default_attr_properties(attr->value, &flags, &prop);
@@ -527,26 +527,26 @@ _dict_value(int *errcnt, int fc, char **fv, LOCUS *loc)
 
         value = strtol(VALUE_NUM, &p, 0);
         if (*p) {
-                radlog_loc(L_ERR, loc,
-			   _("value not a number (near %s)"),
-			   p);
+                grad_log_loc(L_ERR, loc,
+			     _("value not a number (near %s)"),
+			     p);
                 (*errcnt)++;
                 return 0;
         }
 
         attr = dict_attr_lookup(VALUE_ATTR);
 	if (!attr) {
-		radlog_loc(L_ERR, loc,
-			   _("Attribute %s is not defined"),
-			   VALUE_ATTR);
+		grad_log_loc(L_ERR, loc,
+			     _("Attribute %s is not defined"),
+			     VALUE_ATTR);
                 (*errcnt)++;
 		return 0;
 	}
 	
         /* Create a new VALUE entry for the list */
-        dval = emalloc(sizeof(DICT_VALUE));
+        dval = grad_emalloc(sizeof(DICT_VALUE));
                         
-        dval->name = estrdup(VALUE_NAME);
+        dval->name = grad_estrdup(VALUE_NAME);
         dval->attr = attr;
         dval->value = value;
 
@@ -569,9 +569,9 @@ _dict_vendor(int *errcnt, int fc, char **fv, LOCUS *loc)
 
         value = strtol(VENDOR_VALUE, &p, 0);
         if (*p) {
-                radlog_loc(L_ERR, loc,
-			   _("value not a number (near %s)"),
-			   p);
+                grad_log_loc(L_ERR, loc,
+			     _("value not a number (near %s)"),
+			     p);
                 (*errcnt)++;
                 return 0;
         }
@@ -627,7 +627,7 @@ parse_dict_entry(void *closure, int fc, char **fv, LOCUS *loc)
 		_dict_property(errcnt, fc, fv, loc);
 		break;
         default:
-                radlog_loc(L_ERR, loc, "%s", _("unknown keyword"));
+                grad_log_loc(L_ERR, loc, "%s", _("unknown keyword"));
                 break;
         }
         return 0;
@@ -641,15 +641,15 @@ parse_dict(char *name)
         int   errcnt = 0;
 
 	if (name[0] == '/')
-		path = estrdup(name);
+		path = grad_estrdup(name);
 	else
 		path = grad_mkfilename(radius_dir, name);
         rc = grad_read_raddb_file(path, 1, parse_dict_entry, &errcnt);
         if (errcnt)
-                radlog(L_NOTICE,
-		       ngettext("%s: %d error", "%s: %d errors",
-				errcnt), path, errcnt);
-        efree(path);
+                grad_log(L_NOTICE,
+		         ngettext("%s: %d error", "%s: %d errors",
+			  	  errcnt), path, errcnt);
+        grad_free(path);
         return rc;
 }
 

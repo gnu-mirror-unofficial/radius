@@ -161,7 +161,7 @@ main(int argc, char **argv)
 	srand(time(NULL));
 	
         if (grad_dict_init()) {
-                radlog(L_ERR, _("error reading dictionary file"));
+                grad_log(L_ERR, _("error reading dictionary file"));
                 return 1;
         }
         srv_queue = grad_client_create_queue(!quick, 0, 0);
@@ -179,12 +179,12 @@ main(int argc, char **argv)
                 char **argv;
 
                 if (argcv_get(server, ":", NULL, &argc, &argv)) {
-                        radlog(L_ERR, "can't parse server definition");
+                        grad_log(L_ERR, "can't parse server definition");
                         exit(1);
                 }
 
                 if (argc < 3) {
-                        radlog(L_ERR, "no shared secret for the server");
+                        grad_log(L_ERR, "no shared secret for the server");
                         exit(1);
                 }
 
@@ -195,9 +195,9 @@ main(int argc, char **argv)
                         case 0:
                                 serv.addr = grad_ip_gethostaddr(argv[i]);
                                 if (!serv.addr) {
-                                        radlog(L_ERR,
-                                             "bad IP address or host name: %s",
-                                               argv[i]);
+                                        grad_log(L_ERR,
+                                                 "bad IP address or host name: %s",
+                                                 argv[i]);
                                         exit(1);
                                 }
                                 break;
@@ -207,26 +207,26 @@ main(int argc, char **argv)
                         case 4:
                                 serv.port[0] = strtol(argv[i], &p, 0);
                                 if (*p) {
-                                        radlog(L_ERR,
-                                               "bad port number %s",
-                                               argv[i]);
+                                        grad_log(L_ERR,
+                                                 "bad port number %s",
+                                                 argv[i]);
                                         break;
                                 }
                                 break;
                         case 6:
                                 serv.port[1] = strtol(argv[i], &p, 0);
                                 if (*p) {
-                                        radlog(L_ERR,
-                                               "bad port number %s",
-                                               argv[i]);
+                                        grad_log(L_ERR,
+                                                 "bad port number %s",
+                                                 argv[i]);
                                         break;
                                 }
                                 break;
                         default:
                                 if (argv[i][0] != ':') {
-                                        radlog(L_ERR,
-                                               "bad separator near %s",
-                                               argv[i]);
+                                        grad_log(L_ERR,
+                                                 "bad separator near %s",
+                                                 argv[i]);
                                         exit(1);
                                 }
                                 break;
@@ -243,13 +243,13 @@ main(int argc, char **argv)
         }
 
         if (grad_list_count(srv_queue->servers) == 0) {
-                radlog(L_ERR,
-                       "No servers specfied. Use -s option.\n");
+                grad_log(L_ERR,
+                         "No servers specfied. Use -s option.\n");
                 exit(1);
         }
         
         x_argmax = argc + 2;
-        x_argv = emalloc(sizeof(x_argv[0]) * x_argmax);
+        x_argv = grad_emalloc(sizeof(x_argv[0]) * x_argmax);
         x_argc = 0;
         x_argv[x_argc++] = filename;
 
@@ -322,7 +322,7 @@ parse_datum(char *p, union datum *dp)
                 p[length-1] = 0;
                 
                 type = String;
-                dp->string = estrdup(p);
+                dp->string = grad_estrdup(p);
         } else if (isdigit(*p)) {
                 char *endp;
                 
@@ -349,7 +349,7 @@ parse_datum(char *p, union datum *dp)
                 }
         } else {
                 type = String;
-                dp->string = estrdup(p);
+                dp->string = grad_estrdup(p);
         }
         return type;
 }
@@ -360,19 +360,19 @@ print_ident(Variable *var)
         char buf[64];
         switch (var->type) {
         case Undefined:
-                return estrdup("UNDEFINED");
+                return grad_estrdup("UNDEFINED");
                 break;
         case Integer:
                 sprintf(buf, "%d", var->datum.number);
-                return estrdup(buf);
+                return grad_estrdup(buf);
         case Ipaddress:
                 grad_ip_iptostr(var->datum.ipaddr, buf);
-                return estrdup(buf);
+                return grad_estrdup(buf);
         case String:
-                return estrdup(var->datum.string);
+                return grad_estrdup(var->datum.string);
                 break;
         case Vector:
-                return estrdup("VECTOR");
+                return grad_estrdup("VECTOR");
         }
 	return NULL;
 }
@@ -445,7 +445,7 @@ var_free(Variable *var)
 {
         switch (var->type) {
         case String:
-                efree(var->datum.string);
+                grad_free(var->datum.string);
                 break;
         case Vector:
                 grad_avl_free(var->datum.vector);

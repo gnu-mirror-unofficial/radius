@@ -44,7 +44,7 @@ DOT_X_FILES=\
  radscm.x
 DOT_DOC_FILES=$(DOT_X_FILES:.x=.doc)
 BUILT_SOURCES=@RADSCM_BUILT_SOURCES_LIST@
-EXTRA_DIST=boot.scm ttl.scm ipalloc.scm radsession.in \
+EXTRA_DIST=ttl.scm ipalloc.scm radsession.in \
  gnuradius.scm gnuradius.scm.in
 CLEANFILES = *.inc *.x *.doc radsession gnuradius.scm guile-procedures.txt
 

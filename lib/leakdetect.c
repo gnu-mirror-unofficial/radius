@@ -40,7 +40,7 @@ struct mallocstat mallocstat;
 #endif
 
 void *
-radxmalloc(size_t size)
+grad_malloc(size_t size)
 {
         char *p;
 
@@ -66,10 +66,10 @@ radxmalloc(size_t size)
 }
 
 void *
-radxrealloc(void *ptr, size_t size)
+grad_realloc(void *ptr, size_t size)
 {
         if (!ptr)
-                return radxmalloc(size);
+                return grad_malloc(size);
         else {
 #ifdef LEAK_DETECTOR
                 MHDR *mhdr;
@@ -92,32 +92,8 @@ radxrealloc(void *ptr, size_t size)
         return ptr;
 }
 
-void *
-emalloc(size_t size)
-{
-        char *p;
-
-        p = radxmalloc(size);
-        if (!p) {
-                radlog(L_CRIT, _("low core: aborting"));
-                abort();
-        } 
-        return p;
-}
-
-void *
-erealloc(void *ptr, size_t size)
-{
-        ptr = radxrealloc(ptr, size);
-        if (!ptr) {
-                radlog(L_CRIT, _("low core: aborting"));
-                abort();
-        } 
-        return ptr;
-}
-
 void 
-efree(void *ptr)
+grad_free(void *ptr)
 {
 #ifdef LEAK_DETECTOR
         MHDR *mhdr;
@@ -142,23 +118,47 @@ efree(void *ptr)
         free(ptr);
 }
 
+void *
+grad_emalloc(size_t size)
+{
+        char *p;
+
+        p = grad_malloc(size);
+        if (!p) {
+                grad_log(L_CRIT, _("low core: aborting"));
+                abort();
+        } 
+        return p;
+}
+
+void *
+grad_erealloc(void *ptr, size_t size)
+{
+        ptr = grad_realloc(ptr, size);
+        if (!ptr) {
+                grad_log(L_CRIT, _("low core: aborting"));
+                abort();
+        } 
+        return ptr;
+}
+
 char *
-estrdup(const char *s)
+grad_estrdup(const char *s)
 {
         char *p;
         
         if (!s)
                 return NULL;
-        p = emalloc(strlen(s)+1);
+        p = grad_emalloc(strlen(s)+1);
         return strcpy(p, s);
 }
 
 char *
-string_replace(char **str, const char *new_value)
+grad_string_replace(char **str, const char *new_value)
 {
 	char *p = *str;
-	*str = estrdup(new_value);
+	*str = grad_estrdup(new_value);
 	if (p)
-		efree(p);
+		grad_free(p);
 	return *str;
 }

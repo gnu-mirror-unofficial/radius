@@ -253,11 +253,11 @@ main(int  argc, char **argv)
         path = grad_mkfilename(radius_dir, RADIUS_NASLIST);
 	if (grad_nas_read_file(path))
                 exit(1);
-        efree(path);
+        grad_free(path);
         /* Read realms */
         path = grad_mkfilename(radius_dir, RADIUS_REALMS);
 	grad_read_realms(path, 0, 0, NULL);
-        efree(path);
+        grad_free(path);
         
         /*
          *      See if we are "fingerd".
@@ -321,8 +321,8 @@ local_who()
         struct radutmp rt;
         
         if ((fp = fopen(UTMP_FILE, "r")) == NULL) {
-                radlog(L_ERR, _("can't open file: %s"),
-                       UTMP_FILE);
+                grad_log(L_ERR, _("can't open file: %s"),
+                         UTMP_FILE);
                 return;
         }
 

@@ -86,8 +86,8 @@ process_var(var, ptr)
         case SMI_STRING:
                 sptr = (char**)ptr;
                 if (*sptr)
-                        efree(*sptr);
-                *sptr = estrdup(var->var_str);
+                        grad_free(*sptr);
+                *sptr = grad_estrdup(var->var_str);
                 DEBUG(("\"%s\"", var->var_str));
                 break;
         case SMI_TIMETICKS:
@@ -113,14 +113,14 @@ process_var(var, ptr)
         case SMI_OPAQUE:
                 sptr = (char**)ptr;
                 if (*sptr)
-                        efree(*sptr);
-                *sptr = emalloc(var->val_length);
+                        grad_free(*sptr);
+                *sptr = grad_emalloc(var->val_length);
                 memcpy(*sptr, var->var_str, var->val_length);
                 break;
         case SMI_OBJID:
                 oidptr = (oid_t*)ptr;
                 if (*oidptr)
-                        efree(*oidptr);
+                        grad_free(*oidptr);
                 *oidptr = oid_dup(var->var_oid);
                 DEBUG(("%s", sprint_oid(buf, sizeof(buf), var->var_oid)));
                 break;
@@ -141,8 +141,8 @@ converse(type, sp, pdu, closure)
         char ipbuf[DOTTED_QUAD_LEN];
         
         if (type == SNMP_CONV_TIMEOUT) {
-                radlog(L_ERR, "timed out in waiting SNMP response from %s\n",
-                       grad_ip_iptostr(sp->remote_sin.sin_addr.s_addr, ipbuf));
+                grad_log(L_ERR, "timed out in waiting SNMP response from %s\n",
+                         grad_ip_iptostr(sp->remote_sin.sin_addr.s_addr, ipbuf));
                 /*FIXME: inform main that the timeout has occured */
                 return 1;
         }
@@ -205,27 +205,27 @@ run_query(tab)
         
         session = snmp_session_create(community, hostname, port, converse, tab);
         if (!session) {
-                radlog(L_CRIT, "(session) snmp err %d\n", snmp_errno);
+                grad_log(L_CRIT, "(session) snmp err %d\n", snmp_errno);
                 exit(1);
         }
 
         pdu = snmp_pdu_create(SNMP_PDU_GET);
         if (!pdu) {
-                radlog(L_ERR, "(pdu) snmp err %d\n", snmp_errno);
+                grad_log(L_ERR, "(pdu) snmp err %d\n", snmp_errno);
                 return;
         }
         
         for (; tab->oid; tab++) {
                 var = snmp_var_create(tab->oid);
                 if (!var) {
-                        radlog(L_ERR, "(var) snmp err %d\n", snmp_errno);
+                        grad_log(L_ERR, "(var) snmp err %d\n", snmp_errno);
                         continue;
                 }
                 snmp_pdu_add_var(pdu, var);
         }
 
         if (snmp_query(session, pdu)) {
-                radlog(L_ERR, "(snmp_query) snmp err %d\n", snmp_errno);
+                grad_log(L_ERR, "(snmp_query) snmp err %d\n", snmp_errno);
                 return;
         }
         snmp_session_close(session);
@@ -256,8 +256,8 @@ walk_converse(type, sp, pdu, closure)
         data->varlist = NULL;
 
         if (type == SNMP_CONV_TIMEOUT) {
-                radlog(L_ERR, "timed out in waiting SNMP response from %s\n",
-                       grad_ip_iptostr(sp->remote_sin.sin_addr.s_addr, ipbuf));
+                grad_log(L_ERR, "timed out in waiting SNMP response from %s\n",
+                         grad_ip_iptostr(sp->remote_sin.sin_addr.s_addr, ipbuf));
                 /*FIXME: inform main that the timeout has occured */
                 return 1;
         }
@@ -314,12 +314,12 @@ run_walk(tab, elsize, insert, app_data)
 
         data.tab = tab;
         data.app_data = app_data;
-        data.instance = emalloc(elsize);
+        data.instance = grad_emalloc(elsize);
         data.varlist = NULL;
         session = snmp_session_create(community, hostname, port,
                                       walk_converse, &data);
         if (!session) {
-                radlog(L_CRIT, "(session) snmp err %d\n", snmp_errno);
+                grad_log(L_CRIT, "(session) snmp err %d\n", snmp_errno);
                 exit(1);
         }
 
@@ -328,9 +328,9 @@ run_walk(tab, elsize, insert, app_data)
                 oid_t oid = oid_create_from_subid(OIDLEN(tab->oid)-1,
                                                   OIDPTR(tab->oid));
                 var = snmp_var_create(oid);
-                efree(oid);
+                grad_free(oid);
                 if (!var) {
-                        radlog(L_ERR, "(var) snmp err %d\n", snmp_errno);
+                        grad_log(L_ERR, "(var) snmp err %d\n", snmp_errno);
                         continue;
                 }
                 var->next = data.varlist;
@@ -340,7 +340,7 @@ run_walk(tab, elsize, insert, app_data)
         do  {
                 pdu = snmp_pdu_create(SNMP_PDU_GETNEXT);
                 if (!pdu) {
-                        radlog(L_ERR, "(pdu) snmp err %d\n", snmp_errno);
+                        grad_log(L_ERR, "(pdu) snmp err %d\n", snmp_errno);
                         return;
                 }
                 for (var = data.varlist; var; ) {
@@ -352,14 +352,14 @@ run_walk(tab, elsize, insert, app_data)
                 data.count = 0;
                 memset(data.instance, 0, elsize);
                 if (snmp_query(session, pdu)) {
-                        radlog(L_ERR,
-                               "(snmp_query) snmp err %d\n", snmp_errno);
+                        grad_log(L_ERR,
+                                 "(snmp_query) snmp err %d\n", snmp_errno);
                         break;
                 }
                 if (data.count)
                         insert(app_data, data.instance);
         } while (data.varlist);
-        efree(data.instance);
+        grad_free(data.instance);
         snmp_session_close(session);
 }
 

@@ -56,9 +56,9 @@ _parse_server(int argc, char **argv, struct _parse_data *pd, int *np,
 		srv->port[PORT_ACCT] = pd->ports[PORT_ACCT];
 	}
 	if (pd->fun && pd->fun(srv)) {
-		radlog_loc(L_ERR, pd->loc,
-			   _("can't find secret for %s"),
-			   srv->name);
+		grad_log_loc(L_ERR, pd->loc,
+			     _("can't find secret for %s"),
+			     srv->name);
 		return 1; 
 	}
 	return 0;
@@ -80,9 +80,9 @@ _parse_server_list(RADIUS_SERVER_QUEUE *qp, char *str, struct _parse_data *pd)
 					      grad_client_alloc_server(&srv));
 
 		if (i < argc && argv[i][0] != ',') {
-			radlog_loc(L_ERR, pd->loc,
-				   _("expected , but found %s"),
-				   argv[i]);
+			grad_log_loc(L_ERR, pd->loc,
+				     _("expected , but found %s"),
+				     argv[i]);
 			argcv_free(argc, argv);
 			return 1;
 		}
@@ -102,13 +102,13 @@ read_realms_entry(void *closure, int fc, char **fv, LOCUS *loc)
 	int i;
 	
         if (fc < 2) {
-                radlog_loc(L_ERR, loc, _("too few fields (%d)"), fc);
+                grad_log_loc(L_ERR, loc, _("too few fields (%d)"), fc);
                 return -1;
         }
 
         pd->loc = loc;
 	
-        rp = emalloc(sizeof(REALM));
+        rp = grad_emalloc(sizeof(REALM));
 	rp->queue = NULL;
         if (strcmp(fv[1], "LOCAL") == 0) {
 		i = 2;
@@ -124,9 +124,9 @@ read_realms_entry(void *closure, int fc, char **fv, LOCUS *loc)
 		i++;
 		
 		if (grad_list_count(rp->queue->servers) == 0) {
-			radlog_loc(L_NOTICE, loc, _("discarding entry"));
+			grad_log_loc(L_NOTICE, loc, _("discarding entry"));
 			grad_client_destroy_queue(rp->queue);
-			efree(rp);
+			grad_free(rp);
 			return 0;
 		}
 	}
@@ -155,7 +155,7 @@ _realm_mem_free(void *item, void *data ARG_UNUSED)
 	REALM *r = item;
 	grad_client_destroy_queue(r->queue);
 	grad_envar_free_list(&r->args);
-	efree(item);
+	grad_free(item);
 	return 0;
 }
 	

@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: radius 1.2\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
-"POT-Creation-Date: 2004-01-31 16:42+0200\n"
+"POT-Creation-Date: 2004-02-03 13:37+0200\n"
 "PO-Revision-Date: 2003-12-16 13:49+0200\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -20,7 +20,7 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
 
-#: lib/avl.c:90
+#: lib/avl.c:91
 #, c-format
 msgid "make_pair(): attribute %d not found in dictionary"
 msgstr "make_pair(): atrybutu %d nie odnaleziono w s³owniku"
@@ -199,7 +199,7 @@ msgstr "%s: opcja `-W %s' jest niejednoznaczna\n"
 msgid "%s: option `-W %s' doesn't allow an argument\n"
 msgstr "%s: opcja `-W %s' nie mo¿e mieæ argumentów\n"
 
-#: lib/leakdetect.c:102 lib/leakdetect.c:113
+#: lib/leakdetect.c:128 lib/leakdetect.c:139
 msgid "low core: aborting"
 msgstr "Brak pamiêci: przerwanie"
 
@@ -245,7 +245,7 @@ msgstr "nie mogê otworzyæ %s"
 msgid "not enough memory"
 msgstr "brak pamiêci"
 
-#: lib/users.l:232 radiusd/config.y:847 radiusd/stat.c:80
+#: lib/users.l:232 radiusd/config.y:850 radiusd/stat.c:80
 #, c-format
 msgid "can't stat `%s'"
 msgstr "stat(%s) nie powiod³a siê"
@@ -695,45 +695,45 @@ msgstr "b³êdna d³ugo¶æ maski podsieci: %d"
 msgid "%s:%d: unexpected EOF in comment started at line %d"
 msgstr "%s:%d: nieoczekiwany koniec pliku w komentarzu rozpoczêtym w linii %d"
 
-#: radiusd/config.y:636
+#: radiusd/config.y:638
 #, c-format
 msgid "%s:%d: no such service: %s"
 msgstr "%s:%d: nieznana us³uga: %s"
 
-#: radiusd/config.y:662 radiusd/sql.c:329
+#: radiusd/config.y:664 radiusd/sql.c:329
 #, c-format
 msgid "%s:%d: unknown host: %s"
 msgstr "%s:%d: nieznany host: %s"
 
-#: radiusd/config.y:712
+#: radiusd/config.y:714
 #, c-format
 msgid "INTERNAL ERROR at %s:%d: unknown datatype %d"
 msgstr "B£¡D WEWNÊTRZNY w %s:%d: nieznany typ danych %d"
 
-#: radiusd/config.y:738
+#: radiusd/config.y:740
 #, c-format
 msgid "%s:%d: wrong datatype (should be %s)"
 msgstr "%s:%d: b³êdny typ danych (musi byæ %s)"
 
-#: radiusd/config.y:748
+#: radiusd/config.y:750
 msgid "too few arguments"
 msgstr "za ma³o argumentów"
 
-#: radiusd/config.y:748 radiusd/config.y:753
+#: radiusd/config.y:750 radiusd/config.y:756
 msgid "too many arguments"
 msgstr "za du¿o argumentów"
 
-#: radiusd/config.y:768
+#: radiusd/config.y:771
 #, c-format
 msgid "%s:%d: obsolete statement"
 msgstr "%s:%d: instrukcja przestarza³a"
 
-#: radiusd/config.y:854
+#: radiusd/config.y:857
 #, c-format
 msgid "can't open config file `%s'"
 msgstr "nie mogê otworzyæ pliku konfiguracyjnego `%s'"
 
-#: radiusd/config.y:864
+#: radiusd/config.y:867
 #, c-format
 msgid "reading %s"
 msgstr "czytanie %s"
@@ -788,47 +788,47 @@ msgstr "powtórne wywo³anie setuid(%lu) nie powiod³o siê"
 msgid "setuid(%lu) failed"
 msgstr "setuid(%lu) nie powiod³a siê"
 
-#: radiusd/exec.c:149
+#: radiusd/exec.c:150
 msgid "seteuid(0) succeeded when it should not"
 msgstr "wywo³anie seteuid(0) powiod³o siê chocia¿ nie powinno"
 
-#: radiusd/exec.c:152
+#: radiusd/exec.c:154
 msgid "cannot drop non-root setuid privileges"
 msgstr "nie mo¿na porzuciæ uprawnieñ setuid u¿ytkownika"
 
-#: radiusd/exec.c:181
+#: radiusd/exec.c:183
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
 msgstr ""
 "radius_exec_program(): nie mo¿na uruchomiæ, nazwa programu nie jest pe³n± "
 "nazw± ¶cie¿ki: %s"
 
-#: radiusd/exec.c:188
+#: radiusd/exec.c:190
 msgid "couldn't open pipe"
 msgstr "nie mogê otworzyæ potoku"
 
-#: radiusd/exec.c:192
+#: radiusd/exec.c:194
 msgid "can't reset SIGCHLD"
 msgstr "nie mo¿na ustaliæ obs³ugi SIGCHLD"
 
-#: radiusd/exec.c:213 radiusd/exec.c:247
+#: radiusd/exec.c:215 radiusd/exec.c:249
 msgid "can't close pipe"
 msgstr "nie mo¿na zamkn±æ potoku"
 
-#: radiusd/exec.c:215
+#: radiusd/exec.c:217
 msgid "can't dup stdout"
 msgstr "nie mo¿na zduplikowaæ stdout"
 
-#: radiusd/exec.c:259 radiusd/exec.c:635
+#: radiusd/exec.c:261 radiusd/exec.c:639
 #, c-format
 msgid "<stdout of %s>:%d: %s"
 msgstr "<wyj¶cie standardowe %s>:%d: %s"
 
-#: radiusd/exec.c:271
+#: radiusd/exec.c:273
 msgid "can't restore SIGCHLD"
 msgstr "nie mo¿na odtworzyæ obs³ugi SIGCHLD"
 
-#: radiusd/exec.c:278
+#: radiusd/exec.c:280
 #, c-format
 msgid ""
 "can't run external program `%s' (reason reported via syslog channel user.err)"
@@ -836,51 +836,51 @@ msgstr ""
 "nie mo¿na wykonaæ programu zewnêtrznego `%s' (powód raportowany przez kana³ "
 "syslog user.err)"
 
-#: radiusd/exec.c:285
+#: radiusd/exec.c:289
 #, c-format
 msgid "external program `%s' %s"
 msgstr "program zewnêtrzny `%s' %s"
 
-#: radiusd/exec.c:412
+#: radiusd/exec.c:416
 #, c-format
 msgid "filter %s (pid %d) %s (in: %u, out: %u)"
 msgstr "filtr %s (pid %d) %s (wej¶cie: %u, wyj¶cie: %u)"
 
-#: radiusd/exec.c:465
+#: radiusd/exec.c:469
 #, c-format
 msgid "filter %s is not declared"
 msgstr "filtr %s nie jest zadeklarowany"
 
-#: radiusd/exec.c:482
+#: radiusd/exec.c:486
 #, c-format
 msgid "cannot run filter %s"
 msgstr "nie mo¿na uruchomiæ filtru %s"
 
-#: radiusd/exec.c:499
+#: radiusd/exec.c:503
 #, c-format
 msgid "filter %s"
 msgstr "filtr %s"
 
-#: radiusd/exec.c:521
+#: radiusd/exec.c:525
 msgid "wrong return type"
 msgstr "zwracany typ danych jest b³êdny"
 
-#: radiusd/exec.c:622 radiusd/exec.c:677
+#: radiusd/exec.c:626 radiusd/exec.c:681
 #, c-format
 msgid "reading from filter %s"
 msgstr "czytanie z filtru %s"
 
-#: radiusd/exec.c:644
+#: radiusd/exec.c:648
 #, c-format
 msgid "filter %s (auth): bad output: %s"
 msgstr "filter %s (uwierzytelnienie): niepoprawne wyj¶cie: %s"
 
-#: radiusd/exec.c:688 radiusd/exec.c:694
+#: radiusd/exec.c:692 radiusd/exec.c:698
 #, c-format
 msgid "filter %s (acct): bad output: %s"
 msgstr "filter %s (rozliczenie): niepoprawne wyj¶cie: %s"
 
-#: radiusd/exec.c:765
+#: radiusd/exec.c:769
 #, c-format
 msgid "%s:%d: filter already declared at %s:%d"
 msgstr "%s:%d: filtr ju¿ zadeklarowany w %s:%d"
@@ -1049,17 +1049,17 @@ msgstr "info"
 msgid "debug"
 msgstr "debug"
 
-#: radiusd/log.c:324
+#: radiusd/log.c:325
 #, c-format
 msgid "could not append to file %s"
 msgstr "do³±czanie do pliku %s niemo¿liwe"
 
-#: radiusd/log.c:404
+#: radiusd/log.c:405
 #, c-format
 msgid "%s: cannot change owner to %d:%d"
 msgstr "nie mo¿na zmieniæ w³a¶ciciela kana³u `%s' na %d:%d"
 
-#: radiusd/log.c:444
+#: radiusd/log.c:445
 #, c-format
 msgid "can't access log file `%s'"
 msgstr "nie ma dostêpu do pliku `%s'"
@@ -1067,43 +1067,43 @@ msgstr "nie ma dostêpu do pliku `%s'"
 #. TRANSLATORS: the subject will always be printed before this msgid.
 #. for example: "child 222 exited with status 0"
 #.
-#: radiusd/log.c:548
+#: radiusd/log.c:550
 #, c-format
 msgid "exited with status %d"
 msgstr "wyj¶cie ze stanem %d"
 
 #. TRANSLATORS: the subject will always be printed before this msgid.
-#: radiusd/log.c:553
+#: radiusd/log.c:555
 #, c-format
 msgid "terminated on signal %d"
 msgstr "zakoñczony na sygna³ %d"
 
 #. TRANSLATORS: the subject will always be printed before this msgid.
-#: radiusd/log.c:557
+#: radiusd/log.c:559
 #, c-format
 msgid "terminated"
 msgstr "zakoñczony"
 
-#: radiusd/log.c:672
+#: radiusd/log.c:674
 #, c-format
 msgid "%s:%d: no channel mode for `%s'"
 msgstr "%s:%d: brak trybu dla kana³u `%s'"
 
-#: radiusd/log.c:835
+#: radiusd/log.c:837
 msgid "no levels applicable for this category"
 msgstr "brak poziomów dla tej kategorii"
 
-#: radiusd/log.c:861
+#: radiusd/log.c:863
 #, c-format
 msgid "%s:%d: channel `%s' not defined"
 msgstr "%s:%d: kana³ `%s' nie jest zdefiniowany"
 
-#: radiusd/log.c:905 radiusd/snmpserv.c:344
+#: radiusd/log.c:907 radiusd/snmpserv.c:344
 #, c-format
 msgid "%s:%d: list item %d has wrong datatype"
 msgstr "%s:%d: b³êdny typ danych dla elementu %d listy"
 
-#: radiusd/log.c:921
+#: radiusd/log.c:923
 #, c-format
 msgid "%s:%d: no such module name: %s"
 msgstr "%s:%d: nieznana nazwa modu³u: %s"
@@ -1828,7 +1828,7 @@ msgstr "nie mo¿na zdekodowaæ pakietu SNMP z %s: %s"
 msgid "DENIED attempt to access community %s from %s"
 msgstr "ODRZUCONO próbê dostêpu do spo³eczno¶ci %s z %s"
 
-#: radiusd/snmpserv.c:2746
+#: radiusd/snmpserv.c:2747
 #, c-format
 msgid "Dropping SNMP request from client %s: %s"
 msgstr "Zrzucanie ¿±dania SNMP od klienta %s: %s"
@@ -2233,7 +2233,7 @@ msgstr ""
 msgid "still logged in"
 msgstr "nadal zalogowany"
 
-#: radscm/radscm.c:331 radtest/main.c:164
+#: radscm/radscm.c:311 radtest/main.c:164
 msgid "error reading dictionary file"
 msgstr "b³±d odczytu pliku s³ownika"
 
@@ -2478,18 +2478,18 @@ msgstr "za ma³o kolumn wynikowych (wymagane %d)"
 msgid "PQconnectStart failed: %s"
 msgstr "Nieudany PQconnectStart: %s"
 
-#: sql/postgres.c:164
+#: sql/postgres.c:125 sql/postgres.c:174 sql/postgres.c:240
+#, c-format
+msgid "PQexec returned %s"
+msgstr "PQexec zwróci³ %s"
+
+#: sql/postgres.c:165
 #, c-format
 msgid "query returned %d tuple: %s"
 msgid_plural "query returned %d tuples: %s"
 msgstr[0] "zapytanie zwróci³o %d wiersz: %s"
 msgstr[1] "zapytanie zwróci³o %d wiersze: %s"
 msgstr[2] "zapytanie zwróci³o %d wierszy: %s"
-
-#: sql/postgres.c:173 sql/postgres.c:239
-#, c-format
-msgid "PQexec returned %s"
-msgstr "PQexec zwróci³ %s"
 
 #~ msgid "expected opcode but found %s"
 #~ msgstr "oczekiwany kod operacji, odnaleziono %s"

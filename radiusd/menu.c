@@ -41,9 +41,9 @@ menu_pairs(char *menu_name, char *menu_selection)
         
         menu_path = grad_mkfilename3(radius_dir, "menus", menu_name);
         if ((fp = fopen(menu_path, "r")) == NULL) {
-                radlog(L_NOTICE|L_PERROR, _("can't open menu `%s'"),
-		       menu_name);
-                efree(menu_path);
+                grad_log(L_NOTICE|L_PERROR, _("can't open menu `%s'"),
+		         menu_name);
+                grad_free(menu_path);
                 return NULL;
         }
 
@@ -91,11 +91,11 @@ menu_pairs(char *menu_name, char *menu_selection)
                                          */
                                         if (userparse(buffer, &reply_first,
                                                       &errp)) {
-                                                radlog(L_ERR,
-                                                       _("menu %s:%d: %s"),
-                                                       menu_name,
-                                                       line_num,
-                                                       errp);
+                                                grad_log(L_ERR,
+                                                         _("menu %s:%d: %s"),
+                                                         menu_name,
+                                                         line_num,
+                                                         errp);
                                                 grad_avl_free(reply_first);
                                                 reply_first = NULL;
                                                 break;
@@ -108,7 +108,7 @@ menu_pairs(char *menu_name, char *menu_selection)
         }       
 
         fclose(fp);
-        efree(menu_path);
+        grad_free(menu_path);
         
         return reply_first;
 }       
@@ -172,7 +172,7 @@ menu_reply(RADIUS_REQ *radreq, int activefd)
                         snprintf(state_value, sizeof(state_value),
                                         "MENU=%s", new_pair->avp_strvalue);
                         radius_send_challenge(radreq, msg, state_value, activefd);
-			efree(msg);
+			grad_free(msg);
                 } else {
                         radius_send_reply(RT_ACCESS_ACCEPT, radreq,
                                           pair, NULL, activefd);
@@ -199,15 +199,15 @@ menu_read_text(char *menu_name)
                 
         menu_path = grad_mkfilename3(radius_dir, "menus", menu_name);
         if ((fp = fopen(menu_path, "r")) == NULL) {
-                radlog(L_NOTICE|L_PERROR, _("can't open menu `%s'"),
-		       menu_name);
-                efree(menu_path);
-                return estrdup(_("\n*** User Menu is Not Available ***\n"));
+                grad_log(L_NOTICE|L_PERROR, _("can't open menu `%s'"),
+		         menu_name);
+                grad_free(menu_path);
+                return grad_estrdup(_("\n*** User Menu is Not Available ***\n"));
         }
 
         mode = 0;
         nread = 0;
-	menu_buffer = emalloc(MAX_MENU_SIZE);
+	menu_buffer = grad_emalloc(MAX_MENU_SIZE);
         ptr = menu_buffer;
 
         while (nread < 4096 && fgets(ptr, MAX_MENU_SIZE - nread, fp)) {
@@ -235,7 +235,7 @@ menu_read_text(char *menu_name)
         }
         fclose(fp);
         *ptr = 0;
-        efree(menu_path);
+        grad_free(menu_path);
         return menu_buffer;
 }
                

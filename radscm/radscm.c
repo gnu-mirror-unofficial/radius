@@ -36,7 +36,7 @@ static RADIUS_SERVER *scheme_to_server(SCM g_list, const char *func);
 static void
 die(char *msg)
 {
-        radlog(L_ERR, "%s", msg);
+        grad_log(L_ERR, "%s", msg);
 }
 
 
@@ -308,7 +308,7 @@ radscm_init()
          */
         grad_path_init();
         if (grad_dict_init()) {
-                radlog(L_ERR, _("error reading dictionary file"));
+                grad_log(L_ERR, _("error reading dictionary file"));
                 exit(1);
         }
         srv_queue = grad_client_create_queue(1, 0, 0);

@@ -78,18 +78,18 @@ grad_dbm_create(char *name, DBM_FILE *dbmfile)
         int fd;
         char *p;
 
-        p = emalloc(strlen(name)+5);
+        p = grad_emalloc(strlen(name)+5);
         strcat(strcpy(p, name), ".pag");
         fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0600);
-        efree(p);
+        grad_free(p);
         if (fd < 0) 
                 return 1;
         close(fd);
 
-        p = emalloc(strlen(name)+5);
+        p = grad_emalloc(strlen(name)+5);
         strcat(strcpy(p, name), ".dir");
         fd = open(p, O_WRONLY | O_CREAT | O_TRUNC, 0600);
-        efree(p);
+        grad_free(p);
         if (fd < 0) 
                 return 1;
         close(fd);

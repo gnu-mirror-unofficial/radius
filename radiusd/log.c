@@ -321,11 +321,12 @@ sqllog(int status, char *msg, ...)
         filename = status ? "sql-lost" : "sql.log";
         path = grad_mkfilename(radacct_dir, filename);
         if ((fp = fopen(path, "a")) == NULL) {
-                radlog(L_ERR|L_PERROR, _("could not append to file %s"), path);
-                efree(path);
+                grad_log(L_ERR|L_PERROR,  
+                         _("could not append to file %s"), path);
+                grad_free(path);
                 return;
         }
-        efree(path);
+        grad_free(path);
 	va_start(ap, msg);
         vfprintf(fp, msg, ap);
         fprintf(fp, ";\n");
@@ -339,12 +340,12 @@ sqllog(int status, char *msg, ...)
 void
 channel_free(Channel *chan)
 {
-        efree(chan->name);
+        grad_free(chan->name);
         if (chan->mode == LM_FILE)
-                efree(chan->id.file);
-	efree(chan->prefix_hook);
-	efree(chan->suffix_hook);
-        efree(chan);
+                grad_free(chan->id.file);
+	grad_free(chan->prefix_hook);
+	grad_free(chan->suffix_hook);
+        grad_free(chan);
 }
 
 Channel *
@@ -400,9 +401,9 @@ log_change_owner(RADIUS_USER *usr)
 	for (cp = iterator_first(itr); cp; cp = iterator_next(itr)) {
 		if (cp->mode == LM_FILE
 		    && chown(cp->id.file, usr->uid, usr->gid)) {
-			radlog(L_ERR,
-			       _("%s: cannot change owner to %d:%d"),
-			       cp->id.file, usr->uid, usr->gid);
+			grad_log(L_ERR,
+			         _("%s: cannot change owner to %d:%d"),
+			         cp->id.file, usr->uid, usr->gid);
 			errcnt++;
 		}
 	}
@@ -440,19 +441,20 @@ register_channel(Channel *chan)
                         /* check the accessibility of the file */
                         fp = fopen(filename, "a");
                         if (!fp) {
-                                radlog(L_CRIT|L_PERROR,
-                                       _("can't access log file `%s'"), filename);
-                                efree(filename);
-                                filename = estrdup("stdout");
+                                grad_log(L_CRIT|L_PERROR,
+                                         _("can't access log file `%s'"),
+                                         filename);
+                                grad_free(filename);
+                                filename = grad_estrdup("stdout");
                         } else
                                 fclose(fp);
                 } else
-                        filename = estrdup("stdout");
+                        filename = grad_estrdup("stdout");
         } else if (chan->mode == LM_SYSLOG) {
         } 
 
-        channel = emalloc(sizeof(*channel));
-        channel->name = estrdup(chan->name);
+        channel = grad_emalloc(sizeof(*channel));
+        channel->name = grad_estrdup(chan->name);
         channel->mode = chan->mode;
         if (chan->mode == LM_FILE)
                 channel->id.file = filename;
@@ -623,9 +625,9 @@ logging_stmt_handler(int argc, cfg_value_t *argv, void *block_data,
 		     void *handler_data)
 {
 	mark = log_mark();
-	efree(log_prefix_hook);
+	grad_free(log_prefix_hook);
 	log_prefix_hook = NULL;
-	efree(log_suffix_hook);
+	grad_free(log_suffix_hook);
 	log_suffix_hook = NULL;
 	return 0;
 }
@@ -668,9 +670,9 @@ static int
 channel_stmt_end(void *block_data, void *handler_data)
 {
 	if (channel.mode == LM_UNKNOWN) {
-		radlog(L_ERR,
-		       _("%s:%d: no channel mode for `%s'"), 
-		       cfg_filename, cfg_line_num, channel.name);
+		grad_log(L_ERR,
+		         _("%s:%d: no channel mode for `%s'"), 
+		         cfg_filename, cfg_line_num, channel.name);
 	} else 
 		register_channel(&channel);
 	return 0;
@@ -829,9 +831,9 @@ category_stmt_end(void *block_data, void *handler_data)
 			break;
 		default:
 			if (cat_def.level)
-				radlog(L_WARN,
-				       "%s:%d: %s",
-				       cfg_filename, cfg_line_num,
+				grad_log(L_WARN,
+				         "%s:%d: %s",
+				         cfg_filename, cfg_line_num,
 				_("no levels applicable for this category"));
 		}
 		register_category(cat_def.cat, cat_def.pri, cat_def.clist);
@@ -857,9 +859,9 @@ category_set_channel(int argc, cfg_value_t *argv,
 	channel = channel_lookup(argv[1].v.string);
 
 	if (!channel) {
-		radlog(L_ERR,
-		       _("%s:%d: channel `%s' not defined"),
-		       cfg_filename, cfg_line_num, argv[1].v.string);
+		grad_log(L_ERR,
+		         _("%s:%d: channel `%s' not defined"),
+		         cfg_filename, cfg_line_num, argv[1].v.string);
 	} else {
 		if (!cat_def.clist)
 			cat_def.clist = grad_list_create();
@@ -901,10 +903,10 @@ category_set_level(int argc, cfg_value_t *argv,
 		int level;
 		
 		if (argv[i].type != CFG_STRING) {
-			radlog(L_ERR,
-			       _("%s:%d: list item %d has wrong datatype"),
-			       cfg_filename, cfg_line_num,
-			       i);
+			grad_log(L_ERR,
+			         _("%s:%d: list item %d has wrong datatype"),
+			         cfg_filename, cfg_line_num,
+			         i);
 			return 1;
 		}
 		modname = argv[i++].v.string;
@@ -917,9 +919,9 @@ category_set_level(int argc, cfg_value_t *argv,
 			level = argv[i++].v.number;
 		}
 		if (set_module_debug_level(modname, level)) {
-			radlog(L_WARN,
-			       _("%s:%d: no such module name: %s"),
-			       cfg_filename, cfg_line_num, modname);
+			grad_log(L_WARN,
+			         _("%s:%d: no such module name: %s"),
+			         cfg_filename, cfg_line_num, modname);
 		}
 	}
 	return 0;

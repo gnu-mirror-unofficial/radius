@@ -93,7 +93,7 @@ _cleanup_fake_pairlist(VALUE_PAIR *p)
 	VALUE_PAIR *next;
 	while (p) {
 		next = p->next;
-		efree(p);
+		grad_free(p);
 		p = next;
 	}
 }
@@ -230,7 +230,7 @@ _pam_parse(pam_handle_t *pamh, int argc, const char **argv)
 			}
 			*p++ = 0;
 			
-			pair = emalloc(sizeof(*pair));
+			pair = grad_emalloc(sizeof(*pair));
 			pair->next = NULL;
 			pair->name = (char *) *argv;
 			pair->avp_strvalue = p;

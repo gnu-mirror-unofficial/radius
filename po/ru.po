@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: radius 1.2\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
-"POT-Creation-Date: 2004-01-31 16:42+0200\n"
+"POT-Creation-Date: 2004-02-03 13:37+0200\n"
 "PO-Revision-Date: 2003-12-16 13:52+0200\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Russian <ru@li.org>\n"
@@ -26,7 +26,7 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
 "10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
-#: lib/avl.c:90
+#: lib/avl.c:91
 #, c-format
 msgid "make_pair(): attribute %d not found in dictionary"
 msgstr "make_pair(): атрибут %d не найден в словаре"
@@ -204,7 +204,7 @@ msgstr "%s: опция `-W %s' неоднозначна\n"
 msgid "%s: option `-W %s' doesn't allow an argument\n"
 msgstr "%s: опция `-W %s' не берет аргументов\n"
 
-#: lib/leakdetect.c:102 lib/leakdetect.c:113
+#: lib/leakdetect.c:128 lib/leakdetect.c:139
 msgid "low core: aborting"
 msgstr "недостаточно памяти: завершение работы"
 
@@ -249,7 +249,7 @@ msgstr "невозможно открыть %s"
 msgid "not enough memory"
 msgstr "недостаточно памяти"
 
-#: lib/users.l:232 radiusd/config.y:847 radiusd/stat.c:80
+#: lib/users.l:232 radiusd/config.y:850 radiusd/stat.c:80
 #, c-format
 msgid "can't stat `%s'"
 msgstr "stat(%s) не сработал"
@@ -699,45 +699,45 @@ msgstr "недействительная длина маски подсети: %d"
 msgid "%s:%d: unexpected EOF in comment started at line %d"
 msgstr "%s:%d: неожиданный конец файла в комментарии открытом в строке %d"
 
-#: radiusd/config.y:636
+#: radiusd/config.y:638
 #, c-format
 msgid "%s:%d: no such service: %s"
 msgstr "%s:%d: нет такого сервиса: %s"
 
-#: radiusd/config.y:662 radiusd/sql.c:329
+#: radiusd/config.y:664 radiusd/sql.c:329
 #, c-format
 msgid "%s:%d: unknown host: %s"
 msgstr "%s:%d: неизвестная машина: %s"
 
-#: radiusd/config.y:712
+#: radiusd/config.y:714
 #, c-format
 msgid "INTERNAL ERROR at %s:%d: unknown datatype %d"
 msgstr "ВНУТРЕННЯЯ ОШИБКА в %s:%d: неизвестный тип данных %d"
 
-#: radiusd/config.y:738
+#: radiusd/config.y:740
 #, c-format
 msgid "%s:%d: wrong datatype (should be %s)"
 msgstr "%s:%d: неизвестный тип данных (должен быть %s)"
 
-#: radiusd/config.y:748
+#: radiusd/config.y:750
 msgid "too few arguments"
 msgstr "недостаточно аргументов"
 
-#: radiusd/config.y:748 radiusd/config.y:753
+#: radiusd/config.y:750 radiusd/config.y:756
 msgid "too many arguments"
 msgstr "слишком много аргументов"
 
-#: radiusd/config.y:768
+#: radiusd/config.y:771
 #, c-format
 msgid "%s:%d: obsolete statement"
 msgstr "%s:%d: устаревшее предложение"
 
-#: radiusd/config.y:854
+#: radiusd/config.y:857
 #, c-format
 msgid "can't open config file `%s'"
 msgstr "невозможно открыть файл конфигурации `%s'"
 
-#: radiusd/config.y:864
+#: radiusd/config.y:867
 #, c-format
 msgid "reading %s"
 msgstr "чтение %s"
@@ -792,47 +792,47 @@ msgstr "повторный вызов setuid(%lu) не сработал"
 msgid "setuid(%lu) failed"
 msgstr "setuid(%lu) не сработал"
 
-#: radiusd/exec.c:149
+#: radiusd/exec.c:150
 msgid "seteuid(0) succeeded when it should not"
 msgstr "вызов seteuid(0) удался, однако не должен был"
 
-#: radiusd/exec.c:152
+#: radiusd/exec.c:154
 msgid "cannot drop non-root setuid privileges"
 msgstr "невозможно отказаться от привилегии setuid пользователя"
 
-#: radiusd/exec.c:181
+#: radiusd/exec.c:183
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
 msgstr ""
 "radius_exec_program(): невозможно выполнить, имя программы не начинается "
 "абсолютным путем: %s"
 
-#: radiusd/exec.c:188
+#: radiusd/exec.c:190
 msgid "couldn't open pipe"
 msgstr "невозможно отрыть канал"
 
-#: radiusd/exec.c:192
+#: radiusd/exec.c:194
 msgid "can't reset SIGCHLD"
 msgstr "невозможно установить обработчик SIGCHLD"
 
-#: radiusd/exec.c:213 radiusd/exec.c:247
+#: radiusd/exec.c:215 radiusd/exec.c:249
 msgid "can't close pipe"
 msgstr "невозможно закрыть канал"
 
-#: radiusd/exec.c:215
+#: radiusd/exec.c:217
 msgid "can't dup stdout"
 msgstr "невозможно создать копию дескриптора стандартного вывода"
 
-#: radiusd/exec.c:259 radiusd/exec.c:635
+#: radiusd/exec.c:261 radiusd/exec.c:639
 #, c-format
 msgid "<stdout of %s>:%d: %s"
 msgstr "<выход %s>:%d: %s"
 
-#: radiusd/exec.c:271
+#: radiusd/exec.c:273
 msgid "can't restore SIGCHLD"
 msgstr "невозможно восстановить обработчик SIGCHLD"
 
-#: radiusd/exec.c:278
+#: radiusd/exec.c:280
 #, c-format
 msgid ""
 "can't run external program `%s' (reason reported via syslog channel user.err)"
@@ -840,51 +840,51 @@ msgstr ""
 "невозможно выполнить программу `%s' (причина сообщается через syslog, канал "
 "user.err)"
 
-#: radiusd/exec.c:285
+#: radiusd/exec.c:289
 #, c-format
 msgid "external program `%s' %s"
 msgstr "внешняя программа `%s' %s"
 
-#: radiusd/exec.c:412
+#: radiusd/exec.c:416
 #, c-format
 msgid "filter %s (pid %d) %s (in: %u, out: %u)"
 msgstr "фильтр %s (pid %d) %s (считано: %u, записано: %u)"
 
-#: radiusd/exec.c:465
+#: radiusd/exec.c:469
 #, c-format
 msgid "filter %s is not declared"
 msgstr "фильтр %s не объявлен"
 
-#: radiusd/exec.c:482
+#: radiusd/exec.c:486
 #, c-format
 msgid "cannot run filter %s"
 msgstr "невозможно выполнить фильтр %s"
 
-#: radiusd/exec.c:499
+#: radiusd/exec.c:503
 #, c-format
 msgid "filter %s"
 msgstr "фильтр %s"
 
-#: radiusd/exec.c:521
+#: radiusd/exec.c:525
 msgid "wrong return type"
 msgstr "неправильный тип возврата"
 
-#: radiusd/exec.c:622 radiusd/exec.c:677
+#: radiusd/exec.c:626 radiusd/exec.c:681
 #, c-format
 msgid "reading from filter %s"
 msgstr "чтение из фильтра %s"
 
-#: radiusd/exec.c:644
+#: radiusd/exec.c:648
 #, c-format
 msgid "filter %s (auth): bad output: %s"
 msgstr "фильтр %s (auth): плохой выход %s"
 
-#: radiusd/exec.c:688 radiusd/exec.c:694
+#: radiusd/exec.c:692 radiusd/exec.c:698
 #, c-format
 msgid "filter %s (acct): bad output: %s"
 msgstr "фильтр %s (auth): плохой выход %s"
 
-#: radiusd/exec.c:765
+#: radiusd/exec.c:769
 #, c-format
 msgid "%s:%d: filter already declared at %s:%d"
 msgstr "%s:%d: фильтр уже объявлен в %s:%d"
@@ -1055,17 +1055,17 @@ msgstr "сообщение"
 msgid "debug"
 msgstr "отладка"
 
-#: radiusd/log.c:324
+#: radiusd/log.c:325
 #, c-format
 msgid "could not append to file %s"
 msgstr "добавление к файлу %s невозможно"
 
-#: radiusd/log.c:404
+#: radiusd/log.c:405
 #, c-format
 msgid "%s: cannot change owner to %d:%d"
 msgstr "невозможно сменить владельца канала %s на %d:%d"
 
-#: radiusd/log.c:444
+#: radiusd/log.c:445
 #, c-format
 msgid "can't access log file `%s'"
 msgstr "нет доступа к файлу журнала `%s'"
@@ -1073,43 +1073,43 @@ msgstr "нет доступа к файлу журнала `%s'"
 #. TRANSLATORS: the subject will always be printed before this msgid.
 #. for example: "child 222 exited with status 0"
 #.
-#: radiusd/log.c:548
+#: radiusd/log.c:550
 #, c-format
 msgid "exited with status %d"
 msgstr "вышел со статусом %d"
 
 #. TRANSLATORS: the subject will always be printed before this msgid.
-#: radiusd/log.c:553
+#: radiusd/log.c:555
 #, c-format
 msgid "terminated on signal %d"
 msgstr "завершился по сигналу %d"
 
 #. TRANSLATORS: the subject will always be printed before this msgid.
-#: radiusd/log.c:557
+#: radiusd/log.c:559
 #, c-format
 msgid "terminated"
 msgstr "завершился"
 
-#: radiusd/log.c:672
+#: radiusd/log.c:674
 #, c-format
 msgid "%s:%d: no channel mode for `%s'"
 msgstr "%s:%d: не указан режим для канала `%s'"
 
-#: radiusd/log.c:835
+#: radiusd/log.c:837
 msgid "no levels applicable for this category"
 msgstr "нет уровней, применимых к этой категории"
 
-#: radiusd/log.c:861
+#: radiusd/log.c:863
 #, c-format
 msgid "%s:%d: channel `%s' not defined"
 msgstr "%s:%d: канал `%s' не определен"
 
-#: radiusd/log.c:905 radiusd/snmpserv.c:344
+#: radiusd/log.c:907 radiusd/snmpserv.c:344
 #, c-format
 msgid "%s:%d: list item %d has wrong datatype"
 msgstr "%s:%d: неверный тип для элемента списка %d"
 
-#: radiusd/log.c:921
+#: radiusd/log.c:923
 #, c-format
 msgid "%s:%d: no such module name: %s"
 msgstr "%s:%d: нет такого модуля: %s"
@@ -1835,7 +1835,7 @@ msgstr "невозможно раскодировать пакет SNMP от %s: %s"
 msgid "DENIED attempt to access community %s from %s"
 msgstr "ОТКЛОНЕНА попытка доступа к community %s с IP %s"
 
-#: radiusd/snmpserv.c:2746
+#: radiusd/snmpserv.c:2747
 #, c-format
 msgid "Dropping SNMP request from client %s: %s"
 msgstr "Отброшен пакет SNMP от клиента %s: %s"
@@ -2241,7 +2241,7 @@ msgstr ""
 msgid "still logged in"
 msgstr "активен"
 
-#: radscm/radscm.c:331 radtest/main.c:164
+#: radscm/radscm.c:311 radtest/main.c:164
 msgid "error reading dictionary file"
 msgstr "ошибка при чтении словаря"
 
@@ -2490,18 +2490,18 @@ msgstr "возвращено недостаточно колонок (требуется %d)"
 msgid "PQconnectStart failed: %s"
 msgstr "PQconnectStart не отработал: %s"
 
-#: sql/postgres.c:164
+#: sql/postgres.c:125 sql/postgres.c:174 sql/postgres.c:240
+#, c-format
+msgid "PQexec returned %s"
+msgstr "PQexec вернул %s"
+
+#: sql/postgres.c:165
 #, c-format
 msgid "query returned %d tuple: %s"
 msgid_plural "query returned %d tuples: %s"
 msgstr[0] "запрос вернул %d комплект значений"
 msgstr[1] "запрос вернул %d комплекта значений"
 msgstr[2] "запрос вернул %d комплектов значений"
-
-#: sql/postgres.c:173 sql/postgres.c:239
-#, c-format
-msgid "PQexec returned %s"
-msgstr "PQexec вернул %s"
 
 #~ msgid "expected opcode but found %s"
 #~ msgstr "ожидается код операции, однако обнаружен %s"

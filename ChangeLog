@@ -1,3 +1,6 @@
+2001-03-25  gray  <gray@farlep.net>
+	snmpserv.c completely rewritten. Stat MIBs are slightly changed
+	to provide for easier indexing of data.
 
 2001-03-20  gray  <gray@farlep.net>
 	Changed typedef ipaddr to ipaddr_t to prevent possible name

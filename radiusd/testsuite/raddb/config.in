@@ -55,12 +55,14 @@ auth {
 	detail yes;
 	strip-names yes;
 	checkrad-assume-logged yes;
+        trace-rules yes;
 };
 
 acct {
 	port @ACCT_PORT@;
 	max-requests 127;
 	request-cleanup-delay 2;
+        trace-rules yes;
 };
 
 filters {

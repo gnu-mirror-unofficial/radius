@@ -12,7 +12,7 @@
 AC_REVISION($Revision$)
 AC_INIT(radiusd/radiusd.c)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(gnu-radius, 0.95.95)
+AM_INIT_AUTOMAKE(gnu-radius, 0.95.96)
 AM_CONFIG_HEADER(config.h)
 
 ## * Available linguas
@@ -395,6 +395,41 @@ AC_ARG_WITH(postgres,
 	 no)    ;;
         esac])
 
+rad_lib_odbc() {
+rad_CHECK_LIB(odbc, SQLAllocHandle, [],
+			    [ USE_SQL=1
+                              AC_DEFINE(USE_SQL_ODBC)
+                              AC_DEFINE(HAVE_LIBODBC) 
+                              RADIUSD_LDADD="$RADIUSD_LDADD $rad_cv_lib_odbc" ],
+		            [ AC_MSG_ERROR(-lodbc not found) ],
+                            [/usr/local/lib])
+}
+
+rad_lib_iodbc() {
+rad_CHECK_LIB(iodbc, SQLAllocHandle, [],
+			    [ USE_SQL=1
+                              AC_DEFINE(USE_SQL_ODBC)
+                              AC_DEFINE(HAVE_LIBODBC) 
+                              RADIUSD_LDADD="$RADIUSD_LDADD $rad_cv_lib_iodbc" ],
+		            [ AC_MSG_ERROR(-liodbc not found) ],
+                            [/usr/local/lib])
+}
+
+
+AC_ARG_WITH(odbc,
+	[  --with-odbc][[={odbc|iodbc}]][      Configure to work with ODBC],
+	[case $withval in
+	 yes)			rad_lib_odbc
+		;;
+	 odbc|ODBC)		rad_lib_odbc
+		;;
+	iodbc|iODBC|IODBC)	rad_lib_iodbc
+		;;
+	no)	;;
+	*)	    		AC_MSG_ERROR(unsupported option value: $enableval)
+
+        esac])
+
 ## Backward compatibility
 AC_ARG_ENABLE(sql,
         [],
@@ -416,6 +451,12 @@ AC_ARG_ENABLE(sql,
                               RADIUSD_LDADD="$RADIUSD_LDADD $rad_cv_lib_pq" ],
 		            [ AC_MSG_ERROR(-lpq not found) ],
                             [/usr/local/pgsql/lib /usr/pgsql/lib])
+		;;
+	odbc|ODBC)
+		rad_lib_odbc
+		;;
+	iodbc|iODBC|IODBC)
+		rad_lib_iodbc
 		;;
 	*)	AC_MSG_ERROR(unsupported SQL server: $enablevale)
 		;;
@@ -606,11 +647,8 @@ AC_OUTPUT(Makefile m4/Makefile
           test/Makefile 
           test/raddb/Makefile 
           test/proxy/Makefile 
-          test/guile/Makefile 
           test/dejagnu/Makefile
           test/dejagnu/lib/Makefile
-          test/dejagnu/s.radiusd/Makefile
-          test/dejagnu/s.radiusd.proxy/Makefile
           scripts/Makefile scripts/guile/Makefile 
           contrib/Makefile)
 

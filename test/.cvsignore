@@ -6,3 +6,5 @@ findport
 test.sh
 proxy-stamp
 radiusd-stamp
+*.sum
+*.log

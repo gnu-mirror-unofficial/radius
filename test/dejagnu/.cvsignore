@@ -7,3 +7,7 @@ remote.exp
 *.bak
 radiusd
 radiusd/*
+radiusd.proxy
+radiusd.proxy/*
+radiusd-stamp
+proxy-stamp

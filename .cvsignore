@@ -20,3 +20,4 @@ INSTALL
 stamp-h.in
 missing
 depcomp
+autom4te.cache

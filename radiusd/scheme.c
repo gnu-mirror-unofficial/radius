@@ -24,13 +24,16 @@
 #ifdef USE_SERVER_GUILE
 
 #include <unistd.h>
+#include <fcntl.h>
 #include <radiusd.h>
 #include <libguile.h>
 #include <radscm.h>
 #include <setjmp.h>
 #include <errno.h>
 
-unsigned scheme_gc_interval = 3600;
+static unsigned scheme_gc_interval = 3600;
+static char *scheme_outfile = NULL;
+static SCM scheme_error_port = SCM_EOL;
 
 /* Protos to be moved to radscm */
 SCM scm_makenum (unsigned long val);
@@ -96,14 +99,14 @@ scheme_auth(char *procname, RADIUS_REQ *req,
 	SCM s_request, s_check, s_reply;
 	SCM res, env;
 	SCM procsym;
-	jmp_buf jmp_env;
+ 	jmp_buf jmp_env;
 	
 	s_request = radscm_avl_to_list(req->request);
 	s_check = radscm_avl_to_list(user_check);
 	s_reply = radscm_avl_to_list(*user_reply_ptr);
 
 	/* Evaluate the procedure */
-	procsym = scm_symbol_value0 (procname);
+	procsym = RAD_SCM_SYMBOL_VALUE(procname);
 	if (scm_procedure_p(procsym) != SCM_BOOL_T) {
 		radlog(L_ERR,
 		       _("procname is not a procedure object"));
@@ -148,7 +151,7 @@ scheme_acct(char *procname, RADIUS_REQ *req)
 	SCM s_request = radscm_avl_to_list(req->request);
 
 	/* Evaluate the procedure */
-	procsym = scm_symbol_value0 (procname);
+	procsym = RAD_SCM_SYMBOL_VALUE(procname);
 	if (scm_procedure_p(procsym) != SCM_BOOL_T) {
 		radlog(L_ERR,
 		       _("%s is not a procedure object"), procname);
@@ -200,16 +203,51 @@ scheme_read_eval_loop()
         printf("%d\n", status);
 }
 
+void
+silent_close_port(SCM port)
+{
+ 	jmp_buf jmp_env;
+	
+	if (setjmp(jmp_env))
+		return;
+	scm_internal_lazy_catch(SCM_BOOL_T,
+				scm_close_port, (void*)port,
+				eval_catch_handler, &jmp_env);
+}
 
 void
 scheme_redirect_output()
 {
-       SCM port;
-       char *mode = "a";
+	SCM port;
+	char *mode = "a";
+	int fd = 2;
 
-       port = scm_fdes_to_port(2, mode, scm_makfrom0str("outport"));
-       scm_set_current_output_port(port);
-       scm_set_current_error_port(port);
+	if (scheme_outfile) {
+		char *filename;
+
+		if (scheme_outfile[0] == '/')
+			filename = estrdup(scheme_outfile);
+		else
+			filename = mkfilename(radlog_dir ?
+					      radlog_dir : RADLOG_DIR,
+					      scheme_outfile);
+		fd = open(filename, O_RDWR|O_CREAT|O_APPEND, 0600);
+		if (fd == -1) {
+			radlog(L_ERR|L_PERROR,
+			       _("can't open file `%s'"),
+			       filename);
+			fd = 2;
+		}
+		efree(filename);
+	}
+
+	port = scheme_error_port;
+	scheme_error_port = scm_fdes_to_port(fd, mode,
+					     scm_makfrom0str("<standard error>"));
+	scm_set_current_output_port(scheme_error_port);
+	scm_set_current_error_port(scheme_error_port);
+	if (port != SCM_EOL) 
+		silent_close_port(port);
 }
 
 
@@ -275,10 +313,29 @@ scheme_cfg_debug(int argc, cfg_value_t *argv,
 	return 0;
 }
 
+static int
+scheme_cfg_outfile(int argc, cfg_value_t *argv,
+		 void *block_data, void *handler_data)
+{
+	if (argc > 2) {
+		cfg_argc_error(0);
+		return 0;
+	}
+
+ 	if (argv[1].type != CFG_STRING) {
+		cfg_type_error(CFG_STRING);
+		return 0;
+	}
+	efree(scheme_outfile);
+	scheme_outfile = estrdup(argv[1].v.string);
+	return 0;
+}
+
 struct cfg_stmt guile_stmt[] = {
 	{ "load-path", CS_STMT, NULL, scheme_cfg_add_load_path, NULL, NULL, NULL },
 	{ "load", CS_STMT, NULL, scheme_cfg_load, NULL, NULL, NULL },
 	{ "debug", CS_STMT, NULL, scheme_cfg_debug, NULL, NULL, NULL },
+	{ "outfile", CS_STMT, NULL, scheme_cfg_outfile, NULL, NULL, NULL },
 	{ "gc-interval", CS_STMT, NULL, cfg_get_integer, &scheme_gc_interval,
 	  NULL, NULL },
 	{ NULL }

@@ -11,13 +11,16 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 # $Id$
 
+
 PROG=$0
+SOURCEDIR=/home/gray/gnu-radius
+BUILDDIR=/home/gray/gnu-radius
 RADTEST=
 RADIUSD=
 DRIVER=
 GUILE="#"
 
-while [ $# -gt 0 ]
+while test $# -gt 0 
 do
     case $1 in
     --srcdir)
@@ -45,22 +48,22 @@ if expr ${BUILDDIR:?} : '\..*' 2>/dev/null 1>&2; then
     BUILDDIR="`pwd`/$BUILDDIR"
 fi
 
-if [ "$RADTEST" = "" ]; then
+if  "$RADTEST" = "" ; then
     RADTEST=$BUILDDIR/radtest/radtest
 fi
-if [ "$RADIUSD" = "" ]; then    
+if  "$RADIUSD" = "" ; then    
     RADIUSD=$BUILDDIR/radiusd/radiusd
 fi
     
 cd $BUILDDIR/test
 
-if [ ! -f raddb/config.in ]; then
+if  ! -f raddb/config.in ; then
     cp -r ${SOURCEDIR}/test/raddb .
 fi
 
 EXPR=`./findport -c2 -s1644 "-fs^@AUTH_PORT@^%d^;\
 s^@ACCT_PORT@^%d^;\
-s^@USER@^gray^;\
+s^@USER@^%u^;\
 s^@BUILDDIR@^$BUILDDIR^;\
 s^@GUILE@^$GUILE^"`
 
@@ -69,8 +72,8 @@ do
     sed $EXPR raddb/${file}.in > raddb/$file
 done
 
-[ -d log ] || mkdir log
-[ -d acct ] || mkdir acct
+ -d log  || mkdir log
+ -d acct  || mkdir acct
 for file in log/radwtmp log/radutmp log/radius.log log/radius.info log/radius.debug log/radius.stderr 
 do
     cat /dev/null > $file
@@ -91,7 +94,7 @@ drv_dejagnu() {
     $RADTEST -d $BUILDDIR/test/raddb -xgram.y 2>/tmp/log
     kill -TERM `cat $BUILDDIR/test/log/radiusd.pid`
     sleep 5
-    if [ -r $BUILDDIR/test/log/radiusd.pid ]; then
+    if test -r $BUILDDIR/test/log/radiusd.pid ; then
         kill -KILL `cat $BUILDDIR/test/log/radiusd.pid` 	     
     fi
 }	     

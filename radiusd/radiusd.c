@@ -120,6 +120,7 @@ int acct_comp_flag; /* ... accounting requests */
 int checkrad_assume_logged = 1;
 size_t max_requests = MAX_REQUESTS;
 size_t max_children = MAX_CHILDREN;
+unsigned process_timeout = PROCESS_TIMEOUT;
 char *exec_user = NULL;
 
 UINT4 warning_seconds;
@@ -291,27 +292,36 @@ get_port_number(char *name, char *proto, int defval)
 }
 
 static void
-radiusd_preconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
+terminate_subprocesses()
 {
-	/* Flush any pending requests and empty the request queue */
+	int sig;
+
+        /* Flush any pending requests and empty the request queue */
 	radiusd_flush_queue();
 	request_init_queue();
 	
 	/* Terminate all subprocesses */
-	rpp_kill(-1, SIGTERM);
-	sleep(2);
-	radiusd_cleanup();
-	if (rpp_count()) {
-		rpp_kill(-1, SIGKILL);
+	radlog(L_INFO, _("Terminating the subprocesses"));
+	sig = SIGTERM;
+	while (rpp_count()) {
+		rpp_kill(-1, sig);
+		sleep(2);
 		radiusd_cleanup();
+		sig = SIGKILL;
 	}
+}
+
+static void
+radiusd_preconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
+{
+	terminate_subprocesses();
 	input_close_channels(radius_input);
 }
 
 static void
 radiusd_postconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 {
-	if (radius_count_channels() == 0) {
+	if (radius_mode = MODE_DAEMON && radius_count_channels() == 0) {
 		radlog(L_ALERT,
 		       _("Radiusd is not listening on any port. Trying to continue anyway..."));
 	}
@@ -551,6 +561,7 @@ void
 radiusd_suspend()
 {
 	if (suspend_flag == 0) {
+		terminate_subprocesses();
 		radlog(L_NOTICE, _("RADIUSD SUSPENDED"));
 		suspend_flag = 1;
 	}
@@ -560,6 +571,7 @@ void
 radiusd_continue()
 {
 	if (suspend_flag) {
+		terminate_subprocesses();
 		suspend_flag = 0;
 #ifdef USE_SNMP
 		server_stat->auth.status = serv_running;
@@ -657,7 +669,7 @@ radiusd_restart()
 		return;
 	}
 
-	radiusd_flush_queue();
+	radiusd_run_preconfig_hooks(NULL);
 
 	if (foreground)
 		pid = 0; /* make-believe we're child */
@@ -669,7 +681,6 @@ radiusd_restart()
 		return;
 	}
 	
-	input_close_channels(radius_input);
 	radiusd_signal_init(SIG_DFL);
 	if (pid > 0) {
 		/* Parent */
@@ -688,10 +699,36 @@ radiusd_restart()
 	/*NOTREACHED*/
 }
 
+
+
+static int
+radiusd_rpp_wait(void *arg)
+{
+	time_t *tp = arg;
+	struct timeval tv;
+
+	if (time(NULL) > *tp)
+		return 1;
+	
+	tv.tv_sec = 2;
+	tv.tv_usec = 0;
+	input_select_channel(radius_input, "rpp", &tv);
+	return 0;
+}
+
 void
 radiusd_flush_queue()
 {
-	rpp_flush();
+	time_t t;
+	unsigned i, delta = 0;
+
+	for (i = 0; i < R_MAX; i++)
+		if (delta < request_class[i].ttl)
+			delta = request_class[i].ttl;
+
+	time(&t);
+	t += delta;
+	rpp_flush(radiusd_rpp_wait, &t);
 }
 		
 void
@@ -1236,6 +1273,8 @@ struct cfg_stmt option_stmt[] = {
 	{ "max-threads", CS_STMT, NULL, cfg_get_integer, &max_children,
 	  NULL, NULL },
 	{ "max-processes", CS_STMT, NULL, cfg_get_integer, &max_children,
+	  NULL, NULL },
+	{ "process-idle-timeout", CS_STMT, NULL, cfg_get_integer, &process_timeout,
 	  NULL, NULL },
 	{ "exec-program-user", CS_STMT, NULL, cfg_get_string, &exec_user,
 	  NULL, NULL },

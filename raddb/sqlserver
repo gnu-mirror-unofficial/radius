@@ -32,6 +32,12 @@
 ##   user_group          char(32),
 ##   KEY (user_name)
 ## );
+## CREATE TABLE attrib(
+##   user_name           char(32) DEFAULT '' NOT NULL,
+##   attr                char(32),
+##   value               char(128),
+##   INDEX user_name (user_name)
+## );
 ## CREATE TABLE calls (
 ##   status              int(3),
 ##   user_name           char(32),
@@ -93,7 +99,13 @@ auth_db RADIUS
 
 # Query to select the password for the given user. Should return one string.
 auth_query  select password from passwd where user_name='%u'
+
+# This query returns groups the user belongs to
 group_query select user_group from groups where user_name='%u'
+
+# This query returns a list of a/v pairs to be included in reply packet.
+# The query is used only if the user is authorized successfully.
+attr_query  select attr,value from attrib where user_name='%u'
 
 #########
 # Accounting-relevant settings

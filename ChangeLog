@@ -1,3 +1,153 @@
+2004-02-05  Sergey Poznyakoff
+
+	* include/common.h: New file
+	* include/radius: New directory. New files:
+	* include/radius/Makefile.am: 
+	* include/radius/.cvsignore:
+	* include/radius/envar.h:
+	* include/radius/mem.h:
+	* include/radius/radius.h:
+	* include/radius/radscm.h:
+	* include/radius/argcv.h:
+	* include/radius/list.h:
+	* include/radius/radargp.h:
+	* include/radius/radutmp;
+	* include/radius/md5.h:
+	* include/radius/raddbm.h:
+	* include/radius/radpaths.h:
+	* include/radius/symtab.h:
+
+	These files are moved to the above subdirectory:
+	
+	* include/envar.h:
+	* include/mem.h:
+	* include/radius.h:
+	* include/radscm.h:
+	* include/argcv.h:
+	* include/list.h:
+	* include/radargp.h:
+	* include/radutmp;	
+	* include/md5.h:
+	* include/raddbm.h:
+	* include/radpaths.h:
+	* include/symtab.h:
+	
+	* scripts/mktypes.c: New file
+	* configure.ac: Adopted new include structure
+	* Makefile.am: Likewise.
+
+	Further namespace cleanup:
+
+        * client/pam_radius/Makefile.am:
+        * client/pam_radius/pam_radius.c:
+        * include/.cvsignore:
+        * include/Makefile.am:
+        * include/checkrad.h:
+        * include/radiusd.h:
+        * include/sysdep.h:
+        * include/timestr.h:
+        * lib/Makefile.am:
+        * lib/ascend.c:
+        * lib/avl.c:
+        * lib/client.c:
+        * lib/cryptpass.c:
+        * lib/dbm.c:
+        * lib/debug.c:
+        * lib/dict.c:
+        * lib/envar.c:
+        * lib/getgr.c:
+        * lib/insist.c:
+        * lib/iputil.c:
+        * lib/leakdetect.c:
+        * lib/list.c:
+        * lib/logger.c:
+        * lib/md5.c:
+        * lib/md5crypt.c:
+        * lib/nas.c:
+        * lib/printutmp.c:
+        * lib/radargp.c:
+        * lib/raddb.c:
+        * lib/radpaths.c:
+        * lib/radpdu.c:
+        * lib/radsrv.c:
+        * lib/radutmp.c:
+        * lib/realms.c:
+        * lib/symtab.c:
+        * lib/sysdep.c:
+        * lib/users.l:
+        * lib/users.y:
+        * lib/util.c:
+        * po/es.po:
+        * po/pl.po:
+        * po/ru.po:
+        * radiusd/Makefile.am:
+        * radiusd/acct.c:
+        * radiusd/auth.c:
+        * radiusd/builddbm.c:
+        * radiusd/checkrad.c:
+        * radiusd/config.y:
+        * radiusd/exec.c:
+        * radiusd/files.c:
+        * radiusd/input.c:
+        * radiusd/log.c:
+        * radiusd/radck.c:
+        * radiusd/radius.c:
+        * radiusd/radiusd.c:
+        * radiusd/radutil.c:
+        * radiusd/request.c:
+        * radiusd/rewrite.y:
+        * radiusd/rpp.c:
+        * radiusd/scheme.c:
+        * radiusd/snmpserv.c:
+        * radiusd/sql.c:
+        * radiusd/stat.c:
+        * radiusd/tsh.c:
+        * radiusd/version.c:
+        * radiusd/testsuite/Makefile.am:
+        * radlast/Makefile.am:
+        * radlast/radlast.c:
+        * radscm/Makefile.am:
+        * radscm/radscm.c:
+        * radscm/rscm_avl.c:
+        * radscm/rscm_dict.c:
+        * radscm/rscm_lib.c:
+        * radscm/rscm_radlog.c:
+        * radscm/rscm_rewrite.c:
+        * radscm/rscm_sql.c:
+        * radscm/rscm_syslog.c:
+        * radscm/rscm_utmp.c:
+        * radtest/Makefile.am:
+        * radtest/gram.y:
+        * radtest/input.l:
+        * radtest/main.c:
+        * radtest/radtest.h:
+        * raduse/Makefile.am:
+        * raduse/raduse.c:
+        * raduse/raduse.h:
+        * radwho/Makefile.am:
+        * radwho/radwho.c:
+        * radzap/Makefile.am:
+        * radzap/radzap.c:
+        * scripts/Makefile.am:
+        * snmplib/Makefile.am:
+        * snmplib/asn1.c:
+        * snmplib/snmp_err.c:
+        * snmplib/snmp_mem.c:
+        * snmplib/snmp_mib.c:
+        * snmplib/snmp_oid.c:
+        * snmplib/snmp_pdu.c:
+        * snmplib/snmp_recv.c:
+        * snmplib/snmp_send.c:
+        * snmplib/snmp_sess.c:
+        * snmplib/snmp_var.c:
+        * sql/Makefile.am:
+        * sql/disp.c:
+        * sql/mysql.c:
+        * sql/odbc.c:
+        * sql/postgres.c:
+
+
+	
 2004-02-04  Sergey Poznyakoff
 
 	Further namespace cleanup;

@@ -253,8 +253,8 @@ typedef void (*config_hook_fp)(void *func_data, void *app_data);
 #define MAX_REQUESTS            255
 #define MAX_CHILDREN            16
 #define PROCESS_TIMEOUT         3600
-#define RADIUSD_READ_TIMEOUT    0
-#define RADIUSD_WRITE_TIMEOUT   0
+#define RADIUSD_READ_TIMEOUT    5
+#define RADIUSD_WRITE_TIMEOUT   5
 
 /*
  * Authentication results

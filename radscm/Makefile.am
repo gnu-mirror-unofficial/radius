@@ -43,16 +43,16 @@ DOT_X_FILES=\
  rscm_lib.x\
  radscm.x
 DOT_DOC_FILES=$(DOT_X_FILES:.x=.doc)
-BUILT_SOURCES=@RADSCM_BUILT_SOURCES@
+BUILT_SOURCES=@RADSCM_BUILT_SOURCES_LIST@
 EXTRA_DIST=boot.scm ttl.scm radsession.in
-CLEANFILES = *.x *.doc radsession
+CLEANFILES = *.x *.doc radsession guile-procedures.txt
 
 radsession: $(srcdir)/radsession.in
 	sed 's,BINDIR,$(bindir),' $? > $@
 
 radscm_LDADD=@GUILE_LIBS@ ./libradscm.a ../radlib/liblog.la ../radlib/librad.la ../radlib/libdebug.la 
 
-INCLUDES  = -I$(top_srcdir)/include @INCLUDEPATH@ @GUILE_INCLUDES@
+INCLUDES  = -I$(top_builddir) -I$(top_srcdir)/include -I$(srcdir) @INCLUDEPATH@ @GUILE_INCLUDES@
 CPPFLAGS=-DDATADIR=\"$(pkgdatadir)\"
 ETAGS_ARGS = --regex='/SCM_\(GLOBAL_\)?\(G?PROC\|G?PROC1\|SYMBOL\|VCELL\|CONST_LONG\).*\"\([^\"]\)*\"/\3/' \
    --regex='/[ \t]*SCM_[G]?DEFINE1?[ \t]*(\([^,]*\),[^,]*/\1/'

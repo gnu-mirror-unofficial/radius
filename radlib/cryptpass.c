@@ -98,7 +98,7 @@ encrypt_password(pair, password, vector, secret)
 
 void
 decrypt_password(password, pair, vector, secret)
-	char *password;   /* At least 128 characters long */
+	char *password;   /* At least AUTH_STRING_LEN+1 characters long */
 	VALUE_PAIR *pair; /* Password pair */
 	char *vector;     /* Request authenticator */
 	char *secret;     /* Shared secret */
@@ -133,5 +133,6 @@ decrypt_password(password, pair, vector, secret)
 		for (j = 0; j < AUTH_VECTOR_LEN; j++, i++)
 			password[i] ^= digest[j];
 	}
+	password[passlen+1] = 0;
 	efree(md5buf);
 }

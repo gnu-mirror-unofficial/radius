@@ -238,7 +238,7 @@ option_line     : /* empty */ EOL
 
 option_def      : T_SOURCE_IP value
                   {
-			  asgn(&myip, &$2, AT_IPADDR, 1);
+			  asgn(&myip, &$2, AT_IPADDR, 0);
 		  }
                 | T_USR2DELAY value
                   {
@@ -307,7 +307,7 @@ auth_def        : listen_stmt
 		  }
                 | T_PORT value
                   {
-			  asgn(&auth_port, &$2, AT_PORT, 1);
+			  asgn(&auth_port, &$2, AT_PORT, 0);
 		  }      
                 | T_SPAWN value
                   {
@@ -376,7 +376,7 @@ acct_def        : listen_stmt
 		  }
                 | T_PORT value
                   {
-			  asgn(&acct_port, &$2, AT_PORT, 1);
+			  asgn(&acct_port, &$2, AT_PORT, 0);
 		  }      
                 | T_SPAWN value
                   {
@@ -865,7 +865,7 @@ snmp_def        : T_IDENT T_STRING
                 | T_PORT value
                   {
                    #ifdef USE_SNMP
-			  asgn(&snmp_port, &$2, AT_PORT, 1);
+			  asgn(&snmp_port, &$2, AT_PORT, 0);
                    #endif
 		  }      
                 | T_SPAWN value

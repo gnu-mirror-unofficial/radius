@@ -592,7 +592,6 @@ hints_setup(RADIUS_REQ *req)
 {
         VALUE_PAIR      *request_pairs = req->request;
         char            newname[AUTH_STRING_LEN];
-        char            *name;
         VALUE_PAIR      *name_pair;
         VALUE_PAIR      *orig_name_pair;
         VALUE_PAIR      *tmp;
@@ -606,20 +605,15 @@ hints_setup(RADIUS_REQ *req)
          *      Check for valid input, zero length names not permitted 
          */
         if ((name_pair = avl_find(request_pairs, DA_USER_NAME)) == NULL) {
-                name = NULL;
+		name_pair = avp_create(DA_USER_NAME, 0, "", 0);
                 orig_name_pair = NULL;
         } else {
-                name = name_pair->avp_strvalue;
                 orig_name_pair = avp_dup(name_pair);
                 orig_name_pair->attribute = DA_ORIG_USER_NAME;
                 orig_name_pair->name = "Orig-User-Name";
         }
-        
-        if (name == NULL || name[0] == 0)
-                /* Will be complained about later. */
-                return 0;
 
-        debug(1, ("called for `%s'", name));
+        debug(1, ("called for `%s'", name_pair->avp_strvalue));
         
         /* if Framed-Protocol is present but Service-Type is missing, add
            Service-Type = Framed-User. */
@@ -635,9 +629,7 @@ hints_setup(RADIUS_REQ *req)
                 int do_strip;
                 VALUE_PAIR *add;
                 
-                name = name_pair->avp_strvalue;
-
-                if (matches(req, name, i, newname))
+                if (matches(req, name_pair->avp_strvalue, i, newname))
                         continue;
 
                 matched++;
@@ -680,8 +672,7 @@ hints_setup(RADIUS_REQ *req)
                         }
                 }
 
-                debug(1, ("newname is `%s', username is `%s'",
-                         newname, name_pair->avp_strvalue));
+                debug(1, ("new name is `%s'", name_pair->avp_strvalue));
 
                 /* fix-up the string length */
                 name_pair->avp_strlength = strlen(name_pair->avp_strvalue);
@@ -703,10 +694,17 @@ hints_setup(RADIUS_REQ *req)
                 break;
         }
 
-        if (matched)
-                avl_add_pair (&request_pairs, orig_name_pair);
-        else
-                avp_free (orig_name_pair);
+        if (matched) {
+		if (orig_name_pair)
+			avl_add_pair(&request_pairs, orig_name_pair);
+		else
+			avl_add_pair(&request_pairs, name_pair);
+	} else {
+		if (orig_name_pair)
+			avp_free(orig_name_pair);
+		else
+			avp_free(name_pair);
+	}
         
         return 0;
 }

@@ -214,7 +214,6 @@ lstmt         : /* empty */ EOL
               | error EOL
                 {
 			errsync();
-			defn.function = NULL;
                         yyclearin;
                         yyerrok;
                 }
@@ -876,8 +875,6 @@ pritem        : expr %prec PRITEM
 int
 yyerror(char *s)
 {
-	if (defn.function)
-		parse_error(_("In function `%s':"), defn.function);
 	if (strcmp(s, "parse error") == 0
 	    || strcmp(s, "syntax error") == 0) {
 		if (yychar == T_END)
@@ -888,17 +885,45 @@ yyerror(char *s)
 			parse_error_loc(&loc, _("Unexpected end of line"));
 		} else if (peek_ctx() == ctx_doerr)
 			;
-		else
+		else 
 			parse_error(s);
+	} else if (yychar == EOL) {
+		grad_locus_t loc = source_locus;
+		loc.line--;
+		parse_error_loc(&loc, s);
 	} else
 		parse_error(s);
 }
+
+static char *funcname_displayed = NULL;
+
+static int
+namecmp(char *a, char *b)
+{
+	if (!a || !b)
+		return a != b;
+	return strcmp(a, b);
+}
+
+static void
+print_function_name()
+{
+	if (namecmp(funcname_displayed, defn.function)) {
+		if (defn.function)
+			fprintf(stderr, _("In function `%s':\n"),
+				defn.function);
+		else
+			fprintf(stderr, _("At top level:\n"));
+		funcname_displayed = defn.function;
+	}
+}	
 
 void
 parse_error(const char *fmt, ...)
 {
         va_list ap;
 
+	print_function_name();
 	va_start(ap, fmt);
         fprintf(stderr, "%s:%lu: ",
 		source_locus.file,
@@ -914,6 +939,7 @@ parse_error_loc(grad_locus_t *locus, const char *fmt, ...)
 {
         va_list ap;
 
+	print_function_name();
 	va_start(ap, fmt);
         fprintf(stderr, "%s:%lu: ",
 		locus->file, (unsigned long) locus->line);

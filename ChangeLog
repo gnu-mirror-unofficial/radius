@@ -1,3 +1,29 @@
+2005-01-11  Sergey Poznyakoff
+
+	* lib/envar.c (grad_envar_parse_argcv_internal): Bugfix.
+	Incorrectly parsed explicit assignments.
+	* lib/radpdu.c (grad_decode_pdu): Fixed debugging output to
+	print IP addresses in host order.
+	* radiusd/radius.c (radius_respond): Run hints_setup() before
+	calling rad_auth_check_username(). This will allow to transform
+	usernames before checking for validity. Proposed in a response
+	to Georges Arnould <georges@ipercom.com> request.
+	(<200411260848.iAQ8mKD18166@Mirddin.farlep.net>)
+	* radiusd/rewrite.y (temp_space_size): New function
+	(bi_time,bi_strftime): New functions.
+
+	* radscm/gnuradius.scm4: Properly protect `define' from
+	expansion by m4. Reported by Stephen Bleazard.
+	* radscm/radiusd.scm4: Likewise.
+
+	* THANKS: Added Stephen Bleazard. Reordered in lexicographic
+	order.
+	
+2004-11-20  Sergey Poznyakoff
+
+	-= Released version 1.3. =-
+	Sources before this point are tagged release_1_3
+	
 2004-11-20  Sergey Poznyakoff 
 
 	* configure.ac: Raised version number to 1.3

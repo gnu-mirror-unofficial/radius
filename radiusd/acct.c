@@ -560,7 +560,7 @@ rad_accounting(RADIUS_REQ *radreq, int activefd, int verified)
 {
 	log_open(L_ACCT);
 
-        huntgroup_access(radreq);
+        huntgroup_access(radreq, NULL);
 
 #if defined(RT_ASCEND_EVENT_REQUEST) && defined(RT_ASCEND_EVENT_RESPONSE)
         /* Special handling for Ascend-Event-Request */

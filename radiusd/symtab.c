@@ -1,5 +1,5 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
+ * Copyright (C) 2000,2001, Sergey Poznyakoff
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -195,6 +195,26 @@ symtab_free(symtab)
 			sym_free(sp);
 		}
 		symtab->sym[i] = NULL;
+	}
+}
+
+void
+symtab_iterate(symtab, fn, closure)
+	Symtab *symtab;
+	int (*fn)();
+	void *closure;
+{
+	int i;
+	Symbol *sym, *next;
+	
+	for (i = 0; i < symtab->hashsize; i++) {
+		sym = symtab->sym[i];
+		while (sym) {
+			next = sym->next;
+			if ((*fn)(closure, sym))
+				break;
+			sym = next;
+		}
 	}
 }
 

@@ -210,7 +210,7 @@ snmp_read(fdset)
 				     sp->app_closure);
 			break;
 		default:
-			/*FIXME:mesg*/
+			/*FIXME:mesg*/ ;
 		}
 		snmp_pdu_free(pdu);
 	}

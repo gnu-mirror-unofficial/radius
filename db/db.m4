@@ -28,7 +28,7 @@ CREATETABLE(passwd, {
   user_name           VARCHAR_T(32) CI default '' not null,
   service             CHAR_T(16) default 'Framed-PPP' not null,
   password            CHAR_T(64),
-  active              ENUM_T(1,'Y','N') COMMA
+  active              ENUM_T(1,'Y','N') default 'Y' not null COMMA
   INDEX(uname, user_name,active) COMMA
   UNIQUE(usrv, user_name,service,active) 
 })

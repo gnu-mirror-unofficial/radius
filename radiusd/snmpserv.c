@@ -80,12 +80,15 @@ find_netlist(name)
 }
 
 int
-snmp_stmt_begin(data, up_data)
+snmp_stmt_begin(finish, data, up_data)
+	int finish;
 	void *data;
 	void *up_data;
 {
-        snmp_free_communities();
-        snmp_free_acl();
+	if (!finish) {
+		snmp_free_communities();
+		snmp_free_acl();
+	}
 	return 0;
 }
 
@@ -375,6 +378,8 @@ snmp_add_acl(acl, community)
                 new_acl = alloc_entry(sizeof(*new_acl));
                 memcpy(new_acl, acl, sizeof(ACL));
                 new_acl->community = community;
+		new_acl->ipaddr = ntohl(new_acl->ipaddr);
+		new_acl->netmask = ntohl(new_acl->netmask);
                 if (snmp_acl_tail)
                         snmp_acl_tail->next = new_acl;
                 else

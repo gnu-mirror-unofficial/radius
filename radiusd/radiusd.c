@@ -518,6 +518,7 @@ main(int argc, char **argv)
 static int
 snmp_request_to_command()
 {
+#ifdef USE_SNMP
 	if (server_stat && server_stat->auth.status != saved_status) {
 		saved_status = server_stat->auth.status;
 		switch (server_stat->auth.status) {
@@ -537,6 +538,7 @@ snmp_request_to_command()
 			return CMD_SHUTDOWN;
 		}
 	}
+#endif	
 	return CMD_NONE;
 }
 

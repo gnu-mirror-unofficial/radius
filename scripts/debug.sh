@@ -12,10 +12,9 @@
 #
 
 ID='$Id$'
-ANCHOR="#define RADIUS_MODULE"
+ANCHOR="RADIUS_MODULE_"
 PROGNAME=$0
 DEBUGMOD=debugmod.c
-NODEBUG=include/nodebug.h
 MODNUM=0
 TOPDIR=`pwd`
 
@@ -27,6 +26,12 @@ fi
 if [ x$MAKE = x ]; then
 	MAKE=make
 fi
+
+if [ x$HEADER = x ]; then
+	HEADER=include/debugmod.h
+fi
+HEADER="`pwd`/$HEADER"
+cat /dev/null > $HEADER
 
 SKEL=$1
 shift
@@ -75,11 +80,12 @@ process_sources() {
 	shift
 	for i in $*
 	do
-		if grep "^$ANCHOR" $i > /dev/null; then
-			mv $i $i~
-			sed -e "s/^\($ANCHOR\).*/\1 $MODNUM/" \
-			    $i~ > $i
-			echo "       \"`basename $i`\", $MODNUM," >> $FILE
+		if grep "^#define $ANCHOR" $i > /dev/null; then
+			MODNAME=`sed -ne "s/^#define \($ANCHOR.*\)/\1/p" $i`
+			echo "#ifdef $MODNAME" >> $HEADER
+			echo "# define RADIUS_MODULE $MODNUM" >> $HEADER
+			echo "#endif" >> $HEADER
+			echo "    \"`basename $i`\", $MODNUM," >> $FILE
 			MODNUM=`expr $MODNUM + 1`
 		fi
 	done

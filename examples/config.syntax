@@ -1,3 +1,4 @@
+## -*- radconf -*-
 ## This file is intended to be an explanation on configuration syntax
 ## issues. It cannot possibly be used as a configuration file.
 option {
@@ -105,6 +106,7 @@ auth {
                                  # dictionary the attributes that will
                                  # be used when comparing two authentication
                                  # requests. Allowed values are 1 through 9
+	trace-rules no;
 };
 
 ## This controls the accounting service
@@ -123,6 +125,7 @@ acct {
                                  # dictionary the attributes that will
                                  # be used when comparing two accounting
                                  # requests. Allowed values are 1 through 9
+	trace-rules no;
 };
 
 # DBM handling. Can be one of

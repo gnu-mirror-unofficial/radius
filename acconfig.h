@@ -133,3 +133,7 @@
 #  define __extension__(c) 1
 # endif
 #endif
+
+#ifdef RADIUS_DEBUG
+# include <debugmod.h>
+#endif

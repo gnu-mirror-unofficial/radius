@@ -32,7 +32,7 @@
 
 ;; Customization:
 ;;  To your .emacs or site-start add:
-;;  (autoload 'radconf-mode "Radius-Config")
+;;  (autoload 'radconf-mode "radconf-mode")
 ;;  (setq auto-mode-alist (append auto-mode-alist
 ;;                                '(("raddb/config$" . radconf-mode))))
 

@@ -1,7 +1,7 @@
 ;;; radius-mode.el --- major mode for editing GNU radius configuration files
 
-;; Authors: 2000 Sergey Poznyakoff
-;; Version:  1.0
+;; Authors: 2000,2003,2004 Sergey Poznyakoff
+;; Version:  1.1
 ;; Keywords: radius
 ;; $Id$
 

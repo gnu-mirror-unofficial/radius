@@ -19,7 +19,7 @@ SUBDIRS=raddb proxy dejagnu shell
 noinst_SCRIPTS=test.sh
 EXTRA_DIST=test.sh.m4 radiusd.m4 proxy.m4 proto.m4
 CLEANFILES=test.sh 
-#TESTS=@TESTDIR@
+
 TESTS_ENVIRONMENT=BUILDDIR=$(top_builddir) SOURCEDIR=$(top_srcdir)
 
 M4_DEFINES=-DBUILDDIR=`cd $(top_builddir); pwd` \

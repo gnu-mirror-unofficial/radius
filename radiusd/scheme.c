@@ -138,8 +138,7 @@ boot_body (void *data)
         time(&last_gc_time);
         scheme_inited = 1;
         
-        pthread_mutex_lock(&server_mutex);
-        debug(50,("SRV: Acquired server mutex"));
+        Pthread_mutex_lock(&server_mutex);
         while (1) {
                 struct call_data *p;
                 time_t t;
@@ -161,11 +160,9 @@ boot_body (void *data)
                                 p->retval = p->fun(p);
                                 p->ready = 1;
                         }
-                        debug(50, ("SRV: Acquiring client mutex"));
-                        pthread_mutex_lock(&p->mutex);
+                        Pthread_mutex_lock(&p->mutex);
                         pthread_cond_signal(&p->cond);
-                        pthread_mutex_unlock(&p->mutex);
-                        debug(50, ("SRV: Released client mutex"));
+                        Pthread_mutex_unlock(&p->mutex);
                 }
         }
         /*NOTREACHED*/
@@ -203,7 +200,7 @@ scheme_debug(val)
                 
 
 /* ************************************************************************* */
-/* Functions running in Guile thread address space */
+/* Functions running in Guile thread stack space */
 
 static SCM
 eval_catch_body (void *list)
@@ -322,7 +319,7 @@ scheme_add_load_path_internal(p)
 }
 
 /* ************************************************************************* */
-/* Functions running in arbitrary address space */
+/* Functions running in arbitrary stack space */
 
 int
 scheme_generic_call(fun, procname, req, user_check, user_reply_ptr)
@@ -346,39 +343,25 @@ scheme_generic_call(fun, procname, req, user_check, user_reply_ptr)
         pthread_cond_init(&p->cond, NULL);
         pthread_mutex_init(&p->mutex, NULL);
         
-        debug(50, ("APP: Acquiring server mutex"));
-        pthread_mutex_lock(&server_mutex);
+        Pthread_mutex_lock(&server_mutex);
         call_place(p);
         debug(1, ("APP: Placed call"));
 
-        debug(50, ("APP: Acquiring client mutex"));
-        pthread_mutex_lock(&p->mutex);
-        debug(50, ("APP: Acquired client mutex"));
+        Pthread_mutex_lock(&p->mutex);
 
         debug(50, ("APP: Signalling"));
         pthread_cond_signal(&server_cond);
-        debug(50, ("APP: Releasing server mutex"));
-        pthread_mutex_unlock(&server_mutex);
+        Pthread_mutex_unlock(&server_mutex);
         while (!p->ready) {
-                struct timespec atime;
-                struct timeval now;
-                gettimeofday(&now, NULL);
-                atime.tv_sec = now.tv_sec + 1;
-                atime.tv_nsec = 0;
                 debug(50, ("APP: Waiting"));
                 pthread_cond_wait(&p->cond, &p->mutex);
         }
         
-        debug(50, ("APP: Releasing client mutex"));
-        pthread_mutex_unlock(&p->mutex);
-        debug(1, ("APP: Done"));
+        Pthread_mutex_unlock(&p->mutex);
         
-        debug(50, ("APP: Re-acquiring server mutex"));
-        pthread_mutex_lock(&server_mutex);
+        Pthread_mutex_lock(&server_mutex);
         call_remove(p);
-        debug(50, ("APP: Releasing server mutex"));
-        pthread_mutex_unlock(&server_mutex);
-        debug(50, ("APP: Released server mutex"));
+        Pthread_mutex_unlock(&server_mutex);
 
         pthread_mutex_destroy(&p->mutex);
         pthread_cond_destroy(&p->cond);

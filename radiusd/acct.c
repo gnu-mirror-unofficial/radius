@@ -595,8 +595,13 @@ rad_acct_ext(radreq)
         if (p = avl_find(radreq->request, DA_SCHEME_ACCT_PROCEDURE))
                 scheme_acct(p->strvalue, radreq);
 #endif
-        if (p = avl_find(radreq->request, DA_ACCT_EXT_PROGRAM)) 
-                radius_exec_program(p->strvalue, radreq, NULL, 0, NULL);
+        if (p = avl_find(radreq->request, DA_ACCT_EXT_PROGRAM)) {
+    		switch (p->strvalue[0]) {
+		case '/':
+                	radius_exec_program(p->strvalue, radreq, NULL, 0, NULL);		case '|':
+                	filter_acct(p->strvalue+1, radreq);
+                }
+        }
         return 0;
 }
 

@@ -454,7 +454,6 @@ radiusd_sql_config()
         }
 
         obstack_free(&parse_stack, NULL);
-
         fclose(sqlfd);
 
         sql_check_config(sqlfile, &new_cfg);
@@ -513,6 +512,12 @@ sql_check_config(const char *filename, SQL_cfg *cfg)
 
 	/* Check general SQL setup */
 	if (cfg->active[SQL_AUTH] || cfg->active[SQL_ACCT]) {
+		if (disp_sql_interface_index(NULL) == 0) {
+			grad_log(L_ERR, _("%s: SQL interface not specified"),
+				 filename);
+			doacct = doauth = 0;
+		}
+
 		if (!cfg->server) {
 			missing_statement(L_ERR, filename, "server");
 			doacct = doauth = 0;

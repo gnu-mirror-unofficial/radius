@@ -208,6 +208,35 @@ scheme_redirect_output()
 		silent_close_port(port);
 }
 
+int
+scheme_call_proc(SCM *result, char *procname, SCM arglist)
+{
+	SCM procsym;
+ 	jmp_buf jmp_env;
+	SCM cell;
+	
+	/* Evaluate the procedure */
+	procsym = RAD_SCM_SYMBOL_VALUE(procname);
+	if (scm_procedure_p(procsym) != SCM_BOOL_T) {
+		grad_log(L_ERR,
+		         _("%s is not a procedure object"), procname);
+		return 1;
+	}
+	if (setjmp(jmp_env)) {
+		grad_log(L_NOTICE,
+		         _("Procedure `%s' failed: see error output for details"),
+		         procname);
+		return 1;
+	}
+	SCM_NEWCELL(cell);
+	SCM_SETCAR(cell, procsym);
+	SCM_SETCDR(cell, arglist);
+	*result = scm_internal_lazy_catch(SCM_BOOL_T,
+					  eval_catch_body, cell,
+					  eval_catch_handler, &jmp_env);
+	return 0;
+}
+	
 
 /* Main loop */
 
@@ -255,48 +284,31 @@ scheme_try_auth(int auth_type, grad_request_t *req,
 {
 	SCM s_request, s_check, s_reply;
 	SCM res;
-	SCM procsym;
- 	jmp_buf jmp_env;
 	grad_avp_t *tmp =
 		radius_decrypt_request_pairs(req,
 					     grad_avl_dup(req->request));
-	static const char *try_auth = "radiusd-try-auth";
+        static const char *try_auth = "radiusd-try-auth";
 	
 	s_request = radscm_avl_to_list(tmp);
 	radius_destroy_pairs(&tmp);
 	s_check = radscm_avl_to_list(user_check);
 	s_reply = radscm_avl_to_list(*user_reply_ptr);
 
-	/* Evaluate the procedure */
-	procsym = RAD_SCM_SYMBOL_VALUE(try_auth);
-	if (scm_procedure_p(procsym) != SCM_BOOL_T) {
-		grad_log(L_ERR,
-		         _("%s is not a procedure object"), try_auth);
+	if (scheme_call_proc(&res,
+			     try_auth,
+			     SCM_LIST4(scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+						   scm_long2num(auth_type),
+						   SCM_UNDEFINED),
+				       scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+						   s_request,
+						   SCM_UNDEFINED),
+				       scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+						   s_check,
+						   SCM_UNDEFINED),
+				       scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+						   s_reply,
+						   SCM_UNDEFINED))))
 		return 1;
-	}
-	if (setjmp(jmp_env)) {
-		grad_log(L_NOTICE,
-		         _("Procedure `%s' failed: see error output for details"),
-		         try_auth);
-		return 1;
-	}
-	res = scm_internal_lazy_catch(
-		SCM_BOOL_T,
-		eval_catch_body,
-		(void*) SCM_LIST5(procsym,
-				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-					      scm_long2num(auth_type),
-					      SCM_UNDEFINED),
-				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-					      s_request,
-					      SCM_UNDEFINED),
-				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-					      s_check,
-					      SCM_UNDEFINED),
-				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-					      s_reply,
-					      SCM_UNDEFINED)),
-		eval_catch_handler, &jmp_env);
 	
 	if (SCM_IMP(res) && SCM_BOOLP(res)) 
 		return res == SCM_BOOL_F;
@@ -320,8 +332,6 @@ scheme_auth(char *procname, grad_request_t *req,
 {
 	SCM s_request, s_check, s_reply;
 	SCM res;
-	SCM procsym;
- 	jmp_buf jmp_env;
 	grad_avp_t *tmp =
 		radius_decrypt_request_pairs(req,
 					     grad_avl_dup(req->request));
@@ -331,34 +341,18 @@ scheme_auth(char *procname, grad_request_t *req,
 	s_check = radscm_avl_to_list(user_check);
 	s_reply = radscm_avl_to_list(*user_reply_ptr);
 
-	/* Evaluate the procedure */
-	procsym = RAD_SCM_SYMBOL_VALUE(procname);
-	if (scm_procedure_p(procsym) != SCM_BOOL_T) {
-		grad_log(L_ERR,
-		         _("%s is not a procedure object"), procname);
+	if (scheme_call_proc(&res,
+			     procname,
+			     SCM_LIST3(scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+						   s_request,
+						   SCM_UNDEFINED),
+				       scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+						   s_check,
+						   SCM_UNDEFINED),
+				       scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+						   s_reply,
+						   SCM_UNDEFINED))))
 		return 1;
-	}
-	if (setjmp(jmp_env)) {
-		grad_log(L_NOTICE,
-		         _("Procedure `%s' failed: see error output for details"),
-		         procname);
-		return 1;
-	}
-	
-	res = scm_internal_lazy_catch(
-		SCM_BOOL_T,
-		eval_catch_body,
-		(void*) SCM_LIST4(procsym,
-				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-					      s_request,
-					      SCM_UNDEFINED),
-				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-					      s_check,
-					      SCM_UNDEFINED),
-				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-					      s_reply,
-					      SCM_UNDEFINED)),
-		eval_catch_handler, &jmp_env);
 	
 	if (SCM_IMP(res) && SCM_BOOLP(res)) 
 		return res == SCM_BOOL_F;
@@ -378,31 +372,16 @@ scheme_auth(char *procname, grad_request_t *req,
 int
 scheme_acct(char *procname, grad_request_t *req)
 {
-	SCM procsym, res;
-	jmp_buf jmp_env;
+	SCM res;
 	SCM s_request = radscm_avl_to_list(req->request);
 
-	/* Evaluate the procedure */
-	procsym = RAD_SCM_SYMBOL_VALUE(procname);
-	if (scm_procedure_p(procsym) != SCM_BOOL_T) {
-		grad_log(L_ERR,
-		         _("%s is not a procedure object"), procname);
+	if (scheme_call_proc(&res,
+			     procname,
+			     SCM_LIST1(scm_listify(SCM_IM_QUOTE,
+						   s_request,
+						   SCM_UNDEFINED))))
 		return 1;
-	}
-	if (setjmp(jmp_env)) {
-		grad_log(L_NOTICE,
-		         _("Procedure `%s' failed: see error output for details"),
-		         procname);
-		return 1;
-	}
-	res = scm_internal_lazy_catch(
-		SCM_BOOL_T,
-		eval_catch_body,
-		(void*) SCM_LIST2(procsym,
-				  scm_listify(SCM_IM_QUOTE,
-					      s_request,
-					      SCM_UNDEFINED)),
-		eval_catch_handler, &jmp_env);
+	
 	if (SCM_IMP(res) && SCM_BOOLP(res)) 
 		return res == SCM_BOOL_F;
 	else
@@ -459,6 +438,110 @@ scheme_cfg_load(int argc, cfg_value_t *argv, void *block_data,
 	return 0;
 }
 
+static SCM
+arglist_to_scm(int argc, cfg_value_t *argv)
+{
+        SCM head = SCM_EOL,
+		tail; /* Don't let gcc fool you: tail cannot be used
+			 uninitialized */
+	SCM val;
+	int i;
+	unsigned long num;
+	
+	for (i = 1; i < argc; i++) {
+                SCM cell;
+		SCM_NEWCELL(cell);
+
+		switch (argv[i].type) {
+		case CFG_INTEGER:
+			val = scm_long2num(num);
+			break;
+			
+		case CFG_BOOLEAN:
+			val = argv[i].v.bool ? SCM_BOOL_T : SCM_BOOL_F;
+			break;
+			
+		case CFG_STRING:
+		{
+			char *p = argv[i].v.string;
+			if (p[0] == '#') {
+				switch (p[1]) {
+				case ':':
+					val = scm_c_make_keyword(p + 2);
+					break;
+				case 'f':
+					val = SCM_BOOL_F;
+					break;
+
+				case 't':
+					val = SCM_BOOL_T;
+					break;
+				case 'x':
+					num = strtoul(p+1, &p, 16);
+					if (*p) {
+						grad_log(L_ERR,
+							 _("Invalid hex number: %s"),
+							 argv[i].v.string);
+						return SCM_BOOL_F;
+					}
+					val = scm_long2num(num);
+				default:
+					val = scm_makfrom0str(p);
+				}
+			} else if (p[0] == '-') 
+				val = scm_c_make_keyword(p + 1);
+			else
+				val = scm_makfrom0str(p);
+		}
+		break;
+
+		case CFG_NETWORK:
+			SCM_NEWCELL(val);
+			SCM_SETCAR(val, scm_long2num(argv[i].v.network.ipaddr));
+			SCM_SETCDR(val, scm_long2num(argv[i].v.network.netmask));
+			break;
+			
+		case CFG_IPADDR:
+		case CFG_PORT:
+			grad_insist_fail("Such CFG_ value should never be returned");
+			break;
+			
+		case CFG_CHAR:
+			val = SCM_MAKE_CHAR(argv[i].v.ch);
+			break;
+			
+		case CFG_HOST:
+			SCM_NEWCELL(val);
+			SCM_SETCAR(val, scm_long2num(argv[i].v.host.ipaddr));
+			SCM_SETCDR(val, scm_long2num(argv[i].v.host.port));
+		}
+		
+		SCM_SETCAR(cell, scm_list_2(SCM_IM_QUOTE, val));
+
+		if (head == SCM_EOL)
+			head = cell;
+		else
+			SCM_SETCDR(tail, cell);
+		tail = cell;
+	}
+
+	if (head != SCM_EOL)
+		SCM_SETCDR(tail, SCM_EOL);
+	return head;
+}
+
+#define INIT_SUFFIX "-init"
+static void
+call_module_init(const char *modname, SCM arglist)
+{
+	char *p = grad_emalloc(strlen(modname) + sizeof(INIT_SUFFIX));
+	SCM res;
+	
+	strcat(strcpy(p, modname), INIT_SUFFIX);
+	scheme_call_proc(&res, p, arglist);
+	grad_free(p);
+}
+
 static int
 scheme_cfg_load_module(int argc, cfg_value_t *argv, void *block_data,
 		       void *handler_data)
@@ -474,13 +557,30 @@ scheme_cfg_load_module(int argc, cfg_value_t *argv, void *block_data,
 	}
 	
 	if (scheme_load_module(argv[1].v.string) == 0) {
-		int i;
-		for (i = 2; i < argc; i++) {
-			if (argv[i].type != CFG_STRING)
-				cfg_type_error(CFG_STRING);
-			else
-				scheme_eval_expression(argv[i].v.string);
-		}
+		if (argc > 2) {
+			SCM arglist = arglist_to_scm(argc - 1, argv + 1);
+			call_module_init(argv[1].v.string, arglist);
+		}	
+	}
+	return 0;
+}
+
+static int
+scheme_cfg_eval(int argc, cfg_value_t *argv, void *block_data,
+		void *handler_data)
+{
+	int i;
+
+	if (argc < 2) {
+		cfg_argc_error(0);
+		return 0;
+	}
+
+	for (i = 1; i < argc; i++) {
+		if (argv[i].type != CFG_STRING)
+			cfg_type_error(CFG_STRING);
+		else
+			scheme_eval_expression(argv[i].v.string);
 	}
 	return 0;
 }
@@ -524,6 +624,7 @@ struct cfg_stmt guile_stmt[] = {
 	{ "load-path", CS_STMT, NULL, scheme_cfg_add_load_path, NULL, NULL, NULL },
 	{ "load", CS_STMT, NULL, scheme_cfg_load, NULL, NULL, NULL },
 	{ "load-module", CS_STMT, NULL, scheme_cfg_load_module, NULL, NULL, NULL },
+	{ "eval", CS_STMT, NULL, scheme_cfg_eval, NULL, NULL, NULL },
 	{ "debug", CS_STMT, NULL, scheme_cfg_debug, NULL, NULL, NULL },
 	{ "outfile", CS_STMT, NULL, scheme_cfg_outfile, NULL, NULL, NULL },
 	{ "gc-interval", CS_STMT, NULL, cfg_get_integer, &scheme_gc_interval,

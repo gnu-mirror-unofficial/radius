@@ -116,7 +116,7 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
                         radlog(L_ERR|L_PERROR, _("couldn't open pipe"));
                         return -1;
                 }
-		if ((oldsig = signal(SIGCHLD, SIG_DFL)) == SIG_ERR) {
+		if ((oldsig = rad_set_signal(SIGCHLD, SIG_DFL)) == SIG_ERR) {
 			radlog(L_ERR|L_PERROR, _("can't reset SIGCHLD"));
 			return -1;
 		}
@@ -199,7 +199,7 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
 	}
 
 	waitpid(pid, &status, 0);
-	if (signal(SIGCHLD, oldsig) == SIG_ERR)
+	if (rad_set_signal(SIGCHLD, oldsig) == SIG_ERR)
 		radlog(L_CRIT|L_PERROR,
 			_("can't restore SIGCHLD"));
 

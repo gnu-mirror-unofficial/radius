@@ -11,6 +11,15 @@
 	* sql/disp.c (disp_sql_drop): Call disconnect only if
 	  (conn && conn->connected).
 
+	* radiusd/radiusd.c: Install pre-fork child handler that closes
+	  all socket descriptors. This allows to remove %radius-sockets
+	  from scheme.c
+	* radiusd/scheme.c: Removed %radius-sockets hack introduced the
+	  day before. It was elegant but a bit too risky.
+
+	* po/es.po: Updated
+	* po/no.po: Updated
+	  
 2002-07-05  Sergey Poznyakoff 
 
 	* sql/disp.c: Additional checks on arguments

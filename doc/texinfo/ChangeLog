@@ -1,6 +1,12 @@
+2003-11-07  Sergey Poznyakoff 
+
+	* acct.texi: Documented new features.
+	* configure.texi: Documented new features.
+	* extensions.texi: Documented new features.
+
 2003-11-01  Sergey Poznyakoff 
 
-	* doc/texinfo/extensions.texi: Minor change
+	* extensions.texi: Minor change
 
 2003-10-26  Sergey Poznyakoff  
 

@@ -643,7 +643,7 @@ acct @{
 The @code{acct} statement configures the parameters of the accounting
 service.
 
-@subheading listen statement
+@subheading @code{listen} statement
 
 This statement determines on which addresses radiusd will listen for incoming
 accounting requests. Its argument is a comma-separated list of items
@@ -797,7 +797,7 @@ snmp @{
 @subheading Usage
 The @code{snmp} statement configures the SNMP service.
 
-@subheading listen statement
+@subheading @code{listen} statement
 
 The @code{listen} statement determines on which addresses radiusd will
 listen for incoming SNMP requests. The argument is a comma-separated

@@ -107,6 +107,10 @@ auth {
 	# as shown in the example:
 	listen localhost, 192.168.10.1:1842;
 
+	# To disable authentication altogether use the following syntax:
+	#
+	# listen no;
+
 	forward remote, remote2:1645;
 
 	# Maximum number of AUTH requests in queue
@@ -159,6 +163,10 @@ acct {
 	# interfaces available.
 	listen localhost, 192.168.10.1:1843;
 
+	# To disable accounting altogether use the following syntax:
+	#
+	# listen no;
+
         # Do the request detail accounting (default)
 	detail yes;
 
@@ -195,6 +203,10 @@ snmp {
 
 	# Same as in auth and acct.
 	listen localhost:160;
+
+	# To disable listening on SNMP ports, use:
+	#
+	# listen no;
 
 	# Maximum number of SNMP requests in queue
 	max-requests 24;

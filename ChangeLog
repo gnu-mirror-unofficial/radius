@@ -1,8 +1,19 @@
+2004-01-28  Sergey Poznyakoff  
+
+	* NEWS: Placeholder for new version
+	* radiusd/testsuite/proxy/Makefile.am: rm before ln
+	* radiusd/testsuite/raddb/Makefile.am: Likewise.
+	* radscm/Makefile.am: Excempt radscm from std-options
+	check
+
 2004-01-28  Sergey Poznyakoff
 
 	Preparational work to move from librad to shared installable
 	libgnuradius. Cleanup in function name space.
 
+	The tree before this point is tagged
+	version_1_2_before_libgnuradius.
+	
 	Files affected:
 
 	* configure.ac

@@ -38,6 +38,8 @@
 #include <radius/argcv.h>
 
 static jmp_buf errbuf;
+static int break_level;
+static int continue_loop;
 
 static void rt_eval_stmt_list(grad_list_t *list);
 static void rt_eval_expr(radtest_node_t *node, radtest_variable_t *result);
@@ -63,10 +65,9 @@ runtime_error(grad_locus_t *locus, const char *fmt, ...)
 int
 radtest_eval(radtest_node_t *stmt)
 {
-	if (!stmt)
-		return 0;
 	if (setjmp(errbuf))
 		return 1;
+	break_level = continue_loop = 0;
 	rt_eval(stmt);
 	return 0;
 }
@@ -149,16 +150,6 @@ rt_eval_bin_uint(grad_locus_t *locus,
 }
 
 static void
-rt_eval_bin_str(radtest_variable_t *result, radtest_binop_t op,
-		char *a, char *b)
-{
-	result->type = rtv_string;
-	radtest_start_string(a);
-	radtest_add_string(b);
-	result->datum.string = radtest_end_string();
-}
-
-static void
 bin_type_error(grad_locus_t *locus)
 {
 	runtime_error(locus, _("Invalid data type in binary operation"));
@@ -170,6 +161,54 @@ unary_type_error(grad_locus_t *locus)
 	runtime_error(locus, _("Invalid data type in unary operation"));
 }
 
+static void
+rt_eval_bin_str(grad_locus_t *locus,
+		radtest_variable_t *result, radtest_binop_t op,
+		char *a, char *b)
+{
+	switch (op) {
+	case radtest_op_add:
+		radtest_start_string(a);
+		radtest_add_string(b);
+		result->type = rtv_string;
+		result->datum.string = radtest_end_string();
+		break;
+
+	case radtest_op_eq:
+		result->type = rtv_integer;
+		result->datum.number = strcmp(a, b) == 0;
+		break;
+		
+	case radtest_op_ne:
+		result->type = rtv_integer;
+		result->datum.number = strcmp(a, b) != 0;
+		break;
+		
+	case radtest_op_lt:
+		result->type = rtv_integer;
+		result->datum.number = strcmp(a, b) < 0;
+		break;
+
+	case radtest_op_le:
+		result->type = rtv_integer;
+		result->datum.number = strcmp(a, b) <= 0;
+		break;
+
+	case radtest_op_gt:
+		result->type = rtv_integer;
+		result->datum.number = strcmp(a, b) > 0;
+		break;
+
+	case radtest_op_ge:
+		result->type = rtv_integer;
+		result->datum.number = strcmp(a, b) >= 0;
+		break;
+		
+	default:
+		bin_type_error(locus);
+	}
+}
+
 static char *
 cast_to_string(grad_locus_t *locus, radtest_variable_t *var)
 {
@@ -177,7 +216,7 @@ cast_to_string(grad_locus_t *locus, radtest_variable_t *var)
 	
 	switch (var->type) {
 	case rtv_string:
-		break;
+		return var->datum.string;
 		
 	case rtv_integer:
 		snprintf(buf, sizeof buf, "%ld", var->datum.number);
@@ -376,7 +415,7 @@ rt_eval_pairlist(grad_locus_t *locus,
 		rt_eval_expr(p->node, &val);
 		switch (val.type) {
 		default:
-			abort();
+			grad_insist_fail("invalid data type in rt_eval_pairlist");
 			
 		case rtv_pairlist:
 		case rtv_avl:
@@ -513,12 +552,21 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 			
 			case rtv_string:
 			{
-				char *p;
-				long v = strtol(right.datum.string, &p, 0);
-				if (*p)
-					runtime_error(&node->locus,
+				long v;
+
+				if (isdigit(right.datum.string[0])) {
+					char *p;
+					p = strtol(right.datum.string, &p, 0);
+					if (*p)
+						runtime_error(&node->locus,
 				      _("cannot convert string to integer: %s"),
-						      right.datum.string);
+							      right.datum.string);
+				} else if ((v = grad_request_name_to_code(right.datum.string)) == 0)
+					runtime_error(&node->locus,
+				 _("cannot convert string to integer: %s"),
+							 right.datum.string);
+					   
+				    
 				rt_eval_bin_int(&node->locus,
 						result,
 						node->v.bin.op,
@@ -572,9 +620,8 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 			break;
 			
 		case rtv_string:
-			if (node->v.bin.op != radtest_op_add)
-				bin_type_error(&node->locus);
-			rt_eval_bin_str(result,
+			rt_eval_bin_str(&node->locus,
+					result,
 					node->v.bin.op,
 					left.datum.string,
 					cast_to_string(&node->locus, &right));
@@ -586,9 +633,9 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 		case rtv_avl:
 			if (right.type != rtv_avl) 
 				bin_type_error(&node->locus);
-			result->type = rtv_avl;
-			grad_avl_merge(&result->datum.avl, &left.datum.avl);
+			grad_avl_merge(&right.datum.avl, &left.datum.avl);
 			grad_avl_free(left.datum.avl);
+			radtest_var_copy(result, &right);
 			break;
 		}
 		break;
@@ -650,9 +697,7 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 	}
 	
 	default:
-		runtime_error(&node->locus, _("Unexpected node type: %d"),
-			      node->type);
-		abort();
+		grad_insist_fail("Unexpected node type");
 	}
 }
 
@@ -702,8 +747,10 @@ rt_asgn(radtest_node_t *node)
 		break;
 		
         case rtv_pairlist:
+		grad_insist_fail("rtv_pairlist in assignment");
+		
 	default:
-		abort();
+		grad_insist_fail("invalid data type in assignment");
 	}
 }
 
@@ -801,11 +848,44 @@ rt_true_p(radtest_variable_t *var)
 		grad_insist_fail("Unexpected data type");
 	}
 }
+
+static void
+rt_eval_loop(radtest_node_t *stmt)
+{
+	radtest_node_loop_t *loop = &stmt->v.loop;
+	int restart;
 	
+	if (loop->first_pass)
+		rt_eval(loop->body);
+
+	do {
+		radtest_variable_t result;
+
+		restart = 0;
+		while (break_level == 0) {
+			rt_eval_expr(loop->cond, &result);
+			if (!rt_true_p(&result))
+				break;
+			rt_eval(loop->body);
+		}
+		if (break_level) {
+			break_level--;
+			restart = continue_loop;
+			continue_loop = 0;
+		}
+	} while (restart);
+}
+
 static void
 rt_eval(radtest_node_t *stmt)
 {
 	radtest_variable_t result;
+
+	if (!stmt)
+		return;
+	
+	if (break_level) 
+		return;
 	
 	switch (stmt->type) {
 		
@@ -834,11 +914,17 @@ rt_eval(radtest_node_t *stmt)
 		break;
 		
 	case radtest_node_continue:
+		break_level = stmt->v.level;
+		continue_loop = 1;
+		break;
+
 	case radtest_node_break:
+		break_level = stmt->v.level;
+		continue_loop = 0;
+		break;
+		
 	case radtest_node_loop:
-		runtime_error(&stmt->locus,
-			      "Statement not yet implemented: %d",
-			      stmt->type);
+		rt_eval_loop(stmt);
 		break;
 		
 	case radtest_node_cond:

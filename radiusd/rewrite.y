@@ -1001,7 +1001,7 @@ stmt    : begin list end
                   loop_pop();
           }
 /* ***********************
-   For the future use:
+   For future use:
         | FOR '(' for_expr for_expr for_expr ')' stmt
    *********************** */
         | BREAK ';'

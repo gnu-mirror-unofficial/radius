@@ -1,5 +1,14 @@
 2001-09-04 Sergey Poznyakoff
 
+	* client/pam_radius/pam_radius.c: Local variable name "errno"
+	caused grief on systems where errno is a define. Renamed.
+	* radiusd/log.c: Likewise.
+	* radlib/applog.c: Likewise.
+
+	* THANKS: Added Andrey Pavlenko.
+	
+2001-09-04 Sergey Poznyakoff
+
 	* configure.in: Fixed erroneous AC_ARG_WITH specification
 	for --without-server-guile option.
 	Add GUILE_LIBS to RADIUSD_LDADD if USE_SERVER_GUILE is set.

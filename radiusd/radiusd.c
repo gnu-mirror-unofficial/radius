@@ -53,10 +53,6 @@ static char rcsid[] =
 #include <radutmp.h>
 #include <rewrite.h>
 
-#if defined (sun) && defined(__svr4__)
-RETSIGTYPE (*sun_signal(int signo, void (*func)(int)))(int);
-#define signal sun_signal
-#endif
 
 /* ********************** Request list handling **************************** */
 	
@@ -428,7 +424,7 @@ main(argc, argv)
 	else
 		signal(SIGINT, sig_fatal);
 	
-	for (t = 32; t >= 3; t--)
+	for (t = getmaxfd(); t >= 3; t--)
 		close(t);
 
 	/* 
@@ -1345,32 +1341,6 @@ rad_req_drop(type, authreq, status_str)
 }
 /* ************************************************************************* */
 
-#if defined (sun) && defined(__svr4__)
-/*
- *	The signal() function in Solaris 2.5.1 sets SA_NODEFER in
- *	sa_flags, which causes grief if signal() is called in the
- *	handler before the cause of the signal has been cleared.
- *	(Infinite recursion).
- */
-RETSIGTYPE
-(*sun_signal(signo, func))(int)
-	int signo;
-	void (*func)(int);
-{
-	struct sigaction act, oact;
-
-	act.sa_handler = func;
-	sigemptyset(&act.sa_mask);
-	act.sa_flags = 0;
-#ifdef  SA_INTERRUPT		/* SunOS */
-	act.sa_flags |= SA_INTERRUPT;
-#endif
-	if (sigaction(signo, &act, &oact) < 0)
-		return SIG_ERR;
-	return oact.sa_handler;
-}
-#endif
-
 /*ARGSUSED*/
 RETSIGTYPE
 sig_cleanup(sig)
@@ -1678,31 +1648,6 @@ int
 master_process()
 {
 	return radius_pid == 0 || getpid() == radius_pid;
-}
-
-#if defined(O_NONBLOCK)
-# define FCNTL_NONBLOCK O_NONBLOCK
-#elif defined(O_NDELAY)
-# define FCNTL_NONBLOCK O_NDELAY
-#else
-# error "Neither O_NONBLOCK nor O_NDELAY are defined"
-#endif
-
-int
-set_nonblocking(fd)
-	int fd;
-{
-	int flags;
-
-	if ((flags = fcntl(fd, F_GETFL, 0)) < 0) {
-		radlog(L_ERR, "F_GETFL: %s", strerror(errno));
-		return -1;
-	}
-	if (fcntl(fd, F_SETFL, flags | FCNTL_NONBLOCK) < 0) {
-		radlog(L_ERR, "F_GETFL: %s", strerror(errno));
-		return -1;
-	}
-	return 0;
 }
 
 int

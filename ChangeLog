@@ -1,3 +1,12 @@
+2002-06-18  Sergey Poznyakoff 
+
+	* configure.ac: Raised patchlevel
+	* radiusd/config.y (channel_name production): initialize
+	  `channel' with zeroes.
+	* radiusd/log.c: Print tid in decimal
+	* po/es.po: Updated
+	* THANKS: Added Jaime Tellez Sanchez.
+	
 2002-06-17  Sergey Poznyakoff 
 
 	* configure.ac: Do not panic if libmysqlclient_r wasn't found.

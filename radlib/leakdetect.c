@@ -42,7 +42,7 @@ struct mallocstat mallocstat;
 #endif
 
 void *
-xmalloc(size)
+radxmalloc(size)
 	size_t size;
 {
 	char *p;
@@ -68,12 +68,12 @@ xmalloc(size)
 }
 
 void *
-xrealloc(ptr, size)
+radxrealloc(ptr, size)
 	void *ptr;
 	size_t size;
 {
 	if (!ptr)
-		return xmalloc(size);
+		return radxmalloc(size);
 	else {
 #ifdef LEAK_DETECTOR
 		MHDR *mhdr;
@@ -102,7 +102,7 @@ emalloc(size)
 {
 	char *p;
 
-	p = xmalloc(size);
+	p = radxmalloc(size);
 	if (!p) {
 		radlog(L_CRIT, _("low core: aborting"));
 		abort();
@@ -115,7 +115,7 @@ erealloc(ptr, size)
 	void *ptr;
 	size_t size;
 {
-	ptr = xrealloc(ptr, size);
+	ptr = radxrealloc(ptr, size);
 	if (!ptr) {
 		radlog(L_CRIT, _("low core: aborting"));
 		abort();

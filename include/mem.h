@@ -55,9 +55,9 @@ void free_entry(void *ptr);
 void *calloc_entry(count_t count, size_t size);
 void cfree_entry(void *ptr, count_t count);
 
-void *xmalloc(size_t);
+void *radxmalloc(size_t);
 void *emalloc(size_t);
-void *xrealloc(void *, size_t);
+void *radxrealloc(void *, size_t);
 void *erealloc(void *, size_t);
 void efree(void *);
 char *estrdup(char *);

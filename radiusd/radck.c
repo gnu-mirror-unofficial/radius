@@ -157,7 +157,7 @@ radck()
 
 	/* Allocate matrix */
 	size = (user_count + BITS_PER_WORD - 1) / BITS_PER_WORD;
-	r = xmalloc(user_count*size*sizeof(unsigned));
+	r = radxmalloc(user_count*size*sizeof(unsigned));
 	if (!r) {
 		radlog(L_ERR,
 		       _("not enough memory for transitivity check"));

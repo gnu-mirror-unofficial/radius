@@ -131,7 +131,7 @@ lex_set_buffer(fp)
 	size_t size;
 	
 	for (size = LEX_BUF_SIZE; size > 1; size /= 2)
-		if (buf = xmalloc(size))
+		if (buf = radxmalloc(size))
 			break;
 	if (!buf) {
 		radlog(L_CRIT, _("not enough memory"));

@@ -1,3 +1,14 @@
+2001-09-05 Sergey Poznyakoff
+
+	* include/mem.h: Prefix xmalloc,xrealloc with "rad": they are
+	apt to conflict with identifiers when from other libs or
+	programs (when used in pam_radius.so).
+	* radiusd/radck.c: Likewise.
+	* radlib/leakdetect.c: Likewise.
+	* radlib/users.l: Likewise.
+	* radlib/symtab.c: Likewise.
+	Do not access hash_size with index < 0.
+
 2001-09-04 Sergey Poznyakoff
 
 	* client/pam_radius/pam_radius.c: Local variable name "errno"

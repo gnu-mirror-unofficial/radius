@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <sysdep.h>
 #include <radius.h>
-#include <radpaths.h>
 #include <radutmp.h>
 #include <radlast.h>
 

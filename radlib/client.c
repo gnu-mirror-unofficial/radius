@@ -279,7 +279,8 @@ radclient_build_request(config, server, code, pair)
 				*ptr++ = attrlen + 2;
 				memset(passbuf, 0, attrlen);
 				memcpy(passbuf, pair->strvalue,
-				       pair->strlength);
+				       pair->strlength < AUTH_PASS_LEN ?
+                                              pair->strlength : AUTH_PASS_LEN);
 
 				/* Calculate the MD5 Digest */
 				secretlen = strlen(server->secret);

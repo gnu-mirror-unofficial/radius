@@ -99,6 +99,7 @@ typedef struct format_data format_data_t;
 int grad_radutent_print(format_data_t *form, struct radutmp *up, int nl);
 format_data_t *grad_radutent_compile_form(char *fmt);
 void grad_utent_print_header(format_data_t *form);
+format_data_t *grad_utent_compile_form(char *fmt);
 
 extern int printutmp_ip_nodomain; /* do not display domain names */
 extern int printutmp_use_naslist; /* use naslist when displaying nas names */

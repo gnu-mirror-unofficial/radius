@@ -1,6 +1,18 @@
+2004-04-10  Sergey Poznyakoff 
+
+	* examples/config.syntax: Example of 'acct/system no'
+	and several other fixes.
+	* radiusd/radck.c (fix_check_pairs): Catch SQL configuration
+	inconsistencies.
+	* radiusd/auth.c (rad_check_password): Inconsistencies
+	in SQL configuration are now catched earlier.
+	* radiusd/radiusd.c (common_init): Moved
+	the call to system_acct_init() to a postconfig hook,
+	which is executed only in daemon mode.
+
 2004-04-09  Sergey Poznyakoff
 
-	Implemented disabling of the system accounting and
+	Implemented disabling of system accounting and
 	additional consistency checking of raddb/users.
 	
 	* include/radiusd.h (acct_system): New extern

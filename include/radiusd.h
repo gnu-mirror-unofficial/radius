@@ -381,6 +381,7 @@ int scheme_auth(char *procname, RADIUS_REQ *req,
 int scheme_acct(char *procname, RADIUS_REQ *req);
 void scheme_add_load_path(char *path);
 void scheme_read_eval_loop();
+void scheme_redirect_output();
 void start_guile();
 int guile_cfg_handler(int argc, cfg_value_t *argv,
 		      void *block_data, void *handler_data);
@@ -420,9 +421,17 @@ int shmem_alloc(size_t size);
 void shmem_free();
 void *shmem_get(size_t size, int zero);
 
+/* pam.c */
+int pam_pass(char *name, char *passwd, const char *pamauth, char **reply_msg);
+#define PAM_DEFAULT_TYPE    "radius"
 
-
-
+/* proxy.c */
+int rad_proxy(REQUEST *req);
+void rad_proxy_free(RADIUS_REQ *req);
+int proxy_send(REQUEST *req);
+int proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int activefd);
+void proxy_retry(int type, void *radreq, void *orig_req,
+		 int fd, char *status_str);
 
 /*FIXME*/
 /* acct.c */
@@ -459,21 +468,6 @@ void strip_username(int do_strip, char *name,
 
 /* version.c */
 void version();
-
-
-/* pam.c */
-#ifdef USE_PAM
-int pam_pass(char *name, char *passwd, const char *pamauth, char **reply_msg);
-# define PAM_DEFAULT_TYPE    "radius"
-#endif
-
-/* proxy.c */
-int rad_proxy(REQUEST *req);
-void rad_proxy_free(RADIUS_REQ *req);
-int proxy_send(REQUEST *req);
-int proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int activefd);
-void proxy_retry(int type, void *radreq, void *orig_req,
-		 int fd, char *status_str);
 
 /* auth.c */
 int rad_auth_init(RADIUS_REQ *radreq, int activefd);

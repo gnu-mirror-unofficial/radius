@@ -201,6 +201,17 @@ scheme_read_eval_loop()
 }
 
 
+void
+scheme_redirect_output()
+{
+       SCM port;
+       char *mode = "a";
+
+       port = scm_fdes_to_port(2, mode, scm_makfrom0str("outport"));
+       scm_set_current_output_port(port);
+       scm_set_current_error_port(port);
+}
+
 
 /* *************************** Configuration ******************************* */
 

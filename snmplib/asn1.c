@@ -266,7 +266,7 @@ asn_decode_string(u_char *data, int *datalength, u_char *type,
 		  u_char *string, int *strlength)
 {
         u_char *buf = data;
-        int count;
+        u_int count;
         
         *type = *buf++;
         if ((buf = asn_decode_length(buf, &count)) == NULL ||

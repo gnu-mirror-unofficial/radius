@@ -1,7 +1,18 @@
+2003-05-30  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* radiusd/testsuite/radiusd/proxy.exp: Fixed copyleft statement.
+	* radiusd/testsuite/radiusd/radiusd.exp: Likewise.
+	* radscm/ttl.scm: Likewise.
+	* raduse/Makefile.am: Likewise.
+	* scripts/Makefile.am: Likewise.
+	* scripts/mksnmp-h.awk: Likewise.
+	* scripts/pofilter.c: Likewise.
+	* snmplib/Makefile.am: Likewise.
+
 2003-05-30  Sergey Poznyakoff 
 
 	* radiusd/radius.c (radius_respond): Call hints_setup
-*	before any processing. Side effect: for proxy replies
+	before any processing. Side effect: for proxy replies
 	hints are processed twice.
 	
 	* examples/comos.rw: Minor change
@@ -373,7 +384,7 @@
 	* radiusd/radiusd.c (spawn_flag): Removed `static' qualifier.
 	  (common_init): Register "rpp" method first (Note: very
 	  important for proxying).
-*	  (proxy_stmt): Removed.
+	  (proxy_stmt): Removed.
 	* radiusd/request.c: Handle proxy requests.
 	* radiusd/rpp.c (rpp_start_process): Raise ready flag
 	  (rpp_ready): Changed declaration

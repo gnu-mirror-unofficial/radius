@@ -1010,7 +1010,7 @@ guile_def       : T_LOAD_PATH value EOL
 					 _("%s:%d: wrong datatype (should be string)"),
 					 filename, line_num);
 			  } else
-				  rscm_add_load_path($2.v.string);
+				  scheme_add_load_path($2.v.string);
 #endif
 		  }
                 | T_LOAD value EOL

@@ -298,6 +298,7 @@ radiusd_preconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 	
 	/* Terminate all subprocesses */
 	rpp_kill(-1, SIGTERM);
+	sleep(2);
 	radiusd_cleanup();
 	input_close_channels(radius_input);
 }
@@ -699,6 +700,13 @@ radiusd_exit()
 	radiusd_flush_queue();
 	radlog(L_CRIT, _("Normal shutdown."));
 
+	rpp_kill(-1, SIGTERM);
+	radiusd_exit0();
+}
+
+void
+radiusd_exit0()
+{
 #ifdef USE_SQL
         radiusd_sql_shutdown();
 #endif

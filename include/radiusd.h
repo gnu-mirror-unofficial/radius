@@ -357,6 +357,7 @@ void radiusd_cleanup();
 void radiusd_restart();
 void radiusd_flush_queue();
 void radiusd_exit();
+void radiusd_exit0();
 void radiusd_reconfigure();
 int radiusd_master();
 void radiusd_set_preconfig_hook(void (*f)(void *, void *), void *p, int once);

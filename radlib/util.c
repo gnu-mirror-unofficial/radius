@@ -245,7 +245,7 @@ str_to_op(str)
 		op = OPERATOR_EQUAL;
 		break;
 	case '!':
-		if (*str++ == "=")
+		if (*str++ == '=')
 			op = OPERATOR_NOT_EQUAL;
 		break;
 	case '<':

@@ -204,9 +204,9 @@
 #define MIB_StatPortIndex2 1,3,6,1,4,1,9163,3,1,8,1,1,-1,-1
 #define LEN_StatPortIndex2 14
 #define MIB_KEY_StatPortIndex2 -1
-#define MIB_StatNASIndex 1,3,6,1,4,1,9163,3,1,8,1,2,-1
-#define LEN_StatNASIndex 13
-#define MIB_KEY_StatNASIndex 2
+#define MIB_StatPortNASIndex 1,3,6,1,4,1,9163,3,1,8,1,2,-1
+#define LEN_StatPortNASIndex 13
+#define MIB_KEY_StatPortNASIndex 2
 #define MIB_StatPortID 1,3,6,1,4,1,9163,3,1,8,1,3,-1
 #define LEN_StatPortID 13
 #define MIB_KEY_StatPortID 3
@@ -321,7 +321,7 @@ subid_t oid_NASLinesInUse[] = { LEN_NASLinesInUse, MIB_NASLinesInUse };
 subid_t oid_NASLinesIdle[] = { LEN_NASLinesIdle, MIB_NASLinesIdle };
 subid_t oid_StatPortIndex1[] = { LEN_StatPortIndex1, MIB_StatPortIndex1 };
 subid_t oid_StatPortIndex2[] = { LEN_StatPortIndex2, MIB_StatPortIndex2 };
-subid_t oid_StatNASIndex[] = { LEN_StatNASIndex, MIB_StatNASIndex };
+subid_t oid_StatPortNASIndex[] = { LEN_StatPortNASIndex, MIB_StatPortNASIndex };
 subid_t oid_StatPortID[] = { LEN_StatPortID, MIB_StatPortID };
 subid_t oid_StatPortFramedAddress[] = { LEN_StatPortFramedAddress, MIB_StatPortFramedAddress };
 subid_t oid_StatPortTotalLogins[] = { LEN_StatPortTotalLogins, MIB_StatPortTotalLogins };

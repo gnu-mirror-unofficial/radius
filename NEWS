@@ -1,5 +1,51 @@
 I. Changes to radiusd
 ----------------------
+I.1. SNMP
+
+Statistics MIBs have been moved to .iso.org.dod.internet.enterprises
+subtree. MIB conceptual tables are supplied with bidirectional indexes.
+E.g.: suppose user `jones' has logged in to NAS 10.100.0.1 on port 10.
+
+  To get the login name and login date of the last login to port
+10 on NAS 10.100.0.1 one would do:
+
+	GetPDU <>.NASIndex.10.100.0.1 = 2
+	GetPDU <>.StatPortIndex.2.10 = 18
+	GetPDU <>.StatPortLastLoginName.18 = jones
+	GetPDU <>.StatPortLastLoginTimestamp.18 = 986898520
+
+
+  To get the NAS IP and NAS Port number for the entry 18 one would do
+
+	GetPDU <>.StatPortNASIndex.18 = 2
+	GetPDU <>.StatNASAddress.2 = 10.100.0.1
+	GetPDU <>.StatPortID.18 = 10
+
+In the examples above <> means
+.iso.org.dod.internet.private.enterprises.gnu-radius.radiusStatistics
+(.1.3.6.1.4.1.9163.3)
+
+
+II. Changes to configuration files
+-----------------------------------
+
+A new attribute Log-Mode-Mask has been added. The attribute modifies
+logging	mode for a given username/hint-group. Works like UNIX umask,
+i.e. effective-log-mode = log_mode & ~Log-Mode-Mask.
+
+III. Elisp radius mode
+-----------------------
+
+This is a major mode for editing configuration files `users', `hints' and
+`huntgroups'. The installation instructions are in file elisp/README.
+
+
+
+=============================================================================
+NEWS for version 0.93
+
+I. Changes to radiusd
+----------------------
 
 Added realm quota support. This feature allows to limit number of
 users coming from a certain realm.

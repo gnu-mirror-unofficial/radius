@@ -17,8 +17,8 @@ TESTS=@top_srcdir@/test/test.sh
 TESTS_ENVIRONMENT=BUILDDIR=$(top_builddir) SOURCEDIR=$(top_srcdir)
 endif
 
-SUBDIRS=include radlib snmplib radiusd  radwho radzap radlast raduse\
-        radscripts $(SCMDIR) $(TESTDIR) doc po
+SUBDIRS=include radlib snmplib radiusd radwho radzap radlast raduse\
+        radscripts elisp $(SCMDIR) $(TESTDIR) doc po
 
 if MAINTAINER_MODE
 CFLAGS=-ggdb

@@ -1,3 +1,10 @@
+2001-04-10  gray  <gray@farlep.net>
+	Modified radlast.c to exit gracefully on keyboard interrupt.
+
+2001-04-07  gray  <gray@farlep.net>
+	Added elisp directory. Written radius-mode.el -- a major
+	mode for editing files raddb/users,hints,huntgroups.
+
 2001-03-31  gray  <gray@farlep.net>
 	Fixed bug in radiusd/proxy.c that caused A/V pairs to be freed
 	twice. Improved debug()s. 

@@ -16,8 +16,6 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
-%e 8000
-%p 15000
 %x in_string
 %{
 	#ifndef lint
@@ -65,7 +63,7 @@
 %}
 
 WS [ \t][ \t]*
-IDENT [a-zA-Z_\-0-9.]+
+IDENT [a-zA-Z_\-0-9.!]+
 O [0-7]
 X [0-9a-fA-F]
 D [0-9]{1,3}

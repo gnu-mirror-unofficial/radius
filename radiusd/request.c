@@ -189,32 +189,55 @@ request_put(type, data, activefd, numpending)
         request_list_block();
 
         while (curreq != NULL) {
-                if (curreq->status == RS_WAITING) {
-                        curreq = curreq->next;
-                        continue;
-                }
 
                 if (curreq->status == RS_PENDING)
                         ++*numpending;
 
-                if (curreq->status == RS_COMPLETED
-                    && curreq->timestamp + 
-                    request_class[curreq->type].cleanup_delay <= curtime) {
-                        /*
-                         *      Request completed, delete it
-                         */
-                        debug(1, ("deleting completed %s request",
-                                 request_class[curreq->type].name));
-                        if (prevreq == NULL) {
-                                first_request = curreq->next;
-                                request_free(curreq);
-                                curreq = first_request;
-                        } else {
-                                prevreq->next = curreq->next;
-                                request_free(curreq);
-                                curreq = prevreq->next;
-                        }
-                        continue;
+		if (curreq->status == RS_COMPLETED
+		    && curreq->timestamp +
+		    request_class[curreq->type].cleanup_delay <= curtime) {
+			debug(1, ("deleting completed %s request",
+				  request_class[curreq->type].name));
+			if (prevreq == NULL) {
+				first_request = curreq->next;
+				request_free(curreq);
+				curreq = first_request;
+			} else {
+				prevreq->next = curreq->next;
+				request_free(curreq);
+				curreq = prevreq->next;
+			}
+			continue;
+		} else if (curreq->timestamp + 
+			   request_class[curreq->type].ttl <= curtime) {
+			switch (curreq->status) {
+			case RS_WAITING:
+                                request_drop(curreq->type, curreq->data,
+                                             _("request timed out in queue"));
+				
+				if (prevreq == NULL) {
+					first_request = curreq->next;
+					request_free(curreq);
+					curreq = first_request;
+				} else {
+					prevreq->next = curreq->next;
+					request_free(curreq);
+					curreq = prevreq->next;
+				}
+				break;
+				
+			case RS_PENDING:
+				/*FIXME: This causes much grief */
+                                radlog(L_NOTICE,
+                                     _("Killing unresponsive %s child pid %d"),
+                                       request_class[curreq->type].name,
+                                       curreq->child_id);
+                                pthread_cancel(curreq->child_id);
+                                num_threads--;
+                                curreq = curreq->next;
+				break;
+			}
+			continue;
                 }
  
                 if (curreq->type == type
@@ -233,19 +256,6 @@ request_put(type, data, activefd, numpending)
 
                         return NULL;
                 } else {
-                        if (curreq->timestamp +
-                            request_class[curreq->type].ttl <= curtime
-                            && curreq->status == RS_PENDING) {
-                                /* This request seems to have hung */
-                                radlog(L_NOTICE,
-                                     _("Killing unresponsive %s child pid %d"),
-                                       request_class[curreq->type].name,
-                                       curreq->child_id);
-                                pthread_cancel(curreq->child_id);
-                                num_threads--;
-                                curreq = curreq->next;
-                                continue;
-                        }
                         if (curreq->type == type) {
                                 request_type_count++;
                                 if (type != R_PROXY
@@ -387,31 +397,28 @@ int
 request_stat_list(stat)
         QUEUE_STAT stat;
 {
-        int     pending_count[R_MAX] = {0};
-        int     completed_count[R_MAX] = {0};
         REQUEST *curreq;
-        int     i;
-        
-        curreq = first_request;
+        int i;
+
+	memset(stat, 0, sizeof(QUEUE_STAT));
+	
         /* Block asynchronous access to the list
          */
         request_list_block();
-
-        while (curreq != NULL) {
-                if (curreq->status == RS_COMPLETED) 
-                        completed_count[curreq->type]++;
-                else
-                        pending_count[curreq->type]++;
-
-                curreq = curreq->next;
+        for (curreq = first_request; curreq != NULL; curreq = curreq->next) {
+		switch (curreq->status) {
+		case RS_COMPLETED:
+                        stat[curreq->type].completed++;
+			break;
+                case RS_PENDING:
+                        stat[curreq->type].pending++;
+			break;
+		case RS_WAITING:
+                        stat[curreq->type].waiting++;
+			break;
+		}
         }
         request_list_unblock();
-
-        /* Report the results */
-        for (i = 0; request_class[i].name; i++) {
-                stat[i][0] = pending_count[i];
-                stat[i][1] = completed_count[i];
-        }
 
         return 0;
 }

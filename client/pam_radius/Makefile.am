@@ -10,6 +10,10 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+if MAINTAINER_MODE
+AM_CFLAGS=-ggdb -DMAINTAINER_MODE=1
+endif
+
 pamdir=@PAMDIR@
 pam_PROGRAMS = pam_radius.la
 pam_radius_la_SOURCES = pam_radius.c
@@ -22,7 +26,7 @@ EXTRA_DIST=client.conf
 
 pam_radius.lo: $(srcdir)/pam_radius.c
 	$(LIBTOOL) --mode=compile $(CC) -c -DHAVE_CONFIG_H \
-                $(CFLAGS) $(INCLUDES) $(srcdir)/pam_radius.c
+                $(CFLAGS) $(AM_CFLAGS) $(INCLUDES) $(srcdir)/pam_radius.c
 
 pam_radius.la: pam_radius.lo
 	$(LIBTOOL) --mode=link $(CC) -module -export-dynamic \

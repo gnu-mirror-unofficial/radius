@@ -52,7 +52,7 @@ install-data-local:
 	fi
 	@if [ -r $(raddbdir)/users ]; then \
 		echo "Warning: The configuration directory $(raddbdir) already exists"; \
-		cp $(raddbdir)/dictionary $(raddbdir)/dictionary.bak; \
+		cp $(raddbdir)/dictionary $(raddbdir)/dictionary~; \
 		${INSTALL} -m 644 $(top_srcdir)/raddb/dictionary $(raddbdir)/dictionary; \
 	else \
 		for file in $(raddb_files_644); do \

@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+# Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -87,11 +87,17 @@ if test $USE_GUILE = yes; then
                         [USE_GUILE=no])
 fi
 
-case "$GUILE_VERSION" in
-	14) GUILE_SNARF_VERSION="1.4";;
-	16|17) GUILE_SNARF_VERSION="1.6";;
-	*) GUILE_SNARF_VERSION="1.6";;
-esac
+# We used to have 'case' here that determined the Guile snarfer version
+# to use. Now that we don't support 1.4 any more, it is gone as well.
+# Hopefully, next versions of Guile will install the snarfer, so I
+# be able to get rid from scripts/guile once and for all. For the
+# time being, let's assume the shipped 1.6-compatible snarfer will
+# work for all future versions of Guile. If it does not, please report
+# to <bug-gnu-radius@gnu.org>. Make sure to include a copy of your config.log,
+# and any relevant error messages, produced when compiling/running.
+
+GUILE_SNARF_VERSION="1.6"
+
 AC_SUBST(GUILE_INCLUDES)
 AC_SUBST(GUILE_LIBS)
 AC_SUBST(GUILE_SNARF_VERSION)
@@ -831,7 +837,6 @@ AC_OUTPUT(Makefile
           examples/Makefile 
           scripts/Makefile
           scripts/guile/Makefile 
-          scripts/guile/1.4/Makefile 
           scripts/guile/1.6/Makefile 
           contrib/Makefile)
 

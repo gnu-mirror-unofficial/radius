@@ -1,5 +1,44 @@
 2001-08-19 Sergey Poznyakoff
 
+	Modified SQL interface: radiusd can now be configured to use
+	both mysql and postgres. Switching between the two is controlled
+	by "interface" statement in raddb/sqlserver file.
+
+	* sql: (new dir): SQL interface library.
+	* sql/Makefile.am: (new)
+	* sql/.cvsignore: (new)
+	* sql/disp.c: (new) SQL interface dispatcher.
+	* sql/mysql.c: (new, from radlib/): MySQL interface functions.
+	* sql/postgres.c: (new, from radlib/): Postgres interface functions.
+
+	* radiusd/sql.c: Added "interface" keyword (raddb/sqlserver). Changed
+	rad_sql_ calls to appropriate disp_sql_ ones.
+	* radiusd/version.c: Changed SQL-related members of compile_flag_str[].
+	* include/radsql.h: Prototypes for dispatching functions and data
+	structures.
+	* radiusd/Makefile.am: Changed SQL-related stuff.
+
+	* radlib/mysql.c: Removed.
+	* radlib/postgres.c: Removed.
+	* radlib/Makefile.am: Removed mysql.c and postgres.c
+
+	* Makefile.am: Added sql to SUBDIRS.
+	* acconfig.h: Changed SQL-related defines.
+	* acinclude.m4: rad_RESULT_ACTIONS (ported from GNU inetutils).
+	* configure.in: Changed SQL-related defuns. New options: --with-mysql
+	and --with-postgres (can be used together). --enable-sql is retained
+	for backward compatibility.
+	* m4/lib.m4: (new) rad_CHECK_LIB: check several paths for the presense
+	of a library.
+	* m4/Makefile.am: Added lib.m4
+
+	* raddb/sqlserver: Added sample interface statement.
+
+	* include/radctl.h: Removed.
+	* include/Makefile.am: Removed radctl.h.
+	
+2001-08-19 Sergey Poznyakoff
+
 	* radiusd/radiusd.c: Unlink pidfile on shutdown.
 	* radlib/radpaths.c: Global variable radpid_dir.
 	* include/radius.h: Declaration for radpid_dir.

@@ -195,7 +195,7 @@ rad_send_request(fd, ipaddr, port, id, secret, req)
         /*
          *      Put all the attributes into a buffer.
          */
-        ptr = auth->data;
+        ptr = (u_char*)(auth + 1);
         for (vp = req->request; vp; vp = vp->next) {
 
                 if (debug_on(10)) {

@@ -241,7 +241,7 @@ radclient_build_request(config, server, code, pair)
         auth->id = config->messg_id++ % 256;
         memset(auth->vector, 0, AUTH_VECTOR_LEN);
         total_length = AUTH_HDR_LEN;
-        ptr = auth->data;
+        ptr = (char*)(auth + 1);
 
         if (radclient_debug) {
                 char *name = auth_code_str(auth->code);
@@ -431,7 +431,7 @@ decode_buffer(host, udp_port, buffer, length)
         /*
          *      Extract attribute-value pairs
          */
-        ptr = (u_char *)auth->data;
+        ptr = (u_char *)(auth + 1);
         length -= AUTH_HDR_LEN;
         first_pair = (VALUE_PAIR *)NULL;
         prev = (VALUE_PAIR *)NULL;

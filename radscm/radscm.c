@@ -52,7 +52,7 @@ static SCM scm_makenum(unsigned long val);
 static int scheme_to_pair(SCM scm, VALUE_PAIR *pair);
 static VALUE_PAIR *scheme_to_list(SCM list);
 static SCM list_to_scheme(VALUE_PAIR *pair);
-static SERVER *scheme_to_server(SCM g_list, char *func);
+static SERVER *scheme_to_server(SCM g_list, const char *func);
 
 static void
 die(msg)
@@ -212,7 +212,7 @@ SCM_DEFINE(rad_get_server, "rad-get-server", 0, 0, 0,
 SERVER *
 scheme_to_server(g_list, func)
 	SCM g_list;
-	char *func;
+	const char *func;
 {
 	SERVER serv;
 	SCM scm;
@@ -250,11 +250,6 @@ scheme_to_server(g_list, func)
 		   scm, SCM_ARG1, func);
 	serv.port[PORT_ACCT] = SCM_INUM(scm);
 
-	scm = SCM_CAR(SCM_CDR(SCM_CDDDDR(g_list)));
-	SCM_ASSERT(SCM_IMP(scm) && SCM_INUMP(scm),
-		   scm, SCM_ARG1, func);
-	serv.port[PORT_CNTL] = SCM_INUM(scm);
-
 	return radclient_alloc_server(&serv);
 }
 
@@ -275,14 +270,13 @@ SCM_DEFINE(rad_client_set_server, "rad-client-set-server", 1, 0, 0,
 (rad-client-set-server LIST)
 "Selects for use the server described by LIST. A LIST should be:\n"
 "\n"
-"	(list ID-STRING HOST-STRING SECRET-STRING AUTH-NUM ACCT-NUM CNTL-NUM)\n"
+"	(list ID-STRING HOST-STRING SECRET-STRING AUTH-NUM ACCT-NUM)\n"
 "Where:\n"
 "	ID-STRING	Server ID\n"
 "	HOST-STRING	Server hostname or IP address\n"
 "	SECRET-STRING	Shared secret key to use\n"
 "	AUTH-NUM	Authentication port number\n"
-"	ACCT-NUM	Accounting port number\n"
-"	CNTL-NUM	Control channel port number\n")
+"	ACCT-NUM	Accounting port number\n")
 #define FUNC_NAME s_rad_client_set_server
 {
 	SERVER *s = scheme_to_server(g_list, FUNC_NAME);

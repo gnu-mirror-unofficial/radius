@@ -16,8 +16,6 @@ EXTRA_DIST=\
  config-conv\
  config-conv.awk\
  dot.emacs\
- debug.sh\
- debugmod.m4\
  dict.awk\
  mksnmp-h.awk\
  texi2html.diff\

@@ -110,6 +110,7 @@ print-priority, T_LOGOPT, _Y(LO_PRI)
 print-auth, T_LOGLEVEL, _Y(RLOG_AUTH)
 print-pass, T_LOGLEVEL, _Y(RLOG_AUTH_PASS)
 print-failed-pass, T_LOGLEVEL, _Y(RLOG_FAILED_PASS)
+username-chars, T_USERNAME_CHARS
 %%
 
 int

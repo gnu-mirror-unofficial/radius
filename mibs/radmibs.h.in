@@ -16,33 +16,84 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/* Authentication */
 /* Fixed oids */
-= AuthServIdent        				1,3,6,1,2,1,67,1,1,1,1,1
-= AuthServUpTime	           		1,3,6,1,2,1,67,1,1,1,1,2
-= AuthServResetTime			 	1,3,6,1,2,1,67,1,1,1,1,3
-= AuthServConfigReset			        1,3,6,1,2,1,67,1,1,1,1,4
-= AuthServTotalAccessRequests       		1,3,6,1,2,1,67,1,1,1,1,5
-= AuthServTotalInvalidRequests		        1,3,6,1,2,1,67,1,1,1,1,6
-= AuthServTotalDupAccessRequests    		1,3,6,1,2,1,67,1,1,1,1,7
-= AuthServTotalAccessAccepts		        1,3,6,1,2,1,67,1,1,1,1,8
-= AuthServTotalAccessRejects	        	1,3,6,1,2,1,67,1,1,1,1,9
-= AuthServTotalAccessChallenges	        	1,3,6,1,2,1,67,1,1,1,1,10
-= AuthServTotalMalformedAccessRequests    	1,3,6,1,2,1,67,1,1,1,1,11
-= AuthServTotalBadAuthenticators  		1,3,6,1,2,1,67,1,1,1,1,12
-= AuthServTotalPacketsDropped	        	1,3,6,1,2,1,67,1,1,1,1,13
-= AuthServTotalUnknownTypes			1,3,6,1,2,1,67,1,1,1,1,14
-
-/* Variable oids */
-~ AuthClientIndex				1,3,6,1,2,1,67,1,1,1,1,15,1,1
-~ AuthClientAddress				1,3,6,1,2,1,67,1,1,1,1,15,1,2
-~ AuthClientID				        1,3,6,1,2,1,67,1,1,1,1,15,1,3
-~ AuthServAccessRequests			1,3,6,1,2,1,67,1,1,1,1,15,1,4
-~ AuthServDupAccessRequests			1,3,6,1,2,1,67,1,1,1,1,15,1,5
-~ AuthServAccessAccepts			        1,3,6,1,2,1,67,1,1,1,1,15,1,6
-~ AuthServAccessRejects			        1,3,6,1,2,1,67,1,1,1,1,15,1,7
-~ AuthServAccessChallenges			1,3,6,1,2,1,67,1,1,1,1,15,1,8
-~ AuthServMalformedAccessRequests		1,3,6,1,2,1,67,1,1,1,1,15,1,9
-~ AuthServBadAuthenticators			1,3,6,1,2,1,67,1,1,1,1,15,1,10
-~ AuthServPacketsDropped			1,3,6,1,2,1,67,1,1,1,1,15,1,11
-~ AuthServUnknownTypes	 		        1,3,6,1,2,1,67,1,1,1,1,15,1,12
+= AuthServIdent        			1,3,6,1,2,1,67,1,1,1,1,1
+= AuthServUpTime	           	1,3,6,1,2,1,67,1,1,1,1,2
+= AuthServResetTime			1,3,6,1,2,1,67,1,1,1,1,3
+= AuthServConfigReset			1,3,6,1,2,1,67,1,1,1,1,4
+= AuthServTotalAccessRequests       	1,3,6,1,2,1,67,1,1,1,1,5
+= AuthServTotalInvalidRequests		1,3,6,1,2,1,67,1,1,1,1,6
+= AuthServTotalDupAccessRequests    	1,3,6,1,2,1,67,1,1,1,1,7
+= AuthServTotalAccessAccepts		1,3,6,1,2,1,67,1,1,1,1,8
+= AuthServTotalAccessRejects	        1,3,6,1,2,1,67,1,1,1,1,9
+= AuthServTotalAccessChallenges	        1,3,6,1,2,1,67,1,1,1,1,10
+= AuthServTotalMalformedAccessRequests  1,3,6,1,2,1,67,1,1,1,1,11
+= AuthServTotalBadAuthenticators  	1,3,6,1,2,1,67,1,1,1,1,12
+= AuthServTotalPacketsDropped	        1,3,6,1,2,1,67,1,1,1,1,13
+= AuthServTotalUnknownTypes		1,3,6,1,2,1,67,1,1,1,1,14
+					
+/* Variable oids */			
+~ AuthClientIndex			1,3,6,1,2,1,67,1,1,1,1,15,1,1
+~ AuthClientAddress			1,3,6,1,2,1,67,1,1,1,1,15,1,2
+~ AuthClientID				1,3,6,1,2,1,67,1,1,1,1,15,1,3
+~ AuthServAccessRequests		1,3,6,1,2,1,67,1,1,1,1,15,1,4
+~ AuthServDupAccessRequests		1,3,6,1,2,1,67,1,1,1,1,15,1,5
+~ AuthServAccessAccepts			1,3,6,1,2,1,67,1,1,1,1,15,1,6
+~ AuthServAccessRejects			1,3,6,1,2,1,67,1,1,1,1,15,1,7
+~ AuthServAccessChallenges		1,3,6,1,2,1,67,1,1,1,1,15,1,8
+~ AuthServMalformedAccessRequests	1,3,6,1,2,1,67,1,1,1,1,15,1,9
+~ AuthServBadAuthenticators		1,3,6,1,2,1,67,1,1,1,1,15,1,10
+~ AuthServPacketsDropped		1,3,6,1,2,1,67,1,1,1,1,15,1,11
+~ AuthServUnknownTypes	 		1,3,6,1,2,1,67,1,1,1,1,15,1,12
+					
+/* Accounting */			
+/* Fixed oids */			
+= AccServIdent				1,3,6,1,2,1,67,2,1,1,1,1
+= AccServUpTime			        1,3,6,1,2,1,67,2,1,1,1,2
+= AccServResetTime			1,3,6,1,2,1,67,2,1,1,1,3
+= AccServConfigReset		        1,3,6,1,2,1,67,2,1,1,1,4
+= AccServTotalRequests		        1,3,6,1,2,1,67,2,1,1,1,5
+= AccServTotalInvalidRequests	        1,3,6,1,2,1,67,2,1,1,1,6
+= AccServTotalDupRequests		1,3,6,1,2,1,67,2,1,1,1,7
+= AccServTotalResponses		        1,3,6,1,2,1,67,2,1,1,1,8
+= AccServTotalMalformedRequests	        1,3,6,1,2,1,67,2,1,1,1,9
+= AccServTotalBadAuthenticators	        1,3,6,1,2,1,67,2,1,1,1,10
+= AccServTotalPacketsDropped	        1,3,6,1,2,1,67,2,1,1,1,11
+= AccServTotalNoRecords	        	1,3,6,1,2,1,67,2,1,1,1,12
+= AccServTotalUnknownTypes		1,3,6,1,2,1,67,2,1,1,1,13
+					
+/* Variable oids */			
+~ AccClientIndex			1,3,6,1,2,1,67,2,1,1,1,14,1,1
+~ AccClientAddress			1,3,6,1,2,1,67,2,1,1,1,14,1,2
+~ AccClientID				1,3,6,1,2,1,67,2,1,1,1,14,1,3
+~ AccServPacketsDropped			1,3,6,1,2,1,67,2,1,1,1,14,1,4
+~ AccServRequests			1,3,6,1,2,1,67,2,1,1,1,14,1,5
+~ AccServDupRequests			1,3,6,1,2,1,67,2,1,1,1,14,1,6
+~ AccServResponses			1,3,6,1,2,1,67,2,1,1,1,14,1,7
+~ AccServBadAuthenticators		1,3,6,1,2,1,67,2,1,1,1,14,1,8
+~ AccServMalformedRequests		1,3,6,1,2,1,67,2,1,1,1,14,1,9
+~ AccServNoRecords			1,3,6,1,2,1,67,2,1,1,1,14,1,10
+~ AccServUnknownTypes			1,3,6,1,2,1,67,2,1,1,1,14,1,11
+					
+/* Statistics */			
+					
+/* Fixed oids */			
+= StatIdent				1,3,6,1,2,1,67,3,1,1
+= StatUpTime				1,3,6,1,2,1,67,3,1,2
+= StatConfigReset			1,3,6,1,2,1,67,3,1,3
+= StatTotalLines			1,3,6,1,2,1,67,3,1,4
+= StatTotalLinesInUse		        1,3,6,1,2,1,67,3,1,5
+= StatTotalLinesIdle          		1,3,6,1,2,1,67,3,1,6
+					
+/* Variable oids */			
+~ NASIndex1				1,3,6,1,2,1,67,3,1,7,1,1
+~ NASIndex2				1,3,6,1,2,1,67,3,1,7,1,1,-1
+~ NASIndex3				1,3,6,1,2,1,67,3,1,7,1,1,-1,-1
+~ NASIndex4				1,3,6,1,2,1,67,3,1,7,1,1,-1,-1,-1
+~ NASAddress				1,3,6,1,2,1,67,3,1,7,1,2
+~ NASID					1,3,6,1,2,1,67,3,1,7,1,3
+~ NASLines				1,3,6,1,2,1,67,3,1,7,1,4
+~ NASLinesInUse				1,3,6,1,2,1,67,3,1,7,1,5
+~ NASLinesIdle				1,3,6,1,2,1,67,3,1,7,1,6
 

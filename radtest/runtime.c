@@ -260,7 +260,7 @@ rt_eval_deref(radtest_node_t *node, radtest_variable_t *result)
                 switch (result->type = parse_datum(p, &datum)) {
                 case rtv_undefined:
                         runtime_error(&node->locus,
-				      "variable %s used before definition",
+				      _("variable %s used before definition"),
 				      node->v.deref.name);
                         break;
                         
@@ -272,7 +272,7 @@ rt_eval_deref(radtest_node_t *node, radtest_variable_t *result)
 
 		default:
 			runtime_error(&node->locus,
-				      "%s:%d: Unknown data type",
+				      _("%s:%d: Unknown data type"),
 				      __FILE__, __LINE__);
 		}
                 break;
@@ -318,7 +318,7 @@ rt_eval_deref(radtest_node_t *node, radtest_variable_t *result)
         }
 	if (result->type == rtv_undefined)
 		runtime_error(&node->locus,
-			      "Variable %s used before definition",
+			      _("Variable %s used before definition"),
 			      node->v.deref.name);
 }
 

@@ -114,8 +114,6 @@
 /* Define this if you wish the DBM support */
 #undef USE_DBM
 
-#undef YACC_DEBUG
-
 #if defined(sun) && !defined(__EXTENSIONS__)
 # define __EXTENSIONS__
 #endif

@@ -17,7 +17,10 @@ EXTRA_DIST=\
  config-conv.awk\
  dot.emacs\
  dict.awk\
+ gud-wrapper\
  mksnmp-h.awk\
+ radius-devel.el\
+ request.list\
  sqlmod.sh\
  texi2html.diff\
  update-dict.awk\

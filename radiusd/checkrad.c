@@ -354,6 +354,7 @@ snmp_check(checkp, nas)
 
 	name = create_oid(snmp_oid, &namelen);
 	vlist = snmp_var_new(name, namelen);
+	efree(name);
 	pdu->variables = vlist;
 
 	debug(1, ("snmpget: %s:%d %s %s",

@@ -906,7 +906,7 @@ send [@var{flags}] @var{port-type} @var{code} [@var{expr-or-pair-list}]
 
 Optional @var{flags} can be used for fine-tuning the internals of
 @code{send}. You will seldom need to use these, unless you are
-developing GNU Radius. @FIXME-xref{send-flags}, for the detailed
+developing GNU Radius. @xref{send-flags}, for the detailed
 description of these.
 
 The first obligatory argument, @var{port-type}, specifies which
@@ -1196,7 +1196,7 @@ to @code{continue 1}).
 @end deffn
 
 @deffn {Radtest statement} send [@var{flags}] auth|acct @var{code} @var{expr-or-pair-list}
-@var{flags} are a whitespace-separated list of variable
+@anchor{send-flags}@var{flags} are a whitespace-separated list of variable
 assignments. Following variables are understood:
 
 @table @code

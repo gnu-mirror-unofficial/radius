@@ -117,6 +117,8 @@ check_user_name(p)
         return *p;
 }
 
+static pthread_mutex_t pwd_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 /*
  * Check the users password against UNIX password database.
  */
@@ -129,7 +131,8 @@ unix_pass(name, passwd)
         struct passwd *pwd;
         char *encpw;
         int pwlen;
-        char *encrypted_pass;
+        char *encrypted_pass = NULL;
+
 #if defined(PWD_SHADOW)
 # if defined(M_UNIX)
         struct passwd *spwd;
@@ -139,71 +142,63 @@ unix_pass(name, passwd)
 #endif /* PWD_SHADOW */
 #ifdef OSFC2
         struct pr_passwd *pr_pw;
-        
-        if ((pr_pw = getprpwnam(name)) == NULL)
-                return -1;
-        encrypted_pass = pr_pw->ufld.fd_encrypt;
-#else /* OSFC2 */
-        /*
-         *      Get encrypted password from password file
-         */
-        if ((pwd = getpwnam(name)) == NULL) {
-                return -1;
-        }
-        encrypted_pass = pwd->pw_passwd;
-#endif /* OSFC2 */
+#endif
+	
+	pthread_cleanup_push((void (*)(void*))pthread_mutex_unlock,
+			     &pwd_mutex);
+        pthread_mutex_lock(&pwd_mutex);
 
-#if defined(PWD_SHADOW)
-        /*
-         *      See if there is a shadow password.
-         */
-        if ((spwd = getspnam(name)) != NULL)
+#if defined(OSFC2)
+        if (pr_pw = getprpwnam(name))
+                encrypted_pass = pr_pw->ufld.fd_encrypt;
+#elif defined(PWD_SHADOW)
+        /* See if there is a shadow password. */
+        if (spwd = getspnam(name))
 # if defined(M_UNIX)
                 encrypted_pass = spwd->pw_passwd;
 # else
-                encrypted_pass = spwd->sp_pwdp;
+       	        encrypted_pass = spwd->sp_pwdp;
 # endif /* M_UNIX */
-#endif  /* PWD_SHADOW */
+#else /* !OSFC2 && !PWD_SHADOW */
+        /* Get encrypted password from password file */
+        if (pwd = getpwnam(name)) 
+		encrypted_pass = pwd->pw_passwd;
+#endif /* OSFC2 */
 
-#ifdef DENY_SHELL
-        /* Users with a certain shell are always denied access. */
-        if (strcmp(pwd->pw_shell, DENY_SHELL) == 0) {
-                radlog(L_NOTICE, "unix_pass: [%s]: %s",
-		       name, _("invalid shell"));
-                return -1;
-        }
-#endif
-
+	if (encrypted_pass) {
 #if defined(PWD_SHADOW) && !defined(M_UNIX)
-        /*
-         * Check if password has expired.
-         */
-        if (spwd && spwd->sp_expire > 0 &&
-            (time(NULL) / 86400) > spwd->sp_expire) {
-                radlog(L_NOTICE,
-		       "unix_pass: [%s]: %s",
-		       name, _("password has expired"));
-                return -1;
-        }
+		/* Check if password has expired. */
+		if (spwd
+		    && spwd->sp_expire > 0
+		    && (time(NULL) / SECONDS_PER_DAY) > spwd->sp_expire) {
+			radlog(L_NOTICE,
+			       "unix_pass: [%s]: %s",
+			       name, _("password has expired"));
+			encrypted_pass = NULL;
+		}
 #endif
 
 #ifdef OSFC2
-        /*
-         * Check if the account is locked.
-         */
-        if (pr_pw->uflg.fg_lock != 1) {
-                radlog(L_NOTICE,
-		       "unix_pass: [%s]: %s",
-		       name, _("account locked"));
-                return -1;
-        }
+		/* Check if the account is locked. */
+		if (pr_pw->uflg.fg_lock != 1) {
+			radlog(L_NOTICE,
+			       "unix_pass: [%s]: %s",
+			       name, _("account locked"));
+			encrypted_pass = NULL;
+		}
 #endif /* OSFC2 */
+	}
 
-        /*
-         * Forbid logins on passwordless accounts 
-         */
-        if (encrypted_pass[0] == 0)
-                return 0;
+	if (encrypted_pass) {
+		if (encrypted_pass[0] == 0)
+			encrypted_pass = NULL;
+		else
+			encrypted_pass = estrdup(encrypted_pass);
+	}
+	pthread_cleanup_pop(1);
+
+        if (!encrypted_pass)
+                return -1;
 
         /*
          * Check encrypted password.
@@ -213,6 +208,7 @@ unix_pass(name, passwd)
         rc = md5crypt(passwd, encrypted_pass, encpw, pwlen) == NULL
                 || strcmp(encpw, encrypted_pass);
         efree(encpw);
+	efree(encrypted_pass);
         if (rc)
                 return -1;
 

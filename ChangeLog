@@ -1,3 +1,23 @@
+2002-07-03  Sergey Poznyakoff
+
+	* radiusd/radiusd.c (reread_config): Call scheme_before_reconfig()
+	  and scheme_after_reconfig() where appropriate.
+	  (socket_list_iterate): New function.
+	* radiusd/scheme.c: Fork-safety: store fd's opened so far
+	  in a list named %radius-sockets so that close-all-ports-except
+	  works correctly. Added new function scheme_after_reconfig().
+	* radiusd/config.y: Removed call to scheme_end_reconfig().
+	* include/radiusd.h (scheme_before_reconfig,
+	  scheme_after_reconfig, socket_list_iterate): New function
+	  prototypes.
+	  
+        * radiusd/auth.c (sfn_validate): Handle check_expiration()
+	  value.
+	* test/radiusd.m4 (Expiration): new test.
+	* test/raddb/users.in: Provisions for Expiration test.
+	* raddb/dictionary (Expiration): Fixed properties.
+	* THANKS: Added Cornel Cristea.
+
 2002-07-01  Sergey Poznyakoff  
 
 	* lib/radpdu.c (rad_decode_pdu): Add NAS-IP-Address to the packet

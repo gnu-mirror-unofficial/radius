@@ -317,6 +317,7 @@ void listen_auth(HOSTDECL *host);
 void listen_acct(HOSTDECL *host);
 void rad_req_drop(int type, RADIUS_REQ *req, RADIUS_REQ *orig, int fd,
 		  char *status_str);
+void socket_list_iterate(void (*fun)());
 
 /* radius.c */
 

@@ -84,14 +84,14 @@ static int syslog_severity[] = {
 };
 	 
 static int radius_severity[] = {
-	-1,
-	L_CRIT,    
-	L_DBG,   
-	-1,   
-	L_ERR,     
-	L_INFO,    
-	L_NOTICE,  
-	L_WARN,
+	-1,            
+	L_CRIT,        
+	L_DBG,         
+	-1,   	       
+	L_ERR,         
+	L_INFO,        
+	L_NOTICE,      
+	L_WARN,	       
 };
 	
  
@@ -541,8 +541,7 @@ category_stmt   : T_CATEGORY category_name '{' category_list '}'
 
 category_name   : severity
                   {
-			  $$.severity = in_category = radius_severity[$1];
-			  in_category = $1;
+			  $$.severity = in_category = $1;
                   }
                 | T_AUTH
                   {

@@ -29,7 +29,7 @@ AC_DEFUN(rad_CHECK_GUILE,
 
    if test $GUILE_CONFIG != no; then
      AC_MSG_CHECKING(for guile version 1.4 or higher)
-     GV=`$GUILE_CONFIG --version 2>&1|sed -n 's/guile-config - Guile version \([[0-9]][[0-9]]*\)\.\([[0-9]][[0-9]]*\).*/\1\2/p'`
+     GV=`($GUILE_CONFIG --version 2>&1; echo '')|sed -n 's/guile-config - Guile version \([[0-9]][[0-9]]*\)\.\([[0-9]][[0-9]]*\).*/\1\2/p'`
      case "x$GV" in
      x[[0-9]]*)
        if test $GV -lt 14; then

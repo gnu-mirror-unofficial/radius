@@ -100,7 +100,6 @@ request_free(REQUEST *req)
 	if (req) {
 		request_class[req->type].free(req->data);
 		efree(req->rawdata);
-		efree(req->update);
 		efree(req);
 	}
 }
@@ -120,10 +119,10 @@ request_respond(REQUEST *req)
 }
 
 void
-request_xmit(REQUEST *req, void *orig_data)
+request_xmit(REQUEST *req)
 {
         if (request_class[req->type].xmit) 
-                request_class[req->type].xmit(req, orig_data);
+                request_class[req->type].xmit(req);
 }
 
 int
@@ -140,9 +139,9 @@ request_cleanup(int type, void *data)
 }
 
 int
-request_forward(REQUEST *req, void *orig_data)
+request_forward(REQUEST *req)
 {
-	if (radiusd_master()) {
+	if (spawn_flag && radiusd_master()) {
 		if (rpp_ready(req->child_id)) { 
 			rpp_forward_request(req);
 			req->status = RS_COMPLETED;
@@ -152,7 +151,7 @@ request_forward(REQUEST *req, void *orig_data)
 			return 1;
 		}
 	} else
-		request_xmit(req, orig_data);
+		request_xmit(req);
 	return 0;
 }
 
@@ -200,8 +199,7 @@ _request_iterator(void *item, void *clos)
 			request_free(req);
 		}
 	} else {
-		if (req->status == RS_XMIT
-		    && request_forward(req, NULL) == 0) 
+		if (req->status == RS_XMIT && request_forward(req) == 0) 
 			return 0;
 
 		if (req->timestamp + request_class[req->type].ttl
@@ -233,7 +231,7 @@ _request_iterator(void *item, void *clos)
 			   completed, hand it over to the child.
 			   Otherwise drop the request. */
 			if (req->status == RS_COMPLETED
-			    && request_forward(req, rp->data) == 0)
+			    && request_forward(req) == 0)
 				break;
 			else
 				request_drop(req->type, rp->data,
@@ -345,7 +343,7 @@ request_update(pid_t pid, int status, void *ptr)
 	if (!itr)
 		return;
 	for (p = iterator_first(itr); p; p = iterator_next(itr)) {
-		if (p->child_id == pid && p->status == RS_WAITING) {
+		if (p->child_id == pid) {
 			p->status = status;
 			if (ptr && request_class[p->type].update) 
 				request_class[p->type].update(p->data, ptr);

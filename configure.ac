@@ -17,7 +17,7 @@
 # along with GNU Radius; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-AC_PREREQ(2.57)
+AC_PREREQ(2.59)
 
 AC_REVISION($Revision$)
 AC_INIT(GNU Radius, 1.2.1, bug-gnu-radius@gnu.org)
@@ -153,9 +153,27 @@ AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(argp.h fcntl.h malloc.h strings.h\
  sys/file.h sys/time.h sys/types.h unistd.h\
- ctype.h sys/socket.h netinet/in.h arpa/inet.h\
+ ctype.h sys/socket.h socket.h netinet/in.h arpa/inet.h\
  netdb.h stdarg.h varargs.h termcap.h termios.h termio.h sgtty.h\
  crypt.h sys/uio.h sys/select.h sys/resources.h getopt.h libintl.h)
+
+AC_TYPE_PID_T
+AC_TYPE_SIZE_T
+AC_TYPE_OFF_T
+AC_TYPE_SIGNAL
+
+AC_CHECK_TYPE(socklen_t, , AC_DEFINE(socklen_t, int, [Define to int if <sys/types.h> does not define]),
+[
+#if HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_SOCKET_H
+# include <sys/socket.h>
+#endif
+#ifdef HAVE_SOCKET_H
+# include <socket.h>
+#endif
+])
 
 AC_CHECK_MEMBERS([struct passwd.pw_expire, struct passwd.pw_change], , ,
                  [#include <pwd.h>])

@@ -111,6 +111,8 @@ struct keyword sql_keyword[] = {
 	{ "mlc_user_query",     STMT_QUERY(mlc_user_query) },
 	{ "mlc_realm_query",    STMT_QUERY(mlc_realm_query) },
 	{ "mlc_stop_query",     STMT_QUERY(mlc_stop_query) },
+	{ "auth_success_query", STMT_QUERY(auth_success_query) },
+	{ "auth_failure_query", STMT_QUERY(auth_failure_query) },
         { NULL }
 };
 
@@ -292,7 +294,7 @@ sql_cfg_comp(SQL_cfg *a, SQL_cfg *b)
 }
 
 int 
-rad_sql_init()
+radiusd_sql_config()
 {
         char *sqlfile;
         char *ptr;
@@ -778,7 +780,7 @@ sql_conn_destroy(struct sql_connection **conn)
 
 /*ARGSUSED*/
 void
-rad_sql_cleanup(int type, void *req ARG_UNUSED)
+radiusd_sql_cleanup(int type, void *req ARG_UNUSED)
 {
         if (sql_cfg.active[type])
                 detach_sql_connection(type);
@@ -788,7 +790,7 @@ rad_sql_cleanup(int type, void *req ARG_UNUSED)
  * Perform normal accounting
  */ 
 void
-rad_sql_acct(grad_request_t *radreq)
+radiusd_sql_acct(grad_request_t *radreq)
 {
         int rc, count;
         int status;
@@ -894,7 +896,7 @@ rad_sql_acct(grad_request_t *radreq)
 
 
 char *
-rad_sql_pass(grad_request_t *req, char *authdata)
+radiusd_sql_pass(grad_request_t *req, char *authdata)
 {
         char *mysql_passwd;
         struct sql_connection *conn;
@@ -929,9 +931,7 @@ rad_sql_pass(grad_request_t *req, char *authdata)
 }
 
 int
-rad_sql_checkgroup(req, groupname)
-        grad_request_t *req;
-        char *groupname;
+radiusd_sql_checkgroup(grad_request_t *req, char *groupname)
 {
         int   rc = -1;
         struct sql_connection *conn;
@@ -1025,7 +1025,7 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
 }
 			
 int
-rad_sql_reply_attr_query(grad_request_t *req, grad_avp_t **reply_pairs)
+radiusd_sql_reply_attr_query(grad_request_t *req, grad_avp_t **reply_pairs)
 {
         struct sql_connection *conn;
         char *query;
@@ -1047,7 +1047,7 @@ rad_sql_reply_attr_query(grad_request_t *req, grad_avp_t **reply_pairs)
 }
 
 int
-rad_sql_check_attr_query(grad_request_t *req, grad_avp_t **return_pairs)
+radiusd_sql_check_attr_query(grad_request_t *req, grad_avp_t **return_pairs)
 {
         struct sql_connection *conn;
         char *query;
@@ -1075,6 +1075,32 @@ sql_auth_avail_p(const char **msg)
 		return 1;
 	*msg = _("SQL authentication is not enabled in raddb/sqlserver");
 	return 0;
+}
+
+
+/* ****************************************************************************
+ * Auth failure trigger
+ */
+void
+radiusd_sql_auth_result_query(grad_request_t *req, int fail)
+{
+        struct sql_connection *conn;
+        char *query;
+        int rc;
+        struct obstack stack;
+	enum radius_sql_query q = fail ? auth_failure_query : auth_success_query;
+	
+	if (!sql_cfg.active[SQL_AUTH] || !sql_cfg.query[q])
+		return;
+
+        conn = attach_sql_connection(SQL_AUTH);
+        obstack_init(&stack);
+	
+        query = radius_xlate(&stack, sql_cfg.query[q],
+			     req, NULL);
+	rc = disp_sql_query(conn, query, NULL);
+	sqllog(rc, query);
+        obstack_free(&stack, NULL);
 }
 
 

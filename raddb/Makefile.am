@@ -17,8 +17,8 @@
 #
 
 raddbdir=@ETC_DIR@/raddb
-raddb_files=access.deny \
-clients \
+
+raddb_files_644=access.deny \
 config \
 config.syntax \
 dictionary \
@@ -40,9 +40,10 @@ radctl.rc \
 realms \
 rewrite \
 rewrite.full \
-sqlserver \
-users 
+sqlserver 
 
+raddb_files_600 = clients users 
+raddb_files=$(raddb_files_600) $(raddb_files_644)
 EXTRA_DIST=$(raddb_files)
 
 install-data-local:
@@ -54,7 +55,10 @@ install-data-local:
 		cp $(raddbdir)/dictionary $(raddbdir)/dictionary.bak; \
 		${INSTALL} -m 644 $(top_srcdir)/raddb/dictionary $(raddbdir)/dictionary; \
 	else \
-		for file in $(raddb_files); do \
+		for file in $(raddb_files_644); do \
 			${INSTALL} -m 644 $(top_srcdir)/raddb/$$file $(raddbdir)/$$file; \
+		done; \
+		for file in $(raddb_files_600); do \
+			${INSTALL} -m 600 $(top_srcdir)/raddb/$$file $(raddbdir)/$$file; \
 		done; \
 	fi

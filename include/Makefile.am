@@ -21,8 +21,8 @@ if MAINTAINER_MODE
 
 all: raddict.h radmibs.h
 
-raddict.h: $(top_srcdir)/raddb/dictionary
-	$(AWK) -f $(top_srcdir)/scripts/dict.awk $(top_srcdir)/raddb/dictionary > raddict.h
+raddict.h: $(top_srcdir)/raddb/dict/standard
+	$(AWK) -f $(top_srcdir)/scripts/dict.awk $(top_srcdir)/raddb/dict/standard > raddict.h
 
 radmibs.h: $(top_srcdir)/mibs/radmibs.h.in
 	$(AWK) -f $(top_srcdir)/scripts/mksnmp-h.awk $(top_srcdir)/mibs/radmibs.h.in > radmibs.h

@@ -1,3 +1,10 @@
+2004-10-29  Sergey Poznyakoff 
+
+	* radiusd/files.c (hints_setup): Removed local variable
+	request_pairs.
+	* radiusd/.gdbinit: Updated
+	* lib/radpdu.c (grad_decode_pdu): Fixed debugging output
+
 2004-10-22  Sergey Poznyakoff
 
 	* lib/radutmp.c: If the file is opened for append,

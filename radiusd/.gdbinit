@@ -143,7 +143,7 @@ Print A/V pair list
 end
 
 define print_authcode
- output auth_code_str($arg0->code)
+ output grad_request_code_to_name($arg0->code)
 end
 document print_authcode
 Print the code value of grad_request_t $arg0
@@ -152,7 +152,7 @@ end
 define preq
  print_authcode $arg0
  printf " {\n"
- plist $arg0->request
+ plist $arg0->avlist
  printf "}\n"
 end
 document preq

@@ -25,7 +25,8 @@
 	 (reply-list '()))
     (if username
 	(let ((user-data (assoc (cdr username) staff-data)))
-	  (display "L:")(display user-data)(newline)
+          (display "L:")(display user-data)(newline)
+	  (rad-log L_INFO (format #f "~A" user-data))
 	  (if user-data
 	      (call-with-current-continuation
 	       (lambda (xx)

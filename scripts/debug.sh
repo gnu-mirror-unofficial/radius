@@ -16,7 +16,6 @@ ANCHOR="RADIUS_MODULE_"
 PROGNAME=$0
 DEBUGMOD=debugmod.c
 MODNUM=0
-TOPDIR=`pwd`
 
 if [ $# -le 3 ]; then
 	echo "usage: $PROGNAME skel deflib dirs"
@@ -65,7 +64,7 @@ debugmod() {
  */
 
 EOF
- m4 -DMODNUM=$MODNUM ${TF}.lib $TF ${TOPDIR}/$SKEL
+ m4 -DMODNUM=$MODNUM ${TF}.lib $TF $SKEL
 ) > $DEBUGMOD
 }
 

@@ -23,7 +23,9 @@ typedef enum {
 	serv_other=1,
 	serv_reset,
 	serv_init,
-	serv_running
+	serv_running,
+	serv_suspended,
+	serv_shutdown
 } serv_stat;
 
 typedef struct {

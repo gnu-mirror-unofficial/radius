@@ -223,13 +223,13 @@ install_pair(char *file, int line, char *name, int op, char *valstr)
         pair->operator = op;
 
         if (valstr[0] == '=') {
-                pair->eval = 1;
+                pair->eval_type = eval_interpret;
                 pair->avp_strvalue = estrdup(valstr+1);
                 pair->avp_strlength = strlen(pair->avp_strvalue);
                 return pair;
         }
 
-        pair->eval = 0;
+        pair->eval_type = eval_const;
         
         switch (pair->type) {
         case TYPE_STRING:
@@ -308,17 +308,15 @@ install_pair(char *file, int line, char *name, int op, char *valstr)
                         }
                         pair->avp_lvalue = ip_gethostaddr(valstr);
 
-                        /*
-                         *      Add an extra (hidden) attribute.
-                         */
-                        pair2 = avp_alloc();
-                        
-                        pair2->name = "Add-Port-To-IP-Address";
-                        pair2->attribute = DA_ADD_PORT_TO_IP_ADDRESS;
-                        pair2->type = TYPE_INTEGER;
-                        pair2->avp_lvalue = x;
-                        pair2->next = pair;
-                        pair = pair2;
+			if (x) {
+				char *s;
+				asprintf(&s, "%lu+%{NAS-Port-Id}",
+					 pair->avp_lvalue);
+				pair->avp_strvalue = estrdup(s);
+				pair->avp_strlength = strlen(pair->avp_strvalue);
+				pair->eval_type = eval_interpret;
+				free(s);
+			}
                 }
                 break;
                 

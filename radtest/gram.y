@@ -176,10 +176,18 @@ port_type     : AUTH
               ;
 
 code          : NUMBER
+              | NAME
+                {
+			$$ = grad_string_to_request_code($1);
+			if ($$ == 0) {
+				yyerror("expected integer value or request code name");
+				YYERROR;
+			}
+		}
               | IDENT
                 {
                         if ($1->type != Integer) {
-                                yyerror("expected integer value");
+                                yyerror("expected integer value or request code name");
                                 YYERROR;
                         } else {
                                 $$ = $1->datum.number;

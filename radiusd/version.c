@@ -40,10 +40,10 @@ static char *sys_def[] = {
 	"bsdi",
 #endif
 #if defined(__FreeBSD__)
-	"FreeBSD"
+	"FreeBSD",
 #endif
 #if defined(__NetBSD__)
-	"NetBSD"
+	"NetBSD",
 #endif
 #if defined(sun)
 	"sun",
@@ -60,6 +60,7 @@ static char *sys_def[] = {
 #if defined(M_UNIX)
 	"M_UNIX",
 #endif
+	NULL
 };
 
 static char *debug_flag_str[] = {
@@ -69,6 +70,7 @@ static char *debug_flag_str[] = {
 #if defined(YACC_DEBUG)
 	"YACC_DEBUG",
 #endif
+	NULL
 };
 
 static char *compile_flag_str[] = {
@@ -115,6 +117,7 @@ static char *compile_flag_str[] = {
 #if defined(ASCEND_PORT_HACK)
 	"ASCEND_PORT_HACK",
 #endif
+	NULL
 };
 
 
@@ -157,16 +160,16 @@ version()
 	fprintf(stderr, "\n");
 
 	fprintf(stderr, _("Compilation platform: "));
-	for (i = 0; i < NITEMS(sys_def); i++)
+	for (i = 0; sys_def[i]; i++)
 		fprintf(stderr, "%s ", sys_def[i]);
 
 	fprintf(stderr, _("\nDebugging flags: "));
-	for (i = 0; i < NITEMS(debug_flag_str); i++) {
+	for (i = 0; debug_flag_str[i]; i++) {
 		fprintf(stderr, "%s ", debug_flag_str[i]);
 	}
 
 	fprintf(stderr, _("\nCompilation flags: "));
-	for (i = 0; i < NITEMS(compile_flag_str); i++) {
+	for (i = 0; compile_flag_str[i]; i++) {
 		fprintf(stderr, "%s ", compile_flag_str[i]);
 	}
 	fprintf(stderr, "\n");

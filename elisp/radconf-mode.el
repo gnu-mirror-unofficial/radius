@@ -1,6 +1,6 @@
 ;;; radconf-mode.el --- major mode for editing GNU radius raddb/config file
 
-;; Authors: 2001,2--3 Sergey Poznyakoff
+;; Authors: 2001,2003 Sergey Poznyakoff
 ;; Version:  1.1
 ;; Keywords: radius
 ;; $Id$

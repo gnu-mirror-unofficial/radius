@@ -278,7 +278,6 @@ main(argc, argv)
 	int			pid;
 	int			radius_port = 0;
 	int                     check_config;    
-	char			ipbuf[DOTTED_QUAD_LEN+1];
 #ifdef RADIUS_PID
 	FILE			*fp;
 	char                    *radpid_dir = RADPID_DIR;
@@ -397,12 +396,10 @@ main(argc, argv)
 	signal(SIGTERM, sig_fatal);
 	signal(SIGCHLD, sig_cleanup);
 	signal(SIGBUS, sig_fatal);
-#if !defined(MAINTAINER_MODE)
 	signal(SIGTRAP, sig_fatal);
 	signal(SIGFPE, sig_fatal);
 	signal(SIGSEGV, sig_fatal);
 	signal(SIGILL, sig_fatal);
-#endif
 #if 0
 	signal(SIGIOT, sig_fatal);
 #endif
@@ -445,8 +442,7 @@ main(argc, argv)
 		radlog(L_CRIT, _("can't find out my own IP address"));
 		exit(1);
 	}
-	radlog(L_INFO, "using %s as my IP address",
-		ipaddr2str(ipbuf, myip));
+	radlog(L_INFO, "using %I as my IP address", myip);
 
 	/*
 	 *	Open Authentication socket.
@@ -501,13 +497,6 @@ main(argc, argv)
 	efree(p);
 #endif
 
-	/*
-	 *	Use linebuffered or unbuffered stdout if
-	 *	the debug flag is on.
-	 */
-	if (debug_flag)
-		setlinebuf(stdout);
-
 	if (!foreground) {
 		char *p = mkfilename(radlog_dir, "radius.stderr");
 		t = open(p, O_CREAT|O_WRONLY, 0644);
@@ -523,7 +512,10 @@ main(argc, argv)
 		}
 		efree(p);
 	}
-
+#ifdef HAVE_SETVBUF
+	setvbuf(stdout, NULL, _IOLBF, 0);
+#endif
+	
 	radlog(L_INFO, _("Ready to process requests."));
 
 	for(;;) {
@@ -598,7 +590,7 @@ rad_select()
 }
 
 /* ************************* Socket queue functions *********************** */
-
+/*ARGSUSED*/
 int
 auth_respond(fd, sa, salen, buf, size)
 	int fd;
@@ -1126,7 +1118,7 @@ rad_spawn_child(type, data, activefd)
 		chdir("/tmp");
 		exit(request_class[type].handler(data, activefd));
 	} else {
-		debug(1, ("started handler at pid %ld", child_pid));
+		debug(1, ("started handler at pid %d", child_pid));
 	}
 
 	/*
@@ -1262,7 +1254,7 @@ stat_request_list(report)
 
 	/* Report the results */
 	for (i = 0; i < NITEMS(request_class); i++) {
-		sprintf(tbuf, "%4.4s  %4d  %4d  %4d",
+		radsprintf(tbuf, sizeof(tbuf), "%4.4s  %4d  %4d  %4d",
 			request_class[i].name,
 			pending_count[i],
 			completed_count[i],

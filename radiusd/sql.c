@@ -696,7 +696,9 @@ rad_sql_acct(radreq)
         char *query;
         struct sql_connection *conn;
         struct obstack stack;
-        
+        char *query_name;
+	int log_facility = 0;
+	
         if (!sql_cfg.doacct)
                 return;
 
@@ -714,6 +716,7 @@ rad_sql_acct(radreq)
 
         switch (status) {
         case DV_ACCT_STATUS_TYPE_START:
+		query_name = "acct_start_query";
                 if (!sql_cfg.acct_start_query)
                         break;
                 query = radius_xlate(&stack,
@@ -721,9 +724,11 @@ rad_sql_acct(radreq)
                                      radreq, NULL);
                 rc = disp_sql_query(sql_cfg.interface, conn, query, NULL);
                 sqllog(rc, query);
+		log_facility = 0;
                 break;
                 
         case DV_ACCT_STATUS_TYPE_STOP:
+		query_name = "acct_stop_query";
                 if (!sql_cfg.acct_stop_query)
                         break;
                 query = radius_xlate(&stack,
@@ -739,15 +744,12 @@ rad_sql_acct(radreq)
                         name = pair ? pair->strvalue : _("unknown");
                         pair = avl_find(radreq->request, DA_ACCT_SESSION_ID);
                         session_id = pair ? pair->strvalue : _("unknown");
-                        radlog_req(L_WARN, radreq,
-				   ngettext("acct_stop_query: %d row changed",
-					    "acct_stop_query: %d rows changed",
-					    count),
-                                   count);
+			log_facility = L_WARN;
                 }
                 break;
 
         case DV_ACCT_STATUS_TYPE_ACCOUNTING_ON:
+		query_name = "acct_nasup_query";
                 if (!sql_cfg.acct_nasup_query)
                         break;
                 query = radius_xlate(&stack,
@@ -755,14 +757,12 @@ rad_sql_acct(radreq)
                                      radreq, NULL);
                 rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
                 sqllog(rc, query);
-                if (rc == 0) {
-                        radlog_req(L_INFO, radreq,
-                                   _("acct_nasup_query updated %d records"),
-                                   count);
-                }
+		if (rc == 0)
+			log_facility = L_INFO;
                 break;
 
         case DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF:
+		query_name = "acct_nasdown_query";
                 if (!sql_cfg.acct_nasdown_query)
                         break;
                 query = radius_xlate(&stack,
@@ -770,14 +770,12 @@ rad_sql_acct(radreq)
                                      radreq, NULL);
                 rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
                 sqllog(rc, query);
-                if (rc == 0) {
-                        radlog_req(L_INFO, radreq,
-                                   _("acct_nasdown_query updated %d records"),
-                                   count);
-                }
+		if (rc == 0)
+			log_facility = L_INFO;
                 break;
 
         case DV_ACCT_STATUS_TYPE_ALIVE:
+		query_name = "acct_keepalive_query";
                 if (!sql_cfg.acct_keepalive_query)
                         break;
                 query = radius_xlate(&stack,
@@ -785,14 +783,20 @@ rad_sql_acct(radreq)
                                      radreq, NULL);
                 rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
                 sqllog(rc, query);
-                if (rc != 0) {
-                        radlog_req(L_INFO, radreq,
-                                   _("acct_keepalive_query updated %d records"),
-                                   count);
-                }
+                if (rc != 0) 
+			log_facility = L_INFO;
                 break;
                 
         }
+
+	if (log_facility) {
+		radlog_req(log_facility, radreq,
+			   ngettext("%s updated %d record",
+				    "%s updated %d records",
+				    count),
+			   query_name,
+			   count);
+	}
 
 	pthread_cleanup_pop(0);
         obstack_free(&stack, NULL);

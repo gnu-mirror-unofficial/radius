@@ -10,6 +10,8 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+AUTOMAKE_OPTIONS = 1.6
+
 SUBDIRS=m4 include radlib sql snmplib radscm radiusd radwho radzap radlast\
         raduse radscripts elisp raddb db client radtest test doc po mibs\
         scripts contrib
@@ -40,3 +42,31 @@ endif
 
 EXTRA_DIST=ylwrap README-alpha
 
+distcleancheck_listfiles = \
+	find . -type f -exec sh -c 'test -f $(top_srcdir)/{} || echo {}' \;
+
+## Override distcheck rule.
+distcheck: dist
+	$(am__remove_distdir)
+	GZIP=$(GZIP_ENV) gunzip -c $(distdir).tar.gz | $(AMTAR) xf -
+	chmod -R a-w $(distdir); chmod a+w $(distdir)
+	mkdir $(distdir)/=build
+	mkdir $(distdir)/=inst
+	chmod a-w $(distdir)
+	dc_install_base=`$(am__cd) $(distdir)/=inst && pwd` \
+	 && cd $(distdir)/=build \
+	 && ../configure --srcdir=.. --prefix=$$dc_install_base \
+	$(DISTCHECK_CONFIGURE_FLAGS) \
+	 && $(MAKE) $(AM_MAKEFLAGS) \
+	 && $(MAKE) $(AM_MAKEFLAGS) dvi \
+	 && $(MAKE) $(AM_MAKEFLAGS) check \
+	 && $(MAKE) $(AM_MAKEFLAGS) install \
+	 && $(MAKE) $(AM_MAKEFLAGS) installcheck \
+	 && $(MAKE) $(AM_MAKEFLAGS) uninstall \
+	 && $(MAKE) $(AM_MAKEFLAGS) dist-gzip \
+	 && rm -f $(distdir).tar.gz \
+	 && $(MAKE) $(AM_MAKEFLAGS) distcleancheck
+	$(am__remove_distdir)
+	@echo "$(distdir).tar.gz is ready for distribution" | \
+	 sed 'h;s/./=/g;p;x;p;x'
+ 

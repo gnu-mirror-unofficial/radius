@@ -22,8 +22,6 @@ server queue a SMOB instead of a hidden list.
 snmp.
 ** Add missing SNMP MIBS and check the compliance of the snmpserv.c
 to RFC 2619,2621
-** Extend the test shell to allow for immediate handling of the typed
-in requests.
 ** Move the radtest functionality to the test shell and remove radtest
 altogether?
 

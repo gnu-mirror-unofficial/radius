@@ -2,6 +2,7 @@
 
 	* configure.ac: Raised patchlevel to 91
 	* NEWS: Updated
+	* TODO: Updated
 	* include/radiusd.h (auth_trace_rules,acct_trace_rules): External
 	variables.
 	(radius_trace_path): New function.

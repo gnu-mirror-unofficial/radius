@@ -1,289 +1,134 @@
-/* This file is part of GNU RADIUS.
- * Copyright (C) 2000,2001, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
 %{
-	#ifndef lint
-	static char rcsid[] = 
+/* This file is part of GNU RADIUS.
+   Copyright (C) 2000,2001, Sergey Poznyakoff
+  
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+  
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+  
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
+#ifndef lint
+static char rcsid[] = 
 	"@(#) $Id$";
-	#endif
+#endif
 
-	#ifdef HAVE_CONFIG_H
-	# include <config.h>
-	#endif
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
 
-        #include <sys/types.h>
-        #include <sys/socket.h>
-        #include <sys/time.h>
-        #include <sys/stat.h>
-        #include <netinet/in.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <sys/stat.h>
+#include <netinet/in.h>
 
-        #include <stdio.h>
-        #include <stdlib.h>
-        #include <netdb.h>
-        #include <ctype.h>
-        #include <fcntl.h>
-        #include <errno.h>
-        #include <unistd.h>
-	#include <syslog.h> 
-        #include <radiusd.h>
-
-        #define YYMAXDEPTH 16
+#include <stdio.h>
+#include <stdlib.h>
+#include <netdb.h>
+#include <ctype.h>
+#include <fcntl.h>
+#include <errno.h>
+#include <unistd.h>
+#include <syslog.h> 
+#include <radiusd.h>
+ 
+#define YYMAXDEPTH 16
 
 #ifdef USE_SNMP
-	typedef struct netlist Netlist;
-	struct netlist {
-		Netlist *next;
-		char *name;
-		ACL *acl;
-	};
-	static Netlist *netlist;
+typedef struct netlist Netlist;
+struct netlist {
+	Netlist *next;
+	char *name;
+	ACL *acl;
+};
+static Netlist *netlist;
 #endif
 
-	struct facility {
-		int number;
-		char string[256];
-	};
+#define CT_CHANNEL 1
+#define CT_OPTIONS 2
+#define CT_LEVEL   3
 
-	#define CT_CHANNEL 1
-	#define CT_OPTIONS 2
-	#define CT_LEVEL   3
+#define AT_ANY    0
+#define AT_INT    1
+#define AT_STRING 2
+#define AT_IPADDR 3
+#define AT_BOOL   4
+#define AT_PORT   5
+ 
+static char *typestr[] = {
+	"any",
+	"numeric",
+	"string",
+	"IP address",
+	"boolean"
+};
+
+static int syslog_severity[] = {
+	LOG_ALERT,
+	LOG_CRIT,    
+	LOG_DEBUG,   
+	LOG_EMERG,   
+	LOG_ERR,     
+	LOG_INFO,    
+	LOG_NOTICE,  
+	LOG_WARNING,
+};
+	 
+static int radius_severity[] = {
+	-1,
+	L_CRIT,    
+	L_DBG,   
+	-1,   
+	L_ERR,     
+	L_INFO,    
+	L_NOTICE,  
+	L_WARN,
+};
 	
-        #define AT_ANY    0
-        #define AT_INT    1
-	#define AT_STRING 2
-	#define AT_IPADDR 3
-	#define AT_BOOL   4
+ 
+extern time_t delayed_hup_wait;
+extern int keyword();
 
-	typedef struct {
-		char *name;
-		int type;
-		void *base;
-		int once;
-	} Variable;
-		
-	typedef struct {
-		char name[256];
-		int type;
-		union {
-			char string[256];
-			UINT4 ipaddr;
-			int number;
-			int bool;
-		} v;
-	} Asgn;
+static char *filename;
+static char line_num;
+static char *buffer;
+static char *curp;
+static int expect_string; 
+static int in_category;
 
-	static char *typestr[] = {
-		"any",
-		"numeric",
-		"string",
-		"IP address",
-		"boolean"
-	};
+static Channel channel;
 
-	static struct keyword *xlat_tab;
-	
-	static struct keyword syslog_facility[] = {
-		"user", 	LOG_USER,
-		"daemon", 	LOG_DAEMON,
-		"auth", 	LOG_AUTH,
-		"local0", 	LOG_LOCAL0,
-		"local1", 	LOG_LOCAL1,
-		"local2", 	LOG_LOCAL2,
-		"local3", 	LOG_LOCAL3,
-		"local4", 	LOG_LOCAL4,
-		"local5", 	LOG_LOCAL5,
-		"local6", 	LOG_LOCAL6,
-		"local7", 	LOG_LOCAL7,
-		0
-	};
-
-	struct keyword syslog_severity[] = {
-		"emerg", 	LOG_EMERG,
-		"alert", 	LOG_ALERT,
-		"crit", 	LOG_CRIT,
-		"err", 		LOG_ERR,
-		"warning", 	LOG_WARNING,
-		"notice", 	LOG_NOTICE,
-		"info", 	LOG_INFO,
-		"debug", 	LOG_DEBUG,
-		0
-	};
-	
-	struct keyword log_tab[] = {
-		"auth",        		RLOG_AUTH,
-		"pass",        		RLOG_AUTH_PASS,
-		"failed_pass", 		RLOG_FAILED_PASS,
-		"pid",         		RLOG_PID,
-		0
-	};
-
-	static struct keyword loglevels[] = {
-		"debug",  		L_DBG, 
-		"info",   		L_INFO,
-		"notice", 		L_NOTICE,
-		"warning", 		L_WARN,
-		"error", 		L_ERR,
-		"crit",  		L_CRIT,
-		"auth",  		L_AUTH,
-		"crit",  		L_CRIT,
-		0
-	};
-
-	static struct keyword log_options[] = {
-		"cons", 		LO_CONS,
-		"pid", 			LO_PID,
-		"level", 		LO_LEVEL,
-		0
-	};
-		
-	Variable top_vars[] = {
-		"source-ip", AT_IPADDR, &myip, 1,
-		"usr2delay", AT_INT,    &config.delayed_hup_wait, 0,
-		"max-requests", AT_INT, &config.max_requests, 0,
-		"log-dir", AT_STRING, &radlog_dir, 1,
-		"acct-dir", AT_STRING, &radacct_dir, 1,
-		"exec-program-user", AT_STRING, &config.exec_user, 0,
-		"exec-program-group", AT_STRING, &config.exec_group, 0,
-		NULL
-	};
-
-#ifdef USE_NOTIFY
-	Variable notify_vars[] = {
-		"host",      AT_IPADDR, &notify_cfg.ipaddr,           0,
-		"port",      AT_INT,    &notify_cfg.port,             0,
-		"retry",     AT_INT,    &notify_cfg.retry,            0,
-		"delay",     AT_INT,    &notify_cfg.timeout,          0,
-                NULL,
-	};
-#endif
-
-	Variable auth_vars[] = {
-		"port", AT_INT, &auth_port, 1,
-
-		"spawn", AT_BOOL,
-		&request_class[R_AUTH].spawn, 0,
-		
-		"time-to-live", AT_INT,
-		&request_class[R_AUTH].ttl, 0,
-
-		"max-requests", AT_INT,
-		&request_class[R_AUTH].max_requests, 0,
-
-		"request-cleanup-delay", AT_INT,
-		&request_class[R_AUTH].cleanup_delay, 0,
-
-		"detail", AT_BOOL, &auth_detail, 0,
-		"strip-names", AT_BOOL, &strip_names, 0,
-
-		"checkrad-assume-logged", AT_BOOL, 
-		&config.checkrad_assume_logged, 0,
-
-		NULL
-	};
-
-	Variable acct_vars[] = {
-		"port", AT_INT, &acct_port, 1,
-
-		"spawn", AT_BOOL,
-		&request_class[R_ACCT].spawn, 0,
-
-		"time-to-live", AT_INT,
-		&request_class[R_ACCT].ttl, 0,
-
-		"max-requests", AT_INT,
-		&request_class[R_ACCT].max_requests, 0,
-
-		"request-cleanup-delay", AT_INT,
-		&request_class[R_ACCT].cleanup_delay, 0,
-
-		NULL
-	};
-
-	Variable cntl_vars[] = {
-		"port", AT_INT,	&cntl_port, 1,
-		NULL
-	};
-
-	Variable proxy_vars[] = {
-		"max-requests", AT_INT,
-		&request_class[R_PROXY].max_requests, 0,
-
-                "request-cleanup-delay", AT_INT,
-                &request_class[R_PROXY].cleanup_delay, 0,
-	};
-		
-#ifdef USE_SNMP	
-	Variable snmp_vars[] = {
-		"spawn", AT_BOOL,
-		&request_class[R_SNMP].spawn, 0,
-
-		"time-to-live", AT_INT,
-		&request_class[R_SNMP].ttl, 0,
-
-		"max-requests", AT_INT,
-		&request_class[R_SNMP].max_requests, 0,
-
-                "request-cleanup-delay", AT_INT,
-                &request_class[R_SNMP].cleanup_delay, 0,
-
-		"port", AT_INT, &snmp_port, 1,
-		NULL
-	};
-#endif
-	
-	extern time_t delayed_hup_wait;
-	
-	static char *filename;
-	static char line_num;
-	static char *buffer;
-	static char *curp;
-	static int tie_in;
-	static int in_debug;
-	
-	static Channel channel;
-	
-	static void skipws();
-	static void skipline();
-	static int isword(int c);
-	static void copy_alpha();
-	static void copy_string();
-	static int copy_digit();
-	static int keyword();
-	static int decode_syslog(struct keyword *tab, char *what, struct facility *value);
-
-	Variable * find_var(Variable *var, char *name);
-	void do_asgn(Variable *varlist, Asgn *asgn);
-
-        static void print_log_mode();
+static void skipws();
+static void skipline();
+static void skipstmt();
+static int isword(int c);
+static void copy_alpha();
+static void copy_string();
+static int copy_digit();
 
 #ifdef USE_SNMP
-        static char * ident_string(char *);
-	static void add_netlist(char *name, ACL *list);
-	static void free_netlist();
-     	static ACL *find_netlist(char*);
-	static int str2access(char*); 
+static char * ident_string(char *);
+static void add_netlist(char *name, ACL *list);
+static void free_netlist();
+static ACL *find_netlist(char*);
 #endif
 
-	static int yylex();
-	static void putback(char *tok, int length);
+static int yylex();
+static void putback(char *tok, int length);
 
-	static int first_time = 1;
-	static int debug_config;
+static int first_time = 1;
+static int debug_config;
+
+static void asgn(void *base, Value *value, int type, int once);
 %}
 
 %union {
@@ -292,11 +137,10 @@
 	int number;
 	int bool;
 	UINT4 ipaddr;
-	Asgn asgn;
+	Value value;
 	struct {
 		int severity;
 	} category;
-	struct facility facility;
 	struct {
 		int type;
 		Chanlist *chanlist;
@@ -314,35 +158,35 @@
 };
 
 %token EOL
-%token T_NOTIFY T_USEDBM T_LOGGING T_IDENT
-%token T_CATEGORY T_OPTION T_CHANNEL T_LEVEL T_SYSLOG T_FILE
-%token T_DEBUG_LEVEL
-%token T_HOST T_PORT
-%token T_AUTH T_ACCT T_CNTL T_PROXY
-%token T_SNMP T_NETWORK T_ACL T_ALLOW T_DENY T_COMMUNITY
+%token T_ALLOW T_AUTH T_CATEGORY T_DENY T_DETAIL T_FILE T_INFO
+%token T_IDENT T_LEVEL T_LOGGING T_NETWORK T_OPTION T_USEDBM
+%token T_CHECKRAD_ASSUME_LOGGED T_DELAY T_DETAIL T_HOST           
+%token T_EXEC_PROGRAM_GROUP T_EXEC_PROGRAM_USER T_LOG_DIR T_MAX_REQUESTS
+%token T_PORT T_REQUEST_CLEANUP_DELAY T_RETRY T_SPAWN T_STRIP_NAMES   
+%token T_TTL T_USR2DELAY              
+
+%token T_SOURCE_IP T_ACCT_DIR T_ACCT T_CNTL T_PROXY T_CHANNEL
+%token T_SYSLOG T_NOTIFY T_SNMP T_COMMUNITY T_ACL
+
+%token <number> T_FACILITY T_LOGLEVEL T_LOGOPT T_SEVERITY T_SNMP_ACCESS 
 %token <number> T_NUMBER
 %token <ipaddr> T_IPADDR
 %token <string> T_STRING
 %token <bool> T_BOOL
 
-%type <ipaddr> ipaddr host_asgn
-%type <string> hostname channel_name
+%type <string> channel_name
 %type <ipaddr> netmask
 %type <netlist> netlist
 %type <acl> acl network
-%type <number> port port_asgn
-%type <asgn> asgn_stmt value
-%type <number> severity
+%type <value> value
+%type <number> facility severity
 %type <category> category_name
-%type <number> chan_option_list chan_option
-%type <number> level_list level
-%type <facility> facility
 %type <category_def> category_list category_def
+%type <number> obs_option_list obs_option_string level level_list
 
 %%
                 
 input           : list
-                | list stmt /* this allows for the absence of trailing EOL */
                 ;
 
 list            : line
@@ -353,7 +197,7 @@ line            : /* empty */ EOL
                 | stmt EOL
                 | error EOL
                   {
-			  tie_in = 0;
+			  expect_string = 0;
 			  yyclearin; yyerrok;
 		  }
                 ;
@@ -373,17 +217,44 @@ stmt            : logging_stmt
 options_stmt    : T_OPTION '{' option_list '}'
                 ;
 
-option_list     : option
-                | option_list option
+option_list     : option_line
+                | option_list option_line
                 | option_list error errmark
                   {
 			  yyclearin; yyerrok;
 		  }
                 ;
 
-option          : asgn_stmt EOL
+option_line     : /* empty */ EOL
+                | option_def EOL
+
+option_def      : T_SOURCE_IP value
                   {
-			  do_asgn(top_vars, &$1);
+			  asgn(&myip, &$2, AT_IPADDR, 1);
+		  }
+                | T_USR2DELAY value
+                  {
+			  asgn(&config.delayed_hup_wait, &$2, AT_INT, 0);
+		  }
+                | T_MAX_REQUESTS value
+                  {
+			  asgn(&config.max_requests, &$2, AT_INT, 0);
+		  }
+                | T_LOG_DIR value
+                  {
+			  asgn(&radlog_dir, &$2, AT_STRING, 1);
+		  }
+                | T_ACCT_DIR value
+                  {
+			  asgn(&radacct_dir, &$2, AT_STRING, 1);
+		  }
+                | T_EXEC_PROGRAM_USER value
+                  {
+			  asgn(&config.exec_user, &$2, AT_STRING, 0);
+		  }
+                | T_EXEC_PROGRAM_GROUP value
+                  {
+			  asgn(&config.exec_group, &$2, AT_STRING, 0);
 		  }
                 ;
 
@@ -398,41 +269,119 @@ errmark         : EOL
 auth_stmt       : T_AUTH '{' auth_list '}'
                 ;
 
-auth_list       : asgn_stmt EOL
+auth_list       : auth_line
+                | auth_list auth_line
+                | auth_list error errmark
                   {
-			  do_asgn(auth_vars, &$1);
+			  yyclearin; yyerrok;
 		  }
-                | auth_list asgn_stmt EOL
+                ;
+
+auth_line       : /* empty */ EOL
+                | auth_def EOL
+                ;
+
+auth_def        : T_PORT value
                   {
-			  do_asgn(auth_vars, &$2);
-		  }
+			  asgn(&auth_port, &$2, AT_PORT, 1);
+		  }      
+                | T_SPAWN value
+                  {
+			  asgn(&request_class[R_AUTH].spawn, &$2, AT_BOOL, 0);
+		  }      
+                | T_TTL value
+                  {
+			  asgn(&request_class[R_AUTH].ttl, &$2, AT_INT, 0);
+		  }      
+                | T_MAX_REQUESTS value
+                  {
+			  asgn(&request_class[R_AUTH].max_requests, &$2,
+			       AT_INT, 0);
+		  }      
+                | T_REQUEST_CLEANUP_DELAY value
+                  {
+			  asgn(&request_class[R_AUTH].cleanup_delay, &$2,
+			       AT_INT, 0);
+		  }      
+                | T_DETAIL value
+                  {
+			  asgn(&auth_detail, &$2, AT_BOOL, 0);
+		  }      
+                | T_STRIP_NAMES value
+                  {
+			  asgn(&strip_names, &$2, AT_BOOL, 0);
+		  }      
+                | T_CHECKRAD_ASSUME_LOGGED value
+                  {
+			  asgn(&config.checkrad_assume_logged, &$2,
+			       AT_BOOL, 0);
+		  }      
                 ;
 
         /* Acct statement */
 acct_stmt       : T_ACCT '{' acct_list '}'
                 ;
 
-acct_list       : asgn_stmt EOL
+acct_list       : acct_line
+                | acct_list acct_line
+                | acct_list error errmark
                   {
-			  do_asgn(acct_vars, &$1);
-		  }
-                | acct_list asgn_stmt EOL
-                  {
-			  do_asgn(acct_vars, &$2);
+			  yyclearin; yyerrok;
 		  }
                 ;
+
+acct_line       : /* empty */ EOL
+                | acct_def EOL
+                ;
+
+acct_def        : T_PORT value
+                  {
+			  asgn(&acct_port, &$2, AT_PORT, 1);
+		  }      
+                | T_SPAWN value
+                  {
+			  asgn(&request_class[R_AUTH].spawn, &$2, AT_BOOL, 0);
+		  }      
+                | T_TTL value
+                  {
+			  asgn(&request_class[R_AUTH].ttl, &$2, AT_INT, 0);
+		  }      
+                | T_MAX_REQUESTS value
+                  {
+			  asgn(&request_class[R_AUTH].max_requests, &$2,
+			       AT_INT, 0);
+		  }      
+                | T_REQUEST_CLEANUP_DELAY value
+                  {
+			  asgn(&request_class[R_AUTH].cleanup_delay, &$2,
+			       AT_INT, 0);
+		  }      
+/*                | T_DETAIL T_BOOL             
+                  {
+			  asgn(&auth_detail, &$2, AT_BOOL, 0);
+			  }      */
+                ;
+
 
         /* cntl statement */
 cntl_stmt       : T_CNTL '{' cntl_list '}'
                 ;
 
-cntl_list       : asgn_stmt EOL
+cntl_list       : cntl_line
+                | cntl_list cntl_line
+                | cntl_list error errmark
                   {
-			  do_asgn(cntl_vars, &$1);
+			  yyclearin; yyerrok;
 		  }
-                | cntl_list asgn_stmt EOL
+                ;
+
+cntl_line       : /* empty */ EOL
+                | cntl_def EOL
+                ;
+
+cntl_def        : T_PORT value
                   {
-			  do_asgn(cntl_vars, &$2);
+			  asgn(&cntl_port, &$2, AT_PORT, 1);
 		  }
                 ;
 
@@ -440,13 +389,27 @@ cntl_list       : asgn_stmt EOL
 proxy_stmt      : T_PROXY '{' proxy_list '}'
                 ;
 
-proxy_list      : asgn_stmt EOL
+proxy_list      : proxy_line
+                | proxy_list proxy_line
+                | proxy_list error errmark
                   {
-			  do_asgn(proxy_vars, &$1);
+			  yyclearin; yyerrok;
 		  }
-                | proxy_list asgn_stmt EOL
+                ;
+
+proxy_line      : /* empty */ EOL
+                | proxy_def EOL
+                ;
+
+proxy_def       : T_MAX_REQUESTS value
                   {
-			  do_asgn(proxy_vars, &$2);
+			  asgn(&request_class[R_PROXY].max_requests, &$2,
+			       AT_INT, 0);
+		  }
+                | T_REQUEST_CLEANUP_DELAY value
+                  {
+			  asgn(&request_class[R_PROXY].cleanup_delay, &$2,
+			       AT_INT, 0);
 		  }
                 ;
 
@@ -464,8 +427,8 @@ logging         : /* empty */ EOL
                 | category_stmt EOL
                 | error EOL
                   {
-			  tie_in = 0;
-			  in_debug = 0;
+			  expect_string = 0;
+			  in_category = 0;
 			  yyclearin;
 			  yyerrok;
 		  }
@@ -488,14 +451,11 @@ channel_stmt    : T_CHANNEL channel_name '{' channel_list '}'
                   }
                 ;
 
-channel_name    : T_STRING
+channel_name    : { expect_string = 1; } T_STRING
                   {
+			  expect_string = 0;
 			  channel.mode = LM_UNKNOWN;
-		  }
-		| T_AUTH
-		  {
-		  	channel.mode = LM_UNKNOWN;
-		  	strcpy($$, "auth");
+			  strcpy($$, $2);
 		  }
                 ;
 
@@ -509,35 +469,37 @@ channel_def     : /* empty */ EOL
 			  channel.mode = LM_FILE;
 			  channel.id.file = estrdup($2);
 		  }
-                | T_SYSLOG facility '.' facility EOL
+                | T_SYSLOG facility '.' T_SEVERITY EOL
                   {
-			  int prio, lev;
-			  prio = decode_syslog(syslog_facility,
-					       "facility", &$2);
-			  lev  = decode_syslog(syslog_severity,
-					       "severity", &$4);
-			  if (prio != -1 && lev != -1) {
-				  channel.mode = LM_SYSLOG;
-				  channel.id.prio = prio | lev;
-			  }
+			  channel.mode = LM_SYSLOG;
+			  channel.id.prio = $2 | syslog_severity[$4] ;
+			  channel.id.file = NULL;
                   }
-                | T_OPTION chan_option_list EOL
+                | T_LOGOPT T_BOOL EOL
                   {
-			  channel.options = $2;
+			  if ($2)
+				  channel.options |= $1;
+			  else
+				  channel.options &= ~$1;
+		  }
+                | T_OPTION { expect_string=1; } obs_option_list EOL
+                  {
+			  expect_string = 0;
+			  radlog(L_WARN,
+				 _("%s:%d: option statement is obsolete"),
+				 filename, line_num);
+			  channel.options |= $3;
 		  }
                 ;
 
-facility        : T_NUMBER
+facility        : T_FACILITY
+                | T_AUTH
                   {
-			  $$.number = $1;
-			  $$.string[0] = 0;
+			  $$ = LOG_AUTH;
 		  }
-                | T_STRING
-                  {
-			  $$.number = 0;
-			  strcpy($$.string, $1);
-		  }
-                ;
+                | T_NUMBER
+		;
+
 
 	/* Logging control: category definition */
 
@@ -546,48 +508,37 @@ category_stmt   : T_CATEGORY category_name '{' category_list '}'
 			  switch ($2.severity) {
 			  case L_AUTH:
 				  log_mode = $4.level;
-				  print_log_mode();
 				  break;
+			  default:
+				  if ($4.level)
+					  radlog(L_WARN,
+			   _("%s:%d: no levels applicable for this category"),
+						 filename, line_num);
+
 			  }
-			  in_debug = 0;
+			  in_category = 0;
 			  register_category($2.severity, $4.chanlist);
 		  }
                 ;
 
 category_name   : severity
                   {
-			  $$.severity = $1;
-			  /* select xlat_tab */
-			  switch ($1) {
-			  case L_AUTH:
-				  xlat_tab = log_tab;
-				  break;
-			  case L_DBG:
-				  xlat_tab = NULL;
-				  in_debug = 1;
-				  break;
-			  default:
-				  xlat_tab = NULL;
-			  }
+			  $$.severity = in_category = radius_severity[$1];
+			  in_category = $1;
                   }
+                | T_AUTH
+                  {
+			  $$.severity = in_category = L_AUTH;
+		  }
                 ;
 
 severity        : '*'
                   {
 			  $$ = -1;
 		  }
-                | T_AUTH
+                | T_SEVERITY
                   {
-			  $$ = L_AUTH;
-		  }
-                | T_STRING
-                  {
-			  if (($$ = xlat_keyword(loglevels, $1, -1)) == -1) {
-				radlog(L_ERR,
-				      _("%s:%d: unknown severity level"),
-				      filename, line_num);
-				YYERROR;
-			  }
+			  $$ = radius_severity[$1];
 		  }
                 ;
 
@@ -596,7 +547,8 @@ category_list   : category_def
                   {
 			  switch ($2.type) {
 			  case CT_CHANNEL:
-				  $2.chanlist->next = $1.chanlist;
+				  if ($2.chanlist)
+					  $2.chanlist->next = $1.chanlist;
 				  $1.chanlist = $2.chanlist;
 				  break;
 			  case CT_LEVEL:
@@ -607,22 +559,23 @@ category_list   : category_def
                 | category_list error '}'
                   {
 			  /*free_chanlist?*/
-			  tie_in = 0;
+			  expect_string = 0;
 			  putback("}", 1);
 			  yyclearin;
                           yyerrok;  
                   }
                 ;
 
-category_def    : T_CHANNEL T_STRING EOL
+category_def    : T_CHANNEL { expect_string = 1; } T_STRING EOL
                   {
 			  Channel *channel;
-			  channel = channel_lookup($2);
+			  channel = channel_lookup($3);
+			  expect_string = 0;
 			  $$.level = 0;
 			  if (!channel) {
 				  radlog(L_ERR,
 					 _("%s:%d: channel `%s' not defined"),
-					 filename, line_num, $2);
+					 filename, line_num, $3);
 				  $$.type = 0;
 				  $$.chanlist = NULL;
 			  } else {
@@ -630,66 +583,43 @@ category_def    : T_CHANNEL T_STRING EOL
 				  $$.chanlist = make_chanlist(channel);
 			  }
 		  }
-                | T_LEVEL { tie_in++; } level_list EOL
+                | T_LOGLEVEL T_BOOL EOL
                   {
-			  tie_in = 0;
-			  $$.chanlist = NULL;
-			  if (xlat_tab) {
-				  $$.type = CT_LEVEL;
-				  $$.level = $3;
-			  } else {
-				  $$.type = -1;
-				  radlog(L_WARN,
-					 _("%s:%d: no levels applicable for this category"),
-					 filename, line_num);
-			  }
+			  if ($2)
+				  $$.level |= $1;
+			  else
+				  $$.level &= ~$1;
 		  }
-		| T_DEBUG_LEVEL { tie_in++;
-		                  clear_debug(); } debug_level_list EOL
+		| begin_level level_list EOL
                   {
-			  tie_in = 0;
+			  expect_string = 0;
+			  if (in_category == L_AUTH) 
+				  $$.level |= $2;
 		  }			  
                 ;
 
-debug_level_list: debug_level
-                | debug_level_list ',' debug_level
-                ;
-
-debug_level     : T_STRING
+begin_level     : T_LEVEL
                   {
-			  if (set_module_debug_level($1, -1))
+			  switch (in_category) {
+			  case L_DBG:
+				  expect_string = 1;
+				  clear_debug();
+				  break;
+			  case L_AUTH:
+				  expect_string = 1;
 				  radlog(L_WARN,
-					 _("%s:%d: no such module name: %s"),
-					 filename, line_num, $1);
-		  }
-                | T_STRING '=' T_NUMBER
-                  {
-			  if (set_module_debug_level($1, $3))
-				  radlog(L_WARN,
-					 _("%s:%d: no such module name: %s"),
-					 filename, line_num, $1);
+			      _("%s:%d: auth:level statement is obsolete"),
+					 filename, line_num);
+				  break;
+			  default:
+				  yyerror("level not applicable");
+				  YYERROR;
+			  }
 		  }
                 ;
-
-chan_option_list: chan_option
-                | chan_option_list ',' chan_option
-                  {
-			$$ = $1 | $3;
-		  }
-                ;
-
-chan_option     : T_STRING
-                  {
-			 if (($$ = xlat_keyword(log_options, $1, 0)) == 0)
-				radlog(L_ERR, _("%s:%d: unknown option: %s"),
-				       filename, line_num, $1);
-                  }
-                ;
-
-	/* Logging control: level */
 
 level_list      : level
-                | level_list ',' level
+                | level_list ','level
                   {
 			  $$ = $1 | $3;
 		  }
@@ -697,12 +627,44 @@ level_list      : level
 
 level           : T_STRING
                   {
-			  if (xlat_tab &&
-			      ($$ = xlat_keyword(xlat_tab, $1, 0)) == 0)
-				  radlog(L_ERR, _("%s:%d: unknown level: %s"),
-				      filename, line_num, $1);
+			  switch (in_category) {
+			  case L_AUTH:
+				  if (strcmp($1, "auth") == 0)
+					  $$ = RLOG_AUTH;
+				  else if (strcmp($1, "pass") == 0)
+					  $$ = RLOG_AUTH_PASS;
+				  else if (strcmp($1, "failed_pass") == 0)
+					  $$ = RLOG_FAILED_PASS;
+				  else {
+					  radlog(L_WARN,
+					 _("%s:%d: invalid level: %s"),
+						 filename, line_num, $1);
+					  $$ = 0;
+				  }
+				  break;
+				  
+			  case L_DBG:
+				  if (set_module_debug_level($1, -1))
+					  radlog(L_WARN,
+					 _("%s:%d: no such module name: %s"),
+						 filename, line_num, $1);
+				  $$ = 0;
+				  break;
+			  }
+		  }
+                | T_STRING '=' T_NUMBER
+                  {
+			  if (in_category != L_DBG) {
+				  yyerror("level syntax");
+				  YYERROR;
+			  }
+			  if (set_module_debug_level($1, $3))
+				  radlog(L_WARN,
+					 _("%s:%d: no such module name: %s"),
+					 filename, line_num, $1);
 		  }
                 ;
+
 
 usedbm_stmt     : T_USEDBM T_BOOL
                   {
@@ -730,7 +692,7 @@ notify_stmt     : T_NOTIFY '{' notify_list '}'
 					 notify_cfg.timeout);
 		   #else
 			  radlog(L_WARN,
-				 _("%s:%d: notify statement ignored: radiusd compiled without notification support"),
+				 _("%s:%d: notify statement ignored: radiusd compiled without TTL notification support"),
 				 filename, line_num);
                    #endif
 		  }
@@ -748,8 +710,8 @@ notify_stmt     : T_NOTIFY '{' notify_list '}'
 		  }
                 ;
 
-notify_list     : notify_def
-                | notify_list notify_def
+notify_list     : notify_line
+                | notify_list notify_line
                 | notify_list error errmark
                   {
 			  yyclearin;
@@ -757,13 +719,34 @@ notify_list     : notify_def
 		  }
                 ;
 
-notify_def      : asgn_stmt EOL
+notify_line     : /* empty */ EOL
+                | notify_def EOL
+                ;
+
+notify_def      : T_HOST value
                   {
 		   #ifdef USE_NOTIFY 
-			  do_asgn(notify_vars, &$1);
+			  asgn(&notify_cfg.ipaddr, &$2, AT_IPADDR,0);
                    #endif
 		  }
-                | /* empty */ EOL
+                | T_PORT value
+                  {
+		   #ifdef USE_NOTIFY 
+			  asgn(&notify_cfg.port, &$2, AT_PORT, 0);
+                   #endif
+		  }
+                | T_RETRY value
+                  {
+		   #ifdef USE_NOTIFY 
+			  asgn(&notify_cfg.retry, &$2, AT_INT, 0);
+                   #endif
+		  }
+                | T_DELAY value
+                  {
+		   #ifdef USE_NOTIFY 
+			  asgn(&notify_cfg.timeout, &$2, AT_INT, 0);
+                   #endif
+		  }
                 ;
 
 	/* SNMP server parameters */
@@ -850,11 +833,11 @@ snmp_list       : snmp_line
 		  }
                 ;
 
-snmp_line       : snmp_def EOL
+snmp_line       : /* empty */ EOL
+                | snmp_def EOL
                 ;
 
-snmp_def        : /* empty */ 
-                | T_IDENT T_STRING
+snmp_def        : T_IDENT T_STRING
                   {
                    #ifdef USE_SNMP
                           if (server_id)
@@ -862,27 +845,47 @@ snmp_def        : /* empty */
                           server_id = ident_string($2);
                    #endif
                   }
-                | asgn_stmt
-                  {
-		   #ifdef USE_SNMP
-			  do_asgn(snmp_vars, &$1);
-		   #endif
-		  }
-		| T_COMMUNITY T_STRING T_STRING
+                | T_PORT value
                   {
                    #ifdef USE_SNMP
-			  int access;
-		     
+			  asgn(&snmp_port, &$2, AT_PORT, 1);
+                   #endif
+		  }      
+                | T_SPAWN value
+                  {
+                   #ifdef USE_SNMP
+			  asgn(&request_class[R_SNMP].spawn, &$2, AT_BOOL, 0);
+                   #endif
+		  }      
+                | T_TTL value
+                  {
+                   #ifdef USE_SNMP
+			  asgn(&request_class[R_SNMP].ttl, &$2, AT_INT, 0);
+                   #endif
+		  }      
+                | T_MAX_REQUESTS value
+                  {
+                   #ifdef USE_SNMP
+			  asgn(&request_class[R_SNMP].max_requests, &$2,
+			       AT_INT, 0);
+                   #endif
+		  }      
+                | T_REQUEST_CLEANUP_DELAY value
+                  {
+                   #ifdef USE_SNMP
+			  asgn(&request_class[R_SNMP].cleanup_delay, &$2,
+			       AT_INT, 0);
+                   #endif
+		  }      
+		| T_COMMUNITY T_STRING T_SNMP_ACCESS
+                  {
+                   #ifdef USE_SNMP
 			  if (snmp_find_community($2)) {
 				  radlog(L_ERR,
 				      _("%s:%d: community %s already declared"),
 				      filename, line_num, $2);
-			  } else if ((access = str2access($3)) == -1) {
-				  radlog(L_ERR,
-				      _("%s:%d: invalid access mode %s"),
-				      filename, line_num, $3);
 			  } else {
-				  snmp_add_community($2, access);
+				  snmp_add_community($2, $3);
 			  }
                    #endif
 		  }
@@ -907,7 +910,8 @@ acl_list        : acl_line
 		  }
                 ;
 
-acl_line        : acl_def EOL
+acl_line        : /* empty */ EOL
+                | acl_def EOL
                 ;
 
 acl_def         : T_ALLOW acl T_STRING
@@ -931,25 +935,6 @@ acl_def         : T_ALLOW acl T_STRING
                 ;
 
 	/* Assignments */
-asgn_stmt       : T_STRING value
-                  {
-			  $$ = $2;
-			  strncpy($$.name, $1, sizeof($$.name));
-			  $$.name[sizeof($$.name)-1] = 0;
-		  }
-                | host_asgn
-                  {
-			  strcpy($$.name, "host");
-			  $$.type = AT_IPADDR;
-			  $$.v.ipaddr = $1;
-		  }
-                | port_asgn
-                  {
-			  strcpy($$.name, "port");
-			  $$.type = AT_INT;
-			  $$.v.number = $1;
-		  }
-                ;
 
 value           : T_STRING
                   {
@@ -974,60 +959,26 @@ value           : T_STRING
 		  }
                 ;
 
-	/* Assignments: special forms */
-
-host_asgn       : T_HOST ipaddr
+       /* Obsolete syntax: for compatibility with 0.95 and earlier */ 
+obs_option_list : obs_option_string
+                | obs_option_list ',' obs_option_string
                   {
-			  $$ = $2;
-		  }
-                ;
-	
-ipaddr          : T_IPADDR
-                | hostname
-                  {
-			  if (($$ = get_ipaddr($1)) == (UINT4) 0) {
-				  radlog(L_ERR, 
-					 _("%s:%d: unknown host: %s"),
-					 filename, line_num, $1);
-			  }
+			  $$ = $1 | $3;
 		  }
                 ;
 
-hostname        : T_STRING
-                | hostname '.' T_STRING
+obs_option_string: T_STRING
                   {
-                          if (strlen($1) + strlen($3) + 2 >= sizeof($1)) {
-				  radlog(L_ERR, 
-					 _("%s:%d: hostname too long"),
-					 filename, line_num);
-				  YYERROR;
-			  }
-			  radsprintf($$, sizeof($$), "%s.%s", $1, $3);
-                  }	
-                ;
-
-port_asgn       : T_PORT port
-                  {
-			  $$ = $2;
-		  }
-                ;
-
-port            : T_NUMBER
-                | T_STRING
-                  {
-			  struct servent *s;
-			  s = getservbyname($1, "udp");
-			  if (s) 
-				  $$ = ntohs(s->s_port);
-			  else {
-				  radlog(L_ERR, 
-                                         _("%s:%d: no such service: %s"),
-					 filename, line_num, $1);
+			  if (strcmp($1, "pid") == 0)
+				  $$ = LO_PID;
+			  else if (strcmp($1, "cons") == 0)
+				  $$ = LO_CONS;
+			  else if (strcmp($1, "level") == 0)
+				  $$ = LO_LEVEL;
+			  else
 				  $$ = 0;
-			  }
 		  }
                 ;
-
 %%
 	   
 int
@@ -1065,7 +1016,7 @@ again:
 	
 	if (isalpha(*curp)) {
 		copy_alpha();
-		return keyword();
+		return expect_string ? T_STRING : keyword();
 	}
 
 	if (*curp == '\"') {
@@ -1121,6 +1072,14 @@ skipline()
 {
 	while (*curp && *curp != '\n')
 		curp++;
+}
+
+void
+skipstmt()
+{
+	int c;
+	while ((c = yylex()) != 0 && c != EOL)
+		;
 }
 
 int
@@ -1191,103 +1150,6 @@ copy_digit()
 	} while (*curp && (isdigit(*curp) || *curp == '.'));
 	*p = 0;
 	return dot;
-}
-
-#ifdef USE_SNMP
-static struct keyword accs[] = {
-	"ro",         SNMP_RO,
-	"read_only",  SNMP_RO,
-	"rw",         SNMP_RW,
-	"read_write", SNMP_RW,
-	0
-};
-
-int
-str2access(str)
-	char *str;
-{
-	struct keyword *kw;
-
-	for (kw = accs; kw->name; kw++)
-		if (strcmp(kw->name, str) == 0)
-			return kw->tok;
-	return -1;
-}
-#endif
-
-struct keyword keywords[] = {
-	"notify", T_NOTIFY,
-	"host", T_HOST,
-	"port", T_PORT,
-	"file", T_FILE,
-	"syslog", T_SYSLOG,
-	"category", T_CATEGORY,
-	"channel", T_CHANNEL,
-	"option", T_OPTION,
-/*	"level", T_LEVEL,         Handled separately */
-	"usedbm", T_USEDBM,
-	"log", T_LOGGING,
-	"logging", T_LOGGING,
-	"snmp", T_SNMP,
-        "ident", T_IDENT,
-	"acl", T_ACL,
-	"network", T_NETWORK,
-	"allow", T_ALLOW,
-	"deny", T_DENY,
-	"community", T_COMMUNITY,
-	"auth", T_AUTH,
-	"acct", T_ACCT,
-	"cntl", T_CNTL,
-	"proxy", T_PROXY,
-	0
-};
-
-struct keyword booleans[] = {
-	"on", 1,
-	"off", 0,
-	"yes", 1,
-	"no", 0,
-	0
-};
-
-
-int
-keyword()
-{
-        int tok;
-
-	if (tie_in)
-		return T_STRING;
-
-	if (strcmp(yylval.string, "level") == 0) 
-		return in_debug ? T_DEBUG_LEVEL : T_LEVEL; 
-	/* First, see if this is a keyword */
-        if (tok = xlat_keyword(keywords, yylval.string, 0))
-	        return tok;
-	if ((tok = xlat_keyword(booleans, yylval.string, -1)) != -1) {
-                yylval.bool = tok;
-	        return T_BOOL;
-        }
-	return T_STRING;
-}
-
-
-void
-print_log_mode()
-{
-	struct keyword *kw;
-	char buf[128];
-
-	if (debug_config) {
-		buf[0] = 0;
-		for (kw = log_tab; kw->name; kw++) {
-			if (log_mode & kw->tok) {
-				strcat(buf, " ");
-				strcat(buf, kw->name);
-			}
-		}
-		radlog(L_DBG, "log:%s", buf);
-	}
 }
 
 int
@@ -1371,64 +1233,96 @@ get_config()
 	return 0;
 }	
 
-Variable *
-find_var(var, name)
-	Variable *var;
-	char *name;
-{
-	for (; var->name; var++)
-		if (strcmp(var->name, name) == 0)
-			return var;
-	return NULL;
-}
-
 void
-do_asgn(varlist, asgn)
-	Variable *varlist;
-	Asgn *asgn;
+asgn(base, value, type, once)
+	void *base;
+	Value *value;
+	int type;
+	int once;
 {
-	Variable *var;
+	struct servent *s;
+	UINT4 ipaddr;
 	
-	var = find_var(varlist, asgn->name);
-	if (!var) {
-		radlog(L_ERR, _("%s:%d: variable `%s' undefined"),
-		       filename, line_num, asgn->name);
-		return;
+	switch (type) {
+	case AT_PORT:
+		switch (value->type) {
+		case AT_INT:
+			type = AT_INT;
+			break;
+		case AT_STRING:
+			  s = getservbyname(value->v.string, "udp");
+			  if (s) 
+				  value->v.number = ntohs(s->s_port);
+			  else {
+				  radlog(L_ERR, 
+                                         _("%s:%d: no such service: %s"),
+					 filename, line_num,
+					 value->v.string);
+				  return;
+			  }
+			  type = AT_INT;
+			  break;
+		default:
+			break;
+		}
+		break;
+			
+	case AT_IPADDR:
+		switch (value->type) {
+		case AT_IPADDR:
+			break;
+		case AT_INT:
+			type = AT_IPADDR;
+			break;
+		case AT_STRING:
+			ipaddr = get_ipaddr(value->v.string);
+			if (ipaddr == 0) {
+				radlog(L_ERR, 
+				       _("%s:%d: unknown host: %s"),
+				       filename, line_num,
+				       value->v.string);
+			}
+			value->v.ipaddr = ipaddr;
+			type = AT_IPADDR;
+			break;
+		default:
+			break;
+		}
 	}
-	if (var->type != asgn->type) {
+	
+	if (type != value->type) {
 		radlog(L_ERR, 
-                       _("%s:%d: wrong datatype for `%s' (should be %s)"),
-		       filename, line_num, asgn->name, typestr[var->type]);
+		       _("%s:%d: wrong datatype (should be %s)"),
+		       filename, line_num, typestr[type]);
 		return;
 	}
 
-#define check_once(v, c) \
-	if ((v)->once && !first_time && (c))\
+#define check_once(c) \
+	if (once && !first_time && (c))\
 		schedule_restart();
 	
-	switch (var->type) {
+	switch (type) {
 	case AT_INT:
-		check_once(var, *(int*) var->base != asgn->v.number);
-		*(int*) var->base = asgn->v.number;
+		check_once(*(int*) base != value->v.number);
+		*(int*) base = value->v.number;
 		break;
 	case AT_STRING:
-		check_once(var,
-			   *(char**)var->base == NULL ||
-			   strcmp(*(char**)var->base, asgn->v.string));
-		replace_string((char**)var->base, asgn->v.string);
+		check_once(*(char**)base == NULL ||
+			   strcmp(*(char**)base, value->v.string));
+		replace_string((char**)base, value->v.string);
 		break;
 	case AT_IPADDR:
-		check_once(var, *(UINT4*) var->base != asgn->v.ipaddr);
-		*(UINT4*) var->base = asgn->v.ipaddr;
+		check_once(*(UINT4*) base != value->v.ipaddr);
+		*(UINT4*) base = value->v.ipaddr;
 		break;
 	case AT_BOOL:
-		check_once(var, *(int*) var->base != asgn->v.bool);
-		*(int*) var->base = asgn->v.bool;
+		check_once(*(int*) base != value->v.bool);
+		*(int*) base = value->v.bool;
 		break;
 	default:
 		radlog(L_CRIT,
-		       _("INTERNAL ERROR at %s:%d: unknown datatype %d, var %p"),
-		       __FILE__, __LINE__, var->type, var);
+		       _("INTERNAL ERROR at %s:%d: unknown datatype %d"),
+		       __FILE__, __LINE__, type);
 	}
 }
 
@@ -1438,7 +1332,8 @@ char *
 ident_string(str)
 	char *str;
 {
-        return estrdup(str);
+
+	return estrdup(str);
 }
 
 void
@@ -1482,26 +1377,6 @@ find_netlist(name)
 }
 
 #endif
-
-int
-decode_syslog(tab, what, value)
-	struct keyword *tab;
-	char *what;
-	struct facility *value;
-{
-	int val;
-	
-	if (value->number)
-		val = value->number;
-	else {
-		val = xlat_keyword(tab, value->string, -1);
-		if (val == -1) 
-			radlog(L_ERR,
-			    _("%s:%d: unknown syslog %s: %s"),
-			    filename, line_num, what, value->string);
-	}
-	return val;
-}
 
 int
 yyerror(s)

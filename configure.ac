@@ -159,6 +159,11 @@ fi
 AC_CHECK_FUNCS(pthread_atfork)
 
 ## * Checks for header files.
+
+# Override CPPFLAGS
+save_CPPFLAGS=$CPPFLAGS
+CPPLAGS="$CPPLAGS $INCLUDEPATH"
+
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(fcntl.h malloc.h strings.h\
@@ -250,6 +255,9 @@ AC_CHECK_DECLS([strncasecmp, strtok_r, localtime_r, asprintf, vasprintf, getline
 # include <time.h>
 #endif
 #include <stdio.h>])
+
+# Restore CPPFLAGS
+CPPFLAGS=$save_CPPFLAGS
 
 AC_ARG_WITH(included-argp,
 	[  --with-included-argp           Use included argp library],

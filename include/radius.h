@@ -72,6 +72,7 @@ typedef struct pw_auth_hdr {
 #define RT_PASSWORD_REJECT              9
 #define RT_ACCOUNTING_MESSAGE           10
 #define RT_ACCESS_CHALLENGE             11
+#define RT_STATUS_SERVER                12
 
 #define RT_ASCEND_TERMINATE_SESSION     31
 #define RT_ASCEND_EVENT_REQUEST         33

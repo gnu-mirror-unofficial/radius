@@ -1,3 +1,13 @@
+2001-10-26 Sergey Poznyakoff
+
+	* radlib/util.c: New function format_string_visual(): format a
+	string of possibly intermixed printable and non-printable characters.
+	pairstr_format(): Use format_string_visual() to format vendor-specific
+	pairs.
+	* include/radius.h: Declaration of format_string_visual().
+
+	* doc/texinfo/configure.texi: Documented message statement.
+
 2001-10-25 Sergey Poznyakoff
 
 	* radiusd/auth.c: Fixed bug in req_decrypt_password (possible

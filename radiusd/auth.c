@@ -1219,6 +1219,8 @@ sfn_ack(m)
 {
 	debug(1, ("ACK: %s", m->namepair->strvalue));
 	
+	stat_inc(auth, m->req->ipaddr, num_accepts);
+
 	rad_send_reply(PW_AUTHENTICATION_ACK,
 		       m->req,
 		       m->user_reply,

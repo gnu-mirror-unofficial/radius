@@ -139,7 +139,7 @@ tsh_help(int argc, char **argv)
 				   cp->longname + len);
 		if (cp->usage)
 			n += printf(" %s", cp->usage);
-		print_doc(n, cp->doc);
+		print_doc(n, gettext(cp->doc));
 	}
 }
 

@@ -22,3 +22,5 @@ $INCLUDE @SOURCEDIR@/../../raddb/dict/cisco
 $INCLUDE @SOURCEDIR@/../../raddb/dict/voip
 $INCLUDE @SOURCEDIR@/../../raddb/dict/ascend
 $INCLUDE @SOURCEDIR@/../../raddb/dict/tunnel
+
+PROPERTY	Cisco-AVPair	[]P

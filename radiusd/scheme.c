@@ -47,8 +47,7 @@ catch_body(void *data)
 {
 	scm_init_load_path();
 	radscm_init();
-	rscm_radlog_init();
-	rscm_rewrite_init();
+	rscm_server_init();
 	radiusd_main();
 	return SCM_BOOL_F;
 }
@@ -112,9 +111,13 @@ scheme_auth(char *procname, RADIUS_REQ *req,
 		       _("%s is not a procedure object"), procname);
 		return 1;
 	}
-	if (setjmp(jmp_env)) 
+	if (setjmp(jmp_env)) {
+		radlog(L_NOTICE,
+		       _("Procedure `%s' failed: see error output for details"),
+		       procname);
 		return 1;
-
+	}
+	
 	res = scm_internal_lazy_catch(
 		SCM_BOOL_T,
 		eval_catch_body,
@@ -159,8 +162,12 @@ scheme_acct(char *procname, RADIUS_REQ *req)
 		       _("%s is not a procedure object"), procname);
 		return 1;
 	}
-	if (setjmp(jmp_env))
+	if (setjmp(jmp_env)) {
+		radlog(L_NOTICE,
+		       _("Procedure `%s' failed: see error output for details"),
+		       procname);
 		return 1;
+	}
 	res = scm_internal_lazy_catch(
 		SCM_BOOL_T,
 		eval_catch_body,

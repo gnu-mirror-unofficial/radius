@@ -190,7 +190,7 @@ log_to_channel(chan, cat, pri, buf1, buf2, buf3)
                 fp = channel_open_file(chan);
                 if (!fp) /* FIXME: log to default channel */
                         break;
-                fprintf(fp, "%s: ", buffer);
+                fprintf(fp, "%s ", buffer);
                 if (chan->options & LO_PID) 
                         fprintf(fp, "[%lu]: ", getpid());
                 if (chan->options & LO_TID) 
@@ -493,4 +493,5 @@ log_set_default(name, cat, pri)
         chanlist.chan = channel_lookup(name);
         register_category(cat, pri, &chanlist);
 }
+
 

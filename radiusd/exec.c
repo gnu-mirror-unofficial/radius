@@ -477,6 +477,30 @@ static int error_log_handler(int argc, cfg_value_t *argv, void *block_data,
 static int _store_format_ptr(int argc, cfg_value_t *argv, void *block_data,
 			     void *handler_data);
 
+
+static int
+filter_cleanup_proc(unused, sym)
+	void *unused;
+	Filter_symbol *sym;
+{
+	Filter *filter;
+	pthread_t tid = pthread_self();
+	
+	for (filter = sym->filter; filter; filter = filter->next) {
+		if (filter->tid == tid) {
+			filter_close(filter);
+			break;
+		}
+	}
+}
+
+/* Called from the first thread cleanup handler */
+void
+filter_cleanup()
+{
+	symtab_iterate(filter_tab, filter_cleanup_proc, NULL);
+}
+
 static int
 _close_filter(data, sym)
 	struct filter_sigchild_data *data;

@@ -98,17 +98,18 @@ pw_expired(exptime)
 	return 0;
 }
 
+char *username_valid_chars;
+
 /*
  * Check if the username is valid. Valid usernames consist of 
- * alphanumeric characters and symbols from valid_char[]
+ * alphanumeric characters and symbols from username_valid_chars[]
  * array
  */
 int
 check_user_name(p)
 	char *p;
 {
-	static char valid_char[] = ".-_!@#$%^&";
-	for (; *p && (isalnum(*p) || strchr(valid_char, *p)); p++)
+	for (; *p && (isalnum(*p) || strchr(username_valid_chars, *p)); p++)
 		;
 	return *p;
 }
@@ -121,7 +122,7 @@ check_disable(username, user_msg)
 	if (get_deny(username)) {
 		*user_msg = NULL;
 		asprintf(user_msg, 
-			    _("Sorry, your account is currently closed\r\n"));
+			 _("Sorry, your account is currently closed\r\n"));
 		return -1;
 	}
 	return 0;

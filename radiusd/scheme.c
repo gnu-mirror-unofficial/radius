@@ -154,7 +154,7 @@ scheme_acct(procname, req)
 	procsym = scm_symbol_value0 (procname);
 	if (scm_procedure_p(procsym) != SCM_BOOL_T) {
 		radlog(L_ERR,
-		       _("procname is not a procedure object"));
+		       _("%s is not a procedure object"), procname);
 		return 1;
 	}
 	if (setjmp(jmp_env))

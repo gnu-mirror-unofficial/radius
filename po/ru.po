@@ -9,8 +9,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-09-20 17:08+0300\n"
-"PO-Revision-Date: 2002-08-02 14:01+0300\n"
+"POT-Creation-Date: 2002-12-23 12:06+0200\n"
+"PO-Revision-Date: 2002-12-23 14:40+0200\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -50,7 +50,7 @@ msgstr "ошибка при получении данных от %s:%d"
 msgid "compiled without debugging support"
 msgstr "поддержка отладки не включена при компиляции"
 
-#: lib/dict.c:97 lib/nas.c:64 radiusd/files.c:1062
+#: lib/dict.c:97 lib/nas.c:64 radiusd/files.c:968
 msgid "too few fields"
 msgstr "недостаточно полей"
 
@@ -228,26 +228,26 @@ msgstr "логаут: не найдена запись login для NAS %s, порт %d"
 msgid "can't open %s"
 msgstr "невозможно открыть %s"
 
-#: lib/users.l:137
+#: lib/users.l:138
 msgid "not enough memory"
 msgstr "недостаточно памяти"
 
-#: lib/users.l:239 radiusd/config.y:889
+#: lib/users.l:240 radiusd/config.y:889
 #, c-format
 msgid "can't stat `%s'"
 msgstr "stat(%s) не сработал"
 
-#: lib/users.l:251
+#: lib/users.l:252
 #, c-format
 msgid "%s:%d: `%s' already included here"
 msgstr "%s:%d: `%s' уже включен здесь"
 
-#: lib/users.l:254
+#: lib/users.l:255
 #, c-format
 msgid "`%s' already included at top level"
 msgstr "`%s' уже включен на верхнем уровне"
 
-#: lib/users.l:261 radiusd/builddbm.c:152
+#: lib/users.l:262 radiusd/builddbm.c:152
 #, c-format
 msgid "can't open `%s'"
 msgstr "невозможно открыть `%s'"
@@ -358,7 +358,6 @@ msgid "Give a short usage message"
 msgstr "Выдать краткую подсказку по использованию"
 
 #: lib/argp-parse.c:103
-#, fuzzy
 msgid "Set the program name"
 msgstr "Задать номер порта для авторизации"
 
@@ -403,8 +402,8 @@ msgstr "ошибочное число аргументов к форме %s"
 msgid "form `%s' not closed"
 msgstr "форма `%s' не закрыта"
 
-#: lib/radargp.c:38 radiusd/radiusd.c:219 radiusd/radiusd.c:227
-#: radiusd/radiusd.c:239
+#: lib/radargp.c:38 radiusd/radiusd.c:215 radiusd/radiusd.c:223
+#: radiusd/radiusd.c:235
 msgid "DIR"
 msgstr "ДИРЕКТОРИЯ"
 
@@ -604,7 +603,6 @@ msgid "Outside allowed timespan (%s)"
 msgstr "Вне дозволенного интервала (%s)"
 
 #: radiusd/auth.c:1222
-#, fuzzy
 msgid "external check failed: "
 msgstr "внешняя проверка не удалась: "
 
@@ -626,49 +624,44 @@ msgstr "невозможно сохранить datum для %s"
 msgid "cannot open dbm file %s"
 msgstr "невозможно открыть файл dbm %s"
 
-#: radiusd/checkrad.c:85
+#: radiusd/checkrad.c:84
 #, c-format
 msgid "unknown NAS type: %s (nas %s)"
 msgstr "неизвестный тип NAS-а: %s (NAS %s)"
 
-#: radiusd/checkrad.c:225
+#: radiusd/checkrad.c:224
 #, c-format
 msgid "timed out in waiting SNMP response from NAS %s"
 msgstr "время ожидания ответа SNMP от NAS %s истекло"
 
-#: radiusd/checkrad.c:277
+#: radiusd/checkrad.c:276
 msgid "no snmp_oid"
 msgstr "отсутствует snmp_oid"
 
-#: radiusd/checkrad.c:284
+#: radiusd/checkrad.c:283
 #, c-format
 msgid "invalid OID: %s"
 msgstr "недействительный OID: %s"
 
-#: radiusd/checkrad.c:302
+#: radiusd/checkrad.c:301
 #, c-format
 msgid "can't create snmp session: %s"
 msgstr "невозможно создать сессию SNMP: %s"
 
-#: radiusd/checkrad.c:311
+#: radiusd/checkrad.c:310
 #, c-format
 msgid "can't open snmp session: %s"
 msgstr "невозможно открыть сессию SNMP: %s"
 
-#: radiusd/checkrad.c:320 radiusd/checkrad.c:330 radiusd/snmpserv.c:881
+#: radiusd/checkrad.c:319 radiusd/checkrad.c:329 radiusd/snmpserv.c:881
 #, c-format
 msgid "can't create SNMP PDU: %s"
 msgstr "невозможно создать PDU SNMP: %s"
 
-#: radiusd/checkrad.c:409
+#: radiusd/checkrad.c:405
 #, c-format
 msgid "unknown host: %s"
 msgstr "неизвестная машина: %s"
-
-#: radiusd/checkrad.c:475
-#, c-format
-msgid "timed out in waiting for finger response from NAS %s"
-msgstr "время ожидания ответа finger от NAS %s истекло"
 
 #: radiusd/config.y:176
 msgid "unknown block statement"
@@ -743,37 +736,37 @@ msgstr "seteuid(%d) не сработал (ruid=%d, euid=%d)"
 msgid "setreuid(0,%d) failed (ruid=%d, euid=%d)"
 msgstr "setreuid(%d) не сработал (ruid=%d, euid=%d)"
 
-#: radiusd/exec.c:142
+#: radiusd/exec.c:138
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
 msgstr ""
 "radius_exec_program(): невозможно выполнить, имя программы не начинается "
 "абсолютным путем: %s"
 
-#: radiusd/exec.c:153
+#: radiusd/exec.c:149
 #, c-format
 msgid "radius_exec_program(): won't execute, no such user: %s"
 msgstr ""
 "radius_exec_program(): невозможно выполнить, неизвестный пользователь %s"
 
-#: radiusd/exec.c:160
+#: radiusd/exec.c:156
 msgid "couldn't open pipe"
 msgstr "невозможно отрыть канал"
 
-#: radiusd/exec.c:185 radiusd/exec.c:217
+#: radiusd/exec.c:178 radiusd/exec.c:212
 msgid "can't close pipe"
 msgstr "невозможно закрыть канал"
 
-#: radiusd/exec.c:187
+#: radiusd/exec.c:180
 msgid "can't dup stdout"
 msgstr ""
 
-#: radiusd/exec.c:234 radiusd/exec.c:821
+#: radiusd/exec.c:229 radiusd/exec.c:819
 #, c-format
 msgid "<stdout of %s>:%d: %s"
 msgstr ""
 
-#: radiusd/exec.c:258
+#: radiusd/exec.c:252
 #, c-format
 msgid ""
 "can't run external program `%s' (reason reported via syslog channel user.err)"
@@ -781,61 +774,61 @@ msgstr ""
 "невозможно выполнить програму `%s' (причина сообщается через syslog, канал "
 "user.err)"
 
-#: radiusd/exec.c:267
+#: radiusd/exec.c:260
 #, c-format
 msgid "external program `%s' %s"
 msgstr "внешняя программа `%s' %s"
 
-#: radiusd/exec.c:288
+#: radiusd/exec.c:281
 #, c-format
 msgid "won't execute, no such user: %s"
 msgstr "невозможно выполнить; нет такого пользователя: %s"
 
-#: radiusd/exec.c:515
-#, c-format
-msgid "filter %s (pid %d) %s (in: %u, out: %u)"
-msgstr "фильтр %s (pid %d) %s (считано: %u, записано: %u)"
-
-#: radiusd/exec.c:550
+#: radiusd/exec.c:509
 #, c-format
 msgid "Too many (%d) threads waiting for filter %s."
 msgstr "Слишком много (%d) потоков ожидает освобождения фильтра %s."
 
-#: radiusd/exec.c:628
+#: radiusd/exec.c:607
 #, c-format
 msgid "filter %s is not declared"
 msgstr "фильтр %s не объявлен"
 
-#: radiusd/exec.c:663
+#: radiusd/exec.c:639
+#, c-format
+msgid "filter %s (pid %d) %s (in: %u, out: %u)"
+msgstr "фильтр %s (pid %d) %s (считано: %u, записано: %u)"
+
+#: radiusd/exec.c:659
 #, c-format
 msgid "cannot run filter %s"
 msgstr "невозможно выполнить фильтр %s"
 
-#: radiusd/exec.c:680
+#: radiusd/exec.c:678
 #, c-format
 msgid "filter %s"
 msgstr "фильтр %s"
 
-#: radiusd/exec.c:712
+#: radiusd/exec.c:710
 msgid "wrong return type"
 msgstr "неправильный тип возврата"
 
-#: radiusd/exec.c:807 radiusd/exec.c:874
+#: radiusd/exec.c:805 radiusd/exec.c:872
 #, c-format
 msgid "reading from filter %s"
 msgstr "чтение из фильтра %s"
 
-#: radiusd/exec.c:830
+#: radiusd/exec.c:828
 #, c-format
 msgid "filter %s (auth): bad output: %s"
 msgstr "фильтр %s (auth): плохой выход %s"
 
-#: radiusd/exec.c:887
+#: radiusd/exec.c:885
 #, c-format
 msgid "filter %s (acct): bad output: %s"
 msgstr "фильтр %s (auth): плохой выход %s"
 
-#: radiusd/exec.c:972
+#: radiusd/exec.c:971
 #, c-format
 msgid "%s:%d: filter already declared at %s:%d"
 msgstr "%s:%d: фильтр уже объявлен в %s:%d"
@@ -864,45 +857,35 @@ msgstr "неизвестный атрибут `%s/%s'"
 msgid "expected opcode but found %s"
 msgstr "ожидается код операции, однако обнаружен %s"
 
-#: radiusd/files.c:627
+#: radiusd/files.c:597
 #, c-format
-msgid "unknown value %s"
-msgstr "неизвестное значение %s"
+msgid "install_pair failed on %s"
+msgstr ""
 
-#: radiusd/files.c:675
-#, c-format
-msgid "%s: error parsing date %s"
-msgstr "%s: невозможно расшифровать дату %s"
-
-#: radiusd/files.c:688
-#, c-format
-msgid "unknown attribute type %d"
-msgstr "неизвестный тип атрибута %d"
-
-#: radiusd/files.c:702
+#: radiusd/files.c:608
 #, c-format
 msgid "expected , but found %s"
 msgstr "ожидается , однако обнаружен %s"
 
 # Function is feminine
-#: radiusd/files.c:812 radiusd/files.c:910
+#: radiusd/files.c:718 radiusd/files.c:816
 msgid "not defined"
 msgstr "не определена"
 
-#: radiusd/files.c:960 radiusd/files.c:1145
+#: radiusd/files.c:866 radiusd/files.c:1051
 msgid "wrong number of fields"
 msgstr "неверное количество полей"
 
-#: radiusd/files.c:1073
+#: radiusd/files.c:979
 msgid "unknown method"
 msgstr "неизвестный метод"
 
-#: radiusd/files.c:1150
+#: radiusd/files.c:1056
 #, c-format
 msgid "user `%s' already found in %s"
 msgstr "имя пользователя `%s' уже встречалось в %s"
 
-#: radiusd/files.c:1176
+#: radiusd/files.c:1082
 #, c-format
 msgid "%d user disabled"
 msgid_plural "%d users disabled"
@@ -910,40 +893,40 @@ msgstr[0] "%d пользователь отключен"
 msgstr[1] "%d пользователя отключены"
 msgstr[2] "%d пользователей отключено"
 
-#: radiusd/files.c:1782
+#: radiusd/files.c:1688
 msgid "using only dbm: USERS NOT LOADED"
 msgstr "используется только DBM: БАЗА ПОЛЬЗОВАТЕЛЕЙ НЕ ЗАГРУЖЕНА"
 
-#: radiusd/files.c:1790
+#: radiusd/files.c:1696
 msgid "DBM files found but no -b flag given - NOT using DBM"
 msgstr ""
 "обнаружены файлы DBM, однако флаг -b не был задан - DBM не используется"
 
-#: radiusd/files.c:1794
+#: radiusd/files.c:1700
 #, c-format
 msgid "can't load %s: exited"
 msgstr "невозможно загрузить %s: завершение работы"
 
-#: radiusd/files.c:1797
+#: radiusd/files.c:1703
 #, c-format
 msgid "%s reloaded."
 msgstr "%s загружен"
 
-#: radiusd/files.c:1873
+#: radiusd/files.c:1779
 msgid "SQL Error: SQL client could not be initialized"
 msgstr "Ошибка SQL: невозможно инициализировать клиентскую часть"
 
-#: radiusd/files.c:1886
+#: radiusd/files.c:1792
 #, c-format
 msgid "INTERNAL ERROR: unknown reload code: %d"
 msgstr "ВНУТРЕННЯЯ ОШИБКА: неизвестный код загрузки: %d"
 
-#: radiusd/files.c:2017
+#: radiusd/files.c:1923
 #, c-format
 msgid "can't create parser output file `%s'"
 msgstr "невозможно создать выходной файл отладки парсера `%s'"
 
-#: radiusd/files.c:2031
+#: radiusd/files.c:1937
 #, c-format
 msgid "dumped users database to %s"
 msgstr "база пользователей скопирована в %s"
@@ -1158,133 +1141,118 @@ msgstr "%s:%d: атрибут %s не разрешен в RHS"
 msgid "BEGIN without Fall-Through"
 msgstr "BEGIN без Fall-Through"
 
-#: radiusd/radius.c:103
+#: radiusd/radius.c:105
 msgid "request from unknown client"
 msgstr "запрос от неизвестного клиента"
 
-#: radiusd/radiusd.c:212
+#: radiusd/radiusd.c:208
 msgid "GNU radius daemon"
 msgstr "Демон GNU radius"
 
-#: radiusd/radiusd.c:216
+#: radiusd/radiusd.c:212
 msgid "radiusd specific switches:"
 msgstr "опции radiusd:"
 
-#: radiusd/radiusd.c:218
+#: radiusd/radiusd.c:214
 msgid "Do detailed authentication logging"
 msgstr "Вести детальный журнал авторизации"
 
-#: radiusd/radiusd.c:220
+#: radiusd/radiusd.c:216
 msgid "Set accounting directory"
 msgstr "Задать директорию для аккаунтинга"
 
-#: radiusd/radiusd.c:223
+#: radiusd/radiusd.c:219
 msgid "Enable DBM support"
 msgstr "Включить поддержку DBM"
 
-#: radiusd/radiusd.c:226
+#: radiusd/radiusd.c:222
 msgid "Stay in foreground"
 msgstr "Остаться на переднем плане"
 
-#: radiusd/radiusd.c:228
+#: radiusd/radiusd.c:224
 msgid "Set logging directory name"
 msgstr "Задать директорию для журналов"
 
-#: radiusd/radiusd.c:230
+#: radiusd/radiusd.c:226
 msgid "Select operation mode: test, checkconf, builddbm."
 msgstr "Выбрать режим работы: test, checkconf, builddbm."
 
-#: radiusd/radiusd.c:232
+#: radiusd/radiusd.c:228
 msgid "Do only authentication"
 msgstr "Вести только авторизацию"
 
-#: radiusd/radiusd.c:234
+#: radiusd/radiusd.c:230
 msgid "Do not resolve IP addresses"
 msgstr "Не разворачивать IP адреса"
 
-#: radiusd/radiusd.c:235 radlast/radlast.c:129
+#: radiusd/radiusd.c:231 radlast/radlast.c:129
 msgid "IPADDR"
 msgstr "IPADDR"
 
-#: radiusd/radiusd.c:236
+#: radiusd/radiusd.c:232
 msgid "Listen on IPADDR"
 msgstr "Слушать IPADDR"
 
-#: radiusd/radiusd.c:238
+#: radiusd/radiusd.c:234
 msgid "Set authentication port number"
 msgstr "Задать номер порта для авторизации"
 
-#: radiusd/radiusd.c:240
+#: radiusd/radiusd.c:236
 msgid "Store pidfile in DIR"
 msgstr "Сохранить файл PID в ДИРЕКТОРИИ"
 
-#: radiusd/radiusd.c:242
+#: radiusd/radiusd.c:238
 msgid "Strip prefixes/suffixes off user names before logging"
 msgstr ""
 "Удалять префиксы и суффиксы из имени пользователя перед записью в журнал"
 
-#: radiusd/radiusd.c:244
+#: radiusd/radiusd.c:240
 msgid "Run in single process mode"
 msgstr "Работать в режиме одного процесса"
 
-#: radiusd/radiusd.c:245
+#: radiusd/radiusd.c:241
 msgid "DEBUGSPEC"
 msgstr "DEBUGSPEC"
 
-#: radiusd/radiusd.c:246
+#: radiusd/radiusd.c:242
 msgid "Set debugging level"
 msgstr "Задать уровень отладки"
 
-#: radiusd/radiusd.c:248
-#, fuzzy
+#: radiusd/radiusd.c:244
 msgid "Log authentications"
 msgstr "Вести журнал авторизаций"
 
-#: radiusd/radiusd.c:249 radlast/radlast.c:125 radlast/radlast.c:137
-#: radtest/main.c:82 radtest/main.c:86 radzap/radzap.c:69
-msgid "NUMBER"
-msgstr "ЧИСЛО"
-
-#: radiusd/radiusd.c:250
-msgid "Start watcher process"
-msgstr "Запустить контрольный процесс"
-
-#: radiusd/radiusd.c:252
+#: radiusd/radiusd.c:246
 msgid "Log users' passwords"
 msgstr "Регистрировать пароли пользователей"
 
-#: radiusd/radiusd.c:291
+#: radiusd/radiusd.c:285
 msgid "radiusd compiled without DBM support"
 msgstr "radiusd скомпилирован без поддержки DBM"
 
-#: radiusd/radiusd.c:300
+#: radiusd/radiusd.c:294
 #, c-format
 msgid "unknown mode: %s"
 msgstr "неизвестный режим: %s"
 
-#: radiusd/radiusd.c:312
+#: radiusd/radiusd.c:306
 #, c-format
 msgid "invalid IP address: %s"
 msgstr "недействительный IP адрес: %s"
 
-#: radiusd/radiusd.c:447
-msgid "can't create watcher: not started as absolute pathname"
-msgstr ""
-"невозможно создать контрольный процесс: имя программы не абсолютный путь"
-
-#: radiusd/radiusd.c:474
+#: radiusd/radiusd.c:450
 msgid "Sorry, your account is currently closed\n"
 msgstr "Сожалею, вас счет в настоящее время закрыт\n"
 
-#: radiusd/radiusd.c:476
+#: radiusd/radiusd.c:452
 msgid "Password has expired\n"
 msgstr "Срок действия пароля истек\n"
 
-#: radiusd/radiusd.c:478
+#: radiusd/radiusd.c:454
 msgid "Password will expire in %R{Password-Expire-Days} Days\n"
 msgstr "Срок действия пароля истечет через %R{Password-Expire-Days} дней\n"
 
-#: radiusd/radiusd.c:480
+#: radiusd/radiusd.c:456
 msgid ""
 "\n"
 "Access denied\n"
@@ -1292,7 +1260,7 @@ msgstr ""
 "\n"
 "Отказ в доступе\n"
 
-#: radiusd/radiusd.c:482
+#: radiusd/radiusd.c:458
 msgid ""
 "\n"
 "Realm quota exceeded - access denied\n"
@@ -1300,7 +1268,7 @@ msgstr ""
 "\n"
 "Превышена квота зоны -- отказано в доступе\n"
 
-#: radiusd/radiusd.c:484
+#: radiusd/radiusd.c:460
 msgid ""
 "\n"
 "You are already logged in %R{Simultaneous-Use} times - access denied\n"
@@ -1308,7 +1276,7 @@ msgstr ""
 "\n"
 "На вас уже открыты %R{Simultaneous-Use} сессии -- отказано в доступе\n"
 
-#: radiusd/radiusd.c:486
+#: radiusd/radiusd.c:462
 msgid ""
 "\n"
 "You are already logged in - access denied\n"
@@ -1316,130 +1284,124 @@ msgstr ""
 "\n"
 "На вас уже открыта сессия -- отказано в доступе\n"
 
-#: radiusd/radiusd.c:488
+#: radiusd/radiusd.c:464
 msgid "You are calling outside your allowed timespan\n"
 msgstr "Попытка подключения вне разрешенного интервала времени\n"
 
-#: radiusd/radiusd.c:610
+#: radiusd/radiusd.c:527
 msgid "Starting"
 msgstr "Начало работы"
 
-#: radiusd/radiusd.c:637
-#, fuzzy
+#: radiusd/radiusd.c:560
 msgid "Ready"
 msgstr "Готов"
 
-#: radiusd/radiusd.c:649
+#: radiusd/radiusd.c:572
 msgid "Ready to process requests."
 msgstr "Готов к обработке запросов"
 
-#: radiusd/radiusd.c:827
+#: radiusd/radiusd.c:751
 msgid "Normal shutdown."
 msgstr "Нормальное завершение."
 
-#: radiusd/radiusd.c:847
+#: radiusd/radiusd.c:771
 msgid "flushing request queues"
 msgstr "сброс очередей запросов"
 
-#: radiusd/radiusd.c:863
+#: radiusd/radiusd.c:784
 msgid "restart initiated"
 msgstr "начата подготовка к перезапуску"
 
-#: radiusd/radiusd.c:866
+#: radiusd/radiusd.c:787
 msgid "can't restart: not started as absolute pathname"
 msgstr "перезапуск невозможен: имя программы не абсолютный путь"
 
-#: radiusd/radiusd.c:915
+#: radiusd/radiusd.c:836
 msgid "restarting radius"
 msgstr "перезапуск radius"
 
-#: radiusd/radiusd.c:917
+#: radiusd/radiusd.c:838
 msgid "RADIUS NOT RESTARTED: exec failed"
 msgstr "ПЕРЕЗАПУСК НЕУДАЧЕН: ошибка exec"
 
-#: radiusd/radiusd.c:1234
+#: radiusd/radiusd.c:1155
 msgid "Radiusd is not listening on any port. Trying to continue anyway..."
 msgstr "Radiusd не обслуживает ни один порт. Продолжаем, тем не менее..."
 
-#: radiusd/radiusd.c:1246
-#, fuzzy
+#: radiusd/radiusd.c:1167
 msgid "Loading configuration files."
 msgstr "Повторная загрузка конфигурационных файлов"
 
-#: radiusd/radiusd.c:1259
+#: radiusd/radiusd.c:1180
 msgid "Errors reading config file - EXITING"
 msgstr "Ошибки при обработке файла config - завершение работы"
 
-#: radiusd/radiusd.c:1285
-msgid "can't find out my own IP address"
-msgstr "невозможно определить мой IP адрес"
-
-#: radiusd/radiusd.c:1299
+#: radiusd/radiusd.c:1192
 msgid "Reloading configuration now"
 msgstr "Начинаю перезагрузку конфигурационных файлов"
 
-#: radiusd/radiusd.c:1312
+#: radiusd/radiusd.c:1205
 #, c-format
 msgid "Dumping users db to `%s'"
 msgstr "База данных по пользователям сброшена в `%s'"
 
-#: radiusd/radiusd.c:1336
+#: radiusd/radiusd.c:1229
 msgid "can't restart: radiusd not started as absolute pathname"
 msgstr "перезапуск невозможен: имя программы не абсолютный путь"
 
-#: radiusd/radiusd.c:1349
+#: radiusd/radiusd.c:1242
 msgid "RADIUSD RUNNING"
 msgstr "RADIUSD В РАБОТЕ"
 
-#: radiusd/radiusd.c:1356
+#: radiusd/radiusd.c:1249
 msgid "RADIUSD SUSPENDED"
 msgstr "RADIUSD ОСТАНОВЛЕН"
 
 # Should I handle plurals here, or just leave them as they are?
-#: radiusd/radiusd.c:1393
+#: radiusd/radiusd.c:1286
 #, c-format
 msgid "%u classes, %u buckets are using %u bytes of memory"
 msgstr "%u классов, %u контейнеров используют %u байт памяти"
 
-#: radiusd/radiusd.c:1400
+#: radiusd/radiusd.c:1293
 #, c-format
 msgid "memory utilization: %u.%1u%%"
 msgstr "использование памяти: %u.%1u%%"
 
-#: radiusd/radiusd.c:1405
+#: radiusd/radiusd.c:1298
 msgid "    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"
 msgstr ""
 
 # plural again...
-#: radiusd/radiusd.c:1410
+#: radiusd/radiusd.c:1303
 #, c-format
 msgid "malloc statistics: %d blocks, %d bytes"
 msgstr "статистика malloc: %d блоков, %d байт"
 
-#: radiusd/radiusd.c:1422
+#: radiusd/radiusd.c:1318
 #, c-format
 msgid "exit on signal %d"
 msgstr "выход по сигналу %d"
 
-#: radiusd/radiusd.c:1585
+#: radiusd/radiusd.c:1474
 msgid "Dropping packet"
 msgstr "Пакет отброшен"
 
-#: radiusd/radiusd.c:1608
+#: radiusd/radiusd.c:1497
 #, c-format
 msgid "Retransmitting %s reply"
 msgstr "Повторная передача ответа %s"
 
-#: radiusd/radiusd.c:1613
+#: radiusd/radiusd.c:1502
 msgid "request failed"
 msgstr "неудавшийся запрос"
 
-#: radiusd/radiusd.c:1734
+#: radiusd/radiusd.c:1623
 #, c-format
 msgid "unknown request code %d"
 msgstr "неизвестный код запроса %d"
 
-#: radiusd/radutil.c:197
+#: radiusd/radutil.c:198
 #, c-format
 msgid "INTERNAL ERROR (%s:%d): attribute %d has bad type (%d)"
 msgstr "ВНУТРЕННЯЯ ОШИБКА (%s:%d): неверный тип (%d) у атрибута %d"
@@ -1453,25 +1415,25 @@ msgstr "Невозможно запустить новый поток: %s"
 msgid "request timed out in queue"
 msgstr "Истекло время ожидания запросом обработки в очереди"
 
-#: radiusd/request.c:279 radiusd/request.c:459
+#: radiusd/request.c:279 radiusd/request.c:456
 #, c-format
 msgid "thread %d (%s) did not respond within %d seconds"
 msgstr "поток %d (%s) не ответил в течении %d секунд"
 
-#: radiusd/request.c:291 radiusd/request.c:475
+#: radiusd/request.c:291 radiusd/request.c:472
 #, c-format
 msgid "Killing unresponsive %s thread %d"
 msgstr "Уничтожение неотвечающего потока %s %d"
 
-#: radiusd/request.c:325
+#: radiusd/request.c:322
 msgid "duplicate request"
 msgstr "повторный запрос"
 
-#: radiusd/request.c:350
+#: radiusd/request.c:347
 msgid "too many requests in queue"
 msgstr "слишком много запросов в очереди"
 
-#: radiusd/request.c:360
+#: radiusd/request.c:357
 msgid "too many requests of this type"
 msgstr "слишком много запросов этого типа"
 
@@ -1498,7 +1460,7 @@ msgid "%s:%d: unknown attribute %s"
 msgstr "%s:%d: неизвестный атрибут %s"
 
 #: radiusd/rewrite.y:2328
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d: %s implicit %s %s coercion"
 msgstr "%s:%d: %s неявное преобразование типов %s %s"
 
@@ -1507,7 +1469,7 @@ msgid "operation not applicable for strings"
 msgstr "операция неприменима к строкам"
 
 #: radiusd/rewrite.y:2516 radiusd/rewrite.y:2584
-#, fuzzy, c-format
+#, c-format
 msgid "(argument %d)"
 msgstr "(аргумент %d)"
 
@@ -1538,42 +1500,34 @@ msgid "UNKNOWN"
 msgstr "НЕИЗВЕСТНОЕ"
 
 #: radiusd/rewrite.y:2645
-#, fuzzy
 msgid "from Undefined"
 msgstr "из неопределенного"
 
 #: radiusd/rewrite.y:2647
-#, fuzzy
 msgid "from integer"
 msgstr "из целого"
 
 #: radiusd/rewrite.y:2649
-#, fuzzy
 msgid "from string"
 msgstr "из строки"
 
 #: radiusd/rewrite.y:2651
-#, fuzzy
 msgid "from UNKNOWN"
 msgstr "из НЕИЗВЕСТНОГО"
 
 #: radiusd/rewrite.y:2661
-#, fuzzy
 msgid "to Undefined"
 msgstr "в неопределенный"
 
 #: radiusd/rewrite.y:2663
-#, fuzzy
 msgid "to integer"
 msgstr "в целое"
 
 #: radiusd/rewrite.y:2665
-#, fuzzy
 msgid "to string"
 msgstr "в строку"
 
 #: radiusd/rewrite.y:2667
-#, fuzzy
 msgid "to UNKNOWN"
 msgstr "в НЕИЗВЕСТНЫЙ"
 
@@ -1700,7 +1654,7 @@ msgid "scheme task timed out"
 msgstr "истекло время ожидания завершения задачи Схемы"
 
 #: radiusd/snmpserv.c:156
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d: community %s already declared"
 msgstr "%s:%d: community %s уже определена"
 
@@ -1871,20 +1825,20 @@ msgstr "отрицательное время простоя порта"
 msgid "negative port session time"
 msgstr "отрицательное время сессии на порту"
 
-#: radiusd/version.c:138
+#: radiusd/version.c:139
 msgid "GNU RADIUS server version "
 msgstr "Сервер GNU RADIUS, версия "
 
-#: radiusd/version.c:156
+#: radiusd/version.c:157
 #, c-format
 msgid "%s: GNU Radius version %s"
 msgstr "%s: Сервер GNU Radius, версия %s"
 
-#: radiusd/version.c:162
+#: radiusd/version.c:163
 msgid "Compilation platform: "
 msgstr "Платформа компиляции: "
 
-#: radiusd/version.c:166
+#: radiusd/version.c:167
 msgid ""
 "\n"
 "Debugging flags: "
@@ -1892,7 +1846,7 @@ msgstr ""
 "\n"
 "Флаги отладки:"
 
-#: radiusd/version.c:171
+#: radiusd/version.c:172
 msgid ""
 "\n"
 "Compilation flags: "
@@ -1900,39 +1854,39 @@ msgstr ""
 "\n"
 "Флаги компиляции:"
 
-#: radiusd/version.c:176
+#: radiusd/version.c:177
 msgid "Compilation defaults:\n"
 msgstr "настройки по умолчанию:\n"
 
-#: radiusd/version.c:177
+#: radiusd/version.c:178
 msgid "Ports in use:\n"
 msgstr "Порты:\n"
 
-#: radiusd/version.c:180
+#: radiusd/version.c:181
 msgid "Paths:\n"
 msgstr "Пути:\n"
 
-#: radiusd/version.c:181
+#: radiusd/version.c:182
 #, c-format
 msgid " configuration directory: %s\n"
 msgstr " конфигурационная директория: %s\n"
 
-#: radiusd/version.c:182
+#: radiusd/version.c:183
 #, c-format
 msgid " logging directory:       %s\n"
 msgstr " директория журналов:         %s\n"
 
-#: radiusd/version.c:183
+#: radiusd/version.c:184
 #, c-format
 msgid " accounting directory:    %s\n"
 msgstr " директория аккаунтинга:      %s\n"
 
-#: radiusd/version.c:184
+#: radiusd/version.c:185
 #, c-format
 msgid " pidfile directory:       %s\n"
 msgstr " директория файла pid:        %s\n"
 
-#: radiusd/version.c:185
+#: radiusd/version.c:186
 #, c-format
 msgid ""
 "\n"
@@ -1942,9 +1896,9 @@ msgstr ""
 "Об ошибках сообщай по адресу <%s>.\n"
 
 #: radiusd/sockets.c:88
-#, fuzzy, c-format
+#, c-format
 msgid "socket %s:%d is already assigned for %s"
-msgstr "%s:%d: `%s' уже включен здесь"
+msgstr ""
 
 #: radlast/radlast.c:110
 msgid "report last logins from Radius database."
@@ -1954,11 +1908,16 @@ msgstr "выдает отчет о последних заходах через radius."
 msgid "radlast specific switches:"
 msgstr "опции radlast:"
 
+#: radlast/radlast.c:125 radlast/radlast.c:137 radtest/main.c:80
+#: radtest/main.c:84 radzap/radzap.c:69
+msgid "NUMBER"
+msgstr "ЧИСЛО"
+
 #: radlast/radlast.c:126
 msgid "show at most NUMBER records"
 msgstr "выводить не более ЧИСЛА записей"
 
-#: radlast/radlast.c:127 radtest/main.c:76 radwho/radwho.c:143
+#: radlast/radlast.c:127 radtest/main.c:74 radwho/radwho.c:143
 #: radzap/radzap.c:65
 msgid "FILE"
 msgstr "ФАЙЛ"
@@ -2004,36 +1963,36 @@ msgstr "выводить длительность сессии с точностью до секунды"
 msgid "--width is incompatible with --show-seconds"
 msgstr "--width и --show-seconds не могут указываться одновременно"
 
-#: radscm/radscm.c:330 radtest/main.c:165
+#: radscm/radscm.c:330 radtest/main.c:163
 msgid "error reading dictionary file"
 msgstr "ошибка при чтении словаря"
 
-#: gram.y:461 radtest/gram.y:461
+#: gram.y:469 radtest/gram.y:469
 #, c-format
 msgid "attribute %s has unknown type"
 msgstr "неизвестный тип для атрибута %s"
 
-#: radtest/main.c:67
+#: radtest/main.c:65
 msgid "send arbitrary radius packets"
 msgstr "отсылает произвольные запросы radius-a"
 
-#: radtest/main.c:71
+#: radtest/main.c:69
 msgid "radtest specific switches:"
 msgstr "опции radtest:"
 
-#: radtest/main.c:72
+#: radtest/main.c:70
 msgid "VARIABLE=VALUE"
 msgstr "ПЕРЕМЕННАЯ=ЗНАЧЕНИЕ"
 
-#: radtest/main.c:73
+#: radtest/main.c:71
 msgid "assign a VALUE to VARIABLE"
 msgstr "присвоить ЗНАЧЕНИЕ ПЕРЕМЕННОЙ"
 
-#: radtest/main.c:75
+#: radtest/main.c:73
 msgid "set debugging level"
 msgstr "Задать уровень отладки"
 
-#: radtest/main.c:77
+#: radtest/main.c:75
 msgid ""
 "Read input from FILE. When this option is used, all unknown options in the "
 "form --VAR=VALUE are treated as variable assignments"
@@ -2042,40 +2001,40 @@ msgstr ""
 "ПЕРЕМЕННАЯ=ЗНАЧЕНИЕ, встречающиеся после этой опции, понимаются как "
 "присвоение значения указанной переменной."
 
-#: radtest/main.c:83
+#: radtest/main.c:81
 msgid "set number of retries"
 msgstr "Задать количество попыток передать запрос"
 
-#: radtest/main.c:84
+#: radtest/main.c:82
 msgid "SERVER"
 msgstr "СЕРВЕР"
 
-#: radtest/main.c:85
+#: radtest/main.c:83
 msgid "set radius server parameters"
 msgstr "Задать параметры сервера"
 
-#: radtest/main.c:87
+#: radtest/main.c:85
 msgid "set timeout"
 msgstr "Установить время ожидания ответа от сервера"
 
-#: radtest/main.c:89
+#: radtest/main.c:87
 msgid "verbose mode"
 msgstr "выводить дополнительную информацию"
 
-#: radtest/main.c:300
+#: radtest/main.c:298
 msgid "assign: expected `='\n"
 msgstr "присвоение: ожидался `='\n"
 
-#: radtest/main.c:324
+#: radtest/main.c:322
 msgid "assign: missing closing quote\n"
 msgstr "присвоение: недостает закрывающей кавычки\n"
 
-#: radtest/main.c:343 radtest/main.c:352
+#: radtest/main.c:341 radtest/main.c:350
 #, c-format
 msgid "assign: invalid IP address: %s\n"
 msgstr "присвоение: недействительный IP адрес: %s\n"
 
-#: radtest/main.c:482
+#: radtest/main.c:480
 msgid "wrong datatype: expected vector"
 msgstr "неверный тип данных: ожидался вектор"
 

@@ -453,7 +453,7 @@ arglist_to_scm(int argc, cfg_value_t *argv)
 
 		switch (argv[i].type) {
 		case CFG_INTEGER:
-			val = scm_long2num(num);
+			val = scm_long2num(argv[i].v.number);
 			break;
 			
 		case CFG_BOOLEAN:
@@ -496,8 +496,8 @@ arglist_to_scm(int argc, cfg_value_t *argv)
 
 		case CFG_NETWORK:
 			SCM_NEWCELL(val);
-			SCM_SETCAR(val, scm_long2num(argv[i].v.network.ipaddr));
-			SCM_SETCDR(val, scm_long2num(argv[i].v.network.netmask));
+			SCM_SETCAR(val, scm_ulong2num(argv[i].v.network.ipaddr));
+			SCM_SETCDR(val, scm_ulong2num(argv[i].v.network.netmask));
 			break;
 			
 		case CFG_IPADDR:

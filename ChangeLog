@@ -1,3 +1,62 @@
+2004-07-05  Sergey Poznyakoff
+
+	Generating list of symbols-followers automatically requires
+	a closer interaction between yacc+flex+readline. Vielleicht das
+	nachste Mal...
+	
+	* radtest/Makefile.am: Updated
+	* radtest/completion.skel: Removed
+	* radtest/keywords: Removed
+	* radtest/completion.c: New file
+	* radtest/gram.y: Use grad_request_code_to_name
+	* radtest/main.c: New option --no-interactive allows to disable
+	readline support.
+	* radtest/input.l (fill_input_buffer): Allow user to disable
+	readline.
+	* radtest/radtest.h (disable_readline): New variable
+	(radtest_command_completion): New declaration.
+	* scripts/comptab.awk: Removed
+	* scripts/Makefile.am: Updated
+
+	* include/common.h: Added readline-related prototypes
+	* include/radius/radius.h (dict_iterator_fp)
+	(dict_value_iterator_fp): New data types
+	(grad_dictionary_iterate,grad_dictionary_value_iterate): New
+	functions.
+	* include/radius/radutmp.h (grad_utent_compile_form): New
+	prototype
+	* include/radius/symtab.h (grad_symtab_iterate): Changed
+	declaration.
+	* lib/symtab.c: Likewise
+	* lib/client.c: Use grad_request_code_to_name
+	* radiusd/rewrite.y: Likewise
+	* lib/radsrv.c: Likewise
+	
+	* lib/debug.c (grad_request_code_name): Removed
+	(grad_next_matching_code_name): New function
+	(grad_first_matching_code_name): New function
+	(grad_request_code_to_string): Renamed to
+	grad_request_code_to_name
+	(grad_string_to_request_code): Renamed to
+	grad_request_name_to_code
+	* lib/dict.c (dict_symbol_ptr): New function
+	(dict_attr_lookup): Use dict_symbol_ptr
+	(attrval_cmp): Changed declaration
+	(grad_dictionary_iterate,grad_dictionary_value_iterate): New
+	funtions
+	
+	* lib/util.c (grad_xlat_keyword): Changed declaration
+	* radiusd/radutil.c (radius_xlate): Changed declaration
+	* radiusd/exec.c: Synchronise with changes to grad_symtab_iterate.
+	* radiusd/files.c: Likewise
+	* radiusd/radck.c: Likewise
+	* radiusd/log.c (run_log_hook): Added explanatory comment
+
+	* radiusd/sql.c (sql_mlc_collect): Minor change
+	* radiusd/tsh.c: Use new readline wrappers
+
+	* radiusd/testsuite/test.sh.m4: Call radtest with --no-interactive
+
 2004-07-05  Sergey Poznyakoff  
 
 	* TODO: Updated

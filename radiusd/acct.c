@@ -502,7 +502,7 @@ write_detail(RADIUS_REQ *radreq, int authtype, char *f)
                         fprintf(outfd, "\tRequest-Authenticator = Unverified\n");
                         break;
 		default:
-			fprintf(outfd, "\tRequest-Authenticator = %d",
+			fprintf(outfd, "\tRequest-Authenticator = %d\n",
 				authtype);
                         break;
                 }

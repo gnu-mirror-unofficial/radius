@@ -283,6 +283,9 @@ bin_type_error(grad_locus_t *locus, radtest_binop_t op)
 		      gettext(binop_string[op]));
 }
 
+/* TRANSLATORS: The following operation names are used as complements,
+   e.g.: "incompatible type in binary negation"
+*/
 static char *unary_string[] = {
 	N_("binary negation"),
 	N_("numeric negation"),

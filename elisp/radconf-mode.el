@@ -232,7 +232,14 @@
                 deny)
     (guile      debug
                 load-path
-                load)))
+                load)
+    (rewrite	stack-size)
+    (filters	filter)
+    (filter	common
+		exec-path
+		error-log
+		auth
+		acct)))
 
 ;; Valid successors for keywords.
 (defconst radconf-keyword-successor

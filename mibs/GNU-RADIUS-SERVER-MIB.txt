@@ -50,7 +50,7 @@ radiusServerMIB MODULE-IDENTITY
        DESCRIPTION
              "The MIB module for entities implementing the server internal
               statistics agent of GNU Radius project."
-       REVISION "$Revision$"
+       REVISION "0212101800Z"
        DESCRIPTION "Experimental Version"
        ::= { radius 1 }
 

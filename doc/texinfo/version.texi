@@ -1,3 +1,0 @@
-@set UPDATED 7 August 2001
-@set EDITION 0.96-alpha.2
-@set VERSION 0.96-alpha.2

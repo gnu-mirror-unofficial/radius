@@ -80,9 +80,9 @@ disp_sql_interface_index(char *name)
 	init_disptab();
         for (i = 1; i < sql_disptab_next; i++)
                 if (sql_disptab[i]
-                    && strcmp(sql_disptab[i]->name, name) == 0)
+                    && (!name || strcmp(sql_disptab[i]->name, name) == 0))
                     return i;
-	if (radiusd_load_ext(name, "dispatch_tab", &tab))
+	if (name && radiusd_load_ext(name, "dispatch_tab", &tab))
 		return add_disptab(tab);
         return 0;
 }

@@ -1,4 +1,19 @@
+2001-10-16 Sergey Poznyakoff
 
+	* doc/texinfo/configure.texi: Cleaned up to to make tex happy.
+	* doc/texinfo/radscm.texi: Likewise.
+
+	* radiusd/auth.c: rad_check_password(): return AUTH_NOUSER if
+	rad_sql_pass() returned	NULL. Fixed bug in outputting
+	'SQL authentication not available' diagnostics (use of
+	uninitialized var).
+	* radiusd/files.c: Added some debugging info.
+	checkdbm(): use dynamically allocated buffer instead of static one.
+	* radlib/cryptpass.c: Null terminator was offset by one. Fixed.
+
+	* TODO: Updated.
+	* client/pam_radius/pam_radius.c: Namespace cleanup.
+	
 2001-10-16 Sergey Poznyakoff
 
 	* include/radiusd.h: External declaration for radius_mode and

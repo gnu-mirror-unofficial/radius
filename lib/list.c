@@ -212,6 +212,10 @@ list_remove_current(struct list *list)
 		_list_remove_item(list, cur);
 	} else
 		list->cur = _list_remove_item(list, cur);
+	if (list->cur)
+		list->next = list->cur->next;
+	else
+		list->next = NULL;
 	return data;
 }
 	
@@ -233,6 +237,10 @@ list_remove(struct list *list, void *data, list_comp_t cmp)
 		return list_remove_current(list);
 	else if (p)
 		_list_remove_item(list, p);
+	if (list->cur)
+		list->next = list->cur->next;
+	else
+		list->next = NULL;
 	return data;
 }
 

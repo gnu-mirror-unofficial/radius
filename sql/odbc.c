@@ -26,13 +26,6 @@ static char rcsid[] =
  "@(#) $Id$" ;
 #endif
 
-/*
-After SQLRowCount we need to execute the query again before doing a fetch;
-possible Postgres driver bug
-*/
-
-#define RAD_ODBC_UGLY_HACK	1
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/time.h>
@@ -240,56 +233,41 @@ rad_odbc_getpwd(conn, query)
 		return NULL;
 	}
 
-	result = SQLRowCount(stmt,&count);	
+
+	result = SQLFetch(stmt);
 	if (result != SQL_SUCCESS) {
 		rad_odbc_diag(SQL_HANDLE_STMT, stmt,
-			      "SQLNumResultCount");
+			      "SQLFetch");
 		SQLFreeHandle(SQL_HANDLE_STMT, stmt);
 		return NULL;
 	}
 
-	if (count > 1 ) {
-		radlog(L_NOTICE,
-		       _("query returned %d tuples: %s"),
-		       count, query);
-	} else if (count == 1) {
-/*Possible Postgres ODBC driver bug*/
-#if RAD_ODBC_UGLY_HACK
+	SQLGetData(stmt, 1, SQL_C_CHAR, passwd, 128, &size);	
+	if (result != SQL_SUCCESS) {
+		rad_odbc_diag(SQL_HANDLE_STMT, stmt,
+			      "SQLGetData");
 		SQLFreeHandle(SQL_HANDLE_STMT, stmt);
-
-		result = SQLAllocHandle(SQL_HANDLE_STMT,
-					odata->dbc,
-					&stmt);	
-		if (result != SQL_SUCCESS) {
-			rad_odbc_diag(SQL_HANDLE_DBC, odata->dbc,
-				      "SQLAllocHandle");
-			return NULL;
-		}
-
-		result = SQLExecDirect(stmt,query,SQL_NTS);	
-		if (result != SQL_SUCCESS) {
-			rad_odbc_diag(SQL_HANDLE_STMT, stmt,
-				      "SQLExecDirect");
-			return NULL;
-		}
-#endif
-		result = SQLFetch(stmt);
-		if (result != SQL_SUCCESS) {
-			rad_odbc_diag(SQL_HANDLE_STMT, stmt,
-				      "SQLFetch");
-			SQLFreeHandle(SQL_HANDLE_STMT, stmt);
-			return NULL;
-		}
-
-		SQLGetData(stmt, 1, SQL_C_CHAR, passwd, 128, &size);	
-		if (result != SQL_SUCCESS) {
-			rad_odbc_diag(SQL_HANDLE_STMT, stmt,
-				      "SQLGetData");
-			SQLFreeHandle(SQL_HANDLE_STMT, stmt);
-			return NULL;
-		}
-		return_passwd = estrdup(passwd);
+		return NULL;
 	}
+
+	result = SQLFetch(stmt);
+
+	if (result == SQL_SUCCESS) {
+		radlog(L_NOTICE,
+	       _("query returned more tuples: %s"),
+	        query);
+		SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+		return NULL;
+	}
+
+	if (result != SQL_NO_DATA) {
+		rad_odbc_diag(SQL_HANDLE_STMT, stmt,
+			      "SQLFetch");
+		SQLFreeHandle(SQL_HANDLE_STMT, stmt);
+		return NULL;
+	}
+
+	return_passwd = estrdup(passwd);
 
 	SQLFreeHandle(SQL_HANDLE_STMT, stmt);
 	return return_passwd;
@@ -298,8 +276,6 @@ rad_odbc_getpwd(conn, query)
 typedef struct {
 	void		*stmt;
 	int            	nfields;
-	int             ntuples;
-	int             curtuple;
 } EXEC_DATA;
 
 void *
@@ -311,7 +287,7 @@ rad_odbc_exec(conn, query)
 	ODBCconn 	*odata;
 	long		result;
 	SQLHSTMT	stmt;
-	SQLSMALLINT	ccount,rcount;
+	SQLSMALLINT	ccount, rcount;
 	EXEC_DATA      *data;
 	
 	if (!conn || !conn->data)
@@ -320,7 +296,7 @@ rad_odbc_exec(conn, query)
 	debug(1, ("query: %s", query));
 
 	odata = (ODBCconn*)(conn->data);
-	result = SQLAllocHandle(SQL_HANDLE_STMT,odata->dbc,&stmt);	
+	result = SQLAllocHandle(SQL_HANDLE_STMT,odata->dbc, &stmt);	
 	if (result != SQL_SUCCESS) {
 		rad_odbc_diag(SQL_HANDLE_DBC, odata->dbc,
 			      "SQLAllocHandle");
@@ -331,13 +307,6 @@ rad_odbc_exec(conn, query)
 	if (result != SQL_SUCCESS) {
 		rad_odbc_diag(SQL_HANDLE_STMT, stmt,
 			      "SQLExecDirect");
-		SQLFreeHandle(SQL_HANDLE_STMT, stmt);
-		return NULL;
-	}
-	result = SQLRowCount(stmt, &rcount);	
-	if (result != SQL_SUCCESS) {
-		rad_odbc_diag(SQL_HANDLE_STMT, stmt,
-			      "SQLRowCount");
 		SQLFreeHandle(SQL_HANDLE_STMT, stmt);
 		return NULL;
 	}
@@ -350,29 +319,8 @@ rad_odbc_exec(conn, query)
 		return NULL;
 	}
 
-/*Possible Postgres ODBC driver bug*/
-#if RAD_ODBC_UGLY_HACK
-	SQLFreeHandle(SQL_HANDLE_STMT, stmt);
-	result = SQLAllocHandle(SQL_HANDLE_STMT,odata->dbc,&stmt);	
-	if (result != SQL_SUCCESS) {
-		rad_odbc_diag(SQL_HANDLE_DBC, odata->dbc,
-			      "SQLAllocHandle");
-		return NULL;
-	}
-
-	result = SQLExecDirect(stmt, query, SQL_NTS);	
-	if (result != SQL_SUCCESS) {
-		rad_odbc_diag(SQL_HANDLE_STMT, stmt,
-			      "SQLExecDirect");
-		SQLFreeHandle(SQL_HANDLE_STMT, stmt);
-		return NULL;
-	}
-#endif
-	
 	data = emalloc(sizeof(*data));
 	data->stmt = stmt;
-	data->ntuples = rcount;
-	data->curtuple = -1;
 	data->nfields = ccount;
 	return (void*)data;
 }
@@ -417,18 +365,19 @@ rad_odbc_next_tuple(conn, data)
 	if (!data)
 		return 1;
 
-	if (edata->curtuple + 1 >= edata->ntuples)
-		return 1;
-	edata->curtuple++;
-	
 	result = SQLFetch(edata->stmt);
-	if (result != SQL_SUCCESS) {
-		rad_odbc_diag(SQL_HANDLE_STMT, edata->stmt,
-			      "SQLFetch");
-		return 1;
-	}
 
-	return 0;
+	if (result == SQL_SUCCESS) 
+		return 0;
+
+	if (result == SQL_NO_DATA) 
+		return 1;
+
+	rad_odbc_diag(SQL_HANDLE_STMT, edata->stmt,
+		      "SQLFetch");
+	return 1;
+
+
 }
 
 /*ARGSUSED*/

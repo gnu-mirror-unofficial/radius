@@ -1,3 +1,13 @@
+2001-11-08 Sergey Poznyakoff
+
+	* radlib/util.c: format_string_visual(): Format last segment
+	printable no matter how many chars it contains. Otherwise
+	strings, shorter than runlen, get formatted in octal.
+	format_pair(): Some NASes (most notably, Ascend) count
+	terminating zero in the length of the string. Try to work
+	around this.
+	
+
 2001-11-07 Sergey Poznyakoff
 
 	* radiusd/radiusd.c: rad_spawn_child(): Fixed bug in selecting

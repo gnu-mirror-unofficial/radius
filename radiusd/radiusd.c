@@ -416,6 +416,7 @@ common_init()
 	radiusd_signal_init(sig_handler);
 	radiusd_reconfigure();
 	radpath_init();
+	forward_init();
 #ifdef USE_SNMP
         snmpserv_init(&saved_status);
 #endif		
@@ -1245,6 +1246,7 @@ struct cfg_stmt message_stmt[] = {
 struct cfg_stmt auth_stmt[] = {
 	{ "port", CS_STMT, NULL, cfg_get_port, &auth_port, NULL, NULL },
 	{ "listen", CS_STMT, NULL, rad_cfg_listen_auth, NULL, NULL, NULL },
+	{ "forward", CS_STMT, NULL, rad_cfg_forward_auth, NULL, NULL, NULL },
 	{ "max-requests", CS_STMT, NULL,
 	  cfg_get_integer, &request_class[R_AUTH].max_requests, NULL, NULL },
 	{ "time-to-live", CS_STMT, NULL,
@@ -1274,6 +1276,7 @@ struct cfg_stmt auth_stmt[] = {
 struct cfg_stmt acct_stmt[] = {
 	{ "port", CS_STMT, NULL, cfg_get_port, &acct_port, NULL, NULL },
 	{ "listen", CS_STMT, NULL, rad_cfg_listen_acct, NULL, NULL, NULL },
+	{ "forward", CS_STMT, NULL, rad_cfg_forward_auth, NULL, NULL, NULL },
 	{ "max-requests", CS_STMT, NULL,
 	  cfg_get_integer, &request_class[R_ACCT].max_requests,
 	  NULL, NULL },

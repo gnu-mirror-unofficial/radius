@@ -82,7 +82,7 @@ shmem_alloc(size_t size)
 			close(tempfd);
 			return -1;
 		}
-		if ((sb.st_mode & statfile_perms) != sb.st_mode) {
+		if ((sb.st_mode & statfile_perms) != statfile_perms) {
 			radlog(L_ERR,
 			       _("refusing to use file `%s': file has incorrect permissions"),
 			       radstat_path);

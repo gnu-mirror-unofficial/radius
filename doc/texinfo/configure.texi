@@ -1715,8 +1715,8 @@ CREATE TABLE attrib (
 
 @noindent
 Each row of the table contains the attribute-value pair for a given
-user. If @code{op} field is @code{NULL}, the row describes @LHS{}
-(check) pair. Otherwise, it describes a @RHS{} (reply) pair. The
+user. If @code{op} field is @code{NULL}, the row describes @RHS{}
+(reply) pair. Otherwise, it describes a @LHS{} (check) pair. The
 authorization queries for this table will look as follows:
 
 @example

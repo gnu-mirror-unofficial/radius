@@ -147,9 +147,21 @@ log_to_channel(chan, cat, pri, buf1, buf2, buf3)
 
         switch (chan->mode) {
         case LM_FILE:
-                timeval = time(NULL);
-                tm = localtime_r(&timeval, &tms);
-                strftime(buffer, sizeof(buffer), "%b %d %H:%M:%S", tm);
+		if (chan->options & LO_MSEC) {
+			struct timeval tv;
+			int len;
+			
+			gettimeofday(&tv, NULL);
+			tm = localtime_r(&tv.tv_sec, &tms);
+			strftime(buffer, sizeof(buffer), "%b %d %H:%M:%S", tm);
+			len = strlen(buffer);
+			snprintf(buffer+len, sizeof(buffer)-len,
+				 ".%06d", tv.tv_usec);
+		} else {
+			timeval = time(NULL);
+			tm = localtime_r(&timeval, &tms);
+			strftime(buffer, sizeof(buffer), "%b %d %H:%M:%S", tm);
+		}
                 fp = channel_open_file(chan);
                 if (!fp) /* FIXME: log to default channel */
                         break;

@@ -6,3 +6,9 @@ config
 realms
 log
 acct
+clients
+dict.voip
+dict.cisco
+naslist
+nastypes
+radiusd.pid

@@ -6,3 +6,5 @@ findport
 test.sh
 *.sum
 *.log
+site.exp
+remote.exp

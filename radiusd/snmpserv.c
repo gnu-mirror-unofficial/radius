@@ -497,8 +497,6 @@ int snmp_serv_queue_handler_compat(enum mib_node_cmd cmd, void *closure,
 #endif
 int snmp_serv_mem_summary(enum mib_node_cmd cmd, void *closure,
                             subid_t subid, struct snmp_var **varp, int *errp);
-int snmp_serv_class_handler(enum mib_node_cmd cmd, void *closure,
-                            subid_t subid, struct snmp_var **varp, int *errp);
 
 int snmp_stat_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
                       struct snmp_var **varp, int *errp);
@@ -650,17 +648,6 @@ static struct mib_data {
         oid_grad_queueActive,  snmp_serv_queue_handler_compat, NULL,
         oid_grad_queueHeld,    snmp_serv_queue_handler_compat, NULL,
         oid_grad_queueTotal,   snmp_serv_queue_handler_compat, NULL,
-
-        oid_grad_memoryNumClasses,      snmp_serv_mem_summary,   NULL,
-        oid_grad_memoryNumBuckets,      snmp_serv_mem_summary,   NULL,
-        oid_grad_memoryBytesAllocated,  snmp_serv_mem_summary,   NULL,
-        oid_grad_memoryBytesUsed,       snmp_serv_mem_summary,   NULL,
-        
-        oid_grad_classIndex,            snmp_serv_class_handler, NULL,
-        oid_grad_classSize,             snmp_serv_class_handler, NULL,
-        oid_grad_classElsPerBucket,     snmp_serv_class_handler, NULL,
-        oid_grad_classNumBuckets,       snmp_serv_class_handler, NULL,
-        oid_grad_classElsUsed,          snmp_serv_class_handler, NULL,
         
         oid_grad_memoryMallocBlocks,    snmp_serv_mem_summary,   NULL,
         oid_grad_memoryMallocBytes,     snmp_serv_mem_summary,   NULL,
@@ -720,17 +707,6 @@ static struct mib_data {
         oid_queueCompleted, snmp_serv_queue_handler, NULL,
         oid_queueTotal,     snmp_serv_queue_handler, NULL,
 
-        oid_memoryNumClasses,      snmp_serv_mem_summary,   NULL,
-        oid_memoryNumBuckets,      snmp_serv_mem_summary,   NULL,
-        oid_memoryBytesAllocated,  snmp_serv_mem_summary,   NULL,
-        oid_memoryBytesUsed,       snmp_serv_mem_summary,   NULL,
-        
-        oid_classIndex,         snmp_serv_class_handler, NULL,
-        oid_classSize,          snmp_serv_class_handler, NULL,
-        oid_classElsPerBucket,     snmp_serv_class_handler, NULL,
-        oid_classNumBuckets,    snmp_serv_class_handler, NULL,
-        oid_classElsUsed,          snmp_serv_class_handler, NULL,
-        
         oid_memoryMallocBlocks, snmp_serv_mem_summary,   NULL,
         oid_memoryMallocBytes,  snmp_serv_mem_summary,   NULL,
 
@@ -2285,11 +2261,6 @@ get_queue_stat(int qno, struct snmp_var *var, subid_t key)
 
 /* Memory table */
 static struct snmp_var *snmp_mem_get(subid_t subid, oid_t oid, int *errp);
-static struct snmp_var *snmp_class_get(subid_t subid,
-                                       struct snmp_var *varp, int *errp);
-static int _mem_get_class(subid_t, CLASS_STAT*);
-static void get_class_stat(CLASS_STAT *stat, struct snmp_var *var,
-                           subid_t key);
 
 int
 snmp_serv_mem_summary(enum mib_node_cmd cmd, void *closure,
@@ -2326,39 +2297,12 @@ struct snmp_var *
 snmp_mem_get(subid_t subid, oid_t oid, int *errp)
 {
         struct snmp_var *ret;
-        MEM_STAT stat;
         
         ret = snmp_var_create(oid);
         *errp = SNMP_ERR_NOERROR;
 
-        mem_get_stat(&stat);
-        
         switch (subid) {
 
-        case MIB_KEY_memoryNumClasses:
-                ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
-                ret->var_int = stat.class_cnt;
-                break;
-                
-        case MIB_KEY_memoryNumBuckets:
-                ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
-                ret->var_int = stat.bucket_cnt;
-                break;
-
-        case MIB_KEY_memoryBytesAllocated:
-                ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
-                ret->var_int = stat.bytes_allocated;
-                break;
-
-        case MIB_KEY_memoryBytesUsed:
-                ret->type = SMI_COUNTER32;
-                ret->val_length = sizeof(counter);
-                ret->var_int = stat.bytes_used;
-                break;
-                
         case MIB_KEY_memoryMallocBlocks:
                 ret->type = SMI_COUNTER32;
                 ret->val_length = sizeof(counter);
@@ -2385,131 +2329,6 @@ snmp_mem_get(subid_t subid, oid_t oid, int *errp)
                 return NULL;
         }
         return ret;
-}
-
-static int
-class_counter(CLASS_STAT *stat, CLASS_STAT *ret)
-{
-        if (stat->index == ret->index) {
-                *ret = *stat;
-                return 1;
-        }
-        return 0;
-}
-
-int
-_mem_get_class(subid_t subid, CLASS_STAT *stat)
-{
-        stat->index = subid;
-        return mem_stat_enumerate(class_counter, stat);
-}
-
-int
-snmp_serv_class_handler(enum mib_node_cmd cmd, void *unused,
-			subid_t subid, struct snmp_var **varp,
-			int *errp)
-{
-        struct mem_data *p = (struct mem_data *) snmpserv_get_data();
-        CLASS_STAT stat;
-        
-        switch (cmd) {
-        case MIB_NODE_GET:
-                if ((*varp = snmp_class_get(subid, *varp, errp)) == NULL)
-                        return -1;
-                break;
-                
-        case MIB_NODE_SET:
-        case MIB_NODE_SET_TRY:
-                /* None of these can be set */
-                if (errp)
-                        *errp = SNMP_ERR_NOSUCHNAME;
-                return -1;
-                
-        case MIB_NODE_COMPARE: 
-                return 0;
-                
-        case MIB_NODE_NEXT:
-                if (_mem_get_class(subid, &stat)) {
-                        p->mem_index = subid+1;
-                        return 0;
-                }
-                return -1;
-                
-        case MIB_NODE_GET_SUBID:
-                return p->mem_index;
-                
-        case MIB_NODE_RESET:
-                p->mem_index = 1;
-                break;
-
-        }
-        
-        return 0;
-}
-
-struct snmp_var *
-snmp_class_get(subid_t subid, struct snmp_var *var, int *errp)
-{
-        struct snmp_var *ret;
-        subid_t key;
-        oid_t oid = var->name;
-        CLASS_STAT stat;
-        
-        ret = snmp_var_create(oid);
-        *errp = SNMP_ERR_NOERROR;
-
-        switch (key = SUBID(oid, OIDLEN(oid)-2)) {
-
-        case MIB_KEY_classIndex:
-        case MIB_KEY_classSize:                 
-        case MIB_KEY_classElsPerBucket:
-        case MIB_KEY_classNumBuckets:
-        case MIB_KEY_classElsUsed:
-                if (_mem_get_class(subid-1, &stat)) {
-                        get_class_stat(&stat, ret, key);
-                        break;
-
-                }
-                /*FALLTHRU*/
-                
-        default:
-                *errp = SNMP_ERR_NOSUCHNAME;
-                snmp_var_free(ret);
-                return NULL;
-        }
-        return ret;
-}
-
-void
-get_class_stat(CLASS_STAT *stat, struct snmp_var *var, subid_t key)
-{
-        switch (key) {
-        case MIB_KEY_classIndex:
-                var->type = ASN_INTEGER;
-                var->val_length = sizeof(int);
-                var->var_int = stat->index+1;
-                break;
-        case MIB_KEY_classSize:
-                var->type = ASN_INTEGER;
-                var->val_length = sizeof(int);
-                var->var_int = stat->elsize;
-                break;
-        case MIB_KEY_classElsPerBucket:
-                var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
-                var->var_int = stat->elcnt;
-                break;
-        case MIB_KEY_classNumBuckets:
-                var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
-                var->var_int = stat->bucket_cnt;
-                break;
-        case MIB_KEY_classElsUsed:
-                var->type = SMI_COUNTER32;
-                var->val_length = sizeof(counter);
-                var->var_int = stat->allocated_cnt;
-                break;
-        }
 }
 
 /* ************************************************************************* */
@@ -3233,10 +3052,10 @@ snmp_req_decode(struct sockaddr_in *sa,
 {
         SNMP_REQ *req;
 
-	req = mem_alloc(sizeof *req);
+	req = emalloc(sizeof *req);
 	req->addr = *sa;
         if (snmp_decode(req, input, inputsize)) {
-                mem_free(req);
+                efree(req);
                 return 1;
         }
 	*output = req;
@@ -3258,7 +3077,7 @@ snmp_req_free(void *ptr)
         SNMP_REQ *req = ptr;
         snmp_pdu_free(req->pdu);
         efree(req->community);
-        mem_free(req);
+        efree(req);
 }
 
 void

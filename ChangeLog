@@ -1,3 +1,19 @@
+2001-11-27 Sergey Poznyakoff
+
+	* m4/guile.m4: One more fix regarding GUILE_INCLUDES and
+	GUILE_LIBS.
+	* configure.in: Added libradlog.a to LIBRADSCM.
+	* radiusd/scheme.c: Call rscm_radlog_init().
+	* radscm/rscm_radlog.c: (new) Scheme interfaces to server's
+	logging functions.
+	* radscm/Makefile.am: New goal: libradlog.a. Contains
+	scheme interfaces to server's logging functions.
+	* radscm/rscm_syslog.c: static parse_facility.
+	* radscm/ttl.scm: Use rad-log instead of ttl-syslog.
+	* scripts/config-conv.awk: Modified to delete from the input
+	obsolete `notify' statements.
+	* test/raddb/auth.scm: Use rad-log instead of display.
+	
 2001-11-26 Sergey Poznyakoff
 
 	* m4/guile.m4: Fixed bug: GUILE_INCLUDES and GUILE_LIBS were not

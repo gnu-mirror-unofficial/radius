@@ -63,7 +63,7 @@ ino_t source_inode;          /* Inode of the current source (for preventing
 int source_line_num;         /* Current line number */
         
 #ifdef FLEX_SCANNER
-#define xinput() getc(yyin)
+#define xinput() (yyin ? getc(yyin) : EOF)
 #undef YY_INPUT
 #define YY_INPUT(buf,result,max_size)  do { \
         int i;                                  \
@@ -159,6 +159,8 @@ lex_delete_buffer(buf)
 int
 xinput()
 {
+        if (!yyin)
+                return EOF;
         if (current_buffer.pb_level) 
                 return current_buffer.putback[--current_buffer.pb_level];
 
@@ -296,8 +298,10 @@ pop_source()
 #ifndef FLEX_SCANNER
         lex_delete_buffer(current_buffer);
 #endif
-        if (!context_stack)
+        if (!context_stack) {
+                yyin = NULL;
                 return 1;
+        }
         /* Restore previous context */
         source_filename = context_stack->filename;
         source_line_num = context_stack->line;

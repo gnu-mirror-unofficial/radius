@@ -1125,6 +1125,12 @@ rad_cfg_listen_auth(int argc, cfg_value_t *argv,
 		    void *block_data, void *handler_data)
 {
 	int i, errcnt = 0;
+
+	if (argc == 2 && argv[1].type == CFG_BOOLEAN) {
+		if (argv[1].v.bool == 0)
+			auth_port = 0;
+		return 0;
+	}
 	
 	for (i = 1; i < argc; i++)  
 		if (argv[i].type != CFG_HOST) {
@@ -1151,7 +1157,9 @@ auth_stmt_begin(int finish, void *block_data, void *handler_data)
 {
 	if (!finish) 
 		_opened_auth_sockets = 0;
-	else if (radius_mode == MODE_DAEMON && !_opened_auth_sockets) 
+	else if (radius_mode == MODE_DAEMON
+		 && !_opened_auth_sockets
+		 && auth_port)
 		udp_open(R_AUTH, INADDR_ANY, auth_port, 0);
 	return 0;
 }
@@ -1161,6 +1169,12 @@ rad_cfg_listen_acct(int argc, cfg_value_t *argv,
 		    void *block_data, void *handler_data)
 {
 	int i, errcnt = 0;
+	
+	if (argc == 2 && argv[1].type == CFG_BOOLEAN) {
+		if (argv[1].v.bool == 0)
+			acct_port = 0;
+		return 0;
+	}
 	
 	for (i = 1; i < argc; i++)  
 		if (argv[i].type != CFG_HOST) {
@@ -1185,7 +1199,9 @@ acct_stmt_begin(int finish, void *block_data, void *handler_data)
 {
 	if (!finish) 
 		_opened_acct_sockets = 0;
-	else if (radius_mode == MODE_DAEMON && !_opened_acct_sockets) 
+	else if (radius_mode == MODE_DAEMON
+		 && !_opened_acct_sockets
+		 && acct_port)
 		udp_open(R_ACCT, INADDR_ANY, acct_port, 0);
 	return 0;
 }

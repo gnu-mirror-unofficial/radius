@@ -393,7 +393,7 @@ format_vendor_pair(char *buf, VALUE_PAIR *pair)
 }
                 
 char *
-format_pair(VALUE_PAIR *pair, char **savep)
+format_pair(VALUE_PAIR *pair, int typeflag, char **savep)
 {
         char *buf1 = NULL;
         char *buf2ptr = NULL;
@@ -402,7 +402,8 @@ format_pair(VALUE_PAIR *pair, char **savep)
                                            octal */
         DICT_VALUE *dval;
         struct tm tm;
-        
+        char *type = "";
+	
         *savep = NULL;
 
         switch (pair->eval_type == eval_const ? pair->type : TYPE_STRING) {
@@ -453,15 +454,37 @@ format_pair(VALUE_PAIR *pair, char **savep)
                 strncpy(buf2, "[UNKNOWN DATATYPE]", sizeof(buf2));
         }
 
+	if (typeflag) {
+		switch (pair->type) {
+		case TYPE_STRING:
+			type = "(STRING) ";
+			break;
+			
+		case TYPE_INTEGER:
+			type = "(INTEGER) ";
+			break;
+			
+		case TYPE_IPADDR:
+			type = "(IPADDR) ";
+			break;
+			
+		case TYPE_DATE:
+			type = "(DATE) ";
+			break;
+		}
+	}
+	
         if (pair->name)
-                asprintf(&buf1, "%s %s %s",
+                asprintf(&buf1, "%s %s %s%s",
                          pair->name,
                          op_to_str(pair->operator),
+			 type,
                          buf2ptr ? buf2ptr : buf2);
         else
-                asprintf(&buf1, "%d %s %s",
+                asprintf(&buf1, "%d %s %s%s",
                          pair->attribute,
                          op_to_str(pair->operator),
+			 type,
                          buf2ptr ? buf2ptr : buf2);
 
         if (buf2ptr)

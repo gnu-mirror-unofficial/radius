@@ -42,6 +42,7 @@ char *rewrite_compile(char *expr);
 int rewrite_stmt_term(int finish, void *block_data, void *handler_data);
 size_t rewrite_get_stack_size();
 void rewrite_set_stack_size(size_t s);
+int rewrite_check_function(char *name, Datatype rettype, char *typestr);
 
 #ifdef RADIUS_SERVER_GUILE
 SCM radscm_datum_to_scm(Datatype type, Datum datum);

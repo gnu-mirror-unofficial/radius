@@ -5416,6 +5416,63 @@ rw_mach_destroy()
 }
 
 int
+rewrite_check_function(char *name, Datatype rettype, char *typestr)
+{
+	int i;
+	PARAMETER *p;
+	
+	FUNCTION *fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
+        if (!fun) {
+                radlog(L_ERR, _("function %s not defined"), name);
+                return -1;
+        }
+	if (fun->rettype) {
+		radlog(L_ERR, _("function %s returns wrong data type"), name);
+		return -1;
+	}
+
+	for (i = 0, p = fun->parm; i < fun->nparm; i++, p++) {
+                switch (typestr[i]) {
+		case 0:
+			radlog(L_ERR,
+			       _("function %s takes too few arguments"),
+			       name);
+			return -1;
+			
+                case 'i':
+                        if (p->datatype != Integer) {
+				radlog(L_ERR,
+				       _("function %s: argument %d must be integer"),
+				       name, i+1);
+				return -1;
+			}
+                        break;
+			
+                case 's':
+                        if (p->datatype != String) {
+				radlog(L_ERR,
+				       _("function %s: argument %d must be string"),
+				       name, i+1);
+				return -1;
+			}
+                        break;
+			
+                default:
+                        insist_fail("bad datatype");
+                }
+        }
+
+	if (typestr[i]) {
+		radlog(L_ERR,
+		       _("function %s takes too many arguments"),
+		       name);
+		return -1;
+	}
+
+	return 0;
+}
+	
+int
 run_init(pctr_t pc, RADIUS_REQ *request)
 {
         FILE *fp;
@@ -5692,6 +5749,7 @@ rewrite_stmt_term(int finish, void *block_data, void *handler_data)
 		list_destroy(&source_list, free_path, NULL);
 		list_destroy(&rewrite_load_path, free_path, NULL);
 		rewrite_add_load_path(radius_dir);
+		rewrite_add_load_path(RADIUS_DATADIR "/rewrite");
 
 		efree(runtime_stack);
 		runtime_stack = NULL;

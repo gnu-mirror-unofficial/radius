@@ -99,7 +99,11 @@ static char *compile_flag_str[] = {
 	"USE_SQL_ODBC",
 #endif	
 #if defined(USE_SNMP)
+# if defined(SNMP_COMPAT_0_96)
+	"USE_SNMP=COMPAT_0_96",
+# else	
 	"USE_SNMP",
+# endif	
 #endif
 #if defined(USE_LIVINGSTON_MENUS)
 	"USE_LIVINGSTON_MENUS",

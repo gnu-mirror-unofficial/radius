@@ -53,10 +53,6 @@ struct netlist {
 static Netlist *netlist;
 #endif
 
-#define CT_CHANNEL 1
-#define CT_OPTIONS 2
-#define CT_LEVEL   3
-
 #define AT_ANY    0
 #define AT_INT    1
 #define AT_STRING 2
@@ -84,6 +80,11 @@ static int syslog_severity[] = {
 	LOG_WARNING,
 };
 	 
+struct category_def {
+	Chanlist *head, *tail;
+	int level;
+} cat_def;
+
 extern time_t delayed_hup_wait;
 extern int keyword();
 
@@ -137,12 +138,6 @@ static void asgn(void *base, Value *value, int type, int once);
 		int cat;
 		int pri;
 	} category_name;
-	struct {
-		int type;
-		Chanlist *chanlist;
-		int options;
-		int level;
-	} category_def;
 #ifdef USE_SNMP
 	struct {
 		ACL *head, *tail;
@@ -178,7 +173,6 @@ static void asgn(void *base, Value *value, int type, int once);
 %type <number> facility 
 %type <number> category severity
 %type <category_name> category_name
-%type <category_def> category_list category_def
 %type <hostdecl> host
 %type <hostlist> hostlist listen_stmt
 %type <number> obs_option_list obs_option_string level level_list
@@ -514,23 +508,33 @@ facility        : T_FACILITY
 
 	/* Logging control: category definition */
 
-category_stmt   : T_CATEGORY category_name '{' category_list '}'
+category_stmt   : T_CATEGORY category_name begin category_list end
                   {
 			  switch ($2.cat) {
 			  case L_AUTH:
-				  log_mode = $4.level;
+				  log_mode = cat_def.level;
 				  break;
 			  default:
-				  if ($4.level)
+				  if (cat_def.level)
 					  radlog(L_WARN,
 			   _("%s:%d: no levels applicable for this category"),
 						 filename, line_num);
 
 			  }
 			  in_category = 0;
-			  register_category($2.cat, $2.pri, $4.chanlist);
-			  free_chanlist($4.chanlist);
+			  register_category($2.cat, $2.pri, cat_def.head);
+			  free_chanlist(cat_def.head);
 		  }
+                ;
+
+begin           : '{'
+                  {
+			  cat_def.level = 0;
+			  cat_def.head = cat_def.tail = NULL;
+		  }
+                ;
+
+end             : '}'
                 ;
 
 category_name   : category
@@ -601,18 +605,6 @@ severity        : T_SEVERITY
 
 category_list   : category_def
                 | category_list category_def
-                  {
-			  switch ($2.type) {
-			  case CT_CHANNEL:
-				  if ($2.chanlist)
-					  $2.chanlist->next = $1.chanlist;
-				  $1.chanlist = $2.chanlist;
-				  break;
-			  case CT_LEVEL:
-				  $1.level |= $2.level;
-			  }
-			  $$ = $1;
-		  }
                 | category_list error '}'
                   {
 			  /*free_chanlist?*/
@@ -627,30 +619,31 @@ category_def    : T_CHANNEL { expect_string = 1; } T_STRING EOL
                   {
 			  Channel *channel = channel_lookup($3);
 			  expect_string = 0;
-			  $$.level = 0;
 			  if (!channel) {
 				  radlog(L_ERR,
 					 _("%s:%d: channel `%s' not defined"),
 					 filename, line_num, $3);
-				  $$.type = 0;
-				  $$.chanlist = NULL;
 			  } else {
-				  $$.type = CT_CHANNEL;
-				  $$.chanlist = make_chanlist(channel);
+				  Chanlist *chanlist = make_chanlist(channel);
+				  if (cat_def.tail)
+					  cat_def.tail->next = chanlist;
+				  else
+					  cat_def.head = chanlist;
+				  cat_def.tail = chanlist;
 			  }
 		  }
                 | T_LOGLEVEL T_BOOL EOL
                   {
 			  if ($2)
-				  $$.level |= $1;
+				  cat_def.level |= $1;
 			  else
-				  $$.level &= ~$1;
+				  cat_def.level &= ~$1;
 		  }
 		| begin_level level_list EOL
                   {
 			  expect_string = 0;
 			  if ((in_category & L_CATMASK) == L_AUTH) 
-				  $$.level |= $2;
+				  cat_def.level |= $2;
 		  }			  
                 ;
 

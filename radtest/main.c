@@ -142,7 +142,8 @@ main(int argc, char **argv)
 {
         char *p;
         int index;
-
+	Variable *var;
+	
         grad_app_setup();
         init_symbols();
 
@@ -166,7 +167,10 @@ main(int argc, char **argv)
         if (!srv_queue)
                 return 1;
 
-        if (timeout)
+	var = (Variable*)grad_sym_lookup(vartab, "SOURCEIP");
+	var->datum.ipaddr = srv_queue->source_ip;
+		
+	if (timeout)
                 srv_queue->timeout = timeout;
         if (retry)
                 srv_queue->retries = retry;
@@ -279,6 +283,8 @@ init_symbols()
         var->type = Integer;
         var = (Variable*) grad_sym_install(vartab, "REPLY");
         var->type = Vector;
+	var = (Variable*) grad_sym_install(vartab, "SOURCEIP");
+	var->type = Ipaddress;
 }
 
 void
@@ -378,27 +384,9 @@ void
 print_pairs(FILE *fp, grad_avp_t *pair)
 {
         for (; pair; pair = pair->next) {
-                fprintf(fp, " %s = ", pair->name);
-                switch (pair->type) {
-                case TYPE_STRING:
-                        fprintf(fp, "(STRING) %s", pair->avp_strvalue);
-                        break;
-
-                case TYPE_INTEGER:
-                        fprintf(fp, "(INTEGER) %ld", pair->avp_lvalue);
-                        break;
-
-                case TYPE_IPADDR:
-                        fprintf(fp, "(IP) %lx", pair->avp_lvalue);
-                        break;
-                
-                case TYPE_DATE:
-                        fprintf(fp, "(DATE) %ld", pair->avp_lvalue);
-                        break;
-                        
-                default:
-                        fprintf(fp, "(%d)", pair->type);
-                }
+		char *save;
+		fprintf(fp, " %s", grad_format_pair(pair, 1, &save));
+		free(save);
                 if (pair->next)
                         fprintf(fp, ",");
                 else

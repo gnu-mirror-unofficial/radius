@@ -100,6 +100,8 @@ SCM_DEFINE(rad_openlog, "rad-openlog", 3, 0, 0,
 	} else if (SCM_BIGP(OPTION)) {
 		option = (UINT4) scm_big2dbl(OPTION);
 	} else {
+		SCM_ASSERT(SCM_NIMP(OPTION) && SCM_CONSP(OPTION),
+			   OPTION, SCM_ARG2, FUNC_NAME);
 		option = parse_facility(OPTION);
 	}
 
@@ -108,6 +110,8 @@ SCM_DEFINE(rad_openlog, "rad-openlog", 3, 0, 0,
 	} else if (SCM_BIGP(FACILITY)) {
 		facility = (UINT4) scm_big2dbl(FACILITY);
 	} else {
+		SCM_ASSERT(SCM_NIMP(FACILITY) && SCM_CONSP(FACILITY),
+			   FACILITY, SCM_ARG3, FUNC_NAME);
 		facility = parse_facility(FACILITY);
 	}
 
@@ -130,6 +134,8 @@ SCM_DEFINE(rad_syslog, "rad-syslog", 2, 0, 0,
 	} else if (SCM_BIGP(PRIO)) {
 		prio = (UINT4) scm_big2dbl(PRIO);
 	} else {
+		SCM_ASSERT(SCM_NIMP(PRIO) && SCM_CONSP(PRIO),
+			   PRIO, SCM_ARG1, FUNC_NAME);
 		prio = parse_facility(PRIO);
 	}
 

@@ -59,8 +59,8 @@ typedef struct request {
 	struct request *next;         /* Link to the next request */
 	int             type;         /* request type */
 	time_t          timestamp;    /* when was the request accepted */
-	pid_t           child_pid;    /* PID of the handling process (or -1) */
-	int             child_return; /* Child return code if child_pid = -1 */
+	pth_t           child_pid;    /* ID of the handling process (or -1) */
+	int             child_return; /* Child return code if child_pid=NULL */
 	void           *data;         /* Request-specific data */
 } REQUEST;
 
@@ -107,7 +107,7 @@ static REQUEST		*first_request;
 static void request_free(REQUEST *req);
 static void request_drop(int type, void *data, char *status_str);
 static void request_xmit(int type, int code, void *data, int fd);
-void rad_spawn_child(int type, void *data, int activefd);
+void rad_handle_request(int type, void *data, int activefd);
 static int flush_request_list();
 static int request_setup(int type, void *data);
 static void request_cleanup(int type, void *data);
@@ -181,7 +181,7 @@ int snmp_port;
 static int i_recv_buffer[RAD_BUFFER_SIZE];
 static u_char *recv_buffer = (u_char *)i_recv_buffer;
 
-int radius_pid; /* The PID of the main process */
+pth_t radius_pid; /* The PID of the main process */
 
 /* This flag signals that there is a need to sweep out the dead children,
    and clean up the request structures associated with them. */
@@ -212,6 +212,8 @@ static RETSIGTYPE sig_usr2 (int);
 static RETSIGTYPE sig_dumpdb (int);
 
 static int radrespond (RADIUS_REQ *, int);
+static void *radrespond0(void *);
+
 static int open_socket(UINT4 ipaddr, int port, char *type);
 static void open_socket_list(HOSTDECL *hostlist, int defport, char *descr,
 			     int (*s)(), int (*r)(), int (*f)());
@@ -424,6 +426,16 @@ main(argc, argv)
 	
 	snmp_init(0, 0, emalloc, efree);
 
+	if (!pth_init()) {
+		radlog(L_CRIT, _("Cannot initialize PTH"));
+		exit(1);
+	}
+
+	radius_pid = pth_self();
+
+#ifdef USE_SERVER_GUILE
+	start_guile();
+#endif
 	rad_main(argv[optind]);
 }
 
@@ -456,6 +468,7 @@ rad_daemon()
 	FILE *fp;
 	char *p;
 	int t;
+	pid_t pid;
 	
 #ifdef USE_SNMP
 	snmp_tree_init();
@@ -477,13 +490,13 @@ rad_daemon()
 #ifdef HAVE_SETSID
 		setsid();
 #endif
-		chdir("/");
+		chdir("/tmp");/*FIXME*/
 	}
 
-	radius_pid = getpid();
+	pid = getpid();
 	p = mkfilename(radpid_dir, "radiusd.pid");
 	if ((fp = fopen(p, "w")) != NULL) {
-		fprintf(fp, "%d\n", radius_pid);
+		fprintf(fp, "%d\n", pid);
 		fclose(fp);
 	}
 	efree(p);
@@ -511,19 +524,7 @@ rad_daemon()
 }
 
 void
-rad_main(arg)
-	char *arg;
-{
-#ifdef USE_SERVER_GUILE
-	char *argv[] = { "radiusd", NULL };
-	scm_boot_guile (1, argv, rad_boot, arg);
-#else
-	rad_mainloop(arg);
-#endif
-}	
-
-void
-rad_mainloop(extra_arg)
+rad_main(extra_arg)
 	char *extra_arg;
 {
 	/*
@@ -622,14 +623,18 @@ close_socket_list()
 void
 rad_select()
 {
-	int                     result;
-	int                     status;
-	int                     salen;
-	struct	sockaddr	saremote;
-	fd_set			readfds;
-	struct socket_list      *ctl;
-	struct timeval          tv;
-
+	int result;
+	int status;
+	int salen;
+	struct sockaddr	saremote;
+	fd_set readfds;
+	struct socket_list *ctl;
+	struct timeval tv;
+	static pth_key_t ev_key = PTH_KEY_INIT;
+	pth_event_t evt;
+	
+	pth_yield(NULL);
+	
 	tv.tv_sec = 1;
 	tv.tv_usec = 0;
 
@@ -637,9 +642,15 @@ rad_select()
 	for (ctl = socket_first; ctl; ctl = ctl->next) 
 		FD_SET(ctl->fd, &readfds);
 
-	status = select(max_fd, &readfds, NULL, NULL, &tv);
+	evt = pth_event(PTH_EVENT_TID|PTH_UNTIL_TID_DEAD|PTH_MODE_STATIC,
+			&ev_key, NULL);
+	
+	status = pth_select_ev(max_fd, &readfds, NULL, NULL, &tv, evt);
+	if (pth_event_occurred(evt))
+		schedule_child_cleanup();
+
 	if (status == -1) {
-		if (errno == EINTR)
+		if (errno == EINTR) 
 			return;/* give main a chance to do some housekeeping */
 		rad_exit(101);
 	/* If a timeout occurs, then just return to main for housekeeping */
@@ -650,9 +661,9 @@ rad_select()
 	for (ctl = socket_first; ctl; ctl = ctl->next) {
 		if (FD_ISSET(ctl->fd, &readfds)) {
 			salen = sizeof (saremote);
-			result = recvfrom (ctl->fd, (char *) recv_buffer,
-					   (int) sizeof(i_recv_buffer),
-					   (int) 0, &saremote, &salen);
+			result = pth_recvfrom (ctl->fd, (char *) recv_buffer,
+					       (int) sizeof(i_recv_buffer),
+					       (int) 0, &saremote, &salen);
 
 			if (ctl->success)
 				ctl->success(&saremote, salen);
@@ -725,7 +736,7 @@ snmp_respond(fd, sa, salen, buf, size)
 	struct sockaddr_in *sin = (struct sockaddr_in *) sa;
 	
 	if (req = rad_snmp_respond(buf, size, sin))
-		rad_spawn_child(R_SNMP, req, fd);
+		rad_handle_request(R_SNMP, req, fd);
 	return 0;
 }
 
@@ -760,7 +771,7 @@ reread_config(reload)
 	
 	if (!reload) {
 		radlog(L_INFO, _("Starting - reading configuration files ..."));
-	} else if (pid == radius_pid) {
+	} else {
 		radlog(L_INFO, _("Reloading configuration files."));
 		rad_flush_queues();
 		close_socket_list();
@@ -794,7 +805,8 @@ reread_config(reload)
 	
 #ifdef USE_SNMP
 	
-	server_stat->auth.status = suspend_flag ? serv_suspended : serv_running;
+	server_stat->auth.status = suspend_flag ?
+		                                serv_suspended : serv_running;
 	snmp_auth_server_reset();
 
 	server_stat->acct.status = server_stat->auth.status;
@@ -875,7 +887,7 @@ check_reload()
 			break;
 		
 		case serv_init:
-		reread_config(1);
+			reread_config(1);
 			break;
 
 		case serv_running:
@@ -919,10 +931,7 @@ radrespond(radreq, activefd)
 	RADIUS_REQ *radreq;
 	int activefd;
 {
-	int type = -1;
-	VALUE_PAIR *namepair;
-	int e;
-
+	
 	if (suspend_flag)
 		return 1;
 	
@@ -930,10 +939,55 @@ radrespond(radreq, activefd)
 		/*FIXME: update stats */
 		return -1;
 	}
+
+	/* Check if we support this request */
+	switch (radreq->code) {
+	case RT_AUTHENTICATION_REQUEST:
+	case RT_ACCOUNTING_REQUEST:
+	case RT_AUTHENTICATION_ACK:
+	case RT_AUTHENTICATION_REJECT:
+	case RT_ACCOUNTING_RESPONSE:
+#if defined(RT_ASCEND_EVENT_REQUEST) 		
+	case RT_ASCEND_EVENT_REQUEST:
+#endif
+		break;
+	default:
+		stat_inc(acct, radreq->ipaddr, num_unknowntypes);
+		radlog(L_NOTICE, _("unknown request %d"), radreq->code); 
+		return -1;
+	}	
 	
-	/*
-	 *	First, see if we need to proxy this request.
-	 */
+	/* Copy the static data into malloc()ed memory. */
+	radreq->data = emalloc(radreq->data_len);
+	memcpy(radreq->data, recv_buffer, radreq->data_len);
+	radreq->data_alloced = 1;
+	radreq->fd = activefd;
+
+	if (spawn_flag  /*FIXME!request_class[type].spawn*/) {
+		pth_attr_t attr = pth_attr_new();
+		pth_attr_set(attr, PTH_ATTR_STACK_SIZE, 1024*1024);
+		pth_attr_set(attr, PTH_ATTR_JOINABLE, FALSE);
+		if (!pth_spawn(PTH_ATTR_DEFAULT, radrespond0, radreq)) {
+			radlog(L_ERR|L_PERROR, _("Can't spawn new thread"));
+			return -1;
+		}
+	} else
+		radrespond0(radreq);
+	return 0;
+}
+
+void *
+radrespond0(arg)
+	void *arg;
+{
+	RADIUS_REQ *radreq = (RADIUS_REQ *)arg;
+	int type = -1;
+	sigset_t sig;
+	
+	sigemptyset(&sig);
+	pth_sigmask(SIG_SETMASK, &sig, NULL);
+	
+	/* First, see if we need to proxy this request. */
 	switch (radreq->code) {
 
 	case RT_AUTHENTICATION_REQUEST:
@@ -941,25 +995,26 @@ radrespond(radreq, activefd)
 		 *	Check request against hints and huntgroups.
 		 */
 		stat_inc(auth, radreq->ipaddr, num_access_req);
-		if ((e = rad_auth_init(radreq, activefd)) < 0)
-			return e;
+		if (rad_auth_init(radreq, radreq->fd) < 0) {
+			radreq_free(radreq);
+			return NULL;
+		}
 		/*FALLTHRU*/
 	case RT_ACCOUNTING_REQUEST:
-		namepair = avl_find(radreq->request, DA_USER_NAME);
-		if (namepair == NULL)
+		if (avl_find(radreq->request, DA_USER_NAME) == NULL)
 			break;
-		if (proxy_send(radreq, activefd) != 0) {
-			rad_spawn_child(R_PROXY, radreq, activefd);
-			return 0;
+		if (proxy_send(radreq, radreq->fd) != 0) {
+			rad_handle_request(R_PROXY, radreq, radreq->fd);
+			return NULL;
 		}
 		break;
 
 	case RT_AUTHENTICATION_ACK:
 	case RT_AUTHENTICATION_REJECT:
 	case RT_ACCOUNTING_RESPONSE:
-		if (proxy_receive(radreq, activefd) < 0) {
+		if (proxy_receive(radreq, radreq->fd) < 0) {
 			radreq_free(radreq);
-			return 0;
+			return NULL;
 		}
 		break;
 	}
@@ -981,23 +1036,12 @@ radrespond(radreq, activefd)
 		type = R_ACCT;
 		break;
 		
-	case RT_PASSWORD_REQUEST:
-		/*
-		 *	We don't support this anymore.
-		 */
-		/* rad_passchange(radreq, activefd); */
-		radlog(L_NOTICE, "RT_PASSWORD_REQUEST not supported anymore");
-		break;
-
 	default:
-		stat_inc(acct, radreq->ipaddr, num_unknowntypes);
-		radlog(L_NOTICE, _("unknown request %d"), radreq->code); 
-		break;
+		__insist_failure("Request type", __FILE__, __LINE__);
 	}
 
-	if (type != -1) 
-	        rad_spawn_child(type, radreq, activefd);
-	return 0;
+	rad_handle_request(type, radreq, radreq->fd);
+	return NULL;
 }
 
 /* *********************** Request list handling ************************** */
@@ -1086,25 +1130,21 @@ scan_request_list(type, handler, closure)
 	return NULL;
 }
 
-/*
- *	Spawns child processes to perform authentication/accounting
- *	and respond to RADIUS clients.  This function also
- *	cleans up complete child requests, and verifies that there
- *	is only one process responding to each request (duplicate
- *	requests are filtered out).
- */
+/* Handle the incoming request. This function also
+   cleans up complete child requests, and verifies that there
+   is only one process responding to each request (duplicate
+   requests are filtered out). */
 void
-rad_spawn_child(type, data, activefd)
+rad_handle_request(type, data, activefd)
 	int type;           /* Type of request */
 	void *data;         /* Request-specific data */
-	int activefd;       /* Active socket descriptor */
+	int activefd;
 {
 	REQUEST	*curreq;
 	REQUEST	*prevreq;
 	REQUEST *to_replace;
 	UINT4	curtime;
 	int	request_count, request_type_count;
-	pid_t	child_pid;
 
 	curtime = (UINT4)time(NULL);
 	request_count = request_type_count = 0;
@@ -1116,7 +1156,7 @@ rad_spawn_child(type, data, activefd)
 	request_list_block();
 
 	while (curreq != NULL) {
-		if (curreq->child_pid == -1
+		if (curreq->child_pid == NULL
 		    && curreq->timestamp + 
 		        request_class[curreq->type].cleanup_delay <= curtime) {
 			/*
@@ -1138,13 +1178,11 @@ rad_spawn_child(type, data, activefd)
  
 		if (curreq->type == type
 		    && request_cmp(type, curreq->data, data) == 0) {
-			/*
-			 * This is a duplicate request.
-			 * If the handling process has already finished --
-			 * retransmit it's results, if possible.
-			 * Otherwise just drop the request.
-			 */
-			if (curreq->child_pid == (pid_t)-1) 
+			/* This is a duplicate request.
+			   If the handling process has already finished --
+			   retransmit it's results, if possible.
+			   Otherwise just drop the request. */
+			if (curreq->child_pid == NULL) 
 				request_xmit(type, curreq->child_return, data,
 					     activefd);
 			else
@@ -1157,27 +1195,26 @@ rad_spawn_child(type, data, activefd)
 		} else {
 			if (curreq->timestamp +
 			    request_class[curreq->type].ttl <= curtime
-			    && curreq->child_pid != -1) {
-				/*
-				 *	This request seems to have hung -
-				 *	kill it
-				 */
+			    && curreq->child_pid != NULL) {
+				pth_t child_pid;
+				
+				/* This request seems to have hung */
 				request_cleanup(curreq->type, curreq->data);
 				child_pid = curreq->child_pid;
 				radlog(L_NOTICE,
 				     _("Killing unresponsive %s child pid %d"),
 				       request_class[curreq->type].name,
 				       child_pid);
-				curreq->child_pid = -1;
+				curreq->child_pid = NULL;
 				curreq->timestamp = curtime -
 				     request_class[curreq->type].cleanup_delay;
-				kill(child_pid, SIGTERM);
+				pth_abort(child_pid);
 				continue;
 			}
 			if (curreq->type == type) {
 				request_type_count++;
 				if (type != R_PROXY
-				    && curreq->child_pid == -1
+				    && curreq->child_pid == NULL
 				    && (to_replace == NULL
 					|| to_replace->timestamp >
 					                   curreq->timestamp))
@@ -1189,9 +1226,7 @@ rad_spawn_child(type, data, activefd)
 		}
 	}
 
-	/*
-	 * This is a new request
-	 */
+	/* This is a new request */
 	if (request_count >= config.max_requests) {
 		if (!to_replace) {
 			request_drop(type, data,
@@ -1199,7 +1234,7 @@ rad_spawn_child(type, data, activefd)
 		
 			request_list_unblock();
 			schedule_child_cleanup();
-			
+			/*FIXME: radreq_free*/
 			return;
 		}
 	} else if (request_class[type].max_requests
@@ -1210,7 +1245,7 @@ rad_spawn_child(type, data, activefd)
 
 			request_list_unblock();
 			schedule_child_cleanup();
-		
+			/*FIXME: radreq_free*/		
 			return;
 		}
 	} else
@@ -1223,7 +1258,7 @@ rad_spawn_child(type, data, activefd)
 
 		request_list_unblock();
 		schedule_child_cleanup();
-		
+		/*FIXME: radreq_free*/		
 		return;
 	}
 		
@@ -1233,7 +1268,7 @@ rad_spawn_child(type, data, activefd)
 	if (to_replace == NULL) {
 		curreq = alloc_entry(sizeof *curreq);
 		curreq->next = NULL;
-		curreq->child_pid = -1;
+		curreq->child_pid = pth_self();
 		curreq->timestamp = curtime;
 		curreq->type = type;
 		curreq->data = data;
@@ -1252,93 +1287,52 @@ rad_spawn_child(type, data, activefd)
 		curreq->type = type;
 		curreq->data = data;
 	}
+
+	curreq->child_pid = pth_self();
 	
 	debug(1, ("adding %s request to the list. %d requests held.", 
 		 request_class[type].name,
 		 request_count+1));
 
-	if (spawn_flag == 0 || !request_class[type].spawn) {
-		/* 
-		 * Execute handler function
-		 */
-		curreq->child_return =
-			request_class[type].handler(data, activefd);
-		request_cleanup(type, curreq->data);
-		request_list_unblock();
-		log_close();
-		return;
-	}
-
-	/*
-	 * fork the child
-	 */
-	if ((child_pid = fork()) < 0) {
-		request_drop(type, data, _("cannot fork"));
-		if (prevreq != NULL) 
-			prevreq->next = curreq->next; 
-		else 
-			first_request = curreq->next; 
-		free_entry(curreq);
-	}
-	if (child_pid == 0) {
-		/*
-		 *	This is the child, it should go ahead and respond
-		 */
-		request_list_unblock();
-		signal(SIGCHLD, SIG_DFL);
-		signal(SIGHUP, SIG_IGN);
-		signal(SIGUSR1, SIG_IGN);
-		signal(SIGUSR2, SIG_IGN);
-		signal(SIGINT, SIG_IGN);
-		chdir("/tmp");
-		exit(request_class[type].handler(data, activefd));
-	} else {
-		debug(1, ("started handler at pid %d", child_pid));
-	}
-
-	/*
-	 *	Register the Child
-	 */
-	curreq->child_pid = child_pid;
-
 	request_list_unblock();
-	schedule_child_cleanup();
+
+	/* Finally, handle the request */
+	curreq->child_return = request_class[type].handler(data, activefd);
+	request_cleanup(type, curreq->data);
+	log_close();
+	return;
 }
+
 
 void
 rad_child_cleanup()
 {
-	int		status;
-        pid_t		pid;
-	REQUEST   	*curreq;
+	REQUEST *curreq;
  
 	if (!need_child_cleanup)
 		return;
 	clear_child_cleanup();
 
-        for (;;) {
-		pid = waitpid((pid_t)-1, &status, WNOHANG);
-                if (pid <= 0)
-                        break;
+	request_list_block();
+			
+	for (curreq = first_request; curreq; curreq = curreq->next) {
+		pth_attr_t attr;
+		pth_state_t state;
+		
+		if (curreq->child_pid == NULL)
+			continue;
+		
+		attr = pth_attr_of(curreq->child_pid);
+		pth_attr_get(attr, PTH_ATTR_STATE, &state);
 
-		debug(2, ("child %d exited: %d", pid, WEXITSTATUS(status)));
-
-#if defined (aix) /* Some say it is necessary on aix :( */
-		kill(pid, SIGKILL);
-#endif
-
-		curreq = first_request;
-		while (curreq != NULL) {
-			if (curreq->child_pid == pid) {
-				curreq->child_pid = -1;
-				curreq->child_return = WEXITSTATUS(status);
-				curreq->timestamp = time(NULL);
-				request_cleanup(curreq->type, curreq->data);
-				break;
-			}
-			curreq = curreq->next;
+		if (state == PTH_STATE_DEAD) {
+			curreq->child_pid = NULL;
+			curreq->timestamp = time(NULL);
+			request_cleanup(curreq->type, curreq->data);
+			break;
 		}
-        }
+	}
+	request_list_unblock();
 }
 
 int
@@ -1348,7 +1342,6 @@ flush_request_list()
 	REQUEST	*prevreq;
 	UINT4	curtime;
 	int	request_count;
-	pid_t	child_pid;
 	
 	curtime = (UINT4)time(NULL);
 	request_count = 0;
@@ -1360,11 +1353,17 @@ flush_request_list()
 	request_list_block();
 
 	while (curreq != NULL) {
-		if (curreq->child_pid == -1) {
-			/*
-			 * Request completed, delete it no matter how
-			 * long does it reside in the queue  
-			 */
+		pth_state_t state;
+		
+		if (curreq->child_pid == NULL)
+			state = PTH_STATE_DEAD;
+		else 
+			pth_attr_get(pth_attr_of(curreq->child_pid),
+				     PTH_ATTR_STATE, &state);
+
+		if (state == PTH_STATE_DEAD) {
+			/* Request completed, delete it no matter how
+			   long does it reside in the queue */
 			debug(1, ("deleting completed %s request",
 				 request_class[curreq->type].name));
 			if (prevreq == NULL) {
@@ -1378,18 +1377,18 @@ flush_request_list()
 			}
 		} else if (curreq->timestamp +
 			   request_class[curreq->type].ttl <= time(NULL)) {
-			/*
-			 *	kill the request
-			 */
+			pth_t	child_pid;
+
+			/* kill the request */
 			child_pid = curreq->child_pid;
 			radlog(L_NOTICE,
 			       _("Killing unresponsive %s child pid %d"),
 			       request_class[curreq->type].name,
 			       child_pid);
-			curreq->child_pid = -1;
+			curreq->child_pid = NULL;
 			curreq->timestamp = curtime -
 				request_class[curreq->type].cleanup_delay;
-			kill(child_pid, SIGTERM);
+			pth_abort(child_pid);
 		} else {
 			prevreq = curreq;
 			curreq = curreq->next;
@@ -1416,7 +1415,7 @@ stat_request_list(stat)
 	request_list_block();
 
 	while (curreq != NULL) {
-		if (curreq->child_pid == -1) 
+		if (curreq->child_pid == NULL) 
 			completed_count[curreq->type]++;
 		else
 			pending_count[curreq->type]++;
@@ -1507,7 +1506,8 @@ usage()
 "                                (default " RADLOG_DIR ").\n"
 "    -m, --mode {t|c|b}          Select operation mode: test, checkconf,\n"
 "                                builddbm.\n"
-"    -n, --auth-only             Start only authentication process.\n"
+"    -N, --auth-only             Start only authentication process.\n"
+"    -n, --do-not-resolve        Do not resolve IP addresses.\n"
 "    -i, --ip-address IP         Use this IP as source address.\n"	
 "    -p, --port PORTNO           Use alternate port number.\n"
 "    -P, --pid-file-dir DIR      Store pidfile in DIR.\n"
@@ -1532,37 +1532,30 @@ void
 rad_exit(sig)
 	int sig;
 {
-	char *me = _("MASTER: ");
 	static int exiting;
 
 	if (exiting) /* Prevent recursive invocation */
 		return ;
 	exiting++;
-	
-	if (radius_pid == getpid()) {
-		/*
-		 *      FIXME: kill all children.
-		 */
-		stat_done();
-		unlink_pidfile();
-	} else {
-		me = _("CHILD: ");
-	}
+
+	stat_done();
+	unlink_pidfile();
 
 	switch (sig) {
 	case 101:
-		radlog(L_CRIT, _("%sfailed in select() - exit."), me);
+		radlog(L_CRIT, _("failed in select() - exit."));
 		break;
 	case SIGINT:  /* Foreground mode */
 	case SIGTERM:
-		radlog(L_CRIT, _("%sNormal shutdown."), me);
+		radlog(L_CRIT, _("Normal shutdown."));
 		break;
 	default:
-		radlog(L_CRIT, _("%sexit on signal (%d)"), me, sig);
+		radlog(L_CRIT, _("exit on signal (%d)"), sig);
 		abort();
 	}
 
 	rad_sql_shutdown();
+	pth_kill();
 	exit(sig == SIGTERM ? 0 : 1);
 }
 
@@ -1595,6 +1588,7 @@ rad_restart()
 	
 	/* Flush request queues */
 	rad_flush_queues();
+	pth_kill();
 	
 	if (foreground)
 		pid = 0; /* make-believe we're child */
@@ -1923,5 +1917,5 @@ test_shell()
 int
 master_process()
 {
- 	return radius_pid == 0 || getpid() == radius_pid;
+ 	return radius_pid == NULL || pth_self() == radius_pid;
 }

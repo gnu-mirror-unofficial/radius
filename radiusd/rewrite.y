@@ -627,11 +627,8 @@ static void gc();
 static void run(RWMACH *mach, pctr_t pc);
 static void run_init(pctr_t pc, RADIUS_REQ *req);
 
-/* These used to lock/unlock access to rw_code array. Now that the
-   array is read-only and may be modified only by the main thread
-   (which makes sure no other thread is running at the moment),
-   these functions are not needed. However, I left the placeholders
-   for a while... */
+/* These used to lock/unlock access to rw_code array. Now this is
+   not needed. However, I left the placeholders for a while... */
 #define rw_code_lock() 
 #define rw_code_unlock()
 

@@ -1,6 +1,7 @@
 Makefile.in
 Makefile
 .deps
+.libs
 findport
 atconfig
 atlocal
@@ -8,3 +9,5 @@ testsuite
 testsuite.dir
 testsuite.log
 package.m4
+confdir
+

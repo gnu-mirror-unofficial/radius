@@ -1,3 +1,90 @@
+2004-09-10  Sergey Poznyakoff
+
+	* snmplib/asn1.c (asn_decode_string): Fix datatype of count
+	
+	* radiusd/radiusd.c: New option --show-defaults
+	* radiusd/version.c: Likewise.
+	
+	* radiusd/sql.c (sql_check_config): Check if at least one
+	sql interface is available.
+
+	* radtest/gram.y: Support for binary strings
+	* radtest/input.l: Likewise.
+	* radtest/main.c: Likewise.
+	* radtest/radtest.h: Likewise.
+	* radtest/runtime.c: Likewise.
+
+	* Makefile.am: Switched to autotest
+	* configure.ac: Likewise.
+	* radiusd/Makefile.am: Likewise.
+	
+	* tests: New directory
+	* tests/Makefile.am: New file
+	* tests/.cvsignore: New file	
+	* tests/findport.c: New file
+	* tests/atlocal.in: New file
+	* tests/testsuite.at: New file
+	* tests/begin.at: New file
+	* tests/end.at: New file
+	* tests/status-server.at: New file
+	* tests/basic-auth.at: New file
+	* tests/reply.at: New file
+	* tests/begin-kw.at: New file
+	* tests/default-kw.at: New file
+	* tests/match-profile.at: New file
+	* tests/hints.at: New file
+	* tests/huntgroups.at: New file
+	* tests/scheme-auth.at: New file
+	* tests/acl.at: New file
+	* tests/expiration.at: New file
+	* tests/menu.at: New file
+	* tests/acct.at: New file
+	* tests/rewrite.at: New file
+	* tests/execwait.at: New file
+	* tests/filter.at: New file
+	* tests/scheme-acct.at: New file
+	* tests/tunnel.at: New file
+	* tests/log-mode.at: New file
+	* tests/proxy-basic-auth.at: New file
+	* tests/proxy-ignorecase.at: New file
+	* tests/proxy-vsa.at: New file
+	* tests/proxy-menu.at: New file
+	* tests/proxy-nested.at: New file
+	* tests/proxy-acct.at: New file
+	* tests/proxy-tunnel.at: New file
+
+	* tests/raddb/.cvsignore: New file
+	* tests/raddb/Makefile.am: New file
+	* tests/raddb/access.deny: New file
+	* tests/raddb/acct.scm.in: New file
+	* tests/raddb/ascend.bin: New file
+	* tests/raddb/auth.bin: New file
+	* tests/raddb/auth.scm: New file
+	* tests/raddb/client.conf.in: New file
+	* tests/raddb/clients: New file
+	* tests/raddb/config.in: New file
+	* tests/raddb/dictionary.in: New file
+	* tests/raddb/filter: New file
+	* tests/raddb/hints: New file
+	* tests/raddb/huntgroups: New file
+	* tests/raddb/naslist: New file
+	* tests/raddb/realms.in: New file
+	* tests/raddb/sqlserver: New file
+	* tests/raddb/users.in: New file
+	* tests/raddb/menus/menu1: New file
+	* tests/raddb/menus/menu2: New file
+
+	* tests/proxy/.cvsignore: New file
+	* tests/proxy/Makefile.am: New file
+	* tests/proxy/client.conf.in: New file
+	* tests/proxy/config.in: New file
+	* tests/proxy/dictionary.in: New file
+	* tests/proxy/hints: New file
+	* tests/proxy/huntgroups: New file
+	* tests/proxy/realms.in: New file
+	* tests/proxy/sqlserver: New file
+	* tests/proxy/users: New file
+	
 2004-09-09  Sergey Poznyakoff
 
 	* configure.ac: Check for crypt_set_format

@@ -76,7 +76,9 @@ TESTSUITE_AT = \
  proxy-menu.at \
  proxy-nested.at \
  proxy-acct.at \
- proxy-tunnel.at
+ proxy-tunnel.at \
+ begin-proxy.at \
+ end-proxy.at 
 
 TESTSUITE = $(srcdir)/testsuite
 

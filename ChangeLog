@@ -1,3 +1,19 @@
+2001-11-29 Sergey Poznyakoff
+	
+	* include/parser.h: Namespace normalization.
+	* include/radius.h: Likewise.
+	* radiusd/files.c: Likewise.
+	* radiusd/radck.c: Likewise.
+	* radlib/dict.c: Likewise.
+	* radlib/users.y: Likewise.
+
+	Added docs for huntgroups. Many formatting changes:
+
+	* doc/texinfo/*.texi
+	
+	* scripts/texi2html: Changed to properly handle new texinfo
+	macros.
+	
 2001-11-28 Sergey Poznyakoff
 
 	* test/dejagnu/README: (new) Instructions for remote

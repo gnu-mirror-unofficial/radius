@@ -21,8 +21,7 @@
 ;;;;
 ;;;; $Id$
 
-(set! %load-path (append %load-path
-			 (list "SCHEMEDIR")))
+(set! %load-path (cons "SCHEMEDIR" %load-path))
 (use-modules (ice-9 getopt-long))
 (use-modules (gnuradius))
 

@@ -439,32 +439,29 @@ proxy_send(radreq, activefd)
 	saved_username = estrdup(namepair->strvalue);
 	username = namepair->strvalue;
 
-	/*
-	 *	Find the realm from the _end_ so that we can
-	 *	cascade realms: user@realm1@realm2.
-	 */
+	/* Find the realm from the _end_ so that we can	cascade realms:
+	   user@realm1@realm2. Two special realms are handled separately:
+	   
+	       LOCAL    -- process request locally.
+	       NOREALM  -- handle an empty realm name.
+
+	   A realm with special name DEFAULT is returned by realm_find()
+	   if no other realm name matches. */
 
 	if ((realmname = strrchr(username, '@')) == NULL) {
+		if ((realm = realm_find("NOREALM")) == NULL) {
+			efree(saved_username);
+			return 0;
+		}
+	} else if ((realm = realm_find(realmname + 1)) == NULL) {
+		/* If the realm is not found, we treat it as usual. */
 		efree(saved_username);
 		return 0;
-	}
-
-	/*
-	 *	Now check if we know this realm!
-	 *	If not found, we treat it as usual.
-	 */
-	if ((realm = realm_find(realmname + 1)) == NULL) {
-		efree(saved_username);
-		return 0;
-	}
-
-	/*
-	 *	The special realm LOCAL ?
-	 */
-	if (strcmp(realm->server, "LOCAL") == 0) {
-		if (realm->striprealm &&
-		    ((realmname = strrchr(namepair->strvalue, '@')) != NULL))
+	} else if (strcmp(realm->server, "LOCAL") == 0) {
+		if (realm->striprealm) {
 			*realmname = 0;
+			namepair->strlength = strlen(namepair->strvalue);
+		}
 		efree(saved_username);
 		return 0;
 	}
@@ -477,11 +474,14 @@ proxy_send(radreq, activefd)
 		return 0;
 	}
 
-	if (realm->striprealm)
-		*realmname = 0;
-	realmname++;
-	radreq->realm = make_string(realmname);
-
+	if (realmname) {
+		if (realm->striprealm)
+			*realmname = 0;
+		realmname++;
+		radreq->realm = make_string(realmname);
+	} else
+		radreq->realm = make_string(realm->realm);
+	
 	replace_string(&namepair->strvalue, username);
 	namepair->strlength = strlen(namepair->strvalue);
 

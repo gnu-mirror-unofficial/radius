@@ -64,8 +64,9 @@ int yyerror(char *s);
 %token <ipaddr> IPADDRESS
 
 %type <number> op code 
-%type <variable> value expr
-%type <ident> maybe_expr
+%type <variable> value expr send_flag
+%type <ident> maybe_expr 
+%type <symtab> send_flags send_flag_list
 %type <vector> vector 
 %type <pair_list> pair_list
 %type <pair> pair
@@ -83,6 +84,7 @@ int yyerror(char *s);
                 VALUE_PAIR *head, *tail;
         } pair_list;
         Variable variable;
+	Symtab *symtab;
 }
 
 %%
@@ -118,10 +120,11 @@ stmt          : /* empty */ EOL
                                 var->datum = $3.datum;
                         }
                 }
-              | SEND port_type code expr EOL
+              | SEND send_flags port_type code expr EOL
                 {
-                        radtest_send($2, $3, &$4);
-                        var_free(&$4);
+                        radtest_send($3, $4, &$5, $2);
+                        tempvar_free(&$5);
+			symtab_free(&$2);
                 }
               | EXPECT code maybe_expr EOL
                 {
@@ -146,7 +149,7 @@ stmt          : /* empty */ EOL
                                 if (compare_lists(reply_list,
                                                   $3->datum.vector))
                                         pass = 0;
-                                var_free($3);
+                                tempvar_free($3);
                                 efree($3);
                         }
                         printf("%s\n", pass ? "PASS" : "FAIL");
@@ -182,6 +185,40 @@ code          : NUMBER
                                 $$ = $1->datum.number;
                         }
                 }
+              ;
+
+send_flags    : /* empty */
+                {
+			$$ = NULL;
+		}
+              | send_flag_list
+              ;
+
+send_flag_list: send_flag
+                {
+			Variable *var;
+			
+			$$ = symtab_create(sizeof(Variable), var_free);
+			var = (Variable*) sym_install($$, $1.name);
+			var->type = $1.type;
+			var->datum = $1.datum;
+		}
+              | send_flag_list send_flag
+                {
+			Variable *var;
+			var = (Variable*) sym_install($1, $2.name);
+			var->type = $2.type;
+			var->datum = $2.datum;
+			$$ = $1;
+		}
+              ;
+
+send_flag     : NAME EQ NUMBER
+                {
+                        $$.name = $1;
+                        $$.type = Integer;
+                        $$.datum.number = $3;
+		}
               ;
 
 expr          : value
@@ -350,7 +387,7 @@ prlist        : pritem
 pritem        : expr
                 {
                         var_print(&$1);
-                        var_free(&$1);
+                        tempvar_free(&$1);
                 }
               ;
 

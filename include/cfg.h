@@ -45,7 +45,7 @@ typedef struct {
         union {
 		char *string;
                 UINT4 ipaddr;
-                int number;
+                size_t number;
                 int bool;
 		cfg_network_t network;
 		char ch;
@@ -83,6 +83,8 @@ int cfg_get_ipaddr(int argc, cfg_value_t *argv,
 		   void *block_data, void *handler_data);
 int cfg_get_integer(int argc, cfg_value_t *argv,
 		    void *block_data, void *handler_data);
+int cfg_get_number(int argc, cfg_value_t *argv,
+		   void *block_data, void *handler_data);
 int cfg_get_string(int argc, cfg_value_t *argv,
 		   void *block_data, void *handler_data);
 int cfg_get_boolean(int argc, cfg_value_t *argv,

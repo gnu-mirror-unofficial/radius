@@ -93,7 +93,7 @@ static char *curp;
 %}
 
 %union {
-        int number;
+        size_t number;
         int bool;
         UINT4 ipaddr;
         char *string;
@@ -680,7 +680,7 @@ _get_value(cfg_value_t *arg, int type, void *base)
 
         switch (type) {
         case CFG_INTEGER:
-                *(int*) base = value.v.number;
+                *(size_t*) base = value.v.number;
                 break;
 		
         case CFG_STRING:
@@ -773,6 +773,19 @@ cfg_get_ipaddr(int argc, cfg_value_t *argv, void *block_data,
 int
 cfg_get_integer(int argc, cfg_value_t *argv, void *block_data,
 		void *handler_data)
+{
+	size_t val;
+	int rc;
+	
+	_check_argc(argc, 1);
+	rc = _get_value(&argv[1], CFG_INTEGER, &val);
+	*(int*)handler_data = val;
+	return rc;
+}
+
+int
+cfg_get_number(int argc, cfg_value_t *argv, void *block_data,
+	       void *handler_data)
 {
 	_check_argc(argc, 1);
 	return _get_value(&argv[1], CFG_INTEGER, handler_data);

@@ -755,8 +755,12 @@ hints_setup(grad_request_t *req)
         if (matched) {
                 if (orig_name_pair)
                         grad_avl_add_pair(&request_pairs, orig_name_pair);
-                else
+		/* A rewrite function might have installed the new
+		   User-Name. Take care not to discard it. */
+                else if (!grad_avl_find(request_pairs, DA_USER_NAME))
                         grad_avl_add_pair(&request_pairs, name_pair);
+		else
+			grad_avp_free(name_pair);
         } else {
                 if (orig_name_pair)
                         grad_avp_free(orig_name_pair);

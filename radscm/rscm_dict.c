@@ -70,7 +70,7 @@ SCM_DEFINE(rad_dict_name_to_attr, "rad-dict-name->attr", 1, 0, 0,
 #undef FUNC_NAME
 
 SCM_DEFINE(rad_dict_value_to_name, "rad-dict-value->name", 2, 0, 0,
-	   (SCM ATTR, SCM g_value),
+	   (SCM ATTR, SCM VALUE),
 "Returns a dictionary name of the given value of an integer-type\n"
 "attribute\n") 	   
 #define FUNC_NAME s_rad_dict_value_to_name
@@ -85,15 +85,15 @@ SCM_DEFINE(rad_dict_value_to_name, "rad-dict-value->name", 2, 0, 0,
 	}
 
 	if (!attr) {
-		scm_misc_error("rad-dict-value->name",
+		scm_misc_error(FUNC_NAME,
 			       "Unknown attribute: ~S",
 			       SCM_LIST1(ATTR));
 		return SCM_BOOL_F;
 	}
 
-	SCM_ASSERT((SCM_IMP(g_value) && SCM_INUMP(g_value)),
-		   g_value, SCM_ARG1, "rad-dict-value->name");
-	val = value_lookup(SCM_INUM(g_value), attr->name);
+	SCM_ASSERT((SCM_IMP(VALUE) && SCM_INUMP(VALUE)),
+		   VALUE, SCM_ARG1, FUNC_NAME);
+	val = value_lookup(SCM_INUM(VALUE), attr->name);
 	return val ? scm_makfrom0str(val->name) : SCM_BOOL_F;
 }
 #undef FUNC_NAME

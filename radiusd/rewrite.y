@@ -260,7 +260,7 @@ typedef union mtx MTX;
 #else
 # define COMMON_MTX \
         OBJ(MTX);\
-        int      line;\
+        LOCUS    loc;\
         Mtxtype  type;
 #endif
         

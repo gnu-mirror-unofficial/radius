@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
 "POT-Creation-Date: 2002-06-14 12:37+0300\n"
-"PO-Revision-Date: 2002-06-14 13:07+0300\n"
+"PO-Revision-Date: 2002-06-14 16:04+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -350,8 +350,7 @@ msgstr "Comunicar `bugs' a %s.\n"
 #: lib/printutmp.c:581
 #, c-format
 msgid "missing closing quote in string started near `%s'"
-msgstr ""
-"Falta comilla cerrante en la cadena de caracteres empezada cerca de `%s'"
+msgstr "Falta una comilla cerrante en la cadena de caracteres empezada cerca de `%s'"
 
 #: lib/printutmp.c:664
 #, c-format
@@ -1121,7 +1120,7 @@ msgstr "Registrar nombres de usuarios sin prefijos/sufijos"
 
 #: radiusd/radiusd.c:243
 msgid "Run in single process mode"
-msgstr "Correr en proceso único"
+msgstr "Correr en modo monoproceso"
 
 #: radiusd/radiusd.c:244
 msgid "DEBUGSPEC"
@@ -1361,11 +1360,11 @@ msgstr "demasiadas peticiones de este tipo"
 
 #: radiusd/rewrite.y:940
 msgid "nothing to break from"
-msgstr "orden `break' usado en contexto incorrecto"
+msgstr "el `break' es irrelevante o está mal colocado"
 
 #: radiusd/rewrite.y:955
 msgid "nothing to continue"
-msgstr "orden `continue' usado en contexto incorrecto"
+msgstr "el `continue' es irrelevante o está mal colocado"
 
 #: radiusd/rewrite.y:1016
 #, c-format
@@ -1906,7 +1905,7 @@ msgstr "se ha esperado `='\n"
 
 #: radtest/main.c:324
 msgid "assign: missing closing quote\n"
-msgstr "falta comilla cerrante\n"
+msgstr "falta una comilla cerrante\n"
 
 #: radtest/main.c:343 radtest/main.c:352
 #, c-format
@@ -2054,7 +2053,7 @@ msgstr "petición fallada"
 
 #: sql/mysql.c:93
 msgid "gave up on connect"
-msgstr ""
+msgstr "se abandona la conexión"
 
 #: sql/mysql.c:123
 #, fuzzy, c-format

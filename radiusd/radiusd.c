@@ -508,25 +508,21 @@ rad_daemon()
 #endif
 }
 
-static char *extra_arg;
-
 void
 rad_main(arg)
 	char *arg;
 {
 #ifdef USE_SERVER_GUILE
 	char *argv[] = { "radiusd", NULL };
-	
-	extra_arg = arg;
-	scm_boot_guile (1, argv, rad_boot, NULL);
+	scm_boot_guile (1, argv, rad_boot, arg);
 #else
-	extra_arg = arg;
-	rad_mainloop();
+	rad_mainloop(arg);
 #endif
 }	
 
 void
-rad_mainloop()
+rad_mainloop(extra_arg)
+	char *extra_arg;
 {
 	/*
 	 *	Read config files.

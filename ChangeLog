@@ -1,3 +1,50 @@
+2003-06-03  Sergey Poznyakoff 
+
+	* radiusd/timestr.c (timespan_day): Fixed semantics of time
+	spans that straddle the 00:00 boundary.
+
+	* lib/mem.c: Removed.
+	* lib/alloc.c: Removed.
+	* lib/Makefile.am: Removed mem.c, alloc.c
+
+	* client/pam_radius/pam_radius.c: Use regular emalloc, efree
+	* include/mem.h: Likewise.
+	* include/timestr.h: Likewise.
+	* lib/ascend.c: Likewise.
+	* lib/avl.c: Likewise.
+	* lib/client.c: Likewise.
+	* lib/cryptpass.c: Likewise.
+	* lib/dict.c: Likewise.
+	* lib/nas.c: Likewise.
+	* lib/radpaths.c: Likewise.
+	* lib/radpdu.c: Likewise.
+	* lib/realms.c: Likewise.
+	* lib/symtab.c: Likewise.
+	* lib/users.l: Likewise.
+	* lib/users.y: Likewise.
+	* lib/util.c: Likewise.
+	* radiusd/radius.c: Likewise.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/sql.c: Likewise.
+	* radscm/rscm_lib.c: Likewise.
+	* radtest/gram.y: Likewise.
+	* radtest/input.l: Likewise.
+	* sql/mysql.c: Likewise.
+	* radiusd/pam.c: Likewise.
+	* radiusd/rewrite.y: Likewise.
+	
+	* lib/leakdetect.c (string_replace): New implementation.
+	* radiusd/snmpserv.c: Removed oids related to the previously used
+	memory system.
+	* radiusd/proxy.c (proxy_cmp): Compare only those requests that
+	have Proxy-State attribute. The heuristic used so far for the
+	requests lacking Proxy-State, caused normal requests to be
+	interpreted as proxy ones at random intervals.
+
+	* radiusd/input.c: Added debugging calls.
+	* radiusd/request.c: Likewise.
+	* radiusd/rpp.c: Likewise.
+	
 2003-06-02  Sergey Poznyakoff
 
 	* radiusd/snmpserv.c (_acl_iterator): Fixed coredump on NULL

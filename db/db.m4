@@ -49,6 +49,7 @@ CREATETABLE(attrib, {
 CREATETABLE(calls, {
   status              SHORTINT_T not null,
   user_name           VARCHAR_T(32) CI default '' not null,
+  realm_name          VARCHAR_T(32) CI default '' not null,
   event_date_time     TIME_T('1970-01-01 00:00:00') NOT NULL,
   nas_ip_address      CHAR_T(17) default '0.0.0.0' not null,
   nas_port_id         INT_T,
@@ -62,7 +63,8 @@ CREATETABLE(calls, {
   calling_station_id  CHAR_T(32) COMMA
   INDEX(name_sid, user_name,acct_session_id) COMMA
   INDEX(name_stat_sid,user_name,status,acct_session_id) COMMA
-  INDEX(stat_nas,status,nas_ip_address)
+  INDEX(stat_nas,status,nas_ip_address) COMMA
+  INDEX(realm,realm_name)
 })
 
 CREATETABLE(naspools, {

@@ -112,8 +112,7 @@ start_server() {
     $RADIUSD -d $1 \
              -l $1/log \
 	     -a $1/acct \
-	     -P $1 \
-	     -w0
+	     -P $1 
     while [[ ! -r $1/radiusd.pid ]]
     do
         sleep 1

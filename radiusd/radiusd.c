@@ -55,21 +55,22 @@ void rad_req_free(RADIUS_REQ *req);
 void rad_req_drop(int type, RADIUS_REQ *ptr, char *status_str);
 int rad_req_cmp(RADIUS_REQ *a, RADIUS_REQ *b);
 int rad_req_setup(REQUEST *radreq);
+void rad_req_xmit(int type, int code, void *data, int fd);
 
 struct request_class request_class[] = {
         { "AUTH", 0, MAX_REQUEST_TIME, CLEANUP_DELAY, 
-          rad_req_setup, rad_authenticate, NULL, rad_req_cmp, rad_req_free,
-          rad_req_drop, rad_sql_cleanup },
+          rad_req_setup, rad_authenticate, rad_req_xmit, rad_req_cmp,
+	  rad_req_free, rad_req_drop, rad_sql_cleanup },
         { "ACCT", 0, MAX_REQUEST_TIME, CLEANUP_DELAY,
-          rad_req_setup, rad_accounting, rad_acct_xmit, rad_req_cmp,
+          rad_req_setup, rad_accounting, rad_req_xmit, rad_req_cmp,
           rad_req_free, rad_req_drop, rad_sql_cleanup },
         { "PROXY",0, MAX_REQUEST_TIME, CLEANUP_DELAY,
-          NULL, rad_proxy, NULL, rad_req_cmp, rad_req_free,
-          rad_req_drop, NULL },
+          NULL, rad_proxy, NULL, rad_req_cmp,
+	  rad_req_free, rad_req_drop, NULL },
 #ifdef USE_SNMP
         { "SNMP", 0, MAX_REQUEST_TIME, 0, 
-          NULL, snmp_answer, NULL, snmp_req_cmp, snmp_req_free,
-          snmp_req_drop, NULL },
+          NULL, snmp_answer, NULL, snmp_req_cmp,
+	  snmp_req_free, snmp_req_drop, NULL },
 #endif
         { NULL, }
 };
@@ -1155,6 +1156,30 @@ rad_req_drop(type, radreq, status_str)
         case R_ACCT:
                 stat_inc(acct, radreq->ipaddr, num_dropped);
         }
+}
+
+/*ARGSUSED*/
+void
+rad_req_xmit(type, code, data, fd)
+        int type;
+        int code;
+        void *data;
+        int fd;
+{
+        RADIUS_REQ *req = (RADIUS_REQ*)data;
+        char buf[MAX_LONGNAME];
+
+	if (code == 0) {
+		rad_send_reply(0, req, NULL, NULL, fd);
+		radlog(L_NOTICE,
+		     _("Retransmitting %s reply: client %s, ID: %d, code: %d"),
+		       request_class[type].name,
+		       client_lookup_name(req->ipaddr, buf, sizeof buf),
+		       req->id,
+		       req->reply_code);
+	} else {
+		rad_req_drop(type, req, "Request failed");
+	}
 }
 
 int

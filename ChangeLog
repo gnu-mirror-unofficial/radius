@@ -3,9 +3,10 @@
 	* NEWS: Placeholder for new version
 	* radiusd/testsuite/proxy/Makefile.am: rm before ln
 	* radiusd/testsuite/raddb/Makefile.am: Likewise.
-	* radscm/Makefile.am: Excempt radscm from std-options
-	check
-
+	* radscm/Makefile.am: Excempt radscm from std-options 
+	check (it prints --help output to stderr, which griefs std-options)
+	* radscm/radscm.c: Bugfix
+	
 2004-01-28  Sergey Poznyakoff
 
 	Preparational work to move from librad to shared installable

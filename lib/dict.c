@@ -341,8 +341,8 @@ _dict_attribute(int *errcnt, int fc, char **fv, char *file, int lineno)
 			case '9':
 				prop |= AP_USER_FLAG(*p-'0');
 				break;
-                        case 'Z':
-                        case 'I':
+			case 'b':
+				prop |= AP_BINARY_STRING;
                                 break;
                         default:
                                 radlog(L_ERR,

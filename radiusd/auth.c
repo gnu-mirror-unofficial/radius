@@ -477,7 +477,6 @@ enum auth_state {
         as_realmuse,
         as_simuse, 
         as_time, 
-        as_eval,
         as_scheme,
         as_ipaddr, 
         as_exec_wait, 
@@ -487,6 +486,7 @@ enum auth_state {
         as_exec_nowait, 
         as_stop, 
         as_reject,
+	as_reject_cleanup,
         AS_COUNT
 };
 
@@ -516,7 +516,6 @@ typedef struct auth_mach {
 
 static void sfn_init(AUTH_MACH*);
 static void sfn_validate(AUTH_MACH*);
-static void sfn_eval_reply(AUTH_MACH*);
 static void sfn_scheme(AUTH_MACH*);
 static void sfn_disable(AUTH_MACH*);
 static void sfn_realmuse(AUTH_MACH*);
@@ -529,6 +528,7 @@ static void sfn_menu_challenge(AUTH_MACH*);
 static void sfn_ack(AUTH_MACH*);
 static void sfn_exec_nowait(AUTH_MACH*);
 static void sfn_reject(AUTH_MACH*);
+static void sfn_reject_cleanup(AUTH_MACH *m);
 static int check_expiration(AUTH_MACH *m);
 
 
@@ -556,12 +556,9 @@ struct auth_state_s states[] = {
         { as_simuse,       as_time,
                          DA_SIMULTANEOUS_USE, L_check, sfn_simuse },
         
-        { as_time,         as_eval,
+        { as_time,         as_scheme,
                          DA_LOGIN_TIME,   L_check, sfn_time },
         
-        { as_eval,         as_scheme,
-                         0,               L_null,  sfn_eval_reply },
-
         { as_scheme,       as_ipaddr,
                          DA_SCHEME_PROCEDURE, L_reply, sfn_scheme },
         
@@ -588,6 +585,9 @@ struct auth_state_s states[] = {
         
         { as_reject,       as_stop,
                          0,               L_null, sfn_reject },
+	
+        { as_reject_cleanup, as_reject,
+                         0,               L_null, sfn_reject_cleanup },
 };
 
 static int is_log_mode(AUTH_MACH *m, int mask);
@@ -824,18 +824,9 @@ sfn_init(AUTH_MACH *m)
                         auth_log(m, _("Invalid user"), NULL, NULL, NULL);
 
                 /* Send reject packet with proxy-pairs as a reply */
-                newstate(as_reject);
-                avl_free(m->user_reply);
-                m->user_reply = NULL;
+                newstate(as_reject_cleanup);
         }
 }
-
-void
-sfn_eval_reply(AUTH_MACH *m)
-{
-	if (radius_eval_avl(m->req, m->user_reply))
-                newstate(as_reject);
-}               
 
 void
 sfn_scheme(AUTH_MACH *m)
@@ -847,7 +838,7 @@ sfn_scheme(AUTH_MACH *m)
         if (!use_guile) {
                 radlog_req(L_ERR, m->req,
                        _("Guile authentication disabled in config"));
-                newstate(as_reject);
+                newstate(as_reject_cleanup);
                 return;
         }
 
@@ -871,7 +862,7 @@ sfn_scheme(AUTH_MACH *m)
 #else
         radlog_req(L_ERR, m->req,
                _("Guile authentication not available"));
-        newstate(as_reject);
+        newstate(as_reject_cleanup);
         return;
 #endif
 }
@@ -928,7 +919,7 @@ sfn_validate(AUTH_MACH *m)
 	rc = check_expiration(m);
 
 	if (rc != AUTH_OK) {
-                newstate(as_reject);
+                newstate(as_reject_cleanup);
                 if (is_log_mode(m, RLOG_AUTH)) {
                         auth_log(m,
                                  _("Login incorrect"),
@@ -945,7 +936,7 @@ sfn_disable(AUTH_MACH *m)
         if (get_deny(m->namepair->avp_strvalue)) {
                 auth_format_msg(m, MSG_ACCOUNT_CLOSED);
                 auth_log(m, _("Account disabled"), NULL, NULL, NULL);
-                newstate(as_reject);
+                newstate(as_reject_cleanup);
         }
 }
 
@@ -960,7 +951,7 @@ sfn_realmuse(AUTH_MACH *m)
         auth_format_msg(m, MSG_REALM_QUOTA);
         auth_log(m, _("Login failed"), NULL,
                  _("realm quota exceeded for "), m->req->realm->realm);
-        newstate(as_reject);
+        newstate(as_reject_cleanup);
 }
 
 void
@@ -989,7 +980,7 @@ sfn_simuse(AUTH_MACH *m)
                m->check_pair->avp_lvalue,
 		   rc == 2 ? _(" [MPP attempt]") : "",
 		   m->clid);
-        newstate(as_reject);
+        newstate(as_reject_cleanup);
 }
 
 static UINT4
@@ -1023,7 +1014,7 @@ sfn_time(AUTH_MACH *m)
 			   m->req,
 			   _("Outside allowed timespan (%s)"),
 			   m->check_pair->avp_strvalue);
-                newstate(as_reject);
+                newstate(as_reject_cleanup);
         } else if (rc == 0) {
                 /*
                  * User is allowed, but set Session-Timeout.
@@ -1084,7 +1075,7 @@ sfn_exec_wait(AUTH_MACH *m)
 		}
 
 		if (rc != 0) {
-			newstate(as_reject);
+			newstate(as_reject_cleanup);
 
 			auth_format_msg(m, MSG_ACCESS_DENIED);
 		
@@ -1162,6 +1153,8 @@ sfn_ack(AUTH_MACH *m)
         
         stat_inc(auth, m->req->ipaddr, num_accepts);
 
+	radius_eval_avl(m->req, m->user_reply);
+
         radius_send_reply(RT_AUTHENTICATION_ACK,
                           m->req,
                           m->user_reply,
@@ -1176,9 +1169,18 @@ sfn_ack(AUTH_MACH *m)
 }
 
 void
+sfn_reject_cleanup(AUTH_MACH *m)
+{
+	avl_free(m->user_reply);
+	m->user_reply = NULL;
+	newstate(as_reject);
+}
+
+void
 sfn_reject(AUTH_MACH *m)
 {
         debug(1, ("REJECT: %s", m->namepair->avp_strvalue));
+	radius_eval_avl(m->req, m->user_reply);
         radius_send_reply(RT_AUTHENTICATION_REJECT,
                           m->req,
                           m->user_reply,

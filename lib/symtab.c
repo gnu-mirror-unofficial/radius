@@ -34,7 +34,6 @@
    Hopefully no one will need more than 1048661 hash entries, and even if
    someone will, it is easy enough to add more numbers to the sequence. */
 static size_t hash_size[] = {
-        1,2,3,4,5,6,
         37,    101,    229,    487,    1009, 2039, 4091, 8191, 16411, 32797,
      65579, 131129, 262217, 524369, 1048661
 };

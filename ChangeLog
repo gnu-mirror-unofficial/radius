@@ -6,8 +6,9 @@
 	  control.
 	  (rad_send_reply): Append 'reply' back to radreq->request.
 	  This should be eliminated soon.
-	  (request_xmit): No need to drop the request
+	* radiusd/request.c (request_xmit): No need to drop the request
 	  if there is no xmit function associated with its type.
+	* radlib/mem.c: Added some more insists.
 	
 	* radiusd/.gdbinit: Handle SIGHUP. Set spawn_flag=1
 

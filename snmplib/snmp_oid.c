@@ -1,0 +1,129 @@
+/*
+   Copyright (C) 2001, Sergey Poznyakoff.
+
+   This file is part of GNU Radius SNMP Library.
+
+   This library is free software; you can redistribute it and/or
+   modify it under the terms of the GNU Library General Public License as
+   published by the Free Software Foundation; either version 2 of the
+   License, or (at your option) any later version.
+
+   This library is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   Library General Public License for more details.
+
+   You should have received a copy of the GNU Library General Public
+   License along with this library; see the file COPYING.LIB.  If not,
+   write to the Free Software Foundation, Inc., 59 Temple Place - Suite 330,
+   Boston, MA 02111-1307, USA.  */
+
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include <stdlib.h>
+#include <asn1.h>
+#include <snmp.h>
+
+oid_t
+oid_dup(oid)
+	oid_t oid;
+{
+	oid_t new_oid;
+
+	new_oid = snmp_alloc(OIDSIZE(oid)+sizeof(oid[0]));
+	if (!new_oid)
+		return NULL;
+	memcpy(new_oid, oid, OIDSIZE(oid)+sizeof(oid[0]));
+	return new_oid;
+}
+
+
+oid_t 
+oid_create_from_string(str)
+	char *str;
+{
+	char *tok;
+	int len;
+	oid_t name, p;
+
+	if (*str == '.')
+		str++;
+	
+	for (tok = str, len = 0; *tok; tok++)
+		if (*tok == '.')
+			len++;
+	len++;
+	name = snmp_alloc(sizeof(*name) * (len+1));
+	if (!name) {
+		SNMP_SET_ERRNO(E_SNMP_NOMEM);
+		return NULL;
+	}
+	OIDLEN(name) = len;
+	p = OIDPTR(name);
+	tok = str;
+	for (;;) {
+		*p++ = strtol(tok, &tok, 10);
+		if (*tok == 0)
+			break;
+		if (*tok++ != '.') {
+			SNMP_SET_ERRNO(E_SNMP_BAD_OID);
+			snmp_free(name);
+			name = NULL;
+			break;
+		}
+	} 
+	return name;
+}
+
+oid_t
+oid_create_from_subid(len, subid)
+	int len;
+	subid_t *subid;
+{
+	oid_t oid;
+
+	oid = snmp_alloc((len+1)*sizeof(oid[0]));
+	if (!oid) {
+		SNMP_SET_ERRNO(E_SNMP_NOMEM);
+		return NULL;
+	}
+	OIDLEN(oid) = len;
+	memcpy(OIDPTR(oid), subid, len*sizeof(oid[0]));
+	return oid;
+}
+
+char *
+sprint_oid(buf, buflen, oid)
+	char *buf;
+	oid_t oid;
+{
+	int i, d;
+	char *p, *start;
+	char temp[64];
+	int len = OIDLEN(oid);
+	oid_t name = OIDPTR(oid);
+
+	start = buf;
+	for (i = 0; i < len; i++) {
+		if (buflen < 3) {
+			*buf++ = '>';
+			break;
+		}
+
+		sprintf(temp, "%d", *name);
+		d = strlen(temp) + 1;
+		if (buflen - d < 3) {
+			*buf++ = '>';
+			break;
+		}
+		buflen -= d;
+		for (p = temp; *p; )
+		     *buf++ = *p++;
+		*buf++ = '.';
+		name++;
+	}
+	*buf = 0;
+	return start;
+}

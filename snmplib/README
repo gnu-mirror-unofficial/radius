@@ -1,0 +1,3 @@
+This directory contains sources for SNMP library. The library is not
+a part of Radius sources and is covered by GLGPL (see COPYING.LIB for
+details). Currently only a basic subset of SNMP requests is implemented.

@@ -505,17 +505,6 @@ yyerror(s)
         radlog(L_ERR, "%s:%d: %s", cfg_filename, cfg_line_num, s);
 }
                 
-void
-obsolete(stmt, ign)
-        char *stmt;
-        int ign;
-{
-        char *expl = ign ? N_("Statement has no effect.") : NULL;
-        radlog(L_WARN,
-               _("%s:%d: `%s' is obsolete. %s"),
-               cfg_filename, cfg_line_num, stmt, expl ? _(expl) : "");
-}
-
 /* ************************************************************************* */
 /* Internal functions */
 

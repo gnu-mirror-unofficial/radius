@@ -41,6 +41,7 @@
 #include <sys/wait.h>
 
 #include <common.h>
+#include <radius/radius.h>	
 #include <radtest.h>
 #include "gram.h"
 
@@ -52,6 +53,78 @@ grad_locus_t source_locus;
 static int interactive;
 static struct obstack string_stk;
  
+char prompt_str[] = "radtest> ";
+
+static char *input_line;
+static size_t input_length;
+static size_t input_pos;
+
+static int
+fill_input_buffer(char *buf, int bufsize)
+{
+	if (interactive) {
+		int rest;
+		
+		if (!input_line || input_pos == input_length) {
+			free(input_line);
+			input_line = grad_readline(prompt_str);
+			if (!input_line)
+				return 0;
+			grad_add_history(input_line);
+			input_length = strlen (input_line);
+			input_line = realloc(input_line, input_length+2);
+			if (!input_line) {
+				fprintf (stderr, _("low core: aborting"));
+				abort();
+			}
+			input_line[input_length++] = '\n';
+			input_line[input_length] = 0;
+			input_pos = 0;
+		}
+		rest = input_length - input_pos;
+		if (bufsize > rest)
+			bufsize = rest;
+		memcpy(buf, input_line + input_pos, bufsize);
+		input_pos += bufsize;
+		return bufsize;
+	} else {
+		return fread(buf, 1, bufsize, yyin);
+	}
+}
+			
+#ifdef FLEX_SCANNER
+
+#undef YY_INPUT
+#define YY_INPUT(buf,result,max_size) \
+  result = fill_input_buffer(buf, max_size)
+
+#else /* !FLEX_SCANNER */
+/* AT&T Lex */
+
+static int
+xinput()
+{
+	char c;
+	if (fill_input_buffer(&c, 1) <= 0)
+		return EOF;
+	return c;
+}
+
+static int
+xunput(int c)
+{
+	if (input_pos == 0) 
+		abort();
+	return input_line[--input_pos] = c;
+}
+ 
+#undef unput
+#define unput(c) xunput(c)
+#undef input
+#define input() xinput()
+
+#endif /* FLEX_SCANNER */ 
+
 static void add_str(char *str, int  len);
 static void add_chr(int c);
 static char *end_str();
@@ -77,8 +150,6 @@ DQ {D3}\.{D3}\.{D3}\.{D3}
 auth    return AUTH;
 acct    return ACCT;
 print   return PRINT;
-all     return ALL;
-vars    return VARS;
 send    return SEND;
 expect  return EXPECT;
 exit    return EXIT;
@@ -195,6 +266,7 @@ exit    return EXIT;
 int
 yywrap()
 {
+	grad_write_history_file();
         return 1;
 }
 
@@ -218,6 +290,11 @@ open_input(char *name)
         }
 
         interactive = isatty(fileno(fp));
+	grad_readline_init("radtest", interactive, radtest_command_completion);
+	if (interactive) 
+		grad_readline_set_input(fp);
+	grad_read_history_file();
+
         source_locus.line = 0;
 #ifdef FLEX_SCANNER
         yyrestart(fp);
@@ -236,25 +313,6 @@ close_input()
         fclose(yyin);
         yyin = NULL;
         obstack_free(&string_stk, NULL);
-}
-
-
-char prompt_str[] = "radtest> ";
-
-void
-prompt()
-{
-        if (interactive) 
-                printf("%s", prompt_str);
-}
-
-void
-putback(char *str)
-{
-        char *p = str + strlen(str);
-
-        while (--p > str)
-                unput(*p);
 }
 
 void

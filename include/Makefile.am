@@ -37,7 +37,6 @@ mem.h \
 obstack1.h \
 parser.h \
 radclient.h \
-radctl.h \
 raddbm.h \
 raddict.h \
 radius.h \

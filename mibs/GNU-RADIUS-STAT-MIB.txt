@@ -1,3 +1,20 @@
+-- This file is part of GNU RADIUS.
+-- Copyright (C) 2000,2001, Sergey Poznyakoff
+--
+-- This program is free software; you can redistribute it and/or modify
+-- it under the terms of the GNU General Public License as published by
+-- the Free Software Foundation; either version 2 of the License, or
+-- (at your option) any later version.
+--
+-- This program is distributed in the hope that it will be useful,
+-- but WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+-- GNU General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with this program; if not, write to the Free Software
+-- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
 GNU-RADIUS-STAT-MIB DEFINITIONS ::= BEGIN
 
 IMPORTS
@@ -6,19 +23,10 @@ IMPORTS
        IpAddress, TimeTicks, mib-2      FROM SNMPv2-SMI
        SnmpAdminString                  FROM SNMP-FRAMEWORK-MIB;
 
-radiusStatMIB MODULE-IDENTITY
-       LAST-UPDATED "0001020000Z"
-       ORGANIZATION ""
-       CONTACT-INFO
-              " Sergey Poznyakoff
-                email: gray@farlep.net"
-       DESCRIPTION
-             "The MIB module for entities implementing the statistics
-              side of the Remote Access Dialin User Service (RADIUS)
-              authentication protocol."
-       REVISION "0001020000Z"    
-       DESCRIPTION "Experimental Version"
-       ::= { radiusStatistics 1 }
+UnixTimestamp ::= TEXTUAL-CONVENTION
+       STATUS  current	
+       DESCRIPTION "Regular Unix timestamp encoded as an integer"
+       SYNTAX Integer32 (1..'ffffffff'h)
 
 radiusMIB OBJECT-IDENTITY
        STATUS  current
@@ -28,6 +36,20 @@ radiusMIB OBJECT-IDENTITY
 
 radiusStatistics  OBJECT IDENTIFIER ::= {radiusMIB 3}
 
+radiusStatMIB MODULE-IDENTITY
+       LAST-UPDATED "0000320010Z"
+       ORGANIZATION ""
+       CONTACT-INFO
+              " Sergey Poznyakoff
+                email: gray@farlep.net"
+       DESCRIPTION
+             "The MIB module for entities implementing the statistics
+              side of the Remote Access Dialin User Service (RADIUS)
+              authentication protocol."
+       REVISION "$Revision$"
+       DESCRIPTION "Experimental Version"
+       ::= { radiusStatistics 1 }
+
 radiusStatIdent OBJECT-TYPE
        SYNTAX      SnmpAdminString
        MAX-ACCESS  read-only
@@ -36,16 +58,16 @@ radiusStatIdent OBJECT-TYPE
              "The implementation identification string for the
               RADIUS statistics server software in use on the
               system"
-       ::= {radiusStatistics 1}
+       ::= {radiusStatMIB 1}
 
 radiusStatUpTime OBJECT-TYPE
        SYNTAX      TimeTicks
        MAX-ACCESS  read-only
        STATUS      current
        DESCRIPTION
-             "Time (in hundredths of a second) since the statistics
-              was started."
-       ::= {radiusStatistics 2}
+             "Time (in hundredths of a second) since the statistics 
+	      data were last initialized."
+       ::= {radiusStatMIB 2}
 
 radiusStatConfigReset OBJECT-TYPE
        SYNTAX INTEGER { other(1),
@@ -64,41 +86,41 @@ radiusStatConfigReset OBJECT-TYPE
                    other(1) - server in some unknown state;
                    initializing(3) - server (re)initializing;
                    running(4) - server currently running."
-       ::= {radiusStatistics 3}
+       ::= {radiusStatMIB 3}
 
 radiusStatTotalLines OBJECT-TYPE
         SYNTAX Counter32
         MAX-ACCESS read-only
         STATUS current
         DESCRIPTION
-               "The number of dialup lines registered by the statistics
-                module"
-        ::= { radiusStatistics 4}
+               "The number of dialup lines registered so far by
+                the statistics module"
+        ::= { radiusStatMIB 4}
 
 radiusStatTotalLinesInUse OBJECT-TYPE
         SYNTAX Counter32
         MAX-ACCESS read-only
         STATUS current
         DESCRIPTION
-              "The number dial-up lines currently in use"
-        ::= { radiusStatistics 5 }
+              "The number of dial-up lines currently in use"
+        ::= { radiusStatMIB 5 }
 
 radiusStatTotalLinesIdle OBJECT-TYPE
         SYNTAX Counter32
         MAX-ACCESS read-only
         STATUS current
         DESCRIPTION
-              "The number dial-up lines currently idle"
-        ::= { radiusStatistics 6 }
+              "The number of dial-up lines currently idle"
+        ::= { radiusStatMIB 6 }
 
-radiusStatNasTable OBJECT-TYPE
+radiusStatNASTable OBJECT-TYPE
        SYNTAX     SEQUENCE OF RadiusStatNASEntry
        MAX-ACCESS not-accessible
        STATUS     current
        DESCRIPTION
              "The (conceptual) table listing the available
               Network Access Servers"
-       ::= { radiusStatistics 5 }
+       ::= { radiusStatMIB 7 }
 
 radiusStatNASEntry OBJECT-TYPE
        SYNTAX     RadiusNASStatEntry
@@ -120,114 +142,147 @@ RadiusStatNASEntry ::= SEQUENCE {
        NASPortTable                       RadiusStatNASPortTable
 }
 
-NASIndex OBJECT-TYPE
+StatNASIndex OBJECT-TYPE
        SYNTAX     Integer32 (1..2147483647)
        MAX-ACCESS not-accessible
        STATUS     current
        DESCRIPTION
-             "A number uniquely identifying each NAS"
+             "A number uniquely identifying each NAS. To obtain this
+              number a NAS IP address in familiar dot notation should
+              be appended to StatNASIndex OID."
        ::= { radiusStatNASEntry 1 }
 
-NASAddress OBJECT-TYPE
+StatNASAddress OBJECT-TYPE
        SYNTAX     IpAddress
        MAX-ACCESS read-only
        STATUS     current
        DESCRIPTION
-             "The NAS-IP-Address"
+             "The NAS IP-Address. This forms the reverse index in this
+              table."
        ::= { radiusStatNASEntry 2 }
 
-NASID OBJECT-TYPE
+StatNASID OBJECT-TYPE
        SYNTAX     SnmpAdminString
        MAX-ACCESS read-only
        STATUS     current
        DESCRIPTION
-             "The NAS-Identifier"
+             "The NAS Identifier: an octet string uniquely identifying
+              each NAS. GNU Radius returns as a value of this variable
+              the NAS longname from <sysconfdir>/raddb/naslist."
        ::= { radiusStatNASEntry 3 }
 
-NASLines OBJECT-TYPE
+StatNASLines OBJECT-TYPE
        SYNTAX Counter32
        MAX-ACCESS read-only
        STATUS current
        DESCRIPTION
-             "The number of lines served by the NAS"
+             "The number of lines (ports) registered so far on the NAS."
        ::= { radiusStatNASEntry 4 }
 
-NASLinesInUse OBJECT-TYPE
+StatNASLinesInUse OBJECT-TYPE
        SYNTAX Counter32
        MAX-ACCESS read-only
        STATUS current
        DESCRIPTION
-             "The number of lines currently in use on this NAS"
+             "The number of lines (ports) currently in use on this NAS"
        ::= { radiusStatNASEntry 5 }
 
-NASLinesIdle OBJECT-TYPE
+StatNASLinesIdle OBJECT-TYPE
        SYNTAX Counter32
        MAX-ACCESS read-only
        STATUS current
        DESCRIPTION
-             "The number of lines currently idle on this NAS"
+             "The number of lines (ports) currently idle on this NAS"
        ::= { radiusStatNASEntry 6 }
 
-NASPortTable OBJECT-TYPE
+StatNASPortTable OBJECT-TYPE
        SYNTAX     SEQUENCE OF RadiusStatNASPortEntry
        MAX-ACCESS not-accessible
        STATUS     current
        DESCRIPTION
              "The (conceptual) table listing the available ports"
-       ::= { radiusStatNASEntry 7 }
+       ::= { radiusStatMIB 8 }
 
-NASPortEntry OBJECT-TYPE
+StatNASPortEntry OBJECT-TYPE
        SYNTAX     RadiusStatNASPortEntry
        MAX-ACCESS not-accessible
        STATUS     current
        DESCRIPTION
              "An entry (conceptual row) representing a port"
        INDEX      { PortIndex }
-       ::= { NASPortTable 1 }
+       ::= { StatNASPortTable 1 }
 
 RadiusStatNASPortEntry ::= SEQUENCE {
        PortIndex                           Integer32,
-       PortID                              SnmpAdminString,
+       NASIndex				   Integer32,	
+       PortID                              Integer32,
+       FramedAddress                       IpAddress,
        PortTotalLogins                     Counter32,
        PortStatus                          Counter32,
-       PortStatusDate                      DateAndTime,
+       PortStatusChangeTimestamp           UnixTimestamp,
        PortUpTime                          TimeTicks,
        PortLastLogin                       SnmpAdminString,
-       PortLastLoginDate                   DateAndTime,
-       PortLastLogoutDate                  DateAndTime,
+       PortLastLoginTimestamp              UnixTimestamp,
+       PortLastLogoutTimestamp             UnixTimestamp,
        PortIdleTotalTime                   TimeTicks,
        PortIdleMaxTime                     TimeTicks,
-       PortIdleMaxDate                     DateAndTime,
+       PortIdleMaxTimestamp                UnixTimestamp,
        PortInUseTotalTime                  TimeTicks,
        PortInUseMaxTime                    TimeTicks,
-       PortInUseMaxDate                    DateAndTime,
+       PortInUseMaxTimestamp               UnixTimestamp,
 }
 
-PortIndex OBJECT-TYPE
+StatPortIndex OBJECT-TYPE
        SYNTAX     Integer32 (1..2147483647)
        MAX-ACCESS read-only
        STATUS     current
        DESCRIPTION
-             "A number uniquely identifying each port"
-       ::= { NASPortEntry 1 }
+             "A number uniquely identifying each port. See also
+              the description for PortID."
+       ::= { StatNASPortEntry 1 }
 
-PortID OBJECT-TYPE
-       SYNTAX     SnmpAdminString
+StatNASIndex OBJECT-TYPE
+       SYNTAX     Integer32 (1..2147483647)
        MAX-ACCESS read-only
        STATUS     current
        DESCRIPTION
-             "The Port-Identifier"
-       ::= { NASPortEntry 2 }
+             "A numeric ID of the NAS the port belongs to. See also
+              the description for PortID."
+       ::= { StatNASPortEntry 2 }
 
-PortTotalLogins OBJECT-TYPE
+StatPortID OBJECT-TYPE
+       SYNTAX     Integer32 (1..2147483647)
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The Port Identifier on the NAS.
+              The following relation between the three OID values
+              holds true:
+
+		StatPortIndex.$(StatNASIndex.N).$(StatPortID.N) = N
+
+              where $() represents the value of corresponding oid
+              and N is an arbitrary integer representing number
+              of the row in port table."
+       ::= { StatNASPortEntry 3 }
+
+StatPortFramedAddress OBJECT-TYPE
+       SYNTAX     IpAddress
+       MAX-ACCESS read-only
+       STATUS     current
+       DESCRIPTION
+             "The framed IP address recently assigned to the port"
+       ::= { StatNASPortEntry 4 }
+
+StatPortTotalLogins OBJECT-TYPE
        SYNTAX Counter32
        MAX-ACCESS read-only
        STATUS current
        DESCRIPTION
-             "The number of logins registered so far"
-       ::= { NASPortEntry 3 }
+             "The number of logins registered so far on this port"
+       ::= { StatNASPortEntry 5 }
 
-PortStatus OBJECT-TYPE
+StatPortStatus OBJECT-TYPE
        SYNTAX INTEGER {
 		idle(1),
 		inUse(2)
@@ -236,96 +291,96 @@ PortStatus OBJECT-TYPE
        STATUS current
        DESCRIPTION
              "The status of the port"
-       ::= { NASPortEntry 4 }
+       ::= { StatNASPortEntry 6 }
 
-PortStatusDate OBJECT-TYPE
-       SYNTAX DateAndTime
+StatPortStatusChangeTimestamp OBJECT-TYPE
+       SYNTAX UnixTimestamp
        MAX-ACCESS read-only
        STATUS current
        DESCRIPTION
              "Time of the last change in port status"
-       ::= { NASPortEntry 5 }
+       ::= { StatNASPortEntry 7 }
 
-PortUpTime OBJECT-TYPE
+StatPortUpTime OBJECT-TYPE
        SYNTAX TimeTicks
        MAX-ACCESS read-only
        STATUS current
        DESCRIPTION
              "Time in thousandths of a second since the port changed its
               status"
-       ::= { NASPortEntry 6 }
+       ::= { StatNASPortEntry 8 }
 
-PortLastLoginName OBJECT-TYPE
+StatPortLastLoginName OBJECT-TYPE
        SYNTAX SnmpAdminString
        MAX-ACCESS read-only
        STATUS current
        DESCRIPTION
              "The username of the last user logged in on that port"
-       ::= { NASPortEntry 7 }
+       ::= { StatNASPortEntry 9 }
 
-PortLastLoginDate OBJECT-TYPE
-       SYNTAX DateAndTime
+StatPortLastLoginTimestamp OBJECT-TYPE
+       SYNTAX UnixTimestamp
        MAX-ACCESS read-only
        STATUS current
        DESCRIPTION
              "Time of the last login"
-       ::= { NASPortEntry 8 }
+       ::= { StatNASPortEntry 10 }
 
-PortLastLogoutDate OBJECT-TYPE
-       SYNTAX DateAndTime
+StatPortLastLogoutTimestamp OBJECT-TYPE
+       SYNTAX UnixTimestamp
        MAX-ACCESS read-only
        STATUS current
        DESCRIPTION
              "Time of the last logout"
-       ::= { NASPortEntry 9 }
+       ::= { StatNASPortEntry 11 }
 
-PortIdleTotalTime OBJECT-TYPE
+StatPortIdleTotalTime OBJECT-TYPE
        SYNTAX TimeTicks
        MAX-ACCESS read-only
        STATUS current
        DESCRIPTION
              "Total time the port was idle"
-       ::= { NASPortEntry 10 }
+       ::= { StatNASPortEntry 12 }
 
-PortIdleMaxTime OBJECT-TYPE
+StatPortIdleMaxTime OBJECT-TYPE
        SYNTAX TimeTicks
        MAX-ACCESS read-only
        STATUS current
        DESCRIPTION
              "Maximum time the port was idle"
-       ::= { NASPortEntry 11 }
+       ::= { StatNASPortEntry 13 }
 
-PortIdleMaxDate OBJECT-TYPE
-       SYNTAX DateAndTime
+StatPortIdleMaxTimestamp OBJECT-TYPE
+       SYNTAX UnixTimestamp
        MAX-ACCESS read-only
        STATUS current
        DESCRIPTION
-             "Date when the maximum idle time was registered"
-       ::= { NASPortEntry 12 }
+             "Timestamp when the maximum idle time was registered"
+       ::= { StatNASPortEntry 14 }
 
-PortInUseTotalTime OBJECT-TYPE
+StatPortInUseTotalTime OBJECT-TYPE
        SYNTAX TimeTicks
        MAX-ACCESS read-only
        STATUS current
        DESCRIPTION
              "Total time the port was in use"
-       ::= { NASPortEntry 13 }
+       ::= { StatNASPortEntry 15 }
 
-PortInUseMaxTime OBJECT-TYPE
+StatPortInUseMaxTime OBJECT-TYPE
        SYNTAX TimeTicks
        MAX-ACCESS read-only
        STATUS current
        DESCRIPTION
              "Maximum time the port was in use"
-       ::= { NASPortEntry 14 }
+       ::= { StatNASPortEntry 16 }
 
-PortInUseMaxDate OBJECT-TYPE
-       SYNTAX DateAndTime
+StatPortInUseMaxTimestamp OBJECT-TYPE
+       SYNTAX UnixTimestamp
        MAX-ACCESS read-only
        STATUS current
        DESCRIPTION
-             "Date when the maximum in use time was registered"
-       ::= { NASPortEntry 15 }
+             "Timestamp when the maximum in use time was registered"
+       ::= { StatNASPortEntry 17 }
 
 
 END

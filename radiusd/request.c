@@ -29,7 +29,7 @@
 extern int spawn_flag; /* FIXME */
 struct request_class request_class[] = {
         { "AUTH", 0, MAX_REQUEST_TIME, CLEANUP_DELAY,
-	  radius_req_decode,   /* Decoder */
+	  radius_auth_req_decode,   /* Decoder */
           radius_respond,      /* Handler */
 	  radius_req_xmit,     /* Retransmitter */
 	  radius_req_cmp,      /* Comparator */
@@ -40,7 +40,7 @@ struct request_class request_class[] = {
 	  radius_req_update,
 	},
         { "ACCT", 0, MAX_REQUEST_TIME, CLEANUP_DELAY,
-	  radius_req_decode,   /* Decoder */
+	  radius_acct_req_decode,   /* Decoder */
           radius_respond,      /* Handler */
 	  radius_req_xmit,     /* Retransmitter */
 	  radius_req_cmp,      /* Comparator */
@@ -111,6 +111,7 @@ request_drop(int type, void *data, void *orig_data,
         request_class[type].drop(type, data, orig_data, fd, status_str);
 }
 
+
 int
 request_respond(REQUEST *req)
 {
@@ -156,9 +157,21 @@ request_forward(REQUEST *req)
 	return 0;
 }
 
+int
+request_retransmit(REQUEST *req, void *rawdata, size_t rawsize)
+{
+	efree(req->rawdata);
+	req->rawdata = emalloc(rawsize);
+	memcpy(req->rawdata, rawdata, rawsize);
+	req->rawsize = rawsize;
+	return request_forward(req);
+}
+
 struct request_closure {
 	int type;                  /* Type of the request */
 	void *data;                /* Request contents */
+	void *rawdata;             /* Request raw data */
+	size_t rawsize;            /* Size thereof */
 	time_t curtime;            /* Current timestamp */
 	int (*handler)(REQUEST *); /* Handler function */
 	/* Output: */
@@ -232,7 +245,8 @@ _request_iterator(void *item, void *clos)
 			   completed, hand it over to the child.
 			   Otherwise drop the request. */
 			if (req->status == RS_COMPLETED
-			    && request_forward(req) == 0)
+			    && request_retransmit(req, rp->rawdata,
+						  rp->rawsize) == 0)
 				break;
 			else
 				request_drop(req->type, rp->data,
@@ -256,9 +270,11 @@ request_handle(REQUEST *req, int (*handler)(REQUEST *))
 
 	if (!req)
 		return 1;
-	
+
 	rc.type = req->type;
 	rc.data = req->data;
+	rc.rawdata = req->rawdata;
+	rc.rawsize = req->rawsize;
 	rc.orig = NULL;
 	rc.state = RCMP_NE;
 	rc.handler = handler;

@@ -24,6 +24,8 @@ lint:;
 
 endif
 
+MAINTAINERCLEANFILES = raddict.h radmibs.h
+
 SUBDIRS=snmp
 
 EXTRA_DIST = \

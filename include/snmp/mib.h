@@ -26,16 +26,18 @@
 
 struct mib_node_t;
 
-enum var_subid_cmd {
-	VAR_SUBID_GET,
-	VAR_SUBID_SET,
-	VAR_SUBID_SET_TRY,
-	VAR_SUBID_COMPARE,
-	VAR_SUBID_NEXT,
-	VAR_SUBID_RESET
+enum mib_node_cmd {
+	MIB_NODE_GET,
+	MIB_NODE_SET,
+	MIB_NODE_SET_TRY,
+	MIB_NODE_COMPARE,
+	MIB_NODE_NEXT,
+	MIB_NODE_GET_SUBID,
+	MIB_NODE_RESET
 };
 
-typedef int (*mib_fp)(enum var_subid_cmd, void *, subid_t, 
+typedef int (*mib_fp)(enum mib_node_cmd, void *,
+		      subid_t,
 		      struct snmp_var **, int *);
 
 struct mib_node_t {

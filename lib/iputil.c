@@ -208,6 +208,7 @@ grad_ip_getnetaddr(const char *str, grad_netdef_t *netdef)
 			else
 				netdef->netmask = (0xfffffffful >> n) << n;
 		}
+		netdef->ipaddr &= netdef->netmask;
 	}
 	return 0;
 }

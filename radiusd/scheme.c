@@ -35,6 +35,45 @@ static char rcsid[] =
 #include <setjmp.h>
 #include <errno.h>
 
+/* Implementation notes and a BIG FIXME:
+
+   Current realisation of libguile (1.6) is not thread-safe in the
+   sense that different threads cannot safely call scheme evaluation
+   procedures. The problem is mainly in the garbage collector, which
+   saves the address of the first automatic variable on the entry to
+   scm_boot_guile_1 and than uses this address as the top of stack.
+   Obviously, when the gc() gets called from another thread this address
+   is not valid anymore and the thread sigfaults miserably.
+
+   So, current workaround is to start a separate thread for processing
+   scheme requests. This thread (let's call it scheme-server one) keeps
+   a queue of tasks. Each thread wishing to execute a scheme procedure
+   (a "client thread") first places it to the queue and then signals the
+   scheme-server thread. Then the client thread waits until the server
+   raises condition variable associated with the task, thereby signalling
+   its completion.
+
+   This creates an obvious buttleneck: assuming that the average time of
+   execution of a scheme procedure is M seconds, the client will wait
+   for the completion of its procedure at least M*(N+1) seconds, where
+   N is the number of the requests in the queue by the time the thread
+   places its task.
+
+   This is hardly acceptable. To avoid possible thread cancellations
+   a timeout is imposed on the execution of scheme requests. The timeout
+   is REQUEST_TYPE_TTL/2 + 1. The value of the configuration variable
+   `task-timeout' overrides this default, provided that
+
+          task-timeout <= REQUEST_TYPE_TTL/2 + 1.
+
+   Possibly, a better approach would be to set timeout to
+
+          REQUEST_TYPE_TTL/N
+
+   where N represents the number of scheme tasks waiting in the queue.
+
+   Anyway, the solution of the bottleneck problem is badly needed. */
+   
 /* Protos to be moved to radscm */
 SCM scm_makenum (unsigned long val);
 SCM radscm_avl_to_list(VALUE_PAIR *pair);
@@ -42,33 +81,61 @@ VALUE_PAIR *radscm_list_to_avl(SCM list);
 SCM radscm_avp_to_cons(VALUE_PAIR *pair);
 VALUE_PAIR *radscm_cons_to_avp(SCM scm);
 
-/* Static declarations */
-static void *guile_boot0(void *ignored);
-static void guile_boot1(void *closure, int argc, char **argv);
+/* Values for rad_scheme_task.state */
+#define RSCM_TASK_WAITING 0
+#define RSCM_TASK_READY   1
+#define RSCM_TASK_DONE    2
 
-struct call_data {
-        struct call_data *next;
+struct rad_scheme_task;
+typedef int (*scheme_task_fp)(struct rad_scheme_task*);
+
+struct rad_scheme_task {
+        struct rad_scheme_task *next;
         pthread_mutex_t mutex;
         pthread_cond_t cond;
-        int ready;
+        int state;
         int retval;
-        int (*fun)(struct call_data*);
+        scheme_task_fp fun;
         char *procname;
         RADIUS_REQ *request;
         VALUE_PAIR *user_check;
         VALUE_PAIR **user_reply_ptr;
 };
 
+/* Static declarations */
+static void *guile_boot0(void *ignored);
+static void guile_boot1(void *closure, int argc, char **argv);
+static SCM boot_body(void *data);
+static SCM boot_handler(void *data, SCM tag, SCM throw_args);
+static SCM eval_catch_body(void *list);
+static SCM eval_catch_handler(void *data, SCM tag, SCM throw_args); 
+
+static int scheme_generic_call(scheme_task_fp fun,
+			       char *procname, RADIUS_REQ *req,
+			       VALUE_PAIR *user_check,
+			       VALUE_PAIR **user_reply_ptr,
+			       u_long timeout);
+static void rad_scheme_place_task(struct rad_scheme_task *cp);
+static void rad_scheme_remove_task(struct rad_scheme_task *cp);
+static int scheme_auth_internal(struct rad_scheme_task *p);
+static int scheme_acct_internal(struct rad_scheme_task *p);
+static int scheme_end_reconfig_internal(struct rad_scheme_task *p);
+static int scheme_load_internal(struct rad_scheme_task *p);
+static int scheme_add_load_path_internal(struct rad_scheme_task *p);
+static int scheme_read_eval_loop_internal(struct rad_scheme_task *unused);
+
+/* variables */
 pthread_t guile_tid;
 static pthread_mutex_t server_mutex = PTHREAD_MUTEX_INITIALIZER;
 static pthread_cond_t server_cond = PTHREAD_COND_INITIALIZER;
-struct call_data *queue_head, *queue_tail;
+struct rad_scheme_task *queue_head, *queue_tail;
 static int scheme_inited;
 unsigned scheme_gc_interval = 3600;
+u_int scheme_task_timeout = 0;
 
 void
-call_place(cp)
-        struct call_data *cp;
+rad_scheme_place_task(cp)
+        struct rad_scheme_task *cp;
 {
         cp->next = NULL;
         if (!queue_head)
@@ -79,10 +146,10 @@ call_place(cp)
 }
 
 void
-call_remove(cp)
-        struct call_data *cp;
+rad_scheme_remove_task(cp)
+        struct rad_scheme_task *cp;
 {
-        struct call_data *p, *prev = NULL;
+        struct rad_scheme_task *p, *prev = NULL;
 
         for (p = queue_head; p; ) {
                 if (p == cp)
@@ -140,7 +207,7 @@ boot_body (void *data)
         
         Pthread_mutex_lock(&server_mutex);
         while (1) {
-                struct call_data *p;
+                struct rad_scheme_task *p;
                 time_t t;
 
                 if (time(&t) - last_gc_time > scheme_gc_interval) {
@@ -155,14 +222,25 @@ boot_body (void *data)
                 
                 debug(1, ("SRV: Processing queue"));
                 for (p = queue_head; p; p = p->next) {
-                        if (!p->ready) {
+			switch (p->state) {
+			case RSCM_TASK_DONE:
+				debug(1, ("SRV: Deleting completed task"));
+				rad_scheme_remove_task(p);
+				efree(p);
+				break;
+
+			case RSCM_TASK_WAITING:
                                 debug(1, ("SRV: Handling request"));
                                 p->retval = p->fun(p);
-                                p->ready = 1;
-                        }
-                        Pthread_mutex_lock(&p->mutex);
-                        pthread_cond_signal(&p->cond);
-                        Pthread_mutex_unlock(&p->mutex);
+                                p->state = RSCM_TASK_READY;
+				/*FALLTHROUGH*/
+
+			case RSCM_TASK_READY:
+			default:
+				Pthread_mutex_lock(&p->mutex);
+				pthread_cond_signal(&p->cond);
+				Pthread_mutex_unlock(&p->mutex);
+			}
                 }
         }
         /*NOTREACHED*/
@@ -218,7 +296,7 @@ eval_catch_handler (void *data, SCM tag, SCM throw_args)
 
 int
 scheme_auth_internal(p)
-        struct call_data *p;
+        struct rad_scheme_task *p;
 {
         SCM s_request, s_check, s_reply;
         SCM res;
@@ -267,7 +345,7 @@ scheme_auth_internal(p)
 
 int
 scheme_acct_internal(p)
-        struct call_data *p;
+        struct rad_scheme_task *p;
 {
         SCM procsym, res;
         jmp_buf jmp_env;
@@ -297,117 +375,33 @@ scheme_acct_internal(p)
 /*ARGSUSED*/
 int
 scheme_end_reconfig_internal(p)
-        struct call_data *p;
+        struct rad_scheme_task *p;
 {
         scm_gc();
         return 0;
 }
 
-void
+int
 scheme_load_internal(p)
-        struct call_data *p;
+        struct rad_scheme_task *p;
 {
         scm_primitive_load_path(scm_makfrom0str(p->procname));
+	return 0;
 }
 
 
-void
+int
 scheme_add_load_path_internal(p)
-        struct call_data *p;
+        struct rad_scheme_task *p;
 {
         rscm_add_load_path(p->procname);
+	return 0;
 }
 
-/* ************************************************************************* */
-/* Functions running in arbitrary stack space */
-
+/*ARGSUSED*/
 int
-scheme_generic_call(fun, procname, req, user_check, user_reply_ptr)
-        int (*fun)();
-        char *procname;
-        RADIUS_REQ *req;
-        VALUE_PAIR *user_check;
-        VALUE_PAIR **user_reply_ptr;
-{
-        struct call_data *p = emalloc(sizeof(*p));
-        int rc;
-    
-        while (!scheme_inited)
-                sleep(1);
-        p->fun = fun;
-        p->procname = procname;
-        p->request = req;
-        p->user_check = user_check;
-        p->user_reply_ptr = user_reply_ptr;
-        p->ready = 0;
-        pthread_cond_init(&p->cond, NULL);
-        pthread_mutex_init(&p->mutex, NULL);
-        
-        Pthread_mutex_lock(&server_mutex);
-        call_place(p);
-        debug(1, ("APP: Placed call"));
-
-        Pthread_mutex_lock(&p->mutex);
-
-        debug(50, ("APP: Signalling"));
-        pthread_cond_signal(&server_cond);
-        Pthread_mutex_unlock(&server_mutex);
-        while (!p->ready) {
-                debug(50, ("APP: Waiting"));
-                pthread_cond_wait(&p->cond, &p->mutex);
-        }
-        
-        Pthread_mutex_unlock(&p->mutex);
-        
-        Pthread_mutex_lock(&server_mutex);
-        call_remove(p);
-        Pthread_mutex_unlock(&server_mutex);
-
-        pthread_mutex_destroy(&p->mutex);
-        pthread_cond_destroy(&p->cond);
-        
-        rc = p->retval;
-        efree(p);
-        return rc;
-}
-
-void
-scheme_load(filename)
-        char *filename;
-{
-        scheme_generic_call(scheme_load_internal, filename, NULL, NULL, NULL);
-}
-
-void
-scheme_end_reconfig()
-{
-        scheme_generic_call(scheme_end_reconfig_internal,
-                            NULL, NULL, NULL, NULL);
-}
-
-
-int
-scheme_auth(procname, req, user_check, user_reply_ptr)
-        char *procname;
-        RADIUS_REQ *req;
-        VALUE_PAIR *user_check;
-        VALUE_PAIR **user_reply_ptr;
-{
-        return scheme_generic_call(scheme_auth_internal,
-                                   procname, req, user_check, user_reply_ptr);
-}
-
-int
-scheme_acct(procname, req)
-        char *procname;
-        RADIUS_REQ *req;
-{
-        return scheme_generic_call(scheme_acct_internal,
-                                   procname, req, NULL, NULL);
-}
-
-void
-scheme_read_eval_loop_internal()
+scheme_read_eval_loop_internal(unused)
+	struct rad_scheme_task *unused;
 {
         SCM list;
         int status;
@@ -417,13 +411,138 @@ scheme_read_eval_loop_internal()
         list = scm_cons(sym_begin, scm_list_1(scm_cons(sym_top_repl, SCM_EOL)));
         status = scm_exit_status(scm_primitive_eval_x(list));
         printf("%d\n", status);
+	return 0;
+}
+
+/* ************************************************************************* */
+/* Functions running in arbitrary stack space */
+
+void
+scheme_client_cleanup(arg)
+	void *arg;
+{
+	struct rad_scheme_task *p = arg;
+	
+        Pthread_mutex_unlock(&p->mutex);
+        pthread_mutex_destroy(&p->mutex);
+        pthread_cond_destroy(&p->cond);
+	p->state = RSCM_TASK_DONE;
+}
+
+int
+scheme_generic_call(fun, procname, req, user_check, user_reply_ptr, timeout)
+        int (*fun)();
+        char *procname;
+        RADIUS_REQ *req;
+        VALUE_PAIR *user_check;
+        VALUE_PAIR **user_reply_ptr;
+	u_long timeout;
+{
+	struct timespec atime;
+	struct timeval now;
+        struct rad_scheme_task *p = emalloc(sizeof(*p));
+        int rc;
+    
+        while (!scheme_inited)
+                sleep(1);
+        p->fun = fun;
+        p->procname = procname;
+        p->request = req;
+        p->user_check = user_check;
+        p->user_reply_ptr = user_reply_ptr;
+        p->state = RSCM_TASK_WAITING;
+        pthread_cond_init(&p->cond, NULL);
+        pthread_mutex_init(&p->mutex, NULL);
+        
+        Pthread_mutex_lock(&server_mutex);
+        rad_scheme_place_task(p);
+        debug(1, ("APP: Placed call"));
+
+        Pthread_mutex_lock(&p->mutex);
+
+        debug(50, ("APP: Signalling"));
+        pthread_cond_signal(&server_cond);
+        Pthread_mutex_unlock(&server_mutex);
+
+	pthread_cleanup_push(scheme_client_cleanup, p);
+
+	gettimeofday(&now, NULL);
+	atime.tv_sec = now.tv_sec + timeout;
+	atime.tv_nsec = 0;
+	
+        while (p->state == RSCM_TASK_WAITING) {
+                debug(50, ("APP: Waiting"));
+                if (timeout) {
+			if (pthread_cond_timedwait(&p->cond, &p->mutex, &atime)
+			    == ETIMEDOUT)
+				break;
+		} else
+			pthread_cond_wait(&p->cond, &p->mutex);
+        }
+
+	if (p->state == RSCM_TASK_WAITING) {
+		radlog(L_NOTICE, "%s: %s",
+		       _("scheme task timed out"), procname);
+	}
+	rc = p->retval; /*FIXME*/
+
+	pthread_cleanup_pop(1);
+        
+        return rc;
+}
+
+void
+scheme_load(filename)
+        char *filename;
+{
+        scheme_generic_call(scheme_load_internal, filename,
+			    NULL, NULL, NULL, 0);
+}
+
+void
+scheme_end_reconfig()
+{
+        scheme_generic_call(scheme_end_reconfig_internal,
+                            NULL, NULL, NULL, NULL, 0);
+}
+
+u_long
+scheme_compute_timeout(type)
+	int type;
+{
+	u_long timeout = request_class[type].ttl/2 + 1;
+	if (scheme_task_timeout && scheme_task_timeout < timeout)
+		timeout = scheme_task_timeout;
+	return timeout;
+}
+
+int
+scheme_auth(procname, req, user_check, user_reply_ptr)
+        char *procname;
+        RADIUS_REQ *req;
+        VALUE_PAIR *user_check;
+        VALUE_PAIR **user_reply_ptr;
+{
+        return scheme_generic_call(scheme_auth_internal,
+                                   procname, req, user_check, user_reply_ptr,
+				   scheme_compute_timeout(R_AUTH));
+}
+
+int
+scheme_acct(procname, req)
+        char *procname;
+        RADIUS_REQ *req;
+{
+        return scheme_generic_call(scheme_acct_internal,
+                                   procname, req, NULL, NULL,
+				   scheme_compute_timeout(R_ACCT));
 }
 
 void
 scheme_read_eval_loop()
 {
         scheme_generic_call(scheme_read_eval_loop_internal,
-                            NULL, NULL, NULL, NULL);
+                            NULL, NULL, NULL, NULL, 0);
 }
 
 void    
@@ -431,7 +550,7 @@ scheme_add_load_path(path)
 	char *path;
 {
         scheme_generic_call(scheme_add_load_path_internal,
-                            path, NULL, NULL, NULL);
+                            path, NULL, NULL, NULL, 0);
 }
 
 #endif

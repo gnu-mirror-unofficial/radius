@@ -287,7 +287,7 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
                                 type = DV_AUTH_TYPE_PAM;
                         else if (!strcmp(password->avp_strvalue, "MYSQL")
                                  || !strcmp(password->avp_strvalue, "SQL"))
-                                type = DV_AUTH_TYPE_MYSQL;
+                                type = DV_AUTH_TYPE_SQL;
                         else
                                 type = DV_AUTH_TYPE_LOCAL;
                 } else {

@@ -120,10 +120,10 @@ request_respond(REQUEST *req)
 }
 
 void
-request_xmit(REQUEST *req, void *data)
+request_xmit(REQUEST *req, void *orig_data)
 {
         if (request_class[req->type].xmit) 
-                request_class[req->type].xmit(req, data);
+                request_class[req->type].xmit(req, orig_data);
 }
 
 int

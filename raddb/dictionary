@@ -93,7 +93,7 @@ ATTRIBUTE	Group-Name		1030	string	- [C--R-R]
 ATTRIBUTE	Simultaneous-Use	1034	integer	- [C--R-R]
 ATTRIBUTE	Strip-User-Name		1035	integer	- [CRCR-R]
 ATTRIBUTE	Fall-Through		1036	integer	- [CRCR--]
-ATTRIBUTE	Add-Port-To-IP-Address	1037	integer	- [-R----]=
+ATTRIBUTE	Add-Port-To-IP-Address	1037	integer	- [-R-R--]=
 ATTRIBUTE	Exec-Program		1038	string	- [-R----]=
 ATTRIBUTE	Exec-Program-Wait	1039	string	- [-R----]=
 ATTRIBUTE	Hint			1040	string	- [C--R-R]

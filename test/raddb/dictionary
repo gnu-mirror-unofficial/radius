@@ -16,110 +16,141 @@ $INCLUDE dictionary.livingston		## Livingston compatibility
 #$INCLUDE dictionary.tunnel		## Tunnel attrs. as per RFC 2867
 #$INCLUDE dictionary.usr		## USR Robotics
 #$INCLUDE dictionary.ascend		## MAX Ascend
-$INCLUDE dictionary.cisco		## Cisco
-$INCLUDE dictionary.voip		## Special attributes to be used
+#$INCLUDE dictionary.cisco		## Cisco
+#$INCLUDE dictionary.voip		## Special attributes to be used
 					## with rewriting functions
 
 ##
 ##	Following are the proper new names. Use these.
-##
-ATTRIBUTE	User-Name		1	string
-ATTRIBUTE	Password		2	string
-ATTRIBUTE	CHAP-Password		3	string
-ATTRIBUTE	NAS-IP-Address		4	ipaddr
-ATTRIBUTE	NAS-Port-Id		5	integer
-ATTRIBUTE	Service-Type		6	integer
-ATTRIBUTE	Framed-Protocol		7	integer
-ATTRIBUTE	Framed-IP-Address	8	ipaddr
-ATTRIBUTE	Framed-IP-Netmask	9	ipaddr
-ATTRIBUTE	Framed-Routing		10	integer
-ATTRIBUTE	Filter-Id		11	string
-ATTRIBUTE	Framed-MTU		12	integer
-ATTRIBUTE	Framed-Compression	13	integer
-ATTRIBUTE	Login-IP-Host		14	ipaddr
-ATTRIBUTE	Login-Service		15	integer
-ATTRIBUTE	Login-TCP-Port		16	integer
-ATTRIBUTE	Reply-Message		18	string
-ATTRIBUTE	Callback-Number		19	string
-ATTRIBUTE	Callback-Id		20	string
-ATTRIBUTE	Framed-Route		22	string
-ATTRIBUTE	Framed-IPX-Network	23	ipaddr
-ATTRIBUTE	State			24	string
-ATTRIBUTE	Class			25	string
-ATTRIBUTE	Vendor-Specific		26	string
-ATTRIBUTE	Session-Timeout		27	integer
-ATTRIBUTE	Idle-Timeout		28	integer
-ATTRIBUTE	Termination-Action	29	integer
-ATTRIBUTE	Called-Station-Id	30	string
-ATTRIBUTE	Calling-Station-Id	31	string
-ATTRIBUTE	NAS-Identifier		32	string
-ATTRIBUTE	Proxy-State		33	string
-ATTRIBUTE	Login-LAT-Service	34	string
-ATTRIBUTE	Login-LAT-Node		35	string
-ATTRIBUTE	Login-LAT-Group		36	string
-ATTRIBUTE	Framed-AppleTalk-Link	37	integer
-ATTRIBUTE	Framed-AppleTalk-Network 38	integer
-ATTRIBUTE	Framed-AppleTalk-Zone	39	string
+## syntax flags: [us-hi-hu]
+ATTRIBUTE	User-Name		1	string	- [CR-RCR]
+ATTRIBUTE	Password		2	string	- [C-----]	
+ATTRIBUTE	CHAP-Password		3	string	- [C-----]
+ATTRIBUTE	NAS-IP-Address		4	ipaddr	- [C--RCR]	
+ATTRIBUTE	NAS-Port-Id		5	integer	- [CR-RCR]
+ATTRIBUTE	Service-Type		6	integer	- [CR-RCR]=P	
+ATTRIBUTE	Framed-Protocol		7	integer	- [CR-RCR]=P	
+ATTRIBUTE	Framed-IP-Address	8	ipaddr	- [CR-RCR]=	
+ATTRIBUTE	Framed-IP-Netmask	9	ipaddr	- [CR-RCR]=
+ATTRIBUTE	Framed-Routing		10	integer	- [-R-R-R]=
+ATTRIBUTE	Filter-Id		11	string	- [-R-R-R]=P
+ATTRIBUTE	Framed-MTU		12	integer	- [CR-R-R]=P
+ATTRIBUTE	Framed-Compression	13	integer	- [CR-RCR]=P
+ATTRIBUTE	Login-IP-Host		14	ipaddr	- [CR-R-R]=
+ATTRIBUTE	Login-Service		15	integer	- [-R-R-R]=P
+ATTRIBUTE	Login-TCP-Port		16	integer	- [-R-R-R]=
+ATTRIBUTE	Reply-Message		18	string	- [-R----]+P
+ATTRIBUTE	Callback-Number		19	string	- [-R----]=
+ATTRIBUTE	Callback-Id		20	string	- [-R----]=	
+ATTRIBUTE	Framed-Route		22	string	- [-R----]=
+ATTRIBUTE	Framed-IPX-Network	23	ipaddr	- [-R----]=
+ATTRIBUTE	State			24	string	- [CRCRCR]
+ATTRIBUTE	Class			25	string	- [CRCRCR]
+ATTRIBUTE	Vendor-Specific		26	string	- [CR-R-R]
+ATTRIBUTE	Session-Timeout		27	integer	- [-R----]=P
+ATTRIBUTE	Idle-Timeout		28	integer	- [-R----]=P
+ATTRIBUTE	Termination-Action	29	integer	- [CR-R-R]=
+ATTRIBUTE	Called-Station-Id	30	string	- [C--RCR]
+ATTRIBUTE	Calling-Station-Id	31	string	- [C--RCR]
+ATTRIBUTE	NAS-Identifier		32	string	- [C--RCR]
+ATTRIBUTE	Proxy-State		33	string	- [------]
+ATTRIBUTE	Login-LAT-Service	34	string	- [-R---R]=
+ATTRIBUTE	Login-LAT-Node		35	string	- [-R---R]=
+ATTRIBUTE	Login-LAT-Group		36	string	- [-R---R]=
+ATTRIBUTE	Framed-AppleTalk-Link	37	integer	- [-R---R]=
+ATTRIBUTE	Framed-AppleTalk-Network 38	integer	- [-R---R]=
+ATTRIBUTE	Framed-AppleTalk-Zone	39	string	- [-R---R]=
 
-ATTRIBUTE	Acct-Status-Type	40	integer
-ATTRIBUTE	Acct-Delay-Time		41	integer
-ATTRIBUTE	Acct-Input-Octets	42	integer
-ATTRIBUTE	Acct-Output-Octets	43	integer
-ATTRIBUTE	Acct-Session-Id		44	string
-ATTRIBUTE	Acct-Authentic		45	integer
-ATTRIBUTE	Acct-Session-Time	46	integer
-ATTRIBUTE       Acct-Input-Packets	47	integer
-ATTRIBUTE       Acct-Output-Packets	48	integer
-ATTRIBUTE	Acct-Terminate-Cause	49	integer
-ATTRIBUTE	Acct-Multi-Session-Id	50	integer
-ATTRIBUTE	Acct-Link-Count		51	integer
+ATTRIBUTE	Acct-Status-Type	40	integer	- []
+ATTRIBUTE	Acct-Delay-Time		41	integer	- []
+ATTRIBUTE	Acct-Input-Octets	42	integer	- []
+ATTRIBUTE	Acct-Output-Octets	43	integer	- []
+ATTRIBUTE	Acct-Session-Id		44	string	- []
+ATTRIBUTE	Acct-Authentic		45	integer	- []
+ATTRIBUTE	Acct-Session-Time	46	integer	- []
+ATTRIBUTE       Acct-Input-Packets	47	integer	- []
+ATTRIBUTE       Acct-Output-Packets	48	integer	- []
+ATTRIBUTE	Acct-Terminate-Cause	49	integer	- []
+ATTRIBUTE	Acct-Multi-Session-Id	50	integer	- []
+ATTRIBUTE	Acct-Link-Count		51	integer	- []
 
-ATTRIBUTE	CHAP-Challenge		60	string
-ATTRIBUTE	NAS-Port-Type		61	integer
-ATTRIBUTE	Port-Limit		62	integer
-ATTRIBUTE	Login-LAT-Port		63	integer
+ATTRIBUTE	CHAP-Challenge		60	string	- []
+ATTRIBUTE	NAS-Port-Type		61	integer	- []
+ATTRIBUTE	Port-Limit		62	integer	- []P
+ATTRIBUTE	Login-LAT-Port		63	integer	- []
 
-ATTRIBUTE	Connect-Info		77	string
+ATTRIBUTE	Connect-Info		77	string	- []
 
-ATTRIBUTE       User-UID                99      integer
+ATTRIBUTE       User-UID                99      integer	- [CRCRCR]
+ATTRIBUTE	User-GID		100	integer	- [CRCRCR]
 
 #
 # Cistron-Radius compatibility
 #
-ATTRIBUTE	Huntgroup-Name		221	string
-ATTRIBUTE	User-Category		1029	string
-ATTRIBUTE	Group-Name		1030	string
-ATTRIBUTE	Simultaneous-Use	1034	integer
-ATTRIBUTE	Strip-User-Name		1035	integer
-ATTRIBUTE	Fall-Through		1036	integer
-ATTRIBUTE	Add-Port-To-IP-Address	1037	integer
-ATTRIBUTE	Exec-Program		1038	string
-ATTRIBUTE	Exec-Program-Wait	1039	string
-ATTRIBUTE	Hint			1040	string
-ATTRIBUTE	Pam-Auth		1041	string
-ATTRIBUTE	Login-Time		1042	string
+ATTRIBUTE	Huntgroup-Name		221	string	- [C--RCR]
+ATTRIBUTE	User-Category		1029	string	- [C--R-R]
+ATTRIBUTE	Group-Name		1030	string	- [C--R-R]
+ATTRIBUTE	Simultaneous-Use	1034	integer	- [C--R-R]
+ATTRIBUTE	Strip-User-Name		1035	integer	- [CRCR-R]
+ATTRIBUTE	Fall-Through		1036	integer	- [CRCR--]
+ATTRIBUTE	Add-Port-To-IP-Address	1037	integer	- [-R-R--]=
+ATTRIBUTE	Exec-Program		1038	string	- [-R----]=
+ATTRIBUTE	Exec-Program-Wait	1039	string	- [-R----]=
+ATTRIBUTE	Hint			1040	string	- [C--R-R]
+ATTRIBUTE	Pam-Auth		1041	string	- [C--R-R]
+ATTRIBUTE	Login-Time		1042	string	- [C-----]
 
 # Attributes used by GNU Radius
-ATTRIBUTE	Replace-User-Name	2001	string
-ATTRIBUTE	Rewrite-Function	2002	string
+ATTRIBUTE	Replace-User-Name	2001	string	- [CRCR--]
+ATTRIBUTE	Rewrite-Function	2002	string	- [CRCRCR]
+
+ATTRIBUTE	Acct-Type		2003	integer	- [C--R-R]
+VALUE		Acct-Type		None	0
+VALUE		Acct-Type		System	1
+VALUE		Acct-Type		Detail	2
+VALUE		Acct-Type		SQL	3
+
+ATTRIBUTE	Match-Profile		2004	string	- [CR-R-R]
+## ATTRIBUTE	Include-Profile		2005	string 
+ATTRIBUTE	Auth-Data		2006	string	- [C--R-R]
+
+ATTRIBUTE	Log-Mode-Mask		2007	integer	- [C--R-R]+
+VALUE		Log-Mode-Mask		Log-Auth		1
+VALUE		Log-Mode-Mask		Log-Auth-Pass		2
+VALUE		Log-Mode-Mask		Log-Failed-Pass		4
+VALUE		Log-Mode-Mask		Log-Pass		6
+VALUE		Log-Mode-Mask		Log-All			7
+
+ATTRIBUTE	Acct-Ext-Program	2008	string	- [---R--]=
+ATTRIBUTE	Scheme-Procedure	2009	string	- [-R----]
+ATTRIBUTE	Scheme-Acct-Procedure	2010	string	- [---R--]=
+
+ATTRIBUTE       Password-Location       2011    integer - [C-----]
+VALUE           Password-Location       SQL			1
+
 # These are used by rewriting functions:
-ATTRIBUTE	Orig-User-Name		2101	string
-ATTRIBUTE	Orig-NAS-Port-Id	2105	integer
-ATTRIBUTE	Orig-Acct-Session-Id	2144	integer
+ATTRIBUTE	Orig-User-Name		2101	string	- [C--R-R]
+ATTRIBUTE	Orig-NAS-Port-Id	2105	integer	- [C--R-R]
+ATTRIBUTE	Orig-Acct-Session-Id	2144	integer	- [C--R-R]
+
+ATTRIBUTE	Password-Expire-Days	2145	integer - [------]
+
+# Used internally by the server
+ATTRIBUTE       Queue-Id	        65534	integer - [------]
 
 #
 # Non-Protocol Attributes
 # These attributes are used internally by the server
 #
-ATTRIBUTE	Expiration		  21	date
-ATTRIBUTE	Auth-Type		1000	integer
-ATTRIBUTE	Menu			1001	string
-ATTRIBUTE	Termination-Menu	1002	string
-ATTRIBUTE	Prefix			1003	string
-ATTRIBUTE	Suffix			1004	string
-ATTRIBUTE	Group			1005	string
-ATTRIBUTE	Crypt-Password		1006	string
-ATTRIBUTE	Connect-Rate		1007	integer
+ATTRIBUTE	Expiration		  21	date	- [------]
+ATTRIBUTE	Auth-Type		1000	integer	- [C--R-R]	
+ATTRIBUTE	Menu			1001	string	- [-R----]=
+ATTRIBUTE	Termination-Menu	1002	string	- [-R----]=
+ATTRIBUTE	Prefix			1003	string	- [C-C-CR]
+ATTRIBUTE	Suffix			1004	string	- [C-C-CR]
+ATTRIBUTE	Group			1005	string	- [C-C-CR]
+ATTRIBUTE	Crypt-Password		1006	string	- [C-----]
+ATTRIBUTE	Connect-Rate		1007	integer	- [------]
 
 #
 # Integer Translations
@@ -222,7 +253,6 @@ VALUE		Auth-Type		System			1
 VALUE		Auth-Type		SecurID			2
 VALUE		Auth-Type		Crypt-Local		3
 VALUE		Auth-Type		Reject			4
-VALUE		Auth-Type		ActivCard		4
 
 #
 # Extensions introduced by Cistron
@@ -238,11 +268,5 @@ VALUE		Fall-Through		Yes			1
 VALUE		Add-Port-To-IP-Address	No			0
 VALUE		Add-Port-To-IP-Address	Yes			1
 
-#
-#	Configuration Values
-##	comment out these two lines to turn account expiration off
-#
 
-VALUE		Server-Config		Password-Expiration	30
-VALUE		Server-Config		Password-Warning	5
 

@@ -180,8 +180,14 @@ AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  setlocale bzero \
  inet_ntoa inet_aton setvbuf seteuid setreuid getdtablesize) 
 AM_FUNC_OBSTACK
+
+AC_CHECK_FUNCS(argp_parse, :,
+               [LIBOBJS="$LIBOBJS argp-ba.o argp-eexst.o argp-fmtstream.o \
+                         argp-fs-xinl.o argp-help.o argp-parse.o argp-pv.o \
+                         argp-pvh.o argp-xinl.o pin.o"])
+
 AC_REPLACE_FUNCS(getline strerror strncasecmp strcspn snprintf vasprintf\
- strtok_r localtime_r)
+ strtok_r localtime_r strchrnul strndup strnlen)
 
 rad_CHECK_STRUCT_FIELD(hostent, h_addr_list,
                        [#include <netdb.h>])

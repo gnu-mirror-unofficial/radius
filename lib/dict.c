@@ -576,6 +576,8 @@ _dict_value(int *errcnt, int fc, char **fv, grad_locus_t *loc)
                 (*errcnt)++;
 		return 0;
 	}
+
+	attr->prop |= AP_TRANSLATE;
 	
         /* Create a new VALUE entry for the list */
         dval = grad_emalloc(sizeof(grad_dict_value_t));

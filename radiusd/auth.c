@@ -205,7 +205,7 @@ rad_auth_check_username(grad_request_t *radreq, int activefd)
 	/* Process a malformed request */
 	if (auth_reject_malformed_names) 
 		radius_send_reply(RT_ACCESS_REJECT, radreq,
-				  radreq->request,
+				  NULL,
 				  message_text[MSG_ACCESS_DENIED],
 				  activefd);
 	else
@@ -803,7 +803,7 @@ sfn_scheme(AUTH_MACH *m)
 {
 #ifdef USE_SERVER_GUILE
         grad_avp_t *p;
-        grad_avp_t *reply;
+        grad_avp_t *reply = NULL;
         
         if (!use_guile) {
                 grad_log_req(L_ERR, m->req,
@@ -812,10 +812,8 @@ sfn_scheme(AUTH_MACH *m)
                 return;
         }
 
-        reply = grad_avl_dup(m->user_reply);
-        for (p = grad_avl_find(reply, DA_SCHEME_PROCEDURE);
-             p;
-             p = grad_avl_find(p->next, DA_SCHEME_PROCEDURE)) {
+	grad_avl_move_attr(&reply, &m->user_reply, DA_SCHEME_PROCEDURE);
+        for (p = reply; p; p = p->next) {
                 if (scheme_auth(p->avp_strvalue,
                                 m->req, m->user_check, &m->user_reply)) {
 			auth_log(m,
@@ -827,7 +825,6 @@ sfn_scheme(AUTH_MACH *m)
                         break;
                 }
         }
-        grad_avl_delete(&m->user_reply, DA_SCHEME_PROCEDURE);
         grad_avl_free(reply);
 #else
         grad_log_req(L_ERR, m->req,

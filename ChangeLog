@@ -1,3 +1,18 @@
+2003-06-12  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac: Switched to gettext 0.12.1. Raised patchlevel.
+	* include/radius.h (AP_BINARY_STRING): New flag.
+	* lib/dict.c: Accept 'b' property to mark binary string
+	attributes.
+	* m4/Makefile.am: Added gettext 0.12.1 files.
+	* raddb/dictionary: Marked several attributes as binary strings.
+	* radiusd/radiusd.c (terminate_subprocesses): Bugfix.
+	(max_ttl): New function.
+	(radiusd_flush_queue): Use max_ttl
+	* radiusd/radutil.c (attr_to_str): Do not recompute the string
+	length on binary attributes.
+	(obstack_grow_quoted): Quote unprintable characters.
+
 2003-06-11  Sergey Poznyakoff  
 
 	* Makefile.am: Updated AUTOMAKE_OPTIONS

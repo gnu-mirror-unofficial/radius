@@ -56,11 +56,11 @@ extern int strncasecmp(char*, char*, int);
 # include <machine/inline.h>
 # include <machine/endian.h>
 #else	/* bsdi */
-# ifdef __FreeBSD__
+# if defined(__FreeBSD__) || defined(__OpenBSD__)
 #  include <stdlib.h>
 # else
 #  include <malloc.h>
-# endif  /* FreeBSD */
+# endif  /* FreeBSD and OpenBSD */
 #endif	/* bsdi */
 
 #if defined(HAVE_SYS_SELECT_H)  
@@ -87,7 +87,7 @@ extern int strncasecmp(char*, char*, int);
 #  define UT_LINESIZE	32
 #  define UT_HOSTSIZE	64
 #endif
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(bsdi)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(bsdi)
 #  ifndef UTMP_FILE
 #    define UTMP_FILE "/var/run/utmp"
 #  endif

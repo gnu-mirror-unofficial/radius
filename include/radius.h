@@ -97,8 +97,9 @@ enum {
 #define AP_ADD_APPEND    1
 #define AP_ADD_NONE      2
 
-#define AP_PROPAGATE   0x10
-#define AP_REQ_CMP     0x20
+#define AP_PROPAGATE     0x10
+#define AP_REQ_CMP       0x20
+#define AP_BINARY_STRING 0x40
 #define AP_USER_FLAG(n) (0x1000<<(n))
 
 #define ADDITIVITY(val) ((val) & 0x3)

@@ -983,7 +983,7 @@ sfn_simuse(AUTH_MACH *m)
                         MSG_MULTIPLE_LOGIN : MSG_SECOND_LOGIN);
 
         radlog_req(L_WARN, m->req,
-		   _("Multiple logins: [%s] max. %ld%s %s"),
+		   _("Multiple logins: [%s] max. %ld%s"),
 		   m->namepair->avp_strvalue,
 		   m->check_pair->avp_lvalue,
 		   rc == 2 ? _(" [MPP attempt]") : "");

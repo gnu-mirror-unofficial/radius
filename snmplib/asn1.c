@@ -198,8 +198,7 @@ asn_decode_int(data, datalength, type, intp, intsize)
         if (!buf)
                 return buf;
 
-        if (count + (buf - data) > *datalength ||
-            count > intsize) {
+        if (count + (buf - data) > *datalength) /* || count > intsize)*/ {
                 SNMP_SET_ERRNO(E_ASN_DECODE);
                 return NULL;
         }

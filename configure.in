@@ -591,6 +591,7 @@ AC_OUTPUT(Makefile m4/Makefile
           test/raddb/Makefile 
           test/guile/Makefile 
           test/dejagnu/Makefile
+          test/dejagnu/lib/Makefile
           scripts/Makefile scripts/guile/Makefile 
           contrib/Makefile)
 

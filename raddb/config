@@ -47,10 +47,6 @@ proxy {
 	request-cleanup-delay 2;
 };
 
-#cntl {
-#	port 5000;
-#};
-
-#usedbm never;
+#usedbm no;
 
 #notify off;

@@ -66,7 +66,12 @@ logging {
 
 ## This controls the authentication service:
 auth {
-	port 1645;		# port number 
+	port 1645;		# default port number
+		# Listen statement can be used to listen to multiple
+		# interfaces/ports. By default radiusd listens to all
+		# interfaces available. Default port number can be overridden
+		# as shown in the example:
+	listen localhost, 192.168.10.1:1842;
 	spawn yes;              # Spawn the child process to handle the
 				# request (the default)
 	max-requests 127;	# Maximum number of AUTH requests in queue
@@ -81,7 +86,11 @@ auth {
 
 ## This controls the accounting service
 acct {
-	port 1646;		# port number
+	port 1646;		# default port number
+		# Listen statement can be used to listen to multiple
+		# interfaces/ports. By default radiusd listens to all
+		# interfaces available.
+	listen localhost, 192.168.10.1:1843;
 	spawn yes;              # Spawn the child process to handle the
 				# request (the default)
 	max-requests 24;	# Maximum number of ACCT requests in queue

@@ -480,6 +480,7 @@ channel_stmt    : T_CHANNEL channel_name '{' channel_list '}'
 channel_name    : { expect_string = 1; } T_STRING
                   {
                           expect_string = 0;
+			  memset(&channel, 0, sizeof(channel));
                           channel.mode = LM_UNKNOWN;
                           strcpy($$, $2);
                   }

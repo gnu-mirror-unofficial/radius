@@ -105,6 +105,12 @@ grad_argp_parse(const struct argp *argp, int *pargc, char **pargv[],
 		unsigned flags, int *arg_index, void *input)
 {
         error_t ret;
+#ifndef PROGRAM_INVOCATION_NAME_DECLARED
+        program_invocation_name = (*pargv[0]);
+        program_invocation_short_name = strrchr(program_invocation_name, '/');
+        if (!program_invocation_short_name)
+                program_invocation_short_name = program_invocation_name;
+#endif
         ret = argp_parse (argp, *pargc, *pargv, flags, arg_index, input);
         return ret;
 }

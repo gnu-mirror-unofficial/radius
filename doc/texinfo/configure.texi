@@ -163,6 +163,7 @@ These are the basic statements:
 @kwindex process-idle-timeout
 @kwindex master-read-timeout
 @kwindex master-write-timeout
+@kwindex radiusd-user
 @kwindex exec-program-user 
 @kwindex username-chars
 @kwindex log-dir
@@ -175,6 +176,7 @@ These are the basic statements:
 option @{
         [ source-ip @var{number} ; ]
         [ max-requests @var{number} ; ]
+        [ radiusd-user @var{string} ; ]
         [ exec-program-user @var{string} ; ]
         [ username-chars @var{string} ; ]
         [ log-dir @var{string} ; ]
@@ -240,10 +242,28 @@ ready for input. By default, no timeouts are imposed.
 
 @subheading String statements
 @table @code
-@item exec-program-user 
-Sets effective user id for the programs executed as a result of
-@attr{Exec-Program} and @attr{Exec-Program-Wait}. The effective
-group id will be retrieved from the @file{/etc/passwd} entry
+@item radiusd-user
+Instructs @command{radiusd} to drop root privileges and to switch to
+the real user and group IDs of the given user after becoming 
+daemon. Notice the following implications of this statement:
+
+@enumerate 1
+@item All configuration files must be readable for this user.
+@item Authentication type @code{System} (@pxref{System Auth}) requires
+root privileges, so it cannot be used with @code{radiusd-user}. Any
+@file{raddb/users} profiles using this authentication type will be
+discarded.
+@item Authentication type @code{PAM} (@pxref{PAM Auth}) may require root
+provileges. It is reported to always require root privileges on some
+systems (notably on Solaris).
+@item @code{exec-program-user} statement (see below) is ignored when
+used with @code{radiusd-user}.
+@end enumerate
+
+@item exec-program-user
+Sets the privileges for the programs executed as a result of
+@attr{Exec-Program} and @attr{Exec-Program-Wait}. The real user
+and group ids will be retrieved from the @file{/etc/passwd} entry
 for the given user.
 
 @item username-chars

@@ -11,14 +11,13 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 bin_PROGRAMS    = radtest
-radtest_SOURCES = main.c radtest.c gram.y input.l debugmod.c radtest.h
-radtest_LDADD   = ../radlib/liblog.la ../radlib/librad.la 
+radtest_SOURCES = main.c gram.y input.l debugmod.c radtest.h
+radtest_LDADD   = ../radlib/liblog.la ../radlib/librad.la
+noinst_HEADERS  = gram.h
 INCLUDES        = -I$(top_srcdir) -I$(top_srcdir)/include -I$(srcdir) @INCLUDEPATH@
 AM_YFLAGS = -vd @YACC_OPTS@
 
 if MAINTAINER_MODE
-CFLAGS=-ggdb -DMAINTAINER_MODE=1
-
 FILELIST:; @echo gram.y > .list
 endif
 

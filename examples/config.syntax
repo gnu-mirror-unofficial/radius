@@ -8,6 +8,9 @@ option {
 	max-requests 127;
 	# Maximum number of children processes
 	max-processes 128;
+	# Child terminates if it does not receive any requests within
+	# this number of seconds:
+	process-idle-timeout 3600;
 	# The following specifies the uid under which external processes
 	# (those triggered by Exec-Program and Exec-Program-Wait 
 	# attributes) should be run. The corresponding gid is determined

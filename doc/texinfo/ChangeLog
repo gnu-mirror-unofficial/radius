@@ -1,3 +1,8 @@
+2005-03-09  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* attributes.texi (Scheme-Procedure,Exec-Program-Wait): Updated
+	definitions
+
 2005-01-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* radtest.texi: Fixed minor bug

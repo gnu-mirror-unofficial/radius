@@ -1,3 +1,18 @@
+2005-03-09  Sergey Poznyakoff
+
+	* include/radiusd.h (scheme_eval_avl)
+	(exec_program_wait): New function
+	* raddb/dict/standard (Exec-Program-Wait,Scheme-Procedure): Allow
+	usage in hints RHS
+	* radiusd/auth.c (sfn_scheme): Rewritten using scheme_eval_avl
+	(sfn_exec_wait): Rewritten using exec_program_wait
+	* radiusd/files.c (exec_program_wait): New function
+	(hints_setup): Process eventual Exec-Program-Wait and
+	Scheme-Procedure attributes
+	* radiusd/scheme.c (scheme_eval_avl): New function
+	* radtest/gram.y: Added missing semicolons before the closing
+	braces in rule actions. Required by recent bison versions.
+
 2005-01-28  Sergey Poznyakoff
 
 	* radiusd/checkrad.c (create_instance): Convert framed IP

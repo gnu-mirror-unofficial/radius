@@ -791,10 +791,11 @@ rad_check_realm(realmname)
       0 == OK,
       1 == user exceeds its simultaneous-use parameter */
 int
-rad_check_multi(name, request, maxsimul)
+rad_check_multi(name, request, maxsimul, pcount)
 	char *name;
 	VALUE_PAIR *request;
 	int maxsimul;
+	int *pcount;
 {
 	radut_file_t file;
 	int		count;
@@ -816,6 +817,8 @@ rad_check_multi(name, request, maxsimul)
 			count++;
 		}
 
+	*pcount = count;
+	
 	if (count < maxsimul) {
 		rut_endent(file);
 		return 0;
@@ -852,6 +855,7 @@ rad_check_multi(name, request, maxsimul)
 	}
 	rut_endent(file);
 
+	*pcount = count;
 	return (count < maxsimul) ? 0 : mpp;
 }
 

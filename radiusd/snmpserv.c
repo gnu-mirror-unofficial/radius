@@ -906,8 +906,8 @@ snmp_agent_response(pdu, access)
 					&answer->err_stat);
 				
 				/* Was there an error? */
-				if (answer->err_stat != SNMP_ERR_NOERROR ||
-				    vnew == NULL) {
+				if (answer->err_stat != SNMP_ERR_NOERROR
+				    || vnew == NULL) {
 					answer->err_ind = index;
 					debug(1, ("returning"));
 					/* preserve the rest of vars */
@@ -927,17 +927,31 @@ snmp_agent_response(pdu, access)
 		case SNMP_PDU_GETNEXT:
 			debug(1, ("GetNextRequest-PDU"));
 
-			vnew = pdu->var;
-			mib_get_next(mib_tree, &vnew,
-				     &answer->err_stat);
+			vresp = &answer->var;
+			/* Loop through all variables */
+			for (vpp = &pdu->var; *vpp; vpp = &(*vpp)->next) {
+				vp = *vpp;
 
-			/* Was there an error? */
-			if (answer->err_stat != SNMP_ERR_NOERROR) {
-				answer->err_ind = 1;
-				answer->var = pdu->var;
-				pdu->var = NULL;
-			} else {
-				answer->var = vnew;
+				index++;
+				vnew = vp;
+				mib_get_next(mib_tree, &vnew,
+					     &answer->err_stat);
+				/* Was there an error? */
+				if (answer->err_stat != SNMP_ERR_NOERROR
+				    || vnew == NULL) {
+					answer->err_ind = index;
+					debug(1, ("returning"));
+					/* preserve the rest of vars */
+					*vresp = snmp_var_dup_list(vp);
+					*vpp = NULL;
+					return answer;
+				}
+				/* No error.
+				 * Insert this var at the end, and move on
+				 * to the next.
+				 */
+				*vresp = vnew;
+				vresp = &vnew->next;
 			}
 			break;
 			

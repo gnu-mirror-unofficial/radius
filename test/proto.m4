@@ -24,7 +24,7 @@ dnl ***
 dnl TOOLDIR(NAME, START-ARG, SEQ...)
 define([TOOLDIR],[define([_TOOLDIR],$1)
 define([_SEQ_NUM],0)
-if ! test -d _FULL_PATH/$1; then mkdir _FULL_PATH/$1; fi])
+if ! test -d _FULL_PATH/$1; then mkdir _FULL_PATH/$1; else rm -f _FULL_PATH/$1/*; fi])
 
 define([_print_zero],[ifelse($1,0,,0[_print_zero(decr($1))])])
 define([_fmtnum],[_print_zero(eval($2-len($1)))$1])

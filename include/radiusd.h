@@ -371,6 +371,7 @@ void snmp_add_acl(ACL *, Community *);
 Community * snmp_find_community(char *);
 void snmp_add_community(char *str, int access);
 void snmp_free_communities();
+void snmp_sort_nas_stat();
 #endif
 
 int xlat_keyword(struct keyword *kw, char *str, int def);

@@ -38,11 +38,8 @@ static char rcsid[] =
 #include <ctype.h>
 
 static void sql_check_config(SQL_cfg *);
-static struct sql_connection *create_sql_connection(int type);
 static struct sql_connection *attach_sql_connection(int type, RADIUS_REQ *req);
-static void unattach_sql_connection(int type, RADIUS_REQ *req);
-static void free_sql_connection(struct sql_connection *conn);
-static void close_sql_connections(int type);
+static void detach_sql_connection(int type, RADIUS_REQ *req);
 
 static char *getline();
 static int get_boolean(char *str, int *retval);
@@ -82,9 +79,12 @@ SQL_cfg sql_cfg;
 static FILE  *sqlfd;
 static int line_no;
 static char *cur_line, *cur_ptr;
-static struct obstack stack;
-static int obstack_ready;
+static struct obstack parse_stack;
+static int obparse_stack_ready;
 static int stmt_type;
+
+static pthread_key_t sql_conn_key[SQL_NSERVICE];
+static pthread_once_t sql_conn_key_once = PTHREAD_ONCE_INIT;
 
 struct keyword sql_keyword[] = {
         "server",             STMT_SERVER,
@@ -114,17 +114,6 @@ struct keyword sql_keyword[] = {
         NULL,
 };
 
-static char *service_name[SQL_NSERVICE] = {
-        "AUTH",
-        "ACCT"
-};
-
-static char *reconnect_file[SQL_NSERVICE] = {
-        "auth.reconnect",
-        "acct.reconnect"
-};
-
-
 /*
  * Chop off trailing whitespace. Return length of the resulting string
  */
@@ -150,7 +139,7 @@ getline()
         int cont;
 
         if (cur_line)
-                obstack_free(&stack, cur_line);
+                obstack_free(&parse_stack, cur_line);
         cont = 1;
         while (cont) {
                 ptr = fgets(buf, sizeof(buf), sqlfd);
@@ -175,13 +164,13 @@ getline()
                         continue;
                 total_length += eff_len;
                 /* add to the stack */
-                obstack_grow(&stack, ptr, eff_len);
+                obstack_grow(&parse_stack, ptr, eff_len);
         } 
 
         if (total_length == 0)
                 return NULL;
-        obstack_1grow(&stack, 0);
-        cur_ptr = cur_line = obstack_finish(&stack);
+        obstack_1grow(&parse_stack, 0);
+        cur_ptr = cur_line = obstack_finish(&parse_stack);
         /* recognize keyword */
         while (*cur_ptr && !isspace(*cur_ptr))
                 cur_ptr++;
@@ -263,12 +252,6 @@ sql_digest(cfg)
         *(int*)p = cfg->port;
         p += sizeof(int);
 
-        *(unsigned*)p = cfg->max_connections[SQL_AUTH];
-        p += sizeof(unsigned);
-
-        *(unsigned*)p = cfg->max_connections[SQL_ACCT];
-        p += sizeof(unsigned);
-        
         STPCPY(p, cfg->server);
         STPCPY(p, cfg->login);
         STPCPY(p, cfg->password);
@@ -305,6 +288,24 @@ sql_cfg_comp(a, b)
         return rc;
 }
 
+static void
+sql_conn_destroy(void *data)
+{
+	if (data) {
+		struct sql_connection *conn = data;
+		if (conn->connected)
+			disp_sql_disconnect(sql_cfg.interface, conn);
+		free_entry(conn);
+	}
+}
+
+static void
+sql_conn_key_alloc()
+{
+	pthread_key_create(&sql_conn_key[SQL_AUTH], sql_conn_destroy);
+	pthread_key_create(&sql_conn_key[SQL_ACCT], sql_conn_destroy);
+}
+
 int 
 rad_sql_init()
 {
@@ -315,13 +316,13 @@ rad_sql_init()
         time_t timeout;
         SQL_cfg new_cfg;
 
+	pthread_once(&sql_conn_key_once, sql_conn_key_alloc);
+	
 #define FREE(a) if (a) efree(a); a = NULL
 
         bzero(&new_cfg, sizeof(new_cfg));
         new_cfg.keepopen = 0;
         new_cfg.idle_timeout = 4*3600; /* four hours */
-        new_cfg.max_connections[SQL_AUTH] = 16;
-        new_cfg.max_connections[SQL_ACCT] = 16;
         new_cfg.doacct = 0;
         new_cfg.doauth = 0;
 
@@ -334,9 +335,9 @@ rad_sql_init()
         }
         line_no = 0;
         cur_line = NULL;
-        if (!obstack_ready) {
-                obstack_init(&stack);
-                obstack_ready = 1;
+        if (!obparse_stack_ready) {
+                obstack_init(&parse_stack);
+                obparse_stack_ready = 1;
         } 
         while (getline()) {
                 if (stmt_type == -1) {
@@ -402,20 +403,6 @@ rad_sql_init()
                                 new_cfg.idle_timeout = timeout;
                         break;
                         
-                case STMT_MAX_AUTH_CONNECTIONS:
-                        if (get_unsigned(cur_ptr,
-                                         &new_cfg.max_connections[SQL_AUTH])) 
-                                radlog(L_ERR, _("%s:%d: number parse error"),
-                                       sqlfile, line_no);
-                        break;
-                        
-                case STMT_MAX_ACCT_CONNECTIONS:
-                        if (get_unsigned(cur_ptr,
-                                         &new_cfg.max_connections[SQL_ACCT])) 
-                                radlog(L_ERR, _("%s:%d: number parse error"),
-                                       sqlfile, line_no);
-                        break;
-                        
                 case STMT_DOAUTH:       
                         if (get_boolean(cur_ptr, &new_cfg.doauth))
                                 radlog(L_ERR,
@@ -474,6 +461,18 @@ rad_sql_init()
                         new_cfg.check_attr_query = estrdup(cur_ptr);
                         break;
                         
+                case STMT_MAX_AUTH_CONNECTIONS:
+			radlog(L_WARN,
+			       "%s:%d: auth_max_connections is obsolete",
+			       sqlfile, line_no);
+                        break;
+                        
+                case STMT_MAX_ACCT_CONNECTIONS:
+			radlog(L_WARN,
+			       "%s:%d: acct_max_connections is obsolete",
+			       sqlfile, line_no);
+                        break;
+                        
                 case STMT_QUERY_BUFFER_SIZE:
                         radlog(L_WARN, "%s:%d: query_buffer_size is obsolete",
                                        sqlfile, line_no);
@@ -490,7 +489,7 @@ rad_sql_init()
                 
         }
 
-        obstack_free(&stack, NULL);
+        obstack_free(&parse_stack, NULL);
 
         fclose(sqlfd);
         efree(sqlfile);
@@ -525,8 +524,14 @@ rad_sql_init()
 void
 rad_sql_shutdown()
 {
-        close_sql_connections(SQL_AUTH);
-        close_sql_connections(SQL_ACCT);
+	/*FIXME*/
+}
+
+void
+rad_sql_need_reconnect(type)
+	int type;
+{
+	/*FIXME*/
 }
 
 void
@@ -595,292 +600,71 @@ sql_check_config(cfg)
                cfg->doauth));
 }
 
-/* ************************************************************************* */
-/* Internal routines
- *
- * All SQL connections are kept in a singly-linked list. The connection
- * immediately at the head of the list is the one that is going to be used
- * on the next call. After use, the connection is moved to the end
- * of the list. The connections are thus sorted in LRU manner.
- * 
- */
-
-/* The connection list
- */
-static struct sql_connection *conn_first; /* First connection: the one
-                                           * to be used
-                                           */
-static struct sql_connection *conn_last;  /* Last connection: the most
-                                           * recently used one.
-                                           */
-static int conn_count[SQL_NSERVICE];      /* number of connections in list */
-
-static void
-print_queue()
-{
-        struct sql_connection *conn, *prev;
-        int i = 0;
-        
-        if (debug_on(10)) {
-                debug(10, ("Connection queue: %p - %p, %d;%d:",
-                             conn_first,
-                             conn_last,
-                             conn_count[SQL_AUTH], conn_count[SQL_ACCT]));
-                prev = NULL;
-                for (conn = conn_first; conn; conn = conn->next) {
-                        debug(10, ("%d: %p (%d) %p",
-                                     i++, conn, conn->type, conn->owner));
-                        prev = conn;
-                }
-                insist(conn_last == prev);
-        }
-}
 
 void
 sql_flush()
 {
-        if (conn_first != NULL) {
-                radlog(L_NOTICE,
-                 _("SQL configuration changed: closing existing connections"));
-
-                rad_flush_queues();
-                
-                close_sql_connections(SQL_AUTH);
-                close_sql_connections(SQL_ACCT);
-        }
+	radlog(L_NOTICE,
+	       _("SQL configuration changed: closing existing connections"));
+	rad_flush_queues();
 }
-
-/* Create the new SQL connection and attach it to the head of the
- * list.
- */
-struct sql_connection *
-create_sql_connection(type)
-        int   type;
-{
-        struct sql_connection *conn;
-
-        debug(1, ("allocating new %d sql connection", type));
-        print_queue();
-
-        conn = alloc_entry(sizeof(struct sql_connection));
-        conn->owner = NULL;
-        conn->delete_on_close = 0;
-        conn->connected = 0;
-        conn->type = type;
-
-        /* attach to the head of the list */
-        conn->next = conn_first;
-        conn_first = conn;
-        if (!conn_last)
-                conn_last = conn;
-
-        conn_count[type]++;
-        disp_sql_reconnect(sql_cfg.interface, type, conn);      
-        return conn;
-}
-
-/* Close the existing SQL connection, unlink it from the list and deallocate
- * the memory associated with it
- * Arguments:
- *        conn     -     the connection to be closed
- *        prev     -     the previous connection in the list
- */
-void
-close_sql_connection(conn, prev)
-        struct sql_connection *conn, *prev;
-{
-        if (conn->owner) {
-                conn->delete_on_close = 1;
-                return;
-        }
-                
-        debug(1, ("destructing sql connection: %d left in queue",
-                 conn_count[SQL_AUTH] + conn_count[SQL_ACCT] - 1));
-        
-        if (conn->connected)
-                disp_sql_disconnect(sql_cfg.interface, conn);
-        if (prev)
-                prev->next = conn->next;
-        if (conn_first == conn)
-                conn_first = conn->next;
-        if (conn_last == conn)
-                conn_last = prev;
-        conn_count[conn->type]--;
-        free_entry(conn);
-}
-
-/* Attach the SQL connection of the given type and queue id to the connection
-   list:
-         1. If the request already has a connection attached, return this
-            connection.
-         2. Scan the list for the first unused connection of the given type
-         3. If not found, allocate one.
-         4. Update connection's owner, last usage timestamp and return. */
 
 struct sql_connection *
-attach_sql_connection(type, req)
-        int type;
-        RADIUS_REQ *req;
+attach_sql_connection(type, radreq)
+	int type;
+	RADIUS_REQ *radreq;
 {
-        struct sql_connection *conn = req->conn;
+	struct sql_connection *conn;
+	time_t now;
+	
+	conn = radreq->conn;
+	if (conn)
+		return conn;
+	conn = pthread_getspecific(sql_conn_key[type]);
+	if (!conn) {
+		debug(1, ("allocating new %d sql connection", type));
 
-        if (!conn) {
-                struct sql_connection *prev, *next;
-                time_t now = time(NULL);
+		conn = alloc_entry(sizeof(struct sql_connection));
+		conn->owner = NULL;
+		conn->delete_on_close = !sql_cfg.keepopen;
+		conn->connected = 0;
+		time(&conn->last_used);
+		conn->type = type;
 
-                prev = NULL;
+		pthread_setspecific(sql_conn_key[type], conn);
+	}
 
-                debug(1, ("attaching %d,%p", type, req));
-                print_queue();
-
-                conn = conn_first;
-                while (conn) {
-                        if (conn->owner == NULL)
-                                break;
-                        next = conn->next;
-                        prev = conn;
-                        conn = next;
-                }
-
-                if (!conn) {
-                        if (conn_count[type] >=
-                            sql_cfg.max_connections[type]) {
-                                radlog(L_CRIT,
-         _("can't create new %s SQL connection: too many connections open"),
-                                       service_name[type]);
-                                return NULL;
-                        }
-                        conn = create_sql_connection(type);
-                }
-                conn->owner = req;
-                req->conn = conn;
-                conn->last_used = now;
-        }
-        return conn;
+	time(&now);
+	if (!conn->connected || now - conn->last_used > sql_cfg.idle_timeout) {
+		debug(1, ("connection %d timed out: reconnect", type));
+		disp_sql_reconnect(sql_cfg.interface, type, conn);
+	}
+	time(&conn->last_used);
+	radreq->conn = conn;
+	debug(1, ("attaching %p->%p [%d]", radreq, conn, type));
+	return conn;
 }
 
-/* Unattach the SQL connection. Move it to the end of the list.
- */
 void
-unattach_sql_connection(type, req)
-        int    type;
-        RADIUS_REQ *req;
+detach_sql_connection(type, radreq)
+	int type;
+	RADIUS_REQ *radreq;
 {
-        struct sql_connection *conn, *prev;
+	struct sql_connection *conn;
 
-        conn = req->conn;
-        if (!conn)
-                return;
-        if (sql_cfg.keepopen == 0 || conn->delete_on_close) {
-                free_sql_connection(req->conn);
-                return;
-        }
-        debug(1, ("unattaching connection %d,%p", type, req));
-
-        prev = NULL;
-        conn = conn_first;
-        while (conn) {
-                if (conn == req->conn) {
-                        debug(5, ("unattaching connection: found"));
-                        conn->owner = 0;
-
-                        if (conn_last == conn)
-                                return;
-
-                        /* Unattach the connection from the list
-                         */
-                        if (conn_first == conn)
-                                conn_first = conn->next;
-                        else if (prev)
-                                prev->next = conn->next;
-                        conn->next = NULL;
-                        
-                        /* Append it to the end of list
-                         */
-                        conn_last->next = conn;
-                        conn_last = conn;
-
-                        return;
-                }
-                prev = conn;
-                conn = conn->next;
-        }
-        print_queue();
-}
-
-/* Unlink the sql connection from the list. Close it and free any memory
-   associated with it. */
-void
-free_sql_connection(sql_conn)
-        struct sql_connection *sql_conn;
-{
-        struct sql_connection *conn, *prev;
-
-        prev = NULL;
-        conn = conn_first;
-        while (conn) {
-                if (conn == sql_conn) {
-                        close_sql_connection(conn, prev);
-                        return;
-                }
-
-                prev = conn;
-                conn = conn->next;
-        }
-}
-
-/* Close and deallocate all SQL connections
- */
-void
-close_sql_connections(type)
-        int    type;
-{
-        struct sql_connection *conn, *prev, *next;
-
-        debug(1, ("closing all %s connections", service_name[type]));
-        
-        prev = NULL;
-        conn = conn_first;
-        while (conn) {
-                if (conn->type == type) {
-                        next = conn->next;
-                        close_sql_connection(conn, prev);
-                        conn = next;
-                } else {
-                        prev = conn;
-                        conn = conn->next;
-                }
-        }
-}
-
-/* ************************************************************************* */
-
-void
-rad_sql_idle_check(void)
-{
-        struct sql_connection *conn = NULL, *prev, *next;
-        time_t now = time(NULL);
-
-        prev = NULL;
-        
-        if (sql_cfg.keepopen) {
-                conn = conn_first;
-                while (conn) {
-                        next = conn->next;
-
-                        if (conn->owner == NULL &&
-                            (now - conn->last_used) >= sql_cfg.idle_timeout) {
-                                /* Close the idle connection */
-                                debug(1,
-                                      ("connection reached idle timeout: %p,%d",
-                                       conn, conn->type));
-                                close_sql_connection(conn, prev);
-                        } else
-                                prev = conn;
-
-                        conn = next;
-                }
-        }
+	conn = radreq->conn;
+	if (!conn)
+		return;
+	debug(1, ("detaching %p->%p [%d]", radreq, conn, type));
+	if (conn->delete_on_close) {
+		debug(1, ("destructing sql connection %p",
+			  conn));
+		if (conn->connected)
+			disp_sql_disconnect(sql_cfg.interface, conn);
+		free_entry(conn);
+		pthread_setspecific(sql_conn_key[type], NULL);
+	}
+	radreq->conn = NULL;
 }
 
 void
@@ -888,51 +672,8 @@ rad_sql_cleanup(type, req)
         int type;
         RADIUS_REQ *req;
 {
-        insist(type >= 0 && type < SQL_NSERVICE);
-
-        if (sql_cfg.active[type])
-                unattach_sql_connection(type, req);
-}
-
-void
-rad_sql_need_reconnect(type)
-        int type;
-{
-        int fd;
-        char *path;
-
-        insist(type >= 0 && type < SQL_NSERVICE);
-
-        if (sql_cfg.keepopen && sql_cfg.active[type]) {
-                path = mkfilename(radius_dir, reconnect_file[type]);
-                fd = open(path, O_CREAT|O_TRUNC|O_RDWR, S_IRUSR|S_IWUSR);
-                if (fd == -1) 
-                        radlog(L_ERR|L_PERROR, 
-                                _("can't create file: %s"), path);
-                else 
-                        close(fd);
-                efree(path);
-        }
-}
-
-
-void
-rad_sql_check_connect(type)
-        int type;
-{
-        char *path;
-        int  pass = 0;
-        
-        insist(type >= 0 && type < SQL_NSERVICE);
-
-        path = mkfilename(radius_dir, reconnect_file[type]);
-        if (access(path, F_OK) == 0) {
-                unlink(path);
-                pass++;
-        }
-        efree(path);
-        if (pass)
-                close_sql_connections(type);
+	if (sql_cfg.active[type])
+		detach_sql_connection(type, req);
 }
 
 /*
@@ -948,7 +689,8 @@ rad_sql_acct(radreq)
         char *query;
         struct sql_connection *conn;
         char buf[MAX_LONGNAME];
-        
+        struct obstack stack;
+	
         if (!sql_cfg.doacct)
                 return;
 
@@ -960,7 +702,7 @@ rad_sql_acct(radreq)
         status = pair->lvalue;
 
         conn = attach_sql_connection(SQL_ACCT, radreq);
-
+	obstack_init(&stack);
         switch (status) {
         case DV_ACCT_STATUS_TYPE_START:
                 if (!sql_cfg.acct_start_query)
@@ -1044,8 +786,7 @@ rad_sql_acct(radreq)
                 
         }
 
-        if (query)
-                obstack_free(&stack, query);
+	obstack_free(&stack, NULL);
 }
 
 
@@ -1058,7 +799,8 @@ rad_sql_pass(req, authdata)
         char *mysql_passwd;
         struct sql_connection *conn;
         char *query;
-
+	struct obstack stack;
+	
         if (sql_cfg.doauth == 0) {
                 radlog(L_ERR,
                        _("SQL Auth specified in users file, but not in sqlserver file"));
@@ -1071,6 +813,8 @@ rad_sql_pass(req, authdata)
                                         strlen(authdata),
                                         authdata, 0));
         }
+	
+	obstack_init(&stack);
         query = radius_xlate(&stack, sql_cfg.auth_query, req, NULL);
         avl_delete(&req->request, DA_AUTH_DATA);
         
@@ -1080,8 +824,7 @@ rad_sql_pass(req, authdata)
         if (mysql_passwd) 
                 chop(mysql_passwd);
         
-        if (!query)
-                obstack_free(&stack, query);
+	obstack_free(&stack, NULL);
         
         return mysql_passwd;
 }
@@ -1096,7 +839,8 @@ rad_sql_checkgroup(req, groupname)
         void *data;
         char *p;
         char *query;
-        
+        struct obstack stack;
+	
         if (sql_cfg.doauth == 0 || sql_cfg.group_query == NULL) 
                 return -1;
 
@@ -1104,6 +848,7 @@ rad_sql_checkgroup(req, groupname)
         if (!conn)
                 return -1;
 
+	obstack_init(&stack);
         query = radius_xlate(&stack, sql_cfg.group_query, req, NULL);
 
         data = disp_sql_exec(sql_cfg.interface, conn, query);
@@ -1117,8 +862,7 @@ rad_sql_checkgroup(req, groupname)
         }
         disp_sql_free(sql_cfg.interface, conn, data);
         
-        if (query)
-                obstack_free(&stack, query);
+	obstack_free(&stack, NULL);
         return rc;
 }
 
@@ -1189,18 +933,19 @@ rad_sql_reply_attr_query(req, reply_pairs)
         struct sql_connection *conn;
         char *query;
         int rc;
-        
+        struct obstack stack;
+	
         if (sql_cfg.doauth == 0 || !sql_cfg.reply_attr_query)
                 return 0;
         
         conn = attach_sql_connection(SQL_AUTH, req);
-        
+
+	obstack_init(&stack);
         query = radius_xlate(&stack, sql_cfg.reply_attr_query, req, NULL);
 
         rc = rad_sql_retrieve_pairs(conn, query, reply_pairs, 0);
         
-        if (query)
-                obstack_free(&stack, query);
+	obstack_free(&stack, NULL);
         return rc == 0;
 }
 
@@ -1214,18 +959,19 @@ rad_sql_check_attr_query(req, return_pairs)
         struct sql_connection *conn;
         char *query;
         int rc;
-        
+        struct obstack stack;
+	
         if (sql_cfg.doauth == 0 || !sql_cfg.check_attr_query)
                 return 0;
         
         conn = attach_sql_connection(SQL_AUTH, req);
-        
+
+        obstack_init(&stack);
         query = radius_xlate(&stack, sql_cfg.check_attr_query, req, NULL);
 
         rc = rad_sql_retrieve_pairs(conn, query, return_pairs, 1);
         
-        if (query)
-                obstack_free(&stack, query);
+	obstack_free(&stack, NULL);
         return rc == 0;
 }
 

@@ -10,10 +10,6 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-if SQL
-LIBSQL=../radlib/libsql.la
-endif
-
 sbin_PROGRAMS   = radiusd
 radiusd_SOURCES = \
  acct.c\
@@ -43,7 +39,7 @@ radiusd_SOURCES = \
  timestr.c\
  version.c
 
-radiusd_LDADD   = @LEXLIB@ ../radlib/librad.la -L../snmplib -lsnmp $(LIBSQL) @RADIUSD_LDADD@
+radiusd_LDADD   = @LEXLIB@ ../radlib/librad.la -L../snmplib -lsnmp @SQLLIB@ @RADIUSD_LDADD@
 BUILT_SOURCES   = config.c config_kw.c rewrite.c
 MAINTAINERCLEANFILES=config.c config_tok.h config_kw.c rewrite.c y.output
 INCLUDES        = -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp -I$(top_srcdir)/radlib @INCLUDEPATH@

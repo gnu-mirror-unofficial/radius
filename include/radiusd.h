@@ -344,6 +344,7 @@ void radiusd_pidfile_write(char *name);
 pid_t radiusd_pidfile_read(char *name);
 void radiusd_pidfile_remove(char *name);
 
+void radiusd_main();
 void radiusd_signal_init(RETSIGTYPE (*)(int));
 void radiusd_cleanup();
 void radiusd_restart();
@@ -361,7 +362,7 @@ int filters_stmt_term(int finish, void *block_data, void *handler_data);
 extern struct cfg_stmt filters_stmt[];
 
 /* scheme.c */
-void rad_boot();
+void scheme_boot();
 void scheme_load(char *filename);
 void scheme_load_path(char *pathname);
 void scheme_debug(int val);

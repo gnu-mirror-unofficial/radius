@@ -252,7 +252,9 @@ option_def      : T_SOURCE_IP value
 		  }
                 | T_EXEC_PROGRAM_GROUP value
                   {
-			  asgn(&config.exec_group, &$2, AT_STRING, 0);
+			  radlog(L_WARN,
+				 _("%s:%d: exec-program-group is obsolete:"),
+				 filename, line_num);
 		  }
                 ;
 

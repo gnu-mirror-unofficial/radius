@@ -63,20 +63,3 @@ rewrite.c: $(srcdir)/rewrite.y
 	$(YLWRAP) "$(YACC)" $(srcdir)/rewrite.y \
 		  y.tab.c rewrite.c y.output rewrite.y.output -- -yy rw_yy -vt
 
-SUFFIXES=.S .c .ln .o .s
-
-# Maintainer-specific code
-if MAINTAINER_MODE
-
-CLEANFILES=*.ln
-LINTFLAGS=-gezra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) -I$(srcdir) $(INCLUDES)
-radiusd_LNS=$(radiusd_SOURCES:.c=.ln)
-
-.c.ln:
-	$(LINT.c) -i $<
-
-lint:  $(radiusd_LNS)
-	$(LINT.c) -u $(radiusd_LNS) -L../lib -lrad
-
-endif
-

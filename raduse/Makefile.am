@@ -14,18 +14,3 @@ raduse_SOURCES = raduse.c session.c stat.c raduse.h
 raduse_LDADD   = ../snmplib/libradsnmp.a ../lib/liblog.la ../lib/librad.la ../lib/libdebug.la @LIBINTL@
 INCLUDES       = @RADIUS_INCLUDE_PATH@
 
-SUFFIXES=.S .c .ln .o .s
-
-if MAINTAINER_MODE
-MAINTAINERCLEANFILES=core *~ err out
-
-LINTFLAGS=-gezra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
-
-.c.ln:
-	$(LINT.c) -i $<
-
-lint: $(raduse_SOURCES:.c=.ln)
-	$(LINT.c) -u $(raduse_SOURCES:.c=.ln) $(raduse_LDADD)
-
-
-endif

@@ -22,10 +22,6 @@ all: radmibs.h
 radmibs.h: $(top_srcdir)/mibs/radmibs.h.in
 	$(AWK) -f $(top_srcdir)/scripts/mksnmp-h.awk $(top_srcdir)/mibs/radmibs.h.in > radmibs.h
 
-if MAINTAINER_MODE
-lint:;
-endif
-
 MAINTAINERCLEANFILES = radmibs.h
 
 SUBDIRS=radius snmp 

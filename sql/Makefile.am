@@ -17,18 +17,3 @@ EXTRA_LTLIBRARIES=libsql.la
 INCLUDES=@RADIUS_INCLUDE_PATH@
 libsql_la_SOURCES=disp.c mysql.c postgres.c odbc.c
 
-SUFFIXES=.S .c .ln .o .s
-
-if MAINTAINER_MODE
-CLEANFILES=*.ln
-LINTFLAGS=-gzra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
-
-.c.ln:
-	$(LINT.c) -i $<
-
-llib-lsql.ln: $(libsql_la_SOURCES:.c=.ln)
-	$(LINT.c) -Csql $(libsql_la_SOURCES:.c=.ln) -L../lib -llog -lrad
-
-lint:: llib-lsql.ln
-
-endif

@@ -39,10 +39,3 @@ radauth: $(srcdir)/radauth.m4
 builddbm: $(srcdir)/builddbm.m4
 	$(M4) $(M4_DEFINES) $(srcdir)/builddbm.m4 > builddbm
 
-# Maintainer-specific part
-if MAINTAINER_MODE
-
-lint:;
-
-endif
-

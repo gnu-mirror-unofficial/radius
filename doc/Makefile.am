@@ -14,6 +14,3 @@
 SUBDIRS=texinfo man rfc
 EXTRA_DIST=COPYING.DOC MACHINES README.ipalloc
 
-if MAINTAINER_MODE
-lint:;
-endif

@@ -11,11 +11,6 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-if MAINTAINER_MODE
-MAINTAINERCLEANFILES=core *~ err out
-lint:;
-endif
-
 EXTRA_DIST=COPYING.LIB README
 noinst_LIBRARIES=libradsnmp.a
 libradsnmp_a_SOURCES=asn1.c snmp_mem.c snmp_oid.c snmp_pdu.c \

@@ -41,12 +41,6 @@ MAINTAINERCLEANFILES=core *~ err out
 
 webdoc:;   $(MAKE) -C doc/texinfo webdoc
 
-lint::
-	for dir in $(SUBDIRS); \
-	do \
-		$(MAKE) -C $$dir lint; \
-	done
-
 alpha: 
 	$(MAKE) dist distdir=$(PACKAGE)-$(VERSION)-`date +'%Y%m%d'`
 

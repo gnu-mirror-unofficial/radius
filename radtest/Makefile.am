@@ -18,17 +18,3 @@ noinst_HEADERS  = gram.h
 INCLUDES        = @RADIUS_INCLUDE_PATH@ -I$(srcdir) 
 AM_YFLAGS = -vdt 
 
-if MAINTAINER_MODE
-CLEANFILES=*.ln
-
-LINTFLAGS=-gezra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
-
-.c.ln:
-	$(LINT.c) -i $<
-
-radtest_ln=main.ln gram.ln input.ln 
-lint: $(radtest_ln)
-	$(LINT.c) -u $(radtest_ln) -L../lib -llog -lrad 
-
-endif
-

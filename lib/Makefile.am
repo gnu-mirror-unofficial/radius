@@ -94,18 +94,3 @@ users_lex.c: $(srcdir)/users.l
 users_lex.o: users_lex.c users_gram.h $(top_srcdir)/include/parser.h
 users_gram.o: users_gram.c users_gram.h $(top_srcdir)/include/parser.h
 
-SUFFIXES=.S .c .ln .o .s
-
-if MAINTAINER_MODE
-CLEANFILES=*.ln
-LINTFLAGS=-gzra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -DLOCALEDIR=\"$(localedir)\" -I$(top_srcdir) -I$(srcdir) $(INCLUDES)
-
-.c.ln:
-	$(LINT.c) -i $<
-
-llib-lgnuradius.ln: $(libgnuradius_la_SOURCES:.c=.ln)  
-	$(LINT.c) -Crad $(libgnuradius_la_SOURCES:.c=.ln) 
-
-lint:: llib-lgnuradius.ln
-
-endif

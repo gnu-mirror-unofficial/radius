@@ -16,21 +16,3 @@ radwho_LDADD   = @LIBGNURADIUS@ @LIBINTL@
 INCLUDES        = @RADIUS_INCLUDE_PATH@
 AM_CPPFLAGS=@PATHFLAGS@
 
-SUFFIXES=.S .c .ln .o .s
-
-if MAINTAINER_MODE
-MAINTAINERCLEANFILES=core *~ err out
-CLEANFILES=*.ln
-
-LINTFLAGS=-gezra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
-
-.c.ln:
-	$(LINT.c) -i $<
-
-lint: $(radwho_SOURCES:.c=.ln)
-	$(LINT.c) -u $(radwho_SOURCES:.c=.ln) -L../lib -llog -lrad -ldebug
-
-
-
-endif
-

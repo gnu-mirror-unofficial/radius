@@ -247,6 +247,7 @@ main(argc, argv)
                         adduser(*argv);
         }
 
+	dict_init();
         read_naslist();
 
         if (nas_name) {
@@ -349,7 +350,7 @@ radwtmp()
         struct tm *tm;
         char ct[256];
         WTMP *pp;
-        
+
         if ((wfd = open(file, O_RDONLY, 0)) < 0 || fstat(wfd, &stb) == -1) {
                 radlog(L_ERR, "can't open %s: %s", file, strerror(errno));
                 exit(1);
@@ -662,11 +663,14 @@ char *
 proto_str(id)
         int id;
 {
-        if (id == 'S')
-                return "SLIP";
-        if (id == 'P')
-                return "PPP";
-        return "shell";
+	DICT_VALUE *dval = value_lookup(id, "Framed-Protocol");
+	static char buf[64];
+	
+	if (!dval) {
+		snprintf(buf, sizeof(buf), "%lu", id);
+		return buf;
+	}
+	return dval->name;
 }
 
 /* NOTE:

@@ -59,7 +59,6 @@ void format_date(char *buf, FORMAT *fmt, struct radutmp *up);
 void format_porttype(char *buf, FORMAT *fmt, struct radutmp *up);
 void format_port(char *buf, FORMAT *fmt, struct radutmp *up);
 void format_nas(char *buf, FORMAT *fmt, struct radutmp *up);
-void format_proto(char *buf, FORMAT *fmt, struct radutmp *up);
 void format_address(char *buf, FORMAT *fmt, struct radutmp *up);
 void format_orig(char *buf, FORMAT *fmt, struct radutmp *ut);
 void format_sid(char *buf, FORMAT *fmt, struct radutmp *ut);
@@ -201,6 +200,8 @@ FORMAT radwho_fmt[MAX_FMT];
 #define SD_SMART     0
 #define SD_FULL      1
 #define SD_ABBR      2
+
+#define P_CONSOLE -1  /* Special radutmp type value for local users */
 
 int  fingerd;             /* Are we run as fingerd */
 int  secure;              /* Secure mode: do not answer queries w/o username */
@@ -385,19 +386,18 @@ main(argc, argv)
         if (!filename)
                 filename = radutmp_path;
         
-        /*
-         *      Read the "naslist" file.
-         */
+	/* Read the dictionary files */
+	dict_init();
+        /* Read the "naslist" file. */
         path = mkfilename(radius_dir, RADIUS_NASLIST);
         if ((naslist = my_read_naslist_file(path)) == NULL)
                 exit(1);
         efree(path);
-
+	/* Read realms */
         path = mkfilename(radius_dir, RADIUS_REALMS);
         my_read_realms(path);
         efree(path);
         
-
         /*
          *      See if we are "fingerd".
          */
@@ -772,7 +772,12 @@ format_proto(buf, fmt, up)
         FORMAT         *fmt;
         struct radutmp *up;
 {
-        strcpy(buf, proto(up));
+	DICT_VALUE *dval = value_lookup(up->proto, "Framed-Protocol");
+	
+	if (!dval)
+		snprintf(buf, fmt->width, "%lu", up->proto);
+	else
+		snprintf(buf, fmt->width, "%s", dval->name);
 }       
 
 /*ARGSUSED*/
@@ -845,21 +850,6 @@ time_str(buffer, t)
                 sprintf(buffer, "%02d:%02d", h, m);
         return buffer;
 }
-
-char *
-proto(rt)
-        struct radutmp *rt;
-{
-        if (rt->type == P_IDLE)
-                return "HUP";
-        switch (rt->proto) {
-        case 'S':
-                return "SLIP";
-        case 'P':
-                return "PPP";
-        }
-        return "shell";
-}        
 
 /*
  *      Find name of NAS

@@ -35,7 +35,7 @@ in verifying the activity of user sessions
 * Rewriting incoming requests::
 * Login verification functions::
 * Attribute creation functions::
-* Formal Syntax Description::
+* Full Syntax Description::
 @end menu
 
 
@@ -72,11 +72,29 @@ foo(integer i)
 @end group
 @end example
 
-The function takes an integer argument and return string
+The function takes an integer argument and returns string
 ``the number is odd'' or ``the number is even'', depending on the
 value of @var{i}. This illustrates the fact that in Rewrite the
 addition operator is defined on the string type. The result of
 such operation is the concatenation of operands.
+
+Another example is a function that adds a prefix to the @attr{User-Name}
+attribute:
+
+@example
+@group
+integer
+px_add()
+@{
+        %[User-Name] = "pfx-" + %[User-Name];
+        return 0;
+@}
+@end group
+@end example
+
+The function manipulates the contents of the incoming request, its
+return value has no special meaning.
+
 
 @comment *L2****************************************************************
 @node Interaction with Radius, Rewriting incoming requests, Quick Start, Rewrite
@@ -444,7 +462,7 @@ check_username(string str, string name, integer pid, string sid)
 @end example
 
 @comment **L3***************************************************************
-@node Attribute creation functions,Formal Syntax Description, Login verification functions, Rewrite
+@node Attribute creation functions,Full Syntax Description, Login verification functions, Rewrite
 @subsection Attribute creation functions
 @cindex Rewrite, attribute creation functions
 
@@ -480,11 +498,9 @@ get_ip_address(integer base)
 @end example
 
 @comment *L2****************************************************************
-@node Formal Syntax Description, , Attribute creation functions, Rewrite
-@subsection Formal Syntax Description
+@node Full Syntax Description, , Attribute creation functions, Rewrite
+@subsection Full Syntax Description
 @cindex Rewrite, syntax of the language
-
-[FIXME]The syntax of Rewrite is similar to C syntax.
 
 @menu
 * Data types::
@@ -496,7 +512,7 @@ get_ip_address(integer base)
 @end menu
 
 @comment **L4***************************************************************
-@node Data types, Symbols, , Formal Syntax Description
+@node Data types, Symbols, , Full Syntax Description
 @subsubsection Rewrite Data Types
 @cindex data types, Rewrite
 @cindex Rewrite, data types
@@ -509,7 +525,7 @@ to a string, the result of such coercion being the @sc{ascii} string with
 decimal representation of the number.
 
 @comment **L4***************************************************************
-@node Symbols, Identifiers, Data types, Formal Syntax Description
+@node Symbols, Identifiers, Data types, Full Syntax Description
 @subsubsection Rewrite Symbols
 @cindex symbols, Rewrite
 @cindex Rewrite, symbols
@@ -522,9 +538,14 @@ These are @samp{+}, @samp{-}, @samp{*}, @samp{/} representing the basic
 arithmetical operations and @samp{%} meaning remainder.
 @item Comparison operators
 These are: @samp{==}, @samp{!=}, @samp{<}, @samp{<=}, @samp{>},
-@samp{>=} with the same meaning they have in C, @samp{=~}
-meaning ``matches a regular expression'' and @samp{!~} meaning
-``does not match a regular expression''.
+@samp{>=} with the same meaning they have in C. Special operators
+are provided for regular expression matching. Binary
+operator @samp{=~} returns true, if its left-hand-side operand
+matches the regular expression on its right-hand side. @samp{!~}
+returns true if the left-hand side operand @emph{does not match}
+the regexp on right-hand side. The right-hand side operand of
+@samp{!~} or @samp{=~} must be a literal string, i.e. the regular
+expression must be known at compile time.
 @item Unary operators.
 Unary operators are @samp{-} and @samp{+} for unary plus and minus,
 @samp{!} for boolean negation and @samp{*} for testing for the
@@ -568,22 +589,41 @@ Thus notation returns the value of the attribute @var{attribute-name}.
 @item Identifiers
 Identifiers represent functions and variables. These are described in
 the next section.
-@item Previous regexp match references
-The results of the execution of the last @samp{=~} command are kept
-in register variables, and can be referenced using the following
-notation:
+@item Regexp group references
+A sequence of characters in the form:
 
 @example
 @samp{\@var{number}}
 @end example
 
 @noindent
-This means the @var{number}th subexpression from the recent regexp
-match. The match references are always string expressions.
+
+refers to the contents of parenthesized group number @var{number}
+obtained as a result of the last executed @samp{=~} command.
+The regexp group reference has always string data type. E.g.
+
+@example
+@group
+string
+basename(string arg)
+@{
+    if (arg =~ ".*/\(.*\)\..*")
+        return \1;
+    else
+        return arg;
+@}
+@end group
+@end example
+
+This function strips from @var{arg} all leading components up to the
+last slash character, and all trailing components after the last dot
+character. It returns @var{arg} unaltered, if it does not contain
+slashes and dots. Roughly, it is analogous to the system @code{basename}
+utility.
 @end table
 
 @comment **L4***************************************************************
-@node Identifiers, Declarations, Symbols, Formal Syntax Description
+@node Identifiers, Declarations, Symbols, Full Syntax Description
 @subsubsection Rewrite Identifiers
 @cindex identifiers, Rewrite
 @cindex Rewrite identifiers
@@ -600,7 +640,7 @@ dollar signs (@samp{$}).
 
 
 @comment **L4***************************************************************
-@node Declarations, Statements, Identifiers, Formal Syntax Description
+@node Declarations, Statements, Identifiers, Full Syntax Description
 @subsubsection Rewrite Declarations
 @cindex declarations, Rewrite
 
@@ -644,7 +684,7 @@ separated list of such identifiers. @emph{Please note} that, unlike in
 C, no assignments are allowed in variable declarations.
 
 @comment **L4***************************************************************
-@node Statements, Built-in Functions, Declarations, Formal Syntax Description
+@node Statements, Built-in Functions, Declarations, Full Syntax Description
 @subsubsection Rewrite Statements
 @cindex statements, Rewrite
 
@@ -726,7 +766,7 @@ number of actual arguments and number of formal parameters in the
 compiled function declaration is not an error but rather a warning.
 
 @comment **L4***************************************************************
-@node Built-in Functions, , Statements, Formal Syntax Description
+@node Built-in Functions, , Statements, Full Syntax Description
 @subsubsection Rewrite Built-in Functions
 @cindex built-in functions, Rewrite
 
@@ -749,6 +789,11 @@ the string @var{s}. Returns -1 if no such occurrence is found.
 @deftypefn Function string substr (string @var{s}, integer @var{start}, integer @var{length})
 Returns the at most @var{length} substring of @var{s} starting at
 position @var{start}.
+@end deftypefn
+
+@deftypefn Function integer logit (string @var{msg})
+Outputs its argument to the radius log channel @code{info}. Returns 0.
+The function is intended for debugging purposes.
 @end deftypefn
 
 All character positions in strings are counted from 0.

@@ -299,6 +299,16 @@ struct radtest_node {
 	} v;
 };
 
+enum context {
+	ctx_none,
+	ctx_if,
+	ctx_iferr,
+	ctx_do,
+	ctx_doerr,
+	ctx_while,
+	ctx_case
+};
+
 
 /* External declarations */
 extern grad_locus_t source_locus;
@@ -308,6 +318,7 @@ extern grad_avp_t *reply_list;
 extern int verbose;
 extern int disable_readline;
 extern int dry_run;
+extern int interactive;
 
 extern grad_list_t *toplevel_env;
 

@@ -437,12 +437,12 @@ finger_check(struct check_instance *checkp, NAS *nas)
 			fclose(fp);
 			obstack_free(&stk, NULL);
 			alarm(0);
-			signal(SIGALRM, handler);
+			rad_set_signal(SIGALRM, handler);
 			return checkp->result = -1;
 		}
 
                 to = ilookup(checkp, "timeout", 10);
-		handler = signal(SIGALRM, alrm_handler);
+		handler = rad_set_signal(SIGALRM, alrm_handler);
 		alarm(to);
 
                 while ((c = getc(fp)) != EOF) {
@@ -469,7 +469,7 @@ finger_check(struct check_instance *checkp, NAS *nas)
                                  * processing data
                                  */
 				to = alarm(0);
-				signal(SIGALRM, handler);
+				rad_set_signal(SIGALRM, handler);
                                 
                                 obstack_1grow(&stk, 0);
                                 ptr = obstack_finish(&stk);
@@ -480,7 +480,7 @@ finger_check(struct check_instance *checkp, NAS *nas)
                                         break;
 
                                 /* restore alarm settings */
-				signal(SIGALRM, alrm_handler);
+				rad_set_signal(SIGALRM, alrm_handler);
 				alarm(to);
                         }
                 }
@@ -490,7 +490,7 @@ finger_check(struct check_instance *checkp, NAS *nas)
                          * processing data
                          */
                         alarm(0);
-			signal(SIGALRM, handler);
+			rad_set_signal(SIGALRM, handler);
 
                         obstack_1grow(&stk, '\n');
                         obstack_1grow(&stk, 0);
@@ -508,7 +508,7 @@ finger_check(struct check_instance *checkp, NAS *nas)
 
         /* restore alarm settings */
         alarm(0);
-	signal(SIGALRM, handler);
+	rad_set_signal(SIGALRM, handler);
 
         debug(1, ("result: %d", found));
         checkp->result = found;

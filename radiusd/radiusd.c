@@ -761,6 +761,8 @@ reread_config(reload)
 		radlog(L_INFO, _("Starting - reading configuration files ..."));
 	} else if (pid == radius_pid) {
 		radlog(L_INFO, _("Reloading configuration files."));
+		rad_flush_queues();
+		close_socket_list();
 	}
 
 #ifdef USE_SNMP
@@ -770,9 +772,6 @@ reread_config(reload)
 	}
 #endif	
 
-	flush_request_list();
-	close_socket_list();
-	
 	/* Read the options */
 	get_config();
 	if (!reload) {
@@ -1575,7 +1574,7 @@ rad_flush_queues()
 	radlog(L_NOTICE, _("flushing request queues"));
 
 	while (flush_request_list())
-		;
+		rad_child_cleanup();
 
 	return 0;
 }

@@ -92,8 +92,8 @@ run_log_hook(const RADIUS_REQ *req, const char *hook_name)
 			   &result,
 			   hook_name,
 			   req,
-			   "ssi",
-			   auth_code_abbr(req->code),
+			   "isi",
+			   req->code,
 			   nas_request_to_name(req, nasbuf, sizeof nasbuf),
 			   req->id))
 		return NULL;

@@ -267,7 +267,8 @@ AC_ARG_ENABLE(debug,
 		no)	RADIUS_DEBUG=0;;
 	 esac])
 
-AC_DEFINE_UNQUOTED(RADIUS_DEBUG, $RADIUS_DEBUG)
+AC_DEFINE_UNQUOTED(RADIUS_DEBUG, $RADIUS_DEBUG,
+                   [Define to 1 to enable debugging])
 
 # Set ETC_DIR. I suppose it's better to be defined in config.h,
 # so I do this dirty work here, instead of adding -DETC_DIR=$sysconfdir

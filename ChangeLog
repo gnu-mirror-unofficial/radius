@@ -1,3 +1,18 @@
+2001-09-01 Sergey Poznyakoff
+
+	* radiusd/config.kw: New keyword: password-expire-warning.
+	* raddb/config.syntax: Sample password-expire-warning statement;
+	* raddb/dictionary: Removed obsolete Server-Config attribute and
+	its values.
+	* radiusd/radiusd.c: Removed unused config_init() function.
+
+	* radiusd/auth.c: Use asprintf for formatting Reply-Message.
+	* radiusd/config.y: Handle password-expire-warning statement;
+	Fixed bug in handling syslog statement.
+
+	* scripts/config-conv.awk: Emit 'channel default' and 'category *'
+	statements.
+
 2001-08-31 Sergey Poznyakoff
 
 	Further changes to the logging subsystem. The only left-to-do is 

@@ -613,6 +613,8 @@ send_challenge(authreq, msg, state, activefd)
 		authreq->id, (u_long)authreq->ipaddr,
 		nas_name2(authreq)));
 	
+	stat_inc(auth, authreq->ipaddr, num_challenges);
+	
 	/*
 	 *	Send it to the user
 	 */

@@ -79,12 +79,6 @@ WTMP *find_wtmp_nas(WTMP *first, struct radutmp *bp);
 WTMP *find_wtmp_nas_port(WTMP *first, struct radutmp *bp);
 WTMP *find_wtmp_nas_port_sid(WTMP *first, struct radutmp *bp);
 
-NAS * nas_find(UINT4 ipaddr);
-NAS * nas_find_by_name(char *name);
-char * nas_name(UINT4 ipaddr);
-
-extern NAS *naslist;
-
 UINT4 host_ip = 0;
 UINT4 nas_ip = 0;
 int port = 0;
@@ -221,7 +215,7 @@ main(argc, argv)
 	if (nas_name) {
 		nas_ip = get_ipaddr(nas_name);
 		if (!nas_ip) {
-			NAS *nas = nas_find_by_name(nas_name);
+			NAS *nas = nas_lookup_name(nas_name);
 			if (nas)
 				nas_ip = nas->ipaddr;
 			else {
@@ -233,6 +227,16 @@ main(argc, argv)
 	}
 	radwtmp();
 	return 0;
+}
+
+int
+read_naslist()
+{
+	int rc;
+	char *path = mkfilename(radius_dir, RADIUS_NASLIST);
+	rc = nas_read_file(path);
+	efree(path);
+	return rc;
 }
 
 #if 0
@@ -660,7 +664,7 @@ print_entry(pp, bp, mark)
 		       bp->login,
 		       
 		       nas_name_len, nas_name_len,
-		       nas_name(ntohl(bp->nas_address)),
+		       nas_lookup_ip(ntohl(bp->nas_address)),
 
 		       bp->nas_port,
 
@@ -685,7 +689,7 @@ print_entry(pp, bp, mark)
 		       bp->login,
 		       
 		       nas_name_len, nas_name_len,
-		       nas_name(ntohl(bp->nas_address)),
+		       nas_lookup_ip(ntohl(bp->nas_address)),
 
 		       bp->nas_port,
 
@@ -742,7 +746,7 @@ print_reboot_entry(bp)
 	       namesize, namesize,
 	       s,
 		       
-	       nas_name(ntohl(bp->nas_address)),
+	       nas_lookup_ip(ntohl(bp->nas_address)),
 	       ct, ct + 11);
 }
 

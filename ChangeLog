@@ -1,3 +1,12 @@
+2003-10-01  Sergey Poznyakoff
+
+	* include/radiusd.h (radius_eval_avl): New function
+	* radiusd/radutil.c: Likewise.
+	* radiusd/auth.c (sfn_eval_reply): Use radius_eval_avl().
+	* radiusd/files.c (hints_setup): Use radius_eval_avl().
+	* radiusd/rewrite.y: Fixed some wording.
+	* radtest/gram.y (pair_list production): Bugfix.
+
 2003-09-30  Sergey Poznyakoff 
 
 	* NEWS: Updated

@@ -1,7 +1,31 @@
+2001-11-28 Sergey Poznyakoff
+
+	* test/dejagnu/README: (new) Instructions for remote
+	  testing of the package.
+	* radiusd/config.y: Call scheme_end_reconfig() after
+	  reading the confguration.
+	* radiusd/radiusd.c: Removed extra_arg kludge. It is 
+	  passed as argument now.
+	* radiusd/scheme.c: Pass the argument to rad_mainloop().
+	  scheme_end_reconfig(): new function. Call gc immediately
+	  after the reconfiguration.
+
+	* doc/texinfo/configure.texi: Documented broken_pass, huntgroups
+	  and realms.
+	* doc/texinfo/operation.texi: Documented huntgroups.
+	* include/envar.h: New functions: envar_lookup_str() and
+	envar_lookup_int().
+	* radlib/envar.c: Likewise.
+	* radiusd/checkrad.c: Use envar_lookup_str() and envar_lookup_int().
+	* radiusd/files.c: Introduced 'quota=' flag for raddb/realms. Old
+	quota syntax is retained for compatibility.
+	
+	* TODO: Updated.
+	
 2001-11-27 Sergey Poznyakoff
 
 	Interoperation between Guile and Rewrite. The support for
-	it is split between two modules: radscm/rscm_rewrite.c
+	this is split between two modules: radscm/rscm_rewrite.c
 	contains Guile interface functions, radiusd/rewrite.y
 	contains Rewrite internal functions.
 	The interoperation is currently one-way: Guile programs
@@ -10,22 +34,22 @@
 	* configure.in: Use libservscm.a instead of libradlog.a.
 	* radscm/Makefile.am: Likewise. Added rscm_rewrite.c
 	* radscm/rscm_rewrite.c: (new) Interface for invoking
-	Rewrite functions from within Guile.
+	  Rewrite functions from within Guile.
 
 	* radiusd/radiusd.c: test_shell: new command 'g': invoke
-	guile read-eval-print loop.
+	  guile read-eval-print loop.
 	* radiusd/scheme.c: Call scm_init_load_path() before calling
-	radscm_init().
-	New function scheme_read_eval_loop().
+	  radscm_init().
+	  New function scheme_read_eval_loop().
 	
 	* radiusd/rewrite.y: Allow for recursive invocations of
-	run_init/va_run_init/interpret.
-	Added Guile interface functions.
+	  run_init/va_run_init/interpret.
+	  Added Guile interface functions.
 
 	* radscm/rscm_radlog.c: Added documentation strings.
 	* radscm/rscm_syslog.c: Likewise.
 	* radscm/ttl.scm: Return Reply-Message if the account has
-	expired.
+	  expired.
 	
 2001-11-27 Sergey Poznyakoff
 
@@ -34,32 +58,32 @@
 2001-11-27 Sergey Poznyakoff
 
 	* m4/guile.m4: One more fix regarding GUILE_INCLUDES and
-	GUILE_LIBS.
+	  GUILE_LIBS.
 	* configure.in: Added libradlog.a to LIBRADSCM.
 	* radiusd/scheme.c: Call rscm_radlog_init().
 	* radscm/rscm_radlog.c: (new) Scheme interfaces to server's
-	logging functions.
+	  logging functions.
 	* radscm/Makefile.am: New goal: libradlog.a. Contains
-	scheme interfaces to server's logging functions.
+	  scheme interfaces to server's logging functions.
 	* radscm/rscm_syslog.c: static parse_facility.
 	* radscm/ttl.scm: Use rad-log instead of ttl-syslog.
 	* scripts/config-conv.awk: Modified to delete from the input
-	obsolete `notify' statements.
+	  obsolete `notify' statements.
 	* test/raddb/auth.scm: Use rad-log instead of display.
 	
 2001-11-26 Sergey Poznyakoff
 
 	* m4/guile.m4: Fixed bug: GUILE_INCLUDES and GUILE_LIBS were not
-	set if the information was cached.
+	  set if the information was cached.
 	* scripts/mktest.awk: Use double backslash to escape a dot
-	(inside a quoted string).
+	  (inside a quoted string).
 	* radiusd/files.c: Allow for multiple Match-Profile attributes.
 	* radiusd/scheme.c: Removed scheme_load_path().
 	* radscm/rscm_lib.c: Added rscm_add_load_path() (from
-	radiusd/scheme.c). Add DATADIR to load path by default.
+	  radiusd/scheme.c). Add DATADIR to load path by default.
 	* radscm/radscm.h: Added rscm_add_load_path().
 	* radscm/rscm_syslog.c: Check the argument before passing it
-	to parse_facility().
+	  to parse_facility().
 	* test/test.sh.m4: Fixed quoting bugs.
 	* test/dejagnu/.cvsignore: Added remote.exp.
 	
@@ -68,7 +92,7 @@
 	guile.
 	
 	* radscm/ttl.scm: Support for real-time session timeout
-	calculation.
+	  calculation.
 	* radscm/Makefile.am: Added ttl.scm
 	
 	Removed old `notify' support.
@@ -84,7 +108,7 @@
 	* raddb/config.syntax: Likewise.
 	* doc/texinfo/configure.texi: Likewise.
 	* radiusd/config.y: Display warning on encountering `notify'
-	statements. Use rscm_add_load_path().
+	  statements. Use rscm_add_load_path().
 	
 2001-11-25 Sergey Poznyakoff
 					 
@@ -108,29 +132,29 @@
 	* test/Makefile.am: Added rule for building test.sh
 	* test/.cvsignore: Added test.sh
 	* test/dejagnu/Makefile.am: Added explicit rules for creating
-	site.exp and remote.exp.
+	  site.exp and remote.exp.
 	* test/dejagnu/lib/radiusd.exp: Support for remote testing.
 	* test/dejagnu/s.radiusd/Makefile.am: awk invocation: pass $(srcdir)
-	instead of `pwd`.
+	  instead of `pwd`.
 	
 2001-11-23 Sergey Poznyakoff
 
 	Compatibility issues:
 
 	* doc/man/Makefile.am: Use $? instead of $<. (Sun make expands
-	the latter to an empty string when it is used in an explicit
-	rule).
+	  the latter to an empty string when it is used in an explicit
+	  rule).
 	* m4/rx.m4: Added --with-included-regex switch (Sun's regex
-	is badly broken).
+	  is badly broken).
 	* radlib/rx.c: Remove typecast to __compar_fn_t, it may not
-	be defined.
+	  be defined.
 	* radscm/rscm_utmp.c: Removed unneeded include.
 	* scripts/mktest.awk: Escape +, even when used at a start of
-	a regexp (nawk bails out at it).
+	  a regexp (nawk bails out at it).
 	* test/dejagnu/s.radiusd/Makefile.am: Use $? instead of $<.
-	Add a space between -v and its argument in the invocation
-	of awk (nawk silently ignores -vVAR assignment).
-	Pass regexp to sed as one string.
+	  Add a space between -v and its argument in the invocation
+	  of awk (nawk silently ignores -vVAR assignment).
+	  Pass regexp to sed as one string.
 
 	(Thanks to sun for providing us with all this headache).
 	
@@ -148,24 +172,24 @@
 	  symbols, allowed in a username.
 	* radscm/Makefile.am: Pass AWK envariable to guile_doc_snarf.
 	* radtest/main.c: Clean up reply_list and reply_code _before_
-	sending the request. This way the old replies won't be reused if
-	send fails.
+	  sending the request. This way the old replies won't be reused if
+	  send fails.
 	
 	* snmplib/snmp_sess.c: Reordered includes. Previous version
-	wouldn't compile on FreeBSD.
+	  wouldn't compile on FreeBSD.
 
 	* test/dejagnu/s.radiusd/Huntgroups.exp: (new) Test huntgroups.
 	* test/dejagnu/s.radiusd/Rewrite.exp: (new) Test rewrite
-	functions.
+	  functions.
 	* test/dejagnu/s.radiusd/Makefile.am: Added Huntgroups.exp and
-	Rewrite.exp
+	  Rewrite.exp
 	* test/dejagnu/s.radiusd/Testlist: Likewise.
 
 	* test/raddb/clients: Added two new nases for testing huntgroups
-	and rewriting rules.
+	  and rewriting rules.
 	* test/raddb/naslist: Likewise.
 	* test/raddb/huntgroups: Set up for Huntgroups.exp and
-	Rewrite.exp.
+	  Rewrite.exp.
 	* test/raddb/users.in: Likewise.
 
 	Avoid duplication of files in test/raddb. We leave here only
@@ -174,7 +198,7 @@
 	configuration files (and save space in distribution tarball).
 
 	* test/raddb/checkrad.conf: (removed) A leftover from the old
-	days.
+	  days.
 	* test/raddb/dictionary: (removed)
 	* test/raddb/dictionary.ascend: (removed) 
 	* test/raddb/dictionary.cisco: (removed) 
@@ -187,20 +211,20 @@
 	* test/raddb/nastypes: (removed) 
 	* test/raddb/rewrite: (removed) 
 	* test/raddb/Makefile.am: Removed unneeded files. Added goals
-	for building needed ones.
+	  for building needed ones.
 	* test/raddb/.cvsignore: Added built files.
 	
 2001-11-22 Sergey Poznyakoff
 
 	* test/dejagnu/s.radiusd/Scheme-acct.exp: (new) Check scheme
-	accounting.
+	  accounting.
 	* test/dejagnu/s.radiusd/Hint.exp: (new) Check hints.
 	* test/dejagnu/s.radiusd/Makefile.am: Added Hint.exp and
-	Scheme-acct.exp.
+	  Scheme-acct.exp.
 	* test/dejagnu/s.radiusd/Testlist: Likewise.
 	
 	* test/raddb/acct.scm.in: (new) Source for acct.scm: procedure for
-	testing scheme accounting.
+	  testing scheme accounting.
 	* test/raddb/Makefile.am: Added acct.scm.in
 	* test/raddb/naslist: Likewise.
 	* test/raddb/auth.bin: Fixed description line.
@@ -209,7 +233,7 @@
 	* test/raddb/clients: Updated.
 	* test/raddb/naslist: Updated.
 	* test/raddb/config.in: Provide default logging channel. Load
-	acct.scm when in scheme mode.
+	  acct.scm when in scheme mode.
 	* test/raddb/hints: Set up for Hint.exp
 	
 	* doc/texinfo/attributes.texi: Use @ref for standalone references.
@@ -221,7 +245,7 @@
 	* test/test.sh: Syntax cleanup.
 	* test/dejagnu/Makefile.am: Removed runtest flags.
 	* test/dejagnu/lib/radiusd.exp: proc radius_test if -message
-	is not specified, use command instead.
+	  is not specified, use command instead.
 	
 	* test/dejagnu/s.radiusd/Acct-start.exp: Split long lines
 	* test/dejagnu/s.radiusd/Acct-stop.exp: Likewise.
@@ -238,25 +262,25 @@
 	* test/dejagnu/s.radiusd/Match.exp: (new) Test Match-Profile attr.
 	* test/dejagnu/s.radiusd/Scheme.exp: (new) Test Scheme-Procedure attr.
 	* test/dejagnu/s.radiusd/Makefile.am: Added Match.exp and
-	Scheme.exp.
+	  Scheme.exp.
 	* test/dejagnu/s.radiusd/Testlist: Likewise.
 	* test/dejagnu/.cvsignore: Updated.
 	
 	* test/raddb/auth.scm: (new) Scheme script to test
-	Scheme-Procedure attribute
+	  Scheme-Procedure attribute
 	* test/raddb/Makefile.am: Added auth.scm
 	* test/raddb/config.in: Added (conditional) guile block
 	* test/raddb/users.in: More tests.
 	
 	* test/test.sh: --guile option.
 	* test/dejagnu/lib/radiusd.exp: Pass --guile to test.sh
-	invocation if radiusd supports server guile.
+	  invocation if radiusd supports server guile.
 	* test/dejagnu/s.radiusd/Default.exp: Changed NAS IPs to use.
 	
 	* radscm/rscm_avl.c: avl-merge(): Allow both arguments to
-	be empty lists.
+	  be empty lists.
 	* radscm/rscm_lib.c: radscm_list_to_avl(): Allow for SCM_EOL
-	input parameter.
+	  input parameter.
 	
 2001-11-21 Sergey Poznyakoff
 
@@ -292,68 +316,68 @@
 	* test/dejagnu/s.radiusd/Reply.exp: reply pairs
 	* test/dejagnu/s.radiusd/Menu.exp: Livingston menus
 	* test/dejagnu/s.radiusd/Acct-start.exp: Start messages &
-	Simultaneous-Use
+	  Simultaneous-Use
 	* test/dejagnu/s.radiusd/Acct-stop.exp: Stop messages &
-	Simultaneous-Use
+	  Simultaneous-Use
 	* test/dejagnu/s.radiusd/Execwait.exp: Exec-Program-Wait
-	attribute
+	  attribute
 	* test/dejagnu/s.radiusd/Stop.exp: Shut the server down.
 
 	* configure.in: Use s.radiusd instead of radiusd.
 	* scripts/mktest.awk: Modified. 
 	* test/Makefile.am: Temporarily commented out TESTS assignment.
 	* test/findport.c: Substitute %u in format string with user
-	login name (useful for testing Exec-Program attributes).
+	  login name (useful for testing Exec-Program attributes).
 	* test/test.sh: Modified EXPR. Zero out logfiles before starting.
 	* test/dejagnu/.cvsignore: Added radiusd
 	* test/dejagnu/Makefile.am: Use s.radiusd instead of radiusd.
 	* test/dejagnu/lib/radiusd.exp: Added missing global to
-	proc radiusd_version.
+	  proc radiusd_version.
 
 	* test/raddb/users: removed.
 	* test/raddb/users.in: (new) template for test suite users file.
 	* test/raddb/auth.bin: (new): Test program for testing
-	Exec-Program-Wait attribute.
+	  Exec-Program-Wait attribute.
 	* test/raddb/Makefile.am: Added auth.bin, users.in. Removed
-	users.
+	  users.
 	* test/raddb/.cvsignore: Added users file.
 	* test/raddb/access.deny: Added username for testing.	
 	* test/raddb/config.in: Added exec-program-user and debugging
-	statements.
+	  statements.
 	
 	* raddb/dictionary: Fixed properties of Add-Port-To-IP-Address
-	attribute.
+	  attribute.
 	* test/raddb/dictionary: Likewise.
 	
 2001-11-21 Sergey Poznyakoff
 	
 	* configure.in: AC_OUTPUT test/dejagnu/radiusd/Makefile
 	* radlib/client.c: radclient_build_request(): Check the length
-	of string value before writing it into packet.
+	  of string value before writing it into packet.
 
 	* radtest/radtest.h: Store strings as string objects, not as
-	statically allocated arrays.
+	  statically allocated arrays.
 	* radtest/input.l: Likewise.
 	* radtest/main.c: Likewise.
 	* radtest/gram.y: Likewise.
-	Added n[attr*] notation to return the concatenated string value
-	of all attributes of type attr in the packet.
+	  Added n[attr*] notation to return the concatenated string value
+	  of all attributes of type attr in the packet.
 
 	* scripts/mktest.awk: (new) Rename test modules so that they are
-	executed in proper order.
+	  executed in proper order.
 	* scripts/Makefile.am: Added mktest.awk.
 	* test/test.sh: New options --srcdir and builddir
 	* test/dejagnu/Makefile.am: Added radiusd to subdirs
 	* test/dejagnu/lib/radiusd.exp: Further improvements.
 	* test/raddb/users: Rewritten.
 	* test/raddb/menus/menu1: Removed leading whitespace from the menu
-	text. This makes it easier for testing.
+	  text. This makes it easier for testing.
 	* test/raddb/menus/menu2: Likewise.
 
 	* test/dejagnu/radiusd/Makefile.am: (new)
 	* test/dejagnu/radiusd/Testlist: (new)
 	* test/dejagnu/radiusd/Auth.in: (new) Test of basic authentication
-	types.
+	  types.
 	* test/dejagnu/radiusd/Menu.in: (new) Test of Livingston menus.
 	* test/dejagnu/radiusd/Reply.in: (new) Test of reply values.
 	* test/dejagnu/radiusd/Start.in: (new) Start the daemon.
@@ -362,10 +386,10 @@
 2001-11-20 Sergey Poznyakoff
 	
 	* radtest/gram.y: Simplified syntax. Implemented full
-	EXPECT command.
+	  EXPECT command.
 	* radtest/input.l: Added EXIT keyword.
 	* radtest/main.c: radtest_send(): free previously allocated
-	reply_pairs. Added compare_lists() and new global: reply_list.
+	  reply_pairs. Added compare_lists() and new global: reply_list.
 	* radtest/radtest.h: New globals: reply_list and abort_on_failure.
 
 	* test/test.sh: Fixed for use with both test suites.
@@ -400,7 +424,7 @@
 	from the test suite.
 	
 	* configure.in: Added test/guile/Makefile and
-	test/dejagnu/Makefile
+	  test/dejagnu/Makefile
 	* test/test.scm: (removed).
 	* test/guile: new directory
 	* test/guile/Makefile.am: (new)
@@ -410,13 +434,13 @@
 	* test/dejagnu/.cvsignore: (new)
 	* test/dejagnu/lib: (new)
 	* test/Makefile.am: Added new subdirs: guile and dejagnu.
-	Removed raddb/radctl.rc dependencies. Added those for
-	raddb/client.conf.in.
+	  Removed raddb/radctl.rc dependencies. Added those for
+	  raddb/client.conf.in.
 	* test/test.sh: Reflect changes in subdir layout.
 	* test/raddb/radctl.rc.in: Removed.
 	* test/raddb/client.conf.in: (new)
 	* test/raddb/Makefile.am: Removed radctl.rc.in, added
-	client.conf.in.
+	  client.conf.in.
 	* test/raddb/.cvsignore: Likewise. 
 	* test/guile/.cvsignore: (new)
 	* radtest/.cvsignore: Updated.
@@ -429,18 +453,18 @@
 	* Makefile.am: Added radtest.
 	* configure.in: Likewise.
 	* scripts/debug.sh: Removed TOPDIR. SKEL should always be
-	passed as an absolute pathname.
+	  passed as an absolute pathname.
 
 	* radtest/radtest.c: Removed.
 	* radtest/Makefile.am: Removed radtest.c
 	* radtest/main.c: Inserted code from radtest.c. Implemented
-	-t, -r and -s switches.
+	  -t, -r and -s switches.
 
 	* radlib/client.c: radclient_alloc(): Read client.conf file.
-	This allows the same configuration to be shared between
-	all client programs.
+	  This allows the same configuration to be shared between
+	  all client programs.
 	* client/pam_radius/pam_radius.c: Removed parsing of
-	client.conf
+	  client.conf
 	* client/pam_radius/client.conf: Removed.
 	* client/pam_radius/Makefile.am: Removed rules for client.conf.
 	* raddb/client.conf: (new) A template for client.conf.
@@ -451,12 +475,12 @@
 	Tested SQL check pairs support.
 
 	* db/db.m4: Changed structure of attrib table to allow for
-	retrieving the check pairs from it.
+	  retrieving the check pairs from it.
 	* raddb/sqlserver: Removed obsolete attr_query. Added
 	check_attr_query and reply_attr_query.
 
 	* doc/texinfo/acct.texi: Fixed some overfill boxes in tex
-	output.
+	  output.
 	* doc/texinfo/bugs.texi: Likewise.
 	* doc/texinfo/radscm.texi: Likewise.
 
@@ -477,22 +501,22 @@
 	* configure.in: Fixed bug in handling --with-lib-path arguments.
 
 	* doc/texinfo/radius.texi: Properly generate variable index.
-	Placed Concept Index at the end. Added pagination directives.
+	  Placed Concept Index at the end. Added pagination directives.
 	* doc/texinfo/radscm.texi: Fixed use of @deffn.
 
 	Initial support for retrieving check pairs from SQL (untested):
 
 	* include/radius.h: Added protos for op_to_str() and str_to_op().
 	* include/radsql.h: New member check_attr_query. Renamed attr_query
-	to reply_attr_query.
-	Renamed rad_.*query() functions for consistency.
+	  to reply_attr_query.
+	  Renamed rad_.*query() functions for consistency.
 	* radiusd/files.c: match_user(): Try to retrieve check pairs
-	from the database.
+	  from the database.
 	* radiusd/sql.c: New function rad_sql_retrieve_pairs(). Renamed
-	rad_sql_attr_query() to rad_sql_reply_attr_query(). New function:
-	rad_sql_check_attr_query().
+	  rad_sql_attr_query() to rad_sql_reply_attr_query(). New function:
+	  rad_sql_check_attr_query().
 	* radlib/util.c: Renamed op_str() to op_to_str(). New function:
-	str_to_op().
+	  str_to_op().
 
 	* TODO: Updated.
 
@@ -503,8 +527,8 @@
 2001-11-09 Sergey Poznyakoff
 
 	* radlib/dict.c: Fixed a very gross bug in valnum_cmp:
-	it was comparing names instead of values, which led to
-	unpredictable coredumps.
+	  it was comparing names instead of values, which led to
+	  unpredictable coredumps.
 
 	* NEWS: Added clause about Password-Location attribute.
 	* configure.in: Increased patchlevel.
@@ -512,17 +536,17 @@
 2001-11-08 Sergey Poznyakoff
 
 	* radlib/util.c: format_string_visual(): Format last segment
-	printable no matter how many chars it contains. Otherwise
-	strings, shorter than runlen, get formatted in octal.
-	format_pair(): Some NASes (most notably, Ascend) count
-	terminating zero in the length of the string. Try to work
-	around this.
+	  printable no matter how many chars it contains. Otherwise
+	  strings, shorter than runlen, get formatted in octal.
+	  format_pair(): Some NASes (most notably, Ascend) count
+	  terminating zero in the length of the string. Try to work
+	  around this.
 	
 
 2001-11-07 Sergey Poznyakoff
 
 	* radiusd/radiusd.c: rad_spawn_child(): Fixed bug in selecting
-	a pretender for replacing.
+	  a pretender for replacing.
 	* sql/mysql.c: rad_mysql_reconnect(): Be less verbose.
 
 2001-11-06 Sergey Poznyakoff
@@ -554,12 +578,12 @@
 	* radiusd/scheme.c: Bugfix in scheme_auth.
 
 	* radiusd/checkrad.c: finger_check(): Get argument from the
-	`arg' envar.
+	  `arg' envar.
 	* raddb/naslist: Reflect the new variable (arg).
 	* raddb/config: Removed usedbm and notify clauses.
 
 	* scripts/config-conv.awk: Changed default channel to
-	"radius.log", for compatibility.
+	  "radius.log", for compatibility.
 	* scripts/Makefile.am: Added config-conv.
 
 	* raddb/Makefile.am: Name dictionary backup file dictionary~.
@@ -575,33 +599,33 @@
 2001-11-01 Sergey Poznyakoff
 
 	* radiusd/rewrite.y: Fixed bug in yylex() which prevented
-	binary % from being recognized. Thanks to Clement Gerouville.
+	  binary % from being recognized. Thanks to Clement Gerouville.
 	
 2001-10-31 Sergey Poznyakoff
 
 	* radlib/util.c: removed debug_pair().
-	format_pair(): Use format_string_visual() to format string
-	attributes (useful for Password). Changed size of buf2
-	accordingly.
-	pairstr_format(): Renamed to format_vendor_pair().
+	  format_pair(): Use format_string_visual() to format string
+	  attributes (useful for Password). Changed size of buf2
+	  accordingly.
+	  pairstr_format(): Renamed to format_vendor_pair().
 	* include/radius.h: removed debug_pair().
 	* include/radiusd.h: Likewise.
 
 	* radiusd/radius.c: Use regular debug() instead of debug_pair().
 	* radiusd/proxy.c: Likewise.
 	* radiusd/radiusd.c: Put a reminder before duping stdout to
-	file. It shall go away soon.
+	  file. It shall go away soon.
 
 2001-10-30 Sergey Poznyakoff
 
 	* client/pam_radius/pam_radius.c: Fixes forgotten to apply
-	2001-10-14.
+	  2001-10-14.
 	* radiusd/log.c: Typo in log_to_channel().
 
 2001-10-28 Sergey Poznyakoff
 
 	* doc/texinfo/Makefile.am: Rule for generating postscript
-	output.
+	  output.
 	* doc/texinfo/configure.texi: Updated.
 	* doc/texinfo/acct.texi: Likewise.
 	* doc/texinfo/attributes.texi: Likewise.
@@ -617,9 +641,9 @@
 2001-10-26 Sergey Poznyakoff
 
 	* radlib/util.c: New function format_string_visual(): format a
-	string of possibly intermixed printable and non-printable characters.
-	pairstr_format(): Use format_string_visual() to format vendor-specific
-	pairs.
+	  string of possibly intermixed printable and non-printable characters.
+	  pairstr_format(): Use format_string_visual() to format
+	  vendor-specific pairs.
 	* include/radius.h: Declaration of format_string_visual().
 
 	* doc/texinfo/configure.texi: Documented message statement.
@@ -627,7 +651,7 @@
 2001-10-25 Sergey Poznyakoff
 
 	* radiusd/auth.c: Fixed bug in req_decrypt_password (possible
-	dereference of NULL pointer).
+	  dereference of NULL pointer).
 
 2001-10-22 Sergey Poznyakoff
 
@@ -637,16 +661,16 @@
 
 	* include/radius.h: Extern declaration for do_not_resolve.
 	* include/radiusd.h: Added message identifiers, extern decl
-	for message_text. Changed proto of rad_check_multi.
+	  for message_text. Changed proto of rad_check_multi.
 
 	* radiusd/acct.c: rad_check_multi(): Return also number
-	of concurrent logins.
+	  of concurrent logins.
 	* radiusd/auth.c: User-defined messages instead of hardcoded ones.
 	* radiusd/config.kw: Added new keywords.
 	* radiusd/config.y: Handle message statement.
 	* radiusd/radiusd.c: Provide defaults for the reply messages.
 	* radiusd/radutil.c: Split off radius_xlate0 from radius_xlate.
-	Fixed a couple of bugs.
+	  Fixed a couple of bugs.
 
 	* raddb/dictionary: New attribute Password-Expire-Days.
 

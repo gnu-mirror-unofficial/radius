@@ -85,12 +85,12 @@ nfields(fc, minf, maxf, file, lineno)
 	int  lineno;
 {
 	if (fc < minf) {
-		radlog(L_ERR|L_CONS,
+		radlog(L_ERR,
 		       _("%s:%d: too few fields"),
 		       file, lineno);
 		return -1;
 	} else if (fc > maxf) {
-		radlog(L_ERR|L_CONS,
+		radlog(L_ERR,
 		       _("%s:%d: too many fields"),
 		       file, lineno);
 		return -1;
@@ -193,7 +193,7 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 	
 	value = strtol(ATTR_VALUE, &p, 0);
 	if (*p) {
-		radlog(L_ERR|L_CONS,
+		radlog(L_ERR,
 		       _("%s:%d: value not a number (near %s)"),
 		       file, lineno, p);
 		(*errcnt)++;
@@ -202,7 +202,7 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 
 	if ((type = xlat_keyword(type_kw, ATTR_TYPE, PW_TYPE_INVALID)) ==
 	    PW_TYPE_INVALID) {
-		radlog(L_ERR|L_CONS,
+		radlog(L_ERR,
 		       _("%s:%d: invalid type"),
 		       file, lineno);
 		(*errcnt)++;
@@ -211,7 +211,7 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 
 	if (HAS_VENDOR(fc, fv)) {
 		if ((vendor = vendor_name_to_id(ATTR_VENDOR)) == 0) {
-			radlog(L_ERR|L_CONS,
+			radlog(L_ERR,
 			       _("%s:%d: unknown vendor"),
 			       file, lineno);
 			(*errcnt)++;
@@ -244,7 +244,7 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 			case 'I':
 				break;
 			default:
-				radlog(L_ERR|L_CONS,
+				radlog(L_ERR,
 				       _("%s:%d: invalid flag %c"),
 				       file, lineno, *p);
 				(*errcnt)++;
@@ -285,7 +285,7 @@ _dict_value(errcnt, fc, fv, file, lineno)
 
 	value = strtol(VALUE_NUM, &p, 0);
 	if (*p) {
-		radlog(L_ERR|L_CONS,
+		radlog(L_ERR,
 		       _("%s:%d: value not a number (near %s)"),
 		       file, lineno, p);
 		(*errcnt)++;
@@ -319,7 +319,7 @@ _dict_vendor(errcnt, fc, fv, file, lineno)
 
 	value = strtol(VENDOR_VALUE, &p, 0);
 	if (*p) {
-		radlog(L_ERR|L_CONS,
+		radlog(L_ERR,
 		       _("%s:%d: value not a number (near %s)"),
 		       file, lineno, p);
 		(*errcnt)++;
@@ -371,7 +371,7 @@ parse_dict_entry(errcnt, fc, fv, file, lineno)
 		_dict_vendor(errcnt, fc, fv, file, lineno);
 		break;
 	default:
-		radlog(L_ERR|L_CONS,
+		radlog(L_ERR,
 		       _("%s:%d: name too long"),
 		       file, lineno);
 		break;

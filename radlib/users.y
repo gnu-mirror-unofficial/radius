@@ -260,7 +260,7 @@ install_pair(name, op, valstr)
 			pair->lvalue = atoi(valstr);
 		} else if ((dval = value_name_to_value(valstr)) == NULL) {
 			avp_free(pair);
-			radlog(L_ERR|L_CONS, _("%s:%d: unknown value %s"),
+			radlog(L_ERR, _("%s:%d: unknown value %s"),
 			    source_filename, source_line_num,
 			    valstr);
 			return NULL;
@@ -307,7 +307,7 @@ install_pair(name, op, valstr)
 		timeval = time(0);
 		tm = localtime(&timeval);
 		if (user_gettime(valstr, tm)) {
-			radlog(L_ERR|L_CONS,
+			radlog(L_ERR,
 				_("%s:%d: %s: can't parse date"),
 				source_filename, source_line_num, name);
 			avp_free(pair);
@@ -321,7 +321,7 @@ install_pair(name, op, valstr)
 		break;
 
 	default:
-		radlog(L_ERR|L_CONS, _("%s:%d: %s: unknown attribute type %d"),
+		radlog(L_ERR, _("%s:%d: %s: unknown attribute type %d"),
 		    source_filename, source_line_num, name,
 		    pair->type);
 		avp_free(pair);

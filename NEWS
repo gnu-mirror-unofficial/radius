@@ -26,6 +26,8 @@ radiusd is able to listen to multiple interfaces/ports.
 
 cntl statement (raddb/config) is obsolete. cntl port is gone.
 
+exec-program-group is obsolete.
+
 =============================================================================
 NEWS for version 0.95
 

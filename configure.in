@@ -14,7 +14,6 @@ AC_INIT(radiusd/radiusd.c)
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE(gnu-radius, 0.95.2c)
 AM_CONFIG_HEADER(config.h)
-AM_MAINTAINER_MODE
 
 ## * Available linguas
 ALL_LINGUAS="no"
@@ -52,6 +51,8 @@ AC_PATH_PROG(PS, ps, no, $PATH:/usr/bin:/usr/local/bin)
 AC_PATH_PROG(GETOPT, getopt, no, $PATH:/usr/bin)
 AC_PROG_LN_S
 AM_PROG_LIBTOOL
+
+rad_MAINTAINER_MODE
 
 ### Make sure Guile is installed.
 AC_PATH_PROG(GUILE_CONFIG, guile-config, no, $PATH)
@@ -94,8 +95,8 @@ AC_ARG_ENABLE(add_includes,
 AC_MSG_RESULT($INCLUDEPATH)
 
 ## * Checks for libraries.
-AC_CHECK_LIB(socket, main)
-AC_CHECK_LIB(nsl, main)
+AC_CHECK_LIB(socket, socket)
+AC_CHECK_LIB(nsl, gethostbyaddr)
 AC_CHECK_LIB(intl, gettext)
 AC_CHECK_LIB(crypt, crypt)
 
@@ -511,7 +512,9 @@ AM_CONDITIONAL(SQL, test x$USE_SQL != xno)
 AM_CONDITIONAL(GUILE, test x$GUILE_CONFIG != xno)
 AM_CONDITIONAL(BUILD_CLIENT, test x$BUILD_CLIENT = xyes)
 
-AC_OUTPUT(Makefile include/Makefile radlib/Makefile snmplib/Makefile \
+AC_OUTPUT(Makefile m4/Makefile \
+          include/Makefile include/snmp/Makefile \
+          radlib/Makefile snmplib/Makefile \
           radiusd/Makefile radlast/Makefile radwho/Makefile \
           raduse/Makefile radzap/Makefile \
 	  radscm/Makefile \

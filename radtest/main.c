@@ -42,7 +42,6 @@ extern int grad_client_debug;
 grad_server_queue_t *srv_queue;
 int reply_code;
 grad_avp_t *reply_list;
-int abort_on_failure = 0;
 
 void init_symbols();
 static void assign(char *);
@@ -156,8 +155,7 @@ int
 radtest_parse_options(int argc, char **argv)
 {
         int index;
-	return grad_argp_parse(&argp, &argc, &argv, ARGP_NO_EXIT,
-			       &index, NULL);
+	return argp_parse (&argp, argc, argv, ARGP_NO_EXIT, NULL, &index);
 }
 
 int
@@ -404,7 +402,7 @@ var_print(radtest_variable_t *var)
                 break;
 		
         case rtv_integer:
-                printf("%d", var->datum.number);
+                printf("%ld", var->datum.number);
                 break;
 		
         case rtv_ipaddress:
@@ -420,6 +418,9 @@ var_print(radtest_variable_t *var)
                 print_pairs(stdout, var->datum.avl);
                 printf(")");
                 break;
+
+	case rtv_pairlist:
+		abort();
         }
 }
 
@@ -430,10 +431,15 @@ var_free(radtest_variable_t *var)
         case rtv_string:
                 grad_free(var->datum.string);
                 break;
+		
         case rtv_avl:
                 grad_avl_free(var->datum.avl);
                 break;
+		
+	default:
+		break;
         }
+	return 0;
 }
 
 void

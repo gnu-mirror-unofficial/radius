@@ -103,6 +103,13 @@ where ATTR-NAME is the attribute name,
       ARGS is a comma-separated list of arguments. Usual %C substitutions
       may be used as arguments. ARGS can be empty.
 
+** Plaintext passwords are allowed in SQL database.
+
+This allows to authenticate users via CHAP. To do so, user's profile
+should contain the following check-pairs:
+
+	Auth-Type = Local, Password-Location = SQL
+
 ** Compiling Guile support into the server.
 
 The radiusd server can be compiled with Guile support, which allows

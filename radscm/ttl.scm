@@ -108,7 +108,11 @@
 	 ((= ttl 0)
 	  (rad-log L_NOTICE
 		   (format #f "Zero time to live ~A" (cdr user-pair)))
-	  #f)
+	  (cons
+	   #f
+	   (list
+	    (cons "Reply-Message"
+		  "\r\nSorry, your account has expired\r\n"))))
 	 ((or (not ttl-pair) (< ttl (cdr ttl-pair)))
 	  (cons #t
 		(list

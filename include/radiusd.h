@@ -278,6 +278,8 @@ extern int radius_mode;
 extern int debug_flag;
 extern int auth_detail;
 extern int acct_detail;
+extern char *auth_detail_template;
+extern char *acct_detail_template;
 extern int acct_system;
 extern int auth_trace_rules;
 extern int acct_trace_rules;
@@ -491,7 +493,7 @@ void system_acct_init();
 void acct_init();
 int rad_accounting(grad_request_t *, int, int);
 int radzap(grad_uint32_t nas, int port, char *user, time_t t);
-int write_detail(grad_request_t *radreq, int authtype, char *f);
+int write_detail(grad_request_t *radreq, int authtype, int rtype);
 
 int radutmp_mlc_collect_user(char *name, grad_request_t *request,
 			     grad_list_t **sess_list);

@@ -45,7 +45,7 @@ static char rcsid[] =
 #include <errno.h>
 #include <sys/wait.h>
 
-#include <radiusd.h>
+#include <radius.h>
 
 #include <obstack1.h>
 #include <parser.h>

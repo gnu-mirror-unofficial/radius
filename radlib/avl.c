@@ -43,8 +43,7 @@ static char rcsid[] =
 #include <sys/file.h>
 #include <pwd.h>
 #include <grp.h>
-#include <sysdep.h>
-#include <radiusd.h>
+#include <radius.h>
 
 /* Memory allocation interface */
 

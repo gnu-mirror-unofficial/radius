@@ -35,7 +35,7 @@ static char rcsid[] =
 #include <sys/types.h>
 #include <unistd.h>
 #include <libpq-fe.h>
-#include <radiusd.h>
+#include <radius.h>
 #include <radsql.h>
 
 #define CI_HOST     "host="

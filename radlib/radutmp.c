@@ -24,8 +24,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <sysdep.h>
-#include <radiusd.h>
+#include <radius.h>
 #include <radutmp.h>
 
 struct _radut_file {

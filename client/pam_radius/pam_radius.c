@@ -33,7 +33,8 @@
 #include <syslog.h>
 #include <errno.h>
 
-#include <radiusd.h> 
+#include <radius.h> 
+#include <radpaths.h> 
 #include <radclient.h>
 
 /* indicate the following groups are defined */

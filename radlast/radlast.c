@@ -41,8 +41,8 @@ static char rcsid[] =
 #include <netinet/in.h>
 
 #include <getopt1.h>
-#include <sysdep.h>
-#include <radiusd.h>
+#include <radius.h>
+#include <radpaths.h>
 #include <radutmp.h>
 #include <log.h>
 

@@ -4,7 +4,7 @@
 
 #include <getopt1.h>
 #include <libguile.h>
-#include <radiusd.h>
+#include <radius.h>
 
 
 static void radscm_shell(void *closure, int argc, char **argv);

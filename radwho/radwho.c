@@ -38,7 +38,8 @@ static char rcsid[] =
 #include <getopt1.h>
 #include <sysdep.h>
 #include <radutmp.h>
-#include <radiusd.h>
+#include <radius.h>
+#include <radpaths.h>
 
 #define ALIGN_LEFT    0
 #define ALIGN_RIGHT   1

@@ -43,7 +43,7 @@
         #include <sys/wait.h>
 
 	#include <sysdep.h>
-        #include <radiusd.h>
+        #include <radius.h>
         #include <parser.h>
 
         #define YYMAXDEPTH 10

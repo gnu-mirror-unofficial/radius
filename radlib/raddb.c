@@ -30,7 +30,7 @@ static char rcsid[] =
 #include <stdio.h>
 #include <errno.h>
 #include <ctype.h>
-#include <radiusd.h>
+#include <radius.h>
 #include <obstack1.h>
 
 struct raddb_file {

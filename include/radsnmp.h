@@ -16,21 +16,54 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
-/*FIXME: do I need it still? */
 #ifndef __radsnmp_h
 #define __radsnmp_h
 
-typedef struct snmp_req {
-	struct snmp_pdu *pdu;
-	char *community;
-	int access;
-	struct sockaddr_in sa;
-} SNMP_REQ;
+typedef enum {
+	serv_other=1,
+	serv_reset,
+	serv_init,
+	serv_running
+} serv_stat;
 
+typedef struct {
+	serv_stat status;
+	struct timeval reset_time;
+	counter num_req;
+	counter num_invalid_req;
+	counter num_dup_req;
+	counter num_resp;
+	counter num_bad_req;
+	counter num_bad_sign;
+	counter num_dropped;
+	counter num_norecords;
+	counter num_unknowntypes;
+} Acct_server_stat;
 
-void snmp_req_free(SNMP_REQ *req);
-void snmp_req_drop(int type, SNMP_REQ *req, char *status_str);
-	
+typedef struct {
+	serv_stat status;
+	struct timeval reset_time;
+	counter num_access_req;
+	counter num_invalid_req;
+	counter num_dup_req;
+	counter num_accepts;
+	counter num_rejects;
+	counter num_challenges;
+	counter num_bad_req;
+	counter num_bad_auth;
+	counter num_dropped;
+	counter num_unknowntypes;
+} Auth_server_stat;
+
+struct nas_stat {
+	int index;
+	UINT4 ipaddr;
+	counter ports_active;
+	counter ports_idle;
+	Auth_server_stat auth;
+	Acct_server_stat acct;
+};
+
 
 #endif
 

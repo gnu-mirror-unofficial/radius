@@ -183,7 +183,7 @@ add_user_entry(symtab, filename, line, name, check, reply)
 	/* See if there are already any entries of this type. If so,
 	 * add after the last of them.
 	 */
-	prev = (User_symbol*)sym_lookup(symtab, name);
+	prev = sym_lookup(symtab, name);
 	if (prev) {
 		p = prev;
 		while ((p = p->next) != NULL && strcmp(p->name, name) == 0) 
@@ -193,7 +193,7 @@ add_user_entry(symtab, filename, line, name, check, reply)
 		sym->next = prev->next;
 		prev->next = sym;
 	} else {
-		sym = (User_symbol*)sym_install(symtab, name);
+		sym = sym_install(symtab, name);
 	}
 	
 	sym->check = check;
@@ -244,8 +244,7 @@ read_users(name)
 	char *name;
 {
 	if (!user_tab)
-		user_tab = symtab_create(sizeof(User_symbol), 0,
-					 free_user_entry);
+		user_tab = symtab_create(sizeof(User_symbol), free_user_entry);
 	return parse_file(name, user_tab, add_user_entry);
 }
 
@@ -286,7 +285,7 @@ user_lookup(name, lptr)
 {
 	lptr->name = name;
 	lptr->state = LU_begin;
-	lptr->sym = (User_symbol*)sym_lookup(user_tab, "BEGIN");
+	lptr->sym = sym_lookup(user_tab, "BEGIN");
 	return lptr->sym ? lptr->sym : user_next(lptr);
 }
 
@@ -294,13 +293,12 @@ User_symbol *
 user_next(lptr)
 	USER_LOOKUP *lptr;
 {
-	if (lptr->sym &&
-	    (lptr->sym = (User_symbol*)sym_next((Symbol*)lptr->sym)))
+	if (lptr->sym && (lptr->sym = sym_next((Symbol*)lptr->sym)))
 		return lptr->sym;
 	
 	switch (lptr->state) {
 	case LU_begin:
-		lptr->sym = (User_symbol*)sym_lookup(user_tab, lptr->name);
+		lptr->sym = sym_lookup(user_tab, lptr->name);
 		if (lptr->sym) {
 			lptr->state = LU_match;
 			break;
@@ -308,7 +306,7 @@ user_next(lptr)
 		/*FALLTHRU*/
 	case LU_match:
 		lptr->state = LU_default;
-		lptr->sym = (User_symbol*)sym_lookup(user_tab, "DEFAULT");
+		lptr->sym = sym_lookup(user_tab, "DEFAULT");
 		break;
 		
 	case LU_default:
@@ -372,8 +370,7 @@ match_user(sym, req, check_pairs, reply_pairs)
 		if (p = avl_find(sym->check, DA_MATCH_PROFILE)) {
 			debug(1, ("submatch: %s", p->strvalue));
 
-			if (!match_user((User_symbol*)sym_lookup(user_tab,
-								 p->strvalue),
+			if (!match_user(sym_lookup(user_tab, p->strvalue),
 					req, check_pairs, reply_pairs))
 				continue;
 		}			
@@ -393,14 +390,13 @@ match_user(sym, req, check_pairs, reply_pairs)
 
 		if (p = avl_find(sym->reply, DA_MATCH_PROFILE)) {
 			debug(1, ("next: %s", p->strvalue));
-			match_user((User_symbol*)sym_lookup(user_tab,
-							    p->strvalue),
+			match_user(sym_lookup(user_tab, p->strvalue),
 				   req, check_pairs, reply_pairs);
 		}
 		if (!fallthrough(sym->reply))
 			break;
 		debug(1, ("fall through"));
-	} while (sym = (User_symbol*)sym_next((Symbol*)sym));
+	} while (sym = sym_next((Symbol*)sym));
 
 	return found;
 }
@@ -1332,9 +1328,9 @@ read_deny_file()
 	
 	name = mkfilename(radius_dir, RADIUS_DENY);
 	if (deny_tab)
-		symtab_free(deny_tab);
+		symtab_clear(deny_tab);
 	else
-		deny_tab = symtab_create(sizeof(Symbol), 0, NULL);
+		deny_tab = symtab_create(sizeof(Symbol), NULL);
 	denycnt = 0;
 
 	read_raddb_file(name, 0, 1, read_denylist_entry, &denycnt);
@@ -1926,7 +1922,7 @@ reload_data(what, do_radck)
 		break;
 		
 	case reload_users:
-		symtab_free(user_tab);
+		symtab_clear(user_tab);
 		path = mkfilename(radius_dir, RADIUS_USERS);
 	
 #if USE_DBM
@@ -2137,6 +2133,23 @@ dump_pair_list(fp, header, pl)
 	fprintf(fp, "}\n");
 }
 
+int
+dump_user(fp, sym)
+	FILE *fp;
+	User_symbol *sym;
+{
+	fprintf(fp, "\t%s:\n", sym->name);
+	fprintf(fp, "\tcheck {\n");
+	dump_pairs(fp, sym->check);
+	fprintf(fp, "\t}\n");
+
+	fprintf(fp, "\treply {\n");
+	dump_pairs(fp, sym->reply);
+	fprintf(fp, "\t}\n");
+	
+	return 0;
+}
+
 void
 dump_users_db()
 {
@@ -2157,19 +2170,7 @@ dump_users_db()
 	fchmod(fileno(fp), S_IRUSR|S_IWUSR);
 
 	fprintf(fp, "%s {\n", "users");
-	for (i = 0; i < user_tab->hashsize; i++) {
-		for (sym = (User_symbol*)user_tab->sym[i]; sym;
-		     sym = (User_symbol*)sym->next) {
-			fprintf(fp, "\t%s:\n", sym->name);
-			fprintf(fp, "\tcheck {\n");
-			dump_pairs(fp, sym->check);
-			fprintf(fp, "\t}\n");
-
-			fprintf(fp, "\treply {\n");
-			dump_pairs(fp, sym->reply);
-			fprintf(fp, "\t}\n");
-		}
-	}
+	symtab_iterate(user_tab, dump_user, fp);
 	fprintf(fp, "}\n");
 
 	dump_pair_list(fp, "huntgroups", huntgroups);

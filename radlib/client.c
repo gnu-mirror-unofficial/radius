@@ -25,16 +25,17 @@ static char rcsid[] =
 # include <config.h>
 #endif
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <ctype.h>
 
-#include <radiusd.h>
+#include <radius.h>
 #include <radclient.h>
 #include <slist.h>
 

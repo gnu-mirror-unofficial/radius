@@ -19,7 +19,7 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
-#include <radiusd.h>
+#include <radius.h>
 #include <checkrad.h>
 
 static NAS  *naslist;      /* raddb/naslist */
@@ -129,20 +129,6 @@ nas_lookup_ip(ipaddr)
 	return nas;
 }
 
-#ifdef USE_SNMP
-NAS *
-nas_lookup_index(ind)
-	int ind;
-{
-	NAS *nas;
-
-	for (nas = naslist; nas; nas = nas->next)
-		if (nas->nas_stat && nas->nas_stat->index == ind)
-			break;
-
-	return nas;
-}
-#endif
 
 /* Find the name of a nas (prefer short name) */
 char *

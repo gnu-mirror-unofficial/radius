@@ -37,6 +37,7 @@ radpaths.c \
 radprintf.c \
 radutmp.c \
 slist.c \
+symtab.c \
 sysdep.c \
 users_gram.c \
 users_lex.c \

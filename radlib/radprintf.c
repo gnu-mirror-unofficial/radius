@@ -49,7 +49,7 @@ static char rcsid[] =
 #include <varargs.h>
 #include <limits.h>
 
-#include <radiusd.h>
+#include <radius.h>
 
 #ifdef STANDALONE
 # define DEBUG1

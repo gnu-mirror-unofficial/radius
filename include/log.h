@@ -22,6 +22,8 @@
 #ifndef __log_h
 #define __log_h
 
+#include <sysdep.h>
+
 /* log levels */
 #define L_DBG			1
 #define L_INFO			2
@@ -65,6 +67,16 @@ int radfprintf(/*FILE *file, char *fmt, va_alist*/);
  __insist_failure(MKSTRING(str), __FILE__, __LINE__)
 	
 #define RADIUS_DEBUG_BUFFER_SIZE 1024
+
+typedef struct {
+	int type;
+	union {
+		char string[256];
+		UINT4 ipaddr;
+		int number;
+		int bool;
+	} v;
+} Value;
 
 typedef struct chanlist Chanlist;
 typedef struct channel Channel;

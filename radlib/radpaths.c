@@ -19,7 +19,7 @@
 #if defined(HAVE_CONFIG_H)
 # include <config.h>
 #endif
-#include <radiusd.h>
+#include <radius.h>
 #include <radpaths.h>
 
 #ifndef lint

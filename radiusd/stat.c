@@ -291,10 +291,12 @@ void
 stat_count_ports()
 {
 	NAS *nas;
+	struct nas_stat *statp;
 	PORT_STAT *port;
 	
 	for (nas = nas_next(NULL); nas; nas = nas_next(nas)) {
-		nas->nas_stat->ports_active = nas->nas_stat->ports_idle = 0;
+		statp = nas->app_data;
+		statp->ports_active = statp->ports_idle = 0;
 	}
 	
 	radstat.port_active_count = radstat.port_idle_count = 0;
@@ -308,11 +310,12 @@ stat_count_ports()
 			/* Silently ignore */
 			continue;
 		}
+		statp = nas->app_data;
 		if (port->active) {
-			nas->nas_stat->ports_active++;
+			statp->ports_active++;
 			radstat.port_active_count++;
 		} else {
-			nas->nas_stat->ports_idle++;
+			statp->ports_idle++;
 			radstat.port_idle_count++;
 		}
 	}

@@ -12,13 +12,14 @@ option {
 logging {
 	channel info {
 		file "radius.info";
-		option pid;
+		print-pid yes;
 	};	
 	channel debug {
 		file "radius.debug";
 	};
 	category auth {
-		level auth,failed_pass;
+		print-auth yes;
+		print-failed-pass yes;
 	};
 	category info {
 		channel info;

@@ -47,7 +47,7 @@ char *alloc_string(size_t length);
 char *make_string(char *str);
 char *dup_string(char *str);
 void free_string(char *str);
-char *replace_string(char **str, char *strvalue);
+char *replace_string(char **str, char *value);
 
 void meminfo(int (*report)());
 		

@@ -33,7 +33,7 @@ static char rcsid[] =
 #include <time.h>
 #include <errno.h>
 #include <string.h>
-#include <radiusd.h>
+#include <radius.h>
 
 int debug_flag;
 char *progname;

@@ -24,7 +24,7 @@
 #include <pwd.h>
 #include <syslog.h>
 #include <libguile.h>
-#include <radiusd.h>
+#include <radius.h>
 #include <radutmp.h>
 #include <radclient.h>
 

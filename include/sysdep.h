@@ -101,4 +101,6 @@ RETSIGTYPE (*sun_signal(int signo, void (*func)(int)))(int);
 int set_nonblocking(int fd);
 int getmaxfd();
 
+typedef unsigned long counter;
+
 #endif /* SYSDEP_H_INCLUDED */

@@ -1173,10 +1173,9 @@ parse_rewrite()
 	}
 
 	if (!rewrite_tab)
-		rewrite_tab = symtab_create(sizeof(FUNCTION), 0,
-					    function_free);
+		rewrite_tab = symtab_create(sizeof(FUNCTION), function_free);
 	else
-		symtab_free(rewrite_tab);
+		symtab_clear(rewrite_tab);
 
 	yyeof = 0;
 	input_line = 1;

@@ -37,7 +37,7 @@ static char rcsid[] =
 #include <time.h>
 #include <errno.h>
 #include <string.h>
-#include <radiusd.h>
+#include <radius.h>
 
 int
 set_module_debug_level(name, level)
@@ -129,7 +129,7 @@ debug_sprintf(msg, va_alist)
 
 #else
 
-#include <radiusd.h>
+#include <radius.h>
 
 /*ARGSUSED*/
 int

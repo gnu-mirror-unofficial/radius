@@ -39,7 +39,7 @@ static char rcsid[] =
 #include <mysql/mysql.h>
 
 #include <sysdep.h>
-#include <radiusd.h>
+#include <radius.h>
 #include <radutmp.h>
 #include <radsql.h>
 

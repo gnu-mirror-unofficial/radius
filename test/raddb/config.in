@@ -12,11 +12,12 @@ logging {
 	};
 	channel auth {
 		file "radius.log";
-		option cons;
+		print-cons yes;
 	};
 	category auth {
 		channel "auth";
-		level auth,failed_pass;
+		print-auth yes;
+		print-failed-pass yes;
 	};
 	category debug {
 		channel debug;

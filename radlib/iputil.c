@@ -38,7 +38,7 @@ static char rcsid[] =
 #include <time.h>
 #include <ctype.h>
 #include <signal.h>
-#include <radiusd.h>
+#include <radius.h>
 
 /*
  *	Return a printable host name (or IP address in dot notation)

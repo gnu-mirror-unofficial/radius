@@ -369,6 +369,8 @@ rad_send_reply(code, radreq, reply_pairs, msg, fd)
 		radreq->reply_msg = estrdup(msg);
 
 		reply = avl_dup(reply_pairs);
+		avl_move_attr(&reply, &radreq->request, DA_PROXY_STATE);
+		
 		switch (code) {
 		case RT_PASSWORD_REJECT:
 		case RT_AUTHENTICATION_REJECT:

@@ -12,6 +12,8 @@
 #	Ascend specific extensions
 #	Used by ASCEND MAX/Pipeline products
 #
+ATTRIBUTE       Ascend-CBCP-Enable              112     integer
+ATTRIBUTE       Ascend-CBCP-Mode                113     integer
 ATTRIBUTE	Ascend-FCP-Parameter		119	string
 ATTRIBUTE	Ascend-Modem-PortNo		120	integer
 ATTRIBUTE	Ascend-Modem-SlotNo		121	integer
@@ -169,6 +171,13 @@ VALUE		Framed-Protocol		FR-CIR			263
 #	Ascend specific extensions
 #	Used by ASCEND MAX/Pipeline products (see above)
 #
+
+VALUE           Ascend-CBCP-Enable      CBCP-Enabled            0
+VALUE           Ascend-CBCP-Enable      CBCP-Not-Enabled        1
+VALUE           Ascend-CBCP-Mode        CBCP-No-Callback        1
+VALUE           Ascend-CBCP-Mode        CBCP-User-Callback      2
+VALUE           Ascend-CBCP-Mode        CBCP-Profile-Callback   3
+VALUE           Ascend-CBCP-Mode        CBCP-User-Or-No         7
 
 VALUE		Ascend-FR-Direct	FR-Direct-No		0
 VALUE		Ascend-FR-Direct	FR-Direct-Yes		1

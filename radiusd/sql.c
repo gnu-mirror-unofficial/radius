@@ -693,7 +693,8 @@ rad_sql_acct(radreq)
 
         if ((pair = avl_find(radreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
                 /* should never happen!! */
-                radlog(L_ERR, _("no Acct-Status-Type attribute in rad_sql_acct()"));
+                radlog_req(L_ERR, radreq,
+                           _("no Acct-Status-Type attribute in rad_sql_acct()"));
                 return ;
         }
         status = pair->lvalue;
@@ -727,9 +728,9 @@ rad_sql_acct(radreq)
                         name = pair ? pair->strvalue : _("unknown");
                         pair = avl_find(radreq->request, DA_ACCT_SESSION_ID);
                         session_id = pair ? pair->strvalue : _("unknown");
-                        radlog(L_WARN, 
-                               _("SQL %s (%s) %d rows changed"),
-                               name, session_id, count);
+                        radlog_req(L_WARN, radreq,
+                                   _("acct_stop_query: %d rows changed"),
+                                   count);
                 }
                 break;
 
@@ -742,10 +743,9 @@ rad_sql_acct(radreq)
                 rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
                 sqllog(rc, query);
                 if (rc == 0) {
-                        radlog(L_INFO,
-                               _("SQL: %d records updated writing acct-on info for NAS %s"),
-                               count,
-                               nas_request_to_name(radreq, buf, sizeof buf));
+                        radlog_req(L_INFO, radreq,
+                                   _("acct_nasup_query updated %d records"),
+                                   count);
                 }
                 break;
 
@@ -758,10 +758,9 @@ rad_sql_acct(radreq)
                 rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
                 sqllog(rc, query);
                 if (rc == 0) {
-                        radlog(L_INFO,
-                               _("SQL: %d records updated writing acct-off info for NAS %s"),
-                               count,
-                               nas_request_to_name(radreq, buf, sizeof buf));
+                        radlog_req(L_INFO, radreq,
+                                   _("acct_nasdown_query updated %d records"),
+                                   count);
                 }
                 break;
 
@@ -774,10 +773,9 @@ rad_sql_acct(radreq)
                 rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
                 sqllog(rc, query);
                 if (rc != 0) {
-                        radlog(L_INFO,
-                               _("SQL: %d records updated writing keepalive info for NAS %s"),
-                               count,
-                               nas_request_to_name(radreq, buf, sizeof buf));
+                        radlog_req(L_INFO, radreq,
+                                   _("acct_keepalive_query updated %d records"),
+                                   count);
                 }
                 break;
                 

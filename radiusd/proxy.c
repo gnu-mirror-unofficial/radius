@@ -161,10 +161,9 @@ proxy_send_request(fd, radreq)
 	}
 
 	if (!radreq->server) {
-		radlog(L_NOTICE,
-		       _("couldn't send %s request to realm %s, id %d"),
-		       auth_code_str(radreq->code),
-		       radreq->realm->realm, radreq->server_id);
+		radlog_req(L_NOTICE, radreq,
+		           _("couldn't send request to realm %s"),
+		           radreq->realm->realm);
 		return 0;
 	}
 	radreq->attempt_no++;
@@ -340,24 +339,20 @@ proxy_send(radreq, activefd)
         /* Is this a valid & signed request ? */
         switch (radreq->code) {
         case RT_AUTHENTICATION_REQUEST:
-                what = _("authentication");
                 rc = 0;
                 break;
         case RT_ACCOUNTING_REQUEST:
-                what = _("accounting");
+                what = _("digest mismatch");
                 rc = calc_acctdigest(radreq) < 0;
                 break;
         default:
-                what = _("unknown");
+                what = _("unknown request code");
                 rc = 1;
         }
 
         if (rc) {
-                radlog(L_NOTICE,
-                       _("%s request from client %s for user %s - Security Breach"),
-                       what,
-                       client_lookup_name(radreq->ipaddr, buf, sizeof buf),
-                       namepair->strvalue);
+                radlog_req(L_NOTICE, radreq,
+                           _("Possible Security Breach: %s"), what);
                 efree(saved_username);
                 return -1;
         }
@@ -557,9 +552,8 @@ proxy_receive(radreq, activefd)
         }
         
         if (oldreq == NULL) {
-                radlog(L_PROXY|L_ERR,
-                       _("Unrecognized proxy reply from server %s - ID %d"),
-                       client_lookup_name(radreq->ipaddr, buf, sizeof buf),
+                radlog_req(L_PROXY|L_ERR, radreq,
+                           _("Unrecognized proxy reply, proxy ID %d"),
                        radreq->id);
                 return -1;
         }

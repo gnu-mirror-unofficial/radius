@@ -1174,12 +1174,8 @@ rad_req_xmit(type, code, data, fd)
 
         if (code == 0) {
                 rad_send_reply(0, req, NULL, NULL, fd);
-                radlog(L_NOTICE,
-                     _("Retransmitting %s reply: client %s, ID: %d, code: %d"),
-                       request_class[type].name,
-                       client_lookup_name(req->ipaddr, buf, sizeof buf),
-                       req->id,
-                       req->reply_code);
+                radlog_req(L_NOTICE, req, _("Retransmitting %s reply"),
+                            request_class[type].name);
         } else {
 		/* FIXME: resend it too? */
                 rad_req_drop(type, NULL, req, fd, _("request failed"));
@@ -1299,7 +1295,8 @@ radrespond(radreq, activefd)
                 break;
         default:
                 stat_inc(acct, radreq->ipaddr, num_unknowntypes);
-                radlog(L_NOTICE, _("unknown request %d"), radreq->code); 
+                radlog_req(L_NOTICE, radreq, _("unknown request code %d"), 
+                           radreq->code); 
                 return -1;
         }       
         

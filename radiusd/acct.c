@@ -212,8 +212,8 @@ rad_acct_system(radreq, dowtmp)
         
         /* A packet should have Acct-Status-Type attribute */
         if ((vp = avl_find(radreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
-                radlog(L_ERR, _("no Acct-Status-Type attribute (from nas %s)"),
-                       nas_request_to_name(radreq, buf, sizeof(buf)));
+                radlog_req(L_ERR, radreq,
+                           _("no Acct-Status-Type attribute"));
                 return -1;
         }
         status = vp->lvalue;
@@ -241,7 +241,8 @@ rad_acct_system(radreq, dowtmp)
                      && vp->strlength == 8
                      && memcmp(vp->strvalue, "00000000", 8) == 0)) {
 
-                        radlog(L_INFO, _("converting reboot records"));
+                        radlog_req(L_INFO, radreq, 
+                                   _("converting reboot records"));
                         if (status == DV_ACCT_STATUS_TYPE_STOP)
                                 status = DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF;
                         if (status == DV_ACCT_STATUS_TYPE_START)
@@ -250,7 +251,7 @@ rad_acct_system(radreq, dowtmp)
 
                 } else {
 #if 0 /* Cisco sometimes sends START records without username. */
-                        radlog(L_ERR, _("no username in record"));
+                        radlog_req(L_ERR, radreq, _("no username in record"));
                         return -1;
 #endif
                 }
@@ -371,9 +372,9 @@ rad_acct_system(radreq, dowtmp)
         if (status != DV_ACCT_STATUS_TYPE_START &&
             status != DV_ACCT_STATUS_TYPE_STOP &&
             status != DV_ACCT_STATUS_TYPE_ALIVE) {
-                radlog(L_NOTICE, _("NAS %s port %d unknown packet type (%d)"),
-                       nas_ip_to_name(nas_address, buf, sizeof buf),
-                       ut.nas_port, status);
+                radlog_req(L_NOTICE, 
+                           radreq, _("unknown packet type (%d)"),
+                           status);
                 return 0;
         } else if (status == DV_ACCT_STATUS_TYPE_START ||
                    status == DV_ACCT_STATUS_TYPE_STOP) {
@@ -427,11 +428,7 @@ rad_acct_system(radreq, dowtmp)
         } else {
                 ret = -1;
                 stat_inc(acct, radreq->ipaddr, num_norecords);
-                radlog(L_NOTICE,
-                    _("NOT writing wtmp record (%d) for `%s',NAS %s,port %d"),
-                       status, ut.login,
-                       nas_ip_to_name(nas_address, buf, sizeof buf),
-                       ut.nas_port);
+                radlog_req(L_NOTICE, radreq, _("NOT writing wtmp record"));
         }
         return ret;
 }

@@ -293,9 +293,8 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
                         if (!real_password)
                                 return AUTH_NOUSER;
 #else
-                        radlog(L_ERR,
-                               _("%s: SQL authentication not available"),
-                               namepair->strvalue);
+                        radlog_req(L_ERR, radreq,
+                                   _("SQL authentication not available"));
                         return AUTH_NOUSER;
 #endif
                         break;
@@ -334,9 +333,8 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
                 if (pam_pass(name, userpass, authdata, user_msg) != 0)
                         result = AUTH_FAIL;
 #else
-                radlog(L_ERR,
-                       _("%s: PAM authentication not available"),
-                       name);
+                radlog_req(L_ERR, radreq,
+                           _("PAM authentication not available"));
                 result = AUTH_NOUSER;
 #endif
                 break;
@@ -443,16 +441,13 @@ rad_auth_init(radreq, activefd)
 
         if ((namepair == (VALUE_PAIR *)NULL) || 
            (strlen(namepair->strvalue) <= 0)) {
-                radlog(L_ERR, _("No username: [] (from nas %s)"),
-                       nas_request_to_name(radreq, buf, sizeof buf));
+                radlog_req(L_ERR, radreq, _("No username"));
                 stat_inc(auth, radreq->ipaddr, num_bad_req);
                 return -1;
         }
         debug(1,("checking username: %s", namepair->strvalue));
         if (check_user_name(namepair->strvalue)) {
-                radlog(L_ERR, _("Malformed username: [%s] (from nas %s)"),
-                       namepair->strvalue,
-                       nas_request_to_name(radreq, buf, sizeof buf));
+                radlog_req(L_ERR, radreq, _("Malformed username"));
                 stat_inc(auth, radreq->ipaddr, num_bad_req);
                 return -1;
         }
@@ -469,9 +464,7 @@ rad_auth_init(radreq, activefd)
          * See if the user has access to this huntgroup.
          */
         if (!huntgroup_access(radreq)) {
-                radlog(L_NOTICE, _("No huntgroup access: [%s] (from nas %s)"),
-                       namepair->strvalue,
-                       nas_request_to_name(radreq, buf, sizeof buf));
+                radlog_req(L_NOTICE, radreq, _("No huntgroup access"));
                 rad_send_reply(RT_AUTHENTICATION_REJECT, radreq,
                                radreq->request, NULL, activefd);
                 return -1;
@@ -632,26 +625,46 @@ auth_log(m, diag, pass, reason, addstr)
 {
         char buf[MAX_LONGNAME];
         
+#if 0
+        if (reason) {
+		if (pass)
+			radlog_req(L_NOTICE, m->req,
+				   "[%s] %s: %s %s",
+				   pass,
+				   diag, reason, addstr ? addstr : "");
+		else
+			radlog_req(L_NOTICE, m->req,
+				   "%s: %s %s",
+				   diag, reason, addstr ? addstr : "");
+        } else {
+		if (pass)
+			radlog_req(L_NOTICE, m->req,
+				   "[%s] %s",
+				   pass, diag);
+		else
+			radlog_req(L_NOTICE, m->req,
+				   "%s", diag);
+	}
+#else
         if (reason)
-                radlog(L_NOTICE,
-                       _("%s: [%s%s%s]: %s%s: CLID %s (from nas %s)"),
+                radlog_req(L_NOTICE, m->req,
+			   _("%s [%s%s%s]: %s%s, CLID %s"),
                        diag,
                        m->namepair->strvalue,
                        pass ? "/" : "",
                        pass ? pass : "",
                        reason,
-                       addstr ? addstr : "",
-                       m->clid,
-                       nas_request_to_name(m->req, buf, sizeof buf));
+			   addstr,
+			   m->clid);
         else
-                radlog(L_NOTICE,
-                       _("%s: [%s%s%s]: CLID %s (from nas %s)"),
+                radlog_req(L_NOTICE, m->req,
+			   _("%s [%s%s%s], CLID %s"),
                        diag,
                        m->namepair->strvalue,
                        pass ? "/" : "",
                        pass ? pass : "",
-                       m->clid,
-                       nas_request_to_name(m->req, buf, sizeof buf));
+			   m->clid);
+#endif
 }
 
 int
@@ -910,7 +923,7 @@ sfn_scheme(m)
         VALUE_PAIR *reply;
         
         if (!use_guile) {
-                radlog(L_ERR,
+                radlog_req(L_ERR, m->req,
                        _("Guile authentication disabled in config"));
                 newstate(as_reject);
                 return;
@@ -929,7 +942,7 @@ sfn_scheme(m)
         avl_delete(&m->user_reply, DA_SCHEME_PROCEDURE);
         avl_free(reply);
 #else
-        radlog(L_ERR,
+        radlog_req(L_ERR, m->req,
                _("Guile authentication not available"));
         newstate(as_reject);
         return;
@@ -1065,13 +1078,12 @@ sfn_simuse(m)
                         (m->check_pair->lvalue > 1) ?
                         MSG_MULTIPLE_LOGIN : MSG_SECOND_LOGIN);
 
-        radlog(L_WARN,
-               _("Multiple logins: [%s] CLID %s (from nas %s) max. %ld%s"),
+        radlog_req(L_WARN, m->req,
+		   _("Multiple logins: [%s] max. %ld%s, CLID %s"),
                m->namepair->strvalue,
-               m->clid,         
-               nas_request_to_name(m->req, buf, sizeof buf),
                m->check_pair->lvalue,
-               rc == 2 ? _(" [MPP attempt]") : "");
+		   rc == 2 ? _(" [MPP attempt]") : "",
+		   m->clid);
         newstate(as_reject);
 }
 

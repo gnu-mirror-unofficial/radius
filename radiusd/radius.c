@@ -105,8 +105,7 @@ validate_client(radreq)
         char buf[MAX_LONGNAME];
         
         if ((cl = client_lookup_ip(radreq->ipaddr)) == NULL) {
-                radlog(L_ERR, _("request from unknown client: %s"),
-                       client_lookup_name(radreq->ipaddr, buf, sizeof buf));
+                radlog_req(L_ERR, radreq, _("request from unknown client"));
                 return -1;
         }
 

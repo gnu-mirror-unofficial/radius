@@ -105,7 +105,7 @@ attr_to_str(obp, req, pairlist, attr, defval)
         char tmp[AUTH_STRING_LEN];
         
         if (!attr) {
-                radlog(L_ERR, "attribute not found");
+                radlog_req(L_ERR, req, "attribute not found");
                 return;
         }
         
@@ -127,7 +127,7 @@ attr_to_str(obp, req, pairlist, attr, defval)
                 case '?':
                         if (*defval == 0)
                                 defval = "Attribute is not present";
-                        radlog(L_ERR, "%s: %s",
+                        radlog_req(L_ERR, req, "%s: %s",
                                attr->name, defval);
                         break;
                 case '=':

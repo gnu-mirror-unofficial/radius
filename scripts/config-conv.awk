@@ -33,6 +33,10 @@ function chanoption(s) {
 		return "# " s;
 }
 
+function emit(s,lev) {
+	printf("%*.*s%s\n", lev, lev, "", s)
+}
+
 ## State map:
 ##     0   --  initial
 ##     1   --  'logging' block
@@ -55,14 +59,16 @@ state == 2 && $1 == "level" {
 		gsub(";", "", $i)
 		n = split($i, la, ",")
 		for (j = 1; j <= n; j++) 
-			printf("%*.*s%s yes;\n",
-			       indent_level, indent_level, "",
-			       authlevel(la[j]))
+			emit(authlevel(la[j]) " yes;", indent_level)
 	}
 	next;
 }	
 
-state == 1 && $1 == "channel" { state = 3 }
+state == 1 && $1 == "channel" {
+	if ($2 == "default")
+		defchan++;
+	state = 3
+}
 
 state == 3 && $1 == "option" {
 	gsub("\t", "        ");
@@ -71,9 +77,7 @@ state == 3 && $1 == "option" {
 		gsub(";", "", $i)
 		n = split($i, la, ",")
 		for (j = 1; j <= n; j++)
-			printf("%*.*s%s yes;\n",
-			       indent_level, indent_level, "",
-			       chanoption(la[j]))
+			emit(chanoption(la[j]) " yes;", indent_level)
 	}
 	next
 }		
@@ -85,6 +89,23 @@ state == 0 && $1 == "cntl" { state = 4; }
 
 /.*{.*/ { nesting_level++; }
 /.*}.*/ {
+	if (state == 1) {
+		# Emit default channel
+		print "## These lines are added by config-conv.awk. They provide"
+		print "## the default output channel for all logging categories."
+		print "## Please, edit them to your liking."	
+		if (!defchan) {
+			emit("channel default {", indent_level/2);
+			emit("syslog user.info;", indent_level);
+			emit("print-category yes;", indent_level);
+			emit("print-level yes;", indent_level);
+			emit("};", indent_level/2);
+		}
+		emit("category * {", indent_level/2);
+		emit("channel default;", indent_level);
+		emit("};", indent_level/2);
+		print "## End of config-conv.awk additions"	
+        }
 	prev_state = state;
 	nesting_level--;
 	if (nesting_level == 0) {

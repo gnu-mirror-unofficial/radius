@@ -1,3 +1,5 @@
+#! /bin/sh 
+# -*- shell-script -*-
 # This file is part of GNU RADIUS.
 # Copyright (C) 2000,2001 Sergey Poznyakoff
 # 
@@ -16,7 +18,12 @@
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 # $Id$
 
-base_dir=.
+if [ "x$BUILDDIR" = x ]; then
+    BUILDDIR=.
+fi
+if [ "xSOURCEDIR" = x ]; then
+    SOURCEDIR=.
+fi
 
 if [ "x$AWK" = x ]; then
     AWK=awk
@@ -27,7 +34,7 @@ error() {
 }
 
 if [ "x$RADIUSD" = x ]; then
-    RADIUSD=`cd $base_dir/../..; pwd`/radiusd/radiusd
+    RADIUSD=`cd $BUILDDIR; pwd`/radiusd/radiusd
 fi
 if [ ! -x $RADIUSD ]; then
     error "Can't find executable ($RADIUSD)"
@@ -48,12 +55,13 @@ radiusd_version() {
      do
 	case "$LINE" in
 	*version*)
-	    echo export RADIUSD_VERSION=`expr "$LINE" : '.*GNU Radius version \([0-9.]*\).*'`
+	    echo RADIUSD_VERSION=`expr "$LINE" : '.*GNU Radius version \([0-9.]*\).*'`
+	    echo "export RADIUSD_VERSION"
 	    ;;
 	*flags:*)
 	    for var in `expr "$LINE" : '.*Compilation flags: \(.*\)'`
 	    do
-		echo "export $var=1"
+		echo "$var=1; export $var"
 	    done	
 	    ;;
 	*) ;;
@@ -65,13 +73,12 @@ radiusd_version() {
 
 radiusd_version
 
-SHELL="$base_dir/../test.sh --radiusd $RADIUSD --radtest $RADTEST --driver dejagnu"
+SHELL="$BUILDDIR/test/test.sh --radiusd $RADIUSD --radtest $RADTEST --driver dejagnu"
 
 if [ "x$USE_SERVER_GUILE" = "x1" ]; then
     SHELL="$SHELL --guile"
 fi
 
-VERBOSE=0
 TESTLIST=""
 if [ "x$TOOL" = "x" ]; then
     TOOL=radiusd
@@ -93,7 +100,11 @@ do
     esac	
 done
 
-DIRLIST=`find $base_dir -name "$TOOL*" -type d -print`
+if [ "x$VERBOSE" = x ]; then
+        VERBOSE=0
+fi
+	
+DIRLIST=`find $SOURCEDIR/test/shell -name "$TOOL*" -type d -print`
 if [ "x$DIRLIST" = x ]; then
     error "No directories for tool \"$TOOL\" found"
     exit 1
@@ -123,7 +134,7 @@ else
 	find $dir -name "$TESTFILEMASK" -exec cat {} \; | runtest $dir
     done
 fi) |
- $AWK -vVERBOSE=$VERBOSE '
+ $AWK -v VERBOSE=$VERBOSE '
     /:[0-9]*:.*/ {
 	test_total++;
 	n = split($0,arg,":")
@@ -132,7 +143,6 @@ fi) |
 	    pattern = arg[3]
 	else
 	    pattern = "PASS"
-	fi
 	state = 1
 	if (VERBOSE)
 	    print "Test " ntest

@@ -1,3 +1,22 @@
+2001-11-25 Sergey Poznyakoff
+
+	Support for remote testing.
+
+	* configure.in: RADTEST and TESTDIR are no longer relevant. Removed.
+	* radscripts/Makefile.am: Removed radtest.
+	* radscripts/.cvsignore: Likewise.
+	* radscripts/radtest.m4: (removed)
+
+	* test/test.sh: Removed.
+	* test/test.sh.m4: (new) Source for test.sh
+	* test/Makefile.am: Added rule for building test.sh
+	* test/.cvsignore: Added test.sh
+	* test/dejagnu/Makefile.am: Added explicit rules for creating
+	site.exp and remote.exp.
+	* test/dejagnu/lib/radiusd.exp: Support for remote testing.
+	* test/dejagnu/s.radiusd/Makefile.am: awk invocation: pass $(srcdir)
+	instead of `pwd`.
+	
 2001-11-23 Sergey Poznyakoff
 
 	Compatibility issues:

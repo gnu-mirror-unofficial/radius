@@ -110,7 +110,7 @@ ATTRIBUTE	Fall-Through		1036	integer	[LRLR--]
 # Use of this attribute is deprecated
 ATTRIBUTE	Add-Port-To-IP-Address	1037	integer	[------]
 ATTRIBUTE	Exec-Program		1038	string	[-R----]
-ATTRIBUTE	Exec-Program-Wait	1039	string	[-R----]
+ATTRIBUTE	Exec-Program-Wait	1039	string	[-R-R--]
 ATTRIBUTE	Hint			1040	string	[L-LRLR]
 ATTRIBUTE	Pam-Auth		1041	string	[L--R-R]=
 ATTRIBUTE	Login-Time		1042	string	[L-----]
@@ -137,7 +137,7 @@ VALUE		Log-Mode-Mask		Log-Pass		6
 VALUE		Log-Mode-Mask		Log-All			7
 
 ATTRIBUTE	Acct-Ext-Program	2008	string	[---R--]
-ATTRIBUTE	Scheme-Procedure	2009	string	[-R----]
+ATTRIBUTE	Scheme-Procedure	2009	string	[-R-R--]
 ATTRIBUTE	Scheme-Acct-Procedure	2010	string	[---R--]
 
 ATTRIBUTE       Password-Location       2011    integer [L-----]

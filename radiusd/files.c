@@ -1592,7 +1592,8 @@ reload_data(enum reload_what what, int *do_radck)
         
         switch (what) {
         case reload_all:
-                /* This implies reloading users, huntgroups and hints */
+                /* This implies reloading rewrite, users, huntgroups 
+		   and hints */
                 rc += reload_data(reload_dict, do_radck);
                 rc += reload_data(reload_clients, do_radck);
                 rc += reload_data(reload_naslist, do_radck);
@@ -1601,7 +1602,6 @@ reload_data(enum reload_what what, int *do_radck)
 #ifdef USE_SQL
                 rc += reload_data(reload_sql, do_radck);
 #endif
-                reload_data(reload_rewrite, do_radck);
                 break;
                 
         case reload_users:
@@ -1642,12 +1642,9 @@ reload_data(enum reload_what what, int *do_radck)
                 if (dict_init())
                         rc = 1;
 
-                /* Users, huntgroups and hints should be reloaded after
-                 * changing dictionary.
-                 */
-                rc += reload_data(reload_users, do_radck);
-                rc += reload_data(reload_huntgroups, do_radck);
-                rc += reload_data(reload_hints, do_radck);
+                /* reload_rewrite implies reloading users, huntgroups
+		   and hints */
+                rc += reload_data(reload_rewrite, do_radck);
                 break;
                 
         case reload_huntgroups:
@@ -1710,6 +1707,9 @@ reload_data(enum reload_what what, int *do_radck)
 
         case reload_rewrite:
 		rewrite_load_all();
+                rc += reload_data(reload_users, do_radck);
+                rc += reload_data(reload_huntgroups, do_radck);
+                rc += reload_data(reload_hints, do_radck);
                 break;
                 
         default:

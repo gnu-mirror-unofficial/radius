@@ -1,3 +1,16 @@
+2002-07-29  Sergey Poznyakoff
+
+	* po/POTFILES.in: Added missed modules.
+	* po/es.po: Updated
+	* po/no.po: Updated
+	* po/pl.po: Updated
+	* po/ru.po: Updated
+	* radiusd/sql.c (rad_sql_acct): Call radlog_req once at the end of
+	  the function.
+	* radiusd/version.c: Some fixes.
+	* radiusd/rewrite.y: Correctly handle cases (for synthetic
+ 	  languages) in implicit coercion warning.
+	
 2002-07-26  Sergey Poznyakoff
 
 	* po/ru.po: (new) Russian localization

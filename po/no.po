@@ -12,8 +12,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-07-25 14:52+0300\n"
-"PO-Revision-Date: 2002-07-25 16:17+0300\n"
+"POT-Creation-Date: 2002-07-29 01:10+0300\n"
+"PO-Revision-Date: 2002-07-29 01:19+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Norwegian-bokmål <no@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -191,7 +191,7 @@ msgstr ""
 msgid "alloc_string(): string too long"
 msgstr "alloc_string(): strengen er for lang"
 
-#: lib/raddb.c:56 lib/raddb.c:60 radiusd/rewrite.y:1230 radiusd/rewrite.y:2645
+#: lib/raddb.c:56 lib/raddb.c:60 radiusd/rewrite.y:1232 radiusd/rewrite.y:2680
 #, c-format
 msgid "can't open file `%s'"
 msgstr "kan ikke åpne filen «%s»"
@@ -346,6 +346,39 @@ msgstr "  Prøv «%s --help» eller «%s --usage» for mer informasjon.\n"
 msgid "Report bugs to %s.\n"
 msgstr "  Rapporter bugs til %s.\n"
 
+#: lib/argp-parse.c:101
+msgid "Give this help list"
+msgstr "Gi denne hjelpelisten"
+
+#: lib/argp-parse.c:102
+msgid "Give a short usage message"
+msgstr "Gi en kort bruksmelding"
+
+#: lib/argp-parse.c:103
+msgid "Set the program name"
+msgstr "Sett programnavnet"
+
+#: lib/argp-parse.c:105
+msgid "Hang for SECS seconds (default 3600)"
+msgstr "Heng i SEK sekunder (forvalgt 3600)"
+
+#: lib/argp-parse.c:162
+msgid "Print program version"
+msgstr "Skriv programversjon"
+
+#: lib/argp-parse.c:178
+msgid "(PROGRAM ERROR) No version known!?"
+msgstr "(PROGRAMFEIL) Ingen versjon kjent!?"
+
+#: lib/argp-parse.c:659
+#, c-format
+msgid "%s: Too many arguments\n"
+msgstr "%s: for mange argumenter\n"
+
+#: lib/argp-parse.c:800
+msgid "(PROGRAM ERROR) Option should have been recognized!?"
+msgstr "(PROGRAMFEIL) Flagg skulle ha blitt gjenkjent!?"
+
 #: lib/printutmp.c:585
 #, c-format
 msgid "missing closing quote in string started near `%s'"
@@ -364,6 +397,42 @@ msgstr "feil antall argumenter til %s"
 #: lib/printutmp.c:718
 #, c-format
 msgid "form `%s' not closed"
+msgstr ""
+
+#: lib/radargp.c:38 radiusd/radiusd.c:226 radiusd/radiusd.c:234
+#: radiusd/radiusd.c:246
+msgid "DIR"
+msgstr "KATALOG"
+
+#: lib/radargp.c:39
+#, fuzzy
+msgid "Set path to the configuration directory"
+msgstr "Sette navnet til konfigurasjon katalog"
+
+#: lib/radargp.c:40
+msgid "print license and exit"
+msgstr "vis lisensen og avslutter"
+
+#: lib/radargp.c:58
+#, fuzzy
+msgid "Common options"
+msgstr "Felles flagg"
+
+#: lib/radargp.c:64
+msgid ""
+"   This program is free software; you can redistribute it and/or modify\n"
+"   it under the terms of the GNU General Public License as published by\n"
+"   the Free Software Foundation; either version 2, or (at your option)\n"
+"   any later version.\n"
+"\n"
+"   This program is distributed in the hope that it will be useful,\n"
+"   but WITHOUT ANY WARRANTY; without even the implied warranty of\n"
+"   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n"
+"   GNU General Public License for more details.\n"
+"\n"
+"   You should have received a copy of the GNU General Public License\n"
+"   along with this program; if not, write to the Free Software\n"
+"   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.\n"
 msgstr ""
 
 #: radiusd/acct.c:216
@@ -451,7 +520,7 @@ msgstr "Feilaktig brukernavn"
 msgid "No huntgroup access"
 msgstr "Tilgang nektet av «huntgroup»"
 
-#: radiusd/auth.c:854 radiusd/sql.c:739 radiusd/sql.c:741
+#: radiusd/auth.c:854 radiusd/sql.c:744 radiusd/sql.c:746
 msgid "unknown"
 msgstr "ukjent"
 
@@ -594,7 +663,7 @@ msgstr ""
 msgid "invalid netmask length: %d"
 msgstr "ugyldig nettmask lengde: %d"
 
-#: radiusd/config.y:342 radiusd/rewrite.y:1485
+#: radiusd/config.y:342 radiusd/rewrite.y:1487
 #, c-format
 msgid "%s:%d: unexpected EOF in comment started at line %d"
 msgstr "%s:%d: uventet slutt-på-fil i kommentar begynt på linje %d"
@@ -1105,10 +1174,6 @@ msgstr "Flagg spesifikk for radiusd:"
 msgid "Do detailed authentication logging"
 msgstr "Slå på detaljert autentisering logging"
 
-#: radiusd/radiusd.c:226 radiusd/radiusd.c:234 radiusd/radiusd.c:246
-msgid "DIR"
-msgstr "KATALOG"
-
 #: radiusd/radiusd.c:227
 msgid "Set accounting directory"
 msgstr ""
@@ -1404,181 +1469,208 @@ msgstr "for mange forespørsler i køen"
 msgid "too many requests of this type"
 msgstr "for mange forespørsler av denne typen"
 
-#: radiusd/rewrite.y:970
+#: radiusd/rewrite.y:972
 msgid "nothing to break from"
 msgstr ""
 
-#: radiusd/rewrite.y:985
+#: radiusd/rewrite.y:987
 msgid "nothing to continue"
 msgstr ""
 
-#: radiusd/rewrite.y:1054
+#: radiusd/rewrite.y:1056
 #, c-format
 msgid "%s:%d: undefined variable: %s"
 msgstr "%s:%d: variabel «%s» er ikke definert"
 
-#: radiusd/rewrite.y:1566
+#: radiusd/rewrite.y:1568
 msgid "unterminated character constant"
 msgstr ""
 
-#: radiusd/rewrite.y:1610
+#: radiusd/rewrite.y:1612
 #, fuzzy, c-format
 msgid "%s:%d: unknown attribute %s"
 msgstr "%s:%d: ukjent attributt «%s»"
 
-#: radiusd/rewrite.y:2330 radiusd/rewrite.y:2985
-#, c-format
-msgid "%s:%d: implicit %s to %s coercion"
-msgstr ""
+#: radiusd/rewrite.y:2328
+#, fuzzy, c-format
+msgid "%s:%d: %s implicit %s %s coercion"
+msgstr "%s:%d: %s implisitt omdannelse %s %s"
 
-#: radiusd/rewrite.y:2364 radiusd/rewrite.y:2417
-#, c-format
-msgid "%s:%d: implicit string to integer coercion"
-msgstr ""
-
-#: radiusd/rewrite.y:2390
+#: radiusd/rewrite.y:2402
 msgid "operation not applicable for strings"
 msgstr ""
 
-#: radiusd/rewrite.y:2439
+#: radiusd/rewrite.y:2516 radiusd/rewrite.y:2584
 #, c-format
-msgid "%s:%d: implicit integer to string coercion"
-msgstr ""
+msgid "(argument %d)"
+msgstr "(argument %d)"
 
-#: radiusd/rewrite.y:2508 radiusd/rewrite.y:2578
-#, c-format
-msgid "%s:%d: (arg %d) implicit %s to %s coercion"
-msgstr ""
-
-#: radiusd/rewrite.y:2525 radiusd/rewrite.y:2592
+#: radiusd/rewrite.y:2531 radiusd/rewrite.y:2595
 #, fuzzy, c-format
 msgid "%s:%d: too many arguments in call to %s"
 msgstr "%s:%d: for mange attributter til %s"
 
-#: radiusd/rewrite.y:2530 radiusd/rewrite.y:2598
+#: radiusd/rewrite.y:2536 radiusd/rewrite.y:2601
 #, fuzzy, c-format
 msgid "%s:%d: too few arguments in call to %s"
 msgstr "%s:%d: for få argumenter til %s"
 
-#: radiusd/rewrite.y:2626
+#: radiusd/rewrite.y:2629
 msgid "Undefined"
 msgstr "Ikke definert"
 
-#: radiusd/rewrite.y:2628
+#: radiusd/rewrite.y:2631
 msgid "integer"
-msgstr ""
+msgstr "heltal"
 
-#: radiusd/rewrite.y:2630
+#: radiusd/rewrite.y:2633
 #, fuzzy
 msgid "string"
 msgstr "streng"
 
-#: radiusd/rewrite.y:2632
+#: radiusd/rewrite.y:2635
 msgid "UNKNOWN"
 msgstr "UKJENT"
 
-#: radiusd/rewrite.y:2959
+#: radiusd/rewrite.y:2645
+#, fuzzy
+msgid "from Undefined"
+msgstr "Ikke definert"
+
+#: radiusd/rewrite.y:2647
+msgid "from integer"
+msgstr "fra heltall"
+
+#: radiusd/rewrite.y:2649
+msgid "from string"
+msgstr "fra streng"
+
+#: radiusd/rewrite.y:2651
+#, fuzzy
+msgid "from UNKNOWN"
+msgstr "fra UKJENT"
+
+#: radiusd/rewrite.y:2661
+#, fuzzy
+msgid "to Undefined"
+msgstr "fra Ikke definert"
+
+#: radiusd/rewrite.y:2663
+msgid "to integer"
+msgstr "til heltall"
+
+#: radiusd/rewrite.y:2665
+#, fuzzy
+msgid "to string"
+msgstr "til streng"
+
+#: radiusd/rewrite.y:2667
+#, fuzzy
+msgid "to UNKNOWN"
+msgstr "til UKJENT"
+
+#: radiusd/rewrite.y:2994
 #, c-format
 msgid "%s:%d: missing return statement"
 msgstr ""
 
-#: radiusd/rewrite.y:3087 radiusd/rewrite.y:3098
+#: radiusd/rewrite.y:3120 radiusd/rewrite.y:3131
 #, c-format
 msgid "%s:%d: divide by zero"
 msgstr ""
 
-#: radiusd/rewrite.y:3709
+#: radiusd/rewrite.y:3742
 #, c-format
 msgid "%s:%d: regexp error: %s"
 msgstr ""
 
-#: radiusd/rewrite.y:3758
+#: radiusd/rewrite.y:3791
 msgid "out of pushdown space"
 msgstr ""
 
-#: radiusd/rewrite.y:3776 radiusd/rewrite.y:3808
+#: radiusd/rewrite.y:3809 radiusd/rewrite.y:3841
 msgid "heap overrun"
 msgstr ""
 
-#: radiusd/rewrite.y:3823 radiusd/rewrite.y:3857
+#: radiusd/rewrite.y:3856 radiusd/rewrite.y:3890
 msgid "out of popup"
 msgstr ""
 
-#: radiusd/rewrite.y:3932
+#: radiusd/rewrite.y:3965
 msgid "rewrite runtime error"
 msgstr ""
 
-#: radiusd/rewrite.y:4038
+#: radiusd/rewrite.y:4071
 #, fuzzy
 msgid "code requires that the request be present"
 msgstr "sikkerhet modus: krever at brukernavn være spesifisert"
 
-#: radiusd/rewrite.y:4078
+#: radiusd/rewrite.y:4111
 msgid "can't create A/V pair"
 msgstr ""
 
-#: radiusd/rewrite.y:4386 radiusd/rewrite.y:4403
+#: radiusd/rewrite.y:4419 radiusd/rewrite.y:4436
 msgid "division by zero!"
 msgstr ""
 
-#: radiusd/rewrite.y:4605
+#: radiusd/rewrite.y:4638
 #, c-format
 msgid "rewrite regex failure: %s. Input: %s"
 msgstr ""
 
-#: radiusd/rewrite.y:4662
+#: radiusd/rewrite.y:4695
 msgid "pc out of range"
 msgstr ""
 
-#: radiusd/rewrite.y:4899
+#: radiusd/rewrite.y:4932
 #, c-format
 msgid "%s:%d: redefinition of function %s"
 msgstr ""
 
-#: radiusd/rewrite.y:4902
+#: radiusd/rewrite.y:4935
 #, c-format
 msgid "%s:%d: previously defined here"
 msgstr ""
 
-#: radiusd/rewrite.y:4999 radiusd/rewrite.y:5102
+#: radiusd/rewrite.y:5032 radiusd/rewrite.y:5135
 #, c-format
 msgid "function %s not defined"
 msgstr "Funksjonen %s er ikke definert"
 
-#: radiusd/rewrite.y:5042
+#: radiusd/rewrite.y:5075
 #, fuzzy, c-format
 msgid "%s(): wrong number of arguments (should be %d, passed %d)"
 msgstr "%s(): feil antall argumenter (forventet %d, overført %d)"
 
-#: radiusd/rewrite.y:5084
+#: radiusd/rewrite.y:5117
 #, c-format
 msgid "malformed function call: %s"
 msgstr "feilaktig funksjonkall: %s"
 
-#: radiusd/rewrite.y:5092
+#: radiusd/rewrite.y:5125
 msgid "missing '(' in function call"
 msgstr "mangler '(' i funksjonkall"
 
-#: radiusd/rewrite.y:5096
+#: radiusd/rewrite.y:5129
 msgid "missing ')' in function call"
 msgstr "mangler ')' i funksjonkall"
 
-#: radiusd/rewrite.y:5133
+#: radiusd/rewrite.y:5166
 #, c-format
 msgid "calling %s: expected ',' but found %s after arg %d"
 msgstr ""
 
-#: radiusd/rewrite.y:5143
+#: radiusd/rewrite.y:5176
 #, c-format
 msgid "too many arguments for %s"
 msgstr "for mange argumenter til %s"
 
-#: radiusd/rewrite.y:5169
+#: radiusd/rewrite.y:5202
 #, c-format
 msgid "too few arguments for %s"
 msgstr "for få argumenter til %s"
 
-#: radiusd/rewrite.y:5219
+#: radiusd/rewrite.y:5252
 #, fuzzy, c-format
 msgid "function %s() requires %d parameter"
 msgid_plural "function %s() requires %d parameters"
@@ -1731,39 +1823,24 @@ msgstr "SQL acct: intet acct_nasup_query"
 msgid "SQL configuration changed: closing existing connections"
 msgstr "SQL konfigurasjon vekslet: lukke av eksisterende tilkoblinger"
 
-#: radiusd/sql.c:706
+#: radiusd/sql.c:708
 msgid "no Acct-Status-Type attribute in rad_sql_acct()"
 msgstr "intet Acct-Status-Type attributt i rad_sql_acct()"
 
-#: radiusd/sql.c:743
+#: radiusd/sql.c:794
 #, c-format
-msgid "acct_stop_query: %d row changed"
-msgid_plural "acct_stop_query: %d rows changed"
+msgid "%s updated %d record"
+msgid_plural "%s updated %d records"
 msgstr[0] ""
 msgstr[1] ""
 
-#: radiusd/sql.c:760
-#, c-format
-msgid "acct_nasup_query updated %d records"
-msgstr ""
-
-#: radiusd/sql.c:775
-#, c-format
-msgid "acct_nasdown_query updated %d records"
-msgstr ""
-
-#: radiusd/sql.c:790
-#, c-format
-msgid "acct_keepalive_query updated %d records"
-msgstr ""
-
-#: radiusd/sql.c:814
+#: radiusd/sql.c:818
 msgid "SQL Auth specified in users file, but not in sqlserver file"
 msgstr ""
 "SQL autentisering er brukt i «users»-filen men ikke krevet i «sqlserver»-"
 "filen"
 
-#: radiusd/sql.c:941
+#: radiusd/sql.c:945
 #, c-format
 msgid "SQL: invalid operator: %s"
 msgstr ""
@@ -1825,29 +1902,47 @@ msgstr ""
 "\n"
 "Flagg for kompilering:"
 
-#: radiusd/version.c:183
+#: radiusd/version.c:176
+#, fuzzy
+msgid "Compilation defaults:\n"
+msgstr "Standardverdi:\n"
+
+#: radiusd/version.c:177
+msgid "Ports in use:\n"
+msgstr "Porter for å bruke:\n"
+
+#: radiusd/version.c:180
+msgid "Paths:\n"
+msgstr "Søkestier:\n"
+
+#: radiusd/version.c:181
 #, c-format
 msgid " configuration directory: %s\n"
 msgstr " konfigurasjon katalog: %s\n"
 
-#: radiusd/version.c:184
+#: radiusd/version.c:182
 #, c-format
 msgid " logging directory:       %s\n"
 msgstr " loggkatalog:           %s\n"
 
-#: radiusd/version.c:185
+#: radiusd/version.c:183
 #, fuzzy, c-format
 msgid " accounting directory:    %s\n"
-msgstr "acct katalog:           %s\n"
+msgstr " acct katalog:          %s\n"
 
-#: radiusd/version.c:187
-#, c-format
-msgid " pidfile:                 %s\n"
-msgstr " pidfil:                %s\n"
+#: radiusd/version.c:184
+#, fuzzy, c-format
+msgid " pidfile directory:       %s\n"
+msgstr " pidfil katalog:        %s\n"
 
-#: radiusd/version.c:189
-msgid " no pidfile\n"
-msgstr " intet pidfil\n"
+#: radiusd/version.c:185
+#, fuzzy, c-format
+msgid ""
+"\n"
+"Report bugs to <%s>\n"
+msgstr ""
+"\n"
+"Rapporter bugs til <%s>\n"
 
 #: radlast/radlast.c:110
 #, fuzzy

@@ -39,6 +39,7 @@ struct iterator {
 	struct iterator *next;
 	LIST *list;
 	struct list_entry *cur;
+	int advanced;
 };
 
 struct list *
@@ -89,6 +90,7 @@ iterator_create(LIST *list)
 	itr->list = list;
 	itr->cur = NULL;
 	itr->next = list->itr;
+	itr->advanced = 0;
 	list->itr = itr;
 	return itr;
 }
@@ -122,6 +124,7 @@ iterator_first(ITERATOR *ip)
 	if (!ip)
 		return NULL;
 	ip->cur = ip->list->head;
+	ip->advanced = 0;
 	return iterator_current(ip);
 }
 
@@ -130,16 +133,21 @@ iterator_next(ITERATOR *ip)
 {
 	if (!ip || !ip->cur)
 		return NULL;
-	ip->cur = ip->cur->next;
+	if (!ip->advanced)
+		ip->cur = ip->cur->next;
+	ip->advanced = 0;
 	return iterator_current(ip);
 }	
 
 static void
 _iterator_advance(ITERATOR *ip, struct list_entry *e)
 {
-	for (; ip; ip = ip->next)
-		if (ip->cur == e)
+	for (; ip; ip = ip->next) {
+		if (ip->cur == e) {
 			ip->cur = e->next;
+			ip->advanced++;
+		}
+	}
 }
 
 void *

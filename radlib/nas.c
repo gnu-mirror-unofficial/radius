@@ -40,7 +40,7 @@ nas_free_list(list)
 
 	while (list) {
 		next = list->next;
-		free_slist((struct slist*)list->args, free_radck_arg);
+		envar_free_list(list->args);
 		free_entry(list);
 		list = next;
 	}
@@ -71,7 +71,7 @@ read_naslist_entry(unused, fc, fv, file, lineno)
 	STRING_COPY(nas.nastype, fv[2]);
 	STRING_COPY(nas.longname, ip_hostname(nas.ipaddr));
 	if (fc == 4)
-		nas.args = parse_radck_args(fv[3]);
+		nas.args = envar_parse(fv[3]);
 	
 	nasp = Alloc_entry(NAS);
 
@@ -109,8 +109,8 @@ nas_lookup_name(name)
 	NAS *nas;
 
 	for (nas = naslist; nas; nas = nas->next)
-		if (strcmp(nas->shortname, name) == 0 ||
-		    strcmp(nas->longname, name) == 0)
+		if (strcmp(nas->shortname, name) == 0
+		    || strcmp(nas->longname, name) == 0)
 			break;
 	return nas;
 }
@@ -147,6 +147,22 @@ nas_ip_to_name(ipaddr)
 }
 
 /* Find the name of a nas (prefer short name) based on the request */
+NAS *
+nas_request_to_nas(radreq)
+	RADIUS_REQ *radreq;
+{
+	UINT4 ipaddr;
+	NAS *nas;
+	VALUE_PAIR *pair;
+
+	if ((pair = avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
+		ipaddr = pair->lvalue;
+	else
+		ipaddr = radreq->ipaddr;
+
+	return nas_lookup_ip(ipaddr);
+}
+
 char *
 nas_request_to_name(radreq)
 	RADIUS_REQ *radreq;

@@ -6,7 +6,40 @@
 	* radiusd/auth.c: Likewise.
 	* scripts/.cvsignore: Updated
 	* NEWS: Updated
+
+        * configure.ac: Updated (version number 1.2.2)
+        * doc/texinfo/.cvsignore: Updated
+
+	Further namespace cleanup:
 	
+        * include/radiusd.h:
+        * include/radius/list.h:
+        * include/radius/symtab.h:
+        * lib/client.c:
+        * lib/dict.c:
+        * lib/envar.c:
+        * lib/list.c:
+        * lib/nas.c:
+        * lib/realms.c:
+        * lib/symtab.c:
+        * radiusd/builddbm.c:
+        * radiusd/config.y:
+        * radiusd/exec.c:
+        * radiusd/files.c:
+        * radiusd/input.c:
+        * radiusd/log.c:
+        * radiusd/radck.c:
+        * radiusd/request.c:
+        * radiusd/rewrite.y:
+        * radiusd/rpp.c:
+        * radiusd/snmpserv.c:
+        * radiusd/stat.c:
+        * radscm/radscm.c:
+        * radtest/gram.y:
+        * radtest/input.l:
+        * radtest/main.c:
+        * radtest/radtest.h:
+
 2004-02-05  Sergey Poznyakoff
 
 	* include/common.h: New file

@@ -4,3 +4,4 @@ Makefile.in
 .libs
 pofilter
 config.rpath
+mktypes

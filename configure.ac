@@ -20,7 +20,7 @@
 AC_PREREQ(2.59)
 
 AC_REVISION($Revision$)
-AC_INIT(GNU Radius, 1.2.93, bug-gnu-radius@gnu.org)
+AC_INIT(GNU Radius, 1.2.94, bug-gnu-radius@gnu.org)
 AC_CONFIG_SRCDIR(radiusd/radiusd.c)
 AC_CONFIG_AUX_DIR([scripts])
 AC_CANONICAL_SYSTEM
@@ -798,7 +798,7 @@ LIBGNURADIUS='${top_builddir}/lib/libgnuradius.la'
 
 RADIUS_INCLUDE_PATH="$RADIUS_INCLUDE_PATH $INCLUDEPATH"
 
-AC_OUTPUT(Makefile 
+AC_CONFIG_FILES(Makefile 
           intl/Makefile 
           po/Makefile.in
           raddb/client.conf
@@ -835,7 +835,11 @@ AC_OUTPUT(Makefile
           scripts/Makefile
           scripts/guile/Makefile 
           scripts/guile/1.6/Makefile 
-          contrib/Makefile)
+          contrib/Makefile
+          contrib/web-radact/Makefile
+          contrib/passcvt/Makefile
+          contrib/passwd_to_db/Makefile
+          contrib/radsend/Makefile)
+AC_OUTPUT
 
-
-
+# EOF

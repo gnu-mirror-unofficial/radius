@@ -1,10 +1,10 @@
-GNU Radius NEWS -- history of user-visible changes. 2004-06-24
+GNU Radius NEWS -- history of user-visible changes. 2004-08-02
 Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
 ^L
-Version 1.2.93:
+Version 1.2.94:
 
 * Important compatibility note.
 
@@ -99,6 +99,8 @@ reduce the size of the executables.
 
 This is a guile module allowing to use libgnuradius functions. It
 supersedes radscm program, which has been removed.
+
+* New contributions added to contrib/ directory.
 
 * Bugfixes
 

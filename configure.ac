@@ -20,7 +20,7 @@
 AC_PREREQ(2.59)
 
 AC_REVISION($Revision$)
-AC_INIT(GNU Radius, 1.2.92, bug-gnu-radius@gnu.org)
+AC_INIT(GNU Radius, 1.2.93, bug-gnu-radius@gnu.org)
 AC_CONFIG_SRCDIR(radiusd/radiusd.c)
 AC_CONFIG_AUX_DIR([scripts])
 AC_CANONICAL_SYSTEM
@@ -42,16 +42,8 @@ AC_PROG_YACC
 AM_PROG_LEX
 AC_PROG_AWK
 
-dnl Override a bug in autoconf 2.53: AS_LITERAL_IF incorrectly optimizes
-dnl out ac_dummy indirection if the argument has shell variables in it.
-dnl To compensate, I have to use my own dummy variable.
-
-ra_PATH=$PATH:/usr/ccs/bin:/usr/bin:/usr/local/bin
-AC_PATH_PROG(PS, ps, no, $ra_PATH)
+AC_PATH_PROG(PS, ps, no, $PATH:/usr/ccs/bin:/usr/bin:/usr/local/bin)
 AC_ARG_VAR(PS,[Full path to ps binary])
-
-AC_PATH_PROG(GETOPT, getopt, no, $ra_PATH)
-AC_ARG_VAR(GETOPT, [Full path to getopt binary])
 
 AC_PROG_LN_S
 AM_PROG_LIBTOOL

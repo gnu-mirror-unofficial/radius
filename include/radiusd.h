@@ -210,6 +210,12 @@ void snmp_req_drop(int type, SNMP_REQ *req, char *status_str);
 #define AUTH_NOUSER  2 /* No such user  */
 #define AUTH_REJECT  3 /* Rejected */
 
+/* Logging modes */
+#define RLOG_AUTH               0x0001
+#define RLOG_AUTH_PASS          0x0002
+#define RLOG_FAILED_PASS        0x0004
+#define RLOG_PID                0x0008
+#define RLOG_DEFAULT            (RLOG_AUTH | RLOG_FAILED_PASS)
 
 /*
  *	Global variables.
@@ -229,6 +235,7 @@ extern UINT4		warning_seconds;
 extern int		auth_port;
 extern int		acct_port;
 extern int              suspend_flag;
+extern int              log_mode;
 
 extern unsigned long stat_start_time;
 extern REQUEST_CLASS    request_class[];

@@ -55,12 +55,11 @@ stop() {
 
 chan_signal() {
 	case $1 in
-		start|stop|restart)
-			;;
-		*)	[ $RUNNING -eq 0 ] && {
+		reload|status|dumpdb)	
+			[ $RUNNING -eq 0 ] && {
 				echo $PROCESS
 				exit 1
-			}
+			};;
 	esac
 
 	case $1 in
@@ -90,11 +89,6 @@ chan_signal() {
 	exit 0
 }
 
-ifdef(%GUILE@,
-chan_socket() {
-	BINDIR/radscm $DEBUG -s DATADIR/radctl.scm $*
-})
-
 if [ -f $%PIDFILE@ ]; then
 	PID=`cat $%PIDFILE@`
 	PROCESS=`$%PS@ -p $PID | sed -n '2p'`
@@ -112,17 +106,9 @@ if [ x"$1" = x"--debug" ]; then
 	DEBUG=$1
 	SHIFT
 fi	    
-ifdef(%GUILE@,
+
 if [ x"$1" = x"-s" -o x"$1" = x"--signal" ]; then
 	%SHIFT@ 
-	chan_signal $*
-else
-	chan_socket $*
-fi,
-if [ "$1" = "-s" ]; then
-	%SHIFT@
 fi
-chan_signal $*)
-
-
+chan_signal $*
 

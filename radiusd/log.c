@@ -647,6 +647,7 @@ get_priority(argv)
 		break;
 
 	case '=':
+		cat_def.pri = L_UPTO(cat_def.pri);
 		break;
 
 	default:
@@ -865,6 +866,7 @@ category_set_level(argc, argv, block_data, handler_data)
 {
 	int i;
 
+	clear_debug();
 	for (i = 1; i < argc; ) {
 		char *modname;
 		int level;

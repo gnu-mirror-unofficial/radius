@@ -343,8 +343,8 @@ rad_odbc_column(data, ncol)
                 return NULL;
         }
         
-        SQLGetData(edata->stmt,ncol+1,SQL_C_CHAR,
-                   buffer, sizeof buffer, &size);       
+        result = SQLGetData(edata->stmt,ncol+1,SQL_C_CHAR,
+                            buffer, sizeof buffer, &size);       
         if (result != SQL_SUCCESS) {
                 rad_odbc_diag(SQL_HANDLE_STMT, edata->stmt,
                               "SQLGetData");

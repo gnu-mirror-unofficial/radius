@@ -251,7 +251,9 @@ pair_list     : pair
 
 pair          : NAME op string
                 {
-                        $$ = install_pair($1, $2, $3);
+                        $$ = install_pair(source_filename,
+                                          source_line_num, 
+                                          $1, $2, $3);
                         free_string($3);
                 }
               ;
@@ -463,116 +465,3 @@ subscript(var, attr_name, all, ret_var)
         return 0;
 }
 
-VALUE_PAIR *
-install_pair(name, op, valstr)
-        char *name;
-        int op;
-        char *valstr;
-{
-        DICT_ATTR       *attr = NULL;
-        DICT_VALUE      *dval;
-        VALUE_PAIR      *pair;
-        char *s;
-        time_t timeval;
-        struct tm *tm;
-        
-        if ((attr = attr_name_to_dict(name)) == (DICT_ATTR *)NULL) {
-                radlog(L_ERR, _("%s:%d: unknown attribute `%s'"),
-                       source_filename, source_line_num, name);
-                return NULL;
-        }
-
-        pair = avp_alloc();
-        
-        pair->next = NULL;
-        pair->name = attr->name;
-        pair->attribute = attr->value;
-        pair->type = attr->type;
-        pair->prop = attr->prop;
-        pair->operator = op;
-
-        if (valstr[0] == '=') {
-                pair->eval = 1;
-                pair->strvalue = make_string(valstr+1);
-                pair->strlength = strlen(pair->strvalue);
-                return pair;
-        }
-
-        pair->eval = 0;
-        
-        switch (pair->type) {
-        case TYPE_STRING:
-                if (pair->attribute == DA_EXEC_PROGRAM ||
-                    pair->attribute == DA_EXEC_PROGRAM_WAIT) {
-                        if (valstr[0] != '/') {
-                                radlog(L_ERR,
-                                   _("%s:%d: %s: not an absolute pathname"),
-                                       source_filename, source_line_num, name);
-                                avp_free(pair);
-                                return NULL;
-                        }
-                }
-                pair->strvalue = make_string(valstr);
-                pair->strlength = strlen(pair->strvalue);
-                break;
-
-        case TYPE_INTEGER:
-                /*
-                 *      For DA_NAS_PORT_ID, allow a
-                 *      port range instead of just a port.
-                 */
-                if (attr->value == DA_NAS_PORT_ID) {
-                        for (s = valstr; *s; s++)
-                                if (!isdigit(*s))
-                                        break;
-                        if (*s) {
-                                pair->type = TYPE_STRING;
-                                pair->strvalue = make_string(valstr);
-                                pair->strlength = strlen(pair->strvalue);
-                                break;
-                        }
-                }
-                if (isdigit(*valstr)) {
-                        pair->lvalue = atoi(valstr);
-                } else if ((dval = value_name_to_value(valstr, pair->attribute)) == NULL) {
-                        avp_free(pair);
-                        radlog(L_ERR, _("%s:%d: unknown value %s"),
-                            source_filename, source_line_num,
-                            valstr);
-                        return NULL;
-                } else {
-                        pair->lvalue = dval->value;
-                }
-                break;
-
-        case TYPE_IPADDR:
-                pair->lvalue = ip_gethostaddr(valstr);
-                break;
-                
-        case TYPE_DATE:
-                timeval = time(0);
-                tm = localtime(&timeval);
-                if (user_gettime(valstr, tm)) {
-                        radlog(L_ERR,
-                                _("%s:%d: %s: can't parse date"),
-                                source_filename, source_line_num, name);
-                        avp_free(pair);
-                        return NULL;
-                }
-#ifdef TIMELOCAL
-                pair->lvalue = (UINT4)timelocal(tm);
-#else /* TIMELOCAL */
-                pair->lvalue = (UINT4)mktime(tm);
-#endif /* TIMELOCAL */
-                break;
-
-        default:
-                radlog(L_ERR, _("%s:%d: %s: unknown attribute type %d"),
-                    source_filename, source_line_num, name,
-                    pair->type);
-                avp_free(pair);
-                return NULL;
-        }
-
-        return pair;
-}

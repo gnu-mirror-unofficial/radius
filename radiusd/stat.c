@@ -329,6 +329,8 @@ findportbyindex(ind)
 	PORT_STAT *p;
 	int i;
 
+        if (ind < 1 || ind > STAT_MAX_PORT_COUNT)
+                return NULL;
 	for (i = 1, p = stat_base+1;
 	     i < ind && p < stat_base + STAT_MAX_PORT_COUNT + 1 && p->ip;
 	     i++, p++) /* empty */ ;

@@ -55,7 +55,7 @@ DOT_DOC_FILES=$(DOT_X_FILES:.x=.doc)
 RADSCM_BUILT_SOURCE_FILES=gnuradius.scm $(DOT_X_FILES) $(DOT_DOC_FILES)
 BUILT_SOURCES=@RADSCM_BUILT_SOURCES_LIST@
 EXTRA_DIST=ttl.scm ipalloc.scm radsession.in \
- gnuradius.scm gnuradius.scm.in radiusd.scm radiusd.scm.in
+ gnuradius.scm gnuradius.scm4 radiusd.scm radiusd.scm4
 CLEANFILES = *.exp *.inc *.x *.doc radsession gnuradius.scm radiusd.scm guile-procedures.txt
 
 radsession: $(srcdir)/radsession.in
@@ -71,7 +71,7 @@ ETAGS_ARGS = --regex='/SCM_\(GLOBAL_\)?\(G?PROC\|G?PROC1\|SYMBOL\|VCELL\|CONST_L
 
 GUILE_DOC_SNARF=$(top_srcdir)/scripts/guile/$(GUILE_SNARF_VERSION)/guile-doc-snarf
 
-SUFFIXES=.x .doc .inc .exp
+SUFFIXES=.x .doc .inc .exp .scm4 .scm
 
 .c.x:
 	AWK=$(AWK) \
@@ -89,17 +89,12 @@ SUFFIXES=.x .doc .inc .exp
 .c.exp:
 	sed -n 's/SCM_DEFINE *(.[^,]*, *\"\([^"][^"]*\)\".*/[ \1]dnl/p' $< > $@
 
+.scm4.scm:
+	m4 -DVERSION=$(VERSION) -DLIBDIR=$(libdir) \
+	   -DBUILDDIR=$(top_builddir)/radscm $< > $@
 
 guile-procedures.txt: $(DOT_DOC_FILES)
 	cat $(DOT_DOC_FILES) > $@
-
-gnuradius.scm: gnuradius.scm.in $(libradscm_la_SOURCES:.c=.inc)
-	m4 -DVERSION=$(VERSION) -DLIBDIR=$(libdir) \
-	   -DBUILDDIR=$(top_builddir)/radscm gnuradius.scm.in > $@
-
-radiusd.scm: radiusd.scm.in $(libservscm_a_SOURCES:.c=.exp)
-	m4 -DVERSION=$(VERSION) -DLIBDIR=$(libdir) \
-	   -DBUILDDIR=$(top_builddir)/radscm radiusd.scm.in > $@
 
 ## Add -MG to make the .x magic work with auto-dep code.
 MKDEP = $(CC) -M -MG $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS)

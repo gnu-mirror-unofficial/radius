@@ -1170,12 +1170,8 @@ uidcmp(grad_avp_t *check, char *username)
         return pwd->pw_uid - check->avp_lvalue;
 }
 
-/*
- *      See if user is member of a group.
- *      We also handle additional groups.
- */
-int
-groupcmp(grad_request_t *req, char *groupname, char *username)
+static int
+system_groupcmp(grad_request_t *req, char *groupname, char *username)
 {
         struct passwd pw, *pwd;
         struct group *grp;
@@ -1184,24 +1180,29 @@ groupcmp(grad_request_t *req, char *groupname, char *username)
         int retval;
 
         if (!(pwd = grad_getpwnam_r(username, &pw, pwbuf, sizeof pwbuf)))
-                return -1;
+                return 1;
 
-        if ((grp = grad_getgrnam(groupname)) == NULL)
-                return -1;
+        if (!(grp = grad_getgrnam(groupname)))
+                return 1;
 
-        retval = (pwd->pw_gid == grp->gr_gid) ? 0 : -1;
-        if (retval < 0) {
-                for (member = grp->gr_mem; *member && retval; member++) {
-                        if (strcmp(*member, pwd->pw_name) == 0)
-                                retval = 0;
-                }
-        }
+        retval = !(pwd->pw_gid == grp->gr_gid);
+	for (member = grp->gr_mem; *member && retval; member++) {
+		if (strcmp(*member, pwd->pw_name) == 0)
+			retval = 0;
+	}
 	grad_free(grp);
-
-	if (retval == 0)
-		return retval;
 	
-        return radiusd_sql_checkgroup(req, groupname);
+	return retval;
+}
+
+/* Return 0 if user `username' is a member of group `groupname' */
+int
+groupcmp(grad_request_t *req, char *groupname, char *username)
+{
+        int retval;
+
+	return system_groupcmp(req, groupname, username)
+		&& radiusd_sql_checkgroup(req, groupname);
 }
 
 /*

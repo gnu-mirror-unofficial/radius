@@ -592,13 +592,20 @@ rad_acct_ext(radreq)
         VALUE_PAIR *p;
 
 #ifdef USE_SERVER_GUILE
-        if (p = avl_find(radreq->request, DA_SCHEME_ACCT_PROCEDURE))
+        for (p = avl_find(radreq->request, DA_SCHEME_ACCT_PROCEDURE);
+	     p;
+	     p = avl_find(p->next, DA_SCHEME_ACCT_PROCEDURE))
                 scheme_acct(p->strvalue, radreq);
 #endif
-        if (p = avl_find(radreq->request, DA_ACCT_EXT_PROGRAM)) {
+        for (p = avl_find(radreq->request, DA_ACCT_EXT_PROGRAM);
+	     p;
+	     p = avl_find(p->next, DA_ACCT_EXT_PROGRAM)) {
     		switch (p->strvalue[0]) {
 		case '/':
-                	radius_exec_program(p->strvalue, radreq, NULL, 0, NULL);		case '|':
+                	radius_exec_program(p->strvalue, radreq,
+					    NULL, 0, NULL);
+			break;
+		case '|':
                 	filter_acct(p->strvalue+1, radreq);
                 }
         }

@@ -122,9 +122,9 @@ VALUE		Log-Mode-Mask		Log-Failed-Pass		4
 VALUE		Log-Mode-Mask		Log-Pass		6
 VALUE		Log-Mode-Mask		Log-All			7
 
-ATTRIBUTE	Acct-Ext-Program	2008	string	- [---R--]=
+ATTRIBUTE	Acct-Ext-Program	2008	string	- [---R--]
 ATTRIBUTE	Scheme-Procedure	2009	string	- [-R----]
-ATTRIBUTE	Scheme-Acct-Procedure	2010	string	- [---R--]=
+ATTRIBUTE	Scheme-Acct-Procedure	2010	string	- [---R--]
 
 ATTRIBUTE       Password-Location       2011    integer - [L-----]
 VALUE           Password-Location       SQL			1

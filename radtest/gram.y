@@ -120,6 +120,7 @@ int yyerror(char *s);
 %token <string> NAME
 %token <number> NUMBER
 %token <string> QUOTE
+%token <bstring> BSTRING
 %token <ipaddr> IPADDRESS
 
 %left PRITEM
@@ -163,6 +164,7 @@ int yyerror(char *s);
 	} set;
 	radtest_case_branch_t *case_branch;
 	radtest_function_t *fun;
+	radtest_bstring_t bstring;
 }
 
 %%
@@ -470,6 +472,11 @@ name          : /* empty */
 
 string        : NAME
               | QUOTE
+              | BSTRING
+                {
+			parse_error(_("warning: truncating binary string"));
+			$$ = $1.ptr;
+		}
               ;
 
 nesting_level : /* empty */
@@ -776,6 +783,11 @@ imm_value     : NUMBER
                 {
 			$$ = radtest_var_alloc(rtv_string);
 			$$->datum.string = $1;
+		}
+              | BSTRING
+                {
+			$$ = radtest_var_alloc(rtv_bstring);
+			$$->datum.bstring = $1;
 		}
               | NAME 
                 {

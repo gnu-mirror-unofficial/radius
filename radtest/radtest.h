@@ -27,12 +27,14 @@ typedef struct radtest_variable radtest_variable_t;
 typedef struct radtest_function radtest_function_t;
 typedef union radtest_datum radtest_datum_t;
 typedef struct radtest_pair radtest_pair_t;
+typedef struct radtest_bstring radtest_bstring_t;
 
 typedef enum {
         rtv_undefined,           /* Undefined variable */
         rtv_integer,             /* Signed integer value */
         rtv_ipaddress,           /* Unsigned integer value */
         rtv_string,              /* String. */
+	rtv_bstring,             /* Binary string */
         rtv_pairlist,            /* Temporary representation of A/V pair
 				    list. */
 	rtv_avl                  /* A/V pair list */
@@ -40,12 +42,18 @@ typedef enum {
 
 #define RTV_MAX rtv_avl+1
 
+struct radtest_bstring {
+	char *ptr;
+	int length;
+};
+
 union radtest_datum {
-	long number;             /* rtv_integer */
-	grad_uint32_t ipaddr;    /* rtv_ipaddress */ 
-	char *string;            /* rtv_string */
-	grad_list_t *list;       /* rtv_pairlist */
-	grad_avp_t *avl;         /* rtv_avl */
+	long number;               /* rtv_integer */
+	grad_uint32_t ipaddr;      /* rtv_ipaddress */ 
+	char *string;              /* rtv_string */
+	radtest_bstring_t bstring; /* rtv_bstring */
+	grad_list_t *list;         /* rtv_pairlist */
+	grad_avp_t *avl;           /* rtv_avl */
 };
 
 struct radtest_variable {

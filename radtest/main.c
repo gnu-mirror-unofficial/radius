@@ -218,7 +218,7 @@ main(int argc, char **argv)
 
         set_yydebug();
         grad_path_init();
-	srand(time(NULL));
+	srand(time(NULL)+getpid());
 	
         if (grad_dict_init()) {
                 grad_log(L_ERR, _("error reading dictionary file"));
@@ -411,7 +411,21 @@ var_print(radtest_variable_t *var)
         case rtv_ipaddress:
                 printf("%s", grad_ip_iptostr(var->datum.ipaddr, buf));
                 break;
-		
+
+	case rtv_bstring:
+	{
+		int len = grad_format_string_visual(NULL, 3,
+						    var->datum.bstring.ptr,
+						    var->datum.bstring.length);
+		char *pbuf = grad_emalloc(len+1);
+		grad_format_string_visual(pbuf, 3,
+					  var->datum.bstring.ptr,
+					  var->datum.bstring.length);
+		printf("%s", pbuf);
+		grad_free(pbuf);
+	}
+		break;
+		       
         case rtv_string:
                 printf("%s", var->datum.string);
                 break;
@@ -552,17 +566,18 @@ comp_op(enum grad_operator op, int result)
 }
 
 int
-compare_lists(grad_avp_t *reply, grad_avp_t *sample)
+compare_lists(grad_avp_t *reply_list, grad_avp_t *sample)
 {
         int result = 0;
+	grad_avp_t *reply = grad_avl_dup(reply_list);
         
         for (; sample && result == 0; sample = sample->next) {
-                grad_avp_t *p;
+                grad_avp_t *p, *prev = NULL;
 
                 if (sample->attribute > 255)
                         continue;
                 for (p = reply; p && p->attribute != sample->attribute;
-                     p = p->next)
+                     prev = p, p = p->next)
                         ;
                 if (!p)
                         return -1;
@@ -570,15 +585,25 @@ compare_lists(grad_avp_t *reply, grad_avp_t *sample)
                 case GRAD_TYPE_STRING:
                         result = strcmp(sample->avp_strvalue, p->avp_strvalue);
                         break;
+			
                 case GRAD_TYPE_INTEGER:
                 case GRAD_TYPE_IPADDR:
                         result = sample->avp_lvalue - p->avp_lvalue;
                         break;
+			
                 default:
                         result = -1;
                 }
                 result = comp_op(sample->operator, result);
+		if (result == 0) {
+			if (!prev)
+				reply = p->next;
+			else
+				prev->next = p->next;
+			grad_avp_free(p);
+		}
         }
+	grad_avl_free(reply);
         return result;
 }
 

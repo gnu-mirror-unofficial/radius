@@ -80,6 +80,13 @@ var_asgn(radtest_variable_t *var, radtest_variable_t *result)
         case rtv_ipaddress:
 		var->datum = result->datum;
 		break;
+
+	case rtv_bstring:
+		var->datum.bstring.ptr = grad_emalloc(result->datum.bstring.length);
+		memcpy(var->datum.bstring.ptr, result->datum.bstring.ptr,
+		       result->datum.bstring.length);
+		var->datum.bstring.length = result->datum.bstring.length;
+		break;
 		
         case rtv_string:
 		/* FIXME: memory leak */
@@ -628,6 +635,20 @@ rt_eval_pairlist(grad_locus_t *locus,
 			}
 			break;
 
+		case rtv_bstring:
+			switch (p->attr->type) {
+			case GRAD_TYPE_STRING:
+				pair = grad_avp_create_binary(p->attr->value,
+							      val.datum.bstring.length,
+							      val.datum.bstring.ptr);
+				break;
+
+			default:
+				/* FIXME */
+				runtime_error(locus, _("invalid data type"));
+			}
+			break;
+			
 		case rtv_string:
 			switch (p->attr->type) {
 			case GRAD_TYPE_STRING:
@@ -733,6 +754,7 @@ static char *type_string[] = {
 	N_("integer"),
 	N_("ipaddress"),
 	N_("string"),
+	N_("binary string"),
 	N_("pairlist"),
 	N_("A/V list")
 };
@@ -745,6 +767,7 @@ static char *type_string_to[] = {
 	N_("to integer"),
 	N_("to ipaddress"),
 	N_("to string"),
+	N_("to binary string"),
 	N_("to pairlist"),
 	N_("to A/V list")
 };
@@ -835,13 +858,14 @@ str_to_ip(radtest_variable_t *var)
 }
 
 typecast_proc_t typecast_proc[][RTV_MAX] = {
-        /* undefined   integer   ipaddress     string     pairlist  avl */
-/* und */ { tc_error,  tc_error,  tc_error,   tc_error,  tc_error, tc_error },
-/* int */ { tc_error,      NULL, int_to_ip, int_to_str,  tc_error, tc_error },
-/* ip  */ { tc_error, ip_to_int,      NULL,  ip_to_str,  tc_error, tc_error },
-/* str */ { tc_error,str_to_int, str_to_ip,       NULL,  tc_error, tc_error },
-/* pls */ { tc_error,  tc_error,  tc_error,   tc_error,  tc_error, tc_error },
-/* avl */ { tc_error,  tc_error,  tc_error,   tc_error,  tc_error, tc_error },
+        /* undefined   integer   ipaddress     string    bstring  pairlist  avl */
+/* und */ { tc_error,  tc_error,  tc_error,   tc_error,  tc_error, tc_error, tc_error },
+/* int */ { tc_error,      NULL, int_to_ip, int_to_str,  tc_error, tc_error, tc_error },
+/* ip  */ { tc_error, ip_to_int,      NULL,  ip_to_str,  tc_error, tc_error, tc_error },
+/* str */ { tc_error,str_to_int, str_to_ip,       NULL,  tc_error, tc_error, tc_error },
+/* bstr*/ { tc_error,  tc_error,  tc_error,   tc_error,      NULL, tc_error, tc_error },
+/* pls */ { tc_error,  tc_error,  tc_error,   tc_error,  tc_error, tc_error, tc_error },
+/* avl */ { tc_error,  tc_error,  tc_error,   tc_error,  tc_error, tc_error, tc_error },
 };
 
 static int

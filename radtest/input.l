@@ -159,7 +159,11 @@ xunput(int c)
 
 #endif /* FLEX_SCANNER */ 
 
+static size_t string_len;
+static int binary_string;
+
 /* Forward declarations */
+static void begin_str();
 static void add_str(char *str, int  len);
 static void add_chr(int c);
 static char *end_str();
@@ -329,17 +333,20 @@ set{WS}.*\n {
 	return PARM;
 }
 \"[^\\"]*\" {
+        begin_str();
         add_str(yytext+1, yyleng-2);
         yylval.string = end_str();
         return QUOTE;
 }
 \"[^\\"]*\n {
         BEGIN(STRING);
+        begin_str();
 	string_start_line = source_locus.line++;
         add_str(yytext+1, yyleng-1);
 }
 \"[^\\"]*\\. {
         BEGIN(STRING);
+        begin_str();
         string_start_line = source_locus.line;
         if (yytext[yyleng-1] == '\n')
                 source_locus.line++;
@@ -348,10 +355,12 @@ set{WS}.*\n {
 }
 \"[^\\"]*\\[0-7]{1,3} {
         BEGIN(STRING);
+        begin_str();
         add_num(0, 8, yytext+1, yyleng-1);
 }
 \"[^\\"]*\\[xX][0-9a-fA-F]{1,2} {
         BEGIN(STRING);
+        begin_str();
         add_num(1, 16, yytext+1, yyleng-1);
 }
 <STRING>[^\\"]*\\[0-7]{1,3} {
@@ -374,11 +383,18 @@ set{WS}.*\n {
 <STRING>[^\\"]*\" {
         BEGIN(INITIAL);
         add_str(yytext, yyleng - 1);
-        yylval.string = end_str();
-        return QUOTE;
+        if (binary_string) {
+            yylval.bstring.ptr = end_str();
+            yylval.bstring.length = string_len;
+            return BSTRING;
+        } else {
+            yylval.string = end_str();
+            return QUOTE;
+        }
 }
 "<<"-?{IDENTIFIER}.*\n {
 	BEGIN(HEREDOC);
+        begin_str();
 	string_start_line = source_locus.line++;
 	heredoc_begin();
 }
@@ -503,7 +519,12 @@ add_num(int skip, int base, char *text, int leng)
         add_chr(strtol(&text[leng - n + 1], NULL, base));
 }
 
-static char string_len;
+void
+begin_str()
+{
+	string_len = 0;
+	binary_string = 0;
+}
 
 /* Append simple string segment to the current string object */
 void
@@ -519,6 +540,8 @@ add_chr(int c)
 {
         obstack_1grow(&string_stk, c);
         string_len++;
+	if (c == 0)
+		binary_string++;
 }
 
 /* Finish the string being constructed. Return pointer to its beginning. */

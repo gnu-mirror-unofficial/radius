@@ -1,4 +1,4 @@
 Makefile
 Makefile.in
 config
-radctl.rc
+client.conf

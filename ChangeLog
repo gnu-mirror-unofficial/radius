@@ -1,3 +1,26 @@
+2003-09-27  Sergey Poznyakoff
+
+	* NEWS: Updated.
+	* examples/config.syntax: Updated.
+	* examples/README: Updated.	
+	* include/rewrite.h (rewrite_init,rewrite_stmt_term): New
+	functions.
+	* radiusd/files.c (reload_data): Removed case reload_rewrite.
+	* radiusd/radiusd.c (radiusd_setup): Call rewrite_init().
+	* radiusd/rewrite.y (input production): Allow expr as the only
+	input (for interpret() call).
+	(interpret): Rewritten.
+	(configuration block): Rewritten. Allow new keywords "load" and
+	"load-path". By default, if no "load" statements were given,
+	attempt to load the legacy file $radius_dir/rewrite.
+	* radiusd/sql.c: Minor indentation fix.
+	* radiusd/tsh.c: Considerably improved.
+
+	* radiusd/testsuite/raddb/Makefile.am: Updated
+	* radiusd/testsuite/proxy/Makefile.am: Updated
+	* radiusd/testsuite/raddb/config.in: "rewrite" section extended
+	* radiusd/testsuite/test.sh.m4: New replace keyword @SOURCEDIR@
+	
 2003-09-23  Sergey Poznyakoff  
 
 	* lib/list.c (list_item): Bugfix

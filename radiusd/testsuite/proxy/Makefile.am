@@ -42,9 +42,6 @@ dict.cisco: $(RADDB)/dict/cisco
 nastypes: $(RADDB)/nastypes
 	$(LN_S) $? $@
 
-rewrite: $(RADDB)/rewrite.full
-	$(LN_S) $? $@
-
 clients: ../raddb/clients
 	$(LN_S) $? $@
 

@@ -7,8 +7,9 @@ config.syntax
 * Rewrite modules.
 
 These sources contain rewrite functions for various NAS types. To
-use a file, copy its contents to your raddb/rewrite file and
-follow the instructions given in the file.
+use a file, copy it to a directory which forms a part of your Rewrite 
+load-path, add to the `rewrite' block of your raddb/config file the 
+statement `load "filename";', and follow the instructions given in the file.
 
  File                Purpose
 ascend.rw           Handle MAX Ascend coded port numbers

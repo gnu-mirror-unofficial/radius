@@ -22,6 +22,7 @@
 #include <symtab.h>
 #include <radiusd.h>
 #include <parser.h>
+#include <rewrite.h>
 
 #ifndef CHAR_BIT
 # define CHAR_BIT 8
@@ -103,12 +104,35 @@ mark_list(struct check_datum *datum, User_symbol *sym, VALUE_PAIR *list)
         }
 }
 
+static int
+compile_pairs(VALUE_PAIR *pair)
+{
+	for (; pair; pair = pair->next) {
+		if (pair->eval_type == eval_interpret) {
+			char *symname = rewrite_compile(pair->avp_strvalue);
+			if (symname == 0) 
+				return -1;
+			pair->eval_type = eval_compiled;
+			efree(pair->avp_strvalue);
+			pair->avp_strvalue = symname;
+			pair->avp_strlength = strlen(symname);
+		}
+	}
+	return 0;
+}
+
 int
 pass1(struct check_datum *datum, User_symbol *sym)
 {
+	if (compile_pairs(sym->reply)) {
+                radlog(L_ERR,
+                       _("users:%d: discarding entry %s"),
+                       sym->lineno, sym->name);
+                symtab_delete(datum->symtab, (Symbol *)sym);
+                datum->count--;
+	}
         mark_list(datum, sym, sym->check);
         mark_list(datum, sym, sym->reply);
-
         return 0;
 }
 

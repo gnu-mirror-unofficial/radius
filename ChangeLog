@@ -1,3 +1,20 @@
+2003-04-26  Sergey Poznyakoff
+
+	Added back server Scheme support. This commit passes successfully
+	all tests. It remains to add back SNMP support and ensure the
+	proxy id uniqueness.
+	
+	* configure.ac: Removed guile warning
+	* include/radiusd.h (radiusd_main,scheme_boot): New functions
+	  (rad_boot): Removed.
+	* lib/getgr.c: Include stdlib.h
+	* lib/getpw_r.c: Likewise.
+	* lib/list.c: Likewise.
+	* radiusd/radiusd.c: Added back Scheme
+	* radiusd/scheme.c: Minor compatibility fixes.
+	* radiusd/testsuite/lib/radiusd.exp (simple_radius_test): Missed
+	  global declaration
+
 2003-04-26  Sergey Poznyakoff 
 
 	Proxy requests re-implemented.

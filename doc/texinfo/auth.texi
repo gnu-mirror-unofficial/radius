@@ -292,7 +292,7 @@ attribute the authentication request is rejected.
 
 To determine the number of open sessions, Radius scans the
 @file{radlog/radutmp} for any open entries marked with the
-user's login name @ref{UNIX Accounting}. Such entries are created
+user's login name @ref{System Accounting}. Such entries are created
 when Radius receives an Accounting-Request packet with
 @attr{Acct-Status-Type} attribute set to @code{Start}. An entry is
 marked closed when a corresponding Accounting-Request packet arrives with

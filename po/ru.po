@@ -3,17 +3,16 @@
 # Sergey Poznyakoff <gray@gnu.org>, 2003.
 msgid ""
 msgstr ""
-"Project-Id-Version: radius 1.0\n"
-"Report-Msgid-Bugs-To: \n"
+"Project-Id-Version: radius 1.1\n"
 "POT-Creation-Date: 2003-07-20 23:44+0300\n"
-"PO-Revision-Date: 2003-07-21 00:06+0300\n"
+"PO-Revision-Date: 2003-07-23 10:39+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=KOI8-R\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
-"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Report-Msgid-Bugs-To: <gray@gnu.org>\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
 #: lib/avl.c:88
 #, c-format
@@ -731,7 +730,7 @@ msgstr "невозможно закрыть канал"
 
 #: radiusd/exec.c:143
 msgid "can't dup stdout"
-msgstr ""
+msgstr "невозможно создать копию дескриптора стандартного вывода"
 
 #: radiusd/exec.c:187 radiusd/exec.c:572
 #, c-format
@@ -881,7 +880,7 @@ msgstr "невозможно загрузить %s: завершение работы"
 #: radiusd/files.c:1579
 #, c-format
 msgid "%s reloaded."
-msgstr "%s загружен"
+msgstr "загружен файл %s"
 
 #: radiusd/files.c:1654
 msgid "SQL Error: SQL client could not be initialized"
@@ -904,59 +903,60 @@ msgstr "база пользователей скопирована в %s"
 
 #: radiusd/log.c:106
 msgid "none"
-msgstr ""
+msgstr "пусто"
 
 #: radiusd/log.c:107
 msgid "Main"
-msgstr ""
+msgstr "Главный"
 
 #: radiusd/log.c:108
 msgid "Auth"
-msgstr ""
+msgstr "Авторизация"
 
 #: radiusd/log.c:109
 msgid "Acct"
-msgstr ""
+msgstr "Аккаунтинг"
 
 #: radiusd/log.c:110
 msgid "Proxy"
-msgstr ""
+msgstr "Прокси"
 
 #: radiusd/log.c:111
 msgid "SNMP"
-msgstr ""
+msgstr "SNMP"
 
 #: radiusd/log.c:115
 msgid "emerg"
-msgstr ""
+msgstr "авария"
 
 #: radiusd/log.c:116
 msgid "alert"
-msgstr ""
+msgstr "тревога"
 
+# подразумевается "ошибка" -> ж.р.
 #: radiusd/log.c:117
 msgid "crit"
-msgstr ""
+msgstr "критическая"
 
 #: radiusd/log.c:118
 msgid "error"
-msgstr ""
+msgstr "ошибка"
 
 #: radiusd/log.c:119
 msgid "warning"
-msgstr ""
+msgstr "предупреждение"
 
 #: radiusd/log.c:120
 msgid "notice"
-msgstr ""
+msgstr "замечание"
 
 #: radiusd/log.c:121
 msgid "info"
-msgstr ""
+msgstr "сообщение"
 
 #: radiusd/log.c:122
 msgid "debug"
-msgstr ""
+msgstr "отладка"
 
 #: radiusd/log.c:239
 #, c-format
@@ -1294,7 +1294,7 @@ msgstr "RADIUSD ОСТАНОВЛЕН"
 
 #: radiusd/radiusd.c:636
 msgid "Reloading configuration now"
-msgstr "Начинаю перезагрузку конфигурационных файлов"
+msgstr "Перезагрузка конфигурационных файлов"
 
 #: radiusd/radiusd.c:648
 #, c-format

@@ -293,7 +293,7 @@ radius_exec_program(char *cmd, radiusd_request_t *req, grad_avp_t **reply,
                 if (exec_wait) {
                         if (close(p[0]))
                                 grad_log(L_ERR|L_PERROR, _("can't close pipe"));
-                        if (dup2(p[1], 1) != 1)
+                        if (p[1] != 1 && dup2(p[1], 1) != 1)
                                 grad_log(L_ERR|L_PERROR, _("can't dup stdout"));
                 } else
 			close(1);
@@ -392,15 +392,20 @@ radius_run_filter(int argc, char **argv, char *errfile, int *p)
 	case 0:
 		/* attach the pipes */
 
-		/* Right-end */
-		close(1);
-		dup2(rightp[1], 1);
-		close(rightp[0]); 
-
-		/* Left-end */
-		close(0);
-		dup2(leftp[0], 0);
+		/* Left-end. It is important that it be processed first,
+		   since it may contain descriptors 0 and 1 */
+		if (leftp[0] != 0) {
+			close(0);
+			dup2(leftp[0], 0);
+		}
 		close(leftp[1]);
+		
+		/* Right-end */
+		if (rightp[1] != 1) {
+			close(1);
+			dup2(rightp[1], 1);
+		}
+		close(rightp[0]); 
 
 		/* Error output */
 		i = open(errfile, O_CREAT|O_WRONLY|O_APPEND, 0644);

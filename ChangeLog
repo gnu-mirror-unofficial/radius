@@ -1,3 +1,12 @@
+2002-02-20  Sergey Poznyakoff  
+
+	* radiusd/radiusd.c (rad_request_handle): Bugfix: return 0 if new
+	  thread cannot be started. In this case, one of currently active
+	  threads will handle the request.
+          (rad_restart): Install signal handlers after becoming a daemon.
+	* radiusd/scheme.c (boot_body): Fixed info messages.
+	* doc/texinfo/client.texi (nas.scm): Fixed typo.
+
 2002-02-19  Sergey Poznyakoff  
 
 	* include/radiusd.h: added extern for scheme_gc_interval.

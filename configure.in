@@ -128,7 +128,7 @@ AC_ARG_WITH(lib-path,
 	[  --with-lib-path=PATH          specify additional library paths.],
 	[ for path in `echo $withval | sed 's/:/ /g'`
           do
-            LIBS="$LIBS -L$withval"
+            LIBS="$LIBS -L$path"
           done])
 AC_MSG_RESULT($LIBS)
 

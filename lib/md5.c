@@ -22,6 +22,7 @@
 #endif
 
 #include <string.h>             /* for memcpy() */
+#include <radius/types.h>
 #include <radius/md5.h>
 
 void
@@ -37,7 +38,7 @@ grad_md5_calc(unsigned char *output, unsigned char *input,
 
 
 static void
-bytes_encode(unsigned char *output, uint32 *input, unsigned int len)
+bytes_encode(unsigned char *output, grad_uint32_t *input, unsigned int len)
 {
         unsigned int i, j;
 
@@ -50,15 +51,15 @@ bytes_encode(unsigned char *output, uint32 *input, unsigned int len)
 }
 
 static void 
-bytes_decode(uint32 *output, unsigned char *input, unsigned int len)
+bytes_decode(grad_uint32_t *output, unsigned char *input, unsigned int len)
 {
         unsigned int i, j;
         
         for (i = 0, j = 0; j < len; i++, j += 4)
-                output[i] = ((uint32)input[j]) |
-                            (((uint32)input[j+1]) << 8) |
-                            (((uint32)input[j+2]) << 16) |
-                            (((uint32)input[j+3]) << 24);
+                output[i] = ((grad_uint32_t)input[j]) |
+                            (((grad_uint32_t)input[j+1]) << 8) |
+                            (((grad_uint32_t)input[j+2]) << 16) |
+                            (((grad_uint32_t)input[j+3]) << 24);
 }
 
 /*
@@ -84,12 +85,12 @@ grad_MD5Init(struct MD5Context *ctx)
 void
 grad_MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len)
 {
-    uint32 t;
+    grad_uint32_t t;
 
     /* Update bitcount */
 
     t = ctx->bits[0];
-    if ((ctx->bits[0] = t + ((uint32) len << 3)) < t)
+    if ((ctx->bits[0] = t + ((grad_uint32_t) len << 3)) < t)
         ctx->bits[1]++;         /* Carry from low to high */
     ctx->bits[1] += len >> 29;
 
@@ -104,7 +105,7 @@ grad_MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len)
             return;
         }
         memcpy(p, buf, t);
-        grad_MD5Transform(ctx->buf, (uint32 *) ctx->in);
+        grad_MD5Transform(ctx->buf, (grad_uint32_t *) ctx->in);
         buf += t;
         len -= t;
     }
@@ -112,7 +113,7 @@ grad_MD5Update(struct MD5Context *ctx, unsigned char const *buf, unsigned len)
 
     while (len >= 64) {
         memcpy(ctx->in, buf, 64);
-        grad_MD5Transform(ctx->buf, (uint32 const *) buf);
+        grad_MD5Transform(ctx->buf, (grad_uint32_t const *) buf);
         buf += 64;
         len -= 64;
     }
@@ -147,7 +148,7 @@ grad_MD5Final(unsigned char digest[16], struct MD5Context *ctx)
     if (count < 8) {
         /* Two lots of padding:  Pad the first block to 64 bytes */
         memset(p, 0, count);
-        grad_MD5Transform(ctx->buf, (uint32 *) ctx->in);
+        grad_MD5Transform(ctx->buf, (grad_uint32_t *) ctx->in);
 
         /* Now fill the next block with 56 bytes */
         memset(ctx->in, 0, 56);
@@ -157,8 +158,8 @@ grad_MD5Final(unsigned char digest[16], struct MD5Context *ctx)
     }
 
     /* Append length in bits and transform */
-    bytes_encode((unsigned char*)((uint32 *) ctx->in + 14), ctx->bits, 8);
-    grad_MD5Transform(ctx->buf, (uint32 *) ctx->in);
+    bytes_encode((unsigned char*)((grad_uint32_t *) ctx->in + 14), ctx->bits, 8);
+    grad_MD5Transform(ctx->buf, (grad_uint32_t *) ctx->in);
     bytes_encode(digest,ctx->buf,16);   
     memset((char *) ctx, 0, sizeof(ctx));       /* In case it's sensitive */
 }
@@ -194,10 +195,10 @@ dump(char *label,unsigned char *p, int len)
  * the data and converts bytes into longwords for this routine.
  */
 void
-grad_MD5Transform(uint32 buf[4], uint32 const cin[16])
+grad_MD5Transform(grad_uint32_t buf[4], grad_uint32_t const cin[16])
 {
-    register uint32 a, b, c, d;
-    uint32 in[16];
+    register grad_uint32_t a, b, c, d;
+    grad_uint32_t in[16];
 
     bytes_decode(in, (unsigned char *) cin, 64);
 

@@ -707,7 +707,7 @@ snmp_req_cmp(a, b)
 	SNMP_REQ *a, *b;
 {
 	return !(a->sa.sin_addr.s_addr == b->sa.sin_addr.s_addr &&
-		 variable_cmp(a->pdu->var, b->pdu->var) == 0);
+		 a->pdu->req_id == b->pdu->req_id);
 }
 
 void

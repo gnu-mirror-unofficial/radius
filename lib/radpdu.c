@@ -124,6 +124,7 @@ rad_pdu_finish(ptr, pdu, code, id, vector, secret)
 		   vector. */
                 secretlen = strlen(secret);
                 md5_calc(hdr->vector, (u_char *)hdr, len + secretlen);
+		memcpy(vector, hdr->vector, AUTH_VECTOR_LEN);
                 memset((char*)hdr + len, 0, secretlen);
 		break;
 		

@@ -180,7 +180,8 @@
 		acct
 		proxy
 		notify
-		snmp)
+		snmp
+		guile)
     (option     source-ip 
 		usr2delay
 		max-requests
@@ -192,16 +193,24 @@
 		category)
     (channel    file
 		syslog
-		option)
+		option
+		print-pid
+		print-category
+		print-cons
+		print-level
+		print-priority)
     (auth       port
+		listen
 		spawn
 		max-requests
 		time-to-live
 		request-cleanup-delay
 		detail
 		strip-names
-		checkrad-assume-logged)
+		checkrad-assume-logged
+		password-expire-warning)
     (acct       port
+		listen
 		spawn
 		max-requests
 		time-to-live
@@ -222,17 +231,26 @@
 		network
 		acl)
     (acl        allow
-		deny) ))
+		deny)
+    (guile      debug
+		load-path
+		load))
 
 ;; Valid successors for keywords.
 (defconst radconf-keyword-successor
   ;; Keyword                    List of successors
-  '((category			debug info notice warning error
-				crit auth proxy *)
+  '((category			main auth acct snmp proxy 
+				debug info notice warning error
+				crit emerg alert)
     (detail			yes no)
     (strip-names		yes no)
     (checkrad-assume-logged	yes no)
-    (usedbm			yes no) ))
+    (usedbm			yes no)
+    (print-pid                  yes no)
+    (print-category             yes no)
+    (print-cons                 yes no)
+    (print-level                yes no)
+    (print-priority             yes no) ))
 
 (defconst radconf-keyword-nodes
   ;; Block kwd	Info file	Info node
@@ -243,7 +261,8 @@
     (acct       "radius"	"acct")
     (proxy      "radius"	"proxy")
     (notify     "radius"	"notify")
-    (snmp       "radius"	"snmp") ))
+    (snmp       "radius"	"snmp")
+    (guile      "radius"        "guile") ))
 
 ;; Find the topmost block containing the point
 (defun radconf-block ()

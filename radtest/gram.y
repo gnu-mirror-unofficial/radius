@@ -120,10 +120,10 @@ stmt          : /* empty */ EOL
                                 var->datum = $3.datum;
                         }
                 }
-              | SEND send_flags port_type code expr EOL
+              | SEND send_flags port_type code maybe_expr EOL
                 {
-                        radtest_send($3, $4, &$5, $2);
-                        tempvar_free(&$5);
+                        radtest_send($3, $4, $5, $2);
+                        tempvar_free($5);
 			symtab_free(&$2);
                 }
               | EXPECT code maybe_expr EOL
@@ -241,7 +241,7 @@ maybe_expr    : /* empty */
                 }
               | expr
                 {
-                        $$ = emalloc(sizeof(*$$));
+			$$ = emalloc(sizeof(*$$));
                         *$$ = $1;
                 }
               ;

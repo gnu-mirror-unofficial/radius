@@ -182,7 +182,7 @@ rad_send_request(fd, ipaddr, port, id, secret, req)
 	char			vector[AUTH_VECTOR_LEN];
 	u_char                  *ptr;
 	struct sockaddr_in	saremote, *sin;
-
+	
 #define checkovf(len) \
 	if (total_length + len >= sizeof(i_send_buffer)) goto ovf;
 
@@ -203,7 +203,13 @@ rad_send_request(fd, ipaddr, port, id, secret, req)
 	ptr = auth->data;
 	for (vp = req->request; vp; vp = vp->next) {
 
-		debug(10, ("proxy_send: %s", format_pair(vp)));
+		if (debug_on(10)) {
+			char *save;
+			radlog(L_DEBUG,
+                               "proxy_send: %s", 
+                               format_pair(vp, &save));
+			free(save);
+		}
 
 		/* This could be a vendor-specific attribute. */
 		length_ptr = NULL;

@@ -251,8 +251,10 @@ radclient_build_request(config, server, code, pair)
 	for (; pair; pair = pair->next) {
 
 		if (radclient_debug) {
+			char *save;
 			fprintf(stdout, "%10.10s: %s\n", 
-				   _("send"), format_pair(pair));
+				   _("send"), format_pair(pair, &save));
+			free(save);
 		}
 
 		/*
@@ -487,8 +489,11 @@ decode_buffer(host, udp_port, buffer, length)
 			}
 
 			if (radclient_debug && pair) {
+				char *save;
 				fprintf(stdout, "%10.10s: %s\n", 
-						_("recv"), format_pair(pair));
+						_("recv"), 
+                                                format_pair(pair, &save));
+				free(save);
 			}
 
 		}

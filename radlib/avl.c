@@ -372,7 +372,10 @@ avl_fprint(fp, avl)
 	FILE *fp;
 	VALUE_PAIR *avl;
 {
-	for (;avl; avl = avl->next) 
-		fprintf(fp, "    %s\n", format_pair(avl));
+	char *save;
+	for (;avl; avl = avl->next) {
+		fprintf(fp, "    %s\n", format_pair(avl, &save));
+		free(save);
+	}
 }
 

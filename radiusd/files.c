@@ -556,7 +556,7 @@ userparse(buffer, first_pair, errmsg)
 	DICT_ATTR	*attr = NULL;
 	DICT_VALUE	*dval;
 	VALUE_PAIR	*pair, *pair2;
-	struct tm	*tm;
+	struct tm	*tm, tms;
 	time_t		timeval;
 	int		op;
 	static char errbuf[512];
@@ -670,7 +670,7 @@ userparse(buffer, first_pair, errmsg)
 
 			case TYPE_DATE:
 				timeval = time(NULL);
-				tm = localtime(&timeval);
+				tm = localtime_r(&timeval, &tms);
 				if (user_gettime(token, tm)) {
 					snprintf(errbuf, sizeof(errbuf),
 						_("%s: error parsing date %s"),
@@ -1319,12 +1319,12 @@ portcmp(check, request)
 	VALUE_PAIR *request;
 {
 	char buf[AUTH_STRING_LEN];
-	char *s, *p;
+	char *s, *p, *save;
 	int lo, hi;
 	int port = request->lvalue;
 
 	strcpy(buf, check->strvalue);
-	s = strtok(buf, ",");
+	s = strtok_r(buf, ",", &save);
 	while(s) {
 		if ((p = strchr(s, '-')) != NULL)
 			p++;
@@ -1335,7 +1335,7 @@ portcmp(check, request)
 		if (lo <= port && port <= hi) {
 			return 0;
 		}
-		s = strtok(NULL, ",");
+		s = strtok_r(NULL, ",", &save);
 	}
 
 	return -1;
@@ -1485,13 +1485,20 @@ paircmp(request, check)
 	char username[AUTH_STRING_LEN];
 	int result = 0;
 	int compare;
+	char *save;
 
 	while (result == 0 && check_item != NULL) {
 		if (server_attr(check_item->attribute)) {  
 			check_item = check_item->next;
 			continue;
 		}
-		debug(20, ("check_item: %s", format_pair(check_item)));
+
+		if (debug_on(20)) {
+			radlog(L_DEBUG, 
+		               "check_item: %s", 
+                               format_pair(check_item, &save));
+			free(save);
+		}
 
 		/*
 		 *	See if this item is present in the request.
@@ -1530,7 +1537,12 @@ paircmp(request, check)
 			continue;
 		}
 
-		debug(20, ("auth_item: %s", format_pair(auth_item)));
+		if (debug_on(20)) {
+			radlog(L_DEBUG,
+			       "auth_item: %s",
+			       format_pair(auth_item, &save));
+			free(save);
+		}
 
 		/*
 		 *	OK it is present now compare them.

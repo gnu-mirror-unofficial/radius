@@ -126,7 +126,7 @@ log_to_channel(chan, cat, pri, buf1, buf2, buf3)
 	char *prefix = NULL;
 	time_t	timeval;
 	char buffer[256];
-	struct tm *tm;
+	struct tm *tm, tms;
 	int spri;
 	FILE *fp;
 	
@@ -148,7 +148,7 @@ log_to_channel(chan, cat, pri, buf1, buf2, buf3)
 	switch (chan->mode) {
 	case LM_FILE:
 		timeval = time(NULL);
-		tm = localtime(&timeval);
+		tm = localtime_r(&timeval, &tms);
 		strftime(buffer, sizeof(buffer), "%b %d %H:%M:%S", tm);
 		fp = channel_open_file(chan);
 		if (!fp) /* FIXME: log to default channel */

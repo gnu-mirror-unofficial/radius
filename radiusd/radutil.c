@@ -204,7 +204,7 @@ curtime_to_str(obp, request, gmt)
 	int gmt;
 {
 	time_t curtime;
-	struct tm *tm;
+	struct tm *tm, tms;
 	VALUE_PAIR *pair;
 	char tbuf[AUTH_STRING_LEN];
 	int len;
@@ -215,7 +215,7 @@ curtime_to_str(obp, request, gmt)
 	if (gmt)
 		tm = gmtime(&curtime);
 	else
-		tm = localtime(&curtime);
+		tm = localtime_r(&curtime, &tms);
 				
 	len = strftime(tbuf, AUTH_STRING_LEN, "%Y-%m-%d %H:%M:%S", tm);
 	obstack_grow(obp, tbuf, len);

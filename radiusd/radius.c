@@ -119,7 +119,12 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
 	 */
 	ptr = auth->data;
 	while (reply) {
-		debug(10, ("reply: %s", format_pair(reply)));
+		if (debug_on(10)) {
+			char *save;
+			radlog(L_DEBUG,
+			       "reply: %s", format_pair(reply, &save));
+			free(save);
+		}
 
 		/*
 		 *	This could be a vendor-specific attribute.
@@ -440,7 +445,12 @@ radrecv(host, udp_port, buffer, length)
 				memcpy(pair->strvalue, ptr, attrlen);
 				pair->strvalue[attrlen] = 0;
 
-				debug(10, ("recv: %s", format_pair(pair)));
+				if (debug_on(10)) {
+					char *save;
+					radlog(L_DEBUG, "recv: %s",
+                                               format_pair(pair, &save));
+					free(save);
+				}
 
 				if (first_pair == NULL) 
 					first_pair = pair;
@@ -454,7 +464,13 @@ radrecv(host, udp_port, buffer, length)
 				memcpy(&lval, ptr, sizeof(UINT4));
 				pair->lvalue = ntohl(lval);
 
-				debug(10, ("recv: %s", format_pair(pair)));
+				if (debug_on(10)) {
+					char *save;
+					radlog(L_DEBUG, 
+					       "recv: %s", 
+                                               format_pair(pair, &save));
+					free(save);
+				}
 
 				if (first_pair == NULL) 
 					first_pair = pair;

@@ -258,14 +258,14 @@ ts_match(timespan, time_now, rest)
 	unsigned *rest;
 {
 	TIMESPAN *tp;
-	struct tm *tm;
+	struct tm *tm, tms;
 	unsigned now;
 	
 	if (!timespan) {
 		return 2;
 	}
 
-	tm = localtime(time_now);
+	tm = localtime_r(time_now, &tms);
 	now = tm->tm_wday * DAYMIN + tm->tm_hour * 60 + tm->tm_min;
 
 	for (tp = timespan; tp; tp = tp->next) {
@@ -319,11 +319,10 @@ int main(int argc, char **argv)
 	char           *p;
 	unsigned       rest;
 	int i;
-	struct tm *tmp, tm;
+	struct tm tm;
 
 	time(&t);
-	tmp = localtime(&t);
-	tm = *tmp;
+	localtime_r(&t, &tm);
 	
 	switch (argc) {
 	default:

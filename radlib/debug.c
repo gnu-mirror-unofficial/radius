@@ -64,11 +64,12 @@ set_debug_levels(str)
 	char *str;
 {
 	int  i;
-	char *tok, *p;
+	char *tok, *p, *save;
 	int  length;
 	int  level;
 
-	for (tok = strtok(str, ","); tok; tok = strtok(NULL, ",")) {
+	for (tok = strtok_r(str, ",", &save); tok; 
+             tok = strtok_r(NULL, ",", &save)) {
 		p = strchr(tok, '=');
 		if (p) {
 			length = p - tok;

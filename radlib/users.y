@@ -197,7 +197,7 @@ install_pair(name, op, valstr)
 	char *s;
 	int x;
 	time_t timeval;
-	struct tm *tm;
+	struct tm *tm, tms;
 	
 	if ((attr = attr_name_to_dict(name)) == (DICT_ATTR *)NULL) {
 		radlog(L_ERR, _("%s:%d: unknown attribute `%s'"),
@@ -304,7 +304,7 @@ install_pair(name, op, valstr)
 		
 	case TYPE_DATE:
 		timeval = time(0);
-		tm = localtime(&timeval);
+		tm = localtime_r(&timeval, &tms);
 		if (user_gettime(valstr, tm)) {
 			radlog(L_ERR,
 				_("%s:%d: %s: can't parse date"),

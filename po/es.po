@@ -1,5 +1,5 @@
 # Mensajes en español para GNU Radius.
-# Copyright (C) 2002, 2003 Free Software Foundation, Inc.
+# Copyright (C) 2002, 2003, 2004  Free Software Foundation, Inc.
 # This file is distributed under the same license as the GNU Radius package.
 #
 # Sergey Poznyakoff <gray@gnu.org>, 2003.

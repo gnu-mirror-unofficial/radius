@@ -1,5 +1,5 @@
 # Russian messages for GNU Radius -*- mode: po; buffer-file-coding-system: koi8-r; default-input-method: cyrillic-yawerty -*-
-# Copyright (C) 2003 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 # Sergey Poznyakoff <gray@gnu.org>, 2003.
 #
 # Замечания по лексике:

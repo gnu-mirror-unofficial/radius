@@ -1,5 +1,5 @@
 # Polish messages for GNU Radius -*- mode: po; buffer-file-coding-system: iso-8859-2; default-input-method: latin-2-prefix -*-
-# Copyright (C) 2003 Free Software Foundation, Inc.
+# Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 # Sergey Poznyakoff <gray@gnu.org>, 2003.
 # Krzysztof Kopera <Krzysztof_Kopera/HeadQ@netia.pl>, 2002.
 # 	  

@@ -275,11 +275,12 @@ rad_sql_getpwd(conn, query)
 	      PQresStatus(stat)));
 
 	if (stat == PGRES_TUPLES_OK) {
-		if (PQntuples(res) != 1 && PQnfields(res)) {
-			radlog(L_ERR,
-			       _("malformed query: %s"),
-			       query);
-		} else {
+		int ntuples = PQntuples(res);
+		if (ntuples > 1 && PQnfields(res)) {
+			radlog(L_NOTICE,
+			       _("query returned %d tuples: %s"),
+			       ntuples, query);
+		} else if (ntuples == 1) {
 			return_passwd = estrdup(PQgetvalue(res, 0, 0));
 		}
 	} else {

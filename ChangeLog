@@ -1,3 +1,12 @@
+2002-03-04  Sergey Poznyakoff
+
+	* radiusd/radiusd.c (rad_request_handle): Do not raise
+	  condition after starting a new thread.
+	  Added (a bit too extensive) debug logs.
+	* radiusd/request.c (request_get): Mark retrieved record with
+	  RS_PENDING flag. Added debug logs.
+	* radiusd/scheme.c: Reorganized inter-thread communication.
+
 2002-02-25  Sergey Poznyakoff 
 
 	* radiusd/radiusd.c (reread_config): Initialize socket_first to
@@ -332,7 +341,7 @@
 2002-01-11  Sergey Poznyakoff  
 
 	* snmplib/snmp_recv.c: Bugfix.
-	* radiusd/snmpserv.c: Fixed handling of GetNext PDUs.
++	* radiusd/snmpserv.c: Fixed handling of GetNext PDUs.
 	* raduse/raduse.h: Added rudimental GetNext requests.
 	* raduse/session.c: Likewise.
 	* raduse/stat.c: Likewise.

@@ -12,7 +12,7 @@
 AC_REVISION($Revision$)
 AC_INIT(radiusd/radiusd.c)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(gnu-radius, 0.95.94)
+AM_INIT_AUTOMAKE(gnu-radius, 0.95.95)
 AM_CONFIG_HEADER(config.h)
 
 ## * Available linguas
@@ -75,6 +75,7 @@ if test $USE_GUILE = yes; then
 	rad_CHECK_GUILE(,
 			[LIBRADSCM="libradscm.a libservscm.a"
                          RADSCM=radscm
+			 RADSESSION=radsession
 			 RADSCM_BUILT_SOURCES='$(DOT_X_FILES) $(DOT_DOC_FILES)'
 			 GUILE_PROCEDURES_TXT=guile-procedures.txt
 			 if test $USE_SERVER_GUILE = yes; then
@@ -88,6 +89,7 @@ AC_SUBST(GUILE_INCLUDES)
 AC_SUBST(GUILE_LIBS)
 AC_SUBST(LIBRADSCM)
 AC_SUBST(RADSCM)
+AC_SUBST(RADSESSION)
 AC_SUBST(RADSCM_BUILT_SOURCES)
 AC_SUBST(GUILE_PROCEDURES_TXT)
 

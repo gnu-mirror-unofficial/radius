@@ -949,7 +949,7 @@ sfn_realmuse(AUTH_MACH *m)
         if (!m->req->realm)
                 return;
         
-        if (radius_mlc_realm(m->req->realm) == 0)
+        if (radius_mlc_realm(m->req) == 0)
                 return;
         auth_format_msg(m, MSG_REALM_QUOTA);
         auth_log(m, _("Login failed"), NULL,
@@ -966,7 +966,7 @@ sfn_simuse(AUTH_MACH *m)
 	
         strip_username(strip_names,
                        m->namepair->avp_strvalue, m->user_check, name);
-        rc = radius_mlc_user(name, m->req->request,
+        rc = radius_mlc_user(name, m->req,
                              m->check_pair->avp_lvalue, &count);
         grad_avl_add_pair(&m->user_reply,
 			  grad_avp_create_integer(DA_SIMULTANEOUS_USE, count));

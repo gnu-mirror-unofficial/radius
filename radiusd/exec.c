@@ -63,12 +63,11 @@ rad_exec_cleanup(arg)
 	kill(p->pid, SIGKILL);
 }
 	
-
 /* Execute a program on successful authentication.
    Return 0 if exec_wait == 0.
    Return the exit code of the called program if exec_wait != 0.
-   NOTE: The routine relies upon SIGCHLD and SIGPIPE being
-   set to SIG_IGN. */
+   NOTE: The routine relies upon SIGCHLD being set ti SIG_IGN and
+   SIGPIPE being set to SIG_DFL. */
 int
 radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         char *cmd;
@@ -88,7 +87,7 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         char buffer[RAD_BUFFER_SIZE];
         struct passwd *pwd;
         struct cleanup_data cleanup_data;
-	
+
         if (cmd[0] != '/') {
                 radlog(L_ERR,
    _("radius_exec_program(): won't execute, not an absolute pathname: %s"),
@@ -106,7 +105,7 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
                        config.exec_user);
                 return -1;
         }
-        
+
         if (exec_wait) {
                 if (pipe(p) != 0) {
                         radlog(L_ERR|L_PERROR, _("couldn't open pipe"));
@@ -205,7 +204,7 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
 
         while (waitpid(pid, &status, 0) != pid)
                 ;
-	
+
 	pthread_cleanup_pop(0);
 
         fclose(fp);

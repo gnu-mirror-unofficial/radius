@@ -156,6 +156,7 @@ guile {
 	load-path "/usr/local/libexec/guile"; # Add given path to guile's
                                               # %load-list
 	load "lib.scm";         # Load given file
+	outfile	"guile.out";	# Redirect the guile output to the given file.
 };
 
 message {

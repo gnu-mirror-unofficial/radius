@@ -25,3 +25,7 @@ DEFAULT NAS-IP-Address = 127.0.0.5,
 		Cisco-PRI-Circuit = "ISDN 2:D:123",
 		Rewrite-Function = "cisco_fixup"
 	NULL
+
+DEFAULT NAS-Identifier = COMOS,
+		Rewrite-Function = "comos_start_stop"
+	NULL

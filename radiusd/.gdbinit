@@ -1,11 +1,11 @@
-# This file is part of GNU RADIUS.
-# Copyright (C) 2001, Sergey Poznyakoff
+# This file is part of GNU Radius.
+# Copyright (C) 2001,2003 Sergey Poznyakoff
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
 # modifications, as long as this notice is preserved.
 #
-# This program is distributed in the hope that it will be useful, but
+# GNU Radius is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
@@ -20,6 +20,7 @@ handle SIGUSR1 nostop noprint pass
 handle SIGUSR2 nostop noprint pass
 handle SIGPIPE nostop print pass
 handle SIGHUP  nostop noprint pass
+handle SIGCHLD nostop print pass
 
 # Make sure radiusd won't spawn any children 
 break main

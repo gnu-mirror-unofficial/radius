@@ -1,3 +1,26 @@
+2002-07-09  Sergey Poznyakoff 
+
+	* configure.ac: Check for pthread_atfork and libintl.h.
+	  If BUILD_INCLUDED_LIBINTL os defined add -Iintl to
+	  the INCLUDEPATH.
+	  When compiling with --disable-nls provide an empty
+	  define for dgettext (needed for included argp stuff).
+	  
+	* include/radargp.h (rad_common_argp_child): Was declared
+	  incorrectly.
+	* lib/radargp.c: Likewise.
+	* radlast/radlast.c: Likewise.
+	* radtest/main.c: Likewise.
+	* raduse/raduse.c: Likewise.
+	* radwho/radwho.c: Likewise.
+	* radzap/radzap.c: Likewise.
+	* radiusd/radiusd.c: Likewise.
+	  (main) Protect invocation of pthread_atfork with ifdef.
+	  This is temporary. Possibly I'll have to revive the
+	  %radius-sockets scheme hack.
+	
+	* lib/printutmp.c: Additional includes to compile on alpha.
+
 2002-07-08  Sergey Poznyakoff  
 
 	* include/radiusd.h (snmp_stmt_begin): Bugfix

@@ -38,7 +38,7 @@ For each substring matching the regular expression R in the string
 T, substitute the string s, and return the resulting string.
 
 *** qprn(S): built-in function
-Replace all non-printable characters in string S by their
+Replace all non-printable characters in string S with their
 corresponding hex value preceeded by a percent sign. Return the
 resulting string.
 
@@ -51,10 +51,9 @@ Returns the copy of the string S with all alphabetical characters
 converted to lower case.
 
 *** #pragma regexp allows to alter the type of regular expressions
-used. By default, basic regular expressions are used. The rest of
-line following #pragma regexp must consist of whitespace-separated
-regexp modifiers. Each regexp modifier is one of the following
-keywords:
+used. The rest of line following `#pragma regexp' must consist of
+whitespace-separated regexp modifiers. Each regexp modifier is one
+of the following keywords:
 
   extended      Use extended regular expressions
   icase         Ignore case
@@ -62,6 +61,8 @@ keywords:
 
 optionally preceeded by plus, indicating enabling the feature, or
 minus, indicating disabling it.
+
+Default is `-extended -icase -newline'.
 
 ** Realms
 

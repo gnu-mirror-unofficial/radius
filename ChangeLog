@@ -1,5 +1,24 @@
 2003-10-31  Sergey Poznyakoff
 
+	Several modifications proposed by Maurice Makaay.
+	
+	* NEWS: Updated
+	* THANKS: Added Maurice Makaay
+	* elisp/radconf-mode.el: Added new keywords.
+	* examples/config.syntax: Likewise.
+	* include/radiusd.h (auth_reject_malformed_names): New global
+	* raddb/dictionary: Added attributes from rfc2869.
+	* radiusd/auth.c (rad_auth_init): Send access-reject depending
+	on the value of auth_reject_malformed_names.
+	* radiusd/radius.c (radius_send_reply): Increase relevant
+	statistics counters.
+	* radiusd/radiusd.c: Initialize auth_reject_malformed_names
+	flag.
+	* radiusd/rewrite.y (tolower,toupper): New builtin functions. 	
+	* configure.ac: Raised version number to 1.1.92
+
+2003-10-31  Sergey Poznyakoff
+
 	* include/radiusd.h (huntgroup_access): Changed proto.
 	* radiusd/files.c: Likewise.
 	* radiusd/acct.c: Updated calls to huntgroup_access().

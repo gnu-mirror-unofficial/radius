@@ -388,7 +388,8 @@ radiusd_setup()
 	   executed after all other hooks */
 	radiusd_set_preconfig_hook(radiusd_preconfig_hook, NULL, 0);
 	radiusd_set_postconfig_hook(radiusd_postconfig_hook, NULL, 0);
-	
+
+	rewrite_init();
         snmp_init(0, 0, (snmp_alloc_t)emalloc, (snmp_free_t)efree);
 }
 
@@ -1303,7 +1304,7 @@ struct cfg_stmt config_syntax[] = {
 	{ "auth", CS_BLOCK, auth_stmt_begin, NULL, NULL, auth_stmt, NULL },
 	{ "acct", CS_BLOCK, acct_stmt_begin, NULL, NULL, acct_stmt, NULL  },
 	{ "proxy", CS_BLOCK, NULL, NULL, NULL, proxy_stmt, NULL  },
-	{ "rewrite", CS_BLOCK, NULL, NULL, NULL, rewrite_stmt, NULL },
+	{ "rewrite", CS_BLOCK, rewrite_stmt_term, NULL, NULL, rewrite_stmt, NULL },
 	{ "filters", CS_BLOCK, filters_stmt_term, NULL, NULL, filters_stmt,
 	  NULL },
 #ifdef USE_DBM

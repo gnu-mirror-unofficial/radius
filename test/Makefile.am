@@ -16,7 +16,13 @@ INCLUDES=-I$(top_srcdir)/include
 noinst_PROGRAMS=findport
 findport_SOURCES=findport.c
 SUBDIRS=raddb guile dejagnu
-EXTRA_DIST=test.sh 
+noinst_SCRIPTS=test.sh
+EXTRA_DIST=test.sh.m4
 CLEANFILES=acct log raddb/config raddb/client.conf
 #TESTS=@TESTDIR@
 TESTS_ENVIRONMENT=BUILDDIR=$(top_builddir) SOURCEDIR=$(top_srcdir)
+
+test.sh: $(srcdir)/test.sh.m4
+	$(M4) -DBUILDDIR=`cd $(top_builddir); pwd` \
+              -DSOURCEDIR=`cd $(top_srcdir); pwd` $? > $@
+	chmod 755 $@

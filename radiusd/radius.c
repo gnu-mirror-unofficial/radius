@@ -467,10 +467,11 @@ radrecv(host, udp_port, buffer, length)
 
 			case PW_TYPE_STRING:
 				/* attrlen always < AUTH_STRING_LEN */
+				pair->strlength = attrlen;
 				pair->strvalue = alloc_string(attrlen + 1);
 				memcpy(pair->strvalue, ptr, attrlen);
 				pair->strvalue[attrlen] = 0;
-				pair->strlength = strlen(pair->strvalue);
+				//pair->strlength = strlen(pair->strvalue);
 
 				if (debug_on(10)) 
 					debug_pair("recv", pair);

@@ -14,36 +14,18 @@
 EXTRA_DIST = \
  client.conf.in\
  config.in\
+ dictionary.in\
  hints\
  huntgroups\
  realms.in\
  sqlserver\
  users
 
-ALLTARGETS= \
- clients\
- dictionary\
- dict.voip\
- dict.cisco\
- dict.tunnel\
- naslist\
- nastypes
+ALLTARGETS= nastypes clients naslist
 
 all: $(ALLTARGETS)
 
 RADDB=$(top_srcdir)/raddb
-
-dictionary: $(RADDB)/dictionary
-	sed '/\$$INCLUDE dict\/compat/d;/\$$INCLUDE dict\/livingston/d;s/#\$$INCLUDE dict\/cisco/\$$INCLUDE dict.cisco/;s/#\$$INCLUDE dict\/voip/\$$INCLUDE dict.voip/;s/#\$$INCLUDE dict\/tunnel/\$$INCLUDE dict.tunnel/' $(RADDB)/dictionary > dictionary
-
-dict.voip: $(RADDB)/dict/voip
-	$(LN_S) $? $@
-
-dict.cisco: $(RADDB)/dict/cisco
-	$(LN_S) $? $@
-
-dict.tunnel: $(RADDB)/dict/tunnel
-	$(LN_S) $? $@
 
 nastypes: $(RADDB)/nastypes
 	$(LN_S) $? $@
@@ -54,7 +36,7 @@ clients: ../raddb/clients
 naslist: ../raddb/naslist
 	$(LN_S) $? $@
 
-CLEANFILES=$(ALLTARGETS) client.conf config realms
+CLEANFILES=$(ALLTARGETS) dictionary client.conf config realms
 
 distclean-local:; -rm -rf radiusd.pid log acct
 

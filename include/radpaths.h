@@ -37,6 +37,7 @@
 
 #define RADUTMP                 "radutmp"
 #define RADWTMP                 "radwtmp"
+#define RADMSGID                "radmsgid"
 
 #define RADSTAT                 "radius.stat"
 

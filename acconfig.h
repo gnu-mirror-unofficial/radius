@@ -83,7 +83,7 @@
 #undef DENY_SHELL
 
 /* Define this to enable Guile interface */
-#undef USE_GUILE
+#undef USE_SERVER_GUILE
 
 /* Define this to enable SNMP support */
 #undef USE_SNMP

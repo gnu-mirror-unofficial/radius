@@ -1056,7 +1056,7 @@ host            : value
 
 guile_stmt      : T_GUILE '{' guile_list '}'
                   {
-#ifdef USE_GUILE
+#ifdef USE_SERVER_GUILE
 			  use_guile = 1;
 #else
 			  radlog(L_WARN,
@@ -1072,7 +1072,7 @@ guile_list      : guile_def
 
 guile_def       : T_LOAD_PATH value EOL
                   {
-#ifdef USE_GUILE
+#ifdef USE_SERVER_GUILE
 			  if ($2.type != AT_STRING) {
 				  radlog(L_ERR, 
 					 _("%s:%d: wrong datatype (should be string)"),
@@ -1083,7 +1083,7 @@ guile_def       : T_LOAD_PATH value EOL
 		  }
                 | T_LOAD value EOL
                   {
-#ifdef USE_GUILE
+#ifdef USE_SERVER_GUILE
 			  if ($2.type != AT_STRING) {
 				  radlog(L_ERR, 
 					 _("%s:%d: wrong datatype (should be string)"),
@@ -1096,7 +1096,7 @@ guile_def       : T_LOAD_PATH value EOL
                 | T_SEVERITY value EOL
                   {
 			  if ($1 == L_DEBUG) {
-#ifdef USE_GUILE
+#ifdef USE_SERVER_GUILE
 				  int dbg;
 				  asgn(&dbg, &$2, AT_BOOL, 0);
 				  scheme_debug(dbg);

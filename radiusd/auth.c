@@ -933,7 +933,7 @@ void
 sfn_scheme(m)
 	MACH *m;
 {
-#ifdef USE_GUILE
+#ifdef USE_SERVER_GUILE
 	VALUE_PAIR *p;
 	
 	if (!use_guile) {

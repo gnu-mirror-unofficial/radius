@@ -49,7 +49,7 @@ static char rcsid[] =
 #include <symtab.h>
 #include <radutmp.h>
 #include <rewrite.h>
-#ifdef USE_GUILE
+#ifdef USE_SERVER_GUILE
 # include <libguile.h>
 #endif
 
@@ -507,7 +507,7 @@ rad_daemon()
 void
 rad_main()
 {
-#ifdef USE_GUILE
+#ifdef USE_SERVER_GUILE
 	char *argv[] = { "radiusd", NULL };
 	
 	scm_boot_guile (1, argv, rad_boot, NULL);

@@ -79,6 +79,7 @@ notify, T_NOTIFY
 off, T_BOOL, _Y(0)
 on, T_BOOL, _Y(1)
 option, T_OPTION
+password-expire-warning, T_EXPWARNING
 port, T_PORT
 proxy, T_PROXY
 read_only, T_SNMP_ACCESS, _Y(SNMP_RO)

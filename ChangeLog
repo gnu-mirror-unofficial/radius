@@ -1,4 +1,16 @@
 2001-10-18 Sergey Poznyakoff
+
+	Changed way of reading raddb/ files. Not thoroughly tested, though.
+
+	* radlib/getline.c: (new) Read line of arbitrary length from
+	a stream.
+	* radlib/Makefile.am: Added getline.c
+	* radlib/argcv.c: Ignore trailing whitespace.
+	* radlib/raddb.c: Use getline+argcv_get.
+
+	* TODO: Updated.
+
+2001-10-18 Sergey Poznyakoff
 	
 	Removed length limit on shared secret. Files affected:
 

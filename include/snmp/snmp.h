@@ -169,6 +169,7 @@ void snmp_init(int retries, int timeout,
 	       snmp_alloc_t memalloc, snmp_free_t memfree);
 
 oid_t oid_dup(oid_t oid);
+oid_t oid_create(int len);
 oid_t oid_create_from_string(char *str);
 oid_t oid_create_from_subid(int len, subid_t *subid);
 
@@ -195,6 +196,7 @@ void snmp_var_free(struct snmp_var *var);
 void snmp_var_free_list(struct snmp_var *var);
 struct snmp_var *snmp_var_create(oid_t oid);
 struct snmp_var *snmp_var_dup(struct snmp_var *src);
+struct snmp_var *snmp_var_dup_list(struct snmp_var *var);
 u_char *snmp_var_encode(u_char *data, int *length, struct snmp_var *var,
 			int version);
 u_char *snmp_var_decode(u_char *data, int *length, struct snmp_var **var,

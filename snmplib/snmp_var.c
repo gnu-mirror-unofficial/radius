@@ -139,6 +139,27 @@ snmp_var_dup(src)
 	return var;
 }
 
+struct snmp_var *
+snmp_var_dup_list(var)
+	struct snmp_var *var;
+{
+	struct snmp_var *var_head, *var_tail, *vp;
+
+	var_head = var_tail = NULL;
+	for (; var; var = var->next) {
+		if ((vp = snmp_var_dup(var)) == NULL) {
+			snmp_var_free_list(var_head);
+			return NULL;
+		}
+		if (var_tail)
+			var_tail->next = vp;
+		else
+			var_head = vp;
+		var_tail = vp;
+	}
+	return var_head;
+}
+	
 /* RFC 1905: Protocol Operations for SNMPv2
    VarBind ::= SEQUENCE {
 	 name ObjectName

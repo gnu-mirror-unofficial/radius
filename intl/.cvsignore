@@ -3,3 +3,7 @@ Makefile
 *.lo
 .deps
 .libs
+libintl.h
+charset.alias
+ref-add.sed 
+ref-del.sed

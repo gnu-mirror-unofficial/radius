@@ -29,6 +29,7 @@
 	* radlast/radlast.c (parse_opt): Bugfix.
 	* radwho/radwho.c: Added utmp-related preprocessor stuff, taken
 	  from include/sysdep.h
+	* lib/printutmp.c: (output_tab): Bugfix.
 
 	* po/no.po: Updated.
 	* TODO: Updated.

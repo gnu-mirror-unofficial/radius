@@ -212,10 +212,50 @@ radius_acct_req_decode(struct sockaddr_in *sa,
 	return 0;
 }
 
+static int crypt_attrlist[] = { DA_USER_PASSWORD, DA_CHAP_PASSWORD };
+
+VALUE_PAIR *
+radius_decrypt_request_pairs(RADIUS_REQ *req)
+{
+	VALUE_PAIR *newlist = avl_dup(req->request);
+	VALUE_PAIR *pair;
+	char password[AUTH_STRING_LEN+1];
+	int i;
+
+	for (pair = newlist; pair; pair = pair->next) 
+		for (i = 0; i < NITEMS(crypt_attrlist); i++) {
+			if (pair->attribute == crypt_attrlist[i]) {
+				req_decrypt_password(password, req, pair);
+				efree(pair->avp_strvalue);
+				pair->avp_strvalue = estrdup(password);
+				pair->avp_strlength = strlen(pair->avp_strvalue);
+			}
+		}
+	return newlist;
+}
+
+void
+radius_destroy_pairs(VALUE_PAIR **p)
+{
+	VALUE_PAIR *pair;
+	int i;
+	
+	if (!p || !*p)
+		return;
+	for (pair = *p; pair; pair = pair->next) 
+		for (i = 0; i < NITEMS(crypt_attrlist); i++) {
+			if (pair->attribute == crypt_attrlist[i]) 
+				memset(pair->avp_strvalue, 0,
+				       pair->avp_strlength);
+		}
+
+	avl_free(*p);
+	*p = NULL;
+}
+
 static VALUE_PAIR *
 _extract_pairs(RADIUS_REQ *req, int prop)
 {
-	static int attrlist[] = { DA_USER_PASSWORD, DA_CHAP_PASSWORD };
 	int i;
 	VALUE_PAIR *newlist = NULL;
 	VALUE_PAIR *pair;
@@ -223,8 +263,8 @@ _extract_pairs(RADIUS_REQ *req, int prop)
 	int found = 0;
 	
 	for (pair = req->request; !found && pair; pair = pair->next) 
-		for (i = 0; i < NITEMS(attrlist); i++) {
-			if (pair->attribute == attrlist[i]
+		for (i = 0; i < NITEMS(crypt_attrlist); i++) {
+			if (pair->attribute == crypt_attrlist[i]
 			    && (pair->prop & prop)) {
 				found = 1;
 				break;
@@ -236,8 +276,8 @@ _extract_pairs(RADIUS_REQ *req, int prop)
 
 	newlist = avl_dup(req->request);
 	for (pair = newlist; pair; pair = pair->next) 
-		for (i = 0; i < NITEMS(attrlist); i++) {
-			if (pair->attribute == attrlist[i]
+		for (i = 0; i < NITEMS(crypt_attrlist); i++) {
+			if (pair->attribute == crypt_attrlist[i]
 			    && (pair->prop & prop)) {
 				req_decrypt_password(password, req, pair);
 				efree(pair->avp_strvalue);
@@ -313,8 +353,8 @@ radius_req_cmp(void *adata, void *bdata)
 	
 	rc = avl_cmp(ap, bp, prop) || avl_cmp(bp, ap, prop);
 
-	avl_free(alist);
-	avl_free(blist);
+	radius_destroy_pairs(&alist);
+	radius_destroy_pairs(&blist);
 	
 	if (rc == 0) {
 		/* We need to replace A/V pairs, authenticator and ID

@@ -139,6 +139,9 @@ typedef struct {
         RADIUS_SERVER *first_server;   /* List of servers */
 } RADIUS_SERVER_QUEUE;    
 
+struct value_pair;
+typedef int (*attr_parser_fp)(struct value_pair *p, char **s);
+
 /* Dictionary attribute */
 typedef struct dict_attr {
         struct dict_attr        *next;      /* Link to the next attribute */
@@ -147,6 +150,7 @@ typedef struct dict_attr {
         int                     type;       /* Data type */
         int                     vendor;     /* Vendor index */
         int                     prop;       /* Properties */
+	attr_parser_fp          parser;     /* Not-NULL for "abinary" */
 } DICT_ATTR;
 
 /* Dictionary value */
@@ -406,3 +410,6 @@ RADIUS_SERVER *rad_clt_find_server(RADIUS_SERVER *list, char *name);
 
 /* log.c */
 char *rad_print_request(RADIUS_REQ *req, char *outbuf, size_t size);
+
+/* ascend.c */
+int ascend_parse_filter(VALUE_PAIR *pair, char **errp);

@@ -70,7 +70,10 @@
   (setq rad-mode-map (make-sparse-keymap))
   (define-key rad-mode-map "=" 'rad-electric-equal)
   (define-key rad-mode-map "," 'rad-electric-comma)
-  (define-key rad-mode-map "\t" 'rad-indent-command) )
+  (define-key rad-mode-map "\t" 'rad-indent-command)
+  (define-key rad-mode-map "\C-c\C-n" 'rad-next-profile)
+  (define-key rad-mode-map "\C-c\C-p" 'rad-prev-profile)
+  (define-key rad-mode-map "\C-c\C-r" 'rad-load-dictionary))
 
 
 (defconst rad-re-value "\\(\\w\\|\\s\"\\|\\.\\)+"
@@ -262,8 +265,51 @@
   (rad-complete "=\\s *\\(\\w+\\)" rad-value-dict
 		'rad-select-attr-values "value: " ?,))
 
-(defvar radius-db-path "/usr/local/etc/raddb")
+;; Wrapper for rad-{next,prev}-profile functions
+;; Arguments: dir   -- seek direction, ether 1 or -1
+;;            comp  -- function returning t where we should stop the search
+;;            count -- seek for count-th profile
+(defun rad-move-to-profile (dir comp count)
+  (while (> count 0)
+    (setq count (1- count))
+    (forward-line dir)
+    (while (and (funcall comp)
+		(not (let ((syntax (rad-guess-syntax)))
+		       (and
+			(eq (car syntax) 'rad-defn)
+			(eq (cdr syntax) 0))))
+		(forward-line dir)))))
 
+(defun rad-next-profile (&optional arg)
+  "Move point to the beginning of the next profile entry. With optional
+argument, skip that many profile entries.
+"
+  (interactive "p")
+  (rad-move-to-profile 1
+		       '(lambda ()
+			  (not (eobp)))
+		       (or arg 1)))
+
+(defun rad-prev-profile (arg)
+  "Move point to the beginning of the previous profile entry. With optional
+argument, skip that many profile entries.
+"
+  (interactive "p")
+  (rad-move-to-profile -1
+		       '(lambda ()
+			  (not (bobp)))
+		       (or arg 1)))
+
+(defvar radius-db-path "/usr/local/etc/raddb"
+  "Path to Radius database")
+
+(defun rad-load-dictionary (&optional arg)
+  "Read Radius dictionary file. Use optional arg to specify alternative
+database directory instead of radius-db-path.
+"
+  (let ((path (or arg radius-db-path)))
+    (rad-read-dictionary (concat path "/dictionary"))))
+    
 ;;;###autoload
 (defun radius-mode ()
   "Major mode for editing GNU Radius configuration files: users, hints,

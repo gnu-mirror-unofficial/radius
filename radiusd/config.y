@@ -1364,18 +1364,10 @@ get_config()
 /* Note: can't check YYDEBUG here, because some yaccs (namely, sun's)
  *       define YYDEBUG after including code block
  */	
-#if defined(YACC_DEBUG)
 		yydebug = 1;
-#else
-		radlog(L_WARN,
-		    _("%s:%d: #debug ignored: radiusd compiled without parser debugging support"),
-		    filename, line_num);
-#endif
 		debug_config = 1;
 	} else {
-#if defined(YACC_DEBUG)
 		yydebug = 0;
-#endif
 		debug_config = 0;
 	}
 

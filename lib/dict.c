@@ -286,6 +286,10 @@ _dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
                 }
         } else if (value > 255)
 		flags |= AP_INTERNAL;
+	/* FIXME: A temporary hack until all users update their dictionaries */
+	else if (value == DA_USER_PASSWORD
+		 || value == DA_USER_PASSWORD)
+		prop |= AP_ENCRYPT_RFC2138;
 
         if (HAS_FLAGS(fc,fv)) {
                 char *p;
@@ -322,9 +326,6 @@ _dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
                         case 'P':
                                 prop |= AP_PROPAGATE;
                                 break;
-			case 'c':
-				prop |= AP_REQ_CMP;
-				break;
 			case 'l':
 				prop &= ~AP_INTERNAL;
 				break;
@@ -342,6 +343,15 @@ _dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
 			case 'b':
 				prop |= AP_BINARY_STRING;
                                 break;
+			case 'E':
+				prop |= AP_ENCRYPT_RFC2138;
+				break;
+			case 'T':
+				prop |= AP_ENCRYPT_RFC2868;
+				break;
+			case 'c':
+				/* Retained for compatibility */
+				break;
                         default:
                                 radlog_loc(L_ERR, loc,
 					   _("invalid flag %c"),

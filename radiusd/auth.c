@@ -475,9 +475,7 @@ rad_auth_init(RADIUS_REQ *radreq, int activefd)
 enum auth_state {
         as_init,
         as_validate,
-        as_service, 
         as_disable, 
-        as_service_type,
         as_realmuse,
         as_simuse, 
         as_time, 
@@ -523,9 +521,7 @@ static void sfn_init(AUTH_MACH*);
 static void sfn_validate(AUTH_MACH*);
 static void sfn_eval_reply(AUTH_MACH*);
 static void sfn_scheme(AUTH_MACH*);
-static void sfn_service(AUTH_MACH*);
 static void sfn_disable(AUTH_MACH*);
-static void sfn_service_type(AUTH_MACH*);
 static void sfn_realmuse(AUTH_MACH*);
 static void sfn_simuse(AUTH_MACH*);
 static void sfn_time(AUTH_MACH*);
@@ -552,18 +548,12 @@ struct auth_state_s states[] = {
         as_init,         as_validate,
                          0,               L_null,     sfn_init,
 
-        as_validate,     as_service,
+        as_validate,     as_disable,
                          0,               L_null,     sfn_validate,
         
-        as_service,      as_disable,
-                         DA_SERVICE_TYPE, L_req, sfn_service,
-        
-        as_disable,      as_service_type,
+        as_disable,      as_realmuse,
                          0,               L_null,     sfn_disable,
         
-        as_service_type, as_realmuse,
-                         DA_SERVICE_TYPE, L_reply, sfn_service_type,
-
         as_realmuse,     as_simuse,
                          0,               L_null,     sfn_realmuse, 
         
@@ -715,7 +705,7 @@ rad_authenticate(RADIUS_REQ *radreq, int activefd)
         m.timeout_pair = NULL;
         m.user_msg   = NULL;
         obstack_init(&m.msg_stack);
-        /*FIXME: this should have been cached by rad_auth_init */
+
         m.namepair = avl_find(m.req->request, DA_USER_NAME);
 
         debug(1, ("auth: %s", m.namepair->avp_strvalue)); 
@@ -979,33 +969,11 @@ sfn_validate(AUTH_MACH *m)
 }
 
 void
-sfn_service(AUTH_MACH *m)
-{
-        /* FIXME: Other service types should also be handled,
-         *        I suppose     
-         */
-        if (m->check_pair->avp_lvalue != DV_SERVICE_TYPE_AUTHENTICATE_ONLY)
-                return;
-        newstate(as_ack);
-}
-
-void
 sfn_disable(AUTH_MACH *m)
 {
         if (get_deny(m->namepair->avp_strvalue)) {
                 auth_format_msg(m, MSG_ACCOUNT_CLOSED);
                 auth_log(m, _("Account disabled"), NULL, NULL, NULL);
-                newstate(as_reject);
-        }
-}
-
-void
-sfn_service_type(AUTH_MACH *m)
-{
-        if (m->check_pair->avp_lvalue == DV_SERVICE_TYPE_AUTHENTICATE_ONLY) {
-                auth_log(m, _("Login rejected"), NULL,
-                         _("Authenticate only user"), NULL);
-                auth_format_msg(m, MSG_ACCESS_DENIED);
                 newstate(as_reject);
         }
 }
@@ -1150,8 +1118,7 @@ sfn_exec_wait(AUTH_MACH *m)
 			rc = radius_exec_program(p->avp_strvalue,
 					         m->req,
 					         &m->user_reply,
-					         1,
-					         &m->user_msg);
+					         1);
 			break;
 
 		case '|':
@@ -1185,14 +1152,12 @@ sfn_exec_nowait(AUTH_MACH *m)
 {
 	VALUE_PAIR *p;
 	
-        /*FIXME: do we need to pass user_reply here? */
 	for (p = m->check_pair;
              p;
              p = avl_find(p->next, DA_EXEC_PROGRAM)) {
 		
 		radius_exec_program(m->check_pair->avp_strvalue,
-				    m->req, &m->user_reply,
-				    0, NULL);
+				    m->req, NULL, 0);
 
 	}
 }

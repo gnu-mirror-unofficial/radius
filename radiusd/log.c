@@ -462,6 +462,7 @@ static struct category_def {
 	int pri;
         RAD_LIST /* of Channel */ *clist;
         int level;
+	char *hook;
 } cat_def;
 
 static struct keyword syslog_facility[] = {
@@ -716,6 +717,7 @@ category_stmt_end(void *block_data, void *handler_data)
 		switch (cat_def.cat) {
 		case L_AUTH:
 			log_mode = cat_def.level;
+			auth_log_hook = cat_def.hook;
 			break;
 		default:
 			if (cat_def.level)
@@ -933,6 +935,8 @@ static struct cfg_stmt category_stmt[] = {
 	  category_set_flag, (void*)RLOG_AUTH_PASS, NULL, NULL },
 	{ "level", CS_STMT, NULL,
 	  category_set_level, NULL, NULL, NULL },
+	{ "hook", CS_STMT, NULL, cfg_get_string, &cat_def.hook,
+	  NULL, NULL },
 	{ NULL }
 };
 

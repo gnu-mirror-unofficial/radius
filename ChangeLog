@@ -1,3 +1,35 @@
+2002-05-29  Sergey Poznyakoff  
+
+	* lib/radpdu.c (rad_pdu_finish): Bugfix: sealing of
+	  RT_ACCOUNTING_REQUESTs was incorrect.
+	  
+	* lib/debug.c (auth_code_abbr): new function. Print abbreviated
+	  request type.
+	* lib/logger.c (rad_print_request): Format the request into
+	  given output buffer. NOTES: Format must be revised. 
+	  (radlog_req): Output a diagnostic message along with the
+	  short request data.
+	  
+	* include/log.h: Proto for radlog_req and definition for
+	  MAXIDBUFSIZE (the latter should certainly be fixed).
+	* include/radius.h: Proto for rad_print_request.
+
+*	* radiusd/acct.c: Use radlog_req where appropriate.
+	* radiusd/auth.c: Likewise.
+	* radiusd/proxy.c: Likewise.
+	* radiusd/radius.c: Likewise.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/radutil.c: Likewise.
+	* radiusd/sql.c: Likewise.
+	
+	* radiusd/log.c: Removed extra colon the diagnostic output.
+
+	* radscm/rscm_dict.c: Added radscm.h
+	* radscm/rscm_radlog.c: Likewise.
+	* radscm/rscm_rewrite.c: Likewise.
+	* radscm/rscm_syslog.c: Likewise.
+	* radscm/rscm_utmp.c: Likewise.
+	
 2002-05-18  Sergey Poznyakoff 
 
 	Client / Server Proxy revised.

@@ -123,7 +123,7 @@ static struct argp argp = {
         parse_opt,
         NULL,
         doc,
-        &rad_common_argp_child,
+        rad_common_argp_child,
         NULL, NULL
 };
 

@@ -54,11 +54,9 @@ struct argp rad_common_argp = {
         NULL
 };
 
-struct argp_child rad_common_argp_child = {
-        &rad_common_argp,
-        0,
-        N_("Common options"),
-        1
+struct argp_child rad_common_argp_child[] = {
+        { &rad_common_argp, 0, N_("Common options"), 1 },
+	{ NULL },
 };
 
 

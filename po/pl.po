@@ -1,6 +1,6 @@
 # Polish messages for GNU Radius -*- mode: po; buffer-file-coding-system: iso-8859-2; default-input-method: latin-2-prefix -*-
-# Copyright (C) 2003, 2004 Free Software Foundation, Inc.
-# Sergey Poznyakoff <gray@gnu.org>, 2003.
+# Copyright (C) 2004 Free Software Foundation, Inc.
+# Sergey Poznyakoff <gray@gnu.org>, 2003,2004.
 # Krzysztof Kopera <Krzysztof_Kopera/HeadQ@netia.pl>, 2002.
 # 	  
 # Local Variables:
@@ -8,17 +8,16 @@
 # End:
 msgid ""
 msgstr ""
-"Project-Id-Version: radius 1.2\n"
+"Project-Id-Version: radius 1.2.93\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
-"POT-Creation-Date: 2004-06-25 15:47+0300\n"
-"PO-Revision-Date: 2004-06-25 15:47+0300\n"
+"POT-Creation-Date: 2004-06-26 13:01+0300\n"
+"PO-Revision-Date: 2004-06-29 11:41+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
-"|| n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
 #: lib/avl.c:91
 #, c-format
@@ -28,8 +27,7 @@ msgstr "make_pair(): atrybutu %d nie odnaleziono w s³owniku"
 #: lib/client.c:126
 #, c-format
 msgid "Actual request length does not match reported length (%d, %d)"
-msgstr ""
-"Rzeczywista d³ugo¶æ ¿±dania ró¿ni siê od d³ugo¶ci zameldowanej (%d, %d)"
+msgstr "Rzeczywista d³ugo¶æ ¿±dania ró¿ni siê od d³ugo¶ci zameldowanej (%d, %d)"
 
 #: lib/client.c:140
 msgid "Received invalid reply digest from server"
@@ -60,7 +58,7 @@ msgstr "b³êdna ilo¶æ pól"
 msgid "bad IP address or host name"
 msgstr "niepoprawny adres IP czy nazwa hosta"
 
-#: lib/client.c:427 lib/client.c:434 radtest/main.c:208 radtest/main.c:217
+#: lib/client.c:427 lib/client.c:434 radtest/main.c:212 radtest/main.c:221
 #, c-format
 msgid "bad port number %s"
 msgstr "niew³a¶ciwy numer portu %s"
@@ -231,9 +229,7 @@ msgstr "login: pozycja dla NAS-u %s, port %d wystêpuje w porz±dku b³êdnym"
 #: lib/radutmp.c:179
 #, c-format
 msgid "logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"
-msgstr ""
-"logout: pozycja dla NAS-u %s, port %d ma b³êdny ID (spodziewano %s, "
-"odnaleziono %s)"
+msgstr "logout: pozycja dla NAS-u %s, port %d ma b³êdny ID (spodziewano %s, odnaleziono %s)"
 
 #: lib/radutmp.c:203
 #, c-format
@@ -332,12 +328,8 @@ msgid "Garbage in ARGP_HELP_FMT: %s"
 msgstr "B³êdne dane w ARGP_HELP_FMT: %s"
 
 #: lib/argp-help.c:1200
-msgid ""
-"Mandatory or optional arguments to long options are also mandatory or "
-"optional for any corresponding short options."
-msgstr ""
-"Argumenty obowi±zkowe lub opcjonalne dla d³ugich opcji s± równie¿ "
-"obowi±zkowe lub opcjonalne dla odpowiednich krótkich opcji."
+msgid "Mandatory or optional arguments to long options are also mandatory or optional for any corresponding short options."
+msgstr "Argumenty obowi±zkowe lub opcjonalne dla d³ugich opcji s± równie¿ obowi±zkowe lub opcjonalne dla odpowiednich krótkich opcji."
 
 #: lib/argp-help.c:1580
 msgid "Usage:"
@@ -811,9 +803,7 @@ msgstr "nie mo¿na porzuciæ uprawnieñ setuid u¿ytkownika"
 #: radiusd/exec.c:174 radiusd/exec.c:262
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
-msgstr ""
-"radius_exec_program(): nie mo¿na uruchomiæ, nazwa programu nie jest pe³n± "
-"nazw± ¶cie¿ki: %s"
+msgstr "radius_exec_program(): nie mo¿na uruchomiæ, nazwa programu nie jest pe³n± nazw± ¶cie¿ki: %s"
 
 #: radiusd/exec.c:180 radiusd/exec.c:273
 msgid "can't reset SIGCHLD"
@@ -825,11 +815,8 @@ msgstr "nie mo¿na odtworzyæ obs³ugi SIGCHLD"
 
 #: radiusd/exec.c:225 radiusd/exec.c:359
 #, c-format
-msgid ""
-"can't run external program `%s' (reason reported via syslog channel user.err)"
-msgstr ""
-"nie mo¿na wykonaæ programu zewnêtrznego `%s' (powód raportowany przez kana³ "
-"syslog user.err)"
+msgid "can't run external program `%s' (reason reported via syslog channel user.err)"
+msgstr "nie mo¿na wykonaæ programu zewnêtrznego `%s' (powód raportowany przez kana³ syslog user.err)"
 
 #: radiusd/exec.c:236 radiusd/exec.c:368
 #, c-format
@@ -951,8 +938,7 @@ msgstr "u¿ycie jedynie dbm: U¯YTKOWNICY NIEZA£ADOWANI"
 
 #: radiusd/files.c:1656
 msgid "DBM files found but no -b flag given - NOT using DBM"
-msgstr ""
-"znaleziono pliki DBM lecz nie podano znacznika -b,  DBM NIE jest u¿ywane"
+msgstr "znaleziono pliki DBM lecz nie podano znacznika -b,  DBM NIE jest u¿ywane"
 
 #: radiusd/files.c:1660
 #, c-format
@@ -1191,9 +1177,7 @@ msgstr "Match-Profile odnosi siê do profilu DEFAULT"
 
 #: radiusd/radck.c:280
 msgid "Simultaneous-Use is used, but multiple login checking is not enabled"
-msgstr ""
-"U¿ywa siê atrybutu Simultaneous-Use, ale sprawdzanie logowañ wielokrotnych "
-"nie jest w³±czone"
+msgstr "U¿ywa siê atrybutu Simultaneous-Use, ale sprawdzanie logowañ wielokrotnych nie jest w³±czone"
 
 #: radiusd/radck.c:320 radiusd/radck.c:351
 msgid "No User-Password attribute in LHS"
@@ -1201,8 +1185,7 @@ msgstr "W LHS brakuje atrybutu User-Password"
 
 #: radiusd/radck.c:328
 msgid "Auth-Type = System can only be used when running with root privileges"
-msgstr ""
-"Auth-Type = System mo¿na u¿ywaæ tylko podczas wykonania z uprawnieniami roota"
+msgstr "Auth-Type = System mo¿na u¿ywaæ tylko podczas wykonania z uprawnieniami roota"
 
 #: radiusd/radck.c:338 radiusd/radck.c:375
 msgid "User-Password attribute ignored for this Auth-Type"
@@ -1459,8 +1442,7 @@ msgstr "Rozpoczêto ponowne uruchomienie"
 
 #: radiusd/radiusd.c:744
 msgid "can't restart: not started as absolute pathname"
-msgstr ""
-"nie mo¿na ponownie uruchomiæ: nazwa programu nie jest pe³n± nazw± ¶cie¿ki"
+msgstr "nie mo¿na ponownie uruchomiæ: nazwa programu nie jest pe³n± nazw± ¶cie¿ki"
 
 #: radiusd/radiusd.c:756
 msgid "radiusd_restart: cannot fork"
@@ -1790,8 +1772,7 @@ msgstr "%s nie jest obiektem-procedur±"
 #: radiusd/scheme.c:233
 #, c-format
 msgid "Procedure `%s' failed: see error output for details"
-msgstr ""
-"Procedura `%s' nie powiod³a siê: szczegó³y patrz w pliku wyj¶cia b³êdów"
+msgstr "Procedura `%s' nie powiod³a siê: szczegó³y patrz w pliku wyj¶cia b³êdów"
 
 #: radiusd/scheme.c:337 radiusd/scheme.c:381
 #, c-format
@@ -1943,8 +1924,7 @@ msgstr "SQL: b³êdny operator: %s"
 
 #: radiusd/sql.c:1076
 msgid "SQL authentication is not enabled in raddb/sqlserver"
-msgstr ""
-"Uwierzytelnienie przez SQL nie zosta³o w³±czone w pliku raddb/sqlserver"
+msgstr "Uwierzytelnienie przez SQL nie zosta³o w³±czone w pliku raddb/sqlserver"
 
 #: radiusd/sql.c:1303
 msgid "Radiusd is compiled without SQL support"
@@ -1972,11 +1952,8 @@ msgid "stat_init failed"
 msgstr "stat_init nie powiod³a siê"
 
 #: radiusd/stat.c:227
-msgid ""
-"reached SNMP storage limit for the number of monitored ports: increase max-"
-"port-count"
-msgstr ""
-"osi±gniêto ograniczenie liczby nadzorowanych portów: zwiêksz max-port-count"
+msgid "reached SNMP storage limit for the number of monitored ports: increase max-port-count"
+msgstr "osi±gniêto ograniczenie liczby nadzorowanych portów: zwiêksz max-port-count"
 
 #: radiusd/stat.c:287
 #, c-format
@@ -1997,11 +1974,8 @@ msgid "negative port session time"
 msgstr "ujemna d³ugo¶æ sesji"
 
 #: radiusd/stat.c:468
-msgid ""
-"reached SNMP storage limit for the number of monitored NASes: increase max-"
-"nas-count"
-msgstr ""
-"osi±gniêto ograniczenie liczby nadzorowanych NAS-ów: zwiêksz max-nas-count"
+msgid "reached SNMP storage limit for the number of monitored NASes: increase max-nas-count"
+msgstr "osi±gniêto ograniczenie liczby nadzorowanych NAS-ów: zwiêksz max-nas-count"
 
 #: radiusd/version.c:137
 msgid "GNU RADIUS server version "
@@ -2086,9 +2060,7 @@ msgstr "Unicestwienie nieodpowiadaj±cego procesu %lu"
 
 #: radiusd/rpp.c:440
 msgid "Child exiting on timeout."
-msgstr ""
-"Podproces zakoñczono: przekroczony czas oczekiwania na wej¶cie z procesu "
-"g³ównego"
+msgstr "Podproces zakoñczono: przekroczony czas oczekiwania na wej¶cie z procesu g³ównego"
 
 #: radiusd/rpp.c:489
 #, c-format
@@ -2297,7 +2269,7 @@ msgstr "rozl_wy³"
 msgid "acct_on"
 msgstr "rozl_w³"
 
-#: radscm/radscm.c:312 radtest/main.c:161
+#: radscm/radscm.c:312 radtest/main.c:162
 msgid "error reading dictionary file"
 msgstr "b³±d odczytu pliku s³ownika"
 
@@ -2327,12 +2299,8 @@ msgid "set debugging level"
 msgstr "ustawia poziom odpluskwiania"
 
 #: radtest/main.c:71
-msgid ""
-"Read input from FILE. When this option is used, all unknown options in the "
-"form --VAR=VALUE are treated as variable assignments"
-msgstr ""
-"Odczyt wej¶cia z PLIKU. Po wyst±pieniu tej opcji wszystkie nieznane opcje w "
-"formie --ZMIENNA=WARTO¦Æ s± traktowane jako podstawienia"
+msgid "Read input from FILE. When this option is used, all unknown options in the form --VAR=VALUE are treated as variable assignments"
+msgstr "Odczyt wej¶cia z PLIKU. Po wyst±pieniu tej opcji wszystkie nieznane opcje w formie --ZMIENNA=WARTO¦Æ s± traktowane jako podstawienia"
 
 #: radtest/main.c:77
 msgid "set number of retries"
@@ -2354,44 +2322,44 @@ msgstr "ustawia limit przekroczenia czasu oczekiwania na odpowied¼"
 msgid "verbose mode"
 msgstr "tryb opisowy"
 
-#: radtest/main.c:179
+#: radtest/main.c:183
 msgid "can't parse server definition"
 msgstr "b³±d analizy definicji serwera"
 
-#: radtest/main.c:184
+#: radtest/main.c:188
 msgid "no shared secret for the server"
 msgstr "brak klucza wspó³dzielonego dla tego serwera"
 
-#: radtest/main.c:196
+#: radtest/main.c:200
 #, c-format
 msgid "bad IP address or host name: %s"
 msgstr "niepoprawny adres IP czy nazwa hosta: %s"
 
-#: radtest/main.c:225
+#: radtest/main.c:229
 #, c-format
 msgid "bad separator near %s"
 msgstr "niew³a¶ciwy separator przy %s"
 
-#: radtest/main.c:244
+#: radtest/main.c:248
 msgid "No servers specfied. Use -s option.\n"
 msgstr "¯aden serwer nie zosta³ podany. U¿yj opcji -s.\n"
 
-#: radtest/main.c:294
+#: radtest/main.c:300
 #, c-format
 msgid "assign: expected `='\n"
 msgstr "podstawienie: spodziewano `='\n"
 
-#: radtest/main.c:316
+#: radtest/main.c:322
 #, c-format
 msgid "assign: missing closing quote\n"
 msgstr "podstawienie: brak zamykaj±cego cudzys³owa\n"
 
-#: radtest/main.c:335 radtest/main.c:344
+#: radtest/main.c:341 radtest/main.c:350
 #, c-format
 msgid "assign: invalid IP address: %s\n"
 msgstr "podstawienie: b³êdny adres IP: %s\n"
 
-#: radtest/main.c:477
+#: radtest/main.c:465
 msgid "wrong datatype: expected vector"
 msgstr "b³êdny typ danych: spodziewano wektor"
 

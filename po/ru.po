@@ -1,6 +1,6 @@
 # Russian messages for GNU Radius -*- mode: po; buffer-file-coding-system: koi8-r; default-input-method: cyrillic-yawerty -*-
-# Copyright (C) 2003, 2004 Free Software Foundation, Inc.
-# Sergey Poznyakoff <gray@gnu.org>, 2003.
+# Copyright (C) 2004 Free Software Foundation, Inc.
+# Sergey Poznyakoff <gray@gnu.org>, 2003, 2004.
 #
 # Замечания по лексике:
 # 	         
@@ -14,17 +14,16 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: radius 1.2\n"
+"Project-Id-Version: radius 1.2.93\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
-"POT-Creation-Date: 2004-06-25 15:47+0300\n"
-"PO-Revision-Date: 2004-06-25 15:54+0300\n"
+"POT-Creation-Date: 2004-06-26 13:01+0300\n"
+"PO-Revision-Date: 2004-06-29 11:42+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=KOI8-R\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
-"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
 #: lib/avl.c:91
 #, c-format
@@ -65,7 +64,7 @@ msgstr "неверное количество полей"
 msgid "bad IP address or host name"
 msgstr "недействительный адрес IP или имя машины"
 
-#: lib/client.c:427 lib/client.c:434 radtest/main.c:208 radtest/main.c:217
+#: lib/client.c:427 lib/client.c:434 radtest/main.c:212 radtest/main.c:221
 #, c-format
 msgid "bad port number %s"
 msgstr "недействительный номер порта %s"
@@ -236,8 +235,7 @@ msgstr "заход: записи для NAS %s, порт %d в неправильном порядке"
 #: lib/radutmp.c:179
 #, c-format
 msgid "logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"
-msgstr ""
-"выход: неверный ID у записи для NAS %s, порт %d (ожидался %s, обнаружен %s)"
+msgstr "выход: неверный ID у записи для NAS %s, порт %d (ожидался %s, обнаружен %s)"
 
 #: lib/radutmp.c:203
 #, c-format
@@ -337,12 +335,8 @@ msgid "Garbage in ARGP_HELP_FMT: %s"
 msgstr "Мусор в ARGP_HELP_FMT: %s"
 
 #: lib/argp-help.c:1200
-msgid ""
-"Mandatory or optional arguments to long options are also mandatory or "
-"optional for any corresponding short options."
-msgstr ""
-"Обязательные или необязательные аргументы к длинным опциям остаются таковыми "
-"и к соответствующим коротким опциям."
+msgid "Mandatory or optional arguments to long options are also mandatory or optional for any corresponding short options."
+msgstr "Обязательные или необязательные аргументы к длинным опциям остаются таковыми и к соответствующим коротким опциям."
 
 #: lib/argp-help.c:1580
 msgid "Usage:"
@@ -359,8 +353,7 @@ msgstr " [ОПЦИЯ...]"
 #: lib/argp-help.c:1623
 #, c-format
 msgid "Try `%s --help' or `%s --usage' for more information.\n"
-msgstr ""
-"Попробуй `%s --help' или `%s --usage' для получения подробной информации.\n"
+msgstr "Попробуй `%s --help' или `%s --usage' для получения подробной информации.\n"
 
 #: lib/argp-help.c:1651
 #, c-format
@@ -814,9 +807,7 @@ msgstr "невозможно отказаться от привилегии setuid пользователя"
 #: radiusd/exec.c:174 radiusd/exec.c:262
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
-msgstr ""
-"radius_exec_program(): невозможно выполнить, имя программы не начинается "
-"абсолютным путем: %s"
+msgstr "radius_exec_program(): невозможно выполнить, имя программы не начинается абсолютным путем: %s"
 
 #: radiusd/exec.c:180 radiusd/exec.c:273
 msgid "can't reset SIGCHLD"
@@ -828,11 +819,8 @@ msgstr "невозможно восстановить обработчик SIGCHLD"
 
 #: radiusd/exec.c:225 radiusd/exec.c:359
 #, c-format
-msgid ""
-"can't run external program `%s' (reason reported via syslog channel user.err)"
-msgstr ""
-"невозможно выполнить программу `%s' (причина сообщается через syslog, канал "
-"user.err)"
+msgid "can't run external program `%s' (reason reported via syslog channel user.err)"
+msgstr "невозможно выполнить программу `%s' (причина сообщается через syslog, канал user.err)"
 
 #: radiusd/exec.c:236 radiusd/exec.c:368
 #, c-format
@@ -955,8 +943,7 @@ msgstr "используется только DBM: БАЗА ПОЛЬЗОВАТЕЛЕЙ НЕ ЗАГРУЖЕНА"
 
 #: radiusd/files.c:1656
 msgid "DBM files found but no -b flag given - NOT using DBM"
-msgstr ""
-"обнаружены файлы DBM, однако флаг -b не был задан - DBM не используется"
+msgstr "обнаружены файлы DBM, однако флаг -b не был задан - DBM не используется"
 
 #: radiusd/files.c:1660
 #, c-format
@@ -1196,9 +1183,7 @@ msgstr "Match-Profile ссылается на профиль DEFAULT"
 
 #: radiusd/radck.c:280
 msgid "Simultaneous-Use is used, but multiple login checking is not enabled"
-msgstr ""
-"Использован атрибут Simultaneous-Use, однако проверка многократного доступа "
-"отключена"
+msgstr "Использован атрибут Simultaneous-Use, однако проверка многократного доступа отключена"
 
 #: radiusd/radck.c:320 radiusd/radck.c:351
 msgid "No User-Password attribute in LHS"
@@ -1206,9 +1191,7 @@ msgstr "Атрибут User-Password отсутствует в LHS"
 
 #: radiusd/radck.c:328
 msgid "Auth-Type = System can only be used when running with root privileges"
-msgstr ""
-"Auth-Type = System можно использовать только при выполнении с привилегиями "
-"root"
+msgstr "Auth-Type = System можно использовать только при выполнении с привилегиями root"
 
 #: radiusd/radck.c:338 radiusd/radck.c:375
 msgid "User-Password attribute ignored for this Auth-Type"
@@ -1326,8 +1309,7 @@ msgstr "Сохранить файл PID в КАТАЛОГЕ"
 
 #: radiusd/radiusd.c:71
 msgid "Strip prefixes/suffixes off user names before logging"
-msgstr ""
-"Удалять префиксы и суффиксы из имени пользователя перед записью в журнал"
+msgstr "Удалять префиксы и суффиксы из имени пользователя перед записью в журнал"
 
 #: radiusd/radiusd.c:73
 msgid "Run in single process mode"
@@ -1977,12 +1959,8 @@ msgid "stat_init failed"
 msgstr "stat_init не сработал"
 
 #: radiusd/stat.c:227
-msgid ""
-"reached SNMP storage limit for the number of monitored ports: increase max-"
-"port-count"
-msgstr ""
-"достигнуто предельное значение числа отслеживаемых по SNMP портов: увеличь "
-"max-port-count"
+msgid "reached SNMP storage limit for the number of monitored ports: increase max-port-count"
+msgstr "достигнуто предельное значение числа отслеживаемых по SNMP портов: увеличь max-port-count"
 
 #: radiusd/stat.c:287
 #, c-format
@@ -2003,12 +1981,8 @@ msgid "negative port session time"
 msgstr "отрицательное время сессии на порту"
 
 #: radiusd/stat.c:468
-msgid ""
-"reached SNMP storage limit for the number of monitored NASes: increase max-"
-"nas-count"
-msgstr ""
-"достигнуто предельное значение числа отслеживаемых по SNMP NAS-ов: увеличь "
-"max-nas-count"
+msgid "reached SNMP storage limit for the number of monitored NASes: increase max-nas-count"
+msgstr "достигнуто предельное значение числа отслеживаемых по SNMP NAS-ов: увеличь max-nas-count"
 
 #: radiusd/version.c:137
 msgid "GNU RADIUS server version "
@@ -2236,8 +2210,7 @@ msgstr "показывать сессии с заданным IPADDR"
 
 #: radlast/radlast.c:129
 msgid "mark records with missed stops with bump (!)"
-msgstr ""
-"отмечать восклицательным знаком сессии для которых не было стоповых записей"
+msgstr "отмечать восклицательным знаком сессии для которых не было стоповых записей"
 
 #: radlast/radlast.c:130 radzap/radzap.c:58
 msgid "NASNAME"
@@ -2302,7 +2275,7 @@ msgstr "обсчёт_выкл"
 msgid "acct_on"
 msgstr "обсчёт_вкл"
 
-#: radscm/radscm.c:312 radtest/main.c:161
+#: radscm/radscm.c:312 radtest/main.c:162
 msgid "error reading dictionary file"
 msgstr "ошибка при чтении словаря"
 
@@ -2332,13 +2305,8 @@ msgid "set debugging level"
 msgstr "Задать уровень отладки"
 
 #: radtest/main.c:71
-msgid ""
-"Read input from FILE. When this option is used, all unknown options in the "
-"form --VAR=VALUE are treated as variable assignments"
-msgstr ""
-"Считывать команды из ФАЙЛа. Все нераспознанные опции вида --"
-"ПЕРЕМЕННАЯ=ЗНАЧЕНИЕ, встречающиеся после этой опции, понимаются как "
-"присвоение значения указанной переменной."
+msgid "Read input from FILE. When this option is used, all unknown options in the form --VAR=VALUE are treated as variable assignments"
+msgstr "Считывать команды из ФАЙЛа. Все нераспознанные опции вида --ПЕРЕМЕННАЯ=ЗНАЧЕНИЕ, встречающиеся после этой опции, понимаются как присвоение значения указанной переменной."
 
 #: radtest/main.c:77
 msgid "set number of retries"
@@ -2360,44 +2328,44 @@ msgstr "Установить время ожидания ответа от сервера"
 msgid "verbose mode"
 msgstr "выводить дополнительную информацию"
 
-#: radtest/main.c:179
+#: radtest/main.c:183
 msgid "can't parse server definition"
 msgstr "ошибка при разборе определения сервера"
 
-#: radtest/main.c:184
+#: radtest/main.c:188
 msgid "no shared secret for the server"
 msgstr "для этого сервера не указан разделяемый ключ"
 
-#: radtest/main.c:196
+#: radtest/main.c:200
 #, c-format
 msgid "bad IP address or host name: %s"
 msgstr "недействительный адрес IP или имя машины: %s"
 
-#: radtest/main.c:225
+#: radtest/main.c:229
 #, c-format
 msgid "bad separator near %s"
 msgstr "недействительный сепаратор возле %s"
 
-#: radtest/main.c:244
+#: radtest/main.c:248
 msgid "No servers specfied. Use -s option.\n"
 msgstr "Не указан ни один сервер. Используйте опцию -s.\n"
 
-#: radtest/main.c:294
+#: radtest/main.c:300
 #, c-format
 msgid "assign: expected `='\n"
 msgstr "присвоение: ожидался `='\n"
 
-#: radtest/main.c:316
+#: radtest/main.c:322
 #, c-format
 msgid "assign: missing closing quote\n"
 msgstr "присвоение: недостает закрывающей кавычки\n"
 
-#: radtest/main.c:335 radtest/main.c:344
+#: radtest/main.c:341 radtest/main.c:350
 #, c-format
 msgid "assign: invalid IP address: %s\n"
 msgstr "присвоение: недействительный IP адрес: %s\n"
 
-#: radtest/main.c:477
+#: radtest/main.c:465
 msgid "wrong datatype: expected vector"
 msgstr "неверный тип данных: ожидался вектор"
 
@@ -2475,9 +2443,7 @@ msgstr "задать формат вывода данных"
 
 #: radwho/radwho.c:157
 msgid "secure mode: requires that the username be specified"
-msgstr ""
-"режим повышенной безопасности: выдавать информацию только для конкретного "
-"имени пользователя"
+msgstr "режим повышенной безопасности: выдавать информацию только для конкретного имени пользователя"
 
 #: radwho/radwho.c:286
 #, c-format
@@ -2523,8 +2489,7 @@ msgstr "не запрашивать подтверждения перед удалением"
 
 #: radzap/radzap.c:99
 msgid "at least one port, nas or user must be specified"
-msgstr ""
-"по меньшей мере имя пользователя, NAS или номер порта должны быть заданы. "
+msgstr "по меньшей мере имя пользователя, NAS или номер порта должны быть заданы. "
 
 #: radzap/radzap.c:173
 #, c-format

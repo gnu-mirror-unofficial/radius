@@ -1,3 +1,29 @@
+2001-09-04 Sergey Poznyakoff
+
+	Allow user to configure which characters are allowed in a
+	username:
+
+	* include/radiusd.h: Declaration for username_valid_chars.
+	* radiusd/auth.c: Use global username_valid_chars instead of a
+	static variable. username_valid_chars contains string object,
+	consisting of characters allowed to appear in a username
+	(alphanumeric chars are always allowed).
+	* radiusd/config.kw: Added username-chars keyword.
+	* radiusd/config.y: Handle username-chars statement (in option block)
+	* radiusd/radiusd.c: Initialize username_valid_chars.
+	* TODO: Updated.
+
+	Other fixes:
+
+	* radiusd/scheme.c: Initialize %load-path. Fixed scheme_load_path.
+
+	* radlib/dict.c: Reverse symtab for attribute values. This restores
+	the functionality of the daemon broken on 2001-08-07 with the
+	introduction of symbol tables instead of linked lists, namely, that
+	the last defined symbolic value is used when printing detail files.
+
+	* radscripts/radctl.m4: Removed superfluous quotes around SHIFT.
+
 2001-09-03 Sergey Poznyakoff
 
 	* radiusd/log.c: static qualifiers to catname, priname.

@@ -88,10 +88,10 @@ locus_free(LOCUS *loc)
 Symtab          *user_tab;     /* raddb/users  */
 Symtab          *deny_tab;     /* raddb/access.deny */
 
-MATCHING_RULE   *huntgroups;   /* raddb/huntgroups */ 
-MATCHING_RULE   *hints;        /* raddb/hints */
-RAD_LIST /* of CLIENT */ *clients; /* raddb/clients */
-RAD_LIST /* of RADCK_TYPE */ *radck_type;   /* raddb/nastypes */
+static RAD_LIST /* of MATCHING_RULE */  *huntgroups;   /* raddb/huntgroups */ 
+static RAD_LIST /* of MATCHING_RULE */  *hints;        /* raddb/hints */
+static RAD_LIST /* of CLIENT */ *clients; /* raddb/clients */
+static RAD_LIST /* of RADCK_TYPE */ *radck_type;   /* raddb/nastypes */
 
 static struct keyword op_tab[] = {
         { "=", OPERATOR_EQUAL },
@@ -120,7 +120,7 @@ static int user_find_sym(char *name, RADIUS_REQ *req,
 int user_find_db(char *name, RADIUS_REQ *req,
                         VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 #endif
-static MATCHING_RULE *file_read(int cf_file, char *name);
+static RAD_LIST *file_read(int cf_file, char *name);
 
 int
 comp_op(int op, int result)
@@ -210,38 +210,33 @@ free_user_entry(User_symbol *sym)
         return 0;
 }
 
-struct temp_list {
+struct temp_data {
         int cf_file;
-        MATCHING_RULE *head;
-        MATCHING_RULE *tail;
+	RAD_LIST *list;
 };
 
 int
 add_pairlist(void *closure, LOCUS *loc,
 	     char *name, VALUE_PAIR *lhs, VALUE_PAIR *rhs)
 {
-	struct temp_list *tlist = closure;
-        MATCHING_RULE *pl;
+	struct temp_data *data = closure;
+        MATCHING_RULE *rule;
         
         if ((lhs == NULL && rhs == NULL)
-            || fix_check_pairs(tlist->cf_file, loc, name, &lhs)
-            || fix_reply_pairs(tlist->cf_file, loc, name, &rhs)) {
+            || fix_check_pairs(data->cf_file, loc, name, &lhs)
+            || fix_reply_pairs(data->cf_file, loc, name, &rhs)) {
                 radlog_loc(L_ERR, loc, _("discarding entry `%s'"), name);
                 avl_free(lhs);
                 avl_free(rhs);
                 return 0;
         }
 
-        pl = emalloc(sizeof(MATCHING_RULE));
-        pl->name = estrdup(name);
-        pl->lhs = lhs;
-        pl->rhs = rhs;
-        locus_dup(&pl->loc, loc);
-        if (tlist->tail)
-                tlist->tail->next = pl;
-        else
-                tlist->head = pl;
-        tlist->tail = pl;
+        rule = emalloc(sizeof(MATCHING_RULE));
+        rule->name = estrdup(name);
+        rule->lhs = lhs;
+        rule->rhs = rhs;
+        locus_dup(&rule->loc, loc);
+	list_append(data->list, rule);
         return  0;
 }
 
@@ -253,15 +248,15 @@ read_users(char *name)
         return parse_file(name, user_tab, add_user_entry);
 }
 
-MATCHING_RULE *
+static RAD_LIST *
 file_read(int cf_file, char *name)
 {
-        struct temp_list tmp;
+        struct temp_data tmp;
 
         tmp.cf_file = cf_file;
-        tmp.head = tmp.tail = NULL;
+        tmp.list = list_create();
         parse_file(name, &tmp, add_pairlist);
-        return tmp.head;
+        return tmp.list;
 }
 
 enum lookup_state {
@@ -482,8 +477,8 @@ nextkn(char **sptr, char *token, int toksize)
         /* skip whitespace */
         while (**sptr && isws(**sptr))
                 ++(*sptr);
-        if (!*sptr)
-                return 0;
+        if (!**sptr)
+                return -1;
         start = token;
         if (**sptr == '"') {
                 (*sptr)++;
@@ -555,7 +550,7 @@ userparse(char *buffer, VALUE_PAIR **first_pair, char **errmsg)
 	loc.line = 0;
 	
         state = PS_LHS;
-        while (nextkn(&buffer, token, sizeof(token))) {
+        while (nextkn(&buffer, token, sizeof(token)) >= 0) {
                 switch (state) {
                 case PS_LHS:
                         if (token[0] == '\n' || token[0] == '#')
@@ -616,13 +611,13 @@ userparse(char *buffer, VALUE_PAIR **first_pair, char **errmsg)
 /* Provide a support for backward-compatible attributes Replace-User-Name
    and Rewrite-Function */
 static void
-hints_eval_compat(RADIUS_REQ *req, VALUE_PAIR *name_pair, MATCHING_RULE *i)
+hints_eval_compat(RADIUS_REQ *req, VALUE_PAIR *name_pair, MATCHING_RULE *rule)
 {
         VALUE_PAIR      *tmp;
 
 	/* Let's see if we need to further modify the username */
-	if ((tmp = avl_find(i->rhs, DA_REPLACE_USER_NAME))
-	    || (tmp = avl_find(i->lhs, DA_REPLACE_USER_NAME))) {
+	if ((tmp = avl_find(rule->rhs, DA_REPLACE_USER_NAME))
+	    || (tmp = avl_find(rule->lhs, DA_REPLACE_USER_NAME))) {
 		char *ptr;
 		struct obstack hints_stk;
  
@@ -635,10 +630,10 @@ hints_eval_compat(RADIUS_REQ *req, VALUE_PAIR *name_pair, MATCHING_RULE *i)
 	}
                 
 	/* Is the rewrite function specified? */
-	if ((tmp = avl_find(i->rhs, DA_REWRITE_FUNCTION))
-	    || (tmp = avl_find(i->lhs, DA_REWRITE_FUNCTION))) {
+	if ((tmp = avl_find(rule->rhs, DA_REWRITE_FUNCTION))
+	    || (tmp = avl_find(rule->lhs, DA_REWRITE_FUNCTION))) {
 		if (rewrite_eval(tmp->avp_strvalue, req, NULL, NULL)) {
-			radlog_loc(L_ERR, &i->loc, "%s(): %s",
+			radlog_loc(L_ERR, &rule->loc, "%s(): %s",
 				   tmp->avp_strvalue,
 				   _("not defined"));
 		}
@@ -656,9 +651,10 @@ hints_setup(RADIUS_REQ *req)
         VALUE_PAIR      *name_pair;
         VALUE_PAIR      *orig_name_pair;
         VALUE_PAIR      *tmp;
-        MATCHING_RULE   *i;
+        MATCHING_RULE   *rule;
         int             matched = 0;
-
+	ITERATOR *itr;
+	
         /* Add Proxy-Replied pair if necessary */
         switch (req->code) {
         case RT_AUTHENTICATION_ACK:
@@ -700,31 +696,32 @@ hints_setup(RADIUS_REQ *req)
                         avl_merge(&request_pairs, &tmp);
         }
 
-        for (i = hints; i; i = i->next) {
+	itr = iterator_create(hints);
+	for (rule = iterator_first(itr); rule; rule = iterator_next(itr)) {
                 int do_strip;
                 VALUE_PAIR *add;
                 
-                if (matches(req, name_pair->avp_strvalue, i, newname))
+                if (matches(req, name_pair->avp_strvalue, rule, newname))
                         continue;
 
                 matched++;
                 
-                debug(1, ("matched %s at %s:%lu", i->name, i->loc.file,
-			  (unsigned long) i->loc.line));
+                debug(1, ("matched %s at %s:%lu", rule->name, rule->loc.file,
+			  (unsigned long) rule->loc.line));
         
-                add = avl_dup(i->rhs);
+                add = avl_dup(rule->rhs);
         
                 /* See if we need to adjust the name. */
                 do_strip = 1;
-                if ((tmp = avl_find(i->rhs, DA_STRIP_USER_NAME)) != NULL
-                    || (tmp = avl_find(i->lhs, DA_STRIP_USER_NAME)) != NULL)
+                if ((tmp = avl_find(rule->rhs, DA_STRIP_USER_NAME)) != NULL
+                    || (tmp = avl_find(rule->lhs, DA_STRIP_USER_NAME)) != NULL)
                         do_strip = tmp->avp_lvalue;
                 
                 if (do_strip) 
                         string_replace(&name_pair->avp_strvalue, newname);
 
 		/* Handle Rewrite-Function and Replace-User-Name */
-		hints_eval_compat(req, name_pair, i);
+		hints_eval_compat(req, name_pair, rule);
 		/* Evaluate hints */
 		radius_eval_avl(req, add); /*FIXME: return value?*/
 		
@@ -743,13 +740,15 @@ hints_setup(RADIUS_REQ *req)
                 
                 /* Ok, let's see if we need to further check the
                    hint's rules */
-                if (((tmp = avl_find(i->rhs, DA_FALL_THROUGH)) != NULL
-                     || (tmp = avl_find(i->lhs, DA_FALL_THROUGH)) != NULL)
+                if (((tmp = avl_find(rule->rhs, DA_FALL_THROUGH)) != NULL
+                     || (tmp = avl_find(rule->lhs, DA_FALL_THROUGH)) != NULL)
                     && tmp->avp_lvalue)
                         continue;
                 break;
         }
 
+	iterator_destroy(&itr);
+	
         if (matched) {
                 if (orig_name_pair)
                         avl_add_pair(&request_pairs, orig_name_pair);
@@ -777,20 +776,24 @@ hints_setup(RADIUS_REQ *req)
 int
 huntgroup_match(RADIUS_REQ *req, char *huntgroup)
 {
-        MATCHING_RULE *pl;
-        
-        for (pl = huntgroups; pl; pl = pl->next) {
-                if (strcmp(pl->name, huntgroup) != 0)
+        MATCHING_RULE *rule;
+	ITERATOR *itr;
+
+        if (!huntgroups)
+		return 0;
+	itr = iterator_create(huntgroups);
+	for (rule = iterator_first(itr); rule; rule = iterator_next(itr)) {
+                if (strcmp(rule->name, huntgroup) != 0)
                         continue;
-                if (paircmp(req, pl->lhs, NULL) == 0) {
+                if (paircmp(req, rule->lhs, NULL) == 0) {
                         debug(1, ("matched %s at %s:%lu",
-				  pl->name, pl->loc.file,
-				  (unsigned long) pl->loc.line));
+				  rule->name, rule->loc.file,
+				  (unsigned long) rule->loc.line));
                         break;
                 }
         }
-
-        return (pl != NULL);
+	iterator_destroy(&itr);
+        return (rule != NULL);
 }
 
 
@@ -804,29 +807,32 @@ int
 huntgroup_access(RADIUS_REQ *radreq)
 {
         VALUE_PAIR      *pair;
-        MATCHING_RULE   *pl;
+        MATCHING_RULE   *rule;
+	ITERATOR *itr;
         int             r = 1;
 
         if (huntgroups == NULL)
                 return 1;
 
-        for (pl = huntgroups; pl; pl = pl->next) {
+	itr = iterator_create(huntgroups);
+	for (rule = iterator_first(itr); rule; rule = iterator_next(itr)) {
                 /*
                  *      See if this entry matches.
                  */
-                if (paircmp(radreq, pl->lhs, NULL) != 0)
+                if (paircmp(radreq, rule->lhs, NULL) != 0)
                         continue;
-                debug(1, ("matched huntgroup at %s:%lu", pl->loc.file,
-			  (unsigned long) pl->loc.line));
-                r = paircmp(radreq, pl->rhs, NULL) == 0;
+                debug(1, ("matched huntgroup at %s:%lu", rule->loc.file,
+			  (unsigned long) rule->loc.line));
+                r = paircmp(radreq, rule->rhs, NULL) == 0;
                 break;
         }
-
+	iterator_destroy(&itr);
+	
 #ifdef DA_REWRITE_FUNCTION
-        if (pl &&
-            (pair = avl_find(pl->lhs, DA_REWRITE_FUNCTION)) != NULL) {
+        if (rule &&
+            (pair = avl_find(rule->lhs, DA_REWRITE_FUNCTION)) != NULL) {
                 if (rewrite_eval(pair->avp_strvalue, radreq, NULL, NULL)) {
-                        radlog_loc(L_ERR, &pl->loc, "%s(): %s",
+                        radlog_loc(L_ERR, &rule->loc, "%s(): %s",
 				   pair->avp_strvalue,
 				   _("not defined"));
                 }
@@ -1268,7 +1274,7 @@ paircmp(RADIUS_REQ *request, VALUE_PAIR *check, char *pusername)
                 if (debug_on(20)) {
                         radlog(L_DEBUG, 
                                "check_item: %s", 
-                               format_pair(check_item, &save));
+                               format_pair(check_item, 1, &save));
                         free(save);
                 }
 
@@ -1315,7 +1321,7 @@ paircmp(RADIUS_REQ *request, VALUE_PAIR *check, char *pusername)
                 if (debug_on(20)) {
                         radlog(L_DEBUG,
                                "auth_item: %s",
-                               format_pair(auth_item, &save));
+                               format_pair(auth_item, 1, &save));
                         free(save);
                 }
 
@@ -1390,22 +1396,18 @@ paircmp(RADIUS_REQ *request, VALUE_PAIR *check, char *pusername)
 /*
  * Free a MATCHING_RULE
  */
-void
-matchrule_free(MATCHING_RULE **pl)
+static int
+matching_rule_free(void *item, void *data ARG_UNUSED)
 {
-        MATCHING_RULE *p, *next;
-
-        for (p = *pl; p; p = next) {
-                if (p->name)
-                        efree(p->name);
-                if (p->lhs)
-                        avl_free(p->lhs);
-                if (p->rhs)
-                        avl_free(p->rhs);
-                next = p->next;
-                efree(p);
-        }
-        *pl = NULL;
+	MATCHING_RULE *p = item;
+	
+	if (p->name)
+		efree(p->name);
+	if (p->lhs)
+		avl_free(p->lhs);
+	if (p->rhs)
+		avl_free(p->rhs);
+	efree(p);
 }
 
 /* ***************************************************************************
@@ -1646,14 +1648,14 @@ reload_data(enum reload_what what, int *do_radck)
                 break;
                 
         case reload_huntgroups:
-                matchrule_free(&huntgroups);
+                list_destroy(&huntgroups, matching_rule_free, NULL);
                 path = mkfilename(radius_dir, RADIUS_HUNTGROUPS);
                 huntgroups = file_read(CF_HUNTGROUPS, path);
                 efree(path);
                 break;
                 
         case reload_hints:
-                matchrule_free(&hints);
+                list_destroy(&hints, matching_rule_free, NULL);
                 path = mkfilename(radius_dir, RADIUS_HINTS);
                 hints = file_read(CF_HINTS, path);
                 efree(path);
@@ -1730,78 +1732,25 @@ reload_config_file(enum reload_what what)
 /* ****************************************************************************
  * Debugging functions
  */
-static void
-dump_pairs(FILE *fp, VALUE_PAIR *pair)
-{
-        int etype;
-        
-        for (; pair; pair = pair->next) {
-                fprintf(fp, "\t\t%s %s ", pair->name, 
-                        op_tab[pair->operator].name);
-
-                switch (pair->type) {
-                case TYPE_STRING:
-                        fprintf(fp, "(STRING) ");
-                        break;
-
-                case TYPE_INTEGER:
-                        fprintf(fp, "(INTEGER) ");
-                        break;
-
-                case TYPE_IPADDR:
-                        fprintf(fp, "(IP) ");
-                        break;
-                
-                case TYPE_DATE:
-                        fprintf(fp, "(DATE) ");
-                        break;
-                        
-                default:
-                        fprintf(fp, "(%d) ", pair->type);
-                }
-
-                if (pair->eval_type != eval_const) {
-                        etype = TYPE_STRING;
-                        fprintf(fp, "=");
-                } else
-                        etype = pair->type;
-                
-                switch (etype) {
-                case TYPE_STRING:
-                        fprintf(fp, "%s", pair->avp_strvalue);
-                        break;
-
-                case TYPE_INTEGER:
-                        fprintf(fp, "%ld", pair->avp_lvalue);
-                        break;
-
-                case TYPE_IPADDR:
-                        fprintf(fp, "%lx", pair->avp_lvalue);
-                        break;
-                
-                case TYPE_DATE:
-                        fprintf(fp, "%ld", pair->avp_lvalue);
-                        break;
-                        
-                }
-                fprintf(fp, "\n");
-        }
-}
-
 void
-dump_pair_list(FILE *fp, char *header, MATCHING_RULE *pl)
+dump_matching_rules(FILE *fp, char *header, RAD_LIST *list)
 {
+	MATCHING_RULE *rule;
+	ITERATOR *itr = iterator_create(hints);
+
         fprintf(fp, "%s {\n", header);
-        for ( ; pl; pl = pl->next) {
-                fprintf(fp, "\t%s:\n", pl->name);
+ 	for (rule = iterator_first(itr); rule; rule = iterator_next(itr)) {
+                fprintf(fp, "\t%s:\n", rule->name);
                 fprintf(fp, "\tlhs {\n");
-                dump_pairs(fp, pl->lhs);
+		avl_fprint(fp, "\t\t", 1, rule->lhs);
                 fprintf(fp, "\t}\n");
 
-                fprintf(fp, "\trhs {\n");
-                dump_pairs(fp, pl->rhs);
+                fprintf(fp, "\trhs {\n"); 
+		avl_fprint(fp, "\t\t", 1, rule->rhs);
                 fprintf(fp, "\t}\n");
         }
+	iterator_destroy(&itr);
+	
         fprintf(fp, "}\n");
 }
 
@@ -1810,11 +1759,11 @@ dump_user(FILE *fp, User_symbol *sym)
 {
         fprintf(fp, "\t%s:\n", sym->name);
         fprintf(fp, "\tlhs {\n");
-        dump_pairs(fp, sym->check);
+	avl_fprint(fp, "\t\t", 1, sym->check);
         fprintf(fp, "\t}\n");
 
         fprintf(fp, "\trhs {\n");
-        dump_pairs(fp, sym->reply);
+	avl_fprint(fp, "\t\t", 1, sym->reply);
         fprintf(fp, "\t}\n");
         
         return 0;
@@ -1841,8 +1790,8 @@ dump_users_db()
         symtab_iterate(user_tab, dump_user, fp);
         fprintf(fp, "}\n");
 
-        dump_pair_list(fp, "huntgroups", huntgroups);
-        dump_pair_list(fp, "hints", hints);
+        dump_matching_rules(fp, "huntgroups", huntgroups);
+        dump_matching_rules(fp, "hints", hints);
         radlog(L_INFO, _("dumped users database to %s"), RADIUS_DUMPDB_NAME);
         fclose(fp);
         efree(name);
@@ -1876,19 +1825,6 @@ strip_username(int do_strip, char *name, VALUE_PAIR *check_item,
                 
         strcpy(stripped_name, source_ptr);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

@@ -90,7 +90,7 @@ typedef struct {
         char *name;
         int port;
         int (*reconnect)(int type, struct sql_connection *);
-        void (*disconnect)(struct sql_connection *conn);
+        void (*disconnect)(struct sql_connection *conn, int drop);
         int (*query)(struct sql_connection *, char *query, int *report_cnt);
         char *(*getpwd)(struct sql_connection *, char *query);
         void *(*exec_query)(struct sql_connection *conn, char *query);

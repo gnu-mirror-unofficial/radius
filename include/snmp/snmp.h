@@ -187,7 +187,7 @@ int snmp_req_id(void);
 struct snmp_session *snmp_session_create(char *community, char *host,
 					 int port, snmp_cfn cfn,
 					 void *closure);
-int snmp_session_open(struct snmp_session *sp, ipaddr_t local_ip,
+int snmp_session_open(struct snmp_session *sp, ip_addr_t local_ip,
 		      int local_port, int timeout, int retries);
 void snmp_session_close(struct snmp_session *sess);
 void snmp_session_free(struct snmp_session *sess);

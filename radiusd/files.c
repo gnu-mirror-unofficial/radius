@@ -1150,8 +1150,16 @@ read_realms_entry(unused, fc, fv, file, lineno)
 
 	if ((p = strchr(fv[1], ':')) != NULL) {
 		*p++ = 0;
-		rp->auth_port = atoi(p);
+		rp->auth_port = strtoul(p, &p, 0);
 		rp->acct_port = rp->auth_port + 1;
+		if (*p) {
+			if (*p == ':')
+				rp->acct_port = strtoul(p+1, &p, 0);
+			else 
+				radlog(L_ERR,
+				       "%s:%d: junk after port number",
+				       file, lineno);
+		}
 	} else {
 		rp->auth_port = auth_port;
 		rp->acct_port = acct_port;

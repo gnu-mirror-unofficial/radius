@@ -96,8 +96,8 @@ create_instance(struct check_instance *cptr, grad_nas_t *nas, struct radutmp *up
         cptr->name = up->orig_login[0] ? up->orig_login : up->login;
         cptr->port = up->nas_port;
         cptr->sid  = up->session_id;
-        cptr->framed_ip = up->framed_address;
-	cptr->nas_ip = up->nas_address;
+        cptr->framed_ip = ntohl(up->framed_address);
+	cptr->nas_ip = ntohl(up->nas_address);
 	cptr->result = -1;
         cptr->timeout = 0;
         cptr->nasname = nas->shortname ? nas->shortname : nas->longname;

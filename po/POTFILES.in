@@ -22,6 +22,7 @@ radiusd/checkrad.c
 radiusd/config.y
 radiusd/exec.c
 radiusd/files.c
+radiusd/forward.c
 radiusd/log.c
 radiusd/menu.c
 radiusd/pam.c

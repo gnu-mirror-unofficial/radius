@@ -4,15 +4,16 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: radius 1.1\n"
-"POT-Creation-Date: 2003-07-20 23:44+0300\n"
-"PO-Revision-Date: 2003-07-23 10:39+0300\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2003-11-02 02:24+0200\n"
+"PO-Revision-Date: 2003-11-02 02:57+0200\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=KOI8-R\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Report-Msgid-Bugs-To: <gray@gnu.org>\n"
-"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
+"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
 #: lib/avl.c:88
 #, c-format
@@ -28,24 +29,49 @@ msgstr "Действительная длина запроса не совпадает с сообщенной (%d, %d)"
 msgid "Received invalid reply digest from server"
 msgstr "Подпись ответа от сервера недействительна"
 
-#: lib/client.c:180
+#: lib/client.c:183
 msgid "invalid port type"
 msgstr "неверный тип порта"
 
-#: lib/client.c:284
+#: lib/client.c:288
 msgid "select() interrupted"
 msgstr "select() прерван"
 
-#: lib/client.c:304
+#: lib/client.c:308
 #, c-format
 msgid "error receiving data from %s:%d"
 msgstr "ошибка при получении данных от %s:%d"
 
-#: lib/debug.c:155 lib/debug.c:162
+#: lib/client.c:366 lib/dict.c:475 radiusd/config.y:204
+msgid "unknown keyword"
+msgstr "неизвестное ключевое слово"
+
+#: lib/client.c:375 radiusd/files.c:874 radiusd/files.c:1043
+msgid "wrong number of fields"
+msgstr "неверное количество полей"
+
+#: lib/client.c:384
+msgid "bad IP address or host name"
+msgstr "недействительный адрес IP или имя машины"
+
+#: lib/client.c:392 lib/client.c:399
+#, c-format
+msgid "bad port number %s"
+msgstr "недействительный номер порта %s"
+
+#: lib/client.c:410
+msgid "bad timeout value"
+msgstr "недействительное значение предела времени ожидания"
+
+#: lib/client.c:416
+msgid "bad retry value"
+msgstr "недействительное значение числа попыток"
+
+#: lib/debug.c:156 lib/debug.c:163
 msgid "compiled without debugging support"
 msgstr "поддержка отладки не включена при компиляции"
 
-#: lib/dict.c:82 lib/nas.c:58 radiusd/files.c:903
+#: lib/dict.c:82 lib/nas.c:57 radiusd/files.c:962
 msgid "too few fields"
 msgstr "недостаточно полей"
 
@@ -53,45 +79,38 @@ msgstr "недостаточно полей"
 msgid "too many fields"
 msgstr "слишком много полей"
 
-#: lib/dict.c:195
-#, c-format
-msgid "%s:%d: missing ]"
-msgstr "%s:%d: отсутсвует ]"
+#: lib/dict.c:194
+msgid "missing ]"
+msgstr "отсутсвует ]"
 
-#: lib/dict.c:212 lib/dict.c:225
+#: lib/dict.c:210 lib/dict.c:223
 #, c-format
-msgid "%s:%d: invalid syntax flag %c"
-msgstr "%s:%d: недействительный флаг синтаксиса: %c"
+msgid "invalid syntax flag %c"
+msgstr "недействительный флаг синтаксиса: %c"
 
-#: lib/dict.c:258 lib/dict.c:385 lib/dict.c:420
+#: lib/dict.c:256 lib/dict.c:393 lib/dict.c:428
 #, c-format
-msgid "%s:%d: value not a number (near %s)"
-msgstr "%s:%d: не число (возле %s)"
+msgid "value not a number (near %s)"
+msgstr "не число (возле %s)"
 
-#: lib/dict.c:269
-#, c-format
-msgid "%s:%d: no parser registered for this attribute"
-msgstr "%s:%d: парсер для этого атрибута не зарегистрирован"
+#: lib/dict.c:267
+msgid "no parser registered for this attribute"
+msgstr "обработчик для этого атрибута не зарегистрирован"
 
-#: lib/dict.c:280
+#: lib/dict.c:276
 msgid "invalid type"
 msgstr "недействительный тип"
 
-#: lib/dict.c:288
+#: lib/dict.c:283
+msgid "unknown vendor"
+msgstr "поставщик неизвестен"
+
+#: lib/dict.c:357
 #, c-format
-msgid "%s:%d: unknown vendor"
-msgstr "%s:%d: поставщик неизвестен"
+msgid "invalid flag %c"
+msgstr "недействительный флаг %c"
 
-#: lib/dict.c:349
-#, c-format
-msgid "%s:%d: invalid flag %c"
-msgstr "%s:%d: недействительный флаг %c"
-
-#: lib/dict.c:469 radiusd/config.y:204
-msgid "unknown keyword"
-msgstr "неизвестное ключевое слово"
-
-#: lib/dict.c:486
+#: lib/dict.c:492
 #, c-format
 msgid "%s: %d error"
 msgid_plural "%s: %d errors"
@@ -158,8 +177,8 @@ msgstr "%s: опция `-W %s' не берет аргументов\n"
 msgid "low core: aborting"
 msgstr "недостаточно памяти: завершение работы"
 
-#: lib/raddb.c:47 lib/raddb.c:51 radiusd/rewrite.y:1226 radiusd/rewrite.y:2621
-#: radiusd/scheme.c:265 radiusd/stat.c:74
+#: lib/raddb.c:47 lib/raddb.c:51 radiusd/rewrite.y:1280 radiusd/rewrite.y:2872
+#: radiusd/scheme.c:268 radiusd/stat.c:74
 #, c-format
 msgid "can't open file `%s'"
 msgstr "невозможно открыть файл `%s'"
@@ -199,15 +218,15 @@ msgstr "невозможно открыть %s"
 msgid "not enough memory"
 msgstr "недостаточно памяти"
 
-#: lib/users.l:231 radiusd/config.y:826 radiusd/stat.c:80
+#: lib/users.l:230 radiusd/config.y:839 radiusd/stat.c:80
 #, c-format
 msgid "can't stat `%s'"
 msgstr "stat(%s) не сработал"
 
 #: lib/users.l:243
 #, c-format
-msgid "%s:%d: `%s' already included here"
-msgstr "%s:%d: `%s' уже включен здесь"
+msgid "`%s' already included here"
+msgstr "`%s' уже включен здесь"
 
 #: lib/users.l:246
 #, c-format
@@ -219,73 +238,70 @@ msgstr "`%s' уже включен на верхнем уровне"
 msgid "can't open `%s'"
 msgstr "невозможно открыть `%s'"
 
-#: lib/users.y:101
+#: lib/users.y:99 radiusd/files.c:189
 #, c-format
 msgid "discarding user `%s'"
 msgstr "пользователь `%s' исключен"
 
-#: lib/users.y:206
+#: lib/users.y:208
 #, c-format
-msgid "%s:%d: unknown attribute `%s'"
-msgstr "%s:%d: неизвестный атрибут `%s'"
+msgid "unknown attribute `%s'"
+msgstr "неизвестный атрибут `%s'"
 
-# Логин неудачен
-#: lib/users.y:235
+#: lib/users.y:237
 #, c-format
-msgid "%s:%d: %s: not an absolute pathname"
-msgstr "%s:%d: %s: имя файла должно быть абсолютным"
+msgid "%s: not an absolute pathname"
+msgstr "%s: имя файла должно быть абсолютным"
 
-#: lib/users.y:248
+#: lib/users.y:250
 msgid "attribute"
 msgstr "атрибут"
 
-#: lib/users.y:278
+#: lib/users.y:280
 #, c-format
-msgid "%s:%d: value %s is not declared for attribute %s"
-msgstr "%s:%d: значение %s не объявлено для атрибута %s"
+msgid "value %s is not declared for attribute %s"
+msgstr "значение %s не объявлено для атрибута %s"
 
-#: lib/users.y:325
+#: lib/users.y:324
 #, c-format
-msgid "%s:%d: %s: can't parse date"
-msgstr "%s:%d: %s: не могу расшифровать дату"
+msgid "%s: can't parse date"
+msgstr "%s: не могу расшифровать дату"
 
 #: lib/users.y:338
 #, c-format
-msgid "%s:%d: %s: unknown attribute type %d"
-msgstr "%s:%d: %s: неизвестный тип атрибута %d"
+msgid "%s: unknown attribute type %d"
+msgstr "%s: неизвестный тип атрибута %d"
 
 #: lib/users.y:370
-#, c-format
-msgid "%s:%d: enabled userfile parser debugging"
-msgstr "%s:%d: отладка парсера файла `users' включена"
+msgid "enabled userfile parser debugging"
+msgstr "отладка парсера файла `users' включена"
 
-#: lib/users.y:373
-#, c-format
-msgid "%s:%d: disabled userfile parser debugging"
-msgstr "%s:%d: отладка парсера файла `users' выключена"
+#: lib/users.y:371
+msgid "disabled userfile parser debugging"
+msgstr "отладка парсера файла `users' выключена"
 
-#: lib/util.c:253
+#: lib/util.c:254
 #, c-format
 msgid "string too long: %s"
 msgstr "слишком длинная строка: %s"
 
 # FUZZY
-#: lib/argp-help.c:212
+#: lib/argp-help.c:217
 #, c-format
 msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
 msgstr "%.*s: параметр ARGP_HELP_FMT требует значения"
 
-#: lib/argp-help.c:221
+#: lib/argp-help.c:226
 #, c-format
 msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
 msgstr "%.*s: Неизвестный параметр ARGP_HELP_FMT"
 
-#: lib/argp-help.c:233
+#: lib/argp-help.c:238
 #, c-format
 msgid "Garbage in ARGP_HELP_FMT: %s"
 msgstr "Мусор в ARGP_HELP_FMT: %s"
 
-#: lib/argp-help.c:1195
+#: lib/argp-help.c:1200
 msgid ""
 "Mandatory or optional arguments to long options are also mandatory or "
 "optional for any corresponding short options."
@@ -293,25 +309,25 @@ msgstr ""
 "Обязательные или необязательные аргументы к длинным опциям остаются таковыми "
 "и к соответсвующим коротким опциям."
 
-#: lib/argp-help.c:1575
+#: lib/argp-help.c:1580
 msgid "Usage:"
 msgstr "Использование:"
 
-#: lib/argp-help.c:1579
+#: lib/argp-help.c:1584
 msgid "  or: "
 msgstr "  или: "
 
-#: lib/argp-help.c:1591
+#: lib/argp-help.c:1596
 msgid " [OPTION...]"
 msgstr " [ОПЦИЯ...]"
 
-#: lib/argp-help.c:1618
+#: lib/argp-help.c:1623
 #, c-format
 msgid "Try `%s --help' or `%s --usage' for more information.\n"
 msgstr ""
 "Попробуй `%s --help' или `%s --usage' для получения подробной информации.\n"
 
-#: lib/argp-help.c:1646
+#: lib/argp-help.c:1651
 #, c-format
 msgid "Report bugs to %s.\n"
 msgstr "Об ошибках сообщай по адресу %s.\n"
@@ -452,124 +468,125 @@ msgstr "%s: не директория"
 msgid "can't create accounting directory `%s'"
 msgstr "невозможно создать директорию `%s'"
 
-#: radiusd/acct.c:606
+#: radiusd/acct.c:608
 #, c-format
 msgid "assuming `%s' is logged in"
 msgstr "предполагается, что сессия `%s' активна"
 
-#: radiusd/acct.c:609
+#: radiusd/acct.c:611
 #, c-format
 msgid "assuming `%s' is NOT logged in"
 msgstr "предполагается, что сессия `%s' НЕ активна"
 
-#: radiusd/acct.c:625
+#: radiusd/acct.c:627
 msgid "check_ts(): unknown NAS"
 msgstr "check_ts(): неизвестный NAS"
 
-#: radiusd/auth.c:169
+#: radiusd/auth.c:168
 msgid "password has expired"
 msgstr "срок действия пароля истек"
 
-#: radiusd/auth.c:179
+#: radiusd/auth.c:178
 msgid "account locked"
 msgstr "счет заблокирован"
 
-#: radiusd/auth.c:294
+#: radiusd/auth.c:293
 msgid "SQL authentication not available"
 msgstr "авторизация через SQL недоступна"
 
-#: radiusd/auth.c:301
+#: radiusd/auth.c:300
 #, c-format
 msgid "unknown Password-Location value: %ld"
 msgstr "неизвестное значение для Password-Location: %ld"
 
-#: radiusd/auth.c:335
+#: radiusd/auth.c:334
 msgid "PAM authentication not available"
 msgstr "авторизация через PAM недоступна"
 
-#: radiusd/auth.c:447
+#: radiusd/auth.c:443
 msgid "No username"
 msgstr "Отсутствует имя пользователя"
 
-#: radiusd/auth.c:453
+#: radiusd/auth.c:449
 msgid "Malformed username"
 msgstr "Недействительное имя пользователя"
 
-#: radiusd/auth.c:465
-msgid "No huntgroup access"
-msgstr "Отказано в доступе от huntgroup"
+#: radiusd/auth.c:468
+#, c-format
+msgid "Access denied by huntgroup %s:%d"
+msgstr "Отказано в доступе группой %s:%d"
 
-#: radiusd/auth.c:822
+#: radiusd/auth.c:828
 msgid "unknown"
 msgstr "неизвестный"
 
-#: radiusd/auth.c:832 radiusd/auth.c:943
+#: radiusd/auth.c:838 radiusd/auth.c:912
 msgid "Invalid user"
 msgstr "Несуществующий пользователь"
 
-#: radiusd/auth.c:884
+#: radiusd/auth.c:854
 msgid "Guile authentication disabled in config"
 msgstr "Авторизация через Guile отключена в конфигурации"
 
-#: radiusd/auth.c:896
+#: radiusd/auth.c:866
 msgid "Login rejected"
 msgstr "Логин отвергнут"
 
-#: radiusd/auth.c:898
+#: radiusd/auth.c:868
 msgid "denied by Scheme procedure "
 msgstr "отвергнут процедурой Scheme "
 
-#: radiusd/auth.c:908
+#: radiusd/auth.c:878
 msgid "Guile authentication not available"
 msgstr "вторизация через Guile недоступна"
 
-#: radiusd/auth.c:932
+#: radiusd/auth.c:900
 msgid "Rejected"
 msgstr "Отвергнут"
 
-#: radiusd/auth.c:937
+#: radiusd/auth.c:906
 msgid "Ignored"
 msgstr "Игнрируется"
 
-#: radiusd/auth.c:949 radiusd/auth.c:969 radiusd/auth.c:1145
+#: radiusd/auth.c:919 radiusd/auth.c:940 radiusd/auth.c:1104
 msgid "Login incorrect"
 msgstr "Логин неверен"
 
-#: radiusd/auth.c:972
+#: radiusd/auth.c:943
 msgid "Password expired"
 msgstr "Срок действия пароля истек"
 
-#: radiusd/auth.c:982
+#: radiusd/auth.c:953
 msgid "Account disabled"
 msgstr "Счет заблокирован"
 
-#: radiusd/auth.c:996
+#: radiusd/auth.c:967
 msgid "Login failed"
 msgstr "Логин не удался"
 
-#: radiusd/auth.c:997
+#: radiusd/auth.c:968
 msgid "realm quota exceeded for "
 msgstr "превышена квота для зоны "
 
-#: radiusd/auth.c:1022
+#: radiusd/auth.c:993
 #, c-format
 msgid "Multiple logins: [%s] max. %ld%s, CLID %s"
 msgstr "Многократные попытки доступа: [%s] предел %ld%s, CLID %s"
 
-#: radiusd/auth.c:1025
+#: radiusd/auth.c:996
 msgid " [MPP attempt]"
 msgstr " [попытка MPP]"
 
-#: radiusd/auth.c:1057
+#: radiusd/auth.c:1030
 #, c-format
 msgid "Outside allowed timespan (%s)"
 msgstr "Вне дозволенного интервала (%s)"
 
-#: radiusd/auth.c:1147
+#: radiusd/auth.c:1106
 msgid "external check failed: "
 msgstr "внешняя проверка не удалась: "
 
-#: radiusd/auth.c:1225
+#: radiusd/auth.c:1192
 msgid "Login OK"
 msgstr "Успешный логин"
 
@@ -640,7 +657,7 @@ msgstr "неизвестное составное утверждение"
 msgid "invalid netmask length: %d"
 msgstr "недействительная длина маски подсети: %d"
 
-#: radiusd/config.y:419 radiusd/rewrite.y:1476
+#: radiusd/config.y:419
 #, c-format
 msgid "%s:%d: unexpected EOF in comment started at line %d"
 msgstr "%s:%d: неожиданный конец файла в комментарии открытом в строке %d"
@@ -678,12 +695,12 @@ msgstr "слишком много аргументов"
 msgid "%s:%d: obsolete statement"
 msgstr "%s:%d: устаревшее предложение"
 
-#: radiusd/config.y:833
+#: radiusd/config.y:846
 #, c-format
 msgid "can't open config file `%s'"
 msgstr "невозможно открыть файл конфигурации `%s'"
 
-#: radiusd/config.y:843
+#: radiusd/config.y:856
 #, c-format
 msgid "reading %s"
 msgstr "чтение %s"
@@ -737,11 +754,11 @@ msgstr "невозможно создать копию дескриптора стандартного вывода"
 msgid "<stdout of %s>:%d: %s"
 msgstr "<выход %s>:%d: %s"
 
-#: radiusd/exec.c:204
+#: radiusd/exec.c:199
 msgid "can't restore SIGCHLD"
 msgstr "невозможно восстановить обработчик SIGCHLD"
 
-#: radiusd/exec.c:211
+#: radiusd/exec.c:206
 #, c-format
 msgid ""
 "can't run external program `%s' (reason reported via syslog channel user.err)"
@@ -749,32 +766,32 @@ msgstr ""
 "невозможно выполнить програму `%s' (причина сообщается через syslog, канал "
 "user.err)"
 
-#: radiusd/exec.c:219
+#: radiusd/exec.c:213
 #, c-format
 msgid "external program `%s' %s"
 msgstr "внешняя программа `%s' %s"
 
-#: radiusd/exec.c:235
+#: radiusd/exec.c:234
 #, c-format
 msgid "won't execute, no such user: %s"
 msgstr "невозможно выполнить; нет такого пользователя: %s"
 
-#: radiusd/exec.c:350
+#: radiusd/exec.c:349
 #, c-format
 msgid "filter %s (pid %d) %s (in: %u, out: %u)"
 msgstr "фильтр %s (pid %d) %s (считано: %u, записано: %u)"
 
-#: radiusd/exec.c:403
+#: radiusd/exec.c:402
 #, c-format
 msgid "filter %s is not declared"
 msgstr "фильтр %s не объявлен"
 
-#: radiusd/exec.c:420
+#: radiusd/exec.c:419
 #, c-format
 msgid "cannot run filter %s"
 msgstr "невозможно выполнить фильтр %s"
 
-#: radiusd/exec.c:437
+#: radiusd/exec.c:436
 #, c-format
 msgid "filter %s"
 msgstr "фильтр %s"
@@ -803,59 +820,50 @@ msgstr "фильтр %s (auth): плохой выход %s"
 msgid "%s:%d: filter already declared at %s:%d"
 msgstr "%s:%d: фильтр уже объявлен в %s:%d"
 
-#: radiusd/files.c:159
+#: radiusd/files.c:228
 #, c-format
-msgid "%s:%d: discarding user `%s'"
-msgstr "%s:%d: исключение пользователя `%s'"
+msgid "discarding entry `%s'"
+msgstr "профиль `%s' исключен"
 
-#: radiusd/files.c:199
-#, c-format
-msgid "%s:%d: discarding entry `%s'"
-msgstr "%s:%d: исключение профиля `%s'"
-
-#: radiusd/files.c:401
+#: radiusd/files.c:427
 msgid "zero length username not permitted"
 msgstr "пустое имя пользователя не разрешено"
 
-#: radiusd/files.c:529
+#: radiusd/files.c:562
 #, c-format
 msgid "unknown attribute `%s/%s'"
 msgstr "неизвестный атрибут `%s/%s'"
 
-#: radiusd/files.c:541
+#: radiusd/files.c:574
 #, c-format
 msgid "expected opcode but found %s"
 msgstr "ожидается код операции, однако обнаружен %s"
 
-#: radiusd/files.c:554
+#: radiusd/files.c:586
 #, c-format
 msgid "install_pair failed on %s"
 msgstr "install_pair не сработал для %s"
 
-#: radiusd/files.c:565
+#: radiusd/files.c:597
 #, c-format
 msgid "expected , but found %s"
 msgstr "ожидается , однако обнаружен %s"
 
 # Function is feminine
-#: radiusd/files.c:677 radiusd/files.c:778
+#: radiusd/files.c:640 radiusd/files.c:843
 msgid "not defined"
 msgstr "не определена"
 
-#: radiusd/files.c:813 radiusd/files.c:986
-msgid "wrong number of fields"
-msgstr "неверное количество полей"
-
-#: radiusd/files.c:914
+#: radiusd/files.c:973
 msgid "unknown method"
 msgstr "неизвестный метод"
 
-#: radiusd/files.c:991
+#: radiusd/files.c:1048
 #, c-format
 msgid "user `%s' already found in %s"
 msgstr "имя пользователя `%s' уже встречалось в %s"
 
-#: radiusd/files.c:1017
+#: radiusd/files.c:1074
 #, c-format
 msgid "%d user disabled"
 msgid_plural "%d users disabled"
@@ -863,145 +871,163 @@ msgstr[0] "%d пользователь отключен"
 msgstr[1] "%d пользователя отключены"
 msgstr[2] "%d пользователей отключено"
 
-#: radiusd/files.c:1564
+#: radiusd/files.c:1617
 msgid "using only dbm: USERS NOT LOADED"
 msgstr "используется только DBM: БАЗА ПОЛЬЗОВАТЕЛЕЙ НЕ ЗАГРУЖЕНА"
 
-#: radiusd/files.c:1572
+#: radiusd/files.c:1625
 msgid "DBM files found but no -b flag given - NOT using DBM"
 msgstr ""
 "обнаружены файлы DBM, однако флаг -b не был задан - DBM не используется"
 
-#: radiusd/files.c:1576
+#: radiusd/files.c:1629
 #, c-format
 msgid "can't load %s: exited"
 msgstr "невозможно загрузить %s: завершение работы"
 
-#: radiusd/files.c:1579
+#: radiusd/files.c:1632
 #, c-format
 msgid "%s reloaded."
 msgstr "загружен файл %s"
 
-#: radiusd/files.c:1654
+#: radiusd/files.c:1704
 msgid "SQL Error: SQL client could not be initialized"
 msgstr "Ошибка SQL: невозможно инициализировать клиентскую часть"
 
-#: radiusd/files.c:1667
+#: radiusd/files.c:1718
 #, c-format
 msgid "INTERNAL ERROR: unknown reload code: %d"
 msgstr "ВНУТРЕННЯЯ ОШИБКА: неизвестный код загрузки: %d"
 
-#: radiusd/files.c:1788
+#: radiusd/files.c:1786
 #, c-format
 msgid "can't create parser output file `%s'"
 msgstr "невозможно создать выходной файл отладки парсера `%s'"
 
-#: radiusd/files.c:1802
+#: radiusd/files.c:1800
 #, c-format
 msgid "dumped users database to %s"
 msgstr "база пользователей скопирована в %s"
 
-#: radiusd/log.c:106
+#: radiusd/forward.c:108
+#, c-format
+msgid "Can't forward to %s:%d"
+msgstr "Невозможно переправить запрос на %s:%d"
+
+#: radiusd/forward.c:178
+#, c-format
+msgid "Forwarding host %s not listed in clients"
+msgstr "Машина %s не указана в списке клиентов"
+
+#: radiusd/forward.c:197
+msgid "Can't open forwarding socket"
+msgstr "Невозможно отрыть гнездо для переправки"
+
+#: radiusd/forward.c:206
+msgid "Can't bind forwarding socket"
+msgstr "Невозможно связать гнездо для переправки с адресом IP"
+
+#: radiusd/log.c:113
 msgid "none"
 msgstr "пусто"
 
-#: radiusd/log.c:107
+#: radiusd/log.c:114
 msgid "Main"
 msgstr "Главный"
 
-#: radiusd/log.c:108
+#: radiusd/log.c:115
 msgid "Auth"
 msgstr "Авторизация"
 
-#: radiusd/log.c:109
+#: radiusd/log.c:116
 msgid "Acct"
 msgstr "Аккаунтинг"
 
-#: radiusd/log.c:110
+#: radiusd/log.c:117
 msgid "Proxy"
 msgstr "Прокси"
 
-#: radiusd/log.c:111
+#: radiusd/log.c:118
 msgid "SNMP"
 msgstr "SNMP"
 
-#: radiusd/log.c:115
+#: radiusd/log.c:122
 msgid "emerg"
 msgstr "авария"
 
-#: radiusd/log.c:116
+#: radiusd/log.c:123
 msgid "alert"
 msgstr "тревога"
 
 # подразумевается "ошибка" -> ж.р.
-#: radiusd/log.c:117
+#: radiusd/log.c:124
 msgid "crit"
 msgstr "критическая"
 
-#: radiusd/log.c:118
+#: radiusd/log.c:125
 msgid "error"
 msgstr "ошибка"
 
-#: radiusd/log.c:119
+#: radiusd/log.c:126
 msgid "warning"
 msgstr "предупреждение"
 
-#: radiusd/log.c:120
+#: radiusd/log.c:127
 msgid "notice"
 msgstr "замечание"
 
-#: radiusd/log.c:121
+#: radiusd/log.c:128
 msgid "info"
 msgstr "сообщение"
 
-#: radiusd/log.c:122
+#: radiusd/log.c:129
 msgid "debug"
 msgstr "отладка"
 
-#: radiusd/log.c:239
+#: radiusd/log.c:246
 #, c-format
 msgid "could not append to file %s"
 msgstr "добавление к файлу %s невозможно"
 
-#: radiusd/log.c:338
+#: radiusd/log.c:345
 #, c-format
 msgid "can't access `%s'"
 msgstr "нет доступа к `%s'"
 
-#: radiusd/log.c:436
+#: radiusd/log.c:443
 #, c-format
 msgid "exited with status %d"
 msgstr "вышел со статусом %d"
 
-#: radiusd/log.c:440
+#: radiusd/log.c:447
 #, c-format
 msgid "terminated on signal %d"
 msgstr "завершился по сигналу %d"
 
-#: radiusd/log.c:443
+#: radiusd/log.c:450
 msgid "terminated"
 msgstr "завершился"
 
-#: radiusd/log.c:553
+#: radiusd/log.c:560
 #, c-format
 msgid "%s:%d: no channel mode for `%s'"
 msgstr "%s:%d: не указан режим для канала `%s'"
 
-#: radiusd/log.c:716
+#: radiusd/log.c:723
 msgid "no levels applicable for this category"
 msgstr "нет уровней, применимых к этой категории"
 
-#: radiusd/log.c:742
+#: radiusd/log.c:749
 #, c-format
 msgid "%s:%d: channel `%s' not defined"
 msgstr "%s:%d: канал `%s' не определен"
 
-#: radiusd/log.c:786 radiusd/snmpserv.c:335
+#: radiusd/log.c:793 radiusd/snmpserv.c:335
 #, c-format
 msgid "%s:%d: list item %d has wrong datatype"
 msgstr "%s:%d: неверный тип для элемента списка %d"
 
-#: radiusd/log.c:802
+#: radiusd/log.c:809
 #, c-format
 msgid "%s:%d: no such module name: %s"
 msgstr "%s:%d: нет такого модуля: %s"
@@ -1028,20 +1054,20 @@ msgstr ""
 msgid "rad_pam_conv(): no application-specific data passed"
 msgstr "rad_pam_conv(): данные приложения не переданы"
 
-#: radiusd/proxy.c:141
+#: radiusd/proxy.c:193
 #, c-format
 msgid "couldn't send request to realm %s"
 msgstr "невозможно отослать запрос в зону %s"
 
-#: radiusd/radck.c:81
+#: radiusd/radck.c:82
 #, c-format
-msgid "users:%d: Match-Profile refers to non-existing profile (%s)"
-msgstr "users:%d: Match-Profile ссылается на несуществующий профиль (%s)"
+msgid "Match-Profile refers to non-existing profile (%s)"
+msgstr "Match-Profile ссылается на несуществующий профиль (%s)"
 
 #: radiusd/radck.c:120
 #, c-format
-msgid "users:%d: circular dependency for %s"
-msgstr "users:%d: циклическая зависимость для %s"
+msgid "circular dependency for %s"
+msgstr "циклическая зависимость для %s"
 
 #: radiusd/radck.c:147
 msgid "not enough memory for transitivity check"
@@ -1053,73 +1079,82 @@ msgstr "СПИСОК ПОЛЬЗОВАТЕЛЕЙ ПУСТ"
 
 #: radiusd/radck.c:180
 #, c-format
-msgid "users:%d: duplicate %s attribute"
-msgstr "users:%d: атрибут %s встречается дважды"
+msgid "duplicate %s attribute"
+msgstr "атрибут %s встречается дважды"
 
-#: radiusd/radck.c:208
+#: radiusd/radck.c:221
 #, c-format
-msgid "%s:%d: attribute %s not allowed in LHS"
-msgstr "%s:%d: атрибут %s не разрешен в LHS"
+msgid "attribute %s not allowed in LHS"
+msgstr "атрибут %s не разрешен в LHS"
 
-#: radiusd/radck.c:251
+#: radiusd/radck.c:263
 msgid "Match-Profile refers to a DEFAULT entry"
 msgstr "Match-Profile ссылается на профиль DEFAULT"
 
-#: radiusd/radck.c:294 radiusd/radck.c:321
+#: radiusd/radck.c:304 radiusd/radck.c:328
 msgid "No User-Password attribute in LHS"
 msgstr "Атрибут User-Password отсутствует в LHS"
 
-#: radiusd/radck.c:306 radiusd/radck.c:339
+#: radiusd/radck.c:315 radiusd/radck.c:344
 msgid "User-Password attribute ignored for this Auth-Type"
 msgstr "Атрибут User-Password не имеет смысла для этого Auth-Type"
 
-#: radiusd/radck.c:312
+#: radiusd/radck.c:320
 msgid "Password-Location attribute ignored for this Auth-Type"
 msgstr "Атрибут Password-Location не имеет смысла для этого Auth-Type"
 
-#: radiusd/radck.c:330
+#: radiusd/radck.c:336
 msgid "Authentication type not supported"
 msgstr "Тип авторизации не поддерживается"
 
-#: radiusd/radck.c:358
+#: radiusd/radck.c:362
 msgid "Both Auth-Data and PAM-Auth attributes present"
 msgstr "Auth-Data и PAM-Auth не могут указываться одновременно"
 
-#: radiusd/radck.c:382
+#: radiusd/radck.c:385
 #, c-format
-msgid "%s:%d: attribute %s not allowed in RHS"
-msgstr "%s:%d: атрибут %s не разрешен в RHS"
+msgid "attribute %s not allowed in RHS"
+msgstr "атрибут %s не разрешен в RHS"
 
-#: radiusd/radck.c:401
+#: radiusd/radck.c:400
+msgid "Use of Add-Port-To-IP-Address is deprecated"
+msgstr "Атрибут Add-Port-To-IP-Address более недействителен"
+
+#: radiusd/radck.c:409
 msgid "BEGIN without Fall-Through"
 msgstr "BEGIN без Fall-Through"
 
-#: radiusd/radius.c:92
+#: radiusd/radius.c:101
 msgid "request from unknown client"
 msgstr "запрос от неизвестного клиента"
 
-#: radiusd/radius.c:363
+#: radiusd/radius.c:401
 msgid "Dropping packet"
 msgstr "Пакет отброшен"
 
-#: radiusd/radius.c:386
+#: radiusd/radius.c:424
 #, c-format
 msgid "Retransmitting %s reply"
 msgstr "Повторная передача ответа %s"
 
-#: radiusd/radius.c:391
+#: radiusd/radius.c:429
 msgid "request failed"
 msgstr "неудавшийся запрос"
 
-#: radiusd/radius.c:442
+#: radiusd/radius.c:491
 #, c-format
 msgid "Unrecognized proxy reply from server %s, proxy ID %d"
 msgstr "Нераспознанный ответ от сервера %s, proxy ID %d"
 
-#: radiusd/radius.c:470
+#: radiusd/radius.c:523
 #, c-format
 msgid "unknown request code %d"
 msgstr "неизвестный код запроса %d"
+
+#: radiusd/radius.c:623
+#, c-format
+msgid "rule trace: %s"
+msgstr "след правил: %s"
 
 #: radiusd/radiusd.c:47
 msgid "GNU radius daemon"
@@ -1186,7 +1221,7 @@ msgstr "Работать в режиме одного процесса"
 msgid "DEBUGSPEC"
 msgstr "DEBUGSPEC"
 
-#: radiusd/radiusd.c:79 radiusd/tsh.c:83
+#: radiusd/radiusd.c:79 radiusd/tsh.c:93
 msgid "Set debugging level"
 msgstr "Задать уровень отладки"
 
@@ -1198,33 +1233,33 @@ msgstr "Вести журнал авторизаций"
 msgid "Log users' passwords"
 msgstr "Регистрировать пароли пользователей"
 
-#: radiusd/radiusd.c:197
+#: radiusd/radiusd.c:200
 msgid "radiusd compiled without DBM support"
 msgstr "radiusd скомпилирован без поддержки DBM"
 
-#: radiusd/radiusd.c:207
+#: radiusd/radiusd.c:210
 #, c-format
 msgid "unknown mode: %s"
 msgstr "неизвестный режим: %s"
 
-#: radiusd/radiusd.c:219
+#: radiusd/radiusd.c:222
 #, c-format
 msgid "invalid IP address: %s"
 msgstr "недействительный IP адрес: %s"
 
-#: radiusd/radiusd.c:276
+#: radiusd/radiusd.c:279
 msgid "Sorry, your account is currently closed\n"
 msgstr "Сожалею, вас счет в настоящее время закрыт\n"
 
-#: radiusd/radiusd.c:278
+#: radiusd/radiusd.c:281
 msgid "Password has expired\n"
 msgstr "Срок действия пароля истек\n"
 
-#: radiusd/radiusd.c:280
+#: radiusd/radiusd.c:283
 msgid "Password will expire in %R{Password-Expire-Days} Days\n"
 msgstr "Срок действия пароля истечет через %R{Password-Expire-Days} дней\n"
 
-#: radiusd/radiusd.c:282
+#: radiusd/radiusd.c:285
 msgid ""
 "\n"
 "Access denied\n"
@@ -1232,7 +1267,7 @@ msgstr ""
 "\n"
 "Отказ в доступе\n"
 
-#: radiusd/radiusd.c:284
+#: radiusd/radiusd.c:287
 msgid ""
 "\n"
 "Realm quota exceeded - access denied\n"
@@ -1240,7 +1275,7 @@ msgstr ""
 "\n"
 "Превышена квота зоны -- отказано в доступе\n"
 
-#: radiusd/radiusd.c:286
+#: radiusd/radiusd.c:289
 msgid ""
 "\n"
 "You are already logged in %R{Simultaneous-Use} times - access denied\n"
@@ -1248,7 +1283,7 @@ msgstr ""
 "\n"
 "На вас уже открыты %R{Simultaneous-Use} сессии -- отказано в доступе\n"
 
-#: radiusd/radiusd.c:288
+#: radiusd/radiusd.c:291
 msgid ""
 "\n"
 "You are already logged in - access denied\n"
@@ -1256,15 +1291,15 @@ msgstr ""
 "\n"
 "На вас уже открыта сессия -- отказано в доступе\n"
 
-#: radiusd/radiusd.c:290
+#: radiusd/radiusd.c:293
 msgid "You are calling outside your allowed timespan\n"
 msgstr "Попытка подключения вне разрешенного интервала времени\n"
 
-#: radiusd/radiusd.c:328
+#: radiusd/radiusd.c:331
 msgid "Terminating the subprocesses"
 msgstr "Остановка подпроцессов"
 
-#: radiusd/radiusd.c:340
+#: radiusd/radiusd.c:343
 #, c-format
 msgid "%d process left!"
 msgid_plural "%d processes left!"
@@ -1272,77 +1307,77 @@ msgstr[0] "остался %d процесс!"
 msgstr[1] "осталось %d процесса!"
 msgstr[2] "осталось %d процессов!"
 
-#: radiusd/radiusd.c:365
+#: radiusd/radiusd.c:368
 msgid "Radiusd is not listening on any port. Trying to continue anyway..."
 msgstr "Radiusd не обслуживает ни один порт. Продолжаем, тем не менее..."
 
-#: radiusd/radiusd.c:398
+#: radiusd/radiusd.c:402
 msgid "Starting"
 msgstr "Начало работы"
 
-#: radiusd/radiusd.c:419
+#: radiusd/radiusd.c:424
 msgid "Ready"
 msgstr "Готов"
 
-#: radiusd/radiusd.c:511
+#: radiusd/radiusd.c:516
 msgid "can't find out my own IP address"
 msgstr "невозможно определить мой IP адрес"
 
-#: radiusd/radiusd.c:606
+#: radiusd/radiusd.c:611
 msgid "RADIUSD SUSPENDED"
 msgstr "RADIUSD ОСТАНОВЛЕН"
 
-#: radiusd/radiusd.c:636
+#: radiusd/radiusd.c:641
 msgid "Reloading configuration now"
 msgstr "Перезагрузка конфигурационных файлов"
 
-#: radiusd/radiusd.c:648
+#: radiusd/radiusd.c:653
 #, c-format
 msgid "Dumping users db to `%s'"
 msgstr "База данных по пользователям сброшена в `%s'"
 
-#: radiusd/radiusd.c:705
+#: radiusd/radiusd.c:710
 msgid "restart initiated"
 msgstr "начата подготовка к перезапуску"
 
-#: radiusd/radiusd.c:708
+#: radiusd/radiusd.c:713
 msgid "can't restart: not started as absolute pathname"
 msgstr "перезапуск невозможен: имя программы не абсолютный путь"
 
-#: radiusd/radiusd.c:720
+#: radiusd/radiusd.c:725
 msgid "radiusd_restart: cannot fork"
 msgstr "radiusd_restart: fork() не сработал"
 
-#: radiusd/radiusd.c:735
+#: radiusd/radiusd.c:740
 msgid "restarting radius"
 msgstr "перезапуск radius"
 
-#: radiusd/radiusd.c:737
+#: radiusd/radiusd.c:742
 msgid "RADIUS NOT RESTARTED: exec failed"
 msgstr "ПЕРЕЗАПУСК НЕУДАЧЕН: ошибка exec"
 
-#: radiusd/radiusd.c:774
+#: radiusd/radiusd.c:779
 msgid "Normal shutdown."
 msgstr "Нормальное завершение."
 
-#: radiusd/radiusd.c:792
+#: radiusd/radiusd.c:797
 msgid "Ready to process requests."
 msgstr "Готов к обработке запросов"
 
-#: radiusd/radiusd.c:880
+#: radiusd/radiusd.c:886
 msgid "Loading configuration files."
 msgstr "Повторная загрузка конфигурационных файлов"
 
-#: radiusd/radiusd.c:890
+#: radiusd/radiusd.c:896
 msgid "Errors reading config file - EXITING"
 msgstr "Ошибки при обработке файла config - завершение работы"
 
-#: radiusd/radiusd.c:1060
+#: radiusd/radiusd.c:1066
 #, c-format
 msgid "socket %s:%d is already assigned for %s"
-msgstr "сокет %s:%d уже назначен для %s"
+msgstr "гнездо %s:%d уже назначено для %s"
 
-#: radiusd/radutil.c:187
+#: radiusd/radutil.c:190
 #, c-format
 msgid "INTERNAL ERROR (%s:%d): attribute %d has bad type (%d)"
 msgstr "ВНУТРЕННЯЯ ОШИБКА (%s:%d): неверный тип (%d) у атрибута %d"
@@ -1373,201 +1408,209 @@ msgstr "слишком много запросов этого типа"
 msgid "Maximum number of children active"
 msgstr "Предельное число процессов в работе"
 
-#: radiusd/rewrite.y:967
+#: radiusd/rewrite.y:835
+#, c-format
+msgid "redefinition of function `%s'"
+msgstr "переопределение функции `%s'"
+
+#: radiusd/rewrite.y:837 radiusd/rewrite.y:5374
+msgid "previously defined here"
+msgstr "ранее объявлена здесь"
+
+#: radiusd/rewrite.y:1023
 msgid "nothing to break from"
 msgstr "нечего обрывать (break использован в недействительном контексте)"
 
-#: radiusd/rewrite.y:982
+#: radiusd/rewrite.y:1037
 msgid "nothing to continue"
 msgstr "нечего продолжать (continue использован в недействительном контексте)"
 
-#: radiusd/rewrite.y:1051
+#: radiusd/rewrite.y:1106
 #, c-format
-msgid "%s:%d: undefined variable: %s"
-msgstr "%s:%d: переменная не определена: %s"
+msgid "undefined variable: %s"
+msgstr "переменная не определена: %s"
 
-#: radiusd/rewrite.y:1559
+#: radiusd/rewrite.y:1597
+#, c-format
+msgid "unexpected EOF in comment started at line %lu"
+msgstr "неожиданный конец файла в комментарии открытом в строке %lu"
+
+#: radiusd/rewrite.y:1658
+msgid "Malformed pragma"
+msgstr "Недействительная директива #pragma"
+
+#: radiusd/rewrite.y:1672
+#, c-format
+msgid "Unknown regexp flag: %s"
+msgstr "Неизвестный тип регулярных выражений: %s"
+
+#: radiusd/rewrite.y:1809
 msgid "unterminated character constant"
 msgstr "незавершенная символьная константа"
 
-#: radiusd/rewrite.y:1603
+#: radiusd/rewrite.y:1853
 #, c-format
-msgid "%s:%d: unknown attribute %s"
-msgstr "%s:%d: неизвестный атрибут %s"
+msgid "unknown attribute %s"
+msgstr "неизвестный атрибут `%s'"
 
-#: radiusd/rewrite.y:2292
+#: radiusd/rewrite.y:2548
 #, c-format
-msgid "%s:%d: %s implicit %s %s coercion"
-msgstr "%s:%d: %s неявное преобразование типов %s %s"
+msgid "%s implicit coercion %s %s"
+msgstr "%s неявное преобразование типов %s %s"
 
-#: radiusd/rewrite.y:2359
-msgid "operation not applicable for strings"
+#: radiusd/rewrite.y:2613
+msgid "operation not applicable to strings"
 msgstr "операция неприменима к строкам"
 
-#: radiusd/rewrite.y:2463 radiusd/rewrite.y:2529
+#: radiusd/rewrite.y:2717 radiusd/rewrite.y:2781
 #, c-format
 msgid "(argument %d)"
 msgstr "(аргумент %d)"
 
-#: radiusd/rewrite.y:2478 radiusd/rewrite.y:2540
+#: radiusd/rewrite.y:2732 radiusd/rewrite.y:2792
 #, c-format
-msgid "%s:%d: too many arguments in call to %s"
-msgstr "%s:%d: слишком много аргументов в вызове %s"
+msgid "too many arguments in call to %s"
+msgstr "слишком много аргументов в вызове %s"
 
-#: radiusd/rewrite.y:2483 radiusd/rewrite.y:2546
+#: radiusd/rewrite.y:2736 radiusd/rewrite.y:2797
 #, c-format
-msgid "%s:%d: too few arguments in call to %s"
-msgstr "%s:%d: недостаточно аргументов в вызове %s"
+msgid "too few arguments in call to %s"
+msgstr "недостаточно аргументов в вызове %s"
 
-#: radiusd/rewrite.y:2572 radiusd/tsh.c:210
+#: radiusd/rewrite.y:2823 radiusd/tsh.c:245
 msgid "Undefined"
 msgstr "Неопределенный"
 
-#: radiusd/rewrite.y:2574
+#: radiusd/rewrite.y:2825
 msgid "integer"
 msgstr "целое"
 
-#: radiusd/rewrite.y:2576
+#: radiusd/rewrite.y:2827
 msgid "string"
 msgstr "строка"
 
-#: radiusd/rewrite.y:2578
+#: radiusd/rewrite.y:2829
 msgid "UNKNOWN"
 msgstr "НЕИЗВЕСТНОЕ"
 
-#: radiusd/rewrite.y:2587
+#: radiusd/rewrite.y:2838
 msgid "from Undefined"
 msgstr "из неопределенного"
 
-#: radiusd/rewrite.y:2589
+#: radiusd/rewrite.y:2840
 msgid "from integer"
 msgstr "из целого"
 
-#: radiusd/rewrite.y:2591
+#: radiusd/rewrite.y:2842
 msgid "from string"
 msgstr "из строки"
 
-#: radiusd/rewrite.y:2593
+#: radiusd/rewrite.y:2844
 msgid "from UNKNOWN"
 msgstr "из НЕИЗВЕСТНОГО"
 
-#: radiusd/rewrite.y:2602
+#: radiusd/rewrite.y:2853
 msgid "to Undefined"
 msgstr "в неопределенный"
 
-#: radiusd/rewrite.y:2604
+#: radiusd/rewrite.y:2855
 msgid "to integer"
 msgstr "в целое"
 
-#: radiusd/rewrite.y:2606
+#: radiusd/rewrite.y:2857
 msgid "to string"
 msgstr "в строку"
 
-#: radiusd/rewrite.y:2608
+#: radiusd/rewrite.y:2859
 msgid "to UNKNOWN"
 msgstr "в НЕИЗВЕСТНЫЙ"
 
-#: radiusd/rewrite.y:2930
-#, c-format
-msgid "%s:%d: missing return statement"
-msgstr "%s:%d: недостает предложения return"
+#: radiusd/rewrite.y:3181
+msgid "missing return statement"
+msgstr "недостает предложения return"
 
-#: radiusd/rewrite.y:3079 radiusd/rewrite.y:3091
-#, c-format
-msgid "%s:%d: divide by zero"
-msgstr "%s:%d: деление на ноль"
+#: radiusd/rewrite.y:3330 radiusd/rewrite.y:3340
+msgid "divide by zero"
+msgstr "деление на ноль"
 
-#: radiusd/rewrite.y:3710
+#: radiusd/rewrite.y:3963
 #, c-format
-msgid "%s:%d: regexp error: %s"
-msgstr "%s:%d: ошибка в регулярном выражении: %s"
+msgid "regexp error: %s"
+msgstr "ошибка в регулярном выражении: %s"
 
-#: radiusd/rewrite.y:3757
+#: radiusd/rewrite.y:4011
 msgid "out of pushdown space"
 msgstr "стек переполнен"
 
-#: radiusd/rewrite.y:3772 radiusd/rewrite.y:3799
+#: radiusd/rewrite.y:4026 radiusd/rewrite.y:4053
 msgid "heap overrun"
 msgstr "куча столкнулась со стеком"
 
-#: radiusd/rewrite.y:3812 radiusd/rewrite.y:3842
+#: radiusd/rewrite.y:4072
+msgid "out of heap space"
+msgstr "стек переполнен"
+
+#: radiusd/rewrite.y:4098 radiusd/rewrite.y:4128
 msgid "out of popup"
 msgstr "стек пуст"
 
-#: radiusd/rewrite.y:3906
+#: radiusd/rewrite.y:4194 radiusd/rewrite.y:4204
 msgid "rewrite runtime error"
 msgstr "rewrite: ошибка времени исполнения"
 
-#: radiusd/rewrite.y:4002
+#: radiusd/rewrite.y:4301
 msgid "no request supplied"
 msgstr "нет запроса"
 
-#: radiusd/rewrite.y:4035
+#: radiusd/rewrite.y:4334
 msgid "can't create A/V pair"
 msgstr "невозможно создать пару A/З"
 
-#: radiusd/rewrite.y:4321 radiusd/rewrite.y:4338
+#: radiusd/rewrite.y:4618 radiusd/rewrite.y:4634
 msgid "division by zero!"
 msgstr "деление на ноль!"
 
-#: radiusd/rewrite.y:4524
+#: radiusd/rewrite.y:4825
 #, c-format
 msgid "rewrite regex failure: %s. Input: %s"
 msgstr "rewrite: ошибка регулярного выражения: %s. Вход: %s"
 
-#: radiusd/rewrite.y:4575
+#: radiusd/rewrite.y:4876
 msgid "pc out of range"
 msgstr "pc вне области определения"
 
-#: radiusd/rewrite.y:4796
-#, c-format
-msgid "%s:%d: redefinition of function %s"
-msgstr "%s:%d: переопределение функции %s"
+#: radiusd/rewrite.y:5196
+msgid "Invalid backreference"
+msgstr "Недействительная обратная ссылка"
 
-#: radiusd/rewrite.y:4799
-#, c-format
-msgid "%s:%d: previously defined here"
-msgstr "%s:%d: ранее объявлена здесь"
+#: radiusd/rewrite.y:5225 radiusd/rewrite.y:5261
+msgid "regexp compile error: "
+msgstr "ошибка при компиляции регулярного выражения: "
 
-#: radiusd/rewrite.y:4891 radiusd/rewrite.y:4990
+#: radiusd/rewrite.y:5231
+msgid "gsub: not enough memory"
+msgstr "gsub: недостаточно памяти"
+
+#: radiusd/rewrite.y:5267
+msgid "sub: not enough memory"
+msgstr "sub: недостаточно памяти"
+
+#: radiusd/rewrite.y:5372
+#, c-format
+msgid "redefinition of function %s"
+msgstr "переопределение функции %s"
+
+#: radiusd/rewrite.y:5482
 #, c-format
 msgid "function %s not defined"
 msgstr "функция %s не определена"
 
-#: radiusd/rewrite.y:4934
+#: radiusd/rewrite.y:5522
 #, c-format
 msgid "%s(): wrong number of arguments (should be %d, passed %d)"
 msgstr "%s(): неверное количество аргументов (должно быть %d, передано %d)"
 
-#: radiusd/rewrite.y:4972
-#, c-format
-msgid "malformed function call: %s"
-msgstr "вызов функции %s сформулирован неверно"
-
-#: radiusd/rewrite.y:4980
-msgid "missing '(' in function call"
-msgstr "в вызове функции отсутствует '('"
-
-#: radiusd/rewrite.y:4984
-msgid "missing ')' in function call"
-msgstr "в вызове функции отсутствует ')'"
-
-#: radiusd/rewrite.y:5021
-#, c-format
-msgid "calling %s: expected ',' but found %s after arg %d"
-msgstr "при вызове %s ожидалась ',' однако обнаружено %s (после аргумента %d)"
-
-#: radiusd/rewrite.y:5031
-#, c-format
-msgid "too many arguments for %s"
-msgstr "слишком много аргументов для %s"
-
-#: radiusd/rewrite.y:5057
-#, c-format
-msgid "too few arguments for %s"
-msgstr "недостаточно аргументов для %s"
-
-#: radiusd/rewrite.y:5105
+#: radiusd/rewrite.y:5594
 #, c-format
 msgid "function %s() requires %d parameter"
 msgid_plural "function %s() requires %d parameters"
@@ -1575,22 +1618,43 @@ msgstr[0] "функция %s() принимает %d параметр"
 msgstr[1] "функция %s() принимает %d параметра"
 msgstr[2] "функция %s() принимает %d параметров"
 
-#: radiusd/scheme.c:118 radiusd/scheme.c:169
+#: radiusd/rewrite.y:5749
+#, c-format
+msgid "file not found: %s"
+msgstr "файл не найден: %s"
+
+#: radiusd/rewrite.y:5879
+msgid "function ~S not defined"
+msgstr "функция ~S не определена"
+
+#: radiusd/rewrite.y:5894
+msgid "too many arguments for ~S"
+msgstr "слишком много аргументов для ~S"
+
+#: radiusd/rewrite.y:5921
+msgid "type mismatch in argument ~S(~S) in call to ~S"
+msgstr "ошибочный тип аргумента ~S(~S) в вызове ~S"
+
+#: radiusd/rewrite.y:5931
+msgid "too few arguments for ~S"
+msgstr "недостаточно аргументов для ~S"
+
+#: radiusd/scheme.c:121 radiusd/scheme.c:172
 #, c-format
 msgid "%s is not a procedure object"
 msgstr "%s -- не процедурный объект"
 
-#: radiusd/scheme.c:123 radiusd/scheme.c:174
+#: radiusd/scheme.c:126 radiusd/scheme.c:177
 #, c-format
 msgid "Procedure `%s' failed: see error output for details"
 msgstr "Процедура `%s' не сработала: смотри диагностику в файле ошибок"
 
-#: radiusd/scheme.c:153
+#: radiusd/scheme.c:156
 #, c-format
 msgid "Unexpected return value from Guile authentication function `%s'"
 msgstr "Неожиданный возврат от функции авторизации Guile `%s'"
 
-#: radiusd/scheme.c:190
+#: radiusd/scheme.c:193
 #, c-format
 msgid "Unexpected return value from Guile accounting function `%s'"
 msgstr "Неожиданный возврат от функции аккаунтинга Guile `%s'"
@@ -1718,11 +1782,11 @@ msgstr "аккаунтинг SQL отключен: acct_nasup_query не указан в конфигурации"
 msgid "SQL configuration changed: closing existing connections"
 msgstr "конфигурация SQL изменилась: закрытие существующих соединений"
 
-#: radiusd/sql.c:794
+#: radiusd/sql.c:796
 msgid "no Acct-Status-Type attribute in rad_sql_acct()"
 msgstr "rad_sql_acct(): нет атрибута Acct-Status-Type"
 
-#: radiusd/sql.c:871
+#: radiusd/sql.c:873
 #, c-format
 msgid "%s updated %d record"
 msgid_plural "%s updated %d records"
@@ -1730,11 +1794,11 @@ msgstr[0] "%s: изменена %d строка"
 msgstr[1] "%s: изменено %d строки"
 msgstr[2] "%s: изменено %d строк"
 
-#: radiusd/sql.c:892
+#: radiusd/sql.c:894
 msgid "SQL Auth specified in users file, but not in sqlserver file"
 msgstr "Авторизация SQL требуется файлом users но не указана в sqlserver"
 
-#: radiusd/sql.c:987
+#: radiusd/sql.c:990
 #, c-format
 msgid "SQL: invalid operator: %s"
 msgstr "SQL: недействительный оператор: %s"
@@ -1873,80 +1937,109 @@ msgstr "Уничтожение неотвечающего процесса %lu"
 msgid "Child exiting on timeout."
 msgstr "Процесс завершен: превышено время ожидания ввода от основного процесса"
 
-#: radiusd/rpp.c:491
+#: radiusd/rpp.c:493
 #, c-format
 msgid "Child received malformed header (len = %d, error = %s)"
 msgstr "Процесс получил недействительный заголовок (длина = %d, ошибка = %s)"
 
-#: radiusd/rpp.c:503
+#: radiusd/rpp.c:505
 msgid "Child received malformed data"
 msgstr "Процесс получил недействительные данные"
 
-#: radiusd/tsh.c:71
+#: radiusd/tsh.c:78
 msgid "Print this help screen"
 msgstr "Выдать эту подсказку"
 
-#: radiusd/tsh.c:72
+#: radiusd/tsh.c:79
 msgid "NAS LOGIN SID PORT [IP]"
 msgstr "NAS LOGIN SID PORT [IP]"
 
-#: radiusd/tsh.c:73
+#: radiusd/tsh.c:80
 msgid "Query the given NAS"
 msgstr "Опросить указанный NAS"
 
-#: radiusd/tsh.c:75
+#: radiusd/tsh.c:82
 msgid "Enter Guile"
 msgstr "Перейти в интерпретатор Guile"
 
-#: radiusd/tsh.c:77
+#: radiusd/tsh.c:84
+msgid "[NUMBER]"
+msgstr "[ЧИСЛО]"
+
+#: radiusd/tsh.c:85
+msgid "Print or set the Rewrite stack size"
+msgstr "Вывести или задать размер стека Rewrite"
+
+#: radiusd/tsh.c:87
 msgid "FUNCTION(args..)"
 msgstr "ФУНКЦИЯ(аргументы...)"
 
-#: radiusd/tsh.c:78
+#: radiusd/tsh.c:88
 msgid "Run given Rewrite function"
 msgstr "Выполнить указанную функцию Rewrite"
 
-#: radiusd/tsh.c:79 radlast/radlast.c:122 radtest/main.c:70
+#: radiusd/tsh.c:89 radlast/radlast.c:122 radtest/main.c:70
 #: radwho/radwho.c:137 radzap/radzap.c:60
 msgid "FILE"
 msgstr "ФАЙЛ"
 
-#: radiusd/tsh.c:80
+#: radiusd/tsh.c:90
 msgid "Source the given Rewrite file"
 msgstr "Прочитать указанный файл Rewrite"
 
-#: radiusd/tsh.c:81
+#: radiusd/tsh.c:91
 msgid "TIMESPAN [DOW [HH [MM]]]"
 msgstr "ИНТЕРВАЛ [ДЕНЬ-НЕДЕЛИ [ЧАСЫ [МИНУТЫ]]]"
 
-#: radiusd/tsh.c:82
+#: radiusd/tsh.c:92
 msgid "Check the timespan interval"
 msgstr "Проверка временного интервала"
 
-#: radiusd/tsh.c:83
+#: radiusd/tsh.c:93
 msgid "LEVEL"
 msgstr "УРОВЕНЬ"
 
-#: radiusd/tsh.c:84
+#: radiusd/tsh.c:94
+msgid "[PAIR [,PAIR]]"
+msgstr "[ПАРА [,ПАРА]]"
+
+#: radiusd/tsh.c:94
+msgid "Define a request"
+msgstr "Определить запрос"
+
+#: radiusd/tsh.c:96
+msgid "Print the request"
+msgstr "Показать запрос"
+
+#: radiusd/tsh.c:98
 msgid "Quit the shell"
 msgstr "Выход из оболочки"
 
-#: radiusd/tsh.c:155 radiusd/tsh.c:191 radiusd/tsh.c:226 radiusd/tsh.c:245
-#: radiusd/tsh.c:288
+#: radiusd/tsh.c:166 radiusd/tsh.c:198 radiusd/tsh.c:222 radiusd/tsh.c:260
+#: radiusd/tsh.c:279 radiusd/tsh.c:322
 #, c-format
 msgid "%s: wrong number of arguments\n"
 msgstr "%s: ошибочное число аргументов\n"
 
-#: radiusd/tsh.c:160
+#: radiusd/tsh.c:171
 #, c-format
 msgid "%s: unknown nas\n"
 msgstr "%s: неизвестный NAS\n"
 
-#: radiusd/tsh.c:364
+#: radiusd/tsh.c:208
+#, c-format
+msgid "%s: argument is not a number\n"
+msgstr "%s: не число\n"
+
+#: radiusd/tsh.c:347
+msgid "Enter the pair list. End with end of file\n"
+msgstr "Введите список пар. Конец файла прекращает ввод\n"
+
+#: radiusd/tsh.c:441
 msgid "Not enough memory\n"
 msgstr "Недостаточно памяти\n"
 
-#: radiusd/tsh.c:500
+#: radiusd/tsh.c:580
 msgid "Bad command\n"
 msgstr "Недействительная команда\n"
 
@@ -2025,7 +2118,7 @@ msgstr "активен"
 msgid "error reading dictionary file"
 msgstr "ошибка при чтении словаря"
 
-#: gram.y:492 radtest/gram.y:492
+#: gram.y:477 radtest/gram.y:477
 #, c-format
 msgid "attribute %s has unknown type"
 msgstr "неизвестный тип для атрибута %s"
@@ -2092,7 +2185,7 @@ msgstr "присвоение: недостает закрывающей кавычки\n"
 msgid "assign: invalid IP address: %s\n"
 msgstr "присвоение: недействительный IP адрес: %s\n"
 
-#: radtest/main.c:475
+#: radtest/main.c:479
 msgid "wrong datatype: expected vector"
 msgstr "неверный тип данных: ожидался вектор"
 
@@ -2273,3 +2366,31 @@ msgstr[2] "запрос вернул %d комплектов значений"
 #, c-format
 msgid "PQexec returned %s"
 msgstr "PQexec вернул %s"
+
+#~ msgid "%s:%d: unknown attribute `%s'"
+#~ msgstr "%s:%d: неизвестный атрибут `%s'"
+
+#~ msgid "No huntgroup access"
+#~ msgstr "Отказано в доступе от huntgroup"
+
+#~ msgid "%s:%d: discarding user `%s'"
+#~ msgstr "%s:%d: исключение пользователя `%s'"
+
+#~ msgid "%s:%d: discarding entry `%s'"
+#~ msgstr "%s:%d: исключение профиля `%s'"
+
+#~ msgid "%s:%d: unknown attribute %s"
+#~ msgstr "%s:%d: неизвестный атрибут %s"
+
+#~ msgid "malformed function call: %s"
+#~ msgstr "вызов функции %s сформулирован неверно"
+
+#~ msgid "missing '(' in function call"
+#~ msgstr "в вызове функции отсутствует '('"
+
+#~ msgid "missing ')' in function call"
+#~ msgstr "в вызове функции отсутствует ')'"
+
+#~ msgid "calling %s: expected ',' but found %s after arg %d"
+#~ msgstr ""
+#~ "при вызове %s ожидалась ',' однако обнаружено %s (после аргумента %d)"

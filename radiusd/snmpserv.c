@@ -79,6 +79,8 @@ find_netlist(name)
         return NULL;
 }
 
+static int _opened_snmp_sockets;
+
 int
 snmp_stmt_begin(finish, data, up_data)
 	int finish;
@@ -88,7 +90,11 @@ snmp_stmt_begin(finish, data, up_data)
 	if (!finish) {
 		snmp_free_communities();
 		snmp_free_acl();
-	}
+		_opened_snmp_sockets = 0;
+	} else if (radius_mode == MODE_DAEMON && !_opened_snmp_sockets) 
+		socket_list_add(&socket_first,
+				R_SNMP,
+				INADDR_ANY, snmp_port);
 	return 0;
 }
 
@@ -187,6 +193,7 @@ snmp_cfg_listen(argc, argv, block_data, handler_data)
 					argv[i].v.host.ipaddr,
 					argv[i].v.host.port > 0 ?
 					argv[i].v.host.port : snmp_port);
+	_opened_snmp_sockets++;
 	return 0;
 }
 

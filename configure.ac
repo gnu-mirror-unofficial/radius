@@ -192,7 +192,7 @@ AH_BOTTOM([
 #else
 # define _(s) s
 # define dgettext(domain,msgid) msgid
-# deifne ngettext(s,p,n) p
+# define ngettext(s,p,n) p
 #endif
 #define N_(s) s
 

@@ -187,13 +187,14 @@ void
 stat_init()
 {
 	struct stat_header hdr;
+	struct timezone tz;
 	int fd;
 
+	memset(&hdr, 0, sizeof hdr);
+	gettimeofday(&hdr.start_time, &tz);
 	memset(&server_stat, 0, sizeof server_stat);
 	fd = open(radstat_path, O_RDONLY);
 	if (fd > 0) {
-		struct timeval tv;
-		struct timezone tz;
 		if (statfile_verify(fd, &hdr,
 				    &server_stat.auth, &server_stat.acct)) {
 			close(fd);

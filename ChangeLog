@@ -1,3 +1,17 @@
+2001-11-20 Sergey Poznyakoff
+	
+	* radtest/gram.y: Simplified syntax. Implemented full
+	EXPECT command.
+	* radtest/input.l: Added EXIT keyword.
+	* radtest/main.c: radtest_send(): free previously allocated
+	reply_pairs. Added compare_lists() and new global: reply_list.
+	* radtest/radtest.h: New globals: reply_list and abort_on_failure.
+
+	* test/test.sh: Fixed for use with both test suites.
+	* test/dejagnu/lib/radiusd.exp: Lots of changes.
+	* test/dejagnu/lib/.cvsignore: (new)
+	* test/dejagnu/radiusd: (new) Test modules for radiusd
+
 2001-11-16 Sergey Poznyakoff
 
 	* test/dejagnu/Makefile.am: Specify tool explicitly.   

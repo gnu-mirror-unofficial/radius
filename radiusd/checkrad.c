@@ -481,13 +481,11 @@ finger_check(checkp, nas)
 		  namebuf, hp->h_name, ntohs(port)));
 
 	/* have network connection; identify the host connected with */
+	memset(&msg, 0, sizeof(msg));
 	msg.msg_name = (void *)&sin;
 	msg.msg_namelen = sizeof sin;
 	msg.msg_iov = iov;
 	msg.msg_iovlen = 0;
-	msg.msg_control = 0;
-	msg.msg_controllen = 0;
-	msg.msg_flags = 0;
 	
 	/* send the name followed by <CR><LF> */
 	iov[msg.msg_iovlen].iov_base = namebuf;

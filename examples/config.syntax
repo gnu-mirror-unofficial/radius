@@ -46,9 +46,7 @@ option {
 
 logging {
 	# This defines output channel `info'. The output will go to a file
-	# named <radlog_dir>/radius.info. (<radlog_dir> is /var/log on BSD-
-	# like systems and /usr/adm on System-V systems. It's value
-	# can be determined from output of radiusd -v.)
+	# named <radlog_dir>/radius.info. 
 	#
 	channel info {
 		file "radius.info";
@@ -58,6 +56,8 @@ logging {
 		print-severity yes;     # Synonim for the above
 		print-milliseconds yes; # Print timestamp with milliseconds
 		print-category yes;     # Print category description
+		prefix-hook "log-prefix"  
+                suffix-hook "log-suffix"
 	};
 
 	# This defines output channel that sends it info to syslog whith
@@ -71,7 +71,7 @@ logging {
 	category auth {
 		print-auth yes;		# Output any authentication info
 		print-failed-pass yes;	# Output failed password
-		print-pass no;		# Output password (very insecure!)
+		print-pass no;		# Do not log correct passwords
 	};
 
 	# Send notice logs to another channel

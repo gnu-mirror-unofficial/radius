@@ -1028,7 +1028,7 @@ rad_sql_pass(req, passwd)
 	if (sql_cfg.doauth == 0) {
 		radlog(L_ERR,
 		       _("SQL Auth specified in users file, but not in sqlserver file"));
-		return -1;
+		return AUTH_FAIL;
 	}
 	radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
 		     sql_cfg.auth_query,
@@ -1038,10 +1038,13 @@ rad_sql_pass(req, passwd)
 	mysql_passwd = rad_sql_getpwd(conn, sql_cfg.buf.ptr);
 	
 	if (!mysql_passwd) {
-		rc = -1;
+		rc = AUTH_NOUSER;
 	} else {
 		chop(mysql_passwd);
-		rc = strcmp(mysql_passwd, md5crypt(passwd, mysql_passwd));
+		if (strcmp(mysql_passwd, md5crypt(passwd, mysql_passwd)) == 0)
+			rc = AUTH_OK;
+		else
+			rc = AUTH_FAIL;
 		efree(mysql_passwd);
 	}
 	

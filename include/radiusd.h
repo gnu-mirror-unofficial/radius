@@ -357,6 +357,16 @@ enum {
 #define DBM_ONLY                        1
 #define DBM_ALSO                        2
 
+
+/*
+ * Authentication results
+ */
+#define AUTH_OK      0 /* OK */
+#define AUTH_FAIL    1 /* Password fail */
+#define AUTH_NOUSER  2 /* No such user  */
+#define AUTH_REJECT  3 /* Rejected */
+
+
 /*
  *	Global variables.
  */

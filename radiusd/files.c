@@ -623,6 +623,48 @@ rule_eval_rewrite (radiusd_request_t *req, grad_matching_rule_t *rule)
 	avl_eval_rewrite (req, rule, rule->lhs);
 }
 
+int
+exec_program_wait (radiusd_request_t *request, grad_avp_t *rhs,
+		   grad_avp_t **reply, grad_avp_t **pfailed)
+{
+	int rc = 0;
+	grad_avp_t *p;
+	
+	for (p = rhs; p; p = p->next) {
+		if (p->attribute == DA_EXEC_PROGRAM_WAIT) {
+			switch (p->avp_strvalue[0]) {
+			case '/':
+				/* radius_exec_program() returns -1 on
+				   fork/exec errors, or >0 if the exec'ed
+				   program
+				   had a non-zero exit status.
+				*/
+				rc = radius_exec_program(p->avp_strvalue,
+							 request,
+							 reply,
+							 1);
+				break;
+				
+			case '|':
+				rc = filter_auth(p->avp_strvalue+1,
+						 request,
+						 reply);
+				break;
+
+			default:
+				rc = 1;
+			}
+
+			if (rc) {
+				if (pfailed)
+					*pfailed = p;
+				break;
+			}
+		}
+	}
+	return rc;
+}
+
 /* ***************************************************************************
  * raddb/hints
  */
@@ -679,7 +721,7 @@ hints_setup(radiusd_request_t *req)
         case RT_STATUS_SERVER:
                 return 0;
         }
-        
+       
         if (hints == NULL)
                 return 0;
 
@@ -736,13 +778,15 @@ hints_setup(radiusd_request_t *req)
 
 		/* Handle Rewrite-Function and Replace-User-Name */
 		hints_eval_compat(req, name_pair, rule);
+		/* Process eventual Exec-Program-Wait and Scheme-Procedure
+		   attributes */
+		exec_program_wait (req, rule->rhs, &add, NULL);
+#ifdef USE_SERVER_GUILE
+		scheme_eval_avl (req, rule->lhs, rule->rhs, &add, NULL);
+#endif
+		
 		/* Evaluate hints */
 		radius_eval_avl(req, add); /*FIXME: return value?*/
-		
-                debug(1, ("new name is `%s'", name_pair->avp_strvalue));
-
-                /* fix-up the string length */
-                name_pair->avp_strlength = strlen(name_pair->avp_strvalue);
 
                 /* Add all attributes to the request list, except
 		   DA_STRIP_USER_NAME and DA_REPLACE_USER_NAME */
@@ -752,6 +796,15 @@ hints_setup(radiusd_request_t *req)
                 grad_avl_merge(&req->request->avlist, &add);
                 grad_avl_free(add);
                 
+		/* Re-read the name pair, since it might have been changed
+		   by exec_program_wait */
+		name_pair = grad_avl_find(req->request->avlist,
+					  DA_USER_NAME);
+                debug(1, ("new name is `%s'", name_pair->avp_strvalue));
+
+                /* fix-up the string length. FIXME: Do we still need it? */
+                name_pair->avp_strlength = strlen(name_pair->avp_strvalue);
+
                 /* Ok, let's see if we need to further check the
                    hint's rules */
                 if (((tmp = grad_avl_find(rule->rhs, DA_FALL_THROUGH))

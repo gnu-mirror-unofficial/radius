@@ -62,6 +62,9 @@ extern int reply_code;
 extern VALUE_PAIR *reply_list;
 extern int verbose;
 extern int abort_on_failure;
+extern int x_argmax;
+extern int x_argc;
+extern char **x_argv;
 
 int open_input(char *name);
 void close_input();

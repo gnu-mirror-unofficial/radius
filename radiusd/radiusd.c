@@ -442,8 +442,7 @@ main(argc, argv)
 	
 	snmp_init(0, 0, emalloc, efree);
 
-
-	rad_main();
+	rad_main(argv[optind]);
 }
 
 
@@ -505,14 +504,19 @@ rad_daemon()
 #endif
 }
 
+static char *extra_arg;
+
 void
-rad_main()
+rad_main(arg)
+	char *arg;
 {
 #ifdef USE_SERVER_GUILE
 	char *argv[] = { "radiusd", NULL };
 	
+	extra_arg = arg;
 	scm_boot_guile (1, argv, rad_boot, NULL);
 #else
+	extra_arg = arg;
 	rad_mainloop();
 #endif
 }	
@@ -520,8 +524,6 @@ rad_main()
 void
 rad_mainloop()
 {
-	rad_daemon();
-	
 	/*
 	 *	Read config files.
 	 */
@@ -536,10 +538,11 @@ rad_mainloop()
 		
 #ifdef USE_DBM		
 	case MODE_BUILDDBM:
-		exit(builddbm(argv[optind]));
+		exit(builddbm(extra_arg));
 #endif		
 	}
 
+	rad_daemon();
 	radlog(L_INFO, _("Ready to process requests."));
 
 	for(;;) {

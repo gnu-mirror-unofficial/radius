@@ -195,6 +195,13 @@ acct {
 	trace-rules no;          
 };
 
+# Multiple Login Check
+mlc {
+	method system;  # Allowed values: system or sql.
+	# Assume the user is logged in when checkrad returns don't-know answer
+	checkrad-assume-logged yes;
+};	
+	
 # DBM handling. Can be one of
 #	no	-	Never to use DBM database
 #	yes	-	Use only DBM database and ignore users

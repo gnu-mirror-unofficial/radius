@@ -100,6 +100,8 @@ int suspend_flag;
 #define CMD_MEMINFO  4 /* Dump memory usage statistics */
 #define CMD_DUMPDB   5 /* Dump authentication database */
 #define CMD_SHUTDOWN 6 /* Stop immediately */
+#define CMD_SUSPEND  7 /* Suspend service */
+#define CMD_CONTINUE 8 /* Continue after suspend */
 
 int daemon_command = CMD_NONE;
 
@@ -287,6 +289,29 @@ get_port_number(char *name, char *proto, int defval)
 	return svp ? ntohs(svp->s_port) : defval;
 }
 
+static void
+radiusd_preconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
+{
+	/* Flush any pending requests and empty the request queue */
+	radiusd_flush_queue();
+	request_init_queue();
+	
+	/* Terminate all subprocesses */
+	rpp_kill(-1, SIGTERM);
+	radiusd_cleanup();
+}
+
+static void
+radiusd_postconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
+{
+	/*FIXME: Emit the warning:
+	  radlog(L_ALERT,
+          _("Radiusd is not listening on any port.
+	  Trying to continue anyway..."));
+
+	  If necessary..*/
+}
+
 void
 radiusd_setup()
 {
@@ -304,15 +329,10 @@ radiusd_setup()
 
 	/* Register radiusd hooks first. This ensures they will be
 	   executed after all other hooks */
-#ifdef FIXME
-	register_before_config_hook(radiusd_before_config_hook, NULL);
-	register_after_config_hook(radiusd_after_config_hook, NULL);
-#endif
+	radiusd_set_preconfig_hook(radiusd_preconfig_hook, NULL, 0);
+	radiusd_set_postconfig_hook(radiusd_postconfig_hook, NULL, 0);
 	
         snmp_init(0, 0, (snmp_alloc_t)emalloc, (snmp_free_t)efree);
-#ifdef USE_SNMP
-        snmpserv_init(&saved_status);
-#endif		
 }
 
 void
@@ -338,7 +358,9 @@ common_init()
 	radiusd_signal_init(sig_handler);
 	radiusd_reconfigure();
 	radpath_init();
-	stat_init();
+#ifdef USE_SNMP
+        snmpserv_init(&saved_status);
+#endif		
 	radlog(L_INFO, _("Ready"));
 }
 
@@ -493,9 +515,58 @@ main(int argc, char **argv)
 	/*NOTREACHED*/
 }
 
+static int
+snmp_request_to_command()
+{
+	if (server_stat && server_stat->auth.status != saved_status) {
+		saved_status = server_stat->auth.status;
+		switch (server_stat->auth.status) {
+		case serv_reset:
+			return CMD_RESTART;
+
+		case serv_init:
+			return CMD_RELOAD;
+
+		case serv_running:
+			return CMD_CONTINUE;
+
+		case serv_suspended:
+			return CMD_SUSPEND;
+
+		case serv_shutdown:
+			return CMD_SHUTDOWN;
+		}
+	}
+	return CMD_NONE;
+}
+
+void
+radiusd_suspend()
+{
+	if (suspend_flag == 0) {
+		radlog(L_NOTICE, _("RADIUSD SUSPENDED"));
+		suspend_flag = 1;
+	}
+}
+
+void
+radiusd_continue()
+{
+	if (suspend_flag) {
+		suspend_flag = 0;
+#ifdef USE_SNMP
+		server_stat->auth.status = serv_running;
+		server_stat->acct.status = serv_running;
+#endif
+	}
+}
+
 static void
 check_reload()
 {
+	if (daemon_command == CMD_NONE)
+		daemon_command = snmp_request_to_command();
+	
         switch (daemon_command) {
 	case CMD_CLEANUP:
 		radiusd_cleanup();
@@ -519,13 +590,18 @@ check_reload()
 		       RADIUS_DUMPDB_NAME);
                 dump_users_db();
                 break;
+
+	case CMD_SUSPEND:
+		radiusd_suspend();
+		break;
+
+	case CMD_CONTINUE:
+		radiusd_continue();
+		break;
 		
 	case CMD_SHUTDOWN:
 		radiusd_exit();
-		
-        default:
-                //check_snmp_request();
-                break;
+		break;
         }
         daemon_command = CMD_NONE;
 }
@@ -638,19 +714,85 @@ radiusd_main_loop()
 	}
 }
 
+
+/* ************************ Coniguration Functions ************************* */
+
+struct hook_rec {
+	void (*function)(void *func_data, void *call_data);
+	void *data;
+	int once; /* Run once and remove */
+};
+
+static LIST /* of struct hook_rec */ *preconfig;
+static LIST /* of struct hook_rec */ *postconfig;
+
+void
+radiusd_set_preconfig_hook(void (*f)(void *, void *), void *p, int once)
+{
+	struct hook_rec *hp = emalloc(sizeof(*hp));
+	hp->function = f;
+	hp->data = p;
+	hp->once = once;
+	if (!preconfig)
+		preconfig = list_create();
+	list_prepend(preconfig, hp);
+}
+
+void
+radiusd_set_postconfig_hook(void (*f)(void *, void *), void *p, int once)
+{
+	struct hook_rec *hp = emalloc(sizeof(*hp));
+	hp->function = f;
+	hp->data = p;
+	hp->once = once;
+	if (!postconfig)
+		postconfig = list_create();
+	list_prepend(postconfig, hp);
+}
+
+struct hook_runtime_closure {
+	LIST *list;
+	void *call_data;
+};
+
+static int
+_hook_call(void *item, void *data)
+{
+	struct hook_rec *hp = item;
+	struct hook_runtime_closure *clos = data;
+	hp->function(hp->data, clos->call_data);
+	if (hp->once) {
+		list_remove(clos->list, hp, NULL);
+		efree(hp);
+	}
+	return 0;
+}
+
+void
+radiusd_run_preconfig_hooks(void *data)
+{
+	struct hook_runtime_closure clos;
+	clos.list = preconfig;
+	clos.call_data = data;
+	list_iterate(clos.list, _hook_call, &clos);
+}
+
+void
+radiusd_run_postconfig_hooks(void *data)
+{
+	struct hook_runtime_closure clos;
+	clos.list = postconfig;
+	clos.call_data = data;
+	list_iterate(clos.list, _hook_call, &clos);
+}
+
 void
 radiusd_reconfigure()
 {
         int rc = 0;
         char *filename;
 
-	/* Flush any pending requests and empty the request queue */
-	radiusd_flush_queue();
-	request_init_queue();
-	
-	/* Terminate all subprocesses */
-	rpp_kill(-1, SIGTERM);
-	radiusd_cleanup();
+	radiusd_run_preconfig_hooks(NULL);
 	
 	radlog(L_INFO, _("Loading configuration files."));
 	/* Read main configuration file */
@@ -665,6 +807,8 @@ radiusd_reconfigure()
                 radlog(L_CRIT, _("Errors reading config file - EXITING"));
                 exit(1);
         }
+
+	radiusd_run_postconfig_hooks(NULL);
 }
 
 
@@ -937,7 +1081,7 @@ udp_input_cmp(const void *a, const void *b)
 }
 
 int
-udp_open(int type, UINT4 ipaddr, int port)
+udp_open(int type, UINT4 ipaddr, int port, int nonblock)
 {
 	int fd;
 	struct sockaddr_in s;
@@ -957,6 +1101,8 @@ udp_open(int type, UINT4 ipaddr, int port)
 	}
 
         fd = socket(PF_INET, SOCK_DGRAM, 0);
+	if (nonblock) 
+		set_nonblocking(fd);
         if (fd < 0) {
                 radlog(L_CRIT|L_PERROR, "%s socket",
 		       request_class[type].name);
@@ -998,7 +1144,8 @@ rad_cfg_listen_auth(int argc, cfg_value_t *argv,
 			if (udp_open(R_AUTH,
 				     argv[i].v.host.ipaddr,
 				     argv[i].v.host.port > 0 ?
-				     argv[i].v.host.port : auth_port))
+				     argv[i].v.host.port : auth_port,
+				     0))
 				errcnt++;
 	}
 	if (errcnt == 0)
@@ -1012,7 +1159,7 @@ auth_stmt_begin(int finish, void *block_data, void *handler_data)
 	if (!finish) 
 		_opened_auth_sockets = 0;
 	else if (radius_mode == MODE_DAEMON && !_opened_auth_sockets) 
-		udp_open(R_AUTH, INADDR_ANY, auth_port);
+		udp_open(R_AUTH, INADDR_ANY, auth_port, 0);
 	return 0;
 }
 
@@ -1033,7 +1180,8 @@ rad_cfg_listen_acct(int argc, cfg_value_t *argv,
 			udp_open(R_ACCT,
 				 argv[i].v.host.ipaddr,
 				 argv[i].v.host.port > 0 ?
-				 argv[i].v.host.port : acct_port);
+				 argv[i].v.host.port : acct_port,
+				 0);
 	}
 	_opened_acct_sockets++;
 	return 0;
@@ -1045,7 +1193,7 @@ acct_stmt_begin(int finish, void *block_data, void *handler_data)
 	if (!finish) 
 		_opened_acct_sockets = 0;
 	else if (radius_mode == MODE_DAEMON && !_opened_acct_sockets) 
-		udp_open(R_ACCT, INADDR_ANY, acct_port);
+		udp_open(R_ACCT, INADDR_ANY, acct_port, 0);
 	return 0;
 }
 

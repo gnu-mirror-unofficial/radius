@@ -61,28 +61,16 @@ union bucket {
 
 Bucketclass bucket_class;
 static pthread_mutex_t mem_mutex = PTHREAD_MUTEX_INITIALIZER;
-static int mem_recursion_level = 0;
 
-static void
-mem_lock()
-{
-        if (mem_recursion_level == 0)
-                pthread_mutex_lock(&mem_mutex);
-        mem_recursion_level++;
-}
+#define mem_lock()    pthread_mutex_lock(&mem_mutex)
+#define mem_unlock()  pthread_mutex_unlock(&mem_mutex)
 
-static void
-mem_unlock()
-{
-        if (--mem_recursion_level == 0)
-                pthread_mutex_unlock(&mem_mutex);
-}
-
-Bucketclass alloc_class(size_t size);
-Bucket alloc_bucket(Bucketclass);
 void *alloc_page();
+static Bucketclass alloc_class(size_t size);
+static Bucket alloc_bucket(Bucketclass);
 static void put_back(Bucketclass, void *);
 static void put_back_cont(Bucketclass, void *, count_t);
+static void *alloc_entry_nl(size_t size);
 
 #define ENTRY_SIZE sizeof(struct entry)
 #define CLASS_SIZE sizeof(struct bucketclass)
@@ -111,7 +99,7 @@ alloc_class_mem()
                 
                 Bucket bp = alloc_bucket(&class);
                 bucket_class = &class; /* to fake alloc_entry() */
-                bucket_class = alloc_entry(CLASS_SIZE);
+                bucket_class = alloc_entry_nl(CLASS_SIZE);
                 bp->s.class = bucket_class;
                 
                 bucket_class->first = bp;
@@ -121,7 +109,7 @@ alloc_class_mem()
                 bucket_class->elsize = CLASS_SIZE;
                 bucket_class->elcnt = bucket_capacity(CLASS_SIZE);
         }
-        return alloc_entry(CLASS_SIZE);
+        return alloc_entry_nl(CLASS_SIZE);
 }
 
 #define free_class free_entry
@@ -212,13 +200,11 @@ alloc_bucket(class)
  */
 
 void *
-alloc_entry(size)
+alloc_entry_nl(size)
         size_t size;
 {
         Bucketclass class_ptr;
         Entry ptr;
-
-        mem_lock();
 
         if (size < ENTRY_SIZE)
                 size = ENTRY_SIZE;
@@ -244,10 +230,20 @@ alloc_entry(size)
         insist(class_ptr->allocated_cnt <= class_ptr->bucket_cnt * class_ptr->elcnt);
         ptr = class_ptr->free;
         class_ptr->free = ptr->next;
-        mem_unlock();
 
         bzero(ptr, class_ptr->elsize);
         return ptr;
+}
+
+void *
+alloc_entry(size)
+        size_t size;
+{
+	void *p;
+	mem_lock();
+	p = alloc_entry_nl(size);
+	mem_unlock();
+	return p;
 }
 
 void
@@ -473,8 +469,8 @@ put_back_cont(class, ptr, count)
 
 typedef union {
         struct {
-        unsigned char nblk;      /* number of allocated blocks */
-        unsigned char nref;      /* number of references */
+		unsigned char nblk;      /* number of allocated blocks */
+		unsigned char nref;      /* number of references */
         } s;
         Align_t align;
 } STRHDR;
@@ -530,11 +526,10 @@ dup_string(str)
                 return NULL;
         pthread_mutex_lock(&string_mutex);
         hp = (STRHDR*)str - 1;
-        if (hp->s.nref == 255) { /* FIXME: use limits.h */
-                pthread_mutex_unlock(&string_mutex);
-                return make_string(str);
-        }
-        hp->s.nref++;
+        if (hp->s.nref == 255)  /* FIXME: use limits.h */
+                str = make_string(str);
+	else
+		hp->s.nref++;
         pthread_mutex_unlock(&string_mutex);
         return str;
 }

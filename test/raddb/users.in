@@ -1,3 +1,4 @@
+# -*- radius -*-
 # This file is part of GNU RADIUS test suite.
 # Copyright (C) 2000,2001 Sergey Poznyakoff
 #
@@ -85,3 +86,14 @@ match1  Auth-Type = Accept,
 scheme  Auth-Type = Accept
 	Scheme-Procedure = "auth"
 
+## Hint.exp
+hint    Hint = "1",
+		Auth-Type = Accept
+        Reply-Message = "Hint 1"
+
+hint    Hint = "2",
+		Auth-Type = Accept
+	Reply-Message = "Hint 2"
+
+hint    Auth-Type = Reject
+	Reply-Message = "No suffix"

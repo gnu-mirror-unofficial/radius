@@ -1,0 +1,474 @@
+@chapter New Configuration Approach (draft)
+
+This document presents a draft describing new approach for
+processing @RADIUS{} requests. It is intended as a @dfn{request
+for comments}, and, in the long run, as a guide for GNU Radius
+developers.
+
+@menu
+* Present State:: A brief description of Currently Used Approach
+* Deficiencies::   Deficiencies of Current Operation Model and Configuration Suite
+* Solution::      A Proposed Solution
+* Traditional Configuration:: Support for Traditional Configuration Files.
+* New Configuration:: New Configuration Files
+@end menu
+
+
+@node Present State
+@section A brief description of Currently Used Approach
+
+When I started to write GNU Radius, back in 1998, I had two major aims.
+The first and primary aim was to create a flexible and robust
+system that would follow the principle of Jon Postel:
+
+@quotation
+Be liberal in what you accept and conservative in what you send.
+@end quotation
+
+This, I believe, is the main principle of any good software for
+Internet.
+
+The second aim was to be backward compatible with the implementations
+that already existed back then. This seemed to be important (and the
+time has proved it was), because it would allow users to easily switch
+from older radius daemon to GNU Radius.
+
+An important part of every complex program is its configuration
+file. Traditional implementations of @RADIUS{} servers (beginning from
+Livingston Radius) used a configuration suite consisting of several
+files, usually located in @file{/etc/raddb} subdirectory. Its main
+components were:
+
+@table @file
+@item dictionary
+A file containing translations of symbolic names of radius attributes
+and attribute values to their integer numbers as specified by
+@RADIUS{} protocol.
+
+@item hints
+This file was intended to separate incoming requests in groups, based
+on the form of their login name. Traditionally such separation
+was performed basing on common @dfn{prefixes} and/or @dfn{suffixes}
+of login names.
+
+@item huntgroups
+The purpose of this file was to separate incoming requests depending
+on their source, i.e. on the @NAS{} that sent them and the port
+number on that @NAS{}. It also served as a sort of simplified
+@dfn{access control list}. 
+
+@item users
+This file contained a users database. It described criteria for
+authentication and @dfn{reply pairs} to be sent back to requesting
+@NAS{}es.
+@end table
+
+Among these files, the first two were used for requests of any kind,
+whereas @file{users} was used only for @code{Access-Request} packets.
+@FIXME-xref{request types}
+
+Though this configuration system suffered from many inconsistencies,
+the @dfn{second aim} required GNU Radius to use this approach.
+
+To compensate for its deficiencies and to fulfill the @dfn{first aim},
+this configuration system was extended, while preserving its main
+functionality. A number of additional @dfn{internal attributes} were
+added, that control @command{radiusd} behavior. A new language was
+created whose main purpose was to modify incoming requests
+(@pxref{Rewrite}). The support for @dfn{GNU's Ubiquitous Intelligent
+Language for Extensions} (@pxref{Guile}) was added, that allowed to
+further extend GNU Radius functionality.
+
+The present operation model@footnote{@xref{Operation}.} of GNU Radius
+and its configuration file system@footnote{@xref{Configuration
+Files}} emerged as a result of the two development aims described
+above. Since 1998 up to present, GNU Radius users contributed a lot
+of ideas and code to the further development of the system.
+
+However, it became obvious that this system presents
+strong obstacles to the further development. The next section
+addresses its deficiencies.
+
+@node Deficiencies
+@section Deficiencies of Current Operation Model and Configuration Suite
+
+The main deficiencies are inherited with the traditional configuration
+file suite. The rules for processing each request are split among
+three files, each of which is processed differently, despite of their
+external similarity. The administrator has to keep in mind a set of
+exotic rules when configuring the system@footnote{@file{Hints} is
+processed for each request... Authentication requests first pass
+@file{hints}, then @file{huntgroups}, then @file{users}... Accounting
+requests use only @file{hints} and @file{huntgroups}...
+@file{Huntgroups} entries may also be used (sometimes inadvertently) to
+create @acronym{ACL} rules, etc, etc...}. When matching incoming
+requests with configuration file entries (@dfn{LHS}, @pxref{Matching
+Rule}), some attributes are taken verbatim, whereas others are used
+to control @command{radiusd} behavior and to pass additional data to
+other rules (@pxref{Radius Internal Attributes}). The things become even
+more complicated when @RADIUS{} realms come into play (@pxref{Proxy
+Service}). Some attributes are meaningful only if used in a certain
+part of a certain configuration file rule.
+
+So, while being a lot more flexible than the approach used by
+other @RADIUS{} implementations, the current system is quite
+difficult to maintain.
+
+Another deficiency is little control over actions executed on
+different events. For example, it is often asked how can one
+block a user account after a predefined number of authentication
+failures? Currently this can only be done by writing an external
+authentication procedure (either in Scheme, using Guile, or as
+a standalone executable, using @attr{Exec-Program-Wait}). The
+proper solution would be to have a set of user-defined triggers
+for every @RADIUS{} event (in this case, for authentication failure).
+
+Another commonly asked question is how to make @command{radiusd}
+execute several @acronym{SQL} queries when processing a request.
+While GNU Radius is not supposed to compensate for deficiencies
+of some @acronym{SQL} implementations that do not allow for
+nested queries, such a feature could come quite handy.
+
+@node Solution
+@section Proposed Solution
+@UNREVISED{}
+
+The new (or, better said @dfn{GNU}) operation model is 
+
+The processing of incoming requests is controlled by a @dfn{radius
+command tree}. When a request arrives, an internal engine traverses
+this tree, executing actions and tests contained therein. Branching
+within the tree is performed depending on values returned by each test,
+as described below. 
+
+@menu
+* Node::        Radius Command Tree Node Defined
+* grad_node_conditional::
+* grad_node_call::
+* grad_node_return::
+* grad_node_action::
+* grad_node_reply::
+* grad_node_proxy::
+* grad_node_forward::
+@end menu
+
+@node Node
+@subsection Radius Command Tree Node
+
+@dfn{Radius Command Tree} consists of @dfn{nodes}. There are six
+basic node types:
+
+@table @code
+@item grad_node_conditional_t
+This node is a branch point.
+
+@item grad_node_call_t
+Represents a @dfn{call} of a subtree
+
+@item grad_node_action_t
+Invokes a Rewrite @FIXME{or Scheme?} function
+
+@item grad_node_proxy_t
+Proxies a request to the remote server
+
+@item grad_node_forward_t
+Forwards a request to the remote server
+
+@item grad_node_reply_t
+Replies back to the requesting @NAS{}.
+@end table
+
+Consequently, a tree node is defined as a union of the above node
+types:
+
+@deftp Node grad_node_t
+@smallexample
+@group
+enum grad_node_type @{
+     grad_node_conditional,
+     grad_node_call,
+     grad_node_return,
+     grad_node_action,
+     grad_node_reply,
+     grad_node_proxy,
+     grad_node_forward
+@};
+
+typedef struct grad_node grad_node_t;
+
+struct grad_node @{
+       enum grad_node_type type;
+       grad_node_t *next;
+       union @{
+             grad_node_conditional_t cond;
+             grad_node_call_t call;
+             grad_node_action_t action;
+             grad_node_reply_t reply;
+             grad_node_proxy_t proxy;
+             grad_node_forward_t forward;
+       @} v;                                                             
+@};
+@end group
+@end smallexample
+@end deftp
+
+Each node type is discussed in detail in the following subsections.
+
+@node grad_node_conditional
+@subsection grad_node_conditional
+@UNREVISED{}
+
+@deftp Node grad_node_conditional_t cond iftrue iffalse
+@smallexample
+@group
+struct grad_node_conditional @{
+       grad_entry_point_t cond;    /* Entry point to the compiled
+                                      Rewrite condition */
+       grad_tree_node_t *iftrue;   /* Points to the ``true'' branch  */
+       grad_tree_node_t *iffalse;  /* Points to the ``false'' branch  */
+@};
+typedef struct grad_node_conditional grad_node_conditional_t;
+@end group
+@end smallexample
+@end deftp
+
+Nodes of type @code{grad_node_conditional_t} indicate branching.
+Upon encountering of @code{grad_node_conditional_t} node, the
+engine executes a Rewrite expression pointed to by @code{cond}.
+If the expression evaluates to @code{true}, execution branches to
+node @code{iftrue}. Otherwise, if @code{iffalse} is not @code{NULL},
+execution branches to that node. Otherwise, pointer @code{next} from
+@code{grad_node_t} will be used as address of the next tree node.
+
+@node grad_node_call
+@subsection grad_node_call
+@UNREVISED{}
+
+@deftp Node grad_node_call_t entry
+@smallexample
+@group
+struct grad_node_call @{
+       grad_tree_node_t *entry;    
+@};
+typedef struct grad_node_call grad_node_call_t;
+@end group
+@end smallexample
+@end deftp
+
+@code{grad_node_call} node instructs the engine to @dfn{call} the
+given subtree. The engine pushes the current node @FIXME{definition?} to the return
+point stack @FIXME{definition?} and branches to the node @code{entry}. Execution of
+the subtree is stopped when the engine encounters @code{grad_node_return},
+@code{grad_node_reply} or @code{grad_node_proxy} node.
+
+If @code{grad_node_return} is encountered, the engine pops a node from
+the top of the return point stack and makes it the current one, then
+it branches to the @code{next} node.
+
+If @code{grad_node_reply} or @code{grad_node_proxy} is encountered,
+the engine, after executing the corresponding actions, stops further
+processing of the tree.
+
+@node grad_node_return
+@subsection grad_node_return
+@UNREVISED{}
+
+A node of type @code{grad_node_return} indicates a return point from
+the tree. If encountered in a subtree (i.e. a tree entered by
+@code{grad_node_call} node), it indicates return to the calling
+subtree (see the previous subsection). Otherwise, if
+@code{grad_node_return} is encountered within the main trunk, it
+halts the traversal.
+
+This node type has no data associated with it in union @code{v}.
+
+@node grad_node_action
+@subsection grad_node_action
+@UNREVISED{}
+
+@deftp Node grad_node_reply_t expr
+@smallexample
+@group
+struct grad_node_action @{
+       grad_entry_point_t expr;    /* Entry point to the compiled
+                                      Rewrite expression */
+@};
+typedef struct grad_node_action grad_node_reply_t;
+@end group
+@end smallexample
+@end deftp
+
+The machine executes a Rewrite expression with entry point
+@code{expr}. The return value from the expression is ignored.
+@FIXME{Should the expression receive any arguments? If so,
+what arguments? I'd say it should take at least the
+request being processed and the reply pairs collected so far.}
+
+@node grad_node_reply
+@subsection grad_node_reply
+@UNREVISED{}
+
+@deftp Node grad_node_reply_t return_code
+@smallexample
+@group
+struct grad_node_reply @{
+       u_char return_code;         /* Radius request code */
+@};
+typedef struct grad_node_reply grad_node_reply_t;
+@end group
+@end smallexample
+@end deftp
+
+@code{grad_node_reply} node instructs @command{radiusd} to send to the
+requesting @NAS{} a reply with code @code{return_code}. Any reply
+pairs collected while traversing the command tree are attached to
+the reply.
+
+Upon encountering @code{grad_node_reply} node, the engine stops further
+traversal of the tree. 
+
+Any execution path will usually end with this node.
+
+@node grad_node_proxy
+@subsection grad_node_proxy
+@UNREVISED{}
+
+@deftp Node grad_node_proxy_t realm    
+@smallexample
+@group
+struct grad_node_proxy @{
+       grad_realm_t realm;
+@};
+typedef struct grad_node_proxy grad_node_proxy_t;
+@end group
+@end smallexample
+@end deftp
+
+This node instructs radius to proxy the request to the server defined
+in @code{realm}. In other words, the engine executes
+@code{proxy_send}. Further processing of the tree is stopped.
+
+
+@node grad_node_forward
+@subsection grad_node_forward
+@UNREVISED{}
+
+@deftp Node grad_node_forward_t server_list
+@smallexample
+@group
+struct grad_node_forward @{
+       grad_list_t server_list; 
+@};
+typedef struct grad_node_forward grad_node_forward_t;
+@end group
+@end smallexample
+@end deftp
+
+This node @dfn{forwards} the request to each servers from
+@code{server_list}. Forwarding differs from proxying
+in that the requests are sent to the remote servers @emph{and} processed
+locally. The remote server is not expected to
+reply. @xref{auth,forwarding}, for more information on this subject.
+
+In contrast to @code{grad_node_proxy}, this node type does not cause the
+traversal to stop.
+
+Elements of @code{server_list} are of type @code{grad_server_t}.
+
+Currently forwarding is performed by @code{forward_request} function
+(@file{forward.c}), which could be used with little modifications.
+Namely, it will be rewritten to get server list as argument, instead
+of using static variable @code{forward_list}. Consequently, the
+functions responsible for creating and initializing this static
+variable will disappear along with the variable itself. @FIXME{Ok, but
+what shall we do with @code{forward} statement in @file{raddb/config}?
+I should address this issue in the section dedicated to backward
+compatibility}.
+
+@node Traditional Configuration
+@section Support for Traditional Configuration Files.
+@UNREVISED{}
+
+Within the new configuration system, the traditional ``trio''
+@file{hints-huntgroups-users} will be translated to the following
+tree:
+
+@smalllisp
+(deftree main
+ (CALL hints_subtree)
+ (CALL huntgroups_subtree)
+ (COND "request_code() == Access-Request"
+       '(CALL users_subtree))
+ (REPLY Access-Reject
+        '((Reply-Message . "\nAccess denied\n"))))
+@end smalllisp
+
+For example, consider the following configuration:
+
+@smallexample
+# raddb/hints:
+DEFAULT Prefix = "PPP" Hint = PPP
+@end smallexample
+
+This will produce the following tree:
+
+@smalllisp
+(deftree hints_subtree
+ (COND "%[Prefix] == \"PPP\"")
+       '(ACTION "%[Hint] = \"PPP\""))
+@end smalllisp
+ 
+
+@smallexample
+#raddb/huntgroups
+DEFAULT NAS-IP-Address = 10.10.4.1      Suffix = "staff"
+DEFAULT NAS-IP-Address = 10.10.4.2      Huntgroup-Name = "second"
+@end smallexample
+
+Will produce
+
+@smalllisp
+(deftree huntgroups_subtree
+ (COND "%[NAS-IP-Address] == 10.10.4.1 && !(%[Suffix] == "staff")"
+       '((REPLY Access-Reject
+                '((Reply-Pair . "Access Denied by Huntgroup")))))
+ (COND "%[NAS-IP-Address] == 10.10.4.2"
+       '((ACTION "%[Huntgroup-Name] = \"second\""))))
+@end smalllisp
+
+Finally, @file{users}:
+
+@smallexample
+#raddb/users
+DEFAULT Hint = "PPP",
+               Auth-Type = PAM
+        Service-Type = Framed-User,
+               Framed-Protocol = PPP
+
+DEFAULT Huntgroup-Name = "second",
+               Auth-Type = PAM
+        Service-Type = "Authenticate-Only",
+               Reply-Message = "Authentity Confirmed"
+@end smallexample                                              
+
+@noindent
+will produce
+
+@smalllisp
+(deftree users_subtree
+ (COND "%[Hint] == "PPP" && authorize(PAM)"
+       '((REPLY Access-Accept
+                '((Service-Type . Framed-User)
+                  (Framed-Protocol . PPP))))
+       '((REPLY Access-Reject
+                '((Reply-Message . "Access Denied")))))
+ (COND "%[Huntgroup-Name] == \"second\" && authorize(PAM)"
+       '((REPLY Access-Accept
+                '((Service-Type . "Authenticate-Only")
+                  (Reply-Message . "Authentity Confirmed"))))))
+@end smalllisp
+        
+
+@node New Configuration
+@section New Configuration Files
+@UNREVISED{}

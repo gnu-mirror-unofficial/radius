@@ -52,10 +52,10 @@ argcv_scan (int len, const char *command, const char *delim,
       if (isdelim (command [i], delim))
 	break;
       /* Skip until next whitespace character or end of line */
-      while (++i < len && !(isws (command [i]) || isdelim (command [i], delim)))
+      while (++i < len &&
+	     !(isws (command [i]) || isdelim (command [i], delim)))
 	;
-      if (i < len)
-	i--;
+      i--;
       break;
     }
 
@@ -73,6 +73,9 @@ argcv_get (const char *command, const char *delim, int *argc, char ***argv)
 
   *argc = 0;
   *argv = NULL;
+
+  while (len > 0 && isspace (command[len-1]))
+    len--;
   if (len < 1)
     return 1;
 
@@ -81,8 +84,6 @@ argcv_get (const char *command, const char *delim, int *argc, char ***argv)
   save = 0;
   while (argcv_scan (len, command, delim, &start, &end, &save) < len)
       (*argc)++;
-  if (start == end)
-    (*argc)--;
 
   *argv = calloc ((*argc + 1), sizeof (char *));
 

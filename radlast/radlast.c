@@ -42,7 +42,6 @@ static char rcsid[] =
 #include <radpaths.h>
 #include <radutmp.h>
 #include <radargp.h>
-#include <log.h>
 
 #define IP_ADDR_LEN 15
 

@@ -15,7 +15,7 @@ divert
 # include <config.h>
 #endif
 #if RADIUS_DEBUG
-#include <log.h>
+#include <radius.h>
 
 int debug_level[MODNUM];
 

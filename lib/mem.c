@@ -28,8 +28,7 @@ static char rcsid[] =
 
 #include <stdio.h>
 #include <sysdep.h>
-#include <mem.h>
-#include <log.h>
+#include <radius.h>
 #include <pthread.h>
 
 typedef struct entry *Entry;
@@ -538,15 +537,15 @@ dup_string(str)
  * with the new string value.
  */
 char *
-replace_string(str, strvalue)
+replace_string(str, string_value)
         char **str;
-        char *strvalue;
+        char *string_value;
 {
-        int length = strlen(strvalue);
+        int length = strlen(string_value);
         STRHDR *hp;
 
         if (!*str)
-                return *str = make_string(strvalue);
+                return *str = make_string(string_value);
         
         pthread_mutex_lock(&string_mutex);
         hp = (STRHDR*)*str - 1;
@@ -556,7 +555,7 @@ replace_string(str, strvalue)
                 pthread_mutex_lock(&string_mutex);
                 *str = alloc_string(length + 1);
         }
-        strcpy(*str, strvalue);
+        strcpy(*str, string_value);
         pthread_mutex_unlock(&string_mutex);
         return *str;
 }

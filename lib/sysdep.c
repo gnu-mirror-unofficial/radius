@@ -29,7 +29,7 @@
 #include <unistd.h>
 #include <signal.h>
 
-#include <log.h>
+#include <radius.h>
 
 #if defined(O_NONBLOCK)
 # define FCNTL_NONBLOCK O_NONBLOCK

@@ -26,7 +26,6 @@ static char rcsid[] =
 
 #include <libguile.h>
 #include <radius.h>
-#include <log.h>
 #include <radscm.h>
 
 static struct keyword radlog_kw[] = {

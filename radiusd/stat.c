@@ -43,7 +43,6 @@ static char rcsid[] =
 #include <sysdep.h>
 #include <radiusd.h>
 #include <radutmp.h>
-#include <log.h>
 
 #ifdef USE_SNMP
 extern Server_stat server_stat;

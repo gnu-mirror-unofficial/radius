@@ -24,7 +24,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <radiusd.h>
-#include <log.h>
 
 #ifndef lint
 static char rcsid[] =

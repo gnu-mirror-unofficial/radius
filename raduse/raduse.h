@@ -8,7 +8,6 @@
 #include <radpaths.h>
 #include <radutmp.h>
 #include <radlast.h>
-#include <log.h>
 
 #include <asn1.h>
 #include <snmp.h>

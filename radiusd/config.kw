@@ -20,7 +20,6 @@
 #endif
 #include <syslog.h>
 #include <radiusd.h>
-#include <log.h>
 #include <config_tok.h>
 #define _Y(x) (int)(x)
 

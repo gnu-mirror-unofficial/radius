@@ -35,7 +35,6 @@ static char rcsid[] =
 #include <radius.h>
 #include <radargp.h>
 #include <radpaths.h>
-#include <log.h>
 #include <radtest.h>
 #include <argcv.h>
 

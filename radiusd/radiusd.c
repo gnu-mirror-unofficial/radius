@@ -42,7 +42,6 @@ static char rcsid[] =
 #include <radiusd.h>
 #include <radargp.h>
 #include <radsql.h>
-#include <log.h>
 #include <symtab.h>
 #include <radutmp.h>
 #include <rewrite.h>

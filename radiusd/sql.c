@@ -308,8 +308,7 @@ rad_sql_init()
                 
                 switch (stmt_type) {
                 case STMT_SERVER:
-                        ipaddr = ip_gethostaddr(cur_ptr);
-                        if (ipaddr == (UINT4)0) {
+                       	if (cur_ptr[0] != '/' && !ip_gethostaddr(cur_ptr)) {
                                 radlog(L_ERR,
                                        _("%s:%d: unknown host: %s"),
                                        sqlfile, line_no,

@@ -1,6 +1,30 @@
 Client package
+
 possibility to retrieve arbitrary reply pairs from the SQL database.
+
 \<newline> continuation sequence in traditional config files
+
+	Added possibility to defer evaluation of a reply pair value. To
+	defer evaluation of a pair, it should be specified in raddb/users
+	(or hints, huntgroups) in the following form:
+
+		NAME = "=function(arg1,arg2,...)"
+
+	`function' must be defined in raddb/rewrite.
+
+%C{Password} substitution return plaintext password
+
+sqlserver: query_buffer_size clause is obsolete.
+
+Special realm NOREALM in radb/realms.
+
+Added provisions for specifying default values	for undefined attributes
+(shell-like syntax: %{Acct-Sessison-Time:-0},
+%{Acct-Sessison-Time:?not defined}, etc.).
+
+radiusd is able to listen to multiple interfaces/ports.
+
+cntl statement (raddb/config) is obsolete. cntl port is gone.
 
 =============================================================================
 NEWS for version 0.95

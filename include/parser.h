@@ -22,12 +22,11 @@ struct matching_rule {
         char *name;
         VALUE_PAIR *lhs;
         VALUE_PAIR *rhs;
-        int lineno;
+	LOCUS loc;
 };
 typedef struct matching_rule MATCHING_RULE;
 
-extern char *source_filename;
-extern int source_line_num;
+extern LOCUS source_locus;
 
 extern Symtab *user_tab;
 extern MATCHING_RULE *hints;

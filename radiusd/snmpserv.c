@@ -2242,23 +2242,6 @@ snmp_port_get(subid, var, errp)
 
 #define TDIFF(tv, time) (tv.tv_sec - time)*100 + tv.tv_usec/10000;
 
-/*FIXME: remove?*/
-char *
-timestr(time)
-	time_t time;
-{
-	char *p;
-	int len;
-
-	if (time == 0)
-		return "N/A";
-	p = ctime(&time);
-	len = strlen(p);
-	if (len > 1) 
-		p[--len] = 0;
-	return p;
-}
-
 void
 get_port_stat(port, var, key)
 	PORT_STAT *port;
@@ -2322,7 +2305,7 @@ get_port_stat(port, var, key)
 		
 	case MIB_KEY_StatPortLastLoginName:             
 		var->type = ASN_OCTET_STR;
-		var->val_length = strlen(port->login)+1;
+		var->val_length = strlen(port->login);
 		var->var_str = snmp_strdup(port->login);
 		break;
 

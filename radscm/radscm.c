@@ -282,47 +282,27 @@ SCM_DEFINE(rad_read_no_echo, "rad-read-no-echo", 1, 0, 0,
 }
 #undef FUNC_NAME
 
+SCM _rad_scm_package_string; /* STRING: PACKAGE_STRING */
+SCM _rad_scm_package;        /* STRING: PACKAGE */
+SCM _rad_scm_version;        /* STRING: VERSION */
 
+/* Initialize the library */
 void
-rad_scheme_init(int argc, char **argv)
+radscm_init()
 {
-        int di, si;
-        int double_dash = 0;
         SCM *scm_loc;
         char *bootpath;
         char *p;
         
-        /*
-         * Process and throw-off radius-specific command line
-         * options.
-         */
-        for (si = di = 0; si < argc; ) {
-                if (double_dash) {
-                        argv[di++] = argv[si++];
-                } else if (strcmp(argv[si], "--") == 0) {
-                        double_dash++;
-                        argv[di++] = argv[si++];
-                } else if (strcmp(argv[si], "-ds") == 0) {
-                        /* allow for guile's -ds option */
-                        argv[di++] = argv[si++];
-                } else if (strncmp(argv[si], "-d", 2) == 0) {
-                        if (argv[si][2]) {
-                                radius_dir = argv[si++]+2;
-                        } else {
-                                if (++si >= argc) 
-                                        die("option requires argument: -d");
-                                radius_dir = argv[si++];
-                        }
-                } else if (strcmp(argv[si], "--directory") == 0) {
-                        if (++si >= argc) 
-                                die("option requires argument: --directory");
-                        radius_dir = argv[si++];
-                } else
-                        argv[di++] = argv[si++];
-        }
-        argv[di] = NULL;
-        argc = di;
-        
+	_rad_scm_package = scm_makfrom0str (PACKAGE);
+	scm_c_define("grad-package", _rad_scm_package);
+	
+	_rad_scm_version = scm_makfrom0str (VERSION);
+	scm_c_define("grad-version", _rad_scm_version);
+	
+	_rad_scm_package_string = scm_makfrom0str (PACKAGE_STRING);
+	scm_c_define("grad-package-string", _rad_scm_package_string);
+	
         /*
          * Initialize radius sub-system
          */
@@ -337,29 +317,10 @@ rad_scheme_init(int argc, char **argv)
          * Provide basic primitives
          */
 
-        radscm_init();
+        grad_scm_init();
         
 #include <radscm.x>
 
         scm_c_define ("%raddb-path", scm_makfrom0str(radius_dir));
-
-        if (!(bootpath = getenv("RADSCM_BOOTPATH")))
-		bootpath = DATADIR;     
-#if 0
-        /*
-         * Reset %load-path
-         */ 
-        {SCM scm = scm_cons(scm_makfrom0str(bootpath),
-                       RAD_SCM_SYMBOL_VALUE("%load-path"));
-        scm_loc = SCM_CDRLOC (scm_c_define ("%load-path", SCM_EOL));
-        *scm_loc = scm;}
-#endif
-        /*
-         * Load radius scheme modules
-         */
-        p = grad_mkfilename(bootpath, "boot.scm");
-        scm_primitive_load(scm_makfrom0str(p));
-        efree(p);
-
-        scm_shell(argc, argv);
 }
+

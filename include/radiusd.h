@@ -113,9 +113,9 @@ struct queue_stat {
         size_t completed;
 };
 typedef struct queue_stat QUEUE_STAT[R_MAX];
-        
+
 typedef struct client {
-        UINT4                   ipaddr;
+	NETDEF                  netdef;
         char                    longname[MAX_LONGNAME+1];
         u_char                  *secret;
         char                    shortname[MAX_SHORTNAME+1];
@@ -156,12 +156,6 @@ typedef struct user_symbol {
 #ifdef USE_SNMP
 
 #include <radsnmp.h>
-
-typedef struct netdef NETDEF;
-struct netdef {
-        UINT4 ipaddr;        /* IP address */
-        UINT4 netmask;
-};
 
 typedef struct netname NETNAME;
 struct netname {
@@ -294,6 +288,7 @@ extern int auth_port;
 extern int acct_port;
 extern int suspend_flag;
 extern int log_mode;
+extern char *auth_log_hook;
 extern int use_guile;
 extern char *message_text[MSG_COUNT];
 extern char *username_valid_chars;
@@ -559,9 +554,7 @@ int radius_eval_avl(RADIUS_REQ *req, VALUE_PAIR *p);
 
 /* rewrite.y */
 extern struct cfg_stmt rewrite_stmt[];
-int run_rewrite(char *name, RADIUS_REQ *req);
 int parse_rewrite(char *name);
-int va_run_init __PVAR((char *name, RADIUS_REQ *request, char *typestr, ...));
 
 /* radck.c */
 int fix_check_pairs(int sf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs);

@@ -456,8 +456,8 @@ int proxy_send(REQUEST *req);
 int proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int activefd);
 void proxy_retry(RADIUS_REQ *radreq, int fd);
 int proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r);
-VALUE_PAIR *proxy_request_recode(RADIUS_REQ *radreq, u_char *secret,
-				 u_char *vector);
+VALUE_PAIR *proxy_request_recode(RADIUS_REQ *radreq, VALUE_PAIR *plist,
+				 u_char *secret, u_char *vector);
 
 /* menu.c */
 #define MAX_PATH_LENGTH                 256

@@ -136,9 +136,6 @@ ATTRIBUTE	Orig-Acct-Session-Id	2144	integer	- [L--R-R]
 
 ATTRIBUTE	Password-Expire-Days	2145	integer - [------]
 
-# Used internally by the server
-ATTRIBUTE       Queue-Id	        65534	integer - [------]
-
 #
 # Non-Protocol Attributes
 # These attributes are used internally by the server

@@ -193,11 +193,6 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
 
         fclose(fp);
 
-        if (vp) {
-                avl_merge(reply, &vp);
-		avl_free(vp);
-	}
-
 	waitpid(pid, &status, 0);
 	if (rad_set_signal(SIGCHLD, oldsig) == SIG_ERR)
 		radlog(L_CRIT|L_PERROR,
@@ -211,14 +206,23 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
                                _("can't run external program `%s' (reason reported via syslog channel user.err)"),
 			       cmd);
                 }
-                return status;
         } else {
 		format_exit_status(buffer, sizeof buffer, status);
-
+		
 		radlog(L_ERR,
 		       _("external program `%s' %s"), cmd, buffer);
 	}
-        return 1;
+
+        if (vp) {
+		if (status) {
+			avl_free(*reply);
+			*reply = NULL;
+		}
+                avl_merge(reply, &vp);
+		avl_free(vp);
+	}
+
+        return status;
 }
 
 pid_t
@@ -575,8 +579,13 @@ filter_auth(char *name, RADIUS_REQ *req, VALUE_PAIR **reply_pairs)
 				       filter->lines_output,
 				       errp);
 				avl_free(vp);
-			} else
+			} else {
+				if (rc) {
+					avl_free(*reply_pairs);
+					*reply_pairs = NULL;
+				}
 				avl_merge(reply_pairs, &vp);
+			}
 		} else {
 			radlog(L_ERR,
 			       _("filter %s (auth): bad output: %s"),

@@ -458,7 +458,7 @@ rad_auth_init(RADIUS_REQ *radreq, int activefd)
         }
                 
         if (auth_detail)
-                write_detail(radreq, -1, "detail.auth");
+                write_detail(radreq, REQ_AUTH_ZERO, "detail.auth");
 
         /*
          * See if the user has access to this huntgroup.
@@ -837,6 +837,7 @@ sfn_init(AUTH_MACH *m)
                 if (is_log_mode(m, RLOG_AUTH)) 
                         auth_log(m, _("Invalid user"), NULL, NULL, NULL);
 
+		auth_format_msg(m, MSG_ACCESS_DENIED);
                 /* Send reject packet with proxy-pairs as a reply */
                 newstate(as_reject_cleanup);
         }

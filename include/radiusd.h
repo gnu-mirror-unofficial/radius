@@ -344,7 +344,7 @@ struct nas_stat {
  do {\
 	NAS *nas;\
 	server_stat->##m . ##c ++;\
-	if ((nas = nas_find(a)) != NULL && nas->nas_stat)\
+	if ((nas = nas_lookup_ip(a)) != NULL && nas->nas_stat)\
 		nas->nas_stat-> ##m . ##c ++;\
  } while (0)
 
@@ -488,6 +488,8 @@ void            rad_unlock(int fd, size_t size, off_t off, int whence);
 char           *mkfilename(char *, char*);
 char           *mkfilename3(char *dir, char *subdir, char *name);
 int             backslash(int c);
+void string_copy(char *d, char *s, int  len);
+#define STRING_COPY(s,d) string_copy(s,d,sizeof(s)-1)
 
 /* radius.c */
 int		rad_send_reply(int, RADIUS_REQ *, VALUE_PAIR *, char *, int);
@@ -496,6 +498,18 @@ int		calc_digest (u_char *, RADIUS_REQ *);
 int		calc_acctdigest(u_char *digest, RADIUS_REQ *radreq);
 void            send_challenge(RADIUS_REQ *radreq, char *msg, char *state, int activefd);
 
+/* nas.c */
+NAS *nas_next(NAS *p);
+int nas_read_file(char *file);
+NAS *nas_lookup_name(char *name);
+NAS *nas_lookup_ip(UINT4 ipaddr);
+#ifdef USE_SNMP
+NAS *nas_lookup_index(int ind);
+#endif
+char *nas_ip_to_name(UINT4 ipaddr);
+char *nas_request_to_name(RADIUS_REQ *radreq);
+
+
 /* files.c */
 int		user_find(char *name, VALUE_PAIR *,
 				VALUE_PAIR **, VALUE_PAIR **);
@@ -503,8 +517,8 @@ int		userparse(char *buf, VALUE_PAIR **first_pair, char **errmsg);
 void		presuf_setup(VALUE_PAIR *request_pairs);
 int		hints_setup(VALUE_PAIR *request_pairs);
 int		huntgroup_access(RADIUS_REQ *radreq);
-CLIENT		*client_find(UINT4 ipno);
-char		*client_name(UINT4 ipno);
+CLIENT		*client_lookup_ip(UINT4 ipno);
+char		*client_lookup_name(UINT4 ipno);
 int		read_clients_file(char *);
 REALM		*realm_find(char *);
 NAS		*nas_find(UINT4 ipno);

@@ -84,7 +84,11 @@ disp_sql_query(type, conn, query, report_cnt)
         char *query;
         int *report_cnt;
 {
-        return disp_sql_entry(type)->query(conn, query, report_cnt);
+	int rc;
+	rc = disp_sql_entry(type)->query(conn, query, report_cnt);
+	if (rc) 
+		radlog(L_ERR, "%s: %s", _("Failed query was"), query);
+	return rc;
 }
 
 char *

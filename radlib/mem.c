@@ -573,7 +573,7 @@ free_string(str)
         pthread_mutex_lock(&string_mutex);
         hp = (STRHDR*)str - 1;
         if (--hp->s.nref == 0)
-        cfree_entry(hp, hp->s.nblk);
+		cfree_entry(hp, hp->s.nblk);
         pthread_mutex_unlock(&string_mutex);
 }
 

@@ -52,7 +52,6 @@ radsql.h \
 radutmp.h \
 regex1.h \
 rewrite.h \
-slist.h \
 symtab.h \
 sysdep.h \
 timestr.h 

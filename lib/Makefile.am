@@ -43,7 +43,6 @@ radpdu.c \
 radsrv.c \
 radutmp.c \
 realms.c \
-slist.c \
 symtab.c \
 sysdep.c \
 users_gram.c \

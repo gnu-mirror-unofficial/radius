@@ -10,7 +10,7 @@
 The main purpose of GNU Radius is to centralize authentication of
 users coming from various network stations, pursuant to the @RADIUS{}
 specification. Its primary usage is for dial-in users, though it can
-be used for any kind of network connection.  @xref{Intro}
+be used for any kind of network connection.  
 
 @menu
 * Attributes::                  Attributes.

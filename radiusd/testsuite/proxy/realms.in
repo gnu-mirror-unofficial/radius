@@ -1,0 +1,4 @@
+# Realm                 Remote server [:port]		flags		
+#----------------	---------------------		--------	
+remote			127.0.0.1:@AUTH_PORT@:@ACCT_PORT@ quota=5
+NOREALM			127.0.0.1:@AUTH_PORT@:@ACCT_PORT@ quota=5

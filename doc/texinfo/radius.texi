@@ -66,7 +66,7 @@ Software Foundation raise funds for GNU development.''
 * radauth: (radius)Radauth.   Check if a user can be authenticated.
 * radctl: (radius)Radctl.     Radctl monitor.
 * builddbm: (radius)Builddbm. Create DBM version of the @file{raddb/users} file.
-* radscm: (radius).Radscm.    A Guile interface to radius functions.
+* radscm: (radius)Radscm.     A Guile interface to radius functions.
 @end direntry
 
 
@@ -136,15 +136,38 @@ Appendices
 Indices
 * Index::               
 
-@ignore
-Enable this when necessary
 Here are some other nodes which are really inferiors of the ones
 already listed, mentioned here so you can get to them in one step:
 
  --- The Detailed Node Listing ---
-@detailmenu
-@end detailmenu
-@end ignore
+
+Radius Configuration
+
+* config file::         Run-time configuration options.
+* dictionary file::     Radius dictionary.
+* clients file::        Clients lists the @NAS{}es that are allowed to
+                        communicate with radius.
+* naslist file::        The naslist file keeps general information about
+                        the @NAS{}es.
+* nastypes file::       Information about how to query the @NAS{}es about
+                        active user sessions.
+* hints file::          Important user information that is common for the
+                        users whose names match some pattern.
+* huntgroups file::     Group users by the @NAS{} (and, possibly, a port
+                        number) they come from.
+* realms file::         Communication with remote radius servers
+* users file::          User profile.
+* access.deny file::    List of users which are denied access.
+* sqlserver file::      SQL server configuration.
+* rewrite file::        Rewrite functions allow to change the input
+                        packets.
+* menus directory::     Menus allow user to select the type of
+                        service.
+
+Client configuration
+
+* client.conf::         Main client configuration file.
+                        
 @end menu
 
 @comment *******************************************************************

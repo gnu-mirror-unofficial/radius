@@ -37,18 +37,6 @@ typedef unsigned long   UINT4;
 # define bzero(s,n) memset(s, 0, n)
 #endif
 
-#ifndef HAVE_STRNCASECMP
-extern int strncasecmp(char*, char*, int);
-#endif
-
-#ifndef HAVE_STRTOK_R
-extern char *strtok_r (char *s, const char *delim, char **save_ptr);
-#endif
-
-#ifndef HAVE_LOCALTIME_R
-extern struct tm *localtime_r(const time_t *timep, struct tm *res);
-#endif
-
 #ifdef HAVE_SYS_TIME_H
 # include <sys/time.h>
 # ifdef TIME_WITH_SYS_TIME
@@ -58,47 +46,18 @@ extern struct tm *localtime_r(const time_t *timep, struct tm *res);
 # include <time.h>
 #endif
 
-#if defined(bsdi)
-# include <machine/inline.h>
-# include <machine/endian.h>
-#else   /* bsdi */
-# if defined(__FreeBSD__) || defined(__OpenBSD__)
-#  include <stdlib.h>
-# else
-#  include <malloc.h>
-# endif  /* FreeBSD and OpenBSD */
-#endif  /* bsdi */
+#if !HAVE_DECL_STRNCASECMP
+extern int strncasecmp(char*, char*, int);
+#endif
 
-#if defined(HAVE_SYS_SELECT_H)  
-# include <sys/select.h>
-#endif  /* needed for AIX */
+#if !HAVE_DECL_STRTOK_R
+extern char *strtok_r(char *s, const char *delim, char **save_ptr);
+#endif
 
-/* UTMP stuff. Uses utmpx on svr4 */
-#if defined(__svr4__) || defined(__sgi)  
-#  include <utmpx.h>
-#  include <sys/fcntl.h>
-#  define utmp utmpx
-#  define UT_NAMESIZE   32
-#  define UT_LINESIZE   32
-#  define UT_HOSTSIZE   257
-#  undef UTMP_FILE
-#  define UTMP_FILE UTMPX_FILE
-#  undef WTMP_FILE
-#  define WTMP_FILE WTMPX_FILE
-#else
-#  include <utmp.h>
+#if !HAVE_DECL_LOCALTIME_R
+extern struct tm *localtime_r(const time_t *timep, struct tm *res);
 #endif
-#ifdef __osf__
-#  define UT_NAMESIZE   32
-#  define UT_LINESIZE   32
-#  define UT_HOSTSIZE   64
-#endif
-#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(bsdi)
-#  ifndef UTMP_FILE
-#    define UTMP_FILE "/var/run/utmp"
-#  endif
-#  define ut_user ut_name
-#endif
+
 
 #if defined (sun) && defined(__svr4__)
 RETSIGTYPE (*sun_signal(int signo, void (*func)(int)))(int);

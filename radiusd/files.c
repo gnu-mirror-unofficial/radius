@@ -331,6 +331,7 @@ user_find_sym(name, req, check_pairs, reply_pairs)
 	User_symbol *sym;
 	USER_LOOKUP lu;
 	
+	debug(1,("looking for %s", name));
 	for (sym = user_lookup(name, &lu); sym; sym = user_next(&lu)) {
 		if (match_user(sym, req, check_pairs, reply_pairs)) {
 			found = 1;
@@ -393,7 +394,7 @@ match_user(sym, req, check_pairs, reply_pairs)
 		}
 		if (!fallthrough(sym->reply))
 			break;
-		debug(1, ("fall through"));
+		debug(1, ("fall through near line %d", sym->lineno));
 	} while (sym = sym_next((Symbol*)sym));
 
 	return found;
@@ -1879,16 +1880,17 @@ checkdbm(users, ext)
 	char *users;
 	char *ext;
 {
-	char buffer[256];
+	char *buffer;
 	struct stat st;
-
-	strcpy(buffer, users);
-	strcat(buffer, ext);
-
-	return stat(buffer, &st);
+	int rc;
+	
+	buffer = emalloc(strlen(users) + strlen(ext) + 1);
+	strcat(strcpy(buffer, users), ext);
+	rc = stat(buffer, &st);
+	efree(buffer);
+	return rc;
 }
 #endif
-
 
 static int reload_data(enum reload_what what, int *do_radck);
 

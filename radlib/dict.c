@@ -435,6 +435,7 @@ attr_number_to_dict(attribute)
 	struct attr_value av;
 	if (attribute < DICT_INDEX_SIZE)
 		return dict_attr_index[attribute];
+	av.value = attribute;
 	av.da = NULL;
 	symtab_iterate(dict_attr_tab, attrval_cmp, &av);
 	return av.da;

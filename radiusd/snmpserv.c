@@ -28,7 +28,6 @@ static char rcsid[] = "@(#) $Id$";
 
 #include <sys/types.h>
 #include <sys/socket.h>
-#include <varargs.h>
 #include <asn1.h>
 #include <snmp.h>
 #include <mib.h>

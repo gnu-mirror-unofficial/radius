@@ -24,18 +24,35 @@
 
 #include <sysdep.h>
 
-/* log levels */
-#define L_DBG			1
-#define L_INFO			2
-#define L_NOTICE                3
-#define L_WARN                  4
-#define L_ERR			5
-#define L_CRIT                  6
-#define L_AUTH                  7
-#define L_PROXY                 8
-#define L_CONS			0
-#define L_PERROR           0x8000
-#define L_MASK             0x000f
+/* The category.priority system below is constructed after that
+   in <syslog.h> */
+   
+/* log categories */
+#define L_MAIN           (1<<3)      /* Main server process */
+#define L_AUTH           (2<<3)      /* Authentication process */
+#define L_ACCT           (3<<3)      /* Accounting process */
+#define L_PROXY          (4<<3)      /* Proxy */
+#define L_SNMP           (5<<3)      /* SNMP process */
+#define L_NCAT           8           /* Number of categories */
+#define L_CATMASK        0x38        /* Mask to extract category part */
+
+/* log priorities */
+#define	L_EMERG	   0	/* system is unusable */
+#define	L_ALERT	   1	/* action must be taken immediately */
+#define	L_CRIT	   2	/* critical conditions */
+#define	L_ERR	   3	/* error conditions */
+#define	L_WARN     4	/* warning conditions */
+#define	L_NOTICE   5	/* normal but signification condition */
+#define	L_INFO	   6 	/* informational */
+#define	L_DEBUG	   7	/* debug-level messages */
+#define	L_PRIMASK  0x0007  /* mask to extract priority part */
+
+#define L_CAT(v)   (((v)&L_CATMASK)>>3)
+#define L_PRI(v)   ((v)&L_PRIMASK)
+#define L_MASK(pri) (1<<(pri))
+
+/* Additional flags */
+#define L_PERROR  0x8000
 
 /* log output modes */
 #define LM_UNKNOWN -1
@@ -46,15 +63,8 @@
 /* log options */
 #define LO_CONS  0x0001
 #define LO_PID   0x0002
-#define LO_LEVEL 0x0004
-
-/* Log flags */
-#define RLOG_AUTH               0x0001
-#define RLOG_AUTH_PASS          0x0002
-#define RLOG_FAILED_PASS        0x0004
-#define RLOG_PID                0x0008
-
-#define RLOG_DEFAULT            (RLOG_AUTH | RLOG_FAILED_PASS)
+#define LO_CAT   0x0004
+#define LO_PRI   0x0008
 
 int radvsprintf(/*char *string, size_t size, char *fmt, va_list ap*/);
 int radsprintf(/*char *string, size_t size, char *fmt, va_alist*/);
@@ -78,36 +88,37 @@ typedef struct {
 	} v;
 } Value;
 
-typedef struct chanlist Chanlist;
 typedef struct channel Channel;
 
 struct channel {
 	struct channel *next;
-	int ucnt;
 	char *name;
-	int mode;
+	int  pmask[L_NCAT]; 
+	int mode;   /* LM_ constant */
 	union {
-		int prio;
-		char *file;
+		int prio;        /* syslog: facility|priority */
+		char *file;      /* file: output file name */
 	} id;
 	int options;
 };
 
-struct chanlist {
-	struct chanlist *next;
-	Channel *channel;
+typedef struct chanlist Chanlist;
+struct chanlist {  /* for keeping channels while parsing config file */
+	Chanlist *next;
+	Channel *chan;
 };
 
-/* log.c */
+/* Global variables */
 extern int debug_level[];
-extern int log_mode;
 
-void            initlog(char*);
-int		radlog(/*int, char *, ...*/);
-char           *debug_sprintf(/*char *, ...*/);
-void            debug_output(char *, int, char *, char *);
-int             __insist_failure(char *, char *, int);
+/* Function prototypes */
+void initlog(char*);
+void radlog_open(int category);
+void radlog_close();
+void radlog(/*int, char *, ...*/);
+int __insist_failure(char *, char *, int);
 
+/* Debugging facilities */
 #ifndef MAX_DEBUG_LEVEL
 # define MAX_DEBUG_LEVEL 100
 #endif
@@ -123,20 +134,25 @@ extern struct debug_module debug_module[];
 # define debug_on(level) (debug_level[RADIUS_MODULE] >= level)
 # define debug(level, vlist) \
    if (debug_level[RADIUS_MODULE] >= level) \
-    debug_output(__FILE__, __LINE__, __FUNCTION__, debug_sprintf vlist)
+    _debug_print(__FILE__, __LINE__, __FUNCTION__, _debug_format_string vlist)
 #else
 # define debug_on(level) 0
 # define debug(mode,vlist)
 #endif
 
-void log_init();
-void log_cleanup();
-Channel *register_channel(Channel *);
-Channel *install_channel(char *name, int mode, int prio, char *file, int opt);
-void register_category(int cat, Chanlist *chanlist);
-Chanlist *make_chanlist(Channel *chan);
+void _debug_print(char *file, int line, char *func_name, char *str);
+char *_debug_format_string(/* char *fmt, ... */);
+	
+/* Parsing */	
 
 Channel *channel_lookup(char *name);
+
+Chanlist * make_chanlist(Channel *chan);
+void free_chanlist(Chanlist *cp);
+
+void register_channel(Channel *chan);
+void register_category(int cat, int pri, Chanlist *chanlist);
+
 
 void set_debug_levels(char *str);
 int set_module_debug_level(char *name, int level);

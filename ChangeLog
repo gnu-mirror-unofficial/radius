@@ -1,5 +1,31 @@
 2001-08-20 Sergey Poznyakoff
 
+	Started rewriting log subsystem. Log channels will now be
+	separated on categories (main,auth,acct,snmp,proxy) as well
+	as severity levels. The internal mechanics resembles that
+	of syslog utility.
+
+	NOTE: This commit does not compile. It misses some essential
+	stuff.
+
+	* radlib/vasprintf.c: (new) GNU (v)asprintf function. 
+	* radlib/Makefile.am: Add vasprintf.c
+
+	* include/log.h: Major rewrite. 
+	* include/radiusd.h: Added RLOG_ constants and log_mode declaration.
+	* radiusd/config.kw: Removed S_ constants. Changed their occurences
+	to corresponding L_ constants from log.h
+	Added print-category keyword (don't forget to document it!).
+	* radiusd/config.y: Changed logging declaration syntax.
+	* radiusd/log.c: Major rewrite.
+	* radiusd/radiusd.c: Added log_mode definition.
+	* radlib/debug.c: Removed debug_output(), debug_sprintf().
+
+	* radlib/dict.c: Removed L_CONS occurences.
+	* radlib/users.y: Likewise.
+
+2001-08-20 Sergey Poznyakoff
+
 	Changed debugging conventions. Each module that calls debug()
 	functions should define symbol RADIUS_MODULE_<modulename>
 	before inclusion of config.h. When a new module is added

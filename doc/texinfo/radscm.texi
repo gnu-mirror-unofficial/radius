@@ -23,16 +23,16 @@ A path to radius configuration directory.
 A list of radius servers. Each element of the list is:
 
 @lisp
-(list ID-STRING HOST-STRING SECRET-STRING AUTH-NUM ACCT-NUM CNTL-NUM)
+(list ID-STR HOST-STR SECRET-STR AUTH-NUM ACCT-NUM CNTL-NUM)
 @end lisp
 
 @noindent
 where:
 
 @multitable @columnfractions .40 .45
-@item ID-STRING         @tab Server ID,
-@item HOST-STRING	@tab Server hostname or IP address,
-@item SECRET-STRING	@tab Shared secret key to use,
+@item ID-STR            @tab Server ID,
+@item HOST-STR          @tab Server hostname or IP address,
+@item SECRET-STR        @tab Shared secret key to use,
 @item AUTH-NUM          @tab Authentication port number,
 @item ACCT-NUM          @tab Accounting port number,
 @item CNTL-NUM          @tab Control channel port number.
@@ -64,11 +64,11 @@ Request code.
 @item  PAIR-LIST
 List of Attribute-value pairs. Each pair is either
 @lisp
-        (cons ATTR-NAME-STRING  VALUE)
+        (cons ATTR-NAME-STR VALUE)
 @end lisp
 or
 @lisp
-        (cons ATTR-NUMBER  VALUE)
+        (cons ATTR-NUMBER VALUE)
 @end lisp
 @end table
 @noindent
@@ -77,11 +77,11 @@ Return:
 
 On success
 @lisp
-	(list RETURN-CODE-NUMBER PAIR-LIST)
+        (list RETURN-CODE-NUMBER PAIR-LIST)
 @end lisp
 On failure:
 @lisp
-	'()
+        '()
 @end lisp
 @end deffn
 
@@ -104,15 +104,15 @@ Returns the ID of the currently selected server.
 Selects for use the server described by LIST. A LIST should be:
 
 @lisp
-(list ID-STRING HOST-STRING SECRET-STRING AUTH-NUM ACCT-NUM CNTL-NUM)
+(list ID-STR HOST-STR SECRET-STR AUTH-NUM ACCT-NUM CNTL-NUM)
 @end lisp
 @noindent
 where:
 
 @multitable @columnfractions .40 .45
-@item ID-STRING         @tab Server ID,
-@item HOST-STRING	@tab Server hostname or IP address,
-@item SECRET-STRING	@tab Shared secret key to use,
+@item ID-STR            @tab Server ID,
+@item HOST-STR          @tab Server hostname or IP address,
+@item SECRET-STR        @tab Shared secret key to use,
 @item AUTH-NUM          @tab Authentication port number,
 @item ACCT-NUM          @tab Accounting port number,
 @item CNTL-NUM          @tab Control channel port number.
@@ -124,45 +124,45 @@ Adds the server described by LIST to the list of active servers.
 A LIST should be:
 
 @lisp
-(list ID-STRING HOST-STRING SECRET-STRING AUTH-NUM ACCT-NUM CNTL-NUM)
+(list ID-STR HOST-STR SECRET-STR AUTH-NUM ACCT-NUM CNTL-NUM)
 @end lisp
 
 @noindent
 where:
 
 @multitable @columnfractions .40 .45
-@item ID-STRING         @tab Server ID,
-@item HOST-STRING	@tab Server hostname or IP address,
-@item SECRET-STRING	@tab Shared secret key to use,
+@item ID-STR            @tab Server ID,
+@item HOST-STR          @tab Server hostname or IP address,
+@item SECRET-STR        @tab Shared secret key to use,
 @item AUTH-NUM          @tab Authentication port number,
 @item ACCT-NUM          @tab Accounting port number,
 @item CNTL-NUM          @tab Control channel port number.
 @end multitable
 @end deffn
 
-@deffn Function rad-dict-name->attr NAME-STRING
+@deffn Function rad-dict-name->attr NAME-STR
 Returns a dictionary entry for the given attribute name or #f if
 no such name was found in the dictionary.
 The entry is a list of the form:
 
 @lisp
-	(NAME-STRING ATTR-NUMBER TYPE-NUMBER VENDOR)
+        (NAME-STR ATTR-NUMBER TYPE-NUMBER VENDOR)
 @end lisp
 
 @noindent
 where:
 
 @multitable @columnfractions .40 .45
-	@item NAME-STRING	@tab is the attribute name,
-        @item VALUE-NUMBER	@tab is the attribute number,
-	@item TYPE-NUMBER	@tab is the attribute type,
-	@item VENDOR
+        @item NAME-STR          @tab is the attribute name,
+        @item VALUE-NUMBER      @tab is the attribute number,
+        @item TYPE-NUMBER       @tab is the attribute type,
+        @item VENDOR
 @tab is the vendor PEC, if the attribute is a Vendor-Specific one, or #f otherwise.
 @end multitable
 @end deffn
 
-@deffn Function rad-dict-name->value ATTR VALUE-STRING
-Returns the numeric value of the VALUE-STRING symbolic value pertaining
+@deffn Function rad-dict-name->value ATTR VALUE-STR
+Returns the numeric value of the VALUE-STR symbolic value pertaining
 to attribute ATTR. ATTR can be either the attribute name or its number.
 @end deffn
 
@@ -170,14 +170,14 @@ to attribute ATTR. ATTR can be either the attribute name or its number.
 Converts PEC to the vendor name
 @end deffn
 
-@deffn Function rad-read-no-echo PROMPT-STRING
-Prints the given PROMPT-STRING, disables echoing, reads a string up to the
+@deffn Function rad-read-no-echo PROMPT-STR
+Prints the given PROMPT-STR, disables echoing, reads a string up to the
 next newline character, restores echoing and returns the string entered.
 This is the interface to the C getpass(3) function.
 @end deffn
 
-@deffn Function rad-client-source-ip IP-STRING
-Sets the IP address to be used as source IP. IP-STRING can be either an
+@deffn Function rad-client-source-ip IP-STR
+Sets the IP address to be used as source IP. IP-STR can be either an
 IP address in dotted-quad form or a hostname.
 @end deffn
 
@@ -199,11 +199,11 @@ Format a radius attribute/value pair for output.
 DEST-BOOL has the same meaning as in format.
 PAIR is either
 @lisp
-		(cons NAME-STRING VALUE)
+                (cons NAME-STR VALUE)
 @end lisp
-	or
+        or
 @lisp
-		(cons ATTR-NUMBER VALUE)
+                (cons ATTR-NUMBER VALUE)
 @end lisp
 @noindent
 where VALUE may be of any type appropriate for the given attribute.
@@ -215,13 +215,13 @@ DEST-BOOL has the same meaning as in format.
 PAIR-LIST is a list of pairs in the form
 
 @lisp
-		(cons NAME-STRING VALUE)
+                (cons NAME-STR VALUE)
 @end lisp
 @noindent
-	or
+        or
 
 @lisp
-		(cons ATTR-NUMBER VALUE)
+                (cons ATTR-NUMBER VALUE)
 @end lisp
 @noindent
 where VALUE may be of any type appropriate for the given attribute.
@@ -241,12 +241,12 @@ For each server from @code{rad-server-list} print its ID and hostname
 or IP address.
 @end deffn
 
-@deffn Function rad-select-server ID-STRING
-Select the server identified by ID-STRING as a current server. The server
+@deffn Function rad-select-server ID-STR
+Select the server identified by ID-STR as a current server. The server
 data are looked up in rad-server-list variable.
 @end deffn
 
-@deffn Function rad-add-server ID-STRING
-Add the server identified by ID-STRING to the list of current servers.
+@deffn Function rad-add-server ID-STR
+Add the server identified by ID-STR to the list of current servers.
 The server data are looked up in rad-server-list variable.
 @end deffn

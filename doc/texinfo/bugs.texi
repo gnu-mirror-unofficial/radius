@@ -30,7 +30,7 @@ days to answer.
 
 To obtain announcements and progress information about GNU Radius
 project subscribe to the mailing list info-gnu-radius. To subscribe
-either visit @url{http://mail.gnu.org/mailman/listinfo/info-gnu-radius}
+either visit @* @url{http://mail.gnu.org/mailman/listinfo/info-gnu-radius} @*
 or send a letter to info-gnu-radius@@gnu.org with the following line
 in its subject or body:
 

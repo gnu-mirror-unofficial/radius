@@ -1,6 +1,7 @@
 Makefile
 Makefile.in
 site.exp
+remote.exp
 *.log
 *.sum
 *.bak

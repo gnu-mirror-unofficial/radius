@@ -12,7 +12,9 @@ lib/users.l
 lib/users.y
 lib/util.c
 lib/argp-help.c
+lib/argp-parse.c
 lib/printutmp.c
+lib/radargp.c
 
 radiusd/acct.c
 radiusd/auth.c

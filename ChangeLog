@@ -1,3 +1,8 @@
+2001-04-26  gray  <gray@farlep.net>
+	Added AM_PROG_CC_STDC to configure.in. Modified postgres.c
+	to properly handle fatal error conditions. Reported by
+	Andrew Kohlsmith <akohlsmith@benshaw.com>.
+
 2001-04-19  gray  <gray@farlep.net>
 	Fixed radiusd/timestr.c. Fixed radiusd/version.c so the
 	native AIX compiler does not bail out (reported by

@@ -193,13 +193,10 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         }
 
         fclose(fp);
-        /*close(p[0]);*/
 
-        if (vp) {
+        if (vp) 
                 avl_merge(reply, &vp);
-        }
 
-        
         while (waitpid(pid, &status, 0) != pid)
                 ;
 

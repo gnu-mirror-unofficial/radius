@@ -167,12 +167,12 @@ radutmp_putent(filename, ut, status)
 			if (ent->type == P_LOGIN) {
 				radlog(L_INFO,
 		_("login: entry for NAS %I port %d duplicate"),
-				       ent->nas_address,
+				       ntohl(ent->nas_address),
 				       ent->nas_port);
 			} else {
 				radlog(L_INFO,
 	        _("login: entry for NAS %I port %d wrong order"),
-				       ent->nas_address,
+				       ntohl(ent->nas_address),
 				       ent->nas_port);
 			}
 		}
@@ -183,7 +183,7 @@ radutmp_putent(filename, ut, status)
 			if (ent->type == P_LOGIN) {
 				radlog(L_ERR,
    _("logout: entry for NAS %I port %d has wrong ID (expected %s found %s)"),
-				       ut->nas_address,
+				       ntohl(ut->nas_address),
 				       ent->nas_port,
 				       ut->session_id,
 				       ent->session_id);
@@ -206,7 +206,7 @@ radutmp_putent(filename, ut, status)
 		if (!ent) {
 			radlog(L_ERR,
 			 _("logout: login entry for NAS %I port %d not found"),
-			       ut->nas_address, ut->nas_port);
+			       ntohl(ut->nas_address), ut->nas_port);
 		}
 		break;
 	}

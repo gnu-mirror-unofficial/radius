@@ -242,8 +242,8 @@ output_hostname(ip, width, key)
 	format_key_t *key;
 {
 	char buf[80];
-	return output_string(get_hostname(ip, key_nodomain(key),
-					  buf, sizeof buf), width, key);
+	return output_string_key(get_hostname(ip, key_nodomain(key),
+					      buf, sizeof buf), width, key);
 }
 
 /*FIXME: ignores key */

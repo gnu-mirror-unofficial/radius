@@ -1,3 +1,10 @@
+2004-07-20  Sergey Poznyakoff 
+
+        * radtest.texi: New file.
+	* Makefile.am: Added radtest.texi
+	* client.texi: Likewise
+	* radius.texi: Likewise
+	
 2004-06-25  Sergey Poznyakoff 
 
 	* configure.texi: Documented string quoting in macro

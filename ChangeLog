@@ -1,3 +1,20 @@
+2004-07-20  Sergey Poznyakoff 
+
+	* radiusd/proxy.c (proxy_send_request): Fixed semantics
+	of queue->retries (it should be named 'attempts' instead).
+	* radiusd/rewrite.y: Fixed error messages
+	* radtest/gram.y: Minor fixes.
+	* radtest/runtime.c: Minor fixes.
+	
+	* radscripts/radscripts.m4 (NOEDIT): New macro.
+	* radscripts/builddbm.m4: Include radscripts.m4 at the
+	first line. Add NOEDIT macro. Remove RCS keywords.
+	* radscripts/radctl.m4: Likewise
+	* radscripts/radgrep.m4: Likewise
+	* radscripts/radping.m4: Likewise
+	* radscripts/radauth.m4: Add NOEDIT macro. Couple of minor
+	fixes.
+	
 2004-07-19  Sergey Poznyakoff 
 
 	* radtest/completion.c: Added new keywords

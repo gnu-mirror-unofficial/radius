@@ -52,7 +52,7 @@ static void run_statement(radtest_node_t *node);
 %}
 
 %token EOL AUTH ACCT SEND EXPECT T_BEGIN T_END
-%token IF ELSE WHILE DO BREAK CONTINUE INPUT SHIFT GETOPT
+%token IF ELSE WHILE DO BREAK CONTINUE INPUT SHIFT GETOPT CASE IN
 %token <set> SET
 %token PRINT 
 %token EXIT
@@ -74,13 +74,14 @@ static void run_statement(radtest_node_t *node);
 
 %type <op> op
 %type <pair> pair
-%type <list> pair_list prlist list
+%type <list> pair_list prlist list caselist
 %type <i> closure req_code nesting_level port_type
 %type <node> stmt lstmt expr maybe_expr value bool cond expr_or_pair_list
              pritem 
 %type <var> send_flag imm_value
 %type <symtab> send_flags send_flag_list
 %type <string> name string
+%type <case_branch> casecond
 
 %union {
 	int i;
@@ -99,6 +100,7 @@ static void run_statement(radtest_node_t *node);
 		int argc;
 		char **argv;
 	} set;
+	radtest_case_branch_t *case_branch;
 }
 
 %%
@@ -161,6 +163,12 @@ stmt          : T_BEGIN list T_END
 			$$->v.cond.cond = $2;
 			$$->v.cond.iftrue = $4;
 			$$->v.cond.iffalse = $6;
+		}
+              | CASE expr in caselist T_END
+                {
+			$$ = radtest_node_alloc(radtest_node_case);
+			$$->v.branch.expr = $2;
+			$$->v.branch.branchlist = $4;
 		}
               | WHILE cond { current_nesting_level++; } EOL stmt
                 {
@@ -249,6 +257,31 @@ stmt          : T_BEGIN list T_END
 
 else          : ELSE
               | ELSE EOL
+              ;
+
+in            : IN
+              | IN EOL
+              ;
+
+caselist      : casecond
+                {
+			$$ = grad_list_create();
+			grad_list_append($$, $1);
+		}
+              | caselist casecond
+                {
+			grad_list_append($1, $2);
+			$$ = $1
+		}
+              ;
+
+casecond      : expr ')' stmt EOL
+                {
+			radtest_case_branch_t *p = radtest_branch_alloc();
+			p->cond = $1;
+			p->node = $3;
+			$$ = p;
+		}
               ;
 
 name          : /* empty */
@@ -636,7 +669,6 @@ int
 yyerror(char *s)
 {
 	parse_error(s);
-	bracket_error();
 }
 
 void
@@ -645,7 +677,9 @@ parse_error(const char *fmt, ...)
         va_list ap;
 
 	va_start(ap, fmt);
-        fprintf(stderr, "%s:%lu: ", source_locus.file, source_locus.line);
+        fprintf(stderr, "%s:%lu: ",
+		source_locus.file,
+		(unsigned long) source_locus.line);
         vfprintf(stderr, fmt, ap);
         va_end(ap);
         fprintf(stderr, "\n");
@@ -658,7 +692,8 @@ parse_error_loc(grad_locus_t *locus, const char *fmt, ...)
         va_list ap;
 
 	va_start(ap, fmt);
-        fprintf(stderr, "%s:%lu: ", locus->file, locus->line);
+        fprintf(stderr, "%s:%lu: ",
+		locus->file, (unsigned long) locus->line);
         vfprintf(stderr, fmt, ap);
         va_end(ap);
         fprintf(stderr, "\n");

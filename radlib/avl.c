@@ -353,7 +353,7 @@ avl_dup(from)
         for ( ; from; from = from->next) {
                 temp = avp_alloc();
                 memcpy(temp, from, sizeof(VALUE_PAIR));
-                if (temp->type == TYPE_STRING)
+                if (temp->type == TYPE_STRING || temp->eval)
                         temp->strvalue = dup_string(temp->strvalue);
                 temp->next = NULL;
                 if (last)

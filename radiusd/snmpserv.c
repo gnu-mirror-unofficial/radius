@@ -304,7 +304,7 @@ static struct mib_data {
 	oid_StatPortIndex2,                  snmp_port_index2, &port_closure,
 
 	/* port table */
-	oid_StatNASIndex,		     snmp_port_table, &port_table,
+	oid_StatPortNASIndex,		     snmp_port_table, &port_table,
 	oid_StatPortID,			     snmp_port_table, &port_table,
 	oid_StatPortFramedAddress,	     snmp_port_table, &port_table,
 	oid_StatPortTotalLogins,             snmp_port_table, &port_table,
@@ -2207,7 +2207,7 @@ snmp_port_get(subid, var, errp)
 
 	switch (key = SUBID(oid, OIDLEN(oid)-2)) {
 
-	case MIB_KEY_StatNASIndex:
+	case MIB_KEY_StatPortNASIndex:
 	case MIB_KEY_StatPortID:
 	case MIB_KEY_StatPortFramedAddress:
 	case MIB_KEY_StatPortTotalLogins:                 
@@ -2252,7 +2252,7 @@ get_port_stat(port, var, key)
 	
 	switch (key) {
 
-	case MIB_KEY_StatNASIndex:
+	case MIB_KEY_StatPortNASIndex:
 		nas = nas_find(port->ip);
 		var->type = ASN_INTEGER;
 		var->val_length = sizeof(counter);

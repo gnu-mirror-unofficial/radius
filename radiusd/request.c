@@ -223,21 +223,23 @@ request_put(type, data, activefd, numpending)
                 if (curreq->status == RS_PENDING)
                         ++*numpending;
 
-                if (curreq->status == RS_COMPLETED
-                    && curreq->timestamp +
-                    request_class[curreq->type].cleanup_delay <= curtime) {
-                        debug(1, ("deleting completed %s request",
-                                  request_class[curreq->type].name));
-                        if (prevreq == NULL) {
-                                first_request = curreq->next;
-                                request_free(curreq);
-                                curreq = first_request;
-                        } else {
-                                prevreq->next = curreq->next;
-                                request_free(curreq);
-                                curreq = prevreq->next;
-                        }
-                        continue;
+                if (curreq->status == RS_COMPLETED) {
+			if (curreq->timestamp +
+			    request_class[curreq->type].cleanup_delay
+			         <= curtime) {
+				debug(1, ("deleting completed %s request",
+					  request_class[curreq->type].name));
+				if (prevreq == NULL) {
+					first_request = curreq->next;
+					request_free(curreq);
+					curreq = first_request;
+				} else {
+					prevreq->next = curreq->next;
+					request_free(curreq);
+					curreq = prevreq->next;
+				}
+				continue;
+			}
                 } else if (curreq->timestamp + 
                            request_class[curreq->type].ttl <= curtime) {
                         switch (curreq->status) {

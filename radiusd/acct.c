@@ -641,8 +641,9 @@ rad_check_realm(REALM *realm)
         int count;
         struct radutmp *up;
         radut_file_t file;
-        
-        if (!realm || realm->maxlogins == 0)
+        size_t maxlogins;
+		
+        if (!realm || (maxlogins = realm_get_quota(realm)) == 0)
                 return 0;
 
         if ((file = rut_setent(radutmp_path, 0)) == NULL)
@@ -655,7 +656,7 @@ rad_check_realm(REALM *realm)
 		    && realm_verify_ip(realm, up->realm_address))
                         count++;
 
-        if (count < realm->maxlogins) {
+        if (count < maxlogins) {
                 rut_endent(file);
                 return 0;
         }
@@ -681,7 +682,7 @@ rad_check_realm(REALM *realm)
                 }
         }
         rut_endent(file);
-        return !(count < realm->maxlogins);
+        return !(count < maxlogins);
 }
 
 /* See if a user is already logged in.

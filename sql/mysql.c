@@ -199,6 +199,7 @@ rad_mysql_disconnect(conn)
 {
         mysql_close(conn->data);
         free_entry(conn->data);
+	conn->connected = 0;
 }
 
 int

@@ -1,3 +1,28 @@
+2002-06-27  Sergey Poznyakoff
+
+	* examples: New dir
+	* examples/.cvsignore: added
+	* examples/Makefile.am: added
+	* examples/README: added
+	* examples/pam.conf: added
+	* examples/nt.rw: added (ex raddb/rewrite.full)
+	* examples/cisco.rw: Likewise.
+	* examples/jetstream.rw: Likewise.
+	* examples/ascend.rw: Likewise.
+	* examples/config.syntax: Added
+
+	* Makefile.am: Added examples/
+	* configure.ac: Likewise.
+	* raddb/config.syntax: removed.
+	* raddb/rewrite.full: Likewise.
+	* raddb/Makefile.am: Removed config.syntax and rewrite.full
+	* radiusd/rewrite.y: Initialize rewrite_stack_size.
+	* radiusd/scheme.c (boot_body): Bugfix.
+	* test/raddb/Makefile.am (rewrite target): Updated
+	
+	* po/es.po: Updated
+	* po/no.po: Updated
+
 2002-06-27  Sergey Poznyakoff 
 
 	* radiusd/rewrite.y: Rewritten to allow for simultaneous

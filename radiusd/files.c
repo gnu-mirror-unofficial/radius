@@ -711,7 +711,9 @@ hints_setup(RADIUS_REQ *req)
 		else
 			avp_free(name_pair);
 	}
-        
+
+        req->request = request_pairs;
+	
         return 0;
 }
 

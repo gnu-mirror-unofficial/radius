@@ -108,5 +108,6 @@ void rut_rewind(radut_file_t file);
 #define PUTENT_UPDATE  2
 
 int radutmp_putent(char *filename, struct radutmp *ut, int status);
+int radwtmp_putent(char *filename, struct radutmp *ut);
 
 #endif /* _RADUTMP_H */

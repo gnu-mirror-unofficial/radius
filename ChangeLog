@@ -2,7 +2,8 @@
 
 *	* radzap/radzap.c: New option: --file. --log-directory retained
 	  for compatibility.
-
+	* radscripts/radctl.m4: Removed potentially dangerous commands:
+	  dumpdb and status.
 	* TODO: Updated.
 
 2002-03-25  Sergey Poznyakoff

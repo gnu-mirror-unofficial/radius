@@ -83,9 +83,6 @@ struct request {
         int             fd;           /* socket the request came from */
 	struct sockaddr_in addr;      /* Remote party address */
 	REQUEST         *orig;        /* Original request. For proxy */
-
-	void            *update;    
-	size_t          update_size;
 };
 
 /* Request class structure
@@ -131,6 +128,7 @@ typedef struct proxy_state {
 } PROXY_STATE;
 
 typedef struct {
+	int id;
 	int proxy_id;
 	int server_no;
 	char realmname[1];
@@ -310,6 +308,7 @@ typedef struct input_system INPUT;
 INPUT *input_create();
 void input_register_method(INPUT *input,
 			   const char *name,
+			   int prio,
 			   int (*handler)(int, void *),
 			   int (*close)(int, void *),
 			   int (*cmp)(const void *, const void *));

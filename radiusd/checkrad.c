@@ -348,7 +348,8 @@ snmp_check(checkp, nas)
 	peername = nas->longname;
 	remote_port = ilookup(checkp, "port", 161);
 
-	sp = snmp_session_create(community, peername, 0, converse, checkp);
+	sp = snmp_session_create(community, peername, remote_port, 
+				 converse, checkp);
 	if (!sp) {
 		radlog(L_ERR,
 		       _("can't create snmp session: %s"),

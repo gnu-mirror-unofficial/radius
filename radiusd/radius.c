@@ -117,9 +117,8 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
 	 *	Load up the configuration values for the user
 	 */
 	ptr = auth->data;
-	while (reply != (VALUE_PAIR *)NULL) {
-		if (debug_on(10))
-			debug_pair("reply", reply);
+	while (reply) {
+		debug(10, ("reply: %s", format_pair(reply)));
 
 		/*
 		 *	This could be a vendor-specific attribute.
@@ -378,8 +377,8 @@ radrecv(host, udp_port, buffer, length)
 	 */
 	ptr = auth->data;
 	length -= AUTH_HDR_LEN;
-	first_pair = (VALUE_PAIR *)NULL;
-	prev = (VALUE_PAIR *)NULL;
+	first_pair = NULL;
+	prev = NULL;
 
 	while (length > 0) {
 
@@ -409,7 +408,7 @@ radrecv(host, udp_port, buffer, length)
 			}
 		}
 
-		if ((attr = attr_number_to_dict(attribute)) == (DICT_ATTR *)NULL) {
+		if ((attr = attr_number_to_dict(attribute)) == NULL) {
 			debug(1, ("Received unknown attribute %d", attribute));
 		} else if ( attrlen >= AUTH_STRING_LEN ) {
 			debug(1, ("attribute %d too long, %d >= %d", attribute,
@@ -425,7 +424,7 @@ radrecv(host, udp_port, buffer, length)
 			pair->attribute = attr->value;
 			pair->type = attr->type;
 			pair->prop = attr->prop;
-			pair->next = (VALUE_PAIR *)NULL;
+			pair->next = NULL;
 
 			switch (attr->type) {
 
@@ -436,15 +435,12 @@ radrecv(host, udp_port, buffer, length)
 				memcpy(pair->strvalue, ptr, attrlen);
 				pair->strvalue[attrlen] = 0;
 
-				if (debug_on(10)) 
-					debug_pair("recv", pair);
+				debug(10, ("recv: %s", format_pair(pair)));
 
-				if (first_pair == (VALUE_PAIR *)NULL) {
+				if (first_pair == NULL) 
 					first_pair = pair;
-				}
-				else {
+				else 
 					prev->next = pair;
-				}
 				prev = pair;
 				break;
 			
@@ -453,15 +449,12 @@ radrecv(host, udp_port, buffer, length)
 				memcpy(&lval, ptr, sizeof(UINT4));
 				pair->lvalue = ntohl(lval);
 
-				if (debug_on(10)) 
-					debug_pair("recv", pair);
+				debug(10, ("recv: %s", format_pair(pair)));
 
-				if (first_pair == (VALUE_PAIR *)NULL) {
+				if (first_pair == NULL) 
 					first_pair = pair;
-				}
-				else {
+				else 
 					prev->next = pair;
-				}
 				prev = pair;
 				break;
 			
@@ -543,7 +536,7 @@ send_challenge(radreq, msg, state, activefd)
 	/*
 	 *	Append the state info
 	 */
-	if ((state != (char *)NULL) && (strlen(state) > 0)) {
+	if ((state != NULL) && (strlen(state) > 0)) {
 		len = strlen(state);
 		*ptr++ = DA_STATE;
 		*ptr++ = len + 2;

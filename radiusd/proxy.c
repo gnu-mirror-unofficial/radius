@@ -203,8 +203,7 @@ rad_send_request(fd, ipaddr, port, id, secret, req)
 	ptr = auth->data;
 	for (vp = req->request; vp; vp = vp->next) {
 
-		if (debug_on(10))
-			debug_pair("proxy_send", vp);
+		debug(10, ("proxy_send: %s", format_pair(vp)));
 
 		/* This could be a vendor-specific attribute. */
 		length_ptr = NULL;

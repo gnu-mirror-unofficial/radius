@@ -60,10 +60,10 @@ install-data-local:
 		fi; \
 	done
 	@if [ -r $(raddbdir)/users ]; then \
-		echo '================================================================='
+		echo '================================================================='; \
 		echo "Warning: The configuration directory $(raddbdir) already exists"; \
-		echo "Make sure your dictionary is up to date!"
-		echo '================================================================='
+		echo "Make sure your dictionary is up to date!"; \
+		echo '================================================================='; \
 	else \
 		for file in $(raddb_files_644); do \
 			${INSTALL} -m 644 $(top_srcdir)/raddb/$$file $(raddbdir)/$$file; \

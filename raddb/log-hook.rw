@@ -24,7 +24,7 @@ default_log_prefix(integer reqtype, string nas, integer id)
 
         result = "(" + request_code_string(reqtype) + " "
                  + nas + " " + (string)id + " "
-                 + "\"" quote_string(%[User-Name]) + "\"";
+                 + "\"" + quote_string(%[User-Name]) + "\"";
         if (*%[Calling-Station-Id])
                 result = result + " CLID=" + %[Calling-Station-Id];
         if (*%[Called-Station-Id])
@@ -39,12 +39,44 @@ default_log_prefix(integer reqtype, string nas, integer id)
  	prefix-hook "compat_log_prefix";
 	suffix-hook "compat_log_suffix"; */
 
+/* Convert integer request type to its abbreviation used in versions
+   1.0 - 1.1 */
+string
+old_request_code_string(integer reqtype)
+{
+	if (reqtype == 1)
+		return "AUTHREQ";
+	else if (reqtype == 2)
+		return "AUTHACK";
+	else if (reqtype == 3)
+	        return "AUTHREJ";
+	else if (reqtype == 4)
+		return "ACCTREQ";
+	else if (reqtype == 5)
+		return "ACCTRES";
+	else if (reqtype == 6)
+		return "ACCTSTA";
+	else if (reqtype == 7)
+		return "PASSREQ";
+	else if (reqtype == 8)
+		return "PASSACK";
+	else if (reqtype == 9)
+		return "PASSREJ";
+	else if (reqtype == 10)
+		return "ACCTMSG";
+	else if (reqtype == 11)
+		return "CHALNGE";
+	else if (reqtype == 12)
+		return "SRVSTAT";
+	return (string) reqtype;
+}
+	
 string
 compat_log_prefix(integer reqtype, string nas, integer id)
 {
 	string result;
 
-	result = "(" + request_code_string(reqtype) + " "
+	result = "(" + old_request_code_string(reqtype) + " "
                  + nas + " " + (string)id + " " + %[User-Name];
 	if (*%[Acct-Session-Id])
 		result = result + %[Acct-Session-Id];

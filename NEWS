@@ -1,10 +1,10 @@
-GNU Radius NEWS -- history of user-visible changes. 2003-11-28
+GNU Radius NEWS -- history of user-visible changes. 2003-12-02
 Copyright (C) 2002,2003 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
 
-Version 1.1.94:
+Version 1.1.95:
 
 * New features:
 
@@ -65,6 +65,11 @@ will send only authentication requests to the server `remote.server.net'
 comparison for realm names.
 
 ** New configuration file statements
+
+*** radiusd-user <username>
+
+Instructs radiusd to drop root privileges and to switch to uid / gid
+of the given user right after becoming daemon.
 
 *** forward ip[:port]...
 

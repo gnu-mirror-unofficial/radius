@@ -125,6 +125,7 @@ struct socket_list {
 static struct socket_list *socket_first;
 static int max_fd;
 static void add_socket_list(int fd, int (*s)(), int (*r)(), int (*f)());
+static void close_socket_list();
 static void rad_select();
 
 /* Implementation functions */
@@ -133,8 +134,6 @@ int auth_respond(int fd, struct sockaddr *sa, int salen,
 int acct_success(struct sockaddr *sa, int salen);
 int acct_failure(struct sockaddr *sa, int salen);
 int snmp_respond(int fd, struct sockaddr *sa, int salen,
-		 u_char *buf, int size);
-int cntl_respond(int fd, struct sockaddr *sa, int salen,
 		 u_char *buf, int size);
 
 /* *************************** Global variables. ************************** */
@@ -163,7 +162,6 @@ UINT4			myip;
 UINT4			warning_seconds;
 int			auth_port;
 int			acct_port;
-int                     cntl_port;
 #ifdef USE_SNMP
 int                     snmp_port;
 #endif
@@ -218,9 +216,10 @@ static RETSIGTYPE sig_usr1 (int);
 static RETSIGTYPE sig_usr2 (int);
 static RETSIGTYPE sig_dumpdb (int);
 
-static int	radrespond (RADIUS_REQ *, int);
-static int      open_socket(int port, char *type);
-
+static int  radrespond (RADIUS_REQ *, int);
+static int  open_socket(UINT4 ipaddr, int port, char *type);
+static void open_socket_list(HOSTDECL *hostlist, int defport, char *descr,
+			     int (*s)(), int (*r)(), int (*f)());
 
 static void reread_config(int reload);
 static UINT4 getmyip(void);
@@ -459,35 +458,7 @@ main(argc, argv)
 #endif		
 	}
 
-	if (myip == 0 && (myip = getmyip()) == 0) {
-		radlog(L_CRIT, _("can't find out my own IP address"));
-		exit(1);
-	}
-	radlog(L_INFO, "using %I as my IP address", myip);
-
-	/*
-	 *	Open Authentication socket.
-	 */
-	fd = open_socket(auth_port, "auth");
-	add_socket_list(fd, NULL, auth_respond, NULL);
-
-	if (open_acct) {
-		/*
-		 * Open Accounting Socket.
-		 */
-		fd = open_socket(acct_port, "acct");
-		add_socket_list(fd, acct_success, auth_respond, acct_failure);
-	}
-	
-	fd = open_socket(cntl_port, "control");
-	if (fd >= 0)
-		add_socket_list(fd, NULL, cntl_respond, NULL);
-	
 #ifdef USE_SNMP
-
-	fd = open_socket(snmp_port, "SNMP");
-	set_nonblocking(fd);
-	add_socket_list(fd, NULL, snmp_respond, NULL);
 	snmp_tree_init();
 #endif
 
@@ -554,6 +525,26 @@ main(argc, argv)
 	/*NOTREACHED*/
 }
 
+/* Open authentication sockets. */
+void
+listen_auth(list)
+	HOSTDECL *list;
+{
+	open_socket_list(list, auth_port, "auth",
+			 NULL, auth_respond, NULL);
+}
+
+/* Open accounting sockets. */
+void
+listen_acct(list)
+	HOSTDECL *list;
+{
+	if (!open_acct)
+		return;
+	open_socket_list(list, acct_port, "acct",
+			 acct_success, auth_respond, acct_failure);
+}
+
 void
 add_socket_list(fd, s, r, f)
 	int fd;
@@ -572,6 +563,19 @@ add_socket_list(fd, s, r, f)
 	ctl->failure = f;
 	ctl->next = socket_first;
 	socket_first = ctl;
+}
+
+void
+close_socket_list()
+{
+	struct socket_list *next;
+	while (socket_first) {
+		next = socket_first->next;
+		close(socket_first->fd);
+		free_entry(socket_first);
+		socket_first = next;
+	}
+	max_fd = 0;
 }
 
 void
@@ -715,8 +719,8 @@ reread_config(reload)
 {
 	int res = 0;
 	int pid = getpid();
-
-
+	int fd;
+	
 	if (!reload) {
 		radlog(L_INFO, _("Starting - reading configuration files ..."));
 	} else if (pid == radius_pid) {
@@ -730,6 +734,8 @@ reread_config(reload)
 	}
 #endif	
 
+	close_socket_list();
+	
 	/* Read the options */
 	get_config();
 	if (!reload) {
@@ -738,6 +744,18 @@ reread_config(reload)
 		radpath_init();
 		stat_init();
 	}
+
+	if (myip == 0 && (myip = getmyip()) == 0) {
+		radlog(L_CRIT, _("can't find out my own IP address"));
+		exit(1);
+	}
+	radlog(L_INFO, "using %I as my IP address", myip);
+
+#ifdef USE_SNMP	
+	fd = open_socket(myip, snmp_port, "SNMP");
+	set_nonblocking(fd);
+	add_socket_list(fd, NULL, snmp_respond, NULL);
+#endif
 	
 	res = reload_config_file(reload_all);
 	
@@ -765,10 +783,26 @@ reread_config(reload)
 UINT4
 getmyip()
 {
-	char myname[256];
-
-	gethostname(myname, sizeof(myname));
-	return get_ipaddr(myname);
+	char *name;
+	int name_len = 256;
+	UINT4 ip;
+	int status;
+	
+	name = emalloc(name_len);
+	while (name
+	       && (status = gethostname(name, name_len)) == 0
+	       && !memchr(name, 0, name_len)) {
+		name_len *= 2;
+		name = erealloc(name, name_len);
+	}
+	if (status) {
+		radlog(L_CRIT, _("can't find out my own IP address"));
+		exit(1);
+	}
+		
+	ip = get_ipaddr(name);
+	efree(name);
+	return ip;
 }
 
 void
@@ -1625,7 +1659,8 @@ sig_dumpdb(sig)
 }
 
 int
-open_socket(port, type)
+open_socket(ipaddr, port, type)
+	UINT4 ipaddr;
 	int port;
 	char *type;
 {
@@ -1641,7 +1676,7 @@ open_socket(port, type)
 	sin = (struct sockaddr_in *) & salocal;
         memset ((char *) sin, '\0', sizeof (salocal));
 	sin->sin_family = AF_INET;
-	sin->sin_addr.s_addr = htonl(myip);
+	sin->sin_addr.s_addr = htonl(ipaddr);
 	sin->sin_port = htons(port);
 
 	if (bind (fd, & salocal, sizeof (*sin)) < 0) {
@@ -1649,6 +1684,31 @@ open_socket(port, type)
 		exit(1);
 	}
 	return fd;
+}
+
+void
+open_socket_list(hostlist, defport, descr, s, r, f)
+	HOSTDECL *hostlist;
+	int defport;
+	char *descr;
+	int (*s)();
+	int (*r)();
+	int (*f)();
+{
+	int fd;
+
+	if (!hostlist) {
+		fd = open_socket(INADDR_ANY, defport, descr);
+		add_socket_list(fd, s, r, f);
+		return;
+	}
+	
+	for (; hostlist; hostlist = hostlist->next) {
+		fd = open_socket(hostlist->ipaddr,
+				 hostlist->port > 0 ? hostlist->port : defport,
+				 descr);
+		add_socket_list(fd, s, r, f);
+	}
 }
 
 static char buf[128];

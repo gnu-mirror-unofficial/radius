@@ -11,6 +11,7 @@ libtool
 config.cache
 config.status
 stamp-h
+stamp-h1
 *.tar.gz
 config.guess
 config.sub

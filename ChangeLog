@@ -1,3 +1,13 @@
+2002-05-02  Sergey Poznyakoff  
+
+	* .cvsignore: Updated.
+	* TODO: Updated.
+	* test/raddb/.cvsignore: Updated.
+	
+	* radiusd/auth.c: Removed proxy_pairs from AUTH_MACH.
+	* radiusd/radius.c (rad_send_reply): Always copy Proxy-State
+	  attributes to the reply.
+
 2002-04-30  Sergey Poznyakoff 
 
 	* configure.ac: Add description string to AC_DEFINE_UNQUOTED.

@@ -2,7 +2,7 @@
 -100 :  redesign raduse to use snmp queries instead of peeking in radstat.
 -80  :  spawn statement in config is obsoleted (update docs).	
 -50  :  Fall back to pth if POSIX threads are not available?
--30  :  retransmit proxy (and possibly auth?) requests
+-30  :  retransmit proxy requests
 
      General:
 -100 : Provide a scheme function for setting radclient_debug variable.

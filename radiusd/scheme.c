@@ -24,12 +24,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <radiusd.h>
-#include <libguile.h>
 #include <setjmp.h>
 #include <errno.h>
 
 #ifdef USE_SERVER_GUILE
-
+#include <libguile.h>
 #include <radius/radscm.h>
 
 static unsigned scheme_gc_interval = 3600;

@@ -198,6 +198,12 @@ radius_test -prereq USE_SERVER_GUILE \
 	    "expect 5" 
 
 
+radius_test "send auth 1 User-Name = \"tunnel\" \
+                         User-Password = \"test\"" \
+            "expect 2  Service-Type = Framed-User \
+		       Framed-Protocol = PPTP \
+		       Tunnel-Password = tUnnEl"
+
 radius_exit
 
 # End of radiusd.exp

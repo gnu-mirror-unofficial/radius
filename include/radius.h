@@ -288,6 +288,11 @@ char *nas_ip_to_name(UINT4 ipaddr, char *buf, size_t size);
 NAS *nas_request_to_nas(RADIUS_REQ *radreq);
 char *nas_request_to_name(RADIUS_REQ *radreq, char *buf, size_t size);
 
+/* realms.c */
+REALM *realm_lookup_name(char *name);
+REALM *realm_lookup_ip(UINT4 ip);
+int realm_read_file(char *filename, int auth_port, int acct_port);
+
 /* fixalloc.c */
 #define Alloc_entry(t) alloc_entry(sizeof(t))
 RADIUS_REQ *radreq_alloc();

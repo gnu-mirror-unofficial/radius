@@ -47,7 +47,7 @@ store_hostent(h_in, h_out, buf, buflen, h_errnop)
         for (i = 0; h_in->h_aliases[i]; i++) 
                 len += sizeof(char*) + strlen(h_in->h_aliases[i]) + 1;
         base = buf + (i + 1) * sizeof(char*);
-#if defined(HAVE_STRUCT_HOSTENT_H_ADDR_LIST) 
+#if defined(HAVE_HOSTENT_H_ADDR_LIST) 
         len += sizeof(char*);
         for (i = 0; h_in->h_addr_list[i]; i++)
                 len += h_in->h_length + sizeof(char*);
@@ -63,7 +63,7 @@ store_hostent(h_in, h_out, buf, buflen, h_errnop)
            first. The variable-length data goes after the pointers; */
 
         ptr = (char**)buf;
-#if defined(HAVE_STRUCT_HOSTENT_H_ADDR_LIST)
+#if defined(HAVE_HOSTENT_H_ADDR_LIST)
         h_out->h_addr_list = ptr;
         /* Store addrlist */
         for (i = 0; h_in->h_addr_list[i]; i++) {

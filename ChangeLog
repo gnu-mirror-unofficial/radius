@@ -1,3 +1,8 @@
+2004-04-14  Sergey Poznyakoff
+
+	* radiusd/scheme.c (arglist_to_scm): Bugfix.
+	Use scm_long2num() to convert IP addresses
+
 2004-04-13  Sergey Poznyakoff
 
 	* examples/config.syntax: Updated

@@ -28,11 +28,12 @@
    in <syslog.h> */
    
 /* log categories */
-#define L_MAIN           (1<<3)      /* Main server process */
-#define L_AUTH           (2<<3)      /* Authentication process */
-#define L_ACCT           (3<<3)      /* Accounting process */
-#define L_PROXY          (4<<3)      /* Proxy */
-#define L_SNMP           (5<<3)      /* SNMP process */
+#define L_MKCAT(n)       ((n)<<3)
+#define L_MAIN           L_MKCAT(1)  /* Main server process */
+#define L_AUTH           L_MKCAT(2)  /* Authentication process */
+#define L_ACCT           L_MKCAT(3)  /* Accounting process */
+#define L_PROXY          L_MKCAT(4)  /* Proxy */
+#define L_SNMP           L_MKCAT(5)  /* SNMP process */
 #define L_NCAT           8           /* Number of categories */
 #define L_CATMASK        0x38        /* Mask to extract category part */
 
@@ -50,7 +51,7 @@
 #define L_CAT(v)   (((v)&L_CATMASK)>>3)
 #define L_PRI(v)   ((v)&L_PRIMASK)
 #define L_MASK(pri) (1<<(pri))
-
+#define L_UPTO(pri) ((1<<((pri)+1))-1)
 /* Additional flags */
 #define L_PERROR  0x8000
 
@@ -146,6 +147,10 @@ char *_debug_format_string(/* char *fmt, ... */);
 /* Parsing */	
 
 Channel *channel_lookup(char *name);
+void channel_free(Channel *chan);
+void channel_free_list(Channel *chan);
+Channel * log_mark();
+void log_release();
 
 Chanlist * make_chanlist(Channel *chan);
 void free_chanlist(Chanlist *cp);
@@ -157,5 +162,11 @@ void register_category(int cat, int pri, Chanlist *chanlist);
 void set_debug_levels(char *str);
 int set_module_debug_level(char *name, int level);
 void clear_debug();
+
+void log_set_to_console();
+void log_set_default(char *name, int cat, int pri);
+
+void log_open(int cat);
+void log_close();
 
 #endif

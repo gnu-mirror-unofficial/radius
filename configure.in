@@ -73,13 +73,13 @@ AC_ARG_WITH(server-guile,
 
 if test $USE_GUILE = yes; then
 	rad_CHECK_GUILE(,
-			[LIBRADSCM="libradscm.a libradlog.a"
+			[LIBRADSCM="libradscm.a libservscm.a"
                          RADSCM=radscm
 			 RADSCM_BUILT_SOURCES='$(DOT_X_FILES) $(DOT_DOC_FILES)'
 			 GUILE_PROCEDURES_TXT=guile-procedures.txt
 			 if test $USE_SERVER_GUILE = yes; then
 				AC_DEFINE(USE_SERVER_GUILE)
-				RADIUSD_LDADD="$RADIUSD_LDADD ../radscm/libradscm.a ../radscm/libradlog.a $GUILE_LIBS"
+				RADIUSD_LDADD="$RADIUSD_LDADD ../radscm/libradscm.a ../radscm/libservscm.a $GUILE_LIBS"
 			 fi],
                         [USE_GUILE=no])
 fi

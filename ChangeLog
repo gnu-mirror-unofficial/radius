@@ -1,3 +1,9 @@
+2001-10-30 Sergey Poznyakoff
+
+	* client/pam_radius/pam_radius.c: Fixes forgotten to apply
+	2001-10-14.
+	* radiusd/log.c: Typo in log_to_channel().
+
 2001-10-28 Sergey Poznyakoff
 
 	* doc/texinfo/Makefile.am: Rule for generating postscript

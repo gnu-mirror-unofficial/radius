@@ -42,8 +42,8 @@ static char rcsid[] =
 #include <pwd.h>
 #include <grp.h>
 #include <string.h>
+#include <syslog.h>
 #include <radiusd.h>
-
 
 
 #define MAXARGS 64
@@ -146,6 +146,7 @@ radius_exec_program(cmd, request, reply, exec_wait, user_msg)
 				    _("radius_exec_program(): too many arguments"));
 				return -1;
 			}
+			debug(10, ("argv[%d] = %s", argc, ptr));
 			argv[argc++] = ptr;
 		}
 		argv[argc++] = NULL;
@@ -164,25 +165,37 @@ radius_exec_program(cmd, request, reply, exec_wait, user_msg)
 		
 		saved_uid = geteuid();
 		saved_gid = getegid();
-		
-		if (setegid(grp->gr_gid)) {
-			radlog(L_CRIT|L_PERROR,
-			       _("radius_exec_program(): setegid failed"));
-		}
-		if (seteuid(pwd->pw_uid)) {
-			radlog(L_CRIT|L_PERROR,
-			       _("radius_exec_program(): seteuid failed"));
-		}
 
+		if (grp->gr_gid && setgid(grp->gr_gid)) {
+			radlog(L_ERR|L_PERROR,
+			       _("setgid(%d) failed"), pwd->pw_gid);
+		}
+		if (pwd->pw_uid != 0) {
+#if defined(HAVE_SETEUID)
+			if (seteuid(pwd->pw_uid)) 
+				radlog(L_ERR|L_PERROR,
+				       _("seteuid(%d) failed (ruid=%d, euid=%d)"),
+					 pwd->pw_uid, getuid(), geteuid());
+#elif defined(HAVE_SETREUID)
+			if (setreuid(0, pwd->pw_uid)) 
+				radlog(L_ERR|L_PERROR,
+				       _("setreuid(0,%d) failed (ruid=%d, euid=%d)"),
+					 pwd->pw_uid, getuid(), geteuid());
+#else
+# warning "*** NO WAY TO SET EFFECTIVE UID IN radius_exec_program() ***"
+#endif
+		}
 		execvp(argv[0], argv);
 
-		seteuid(saved_uid);
-		setegid(saved_gid);
-
-		radlog(L_CRIT|L_PERROR,
-		       _("radius_exec_program(): cannot run %s"),
-		       argv[0]);
-		exit(1);
+		/*
+		 * Report error via syslog: we might not be able
+		 * to restore initial privileges if we were started
+		 * as non-root.
+		 */
+		openlog("radiusd", LOG_PID, LOG_USER);
+		syslog(LOG_ERR, "can't run %s (ruid=%d, euid=%d): %m",
+		       argv[0], getuid(), geteuid());
+		exit(2);
 	}
 
 	/* Parent branch */ 
@@ -231,8 +244,12 @@ radius_exec_program(cmd, request, reply, exec_wait, user_msg)
 
 	if (WIFEXITED(status)) {
 		status = WEXITSTATUS(status);
-		debug(1,
-			("returned: %d", status));
+		debug(1, ("returned: %d", status));
+		if (status == 2) {
+			radlog(L_ERR,
+			       _("can't run external program (reason reported via syslog channel user.err)"),
+			       argv[0]);
+		}
 		return status;
 	}
 	radlog(L_ERR, _("radius_exec_program(): abnormal child exit"));

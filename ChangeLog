@@ -1,5 +1,15 @@
 2003-07-21  Sergey Poznyakoff
 
+	-== Version 1.1 released ==-
+
+2003-07-21  Sergey Poznyakoff 
+
+	* radiusd/tsh.c [!WITH_READLINE]: Several bugfixes.
+	* radiusd/radiusd.c (radiusd_main_loop): Open L_MAIN
+	log channel.
+	
+2003-07-21  Sergey Poznyakoff
+
 	* radiusd/files.c (hints_setup): Bugfix. Failed to update
 	req->request. Thanks to Lewis Watson <watson@visionsix.com>
 	for helping to trace the bug.

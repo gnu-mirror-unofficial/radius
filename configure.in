@@ -321,7 +321,7 @@ BUILD_SQL=
 
 AC_ARG_WITH(mysql,
         [  --with-mysql          Configure to work with MySQL],
-	[case $enableval in
+	[case $withval in
 	 yes)    rad_CHECK_LIB(mysqlclient, mysql_connect, "-lm",
                             [ USE_SQL=1
                               AC_DEFINE(USE_SQL_MYSQL)
@@ -335,7 +335,7 @@ AC_ARG_WITH(mysql,
 
 AC_ARG_WITH(postgres,
         [  --with-postgres       Configure to work with Postgres],
-	[case $enableval in
+	[case $withval in
 	 yes)	rad_CHECK_LIB(pq, PQconnectStart, [],
 			    [ USE_SQL=1
                               AC_DEFINE(USE_SQL_POSTGRES)

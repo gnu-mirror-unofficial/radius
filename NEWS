@@ -20,7 +20,8 @@ reduce the size of the executables.
 This is a guile module allowing to use libgnuradius functions. It
 supercedes radscm program, which has been removed.
 
-* Rewrite
+* Rewrite language
+
 ** Added i18n support
 
 * radiusd

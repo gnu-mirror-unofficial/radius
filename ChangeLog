@@ -1,3 +1,12 @@
+2001-07-16 Sergey Poznyakoff <gray@farlep.net>
+	* configure.in: When --with-client is specified build any part
+	of client that can be built.
+	* Makefile.am: Remove conditional BUILD_CLIENT block.
+	* client/pam_radius/pam_radius.c: Fixed erroneous call to strtok().
+	* client/pam_radius/Makefile.am: Substitution for pam_PROGRAMS.
+	* client/nas/Makefile.am: Substitution for libexec_SCRIPTS so the
+	client can still be built when GUILE is not installed.
+
 2001-07-12 Sergey Poznyakoff <gray@farlep.net>
 	Added possibility to defer evaluation of a reply pair value. To
 	defer evaluation of a pair, it should be specified in raddb/users

@@ -328,10 +328,6 @@ void proxy_cleanup();
 /* auth.c */
 int		rad_auth_init(RADIUS_REQ *radreq, int activefd);
 int		rad_authenticate (RADIUS_REQ *, int);
-int  rad_check_password(RADIUS_REQ *radreq, int activefd,
-			VALUE_PAIR *check_item,
-			VALUE_PAIR *namepair,
-			u_char *pw_digest, char **user_msg, char *userpass);
 
 /* exec.c */
 int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **,

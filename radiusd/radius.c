@@ -66,8 +66,8 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
         VALUE_PAIR *reply, *pair;
         int vendorcode, vendorpec;
         char buf[MAX_LONGNAME];
-	int i_send_buffer[RAD_BUFFER_SIZE];
-	char *send_buffer = (char *)i_send_buffer;
+        int i_send_buffer[RAD_BUFFER_SIZE];
+        char *send_buffer = (char *)i_send_buffer;
         
         auth = (AUTH_HDR *)send_buffer;
         reply = oreply;
@@ -304,7 +304,7 @@ calc_acctdigest(radreq)
            all zeros. Return `1' in that case. */
         memset(zero, 0, sizeof(zero));
         if (memcmp(radreq->vector, zero, AUTH_VECTOR_LEN) == 0)
-                return 1;
+                return REQ_AUTH_ZERO;
 
         /* Zero out the auth_vector in the received packet.
            Then append the shared secret to the received packet,
@@ -318,7 +318,8 @@ calc_acctdigest(radreq)
         /*
          *      Return 0 if OK, 2 if not OK.
          */
-        return memcmp(digest, radreq->vector, AUTH_VECTOR_LEN) ? 2 : 0;
+        return memcmp(digest, radreq->vector, AUTH_VECTOR_LEN) ?
+		          REQ_AUTH_BAD : REQ_AUTH_OK;
 }
 
 /*
@@ -512,8 +513,8 @@ send_challenge(radreq, msg, state, activefd)
         u_char *ptr;
         int len;
         char buf[MAX_LONGNAME];
-	int i_send_buffer[RAD_BUFFER_SIZE];
-	char *send_buffer = (char *)i_send_buffer;
+        int i_send_buffer[RAD_BUFFER_SIZE];
+        char *send_buffer = (char *)i_send_buffer;
         
         auth = (AUTH_HDR *)send_buffer;
 

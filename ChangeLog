@@ -1,3 +1,19 @@
+2003-07-11  Sergey Poznyakoff 
+
+	* configure.ac: Raised version number to 1.0.1
+	* NEWS: Updated
+	* lib/dict.c (_dict_attribute,attr_number_to_dict): Bugfix
+	Check the range of the attribute before indexing the
+	dict_attr_index array. Thanks to Anderson Nadal
+	<security@onda.com.br> for reporting and helping to
+	trace the bug.
+	* THANKS: Added Anderson Nadal
+	* include/radius.h (rad_decode_pdu): Changed length type from
+	int to size_t
+	* lib/radpdu.c (rad_decode_pair,rad_decode_pdu): Changed attrlen
+	type from int to size_t
+	(decode_vsa): Fixed a gross bug.
+
 2003-07-09  Sergey Poznyakoff  
 
 	* client/nas/Makefile.am: Bugfix. Removed leftover ETC_DIR

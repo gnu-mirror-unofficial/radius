@@ -249,11 +249,6 @@ rad_acct_system(radreq, dowtmp)
                                 status = DV_ACCT_STATUS_TYPE_ACCOUNTING_ON;
                         rb_record = 1;
 
-                } else {
-#if 0 /* Cisco sometimes sends START records without username. */
-                        radlog_req(L_ERR, radreq, _("no username in record"));
-                        return -1;
-#endif
                 }
         } 
 

@@ -19,7 +19,6 @@ EXTRA_DIST=\
  debugmod.m4\
  dict.awk\
  mksnmp-h.awk\
- mktest.awk\
  texi2html.diff\
  ylwrap
 

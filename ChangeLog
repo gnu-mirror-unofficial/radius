@@ -1,3 +1,17 @@
+2002-04-11  Sergey Poznyakoff
+
+        * include/radutmp.h: Removed P_ protocol defines.
+        * radiusd/acct.c: Store Framed-Attribute value in
+          ut.proto verbatim.
+        * radlast/radlast.c: Use dictionary to decode stored
+          protocol value
+        * radwho/radwho.c: Likewise.
+
+        * radscm/rscm_utmp.c (s_rad_utmp_putent): Accept integer
+          and string protocol values.
+        * client/nas/nas.scm.in (nas-utmp-list): Use string protocol
+          value.
+	
 2002-03-29  Sergey Poznyakoff 
 
 *	* radzap/radzap.c: New option: --file. --log-directory retained

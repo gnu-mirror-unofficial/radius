@@ -1371,11 +1371,11 @@ tolower("A-STRING") @result{} "a-string"
 @end deftypefn
 
 @deftypefn Function string request_code_string (integer @var{code})
-Converts integer RADIUS request code to its abbreviated textual
-representation. This function is useful in logging hooks (@pxref{hooks}).
+Converts integer RADIUS request code to its textual representation as
+per RFC 3575. This function is useful in logging hooks (@pxref{hooks}).
 
 @smallexample
-request_code_string(4) @result{} "ACCTREQ"
+request_code_string(4) @result{} "Accounting-Request"
 @end smallexample
 @end deftypefn
 

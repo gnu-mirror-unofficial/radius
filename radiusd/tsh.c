@@ -164,8 +164,8 @@ tsh_query_nas(int argc, char **argv, char *cmd ARG_UNUSED)
 	}
 	nas = grad_nas_lookup_name(argv[1]);
 	if (nas) {
-		if (nas->netdef.netmask != 32) {
-			fprintf(stderr, _("%s: is a network name\n"), argv[0]);
+		if (nas->netdef.netmask != 0xffffffffL) {
+			fprintf(stderr, _("%s is a network name\n"), argv[1]);
 			return;
 		}
 		ut.nas_address = nas->netdef.ipaddr;

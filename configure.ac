@@ -147,9 +147,9 @@ HAVE_PTHREAD=no
 AC_CHECK_LIB(pthread, pthread_self,
              [ HAVE_PTHREAD=yes
                LIBS="$LIBS -lpthread -lc" ],
-             AC_CHECK_LIB(c_r, pthread_self,
-                          [ HAVE_PTHREAD=yes
-                            LIBS="$LIBS -lc_r" ]))
+             [ LIBS="$LIBS -pthread"
+               AC_CHECK_FUNC(pthread_self,
+                             [HAVE_PTHREAD=yes]) ])
 
 if test $HAVE_PTHREAD != yes; then
 	AC_MSG_ERROR("POSIX threads library not found. Please install one and then reconfigure")
@@ -231,6 +231,9 @@ AC_CHECK_TYPE(u_int, unsigned int)
 AC_CHECK_TYPE(u_long, unsigned long)
 AC_HEADER_TIME
 AC_STRUCT_TM
+RA_CHECK_MEMBERS([struct sockaddr_in.sin_len], , ,
+    [ #include <sys/types.h>
+      #include <netinet/in.h> ])
 RA_CHECK_INADDR_LOOPBACK
 
 ## * Checks for library functions.

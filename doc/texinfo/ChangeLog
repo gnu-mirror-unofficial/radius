@@ -1,8 +1,30 @@
+2003-02-10  Daniel Barowy <dan@barowy.net>
+
+	* added missing ChangeLog entry (2003-02-03).
+	
 2003-02-06  Sergey Poznyakoff
 
 	* operation.texi: Removed stray @xref.
 	* radius.texi: Use @radiusd{} where appropriate.
 
+2003-02-03  Daniel Barowy <dan@barowy.net>
+
+	* config.texi: Changed macro '@radius{}' to '@radiusd{}' for clarity.
+	
+	* radius.texi: More minor rewordings, changed copright holder from
+	"Sergey Poznyakoff" to "Free Software Foundation".
+
+	* intro.texi: Changed copyright holder.  Added section on 'failed
+	requests due to a high server load' at the end (from
+	operation.texi).
+
+	* naming.texi: Changed copyright holder, some spelling, grammar, &
+	rewording, substitution of '@command{radiusd}' with '@radiusd{}'.
+
+	* operation.texi: Removed redundant general RADIUS information,
+	referencing the Introduction.  Information on high server loads
+	moved to intro.texi.  Grammar and rewording changes.
+	
 2003-01-31  Sergey Poznyakoff
 
 	* intro.texi: Fixed Texinfo syntax.

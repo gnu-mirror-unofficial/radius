@@ -236,14 +236,12 @@ int
 proxy_send(REQUEST *req)
 {
 	RADIUS_REQ *radreq = req->data;
-        int rc;
         char *saved_username;
         char *username;
         VALUE_PAIR *namepair;
         VALUE_PAIR *vp;
         char *realmname;
         REALM *realm;
-        char *what;
 
         /* Look up name. */
         namepair = avl_find(radreq->request, DA_USER_NAME);
@@ -360,7 +358,6 @@ proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int fd)
 {
         VALUE_PAIR *vp, *proxy_state_pair, *prev, *x;
         VALUE_PAIR *allowed_pairs;
-        PROXY_STATE *state;
         
         /* Remove the last proxy pair from the list. */
         proxy_state_pair = x = prev = NULL;

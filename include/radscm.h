@@ -27,7 +27,9 @@ void rscm_avl_init();
 void rscm_dict_init();
 void rscm_radlog_init();
 void rscm_rewrite_init();
+void rscm_sql_init();
 void rscm_add_load_path(char *path);
+void rscm_server_init();
 	
 char *rscm_load_path(char *);
 
@@ -43,7 +45,8 @@ char *rscm_load_path(char *);
 
 # define scm_c_define scm_sysintern
 
-# define scm_primitive_eval_x scm_eval_x
+# define RAD_SCM_EVAL_X scm_eval_x
+# define RAD_SCM_EVAL scm_eval
 
 # define RAD_SCM_SYMBOL_VALUE(p) scm_symbol_value0(p)
 
@@ -53,6 +56,8 @@ extern SCM scm_long2num (long val);
 
 #elif GUILE_VERSION >= 16
 
+# define RAD_SCM_EVAL_X scm_primitive_eval_x
+# define RAD_SCM_EVAL scm_primitive_eval
 # define RAD_SCM_SYMBOL_VALUE(p) SCM_VARIABLE_REF(scm_c_lookup(p))
 
 #endif

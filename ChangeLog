@@ -1,3 +1,69 @@
+2003-06-19  Sergey Poznyakoff  
+
+	* client/pam_radius/pam_radius.c: Syntax cleanup.
+	* include/argcv.h: Likewise
+	* include/mem.h: Likewise
+	* include/radius.h: Likewise
+	* include/radiusd.h: Likewise
+	* include/radscm.h: Likewise
+	* include/radsql.h: Likewise
+	* include/rewrite.h: Likewise
+	* include/sysdep.h: Likewise
+	* lib/applog.c: Likewise
+	* lib/client.c: Likewise
+	* lib/cryptpass.c: Likewise
+	* lib/debug.c: Likewise
+	* lib/dict.c: Likewise
+	* lib/insist.c: Likewise
+	* lib/intl.c: Likewise
+	* lib/leakdetect.c: Likewise
+	* lib/logger.c: Likewise
+	* lib/md5crypt.c: Likewise
+	* lib/printutmp.c: Likewise
+	* lib/strerror.c: Likewise
+	* lib/sysdep.c: Likewise
+	* lib/users.l: Likewise
+	* lib/users.y: Likewise
+	* raddb/config: Likewise
+	* radiusd/auth.c: Likewise
+	* radiusd/config.y: Likewise
+	* radiusd/exec.c: Likewise
+	* radiusd/files.c: Likewise
+	* radiusd/input.c: Likewise
+	* radiusd/log.c: Likewise
+	* radiusd/menu.c: Likewise
+	* radiusd/proxy.c: Likewise
+	* radiusd/radck.c: Likewise
+	* radiusd/radius.c: Likewise
+	* radiusd/radiusd.c: Likewise
+	* radiusd/request.c: Likewise
+	* radiusd/rewrite.y: Likewise
+	* radiusd/rpp.c: Likewise
+	* radiusd/scheme.c: Likewise
+	* radiusd/snmpserv.c: Likewise
+	* radiusd/sql.c: Likewise
+	* radiusd/stat.c: Likewise
+	* radiusd/version.c: Likewise
+	* radiusd/testsuite/findport.c: Likewise
+	* radlast/radlast.c: Likewise
+	* radscm/rscm_avl.c: Likewise
+	* radscm/rscm_dict.c: Likewise
+	* radscm/rscm_lib.c: Likewise
+	* radscm/rscm_radlog.c: Likewise
+	* radscm/rscm_rewrite.c: Likewise
+	* radscm/rscm_sql.c: Likewise
+	* radscm/rscm_syslog.c: Likewise
+	* radscm/rscm_utmp.c: Likewise
+	* raduse/raduse.c: Likewise
+	* raduse/session.c: Likewise
+	* raduse/stat.c: Likewise
+	* radwho/radwho.c: Likewise
+	* scripts/debug.sh: Likewise
+	* scripts/debugmod.m4: Likewise
+	* snmplib/snmp_sess.c: Likewise
+	* sql/mysql.c: Likewise
+	* sql/odbc.c: Likewise
+
 2003-06-19  Sergey Poznyakoff 
 
 	* configure.ac: Moved include <gettext.h> to radius.h

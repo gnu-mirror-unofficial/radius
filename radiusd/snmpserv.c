@@ -142,10 +142,10 @@ struct acl_closure {
 };
 
 int
-_netdef_cmp(void *item, void *data)
+_netdef_cmp(const void *item, const void *data)
 {
-	NETDEF *nd = item;
-	struct acl_closure *clos = data;
+	const NETDEF *nd = item;
+	const struct acl_closure *clos = data;
 
 	if (nd->ipaddr == (clos->ip & nd->netmask))
 		return 0;
@@ -243,11 +243,11 @@ snmp_cfg_ident(int argc, cfg_value_t *argv, void *block_data,
 }
 
 static struct keyword snmp_access[] = {
-	"read-only", SNMP_RO,
-	"read-write", SNMP_RW,
-	"ro", SNMP_RO,
-	"rw", SNMP_RW,
-	0
+	{ "read-only", SNMP_RO },
+	{ "read-write", SNMP_RW },
+	{ "ro", SNMP_RO },
+	{ "rw", SNMP_RW },
+	{ 0 }
 };
 
 static int
@@ -560,161 +560,161 @@ static struct mib_data {
 } mib_data[] = {
         /* Authentication */
         /* Fixed oids */
-        oid_AuthServIdent,                   snmp_auth_handler, NULL,
-        oid_AuthServUpTime,                  snmp_auth_handler, NULL,
-        oid_AuthServResetTime,               snmp_auth_handler, NULL,
-        oid_AuthServConfigReset,             snmp_auth_handler, NULL,
-        oid_AuthServTotalAccessRequests,     snmp_auth_handler, NULL,
-        oid_AuthServTotalInvalidRequests,    snmp_auth_handler, NULL,
-        oid_AuthServTotalDupAccessRequests,  snmp_auth_handler, NULL,
-        oid_AuthServTotalAccessAccepts,      snmp_auth_handler, NULL,
-        oid_AuthServTotalAccessRejects,      snmp_auth_handler, NULL,
-        oid_AuthServTotalAccessChallenges,   snmp_auth_handler, NULL, 
-        oid_AuthServTotalMalformedAccessRequests,
-                                             snmp_auth_handler, NULL,
-        oid_AuthServTotalBadAuthenticators,  snmp_auth_handler, NULL,
-        oid_AuthServTotalPacketsDropped,     snmp_auth_handler, NULL,
-        oid_AuthServTotalUnknownTypes,       snmp_auth_handler, NULL,
+        { oid_AuthServIdent,                   snmp_auth_handler, NULL },
+        { oid_AuthServUpTime,                  snmp_auth_handler, NULL },
+        { oid_AuthServResetTime,               snmp_auth_handler, NULL },
+        { oid_AuthServConfigReset,             snmp_auth_handler, NULL },
+        { oid_AuthServTotalAccessRequests,     snmp_auth_handler, NULL },
+        { oid_AuthServTotalInvalidRequests,    snmp_auth_handler, NULL },
+        { oid_AuthServTotalDupAccessRequests,  snmp_auth_handler, NULL },
+        { oid_AuthServTotalAccessAccepts,      snmp_auth_handler, NULL },
+        { oid_AuthServTotalAccessRejects,      snmp_auth_handler, NULL },
+        { oid_AuthServTotalAccessChallenges,   snmp_auth_handler, NULL }, 
+        { oid_AuthServTotalMalformedAccessRequests,
+                                             snmp_auth_handler, NULL },
+        { oid_AuthServTotalBadAuthenticators,  snmp_auth_handler, NULL },
+        { oid_AuthServTotalPacketsDropped,     snmp_auth_handler, NULL },
+        { oid_AuthServTotalUnknownTypes,       snmp_auth_handler, NULL },
 
         /* Variable oids */
-        oid_AuthClientIndex,                 snmp_auth_v_handler,NULL,
-        oid_AuthClientAddress,               snmp_auth_v_handler,NULL,
-        oid_AuthClientID,                    snmp_auth_v_handler,NULL,
-        oid_AuthServAccessRequests,          snmp_auth_v_handler,NULL,
-        oid_AuthServDupAccessRequests,       snmp_auth_v_handler,NULL,
-        oid_AuthServAccessAccepts,           snmp_auth_v_handler,NULL,
-        oid_AuthServAccessRejects,           snmp_auth_v_handler,NULL,
-        oid_AuthServAccessChallenges,        snmp_auth_v_handler,NULL,
-        oid_AuthServMalformedAccessRequests, snmp_auth_v_handler,NULL,
-        oid_AuthServBadAuthenticators,       snmp_auth_v_handler,NULL,
-        oid_AuthServPacketsDropped,          snmp_auth_v_handler,NULL,
-        oid_AuthServUnknownTypes,            snmp_auth_v_handler,NULL,
+        { oid_AuthClientIndex,                 snmp_auth_v_handler,NULL },
+        { oid_AuthClientAddress,               snmp_auth_v_handler,NULL },
+        { oid_AuthClientID,                    snmp_auth_v_handler,NULL },
+        { oid_AuthServAccessRequests,          snmp_auth_v_handler,NULL },
+        { oid_AuthServDupAccessRequests,       snmp_auth_v_handler,NULL },
+        { oid_AuthServAccessAccepts,           snmp_auth_v_handler,NULL },
+        { oid_AuthServAccessRejects,           snmp_auth_v_handler,NULL },
+        { oid_AuthServAccessChallenges,        snmp_auth_v_handler,NULL },
+        { oid_AuthServMalformedAccessRequests, snmp_auth_v_handler,NULL },
+        { oid_AuthServBadAuthenticators,       snmp_auth_v_handler,NULL },
+        { oid_AuthServPacketsDropped,          snmp_auth_v_handler,NULL },
+        { oid_AuthServUnknownTypes,            snmp_auth_v_handler,NULL },
         
         /* Accounting */
         /* Fixed oids */
-        oid_AccServIdent,                    snmp_acct_handler, NULL,
-        oid_AccServUpTime,                   snmp_acct_handler, NULL,
-        oid_AccServResetTime,                snmp_acct_handler, NULL,
-        oid_AccServConfigReset,              snmp_acct_handler, NULL,
-        oid_AccServTotalRequests,            snmp_acct_handler, NULL,
-        oid_AccServTotalInvalidRequests,     snmp_acct_handler, NULL,    
-        oid_AccServTotalDupRequests,         snmp_acct_handler, NULL,      
-        oid_AccServTotalResponses,           snmp_acct_handler, NULL,      
-        oid_AccServTotalMalformedRequests,   snmp_acct_handler, NULL,      
-        oid_AccServTotalBadAuthenticators,   snmp_acct_handler, NULL,      
-        oid_AccServTotalPacketsDropped,      snmp_acct_handler, NULL,      
-        oid_AccServTotalNoRecords,           snmp_acct_handler, NULL,      
-        oid_AccServTotalUnknownTypes,        snmp_acct_handler, NULL,      
+        { oid_AccServIdent,                    snmp_acct_handler, NULL },
+        { oid_AccServUpTime,                   snmp_acct_handler, NULL },
+        { oid_AccServResetTime,                snmp_acct_handler, NULL },
+        { oid_AccServConfigReset,              snmp_acct_handler, NULL },
+        { oid_AccServTotalRequests,            snmp_acct_handler, NULL },
+        { oid_AccServTotalInvalidRequests,     snmp_acct_handler, NULL },    
+        { oid_AccServTotalDupRequests,         snmp_acct_handler, NULL },      
+        { oid_AccServTotalResponses,           snmp_acct_handler, NULL },      
+        { oid_AccServTotalMalformedRequests,   snmp_acct_handler, NULL },      
+        { oid_AccServTotalBadAuthenticators,   snmp_acct_handler, NULL },      
+        { oid_AccServTotalPacketsDropped,      snmp_acct_handler, NULL },      
+        { oid_AccServTotalNoRecords,           snmp_acct_handler, NULL },      
+        { oid_AccServTotalUnknownTypes,        snmp_acct_handler, NULL },      
 
         /* Variable oids */
-        oid_AccClientIndex,                  snmp_acct_v_handler,NULL,
-        oid_AccClientAddress,                snmp_acct_v_handler,NULL,
-        oid_AccClientID,                     snmp_acct_v_handler,NULL,
-        oid_AccServPacketsDropped,           snmp_acct_v_handler,NULL,
-        oid_AccServRequests,                 snmp_acct_v_handler,NULL,
-        oid_AccServDupRequests,              snmp_acct_v_handler,NULL,
-        oid_AccServResponses,                snmp_acct_v_handler,NULL,
-        oid_AccServBadAuthenticators,        snmp_acct_v_handler,NULL,
-        oid_AccServMalformedRequests,        snmp_acct_v_handler,NULL,
-        oid_AccServNoRecords,                snmp_acct_v_handler,NULL,
-        oid_AccServUnknownTypes,             snmp_acct_v_handler,NULL,
+        { oid_AccClientIndex,                  snmp_acct_v_handler,NULL },
+        { oid_AccClientAddress,                snmp_acct_v_handler,NULL },
+        { oid_AccClientID,                     snmp_acct_v_handler,NULL },
+        { oid_AccServPacketsDropped,           snmp_acct_v_handler,NULL },
+        { oid_AccServRequests,                 snmp_acct_v_handler,NULL },
+        { oid_AccServDupRequests,              snmp_acct_v_handler,NULL },
+        { oid_AccServResponses,                snmp_acct_v_handler,NULL },
+        { oid_AccServBadAuthenticators,        snmp_acct_v_handler,NULL },
+        { oid_AccServMalformedRequests,        snmp_acct_v_handler,NULL },
+        { oid_AccServNoRecords,                snmp_acct_v_handler,NULL },
+        { oid_AccServUnknownTypes,             snmp_acct_v_handler,NULL },
 
 #ifdef SNMP_COMPAT_0_96
         
         /* Server */
-        oid_grad_radiusServerUpTime,         snmp_serv_handler, NULL,
-        oid_grad_radiusServerResetTime,      snmp_serv_handler, NULL,
-        oid_grad_radiusServerState,          snmp_serv_handler, NULL,
+        { oid_grad_radiusServerUpTime,         snmp_serv_handler, NULL },
+        { oid_grad_radiusServerResetTime,      snmp_serv_handler, NULL },
+        { oid_grad_radiusServerState,          snmp_serv_handler, NULL },
 
         
         /* Statistics */
-        oid_grad_StatIdent,             snmp_stat_handler, NULL,
-        oid_grad_StatUpTime,            snmp_stat_handler, NULL,
-        oid_grad_StatConfigReset,       snmp_stat_handler, NULL,
-        oid_grad_StatTotalLines,        snmp_stat_handler, NULL,
-        oid_grad_StatTotalLinesInUse,   snmp_stat_handler, NULL,
-        oid_grad_StatTotalLinesIdle,    snmp_stat_handler, NULL,
+        { oid_grad_StatIdent,             snmp_stat_handler, NULL },
+        { oid_grad_StatUpTime,            snmp_stat_handler, NULL },
+        { oid_grad_StatConfigReset,       snmp_stat_handler, NULL },
+        { oid_grad_StatTotalLines,        snmp_stat_handler, NULL },
+        { oid_grad_StatTotalLinesInUse,   snmp_stat_handler, NULL },
+        { oid_grad_StatTotalLinesIdle,    snmp_stat_handler, NULL },
 
         /* Variable oids */
-        oid_grad_NASIndex1,             snmp_stat_nas1, NULL,
-        oid_grad_NASIndex2,             snmp_stat_nas2, NULL,
-        oid_grad_NASIndex3,             snmp_stat_nas3, NULL,
-        oid_grad_NASIndex4,             snmp_stat_nas4, NULL,
+        { oid_grad_NASIndex1,             snmp_stat_nas1, NULL },
+        { oid_grad_NASIndex2,             snmp_stat_nas2, NULL },
+        { oid_grad_NASIndex3,             snmp_stat_nas3, NULL },
+        { oid_grad_NASIndex4,             snmp_stat_nas4, NULL },
 
-        oid_grad_NASAddress,            snmp_nas_table, NULL,
-        oid_grad_NASID,                 snmp_nas_table, NULL,
-        oid_grad_NASLines,              snmp_nas_table, NULL,
-        oid_grad_NASLinesInUse,         snmp_nas_table, NULL,
-        oid_grad_NASLinesIdle,          snmp_nas_table, NULL,
+        { oid_grad_NASAddress,            snmp_nas_table, NULL },
+        { oid_grad_NASID,                 snmp_nas_table, NULL },
+        { oid_grad_NASLines,              snmp_nas_table, NULL },
+        { oid_grad_NASLinesInUse,         snmp_nas_table, NULL },
+        { oid_grad_NASLinesIdle,          snmp_nas_table, NULL },
 
-        oid_grad_StatPortIndex1,        snmp_port_index1, NULL,
-        oid_grad_StatPortIndex2,        snmp_port_index2, NULL,
+        { oid_grad_StatPortIndex1,        snmp_port_index1, NULL },
+        { oid_grad_StatPortIndex2,        snmp_port_index2, NULL },
 
         /* port table */
-        oid_grad_StatPortNASIndex,      snmp_port_table, NULL,
-        oid_grad_StatPortID,            snmp_port_table, NULL,
-        oid_grad_StatPortFramedAddress, snmp_port_table, NULL,
-        oid_grad_StatPortTotalLogins,   snmp_port_table, NULL,
-        oid_grad_StatPortStatus,        snmp_port_table, NULL,
-        oid_grad_StatPortStatusChangeTimestamp,   snmp_port_table, NULL,
-        oid_grad_StatPortUpTime,        snmp_port_table, NULL,
-        oid_grad_StatPortLastLoginName, snmp_port_table, NULL,
-        oid_grad_StatPortLastLoginTimestamp,  snmp_port_table, NULL,
-        oid_grad_StatPortLastLogoutTimestamp, snmp_port_table, NULL,
-        oid_grad_StatPortIdleTotalTime, snmp_port_table, NULL,
-        oid_grad_StatPortIdleMaxTime,   snmp_port_table, NULL,
-        oid_grad_StatPortIdleMaxTimestamp, snmp_port_table, NULL,
-        oid_grad_StatPortInUseTotalTime, snmp_port_table, NULL,
-        oid_grad_StatPortInUseMaxTime,   snmp_port_table, NULL,
-        oid_grad_StatPortInUseMaxTimestamp, snmp_port_table, NULL,
+        { oid_grad_StatPortNASIndex,      snmp_port_table, NULL },
+        { oid_grad_StatPortID,            snmp_port_table, NULL },
+        { oid_grad_StatPortFramedAddress, snmp_port_table, NULL },
+        { oid_grad_StatPortTotalLogins,   snmp_port_table, NULL },
+        { oid_grad_StatPortStatus,        snmp_port_table, NULL },
+        { oid_grad_StatPortStatusChangeTimestamp,   snmp_port_table, NULL },
+        { oid_grad_StatPortUpTime,        snmp_port_table, NULL },
+        { oid_grad_StatPortLastLoginName, snmp_port_table, NULL },
+        { oid_grad_StatPortLastLoginTimestamp,  snmp_port_table, NULL },
+        { oid_grad_StatPortLastLogoutTimestamp, snmp_port_table, NULL },
+        { oid_grad_StatPortIdleTotalTime, snmp_port_table, NULL },
+        { oid_grad_StatPortIdleMaxTime,   snmp_port_table, NULL },
+        { oid_grad_StatPortIdleMaxTimestamp, snmp_port_table, NULL },
+        { oid_grad_StatPortInUseTotalTime, snmp_port_table, NULL },
+        { oid_grad_StatPortInUseMaxTime,   snmp_port_table, NULL },
+        { oid_grad_StatPortInUseMaxTimestamp, snmp_port_table, NULL },
 #endif
         /* enterprise.gnu.radius subtree */
         /* Server */
-        oid_radiusServerUpTime,         snmp_serv_handler, NULL,
-        oid_radiusServerResetTime,      snmp_serv_handler, NULL,
-        oid_radiusServerState,          snmp_serv_handler, NULL,
+        { oid_radiusServerUpTime,         snmp_serv_handler, NULL },
+        { oid_radiusServerResetTime,      snmp_serv_handler, NULL },
+        { oid_radiusServerState,          snmp_serv_handler, NULL },
 
 
         /* Statistics */
-        oid_StatIdent,                       snmp_stat_handler, NULL,
-        oid_StatUpTime,                      snmp_stat_handler, NULL,
-        oid_StatConfigReset,                 snmp_stat_handler, NULL,
-        oid_StatTotalLines,                  snmp_stat_handler, NULL,
-        oid_StatTotalLinesInUse,             snmp_stat_handler, NULL,
-        oid_StatTotalLinesIdle,              snmp_stat_handler, NULL,
+        { oid_StatIdent,                       snmp_stat_handler, NULL },
+        { oid_StatUpTime,                      snmp_stat_handler, NULL },
+        { oid_StatConfigReset,                 snmp_stat_handler, NULL },
+        { oid_StatTotalLines,                  snmp_stat_handler, NULL },
+        { oid_StatTotalLinesInUse,             snmp_stat_handler, NULL },
+        { oid_StatTotalLinesIdle,              snmp_stat_handler, NULL },
 
         /* Variable oids */
-        oid_NASIndex1,                       snmp_stat_nas1, NULL,
-        oid_NASIndex2,                       snmp_stat_nas2, NULL,
-        oid_NASIndex3,                       snmp_stat_nas3, NULL,
-        oid_NASIndex4,                       snmp_stat_nas4, NULL,
+        { oid_NASIndex1,                       snmp_stat_nas1, NULL },
+        { oid_NASIndex2,                       snmp_stat_nas2, NULL },
+        { oid_NASIndex3,                       snmp_stat_nas3, NULL },
+        { oid_NASIndex4,                       snmp_stat_nas4, NULL },
 
-        oid_NASAddress,                      snmp_nas_table, NULL,
-        oid_NASID,                           snmp_nas_table, NULL,
-        oid_NASLines,                        snmp_nas_table, NULL,
-        oid_NASLinesInUse,                   snmp_nas_table, NULL,
-        oid_NASLinesIdle,                    snmp_nas_table, NULL,
+        { oid_NASAddress,                      snmp_nas_table, NULL },
+        { oid_NASID,                           snmp_nas_table, NULL },
+        { oid_NASLines,                        snmp_nas_table, NULL },
+        { oid_NASLinesInUse,                   snmp_nas_table, NULL },
+        { oid_NASLinesIdle,                    snmp_nas_table, NULL },
 
-        oid_StatPortIndex1,                  snmp_port_index1, NULL,
-        oid_StatPortIndex2,                  snmp_port_index2, NULL,
+        { oid_StatPortIndex1,                  snmp_port_index1, NULL },
+        { oid_StatPortIndex2,                  snmp_port_index2, NULL },
 
         /* port table */
-        oid_StatPortNASIndex,                snmp_port_table, NULL,
-        oid_StatPortID,                      snmp_port_table, NULL,
-        oid_StatPortFramedAddress,           snmp_port_table, NULL,
-        oid_StatPortTotalLogins,             snmp_port_table, NULL,
-        oid_StatPortStatus,                  snmp_port_table, NULL,
-        oid_StatPortStatusChangeTimestamp,   snmp_port_table, NULL,
-        oid_StatPortUpTime,                  snmp_port_table, NULL,
-        oid_StatPortLastLoginName,           snmp_port_table, NULL,
-        oid_StatPortLastLoginTimestamp,      snmp_port_table, NULL,
-        oid_StatPortLastLogoutTimestamp,     snmp_port_table, NULL,
-        oid_StatPortIdleTotalTime,           snmp_port_table, NULL,
-        oid_StatPortIdleMaxTime,             snmp_port_table, NULL,
-        oid_StatPortIdleMaxTimestamp,        snmp_port_table, NULL,
-        oid_StatPortInUseTotalTime,          snmp_port_table, NULL,
-        oid_StatPortInUseMaxTime,            snmp_port_table, NULL,
-        oid_StatPortInUseMaxTimestamp,       snmp_port_table, NULL,
+        { oid_StatPortNASIndex,                snmp_port_table, NULL },
+        { oid_StatPortID,                      snmp_port_table, NULL },
+        { oid_StatPortFramedAddress,           snmp_port_table, NULL },
+        { oid_StatPortTotalLogins,             snmp_port_table, NULL },
+        { oid_StatPortStatus,                  snmp_port_table, NULL },
+        { oid_StatPortStatusChangeTimestamp,   snmp_port_table, NULL },
+        { oid_StatPortUpTime,                  snmp_port_table, NULL },
+        { oid_StatPortLastLoginName,           snmp_port_table, NULL },
+        { oid_StatPortLastLoginTimestamp,      snmp_port_table, NULL },
+        { oid_StatPortLastLogoutTimestamp,     snmp_port_table, NULL },
+        { oid_StatPortIdleTotalTime,           snmp_port_table, NULL },
+        { oid_StatPortIdleMaxTime,             snmp_port_table, NULL },
+        { oid_StatPortIdleMaxTimestamp,        snmp_port_table, NULL },
+        { oid_StatPortInUseTotalTime,          snmp_port_table, NULL },
+        { oid_StatPortInUseMaxTime,            snmp_port_table, NULL },
+        { oid_StatPortInUseMaxTimestamp,       snmp_port_table, NULL },
 
 };                                          
 
@@ -2723,10 +2723,9 @@ snmp_req_free(void *ptr)
 
 void
 snmp_req_drop(int type, void *data, void *orig_data,
-	      int fd, char *status_str)
+	      int fd, const char *status_str)
 {
         SNMP_REQ *req = data ? data : orig_data;
-	SNMP_REQ *orig = orig_data;
         char ipbuf[DOTTED_QUAD_LEN];
 
         radlog(L_NOTICE,

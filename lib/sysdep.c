@@ -113,8 +113,7 @@ get_first_ip_nameindex()
 			return INADDR_ANY;
 		}
 		rq_len *= 2;
-	}
-	while (ifc.ifc_len != last_len);
+	} while (ifc.ifc_len != last_len);
 
 	/* Now find first non-loopback address */
 	ifr = (struct ifreq *)ifc.ifc_req;

@@ -198,7 +198,7 @@ menu_read_text(char *menu_name)
         if ((fp = fopen(menu_path, "r")) == NULL) {
                 radlog(L_NOTICE|L_PERROR, _("can't open menu `%s'"), menu_name);
                 efree(menu_path);
-                return _("\n*** User Menu is Not Available ***\n");
+                return estrdup(_("\n*** User Menu is Not Available ***\n"));
         }
 
         mode = 0;

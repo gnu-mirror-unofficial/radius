@@ -12,6 +12,7 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+#include <gettext.h>
 #ifdef HAVE_LOCALE_H
 # include <locale.h>
 #endif

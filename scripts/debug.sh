@@ -84,7 +84,7 @@ process_sources() {
 			echo "#ifdef $MODNAME" >> $HEADER
 			echo "# define RADIUS_MODULE $MODNUM" >> $HEADER
 			echo "#endif" >> $HEADER
-			echo "    \"`basename $i`\", $MODNUM," >> $FILE
+			echo "    { \"`basename $i`\", $MODNUM }," >> $FILE
 			MODNUM=`expr $MODNUM + 1`
 		fi
 	done

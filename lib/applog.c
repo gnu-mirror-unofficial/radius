@@ -53,8 +53,10 @@ static char *priname[] = { /* priority names */
         "debug"
 };
 
-void vlog(int level, char *file, int line, char *func_name, int en,
-          char *fmt, va_list ap)
+void
+vlog(int level, const char *file, int line,
+     const char *func_name, int en,
+     const char *fmt, va_list ap)
 {
         fprintf(stderr, "%s: %s: ", progname, priname[level & L_PRIMASK]);
         if (file) 

@@ -64,22 +64,22 @@ typedef struct {
 
 extern SQL_cfg sql_cfg;
 
+void radiusd_sql_shutdown();
+
 int rad_sql_init();
 void rad_sql_acct(RADIUS_REQ *req);
 char *rad_sql_pass(RADIUS_REQ *req, char *data);
-void rad_sql_check_connect(int type);
 void rad_sql_cleanup(int type, void *req);
 int rad_sql_checkgroup(RADIUS_REQ *req, char *groupname);
 int rad_sql_check_attr_query(RADIUS_REQ *req, VALUE_PAIR **check_pairs);
 int rad_sql_reply_attr_query(RADIUS_REQ *req, VALUE_PAIR **reply_pairs);
-void rad_sql_shutdown();
-int disp_sql_interface_index(char *name);
 
 #ifdef RADIUS_SERVER_GUILE
 SCM sql_exec_query(int type, char *query);
 #endif
 
 /* Dispatcher routines */
+int disp_sql_interface_index(char *name);
 int disp_sql_reconnect(int interface, int conn_type, struct sql_connection *conn);
 void disp_sql_disconnect(struct sql_connection *conn);
 int disp_sql_query(struct sql_connection *conn, char *query, int *report_cnt);

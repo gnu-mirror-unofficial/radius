@@ -43,11 +43,11 @@ static struct keyword auth_codes[] = {
         D(RT_ACCOUNTING_MESSAGE),
         D(RT_ACCESS_CHALLENGE),
         D(RT_ASCEND_TERMINATE_SESSION),
-        0
+        { 0 }
 #undef D        
 };
 
-char *
+const char *
 auth_code_str(int code)
 {
         struct keyword *p;
@@ -59,21 +59,21 @@ auth_code_str(int code)
 }
 
 static struct keyword auth_codes_abbr[] = {
-        "AUTHREQ", RT_AUTHENTICATION_REQUEST, 
-        "AUTHACK", RT_AUTHENTICATION_ACK,     
-        "AUTHREJ", RT_AUTHENTICATION_REJECT,  
-        "ACCTREQ", RT_ACCOUNTING_REQUEST,     
-        "ACCTRES", RT_ACCOUNTING_RESPONSE,    
-        "ACCTSTA", RT_ACCOUNTING_STATUS,      
-        "PASSREQ", RT_PASSWORD_REQUEST,       
-	"PASSACK", RT_PASSWORD_ACK,           
-        "PASSREJ", RT_PASSWORD_REJECT,        
-        "ACCTMSG", RT_ACCOUNTING_MESSAGE,     
-        "CHALNGE", RT_ACCESS_CHALLENGE,       
-        0
+        { "AUTHREQ", RT_AUTHENTICATION_REQUEST }, 
+        { "AUTHACK", RT_AUTHENTICATION_ACK },     
+        { "AUTHREJ", RT_AUTHENTICATION_REJECT },  
+        { "ACCTREQ", RT_ACCOUNTING_REQUEST },     
+        { "ACCTRES", RT_ACCOUNTING_RESPONSE },    
+        { "ACCTSTA", RT_ACCOUNTING_STATUS },      
+        { "PASSREQ", RT_PASSWORD_REQUEST },       
+	{ "PASSACK", RT_PASSWORD_ACK },           
+        { "PASSREJ", RT_PASSWORD_REJECT },        
+        { "ACCTMSG", RT_ACCOUNTING_MESSAGE },     
+        { "CHALNGE", RT_ACCESS_CHALLENGE },       
+        { NULL }
 };
 
-char *
+const char *
 auth_code_abbr(int code)
 {
         struct keyword *p;

@@ -271,9 +271,6 @@ extern char *bug_report_address;
 
 #define NITEMS(a) sizeof(a)/sizeof((a)[0])
 
-/*FIXME*/
-char *auth_code_str(int code);
-
 size_t rad_create_pdu(void **rptr, int code, int id,
 		      u_char *vector, u_char *secret,
 		      VALUE_PAIR *pairlist, char *msg);
@@ -362,7 +359,7 @@ int read_raddb_file(char *name, int vital, int (*fun)(), void *closure);
 /* mem.c */
 void *emalloc(size_t);
 void efree(void*);
-char *estrdup(char *);
+char *estrdup(const char *);
 
 /* radpaths.c */
 void radpath_init();
@@ -420,10 +417,10 @@ RADIUS_SERVER *rad_clt_alloc_server(RADIUS_SERVER *src);
 RADIUS_SERVER *rad_clt_dup_server(RADIUS_SERVER *src);
 
 void rad_clt_free_server(RADIUS_SERVER *server);
-RADIUS_SERVER *rad_clt_append_server(RADIUS_SERVER_QUEUE *qp,
-				     RADIUS_SERVER *server);
+void rad_clt_append_server(RADIUS_SERVER_QUEUE *qp, RADIUS_SERVER *server);
 void rad_clt_clear_server_list(RADIUS_SERVER_QUEUE *qp);
 RADIUS_SERVER *rad_clt_find_server(RADIUS_SERVER_QUEUE *qp, char *name);
+void rad_clt_random_vector(char *vector);
 
 /* log.c */
 char *rad_print_request(RADIUS_REQ *req, char *outbuf, size_t size);
@@ -509,9 +506,11 @@ extern int debug_level[];
 void initlog(char*);
 void radlog_open(int category);
 void radlog_close();
-void radlog __PVAR((int level, char *fmt, ...));
-int __insist_failure(char *, char *, int);
-void radlog_req __PVAR((int level, RADIUS_REQ *req, char *fmt, ...));
+void vlog(int lvl, const char *file, int line, const char *func_name, int en,
+          const char *fmt, va_list ap);
+void radlog __PVAR((int level, const char *fmt, ...));
+int __insist_failure(const char *, const char *, int);
+void radlog_req __PVAR((int level, RADIUS_REQ *req, const char *fmt, ...));
 
 #define MAXIDBUFSIZE \
  4+1+MAX_LONGNAME+1+4+2*AUTH_STRING_LEN+3+1+AUTH_STRING_LEN+1+1
@@ -540,7 +539,9 @@ extern struct debug_module debug_module[];
 
 void _debug_print(char *file, int line, char *func_name, char *str);
 char *_debug_format_string __PVAR((char *fmt, ...));
-        
+const char *auth_code_str(int code);
+const char *auth_code_abbr(int code);
+
 /* Parsing */   
 
 Channel *channel_lookup(char *name);

@@ -18,10 +18,6 @@
 %p 15000
 %x in_string
 %{
-#ifndef lint
-static char rcsid[] = 
-"$Id$";
-#endif
  
 #if defined(HAVE_CONFIG_H)        
 # include <config.h>
@@ -51,6 +47,7 @@ static char rcsid[] =
 #include <users_gram.h>
 
 extern void enable_usr_dbg(int);
+extern int yyerror(char *s); 
 static char *addstring();
 static char *addquote();
 static int preproc();

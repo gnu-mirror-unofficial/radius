@@ -67,7 +67,7 @@ extern char **x_argv;
 int open_input(char *name);
 void close_input();
 void set_yydebug();
-void parse_error __PVAR((char *fmt, ...));
+void parse_error __PVAR((const char *fmt, ...));
 void print(Variable *var);
 void radtest_send(int port, int code, Variable *var);
 void putback(char *str);
@@ -75,5 +75,5 @@ void prompt();
 void var_free(Variable *var);
 void var_print(Variable *var);
 int compare_lists(VALUE_PAIR *reply, VALUE_PAIR *sample);
-
+int parse_datum(char *p, union datum *dp);
 

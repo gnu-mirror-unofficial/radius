@@ -68,6 +68,13 @@ scheme_boot(void *closure, int argc, char **argv)
 }
 
 void
+scheme_main()
+{
+	char *argv[] = { "radiusd", NULL };
+	scm_boot_guile (1, argv, scheme_boot, NULL);
+}
+
+void
 scheme_debug(int val)
 {
 	SCM_DEVAL_P = val;
@@ -80,7 +87,7 @@ scheme_debug(int val)
 static SCM
 eval_catch_body (void *list)
 {
-	return scm_primitive_eval((SCM)list);
+	return RAD_SCM_EVAL((SCM)list);
 }
 
 static SCM
@@ -96,7 +103,7 @@ scheme_auth(char *procname, RADIUS_REQ *req,
 	    VALUE_PAIR **user_reply_ptr)
 {
 	SCM s_request, s_check, s_reply;
-	SCM res, env;
+	SCM res;
 	SCM procsym;
  	jmp_buf jmp_env;
 	
@@ -213,7 +220,7 @@ scheme_read_eval_loop()
         SCM sym_begin = RAD_SCM_SYMBOL_VALUE("begin");
 
         list = scm_cons(sym_begin, scm_list_1(scm_cons(sym_top_repl, SCM_EOL)));
-	status = scm_exit_status(scm_primitive_eval(list));
+	status = scm_exit_status(RAD_SCM_EVAL_X(list));
         printf("%d\n", status);
 }
 

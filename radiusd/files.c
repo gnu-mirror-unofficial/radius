@@ -65,13 +65,13 @@ LIST /* of CLIENT */ *clients; /* raddb/clients */
 LIST /* of RADCK_TYPE */ *radck_type;   /* raddb/nastypes */
 
 static struct keyword op_tab[] = {
-        "=", OPERATOR_EQUAL,
-        "!=", OPERATOR_NOT_EQUAL,
-        ">", OPERATOR_GREATER_THAN,
-        "<", OPERATOR_LESS_THAN,
-        ">=", OPERATOR_GREATER_EQUAL,
-        "<=", OPERATOR_LESS_EQUAL,
-        0
+        { "=", OPERATOR_EQUAL },
+        { "!=", OPERATOR_NOT_EQUAL },
+        { ">", OPERATOR_GREATER_THAN },
+        { "<", OPERATOR_LESS_THAN },
+        { ">=", OPERATOR_GREATER_EQUAL },
+        { "<=", OPERATOR_LESS_EQUAL },
+        { 0 }
 };
 
 int paircmp(RADIUS_REQ *req, VALUE_PAIR *check, char *pusername);
@@ -512,13 +512,8 @@ int
 userparse(char *buffer, VALUE_PAIR **first_pair, char **errmsg)
 {
         int             state;
-        int             x;
-        char            *s;
         DICT_ATTR       *attr = NULL;
-        DICT_VALUE      *dval;
-        VALUE_PAIR      *pair, *pair2;
-        struct tm       *tm, tms;
-        time_t          timeval;
+        VALUE_PAIR      *pair;
         int             op;
         static char errbuf[512];
         char token[256];
@@ -793,15 +788,10 @@ huntgroup_access(RADIUS_REQ *radreq)
 int
 read_naslist_file(char *file)
 {
-        int rc;
 #ifdef USE_SNMP 
-        NAS *nas;
-
         snmp_init_nas_stat();
 #endif
-        rc = nas_read_file(file);
-        
-        return rc;
+        return nas_read_file(file);
 }
 
 /* ***************************************************************************
@@ -1104,7 +1094,7 @@ int
 groupcmp(RADIUS_REQ *req, char *groupname, char *username)
 {
         struct passwd pw, *pwd;
-        struct group gr, *grp;
+        struct group *grp;
         char **member;
         char pwbuf[512];
         int retval;

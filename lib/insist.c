@@ -17,7 +17,7 @@
 #include <radius.h>
 
 int
-__insist_failure(char *str, char *file, int line)
+__insist_failure(const char *str, const char *file, int line)
 {
         radlog(L_CRIT,
                "INSIST FAILURE: %s at %s:%d", str, file, line);

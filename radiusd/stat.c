@@ -400,9 +400,9 @@ findportbyindex(int ind)
 	PORT_STAT *p;
 	int i;
 
-	if (!server_stat)
-		return;
-        if (ind < 1 || ind > stat_port_count)
+	if (!server_stat
+	    || ind < 1
+	    || ind > stat_port_count)
                 return NULL;
 	i = 1;
 	FOR_EACH_PORT(p) {

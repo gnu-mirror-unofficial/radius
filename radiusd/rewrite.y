@@ -535,8 +535,10 @@ static struct obstack input_stk;   /* Symbol stack */
 /*
  * Lexical analyzer
  */
+static int yylex(); 
 static void yysync();
-
+static int yyerror(char *s);
+ 
 /*
  * Frames
  */
@@ -615,9 +617,9 @@ static void code_init();
  * Auxiliary and debugging functions
  */
 static void debug_dump_code();
-static char * datatype_str_nom(Datatype type);
-static char * datatype_str_acc(Datatype type);
-static char * datatype_str_abl(Datatype type);
+static const char * datatype_str_nom(Datatype type);
+static const char * datatype_str_acc(Datatype type);
+static const char * datatype_str_abl(Datatype type);
 static Datatype attr_datatype(int type);
 
 /*
@@ -626,7 +628,8 @@ static Datatype attr_datatype(int type);
 static void gc();
 static void run(RWMACH *mach, pctr_t pc);
 static void run_init(pctr_t pc, RADIUS_REQ *req);
-
+static int rw_error(RWMACH *mach, const char *msg);
+ 
 /* These used to lock/unlock access to rw_code array. Now this is
    not needed. However, I left the placeholders for a while... */
 #define rw_code_lock() 
@@ -1206,6 +1209,7 @@ yyerror(char *s)
         radlog(L_ERR, "%s:%d: %s",
                input_filename, input_line, s);
         errcnt++;
+	return 0;
 }
 
 /* **************************************************************************
@@ -1485,22 +1489,24 @@ c_comment()
 }
 
 #if defined(MAINTAINER_MODE)
-# define DEBUG_LEX(s,v) if (debug_on(60)) printf("yylex: " s "\n", v)
+# define DEBUG_LEX1(s) if (debug_on(60)) printf("yylex: " s "\n")
+# define DEBUG_LEX2(s,v) if (debug_on(60)) printf("yylex: " s "\n", v)
 #else
-# define DEBUG_LEX(s,v)                     
+# define DEBUG_LEX1(s)
+# define DEBUG_LEX2(s,v)
 #endif
 
 static struct keyword rw_kw[] = {
-        "if",       IF,
-        "else",     ELSE,
-        "return",   RETURN,
-        "for",      FOR,
-        "do",       DO,
-        "while",    WHILE,
-        "break",    BREAK,
-        "continue", CONTINUE,
-	"delete",   DELETE,
-        NULL
+        { "if",       IF },
+        { "else",     ELSE },
+        { "return",   RETURN },
+        { "for",      FOR },
+        { "do",       DO },
+        { "while",    WHILE },
+        { "break",    BREAK },
+        { "continue", CONTINUE },
+	{ "delete",   DELETE },
+        { NULL }
 };
 
 int
@@ -1534,7 +1540,7 @@ yylex()
         if (yychar == '\\') {
                 input();
                 yylval.number = read_number();
-                DEBUG_LEX("REFERENCE %d", yylval.number);
+                DEBUG_LEX2("REFERENCE %d", yylval.number);
                 return REFERENCE;
         }
 
@@ -1554,7 +1560,7 @@ yylex()
                         errcnt++;
                 }
                 yylval.number = c;
-                DEBUG_LEX("CHAR %d", c);
+                DEBUG_LEX2("CHAR %d", c);
                 return NUMBER;
         }
         
@@ -1563,7 +1569,7 @@ yylex()
          */
         if (isdigit(yychar)) {
                 yylval.number = read_number();
-                DEBUG_LEX("NUMBER %d", yylval.number);
+                DEBUG_LEX2("NUMBER %d", yylval.number);
                 return NUMBER;
         }
 
@@ -1572,7 +1578,7 @@ yylex()
          */
         if (yychar == '"') {
                 yylval.string = read_string();
-                DEBUG_LEX("STRING %s", yylval.string);
+                DEBUG_LEX2("STRING %s", yylval.string);
                 return STRING;
         }
 
@@ -1600,7 +1606,7 @@ yylex()
                         return BOGUS;
                 }
                 yylval.attr = attr;
-                DEBUG_LEX("ATTR: %s", attr->name);
+                DEBUG_LEX2("ATTR: %s", attr->name);
                 return ATTR;
         }
                                
@@ -1612,38 +1618,38 @@ yylex()
                 yylval.string = read_ident(yychar);
 
                 if (strcmp(yylval.string, "integer") == 0) {
-                        DEBUG_LEX("TYPE(Integer)", 0);
+                        DEBUG_LEX1("TYPE(Integer)");
                         yylval.type = Integer;
                         return TYPE;
                 } else if (strcmp(yylval.string, "string") == 0) {
-                        DEBUG_LEX("TYPE(String)", 0);
+                        DEBUG_LEX1("TYPE(String)");
                         yylval.type = String;
                         return TYPE;
                 }
 
                 if ((c = xlat_keyword(rw_kw, yylval.string, 0)) != 0) {
-                        DEBUG_LEX("KW: %s", yylval.string);
+                        DEBUG_LEX2("KW: %s", yylval.string);
                         return c;
                 }
 
                 if (var = var_lookup(yylval.string)) {
-                        DEBUG_LEX("VARIABLE: %s", yylval.string);
+                        DEBUG_LEX2("VARIABLE: %s", yylval.string);
                         yylval.var = var;
                         return VARIABLE;
                 }
                 
                 if (fun = (FUNCTION*) sym_lookup(rewrite_tab, yylval.string)) {
-                        DEBUG_LEX("FUN %s", yylval.string);
+                        DEBUG_LEX2("FUN %s", yylval.string);
                         yylval.fun = fun;
                         return FUN;
                 }
 
                 if (btin = builtin_lookup(yylval.string)) {
-                        DEBUG_LEX("BUILTIN %s", yylval.string);
+                        DEBUG_LEX2("BUILTIN %s", yylval.string);
                         yylval.btin = btin;
                         return BUILTIN;
                 }
-                DEBUG_LEX("IDENT: %s", yylval.string);
+                DEBUG_LEX2("IDENT: %s", yylval.string);
                 return IDENT;
         }
 
@@ -1654,12 +1660,12 @@ yylex()
                 int c = yychar;
 
                 if (input() == c) { 
-                        DEBUG_LEX("%s", yychar == '&' ? "AND" : "OR"); 
+                        DEBUG_LEX2("%s", yychar == '&' ? "AND" : "OR"); 
                         return yychar == '&' ? AND : OR;
                 }
                 unput(yychar);
                 
-                DEBUG_LEX("%c", c); 
+                DEBUG_LEX2("%c", c); 
                 return c;
         }
         
@@ -1671,57 +1677,57 @@ yylex()
                 if (input() == '=') {
                         switch (c) {
                         case '<':
-                                DEBUG_LEX("LE", 0);
+                                DEBUG_LEX1("LE");
                                 return LE;
                         case '>':
-                                DEBUG_LEX("GE", 0);
+                                DEBUG_LEX1("GE");
                                 return GE;
                         case '=':
-                                DEBUG_LEX("EQ", 0);
+                                DEBUG_LEX1("EQ");
                                 return EQ;
                         case '!':
-                                DEBUG_LEX("NE", 0);
+                                DEBUG_LEX1("NE");
                                 return NE;
                         }
                 } else if (c == yychar) {
                         if (c == '<') {
-                                DEBUG_LEX("SHL", 0);
+                                DEBUG_LEX1("SHL");
                                 return SHL;
                         }
                         if (c == '>') {
-                                DEBUG_LEX("SHR", 0);
+                                DEBUG_LEX1("SHR");
                                 return SHR;
                         }
                         unput(yychar);
-                        DEBUG_LEX("%c", yychar);
+                        DEBUG_LEX2("%c", yychar);
                         return yychar;
                 } else if (yychar == '~') {
                         if (c == '=') {
-                                DEBUG_LEX("MT", 0);
+                                DEBUG_LEX1("MT");
                                 return MT;
                         }
                         if (c == '!') {
-                                DEBUG_LEX("NM", 0);
+                                DEBUG_LEX1("NM");
                                 return NM;
                         }
                 }
                 unput(yychar);
                 switch (c) {
                 case '<':
-                        DEBUG_LEX("LT", 0);
+                        DEBUG_LEX1("LT");
                         return LT;
                 case '>':
-                        DEBUG_LEX("GT", 0);
+                        DEBUG_LEX1("GT");
                         return GT;
                 case '!':
-                        DEBUG_LEX("NOT", 0);
+                        DEBUG_LEX1("NOT");
                         return NOT;
                 default:
                         return c;
                 }
         }
 
-        DEBUG_LEX("%c", yychar);
+        DEBUG_LEX2("%c", yychar);
         return yychar;
 }
 
@@ -2191,8 +2197,13 @@ mtx_const(Datatype type, void *data)
         case Integer:
                 mtx->datum.ival = *(int*)data;
                 break;
+		
         case String:
                 mtx->datum.sval = *(char**)data;
+		break;
+		
+	default:
+		insist_fail("unknown data type");
         }
         return (MTX*)mtx;
 }
@@ -2353,6 +2364,10 @@ mtx_bin(Bopcode opcode, MTX *arg1, MTX *arg2)
                 
         case Integer:
                 mtx->datatype = Integer;
+		break;
+
+	default:
+		insist_fail("unknown data type");
         }
 
         mtx->opcode = opcode;
@@ -2549,7 +2564,7 @@ mtx_builtin(builtin_t *bin, MTX *args)
  * Code optimizer (rudimentary)
  */
 
-char *
+const char *
 datatype_str_nom(Datatype type)
 {
         switch (type) {
@@ -2564,7 +2579,7 @@ datatype_str_nom(Datatype type)
         }
 }
 
-char *
+const char *
 datatype_str_abl(Datatype type)
 {
         switch (type) {
@@ -2579,7 +2594,7 @@ datatype_str_abl(Datatype type)
         }
 }
 
-char *
+const char *
 datatype_str_acc(Datatype type)
 {
         switch (type) {
@@ -2654,8 +2669,13 @@ debug_print_datum(FILE *fp, Datatype type, Datum *datum)
         case Integer:
                 fprintf(fp, "%d", datum->ival);
                 break;
+		
         case String:
                 fprintf(fp, "%s", datum->sval);
+		break;
+		
+	default:
+		insist_fail("unknown data type");
         }
 }
 
@@ -2817,21 +2837,21 @@ debug_print_mtxlist(char *s)
                         fprintf(fp, "%3.3s A:%d I:%d",
                                 datatype_str_nom(mtx->gen.datatype),
                                 mtx->attr.attrno,
-				mtx->attr.index);
+				mtx->attr.index->gen.id);
                         break;
 
                 CASE (Attr_check)
                         fprintf(fp, "%3.3s A:%d I:%d",
                                 datatype_str_nom(mtx->gen.datatype),
                                 mtx->attr.attrno,
-				mtx->attr.index);
+				mtx->attr.index->gen.id);
                         break;
                         
                 CASE (Attr_asgn)
                         fprintf(fp, "%3.3s A:%d I:%d M:%d",
                                 datatype_str_nom(mtx->gen.datatype),
                                 mtx->attr.attrno,
-				mtx->attr.index,
+				mtx->attr.index->gen.id,
                                 LINK(mtx->attr.rval));
                         break;
                         
@@ -2839,7 +2859,7 @@ debug_print_mtxlist(char *s)
 			fprintf(fp, "%3.3s A:%d I:%d",
 				datatype_str_nom(mtx->gen.datatype),
 				mtx->attr.attrno,
-				mtx->attr.index);
+				mtx->attr.index->gen.id);
 		        break;
  
                 default:
@@ -2913,8 +2933,13 @@ pass1()
                 case Integer:
                         datum.ival = 0;
                         break;
+			
                 case String:
                         datum.sval = "";
+			break;
+
+		default:
+			insist_fail("Unknown data type");
                 }
                 mtx_const(function->rettype, &datum);
                 mtx_frame(Leave, function->stack_alloc);
@@ -2959,9 +2984,13 @@ pass2_unary(MTX *mtx)
         case Not:
                 arg->cnst.datum.ival = !arg->cnst.datum.ival;
                 break;
+		
         case Neg:
                 arg->cnst.datum.ival = -arg->cnst.datum.ival;
                 break;
+
+	default:
+		insist_fail("Unexpected opcode");
         }
         mtx->gen.type = Constant;
         mtx->cnst.datum = arg->cnst.datum;
@@ -2983,51 +3012,67 @@ pass2_binary(MTX *mtx)
         case Eq:
                 dat.ival = arg0->cnst.datum.ival == arg1->cnst.datum.ival;
                 break;
+		
         case Ne:
                 dat.ival = arg0->cnst.datum.ival != arg1->cnst.datum.ival;
                 break;
+		
         case Lt:
                 dat.ival = arg0->cnst.datum.ival < arg1->cnst.datum.ival;
                 break;
+		
         case Le:
                 dat.ival = arg0->cnst.datum.ival <= arg1->cnst.datum.ival;
                 break;
+		
         case Gt:
                 dat.ival = arg0->cnst.datum.ival > arg1->cnst.datum.ival;
                 break;
+		
         case Ge:
                 dat.ival = arg0->cnst.datum.ival >= arg1->cnst.datum.ival;
                 break;
+		
         case BAnd:
                 dat.ival = arg0->cnst.datum.ival & arg1->cnst.datum.ival;
                 break;
+		
         case BOr:
                 dat.ival = arg0->cnst.datum.ival | arg1->cnst.datum.ival;
                 break;
+		
         case BXor:
                 dat.ival = arg0->cnst.datum.ival ^ arg1->cnst.datum.ival;
                 break;
+		
         case And:
                 dat.ival = arg0->cnst.datum.ival && arg1->cnst.datum.ival;
                 break;
+		
         case Or:
                 dat.ival = arg0->cnst.datum.ival || arg1->cnst.datum.ival;
                 break;
+		
         case Shl:
                 dat.ival = arg0->cnst.datum.ival << arg1->cnst.datum.ival;
                 break;
+		
         case Shr:
                 dat.ival = arg0->cnst.datum.ival >> arg1->cnst.datum.ival;
                 break;
+		
         case Add:
                 dat.ival = arg0->cnst.datum.ival + arg1->cnst.datum.ival;
                 break;
+		
         case Sub:
                 dat.ival = arg0->cnst.datum.ival - arg1->cnst.datum.ival;
                 break;
+		
         case Mul:
                 dat.ival = arg0->cnst.datum.ival * arg1->cnst.datum.ival;
                 break;
+		
         case Div:
                 if (arg1->cnst.datum.ival == 0) {
                         radlog(L_ERR,
@@ -3039,6 +3084,7 @@ pass2_binary(MTX *mtx)
                         dat.ival =
                                 arg0->cnst.datum.ival / arg1->cnst.datum.ival;
                 break;
+		
         case Rem:
                 if (arg1->cnst.datum.ival == 0) {
                         radlog(L_ERR,
@@ -3050,6 +3096,9 @@ pass2_binary(MTX *mtx)
                         dat.ival =
                                 arg0->cnst.datum.ival % arg1->cnst.datum.ival;
                 break;
+
+	default:
+		insist_fail("Unexpected opcode");
         }
         mtx->gen.type = Constant;
         mtx->cnst.datum = dat;
@@ -3123,8 +3172,8 @@ pass2()
                                 break;
                         
                         case Binary:
-                                if (mtx->bin.arg[0]->gen.type == Constant &&
-                                    mtx->bin.arg[1]->gen.type == Constant) {
+                                if (mtx->bin.arg[0]->gen.type == Constant
+				    && mtx->bin.arg[1]->gen.type == Constant) {
                                         switch (mtx->bin.datatype) {
                                         case Integer:
                                                 if (pass2_binary(mtx))
@@ -3132,8 +3181,13 @@ pass2()
                                                 else
                                                         optcnt++;
                                                 break;
+						
                                         case String:
                                                 /*NO STRING OPS SO FAR */;
+					        break;
+
+					default:
+						insist_fail("Unknown data type");
                                         }
                                 } else if (mtx->bin.opcode == And
 					   || mtx->bin.opcode == Or) {
@@ -3153,6 +3207,9 @@ pass2()
 				/*FIXME: the rw_attr.0 functions should
 				  expect an immediate value after the
 				  attribute number */
+				break;
+
+			default:
 				break;
                         }
                         mtx = next;
@@ -3396,10 +3453,14 @@ codegen()
                                 code(rw_pushn);
                                 data(mtx->cnst.datum.ival);
                                 break;
+				
                         case String:
                                 code(rw_pushs);
                                 data_str(mtx->cnst.datum.sval);
                                 break;
+
+			default:
+				insist_fail("Unknown data type");
                         }
                         break;
                 case Matchref:
@@ -3417,9 +3478,13 @@ codegen()
                         case Not:
                                 code(rw_not);
                                 break;
+				
                         case Neg:
                                 code(rw_neg);
                                 break;
+
+			default:
+				insist_fail("Unexpected opcode");
                         }
                         break;
                 case Binary:
@@ -3502,12 +3567,16 @@ codegen()
 				else
 					code(rw_attrn0);
                                 break;
+				
                         case String:
 				if (mtx->attr.index)
 					code(rw_attrs);
 				else
 					code(rw_attrs0);
                                 break;
+
+			default:
+				insist_fail("Unknown data type");
                         }
                         data(mtx->attr.attrno);
                         break;
@@ -3829,8 +3898,8 @@ getarg(RWMACH *mach, int num)
 
 static RWSTYPE nil = 0;
 
-int
-rw_error(RWMACH *mach, char *msg)
+static int
+rw_error(RWMACH *mach, const char *msg)
 {
         radlog(L_ERR,
 	       "%s: %s",
@@ -3948,7 +4017,6 @@ rw_attrcheck(RWMACH *mach)
 {
         int attr = (int) rw_code[mach->pc++];
 	RWSTYPE index;
-	VALUE_PAIR *p = AVPLIST(mach);
  
 	cpopn(mach, &index);
 	pushn(mach, avl_find_n(AVPLIST(mach), attr, index) != NULL);
@@ -4685,7 +4753,7 @@ static builtin_t builtin[] = {
 	{ bi_htons, "htons", Integer, "i" },
 	{ bi_inet_ntoa, "inet_ntoa", String, "i" },
 	{ bi_inet_aton, "inet_aton", Integer, "s" },
-        NULL
+	{ NULL }
 };
 
 builtin_t *
@@ -5070,6 +5138,8 @@ radscm_datum_to_scm(Datatype type, Datum datum)
         case String:
                 return scm_makfrom0str(datum.sval);
 
+	default:
+		insist_fail("Unknown data type");
         }
         return SCM_UNSPECIFIED;
 }
@@ -5105,7 +5175,7 @@ radscm_scm_to_ival(SCM cell, int *val)
 }
 
 SCM
-radscm_rewrite_execute(char *func_name, SCM ARGS)
+radscm_rewrite_execute(const char *func_name, SCM ARGS)
 {
         char *name;
         FUNCTION *fun;
@@ -5159,6 +5229,10 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
                                 rc = 0;
                         } else
                                 rc = 1;
+			break;
+
+		default:
+			insist_fail("Unknown data type");
                 }
 
                 if (rc) {

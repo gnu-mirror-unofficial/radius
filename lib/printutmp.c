@@ -406,21 +406,21 @@ static struct {
 	char *name;
 	radutent_fh_t fun;
 } handlers[] = {
-	"login",  login_fh,
-	"orig-login", orig_login_fh,
-	"gecos", gecos_fh,
-	"nas-port", nas_port_fh,
-	"session-id", session_id_fh,
-	"nas-address", nas_address_fh,
-	"framed-address", framed_address_fh,
-	"protocol", protocol_fh,
-	"time", time_fh,
-	"duration", duration_fh,
-	"delay", delay_fh,
-	"port-type", port_type_fh,
-	"clid", clid_fh,
-	"realm", realm_address_fh,
-	NULL
+	{ "login",  login_fh },
+	{ "orig-login", orig_login_fh },
+	{ "gecos", gecos_fh },
+	{ "nas-port", nas_port_fh },
+	{ "session-id", session_id_fh },
+	{ "nas-address", nas_address_fh },
+	{ "framed-address", framed_address_fh },
+	{ "protocol", protocol_fh },
+	{ "time", time_fh },
+	{ "duration", duration_fh },
+	{ "delay", delay_fh },
+	{ "port-type", port_type_fh }, 
+	{ "clid", clid_fh },
+	{ "realm", realm_address_fh },
+	{ NULL }
 };
 
 static radutent_fh_t 

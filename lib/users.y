@@ -46,8 +46,11 @@ int old_lineno;
 
 static void *closure;
 static int (*add_entry)(void*, char *, int, char *, VALUE_PAIR *, VALUE_PAIR *);
-
 static VALUE_PAIR *install_pair0(char *name, int op, char *valstr);
+
+int yyerror(char *s);
+extern int yylex();
+ 
 %}
 %token EQ LT GT NE LE GE
 %token NUL
@@ -178,6 +181,7 @@ int
 yyerror(char *s)
 {
         radlog(L_ERR, "%s:%d: %s", source_filename, source_line_num, s);
+	return 0;
 }
 
 VALUE_PAIR *

@@ -20,6 +20,7 @@
 # include <config.h>
 #endif
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
@@ -34,8 +35,12 @@
 #include <radargp.h>
 #include <radutmp.h>
 #include <rewrite.h>
+#include <argcv.h>
 #include <snmp/asn1.h>
 #include <snmp/snmp.h>
+#ifdef USE_SQL
+# include <radsql.h>
+#endif
 
 const char *argp_program_version = "radiusd (" PACKAGE ") " VERSION;
 static char doc[] = N_("GNU radius daemon");
@@ -146,7 +151,7 @@ static RETSIGTYPE sig_handler(int sig);
 void radiusd_main_loop();
 static size_t radius_count_channels();
 void radiusd_run_preconfig_hooks(void *data);
-	
+static int test_shell();	
 struct cfg_stmt config_syntax[];
 
 
@@ -312,7 +317,6 @@ max_ttl(time_t *t)
 static void
 terminate_subprocesses()
 {
-	int i;
 	int kill_sent = 0;
 	time_t t;
 	
@@ -384,8 +388,6 @@ radiusd_setup()
 void
 common_init()
 {
-	int i;
-	
 	radlog(L_INFO, _("Starting"));
 
 	radiusd_pid = getpid();
@@ -415,7 +417,6 @@ common_init()
 void
 radiusd_daemon()
 {
-        FILE *fp;
         char *p;
         int i;
         pid_t pid;
@@ -520,8 +521,7 @@ void
 radiusd_start()
 {
 #ifdef USE_SERVER_GUILE
-	char *argv[] = { "radiusd", NULL };
-	scm_boot_guile (1, argv, scheme_boot, NULL);
+	scheme_main();
 #else
 	radiusd_main();
 #endif
@@ -582,6 +582,9 @@ snmp_request_to_command()
 
 		case serv_shutdown:
 			return CMD_SHUTDOWN;
+
+		case serv_other:
+			/* nothing */;
 		}
 	}
 #endif	
@@ -944,7 +947,7 @@ radiusd_signal_init(RETSIGTYPE (*hp)(int sig))
 static char buf[128];
 int doprompt;
 
-char *
+static char *
 moreinput(char *buf, size_t bufsize)
 {
         if (doprompt)
@@ -952,7 +955,7 @@ moreinput(char *buf, size_t bufsize)
         return fgets(buf, bufsize, stdin);
 }
 
-int
+static int
 test_shell()
 {
         char *tok;
@@ -1038,9 +1041,17 @@ test_shell()
                                         printf("%d (%u)", datum.ival,
                                                      (unsigned) datum.ival);
                                         break;
+					
                                 case String:
                                         printf("%s", datum.sval);
                                         break;
+					
+				case Undefined:
+					printf("Undefined");
+					break;
+
+				default:
+					abort();
                                 }
                                 printf("\n");
                         }
@@ -1130,6 +1141,7 @@ udp_input_handler(int fd, void *data)
 				   rpp_forward_request : request_respond))
 			request_free(req);
 	}
+	return 0;
 }
 
 int

@@ -10,10 +10,6 @@
  *
  */
 
-#if defined(LIBC_SCCS) && !defined(lint)
-static char rcsid[] = "$Id$";
-#endif /* LIBC_SCCS and not lint */
-
 #if defined(HAVE_CONFIG_H)
 # include <config.h>
 #endif
@@ -22,6 +18,9 @@ static char rcsid[] = "$Id$";
 #include <stdio.h>
 #include <sysdep.h>
 #include <md5.h>
+#if defined(HAVE_CRYPT_H)
+# include <crypt.h>
+#endif
 
 static unsigned char itoa64[] =         /* 0 ... 63 => ascii - 64 */
         "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";

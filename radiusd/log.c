@@ -33,8 +33,6 @@ static LIST /* of Channel*/ *chanlist;     /* List of defined channels */
 
 static void log_to_channel(Channel *chan, int cat, int pri,
                            char *buf1, char *buf2, char *buf3);
-void vlog(int lvl, char *file, int line, char *func_name, int en,
-          char *fmt, va_list ap);
 static FILE *channel_open_file(Channel *chan);
 static void channel_close_file(Channel *chan, FILE *fp);
 
@@ -65,8 +63,10 @@ log_close()
 }
 
 void
-vlog(int level, char *file, int line, char *func_name,
-     int en, char *fmt, va_list ap)
+vlog(int level,
+     const char *file, int line,
+     const char *func_name, int en,
+     const char *fmt, va_list ap)
 {
         Channel *chan;
         int cat, pri;
@@ -173,7 +173,7 @@ log_to_channel(Channel *chan, int cat, int pri,
                         break;
                 fprintf(fp, "%s ", buffer);
                 if (chan->options & LO_PID) 
-                        fprintf(fp, "[%lu]: ", getpid());
+                        fprintf(fp, "[%lu]: ", (u_long) getpid());
                 if (prefix)
                         fprintf(fp, "%s: ", prefix);
                 if (buf1)
@@ -269,7 +269,7 @@ log_mark()
 void
 log_release(Channel *chan)
 {
-        Channel *cp, *prev = NULL;
+        Channel *cp;
         int emerg, alert, crit;
 	ITERATOR *itr = iterator_create(chanlist);
 
@@ -387,7 +387,6 @@ _regcat(void *item, void *data)
 void
 register_category(int cat, int pri, LIST *clist)
 {
-        Channel *chan;
 	struct category_closure clos;
 
         if (pri == -1)
@@ -457,51 +456,51 @@ static struct category_def {
 } cat_def;
 
 static struct keyword syslog_facility[] = {
-	"user", 	LOG_USER,
-	"daemon", 	LOG_DAEMON,
-	"auth", 	LOG_AUTH,
-	"local0", 	LOG_LOCAL0,
-	"local1", 	LOG_LOCAL1,
-	"local2", 	LOG_LOCAL2,
-	"local3", 	LOG_LOCAL3,
-	"local4", 	LOG_LOCAL4,
-	"local5", 	LOG_LOCAL5,
-	"local6", 	LOG_LOCAL6,
-	"local7", 	LOG_LOCAL7,
-	0
+	{ "user", 	LOG_USER },
+	{ "daemon", 	LOG_DAEMON },
+	{ "auth", 	LOG_AUTH },
+	{ "local0", 	LOG_LOCAL0 },
+	{ "local1", 	LOG_LOCAL1 },
+	{ "local2", 	LOG_LOCAL2 },
+	{ "local3", 	LOG_LOCAL3 },
+	{ "local4", 	LOG_LOCAL4 },
+	{ "local5", 	LOG_LOCAL5 },
+	{ "local6", 	LOG_LOCAL6 },
+	{ "local7", 	LOG_LOCAL7 },
+	{ 0 }
 };
 
 static struct keyword syslog_priority[] = {
-	"emerg", 	LOG_EMERG,
-	"alert", 	LOG_ALERT,
-	"crit", 	LOG_CRIT,
-	"err", 		LOG_ERR,
-	"warning", 	LOG_WARNING,
-	"notice", 	LOG_NOTICE,
-	"info", 	LOG_INFO,
-	"debug", 	LOG_DEBUG,
-	0
+	{ "emerg", 	LOG_EMERG },
+	{ "alert", 	LOG_ALERT },
+	{ "crit", 	LOG_CRIT },
+	{ "err", 	LOG_ERR },
+	{ "warning", 	LOG_WARNING },
+	{ "notice", 	LOG_NOTICE },
+	{ "info", 	LOG_INFO },
+	{ "debug", 	LOG_DEBUG },
+	{ 0 }
 };
 
 static struct keyword log_categories[] = {
-	"main",         L_MAIN,
-	"auth",         L_AUTH,
-	"acct",         L_ACCT,
-	"snmp",         L_SNMP,
-	"proxy",        L_PROXY,
-	0
+	{ "main",       L_MAIN },
+	{ "auth",       L_AUTH },
+	{ "acct",       L_ACCT },
+	{ "snmp",       L_SNMP },
+	{ "proxy",      L_PROXY },
+	{ 0 }
 };
 
 static struct keyword log_priorities[] = {
-	"emerg",        L_EMERG,
-	"alert",        L_ALERT,
-	"crit",         L_CRIT,
-	"err",          L_ERR,
-	"warning",      L_WARN,
-	"notice",       L_NOTICE,
-	"info",         L_INFO,
-	"debug",        L_DEBUG,
-	0
+	{ "emerg",      L_EMERG },
+	{ "alert",      L_ALERT },
+	{ "crit",       L_CRIT },
+	{ "err",        L_ERR },
+	{ "warning",    L_WARN },
+	{ "notice",     L_NOTICE },
+	{ "info",       L_INFO },
+	{ "debug",      L_DEBUG },
+	{ 0 }
 };
 
 int

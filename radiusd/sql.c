@@ -82,31 +82,31 @@ static struct obstack parse_stack;
 static int stmt_type;
 
 struct keyword sql_keyword[] = {
-        "server",             STMT_SERVER,
-        "port",               STMT_PORT,
-        "login",              STMT_LOGIN,
-        "password",           STMT_PASSWORD,
-        "keepopen",           STMT_KEEPOPEN,
-        "idle_timeout",       STMT_IDLE_TIMEOUT,
-        "auth_max_connections", STMT_MAX_AUTH_CONNECTIONS,
-        "acct_max_connections", STMT_MAX_ACCT_CONNECTIONS,
-        "doauth",             STMT_DOAUTH,
-        "doacct",             STMT_DOACCT,
-        "auth_db",            STMT_AUTH_DB,
-        "acct_db",            STMT_ACCT_DB,
-        "auth_query",         STMT_AUTH_QUERY,
-        "group_query",        STMT_GROUP_QUERY,
-        "attr_query",         STMT_REPLY_ATTR_QUERY,
-        "reply_attr_query",   STMT_REPLY_ATTR_QUERY,
-        "check_attr_query",   STMT_CHECK_ATTR_QUERY,
-        "acct_start_query",   STMT_ACCT_START_QUERY,
-        "acct_stop_query",    STMT_ACCT_STOP_QUERY,
-        "acct_alive_query",   STMT_ACCT_KEEPALIVE_QUERY,
-        "acct_keepalive_query", STMT_ACCT_KEEPALIVE_QUERY,
-        "acct_nasup_query",   STMT_ACCT_NASUP_QUERY,
-        "acct_nasdown_query", STMT_ACCT_NASDOWN_QUERY,
-        "interface",          STMT_INTERFACE,
-        NULL,
+        { "server",             STMT_SERVER },
+        { "port",               STMT_PORT },
+        { "login",              STMT_LOGIN },
+        { "password",           STMT_PASSWORD },
+        {"keepopen",            STMT_KEEPOPEN },
+        { "idle_timeout",       STMT_IDLE_TIMEOUT },
+        { "auth_max_connections", STMT_MAX_AUTH_CONNECTIONS },
+        { "acct_max_connections", STMT_MAX_ACCT_CONNECTIONS },
+        { "doauth",             STMT_DOAUTH },
+        { "doacct",             STMT_DOACCT },
+        { "auth_db",            STMT_AUTH_DB },
+        { "acct_db",            STMT_ACCT_DB },
+        { "auth_query",         STMT_AUTH_QUERY },
+        { "group_query",        STMT_GROUP_QUERY },
+        { "attr_query",         STMT_REPLY_ATTR_QUERY },
+        { "reply_attr_query",   STMT_REPLY_ATTR_QUERY },
+        { "check_attr_query",   STMT_CHECK_ATTR_QUERY },
+        { "acct_start_query",   STMT_ACCT_START_QUERY },
+        { "acct_stop_query",    STMT_ACCT_STOP_QUERY },
+        { "acct_alive_query",   STMT_ACCT_KEEPALIVE_QUERY },
+        { "acct_keepalive_query", STMT_ACCT_KEEPALIVE_QUERY },
+        { "acct_nasup_query",   STMT_ACCT_NASUP_QUERY },
+        { "acct_nasdown_query", STMT_ACCT_NASDOWN_QUERY },
+        { "interface",          STMT_INTERFACE },
+        { NULL }
 };
 
 /*
@@ -266,7 +266,6 @@ int
 rad_sql_init()
 {
         char *sqlfile;
-        UINT4 ipaddr;
         char *ptr;
         time_t timeout;
         SQL_cfg new_cfg;
@@ -682,16 +681,8 @@ rad_sql_acct(RADIUS_REQ *radreq)
                                      radreq, NULL);
                 rc = disp_sql_query(conn, query, &count);
                 sqllog(rc, query);
-                if (rc == 0 && count != 1) {
-                        char *name;
-                        char *session_id;
-
-                        pair = avl_find(radreq->request, DA_USER_NAME);
-                        name = pair ? pair->avp_strvalue : _("unknown");
-                        pair = avl_find(radreq->request, DA_ACCT_SESSION_ID);
-                        session_id = pair ? pair->avp_strvalue : _("unknown");
+                if (rc == 0 && count != 1) 
 			log_facility = L_WARN;
-                }
                 break;
 
         case DV_ACCT_STATUS_TYPE_ACCOUNTING_ON:

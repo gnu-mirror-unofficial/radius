@@ -119,7 +119,7 @@ pass2(struct check_datum *datum, User_symbol *sym)
                 radlog(L_ERR,
                        _("users:%d: circular dependency for %s"),
                        sym->lineno, sym->name);
-                symtab_delete(datum->symtab, sym);
+                symtab_delete(datum->symtab, (Symbol *)sym);
                 datum->count--;
         }
         return 0;

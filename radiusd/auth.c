@@ -120,7 +120,6 @@ int
 unix_pass(char *name, char *passwd)
 {
         int rc;
-        struct passwd *pwd;
         char *encpw;
         int pwlen;
         char *encrypted_pass = NULL;
@@ -150,9 +149,13 @@ unix_pass(char *name, char *passwd)
        	        encrypted_pass = spwd->sp_pwdp;
 # endif /* M_UNIX */
 #else /* !OSFC2 && !PWD_SHADOW */
-        /* Get encrypted password from password file */
-        if (pwd = getpwnam(name)) 
-		encrypted_pass = pwd->pw_passwd;
+	{
+		struct passwd *pwd;
+
+		/* Get encrypted password from password file */
+		if (pwd = getpwnam(name)) 
+			encrypted_pass = pwd->pw_passwd;
+	}
 #endif /* OSFC2 */
 
 	if (encrypted_pass) {
@@ -513,7 +516,7 @@ typedef struct auth_mach {
         char       *user_msg;
         struct obstack msg_stack;
         
-        char       *clid;
+        const char *clid;
         enum auth_state state;
 } AUTH_MACH;
 
@@ -545,63 +548,62 @@ struct auth_state_s {
 };
 
 struct auth_state_s states[] = {
-        as_init,         as_validate,
-                         0,               L_null,     sfn_init,
+        { as_init,         as_validate,
+                         0,               L_null,     sfn_init },
 
-        as_validate,     as_disable,
-                         0,               L_null,     sfn_validate,
+	{ as_validate,     as_disable,
+                         0,               L_null,     sfn_validate },
         
-        as_disable,      as_realmuse,
-                         0,               L_null,     sfn_disable,
+        { as_disable,      as_realmuse,
+                         0,               L_null,     sfn_disable },
         
-        as_realmuse,     as_simuse,
-                         0,               L_null,     sfn_realmuse, 
+        { as_realmuse,     as_simuse,
+                         0,               L_null,     sfn_realmuse }, 
         
-        as_simuse,       as_time,
-                         DA_SIMULTANEOUS_USE, L_check, sfn_simuse,
+        { as_simuse,       as_time,
+                         DA_SIMULTANEOUS_USE, L_check, sfn_simuse },
         
-        as_time,         as_eval,
-                         DA_LOGIN_TIME,   L_check, sfn_time,
+        { as_time,         as_eval,
+                         DA_LOGIN_TIME,   L_check, sfn_time },
         
-        as_eval,         as_scheme,
-                         0,               L_null,  sfn_eval_reply,
+        { as_eval,         as_scheme,
+                         0,               L_null,  sfn_eval_reply },
 
-        as_scheme,       as_ipaddr,
-                         DA_SCHEME_PROCEDURE, L_reply, sfn_scheme,
+        { as_scheme,       as_ipaddr,
+                         DA_SCHEME_PROCEDURE, L_reply, sfn_scheme },
         
-        as_ipaddr,       as_exec_wait,
-                         0,               L_null, sfn_ipaddr,
+        { as_ipaddr,       as_exec_wait,
+                         0,               L_null, sfn_ipaddr },
         
-        as_exec_wait,    as_cleanup_cbkid,
-                         DA_EXEC_PROGRAM_WAIT, L_reply, sfn_exec_wait,
+        { as_exec_wait,    as_cleanup_cbkid,
+                         DA_EXEC_PROGRAM_WAIT, L_reply, sfn_exec_wait },
         
-        as_cleanup_cbkid,as_menu_challenge,
-                         DA_CALLBACK_ID,  L_reply, sfn_cleanup_cbkid,
+        { as_cleanup_cbkid,as_menu_challenge,
+                         DA_CALLBACK_ID,  L_reply, sfn_cleanup_cbkid },
         
-        as_menu_challenge,         as_ack,
-                         DA_MENU,         L_reply, sfn_menu_challenge,
+        { as_menu_challenge,         as_ack,
+                         DA_MENU,         L_reply, sfn_menu_challenge },
         
-        as_ack,          as_exec_nowait,
-                         0,               L_null, sfn_ack,
+        { as_ack,          as_exec_nowait,
+                         0,               L_null, sfn_ack },
         
-        as_exec_nowait,  as_stop,
-                         DA_EXEC_PROGRAM, L_reply, sfn_exec_nowait,
+        { as_exec_nowait,  as_stop,
+                         DA_EXEC_PROGRAM, L_reply, sfn_exec_nowait },
         
-        as_stop,         as_stop,
-                         0,               L_null, NULL,
+        { as_stop,         as_stop,
+                         0,               L_null, NULL },
         
-        as_reject,       as_stop,
-                         0,               L_null, sfn_reject,
+        { as_reject,       as_stop,
+                         0,               L_null, sfn_reject },
 };
 
-static void auth_log(AUTH_MACH *m, char *diag, char *pass, char *reason,
-                     char *addstr);
 static int is_log_mode(AUTH_MACH *m, int mask);
 static void auth_format_msg(AUTH_MACH *m, int msg_id);
 static char *auth_finish_msg(AUTH_MACH *m);
 
-void
-auth_log(AUTH_MACH *m, char *diag, char *pass, char *reason, char *addstr)
+static void
+auth_log(AUTH_MACH *m, const char *diag, const char *pass,
+	 const char *reason, const char *addstr)
 {
         if (reason)
                 radlog_req(L_NOTICE, m->req,
@@ -914,7 +916,6 @@ sfn_validate(AUTH_MACH *m)
 {
         RADIUS_REQ *radreq = m->req;
         int rc;
-        char *reason = NULL;
 	
 	rc = rad_check_password(radreq,
 				m->user_check, m->namepair,

@@ -32,8 +32,8 @@ void *emalloc(size_t);
 void *radxrealloc(void *, size_t);
 void *erealloc(void *, size_t);
 void efree(void *);
-char *estrdup(char *);
+char *estrdup(const char *);
 
-char *string_replace(char **str, char *value);
+char *string_replace(char **str, const char *value);
 
 #endif

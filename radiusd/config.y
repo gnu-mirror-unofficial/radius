@@ -29,7 +29,9 @@
 #include <fcntl.h>
 #include <errno.h>
 #include <unistd.h>
- 
+#include <stdlib.h>	
+#include <ctype.h>
+	
 #include <radiusd.h>
 #include <obstack1.h>
 #include <cfg.h>
@@ -52,6 +54,8 @@ static void _cfg_free_memory_pool();
 static void _cfg_run_begin(struct cfg_stmt *stmt, void *up_data);
 
 static int yylex();
+static int yyerror(char *s); 
+
 static char *typestr[] = {
 	"integer",
 	"boolean",
@@ -294,20 +298,104 @@ netmask     : T_IPADDR
 
 %%
 
-static void skipws();
-static void skipline();
-static void skipstmt();
-static int isword(int c);
-static char *copy_alpha();
-static char *copy_string();
-static int copy_digit();
+static void
+skipws()
+{
+        while (*curp && isspace(*curp)) {
+                if (*curp == '\n')
+                        cfg_line_num++;
+                curp++;
+        }
+}
 
-static void putback(char *tok, int length);
+static void
+skipline()
+{
+        while (*curp && *curp != '\n')
+                curp++;
+}
 
+static int
+isword(int c)
+{
+        return isalnum(c) || c == '_' || c == '-';
+}
+
+static char *
+copy_alpha()
+{
+        do {
+		obstack_1grow(&cfg_obstack, *curp);
+                curp++;
+        } while (*curp && isword(*curp));
+	obstack_1grow(&cfg_obstack, 0);
+	return obstack_finish(&cfg_obstack);
+}
+
+static char *
+copy_string()
+{
+        int quote = *curp++;
+
+        while (*curp) {
+                if (*curp == quote) {
+                        curp++;
+                        break;
+                }
+		obstack_1grow(&cfg_obstack, *curp);
+                curp++;
+        } 
+	obstack_1grow(&cfg_obstack, 0);
+	return obstack_finish(&cfg_obstack);
+}
+
+static int
+copy_digit()
+{
+        int dot = 0;
+
+        if (*curp == '0') {
+                if (curp[1] == 'x' || curp[1] == 'X') {
+			obstack_1grow(&cfg_obstack, *curp);
+			curp++;
+			obstack_1grow(&cfg_obstack, *curp);
+			curp++;
+                }
+        }
+        
+        do {
+		obstack_1grow(&cfg_obstack, *curp);
+                if (*curp++ == '.')
+                        dot++;
+        } while (*curp && (isdigit(*curp) || *curp == '.'));
+	obstack_1grow(&cfg_obstack, 0);
+	yylval.string = obstack_finish(&cfg_obstack);
+        return dot;
+}
+
+struct keyword booleans[] = {
+	{ "on", 1 }, 
+	{ "off", 0 },
+	{ "yes", 1 }, 
+	{ "no", 0 },
+	{ 0 }
+};
+
+static int
+keyword()
+{
+	int tok;
+	
+	if ((tok = xlat_keyword(booleans, yylval.string, -1)) != -1) {
+		yylval.bool = tok;
+		return T_BOOL;
+	}
+	return T_WORD;
+}
 
 #define ismath(c) (strchr("=!+-/*.", c)!=NULL)
 
-int
+static int
 yylex()
 {
 again:
@@ -372,116 +460,7 @@ again:
         return *curp++;
 }
 
-void
-putback(char *tok, int length)
-{
-        if (length > curp - buffer) {
-                radlog(L_CRIT, 
-                       _("INTERNAL ERROR parsing %s near %d: out of putback space"),
-                        cfg_filename, cfg_line_num);
-                return;
-        }       
-        while (length--)        
-                *--curp = tok[length];          
-}
-
-void
-skipws()
-{
-        while (*curp && isspace(*curp)) {
-                if (*curp == '\n')
-                        cfg_line_num++;
-                curp++;
-        }
-}
-
-void
-skipline()
-{
-        while (*curp && *curp != '\n')
-                curp++;
-}
-
-int
-isword(int c)
-{
-        return isalnum(c) || c == '_' || c == '-';
-}
-
-char *
-copy_alpha()
-{
-        do {
-		obstack_1grow(&cfg_obstack, *curp);
-                curp++;
-        } while (*curp && isword(*curp));
-	obstack_1grow(&cfg_obstack, 0);
-	return obstack_finish(&cfg_obstack);
-}
-
-char *
-copy_string()
-{
-        int quote = *curp++;
-
-        while (*curp) {
-                if (*curp == quote) {
-                        curp++;
-                        break;
-                }
-		obstack_1grow(&cfg_obstack, *curp);
-                curp++;
-        } 
-	obstack_1grow(&cfg_obstack, 0);
-	return obstack_finish(&cfg_obstack);
-}
-
-int
-copy_digit()
-{
-        int dot = 0;
-
-        if (*curp == '0') {
-                if (curp[1] == 'x' || curp[1] == 'X') {
-			obstack_1grow(&cfg_obstack, *curp);
-			curp++;
-			obstack_1grow(&cfg_obstack, *curp);
-			curp++;
-                }
-        }
-        
-        do {
-		obstack_1grow(&cfg_obstack, *curp);
-                if (*curp++ == '.')
-                        dot++;
-        } while (*curp && (isdigit(*curp) || *curp == '.'));
-	obstack_1grow(&cfg_obstack, 0);
-	yylval.string = obstack_finish(&cfg_obstack);
-        return dot;
-}
-
-struct keyword booleans[] = {
-	{ "on", 1 }, 
-	{ "off", 0 },
-	{ "yes", 1 }, 
-	{ "no", 0 },
-	0
-};
-
-int
-keyword()
-{
-	int tok;
-	
-	if ((tok = xlat_keyword(booleans, yylval.string, -1)) != -1) {
-		yylval.bool = tok;
-		return T_BOOL;
-	}
-	return T_WORD;
-}
-
-
-int
+static int
 yyerror(char *s)
 {
         radlog(L_ERR, "%s:%d: %s", cfg_filename, cfg_line_num, s);
@@ -579,7 +558,6 @@ _cfg_vlist_append(LIST *vlist, cfg_value_t *val)
 LIST *
 _cfg_vlist_create(cfg_value_t *val)
 {
-	cfg_value_t *vp;
 	LIST *vlist = list_create();
 	LIST **lp = cfg_malloc(sizeof(*lp), _cfg_vlist_destroy);
 	*lp = vlist;

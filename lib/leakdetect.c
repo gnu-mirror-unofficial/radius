@@ -20,6 +20,7 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+#include <stdio.h>
 #include <stdlib.h>
 #include <mem.h>
 #include <radius.h>
@@ -142,7 +143,7 @@ efree(void *ptr)
 }
 
 char *
-estrdup(char *s)
+estrdup(const char *s)
 {
         char *p;
         
@@ -153,7 +154,7 @@ estrdup(char *s)
 }
 
 char *
-string_replace(char **str, char *new_value)
+string_replace(char **str, const char *new_value)
 {
 	char *p = *str;
 	*str = estrdup(new_value);

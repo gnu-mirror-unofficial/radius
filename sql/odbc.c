@@ -21,11 +21,6 @@
 # include <config.h>
 #endif
 
-#ifndef lint
-static char rcsid[] =
- "@(#) $Id$" ;
-#endif
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/time.h>

@@ -15,11 +15,6 @@
    along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-#ifndef lint
-static char rcsid[] = 
-"$Id$";
-#endif
-
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -36,11 +31,11 @@ static char rcsid[] =
 void
 radlog
 #if STDC_HEADERS
-      (int lvl, char *msg, ...)
+      (int lvl, const char *msg, ...)
 #else	
       (lvl, msg, va_alist)
         int lvl;
-        char *msg;
+        const char *msg;
         va_dcl
 #endif
 {
@@ -127,12 +122,12 @@ rad_print_request(req, outbuf, size)
 void
 radlog_req
 #if STDC_HEADERS
-           (int lvl, RADIUS_REQ *req, char *msg, ...)
+           (int lvl, RADIUS_REQ *req, const char *msg, ...)
 #else
 	   (lvl, req, msg, va_alist)
         int lvl;
 	RADIUS_REQ *req;
-        char *msg;
+        const char *msg;
         va_dcl
 #endif
 {

@@ -417,7 +417,7 @@ radwtmp()
         
         tm = localtime(&buf[0].time);
         strftime(ct, sizeof(ct), "%c", tm);
-        printf("\nradwtmp begins %s\n", ct);
+        printf(_("\nradwtmp begins %s\n"), ct);
 }
 
 int
@@ -674,7 +674,7 @@ print_entry(WTMP *pp, struct radutmp *bp, int mark)
         char buf[MAX_LONGNAME];
         
         tm = localtime(&bp->time);
-        strftime(ct, sizeof(ct), "%c", tm);
+        strftime(ct, sizeof(ct), "%a %b %d %H:%M", tm);
 
         ipaddr = bp->framed_address;
         if (ipaddr == 0 && pp)
@@ -682,7 +682,7 @@ print_entry(WTMP *pp, struct radutmp *bp, int mark)
         ip_iptostr(ntohl(ipaddr), ip_str);
 
         if (long_fmt) {                                   
-                printf("%-*.*s %-*.*s %3.3d %-4.4s %2s %-*.*s %-*.*s %-*.*s %10.10s %5.5s ",
+                printf("%-*.*s %-*.*s %3.3d %-4.4s %2s %-*.*s %-*.*s %-*.*s %16.16s ",
                        namesize, namesize,
                        bp->login,
                        
@@ -704,10 +704,9 @@ print_entry(WTMP *pp, struct radutmp *bp, int mark)
                        IP_ADDR_LEN, IP_ADDR_LEN,
                        ip_str,
                        
-                       ct, ct + 11);
-
+                       ct);
         } else {
-                printf("%-*.*s %-*.*s %3.3d %-*.*s %10.10s %5.5s ",
+                printf("%-*.*s %-*.*s %3.3d %-*.*s %16.16s ",
                        namesize, namesize,
                        bp->login,
                        
@@ -719,15 +718,15 @@ print_entry(WTMP *pp, struct radutmp *bp, int mark)
                        IP_ADDR_LEN, IP_ADDR_LEN,
                        ip_str,
                        
-                       ct, ct + 11);
+                       ct);
         }
         
         if (pp == NULL) {
-                printf("still logged in");
+                printf(_("still logged in"));
         } else {
                 tm = localtime(&pp->ut.time);
-                strftime(ct, sizeof(ct), "%c", tm);
-                printf("- %5.5s", ct + 11);
+                strftime(ct, sizeof(ct), "%H:%M", tm);
+                printf("- %5.5s", ct);
 
                 /*delta = pp->ut.duration;*/
                 delta = pp->ut.time - bp->time;
@@ -737,12 +736,12 @@ print_entry(WTMP *pp, struct radutmp *bp, int mark)
                         if (delta < 0)
                                 delta = 0;
                         tm = gmtime(&delta);
-                        strftime(ct, sizeof(ct), "%c", tm);
+                        strftime(ct, sizeof(ct), "%H:%M:%S", tm);
                         if (delta < 86400)
-                                printf("  (%*.*s)", width, width, ct + 11);
+                                printf("  (%*.*s)", width, width, ct);
                         else
                                 printf(" (%ld+%*.*s)",
-                                       delta / 86400, width, width, ct + 11);
+                                       delta / 86400, width, width, ct);
                 }
         }
         if (mark)
@@ -759,18 +758,18 @@ print_reboot_entry(struct radutmp *bp)
         char buf[MAX_LONGNAME];
         
         tm = localtime(&bp->time);
-        strftime(ct, sizeof(ct), "%c", tm);
+        strftime(ct, sizeof(ct), "%a %b %d %H:%M", tm);
 
         if (bp->type == P_NAS_SHUTDOWN)
                 s = "shutdown";
         else
                 s = "reboot";
-        printf("%-*.*s %s      ~                   %10.10s %5.5s\n",
+        printf("%-*.*s %s      ~                   %16.16s\n",
                namesize, namesize,
                s,
                        
                nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
-               ct, ct + 11);
+               ct);
 }
 
 

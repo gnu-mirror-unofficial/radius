@@ -270,7 +270,6 @@ add_num(int skip, int base, char *text, int leng)
         add_chr(strtol(&text[leng - n + 1], NULL, base));
 }
 
-static char string_acc[MAX_STRING];
 static char string_len;
 
 void

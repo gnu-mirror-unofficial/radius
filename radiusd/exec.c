@@ -44,29 +44,34 @@
 #include <symtab.h>
 #include <rewrite.h>
 
-
 int
 radius_change_uid(struct passwd *pwd)
 {
 	if (pwd->pw_gid != 0 && setgid(pwd->pw_gid)) {
 		radlog(L_ERR|L_PERROR,
 		       _("setgid(%d) failed"), pwd->pw_gid);
+		return -1;
 	}
 	if (pwd->pw_uid != 0) {
 #if defined(HAVE_SETEUID)
-		if (seteuid(pwd->pw_uid)) 
+		if (seteuid(pwd->pw_uid)) {
 			radlog(L_ERR|L_PERROR,
 			       _("seteuid(%d) failed (ruid=%d, euid=%d)"),
 			       pwd->pw_uid, getuid(), geteuid());
+			return -1;
+		}
 #elif defined(HAVE_SETREUID)
-		if (setreuid(0, pwd->pw_uid)) 
+		if (setreuid(0, pwd->pw_uid)) {
 			radlog(L_ERR|L_PERROR,
 			       _("setreuid(0,%d) failed (ruid=%d, euid=%d)"),
 			       pwd->pw_uid, getuid(), geteuid());
+			return -1;
+		}
 #else
 # error "*** NO WAY TO SET EFFECTIVE UID IN radius_change_uid() ***"
 #endif
 	}
+	return 0;
 }
 
 /* Execute a program on successful authentication.
@@ -143,7 +148,8 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
 
                 chdir("/tmp");
 
-                radius_change_uid(pwd);
+                if (radius_change_uid(pwd))
+			exit(2);
 		
                 execvp(argv[0], argv);
 
@@ -260,7 +266,8 @@ radius_run_filter(int argc, char **argv, char *errfile, int *p)
 		for (i = getmaxfd(); i > 2; i--)
 			close(i);
 
-		radius_change_uid(pwd);
+		if (radius_change_uid(pwd))
+			exit(2);
 		execvp(argv[0], argv);
 		
                 /* Report error via syslog: we might not be able
@@ -344,7 +351,9 @@ filter_cleanup_proc(void *ptr, Filter *filter)
 		       buffer,
 		       filter->lines_input, filter->lines_output);
 		filter->pid = 0;
+		return 1;
 	}
+	return 0;
 }
 
 void
@@ -583,11 +592,6 @@ filter_acct(char *name, RADIUS_REQ *req)
 	Filter *filter;
 	int rc = -1;
 	int err;
-	char *buf = NULL;
-	char *errp;
-	size_t size;
-	VALUE_PAIR *vp = NULL;
-	char buffer[1024];
 	
 	filter = filter_open(name, req, R_ACCT, &err);
 	if (!filter)
@@ -612,10 +616,15 @@ filter_acct(char *name, RADIUS_REQ *req)
 			filter_close(filter);
 		} else if (isdigit(buffer[0])) {
 			char *ptr;
-			char *errp;
 
 			debug(1, ("%s > \"%s\"", filter->name, buffer));
 			rc = strtoul(buffer, &ptr, 0);
+			if (!isspace(*ptr)) {
+				radlog(L_ERR,
+				       _("filter %s (acct): bad output: %s"),
+				       filter->name, buffer);
+				return -1;
+			}
 		} else {
 			radlog(L_ERR,
 			       _("filter %s (acct): bad output: %s"),

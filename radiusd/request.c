@@ -105,7 +105,8 @@ request_free(REQUEST *req)
 }
 
 void
-request_drop(int type, void *data, void *orig_data, int fd, char *status_str)
+request_drop(int type, void *data, void *orig_data,
+	     int fd, const char *status_str)
 {
         request_class[type].drop(type, data, orig_data, fd, status_str);
 }

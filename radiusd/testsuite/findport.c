@@ -48,12 +48,67 @@
 #include <errno.h>
 #include <pwd.h>
 
-void output(int);
 char *format = NULL;
 
-main(argc, argv)
-        int argc;
-        char **argv;
+char *
+who_am_i()
+{
+        struct passwd *pw = getpwuid(getuid());
+        if (pw)
+                return pw->pw_name;
+        return "nobody";
+}
+
+void
+output(int port)
+{
+        if (!format) {
+                if (port)
+                        printf("%d\n", port);
+                return;
+        }
+        
+        while (*format) {
+                if (port && format[0] == '%' && format[1] == 'd') {
+                        printf("%d", port);
+                        format += 2;
+                        break;
+                } else if (format[0] == '%' && format[1] == 'u') {
+                        printf("%s", who_am_i());
+                        format += 2;
+                } else if (format[0] == '\\' && format[1]) {
+                        switch (format[1]) {
+                        case 'a':
+                                putchar('\a');
+                                break;
+                        case 'b':
+                                putchar('\b');
+                                break;
+                        case 'n':
+                                putchar('\n');
+                                break;
+                        case 't':
+                                putchar('\t');
+                                break;
+                        case 'v':
+                                putchar('\v');
+                                break;
+                        case '\\':
+                                putchar('\\');
+                                break;
+                        default:
+                                putchar(format[0]);
+                                putchar(format[2]);
+                                break;
+                        }
+                        format += 2;
+                } else
+                        putchar(*format++);
+        }
+}
+
+int
+main(int argc, char **argv)
 {
         char *progname = argv[0]; 
         int local_port, max_port, num_ports;
@@ -66,7 +121,7 @@ main(argc, argv)
         max_port = 65535;
         num_ports = 1;
 
-        #define OPTARG (*argv)[2] ? *argv+2 : *++argv
+#define OPTARG (*argv)[2] ? *argv+2 : *++argv
         while (*++argv) {
                 if (**argv == '-') {
                         switch ((*argv)[1]) {
@@ -125,60 +180,3 @@ main(argc, argv)
         return 0;
 }
 
-char *
-who_am_i()
-{
-        struct passwd *pw = getpwuid(getuid());
-        if (pw)
-                return pw->pw_name;
-        return "nobody";
-}
-
-void
-output(port)
-        int port;
-{
-        if (!format) {
-                if (port)
-                        printf("%d\n", port);
-                return;
-        }
-        
-        while (*format) {
-                if (port && format[0] == '%' && format[1] == 'd') {
-                        printf("%d", port);
-                        format += 2;
-                        break;
-                } else if (format[0] == '%' && format[1] == 'u') {
-                        printf("%s", who_am_i());
-                        format += 2;
-                } else if (format[0] == '\\' && format[1]) {
-                        switch (format[1]) {
-                        case 'a':
-                                putchar('\a');
-                                break;
-                        case 'b':
-                                putchar('\b');
-                                break;
-                        case 'n':
-                                putchar('\n');
-                                break;
-                        case 't':
-                                putchar('\t');
-                                break;
-                        case 'v':
-                                putchar('\v');
-                                break;
-                        case '\\':
-                                putchar('\\');
-                                break;
-                        default:
-                                putchar(format[0]);
-                                putchar(format[2]);
-                                break;
-                        }
-                        format += 2;
-                } else
-                        putchar(*format++);
-        }
-}

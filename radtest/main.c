@@ -27,6 +27,7 @@
 #include <pwd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <time.h>
 
 #include <radius.h>
 #include <radargp.h>
@@ -45,7 +46,6 @@ int abort_on_failure = 0;
 
 void init_symbols();
 static void assign(char *);
-int parse_datum(char *p, union datum *dp);
 
 int x_argmax;
 int x_argc;
@@ -158,6 +158,8 @@ main(int argc, char **argv)
 
         set_yydebug();
         radpath_init();
+	srand(time(NULL));
+	
         if (dict_init()) {
                 radlog(L_ERR, _("error reading dictionary file"));
                 return 1;

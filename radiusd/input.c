@@ -320,7 +320,7 @@ _chan_itr(void *item, void *data)
 	return rc;
 }
 
-int
+void
 input_iterate_channels(INPUT *input, char *name,
 		       list_iterator_t fun, void *data)
 {

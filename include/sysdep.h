@@ -85,9 +85,6 @@ int asprintf(/*char **result, const char *format, ...*/);
 int vasprintf(char **result, const char *format, va_list args);
 #endif
 
-int set_nonblocking(int fd);
-int getmaxfd();
-
 #if defined(__alpha) && (defined(__osf__) || defined(__linux__))
 typedef unsigned int    UINT4;
 #else
@@ -97,6 +94,9 @@ typedef unsigned long   UINT4;
 typedef unsigned long counter;
 
 RETSIGTYPE (*install_signal(int signo, void (*func)(int)))(int);
-	
+int set_nonblocking(int fd);
+int getmaxfd();
+UINT4 get_first_ip();
+
 #endif /* SYSDEP_H_INCLUDED */
 

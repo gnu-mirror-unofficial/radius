@@ -48,6 +48,9 @@ char *source_filename = "";
 char *print_ident(Variable *var);
 int subscript(Variable *var, char *attr_name, int all, Variable *ret_var);
 
+extern int yylex();
+int yyerror(char *s);
+
 %}
 
 %token EOL AUTH ACCT SEND EXPECT
@@ -365,7 +368,7 @@ yyerror(char *s)
 void
 parse_error
 #if STDC_HEADERS
-           (char *fmt, ...)
+           (const char *fmt, ...)
 #else
            (va_alist)
         va_dcl

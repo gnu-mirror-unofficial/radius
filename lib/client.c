@@ -215,7 +215,6 @@ rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 		void *pdu;
 		size_t size;
 		VALUE_PAIR *pair;
-		ITERATOR *itr;
 
                 if (server->port[port_type] <= 0)
                         continue;
@@ -322,12 +321,12 @@ rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 #define TOK_RETRY      4
 
 static struct keyword kwd[] = {
-        "source_ip", TOK_SOURCE_IP,
-        "source-ip", TOK_SOURCE_IP,
-        "server", TOK_SERVER,
-        "timeout", TOK_TIMEOUT,
-        "retry", TOK_RETRY,
-        NULL
+        { "source_ip", TOK_SOURCE_IP },
+        { "source-ip", TOK_SOURCE_IP },
+        { "server", TOK_SERVER },
+        { "timeout", TOK_TIMEOUT },
+        { "retry", TOK_RETRY },
+        { NULL }
 };
 
 static int
@@ -477,7 +476,7 @@ rad_clt_free_server(RADIUS_SERVER *server)
         efree(server);
 }
 
-RADIUS_SERVER *
+void
 rad_clt_append_server(RADIUS_SERVER_QUEUE *qp, RADIUS_SERVER *server)
 {
 	if (!qp->servers)
@@ -502,10 +501,10 @@ rad_clt_clear_server_list(RADIUS_SERVER_QUEUE *qp)
 }
 
 static int
-server_cmp(void *item, void *data)
+server_cmp(const void *item, const void *data)
 {
-	RADIUS_SERVER *serv = item;
-	char *id = data;
+	const RADIUS_SERVER *serv = item;
+	const char *id = data;
 
         return strcmp(serv->name, id);
 }

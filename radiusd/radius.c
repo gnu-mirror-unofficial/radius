@@ -16,10 +16,6 @@
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #define RADIUS_MODULE_RADIUS_C
-#ifndef lint
-static char rcsid[] =
-"@(#) $Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -268,9 +264,6 @@ radius_req_update(void *req_ptr, void *data_ptr)
 {
 	RADIUS_REQ *req = req_ptr;
 	RADIUS_UPDATE *upd = data_ptr;
-	RADIUS_SERVER *server;
-	REALM *realm;
-	int i;
 
 	if (req->id != upd->id)
 		return;
@@ -292,11 +285,9 @@ radius_req_free(void *req)
 /*ARGSUSED*/
 void
 radius_req_drop(int type, void *data, void *orig_data,
-		int fd, char *status_str)
+		int fd, const char *status_str)
 {
 	RADIUS_REQ *radreq = data ? data : orig_data;
-	RADIUS_REQ *origreq = orig_data;
-	char buf[MAX_LONGNAME];
 
         radlog_req(L_NOTICE, radreq,
 		   "%s: %s", _("Dropping packet"),  status_str);

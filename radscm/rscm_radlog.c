@@ -15,11 +15,6 @@
    along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-#ifndef lint
-static char rcsid[] =
-"@(#) $Id$";
-#endif
-
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -29,7 +24,7 @@ static char rcsid[] =
 #include <radscm.h>
 
 static struct keyword radlog_kw[] = {
-#define D(c) #c, c
+#define D(c) { #c, c }
         /* log categories */
         D(L_MAIN),
         D(L_AUTH),
@@ -45,7 +40,7 @@ static struct keyword radlog_kw[] = {
         D(L_NOTICE),
         D(L_INFO),
         D(L_DEBUG),
-        NULL
+        { NULL }
 #undef D
 };
 

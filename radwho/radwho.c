@@ -104,7 +104,7 @@ Uptime: (duration)(newline)\
 Assigned IP: (framed-address)(newline)\
 Realm: (realm)(newline)" },
 
-	NULL
+	{ NULL }
 };
 
 static char *

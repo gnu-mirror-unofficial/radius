@@ -167,10 +167,10 @@ static int parse_dict_entry(int *, int, char **, char *, int);
 static int parse_dict(char *name);
 
 static struct keyword type_kw[] = {
-        "string", TYPE_STRING,
-        "integer", TYPE_INTEGER,
-        "ipaddr", TYPE_IPADDR,
-        "date", TYPE_DATE
+        { "string", TYPE_STRING },
+        { "integer", TYPE_INTEGER },
+        { "ipaddr", TYPE_IPADDR },
+        { "date", TYPE_DATE }
 };
 
 /*ARGSUSED*/
@@ -439,11 +439,11 @@ enum {
 };
 
 static struct keyword dict_kw[] = {
-        "$INCLUDE", KW_INCLUDE,
-        "ATTRIBUTE", KW_ATTRIBUTE,
-        "VALUE", KW_VALUE,
-        "VENDOR", KW_VENDOR,
-        NULL, 0
+        { "$INCLUDE", KW_INCLUDE },
+        { "ATTRIBUTE", KW_ATTRIBUTE },
+        { "VALUE", KW_VALUE },
+        { "VENDOR", KW_VENDOR },
+        { NULL, 0 }
 };
 
 int

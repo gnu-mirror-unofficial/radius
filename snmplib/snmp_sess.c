@@ -22,9 +22,10 @@
 # include <config.h>
 #endif
 
-#include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/time.h>
+#include <time.h>
 #include <stdlib.h>
 #include <netdb.h>
 #include <arpa/inet.h>

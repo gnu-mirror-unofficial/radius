@@ -98,8 +98,8 @@ typedef struct request_class {
         void (*xmit)(REQUEST *r);             /* Retransmit function */
         int  (*comp)(void *a, void *b);       /* Compare function */
         void (*free)(void *data);             /* Free the associated data */
-        void (*drop)(int type, void *data, void *old_data, int fd, char *msg);
-	                                      /* Drop the request */
+        void (*drop)(int type, void *data, void *old_data, int fd,
+		     const char *msg);        /* Drop the request */
         void (*cleanup)(int type, void *data);/* Cleanup function */
         int (*failure)(int type, struct sockaddr_in *addr);
 	void (*update)(void *req, void *ptr);
@@ -323,8 +323,8 @@ void input_close_channel_data(INPUT *input, char *name, void *data);
 int input_select(INPUT *input, struct timeval *tv);
 int input_select_channel(INPUT *input, char *name, struct timeval *tv);
 void *input_find_channel(INPUT *input, char *name, void *data);
-int input_iterate_channels(INPUT *input, char *name, list_iterator_t fun,
-			   void *data);
+void input_iterate_channels(INPUT *input, char *name, list_iterator_t fun,
+			    void *data);
 
 /* rpp.c */
 int rpp_ready();
@@ -335,6 +335,7 @@ int rpp_input_handler(int fd, void *data);
 int rpp_input_close(int fd, void *data);
 int rpp_kill(pid_t pid, int signo);
 size_t rpp_count();
+int rpp_update(void *data, size_t size);
 
 /* request.c */
 REQUEST *request_create(int type, int fd, struct sockaddr_in *sa,
@@ -347,7 +348,8 @@ void request_init_queue();
 void *request_scan_list(int type, list_iterator_t itr, void *closure);
 void request_set_status(pid_t pid, int status);
 int request_stat_list(QUEUE_STAT stat);
-	
+void request_update(pid_t pid, int status, void *ptr);
+
 /* radiusd.c */
 int udp_input_handler(int fd, void *data);
 int udp_input_close(int fd, void *data);
@@ -370,7 +372,8 @@ void radiusd_reconfigure();
 int radiusd_master();
 void radiusd_set_preconfig_hook(void (*f)(void *, void *), void *p, int once);
 void radiusd_set_postconfig_hook(void (*f)(void *, void *), void *p, int once);
-
+void radiusd_register_input_fd(char *name, int fd, void *data);
+void radiusd_close_channel(int fd);
 
 /* exec.c */
 int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **, int);
@@ -381,7 +384,7 @@ int filters_stmt_term(int finish, void *block_data, void *handler_data);
 extern struct cfg_stmt filters_stmt[];
 
 /* scheme.c */
-void scheme_boot();
+void scheme_main();
 void scheme_load(char *filename);
 void scheme_load_path(char *pathname);
 void scheme_debug(int val);
@@ -402,6 +405,7 @@ int logging_stmt_handler(int argc, cfg_value_t *argv, void *block_data,
 			 void *handler_data);
 int logging_stmt_end(void *block_data, void *handler_data);
 int logging_stmt_begin(int finish, void *block_data, void *handler_data);
+void format_exit_status(char *buffer, int buflen, int status);
 extern struct cfg_stmt logging_stmt[];
 
 /* radius.c */
@@ -419,7 +423,7 @@ int radius_req_decode(struct sockaddr_in *sa,
 int radius_req_cmp(void *a, void *b);
 void radius_req_free(void *req);
 void radius_req_drop(int type, void *radreq, void *origreq,
-		     int fd, char *status_str);
+		     int fd, const char *status_str);
 void radius_req_xmit(REQUEST *request);
 int radius_req_failure(int type, struct sockaddr_in *addr);
 void radius_req_update(void *req_ptr, void *data_ptr);
@@ -435,11 +439,10 @@ int pam_pass(char *name, char *passwd, const char *pamauth, char **reply_msg);
 #define PAM_DEFAULT_TYPE    "radius"
 
 /* proxy.c */
-int rad_proxy(REQUEST *req);
-void rad_proxy_free(RADIUS_REQ *req);
 int proxy_send(REQUEST *req);
 int proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int activefd);
 void proxy_retry(RADIUS_REQ *radreq, int fd);
+int proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r);
 
 /* menu.c */
 #define MAX_PATH_LENGTH                 256
@@ -527,7 +530,7 @@ int snmp_req_decode(struct sockaddr_in *sa,
 int snmp_req_cmp(void *ap, void *bp);
 void snmp_req_free(void *ptr);
 void snmp_req_drop(int type, void *data, void *orig_data,
-		   int fd, char *status_str);
+		   int fd, const char *status_str);
 int snmp_req_respond(REQUEST *request);
         
 /* radutil.c */

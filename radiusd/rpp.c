@@ -152,7 +152,6 @@ rpp_fd_write(int fd, void *data, size_t size, struct timeval *tv)
 int
 rpp_start_process(rpp_proc_t *proc, int (*proc_main)(void *), void *data)
 {
-	int i;
 	int inp[2];
 	int outp[2];
 	pid_t pid;
@@ -525,7 +524,6 @@ rpp_request_handler(void *arg ARG_UNUSED)
 int
 rpp_input_handler(int fd, void *data)
 {
-	int true = 0;
 	struct rpp_reply repl;
 	rpp_proc_t *p = rpp_lookup_fd(fd);
 	struct timeval tv, *tvp;

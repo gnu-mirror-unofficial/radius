@@ -15,11 +15,6 @@
    along with GNU Radius; if not, write to the Free Software Foundation, 
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-#ifndef lint
-static char rcsid[] =
-"@(#) $Id$";
-#endif
-
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -30,31 +25,31 @@ static char rcsid[] =
 #include <radscm.h>
 
 static struct keyword syslog_kw[] = {
-        "LOG_USER",     LOG_USER,   
-        "LOG_DAEMON",   LOG_DAEMON,
-        "LOG_AUTH",     LOG_AUTH,  
-        "LOG_LOCAL0",   LOG_LOCAL0,
-        "LOG_LOCAL1",   LOG_LOCAL1,
-        "LOG_LOCAL2",   LOG_LOCAL2,
-        "LOG_LOCAL3",   LOG_LOCAL3,
-        "LOG_LOCAL4",   LOG_LOCAL4,
-        "LOG_LOCAL5",   LOG_LOCAL5,
-        "LOG_LOCAL6",   LOG_LOCAL6,
-        "LOG_LOCAL7",   LOG_LOCAL7,
+        { "LOG_USER",     LOG_USER },   
+        { "LOG_DAEMON",   LOG_DAEMON },
+        { "LOG_AUTH",     LOG_AUTH },  
+        { "LOG_LOCAL0",   LOG_LOCAL0 },
+        { "LOG_LOCAL1",   LOG_LOCAL1 },
+        { "LOG_LOCAL2",   LOG_LOCAL2 },
+        { "LOG_LOCAL3",   LOG_LOCAL3 },
+        { "LOG_LOCAL4",   LOG_LOCAL4 },
+        { "LOG_LOCAL5",   LOG_LOCAL5 },
+        { "LOG_LOCAL6",   LOG_LOCAL6 },
+        { "LOG_LOCAL7",   LOG_LOCAL7 },
         /* severity */
-        "LOG_EMERG",    LOG_EMERG,    
-        "LOG_ALERT",    LOG_ALERT,   
-        "LOG_CRIT",     LOG_CRIT,    
-        "LOG_ERR",      LOG_ERR,     
-        "LOG_WARNING",  LOG_WARNING, 
-        "LOG_NOTICE",   LOG_NOTICE,  
-        "LOG_INFO",     LOG_INFO,    
-        "LOG_DEBUG",    LOG_DEBUG,   
+        { "LOG_EMERG",    LOG_EMERG },    
+        { "LOG_ALERT",    LOG_ALERT },   
+        { "LOG_CRIT",     LOG_CRIT },    
+        { "LOG_ERR",      LOG_ERR },     
+        { "LOG_WARNING",  LOG_WARNING }, 
+        { "LOG_NOTICE",   LOG_NOTICE },  
+        { "LOG_INFO",     LOG_INFO },    
+        { "LOG_DEBUG",    LOG_DEBUG },   
         /* options */
-        "LOG_CONS",     LOG_CONS,   
-        "LOG_NDELAY",   LOG_NDELAY, 
-        "LOG_PID",      LOG_PID,
-        NULL
+        { "LOG_CONS",     LOG_CONS },   
+        { "LOG_NDELAY",   LOG_NDELAY }, 
+        { "LOG_PID",      LOG_PID },
+        { NULL }
 };
 
 static int

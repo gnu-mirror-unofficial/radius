@@ -93,7 +93,7 @@ proc radiusd_version {} {
     }
 }
 
-proc default_radiusd_start {} {
+proc default_radiusd_start {args} {
     global base_dir
     global srcdir
     global verbose
@@ -105,7 +105,9 @@ proc default_radiusd_start {} {
 
     default_radiusd_version
 
-    set sw ""
+    set sw $args
+    append sw " "
+    
     if [info exists CAPABILITY(USE_SERVER_GUILE)] {
 	append sw "--guile"
     } 

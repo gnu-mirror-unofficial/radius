@@ -25,8 +25,8 @@ $INCLUDE dict/livingston		## Livingston compatibility
 ##	Following are the proper new names. Use these.
 ## syntax flags: [us-hi-hu]
 ATTRIBUTE	User-Name		1	string	- [LR-RLR]
-ATTRIBUTE	User-Password		2	string	- [L-----]
-ATTRIBUTE	CHAP-Password		3	string	- [L-----]b
+ATTRIBUTE	User-Password		2	string	- [L-----]E
+ATTRIBUTE	CHAP-Password		3	string	- [L-----]bE
 ATTRIBUTE	NAS-IP-Address		4	ipaddr	- [L--RLR]
 ATTRIBUTE	NAS-Port-Id		5	integer	- [LR-RLR]
 ATTRIBUTE	Service-Type		6	integer	- [LR-RLR]=P	
@@ -266,9 +266,6 @@ VALUE           Acct-Terminate-Cause    Service-Unavailable     15
 VALUE           Acct-Terminate-Cause    Callback                16
 VALUE           Acct-Terminate-Cause    User-Error              17
 VALUE           Acct-Terminate-Cause    Host-Request            18
-
-#VALUE		Tunnel-Type		L2TP			3
-#VALUE		Tunnel-Medium-Type	IP			1
 
 #
 # Auth-Type translations

@@ -1,3 +1,12 @@
+2001-08-27 Sergey Poznyakoff
+
+	* configure.in: Use $withval when handling --with arguments.
+	* radiusd/config.y: Added "port" to typestr. Fixed handling of
+	obsolete level statements (auth).
+	Fixed buglet in asgn (handling AT_PORT type).
+	* radiusd/radius.c: Do not trust attrlen when decoding string
+	variables. Some NASes compute it including terminating zero byte.
+	
 2001-08-26 Sergey Poznyakoff
 
 	* db/Makefile.am: Use M4 variable. Allow user to define database

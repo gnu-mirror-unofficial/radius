@@ -46,6 +46,7 @@ store_group(grp)
 		len += strlen(grp->gr_mem[i]) + 1;
 
 	result = emalloc(len);
+	*result = *grp;
 	result->gr_mem = (char**)(result + 1);
 	buffer = (char*)(result->gr_mem + grcnt + 1);
 	

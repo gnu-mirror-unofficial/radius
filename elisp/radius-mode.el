@@ -53,7 +53,8 @@
   (modify-syntax-entry ?\# "<" rad-mode-syntax-table)
   (modify-syntax-entry ?\n ">" rad-mode-syntax-table)
   (modify-syntax-entry ?\t "-" rad-mode-syntax-table)
-  (modify-syntax-entry ?- "w" rad-mode-syntax-table))
+  (modify-syntax-entry ?- "w" rad-mode-syntax-table)
+  (modify-syntax-entry ?_ "w" rad-mode-syntax-table))
 
 (defvar rad-mode-abbrev-table nil
   "Abbrev table in use in rad-mode buffers.")
@@ -70,7 +71,7 @@
   (setq rad-mode-map (make-sparse-keymap))
   (define-key rad-mode-map "=" 'rad-electric-equal)
   (define-key rad-mode-map "," 'rad-electric-comma)
-  (define-key rad-mode-map "\t" 'rad-indent-command)
+  (define-key rad-mode-map "\t" 'rad-complete-or-indent)
   (define-key rad-mode-map "\C-c\C-n" 'rad-next-profile)
   (define-key rad-mode-map "\C-c\C-p" 'rad-prev-profile)
   (define-key rad-mode-map "\C-c\C-r" 'rad-load-dictionary))
@@ -102,7 +103,7 @@
      (t
       (let ((syntax nil)
 	    (count 0))
-	(while (and (null syntax) (> (point) 1))
+	(while (and (null syntax) (not (bobp)))
 	  (forward-line -1)
 	  (setq count (1+ count))
 	  (cond
@@ -159,11 +160,45 @@
 	(beginning-of-line)
 	(delete-region (point) start-of-line)
 	(indent-to shift-amt)))
-    (goto-char (+ (point) off))))
+    (if (> off 0)
+	(goto-char (+ (point) off))
+      (rad-bol))))
 
 (defun rad-indent-command (arg)
   (interactive "p")
   (rad-indent-line))
+
+(defun rad-complete-attribute ()
+  (rad-complete "\\W\\(\\w+\\)\\s *"
+		rad-attr-dict nil "attribute: " " = "))
+
+(defun rad-complete-or-indent (arg)
+  "Depending on the current context either complete the attribute or its value
+or indent the current line"
+  (interactive "p")
+  (let ((here (point))
+	(syntax (rad-guess-syntax))
+	(bound (save-excursion
+		 (beginning-of-line)
+		 (point))))
+    (if (or (bolp)
+	    (eq (char-syntax (preceding-char)) ?\ ))
+	(rad-indent-line)
+      (cond
+       ((save-excursion (search-backward-regexp "\\([=,]\\)" bound t))
+	(if (char-equal
+	     (string-to-char (buffer-substring (match-beginning 1)
+						(match-end 1))) ?\,)
+	    (rad-complete-attribute)
+	  (rad-complete "=\\s *\\(\\w+\\)"
+			rad-value-dict
+			'rad-select-attr-values "value: ")))
+       ((save-excursion (search-backward-regexp "^\\w+\\s +\\w+" bound t))
+	(rad-complete-attribute))
+       ((eq (car syntax) 'rad-defn)
+	(rad-indent-line))
+       (t
+	(rad-complete-attribute))))))
 
 (defvar rad-attr-dict nil)
 (defvar rad-value-dict nil)
@@ -218,17 +253,20 @@
     (kill-buffer buf)))
 
 (defun rad-complete (regexp dict &optional select prompt c)
-  (let ((here (point)))
-    (if (search-backward-regexp regexp nil t)
+  (let ((here (point))
+	(bol (save-excursion
+	       (beginning-of-line)
+	       (point))))
+    (if (search-backward-regexp regexp bol t)
 	(let* ((from (match-beginning 1))
 	       (to (match-end 1))
 	       (attr (buffer-substring from to))
-	       (str (if (not (assoc attr dict))
+	       (real-dict (if select
+			      (funcall select dict)
+			    dict))
+	       (str (if (not (assoc attr real-dict))
 			(let ((compl (completing-read (or prompt "what? ")
-						      (if select
-							  (funcall select
-								   dict)
-							dict)
+						      real-dict
 						      nil nil attr nil)))
 			  (if compl
 			      compl
@@ -321,6 +359,7 @@ Key bindings:
   (interactive)
   (kill-all-local-variables)
   (set-syntax-table rad-mode-syntax-table)
+  (make-local-variable 'indent-line-function)
   (setq major-mode 'radius-mode
 	mode-name "Radius"
 	local-abbrev-table rad-mode-abbrev-table

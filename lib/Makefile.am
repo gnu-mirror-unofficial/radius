@@ -35,6 +35,8 @@ printutmp.c \
 radargp.c \
 raddb.c \
 radpaths.c \
+radpdu.c \
+radsrv.c \
 radutmp.c \
 realms.c \
 slist.c \
@@ -101,7 +103,5 @@ llib-ldebug.ln: $(libdebug_a_SOURCES:.c=.ln) llib-llog.ln
 
 lint:: llib-llog.ln llib-lrad.ln llib-ldebug.ln llib-lsql.ln
 
-LIBSRC=leakdetect.c mem.c $(libsql_a_SOURCES)
-
-LIBLIST:; @echo $(LIBSRC) > .list
+LIBLIST:; @echo $(librad_la_SOURCES) > .list
 endif

@@ -603,6 +603,36 @@ static Datatype attr_datatype(int type);
 static void gc();
 static void run(pctr_t pc);
 static void run_init(pctr_t pc, VALUE_PAIR *req);
+
+static pthread_mutex_t rewrite_code_mutex = PTHREAD_MUTEX_INITIALIZER; 
+static int rewrite_call_level = 0;
+
+static void rw_code_lock(int *locker);
+static void rw_code_unlock(int *locker, int force);
+ 
+static void
+rw_code_lock(locker)
+	int *locker;
+{
+	*locker = rewrite_call_level;
+	if (rewrite_call_level == 0)
+		pthread_mutex_lock(&rewrite_code_mutex);
+	rewrite_call_level++;
+}
+
+static void
+rw_code_unlock(locker, force)
+	int *locker;
+        int force;
+{
+	if (force)
+		rewrite_call_level = *locker;
+	else
+		--rewrite_call_level;
+	if (rewrite_call_level == 0)
+		pthread_mutex_unlock(&rewrite_code_mutex);
+}
+ 
 %}
 
 %union {
@@ -1164,6 +1194,8 @@ int
 parse_rewrite(path)
         char *path;
 {
+	int locker;
+	
         input_filename = path;
         infile = fopen(input_filename, "r");
         if (!infile) {
@@ -1175,11 +1207,12 @@ parse_rewrite(path)
                 return -1;
         }
 
-        if (!rewrite_tab)
+        if (!rewrite_tab) 
                 rewrite_tab = symtab_create(sizeof(FUNCTION), function_free);
-        else
+	else
                 symtab_clear(rewrite_tab);
 
+	rw_code_lock(&locker);
         yyeof = 0;
         input_line = 1;
         obstack_init(&input_stk);
@@ -1208,6 +1241,7 @@ parse_rewrite(path)
                 
         fclose(infile);
         obstack_free(&input_stk, NULL);
+	rw_code_unlock(&locker, 0);
         return 0;
 }
 
@@ -4372,290 +4406,6 @@ run(pc)
         }
 }
 
-static int rewrite_call_level = 0;
-
-void
-run_init(pc, request)
-        pctr_t     pc;
-        VALUE_PAIR *request;
-{
-        FILE *fp;
-
-        if (setjmp(rw_rt.jmp)) {
-                rewrite_call_level = 0;
-                return;
-        }
-        
-        rw_rt.request = request;
-        if (debug_on(2)) {
-                fp = debug_open_file();
-                fprintf(fp, "Before rewriting:\n");
-                avl_fprint(fp, rw_rt.request);
-                fclose(fp);
-        }
-        rw_rt.st = 0;                     /* Stack top */
-        rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
-        /* Imitate a function call */
-        rw_rt.pc = 0;
-        rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
-        pushn(0);                         /* Push on stack */
-        rewrite_call_level = 1;
-        run(pc);                          /* call function */
-        rewrite_call_level = 0;
-        if (debug_on(2)) {
-                fp = debug_open_file();
-                fprintf(fp, "After rewriting\n");
-                avl_fprint(fp, rw_rt.request);
-                fclose(fp);
-        }
-}
-
-/*VARARGS3*/
-int
-va_run_init(name, request, typestr, va_alist)
-        char *name;
-        VALUE_PAIR *request;
-        char *typestr;
-        va_dcl
-{
-        FILE *fp;
-        va_list ap;
-        FUNCTION *fun;
-        int nargs;
-        char *s;
-        
-        fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
-        if (!fun) {
-                radlog(L_ERR, _("function %s not defined"), name);
-                return -1;
-        }
-        
-        if (setjmp(rw_rt.jmp)) {
-                rewrite_call_level = 0;
-                return -1;
-        }
-        
-        rw_rt.request = request;
-        if (debug_on(2)) {
-                fp = debug_open_file();
-                fprintf(fp, "Before rewriting:\n");
-                avl_fprint(fp, rw_rt.request);
-                fclose(fp);
-        }
-        rw_rt.st = 0;                     /* Stack top */
-        rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
-        rw_rt.pc = 0;
-
-        /* Pass arguments */
-        nargs = 0;
-        va_start(ap);
-        while (*typestr) {
-                nargs++;
-                switch (*typestr++) {
-                case 'i':
-                        pushn(va_arg(ap, int));
-                        break;
-                case 's':
-                        s = va_arg(ap, char*);
-                        pushstr(s, strlen(s));
-                        break;
-                default:
-                        insist_fail("bad datatype");
-                }
-        }
-        va_end(ap);
-
-        if (fun->nparm != nargs) {
-                radlog(L_ERR,
-                       _("%s(): wrong number of arguments (should be %d, passed %d"),
-                       name, fun->nparm, nargs);
-                return -1;
-        }
-
-        /* Imitate a function call */
-        rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
-        pushn(0);                         /* Push on stack */
-        rewrite_call_level = 1;
-        run(fun->entry);                  /* call function */
-        rewrite_call_level = 0;
-        if (debug_on(2)) {
-                fp = debug_open_file();
-                fprintf(fp, "After rewriting\n");
-                avl_fprint(fp, rw_rt.request);
-                fclose(fp);
-        }
-        return rw_rt.rA;
-}
-
-
-int
-interpret(fcall, req, type, datum)
-        char *fcall;
-        RADIUS_REQ *req;
-        Datatype *type;
-        Datum *datum;
-{
-        FILE *fp;
-        FUNCTION *fun;
-        PARAMETER *parm;
-        int nargs;
-        char **argv = NULL;
-        int argc;
-        int i, errcnt = 0;
-        struct obstack obs;
-        char *args;
-        
-        obstack_init(&obs);
-        args = radius_xlate(&obs, fcall, req, NULL);
-        if (argcv_get(args, "(),", &argc, &argv) || argc < 3) {
-                radlog(L_ERR, _("malformed function call: %s"), fcall);
-                obstack_free(&obs, NULL);
-                if (argv)
-                        argcv_free(argc, argv);
-                return 1;
-        }
-
-        if (argv[1][0] != '(') {
-                radlog(L_ERR, _("missing '(' in function call"));
-                errcnt++;
-        } 
-        if (argv[argc-1][0] != ')') {
-                radlog(L_ERR, _("missing ')' in function call"));
-                errcnt++;
-        }       
-
-        fun = (FUNCTION*) sym_lookup(rewrite_tab, argv[0]);
-        if (!fun) {
-                radlog(L_ERR, _("function %s not defined"), argv[0]);
-                errcnt++;
-        }
-
-        if (errcnt) {
-                obstack_free(&obs, NULL);
-                argcv_free(argc, argv);
-                return 1;
-        }
-        
-        rw_rt.request = req ? req->request : NULL;
-        if (debug_on(2)) {
-                fp = debug_open_file();
-                fprintf(fp, "Before rewriting:\n");
-                avl_fprint(fp, rw_rt.request);
-                fclose(fp);
-        }
-
-        if (rewrite_call_level == 0) {
-                rw_rt.st = 0;                     /* Stack top */
-                rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
-                rw_rt.pc = 0;
-        }
-
-        /* Pass arguments */
-        nargs = 0;
-        parm = fun->parm;
-
-        for (i = 2; i < argc-1; i++) {
-                int n;
-                char *p;
-                
-                if (i % 2) {
-                        if (argv[i][0] == ',')
-                                continue;
-                        radlog(L_ERR,
-                        "calling %s: expected ',' but found %s after arg %d",
-                               argv[0], argv[i], parm);
-                        obstack_free(&obs, NULL);
-                        argcv_free(argc, argv);
-                        return -1;
-                }
-
-                if (++nargs > fun->nparm) {
-                        radlog(L_ERR, "too many arguments for %s", argv[0]);
-                        obstack_free(&obs, NULL);
-                        argcv_free(argc, argv);
-                        return -1;
-                }
-
-                switch (parm->datatype) {
-                case Integer:
-                        n = strtol(argv[i], &p, 0);
-                        if (*p) 
-                                n = ip_gethostaddr(argv[i]);
-                        pushn(n);
-                        break;
-                case String:
-                        pushstr(argv[i], strlen(argv[i]));
-                        break;
-                default:
-                        insist_fail("datatype!");
-                }
-                parm = parm->next;
-        }
-        obstack_free(&obs, NULL);
-        
-        if (fun->nparm != nargs) {
-                radlog(L_ERR,
-                       _("too few arguments for %s"),
-                         argv[0]);
-                argcv_free(argc, argv);
-                return -1;
-        }
-
-        argcv_free(argc, argv);
-
-        ++rewrite_call_level;
-        
-        /* Imitate a function call */
-        if (setjmp(rw_rt.jmp)) {
-                --rewrite_call_level;
-                return -1;
-        }
-        
-        rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
-        pushn(0);                         /* Push on stack */
-        run(fun->entry);                  /* call function */
-        --rewrite_call_level;
-        if (debug_on(2)) {
-                fp = debug_open_file();
-                fprintf(fp, "After rewriting\n");
-                avl_fprint(fp, rw_rt.request);
-                fclose(fp);
-        }
-        
-        switch (fun->rettype) {
-        case Integer:   
-                datum->ival = rw_rt.rA;
-                break;
-        case String:
-                datum->sval = (char*) rw_rt.rA;
-                break;
-        default:
-                abort();
-        }
-        *type = fun->rettype;
-        return 0;
-}
-
-int
-run_rewrite(name, req)
-        char *name;
-        VALUE_PAIR *req;
-{
-        FUNCTION *fun;
-        
-        fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
-        if (fun) {
-                if (fun->nparm) {
-                        radlog(L_ERR, "function %s() requires %d parameters",
-                               fun->name, fun->nparm);
-                        return -1;
-                }
-                run_init(fun->entry, req);
-                return 0;
-        } 
-        return -1;
-}
-
 /* ****************************************************************************
  * A placeholder for the garbage collector
  */
@@ -4843,6 +4593,298 @@ function_install(fun)
 }
 
 /* ****************************************************************************
+ * Runtime functions
+ */
+
+void
+run_init(pc, request)
+        pctr_t     pc;
+        VALUE_PAIR *request;
+{
+        FILE *fp;
+	int locker;
+	
+	rw_code_lock(&locker);
+        if (setjmp(rw_rt.jmp)) {
+		rw_code_unlock(&locker, 1);
+                return;
+        }
+        
+        rw_rt.request = request;
+        if (debug_on(2)) {
+                fp = debug_open_file();
+                fprintf(fp, "Before rewriting:\n");
+                avl_fprint(fp, rw_rt.request);
+                fclose(fp);
+        }
+        rw_rt.st = 0;                     /* Stack top */
+        rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
+        /* Imitate a function call */
+        rw_rt.pc = 0;
+        rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
+        pushn(0);                         /* Push on stack */
+        run(pc);                          /* call function */
+        if (debug_on(2)) {
+                fp = debug_open_file();
+                fprintf(fp, "After rewriting\n");
+                avl_fprint(fp, rw_rt.request);
+                fclose(fp);
+        }
+	rw_code_unlock(&locker, 0);
+}
+
+/*VARARGS3*/
+int
+va_run_init(name, request, typestr, va_alist)
+        char *name;
+        VALUE_PAIR *request;
+        char *typestr;
+        va_dcl
+{
+        FILE *fp;
+        va_list ap;
+        FUNCTION *fun;
+        int nargs;
+        char *s;
+        int locker;
+	
+        fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
+        if (!fun) {
+                radlog(L_ERR, _("function %s not defined"), name);
+                return -1;
+        }
+        
+	rw_code_lock(&locker);
+        if (setjmp(rw_rt.jmp)) {
+		rw_code_unlock(&locker, 1);
+                return -1;
+        }
+        
+        rw_rt.request = request;
+        if (debug_on(2)) {
+                fp = debug_open_file();
+                fprintf(fp, "Before rewriting:\n");
+                avl_fprint(fp, rw_rt.request);
+                fclose(fp);
+        }
+        rw_rt.st = 0;                     /* Stack top */
+        rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
+        rw_rt.pc = 0;
+
+        /* Pass arguments */
+        nargs = 0;
+        va_start(ap);
+        while (*typestr) {
+                nargs++;
+                switch (*typestr++) {
+                case 'i':
+                        pushn(va_arg(ap, int));
+                        break;
+                case 's':
+                        s = va_arg(ap, char*);
+                        pushstr(s, strlen(s));
+                        break;
+                default:
+                        insist_fail("bad datatype");
+                }
+        }
+        va_end(ap);
+
+        if (fun->nparm != nargs) {
+                radlog(L_ERR,
+                       _("%s(): wrong number of arguments (should be %d, passed %d"),
+                       name, fun->nparm, nargs);
+		rw_code_unlock(&locker, 1);
+		return -1;
+        }
+
+        /* Imitate a function call */
+        rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
+        pushn(0);                         /* Push on stack */
+        run(fun->entry);                  /* call function */
+        if (debug_on(2)) {
+                fp = debug_open_file();
+                fprintf(fp, "After rewriting\n");
+                avl_fprint(fp, rw_rt.request);
+                fclose(fp);
+        }
+	rw_code_unlock(&locker, 0);
+        return rw_rt.rA;
+}
+
+
+int
+interpret(fcall, req, type, datum)
+        char *fcall;
+        RADIUS_REQ *req;
+        Datatype *type;
+        Datum *datum;
+{
+        FILE *fp;
+        FUNCTION *fun;
+        PARAMETER *parm;
+        int nargs;
+        char **argv = NULL;
+        int argc;
+        int i, errcnt = 0;
+        struct obstack obs;
+        char *args;
+	int locker;
+	
+        obstack_init(&obs);
+        args = radius_xlate(&obs, fcall, req, NULL);
+        if (argcv_get(args, "(),", &argc, &argv) || argc < 3) {
+                radlog(L_ERR, _("malformed function call: %s"), fcall);
+                obstack_free(&obs, NULL);
+                if (argv)
+                        argcv_free(argc, argv);
+                return 1;
+        }
+
+        if (argv[1][0] != '(') {
+                radlog(L_ERR, _("missing '(' in function call"));
+                errcnt++;
+        } 
+        if (argv[argc-1][0] != ')') {
+                radlog(L_ERR, _("missing ')' in function call"));
+                errcnt++;
+        }       
+
+        fun = (FUNCTION*) sym_lookup(rewrite_tab, argv[0]);
+        if (!fun) {
+                radlog(L_ERR, _("function %s not defined"), argv[0]);
+                errcnt++;
+        }
+
+        if (errcnt) {
+                obstack_free(&obs, NULL);
+                argcv_free(argc, argv);
+                return 1;
+        }
+        
+	rw_code_lock(&locker);
+        rw_rt.request = req ? req->request : NULL;
+        if (debug_on(2)) {
+                fp = debug_open_file();
+                fprintf(fp, "Before rewriting:\n");
+                avl_fprint(fp, rw_rt.request);
+                fclose(fp);
+        }
+
+        if (rewrite_call_level == 1) {
+                rw_rt.st = 0;                     /* Stack top */
+                rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
+                rw_rt.pc = 0;
+        }
+
+        /* Pass arguments */
+        nargs = 0;
+        parm = fun->parm;
+
+        for (i = 2; i < argc-1; i++) {
+                int n;
+                char *p;
+                
+                if (i % 2) {
+                        if (argv[i][0] == ',')
+                                continue;
+                        radlog(L_ERR,
+                        "calling %s: expected ',' but found %s after arg %d",
+                               argv[0], argv[i], parm);
+                        obstack_free(&obs, NULL);
+                        argcv_free(argc, argv);
+			rw_code_unlock(&locker, 1);
+                        return -1;
+                }
+
+                if (++nargs > fun->nparm) {
+                        radlog(L_ERR, "too many arguments for %s", argv[0]);
+                        obstack_free(&obs, NULL);
+                        argcv_free(argc, argv);
+			rw_code_unlock(&locker, 1);
+                        return -1;
+                }
+
+                switch (parm->datatype) {
+                case Integer:
+                        n = strtol(argv[i], &p, 0);
+                        if (*p) 
+                                n = ip_gethostaddr(argv[i]);
+                        pushn(n);
+                        break;
+                case String:
+                        pushstr(argv[i], strlen(argv[i]));
+                        break;
+                default:
+                        insist_fail("datatype!");
+                }
+                parm = parm->next;
+        }
+        obstack_free(&obs, NULL);
+        
+        if (fun->nparm != nargs) {
+                radlog(L_ERR,
+                       _("too few arguments for %s"),
+                         argv[0]);
+                argcv_free(argc, argv);
+		rw_code_unlock(&locker, 1);
+                return -1;
+        }
+
+        argcv_free(argc, argv);
+
+        /* Imitate a function call */
+        if (setjmp(rw_rt.jmp)) {
+		rw_code_unlock(&locker, 1);
+                return -1;
+        }
+        
+        rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
+        pushn(0);                         /* Push on stack */
+        run(fun->entry);                  /* call function */
+        if (debug_on(2)) {
+                fp = debug_open_file();
+                fprintf(fp, "After rewriting\n");
+                avl_fprint(fp, rw_rt.request);
+                fclose(fp);
+        }
+        
+        switch (fun->rettype) {
+        case Integer:   
+                datum->ival = rw_rt.rA;
+                break;
+        case String:
+                datum->sval = (char*) rw_rt.rA;
+                break;
+        default:
+                abort();
+        }
+        *type = fun->rettype;
+	rw_code_unlock(&locker, 0);
+        return 0;
+}
+
+int
+run_rewrite(name, req)
+        char *name;
+        VALUE_PAIR *req;
+{
+        FUNCTION *fun;
+        
+        fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
+        if (fun) {
+                if (fun->nparm) {
+                        radlog(L_ERR, "function %s() requires %d parameters",
+                               fun->name, fun->nparm);
+                        return -1;
+                }
+                run_init(fun->entry, req);
+                return 0;
+        } 
+        return -1;
+}
+
+/* ****************************************************************************
  * Guile interface
  */
 #ifdef USE_SERVER_GUILE
@@ -4906,7 +4948,8 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
         Datum datum;
         SCM cell;
         SCM FNAME;
-
+	int locker;
+	
         FNAME = SCM_CAR(ARGS);
         ARGS  = SCM_CDR(ARGS);
         SCM_ASSERT(SCM_NIMP(FNAME) && SCM_STRINGP(FNAME),
@@ -4919,7 +4962,8 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
                                "function ~S not defined",
                                SCM_LIST1(FNAME));
 
-        if (rewrite_call_level == 0) {
+	rw_code_lock(&locker);
+        if (rewrite_call_level == 1) {
                 rw_rt.st = 0;                     /* Stack top */
                 rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
                 rw_rt.pc = 0;
@@ -4933,6 +4977,7 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
                 SCM car = SCM_CAR(cell);
 
                 if (++nargs > fun->nparm) {
+			rw_code_unlock(&locker, 1);
                         scm_misc_error(func_name,
                                        "too many arguments for ~S",
                                        SCM_LIST1(FNAME));
@@ -4954,29 +4999,31 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
                                 rc = 1;
                 }
 
-                if (rc) 
+                if (rc) {
+			rw_code_unlock(&locker, 1);
                         scm_misc_error(func_name,
                              "type mismatch in argument ~S(~S) in call to ~S",
                                        SCM_LIST3(SCM_MAKINUM(nargs),
                                                  car,
                                                  FNAME));
+		}
         }
 
-        if (fun->nparm != nargs)
+        if (fun->nparm != nargs) {
+		rw_code_unlock(&locker, 1);
                 scm_misc_error(func_name,
                                "too few arguments for ~S",
                                SCM_LIST1(FNAME));
-
+	}
+	
         /* Imitate a function call */
-        ++rewrite_call_level;
         if (setjmp(rw_rt.jmp)) {
-                --rewrite_call_level;
+		rw_code_unlock(&locker, 1);
                 return -1;
         }
         rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
         pushn(0);                         /* Push on stack */
         run(fun->entry);                  /* call function */
-        --rewrite_call_level;
 
         switch (fun->rettype) {
         case Integer:   
@@ -4988,7 +5035,7 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
         default:
                 abort();
         }
-
+	rw_code_unlock(&locker, 0);
         return radscm_datum_to_scm(fun->rettype, datum);
 }
 

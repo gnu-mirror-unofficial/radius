@@ -160,7 +160,7 @@ radius_exec_program(cmd, request, reply, exec_wait, user_msg)
 				radlog(L_ERR|L_PERROR, _("can't dup stdout"));
 		}
 
-		for(n = 32; n >= 3; n--)
+		for(n = getmaxfd(); n >= 3; n--)
 			close(n);
 
 		chdir("/tmp");

@@ -19,4 +19,4 @@ EXTRA_DIST=\
  Testlist
 
 all:;
-	$(AWK) -v SRCDIR=`cd $(srcdir); pwd` -f $(top_srcdir)/scripts/mktest.awk Testlist|$(SHELL)
+	$(AWK) -v SRCDIR=`cd $(srcdir); pwd` -f $(top_srcdir)/scripts/mktest.awk $(srcdir)/Testlist|$(SHELL)

@@ -122,7 +122,7 @@ proc default_radiusd_start {} {
     append sw " --radiusd $RADIUSD --radtest $RADTEST --driver dejagnu"
     
     if {![is_remote host]} {
-        set radiusd_cmd "$srcdir/../test.sh $sw"
+        set radiusd_cmd "$base_dir/../test.sh $sw"
     } else {
         regexp "(.*)/radiusd$"  $RADIUSD m path
         set radiusd_cmd "$path/../test/test.sh $sw"

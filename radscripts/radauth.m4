@@ -82,7 +82,7 @@ begin
     input "Enter session ID: " SID
   if ${PID:-} = ""
     input "Enter NAS port ID: " PID
-  send auth Accounting-Request $1 + (Acct-Session-Id = $SID NAS-Port-Id = $PID)
+  send acct Accounting-Request $1 + (Acct-Session-Id = $SID NAS-Port-Id = $PID)
   if $REPLY_CODE != Accounting-Response
   begin
     print "Accounting failed.\n"

@@ -1192,7 +1192,7 @@ rad_sql_attr_query(req, reply_pairs)
 	char			*value;
 	char			*cols_array[2];
 	VALUE_PAIR		*pair;
-	int			i;
+	int			i = 0;
 	qid_t                   qid;
 	char *query;
 
@@ -1210,25 +1210,28 @@ rad_sql_attr_query(req, reply_pairs)
 	query = radius_xlate(&stack, sql_cfg.attr_query, req, NULL);
 	
         data = disp_sql_exec(sql_cfg.interface, conn, query);
-	if (!data)
-		return 0;
-	
-        for (i = 0; disp_sql_next_tuple(sql_cfg.interface, conn, data) == 0; i++) {
-                if (!(attribute = disp_sql_column(sql_cfg.interface, data, 0))
-		    || !(value = disp_sql_column(sql_cfg.interface, data, 1))) {
-                        break;
-                }
-                chop(attribute);
-		chop(value);
+	if (data) {
+		for (i = 0;
+		     disp_sql_next_tuple(sql_cfg.interface, conn, data) == 0;
+		     i++) {
+			if (!(attribute =
+			      disp_sql_column(sql_cfg.interface, data, 0))
+			    || !(value =
+				 disp_sql_column(sql_cfg.interface, data, 1)))
+				break;
+			chop(attribute);
+			chop(value);
 
-		pair = install_pair(attribute, PW_OPERATOR_EQUAL, value);
+			pair = install_pair(attribute,
+					    PW_OPERATOR_EQUAL, value);
  
-                if (pair)
-                        avl_add_list(reply_pairs, pair);
-        }
+			if (pair)
+				avl_add_list(reply_pairs, pair);
+		}
  
-        disp_sql_free(sql_cfg.interface, conn, data);
- 
+		disp_sql_free(sql_cfg.interface, conn, data);
+	}
+	
         if (!sql_cfg.keepopen) 
                 unattach_sql_connection(SQL_AUTH, qid);
 

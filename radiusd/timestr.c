@@ -30,6 +30,12 @@ static char rcsid[] = "@(#) $Id$";
 #include <strings.h>
 #include <ctype.h>
 
+#ifdef TM_IN_SYS_TIME
+# include <sys/time.h>
+#else
+# include <time.h>
+#endif
+
 #include <timestr.h>
 
 

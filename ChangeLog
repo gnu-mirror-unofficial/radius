@@ -1,5 +1,14 @@
 2004-02-05  Sergey Poznyakoff
 
+	* radiusd/mlc.c: New file. Interface for multiple login checking.
+	* radiusd/Makefile.am: Added mlc.c
+	* radiusd/acct.c: Use MLC interface
+	* radiusd/auth.c: Likewise.
+	* scripts/.cvsignore: Updated
+	* NEWS: Updated
+	
+2004-02-05  Sergey Poznyakoff
+
 	* include/common.h: New file
 	* include/radius: New directory. New files:
 	* include/radius/Makefile.am: 
@@ -77,9 +86,6 @@
         * lib/users.l:
         * lib/users.y:
         * lib/util.c:
-        * po/es.po:
-        * po/pl.po:
-        * po/ru.po:
         * radiusd/Makefile.am:
         * radiusd/acct.c:
         * radiusd/auth.c:
@@ -145,8 +151,6 @@
         * sql/mysql.c:
         * sql/odbc.c:
         * sql/postgres.c:
-
-
 	
 2004-02-04  Sergey Poznyakoff
 

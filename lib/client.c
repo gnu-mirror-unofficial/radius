@@ -246,8 +246,8 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
 	debug(1,
 	      ("sending %s", auth_code_str(code)));
 	recv_buf = grad_emalloc(config->buffer_size);
-        itr = iterator_create(config->servers);
-        server = iterator_first(itr);
+        itr = grad_iterator_create(config->servers);
+        server = grad_iterator_first(itr);
         do {
 		fd_set readfds;
 		struct timeval tm;
@@ -356,8 +356,8 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
 				  grad_ip_iptostr(server->addr, ipbuf),
 				  server->port[port_type]));
 		
-        } while (!req && (server = iterator_next(itr)) != NULL);
-	iterator_destroy(&itr);
+        } while (!req && (server = grad_iterator_next(itr)) != NULL);
+	grad_iterator_destroy(&itr);
 
 	grad_free(recv_buf);
         close(sockfd);

@@ -186,21 +186,21 @@ grad_realm_t *
 grad_realm_lookup_name(char *realm)
 {
         grad_realm_t *p;
-	grad_iterator_t *itr = iterator_create(realms);
+	grad_iterator_t *itr = grad_iterator_create(realms);
 
 	if (!itr)
 		return NULL;
 
-        for (p = iterator_first(itr); p; p = iterator_next(itr))
+        for (p = grad_iterator_first(itr); p; p = grad_iterator_next(itr))
 		if (realm_match_name_p(p, realm))
                         break;
 	
         if (!p && strcmp(realm, "NOREALM")) {
-        	for (p = iterator_first(itr); p; p = iterator_next(itr))
+        	for (p = grad_iterator_first(itr); p; p = grad_iterator_next(itr))
                         if (strcmp(p->realm, "DEFAULT") == 0)
                                 break;
         }
-        iterator_destroy(&itr);
+        grad_iterator_destroy(&itr);
         return p;
 }
 
@@ -211,12 +211,12 @@ grad_realm_verify_ip(grad_realm_t *realm, grad_uint32_t ip)
 	grad_iterator_t *itr;
 
 	if (!realm->queue
-	    || (itr = iterator_create(realm->queue->servers)) == NULL)
+	    || (itr = grad_iterator_create(realm->queue->servers)) == NULL)
 		return 0;
-	for (serv = iterator_first(itr); serv; serv = iterator_next(itr))
+	for (serv = grad_iterator_first(itr); serv; serv = grad_iterator_next(itr))
 	     	if (serv->addr == ip)
 			break;
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
 	return serv != NULL;
 }
 
@@ -226,12 +226,12 @@ grad_realm_lookup_ip(grad_uint32_t ip)
 	grad_realm_t *p;
 	grad_iterator_t *itr;
 
-        if (!(itr = iterator_create(realms)))
+        if (!(itr = grad_iterator_create(realms)))
 	    return NULL;
-        for (p = iterator_first(itr); p; p = iterator_next(itr))
+        for (p = grad_iterator_first(itr); p; p = grad_iterator_next(itr))
 		if (grad_realm_verify_ip(p, ip))
 			break;
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
 	return p;
 }
 

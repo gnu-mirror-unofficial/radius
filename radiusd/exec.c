@@ -396,7 +396,7 @@ struct filter_symbol {
 	int    output;              /* Output file descriptor */
 }; 
 
-static Symtab *filter_tab;
+static grad_symtab_t *filter_tab;
 
 struct cleanup_info {
 	pid_t pid;
@@ -429,7 +429,7 @@ filter_cleanup(pid_t pid, int status)
 	struct cleanup_info info;
 	info.pid = pid;
 	info.status = status;
-	symtab_iterate(filter_tab, filter_cleanup_proc, &info);
+	grad_symtab_iterate(filter_tab, filter_cleanup_proc, &info);
 }
 
 void
@@ -463,7 +463,7 @@ filter_kill(Filter *filter)
 static Filter *
 filter_open(char *name, grad_request_t *req, int type, int *errp)
 {
-	Filter *filter = sym_lookup(filter_tab, name);
+	Filter *filter = grad_sym_lookup(filter_tab, name);
 	if (!filter) {
 		grad_log_req(L_ERR, req,
 			     _("filter %s is not declared"),
@@ -726,10 +726,10 @@ filters_stmt_term(int finish, void *block_data, void *handler_data)
 {
 	if (!finish) {
 		if (filter_tab)
-			symtab_clear(filter_tab);
+			grad_symtab_clear(filter_tab);
 		else
-			filter_tab = symtab_create(sizeof(Filter),
-						   free_symbol_entry);
+			filter_tab = grad_symtab_create(sizeof(Filter),
+						        free_symbol_entry);
 	}
 	return 0;
 }
@@ -761,9 +761,9 @@ static int
 filter_stmt_end(void *block_data, void *handler_data)
 {
 	if (filter_symbol.argc) {
-		Filter *sym = sym_lookup_or_install(filter_tab,
-						    filter_symbol.name,
-						    1);
+		Filter *sym = grad_sym_lookup_or_install(filter_tab,
+						         filter_symbol.name,
+						         1);
 		if (sym->argc) {
 			grad_log(L_ERR,
 			         _("%s:%d: filter already declared at %s:%d"),

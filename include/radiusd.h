@@ -319,7 +319,7 @@ extern int auth_comp_flag;
 extern int acct_comp_flag; 
 extern RADIUS_USER exec_user;
 extern RADIUS_USER radiusd_user;
-extern Symtab *user_tab;
+extern grad_symtab_t *user_tab;
 
 /* Input subsystem (input.c) */
 
@@ -492,10 +492,17 @@ char *menu_read_text(char *menu_name);
 void acct_init();
 int rad_accounting(grad_request_t *, int, int);
 int radzap(grad_uint32_t nas, int port, char *user, time_t t);
-int rad_check_multi(char *name, grad_avp_t *request, int maxsimul,
-		    int *pcount);
-int rad_check_realm(grad_realm_t *realm);
 int write_detail(grad_request_t *radreq, int authtype, char *f);
+
+int radutmp_mlc_collect_user(char *name, grad_avp_t *request,
+			     grad_list_t **sess_list);
+int radutmp_mlc_collect_realm(grad_realm_t *realm, grad_list_t **sess_list);
+void radutmp_mlc_close(struct radutmp *up);
+
+/* mlc.c */
+int radius_mlc_user(char *name, grad_avp_t *request,
+		    size_t maxsimul, size_t *pcount);
+int radius_mlc_realm(grad_realm_t *realm);
 
 /* files.c */
 int user_find(char *name, grad_request_t *, grad_avp_t **, grad_avp_t **);

@@ -109,15 +109,15 @@ char *
 grad_envar_lookup(grad_envar_t *env, char *name)
 {
 	ENVAR *p;
-	grad_iterator_t *itr = iterator_create(env);
+	grad_iterator_t *itr = grad_iterator_create(env);
 
 	if (!itr)
 		return NULL;
-	for (p = iterator_first(itr); p; p = iterator_next(itr)) {
+	for (p = grad_iterator_first(itr); p; p = grad_iterator_next(itr)) {
                 if (strcmp(p->name, name) == 0)
                         break;
         }
-        iterator_destroy(&itr);
+        grad_iterator_destroy(&itr);
         return p ? p->value : NULL;
 }
 
@@ -160,19 +160,19 @@ grad_envar_merge_lists(grad_envar_t *prim, grad_envar_t *sec)
 	grad_iterator_t *itr;
         
         list = grad_list_create();
-	itr = iterator_create(sec);
+	itr = grad_iterator_create(sec);
 	if (itr) {
-		for (p = iterator_first(itr); p; p = iterator_next(itr))
+		for (p = grad_iterator_first(itr); p; p = grad_iterator_next(itr))
                 	if (!grad_envar_lookup(prim, p->name)) {
 				grad_list_append(list, grad_envar_dup(p));
                 	}
-                iterator_destroy(&itr);
+                grad_iterator_destroy(&itr);
         }
-        itr = iterator_create(prim);
+        itr = grad_iterator_create(prim);
         if (itr) {
-        	for (p = iterator_first(itr); p; p = iterator_next(itr)) 
+        	for (p = grad_iterator_first(itr); p; p = grad_iterator_next(itr)) 
                 	grad_list_append(list, grad_envar_dup(p));
-                iterator_destroy(&itr);
+                grad_iterator_destroy(&itr);
         }
         return list;
 }

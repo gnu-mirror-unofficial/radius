@@ -10,7 +10,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: radius 1.2\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
-"POT-Creation-Date: 2004-02-04 23:32+0200\n"
+"POT-Creation-Date: 2004-02-05 14:55+0200\n"
 "PO-Revision-Date: 2003-12-16 13:49+0200\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Polish <translation-team-pl@lists.sourceforge.net>\n"
@@ -501,20 +501,6 @@ msgstr "nie mogê stworzyæ katalogu rozliczeniowego `%s'"
 #: radiusd/acct.c:412
 msgid "Detailed accounting is disabled"
 msgstr "Rozliczenie detalizowane wy³±czone"
-
-#: radiusd/acct.c:636
-#, c-format
-msgid "assuming `%s' is logged in"
-msgstr "przyjmujê ¿e u¿ytkownik `%s' jest zalogowany"
-
-#: radiusd/acct.c:639
-#, c-format
-msgid "assuming `%s' is NOT logged in"
-msgstr "przyjmujê ¿e u¿ytkownik `%s' NIE jest zalogowanym"
-
-#: radiusd/acct.c:655
-msgid "check_ts(): unknown NAS"
-msgstr "check_ts(): nieznany NAS"
 
 #: radiusd/auth.c:158
 msgid "account locked"
@@ -2490,6 +2476,15 @@ msgid_plural "query returned %d tuples: %s"
 msgstr[0] "zapytanie zwróci³o %d wiersz: %s"
 msgstr[1] "zapytanie zwróci³o %d wiersze: %s"
 msgstr[2] "zapytanie zwróci³o %d wierszy: %s"
+
+#~ msgid "assuming `%s' is logged in"
+#~ msgstr "przyjmujê ¿e u¿ytkownik `%s' jest zalogowany"
+
+#~ msgid "assuming `%s' is NOT logged in"
+#~ msgstr "przyjmujê ¿e u¿ytkownik `%s' NIE jest zalogowanym"
+
+#~ msgid "check_ts(): unknown NAS"
+#~ msgstr "check_ts(): nieznany NAS"
 
 #~ msgid "expected opcode but found %s"
 #~ msgstr "oczekiwany kod operacji, odnaleziono %s"

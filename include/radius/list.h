@@ -37,11 +37,11 @@ int grad_list_insert_sorted(struct list *list, void *data, list_comp_t cmp);
 void *grad_list_locate(grad_list_t *list, void *data, list_comp_t cmp);
 void *grad_list_remove(grad_list_t *list, void *data, list_comp_t cmp);
 
-void *iterator_current(grad_iterator_t *ip);
-grad_iterator_t *iterator_create(grad_list_t *list);
-void iterator_destroy(grad_iterator_t **ip);
-void *iterator_first(grad_iterator_t *ip);
-void *iterator_next(grad_iterator_t *ip);
+void *grad_iterator_current(grad_iterator_t *ip);
+grad_iterator_t *grad_iterator_create(grad_list_t *list);
+void grad_iterator_destroy(grad_iterator_t **ip);
+void *grad_iterator_first(grad_iterator_t *ip);
+void *grad_iterator_next(grad_iterator_t *ip);
 
 
 #endif

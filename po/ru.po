@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: radius 1.2\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
-"POT-Creation-Date: 2004-02-04 23:32+0200\n"
+"POT-Creation-Date: 2004-02-05 14:55+0200\n"
 "PO-Revision-Date: 2003-12-16 13:52+0200\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Russian <ru@li.org>\n"
@@ -507,20 +507,6 @@ msgstr "невозможно создать каталог `%s'"
 #: radiusd/acct.c:412
 msgid "Detailed accounting is disabled"
 msgstr "Детальный обсчёт отключен"
-
-#: radiusd/acct.c:636
-#, c-format
-msgid "assuming `%s' is logged in"
-msgstr "предполагается, что сессия `%s' активна"
-
-#: radiusd/acct.c:639
-#, c-format
-msgid "assuming `%s' is NOT logged in"
-msgstr "предполагается, что сессия `%s' НЕ активна"
-
-#: radiusd/acct.c:655
-msgid "check_ts(): unknown NAS"
-msgstr "check_ts(): неизвестный NAS"
 
 #: radiusd/auth.c:158
 msgid "account locked"
@@ -2502,6 +2488,15 @@ msgid_plural "query returned %d tuples: %s"
 msgstr[0] "запрос вернул %d комплект значений"
 msgstr[1] "запрос вернул %d комплекта значений"
 msgstr[2] "запрос вернул %d комплектов значений"
+
+#~ msgid "assuming `%s' is logged in"
+#~ msgstr "предполагается, что сессия `%s' активна"
+
+#~ msgid "assuming `%s' is NOT logged in"
+#~ msgstr "предполагается, что сессия `%s' НЕ активна"
+
+#~ msgid "check_ts(): unknown NAS"
+#~ msgstr "check_ts(): неизвестный NAS"
 
 #~ msgid "expected opcode but found %s"
 #~ msgstr "ожидается код операции, однако обнаружен %s"

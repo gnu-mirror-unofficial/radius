@@ -20,9 +20,9 @@
 #ifndef __symtab_h
 #define __symtab_h
 
-typedef struct symbol Symbol;
+typedef struct symbol grad_symbol_t;
 struct symbol {
-        Symbol *next;
+        grad_symbol_t *next;
         char *name;
 } ;
 
@@ -30,22 +30,22 @@ typedef struct {
         int elsize;
         int elcnt;
         int hash_num;
-        Symbol **sym;
+        grad_symbol_t **sym;
         int (*elfree)();
-} Symtab;
+} grad_symtab_t;
 
-Symtab * symtab_create(unsigned esize, int (*)());
-void symtab_free(Symtab **symtab);
-void symtab_clear(Symtab *symtab);
+grad_symtab_t * grad_symtab_create(unsigned esize, int (*)());
+void grad_symtab_free(grad_symtab_t **symtab);
+void grad_symtab_clear(grad_symtab_t *symtab);
 
-void *sym_install(Symtab *symtab, char *name);
-void *sym_lookup(Symtab *symtab, char *name);
-void *sym_lookup_or_install(Symtab *symtab, char *name, int install);
-void *sym_next(Symbol *sym);
-void symtab_iterate(Symtab *symtab, int (*fn)(), void *closure);
-int symtab_delete(Symtab *symtab, Symbol *sym);
+void *grad_sym_install(grad_symtab_t *symtab, char *name);
+void *grad_sym_lookup(grad_symtab_t *symtab, char *name);
+void *grad_sym_lookup_or_install(grad_symtab_t *symtab, char *name, int install);
+void *grad_sym_next(grad_symbol_t *sym);
+void grad_symtab_iterate(grad_symtab_t *symtab, int (*fn)(), void *closure);
+int grad_symtab_delete(grad_symtab_t *symtab, grad_symbol_t *sym);
 
-Symbol * alloc_sym(char *, unsigned);
-void     sym_free(Symbol *);
+grad_symbol_t * alloc_sym(char *, unsigned);
+void     grad_sym_free(grad_symbol_t *);
 
 #endif

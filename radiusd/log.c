@@ -270,7 +270,7 @@ radiusd_logger(int level,
         char *buf1 = NULL;
         char *buf2 = NULL;
         char *buf3 = NULL;
-        grad_iterator_t *itr = iterator_create(chanlist);
+        grad_iterator_t *itr = grad_iterator_create(chanlist);
 
         cat = L_CAT(level);
         if (cat == 0)
@@ -292,12 +292,12 @@ radiusd_logger(int level,
 
         vasprintf(&buf2, fmt, ap);
         
-        for (chan = iterator_first(itr); chan; chan = iterator_next(itr)) {
+        for (chan = grad_iterator_first(itr); chan; chan = grad_iterator_next(itr)) {
                 /* Skip channels whith incorrect priority */
                 if (chan->pmask[cat] & L_MASK(pri))
                         log_to_channel(chan, cat, pri, req, buf1, buf2, buf3);
         }
-        iterator_destroy(&itr);
+        grad_iterator_destroy(&itr);
 
         if (buf1)
                 free(buf1);
@@ -360,12 +360,12 @@ log_release(Channel *chan)
 {
         Channel *cp;
         int emerg, alert, crit;
-	grad_iterator_t *itr = iterator_create(chanlist);
+	grad_iterator_t *itr = grad_iterator_create(chanlist);
 
-	for (cp = iterator_first(itr); cp; cp = iterator_next(itr))
+	for (cp = grad_iterator_first(itr); cp; cp = grad_iterator_next(itr))
 		if (cp == chan)
 			break;
-        for (; cp; cp = iterator_next(itr)) {
+        for (; cp; cp = grad_iterator_next(itr)) {
                 if (!(cp->options & LO_PERSIST)) {
 			grad_list_remove(chanlist, cp, NULL);
                         channel_free(cp);
@@ -377,7 +377,7 @@ log_release(Channel *chan)
         emerg = L_EMERG;
         alert = L_ALERT;
         crit  = L_CRIT;
-	for (cp = iterator_first(itr); cp; cp = iterator_next(itr)) {
+	for (cp = grad_iterator_first(itr); cp; cp = grad_iterator_next(itr)) {
                 int i;
                 for (i = 1; i < L_NCAT; i++) {
                         if (emerg && (cp->pmask[i] & L_MASK(emerg)))
@@ -388,7 +388,7 @@ log_release(Channel *chan)
                                 crit = 0;
                 }
         }
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
         if (emerg || alert || crit)
                 log_set_default("##emerg##", -1, emerg|alert|crit);
 }
@@ -398,8 +398,8 @@ log_change_owner(RADIUS_USER *usr)
 {
         Channel *cp;
 	int errcnt = 0;
-	grad_iterator_t *itr = iterator_create(chanlist);
-	for (cp = iterator_first(itr); cp; cp = iterator_next(itr)) {
+	grad_iterator_t *itr = grad_iterator_create(chanlist);
+	for (cp = grad_iterator_first(itr); cp; cp = grad_iterator_next(itr)) {
 		if (cp->mode == LM_FILE
 		    && chown(cp->id.file, usr->uid, usr->gid)) {
 			grad_log(L_ERR,
@@ -408,7 +408,7 @@ log_change_owner(RADIUS_USER *usr)
 			errcnt++;
 		}
 	}
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
 	return errcnt;
 }
 

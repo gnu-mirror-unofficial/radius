@@ -373,11 +373,11 @@ stat_count_ports()
 	if (!server_stat)
 		return;
  	itr = grad_nas_iterator();	
-	for (nas = iterator_first(itr); nas; nas = iterator_next(itr)) {
+	for (nas = grad_iterator_first(itr); nas; nas = grad_iterator_next(itr)) {
 		statp = nas->app_data;
 		statp->ports_active = statp->ports_idle = 0;
 	}
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
 	
 	radstat.port_active_count = radstat.port_idle_count = 0;
 

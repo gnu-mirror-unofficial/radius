@@ -83,7 +83,7 @@ int yyerror(char *s);
                 grad_avp_t *head, *tail;
         } pair_list;
         Variable variable;
-	Symtab *symtab;
+	grad_symtab_t *symtab;
 	enum grad_operator op;
 }
 
@@ -111,8 +111,8 @@ stmt          : /* empty */ EOL
                 {
                         Variable *var;
                         
-                        if ((var = (Variable*) sym_lookup(vartab, $1)) == NULL)
-                                var = (Variable*) sym_install(vartab, $1);
+                        if ((var = (Variable*) grad_sym_lookup(vartab, $1)) == NULL)
+                                var = (Variable*) grad_sym_install(vartab, $1);
                         if (var->type == Builtin)
                                 var->datum.builtin.set(&$3);
                         else {
@@ -124,7 +124,7 @@ stmt          : /* empty */ EOL
                 {
                         radtest_send($3, $4, $5, $2);
                         tempvar_free($5);
-			symtab_free(&$2);
+			grad_symtab_free(&$2);
                 }
               | EXPECT code maybe_expr EOL
                 {
@@ -198,15 +198,15 @@ send_flag_list: send_flag
                 {
 			Variable *var;
 			
-			$$ = symtab_create(sizeof(Variable), var_free);
-			var = (Variable*) sym_install($$, $1.name);
+			$$ = grad_symtab_create(sizeof(Variable), var_free);
+			var = (Variable*) grad_sym_install($$, $1.name);
 			var->type = $1.type;
 			var->datum = $1.datum;
 		}
               | send_flag_list send_flag
                 {
 			Variable *var;
-			var = (Variable*) sym_install($1, $2.name);
+			var = (Variable*) grad_sym_install($1, $2.name);
 			var->type = $2.type;
 			var->datum = $2.datum;
 			$$ = $1;

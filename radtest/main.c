@@ -36,7 +36,7 @@
 #include <radtest.h>
 #include <radius/argcv.h>
 
-Symtab *vartab;
+grad_symtab_t *vartab;
 int verbose;
 extern int grad_client_debug;
 grad_server_queue_t *srv_queue;
@@ -276,10 +276,10 @@ init_symbols()
 {
         Variable *var;
         
-        vartab = symtab_create(sizeof(Variable), NULL);
-        var = (Variable*) sym_install(vartab, "REPLY_CODE");
+        vartab = grad_symtab_create(sizeof(Variable), NULL);
+        var = (Variable*) grad_sym_install(vartab, "REPLY_CODE");
         var->type = Integer;
-        var = (Variable*) sym_install(vartab, "REPLY");
+        var = (Variable*) grad_sym_install(vartab, "REPLY");
         var->type = Vector;
 }
 
@@ -301,7 +301,7 @@ assign(char *s)
         type = parse_datum(p, &datum);
         if (type == Undefined)
                 return;
-        var = (Variable*)sym_install(vartab, s);
+        var = (Variable*)grad_sym_install(vartab, s);
         var->type = type;
         var->datum = datum;
 }
@@ -463,7 +463,7 @@ tempvar_free(Variable *var)
 }
 
 void
-radtest_send(int port, int code, Variable *var, Symtab *cntl)
+radtest_send(int port, int code, Variable *var, grad_symtab_t *cntl)
 {
         grad_request_t *auth;
 	Variable *p;
@@ -490,17 +490,17 @@ radtest_send(int port, int code, Variable *var, Symtab *cntl)
 		u_char vector[AUTH_VECTOR_LEN];
 		int sflags = 0;
 		int retry = 1;
-		Variable *delay = (Variable*)sym_lookup(cntl, "delay");
+		Variable *delay = (Variable*)grad_sym_lookup(cntl, "delay");
 		
-		p = (Variable*)sym_lookup(cntl, "repeat");
+		p = (Variable*)grad_sym_lookup(cntl, "repeat");
 		if (p)
 			retry = p->datum.number;
-		p = (Variable*)sym_lookup(cntl, "id");
+		p = (Variable*)grad_sym_lookup(cntl, "id");
 		if (p) {
 			sflags |= RADCLT_ID;
 			id = p->datum.number;
 		}
-		p = (Variable*)sym_lookup(cntl, "keepauth");
+		p = (Variable*)grad_sym_lookup(cntl, "keepauth");
 		if (p && p->datum.number) 
 			sflags |= RADCLT_AUTHENTICATOR;
 		auth = grad_client_send0(srv_queue,
@@ -526,14 +526,14 @@ radtest_send(int port, int code, Variable *var, Symtab *cntl)
 	if (!auth)
 		return;
         reply_code = auth->code;
-        var = (Variable*)sym_lookup(vartab, "REPLY_CODE");
+        var = (Variable*)grad_sym_lookup(vartab, "REPLY_CODE");
         var->type = Integer;
         var->datum.number = reply_code;
 
         reply_list = grad_client_decrypt_pairlist(grad_avl_dup(auth->request),
 						  auth->vector, auth->secret);
 
-        var = (Variable*)sym_lookup(vartab, "REPLY");
+        var = (Variable*)grad_sym_lookup(vartab, "REPLY");
         var->type = Vector;
         var->datum.vector = NULL;
         var->datum.vector = reply_list;

@@ -71,7 +71,7 @@ grad_list_destroy(struct list **plist, list_iterator_t user_free, void *data)
 }
 
 void *
-iterator_current(grad_iterator_t *ip)
+grad_iterator_current(grad_iterator_t *ip)
 {
 	if (!ip)
 		return NULL;
@@ -79,7 +79,7 @@ iterator_current(grad_iterator_t *ip)
 }
 
 grad_iterator_t *
-iterator_create(grad_list_t *list)
+grad_iterator_create(grad_list_t *list)
 {
 	grad_iterator_t *itr;
 
@@ -95,7 +95,7 @@ iterator_create(grad_list_t *list)
 }
 
 void
-iterator_destroy(grad_iterator_t **ip)
+grad_iterator_destroy(grad_iterator_t **ip)
 {
 	grad_iterator_t *itr, *prev;
 
@@ -118,24 +118,24 @@ iterator_destroy(grad_iterator_t **ip)
 }
 		
 void *
-iterator_first(grad_iterator_t *ip)
+grad_iterator_first(grad_iterator_t *ip)
 {
 	if (!ip)
 		return NULL;
 	ip->cur = ip->list->head;
 	ip->advanced = 0;
-	return iterator_current(ip);
+	return grad_iterator_current(ip);
 }
 
 void *
-iterator_next(grad_iterator_t *ip)
+grad_iterator_next(grad_iterator_t *ip)
 {
 	if (!ip || !ip->cur)
 		return NULL;
 	if (!ip->advanced)
 		ip->cur = ip->cur->next;
 	ip->advanced = 0;
-	return iterator_current(ip);
+	return grad_iterator_current(ip);
 }	
 
 static void
@@ -250,14 +250,14 @@ grad_list_iterate(struct list *list, list_iterator_t func, void *data)
 	
 	if (!list)
 		return;
-	itr = iterator_create(list);
+	itr = grad_iterator_create(list);
 	if (!itr)
 		return;
-	for (p = iterator_first(itr); p; p = iterator_next(itr)) {
+	for (p = grad_iterator_first(itr); p; p = grad_iterator_next(itr)) {
 		if (func(p, data))
 			break;
 	}
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
 }
 
 void *

@@ -474,9 +474,9 @@ snmpserv_after_config_hook(void *arg, void *data ARG_UNUSED)
 		*(serv_stat*)arg = server_stat->auth.status;
 		snmp_init_nas_stat();
 		itr = grad_nas_iterator();
-		for (nas = iterator_first(itr); nas; nas = iterator_next(itr))
+		for (nas = grad_iterator_first(itr); nas; nas = grad_iterator_next(itr))
 			snmp_attach_nas_stat(nas);
-		iterator_destroy(&itr);
+		grad_iterator_destroy(&itr);
 		snmp_sort_nas_stat();
 	}
 }
@@ -2652,12 +2652,12 @@ nas_lookup_index(int ind)
 	grad_iterator_t *itr = grad_nas_iterator();
         struct nas_stat *ns;
         
-        for (nas = iterator_first(itr); nas; nas = iterator_next(itr)) {
+        for (nas = grad_iterator_first(itr); nas; nas = grad_iterator_next(itr)) {
                 ns = nas->app_data;
                 if (ns && ns->index == ind)
                         break;
         }
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
         return nas;
 }
 

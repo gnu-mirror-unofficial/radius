@@ -43,14 +43,14 @@ static size_t hash_size[] = {
 static int max_rehash = sizeof (hash_size) / sizeof (hash_size[0]);
 
 
-Symbol * alloc_sym(char *, unsigned);
+grad_symbol_t * alloc_sym(char *, unsigned);
 static unsigned int hashval(unsigned char *s, unsigned bias);
-static void _sym_add(Symtab *symtab, unsigned h, Symbol *sp);
+static void _sym_add(grad_symtab_t *symtab, unsigned h, grad_symbol_t *sp);
 
-Symtab *
-symtab_create(unsigned esize, int (*elfree)())
+grad_symtab_t *
+grad_symtab_create(unsigned esize, int (*elfree)())
 {
-        Symtab *symtab;
+        grad_symtab_t *symtab;
         
         symtab = grad_emalloc(sizeof(*symtab));
         symtab->elsize = esize;
@@ -74,11 +74,11 @@ hashval(unsigned char *s, unsigned bias)
 }
 
 void
-_sym_add(Symtab *symtab, unsigned h, Symbol *sp)
+_sym_add(grad_symtab_t *symtab, unsigned h, grad_symbol_t *sp)
 {
         sp->next = NULL;
         if (symtab->sym[h]) {
-                Symbol *prev;
+                grad_symbol_t *prev;
                 for (prev = symtab->sym[h]; prev->next; prev = prev->next)
                         ;
                 prev->next = sp;
@@ -87,9 +87,9 @@ _sym_add(Symtab *symtab, unsigned h, Symbol *sp)
 }
 
 int
-symtab_rehash(Symtab *symtab)
+grad_symtab_rehash(grad_symtab_t *symtab)
 {
-        Symbol **old_table = symtab->sym;
+        grad_symbol_t **old_table = symtab->sym;
         int i;
   
         if (++symtab->hash_num >= max_rehash) {
@@ -103,7 +103,7 @@ symtab_rehash(Symtab *symtab)
                 size_t old_size = hash_size[symtab->hash_num-1];
                 
                 for (i = 0; i < old_size; i++) {
-                        Symbol *sym, *next;
+                        grad_symbol_t *sym, *next;
                         
                         sym = old_table[i];
                         while (sym) {
@@ -123,10 +123,10 @@ symtab_rehash(Symtab *symtab)
 }
 
 void *
-sym_lookup_or_install(Symtab *symtab, char *name, int install)
+grad_sym_lookup_or_install(grad_symtab_t *symtab, char *name, int install)
 {
         if (symtab->sym) {
-                Symbol *sp;
+                grad_symbol_t *sp;
                 unsigned h;
 
                 h = hashval((unsigned char *)name,
@@ -139,20 +139,20 @@ sym_lookup_or_install(Symtab *symtab, char *name, int install)
         }
         
         if (install)
-                return sym_install(symtab, name);
+                return grad_sym_install(symtab, name);
                 
         return NULL;
 }
 
 void *
-sym_install(Symtab *symtab, char *name)
+grad_sym_install(grad_symtab_t *symtab, char *name)
 {
-        Symbol *sp;
+        grad_symbol_t *sp;
         unsigned int h;
 
         if (!symtab->sym
             || 10 * symtab->elcnt / hash_size[symtab->hash_num] > 20/3)
-                symtab_rehash(symtab);
+                grad_symtab_rehash(symtab);
         
         h = hashval((unsigned char *)name, hash_size[symtab->hash_num]);
 
@@ -163,13 +163,13 @@ sym_install(Symtab *symtab, char *name)
 }
 
 void *
-sym_lookup(Symtab *symtab, char *name)
+grad_sym_lookup(grad_symtab_t *symtab, char *name)
 {
-        return sym_lookup_or_install(symtab, name, 0);
+        return grad_sym_lookup_or_install(symtab, name, 0);
 }
 
 void *
-sym_next(Symbol *sym)
+grad_sym_next(grad_symbol_t *sym)
 {
         char *name = sym->name;
         for (sym = sym->next; sym; sym = sym->next) {
@@ -179,10 +179,10 @@ sym_next(Symbol *sym)
         return NULL;
 }
 
-Symbol *
+grad_symbol_t *
 alloc_sym(char *s, unsigned size)
 {
-        Symbol *ptr;
+        grad_symbol_t *ptr;
         ptr = grad_emalloc(size);
         ptr->name = grad_estrdup(s);
         return ptr;
@@ -192,9 +192,9 @@ alloc_sym(char *s, unsigned size)
  * Delete the symbol `sym' from symtab.
  */
 int
-symtab_delete(Symtab *symtab, Symbol *sym)
+grad_symtab_delete(grad_symtab_t *symtab, grad_symbol_t *sym)
 {
-        Symbol *sp, *prev;
+        grad_symbol_t *sp, *prev;
         unsigned h;
 
         if (!symtab->sym)
@@ -231,23 +231,23 @@ symtab_delete(Symtab *symtab, Symbol *sym)
          */
         if (symtab->elfree)
                 symtab->elfree(sp);
-        sym_free(sp);
+        grad_sym_free(sp);
         symtab->elcnt--;
         return 0;
 }
 
 void
-sym_free(Symbol *sp)
+grad_sym_free(grad_symbol_t *sp)
 {
         grad_free(sp->name);
         grad_free(sp);
 }
 
 void
-symtab_clear(Symtab *symtab)
+grad_symtab_clear(grad_symtab_t *symtab)
 {
         int i;
-        Symbol *sp, *next;
+        grad_symbol_t *sp, *next;
 
         if (!symtab || !symtab->sym)
                 return;
@@ -257,7 +257,7 @@ symtab_clear(Symtab *symtab)
                         next = sp->next;
                         if (symtab->elfree)
                                 symtab->elfree(sp);
-                        sym_free(sp);
+                        grad_sym_free(sp);
                 }
                 symtab->sym[i] = NULL;
         }
@@ -265,21 +265,21 @@ symtab_clear(Symtab *symtab)
 }
 
 void
-symtab_free(Symtab **symtab)
+grad_symtab_free(grad_symtab_t **symtab)
 {
 	if (!symtab || !*symtab)
 		return;
-        symtab_clear(*symtab);
+        grad_symtab_clear(*symtab);
         grad_free((*symtab)->sym);
         grad_free(*symtab);
         *symtab = NULL;
 }
 
 void
-symtab_iterate(Symtab *symtab, int (*fn)(), void *closure)
+grad_symtab_iterate(grad_symtab_t *symtab, int (*fn)(), void *closure)
 {
         int i;
-        Symbol *sym, *next;
+        grad_symbol_t *sym, *next;
 
 	if (!symtab->sym)
 		return;

@@ -494,7 +494,7 @@ static FRAME *frame_first, *frame_last;
 
 static int errcnt;         /* Number of errors detected */ 
 static FUNCTION *function; /* Function being compiled */
-static Symtab *rewrite_tab;/* Function table */  
+static grad_symtab_t *rewrite_tab;/* Function table */  
 
 static MTX *mtx_first, *mtx_last;  /* Matrix list */
 static VAR *var_first, *var_last;  /* Variable list */ 
@@ -1886,7 +1886,7 @@ yylex()
                         return VARIABLE;
                 }
                 
-                if (fun = (FUNCTION*) sym_lookup(rewrite_tab, yylval.string)) {
+                if (fun = (FUNCTION*) grad_sym_lookup(rewrite_tab, yylval.string)) {
                         DEBUG_LEX2("FUN %s", yylval.string);
                         yylval.fun = fun;
                         return FUN;
@@ -3981,7 +3981,7 @@ void
 function_delete()
 {
         if (function) {
-                symtab_delete(rewrite_tab, (Symbol*)function);
+                grad_symtab_delete(rewrite_tab, (grad_symbol_t*)function);
                 function_cleanup();
         }
 }
@@ -5188,10 +5188,10 @@ void
 subst_run(grad_list_t *subst, size_t nsub,
 	  char **baseptr, char *arg)
 {
-	grad_iterator_t *itr = iterator_create(subst);
+	grad_iterator_t *itr = grad_iterator_create(subst);
 	struct subst_segment *seg;
 	
-	for (seg = iterator_first(itr); seg; seg = iterator_next(itr)) {
+	for (seg = grad_iterator_first(itr); seg; seg = grad_iterator_next(itr)) {
 		switch (seg->type) {
 		case subst_text:
 			temp_space_copy(baseptr,
@@ -5214,7 +5214,7 @@ subst_run(grad_list_t *subst, size_t nsub,
 					  mach.pmatch[0].rm_so);
 		}
 	}
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
 }
 
 static void
@@ -5401,7 +5401,7 @@ function_install(FUNCTION *fun)
 {
         FUNCTION *fp;
 
-        if (fp = (FUNCTION *)sym_lookup(rewrite_tab, fun->name)) {
+        if (fp = (FUNCTION *)grad_sym_lookup(rewrite_tab, fun->name)) {
                 grad_log_loc(L_ERR, &fun->loc,
 			     _("redefinition of function %s"));
                 grad_log_loc(L_ERR, &fp->loc,
@@ -5409,7 +5409,7 @@ function_install(FUNCTION *fun)
                 errcnt++;
                 return fp;
         }  
-        fp = (FUNCTION*)sym_install(rewrite_tab, fun->name);
+        fp = (FUNCTION*)grad_sym_install(rewrite_tab, fun->name);
         
         fp->rettype = fun->rettype;
         fp->entry   = fun->entry;
@@ -5453,7 +5453,7 @@ rewrite_check_function(char *name, Datatype rettype, char *typestr)
 	int i;
 	PARAMETER *p;
 	
-	FUNCTION *fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
+	FUNCTION *fun = (FUNCTION*) grad_sym_lookup(rewrite_tab, name);
         if (!fun) {
                 grad_log(L_ERR, _("function %s not defined"), name);
                 return NULL;
@@ -5638,7 +5638,7 @@ rewrite_compile(char *expr)
 	char *name = grad_emalloc(strlen(expr) + 3); 
 
 	sprintf(name, "$%s$", expr);
-        fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
+        fun = (FUNCTION*) grad_sym_lookup(rewrite_tab, name);
         if (!fun) {
 		rc = parse_rewrite_string(expr);
 		if (rc) {
@@ -5676,7 +5676,7 @@ rewrite_eval(char *symname, grad_request_t *req, Datatype *type, Datum *datum)
 {
         FUNCTION *fun;
 	
-        fun = (FUNCTION*) sym_lookup(rewrite_tab, symname);
+        fun = (FUNCTION*) grad_sym_lookup(rewrite_tab, symname);
         if (!fun)
 		return -1;
 	
@@ -5775,7 +5775,7 @@ int
 rewrite_stmt_term(int finish, void *block_data, void *handler_data)
 {
 	if (!finish) {
-		symtab_clear(rewrite_tab);
+		grad_symtab_clear(rewrite_tab);
 		
 		yydebug = debug_on(50);
 		grad_list_destroy(&source_list, free_path, NULL);
@@ -5865,7 +5865,7 @@ rewrite_load_all(void *a ARG_UNUSED, void *b ARG_UNUSED)
 void
 rewrite_init()
 {
-	rewrite_tab = symtab_create(sizeof(FUNCTION), function_free);
+	rewrite_tab = grad_symtab_create(sizeof(FUNCTION), function_free);
 	radiusd_set_preconfig_hook(rewrite_before_config_hook, NULL, 0);
 }
 
@@ -5965,7 +5965,7 @@ radscm_rewrite_execute(const char *func_name, SCM ARGS)
                    FNAME, SCM_ARG1, func_name);
 
         name = SCM_STRING_CHARS(FNAME);
-        fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
+        fun = (FUNCTION*) grad_sym_lookup(rewrite_tab, name);
         if (!fun) 
                 scm_misc_error(func_name,
                                _("function ~S not defined"),

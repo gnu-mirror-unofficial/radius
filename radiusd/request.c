@@ -364,17 +364,17 @@ request_update(pid_t pid, int status, void *ptr)
 	grad_iterator_t *itr;
 	
 	debug(100,("enter, pid=%lu, ptr = %p", (unsigned long)pid, ptr));
-	itr = iterator_create(request_list);
+	itr = grad_iterator_create(request_list);
 	if (!itr)
 		return;
-	for (p = iterator_first(itr); p; p = iterator_next(itr)) {
+	for (p = grad_iterator_first(itr); p; p = grad_iterator_next(itr)) {
 		if (p->child_id == pid) {
 			p->status = status;
 			if (ptr && request_class[p->type].update) 
 				request_class[p->type].update(p->data, ptr);
 		}
 	}
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
 	debug(100,("exit"));
 }
 			
@@ -405,14 +405,14 @@ request_scan_list(int type, list_iterator_t fn, void *closure)
 	REQUEST *p;
 	grad_iterator_t *itr;
 
-	itr = iterator_create(request_list);
+	itr = grad_iterator_create(request_list);
 	if (!itr)
 		return NULL;
-	for (p = iterator_first(itr); p; p = iterator_next(itr)) {
+	for (p = grad_iterator_first(itr); p; p = grad_iterator_next(itr)) {
                 if (p->type == type && fn(p->data, closure) == 0)
 			break;
 	}
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
         return p ? p->data : NULL;
 }
 

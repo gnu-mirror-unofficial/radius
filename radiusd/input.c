@@ -166,14 +166,14 @@ input_close_channels(INPUT *input)
 	CHANNEL *p;
 
 	if (!input->citr)
-		input->citr = iterator_create(input->channels);
+		input->citr = grad_iterator_create(input->channels);
 
-	for (p = iterator_first(input->citr); p;
-	     p = iterator_next(input->citr)) {
+	for (p = grad_iterator_first(input->citr); p;
+	     p = grad_iterator_next(input->citr)) {
 		grad_list_remove(input->channels, p, NULL);
 		channel_close(input, p);
 	}
-	iterator_destroy(&input->citr);
+	grad_iterator_destroy(&input->citr);
 }
 
 void
@@ -223,11 +223,11 @@ input_select(INPUT *input, struct timeval *tv)
 
 	debug(100,("enter"));
 	if (!input->citr)
-		input->citr = iterator_create(input->channels);
+		input->citr = grad_iterator_create(input->channels);
 
 	if (input->fd_max == -2) {
-		for (p = iterator_first(input->citr); p;
-		     p = iterator_next(input->citr)) {
+		for (p = grad_iterator_first(input->citr); p;
+		     p = grad_iterator_next(input->citr)) {
 			if (p->fd > input->fd_max)
 				input->fd_max = p->fd;
 		}
@@ -250,8 +250,8 @@ input_select(INPUT *input, struct timeval *tv)
 	} else if (status > 0) {
 		debug(1, ("select returned %d", status));
 		
-		for (p = iterator_first(input->citr); p;
-		     p = iterator_next(input->citr)) 
+		for (p = grad_iterator_first(input->citr); p;
+		     p = grad_iterator_next(input->citr)) 
 			if (FD_ISSET(p->fd, &readfds)) 
 				channel_handle(p);
 	} 
@@ -273,11 +273,11 @@ input_select_channel(INPUT *input, char *name, struct timeval *tv)
 	if (!m)
 		return -1;
 	if (!input->citr)
-		input->citr = iterator_create(input->channels);
+		input->citr = grad_iterator_create(input->channels);
 
 	FD_ZERO(&readfds);
-	for (p = iterator_first(input->citr); p;
-	     p = iterator_next(input->citr)) {
+	for (p = grad_iterator_first(input->citr); p;
+	     p = grad_iterator_next(input->citr)) {
 		if (p->method == m) {
 			if (p->fd > fd_max)
 				fd_max = p->fd;
@@ -296,8 +296,8 @@ input_select_channel(INPUT *input, char *name, struct timeval *tv)
 	} else if (status > 0) {
 		debug(1, ("select returned %d", status));
 		
-		for (p = iterator_first(input->citr); p;
-		     p = iterator_next(input->citr)) 
+		for (p = grad_iterator_first(input->citr); p;
+		     p = grad_iterator_next(input->citr)) 
 			if (FD_ISSET(p->fd, &readfds)) 
 				channel_handle(p);
 	} 

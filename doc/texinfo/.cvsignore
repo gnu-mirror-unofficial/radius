@@ -25,3 +25,12 @@ radius.ex
 radius.ats
 radius.exs
 radius.kws
+radius.dvi.gz
+radius.pdf
+radius.pdf.gz
+radius.ps.gz
+radius.texi.tar.gz
+radius.text
+radius.tmp
+*.tar.gz
+index.html

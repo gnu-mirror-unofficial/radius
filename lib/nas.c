@@ -101,18 +101,18 @@ grad_nas_lookup_name(char *name)
 {
         grad_nas_t *nas;
         grad_nas_t *defnas = NULL;
-        grad_iterator_t *itr = iterator_create(naslist);
+        grad_iterator_t *itr = grad_iterator_create(naslist);
 
 	if (!itr)
 		return NULL;
-	for (nas = iterator_first(itr); nas; nas = iterator_next(itr)) {
+	for (nas = grad_iterator_first(itr); nas; nas = grad_iterator_next(itr)) {
                 if (nas->netdef.ipaddr == 0 && nas->netdef.netmask == 0)
                         defnas = nas;
                 else if (strcmp(nas->shortname, name) == 0
                          || strcmp(nas->longname, name) == 0)
                         break;
         }
-        iterator_destroy(&itr);
+        grad_iterator_destroy(&itr);
         return nas ? nas : defnas;
 }
 
@@ -121,15 +121,15 @@ grad_nas_t *
 grad_nas_lookup_ip(grad_uint32_t ipaddr)
 {
         grad_nas_t *nas = NULL;
-        grad_iterator_t *itr = iterator_create(naslist);
+        grad_iterator_t *itr = grad_iterator_create(naslist);
 
 	if (!itr)
 		return NULL;
-	for (nas = iterator_first(itr); nas; nas = iterator_next(itr)) {
+	for (nas = grad_iterator_first(itr); nas; nas = grad_iterator_next(itr)) {
                 if (grad_ip_in_net_p(&nas->netdef, ipaddr))
                         break;
         }
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
         return nas;
 }
 
@@ -188,6 +188,6 @@ grad_nas_request_to_name(const grad_request_t *radreq, char *buf, size_t size)
 grad_iterator_t *
 grad_nas_iterator()
 {
-	return iterator_create(naslist);
+	return grad_iterator_create(naslist);
 }
 

@@ -323,19 +323,19 @@ deref_var(char *name, char *p)
         union datum datum;
         size_t n;
         
-        yylval.ident = (Variable*) sym_lookup(vartab, name);
+        yylval.ident = (Variable*) grad_sym_lookup(vartab, name);
         if (yylval.ident) 
                 return IDENT;
         else if (!p) {
                 parse_error("variable %s used before definition", name);
-                yylval.ident = sym_install(vartab, name);
+                yylval.ident = grad_sym_install(vartab, name);
                 yylval.ident->type = Undefined;
                 return IDENT;
         }
 
         switch (*p++) {
         case '=':
-                yylval.ident = (Variable*) sym_install(vartab, name);
+                yylval.ident = (Variable*) grad_sym_install(vartab, name);
                 yylval.ident->type = parse_datum(p, &yylval.ident->datum);
                 type = IDENT;
                 break;
@@ -344,7 +344,7 @@ deref_var(char *name, char *p)
                 switch (parse_datum(p, &datum)) {
                 case Undefined:
                         parse_error("variable %s used before definition", name);
-                        yylval.ident = sym_install(vartab, name);
+                        yylval.ident = grad_sym_install(vartab, name);
                         yylval.ident->type = Undefined;
                         type = IDENT;
                         break;

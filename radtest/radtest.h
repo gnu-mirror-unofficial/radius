@@ -32,7 +32,7 @@ enum {
 
 typedef struct variable Variable;
 struct variable {
-        Symbol *next;
+        grad_symbol_t *next;
         char *name;
         int type;
         union datum {
@@ -48,7 +48,7 @@ struct variable {
         } datum;
 };
 
-extern Symtab *vartab;
+extern grad_symtab_t *vartab;
 extern grad_uint32_t auth_server;
 extern int   auth_port;
 extern grad_uint32_t acct_server;
@@ -67,7 +67,7 @@ void close_input();
 void set_yydebug();
 void parse_error(const char *fmt, ...);
 void print(Variable *var);
-void radtest_send(int port, int code, Variable *var, Symtab *cntl);
+void radtest_send(int port, int code, Variable *var, grad_symtab_t *cntl);
 void putback(char *str);
 void prompt();
 void tempvar_free(Variable *var);

@@ -50,7 +50,7 @@ struct dict_symbol {
 	} v;
 };
 
-static Symtab    *dict_attr_tab;
+static grad_symtab_t    *dict_attr_tab;
 static grad_dict_attr_t *dict_attr_index[DICT_INDEX_SIZE];
 static grad_list_t /* of grad_dict_value_t */ *dictionary_values;
 static grad_list_t /* of grad_dict_vendor_t */ *dictionary_vendors;
@@ -59,11 +59,11 @@ static int         vendorno;
 static grad_dict_attr_t *
 dict_attr_lookup(char *ident)
 {
-	DICT_SYMBOL *sym = sym_lookup(dict_attr_tab, ident);
+	DICT_SYMBOL *sym = grad_sym_lookup(dict_attr_tab, ident);
 	if (sym) {
 		switch (sym->type) {
 		case dict_symbol_uninitialized:
-			grad_insist_fail("sym_lookup returned uninitialized symbol!");
+			grad_insist_fail("grad_sym_lookup returned uninitialized symbol!");
 			break;
 			
 		case dict_symbol_attribute:
@@ -101,9 +101,9 @@ void
 dict_free()
 {
         if (dict_attr_tab)
-                symtab_clear(dict_attr_tab);
+                grad_symtab_clear(dict_attr_tab);
         else
-                dict_attr_tab = symtab_create(sizeof(DICT_SYMBOL), NULL);
+                dict_attr_tab = grad_symtab_create(sizeof(DICT_SYMBOL), NULL);
         memset(dict_attr_index, 0, sizeof dict_attr_index);
 
 	grad_list_destroy(&dictionary_values, free_value, NULL);
@@ -419,7 +419,7 @@ _dict_attribute(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 		}
         }
 
-	sym = sym_lookup_or_install(dict_attr_tab, ATTR_NAME, 1);
+	sym = grad_sym_lookup_or_install(dict_attr_tab, ATTR_NAME, 1);
 	switch (sym->type) {
 	case dict_symbol_uninitialized:
 		sym->type = dict_symbol_attribute;
@@ -470,7 +470,7 @@ _dict_alias(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 		return 0;
 	}
 		
-	sym = sym_lookup_or_install(dict_attr_tab, fv[2], 1);
+	sym = grad_sym_lookup_or_install(dict_attr_tab, fv[2], 1);
 	if (sym->type != dict_symbol_uninitialized) {
 		grad_log_loc(L_ERR, loc,
 			     _("Symbol %s already declared"),
@@ -709,7 +709,7 @@ grad_attr_number_to_dict(int attribute)
                 return dict_attr_index[attribute];
         av.value = attribute;
         av.da = NULL;
-        symtab_iterate(dict_attr_tab, attrval_cmp, &av);
+        grad_symtab_iterate(dict_attr_tab, attrval_cmp, &av);
         return av.da;
 }
 

@@ -142,7 +142,7 @@ builddbm(char *name)
                 return 1;
         }
 
-        symtab_iterate(user_tab, append_symbol, &closure);
+        grad_symtab_iterate(user_tab, append_symbol, &closure);
 
         return 0;
 }

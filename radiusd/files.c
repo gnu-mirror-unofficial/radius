@@ -52,7 +52,7 @@ typedef struct locus_name {
 	size_t refcnt;
 } Locus_symbol;
 
-static Symtab *locus_tab;
+static grad_symtab_t *locus_tab;
 
 void
 locus_dup(grad_locus_t *dst, grad_locus_t *src)
@@ -60,8 +60,8 @@ locus_dup(grad_locus_t *dst, grad_locus_t *src)
 	Locus_symbol *sp;
 	
 	if (!locus_tab)
-                locus_tab = symtab_create(sizeof(Locus_symbol), NULL);
-	sp = (Locus_symbol*) sym_lookup_or_install(locus_tab, src->file, 1);
+                locus_tab = grad_symtab_create(sizeof(Locus_symbol), NULL);
+	sp = (Locus_symbol*) grad_sym_lookup_or_install(locus_tab, src->file, 1);
 	sp->refcnt++;
 	dst->file = sp->filename;
 	dst->line = src->line;
@@ -70,16 +70,16 @@ locus_dup(grad_locus_t *dst, grad_locus_t *src)
 void
 locus_free(grad_locus_t *loc)
 {
-	Locus_symbol *sp = (Locus_symbol*) sym_lookup(locus_tab, loc->file);
+	Locus_symbol *sp = (Locus_symbol*) grad_sym_lookup(locus_tab, loc->file);
 	if (--sp->refcnt == 0)
-		symtab_delete(locus_tab, (Symbol*) sp);
+		grad_symtab_delete(locus_tab, (grad_symbol_t*) sp);
 }
 
 /*
  * Symbol tables and lists
  */
-Symtab          *user_tab;     /* raddb/users  */
-Symtab          *deny_tab;     /* raddb/access.deny */
+grad_symtab_t          *user_tab;     /* raddb/users  */
+grad_symtab_t          *deny_tab;     /* raddb/access.deny */
 
 static grad_list_t /* of grad_matching_rule_t */  *huntgroups;   /* raddb/huntgroups */ 
 static grad_list_t /* of grad_matching_rule_t */  *hints;        /* raddb/hints */
@@ -164,7 +164,7 @@ int
 add_user_entry(void *closure, grad_locus_t *loc,
 	       char *name, grad_avp_t *check, grad_avp_t *reply)
 {
-	Symtab *symtab = closure;
+	grad_symtab_t *symtab = closure;
         User_symbol *sym;
 
         /* Special handling for DEFAULT names: strip any trailing
@@ -186,7 +186,7 @@ add_user_entry(void *closure, grad_locus_t *loc,
                 return 0;
         }
 
-        sym = sym_install(symtab, name);
+        sym = grad_sym_install(symtab, name);
         
         sym->check = check;
         sym->reply = reply;
@@ -237,7 +237,7 @@ int
 read_users(char *name)
 {
         if (!user_tab)
-                user_tab = symtab_create(sizeof(User_symbol), free_user_entry);
+                user_tab = grad_symtab_create(sizeof(User_symbol), free_user_entry);
         return grad_parse_rule_file(name, user_tab, add_user_entry);
 }
 
@@ -276,19 +276,19 @@ user_lookup(char *name, USER_LOOKUP *lptr)
 {
         lptr->name = name;
         lptr->state = LU_begin;
-        lptr->sym = sym_lookup(user_tab, "BEGIN");
+        lptr->sym = grad_sym_lookup(user_tab, "BEGIN");
         return lptr->sym ? lptr->sym : user_next(lptr);
 }
 
 User_symbol *
 user_next(USER_LOOKUP *lptr)
 {
-        if (lptr->sym && (lptr->sym = sym_next((Symbol*)lptr->sym)))
+        if (lptr->sym && (lptr->sym = grad_sym_next((grad_symbol_t*)lptr->sym)))
                 return lptr->sym;
         
         switch (lptr->state) {
         case LU_begin:
-                lptr->sym = sym_lookup(user_tab, lptr->name);
+                lptr->sym = grad_sym_lookup(user_tab, lptr->name);
                 if (lptr->sym) {
                         lptr->state = LU_match;
                         break;
@@ -296,7 +296,7 @@ user_next(USER_LOOKUP *lptr)
                 /*FALLTHRU*/
         case LU_match:
                 lptr->state = LU_default;
-                lptr->sym = sym_lookup(user_tab, "DEFAULT");
+                lptr->sym = grad_sym_lookup(user_tab, "DEFAULT");
                 break;
                 
         case LU_default:
@@ -365,7 +365,7 @@ match_user(User_symbol *sym, grad_request_t *req,
                      p = grad_avl_find(p->next, DA_MATCH_PROFILE)) {
                         debug(1, ("submatch: %s", p->avp_strvalue));
 
-                        found = match_user(sym_lookup(user_tab,
+                        found = match_user(grad_sym_lookup(user_tab,
 						      p->avp_strvalue),
                                            req, check_pairs, reply_pairs);
                 }                       
@@ -389,14 +389,14 @@ match_user(User_symbol *sym, grad_request_t *req,
                      p;
                      p = grad_avl_find(p->next, DA_MATCH_PROFILE)) {
                         debug(1, ("next: %s", p->avp_strvalue));
-                        match_user(sym_lookup(user_tab, p->avp_strvalue),
+                        match_user(grad_sym_lookup(user_tab, p->avp_strvalue),
                                    req, check_pairs, reply_pairs);
                 }
                 if (!fallthrough(sym->reply))
                         break;
                 debug(1, ("fall through near %s:%lu",
 			  sym->loc.file, (unsigned long) sym->loc.line));
-        } while (sym = sym_next((Symbol*)sym));
+        } while (sym = grad_sym_next((grad_symbol_t*)sym));
 
         return found;
 }
@@ -694,8 +694,8 @@ hints_setup(grad_request_t *req)
                         grad_avl_merge(&request_pairs, &tmp);
         }
 
-	itr = iterator_create(hints);
-	for (rule = iterator_first(itr); rule; rule = iterator_next(itr)) {
+	itr = grad_iterator_create(hints);
+	for (rule = grad_iterator_first(itr); rule; rule = grad_iterator_next(itr)) {
                 int do_strip;
                 grad_avp_t *add;
                 
@@ -750,7 +750,7 @@ hints_setup(grad_request_t *req)
                 break;
         }
 
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
 	
         if (matched) {
                 if (orig_name_pair)
@@ -784,8 +784,8 @@ huntgroup_match(grad_request_t *req, char *huntgroup)
 
         if (!huntgroups)
 		return 0;
-	itr = iterator_create(huntgroups);
-	for (rule = iterator_first(itr); rule; rule = iterator_next(itr)) {
+	itr = grad_iterator_create(huntgroups);
+	for (rule = grad_iterator_first(itr); rule; rule = grad_iterator_next(itr)) {
                 if (strcmp(rule->name, huntgroup) != 0)
                         continue;
                 if (paircmp(req, rule->lhs, NULL) == 0) {
@@ -795,7 +795,7 @@ huntgroup_match(grad_request_t *req, char *huntgroup)
                         break;
                 }
         }
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
         return (rule != NULL);
 }
 
@@ -817,8 +817,8 @@ huntgroup_access(grad_request_t *radreq, grad_locus_t *loc)
         if (huntgroups == NULL)
                 return 1;
 
-	itr = iterator_create(huntgroups);
-	for (rule = iterator_first(itr); rule; rule = iterator_next(itr)) {
+	itr = grad_iterator_create(huntgroups);
+	for (rule = grad_iterator_first(itr); rule; rule = grad_iterator_next(itr)) {
                 /*
                  *      See if this entry matches.
                  */
@@ -829,7 +829,7 @@ huntgroup_access(grad_request_t *radreq, grad_locus_t *loc)
                 r = paircmp(radreq, rule->rhs, NULL) == 0;
                 break;
         }
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
 	
         if (rule) {
 		if (loc)
@@ -918,14 +918,14 @@ CLIENT *
 client_lookup_ip(grad_uint32_t ipaddr)
 {
         CLIENT *cl;
-        grad_iterator_t *itr = iterator_create(clients);
+        grad_iterator_t *itr = grad_iterator_create(clients);
 
         if (!itr)
                 return NULL;
-        for (cl = iterator_first(itr); cl; cl = iterator_next(itr))
+        for (cl = grad_iterator_first(itr); cl; cl = grad_iterator_next(itr))
 		if (grad_ip_in_net_p(&cl->netdef, ipaddr))
                         break;
-        iterator_destroy(&itr);
+        grad_iterator_destroy(&itr);
         return cl;
 }
 
@@ -1012,15 +1012,15 @@ RADCK_TYPE *
 find_radck_type(char *name)
 {
         RADCK_TYPE *tp;
-       	grad_iterator_t *itr = iterator_create(radck_type);
+       	grad_iterator_t *itr = grad_iterator_create(radck_type);
 
         if (!itr)
         	return NULL;
-        for (tp = iterator_first(itr);
+        for (tp = grad_iterator_first(itr);
 	     tp && strcmp(tp->type, name);
-	     tp = iterator_next(itr))
+	     tp = grad_iterator_next(itr))
                 ;
-        iterator_destroy(&itr);
+        grad_iterator_destroy(&itr);
         return tp;
 }
                 
@@ -1035,7 +1035,7 @@ find_radck_type(char *name)
 void
 add_deny(char *user)
 {
-        sym_install(deny_tab, user);
+        grad_sym_install(deny_tab, user);
 }
 
 /*ARGSUSED*/
@@ -1066,9 +1066,9 @@ read_deny_file()
         
         name = grad_mkfilename(radius_dir, RADIUS_DENY);
         if (deny_tab)
-                symtab_clear(deny_tab);
+                grad_symtab_clear(deny_tab);
         else
-                deny_tab = symtab_create(sizeof(Symbol), NULL);
+                deny_tab = grad_symtab_create(sizeof(grad_symbol_t), NULL);
         denycnt = 0;
 
         grad_read_raddb_file(name, 0, read_denylist_entry, &denycnt);
@@ -1085,7 +1085,7 @@ read_deny_file()
 int
 get_deny(char *user)
 {
-        return sym_lookup(deny_tab, user) != NULL;
+        return grad_sym_lookup(deny_tab, user) != NULL;
 }
 
 
@@ -1612,7 +1612,7 @@ reload_data(enum reload_what what, int *do_radck)
                 break;
                 
         case reload_users:
-                symtab_clear(user_tab);
+                grad_symtab_clear(user_tab);
                 path = grad_mkfilename(radius_dir, RADIUS_USERS);
         
 #if USE_DBM
@@ -1746,10 +1746,10 @@ void
 dump_matching_rules(FILE *fp, char *header, grad_list_t *list)
 {
 	grad_matching_rule_t *rule;
-	grad_iterator_t *itr = iterator_create(list);
+	grad_iterator_t *itr = grad_iterator_create(list);
 
         fprintf(fp, "%s {\n", header);
- 	for (rule = iterator_first(itr); rule; rule = iterator_next(itr)) {
+ 	for (rule = grad_iterator_first(itr); rule; rule = grad_iterator_next(itr)) {
                 fprintf(fp, "\t%s:\n", rule->name);
                 fprintf(fp, "\tlhs {\n");
 		grad_avl_fprint(fp, "\t\t", 1, rule->lhs);
@@ -1759,7 +1759,7 @@ dump_matching_rules(FILE *fp, char *header, grad_list_t *list)
 		grad_avl_fprint(fp, "\t\t", 1, rule->rhs);
                 fprintf(fp, "\t}\n");
         }
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
 	
         fprintf(fp, "}\n");
 }
@@ -1797,7 +1797,7 @@ dump_users_db()
         fchmod(fileno(fp), S_IRUSR|S_IWUSR);
 
         fprintf(fp, "%s {\n", "users");
-        symtab_iterate(user_tab, dump_user, fp);
+        grad_symtab_iterate(user_tab, dump_user, fp);
         fprintf(fp, "}\n");
 
         dump_matching_rules(fp, "huntgroups", huntgroups);

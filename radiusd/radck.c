@@ -37,7 +37,7 @@
 #define BITISSET(x, i)  (((x)[(i)/BITS_PER_WORD] & (1<<((i) % BITS_PER_WORD))) != 0)
 
 struct check_datum {
-        Symtab   *symtab;
+        grad_symtab_t   *symtab;
         unsigned count;    /* Number of elements */
         unsigned rlen;     /* Number of elements in a row */
         unsigned *r;
@@ -76,7 +76,7 @@ radck_bitisset(unsigned *r, unsigned rowsize, unsigned row, unsigned col)
 void
 mark_profile(struct check_datum *datum, User_symbol *sym, char *target_name)
 {
-        User_symbol *target = (User_symbol*)sym_lookup(datum->symtab, target_name);
+        User_symbol *target = (User_symbol*)grad_sym_lookup(datum->symtab, target_name);
 
         if (!target) {
                 grad_log_loc(L_ERR, &sym->loc,
@@ -120,7 +120,7 @@ pass2(struct check_datum *datum, User_symbol *sym)
                 grad_log_loc(L_ERR, &sym->loc,
 			     _("circular dependency for %s"),
 			     sym->name);
-                symtab_delete(datum->symtab, (Symbol *)sym);
+                grad_symtab_delete(datum->symtab, (grad_symbol_t *)sym);
                 datum->count--;
         }
         return 0;
@@ -137,7 +137,7 @@ radck()
          * Count users.
          */
         user_count = 0;
-        symtab_iterate(user_tab, sym_counter, &user_count);
+        grad_symtab_iterate(user_tab, sym_counter, &user_count);
 
         if (user_count) {
 		/* Allocate matrix */
@@ -156,14 +156,14 @@ radck()
 		datum.r      = r;
 		
 		/* First pass: mark directly connected entries */
-		symtab_iterate(user_tab, pass1, &datum);
+		grad_symtab_iterate(user_tab, pass1, &datum);
 
 		/* Compute transitive closure of the matrix r */
 		TC(datum.r, user_count);
 
 		/* Select all non-zero diagonal elements and delete
 		   corresponding profiles  */
-		symtab_iterate(user_tab, pass2, &datum);
+		grad_symtab_iterate(user_tab, pass2, &datum);
 		grad_free(datum.r);
 
 		user_count = datum.count;

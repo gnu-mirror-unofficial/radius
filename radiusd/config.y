@@ -534,13 +534,13 @@ _cfg_make_argv(cfg_value_t **argv, char *keyword, grad_list_t *vlist)
 	if (vlist) {
 		int i;
 		cfg_value_t *val;
-		grad_iterator_t *itr = iterator_create(vlist);
+		grad_iterator_t *itr = grad_iterator_create(vlist);
 
 		if (itr) {
-			for (i = 1, val = iterator_first(itr); val;
-		     	     i++, val = iterator_next(itr))
+			for (i = 1, val = grad_iterator_first(itr); val;
+		     	     i++, val = grad_iterator_next(itr))
 				(*argv)[i] = *val;
-			iterator_destroy(&itr);
+			grad_iterator_destroy(&itr);
 		}
 	}
 	return argc;

@@ -124,15 +124,15 @@ SCM_DEFINE(rad_client_list_servers, "rad-client-list-servers", 0, 0, 0,
         grad_server_t *s;
         char p[DOTTED_QUAD_LEN+1];
         SCM tail = SCM_EOL;
-        grad_iterator_t *itr = iterator_create(srv_queue->servers);
+        grad_iterator_t *itr = grad_iterator_create(srv_queue->servers);
 
-        for (s = iterator_first(itr); s; s = iterator_next(itr)) {
+        for (s = grad_iterator_first(itr); s; s = grad_iterator_next(itr)) {
                 grad_ip_iptostr(s->addr, p);
                 tail = scm_cons(scm_list_2(scm_makfrom0str(s->name),
                                           scm_makfrom0str(p)),
                                 tail);
         }
-        iterator_destroy(&itr);
+        grad_iterator_destroy(&itr);
         return scm_reverse_x(tail, SCM_UNDEFINED);
 }
 #undef FUNC_NAME

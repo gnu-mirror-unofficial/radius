@@ -208,11 +208,11 @@ rpp_proc_t *
 rpp_lookup_fd(int fd)
 {
 	rpp_proc_t *p;
-	grad_iterator_t *itr = iterator_create(process_list);
-	for (p = iterator_first(itr); p; p = iterator_next(itr))
+	grad_iterator_t *itr = grad_iterator_create(process_list);
+	for (p = grad_iterator_first(itr); p; p = grad_iterator_next(itr))
 		if (p->p[0] == fd)
 			break;
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
 	return p;
 }
 
@@ -222,11 +222,11 @@ rpp_lookup_ready(int (*proc_main)(void *), void *data)
 	rpp_proc_t *p;
 
 	if (process_list) {
-		grad_iterator_t *itr = iterator_create(process_list);
-		for (p = iterator_first(itr); p && !p->ready;
-		     p = iterator_next(itr))
+		grad_iterator_t *itr = grad_iterator_create(process_list);
+		for (p = grad_iterator_first(itr); p && !p->ready;
+		     p = grad_iterator_next(itr))
 			;
-		iterator_destroy(&itr);
+		grad_iterator_destroy(&itr);
 	} else {
 		process_list = grad_list_create();
 		p = NULL;
@@ -250,12 +250,12 @@ rpp_proc_t *
 rpp_lookup_pid(pid_t pid)
 {
 	rpp_proc_t *p;
-	grad_iterator_t *itr = iterator_create(process_list);
-	for (p = iterator_first(itr); p; p = iterator_next(itr)) {
+	grad_iterator_t *itr = grad_iterator_create(process_list);
+	for (p = grad_iterator_first(itr); p; p = grad_iterator_next(itr)) {
 		if (p->pid == pid)
 			break;
 	}
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
 	return p;
 }
 	
@@ -288,14 +288,14 @@ rpp_ready(pid_t pid)
 			return 1;
 	} else {
 		rpp_proc_t *p;
-		grad_iterator_t *itr = iterator_create(process_list);
+		grad_iterator_t *itr = grad_iterator_create(process_list);
 
-		for (p = iterator_first(itr); p; p = iterator_next(itr)) {
+		for (p = grad_iterator_first(itr); p; p = grad_iterator_next(itr)) {
 			if (p->pid == pid) {
 				break;
 			}
 		}
-	        iterator_destroy(&itr);
+	        grad_iterator_destroy(&itr);
 		if (p && p->ready)
 			return 1;
 	}
@@ -307,19 +307,19 @@ rpp_flush(int (*fun)(void*), void *closure)
 {
 	time_t t;
 	unsigned count;
-	grad_iterator_t *itr = iterator_create(process_list);
+	grad_iterator_t *itr = grad_iterator_create(process_list);
 
 	time(&t);
 
 	do {
 		rpp_proc_t *p;
-		for (count = 0, p = iterator_first(itr);
+		for (count = 0, p = grad_iterator_first(itr);
 		     p;
-		     p = iterator_next(itr))
+		     p = grad_iterator_next(itr))
 			if (!p->ready)
 				count++;
 	} while (count > 0 && (*fun)(closure) == 0);
-	iterator_destroy(&itr);
+	grad_iterator_destroy(&itr);
 }
 
 static int

@@ -40,6 +40,8 @@ void cfree_entry(void *ptr, count_t count);
 
 void *xmalloc(size_t);
 void *emalloc(size_t);
+void *xrealloc(void *, size_t);
+void *erealloc(void *, size_t);
 void efree(void *);
 char *estrdup(char *);
 

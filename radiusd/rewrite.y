@@ -31,6 +31,7 @@
 	#include <setjmp.h>
 	#include <varargs.h>
         #include <obstack1.h>
+	#include <argcv.h>
 	#include <rewrite.h>
 	
         #ifndef lint
@@ -4472,63 +4473,6 @@ va_run_init(name, request, typestr, va_alist)
 	return rw_rt.rA;
 }
 
-typedef struct {
-	char *ptr;     /* current input pointer */
-	char *tok;     /* start of a (recent) token */
-	int  delim;    /* last found delimiter */
-} TOKBUF; 
-
-int
-tokbegin(buf, str)
-	TOKBUF *buf;
-	char   *str;
-{
-	buf->ptr = str;
-	buf->tok = str;
-	buf->delim = -1;
-	return 0;
-}
-
-#define tokend(buf)
-#define tokptr(buf) (buf)->tok
-#define tokdelim(buf) (buf)->delim
-
-char *
-toknext(buf, delim)
-	TOKBUF *buf;
-	char *delim;
-{
-	int found = 0;
-
-	if (!*buf->ptr)
-		return NULL;
-	/* skip initial whitespace */
-	while (*buf->ptr && isspace(*buf->ptr))
-		buf->ptr++;
-	/* Mark start of a token */
-	buf->tok = buf->ptr;
-	/* Advance till a whitespace or a delimiter is found */
-	while (*buf->ptr && !isspace(*buf->ptr)) {
-		if (strchr(delim, *buf->ptr)) { 
-			found++;
-			break;
-		}
-		buf->ptr++;
-	}
-	if (!*buf->ptr)
-		return NULL;
-	if (!found) {
-		*buf->ptr++ = 0;
-		/* skip whitespace */
-		while (*buf->ptr && isspace(*buf->ptr))
-			buf->ptr++;
-	}
-	buf->delim = *buf->ptr;
-	*buf->ptr++ = 0;
-	return buf->tok;
-}
-	
-	
 int
 interpret(fcall, request, type, datum)
 	char *fcall;
@@ -4540,20 +4484,33 @@ interpret(fcall, request, type, datum)
 	FUNCTION *fun;
 	PARAMETER *parm;
 	int nargs;
-	char *name, *tok;
-	TOKBUF tokbuf;
+	char **argv;
+	int argc;
+	int i, errcnt = 0;
 
-	tokbegin(&tokbuf, fcall);
-	name = toknext(&tokbuf, "(");
-        if (!name) {
+	if (argcv_get(fcall, "(),", &argc, &argv) || argc < 3) {
+		radlog(L_ERR, _("malformed function call: %s"), fcall);
+		return 1;
+	}
+
+        if (argv[1][0] != '(') {
 	        radlog(L_ERR, _("missing '(' in function call"));
-		return -1;
+		errcnt++;
+	} 
+	if (argv[argc-1][0] != ')') {
+		radlog(L_ERR, _("missing ')' in function call"));
+		errcnt++;
 	}	
 
-	fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
+	fun = (FUNCTION*) sym_lookup(rewrite_tab, argv[0]);
 	if (!fun) {
-		radlog(L_ERR, _("function %s not defined"), name);
-		return -1;
+		radlog(L_ERR, _("function %s not defined"), argv[0]);
+		errcnt++;
+	}
+
+	if (errcnt) {
+		argcv_free(argc, argv);
+		return 1;
 	}
 	
 	if (setjmp(rw_rt.jmp))
@@ -4573,17 +4530,25 @@ interpret(fcall, request, type, datum)
 	/* Pass arguments */
 	nargs = 0;
 	parm = fun->parm;
-	while (tok = toknext(&tokbuf, ",)")) {
+
+	for (i = 2; i < argc-1; i++) {
+		int n;
+		char *p;
+		
 		if (++nargs > fun->nparm) {
-			radlog(L_ERR, "too many arguments for %s", name);
+			radlog(L_ERR, "too many arguments for %s", argv[0]);
+			argcv_free(argc, argv);
 			return -1;
 		}
 		switch (parm->datatype) {
 		case Integer:
-			pushn(strtol(tok, NULL, 0));
+			n = strtol(argv[i], &p, 0);
+			if (*p) 
+				n = get_ipaddr(argv[i]);
+			pushn(n);
 			break;
 		case String:
-			pushstr(tok, strlen(tok));
+			pushstr(argv[i], strlen(argv[i]));
 			break;
 		default:
 			insist_fail("datatype!");
@@ -4591,18 +4556,16 @@ interpret(fcall, request, type, datum)
 		parm++;
 	}
 
-	if (tokdelim(&tokbuf) != ')') {
-		radlog(L_ERR,
-		       _("missing closing parenthesis in call to %s"), name);
-		return -1;
-	}
 	if (fun->nparm != nargs) {
 		radlog(L_ERR,
 		       _("too few arguments for %s"),
-			 name);
+			 argv[0]);
+		argcv_free(argc, argv);
 		return -1;
 	}
 
+	argcv_free(argc, argv);
+	
         /* Imitate a function call */
 	rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
 	pushn(0);                         /* Push on stack */

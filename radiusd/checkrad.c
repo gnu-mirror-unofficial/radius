@@ -63,64 +63,16 @@ struct check_instance {
 	int       timeout;
 	int       method;
 	char      *func;
-	RADCK_ARG *args;
+	envar_t   *args;
 	char      *hostname;
 };
 
-RADCK_ARG *lookup(RADCK_ARG *arg, char *name);
-RADCK_ARG *dup_arg(RADCK_ARG *arg);
-RADCK_ARG *merge_args(RADCK_ARG *prim, RADCK_ARG *sec);
 struct check_instance * create_instance(struct check_instance *cptr,
 					NAS *nas, struct radutmp *up);
 void free_instance(struct check_instance *cptr);
 char * slookup(struct check_instance *checkp, char *name, char *defval);
 int ilookup(struct check_instance *checkp, char *name, int defval);
 int compare(struct check_instance *checkp, char *str);
-
-
-RADCK_ARG *
-lookup(arg, name)
-	RADCK_ARG *arg;
-	char    *name;
-{
-	for (; arg && strcmp(arg->name, name); arg = arg->next)
-		;
-	return arg;
-}
-
-RADCK_ARG *
-dup_arg(arg)
-	RADCK_ARG *arg;
-{
-	RADCK_ARG *dp;
-
-	dp = alloc_entry(sizeof(*arg));
-	dp->name  = arg->name;
-	dp->value = arg->value;
-	return dp;
-}
-
-RADCK_ARG *
-merge_args(prim, sec)
-	RADCK_ARG *prim;
-	RADCK_ARG *sec;
-{
-	RADCK_ARG *list, *p;
-
-	list = NULL;
-	for (; sec; sec = sec->next)
-		if (!lookup(prim, sec->name)) {
-			p = dup_arg(sec);
-			p->next = list;
-			list = p;
-		}
-	for (; prim; prim = prim->next) {
-		p = dup_arg(prim);
-		p->next = list;
-		list = p;
-	}
-	return list;
-}
 
 struct check_instance *
 create_instance(cptr, nas, up)
@@ -146,7 +98,7 @@ create_instance(cptr, nas, up)
 	cptr->hostname = nas->shortname ? nas->shortname : nas->longname;
 	
 	cptr->method = radck_type->method;
-	cptr->args = merge_args((RADCK_ARG*) nas->args, radck_type->args);
+	cptr->args = envar_merge_lists((envar_t*) nas->args, radck_type->args);
 	cptr->func = slookup(cptr, "function", NULL);
 	return cptr;
 }
@@ -155,7 +107,7 @@ void
 free_instance(cptr)
 	struct check_instance *cptr;
 {
-	free_slist((struct slist*)cptr->args, NULL);
+	envar_free_list(cptr->args);
 }
 
 char *
@@ -164,10 +116,10 @@ slookup(checkp, name, defval)
 	char *name;
 	char *defval;
 {
-	RADCK_ARG *arg;
+	char *s;
 
-	if (arg = lookup(checkp->args, name))
-		return arg->value;
+	if (s = envar_lookup(checkp->args, name))
+		return s;
 	return defval;
 }
 
@@ -177,10 +129,10 @@ ilookup(checkp, name, defval)
 	char *name;
 	int defval;
 {
-	RADCK_ARG *arg;
-
-	if (arg = lookup(checkp->args, name))
-		return atoi(arg->value);
+	char *s;
+	
+	if (s = envar_lookup(checkp->args, name))
+		return atoi(s);
 	return defval;
 }
 	

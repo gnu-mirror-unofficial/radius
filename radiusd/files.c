@@ -1159,7 +1159,7 @@ read_nastypes_entry(unused, fc, fv, file, lineno)
 	mp->type = estrdup(fv[0]);
 	mp->method = method;
 	if (fc == 3)
-		mp->args = parse_radck_args(fv[2]);
+		mp->args = envar_parse(fv[2]);
 	else
 		mp->args = NULL;
 	mp->next = radck_type;
@@ -1167,6 +1167,13 @@ read_nastypes_entry(unused, fc, fv, file, lineno)
 	return 0;
 }
 	
+void
+free_radck_type(rp)
+	RADCK_TYPE *rp;
+{
+	envar_free_list(rp->args);
+}
+
 int
 read_nastypes_file(file)
 	char *file;

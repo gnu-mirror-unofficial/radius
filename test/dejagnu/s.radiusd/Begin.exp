@@ -18,5 +18,7 @@
 
 clone_output "Checking BEGIN Keyword"
 
-radius_test "auth 1 User-Name = \"accept\" NAS-IP-Address = \"127.0.0.2\" NAS-Port-Id = 2" \
+radius_test "auth 1 User-Name = \"accept\" \
+                    NAS-IP-Address = \"127.0.0.2\" \
+                    NAS-Port-Id = 2" \
 	    "2 Framed-IP-Address = \"127.10.0.3\"" 

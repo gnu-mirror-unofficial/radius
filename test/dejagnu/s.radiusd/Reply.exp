@@ -18,8 +18,9 @@
 
 clone_output "Checking Reply Attributes"
 
-radius_test -message "Reply Attributes" "auth 1 User-Name = \"reply\" Password = \"guessme\"" \
-	      "2 Service-Type = 2 Framed-Protocol = 1"
+radius_test -message "Reply Attributes" \
+            "auth 1 User-Name = \"reply\" Password = \"guessme\"" \
+	    "2 Service-Type = 2 Framed-Protocol = 1"
 
 radius_test -message "Framed IP + port-number" \
 	    "auth 1 User-Name = \"framed-ip\" NAS-Port-Id = 10" \

@@ -19,7 +19,11 @@
 clone_output "Checking accountng start"
 
 radius_test -message "Acct start" \
-	    "acct 4 User-Name = \"simuse\" NAS-IP-Address = \"127.0.0.1\" NAS-Port-Id = 1 Acct-Session-Id = \"0001\" Acct-Status-Type = Start" \
+	    "acct 4 User-Name = \"simuse\" \
+                    NAS-IP-Address = \"127.0.0.1\" \
+                    NAS-Port-Id = 1 \
+                    Acct-Session-Id = \"0001\" \
+                    Acct-Status-Type = Start" \
             "5"
 
 # Fixme: Check details

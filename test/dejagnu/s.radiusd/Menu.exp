@@ -42,7 +42,8 @@ if { [info exists CAPABILITY(USE_LIVINGSTON_MENUS)] } {
 	}
     }
 
-    radius_send "send auth 1 User-Name = \"menu\" Password = \"5\" State = \"MENU=menu1\"\n"
+    radius_send "send auth 1 User-Name = \"menu\" \
+                             Password = \"5\" State = \"MENU=menu1\"\n"
     radius_expect 10 {
 	-re "$radtest_prompt" {}
 	timeout {
@@ -60,7 +61,14 @@ if { [info exists CAPABILITY(USE_LIVINGSTON_MENUS)] } {
 	}
     }
 
-    radius_test -message "$message: Termination action" "auth 1 User-Name = \"menu\" Password = \"sol\" State = \"MENU=menu2\"" "2 Service-Type = 1 Login-IP-Host = \"127.0.0.1\" State = \"MENU=\menu2\" Termination-Action = 1" 
+    radius_test -message "$message: Termination action" \
+                "auth 1 User-Name = \"menu\" \
+                        Password = \"sol\" \
+                        State = \"MENU=menu2\"" \
+                "2 Service-Type = 1 \
+                   Login-IP-Host = \"127.0.0.1\" \
+                   State = \"MENU=\menu2\" \
+                   Termination-Action = 1" 
     
 } else {
     unsupported "$message"

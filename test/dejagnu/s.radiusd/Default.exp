@@ -18,10 +18,16 @@
 
 clone_output "Checking DEFAULT Keyword"
 
-radius_test "auth 1 User-Name = \"no-such-user\" NAS-IP-Address = \"127.0.0.1\" NAS-Port-Id = 2" \
+radius_test "auth 1 User-Name = \"no-such-user\" \
+                    NAS-IP-Address = \"127.0.0.1\" \
+                    NAS-Port-Id = 2" \
 	    "3"
-radius_test "auth 1 User-Name = \"no-such-user\" NAS-IP-Address = \"127.0.0.3\" NAS-Port-Id = 2" \
+radius_test "auth 1 User-Name = \"no-such-user\" \
+                    NAS-IP-Address = \"127.0.0.3\" \
+                    NAS-Port-Id = 2" \
 	    "2 Reply-Message = \"OK. Come in.\"" 
-radius_test "auth 1 User-Name = \"no-such-user\" NAS-IP-Address = \"127.0.0.4\" NAS-Port-Id = 2" \
+radius_test "auth 1 User-Name = \"no-such-user\" \
+                    NAS-IP-Address = \"127.0.0.4\" \
+                    NAS-Port-Id = 2" \
 	    "3 Reply-Message = \"Wrong NAS\"" 
 

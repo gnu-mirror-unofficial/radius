@@ -18,14 +18,29 @@
 
 clone_output "Checking Match-Profile"
 
-radius_test "auth 1 User-Name = \"match1\" NAS-IP-Address = \"127.0.0.1\" NAS-Port-Id = 1 NAS-Identifier = \"een\"" \
-	    "2 Service-Type = Framed-User Framed-Protocol = PPP Framed-IP-Address = \"127.10.10.1\"" 
-radius_test "auth 1 User-Name = \"match1\" NAS-IP-Address = \"127.0.0.1\" NAS-Port-Id = 1 NAS-Identifier = \"to\"" \
-	    "2 Service-Type = Framed-User Framed-Protocol = PPP Framed-IP-Address = \"127.10.10.2\"" 
+radius_test "auth 1 User-Name = \"match1\" \
+                    NAS-IP-Address = \"127.0.0.1\" \
+                    NAS-Port-Id = 1 \
+                    NAS-Identifier = \"een\"" \
+	    "2 Service-Type = Framed-User \
+               Framed-Protocol = PPP \
+               Framed-IP-Address = \"127.10.10.1\"" 
+radius_test "auth 1 User-Name = \"match1\" \
+                    NAS-IP-Address = \"127.0.0.1\" \
+                    NAS-Port-Id = 1 \
+                    NAS-Identifier = \"to\"" \
+	    "2 Service-Type = Framed-User \
+               Framed-Protocol = PPP \
+               Framed-IP-Address = \"127.10.10.2\"" 
 
-radius_test "auth 1 User-Name = \"match1\" NAS-IP-Address = \"127.0.0.1\" NAS-Port-Id = 2 NAS-Identifier = \"een\"" \
+radius_test "auth 1 User-Name = \"match1\" \
+                    NAS-IP-Address = \"127.0.0.1\" \
+                    NAS-Port-Id = 2 \
+                    NAS-Identifier = \"een\"" \
 	    "3" 
 
-radius_test "auth 1 User-Name = \"match1\" NAS-IP-Address = \"127.0.0.1\" NAS-Identifier = \"een\"" \
+radius_test "auth 1 User-Name = \"match1\" \
+                    NAS-IP-Address = \"127.0.0.1\" \
+                    NAS-Identifier = \"een\"" \
 	    "3" 
 

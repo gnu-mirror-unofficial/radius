@@ -17,7 +17,7 @@
  *
  */
 
-#define RADIUS_MODULE 12
+#define RADIUS_MODULE 10
 #ifndef lint
 static char rcsid[] =
 "@(#) $Id$";
@@ -228,7 +228,7 @@ rad_send_request(fd, ipaddr, port, id, code, pw_digest, secret_key, request)
 		 */
 		length_ptr = NULL;
 		if ((vendorcode = VENDOR(vp->attribute)) > 0 &&
-		    (vendorpec  = dict_vendorpec(vendorcode)) > 0) {
+		    (vendorpec  = vendor_id_to_pec(vendorcode)) > 0) {
 		        checkovf(11);
 			*ptr++ = DA_VENDOR_SPECIFIC;
 			length_ptr = ptr;
@@ -245,17 +245,6 @@ rad_send_request(fd, ipaddr, port, id, code, pw_digest, secret_key, request)
 		} else
 			vendorpec = 0;
 
-#ifdef ATTRIB_NMC
-		if (vendorpec == VENDORPEC_USR) {
-                        checkovf(4);
-			lval = htonl(vp->attribute & 0xFFFF);
-			memcpy(ptr, &lval, 4);
-			total_length += 2;
-                        if (length_ptr)
-                             *length_ptr  += 2;
-			ptr          += 4;
-		} else
-#endif
 		*ptr++ = (vp->attribute & 0xFF);
 
 		switch (vp->type) {
@@ -267,10 +256,9 @@ rad_send_request(fd, ipaddr, port, id, code, pw_digest, secret_key, request)
 				passwd_recode(secret_key, vector,
 					      pw_digest, vp);
                         checkovf(vp->strlength + 2);
-#ifdef ATTRIB_NMC
-			if (vendorpec != VENDORPEC_USR)
-#endif
-				*ptr++ = vp->strlength + 2;
+
+			*ptr++ = vp->strlength + 2;
+
 			if (length_ptr)
 				*length_ptr += vp->strlength + 2;
 			total_length += 2 + vp->strlength;
@@ -282,10 +270,8 @@ rad_send_request(fd, ipaddr, port, id, code, pw_digest, secret_key, request)
 		case PW_TYPE_DATE:
 		case PW_TYPE_IPADDR:
                         checkovf(sizeof(UINT4) + 2); 
-#ifdef ATTRIB_NMC
-			if (vendorpec != VENDORPEC_USR)
-#endif
-				*ptr++ = sizeof(UINT4) + 2;
+
+			*ptr++ = sizeof(UINT4) + 2;
 			if (length_ptr)
 				*length_ptr += sizeof(UINT4)+ 2;
 			lval = htonl(vp->lvalue);

@@ -7,7 +7,7 @@
 
 @dircategory GNU radius
 @direntry
-* Radius: (radius).     The GNU radius
+* Radius: (radius).     The GNU Radius
 @end direntry
 
 @include version.texi
@@ -58,7 +58,7 @@ original English.
 @sp 6
 @center @titlefont{GNU Radius Manual}
 @sp 4
-2@center for Radius version @value{VERSION}
+@center for Radius version @value{VERSION}
 @sp5
 @sp 1
 Permission is granted to make and distribute verbatim copies of
@@ -103,18 +103,13 @@ This Info file documents the version @value{VERSION} of the package.
 
 The radius daemon
 * Operation::           How radius operates.
-* Naming conventions::  Conventins abount naming files and directories.
+* Naming conventions::  Conventions abount naming files and directories.
 * Invocation::          How to start the daemon.
 * Configuration files:: Radius configuration files.
 * Authentication::      How the users are authenticated
 * Accounting::          Accounting methods.
 * Logging::             What gets logged and where.
 * Debugging::           An extensive logging information.
-
-Client programs
-* Client Overview::     General concepts.
-* client.config::       General configuration options.
-* client.shadow::       A list of radius servers to connect to.
 
 The checkrad program
 * Checkrad Overview::   Purpose of checkrad.
@@ -130,10 +125,11 @@ Maintenance commands
 * Radgrep::             Quickly find the login record.
 * Radping::             Ping the remote machine by the username.
 * Radauth::             Check if a user can be authenticated.
-* Radtest::             Test the functionality of the radius daemon.
 * Radctl::              Radctl monitor.
-* Radctl.sh::           Alternative ways to communicate with radius daemon.
 * Builddbm::            Create DBM version of the @file{raddb/users} file.
+
+Guile interface
+* Radscm::              A guile interface to radius functions.
 
 Radius Attributes
 * Attribute list::      Some frequently used attributes.
@@ -1188,7 +1184,7 @@ time. These are:
 @item Log directory
 @cindex Log directory
 @cindex @file{radlog}
-@tab raddb
+@tab radlog
 @tab @value{RADLOG}
 
 @item Accounting directory
@@ -3893,7 +3889,7 @@ can be overridden using @code{logging} statement in @file{raddb/config} file
 
 
 @comment *******************************************************************
-@node Debugging, Client Overview, Logging, Top
+@node Debugging, Checkrad Overview, Logging, Top
 @chapter Debugging
 @cindex Debugging
 
@@ -3928,93 +3924,9 @@ to release.
 
 @c @include debug.texinfo
 
-@comment *******************************************************************
-@node Client Overview, client.config, Debugging, Top
-@chapter Client Overview
-@cindex Client Overview
-
-Client programs are those which emulate the NAS. These are
-@code{radtest} @ref{Radtest} and @code{radctl} @ref{Radctl}.
-
-Since they have to connect to radius server, they should be provided
-information about server's IP address, ports to connect to and the
-shared secret key to use.
-
-The two configuration files @file{raddb/client.config} and
-@file{raddb/client.shadow} provide this information for the
-client programs.
-
-These configuration files are described in the following chapters.
 
 @comment *******************************************************************
-@node client.config, client.shadow, Client Overview, Top
-@chapter client.config
-
-The @file{client.config} file determines the configuration values for
-client programs such as @code{radtest} and @code{radctl}.
-
-@subheading Syntax
-The syntax is quite simple: one statement per line, a statement consists
-of a keyword and a value separated by whitespace.
-
-Following keywords are recognized:
-
-@table @code
-@item timeout
-Sets the timeout in seconds for connection to radius server.
-@item retry
-Determines how many times to retry connecting the server in case of failure.
-Each subsequent	attempt takes place after sleeping the amount of time
-specified by @code{timeout} statement.
-@item server
-The name of the Radius server to connect to. It is used as a lookup key
-to client.shadow file, from where the corresponding server parameters are
-obtained.
-@end table
-
-@subheading Example
-
-@example
-server local
-timeout 3
-retry 2
-@end example
-
-@comment *******************************************************************
-@node client.shadow, Checkrad Overview, client.config, Top
-@chapter client.shadow
-
-This file contains IP addresses, port numbers and secret keys to
-be used when connecting to Radius servers.
-
-@subheading Syntax
-The record for each server occupies one line. The format of the record is
-somewhat similar to that of the system /etc/passwd file: it contains six
-fields separated by colons. The fields are:
-
-@enumerate 1
-@item Server name
-@item Server IP address or FQDN
-@item Shared secret
-@item Authentication port number
-@item Accounting port number
-@item Administrative portnumber
-@end enumerate
-
-@subheading Example
-
-@example
-local:localhost:guessme:1645:1646:5000
-@end example
-
-This line states that server @samp{local} has the hostname
-@samp{localhost}. Its shared secret value is @samp{guessme},
-authentication and accounting port numbers are 1645 and 1646
-respectively, and the control channel is listening on port 5000.
-
-
-@comment *******************************************************************
-@node Checkrad Overview, checkrad.conf, client.shadow, Top
+@node Checkrad Overview, checkrad.conf, Debugging, Top
 @chapter Checkrad Overview
 @pindex checkrad
 
@@ -4890,7 +4802,7 @@ The second way of invoking the program allows to use calling station
 ID in order to indicate the user.
 
 @comment *******************************************************************
-@node Radauth, Radtest, Radping, Top
+@node Radauth, Radctl, Radping, Top
 @chapter Radauth
 @pindex radauth
 
@@ -4899,358 +4811,120 @@ packet and displays the result it gets. It can be used to test the
 configuration files. The usage is:
 
 @example
-raduse [options] username password
+raduse [-v] username password
 @end example
 
-Actually the program is a wrapper that collects its arguments and calls
-@code{radtest} @ref{Radtest} with the options collected and passes it
-the following script ($LOGIN and $PASSWORD variables contain the username
-and password):
+The @code{-v} or @code{--verbose} option forces @code{raduse} to be
+verbose on output.
 
-@example
-        auth_packet = @{
-                User-Name = $LOGIN,
-                Password = $PASSWD
-	@};
-        send auth 1 $auth_packet;
-        expect 2 "rejected (" $REPLY_CODE \
-                  "); Reply-Message = " $REPLY[Reply-Message];
-	print "Authentity confirmed, reply pairs: " $REPLY;
-@end example
+If you enter @samp{.} (dot) instead of the password, the program
+will disable echoing on the screen, prompt you to enter it,
+and turn the echoing on again, thus preventing the password from being
+compromised.
 
 The program determines which Radius server to use, the authentication
-port number and shared secret following the procedure common for all client
-programs @ref{Client Overview}. @ref{radtest usage} for a list of
-accepted command line options.
+port number and shared secret following the procedure common for all
+client scripts. [FIXME: add reference to session.scm and explain
+which startup files are used]
 
 @comment *******************************************************************
-@node Radtest, Radctl, Radauth, Top
-@chapter Radtest
-@pindex radtest
-
-@code{radtest} program is designed to test the functionality of
-the Radius daemon. It sends the daemon arbitrary requests and
-displays the replies it gets.
-
-@menu
-* Usage: radtest usage.         Invocation and command line options.
-* Syntax: radtest syntax.       The input language syntax.
-* Examples: radtest examples.   Examples of using @code{radtest}.
-@end menu
-
-@comment *L2****************************************************************
-@node radtest usage, radtest syntax, , Radtest
-@chapter Invocation and command line options.
-
-The @code{radtest} is invoked using the following syntax:
-
-@example
-radtest [@var{options}] [@var{filename} ...]
-@end example
-
-When started without filename argument, @code{radtest} enters 
-interactive mode. In this mode the user is allowed to input
-arbitrary commands and execute them interactively. The program
-prompts the user by @samp{> } characters.
-
-If the filenames are supplied, @code{radtest} treats them as
-names of the files containing scripts and executes these
-files.
-
-The variables used in scripts can be set from command line using this
-syntax:
-
-@example
-@var{VARIABLE}=@var{VALUE}
-@end example
-
-@noindent
-Note, that no spaces are allowed on either side of the equal sign.
-
-Following options can be used to control the behaviour of
-@code{radtest}.
-
-@table @samp
-
-@item -d @var{path}
-@itemx --directory @var{path}
-Specifies the directory where Radius startup files reside.
-
-@item -x @var{debug_level}
-@itemx --debug @var{debug_level}
-Specifies the debugging level @ref{Debugging}.
-
-@item -p @var{portno}
-@itemx --port @var{portno}
-Sets the port number to use when sending authentication requests.
-@var{portno} can be either a decimal number or string representing a valid
-service from @file{/etc/services}. Accounting port is computed as
-@var{portno} + 1.
-
-@item -q
-@itemx --quick
-Quick startup. When given this flag @code{radtest} does not process startup
-files.
-
-@item -r @var{number}
-@itemx --retry @var{number}
-Specifies how many times @code{radtest} should retry sending requests if
-the server does not respond within the timeout interval.
-
-@item -t @var{number}
-@itemx --timeout @var{number}
-Specifies the amount of time @code{radtest} should wait for the reply before
-giving up.
-
-@item -h
-@itemx --help
-Display short usage summary and exit.
-
-@item -l
-@itemx --license
-Display the license and exit.
-
-@item -v
-@itemx --version
-Display the version and exit.
-
-@end table
-
-@comment *L2****************************************************************
-@node radtest syntax, radtest examples, radtest usage, Radtest
-@chapter The input language syntax
-
-The @code{radtest} program gets as its argument the filename of the test
-script to run. Currently its syntax is very simple: It consists of
-the statements of three kinds:
-
-@enumerate 1
-@item Assignment statements
-@item Send statements
-@item Expect statements
-@end enumerate
-
-Each statement is terminated by a semicolon. The statements are
-discussed in detail below.
-
-@subheading Expressions
-
-The term @dfn{expression} in the discussion below means one of the
-following:
-
-@table @asis
-@item 1. Dereferenced variable name.
-This is the name of a previously defined variable with a @samp{$}
-sign prepended to it, e.g: @code{$VAR}. In this case the resulting
-value is that of the variable being dereferenced.	
-
-@item 2. String enclosed in double quotes
-E.g. @code{"a string"}
-
-@item 3. Integer value
-
-@item 4. IP address
-IP addresses are specified in `dotted quad' notation,
-e.g. @code{127.0.0.1}
-
-@item 5. An A/V pair list.
-A comma-separated list of A/V pairs. The whole list is enclosed
-in curly braces. Each pair is represented by the following construct:
-
-@example
-		@var{dict_name} = @var{value}
-@end example
-
-@noindent
-where @var{dict_name} is a valid radius dictionary name, i.e.
-the name which is listed in @code{ATTRIBUTE} statement in one
-of the radius dictionary files.
-
-For example the following is a valid value-pair list:
-
-@example
-@{ NAS-Name = "localhost", NAS-IP-Address = 127.0.0.1,
-   NAS-Port-Id = 1, User-Name = $name @}
-@end example
-
-@item 6. Concatenation
-This means a concatenation of the two or more value-pair lists. The
-sign for such concatenation is @samp{+}. For example, assuming
-
-@example
-a = @{ NAS-Name = "localhost,
-       NAS-IP-Address = 127.0.0.1 @};
-b = @{ NAS-Port-Id = 1, User-Name = $name @};
-@end example
-
-@noindent
-the statement:
-
-@example
-		$a + $b
-@end example
-@noindent
-would produce the same list as in the example above, except
-that the @code{$name} will be already substituted by its value.
-
-@item 7. Dictionary name
-This means a valid radius dictionary value name, i.e. the name which
-is listed in a @code{VALUE} statement in one of the radius
-dictionary files.
-
-@end table
-	
-
-@subheading An assignment statement
-
-This statement assigns a value to a variable. Syntax is:
-
-@example
-@var{variable_name} = @var{expression} ;
-@end example
-
-@noindent
-where @var{variable_name} is a name of a variable, @var{value} is its
-value. The @samp{=} and @samp{;} are required. 
-
-@subheading Send statement
-
-This statement sends the packet to the radius server.
-
-The syntax is:
-
-@example
-send auth @var{PACKET_CODE} @var{PAIRLIST}
-send acct @var{PACKET_CODE} @var{PAIRLIST}
-@end example
-
-@noindent
-where @var{PACKET_CODE} is the integer value of the radius packet code,
-@var{PAIRLIST} is a value-pair list to be sent to the server.
-
-The following statement:
-
-@example
-send auth 1 @{ User-Name = "hamlet", Password = "pwd",
-               NAS-IP-Address = 127.0.0.1, NAS-Port-Id = 1 @} ;
-@end example
-
-@noindent
-sends the radius authentication request (code 1) to authenticate the
-user @samp{hamlet} with password @samp{pwd} coming from the port 1 on
-the NAS 127.0.0.1.
-
-The statement:
-
-@example
-send acct 4 @{ Acct-Status-Type = Start,
-               Acct-Session-Id = "00" @} +
-            @{ User-Name = "hamlet", Password = "pwd",
-               NAS-IP-Address = 127.0.0.1, NAS-Port-Id = 1 @} ;
-@end example
-@noindent
-sends the accounting record (code 4) for the above user, querying
-server to mark the start of his session.
-
-@subheading Expect statement
-
-The expect statement follows the syntax:
-
-@example
-expect @var{CODE} ;
-expect @var{CODE} @var{FAILURE_MESSAGE} ;
-@end example
-
-@noindent
-where @var{CODE} is an integer number of the response packet to expect
-from the radius server. If the server replies with this code, the
-statement succeeds, otherwise it fails, prints the diagnostics on
-stderr and @code{radtest} finishes its execution.
-
-The @var{FAILURE_MESSAGE} is a string to display when the expect fails
-instead of the standard message;
-
-@comment *L2****************************************************************
-@node radtest examples,              , radtest syntax, Radtest
-@chapter Examples of @code{radtest} scripts
-
-@subheading Authentication test
-
-The following script sends the authentication request to the server
-
-@example
-
-auth_packet = @{ User-Name = $username, Password = $password,
-		 NAS-Port-Id = $port,
-		 NAS-Identifier = "localhost",
-		 NAS-IP-Address = 127.0.0.1 @};
-
-send auth 1 $auth_packet;
-expect 2 "Returned " $REPLY_CODE ", Reply-Message = " $REPLY[Reply-Message] ;
-
-## EOF
-@end example
-
-Before calling this script, the variables @code{username},
-@code{password} and @code{port} must be assigned corresponding values.
-If the above script is saved in the file @file{auth.t}, then it can
-be run as:
-
-@example
-% radtest username=\"gray\" password=\"foo\" port=1 auth.t
-@end example
-@noindent
-Note the use of quotes to assign string values and the use of escape
-characters (@samp{\}) to prevent the quotes from being interpreted by
-the shell.
-
-@subheading Accounting test
-
-@example
-
-send acct 4 @{ User-Name = $username,
-		Acct-Status-Type = $type,
-		Acct-Session-Id = $sid,
-		NAS-Port-Id = $port,
-		NAS-Identifier = "localhost",
-		NAS-IP-Address = 127.0.0.1 @};
-expect 5;
-@end example
-
-This script can be run as:
-
-@example
-% radtest username=\"gray\" sid=\"abc\" port=1 type=Start acct.t
-@end example
-@noindent
-
-to send a start request or as:
-
-@example
-% radtest username=\"gray\" sid=\"abc\" port=1 type=Stop acct.t
-@end example
-@noindent
-
-to send a stop request.
-
-@comment *******************************************************************
-@node Radctl, Radctl.sh, Radtest, Top
+@node Radctl, Builddbm, Radauth, Top
 @chapter Radctl
 @pindex radctl
 
 @code{radctl} is a control interface to @code{radiusd} daemon. It allows
 user running it to query @code{radiusd} about various aspects of its
-work and issue administrative commands to it. It is planned to replace
-usual signal interface.
+work and issue administrative commands to it. 
+
+@code{Radctl} communicates with radius using either a regular
+UNIX-style signal interface or a special UDP control channel.
 
 @menu
-* Configuring:radctl configuration.     Configuring @code{radctl}.
-* Invocation:radctl invocation.         How to invoke @code{radctl}.
-* Commands:radctl commands.             Commands available. 
+* Signal Interface::            Invoking radctl to use signal interface.
+* Control Channel::             Using radius control channel.
 @end menu
 
 @comment *L2****************************************************************
-@node radctl configuration, radctl invocation, , Radctl
+@node Signal Interface, Control Channel, , Radctl
+@chapter Signal Interface
+@cindex signalling radius
+@cindex radctl, signal interface
+
+In order to use the signal interface invoke @code{Radctl} with
+@samp{-s} or @samp{--signal} option. The usage is:
+
+@example
+radctl -s @var{command} [@var{args}]
+@end example
+
+Where @var{command} is a command telling @code{radctl} which actions to
+take, and @var{args} are optional arguments to the command. Only one
+command can be specified per invocation.
+
+The valid @var{command}s are as follows:
+
+@table @code
+
+@item start [@var{args}]
+If @code{radiusd} is not running already, it is started. When
+present, @var{args} are passed as the command line to the
+server.
+
+@item stop
+Stops running @code{radiusd}.
+
+@item restart [@var{args}]
+Stops the server and then starts it again. When present, @var{args}
+are passed as the command line to the server.
+
+@item reload
+Causes running @code{radiusd} server to re-read its configuration files.
+
+@item dumpdb
+Tells @code{radiusd} to dump its user hash table into the file
+@file{@value{RADLOG}/radius.parse}. This can be used for debugging 
+configuration files.
+
+@item status
+@code{radiusd} reports its memory usage statistics. The information is
+logged under @code{Info} log level.
+
+@item which
+Reports the information about the running copy of @code{radiusd}.
+
+@end table
+
+No special configuration is needed in order to use radius signal
+interface.
+
+@comment *L2****************************************************************
+@node Control Channel, , Signal Interface, Radctl
+@chapter Control Channel
+@cindex control channel
+@cindex radctl, control channel
+
+Control channel offers much more flexible monitoring and control
+capabilities than regular UNIX-style signal interface. @code{radctl}
+uses control channel when invoked without @samp{-s} option.
+
+When using control channel interface, @code{radctl} switches to
+interactive mode, which allows you to directly send commands to
+the server and to immediately see the server replies.
+
+Since this option uses UDP channel, special attention must be paid
+to security issues while configuring the server.
+
+@menu
+
+* Configuring:radctl configuration.     Configuring radius to use
+                                        control channel.
+* Invocation:radctl invocation.         How to invoke @code{radctl}.
+* Commands:radctl commands.             Commands available in interactive
+                                        mode.
+@end menu
+
+@comment **L3***************************************************************
+@node radctl configuration, radctl invocation, , Control Channel
 @chapter Configuring @code{radctl}.
 @cindex configuring radctl
 @cindex radctl, configuring
@@ -5314,51 +4988,63 @@ ROOT    Auth-Type = System,
         Service-Type = RADIUS-Administrative-User
 @end example
 
-@comment *L2****************************************************************
-@node radctl invocation, radctl commands, radctl configuration, Radctl
+@comment **L3***************************************************************
+@node radctl invocation, radctl commands, radctl configuration, Control Channel
 @chapter How to invoke @code{radctl}.
 @cindex radctl, invocation
 
-Radctl understands following command line options:
+When started in control channel mode, @code{radctl} understands the
+following command line options:
 
 @table @code
 @item -d DIR
 @itemx --directory DIR
-Specifies the directory where client configuration files reside
-@ref{Client Overview}.
+Specifies the directory where radius dictionary files and
+@code{radctl.rc} file reside.
 
-@item -s HOST
+@item -S HOST
 @itemx --server HOST
 Specifies the name of the server to connect to. @emph{Please note} that
-this is not a domain name, but rather the name under which server is
-listed in @file{client.shadow} file @ref{client.shadow}.
+this is not a domain name, but rather the server ID under which it was
+registered using @samp{(set! rad-server-list ...)} statement in
+@code{radctl.rc} file. [FIXME:add reference]
 
 @item -u USERNAME
-@itemx --user USERNAME 
-Specifies the username. If started without this option, @code{radctl}
-will prompt for the username.
+@itemx --user USERNAME
+@itemx -l USERNAME
+@itemx --login USERNAME
+Specifies the username. If you start @code{radctl} without this option,
+you will have to issue @code{user} command from inside it.
 
 @item -p PASSWORD
 @itemx --password PASSWORD
-Specifies the password to be used while connecting to the server. If
-started without this option, @code{radctl} will prompt user for the
-password.
+Specifies the password to be used while connecting to the
+server. Special password @samp{.} (dot) tells @code{radctl} to
+prompt you for the password with terminal echoing turned off.
 
 @item -v
 @itemx --verbose
 Enable verbose mode. In verbose mode all conversation with the
 Radius server is echoed on stderr.
 
-@item -?
+@item -h
 @itemx --help
 Display short usage help and exit.
 @end table
 
-@comment *L2****************************************************************
-@node radctl commands, , radctl invocation, Radctl
+@comment **L3***************************************************************
+@node radctl commands, , radctl invocation, Control Channel
 @chapter Radctl commands
 @cindex radctl commands
 @cindex commands, radctl
+
+A command in radctl interactive mode consists of a command verb and
+optional arguments. Any non-ambiguous abbreviated form of a command
+verb is accepted. Command arguments, however, may not be abbreviated.
+
+Commands fall into two groups: those that control the behaviour of
+the @code{radctl} monitor itself, and those that are sent directly
+to the server.
 
 @subheading Internal commands
 
@@ -5366,23 +5052,42 @@ These commands modify the behaviour of radctl itself.
 
 @table @code
 
-@item -?
-@itemx -help
+@item help
 Output short help information.
 
-@item -q
-@itemx -quit
+@item quit
+@itemx bye
 Exit the program.
 
-@item -s
-@itemx -server
-Set the name of radius server to query @ref{Client Overview}.
+@item server
+Display the ID of the current radius server.
 
-@item -v
-@itemx -verbose
+@item server @var{id}
+Set current radius server.
+
+@itemx verbose
 Toggle verbose mode on/off. When verbose mode is on, @code{radctl}
 displays to stderr detailed log of its conversation with Radius
 server.
+
+@item login @var{name}
+@itemx user @var{name}
+Use @var{name} as administrative user login name.
+
+@item password @var{pass}
+Use the specified password. If @samp{.} (dot) is entered instead of
+plaintext password, @code{radctl} reads the password from
+@code{/dev/tty} with character echoing turned off and generation
+of signals by tty special characters disabled. This reduces the
+possibility of the password being compromised.
+
+@item list
+@itemx list active
+Display detailed information about current radius server.
+
+@item list avail
+List available radius servers. Only server ID and hostname (or IP
+address) are listed.
 
 @end table
 
@@ -5415,7 +5120,7 @@ to disk file. The filename is @file{radlog/radius.parse}
 
 @item reload @var{what}
 Instructs the server to reload a particular part of its configuration.
-The @var{what} part specifies which configuration file to reload:
+The @var{what} argument specifies which of the configuration files to reload:
 
 @table @code
 @item all
@@ -5462,57 +5167,18 @@ been started with its full pathname.
 @item shutdown
 Instructs Radius to flush all pending requests and shut down.
 
+@item suspend
+Tells radiusd to stop servicing incoming requests. The server becomes
+idle and listens only to the control channel.
+
+@item continue
+Undo the effect of the last @code{suspend} command.
+
 @end table
 
 
 @comment *******************************************************************
-@node Radctl.sh, Builddbm, Radctl, Top
-@chapter Radctl.sh
-@pindex radctl.sh
-
-The @code{radctl.sh} utility provides the alternative way to communicate
-with the radius server. It uses the signal mechanism in order to do so.
-It is invoked as:
-
-@example
-radctl.sh @var{command}
-@end example
-
-The valid @var{command}s are as follows:
-
-@table @code
-
-@item start
-If @code{radiusd} is not running already, it is started. The
-rest of the command line arguments is passed as command line to the
-server.
-
-@item stop
-Stops running @code{radiusd}.
-
-@item restart
-Stops the server and then starts it again. The rest of the arguments
-is passed as command line to the server.
-
-@item reload
-Causes running @code{radiusd} server to re-read its configuration files.
-
-@item dumpdb
-Tells @code{radiusd} to dump its user hash table into the file
-@file{/var/log/radius.parse}. This can be used for debugging the
-configuration files.
-
-@item status
-@code{radiusd} reports its memory usage statistics. The information is
-logged under @code{Info} log level.
-
-@item which
-Reports the information about running copy of @code{radiusd}.
-
-@end table
-
-@comment *******************************************************************
-@node Builddbm, , Radctl.sh, Top
+@node Builddbm, Radscm, Radctl, Top
 @chapter Builddbm
 @pindex buildbm
 
@@ -5554,6 +5220,292 @@ safely be omitted.
 @item -h
 Outputs short usage summary and exits with 0 exit code.
 @end table
+
+@comment *******************************************************************
+@node Radscm, , Builddbm, Top
+@chapter Radscm: A guile interface to radius functions.
+@pindex radscm
+@cindex guile interface
+
+@code{Radscm} is a Scheme interpreter based on Guile with the addition
+of special functions and variables for communicating with
+@code{radiusd}. This chapter concentrates on the special features
+provided by @code{radscm}. Please refer to Guile documentation for
+information about Scheme and Guile @xref{Top,,Overview,guile,The Guile Reference Manual}.
+
+@heading Variables
+
+@deffn %raddb-path
+A path to radius configuration directory.
+
+@end deffn
+
+@deffn rad-server-list
+@vindex rad-server-list, radscm
+A list of radius servers. Each element of the list is:
+
+@lisp
+(list ID-STRING HOST-STRING SECRET-STRING AUTH-NUM ACCT-NUM CNTL-NUM)
+@end lisp
+
+@noindent
+where:
+
+@multitable @columnfractions .40 .45
+@item ID-STRING         @tab Server ID,
+@item HOST-STRING	@tab Server hostname or IP address,
+@item SECRET-STRING	@tab Shared secret key to use,
+@item AUTH-NUM          @tab Authentication port number,
+@item ACCT-NUM          @tab Accounting port number,
+@item CNTL-NUM          @tab Control channel port number.
+@end multitable
+Thus, each entry can be used as an argument to rad-client-set-server or
+rad-client-add-server.
+@end deffn
+
+@heading Functions
+
+@deffn rad-send-internal PORT-NUMBER CODE-NUMBER PAIR-LIST
+
+Sends the request to currently selected server.
+Arguments are:
+
+@table @var
+@item  PORT-NUMBER
+Port number to use. These values are allowed:
+
+        @multitable @columnfractions .40 .40
+                @item  0         @tab Authentication port,
+                @item  1         @tab Accounting port,
+                @item  2         @tab Control port.
+        @end multitable
+        @noindent
+The actual port numbers are those configured for
+the given server.
+@item  CODE-NUMBER
+Request code.
+@item  PAIR-LIST
+List of Attribute-value pairs. Each pair is either
+@lisp
+        (cons ATTR-NAME-STRING  VALUE)
+@end lisp
+or
+@lisp
+        (cons ATTR-NUMBER  VALUE)
+@end lisp
+@end table
+@noindent
+
+Return:
+
+On success
+@lisp
+	(list RETURN-CODE-NUMBER PAIR-LIST)
+@end lisp
+On failure:
+@lisp
+	'()
+@end lisp
+
+@end deffn
+
+@deffn rad-send PORT-NUMBER CODE-NUMBER PAIR-LIST . VERBOSE
+
+Sends a radius request. Actually it does the same work as rad-send-internal
+but if VERBOSE is specified, the verbose report about interaction with
+the radius server is printed.
+
+@end deffn
+
+@deffn rad-client-list-servers
+
+List currently configured servers. Two columns for each server are displayed:
+Server ID and IP address.
+
+@end deffn
+
+@deffn rad-get-server
+
+Returns the ID of the currently selected server.
+
+@end deffn
+
+@deffn rad-client-set-server LIST
+
+Selects for use the server described by LIST. A LIST should be:
+
+@lisp
+(list ID-STRING HOST-STRING SECRET-STRING AUTH-NUM ACCT-NUM CNTL-NUM)
+@end lisp
+@noindent
+where:
+
+@multitable @columnfractions .40 .45
+@item ID-STRING         @tab Server ID,
+@item HOST-STRING	@tab Server hostname or IP address,
+@item SECRET-STRING	@tab Shared secret key to use,
+@item AUTH-NUM          @tab Authentication port number,
+@item ACCT-NUM          @tab Accounting port number,
+@item CNTL-NUM          @tab Control channel port number.
+@end multitable
+
+@end deffn
+
+@deffn rad-client-add-server LIST
+
+Adds the server described by LIST to the list of active servers.
+A LIST should be:
+
+@lisp
+(list ID-STRING HOST-STRING SECRET-STRING AUTH-NUM ACCT-NUM CNTL-NUM)
+@end lisp
+
+@noindent
+where:
+
+@multitable @columnfractions .40 .45
+@item ID-STRING         @tab Server ID,
+@item HOST-STRING	@tab Server hostname or IP address,
+@item SECRET-STRING	@tab Shared secret key to use,
+@item AUTH-NUM          @tab Authentication port number,
+@item ACCT-NUM          @tab Accounting port number,
+@item CNTL-NUM          @tab Control channel port number.
+@end multitable
+
+@end deffn
+
+@deffn rad-dict-name->attr NAME-STRING
+
+Returns a dictionary entry for the given attribute name or #f if
+no such name was found in the dictionary.
+The entry is a list of the form:
+
+@lisp
+	(NAME-STRING ATTR-NUMBER TYPE-NUMBER VENDOR)
+@end lisp
+
+@noindent
+where:
+
+@multitable @columnfractions .40 .45
+	@item NAME-STRING	@tab is the attribute name,
+        @item VALUE-NUMBER	@tab is the attribute number,
+	@item TYPE-NUMBER	@tab is the attribute type,
+	@item VENDOR
+@tab is the vendor PEC, if the attribute is a Vendor-Specific one, or #f otherwise.
+@end multitable
+
+@end deffn
+
+@deffn rad-dict-name->value ATTR VALUE-STRING
+
+Returns the numeric value of the VALUE-STRING symbolic value pertaining
+to attribute ATTR. ATTR can be either the attribute name or its number.
+
+@end deffn
+
+@deffn rad-dict-pec->vendor PEC-NUMBER
+
+Converts PEC to the vendor name
+
+@end deffn
+
+@deffn rad-read-no-echo PROMPT-STRING
+
+Prints the given PROMPT-STRING, disables echoing, reads a string up to the
+next newline character, restores echoing and returns the string entered.
+This is the interface to the C getpass(3) function.
+
+@end deffn
+
+@deffn rad-client-timeout NUMBER
+
+Sets the timeout for waiting to the server reply.
+
+@end deffn
+
+@deffn rad-client-retry NUMBER
+
+Sets the number of retries for sending requests to a radius server.
+
+@end deffn
+
+@deffn rad-format-code DEST-BOOL CODE-NUMBER
+
+Format a radius reply code into a human-readable form.
+DEST-BOOL has the same meaning as in format.
+
+@end deffn
+
+@deffn rad-format-pair DEST-BOOL PAIR
+
+Format a radius attribute/value pair for output.
+DEST-BOOL has the same meaning as in format.
+PAIR is eihter
+@lisp
+		(cons NAME-STRING VALUE)
+@end lisp
+	or
+@lisp
+		(cons ATTR-NUMBER VALUE)
+@end lisp
+@noindent
+where VALUE may be of any type appropriate for the given attribute.
+
+@end deffn
+
+@deffn rad-print-pairs DEST-BOOL PAIR-LIST
+
+Output the radius attribute/value pairs from the PAIR-LIST.
+DEST-BOOL has the same meaning as in format.
+PAIR-LIST is a list of pairs in the form
+
+@lisp
+		(cons NAME-STRING VALUE)
+@end lisp
+@noindent
+	or
+
+@lisp
+		(cons ATTR-NUMBER VALUE)
+@end lisp
+@noindent
+where VALUE may be of any type appropriate for the given attribute.
+
+All "Reply-Message" pairs from the list are concatenated and displayed
+as one.
+
+@end deffn
+
+@deffn rad-format-reply-msg PAIR-LIST . TEXT
+
+Concatenate and print text from all "Reply-Message" pairs from the
+PAIR-LIST. If TEXT is specified, it is printed before the concatenated
+text.
+
+@end deffn
+
+@deffn rad-list-servers
+
+For each server from @code{rad-server-list} print its ID and hostname
+or IP address.
+
+@end deffn
+
+@deffn rad-select-server ID-STRING
+
+Select the server identified by ID-STRING as a current server. The server
+data are looked up in rad-server-list variable.
+
+@end deffn
+
+@deffn rad-add-server ID-STRING
+
+Add the server identified by ID-STRING to the list of current servers.
+The server data are looked up in rad-server-list variable.
+
+@end deffn
+
 
 @comment *******************************************************************
 

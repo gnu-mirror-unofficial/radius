@@ -17,7 +17,7 @@
  *
  */
 
-#define RADIUS_MODULE 13
+#define RADIUS_MODULE 11
 #ifndef lint
 static char rcsid[] =
 "@(#) $Id$";
@@ -129,7 +129,7 @@ rad_send_reply(code, authreq, oreply, msg, activefd)
 		 */
 		length_ptr = NULL;
 		if ((vendorcode = VENDOR(reply->attribute)) > 0 &&
-		    (vendorpec  = dict_vendorpec(vendorcode)) > 0) {
+		    (vendorpec  = vendor_id_to_pec(vendorcode)) > 0) {
 			if (total_length + 6 >= RAD_BUFFER_SIZE)
 				goto err;
 			*ptr++ = DA_VENDOR_SPECIFIC;
@@ -148,17 +148,6 @@ rad_send_reply(code, authreq, oreply, msg, activefd)
 		} else
 			vendorpec = 0;
 
-#ifdef ATTRIB_NMC
-		if (vendorpec == VENDORPEC_USR) {
-			if (total_length + 2 >= RAD_BUFFER_SIZE)
-				goto err;
-			lval = htonl(reply->attribute & 0xFFFF);
-			memcpy(ptr, &lval, 4);
-			total_length += 2;
-			*length_ptr  += 2;
-			ptr          += 4;
-		} else
-#endif
 		*ptr++ = (reply->attribute & 0xFF);
 
 		switch(reply->type) {
@@ -178,10 +167,8 @@ rad_send_reply(code, authreq, oreply, msg, activefd)
 			}
 			if (total_length + len + 2 >= RAD_BUFFER_SIZE)
 				goto err;
-#ifdef ATTRIB_NMC
-			if (vendorpec != VENDORPEC_USR)
-#endif
-				*ptr++ = len + 2;
+
+			*ptr++ = len + 2;
 			if (length_ptr) *length_ptr += len + 2;
 			memcpy(ptr, reply->strvalue, len);
 			ptr += len;
@@ -192,10 +179,8 @@ rad_send_reply(code, authreq, oreply, msg, activefd)
 		case PW_TYPE_IPADDR:
 			if (total_length + sizeof(UINT4) + 2 >= RAD_BUFFER_SIZE)
 				goto err;
-#ifdef ATTRIB_NMC
-			if (vendorpec != VENDORPEC_USR)
-#endif
-				*ptr++ = sizeof(UINT4) + 2;
+				
+			*ptr++ = sizeof(UINT4) + 2;
 			if (length_ptr) *length_ptr += sizeof(UINT4)+ 2;
 			lval = htonl(reply->lvalue);
 			memcpy(ptr, &lval, sizeof(UINT4));
@@ -455,30 +440,16 @@ radrecv(host, udp_port, buffer, length)
 		if (attribute == DA_VENDOR_SPECIFIC && attrlen > 6) {
 			memcpy(&lval, ptr, 4);
 			vendorpec = ntohl(lval);
-			if ((vendorcode = dict_vendorcode(vendorpec)) != 0) {
-#ifdef ATTRIB_NMC
-				if (vendorpec == VENDORPEC_USR) {
-					ptr += 4;
-					memcpy(&lval, ptr, 4);
-
-					attribute = (ntohl(lval) & 0xFFFF) |
-							(vendorcode << 16);
-					ptr += 4;
-					attrlen -= 8;
-					length -= 8;
-				} else
-#endif
-				{
-					ptr += 4;
-					attribute = *ptr | (vendorcode << 16);
-					ptr += 2;
-					attrlen -= 6;
-					length -= 6;
-				}
+			if ((vendorcode = vendor_pec_to_id(vendorpec)) != 0) {
+				ptr += 4;
+				attribute = *ptr | (vendorcode << 16);
+				ptr += 2;
+				attrlen -= 6;
+				length -= 6;
 			}
 		}
 
-		if ((attr = dict_attrget(attribute)) == (DICT_ATTR *)NULL) {
+		if ((attr = attr_number_to_dict(attribute)) == (DICT_ATTR *)NULL) {
 			debug(1, ("Received unknown attribute %d", attribute));
 		} else if ( attrlen >= AUTH_STRING_LEN ) {
 			debug(1, ("attribute %d too long, %d >= %d", attribute,

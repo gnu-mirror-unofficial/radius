@@ -104,9 +104,6 @@ static char *compile_flag_str[] = {
 #if defined(DENY_SHELL)
 	"DENY_SHELL",
 #endif
-#if defined(ATTRIB_NMC)
-	"ATTRIB_NMC",
-#endif
 #if defined(OSFC2)
 	"OSFC2",
 #endif

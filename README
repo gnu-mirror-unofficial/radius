@@ -13,10 +13,6 @@
   the statement #debug starting on the first colon. Debugging output goes to
   stderr or to the file /var/log/radius.stderr if such file exists.
 
-  --with-etcdir                  
-     Specify the directory containing raddb files instead of the default 
-  /etc/raddb.
-
   --with-auth-port=NUMBER	 
      Specify port number to use for authentication. Default is 1645. The
   default port number for accounting is computed as auth_port + 1.
@@ -38,10 +34,9 @@
      Enable dbm support. If no argument is specified, an usual DBM is enabled.
   The `ndbm' argument instructs to enable support of NDBM.
 
-  --ensble-mysql                 
-     Enable mysql support. If an argument is specified it is supposed to 
-  mean the default port to connect to. The port can be overridden in
-  /etc/raddb/sqlserver.
+  --ensble-sql={mysql|postgres}                 
+     Enable SQL accounting support. Currently MySQL and PostgreSQL interfaces
+     are supported.
 
   --enable-snmp                  
      Enable SNMP support.
@@ -55,9 +50,6 @@
 
   --enable-deny-shell=SHELL
      Always reject users with given shell.
-
-  --enable-attrib-nmc	         
-     Enable vendor-specific attributes (ATTRIB_NMC) keyword in dictionaries.
 
   --enable-osfc2	          
      Enable OSFC2 support.

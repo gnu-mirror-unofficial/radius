@@ -1,3 +1,27 @@
+2001-01-17  gray  <gray@farlep.net>
+	Finished writing radscm. Written guile modules which replace radctl
+	and radtest programs. Removed radctl and radtest subdirs from the 
+	distribution. Also added radctl.m4 to radscripts directory, so that
+	the functionality of old radctl is preserved.
+	
+2001-01-16  gray  <gray@farlep.net>
+	Fixed bugs in menu.c
+
+2001-01-15  gray  <gray@farlep.net>
+	Removed --with-etcdir from configure.in. 
+	Removed setting directory permissions to ETC_DIR in
+	install-data-local in Makefile.am. Thanks to
+	Alexandre Oliva <oliva@gnu.org> who proposed both
+	changes.
+
+2001-01-10  gray  <gray@farlep.net>
+	Started writing radscm -- a guile interface to radius functions.
+	I suppose it will obsolete both radctl and radtest as they could
+	be written as guile modules.
+
+2001-01-08  gray  <gray@farlep.net>
+	Added loops to rewrite.y
+
 2000-12-28  gray  <gray@farlep.net>
 	Removed radiusd/oldconfig.c. Its functionality moved to
 	radlib/raddb.c. raddb.c does not restrict input field lengths, 

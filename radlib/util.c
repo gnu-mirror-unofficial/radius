@@ -176,7 +176,7 @@ create_pair(attr, length, strval, lval)
 	VALUE_PAIR *pair;
 	DICT_ATTR  *dict;
 
-	dict = dict_attrget(attr);
+	dict = attr_number_to_dict(attr);
 	if (!dict) {
 		radlog(L_ERR, _("make_pair(): dictionary attr %d not found"),
 		       attr);

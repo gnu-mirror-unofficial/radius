@@ -17,7 +17,7 @@
  *
  */
 %{
-#define RADIUS_MODULE 18
+#define RADIUS_MODULE 16
         #if defined(HAVE_CONFIG_H)
 	# include <config.h>
 	#endif
@@ -359,6 +359,9 @@
 	 */
 	typedef struct {
 		COMMON_MTX
+		MTX *link;          /* Link to the next jump matrix
+				     * (for break and continue matrices)
+				     */
 		MTX      *dest;     /* Jump destination (usually NOP matrix) */
 	} JUMP_MTX;
 	/*
@@ -385,6 +388,8 @@
 	typedef struct {
 		COMMON_MTX
 		TGT_MTX   *tgt;     /* Target list */
+		pctr_t     pc;      /* Program counter for backward
+				       references */
 	} NOP_MTX;
 	/*
 	 * Function call
@@ -465,6 +470,25 @@
 	static MTX *mtx_first, *mtx_last;  /* Matrix list */
 	static VAR *var_first, *var_last;  /* Variable list */ 
 
+	/*
+	 * Loops
+	 */
+	typedef struct loop_t LOOP;
+	struct loop_t {
+		OBJ(LOOP);
+		JUMP_MTX *lp_break;
+		JUMP_MTX *lp_cont;
+	};
+	static OBUCKET loop_bkt = { sizeof(LOOP), NULL };
+	static LOOP *loop_first, *loop_last;
+
+	void loop_push(MTX *mtx);
+	void loop_pop();
+	void loop_fixup(JUMP_MTX *list, MTX *target);
+	void loop_init();
+	void loop_free_all();
+	void loop_unwind_all();
+	
 	/*
 	 * Lexical analyzer stuff
 	 */
@@ -592,7 +616,7 @@
 };
 
 %token <type>   TYPE
-%token IF ELSE RETURN
+%token IF ELSE RETURN WHILE FOR DO BREAK CONTINUE
 %token <string> STRING IDENT
 %token <number> NUMBER REFERENCE
 %token <var> VARIABLE
@@ -602,7 +626,7 @@
 %token BOGUS
 
 %type <arg> arglist 
-%type <mtx> stmt expr list cond else arg args
+%type <mtx> stmt expr list cond else while do arg args
 %type <var> varlist parmlist parm dclparm
 
 
@@ -621,6 +645,7 @@
 input   : dcllist
           {
 		  var_free_all();
+		  loop_free_all();
 		  frame_free_all();
 		  mtx_free_all();
 	  }
@@ -632,6 +657,7 @@ dcllist : decl
           {
 		  /* Roll back all changes done so far */
 		  var_unwind_all();
+		  loop_unwind_all();
 		  frame_unwind_all();
 		  mtx_unwind_all();
 		  function_delete();
@@ -663,6 +689,7 @@ decl    : fundecl begin list end
 		  
 		  /* clean up things */
 		  var_unwind_all();
+		  loop_unwind_all();
 		  frame_unwind_all();
 		  mtx_unwind_all();
 		  function_cleanup();
@@ -848,6 +875,82 @@ stmt    : begin list end
           {
 		  /*mtx_stop();*/
 		  $$ = mtx_return($2);
+	  }
+        | while cond stmt
+	  {
+		  MTX *mtx;
+		  
+	          mtx_stop();
+		  mtx = mtx_jump();
+		  mtx->jump.dest = $1;
+		  $2->cond.if_false = mtx_nop();
+		  $$ = mtx_cur();
+		  
+		  /* Fixup possible breaks */
+		  loop_fixup(loop_last->lp_break, $$);
+		  /* Fixup possible continues */
+		  loop_fixup(loop_last->lp_cont, $1);
+		  loop_pop();
+	  }	  
+	| do stmt { $<mtx>$ = mtx_nop(); } WHILE cond ';' 
+          {
+		  /* Default cond rule sets if_true to the next NOP matrix
+		   * Invert this behaviour.
+		   */
+		  $5->cond.if_false = $5->cond.if_true;
+		  $5->cond.if_true = $1;
+		  $$ = mtx_cur();
+
+		  /* Fixup possible breaks */
+		  loop_fixup(loop_last->lp_break, $$);
+		  /* Fixup possible continues */
+		  loop_fixup(loop_last->lp_cont, $<mtx>3);
+		  loop_pop();
+	  }
+/* ***********************
+   For the future use:
+	| FOR '(' for_expr for_expr for_expr ')' stmt
+   *********************** */
+        | BREAK ';'
+          {
+		  if (!loop_last) {
+			  radlog(L_ERR,
+				 _("%s:%d: nothing to break from"),
+				 input_filename, input_line);
+			  errcnt++;
+			  YYERROR;
+		  }
+
+		  $$ = mtx_jump();
+		  $$->jump.link = (MTX*)loop_last->lp_break;
+		  loop_last->lp_break = (JUMP_MTX*)$$;
+	  }
+	| CONTINUE ';'
+          {
+		  if (!loop_last) {
+			  radlog(L_ERR,
+				 _("%s:%d: nothing to continue"),
+				 input_filename, input_line);
+			  errcnt++;
+			  YYERROR;
+		  }
+		  $$ = mtx_jump();
+		  $$->jump.link = (MTX*)loop_last->lp_cont;
+		  loop_last->lp_cont = (JUMP_MTX*)$$;
+	  }
+        ;
+
+while   : WHILE
+          {
+		  $$ = mtx_nop();
+		  loop_push($$);
+	  }
+        ;
+
+do      : DO
+          {
+		  $$ = mtx_nop();
+		  loop_push($$);
 	  }
         ;
 
@@ -1043,6 +1146,7 @@ parse_rewrite()
 	code_init();
 	mtx_init();
 	var_init();
+	loop_init();
 	frame_init();
 	
 	frame_push();
@@ -1300,11 +1404,24 @@ c_comment()
 #else
 # define DEBUG_LEX(s,v)			    
 #endif
-			    
+
+static struct keyword rw_kw[] = {
+	"if",       IF,
+	"else",     ELSE,
+	"return",   RETURN,
+	"for",      FOR,
+	"do",       DO,
+	"while",    WHILE,
+	"break",    BREAK,
+	"continue", CONTINUE,
+	NULL
+};
+
 int
 yylex()
 {
 	int nl;
+	int c;
 	VAR *var;
 	FUNCTION *fun;
 	builtin_t *btin;
@@ -1339,8 +1456,6 @@ yylex()
 	 * A character
 	 */
 	if (yychar == '\'') {
-		int c;
-		
 		if (input() == '\\')
 			c = backslash();
 		else
@@ -1381,10 +1496,10 @@ yylex()
 		char *attr_name;
 		
 		if (isdigit(input())) {
-			attr = dict_attrget(read_number());
+			attr = attr_number_to_dict(read_number());
 		} else if (yychar == '[' || yychar == '{') {
 			attr_name = read_to_delim(yychar == '[' ? ']' : '}');
-			attr = dict_attrfind(attr_name);
+			attr = attr_name_to_dict(attr_name);
 		}
 		if (!attr) {
 			radlog(L_ERR, "%s:%d: unknown attribute",
@@ -1403,6 +1518,7 @@ yylex()
 	 */
 	if (isword(yychar)) {
 		yylval.string = read_ident(yychar);
+
 		if (strcmp(yylval.string, "integer") == 0) {
 			DEBUG_LEX("TYPE(Integer)", 0);
 			yylval.type = Integer;
@@ -1411,15 +1527,11 @@ yylex()
 			DEBUG_LEX("TYPE(String)", 0);
 			yylval.type = String;
 			return TYPE;
-		} else if (strcmp(yylval.string, "if") == 0) {
-			DEBUG_LEX("IF", 0);
-			return IF;
-		} else if (strcmp(yylval.string, "else") == 0) {
-			DEBUG_LEX("ELSE", 0);
-			return ELSE;
-		} else if (strcmp(yylval.string, "return") == 0) {
-			DEBUG_LEX("RETURN", 0);
-			return RETURN;
+		}
+
+		if ((c = xlat_keyword(rw_kw, yylval.string, 0)) != 0) {
+			DEBUG_LEX("KW: %s", yylval.string);
+			return c;
 		}
 
 		if (var = var_lookup(yylval.string)) {
@@ -1705,7 +1817,56 @@ frame_unwind_all()
 		list_remove(&frame_first, &frame_last, frame_last);
 	frame_push();
 }
-		   
+
+/* **************************************************************************
+ * Loops
+ */
+
+void
+loop_init()
+{
+	loop_bkt.alloc_list = NULL;
+	loop_first = loop_last = NULL;
+}
+
+void
+loop_free_all()
+{
+	obj_free_all(&loop_bkt);
+	loop_first = loop_last = NULL;
+}
+
+void
+loop_unwind_all()
+{
+	loop_first = loop_last = NULL;
+}
+
+void
+loop_push(mtx)
+	MTX *mtx;
+{
+	LOOP *this_loop = obj_alloc(&loop_bkt);
+	list_append(&loop_first, &loop_last, this_loop);
+}
+
+void
+loop_pop()
+{
+	list_remove(&loop_first, &loop_last, loop_last);
+}
+
+void
+loop_fixup(list, target)
+	JUMP_MTX *list;
+	MTX *target;
+{
+	JUMP_MTX *jp;
+
+	for (jp = list; jp; jp = (JUMP_MTX*)jp->link)
+		jp->dest = target;
+}
+
 /* **************************************************************************
  * Variables
  */
@@ -2884,7 +3045,7 @@ debug_dump_code()
 	do {
 		fprintf(fp, "%4d:", pc);
 		for (i = 0; i < 8 && pc < rw_rt.codesize; i++, pc++)
-			fprintf(fp, " %8p", rw_rt.code[pc]);
+			fprintf(fp, " %8x", rw_rt.code[pc]);
 		fprintf(fp, "\n");
 	} while (pc < rw_rt.codesize);
 	
@@ -2999,6 +3160,17 @@ add_target(mtx, pc)
 	tgt->pc = pc;
 }
 
+void
+fixup_target(mtx, pc)
+	NOP_MTX *mtx;
+	pctr_t   pc;
+{
+	TGT_MTX   *tgt;
+	
+	for (tgt = (TGT_MTX*)mtx->tgt; tgt; tgt = (TGT_MTX*)tgt->next) 
+		rw_rt.code[tgt->pc] = (INSTR)pc;
+	mtx->tgt = NULL;
+}
 
 pctr_t
 codegen()
@@ -3018,9 +3190,8 @@ codegen()
 			return 0;
 		case Nop:
 			/* Fix-up the references */
-			for (tgt = (TGT_MTX*)mtx->nop.tgt; tgt;
-			      tgt = (TGT_MTX*)tgt->next) 
-				rw_rt.code[tgt->pc] = (INSTR)rw_rt.pc;
+			fixup_target(&mtx->nop, rw_rt.pc);
+			mtx->nop.pc = rw_rt.pc;
 			break;
 		case Stop:
 			break;
@@ -3145,6 +3316,15 @@ codegen()
 				
 		}
 	}
+
+	/*
+	 * Second pass: fixup backward references
+	 */
+	for (mtx = mtx_first; mtx; mtx = mtx->gen.next) {
+		if (mtx->gen.type == Nop)
+			fixup_target(&mtx->nop, mtx->nop.pc);
+	}
+	
 #if defined(MAINTAINER_MODE)	
 	if (debug_on(25)) {
 		FILE *fp = debug_open_file();
@@ -4178,21 +4358,16 @@ test_rewrite()
 	FUNCTION *fun;
 	VALUE_PAIR *pair;
 
-#define sid "2345/some we/ry stran/ge/data/ as cisco is/used/to/send"
-#define pri "ISDN 1:D:234"
-again:
 	parse_rewrite();
-	meminfo(mp);
-//	goto again;
-	
+/*	
 	rw_rt.request = create_pair(44, strlen(sid), sid, 0);
 	pair = create_pair(2005, strlen(pri), pri, 0);
 	pairadd(&rw_rt.request, pair);
-
+*/
 	
 	fun = (FUNCTION*) sym_lookup(rewrite_tab, "test");
 	if (fun) {
-		run_init(fun->entry);
+		run_init(fun->entry, NULL);
 		switch (fun->rettype) {
 		case Integer:
 			printf("int: %d\n", rw_rt.rA);
@@ -4201,8 +4376,11 @@ again:
 			printf("str: %s\n", (char*)rw_rt.rA);
 		}
 	}
+/*
 	fprint_attr_list(stdout, rw_rt.request);
 	pairfree(rw_rt.request);
-	goto again;
+	*/
 }
 #endif
+
+	/*HONY SOIT QUI MAL Y PENSE*/

@@ -493,7 +493,8 @@ channel_stmt    : T_CHANNEL channel_name '{' channel_list '}'
                   {
 			  if (channel.mode == LM_UNKNOWN) {
 				  radlog(L_ERR,
-				      _("%s:%d: no channel mode for `%s'"), $2);
+				      _("%s:%d: no channel mode for `%s'"), 
+				      	filename, line_num, $2);
 			  } else {
 				  channel.name = $2;
 				  register_channel(&channel);
@@ -506,6 +507,11 @@ channel_stmt    : T_CHANNEL channel_name '{' channel_list '}'
 channel_name    : T_STRING
                   {
 			  channel.mode = LM_UNKNOWN;
+		  }
+		| T_AUTH
+		  {
+		  	channel.mode = LM_UNKNOWN;
+		  	strcpy($$, "auth");
 		  }
                 ;
 

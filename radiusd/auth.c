@@ -23,7 +23,7 @@
  * Version:	@(#)auth.c  1.83  21-Mar-1999  miquels@cistron.nl
  *              @(#) $Id$ 
  */
-#define RADIUS_MODULE 6
+#define RADIUS_MODULE 4
 #ifndef lint
 static char rcsid[] =
 "@(#) $Id$";
@@ -512,7 +512,7 @@ rad_auth_init(authreq, activefd)
 	 */
 	if (calc_digest(authreq->digest, authreq) != 0) {
 		/*
-		 *	We dont respond when this fails
+		 *	We don't respond when this fails
 		 */
 		radlog(L_NOTICE,
 		       _("from client %s - Security Breach: %s"),
@@ -537,7 +537,7 @@ rad_auth_init(authreq, activefd)
 		radlog(L_AUTH, _("No huntgroup access: [%s] (from nas %s)"),
 			namepair->strvalue, nas_name2(authreq));
 		rad_send_reply(PW_AUTHENTICATION_REJECT, authreq,
-			authreq->request, NULL, activefd);
+			       authreq->request, NULL, activefd);
 		authfree(authreq);
 		return -1;
 	}
@@ -545,46 +545,142 @@ rad_auth_init(authreq, activefd)
 	return 0;
 }
 
-/*
- *	Process and reply to an authentication request
+/* ****************************************************************************
+ * Authentication state machine.
  */
+
+typedef struct auth_mach {
+	AUTH_REQ   *req;
+	VALUE_PAIR *user_check;
+	VALUE_PAIR *user_reply;
+	VALUE_PAIR *proxy_pairs;
+	int        activefd;
+	
+	VALUE_PAIR *namepair;
+	VALUE_PAIR *check_pair;
+	VALUE_PAIR *timeout_pair;
+	char       userpass[AUTH_STRING_LEN];
+	char       *user_msg;
+	char       umsg[AUTH_STRING_LEN];
+	
+	char       *clid;
+	int        state;
+} MACH;
+
+enum auth_state {
+	as_init,
+	as_validate,
+	as_service, 
+	as_disable, 
+	as_service_type,
+	as_simuse, 
+	as_time, 
+	as_ttl, 
+	as_ipaddr, 
+	as_exec_wait, 
+	as_cleanup_cbkid, 
+	as_menu,
+	as_ack, 
+	as_exec_nowait, 
+	as_stop, 
+	as_reject,
+	AS_COUNT
+};
+
+enum {
+	L_req,
+	L_reply,
+	L_check,
+};
+
+static void sfn_init(MACH*);
+static void sfn_validate(MACH*);
+static void sfn_service(MACH*);
+static void sfn_disable(MACH*);
+static void sfn_service_type(MACH*);
+static void sfn_simuse(MACH*);
+static void sfn_time(MACH*);
+static void sfn_ttl(MACH*);
+static void sfn_ipaddr(MACH*);
+static void sfn_exec_wait(MACH*);
+static void sfn_cleanup_cbkid(MACH*);
+static void sfn_menu(MACH*);
+static void sfn_ack(MACH*);
+static void sfn_exec_nowait(MACH*);
+static void sfn_reject(MACH*);
+static VALUE_PAIR *timeout_pair(MACH *m);
+
+
+struct auth_state_s {
+	enum auth_state this;
+	enum auth_state next;
+	int             attr;
+	int             list;
+	void            (*sfn)(MACH*);
+};
+
+struct auth_state_s states[] = {
+	as_init,         as_validate,
+	                 0,               0,     sfn_init,
+
+	as_validate,     as_service,
+	                 0,               0,     sfn_validate,
+	
+	as_service,      as_disable,
+	                 DA_SERVICE_TYPE, L_req, sfn_service,
+	
+	as_disable,      as_service_type,
+	                 0,               0,     sfn_disable,
+	
+	as_service_type, as_simuse,
+	                 DA_SERVICE_TYPE, L_reply, sfn_service_type,
+	
+	as_simuse,       as_time,
+	                 DA_SIMULTANEOUS_USE, L_check, sfn_simuse,
+	
+	as_time,         as_ttl,
+	                 DA_LOGIN_TIME,   L_check, sfn_time,
+	
+	as_ttl,          as_ipaddr,
+	                 0,               0, sfn_ttl,
+	
+	as_ipaddr,       as_exec_wait,
+	                 0,               0, sfn_ipaddr,
+	
+	as_exec_wait,    as_cleanup_cbkid,
+	                 DA_EXEC_PROGRAM_WAIT, L_reply, sfn_exec_wait,
+	
+	as_cleanup_cbkid,as_menu,
+	                 DA_CALLBACK_ID,  L_reply, sfn_cleanup_cbkid,
+	
+	as_menu,         as_ack,
+	                 DA_MENU,         L_reply, sfn_menu,
+	
+	as_ack,          as_exec_nowait,
+	                 0,               0, sfn_ack,
+	
+	as_exec_nowait,  as_stop,
+	                 DA_EXEC_PROGRAM, L_reply, sfn_exec_nowait,
+	
+	as_stop,         -1,
+	                 0,               0, NULL,
+	
+	as_reject,       as_stop,
+	                 0,               0, sfn_reject,
+};
+
 int
 rad_authenticate(authreq, activefd)
 	AUTH_REQ  *authreq;
 	int        activefd;
 {
-	VALUE_PAIR	*namepair;
-	VALUE_PAIR      *timeout_pair;
-	VALUE_PAIR	*check_item;
-	VALUE_PAIR	*reply_item;
-	VALUE_PAIR	*auth_item;
-	VALUE_PAIR	*user_check;
-	VALUE_PAIR	*user_reply;
-	VALUE_PAIR	*proxy_pairs;
-	VALUE_PAIR      *pair_ptr;
-	int		result;
-	long            r;
-	char		userpass[AUTH_STRING_LEN];
-	char		umsg[AUTH_STRING_LEN];
-	char            name[AUTH_STRING_LEN];
-	char            xlat_buf[AUTH_STRING_LEN];
-	char		*user_msg;
-	char		*ptr;
-	char		*exec_program, *exec_program_wait;
-	int		seen_callback_id;
-	char           *calling_id;
-	int             proxied = 0;
+	enum auth_state oldstate;
+	struct auth_state_s *sp;
+	struct auth_mach m;
 
-	user_check = NULL;
-	user_reply = NULL;
-
-	/*
-	 *	Get the username from the request.
-	 *	All checking has been done by rad_auth_init().
-	 */
-	namepair = pairfind(authreq->request, DA_USER_NAME);
-	
 #ifdef USE_LIVINGSTON_MENUS
+	VALUE_PAIR *pair_ptr;
+
 	/*
 	 * If the request is processing a menu, service it here.
 	 */
@@ -594,12 +690,82 @@ rad_authenticate(authreq, activefd)
 	    return 0;
 	}
 #endif
+
+	m.req = authreq;
+	m.activefd = activefd;
+	m.user_check = NULL;
+	m.user_reply = NULL;
+	m.proxy_pairs= NULL;
+	m.check_pair = NULL;
+	m.timeout_pair = NULL;
+	m.user_msg   = NULL;
+	/*FIXME: this should have been cached by rad_auth_init */
+	m.namepair = pairfind(m.req->request, DA_USER_NAME);
+
+	debug(1, ("auth: %s", m.namepair->strvalue)); 
+	m.state = as_init;
+
+	while (m.state != as_stop) {
+		sp = &states[m.state];
+		oldstate = m.state;
+		if (sp->attr) {
+			VALUE_PAIR *p;
+			
+			switch (sp->list) {
+			case L_req:
+				p = m.req->request;
+				break;
+			case L_check:
+				p = m.user_check;
+				break;
+			case L_reply:
+				p = m.user_reply;
+				break;
+			default:
+				abort();
+			}
+			if (p = pairfind(p, sp->attr))
+				m.check_pair = p;
+			else {
+				m.state = sp->next;
+				continue;
+			}
+		}
+		(*sp->sfn)(&m);
+		/* default action: */
+		if (oldstate == m.state) 
+			m.state = sp->next;
+	}
+
+	/* Cleanup */
+	pairfree(m.user_check);
+	pairfree(m.user_reply);
+	pairfree(m.proxy_pairs);
+	bzero(m.userpass, sizeof(m.userpass));
+	return 0;
+}
+
+#if RADIUS_DEBUG
+# define newstate(s) do {\
+             debug(2, ("%d -> %d", m->state, s));\
+             m->state = s;\
+  } while (0)
+#else
+# define newstate(s) m->state = s
+#endif
+
+void
+sfn_init(m)
+	MACH *m;
+{
+	int proxied = 0;
+	AUTH_REQ *authreq = m->req;
+	VALUE_PAIR *pair_ptr;
 	
 	/*
 	 *	Move the proxy_state A/V pairs somewhere else.
 	 */
-	proxy_pairs = NULL;
-	pairmove2(&proxy_pairs, &authreq->request, DA_PROXY_STATE);
+	pairmove2(&m->proxy_pairs, &authreq->request, DA_PROXY_STATE);
 
 	/*
 	 *	If this request got proxied to another server, we need
@@ -609,430 +775,376 @@ rad_authenticate(authreq, activefd)
 	 */
 	if (authreq->server_code == PW_AUTHENTICATION_REJECT ||
 	    authreq->server_code == PW_AUTHENTICATION_ACK) {
-		user_check = create_pair(DA_AUTH_TYPE, 0, NULL, 0);
-		if (!user_check) {
-			radlog(L_CRIT,
-			       _("rejecting %s: cannot create Auth-Type pair"));
-			stat_inc(auth, authreq->ipaddr, num_rejects);
-			pairfree(proxy_pairs);
-			pairfree(user_reply);
-			return -1;
-		}
+		m->user_check = create_pair(DA_AUTH_TYPE, 0, NULL, 0);
 		proxied = 1;
 	}
 	if (authreq->server_code == PW_AUTHENTICATION_REJECT)
-		user_check->lvalue = DV_AUTH_TYPE_REJECT;
+		m->user_check->lvalue = DV_AUTH_TYPE_REJECT;
 	if (authreq->server_code == PW_AUTHENTICATION_ACK)
-		user_check->lvalue = DV_AUTH_TYPE_ACCEPT;
+		m->user_check->lvalue = DV_AUTH_TYPE_ACCEPT;
 
 	if (authreq->server_reply) {
-		user_reply = authreq->server_reply;
+		m->user_reply = authreq->server_reply;
 		authreq->server_reply = NULL;
 	}
 
 	if (pair_ptr = pairfind(authreq->request, DA_CALLING_STATION_ID)) 
-		calling_id = pair_ptr->strvalue;
+		m->clid = pair_ptr->strvalue;
 	else
-		calling_id = _("unknown");
+		m->clid = _("unknown");
 
 	/*
 	 *	Get the user from the database
 	 */
 	if (!proxied &&
-	    user_find(namepair->strvalue, authreq->request,
-		      &user_check, &user_reply) != 0) {
-		radlog(L_AUTH, _("Invalid user: [%s] (%s from nas %s)"),
-		    namepair->strvalue,
-		    calling_id,
-		    nas_name2(authreq));
-		rad_send_reply(PW_AUTHENTICATION_REJECT, authreq,
-			       proxy_pairs, NULL, activefd);
-		stat_inc(auth, authreq->ipaddr, num_rejects);
-		pairfree(proxy_pairs);
-		pairfree(user_reply);
-		pairfree(user_check);
-		return -1;
-	}
+	    user_find(m->namepair->strvalue, authreq->request,
+		      &m->user_check, &m->user_reply) != 0) {
+		radlog(L_AUTH, _("Invalid user: [%s] CLID %s (from nas %s)"),
+		       m->namepair->strvalue,
+		       m->clid,
+		       nas_name2(authreq));
 
+		/* Send reject packet with proxy-pairs as a reply */
+		newstate(as_reject);
+		pairfree(m->user_reply);
+		m->user_reply = m->proxy_pairs;
+		m->proxy_pairs = NULL;
+	}
+}
+
+void
+sfn_validate(m)
+	MACH *m;
+{
+	AUTH_REQ *authreq = m->req;
+	VALUE_PAIR *p;
+	int rc;
 	
 	/*
 	 *	Validate the user
 	 */
-	user_msg = NULL;
-	userpass[0] = 0;
-	if ((result = check_expiration(user_check, umsg, &user_msg)) >= 0) {
-		result = rad_check_password(authreq, activefd, user_check,
-					    namepair, authreq->digest,
-					    &user_msg, userpass);
-		if (result > 0) {
-			/*
-			 *	FIXME: proxy_pairs is lost in reply.
-			 *	Happens only in the CHAP case, which
-			 *	doesn't work anyway, so ..
-			 */
+	if ((rc = check_expiration(m->user_check, m->umsg, &m->user_msg)) >= 0) {
+		rc = rad_check_password(authreq, m->activefd,
+					m->user_check,
+					m->namepair, authreq->digest,
+					&m->user_msg, m->userpass);
+		if (rc > 0) {
 			stat_inc(auth, authreq->ipaddr, num_rejects);
-			pairfree(proxy_pairs);
-			pairfree(user_reply);
-			pairfree(user_check);
-			return -1;
+			newstate(as_stop);
+			return;
 		}
-		if (result == -2) {
-			if ((reply_item = pairfind(user_reply,
-						   DA_REPLY_MESSAGE)) != NULL)
-				user_msg = reply_item->strvalue;
+		if (rc == -2) {
+			if (p = pairfind(m->user_reply, DA_REPLY_MESSAGE))
+				m->user_msg = p->strvalue;
 		}
 	}
 
-	pairmove2(&user_reply, &proxy_pairs, DA_PROXY_STATE);
+	pairmove2(&m->user_reply, &m->proxy_pairs, DA_PROXY_STATE);
 
-	if (result < 0) {
+	if (rc < 0) {
 		/*
 		 *	Failed to validate the user.
 		 */
-		rad_send_reply(PW_AUTHENTICATION_REJECT, authreq,
-			       user_reply, user_msg, activefd);
+		newstate(as_reject);
 		if (log_mode & RLOG_AUTH) {
 			if (log_mode & RLOG_FAILED_PASS) {
 				radlog(L_AUTH,
-				    _("Login incorrect: [%s/%s] (%s from nas %s)"),
-				    namepair->strvalue,
-				    userpass,
-				    calling_id,
-				    nas_name2(authreq));
+				       _("Login incorrect: [%s/%s] CLID %s (from nas %s)"),
+				       m->namepair->strvalue,
+				       m->userpass,
+				       m->clid,
+				       nas_name2(authreq));
 			} else {			
 				radlog(L_AUTH,
-				       _("Login incorrect: [%s] (%s from nas %s)"),
-				    namepair->strvalue,
-				    calling_id,
-				    nas_name2(authreq));
-			}
-		}
-	}
-
-	if (result >= 0) {
-		/* FIXME: Other service types should also be handled,
-		 *        I suppose       -- Gray
-		 */
-		if ((pair_ptr = pairfind(authreq->request, DA_SERVICE_TYPE)) &&
-		    pair_ptr->lvalue == DV_SERVICE_TYPE_AUTHENTICATE_ONLY) {
-			if (log_mode & RLOG_AUTH) {
-				radlog(L_AUTH,
-				       _("Authentication OK: [%s%s%s] (from nas %s)"),
-				       namepair->strvalue,
-				       (log_mode & RLOG_AUTH_PASS)
-				                          ? "/" : "",
-				       (log_mode & RLOG_AUTH_PASS)
-				                          ? userpass : "",
+				       _("Login incorrect: [%s] CLID %s (from nas %s)"),
+				       m->namepair->strvalue,
+				       m->clid,
 				       nas_name2(authreq));
 			}
-
-			rad_send_reply(PW_AUTHENTICATION_ACK, authreq,
-				       user_reply, user_msg, activefd);
-			stat_inc(auth, authreq->ipaddr, num_accepts);
-			pairfree(user_check);
-			pairfree(user_reply);
-			pairfree(proxy_pairs);
-			return 0;
-		}
- 
-		if (result = check_disable(namepair->strvalue, &user_msg)) {
-			radlog(L_AUTH, "Account disabled: [%s]",
-			       namepair->strvalue); 
-			rad_send_reply(PW_AUTHENTICATION_REJECT,
-				       authreq, user_reply,
-				       user_msg, activefd);
-		}
-	} 
-
-	if (result >= 0 &&
-	    (check_item = pairfind(user_reply, DA_SERVICE_TYPE)) != NULL &&
-	    check_item->lvalue == DV_SERVICE_TYPE_AUTHENTICATE_ONLY) {
-		radlog(L_AUTH, "Login rejected [%s]. Authenticate only user.",
-		    namepair->strvalue); 
-		sprintf(umsg,
-			_("\r\nAccess denied\r\n\n"));
-		user_msg = umsg;
-		rad_send_reply(PW_AUTHENTICATION_REJECT,
-			       authreq, user_reply,
-			       user_msg, activefd);
-		result = -1;
-	}
-	
-	if (result >= 0 &&
-            (check_item = pairfind(user_check, DA_SIMULTANEOUS_USE)) != NULL) {
-		/*
-		 *	User authenticated O.K. Now we have to check
-		 *	for the Simultaneous-Use parameter.
-		 */
-
-	        strip_username(strip_names,
-		               namepair->strvalue, user_check, name);
-		if ((r = rad_check_multi(name, authreq->request,
-                                         check_item->lvalue)) != 0) {
-
-			if (check_item->lvalue > 1) {
-				sprintf(umsg,
-	  _("\r\nYou are already logged in %d times  - access denied\r\n\n"),
-					(int)check_item->lvalue);
-				user_msg = umsg;
-			} else {
-				user_msg =
-	   _("\r\nYou are already logged in - access denied\r\n\n");
-			}
-			rad_send_reply(PW_AUTHENTICATION_REJECT,
-				       authreq,
-				       user_reply, user_msg, activefd);
-			radlog(L_WARN,
-			 _("Multiple logins: [%s] (from nas %s) max. %ld%s"),
-				namepair->strvalue,
-				nas_name2(authreq),
-				check_item->lvalue,
-				r == 2 ? _(" [MPP attempt]") : "");
-			result = -1;
-
 		}
 	}
+}
 
-	timeout_pair = pairfind(user_reply, DA_SESSION_TIMEOUT);
+void
+sfn_service(m)
+	MACH *m;
+{
+	/* FIXME: Other service types should also be handled,
+	 *        I suppose       -- Gray
+	 */
+	if (m->check_pair->lvalue != DV_SERVICE_TYPE_AUTHENTICATE_ONLY)
+		return;
+	if (log_mode & RLOG_AUTH) {
+		radlog(L_AUTH,
+		       _("Authentication OK: [%s%s%s] (from nas %s)"),
+		       m->namepair->strvalue,
+		       (log_mode & RLOG_AUTH_PASS)
+		                ? "/" : "",
+		       (log_mode & RLOG_AUTH_PASS)
+		                ? m->userpass : "",
+		       nas_name2(m->req));
+	}
+	newstate(as_ack);
+}
+
+void
+sfn_disable(m)
+	MACH *m;
+{
+	if (check_disable(m->namepair->strvalue, &m->user_msg)) {
+		radlog(L_AUTH, "Account disabled: [%s]",
+		       m->namepair->strvalue);
+		newstate(as_reject);
+	}
+}
+
+void
+sfn_service_type(m)
+	MACH *m;
+{
+	if (m->check_pair->lvalue == DV_SERVICE_TYPE_AUTHENTICATE_ONLY) {
+		radlog(L_AUTH,
+		       "Login rejected [%s]. Authenticate only user.",
+		       m->namepair->strvalue); 
+		m->user_msg = _("\r\nAccess denied\r\n");
+		newstate(as_reject);
+	}
+}
+
+void
+sfn_simuse(m)
+	MACH *m;
+{
+	char  name[AUTH_STRING_LEN];
+	int   rc;
 	
-	if (result >= 0 &&
-	   (check_item = pairfind(user_check, DA_LOGIN_TIME)) != NULL) {
+	strip_username(strip_names,
+		       m->namepair->strvalue, m->user_check, name);
+	if ((rc = rad_check_multi(name, m->req->request,
+				  m->check_pair->lvalue)) == 0)
+		return;
 
+	if (m->check_pair->lvalue > 1) {
+		sprintf(m->umsg,
+	      _("\r\nYou are already logged in %d times  - access denied\r\n"),
+			(int)m->check_pair->lvalue);
+		m->user_msg = m->umsg;
+	} else {
+		m->user_msg =
+	      _("\r\nYou are already logged in - access denied\r\n");
+	}
+
+	radlog(L_WARN,
+	       _("Multiple logins: [%s] (from nas %s) max. %ld%s"),
+	       m->namepair->strvalue,
+	       nas_name2(m->req),
+	       m->check_pair->lvalue,
+	       rc == 2 ? _(" [MPP attempt]") : "");
+	newstate(as_reject);
+}
+
+VALUE_PAIR *
+timeout_pair(m)
+	MACH *m;
+{
+	VALUE_PAIR *p;
+
+	if (!m->timeout_pair &&
+	    !(m->timeout_pair = pairfind(m->user_reply, DA_SESSION_TIMEOUT))) {
+		m->timeout_pair = create_pair(DA_SESSION_TIMEOUT,
+					      0, NULL, 0);
+		pairadd(&m->user_reply, m->timeout_pair);
+	}
+	return m->timeout_pair;
+}
+
+void
+sfn_time(m)
+	MACH *m;
+{
+	int rc;
+	
+	rc = timestr_match(m->check_pair->strvalue, time(NULL));
+	if (rc < 0) {
 		/*
-		 *	Authentication is OK. Now see if this
-		 *	user may login at this time of the day.
+		 *	User called outside allowed time interval.
 		 */
-		r = timestr_match(check_item->strvalue, time(NULL));
-		if (r < 0) {
-			/*
-			 *	User called outside allowed time interval.
-			 */
-			result = -1;
-			user_msg =
+		m->user_msg =
 			_("You are calling outside your allowed timespan\r\n");
-			rad_send_reply(PW_AUTHENTICATION_REJECT, authreq,
-				user_reply, user_msg, activefd);
-			radlog(L_ERR,
-                               _("Outside allowed timespan: [%s]"
-			         " (from nas %s) time allowed: %s"),
-					namepair->strvalue,
-					nas_name2(authreq),
-					check_item->strvalue);
-		} else if (r > 0) {
-			/*
-			 *	User is allowed, but set Session-Timeout.
-			 */
-			if (timeout_pair) {
-				if (timeout_pair->lvalue > r)
-					timeout_pair->lvalue = r;
-			} else {
-				reply_item = create_pair(DA_SESSION_TIMEOUT,
-							 0,
-							 NULL,
-							 r);
-				if (reply_item)
-					pairadd(&user_reply, reply_item);
-				timeout_pair = reply_item;
-			}
-		}
+		radlog(L_ERR,
+		       _("Outside allowed timespan: [%s]"
+			 " (from nas %s) time allowed: %s"),
+		       m->namepair->strvalue,
+		       nas_name2(m->req),
+		       m->check_pair->strvalue);
+		newstate(as_reject);
+	} else if (rc > 0) {
+		/*
+		 *	User is allowed, but set Session-Timeout.
+		 */
+		timeout_pair(m)->lvalue = rc;
 	}
+	/* rc == 0 is Ok */
+}
 
+void
+sfn_ttl(m)
+	MACH *m;
+{
 #ifdef USE_NOTIFY	
-	if (result >= 0 && timetolive(namepair->strvalue, &r) == 0) {
+	int r;
+	if (timetolive(m->namepair->strvalue, &r) == 0) {
 		if (r > 0) {
-			if (timeout_pair) {
-				if (timeout_pair->lvalue > r)
-					timeout_pair->lvalue = r;
-			} else {
-				reply_item = create_pair(DA_SESSION_TIMEOUT,
-							 0,
-							 NULL,
-							 r);
-				pairadd(&user_reply, reply_item);
-				timeout_pair = reply_item;
-			}
+			timeout_pair(m)->lvalue = r;
 		} else {
 			radlog(L_AUTH, _("Zero time to live: [%s]"),
-			    namepair->strvalue); 
-			user_msg =
+			       m->namepair->strvalue); 
+			m->user_msg =
 			  _("\r\nSorry, your account is currently closed\r\n");
-			rad_send_reply(PW_AUTHENTICATION_REJECT,
-				       authreq, user_reply,
-				       user_msg, activefd);
-			result = -1;
+			newstate(as_reject);
 		}
 	}
 #endif
-	/*
-	 *	Result should be >= 0 here - if not, we return.
-	 */
-	if (result < 0) {
-		stat_inc(auth, authreq->ipaddr, num_rejects);
-		pairfree(user_check);
-		pairfree(user_reply);
-		return 0;
-	}
+}
 
-	
+void
+sfn_ipaddr(m)
+	MACH *m;
+{
+	VALUE_PAIR *p;
 	/* Assign an IP if necessary */
-	if (!pairfind(user_reply, DA_FRAMED_IP_ADDRESS) &&
-	    (reply_item = alloc_ip_pair(namepair->strvalue, authreq)))
-		pairadd(&user_reply, reply_item);
+	if (!pairfind(m->user_reply, DA_FRAMED_IP_ADDRESS) &&
+	    (p = alloc_ip_pair(m->namepair->strvalue, m->req)))
+		pairadd(&m->user_reply, p);
+}
 
-	/*
-	 *	See if we need to execute a program. Allow for coexistence
-	 *      of both DA_EXEC_PROGRAM and DA_EXEC_PROGRAM_WAIT attributes.
-	 */
-	exec_program = NULL;
-	exec_program_wait = NULL;
-	if ((auth_item = pairfind(user_reply, DA_EXEC_PROGRAM)) != NULL) {
-		exec_program = dup_string(auth_item->strvalue);
-		pairdelete(&user_reply, DA_EXEC_PROGRAM);
-	}
-	if ((auth_item = pairfind(user_reply, DA_EXEC_PROGRAM_WAIT)) != NULL) {
-		exec_program_wait = dup_string(auth_item->strvalue);
-		pairdelete(&user_reply, DA_EXEC_PROGRAM_WAIT);
-	}
+void
+sfn_exec_wait(m)
+	MACH *m;
+{
+	if (radius_exec_program(m->check_pair->strvalue,
+				m->req->request,
+				&m->user_reply,
+				1,
+				&m->user_msg) != 0) {
+		/*
+		 *	Error. radius_exec_program() returns -1 on
+		 *	fork/exec errors, or >0 if the exec'ed program
+		 *	had a non-zero exit status.
+		 */
 
-	/*
-	 *	Hack - allow % expansion in certain value strings.
-	 *	This is nice for certain Exec-Program programs.
-	 */
-	seen_callback_id = 0;
-	if ((auth_item = pairfind(user_reply, DA_CALLBACK_ID)) != NULL) {
-		seen_callback_id = 1;
-		ptr = radius_xlate(xlat_buf, sizeof(xlat_buf),
-				   auth_item->strvalue,
-				   authreq->request, user_reply);
-		replace_string(&auth_item->strvalue, ptr);
-		auth_item->strlength = strlen(auth_item->strvalue);
-	}
+		newstate(as_reject);
 
-
-	/*
-	 *	If we want to exec a program, but wait for it,
-	 *	do it first before sending the reply.
-	 */
-	if (exec_program_wait) {
-		if (radius_exec_program(exec_program_wait,
-					authreq->request, &user_reply,
-					1, &user_msg) != 0) {
-			/*
-			 *	Error. radius_exec_program() returns -1 on
-			 *	fork/exec errors, or >0 if the exec'ed program
-			 *	had a non-zero exit status.
-			 */
-			if (user_msg == NULL)
-				user_msg =
+		if (!m->user_msg)
+			m->user_msg =
 			      _("\r\nAccess denied (external check failed).");
-			rad_send_reply(PW_AUTHENTICATION_REJECT, authreq,
-				       user_reply, user_msg, activefd);
-			if (log_mode & RLOG_AUTH) {
-				radlog(L_AUTH,
-	  _("Login incorrect: [%s] (%s from nas %s) (external check failed)"),
-				    namepair->strvalue,
-				    calling_id,
-				    nas_name2(authreq));
-			}
-			stat_inc(auth, authreq->ipaddr, num_rejects);
-			pairfree(user_check);
-			pairfree(user_reply);
-			free_string(exec_program);
-			free_string(exec_program_wait);
-			return 0;
+
+		if (log_mode & RLOG_AUTH) {
+			radlog(L_AUTH,
+	  _("Login incorrect: [%s] CLID %s (from nas %s): external check failed"),
+			       m->namepair->strvalue,
+			       m->clid,
+			       nas_name2(m->req));
 		}
 	}
+}
 
-	/*
-	 *	Delete "normal" A/V pairs when using callback.
-	 */
+void
+sfn_exec_nowait(m)
+	MACH *m;
+{
+	/*FIXME: do we need to pass user_reply here? */
+	radius_exec_program(m->check_pair->strvalue,
+			    m->req->request, &m->user_reply,
+			    0, NULL);
+}
 
-	if (seen_callback_id) {
-		pairdelete(&user_reply, DA_FRAMED_PROTOCOL);
-		pairdelete(&user_reply, DA_FRAMED_IP_ADDRESS);
-		pairdelete(&user_reply, DA_FRAMED_IP_NETMASK);
-		pairdelete(&user_reply, DA_FRAMED_ROUTE);
-		pairdelete(&user_reply, DA_FRAMED_MTU);
-		pairdelete(&user_reply, DA_FRAMED_COMPRESSION);
-		pairdelete(&user_reply, DA_FILTER_ID);
-		pairdelete(&user_reply, DA_PORT_LIMIT);
-		pairdelete(&user_reply, DA_CALLBACK_NUMBER);
-	}
+void
+sfn_cleanup_cbkid(m)
+	MACH *m;
+{
+	static int delete_pairs[] = {
+		DA_FRAMED_PROTOCOL,
+		DA_FRAMED_IP_ADDRESS,
+		DA_FRAMED_IP_NETMASK,
+		DA_FRAMED_ROUTE,
+		DA_FRAMED_MTU,
+		DA_FRAMED_COMPRESSION,
+		DA_FILTER_ID,
+		DA_PORT_LIMIT,
+		DA_CALLBACK_NUMBER,
+		0
+	};
+	int *ip;
 
-	/*
-	 *	Filter Reply-Message value through radius_xlate
-	 */
-	if (user_msg == NULL) {
-		if ((reply_item = pairfind(user_reply,
-					   DA_REPLY_MESSAGE)) != NULL) {
-			user_msg = radius_xlate(xlat_buf, sizeof(xlat_buf),
-						reply_item->strvalue,
-						authreq->request, user_reply);
-			replace_string(&reply_item->strvalue, user_msg);
-			reply_item->strlength = strlen(reply_item->strvalue);
-			user_msg = NULL;
-		}
-	}
+	for (ip = delete_pairs; *ip; ip++)
+		pairdelete(&m->user_reply, *ip);
+}
 
-	stat_inc(auth, authreq->ipaddr, num_accepts);
-
+void
+sfn_menu(m)
+	MACH *m;
+{
 #ifdef USE_LIVINGSTON_MENUS
-	if ((pair_ptr = pairfind(user_reply, DA_MENU)) != NULL) {
-		char *msg;
-		char state_value[MAX_STATE_VALUE];
+	char *msg;
+	char state_value[MAX_STATE_VALUE];
 		
-		msg = get_menu(pair_ptr->strvalue);
-		sprintf(state_value, "MENU=%s", pair_ptr->strvalue);
-		send_challenge(authreq, msg, state_value, activefd);
+	msg = get_menu(m->check_pair->strvalue);
+	sprintf(state_value, "MENU=%s", m->check_pair->strvalue);
+	send_challenge(m->req, msg, state_value, m->activefd);
+	
+	debug(1,
+	      ("sending challenge (menu %s) to %s",
+	       m->check_pair->strvalue, m->namepair->strvalue));
+	newstate(as_stop);
+#endif	
+}
 
-		radlog(L_INFO, _("sending challenge (menu %s) to %s"),
-		    pair_ptr->strvalue, namepair->strvalue); 
-	} else {
-		rad_send_reply(PW_AUTHENTICATION_ACK, authreq,
-			       user_reply, user_msg, activefd);
-	}
-#else
-	rad_send_reply(PW_AUTHENTICATION_ACK, authreq,
-		       user_reply, user_msg, activefd);
-#endif
+void
+sfn_ack(m)
+	MACH *m;
+{
+	debug(1, ("ACK: %s", m->namepair->strvalue));
+	
+	rad_send_reply(PW_AUTHENTICATION_ACK,
+		       m->req,
+		       m->user_reply,
+		       m->user_msg,
+		       m->activefd);
 	
 	if (log_mode & RLOG_AUTH) {
-		if (strcmp(namepair->strvalue, "gray") == 0)
-			strcpy(userpass, "guess");
-
+	   #if RADIUS_DEBUG
+		if (strcmp(m->namepair->strvalue, "gray") == 0)
+			strcpy(m->userpass, "guess");
+           #endif
 		radlog(L_AUTH,
-		    _("Login OK: [%s%s%s] (%s from nas %s)"),
-		    namepair->strvalue,
-		    (log_mode & RLOG_AUTH_PASS) ? "/" : "",
-		    (log_mode & RLOG_AUTH_PASS) ? userpass : "",
-		    calling_id,
-		    nas_name2(authreq));
+		    _("Login OK: [%s%s%s] CLID %s (from nas %s)"),
+		       m->namepair->strvalue,
+		       (log_mode & RLOG_AUTH_PASS) ? "/" : "",
+		       (log_mode & RLOG_AUTH_PASS) ? m->userpass : "",
+		       m->clid,
+		       nas_name2(m->req));
 	}
 
-	if (timeout_pair) {
+	if (timeout_pair(m)) {
 		debug(5,
 			("timeout for [%s] is set to %d sec",
-			 namepair->strvalue, timeout_pair->lvalue));
+			 m->namepair->strvalue, timeout_pair(m)->lvalue));
 	}
-		
-	if (exec_program) {
-		/*
-		 *	No need to check the exit status here.
-		 */
-		radius_exec_program(exec_program,
-				    authreq->request, &user_reply,
-				    0, NULL);
-	}
-
-	free_string(exec_program);
-	free_string(exec_program_wait);
-	pairfree(user_check);
-	pairfree(user_reply);
-	pairfree(proxy_pairs); 
-
-	return 0;
 }
 
 
+void
+sfn_reject(m)
+	MACH *m;
+{
+	debug(1, ("REJECT: %s", m->namepair->strvalue));
+	rad_send_reply(PW_AUTHENTICATION_REJECT,
+		       m->req,
+		       m->user_reply,
+		       m->user_msg,
+		       m->activefd);
+	stat_inc(auth, m->req->ipaddr, num_rejects);
+}
 
 

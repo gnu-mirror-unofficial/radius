@@ -15,10 +15,6 @@ radlast - report last logins from Radius database.
 [\fB-w\fR]
 [\fB-#\fR]
 [user ...]
-.SH NOTE
-The information in this manpage may be obsolete or incomplete. Please
-refer to texinfo documentation for full information about GNU Radius
-tools.
 .SH DESCRIPTION
 \fBRadlast\fR lists the session of specified users, NASes, NAS ports
 and hosts, in reverse time order. By default, each line of output
@@ -77,6 +73,11 @@ server.
 .PP
 If \fBradlast\fR is interrupted, it indicates to what date the search
 was progressed.
+
+.SH BUGS
+The information in this manpage may be obsolete or incomplete. Please
+refer to texinfo documentation for full information about GNU Radius
+tools.
 
 .SH AUTHORS
 Sergey Poznyakoff, gray@farlep.net

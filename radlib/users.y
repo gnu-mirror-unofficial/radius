@@ -190,7 +190,7 @@ install_pair(name, op, valstr)
 	time_t timeval;
 	struct tm *tm;
 	
-	if ((attr = dict_attrfind(name)) == (DICT_ATTR *)NULL) {
+	if ((attr = attr_name_to_dict(name)) == (DICT_ATTR *)NULL) {
 		radlog(L_ERR, _("%s:%d: unknown attribute `%s'"),
 		       source_filename, source_line_num, name);
 		return NULL;
@@ -238,7 +238,7 @@ install_pair(name, op, valstr)
 		}
 		if (isdigit(*valstr)) {
 			pair->lvalue = atoi(valstr);
-		} else if ((dval = dict_valfind(valstr)) == NULL) {
+		} else if ((dval = value_name_to_value(valstr)) == NULL) {
 			free_pair(pair);
 			radlog(L_ERR|L_CONS, _("%s:%d: unknown value %s"),
 			    source_filename, source_line_num,

@@ -20,7 +20,7 @@
  * This file deals with contents of /etc/raddb directory (except config and
  * dictionaries)
  */
-#define RADIUS_MODULE 8
+#define RADIUS_MODULE 6
 #ifndef lint
 static char rcsid[] =
 "@(#) $Id$";
@@ -677,7 +677,7 @@ userparse(buffer, first_pair, errmsg)
 		case PS_LHS:
 			if (token[0] == '\n' || token[0] == '#')
 				continue;
-			if (!(attr = dict_attrfind(token))) {
+			if (!(attr = attr_name_to_dict(token))) {
 				sprintf(errbuf,
 					_("unknown attribute `%s/%s'"), 
 					token, buffer);
@@ -731,7 +731,7 @@ userparse(buffer, first_pair, errmsg)
 				}
 				if (isdigit(*token)) {
 					pair->lvalue = atoi(token);
-				} else if (!(dval = dict_valfind(token))) {
+				} else if (!(dval = value_name_to_value(token))) {
 					free_pair(pair);
 					sprintf(errbuf,
 						_("unknown value %s"),

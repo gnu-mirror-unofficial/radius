@@ -378,6 +378,7 @@ extern UINT4		warning_seconds;
 extern int		auth_port;
 extern int		acct_port;
 extern int              cntl_port;
+extern int              suspend_flag;
 
 extern unsigned long stat_start_time;
 extern REQUEST_CLASS    request_class[];
@@ -412,12 +413,15 @@ void		fprint_attr_val(FILE *, VALUE_PAIR *);
 
 /* dict.c */
 int		dict_init();
-DICT_ATTR	*dict_attrget(int);
-DICT_ATTR	*dict_attrfind(char *);
-DICT_VALUE	*dict_valfind(char *);
-DICT_VALUE	*dict_valget(UINT4 value, char *);
-int		dict_vendorcode(int);
-int		dict_vendorpec(int);
+DICT_ATTR	*attr_number_to_dict(int);
+DICT_ATTR       *attr_name_to_dict(char *);
+DICT_VALUE      *value_name_to_value(char *);
+DICT_VALUE      *value_lookup(UINT4, char *);
+int             vendor_id_to_pec(int);
+int             vendor_pec_to_id(int);
+char            *vendor_pec_to_name(int);
+int             vendor_name_to_id(char *);
+
 
 /* md5.c */
 

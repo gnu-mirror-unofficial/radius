@@ -17,6 +17,9 @@
  *
  */
 
+#if defined(HAVE_CONFIG_H)
+# include <config.h>
+#endif
 	
 #ifdef USE_LIVINGSTON_MENUS
 
@@ -68,8 +71,6 @@ process_menu(authreq, activefd, pw_digest)
 
 	pair = menu_pairs(menu_name, menu_input);
 	if (!pair) {
-		memset(authreq, 0, sizeof(AUTH_REQ));
-		authfree(authreq);
 		return;
 	}
 	
@@ -77,9 +78,9 @@ process_menu(authreq, activefd, pw_digest)
 		/* Change this to a menu state */
 		sprintf(state_value, "MENU=%s", term_pair->strvalue);
 		term_pair->attribute = DA_STATE;
-		term_pair->strlength = strlen(state_value);
 		replace_string(&term_pair->strvalue, state_value);
-		strcpy(term_pair->name, "Challenge-State");
+		term_pair->strlength = strlen(state_value);
+		term_pair->name = "Challenge-State";
 
 		/* Insert RADIUS termination option */
 		if (new_pair = create_pair(DA_TERMINATION_ACTION,
@@ -110,8 +111,7 @@ process_menu(authreq, activefd, pw_digest)
 	}
 
 	pairfree(pair);
-	memset(authreq, 0, sizeof(AUTH_REQ));
-	authfree(authreq);
+
 }
 
 char *

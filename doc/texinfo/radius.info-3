@@ -3,7 +3,7 @@ the input file radius.texinfo.
 
 INFO-DIR-SECTION GNU radius
 START-INFO-DIR-ENTRY
-* Radius: (radius).     The GNU radius
+* Radius: (radius).     The GNU Radius
 END-INFO-DIR-ENTRY
 
    This file documents the GNU radius
@@ -733,7 +733,7 @@ SQL Accounting
 `--enable-mysql' option and `sqlserver' file in its configuration
 directory is properly set up *Note sqlserver::.
 
-   This version of GNU Radius (0.92) supports only MySQL servers.
+   This version of GNU Radius (0.93-pre) supports only MySQL servers.
 Support for other SQL servers will be added in future versions.
 
    With this accounting method enabled, `radiusd' will store the
@@ -789,7 +789,7 @@ using `logging' statement in `raddb/config' file *Note logging
 statement: logging, *Note Naming conventions::.
 
 
-File: radius.info,  Node: Debugging,  Next: Client Overview,  Prev: Logging,  Up: Top
+File: radius.info,  Node: Debugging,  Next: Checkrad Overview,  Prev: Logging,  Up: Top
 
 Debugging
 *********
@@ -817,100 +817,7 @@ and 1 for `config.y'.
 to release.
 
 
-File: radius.info,  Node: Client Overview,  Next: client.config,  Prev: Debugging,  Up: Top
-
-Client Overview
-***************
-
-   Client programs are those which emulate the NAS. These are `radtest'
-*Note Radtest:: and `radctl' *Note Radctl::.
-
-   Since they have to connect to radius server, they should be provided
-information about server's IP address, ports to connect to and the
-shared secret key to use.
-
-   The two configuration files `raddb/client.config' and
-`raddb/client.shadow' provide this information for the client programs.
-
-   These configuration files are described in the following chapters.
-
-
-File: radius.info,  Node: client.config,  Next: client.shadow,  Prev: Client Overview,  Up: Top
-
-client.config
-*************
-
-   The `client.config' file determines the configuration values for
-client programs such as `radtest' and `radctl'.
-
-Syntax
-------
-
-   The syntax is quite simple: one statement per line, a statement
-consists of a keyword and a value separated by whitespace.
-
-   Following keywords are recognized:
-
-`timeout'
-     Sets the timeout in seconds for connection to radius server.
-
-`retry'
-     Determines how many times to retry connecting the server in case
-     of failure.  Each subsequent	attempt takes place after sleeping the
-     amount of time specified by `timeout' statement.
-
-`server'
-     The name of the Radius server to connect to. It is used as a
-     lookup key to client.shadow file, from where the corresponding
-     server parameters are obtained.
-
-Example
--------
-
-     server local
-     timeout 3
-     retry 2
-
-
-File: radius.info,  Node: client.shadow,  Next: Checkrad Overview,  Prev: client.config,  Up: Top
-
-client.shadow
-*************
-
-   This file contains IP addresses, port numbers and secret keys to be
-used when connecting to Radius servers.
-
-Syntax
-------
-
-   The record for each server occupies one line. The format of the
-record is somewhat similar to that of the system /etc/passwd file: it
-contains six fields separated by colons. The fields are:
-
-  1. Server name
-
-  2. Server IP address or FQDN
-
-  3. Shared secret
-
-  4. Authentication port number
-
-  5. Accounting port number
-
-  6. Administrative portnumber
-
-Example
--------
-
-     local:localhost:guessme:1645:1646:5000
-
-   This line states that server `local' has the hostname `localhost'.
-Its shared secret value is `guessme', authentication and accounting
-port numbers are 1645 and 1646 respectively, and the control channel is
-listening on port 5000.
-
-
-File: radius.info,  Node: Checkrad Overview,  Next: checkrad.conf,  Prev: client.shadow,  Up: Top
+File: radius.info,  Node: Checkrad Overview,  Next: checkrad.conf,  Prev: Debugging,  Up: Top
 
 Checkrad Overview
 *****************
@@ -1677,4 +1584,117 @@ matter was the command understood or not.
      Display lines on a given Network Access Servers. The user is
      prompted to input the NAS names. The names should be separated by
      whitespace. The word `all' returns to display of all NAS lines.
+
+
+File: radius.info,  Node: Radzap,  Next: Radgrep,  Prev: Raduse,  Up: Top
+
+Radzap
+******
+
+   `radzap' searches the Radius accounting database for matching login
+records and closes them.
+
+   At least one of `-n', `-p' options or username must be specified. If
+they are used in conjunction, they are taken as if joined by logical
+AND operation.
+
+   `radzap' operates in two modes: silent and confirm. The silent mode
+is enabeld by default. When run in this mode, radzap deletes every
+record that matched the search conditions given.
+
+   In confirm mode `radzap' will ask for a confirmation before zapping
+each matching record. Every line beginning with a `y' is taken as
+positive response, otherwise it is taken as negative response.
+
+   The confirm mode is toggled by the command line option `-c'.
+
+Syntax
+------
+
+     radzap [options] [username]
+
+Options are:
+
+`-c'
+`--confirm'
+     Enable confirm mode.
+
+`-q'
+`--quiet'
+     Disable confirm mode.
+
+`-h'
+`--help'
+     Display short help summary and exit.
+
+`-n NAME'
+`--nas NAME'
+     Specify NAS name to zap user from.
+
+`-p PORT'
+`--port PORT'
+     Specify the port number of the session to be zapped. The port
+     number can be specified either in its full form, i.e `radzap -p
+     S02' or in its short form, like `radzap -p 2'.
+
+
+File: radius.info,  Node: Radgrep,  Next: Radping,  Prev: Radzap,  Up: Top
+
+Radgrep
+*******
+
+   This utility allows to quickly lookup the user in the radius
+accounting database using a regular expression match.
+
+   `radgrep' scans the output of `radwho' utility and outputs only the
+lines that match given `grep' regular expressions.
+
+Syntax
+------
+
+   `radgrep' accepts two sets of options separated by `--'
+(double-dash) sign. First subset is passed as command line to `radwho'
+utility. The second one is passed to `grep'.
+
+
+File: radius.info,  Node: Radping,  Next: Radauth,  Prev: Radgrep,  Up: Top
+
+Radping
+*******
+
+   This utility is a shell program that determines the user's framed IP
+address and runs `ping' on that address.
+
+Syntax
+------
+
+     radping USERNAME
+     radping -c CALLING-STATION-ID
+
+   The second way of invoking the program allows to use calling station
+ID in order to indicate the user.
+
+
+File: radius.info,  Node: Radauth,  Next: Radctl,  Prev: Radping,  Up: Top
+
+Radauth
+*******
+
+   The `radauth' utility sends the Radius server Access-Request packet
+and displays the result it gets. It can be used to test the
+configuration files. The usage is:
+
+     raduse [-v] username password
+
+   The `-v' or `--verbose' option forces `raduse' to be verbose on
+output.
+
+   If you enter `.' (dot) instead of the password, the program will
+disable echoing on the screen, prompt you to enter it, and turn the
+echoing on again, thus preventing the password from being compromised.
+
+   The program determines which Radius server to use, the authentication
+port number and shared secret following the procedure common for all
+client scripts. [FIXME: add reference to session.scm and explain which
+startup files are used]
 

@@ -70,6 +70,9 @@ CC = @CC@
 ETC_DIR = @ETC_DIR@
 GETOPT = @GETOPT@
 GMSGFMT = @GMSGFMT@
+GUILE_CONFIG = @GUILE_CONFIG@
+GUILE_INCLUDES = @GUILE_INCLUDES@
+GUILE_LIBS = @GUILE_LIBS@
 INCLUDEPATH = @INCLUDEPATH@
 INSTOBJEXT = @INSTOBJEXT@
 LANGUAGES = @LANGUAGES@
@@ -80,7 +83,6 @@ MAKEINFO = @MAKEINFO@
 MSGFMT = @MSGFMT@
 PACKAGE = @PACKAGE@
 PS = @PS@
-RADDB_DIR = @RADDB_DIR@
 RADIUSD_LDADD = @RADIUSD_LDADD@
 RADIUS_PID = @RADIUS_PID@
 RADLOG_DIR = @RADLOG_DIR@
@@ -111,9 +113,9 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .dvi .info .ps .texi .texinfo .txi
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps doc/texinfo/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu doc/texinfo/Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -268,6 +270,11 @@ distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 subdir = doc/texinfo
 
 distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu doc/texinfo/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \

@@ -50,37 +50,59 @@ else
 	RUNNING=0
 fi
 
-case $1 in
-	start|stop|restart)
-		;;
-	*)	[ $RUNNING -eq 0 ] && {
-			echo $PROCESS
-			exit 1
-		}
-esac
+chan_signal() {
+	case $1 in
+		start|stop|restart)
+			;;
+		*)	[ $RUNNING -eq 0 ] && {
+				echo $PROCESS
+				exit 1
+			}
+	esac
 
-case $1 in
-	reload) kill -HUP  $PID && echo "Reloading configs";;
-	status)	kill -USR1 $PID && echo "Dumping statistics";;
-	dumpdb)	kill -INT  $PID && echo "Dumping Database";;
-	start)
-		[ $RUNNING -eq 1 ] && {
-			echo "$0: start: radiusd (pid $PID) already running"
-			continue
-		}
-		rm -f $%PIDFILE@
-		SHIFT
-		start $*;;
-	stop)   stop;;
+	case $1 in
+		reload) kill -HUP  $PID && echo "Reloading configs";;
+		status)	kill -USR1 $PID && echo "Dumping statistics";;
+		dumpdb)	kill -INT  $PID && echo "Dumping Database";;
+		start)
+			[ $RUNNING -eq 1 ] && {
+				echo "$0: start: radiusd (pid $PID) already running"
+				continue
+			}
+			rm -f $%PIDFILE@
+			SHIFT
+			start $*;;
+		stop)   stop;;
 
-	which)  echo $PROCESS;;
+		which)  echo $PROCESS;;
 
-	restart)
-		stop
-		SHIFT
-		start $*;;
+		restart)
+			stop
+			SHIFT
+			start $*;;
 
-	*)	usage;;
-esac
+		*)	usage;;
+	esac
 
-exit 0
+	exit 0
+}
+
+ifdef(%GUILE@,
+chan_socket() {
+	BINDIR/radscm --debug -s DATADIR/radctl.scm $*
+})
+
+ifdef(%GUILE@,
+if [ x"$1" = x"-s" -o x"$1" = x"--signal" ]; then
+	%SHIFT@ 
+	chan_signal $*
+else
+	chan_socket $*
+fi,
+if [ "$1" = "-s" ]; then
+	%SHIFT@
+fi
+chan_signal $*)
+
+
+

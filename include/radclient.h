@@ -23,7 +23,6 @@
 
 typedef struct server {
 	struct server *next;
-	struct server *next_avail;
 	UINT4  addr;
 	char   *name;
 	int    port[3];
@@ -34,19 +33,23 @@ typedef struct {
 	size_t bufsize;
 	char  *data_buffer;
 	char   vector[AUTH_VECTOR_LEN];
-	int    timeout;
-	int    retries;
-	int    messg_id;
-	SERVER *server;
+	unsigned timeout;
+	unsigned retries;
+	unsigned messg_id;
 	SERVER *first_server;
 } RADCLIENT;	
 
-RADCLIENT * radclient_init(char *config_dir);
+RADCLIENT *radclient_alloc(size_t);
 AUTH_REQ *radclient_send(RADCLIENT *config, int port_type,
 			 int code, VALUE_PAIR *pair);
 
-SERVER * radclient_find_server(RADCLIENT *config, char *name);
-int radclient_delete_server(RADCLIENT *config, char *name);
-int radclient_add_server(RADCLIENT *config, char *name);
+SERVER *radclient_alloc_server(SERVER *data);
+
+SERVER *radclient_dup_server(SERVER *src);
+void radclient_free_server(SERVER *server);
+SERVER *radclient_append_server(SERVER *list, SERVER *server);
+void radclient_clear_server_list(SERVER *list);
+SERVER *radclient_find_server(SERVER *list, char *name);
+
 
 

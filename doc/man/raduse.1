@@ -1,7 +1,7 @@
 .\" $Id$
-.ds RD /etc/raddb
+.ds RD /usr/local/etc/raddb
 .ds RL /usr/adm
-.ds RP /etc/raddb
+.ds RP /usr/local/etc/raddb
 .TH raduse 1 "March 10, 2000" "FSF"
 .SH NAME
 raduse - monitor the usage of dialup lines.
@@ -19,10 +19,6 @@ raduse - monitor the usage of dialup lines.
 \fBraduse -l\fR
 .PP
 \fBraduse -h\fR
-.SH NOTE
-The information in this manpage may be obsolete or incomplete. Please
-refer to texinfo documentation for full information about GNU Radius
-tools.
 .SH DESCRIPTION
 \fBRaduse\fR monitors the activity of dialup lines.
 .PP
@@ -136,6 +132,11 @@ The list of network access servers
 
 .IP \*(RL/radacct/radstat
 Radius statistics.
+
+.SH BUGS
+The information in this manpage may be obsolete or incomplete. Please
+refer to texinfo documentation for full information about GNU Radius
+tools.
 
 .SH AUTHORS
 Sergey Poznyakoff, gray@farlep.net

@@ -72,6 +72,9 @@ CC = @CC@
 ETC_DIR = @ETC_DIR@
 GETOPT = @GETOPT@
 GMSGFMT = @GMSGFMT@
+GUILE_CONFIG = @GUILE_CONFIG@
+GUILE_INCLUDES = @GUILE_INCLUDES@
+GUILE_LIBS = @GUILE_LIBS@
 INCLUDEPATH = @INCLUDEPATH@
 INSTOBJEXT = @INSTOBJEXT@
 LANGUAGES = @LANGUAGES@
@@ -82,7 +85,6 @@ MAKEINFO = @MAKEINFO@
 MSGFMT = @MSGFMT@
 PACKAGE = @PACKAGE@
 PS = @PS@
-RADDB_DIR = @RADDB_DIR@
 RADIUSD_LDADD = @RADIUSD_LDADD@
 RADIUS_PID = @RADIUS_PID@
 RADLOG_DIR = @RADLOG_DIR@
@@ -93,13 +95,16 @@ VERSION = @VERSION@
 YACC = @YACC@
 YACC_OPTS = @YACC_OPTS@
 
-sbin_PROGRAMS = radctl.sh
-radctl_sh_SOURCES = radctl.sh.m4
-bin_PROGRAMS = radping radgrep radauth
+sbin_PROGRAMS = radctl radauth radtest
+radctl_SOURCES = radctl.m4
+radauth_SOURCES = radauth.m4
+bin_PROGRAMS = radping radgrep 
 radping_SOURCES = radping.m4
 radgrep_SOURCES = radgrep.m4
-radauth_SOURCES = radauth.m4
+radtest_SOURCES = radtest.m4
 EXTRA_DIST = radscripts.m4
+
+@GUILE_TRUE@GUILE_ENABLE = -DGUILE=1
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -118,14 +123,18 @@ radgrep_OBJECTS =
 radgrep_LDADD = $(LDADD)
 radgrep_DEPENDENCIES = 
 radgrep_LDFLAGS = 
+radctl_OBJECTS = 
+radctl_LDADD = $(LDADD)
+radctl_DEPENDENCIES = 
+radctl_LDFLAGS = 
 radauth_OBJECTS = 
 radauth_LDADD = $(LDADD)
 radauth_DEPENDENCIES = 
 radauth_LDFLAGS = 
-radctl_sh_OBJECTS = 
-radctl_sh_LDADD = $(LDADD)
-radctl_sh_DEPENDENCIES = 
-radctl_sh_LDFLAGS = 
+radtest_OBJECTS = 
+radtest_LDADD = $(LDADD)
+radtest_DEPENDENCIES = 
+radtest_LDFLAGS = 
 DIST_COMMON =  Makefile.am Makefile.in
 
 
@@ -133,16 +142,16 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
-SOURCES = $(radping_SOURCES) $(radgrep_SOURCES) $(radauth_SOURCES) $(radctl_sh_SOURCES)
-OBJECTS = $(radping_OBJECTS) $(radgrep_OBJECTS) $(radauth_OBJECTS) $(radctl_sh_OBJECTS)
+SOURCES = $(radping_SOURCES) $(radgrep_SOURCES) $(radctl_SOURCES) $(radauth_SOURCES) $(radtest_SOURCES)
+OBJECTS = $(radping_OBJECTS) $(radgrep_OBJECTS) $(radctl_OBJECTS) $(radauth_OBJECTS) $(radtest_OBJECTS)
 
 all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .o .s
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps radscripts/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu radscripts/Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
@@ -197,9 +206,6 @@ uninstall-sbinPROGRAMS:
 	  rm -f $(DESTDIR)$(sbindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
 	done
 
-.c.o:
-	$(COMPILE) -c $<
-
 .s.o:
 	$(COMPILE) -c $<
 
@@ -224,6 +230,11 @@ distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 subdir = radscripts
 
 distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu radscripts/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -306,10 +317,12 @@ mostlyclean-generic distclean-generic clean-generic \
 maintainer-clean-generic clean mostlyclean distclean maintainer-clean
 
 
-radctl.sh: $(srcdir)/radctl.sh.m4
+radctl: $(srcdir)/radctl.m4
 	$(M4) -DSRCDIR=$(srcdir) -DPROGNAME=$(sbindir)/radiusd \
-	      -DPIDFILE=$(RADPID_DIR)/radiusd.pid -DPS=$(PS) \
-              -DAWK=$(AWK) $(srcdir)/radctl.sh.m4 > radctl.sh
+              -DBINDIR=$(bindir) -DDATADIR=$(pkgdatadir) \
+              -DPIDFILE=$(RADPID_DIR)/radiusd.pid -DPS=$(PS) \
+	      $(GUILE_ENABLE) \
+	      -DAWK=$(AWK) $(srcdir)/radctl.m4 > radctl
 
 radgrep: $(srcdir)/radgrep.m4
 	$(M4) -DSRCDIR=$(srcdir) $(srcdir)/radgrep.m4 > radgrep
@@ -319,8 +332,12 @@ radping: $(srcdir)/radping.m4
 	       $(srcdir)/radping.m4 > radping
 
 radauth: $(srcdir)/radauth.m4
-	$(M4) -DSRCDIR=$(srcdir) -DRADTEST=$(bindir)/radtest \
+	$(M4) -DSRCDIR=$(srcdir) -DBINDIR=$(bindir) -DDATADIR=$(pkgdatadir) \
               -DGETOPT=$(GETOPT) $(srcdir)/radauth.m4 > radauth
+
+radtest: $(srcdir)/radtest.m4
+	$(M4) -SRCDIR=$(srcdir) -DBINDIR=$(bindir) -DDATADIR=$(pkgdatadir) \
+              $(srcdir)/radtest.m4 > radtest
 
 # Maintainer-specific part
 

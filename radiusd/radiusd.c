@@ -17,7 +17,7 @@
  *
  */
 
-#define RADIUS_MODULE 4
+#define RADIUS_MODULE 2
 
 #ifndef lint
 static char rcsid[] =
@@ -147,6 +147,7 @@ int			use_dbm = 0;
 int                     open_acct = 1;
 int                     auth_detail;
 int                     strip_names;
+int                     suspend_flag;
 
 Config config = {
 	10,              /* delayed_hup_wait */
@@ -406,7 +407,13 @@ main(argc, argv)
 	reread_config(0);
 	if (check_config) 
 		exit(0);
-
+#if 0
+/*DEBUG ONLY*/
+	test_rewrite();
+	exit(1);
+/*END*/
+#endif
+	
 	if ((myip = getmyip()) == 0) {
 		radlog(L_CRIT, _("can't find out my own IP address"));
 		exit(1);
@@ -618,6 +625,25 @@ snmp_respond(fd, sa, salen, buf, size)
 
 #endif
 
+void
+rad_susp()
+{
+	suspend_flag = 1;
+#ifdef USE_SNMP
+	server_stat->auth.status = serv_other;
+	server_stat->acct.status = serv_other;
+#endif	
+}
+
+void
+rad_cont()
+{
+	suspend_flag = 0;
+#ifdef USE_SNMP
+	server_stat->auth.status = serv_running;
+	server_stat->acct.status = serv_running;
+#endif	
+}
 /* ************************************************************************  */
 
 /*
@@ -722,7 +748,9 @@ radrespond(authreq, activefd)
 	VALUE_PAIR *namepair;
 	int e;
 
-
+	if (suspend_flag)
+		return 0;
+	
 	/*
 	 *	First, see if we need to proxy this request.
 	 */
@@ -1336,13 +1364,13 @@ config_init()
 {
 	DICT_VALUE	*dval;
 
-	if (!(dval = dict_valfind("Password-Warning"))) 
+	if (!(dval = value_name_to_value("Password-Warning"))) 
 		warning_seconds = (UINT4)0;
 	else 
 		warning_seconds = dval->value * (UINT4)SECONDS_PER_DAY;
 
 #if 0
-	if (!(dval = dict_valfind("Password-Expiration"))) 
+	if (!(dval = value_name_to_value("Password-Expiration"))) 
 		password_expiration = 0;
 	else
 		passvord_expiration = dval->value * SECONDS_PER_DAY;

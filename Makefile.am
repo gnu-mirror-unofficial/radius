@@ -6,7 +6,11 @@ if DBM
 DBMDIR=builddbm
 endif
 
-SUBDIRS=include radlib $(SNMPDIR) radiusd radtest radwho radzap radlast raduse radctl radscripts checkrad $(DBMDIR) doc po
+if GUILE
+SCMDIR=radscm
+endif
+
+SUBDIRS=include radlib $(SNMPDIR) radiusd  radwho radzap radlast raduse radscripts checkrad $(DBMDIR) $(SCMDIR) doc po
 
 if MAINTAINER_MODE
 CFLAGS=-ggdb
@@ -20,10 +24,10 @@ EXTRA_DIST=include raddb doc mibs scripts test
 dist-hook:
 	(cd $(distdir); \
 	 rm -f radlib/users_gram.c radlib/users_lex.c \
-	       radiusd/config.c radtest/y.tab.c radtest/lex.yy.c )
+	       radiusd/config.c )
 
 install-data-local:
 	@if [ ! -d @ETC_DIR@/raddb ]; then \
-		./install-sh -d -m 644 @ETC_DIR@ ; \
-		cp -r raddb @ETC_DIR@ ; \
+		${INSTALL} -d @ETC_DIR@ ; \
+		cp -r $(top_srcdir)/raddb @ETC_DIR@ ; \
 	fi

@@ -1,7 +1,7 @@
 .\" $Id$
-.ds RD /etc/raddb
+.ds RD /usr/local/etc/raddb
 .ds RL /usr/adm
-.ds RP /etc/raddb
+.ds RP /usr/local/etc/raddb
 .TH radwho 1 "March 10, 2000" "FSF"
 .SH NAME
 radwho - display who is logged on by the Radius
@@ -23,10 +23,6 @@ radwho - display who is logged on by the Radius
 [\fB-s,--secure\fR]
 
 
-.SH NOTE
-The information in this manpage may be obsolete or incomplete. Please
-refer to texinfo documentation for full information about GNU Radius
-tools.
 .SH DESCRIPTION
 \fBRadwho\fR displays the list of users currently logged in by the
 \fBRadius\fR server.
@@ -185,6 +181,11 @@ If the user does not have a local account, his login name is output.
 .SH FILES
 .IP \*(RD/naslist
 .IP \*(RL/radutmp
+
+.SH BUGS
+The information in this manpage may be obsolete or incomplete. Please
+refer to texinfo documentation for full information about GNU Radius
+tools.
 
 .SH AUTHORS
 Sergey Poznyakoff, gray@farlep.net

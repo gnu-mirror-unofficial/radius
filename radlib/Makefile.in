@@ -72,6 +72,9 @@ CC = @CC@
 ETC_DIR = @ETC_DIR@
 GETOPT = @GETOPT@
 GMSGFMT = @GMSGFMT@
+GUILE_CONFIG = @GUILE_CONFIG@
+GUILE_INCLUDES = @GUILE_INCLUDES@
+GUILE_LIBS = @GUILE_LIBS@
 INCLUDEPATH = @INCLUDEPATH@
 INSTOBJEXT = @INSTOBJEXT@
 LANGUAGES = @LANGUAGES@
@@ -82,7 +85,6 @@ MAKEINFO = @MAKEINFO@
 MSGFMT = @MSGFMT@
 PACKAGE = @PACKAGE@
 PS = @PS@
-RADDB_DIR = @RADDB_DIR@
 RADIUSD_LDADD = @RADIUSD_LDADD@
 RADIUS_PID = @RADIUS_PID@
 RADLOG_DIR = @RADLOG_DIR@
@@ -102,7 +104,7 @@ YACC_OPTS = @YACC_OPTS@
 @SQL_TRUE@libsql_a_SOURCES = mysql.c postgres.c
 
 noinst_LIBRARIES = librad.a $(LIBSQL) liblog.a libdebug.a 
-librad_a_SOURCES = intl.c radpaths.c alloc.c attrprint.c raddb.c dict.c                  fixalloc.c iputil.c strerror.c strncasecmp.c                  md5.c md5crypt.c mem.c leakdetect.c obstack.c                  users_gram.c users_lex.c util.c client.c 		 insist.c debug.c 
+librad_a_SOURCES = intl.c radpaths.c alloc.c attrprint.c raddb.c dict.c                  fixalloc.c iputil.c strerror.c strncasecmp.c                  md5.c md5crypt.c mem.c leakdetect.c obstack.c                  users_gram.c users_lex.c util.c client.c 		 insist.c debug.c slist.c
 
 liblog_a_SOURCES = log.c 
 libdebug_a_SOURCES = debugmod.c
@@ -110,7 +112,7 @@ libdebug_a_SOURCES = debugmod.c
 BUILT_SOURCES = users_gram.c users_lex.c
 DISTCLEANFILES = users_gram.c users_lex.c
 INCLUDES = -I$(srcdir) -I$(top_srcdir)/include @INCLUDEPATH@
-EXTRA_DIST = users.y users.l
+EXTRA_DIST = users.y users.l mysql.c postgres.c
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
@@ -125,7 +127,7 @@ librad_a_LIBADD =
 librad_a_OBJECTS =  intl.o radpaths.o alloc.o attrprint.o raddb.o dict.o \
 fixalloc.o iputil.o strerror.o strncasecmp.o md5.o md5crypt.o mem.o \
 leakdetect.o obstack.o users_gram.o users_lex.o util.o client.o \
-insist.o debug.o
+insist.o debug.o slist.o
 libsql_a_LIBADD = 
 @SQL_TRUE@libsql_a_OBJECTS =  mysql.o postgres.o
 liblog_a_LIBADD = 
@@ -148,7 +150,7 @@ DEP_FILES =  .deps/alloc.P .deps/attrprint.P .deps/client.P \
 .deps/insist.P .deps/intl.P .deps/iputil.P .deps/leakdetect.P \
 .deps/log.P .deps/md5.P .deps/md5crypt.P .deps/mem.P .deps/mysql.P \
 .deps/obstack.P .deps/postgres.P .deps/raddb.P .deps/radpaths.P \
-.deps/strerror.P .deps/strncasecmp.P .deps/users_gram.P \
+.deps/slist.P .deps/strerror.P .deps/strncasecmp.P .deps/users_gram.P \
 .deps/users_lex.P .deps/util.P
 SOURCES = $(librad_a_SOURCES) $(libsql_a_SOURCES) $(liblog_a_SOURCES) $(libdebug_a_SOURCES)
 OBJECTS = $(librad_a_OBJECTS) $(libsql_a_OBJECTS) $(liblog_a_OBJECTS) $(libdebug_a_OBJECTS)

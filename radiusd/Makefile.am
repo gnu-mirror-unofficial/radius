@@ -1,6 +1,6 @@
 # $Id$
 
-CFLAGS=$(MCFLAGS) -DCHECKRAD=\"${sbindir}/checkrad\"
+CFLAGS=$(MCFLAGS) -DCHECKRAD=\"${libexecdir}/checkrad\"
 
 if SQL
 LIBSQL=-lsql
@@ -36,7 +36,7 @@ if MAINTAINER_MODE
 MCFLAGS=-ggdb -DMAINTAINER_MODE=1
 MAINTAINERCLEANFILES=core *~ err out 
 CLEANFILES=*.ln
-LINTFLAGS=-gezr -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -DCHECKRAD=\"${sbindir}/checkrad\" $(INCLUDES)
+LINTFLAGS=-gezr -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -DCHECKRAD=\"${libexecdir}/checkrad\" $(INCLUDES)
 radiusd_LNS=$(radiusd_SOURCES:.c=.ln)
 
 .c.ln:

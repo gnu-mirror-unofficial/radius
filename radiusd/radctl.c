@@ -208,14 +208,17 @@ cntl_respond(fd, sa, salen, buf, size)
 	}
 
 	reply_msg[0] = 0;
+	reply_ptr = reply_msg;
+	if (suspend_flag)
+		format_reply(_("SUSPENDED\n"));
+			     
 	switch (xlat_keyword(cntl_state, pair->strvalue, -1)) {
 	case CNTL_GETPID:
-		sprintf(reply_msg, _("RADIUS pid %ld"), radius_pid);
+		sprintf(reply_ptr, _("RADIUS pid %ld"), radius_pid);
 		reply_code = PW_AUTHENTICATION_ACK;
 		break;
 		
 	case CNTL_GETMSTAT:
-		reply_ptr = reply_msg;
 		format_reply(_("Memory usage:"));
 		meminfo(format_reply);
 #ifdef LEAK_DETECTOR
@@ -227,7 +230,6 @@ cntl_respond(fd, sa, salen, buf, size)
 		break;
 		
 	case CNTL_GETQSTAT:
-		reply_ptr = reply_msg;
 		format_reply(_("Request queue statistics:"));
 		stat_request_list(format_reply);
 		reply_code = PW_AUTHENTICATION_ACK;
@@ -235,11 +237,11 @@ cntl_respond(fd, sa, salen, buf, size)
 		
 	case CNTL_GETUSER: 
 		if ((pair = pairfind(authreq->request, DA_CLASS)) == NULL) {
-			sprintf(reply_msg, _("no user specified"));
+			sprintf(reply_ptr, _("no user specified"));
 			radlog(L_WARN, _("no user specified in GETUSER control packet"));
 			break;
 		}
-		sprintf(reply_msg, _("CNTL_GETUSER: not implemented"));
+		sprintf(reply_ptr, _("CNTL_GETUSER: not implemented"));
 		reply_code = PW_AUTHENTICATION_ACK;
 		break;
 		
@@ -247,7 +249,7 @@ cntl_respond(fd, sa, salen, buf, size)
 		radlog(L_INFO, _("Dumping users db to `%s'"),
 		       RADIUS_DUMPDB_NAME);
 		dump_users_db();
-		sprintf(reply_msg, _("Database dumped into `%s'"),
+		sprintf(reply_ptr, _("Database dumped into `%s'"),
 			RADIUS_DUMPDB_NAME);
 		reply_code = PW_AUTHENTICATION_ACK;
 		break;
@@ -272,20 +274,20 @@ cntl_respond(fd, sa, salen, buf, size)
 		case reload_sql:
 #endif
 			rc = reload_config_file(code);
-			sprintf(reply_msg, _("Reloading %s: %d"),
+			sprintf(reply_ptr, _("Reloading %s: %d"),
 				what_str[code], rc);
 			reply_code = PW_AUTHENTICATION_ACK;
 			break;
 
 		case reload_config:
 			rc = get_config();
-			sprintf(reply_msg, _("Reloading %s: %d"),
+			sprintf(reply_ptr, _("Reloading %s: %d"),
 				what_str[code], rc);
 			reply_code = PW_AUTHENTICATION_ACK;
 			break;
 			
 		default:
-			sprintf(reply_msg, _("Unknown configuration file: %s"),
+			sprintf(reply_ptr, _("Unknown configuration file: %s"),
 				pair->strvalue);
 			reply_code = PW_AUTHENTICATION_REJECT;
 		}
@@ -294,11 +296,11 @@ cntl_respond(fd, sa, salen, buf, size)
 	case CNTL_RESTART:
 		if (xargv[0][0] != '/') {
 			reply_code = PW_AUTHENTICATION_REJECT;
-			sprintf(reply_msg, _("can't restart: RADIUSD not started as absolute pathname"));
+			sprintf(reply_ptr, _("can't restart: RADIUSD not started as absolute pathname"));
 			break;
 		}
 		reply_code = PW_AUTHENTICATION_ACK;
-		sprintf(reply_msg, _("restart initiated"));
+		sprintf(reply_ptr, _("restart initiated"));
 		rad_send_reply(reply_code, authreq,
 			       NULL, reply_msg, fd);
 		pairfree(user_check);
@@ -311,7 +313,7 @@ cntl_respond(fd, sa, salen, buf, size)
 		reply_code = PW_AUTHENTICATION_ACK;
 		radlog(L_NOTICE,
 		       _("control channel: shutdown initiated"));
-		sprintf(reply_msg, _("shutdown initiated"));
+		sprintf(reply_ptr, _("shutdown initiated"));
 		rad_send_reply(reply_code, authreq,
 			       NULL, reply_msg, fd);
 		pairfree(user_check);
@@ -321,12 +323,26 @@ cntl_respond(fd, sa, salen, buf, size)
 		break;
 
 	case CNTL_SUSPEND:
-		sprintf(reply_msg, _("CNTL_SUSPEND not implemented"));
+		if (suspend_flag) {
+			sprintf(reply_ptr, _("already suspended"));
+		} else {
+			rad_susp();
+			sprintf(reply_ptr, _("SUSPENDED"));
+			radlog(L_NOTICE,
+			       _("control channel: SUSPENDED"));
+		}
 		reply_code = PW_AUTHENTICATION_ACK;
 		break;
 		
 	case CNTL_CONTINUE:
-		sprintf(reply_msg, _("CNTL_CONTINUE not implemented"));
+		if (!suspend_flag) {
+			sprintf(reply_ptr, _("already running"));
+		} else {
+			rad_cont();
+			sprintf(reply_ptr, _("RUNNING"));
+			radlog(L_NOTICE,
+			       _("control channel: suspend cancelled"));
+		}
 		reply_code = PW_AUTHENTICATION_ACK;
 		break;
 		

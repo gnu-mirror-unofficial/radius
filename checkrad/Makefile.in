@@ -72,6 +72,9 @@ CC = @CC@
 ETC_DIR = @ETC_DIR@
 GETOPT = @GETOPT@
 GMSGFMT = @GMSGFMT@
+GUILE_CONFIG = @GUILE_CONFIG@
+GUILE_INCLUDES = @GUILE_INCLUDES@
+GUILE_LIBS = @GUILE_LIBS@
 INCLUDEPATH = @INCLUDEPATH@
 INSTOBJEXT = @INSTOBJEXT@
 LANGUAGES = @LANGUAGES@
@@ -82,7 +85,6 @@ MAKEINFO = @MAKEINFO@
 MSGFMT = @MSGFMT@
 PACKAGE = @PACKAGE@
 PS = @PS@
-RADDB_DIR = @RADDB_DIR@
 RADIUSD_LDADD = @RADIUSD_LDADD@
 RADIUS_PID = @RADIUS_PID@
 RADLOG_DIR = @RADLOG_DIR@
@@ -96,14 +98,14 @@ YACC_OPTS = @YACC_OPTS@
 @MAINTAINER_MODE_TRUE@CFLAGS = -ggdb -DMAINTAINER_MODE=1
 @MAINTAINER_MODE_TRUE@MAINTAINERCLEANFILES = core *~ err out
 
-sbin_PROGRAMS = checkrad
+libexec_PROGRAMS = checkrad
 checkrad_SOURCES = checkrad.c netfinger.c compare.c config.c log.c debugmod.c
 checkrad_LDADD = -L ../radlib -lrad 
 INCLUDES = -I$(top_srcdir)/include @INCLUDEPATH@
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = ../config.h
 CONFIG_CLEAN_FILES = 
-PROGRAMS =  $(sbin_PROGRAMS)
+PROGRAMS =  $(libexec_PROGRAMS)
 
 
 DEFS = @DEFS@ -I. -I$(srcdir) -I..
@@ -124,6 +126,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
+DEP_FILES =  .deps/checkrad.P .deps/compare.P .deps/config.P \
+.deps/debugmod.P .deps/log.P .deps/netfinger.P
 SOURCES = $(checkrad_SOURCES)
 OBJECTS = $(checkrad_OBJECTS)
 
@@ -131,40 +135,37 @@ all: all-redirect
 .SUFFIXES:
 .SUFFIXES: .S .c .o .s
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
-	cd $(top_srcdir) && $(AUTOMAKE) --gnu --include-deps checkrad/Makefile
+	cd $(top_srcdir) && $(AUTOMAKE) --gnu checkrad/Makefile
 
-Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status
+Makefile: $(srcdir)/Makefile.in  $(top_builddir)/config.status $(BUILT_SOURCES)
 	cd $(top_builddir) \
 	  && CONFIG_FILES=$(subdir)/$@ CONFIG_HEADERS= $(SHELL) ./config.status
 
 
-mostlyclean-sbinPROGRAMS:
+mostlyclean-libexecPROGRAMS:
 
-clean-sbinPROGRAMS:
-	-test -z "$(sbin_PROGRAMS)" || rm -f $(sbin_PROGRAMS)
+clean-libexecPROGRAMS:
+	-test -z "$(libexec_PROGRAMS)" || rm -f $(libexec_PROGRAMS)
 
-distclean-sbinPROGRAMS:
+distclean-libexecPROGRAMS:
 
-maintainer-clean-sbinPROGRAMS:
+maintainer-clean-libexecPROGRAMS:
 
-install-sbinPROGRAMS: $(sbin_PROGRAMS)
+install-libexecPROGRAMS: $(libexec_PROGRAMS)
 	@$(NORMAL_INSTALL)
-	$(mkinstalldirs) $(DESTDIR)$(sbindir)
-	@list='$(sbin_PROGRAMS)'; for p in $$list; do \
+	$(mkinstalldirs) $(DESTDIR)$(libexecdir)
+	@list='$(libexec_PROGRAMS)'; for p in $$list; do \
 	  if test -f $$p; then \
-	    echo "  $(INSTALL_PROGRAM) $$p $(DESTDIR)$(sbindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
-	     $(INSTALL_PROGRAM) $$p $(DESTDIR)$(sbindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	    echo "  $(INSTALL_PROGRAM) $$p $(DESTDIR)$(libexecdir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`"; \
+	     $(INSTALL_PROGRAM) $$p $(DESTDIR)$(libexecdir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
 	  else :; fi; \
 	done
 
-uninstall-sbinPROGRAMS:
+uninstall-libexecPROGRAMS:
 	@$(NORMAL_UNINSTALL)
-	list='$(sbin_PROGRAMS)'; for p in $$list; do \
-	  rm -f $(DESTDIR)$(sbindir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
+	list='$(libexec_PROGRAMS)'; for p in $$list; do \
+	  rm -f $(DESTDIR)$(libexecdir)/`echo $$p|sed 's/$(EXEEXT)$$//'|sed '$(transform)'|sed 's/$$/$(EXEEXT)/'`; \
 	done
-
-.c.o:
-	$(COMPILE) -c $<
 
 .s.o:
 	$(COMPILE) -c $<
@@ -220,6 +221,11 @@ distdir = $(top_builddir)/$(PACKAGE)-$(VERSION)/$(subdir)
 subdir = checkrad
 
 distdir: $(DISTFILES)
+	here=`cd $(top_builddir) && pwd`; \
+	top_distdir=`cd $(top_distdir) && pwd`; \
+	distdir=`cd $(distdir) && pwd`; \
+	cd $(top_srcdir) \
+	  && $(AUTOMAKE) --include-deps --build-dir=$$here --srcdir-name=$(top_srcdir) --output-dir=$$top_distdir --gnu checkrad/Makefile
 	@for file in $(DISTFILES); do \
 	  d=$(srcdir); \
 	  if test -d $$d/$$file; then \
@@ -230,27 +236,38 @@ distdir: $(DISTFILES)
 	    || cp -p $$d/$$file $(distdir)/$$file || :; \
 	  fi; \
 	done
-checkrad.o: checkrad.c ../config.h ../include/sysdep.h \
-	../include/radiusd.h ../include/radius.h ../include/raddict.h \
-	../include/radpaths.h ../include/mem.h ../include/log.h \
-	../include/ippool.h ../include/obstack1.h ../include/obstack.h \
-	../include/checkrad.h
-compare.o: compare.c ../config.h ../include/sysdep.h ../include/mem.h \
-	../include/log.h ../include/checkrad.h
-config.o: config.c ../config.h ../include/log.h ../include/radiusd.h \
-	../include/sysdep.h ../include/radius.h ../include/raddict.h \
-	../include/radpaths.h ../include/mem.h ../include/ippool.h \
-	../include/checkrad.h
-debugmod.o: debugmod.c ../config.h ../include/log.h
-log.o: log.c ../config.h ../include/sysdep.h ../include/radiusd.h \
-	../include/radius.h ../include/raddict.h ../include/radpaths.h \
-	../include/mem.h ../include/log.h ../include/ippool.h
-netfinger.o: netfinger.c ../config.h ../include/obstack1.h \
-	../include/obstack.h ../include/radiusd.h ../include/sysdep.h \
-	../include/radius.h ../include/raddict.h ../include/radpaths.h \
-	../include/mem.h ../include/log.h ../include/ippool.h \
-	../include/radutmp.h ../include/checkrad.h
 
+DEPS_MAGIC := $(shell mkdir .deps > /dev/null 2>&1 || :)
+
+-include $(DEP_FILES)
+
+mostlyclean-depend:
+
+clean-depend:
+
+distclean-depend:
+	-rm -rf .deps
+
+maintainer-clean-depend:
+
+%.o: %.c
+	@echo '$(COMPILE) -c $<'; \
+	$(COMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-cp .deps/$(*F).pp .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm .deps/$(*F).pp
+
+%.lo: %.c
+	@echo '$(LTCOMPILE) -c $<'; \
+	$(LTCOMPILE) -Wp,-MD,.deps/$(*F).pp -c $<
+	@-sed -e 's/^\([^:]*\)\.o[ 	]*:/\1.lo \1.o :/' \
+	  < .deps/$(*F).pp > .deps/$(*F).P; \
+	tr ' ' '\012' < .deps/$(*F).pp \
+	  | sed -e 's/^\\$$//' -e '/^$$/ d' -e '/:$$/ d' -e 's/$$/ :/' \
+	    >> .deps/$(*F).P; \
+	rm -f .deps/$(*F).pp
 info-am:
 info: info-am
 dvi-am:
@@ -259,7 +276,7 @@ check-am: all-am
 check: check-am
 installcheck-am:
 installcheck: installcheck-am
-install-exec-am: install-sbinPROGRAMS
+install-exec-am: install-libexecPROGRAMS
 install-exec: install-exec-am
 
 install-data-am:
@@ -268,14 +285,14 @@ install-data: install-data-am
 install-am: all-am
 	@$(MAKE) $(AM_MAKEFLAGS) install-exec-am install-data-am
 install: install-am
-uninstall-am: uninstall-sbinPROGRAMS
+uninstall-am: uninstall-libexecPROGRAMS
 uninstall: uninstall-am
 all-am: Makefile $(PROGRAMS)
 all-redirect: all-am
 install-strip:
 	$(MAKE) $(AM_MAKEFLAGS) AM_INSTALL_PROGRAM_FLAGS=-s install
 installdirs:
-	$(mkinstalldirs)  $(DESTDIR)$(sbindir)
+	$(mkinstalldirs)  $(DESTDIR)$(libexecdir)
 
 
 mostlyclean-generic:
@@ -288,39 +305,43 @@ distclean-generic:
 
 maintainer-clean-generic:
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
-mostlyclean-am:  mostlyclean-sbinPROGRAMS mostlyclean-compile \
-		mostlyclean-tags mostlyclean-generic
+mostlyclean-am:  mostlyclean-libexecPROGRAMS mostlyclean-compile \
+		mostlyclean-tags mostlyclean-depend mostlyclean-generic
 
 mostlyclean: mostlyclean-am
 
-clean-am:  clean-sbinPROGRAMS clean-compile clean-tags clean-generic \
-		mostlyclean-am
+clean-am:  clean-libexecPROGRAMS clean-compile clean-tags clean-depend \
+		clean-generic mostlyclean-am
 
 clean: clean-am
 
-distclean-am:  distclean-sbinPROGRAMS distclean-compile distclean-tags \
-		distclean-generic clean-am
+distclean-am:  distclean-libexecPROGRAMS distclean-compile \
+		distclean-tags distclean-depend distclean-generic \
+		clean-am
 
 distclean: distclean-am
 
-maintainer-clean-am:  maintainer-clean-sbinPROGRAMS \
+maintainer-clean-am:  maintainer-clean-libexecPROGRAMS \
 		maintainer-clean-compile maintainer-clean-tags \
-		maintainer-clean-generic distclean-am
+		maintainer-clean-depend maintainer-clean-generic \
+		distclean-am
 	@echo "This command is intended for maintainers to use;"
 	@echo "it deletes files that may require special tools to rebuild."
 
 maintainer-clean: maintainer-clean-am
 
-.PHONY: mostlyclean-sbinPROGRAMS distclean-sbinPROGRAMS \
-clean-sbinPROGRAMS maintainer-clean-sbinPROGRAMS uninstall-sbinPROGRAMS \
-install-sbinPROGRAMS mostlyclean-compile distclean-compile \
-clean-compile maintainer-clean-compile tags mostlyclean-tags \
-distclean-tags clean-tags maintainer-clean-tags distdir info-am info \
-dvi-am dvi check check-am installcheck-am installcheck install-exec-am \
-install-exec install-data-am install-data install-am install \
-uninstall-am uninstall all-redirect all-am all installdirs \
-mostlyclean-generic distclean-generic clean-generic \
-maintainer-clean-generic clean mostlyclean distclean maintainer-clean
+.PHONY: mostlyclean-libexecPROGRAMS distclean-libexecPROGRAMS \
+clean-libexecPROGRAMS maintainer-clean-libexecPROGRAMS \
+uninstall-libexecPROGRAMS install-libexecPROGRAMS mostlyclean-compile \
+distclean-compile clean-compile maintainer-clean-compile tags \
+mostlyclean-tags distclean-tags clean-tags maintainer-clean-tags \
+distdir mostlyclean-depend distclean-depend clean-depend \
+maintainer-clean-depend info-am info dvi-am dvi check check-am \
+installcheck-am installcheck install-exec-am install-exec \
+install-data-am install-data install-am install uninstall-am uninstall \
+all-redirect all-am all installdirs mostlyclean-generic \
+distclean-generic clean-generic maintainer-clean-generic clean \
+mostlyclean distclean maintainer-clean
 
 
 @MAINTAINER_MODE_TRUE@FILELIST:; @echo $(checkrad_SOURCES) > .list

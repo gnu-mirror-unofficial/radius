@@ -11,31 +11,29 @@
 #if RADIUS_DEBUG
 #include <log.h>
 
-int debug_level[19];
+int debug_level[17];
 
-struct debug_module debug_module[19+1] = {
+struct debug_module debug_module[17+1] = {
 
        "leakdetect.c", 0,
        "mem.c", 1,
-       "mysql.c", 2,
-       "postgres.c", 3,
 
 
-       "radiusd.c", 4,
-       "acct.c", 5,
-       "auth.c", 6,
-       "exec.c", 7,
-       "files.c", 8,
-       "sql.c", 9,
-       "notify.c", 10,
-       "pam.c", 11,
-       "proxy.c", 12,
-       "radius.c", 13,
-       "ippool.c", 14,
-       "stat.c", 15,
-       "snmpserv.c", 16,
-       "radutil.c", 17,
-       "rewrite.y", 18,
+       "radiusd.c", 2,
+       "acct.c", 3,
+       "auth.c", 4,
+       "exec.c", 5,
+       "files.c", 6,
+       "sql.c", 7,
+       "notify.c", 8,
+       "pam.c", 9,
+       "proxy.c", 10,
+       "radius.c", 11,
+       "ippool.c", 12,
+       "stat.c", 13,
+       "snmpserv.c", 14,
+       "radutil.c", 15,
+       "rewrite.y", 16,
 
 	(char*)0, 0
 };

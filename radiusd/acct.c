@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
-#define RADIUS_MODULE 5
+#define RADIUS_MODULE 3
 
 #ifndef lint
 static char rcsid[] =
@@ -831,7 +831,8 @@ rad_accounting(authreq, activefd)
 	}
 
 	huntgroup_access(authreq);
-	
+
+#if defined(PW_ASCEND_EVENT_REQUEST) && defined(PW_ASCEND_EVENT_RESPONSE)
 	/* Special handling for Ascend-Event-Request
 	 */
 	if (authreq->code == PW_ASCEND_EVENT_REQUEST) {
@@ -841,7 +842,8 @@ rad_accounting(authreq, activefd)
 		stat_inc(acct, authreq->ipaddr, num_resp);
 		return 0;
 	}
-
+#endif
+	
 	if (rad_accounting_new(authreq, doradwtmp) == 0 &&
 	    rad_accounting_orig(authreq, auth, NULL) == 0) {
 		/*
@@ -913,7 +915,7 @@ check_ts(ut)
 	char	address[DOTTED_QUAD_LEN];
 	char	port[32];
 	char	session_id[RUT_IDSIZE+1];
-	void	(*handler)(int);
+	RETSIGTYPE (*handler)(int);
 
 	/*
 	 *	Find NAS type.

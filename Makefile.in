@@ -70,6 +70,9 @@ CC = @CC@
 ETC_DIR = @ETC_DIR@
 GETOPT = @GETOPT@
 GMSGFMT = @GMSGFMT@
+GUILE_CONFIG = @GUILE_CONFIG@
+GUILE_INCLUDES = @GUILE_INCLUDES@
+GUILE_LIBS = @GUILE_LIBS@
 INCLUDEPATH = @INCLUDEPATH@
 INSTOBJEXT = @INSTOBJEXT@
 LANGUAGES = @LANGUAGES@
@@ -80,7 +83,6 @@ MAKEINFO = @MAKEINFO@
 MSGFMT = @MSGFMT@
 PACKAGE = @PACKAGE@
 PS = @PS@
-RADDB_DIR = @RADDB_DIR@
 RADIUSD_LDADD = @RADIUSD_LDADD@
 RADIUS_PID = @RADIUS_PID@
 RADLOG_DIR = @RADLOG_DIR@
@@ -95,7 +97,9 @@ YACC_OPTS = @YACC_OPTS@
 
 @DBM_TRUE@DBMDIR = builddbm
 
-SUBDIRS = include radlib $(SNMPDIR) radiusd radtest radwho radzap radlast raduse radctl radscripts checkrad $(DBMDIR) doc po
+@GUILE_TRUE@SCMDIR = radscm
+
+SUBDIRS = include radlib $(SNMPDIR) radiusd  radwho radzap radlast raduse radscripts checkrad $(DBMDIR) $(SCMDIR) doc po
 
 @MAINTAINER_MODE_TRUE@CFLAGS = -ggdb
 @MAINTAINER_MODE_TRUE@MAINTAINERCLEANFILES = core *~ err out
@@ -115,8 +119,8 @@ DISTFILES = $(DIST_COMMON) $(SOURCES) $(HEADERS) $(TEXINFOS) $(EXTRA_DIST)
 
 TAR = tar
 GZIP_ENV = --best
-DIST_SUBDIRS =  include radlib snmplib radiusd radtest radwho radzap \
-radlast raduse radctl radscripts checkrad builddbm doc po
+DIST_SUBDIRS =  include radlib snmplib radiusd radwho radzap radlast \
+raduse radscripts checkrad builddbm radscm doc po
 all: all-redirect
 .SUFFIXES:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am $(top_srcdir)/configure.in $(ACLOCAL_M4) 
@@ -396,12 +400,12 @@ mostlyclean distclean maintainer-clean
 dist-hook:
 	(cd $(distdir); \
 	 rm -f radlib/users_gram.c radlib/users_lex.c \
-	       radiusd/config.c radtest/y.tab.c radtest/lex.yy.c )
+	       radiusd/config.c )
 
 install-data-local:
 	@if [ ! -d @ETC_DIR@/raddb ]; then \
-		./install-sh -d -m 644 @ETC_DIR@ ; \
-		cp -r raddb @ETC_DIR@ ; \
+		${INSTALL} -d @ETC_DIR@ ; \
+		cp -r $(top_srcdir)/raddb @ETC_DIR@ ; \
 	fi
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

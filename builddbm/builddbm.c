@@ -1,5 +1,4 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -248,15 +247,15 @@ void auth_type_fixup(VALUE_PAIR *check)
 	 *	if we see Auth-Type.
 	 */
 	for (vp = check; vp; vp = vp->next) {
-		if (vp->attribute == PW_AUTHTYPE)
+		if (vp->attribute == DA_AUTH_TYPE)
 			return;
-		if (vp->attribute == PW_PASSWORD) {
+		if (vp->attribute == DA_PASSWORD) {
 			c = vp;
-			n = PW_AUTHTYPE_LOCAL;
+			n = DV_AUTH_TYPE_LOCAL;
 		}
-		if (vp->attribute == PW_CRYPT_PASSWORD) {
+		if (vp->attribute == DA_CRYPT_PASSWORD) {
 			c = vp;
-			n = PW_AUTHTYPE_CRYPT;
+			n = DV_AUTH_TYPE_CRYPT_LOCAL;
 		}
 	}
 
@@ -269,7 +268,7 @@ void auth_type_fixup(VALUE_PAIR *check)
 	vp = alloc_pair();
 	memset(vp, 0, sizeof(VALUE_PAIR));
 	strcpy(vp->name, "Auth-Type");
-	vp->attribute = PW_AUTHTYPE;
+	vp->attribute = DA_AUTH_TYPE;
 	vp->type = PW_TYPE_INTEGER;
 	vp->lvalue = n;
 

@@ -36,6 +36,7 @@ static char rcsid[] =
 
 #include <radiusd.h>
 #include <radclient.h>
+#include <slist.h>
 
 int radclient_debug;
 
@@ -48,8 +49,6 @@ static AUTH_REQ * radclient_recv(UINT4 host, u_short udp_port,
 static AUTH_REQ * decode_buffer(UINT4 host, u_short udp_port, char *buffer,
 				int length);
 static void random_vector(char *vector);
-static SERVER * read_servers(char *config_dir);
-static void read_config(RADCLIENT *client, char *config_dir);
 static char * auth_code_str(int code);
 
 static struct keyword auth_codes[] = {
@@ -191,7 +190,7 @@ radclient_send(config, port_type, code, pair)
 				break;
 			}
 		}
-	} while (!req && (server = server->next_avail) != NULL);
+	} while (!req && (server = server->next) != NULL);
 	
 	close(sockfd);
 	return req;
@@ -250,7 +249,7 @@ radclient_build_request(config, server, code, pair)
 		 */
 		length_ptr = NULL;
 		if ((vendorcode = VENDOR(pair->attribute)) > 0 &&
-		    (vendorpec  = dict_vendorpec(vendorcode)) > 0) {
+		    (vendorpec  = vendor_id_to_pec(vendorcode)) > 0) {
 			CHECKSIZE(6);
 			*ptr++ = DA_VENDOR_SPECIFIC;
 			length_ptr = ptr;
@@ -268,16 +267,6 @@ radclient_build_request(config, server, code, pair)
 		} else
 			vendorpec = 0;
 
-#ifdef ATTRIB_NMC
-		if (vendorpec == VENDORPEC_USR) {
-			CHECKSIZE(2);
-			lval = htonl(pair->attribute & 0xFFFF);
-			memcpy(ptr, &lval, 4);
-			total_length += 2;
-			*length_ptr  += 2;
-			ptr          += 4;
-		} else
-#endif
 		*ptr++ = (pair->attribute & 0xFF);
 
 		switch (pair->type) {
@@ -380,7 +369,7 @@ radclient_recv(host, udp_port, secret, vector, buffer, length)
 }
 
 
-AUTH_REQ	*
+AUTH_REQ *
 decode_buffer(host, udp_port, buffer, length)
 	UINT4 host;
 	u_short udp_port;
@@ -443,7 +432,7 @@ decode_buffer(host, udp_port, buffer, length)
 			continue;
 		}
 		attrlen -= 2;
-		if ((attr = dict_attrget(attribute)) == (DICT_ATTR *)NULL) {
+		if ((attr = attr_number_to_dict(attribute)) == (DICT_ATTR *)NULL) {
 			radlog(L_ERR,
 			       _("Received unknown attribute %d"), attribute);
 		} else if ( attrlen > AUTH_STRING_LEN ) {
@@ -526,459 +515,110 @@ random_vector(vector)
 	}
 }
 
-
-#define F_LOCALNAME 0
-#define F_FQDN      1
-#define F_SECRET    2
-#define F_AUTH_PORT 3
-#define F_ACCT_PORT 4
-#define F_CNTL_PORT 5
-#define FN 6
-
-SERVER *
-read_servers(config_dir)
-	char *config_dir;
-{
-	FILE        *fp;
-	int         line_no;
-	int         errcnt;
-	char        *name;
-	int         i;
-	char        linebuf[128];
-	char        *start, *p;
-	int         fn;
-	int         len;
-	UINT4       addr;
-	char        *field[FN];
-	SERVER      *first, *last, *sp;
-	
-	name = mkfilename(config_dir, RADCLIENT_SHADOW);
-	fp = fopen(name, "r");
-	if (!fp) {
-		radlog(L_ERR|L_PERROR,
-		       _("can't open `%s' for reading"),
-		       name);
-		efree(name);
-		return NULL;
-	}
-	
-	line_no = 0;
-	first = last = NULL;
-	while (fgets(linebuf, sizeof linebuf, fp)) {
-		line_no++;
-		if (linebuf[0] == '#')
-			continue;
-
-		len = strlen(linebuf);
-		if (len <= 1)
-			continue;
-		if (linebuf[len-1] == '\n')
-			linebuf[len-1] = 0;
-
-		/*
-		 * Parse the line
-		 */
-		fn = 0;
-		start = linebuf;
-		while (*start) {
-			if (fn >= FN) {
-				radlog(L_WARN,
-				       _("%s:%d: extra fields"),
-				       name, line_no);
-				break;
-			}
-			field[fn++] = start;
-			for (p = start; *p && *p != ':'; p++)
-				;
-			if (!*p)
-				break;
-			else
-				*p++ = 0;
-			start = p;
-		}
-		if (fn != FN) {
-			radlog(L_ERR,
-			       _("%s:%d: not enough fields"),
-			       name, line_no);
-			continue;
-		}
-
-		/*
-		 * Verify semantics
-		 */
-		errcnt = 0;
-		if (field[F_LOCALNAME][0] == 0) {
-			radlog(L_ERR,
-			       _("%s:%d: empty local name"),
-			       name, line_no);
-			errcnt++;
-		}
-		if (field[F_FQDN][0] == 0) {
-			radlog(L_ERR,
-			       _("%s:%d: empty host address"),
-			       name, line_no);
-			errcnt++;
-		}
-		addr = get_ipaddr(field[F_FQDN]);
-		if (addr == 0) {
-			radlog(L_ERR,
-			       _("%s:%d: unknown host %s"),
-			       name, line_no,
-			       field[0]);
-			errcnt++;
-		}
-		if (field[F_SECRET][0] == 0) {
-			radlog(L_ERR,
-			       _("%s:%d: empty secret key"),
-			       name, line_no);
-			errcnt++;
-		} else if (strlen(field[F_SECRET]) >= sizeof(sp->secret)) {
-			radlog(L_ERR,
-			       _("%s:%d: secret key too long"),
-			       name, line_no);
-			errcnt++;
-		}
-		
-		for (i = 0; i < 3; i++) {
-			for (p = field[F_AUTH_PORT+i]; *p; p++)
-				if (!isdigit(*p))
-					break;
-			if (*p) {
-				radlog(L_ERR,
-				       _("%s:%d: field %d not a number"),
-				       name, line_no, F_AUTH_PORT+i);
-				errcnt++;
-			}
-		}
-
-		if (errcnt)
-			continue;
-
-		/*
-		 * Allocate SERVER structure
-		 */
-		sp = alloc_entry(sizeof *sp);
-		
-		sp->addr = addr;
-		sp->name = estrdup(field[F_LOCALNAME]);
-		strcpy(sp->secret, field[F_SECRET]);
-		sp->port[PORT_AUTH] = field[F_AUTH_PORT][0] ? 
-		                   atoi(field[F_AUTH_PORT]) : PW_AUTH_UDP_PORT;
-		sp->port[PORT_ACCT] = field[F_ACCT_PORT][0] ? 
-		                   atoi(field[F_ACCT_PORT]) : PW_ACCT_UDP_PORT;
-		sp->port[PORT_CNTL] = atoi(field[F_CNTL_PORT]);
-		if (!first)
-			first = sp;
-		else
-			last->next = sp;
-		last = sp;
-	}
-	fclose(fp);
-	efree(name);
-	return first;
-}
-
 /* ************************************************************************* */
-/* Functions to manipulate server lists
- */
-
-/* Static functions */
-static int add_server(SERVER **first, SERVER *new_server);
-static int delete_server(SERVER **first, char *name);
-
-int
-add_server(first, new_server)
-	SERVER **first;
-	SERVER *new_server;
-{
-	SERVER *sp, *prev;
-	
-	new_server->next_avail = NULL;
-	if (!*first) {
-		*first = new_server;
-		return 0;
-	}
-	
-	sp = *first;
-	while (sp) {
-		if (strcmp(sp->name, new_server->name) == 0)
-			return 1;
-		prev = sp;
-		sp = sp->next_avail;
-	}
-	prev->next_avail = sp;
-	return 0;
-}
-
-int
-delete_server(first, name)
-	SERVER **first;
-	char *name;
-{
-	SERVER *sp, *prev;
-	
-	if (!*first) 
-		return 0;
-	
-	sp = *first;
-	prev = NULL;
-	while (sp) {
-		if (strcmp(sp->name, name) == 0)
-			break;
-		prev = sp;
-		sp = sp->next_avail;
-	}
-	if (!sp)
-		return 1;
-	if (prev)
-		prev->next_avail = sp->next_avail;
-	else
-		*first = sp->next_avail;
-	return 0;
-}
-
-SERVER *
-find_server(server, name)
-	SERVER *server;
-	char *name;
-{
-	while (server) {
-		if (strcmp(server->name, name) == 0)
-			break;
-		server = server->next;
-	}
-	return server;
-}
-
-/* global functions */
-
-SERVER *
-radclient_find_server(config, name)
-	RADCLIENT *config;
-	char *name;
-{
-	return find_server(config->server, name);
-}
-
-int
-radclient_delete_server(config, name)
-	RADCLIENT *config;
-	char *name;
-{
-	if (!name) {
-		config->first_server = NULL;
-		return 0;
-	}
-	return delete_server(&config->first_server, name);
-}
-		
-int
-radclient_add_server(config, name)
-	RADCLIENT *config;
-	char *name;
-{
-	SERVER *sp;
-	
-	if (!name) {
-		/* Add whole list */
-		for (sp = config->server; sp; sp = sp->next)
-			sp->next_avail = sp->next;
-		config->first_server = config->server;
-		return 0;
-	}
-	if ((sp = radclient_find_server(config, name)) == NULL)
-		return 1;
-	return add_server(&config->first_server, sp);
-}
-		
-/* ************************************************************************* */
-/* Initialization, config files &c. */
-
-enum {
-	KW_TIMEOUT,
-	KW_RETRY,
-	KW_BUFSIZE,
-	KW_SERVER,
-};
-
-static struct keyword config_keyword[] = {
-	"timeout",    KW_TIMEOUT,
-	"retry",      KW_RETRY,
-	"bufsize",    KW_BUFSIZE,
-	"server",     KW_SERVER,
-	0
-};
-
-static void get_number(char *arg, int *vp, char *name, int line_no);
-static void get_size(char *arg, size_t *vp, char *name, int line_no);
-
-void
-get_number(arg, vp, name, line_no)
-	char *arg;
-	int *vp;
-	char *name;
-	int line_no;
-{
-	char *p;
-	int value;
-
-	value = strtol(arg, &p, 0);
-	if (*p) 
-		radlog(L_ERR,
-		       _("%s:%d: expected number"),
-		       name, line_no);
-	else
-		*vp = value;
-}
-
-void
-get_size(arg, vp, name, line_no)
-	char *arg;
-	size_t *vp;
-	char *name;
-	int line_no;
-{
-	char *p;
-	size_t value;
-
-	value = (size_t) strtol(arg, &p, 0);
-	if (*p) 
-		radlog(L_ERR,
-		       _("%s:%d: expected number"),
-		       name, line_no);
-	else
-		*vp = value;
-}
-
-void
-read_config(client, config_dir)
-	RADCLIENT *client;
-	char *config_dir;
-{
-	char       *name;
-	FILE       *fp;
-	int        line_no;
-	int        len;
-	char       linebuf[128];
-	char       *start, *arg, *p;
-	SERVER     *sp;
-	
-	name = mkfilename(config_dir, RADCLIENT_CONFIG);
-	fp = fopen(name, "r");
-	if (!fp) {
-		if (errno != ENOENT) {
-			radlog(L_ERR|L_PERROR,
-			       _("can't open `%s' for reading"),
-			       name);
-		}
-		efree(name);
-		return;
-	}
-
-	line_no = 0;
-	while (fgets(linebuf, sizeof linebuf, fp)) {
-		line_no++;
-		len = strlen(linebuf);
-		if (len ==  0)
-			continue;
-		if (linebuf[len-1] == '\n')
-			linebuf[len-1] = 0;
-
-		/*
-		 * Get command word
-		 */
-		for (p = linebuf; *p; p++)
-			if (!isspace(*p))
-				break;
-		if (!*p || *p == '#')
-			continue;
-		start = p;
-		while (*p && !isspace(*p))
-			p++;
-
-		/*
-		 * Get argument
-		 */
-		if (*p) {
-			*p++ = 0;
-			while (*p && isspace(*p))
-				p++;
-			arg = p;
-			while (*p && !isspace(*p))
-				p++;
-			if (*p)
-				*p = 0;
-			if (arg[0] == 0 || arg[0] == '#')
-				arg = NULL;
-		} else
-			arg = NULL;
-
-		if (!arg) {
-			radlog(L_ERR,
-			       _("%s:%d: syntax error"),
-			       name, line_no);
-			continue;
-		}
-		switch (xlat_keyword(config_keyword, start, -1)) {
-		case KW_TIMEOUT:
-			get_number(arg, &client->timeout, name, line_no);
-			break;
-		case KW_RETRY:
-			get_number(arg, &client->retries, name, line_no);
-			break;
-		case KW_BUFSIZE:
-			get_size(arg, &client->bufsize, name, line_no);
-			break;
-		case KW_SERVER:
-			sp = radclient_find_server(client, arg);
-			if (!sp) {
-				radlog(L_ERR,
-				       _("%s:%d: unknown server: %s"),
-				       name, line_no, arg);
-				break;
-			}
-			add_server(&client->first_server, sp);
-			break;
-		default:
-			radlog(L_ERR,
-			       _("%s:%d: unknown keyword"),
-			       name, line_no);
-		}
-	}
-	fclose(fp);
-	efree(name);
-}
+/* Initialization. */
 
 RADCLIENT *
-radclient_init(config_dir)
-	char *config_dir;
+radclient_alloc(bufsize)
+	size_t bufsize;
 {
 	RADCLIENT *client;
-	SERVER *server;
-	
-	if (!config_dir)
-		config_dir = radius_dir;
-	server = read_servers(config_dir);
-	if (!server)
-		return NULL;
 
 	client = emalloc(sizeof *client);
 
+	/* Provide default values */
 	client->timeout = 1;
 	client->retries = 3;
-	client->bufsize = 4096;
-	client->server = server;
-
-	read_config(client, config_dir);
-
+	client->bufsize = bufsize ? bufsize : 4096;
+	client->first_server = NULL;
 	client->data_buffer = emalloc(client->bufsize);
 	client->messg_id = getpid() % 256;
 
 	return client;
 }
 
+SERVER *
+radclient_alloc_server(src)
+	SERVER *src;
+{
+	SERVER *server;
 
+	server = alloc_entry(sizeof(*server));
+	server->name = make_string(src->name);
+	server->addr = src->addr;
+	server->port[0] = src->port[0];
+	server->port[1] = src->port[1];
+	server->port[2] = src->port[2];
+	strncpy(server->secret, src->secret, AUTH_PASS_LEN);
+	server->secret[AUTH_PASS_LEN] = 0;
+}
 
+SERVER *
+radclient_dup_server(src)
+	SERVER *src;
+{
+	SERVER *dest;
 
+	dest = alloc_entry(sizeof(*dest));
+	dest->addr = src->addr;
+	dest->name = dup_string(src->name);
+	dest->port[0] = src->port[0];
+	dest->port[1] = src->port[1];
+	dest->port[2] = src->port[2];
+	strncpy(dest->secret, src->secret, AUTH_PASS_LEN);
+	return dest;
+}
 
+/* ************************************************************************* */
+/* Functions to manipulate server lists
+ */
+
+void
+radclient_free_server(server)
+	SERVER *server;
+{
+	free_string(server->name);
+	free_entry(server);
+}
+
+SERVER *
+radclient_append_server(list, server)
+	SERVER *list;
+	SERVER *server;
+{
+	return (SERVER*)append_slist((struct slist*)list,
+				     (struct slist*)server);
+}
+
+void
+radclient_internal_free_server(server)
+	SERVER *server;
+{
+	free_string(server->name);
+}
+
+void
+radclient_clear_server_list(list)
+	SERVER *list;
+{
+	free_slist((struct slist *)list, radclient_internal_free_server);
+}
+
+int
+server_cmp(serv, id)
+	SERVER *serv;
+	char *id;
+{
+	return strcmp(serv->name, id);
+}
+
+SERVER *
+radclient_find_server(list, name)
+	SERVER *list;
+	char *name;
+{
+	return (SERVER*)find_slist((struct slist *)list,
+				   server_cmp,
+				   name);
+}
 

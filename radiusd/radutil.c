@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
-#define RADIUS_MODULE 17
+#define RADIUS_MODULE 15
 
 #ifndef lint
 static char rcsid[] =
@@ -146,7 +146,7 @@ attrno_to_str(buf, request, attr_no)
 	VALUE_PAIR *request;
 	int attr_no;
 {
-	return attr_to_str(buf, request, dict_attrget(attr_no));
+	return attr_to_str(buf, request, attr_number_to_dict(attr_no));
 }
 
 static DICT_ATTR *
@@ -157,7 +157,7 @@ parse_dict_attr(p, endp)
 	char namebuf[MAX_DICTNAME];
 	
 	if (isdigit(*p)) {
-		return dict_attrget(strtol(p, endp, 10));
+		return attr_number_to_dict(strtol(p, endp, 10));
 	}
 	if (*p == '{') {
 		int len;
@@ -170,7 +170,7 @@ parse_dict_attr(p, endp)
 			return NULL;
 		strncpy(namebuf, p+1, len);
 		namebuf[len] = 0;
-		return dict_attrfind(namebuf);
+		return attr_name_to_dict(namebuf);
 	}
 	*endp = p;
 	return NULL;

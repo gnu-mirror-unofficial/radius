@@ -486,7 +486,7 @@ debug_print_pair(pair)
 		break;
 
 	case PW_TYPE_INTEGER:
-		dval = dict_valget(pair->lvalue, pair->name);
+		dval = value_lookup(pair->lvalue, pair->name);
 		if (dval != (DICT_VALUE *)NULL) {
 			debug_add_string(dval->name, strlen(dval->name));
 		} else {

@@ -3,7 +3,7 @@ the input file radius.texinfo.
 
 INFO-DIR-SECTION GNU radius
 START-INFO-DIR-ENTRY
-* Radius: (radius).     The GNU radius
+* Radius: (radius).     The GNU Radius
 END-INFO-DIR-ENTRY
 
    This file documents the GNU radius
@@ -448,7 +448,6 @@ TYPE
 * $INCLUDE::            Include a file.
 * VENDOR::              Define a vendor-id.
 * ATTRIBUTE::           Define an attribute translation.
-* ATTRIB_NMC::          Another way to define vendor-specific attributes.
 * VALUE::               Define a value translation.
 
 
@@ -502,7 +501,7 @@ Example
      VENDOR		Livingston	307
 
 
-File: radius.info,  Node: ATTRIBUTE,  Next: ATTRIB_NMC,  Prev: VENDOR,  Up: dictionary
+File: radius.info,  Node: ATTRIBUTE,  Next: VALUE,  Prev: VENDOR,  Up: dictionary
 
 ATTRIBUTE statement
 *******************
@@ -534,28 +533,10 @@ attribute number 6:
      ATTRIBUTE	LE-Terminate-Detail	2	string	Livingston
 
 
-File: radius.info,  Node: ATTRIB_NMC,  Next: VALUE,  Prev: ATTRIBUTE,  Up: dictionary
+File: radius.info,  Node: VALUE,  Prev: ATTRIBUTE,  Up: dictionary
 
-ATTRIB_NMC statement
-********************
-
-Syntax
-------
-
-     ATTRIB_NMC      Attribute-Name          NUMBER  TYPE
-
-Usage
------
-
-   This statement defines the translation for a USR vendor-specific
-attribute (vendor PEC 429). The `ATTRIB_NMC' statement is provided for
-compatibility with existing dictionaries.
-
-
-File: radius.info,  Node: VALUE,  Prev: ATTRIB_NMC,  Up: dictionary
-
-ATTRIB_NMC statement
-********************
+VALUE statement
+***************
 
 Syntax
 ------
@@ -651,14 +632,14 @@ File: radius.info,  Node: naslist example,  Prev: naslist,  Up: naslist
 Example of `naslist' file
 *************************
 
-     # /etc/raddb/naslist: contains a list of Network Access Servers
+     # /usr/local/etc/raddb/naslist: contains a list of Network Access Servers
      #
      # Each record consists of following fields:
      #
      # 	i. 	A valid hostname or IP address for the client.
      #	ii. 	The short name to use in the logfiles for this NAS.
      #	iii.	Type of device. Valid values are those listed in
-     #		/etc/raddb/checkrad.conf file.
+     #		/usr/local/etc/raddb/checkrad.conf file.
      
      # NAS Name              Short Name      Type
      #----------------       ----------      ----
@@ -979,7 +960,7 @@ Example of `users' file
              Exec-Program-Wait = "/usr/local/sbin/telauth %C{User-Name} %C{Calling-Station-Id} %C{NAS-IP-Address} %C{NAS-Port-Id}"
      
      ## This particular user is authenticated via PAM. He is presented a
-     ## choice from `/etc/raddb/menus/menu1' file.
+     ## choice from `/usr/local/etc/raddb/menus/menu1' file.
      gray    Auth-Type = Pam
              Menu = menu1
 

@@ -18,14 +18,14 @@ librad_a_SOURCES=intl.c radpaths.c alloc.c attrprint.c raddb.c dict.c \
                  fixalloc.c iputil.c strerror.c strncasecmp.c \
                  md5.c md5crypt.c mem.c leakdetect.c obstack.c \
                  users_gram.c users_lex.c util.c client.c \
-		 insist.c debug.c 
+		 insist.c debug.c slist.c
 liblog_a_SOURCES=log.c 
 libdebug_a_SOURCES=debugmod.c
 
 BUILT_SOURCES=users_gram.c users_lex.c
 DISTCLEANFILES=users_gram.c users_lex.c
 INCLUDES= -I$(srcdir) -I$(top_srcdir)/include @INCLUDEPATH@
-EXTRA_DIST=users.y users.l
+EXTRA_DIST=users.y users.l mysql.c postgres.c
 
 users_gram.c users_gram.h: $(srcdir)/users.y
 	$(YACC) -vd @YACC_OPTS@ $(srcdir)/users.y

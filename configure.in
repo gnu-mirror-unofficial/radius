@@ -3,11 +3,11 @@ dnl * $Id$
 AC_REVISION($Revision$)
 AC_INIT(radiusd/radiusd.c)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(gnu-radius, 0.92.2)
+AM_INIT_AUTOMAKE(gnu-radius, 0.93-pre)
 AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 
-dnl * Available linguas
+## * Available linguas
 ALL_LINGUAS="no"
 
 AC_SUBST(RADIUSD_LDADD)
@@ -15,7 +15,6 @@ AC_SUBST(BUILD_TARGET)
 AC_SUBST(INCLUDEPATH)
 AC_SUBST(YACC_OPTS)
 AC_SUBST(RADLOG_DIR)
-AC_SUBST(RADDB_DIR)
 AC_SUBST(RADIUS_PID)
 AC_SUBST(PS)
 AC_SUBST(GETOPT)
@@ -24,8 +23,7 @@ case $target in
 	*-*-linux*)	SHADOW_SUPPORT=yes
 			ST="BSD";;
 
-	*-*-solaris*)	ADDLIBS="-lnsl -lsocket"; 
-			LIBS="$LIBS $ADDLIBS -L/usr/ucblib"
+	*-*-solaris*)	LIBS="$LIBS -L/usr/ucblib"
 			SHADOW_SUPPORT=yes
                         ST="SYSV";;
 
@@ -34,7 +32,7 @@ case $target in
         *)              ST="BSD";;
 esac
 
-dnl * Checks for programs.
+## * Checks for programs.
 AC_PROG_CC
 AC_PROG_RANLIB
 AC_PROG_YACC
@@ -43,12 +41,14 @@ AC_PROG_AWK
 AC_PATH_PROG(M4, m4, no, $PATH:/usr/ccs/bin:/usr/bin:/usr/local/bin)
 AC_PATH_PROG(PS, ps, no, $PATH:/usr/bin:/usr/local/bin)
 AC_PATH_PROG(GETOPT, getopt, no, $PATH:/usr/bin)
-
 if test "$PS" = "no" ; then
   AC_MSG_WARN(radctl.sh will not be built since ps is not found on the system)
 fi	
 
-dnl * Check for preprocessor capabilities
+### Make sure Guile is installed.
+AC_PATH_PROG(GUILE_CONFIG, guile-config, $PATH)
+
+## * Check for preprocessor capabilities
 AC_MSG_CHECKING(whether compiler defines __FUNCTION__)
 AC_TRY_RUN(
 main() { return strcmp(__FUNCTION__,"main"); },
@@ -57,11 +57,13 @@ main() { return strcmp(__FUNCTION__,"main"); },
 	AC_MSG_RESULT(no),
 	AC_MSG_RESULT(don't know))
 
-dnl * Checks for libraries.
+## * Checks for libraries.
+AC_CHECK_LIB(socket, main)
+AC_CHECK_LIB(nsl, main)
 AC_CHECK_LIB(intl, gettext)
 AC_CHECK_LIB(rx, regcomp)
 
-dnl * Checks for header files.
+## * Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADERS(fcntl.h malloc.h strings.h\
@@ -70,7 +72,7 @@ AC_CHECK_HEADERS(fcntl.h malloc.h strings.h\
  netdb.h stdarg.h varargs.h termcap.h termios.h termio.h sgtty.h\
  crypt.h sys/uio.h)
 
-dnl * Checks for typedefs, structures, and compiler characteristics.
+## * Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_TYPE_UID_T
 AC_TYPE_OFF_T
@@ -79,7 +81,7 @@ AC_TYPE_SIZE_T
 AC_HEADER_TIME
 AC_STRUCT_TM
 
-dnl * Checks for library functions.
+## * Checks for library functions.
 AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
 AC_FUNC_STRFTIME
@@ -99,13 +101,13 @@ main() { char *s = sys_errlist[[0]]; return 0; },
 	AC_MSG_RESULT(No),
 	AC_MSG_RESULT(don't know))
 
-dnl ********************************************************************
-dnl *                     User-configurable options                    *
-dnl ********************************************************************
+## ********************************************************************
+## *                     User-configurable options                    *
+## ********************************************************************
 
-dnl **************
-dnl debug
-dnl **************
+## **************
+## debug
+## **************
 RADIUS_DEBUG=1
 AC_ARG_ENABLE(debug,                     
 	[  --disable-debug               disable debugging functions],
@@ -116,9 +118,9 @@ AC_ARG_ENABLE(debug,
 
 AC_DEFINE_UNQUOTED(RADIUS_DEBUG, $RADIUS_DEBUG)
 
-dnl **************
-dnl yydebug
-dnl **************
+## **************
+## yydebug
+## **************
 AC_ARG_ENABLE(yydebug,
 	[  --enable-yydebug	         enable parser debugging],
 	[case $enableval in
@@ -127,25 +129,13 @@ AC_ARG_ENABLE(yydebug,
 		*)	;;
 	esac])
 
-dnl **************
-dnl etcdir
-dnl **************
-AC_MSG_CHECKING(etcdir)
-AC_ARG_WITH(etcdir,
-        [  --with-etcdir                  directory containing raddb files],
-	[case $withval in
-		no)		AC_MSG_ERROR(--with-etcdir requires an argument)
-				;;
-		yes)		ETC_DIR="/etc"
-				;;
-		*)		ETC_DIR="$withval"
-				;;
-	esac],
-	ETC_DIR=/etc)
-AC_MSG_RESULT($ETC_DIR)
+# Set ETC_DIR. I suppose it's better to be defined in config.h,
+# so I do this dirty work here, instead of adding -DETC_DIR=$sysconfdir
+# to every invocation of C compiler.
+eval s=$sysconfdir
+ETC_DIR=`echo $s|sed -e 's%NONE/%/usr/local/%'`
 AC_SUBST(ETC_DIR)
 AC_DEFINE_UNQUOTED(ETC_DIR, "$ETC_DIR")
-RADDB_DIR=${ETC_DIR}/raddb
 
 case "$ST" in
         "BSD")		RADLOG_DIR="/var/log"
@@ -161,9 +151,9 @@ AC_DEFINE_UNQUOTED(RADLOG_DIR, "$RADLOG_DIR")
 AC_DEFINE_UNQUOTED(RADPID_DIR, "$RADPID_DIR")
 AC_DEFINE_UNQUOTED(BUILD_TARGET, "$target")
 	
-dnl **************
-dnl auth port no
-dnl **************
+## **************
+## auth port no
+## **************
 AC_MSG_CHECKING(authentication port number)
 AC_ARG_WITH(auth-port,
 	[  --with-auth-port=NUMBER	 specify port number to use for authentication],
@@ -182,9 +172,9 @@ AC_MSG_RESULT($AUTH_PORT)
 AC_DEFINE_UNQUOTED(PW_AUTH_UDP_PORT,$AUTH_PORT)
 AC_DEFINE_UNQUOTED(PW_ACCT_UDP_PORT,`expr $AUTH_PORT + 1`)		
 		
-dnl *****************************
-dnl additional libraries/includes
-dnl *****************************
+## *****************************
+## additional libraries/includes
+## *****************************
 AC_MSG_CHECKING(for additional libraries)
 AC_ARG_ENABLE(add_libs,
 	[  --enable-add-libs=STRING 	 additional libraries],
@@ -206,9 +196,9 @@ AC_ARG_ENABLE(add_includes,
 AC_MSG_RESULT($INCLUDEPATH)
 
 
-dnl **************
-dnl shadow support
-dnl **************
+## **************
+## shadow support
+## **************
 AC_MSG_CHECKING(whether to enable shadow support)
 AC_ARG_ENABLE(shadow,
 	[  --enable-shadow	         enable shadow support],
@@ -222,9 +212,9 @@ if test x$SHADOW_SUPPORT = xyes; then
 	AC_DEFINE(PWD_SHADOW)
 fi
 
-dnl **************
-dnl PAM support
-dnl **************
+## **************
+## PAM support
+## **************
 AC_ARG_ENABLE(pam,
 	[  --enable-pam		         enable pam support],
 	[case $enableval in
@@ -242,9 +232,9 @@ if test x$USE_PAM = xyes; then
 fi
 
 
-dnl **************
-dnl DBM 
-dnl **************
+## **************
+## DBM 
+## **************
 
 use_dbm() {
 	USE_DBM=yes
@@ -289,12 +279,12 @@ AC_ARG_ENABLE(dbm,
 	esac])	
 
 
-dnl **************
-dnl SQL
-dnl **************
+## **************
+## SQL
+## **************
 USE_SQL=no
 AC_ARG_ENABLE(sql,
-	[  --enable-mysql                 enable sql support (at given port)],
+	[  --enable-sql=][[mysql|postgres]][  enable SQL support],
 	[case $enableval in
 		mysql|mySQL|MySQL)
 				USE_SQL=SQL_MYSQL
@@ -333,9 +323,9 @@ case "$USE_SQL" in
 		;;
 esac
 
-dnl **************
-dnl SNMP
-dnl **************
+## **************
+## SNMP
+## **************
 
 AC_ARG_ENABLE(snmp,
 	[  --enable-snmp                  enable SNMP support],
@@ -348,9 +338,9 @@ AC_ARG_ENABLE(snmp,
 				exit 1;;
 	esac])
 	
-dnl **************
-dnl TTL
-dnl **************
+## **************
+## TTL
+## **************
 
 AC_ARG_ENABLE(notify,
 	[  --enable-notify	         enable TTL notification],
@@ -360,9 +350,9 @@ AC_ARG_ENABLE(notify,
 	 esac])
 
 
-dnl ***********************************************************************
-dnl *          Compatibility options and some special hacks               *
-dnl ***********************************************************************
+## ***********************************************************************
+## *          Compatibility options and some special hacks               *
+## ***********************************************************************
 
 AC_ARG_ENABLE(livingston-menus,
 	[  --enable-livingston-menus	 enable Livingston-compatible menus],
@@ -389,7 +379,7 @@ AC_ARG_ENABLE(osfc2,
 				exit 1;;
 	esac])
 
-dnl * Check for national language support
+## * Check for national language support
 
 LANGLIST="no"
 USE_NLS=no
@@ -462,18 +452,26 @@ AC_ARG_WITH(gnu-msgfmt,
 AC_PATH_PROG(GMSGFMT, $PROG, missing, $PATH:/usr/bin)
 
 
-dnl ***********************************************************************
-dnl *           Do some final checks and create Makefiles                 *
-dnl ***********************************************************************
+## ***********************************************************************
+## *           Do some final checks and create Makefiles                 *
+## ***********************************************************************
+
+AC_SUBST(GUILE_INCLUDES)
+AC_SUBST(GUILE_LIBS)
+if test x$GUILE_CONFIG != xno; then
+	GUILE_INCLUDES=`guile-config compile`
+	GUILE_LIBS=`guile-config link`
+fi
 
 AM_CONDITIONAL(DBM, test x$USE_DBM = xyes)
 AM_CONDITIONAL(SNMP, test x$USE_SNMP = xyes)
 AM_CONDITIONAL(SQL, test x$USE_SQL != xno)
+AM_CONDITIONAL(GUILE, test x$GUILE_CONFIG != xno)
 
 AC_OUTPUT(Makefile include/Makefile radlib/Makefile snmplib/Makefile \
-          radiusd/Makefile radtest/Makefile \
-          radlast/Makefile radwho/Makefile raduse/Makefile radzap/Makefile \
-          checkrad/Makefile builddbm/Makefile radctl/Makefile \
+          radiusd/Makefile radlast/Makefile radwho/Makefile \
+          raduse/Makefile radzap/Makefile \
+          checkrad/Makefile builddbm/Makefile radscm/Makefile \
           radscripts/Makefile doc/Makefile \
 	  doc/texinfo/Makefile doc/man/Makefile po/Makefile \
           doc/texinfo/config.texi doc/man/config.so)

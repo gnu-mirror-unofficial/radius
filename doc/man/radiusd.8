@@ -1,8 +1,8 @@
 .\" $Id$
-.ds RD /etc/raddb
+.ds RD /usr/local/etc/raddb
 .ds RL /usr/adm
-.ds RP /etc/raddb
-.TH RadiusD 8 "March 10, 2000" "FSF"
+.ds RP /usr/local/etc/raddb
+.TH Radiusd 8 "March 10, 2000" "FSF"
 .SH NAME
 radiusd - Authentication and accounting server
 .SH SYNOPSIS
@@ -19,10 +19,6 @@ radiusd - Authentication and accounting server
 [\fB-Ssv\fR]
 [\fB-x\fR debug_level]
 [\fB-yz\fR]
-.SH NOTE
-The information in this manpage may be obsolete or incomplete. Please
-refer to texinfo documentation for full information about GNU Radius
-tools.
 .SH DESCRIPTION
 \fBradiusd\fR is the server implementing \fBRADIUS\fR protocol.
 .PP
@@ -177,10 +173,9 @@ Holds the PID number of the master \fBRadius\fR process.
 .PP
 
 .SH BUGS
-Hmm, probalbly there are some. Bug reports are welcome.
-.PP
-This manpage is very scarce. Refer to texinfo documentation for full
-info.
+The information in this manpage may be obsolete or incomplete. Please
+refer to texinfo documentation for full information about GNU Radius
+tools.
 
 .SH AUTHORS
 Sergey Poznyakoff, gray@farlep.net

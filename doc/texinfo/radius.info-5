@@ -3,7 +3,7 @@ the input file radius.texinfo.
 
 INFO-DIR-SECTION GNU radius
 START-INFO-DIR-ENTRY
-* Radius: (radius).     The GNU radius
+* Radius: (radius).     The GNU Radius
 END-INFO-DIR-ENTRY
 
    This file documents the GNU radius
@@ -28,65 +28,6 @@ versions, except that the sections entitled "The GNU Manifesto",
 "Distribution" and "GNU General Public License" may be included in a
 translation approved by the Free Software Foundation instead of in the
 original English.
-
-
-File: radius.info,  Node: Crypt-Password,  Next: Huntgroup-Name,  Prev: Group,  Up: Attribute list
-
-Crypt-Password
-**************
-
-     ATTRIBUTE  Crypt-Password    1006                 string
-
-   This attribute is intended to be used in user's profile check-pairs.
-It specifies the MD5 hash of the user's password. When this attribute
-is present, Auth-Type = Crypt-Local is assumed. If both `Auth-Type' and
-`Crypt-Password' are present, the value of `Auth-Type' is ignored.
-
-   *Note Auth-Type::.
-
-
-File: radius.info,  Node: Huntgroup-Name,  Next: Simultaneous-Use,  Prev: Crypt-Password,  Up: Attribute list
-
-Huntgroup-Name
-**************
-
-     ATTRIBUTE  Huntgroup-Name    221                  string
-
-   The `Huntgroup-Name' can be used either in check-pairs of the
-`users' file record or in reply-pairs of the `huntgroups' file record.
-
-   When encountered in check-pairlist of a particular `users' profile,
-this attribute indicates the huntgroup name to be matched. Radius looks
-up the corresponding record in the `huntgroups' file. If such record is
-found, each A/V pair from its reply-list is compaired against the
-corresponing pair from the request being processed. The request matches
-only if it contains all the attributes from the specified huntgroup,
-and their values satisfy the conditions listed in the huntgroup pairs.
-
-   For example, suppose that the athentication request contained the
-following attrbutes:
-
-     User-Name = "john",
-     Password = "guess",
-     NAS-IP-Address = 10.11.11.1,
-     NAS-Port-Id = 24
-
-Let us further suppose that the `users' file contains the following
-entry:
-
-     john    Huntgroup-Name = "users_group",
-                     Auth-Type = System
-             Service-Type = Login
-
-and, finally, `huntgroups' contains the following entry:
-
-     users_group     NAS-IP-Address = 10.11.11.1
-                     NAS-Port-Id < 32
-
-   Then the authentication request would succeed since it contains
-`NAS-Port-Id' attribute and its value is less than 32.
-
-   *Note huntgroups::.
 
 
 File: radius.info,  Node: Simultaneous-Use,  Next: Strip-User-Name,  Prev: Huntgroup-Name,  Up: Attribute list
@@ -472,8 +413,8 @@ information when reporting a bug. The information needed is:
    * If the bug is found in `radiusd' daemon, run `radiusd -v' and
      include the output it produces.
 
-   * Contents of radius configuration directory (/etc/raddb or whatever
-     you have set it to while configuring).
+   * Contents of radius configuration directory (/usr/local/etc/raddb
+     or whatever you have set it to while configuring).
 
    * Log messages produced.
 
@@ -492,13 +433,12 @@ Program Index
 * checkrad:                              Checkrad Overview.
 * radauth:                               Radauth.
 * radctl:                                Radctl.
-* radctl.sh:                             Radctl.sh.
 * radgrep:                               Radgrep.
 * radiusd:                               Invocation.
 * radlast:                               Radlast.
 * radlast, options:                      radlast options.
 * radping:                               Radping.
-* radtest:                               Radtest.
+* radscm:                                Radscm.
 * raduse:                                Raduse.
 * radwho:                                Radwho.
 * radzap:                                Radzap.
@@ -553,6 +493,7 @@ Attribute Index
 * Pam-Auth:                              Pam-Auth.
 * Password:                              Password.
 * Prefix:                                Prefix.
+* rad-server-list, radscm:               Radscm.
 * Replace-User-Name:                     Replace-User-Name.
 * Reply-Message:                         Reply-Message.
 * Rewrite-Function:                      Rewrite-Function.
@@ -584,9 +525,8 @@ Concept Index
 * Accounting requests:                   Accounting requests.
 * Accounting Types:                      Accounting.
 * acct statement (raddb/config):         acct.
-* ATTRIB_NMC statement (dictionary):     ATTRIB_NMC.
-* Attribute <1>:                         Glossary.
-* Attribute:                             Attributes.
+* Attribute <1>:                         Attributes.
+* Attribute:                             Glossary.
 * ATTRIBUTE statement (dictionary):      ATTRIBUTE.
 * Attribute-Value pair <1>:              Glossary.
 * Attribute-Value pair:                  Attributes.
@@ -596,13 +536,13 @@ Concept Index
 * checkrad, configuring:                 checkrad.conf.
 * checkrad.conf:                         checkrad.conf.
 * checkrad.conf, an example:             checkrad.conf example.
-* Client Overview:                       Client Overview.
 * clients file:                          clients.
 * clients file, an example:              clients example.
 * commands, radctl:                      radctl commands.
 * Configuration directory:               Naming conventions.
 * Configuring checkrad.:                 checkrad.conf.
 * configuring radctl:                    radctl configuration.
+* control channel:                       Control Channel.
 * Debugging:                             Debugging.
 * Detailed Request Accounting:           Detailed Request Accounting.
 * Dial-In user:                          Glossary.
@@ -612,6 +552,7 @@ Concept Index
 * display, raduse:                       raduse display.
 * Encrypted Password Authentication Type: Encrypted Password Auth.
 * guest accounts, setting up:            Accept Auth.
+* guile interface:                       Radscm.
 * Hints <1>:                             hints matching.
 * Hints:                                 hints.
 * hints file:                            hints.
@@ -632,12 +573,12 @@ Concept Index
 * menus:                                 menus.
 * menus, an example:                     menu example.
 * naming conventions:                    Naming conventions.
-* NAS <1>:                               Operation.
-* NAS:                                   Glossary.
+* NAS <1>:                               Glossary.
+* NAS:                                   Operation.
 * naslist file:                          naslist.
 * naslist file, an example:              naslist example.
-* Network Access Server <1>:             Operation.
-* Network Access Server:                 Glossary.
+* Network Access Server <1>:             Glossary.
+* Network Access Server:                 Operation.
 * notify statement (raddb/config):       notify.
 * option (raddb/config file):            option.
 * Packet:                                Packets.
@@ -648,7 +589,9 @@ Concept Index
 * radacct:                               Naming conventions.
 * radctl commands:                       radctl commands.
 * radctl, configuring:                   radctl configuration.
+* radctl, control channel:               Control Channel.
 * radctl, invocation:                    radctl invocation.
+* radctl, signal interface:              Signal Interface.
 * raddb:                                 Naming conventions.
 * raddb/access.deny file:                access.deny.
 * raddb/clients file:                    clients.
@@ -684,6 +627,7 @@ Concept Index
 * Service:                               Glossary.
 * Session:                               Glossary.
 * Session ID:                            Glossary.
+* signalling radius:                     Signal Interface.
 * simultaneous logins, checking for:     Checking Simultaneous Logins.
 * snmp statement (raddb/config):         snmp.
 * SQL Accounting:                        SQL Accounting.

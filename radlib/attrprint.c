@@ -81,7 +81,7 @@ fprint_attr_val(fd, pair)
 	FILE *fd;
 	VALUE_PAIR *pair;
 {
-	DICT_VALUE	*dict_valget();
+	DICT_VALUE	*value_lookup();
 	DICT_VALUE	*dval;
 	char		buffer[32];
 	u_char		*ptr;
@@ -148,7 +148,7 @@ fprint_attr_val(fd, pair)
 		break;
 
 	case PW_TYPE_INTEGER:
-		dval = dict_valget(pair->lvalue, pair->name);
+		dval = value_lookup(pair->lvalue, pair->name);
 		if(dval != (DICT_VALUE *)NULL) {
 			fprintf(fd, "%s %s %s", pair->name, opstr[pair->operator], 
 				dval->name);

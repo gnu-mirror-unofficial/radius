@@ -3,7 +3,7 @@ the input file radius.texinfo.
 
 INFO-DIR-SECTION GNU radius
 START-INFO-DIR-ENTRY
-* Radius: (radius).     The GNU radius
+* Radius: (radius).     The GNU Radius
 END-INFO-DIR-ENTRY
 
    This file documents the GNU radius
@@ -38,7 +38,7 @@ The GNU Radius
    Radius is a suite of programs for performing user authentication and
 accounting using RADIUS protocol.
 
-   This Info file documents the version 0.92 of the package.
+   This Info file documents the version 0.93-pre of the package.
 
 * Menu:
 
@@ -50,18 +50,13 @@ accounting using RADIUS protocol.
 
 The radius daemon
 * Operation::           How radius operates.
-* Naming conventions::  Conventins abount naming files and directories.
+* Naming conventions::  Conventions abount naming files and directories.
 * Invocation::          How to start the daemon.
 * Configuration files:: Radius configuration files.
 * Authentication::      How the users are authenticated
 * Accounting::          Accounting methods.
 * Logging::             What gets logged and where.
 * Debugging::           An extensive logging information.
-
-Client programs
-* Client Overview::     General concepts.
-* client.config::       General configuration options.
-* client.shadow::       A list of radius servers to connect to.
 
 The checkrad program
 * Checkrad Overview::   Purpose of checkrad.
@@ -77,10 +72,11 @@ Maintenance commands
 * Radgrep::             Quickly find the login record.
 * Radping::             Ping the remote machine by the username.
 * Radauth::             Check if a user can be authenticated.
-* Radtest::             Test the functionality of the radius daemon.
 * Radctl::              Radctl monitor.
-* Radctl.sh::           Alternative ways to communicate with radius daemon.
 * Builddbm::            Create DBM version of the `raddb/users' file.
+
+Guile interface
+* Radscm::              A guile interface to radius functions.
 
 Radius Attributes
 * Attribute list::      Some frequently used attributes.
@@ -1054,8 +1050,8 @@ to store various configuration and log files:
 time. These are:
 
 Directory                     Short Name  Default location                 
-Configuration directory       raddb       /etc/raddb                       
-Log directory                 raddb       /usr/adm                         
+Configuration directory       raddb       /usr/local/etc/raddb             
+Log directory                 radlog      /usr/adm                         
 Accounting directory          radacct     /usr/adm/radacct                 
 
    Throughout this document we will refer to these directories by their
@@ -1063,7 +1059,7 @@ short names, e.g. saying
 
      ... this information is contained in file `raddb/sqlserver'
 
-we actually mean `/etc/raddb/sqlserver'.
+we actually mean `/usr/local/etc/raddb/sqlserver'.
 
    If necessary, locations of these directories can be overidden by
 specifying appropriate command line options to a program. For example,
@@ -1112,7 +1108,8 @@ following sources (in order of increasing precedence):
 
 `-d DIR'
 `--config-directory DIR'
-     Specify alternate configuration directory. Default is `/etc/raddb'.
+     Specify alternate configuration directory. Default is
+     `/usr/local/etc/raddb'.
 
 `-f'
 `--foreground'
@@ -1179,10 +1176,10 @@ Radius configuration files
    This chapter describes the configuration files used by GNU Radius
 package.
 
-   These files are normally found in /etc/raddb directory, which is
-defined at configuration time, although their location can be specified
-at runtime. In the discussion below we will refer to this directory by
-`raddb' *Note Naming conventions::.
+   These files are normally found in /usr/local/etc/raddb directory,
+which is defined at configuration time, although their location can be
+specified at runtime. In the discussion below we will refer to this
+directory by `raddb' *Note Naming conventions::.
 
 * Menu:
 

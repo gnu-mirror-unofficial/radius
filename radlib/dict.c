@@ -32,52 +32,23 @@ static char rcsid[] =
 #include <ctype.h>
 
 #include <radiusd.h>
+#include <slist.h>
 
 static DICT_ATTR	*dictionary_attributes;
 static DICT_VALUE	*dictionary_values;
 static DICT_VENDOR	*dictionary_vendors;
 static int               vendorno;
 
-struct slist {
-	struct slist *next;
-};
-
 int nfields(int  fc, int  minf, int  maxfm, char *file, int  lineno);
-void free_slist(struct slist *s);
-struct slist * find_slist(struct slist *s, int (*f)(), void *v);
 
-/* **************************************************************************
- * Internal use only
- */
-void
-free_slist(s)
-	struct slist *s;
-{
-	struct slist *next;
-
-	while (s) {
-		next = s->next;
-		free_entry(s);
-	}
-}
-
-struct slist *
-find_slist(s, f, v)
-	struct slist *s;
-	int (*f)();
-	void *v;
-{
-	for (; s && (*f)(s, v); s = s->next) 
-		;
-	return s;
-}
+/* ************************************************************************ */
 
 void
 dict_free()
 {
-	free_slist((struct slist*)dictionary_attributes);
-	free_slist((struct slist*)dictionary_values);
-	free_slist((struct slist*)dictionary_vendors);
+	free_slist((struct slist*)dictionary_attributes, NULL);
+	free_slist((struct slist*)dictionary_values, NULL);
+	free_slist((struct slist*)dictionary_vendors, NULL);
 
 	dictionary_attributes = NULL;
 	dictionary_values = NULL;
@@ -220,7 +191,7 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 	}
 
 	if (HAS_VENDOR(fc)) {
-		if ((vendor = dict_vendorname(ATTR_VENDOR)) == 0) {
+		if ((vendor = vendor_name_to_id(ATTR_VENDOR)) == 0) {
 			radlog(L_ERR|L_CONS,
 			       _("%s:%d: unknown vendor"),
 			       file, lineno);
@@ -420,7 +391,7 @@ attrval_cmp(a,attr)
 }
 
 DICT_ATTR *
-dict_attrget(attribute)
+attr_number_to_dict(attribute)
 	int	attribute;
 {
 	return (DICT_ATTR *)find_slist((struct slist*) dictionary_attributes,
@@ -440,7 +411,7 @@ attrname_cmp(a,attr)
 }
 
 DICT_ATTR *
-dict_attrfind(attrname)
+attr_name_to_dict(attrname)
 	char	*attrname;
 {
 	return (DICT_ATTR *)find_slist((struct slist*) dictionary_attributes,
@@ -460,7 +431,7 @@ valname_cmp(v, s)
 }
 
 DICT_VALUE *
-dict_valfind(valname)
+value_name_to_value(valname)
 	char	*valname;
 {
 	return (DICT_VALUE *)find_slist((struct slist*) dictionary_values,
@@ -481,7 +452,7 @@ value_cmp(a, b)
 }
 
 DICT_VALUE *
-dict_valget(value, attrname)
+value_lookup(value, attrname)
 	UINT4	value;
 	char	*attrname;
 {
@@ -507,7 +478,7 @@ code_cmp(v, code)
 }
 
 int 
-dict_vendorpec(code)
+vendor_id_to_pec(code)
 	int code;
 {
 	DICT_VENDOR *vp;
@@ -530,7 +501,7 @@ pec_cmp(v, pec)
 }
 
 int 
-dict_vendorcode(pec)
+vendor_pec_to_id(pec)
 	int pec;
 {
 	DICT_VENDOR *vp;
@@ -539,6 +510,18 @@ dict_vendorcode(pec)
 				      pec_cmp,
 				      (void*)pec);
 	return vp ? vp->vendorcode : 0;
+}
+	
+char *
+vendor_pec_to_name(pec)
+	int pec;
+{
+	DICT_VENDOR *vp;
+
+	vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
+				      pec_cmp,
+				      (void*)pec);
+	return vp ? vp->vendorname : NULL;
 }
 	
 
@@ -554,7 +537,7 @@ vendor_cmp(v, s)
 }
 
 int 
-dict_vendorname(name)
+vendor_name_to_id(name)
 	char *name;
 {
 	DICT_VENDOR *vp;

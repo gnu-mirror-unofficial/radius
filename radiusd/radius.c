@@ -128,7 +128,7 @@ radius_verify_digest(REQUEST *req)
         secretlen = strlen(radreq->request->secret);
 
         recvbuf = grad_emalloc(len + secretlen);
-        memcpy(recvbuf, req->rawdata, len + secretlen);
+        memcpy(recvbuf, req->rawdata, len);
         
         /* Older clients have the authentication vector set to
            all zeros. Return `1' in that case. */

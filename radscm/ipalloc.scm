@@ -1,5 +1,5 @@
 ;;;; This file is part of GNU Radius.
-;;;; Copyright (C) 2003 Free Software Foundation, Inc.
+;;;; Copyright (C) 2003, 2004 Free Software Foundation, Inc.
 ;;;;
 ;;;; Written by Sergey Poznyakoff
 ;;;;
@@ -26,6 +26,11 @@
 ;;;;  DEFAULT Scheme-Acct-Procedure = "ip-alloc-update"  NULL
 ;;;; #raddb/users:
 ;;;;  BEGIN   Scheme-Procedure = "ip-alloc"	Fall-Through = Yes
+
+(define-module (ipalloc)
+  :export (ipalloc-max-attempts ipalloc-sleep-time ip-alloc-update ip-alloc)
+  :use-module (gnuradius)
+  :use-module (radiusd))
 
 ;;; Number of lookup retries
 (define ipalloc-max-attempts 10)

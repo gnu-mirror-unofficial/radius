@@ -7,3 +7,4 @@ guile-procedures.txt
 .libs
 radscm
 libradscm.a
+radsession

@@ -1,3 +1,28 @@
+2001-10-22 Sergey Poznyakoff
+
+	Configurable reply-messages. The messages are defined under
+	`message' block in raddb/config	file. The % substitutions
+	are allowed in messages.
+
+	* include/radius.h: Extern declaration for do_not_resolve.
+	* include/radiusd.h: Added message identifiers, extern decl
+	for message_text. Changed proto of rad_check_multi.
+
+	* radiusd/acct.c: rad_check_multi(): Return also number
+	of concurrent logins.
+	* radiusd/auth.c: User-defined messages instead of hardcoded ones.
+	* radiusd/config.kw: Added new keywords.
+	* radiusd/config.y: Handle message statement.
+	* radiusd/radiusd.c: Provide defaults for the reply messages.
+	* radiusd/radutil.c: Split off radius_xlate0 from radius_xlate.
+	Fixed a couple of bugs.
+
+	* raddb/dictionary: New atrribute Password-Expire-Days.
+
+	* raddb/config.syntax: Example of message statement.
+	
+	* TODO: Updated.
+	
 2001-10-19 Sergey Poznyakoff
 
 	* THANKS: Ajoute Clement Gerouville.

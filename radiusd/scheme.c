@@ -30,6 +30,7 @@ static char rcsid[] =
 
 #include <radiusd.h>
 #include <libguile.h>
+#include <radscm.h>
 #include <setjmp.h>
 #include <errno.h>
 
@@ -207,7 +208,8 @@ scheme_debug(val)
 static SCM
 eval_catch_body (void *list)
 {
-        return scm_eval((SCM)list);
+	scm_display(list,scm_current_output_port());
+        return scm_primitive_eval_x((SCM)list);
 }
 
 static SCM
@@ -231,7 +233,7 @@ scheme_auth_internal(p)
         s_reply = radscm_avl_to_list(*p->user_reply_ptr);
 
         /* Evaluate the procedure */
-        procsym = scm_symbol_value0 (p->procname);
+        procsym = RAD_SCM_SYMBOL_VALUE(p->procname);
         if (scm_procedure_p(procsym) != SCM_BOOL_T) {
                 radlog(L_ERR,
                        _("%s is not a procedure object"), p->procname);
@@ -243,16 +245,13 @@ scheme_auth_internal(p)
         res = scm_internal_lazy_catch(
                 SCM_BOOL_T,
                 eval_catch_body,
-                (void*) SCM_LIST4(procsym,
-                                  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-                                              s_request,
-                                              SCM_UNDEFINED),
-                                  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-                                              s_check,
-                                              SCM_UNDEFINED),
-                                  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
-                                              s_reply,
-                                              SCM_UNDEFINED)),
+                (void*) scm_list_4(procsym,
+                                  scm_list_2(scm_copy_tree(SCM_IM_QUOTE),
+                                             s_request),
+                                  scm_list_2(scm_copy_tree(SCM_IM_QUOTE),
+                                             s_check),
+                                  scm_list_2(scm_copy_tree(SCM_IM_QUOTE),
+                                             s_reply)),
                 eval_catch_handler, &jmp_env);
         
         if (SCM_IMP(res) && SCM_BOOLP(res)) 
@@ -278,7 +277,7 @@ scheme_acct_internal(p)
         SCM s_request = radscm_avl_to_list(p->request->request);
 
         /* Evaluate the procedure */
-        procsym = scm_symbol_value0 (p->procname);
+        procsym = RAD_SCM_SYMBOL_VALUE(p->procname);
         if (scm_procedure_p(procsym) != SCM_BOOL_T) {
                 radlog(L_ERR,
                        _("%s is not a procedure object"), p->procname);
@@ -289,10 +288,9 @@ scheme_acct_internal(p)
         res = scm_internal_lazy_catch(
                 SCM_BOOL_T,
                 eval_catch_body,
-                (void*) SCM_LIST2(procsym,
-                                  scm_listify(SCM_IM_QUOTE,
-                                              s_request,
-                                              SCM_UNDEFINED)),
+                (void*) scm_list_2(procsym,
+                                  scm_list_2(SCM_IM_QUOTE,
+                                             s_request)),
                 eval_catch_handler, &jmp_env);
         if (SCM_IMP(res) && SCM_BOOLP(res)) 
                 return res == SCM_BOOL_F;
@@ -430,11 +428,11 @@ scheme_read_eval_loop_internal()
 {
         SCM list;
         int status;
-        SCM sym_top_repl = scm_symbol_value0("top-repl");
-        SCM sym_begin = scm_symbol_value0("begin");
+        SCM sym_top_repl = RAD_SCM_SYMBOL_VALUE("top-repl");
+        SCM sym_begin = RAD_SCM_SYMBOL_VALUE("begin");
         
-        list = scm_cons(sym_begin, SCM_LIST1(scm_cons(sym_top_repl, SCM_EOL)));
-        status = scm_exit_status(scm_eval_x(list));
+        list = scm_cons(sym_begin, scm_list_1(scm_cons(sym_top_repl, SCM_EOL)));
+        status = scm_exit_status(scm_primitive_eval_x(list));
         printf("%d\n", status);
 }
 

@@ -461,9 +461,7 @@ radius_respond(REQUEST *req)
 
 	forward_request(req->type, radreq);
 
-#ifdef USE_SQL
 	radiusd_sql_clear_cache();
-#endif
 
 	if (radreq->code == RT_ACCESS_REQUEST
 	    && rad_auth_check_username(radreq, req->fd))

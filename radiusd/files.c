@@ -349,9 +349,7 @@ match_user(User_symbol *sym, grad_request_t *req,
         found = 0;
         do {
                 check_tmp = grad_avl_dup(sym->check);
-#ifdef USE_SQL
-                rad_sql_check_attr_query(req, &check_tmp);
-#endif
+                radiusd_sql_check_attr_query(req, &check_tmp);
                 if (paircmp(req, check_tmp, NULL)) {
                         grad_avl_free(check_tmp);
                         continue;
@@ -378,9 +376,7 @@ match_user(User_symbol *sym, grad_request_t *req,
                 reply_tmp = grad_avl_dup(sym->reply);
                 grad_avl_merge(reply_pairs, &reply_tmp);
                 grad_avl_merge(check_pairs, &check_tmp);
-#ifdef USE_SQL
-                rad_sql_reply_attr_query(req, reply_pairs);
-#endif
+                radiusd_sql_reply_attr_query(req, reply_pairs);
 
                 grad_avl_free(reply_tmp);
                 grad_avl_free(check_tmp);
@@ -1187,10 +1183,8 @@ groupcmp(grad_request_t *req, char *groupname, char *username)
         char pwbuf[512];
         int retval;
 
-#ifdef USE_SQL
-        if (rad_sql_checkgroup(req, groupname) == 0)
+        if (radiusd_sql_checkgroup(req, groupname) == 0)
                 return 0;
-#endif
 
         if ((pwd = grad_getpwnam_r(username, &pw, pwbuf, sizeof pwbuf)) == NULL)
                 return -1;
@@ -1728,13 +1722,11 @@ reload_data(enum reload_what what, int *do_radck)
                 break;
 
         case reload_sql:
-#ifdef USE_SQL
-                if (rad_sql_init() != 0) {
+                if (radiusd_sql_config() != 0) {
                         grad_log(L_CRIT,
                            _("SQL Error: SQL client could not be initialized"));
                         rc = 1;
                 } 
-#endif
                 /* This implies reloading rewrite, users, huntgroups 
 		   and hints */
                 rc += reload_data(reload_dict, do_radck);

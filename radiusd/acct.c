@@ -749,10 +749,8 @@ rad_acct_db(grad_request_t *radreq, int authtype)
 
         if (acct_detail && ACCT_TYPE(radreq->request, DV_ACCT_TYPE_DETAIL))
                 rc = write_detail(radreq, authtype, R_ACCT);
-#ifdef USE_SQL
         if (ACCT_TYPE(radreq->request, DV_ACCT_TYPE_SQL))
-                rad_sql_acct(radreq);
-#endif
+                radiusd_sql_acct(radreq);
         return rc;
 }
 

@@ -816,9 +816,7 @@ radiusd_exit()
 void
 radiusd_exit0()
 {
-#ifdef USE_SQL
         radiusd_sql_shutdown();
-#endif
         exit(0);
 }
 

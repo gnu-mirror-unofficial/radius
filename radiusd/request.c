@@ -34,7 +34,7 @@ struct request_class request_class[] = {
 	  radius_req_cmp,      /* Comparator */
           radius_req_free,     /* Deallocator */
 	  radius_req_drop,     /* Drop function */
-	  rad_sql_cleanup,  /* Cleanup function */
+	  radiusd_sql_cleanup, /* Cleanup function */
 	  radius_req_failure,  /* Failure indicator */
 	  radius_req_update,
 	},
@@ -45,7 +45,7 @@ struct request_class request_class[] = {
 	  radius_req_cmp,      /* Comparator */
           radius_req_free,     /* Deallocator */
 	  radius_req_drop,     /* Drop function */
-	  rad_sql_cleanup,  /* Cleanup function */
+	  radiusd_sql_cleanup, /* Cleanup function */
 	  radius_req_failure,  /* Failure indicator */
 	  radius_req_update,
 	},

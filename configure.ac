@@ -217,6 +217,22 @@ AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  inet_ntoa inet_aton setvbuf seteuid setreuid getdtablesize) 
 AC_FUNC_OBSTACK
 
+AC_CHECK_DECLS([strncasecmp, strtok_r, localtime_r], , ,
+               [
+#define _REENTRANT
+#include <string.h>
+#ifdef HAVE_STRINGS_H
+# include <strings.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
+# include <sys/time.h>
+# ifdef TIME_WITH_SYS_TIME
+#  include <time.h>
+# endif
+#else
+# include <time.h>
+#endif])
+
 AC_ARG_WITH(included-argp,
 	[  --with-included-argp           Use included argp library],
         [USE_INCLUDED_ARGP=$withval],

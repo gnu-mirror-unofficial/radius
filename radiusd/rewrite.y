@@ -3902,6 +3902,8 @@ rw_attrasgn()
 	cpopn(&val);
 	if ((pair = avl_find(rw_rt.request, attr)) == NULL) {
 		pair = avp_create(attr, 0, NULL, 0);
+		if (!pair)
+			rw_error("can't create A/V pair");
 		avl_add_pair(&rw_rt.request, pair);
 	}
 	switch (pair->type) {

@@ -1,4 +1,5 @@
 EXTRA_DIST = \
+ common.m4 \
  getopt.m4 \
  guile.m4 \
  inaddr.m4 \

@@ -146,6 +146,20 @@ AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(nsl, gethostbyaddr)
 AC_CHECK_LIB(crypt, crypt)
 
+USE_LOADABLE_MODULES=no
+if test "$enable_shared" = yes; then
+  AC_CHECK_LIB(ltdl, lt_dlinit,[
+    AC_DEFINE(HAVE_LIBLTDL,
+	      1,
+	      [Define to 1 if you have the `ltdl' library (-lltdl).])
+    RA_RADIUSD_LDADD([-lltdl])
+    USE_LOADABLE_MODULES=yes])
+fi
+if test $USE_LOADABLE_MODULES = yes; then
+	AC_DEFINE(USE_LOADABLE_MODULES,1,
+                  [Define if radiusd is able to use loadable modules])
+fi
+
 ## * Checks for header files.
 
 # Override CPPFLAGS
@@ -599,94 +613,189 @@ AC_ARG_ENABLE(dbm,
 ## SQL
 ## **************
 
-BUILD_SQL=
+SQL_MODULES=
+AC_SUBST(SQL_MODULES)
 
-AH_TEMPLATE(USE_SQL_MYSQL,[When defined, enable MySQL support])
-AH_TEMPLATE(HAVE_LIBMYSQL,[Define if you have libmysql])
-AH_TEMPLATE(USE_SQL_POSTGRES,[When defined, enable PostgreSQL support])
-AH_TEMPLATE(HAVE_LIBPQ,[Define if you have libpq]) 
-AH_TEMPLATE(USE_SQL_ODBC,[When defined, enable ODBC support])
-AH_TEMPLATE(HAVE_LIBODBC,[Define if you have libodbc or libiodbc]) 
+SQL_LIBOBJS=
+AC_SUBST(SQL_LIBOBJS)
+
+SQL_LTLIBOBJS=
+AC_SUBST(SQL_LTLIBOBJS)
+
+BUILD_SQL=
+AC_SUBST(BUILD_SQL)
+AC_SUBST(SQLLIB)
+
+SQL_LOADABLE_MODULES=
+AC_SUBST(SQL_LOADABLE_MODULES)
+
 AH_TEMPLATE(USE_SQL,[Enables SQL support])
 
-USE_SQL=0
+AC_DEFUN([RA_SQL_LDADD],[
+     if test $USE_LOADABLE_MODULES = yes; then
+	$1=$2
+     else	
+        RA_RADIUSD_LDADD($2)
+     fi 			
+])
+
+
+## *********
+## MySQL
+## *********
+AH_TEMPLATE(USE_SQL_MYSQL,[When defined, enable MySQL support])
+AH_TEMPLATE(HAVE_LIBMYSQL,[Define if you have libmysql])
+AC_SUBST(MYSQLLIBS)
+
+mysql_init() {
+	RA_CHECK_LIB(mysqlclient, 
+	                     mysql_real_connect, 
+	                    [-lm],
+                            [ AC_DEFINE(USE_SQL_MYSQL)
+                              AC_DEFINE(HAVE_LIBMYSQL)
+			      RA_SQL_LDADD(MYSQLLIBS, $ra_cv_lib_mysqlclient)
+                            ],
+			    [AC_MSG_FAILURE([The requested library libmysqlclient is not found or is unusable])],
+                            [/usr/local/lib/mysql /usr/lib/mysql])
+}
+
 AC_ARG_WITH(mysql,
 	AC_HELP_STRING([--with-mysql],
 	[Configure to work with MySQL]),
 	[case $withval in
-	 yes)  RA_CHECK_LIB(mysqlclient, 
-	                     mysql_real_connect, 
-	                    [-lm],
-                            [ USE_SQL=1
-                              AC_DEFINE(USE_SQL_MYSQL)
-                              AC_DEFINE(HAVE_LIBMYSQL)
-                              RA_RADIUSD_LDADD($ra_cv_lib_mysqlclient)
-                            ],
-			    [AC_MSG_FAILURE([The requested library libmysqlclient is not found or is unusable])],
-                            [/usr/local/lib/mysql /usr/lib/mysql])
+	 yes)   SQL_MODULES="$SQL_MODULES mysql"
 		;;
 	 no)    ;;
         esac])
+
+
+# *********
+# Postgres
+# *********
+AH_TEMPLATE(USE_SQL_POSTGRES,[When defined, enable PostgreSQL support])
+AH_TEMPLATE(HAVE_LIBPQ,[Define if you have libpq]) 
+AC_SUBST(POSTGRESLIBS)
+
+postgres_init() {
+	RA_CHECK_LIB(pq, PQconnectStart, [],
+			    [ AC_DEFINE(USE_SQL_POSTGRES)
+                              AC_DEFINE(HAVE_LIBPQ)
+			      RA_SQL_LDADD(POSTGRESLIBS, $ra_cv_lib_pq)],
+		            [AC_MSG_FAILURE([The requested library libpq is not found or is unusable])],
+                            [/usr/local/pgsql/lib /usr/pgsql/lib])
+}
 
 AC_ARG_WITH(postgres,
 	AC_HELP_STRING([--with-postgres],
 	[Configure to work with Postgres]),
 	[case $withval in
-	 yes)	RA_CHECK_LIB(pq, PQconnectStart, [],
-			    [ USE_SQL=1
-                              AC_DEFINE(USE_SQL_POSTGRES)
-                              AC_DEFINE(HAVE_LIBPQ) 
-                              RA_RADIUSD_LDADD($ra_cv_lib_pq) ],
-		            [AC_MSG_FAILURE([The requested library libpq is not found or is unusable])],
-                            [/usr/local/pgsql/lib /usr/pgsql/lib])
+	 yes)	SQL_MODULES="$SQL_MODULES postgres"
 		;;
 	 no)    ;;
         esac])
 
+
+## *********
+## ODBC
+## *********
+AH_TEMPLATE(USE_SQL_ODBC,[When defined, enable ODBC support])
+AH_TEMPLATE(HAVE_LIBODBC,[Define if you have libodbc or libiodbc]) 
+AC_SUBST(ODBCLIBS)
+
 rad_lib_odbc() {
-RA_CHECK_LIB(odbc, SQLAllocHandle, [],
-			    [ USE_SQL=1
-                              AC_DEFINE(USE_SQL_ODBC)
-                              AC_DEFINE(HAVE_LIBODBC) 
-                              RA_RADIUSD_LDADD($ra_cv_lib_odbc) ],
+	RA_CHECK_LIB(odbc, SQLAllocHandle, [],
+			    [ AC_DEFINE(USE_SQL_ODBC)
+                              AC_DEFINE(HAVE_LIBODBC)
+			      RA_SQL_LDADD(ODBCLIBS, $ra_cv_lib_odbc)],
                             [AC_MSG_FAILURE([The requested library libobdc is not found or is unusable])],
                             [/usr/local/lib])
 }
 
 rad_lib_iodbc() {
-RA_CHECK_LIB(iodbc, SQLAllocHandle, [],
-			    [ USE_SQL=1
-                              AC_DEFINE(USE_SQL_ODBC)
-                              AC_DEFINE(HAVE_LIBODBC) 
-                              RA_RADIUSD_LDADD($ra_cv_lib_iodbc) ],
+	RA_CHECK_LIB(iodbc, SQLAllocHandle, [],
+			    [ AC_DEFINE(USE_SQL_ODBC)
+                              AC_DEFINE(HAVE_LIBODBC)
+		              RA_SQL_LDADD(ODBCLIBS, $ra_cv_lib_iodbc)],
 		            [AC_MSG_FAILURE([The requested library libiodbc is not found or is unusable])],
                             [/usr/local/lib])
 }
 
+with_flag_used=odbc
+
+odbc_init() {
+         case $with_flag_used in
+	 yes|odbc|ODBC)
+		rad_lib_odbc
+		;;
+	 iodbc|iODBC|IODBC)
+		rad_lib_iodbc
+		;;
+	 no)	;;
+	 esac
+}
 
 AC_ARG_WITH(odbc,
 	AC_HELP_STRING([--with-odbc[={odbc|iodbc}]],
 	[Configure to work with ODBC]),
 	[case $withval in
-	 yes)			rad_lib_odbc
+	 yes|odbc|ODBC|iodbc|iODBC|IODBC)
+		SQL_MODULES="$SQL_MODULES odbc"
+		with_flag_used=$withval
 		;;
-	 odbc|ODBC)		rad_lib_odbc
+	 no)    with_flag_used=$withval
 		;;
-	 iodbc|iODBC|IODBC)	rad_lib_iodbc
-		;;
-	 no)	;;
-	 *)	    		AC_MSG_ERROR(unsupported option value: $enableval)
-
+	 *)	AC_MSG_ERROR(unsupported option value: $withval)
         esac])
 
-if test "$USE_SQL" = "1"; then
+
+## ***********
+## General SQL support
+## ***********
+
+AC_ARG_WITH(sql,
+        AC_HELP_STRING([--with-sql=modlist],
+                       [Configure to work with SQL]),
+	[for mod in `echo $withval | tr ':,' '  '`
+         do
+		if test -r $srcdir/sql/${mod}.c; then
+			SQL_MODULES="$SQL_MODULES ${mod}"
+		else
+			AC_MSG_ERROR(No such SQL module: $mod)
+		fi
+	 done])
+
+dummy_init() {
+	:
+}
+
+if test -n "$SQL_MODULES"; then
+	USE_SQL=1
         AC_DEFINE(USE_SQL)
 	BUILD_SQL=libsql.la
 	SQLLIB=../sql/libsql.la
-fi
 
-AC_SUBST(BUILD_SQL)
-AC_SUBST(SQLLIB)
+	for module in $SQL_MODULES
+	do
+		${module:-dummy}_init
+		if test $USE_LOADABLE_MODULES = yes; then
+		   SQL_LOADABLE_MODULES="$SQL_LOADABLE_MODULES ${module}.la"
+		else
+		   SQL_LIBOBJS="$SQL_LIBOBJS ${module}.o"
+	        fi
+	done
+	S=`echo "$SQL_LIBOBJS" |
+                  sed 's,\.[[^.]]* ,$U&,g;s,\.[[^.]]*$,$U&,'`
+	SQL_LTLIBOBJS=`echo "$S" |
+                  sed 's,\.[[^.]]* ,.lo ,g;s,\.[[^.]]*$,.lo,'`
+
+	AC_CONFIG_COMMANDS([sql/modlist.h],
+                           [$srcdir/scripts/sqlmod.sh $SQL_MODULES > sql/modlist.h],
+                           [if test $USE_LOADABLE_MODULES = yes; then
+				SQL_MODULES=
+                            else
+                                SQL_MODULES="$SQL_MODULES"
+                            fi])
+fi
 
 ## **************
 ## SNMP

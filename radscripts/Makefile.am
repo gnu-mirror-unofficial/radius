@@ -13,10 +13,11 @@
 sbin_PROGRAMS=radctl radauth radtest
 radctl_SOURCES=radctl.m4
 radauth_SOURCES=radauth.m4
-bin_PROGRAMS=radping radgrep 
+bin_PROGRAMS=radping radgrep builddbm
 radping_SOURCES=radping.m4
 radgrep_SOURCES=radgrep.m4
 radtest_SOURCES=radtest.m4
+builddbm_SOURCES=builddbm.m4
 EXTRA_DIST=radscripts.m4
 
 if GUILE
@@ -45,6 +46,9 @@ radtest: $(srcdir)/radtest.m4
 	$(M4) -DSRCDIR=$(srcdir) -DBINDIR=$(bindir) -DDATADIR=$(pkgdatadir) \
               $(GUILE_ENABLE) $(srcdir)/radtest.m4 > radtest
 
+builddbm: $(srcdir)/builddbm.m4
+	$(M4) -DSRCDIR=$(srcdir) -DSBINDIR=$(sbindir) \
+              $(srcdir)/builddbm.m4 > builddbm
 
 # Maintainer-specific part
 if MAINTAINER_MODE

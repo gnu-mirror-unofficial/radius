@@ -91,7 +91,7 @@ struct keyword sql_keyword[] = {
         { "port",               STMT_PORT },
         { "login",              STMT_LOGIN },
         { "password",           STMT_PASSWORD },
-        {"keepopen",            STMT_KEEPOPEN },
+        { "keepopen",           STMT_KEEPOPEN },
         { "idle_timeout",       STMT_IDLE_TIMEOUT },
         { "auth_max_connections", STMT_MAX_AUTH_CONNECTIONS },
         { "acct_max_connections", STMT_MAX_ACCT_CONNECTIONS },

@@ -227,7 +227,7 @@ sessions active simultaneously.
 @item Session @sc{id}
 The session identifier: a string of characters uniquely identifying the session.
 
-@cindex @AVP{}
+@cindex A/V pair
 @cindex Attribute
 @cindex Attribute-Value pair
 @item @AVP{}

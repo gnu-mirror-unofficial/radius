@@ -85,10 +85,6 @@ int asprintf(/*char **result, const char *format, ...*/);
 int vasprintf(char **result, const char *format, va_list args);
 #endif
 
-#if defined (sun) && defined(__svr4__)
-RETSIGTYPE (*sun_signal(int signo, void (*func)(int)))(int);
-#define signal sun_signal
-#endif
 int set_nonblocking(int fd);
 int getmaxfd();
 
@@ -100,4 +96,7 @@ typedef unsigned long   UINT4;
 
 typedef unsigned long counter;
 
+RETSIGTYPE (*install_signal(int signo, void (*func)(int)))(int);
+	
 #endif /* SYSDEP_H_INCLUDED */
+

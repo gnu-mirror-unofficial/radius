@@ -59,23 +59,17 @@ set_nonblocking(fd)
         return 0;
 }
 
-#if defined (sun) && defined(__svr4__)
-/*
- *      The signal() function in Solaris 2.5.1 sets SA_NODEFER in
- *      sa_flags, which causes grief if signal() is called in the
- *      handler before the cause of the signal has been cleared.
- *      (Infinite recursion).
- */
 RETSIGTYPE
-(*sun_signal(signo, func))(int)
+(*install_signal_flags(signo, func, flags))(int)
         int signo;
         void (*func)(int);
+	int flags;
 {
-        struct sigaction act, oact;
-
-        act.sa_handler = func;
-        sigemptyset(&act.sa_mask);
-        act.sa_flags = 0;
+	struct sigaction act, oact;
+		
+	act.sa_handler = func;
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = flags;
 #ifdef  SA_INTERRUPT            /* SunOS */
         act.sa_flags |= SA_INTERRUPT;
 #endif
@@ -83,7 +77,14 @@ RETSIGTYPE
                 return SIG_ERR;
         return oact.sa_handler;
 }
-#endif
+
+RETSIGTYPE
+(*install_signal(signo, func))(int)
+        int signo;
+        void (*func)(int);
+{
+	return install_signal_flags(signo, func, SA_RESTART);
+}
 
 #define DEFMAXFD 512
 

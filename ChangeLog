@@ -1,3 +1,19 @@
+2003-10-16  Sergey Poznyakoff 
+
+	* examples/config.syntax: Provide samples of trace-rules
+	statement.
+	* include/radius.h (typedef struct radius_req.locus_list)
+	New member.
+	* include/radiusd.h (radius_req_register_locus): New function.
+	* radiusd/radius.c: Likewise
+	* lib/client.c (parse_client_config): Fixed declaration.
+	* lib/util.c (radreq_free): Deallocate locus list.
+	* radiusd/auth.c (rad_auth_init): Removed irrelevant comment
+	* radiusd/files.c (match_user,hints_setup)
+	(huntgroup_access): Remember used files/locations.
+	* radiusd/radiusd.c: Handle trace-rules statements.
+	(auth_trace_rules,acct_trace_rules): New functions.
+
 2003-10-14  Sergey Poznyakoff
 
 	* include/parser.h (struct matching_rule): Removed `next'

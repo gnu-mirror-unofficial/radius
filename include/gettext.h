@@ -22,14 +22,7 @@
 /* NLS can be disabled through the configure --disable-nls option.  */
 #if ENABLE_NLS
 
-/* Get declarations of GNU message catalog functions.  */
-# if defined(WITH_INCLUDED_LIBINTL)
-#  include <libgnuintl.h>
-# elif defined(HAVE_LIBINTL_H)
-#  include <libintl.h>
-# else
-#  include <libgnuintl.h>
-# endif
+# include <libintl.h>
 
 #else
 

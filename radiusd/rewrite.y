@@ -1229,7 +1229,7 @@ input()
 	return yychar;
 }
 
-static int  backslash();
+static int  rw_backslash();
 static int  c2d(int c);
 static int  read_number();
 static int  read_num(int n, int base);
@@ -1315,7 +1315,7 @@ read_num(n, base)
 }
 
 int
-backslash()
+rw_backslash()
 {
 	switch (input()) {
 	case '\\':
@@ -1356,7 +1356,7 @@ read_string()
 {
 	while (input() && yychar != '"') {
 		if (yychar == '\\')
-			yychar = backslash();
+			yychar = rw_backslash();
 		obstack_1grow(&input_stk, yychar);
 	}
 	obstack_1grow(&input_stk, 0);
@@ -1495,7 +1495,7 @@ yylex()
 	 */
 	if (yychar == '\'') {
 		if (input() == '\\')
-			c = backslash();
+			c = rw_backslash();
 		else
 			c = yychar;
 		if (input() != '\'') {

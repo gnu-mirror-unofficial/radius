@@ -91,6 +91,10 @@ auth {
 	password-expire-warning 1440;   # Emit warning if user's password
                                         # expires within the given interval
                                         # (seconds).
+	compare-atribute-flag 1; # User-defined flag that marks in the
+                                 # dictionary the attributes that will
+                                 # be used when comparing two authentication
+                                 # requests. Allowed values are 1 through 9
 };
 
 ## This controls the accounting service
@@ -105,6 +109,10 @@ acct {
 	time-to-live 60;	# Request time to live
         request-cleanup-delay 10; # Number of seconds the request remains
                                   # in queue after being processed
+	compare-atribute-flag 2; # User-defined flag that marks in the
+                                 # dictionary the attributes that will
+                                 # be used when comparing two accounting
+                                 # requests. Allowed values are 1 through 9
 };
 
 ## This controls the proxy service

@@ -6,6 +6,8 @@ option {
 	source-ip 127.0.0.1;
 	# Maximum number of request in queue
 	max-requests 127;
+	# Maximum number of threads
+	max-threads 128;
 	# The following specifies the uid under which external processes
 	# (those triggered by Exec-Program and Exec-Program-Wait 
 	# attributes) should be run. The corresponding gid is determined

@@ -12,16 +12,38 @@
 # $Id$
 
 if expr ${SOURCEDIR:?} : '\..*' 2>/dev/null 1>&2; then
-	SOURCEDIR="`pwd`/$SOURCEDIR"
+    SOURCEDIR="`pwd`/$SOURCEDIR"
 fi
 if expr ${BUILDDIR:?} : '\..*' 2>/dev/null 1>&2; then
-	BUILDDIR="`pwd`/$BUILDDIR"
+    BUILDDIR="`pwd`/$BUILDDIR"
 fi
+
+PROG=$0
+RADTEST=$BUILDDIR/radtest/radtest
+RADIUSD=$BUILDDIR/radiusd/radiusd
+DRIVER=
+
+while [ $# -gt 0 ]
+do
+    case $1 in
+    --radiusd)
+	RADIUSD=$2; shift 2;;
+    --radtest)
+	RADTEST=$2; shift 2;;
+    --driver)
+	DRIVER=$2; shift 2;;
+    *)
+	echo "$PROG: wrong switch" >&2
+	exit 1;;
+    esac
+done
+
+cd $BUILDDIR/test
 
 if [ ! -f raddb/config.in ]; then
     cp -r ${SOURCEDIR}/test/raddb .
 fi
-EXPR=`./findport -c2 -s1644 "-fs/@AUTH_PORT@/%d/;s/@ACCT_PORT@/%d/"`
+EXPR=`.//findport -c2 -s1644 "-fs/@AUTH_PORT@/%d/;s/@ACCT_PORT@/%d/"`
 sed $EXPR raddb/config.in > raddb/config
 sed $EXPR raddb/client.conf.in > raddb/client.conf
 
@@ -29,8 +51,29 @@ sed $EXPR raddb/client.conf.in > raddb/client.conf
 [ -d acct ] || mkdir acct
 cat /dev/null > log/radwtmp
 cat /dev/null > log/radutmp
-RADSCM_BOOTPATH=${SOURCEDIR}/radscm \
-  ../radscm/radscm --debug --directory raddb \
-                   -s ${SOURCEDIR}/test/guile/test.scm \
-                    --build-dir $BUILDDIR
 
+drv_guile() {
+    RADSCM_BOOTPATH=${SOURCEDIR}/radscm \
+      ../radscm/radscm --debug --directory raddb \
+                       -s ${SOURCEDIR}/test/guile/test.scm \
+                       --build-dir $BUILDDIR
+}
+
+drv_dejagnu() {
+    $RADIUSD -d $BUILDDIR/test/raddb \
+             -l $BUILDDIR/test/log \
+	     -a $BUILDDIR/test/acct \
+	     -P $BUILDDIR/test/log
+    $RADTEST -d $BUILDDIR/test/raddb -xgram.y 2>/tmp/log
+    kill -TERM `cat $BUILDDIR/test/log/radiusd.pid`
+    sleep 5
+    if [ -r $BUILDDIR/test/log/radiusd.pid ]; then
+        kill -KILL `cat $BUILDDIR/test/log/radiusd.pid` 	     
+    fi
+}	     
+
+case $DRIVER in
+    guile)   drv_guile;;
+    dejagnu) drv_dejagnu;;
+    *)       drv_guile;;
+esac    

@@ -156,7 +156,7 @@ static void obsolete(char *stmt, int ign);
 %token T_USEDBM T_CHECKRAD_ASSUME_LOGGED T_DELAY T_DETAIL T_HOST           
 %token T_EXEC_PROGRAM_GROUP T_EXEC_PROGRAM_USER T_LOAD T_LOAD_PATH T_LOG_DIR
 %token T_MAX_REQUESTS T_MESSAGE T_PORT T_REQUEST_CLEANUP_DELAY T_RETRY T_SPAWN 
-%token T_STRIP_NAMES T_TTL T_USERNAME_CHARS T_USR2DELAY T_RESOLVE
+%token T_STRIP_NAMES T_TTL T_USERNAME_CHARS T_USR2DELAY T_RESOLVE T_MAX_THREADS
 
 %token T_SOURCE_IP T_ACCT_DIR T_ACCT T_CNTL T_PROXY T_CHANNEL
 %token T_SYSLOG T_NOTIFY T_SNMP T_COMMUNITY T_ACL
@@ -234,6 +234,10 @@ option_def      : T_SOURCE_IP value
                 | T_MAX_REQUESTS value
                   {
                           asgn(&config.max_requests, &$2, AT_INT, 0);
+                  }
+                | T_MAX_THREADS value
+                  {
+                          asgn(&max_threads, &$2, AT_INT, 0);
                   }
                 | T_LOG_DIR value
                   {

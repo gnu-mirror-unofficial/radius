@@ -5,6 +5,9 @@
 	* include/radiusd.h: include <signal.h>
 	* radlib/avl.c (avp_dup): Duplicate string values of attributes
 	  with deferred evaluation.
+	* radiusd/scheme.c: Removed // comment.
+	* radiusd/radiusd.c: Thread-safety: signal handlers only set
+	  global flag, the main thread does the actual handling.
 	
 2002-03-04  Sergey Poznyakoff
 

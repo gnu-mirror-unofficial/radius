@@ -107,12 +107,12 @@ free_instance(struct check_instance *cptr)
 int
 compare(struct check_instance *checkp, char *str)
 {
-        return va_run_init(checkp->func, NULL,
-                           "ssis",
-                           str,
-                           checkp->name,
-                           checkp->port,
-                           checkp->sid);
+        return rewrite_invoke(checkp->func, NULL,
+			      "ssis",
+			      str,
+			      checkp->name,
+			      checkp->port,
+			      checkp->sid);
 }
 
 

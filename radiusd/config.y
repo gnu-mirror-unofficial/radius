@@ -678,8 +678,14 @@ level_list      : level
 
 level           : T_STRING
                   {
-			  switch (in_category) {
-			  case L_AUTH:
+			  if (in_category & L_MASK(L_DEBUG)) {
+				  if (set_module_debug_level($1, -1))
+					  radlog(L_WARN,
+					 _("%s:%d: no such module name: %s"),
+						 filename, line_num, $1);
+				  $$ = 0;
+			  } else if (in_category & L_AUTH) {
+				  /* Backward compatibility */
 				  if (strcmp($1, "auth") == 0)
 					  $$ = RLOG_AUTH;
 				  else if (strcmp($1, "pass") == 0)
@@ -692,15 +698,9 @@ level           : T_STRING
 						 filename, line_num, $1);
 					  $$ = 0;
 				  }
-				  break;
-				  
-			  case L_MASK(L_DEBUG):
-				  if (set_module_debug_level($1, -1))
-					  radlog(L_WARN,
-					 _("%s:%d: no such module name: %s"),
-						 filename, line_num, $1);
-				  $$ = 0;
-				  break;
+			  } else {
+				  yyerror("level syntax");
+				  YYERROR;
 			  }
 		  }
                 | T_STRING '=' T_NUMBER

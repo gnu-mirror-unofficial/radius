@@ -47,13 +47,6 @@ static char rcsid[] =
 #include <errno.h>
 #include <unistd.h>
 
-#ifdef DBM
-#  include <dbm.h>
-#endif
-#ifdef NDBM
-#  include <ndbm.h>
-#endif
-
 #include <sysdep.h>
 #include <radiusd.h>
 #include <radutmp.h>
@@ -63,10 +56,7 @@ static char rcsid[] =
 #ifdef USE_SQL
 # include <radsql.h>
 #endif
-
-#ifdef NDBM
-static	DBM *dbmfile;
-#endif
+#include <raddbm.h>
 
 /*
  * Internal representation of a user's profile
@@ -122,6 +112,9 @@ static int user_find_sym(char *name, VALUE_PAIR *request_pairs,
 #ifdef USE_DBM
 static int user_find_db(char *name, VALUE_PAIR *request_pairs,
 			VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
+static VALUE_PAIR * decode_dbm(VALUE_PAIR **dbm_ptr);
+static int dbm_find(DBM_FILE dbmfile, char *name, VALUE_PAIR *request_pairs,
+		    VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 #endif
 
 /* ***************************************************************************
@@ -347,100 +340,6 @@ user_next(lptr)
 	return lptr->sym;
 }
 
-/*
- * DBM lookup:
- *	-1 username not found
- *	0 username found but profile doesn't match the request.
- *	1 username found and matches.
- */
-#ifdef USE_DBM
-static VALUE_PAIR * decode_dbm(VALUE_PAIR **dbm_ptr);
-static int dbm_find(char *name, VALUE_PAIR *request_pairs,
-		    VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
-
-VALUE_PAIR *
-decode_dbm(dbm_ptr)
-	VALUE_PAIR **dbm_ptr;
-{
-	VALUE_PAIR *ptr;
-	VALUE_PAIR *next_pair, *first_pair, *last_pair;
-
-	ptr = *dbm_ptr;
-	last_pair = first_pair = NULL;
-	do {
-		next_pair = alloc_pair();
-		*next_pair = *ptr++;
-		if (next_pair->type == PW_TYPE_STRING) {
-			next_pair->strvalue = make_string((char*)ptr);
-			ptr = (VALUE_PAIR*)((char*)ptr + next_pair->strlength + 1);
-		}
-		if (last_pair)
-			last_pair->next = next_pair;
-		else
-			first_pair = next_pair;
-		last_pair = next_pair;
-	} while (next_pair->next);
-
-	*dbm_ptr = ptr;
-	return first_pair;
-}
-
-int
-dbm_find(name, request_pairs, check_pairs, reply_pairs)
-	char       *name;
-	VALUE_PAIR *request_pairs;
-	VALUE_PAIR **check_pairs;
-	VALUE_PAIR **reply_pairs;
-{
-	datum		named;
-	datum		contentd;
-	VALUE_PAIR	*ptr, *next_pair, *last_pair;
-	VALUE_PAIR	*check_tmp;
-	VALUE_PAIR	*reply_tmp;
-	int		ret = 0;
-	int             unused; /* strange, fetch on solaris seems to clobber stack */
-	
-	named.dptr = name;
-	named.dsize = strlen(name);
-#ifdef DBM
-	contentd = fetch(named);
-#endif
-#ifdef NDBM
-	contentd = dbm_fetch(dbmfile, named);
-#endif
-	if (contentd.dptr == NULL)
-		return -1;
-
-	check_tmp = NULL;
-	reply_tmp = NULL;
-
-	/*
-	 *	Parse the check values
-	 */
-	ptr = (VALUE_PAIR*) contentd.dptr;
-	/* check pairs */
-	check_tmp = decode_dbm(&ptr);
-
-	/* reply pairs */
-	reply_tmp = decode_dbm(&ptr);
-
-	/*
-	 *	See if the check_pairs match.
-	 */
-	if (paircmp(request_pairs, check_tmp) == 0) {
-		pairmove(reply_pairs, &reply_tmp);
-		pairmove(check_pairs, &check_tmp);
-		ret = 1;
-	}
-	/* Should we
-	 *  free(contentd.dptr);
-	 */
-	pairfree(reply_tmp);
-	pairfree(check_tmp);
-
-	return ret;
-}
-#endif /* DBM */
 
 static int match_user(User_symbol *sym, VALUE_PAIR *request_pairs,
 		      VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
@@ -489,7 +388,7 @@ match_user(sym, request_pairs, check_pairs, reply_pairs)
 
 	found = 0;
 	do {
-		if (paircmp(request_pairs, sym->check)) 
+		if (paircmp(request_pairs, sym->check))
 			continue;
 		
 		if (p = pairfind(sym->check, DA_MATCH_PROFILE)) {
@@ -518,6 +417,10 @@ match_user(sym, request_pairs, check_pairs, reply_pairs)
 			nsym = (User_symbol*)sym_lookup(user_tab,
 							p->strvalue);
 			debug(1, ("include: %s", p->strvalue));
+			/* Create a copy of the request pairs without
+			 * this Include-Profile attribute in order
+			 * to prevent infinite recursion.
+			 */
 			pl = paircopy(request_pairs);
 			pairdelete(&pl, DA_INCLUDE_PROFILE);
 			match_user(nsym, pl, check_pairs, reply_pairs);
@@ -539,6 +442,92 @@ match_user(sym, request_pairs, check_pairs, reply_pairs)
 
 #ifdef USE_DBM
 /*
+ * DBM lookup:
+ *	-1 username not found
+ *	0 username found but profile doesn't match the request.
+ *	1 username found and matches.
+ */
+
+VALUE_PAIR *
+decode_dbm(dbm_ptr)
+	VALUE_PAIR **dbm_ptr;
+{
+	VALUE_PAIR *ptr;
+	VALUE_PAIR *next_pair, *first_pair, *last_pair;
+
+	ptr = *dbm_ptr;
+	last_pair = first_pair = NULL;
+	do {
+		next_pair = alloc_pair();
+		*next_pair = *ptr++;
+		if (next_pair->type == PW_TYPE_STRING) {
+			next_pair->strvalue = make_string((char*)ptr);
+			ptr = (VALUE_PAIR*)((char*)ptr + next_pair->strlength + 1);
+		}
+		if (last_pair)
+			last_pair->next = next_pair;
+		else
+			first_pair = next_pair;
+		last_pair = next_pair;
+	} while (next_pair->next);
+
+	*dbm_ptr = ptr;
+	return first_pair;
+}
+
+int
+dbm_find(file, name, request_pairs, check_pairs, reply_pairs)
+	DBM_FILE file;
+	char       *name;
+	VALUE_PAIR *request_pairs;
+	VALUE_PAIR **check_pairs;
+	VALUE_PAIR **reply_pairs;
+{
+	DBM_DATUM	named;
+	DBM_DATUM	contentd;
+	VALUE_PAIR	*ptr;
+	VALUE_PAIR	*check_tmp;
+	VALUE_PAIR	*reply_tmp;
+	int		ret = 0;
+	int             unused; /* strange, fetch on solaris seems to clobber stack */
+	
+	named.dptr = name;
+	named.dsize = strlen(name);
+
+	if (fetch_dbm(file, named, &contentd))
+		return -1;
+
+	check_tmp = NULL;
+	reply_tmp = NULL;
+
+	/*
+	 *	Parse the check values
+	 */
+	ptr = (VALUE_PAIR*) contentd.dptr;
+	/* check pairs */
+	check_tmp = decode_dbm(&ptr);
+
+	/* reply pairs */
+	reply_tmp = decode_dbm(&ptr);
+
+	/*
+	 *	See if the check_pairs match.
+	 */
+	if (paircmp(request_pairs, check_tmp) == 0) {
+		pairmove(reply_pairs, &reply_tmp);
+		pairmove(check_pairs, &check_tmp);
+		ret = 1;
+	}
+	/* Should we
+	 *  free(contentd.dptr);
+	 */
+	pairfree(reply_tmp);
+	pairfree(check_tmp);
+
+	return ret;
+}
+
+/*
  * Find matching profile in the DBM database
  */
 int
@@ -552,24 +541,19 @@ user_find_db(name, request_pairs, check_pairs, reply_pairs)
 	int		i, r;
 	char		*path;
 	char		buffer[64];
+	DBM_FILE        dbmfile;
 
 	/*
 	 *	FIXME: No Prefix / Suffix support for DBM.
 	 */
 	path = mkfilename(radius_dir, RADIUS_USERS);
-#ifdef DBM
-	if (dbminit(path) != 0)
-#endif
-#ifdef NDBM
-	if ((dbmfile = dbm_open(path, O_RDONLY, 0)) == NULL)
-#endif
-	{
+	if (open_dbm(path, &dbmfile)) {
 		radlog(L_ERR, _("cannot open dbm file %s"), path);
 		efree(path);
 		return 0;
 	}
 
-	r = dbm_find(name, request_pairs, check_pairs, reply_pairs);
+	r = dbm_find(dbmfile, name, request_pairs, check_pairs, reply_pairs);
 	if (r > 0)
 		found = 1;
 	if (r <= 0 || fallthrough(*reply_pairs)) {
@@ -578,9 +562,8 @@ user_find_db(name, request_pairs, check_pairs, reply_pairs)
 
 		radsprintf(buffer, sizeof(buffer), "DEFAULT");
 		i = 0;
-		while ((r = dbm_find(buffer, request_pairs,
-				     check_pairs, reply_pairs)) >= 0 ||
-		       i < 2) {
+		while ((r = dbm_find(dbmfile, buffer, request_pairs,
+				     check_pairs, reply_pairs)) >= 0) {
 			if (r > 0) {
 				found = 1;
 				if (!fallthrough(*reply_pairs))
@@ -590,12 +573,7 @@ user_find_db(name, request_pairs, check_pairs, reply_pairs)
 			radsprintf(buffer, sizeof(buffer), "DEFAULT%d", i++);
 		}
 	}
-#ifdef DBM
-	dbmclose();
-#endif
-#ifdef NDBM
-	dbm_close(dbmfile);
-#endif
+	close_dbm(dbmfile);
 	efree(path);
 
 	debug(1, ("returning %d", found));
@@ -2056,8 +2034,8 @@ presufcmp(check, name, rest)
 }
 
 /*
- *	Attributes we skip during comparison.
- *	These are "server" check items.
+ * Attributes we skip during comparison.
+ * These are "server" check items.
  */
 static int server_check_items[] = {
 	DA_EXPIRATION,
@@ -2080,6 +2058,7 @@ static int server_check_items[] = {
 	DA_GROUP_NAME,
 	DA_MATCH_PROFILE,
 	DA_INCLUDE_PROFILE,
+	DA_AUTH_DATA,
 	DA_QUEUE_ID
 };
 
@@ -2096,8 +2075,8 @@ server_attr(attr)
 }
 
 /*
- *	Compare two pair lists except for the password information.
- *	Return 0 on match.
+ * Compare two pair lists except for the internal server items.
+ * Return 0 on match.
  */
 int
 paircmp(request, check)

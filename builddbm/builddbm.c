@@ -41,14 +41,9 @@ static char rcsid[] =
 #include <ctype.h>
 #include <errno.h>
 #include <unistd.h>
-#ifdef DBM
-# include <dbm.h>
-#endif
-#ifdef NDBM
-# include <ndbm.h>
-#endif
 
 #include <radiusd.h>
+#include <raddbm.h>
 #include <parser.h>
 
 char		*progname;
@@ -63,9 +58,7 @@ char            *users_file;
 char            *input="users";
 
 typedef struct {
-#ifdef NDBM
-	DBM *dbm;
-#endif
+	DBM_FILE dbmfile;
 	int defno;   /* ordinal number of next default entry */
 } DBM_closure;
 
@@ -117,47 +110,22 @@ main(argc, argv)
 	/* Make filenames: */
 	if (!users_file)
 		users_file = mkfilename(radius_dir, input);
-#ifdef DBM	
-	pag_file = mkfilename(radius_dir, "users.pag");
-	dir_file = mkfilename(radius_dir, "users.dir");
-#endif
+
 	db_file = mkfilename(radius_dir, "users");
-	
+
 	/*
 	 *	Initialize a new, empty database.
 	 */
-#ifdef DBM
-	if ((fd = open(pag_file, O_WRONLY | O_CREAT | O_TRUNC, 0600)) < 0) {
-		radlog(L_ERR|L_PERROR, _("can't open `%s'"), pag_file);
+	closure.defno = 0;
+	if (create_dbm(db_file, &closure.dbmfile)) {
+		radlog(L_ERR|L_PERROR, _("can't open `%s'"), db_file);
 		return 1;
 	}
-	close(fd);
-	if ((fd = open(dir_file, O_WRONLY | O_CREAT | O_TRUNC, 0600)) < 0) {
-		radlog(L_ERR, _("can't open `%s'"), dir_file);
-		return 1;
-	}
-	close(fd);
-	if (dbminit(db_file) != 0) {
-		radlog(L_ERR, "dbminit(%s)", db_file);
-		return 1;
-	}
-#endif
-#ifdef NDBM
-	if ((closure.dbm = dbm_open(db_file, O_RDWR|O_CREAT|O_TRUNC, 0600))
-	    == NULL) {
-		radlog(L_ERR, "dbm_open(%s)", db_file);
-		return 1;
-	}
-#endif
 
 	parse_file(users_file, &closure, add_user);
 	
-#ifdef DBM
-	dbmclose();
-#endif
-#ifdef NDBM
-	dbm_close(closure.dbm);
-#endif
+	close_dbm(closure.dbmfile);
+
 	return 0;
 }
 
@@ -216,13 +184,7 @@ add_user(closure, line, name, check, reply)
 	named.dsize = strlen(name);
 	contentd.dptr = (char*)pair_buffer;
 	contentd.dsize = len;
-#ifdef DBM
-	if (store(named, contentd) != 0)
-#endif
-#ifdef NDBM
-	if (dbm_store(closure->dbm, named, contentd, DBM_INSERT) != 0)
-#endif
-	{
+	if (insert_dbm(closure->dbmfile, named, contentd)) {
 		radlog(L_ERR, _("can't store datum for %s"), name);
 		exit(1);
 	}
@@ -236,7 +198,9 @@ add_user(closure, line, name, check, reply)
  *	If Password or Crypt-Password is set, but there is no
  *	Auth-Type, add one (kludge!).
  */
-void auth_type_fixup(VALUE_PAIR *check)
+void
+auth_type_fixup(check)
+	VALUE_PAIR *check;
 {
 	VALUE_PAIR	*vp;
 	VALUE_PAIR	*c = NULL;

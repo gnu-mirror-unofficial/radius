@@ -192,6 +192,31 @@ TEST(send auth 1 User-Name = QUOTE(execwait) NAS-Port-Id = 0,
 TEST(send auth 1 User-Name = QUOTE(execwait) NAS-Port-Id = 1, 
      expect 3)])
 
+SEQUENCE(Filter,
+Checking Filters,
+[
+TEST(send auth 1 User-Name = QUOTE(filter-ok),
+     expect 2 Reply-Message = QUOTE(Filter allows access))
+TEST(send auth 1 User-Name = QUOTE(filter-bad),
+     expect 3 Reply-Message = QUOTE(Filter denies access))
+TEST(send acct 4 User-Name = QUOTE(filter-ok) \
+	                NAS-IP-Address = 127.0.0.1 \
+                        NAS-Port-Id = 1 \
+                        Acct-Status-Type = Start \
+			Acct-Session-Id = QUOTE(0001),
+	        expect 5)
+
+TEST(send auth 1 User-Name = QUOTE(frw-ok),
+     expect 2 Reply-Message = QUOTE(Filter allows access))
+TEST(send auth 1 User-Name = QUOTE(frw-bad),
+     expect 3 Reply-Message = QUOTE(Filter denies access))
+TEST(send acct 4 User-Name = QUOTE(frw-ok) \
+	                NAS-IP-Address = 127.0.0.1 \
+                        NAS-Port-Id = 1 \
+                        Acct-Status-Type = Start \
+			Acct-Session-Id = QUOTE(0001),
+	        expect 5)])
+
 IFSEQUENCE(Scheme-Acct, USE_SERVER_GUILE,
 Checking Scheme Accounting,
 TEST(send acct 4 User-Name = QUOTE(scheme) \

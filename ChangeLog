@@ -3,6 +3,10 @@
 	entry.
 	* radiusd/exec.c: Fixed bug in installing SIGCHLD handler
 	introduced 2001-07-25.
+	* radiusd/radutil.c: Fixed handling of NULL default value.
+	* raddb/rewrite.full: Synched declaration of max_decode_port()
+	with that in the documentation.
+	
 
 2001-07-25 Sergey Poznyakoff <gray@farlep.net>
 	* radiusd/acct.c: added external accounting (function rad_acct_ext).

@@ -253,8 +253,6 @@ rt_eval_bin_avl(grad_locus_t *locus,
 		radtest_binop_t op,
 		grad_avp_t *a, grad_avp_t *b)
 {
-	grad_avp_t *p;
-	
 	switch (op) {
 	case radtest_op_add:
 		grad_avl_merge(&a, &b);
@@ -514,7 +512,7 @@ rt_eval_pairlist(grad_locus_t *locus,
 			case TYPE_STRING:
 			case TYPE_DATE:
 				snprintf(buf, sizeof buf, "%lu",
-					 val.datum.ipaddr);
+					 (unsigned long) val.datum.ipaddr);
 				pair = grad_avp_create_string(p->attr->value,
 							      buf);
 				break;
@@ -607,8 +605,14 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 		rt_eval_expr(node->v.bin.right, &right);
 		
 		switch (left.type) {
+		case rtv_undefined:
+			grad_insist_fail("bad datatype");
+			
 		case rtv_integer:
 			switch (right.type) {
+			case rtv_undefined:
+				abort();
+				
 			case rtv_integer:
 				rt_eval_bin_int(&node->locus,
 						result,
@@ -693,7 +697,8 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 				break;
 				
 			case rtv_pairlist:
-				grad_insist_fail("a value cannot evaluate to rtv_pairlist");
+			case rtv_undefined:
+				grad_insist_fail("bad datatype");
 			}
 			break;
 			
@@ -796,7 +801,6 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 	
 	case radtest_node_getopt:
 	{
-		int n;
 		char buf[3];
 
 		if (node->v.gopt.last <= 0) 
@@ -943,8 +947,9 @@ rt_exit(radtest_node_t *expr)
 			break;
 
 		default:
-			runtime_error(&expr->locus,
-				      _("Invalid data type in exit statement"));
+			/* Use parse_error_loc() so we don't longjump */
+			parse_error_loc(&expr->locus,
+					_("Invalid data type in exit statement"));
 			break; /* exit anyway */
 		}
 	}
@@ -973,6 +978,7 @@ rt_true_p(radtest_variable_t *var)
 	default:
 		grad_insist_fail("Unexpected data type");
 	}
+	return 0;
 }
 
 static void
@@ -1038,6 +1044,49 @@ rt_eval_input(radtest_node_t *stmt)
 		p[n-1] = 0;
 	var->datum.string = grad_estrdup(p);
 	free(p);
+}
+
+static void
+rt_eval_case(radtest_node_t *stmt)
+{
+	radtest_variable_t result;
+	char *sample;
+	grad_iterator_t *itr;
+	radtest_case_branch_t *bp;
+	
+	rt_eval_expr(stmt->v.branch.expr, &result);
+	sample = cast_to_string(&stmt->locus, &result);
+	radtest_start_string(sample);
+	sample = radtest_end_string();
+	
+	itr = grad_iterator_create(stmt->v.branch.branchlist);
+	for (bp = grad_iterator_first(itr);
+	     bp;
+	     bp = grad_iterator_next(itr)) {
+		char *p;
+		regex_t rx;
+		int rc;
+		
+		rt_eval_expr(bp->cond, &result);
+		p = cast_to_string(&bp->cond->locus, &result);
+
+                /* FIXME: configurable flags */
+		rc = regcomp(&rx, p, REG_EXTENDED);
+
+		if (rc) {
+			char errbuf[512];
+			regerror(rc, &rx, errbuf, sizeof(errbuf));
+			runtime_error(&bp->cond->locus, "%s", errbuf);
+		}
+
+		rc = regexec(&rx, sample, 0, NULL, 0);
+		regfree(&rx);
+		if (rc == 0) {
+			rt_eval(bp->node);
+			break;
+		}
+	}
+	grad_iterator_destroy(&itr);
 }
 
 static void
@@ -1128,7 +1177,11 @@ rt_eval(radtest_node_t *stmt)
 		x_argc -= level;
 		break;
 	}
-	
+
+	case radtest_node_case:
+		rt_eval_case(stmt);
+		break;
+		
 	default:
 		grad_insist_fail("Unexpected instruction code");
 	}
@@ -1147,58 +1200,55 @@ rt_eval_stmt_list(grad_list_t *list)
 
 
 /* Memory management */
-static grad_list_t /* of radtest_node_t */ *node_pool;
 
+struct memory_chunk {
+	void *ptr;
+	void (*destructor)(void *);
+};
+static grad_list_t /* of struct memory_chunk */ *memory_pool;
+
+
+static void
+register_chunk(void *ptr, void (*destructor)(void *))
+{
+	struct memory_chunk *p = grad_emalloc(sizeof(*p));
+	if (!memory_pool)
+		memory_pool = grad_list_create();
+	p->ptr = ptr;
+	p->destructor = destructor;
+	grad_list_append(memory_pool, p);
+}
+
+static int
+free_mem(void *item, void *data)
+{
+	struct memory_chunk *p = item;
+	if (p->destructor)
+		p->destructor(p->ptr);
+	grad_free(p);
+	return 0;
+}
+
+void
+radtest_free_mem()
+{
+	grad_list_destroy(&memory_pool, free_mem, NULL);
+	radtest_free_strings();
+}
+
+
 radtest_node_t *
 radtest_node_alloc(radtest_node_type type)
 {
 	radtest_node_t *node = grad_emalloc(sizeof(*node));
 	node->type = type;
 	node->locus = source_locus;
-	if (!node_pool)
-		node_pool = grad_list_create();
-	grad_list_append(node_pool, node);
+	register_chunk(node, grad_free);
 	return node;
 }
 
-int
-_free_item(void *item, void *data)
-{
-	grad_free(item);
-}
-
-void
-radtest_free_nodes()
-{
-	grad_list_destroy(&node_pool, _free_item, NULL);
-}
-
-
-/* Variables */
-
-static grad_list_t /* of radtest_variable_t */ *value_pool;
-   
-radtest_variable_t *
-radtest_var_alloc(radtest_data_type type)
-{
-	radtest_variable_t *var;
-	var = grad_emalloc(sizeof(*var)); 
-	var->type = type;
-	if (!value_pool)
-		value_pool = grad_list_create();
-	grad_list_append(value_pool, var);
-	return var;
-}
-
-void
-radtest_var_copy (radtest_variable_t *dst, radtest_variable_t *src)
-{
-	dst->type = src->type;
-	dst->datum = src->datum; 
-}
-
-static int
-_free_var(void *item, void *data)
+static void
+_free_var(void *item)
 {
 	radtest_variable_t *var = item;
 	switch (var->type) {
@@ -1216,40 +1266,36 @@ _free_var(void *item, void *data)
 	grad_free(var);
 }
 
-void
-radtest_free_variables()
+radtest_variable_t *
+radtest_var_alloc(radtest_data_type type)
 {
-	grad_list_destroy(&value_pool, _free_var, NULL);
+	radtest_variable_t *var;
+	var = grad_emalloc(sizeof(*var));
+	var->type = type;
+	register_chunk(var, _free_var);
+	return var;
 }
 
-
-/* Pairs */
+void
+radtest_var_copy (radtest_variable_t *dst, radtest_variable_t *src)
+{
+	dst->type = src->type;
+	dst->datum = src->datum; 
+}
 
-static grad_list_t /* of radtest_pair_t */ *pair_pool;
+radtest_case_branch_t *
+radtest_branch_alloc()
+{
+	radtest_case_branch_t *p = grad_emalloc(sizeof(*p));
+	register_chunk(p, grad_free);
+	return p;
+}
 
 radtest_pair_t *
 radtest_pair_alloc()
 {
-	radtest_pair_t *p;
-	p = grad_emalloc(sizeof(*p));
-	if (!pair_pool)
-		pair_pool = grad_list_create();
-	grad_list_append(pair_pool, p);
+	radtest_pair_t *p = grad_emalloc(sizeof(*p));
+	register_chunk(p, grad_free);
 	return p;
 }
 
-void
-radtest_free_pairs()
-{
-	grad_list_destroy(&pair_pool, _free_item, NULL);
-}
-
-
-void
-radtest_free_mem()
-{
-	radtest_free_nodes();
-	radtest_free_variables();
-	radtest_free_pairs();
-	radtest_free_strings();
-}

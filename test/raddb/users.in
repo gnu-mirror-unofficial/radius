@@ -15,15 +15,17 @@
 # along with this program; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
 
+# Begin.exp: Check for BEGIN pattern
 BEGIN   NAS-IP-Address = 127.0.0.2
 	Framed-IP-Address = 127.10.0.1+,
 		Fall-Through = Yes
 
-DEFAULT NAS-IP-Address = 127.0.0.1,
+# Default.exp: Check for DEFAULT pattern
+DEFAULT NAS-IP-Address = 127.0.0.3,
 		Auth-Type = Accept
 	Reply-Message = "OK. Come in."
 
-DEFAULT NAS-IP-Address = 127.0.0.2,
+DEFAULT NAS-IP-Address = 127.0.0.4,
 		Auth-Type = Reject
 	Reply-Message = "Wrong NAS"
 	
@@ -63,7 +65,23 @@ simuse  Auth-Type = Accept,
 ## Execwait.exp: Check for working Exec-Program-Wait attribute
 execwait Auth-Type = Accept
 	Exec-Program-Wait = "@BUILDDIR@/test/raddb/auth.bin %C{NAS-Port-Id} %C{User-Name}"
+
+# Match.exp: Check for working Match-Profile attributes		
+REQ0    NAS-Identifier = "een"
+	Framed-IP-Address = 127.10.10.1
+REQ0    NAS-Identifier = "to"
+	Framed-IP-Address = 127.10.10.2
+
+REQ1    NAS-IP-Address = 127.0.0.1,
+		NAS-Port-Id = 1
+	Framed-Protocol = PPP,
+		Match-Profile = REQ0
+
+match1  Auth-Type = Accept,
+		Match-Profile = REQ1
+	Service-Type = Framed-User
 		
-
-
+## Scheme-auth.exp: Check for working scheme authentication
+scheme  Auth-Type = Accept
+	Scheme-Procedure = "auth"
 

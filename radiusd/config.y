@@ -338,12 +338,15 @@ copy_string()
         int quote = *curp++;
 
         while (*curp) {
-                if (*curp == quote) {
+		if (*curp == '\\') {
+			obstack_grow_backslash(&cfg_obstack, curp, &curp);
+		} else if (*curp == quote) {
                         curp++;
                         break;
-                }
-		obstack_1grow(&cfg_obstack, *curp);
-                curp++;
+                } else {
+			obstack_1grow(&cfg_obstack, *curp);
+			curp++;
+		}
         } 
 	obstack_1grow(&cfg_obstack, 0);
 	return obstack_finish(&cfg_obstack);

@@ -278,6 +278,7 @@ extern int radius_mode;
 extern int debug_flag;
 extern int auth_detail;
 extern int acct_detail;
+extern int acct_system;
 extern int auth_trace_rules;
 extern int acct_trace_rules;
 extern int strip_names;
@@ -489,6 +490,7 @@ void menu_reply(grad_request_t *radreq, int fd);
 char *menu_read_text(char *menu_name);
 
 /* acct.c */
+void system_acct_init();
 void acct_init();
 int rad_accounting(grad_request_t *, int, int);
 int radzap(grad_uint32_t nas, int port, char *user, time_t t);
@@ -499,8 +501,21 @@ int radutmp_mlc_collect_user(char *name, grad_request_t *request,
 int radutmp_mlc_collect_realm(grad_request_t *request,
 			      grad_list_t **sess_list);
 void radutmp_mlc_close(struct radutmp *up);
+int radutmp_mlc_enabled_p(void);
 
 /* mlc.c */
+typedef int (*mlc_collect_user_t) (char *name, grad_request_t *request,
+				   grad_list_t **sess_list);
+typedef int (*mlc_collect_realm_t) (grad_request_t *request,
+				    grad_list_t **sess_list);
+typedef void (*mlc_close_t) (struct radutmp *up);
+typedef int (*mlc_enabled_t) (void);
+void mlc_register_method(char *name,
+			 mlc_collect_user_t collect_user,
+			 mlc_collect_realm_t collect_realm,
+			 mlc_close_t close,
+			 mlc_enabled_t enabled_p);
+
 extern struct cfg_stmt mlc_stmt[];
 int radius_mlc_user(char *name, grad_request_t *request,
 		    size_t maxsimul, size_t *pcount);

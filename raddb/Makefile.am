@@ -45,7 +45,6 @@ raddb_files_644=\
  naslist\
  nastypes\
  realms\
- rewrite\
  sqlserver 
 
 raddb_files_600 = clients client.conf users 

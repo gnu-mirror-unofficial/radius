@@ -1,3 +1,22 @@
+2004-06-30  Sergey Poznyakoff
+
+	* include/radiusd.h (rpp_remove_pid,rpp_status_changed): New
+	functions.
+	(rpp_remove): Removed
+	* include/sysdep.h (timersub): New macro
+	* radiusd/rpp.c: Reversed changes made 2004-05-07.
+	(rpp_remove_pid,rpp_status_changed): New functions.
+	(rpp_remove): Changed prototype.
+	(pipe_read,pipe_write): Recompute the timeout before entering
+	select().
+	* radiusd/files.c (user_find_sym): Assume nothing was found for
+	lu.state == LU_begin
+	* radiusd/radiusd.c (radiusd_collect_children): New function.
+	(radiusd_cleanup): Rewritten.
+	(radiusd_restart): Call radiusd_collect_children on SIGCHLD
+
+	* radscm/ttl.scm (wait-input): Bugfix
+	
 2004-06-26  Sergey Poznyakoff
 	
 	* radscm/gnuradius.scm.in: Renamed to gnuradius.scm4
@@ -27,6 +46,7 @@
 	
 2004-06-25  Sergey Poznyakoff
 
+	* po/POTFILES.in: Updated
 	* include/radius/radius.h: New flag AP_TRANSLATE
 	* lib/dict.c (_dict_value): Raise AP_TRANSLATE bit on
 	the attribute properties.

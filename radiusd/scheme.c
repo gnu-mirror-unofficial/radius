@@ -31,7 +31,7 @@ static char rcsid[] =
 #include <setjmp.h>
 
 /* Protos to be moved to radscm */
-SCM  scm_makenum (unsigned long val);
+SCM scm_makenum (unsigned long val);
 SCM radscm_avl_to_list(VALUE_PAIR *pair);
 VALUE_PAIR *radscm_list_to_avl(SCM list);
 SCM radscm_avp_to_cons(VALUE_PAIR *pair);
@@ -41,6 +41,7 @@ static SCM
 catch_body (void *data)
 {
 	radscm_init();
+	rscm_radlog_init();
 	scm_init_load_path();
 	rad_mainloop();
 	return SCM_BOOL_F;
@@ -111,23 +112,21 @@ scheme_auth(procname, req, user_check, user_reply_ptr)
 	if (setjmp(jmp_env)) 
 		return 1;
 
-	res = scm_internal_lazy_catch(SCM_BOOL_T,
-				      eval_catch_body,
-				      (void*)
-				      SCM_LIST4(procsym,
-						scm_listify(
-						  scm_copy_tree(SCM_IM_QUOTE),
-							    s_request,
-							    SCM_UNDEFINED),
-						scm_listify(
-						  scm_copy_tree(SCM_IM_QUOTE),
-							    s_check,
-							    SCM_UNDEFINED),
-						scm_listify(
-						  scm_copy_tree(SCM_IM_QUOTE),
-							    s_reply,
-							    SCM_UNDEFINED)),
-				      eval_catch_handler, &jmp_env);
+	res = scm_internal_lazy_catch(
+		SCM_BOOL_T,
+		eval_catch_body,
+		(void*) SCM_LIST4(procsym,
+				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+					      s_request,
+					      SCM_UNDEFINED),
+				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+					      s_check,
+					      SCM_UNDEFINED),
+				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+					      s_reply,
+					      SCM_UNDEFINED)),
+		eval_catch_handler, &jmp_env);
+	
 	if (SCM_IMP(res) && SCM_BOOLP(res)) 
 		return res == SCM_BOOL_F;
 	if (SCM_NIMP(res) && SCM_CONSP(res)) {
@@ -159,14 +158,14 @@ scheme_acct(procname, req)
 	}
 	if (setjmp(jmp_env))
 		return 1;
-	res = scm_internal_lazy_catch(SCM_BOOL_T,
-				      eval_catch_body,
-				      (void*)
-				      SCM_LIST2(procsym,
-						scm_listify(SCM_IM_QUOTE,
-							    s_request,
-							    SCM_UNDEFINED)),
-				      eval_catch_handler, &jmp_env);
+	res = scm_internal_lazy_catch(
+		SCM_BOOL_T,
+		eval_catch_body,
+		(void*) SCM_LIST2(procsym,
+				  scm_listify(SCM_IM_QUOTE,
+					      s_request,
+					      SCM_UNDEFINED)),
+		eval_catch_handler, &jmp_env);
 	if (SCM_IMP(res) && SCM_BOOLP(res)) 
 		return res == SCM_BOOL_F;
 	return 1;

@@ -1,3 +1,7 @@
+2001-01-23  gray  <gray@farlep.net>
+	Added boolean shortcut evaluation and bitwise operations
+	to rewrite.y
+
 2001-01-17  gray  <gray@farlep.net>
 	Finished writing radscm. Written guile modules which replace radctl
 	and radtest programs. Removed radctl and radtest subdirs from the 

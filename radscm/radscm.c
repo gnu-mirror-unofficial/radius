@@ -60,6 +60,8 @@ rad_scheme_init(argc, argv)
 	int di, si;
 	int double_dash = 0;
 	SCM *scm_loc, scm;
+	char *bootpath;
+	char *p;
 	
 	/*
 	 * Process and throw-off radius-specific command line
@@ -120,22 +122,26 @@ rad_scheme_init(argc, argv)
 	scm_make_gsubr("rad-client-add-server", 1, 0, 0, rad_client_add_server);
 	scm_make_gsubr("rad-client-list-servers", 0, 0, 0, rad_client_list_servers);
 
+	scm_loc = SCM_CDRLOC (scm_sysintern ("%raddb-path", SCM_EOL));
+	*scm_loc = scm_makfrom0str(radius_dir);
+		
+	if (!(bootpath = getenv("RADSCM_BOOTPATH")))
+		bootpath = DATADIR;	
 #if 0
 	/*
 	 * Reset %load-path
 	 */
-	scm = scm_cons(scm_makfrom0str(DATADIR),
+	scm = scm_cons(scm_makfrom0str(bootpath),
 		       scm_symbol_value0("%load-path"));
 	scm_loc = SCM_CDRLOC (scm_sysintern ("%load-path", SCM_EOL));
 	*scm_loc = scm;
 #endif
-	scm_loc = SCM_CDRLOC (scm_sysintern ("%raddb-path", SCM_EOL));
-	*scm_loc = scm_makfrom0str(RADDB_DIR);
-	
 	/*
 	 * Load radius scheme modules
 	 */
-	scm_primitive_load(scm_makfrom0str(DATADIR "/boot.scm"));
+	p = mkfilename(bootpath, "boot.scm");
+	scm_primitive_load(scm_makfrom0str(p));
+	efree(p);
 
 	scm_shell(argc, argv);
 }

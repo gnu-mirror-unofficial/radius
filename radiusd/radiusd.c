@@ -407,7 +407,7 @@ main(argc, argv)
 	reread_config(0);
 	if (check_config) 
 		exit(0);
-#if 0
+#if 1
 /*DEBUG ONLY*/
 	test_rewrite();
 	exit(1);

@@ -4928,6 +4928,8 @@ to security issues while configuring the server.
 @chapter Configuring @code{radctl}.
 @cindex configuring radctl
 @cindex radctl, configuring
+@cindex radctl.rc file
+@heading Configuring radius daemon
 
 To configure Radius to use @code{radctl} control channel the following
 actions must be performed:
@@ -4987,6 +4989,31 @@ ROOT    Auth-Type = System,
                 Huntgroup-Name = "ROOT"
         Service-Type = RADIUS-Administrative-User
 @end example
+
+@heading Configuring radctl
+
+Upon startup @code{Radctl} reads file @code{@value{RADDB}/radctl.rc},
+then file @code{@var{$HOME}/.radctl}. Both are usual Scheme sources. This is
+an example of @code{radctl.rc} file:
+
+@lisp
+;; Define a list of available servers. 
+(set! rad-server-list
+;;         ID      Hostname  Secret   Auth Acct Cntl
+;;       -------------------------------------------
+      '(("local" "localhost" "foobar" 1645 1646 5000)))
+
+;; Set timeout and the number of retransmission retries
+(rad-client-timeout 3)
+(rad-client-retry 2)
+;; Select default server to use
+(rad-select-server "local") 
+@end lisp
+
+@emph{Please note}, that the shared secret is listed in plaintext,
+as a usual Scheme string. Thus, special attention must be paid to
+security issues. The file @code{radctl.rc} should be owned by root
+and have permissions of at least 0600.
 
 @comment **L3***************************************************************
 @node radctl invocation, radctl commands, radctl configuration, Control Channel

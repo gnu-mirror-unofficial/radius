@@ -104,7 +104,7 @@ as one.
 	      mesg)))))))
 
 (define (rad-format-reply-msg plist . text)
-"Concatenate and print text from all "Reply-Message" pairs from the
+"Concatenate and print text from all \"Reply-Message\" pairs from the
 PAIR-LIST. If TEXT is specified, it is printed before the concatenated
 text.
 

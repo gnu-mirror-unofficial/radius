@@ -125,6 +125,9 @@ File: radius.info,  Node: radctl configuration,  Next: radctl invocation,  Up: C
 Configuring `radctl'.
 *********************
 
+Configuring radius daemon
+=========================
+
    To configure Radius to use `radctl' control channel the following
 actions must be performed:
 
@@ -177,6 +180,30 @@ would be needed:
      ROOT    Auth-Type = System,
                      Huntgroup-Name = "ROOT"
              Service-Type = RADIUS-Administrative-User
+
+Configuring radctl
+==================
+
+   Upon startup `Radctl' reads file `/usr/local/etc/raddb/radctl.rc',
+then file `$HOME/.radctl'. Both are usual Scheme sources. This is an
+example of `radctl.rc' file:
+
+     ;; Define a list of available servers.
+     (set! rad-server-list
+     ;;         ID      Hostname  Secret   Auth Acct Cntl
+     ;;       -------------------------------------------
+           '(("local" "localhost" "foobar" 1645 1646 5000)))
+     
+     ;; Set timeout and the number of retransmission retries
+     (rad-client-timeout 3)
+     (rad-client-retry 2)
+     ;; Select default server to use
+     (rad-select-server "local")
+
+   *Please note*, that the shared secret is listed in plaintext, as a
+usual Scheme string. Thus, special attention must be paid to security
+issues. The file `radctl.rc' should be owned by root and have
+permissions of at least 0600.
 
 
 File: radius.info,  Node: radctl invocation,  Next: radctl commands,  Prev: radctl configuration,  Up: Control Channel
@@ -1478,48 +1505,4 @@ is present, Auth-Type = Crypt-Local is assumed. If both `Auth-Type' and
 `Crypt-Password' are present, the value of `Auth-Type' is ignored.
 
    *Note Auth-Type::.
-
-
-File: radius.info,  Node: Huntgroup-Name,  Next: Simultaneous-Use,  Prev: Crypt-Password,  Up: Attribute list
-
-Huntgroup-Name
-**************
-
-     ATTRIBUTE  Huntgroup-Name    221                  string
-
-   The `Huntgroup-Name' can be used either in check-pairs of the
-`users' file record or in reply-pairs of the `huntgroups' file record.
-
-   When encountered in check-pairlist of a particular `users' profile,
-this attribute indicates the huntgroup name to be matched. Radius looks
-up the corresponding record in the `huntgroups' file. If such record is
-found, each A/V pair from its reply-list is compaired against the
-corresponing pair from the request being processed. The request matches
-only if it contains all the attributes from the specified huntgroup,
-and their values satisfy the conditions listed in the huntgroup pairs.
-
-   For example, suppose that the athentication request contained the
-following attrbutes:
-
-     User-Name = "john",
-     Password = "guess",
-     NAS-IP-Address = 10.11.11.1,
-     NAS-Port-Id = 24
-
-Let us further suppose that the `users' file contains the following
-entry:
-
-     john    Huntgroup-Name = "users_group",
-                     Auth-Type = System
-             Service-Type = Login
-
-and, finally, `huntgroups' contains the following entry:
-
-     users_group     NAS-IP-Address = 10.11.11.1
-                     NAS-Port-Id < 32
-
-   Then the authentication request would succeed since it contains
-`NAS-Port-Id' attribute and its value is less than 32.
-
-   *Note huntgroups::.
 

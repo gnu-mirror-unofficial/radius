@@ -30,6 +30,50 @@ translation approved by the Free Software Foundation instead of in the
 original English.
 
 
+File: radius.info,  Node: Huntgroup-Name,  Next: Simultaneous-Use,  Prev: Crypt-Password,  Up: Attribute list
+
+Huntgroup-Name
+**************
+
+     ATTRIBUTE  Huntgroup-Name    221                  string
+
+   The `Huntgroup-Name' can be used either in check-pairs of the
+`users' file record or in reply-pairs of the `huntgroups' file record.
+
+   When encountered in check-pairlist of a particular `users' profile,
+this attribute indicates the huntgroup name to be matched. Radius looks
+up the corresponding record in the `huntgroups' file. If such record is
+found, each A/V pair from its reply-list is compaired against the
+corresponing pair from the request being processed. The request matches
+only if it contains all the attributes from the specified huntgroup,
+and their values satisfy the conditions listed in the huntgroup pairs.
+
+   For example, suppose that the athentication request contained the
+following attrbutes:
+
+     User-Name = "john",
+     Password = "guess",
+     NAS-IP-Address = 10.11.11.1,
+     NAS-Port-Id = 24
+
+Let us further suppose that the `users' file contains the following
+entry:
+
+     john    Huntgroup-Name = "users_group",
+                     Auth-Type = System
+             Service-Type = Login
+
+and, finally, `huntgroups' contains the following entry:
+
+     users_group     NAS-IP-Address = 10.11.11.1
+                     NAS-Port-Id < 32
+
+   Then the authentication request would succeed since it contains
+`NAS-Port-Id' attribute and its value is less than 32.
+
+   *Note huntgroups::.
+
+
 File: radius.info,  Node: Simultaneous-Use,  Next: Strip-User-Name,  Prev: Huntgroup-Name,  Up: Attribute list
 
 Simultaneous-Use
@@ -525,11 +569,11 @@ Concept Index
 * Accounting requests:                   Accounting requests.
 * Accounting Types:                      Accounting.
 * acct statement (raddb/config):         acct.
-* Attribute <1>:                         Attributes.
-* Attribute:                             Glossary.
+* Attribute <1>:                         Glossary.
+* Attribute:                             Attributes.
 * ATTRIBUTE statement (dictionary):      ATTRIBUTE.
-* Attribute-Value pair <1>:              Glossary.
-* Attribute-Value pair:                  Attributes.
+* Attribute-Value pair <1>:              Attributes.
+* Attribute-Value pair:                  Glossary.
 * auth statement (raddb/config):         auth.
 * Authentication requests:               Authentication requests.
 * Checking Simultaneous Logins:          Checking Simultaneous Logins.
@@ -553,8 +597,8 @@ Concept Index
 * Encrypted Password Authentication Type: Encrypted Password Auth.
 * guest accounts, setting up:            Accept Auth.
 * guile interface:                       Radscm.
-* Hints <1>:                             hints matching.
-* Hints:                                 hints.
+* Hints <1>:                             hints.
+* Hints:                                 hints matching.
 * hints file:                            hints.
 * hints file, an example:                hints example.
 * hints, matching rules:                 hints matching.
@@ -573,12 +617,12 @@ Concept Index
 * menus:                                 menus.
 * menus, an example:                     menu example.
 * naming conventions:                    Naming conventions.
-* NAS <1>:                               Glossary.
-* NAS:                                   Operation.
+* NAS <1>:                               Operation.
+* NAS:                                   Glossary.
 * naslist file:                          naslist.
 * naslist file, an example:              naslist example.
-* Network Access Server <1>:             Glossary.
-* Network Access Server:                 Operation.
+* Network Access Server <1>:             Operation.
+* Network Access Server:                 Glossary.
 * notify statement (raddb/config):       notify.
 * option (raddb/config file):            option.
 * Packet:                                Packets.
@@ -592,6 +636,7 @@ Concept Index
 * radctl, control channel:               Control Channel.
 * radctl, invocation:                    radctl invocation.
 * radctl, signal interface:              Signal Interface.
+* radctl.rc file:                        radctl configuration.
 * raddb:                                 Naming conventions.
 * raddb/access.deny file:                access.deny.
 * raddb/clients file:                    clients.

@@ -1,6 +1,11 @@
 ## $Id$
 ##
 
+## This is a sample rewrite file. You would not probably need all of
+## the features it provides, so tailor it for your needs.
+## Also, should you write any new useful functions, please let
+## me know.
+
 /* ************************************************************************ 
  * Functions for normalizing packets coming from a cisco AS5300
  * usage:
@@ -22,7 +27,7 @@ integer
 cisco_pid(string A)
 {
 	if (A =~ ".*\([0-9][0-9]*\):[A-Z]:\([0-9][0-9]*\)") {
-		return fact((integer)\2);
+		return (integer)\2;
 	}
 	return -1;
 }
@@ -31,6 +36,8 @@ cisco_pid(string A)
  * The actual sid is the number before the first slash character.
  * Other possibly relevant fields are also parsed out and saved 
  * in the Voip-* A/V pairs.
+ * Note that you should $INCLUDE dictionary.voip in your main 
+ * dictionary file.
  */
 string
 cisco_sid(string S)

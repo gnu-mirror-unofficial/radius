@@ -106,8 +106,13 @@
 		Le,
 		Gt,
 		Ge,
+		BAnd,
+		BXor,
+		BOr,
 		And,
 		Or,
+		Shl,
+		Shr,
 		Add,
 		Sub,
 		Mul,
@@ -146,10 +151,13 @@
 		Expression,
 		Return,
 		Jump,
+		Branch,
 		Target,
 		Call,
 		Builtin,
 		Pop,
+		Pusha,
+		Popa,
 		Attr,
 		Attr_asgn,
 		Attr_check,
@@ -365,6 +373,15 @@
 		MTX      *dest;     /* Jump destination (usually NOP matrix) */
 	} JUMP_MTX;
 	/*
+	 * Conditional branch
+	 * Type: Branch
+	 */
+	typedef struct {
+		COMMON_MTX
+		int      cond;      /* Condition: 1 - equal, 0 - not equal */
+		MTX      *dest;     /* Jump destination (usually NOP matrix) */
+	} BRANCH_MTX;
+	/*
 	 * Stack frame matrix
 	 * Type: Enter, Leave
 	 */
@@ -436,6 +453,7 @@
 		COERCE_MTX coerce;
 		RET_MTX    ret;
 		JUMP_MTX   jump;
+		BRANCH_MTX branch;
 		TGT_MTX    tgt;
 		CALL_MTX   call;
 		BTIN_MTX   btin;
@@ -634,8 +652,12 @@
 %left OR
 %left AND
 %nonassoc MT NM
+%left '|'
+%left '^'
+%left '&'
 %left EQ NE 
 %left LT LE GT GE
+%left SHL SHR
 %left '+' '-'
 %left '*' '/' '%'
 %left UMINUS NOT TYPECAST
@@ -1040,6 +1062,34 @@ expr    : NUMBER
           {
 		  $$ = mtx_bin(Rem, $1, $3);
 	  }
+        | expr '|' expr
+          {
+		  $$ = mtx_bin(BOr, $1, $3);
+	  }
+	| expr '&' expr
+          {
+		  $$ = mtx_bin(BAnd, $1, $3);
+	  }
+	| expr '^' expr
+          {
+		  $$ = mtx_bin(BXor, $1, $3);
+	  }
+	| expr SHL expr
+          {
+		  $$ = mtx_bin(Shl, $1, $3);
+	  }
+	| expr SHR expr
+          {
+		  $$ = mtx_bin(Shr, $1, $3);
+	  }
+	| expr AND expr
+          {
+		  $$ = mtx_bin(And, $1, $3);
+	  }
+	| expr OR expr
+          {
+		  $$ = mtx_bin(Or, $1, $3);
+	  }
         | '-' expr %prec UMINUS
           {
 		  $$ = mtx_un(Neg, $2);
@@ -1235,7 +1285,7 @@ c2d(c)
 	case 'd':
 	case 'e':
 	case 'f':
-		return c - 'a' + 16;
+		return c - 'a' + 10;
 	}
 	return 100;
 }
@@ -1565,7 +1615,7 @@ yylex()
 			DEBUG_LEX("%s", yychar == '&' ? "AND" : "OR"); 
 			return yychar == '&' ? AND : OR;
 		}
-		unput(c);
+		unput(yychar);
 		
 		DEBUG_LEX("%c", c); 
 		return c;
@@ -1591,6 +1641,18 @@ yylex()
 				DEBUG_LEX("NE", 0);
 				return NE;
 			}
+		} else if (c == yychar) {
+			if (c == '<') {
+				DEBUG_LEX("SHL", 0);
+				return SHL;
+			}
+			if (c == '>') {
+				DEBUG_LEX("SHR", 0);
+				return SHR;
+			}
+			unput(yychar);
+			DEBUG_LEX("%c", yychar);
+			return yychar;
 		} else if (yychar == '~') {
 			if (c == '=') {
 				DEBUG_LEX("MT", 0);
@@ -2258,8 +2320,8 @@ mtx_bin(opcode, arg1, arg2)
 	case Integer:
 		mtx->datatype = Integer;
 	}
-	
-	mtx->opcode   = opcode;
+
+	mtx->opcode = opcode;
 	mtx->arg[0] = arg1;
 	mtx->arg[1] = arg2;
 	arg1->gen.uplink = arg2->gen.uplink = (MTX*)mtx;
@@ -2524,8 +2586,13 @@ static char *b_opstr[] = {
 	"Le",
 	"Gt",
 	"Ge",
+	"&",
+	"^",
+	"|",
 	"And",
 	"Or",
+	"Shl",
+	"Shr",
 	"Add",
 	"Sub",
 	"Mul",
@@ -2685,6 +2752,11 @@ debug_print_mtxlist(s)
 				"",
 				LINK(mtx->jump.dest));
 		        break;
+		CASE (Branch)
+			fprintf(fp, "%3.3s M:%4d",
+				mtx->branch.cond ? "NE" : "EQ",
+				LINK(mtx->branch.dest));
+		        break;
 		CASE (Call)
 			fprintf(fp, "%3.3s F:%s, A:%d:",
 				datatype_str(mtx->call.datatype),
@@ -2704,6 +2776,12 @@ debug_print_mtxlist(s)
 			break;
 
 		CASE (Pop)
+			break;
+
+		CASE (Pusha)
+			break;
+
+		CASE (Popa)
 			break;
 		
        		CASE (Attr)
@@ -2881,11 +2959,26 @@ pass2_binary(mtx)
 	case Ge:
 		dat.ival = arg0->cnst.datum.ival >= arg1->cnst.datum.ival;
 		break;
+	case BAnd:
+		dat.ival = arg0->cnst.datum.ival & arg1->cnst.datum.ival;
+		break;
+	case BOr:
+		dat.ival = arg0->cnst.datum.ival | arg1->cnst.datum.ival;
+		break;
+	case BXor:
+		dat.ival = arg0->cnst.datum.ival ^ arg1->cnst.datum.ival;
+		break;
 	case And:
 		dat.ival = arg0->cnst.datum.ival && arg1->cnst.datum.ival;
 		break;
 	case Or:
 		dat.ival = arg0->cnst.datum.ival || arg1->cnst.datum.ival;
+		break;
+	case Shl:
+		dat.ival = arg0->cnst.datum.ival << arg1->cnst.datum.ival;
+		break;
+	case Shr:
+		dat.ival = arg0->cnst.datum.ival >> arg1->cnst.datum.ival;
 		break;
 	case Add:
 		dat.ival = arg0->cnst.datum.ival + arg1->cnst.datum.ival;
@@ -2924,23 +3017,55 @@ pass2_binary(mtx)
 	return 0;
 }
 
+MTX *
+mtx_branch(cond, target)
+	int cond;
+	MTX *target;
+{
+	MTX *nop = mtx_alloc(Nop);
+	MTX *mtx = mtx_alloc(Branch);
+	mtx_insert(target, nop);
+	mtx->branch.cond = cond;
+	mtx->branch.dest = nop;
+	return mtx;
+}
+
+void
+mtx_bool(mtx)
+	MTX *mtx;
+{
+	MTX *j_mtx;
+
+	/*
+	 * Insert a j?e after first operand
+	 */
+	j_mtx = mtx_branch(mtx->bin.opcode == Or, mtx);
+	mtx_insert(mtx->bin.arg[0],  j_mtx);
+	/*
+	 * Remove the op matrix
+	 */
+	mtx_remove(mtx);
+}
+
 /*
  * Second optimization pass: immediate computations
  */
 int
 pass2()
 {
-	MTX *mtx;
+	MTX *mtx, *next;
 	int optcnt;
 	int errcnt = 0;
 	
 	do {
 		optcnt = 0;
-		for (mtx = mtx_first; mtx; mtx = mtx->gen.next) {
+		mtx = mtx_first;
+		while (mtx) {
+			next = mtx->gen.next;
 			switch (mtx->gen.type) {
 			case Unary:
 				if (mtx->un.arg->gen.type != Constant)
-					continue;
+					break;
 				if (pass2_unary(mtx))
 					errcnt++;
 				else
@@ -2960,6 +3085,9 @@ pass2()
 					case String:
 						/*NO STRING OPS SO FAR */
 					}
+				} else if (mtx->bin.opcode == And ||
+					   mtx->bin.opcode == Or) {
+					mtx_bool(mtx);
 				}
 				break;
 				/*FIXME: ADD `if (1)'/`if 0' evaluation */
@@ -2967,6 +3095,7 @@ pass2()
 				if (mtx->jump.dest == mtx->jump.next)
 					mtx_remove(mtx);
 			}
+			mtx = next;
 		}
 	} while (errcnt == 0 && optcnt > 0);
 	return errcnt;
@@ -3079,8 +3208,11 @@ static int rw_lts();
 static int rw_les();
 static int rw_gts();
 static int rw_ges();
-static int rw_and();
-static int rw_or();
+static int rw_b_xor();
+static int rw_b_and();
+static int rw_b_or();
+static int rw_shl();
+static int rw_shr();
 static int rw_add();
 static int rw_sub();
 static int rw_mul();
@@ -3094,9 +3226,14 @@ static int rw_leave();
 static int rw_match();
 static int rw_jmp();
 static int rw_jne();
+static int rw_je();
+static int rw_jtne();
+static int rw_jte();
 static int rw_adds();
 static int rw_adjstk();
 static int rw_popn();
+static int rw_pusha();
+static int rw_popa();
 static int rw_call();
 static int rw_builtin();
 static int rw_attrs();
@@ -3111,8 +3248,13 @@ INSTR bin_codetab[] = {
 	rw_le,
 	rw_gt,
 	rw_ge,
-	rw_and,
-	rw_or,
+	rw_b_and,
+	rw_b_xor,
+	rw_b_or,
+	NULL,
+	NULL,
+	rw_shl,
+	rw_shr,
 	rw_add,
 	rw_sub,
 	rw_mul,
@@ -3274,6 +3416,12 @@ codegen()
 			code(NULL);
 			break;
 
+		case Branch:
+			code(mtx->branch.cond ? rw_jne : rw_je);
+			add_target(&mtx->branch.dest->nop, rw_rt.pc);
+			code(NULL);
+			break;
+			
 		case Call:
 			code(rw_call);
 			data((int) mtx->call.fun->entry);
@@ -3292,6 +3440,14 @@ codegen()
 			code(rw_popn);
 			break;
 
+		case Popa:
+			code(rw_popa);
+			break;
+			
+		case Pusha:
+			code(rw_pusha);
+			break;
+			
 		case Attr:
 			switch (mtx->attr.datatype) {
 			case Integer:
@@ -3545,6 +3701,12 @@ popn()
 	return rw_rt.stack[--rw_rt.st];
 }
 
+int
+tos()
+{
+	return rw_rt.stack[rw_rt.st-1];
+}
+
 /*
  * Check if the stack contains at list CNT elements.
  */
@@ -3791,6 +3953,24 @@ rw_popn()
 }
 
 /*
+ * Pop a value from stack into the accumulator
+ */
+int
+rw_popa()
+{
+	cpopn(&rw_rt.rA);
+}
+
+/*
+ * Push accumulator on stack
+ */
+int
+rw_pusha()
+{
+	pushn(rw_rt.rA);
+}
+
+/*
  * String concatenation
  */
 int
@@ -3816,6 +3996,64 @@ rw_neg()
 
 	checkpop(1);
 	pushn(-popn());
+}
+
+/*
+ * Bitwise operations
+ */
+int
+rw_b_and()
+{
+	int n1, n2;
+
+	checkpop(2);
+	n2 = popn();
+	n1 = popn();
+	pushn(n1 & n2);
+}
+
+int
+rw_b_or()
+{
+	int n1, n2;
+
+	checkpop(2);
+	n2 = popn();
+	n1 = popn();
+	pushn(n1 | n2);
+}
+
+int
+rw_b_xor()
+{
+	int n1, n2;
+
+	checkpop(2);
+	n2 = popn();
+	n1 = popn();
+	pushn(n1 ^ n2);
+}
+
+int
+rw_shl()
+{
+	int n1, n2;
+
+	checkpop(2);
+	n2 = popn();
+	n1 = popn();
+	pushn(n1 << n2);
+}
+
+int
+rw_shr()
+{
+	int n1, n2;
+
+	checkpop(2);
+	n2 = popn();
+	n1 = popn();
+	pushn(n1 >> n2);
 }
 
 /*
@@ -4042,28 +4280,6 @@ rw_ges()
 }
 
 int
-rw_and()
-{
-	int n1, n2;
-
-	checkpop(2);
-	n2 = popn();
-	n1 = popn();
-	pushn(n1 && n2);
-}
-
-int
-rw_or()
-{
-	int n1, n2;
-
-	checkpop(2);
-	n2 = popn();
-	n1 = popn();
-	pushn(n1 || n2);
-} 
-
-int
 rw_not()
 {
 	int n;
@@ -4117,6 +4333,43 @@ rw_jne()
 	
 	n = popn();
 	if (n != 0)
+		rw_rt.pc = pc;
+	return 0;
+}
+
+int
+rw_je()
+{
+	int n;
+	pctr_t pc = (pctr_t) rw_rt.code[rw_rt.pc++];
+	
+	n = popn();
+	if (n == 0)
+		rw_rt.pc = pc;
+	return 0;
+}
+
+/*
+ * Jump if top of stak value is not zero
+ */
+int
+rw_jtne()
+{
+	int n;
+	pctr_t pc = (pctr_t) rw_rt.code[rw_rt.pc++];
+	
+	if (tos() != 0)
+		rw_rt.pc = pc;
+	return 0;
+}
+
+int
+rw_jte()
+{
+	int n;
+	pctr_t pc = (pctr_t) rw_rt.code[rw_rt.pc++];
+	
+	if (tos() == 0)
 		rw_rt.pc = pc;
 	return 0;
 }
@@ -4342,7 +4595,7 @@ function_install(fun)
 	return fp;
 }
 
-#if 0
+#if 1
 /* ****************************************************************************
  * Test only
  */

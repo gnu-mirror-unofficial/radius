@@ -733,7 +733,7 @@ SQL Accounting
 `--enable-mysql' option and `sqlserver' file in its configuration
 directory is properly set up *Note sqlserver::.
 
-   This version of GNU Radius (0.93-pre) supports only MySQL servers.
+   This version of GNU Radius (0.93) supports only MySQL servers.
 Support for other SQL servers will be added in future versions.
 
    With this accounting method enabled, `radiusd' will store the

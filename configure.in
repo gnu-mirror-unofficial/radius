@@ -3,7 +3,7 @@ dnl * $Id$
 AC_REVISION($Revision$)
 AC_INIT(radiusd/radiusd.c)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(gnu-radius, 0.93-pre)
+AM_INIT_AUTOMAKE(gnu-radius, 0.93)
 AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 

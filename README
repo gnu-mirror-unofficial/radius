@@ -161,7 +161,60 @@ for following NASes is already included:
 Support for another NASes can easily be added without recompiling Radius. 
 See accompanying documentation (Ref. "rewrite").
 
-		IV. Bug reporting.		
+		IV. Testing.		
+           ------------------------------------------------
+Use radtest. 
+
+1. To test authentication do
+
+	radtest -l LOGIN -p PASSWD -P PORT-ID --auth
+
+2. To test accounting do
+
+	radtest -l LOGIN -p PASSWD -P PORT-ID -s SESSION-ID --start
+or
+	radtest -l LOGIN -P PORT-ID -s SESSION-ID --stop
+
+Here,
+	LOGIN		is the user's login name
+	PASSWD		is his password. Use `.' (dot) to get prompted
+			for the password as passwd(1) does.
+	PORT-ID		is the port number
+	SESSION-ID	is a session ID (a string uniquely identifying
+			the session). It can be an arbitrary string
+			when used with --start option. It should be
+			a session ID of a previously started session
+			when used with --stop option.
+
+For example, supposing user `hamlet' has an entry in the users file,
+the following would authenticate it and open a session for it:
+
+	radtest -l hamlet -p guessme -P 1 -s "0001" --start
+
+Now, if you run radwho, you would get something like:
+
+     Login             Name What  TTY     When     From        Location
+hamlet           hamlet      PPP  S001  Mon 07:22 localhost    255.255.255.254
+
+radlast shows the following;
+
+hamlet      local    001 127.0.0.2       Thu Mon 07 07:22 - still logged in
+
+radwtmp begins Fri Dec 01 16:36:59 2000
+
+Then, suppose you run:
+
+	radtest -l hamlet -P 1 -s "0001" --stop
+
+This will send a stop record for session 0001. Radlast would then show
+something like:
+
+hamlet      local    001 127.0.0.2       Thu Mon 07 07:22 - 07:25  (00:03) 
+
+radwtmp begins Fri Dec 01 16:36:59 2000
+
+
+		V. Bug reporting.		
            ------------------------------------------------
 
 Bug reports are velcome. Should you find any bugs please report them 

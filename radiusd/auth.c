@@ -716,20 +716,21 @@ is_log_mode(m, mask)
 	MACH *m;
 	int mask;
 {
-	int mode = log_mode;
+        int mode = log_mode;
+        int xmask = 0;
 #ifdef DA_LOG_MODE_MASK
-	VALUE_PAIR *p;
-	
-	for (p = avl_find(m->user_check, DA_LOG_MODE_MASK);
-	     p;
-	     p = p->next ? avl_find(p->next, DA_LOG_MODE_MASK) : NULL) 
-		mode &= ~p->lvalue;
-	for (p = avl_find(m->req->request, DA_LOG_MODE_MASK);
-	     p;
-	     p = p->next ? avl_find(p->next, DA_LOG_MODE_MASK) : NULL) 
-		mode &= ~p->lvalue;
+        VALUE_PAIR *p;
+
+        for (p = avl_find(m->user_check, DA_LOG_MODE_MASK);
+             p;
+             p = p->next ? avl_find(p->next, DA_LOG_MODE_MASK) : NULL)
+                xmask |= p->lvalue;
+        for (p = avl_find(m->req->request, DA_LOG_MODE_MASK);
+             p;
+             p = p->next ? avl_find(p->next, DA_LOG_MODE_MASK) : NULL)
+                xmask |= p->lvalue;
 #endif
-	return mode & mask;
+        return (mode & ~xmask) & mask;
 }
 
 int

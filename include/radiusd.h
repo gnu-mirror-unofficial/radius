@@ -157,17 +157,19 @@ typedef enum {
 
 typedef struct {
 	struct timeval start_time;
-	int nas_count; /* Number of NASes in the nas_stat tail */
+	unsigned port_count; /* Number of ports in the port_stat array */
+	unsigned nas_count;  /* Number of NASes in the nas_stat array */
 	int nas_index; /* Next available NAS index */
 	Auth_server_stat auth;
 	Acct_server_stat acct;
-	/* a tail of nas_stat structures follows */
+	struct nas_stat *nas_head, *nas_tail;
+	struct port_stat *port_head, *port_tail;
 } Server_stat;
 
 #define stat_inc(m,a,c) \
  do {\
 	NAS *nas;\
-	server_stat->##m . ##c ++;\
+	server_stat . ##m . ##c ++;\
 	if ((nas = nas_lookup_ip(a)) != NULL && nas->app_data)\
 		((struct nas_stat*)nas->app_data)-> ##m . ##c ++;\
  } while (0)
@@ -256,7 +258,7 @@ extern pth_t radius_pid;
 #ifdef USE_SNMP
 extern int snmp_port;
 extern char *server_id;
-extern Server_stat *server_stat;
+extern Server_stat server_stat;
 #endif
 
 /*
@@ -353,12 +355,6 @@ char * get_menu(char *menu_name);
 /* timestr.c */
 int timestr_match(char *, time_t);
 
-/* shmem.c */
-int shmem_alloc(unsigned size);
-void shmem_free();
-void shmem_free();
-void * shmem_get(unsigned size, int zero);
-
 #ifdef USE_SNMP
 /* snmpserv.c */
 void snmp_tree_init();
@@ -380,11 +376,16 @@ int xlat_keyword(struct keyword *kw, char *str, int def);
 
 
 /* stat.c */
+#ifdef USE_SNMP
 void stat_init();
 void stat_done();
 void stat_update(struct radutmp *ut, int status);
-void stat_create();
 void stat_count_ports();
+#else
+# define stat_init()
+# define stat_done()
+# define stat_update(ut,status)
+#endif
 
 /* snmpserver.c */
 struct sockaddr_in;

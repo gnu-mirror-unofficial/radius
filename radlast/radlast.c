@@ -37,6 +37,7 @@ static char rcsid[] =
 #include <errno.h>
 #include <stdarg.h>
 #include <assert.h>
+#include <signal.h>
 #include <netinet/in.h>
 #ifdef HAVE_GETOPT_LONG
 # include <getopt.h>
@@ -289,6 +290,15 @@ rawread()
 }
 #endif
 
+volatile int stop;
+
+RETSIGTYPE
+sig_int(sig)
+	int sig;
+{
+	stop = 1;
+}
+
 void
 radwtmp()
 {
@@ -307,9 +317,12 @@ radwtmp()
 	}
 	bl = (stb.st_size + sizeof(buf) - 1) / sizeof(buf);
 	
+	signal(SIGINT, sig_int);
+	stop = 0;
+
 	/*time(&buf[0].ut_time);*/
 	
-	while (--bl >= 0) {
+	while (!stop && --bl >= 0) {
 		if (lseek(wfd, (off_t)(bl * sizeof(buf)), L_SET) == -1 ||
 		    (bytes = read(wfd, buf, sizeof(buf))) == -1)
 			radlog(L_ERR, "%s", file);

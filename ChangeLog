@@ -1,4 +1,10 @@
-2003-05-30  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+2003-06-02  Sergey Poznyakoff
+
+	* radiusd/snmpserv.c (_acl_iterator): Fixed coredump on NULL
+	communities.
+	(snmp_agent_response): Fixed memory leaks on nonexisting OIDs.
+
+2003-05-30  Sergey Poznyakoff
 
 	* radiusd/testsuite/radiusd/proxy.exp: Fixed copyleft statement.
 	* radiusd/testsuite/radiusd/radiusd.exp: Likewise.

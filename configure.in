@@ -137,7 +137,7 @@ AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  setlocale bzero \
  inet_ntoa inet_aton setvbuf seteuid setreuid getdtablesize) 
 AM_FUNC_OBSTACK
-AC_REPLACE_FUNCS(strerror strncasecmp)
+AC_REPLACE_FUNCS(strerror strncasecmp snprintf vasprintf)
 rad_REPLACE_GNU_GETOPT
 rad_LIB_REGEX
 

@@ -24,7 +24,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <varargs.h>
 #include <string.h>
 #include <unistd.h>
 #include <ctype.h>
@@ -93,26 +92,44 @@ _pam_vlog(int err, const char *format, va_list args)
 }
 
 static void
-_pam_log(err, format, va_alist)
+_pam_log 
+#if STDC_HEADERS
+        (int err, const char *format, ...)
+#else
+        (err, format, va_alist)
         int err;
         const char *format;
         va_dcl
+#endif
 {
         va_list args;
 
-        va_start(args);
+#if STDC_HEADERS
+        va_start(args, format);
+#else
+	va_start(args);
+#endif
         _pam_vlog(err, format, args);
         va_end(args);
 }
 
 static void
-_pam_debug(format, va_alist)
+_pam_debug
+#if STDC_HEADERS
+          (char *format, ...)
+#else
+          (format, va_alist)
         char *format;
         va_dcl
+#endif
 {
         va_list args;
 
+#if STDC_HEADERS
+	va_start(args, format);
+#else
         va_start(args);
+#endif
         _pam_vlog(LOG_DEBUG, format, args);
         va_end(args);
 }

@@ -23,10 +23,8 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
-#include <varargs.h>
 #include <syslog.h>
 #include <radiusd.h>
-#include <log.h>
 #include <slist.h>
 
 static pthread_once_t log_once = PTHREAD_ONCE_INIT;
@@ -256,10 +254,15 @@ channel_close_file(chan, fp)
 #ifdef USE_SQL
 /*PRINTFLIKE2*/
 void
-sqllog(status, msg, va_alist)
+sqllog
+#if STDC_HEADERS
+      (int status, char *msg, ...)
+#else
+      (status, msg, va_alist)
         int status;
         char *msg;
         va_dcl
+#endif
 {
         va_list ap;
         FILE *fp;
@@ -274,7 +277,11 @@ sqllog(status, msg, va_alist)
                 return;
         }
         efree(path);
+#if STDC_HEADERS
+	va_start(ap, msg);
+#else
         va_start(ap);
+#endif
         vfprintf(fp, msg, ap);
         fprintf(fp, ";\n");
         va_end(ap);

@@ -27,7 +27,6 @@ static char rcsid[] =
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <varargs.h>
 #include <time.h>
 #include <errno.h>
 #include <string.h>
@@ -35,17 +34,26 @@ static char rcsid[] =
 
 /*PRINTFLIKE2*/
 void
-radlog(lvl, msg, va_alist)
+radlog
+#if STDC_HEADERS
+      (int lvl, char *msg, ...)
+#else	
+      (lvl, msg, va_alist)
         int lvl;
         char *msg;
         va_dcl
+#endif
 {
         va_list ap;
         int ec = 0;
 
         if (lvl & L_PERROR)
                 ec = errno;
+#if STDC_HEADERS	
+        va_start(ap, msg);
+#else
         va_start(ap);
+#endif
         vlog(lvl, NULL, 0, NULL, ec, msg, ap);
         va_end(ap);
 }
@@ -117,21 +125,29 @@ rad_print_request(req, outbuf, size)
 
 /*PRINTFLIKE3*/
 void
-radlog_req(lvl, req, msg, va_alist)
+radlog_req
+#if STDC_HEADERS
+           (int lvl, RADIUS_REQ *req, char *msg, ...)
+#else
+	   (lvl, req, msg, va_alist)
         int lvl;
 	RADIUS_REQ *req;
         char *msg;
         va_dcl
+#endif
 {
 	va_list ap;
 
+#if STDC_HEADERS	
+	va_start(ap, msg);
+#else
+	va_start(ap);
+#endif
 	if (req) {
 		char idbuf[MAXIDBUFSIZE];
 		char *buf = NULL;
 
-		va_start(ap);
 		vasprintf(&buf, msg, ap);
-		va_end(ap);
 	
 		radlog(lvl, "%s: %s",
 		       rad_print_request(req, idbuf, sizeof idbuf),
@@ -142,27 +158,35 @@ radlog_req(lvl, req, msg, va_alist)
 
 		if (lvl & L_PERROR)
 			ec = errno;
-		va_start(ap);
 		vlog(lvl, NULL, 0, NULL, ec, msg, ap);
-		va_end(ap);
 	}		
+	va_end(ap);
 }
 
 void
-_dolog(level, file, line, func_name, fmt, va_alist)
+_dolog
+#if STDC_HEADERS
+      (int level, char *file, int line, char *func_name, char *fmt, ...)
+#else
+      (level, file, line, func_name, fmt, va_alist)
         int level;
         char *file;
         int line;
         char *func_name;
         char *fmt;
         va_dcl
+#endif
 {
         va_list ap;
         int ec = 0;
         
         if (level & L_PERROR)
                 ec = errno;
-        va_start(ap);
+#if STDC_HEADERS	
+	va_start(ap, fmt);
+#else
+	va_start(ap);
+#endif
         vlog(level, file, line, func_name, ec, fmt, ap);
         va_end(ap);
 }
@@ -180,15 +204,24 @@ _debug_print(file, line, func_name, str)
 
 /*VARARGS*/
 char *
-_debug_format_string(va_alist)
+_debug_format_string
+#if STDC_HEADERS
+                    (char *fmt, ...)
+#else
+                    (va_alist)
         va_dcl
+#endif
 {
         va_list ap;
-        char *fmt;
         char *str = NULL;
-        
+#if !STDC_HEADERS
+        char *fmt;
+	
         va_start(ap);
         fmt = va_arg(ap,char*);
+#else
+	va_start(ap, fmt);
+#endif
         vasprintf(&str, fmt, ap);
         va_end(ap);
         return str;

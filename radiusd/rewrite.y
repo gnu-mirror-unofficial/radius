@@ -28,7 +28,6 @@
 #include <radiusd.h>
 #include <symtab.h>
 #include <setjmp.h>
-#include <varargs.h>
 #include <obstack1.h>
 #include <argcv.h>
 #include <rewrite.h>
@@ -4623,11 +4622,16 @@ run_init(pc, request)
 
 /*VARARGS3*/
 int
-va_run_init(name, request, typestr, va_alist)
+va_run_init
+#if STDC_HEADERS
+           (char *name, VALUE_PAIR *request, char *typestr, ...)
+#else
+           (name, request, typestr, va_alist)
         char *name;
         VALUE_PAIR *request;
         char *typestr;
         va_dcl
+#endif
 {
         FILE *fp;
         va_list ap;
@@ -4661,7 +4665,11 @@ va_run_init(name, request, typestr, va_alist)
 
         /* Pass arguments */
         nargs = 0;
+#if STDC_HEADERS
+	va_start(ap, typestr);
+#else
         va_start(ap);
+#endif
         while (*typestr) {
                 nargs++;
                 switch (*typestr++) {
@@ -4879,7 +4887,7 @@ run_rewrite(name, req)
 
 SCM
 radscm_datum_to_scm(type, datum)
-        int type;
+        Datatype type;
         Datum datum;
 {
         switch (type) {

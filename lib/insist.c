@@ -18,7 +18,7 @@ static char rcsid[] = "@(#) $Id$";
 #endif
 
 #include <stdlib.h>
-#include <log.h>
+#include <radius.h>
 
 int
 __insist_failure(str, file, line)

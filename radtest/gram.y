@@ -41,7 +41,6 @@ static char rcsid[] =
 #include <signal.h>
 #include <errno.h>
 #include <sys/wait.h>
-#include <varargs.h>
 #include <sysdep.h>
 #include <radius.h>
 #include <radtest.h>
@@ -367,14 +366,23 @@ yyerror(s)
 }
 
 void
-parse_error(va_alist)
+parse_error
+#if STDC_HEADERS
+           (char *fmt, ...)
+#else
+           (va_alist)
         va_dcl
+#endif
 {
         va_list ap;
+#if !STDC_HEADERS
         char *fmt;
         
         va_start(ap);
         fmt = va_arg(ap, char*);
+#else
+	va_start(ap, fmt);
+#endif
         fprintf(stderr, "%s:%d: ", source_filename, source_line_num);
         vfprintf(stderr, fmt, ap);
         va_end(ap);

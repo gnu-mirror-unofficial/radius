@@ -409,7 +409,6 @@ void app_setup();
 
 /* log.c */
 void sqllog(/* int status, char *msg, va_alist */);
-char * debug_print_pair(VALUE_PAIR *pair);
 
 /* rewrite.y */
 int run_rewrite(char *name, VALUE_PAIR *req);

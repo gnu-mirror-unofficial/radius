@@ -151,3 +151,13 @@ estrdup(char *s)
         p = emalloc(strlen(s)+1);
         return strcpy(p, s);
 }
+
+char *
+string_replace(char **str, char *new_value)
+{
+	char *p = *str;
+	*str = estrdup(new_value);
+	if (p)
+		efree(p);
+	return *str;
+}

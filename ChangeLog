@@ -1,3 +1,23 @@
+2002-01-28  Sergey Poznyakoff  
+
+	* radiusd/radiusd.c (rad_daemon): Force the safe umask.
+*	* test/radiusd.m4: Make number of subtests in stress test
+	  configurable via environment variable STRESS_COUNT.
+	* test/test.sh.m4: Sleep until daemon really starts up
+	  instead of sleeping an arbitrary amount of time.
+
+	* acconfig.h: Define _REENTRANT
+	* configure.in:	Reentrant interfaces to gethostby.* functions
+	  are defined in at least 4 different ways on different platforms.
+	  Therefore, ignore them and provide our own versions
+	  unconditionally.
+	* radlib/gethost_r.c: Likewise.
+	* radlib/iputil.c: Likewise.
+	* include/radius.h: Likewise.
+	* include/sysdep.h: Likewise.
+	* radiusd/rewrite.y: Ensure thread safety.
+	* radlib/mem.c: Recursive mutexes are not portable. Fixed.
+	
 2002-01-27  Sergey Poznyakoff  
 
 	Fixed a couple of bugs. Tested authentication under stress

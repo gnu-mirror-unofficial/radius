@@ -640,14 +640,14 @@ proxy_receive(radreq, activefd)
         if (state) {
                 if (state->proxy_id   == radreq->id &&
                     state->rem_ipaddr == radreq->ipaddr) {
-                        oldreq = scan_request_list(R_PROXY,
+                        oldreq = request_scan_list(R_PROXY,
                                                    proxy_compare_request,
                                                    &data);
                 } else {
                         oldreq = NULL;
                 }
         } else {
-                oldreq = scan_request_list(R_PROXY,
+                oldreq = request_scan_list(R_PROXY,
                                            proxy_compare_request_no_state,
                                            &data);
         }

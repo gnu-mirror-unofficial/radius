@@ -1994,7 +1994,7 @@ get_queue_stat(qno, var, key)
         struct timezone tz;
         QUEUE_STAT stat;
         
-        stat_request_list(stat);
+        request_stat_list(stat);
         switch (key) {
         case MIB_KEY_queueIndex:
                 var->type = ASN_INTEGER;

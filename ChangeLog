@@ -1,3 +1,21 @@
+2004-02-04  Sergey Poznyakoff
+
+	* TODO: Updated
+	* include/radius.h (struct nas): Removed 'next'.
+	(grad_nas_next): Removed
+	(grad_nas_iterator): New function
+	* lib/nas.c: Rewritten using general purpose lists
+	* radiusd/snmpserv.c: Use new NAS iteration approach
+	* radiusd/stat.c: Likewise.
+
+	* doc/rfc/rfc2433.txt: New file
+	* doc/rfc/rfc2548.txt: New file
+	* doc/rfc/rfc2759.txt: New file
+	* doc/rfc/Makefile.am: Added new RFCs
+
+	* raddb/dict/microsoft: New file (arriere, diable!)
+	* raddb/Makefile.am: Reluctantly added dict/microsoft
+
 2004-02-03  Sergey Poznyakoff
 	
 	* TODO: Updated

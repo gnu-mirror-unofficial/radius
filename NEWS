@@ -6,6 +6,24 @@ Please send radius bug reports to <bug-gnu-radius@gnu.org>
 
 Version 1.1.95:
 
+* Important notes for upgrading from versions 1.0 - 1.1
+
+** This version does a very strict semantic checking on the dictionary
+files. Old dictionaries may produce lots of warnings and
+errors, therefore, new dictionaries are always installed by `make
+install'. The default main dictionary file, raddb/dictionary, does
+not contain any attribute declarations, instead it merely includes
+the necessary dictionaries.
+
+Any modifications to the dictionary files in raddb/dict are now
+strongly discouraged, as these files will be updated by each new
+release. Put your modifications to the main dictionary file,
+raddb/dictionary. This file will remain unchanged during subsequent
+installs.
+
+Two new statements are provided to help you customize your dictionary.
+See section `** Dictionary' below.
+
 * New features:
 
 ** Support for Status-Server request.
@@ -139,6 +157,13 @@ could cause name-clashes with  functions declared in old-version
 raddb/rewrite. Configure should take care of this]
 
 ** Dictionary
+
+Redefinition of an attribute produces a warning message. In future
+releases it will be considered an error.
+
+There are two new statements: ALIAS and PROPERTY. ALIAS statement
+defines an alternative name for an attribute. PROPERTY redefines
+the attribute properties.
 
 Flag 'E' marks attributes encrypted as per RFC 2138. Currently
 these are User-Password and CHAP-Password. 

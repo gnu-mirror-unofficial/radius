@@ -108,8 +108,8 @@ make_raddb() {
     fi    
 }
 
-make_raddb raddb config client.conf users acct.scm realms
-make_raddb proxy client.conf config realms
+make_raddb raddb dictionary config client.conf users acct.scm realms
+make_raddb proxy dictionary client.conf config realms
 
 drv_guile() {
     :

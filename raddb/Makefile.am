@@ -19,17 +19,17 @@
 #
 
 raddbdir=$(sysconfdir)/raddb
-raddb_subdirs=dict menus
+raddb_subdirs=dict 
 
 rewritedir=$(pkgdatadir)/$(VERSION)/rewrite
 
-newdict=\
- dictionary\
+dictionaries=\
  dict/ascend\
  dict/ascend.vs\
  dict/cisco\
  dict/compat\
  dict/livingston\
+ dict/standard\
  dict/tunnel\
  dict/usr\
  dict/voip
@@ -37,11 +37,9 @@ newdict=\
 raddb_files_644=\
  access.deny\
  config\
- $(newdict)\
+ dictionary\
  hints\
  huntgroups\
- menus/menu1\
- menus/menu2\
  naslist\
  nastypes\
  realms\
@@ -52,7 +50,7 @@ raddb_files=$(raddb_files_600) $(raddb_files_644)
 
 rewrite_DATA = checknas.rw log-hook.rw
 
-EXTRA_DIST=$(raddb_files) client.conf.in config.in checknas.rw log-hook.rw
+EXTRA_DIST=$(raddb_files) $(dictionaries) client.conf.in config.in checknas.rw log-hook.rw
 DISTCLEANFILES=client.conf
 
 install-data-local:
@@ -77,4 +75,7 @@ install-data-local:
 			${INSTALL} -m 600 $(top_srcdir)/raddb/$$file $(DESTDIR)$(raddbdir)/$$file; \
 		done; \
 	fi
+	@for file in $(dictionaries); do \
+		${INSTALL} -m 644 $(top_srcdir)/raddb/$$file $(DESTDIR)$(raddbdir)/$$file; \
+	done; 
 

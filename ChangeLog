@@ -1,3 +1,46 @@
+2003-12-03  Sergey Poznyakoff 
+
+	* raddb/dict/standard: New file
+	* radiusd/testsuite/proxy/dictionary.in
+	* radiusd/testsuite/raddb/dictionary.in
+	* NEWS: Updated
+
+	* include/Makefile.am: Updated rule for creating raddict.h
+	* include/radius.h (struct dict_attr.next): Removed
+	* lib/dict.c: Changed the way attributes are stored.
+	Implemented new keywords ALIAS and PROPERTY.
+
+	* raddb/menus: Removed.
+	* raddb/Makefile.am: Updated
+	* raddb/dictionary: All real declarations moved to raddb/standard.
+	This file contains only $INCLUDE statements and eventual user
+	customizations.
+	* raddb/dict/compat: Rewritten using ALIAS statements.
+	* raddb/access.deny: Minor change.
+	* raddb/client.conf.in: Likewise
+	* raddb/clients: Likewise
+	* raddb/config.in: Likewise
+	* raddb/hints: Likewise	
+	* raddb/huntgroups: Likewise
+	* raddb/naslist: Likewise
+	* raddb/nastypes: Likewise
+	* raddb/realms: Likewise
+	* raddb/sqlserver: Likewise
+	* raddb/users: Likewise
+	* raddb/dict/ascend: Likewise
+	* raddb/dict/ascend.vs: Likewise
+	* raddb/dict/cisco: Likewise
+	* raddb/dict/livingston: Likewise
+	* raddb/dict/tunnel: Likewise
+	* raddb/dict/usr: Likewise
+	* raddb/dict/voip: Likewise
+	
+	* radiusd/testsuite/proxy/Makefile.am: Rewritten
+	* radiusd/testsuite/raddb/Makefile.am: Rewritten
+	
+	* radiusd/testsuite/test.sh.m4: Updated
+	* radiusd/files.c (dump_matching_rules): Bugfix.
+	
 2003-12-02  Sergey Poznyakoff
 
 	* radiusd/tsh.c (tsh_timespan): Minor fix: the second

@@ -1,3 +1,10 @@
+2003-12-03  Sergey Poznyakoff
+
+	* radius.texi: Added detailed node listing
+	* configure.texi: Document new dictionary statements
+	* client.texi: Minor change
+	* radauth.texi: Minor change
+
 2003-12-02  Sergey Poznyakoff 
 
 	* extensions.texi: Minor change

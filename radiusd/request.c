@@ -120,10 +120,10 @@ request_respond(REQUEST *req)
 }
 
 void
-request_xmit(REQUEST *req)
+request_xmit(REQUEST *req, void *data)
 {
         if (request_class[req->type].xmit) 
-                request_class[req->type].xmit(req);
+                request_class[req->type].xmit(req, data);
 }
 
 int
@@ -140,7 +140,7 @@ request_cleanup(int type, void *data)
 }
 
 int
-request_forward(REQUEST *req)
+request_forward(REQUEST *req, void *orig_data)
 {
 	if (radiusd_master()) {
 		if (rpp_ready(req->child_id)) { 
@@ -152,7 +152,7 @@ request_forward(REQUEST *req)
 			return 1;
 		}
 	} else
-		request_xmit(req);
+		request_xmit(req, orig_data);
 	return 0;
 }
 
@@ -200,7 +200,8 @@ _request_iterator(void *item, void *clos)
 			request_free(req);
 		}
 	} else {
-		if (req->status == RS_XMIT && request_forward(req) == 0) 
+		if (req->status == RS_XMIT
+		    && request_forward(req, NULL) == 0) 
 			return 0;
 
 		if (req->timestamp + request_class[req->type].ttl
@@ -232,7 +233,7 @@ _request_iterator(void *item, void *clos)
 			   completed, hand it over to the child.
 			   Otherwise drop the request. */
 			if (req->status == RS_COMPLETED
-			    && request_forward(req) == 0)
+			    && request_forward(req, rp->data) == 0)
 				break;
 			else
 				request_drop(req->type, rp->data,

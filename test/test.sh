@@ -21,7 +21,7 @@ fi
 (cd ${BUILDDIR}/test;
  [ -d raddb ] || cp -r ${SOURCEDIR}/test/raddb .
 
- EXPR=`./findport -c3 -s1644 "-fs/@AUTH_PORT@/%d/;s/@ACCT_PORT@/%d/;s/@CNTL_PORT@/%d/"`
+ EXPR=`./findport -c2 -s1644 "-fs/@AUTH_PORT@/%d/;s/@ACCT_PORT@/%d/"`
  sed $EXPR raddb/config.in > raddb/config
  sed $EXPR raddb/radctl.rc.in > raddb/radctl.rc
 

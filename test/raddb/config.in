@@ -44,10 +44,3 @@ proxy {
 	request-cleanup-delay 2;
 };
 
-cntl {
-	port @CNTL_PORT@;
-};
-
-#usedbm never;
-
-#notify off;

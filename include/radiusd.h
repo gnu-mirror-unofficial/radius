@@ -217,6 +217,8 @@ typedef struct snmp_req {
 #define stat_inc(m,a,c)
 #endif
 
+typedef void (*config_hook_fp)(void *func_data, void *app_data);
+
 #define SECONDS_PER_DAY         86400
 #define MAX_REQUEST_TIME        60
 #define CLEANUP_DELAY           10
@@ -323,6 +325,11 @@ void radiusd_pidfile_remove(char *name);
 int radiusd_is_watched();
 int radiusd_restart();
 int radiusd_primitive_restart();
+void run_before_config_hooks(void *data);
+void run_after_config_hooks(void *data);
+void register_before_config_hook(config_hook_fp fp, void *data);
+void register_after_config_hook(config_hook_fp fp, void *data);
+
 /* radius.c */
 
 #define REQ_AUTH_OK   0
@@ -413,7 +420,7 @@ int timestr_match(char *, time_t);
 
 #ifdef USE_SNMP
 /* snmpserv.c */
-void snmp_tree_init();
+void snmpserv_init(void *arg);
 void snmp_auth_server_reset();
 void snmp_acct_server_reset();
 void snmp_attach_nas_stat(NAS *nas);
@@ -489,8 +496,6 @@ int scheme_auth(char *procname, RADIUS_REQ *req,
 int scheme_acct(char *procname, RADIUS_REQ *req);
 void scheme_add_load_path(char *path);
 void scheme_read_eval_loop();
-void scheme_before_reconfig();
-void scheme_after_reconfig();
 void start_guile();
 int guile_cfg_handler(int argc, cfg_value_t *argv,
 		      void *block_data, void *handler_data);

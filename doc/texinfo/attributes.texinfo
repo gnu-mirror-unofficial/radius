@@ -70,6 +70,8 @@ Radius Internal Attributes
 * Login-Time::
 * Replace-User-Name::
 * Rewrite-Function::
+* Match-Profile::
+* Include-Profile::
 @end menu
 
 @comment **************************************************************
@@ -1400,7 +1402,7 @@ The string consisting of @samp{#} character followed by
 
 
 @comment **************************************************************
-@node Rewrite-Function, , Replace-User-Name, Attribute list
+@node Rewrite-Function, Match-Profile, Replace-User-Name, Attribute list
 @chapter Rewrite-Function
 @vindex Rewrite-Function
 
@@ -1425,3 +1427,47 @@ i.e. it should return integer value and should not take any arguments.
 @xref{rewrite,, Packet rewriting rules}.
 @xref{hints}
 @xref{huntgroups}
+
+@comment **************************************************************
+@node Match-Profile, Include-Profile, Rewrite-Function, Attribute list
+@chapter Match-Profile
+@vindex Match-Profile
+
+@example
+ATTRIBUTE  Match-Profile     2004                 string
+@end example
+
+@example
+IPPOOL  NAS-IP-Address = 192.168.10.1
+                Framed-Protocol = PPP, Framed-IP-Address = "10.10.10.1+"
+
+IPPOOL  NAS-IP-Address = 192.168.11.1
+                Framed-Protocol = PPP, Framed-IP-Address = "10.10.11.1+"
+
+guest   Auth-Type = SQL
+        Match-Profile = IPPOOL
+@end example
+
+@comment **************************************************************
+@node Include-Profile, , Match-Profile, Attribute list
+@chapter Include-Profile
+@vindex Include-Profile
+
+@example
+ATTRIBUTE  Include-Profile   2005                 string
+@end example
+
+This attribute can be used in reply-pair list to cause the contents of
+a specified user profile to be checked. 
+
+Example:
+
+@example
+IPPOOL  NULL
+                Framed-Protocol = PPP, Framed-IP-Address = "10.10.10.1+"
+
+guest   NAS-IP-Address = 192.168.10.1,
+                Auth-Type = SQL
+        Include-Profile = IPPOOL
+@end example
+                

@@ -10,7 +10,7 @@ librad_a_SOURCES=intl.c radpaths.c alloc.c radprintf.c raddb.c dict.c \
                  fixalloc.c iputil.c strerror.c strncasecmp.c \
                  md5.c md5crypt.c mem.c leakdetect.c obstack.c \
                  users_gram.c users_lex.c util.c client.c \
-		 insist.c debug.c slist.c
+		 insist.c debug.c slist.c dbm.c
 liblog_a_SOURCES=log.c 
 libdebug_a_SOURCES=debugmod.c
 

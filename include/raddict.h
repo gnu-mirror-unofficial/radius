@@ -64,6 +64,7 @@
 #define DA_LOGIN_LAT_PORT 63
 #define DA_CONNECT_INFO 77
 #define DA_USER_UID 99
+#define DA_USER_GID 100
 /* 
  *  Cistron-Radius compatibility
  * 
@@ -87,6 +88,7 @@
 #define DA_ACCT_TYPE 2003
 #define DA_MATCH_PROFILE 2004
 #define DA_INCLUDE_PROFILE 2005
+#define DA_AUTH_DATA 2006
 #define DA_QUEUE_ID 65534
 #define DV_ACCT_TYPE_NONE 0
 #define DV_ACCT_TYPE_SYSTEM 1

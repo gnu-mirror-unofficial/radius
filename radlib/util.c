@@ -121,6 +121,8 @@ pairadd(first, new)
 	VALUE_PAIR **first;
 	VALUE_PAIR *new;
 {
+	if (!new)
+		return;
 	new->next = NULL;
 	pairlistadd(first, new);
 }

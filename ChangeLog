@@ -1,3 +1,9 @@
+2002-01-28  Sergey Poznyakoff
+
+	* m4/common.m4: Fixed definition of rad_RESULT_ACTIONS.
+
+	Untabified the sources.
+	
 2002-01-28  Sergey Poznyakoff  
 
 	* radiusd/radiusd.c (rad_daemon): Force the safe umask.

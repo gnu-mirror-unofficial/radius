@@ -45,11 +45,103 @@ static char rcsid[] =
 
 static PROXY_ID *proxy_id;
 
-void proxy_addrequest(RADIUS_REQ *radreq);
-static void passwd_recode(VALUE_PAIR *pair,
-                          char *new_secret, char *new_vector, RADIUS_REQ *req);
-static int proxy_send_request(int fd, RADIUS_REQ *radreq);
-static UINT4 get_socket_addr(int fd);
+/* ************************************************************************* */
+/* Functions local to this module */
+
+static UINT4
+get_socket_addr(int fd)
+{
+	struct sockaddr_in sin;
+	int len = sizeof(sin);
+	UINT4 ip = 0;
+
+	if (getsockname(fd, (struct sockaddr*)&sin, &len) == 0)
+		ip = sin.sin_addr.s_addr;
+
+	if (ip == INADDR_ANY)
+		ip = ref_ip;
+	return ip;
+}
+
+
+/*
+ *      Decode a password and encode it again.
+ */
+static void
+passwd_recode(VALUE_PAIR *pass_pair, char *new_secret, char *new_vector,
+	      RADIUS_REQ *req)
+{
+        char    password[AUTH_STRING_LEN+1];
+        req_decrypt_password(password, req, pass_pair);
+        string_free(pass_pair->avp_strvalue);
+        encrypt_password(pass_pair, password, new_vector, new_secret);
+        /* Don't let the cleantext hang around */
+        memset(password, 0, AUTH_STRING_LEN);
+}
+
+/* ************************************************************************* */
+/* Functions for finding the matching request in the list of outstanding ones.
+ * There appear to be two cases: i) when the remote server retains the
+ * Proxy-State A/V pair, which seems to correspond to RFC 2865,
+ * and ii) when the remote server drops the Proxy-State pair.
+ */
+
+int
+proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r)
+{
+	VALUE_PAIR *p, *proxy_state_pair = NULL;
+        PROXY_STATE *state;
+	
+	if (!qr->server) {
+		debug(100,("no proxy server"));
+		return 1;
+	}
+        /* Find the last PROXY_STATE attribute. */
+        for (p = r->request; p; p = p->next) {
+                if (p->attribute == DA_PROXY_STATE) 
+                        proxy_state_pair = p;
+        }
+	
+        state = proxy_state_pair ?
+                   (PROXY_STATE *)proxy_state_pair->avp_strvalue : NULL;
+	
+        if (state) {
+		debug(1,
+		      ("state: ipaddr %08x, id %u, proxy_id %u, rem_ipaddr %08x",
+		       state->ipaddr,
+		       state->id,
+		       state->proxy_id,
+		       state->rem_ipaddr));
+		
+                if (state->proxy_id   == r->id
+		    && state->rem_ipaddr == r->ipaddr) {
+			debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x, proxy_id %d %d, server_addr %#8x %#8x", 
+				   qr->id, state->id,
+				   qr->ipaddr, state->ipaddr,
+				   qr->server_id, state->proxy_id,
+				   qr->server->addr, state->rem_ipaddr));
+        
+			if (state->ipaddr == qr->ipaddr
+			    && state->id  == qr->id
+			    && state->proxy_id == qr->server_id
+			    && state->rem_ipaddr == qr->server->addr) {
+				debug(1,("EQUAL!!!"));
+				return 0;
+			}
+		} 
+	} else if (qr->server_id) {
+		debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x",
+			   qr->server_id,
+			   r->id,
+			   qr->server->addr,
+			   r->ipaddr));
+                        
+		if (r->ipaddr == qr->server->addr
+		    && r->id == qr->server_id)
+			return 0;
+	}
+	return 1;
+}
 
 /* ************************************************************************* */
 /* Proxy-Id functions */
@@ -70,11 +162,10 @@ static UINT4 get_socket_addr(int fd);
  * If we don't have one, create it and initialize to zero.
  */
 u_char
-next_proxy_id(ipaddr)
-        UINT4 ipaddr;
+next_proxy_id(UINT4 ipaddr)
 {
         PROXY_ID *p;
-
+	
         for (p = proxy_id; p; p = p->next)
                 if (p->ipaddr == ipaddr)
                         break;
@@ -110,27 +201,10 @@ proxy_cleanup()
 }
 
 /* ************************************************************************* */
-/* Request-queue functions */
-
-/* rad_proxy(): Called right after the request has been added to the request
- * list. The function just creates a dynamic copy of raw request data and
- * attaches it to the request.
- */
-/*ARGSUSED*/
-int
-rad_proxy(REQUEST *req ARG_UNUSED)
-{
-        return 0;
-}
-
-
-/* ************************************************************************* */
 /* Reply functions. Possibly these should go to libclient? */
 
 int
-proxy_send_request(fd, radreq)
-	int fd;
-	RADIUS_REQ *radreq;
+proxy_send_request(int fd, RADIUS_REQ *radreq)
 {
 	VALUE_PAIR *plist, *p;
         PROXY_STATE *proxy_state;
@@ -177,7 +251,7 @@ proxy_send_request(fd, radreq)
         
         proxy_state = (PROXY_STATE *)p->avp_strvalue;
 	       
-        proxy_state->ipaddr = get_socket_addr(fd);
+        proxy_state->ipaddr = radreq->ipaddr; /*FIXME: get_socket_addr(fd);*/
         proxy_state->id = radreq->id;
         proxy_state->proxy_id = radreq->server_id;
         proxy_state->rem_ipaddr = server->addr;
@@ -202,51 +276,13 @@ proxy_send_request(fd, radreq)
 		sin.sin_port = htons(
 			(radreq->code == RT_AUTHENTICATION_REQUEST) ?
 			server->port[PORT_AUTH] : server->port[PORT_ACCT]);
+
+                debug(1, ("Proxying id %d to %lx",
+                          radreq->id, (u_long)server->addr));
+
 		sendto(fd, pdu, size, 0, (struct sockaddr *)&sin, sizeof(sin));
 	}
 	return size;
-}
-
-/* ************************************************************************* */
-/* Functions local to this module */
-
-static UINT4
-get_socket_addr(fd)
-	int fd;
-{
-	struct sockaddr_in sin;
-	int len = sizeof(sin);
-	UINT4 ip = 0;
-
-	/* FIXME: if fd was bound to INADDR_ANY, there is not much sense
-	   in doing this. The possible solution will be to use if_nameindex
-	   (or SIOCGIFCONF) to get the IP of the first available interface */
-	   
-	if (getsockname(fd, (struct sockaddr*)&sin, &len) == 0)
-		ip = sin.sin_addr.s_addr;
-
-	if (ip == INADDR_ANY)
-		ip = ref_ip;
-	return ip;
-}
-
-
-/*
- *      Decode a password and encode it again.
- */
-static void
-passwd_recode(pass_pair, new_secret, new_vector, req)
-        VALUE_PAIR *pass_pair;
-        char *new_secret;
-        char *new_vector;
-        RADIUS_REQ *req;
-{
-        char    password[AUTH_STRING_LEN+1];
-        req_decrypt_password(password, req, pass_pair);
-        string_free(pass_pair->avp_strvalue);
-        encrypt_password(pass_pair, password, new_vector, new_secret);
-        /* Don't let the cleantext hang around */
-        memset(password, 0, AUTH_STRING_LEN);
 }
 
 /* ************************************************************************* */
@@ -258,10 +294,9 @@ passwd_recode(pass_pair, new_secret, new_vector, req)
              -1 fail (we don't reply, caller returns without replying) */
 
 int
-proxy_send(radreq, activefd)
-        RADIUS_REQ *radreq;
-        int activefd;
+proxy_send(REQUEST *req)
 {
+	RADIUS_REQ *radreq = req->data;
         int rc;
         char *saved_username;
         char *username;
@@ -270,7 +305,8 @@ proxy_send(radreq, activefd)
         char *realmname;
         REALM *realm;
         char *what;
-        
+        RADIUS_UPDATE *upd;
+
         /* Look up name. */
         namepair = avl_find(radreq->request, DA_USER_NAME);
         if (namepair == NULL)
@@ -319,6 +355,13 @@ proxy_send(radreq, activefd)
 	radreq->attempt_no = 0;
         radreq->server_id = next_proxy_id(radreq->server->addr);
 	radreq->remote_user = string_create(username);
+
+	req->update_size = sizeof(*upd) + strlen(realm->realm);
+	upd = emalloc(req->update_size);
+	upd->proxy_id = radreq->server_id;
+	upd->server_no = 0;
+	strcpy(upd->realmname, realm->realm);
+	req->update = upd;
 	
         /* If there is no DA_CHAP_CHALLENGE attribute but there
            is a DA_CHAP_PASSWORD we need to add it since we can't
@@ -338,19 +381,14 @@ proxy_send(radreq, activefd)
                 avl_add_pair(&radreq->request, vp);
         }
 
-        /* Now build a new request and send it to the remote radiusd. */
-        proxy_send_request(activefd, radreq);
-        
-#if 1   
-        /* And restore username. */
-        string_replace(&namepair->avp_strvalue, saved_username);
-        namepair->avp_strlength = strlen(namepair->avp_strvalue);
-#endif
         efree(saved_username);
-
+	
+	proxy_send_request(req->fd, radreq);
+	
         return 1;
 }
 
+/* FIXME: Unused */
 void
 proxy_retry(int type, void *data, void *orig_data,
 	    int fd, char *status_str)
@@ -383,73 +421,9 @@ proxy_retry(int type, void *data, void *orig_data,
         namepair->avp_strlength = strlen(namepair->avp_strvalue);
 }
 
-/* ************************************************************************* */
-/* Functions for finding the matching request in the list of outstanding ones.
- * There appear to be two cases: i) when the remote server retains the
- * Proxy-State A/V pair, which seems to correspond to RFC 2865,
- * and ii) when the remote server drops the Proxy-State pair.
- */
-
-struct proxy_data {
-	UINT4 ipaddr;
-        PROXY_STATE *state;
-        RADIUS_REQ  *radreq;
-};
-
-/* proxy_compare_request(): Find matching request based on the information
-   preserved in the Proxy-State pair. */
-int
-proxy_compare_request(void *item, void *datap)
-{
-        RADIUS_REQ *oldreq = item;
-        struct proxy_data *data = datap;
-
-        debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x, proxy_id %d %d, server_addr %#8x %#8x", 
-		   oldreq->id, data->state->id,
-		   data->ipaddr, data->state->ipaddr,
-		   oldreq->server_id, data->state->proxy_id,
-		   oldreq->server->addr, data->state->rem_ipaddr));
-        
-        if (data->state->ipaddr     == data->ipaddr
-	    && data->state->id      == oldreq->id
-	    && data->state->proxy_id == oldreq->server_id
-	    && data->state->rem_ipaddr == oldreq->server->addr)
-                return 0;
-
-        return 1;
-}
-
-/* proxy_compare_request_no_state(): Find matching outstanding request if the
-   server did not retain the Proxy-State pair.
-   miquels@cistron.nl says:
-        Some servers drop the proxy pair. So
-        compare in another way if needed.
-        FIXME: hmmm, perhaps we don't even need Proxy-State
-        after all! */
-int
-proxy_compare_request_no_state(void *item, void *datap)
-{
-        RADIUS_REQ *oldreq = item;
-        struct proxy_data *data = datap;
-	
-        debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x",
-		   oldreq->server_id,
-		   data->radreq->id,
-		   oldreq->server->addr,
-		   data->radreq->ipaddr));
-                        
-        if (data->radreq->ipaddr == oldreq->server->addr &&
-            data->radreq->id     == oldreq->server_id)
-                return 0;
-
-        return 1;
-}
-
 
 int
-select_allowed(unused, pair)
-        void *unused;
-        VALUE_PAIR *pair;
+select_allowed(void *null ARG_UNUSED, VALUE_PAIR *pair)
 {
         return pair->prop & AP_PROPAGATE;
 }
@@ -460,19 +434,14 @@ select_allowed(unused, pair)
    Return:   0 proxy found
             -1 error don't reply */
 int
-proxy_receive(radreq, activefd)
-        RADIUS_REQ        *radreq;
-        int             activefd;
+proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int fd)
 {
-        VALUE_PAIR      *vp, *proxy_state_pair, *prev, *x;
-        VALUE_PAIR      *allowed_pairs;
-        RADIUS_REQ      *oldreq;
-        PROXY_STATE     *state;
-        struct proxy_data data;
+        VALUE_PAIR *vp, *proxy_state_pair, *prev, *x;
+        VALUE_PAIR *allowed_pairs;
+        PROXY_STATE *state;
         
-        /* Find the last PROXY_STATE attribute. */
-
-        oldreq  = NULL;
+        /* Remove the last proxy pair from the list. */
+	/* FIXME: Should be done by proxy_cmp ? */
         proxy_state_pair = x = prev = NULL;
 
         for (vp = radreq->request; vp; vp = vp->next) {
@@ -483,49 +452,6 @@ proxy_receive(radreq, activefd)
                 x = vp;
         }
 
-        state = proxy_state_pair ?
-                   (PROXY_STATE *)proxy_state_pair->avp_strvalue : NULL;
-
-        if (state)
-          debug(1, ("state: ipaddr %08x, id %u, proxy_id %u, rem_ipaddr %08x",
-                 state->ipaddr,
-                 state->id,
-                 state->proxy_id,
-                 state->rem_ipaddr));
-
-        /* Find matching request in the list of outstanding requests. */
-	data.ipaddr = get_socket_addr(activefd);
-	data.state = state;
-        data.radreq = radreq;
-	
-        debug(1, ("Compare: myip %08x, radreq->id %d, radreq->ipaddr %08x",
-		  data.ipaddr, radreq->id, radreq->ipaddr));
-        
-        if (state) {
-                if (state->proxy_id   == radreq->id &&
-                    state->rem_ipaddr == radreq->ipaddr) {
-                        oldreq = request_scan_list(R_PROXY,
-                                                   proxy_compare_request,
-                                                   &data);
-                } else {
-                        oldreq = NULL;
-                }
-        } else {
-                oldreq = request_scan_list(R_PROXY,
-                                           proxy_compare_request_no_state,
-                                           &data);
-        }
-        
-        if (oldreq == NULL) {
-		char buf[MAX_LONGNAME];
-                radlog_req(L_PROXY|L_ERR, radreq,
-                           _("Unrecognized proxy reply from server %s, proxy ID %d"),
-			   client_lookup_name(radreq->ipaddr, buf, sizeof buf), 
-			   radreq->id);
-                return -1;
-        }
-
-        /* Remove proxy pair from the list. */
         if (proxy_state_pair) {
                 if (prev)
                         prev->next = proxy_state_pair->next;

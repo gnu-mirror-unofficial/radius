@@ -39,7 +39,7 @@
 	Enable dbm support. If no argument is specified, usual DBM is
 	assumed. The `ndbm' argument instructs to enable support of NDBM.
 		
-    --with-sql
+    --with-mysql
 	Enable MySQL support. Usually this requires adding appropriate
 	--with-lib-path and --with-include-path options.
     

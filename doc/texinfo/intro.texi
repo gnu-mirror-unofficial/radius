@@ -2,7 +2,7 @@
 @c Copyright (C) 2003 Free Software Foundation
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Intro, Glossary, Copying, Top
+@node Intro, Naming Conventions, Top, Top
 @unnumbered Introduction to Radius
 
 GNU Radius is a software package that provides authentication and
@@ -190,63 +190,4 @@ of @dfn{backup} @RADIUS{} servers.  In this case it applies the described
 process to each server from the set, until one of them responds or
 the set is exhausted.
 
-@comment *******************************************************************
-@node Glossary, Naming Conventions, Intro, Top
-@unnumbered Radius Glossary
-
-Throughout this document the following terms are used:
-
-@table @asis
-
-@item @RADIUS{} (small capitals)
-The Remote Authentication Dial In User Service
-protocol as described in RFC 2138, 2865, and 2866.
-
-@cindex @sc{nas}
-@cindex Network Access Server
-@item @NAS{}
-A network access server, that is, a computer or a special device
-designed to provide access to the network.  For example, it can be a
-computer connected to the network and equipped with several modems.
-Such a
-@NAS{} will allow a user connecting to one of its modems to access the
-network. 
-
-@cindex Service
-@item Service
-A service, such as PPP, SLIP, or telnet, provided to a user by the @NAS{}.
-
-@cindex Session
-@item Session
-Each instance of a service.  Sessions start when the service is
-first provided and close when the service is ended.  A user may be
-allowed to have multiple
-sessions active simultaneously.
-
-@cindex Session ID
-@item Session @sc{id}
-The session identifier: a string of characters uniquely identifying the session.
-
-@cindex A/V pair
-@cindex Attribute
-@cindex Attribute-Value pair
-@item @AVP{}
-Attribute-value pair: see @ref{Attributes}. 
-
-@cindex Dial-in user
-@cindex Dial-up user
-@item Dial-in or dial-up user
-A user connecting to a service through the modem line.
-
-@item User database
-A database where a @RADIUS{} server keeps information about users, their
-authentication information, etc.
-
-@item User's profile
-A record in the user database describing a particular user for
-purposes of authentication and authorization, i.e., how the user should
-be authenticated as well as which services he is allowed to be
-provided and parameters of these services.
-
-@end table
 

@@ -2,7 +2,7 @@
 @c Copyright (C) 2003 Free Software Foundation
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Naming Conventions, Operation, Glossary, Top
+@node Naming Conventions, Operation, Intro, Top
 @chapter Naming Conventions
 @cindex Naming conventions
 
@@ -57,9 +57,9 @@ These locations may differ depending on your local site configuration.
 Throughout this document we will refer to these directories by their
 short names.  For example, when we say:
 
-@example
+@smallexample
 ... this information is contained in file @file{raddb/sqlserver} 
-@end example
+@end smallexample
 
 @noindent
 we actually mean @file{@value{RADDB}/sqlserver}.

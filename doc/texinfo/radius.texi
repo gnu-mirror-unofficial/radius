@@ -93,7 +93,7 @@ except that this permission notice may be stated in a translation
 approved by the Foundation.
 @end titlepage
 
-@node Top, Distrib, , (dir)
+@node Top, Intro, , (dir)
 
 @ifinfo
 @top The GNU Radius
@@ -107,11 +107,7 @@ This Info file documents the version @value{VERSION} of the package.
 
 @comment *******************************************************************
 @menu
-* Distrib::             How to get the GNU Radius distribution
-* Copying::             The GNU General Public License gives you permission
-                        to redistribute the program on certain terms
 * Intro::               An introduction to @RADIUS{} concepts
-* Glossary::            The glossary
 
 The @RADIUS{} daemon
 * Naming Conventions::  Conventions about naming files and directories
@@ -135,6 +131,12 @@ Reporting Bugs and getting information
 * Bugs::                How to report a bug
 * News::                Where to get info about GNU Radius
 
+Obtaining GNU Radius
+* Distrib::             How to Obtain the GNU Radius
+* Glossary::            The glossary
+* Copying::             The GNU General Public License gives you permission
+                        to redistribute the program on certain terms
+
 Indices
 * Program Index::       Index of programs
 * Keyword Index::       Index of keywords
@@ -155,8 +157,26 @@ already listed, mentioned here so you can get to them in one step:
 @end menu
 
 @comment *******************************************************************
-@node Distrib, Copying, Top, Top
-@unnumbered Distribution
+
+@include intro.texi
+@include naming.texi
+@include operation.texi
+@include invoke.texi
+@include configure.texi
+@include comp.texi
+@include auth.texi
+@include acct.texi
+@include logging.texi
+@include debug.texi
+@include extensions.texi
+@include programs.texi
+@include client.texi
+@include attributes.texi
+@include bugs.texi
+
+@comment *******************************************************************
+@node Distrib, Glossary, Top, Top
+@unnumbered How to Obtain Radius
 
 GNU Radius is @dfn{free software}; this means that everyone is free to
 use it and free to redistribute it on certain conditions.  GNU Radius is
@@ -172,11 +192,70 @@ One way to get a copy of GNU Radius is from someone else who has it.  You
 need not ask for our permission to do so, or tell any one else; just
 copy it.  If you have access to the Internet, you can get the latest
 distribution version of GNU Radius by anonymous FTP. It is available at
-@url{ftp://ftp.gnu.org/pub/gnu/gnu-radius}
-
+@url{ftp://ftp.gnu.org/pub/gnu/radius}
 
 @comment *******************************************************************
-@node Copying, Intro, Distrib, Top
+@node Glossary, Copying, Distrib, Top
+@unnumbered Radius Glossary
+
+Throughout this document the following terms are used:
+
+@table @asis
+
+@item @RADIUS{} (small capitals)
+The Remote Authentication Dial In User Service
+protocol as described in RFC 2138, 2865, and 2866.
+
+@cindex @sc{nas}
+@cindex Network Access Server
+@item @NAS{}
+A network access server, that is, a computer or a special device
+designed to provide access to the network.  For example, it can be a
+computer connected to the network and equipped with several modems.
+Such a
+@NAS{} will allow a user connecting to one of its modems to access the
+network. 
+
+@cindex Service
+@item Service
+A service, such as PPP, SLIP, or telnet, provided to a user by the @NAS{}.
+
+@cindex Session
+@item Session
+Each instance of a service.  Sessions start when the service is
+first provided and close when the service is ended.  A user may be
+allowed to have multiple
+sessions active simultaneously.
+
+@cindex Session ID
+@item Session @sc{id}
+The session identifier: a string of characters uniquely identifying the session.
+
+@cindex A/V pair
+@cindex Attribute
+@cindex Attribute-Value pair
+@item @AVP{}
+Attribute-value pair: see @ref{Attributes}. 
+
+@cindex Dial-in user
+@cindex Dial-up user
+@item Dial-in or dial-up user
+A user connecting to a service through the modem line.
+
+@item User database
+A database where a @RADIUS{} server keeps information about users, their
+authentication information, etc.
+
+@item User's profile
+A record in the user database describing a particular user for
+purposes of authentication and authorization, i.e., how the user should
+be authenticated as well as which services he is allowed to be
+provided and parameters of these services.
+
+@end table
+
+@comment *******************************************************************
+@node Copying, , Glossary, Top
 @unnumbered GNU GENERAL PUBLIC LICENSE
 @center Version 2, June 1991
 
@@ -571,25 +650,6 @@ proprietary programs.  If your program is a subroutine library, you may
 consider it more useful to permit linking proprietary applications with the
 library.  If this is what you want to do, use the GNU Library General
 Public License instead of this License.
-
-@comment *******************************************************************
-
-@include intro.texi
-@include naming.texi
-@include operation.texi
-@include invoke.texi
-@include configure.texi
-@include comp.texi
-@include auth.texi
-@include acct.texi
-@include logging.texi
-@include debug.texi
-@include extensions.texi
-@include programs.texi
-@include client.texi
-@include attributes.texi
-@include bugs.texi
-
 
 @node Program Index, Keyword Index, , Top
 @unnumbered Program Index

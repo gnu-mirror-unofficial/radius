@@ -462,7 +462,7 @@ write_detail(radreq, authtype, f)
 	FILE		*outfd;
 	char		nasname[MAX_LONGNAME];
 	char            *dir, *path;
-	char		*s;
+	char		*s, *save;
 	VALUE_PAIR	*pair;
 	UINT4		nas;
 	NAS		*cl;
@@ -526,7 +526,9 @@ write_detail(radreq, authtype, f)
 			else
 				pair = avl_find(radreq->request, DA_USER_NAME);
 			if (pair) {
-				fprintf(outfd, "\t%s\n", format_pair(pair));
+				fprintf(outfd, "\t%s\n", 
+                                        format_pair(pair, &save));
+                                free(save);
 			}
 		}
 
@@ -541,7 +543,9 @@ write_detail(radreq, authtype, f)
 				if (!strip_names)
 					break;
 			default:
-				fprintf(outfd, "\t%s\n", format_pair(pair));
+				fprintf(outfd, "\t%s\n", 
+                                        format_pair(pair, &save));
+                                free(save);
 			} 
 			pair = pair->next;
 		}

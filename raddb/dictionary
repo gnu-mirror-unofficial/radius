@@ -105,6 +105,7 @@ ATTRIBUTE	Rewrite-Function	2002	string
 ATTRIBUTE	Acct-Type		2003	integer
 ATTRIBUTE	Match-Profile		2004	string
 ATTRIBUTE	Include-Profile		2005	string 
+ATTRIBUTE       Queue-Id	        65534	integer 
 
 VALUE		Acct-Type		None	0
 VALUE		Acct-Type		System	1

@@ -135,7 +135,7 @@ check_expiration(check_item, umsg, user_msg)
 			result = -1;
 			*user_msg = _("Password Has Expired\r\n");
 		} else if (rc > 0) {
-			sprintf(umsg,
+			radsprintf(umsg, sizeof(umsg),
 				_("Password Will Expire in %d Days\r\n"),
 				rc);
 			*user_msg = umsg;
@@ -247,6 +247,7 @@ unix_pass(name, passwd)
  *			-2 Rejected
  *			1  End check & return.
  */
+/*ARGSUSED*/
 int
 rad_check_password(authreq, activefd, check_item, namepair,
 		   pw_digest, user_msg, userpass)
@@ -493,6 +494,9 @@ rad_auth_init(authreq, activefd)
 	int       activefd;
 {
 	VALUE_PAIR	*namepair;
+#ifdef USE_SQL
+	VALUE_PAIR	*p;
+#endif
 
 	/*
 	 *	Get the username from the request
@@ -523,6 +527,10 @@ rad_auth_init(authreq, activefd)
 		return -1;
 	}
 
+#ifdef USE_SQL
+	if (p = create_pair(DA_QUEUE_ID, 0, NULL, (qid_t)authreq))
+		pairadd(&authreq->request, p);
+#endif
 	/*
 	 *	Add any specific attributes for this username.
 	 */
@@ -951,7 +959,7 @@ sfn_simuse(m)
 		return;
 	
 	if (m->check_pair->lvalue > 1) {
-		sprintf(m->umsg,
+		radsprintf(m->umsg, sizeof(m->umsg),
 	      _("\r\nYou are already logged in %d times  - access denied\r\n"),
 			(int)m->check_pair->lvalue);
 		m->user_msg = m->umsg;
@@ -999,8 +1007,7 @@ sfn_time(m)
 		m->user_msg =
 			_("You are calling outside your allowed timespan\r\n");
 		radlog(L_ERR,
-		       _("Outside allowed timespan: [%s]"
-			 " (from nas %s) time allowed: %s"),
+       _("Outside allowed timespan: [%s] (from nas %s) time allowed: %s"),
 		       m->namepair->strvalue,
 		       nas_name2(m->req),
 		       m->check_pair->strvalue);
@@ -1013,6 +1020,7 @@ sfn_time(m)
 	}
 }
 
+/*ARGSUSED*/
 void
 sfn_ttl(m)
 	MACH *m;
@@ -1142,7 +1150,8 @@ sfn_menu(m)
 	char state_value[MAX_STATE_VALUE];
 		
 	msg = get_menu(m->check_pair->strvalue);
-	sprintf(state_value, "MENU=%s", m->check_pair->strvalue);
+	radsprintf(state_value, sizeof(state_value),
+		   "MENU=%s", m->check_pair->strvalue);
 	send_challenge(m->req, msg, state_value, m->activefd);
 	
 	debug(1,
@@ -1180,7 +1189,7 @@ sfn_ack(m)
 
 	if (timeout_pair(m)) {
 		debug(5,
-			("timeout for [%s] is set to %d sec",
+			("timeout for [%s] is set to %ld sec",
 			 m->namepair->strvalue, timeout_pair(m)->lvalue));
 	}
 }

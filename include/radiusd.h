@@ -420,8 +420,10 @@ void radius_send_reply(int, RADIUS_REQ *, VALUE_PAIR *, char *, int);
 void radius_send_challenge(RADIUS_REQ *radreq, char *msg, char *state, int fd);
 int radius_verify_digest(REQUEST *req);
 
-int radius_req_decode(struct sockaddr_in *sa,
-		      void *input, size_t inputsize, void **output);
+int radius_auth_req_decode(struct sockaddr_in *sa,
+			   void *input, size_t inputsize, void **output);
+int radius_acct_req_decode(struct sockaddr_in *sa,
+			   void *input, size_t inputsize, void **output);
 int radius_req_cmp(void *a, void *b);
 void radius_req_free(void *req);
 void radius_req_drop(int type, void *radreq, void *origreq,

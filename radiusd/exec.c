@@ -46,12 +46,29 @@ static char rcsid[] =
 #include <obstack1.h>
 #include <argcv.h>
 
-/*
- *      Execute a program on successful authentication.
- *      Return 0 if exec_wait == 0.
- *      Return the exit code of the called program if exec_wait != 0.
- *
- */
+struct cleanup_data {
+	VALUE_PAIR **vp;
+	FILE *fp;
+	pid_t pid;
+};
+
+void
+rad_exec_cleanup(arg)
+	void *arg;
+{
+	struct cleanup_data *p = arg;
+
+	fclose(p->fp);
+	avl_free(*p->vp);
+	kill(p->pid, SIGKILL);
+}
+	
+
+/* Execute a program on successful authentication.
+   Return 0 if exec_wait == 0.
+   Return the exit code of the called program if exec_wait != 0.
+   NOTE: The routine relies upon the fact that SIGCHLD and SIGPIPE
+   handlers are set to SIG_IGN. */
 int
 radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         char *cmd;
@@ -61,7 +78,6 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         char **user_msg;
 {
         int p[2];
-        RETSIGTYPE (*oldsig)();
         pid_t pid;
         int n;
         char *ptr, *errp;
@@ -71,7 +87,8 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         int line_num;
         char buffer[RAD_BUFFER_SIZE];
         struct passwd *pwd;
-        
+        struct cleanup_data cleanup_data;
+	
         if (cmd[0] != '/') {
                 radlog(L_ERR,
    _("radius_exec_program(): won't execute, not an absolute pathname: %s"),
@@ -80,9 +97,8 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         }
 
         /* Check user/group
-         * FIXME: This should be checked *once* after re-reading the
-         *        configuration
-         */
+           FIXME: This should be checked *once* after re-reading the
+           configuration */
         pwd = getpwnam(config.exec_user);
         if (!pwd) {
                 radlog(L_ERR,
@@ -94,12 +110,6 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         if (exec_wait) {
                 if (pipe(p) != 0) {
                         radlog(L_ERR|L_PERROR, _("couldn't open pipe"));
-                        p[0] = p[1] = 0;
-                        return -1;
-                }
-
-                if ((oldsig = signal(SIGCHLD, SIG_DFL)) == SIG_ERR) {
-                        radlog(L_ERR|L_PERROR, _("can't reset SIGCHLD"));
                         return -1;
                 }
         }
@@ -114,8 +124,7 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
                 /* child branch */
                 ptr = radius_xlate(&s, cmd, req, reply ? *reply : NULL);
 
-                debug(1,
-                        ("command line: %s", ptr));
+                debug(1, ("command line: %s", ptr));
 
                 argcv_get(ptr, "", &argc, &argv);
                 
@@ -152,11 +161,9 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
                 }
                 execvp(argv[0], argv);
 
-                /*
-                 * Report error via syslog: we might not be able
-                 * to restore initial privileges if we were started
-                 * as non-root.
-                 */
+                /* Report error via syslog: we might not be able
+		   to restore initial privileges if we were started
+		   as non-root. */
                 openlog("radiusd", LOG_PID, LOG_USER);
                 syslog(LOG_ERR, "can't run %s (ruid=%d, euid=%d): %m",
                        argv[0], getuid(), geteuid());
@@ -166,8 +173,6 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         /* Parent branch */ 
         if (pid < 0) {
                 radlog(L_ERR|L_PERROR, "fork");
-                if (exec_wait)
-                        signal(SIGCHLD, oldsig);
                 return -1;
         }
         if (!exec_wait)
@@ -180,30 +185,33 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
 
         vp = NULL;
         line_num = 0;
+	
+	cleanup_data.vp = &vp;
+	cleanup_data.fp = fp;
+	cleanup_data.pid = pid;
+	pthread_cleanup_push(rad_exec_cleanup, &cleanup_data);
+	
         while (ptr = fgets(buffer, sizeof(buffer), fp)) {
                 line_num++;
-                debug(1,
-                        ("got `%s'", buffer));
+                debug(1, ("got `%s'", buffer));
                 if (userparse(ptr, &vp, &errp)) {
                         radlog(L_ERR,
-                            _("<stdout of %s>:%d: %s"),
-                            cmd, line_num, errp);
+			       _("<stdout of %s>:%d: %s"),
+			       cmd, line_num, errp);
                         avl_free(vp);
                         vp = NULL;
                 }
         }
 
+        while (waitpid(pid, &status, 0) != pid)
+                ;
+	
+	pthread_cleanup_pop(0);
+
         fclose(fp);
 
         if (vp) 
                 avl_merge(reply, &vp);
-
-        while (waitpid(pid, &status, 0) != pid)
-                ;
-
-        if (signal(SIGCHLD, oldsig) == SIG_ERR)
-                radlog(L_CRIT|L_PERROR,
-                        _("can't restore SIGCHLD"));
 
         if (WIFEXITED(status)) {
                 status = WEXITSTATUS(status);

@@ -1,3 +1,7 @@
+2003-12-15  Sergey Poznyakoff 
+
+	* raddb/dict/compat: Fixed indentation
+
 2003-12-12  Sergey Poznyakoff
 
 	Temporarily switched to the back-up repository

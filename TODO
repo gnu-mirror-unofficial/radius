@@ -1,7 +1,4 @@
      Switching to multithread server:
--100 :  radiusd/request.c (request_put): forced thread cancellation.
--100 :  rad_sql_shutdown is non-functional	
--100 :  redesign raduse to use snmp queries instead of peeking in radstat.
 -50  :  Fall back to pth if POSIX threads are not available?
 
      General:
@@ -9,6 +6,7 @@
        shared libraries). Build a shared Guile module instead. Make
        server queue a SMOB instead of a hidden list.
 -50  : Add \ line continuation to read_raddb_files.
+-50  : redesign raduse to use snmp queries instead of peeking in radstat.
 -10  : Clean up the semantics of log_init/log_done.
 -3   : Enable use of port number in rewrite:check_unix()
 5    : Add include feature to config files that don't have it.

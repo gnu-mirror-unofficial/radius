@@ -15,6 +15,7 @@
 	  (rad_sql_shutdown): Implemented.
 	  (attach_sql_connection,detach_sql_connection): Removed unused
 	  second argument.
+	* radiusd/scheme.c: Use Pthread_mutex_* functions.
 	* radscripts/radauth.m4: Use User-Password instead of obsolete
 	  Password.
 	* sql/disp.c (disp_sql_disconnect): Check ->connected before

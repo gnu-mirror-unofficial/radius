@@ -120,6 +120,8 @@ static int first_time = 1;
 static int debug_config;
 
 static void asgn(void *base, Value *value, int type, int once);
+static void obsolete(char *stmt, int ign);
+ 
 %}
 
 %union {
@@ -250,9 +252,7 @@ option_def      : T_SOURCE_IP value
 		  }
                 | T_EXEC_PROGRAM_GROUP value
                   {
-			  radlog(L_WARN,
-				 _("%s:%d: exec-program-group is obsolete:"),
-				 filename, line_num);
+			  obsolete("exec-program-group", 1);
 		  }
                 | T_USERNAME_CHARS value
                   {
@@ -305,7 +305,7 @@ auth_def        : listen_stmt
 		  }      
                 | T_SPAWN value
                   {
-			  asgn(&request_class[R_AUTH].spawn, &$2, AT_BOOL, 0);
+			  obsolete("spawn", 1);
 		  }      
                 | T_TTL value
                   {
@@ -378,7 +378,7 @@ acct_def        : listen_stmt
 		  }      
                 | T_SPAWN value
                   {
-			  asgn(&request_class[R_AUTH].spawn, &$2, AT_BOOL, 0);
+			  obsolete("spawn", 1);
 		  }      
                 | T_TTL value
                   {
@@ -500,9 +500,7 @@ channel_def     : /* empty */ EOL
                 | T_OPTION { expect_string=1; } obs_option_list EOL
                   {
 			  expect_string = 0;
-			  radlog(L_WARN,
-				 _("%s:%d: option statement is obsolete"),
-				 filename, line_num);
+			  obsolete("option", 0);
 			  channel.options |= $3;
 		  }
                 ;
@@ -664,9 +662,7 @@ begin_level     : T_LEVEL
 				  clear_debug();
 			  } else if ((in_category & L_CATMASK) == L_AUTH) {
 				  expect_string = 1;
-				  radlog(L_WARN,
-			      _("%s:%d: auth:level statement is obsolete"),
-					 filename, line_num);
+				  obsolete("level", 0);
 			  }
 		  }
                 ;
@@ -837,9 +833,7 @@ snmp_def        : T_IDENT T_STRING
 		  }      
                 | T_SPAWN value
                   {
-#ifdef USE_SNMP
-			  asgn(&request_class[R_SNMP].spawn, &$2, AT_BOOL, 0);
-#endif
+			  obsolete("spawn", 1);
 		  }      
                 | T_TTL value
                   {
@@ -1095,9 +1089,7 @@ cntl_stmt       : cntl '{' cntl_list '}'
 
 cntl            : T_CNTL
                   {
-			  radlog(L_WARN,
-				 _("%s:%d: ignoring obsolete cntl statement"),
-				 filename, line_num);
+			  obsolete("cntl", 1);
 		  }
                 ;
 
@@ -1118,15 +1110,11 @@ cntl_def        : T_PORT value
 
 notify_stmt     : T_NOTIFY '{' notify_list '}'
                   {
-			  radlog(L_WARN,
-				_("%s:%d: ignoring obsolete notify statement"),
-				 filename, line_num);
+			  obsolete("notify", 1);
 		  }
                 | T_NOTIFY T_BOOL
                   {
-			  radlog(L_WARN,
-				_("%s:%d: ignoring obsolete notify statement"),
-				 filename, line_num);
+			  obsolete("notify", 1);
 		  }
                 ;
 
@@ -1544,5 +1532,14 @@ yyerror(s)
 	radlog(L_ERR, "%s:%d: %s", filename, line_num, s);
 }
 		
-
+void
+obsolete(stmt, ign)
+	char *stmt;
+	int ign;
+{
+	char *expl = ign ? "Statement has no effect." : "";
+	radlog(L_WARN,
+	       _("%s:%d: `%s' is obsolete. %s"),
+	       filename, line_num, stmt, expl);
+}
 

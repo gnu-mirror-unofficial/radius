@@ -397,10 +397,23 @@ rad_decode_pdu(host, udp_port, buffer, length)
                         
                         ptr += 4;
                         attrlen -= 4;
+
                         while (attrlen > 0) {
                                 UINT4 len;
-                                attrno = *ptr++ | (vendorcode << 16);
-                                len = *ptr++ - 2;
+
+				if (vendorpec == 429) {
+					/* Hack for non-compliant USR VSA */
+					memcpy(&attrno, ptr, 4);
+					attrno = ntohl(attrno)
+						 | (vendorcode << 16);
+					ptr += 4;
+					attrlen -= 4;
+					len = attrlen;
+				} else {
+					attrno = *ptr++ | (vendorcode << 16);
+					len = *ptr++ - 2;
+				}
+				
                                 pair = rad_decode_pair(attrno, ptr, len);
                                 if (!pair) {
                                         stop = 1;

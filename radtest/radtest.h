@@ -67,7 +67,7 @@ extern char **x_argv;
 int open_input(char *name);
 void close_input();
 void set_yydebug();
-void parse_error();
+void parse_error __PVAR((char *fmt, ...));
 void print(Variable *var);
 void radtest_send(int port, int code, Variable *var);
 void putback(char *str);

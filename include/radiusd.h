@@ -430,11 +430,12 @@ char *radius_xlate(struct obstack *obp, char *str,
                    RADIUS_REQ *req, VALUE_PAIR *reply_pairs);
 
 /* log.c */
-void sqllog(/* int status, char *msg, va_alist */);
+void sqllog __PVAR((int status, char *msg, ...));
 
 /* rewrite.y */
 int run_rewrite(char *name, VALUE_PAIR *req);
 int parse_rewrite(char *name);
+int va_run_init __PVAR((char *name, VALUE_PAIR *request, char *typestr, ...));
 
 /* radck.c */
 int fix_check_pairs(int sf_file, char *filename, int line, char *name,

@@ -33,8 +33,8 @@ and analyze the information it provides.
 
 To illustrate what GNU Radius does, let's consider an imaginary Internet
 Service Provider. Our provider has two @dfn{network access servers}
-(@NAS{}es for short) -- i.e., two pieces of equipment which directly accept
-users' connections --  and a core router which connects the ISP's internal
+(@NAS{}es for short) --- i.e., two pieces of equipment which directly accept
+users' connections ---  and a core router which connects the ISP's internal
 network with the Internet backbone.
 
 When a user connects to a @NAS{}, the server must verify if the
@@ -63,9 +63,9 @@ becomes.
 
 @subheading How Does @RADIUS{} Solve These Tasks?
 
-RADIUS{} allows an administrator to keep authentication and accounting
+@RADIUS{} allows an administrator to keep authentication and accounting
 data in a single place, no matter how many network access servers are
-actually present.  Using @RADIUS, @NAS{}es communicate with this
+actually present.  Using @RADIUS{}, @NAS{}es communicate with this
 central server to perform authentication and accounting.
 
 Let's return to our imaginary ISP. Suppose it runs a @RADIUS{} daemon

@@ -89,108 +89,6 @@ static struct keyword syslog_kw[] = {
 	NULL
 };
 
-void
-rad_scheme_init(argc, argv)
-	int argc;
-	char **argv;
-{
-	int di, si;
-	int double_dash = 0;
-	SCM *scm_loc;
-	char *bootpath;
-	char *p;
-	
-	/*
-	 * Process and throw-off radius-specific command line
-	 * options.
-	 */
-	for (si = di = 0; si < argc; ) {
-		if (double_dash) {
-			argv[di++] = argv[si++];
-		} else if (strcmp(argv[si], "--") == 0) {
-			double_dash++;
-			argv[di++] = argv[si++];
-		} else if (strcmp(argv[si], "-ds") == 0) {
-			/* allow for guile's -ds option */
-			argv[di++] = argv[si++];
-		} else if (strncmp(argv[si], "-d", 2) == 0) {
-			if (argv[si][2]) {
-				radius_dir = argv[si++]+2;
-			} else {
-				if (++si >= argc) 
-					die("option requires argument: -d");
-				radius_dir = argv[si++];
-			}
-		} else if (strcmp(argv[si], "--directory") == 0) {
-			if (++si >= argc) 
-				die("option requires argument: --directory");
-			radius_dir = argv[si++];
-		} else
-			argv[di++] = argv[si++];
-	}
-	argv[di] = NULL;
-	argc = di;
-	
-	/*
-	 * Initialize radius sub-system
-	 */
-	radpath_init();
-	if (dict_init()) {
-		radlog(L_ERR, _("error reading dictionary file"));
-		exit(1);
-	}
-	radclient = radclient_alloc(0, 0);
-
-	/*
-	 * Provide basic primitives
-	 */
-	scm_make_gsubr("rad-send-internal", 3, 0, 0, rad_send_internal);
-	scm_make_gsubr("rad-get-server", 0, 0, 0, rad_get_server);
-
-	scm_make_gsubr("rad-directory", 1, 0, 0, rad_directory);
-	scm_make_gsubr("rad-dict-name->value", 2, 0, 0, rad_dict_name_to_value);
-	scm_make_gsubr("rad-dict-value->name", 2, 0, 0, rad_dict_value_to_name);
-	scm_make_gsubr("rad-dict-name->attr", 1, 0, 0, rad_dict_name_to_attr);
-	scm_make_gsubr("rad-dict-pec->vendor", 1, 0, 0, rad_dict_pec_to_vendor);
-	scm_make_gsubr("rad-read-no-echo", 1, 0, 0, rad_read_no_echo);
-
-	scm_make_gsubr("rad-client-source-ip", 1, 0, 0, rad_client_source_ip);
-	scm_make_gsubr("rad-client-timeout", 1, 0, 0, rad_client_timeout);
-	scm_make_gsubr("rad-client-retry", 1, 0, 0, rad_client_retry);
-	scm_make_gsubr("rad-client-set-server", 1, 0, 0, rad_client_set_server);
-	scm_make_gsubr("rad-client-add-server", 1, 0, 0, rad_client_add_server);
-	scm_make_gsubr("rad-client-list-servers", 0, 0, 0, rad_client_list_servers);
-	scm_make_gsubr("rad-openlog", 3, 0, 0, rad_openlog);
-	scm_make_gsubr("rad-syslog", 2, 0, 0, rad_syslog);
-	scm_make_gsubr("rad-closelog", 1, 0, 0, rad_closelog);
-
-	scm_loc = SCM_CDRLOC (scm_sysintern ("%raddb-path", SCM_EOL));
-	*scm_loc = scm_makfrom0str(radius_dir);
-
-	for (si = 0; syslog_kw[si].name; si++)
-		scm_sysintern(syslog_kw[si].name,
-			      SCM_MAKINUM(syslog_kw[si].tok));
-	
-	if (!(bootpath = getenv("RADSCM_BOOTPATH")))
-		bootpath = DATADIR;	
-#if 0
-	/*
-	 * Reset %load-path
-	 */
-	scm = scm_cons(scm_makfrom0str(bootpath),
-		       scm_symbol_value0("%load-path"));
-	scm_loc = SCM_CDRLOC (scm_sysintern ("%load-path", SCM_EOL));
-	*scm_loc = scm;
-#endif
-	/*
-	 * Load radius scheme modules
-	 */
-	p = mkfilename(bootpath, "boot.scm");
-	scm_primitive_load(scm_makfrom0str(p));
-	efree(p);
-
-	scm_shell(argc, argv);
-}
 
 SCM
 scm_makenum(val)
@@ -206,9 +104,10 @@ scm_makenum(val)
 #endif /* SCM_BIGDIG */ 
 }
 
-SCM
-rad_directory(g_dir)
-	SCM g_dir;
+SCM_DEFINE(rad_directory, "rad-directory", 1, 0, 0,
+	   (SCM g_dir),
+	   "Sets radius database directory to dir")
+#define FUNC_NAME s_rad_directory
 {
 	SCM_ASSERT(SCM_NIMP(g_dir) && SCM_STRINGP(g_dir),
 		   g_dir, SCM_ARG1, "rad-directory");
@@ -217,15 +116,34 @@ rad_directory(g_dir)
 		return SCM_BOOL_F;
 	return SCM_BOOL_T;
 }
-	
+#undef FUNC_NAME
+
 /*
  * (define (rad-send-internal port code pairlist) ... )
  */
-SCM
-rad_send_internal(g_port, g_code, g_pairs)
-	SCM g_port;
-	SCM g_code;
-	SCM g_pairs;
+SCM_DEFINE(rad_send_internal, "rad-send-internal", 3, 0, 0,
+	   (SCM g_port, SCM g_code, SCM g_pairs),
+"(rad-send-internal PORT-NUMBER CODE-NUMBER PAIR-LIST)\n"
+"Sends the request to currently selected server.\n"
+"PORT-NUMBER	Port to use.\n"
+"			0 - Authentication port\n"
+"			1 - Accounting port\n"
+"			2 - Control port\n"
+"		The actual port numbers are those configured for\n"
+"		the given server.\n"
+"CODE-NUMBER	Request code.\n"
+"PAIR-LIST	List of Attribute-value pairs. Each pair is:\n"
+"			(cons ATTR-NAME-STRING . VALUE)\n"
+"		or\n"
+"			(cons ATTR-NUMBER . VALUE)\n"
+"\n"
+"Return:\n"
+"\n"
+"On success\n"
+"	(list RETURN-CODE-NUMBER PAIR-LIST)\n"
+"On failure:\n"
+"	'()\n")
+#define FUNC_NAME s_rad_send_internal	   
 {
 	int port;
 	int code;
@@ -259,9 +177,13 @@ rad_send_internal(g_port, g_code, g_pairs)
 	
 	return scm_cons(g_auth, g_plist);
 }
+#undef FUNC_NAME
 
-SCM
-rad_client_list_servers()
+SCM_DEFINE(rad_client_list_servers, "rad-client-list-servers", 0, 0, 0,
+	   (),
+"List currently configured servers. Two column for each server are displayed:\n"
+"Server ID and IP address.\n")
+#define FUNC_NAME s_rad_client_list_servers	   
 {
 	SERVER *s;
 	char p[DOTTED_QUAD_LEN+1];
@@ -275,12 +197,16 @@ rad_client_list_servers()
 	}
 	return scm_reverse_x(tail, SCM_UNDEFINED);
 }
+#undef FUNC_NAME
 
-SCM
-rad_get_server()
+SCM_DEFINE(rad_get_server, "rad-get-server", 0, 0, 0,
+	   (),
+	   "Returns the ID of the currently selected server.")
+#define FUNC_NAME s_rad_get_server	
 {
 	return scm_makfrom0str(radclient->first_server->name);
 }
+#undef FUNC_NAME
 
 SERVER *
 scheme_to_server(g_list, func)
@@ -331,10 +257,10 @@ scheme_to_server(g_list, func)
 	return radclient_alloc_server(&serv);
 }
 
-#define FUNC_NAME "rad-client-add-server"
-SCM
-rad_client_add_server(g_list)
-	SCM g_list;
+SCM_DEFINE(rad_client_add_server, "rad-client-add-server", 1, 0, 0,
+	   (SCM g_list),
+	   "Add a server to the list of configured radius servers")
+#define FUNC_NAME s_rad_client_add_server
 {
 	radclient->first_server =
 		radclient_append_server(radclient->first_server,
@@ -343,10 +269,20 @@ rad_client_add_server(g_list)
 }
 #undef FUNC_NAME
 
-#define FUNC_NAME "rad-client-set-server"
-SCM
-rad_client_set_server(g_list)
-	SCM g_list;
+SCM_DEFINE(rad_client_set_server, "rad-client-set-server", 1, 0, 0, 
+	   (SCM g_list),
+(rad-client-set-server LIST)
+"Selects for use the server described by LIST. A LIST should be:\n"
+"\n"
+"	(list ID-STRING HOST-STRING SECRET-STRING AUTH-NUM ACCT-NUM CNTL-NUM)\n"
+"Where:\n"
+"	ID-STRING	Server ID\n"
+"	HOST-STRING	Server hostname or IP address\n"
+"	SECRET-STRING	Shared secret key to use\n"
+"	AUTH-NUM	Authentication port number\n"
+"	ACCT-NUM	Accounting port number\n"
+"	CNTL-NUM	Control channel port number\n")
+#define FUNC_NAME s_rad_client_set_server
 {
 	SERVER *s = scheme_to_server(g_list, FUNC_NAME);
 
@@ -356,10 +292,10 @@ rad_client_set_server(g_list)
 }
 #undef FUNC_NAME
 
-#define FUNC_NAME "rad-client-source-ip"
-SCM
-rad_client_source_ip(g_ip)
-	SCM g_ip;
+SCM_DEFINE(rad_client_source_ip, "rad-client-source-ip", 1, 0, 0,
+	   (SCM g_ip),
+"Set source IP address for packets coming from this client\n")
+#define FUNC_NAME s_rad_client_source_ip
 {
 	UINT4 ip;
 	
@@ -379,10 +315,10 @@ rad_client_source_ip(g_ip)
 }
 #undef FUNC_NAME
 
-#define FUNC_NAME "rad-client-timeout"
-SCM
-rad_client_timeout(g_to)
-	SCM g_to;
+SCM_DEFINE(rad_client_timeout, "rad-client-timeout", 1, 0, 0,
+	   (SCM g_to),
+"Sets the timeout for waiting for the server reply.\n")
+#define FUNC_NAME s_rad_client_timeout
 {
 	SCM_ASSERT(SCM_IMP(g_to) && SCM_INUMP(g_to),
 		   g_to, SCM_ARG1, FUNC_NAME);
@@ -391,10 +327,10 @@ rad_client_timeout(g_to)
 }
 #undef FUNC_NAME
 
-#define FUNC_NAME "rad-client-retry"
-SCM
-rad_client_retry(g_retry)
-	SCM g_retry;
+SCM_DEFINE(rad_client_retry, "rad-client-retry", 1, 0, 0,
+	   (SCM g_retry),
+"Sets the number of retries for sending requests to a radius server.")
+#define FUNC_NAME s_rad_client_retry
 {
 	SCM_ASSERT(SCM_IMP(g_retry) && SCM_INUMP(g_retry),
 		   g_retry, SCM_ARG1, FUNC_NAME);
@@ -404,9 +340,21 @@ rad_client_retry(g_retry)
 #undef FUNC_NAME
 
 
-SCM
-rad_dict_name_to_attr(g_name)
-	SCM g_name;
+SCM_DEFINE(rad_dict_name_to_attr, "rad-dict-name->attr", 1, 0, 0,
+	   (SCM g_name),
+"Returns a dictionary entry for the given attribute name or #f if\n"
+"no such name was found in the dictionary.\n"
+"The entry is a list of the form:\n"
+"\n"
+"	(NAME-STRING ATTR-NUMBER TYPE-NUMBER VENDOR)\n"
+"\n"
+"Where,\n"
+"	NAME-STRING	is the attribute name,\n"
+"	VALUE-NUMBER	is the attribute number,\n"
+"	TYPE-NUMBER	is the attribute type\n"
+"	VENDOR		is the vendor PEC, if the attribute is a\n"
+"			Vendor-Specific one, or #f otherwise.\n")
+#define FUNC_NAME s_rad_dict_name_to_attr	   
 {
 	DICT_ATTR *attr;
 	int vendor;
@@ -433,11 +381,13 @@ rad_dict_name_to_attr(g_name)
 			 SCM_MAKINUM(vendor_id_to_pec(vendor)) :
 			 SCM_BOOL_F);
 }
+#undef FUNC_NAME
 
-SCM
-rad_dict_value_to_name(g_attr, g_value)
-	SCM g_attr;
-	SCM g_value;
+SCM_DEFINE(rad_dict_value_to_name, "rad-dict-value->name", 2, 0, 0,
+	   (SCM g_attr, SCM g_value),
+"Returns a dictionary name of the given value of an integer-type\n"
+"attribute\n") 	   
+#define FUNC_NAME s_rad_dict_value_to_name
 {
 	DICT_ATTR *attr;
 	DICT_VALUE *val;
@@ -460,11 +410,12 @@ rad_dict_value_to_name(g_attr, g_value)
 	val = value_lookup(SCM_INUM(g_value), attr->name);
 	return val ? scm_makfrom0str(val->name) : SCM_BOOL_F;
 }
+#undef FUNC_NAME
 
-SCM
-rad_dict_name_to_value(g_attr, g_value)
-	SCM g_attr;
-	SCM g_value;
+SCM_DEFINE(rad_dict_name_to_value, "rad-dict-name->value", 2, 0, 0,
+	   (SCM g_attr, SCM g_value),
+"Convert a symbolic attribute value name into its integer representation\n")
+#define FUNC_NAME s_rad_dict_name_to_value	
 {
 	DICT_ATTR *attr;
 	DICT_VALUE *val;
@@ -489,10 +440,12 @@ rad_dict_name_to_value(g_attr, g_value)
 	val = value_name_to_value(SCM_CHARS(g_value));
 	return val ? scm_makenum(val->value) : SCM_BOOL_F;
 }
+#undef FUNC_NAME
 
-SCM
-rad_dict_pec_to_vendor(g_pec)
-	SCM g_pec;
+SCM_DEFINE(rad_dict_pec_to_vendor, "rad-dict-pec->vendor", 1, 0, 0,
+	   (SCM g_pec),
+"Converts PEC to the vendor name")	   
+#define FUNC_NAME s_rad_dict_pec_to_vendor
 {
 	char *s;
 	
@@ -501,10 +454,14 @@ rad_dict_pec_to_vendor(g_pec)
 	s = vendor_pec_to_name(SCM_INUM(g_pec));
 	return s ? scm_makfrom0str(s) : SCM_BOOL_F;
 }
+#undef FUNC_NAME
 
-SCM
-rad_read_no_echo(g_prompt)
-	SCM g_prompt;
+SCM_DEFINE(rad_read_no_echo, "rad-read-no-echo", 1, 0, 0,
+	   (SCM g_prompt),
+"Prints the given PROMPT-STRING, disables echoing, reads a string up to the\n"
+"next newline character, restores echoing and returns the string entered.\n"
+"This is the interface to the C getpass(3) function.\n")
+#define FUNC_NAME s_rad_read_no_echo	   
 {
 	char *s;
 	
@@ -513,7 +470,7 @@ rad_read_no_echo(g_prompt)
 	s = getpass(SCM_CHARS(g_prompt));
 	return scm_makfrom0str(s);
 }
-
+#undef FUNC_NAME
 
 SCM
 list_to_scheme(pair)
@@ -698,12 +655,10 @@ parse_facility(list)
 	return accval;
 }
 
-#define FUNC_NAME "rad-openlog"
-SCM
-rad_openlog(g_ident, g_option, g_facility)
-	SCM g_ident;
-	SCM g_option;
-	SCM g_facility;
+SCM_DEFINE(rad_openlog, "rad-openlog", 3, 0, 0,
+	   (SCM g_ident, SCM g_option, SCM g_facility),
+"FIXME: rad-openlog docstring")	   
+#define FUNC_NAME s_rad_openlog
 {
 	char *ident;
 	int option, facility;
@@ -737,11 +692,10 @@ rad_openlog(g_ident, g_option, g_facility)
 }
 #undef FUNC_NAME
 
-#define FUNC_NAME "rad-syslog"
-SCM
-rad_syslog(g_prio, g_text)
-	SCM g_prio;
-	SCM g_text;
+SCM_DEFINE(rad_syslog, "rad-syslog", 2, 0, 0,
+	   (SCM g_prio, SCM g_text),
+"FIXME: rad-syslog docstring")	   
+#define FUNC_NAME s_rad_syslog
 {
 	int prio;
 
@@ -762,11 +716,97 @@ rad_syslog(g_prio, g_text)
 }
 #undef FUNC_NAME
 
-#define FUNC_NAME "rad-closelog"
-SCM
-rad_closelog()
+SCM_DEFINE(rad_closelog, "rad-closelog", 0, 0, 0,
+	   (),
+"FIXME: rad-closelog docstring")	   
+#define FUNC_NAME s_rad_closelog
 {
 	closelog();
 	return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
+
+void
+rad_scheme_init(argc, argv)
+	int argc;
+	char **argv;
+{
+	int di, si;
+	int double_dash = 0;
+	SCM *scm_loc;
+	char *bootpath;
+	char *p;
+	
+	/*
+	 * Process and throw-off radius-specific command line
+	 * options.
+	 */
+	for (si = di = 0; si < argc; ) {
+		if (double_dash) {
+			argv[di++] = argv[si++];
+		} else if (strcmp(argv[si], "--") == 0) {
+			double_dash++;
+			argv[di++] = argv[si++];
+		} else if (strcmp(argv[si], "-ds") == 0) {
+			/* allow for guile's -ds option */
+			argv[di++] = argv[si++];
+		} else if (strncmp(argv[si], "-d", 2) == 0) {
+			if (argv[si][2]) {
+				radius_dir = argv[si++]+2;
+			} else {
+				if (++si >= argc) 
+					die("option requires argument: -d");
+				radius_dir = argv[si++];
+			}
+		} else if (strcmp(argv[si], "--directory") == 0) {
+			if (++si >= argc) 
+				die("option requires argument: --directory");
+			radius_dir = argv[si++];
+		} else
+			argv[di++] = argv[si++];
+	}
+	argv[di] = NULL;
+	argc = di;
+	
+	/*
+	 * Initialize radius sub-system
+	 */
+	radpath_init();
+	if (dict_init()) {
+		radlog(L_ERR, _("error reading dictionary file"));
+		exit(1);
+	}
+	radclient = radclient_alloc(0, 0);
+
+	/*
+	 * Provide basic primitives
+	 */
+	#include <radscm.x>
+
+	scm_loc = SCM_CDRLOC (scm_sysintern ("%raddb-path", SCM_EOL));
+	*scm_loc = scm_makfrom0str(radius_dir);
+
+	for (si = 0; syslog_kw[si].name; si++)
+		scm_sysintern(syslog_kw[si].name,
+			      SCM_MAKINUM(syslog_kw[si].tok));
+	
+	if (!(bootpath = getenv("RADSCM_BOOTPATH")))
+		bootpath = DATADIR;	
+#if 0
+	/*
+	 * Reset %load-path
+	 */
+	scm = scm_cons(scm_makfrom0str(bootpath),
+		       scm_symbol_value0("%load-path"));
+	scm_loc = SCM_CDRLOC (scm_sysintern ("%load-path", SCM_EOL));
+	*scm_loc = scm;
+#endif
+	/*
+	 * Load radius scheme modules
+	 */
+	p = mkfilename(bootpath, "boot.scm");
+	scm_primitive_load(scm_makfrom0str(p));
+	efree(p);
+
+	scm_shell(argc, argv);
+}

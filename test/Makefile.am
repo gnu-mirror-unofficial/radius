@@ -18,7 +18,7 @@ findport_SOURCES=findport.c
 SUBDIRS=raddb proxy dejagnu shell
 noinst_SCRIPTS=test.sh
 EXTRA_DIST=test.sh.m4 radiusd.m4 proxy.m4 proto.m4
-CLEANFILES=acct log raddb/config raddb/client.conf 
+CLEANFILES=test.sh 
 #TESTS=@TESTDIR@
 TESTS_ENVIRONMENT=BUILDDIR=$(top_builddir) SOURCEDIR=$(top_srcdir)
 

@@ -1738,7 +1738,6 @@ reload_data(what, do_radck)
                 path = mkfilename(radius_dir, RADIUS_CLIENTS);
                 if (read_clients_file(path) < 0)
                         rc = 1;
-                proxy_cleanup();
                 efree(path);
                 break;
 

@@ -289,7 +289,7 @@ rad_create_pdu(void **rptr, int code, int id, u_char *vector,
 }
 
 static VALUE_PAIR *
-rad_decode_pair(int attrno, char *ptr, int attrlen)
+rad_decode_pair(UINT4 attrno, char *ptr, size_t attrlen)
 {
         DICT_ATTR *attr;
         VALUE_PAIR *pair;
@@ -371,7 +371,7 @@ decode_vsa(u_char *ptr, UINT4 attrlen, UINT4 *vendorpec, UINT4 *vendorcode)
 	*vendorpec = ntohl(x);
 	*vendorcode = vendor_pec_to_id(*vendorpec);
 
-	return *vendorcode != 0;
+	return *vendorcode == 0;
 }
 
 /* Receive UDP client requests, build an authorization request
@@ -379,7 +379,7 @@ decode_vsa(u_char *ptr, UINT4 attrlen, UINT4 *vendorpec, UINT4 *vendorcode)
    to the new structure. */
 
 RADIUS_REQ *
-rad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, int length)
+rad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, size_t length)
 {
         u_char          *ptr;
         AUTH_HDR        *auth;
@@ -442,7 +442,7 @@ rad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, int length)
                         attrlen -= 4;
 
                         while (attrlen > 0) {
-                                UINT4 len;
+                                size_t len;
 
 				if (vendorpec == 429) {
 					/* Hack for non-compliant USR VSA */

@@ -1,16 +1,34 @@
 @c This is part of the Radius manual.
-@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c Copyright (C) 1999,2000,2001,2002,2003 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Debugging, Extensions, Logging, Top
-@chapter Debugging
+@node Problem Tracking, Extensions, Logging, Top
+@chapter Problem Tracking
+@cindex Problem Tracking
+
+@menu
+* Rule Tracing::       Tracing rules.
+* Debugging::          Enabling full debugging information.
+* Test Mode::          Running radius in test mode.
+@end menu
+
+@comment *******************************************************************
+@node Rule Tracing
+@section Rule Tracing
+@cindex Rule Tracing
+
+
+
+@comment *******************************************************************
+@node Debugging
+@section Debugging
 @cindex Debugging
 
 GNU Radius provides extensive debugging features. These are enabled
-either by the @option{-x} command option to @command{radiusd}
-@ref{Invocation}, or by the @code{level} statement in the debug category
-(@ref{logging,,logging statement}). Both cases require as an argument
-a valid debug specification.
+either by the @option{--debug} (@option{-x}) command line option to
+@command{radiusd} (@pxref{Invocation}), or by the @code{level}
+statement in the debug category (@pxref{logging,,logging statement}).
+Both cases require as an argument a valid debug specification.
 
 A debug specification sets the module for which the debugging should
 be enabled and the debugging level. The higher the level is, the more
@@ -37,4 +55,8 @@ to release.
 
 @c @include debug.texinfo
 
+@comment *******************************************************************
+@node Test Mode
+@section Test Mode
+@cindex Test Mode
 

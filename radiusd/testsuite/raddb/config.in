@@ -93,7 +93,6 @@ filters {
 
 rewrite {
 	load-path "@SOURCEDIR@/../../examples";
-	load "rewrite";
 	load "ascend.rw";
 	load "cisco.rw";
 	load "jetstream.rw";

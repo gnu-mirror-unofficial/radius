@@ -14,6 +14,10 @@ AUTOMAKE_OPTIONS = dejagnu
 DEJATOOL = radiusd
 RUNTESTFLAGS = 
 SUBDIRS = lib
+EXTRA_DIST = dejagnu.m4 radiusd-stamp proxy-stamp radiusd radiusd.proxy
+
+M4_DEFINES=-DBUILDDIR=`cd $(top_builddir); pwd` \
+           -DSOURCEDIR=`cd $(top_srcdir); pwd`
 
 site.exp: Makefile remote.exp
 	@echo 'Making a new site.exp file...'
@@ -50,4 +54,12 @@ remote.exp:;
 	@mv $@-t remote.exp
 
 
+radiusd-stamp: $(srcdir)/../proto.m4 $(srcdir)/dejagnu.m4 $(srcdir)/../radiusd.m4
+	$(M4) $(M4_DEFINES) $(srcdir)/../proto.m4 $(srcdir)/dejagnu.m4 $(srcdir)/../radiusd.m4|$(SHELL)
+	touch radiusd-stamp
 
+proxy-stamp: $(srcdir)/../proto.m4 $(srcdir)/dejagnu.m4 $(srcdir)/../proxy.m4
+	$(M4) $(M4_DEFINES) $(srcdir)/../proto.m4 $(srcdir)/dejagnu.m4 $(srcdir)/../proxy.m4|$(SHELL)
+	touch proxy-stamp
+
+all: radiusd-stamp proxy-stamp 

@@ -1,3 +1,11 @@
+2003-10-17  Sergey Poznyakoff  
+
+	* include/radiusd.h (radius_decrypt_request_pairs)
+	(radius_destroy_pairs): New functions.
+	* radiusd/radius.c: Likewise.
+	* radiusd/scheme.c (scheme_auth): Decrypt passwords before
+	passing them on to Scheme.
+
 2003-10-16  Sergey Poznyakoff
 
 	* radiusd/rpp.c (rpp_request_handler): Minor fix

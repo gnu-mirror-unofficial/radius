@@ -1,3 +1,14 @@
+2001-10-15 Sergey Poznyakoff
+
+	* configure.in: Removed superfluous backslashes in final AC_OUTPUT.
+	* radiusd/proxy.c: Fixed bugs introduced yesterday.
+	* radlib/client.c: Likewise (in function radclient_build_request).
+	* TODO: Updated.
+
+	* radiusd/config.y: Fixed action for `level: T_STRING' to work
+	with `upto' severity specs (e.g.: `category debug').
+	* raddb/config: Added default channel ang category statements.
+	
 2001-10-14 Sergey Poznyakoff
 
 	Bunch of fixes to handle correctly passwords longer than 16 bytes:

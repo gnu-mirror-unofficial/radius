@@ -564,7 +564,8 @@ AC_OUTPUT(Makefile m4/Makefile \
           po/Makefile \
           elisp/Makefile \
           raddb/Makefile \
-	  client/Makefile \
+          db/Makefile \
+          client/Makefile \
           client/nas/Makefile \
           client/pam_radius/Makefile \
           test/Makefile test/raddb/Makefile \

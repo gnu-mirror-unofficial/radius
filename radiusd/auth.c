@@ -857,7 +857,6 @@ auth_failure(AUTH_MACH *m)
 		radius_exec_command(cmd);
 		break;
 
-	default:
 	}
 	obstack_free(&stk, NULL);
 }

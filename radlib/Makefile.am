@@ -23,6 +23,7 @@ insist.c \
 intl.c \
 iputil.c \
 leakdetect.c \
+logger.c \
 md5.c \
 md5crypt.c \
 mem.c \
@@ -39,7 +40,7 @@ util.c
 
 LIBADD=@LIBOBJS@
 librad_la_LIBADD = $(LIBADD:.o=.lo)
-liblog_la_SOURCES=log.c 
+liblog_la_SOURCES=applog.c 
 libdebug_la_SOURCES=debugmod.c
 LDFLAGS=-all-static
 AM_CFLAGS=-static

@@ -1,5 +1,5 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
+ * Copyright (C) 2000,2001, Sergey Poznyakoff
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  *
  */
+%x in_string
 %{
 	#ifndef lint
 	static char rcsid[] = 
@@ -49,32 +50,95 @@
 	#include "users_gram.h"
 
 	extern void enable_usr_dbg();
-	char *addstring();
-	char *addquote();
-	struct obstack stack;
+	static char *addstring();
+	static char *addquote();
+	static int backslash(int c);
+	
+	static struct obstack stack;
 
 	int source_line_num;
 	char *source_filename;
+
+	#define to_num(c) ((c)-'0')
 %}
 
 WS [ \t][ \t]*
 IDENT [a-zA-Z_\-0-9.]+
+O [0-7]
+X [0-9a-fA-F]
+D [0-9]{1,3}
+
 %%
 #.*\n   {
 	  if (strncmp(yytext+1, "debug", 5) == 0)
-		  enable_usr_dbg();
+ 		  enable_usr_dbg();
 	  source_line_num++; /* a comment */
         }
 #.*     /* end-of-file comment */;
 NULL    return NUL;
+{D}\.{D}\.{D}\.{D} |
+{D}\.{D}\.{D}\.{D}\+ {
+          yylval.string = addstring(yytext);
+          return STRING;
+}
 {IDENT} {
 	  yylval.string = addstring(yytext);
 	  return STRING;
         }
-\"[^"]*\" {
+\"[^"\\\n]*\" {
           yylval.string = addquote(yytext);
           return QUOTE;
         }
+\"[^"\\\n]*\\\n {
+          BEGIN(in_string);
+          if (yyleng > 3)
+                 obstack_grow(&stack, yytext+1, yyleng-3);
+}
+\"[^"\\\n]*\n {
+          BEGIN(INITIAL);
+          yyerror("unterminated character string");
+          return BOGUS;
+}
+\"[^"\\\n]*\\[^xX0-9] {
+	  BEGIN(in_string);
+	  if (yyleng > 3)
+	         obstack_grow(&stack, yytext+1, yyleng-3);
+	  obstack_1grow(&stack, backslash(yytext[yyleng-1]));
+}
+<in_string>[^"\\\n]*\\\n {
+          obstack_grow(&stack, yytext, yyleng-2);
+}
+<in_string>[^"\\\n]*\n {
+	  BEGIN(INITIAL);
+	  obstack_finish(&stack);
+          yyerror("unterminated character string");
+          return BOGUS;
+}	  
+<in_string>[^"\\\n]*\\[^xX0-9] {
+          if (yyleng > 2)
+                   obstack_grow(&stack, yytext, yyleng-2);
+          obstack_1grow(&stack, backslash(yytext[yyleng-1]));
+}
+<in_string>[^"\\\n]*\\{O} |
+<in_string>[^"\\\n]*\\{O}{O} |
+<in_string>[^"\\\n]*\\{O}{O}{O} {
+	  int i = yyleng;
+          int c = 0;
+
+	  while (i > 0 && yytext[i] != '\\')
+		  i--;
+	  obstack_grow(&stack, yytext, i);
+	  for (i++; i < yyleng; i++) 
+		  c = c*8 + to_num(yytext[i]);
+	  obstack_1grow(&stack, c);
+}
+<in_string>[^"\\\n]*\" {
+          BEGIN(INITIAL);
+	  obstack_grow(&stack, yytext, yyleng-1);
+	  obstack_1grow(&stack, 0);
+	  yylval.string = obstack_finish(&stack);
+          return QUOTE;
+}
 {WS}    ;
 \n      {
           source_line_num++;
@@ -185,3 +249,14 @@ users_sync()
 		}
 	}
 }
+
+int
+backslash(c)
+        int c;
+{
+	static char transtab[] = "b\bf\fn\nr\rt\t";
+	if (strchr(transtab, c))
+		return strchr(transtab, c)[1];
+        return c;
+}
+	

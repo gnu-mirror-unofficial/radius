@@ -31,8 +31,8 @@ static char rcsid[] = "@(#) $Id$";
 #include <ctype.h>
 
 #include <timestr.h>
-#undef ALLOC
-#undef FREE
+
+
 #ifndef ALLOC
 # define ALLOC malloc
 #endif

@@ -1,27 +1,23 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 /*FIXME!FIXME!FIXME! server timeout is not used */
 
 #define RADIUS_MODULE_PROXY_C
-#ifndef lint
-static char rcsid[] =
-"@(#) $Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -42,8 +38,6 @@ static char rcsid[] =
 #include <string.h>
 
 #include <radiusd.h>
-
-static PROXY_ID *proxy_id;
 
 /* ************************************************************************* */
 /* Functions local to this module */
@@ -141,63 +135,6 @@ proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r)
 			return 0;
 	}
 	return 1;
-}
-
-/* ************************************************************************* */
-/* Proxy-Id functions */
-/* We try to keep a separate proxy_id per remote server so that if we happen
- * to have a lot of proxy requests the proxy id wouldn't wrap around too
- * fast.
- * From the other hand, we can't keep the proxy id in the client struct since
- * it would be reset to zero after each reload of configuration files.
- * This approach has two drawbacks:
- *   1. Linear search. If we have too many clients, its performance will
- *      degradate.
- *   2. Suppose we delete a client and then do a reload. In that case this
- *      client's proxy_id record will hang around just wasting memory. Hence,
- *      the need of proxy_cleanup function.
- */
-
-/* next_proxy_id(): return next proxy id for the given client's IP address.
- * If we don't have one, create it and initialize to zero.
- */
-u_char
-next_proxy_id(UINT4 ipaddr)
-{
-        PROXY_ID *p;
-	
-        for (p = proxy_id; p; p = p->next)
-                if (p->ipaddr == ipaddr)
-                        break;
-        if (!p) {
-                p = mem_alloc(sizeof *p);
-                p->ipaddr = ipaddr;
-                p->id = 0;
-                p->next = proxy_id;
-                proxy_id = p;
-        }
-        return p->id++;
-}
-
-/* Delete any proxy_id's that do not correspond to existing clients
- */
-void
-proxy_cleanup()
-{
-        PROXY_ID *p, *prev, *next;
-
-        prev = NULL;
-        for (p = proxy_id; p; ) {
-                next = p->next;
-                if (!client_lookup_ip(p->ipaddr)) {
-                        if (prev) 
-                                prev->next = next;
-                        else
-                                proxy_id = next;
-                        mem_free(p);
-                }
-                p = next;
-        }
 }
 
 /* ************************************************************************* */
@@ -353,7 +290,7 @@ proxy_send(REQUEST *req)
 
         radreq->server = realm->queue->first_server;
 	radreq->attempt_no = 0;
-        radreq->server_id = next_proxy_id(radreq->server->addr);
+        radreq->server_id = rad_clt_message_id(radreq->server);
 	radreq->remote_user = string_create(username);
 
 	req->update_size = sizeof(*upd) + strlen(realm->realm);

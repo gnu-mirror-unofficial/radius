@@ -18,6 +18,9 @@ bin_SCRIPTS=@RADSESSION@
 EXTRA_PROGRAMS=radscm
 EXTRA_SCRIPTS=radsession
 
+# Sad but true, libguile prints --help output on stderr!
+AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = radscm$(EXEEXT) 
+
 libradscm_a_SOURCES= \
  rscm_avl.c\
  rscm_dict.c\

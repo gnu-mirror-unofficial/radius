@@ -29,7 +29,9 @@ typedef union {
         char      *sval;
 } Datum;
 
+void rewrite_init();
 int interpret(char *fcall, RADIUS_REQ *req, Datatype *type, Datum *datum);
+int rewrite_stmt_term(int finish, void *block_data, void *handler_data);
 
 #ifdef RADIUS_SERVER_GUILE
 SCM radscm_datum_to_scm(Datatype type, Datum datum);

@@ -270,6 +270,8 @@ VALUE		Auth-Type		Crypt-Local		3
 VALUE		Auth-Type		Reject			4
 VALUE           Auth-Type               Ignore			5
 
+VALUE		Auth-Type		MS-CHAP			1000
+
 #
 # Extensions introduced by Cistron
 #

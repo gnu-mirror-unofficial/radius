@@ -21,34 +21,34 @@ BEGIN(--proxy)
 
 SEQUENCE(Auth,
 Checking Basic Authentication Types,
-TEST(send auth 1 User-Name = "accept@remote", expect 2) 
-TEST(send auth 1 User-Name = "reject@remote", expect 3) 
-TEST(send auth 1 User-Name = "local@remote" Password = "guessme",
+TEST(send auth 1 User-Name = QUOTE(accept@remote), expect 2) 
+TEST(send auth 1 User-Name = QUOTE(reject@remote), expect 3) 
+TEST(send auth 1 User-Name = QUOTE(local@remote) Password = QUOTE(guessme),
      expect 2)
-TEST(send auth 1 User-Name = "local@remote" Password = "bad",
+TEST(send auth 1 User-Name = QUOTE(local@remote) Password = QUOTE(bad),
      expect 3)
-TEST(send auth 1 User-Name = "crypt@remote" Password = "hamlet",
+TEST(send auth 1 User-Name = QUOTE(crypt@remote) Password = QUOTE(hamlet),
      expect 2)) 
 
 SEQUENCE(Nest,
 Checking Nested realms,
-TEST(send auth 1 User-Name = "accept@local@remote", expect 2))
+TEST(send auth 1 User-Name = QUOTE(accept@local@remote), expect 2))
 
 SEQUENCE(Acct-Start,
-Checking accountng stop,
-TEST(send acct 4 User-Name = "simuse@remote" \
-                    NAS-IP-Address = "127.0.0.1" \
+Checking accountng start,
+TEST(send acct 4 User-Name = QUOTE(simuse@remote) \
+                    NAS-IP-Address = 127.0.0.1 \
                     NAS-Port-Id = 1 \
-                    Acct-Session-Id = "0001" \
+                    Acct-Session-Id = QUOTE(0001) \
                     Acct-Status-Type = Start, 
      expect 5))
 
 SEQUENCE(Acct-Stop,
 Checking accountng stop,
-TEST(send acct 4 User-Name = "simuse@remote" \
-                    NAS-IP-Address = "127.0.0.1" \
+TEST(send acct 4 User-Name = QUOTE(simuse@remote) \
+                    NAS-IP-Address = 127.0.0.1 \
                     NAS-Port-Id = 1 \
-                    Acct-Session-Id = "0001" \
+                    Acct-Session-Id = QUOTE(0001) \
                     Acct-Status-Type = Stop, 
      expect 5))
 

@@ -18,6 +18,7 @@ radius_TEXINFOS=acct.texi\
  bugs.texi\
  builddbm.texi\
  client.texi\
+ comp.texi\
  config.texi\
  configure.texi\
  debug.texi\

@@ -1,0 +1,221 @@
+@c This is part of the Radius manual.
+@c Copyright (C) 1999,2000,2001,2002 Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
+@node Request Comparison, Authentication, Configuration Files, Top
+@chapter Request Comparison Methods
+@cindex Comparing the requests
+
+The basic notions about comparison of the incoming requests and why
+it is necessary were given in @ref{Checking Duplicates}. This
+chapter concentrates on extended methods of request comparison and
+on the configuration issues.
+
+@menu
+* Extended Comparison::
+* Request Queue::
+@end menu
+
+@node Extended Comparison
+@section Extended Comparison
+@cindex Extended Comparison
+
+The default comparison method may fail to recognize duplicate requests.
+if the originating @NAS{} has modified the request authenticator or
+request identifier before retransmitting the request. If you
+happen to use such @NAS{}es, you will have to enable @dfn{extended
+request comparison} to compensate for their deficiencies.
+
+The extended request comparison consists in comparing the
+@emph{contents} of both requests. However, blindly comparing
+each @AVP{} from both requests won't work, since many attributes do
+change their values between successive retransmits. Therefore,
+@command{radiusd} uses only @dfn{comparable attribute}, i.e. a
+user-defined subset of such attributes that can safely be used in
+comparison. Thus, extended request comparison works as follows:
+
+@enumerate
+@item The comparable attributes are extracted from each request. They
+form two sorted @dfn{attribute lists}.
+@item If lengths of both lists differ, the requests are considered different.
+@item Otherwise, the value of each @AVP{} from the first list is
+compared against that of the corresponding @AVP{} from the second list.
+If at least one @AVP{} differs, then the requests are considered
+different. @emph{Notice}, that values of @attr{Password} and
+@attr{CHAP-Password} are decoded prior to comparison.
+@end enumerate
+
+To use the extended comparison, follow the procedure below:
+
+@enumerate
+@item Select user-defined attribute properties.
+
+The syntax of dictionary file allows for nine user-defined properties,
+denoted by characters @samp{1} through @samp{9}. You should select one of
+them to mark comparable attributes for authentication and another one to
+mark those for accounting. @xref{ATTRIBUTE}, for detailed description
+of attribute property flags.
+
+@item To enable the extended comparison for requests coming from any
+@NAS{}, declare extended comparison flags in @file{raddb/config}.
+
+To enable the extended comparison for authentication requests,
+add to your @code{auth} block the statement
+
+@example
+        compare-attribute-flag @var{flag};
+@end example
+
+The @var{flag} is the same symbol you used in the dictionary to mark
+comparable attributes for authentication.
+
+To enable the extended comparison for accounting requests, insert 
+@code{compare-attribute-flag} statement into the @code{acct} block.
+
+@item To enable the extended comparison for requests coming from
+selected @NAS{}es, declare extended comparison flags in
+@file{raddb/naslist}.
+
+Add the following statement to the declaration of those @NAS{}es,
+that require using the extended comparison (in flags column):
+
+@example
+        compare-auth-flag=@var{flag},compare-acct-flag=@var{flag}
+@end example
+
+@noindent
+@xref{naslist file}, for a description of naslist file syntax.
+@end enumerate
+
+@menu
+* Example: Extended Comparison Example.
+* Comparable Attributes::        List of attributes that can be declared
+                                 comparable.
+@end menu
+
+@node Extended Comparison Example
+@subsection An example of extended comparison configuration
+@exindex Extended comparison
+
+In this example configuration, the user-defined flag @samp{1} marks
+authentication comparable attributes, and the flag @samp{2} marks
+the accounting comparable attributes.
+
+@subheading @file{raddb/dictionary}
+
+@example
+ATTRIBUTE       User-Name               1       string  - [LR-RLR]12
+ATTRIBUTE       Password                2       string  - [L-----]1
+ATTRIBUTE       NAS-Port-Id             5       integer - [LR-RLR]12
+ATTRIBUTE       State                   24      string  - [LRLRLR]1
+ATTRIBUTE       Called-Station-Id       30      string  - [L--RLR]12
+ATTRIBUTE       Calling-Station-Id      31      string  - [L--RLR]12
+ATTRIBUTE       Acct-Status-Type        40      integer - []2
+ATTRIBUTE       Acct-Session-Id         44      string  - []2
+ATTRIBUTE       Acct-Session-Time       46      integer - []2
+@end example
+
+@subheading @file{raddb/config}
+
+@example
+        auth @{
+        	max-requests 127;
+                request-cleanup-delay 2;
+                compare-attribute-flag 1;
+        @};
+        acct @{
+                max-requests 127;
+                request-cleanup-delay 2;
+                compare-attribute-flag 2;
+        @};                
+@end example
+
+@node Comparable Attributes                      
+@subsection List of attributes that can be declared comparable.
+
+The following attributes can be declared as comparable:
+
+@itemize
+@item @attr{User-Name}
+@item @attr{Password}
+@item @attr{CHAP-Password}
+@item @attr{NAS-Port-Id}             
+@item @attr{State}                   
+@item @attr{Called-Station-Id}       
+@item @attr{Calling-Station-Id}      
+@item @attr{NAS-Identifier}          
+@item @attr{Acct-Status-Type}        
+@item @attr{Acct-Session-Id}         
+@item @attr{Acct-Session-Time}       
+@item @attr{User-UID}                
+@item @attr{User-GID}                
+@end itemize
+
+Notice that this list is by no means an exhaustive one. Depending on
+a particular @NAS{} other attributes may be safe to be used
+in comparisons, or, vice-versa, some attributes from this list may not 
+be used. You should carefully analyze packets coming from your @NAS{}
+before deciding which attributes to mark as comparable.
+
+@node Request Queue
+@section Fine-Tuning the Request Queue
+@cindex request queue, configuring
+
+As described in @ref{Checking Duplicates}, each request is added
+to the request queue when @command{radiusd} starts processing it
+and is removed from there a certain amount of time after its
+processing was finished. The configuration parameter
+@code{request-cleanup-delay} defines how long each already processed
+request is kept in the queue. Its value must be synchronized with
+the @NAS{} settings.
+
+Each @NAS{} allows to configure two parameters:
+ 
+@table @code
+@item Ntimeout
+The amount of time in seconds during which the @NAS{} is waiting
+for a response from radius server.
+@item Nretries
+The number of times the @NAS{} tries to re-send the request if
+it received no response from the radius server.
+@end table
+
+Of course, these parameters are named differently for different
+makes of @NAS{}es. Refer to your @NAS{} documentation
+to find out where these values are configured.
+
+In general, these parameters must satisfy the following relation:
+
+@example
+     request-cleanup-delay + @var{const} = Nretries * Ntimeout
+@end example
+
+@noindent
+where @var{const} is an empirical constant that depends on the
+average time of processing a single request. Usually its value lies
+between 0 and 10 seconds.
+
+For example, if the configuration of your @NAS{} sets
+
+@example
+   Nretries = 3
+   Ntimeout = 10
+@end example
+
+@noindent
+then your raddb/config should contain:
+
+@example
+auth @{ 
+        request-cleanup-delay 40;
+@};
+acct @{ 
+        request-cleanup-delay 40;
+@};
+@end example
+
+Notice the duplication of @code{request-cleanup-delay}:
+@command{radiusd} uses distinct values for authentication
+and accounting requests, however most existing @NAS{}es do
+not make such distinction.
+

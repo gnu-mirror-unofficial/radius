@@ -1,3 +1,51 @@
+2002-01-25  Sergey Poznyakoff  
+
+	Fixed thread-unsafe functions all over the package.
+	
+	* radlib/gethost_r.c: (new) Replacements for missing
+	  gethostbyname_r and gethostbyaddr_r calls.
+	* radlib/Makefile.am: Add gethost_r.c
+	* radlib/localtime_r.c: Lock the mutex before calling localtime().
+	* radlib/mem.c: Lock critical sections with mutexes.
+
+	* m4/common.m4: (new) Some useful m4 macros (taken from
+	  GNU inetutils).
+	* m4/Makefile.am: Added m4/common.m4
+	* acconfig.h: Added HAVE_HOSTENT_H_ADDR_LIST.
+	* configure.in: Replace gethost.*_r and getline functions.
+	* include/radius.h: Changed protos of ip_hostname, ipaddr2str,
+	  nas_ip_to_name, nas_request_to_name. Removed format_ipaddr.
+	* include/radiusd.h: Changed proto of client_lookup_name.
+	* include/sysdep.h: Provide declarations for gethost.*_r
+	  functions.
+
+	* radiusd/acct.c: Use thread-safe functions.
+	* radiusd/auth.c: Likewise.
+	* radiusd/checkrad.c: Likewise.
+	* radiusd/files.c: Likewise.
+	* radiusd/proxy.c: Likewise.
+	* radiusd/radius.c: Likewise.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/radutil.c: Likewise.
+	* radiusd/snmpserv.c: Likewise.
+	* radiusd/sql.c: Likewise.
+	* radiusd/stat.c: Likewise.
+	
+	* radlast/radlast.c: Likewise.
+	* radlib/client.c: Likewise.
+	* radlib/iputil.c: Likewise.
+	* radlib/nas.c: Likewise.
+	* radlib/radutmp.c: Likewise.
+	* radlib/util.c: Likewise.
+	* radscm/radscm.c: Likewise.
+	* radtest/gram.y: Likewise.
+	* radtest/main.c: Likewise.
+	* raduse/raduse.c: Likewise.
+	* raduse/session.c: Likewise.
+	* raduse/stat.c: Likewise.
+	* radwho/radwho.c: Likewise.
+	* radzap/radzap.c: Likewise.
+	
 2002-01-24  Sergey Poznyakoff 
 
 	Moved to POSIX threads. Tested basic functionality of

@@ -226,7 +226,6 @@ typedef struct radius_req {
         u_char                  *data;        /* Raw received data */
         int                     data_len;     /* Length of raw data */
         int                     data_alloced; /* Was the data malloced */
-        void                    *conn;        /* SQL connection */
         
         /* Saved reply values */
         int                     reply_code;   /* Reply code */

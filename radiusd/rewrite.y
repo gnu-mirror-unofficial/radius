@@ -3225,7 +3225,7 @@ optimize()
 static INSTR *rw_code;          /* Code segment */
 static pctr_t rw_pc;            /* PC when compiling the code */
 static size_t rw_codesize;      /* Length of code segment */ 
-int rewrite_stack_size = 4096;  /* Size of stack+heap (global)  */
+static int rewrite_stack_size = 4096;  /* Size of stack+heap */
 
 void
 code_init()
@@ -5137,6 +5137,15 @@ run_rewrite(name, req)
         } 
         return -1;
 }
+
+/* ****************************************************************************
+ * Configuration
+ */
+struct cfg_stmt rewrite_stmt[] = {
+	{ "stack-size", CS_STMT, NULL, cfg_get_integer, &rewrite_stack_size,
+	  NULL, NULL },
+	{ NULL, }
+};
 
 /* ****************************************************************************
  * Guile interface

@@ -55,6 +55,253 @@ Community *commlist, *commlist_tail;
 Server_stat server_stat;
 struct radstat radstat;
 
+/* ************************************************************************ */
+/* Configuration file */
+
+typedef struct netlist Netlist;
+struct netlist {
+        Netlist *next;
+        char *name;
+        ACL *acl;
+};
+static Netlist *netlist;
+
+static ACL *
+find_netlist(name)
+        char *name;
+{
+        Netlist *p;
+
+        for (p = netlist; p; p = p->next)
+                if (strcmp(p->name, name) == 0) 
+                        return p->acl;
+
+        return NULL;
+}
+
+int
+snmp_stmt_begin(data, up_data)
+	void *data;
+	void *up_data;
+{
+        snmp_free_communities();
+        snmp_free_acl();
+	return 0;
+}
+
+static int
+snmp_cfg_ident(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	if (argc > 2) {
+		cfg_argc_error(0);
+		return 0;
+	}
+
+ 	if (argv[1].type != CFG_STRING) {
+		cfg_type_error(CFG_STRING);
+		return 0;
+	}
+	if (server_id)
+		efree(server_id);
+	server_id = estrdup(argv[1].v.string);
+	return 0;
+}
+
+static struct keyword snmp_access[] = {
+	"read-only", SNMP_RO,
+	"read-write", SNMP_RW,
+	"ro", SNMP_RO,
+	"rw", SNMP_RW,
+	0
+};
+
+static int
+snmp_cfg_community(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	int access;
+
+	if (argc != 3) {
+		cfg_argc_error(argc < 3);
+		return 0;
+	}
+
+ 	if (argv[1].type != CFG_STRING
+	    || argv[2].type != CFG_STRING) {
+		cfg_type_error(CFG_STRING);
+		return 0;
+	}
+
+	access = xlat_keyword(snmp_access, argv[2].v.string, -1);
+	if (access == -1) 
+		return 1;
+		
+	if (snmp_find_community(argv[1].v.string)) {
+		radlog(L_ERR,
+		       _("%s:%d: community %s already declared"),
+		       cfg_filename, cfg_line_num, argv[1].v.string);
+		return 0;
+	}
+	
+	snmp_add_community(argv[1].v.string, access);
+	return 0;
+}
+
+static void
+destroy_netlist(netlist)
+	Netlist *netlist;
+{
+	free_acl(netlist->acl);
+	efree(netlist->name);
+}
+
+static int
+snmp_cfg_network(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	int i;
+	Netlist *p;
+	ACL *head = NULL, *tail = NULL;
+	
+	if (argc < 3) {
+		cfg_argc_error(1);
+		return 0;
+	}
+
+ 	if (argv[1].type != CFG_STRING) {
+		cfg_type_error(CFG_STRING);
+		return 0;
+	}
+
+        p = cfg_malloc(sizeof(*p), destroy_netlist);
+        p->next = netlist;
+        p->name = estrdup(argv[1].v.string);
+	
+	for (i = 2; i < argc; i++) {
+		if (argv[i].type != CFG_NETWORK) {
+			radlog(L_ERR,
+			       _("%s:%d: list item %d has wrong datatype"),
+			       cfg_filename, cfg_line_num,
+			       i);
+		} else {
+			ACL *acl = alloc_entry(sizeof(*acl));
+			acl->ipaddr = argv[i].v.network.ipaddr;
+			acl->netmask = argv[i].v.network.netmask;
+			if (tail)
+				tail->next = acl;
+			else
+				head = acl;
+			tail = acl;
+		}
+	}
+        p->acl = head;
+        netlist = p;
+	return 0;
+}
+
+static int
+snmp_cfg_allow(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	Community *comm;
+	ACL *acl;
+	
+	if (argc != 3) {
+		cfg_argc_error(argc < 3);
+		return 0;
+	}
+	
+ 	if (argv[1].type != CFG_STRING || argv[2].type != CFG_STRING) {
+		cfg_type_error(CFG_STRING);
+		return 0;
+	}
+
+	if ((acl = find_netlist(argv[1].v.string)) == NULL) {
+		radlog(L_ERR, _("%s:%d: no such acl: %s"),
+		       cfg_filename, cfg_line_num, argv[1].v.string);
+		return 0;
+	}
+
+	comm = snmp_find_community(argv[2].v.string);
+	if (!comm) {
+		radlog(L_ERR, 
+		       _("%s:%d: undefined community %s"),
+		       cfg_filename, cfg_line_num, argv[2].v.string);
+		return 0;
+	} 
+
+	snmp_add_acl(acl, comm);
+	return 0;
+}
+
+static int
+snmp_cfg_deny(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	ACL *acl;
+	
+	if (argc != 2) {
+		cfg_argc_error(argc < 2);
+		return 0;
+	}
+	
+ 	if (argv[1].type != CFG_STRING) {
+		cfg_type_error(CFG_STRING);
+		return 0;
+	}
+
+	if ((acl = find_netlist(argv[1].v.string)) == NULL) {
+		radlog(L_ERR, _("%s:%d: no such acl: %s"),
+		       cfg_filename, cfg_line_num, argv[1].v.string);
+		return 0;
+	}
+
+	snmp_add_acl(acl, NULL);
+	return 0;
+}
+
+static struct cfg_stmt acl_stmt[] = {
+	{ "allow", CS_STMT, NULL, snmp_cfg_allow, NULL, NULL, NULL },
+	{ "deny", CS_STMT, NULL, snmp_cfg_deny, NULL, NULL, NULL },
+	{ NULL },
+};
+
+struct cfg_stmt snmp_stmt[] = {
+	{ "port", CS_STMT, NULL, cfg_get_port, &snmp_port, NULL, NULL },
+	{ "max-requests", CS_STMT, NULL,
+	  cfg_get_integer, &request_class[R_SNMP].max_requests,
+	  NULL, NULL },
+	{ "time-to-live", CS_STMT, NULL,
+	  cfg_get_integer, &request_class[R_SNMP].ttl,
+	  NULL, NULL },
+	{ "request-cleanup-delay", CS_STMT, NULL,
+	  cfg_get_integer, &request_class[R_SNMP].cleanup_delay,
+	  NULL, NULL },
+	{ "ident", CS_STMT, NULL, snmp_cfg_ident, NULL,
+	  NULL, NULL },
+	{ "community", CS_STMT, NULL, snmp_cfg_community, NULL, 
+	  NULL, NULL },
+	{ "network", CS_STMT, NULL, snmp_cfg_network, NULL,
+	  NULL, NULL },
+	{ "acl", CS_BLOCK, NULL, NULL, NULL, acl_stmt, NULL },
+	{ NULL, }
+};
 
 /* ************************************************************************ */
 /* ACL fiddling */

@@ -502,3 +502,529 @@ log_set_default(name, cat, pri)
 }
 
 
+/* ************************************************************************* */
+/* Configuration issues */
+
+static Channel *mark, channel;
+static struct category_def {
+	int init;
+	int cat;
+	int pri;
+        Chanlist *head, *tail;
+        int level;
+} cat_def;
+
+static struct keyword syslog_facility[] = {
+	"user", 	LOG_USER,
+	"daemon", 	LOG_DAEMON,
+	"auth", 	LOG_AUTH,
+	"local0", 	LOG_LOCAL0,
+	"local1", 	LOG_LOCAL1,
+	"local2", 	LOG_LOCAL2,
+	"local3", 	LOG_LOCAL3,
+	"local4", 	LOG_LOCAL4,
+	"local5", 	LOG_LOCAL5,
+	"local6", 	LOG_LOCAL6,
+	"local7", 	LOG_LOCAL7,
+	0
+};
+
+static struct keyword syslog_priority[] = {
+	"emerg", 	LOG_EMERG,
+	"alert", 	LOG_ALERT,
+	"crit", 	LOG_CRIT,
+	"err", 		LOG_ERR,
+	"warning", 	LOG_WARNING,
+	"notice", 	LOG_NOTICE,
+	"info", 	LOG_INFO,
+	"debug", 	LOG_DEBUG,
+	0
+};
+
+static struct keyword log_categories[] = {
+	"main",         L_MAIN,
+	"auth",         L_AUTH,
+	"acct",         L_ACCT,
+	"snmp",         L_SNMP,
+	"proxy",        L_PROXY,
+	0
+};
+
+static struct keyword log_priorities[] = {
+	"emerg",        L_EMERG,
+	"alert",        L_ALERT,
+	"crit",         L_CRIT,
+	"err",          L_ERR,
+	"warning",      L_WARN,
+	"notice",       L_NOTICE,
+	"info",         L_INFO,
+	"debug",        L_DEBUG,
+	0
+};
+
+int
+logging_stmt_handler(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	mark = log_mark();
+	return 0;
+}
+
+
+int
+logging_stmt_end(block_data, handler_data)
+	void *block_data;
+	void *handler_data;
+{
+	log_release(mark);
+	return 0;
+}
+
+int
+logging_stmt_begin(finish, block_data, handler_data)
+	int finish;
+	void *block_data;
+	void *handler_data;
+{
+	/*FIXME*/
+	return 0;
+}
+
+static int
+channel_stmt_handler(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	if (argc != 2) {
+		cfg_argc_error(argc < 2);
+		return 0;
+	}
+ 	if (argv[1].type != CFG_STRING) {
+		cfg_type_error(CFG_STRING);
+		return 0;
+	}
+	
+	memset(&channel, 0, sizeof(channel));
+	channel.mode = LM_UNKNOWN;
+	channel.name = argv[1].v.string;
+	return 0;
+}
+
+static int
+channel_stmt_end(block_data, handler_data)
+	void *block_data;
+	void *handler_data;
+{
+	if (channel.mode == LM_UNKNOWN) {
+		radlog(L_ERR,
+		       _("%s:%d: no channel mode for `%s'"), 
+		       cfg_filename, cfg_line_num, channel.name);
+	} else 
+		register_channel(&channel);
+	return 0;
+}
+
+static int
+get_priority(argv)
+	cfg_value_t *argv;
+{
+	if (argv[0].type != CFG_CHAR || argv[1].type != CFG_STRING)
+		return 1;
+	cat_def.pri = xlat_keyword(log_priorities,
+				   argv[1].v.string,
+				   -1);
+	if (cat_def.pri == -1)
+		return 1;
+
+	switch (argv[0].v.ch) {
+	case '!':
+		cat_def.pri = L_UPTO(L_DEBUG) & ~L_MASK(cat_def.pri);
+		break;
+
+	case '=':
+		break;
+
+	default:
+		return 1;
+	}
+	return 0;
+}	
+
+static int
+category_stmt_handler(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	cat_def.init = 0;
+	cat_def.cat = cat_def.pri = -1;
+	cat_def.level = 0;
+	
+	switch (argc) {
+	case 2: /* only category or priority */
+		switch (argv[1].type) {
+		case CFG_CHAR:
+			if (argv[1].v.ch == '*') 
+				cat_def.cat = cat_def.pri = -1;
+			else
+				return 1;
+			break;
+			
+		case CFG_STRING:
+			cat_def.cat = xlat_keyword(log_categories,
+						   argv[1].v.string, -1);
+			if (cat_def.cat == -1) {
+				cat_def.pri = xlat_keyword(log_priorities,
+							   argv[1].v.string,
+							   -1);
+				if (cat_def.pri == -1)
+					return 1;
+				cat_def.pri = L_UPTO(cat_def.pri);
+			}
+		}
+		break;
+
+	case 3: /* [!=]priority */
+		if (get_priority(argv+1))
+			return 1;
+		break;
+
+	case 4: /* category '.' priority */
+		if (!(argv[2].type == CFG_CHAR && argv[2].v.ch == '.'))
+			return 1;
+
+		switch (argv[1].type) {
+		case CFG_CHAR:
+			if (argv[1].v.ch == '*')
+				cat_def.cat = -1;
+			else
+				return 1;
+			break;
+			
+		case CFG_STRING:
+			cat_def.cat = xlat_keyword(log_categories,
+						   argv[1].v.string, -1);
+			if (cat_def.cat == -1) 
+				return 1;
+			break;
+
+		default:
+			return 1;
+		}
+
+		switch (argv[3].type) {
+		case CFG_CHAR:
+			if (argv[3].v.ch == '*')
+				cat_def.pri = -1;
+			else
+				return 1;
+			break;
+			
+		case CFG_STRING:
+			cat_def.pri = xlat_keyword(log_priorities,
+						   argv[3].v.string, -1);
+			if (cat_def.pri == -1) 
+				return 1;
+			cat_def.pri = L_UPTO(cat_def.pri);
+			break;
+
+		default:
+			return 1;
+		}
+		break;
+
+	case 5: /* category '.' [!=] priority */
+		if (!(argv[2].type == CFG_CHAR && argv[2].v.ch == '.'))
+			return 1;
+
+		switch (argv[1].type) {
+		case CFG_CHAR:
+			if (argv[1].v.ch == '*')
+				cat_def.cat = -1;
+			else
+				return 1;
+			break;
+			
+		case CFG_STRING:
+			cat_def.cat = xlat_keyword(log_categories,
+						   argv[1].v.string, -1);
+			if (cat_def.cat == -1) 
+				return 1;
+			break;
+
+		default:
+			return 1;
+		}
+
+		if (get_priority(argv+3))
+			return 1;
+		break;
+
+	default:
+		cfg_argc_error(0);
+		return 0;
+	}
+	cat_def.init = 1;
+	cat_def.head = cat_def.tail = NULL;
+	return 0;
+}
+
+static int
+category_stmt_end(block_data, handler_data)
+	void *block_data;
+	void *handler_data;
+{
+	if (cat_def.init) {
+		switch (cat_def.cat) {
+		case L_AUTH:
+			log_mode = cat_def.level;
+			break;
+		default:
+			if (cat_def.level)
+				radlog(L_WARN,
+				       "%s:%d: %s",
+				       cfg_filename, cfg_line_num,
+				_("no levels applicable for this category"));
+		}
+		register_category(cat_def.cat, cat_def.pri, cat_def.head);
+		free_chanlist(cat_def.head);
+	}
+	return 0;
+}
+
+static int
+category_set_channel(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	Channel *channel;
+		
+	if (argc != 2) {
+		cfg_argc_error(argc < 2);
+		return 0;
+	}
+ 	if (argv[1].type != CFG_STRING) {
+		cfg_type_error(CFG_STRING);
+		return 0;
+	}
+	channel = channel_lookup(argv[1].v.string);
+
+	if (!channel) {
+		radlog(L_ERR,
+		       _("%s:%d: channel `%s' not defined"),
+		       cfg_filename, cfg_line_num, argv[1].v.string);
+	} else {
+		Chanlist *chanlist = make_chanlist(channel);
+		if (cat_def.tail)
+			cat_def.tail->next = chanlist;
+		else
+			cat_def.head = chanlist;
+		cat_def.tail = chanlist;
+	}
+	
+	return 0;
+}
+
+static int
+category_set_flag(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	int flag = (int) handler_data;
+	if (argc != 2) {
+		cfg_argc_error(argc < 2);
+		return 0;
+	}
+ 	if (argv[1].type != CFG_BOOLEAN) {
+		cfg_type_error(CFG_BOOLEAN);
+		return 0;
+	}
+	if (argv[1].v.bool)
+		cat_def.level |= flag;
+	else
+		cat_def.level &= ~flag;
+	return 0;
+}
+
+static int
+category_set_level(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	int i;
+
+	for (i = 1; i < argc; ) {
+		char *modname;
+		int level;
+		
+		if (argv[i].type != CFG_STRING) {
+			radlog(L_ERR,
+			       _("%s:%d: list item %d has wrong datatype"),
+			       cfg_filename, cfg_line_num,
+			       i);
+			return 1;
+		}
+		modname = argv[i++].v.string;
+		level = -1;
+		if (i < argc
+		    && argv[i].type == CFG_CHAR && argv[i].v.ch == '=') {
+			i++;
+			if (i == argc || argv[i].type != CFG_INTEGER)
+				return 1;
+			level = argv[i++].v.number;
+		}
+		if (set_module_debug_level(modname, level)) {
+			radlog(L_WARN,
+			       _("%s:%d: no such module name: %s"),
+			       cfg_filename, cfg_line_num, modname);
+		}
+	}
+	return 0;
+}
+
+static int
+channel_file_handler(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	if (argc != 2) {
+		cfg_argc_error(argc < 2);
+		return 0;
+	}
+ 	if (argv[1].type != CFG_STRING) {
+		cfg_type_error(CFG_STRING);
+		return 0;
+	}
+	channel.mode = LM_FILE;
+	channel.id.file = argv[1].v.string;
+	return 0;
+}
+
+static int
+channel_syslog_handler(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	int facility;
+	int prio;
+	
+	if (argc != 4) {
+		cfg_argc_error(argc < 4);
+		return 0;
+	}
+
+	switch (argv[1].type) {
+	case CFG_INTEGER:
+		facility = argv[1].v.number;
+		break;
+
+	case CFG_STRING:
+		facility = xlat_keyword(syslog_facility, argv[1].v.string, -1);
+		break;
+
+	default:
+		return 1;
+	}
+
+	if (argv[2].type != CFG_CHAR || argv[2].v.ch != '.')
+		return 1;
+	
+	switch (argv[3].type) {
+	case CFG_INTEGER:
+		prio = argv[1].v.number;
+		break;
+
+	case CFG_STRING:
+		prio = xlat_keyword(syslog_priority, argv[1].v.string, -1);
+		break;
+
+	default:
+		return 1;
+	}
+
+	channel.mode = LM_SYSLOG;
+	channel.id.prio = facility | prio ;
+	return 0;
+}
+
+static int
+channel_set_flag(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	int flag = (int) handler_data;
+	if (argc != 2) {
+		cfg_argc_error(argc < 2);
+		return 0;
+	}
+ 	if (argv[1].type != CFG_BOOLEAN) {
+		cfg_type_error(CFG_BOOLEAN);
+		return 0;
+	}
+
+	if (argv[1].v.bool)
+		channel.options |= flag;
+	else
+		channel.options &= ~flag;
+	return 0;
+}
+
+static struct cfg_stmt channel_stmt[] = {
+	{ "file", CS_STMT, NULL, channel_file_handler, NULL, NULL, NULL },
+	{ "syslog", CS_STMT, NULL, channel_syslog_handler, NULL, NULL, NULL },
+	{ "print-pid", CS_STMT, NULL, channel_set_flag, (void*)LO_PID,
+	  NULL, NULL },
+	{ "print-cons", CS_STMT, NULL, channel_set_flag, (void*)LO_CONS,
+	  NULL, NULL },
+	{ "print-level", CS_STMT, NULL, channel_set_flag, (void*)LO_PRI,
+	  NULL, NULL },
+	{ "print-category", CS_STMT, NULL, channel_set_flag, (void*)LO_CAT,
+	  NULL, NULL },
+	{ "print-priority", CS_STMT, NULL, channel_set_flag, (void*)LO_PRI,
+	  NULL, NULL },
+	{ "print-tid", CS_STMT, NULL, channel_set_flag, (void*)LO_TID,
+	  NULL, NULL },
+	{ "print-milliseconds", CS_STMT, NULL, channel_set_flag,
+	  (void*)LO_MSEC, NULL, NULL },
+	{ NULL }
+};
+
+static struct cfg_stmt category_stmt[] = {
+	{ "channel", CS_STMT, NULL, category_set_channel, NULL, NULL, NULL },
+	{ "print-auth", CS_STMT, NULL,
+	  category_set_flag, (void*)RLOG_AUTH, NULL, NULL },
+	{ "print-failed-pass", CS_STMT, NULL,
+	  category_set_flag, (void*)RLOG_FAILED_PASS, NULL, NULL },
+	{ "print-pass", CS_STMT, NULL,
+	  category_set_flag, (void*)RLOG_AUTH_PASS, NULL, NULL },
+	{ "level", CS_STMT, NULL,
+	  category_set_level, NULL, NULL, NULL },
+	{ NULL }
+};
+
+struct cfg_stmt logging_stmt[] = {
+	{ "channel", CS_BLOCK, NULL,
+	  channel_stmt_handler, NULL, channel_stmt, channel_stmt_end },
+	{ "category", CS_BLOCK, NULL,
+	  category_stmt_handler, NULL, category_stmt, category_stmt_end }, 
+	{ NULL },
+};
+

@@ -121,11 +121,9 @@ int suspend_flag;
 serv_stat saved_status;
 #endif
 
-Config config = {
-        1,               /* checkrad_assume_logged */
-        MAX_REQUESTS,    /* maximum number of requests */
-        NULL,            /* exec_program_user */
-};
+int checkrad_assume_logged = 1;
+int max_requests = MAX_REQUESTS;
+char *exec_user = NULL;
 
 UINT4 warning_seconds;
 int use_guile;
@@ -181,15 +179,20 @@ static struct signal_list {
         0, SIGFPE,  sig_fatal,
         0, SIGSEGV, sig_fatal,
         0, SIGILL,  sig_fatal,
-        0, SIGIOT,  sig_fatal,
+        0, SIGIOT,  SIG_DFL,
         1, SIGINT,  sig_dumpdb
 };
 
 sigset_t rad_signal_set;
 
 static int open_socket(UINT4 ipaddr, int port, char *type);
-static void open_socket_list(HOSTDECL *hostlist, int defport, char *descr,
+static void open_socket_list(int argc, cfg_value_t *argv,
+			     int defport, char *descr,
                              int (*s)(), int (*r)(), int (*f)());
+static int rad_cfg_listen_auth(int argc, cfg_value_t *argv,
+			       void *block_data, void *handler_data);
+static int rad_cfg_listen_acct(int argc, cfg_value_t *argv,
+			       void *block_data, void *handler_data);
 
 static void reread_config(int reload);
 static void rad_daemon();
@@ -465,7 +468,7 @@ main(argc, argv)
 void
 set_config_defaults()
 {
-        config.exec_user  = make_string("daemon");
+        exec_user  = make_string("daemon");
         username_valid_chars = make_string(".-_!@#$%^&\\/");
         message_text[MSG_ACCOUNT_CLOSED] =
                 make_string(_("Sorry, your account is currently closed\n"));
@@ -825,10 +828,12 @@ rad_exit(sig)
                 break;
         case SIGINT:  /* Foreground mode */
         case SIGTERM:
+        case SIGQUIT:
                 radlog(L_CRIT, _("Normal shutdown."));
                 break;
         default:
                 radlog(L_CRIT, _("exit on signal (%d)"), sig);
+		abort();
         }
 
         rad_sql_shutdown();
@@ -904,6 +909,185 @@ rad_restart(cont)
         /*NOTREACHED*/
 }
 
+static int _opened_auth_sockets;
+int
+auth_stmt_begin(finish, block_data, handler_data)
+	int finish;
+	void *block_data;
+	void *handler_data;
+{
+	if (!finish) 
+		_opened_auth_sockets = 0;
+	else if (radius_mode == MODE_DAEMON && !_opened_auth_sockets)
+		open_socket_list(0, NULL, auth_port,
+				 "auth", NULL, auth_respond, NULL);
+	return 0;
+}
+
+/* Open authentication sockets. */
+int
+rad_cfg_listen_auth(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	if (radius_mode == MODE_DAEMON) 
+		open_socket_list(argc-1, argv+1, auth_port,
+				 "auth", NULL, auth_respond, NULL);
+	_opened_auth_sockets++;
+	return 0;
+}
+
+static int _opened_acct_sockets;
+int
+acct_stmt_begin(finish, block_data, handler_data)
+	int finish;
+	void *block_data;
+	void *handler_data;
+{
+	if (!finish) 
+		_opened_acct_sockets = 0;
+	else if (radius_mode == MODE_DAEMON && !_opened_acct_sockets)
+		open_socket_list(0, NULL, acct_port, "acct",
+				 acct_success, auth_respond, acct_failure);
+	return 0;
+}
+
+/* Open accounting sockets. */
+int
+rad_cfg_listen_acct(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+  	if (open_acct && radius_mode == MODE_DAEMON)
+		open_socket_list(argc-1, argv+1, acct_port, "acct",
+				 acct_success, auth_respond, acct_failure);
+	return 0;
+}
+
+
+
+struct cfg_stmt option_stmt[] = {
+	{ "source-ip", CS_STMT, NULL, cfg_get_ipaddr, &myip,
+	  NULL, NULL },
+	{ "max-requests", CS_STMT, NULL, cfg_get_integer, &max_requests,
+	  NULL, NULL },
+	{ "max-threads", CS_STMT, NULL, cfg_get_integer, &max_threads,
+	  NULL, NULL },
+	{ "exec-program-user", CS_STMT, NULL, cfg_get_string, &exec_user,
+	  NULL, NULL },
+	{ "log-dir", CS_STMT, NULL, cfg_get_string, &radlog_dir,
+	  NULL, NULL },
+	{ "acct-dir", CS_STMT, NULL, cfg_get_string, &radacct_dir,
+	  NULL, NULL },
+	{ "resolve", CS_STMT, NULL, cfg_get_boolean, &resolve_hostnames,
+	  NULL, NULL },
+	{ "username-chars", CS_STMT, NULL, cfg_get_string,
+	  &username_valid_chars,
+	  NULL, NULL },
+	{ NULL, }
+};
+
+struct cfg_stmt message_stmt[] = {
+	{ "account-closed", CS_STMT, NULL,
+	  cfg_get_string, &message_text[MSG_ACCOUNT_CLOSED],
+	  NULL, NULL },
+	{ "password-expired", CS_STMT, NULL,
+	  cfg_get_string, &message_text[MSG_PASSWORD_EXPIRED],
+	  NULL, NULL },
+	{ "access-denied", CS_STMT, NULL,
+	  cfg_get_string, &message_text[MSG_ACCESS_DENIED],
+	  NULL, NULL },
+	{ "realm-quota", CS_STMT, NULL,
+	  cfg_get_string, &message_text[MSG_REALM_QUOTA],
+	  NULL, NULL },
+	{ "multiple-login", CS_STMT, NULL,
+	  cfg_get_string, &message_text[MSG_MULTIPLE_LOGIN],
+	  NULL, NULL },
+	{ "second-login", CS_STMT, NULL,
+	  cfg_get_string, &message_text[MSG_SECOND_LOGIN],
+	  NULL, NULL },
+	{ "timespan-violation", CS_STMT, NULL,
+	  cfg_get_string, &message_text[MSG_TIMESPAN_VIOLATION],
+	  NULL, NULL },
+	{ "password-expire-warning", CS_STMT, NULL,
+	  cfg_get_string, &message_text[MSG_PASSWORD_EXPIRE_WARNING],
+	  NULL, NULL },
+	{ NULL, }
+};
+
+struct cfg_stmt auth_stmt[] = {
+	{ "port", CS_STMT, NULL, cfg_get_port, &auth_port, NULL, NULL },
+	{ "listen", CS_STMT, NULL, rad_cfg_listen_auth, NULL, NULL, NULL },
+	{ "max-requests", CS_STMT, NULL,
+	  cfg_get_integer, &request_class[R_AUTH].max_requests, NULL, NULL },
+	{ "time-to-live", CS_STMT, NULL,
+	  cfg_get_integer, &request_class[R_AUTH].ttl, NULL, NULL },
+	{ "request-cleanup-delay", CS_STMT, NULL,
+	  cfg_get_integer, &request_class[R_AUTH].cleanup_delay, NULL, NULL },
+	{ "detail", CS_STMT, NULL, cfg_get_boolean, &auth_detail,
+	  NULL, NULL },
+	{ "strip-names", CS_STMT, NULL, cfg_get_boolean, &strip_names,
+	  NULL, NULL },
+	{ "checkrad-assume-logged", CS_STMT, NULL,
+	  cfg_get_boolean, &checkrad_assume_logged,
+	  NULL, NULL },
+	{ "password-expire-warning", CS_STMT, NULL,
+	  cfg_get_integer, &warning_seconds,
+	  NULL, NULL },
+	{ NULL, }
+};
+	
+struct cfg_stmt acct_stmt[] = {
+	{ "port", CS_STMT, NULL, cfg_get_port, &acct_port, NULL, NULL },
+	{ "listen", CS_STMT, NULL, rad_cfg_listen_acct, NULL, NULL, NULL },
+	{ "max-requests", CS_STMT, NULL,
+	  cfg_get_integer, &request_class[R_ACCT].max_requests,
+	  NULL, NULL },
+	{ "time-to-live", CS_STMT, NULL,
+	  cfg_get_integer, &request_class[R_ACCT].ttl,
+	  NULL, NULL },
+	{ "request-cleanup-delay", CS_STMT, NULL,
+	  cfg_get_integer, &request_class[R_ACCT].cleanup_delay,
+	  NULL, NULL },
+	{ "detail", CS_STMT, NULL, cfg_get_boolean, &acct_detail,
+	  NULL, NULL },
+	{ NULL, }
+};
+
+struct cfg_stmt proxy_stmt[] = {
+	{ "max-requests", CS_STMT, NULL,
+	  cfg_get_integer, &request_class[R_PROXY].max_requests,
+	  NULL, NULL },
+	{ "request-cleanup-delay", CS_STMT, NULL,
+	  cfg_get_integer, &request_class[R_PROXY].cleanup_delay,
+	  NULL, NULL },
+	{ NULL, }
+};
+
+struct cfg_stmt config_syntax[] = {
+	{ "option", CS_BLOCK, NULL, NULL, NULL, option_stmt, NULL },
+	{ "message", CS_BLOCK, NULL, NULL, NULL, message_stmt, NULL },
+	{ "logging", CS_BLOCK, logging_stmt_begin, logging_stmt_handler, NULL,
+	  logging_stmt, logging_stmt_end },
+	{ "auth", CS_BLOCK, auth_stmt_begin, NULL, NULL, auth_stmt, NULL },
+	{ "acct", CS_BLOCK, acct_stmt_begin, NULL, NULL, acct_stmt, NULL  },
+	{ "proxy", CS_BLOCK, NULL, NULL, NULL, proxy_stmt, NULL  },
+	{ "rewrite", CS_BLOCK, NULL, NULL, NULL, rewrite_stmt, NULL },
+#ifdef USE_DBM
+	{ "usedbm", CS_STMT, NULL, cfg_get_boolean, &use_dbm, NULL, NULL },
+#endif
+#ifdef USE_SNMP
+	{ "snmp", CS_BLOCK, snmp_stmt_begin, NULL, NULL, snmp_stmt, NULL },
+#endif
+#ifdef USE_SERVER_GUILE
+	{ "guile", CS_BLOCK, NULL, guile_cfg_handler, NULL, guile_stmt, NULL },
+#endif
+	{ NULL, },
+};	
 
 /*
  *      Read config files.
@@ -913,7 +1097,8 @@ reread_config(reload)
         int reload;
 {
         int res = 0;
-        
+        char *filename;
+	
         if (!reload) {
                 radlog(L_INFO, _("Starting - reading configuration files ..."));
         } else {
@@ -934,7 +1119,9 @@ reread_config(reload)
 #endif
 
         /* Read the options */
-        get_config();
+        filename = mkfilename(radius_dir, RADIUS_CONFIG);
+        cfg_read(filename, config_syntax, NULL);
+	efree(filename);
         if (!reload) {
                 if (x_debug_spec)
                         set_debug_levels(x_debug_spec);
@@ -1121,27 +1308,6 @@ meminfo()
 /* ************************************************************************* */
 /* Application-specific sockets */
 
-/* Open authentication sockets. */
-void
-listen_auth(host)
-        HOSTDECL *host;
-{
-	if (radius_mode != MODE_DAEMON)
-	    	return;
-        open_socket_list(host, auth_port, "auth", NULL, auth_respond, NULL);
-}
-
-/* Open accounting sockets. */
-void
-listen_acct(host)
-        HOSTDECL *host;
-{
-  	if (!open_acct || radius_mode != MODE_DAEMON)
-                return;
-        open_socket_list(host, acct_port, "acct",
-                         acct_success, auth_respond, acct_failure);
-}
-
 int
 open_socket(ipaddr, port, type)
         UINT4 ipaddr;
@@ -1171,8 +1337,9 @@ open_socket(ipaddr, port, type)
 }
 
 void
-open_socket_list(hostlist, defport, descr, s, r, f)
-        HOSTDECL *hostlist;
+open_socket_list(argc, argv, defport, descr, s, r, f)
+	int argc;
+	cfg_value_t *argv;
         int defport;
         char *descr;
         int (*s)();
@@ -1181,16 +1348,21 @@ open_socket_list(hostlist, defport, descr, s, r, f)
 {
         int fd;
 
-        if (!hostlist) {
+        if (argc == 0) {
                 fd = open_socket(myip, defport, descr);
                 socket_list_add(&socket_first, fd, s, r, f);
                 return;
         }
         
-        for (; hostlist; hostlist = hostlist->next) {
-                fd = open_socket(hostlist->ipaddr,
-                                 hostlist->port > 0 ? hostlist->port : defport,
-                                 descr);
+        for (; argc > 0; argc--, argv++) {
+		if (argv->type != CFG_HOST)
+			cfg_type_error(CFG_HOST);
+		else {
+			fd = open_socket(argv->v.host.ipaddr,
+					 argv->v.host.port > 0 ?
+					      argv->v.host.port : defport,
+					 descr);
+		}
                 socket_list_add(&socket_first, fd, s, r, f);
         }
 }
@@ -1605,5 +1777,4 @@ socket_list_select(list, tv)
         }
         return 0;
 }
-
 

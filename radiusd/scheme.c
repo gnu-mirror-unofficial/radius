@@ -41,7 +41,7 @@ static char rcsid[] =
    sense that different threads cannot safely call scheme evaluation
    procedures. The problem is mainly in the garbage collector, which
    saves the address of the first automatic variable on the entry to
-   scm_boot_guile_1 and than uses this address as the top of stack.
+   scm_boot_guile_1 and then uses this address as the top of stack.
    Obviously, when the gc() gets called from another thread this address
    is not valid anymore and the thread sigfaults miserably.
 
@@ -573,4 +573,90 @@ scheme_add_load_path(path)
                             path, NULL, NULL, NULL, 0);
 }
 
+/* ************************************************************************* */
+/* Configuration issues */
+
+int
+guile_cfg_handler(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	use_guile = 1;
+	return 0;
+}
+
+static int
+scheme_cfg_add_load_path(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	if (argc > 2) {
+		cfg_argc_error(0);
+		return 0;
+	}
+
+ 	if (argv[1].type != CFG_STRING) {
+		cfg_type_error(CFG_STRING);
+		return 0;
+	}
+
+	scheme_add_load_path(argv[1].v.string);
+	return 0;
+}
+	
+static int
+scheme_cfg_load(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	if (argc > 2) {
+		cfg_argc_error(0);
+		return 0;
+	}
+
+ 	if (argv[1].type != CFG_STRING) {
+		cfg_type_error(CFG_STRING);
+		return 0;
+	}
+	scheme_load(argv[1].v.string);
+	return 0;
+}
+
+static int
+scheme_cfg_debug(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	if (argc > 2) {
+		cfg_argc_error(0);
+		return 0;
+	}
+
+ 	if (argv[1].type != CFG_BOOLEAN) {
+		cfg_type_error(CFG_BOOLEAN);
+		return 0;
+	}
+	scheme_debug(argv[1].v.bool);
+	return 0;
+}
+
+struct cfg_stmt guile_stmt[] = {
+	{ "load-path", CS_STMT, NULL, scheme_cfg_add_load_path, NULL, NULL, NULL },
+	{ "load", CS_STMT, NULL, scheme_cfg_load, NULL, NULL, NULL },
+	{ "debug", CS_STMT, NULL, scheme_cfg_debug, NULL, NULL, NULL },
+	{ "gc-interval", CS_STMT, NULL, cfg_get_integer, &scheme_gc_interval,
+	  NULL, NULL },
+	{ "task-timeout", CS_STMT, NULL, cfg_get_integer, &scheme_task_timeout,
+	  NULL, NULL},
+	{ NULL }
+};
+   
 #endif

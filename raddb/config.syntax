@@ -158,3 +158,16 @@ guile {
                                               # %load-list
 	load "lib.scm";                       # Load given file
 };
+
+message {
+	account-closed "Sorry, your account is currently closed\r\n";
+        password-expired "Password Has Expired\r\n";
+        password-expire-warning
+              "Password Will Expire in %R{Password-Expire-Days} Days\r\n";
+        access-denied "\r\nAccess denied\r\n";
+        realm-quota "\r\nRealm quota exceeded - access denied\r\n";
+        multiple-login
+"\r\nYou are already logged in %R{Simultaneous-Use} times - access denied\r\n";
+        second-login "\r\nYou are already logged in - access denied\r\n";
+        timespan-violation "You are calling outside your allowed timespan\r\n";
+};

@@ -1,3 +1,17 @@
+2001-12-14 Sergey Poznyakoff
+
+	* configure.in: Do not display --enable-notify with help
+	  output.
+	* raddb/Makefile.am: Create dict and menu subdirs if necessary.
+	* radscripts/radping.m4: Give -n switch to radwho.
+	
+	* radtest/input.l: Changed radtest prompt to "radtest>".
+	* test/dejagnu/lib/radiusd.exp: Likewise.
+	
+	* README: Updated.
+	
+	* doc/texinfo/*.texi: Updated.
+	
 2001-12-13 Sergey Poznyakoff
 
 	* radiusd/radiusd.c: Added --directory switch for compatibility

@@ -23,7 +23,8 @@ package.
 @node config
 @section Client Configuration
 @cindex Client Configuration
-@cindex client.conf
+@cindex @file{client.conf}
+@cindex @file{raddb/client.conf}
 
 All programs from the client package share the same configuration file:
 @file{raddb/client.conf}. The file uses simple line-oriented syntax.
@@ -84,7 +85,7 @@ retry @var{number}
 
 The example of @file{raddb/client.conf} follows:
 
-@exindex client.conf
+@exindex @file{client.conf}
 @example
 @group
 server first 10.11.10.1 secret 1645 1646

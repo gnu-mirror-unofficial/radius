@@ -1,187 +1,171 @@
-              I. Installation
-           ---------------------		
+		       I. Installation
+	            ---------------------
+    
   To install do:
 
 1. ./configure [options]
-  For the list of available options consult INSTALL file.
-  The applications-specific options are:
+    
+    For the list of available options consult INSTALL file.
+    The applications-specific options are:
+			      			      	
+    --enable-yydebug
+	Enable parser debugging. The parser debugging can be useful to
+	track down errors in configuration files such as /etc/raddb/users
+	and /etc/raddb/config.
+	
+	To enable the debugging on a given file, its first line should
+	start with the following statement:
+    
+		#debug
 
-  --enable-yydebug	         
-     Enable parser debugging. The parser debugging can be useful to track down
-  errors in configuration files such as /etc/raddb/users and /etc/raddb/config.
-  To enable the debugging on a given file, the first line of it should contain
-  the statement #debug starting on the first colon. Debugging output goes to
-  stderr or to the file /var/log/radius.stderr if such file exists.
+	Debugging output goes to stderr or to the file
+	/var/log/radius.stderr if such file exists.
 
-  --with-auth-port=NUMBER	 
-     Specify port number to use for authentication. Default is 1645. The
-  default port number for accounting is computed as auth_port + 1.
+    --disable-debug
+	Disable debugging functions. This results in slightly more compact
+    	code, but makes configuration issues difficult to debug. Use at
+    	your own risk.
 
-  --enable-add-libs=STRING 	 
-     Specify any additional libraries/libpaths your system might require.
+    --with-auth-port=NUMBER
+	Specify port number to use for authentication. Default is 1645.
+        The default port number for accounting is computed as auth_port + 1.
 
-  --enable-add-includes=STRING   
-     Specify any additional include files/include paths.
- 
-  --enable-shadow	         
-     Enable shadow support. Use this only if ./configure was unable to 
-  correctly determine if it should use the shadow support.
+    --with-include-path=STRING
+	Specify any additional include directories that are required for
+	your configuration. Multiple directories are separated by colons.
 
-  --enable-pam		         
-     Enable pam support.
+    --with-lib-path=STRING
+	Specify any additional library directories that are required for
+	your configuration. Multiple directories are separated by
+	colons.
 
-  --enable-dbm[={dbm|ndbm}]      
-     Enable dbm support. If no argument is specified, an usual DBM is enabled.
-  The `ndbm' argument instructs to enable support of NDBM.
+    --enable-shadow
+	Enable shadow support. Use this only if ./configure was unable to
+        correctly determine if it should use the shadow support.
 
-  --enable-sql={mysql|postgres}                 
-     Enable SQL accounting support. Currently MySQL and PostgreSQL interfaces
-     are supported.
+    --enable-pam
+    	Enable PAM support.
+	
+    --enable-dbm[={dbm|ndbm}]
+	Enable dbm support. If no argument is specified, usual DBM is
+	assumed. The `ndbm' argument instructs to enable support of NDBM.
+		
+    --with-sql
+	Enable MySQL support. Usually this requires adding appropriate
+	--with-lib-path and --with-include-path options.
+    
+    --with-postgres
+	Enable PostgreSQL support. Usually this requires adding appropriate
+	--with-lib-path and --with-include-path options.
 
-  --enable-snmp                  
-     Enable SNMP support.
+    --without-guile
+	Do not compile Guile support.
 
-  --enable-notify	         
-     Enable TTL notification. This can be used to set the per-user session
-  timeouts depending on their accounts.
+    --without-server-guile
+	Do not compile server Guile support
 
-  --enable-livingston-menus	 
-     Enable support for Livingston-compatible menus.
+    --with-client
+	Build client programs. Requires presence of Guile >=1.4 and
+	PAM on your system.
 
-  --enable-deny-shell=SHELL
-     Always reject users with given shell.
+    --with-pamdir=DIR
+	Install PAM modules in the given DIR. Default is
+    	$prefix/lib/security.
 
-  --enable-osfc2	          
-     Enable OSFC2 support.
+    --enable-snmp
+	Enable SNMP support.
 
-     The following is designed for future use. Currently the Norwegian locale
-  (bokmal) is being finished.
+    --enable-livingston-menus
+        Enable support for Livingston-compatible menus.
 
-  --enable-nls		         
-     Enable national language support. 
+    --enable-deny-shell=SHELL
+	Always reject users with given shell.
 
-  --with-languages=LIST          
-     Set a list of languages to include in NLS.
+    --enable-osfc2
+	Enable OSFC2 support.
 
-  --with-catobjext=EXT          
-     Override default .po extension.
+    The following is designed for future use. Currently the Norwegian locale
+    (bokmal) is being finished.
 
-  --with-instobjext=EXT          
-     Override default .mo extension.
+    --enable-nls
+        Enable national language support. 
 
-  --with-msgfmt=PROG             
-     Use PROG instead of msgfmt.
+    --with-languages=LIST
+        Set a list of languages to include in NLS.
 
-  --with-gnu-msgfmt=PROG         
-     Use PROG instead of GNU msgfmt.
+    --with-catobjext=EXT
+        Override default .po extension.
 
-2. make
+    --with-instobjext=EXT
+	Override default .mo extension.
 
-3. If guile version 1.4 or higher is installed on your system, you can do
-	make check
-   to check the functionality of the package without installing it.
+    --with-msgfmt=PROG
+	Use PROG instead of msgfmt.
 
+    --with-gnu-msgfmt=PROG
+	Use PROG instead of GNU msgfmt.
+
+2. Run make.
+
+    The GNU make is preferred.
+
+3. Check it
+
+    This step is optional. It requires DejaGNU package installed
+    either directly on the machine you have compiled radius on, or on 
+    another machine, connected to it via network. In the simplest case,
+    it will suffice to type
+
+       make check
+
+    For instructions on how to test radius from a remote machine, refer
+    to file test/dejagnu/README.
+    
 4. make install
 
-              II. Some configuration issues:
-           ------------------------------------		
+5. If you wish to install manual pages, do 
 
-  Files raddb/users raddb/hints and raddb/huntgroups all follow the same
-syntax:
+    make install-man.
 
-input       : username check_pairs reply_pairs
-	    ;
+    Please note, that the information in man pages is no longer being
+    maintained and can therefore be inaccurate or incomplete. The
+    Info files are the authoritative documentation. 
 
-check_pairs : pairs
-            ;
+		       II. Configuring
+		    --------------------
 
-reply_pairs : pairs
-            ;
+    Be sure to read accompanying documentation. If you need help,
+    subscribe to <help-gnu-radius@gnu.org> and send your questions
+    there. To subscribe, visit
 
-pairs       : NULL
-            | pairlist
-            ;
+    http://mail.gnu.org/mailman/listinfo/help-gnu-radius
 
-pairlist    : pair
-            | pairlist ',' pair
-            ;
+    Before asking a question, it is be a good idea to look through
+    the mailing archives on the same page, as they might already
+    contain the answer.
+        
+		       III. Testing.		
+		    ------------------
 
-pair        : attribute op value
-            ;
+    If you have guile version 1.4 or better installed, you can use
+    session.scm script to send authentication/accounting requests
+    to the server. To do so, you will first need to edit your
+    raddb/client.conf file. The template installed from the distribution
+    will suffice to test the server in default configuration.
 
-op          : '=' | '!=' | '<' | '>' | '<=' | '>='
-            ;
 
-value       : NUMBER
-            | IPADDR
-            | DATE
-            | QUOTE
-            ;
+    1. To test authentication do
 
-username    : STRING
-            ;
+	radscm -s session.scm -l LOGIN -p PASSWD -P PORT-ID --auth
 
-attribute   : STRING
-            ;
+    2. To test accounting do
 
-  Terminal symbols are as follows:
-STRING   is a character string consisting of alphanumeric characters,
-         underscore, dash and a dot. Note that it is not required to
-         start with an alphabetic character.
-NUMBER   is any decimal number.
-IPADDR   is either a hostname or an IP address in dotted quad notation.
-         When a hostname is specified it must be enclosed in a pair of
-         double quotes, e.g. "host.dom.ain". An IP address may be specified
-         either as is, or in a pair of double quotes.
-DATE     date in a form:
-		"Mon DM YEAR"
-	 where
-		Mon  is a three-letter abbreviation of a month name
-		DM   is a two-digit day-of-month number
-		YEAR is a full year number. 
-QUOTE    is any character string enclosed in a pair of double-quotes.
-NULL     is a word NULL, meaning empty pairlist.
+	radscm -s session.scm -l LOGIN -p PASSWD -P PORT-ID
+               -s SESSION-ID --start
+     or
+	radscm -s session.scm -l LOGIN -P PORT-ID -s SESSION-ID --stop
 
-  Special usernames DEFAULT and DEFAULT%d, where %d means any decimal number,
-are reserved. When authenticating a request, radius first tries to find
-the exact match on username and check_pairs. If such a match cannot be found
-it tries to find a DEFAULT entry matching the check_pairs. All DEFAULT
-entries are tried in the order of their appearance in the file.
-  When comparing pairlists, order of pairs is not significant. Special
-attributes (the ones with number > 254) appearing in a pairlist are ignored.
-
-              III. Special hacks for some peculiar NASes		
-           ------------------------------------------------
-
-GNU Radius includes packet rewriting support which makes it possible
-to cope with some NASes which do not follow the protocol. The support
-for following NASes is already included:
-
-	1. MAX Ascend which sends packed NAS-Port-Id attributes
-	2. Specialix Jetstream with peculiarities in handling
-           usernames longer than 10 characters.
-	3. Cisco AS5300	used for VoIP.
-
-Support for another NASes can easily be added without recompiling Radius. 
-See accompanying documentation (Ref. "rewrite").
-
-		IV. Testing.		
-           ------------------------------------------------
-
-Use radtest. Note that you will need guile version 1.4 or later installed
-on your system.
-
-1. To test authentication do
-
-	radtest -l LOGIN -p PASSWD -P PORT-ID --auth
-
-2. To test accounting do
-
-	radtest -l LOGIN -p PASSWD -P PORT-ID -s SESSION-ID --start
-or
-	radtest -l LOGIN -P PORT-ID -s SESSION-ID --stop
-
-Here,
+    Here,
 	LOGIN		is the user's login name
 	PASSWD		is his password. Use `.' (dot) to get prompted
 			for the password as passwd(1) does.
@@ -192,38 +176,43 @@ Here,
 			a session ID of a previously started session
 			when used with --stop option.
 
-For example, supposing user `hamlet' has an entry in the users file,
-the following would authenticate it and open a session for it:
+    For example, supposing user `hamlet' has an entry in the users file,
+    the following would authenticate it and open a session for it:
 
 	radtest -l hamlet -p guessme -P 1 -s "0001" --start
 
-Now, if you run radwho, you would get something like:
+    Now, if you run radwho, you would get something like:
 
      Login             Name What  TTY     When     From        Location
 hamlet           hamlet      PPP  S001  Mon 07:22 localhost    255.255.255.254
 
-radlast shows the following;
+    radlast shows the following;
 
 hamlet      local    001 127.0.0.2       Thu Mon 07 07:22 - still logged in
 
 radwtmp begins Fri Dec 01 16:36:59 2000
 
-Then, suppose you run:
+    Then, suppose you run:
 
-	radtest -l hamlet -P 1 -s "0001" --stop
+	radscm -s session.scm -l hamlet -P 1 -s "0001" --stop
 
-This will send a stop record for session 0001. Radlast would then show
-something like:
+    This will send a stop record for session 0001. Radlast would then show
+    something like:
 
 hamlet      local    001 127.0.0.2       Thu Mon 07 07:22 - 07:25  (00:03) 
 
 radwtmp begins Fri Dec 01 16:36:59 2000
 
+		       IV. Bug reporting.		
+                      ---------------------
 
-		V. Bug reporting.		
-           ------------------------------------------------
-
-Bug reports are welcome. Should you find any bugs please report them 
-to bug-gnu-radius@gnu.org. 
+    Send bug reports to bug-gnu-radius@gnu.org. Be sure
 
 	
+
+Local Variables:
+mode: indented-text
+left-margin: 4
+fill-column: 74
+version-control: never
+End:

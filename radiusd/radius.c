@@ -39,9 +39,7 @@ static char rcsid[] =
 #include <radiusd.h>
 
 
-/*
- *      Make sure our buffer is aligned.
- */
+#define SEND_BUFFER_SIZE sizeof(i_send_buffer)
 
 /*
  *      Reply to the request.  Also attach
@@ -65,11 +63,10 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
         UINT4 lval;
         u_char digest[AUTH_DIGEST_LEN];
         int secretlen;
-        VALUE_PAIR *reply;
+        VALUE_PAIR *reply, *pair;
         int vendorcode, vendorpec;
         char buf[MAX_LONGNAME];
-	int  i_send_buffer[RAD_BUFFER_SIZE];
-#define SEND_BUFFER_SIZE sizeof(i_send_buffer)
+	int i_send_buffer[RAD_BUFFER_SIZE];
 	char *send_buffer = (char *)i_send_buffer;
         
         auth = (AUTH_HDR *)send_buffer;
@@ -119,11 +116,11 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
          *      Load up the configuration values for the user
          */
         ptr = auth->data;
-        while (reply) {
+        for (pair = reply; pair; pair = pair->next) {
                 if (debug_on(10)) {
                         char *save;
                         radlog(L_DEBUG,
-                               "reply: %s", format_pair(reply, &save));
+                               "reply: %s", format_pair(pair, &save));
                         free(save);
                 }
 
@@ -131,7 +128,7 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
                  *      This could be a vendor-specific attribute.
                  */
                 length_ptr = NULL;
-                if ((vendorcode = VENDOR(reply->attribute)) > 0 &&
+                if ((vendorcode = VENDOR(pair->attribute)) > 0 &&
                     (vendorpec  = vendor_id_to_pec(vendorcode)) > 0) {
                         if (total_length + 6 >= SEND_BUFFER_SIZE)
                                 goto err;
@@ -142,18 +139,17 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
                         memcpy(ptr, &lval, 4);
                         ptr += 4;
                         total_length += 6;
-                } else if (reply->attribute > 0xff) {
+                } else if (pair->attribute > 0xff) {
                         /*
                          *      Ignore attributes > 0xff
                          */
-                        reply = reply->next;
                         continue;
                 } else
                         vendorpec = 0;
 
-                *ptr++ = (reply->attribute & 0xFF);
+                *ptr++ = (pair->attribute & 0xFF);
 
-                switch(reply->type) {
+                switch (pair->type) {
 
                 case TYPE_STRING:
                         /*
@@ -161,10 +157,10 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
                          *      should NOT be needed. In fact I have no
                          *      idea if it is needed :)
                          */
-                        if (reply->strlength == 0 && reply->strvalue[0] != 0)
-                                reply->strlength = strlen(reply->strvalue);
+                        if (pair->strlength == 0 && pair->strvalue[0] != 0)
+                                pair->strlength = strlen(pair->strvalue);
 
-                        len = reply->strlength;
+                        len = pair->strlength;
                         if (len >= AUTH_STRING_LEN) {
                                 len = AUTH_STRING_LEN - 1;
                         }
@@ -173,7 +169,7 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
 
                         *ptr++ = len + 2;
                         if (length_ptr) *length_ptr += len + 2;
-                        memcpy(ptr, reply->strvalue, len);
+                        memcpy(ptr, pair->strvalue, len);
                         ptr += len;
                         total_length += len + 2;
                         break;
@@ -185,7 +181,7 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
                                 
                         *ptr++ = sizeof(UINT4) + 2;
                         if (length_ptr) *length_ptr += sizeof(UINT4)+ 2;
-                        lval = htonl(reply->lvalue);
+                        lval = htonl(pair->lvalue);
                         memcpy(ptr, &lval, sizeof(UINT4));
                         ptr += sizeof(UINT4);
                         total_length += sizeof(UINT4) + 2;
@@ -194,8 +190,6 @@ rad_send_reply(code, radreq, oreply, msg, activefd)
                 default:
                         break;
                 }
-
-                reply = reply->next;
         }
 
         /*
@@ -518,6 +512,8 @@ send_challenge(radreq, msg, state, activefd)
         u_char *ptr;
         int len;
         char buf[MAX_LONGNAME];
+	int i_send_buffer[RAD_BUFFER_SIZE];
+	char *send_buffer = (char *)i_send_buffer;
         
         auth = (AUTH_HDR *)send_buffer;
 

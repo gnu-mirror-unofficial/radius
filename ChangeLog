@@ -4,7 +4,7 @@
 	* radscm/radiusd.scm.in: Renamed to radiusd.scm4
 	* radscm/gnuradius.scm4: New file
 	* radscm/radiusd.scm4: New file
-	* radscm/Makefile.am: Removed explicite rules for
+	* radscm/Makefile.am: Removed explicit rules for
 	gnuradius.scm and radiusd.scm, they caused too
 	much confusion for different "make"s.
 	(.scm4.scm): New rule

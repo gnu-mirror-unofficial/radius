@@ -150,7 +150,7 @@ static int foreground;
 static int spawn_flag;
 int	   use_dbm = 0;
 int        open_acct = 1;
-int        auth_detail;
+int        auth_detail = 0;
 int        strip_names;
 int        suspend_flag;
 #ifdef USE_SNMP
@@ -231,7 +231,7 @@ static void open_socket_list(HOSTDECL *hostlist, int defport, char *descr,
 
 static void reread_config(int reload);
 
-#define OPTSTR "Aa:bd:fhl:Lm:ni:p:P:Ssvx:yz"
+#define OPTSTR "Aa:bd:fhl:Lm:Nni:p:P:Ssvx:yz"
 
 struct option longopt[] = {
 	"log-auth-detail",    no_argument,       0, 'A',
@@ -246,6 +246,7 @@ struct option longopt[] = {
 	"license",            no_argument,       0, 'L',
 	"mode",               required_argument, 0, 'm',
 	"auth-only",          no_argument,       0, 'n',
+	"do-not-resolve",     no_argument,       0, 'N',
 	"ip-address",	      required_argument, 0, 'i',	
 	"port",               required_argument, 0, 'p',
 	"pid-file-dir",       required_argument, 0, 'P',
@@ -353,6 +354,9 @@ main(argc, argv)
 			break;
 		case 'n':
 			open_acct = 0;
+			break;
+		case 'N':
+			do_not_resolv = 1; 
 			break;
 		case 'i':
 			if ((myip = get_ipaddr(optarg)) == 0)
@@ -1099,6 +1103,7 @@ rad_spawn_child(type, data, activefd)
 {
 	REQUEST	*curreq;
 	REQUEST	*prevreq;
+	REQUEST *to_replace;
 	UINT4	curtime;
 	int	request_count, request_type_count;
 	pid_t	child_pid;
@@ -1107,13 +1112,14 @@ rad_spawn_child(type, data, activefd)
 	request_count = request_type_count = 0;
 	curreq = first_request;
 	prevreq = NULL;
+	to_replace = NULL; 
 
 	/* Block asynchronous access to the list */
 	request_list_block();
 
 	while (curreq != NULL) {
-		if (curreq->child_pid == -1 &&
-		    curreq->timestamp + 
+		if (curreq->child_pid == -1
+		    && curreq->timestamp + 
 		        request_class[curreq->type].cleanup_delay <= curtime) {
 			/*
 			 *	Request completed, delete it
@@ -1132,8 +1138,8 @@ rad_spawn_child(type, data, activefd)
 			continue;
 		}
  
-		if (curreq->type == type &&
-		    request_cmp(type, curreq->data, data) == 0) {
+		if (curreq->type == type
+		    && request_cmp(type, curreq->data, data) == 0) {
 			/*
 			 * This is a duplicate request.
 			 * If the handling process has already finished --
@@ -1152,8 +1158,8 @@ rad_spawn_child(type, data, activefd)
 			return;
 		} else {
 			if (curreq->timestamp +
-			    request_class[curreq->type].ttl <= curtime &&
-			    curreq->child_pid != -1) {
+			    request_class[curreq->type].ttl <= curtime
+			    && curreq->child_pid != -1) {
 				/*
 				 *	This request seems to have hung -
 				 *	kill it
@@ -1171,8 +1177,15 @@ rad_spawn_child(type, data, activefd)
 				kill(child_pid, SIGTERM);
 				continue;
 			}
-			if (curreq->type == type)
+			if (curreq->type == type) {
 				request_type_count++;
+				if (type != R_PROXY
+				    && (to_replace == NULL
+					|| (to_replace->timestamp >
+					                    curreq->timestamp
+					    && curreq->child_pid == -1)))
+					to_replace = curreq;
+			}
 			request_count++;
 			prevreq = curreq;
 			curreq = curreq->next;
@@ -1182,22 +1195,26 @@ rad_spawn_child(type, data, activefd)
 	/*
 	 * This is a new request
 	 */
-	if (request_count >= config.max_requests) {
-		request_drop(type, data, _("too many requests in queue"));
+	if (!to_replace) {
+		if (request_count >= config.max_requests) {
+			request_drop(type, data,
+				     _("too many requests in queue"));
 		
-		request_list_unblock();
-		schedule_child_cleanup();
+			request_list_unblock();
+			schedule_child_cleanup();
 		
-		return;
-	}
-	if (request_class[type].max_requests &&
-	    request_type_count >= request_class[type].max_requests) {
-		request_drop(type, data, _("too many requests of this type"));
+			return;
+		}
+		if (request_class[type].max_requests
+		    && request_type_count >= request_class[type].max_requests){
+			request_drop(type, data,
+				     _("too many requests of this type"));
 
-		request_list_unblock();
-		schedule_child_cleanup();
-		
-		return;
+			request_list_unblock();
+			schedule_child_cleanup();
+			
+			return;
+		}
 	}
 	
 	/* First, setup the request
@@ -1214,18 +1231,26 @@ rad_spawn_child(type, data, activefd)
 	/*
 	 * Add this request to the list
 	 */
-	curreq = alloc_entry(sizeof *curreq);
-	curreq->next = NULL;
-	curreq->child_pid = -1;
-	curreq->timestamp = curtime;
-	curreq->type = type;
-	curreq->data = data;
+	if (to_replace == NULL) {
+		curreq = alloc_entry(sizeof *curreq);
+		curreq->next = NULL;
+		curreq->child_pid = -1;
+		curreq->timestamp = curtime;
+		curreq->type = type;
+		curreq->data = data;
 
-	if (prevreq == NULL)
-		first_request = curreq;
-	else
-		prevreq->next = curreq;
-
+		if (prevreq == NULL)
+			first_request = curreq;
+		else
+			prevreq->next = curreq;
+	} else {
+		request_class[to_replace->type].free(to_replace->data);
+		curreq = to_replace;
+		curreq->timestamp = curtime;
+		curreq->type = type;
+		curreq->data = data;
+	}
+	
 	debug(1, ("adding %s request to the list. %d requests held.", 
 		 request_class[type].name,
 		 request_count+1));
@@ -1247,6 +1272,10 @@ rad_spawn_child(type, data, activefd)
 	 */
 	if ((child_pid = fork()) < 0) {
 		request_drop(type, data, _("cannot fork"));
+		if (prevreq != NULL) 
+			prevreq->next = curreq->next; 
+		else 
+			first_request = curreq->next; 
 		free_entry(curreq);
 	}
 	if (child_pid == 0) {

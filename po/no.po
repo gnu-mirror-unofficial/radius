@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-07-12 12:06+0300\n"
+"POT-Creation-Date: 2002-07-14 21:20+0300\n"
 "PO-Revision-Date: 2002-07-12 12:10+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Norwegian-bokmål <no@li.org>\n"
@@ -656,88 +656,114 @@ msgstr "lese %s"
 msgid "ready"
 msgstr "klar"
 
-#: radiusd/exec.c:73
+#: radiusd/exec.c:74
 #, c-format
 msgid "setgid(%d) failed"
 msgstr "setgid(%d) feil"
 
-#: radiusd/exec.c:79
+#: radiusd/exec.c:80
 #, c-format
 msgid "seteuid(%d) failed (ruid=%d, euid=%d)"
 msgstr "seteuid(%d) feilet (ruid=%d, euid=%d)"
 
-#: radiusd/exec.c:84
+#: radiusd/exec.c:85
 #, c-format
 msgid "setreuid(0,%d) failed (ruid=%d, euid=%d)"
 msgstr "setreuid(0,%d) feilet (ruid=%d, euid=%d)"
 
-#: radiusd/exec.c:140
+#: radiusd/exec.c:141
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
 msgstr ""
 "radius_exec_program(): ville ikke kjøre kommando: ikke et absolutt filnavn: %"
 "s"
 
-#: radiusd/exec.c:151
+#: radiusd/exec.c:152
 #, c-format
 msgid "radius_exec_program(): won't execute, no such user: %s"
 msgstr ""
 "radius_exec_program(): ville ikke kjøre kommando: ingen slik bruker: %s"
 
-#: radiusd/exec.c:158
+#: radiusd/exec.c:159
 msgid "couldn't open pipe"
 msgstr "kan ikke åpne røret"
 
-#: radiusd/exec.c:183 radiusd/exec.c:215
+#: radiusd/exec.c:184 radiusd/exec.c:216
 msgid "can't close pipe"
 msgstr "kan ikke stenge røret"
 
-#: radiusd/exec.c:185
+#: radiusd/exec.c:186
 msgid "can't dup stdout"
 msgstr "kan ikke duplisere standard utgang"
 
-#: radiusd/exec.c:232 radiusd/exec.c:553
+#: radiusd/exec.c:233 radiusd/exec.c:669
 #, c-format
 msgid "<stdout of %s>:%d: %s"
 msgstr "<standard ut av %s>:%d: %s"
 
-#: radiusd/exec.c:256
+#: radiusd/exec.c:257
 msgid ""
 "can't run external program (reason reported via syslog channel user.err)"
 msgstr ""
 "kan ikke kjøre subprocess (årsaken rapportert gjennom syslogkanalen «user."
 "err»)"
 
-#: radiusd/exec.c:260
+#: radiusd/exec.c:261
 msgid "radius_exec_program(): abnormal child exit"
 msgstr "radius_exec_program(): ugyldig avslutning av underprosess"
 
-#: radiusd/exec.c:279
+#: radiusd/exec.c:281
 #, fuzzy, c-format
 msgid "won't execute, no such user: %s"
 msgstr ""
 "radius_exec_program(): ville ikke kjøre kommando: ingen slik bruker: %s"
 
-#: radiusd/exec.c:443
+#: radiusd/exec.c:434
 #, c-format
-msgid "filter `%s' is not declared"
+msgid "filter %s (pid %d) exited with status %d (in: %u, out: %u)"
+msgstr "filter %s (pid %d) avsluttet med status %d (inn: %u, ut: %u)"
+
+# FIXME
+#: radiusd/exec.c:502
+#, c-format
+msgid "filter %s is not declared"
+msgstr "filter %s er ikke definert"
+
+# FUZZY
+#: radiusd/exec.c:530
+#, fuzzy, c-format
+msgid "cannot run filter %s"
+msgstr "kan ikke eksekvere filter «%s»"
+
+#: radiusd/exec.c:548
+#, c-format
+msgid "filter %s"
+msgstr "filter %s"
+
+#: radiusd/exec.c:581
+msgid "wrong return type"
 msgstr ""
 
 # FUZZY
-#: radiusd/exec.c:453
-#, fuzzy, c-format
-msgid "cannot run filter `%s'"
-msgstr "kan ikke åpne filter «%s»"
-
-#: radiusd/exec.c:466
+#: radiusd/exec.c:654 radiusd/exec.c:722
 #, c-format
-msgid "filter `%s'"
-msgstr ""
+msgid "reading from filter %s"
+msgstr "lese fra filter «%s»"
 
-#: radiusd/exec.c:666
+#: radiusd/exec.c:678
+#, c-format
+msgid "filter %s (auth): bad output: %s"
+msgstr "filter %s (auth): ugyldig utdata"
+
+#: radiusd/exec.c:736
+#, c-format
+msgid "filter %s (acct): bad output: %s"
+msgstr "filter %s (acct): ugyldig utdata"
+
+#: radiusd/exec.c:822
 #, c-format
 msgid "%s:%d: filter already declared at %s:%d"
-msgstr ""
+msgstr "%s:%d: filter allerede deklarert i %s:%d"
 
 #: radiusd/files.c:170
 #, c-format
@@ -1349,25 +1375,25 @@ msgstr "INTERN FEIL (%s:%d): attributt %d har ulovlig type (%d)"
 msgid "Can't spawn new thread: %s"
 msgstr "Kan ikke starter ny tråd: %s"
 
-#: radiusd/request.c:249
+#: radiusd/request.c:242
 #, fuzzy
 msgid "request timed out in queue"
 msgstr "Forespørsel overskred tidsgrensen mens i køen"
 
-#: radiusd/request.c:264 radiusd/request.c:423
+#: radiusd/request.c:257 radiusd/request.c:416
 #, c-format
 msgid "Killing unresponsive %s thread %d"
 msgstr ""
 
-#: radiusd/request.c:292
+#: radiusd/request.c:285
 msgid "duplicate request"
 msgstr "duplisert forespørsel"
 
-#: radiusd/request.c:317
+#: radiusd/request.c:310
 msgid "too many requests in queue"
 msgstr "for mange forespørsler i køen"
 
-#: radiusd/request.c:327
+#: radiusd/request.c:320
 msgid "too many requests of this type"
 msgstr "for mange forespørsler av denne typen"
 
@@ -1492,55 +1518,55 @@ msgstr ""
 msgid "pc out of range"
 msgstr ""
 
-#: radiusd/rewrite.y:4811
+#: radiusd/rewrite.y:4869
 #, c-format
 msgid "%s:%d: redefinition of function %s"
 msgstr ""
 
-#: radiusd/rewrite.y:4814
+#: radiusd/rewrite.y:4872
 #, c-format
 msgid "%s:%d: previously defined here"
 msgstr ""
 
-#: radiusd/rewrite.y:4911 radiusd/rewrite.y:5014
+#: radiusd/rewrite.y:4969 radiusd/rewrite.y:5072
 #, c-format
 msgid "function %s not defined"
 msgstr "Funksjonen %s er ikke definert"
 
-#: radiusd/rewrite.y:4954
+#: radiusd/rewrite.y:5012
 #, fuzzy, c-format
 msgid "%s(): wrong number of arguments (should be %d, passed %d)"
 msgstr "%s(): feil antall argumenter (forventet %d, overført %d)"
 
-#: radiusd/rewrite.y:4996
+#: radiusd/rewrite.y:5054
 #, c-format
 msgid "malformed function call: %s"
 msgstr "feilaktig funksjonkall: %s"
 
-#: radiusd/rewrite.y:5004
+#: radiusd/rewrite.y:5062
 msgid "missing '(' in function call"
 msgstr "mangler '(' i funksjonkall"
 
-#: radiusd/rewrite.y:5008
+#: radiusd/rewrite.y:5066
 msgid "missing ')' in function call"
 msgstr "mangler ')' i funksjonkall"
 
-#: radiusd/rewrite.y:5045
+#: radiusd/rewrite.y:5103
 #, c-format
 msgid "calling %s: expected ',' but found %s after arg %d"
 msgstr ""
 
-#: radiusd/rewrite.y:5055
+#: radiusd/rewrite.y:5113
 #, c-format
 msgid "too many arguments for %s"
 msgstr "for mange argumenter til %s"
 
-#: radiusd/rewrite.y:5081
+#: radiusd/rewrite.y:5139
 #, c-format
 msgid "too few arguments for %s"
 msgstr "for få argumenter til %s"
 
-#: radiusd/rewrite.y:5131
+#: radiusd/rewrite.y:5189
 #, c-format
 msgid "function %s() requires %d parameters"
 msgstr ""
@@ -2148,10 +2174,3 @@ msgstr ""
 
 #~ msgid "failed in select() - exit."
 #~ msgstr "feil under select() - avslutning."
-
-#~ msgid "%s:%d: cannot translate value %s"
-#~ msgstr "%s:%d: kan ikke oversette verdi %s"
-
-#, fuzzy
-#~ msgid "%s:%d: unknown value %s"
-#~ msgstr "%s:%d: ukjent verdi %s"

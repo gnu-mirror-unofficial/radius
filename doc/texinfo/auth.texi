@@ -448,13 +448,13 @@ authentication failures for the same user. Of course, if the intruder
 is given sufficient number of such probes he will sooner or later
 succeed in finding the actual password. The conventional method
 to prevent this from occurring is to keep @dfn{failure counters} for
-each user and to lock the account when its failure countrer reaches a
+each user and to lock the account when its failure counter reaches a
 predefined limit. Notice that a legitimate user may fail (sometimes
-even several times in sequence) in entering his password so, two
+even several times in sequence) in entering his password, so two
 important points should always be observed. First, failure counters
 record the number of consecutive authentication failures and they are
 reset after each successive authentication. Secondly, the maximum number
-of allowed consecutive failures should be set sufficiantly high.
+of allowed consecutive failures should be set sufficiently high.
 
 The version @value{VERSION} offers two ways for controlling 
 authentication probes: using external programs and using special

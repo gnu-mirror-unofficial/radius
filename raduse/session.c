@@ -23,6 +23,8 @@ static char rcsid[] =
 #define SERVER
 #include <raduse.h>
 
+#define DEBUG(c)
+
 SNMP_GET_TAB *snmp_get_lookup(SNMP_GET_TAB *tab, oid_t oid);
 
 /* return formatted textual description of SNMP error status */
@@ -80,29 +82,38 @@ process_var(var, ptr)
 	oid_t *oidptr;
 	struct timeval *tvptr;
 	struct in_addr in;
-	
+	char buf[512];
+
+	DEBUG(("%s = ",
+	       sprint_oid(buf, sizeof(buf), var->name)));
+		
 	switch (var->type) {
 	case SMI_STRING:
 		sptr = (char**)ptr;
 		if (*sptr)
 			efree(*sptr);
 		*sptr = estrdup(var->var_str);
+		DEBUG(("\"%s\"", var->var_str));
 		break;
 	case SMI_TIMETICKS:
 		tvptr = (struct timeval*)ptr;
 		tvptr->tv_sec = var->var_int / 100;
 		tvptr->tv_usec = (var->var_int - tvptr->tv_sec*100)*10000;
+		DEBUG(("%s", format_time(tvptr, buf, sizeof buf)));
 		break;
 	case SMI_INTEGER:
 		*(unsigned*)ptr = var->var_int;
+		DEBUG(("%d", var->var_int));
 		break;
 	case SMI_COUNTER32:
 		*(counter*)ptr = var->var_int;
+		DEBUG(("%d", var->var_int));
 		break;
 	case SMI_COUNTER64:
 		break;
 	case SMI_IPADDRESS:
 		*(UINT4*)ptr = *(unsigned int*)var->var_str;
+		DEBUG(("%s", ipaddr2str(buf, ntohl(*(UINT4*)ptr))));
 		break;
 	case SMI_OPAQUE:
 		sptr = (char**)ptr;
@@ -116,8 +127,10 @@ process_var(var, ptr)
 		if (*oidptr)
 			efree(*oidptr);
 		*oidptr = oid_dup(var->var_oid);
+		DEBUG(("%s", sprint_oid(buf, sizeof(buf), var->var_oid)));
 		break;
 	}
+	DEBUG(("\n"));
 }
 
 int
@@ -225,7 +238,7 @@ run_query(tab)
 struct snmp_walk_data {
 	SNMP_WALK_TAB *tab;
 	void *app_data;
-	void *(*alloc_instance)();
+	int count;
 	u_char *instance;
 	struct snmp_var *varlist;
 };
@@ -261,7 +274,7 @@ walk_converse(type, sp, pdu, closure)
 		printf("Error in packet: %s\n",
 		       format_snmp_error_str(pdu->err_stat));
 	}
-	
+	DEBUG(("processing PDU\n"));
 	for (var = pdu->var, ind = 1; var; var = var->next, ind++) {
 		if (ind == pdu->err_ind) {
 			char oidbuf[512];
@@ -275,27 +288,26 @@ walk_converse(type, sp, pdu, closure)
 				continue;
 		}
 
-		tab = snmp_walk_lookup(data->tab, var->name);
-		if (tab) {
+		tab = &data->tab[ind-1];
+		if (memcmp(OIDPTR(tab->oid), OIDPTR(var->name),
+			   (OIDLEN(tab->oid)-1)*sizeof(tab->oid[0])) == 0) {
 			struct snmp_var *vp;
-
-			if (!data->instance)
-				data->instance =
-					data->alloc_instance(data->app_data);
+			data->count++;
 			process_var(var, data->instance + tab->offset);
 			vp = snmp_var_create(var->name);
 			vp->next = data->varlist;
 			data->varlist = vp;
 		}
 	}
-						
+
 	return 1;
 }
 
 void
-run_walk(tab, alloc, app_data)
+run_walk(tab, elsize, insert, app_data)
 	SNMP_WALK_TAB *tab;
-	void *(*alloc)();
+	size_t elsize;
+	void *(*insert)(void*,void*);
 	void *app_data;
 {
 	struct snmp_session *session;
@@ -304,8 +316,8 @@ run_walk(tab, alloc, app_data)
 	struct snmp_walk_data data;
 
 	data.tab = tab;
-	data.alloc_instance = alloc;
 	data.app_data = app_data;
+	data.instance = emalloc(elsize);
 	data.varlist = NULL;
 	session = snmp_session_create(community, hostname, port,
 				      walk_converse, &data);
@@ -316,7 +328,10 @@ run_walk(tab, alloc, app_data)
 
 
 	for (; tab->oid; tab++) {
-		var = snmp_var_create(tab->oid);
+		oid_t oid = oid_create_from_subid(OIDLEN(tab->oid)-1,
+						  OIDPTR(tab->oid));
+		var = snmp_var_create(oid);
+		efree(oid);
 		if (!var) {
 			radlog(L_ERR, "(var) snmp err %d\n", snmp_errno);
 			continue;
@@ -337,14 +352,17 @@ run_walk(tab, alloc, app_data)
 			var = next;
 		}
 
-		data.instance = NULL;
+		data.count = 0;
+		memset(data.instance, 0, elsize);
 		if (snmp_query(session, pdu)) {
 			radlog(L_ERR,
 			       "(snmp_query) snmp err %d\n", snmp_errno);
 			break;
 		}
+		if (data.count)
+			insert(app_data, data.instance);
 	} while (data.varlist);
-
+	efree(data.instance);
 	snmp_session_close(session);
 }
 

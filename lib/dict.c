@@ -361,6 +361,9 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
                         case 'P':
                                 prop |= AP_PROPAGATE;
                                 break;
+			case 'c':
+				prop |= AP_REQ_CMP;
+				break;
                         case 'Z':
                         case 'I':
                                 break;

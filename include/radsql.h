@@ -73,8 +73,6 @@ typedef struct {
         int      keepopen;
         time_t   idle_timeout;
         int      active[SQL_NSERVICE];
-#define doauth   active[SQL_AUTH]
-#define doacct   active[SQL_ACCT]
 } SQL_cfg;
 
 extern SQL_cfg sql_cfg;

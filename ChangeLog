@@ -18,7 +18,8 @@
 	* radiusd/files.c: Fixed invocation of value_name_to_value.
 	* radscm/rscm_dict.c: Likewise.
 	* radscm/rscm_lib.c: Likewise.
-	
+	* radlib/users.y: Likewise.
+
 	* radlib/symtab.c: Preserve the order of entries in collision lists
 	when rehashing.
 

@@ -1443,7 +1443,7 @@ radreq_cmp(a, b)
 {
 	return !(a->ipaddr == b->ipaddr &&
 		 a->id == b->id &&
-			memcmp(a->vector, b->vector, 16) == 0);
+			memcmp(a->vector, b->vector, sizeof(a->vector)) == 0);
 }
 
 void

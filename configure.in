@@ -478,7 +478,7 @@ AC_SUBST(SQLLIB)
 ## **************
 
 AC_ARG_ENABLE(snmp,
-	[  --enable-snmp                  enable SNMP support],
+[  --enable-snmp][[={yes|no|compat}]][                  enable SNMP support],
 	[case $enableval in
 		compat)		USE_SNMP=yes
 				AC_DEFINE(USE_SNMP)

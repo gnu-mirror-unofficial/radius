@@ -1,5 +1,18 @@
 2002-07-05  Sergey Poznyakoff 
 
+	* radiusd/sql.c (sql_conn_destroy): Removed if (data) condition.
+	  The destructor gets called only if its associated pointer is
+	  non-null.
+	  (rad_sql_thread_cleanup): Bugfix: Do not free the connections.
+	  They will be freed by sql_conn_destroy. Actually, all I should
+	  do here is obstack_free, since sql_conn_destroy will also close
+	  the connections. However, for the time being I use disp_sql_drop
+	  here, since it *may* work differently from disp_sql_disconnect.
+	* sql/disp.c (disp_sql_drop): Call disconnect only if
+	  (conn && conn->connected).
+
+2002-07-05  Sergey Poznyakoff 
+
 	* sql/disp.c: Additional checks on arguments
 	* db/pgsql.m4: Bugfix.
 	* radiusd/sql.c (rad_sql_checkgroup): Install an additional

@@ -168,6 +168,59 @@ _dict_include(errcnt, fc, fv, file, lineno)
 	return 0;
 }
 
+int
+parse_flags(ptr, flags, filename, line)
+	char **ptr;
+	int *flags;
+	char *filename;
+	int line;
+{
+	int i;
+	char *p;
+	
+	for (p = *ptr+1, i = 0; i < CF_MAX; i++) {
+		if (*p == 0) {
+			radlog(L_ERR,
+			       _("%s:%d: missing ]"),
+			       filename, line, *p);
+			return 1;
+		}
+		switch (*p++) {
+		case 'C':
+			*flags |= AF_CHECKLIST(i);
+			break;
+		case '-':
+			*flags &= ~AF_CHECKLIST(i);
+			break;
+		case ']':
+			p--;
+			goto stop;
+		default:
+			radlog(L_ERR,
+			       _("%s:%d: invalid syntax flag %c"),
+			       filename, line, p[-1]);
+			return 1;
+		}
+		switch (*p++) {
+ 		case 'R':
+			*flags |= AF_REPLYLIST(i);
+			break;
+		case '-':
+			*flags &= ~AF_REPLYLIST(i);
+			break;
+		default:
+			radlog(L_ERR,
+			       _("%s:%d: invalid syntax flag %c"),
+			       filename, line, p[-1]);
+			return 1;
+		}
+	}
+  stop:
+	for (; i < CF_MAX; i++) 
+		*flags |= AF_CHECKLIST(i)|AF_REPLYLIST(i);
+	*ptr = p;
+	return 0;
+}
 
 int
 _dict_attribute(errcnt, fc, fv, file, lineno)
@@ -177,13 +230,13 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 	char    *file;
 	int     lineno;
 {
-	DICT_ATTR	*attr;
-	int              type;
-	int              vendor = 0;
-	unsigned        value;
-	char            *p;
-	int              flags = AF_DEFAULT_FLAGS;
-	int              add   = AF_DEFAULT_ADD;
+	DICT_ATTR *attr;
+	int type;
+	int vendor = 0;
+	unsigned value;
+	char *p;
+	int flags = AF_DEFAULT_FLAGS;
+	int prop  = AP_DEFAULT_ADD;
 	
 	if (nfields(fc, 4, 6, file, lineno))
 		return 0;
@@ -222,23 +275,36 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 	if (HAS_FLAGS(fc,fv)) {
 		char *p;
 
-		flags = 0;
 		for (p = ATTR_FLAGS; *p; p++) {
 			switch (*p) {
 			case 'C':
-				flags |= AF_CHECKLIST;
+				flags |= AF_CHECKLIST(CF_USERS)
+					|AF_CHECKLIST(CF_HINTS)
+					|AF_CHECKLIST(CF_HUNTGROUPS);
 				break;
 			case 'R':
-				flags |= AF_REPLYLIST;
+				flags |= AF_REPLYLIST(CF_USERS)
+					|AF_REPLYLIST(CF_HINTS)
+					|AF_REPLYLIST(CF_HUNTGROUPS);
+				break;
+			case '[':
+				if (parse_flags(&p, &flags, file, lineno)) {
+					while (*++p);
+					--p;
+					++(*errcnt);
+				}
 				break;
 			case '=':
-				add = AF_ADD_REPLACE;
+				SET_ADDITIVITY(prop, AP_ADD_REPLACE);
 				break;
 			case '+':
-				add = AF_ADD_APPEND;
+			        SET_ADDITIVITY(prop, AP_ADD_APPEND);
 				break;
 			case 'N':
-				add = AF_ADD_NONE;
+				SET_ADDITIVITY(prop, AP_ADD_NONE);
+				break;
+			case 'P':
+				prop |= AP_PROPAGATE;
 				break;
 			case 'Z':
 			case 'I':
@@ -259,8 +325,7 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 			
 	attr->value = value;
 	attr->type = type;
-	attr->flags = flags;
-	attr->additivity = add;
+	attr->prop = flags|prop;
 	if (vendor)
 		attr->value |= (vendor << 16);
 	

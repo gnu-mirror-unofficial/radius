@@ -1,3 +1,38 @@
+2001-07-09 Sergey Poznyakoff <gray@farlep.net>
+	* m4/Makefile.am: (new)
+	* m4/maintain.m4: (new) Enable maintainer-specific definitions
+	* configure.in: use rad_MAINTAINER_MODE
+	* include/Makefile.am: Added EXTRA_DIST
+	* include/snmp/Makefile.am: (new)
+	* */Makefile.am: removed spurious CFLAGS assignments.
+	Removed spurious -I statements in INCLUDES.
+	Changes due to addition of new Makefile.am's.
+	* radlib/Makefile.am: Moved yacc- and lex-generated sources to
+	MAINTAINERCLEANFILES,
+	* radiusd/Makefile.am: Likewise.
+
+	* radlib/nas.c: (new) nas database functions
+	* radlib/util.c: Added RADCK_ARG functions (from radiusd/files.c)
+	* radlast/nasutil.c: removed.
+	* radlast/radlast.c: changes due to introduction of radlib/nas.c
+
+	* radiusd/version.c: Forgotten to commit on 2001-07-04.
+
+	* include/checkrad.h: Protos for radck_ functions.
+	* include/radiusd.h: Namespace housekeeping: normalized nas database
+	function names (nas_ and client_ ).
+	* radiusd/acct.c: Likewise.
+	* radiusd/auth.c: Likewise.
+	* radiusd/files.c: Likewise.
+	* radiusd/proxy.c: Likewise.
+	* radiusd/radctl.c: Likewise.
+	* radiusd/radius.c: Likewise.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/snmpserv.c: Likewise.
+	* radiusd/sql.c: Likewise.
+	* radiusd/stat.c: Likewise.
+
+
 2001-07-04  Sergey Poznyakoff <gray@farlep.net>
 	* include/sysdep.h,radiusd/version.c: Added support for
 	OpenBSD (Thanks to Andrey Pavlenko <lance@evitel.net>).

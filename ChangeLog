@@ -1,3 +1,31 @@
+2002-01-11  Sergey Poznyakoff  
+
+	* include/radiusd.h: Moved NITEMS to radius.h
+	* include/radius.h: Likewise.
+
+	* snmplib/snmp_oid.c: (oid_cmp): new function.
+	* include/snmp/snmp.h: (oid_cmp): Added prototype.
+
+	* scripts/mksnmp-h.awk: Generate external declaractions,
+	  if SERVER is not defined.
+	
+	Started rewriting of raduse:
+	
+	* raduse/Makefile.am: Updated
+	* raduse/raduse.c: Cleaned-up.
+	* raduse/session.c: (new) SNMP-session specific functions.
+	* raduse/stat.c: (new) Statistic-specific variables and functions.
+	* raduse/raduse.h: (new) Common header for raduse.
+
+	Further changes due to removal of usr2delay statement:
+	
+	* raddb/config: Removed usr2delay statement.
+	* raddb/config.syntax: Likewise.
+	* test/raddb/config.in: Likewise.
+	* test/proxy/config.in: Likewise.
+	* radiusd/config.kw: Restored T_USR2DELAY.
+	* radiusd/config.y: Handle 'usr2delay' for backward compatibility.
+
 2002-01-10  Sergey Poznyakoff  
 
 *	* configure.in: --enable-snmp=compat enables support for

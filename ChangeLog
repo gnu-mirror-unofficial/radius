@@ -1,3 +1,35 @@
+2003-10-31  Sergey Poznyakoff
+
+	* include/radiusd.h (huntgroup_access): Changed proto.
+	* radiusd/files.c: Likewise.
+	* radiusd/acct.c: Updated calls to huntgroup_access().
+	* radiusd/auth.c: Likewise. Improved 'no huntgroup access'
+	diagnostics.
+
+2003-10-31  Sergey Poznyakoff 
+
+	* radiusd/proxy.c (proxy_request_recode): New function
+	* include/radiusd.h (proxy_request_recode): New function.
+	(forward_request): Changed proto.
+	* lib/client.c: Fixed 1st argument to socket()
+	* lib/sysdep.c: Likewise.
+	* snmplib/snmp_sess.c: Likewise.
+	* lib/dict.c (_dict_attribute): New flag 'l'. Turns on
+	logging of an internal attribute.
+	* lib/raddb.c (read_raddb_file): Bugfix: loc.line was
+	incremented twice per line.
+	* lib/realms.c (read_realms_entry): Fixed wording and priority
+	of the diagnostic message.
+	* radiusd/forward.c: Recode the request if the remote server
+	is listed in raddb/clients.
+	* radiusd/proxy.c (proxy_request_recode): New function.
+	* radiusd/radius.c: (radius_auth_req_decode)
+	(radius_acct_req_decode): Removed improperly placed calls to
+	forward_request.
+	(radius_respond): Call forward_request().
+	* radiusd/radiusd.c (common_init): Fixed order of calling
+	the initialization functions.
+	
 2003-10-30  Sergey Poznyakoff 
 
 	* examples/config.syntax: Sample "forward" statements.

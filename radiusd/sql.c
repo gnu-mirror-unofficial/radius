@@ -1099,14 +1099,15 @@ rad_sql_retrieve_sessions(struct sql_connection *conn,
 			return 0;
 	}
 
-	if (res->ntuples == 0 || res->nfields != 3)
+	if (res->ntuples == 0 || res->nfields != 4)
 		return 0;
 	
         for (i = 0; i < res->ntuples; i++) {
 		struct radutmp *up = grad_emalloc(sizeof(*up));
 		GRAD_STRING_COPY(up->login, res->tuple[i][0]);
-		up->nas_port = strtoul(res->tuple[i][1], NULL, 0);
-		GRAD_STRING_COPY(up->session_id, res->tuple[i][2]);
+		up->nas_address = htonl(grad_ip_strtoip(res->tuple[i][1]));
+		up->nas_port = strtoul(res->tuple[i][2], NULL, 0);
+		GRAD_STRING_COPY(up->session_id, res->tuple[i][3]);
 		if (*sess_list == NULL) 
 			*sess_list = grad_list_create();
 		grad_list_append(*sess_list, up);

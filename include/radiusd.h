@@ -221,6 +221,7 @@ typedef struct snmp_req {
 #define AUTH_FAIL    1 /* Password fail */
 #define AUTH_NOUSER  2 /* No such user  */
 #define AUTH_REJECT  3 /* Rejected */
+#define AUTH_IGNORE  4 /* Silently ignore */
 
 /* Logging modes */
 #define RLOG_AUTH               0x0001

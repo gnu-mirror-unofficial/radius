@@ -46,7 +46,8 @@
 ;;;; +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 ;;;;
 ;;;; Code is ignored. String contains a timeout value for the user
-;;;; converted to ASCII. If it starts with '-', no timeout is set.
+;;;; converted to ASCII (null-terminated). If it starts with '-', no
+;;;; timeout is set.
 ;;;;
 ;;;; usage:
 ;;;;
@@ -180,7 +181,8 @@
 		    ;			     (ttl-reply-length packet)))
                     (if (not
                          (or
-                          (< length 2)
+                          (< length 4) ;; Remote party should send us
+			               ;; at least one significant character
                           (not (= (ttl-reply-length packet) length))))
                         (cond
                          ((or (char=? code #\+) (char=? code #\-))

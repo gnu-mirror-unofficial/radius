@@ -44,6 +44,9 @@ static int continue_loop;
 static void rt_eval_stmt_list(grad_list_t *list);
 static void rt_eval_expr(radtest_node_t *node, radtest_variable_t *result);
 static void rt_eval(radtest_node_t *stmt);
+static void rt_eval_variable(grad_locus_t *locus,
+			     radtest_variable_t *result,
+			     radtest_variable_t *var);
 
 static void
 runtime_error(grad_locus_t *locus, const char *fmt, ...)
@@ -232,6 +235,68 @@ cast_to_string(grad_locus_t *locus, radtest_variable_t *var)
 	return buf;
 }
 
+static int
+_found_p(void *data, grad_avp_t *pair)
+{
+	return grad_avl_find(data, pair->attribute) != NULL;
+}				
+
+static int
+_not_found_p(void *data, grad_avp_t *pair)
+{
+	return grad_avl_find(data, pair->attribute) == NULL;
+}				
+
+void
+rt_eval_bin_avl(grad_locus_t *locus,
+		radtest_variable_t *result,
+		radtest_binop_t op,
+		grad_avp_t *a, grad_avp_t *b)
+{
+	grad_avp_t *p;
+	
+	switch (op) {
+	case radtest_op_add:
+		grad_avl_merge(&a, &b);
+		grad_avl_free(b);
+		result->type = rtv_avl;
+		result->datum.avl = a;
+		break;
+		
+	case radtest_op_sub:
+		result->type = rtv_avl;
+		result->datum.avl = NULL;
+		grad_avl_move_pairs(&result->datum.avl,
+				    &a,
+				    _not_found_p,
+				    b);
+		break;
+		
+	case radtest_op_mod:
+		/* Return the intersection of A and B */
+		result->type = rtv_avl;
+		result->datum.avl = NULL;
+		grad_avl_move_pairs(&result->datum.avl,
+				    &a,
+				    _found_p,
+				    b);
+		break;
+		
+	case radtest_op_eq:
+		result->type = rtv_integer;
+		result->datum.number = compare_lists(a, b) == 0;
+		break;
+		
+	case radtest_op_ne:
+		result->type = rtv_integer;
+		result->datum.number = compare_lists(a, b) != 0;
+		break;
+
+	default:
+		bin_type_error(locus);
+	}
+}
+
 static void
 rt_eval_deref(radtest_node_t *node, radtest_variable_t *result)
 {
@@ -245,13 +310,14 @@ rt_eval_deref(radtest_node_t *node, radtest_variable_t *result)
 	if (!var)
 		result->type = rtv_undefined;
 	else
-		radtest_var_copy(result, var);
+		rt_eval_variable(&node->locus, result, var);
+
 	p = node->v.deref.repl;
 	if (p) switch (*p++) {
         case '=':
 		if (!var)
-			var = (radtest_variable_t*) grad_sym_install(vartab,
-								     node->v.deref.name);
+			var = (radtest_variable_t*)
+				grad_sym_install(vartab, node->v.deref.name);
                 var->type = parse_datum(p, &var->datum);
 		radtest_var_copy(result, var);
                 break;
@@ -347,7 +413,8 @@ rt_eval_parm(radtest_node_t *node, radtest_variable_t *result)
         case '=':
                 if (num > x_argmax) {
                         x_argmax = num;
-                        x_argv = grad_erealloc(x_argv, sizeof(x_argv[0])*(num+1));
+                        x_argv = grad_erealloc(x_argv,
+					       sizeof(x_argv[0]) * (num + 1));
                 }
                 x_argv[num] = grad_estrdup(p);
                 x_argc = num+1;
@@ -468,10 +535,13 @@ rt_eval_pairlist(grad_locus_t *locus,
 				
 			case TYPE_INTEGER:
 			{
-				grad_dict_value_t *dv = grad_value_name_to_value(val.datum.string, p->attr->value);
+				grad_dict_value_t *dv =
+				    grad_value_name_to_value(val.datum.string,
+							     p->attr->value);
 				if (dv) {
-					pair = grad_avp_create_integer(p->attr->value,
-								       dv->value);
+					pair = grad_avp_create_integer(
+						   p->attr->value,
+						   dv->value);
 					break;
 				}
 			}
@@ -508,7 +578,8 @@ rt_eval_variable(grad_locus_t *locus,
 	case rtv_avl:
 		result->type = var->type;
 		result->datum.avl = grad_avl_dup(var->datum.avl);
-
+		break;
+		
 	default:
 		*result = *var;
 	}
@@ -518,6 +589,11 @@ static void
 rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 {
 	radtest_variable_t left, right;
+
+	if (!node) {
+		result->type = rtv_undefined;
+		return;
+	}
 	
 	switch (node->type) {
 	case radtest_node_value:
@@ -556,15 +632,15 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 
 				if (isdigit(right.datum.string[0])) {
 					char *p;
-					p = strtol(right.datum.string, &p, 0);
+					v = strtol(right.datum.string, &p, 0);
 					if (*p)
 						runtime_error(&node->locus,
-				      _("cannot convert string to integer: %s"),
+				    _("cannot convert string to integer: %s"),
 							      right.datum.string);
 				} else if ((v = grad_request_name_to_code(right.datum.string)) == 0)
 					runtime_error(&node->locus,
 				 _("cannot convert string to integer: %s"),
-							 right.datum.string);
+						      right.datum.string);
 					   
 				    
 				rt_eval_bin_int(&node->locus,
@@ -633,9 +709,11 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 		case rtv_avl:
 			if (right.type != rtv_avl) 
 				bin_type_error(&node->locus);
-			grad_avl_merge(&right.datum.avl, &left.datum.avl);
-			grad_avl_free(left.datum.avl);
-			radtest_var_copy(result, &right);
+			rt_eval_bin_avl(&node->locus,
+					result,
+					node->v.bin.op,
+					left.datum.avl,
+					right.datum.avl);
 			break;
 		}
 		break;
@@ -678,6 +756,24 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 		p = grad_avl_find(left.datum.avl, node->v.attr.dict->value);
 		switch (node->v.attr.dict->type) {
 		case TYPE_STRING:
+			result->type = rtv_string;
+			if (node->v.attr.all) {
+				size_t len = 1;
+				for (p = left.datum.avl; p; p = p->next) {
+					if (p->attribute == node->v.attr.dict->value)
+						len += p->avp_strlength;
+				}
+				result->datum.string = grad_emalloc(len);
+				result->datum.string[0] = 0;
+				for (p = left.datum.avl; p; p = p->next) {
+					if (p->attribute == node->v.attr.dict->value)
+						strcat(result->datum.string,
+						       p->avp_strvalue);
+				}
+			} else
+				result->datum.string = p ? p->avp_strvalue : "";
+			break;
+			
 		case TYPE_DATE:    
 			result->type = rtv_string;
 			result->datum.string = p ? p->avp_strvalue : "";
@@ -877,6 +973,48 @@ rt_eval_loop(radtest_node_t *stmt)
 }
 
 static void
+rt_eval_input(radtest_node_t *stmt)
+{
+	char *p = NULL;
+	size_t n = 0;
+	radtest_variable_t *var;
+
+	if (stmt->v.input.expr) {
+		radtest_variable_t result;
+		rt_eval_expr(stmt->v.input.expr, &result);
+		printf("%s", cast_to_string(&stmt->locus, &result));
+	}
+	fflush(stdout);
+		
+	getline(&p, &n, stdin);
+	var = (radtest_variable_t*) grad_sym_lookup(vartab,
+						    stmt->v.input.name);
+	if (var) {
+		switch (var->type) {
+		case rtv_string:
+			grad_free(var->datum.string);
+			break;
+
+		case rtv_avl:
+			grad_avl_free(var->datum.avl);
+			break;
+
+		default:
+			break;
+		}
+	}  else
+		var = (radtest_variable_t*)
+			grad_sym_install(vartab, stmt->v.input.name);
+	
+	var->type = rtv_string;
+	n = strlen(p);
+	if (n > 1 && p[n-1] == '\n')
+		p[n-1] = 0;
+	var->datum.string = grad_estrdup(p);
+	free(p);
+}
+
+static void
 rt_eval(radtest_node_t *stmt)
 {
 	radtest_variable_t result;
@@ -932,6 +1070,13 @@ rt_eval(radtest_node_t *stmt)
 		rt_eval(rt_true_p(&result) ?
 			stmt->v.cond.iftrue : stmt->v.cond.iffalse);
 		break;
+
+	case radtest_node_input:
+		rt_eval_input(stmt);
+		break;
+
+	default:
+		grad_insist_fail("Unexpected instruction code");
 	}
 }
 

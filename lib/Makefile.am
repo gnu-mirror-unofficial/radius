@@ -14,6 +14,7 @@ noinst_LTLIBRARIES=librad.la liblog.la libdebug.la
 librad_la_SOURCES= \
 alloc.c \
 argcv.c \
+ascend.c \
 avl.c \
 client.c \
 cryptpass.c \

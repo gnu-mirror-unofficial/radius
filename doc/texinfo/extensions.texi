@@ -243,8 +243,9 @@ Rewrite is the GNU Radius extension language. Its name reflects the
 fact that it was originally designed to rewrite the broken request packets
 so they could be processed as usual (@pxref{Rewriting Incoming
 Requests}). Beside this basic use, however, Rewrite functions are used
-in verifying the activity of user sessions
-(@pxref{Checking Simultaneous Logins}).
+to control various aspects of GNU Radius functionality, such as
+verifying the activity of user sessions, controlling the amount of
+information displayed in log messages, etc (@pxref{Interaction with Radius}).
 
 @menu
 * Syntax Overview::
@@ -253,6 +254,7 @@ in verifying the activity of user sessions
 * Rewriting Incoming Requests::
 * Login Verification Functions::
 * Attribute Creation Functions::
+* Logging Hook Functions::
 * Full Syntax Description::
 @end menu
 
@@ -329,6 +331,7 @@ purpose. There are three major kinds of Rewrite functions:
 @item Functions used to rewrite the incoming requests.
 @item Functions designed for simultaneous login verification.
 @item Functions used to generate Radius attribute values.
+@item Logging hooks.
 @end itemize
 
 @comment *L3****************************************************************
@@ -616,14 +619,8 @@ The function to be invoked for given @NAS{} is defined by
 a @code{function} flag in the @file{raddb/nastypes} or @file{raddb/naslist}
 file (@pxref{nastypes file}). It must be defined as follows:
 
-@smallexample
-@group
-integer check(string @var{str}, string @var{name}, integer @var{pid}, 
-              string @var{sid})
-@{
-@}
-@end group
-@end smallexample
+@deftypefn {Function Template} integer check (string @var{str}, string @var{name}, integer @var{pid}, string @var{sid})
+@end deftypefn
 
 @noindent
 Its arguments are:
@@ -723,6 +720,54 @@ get_ip_address(integer base)
     return base + %[NAS-Port-Id] - %[NAS-Port-Id]/16;
 @}
 @end group
+@end smallexample
+
+@comment **L3***************************************************************
+@node Logging Hook Functions
+@subsection Logging Hook Functions
+@cindex Rewrite, Logging Hook Functions
+
+A logging hook functions should be declared as follows:
+
+@deftypefn {Function Template} string hook (integer @var{reqtype}, string @var{nasid}, integer @var{reqid})
+@table @var
+@item reqtype
+Type of the request. It can be converted to string using
+@code{request_code_string} function (@pxref{Built-in Functions}).
+@item nasid
+@NAS{} identifier from @file{raddb/naslist}, or its host name if not
+declared there
+@item reqid
+Request identifier.
+@end table
+@end deftypefn
+
+Notice that the hook function @emph{shall not} produce any side effects,
+in particular it shall not modify the incoming request in any way.
+
+Following is an example prefix hook function that formats the
+incoming request data:
+
+@smallexample
+string
+compat_log_prefix(integer reqtype, string nas, integer id)
+@{
+	string result;
+
+	return "(" + request_code_string(reqtype) + " "
+                   + nas + " " + (string)id + " " + %[User-Name] + ")";
+@}
+@end smallexample
+
+Here is a sample log produced by @command{radiusd} before and after
+enabling this function:
+
+@smallexample
+@cartouche
+Auth.notice: Login OK [jsmith]
+@dots{}
+Auth.notice: (AUTHREQ nas-2 251 jsmith): Login OK [jsmith]
+@end cartouche
 @end smallexample
 
 @comment *L2****************************************************************
@@ -1274,12 +1319,37 @@ gsub("[()'\"]","/","\"a\" (quoted) 'string'")
 @deftypefn Function string qprn (string @var{str})
 Replace all non-printable characters in string S by their
 corresponding hex value preceeded by a percent sign. Return the
-resulting string. For example:
+resulting string. Printable are alphabetical characters, decimal
+digits and dash (@samp{-}). Other characters are considered non-printable.
+For example:
 
 @smallexample
 qprn("a string/value") @result{} "a%20string%2Fvalue"
 @end smallexample
 @noindent
+@end deftypefn
+
+@deftypefn Function string quote_string (string @var{str})
+Replace all non-printable characters in string @var{str} by their
+three-digit octal code prefixed with a backslash, or by their C
+escape notation, as appropriate. @dfn{Non-printable} characters
+depend on the locale settings. For example, suppose that the current
+locale is set to ISO-8859-1 (a so called ``Latin-1'' character set)
+and @point{} represents a tab character. Then:
+
+@smallexample
+quote_string("Fran@,{c}ois contains non@point{}printable chars")
+  @result{} "Fran\347ois contains non\tprintable chars"
+@end smallexample  
+@end deftypefn
+
+@deftypefn Function string unquote_string (string @var{str})
+Replace C escape notations in string @var{str} with corresponding
+characters using current locale. For example, for ISO-8859-1 locale:
+
+@smallexample
+unquote_string("Fran\347ois") @result{} "Fran@,{c}ois"
+@end smallexample
 @end deftypefn
 
 @deftypefn Function string toupper (string @var{str})
@@ -1297,6 +1367,15 @@ converted to lower case. For example:
 
 @smallexample
 tolower("A-STRING") @result{} "a-string"
+@end smallexample
+@end deftypefn
+
+@deftypefn Function string request_code_string (integer @var{code})
+Converts integer RADIUS request code to its abbreviated textual
+representation. This function is useful in logging hooks (@pxref{hooks}).
+
+@smallexample
+request_code_string(4) @result{} "ACCTREQ"
 @end smallexample
 @end deftypefn
 

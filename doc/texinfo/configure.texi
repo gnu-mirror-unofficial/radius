@@ -288,6 +288,8 @@ Specifies the accounting directory.
 
 @smallexample
 logging @{
+        [ prefix-hook @var{string} ; ]
+        [ suffix-hook @var{string} ; ]
         [ category category_spec @{
                 [ channel channel_name ; ]
                 [ print-auth @var{bool} ; ]
@@ -305,6 +307,8 @@ logging @{
                 [ print-priority @var{bool} ; ]
                 [ print-tid @var{bool}; ]
                 [ print-milliseconds @var{bool}; ]
+                [ prefix-hook @var{string} ; ]
+                [ suffix-hook @var{string} ; ]
         @}; ]
 @} ;
 
@@ -318,10 +322,43 @@ The @code{logging} statement describes the course followed by
 The parts of this statement are discussed below.
 
 @menu
+* hooks::            Logging hooks
 * category::         @code{category} statement.
 * channel::          @code{channel} statement.
 * logging example::  Example of the @code{logging} statement.
 @end menu
+
+@comment **L4***************************************************************
+@node hooks
+@subsubsection Logging hooks
+@cindex Logging hook
+@kwindex prefix-hook
+@kwindex suffix-hook
+
+Most diagnostic messages displayed by @command{radiusd} describe
+some events that occured while processig a certain incoming request.
+By default they contain only a short summary of the event.
+@dfn{Logging hooks} are means of controlling actual amount of
+information displayed in such messages. They allow you to add to the
+message being displayed any relevant information from the incoming
+request that caused the message to appear.
+
+A @dfn{hook} is a special Rewrite function that takes three arguments
+and returns a string. There are two kinds of logging hooks: @dfn{prefix}
+and @dfn{suffix}. Return value from the prefix hook function will
+be displayed before the actual log message, that of the suffix hook
+function will be displayed after the message.
+
+Furthermore, there may be @dfn{global} and @dfn{channel-specific
+hooks}. Global hooks apply to all categories, unless overridden by
+category-specific hooks. Global prefix hook is enabled by
+@code{prefix-hook} statement appearing in the @code{logging} block.
+Global suffix hook is enabled by @code{suffix-hook} statement.
+Both statements take as their argument the name of corresponding
+Rewrite function.
+
+For detailed information about writing logging hooks,
+@xref{Logging Hook Functions}.
 
 @comment **L4***************************************************************
 @node category
@@ -392,6 +429,8 @@ Include passwords for failed authentications.
 @kwindex print-priority
 @kwindex print-tid
 @kwindex print-milliseconds
+@kwindex prefix-hook
+@kwindex suffix-hook
 
 Channels represent methods for recording logging information.  Each
 channel has a unique name, and any categories which specify that name in
@@ -417,6 +456,12 @@ Add the category name to the logging information.
 Add the priority name to the logging information.
 @item print-milliseconds
 Print timestamp with milliseconds.
+@item prefix-hook
+Declares the name of Rewrite function used as logging prefix hook for that
+channel (@pxref{hooks}). This overrides any global prefix hook.
+@item suffix-hook
+Declares the name of Rewrite function used as logging suffix hook for that
+channel (@pxref{hooks}). This overrides any global suffix hook.
 @end table
 
 @comment **L4***************************************************************
@@ -1393,6 +1438,25 @@ Specifies a hostname or @IP{} of the @NAS{}.
 Lists the encryption key shared between the server and this @NAS{}.
 @end table
 
+If the set of @NAS{}es share the same encryption key, there are two
+ways to list it in @file{raddb/clients}. First, if these @NAS{}es
+lie in a single network, you can specify this network address in
+@code{NAS name} field, e.g.:
+
+@smallexample
+10.10.10.0/27   seCRet
+@end smallexample
+
+Notice also that specifying full netmask after the @samp{/} character is
+also allowed, so that the above example could also be written as follows:
+
+@smallexample
+10.10.10.0/255.255.255.224   seCRet
+@end smallexample
+
+Otherwise, the keyword DEFAULT may be used as @code{NAS name}. This
+notation will match any @IP{}, so it should be used with caution.
+
 @menu
 * Example: clients example.     An example of clients file.
 @end menu
@@ -1429,9 +1493,9 @@ the first two being mandatory, the last two being optional:
 
 @table @asis
 @item NAS name
-Specifies a hostname or @IP{} of the @NAS{}. The word @samp{DEFAULT} may
-be used in this field to match any @NAS{}.
-@footnote{Logins from DEFAULT @NAS{}es are not reflected in SNMP variables.}
+Specifies either a hostname or @IP{} for a single @NAS{} or a CIDR net block
+address for a set of @NAS{}es. The word @samp{DEFAULT} may
+be used in this field to match any @NAS{}. @footnote{Logins from DEFAULT @NAS{}es are not reflected in SNMP variables.}
 
 @item Short Name
 This field defines a short name under which this @NAS{} will be listed

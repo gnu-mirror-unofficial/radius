@@ -191,14 +191,14 @@ typedef struct {
         int nas_index; /* Next available NAS index */
         Auth_server_stat auth;
         Acct_server_stat acct;
-        struct nas_stat *nas_head, *nas_tail;
-        struct port_stat *port_head, *port_tail;
+        /* struct nas_stat naslist[nas_count];
+	   struct port_stat portlist[port_count]; */
 } Server_stat;
 
 #define stat_inc(m,a,c) \
- do {\
+ do if (server_stat) {\
         NAS *nas;\
-        server_stat . m . c ++;\
+        server_stat -> m . c ++;\
         if ((nas = nas_lookup_ip(a)) != NULL && nas->app_data)\
                 ((struct nas_stat*)nas->app_data)-> m . c ++;\
  } while (0)
@@ -209,8 +209,7 @@ typedef struct snmp_req {
         struct snmp_pdu *pdu;
         char *community;
         int access;
-        struct sockaddr_in sa;
-        int fd;
+	struct sockaddr_in addr;
 } SNMP_REQ;
 
 #else
@@ -292,7 +291,7 @@ extern u_int scheme_task_timeout;
 #ifdef USE_SNMP
 extern int snmp_port;
 extern char *server_id;
-extern Server_stat server_stat;
+extern Server_stat *server_stat;
 extern struct cfg_stmt snmp_stmt[];
 #endif
 extern int auth_comp_flag; 
@@ -334,11 +333,14 @@ void request_fail(int type, struct sockaddr_in *addr);
 void request_init_queue();
 void *request_scan_list(int type, list_iterator_t itr, void *closure);
 void request_set_status(pid_t pid, int status);
-
+int request_stat_list(QUEUE_STAT stat);
+	
 /* radiusd.c */
 int udp_input_handler(int fd, void *data);
 int udp_input_close(int fd, void *data);
 int udp_input_cmp(const void *a, const void *b);
+
+int udp_open(int type, UINT4 ipaddr, int port, int nonblock);
 
 void radiusd_pidfile_write(char *name);
 pid_t radiusd_pidfile_read(char *name);
@@ -352,6 +354,9 @@ void radiusd_flush_queue();
 void radiusd_exit();
 void radiusd_reconfigure();
 int radiusd_master();
+void radiusd_set_preconfig_hook(void (*f)(void *, void *), void *p, int once);
+void radiusd_set_postconfig_hook(void (*f)(void *, void *), void *p, int once);
+
 
 /* exec.c */
 int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **, int, char **);
@@ -404,6 +409,15 @@ void radius_req_xmit(REQUEST *request);
 int radius_req_failure(int type, struct sockaddr_in *addr);
 void radius_req_update(void *req_ptr, void *data_ptr);
 int radius_respond(REQUEST *req);
+
+/* shmem.c */
+int shmem_alloc(size_t size);
+void shmem_free();
+void *shmem_get(size_t size, int zero);
+
+
+
+
 
 /*FIXME*/
 /* acct.c */
@@ -513,14 +527,13 @@ int stat_get_next_port_no(NAS *nas, int port_no);
 #endif
 
 /* snmpserver.c */
-struct sockaddr_in;
-struct snmp_req * rad_snmp_respond(u_char *buf, int len,
-                                   struct sockaddr_in *sa);
-int snmp_req_cmp(struct snmp_req *a, struct snmp_req *b);
-void snmp_req_free(struct snmp_req  *req);
-void snmp_req_drop(int type, struct snmp_req *req, struct snmp_req *orig_req,
+int snmp_req_decode(struct sockaddr_in *sa,
+		    void *input, size_t inputsize, void **output);
+int snmp_req_cmp(void *ap, void *bp);
+void snmp_req_free(void *ptr);
+void snmp_req_drop(int type, void *data, void *orig_data,
 		   int fd, char *status_str);
-int snmp_answer(struct snmp_req *req, int fd);
+int snmp_req_respond(REQUEST *request);
         
 /* radutil.c */
 char *radius_xlate(struct obstack *obp, char *str,

@@ -26,7 +26,7 @@ $INCLUDE dict/livingston		## Livingston compatibility
 ## syntax flags: [us-hi-hu]
 ATTRIBUTE	User-Name		1	string	- [LR-RLR]
 ATTRIBUTE	User-Password		2	string	- [L-----]
-ATTRIBUTE	CHAP-Password		3	string	- [L-----]
+ATTRIBUTE	CHAP-Password		3	string	- [L-----]b
 ATTRIBUTE	NAS-IP-Address		4	ipaddr	- [L--RLR]
 ATTRIBUTE	NAS-Port-Id		5	integer	- [LR-RLR]
 ATTRIBUTE	Service-Type		6	integer	- [LR-RLR]=P	
@@ -75,7 +75,7 @@ ATTRIBUTE	Acct-Terminate-Cause	49	integer	- []
 ATTRIBUTE	Acct-Multi-Session-Id	50	integer	- []
 ATTRIBUTE	Acct-Link-Count		51	integer	- []
 
-ATTRIBUTE	CHAP-Challenge		60	string	- []
+ATTRIBUTE	CHAP-Challenge		60	string	- []b
 ATTRIBUTE	NAS-Port-Type		61	integer	- []
 ATTRIBUTE	Port-Limit		62	integer	- []P
 ATTRIBUTE	Login-LAT-Port		63	integer	- []

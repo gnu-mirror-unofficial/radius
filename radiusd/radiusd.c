@@ -95,7 +95,9 @@ int spawn_flag;
 
 int use_dbm = 0;
 int auth_detail = 0;
-int acct_detail = 1;      
+int acct_detail = 1;
+int auth_trace_rules = 0;
+int acct_trace_rules = 0;
 int strip_names;
 int suspend_flag;
 
@@ -1262,6 +1264,8 @@ struct cfg_stmt auth_stmt[] = {
 	{ "compare-attribute-flag", CS_STMT, NULL,
 	  cfg_get_integer, &auth_comp_flag,
 	  NULL, NULL },
+	{ "trace-rules", CS_STMT, NULL, cfg_get_boolean, &auth_trace_rules,
+	  NULL, NULL },
 	/* Obsolete statements */
 	{ "spawn", CS_STMT, NULL, cfg_obsolete, NULL, NULL, NULL },
 	{ NULL, }
@@ -1283,6 +1287,8 @@ struct cfg_stmt acct_stmt[] = {
 	  NULL, NULL },
 	{ "compare-attribute-flag", CS_STMT, NULL,
 	  cfg_get_integer, &acct_comp_flag,
+	  NULL, NULL },
+	{ "trace-rules", CS_STMT, NULL, cfg_get_boolean, &acct_trace_rules,
 	  NULL, NULL },
 	/* Obsolete statements */
 	{ "spawn", CS_STMT, NULL, cfg_obsolete, NULL, NULL, NULL },

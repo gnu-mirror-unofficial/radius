@@ -439,7 +439,7 @@ void radius_req_update(void *req_ptr, void *data_ptr);
 int radius_respond(REQUEST *req);
 void radius_req_register_locus(RADIUS_REQ *req, LOCUS *loc);
 void radius_trace_path(RADIUS_REQ *req);
-VALUE_PAIR *radius_decrypt_request_pairs(RADIUS_REQ *req);
+VALUE_PAIR *radius_decrypt_request_pairs(RADIUS_REQ *req, VALUE_PAIR *pair);
 void radius_destroy_pairs(VALUE_PAIR **p);
 
 /* shmem.c */

@@ -1,3 +1,16 @@
+2004-09-22  Sergey Poznyakoff
+
+	* NEWS: Updated version number to 1.2.95
+	* configure.ac: Likewise
+	* lib/radpdu.c: Print IP addresses in debugging messages in
+	dotted-quad notation.
+	* lib/radsrv.c: Likewise
+	* radiusd/rpp.c (pipe_write, pipe_read): Fixed timeout calculation.
+	Improved debugging diagnostics. Set errno on errors.
+	(rpp_fd_read,rpp_fd_write): Improved debugging diagnostics
+	(_rpp_slay): Take an additional argument describing why the
+	function is called. Corrected notice message. All callers updated.
+	
 2004-09-18  Sergey Poznyakoff
 
 	* radiusd/auth.c (unix_pass): Bugfix

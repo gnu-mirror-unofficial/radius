@@ -623,7 +623,7 @@ check_ts(struct radutmp *ut)
         /* Find NAS type. */
         if ((nas = nas_lookup_ip(ntohl(ut->nas_address))) == NULL) {
                 radlog(L_NOTICE, _("check_ts(): unknown NAS"));
-                return 0; 
+                return -1; 
         }
 
         /* Handle two special types */

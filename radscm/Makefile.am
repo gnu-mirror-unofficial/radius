@@ -18,7 +18,7 @@ ETAGS_ARGS = --regex='/SCM_\(GLOBAL_\)?\(G?PROC\|G?PROC1\|SYMBOL\|VCELL\|CONST_L
    --regex='/[ \t]*SCM_[G]?DEFINE1?[ \t]*(\([^,]*\),[^,]*/\1/'
 
 radscm_LDADD=@GUILE_LIBS@ ../radlib/liblog.la ../radlib/librad.la ../radlib/libdebug.la 
-pkgdata_DATA=boot.scm session.scm radctl.scm guile-procedures.txt
+pkgdata_DATA=boot.scm session.scm guile-procedures.txt
 BUILT_SOURCES=radscm.x radscm.doc 
 
 EXTRA_DIST=boot.scm session.scm radctl.scm radscm.x radscm.doc 

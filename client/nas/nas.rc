@@ -1,0 +1,31 @@
+;; This is a sample configuration file for radctl and session
+;; scripts.
+(set! rad-server-list
+      '(("local" "localhost" "guessme" 1645 1646 0)))
+(define nas-ip "127.0.0.1")
+(rad-client-source-ip nas-ip)
+(rad-client-timeout 10)
+(rad-client-retry 3)
+(rad-select-server "emris")
+
+(set! nas-log-facility LOG_LOCAL4)
+(set! pppd-args (list
+                "crtscts"
+                "asyncmap" "0x000A0000"
+                "lock" 
+                "-detach"
+                "idle" "600"
+                "mtu" "296" 
+                "mru" "296"))
+
+(set! port-list (list
+		 (cons "/dev/ttyS0"	1)
+		 (cons "/dev/ttyS1"	2)
+	 	 (cons "/dev/ttyS4"	3)
+                 (cons "/dev/ttyS5"	4)
+                 (cons "/dev/ttyS6"	5)
+                 (cons "/dev/ttyS7"	6)
+                 (cons "/dev/ttyS8"	7)
+                 (cons "/dev/ttyS9"	8)
+                 (cons "/dev/ttyS10"	9)
+                 (cons "/dev/ttyS11"	10)))

@@ -276,6 +276,7 @@ extern int auth_trace_rules;
 extern int acct_trace_rules;
 extern int strip_names;
 extern int checkrad_assume_logged;
+extern int auth_reject_malformed_names;
 extern size_t max_requests;
 extern size_t max_children;
 extern unsigned process_timeout;

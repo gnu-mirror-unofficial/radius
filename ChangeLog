@@ -1,3 +1,54 @@
+2002-03-25  Sergey Poznyakoff
+
+	Switched to GNU argp functions for parsing command line
+	options. 
+
+	* radlib/argp-ba.c: (new).
+	* radlib/argp-eexst.c: (new).
+	* radlib/argp-fmtstream.c: (new).
+	* radlib/argp-fs-xinl.c: (new).
+        * radlib/argp-help.c: (new).
+	* radlib/argp-parse.c: (new).
+	* radlib/argp-pv.c: (new).
+	* radlib/argp-pvh.c: (new).
+	* radlib/argp-xinl.c: (new).
+	* radlib/argp-fmtstream.h: (new).
+	* radlib/argp-namefrob.h: (new).
+	* radlib/argp.h: (new).
+	* radlib/pin.c: (new).
+	* radlib/strchrnul.c: (new).
+	* radlib/strndup.c: (new).
+	* radlib/strnlen.c: (new).
+	* radlib/radargp.c: (new) Radius-specific command line
+	  handling.
+	* radlib/Makefile.am: Added new sources.
+	* configure.in: Check for argp stuff.
+
+	* include/radargp.h: (new)
+	* include/Makefile.am: Removed getopt1.h, added radargp.h
+
+	* radiusd/radiusd.c: Use rad_argp_parse().
+	* radiusd/version.c: Changed version() to fit
+	  argp_program_version_hook declaration.
+	* radlast/radlast.c: Use rad_argp_parse().
+	* raduse/raduse.c: Likewise.
+	* radwho/radwho.c: Likewise.
+	* radzap/radzap.c: Likewise.
+	* radtest/main.c: Likewise.
+	
+	* radlast/Makefile.am: Added -I$(top_srcdir)/radlib
+	* raduse/Makefile.am: Likewise.
+	* radwho/Makefile.am: Likewise.
+	* radzap/Makefile.am: Likewise.
+	* radtest/Makefile.am: Likewise.
+	
+	* radscm/main.c: Removed include <getopt1.h>
+	* radtest/radtest.h: Removed not needed externs.
+	* radiusd/.gdbinit: Ignore SIGPIPE
+	* doc/MACHINES: Added entry about Hurd (forgotten to
+	  commint 2002-03-21?)
+	* TODO: Updated. 
+
 2002-03-22  Sergey Poznyakoff
 
         * radlib/users.l (pop_source): Zero out yyin when no more

@@ -174,7 +174,7 @@ static struct signal_list {
         1, SIGHUP,  sig_hup,
         0, SIGQUIT, sig_fatal,
         0, SIGTERM, sig_fatal,
-        0, SIGCHLD, SIG_IGN,
+        0, SIGCHLD, SIG_DFL,
         0, SIGPIPE, SIG_IGN,
         0, SIGBUS,  sig_fatal,
         0, SIGTRAP, sig_fatal,

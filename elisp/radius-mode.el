@@ -279,12 +279,33 @@ or indent the current line"
             (insert str)
             (goto-char (+ (point) (- here to))))
            (t
-            (goto-char here))) )))
+            (goto-char here))) )
+      (goto-char here)))
   (and c (insert c)) )
 
 (defun rad-electric-equal (arg)
   (interactive "p")
-  (rad-complete "\\W\\(\\w+\\)\\s *" rad-attr-dict nil "attribute: " ?=))
+  (let ((c (save-excursion
+	     (let ((here (point))
+		   (bol (save-excursion (beginning-of-line) (point))))
+	       (cond
+		((and (save-excursion
+			(search-backward-regexp
+			 "\\(=\\s *\"[^\"]*\"\\s *\\)\\|\\(=[^,\"]*\\)\\|\\(,\\s *\\)"
+						bol t))
+		      (= (match-end 0) here))
+		 nil)
+		((and (search-backward-regexp "=\\s *\"[^\"]*" bol t)
+		      (= (match-end 0) here))
+		 ?=)
+		(t
+		 t))))))
+    (if c
+	(if (char-or-string-p c)
+	    (insert c)
+	  (rad-complete "\\W+\\(\\w+\\)\\s *"
+			rad-attr-dict nil "attribute: " ?=))
+      (message "wrong context!"))))
 
 (defun rad-select-attr-values (dict)
   (save-excursion
@@ -300,8 +321,24 @@ or indent the current line"
 
 (defun rad-electric-comma (arg)
   (interactive "p")
-  (rad-complete "=\\s *\\(\\w+\\)" rad-value-dict
-                'rad-select-attr-values "value: " ?,))
+  (let ((c (save-excursion
+	     (let ((here (point))
+		   (bol (save-excursion (beginning-of-line) (point))))
+	       (cond
+		((and (search-backward-regexp ",\\s *"  bol t)
+		      (= (match-end 0) here))
+		 nil)
+		((and (search-backward-regexp "\"" bol t)
+		      (= (match-end 0) here))
+		 ?,)
+		(t
+		 t))))))
+    (if c
+	(if (char-or-string-p c)
+	    (insert c)
+	  (rad-complete "=\\s *\\(\\w+\\)" rad-value-dict
+			'rad-select-attr-values "value: " ?,))
+      (message "wrong context!"))))
 
 ;; Wrapper for rad-{next,prev}-profile functions
 ;; Arguments: dir   -- seek direction, either 1 or -1

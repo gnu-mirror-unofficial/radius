@@ -1514,7 +1514,7 @@ dom.ain                 server.dom.ain:3000
 @cindex @file{raddb/users} file
 
 File @file{raddb/users} contains the database of Radius users.
-@xref{User Profile} for a description of its syntax.
+@xref{User Profile}, for a description of its syntax.
 
 Each record in the file describes a user's profile. When trying
 to find a match for an input request, @code{radiusd} uses the

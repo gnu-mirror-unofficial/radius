@@ -43,7 +43,7 @@ static char rcsid[] =
 #include <signal.h>
 #include <errno.h>
 #include <sys/wait.h>
-#if defined(HAVE_GETOPT_LONG)
+#if defined(HAVE_GETOPT_H)
 # include <getopt.h>
 #endif
 #include <radiusd.h>
@@ -445,6 +445,7 @@ main(argc, argv)
 	else
 		acct_port = ntohs(svp->s_port);
 	
+	snmp_init(0, 0, emalloc, efree);
 	/*
 	 *	Read config files.
 	 */
@@ -1702,8 +1703,8 @@ test_shell()
 	struct radutmp ut;
 	Datatype type;
 	Datum datum;
-	
-#define nextkn() if ((tok = strtok(NULL, " \t")) == NULL) {\
+#define opttkn() (tok = strtok(NULL, " \t"))
+#define nextkn() if (opttkn() == NULL) {\
  printf("arg count\n");\
  continue; }  
 #define chktkn() if (!tok) { \
@@ -1726,12 +1727,12 @@ test_shell()
 			continue;
 		case 'h':
 		case '?':
-			printf("h,?                     help\n");
-			printf("q,<EOF>                 quit\n");
-			printf("c LOGIN SID PORT NAS    checkrad\n");
-			printf("r FUNCALL               function call\n");
-			printf("d LEVEL[,LEVEL]         set debug level\n");
-			printf("m                       display memory usage\n"); 
+			printf("h,?                       help\n");
+			printf("q,<EOF>                   quit\n");
+			printf("c NAS LOGIN SID PORT [IP] checkrad\n");
+			printf("r FUNCALL                 function call\n");
+			printf("d LEVEL[,LEVEL]           set debug level\n");
+			printf("m                         display memory usage\n"); 
 			break;
 		case 'd':
 			chktkn();
@@ -1741,18 +1742,21 @@ test_shell()
 			return 0;
 		case 'c': /* checkrad */
 			chktkn();
-			strncpy(ut.orig_login, tok, sizeof(ut.orig_login));
-			nextkn();
-			strncpy(ut.session_id, tok, sizeof(ut.session_id));
-			nextkn();
-			ut.nas_port = atoi(tok);
-			nextkn();
 			nas = nas_by_name(tok);
 			if (!nas) {
 				printf("bad nas\n");
 				continue;
 			}
 			ut.nas_address = nas->ipaddr;
+
+			nextkn();
+			strncpy(ut.orig_login, tok, sizeof(ut.orig_login));
+			nextkn();
+			strncpy(ut.session_id, tok, sizeof(ut.session_id));
+			nextkn();
+			ut.nas_port = atoi(tok);
+			if (opttkn()) 
+				ut.framed_address = ipstr2long(tok);
 			printf("%d\n", checkrad(nas, &ut));
 			break;
 		case 'r':

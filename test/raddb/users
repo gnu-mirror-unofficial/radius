@@ -1,13 +1,3 @@
-ROOT	Auth-Type = Crypt-Local,
-		Password = "$1$r22sA$AfVF2TR2ETWaknXsAZAc41",
-		Huntgroup-Name = "ROOT"
-	Service-Type = RADIUS-Administrative-User
-
-OPERATOR	Auth-Type = Local,
-		Password = "test",
-		Huntgroup-Name = "OPERATOR"
-	Service-Type = RADIUS-Administrative-User
-
 claudius	Auth-Type = Crypt-Local,
 		Password = "$1$gHpum$PvsdB6vnsTt.wC0xPDkar/",
 		Simultaneous-Use = 1

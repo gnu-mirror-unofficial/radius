@@ -250,7 +250,8 @@ _read_client_config(pam_handle_t *pamh, char *name)
 	char *tok, *arg;
 	SERVER serv;
 	int tokid;
-	
+	struct timeval tv;
+
 	if ((fp = fopen(name, "r")) == NULL) {
 		_pam_log(LOG_ERR,
 			 "can't open configuration file `%s': %s",
@@ -259,6 +260,9 @@ _read_client_config(pam_handle_t *pamh, char *name)
 	}
 
 	radclient = radclient_alloc(0x7f000001, 0);
+	gettimeofday(&tv, NULL);
+	srand(tv.tv_usec);
+	radclient->messg_id = random() % 256;
 	memset(&serv, 0, sizeof(serv));
 	
 	while (ptr = fgets(buf, sizeof(buf), fp)) {

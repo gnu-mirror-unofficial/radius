@@ -99,34 +99,6 @@ clear_debug()
 		debug_level[ debug_module[i].modnum ] = 0;
 }
 
-void
-debug_output(module, line, function, msg)
-	char *module;
-	int  line;
-	char *function;
-	char *msg;
-{
-	if (function)
-		radlog(L_DBG, "%s:%d:%s:%s", module, line, function, msg);
-	else
-		radlog(L_DBG, "%s:%d:%s", module, line, msg);
-}	
-
-/*PRINTFLIKE1*/
-char *
-debug_sprintf(msg, va_alist)
-	char *msg;
-	va_dcl
-{
-	va_list ap;
-	static char debug_buffer[RADIUS_DEBUG_BUFFER_SIZE];
-
-	va_start(ap);
-	radvsprintf(debug_buffer, sizeof(debug_buffer), msg, ap);
-	va_end(ap);
-	return debug_buffer;
-}
-
 #else
 
 #include <radius.h>

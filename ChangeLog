@@ -1,5 +1,12 @@
 2003-11-03  Sergey Poznyakoff
 
+	Two more bugfixes. Thanks Maurice for pointing.
+	
+	* lib/dict.c (_dict_attribute): Bugfix. 
+	* radiusd/config.y: Bugfix.
+
+2003-11-03  Sergey Poznyakoff
+
 	* radiusd/acct.c (write_detail): Minor change.
 	* radiusd/auth.c (rad_auth_init): Changed 2nd arg to write_detail.
 	(sfn_init): Return MSG_ACCESS_DENIED if an invalid username was
@@ -11,6 +18,31 @@
 	authentications requests only.
 	* radiusd/radiusd.c (radiusd_postconfig_hook): Bugfix.
 
+2003-11-02  Sergey Poznyakoff 
+
+	* include/radius.h (struct radius_req): New member remote_auth.
+	Keeps the authenticator used to forward the request to the
+	remote host.
+	(rad_clt_decrypt_pairlist): New function.
+	* lib/client.c (rad_clt_decrypt_pairlist): New function.
+	(rad_clt_recv): Save the pointer to the shared secret in the
+	returned RADIUS_REQ.
+	* lib/cryptpass.c (encrypt_tunnel_password)
+	(crypt_tunnel_password): Fixed to comply to RFC 2868. Thanks
+	Maurice.
+	* raddb/dict/tunnel (Tunnel-Password): Marked with P
+	* radiusd/proxy.c: Provide for proper recoding of the encrypted
+	attributes.
+	* radiusd/testsuite/proxy/Makefile.am: Added dict.tunnel
+	* radiusd/testsuite/raddb/Makefile.am: Likewise
+	* radiusd/testsuite/raddb/users.in: New test user 'tunnel'
+	* radiusd/testsuite/radiusd/proxy.exp: Added test for proxying
+	Tunnel-Password pair.
+	* radiusd/testsuite/radiusd/radiusd.exp: Added Tunnel-Password
+	pair test.
+	* radtest/main.c (radtest_send): Decrypt the returned pair list.
+	* radiusd/rewrite.y (debug_print_mtxlist): Fixed coredumps.
+	
 2003-11-02  Sergey Poznyakoff 
 
 	* include/radius.h (rad_clt_encrypt_pairlist): New function.

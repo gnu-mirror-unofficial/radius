@@ -351,15 +351,15 @@ static struct keyword kwd[] = {
 };
 
 static int
-parse_client_config(RADIUS_SERVER_QUEUE *client, int argc, char **argv,
-		    char *file, int lineno)
+parse_client_config(void *closure, int argc, char **argv, LOCUS *loc)
 {
+	RADIUS_SERVER_QUEUE *client = closure;
         char *p;
         RADIUS_SERVER serv;
         
         switch (xlat_keyword(kwd, argv[0], TOK_INVALID)) {
         case TOK_INVALID:
-                radlog(L_ERR, "%s:%d: unknown keyword", file, lineno);
+                radlog_loc(L_ERR, loc, _("unknown keyword"));
                 break;
                 
         case TOK_SOURCE_IP:
@@ -368,8 +368,7 @@ parse_client_config(RADIUS_SERVER_QUEUE *client, int argc, char **argv,
                 
         case TOK_SERVER:
                 if (argc != 6) {
-                        radlog(L_ERR, "%s:%d: wrong number of fields",
-                               file, lineno);
+                        radlog_loc(L_ERR, loc, _("wrong number of fields"));
                         break;
                 }
                 memset(&serv, 0, sizeof serv);
@@ -377,9 +376,8 @@ parse_client_config(RADIUS_SERVER_QUEUE *client, int argc, char **argv,
                 serv.name = argv[1];
                 serv.addr = ip_gethostaddr(argv[2]);
                 if (!serv.addr) {
-                        radlog(L_ERR,
-                               "%s:%d: bad IP address or host name",
-                               file, lineno);
+                        radlog_loc(L_ERR, loc,
+				   _("bad IP address or host name"));
                         break;
                 }
                 
@@ -387,17 +385,15 @@ parse_client_config(RADIUS_SERVER_QUEUE *client, int argc, char **argv,
 
                 serv.port[0] = strtol(argv[4], &p, 0);
                 if (*p) {
-                        radlog(L_ERR,
-                               "%s:%d: bad port number %s",
-                               file, lineno, argv[4]);
+                        radlog_loc(L_ERR, loc, _("bad port number %s"),
+				   argv[4]);
                         break;
                 }
 
                 serv.port[1] = strtol(argv[5], &p, 0);
                 if (*p) {
-                        radlog(L_ERR,
-                               "%s:%d: bad port number %s",
-                               file, lineno, argv[4]);
+                        radlog_loc(L_ERR, loc, _("bad port number %s"),
+				   argv[4]);
                         break;
                 }
 
@@ -406,18 +402,14 @@ parse_client_config(RADIUS_SERVER_QUEUE *client, int argc, char **argv,
                 
         case TOK_TIMEOUT:
                 client->timeout = strtol(argv[1], &p, 0);
-                if (*p) {
-                        radlog(L_ERR,
-                               "%s:%d: bad timeout value", file, lineno);
-                }
+                if (*p) 
+                        radlog_loc(L_ERR, loc,  _("bad timeout value"));
                 break;
                 
         case TOK_RETRY:
                 client->retries = strtol(argv[1], &p, 0);
-                if (*p) {
-                        radlog(L_ERR,
-                               "%s:%d: bad retry value", file, lineno);
-                }
+                if (*p) 
+                        radlog_loc(L_ERR, loc, _("bad retry value"));
                 break;
         }
         return 0;

@@ -1,3 +1,8 @@
+2004-11-01  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.ac: Allow to set LEAK_DETECT from the command line.
+	* radiusd/log.c: Added comment
+	
 2004-11-01  Sergey Poznyakoff 
 
 	* lib/list.c (grad_iterator_attach,grad_iterator_detach): New

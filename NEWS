@@ -34,6 +34,12 @@ doc/README.ipalloc for more info.
 
 * Important differences in behaviour compared to the 0.96 series
 
+** The default ports are now 1812 for authentication and 1813 for
+accounting, as per RFC 2865. If you wish to continue using old
+port values (1645/1646), invoke configure with --with-auth-port=old
+option. Alternatively, you may use `listen' statement in your
+raddb/config to change the compilation defaults.
+
 ** Additional information in logs.
 
 Whenever possible, radius displays in its logs the additional

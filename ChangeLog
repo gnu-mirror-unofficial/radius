@@ -1,8 +1,11 @@
-2003-06-23  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+2003-06-23  Sergey Poznyakoff 
+
+	-== Version 1.0 released ==-
+
+2003-06-23  Sergey Poznyakoff 
 
 	* NEWS: Updated
 	* configure.ac: Raised version number to 1.0
-	* doc/texinfo/configure.texi: Documented missing keywords.
 	* examples/hints-0.96: New file.
 	* examples/Makefile.am: Added hints-0.96
 	* examples/pam.conf: Added copyleft header

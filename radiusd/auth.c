@@ -1,3 +1,4 @@
+#define EMBEDDED_EXPIRATION_INFO
 /* This file is part of GNU Radius
    Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
@@ -82,6 +83,41 @@ check_user_name(char *p)
 
 LOCK_DECLARE(lock)
 
+#ifdef EMBEDDED_EXPIRATION_INFO	
+static char base64[] =         /* 0 ... 63 => ascii - 64 */
+        "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+static int
+from_base64(u_char *data, int len, unsigned int *value)
+{
+	*value = 0;
+	while (len--) {
+		char *p = strchr(base64, *data++);
+		if (!p)
+			return 1;
+		*value <<= 6;
+		*value += p - base64;
+	}
+	return 0;
+}
+	
+static int
+decode_aging_info(char *p, u_int *maxweeks, u_int *minweeks, u_int *lastchange)
+{
+	if (from_base64(p, 1, maxweeks))
+		return 1;
+	p++;
+	if (from_base64(p, 1, minweeks))
+		return 1;
+	p++;
+	if (from_base64(p, 2, lastchange))
+		return 1;
+	if (p[2])
+		return 1;
+	return 0;
+}
+#endif	
+	
 static enum auth_status
 unix_expiration(char *name, time_t *exp)
 {
@@ -125,6 +161,45 @@ unix_expiration(char *name, time_t *exp)
 		}
 		*exp = t;
 # endif
+	}
+#endif
+#ifdef EMBEDDED_EXPIRATION_INFO
+	if (status == auth_ok) {
+		struct passwd *pwd;
+		char *p;
+#define SECS_IN_WEEK 604800
+	
+		if (pwd = getpwnam(name)) {
+			p = strchr(pwd->pw_passwd, ',');
+			if (p) {
+				u_int maxweeks, minweeks, lastchange;
+			
+				if (decode_aging_info(p+1,
+						      &maxweeks,
+						      &minweeks,
+						      &lastchange) == 0) {
+					time_t now = time(NULL);
+					time_t nweeks = now / SECS_IN_WEEK
+						        - lastchange;
+					
+					if (maxweeks == minweeks)
+						return auth_password_expired;
+				
+					if (nweeks >= minweeks
+					    && nweeks >= maxweeks)
+						return auth_password_expired;
+
+					*exp = (maxweeks - nweeks)
+						* SECS_IN_WEEK
+						+ now % SECS_IN_WEEK;
+					status = auth_valid;
+				} else { /* Invalid password data? */
+					grad_log(L_NOTICE,
+						 _("Invalid password aging information for user '%s'"), name);
+					status = auth_fail;
+				}
+			}
+		}
 	}
 #endif
 	return status;
@@ -176,10 +251,18 @@ unix_pass(char *name, char *passwd)
         /*
          * Check encrypted password.
          */
-        pwlen = strlen(encrypted_pass)+1;
-        encpw = grad_emalloc(pwlen);
-        rc = grad_md5crypt(passwd, encrypted_pass, encpw, pwlen) == NULL
-                || strcmp(encpw, encrypted_pass);
+        pwlen = strlen(encrypted_pass);
+        encpw = grad_emalloc(pwlen+1);
+#ifdef EMBEDDED_EXPIRATION_INFO
+ {
+	/* Some systems append expiration data to the encrypted password */
+	char *p = strchr(encrypted_pass, ',');
+	if (p) 
+		pwlen = p - encrypted_pass;
+ }
+#endif
+        rc = grad_md5crypt(passwd, encrypted_pass, encpw, pwlen+1) == NULL
+                || memcmp(encpw, encrypted_pass, pwlen);
         grad_free(encpw);
 	grad_free(encrypted_pass);
         if (rc)

@@ -30,7 +30,6 @@ radiusd/radius.c
 radiusd/radiusd.c
 radiusd/radutil.c
 radiusd/request.c
-radiusd/rewrite.c
 radiusd/rewrite.y
 radiusd/scheme.c
 radiusd/snmpserv.c

@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <mem.h>
 #include <list.h>
+#include <assert.h>
 
 struct list_entry {
 	struct list_entry *next;
@@ -30,14 +31,22 @@ struct list_entry {
 
 struct list {
 	size_t count;
-	struct list_entry *head, *tail, *cur, *next;
+	struct list_entry *head, *tail;
+	struct iterator *itr;
+};
+
+struct iterator {
+	struct iterator *next;
+	LIST *list;
+	struct list_entry *cur;
 };
 
 struct list *
 list_create()
 {
 	struct list *p = emalloc(sizeof(*p));
-	p->head = p->tail = p->cur = p->next = NULL;
+	p->head = p->tail = NULL;
+	p->itr = NULL;
 	return p;
 }
 
@@ -61,47 +70,77 @@ list_destroy(struct list **plist, list_iterator_t user_free, void *data)
 	*plist = NULL;
 }
 
+void *
+iterator_current(ITERATOR *ip)
+{
+	if (!ip)
+		return NULL;
+	return ip->cur ? ip->cur->data : NULL;
+}
+
+ITERATOR *
+iterator_create(LIST *list)
+{
+	ITERATOR *itr;
+
+	if (!list)
+		return NULL;
+	itr = emalloc(sizeof(*itr));
+	itr->list = list;
+	itr->cur = NULL;
+	itr->next = list->itr;
+	list->itr = itr;
+	return itr;
+}
+
 void
-list_iterate(struct list *list, list_iterator_t itr, void *data)
+iterator_destroy(ITERATOR **ip)
 {
-	if (!list)
+	ITERATOR *itr, *prev;
+
+	if (!ip || !*ip)
 		return;
-	for (list->cur = list->head; list->cur; list->cur = list->next) {
-		list->next = list->cur->next;
-		if (itr(list->cur->data, data))
+	for (itr = (*ip)->list->itr, prev = NULL;
+	     itr;
+	     prev = itr, itr = itr->next)
+		if (*ip == itr)
 			break;
+	if (itr) {
+		if (prev)
+			prev->next = itr->next;
+		else
+			itr->list->itr = itr->next;
+		efree(itr);
+		*ip = NULL;
 	}
+		
+}
+		
+void *
+iterator_first(ITERATOR *ip)
+{
+	if (!ip)
+		return NULL;
+	ip->cur = ip->list->head;
+	return iterator_current(ip);
 }
 
 void *
-list_current(struct list *list)
+iterator_next(ITERATOR *ip)
 {
-	if (!list)
+	if (!ip || !ip->cur)
 		return NULL;
-	return list->cur ? list->cur->data : NULL;
-}
-
-void *
-list_first(struct list *list)
-{
-	if (!list)
-		return NULL;
-	list->cur = list->head;
-	if (list->cur)
-		list->next = list->cur->next;
-	return list_current(list);
-}
-
-void *
-list_next(struct list *list)
-{
-	if (!list || !list->next)
-		return NULL;
-	list->cur = list->next;
-	if (list->cur)
-		list->next = list->cur->next;
-	return list_current(list);
+	ip->cur = ip->cur->next;
+	return iterator_current(ip);
 }	
+
+static void
+_iterator_advance(ITERATOR *ip, struct list_entry *e)
+{
+	for (; ip; ip = ip->next)
+		if (ip->cur == e)
+			ip->cur = e->next;
+}
 
 void *
 list_item(struct list *list, size_t n)
@@ -127,6 +166,7 @@ list_append(struct list *list, void *data)
 {
 	struct list_entry *ep;
 
+	assert(list!=NULL);
 	if (!list)
 		return;
 	ep = emalloc(sizeof(*ep));
@@ -163,66 +203,9 @@ cmp_ptr(const void *a, const void *b)
 }
 
 void *
-list_locate(struct list *list, void *data, list_comp_t cmp)
-{
-	if (!list)
-		return NULL;
-	if (!cmp)
-		cmp = cmp_ptr;
-	for (list->cur = list->head; list->cur; list->cur = list->cur->next)
-		if (cmp(list->cur->data, data) == 0)
-			break;
-	return list_current(list);
-}
-	
-static struct list_entry *
-_list_remove_item(struct list *list, struct list_entry *item)
-{
-	struct list_entry *p = NULL;
-	if (item == list->head) {
-		list->head = list->head->next;
-		if (!list->head)
-			list->tail = NULL;
-	} else {
-		for (p = list->head; p && p->next != item; p = p->next) 
-			;
-		p->next = item->next;
-		if (item == list->tail)
-			list->tail = p;
-	}
-
-	efree(item);
-	list->count--;
-	return p;
-}
-
-void *
-list_remove_current(struct list *list)
-{
-	struct list_entry *cur;
-	void *data;
-	
-	if (!list || !list->cur)
-		return NULL;
-
-	cur = list->cur;
-	data = cur->data;
-	if (list->cur == list->head) {
-		list->cur = cur->next;
-		_list_remove_item(list, cur);
-	} else
-		list->cur = _list_remove_item(list, cur);
-	if (list->cur)
-		list->next = list->cur->next;
-	else
-		list->next = NULL;
-	return data;
-}
-	
-void *
 list_remove(struct list *list, void *data, list_comp_t cmp)
 {
-	struct list_entry *p;
+	struct list_entry *p, *prev;
 
 	if (!list)
 		return NULL;
@@ -230,34 +213,56 @@ list_remove(struct list *list, void *data, list_comp_t cmp)
 		return NULL;
 	if (!cmp)
 		cmp = cmp_ptr;
-	for (p = list->head; p; p = p->next)
+	for (p = list->head, prev = NULL; p; prev = p, p = p->next)
 		if (cmp(p->data, data) == 0)
 			break;
-	if (p == list->cur)
-		return list_remove_current(list);
-	else if (p)
-		_list_remove_item(list, p);
-	if (list->cur)
-		list->next = list->cur->next;
-	else
-		list->next = NULL;
+	_iterator_advance(list->itr, p);
+	if (p == list->head) {
+		list->head = list->head->next;
+		if (!list->head)
+			list->tail = NULL;
+	} else 
+		prev->next = p->next;
+
+	if (p == list->tail)
+		list->tail = prev;
+
+	efree(p);
+	list->count--;
+	
 	return data;
 }
 
 void
-list_append_list(struct list *a, struct list *b)
+list_iterate(struct list *list, list_iterator_t func, void *data)
 {
-	if (a->tail) {
-		a->tail->next = b->head;
-		a->tail = b->tail;
-	} else {
-		a->head = b->head;
-		a->tail = b->tail;
+	ITERATOR *itr;
+	void *p;
+	
+	if (!list)
+		return;
+	itr = iterator_create(list);
+	if (!itr)
+		return;
+	for (p = iterator_first(itr); p; p = iterator_next(itr)) {
+		if (func(p, data))
+			break;
 	}
-	a->count += b->count;
-
-	b->head = b->tail = b->cur = NULL;
+	iterator_destroy(&itr);
 }
 
-
+void *
+list_locate(struct list *list, void *data, list_comp_t cmp)
+{
+	struct list_entry *cur;
+	if (!list)
+		return NULL;
+	if (!cmp)
+		cmp = cmp_ptr;
+	for (cur = list->head; cur; cur = cur->next)
+		if (cmp(cur->data, data) == 0)
+			break;
+	return cur ? cur->data : NULL;
+}
+	
 

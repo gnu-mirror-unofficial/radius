@@ -19,6 +19,7 @@
 #define LIST_H
 
 typedef struct list LIST;
+typedef struct iterator ITERATOR;
 
 typedef int (*list_iterator_t)(void *item, void *data);
 typedef int (*list_comp_t)(const void *, const void *);
@@ -26,17 +27,19 @@ typedef int (*list_comp_t)(const void *, const void *);
 LIST *list_create();
 void list_destroy(LIST **list, list_iterator_t free, void *data);
 void list_iterate(LIST *list, list_iterator_t itr, void *data);
-void *list_current(LIST *list);
-void *list_first(LIST *list);
-void *list_next(LIST *list);
 void *list_item(LIST *list, size_t n);
 size_t list_count(LIST *list);
 void list_append(LIST *list, void *data);
 void list_prepend(LIST *list, void *data);
 void *list_locate(LIST *list, void *data, list_comp_t cmp);
-void *list_remove_current(LIST *list);
 void *list_remove(LIST *list, void *data, list_comp_t cmp);
-void list_append_list(LIST *a, LIST *b);
+
+void *iterator_current(ITERATOR *ip);
+ITERATOR *iterator_create(LIST *list);
+void iterator_destroy(ITERATOR **ip);
+void *iterator_first(ITERATOR *ip);
+void *iterator_next(ITERATOR *ip);
+
 
 #endif
 

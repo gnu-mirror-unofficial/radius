@@ -81,7 +81,7 @@ further extend GNU Radius functionality.
 
 The present operation model@footnote{@xref{Operation}.} of GNU Radius
 and its configuration file system@footnote{@xref{Configuration
-Files}} emerged as a result of the two development aims described
+Files}.} emerged as a result of the two development aims described
 above. Since 1998 up to present, GNU Radius users contributed a lot
 of ideas and code to the further development of the system.
 

@@ -878,7 +878,8 @@ sfn_init(m)
 	    user_find(m->namepair->strvalue, radreq,
 		      &m->user_check, &m->user_reply) != 0) {
 
-		auth_log(m, _("Invalid user"), NULL, NULL, NULL);
+		if (is_log_mode(m, RLOG_AUTH)) 
+			auth_log(m, _("Invalid user"), NULL, NULL, NULL);
 
 		/* Send reject packet with proxy-pairs as a reply */
 		newstate(as_reject);
@@ -944,18 +945,21 @@ sfn_validate(m)
 			stat_inc(auth, radreq->ipaddr, num_rejects);
 			newstate(as_reject);
 			
-			switch (rc) {
-			case AUTH_REJECT:
-				auth_log(m, _("Rejected"), NULL, NULL, NULL);  
-				return;
+			if (is_log_mode(m, RLOG_AUTH)) {
+				switch (rc) {
+				case AUTH_REJECT:
+					auth_log(m, _("Rejected"),
+						 NULL, NULL, NULL);  
+					return;
 				
-			case AUTH_NOUSER:
-				auth_log(m, _("Invalid user"), NULL,
-					 NULL, NULL);
-				return;
+				case AUTH_NOUSER:
+					auth_log(m, _("Invalid user"),
+						 NULL, NULL, NULL);
+					return;
 				
-			case AUTH_FAIL:
-				break;
+				case AUTH_FAIL:
+					break;
+				}
 			}
 		}		
               /*if (p = avl_find(m->user_reply, DA_REPLY_MESSAGE))

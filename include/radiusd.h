@@ -24,8 +24,6 @@
 #include <radius.h>
 #include <radpaths.h>
 
-#define NITEMS(a) sizeof(a)/sizeof((a)[0])
-
 /* Server data structures */
 struct radutmp; /* declared in radutmp.h */
 struct obstack;

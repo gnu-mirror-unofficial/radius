@@ -230,6 +230,7 @@ extern char *radstat_path;
 extern char *radpid_dir;
 extern char *bug_report_address;
 
+#define NITEMS(a) sizeof(a)/sizeof((a)[0])
 
 /* dict.c */
 #define VENDOR(x) (x >> 16)

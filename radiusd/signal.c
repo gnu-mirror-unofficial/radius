@@ -114,7 +114,7 @@ _signal_entry_runqueue (sig, type, e)
 	int type;
 	struct _signal_entry *e;
 {
-	int rc = 1;
+	int count = 0;
 	struct _signal_queue *q;
 	
 	if (!e)
@@ -123,16 +123,17 @@ _signal_entry_runqueue (sig, type, e)
 	
 	for (q = e->head; q; ) {
 		struct _signal_queue *next = q->next;
-		if (q->type == type) {
-			rc = q->handler (sig, q->data, (rad_sigid_t) q, e);
-			if (rc == 0)
-				break;
+		if (q->type == SH_DELETED)
+			_signal_queue_remove (&e->head, q);
+		else if (q->type == type) {
+			if (q->handler (sig, q->data, (rad_sigid_t) q, e) == 0)
+				count++;
 		}
 		q = next;
 	}
 	
 	_signal_entry_unlock (e, NULL);
-	return rc;
+	return count;
 }
 
 static void
@@ -140,15 +141,10 @@ _signal_deliver (sig, type)
 	int sig;
 	int type;
 {
-	unsigned i, pass;
-
-	if (!sigtab[sig].used || !sigtab[sig].count)
-		return;
-		
-	for (i = pass = 0; i < sigtab[sig].count; i++)
-		if (_signal_entry_runqueue (sig, type, &sigtab[sig]) == 0)
-			pass++;
-	sigtab[sig].count -= pass;
+	if (sigtab[sig].used && sigtab[sig].count) {
+		unsigned pass = _signal_entry_runqueue (sig, type, &sigtab[sig]);
+		sigtab[sig].count -= pass;
+	}
 }
 
 void
@@ -176,21 +172,15 @@ void *
 signal_thread0 (arg)
 	void *arg;
 {
+	pthread_mutex_lock (&signal_mutex);
 	while (1) {
 		int sig;
-		struct timespec atime;
-		struct timeval now;
-		
-		pthread_mutex_lock (&signal_mutex);
-		gettimeofday(&now, NULL);
-		atime.tv_sec = now.tv_sec;
-		atime.tv_nsec = now.tv_usec * 1000 + 10;
-		
-		pthread_cond_wait (&signal_cond, &signal_mutex);//, &atime);
+		pthread_cond_wait (&signal_cond, &signal_mutex);
 		for (sig = 0; sig < NSIG; sig++)
 			_signal_deliver (sig, SH_ASYNC);
-		pthread_mutex_unlock (&signal_mutex);
 	}
+	/* NOTREACHED. For the completeness sake ... */
+	pthread_mutex_unlock (&signal_mutex);
 }
 
 int
@@ -264,7 +254,8 @@ rad_signal_remove (sig, id, owner)
 	const void *owner;
 {
 	struct _signal_entry *entry;
-
+	struct _signal_queue *q;
+	
 	if (sig < 0 || sig > NSIG || !sigtab[sig].used) {
 		errno = ENOENT;
 		return 0;
@@ -275,8 +266,13 @@ rad_signal_remove (sig, id, owner)
 	if (!entry->used)
 		return 0;
 	_signal_entry_lock (entry, owner);
-	if (_signal_queue_remove (&entry->head, (struct _signal_queue*) id))
-		id = NULL;
+	for (q = entry->head; q; q = q->next) {
+		if (q == id) {
+			q->type = SH_DELETED;
+			id = NULL;
+			break;
+		}
+	}
 	_signal_entry_unlock (entry, owner);
 	return id;
 }

@@ -1,6 +1,6 @@
 divert(-1)
 dnl This file is part of GNU Radius.
-dnl Copyright (C) 2001,2003 Free Software Foundation, Inc.
+dnl Copyright (C) 2001,2003,2004 Free Software Foundation, Inc.
 dnl
 dnl Written by Sergey Poznyakoff
 dnl  
@@ -26,8 +26,11 @@ divert{}dnl
 
 CREATEDATABASE(RADIUS)
 
+define({USER_COLUMN},
+       {user_name           VARCHAR_T(32) CI default '' not null})
+
 CREATETABLE(passwd, {
-  user_name           VARCHAR_T(32) CI default '' not null,
+  USER_COLUMN,
   service             CHAR_T(16) default 'Framed-PPP' not null,
   password            CHAR_T(64),
   active              ENUM_T(1,'Y','N') default 'Y' not null COMMA
@@ -35,12 +38,18 @@ CREATETABLE(passwd, {
   UNIQUE(usrv, user_name,service,active) 
 })
 CREATETABLE(groups, {
-  user_name           CHAR_T(32) CI default '' not null,
+  USER_COLUMN,
   user_group          CHAR_T(32) COMMA
   INDEX(grp, user_name)
 })
+CREATETABLE(authfail, {
+  USER_COLUMN,
+  count               SHORTINT_T,
+  time                TIME_T('1970-01-01 00:00:00') NOT NULL COMMA
+  UNIQUE(uname, user_name)
+})  
 CREATETABLE(attrib, {
-  user_name           VARCHAR_T(32) CI default '' not null,
+  USER_COLUMN,
   attr                CHAR_T(32) default '' not null,
   value               CHAR_T(128),
   op                  ENUM_T(2,'=','!=','<','>','<=','>=') default NULL COMMA
@@ -48,7 +57,7 @@ CREATETABLE(attrib, {
 })
 CREATETABLE(calls, {
   status              SHORTINT_T not null,
-  user_name           VARCHAR_T(32) CI default '' not null,
+  USER_COLUMN,
   realm_name          VARCHAR_T(32) CI default '' not null,
   event_date_time     TIME_T('1970-01-01 00:00:00') NOT NULL,
   nas_ip_address      CHAR_T(17) default '0.0.0.0' not null,
@@ -78,7 +87,7 @@ CREATETABLE(ippool, {
   ipaddr CHAR_T(17) default '' not null,
   status ENUM_T(4,'FREE','BLCK','FIXD','ASGN','RSRV') default 'FREE' not null,
   time TIME_T('1970-01-01 00:00:00') NOT NULL,
-  user_name VARCHAR_T(32) CI default '' not null COMMA
+  USER_COLUMN COMMA
   INDEX(ippool_name,user_name) COMMA
   INDEX(ippool_ipaddr,ipaddr)
 })

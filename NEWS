@@ -1,4 +1,4 @@
-GNU Radius NEWS -- history of user-visible changes. 2004-12-27
+GNU Radius NEWS -- history of user-visible changes. 2004-04-23
 Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
@@ -24,8 +24,11 @@ supercedes radscm program, which has been removed.
 
 ** Added i18n support
 
-** Built-in functions allowing to read some internal fields of a
-RADIUS request.
+** New built-in functions:
+
+*** Functions to access internal fields of a RADIUS request.
+*** Interfaces to the Radius NAS database (raddb/naslist).
+*** Interfaces to DNS lookup functions.
 
 * radiusd
 
@@ -45,10 +48,13 @@ authentication type. If such module is found, it is invoked to handle
 the authentication.
 
 ** System accounting can be turned off by specifying `system no;' in
-`acct' section of raddb/config.
+`acct' section of raddb/config. 
 
 ** New configuration statement 'load-module' allows to load arbitrary
 Scheme modules.
+
+** Detailed log filenames are configurable via `detail-file-name'
+statements in `auth' and `acct' sections of raddb/config.
 
 ** Support for Guile versions prior to 1.6 has been withdrawn.
 

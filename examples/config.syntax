@@ -134,6 +134,13 @@ auth {
 	# Store detailed info about every auth request
 	detail yes;
 
+	# Detailed log file name. If it starts with an equal
+	# sign, it is interpreted as Rewrite expression. This expression
+	# is executed and its result is taken as the file name.
+        # Otherwise, usual %C{} substitutions are performed, and
+	# the resulting string is taken as the file name.
+	detail-file-name "=nas_name(%[NAS-IP-Address]) + \"/detail.auth\"";
+	
 	# Strip username prefixes/suffixes
 	strip-names yes;
 
@@ -182,7 +189,13 @@ acct {
 	
         # Do the request detail accounting (default)
 	detail yes;
-
+	# Detailed accounting file name. If it starts with an equal
+	# sign, it is interpreted as Rewrite expression. This expression
+	# is executed and its result is taken as the file name.
+        # Otherwise, usual %C{} substitutions are performed, and
+	# the resulting string is taken as the file name.
+	detail-file-name "=nas_name(%[NAS-IP-Address]) + \"/detail\"";
+	
 	# Maximum number of ACCT requests in queue
 	max-requests 24;
 

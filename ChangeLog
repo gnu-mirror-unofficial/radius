@@ -1,3 +1,24 @@
+2004-04-23  Sergey Poznyakoff
+
+	* radiusd/acct.c (mkdir_path): 
+	(check_acct_dir): Rewritten using mkdir_path().
+	(write_detail): Construct detailed log file name
+	from the configuration file template. 
+	* include/radiusd.h (write_detail): Updated prototype.
+	* radiusd/auth.c (rad_auth_init): Updated call to
+	write_detail().
+	* radiusd/radiusd.c (auth_detail_template)
+	(acct_detail_template): New globals
+	(auth_stmt,acct_stmt): Added detail-file-name keyword to
+	set the above.
+	
+	* radiusd/rewrite.y (bi_nas_name, bi_nas_short_name)
+	(bi_nas_full_name)
+	(bi_gethostbyaddr, bi_gethostbyname): New functions.
+	* NEWS: Updated.
+	* examples/config.syntax: Updated
+	* raddb/config.in: Added `detail-file-name' statements.
+
 2004-04-20  Sergey Poznyakoff
 
 	* radscripts/radctl.m4 (usage): Quote $PROCESS when echoing

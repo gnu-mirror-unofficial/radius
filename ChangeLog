@@ -1,3 +1,53 @@
+2003-07-20  Sergey Poznyakoff
+
+	Fixed bugs in extended request comparison. Fixed minor
+	bug in SQL caching.
+	Improved test shell and radtest.
+	
+	* NEWS: Updated
+	* TODO: Updated
+	* include/radius.h (obstack_grow_backslash_num)
+	(obstack_grow_backslash,rad_clt_send0): New function.
+	* include/radiusd.h (radius_req_decode): Removed
+	(radius_auth_req_decode,radius_acct_req_decode): New functions.
+	* include/radsql.h (radiusd_sql_clear_cache): New function.
+	* lib/avl.c: Fixed comment
+	* lib/client.c (rad_clt_send0): New function.
+	(rad_clt_send): Rewritten.
+	* lib/symtab.c (symtab_free): Check for invalid input
+	value.
+	* lib/users.l (read_number): Removed. Use
+	obstack_grow_backslash_num() instead.
+	* lib/util.c (backslash): Minor fix. Recognize '\a'
+	(obstack_grow_backslash_num,obstack_grow_backslash): New
+	functions.
+	* radiusd/config.y (copy_string): Recognize character
+	escapes in strings.
+	* radiusd/files.c (hints_setup): Create Orig-User-Name
+	using canonical way.
+	* radiusd/radius.c (radius_req_decode): Removed
+	(radius_auth_req_decode,radius_acct_req_decode): New functions.
+	(_extract_pairs): Bugfix.
+	* radiusd/radiusd.c (radiusd_setup) [USE_SNMP]: Initialize default
+	SNMP port.
+	(test_shell): New command 't' tests timespan specifications.
+	* radiusd/request.c (struct request_class request_class): Updated.
+	(request_retransmit): New function.
+	(struct request_closure.rawdata, rawsize): New members
+	(_request_iterator): Use request_retransmit().
+	* radiusd/snmpserv.c: Moved log_open invocation to snmp_decode().
+	* radiusd/sql.c (radiusd_sql_clear_cache): New function.
+	(sql_cache_destroy): Check for NULL argument.
+	* radiusd/timestr.c [STANDALONE]: Removed ifdef blocks
+	* radtest/gram.y: Syntax improvement. "Send" command allows to
+	specify retransmit count, delay between the retransmissions,
+	request ID and whether the authenticator should be retained
+	between the retransmissions. This allows to imitate
+	retransmissions.
+	* radtest/main.c (radtest_send): Added extra argument.
+	(tempvar_free,var_free): New functions
+	* radtest/radtest.h: Updated
+
 2003-07-17  Sergey Poznyakoff
 
 	* include/radius.h (AF_LHS,AF_RHS,AP_USER_FLAG): Fixed overlap.

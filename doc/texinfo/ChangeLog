@@ -1,3 +1,14 @@
+2003-07-20  Sergey Poznyakoff 
+
+	* radius.texi: Combine indices into one.
+	* configure.texi: Lots of changes.
+	* acct.texi: Minor change.
+	* attributes.texi: Minor change.
+	* auth.texi: Minor change.
+	* extensions.texi: Minor change.
+	* invoke.texi: Minor change.
+	* radscm.texi: Minor change.
+
 2003-06-23  Sergey Poznyakoff 
 
 	* doc/texinfo/configure.texi: Documented missing keywords.

@@ -1,3 +1,5 @@
+TODO for GNU Radius
+
 * Redesign configuration files. The goals are:
 ** get rid of the mess in raddb, replacing it with a single 
 logically structured configuration file.
@@ -18,9 +20,13 @@ server queue a SMOB instead of a hidden list.
 ** Add include feature to config files that don't have it.
 ** Revise the possibility of listing memory and queue usage via
 snmp.
+** Add missing SNMP MIBS and check the compliance of the snmpserv.c
+to RFC 2619,2621
+** Add readline to the test shell
 
 * Redesign raduse to use snmp queries instead of peeking in radstat.
 * Write radctl substitute which would use SNMP.
+* Revise radtest to make it more useful.
 
 
 Local variables:

@@ -1,4 +1,4 @@
-GNU Radius NEWS -- history of user-visible changes. 2003-07-17
+GNU Radius NEWS -- history of user-visible changes. 2003-07-20
 Copyright (C) 2002,2003 Free Software Foundation, Inc.
 See the end for copying conditions.
 
@@ -10,14 +10,19 @@ Version 1.1:
 
 ** Do not stop decoding	of the incoming request upon encountering of an
 unknown or malformed attribute ('no Acct-Status-Record bug').
-** Fix Makefile.am's to allow for `make DESTDIR=whatever install'.
+** Makefile.am's fixed to allow for `make DESTDIR=whatever install'.
 ** Close stdout when running Acct-Ext-Program, so that its eventual output
 does not disturb the main process.
+** Fixed extended request comparison.
 
 * New features:
 
 ** Caching of the results of SQL queries during authentication and
 accounting.
+** Strings in raddb/config may contain escaped characters. This is
+useful mainly for username-chars statement.
+** New command in test shell mode allows to check a timestamp
+against a time interval specification.
 
 
 Version 1.0:

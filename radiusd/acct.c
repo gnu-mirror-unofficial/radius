@@ -633,7 +633,7 @@ write_nas_restart(int status, grad_uint32_t addr)
 /* Multiple login checking */
 
 int
-radutmp_mlc_collect_user(char *name, grad_avp_t *request,
+radutmp_mlc_collect_user(char *name, grad_request_t *request,
 			 grad_list_t **sess_list)
 {
         radut_file_t file;
@@ -659,7 +659,7 @@ radutmp_mlc_collect_user(char *name, grad_avp_t *request,
 }
 
 int
-radutmp_mlc_collect_realm(grad_realm_t *realm, grad_list_t **sess_list)
+radutmp_mlc_collect_realm(grad_request_t *request, grad_list_t **sess_list)
 {
         radut_file_t file;
 	struct radutmp *up;
@@ -669,7 +669,7 @@ radutmp_mlc_collect_realm(grad_realm_t *realm, grad_list_t **sess_list)
 
         while (up = rut_getent(file)) {
                 if (up->type == P_LOGIN
-		    && grad_realm_verify_ip(realm, up->realm_address)) {
+		    && grad_realm_verify_ip(request->realm, up->realm_address)) {
 			struct radutmp *tmp;
 			
 			if (*sess_list == NULL) 

@@ -280,6 +280,11 @@ radius_xlate(obp, str, req, reply)
 	DICT_ATTR *da;
 	char *defval;
 
+	if (!req) {
+		int len = strlen(str);
+		obstack_grow(obp, str, len);
+		return obstack_finish(obp);
+	}
 	for (p = str; *p; ) {
 		switch (c = *p++) {
 		default:

@@ -23,6 +23,7 @@
 #include <pthread.h>
 #include <radius.h>
 #include <radpaths.h>
+#include <signal.h>
 
 /* Server data structures */
 struct radutmp; /* declared in radutmp.h */

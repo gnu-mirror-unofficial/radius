@@ -116,21 +116,26 @@ grad_nas_lookup_name(char *name)
         return nas ? nas : defnas;
 }
 
-/* Find a nas in the NAS list */
+/* Find a nas in the NAS list. Select the most specific match. */
 grad_nas_t *
 grad_nas_lookup_ip(grad_uint32_t ipaddr)
 {
         grad_nas_t *nas = NULL;
-        grad_iterator_t *itr = grad_iterator_create(naslist);
+	grad_nas_t *defnas = NULL;
+	grad_iterator_t *itr = grad_iterator_create(naslist);
 
 	if (!itr)
 		return NULL;
-	for (nas = grad_iterator_first(itr); nas; nas = grad_iterator_next(itr)) {
-                if (grad_ip_in_net_p(&nas->netdef, ipaddr))
-                        break;
-        }
+	for (nas = grad_iterator_first(itr); nas;
+	     nas = grad_iterator_next(itr)) {
+		if (grad_ip_in_net_p(&nas->netdef, ipaddr)) {
+			if (!defnas
+			    || (defnas->netdef.netmask & nas->netdef.netmask) == defnas->netdef.netmask)
+				defnas = nas;
+		}
+	}
 	grad_iterator_destroy(&itr);
-        return nas;
+        return defnas;
 }
 
 

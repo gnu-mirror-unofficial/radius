@@ -930,7 +930,6 @@ cfg_read(fname, syntax, data)
 	_cfg_free_memory_pool();
 	obstack_free(&cfg_obstack, NULL);
 
-        radlog(L_INFO, _("ready"));
         return 0;
 }       
 

@@ -1,21 +1,19 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
+   Copyright (C) 2000, Sergey Poznyakoff
+  
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+  
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+  
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #include <sysdep.h>
 #include <raddict.h>
@@ -175,8 +173,7 @@ typedef struct radius_req {
 	u_char			id;
 	u_char			code;
 	u_char			vector[AUTH_VECTOR_LEN];
-	u_char			secret[AUTH_PASS_LEN];
-	u_char		        digest[AUTH_PASS_LEN];
+	u_char			*secret;
 	VALUE_PAIR		*request;
 	u_char			*data;		/* Raw received data */
 	int			data_len;       /* Length of raw data */
@@ -317,4 +314,10 @@ void string_copy(char *d, char *s, int  len);
 char *format_pair(VALUE_PAIR *pair);
 char *format_ipaddr(UINT4 ipaddr);
 void debug_pair(char *prefix, VALUE_PAIR *pair);
+
+/* cryptpass.c */
+void encrypt_password(VALUE_PAIR *pair, char *password,
+		      char *vector, char *secret);
+void decrypt_password(char *password, VALUE_PAIR *pair,
+		      char *vector, char *secret);
 

@@ -2066,8 +2066,9 @@ snmp_port_index1(cmd, closure, subid, varp, errp)
 		
 	case MIB_NODE_RESET:
 		pind->nas_index = 1;
-		if (nas = findnasbyindex(pind->nas_index)) 
-			pind->port_no = stat_get_next_port_no(nas, 0);
+		while ((nas = findnasbyindex(pind->nas_index)) && 
+		       (pind->port_no = stat_get_next_port_no(nas, 0)) == 0)
+			pind->nas_index++;
 		break; 
 	}
 	
@@ -2122,14 +2123,13 @@ snmp_port_index2(cmd, closure, subid, varp, errp)
 			break;
 		}
 		/* move to next nas */
-		if ((nas = findnasbyindex(pind->nas_index+1)) == NULL)
-			return -1;
-		index = stat_get_next_port_no(nas, 0);
-		if (index > 0) {
-			pind->nas_index++;
-			pind->port_no = index;
+		while ((nas = findnasbyindex(++pind->nas_index)) && 
+		       (pind->port_no = stat_get_next_port_no(nas, 0)) == 0)
+			;
+
+		if (nas && pind->port_no > 0)
 			break;
-		}
+
 		return -1;
 		
 	case MIB_NODE_GET_SUBID:

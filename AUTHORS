@@ -2,14 +2,14 @@ Authors of GNU Radius.
 
 Sergey Poznyakoff	<gray@farlep.net>
 
-Portions of the code were used from following sources:
+Miquel Van Smoorenberg 	<miquels@cistron.nl> wrote initial version
+of radiusd/radius.c
 
-Miquel Van Smoorenberg 	<miquels@cistron.nl>:
-	radiusd/radius.c
-
-Poul-Henning Kamp 	<phk@login.dknet.dk> 
-	radlib/md5crypt.c
+Poul-Henning Kamp 	<phk@login.dknet.dk> wrote radlib/md5crypt.c
 
 WEB-RADACT is written by 
 	Oswaldo E. Aguirre M. 	<oaguirre@reacciun.ve>
 	Francisco J. Obispo S.	<fobispo@reacciun.ve>
+
+sql/odbc.c is written by
+	Vlad Lungu		<vlad@rls.roknet.ro>

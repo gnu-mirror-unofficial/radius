@@ -24,13 +24,15 @@
 
 #include <asn1.h>
 #include <snmp.h>
+#include <snmp_intern.h>
 #include <stdlib.h>
+#include <string.h>
 
 void *
 snmp_alloc(size)
 	size_t size;
 {
-	return malloc(size);
+	return (*snmp_def.alloc)(size);
 }
 
 void
@@ -38,5 +40,17 @@ snmp_free(ptr)
 	void *ptr;
 {
 	if (ptr)
-		free(ptr);
+		(*snmp_def.free)(ptr);
 }
+
+char *
+snmp_strdup(str)
+	char *str;
+{
+	int len = strlen(str+1);
+	char *p = snmp_alloc(len);
+	if (p)
+		strcpy(p, str);
+	return p;
+}
+

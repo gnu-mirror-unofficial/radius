@@ -56,8 +56,7 @@ util.c
 
 localedir = $(datadir)/locale
 
-LIBADD=@LIBOBJS@
-librad_la_LIBADD = $(LIBADD:.o=.lo)
+librad_la_LIBADD = @LTLIBOBJS@
 liblog_la_SOURCES=applog.c 
 libdebug_la_SOURCES=debugmod.c
 AM_LDFLAGS=-all-static

@@ -594,9 +594,9 @@ value_lookup(value, attrname)
 int
 code_cmp(v, code)
 	DICT_VENDOR *v;
-	int code;
+	int *code;
 {
-	return v->vendorcode - code;
+	return v->vendorcode - *code;
 }
 
 int 
@@ -607,7 +607,7 @@ vendor_id_to_pec(code)
 
 	vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
 				      code_cmp,
-				      (void*)code);
+				      &code);
 	return vp ? vp->vendorpec : 0;
 }
 
@@ -617,9 +617,9 @@ vendor_id_to_pec(code)
 int
 pec_cmp(v, pec)
 	DICT_VENDOR *v;
-	int pec;
+	int *pec;
 {
-	return v->vendorpec - pec;
+	return v->vendorpec - *pec;
 }
 
 int 
@@ -630,7 +630,7 @@ vendor_pec_to_id(pec)
 
 	vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
 				      pec_cmp,
-				      (void*)pec);
+				      &pec);
 	return vp ? vp->vendorcode : 0;
 }
 	
@@ -642,7 +642,7 @@ vendor_pec_to_name(pec)
 
 	vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
 				      pec_cmp,
-				      (void*)pec);
+				      &pec);
 	return vp ? vp->vendorname : NULL;
 }
 	

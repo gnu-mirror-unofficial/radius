@@ -1,3 +1,42 @@
+2004-08-29  Sergey Poznyakoff 
+
+	* radiusd/auth.c (unix_expiration)[EMBEDDED_EXPIRATION_INFO]:
+	(unix_pass)[EMBEDDED_EXPIRATION_INFO]: Account for old method
+	of keeping password aging info in /etc/passwd.
+
+2004-08-28  Sergey Poznyakoff 
+
+	* client/pam_radius/pam_radius.c: Split grad_request_t
+	into two structures: a generic radius request structure
+	grad_request_t and a server-specific structure
+	radiusd_request_t
+	* contrib/php/mod_radius.c: Likewise
+	* include/radiusd.h: Likewise
+	* include/radsql.h: Likewise
+	* include/radius/radius.h: Likewise
+	* lib/nas.c: Likewise
+	* lib/radpdu.c: Likewise
+	* lib/radsrv.c: Likewise
+	* lib/util.c: Likewise
+	* radiusd/acct.c: Likewise
+	* radiusd/auth.c: Likewise
+	* radiusd/builddbm.c: Likewise
+	* radiusd/checkrad.c: Likewise
+	* radiusd/exec.c: Likewise
+	* radiusd/files.c: Likewise
+	* radiusd/forward.c: Likewise
+	* radiusd/menu.c: Likewise
+	* radiusd/mlc.c: Likewise
+	* radiusd/proxy.c: Likewise
+	* radiusd/radius.c: Likewise
+	* radiusd/radutil.c: Likewise
+	* radiusd/rewrite.y: Likewise
+	* radiusd/scheme.c: Likewise
+	* radiusd/sql.c: Likewise
+	* radiusd/tsh.c: Likewise
+	* radscm/radscm.c: Likewise
+	* radtest/main.c: Likewise
+	
 2004-08-28  Sergey Poznyakoff
 
 	* snmplib/snmp_var.c (snmp_var_decode): Initialize var

@@ -28,9 +28,11 @@
 #include <common.h>
 
 struct _radut_file {
+	char *name;
         int fd;
         int eof;
         int readonly;
+	int append;
         struct radutmp ut;
 };
 
@@ -50,10 +52,10 @@ rut_setent(char *name, int append)
                          _("rut_setent(): cannot open `%s'"), name);
                 return NULL;
         }
-        if (append)
-                lseek(fd, 0, SEEK_END);
         fp = grad_emalloc(sizeof(*fp));
+	fp->name = name;
         fp->fd = fd;
+        fp->append = append;
         fp->eof = append;
         fp->readonly = ro;
         return fp;
@@ -93,23 +95,50 @@ int
 rut_putent(radut_file_t file, struct radutmp *ent)
 {
         if (file->readonly) {
-                grad_log(L_ERR, "rut_putent(): file opened readonly");
+                grad_log(L_ERR,
+			 "rut_putent(%s): file opened readonly",
+			 file->name);
                 return -1;
         }
-        /* Step back one record unless we have reached eof */
-        if (!file->eof &&
-            lseek(file->fd, -(off_t)sizeof(file->ut), SEEK_CUR) < 0) {
-                grad_log(L_ERR|L_PERROR, 
-                         "rut_putent(): lseek");
-                lseek(file->fd, (off_t)0, SEEK_SET);
-                return -1;
-        }
-        /* Lock the utmp file.  */
-        grad_lock_file(file->fd, sizeof(*ent), 0, SEEK_CUR);
 
+	if (file->append) {
+		off_t size;
+		grad_lock_file(file->fd, sizeof(*ent), 0, SEEK_END);
+		size = lseek(file->fd, 0, SEEK_END);
+		if (size < 0) {
+			grad_log(L_ERR|L_PERROR, 
+				 "rut_putent(%s): lseek",
+				 file->name);
+			grad_unlock_file(file->fd, sizeof(*ent), 0, SEEK_END);
+			return -1;
+		}
+		if (size % sizeof (*ent)) {
+			grad_log(L_CRIT,
+				 "rut_putent(%s): File size is not a multiple of radutmp entry size",
+				 file->name);
+			grad_unlock_file(file->fd, sizeof(*ent), 0, SEEK_END);
+			return -1;
+		}
+	} else {
+		/* Step back one record unless we have reached eof */
+		if (!file->eof &&
+		    lseek(file->fd, -(off_t)sizeof(file->ut), SEEK_CUR) < 0) {
+			grad_log(L_ERR|L_PERROR, 
+				 "rut_putent(%s): lseek",
+				 file->name);
+			lseek(file->fd, (off_t)0, SEEK_SET);
+			return -1;
+		}
+		/* Lock the utmp file.  */
+		grad_lock_file(file->fd, sizeof(*ent), 0, SEEK_CUR);
+	}
+	
         if (write(file->fd, ent, sizeof(*ent)) != sizeof(*ent)) {
                 grad_log(L_ERR|L_PERROR, 
-                         "rut_putent(): write");
+                         "rut_putent(%s): write",
+			 file->name);
+		grad_lock_file(file->fd, sizeof(*ent), 0, SEEK_CUR);
+		return -1;
         }
 
         memcpy(&file->ut, ent, sizeof(file->ut));

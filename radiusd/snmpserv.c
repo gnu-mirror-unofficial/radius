@@ -991,6 +991,19 @@ timeval_diff(tva, tvb)
 		(tva->tv_usec - tvb->tv_usec)/10000;
 }
 
+serv_stat
+abridge_server_state()
+{
+	switch (server_stat->auth.status) {
+	case serv_init:
+	case serv_running:
+		return server_stat->auth.status;
+	case serv_other:
+	default:
+		return serv_other;
+	}
+}
+
 /* ************************************************************************* */
 /* Auth sub-tree */
 
@@ -1074,7 +1087,7 @@ snmp_auth_var_get(subid, oid, errp)
 	case MIB_KEY_AuthServConfigReset:
 		ret->type = ASN_INTEGER;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->auth.status;
+		ret->var_int = abridge_server_state();
 		break;
 
 	case MIB_KEY_AuthServTotalAccessRequests:
@@ -1173,7 +1186,7 @@ snmp_auth_var_set(subid, vp, errp)
 		switch (subid) {
 			
 		case MIB_KEY_AccServConfigReset:
-			server_stat->acct.status = serv_init;
+			server_stat->auth.status = serv_init;
 			radlog(L_INFO,
 			     _("acct server re-initializing on SNMP request"));
 			break;
@@ -1452,7 +1465,7 @@ snmp_acct_var_get(subid, oid, errp)
 	case MIB_KEY_AccServConfigReset:
 		ret->type = ASN_INTEGER;
 		ret->val_length = sizeof(counter);
-		ret->var_int = server_stat->acct.status;
+		ret->var_int = abridge_server_state();
 		break;
 		
 	case MIB_KEY_AccServTotalRequests:

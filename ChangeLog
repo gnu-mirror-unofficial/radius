@@ -1,3 +1,8 @@
+2003-06-15  Sergey Poznyakoff 
+
+	* radiusd/Makefile.am: Fixed FILELIST rule. Thanks Wojciech
+	for noticing.
+
 2003-06-14  Sergey Poznyakoff 
 
 	* README: Updated

@@ -68,6 +68,12 @@ rad_pam_conv(num_msg, msg, resp, closure)
 	struct pam_response *reply = NULL;
 	struct pam_conv_data *data = (struct pam_conv_data *)closure;
 	int rc;
+
+	if (!data) {
+		radlog(L_ERR,
+		       _("rad_pam_conv(): no application-specific data passed"));
+		return PAM_CONV_ERR;
+	}
 	
 	if ((reply = calloc(num_msg, sizeof(struct pam_response))) == NULL)
 		return PAM_CONV_ERR;

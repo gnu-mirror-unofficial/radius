@@ -696,6 +696,34 @@ close_sql_connection(conn, prev)
  *          timestamp and return.
  *       Additionally, while scanning, close all connections which have been
  *       idle for more than sql_cfg.idle_timeout seconds.
+ *
+ * Modified by kaz:
+ *       Remove the code to scan for idle connections.  
+ *
+ *       Why?  This function is only called when the RADIUS server is
+ *       about to log something to the SQL server. It is called in two
+ *       places: in the master_process when it calls request_setup and 
+ *       when the child process calls rad_accounting/rad_authenticate. 
+ *
+ *       Whats the problem?  If the RADIUS server is configured to 
+ *       "keepopen" the SQL connections, then there is a potential 
+ *       that the RADIUS server may be idle for a time greater than 
+ *       the time expected by the SQL server's idle timeout, which 
+ *       could result in an error.  On MySQL, it will complain about 
+ *       an "Aborted connection ## to db".  For example, my RADIUS 
+ *       server was using "keepopen", but it was not very busy.  My
+ *       database "MySQL" was configured with a default "wait_timeout"
+ *       of 8 hours.  Everytime, the 8 hours were exceeded, MySQL would
+ *       mark the connection dead, yet, the RADIUS server still thought
+ *       the connection was open and it resulted in error messages in 
+ *       my MySQL logs.
+ *
+ *       Whats the solution?  Move the idle checking to the main loop
+ *       of radiusd.c.  rad_select should be modified to wait only for 
+ *       a fixed interval, perhaps 60 seconds, instead of blocking 
+ *       indefinitely.  A new function should also be created in sql.c
+ *       called rad_sql_idle_check() which will close connections that
+ *       are now idle.
  */
 struct sql_connection *
 attach_sql_connection(type, qid)
@@ -720,17 +748,7 @@ attach_sql_connection(type, qid)
 					break;
 			}
 			next = conn->next;
-			if (master_process() &&
-			    conn->qid == 0 &&
-			    (now - conn->last_used) >= sql_cfg.idle_timeout) {
-				/* Close the connection */
-				debug(1,
-			     ("connection reached idle timeout: %p,%d",
-			      conn, conn->type));
-				close_sql_connection(conn, prev);
-			} else
-				prev = conn;
-		
+			prev = conn;
 			conn = next;
 		}
 	}
@@ -865,6 +883,35 @@ rad_sql_setup(type, qid)
 		attach_sql_connection(type, qid); 
 	}
 	return 0;
+}
+
+void
+rad_sql_idle_check(void)
+{
+  	struct sql_connection *conn = NULL, *prev, *next;
+  	time_t now = time(NULL);
+
+  	prev = NULL;
+	
+  	if (sql_cfg.keepopen) {
+    		conn = conn_first;
+    		while (conn) {
+			next = conn->next;
+
+			if (master_process() &&
+			    conn->qid == 0 &&
+			    (now - conn->last_used) >= sql_cfg.idle_timeout) {
+				/* Close the idle connection */
+				debug(1,
+				      ("connection reached idle timeout: %p,%d",
+				       conn, conn->type));
+				close_sql_connection(conn, prev);
+			} else
+				prev = conn;
+
+			conn = next;
+		}
+	}
 }
 
 void

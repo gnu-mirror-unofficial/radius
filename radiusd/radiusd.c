@@ -548,6 +548,7 @@ main(argc, argv)
 	for(;;) {
 		rad_child_cleanup();
 		check_reload();
+		rad_sql_idle_check(); 
 		rad_select();
 	}
 	/*NOTREACHED*/
@@ -582,16 +583,23 @@ rad_select()
 	struct	sockaddr	saremote;
 	fd_set			readfds;
 	struct socket_list      *ctl;
-	
+	struct timeval          tv;
+
+	tv.tv_sec = 1;
+	tv.tv_usec = 0;
+
 	FD_ZERO(&readfds);
 	for (ctl = socket_first; ctl; ctl = ctl->next) 
 		FD_SET(ctl->fd, &readfds);
 
-	status = select(max_fd, &readfds, NULL, NULL, NULL);
+	status = select(max_fd, &readfds, NULL, NULL, &tv);
 	if (status == -1) {
 		if (errno == EINTR)
 			return;/* give main a chance to do some housekeeping */
 		rad_exit(101);
+	/* If a timeout occurs, then just return to main for housekeeping */
+	} else if (status == 0) {
+		return;
 	}
 	
 	for (ctl = socket_first; ctl; ctl = ctl->next) {

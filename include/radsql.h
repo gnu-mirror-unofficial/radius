@@ -96,5 +96,6 @@ void rad_sql_free(struct sql_connection *conn, void *data);
 # define rad_sql_setup NULL
 # define rad_sql_cleanup NULL
 # define rad_sql_shutdown()
+# define rad_sql_idle_check()
 
 #endif

@@ -157,8 +157,10 @@ _encode_pairlist(VALUE_PAIR *p, u_char *vector, u_char *secret)
 
 
 RADIUS_REQ *
-rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
-	     VALUE_PAIR *pairlist)
+rad_clt_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
+	      VALUE_PAIR *pairlist,
+	      int flags,
+	      int *authid, u_char *authvec)
 {
 	struct sockaddr salocal;
 	struct sockaddr saremote;
@@ -172,6 +174,7 @@ rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
         char ipbuf[DOTTED_QUAD_LEN];
 	char *recv_buf;
 	ITERATOR *itr;
+	int id;
 	
         if (port_type < 0 || port_type > 2) {
                 radlog(L_ERR, _("invalid port type"));
@@ -224,16 +227,27 @@ rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
                                ip_iptostr(server->addr, ipbuf),
                                server->port[port_type]);
                 }
-                
-		rad_clt_random_vector(vector);
+
+                if (authid && (flags & RADCLT_AUTHENTICATOR))
+			memcpy(vector, authvec, sizeof vector);
+		else
+			rad_clt_random_vector(vector);
+		if (authid && (flags & RADCLT_ID))
+			id = *authid;
+		else
+			id = rad_clt_message_id(server);
 		pair = _encode_pairlist(pairlist, vector, server->secret);
 		size = rad_create_pdu(&pdu, code,
-				      rad_clt_message_id(server),
+				      id,
 				      vector,
 				      server->secret,
 				      pair,
 				      NULL);
-
+		if (authid && !(flags & RADCLT_ID))
+			*authid = id;
+		if (authvec && !(flags & RADCLT_AUTHENTICATOR))
+			memcpy(authvec, vector, sizeof vector);
+		
 		avl_free(pair);
 		
                 if (size <= 0) 
@@ -309,6 +323,13 @@ rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 	efree(recv_buf);
         close(sockfd);
         return req;
+}
+
+RADIUS_REQ *
+rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
+	     VALUE_PAIR *pairlist)
+{
+	return rad_clt_send0(config, port_type, code, pairlist, 0, NULL, NULL);
 }
 
 /* ************************************************************************* */

@@ -214,7 +214,7 @@ rad_encode_pair(ap, pair)
 	UINT4 lval;
 	size_t len;
 	int rc;
-	
+
 	switch (pair->type) {
 	case TYPE_STRING:
 		/* Do we need it? */
@@ -234,6 +234,7 @@ rad_encode_pair(ap, pair)
 		break;
 
 	default:
+		radlog(L_ERR, "Unknown pair type %d", pair->type);
 		rc = 0;
 	}
 	return rc;
@@ -291,11 +292,13 @@ rad_create_pdu(rptr, code, id, vector, secret, pairlist, msg)
 			rad_attr_write(&attr, &lval, 1); /* Reserve a byte */
 			attrlen = rad_encode_pair(&attr, pair);
 			attr.data[5] = attrlen; /* Fill in the reserved byte */
-		} else if (pair->attribute <= 0xff) {
-			attr.attrno = pair->attribute;
-			attrlen = rad_encode_pair(&attr, pair);
-		}
+		} else if (pair->attribute > 0xff)
+			continue;
+
+		attr.attrno = pair->attribute;
+		attrlen = rad_encode_pair(&attr, pair);
 		if (attrlen <= 0) {
+			radlog(L_ERR, "attrlen = %d", attrlen);
 			status = 1;
 			break;
 		}
@@ -309,8 +312,8 @@ rad_create_pdu(rptr, code, id, vector, secret, pairlist, msg)
 	    && (len = strlen(msg)) > 0) {
                 int block_len;
 		struct radius_attr attr;
-                
-                while (attrlen > 0 && len > 0) {
+
+                while (len > 0) {
                         if (len > AUTH_STRING_LEN) 
                                 block_len = AUTH_STRING_LEN;
 			else 
@@ -357,7 +360,7 @@ rad_send_reply(code, radreq, reply_pairs, msg, fd)
 	void *pdu;
 	char *what;
 	size_t length;
-	
+
 	if (radreq->reply_code == 0) {
 		VALUE_PAIR *reply;
 		

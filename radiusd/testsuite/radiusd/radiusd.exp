@@ -18,6 +18,9 @@
 
 default_radiusd_start --zero-logs
 
+radius_test "send auth 12" \
+            "expect 2 Reply-Message = \"GNU Radius server fully operational\""
+
 #clone_output "Checking Basic Authentication Types"
 radius_test "send auth 1 User-Name = \"accept\"" "expect 2"
 
@@ -193,6 +196,7 @@ radius_test -prereq USE_SERVER_GUILE \
                         Acct-Status-Type = Start \
 			Acct-Session-Id = \"0001\"" \
 	    "expect 5" 
+
 
 radius_exit
 

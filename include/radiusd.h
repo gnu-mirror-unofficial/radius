@@ -99,7 +99,12 @@ typedef struct request {
 	int             fd;           /* socket the request came from */
 } REQUEST;
 
-typedef int QUEUE_STAT[R_MAX][2];
+struct queue_stat {
+	size_t waiting;
+	size_t pending;
+	size_t completed;
+};
+typedef struct queue_stat QUEUE_STAT[R_MAX];
         
 typedef struct client {
         struct client           *next;

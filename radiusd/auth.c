@@ -62,6 +62,7 @@ static char rcsid[] =
 #if defined(USE_SQL)
 # include <radsql.h>
 #endif
+#include <timestr.h>
 
 #if !defined(__linux__) && !defined(__GLIBC__)
   extern char *crypt();
@@ -986,9 +987,12 @@ sfn_time(m)
 	MACH *m;
 {
 	int rc;
+	time_t t;
+	unsigned rest;
 	
-	rc = timestr_match(m->check_pair->strvalue, time(NULL));
-	if (rc < 0) {
+	time(&t);
+	rc = ts_check(m->check_pair->strvalue, &t, &rest, NULL);
+	if (rc > 0) {
 		/*
 		 *	User called outside allowed time interval.
 		 */
@@ -1001,13 +1005,12 @@ sfn_time(m)
 		       nas_name2(m->req),
 		       m->check_pair->strvalue);
 		newstate(as_reject);
-	} else if (rc > 0) {
+	} else if (rest > 0) {
 		/*
 		 *	User is allowed, but set Session-Timeout.
 		 */
-		timeout_pair(m)->lvalue = rc;
+		timeout_pair(m)->lvalue = rest;
 	}
-	/* rc == 0 is Ok */
 }
 
 void

@@ -1,3 +1,10 @@
+Client package
+possibility to retrieve arbitrary reply pairs from the SQL database.
+\<newline> continuation sequence in traditional config files
+
+=============================================================================
+NEWS for version 0.95
+
 I. Changes to radiusd
 ----------------------
 I.1. SNMP

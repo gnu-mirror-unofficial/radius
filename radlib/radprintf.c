@@ -538,10 +538,10 @@ radprint(f, fmt, ap)
 				goto hex;
 			case 'X':
 				xdigs = "0123456789ABCDEF";
-		hex:
+			  hex:
 				ulval = uarg();
 				base = 16;
-		unsign:
+			  unsign:
 				sign = 0;
 		number:
 				if (prec >= 0)
@@ -556,11 +556,13 @@ radprint(f, fmt, ap)
 				break;
 
 				/* Additions to standard format specifiers */
+			  ipaddr:
 			case 'I': /* IP address */
 				ipaddr2str(buf, uarg());
 				cp = buf;
 				goto string;
 
+			  avpair:
 			case 'A': /* Attribute/Value pair */
 				pair = va_arg(ap, VALUE_PAIR*);
 				if (pair->name)
@@ -763,10 +765,10 @@ main()
 	radpath_init();
 	dict_init();
 #if 1
-	spair = create_pair(DA_USER_NAME, strlen("gray"), "gray", 0);
-	ipair = create_pair(DA_FRAMED_IP_ADDRESS, 0, NULL, 0x7f101001);
-	dpair = create_pair(DA_FRAMED_PROTOCOL, 0, NULL, 1);
-	lpair = create_pair(DA_SIMULTANEOUS_USE, 0, NULL, 1);
+	spair = avp_create(DA_USER_NAME, strlen("gray"), "gray", 0);
+	ipair = avp_create(DA_FRAMED_IP_ADDRESS, 0, NULL, 0x7f101001);
+	dpair = avp_create(DA_FRAMED_PROTOCOL, 0, NULL, 1);
+	lpair = avp_create(DA_SIMULTANEOUS_USE, 0, NULL, 1);
 	i = radsprintf(string, sizeof(string),
 		   "a decimal '%+d, octal %#o, hex %#X, string '%4.4s' ;\n"
 		   "varstr '%*.*s'.\n"

@@ -93,10 +93,11 @@
 #define DA_MATCH_PROFILE 2004
 #define DA_AUTH_DATA 2006
 #define DA_LOG_MODE_MASK 2007
-#define DV_LOG_MODE_MASK_LOG_ALL 0
 #define DV_LOG_MODE_MASK_LOG_AUTH 1
 #define DV_LOG_MODE_MASK_LOG_AUTH_PASS 2
 #define DV_LOG_MODE_MASK_LOG_FAILED_PASS 4
+#define DV_LOG_MODE_MASK_LOG_PASS 6
+#define DV_LOG_MODE_MASK_LOG_ALL 7
 /*  These are used by rewriting functions:
  */
 #define DA_ORIG_USER_NAME 2101

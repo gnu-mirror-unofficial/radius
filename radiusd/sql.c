@@ -928,8 +928,8 @@ rad_sql_check_connect(type)
  * Perform normal accounting
  */ 
 void
-rad_sql_acct(authreq)
-	AUTH_REQ *authreq;
+rad_sql_acct(radreq)
+	RADIUS_REQ *radreq;
 {
 	int rc, count;
 	int status;
@@ -940,14 +940,14 @@ rad_sql_acct(authreq)
 	if (!sql_cfg.doacct)
 		return;
 
-	if ((pair = pairfind(authreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
+	if ((pair = avl_find(radreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
 		/* should never happen!! */
 		radlog(L_ERR, _("no Acct-Status-Type record in rad_sql_acct()"));
 		return ;
 	}
 	status = pair->lvalue;
 
-	conn = attach_sql_connection(SQL_ACCT, (qid_t)authreq);
+	conn = attach_sql_connection(SQL_ACCT, (qid_t)radreq);
 
 	switch (status) {
 	case DV_ACCT_STATUS_TYPE_START:
@@ -955,7 +955,7 @@ rad_sql_acct(authreq)
 			break;
 		query = radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
 				     sql_cfg.acct_start_query,
-				     authreq->request, NULL);
+				     radreq->request, NULL);
 		rc = rad_sql_query(conn, query, NULL);
 		sqllog(rc, query);
 		break;
@@ -965,16 +965,16 @@ rad_sql_acct(authreq)
 			break;
 		query = radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
 				     sql_cfg.acct_stop_query,
-				     authreq->request, NULL);
+				     radreq->request, NULL);
 		rc = rad_sql_query(conn, query, &count);
 		sqllog(rc, query);
 		if (rc == 0 && count != 1) {
 			char *name;
 			char *session_id;
 
-			pair = pairfind(authreq->request, DA_USER_NAME);
+			pair = avl_find(radreq->request, DA_USER_NAME);
 			name = pair ? pair->strvalue : _("unknown");
-			pair = pairfind(authreq->request, DA_ACCT_SESSION_ID);
+			pair = avl_find(radreq->request, DA_ACCT_SESSION_ID);
 			session_id = pair ? pair->strvalue : _("unknown");
 			radlog(L_WARN, 
 			       _("SQL %s (%s) %d rows changed"),
@@ -987,14 +987,14 @@ rad_sql_acct(authreq)
 			break;
 		query = radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
 				     sql_cfg.acct_nasup_query,
-				     authreq->request, NULL);
+				     radreq->request, NULL);
 		rc = rad_sql_query(conn, query, &count);
 		sqllog(rc, query);
 		if (rc == 0) {
 			radlog(L_INFO,
 			       _("SQL: %d records updated writing acct-on info for NAS %s"),
 			       count,
-			       nas_name2(authreq));
+			       nas_name2(radreq));
 		}
 		break;
 
@@ -1003,14 +1003,14 @@ rad_sql_acct(authreq)
 			break;
 		query = radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
 				     sql_cfg.acct_nasdown_query,
-				     authreq->request, NULL);
+				     radreq->request, NULL);
 		rc = rad_sql_query(conn, query, &count);
 		sqllog(rc, query);
 		if (rc == 0) {
 			radlog(L_INFO,
 			       _("SQL: %d records updated writing acct-off info for NAS %s"),
 			       count,
-			       nas_name2(authreq));
+			       nas_name2(radreq));
 		}
 		break;
 
@@ -1019,27 +1019,27 @@ rad_sql_acct(authreq)
 			break;
 		query = radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
 				     sql_cfg.acct_keepalive_query,
-				     authreq->request, NULL);
+				     radreq->request, NULL);
 		rc = rad_sql_query(conn, query, &count);
 		sqllog(rc, query);
 		if (rc != 0) {
 			radlog(L_INFO,
 			       _("SQL: %d records updated writing keepalive info for NAS %s"),
 			       count,
-			       nas_name2(authreq));
+			       nas_name2(radreq));
 		}
 		break;
 		
 	}
 
 	if (!sql_cfg.keepopen)
-		unattach_sql_connection(SQL_ACCT, (qid_t)authreq);
+		unattach_sql_connection(SQL_ACCT, (qid_t)radreq);
 }
 
 
 int
 rad_sql_pass(req, authdata, passwd)
-	AUTH_REQ *req;
+	RADIUS_REQ *req;
 	char *authdata;
 	char *passwd;
 {
@@ -1054,15 +1054,15 @@ rad_sql_pass(req, authdata, passwd)
 	}
 	
 	if (authdata) {
-		pairadd(&req->request,
-			create_pair(DA_AUTH_DATA,
+		avl_add_pair(&req->request,
+			avp_create(DA_AUTH_DATA,
 				    strlen(authdata),
 				    authdata, 0));
 	}
 	radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
 		     sql_cfg.auth_query,
 		     req->request, NULL);
-	pairdelete(&req->request, DA_AUTH_DATA);
+	avl_delete(&req->request, DA_AUTH_DATA);
 	
 	conn = attach_sql_connection(SQL_AUTH, (qid_t)req);
 	mysql_passwd = rad_sql_getpwd(conn, sql_cfg.buf.ptr);
@@ -1086,7 +1086,7 @@ rad_sql_pass(req, authdata, passwd)
 
 int
 rad_sql_checkgroup(req, groupname)
-	AUTH_REQ *req;
+	RADIUS_REQ *req;
 	char *groupname;
 {
 	int   rc = -1;
@@ -1135,7 +1135,7 @@ rad_sql_attr_query(request_pairs, reply_pairs)
 	if (!sql_cfg.attr_query)
 		return 0;
 	
-	if ((pair = pairfind(request_pairs, DA_QUEUE_ID)) == NULL) {
+	if ((pair = avl_find(request_pairs, DA_QUEUE_ID)) == NULL) {
 		/* this should never happen, but just in case... */
 		radlog(L_ERR, "No queue ID in request");
 		return -1;
@@ -1161,7 +1161,7 @@ rad_sql_attr_query(request_pairs, reply_pairs)
 		pair = install_pair(attribute, PW_OPERATOR_EQUAL, value);
  
                 if (pair)
-                        pairlistadd(reply_pairs, pair);
+                        avl_add_list(reply_pairs, pair);
         }
  
         rad_sql_free(conn, data);

@@ -104,6 +104,15 @@ typedef struct request_class {
 #define MAX_LONGNAME  256
 #define MAX_SHORTNAME 32
 
+#define AF_CHECKLIST   0x0001  /* The attribute is valid in checklist */
+#define AF_REPLYLIST   0x0002  /* The attribute is valid in replylist */
+#define AF_ADD_REPLACE 0
+#define AF_ADD_APPEND  1
+#define AF_ADD_NONE    2
+
+#define AF_DEFAULT_FLAGS (AF_CHECKLIST|AF_REPLYLIST)
+#define AF_DEFAULT_ADD   AF_ADD_APPEND
+
 /* Dictionary attribute */
 typedef struct dict_attr {
 	struct dict_attr	*next;
@@ -111,6 +120,8 @@ typedef struct dict_attr {
 	int			value;
 	int			type;
 	int			vendor;
+	int                     flags;
+	int                     additivity; 
 } DICT_ATTR;
 
 /* Dictionary value */
@@ -135,6 +146,7 @@ typedef struct value_pair {
 	char	                *name;      /* Attribute name */
 	int			attribute;  /* Attribute value */
 	int			type;       /* Data type */
+	int                     additivity; 
 	int			operator;   /* Comparison operator */
 	union {
 		UINT4		ival;       /* integer value */
@@ -152,7 +164,7 @@ typedef struct value_pair {
 
 } VALUE_PAIR;
 
-typedef struct auth_req {
+typedef struct radius_req {
 	UINT4			ipaddr;
 	u_short			udp_port;
 	u_char			id;
@@ -171,7 +183,7 @@ typedef struct auth_req {
 	UINT4			server_id;
 	VALUE_PAIR		*server_reply;	/* Reply from other server */
 	int			server_code;	/* Reply code from other srv */
-} AUTH_REQ;
+} RADIUS_REQ;
 
 typedef struct client {
 	struct client		*next;
@@ -413,20 +425,14 @@ extern int              notify_port;
  */
 
 /* acct.c */
-int		rad_accounting(AUTH_REQ *, int);
-int		rad_account_transfer(AUTH_REQ *, int);
-int		rad_accounting_orig(AUTH_REQ *, int);
-int		rad_account_slice(AUTH_REQ *, int);
+int		rad_accounting(RADIUS_REQ *, int);
+int		rad_account_transfer(RADIUS_REQ *, int);
+int		rad_accounting_orig(RADIUS_REQ *, int);
+int		rad_account_slice(RADIUS_REQ *, int);
 int		radzap(UINT4 nas, int port, char *user, time_t t);
-char		*uue(void *);
 int		rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul);
-int             write_detail(AUTH_REQ *authreq, int authtype, char *f);
+int             write_detail(RADIUS_REQ *radreq, int authtype, char *f);
 void            rad_acct_xmit(int type, int code, void *data, int fd);
-
-/* attrprint.c */
-extern char *opstr[];
-void		fprint_attr_list(FILE *, VALUE_PAIR *);
-void		fprint_attr_val(FILE *, VALUE_PAIR *);
 
 /* dict.c */
 int		dict_init();
@@ -455,23 +461,28 @@ int             master_process();
 int             rad_flush_queues();
 void            schedule_restart();
 
+/* avl.c */
+VALUE_PAIR *avp_alloc();
+void avp_free();
+void		avl_free(VALUE_PAIR *);
+VALUE_PAIR	*avl_find(VALUE_PAIR *, int);
+void		avl_delete(VALUE_PAIR **, int);
+void		avl_add_list(VALUE_PAIR **, VALUE_PAIR *);
+void		avl_add_pair(VALUE_PAIR **, VALUE_PAIR *);
+VALUE_PAIR     *avl_dup(VALUE_PAIR *from);
+VALUE_PAIR     *avp_dup(VALUE_PAIR *vp);
+void            avl_merge(VALUE_PAIR **dst_ptr, VALUE_PAIR **src_ptr);
+VALUE_PAIR     *avp_create(int attr, int length, char *strval, int lval);
+void		avl_move_attr(VALUE_PAIR **to, VALUE_PAIR **from, int attr);
+
 /* util.c */
 char *		ip_hostname (UINT4);
 UINT4		get_ipaddr (char *);
 int		good_ipaddr(char *);
 char *		ipaddr2str(char *, UINT4);
-void		pairfree(VALUE_PAIR *);
 UINT4		ipstr2long(char *);
 struct passwd	*rad_getpwnam(char *);
-VALUE_PAIR	*pairfind(VALUE_PAIR *, int);
-void		pairdelete(VALUE_PAIR **, int);
-void		pairlistadd(VALUE_PAIR **, VALUE_PAIR *);
-void		pairadd(VALUE_PAIR **, VALUE_PAIR *);
-VALUE_PAIR     *paircopy(VALUE_PAIR *from);
-VALUE_PAIR     *pairdup(VALUE_PAIR *vp);
-
-VALUE_PAIR     *create_pair(int attr, int length, char *strval, int lval);
-void		authfree(AUTH_REQ *authreq);
+void		radreq_free(RADIUS_REQ *radreq);
 void            rad_lock(int fd, size_t size, off_t off, int whence);
 void            rad_unlock(int fd, size_t size, off_t off, int whence);
 char           *mkfilename(char *, char*);
@@ -479,11 +490,11 @@ char           *mkfilename3(char *dir, char *subdir, char *name);
 int             backslash(int c);
 
 /* radius.c */
-int		rad_send_reply(int, AUTH_REQ *, VALUE_PAIR *, char *, int);
-AUTH_REQ	*radrecv (UINT4, u_short, u_char *, int);
-int		calc_digest (u_char *, AUTH_REQ *);
-int		calc_acctdigest(u_char *digest, AUTH_REQ *authreq);
-void            send_challenge(AUTH_REQ *authreq, char *msg, char *state, int activefd);
+int		rad_send_reply(int, RADIUS_REQ *, VALUE_PAIR *, char *, int);
+RADIUS_REQ	*radrecv (UINT4, u_short, u_char *, int);
+int		calc_digest (u_char *, RADIUS_REQ *);
+int		calc_acctdigest(u_char *digest, RADIUS_REQ *radreq);
+void            send_challenge(RADIUS_REQ *radreq, char *msg, char *state, int activefd);
 
 /* files.c */
 int		user_find(char *name, VALUE_PAIR *,
@@ -491,7 +502,7 @@ int		user_find(char *name, VALUE_PAIR *,
 int		userparse(char *buf, VALUE_PAIR **first_pair, char **errmsg);
 void		presuf_setup(VALUE_PAIR *request_pairs);
 int		hints_setup(VALUE_PAIR *request_pairs);
-int		huntgroup_access(AUTH_REQ *authreq);
+int		huntgroup_access(RADIUS_REQ *radreq);
 CLIENT		*client_find(UINT4 ipno);
 char		*client_name(UINT4 ipno);
 int		read_clients_file(char *);
@@ -499,12 +510,10 @@ REALM		*realm_find(char *);
 NAS		*nas_find(UINT4 ipno);
 NAS             *nas_by_name(char *name);
 char		*nas_name(UINT4 ipno);
-char		*nas_name2(AUTH_REQ *r);
+char		*nas_name2(RADIUS_REQ *r);
 int		read_naslist_file(char *);
 int		reload_config_file(enum reload_what);
 int		presufcmp(VALUE_PAIR *check, char *name, char *rest);
-void		pairmove(VALUE_PAIR **to, VALUE_PAIR **from);
-void		pairmove2(VALUE_PAIR **to, VALUE_PAIR **from, int attr);
 int             get_config();
 int             get_deny(char *user);
 NAS *           findnasbyindex(int);
@@ -525,16 +534,16 @@ int		pam_pass(char *name, char *passwd, const char *pamauth,
 #endif
 
 /* proxy.c */
-int rad_proxy(AUTH_REQ *authreq, int activefd);
-void rad_proxy_free(AUTH_REQ *req);
-int proxy_send(AUTH_REQ *authreq, int activefd);
-int proxy_receive(AUTH_REQ *authreq, int activefd);
+int rad_proxy(RADIUS_REQ *radreq, int activefd);
+void rad_proxy_free(RADIUS_REQ *req);
+int proxy_send(RADIUS_REQ *radreq, int activefd);
+int proxy_receive(RADIUS_REQ *radreq, int activefd);
 void proxy_cleanup();
 
 /* auth.c */
-int		rad_auth_init(AUTH_REQ *authreq, int activefd);
-int		rad_authenticate (AUTH_REQ *, int);
-int  rad_check_password(AUTH_REQ *authreq, int activefd,
+int		rad_auth_init(RADIUS_REQ *radreq, int activefd);
+int		rad_authenticate (RADIUS_REQ *, int);
+int  rad_check_password(RADIUS_REQ *radreq, int activefd,
 			VALUE_PAIR *check_item,
 			VALUE_PAIR *namepair,
 			u_char *pw_digest, char **user_msg, char *userpass);
@@ -544,14 +553,12 @@ int		radius_exec_program(char *, VALUE_PAIR *,
 				    VALUE_PAIR **, int, char **user_msg);
 
 /* menu.c */
-void process_menu(AUTH_REQ *authreq, int fd, u_char *pw_digest);
+void process_menu(RADIUS_REQ *radreq, int fd, u_char *pw_digest);
 char * get_menu(char *menu_name);
 
 /* fixalloc.c */
 #define Alloc_entry(t) alloc_entry(sizeof(t))
-AUTH_REQ *alloc_request();
-VALUE_PAIR *alloc_pair();
-void free_pair();
+RADIUS_REQ *radreq_alloc();
 #define free_request free_entry
 
 #define MAX_PATH_LENGTH                 256

@@ -225,7 +225,7 @@ radius_exec_program(cmd, request, reply, exec_wait, user_msg)
 			radlog(L_ERR,
 			    _("<stdout of %s>:%d: %s"),
 			    cmd, line_num, errp);
-			pairfree(vp);
+			avl_free(vp);
 			vp = NULL;
 		}
 	}
@@ -234,7 +234,7 @@ radius_exec_program(cmd, request, reply, exec_wait, user_msg)
 	/*close(p[0]);*/
 
 	if (vp) {
-		pairmove(reply, &vp);
+		avl_merge(reply, &vp);
 	}
 
 	

@@ -109,7 +109,10 @@ addvendor(name, value)
 #define ATTR_VALUE   fv[2]
 #define ATTR_TYPE    fv[3]
 #define ATTR_VENDOR  fv[4]
-#define HAS_VENDOR(c) (c==5)
+#define ATTR_FLAGS   fv[5]
+#define ATTR_ADDITIVITY fv[6]
+#define HAS_VENDOR(c,p)     ((c>=5)&&strcmp(p[4],"-"))
+#define HAS_FLAGS(c,p)      (c==6)
 #define VALUE_ATTR   fv[1]
 #define VALUE_NAME   fv[2]
 #define VALUE_NUM    fv[3]
@@ -159,8 +162,10 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 	int              vendor = 0;
 	int              value;
 	char            *p;
+	int              flags = AF_DEFAULT_FLAGS;
+	int              add   = AF_DEFAULT_ADD;
 	
-	if (nfields(fc, 4, 5, file, lineno))
+	if (nfields(fc, 4, 6, file, lineno))
 		return 0;
 	/*
 	 * Validate all entries
@@ -191,7 +196,7 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 		return 0;
 	}
 
-	if (HAS_VENDOR(fc)) {
+	if (HAS_VENDOR(fc, fv)) {
 		if ((vendor = vendor_name_to_id(ATTR_VENDOR)) == 0) {
 			radlog(L_ERR|L_CONS,
 			       _("%s:%d: unknown vendor"),
@@ -201,11 +206,47 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 		}
 	}
 
+	if (HAS_FLAGS(fc,fv)) {
+		char *p;
+
+		flags = 0;
+		for (p = ATTR_FLAGS; *p; p++) {
+			switch (*p) {
+			case 'C':
+				flags |= AF_CHECKLIST;
+				break;
+			case 'R':
+				flags |= AF_REPLYLIST;
+				break;
+			case '=':
+				add = AF_ADD_REPLACE;
+				break;
+			case '+':
+				add = AF_ADD_APPEND;
+				break;
+			case 'N':
+				add = AF_ADD_NONE;
+				break;
+			case 'Z':
+			case 'I':
+				break;
+			default:
+				radlog(L_ERR|L_CONS,
+				       _("%s:%d: invalid flag %c"),
+				       file, lineno, *p);
+				(*errcnt)++;
+				return 0;
+			}
+		}
+	}
+
 	attr = Alloc_entry(DICT_ATTR);
 			
 	strcpy(attr->name, ATTR_NAME);
 	attr->value = value;
 	attr->type = type;
+	attr->flags = flags;
+	attr->additivity = add;
 	if (vendor)
 		attr->value |= (vendor << 16);
 	
@@ -360,7 +401,7 @@ parse_dict(name)
 	int   errcnt = 0;
 	
 	path = mkfilename(radius_dir, name);
-	rc = read_raddb_file(path, 1, 5, parse_dict_entry, &errcnt);
+	rc = read_raddb_file(path, 1, 6, parse_dict_entry, &errcnt);
 	if (errcnt)
 		radlog(L_NOTICE, _("%s: %d errors"), path, errcnt);
 	efree(path);

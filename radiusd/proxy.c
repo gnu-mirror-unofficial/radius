@@ -66,8 +66,8 @@ static int allowed[] = {
 };
 
 static void random_vector(char *vector);
-static VALUE_PAIR *proxy_addinfo(AUTH_REQ *authreq, int proxy_id, UINT4 remip);
-void proxy_addrequest(AUTH_REQ *authreq);
+static VALUE_PAIR *proxy_addinfo(RADIUS_REQ *radreq, int proxy_id, UINT4 remip);
+void proxy_addrequest(RADIUS_REQ *radreq);
 static void passwd_recode(char *secret_key, char *vector,
 			  char *pw_digest, VALUE_PAIR *pair);
 
@@ -139,8 +139,8 @@ proxy_cleanup()
  */
 /*ARGSUSED*/
 int
-rad_proxy(authreq, activefd)
-	AUTH_REQ *authreq;
+rad_proxy(radreq, activefd)
+	RADIUS_REQ *radreq;
 	int activefd;
 {
 	void *ptr;
@@ -148,11 +148,11 @@ rad_proxy(authreq, activefd)
 	/*
 	 *	Copy the static data into malloc()ed memory.
 	 */
-	ptr = emalloc(authreq->data_len);
+	ptr = emalloc(radreq->data_len);
 	debug(1,("allocated ptr %p", ptr));
-	memcpy(ptr, authreq->data, authreq->data_len);
-	authreq->data = ptr;
-	authreq->data_alloced = 1;
+	memcpy(ptr, radreq->data, radreq->data_len);
+	radreq->data = ptr;
+	radreq->data_alloced = 1;
 
 	return 0;
 }
@@ -325,15 +325,15 @@ ovf:
  *	Add a proxy-pair to the end of the request.
  */
 static VALUE_PAIR *
-proxy_addinfo(authreq, proxy_id, remip)
-	AUTH_REQ *authreq;
+proxy_addinfo(radreq, proxy_id, remip)
+	RADIUS_REQ *radreq;
 	int proxy_id;
 	UINT4 remip;
 {
 	VALUE_PAIR		*proxy_pair, *vp;
 	PROXY_STATE		*proxy_state;
 
-	proxy_pair = alloc_pair();
+	proxy_pair = avp_alloc();
 	proxy_pair->name = "Proxy-State";
 	proxy_pair->attribute = DA_PROXY_STATE;
 	proxy_pair->type = PW_TYPE_STRING;
@@ -342,11 +342,11 @@ proxy_addinfo(authreq, proxy_id, remip)
 	
 	proxy_state = (PROXY_STATE *)proxy_pair->strvalue;
 	proxy_state->ipaddr = myip;
-	proxy_state->id = authreq->id;
+	proxy_state->id = radreq->id;
 	proxy_state->proxy_id = proxy_id;
 	proxy_state->rem_ipaddr = remip;
 
-	for (vp = authreq->request; vp && vp->next; vp = vp->next)
+	for (vp = radreq->request; vp && vp->next; vp = vp->next)
 		;
 	vp->next = proxy_pair;
 	return vp;
@@ -411,8 +411,8 @@ passwd_recode(secret_key, vector, pw_digest, pass_pair)
  *
  */
 int
-proxy_send(authreq, activefd)
-	AUTH_REQ *authreq;
+proxy_send(radreq, activefd)
+	RADIUS_REQ *radreq;
 	int activefd;
 {
 	int                     rc;
@@ -432,7 +432,7 @@ proxy_send(authreq, activefd)
 	/*
 	 *	Look up name.
 	 */
-	namepair = pairfind(authreq->request, DA_USER_NAME);
+	namepair = avl_find(radreq->request, DA_USER_NAME);
 	if (namepair == NULL)
 		return 0;
 
@@ -480,12 +480,12 @@ proxy_send(authreq, activefd)
 	if (realm->striprealm)
 		*realmname = 0;
 	realmname++;
-	authreq->realm = make_string(realmname);
+	radreq->realm = make_string(realmname);
 
 	replace_string(&namepair->strvalue, username);
 	namepair->strlength = strlen(namepair->strvalue);
 
-	if (authreq->code == PW_AUTHENTICATION_REQUEST)
+	if (radreq->code == PW_AUTHENTICATION_REQUEST)
 		rport = realm->auth_port;
 	else
 		rport = realm->acct_port;
@@ -493,8 +493,8 @@ proxy_send(authreq, activefd)
 	secret_key = client->secret;
 	proxy_id = next_proxy_id(client->ipaddr);
 	
-	authreq->server_ipaddr = realm->ipaddr;
-	authreq->server_id = proxy_id;
+	radreq->server_ipaddr = realm->ipaddr;
+	radreq->server_id = proxy_id;
 
 	/*
 	 *	Is this a valid & signed request ?
@@ -503,14 +503,14 @@ proxy_send(authreq, activefd)
 	 *	FIXME: we have already calculated the
 	 *	digest in rad_auth_init()
 	 */
-	switch (authreq->code) {
+	switch (radreq->code) {
 	case PW_AUTHENTICATION_REQUEST:
 		what = _("authentication");
-		rc = calc_digest(pw_digest, authreq) != 0;
+		rc = calc_digest(pw_digest, radreq) != 0;
 		break;
 	case PW_ACCOUNTING_REQUEST:
 		what = _("accounting");
-		rc = calc_acctdigest(pw_digest, authreq) < 0;
+		rc = calc_acctdigest(pw_digest, radreq) < 0;
 		break;
 	default:
 		what = _("unknown");
@@ -520,7 +520,7 @@ proxy_send(authreq, activefd)
 	if (rc) {
 		radlog(L_NOTICE,
 		       _("%s request from client %s for user %s - Security Breach"),
-		       what, client_name(authreq->ipaddr),
+		       what, client_name(radreq->ipaddr),
 		       namepair->strvalue);
 		efree(saved_username);
 		return -1;
@@ -529,16 +529,16 @@ proxy_send(authreq, activefd)
 	/*
 	 *	Add PROXY_STATE attribute.
 	 */
-	pp = proxy_addinfo(authreq, proxy_id, realm->ipaddr);
+	pp = proxy_addinfo(radreq, proxy_id, realm->ipaddr);
 
 	/*
 	 *	If there is no DA_CHAP_CHALLENGE attribute but there
 	 *	is a DA_CHAP_PASSWORD we need to add it since we can't
 	 *	use the request authenticator anymore - we changed it.
 	 */
-	if (pairfind(authreq->request, DA_CHAP_PASSWORD) &&
-	    pairfind(authreq->request, DA_CHAP_CHALLENGE) == NULL) {
-		vp = alloc_pair();
+	if (avl_find(radreq->request, DA_CHAP_PASSWORD) &&
+	    avl_find(radreq->request, DA_CHAP_CHALLENGE) == NULL) {
+		vp = avp_alloc();
 		
 		memset(vp, 0, sizeof(VALUE_PAIR));
 
@@ -547,8 +547,8 @@ proxy_send(authreq, activefd)
 		vp->type = PW_TYPE_STRING;
 		vp->strlength = AUTH_VECTOR_LEN;
 		vp->strvalue = alloc_string(AUTH_VECTOR_LEN);
-		memcpy(vp->strvalue, authreq->vector, AUTH_VECTOR_LEN);
-		pairadd(&authreq->request, vp);
+		memcpy(vp->strvalue, radreq->vector, AUTH_VECTOR_LEN);
+		avl_add_pair(&radreq->request, vp);
 	}
 
 	debug(1, ("Sending %s request of id %d to %lx (server %s:%d)",
@@ -558,9 +558,9 @@ proxy_send(authreq, activefd)
 	 *	Now build a new request and send it to the remote radiusd.
 	 */
 	rad_send_request(activefd, realm->ipaddr, rport,
-			 proxy_id, authreq->code,
+			 proxy_id, radreq->code,
 			 pw_digest, secret_key,
-			 authreq->request);
+			 radreq->request);
 	
 	/*
 	 *	Remove proxy-state from list.
@@ -569,7 +569,7 @@ proxy_send(authreq, activefd)
 		VALUE_PAIR *p = pp->next;
 		pp->next = p->next;
 		p->next = NULL;  /* be sure to delete *only* this pair */
-		pairfree(p);
+		avl_free(p);
 	}
 #if 1	
 	/*
@@ -592,7 +592,7 @@ proxy_send(authreq, activefd)
 
 struct proxy_data {
 	PROXY_STATE *state;
-	AUTH_REQ    *authreq;
+	RADIUS_REQ    *radreq;
 };
 
 /* proxy_compare_request(): Find matching request based on the information
@@ -601,7 +601,7 @@ struct proxy_data {
 int
 proxy_compare_request(data, oldreq)
 	struct proxy_data *data;
-	AUTH_REQ *oldreq;
+	RADIUS_REQ *oldreq;
 {
 	debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x", 
 		oldreq->id,data->state->id,myip,data->state->ipaddr));
@@ -624,16 +624,16 @@ proxy_compare_request(data, oldreq)
 int
 proxy_compare_request_no_state(data, oldreq)
 	struct proxy_data *data;
-	AUTH_REQ *oldreq;
+	RADIUS_REQ *oldreq;
 {
 	debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x",
 		oldreq->server_id,
-		data->authreq->id,
+		data->radreq->id,
 		oldreq->server_ipaddr,
-		data->authreq->ipaddr));
+		data->radreq->ipaddr));
 			
-	if (data->authreq->ipaddr == oldreq->server_ipaddr &&
-	    data->authreq->id     == oldreq->server_id)
+	if (data->radreq->ipaddr == oldreq->server_ipaddr &&
+	    data->radreq->id     == oldreq->server_id)
 		return 0;
 
 	return 1;
@@ -647,13 +647,13 @@ proxy_compare_request_no_state(data, oldreq)
  *		  -1 error don't reply
  */
 int
-proxy_receive(authreq, activefd)
-	AUTH_REQ        *authreq;
+proxy_receive(radreq, activefd)
+	RADIUS_REQ        *radreq;
 	int             activefd;
 {
 	VALUE_PAIR	*vp, *proxy_state_pair, *prev, *x;
 	VALUE_PAIR	*allowed_pairs;
-	AUTH_REQ	*oldreq;
+	RADIUS_REQ	*oldreq;
 	PROXY_STATE	*state;
 	struct proxy_data data;
 	int             i;
@@ -669,7 +669,7 @@ proxy_receive(authreq, activefd)
 	oldreq  = NULL;
 	proxy_state_pair = x = prev = NULL;
 
-	for (vp = authreq->request; vp; vp = vp->next) {
+	for (vp = radreq->request; vp; vp = vp->next) {
 		if (vp->attribute == DA_PROXY_STATE) {
 			prev = x;
 			proxy_state_pair = vp;
@@ -691,14 +691,14 @@ proxy_receive(authreq, activefd)
 	 *	Now find matching request in the list of outstanding requests.
 	 */
 	data.state = state;
-	data.authreq = authreq;
+	data.radreq = radreq;
 
-	debug(1, ("Compare: myip %08x, authreq->id %d, authreq->ipaddr %08x",
-		 myip, authreq->id, authreq->ipaddr));
+	debug(1, ("Compare: myip %08x, radreq->id %d, radreq->ipaddr %08x",
+		 myip, radreq->id, radreq->ipaddr));
 	
 	if (state) {
-		if (state->proxy_id   == authreq->id &&
-		    state->rem_ipaddr == authreq->ipaddr) {
+		if (state->proxy_id   == radreq->id &&
+		    state->rem_ipaddr == radreq->ipaddr) {
 			oldreq = scan_request_list(R_PROXY,
 						   proxy_compare_request,
 						   &data);
@@ -714,7 +714,7 @@ proxy_receive(authreq, activefd)
 	if (oldreq == NULL) {
 		radlog(L_PROXY,
 		       _("Unrecognized proxy reply from server %s - ID %d"),
-		       client_name(authreq->ipaddr), authreq->id);
+		       client_name(radreq->ipaddr), radreq->id);
 		return -1;
 	}
 
@@ -725,9 +725,9 @@ proxy_receive(authreq, activefd)
 		if (prev)
 			prev->next = proxy_state_pair->next;
 		else
-			authreq->request = proxy_state_pair->next;
+			radreq->request = proxy_state_pair->next;
           	proxy_state_pair->next = NULL;
-	        pairfree(proxy_state_pair);
+	        avl_free(proxy_state_pair);
 	}
 
 	/*
@@ -736,31 +736,31 @@ proxy_receive(authreq, activefd)
 	 */
 	allowed_pairs = NULL;
 	for(i = 0; allowed[i]; i++)
-		pairmove2(&allowed_pairs, &authreq->request, allowed[i]);
-	pairfree(authreq->request);
+		avl_move_attr(&allowed_pairs, &radreq->request, allowed[i]);
+	avl_free(radreq->request);
 
 	/*
-	 *	Now rebuild the AUTHREQ struct, so that the
+	 *	Now rebuild the RADIUS_REQ struct, so that the
 	 *	normal functions can process it. Take care not to modify
 	 *      oldreq!
 	 */
 	
-	authreq->server_reply = allowed_pairs;
-	authreq->validated    = 1;
-	authreq->server_code  = authreq->code;
-	authreq->code         = oldreq->code;
+	radreq->server_reply = allowed_pairs;
+	radreq->validated    = 1;
+	radreq->server_code  = radreq->code;
+	radreq->code         = oldreq->code;
 
-	authreq->ipaddr       = oldreq->ipaddr;
-	authreq->udp_port     = oldreq->udp_port;
-	authreq->id           = oldreq->id;
-	memcpy(authreq->vector, oldreq->vector, sizeof authreq->vector);
-	memcpy(authreq->secret, oldreq->secret, sizeof authreq->secret);
-	authreq->request      = paircopy(oldreq->request);
+	radreq->ipaddr       = oldreq->ipaddr;
+	radreq->udp_port     = oldreq->udp_port;
+	radreq->id           = oldreq->id;
+	memcpy(radreq->vector, oldreq->vector, sizeof radreq->vector);
+	memcpy(radreq->secret, oldreq->secret, sizeof radreq->secret);
+	radreq->request      = avl_dup(oldreq->request);
 
 	/* Proxy support fields */
-	authreq->realm         = dup_string(oldreq->realm);
-	authreq->server_ipaddr = oldreq->server_ipaddr;
-	authreq->server_id     = oldreq->server_id;
+	radreq->realm         = dup_string(oldreq->realm);
+	radreq->server_ipaddr = oldreq->server_ipaddr;
+	radreq->server_id     = oldreq->server_id;
 	
 	return 0;
 }

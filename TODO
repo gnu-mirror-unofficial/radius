@@ -1,9 +1,10 @@
-0    : Multiple servers per realm? (Rasmus Aveskogh <rasmus.aveskogh@utfors.se>)
 -100 : Add documentation and default configs for attr_query!
 -3   : Enable use of port number in rewrite:check_unix()
+0    : Multiple servers per realm? (Rasmus Aveskogh <rasmus.aveskogh@utfors.se>)
+0    : Think about the possibility to serve multiple interfaces/ports.
 2    : radprintf: Select more appropriate notations for (%I, %A). Maybe
        %#i, %#p would do: both are accepted by usual pritnf functions
        and do not make lint angry.
-0    : Think about the possibility to serve multiple interfaces/ports.
-10   : Need a more flexible IP allocation strategy
 5    : Write a unified configuration utility in guile.
+10   : Need a more flexible IP allocation strategy
+

@@ -150,7 +150,7 @@ SCM_DEFINE(rad_send_internal, "rad-send-internal", 3, 0, 0,
 	int code;
 	VALUE_PAIR *pairlist;
 	SCM g_auth, g_plist;
-	AUTH_REQ *auth;
+	RADIUS_REQ *auth;
 	
 	SCM_ASSERT((SCM_IMP(g_port) && SCM_INUMP(g_port)),
 		    g_port, SCM_ARG1, "rad-send-internal");

@@ -46,169 +46,22 @@ static char rcsid[] =
 #include <sysdep.h>
 #include <radiusd.h>
 
-/* Release the memory used by a list of attribute-value
- * pairs.
+RADIUS_REQ *
+radreq_alloc()
+{
+	return Alloc_entry(RADIUS_REQ);
+}
+
+/* Free a RADIUS_REQ struct.
  */
 void 
-pairfree(pair)
-	VALUE_PAIR *pair;
+radreq_free(radreq)
+	RADIUS_REQ *radreq;
 {
-	VALUE_PAIR *next;
-
-	while (pair != NULL) {
-		next = pair->next;
-		free_pair(pair);
-		pair = next;
-	}
-}
-
-
-/* Find the pair with the matching attribute
- */
-VALUE_PAIR * 
-pairfind(first, attr)
-	VALUE_PAIR *first; 
-	int attr;
-{
-	while (first && first->attribute != attr)
-		first = first->next;
-	return first;
-}
-
-
-/* Delete the pairs with the mathing attribute
- */
-void 
-pairdelete(first, attr)
-	VALUE_PAIR **first; 
-	int attr;
-{
-	VALUE_PAIR *pair, *next, *last = NULL;
-
-	for (pair = *first; pair; pair = next) {
-		next = pair->next;
-		if (pair->attribute == attr) {
-			if (last)
-				last->next = next;
-			else
-				*first = next;
-			free_pair(pair);
-		} else
-			last = pair;
-	}
-}
-
-/* Add a pair to the end of a VALUE_PAIR list.
- */
-void 
-pairlistadd(first, new)
-	VALUE_PAIR **first; 
-	VALUE_PAIR *new;
-{
-	VALUE_PAIR *pair;
-
-	if (*first == NULL) {
-		*first = new;
-		return;
-	}
-	for (pair = *first; pair->next; pair = pair->next)
-		;
-	pair->next = new;
-}
-
-void 
-pairadd(first, new)
-	VALUE_PAIR **first;
-	VALUE_PAIR *new;
-{
-	if (!new)
-		return;
-	new->next = NULL;
-	pairlistadd(first, new);
-}
-
-/* Create a copy of a pair list.
- */
-VALUE_PAIR *
-paircopy(from)
-	VALUE_PAIR *from;
-{
-	VALUE_PAIR *first = NULL;
-	VALUE_PAIR *last = NULL;
-	VALUE_PAIR *temp;
-
-	for ( ; from; from = from->next) {
-		temp = alloc_pair();
-		memcpy(temp, from, sizeof(VALUE_PAIR));
-		if (temp->type == PW_TYPE_STRING)
-			temp->strvalue = dup_string(temp->strvalue);
-		temp->next = NULL;
-		if (last)
-			last->next = temp;
-		else
-			first = temp;
-		last = temp;
-	}
-
-	return first;
-}
-
-/* Create a copy of a pair
- */
-VALUE_PAIR *
-pairdup(vp)
-	VALUE_PAIR *vp;
-{
-	VALUE_PAIR *ret = alloc_pair();
-
-	memcpy(ret, vp, sizeof(VALUE_PAIR));
-	ret->next = NULL;
-	if (ret->type == PW_TYPE_STRING)
-		ret->strvalue = dup_string(vp->strvalue);
-	return ret;
-}
-
-/* Create a pair with given attribute, length and value;
- */
-VALUE_PAIR *
-create_pair(attr, length, strval, lval)
-	int attr;
-	int length;
-	char *strval;
-	int lval;
-{
-	VALUE_PAIR *pair;
-	DICT_ATTR  *dict;
-
-	dict = attr_number_to_dict(attr);
-	if (!dict) {
-		radlog(L_ERR, _("make_pair(): dictionary attr %d not found"),
-		       attr);
-		return NULL;
-	}
-	pair = alloc_pair();
-	pair->name = dict->name;
-	pair->attribute = attr;
-	pair->type = dict->type;
-	if (strval) {
-		pair->strlength = length;
-		pair->strvalue = make_string(strval);
-	} else
-		pair->lvalue = lval;
-
-	return pair;
-}
-
-/* Free an AUTHREQ struct.
- */
-void 
-authfree(authreq)
-	AUTH_REQ *authreq;
-{
-	free_string(authreq->realm);
-	pairfree(authreq->server_reply);
-	pairfree(authreq->request);
-	free_request(authreq);
+	free_string(radreq->realm);
+	avl_free(radreq->server_reply);
+	avl_free(radreq->request);
+	free_request(radreq);
 }
 
 
@@ -339,19 +192,6 @@ mkfilename3(dir, subdir, name)
 	return p;
 }
 
-
-/*
- *	Write a whole list of A/V pairs.
- */
-void 
-fprint_attr_list(fd, pair)
-	FILE *fd;
-	VALUE_PAIR *pair;
-{
-	for (; pair; pair = pair->next) {
-		radfprintf(fd, "    %A\n", pair);
-	}
-}
 
 #if 0
 int

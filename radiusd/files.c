@@ -194,8 +194,8 @@ add_user_entry(symtab, line, name, check, reply)
 		radlog(L_ERR,
 		       _("users:%d: discarding user `%s'"),
 		       line, name);
-		pairfree(check);
-		pairfree(reply);
+		avl_free(check);
+		avl_free(reply);
 		return 0;
 	}
 
@@ -226,8 +226,8 @@ static int
 free_user_entry(sym)
 	User_symbol *sym;
 {
-	pairfree(sym->check);
-	pairfree(sym->reply);
+	avl_free(sym->check);
+	avl_free(sym->reply);
 	return 0;
 }
 
@@ -245,8 +245,6 @@ add_pairlist(closure, line, name, check, reply)
 {
 	PAIR_LIST *pl;
 	
-	fix_check_pairs(name, line, &check);
-
 	pl = Alloc_entry(PAIR_LIST);
 	pl->name = estrdup(name);
 	pl->check = check;
@@ -389,7 +387,7 @@ match_user(sym, request_pairs, check_pairs, reply_pairs)
 		if (paircmp(request_pairs, sym->check))
 			continue;
 		
-		if (p = pairfind(sym->check, DA_MATCH_PROFILE)) {
+		if (p = avl_find(sym->check, DA_MATCH_PROFILE)) {
 			debug(1, ("submatch: %s", p->strvalue));
 
 			if (!match_user((User_symbol*)sym_lookup(user_tab,
@@ -401,18 +399,18 @@ match_user(sym, request_pairs, check_pairs, reply_pairs)
 
 		found = 1;
 
-		check_tmp = paircopy(sym->check);
-		reply_tmp = paircopy(sym->reply);
-		pairmove(reply_pairs, &reply_tmp);
-		pairmove(check_pairs, &check_tmp);
+		check_tmp = avl_dup(sym->check);
+		reply_tmp = avl_dup(sym->reply);
+		avl_merge(reply_pairs, &reply_tmp);
+		avl_merge(check_pairs, &check_tmp);
 #ifdef USE_SQL
 		rad_sql_attr_query(request_pairs, reply_pairs);
 #endif
 
-		pairfree(reply_tmp);
-		pairfree(check_tmp);
+		avl_free(reply_tmp);
+		avl_free(check_tmp);
 
-		if (p = pairfind(sym->reply, DA_MATCH_PROFILE)) {
+		if (p = avl_find(sym->reply, DA_MATCH_PROFILE)) {
 			debug(1, ("next: %s", p->strvalue));
 			match_user((User_symbol*)sym_lookup(user_tab,
 							    p->strvalue),
@@ -471,8 +469,8 @@ user_find(name, request_pairs, check_pairs, reply_pairs)
 	/*
 	 *	Remove server internal parameters.
 	 */
-	pairdelete(reply_pairs, DA_FALL_THROUGH);
-	pairdelete(reply_pairs, DA_MATCH_PROFILE);
+	avl_delete(reply_pairs, DA_FALL_THROUGH);
+	avl_delete(reply_pairs, DA_MATCH_PROFILE);
 	
 	return 0;
 }
@@ -609,7 +607,7 @@ userparse(buffer, first_pair, errmsg)
 			break;
 			
 		case PS_RHS:
-			pair = alloc_pair();
+			pair = avp_alloc();
 			pair->name = attr->name;
 			pair->attribute = attr->value;
 			pair->type = attr->type;
@@ -641,7 +639,7 @@ userparse(buffer, first_pair, errmsg)
 				if (isdigit(*token)) {
 					pair->lvalue = atoi(token);
 				} else if (!(dval = value_name_to_value(token))) {
-					free_pair(pair);
+					avp_free(pair);
 					radsprintf(errbuf, sizeof(errbuf),
 						_("unknown value %s"),
 						token);
@@ -676,7 +674,7 @@ userparse(buffer, first_pair, errmsg)
 				/*
 				 *	Add an extra (hidden) attribute.
 				 */
-				pair2 = alloc_pair();
+				pair2 = avp_alloc();
 				
 				pair2->name = "Add-Port-To-IP-Address";
 				pair2->attribute = DA_ADD_PORT_TO_IP_ADDRESS;
@@ -708,10 +706,10 @@ userparse(buffer, first_pair, errmsg)
 					pair->type);
 			error:
 				*errmsg = errbuf;
-				free_pair(pair);
+				avp_free(pair);
 				return -1;
 			}
-			pairlistadd(first_pair, pair);
+			avl_add_list(first_pair, pair);
 			state = PS_END;
 			break;
 			
@@ -758,12 +756,12 @@ hints_setup(request_pairs)
 	/* 
 	 *	Check for valid input, zero length names not permitted 
 	 */
-	if ((name_pair = pairfind(request_pairs, DA_USER_NAME)) == NULL) {
+	if ((name_pair = avl_find(request_pairs, DA_USER_NAME)) == NULL) {
 		name = NULL;
 		orig_name_pair = NULL;
 	} else {
 		name = name_pair->strvalue;
-		orig_name_pair = pairdup(name_pair);
+		orig_name_pair = avp_dup(name_pair);
 		orig_name_pair->attribute = DA_ORIG_USER_NAME;
 		orig_name_pair->name = "Orig-User-Name";
 	}
@@ -780,12 +778,12 @@ hints_setup(request_pairs)
 	 * if Framed-Protocol is present but Service-Type is missing, add
 	 * Service-Type = Framed-User.
 	 */
-	if (pairfind(request_pairs, DA_FRAMED_PROTOCOL) != NULL &&
-	    pairfind(request_pairs, DA_SERVICE_TYPE) == NULL) {
-		tmp = create_pair(DA_SERVICE_TYPE, 0, NULL,
+	if (avl_find(request_pairs, DA_FRAMED_PROTOCOL) != NULL &&
+	    avl_find(request_pairs, DA_SERVICE_TYPE) == NULL) {
+		tmp = avp_create(DA_SERVICE_TYPE, 0, NULL,
 				  DV_SERVICE_TYPE_FRAMED_USER);
 		if (tmp) {
-			pairmove(&request_pairs, &tmp);
+			avl_merge(&request_pairs, &tmp);
 		}
 	}
 
@@ -799,21 +797,21 @@ hints_setup(request_pairs)
 	}
 
 	if (i == NULL) {
-		pairfree(orig_name_pair);
+		avl_free(orig_name_pair);
 		return 0;
 	}
 	
-	add = paircopy(i->reply);
+	add = avl_dup(i->reply);
 	if (orig_name_pair)
-		pairadd(&add, orig_name_pair);
+		avl_add_pair(&add, orig_name_pair);
 	
 	/*
 	 *	See if we need to adjust the name.
 	 */
 	if (name_pair) {
 		do_strip = 1;
-		if ((tmp = pairfind(i->reply, DA_STRIP_USER_NAME)) != NULL ||
-		    (tmp = pairfind(i->check, DA_STRIP_USER_NAME)) != NULL)
+		if ((tmp = avl_find(i->reply, DA_STRIP_USER_NAME)) != NULL ||
+		    (tmp = avl_find(i->check, DA_STRIP_USER_NAME)) != NULL)
 			do_strip = tmp->lvalue;
 
 		if (do_strip) {
@@ -821,8 +819,8 @@ hints_setup(request_pairs)
 		}
 
 		/* Ok, let's see if we need to further modify the username */
-		if ((tmp = pairfind(i->reply, DA_REPLACE_USER_NAME)) != NULL ||
-		    (tmp = pairfind(i->check, DA_REPLACE_USER_NAME)) != NULL) {
+		if ((tmp = avl_find(i->reply, DA_REPLACE_USER_NAME)) != NULL ||
+		    (tmp = avl_find(i->check, DA_REPLACE_USER_NAME)) != NULL) {
 			char *ptr;
 			
 			ptr = radius_xlate(newname, sizeof(newname),
@@ -834,8 +832,8 @@ hints_setup(request_pairs)
 		}
 		
 		/* Is the rewrite function specified? */
-		if ((tmp = pairfind(i->reply, DA_REWRITE_FUNCTION)) != NULL ||
-		    (tmp = pairfind(i->check, DA_REWRITE_FUNCTION)) != NULL) {
+		if ((tmp = avl_find(i->reply, DA_REWRITE_FUNCTION)) != NULL ||
+		    (tmp = avl_find(i->check, DA_REWRITE_FUNCTION)) != NULL) {
 			if (run_rewrite(tmp->strvalue, request_pairs)) {
 				radlog(L_ERR, _("hints:%d: %s(): not defined"),
 				       i->lineno,
@@ -856,9 +854,9 @@ hints_setup(request_pairs)
 	 *	Now add all attributes to the request list,
 	 *	except the DA_STRIP_USER_NAME and DA_REPLACE_USER_NAME ones.
 	 */
-	pairdelete(&add, DA_STRIP_USER_NAME);
-	pairdelete(&add, DA_REPLACE_USER_NAME);
-	pairdelete(&add, DA_REWRITE_FUNCTION);
+	avl_delete(&add, DA_STRIP_USER_NAME);
+	avl_delete(&add, DA_REPLACE_USER_NAME);
+	avl_delete(&add, DA_REWRITE_FUNCTION);
 	for (last = request_pairs; last && last->next; last = last->next)
 		;
 	if (last)
@@ -997,8 +995,8 @@ huntgroup_match(request_pairs, huntgroup)
  *         -1 on error.
  */
 int
-huntgroup_access(authreq)
-	AUTH_REQ *authreq;
+huntgroup_access(radreq)
+	RADIUS_REQ *radreq;
 {
 	VALUE_PAIR      *request_pairs, *pair;
 	PAIR_LIST	*pl;
@@ -1007,7 +1005,7 @@ huntgroup_access(authreq)
 	if (huntgroups == NULL)
 		return 1;
 
-	request_pairs = authreq->request;
+	request_pairs = radreq->request;
 	for (pl = huntgroups; pl; pl = pl->next) {
 		/*
 		 *	See if this entry matches.
@@ -1021,8 +1019,8 @@ huntgroup_access(authreq)
 
 #ifdef DA_REWRITE_FUNCTION
 	if (pl &&
-	    (pair = pairfind(pl->check, DA_REWRITE_FUNCTION)) != NULL) {
-		if (run_rewrite(pair->strvalue, authreq->request)) {
+	    (pair = avl_find(pl->check, DA_REWRITE_FUNCTION)) != NULL) {
+		if (run_rewrite(pair->strvalue, radreq->request)) {
 			radlog(L_ERR, _("huntgroups:%d: %s(): not defined"),
 			       pl->lineno,
 			       pair->strvalue);
@@ -1398,17 +1396,17 @@ nas_name(ipaddr)
 
 /* Find the name of a nas (prefer short name) based on the request */
 char *
-nas_name2(authreq)
-	AUTH_REQ *authreq;
+nas_name2(radreq)
+	RADIUS_REQ *radreq;
 {
 	UINT4	ipaddr;
 	NAS	*cl;
 	VALUE_PAIR	*pair;
 
-	if ((pair = pairfind(authreq->request, DA_NAS_IP_ADDRESS)) != NULL)
+	if ((pair = avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
 		ipaddr = pair->lvalue;
 	else
-		ipaddr = authreq->ipaddr;
+		ipaddr = radreq->ipaddr;
 
 	if ((cl = nas_find(ipaddr)) != NULL) {
 		if (cl->shortname[0])
@@ -1603,138 +1601,12 @@ fallthrough(vp)
 {
 	VALUE_PAIR *tmp;
 
-	return (tmp = pairfind(vp, DA_FALL_THROUGH)) ? tmp->lvalue : 0;
+	return (tmp = avl_find(vp, DA_FALL_THROUGH)) ? tmp->lvalue : 0;
 }
 
 
 /*
- * Move attributes from one list to the other if not already present there.
- */
-void
-pairmove(to, from)
-	VALUE_PAIR **to;
-	VALUE_PAIR **from;
-{
-	VALUE_PAIR *tailto, *i, *next;
-	VALUE_PAIR *tailfrom = NULL;
-	int has_password = 0;
 
-	if (*to == NULL) {
-		*to = *from;
-		*from = NULL;
-		return;
-	}
-
-	/*
-	 *	First, see if there are any passwords here, and
-	 *	point "tailto" to the end of the "to" list.
-	 */
-	tailto = *to;
-	for(i = *to; i; i = i->next) {
-		if (i->attribute == DA_PASSWORD ||
-		/*
-		 *	FIXME: this seems to be needed with PAM support
-		 *	to keep it around the Auth-Type = Pam stuff.
-		 *	Perhaps we should only do this if Auth-Type = Pam?
-		 */
-#ifdef USE_PAM
-		    i->attribute == DA_PAM_AUTH ||
-#endif
-		    i->attribute == DA_CRYPT_PASSWORD)
-			has_password = 1;
-		tailto = i;
-	}
-
-	/*
-	 *	Loop over the "from" list.
-	 */
-	for(i = *from; i; i = next) {
-		next = i->next;
-		/*
-		 *	If there was a password in the "to" list,
-		 *	do not move any other password from the
-		 *	"from" to the "to" list.
-		 */
-		if (has_password &&
-		    (i->attribute == DA_PASSWORD ||
-#ifdef USE_PAM
-		     i->attribute == DA_PAM_AUTH ||
-#endif
-		     i->attribute == DA_CRYPT_PASSWORD)) {
-			tailfrom = i;
-			continue;
-		}
-		/*
-		 *	If the attribute is already present in "to",
-		 *	do not move it from "from" to "to". We make
-		 *	an exception for "Hint" which can appear multiple
-		 *	times, and we never move "Fall-Through".
-		 */
-		if (i->attribute == DA_FALL_THROUGH ||
-		    (i->attribute != DA_HINT && i->attribute != DA_FRAMED_ROUTE
-		     && pairfind(*to, i->attribute) != 0)) {
-			tailfrom = i;
-			continue;
-		}
-		if (tailfrom)
-			tailfrom->next = next;
-		else
-			*from = next;
-		tailto->next = i;
-		i->next = NULL;
-		tailto = i;
-	}
-}
-
-/*
- *	Move one kind of attributes from one list to the other
- */
-void
-pairmove2(to, from, attr)
-	VALUE_PAIR **to;
-	VALUE_PAIR **from;
-	int attr;
-{
-	VALUE_PAIR *to_tail, *i, *next;
-	VALUE_PAIR *iprev = NULL;
-
-	/*
-	 *	Find the last pair in the "to" list and put it in "to_tail".
-	 */
-	if (*to != NULL) {
-		to_tail = *to;
-		for(i = *to; i; i = i->next)
-			to_tail = i;
-	} else
-		to_tail = NULL;
-
-	for(i = *from; i; i = next) {
-		next = i->next;
-
-		if (i->attribute != attr) {
-			iprev = i;
-			continue;
-		}
-
-		/*
-		 *	Remove the attribute from the "from" list.
-		 */
-		if (iprev)
-			iprev->next = next;
-		else
-			*from = next;
-
-		/*
-		 *	Add the attribute to the "to" list.
-		 */
-		if (to_tail)
-			to_tail->next = i;
-		else
-			*to = i;
-		to_tail = i;
-		i->next = NULL;
-	}
-}
 
 /*
  *	Compare a portno with a range.
@@ -1781,14 +1653,14 @@ uidcmp(check, username)
 	return pwd->pw_uid - check->lvalue;
 }
 
-AUTH_REQ *
+RADIUS_REQ *
 auth_request(request_pairs)
 	VALUE_PAIR *request_pairs;
 {
 	VALUE_PAIR *p;
 
-	if (p = pairfind(request_pairs, DA_QUEUE_ID))
-		return (AUTH_REQ*)p->lvalue;
+	if (p = avl_find(request_pairs, DA_QUEUE_ID))
+		return (RADIUS_REQ*)p->lvalue;
 	return NULL;
 }
 
@@ -1808,7 +1680,7 @@ groupcmp(request, groupname, username)
 	int retval;
 
 #ifdef USE_SQL
-	AUTH_REQ *req = auth_request(request);
+	RADIUS_REQ *req = auth_request(request);
 	if (req && rad_sql_checkgroup(req, groupname) == 0)
 		return 0;
 #endif
@@ -2047,9 +1919,9 @@ pairlist_free(pl)
 		if (p->name)
 			efree(p->name);
 		if (p->check)
-			pairfree(p->check);
+			avl_free(p->check);
 		if (p->reply)
-			pairfree(p->reply);
+			avl_free(p->reply);
 		next = p->next;
 		free_entry(p);
 	}
@@ -2532,21 +2404,21 @@ presuf_setup(request_pairs)
 	VALUE_PAIR  *tmp;
 	char	     name[RUT_NAMESIZE+1];
 	
-	if ((name_pair = pairfind(request_pairs, DA_USER_NAME)) == NULL)
+	if ((name_pair = avl_find(request_pairs, DA_USER_NAME)) == NULL)
 		return ;
 
 	for (sym = user_lookup(name_pair->strvalue, &lu); sym;
 	     sym = user_next(&lu)) {
 
-		if ((presuf_pair = pairfind(sym->check, DA_PREFIX)) == NULL &&
-		    (presuf_pair = pairfind(sym->check, DA_SUFFIX)) == NULL)
+		if ((presuf_pair = avl_find(sym->check, DA_PREFIX)) == NULL &&
+		    (presuf_pair = avl_find(sym->check, DA_SUFFIX)) == NULL)
 			continue;
 		if (presufcmp(presuf_pair, name_pair->strvalue, name) != 0)
 			continue;
 		/*
 		 *	See if username must be stripped.
 		 */
-		if ((tmp = pairfind(sym->check, DA_STRIP_USER_NAME)) != NULL &&
+		if ((tmp = avl_find(sym->check, DA_STRIP_USER_NAME)) != NULL &&
 		    tmp->lvalue == 0)
 			continue;
 		replace_string(&name_pair->strvalue, name);
@@ -2569,10 +2441,10 @@ strip_username(do_strip, name, check_item, stripped_name)
 	/*
 	 *	See if there was a Prefix or Suffix included.
 	 */
-	if ((presuf_item = pairfind(check_item, DA_PREFIX)) == NULL)
-		presuf_item = pairfind(check_item, DA_SUFFIX);
+	if ((presuf_item = avl_find(check_item, DA_PREFIX)) == NULL)
+		presuf_item = avl_find(check_item, DA_SUFFIX);
 	if (presuf_item) {
-		if (tmp = pairfind(check_item, DA_STRIP_USER_NAME))
+		if (tmp = avl_find(check_item, DA_STRIP_USER_NAME))
 			do_strip = tmp->lvalue;
 		if (do_strip) { 
 			if (presufcmp(presuf_item, name, tmpname) == 0)

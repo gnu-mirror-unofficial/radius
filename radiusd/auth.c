@@ -138,7 +138,7 @@ check_expiration(check_item, user_msg)
 	char umsg[80];
 	
 	result = AUTH_OK;
-	if (pair = pairfind(check_item, DA_EXPIRATION)) {
+	if (pair = avl_find(check_item, DA_EXPIRATION)) {
 		rc = pw_expired(pair->lvalue);
 		if (rc < 0) {
 			result = AUTH_FAIL;
@@ -258,9 +258,9 @@ unix_pass(name, passwd)
  */
 /*ARGSUSED*/
 int
-rad_check_password(authreq, activefd, check_item, namepair,
+rad_check_password(radreq, activefd, check_item, namepair,
 		   pw_digest, user_msg, userpass)
-	AUTH_REQ   *authreq;
+	RADIUS_REQ   *radreq;
 	int        activefd;
 	VALUE_PAIR *check_item;
 	VALUE_PAIR *namepair;
@@ -290,7 +290,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 	 * if the authentication type is DV_AUTH_TYPE_ACCEPT or
 	 * DV_AUTH_TYPE_REJECT.
 	 */
-	if ((auth_type_pair = pairfind(check_item, DA_AUTH_TYPE)) != NULL)
+	if ((auth_type_pair = avl_find(check_item, DA_AUTH_TYPE)) != NULL)
 		auth_type = auth_type_pair->lvalue;
 
 	if (auth_type == DV_AUTH_TYPE_ACCEPT)
@@ -301,7 +301,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 		return AUTH_REJECT;
 	}
 
-        if ((p = pairfind(check_item, DA_AUTH_DATA)) != NULL) {
+        if ((p = avl_find(check_item, DA_AUTH_DATA)) != NULL) {
 		authdata = p->strvalue;
         }
 	
@@ -309,18 +309,18 @@ rad_check_password(authreq, activefd, check_item, namepair,
 	 * Find the password sent by the user. It SHOULD be there,
 	 * if it's not authentication fails.
 	 */
-	if ((auth_item = pairfind(authreq->request, DA_CHAP_PASSWORD)) == NULL)
-		auth_item = pairfind(authreq->request, DA_PASSWORD);
+	if ((auth_item = avl_find(radreq->request, DA_CHAP_PASSWORD)) == NULL)
+		auth_item = avl_find(radreq->request, DA_PASSWORD);
 	if (auth_item == NULL)
 		return AUTH_FAIL;
 
 	/*
 	 * Find the password from the users file.
 	 */
-	if ((password_pair = pairfind(check_item, DA_CRYPT_PASSWORD)) != NULL)
+	if ((password_pair = avl_find(check_item, DA_CRYPT_PASSWORD)) != NULL)
 		auth_type = DV_AUTH_TYPE_CRYPT_LOCAL;
 	else
-		password_pair = pairfind(check_item, DA_PASSWORD);
+		password_pair = avl_find(check_item, DA_PASSWORD);
 
 	/*
 	 * See if there was a Prefix or Suffix included.
@@ -348,7 +348,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 		 auth_type, string, name,
 		 password_pair ? password_pair->strvalue : ""));
 
-	if ((p = pairfind(check_item, DA_AUTH_DATA)) != NULL) 
+	if ((p = avl_find(check_item, DA_AUTH_DATA)) != NULL) 
 		authdata = p->strvalue;
 
 	switch (auth_type) {
@@ -367,7 +367,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 			 * Provide defaults for authdata
 			 */
 			if (authdata == NULL &&
-			    (p = pairfind(check_item, DA_PAM_AUTH)) != NULL) {
+			    (p = avl_find(check_item, DA_PAM_AUTH)) != NULL) {
 				authdata = p->strvalue;
 			}
 			authdata = authdata ? authdata : PAM_DEFAULT_TYPE;
@@ -382,7 +382,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 			break;
 		case DV_AUTH_TYPE_MYSQL:
 #ifdef USE_SQL
-			result = rad_sql_pass(authreq, authdata, string);
+			result = rad_sql_pass(radreq, authdata, string);
 #else
 			radlog(L_ERR,
 			       _("%s: MYSQL authentication not available"),
@@ -441,12 +441,12 @@ rad_check_password(authreq, activefd, check_item, namepair,
 			 * Use Chap-Challenge pair if present,
 			 * Request-Authenticator otherwise.
 			 */
-			if ((tmp = pairfind(authreq->request,
+			if ((tmp = avl_find(radreq->request,
 					    DA_CHAP_CHALLENGE)) != NULL) {
 				memcpy(ptr, tmp->strvalue, tmp->strlength);
 				i += tmp->strlength;
 			} else {
-				memcpy(ptr, authreq->vector, AUTH_VECTOR_LEN);
+				memcpy(ptr, radreq->vector, AUTH_VECTOR_LEN);
 				i += AUTH_VECTOR_LEN;
 			}
 			md5_calc(pw_digest, (u_char*) string, i);
@@ -474,8 +474,8 @@ rad_check_password(authreq, activefd, check_item, namepair,
  *	process the hints and huntgroups file.
  */
 int
-rad_auth_init(authreq, activefd)
-	AUTH_REQ *authreq;
+rad_auth_init(radreq, activefd)
+	RADIUS_REQ *radreq;
 	int       activefd;
 {
 	VALUE_PAIR	*namepair;
@@ -486,62 +486,62 @@ rad_auth_init(authreq, activefd)
 	/*
 	 * Get the username from the request
 	 */
-	namepair = pairfind(authreq->request, DA_USER_NAME);
+	namepair = avl_find(radreq->request, DA_USER_NAME);
 
 	if ((namepair == (VALUE_PAIR *)NULL) || 
 	   (strlen(namepair->strvalue) <= 0)) {
 		radlog(L_ERR, _("No username: [] (from nas %s)"),
-		       nas_name2(authreq));
-		stat_inc(auth, authreq->ipaddr, num_bad_req);
-		authfree(authreq);
+		       nas_name2(radreq));
+		stat_inc(auth, radreq->ipaddr, num_bad_req);
+		radreq_free(radreq);
 		return -1;
 	}
 	debug(1,("checking username: %s", namepair->strvalue));
 	if (check_user_name(namepair->strvalue)) {
 		radlog(L_AUTH, _("Malformed username: [%s] (from nas %s)"),
 		       namepair->strvalue,
-		       nas_name2(authreq));
-		stat_inc(auth, authreq->ipaddr, num_bad_req);
-		authfree(authreq);
+		       nas_name2(radreq));
+		stat_inc(auth, radreq->ipaddr, num_bad_req);
+		radreq_free(radreq);
 		return -1;
 	}
 		
 	/*
 	 * Verify the client and Calculate the MD5 Password Digest
 	 */
-	if (calc_digest(authreq->digest, authreq) != 0) {
+	if (calc_digest(radreq->digest, radreq) != 0) {
 		/*
 		 * We don't respond when this fails
 		 */
 		radlog(L_NOTICE,
 		       _("from client %s - Security Breach: %s"),
-		       client_name(authreq->ipaddr), namepair->strvalue);
-		stat_inc(auth, authreq->ipaddr, num_bad_auth);
-		authfree(authreq);
+		       client_name(radreq->ipaddr), namepair->strvalue);
+		stat_inc(auth, radreq->ipaddr, num_bad_auth);
+		radreq_free(radreq);
 		return -1;
 	}
 
 #ifdef USE_SQL
-	if (p = create_pair(DA_QUEUE_ID, 0, NULL, (qid_t)authreq))
-		pairadd(&authreq->request, p);
+	if (p = avp_create(DA_QUEUE_ID, 0, NULL, (qid_t)radreq))
+		avl_add_pair(&radreq->request, p);
 #endif
 	/*
 	 * Add any specific attributes for this username.
 	 */
-	hints_setup(authreq->request);
+	hints_setup(radreq->request);
 
 	if (auth_detail)
-		write_detail(authreq, -1, "detail.auth");
+		write_detail(radreq, -1, "detail.auth");
 
 	/*
 	 * See if the user has access to this huntgroup.
 	 */
-	if (!huntgroup_access(authreq)) {
+	if (!huntgroup_access(radreq)) {
 		radlog(L_AUTH, _("No huntgroup access: [%s] (from nas %s)"),
-			namepair->strvalue, nas_name2(authreq));
-		rad_send_reply(PW_AUTHENTICATION_REJECT, authreq,
-			       authreq->request, NULL, activefd);
-		authfree(authreq);
+			namepair->strvalue, nas_name2(radreq));
+		rad_send_reply(PW_AUTHENTICATION_REJECT, radreq,
+			       radreq->request, NULL, activefd);
+		radreq_free(radreq);
 		return -1;
 	}
 
@@ -581,7 +581,7 @@ enum list_id {
 };
 
 typedef struct auth_mach {
-	AUTH_REQ   *req;
+	RADIUS_REQ   *req;
 	VALUE_PAIR *user_check;
 	VALUE_PAIR *user_reply;
 	VALUE_PAIR *proxy_pairs;
@@ -720,21 +720,21 @@ is_log_mode(m, mask)
 #ifdef DA_LOG_MODE_MASK
 	VALUE_PAIR *p;
 	
-	for (p = pairfind(m->user_check, DA_LOG_MODE_MASK);
+	for (p = avl_find(m->user_check, DA_LOG_MODE_MASK);
 	     p;
-	     p = p->next ? pairfind(p->next, DA_LOG_MODE_MASK) : NULL) 
+	     p = p->next ? avl_find(p->next, DA_LOG_MODE_MASK) : NULL) 
 		mode &= ~p->lvalue;
-	for (p = pairfind(m->req->request, DA_LOG_MODE_MASK);
+	for (p = avl_find(m->req->request, DA_LOG_MODE_MASK);
 	     p;
-	     p = p->next ? pairfind(p->next, DA_LOG_MODE_MASK) : NULL) 
+	     p = p->next ? avl_find(p->next, DA_LOG_MODE_MASK) : NULL) 
 		mode &= ~p->lvalue;
 #endif
 	return mode & mask;
 }
 
 int
-rad_authenticate(authreq, activefd)
-	AUTH_REQ  *authreq;
+rad_authenticate(radreq, activefd)
+	RADIUS_REQ  *radreq;
 	int        activefd;
 {
 	enum auth_state oldstate;
@@ -747,14 +747,14 @@ rad_authenticate(authreq, activefd)
 	/*
 	 * If the request is processing a menu, service it here.
 	 */
-	if ((pair_ptr = pairfind(authreq->request, DA_STATE)) != NULL &&
+	if ((pair_ptr = avl_find(radreq->request, DA_STATE)) != NULL &&
 	    strncmp(pair_ptr->strvalue, "MENU=", 5) == 0) {
-	    process_menu(authreq, activefd, authreq->digest);
+	    process_menu(radreq, activefd, radreq->digest);
 	    return 0;
 	}
 #endif
 
-	m.req = authreq;
+	m.req = radreq;
 	m.activefd = activefd;
 	m.user_check = NULL;
 	m.user_reply = NULL;
@@ -763,7 +763,7 @@ rad_authenticate(authreq, activefd)
 	m.timeout_pair = NULL;
 	m.user_msg   = NULL;
 	/*FIXME: this should have been cached by rad_auth_init */
-	m.namepair = pairfind(m.req->request, DA_USER_NAME);
+	m.namepair = avl_find(m.req->request, DA_USER_NAME);
 
 	debug(1, ("auth: %s", m.namepair->strvalue)); 
 	m.state = as_init;
@@ -787,7 +787,7 @@ rad_authenticate(authreq, activefd)
 			default:
 				abort();
 			}
-			if (p = pairfind(p, sp->attr))
+			if (p = avl_find(p, sp->attr))
 				m.check_pair = p;
 			else {
 				m.state = sp->next;
@@ -801,9 +801,9 @@ rad_authenticate(authreq, activefd)
 	}
 
 	/* Cleanup */
-	pairfree(m.user_check);
-	pairfree(m.user_reply);
-	pairfree(m.proxy_pairs);
+	avl_free(m.user_check);
+	avl_free(m.user_reply);
+	avl_free(m.proxy_pairs);
 	if (m.user_msg)
 		free_string(m.user_msg);
 	bzero(m.userpass, sizeof(m.userpass));
@@ -824,13 +824,13 @@ sfn_init(m)
 	MACH *m;
 {
 	int proxied = 0;
-	AUTH_REQ *authreq = m->req;
+	RADIUS_REQ *radreq = m->req;
 	VALUE_PAIR *pair_ptr;
 	
 	/*
 	 *	Move the proxy_state A/V pairs somewhere else.
 	 */
-	pairmove2(&m->proxy_pairs, &authreq->request, DA_PROXY_STATE);
+	avl_move_attr(&m->proxy_pairs, &radreq->request, DA_PROXY_STATE);
 
 	/*
 	 * If this request got proxied to another server, we need
@@ -838,22 +838,22 @@ sfn_init(m)
 	 * Auth-Reject for fail. We also need to add the reply
 	 * pairs from the server to the initial reply.
 	 */
-	if (authreq->server_code == PW_AUTHENTICATION_REJECT ||
-	    authreq->server_code == PW_AUTHENTICATION_ACK) {
-		m->user_check = create_pair(DA_AUTH_TYPE, 0, NULL, 0);
+	if (radreq->server_code == PW_AUTHENTICATION_REJECT ||
+	    radreq->server_code == PW_AUTHENTICATION_ACK) {
+		m->user_check = avp_create(DA_AUTH_TYPE, 0, NULL, 0);
 		proxied = 1;
 	}
-	if (authreq->server_code == PW_AUTHENTICATION_REJECT)
+	if (radreq->server_code == PW_AUTHENTICATION_REJECT)
 		m->user_check->lvalue = DV_AUTH_TYPE_REJECT;
-	if (authreq->server_code == PW_AUTHENTICATION_ACK)
+	if (radreq->server_code == PW_AUTHENTICATION_ACK)
 		m->user_check->lvalue = DV_AUTH_TYPE_ACCEPT;
 
-	if (authreq->server_reply) {
-		m->user_reply = authreq->server_reply;
-		authreq->server_reply = NULL;
+	if (radreq->server_reply) {
+		m->user_reply = radreq->server_reply;
+		radreq->server_reply = NULL;
 	}
 
-	if (pair_ptr = pairfind(authreq->request, DA_CALLING_STATION_ID)) 
+	if (pair_ptr = avl_find(radreq->request, DA_CALLING_STATION_ID)) 
 		m->clid = pair_ptr->strvalue;
 	else
 		m->clid = _("unknown");
@@ -862,14 +862,14 @@ sfn_init(m)
 	 * Get the user from the database
 	 */
 	if (!proxied &&
-	    user_find(m->namepair->strvalue, authreq->request,
+	    user_find(m->namepair->strvalue, radreq->request,
 		      &m->user_check, &m->user_reply) != 0) {
 
 		auth_log(m, _("Invalid user"), NULL, NULL, NULL);
 
 		/* Send reject packet with proxy-pairs as a reply */
 		newstate(as_reject);
-		pairfree(m->user_reply);
+		avl_free(m->user_reply);
 		m->user_reply = m->proxy_pairs;
 		m->proxy_pairs = NULL;
 	}
@@ -879,7 +879,7 @@ void
 sfn_validate(m)
 	MACH *m;
 {
-	AUTH_REQ *authreq = m->req;
+	RADIUS_REQ *radreq = m->req;
 	VALUE_PAIR *p;
 	int rc;
 	
@@ -887,13 +887,13 @@ sfn_validate(m)
 	 * Validate the user
 	 */
 	if ((rc = check_expiration(m->user_check, &m->user_msg)) >= 0) {
-		rc = rad_check_password(authreq, m->activefd,
+		rc = rad_check_password(radreq, m->activefd,
 					m->user_check,
-					m->namepair, authreq->digest,
+					m->namepair, radreq->digest,
 					&m->user_msg, m->userpass);
 
 		if (rc != AUTH_OK) { 
-			stat_inc(auth, authreq->ipaddr, num_rejects);
+			stat_inc(auth, radreq->ipaddr, num_rejects);
 			newstate(as_reject);
 			
 			switch (rc) {
@@ -910,11 +910,11 @@ sfn_validate(m)
 				break;
 			}
 		}		
-              /*if (p = pairfind(m->user_reply, DA_REPLY_MESSAGE))
+              /*if (p = avl_find(m->user_reply, DA_REPLY_MESSAGE))
 			m->user_msg = dup_string(p->strvalue);*/
 	}
 
-	pairmove2(&m->user_reply, &m->proxy_pairs, DA_PROXY_STATE);
+	avl_move_attr(&m->user_reply, &m->proxy_pairs, DA_PROXY_STATE);
 
 	if (rc != AUTH_OK) {
 		/*
@@ -1024,10 +1024,10 @@ timeout_pair(m)
 	MACH *m;
 {
 	if (!m->timeout_pair &&
-	    !(m->timeout_pair = pairfind(m->user_reply, DA_SESSION_TIMEOUT))) {
-		m->timeout_pair = create_pair(DA_SESSION_TIMEOUT,
+	    !(m->timeout_pair = avl_find(m->user_reply, DA_SESSION_TIMEOUT))) {
+		m->timeout_pair = avp_create(DA_SESSION_TIMEOUT,
 					      0, NULL, 0);
-		pairadd(&m->user_reply, m->timeout_pair);
+		avl_add_pair(&m->user_reply, m->timeout_pair);
 	}
 	return m->timeout_pair;
 }
@@ -1096,34 +1096,34 @@ sfn_ipaddr(m)
 	VALUE_PAIR *p, *tmp, *pp;
 	
 	/* Assign an IP if necessary */
-	if (!pairfind(m->user_reply, DA_FRAMED_IP_ADDRESS)) {
+	if (!avl_find(m->user_reply, DA_FRAMED_IP_ADDRESS)) {
 #if 0
 		/* **************************************************
 		 * Keep it here until IP allocation is ready
 		 */
 		if (p = alloc_ip_pair(m->namepair->strvalue, m->req))
-			pairadd(&m->user_reply, p);
+			avl_add_pair(&m->user_reply, p);
 		else
 #endif	
-		if (p = pairfind(m->req->request, DA_FRAMED_IP_ADDRESS)) {
+		if (p = avl_find(m->req->request, DA_FRAMED_IP_ADDRESS)) {
 			/* termserver hint */
-			pairadd(&m->user_reply, pairdup(p));
-			if (p = pairfind(m->req->request,
+			avl_add_pair(&m->user_reply, avp_dup(p));
+			if (p = avl_find(m->req->request,
 					 DA_ADD_PORT_TO_IP_ADDRESS))
-				pairadd(&m->user_reply, pairdup(p));
+				avl_add_pair(&m->user_reply, avp_dup(p));
 		}
 	}
 	
-	if ((p = pairfind(m->user_reply, DA_FRAMED_IP_ADDRESS)) &&
-	    (tmp = pairfind(m->user_reply, DA_ADD_PORT_TO_IP_ADDRESS)) &&
+	if ((p = avl_find(m->user_reply, DA_FRAMED_IP_ADDRESS)) &&
+	    (tmp = avl_find(m->user_reply, DA_ADD_PORT_TO_IP_ADDRESS)) &&
 	    tmp->lvalue &&
-	    (pp = pairfind(m->req->request, DA_NAS_PORT_ID)))
+	    (pp = avl_find(m->req->request, DA_NAS_PORT_ID)))
 		/* NOTE: This only works because IP numbers are stored in
 		 * host order throughout the program.
 		 */
 		p->lvalue += pp->lvalue;
 		
-	pairdelete(&m->user_reply, DA_ADD_PORT_TO_IP_ADDRESS);
+	avl_delete(&m->user_reply, DA_ADD_PORT_TO_IP_ADDRESS);
 }
 
 void
@@ -1183,7 +1183,7 @@ sfn_cleanup_cbkid(m)
 	int *ip;
 
 	for (ip = delete_pairs; *ip; ip++)
-		pairdelete(&m->user_reply, *ip);
+		avl_delete(&m->user_reply, *ip);
 }
 
 void

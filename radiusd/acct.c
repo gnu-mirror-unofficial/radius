@@ -174,13 +174,13 @@ check_attribute(check_pairs, pair_attr, pair_value, def)
 {
 	VALUE_PAIR *pair;
 
-	if ((pair = pairfind(check_pairs, pair_attr)) == NULL)
+	if ((pair = avl_find(check_pairs, pair_attr)) == NULL)
 		return def;
 	do {
 		if (pair->lvalue == pair_value)
 			return 1;
 		check_pairs = pair->next;
-	} while (check_pairs && (pair = pairfind(check_pairs, pair_attr)));
+	} while (check_pairs && (pair = avl_find(check_pairs, pair_attr)));
 	return 0;
 }
 
@@ -192,8 +192,8 @@ check_attribute(check_pairs, pair_attr, pair_value, def)
 
 /*  Store logins in the RADIUS utmp file. */
 int
-rad_accounting_new(authreq, dowtmp)
-	AUTH_REQ *authreq;
+rad_accounting_new(radreq, dowtmp)
+	RADIUS_REQ *radreq;
 	int dowtmp;
 {
 	struct radutmp	ut;
@@ -208,9 +208,9 @@ rad_accounting_new(authreq, dowtmp)
 	int		nas_port_type = 0;
 	
 	/* A packet should have Acct-Status-Type attribute */
-	if ((vp = pairfind(authreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
+	if ((vp = avl_find(radreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
 		radlog(L_ERR, _("no Acct-Status-Type record (from nas %s)"),
-			nas_name2(authreq));
+			nas_name2(radreq));
 		return -1;
 	}
 	status = vp->lvalue;
@@ -219,7 +219,7 @@ rad_accounting_new(authreq, dowtmp)
 		rb_record = 1;
 
 	if (!rb_record &&
-	    (vp = pairfind(authreq->request, DA_USER_NAME)) == NULL) {
+	    (vp = avl_find(radreq->request, DA_USER_NAME)) == NULL) {
 
 		/* ComOS (up to and including 3.5.1b20) does not send
 		   standard DV_ACCT_STATUS_TYPE_ACCOUNTING_{ON|OFF}
@@ -232,9 +232,9 @@ rad_accounting_new(authreq, dowtmp)
 		   For backward compatibility we convert such packets to
 		   DV_ACCT_STATUS_TYPE_ACCOUNTING_{ON|OFF} */
 		
-		if ((!(vp = pairfind(authreq->request, DA_ACCT_SESSION_TIME))
+		if ((!(vp = avl_find(radreq->request, DA_ACCT_SESSION_TIME))
 		     || vp->lvalue == 0) &&
-		    (!(vp = pairfind(authreq->request, DA_ACCT_SESSION_ID))
+		    (!(vp = avl_find(radreq->request, DA_ACCT_SESSION_ID))
 		     && vp->strlength == 8
 		     && memcmp(vp->strvalue, "00000000", 8) == 0)) {
 
@@ -255,21 +255,21 @@ rad_accounting_new(authreq, dowtmp)
 
 	/* Add any specific attributes for this username. */
 	if (!rb_record && vp != NULL) {
-		hints_setup(authreq->request);
-		presuf_setup(authreq->request);
+		hints_setup(radreq->request);
+		presuf_setup(radreq->request);
 	}
 	time(&t);
 	memset(&ut, 0, sizeof(ut));
 	ut.porttype = 'A';
 
-	if (authreq->realm) {
-		REALM *realm = realm_find(authreq->realm);
+	if (radreq->realm) {
+		REALM *realm = realm_find(radreq->realm);
 		if (realm)
 			ut.realm_address = realm->ipaddr;
 	}
 	
 	/* Fill in radutmp structure */
-	for (vp = authreq->request; vp; vp = vp->next) {
+	for (vp = radreq->request; vp; vp = vp->next) {
 		switch (vp->attribute) {
 		case DA_USER_NAME:
 			backslashify(ut.login, vp->strvalue, RUT_NAMESIZE);
@@ -323,7 +323,7 @@ rad_accounting_new(authreq, dowtmp)
 	/* If we didn't find out the NAS address, use the originator's
 	   IP address. */
 	if (nas_address == 0) {
-		nas_address = authreq->ipaddr;
+		nas_address = radreq->ipaddr;
 		ut.nas_address = htonl(nas_address);
 	}
 
@@ -402,7 +402,7 @@ rad_accounting_new(authreq, dowtmp)
 	    nas_port_type == DV_NAS_PORT_TYPE_SYNC)
 		return 0;
 
-	if (!ACCT_TYPE(authreq->request, DV_ACCT_TYPE_SYSTEM))
+	if (!ACCT_TYPE(radreq->request, DV_ACCT_TYPE_SYSTEM))
 		return 0;
 	
 	/* Update radutmp file. */
@@ -426,7 +426,7 @@ rad_accounting_new(authreq, dowtmp)
 		stat_update(&ut, status);
 	} else {
 		ret = -1;
-		stat_inc(acct, authreq->ipaddr, num_norecords);
+		stat_inc(acct, radreq->ipaddr, num_norecords);
 		radlog(L_NOTICE,
 		    _("NOT writing wtmp record (%d) for `%s',NAS %s,port %d"),
 		    status, ut.login, nas_name(nas_address), ut.nas_port);
@@ -459,8 +459,8 @@ check_acct_dir()
 }
 
 int
-write_detail(authreq, authtype, f)
-	AUTH_REQ *authreq;
+write_detail(radreq, authtype, f)
+	RADIUS_REQ *radreq;
 	int authtype;
 	char *f;
 {
@@ -485,11 +485,11 @@ write_detail(authreq, authtype, f)
 	   we look for the originating address.
 	   Only if that fails we resort to a name lookup. */
 	cl = NULL;
-	nas = authreq->ipaddr;
-	if ((pair = pairfind(authreq->request, DA_NAS_IP_ADDRESS)) != NULL)
+	nas = radreq->ipaddr;
+	if ((pair = avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
 		nas = pair->lvalue;
-	if (authreq->server_ipaddr)
-		nas = authreq->server_ipaddr;
+	if (radreq->server_ipaddr)
+		nas = radreq->server_ipaddr;
 
 	if ((cl = nas_find(nas)) != NULL) {
 		if (cl->shortname[0])
@@ -525,18 +525,18 @@ write_detail(authreq, authtype, f)
 			/* user wants a full (non-stripped) name to appear
 			   in detail */
 			
-			pair = pairfind(authreq->request, DA_ORIG_USER_NAME);
+			pair = avl_find(radreq->request, DA_ORIG_USER_NAME);
 			if (pair) 
 				pair->name = "User-Name";
 			else
-				pair = pairfind(authreq->request, DA_USER_NAME);
+				pair = avl_find(radreq->request, DA_USER_NAME);
 			if (pair) {
 				radfprintf(outfd, "\t%A\n", pair);
 			}
 		}
 
 		/* Write each attribute/value to the log file */
-		pair = authreq->request;
+		pair = radreq->request;
 		while (pair != (VALUE_PAIR *)NULL) {
 			switch (pair->attribute) {
 			case DA_PASSWORD:
@@ -576,17 +576,17 @@ write_detail(authreq, authtype, f)
 }
 
 int
-rad_accounting_orig(authreq, authtype)
-	AUTH_REQ *authreq;
+rad_accounting_orig(radreq, authtype)
+	RADIUS_REQ *radreq;
 	int authtype;
 {
 	int rc = 0;
 
-	if (ACCT_TYPE(authreq->request, DV_ACCT_TYPE_DETAIL))
-		rc = write_detail(authreq, authtype, "detail");
+	if (ACCT_TYPE(radreq->request, DV_ACCT_TYPE_DETAIL))
+		rc = write_detail(radreq, authtype, "detail");
 #ifdef USE_SQL
-	if (ACCT_TYPE(authreq->request, DV_ACCT_TYPE_SQL))
-		rad_sql_acct(authreq);
+	if (ACCT_TYPE(radreq->request, DV_ACCT_TYPE_SQL))
+		rad_sql_acct(radreq);
 #endif
 	return rc;
 }
@@ -594,39 +594,39 @@ rad_accounting_orig(authreq, authtype)
 
 /* rad_accounting: call both the old and new style accounting functions. */
 int
-rad_accounting(authreq, activefd)
-	AUTH_REQ *authreq;
+rad_accounting(radreq, activefd)
+	RADIUS_REQ *radreq;
 	int activefd;
 {
 	int auth;
 	u_char pw_digest[AUTH_PASS_LEN];
 
 	/* See if we know this client, then check the request authenticator. */
-	auth = calc_acctdigest(pw_digest, authreq);
+	auth = calc_acctdigest(pw_digest, radreq);
 	if (auth < 0) {
-		stat_inc(acct, authreq->ipaddr, num_bad_sign);
+		stat_inc(acct, radreq->ipaddr, num_bad_sign);
 		return -1;
 	}
 
-	huntgroup_access(authreq);
+	huntgroup_access(radreq);
 
 #if defined(PW_ASCEND_EVENT_REQUEST) && defined(PW_ASCEND_EVENT_RESPONSE)
 	/* Special handling for Ascend-Event-Request */
-	if (authreq->code == PW_ASCEND_EVENT_REQUEST) {
-		write_detail(authreq, auth, "detail");
+	if (radreq->code == PW_ASCEND_EVENT_REQUEST) {
+		write_detail(radreq, auth, "detail");
 		rad_send_reply(PW_ASCEND_EVENT_RESPONSE,
-			       authreq, NULL, NULL, activefd);
-		stat_inc(acct, authreq->ipaddr, num_resp);
+			       radreq, NULL, NULL, activefd);
+		stat_inc(acct, radreq->ipaddr, num_resp);
 		return 0;
 	}
 #endif
 	
-	if (rad_accounting_new(authreq, doradwtmp) == 0 &&
-	    rad_accounting_orig(authreq, auth) == 0) {
+	if (rad_accounting_new(radreq, doradwtmp) == 0 &&
+	    rad_accounting_orig(radreq, auth) == 0) {
 		/* Now send back an ACK to the NAS. */
 		rad_send_reply(PW_ACCOUNTING_RESPONSE,
-			       authreq, NULL, NULL, activefd);
-		stat_inc(acct, authreq->ipaddr, num_resp);
+			       radreq, NULL, NULL, activefd);
+		stat_inc(acct, radreq->ipaddr, num_resp);
 		return 0;
 	}
 
@@ -641,7 +641,7 @@ rad_acct_xmit(type, code, data, fd)
 	void *data;
 	int fd;
 {
-	AUTH_REQ *req = (AUTH_REQ*)data;
+	RADIUS_REQ *req = (RADIUS_REQ*)data;
 	
 	if (code == 0) {
 		rad_send_reply(PW_ACCOUNTING_RESPONSE, req, NULL, NULL, fd);
@@ -803,7 +803,7 @@ rad_check_multi(name, request, maxsimul)
 	}
 
 
-	if ((fra = pairfind(request, DA_FRAMED_IP_ADDRESS)) != NULL)
+	if ((fra = avl_find(request, DA_FRAMED_IP_ADDRESS)) != NULL)
 		ipno = htonl(fra->lvalue);
 
 	/* Pass II. Check all registered logins. */

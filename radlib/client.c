@@ -42,11 +42,11 @@ int radclient_debug;
 
 static int radclient_build_request(RADCLIENT *config, SERVER *server, int code,
 				   VALUE_PAIR *pair);
-static AUTH_REQ * radclient_recv(UINT4 host, u_short udp_port,
+static RADIUS_REQ * radclient_recv(UINT4 host, u_short udp_port,
 				 char *secret, char *vector,
 				 char *buffer,
 				 int length);
-static AUTH_REQ * decode_buffer(UINT4 host, u_short udp_port, char *buffer,
+static RADIUS_REQ * decode_buffer(UINT4 host, u_short udp_port, char *buffer,
 				int length);
 static void random_vector(char *vector);
 static char * auth_code_str(int code);
@@ -81,7 +81,7 @@ auth_code_str(code)
 	return NULL;
 }
 
-AUTH_REQ *
+RADIUS_REQ *
 radclient_send(config, port_type, code, pair)
 	RADCLIENT *config;
 	int port_type;
@@ -99,7 +99,7 @@ radclient_send(config, port_type, code, pair)
 	struct timeval tm;
 	int result;
 	int i;
-	AUTH_REQ *req = NULL;
+	RADIUS_REQ *req = NULL;
 	SERVER *server;
 
 	if (port_type < 0 || port_type > 2) {
@@ -329,7 +329,7 @@ overflow:
 }
 
 
-AUTH_REQ *
+RADIUS_REQ *
 radclient_recv(host, udp_port, secret, vector, buffer, length)
 	UINT4 host;
 	u_short udp_port;
@@ -369,7 +369,7 @@ radclient_recv(host, udp_port, secret, vector, buffer, length)
 }
 
 
-AUTH_REQ *
+RADIUS_REQ *
 decode_buffer(host, udp_port, buffer, length)
 	UINT4 host;
 	u_short udp_port;
@@ -385,24 +385,24 @@ decode_buffer(host, udp_port, buffer, length)
 	VALUE_PAIR	*first_pair;
 	VALUE_PAIR	*prev;
 	VALUE_PAIR	*pair;
-	AUTH_REQ	*authreq;
+	RADIUS_REQ	*radreq;
 
 	/*
 	 *	Pre-allocate the new request data structure
 	 */
 
-	authreq = alloc_request();
+	radreq = radreq_alloc();
 
 	auth = (AUTH_HDR *)buffer;
 
 	/*
 	 *	Fill header fields
 	 */
-	authreq->ipaddr = host;
-	authreq->udp_port = udp_port;
-	authreq->id = auth->id;
-	authreq->code = auth->code;
-	memcpy(authreq->vector, auth->vector, AUTH_VECTOR_LEN);
+	radreq->ipaddr = host;
+	radreq->udp_port = udp_port;
+	radreq->id = auth->id;
+	radreq->code = auth->code;
+	memcpy(radreq->vector, auth->vector, AUTH_VECTOR_LEN);
 
 	/*
 	 *	Extract attribute-value pairs
@@ -438,7 +438,7 @@ decode_buffer(host, udp_port, buffer, length)
 			       _("attribute %d too long, %d > %d"), attribute,
 			       attrlen, AUTH_STRING_LEN);
 		} else {
-			pair = alloc_pair();
+			pair = avp_alloc();
 			
 			pair->name = attr->name;
 			pair->attribute = attr->value;
@@ -476,7 +476,7 @@ decode_buffer(host, udp_port, buffer, length)
 				radlog(L_ERR,
 				       _("    %s (Unknown Type %d)"),
 				       attr->name, attr->type);
-				free_pair(pair);
+				avp_free(pair);
 				break;
 			}
 
@@ -489,8 +489,8 @@ decode_buffer(host, udp_port, buffer, length)
 		ptr += attrlen;
 		length -= attrlen + 2;
 	}
-	authreq->request = first_pair;
-	return authreq;
+	radreq->request = first_pair;
+	return radreq;
 }
 
 /*

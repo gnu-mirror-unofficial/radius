@@ -75,7 +75,7 @@ attr_to_str(buf, request, attr)
 		return strlen(buf);
 	}
 	
-	if ((pair = pairfind(request, attr->value)) == NULL) {
+	if ((pair = avl_find(request, attr->value)) == NULL) {
 		debug(1, ("attribute %d not found in packet",
 		    	attr->value));
 		if (attr->type == PW_TYPE_STRING)
@@ -123,7 +123,7 @@ curtime_to_str(tbuf, request, gmt)
 	
 	
 	curtime = time(NULL);
-	if (pair = pairfind(request, DA_ACCT_DELAY_TIME))
+	if (pair = avl_find(request, DA_ACCT_DELAY_TIME))
 		curtime -= pair->lvalue;
 	if (gmt)
 		tm = gmtime(&curtime);

@@ -190,7 +190,7 @@ decode_dbm(pptr)
 	
 	last_pair = first_pair = NULL;
 	while (ptr < endp) {
-		next_pair = alloc_pair();
+		next_pair = avp_alloc();
 		next_pair->attribute = *ptr++;
 		next_pair->type = *ptr++;
 		next_pair->operator = *ptr++;
@@ -262,7 +262,7 @@ dbm_find(file, name, request_pairs, check_pairs, reply_pairs)
 		 * the profile it points to.
 		 */
 		ret = 1;
-		if (p = pairfind(check_tmp, DA_MATCH_PROFILE)) {
+		if (p = avl_find(check_tmp, DA_MATCH_PROFILE)) {
 			int dummy;
 			char *name;
 			
@@ -276,16 +276,16 @@ dbm_find(file, name, request_pairs, check_pairs, reply_pairs)
 		} 
 		
 		if (ret == 1) {
-			pairmove(reply_pairs, &reply_tmp);
-			pairmove(check_pairs, &check_tmp);
+			avl_merge(reply_pairs, &reply_tmp);
+			avl_merge(check_pairs, &check_tmp);
 		}
 	}
 	
 	/* Should we
 	 *  free(contentd.dptr);
 	 */
-	pairfree(reply_tmp);
-	pairfree(check_tmp);
+	avl_free(reply_tmp);
+	avl_free(check_tmp);
 
 	return ret;
 }
@@ -347,13 +347,13 @@ dbm_match(dbmfile, name, fn, request_pairs, check_pairs, reply_pairs, fallthru)
 
 		found = 1;
 
-		if (p = pairfind(*reply_pairs, DA_MATCH_PROFILE)) {
+		if (p = avl_find(*reply_pairs, DA_MATCH_PROFILE)) {
 			int dummy;
 			char *name;
 			
 			debug(1, ("next: %s", p->strvalue));
 			name = dup_string(p->strvalue);
-			pairdelete(reply_pairs, DA_MATCH_PROFILE);
+			avl_delete(reply_pairs, DA_MATCH_PROFILE);
 			dbm_match(dbmfile, name, _dbm_dup_name,
 				  request_pairs,
 				  check_pairs, reply_pairs, &dummy);
@@ -362,7 +362,7 @@ dbm_match(dbmfile, name, fn, request_pairs, check_pairs, reply_pairs, fallthru)
 
 		if (!fallthrough(*reply_pairs))
 			break;
-		pairdelete(reply_pairs, DA_FALL_THROUGH);
+		avl_delete(reply_pairs, DA_FALL_THROUGH);
 		*fallthru = 1;
 	}
 	return found;

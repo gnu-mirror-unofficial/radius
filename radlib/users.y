@@ -129,7 +129,7 @@ pairlist : pair
            {
 		   if ($1) {
 			   if ($3) 
-				   pairlistadd(&$1, $3);
+				   avl_add_list(&$1, $3);
 			   $$ = $1;
 		   } else
 			   $$ = $3;
@@ -204,12 +204,13 @@ install_pair(name, op, valstr)
 		return NULL;
 	}
 
-	pair = alloc_pair();
+	pair = avp_alloc();
 	
 	pair->next = NULL;
 	pair->name = attr->name;
 	pair->attribute = attr->value;
 	pair->type = attr->type;
+	pair->additivity = attr->additivity;
 	pair->operator = op;
 	
 	switch (pair->type) {
@@ -220,7 +221,7 @@ install_pair(name, op, valstr)
 				radlog(L_ERR,
 				   _("%s:%d: %s: not an absolute pathname"),
 				       source_filename, source_line_num, name);
-				free_pair(pair);
+				avp_free(pair);
 				return NULL;
 			}
 		}
@@ -247,7 +248,7 @@ install_pair(name, op, valstr)
 		if (isdigit(*valstr)) {
 			pair->lvalue = atoi(valstr);
 		} else if ((dval = value_name_to_value(valstr)) == NULL) {
-			free_pair(pair);
+			avp_free(pair);
 			radlog(L_ERR|L_CONS, _("%s:%d: unknown value %s"),
 			    source_filename, source_line_num,
 			    valstr);
@@ -280,7 +281,7 @@ install_pair(name, op, valstr)
 			/*
 			 *	Add an extra (hidden) attribute.
 			 */
-			pair2 = alloc_pair();
+			pair2 = avp_alloc();
 			
 			pair2->name = "Add-Port-To-IP-Address";
 			pair2->attribute = DA_ADD_PORT_TO_IP_ADDRESS;
@@ -298,7 +299,7 @@ install_pair(name, op, valstr)
 			radlog(L_ERR|L_CONS,
 				_("%s:%d: %s: can't parse date"),
 				source_filename, source_line_num, name);
-			free_pair(pair);
+			avp_free(pair);
 			return NULL;
 		}
 #ifdef TIMELOCAL
@@ -312,7 +313,7 @@ install_pair(name, op, valstr)
 		radlog(L_ERR|L_CONS, _("%s:%d: %s: unknown attribute type %d"),
 		    source_filename, source_line_num, name,
 		    pair->type);
-		free_pair(pair);
+		avp_free(pair);
 		return NULL;
 	}
 

@@ -126,7 +126,7 @@ cntl_respond(fd, sa, salen, buf, size)
 	u_char *buf;
 	int size;
 {
-	AUTH_REQ           *authreq;
+	RADIUS_REQ           *radreq;
 	VALUE_PAIR         *pair, *namepair;
 	u_char	   	   pw_digest[AUTH_PASS_LEN];
 	struct sockaddr_in *sin = (struct sockaddr_in *) sa;
@@ -137,7 +137,7 @@ cntl_respond(fd, sa, salen, buf, size)
 	char               tbuf[512];
 	extern char **xargv;	
 
-	authreq = radrecv(ntohl(sin->sin_addr.s_addr),
+	radreq = radrecv(ntohl(sin->sin_addr.s_addr),
 			  ntohs(sin->sin_port),
 			  buf,
 			  size);
@@ -145,67 +145,67 @@ cntl_respond(fd, sa, salen, buf, size)
         /* Authorize request
 	 */
 
-	namepair = pairfind(authreq->request, DA_USER_NAME);
+	namepair = avl_find(radreq->request, DA_USER_NAME);
 	if (!namepair) {
 		radlog(L_NOTICE,
 		       _("control channel: no username in request"));
-		authfree(authreq);
+		radreq_free(radreq);
 		return -1;
 	}
 	
-	calc_digest(pw_digest, authreq);
+	calc_digest(pw_digest, radreq);
 
-	pairdelete(&authreq->request, DA_NAS_IP_ADDRESS);
-	pair = create_pair(DA_NAS_IP_ADDRESS, 0, NULL, authreq->ipaddr);
-	pairadd(&authreq->request, pair);
+	avl_delete(&radreq->request, DA_NAS_IP_ADDRESS);
+	pair = avp_create(DA_NAS_IP_ADDRESS, 0, NULL, radreq->ipaddr);
+	avl_add_pair(&radreq->request, pair);
 	
 	user_check = user_reply = NULL;
-	if (user_find(namepair->strvalue, authreq->request,
+	if (user_find(namepair->strvalue, radreq->request,
 		      &user_check, &user_reply) != 0) {
 		radlog(L_NOTICE, _("Invalid user: [%s] (from %s) trying to access control channel"),
 		       namepair->strvalue,
-		       nas_name2(authreq));
-		rad_send_reply(PW_AUTHENTICATION_REJECT, authreq,
+		       nas_name2(radreq));
+		rad_send_reply(PW_AUTHENTICATION_REJECT, radreq,
 			       NULL, _("Access denied"), fd);
-		authfree(authreq);
+		radreq_free(radreq);
 		return -1;
 	}
 
 	userpass[0] = 0;
-	rc = rad_check_password(authreq, fd, user_check,
+	rc = rad_check_password(radreq, fd, user_check,
 				namepair, pw_digest,
 				&reply_ptr, userpass);
 	if (rc) {
-		rad_send_reply(PW_AUTHENTICATION_REJECT, authreq,
+		rad_send_reply(PW_AUTHENTICATION_REJECT, radreq,
 			       user_reply, reply_ptr, fd);
 		if (log_mode & RLOG_FAILED_PASS) {
 			radlog(L_NOTICE,
 			       _("control channel: Login incorrect: [%s/%s] (from %s)"),
 			       namepair->strvalue,
 			       userpass,
-			       nas_name2(authreq));
+			       nas_name2(radreq));
 		} else {			
 			radlog(L_AUTH,
 			       _("control channel: Login incorrect: [%s] (from %s)"),
 			       namepair->strvalue,
-			       nas_name2(authreq));
+			       nas_name2(radreq));
 		}
-		pairfree(user_check);
-		pairfree(user_reply);
-		authfree(authreq);
+		avl_free(user_check);
+		avl_free(user_reply);
+		radreq_free(radreq);
 		return -1;
 	}
 	
         /* OK. Now let's process it
 	 */
 	
-	pair = pairfind(authreq->request, DA_STATE);
+	pair = avl_find(radreq->request, DA_STATE);
 	if (!pair) {
 		radlog(L_ERR,
 		       _("no State attribute in control packet"));
-		pairfree(user_check);
-		pairfree(user_reply);
-		authfree(authreq);
+		avl_free(user_check);
+		avl_free(user_reply);
+		radreq_free(radreq);
 		return -1;
 	}
 
@@ -238,7 +238,7 @@ cntl_respond(fd, sa, salen, buf, size)
 		break;
 		
 	case CNTL_GETUSER: 
-		if ((pair = pairfind(authreq->request, DA_CLASS)) == NULL) {
+		if ((pair = avl_find(radreq->request, DA_CLASS)) == NULL) {
 			sprintf(reply_ptr, _("no user specified"));
 			radlog(L_WARN, _("no user specified in GETUSER control packet"));
 			break;
@@ -257,7 +257,7 @@ cntl_respond(fd, sa, salen, buf, size)
 		break;
 		
 	case CNTL_RELOAD:
-		if ((pair = pairfind(authreq->request, DA_CLASS)) == NULL)
+		if ((pair = avl_find(radreq->request, DA_CLASS)) == NULL)
 			code = reload_all;
 		else 
 			code = xlat_keyword(cntl_reload, pair->strvalue, -1);
@@ -311,11 +311,11 @@ cntl_respond(fd, sa, salen, buf, size)
 		radlog(L_NOTICE,
 		       _("control channel: shutdown initiated"));
 		sprintf(reply_ptr, _("shutdown initiated"));
-		rad_send_reply(reply_code, authreq,
+		rad_send_reply(reply_code, radreq,
 			       NULL, reply_msg, fd);
-		pairfree(user_check);
-		pairfree(user_reply);
-		authfree(authreq);
+		avl_free(user_check);
+		avl_free(user_reply);
+		radreq_free(radreq);
 		rad_exit(SIGTERM);
 		break;
 
@@ -344,10 +344,10 @@ cntl_respond(fd, sa, salen, buf, size)
 		break;
 
 	case CNTL_REMARK:
-		pair = pairfind(authreq->request, DA_CLASS);
+		pair = avl_find(radreq->request, DA_CLASS);
 		while (pair) {
 			radlog(L_INFO, "REMARK: %s", pair->strvalue);
-			pair = pairfind(pair->next, DA_CLASS);
+			pair = avl_find(pair->next, DA_CLASS);
 		}
 		reply_code = PW_AUTHENTICATION_ACK;
 		break;
@@ -360,12 +360,12 @@ cntl_respond(fd, sa, salen, buf, size)
 			pair->strvalue);
 	}
 
-	rad_send_reply(reply_code, authreq,
+	rad_send_reply(reply_code, radreq,
 		       NULL, reply_msg[0] ? reply_msg : NULL, fd);
 
-	pairfree(user_check);
-	pairfree(user_reply);
-	authfree(authreq);
+	avl_free(user_check);
+	avl_free(user_reply);
+	radreq_free(radreq);
 	return 0;
 }
 

@@ -3894,7 +3894,7 @@ rw_attrcheck()
 {
 	int attr = (int) rw_rt.code[rw_rt.pc++];
 
-	pushn(pairfind(rw_rt.request, attr) != NULL);
+	pushn(avl_find(rw_rt.request, attr) != NULL);
 }
 
 /*
@@ -3908,9 +3908,9 @@ rw_attrasgn()
 	VALUE_PAIR *pair;
 	
 	cpopn(&val);
-	if ((pair = pairfind(rw_rt.request, attr)) == NULL) {
-		pair = create_pair(attr, 0, NULL, 0);
-		pairadd(&rw_rt.request, pair);
+	if ((pair = avl_find(rw_rt.request, attr)) == NULL) {
+		pair = avp_create(attr, 0, NULL, 0);
+		avl_add_pair(&rw_rt.request, pair);
 	}
 	switch (pair->type) {
 	case PW_TYPE_STRING:
@@ -3933,7 +3933,7 @@ rw_attrs()
 	int attr = (int) rw_rt.code[rw_rt.pc++];
 	VALUE_PAIR *pair;
 	
-	if ((pair = pairfind(rw_rt.request, attr)) == NULL) 
+	if ((pair = avl_find(rw_rt.request, attr)) == NULL) 
 		pushs(&nil, 1);
 	else
 		pushstr(pair->strvalue, pair->strlength);
@@ -3945,7 +3945,7 @@ rw_attrn()
 	int attr = (int) rw_rt.code[rw_rt.pc++];
 	VALUE_PAIR *pair;
 
-	if ((pair = pairfind(rw_rt.request, attr)) == NULL)
+	if ((pair = avl_find(rw_rt.request, attr)) == NULL)
 		pushn(0);
 	else
 		pushn(pair->lvalue);
@@ -4388,7 +4388,7 @@ run_init(pc, request)
 	if (debug_on(2)) {
 		fp = debug_open_file();
 		fprintf(fp, "Before rewriting:\n");
-		fprint_attr_list(fp, rw_rt.request);
+		avl_fprint(fp, rw_rt.request);
 		fclose(fp);
 	}
 	rw_rt.st = 0;                     /* Stack top */
@@ -4401,7 +4401,7 @@ run_init(pc, request)
 	if (debug_on(2)) {
 		fp = debug_open_file();
 		fprintf(fp, "After rewriting\n");
-		fprint_attr_list(fp, rw_rt.request);
+		avl_fprint(fp, rw_rt.request);
 		fclose(fp);
 	}
 }
@@ -4433,7 +4433,7 @@ va_run_init(name, request, typestr, va_alist)
 	if (debug_on(2)) {
 		fp = debug_open_file();
 		fprintf(fp, "Before rewriting:\n");
-		fprint_attr_list(fp, rw_rt.request);
+		avl_fprint(fp, rw_rt.request);
 		fclose(fp);
 	}
 	rw_rt.st = 0;                     /* Stack top */
@@ -4473,7 +4473,7 @@ va_run_init(name, request, typestr, va_alist)
 	if (debug_on(2)) {
 		fp = debug_open_file();
 		fprintf(fp, "After rewriting\n");
-		fprint_attr_list(fp, rw_rt.request);
+		avl_fprint(fp, rw_rt.request);
 		fclose(fp);
 	}
 	return rw_rt.rA;
@@ -4566,7 +4566,7 @@ interpret(fcall, request, type, datum)
 	if (debug_on(2)) {
 		fp = debug_open_file();
 		fprintf(fp, "Before rewriting:\n");
-		fprint_attr_list(fp, rw_rt.request);
+		avl_fprint(fp, rw_rt.request);
 		fclose(fp);
 	}
 	rw_rt.st = 0;                     /* Stack top */
@@ -4613,7 +4613,7 @@ interpret(fcall, request, type, datum)
 	if (debug_on(2)) {
 		fp = debug_open_file();
 		fprintf(fp, "After rewriting\n");
-		fprint_attr_list(fp, rw_rt.request);
+		avl_fprint(fp, rw_rt.request);
 		fclose(fp);
 	}
 	
@@ -4855,9 +4855,9 @@ test_rewrite()
 
 	parse_rewrite();
 /*	
-	rw_rt.request = create_pair(44, strlen(sid), sid, 0);
-	pair = create_pair(2005, strlen(pri), pri, 0);
-	pairadd(&rw_rt.request, pair);
+	rw_rt.request = avp_create(44, strlen(sid), sid, 0);
+	pair = avp_create(2005, strlen(pri), pri, 0);
+	avl_add_pair(&rw_rt.request, pair);
 */
 	
 	fun = (FUNCTION*) sym_lookup(rewrite_tab, "test");
@@ -4872,8 +4872,8 @@ test_rewrite()
 		}
 	}
 /*
-	fprint_attr_list(stdout, rw_rt.request);
-	pairfree(rw_rt.request);
+	avl_fprint(stdout, rw_rt.request);
+	avl_free(rw_rt.request);
 	*/
 }
 #endif

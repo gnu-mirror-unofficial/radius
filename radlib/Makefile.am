@@ -17,7 +17,7 @@ endif
 
 noinst_LTLIBRARIES=librad.la $(LIBSQL) liblog.la libdebug.la 
 librad_la_SOURCES=intl.c radpaths.c sysdep.c alloc.c radprintf.c \
-		 raddb.c dict.c fixalloc.c iputil.c strerror.c \
+		 raddb.c dict.c avl.c iputil.c strerror.c \
 		 strncasecmp.c md5.c md5crypt.c mem.c leakdetect.c \
                  users_gram.c users_lex.c util.c client.c \
 		 insist.c debug.c slist.c dbm.c obstack.c \

@@ -52,9 +52,9 @@ static char	*send_buffer = (char *)i_send_buffer;
  *	reply attribute value pairs and any user message provided.
  */
 int
-rad_send_reply(code, authreq, oreply, msg, activefd)
+rad_send_reply(code, radreq, oreply, msg, activefd)
 	int code;
-	AUTH_REQ *authreq;
+	RADIUS_REQ *radreq;
 	VALUE_PAIR *oreply;
 	char *msg;
 	int activefd;
@@ -84,12 +84,12 @@ rad_send_reply(code, authreq, oreply, msg, activefd)
 			 *	except proxy-pair and port-message.
 			 */
 			reply = NULL;
-			pairmove2(&reply, &oreply, DA_REPLY_MESSAGE);
-			pairmove2(&reply, &oreply, DA_PROXY_STATE);
+			avl_move_attr(&reply, &oreply, DA_REPLY_MESSAGE);
+			avl_move_attr(&reply, &oreply, DA_PROXY_STATE);
 			break;
 		case PW_ACCESS_CHALLENGE:
 			what = _("Challenge");
-			stat_inc(auth, authreq->ipaddr, num_challenges);
+			stat_inc(auth, radreq->ipaddr, num_challenges);
 			break;
 		case PW_AUTHENTICATION_ACK:
 			what = _("Ack");
@@ -106,12 +106,12 @@ rad_send_reply(code, authreq, oreply, msg, activefd)
 	 *	Build standard header
 	 */
 	auth->code = code;
-	auth->id = authreq->id;
-	memcpy(auth->vector, authreq->vector, AUTH_VECTOR_LEN);
+	auth->id = radreq->id;
+	memcpy(auth->vector, radreq->vector, AUTH_VECTOR_LEN);
 
 	debug(1, ("Sending %s of id %d to %lx (nas %s)",
-		what, authreq->id, (u_long)authreq->ipaddr,
-		nas_name2(authreq)));
+		what, radreq->id, (u_long)radreq->ipaddr,
+		nas_name2(radreq)));
 
 	total_length = AUTH_HDR_LEN;
 
@@ -230,8 +230,8 @@ rad_send_reply(code, authreq, oreply, msg, activefd)
 	/*
 	 *	Append secret and calculate the response digest
 	 */
-	secretlen = strlen(authreq->secret);
-	memcpy(send_buffer + total_length, authreq->secret, secretlen);
+	secretlen = strlen(radreq->secret);
+	memcpy(send_buffer + total_length, radreq->secret, secretlen);
 	md5_calc(digest, (u_char *)auth, total_length + secretlen);
 	memcpy(auth->vector, digest, AUTH_VECTOR_LEN);
 	memset(send_buffer + total_length, 0, secretlen);
@@ -239,8 +239,8 @@ rad_send_reply(code, authreq, oreply, msg, activefd)
 	sin = (struct sockaddr_in *) &saremote;
         memset ((char *) sin, '\0', sizeof (saremote));
 	sin->sin_family = AF_INET;
-	sin->sin_addr.s_addr = htonl(authreq->ipaddr);
-	sin->sin_port = htons(authreq->udp_port);
+	sin->sin_addr.s_addr = htonl(radreq->ipaddr);
+	sin->sin_port = htons(radreq->udp_port);
 
 	/*
 	 *	Send it to the user
@@ -252,8 +252,8 @@ rad_send_reply(code, authreq, oreply, msg, activefd)
 	 *	Just to be tidy move pairs back.
 	 */
 	if (reply != oreply) {
-		pairmove2(&oreply, &reply, DA_PROXY_STATE);
-		pairmove2(&oreply, &reply, DA_REPLY_MESSAGE);
+		avl_move_attr(&oreply, &reply, DA_PROXY_STATE);
+		avl_move_attr(&oreply, &reply, DA_REPLY_MESSAGE);
 	}
 
 	return 0;
@@ -269,9 +269,9 @@ err:
  *	based on the clients private key.
  */
 int
-calc_digest(digest, authreq)
+calc_digest(digest, radreq)
 	u_char *digest;
-	AUTH_REQ *authreq;
+	RADIUS_REQ *radreq;
 {
 	u_char	buffer[128];
 	int	secretlen;
@@ -280,9 +280,9 @@ calc_digest(digest, authreq)
 	/*
 	 *	See if we know this client.
 	 */
-	if ((cl = client_find(authreq->ipaddr)) == NULL) {
+	if ((cl = client_find(radreq->ipaddr)) == NULL) {
 		radlog(L_ERR, _("request from unknown client: %s"),
-			client_name(authreq->ipaddr));
+			client_name(radreq->ipaddr));
 		return -1;
 	}
 
@@ -291,9 +291,9 @@ calc_digest(digest, authreq)
 	 */
 	secretlen = strlen(cl->secret);
 	strcpy(buffer, cl->secret);
-	memcpy(buffer + secretlen, authreq->vector, AUTH_VECTOR_LEN);
+	memcpy(buffer + secretlen, radreq->vector, AUTH_VECTOR_LEN);
 	md5_calc(digest, buffer, secretlen + AUTH_VECTOR_LEN);
-	strcpy(authreq->secret, cl->secret);
+	strcpy(radreq->secret, cl->secret);
 	memset(buffer, 0, sizeof(buffer));
 
 	return(0);
@@ -304,45 +304,45 @@ calc_digest(digest, authreq)
  *	signature based on the clients private key.
  */
 int
-calc_acctdigest(digest, authreq)
+calc_acctdigest(digest, radreq)
 	u_char *digest;
-	AUTH_REQ *authreq;
+	RADIUS_REQ *radreq;
 {
 	int	secretlen;
 	CLIENT	*cl;
 	char zero[AUTH_VECTOR_LEN];
-	u_char	* recvbuf = (u_char*) authreq->data;
-	int	len = authreq->data_len;
+	u_char	* recvbuf = (u_char*) radreq->data;
+	int	len = radreq->data_len;
 
 	/*
 	 *	See if we know this client.
 	 */
-	if ((cl = client_find(authreq->ipaddr)) == NULL) {
+	if ((cl = client_find(radreq->ipaddr)) == NULL) {
 		radlog(L_ERR, _("request from unknown client: %s"),
-			client_name(authreq->ipaddr));
+			client_name(radreq->ipaddr));
 		return -1;
 	}
 
 	/*
-	 *	Copy secret into authreq->secret so that we can
+	 *	Copy secret into radreq->secret so that we can
 	 *	use it with send_acct_reply()
 	 */
 	secretlen = strlen(cl->secret);
-	strcpy(authreq->secret, cl->secret);
+	strcpy(radreq->secret, cl->secret);
 
 	/*
 	 *	Older clients have the authentication vector set to
 	 *	all zeros. Return `1' in that case.
 	 */
 	memset(zero, 0, sizeof(zero));
-	if (memcmp(authreq->vector, zero, AUTH_VECTOR_LEN) == 0)
+	if (memcmp(radreq->vector, zero, AUTH_VECTOR_LEN) == 0)
 		return 1;
 
 	/*
 	 *	Zero out the auth_vector in the received packet.
 	 *	Then append the shared secret to the received packet,
 	 *	and calculate the MD5 sum. This must be the same
-	 *	as the original MD5 sum (authreq->vector).
+	 *	as the original MD5 sum (radreq->vector).
 	 */
 	memset(recvbuf + 4, 0, AUTH_VECTOR_LEN);
 	memcpy(recvbuf + len, cl->secret, secretlen);
@@ -351,7 +351,7 @@ calc_acctdigest(digest, authreq)
 	/*
 	 *	Return 0 if OK, 2 if not OK.
 	 */
-	return memcmp(digest, authreq->vector, AUTH_VECTOR_LEN) ? 2 : 0;
+	return memcmp(digest, radreq->vector, AUTH_VECTOR_LEN) ? 2 : 0;
 }
 
 /*
@@ -359,7 +359,7 @@ calc_acctdigest(digest, authreq)
  *	structure, and attach attribute-value pairs contained in
  *	the request to the new structure.
  */
-AUTH_REQ *
+RADIUS_REQ *
 radrecv(host, udp_port, buffer, length)
 	UINT4 host;
 	u_short udp_port;
@@ -378,15 +378,15 @@ radrecv(host, udp_port, buffer, length)
 	VALUE_PAIR	*first_pair;
 	VALUE_PAIR	*prev;
 	VALUE_PAIR	*pair;
-	AUTH_REQ	*authreq;
+	RADIUS_REQ	*radreq;
 
 	/*
 	 *	Pre-allocate the new request data structure
 	 */
 
-	authreq = alloc_request();
+	radreq = radreq_alloc();
 	
-	memset(authreq, 0, sizeof(AUTH_REQ));
+	memset(radreq, 0, sizeof(RADIUS_REQ));
 
 	auth = (AUTH_HDR *)buffer;
 	totallen = ntohs(auth->length);
@@ -403,13 +403,13 @@ radrecv(host, udp_port, buffer, length)
 	/*
 	 *	Fill header fields
 	 */
-	authreq->ipaddr = host;
-	authreq->udp_port = udp_port;
-	authreq->id = auth->id;
-	authreq->code = auth->code;
-	memcpy(authreq->vector, auth->vector, AUTH_VECTOR_LEN);
-	authreq->data = buffer;
-	authreq->data_len = length;
+	radreq->ipaddr = host;
+	radreq->udp_port = udp_port;
+	radreq->id = auth->id;
+	radreq->code = auth->code;
+	memcpy(radreq->vector, auth->vector, AUTH_VECTOR_LEN);
+	radreq->data = buffer;
+	radreq->data_len = length;
 
 	/*
 	 *	Extract attribute-value pairs
@@ -457,11 +457,12 @@ radrecv(host, udp_port, buffer, length)
 			      ("attribute %d longer then buffer left, %d > %d",
 				attribute, attrlen, length));
 		} else {
-			pair = alloc_pair();
+			pair = avp_alloc();
 			
 			pair->name = attr->name;
 			pair->attribute = attr->value;
 			pair->type = attr->type;
+			pair->additivity = attr->additivity;
 			pair->next = (VALUE_PAIR *)NULL;
 
 			switch (attr->type) {
@@ -505,7 +506,7 @@ radrecv(host, udp_port, buffer, length)
 			default:
 				debug(1, ("    %s (Unknown Type %d)",
 					attr->name,attr->type));
-				free_pair(pair);
+				avp_free(pair);
 				break;
 			}
 
@@ -513,8 +514,8 @@ radrecv(host, udp_port, buffer, length)
 		ptr += attrlen;
 		length -= attrlen;
 	}
-	authreq->request = first_pair;
-	return(authreq);
+	radreq->request = first_pair;
+	return(radreq);
 }
 
 #ifdef USE_LIVINGSTON_MENUS
@@ -523,8 +524,8 @@ radrecv(host, udp_port, buffer, length)
  *	any user message provided and a state value.
  */
 void
-send_challenge(authreq, msg, state, activefd)
-	AUTH_REQ *authreq;
+send_challenge(radreq, msg, state, activefd)
+	RADIUS_REQ *radreq;
 	char *msg;
 	char *state;
 	int activefd;
@@ -545,8 +546,8 @@ send_challenge(authreq, msg, state, activefd)
 	 *	Build standard response header
 	 */
 	auth->code = PW_ACCESS_CHALLENGE;
-	auth->id = authreq->id;
-	memcpy(auth->vector, authreq->vector, AUTH_VECTOR_LEN);
+	auth->id = radreq->id;
+	memcpy(auth->vector, radreq->vector, AUTH_VECTOR_LEN);
 	total_length = AUTH_HDR_LEN;
 	ptr = auth->data;
 
@@ -597,8 +598,8 @@ send_challenge(authreq, msg, state, activefd)
 	/*
 	 *	Calculate the response digest
 	 */
-	secretlen = strlen(authreq->secret);
-	memcpy(send_buffer + total_length, authreq->secret, secretlen);
+	secretlen = strlen(radreq->secret);
+	memcpy(send_buffer + total_length, radreq->secret, secretlen);
 	md5_calc(digest, (u_char *)auth, total_length + secretlen);
 	memcpy(auth->vector, digest, AUTH_VECTOR_LEN);
 	memset(send_buffer + total_length, 0, secretlen);
@@ -606,14 +607,14 @@ send_challenge(authreq, msg, state, activefd)
 	sin = (struct sockaddr_in *) &saremote;
         memset ((char *) sin, '\0', sizeof (saremote));
 	sin->sin_family = AF_INET;
-	sin->sin_addr.s_addr = htonl(authreq->ipaddr);
-	sin->sin_port = htons(authreq->udp_port);
+	sin->sin_addr.s_addr = htonl(radreq->ipaddr);
+	sin->sin_port = htons(radreq->udp_port);
 
 	debug(1, ("Sending Challenge of id %d to %lx (nas %s)",
-		authreq->id, (u_long)authreq->ipaddr,
-		nas_name2(authreq)));
+		radreq->id, (u_long)radreq->ipaddr,
+		nas_name2(radreq)));
 	
-	stat_inc(auth, authreq->ipaddr, num_challenges);
+	stat_inc(auth, radreq->ipaddr, num_challenges);
 	
 	/*
 	 *	Send it to the user

@@ -446,18 +446,18 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
 	 * Create authentication request
 	 */
 	pairs = NULL;
-	pairadd(&pairs,
-		namepair = create_pair(DA_USER_NAME, strlen(name), name, 0));
-	pairadd(&pairs, create_pair(DA_PASSWORD, strlen(password),
+	avl_add_pair(&pairs,
+		namepair = avp_create(DA_USER_NAME, strlen(name), name, 0));
+	avl_add_pair(&pairs, avp_create(DA_PASSWORD, strlen(password),
 				    password, 0));
 	if (service_type &&
 	    (dv = value_name_to_value(service_type))) {
 		DEBUG(10, ("adding Service-Type=%d", dv->value));
-		pairadd(&pairs, create_pair(DA_SERVICE_TYPE,
+		avl_add_pair(&pairs, avp_create(DA_SERVICE_TYPE,
 					    0, NULL,
 					    dv->value));
 	}
-	pairadd(&pairs, create_pair(DA_NAS_IP_ADDRESS,
+	avl_add_pair(&pairs, avp_create(DA_NAS_IP_ADDRESS,
 				    0, NULL,
 				    radclient->source_ip));
 	authreq = radclient_send(radclient,
@@ -465,7 +465,7 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
 	if (authreq == NULL) {
 		_pam_log(LOG_ERR,
 			 "no response from radius server");
-		pairfree(pairs);
+		avl_free(pairs);
 		return PAM_AUTHINFO_UNAVAIL;
 	}
 
@@ -499,7 +499,7 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
 		authfree(authreq);
 	}
 	/* add username to the response (do we need it still?) */
-	pairadd(&authreq->request, pairdup(namepair));
+	avl_add_pair(&authreq->request, avp_dup(namepair));
 
 	return PAM_SUCCESS;
 }

@@ -71,13 +71,13 @@ typedef struct {
 extern SQL_cfg sql_cfg;
 
 int rad_sql_init();
-void rad_sql_acct(AUTH_REQ *req);
-int rad_sql_pass(AUTH_REQ *req, char *data, char *passwd);
+void rad_sql_acct(RADIUS_REQ *req);
+int rad_sql_pass(RADIUS_REQ *req, char *data, char *passwd);
 void rad_sql_check_connect(int type);
 void rad_sql_need_reconnect(int type);
 int rad_sql_setup(int type, qid_t qid);
 void rad_sql_cleanup(int type, qid_t qid);
-int rad_sql_checkgroup(AUTH_REQ *req, char *groupname);
+int rad_sql_checkgroup(RADIUS_REQ *req, char *groupname);
 void rad_sql_shutdown();
 
 /* Lower level routines: */

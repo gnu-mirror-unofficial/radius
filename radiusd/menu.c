@@ -37,8 +37,8 @@ static VALUE_PAIR * menu_pairs(char *menu_name, char  *menu_selection);
 
 
 void
-process_menu(authreq, activefd, pw_digest)
-	AUTH_REQ        *authreq;
+process_menu(radreq, activefd, pw_digest)
+	RADIUS_REQ        *radreq;
 	int             activefd;
 	u_char          *pw_digest;
 {
@@ -49,7 +49,7 @@ process_menu(authreq, activefd, pw_digest)
 	int i;
 	char *msg;
 
-	if ((pair = pairfind(authreq->request, DA_STATE)) == NULL ||
+	if ((pair = avl_find(radreq->request, DA_STATE)) == NULL ||
             pair->strvalue == NULL ||		
 	    strncmp(pair->strvalue, "MENU=", 5) != 0) 
 		return;
@@ -58,7 +58,7 @@ process_menu(authreq, activefd, pw_digest)
 	strcpy(menu_name, pair->strvalue + 5);
 
 	/* The menu input is in the Password Field */
-	pair = pairfind(authreq->request, DA_PASSWORD);
+	pair = avl_find(radreq->request, DA_PASSWORD);
 	if (!pair) 
 		*menu_input = 0;
 	else {
@@ -74,7 +74,7 @@ process_menu(authreq, activefd, pw_digest)
 		return;
 	}
 	
-	if ((term_pair = pairfind(pair, DA_TERMINATION_MENU)) != NULL) {
+	if ((term_pair = avl_find(pair, DA_TERMINATION_MENU)) != NULL) {
 		/* Change this to a menu state */
 		radsprintf(state_value, sizeof(state_value),
 				"MENU=%s", term_pair->strvalue);
@@ -84,7 +84,7 @@ process_menu(authreq, activefd, pw_digest)
 		term_pair->name = "Challenge-State";
 
 		/* Insert RADIUS termination option */
-		if (new_pair = create_pair(DA_TERMINATION_ACTION,
+		if (new_pair = avp_create(DA_TERMINATION_ACTION,
 					   0, NULL,
 				       DV_TERMINATION_ACTION_RADIUS_REQUEST)) {
 			/* Insert it */
@@ -93,26 +93,26 @@ process_menu(authreq, activefd, pw_digest)
 		}
 	}
 
-	if ((term_pair = pairfind(pair, DA_MENU)) != NULL &&
+	if ((term_pair = avl_find(pair, DA_MENU)) != NULL &&
 	    strcmp(term_pair->strvalue, "EXIT") == 0) {
-		rad_send_reply(PW_AUTHENTICATION_REJECT, authreq,
-			       authreq->request, NULL, activefd);
+		rad_send_reply(PW_AUTHENTICATION_REJECT, radreq,
+			       radreq->request, NULL, activefd);
 	} else if (pair) {
-		if (new_pair = pairfind(pair, DA_MENU)) {
+		if (new_pair = avl_find(pair, DA_MENU)) {
 			msg = get_menu(new_pair->strvalue);
 			radsprintf(state_value, sizeof(state_value),
 					"MENU=%s", new_pair->strvalue);
-			send_challenge(authreq, msg, state_value, activefd);
+			send_challenge(radreq, msg, state_value, activefd);
 		} else {
-			rad_send_reply(PW_AUTHENTICATION_ACK, authreq,
+			rad_send_reply(PW_AUTHENTICATION_ACK, radreq,
 				       pair, NULL, activefd);
 		}
 	} else {
-		rad_send_reply(PW_AUTHENTICATION_REJECT, authreq,
-			       authreq->request, NULL, activefd);
+		rad_send_reply(PW_AUTHENTICATION_REJECT, radreq,
+			       radreq->request, NULL, activefd);
 	}
 
-	pairfree(pair);
+	avl_free(pair);
 
 }
 
@@ -239,7 +239,7 @@ menu_pairs(menu_name, menu_selection)
 						       menu_name,
 						       line_num,
 						       errp);
-						pairfree(reply_first);
+						avl_free(reply_first);
 						reply_first = NULL;
 						break;
 					}

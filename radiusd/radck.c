@@ -105,11 +105,11 @@ mark_list(datum, sym, list)
 {
 	VALUE_PAIR *p;
 
-	if (p = pairfind(list, DA_MATCH_PROFILE)) {
+	if (p = avl_find(list, DA_MATCH_PROFILE)) {
 		do {
 			mark_profile(datum, sym, p->strvalue);
 		} while (p->next &&
-			 (p = pairfind(p->next, DA_MATCH_PROFILE)));
+			 (p = avl_find(p->next, DA_MATCH_PROFILE)));
 	}
 }
 
@@ -229,6 +229,7 @@ fix_check_pairs(name, line, pairs)
 	VALUE_PAIR *password = NULL;
 	VALUE_PAIR *crypt_password = NULL;
 	VALUE_PAIR *chap_password = NULL;
+	DICT_ATTR *dict;
 	int errcnt = 0;
 	
 	for (p = *pairs; p; p = p->next) {
@@ -268,6 +269,16 @@ fix_check_pairs(name, line, pairs)
 			}
 			break;
 
+		default:
+			dict = attr_number_to_dict(p->attribute);
+			if (!dict)
+				break; /* just in case */
+			if (!(dict->flags & AF_CHECKLIST)) {
+				radlog(L_ERR,
+			_("users:%d: attribute %s not allowed in check pairs"),
+				       line, dict->name);
+				errcnt++;
+			}
 		}
 		
 	}
@@ -294,8 +305,8 @@ fix_check_pairs(name, line, pairs)
 		} else {
 			return 0;
 		}
-		auth_type = create_pair(DA_AUTH_TYPE, 0, NULL, type);
-		pairadd(pairs, auth_type);
+		auth_type = avp_create(DA_AUTH_TYPE, 0, NULL, type);
+		avl_add_pair(pairs, auth_type);
 	}
 	
 	switch (auth_type->lvalue) {
@@ -364,12 +375,24 @@ fix_reply_pairs(name, line, pairs)
 {
 	VALUE_PAIR *p;
 	int fall_through = 0;
+	DICT_ATTR *dict;
+	int errcnt = 0;
 	
 	for (p = *pairs; p; p = p->next) {
 		switch (p->attribute) {
 		case DA_FALL_THROUGH:
 			fall_through++;
 			break;
+		default:
+			dict = attr_number_to_dict(p->attribute);
+			if (!dict)
+				break; /* just in case */
+			if (!(dict->flags & AF_REPLYLIST)) {
+				radlog(L_ERR,
+			_("users:%d: attribute %s not allowed in reply pairs"),
+				       line, dict->name);
+				errcnt++;
+			}
 		}
 	}
 
@@ -378,7 +401,7 @@ fix_reply_pairs(name, line, pairs)
 		       _("users:%d: BEGIN without Fall-Through"),
 			 line);
 	}
-	return 0;
+	return errcnt;
 }
 
 /* given n by n matrix of bits R, modify its contents

@@ -65,19 +65,19 @@ typedef struct request {
 	void           *data;         /* Request-specific data */
 } REQUEST;
 
-void rad_req_free(AUTH_REQ *req);
-void rad_req_drop(int type, AUTH_REQ *ptr, char *status_str);
-int authreq_cmp(AUTH_REQ *a, AUTH_REQ *b);
+void rad_req_free(RADIUS_REQ *req);
+void rad_req_drop(int type, RADIUS_REQ *ptr, char *status_str);
+int radreq_cmp(RADIUS_REQ *a, RADIUS_REQ *b);
 
 struct request_class request_class[] = {
 	{ "AUTH", 0, MAX_REQUEST_TIME, CLEANUP_DELAY, 1,
-	  rad_authenticate, NULL, authreq_cmp, rad_req_free,
+	  rad_authenticate, NULL, radreq_cmp, rad_req_free,
 	  rad_req_drop, rad_sql_setup, rad_sql_cleanup },
 	{ "ACCT", 0, MAX_REQUEST_TIME, CLEANUP_DELAY, 1,
-	  rad_accounting, rad_acct_xmit, authreq_cmp, rad_req_free,
+	  rad_accounting, rad_acct_xmit, radreq_cmp, rad_req_free,
 	  rad_req_drop, rad_sql_setup, rad_sql_cleanup },
 	{ "PROXY",0, MAX_REQUEST_TIME, CLEANUP_DELAY, 0,
-	  rad_proxy, NULL, authreq_cmp, rad_req_free,
+	  rad_proxy, NULL, radreq_cmp, rad_req_free,
 	  rad_req_drop, NULL, NULL },
 #ifdef USE_SNMP
 	{ "SNMP", 0, MAX_REQUEST_TIME, 0, 1,
@@ -219,7 +219,7 @@ static RETSIGTYPE sig_usr1 (int);
 static RETSIGTYPE sig_usr2 (int);
 static RETSIGTYPE sig_dumpdb (int);
 
-static int	radrespond (AUTH_REQ *, int);
+static int	radrespond (RADIUS_REQ *, int);
 static int      open_socket(int port, char *type);
 
 
@@ -632,14 +632,14 @@ auth_respond(fd, sa, salen, buf, size)
 	u_char *buf;
 	int size;
 {
-	AUTH_REQ *authreq;
+	RADIUS_REQ *radreq;
 	struct sockaddr_in *sin = (struct sockaddr_in *) sa;
 	
-	authreq = radrecv(ntohl(sin->sin_addr.s_addr),
+	radreq = radrecv(ntohl(sin->sin_addr.s_addr),
 			  ntohs(sin->sin_port),
 			  buf,
 			  size);
-	radrespond(authreq, fd);
+	radrespond(radreq, fd);
 	return 0;
 }
 
@@ -814,8 +814,8 @@ check_reload()
  *
  */
 int
-radrespond(authreq, activefd)
-	AUTH_REQ *authreq;
+radrespond(radreq, activefd)
+	RADIUS_REQ *radreq;
 	int activefd;
 {
 	int type = -1;
@@ -828,23 +828,23 @@ radrespond(authreq, activefd)
 	/*
 	 *	First, see if we need to proxy this request.
 	 */
-	switch (authreq->code) {
+	switch (radreq->code) {
 
 	case PW_AUTHENTICATION_REQUEST:
 		/*
 		 *	Check request against hints and huntgroups.
 		 */
-		stat_inc(auth, authreq->ipaddr, num_access_req);
-		if ((e = rad_auth_init(authreq, activefd)) < 0)
+		stat_inc(auth, radreq->ipaddr, num_access_req);
+		if ((e = rad_auth_init(radreq, activefd)) < 0)
 			return e;
 		/*FALLTHRU*/
 	case PW_ACCOUNTING_REQUEST:
-		namepair = pairfind(authreq->request, DA_USER_NAME);
+		namepair = avl_find(radreq->request, DA_USER_NAME);
 		if (namepair == NULL)
 			break;
 		if (strchr(namepair->strvalue, '@') &&
-		    proxy_send(authreq, activefd) != 0) {
-			rad_spawn_child(R_PROXY, authreq, activefd);
+		    proxy_send(radreq, activefd) != 0) {
+			rad_spawn_child(R_PROXY, radreq, activefd);
 			return 0;
 		}
 		break;
@@ -852,8 +852,8 @@ radrespond(authreq, activefd)
 	case PW_AUTHENTICATION_ACK:
 	case PW_AUTHENTICATION_REJECT:
 	case PW_ACCOUNTING_RESPONSE:
-		if (proxy_receive(authreq, activefd) < 0) {
-			authfree(authreq);
+		if (proxy_receive(radreq, activefd) < 0) {
+			radreq_free(radreq);
 			return 0;
 		}
 		break;
@@ -863,7 +863,7 @@ radrespond(authreq, activefd)
 	 *	Select the required function and indicate if
 	 *	we need to fork off a child to handle it.
 	 */
-	switch (authreq->code) {
+	switch (radreq->code) {
 
 	case PW_AUTHENTICATION_REQUEST:
 		rad_sql_check_connect(SQL_AUTH);
@@ -880,13 +880,13 @@ radrespond(authreq, activefd)
 		/*
 		 *	We don't support this anymore.
 		 */
-		/* rad_passchange(authreq, activefd); */
+		/* rad_passchange(radreq, activefd); */
 		radlog(L_NOTICE, "PW_PASSWORD_REQUEST not supported anymore");
 		break;
 
 	default:
-		stat_inc(acct, authreq->ipaddr, num_unknowntypes);
-		radlog(L_NOTICE, _("unknown request %d"), authreq->code); 
+		stat_inc(acct, radreq->ipaddr, num_unknowntypes);
+		radlog(L_NOTICE, _("unknown request %d"), radreq->code); 
 		break;
 	}
 
@@ -895,7 +895,7 @@ radrespond(authreq, activefd)
 	 *	(perhaps through rad_spawn_child)
 	 */
 	if (type != -1) {
-	        rad_spawn_child(type, authreq, activefd);
+	        rad_spawn_child(type, radreq, activefd);
 	}
 	return 0;
 }
@@ -934,10 +934,10 @@ request_xmit(type, code, data, fd)
 
 	switch (type) {
 	case R_AUTH:
-		stat_inc(auth, ((AUTH_REQ*)data)->ipaddr, num_dup_req);
+		stat_inc(auth, ((RADIUS_REQ*)data)->ipaddr, num_dup_req);
 		break;
 	case R_ACCT:
-		stat_inc(acct, ((AUTH_REQ*)data)->ipaddr, num_dup_req);
+		stat_inc(acct, ((RADIUS_REQ*)data)->ipaddr, num_dup_req);
 	}
 
 	request_class[type].free(data);
@@ -1311,8 +1311,8 @@ stat_request_list(report)
 
 /* ************************************************************************* */
 int
-authreq_cmp(a, b)
-	AUTH_REQ *a, *b;
+radreq_cmp(a, b)
+	RADIUS_REQ *a, *b;
 {
 	return !(a->ipaddr == b->ipaddr &&
 		 a->id == b->id &&
@@ -1321,32 +1321,32 @@ authreq_cmp(a, b)
 
 void
 rad_req_free(req)
-	AUTH_REQ *req;
+	RADIUS_REQ *req;
 {
 	if (req->data_alloced)
 		efree(req->data);
-	authfree(req);
+	radreq_free(req);
 }
 
 void
-rad_req_drop(type, authreq, status_str)
+rad_req_drop(type, radreq, status_str)
 	int type;
-	AUTH_REQ *authreq;
+	RADIUS_REQ *radreq;
 	char *status_str;
 {
 	radlog(L_NOTICE,
 	       _("Dropping %s packet from client %s, ID: %d: %s"),
 	       request_class[type].name,
-	       client_name(authreq->ipaddr),
-	       authreq->id,
+	       client_name(radreq->ipaddr),
+	       radreq->id,
 	       status_str);
 
 	switch (type) {
 	case R_AUTH:
-		stat_inc(auth, authreq->ipaddr, num_dropped);
+		stat_inc(auth, radreq->ipaddr, num_dropped);
 		break;
 	case R_ACCT:
-		stat_inc(acct, authreq->ipaddr, num_dropped);
+		stat_inc(acct, radreq->ipaddr, num_dropped);
 	}
 }
 /* ************************************************************************* */

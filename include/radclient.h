@@ -41,7 +41,7 @@ typedef struct {
 } RADCLIENT;	
 
 RADCLIENT *radclient_alloc(UINT4, size_t);
-AUTH_REQ *radclient_send(RADCLIENT *config, int port_type,
+RADIUS_REQ *radclient_send(RADCLIENT *config, int port_type,
 			 int code, VALUE_PAIR *pair);
 
 SERVER *radclient_alloc_server(SERVER *data);

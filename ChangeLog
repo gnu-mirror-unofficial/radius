@@ -1,3 +1,11 @@
+2004-07-19  Sergey Poznyakoff
+
+	* radtest/gram.y: Implemented functions.
+	* radtest/input.l: Likewise.
+	* radtest/runtime.c: Likewise.
+	* radtest/main.c: Cleanup
+	* radtest/radtest.h: Cleanup
+	
 2004-07-18  Sergey Poznyakoff
 
 	* include/common.h: Added missing prototypes

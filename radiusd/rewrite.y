@@ -5844,8 +5844,6 @@ rewrite_stmt_term(int finish, void *block_data, void *handler_data)
 
 		grad_free(runtime_stack);
 		runtime_stack = NULL;
-
-		regcomp_flags = 0;
 	} 
 	return 0;
 }

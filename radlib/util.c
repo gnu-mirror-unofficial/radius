@@ -348,7 +348,7 @@ fprint_attr_list(fd, pair)
 	FILE *fd;
 	VALUE_PAIR *pair;
 {
-	while (pair) {
+	for (; pair; pair = pair->next) {
 		radfprintf(fd, "    %A\n", pair);
 	}
 }

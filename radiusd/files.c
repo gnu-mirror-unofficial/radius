@@ -606,6 +606,9 @@ hints_setup(RADIUS_REQ *req)
 		avl_merge(&request_pairs, &tmp);
 		avp_free(tmp);
 		break;
+
+	case RT_STATUS_SERVER:
+		return 0;
 	}
 	
         if (hints == NULL)

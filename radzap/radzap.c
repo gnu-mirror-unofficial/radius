@@ -39,6 +39,7 @@
 int confirm_flag;
 
 struct arguments {
+	char *radutmp;
         char *user;
         char *nas;
         int port;
@@ -77,7 +78,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 radlog_dir = arg;
                 break;
         case 'f':
-                radutmp_path = arg;
+                args->radutmp = arg;
                 break;
         case 'n':
                 args->nas = arg;
@@ -209,11 +210,14 @@ main(int argc, char **argv)
 
         if (s = getenv("RADZAP_CONFIRM"))
                 confirm_flag = atoi(s);
+	args.radutmp = NULL;
         args.user = NULL;
         args.nas  = NULL;
         args.port = -1;
         if (grad_argp_parse(&argp, &argc, &argv, 0, NULL, &args))
                 return 1;
+	if (args.radutmp)
+		radutmp_path = args.radutmp;
 
         /*
          *      Read the "naslist" file.

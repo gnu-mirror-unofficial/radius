@@ -64,6 +64,7 @@
 #define LO_PID   0x0002
 #define LO_CAT   0x0004
 #define LO_PRI   0x0008
+#define LO_TID   0x0010
 #define LO_PERSIST 0x8000
 
 #define MKSTRING(x) #x 

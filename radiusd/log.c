@@ -88,7 +88,11 @@ run_log_hook(const grad_request_t *req, const char *hook_name)
 {
 	char *result;
 	char nasbuf[MAX_LONGNAME];
-	
+
+	/* FIXME: Should make sure that the hook does not modify the
+	   request, either by passing rewrite_invoke a copy of the
+	   latter (expensive), or by providing some internal rewrite
+	   mechanism */
 	if (rewrite_invoke(String,
 			   &result,
 			   hook_name,

@@ -11,6 +11,7 @@
 
 EXTRA_DIST = \
  access.deny\
+ auth.bin\
  checkrad.conf\
  clients\
  client.conf.in\
@@ -33,4 +34,4 @@ EXTRA_DIST = \
  realms\
  rewrite\
  sqlserver\
- users
+ users.in

@@ -1,0 +1,45 @@
+# Check for working accounting and simultaneous use ctrl. -*- Autotest -*-
+
+# Test suite for GNU Radius.
+# Copyright (C) 2004 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+# 02111-1307, USA.
+
+AT_SETUP([accounting and simultaneous use control])
+AT_KEYWORDS([acct-start])
+
+RA_CHECK([send acct Accounting-Request User-Name = "simuse" \
+                  NAS-IP-Address = 127.0.0.1 \
+                  NAS-Port-Id = 1 \
+                  Acct-Session-Id = "0001" \
+                  Acct-Status-Type = Start
+          expect Accounting-Response])
+
+RA_CHECK([send auth Access-Request User-Name = "simuse" 
+          expect Access-Reject Reply-Message = "\r\nYou are already logged in - access denied\r\n"]) 
+
+RA_CHECK([send acct Accounting-Request User-Name = "simuse" \
+                  NAS-IP-Address = 127.0.0.1 \
+                  NAS-Port-Id = 1 \
+                  Acct-Session-Id = "0001" \
+                  Acct-Status-Type = Stop
+          expect Accounting-Response]) 
+
+RA_CHECK([send auth Access-Request User-Name = "simuse" 
+          expect Access-Accept Service-Type = 2]) 
+
+AT_CLEANUP
+

@@ -1,0 +1,34 @@
+# Reply attributes. -*- Autotest -*-
+
+# Test suite for GNU Radius.
+# Copyright (C) 2004 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+# 02111-1307, USA.
+
+AT_SETUP([Reply attributes])
+AT_KEYWORDS([reply])
+
+RA_CHECK([send auth Access-Request \
+             User-Name = "reply" \
+             User-Password = "guessme" 
+          expect Access-Accept Service-Type = 2 Framed-Protocol = 1])
+
+RA_CHECK([send auth Access-Request User-Name = "framed-ip" \
+             NAS-Port-Id = 10
+          expect Access-Accept Service-Type = 2 Framed-Protocol = 1 Framed-IP-Address = 127.0.0.11]
+)
+
+AT_CLEANUP

@@ -1,0 +1,47 @@
+# Check for proxying Livingston menus. -*- Autotest -*-
+
+# Test suite for GNU Radius.
+# Copyright (C) 2004 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+# 02111-1307, USA.
+
+AT_SETUP([menus (proxy)])
+AT_KEYWORDS([proxy-menu])
+
+RA_PREREQ([USE_LIVINGSTON_MENUS],
+[RA_CHECK([send auth Access-Request User-Name = "menu" 
+	   print $REPLY[[Reply-Message*]]],
+	  [MENU1(1-PPP, 2-CSLIP, 3-SLIP, 4-Login, 5-Second, 6-Exit)])
+
+ RA_CHECK([send auth Access-Request User-Name = "menu" \
+                  User-Password = "5" \
+		  State = "MENU=menu1" 
+	   print $REPLY[[Reply-Message*]]],
+          [MENU2(ra,sol,weevil,top,quit)])
+
+ RA_CHECK([send auth Access-Request User-Name = "menu" \
+                  User-Password = "sol" \
+                  State = "MENU=menu2" 
+           expect Access-Accept Service-Type = 1 \
+                  Login-IP-Host = 127.0.0.1 \
+                  State = "MENU=menu2" \
+                  Termination-Action = 1])
+])
+
+AT_CLEANUP
+
+
+

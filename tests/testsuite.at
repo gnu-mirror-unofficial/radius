@@ -1,0 +1,74 @@
+# Process this file with autom4te to create testsuite. -*- Autotest -*-
+
+# Test suite for GNU Radius.
+# Copyright (C) 2004 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2, or (at your option)
+# any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA
+# 02111-1307, USA.
+
+# We need a recent Autotest.
+m4_version_prereq([2.52g])
+
+AT_INIT
+
+AT_TESTED([radiusd])
+
+m4_define([RA_CHECK],[
+ AT_DATA([script],[
+$1
+])
+ AT_CHECK([radtest -d `cat $BUILDDIR/confdir` --no-interactive -f script],
+  [0],
+  [m4_if([$2],[],[PASS
+],[$2])])
+])
+
+m4_define([RA_PREREQ],
+ [AT_CHECK([radiusd --show-defaults|grep "$1" || exit 77],
+           [0],
+           [$1
+],
+           [],
+           [exit 77],
+           [$2])])
+
+m4_define([RA_ALL_KEYWORDS],[status-server basic-auth reply begin-kw default-kw match-profile hints huntgroups scheme-auth acl expiration menu acct rewrite execwait filter scheme-acct tunnel log-mode])
+
+m4_define([RA_PROXY_KEYWORDS],[proxy-basic-auth proxy-ignorecase proxy-vsa proxy-menu proxy-nested proxy-acct proxy-tunnel])
+
+##
+
+m4_include([begin.at])
+
+m4_foreach([keyword],
+           m4_split(RA_ALL_KEYWORDS,[[
+	 ]]+),
+           [m4_include(keyword[.at])])
+
+m4_include([end.at])
+
+m4_include([begin-proxy.at])
+
+m4_foreach([keyword],
+           m4_split(RA_PROXY_KEYWORDS,[[
+	 ]]+),
+           [m4_include(keyword[.at])])
+
+m4_include([end-proxy.at])
+
+# End of testsuite.at
+
+	     
+

@@ -1,0 +1,101 @@
+# @configure_input@                                     -*- shell-script -*-
+# Configurable variable values for tar test suite.
+# Copyright (C) 2004 Free Software Foundation, Inc.
+
+SOURCEDIR=$abs_srcdir
+BUILDDIR=$abs_builddir
+PATH=@abs_builddir@:@abs_top_builddir@/radiusd:@abs_top_builddir@/radtest:$top_srcdir:$srcdir:$PATH
+GUILE_LOAD_PATH=$abs_top_builddir/radscm
+export GUILE_LOAD_PATH
+
+ZERO_LOGS=1
+
+make_raddb() {
+    NAME=$1
+    ABS_NAME=$builddir/$1
+    shift
+
+    if test ! -f $ABS_NAME ; then
+       cp -r $SOURCEDIR/$NAME $builddir
+       chmod -R u+w $ABS_NAME
+    fi
+
+    EXPR=`@abs_builddir@/findport -c5 -s1644 "-fs^@TEST_AUTH_PORT@^%d^;\
+s^@TEST_ACCT_PORT@^%d^;\
+s^@TEST_SNMP_PORT@^%d^;\
+s^@PROXY_AUTH_PORT@^%d^;\
+s^@PROXY_ACCT_PORT@^%d^;\
+s^@USER@^%u^;\
+s^@BUILDDIR@^$BUILDDIR^;\
+s^@SOURCEDIR@^$SOURCEDIR^;\
+s^@GUILE@^$GUILE^;\
+s^@SNMP@^$SNMP^;"`
+
+    for file in $*
+    do
+        sed $EXPR $ABS_NAME/${file}.in > $ABS_NAME/$file
+    done
+    [ -d $ABS_NAME/log ] || mkdir $ABS_NAME/log
+    [ -d $ABS_NAME/acct ] || mkdir $ABS_NAME/acct
+    if [ x"$ZERO_LOGS" != x ]; then
+	for file in radwtmp radutmp radius.log radius.info radius.debug radius.stderr 
+	do
+	    cat /dev/null > $ABS_NAME/log/$file
+	done
+    fi
+}
+
+start_server() {
+    @abs_top_builddir@/radiusd/radiusd -d $1 \
+             -l $1/log \
+	     -a $1/acct \
+	     -P $1
+    N=1	     
+    while [ ! -r $1/radiusd.pid ]
+    do
+        sleep 1
+	N=`expr $N + 1`
+	if [ $N -gt 5 ]; then
+		exit 1
+	fi	  
+    done
+}
+
+stop_server() {
+    for dir in $*
+    do
+        if test -r $dir/radiusd.pid; then
+            kill -TERM `cat $dir/radiusd.pid`
+            sleep 2
+            if test -r $dir/radiusd.pid ; then
+                kill -KILL `cat $dir/radiusd.pid` 	     
+            fi
+        fi
+    done
+}
+
+LOCAL_CONF=$BUILDDIR/raddb
+PROXY_CONF=$BUILDDIR/proxy
+
+rm -f $LOCAL_CONF/radiusd.pid $PROXY_CONF/radiusd.pid 
+
+begin_server() {
+  case $1 in
+  proxy) RADIUSD_CONFDIR=$PROXY_CONF;;
+  *)     RADIUSD_CONFDIR=$LOCAL_CONF;;
+  esac
+  if [ -r $RADIUSD_CONFDIR/radiusd.pid ]; then
+     :
+  else
+     make_raddb raddb dictionary config client.conf users acct.scm realms
+     make_raddb proxy dictionary client.conf config realms
+     start_server $LOCAL_CONF
+     test "$1" = "proxy" && start_server $PROXY_CONF
+     trap "stop_server $LOCAL_CONF $PROXY_CONF" 1 3 15
+  fi
+  echo $RADIUSD_CONFDIR > $BUILDDIR/confdir
+}
+
+end_server() {
+  stop_server $LOCAL_CONF $PROXY_CONF
+}  

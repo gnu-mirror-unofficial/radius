@@ -147,27 +147,30 @@ attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
 				len = pair->avp_strlength;
                         obstack_grow_quoted(obp, string, len);
                 } else {
-                        /* strvalue might include terminating zero character,
-                           so we need to recalculate it */
-                        int length = strlen(pair->avp_strvalue);
-                        obstack_grow_quoted(obp, pair->avp_strvalue, length);
+                        obstack_grow_quoted(obp,
+					    pair->avp_strvalue,
+					    pair->avp_strlength);
                 }
                 break;
+		
         case TYPE_INTEGER:
                 snprintf(tmp, sizeof(tmp), "%lu", pair->avp_lvalue);
                 len = strlen(tmp);
                 obstack_grow(obp, tmp, len);
                 break;
+		
         case TYPE_IPADDR:
                 ip_iptostr(pair->avp_lvalue, tmp);
                 len = strlen(tmp);
                 obstack_grow(obp, tmp, len);
                 break;
+		
         case TYPE_DATE:
                 snprintf(tmp, sizeof(tmp), "%ld", pair->avp_lvalue);
                 len = strlen(tmp);
                 obstack_grow(obp, tmp, len);
                 break;
+		
         default:
                 radlog(L_CRIT,
                     _("INTERNAL ERROR (%s:%d): attribute %d has bad type (%d)"),
@@ -272,12 +275,15 @@ radius_xlate0(struct obstack *obp, char *str, RADIUS_REQ *req,
                 default:
                         obstack_1grow(obp, c);
                         break;
+			
                 case 0:
                         goto end;
+			
 		case '\n':
 			obstack_1grow(obp, '\r');
 			obstack_1grow(obp, c);
 			break;
+			
                 case '%':
                         if (!req) {
                                 obstack_1grow(obp, c);
@@ -287,48 +293,60 @@ radius_xlate0(struct obstack *obp, char *str, RADIUS_REQ *req,
                         case '%':
                                 obstack_1grow(obp, c);
                                 break;
+				
                         case 'D':
                                 curtime_to_str(obp, req->request, 0);
                                 break;
+				
                         case 'G':
                                 curtime_to_str(obp, req->request, 1);
                                 break;
+				
                         case 'f': /* Framed IP address */
                                 attrno_to_str(obp, NULL, reply,
                                               DA_FRAMED_IP_ADDRESS, NULL);
                                 break;
+				
                         case 'n': /* NAS IP address */
                                 attrno_to_str(obp, req, req->request,
                                               DA_NAS_IP_ADDRESS, NULL);
                                 break;
+				
                         case 't': /* MTU */
                                 attrno_to_str(obp, NULL, reply,
                                               DA_FRAMED_MTU, NULL);
                                 break;
+				
                         case 'p': /* Port number */
                                 attrno_to_str(obp, req, req->request,
                                               DA_NAS_PORT_ID, NULL);
                                 break;
+				
                         case 'u': /* User name */
                                 attrno_to_str(obp, req, req->request,
                                               DA_USER_NAME, NULL);
                                 break;
+				
                         case 'c': /* Callback-Number */
                                 attrno_to_str(obp, NULL, reply,
                                               DA_CALLBACK_NUMBER, NULL);
                                 break;
+				
                         case 'i': /* Calling station ID */
                                 attrno_to_str(obp, req, req->request,
                                               DA_CALLING_STATION_ID, NULL);
                                 break;
+				
                         case 'a': /* Protocol: SLIP/PPP */
                                 attrno_to_str(obp, NULL, reply,
                                               DA_FRAMED_PROTOCOL, NULL);
                                 break;
+				
                         case 's': /* Speed */
                                 attrno_to_str(obp, req, req->request,
                                               DA_CONNECT_INFO, NULL);
                                 break;
+				
                         case 'C':
                                 /* Check pair */
                                 da = parse_dict_attr(p, &p, &defval);
@@ -336,12 +354,14 @@ radius_xlate0(struct obstack *obp, char *str, RADIUS_REQ *req,
                                             da, defval);
                                 efree(defval);
                                 break;
+				
                         case 'R':
                                 /* Reply pair */
                                 da = parse_dict_attr(p, &p, &defval);
                                 attr_to_str(obp, NULL,
                                             reply, da, defval);
                                 break;
+				
                         default:                                        
                                 obstack_1grow(obp, '%');
                                 obstack_1grow(obp, c);
@@ -354,26 +374,34 @@ radius_xlate0(struct obstack *obp, char *str, RADIUS_REQ *req,
                         case 'a':
                                 obstack_1grow(obp, '\a');
                                 break;
+				
                         case 'b':
                                 obstack_1grow(obp, '\b');
                                 break;
+				
                         case 'f':
                                 obstack_1grow(obp, '\f');
                                 break;
+				
                         case 'e':
                                 obstack_1grow(obp, '\033');
                                 break;
+				
                         case 'n':
                                 obstack_1grow(obp, '\n');
                                 break;
+				
                         case 'r':
                                 obstack_1grow(obp, '\r');
                                 break;
+				
                         case 't':
                                 obstack_1grow(obp, '\t');
                                 break;
+				
                         case 0:
                                 goto end;
+				
                         default:
                                 obstack_1grow(obp, '\\');
                                 obstack_1grow(obp, c);

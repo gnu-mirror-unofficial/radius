@@ -8,6 +8,11 @@
 	* naming.texi: Likewise.
 	* operation.texi: Likewise.
 
+	* attributes.texi: Minor changes in wording.
+	* configure.texi: Removed no longer relevant keywords print-tid
+	and common.
+	* extensions.texi: Removed node `Common Filters'.
+	
 2003-02-23  Daniel Barowy <dan@barowy.net>
 
 	* operation.texi: Some grammatical changes.

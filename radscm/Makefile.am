@@ -11,7 +11,7 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 noinst_LIBRARIES=@LIBRADSCM@
-EXTRA_LIBRARIES=libradscm.a
+EXTRA_LIBRARIES=libradscm.a libradlog.a
 bin_PROGRAMS=@RADSCM@
 EXTRA_PROGRAMS=radscm
 
@@ -23,6 +23,9 @@ libradscm_a_SOURCES= \
  rscm_lib.c\
  radscm.c\
  radscm.h
+
+libradlog_a_SOURCES= \
+ rscm_radlog.c
 
 radscm_SOURCES=main.c radscm.c
 

@@ -1,3 +1,35 @@
+2003-07-29  Sergey Poznyakoff 
+
+	* doc/texinfo/Makefile.am: Generate PDF on make webdoc.
+	* doc/texinfo/index.html.in: Added link to PDF copy.
+	* examples/c3620.rw: New file. Contibuted y Oleg Gawriloff
+	* examples/Makefile.am: Added c3620.rw
+	* examples/README: Updated.
+	* include/list.h: Renamed LIST to RAD_LIST to eliminate
+	possible name clashes with the other libraries (namely,
+	libmysqlclient)
+	* lib/list.c: Likewise.
+	* include/radius.h: Likewise.
+	* include/envar.h: Likewise.
+	* include/radiusd.h: Likewise.
+	* lib/dict.c: Likewise.
+	* lib/envar.c: Likewise.
+	* lib/realms.c: Likewise.
+	* radiusd/files.c: Likewise.
+	* radiusd/input.c: Likewise.
+	* radiusd/log.c: Likewise.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/request.c: Likewise.
+	* radiusd/rpp.c: Likewise.
+	* radiusd/snmpserv.c: Likewise.
+	* radiusd/config.y: Likewise.
+
+	* scripts/texi2html.diff: Bugfix
+
+	* radiusd/auth.c: Choose the strictest timeout value between
+	the one imposed by Login-Time attribute and the one set using
+	Session-Timeout attribute.
+
 2003-07-23  Sergey Poznyakoff 
 
 	* radiusd/tsh.c (tsh_help): Use gettext.

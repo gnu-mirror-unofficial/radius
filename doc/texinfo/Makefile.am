@@ -1,6 +1,7 @@
 # $Id$
 # This file is part of GNU RADIUS.
-# Copyright (C) 2000,2001, Sergey Poznyakoff
+# Copyright (C) 2000,2001, Free Software Foundation
+# Written by Sergey Poznyakoff
 #
 # This file is free software; as a special exception the author gives
 # unlimited permission to copy and/or distribute it, with or without
@@ -38,29 +39,36 @@ radius_TEXINFOS=acct.texi\
  radzap.texi\
  version.texi
 
-EXTRA_DIST=index.html.in
+EXTRA_DIST = index.html.in
 
 CLEANFILES=*.tmp *.ats *.cps *.exs *.fns *.kws *.pgs \
- *.text *.html html_node/* html_chapter/* html_mono/* *.gz index.html
+ *.text *.html 
 
 if MAINTAINER_MODE
+BASE_URL="http://www.gnu.org/software/radius/manual/"
+TEXI2HTML=${SHELL} `cd $(top_srcdir); pwd`/scripts/missing --run texi2html
+INFO=${SHELL} `cd $(top_srcdir); pwd`/scripts/missing --run info
+PKG=radius
+
+clean-local:
+	rm -rf $(WEB_BIN) $(WEB_HTML) index.html
 
 html: html_mono html_node html_chapter
 
 html_node:
-	texi2html=`cd $(top_srcdir);pwd`/scripts/texi2html; \
+	texi2html="$(TEXI2HTML)";\
 	if ! test -d html_node; then mkdir html_node; fi; \
 	cd html_node; \
 	$$texi2html -menu -split_node ../radius.texi
 
 html_chapter:
-	texi2html=`cd $(top_srcdir);pwd`/scripts/texi2html; \
+	texi2html="$(TEXI2HTML)";\
 	if ! test -d html_chapter; then mkdir html_chapter; fi; \
 	cd html_chapter; \
 	$$texi2html -menu -split_chapter ../radius.texi
 
 html_mono:
-	texi2html=`cd $(top_srcdir);pwd`/scripts/texi2html; \
+	texi2html="$(TEXI2HTML)";\
 	if ! test -d html_mono; then mkdir html_mono; fi; \
 	cd html_mono; \
 	$$texi2html -menu -monolithic ../radius.texi
@@ -68,12 +76,12 @@ html_mono:
 ps: radius.ps
 
 radius.ps: radius.dvi
-	dvips -oradius.ps radius.dvi
+	$(DVIPS) -oradius.ps radius.dvi
 
 text: radius.text
 
 radius.text: radius.info
-	info --node=Top --subnodes --out radius.text -f radius.info
+	$(INFO) --node=Top --subnodes --out radius.text -f radius.info
 
 radius.info.tar.gz:
 	tar cfz radius.info.tar.gz radius.info*
@@ -83,7 +91,7 @@ radius.dvi.gz: radius.dvi
 
 radius.ps.gz: radius.ps
 	gzip -c radius.ps > radius.ps.gz
-
+	
 radius.texi.tar.gz:
 	tar cfz radius.texi.tar.gz *.texi
 
@@ -101,57 +109,59 @@ WEB_BIN=\
 
 WEBDOC=$(WEB_HTML) $(WEB_BIN) 
 
-docdir: $(WEBDOC) index.html
-	if ! test -d $(docdir); then mkdir $(docdir); fi; \
+webdocdir: $(WEBDOC) index.html
+	if ! test -d $(WEBDOCDIR); then mkdir $(WEBDOCDIR); fi; \
 	here=`cd $(srcdir) && pwd`; \
-	docdir=`cd $(docdir) && pwd`; \
+	webdocdir=`cd $(WEBDOCDIR) && pwd`; \
 	for file in $(WEB_HTML) index.html; do \
 	  if test -d $$here/$$file; then \
-	    cp -pr $$here/$$file $$docdir/$$file; \
+	    cp -pr $$here/$$file $$webdocdir/$$file; \
 	  else \
-	    test -f $$docdir/$$file \
-	    || ln $$here/$$file $$docdir/$$file 2> /dev/null \
-	    || cp -p $$here/$$file $$docdir/$$file || :; \
+	    test -f $$webdocdir/$$file \
+	    || ln $$here/$$file $$webdocdir/$$file 2> /dev/null \
+	    || cp -p $$here/$$file $$webdocdir/$$file || :; \
 	  fi; \
 	done; \
-	if ! test -d $(docdir)/other; then mkdir $(docdir)/other; fi;\
+	if ! test -d $(WEBDOCDIR)/other; then mkdir $(WEBDOCDIR)/other; fi;\
 	for file in $(WEB_BIN); do \
 	  if test -d $$here/$$file; then \
-	    cp -pr $$here/$$file $$docdir/other/$$file; \
+	    cp -pr $$here/$$file $$webdocdir/other/$$file; \
 	  else \
-	    test -f $$docdir/other/$$file \
-	    || ln $$here/$$file $$docdir/other/$$file 2> /dev/null \
-	    || cp -p $$here/$$file $$docdir/other/$$file || :; \
+	    test -f $$webdocdir/other/$$file \
+	    || ln $$here/$$file $$webdocdir/other/$$file 2> /dev/null \
+	    || cp -p $$here/$$file $$webdocdir/other/$$file || :; \
 	  fi; \
 	done
 
 index.html: index.html.in $(WEBDOC)
-	@if test "x$$BASE_URL" = "x"; then \
-	echo '**********************************************'; \
-	echo '** WARNING: BASE_URL not specified or empty **'; \
-	echo '**********************************************'; \
-	fi
-	@echo "s^@BASE_URL@^$$BASE_URL^;" > .webdoc
-	@echo "s/@DATE@/`date`/;" >> .webdoc
-	@echo "s/@UPDATED@/`date +'%B, %d'`/;" >> .webdoc
-	@for file in radius.info.tar.gz radius.dvi.gz radius.ps.gz radius.texi.tar.gz radius.text html_mono/radius.html; \
+	@echo "s^%BASE_URL%^$(BASE_URL)^;" > .webdoc
+	@echo "s/%DATE%/`date`/;" >> .webdoc
+	@echo "s/%UPDATED%/`date +'%B, %d'`/;" >> .webdoc
+	@echo "s/%PACKAGE_NAME%/$(PACKAGE_NAME)/" >> .webdoc
+	@echo "s/%PACKAGE%/$(PKG)/" >> .webdoc
+	@echo "s/%VERSION%/$(VERSION)/" >> .webdoc
+	@for file in `sed -n 's,.*"other/%PACKAGE%\(.*\)".*,$(PKG)\1,pg;s,.*"\(.*\)%PACKAGE%\(.*\)".*,\1$(PKG)\2,pg' index.html.in`; \
 	do\
 		ls -sk $$file; \
 	done |\
-         $(AWK) '{ gsub("\\.", "_", $$2); \
+         $(AWK) -vPACKAGE=$(PKG) \
+                'BEGIN { len = length(PACKAGE) } \
+                 { gsub("\\.", "_", $$2); \
                    if (match($$2,"/")) \
                        $$2=substr($$2,RSTART+1); \
-                   print "s/@" toupper(substr($$2,8)) "_SIZE@/" $$1 "/;" }' >> .webdoc
+                   print "s/%" toupper(substr($$2,len+2)) "_SIZE%/" $$1 "/;" }' >> .webdoc
 	sed -f .webdoc index.html.in > index.html
-	rm .webdoc
+	rm -f .webdoc
 
-webdocname=$(PACKAGE)-$(VERSION)-doc
+webdocname=$(PKG)-$(VERSION)-doc
+WEBDOCDIR=$(webdocname)
 
 webdoc: $(WEBDOC) index.html
-	$(MAKE) docdir=$(top_builddir)/$(webdocname) docdir
-	cd $(top_builddir) &&\
+	$(MAKE) WEBDOCDIR=$(top_builddir)/doc/texinfo/$(webdocname) webdocdir
+	cd $(top_builddir)/doc/texinfo &&\
 	tar cfz $(webdocname).tar.gz $(webdocname) &&\
 	rm -r $(webdocname)
 
+## End of webdoc
 endif
 

@@ -193,7 +193,7 @@ log_to_channel(chan, cat, pri, buf1, buf2, buf3)
                 if (chan->options & LO_PID) 
                         fprintf(fp, "[%lu]: ", getpid());
                 if (chan->options & LO_TID) 
-                        fprintf(fp, "(%#lx): ", (long) pthread_self());
+                        fprintf(fp, "(%lu): ", (long) pthread_self());
                 if (prefix)
                         fprintf(fp, "%s: ", prefix);
                 if (buf1)

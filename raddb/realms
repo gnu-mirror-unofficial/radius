@@ -14,10 +14,9 @@
 # 	iii. (optional) flag. This can be either strip, meaning to strip
 #	     the realm name off the full user name (the default), or
 #            nostrip, meaning the realm should not be stripped. 
-#	iv.  (optional) Maximum number of simultaneous sessions for this 
-#	     realm. 
 
-# Realm                 Remote server [:port]		flags		Max
-#----------------	---------------------		--------	----
-#isp2.com		radius.isp2.com			nostrip		20
+
+# Realm                 Remote server[:port[:port]]	flags	
+#----------------	---------------------		--------
+#isp2.com		radius.isp2.com			nostrip,quota=10
 #company.com		radius.company.com:1600

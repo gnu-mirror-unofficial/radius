@@ -1,3 +1,67 @@
+2001-12-19 Sergey Poznyakoff
+
+	Changes to make it work on alpha (thanks to
+	David Friedman for providing access to the platform):
+	
+	* radiusd/rewrite.y: Lots of fixes to make it work
+          on machines where sizeof(int) != sizeof(void*).
+	* include/Makefile.am: Fixed relative paths.
+	* include/snmp/snmp.h: Added include <string.h>
+	* radlib/dict.c: Fixed suspicious int -> void* casts.
+	  It upsets the gcc on alpha.
+
+	* THANKS: Added David Friedman
+	
+	Security considerations:
+	
+	* radiusd/radius.c: More overflow checks.
+	* radiusd/radiusd.c: (radreq_cmp) use sizeof insead of a hardcoded
+	  constant.
+	* radiusd/radutil.c: (obstack_grow_quoted) Extra precaution when
+	  checking the signed value.
+
+	New features:
+	
+*	* radiusd/files.c: Allow to specify accounting port in
+	  a realms entry. Syntax is: hostname[:auth-port:[acct-port]].
+	* radtest/main.c: Honour checklist opcodes.
+	* raddb/realms: Removed obsolete fourth field.
+
+	New: proxy service check suite:
+	
+	* configure.in: Added new Makefiles.
+	* test/Makefile.am: Added proxy subdir.
+	* test/test.sh.m4: Lots of changes to allow for proxy test
+	  suite.
+	* test/dejagnu/Makefile.am: Added s.radiusd.proxy
+	* test/dejagnu/lib/radiusd.exp: Pass arguments of
+	  default_radiusd_start to the invocation of test.sh verbatim.
+	* test/dejagnu/s.radiusd/Acct-stop.exp: Fixed typo.
+	* test/raddb/Makefile.am: Removed realms, added realms.in
+	* test/raddb/.cvsignore: Added realms.
+	* test/raddb/realms: Removed.
+	* test/raddb/realms.in: (new)
+	* test/proxy/Makefile.am: (new)
+	* test/proxy/client.conf.in: (new)
+	* test/proxy/config.in: (new)
+	* test/proxy/hints: (new)
+	* test/proxy/huntgroups: (new)
+	* test/proxy/realms.in: (new)
+	* test/proxy/sqlserver: (new)
+	* test/proxy/users: (new)
+	* test/proxy/.cvsignore: (new)
+	* test/dejagnu/s.radiusd.proxy: (new dir)
+	* test/dejagnu/s.radiusd.proxy/Makefile.am: (new)
+	* test/dejagnu/s.radiusd.proxy/Testlist: (new)
+	* test/dejagnu/s.radiusd.proxy/Start.exp: (new)
+	* test/dejagnu/s.radiusd.proxy/Auth.exp: (new)
+	* test/dejagnu/s.radiusd.proxy/Nested.exp: (new)
+	* test/dejagnu/s.radiusd.proxy/Prop.exp: (new)
+	* test/dejagnu/s.radiusd.proxy/Acct-start.exp: (new)
+	* test/dejagnu/s.radiusd.proxy/Acct-stop.exp: (new)
+	* test/dejagnu/s.radiusd.proxy/Stop.exp: (new)
+	* test/dejagnu/s.radiusd.proxy/.cvsignore: (new)
+	
 2001-12-18 Sergey Poznyakoff
 	
 	* radiusd/radius.c: (calc_acctdigest): Fixed possible buffer

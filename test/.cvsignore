@@ -3,6 +3,4 @@ Makefile.in
 .deps
 .libs
 findport
-log
-acct
 test.sh

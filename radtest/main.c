@@ -439,11 +439,9 @@ var_print(Variable *var)
         }
 }
 
-void
+int
 var_free(Variable *var)
 {
-        if (var->name)
-                return; /* named variables are not freed */
         switch (var->type) {
         case String:
                 efree(var->datum.string);
@@ -455,10 +453,19 @@ var_free(Variable *var)
 }
 
 void
-radtest_send(int port, int code, Variable *var)
+tempvar_free(Variable *var)
+{
+        if (var->name)
+                return; /* named variables are not freed */
+	var_free(var);
+}
+
+void
+radtest_send(int port, int code, Variable *var, Symtab *cntl)
 {
         RADIUS_REQ *auth;
-        
+	Variable *p;
+	
         if (reply_list)
                 avl_free(reply_list);
         reply_list = NULL;
@@ -469,12 +476,50 @@ radtest_send(int port, int code, Variable *var)
                 return;
         }
 
-        auth = rad_clt_send(srv_queue,
-                            port,
-                            code, var->datum.vector);
-        if (!auth)
-                return;
+	if (!cntl) {
+		auth = rad_clt_send(srv_queue,
+				    port,
+				    code, var->datum.vector);
+	} else {
+		int id;
+		u_char vector[AUTH_VECTOR_LEN];
+		int sflags = 0;
+		int retry = 1;
+		Variable *delay = (Variable*)sym_lookup(cntl, "delay");
+		
+		p = (Variable*)sym_lookup(cntl, "repeat");
+		if (p)
+			retry = p->datum.number;
+		p = (Variable*)sym_lookup(cntl, "id");
+		if (p) {
+			sflags |= RADCLT_ID;
+			id = p->datum.number;
+		}
+		p = (Variable*)sym_lookup(cntl, "keepauth");
+		if (p && p->datum.number) 
+			sflags |= RADCLT_AUTHENTICATOR;
+		auth = rad_clt_send0(srv_queue,
+				     port,
+				     code,
+				     var->datum.vector,
+				     0,
+				     &id,
+				     vector);
+		while (--retry) {
+			if (delay)
+				sleep(delay->datum.number);
+			auth = rad_clt_send0(srv_queue,
+					     port,
+					     code,
+					     var->datum.vector,
+					     sflags,
+					     &id,
+					     vector);
+		}
+	}
 
+	if (!auth)
+		return;
         reply_code = auth->code;
         var = (Variable*)sym_lookup(vartab, "REPLY_CODE");
         var->type = Integer;

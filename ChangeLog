@@ -1,3 +1,8 @@
+2002-03-19  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* configure.in: More elaborate checking for POSIX threads
+	  library: FreeBSD keeps posix_ functions in libc_r.
+
 2002-03-19  Sergey Poznyakoff
 	
 	* radiusd/sql.c (rad_sql_retrieve_pairs): Honor additivity

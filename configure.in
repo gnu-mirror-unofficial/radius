@@ -135,11 +135,16 @@ AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(nsl, gethostbyaddr)
 AC_CHECK_LIB(intl, gettext)
 AC_CHECK_LIB(crypt, crypt)
-AC_CHECK_LIB(pthread, pthread_self)
 
-if test $ac_cv_lib_pthread_pthread_self = yes; then
-	LIBS="$LIBS -lc"
-else
+HAVE_PTHREAD=no
+AC_CHECK_LIB(pthread, pthread_self,
+             [ HAVE_PTHREAD=yes
+               LIBS="$LIBS -lpthread -lc" ],
+             AC_CHECK_LIB(c_r, pthread_self,
+                          [ HAVE_PTHREAD=yes
+                            LIBS="$LIBS -lc_r" ]))
+
+if test $HAVE_PTHREAD != yes; then
 	AC_MSG_ERROR("POSIX threads library not found. Please install one and then reconfigure")
 fi
 

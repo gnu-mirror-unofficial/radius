@@ -18,6 +18,7 @@
 GNU-RADIUS-STAT-MIB DEFINITIONS ::= BEGIN
 
 IMPORTS
+       enterprises FROM RFC1155-SMI
        MODULE-IDENTITY, OBJECT-TYPE, OBJECT-IDENTITY,
        Counter32, Integer32,
        IpAddress, TimeTicks, mib-2      FROM SNMPv2-SMI
@@ -112,6 +113,15 @@ radiusStatTotalLinesIdle OBJECT-TYPE
               "The number of dial-up lines currently idle"
         ::= { radiusStatMIB 6 }
 
+RadiusStatNASEntry ::= SEQUENCE {
+       StatNASIndex                      Integer32,
+       StatNASAddress                    IpAddress,
+       StatNASID                         SnmpAdminString,
+       StatNASLines                      Counter32,
+       StatNASLinesInUse                 Counter32,
+       StatNASLinesIdle                  Counter32,
+}
+
 radiusStatNASTable OBJECT-TYPE
        SYNTAX     SEQUENCE OF RadiusStatNASEntry
        MAX-ACCESS not-accessible
@@ -122,7 +132,7 @@ radiusStatNASTable OBJECT-TYPE
        ::= { radiusStatMIB 7 }
 
 radiusStatNASEntry OBJECT-TYPE
-       SYNTAX     RadiusNASStatEntry
+       SYNTAX     RadiusStatNASEntry
        MAX-ACCESS not-accessible
        STATUS     current
        DESCRIPTION
@@ -130,16 +140,6 @@ radiusStatNASEntry OBJECT-TYPE
               Access Server"
        INDEX      { NASIndex }
        ::= { radiusStatNASTable 1 }
-
-RadiusStatNASEntry ::= SEQUENCE {
-       NASIndex                           Integer32,
-       NASAddress                         IpAddress,
-       NASID                              SnmpAdminString,
-       NASLines                           Counter32,
-       NASLinesInUse                      Counter32,
-       NASLinesIdle                       Counter32,
-       NASPortTable                       RadiusStatNASPortTable
-}
 
 StatNASIndex OBJECT-TYPE
        SYNTAX     Integer32 (1..2147483647)
@@ -202,15 +202,6 @@ StatNASPortTable OBJECT-TYPE
              "The (conceptual) table listing the available ports"
        ::= { radiusStatMIB 8 }
 
-StatNASPortEntry OBJECT-TYPE
-       SYNTAX     RadiusStatNASPortEntry
-       MAX-ACCESS not-accessible
-       STATUS     current
-       DESCRIPTION
-             "An entry (conceptual row) representing a port"
-       INDEX      { PortIndex }
-       ::= { StatNASPortTable 1 }
-
 RadiusStatNASPortEntry ::= SEQUENCE {
        PortIndex                           Integer32,
        NASIndex				   Integer32,	
@@ -230,6 +221,15 @@ RadiusStatNASPortEntry ::= SEQUENCE {
        PortInUseMaxTime                    TimeTicks,
        PortInUseMaxTimestamp               UnixTimestamp,
 }
+
+StatNASPortEntry OBJECT-TYPE
+       SYNTAX     RadiusStatNASPortEntry
+       MAX-ACCESS not-accessible
+       STATUS     current
+       DESCRIPTION
+             "An entry (conceptual row) representing a port"
+       INDEX      { PortIndex }
+       ::= { StatNASPortTable 1 }
 
 StatPortIndex OBJECT-TYPE
        SYNTAX     Integer32 (1..2147483647)

@@ -320,7 +320,7 @@ acts accordingly to the value of configuration variable
 Otherwise, Radius determines the query method to use from the second
 field of this entry, and constructs its arguments by appending
 arguments from the @file{naslist} entry to those of @code{nastypes}
-entry. @emph{Please note}, that the former take precedence over the
+entry. @emph{Note}, that the former take precedence over the
 latter, and can thus be used to override default values specified
 in @file{nastypes}.
 

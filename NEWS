@@ -1,3 +1,66 @@
+Changes in Radius 1.0
+
+This version implements multi-thread model instead of multi-process model
+used in previous versions. Each incoming request is served by a separate
+thread. The maximum number of threads is controlled by configuration variable
+`max-threads' (see below). The main process acts as a dispatcher between
+the threads. If a request arrives when all threads are busy, the dispatcher
+attempts to start new thread and pass the request to it. If the number of
+threads has reached its maximum, the request is placed to the wait queue.
+It will be processed by the first thread that finishes its job.
+
+** configure: --enable-snmp gets optional argument 'compat'.
+
+The radius-specific MIBs use the MIB subtree allocated for GNU project:
+.iso.org.dod.internet.private.enterprises.gnu.radius (.1.3.6.1.4.1.11591.1).
+Previous versions have used the radius-specific subtree for this purpose
+(.iso.org.dod.internet.private.enterprises.gnu-radius = .1.3.6.1.4.1.11591.1)
+Specifying --enable-snmp=compat enables support of this subtree along with
+the official GNU subtree.
+
+** raddb/config: New keyword max-threads
+
+This keyword controls the maximum number of threads the dispatcher is
+allowed to start. It may be used in `option' block (see raddb/config.status
+for an example). Default number of threads is 128.
+
+Note, that the main dispatcher thread and the scheme interpreter thread
+(if guile support is enabled) are not counted in this number.
+So, the actual maximum number of threads is max_threads + 2 for the
+server with guile support and max_threads + 1 for the server without
+guile support.
+
+** raddb/config: New keywords print-tid and print-milliseconds
+
+These are boolean keywords that are used in `channel' statement of
+the `logging' block. Use `print-tid' to output the thread
+identifier before each diagnostic message. Use `print-milliseconds'
+to print log timestamps with milliseconds. See raddb/config.syntax
+for examples.
+
+** raddb/config: Keywords `spawn' and `usr2delay' are obsolete.
+
+These keywords are useless with the multi-threaded version.
+
+** sqlserver: auth_max_connections and acct_max_connections are
+   deprecated
+
+The maximum number of connections to the authentication database equals
+to the maximum number of threads set by `max-threads' statement. The
+same holds for the number of connections to accounting the database.
+
+** STRESS_COUNT environment variable allows to control number of
+   requests sent during stress test.
+
+The stress test is one of the tests run by the regression test
+suite. It consists in loading the server with a continuous flow
+of requests. By default 500 requests are sent. To modify this
+number use environment variable STRESS_COUNT, e.g.:
+
+	make STRESS_COUNT=2000 check
+
+
+=============================================================================
 Changes in Radius 0.96
 
 ** The format of raddb/config has changed a little.

@@ -32,6 +32,8 @@ logging {
 		print-pid yes;		# Output pid along with the diagnostics
 		print-cons yes;		# Duplicate output to /dev/console
 		print-level yes;	# Output severity level description
+		print-tid yes;		# Print thread ID.
+		print-milliseconds yes; # Print timestamp with milliseconds
 	};
 	# This defines output channel that sends it info to syslog whith
 	# facility `auth' and priority `notice'

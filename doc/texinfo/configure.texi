@@ -102,6 +102,7 @@ These are the basic statements:
 @kwindex username-chars
 @kwindex log-dir
 @kwindex acct-dir
+@kwindex resolve
 
 @subheading Syntax:
 
@@ -113,12 +114,24 @@ option @{
         [ username-chars @var{string} ; ]
         [ log-dir @var{string} ; ]
         [ acct-dir @var{string} ; ]
+        [ resolve @var{bool} ; ]
 @} ;
 @end example
 
 @subheading Usage
 
 The @code{option} block defines the global options to be used by @command{radiusd}.
+
+@subheading Boolean statements
+
+@table @code
+
+@item resolve
+Determines whether radius should resolve the IP addresses for diagnostic
+output. Specifying @code{resolve no} speeds up the server and reduces
+the network traffic.
+
+@end table
 
 @subheading Numeric statements
 
@@ -181,6 +194,8 @@ logging @{
                 [ print-cons @var{bool} ; ]
                 [ print-level @var{bool} ; ]
                 [ print-priority @var{bool} ; ]
+                [ print-tid @var{bool}; ]
+                [ print-milliseconds @var{bool}; ]
         @}; ]
 @} ;
 
@@ -263,6 +278,8 @@ Include passwords for failed authentications.
 @kwindex print-cons
 @kwindex print-level
 @kwindex print-priority
+@kwindex print-tid
+@kwindex print-milliseconds
 
 Channels represent methods for recording logging information.  Each
 channel has a unique name, and any categories which specify that name in
@@ -286,6 +303,10 @@ Add the category name to the logging information.
 @item print-priority
 @itemx print-level
 Add the priority name to the logging information.
+@item print-tid
+Print the @sc{id} of the current thread.
+@item print-milliseconds
+Print timestamp with milliseconds.
 @end table
 
 @comment **L4***************************************************************
@@ -339,7 +360,6 @@ logging @{
 @kwindex auth 
 @kwindex listen
 @kwindex port
-@kwindex spawn
 @kwindex max-requests 
 @kwindex time-to-live 
 @kwindex request-cleanup-delay
@@ -353,7 +373,6 @@ logging @{
 auth @{
         [ listen @var{addr-list} ; ]
         [ port @var{number} ; ]
-        [ spawn @var{bool} ; ]
         [ max-requests @var{number} ; ]
         [ time-to-live @var{number} ; ]
         [ request-cleanup-delay @var{number} ; ]
@@ -410,8 +429,6 @@ is 0.
 @subheading Boolean statements
 
 @table @code
-@item spawn
-Determines if @command{radiusd} should spawn a child to process the request.
 
 @item detail
 When set to true, @command{radiusd} will produce the detailed log of each
@@ -439,7 +456,6 @@ Otherwise @command{radiusd} assumes the user @emph{is not} logged in.
 @kwindex acct statement 
 @kwindex listen
 @kwindex port 
-@kwindex spawn 
 @kwindex max-requests 
 @kwindex time-to-live 
 @kwindex request-cleanup-delay
@@ -450,7 +466,6 @@ Otherwise @command{radiusd} assumes the user @emph{is not} logged in.
 acct @{
         [ listen @var{addr-list} ; ]
         [ port @var{number} ; ]
-        [ spawn @var{bool} ; ]
         [ detail @var{bool}; ]
         [ max-requests @var{number} ; ]
         [ time-to-live @var{number} ; ]
@@ -500,8 +515,6 @@ the completed account request reside in the queue.
 @subheading Boolean statements
 
 @table @code
-@item spawn 
-Determines if @command{radiusd} should spawn a child to process the request.
 @item detail
 When set to @code{false}, disables detailed accounting
 (@pxref{Detailed Request Accounting}). 
@@ -572,7 +585,6 @@ Use only the DBM database and ignore @file{raddb/users}.
 @cindex Customizing SNMP server
 @kwindex snmp
 @kwindex port 
-@kwindex spawn 
 @kwindex max-requests
 @kwindex time-to-live
 @kwindex request-cleanup-delay
@@ -587,7 +599,6 @@ Use only the DBM database and ignore @file{raddb/users}.
 @example
 snmp @{
         [ port @var{portno} ; ]
-        [ spawn @var{bool} ; ]
         [ max-requests @var{number} ; ]
         [ time-to-live @var{number} ; ]
         [ request-cleanup-delay @var{number} ; ]
@@ -623,15 +634,6 @@ child process killed and the request removed from the queue.
 @item request-cleanup-delay 
 Sets the request cleanup delay in seconds, i.e. determines how long will
 the completed SNMP request reside in the queue.
-
-@end table
-
-@subheading Boolean statements
-
-@table @code
-@item spawn
-Determines if @command{radiusd} should spawn a child to process the SNMP
-request.
 
 @end table
 
@@ -674,6 +676,7 @@ Deny access to SNMP service from any host in the group @var{network_name}.
 @kwindex debug
 @kwindex load-path
 @kwindex load
+@kwindex gc-interval
 
 The @code{guile} statement allows to configure server interface with
 Guile. 
@@ -685,6 +688,7 @@ guile @{
         [ debug @var{bool} ; ]
         [ load-path @var{string} ; ]
         [ load @var{string} ; ]
+        [ gc-interval @var{number} ; ]
 @};
 @end example
 
@@ -696,6 +700,16 @@ guile @{
 @item debug
 When set to yes, enables debugging evaluator and backtraces on Guile
 scripts.
+@end table
+
+@subheading Numeric statements
+
+@table @code
+@item gc-interval
+Sets the interval in seconds between the two successive forced
+garbage collections. Setting this value to @code{0} disables forced
+garbage collections. This is the default.
+
 @end table
 
 @subheading String statements
@@ -1138,7 +1152,7 @@ Method to use to query a @NAS{} of given type.
 Arguments to pass to this method. Each argument is a pair
 @var{arg}=@var{value}, where @var{arg} is its name and @var{value} is
 a value assigned to it. The list of predefined argument names follows.
-@emph{Please note}, that no intervening whitespace is allowed in this
+@emph{Note}, that no intervening whitespace is allowed in this
 field.
 @end table
 
@@ -1214,7 +1228,7 @@ Expands to port number + 1.
 @subsection Example of nastypes file.
 @exindex @file{nastypes} file
 
-@emph{Please note}, that in the following example the long lines are
+@emph{Note}, that in the following example the long lines are
 broken into several lines for readability.
 
 @example
@@ -1264,7 +1278,7 @@ nas.name        T           max-f broken_pass
 @end group
 @end example
 
-@emph{Please note} the use of @code{broken_pass} flag. It is needed
+@emph{Note} the use of @code{broken_pass} flag. It is needed
 for most MAX Ascend servers (@pxref{naslist file}).
 
 @item max --- MAX Ascend, answering SNMP
@@ -1593,9 +1607,6 @@ syntax is:
 @item doauth @var{bool}
 When set to @code{yes}, enables authentication via @sc{sql}. All @code{auth_}
 keywords are ignored if @code{doauth} is set to @code{no}.
-@item auth_max_connections @var{bool}
-Specifies the maximum number of authentication @sc{sql} connections to keep
-open. This parameter is ignored if @code{keepopen} is set to @code{no}.
 @item auth_db @var{string}
 Specifies the name of the database containing authentication information.
 @item auth_query @var{string}
@@ -1778,7 +1789,7 @@ NAS-Port-Id <= 20
 @item
 Radius compares the incoming request with the @LHS{} pairs thus
 obtained. If the comparison fails, it rejects the authentication.
-@emph{Please note}, that the @attr{Auth-Type} attributes itself
+@emph{Note} that the @attr{Auth-Type} attributes itself
 triggers execution of @code{auth_query}, described in the previous
 section.
 @item
@@ -1819,9 +1830,6 @@ keywords are ignored if @code{doacct} is set to @code{no}.
 @item acct_db @var{string}
 Specifies the name of the database where the accounting information is
 to be stored.
-@item acct_max_connections @var{number}
-Specifies the maximum number of accounting @sc{sql} connections to keep
-open. This parameter is ignored if @code{keepopen} is set to @code{no}.
 @end table
 
 Further, @command{radiusd} needs to know which information it is

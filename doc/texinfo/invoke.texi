@@ -75,7 +75,7 @@ IP addresses, assigned to the machine it runs on.
 
 Config file equivalent: @code{option @{ source-ip IP; @};}.
 
-@emph{Please note}, that @code{listen} statement in @file{raddb/config}
+@emph{Note} that @code{listen} statement in @file{raddb/config}
 provides a better control over @IP{}es to listen on (@xref{auth}, and
 @pxref{acct}). 
 
@@ -114,11 +114,21 @@ log channels.
 Test mode. In this mode @command{radiusd} starts an interactive interpreter
 which allows to test various aspects of its configuration.
 
-@c ** -n option (radiusd)
+@c ** -N option (radiusd)
 @c ** --auth-only option (radiusd)
-@item -n
+@item -N
 @itemx --auth-only
 Process only authentication requests.
+
+@c ** -n option (radiusd)
+@c ** --do-not-resolve option (radiusd)
+@item -n
+@itemx --do-not-resolve
+
+Do not resolve IP addresses for diagnostic output. This can reduce the
+amount of network traffic and speed up the server.
+
+Config file equivalent: @code{option @{ resolve no @};}.
 
 @c ** -p option (radiusd)
 @c ** --port option (radiusd)

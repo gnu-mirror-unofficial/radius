@@ -1166,7 +1166,7 @@ whereas user @code{smith} gets
 @end example
 
 @noindent
-@emph{Please note} that the attribute @attr{Fall-Through} itself
+@emph{Note} that the attribute @attr{Fall-Through} itself
 is never returned to the @NAS{}.
 
 @comment **************************************************************

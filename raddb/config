@@ -3,9 +3,11 @@
 #
 option {
 	max-requests 1024;
+	max-threads 32;
 	# Uncomment and edit these if you need to:
 #	log-dir "/var/log";
 #	acct-dir "/var/acct";
+	resolve no;
 };
 
 logging {

@@ -231,7 +231,7 @@ Enable audit information.
 @item debug[=@var{level}]
 Enable debugging information. The higher @var{level} is, the more
 debugging info is output. When omitted, @var{level} defaults to
-100. @emph{Please note}, that debugging levels equal to or greater than
+100. @emph{Note}, that debugging levels equal to or greater than
 10 compromise users' passwords, so use them sparingly.
 @item use_authtok
 Use authentication token passed from the previous module in stack.

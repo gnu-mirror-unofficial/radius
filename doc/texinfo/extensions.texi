@@ -173,7 +173,7 @@ DEFAULT  Prefix = "P"
 @end group
 @end example
 
-@emph{Please note}, that in both cases the attribute can be used
+@emph{Note}, that in both cases the attribute can be used
 either in @LHS{} or in @RHS{} pairs of a rule.
 
 The packet rewrite function must be declared as having no arguments,
@@ -679,7 +679,7 @@ syntax is:
 
 @noindent
 Here @var{ident_list} is either a valid Rewrite identifier, or a comma-
-separated list of such identifiers. @emph{Please note} that, unlike in
+separated list of such identifiers. @emph{Note} that, unlike in
 C, no assignments are allowed in variable declarations.
 
 @comment **L4***************************************************************
@@ -760,7 +760,7 @@ actual arguments to the function. The function @var{ident}
 references can be either a compiled function or a built-in
 function.
 
-@emph{Please note} that, unlike in C, the mismatch between the
+@emph{Note} that, unlike in C, the mismatch between the
 number of actual arguments and number of formal parameters in the
 compiled function declaration is not an error but rather a warning.
 

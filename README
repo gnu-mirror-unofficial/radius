@@ -65,9 +65,15 @@
 	Install PAM modules in the given DIR. Default is
     	$prefix/lib/security.
 
-    --enable-snmp
-	Enable SNMP support.
-
+    --enable-snmp[=compat]
+	Enable SNMP support. By default this enables the use of enterprise
+        subtree .iso.org.dod.internet.private.enterprises.gnu.radius
+        (.1.3.6.1.4.1.11591.1). To enable support for the subtree used
+        in previous versions of radius (i.e.
+        .iso.org.dod.internet.private.enterprises.gnu-radius =
+        .1.3.6.1.4.1.11591.1) use --enable-snmp=compat form of this
+        option.
+        
     --enable-livingston-menus
         Enable support for Livingston-compatible menus.
 
@@ -93,6 +99,11 @@
     Basically, both suites contain the same tests. The DejaGNU-based
     test suite allows for remote testing of the package. For instructions
     on how to test the package remotely, refer to file test/dejagnu/README.
+
+    To control the number of requests sent during the stress test use
+    STRESS_COUNT environment variable, e.g.:
+
+                 make STRESS_COUNT=2000 check
     
     4. make install
 

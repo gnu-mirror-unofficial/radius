@@ -16,6 +16,8 @@
 	* radiusd/.gdbinit: Synchronized with namespace cleanup from
 	2001-10-16.
 
+	* radlib/argcv.c: Ignore trailing whitespace: fixed.
+
 	* TODO: Updated.
 
 2001-10-18 Sergey Poznyakoff

@@ -14,7 +14,7 @@ when reporting a bug. The information needed is:
 @item Conditions under which the bug appears.
 @item Version of the package you are using.
 @item Compilation options used when configuring the package.
-@item If the bug is found in @code{radiusd} daemon, run
+@item If the bug is found in @command{radiusd} daemon, run
 @samp{radiusd -v} and include the output it produces.
 @item Contents of radius configuration directory (@value{RADDB} or whatever
 you have set it to while configuring).

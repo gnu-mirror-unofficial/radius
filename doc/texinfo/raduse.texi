@@ -6,7 +6,7 @@
 @chapter Raduse
 @pindex raduse
 
-The @code{raduse} utility shows the usage of dialup lines in the
+The @command{raduse} utility shows the usage of dialup lines in the
 realtime.
 
 @menu
@@ -81,9 +81,9 @@ interactive commands
 @section Raduse Command Line Options
 @cindex raduse, command line options
 
-The following options modify the behavior of @code{raduse}:
+The following options modify the behavior of @command{raduse}:
 
-@table @samp
+@table @option
 @item -b
 @itemx --brief
 Start up in brief mode. In this mode only first line of information for
@@ -98,7 +98,7 @@ Dump the statistics database to the standard output and then
 exit. This is for debugging purposes only.
 @item -I
 @itemx --no-idle-lines
-Do not display idle lines. By default @code{raduse} displays all dialup
+Do not display idle lines. By default @command{raduse} displays all dialup
 lines.
 @item -i
 @itemx --interactive
@@ -130,9 +130,9 @@ Display short usage summary.
 @node raduse commands, , raduse options, Raduse
 @section Raduse Interactive Commands
 
-The following commands are understood when @code{raduse} is in
+The following commands are understood when @command{raduse} is in
 interactive mode. Some commands require an argument. Such commands
-are followed by the word @var{arg}. When @code{raduse} gets such command
+are followed by the word @var{arg}. When @command{raduse} gets such command
 it displays a prompt and waits for user to enter the necessary data.
 
 After processing each command the screen is updated immediately,
@@ -169,6 +169,6 @@ Quit the program
 Change the number of seconds to delay between screen updates. 
 @item t @var{arg}
 Display lines on a given Network Access Servers. The user is
-prompted to input the NAS names. The names should be separated by
-whitespace. The word @samp{all} returns to display of all NAS lines.
+prompted to input the @NAS{} names. The names should be separated by
+whitespace. The word @samp{all} returns to display of all @NAS{} lines.
 @end table

@@ -17,10 +17,10 @@ to store various configuration and log files:
 A directory where all configuration files are stored.
 
 @item Log directory
-A directory where @code{radiusd} stores its radius files.
+A directory where @command{radiusd} stores its radius files.
 
 @item Accounting directory
-A directory where @code{radiusd} stores accounting detail files
+A directory where @command{radiusd} stores accounting detail files
 @ref{Detailed Request Accounting}.
 
 @end table
@@ -28,7 +28,6 @@ A directory where @code{radiusd} stores accounting detail files
 The default locations of these directories are determined at compile
 time. These are:
 
-@include config.texi
 @multitable @columnfractions .40 .15 .45
 @item Directory @tab Short Name @tab Default location 
 
@@ -65,6 +64,6 @@ we actually mean @file{@value{RADDB}/sqlserver}.
 If necessary, locations of these directories can be overridden by
 specifying appropriate command line options to a program. For
 example, any program from the GNU Radius package accepts command
-line option @code{-d} or @code{--directory}, which introduces
+line option @option{-d} or @option{--directory}, which introduces
 the configuration directory path. 
 

@@ -6,25 +6,25 @@
 @chapter Accounting
 @cindex Accounting Types
 
-GNU Radius supports three types of accounting. By default Unix and
+GNU Radius supports three types of accounting. By default UNIX and
 Detailed request accounting types are always enabled. 
 
 @menu
-* Unix Accounting::                     Unix style utmp/wtmp accounting.
+* UNIX Accounting::                     UNIX style utmp/wtmp accounting.
 * Detailed Request Accounting::         Detailed requests.
 * SQL Accounting::                      Accounting to SQL server.
 @end menu
 
 @comment *L2****************************************************************
-@node Unix Accounting, Detailed Request Accounting, , Accounting
-@section Unix Accounting
-@cindex Unix Accounting
+@node UNIX Accounting, Detailed Request Accounting, , Accounting
+@section UNIX Accounting
+@cindex UNIX Accounting
 
 This accounting method is always enabled.
 
 Radius keeps files @file{radutmp} and @file{radwtmp} in its logging
 directory  and stores the accounting data there. The utilities
-@code{radwho} and @code{radlast} can be used to list information about
+@command{radwho} and @command{radlast} can be used to list information about
 users' sessions.
 
 @xref{Naming conventions}.
@@ -34,7 +34,7 @@ users' sessions.
 @xref{Radlast}.
 
 @comment *L2****************************************************************
-@node Detailed Request Accounting, SQL Accounting, Unix Accounting, Accounting
+@node Detailed Request Accounting, SQL Accounting, UNIX Accounting, Accounting
 @section Detailed Request Accounting
 @cindex Detailed Request Accounting
 
@@ -87,16 +87,16 @@ Fri Dec 15 18:32:09 2000
 @section SQL Accounting
 @cindex SQL Accounting
 
-The SQL accounting method is enabled when Radius is configured with
-@code{--enable-sql} option and @file{sqlserver} file in its
+The @sc{sql} accounting method is enabled when Radius is configured with
+@option{--enable-sql} option and @file{sqlserver} file in its
 configuration directory is properly set up (@pxref{sqlserver file}).
 
 This version of GNU Radius (@value{VERSION}) supports MySQL and
 PostgreSQL servers. Support for Oracle servers will be added in the
 nearest future.
 
-With this accounting method enabled, @code{radiusd} will store the
-information about accounting requests in the configured SQL database.
+With this accounting method enabled, @command{radiusd} will store the
+information about accounting requests in the configured @sc{sql} database.
 The accounting method is fully configurable: the Radius administrator
 defines both the types of requests to be accounted and the information
 to be stored into the database. (@pxref{sqlserver file}).

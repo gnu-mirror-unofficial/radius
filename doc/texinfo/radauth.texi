@@ -6,7 +6,7 @@
 @chapter Radauth
 @pindex radauth
 
-The @code{radauth} utility sends the Radius server Access-Request
+The @command{radauth} utility sends the Radius server Access-Request
 packet and displays the result it gets. It can be used to test the
 configuration files. The usage is:
 
@@ -14,7 +14,7 @@ configuration files. The usage is:
 raduse [-v] username password
 @end example
 
-The @code{-v} or @code{--verbose} option forces @code{raduse} to be
+The @option{-v} or @option{--verbose} option forces @command{radauth} to be
 verbose on output.
 
 If you enter @samp{.} (dot) instead of the password, the program

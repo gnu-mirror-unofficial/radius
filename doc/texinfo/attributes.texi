@@ -7,7 +7,7 @@
 @node Attribute list, , , Top
 @chapter Attribute list
 
-The following chapters describe the most frequently used RADIUS
+The following chapters describe the most frequently used @RADIUS{}
 attributes.
 
 @menu
@@ -76,7 +76,7 @@ Radius Internal Attributes
 
 @comment **************************************************************
 @node User-Name, Password , , Attribute list
-@unnumberedsec User-Name
+@section User-Name
 @atindex User-Name
 
 @example
@@ -91,7 +91,7 @@ value can be modified by redefining @code{RUT_USERNAME} macro in
 include/radutmp.h file in the distribution directory and recompiling the
 program.
 
-Some NASes have peculiarities about sending long usernames. For example,
+Some @NAS{}es have peculiarities about sending long usernames. For example,
 Specialix Jetstream 8500 24 port access server inserts a @samp{/}
 character after the 10th character if the username is longer than
 10 characters. In such cases, we recommend to apply rewrite functions
@@ -99,8 +99,8 @@ in order to bring username to its ``normal'' form (@pxref{rewrite file}).
 
 
 @comment **************************************************************
-@node Password , CHAP-Password , User-Name, Attribute list
-@unnumberedsec Password
+@node Password, CHAP-Password , User-Name, Attribute list
+@section Password
 @atindex Password
 
 @example
@@ -132,8 +132,8 @@ to xor the next segment of the password, to no more than 128
 characters.
 
 @comment **************************************************************
-@node CHAP-Password , NAS-IP-Address , Password, Attribute list
-@unnumberedsec CHAP-Password
+@node CHAP-Password, NAS-IP-Address , Password, Attribute list
+@section CHAP-Password
 @atindex CHAP-Password
 
 @example
@@ -150,38 +150,38 @@ The CHAP challenge value is found in the CHAP-Challenge Attribute
 Authenticator field.
 
 @comment **************************************************************
-@node NAS-IP-Address , NAS-Port-Id , CHAP-Password, Attribute list
-@unnumberedsec NAS-IP-Address
+@node NAS-IP-Address, NAS-Port-Id , CHAP-Password, Attribute list
+@section NAS-IP-Address
 @atindex NAS-IP-Address
 
 @example
 ATTRIBUTE  NAS-IP-Address    4                    ipaddr  
 @end example
 
-This Attribute indicates the identifying IP Address of the NAS
+This Attribute indicates the identifying @IP{} of the @NAS{}
 which is requesting authentication of the user.  It is only used
 in Access-Request packets. Each Access-Request packet should contain
-either @code{NAS-IP-Address} or @code{NAS-Identifier} attribute
+either @attr{NAS-IP-Address} or @attr{NAS-Identifier} attribute
 @ref{NAS-Identifier}.
 
 @comment **************************************************************
-@node NAS-Port-Id , Service-Type , NAS-IP-Address, Attribute list
-@unnumberedsec NAS-Port-Id
+@node NAS-Port-Id, Service-Type , NAS-IP-Address, Attribute list
+@section NAS-Port-Id
 @atindex NAS-Port-Id
 
 @example
 ATTRIBUTE  NAS-Port-Id       5                    integer 
 @end example
 
-This attribute indicates the physical port number of the NAS which
+This attribute indicates the physical port number of the @NAS{} which
 is authenticating the user.  It is only used in Access-Request
 packets.  Note that this is using "port" in its sense of a
-physical connection on the NAS, not in the sense of a TCP or UDP
-port number.
+physical connection on the @NAS{}, not in the sense of a @sc{tcp} or 
+@sc{udp} port number.
 
-Some NASes try to encode various information in the NAS-Port-Id
+Some @NAS{}es try to encode various information in the @attr{NAS-Port-Id}
 attribute value. For example MAX Ascend terminal server constructs
-@code{NAS-Port-Id} concatenating line type (one-digit), line number
+@attr{NAS-Port-Id} concatenating line type (one-digit), line number
 (two-digits), and the channel number (two-digits) thus producing
 a 5-digit port number. In order to ``normalize'' such encoded
 port numbers we recommend to use a rewrite function (@pxref{rewrite file}).
@@ -189,8 +189,8 @@ A rewrite function for MAX Ascend servers is provided in the
 distribution.
 
 @comment **************************************************************
-@node Service-Type , Framed-Protocol , NAS-Port-Id, Attribute list
-@unnumberedsec Service-Type
+@node Service-Type, Framed-Protocol , NAS-Port-Id, Attribute list
+@section Service-Type
 @atindex Service-Type
 
 @example
@@ -213,11 +213,11 @@ requested, or the type of service to be provided.  It may be used
 in both Access-Request and Access-Accept packets.
 
 When used in an Access-Request the Service type represents a
-hint Radius server that the NAS has reason to believe the user
+hint Radius server that the @NAS{} has reason to believe the user
 would prefer the kind of service indicated.
 
 When used in an Access-Accept, the Service type is an indication
-to the NAS that the user must be provided this type of service.
+to the @NAS{} that the user must be provided this type of service.
 
 The meaning of various service-types is as follows:
 
@@ -227,8 +227,8 @@ The user should be connected to a host.
 
 @item Framed-User
 A Framed Protocol should be started for the User, such as PPP or SLIP.
-The @code{Framed-IP-Address} attribute @ref{Framed-IP-Address} would
-supply the IP address to be used.
+The @attr{Framed-IP-Address} attribute (@pxref{Framed-IP-Address}) would
+supply the @IP{} to be used.
 
 @item Callback-Login-User
 The user should be disconnected and called back, then connected to a host.
@@ -242,10 +242,10 @@ The user should be granted access to outgoing devices.
 
 @item Administrative-User
 The user should be granted access to the administrative interface
-to the NAS from which privileged commands can be executed.
+to the @NAS{} from which privileged commands can be executed.
 
 @item NAS-Prompt
-The user should be provided a command prompt on the NAS from which
+The user should be provided a command prompt on the @NAS{} from which
 non-privileged commands can be executed.
 
 @item Authenticate-Only
@@ -255,7 +255,7 @@ to be returned in the Access-Accept
 @item Call-Check
 @itemx Callback-NAS-Prompt
 The user should be disconnected and called back, then provided a command
-prompt on the NAS from which non-privileged commands can be executed.
+prompt on the @NAS{} from which non-privileged commands can be executed.
 
 @item RADIUS-Administrative-User
 FIXME
@@ -263,8 +263,8 @@ FIXME
 @end table
 
 @comment **************************************************************
-@node Framed-Protocol , Framed-IP-Address , Service-Type, Attribute list
-@unnumberedsec Framed-Protocol
+@node Framed-Protocol, Framed-IP-Address , Service-Type, Attribute list
+@section Framed-Protocol
 @atindex Framed-Protocol
 
 @example
@@ -278,8 +278,8 @@ It may be used in both Access-Request and Access-Accept packets.
 
 
 @comment **************************************************************
-@node Framed-IP-Address , Framed-IP-Netmask , Framed-Protocol, Attribute list
-@unnumberedsec Framed-IP-Address
+@node Framed-IP-Address, Framed-IP-Netmask , Framed-Protocol, Attribute list
+@section Framed-IP-Address
 @atindex Framed-IP-Address
 
 @example
@@ -288,19 +288,19 @@ ATTRIBUTE  Framed-IP-Address  8                    ipaddr
 
 This Attribute indicates the address to be configured for the
 user.  It may be used in Access-Accept packets.  It may be used in
-an Access-Request packet as a hint by the NAS to the server that
+an Access-Request packet as a hint by the @NAS{} to the server that
 it would prefer that address, but the server is not required to
 honor the hint.
 
-The value 0xFFFFFFFF (255.255.255.255) indicates that the NAS should
-allow the user to select an address. The value 0xFFFFFFFE (255.255.255.254)
-indicates that the NAS should select an address for the user (e.g. assigned
-from a pool of addresses kept by the NAS).  Other valid values indicate
-that the NAS should use that value as the user's IP address.
+The value @code{0xFFFFFFFF} (@code{255.255.255.255}) indicates that the NAS should
+allow the user to select an address. The value @code{0xFFFFFFFE} (@code{255.255.255.254})
+indicates that the @NAS{} should select an address for the user (e.g. assigned
+from a pool of addresses kept by the @NAS{}).  Other valid values indicate
+that the @NAS{} should use that value as the user's @IP{}.
 
-When used in a reply pairlist, the value of this attribute can
+When used in a @RHS{}, the value of this attribute can
 optionally be followed by a plus sign. This usage means that
-the value of NAS-Port-Id must be added to this IP address before
+the value of NAS-Port-Id must be added to this @IP{} before
 replying. For example
 
 @example
@@ -310,8 +310,8 @@ replying. For example
 Also @ref{Add-Port-To-IP-Address}.
 
 @comment **************************************************************
-@node Framed-IP-Netmask , Framed-Routing , Framed-IP-Address, Attribute list
-@unnumberedsec Framed-IP-Netmask
+@node Framed-IP-Netmask, Framed-Routing , Framed-IP-Address, Attribute list
+@section Framed-IP-Netmask
 @atindex Framed-IP-Netmask
 
 @example
@@ -321,13 +321,13 @@ ATTRIBUTE  Framed-IP-Netmask  9                    ipaddr
 This Attribute indicates the IP netmask to be configured for the
 user when the user is a router to a network.  It may be used in
 Access-Accept packets.  It may be used in an Access-Request packet
-as a hint by the NAS to the server that it would prefer that
+as a hint by the @NAS{} to the server that it would prefer that
 netmask, but the server is not required to honor the hint.
 
 
 @comment **************************************************************
-@node Framed-Routing , Framed-MTU , Framed-IP-Netmask, Attribute list
-@unnumberedsec Framed-Routing
+@node Framed-Routing, Framed-MTU , Framed-IP-Netmask, Attribute list
+@section Framed-Routing
 @atindex Framed-Routing
 
 @example
@@ -344,8 +344,8 @@ packets.
 
 
 @comment **************************************************************
-@node Framed-MTU , Framed-Compression , Framed-Routing, Attribute list
-@unnumberedsec Framed-MTU
+@node Framed-MTU, Framed-Compression , Framed-Routing, Attribute list
+@section Framed-MTU
 @atindex Framed-MTU
 
 @example
@@ -357,8 +357,8 @@ configured for the user, when it is not negotiated by some other
 means (such as PPP).  It is only used in Access-Accept packets.
 
 @comment **************************************************************
-@node Framed-Compression , Reply-Message , Framed-MTU, Attribute list
-@unnumberedsec Framed-Compression
+@node Framed-Compression, Reply-Message , Framed-MTU, Attribute list
+@section Framed-Compression
 @atindex Framed-Compression
 
 @example
@@ -369,17 +369,17 @@ VALUE      Framed-Compression  Van-Jacobson-TCP-IP  1
 
 This Attribute indicates a compression protocol to be used for the
 link.  It may be used in Access-Accept packets.  It may be used in
-an Access-Request packet as a hint to the server that the NAS
+an Access-Request packet as a hint to the server that the @NAS{}
 would prefer to use that compression, but the server is not
 required to honor the hint.
 
 More than one compression protocol Attribute may be sent.  It is
-the responsibility of the NAS to apply the proper compression
+the responsibility of the @NAS{} to apply the proper compression
 protocol to appropriate link traffic.
 
 @comment **************************************************************
-@node Reply-Message , Callback-Number , Framed-Compression, Attribute list
-@unnumberedsec Reply-Message
+@node Reply-Message, Callback-Number , Framed-Compression, Attribute list
+@section Reply-Message
 @atindex Reply-Message
 
 @example
@@ -397,13 +397,13 @@ Access-Request attempt.
 When used in an Access-Challenge, it may indicate a dialog message
 to prompt the user for a response.
 
-Multiple @code{Reply-Message} attributes may be included and if any are displayed,
+Multiple @attr{Reply-Message} attributes may be included and if any are displayed,
 they must be displayed in the same order as they appear in the
 packet.
 
 @comment **************************************************************
-@node Callback-Number , Callback-Id , Reply-Message, Attribute list
-@unnumberedsec Callback-Number
+@node Callback-Number, Callback-Id , Reply-Message, Attribute list
+@section Callback-Number
 @atindex Callback-Number
 
 @example
@@ -417,8 +417,8 @@ service is desired, but the server is not required to honor the
 hint.
 
 @comment **************************************************************
-@node Callback-Id , Framed-Route , Callback-Number, Attribute list
-@unnumberedsec Callback-Id
+@node Callback-Id, Framed-Route , Callback-Number, Attribute list
+@section Callback-Id
 @atindex Callback-Id
 
 @example
@@ -426,11 +426,11 @@ ATTRIBUTE  Callback-Id       20                   string
 @end example
 
 This Attribute indicates the name of a place to be called, to be
-interpreted by the NAS.  It may be used in Access-Accept packets.
+interpreted by the @NAS{}.  It may be used in Access-Accept packets.
 
 @comment **************************************************************
-@node Framed-Route , State , Callback-Id, Attribute list
-@unnumberedsec Framed-Route
+@node Framed-Route, State , Callback-Id, Attribute list
+@section Framed-Route
 @atindex Framed-Route
 
 @example
@@ -438,12 +438,12 @@ ATTRIBUTE  Framed-Route      22                   string
 @end example
 
 This Attribute provides routing information to be configured for
-the user on the NAS.  It is used in the Access-Accept packet and
+the user on the @NAS{}.  It is used in the Access-Accept packet and
 can appear multiple times.
 
 @comment **************************************************************
-@node State , Class , Framed-Route, Attribute list
-@unnumberedsec State
+@node State, Class , Framed-Route, Attribute list
+@section State
 @atindex State
 
 @example
@@ -457,17 +457,17 @@ if any.
 
 This Attribute is available to be sent by the server to the client
 in an Access-Accept that also includes a Termination-Action
-Attribute with the value of RADIUS-Request.  If the NAS performs
+Attribute with the value of RADIUS-Request.  If the @NAS{} performs
 the Termination-Action by sending a new Access-Request upon
 termination of the current session, it MUST include the State
 attribute unchanged in that Access-Request.
 
 In either usage, no interpretation by the client should be made.
-A packet may have only one @code{State} Attribute.
+A packet may have only one @attr{State} Attribute.
 
 @comment **************************************************************
-@node Class , Vendor-Specific , State, Attribute list
-@unnumberedsec Class
+@node Class, Vendor-Specific , State, Attribute list
+@section Class
 @atindex Class
 
 @example
@@ -480,8 +480,8 @@ the accounting server as part of the Accounting-Request packet if
 accounting is supported.
 
 @comment **************************************************************
-@node Vendor-Specific , Session-Timeout , Class, Attribute list
-@unnumberedsec Vendor-Specific
+@node Vendor-Specific, Session-Timeout , Class, Attribute list
+@section Vendor-Specific
 @atindex Vendor-Specific
 
 @example
@@ -493,8 +493,8 @@ extended Attributes not suitable for general usage.
 FIXME
 
 @comment **************************************************************
-@node Session-Timeout , Idle-Timeout , Vendor-Specific, Attribute list
-@unnumberedsec Session-Timeout
+@node Session-Timeout, Idle-Timeout , Vendor-Specific, Attribute list
+@section Session-Timeout
 @atindex Session-Timeout
 
 @example
@@ -507,8 +507,8 @@ The server may send this attribute to the client in an Access-Accept
 or Access-Challenge.
 
 @comment **************************************************************
-@node Idle-Timeout , Termination-Action , Session-Timeout, Attribute list
-@unnumberedsec Idle-Timeout
+@node Idle-Timeout, Termination-Action , Session-Timeout, Attribute list
+@section Idle-Timeout
 @atindex Idle-Timeout
 
 @example
@@ -521,8 +521,8 @@ session or prompt.  The server may send this attribute to the client
 in an Access-Accept or Access-Challenge.
 
 @comment **************************************************************
-@node Termination-Action , Called-Station-Id , Idle-Timeout, Attribute list
-@unnumberedsec Termination-Action
+@node Termination-Action, Called-Station-Id , Idle-Timeout, Attribute list
+@section Termination-Action
 @atindex Termination-Action
 
 @example
@@ -531,58 +531,58 @@ VALUE      Termination-Action  Default              0
 VALUE      Termination-Action  RADIUS-Request       1       
 @end example
 
-This Attribute indicates what action the NAS should take when the
+This Attribute indicates what action the @NAS{} should take when the
 specified service is completed.  It is only used in Access-Accept
 packets.
 
 @comment **************************************************************
-@node Called-Station-Id , Calling-Station-Id , Termination-Action, Attribute list
-@unnumberedsec Called-Station-Id
+@node Called-Station-Id, Calling-Station-Id , Termination-Action, Attribute list
+@section Called-Station-Id
 @atindex Called-Station-Id
 
 @example
 ATTRIBUTE  Called-Station-Id  30                   string  
 @end example
 
-This Attribute allows the NAS to send in the Access-Request packet
+This Attribute allows the @NAS{} to send in the Access-Request packet
 the phone number that the user called, using Dialed Number
 Identification (DNIS) or similar technology.  Note that this may be
 different from the phone number the call comes in on.  It is only
 used in Access-Request packets.
 
 @comment **************************************************************
-@node Calling-Station-Id , NAS-Identifier , Called-Station-Id, Attribute list
-@unnumberedsec Calling-Station-Id
+@node Calling-Station-Id, NAS-Identifier , Called-Station-Id, Attribute list
+@section Calling-Station-Id
 @atindex Calling-Station-Id
 
 @example
 ATTRIBUTE  Calling-Station-Id  31                   string  
 @end example
 
-This Attribute allows the NAS to send in the Access-Request packet
+This Attribute allows the @NAS{} to send in the Access-Request packet
 the phone number that the call came from, using Automatic Number
 Identification (ANI) or similar technology.  It is only used in
 Access-Request packets.
 
 @comment **************************************************************
-@node NAS-Identifier , NAS-Port-Type , Calling-Station-Id, Attribute list
-@unnumberedsec NAS-Identifier
+@node NAS-Identifier, NAS-Port-Type , Calling-Station-Id, Attribute list
+@section NAS-Identifier
 @atindex NAS-Identifier
 
 @example
 ATTRIBUTE  NAS-Identifier    32                   string  
 @end example
 
-This Attribute contains a string identifying the NAS originating
+This Attribute contains a string identifying the @NAS{} originating
 the Access-Request.  It is only used in Access-Request packets.
-Either @code{NAS-IP-Address}  or @code{NAS-Identifier} should be present in an
+Either @attr{NAS-IP-Address}  or @attr{NAS-Identifier} should be present in an
 Access-Request packet.
 
 @xref{NAS-IP-Address}.
 
 @comment **************************************************************
-@node NAS-Port-Type , Acct-Status-Type, NAS-Identifier, Attribute list
-@unnumberedsec NAS-Port-Type
+@node NAS-Port-Type, Acct-Status-Type, NAS-Identifier, Attribute list
+@section NAS-Port-Type
 @atindex NAS-Port-Type
 
 @example
@@ -594,16 +594,16 @@ VALUE      NAS-Port-Type     ISDN-V120            3
 VALUE      NAS-Port-Type     ISDN-V110            4       
 @end example
 
-This Attribute indicates the type of the physical port of the NAS
+This Attribute indicates the type of the physical port of the @NAS{}
 which is authenticating the user.  It can be used instead of or in
-addition to the @code{NAS-Port-Id} @ref{NAS-Port-Id} attribute.  It is only used in
-Access-Request packets.  Either @code{NAS-Port} or @code{NAS-Port-Type} or
-both should be present in an Access-Request packet, if the NAS
+addition to the @attr{NAS-Port-Id} @ref{NAS-Port-Id} attribute.  It is only used in
+Access-Request packets.  Either @attr{NAS-Port} or @attr{NAS-Port-Type} or
+both should be present in an Access-Request packet, if the @NAS{}
 differentiates among its ports.
 
 @comment **************************************************************
 @node Acct-Status-Type, Acct-Delay-Time, NAS-Port-Type, Attribute list
-@unnumberedsec Acct-Status-Type
+@section Acct-Status-Type
 @atindex Acct-Status-Type
 
 @example
@@ -629,7 +629,7 @@ last Alive record.
 
 @comment **************************************************************
 @node Acct-Delay-Time, Acct-Input-Octets, Acct-Status-Type, Attribute list
-@unnumberedsec Acct-Delay-Time
+@section Acct-Delay-Time
 @atindex Acct-Delay-Time
 
 @example
@@ -644,7 +644,7 @@ is ignored.)
 
 @comment **************************************************************
 @node Acct-Input-Octets, Acct-Output-Octets, Acct-Delay-Time, Attribute list
-@unnumberedsec Acct-Input-Octets
+@section Acct-Input-Octets
 @atindex Acct-Input-Octets
 
 @example
@@ -658,7 +658,7 @@ Acct-Status-Type is set to Stop.
 
 @comment **************************************************************
 @node Acct-Output-Octets, Acct-Session-Id, Acct-Input-Octets, Attribute list
-@unnumberedsec Acct-Output-Octets
+@section Acct-Output-Octets
 @atindex Acct-Output-Octets
 
 @example
@@ -672,24 +672,24 @@ is set to Stop.
 
 @comment **************************************************************
 @node Acct-Session-Id, Acct-Authentic, Acct-Output-Octets, Attribute list
-@unnumberedsec Acct-Session-Id
+@section Acct-Session-Id
 @atindex Acct-Session-Id
 
 @example
 ATTRIBUTE       Acct-Session-Id         44      string
 @end example
 
-This attribute is a unique Accounting ID to make it easy to match
+This attribute is a unique Accounting @sc{id} to make it easy to match
 start and stop records in a log file.  The start and stop records
 for a given session must have the same Acct-Session-Id.  An
 Accounting-Request packet must have an Acct-Session-Id.  An
 Access-Request packet may have an Acct-Session-Id; if it does,
-then the NAS must use the same Acct-Session-Id in the Accounting-Request
+then the @NAS{} must use the same Acct-Session-Id in the Accounting-Request
 packets for that session.
 
 @comment **************************************************************
 @node Acct-Authentic, Acct-Session-Time, Acct-Session-Id, Attribute list
-@unnumberedsec Acct-Authentic
+@section Acct-Authentic
 @atindex Acct-Authentic
 
 @example
@@ -701,13 +701,13 @@ VALUE           Acct-Authentic          Remote          3
 
 This attribute may be included in an Accounting-Request to
 indicate how the user was authenticated, whether by Radius, the
-NAS itself, or another remote authentication protocol.  Users who
+@NAS{} itself, or another remote authentication protocol.  Users who
 are delivered service without being authenticated should not
 generate Accounting records.
 
 @comment **************************************************************
 @node Acct-Session-Time, Acct-Input-Packets, Acct-Authentic, Attribute list
-@unnumberedsec Acct-Session-Time
+@section Acct-Session-Time
 @atindex Acct-Session-Time
 
 @example
@@ -720,7 +720,7 @@ where the Acct-Status-Type is set to Stop.
 
 @comment **************************************************************
 @node Acct-Input-Packets, Acct-Output-Packets, Acct-Session-Time, Attribute list
-@unnumberedsec Acct-Input-Packets
+@section Acct-Input-Packets
 @atindex Acct-Input-Packets
 
 @example
@@ -734,7 +734,7 @@ where the Acct-Status-Type is set to Stop.
 
 @comment **************************************************************
 @node Acct-Output-Packets, Acct-Terminate-Cause, Acct-Input-Packets, Attribute list
-@unnumberedsec Acct-Output-Packets
+@section Acct-Output-Packets
 @atindex Acct-Output-Packets
 
 @example
@@ -748,7 +748,7 @@ Acct-Status-Type is set to Stop.
 
 @comment **************************************************************
 @node Acct-Terminate-Cause, Auth-Type, Acct-Output-Packets, Attribute list
-@unnumberedsec Acct-Terminate-Cause
+@section Acct-Terminate-Cause
 @atindex Acct-Terminate-Cause
 
 @example
@@ -780,7 +780,7 @@ Status-Type is set to Stop.
 
 @comment **************************************************************
 @node Auth-Type, Menu, Acct-Terminate-Cause, Attribute list
-@unnumberedsec Auth-Type
+@section Auth-Type
 @atindex Auth-Type
 
 @example
@@ -795,15 +795,15 @@ VALUE      Auth-Type         Accept               254
 @end example
 
 This attribute tells the server which type of authentication
-to apply to a particular user. It can be used in check-pairs of
+to apply to a particular user. It can be used in @LHS{} of
 the user's profile. @xref{Authentication}.
 
-Radius interprets values of @code{Auth-Type} attribute as follows:
+Radius interprets values of @attr{Auth-Type} attribute as follows:
 
 @table @code
 @item Local
-The value of the @code{Password} attribute from the record is taken
-as a cleantext password and is compared against the @code{Password} value
+The value of the @attr{Password} attribute from the record is taken
+as a cleantext password and is compared against the @attr{Password} value
 from the input packet. 
 
 @item System
@@ -812,9 +812,9 @@ Radius queries the operating system to determine if the username/password
 supplied in the incoming packet are OK.
 
 @item Crypt-Local
-The value of the @code{Password} attribute from the record is taken
+The value of the @attr{Password} attribute from the record is taken
 as an MD5 hash on the user's password. Radius generates MD5 hash
-on the supplied @code{Password} value and compares both strings.
+on the supplied @attr{Password} value and compares both strings.
 
 @item Reject
 Authentication fails.
@@ -824,7 +824,7 @@ Authentication succeeds.
 
 @item SQL
 @itemx Mysql
-The MD5-encrypted user's password is queried from the SQL database
+The MD5-encrypted user's password is queried from the @sc{sql} database
 @ref{SQL Auth}. @code{Mysql} is an alias maintained for compatibility
 with other versions of Radius.
 
@@ -836,50 +836,50 @@ The username/password combination is checked using PAM.
 
 @comment **************************************************************
 @node Menu, Termination-Menu, Auth-Type, Attribute list
-@unnumberedsec Menu
+@section Menu
 @atindex Menu
 
 @example
 ATTRIBUTE  Menu              1001                 string  
 @end example
 
-This attribute should be used in the reply pairs. If it is used, it should
+This attribute should be used in the @RHS{}. If it is used, it should
 be the only reply item.
 
-The @code{Menu} attribute specifies the name of the menu to be presented
+The @attr{Menu} attribute specifies the name of the menu to be presented
 to the user. The corresponding menu code is looked up in
 @file{RADIUS_DIR/menus/} directory (@pxref{menus file}).
 
 
 @comment **************************************************************
 @node Termination-Menu, Prefix, Menu, Attribute list
-@unnumberedsec Termination-Menu
+@section Termination-Menu
 @atindex Termination-Menu
 
 @example
 ATTRIBUTE  Termination-Menu  1002                 string  
 @end example
 
-This attribute should be used in the reply pairs. If it is used, it should
+This attribute should be used in the @RHS{}. If it is used, it should
 be the only reply item.
 
-The @code{Termination-Menu} specifies the name of the menu file to be
+The @attr{Termination-Menu} specifies the name of the menu file to be
 presented to the user after finishing his session. The corresponding
 menu code is looked up in @file{RADIUS_DIR/menus/} directory
 (@pxref{menus file}).
 
 @comment **************************************************************
 @node Prefix, Suffix, Termination-Menu, Attribute list
-@unnumberedsec Prefix
+@section Prefix
 @atindex Prefix
 
 @example
 ATTRIBUTE  Prefix            1003                 string  
 @end example
 
-The @code{Prefix} attribute indicates the prefix which the username
+The @attr{Prefix} attribute indicates the prefix which the username
 should contain in order for a particular record in the profile
-to be matched. This attribute should be specified in check-pairs
+to be matched. This attribute should be specified in @LHS{}
 of the @file{users} or @file{hints} file.
 
 For example, if the @file{users} file contained:
@@ -893,7 +893,7 @@ DEFAULT Prefix = "U", Auth-Type = System
 then usernames @samp{Ugray} and @samp{Uyoda} would match this record,
 whereas @samp{gray} and @samp{yoda} would not.
 
-Both @code{Prefix} and @code{Suffix} attributes may be specified in
+Both @attr{Prefix} and @attr{Suffix} attributes may be specified in
 a profile. In this case the record is matched only if the username
 contains both prefix and suffix specified.
 
@@ -902,16 +902,16 @@ contains both prefix and suffix specified.
 
 @comment **************************************************************
 @node Suffix, Group, Prefix, Attribute list
-@unnumberedsec Suffix
+@section Suffix
 @atindex Suffix
 
 @example
 ATTRIBUTE  Suffix            1004                 string  
 @end example
 
-The @code{Suffix} attribute indicates the suffix which the username
+The @attr{Suffix} attribute indicates the suffix which the username
 should contain in order for a particular record in the profile
-to be matched. This attribute should be specified in check-pairs
+to be matched. This attribute should be specified in @LHS{}
 of the @file{users} or @file{hints} file.
 
 For example, if the @file{users} file contained:
@@ -926,7 +926,7 @@ DEFAULT Suffix = ".ppp", Auth-Type = System, Strip-User-Name = Yes
 then usernames @samp{gray.ppp} and @samp{yoda.ppp} would match this record,
 whereas @samp{gray} and @samp{yoda} would not.
 
-Both @code{Prefix} and @code{Suffix} attributes may be specified in
+Both @attr{Prefix} and @attr{Suffix} attributes may be specified in
 a profile. In this case the record is matched only if the username
 contains both prefix and suffix specified.
 
@@ -935,7 +935,7 @@ contains both prefix and suffix specified.
 
 @comment **************************************************************
 @node Group, Crypt-Password, Suffix, Attribute list
-@unnumberedsec Group
+@section Group
 @atindex Group
 
 @example
@@ -944,35 +944,35 @@ ATTRIBUTE  Group             1005                 string
 
 @comment **************************************************************
 @node Crypt-Password, Huntgroup-Name, Group, Attribute list
-@unnumberedsec Crypt-Password
+@section Crypt-Password
 @atindex Crypt-Password
 
 @example
 ATTRIBUTE  Crypt-Password    1006                 string  
 @end example
 
-This attribute is intended to be used in user's profile check-pairs.
+This attribute is intended to be used in user's profile @LHS{}.
 It specifies the MD5 hash of the user's password. When this attribute
-is present, Auth-Type = Crypt-Local is assumed. If both @code{Auth-Type}
-and @code{Crypt-Password} are present, the value of @code{Auth-Type} is
+is present, Auth-Type = Crypt-Local is assumed. If both @attr{Auth-Type}
+and @attr{Crypt-Password} are present, the value of @attr{Auth-Type} is
 ignored.
 
 @xref{Auth-Type}.
 
 @comment **************************************************************
 @node Huntgroup-Name, Simultaneous-Use, Crypt-Password, Attribute list
-@unnumberedsec Huntgroup-Name
+@section Huntgroup-Name
 @atindex Huntgroup-Name
 
 @example
 ATTRIBUTE  Huntgroup-Name    221                  string  
 @end example
 
-The @code{Huntgroup-Name} can be used either in check-pairs of the
-@file{users} file record or in reply-pairs of the @file{huntgroups}
+The @attr{Huntgroup-Name} can be used either in @LHS{} of the
+@file{users} file record or in @RHS{} of the @file{huntgroups}
 file record.
 
-When encountered in check-pairlist of a particular @file{users} profile,
+When encountered in a @LHS{} of a particular @file{users} profile,
 this attribute indicates the huntgroup name to be matched. Radius looks
 up the corresponding record in the @file{huntgroups} file. If such
 record is found, each A/V pair from its reply-list is compared against
@@ -1010,13 +1010,13 @@ users_group     NAS-IP-Address = 10.11.11.1
 @end example
 
 Then the authentication request would succeed since it contains
-@code{NAS-Port-Id} attribute and its value is less than 32.
+@attr{NAS-Port-Id} attribute and its value is less than 32.
 
 @xref{huntgroups file}.
 
 @comment **************************************************************
 @node Simultaneous-Use, Strip-User-Name, Huntgroup-Name, Attribute list
-@unnumberedsec Simultaneous-Use
+@section Simultaneous-Use
 @atindex Simultaneous-Use
 
 @example
@@ -1031,7 +1031,7 @@ number of times any surplus attempts to log in are rejected.
  
 @comment **************************************************************
 @node Strip-User-Name, Fall-Through, Simultaneous-Use, Attribute list
-@unnumberedsec Strip-User-Name
+@section Strip-User-Name
 @atindex Strip-User-Name
 
 @example
@@ -1040,7 +1040,7 @@ VALUE      Strip-User-Name   No                   0
 VALUE      Strip-User-Name   Yes                  1       
 @end example
 
-The value of @code{Strip-User-Name} indicates whether Radius should
+The value of @attr{Strip-User-Name} indicates whether Radius should
 strip any prefixes/suffixes specified in the user's profile from the
 user name. When set to @code{Yes} the usernames would be logged and
 accounted without any prefixes/suffixes.
@@ -1067,7 +1067,7 @@ DEFAULT Suffix = ".slip",
 @end example
 
 @noindent
-Now, user @samp{johns} having a valid account in SQL database
+Now, user @samp{johns} having a valid account in @sc{sql} database
 logs in as @samp{johns.ppp}. He then is provided the PPP service,
 and his PPP session is accounted under username @samp{johns}.
 Later on, he logs in as @samp{johns.slip}. In this case he is
@@ -1077,7 +1077,7 @@ under his real username @samp{johns}.
 
 @comment **************************************************************
 @node Fall-Through, Add-Port-To-IP-Address, Strip-User-Name, Attribute list
-@unnumberedsec Fall-Through
+@section Fall-Through
 @atindex Fall-Through
 
 @example
@@ -1086,7 +1086,7 @@ VALUE      Fall-Through      No                   0
 VALUE      Fall-Through      Yes                  1       
 @end example
 
-The @code{Fall-Through} attribute should be used in reply-list.
+The @attr{Fall-Through} attribute should be used in reply-list.
 If its value is set to @code{Yes} in a particular record, it
 indicates to Radius that it should continue looking up another records
 even when this record matches the request. It can be used to provide
@@ -1114,7 +1114,7 @@ DEFAULT NAS-IP-Address = 11.10.10.1
 @noindent
 Then after successful matching of a particular user's record,
 the matching will continue until it finds the DEFAULT entry,
-which would add its reply pairs to the reply pairs for
+which would add its @RHS{} to the reply pairs for
 this request. The effect is, that if user @samp{johns} authenticates
 successfully it gets the following reply pairs:
 
@@ -1134,12 +1134,12 @@ whereas user @code{smith} gets
 @end example
 
 @noindent
-@emph{Please note} that the attribute @code{Fall-Through} itself
-is never returned to the NAS.
+@emph{Please note} that the attribute @attr{Fall-Through} itself
+is never returned to the @NAS{}.
 
 @comment **************************************************************
 @node Add-Port-To-IP-Address, Exec-Program, Fall-Through, Attribute list
-@unnumberedsec Add-Port-To-IP-Address
+@section Add-Port-To-IP-Address
 @atindex Add-Port-To-IP-Address
 
 @example
@@ -1148,17 +1148,17 @@ VALUE      Add-Port-To-IP-Address  No                   0
 VALUE      Add-Port-To-IP-Address  Yes                  1       
 @end example
 
-If this attribute is present in the reply-pairs and has the value
-of @code{Yes}, then the value of @code{NAS-Port-Id} attribute from
+If this attribute is present in the @RHS{} and has the value
+of @code{Yes}, then the value of @attr{NAS-Port-Id} attribute from
 the authentication request will be added to the value of
-@code{Framed-IP-Address} attribute from the reply pairs, and 
-resulting value will be returned in @code{Framed-IP-Address}
-attribute to the NAS.
+@attr{Framed-IP-Address} attribute from the @RHS{}, and 
+resulting value will be returned in @attr{Framed-IP-Address}
+attribute to the @NAS{}.
 
-This provides the simplest form of organizing IP address pools.
+This provides the simplest form of organizing @IP{} pools.
 
-This attribute is implicitly added to the reply pairlist when the
-value of a @code{Framed-IP-Address} attribute ends with @samp{+}
+This attribute is implicitly added to the @RHS{} when the
+value of a @attr{Framed-IP-Address} attribute ends with @samp{+}
 sign. For example the following:
 
 @example
@@ -1174,21 +1174,21 @@ is equivalent to
 
 @comment **************************************************************
 @node Exec-Program, Exec-Program-Wait, Add-Port-To-IP-Address, Attribute list
-@unnumberedsec Exec-Program
+@section Exec-Program
 @atindex Exec-Program
 
 @example
 ATTRIBUTE  Exec-Program      1038                 string  
 @end example
 
-When present in reply-pairs, the @code{Exec-Program} attribute specifies
+When present in @RHS{}, the @attr{Exec-Program} attribute specifies
 the full pathname and arguments for the program to be executed when the
 entry matches.
 
 The command line can reference any attributes from both check and reply
 pairlists using attribute macros @ref{Macro substitution}.
 
-Before the execution of the program @code{radiusd} switches to
+Before the execution of the program @command{radiusd} switches to
 uid and gid of user @code{daemon}, group @code{daemon}. You can
 override these defaults by setting variables @code{exec-program-user}
 and @code{exec-program-group} in configuration file to proper values
@@ -1209,30 +1209,30 @@ DEFAULT Auth-Type = System,
 @noindent
 Then, upon successful matching, the program
 @file{/usr/local/sbin/logauth} will be executed. It will get as its
-arguments the values of @code{User-Name} and @code{Calling-Station-Id}
-attributes from the request check pairs.
+arguments the values of @attr{User-Name} and @attr{Calling-Station-Id}
+attributes from the request pairs.
 
 
 @comment **************************************************************
 @node Exec-Program-Wait, Hint, Exec-Program, Attribute list
-@unnumberedsec Exec-Program-Wait
+@section Exec-Program-Wait
 @atindex Exec-Program-Wait
 
 @example
 ATTRIBUTE  Exec-Program-Wait  1039                 string  
 @end example
 
-When present in reply-pairs, the @code{Exec-Program-Wait} attribute specifies
+When present in @RHS{}, the @attr{Exec-Program-Wait} attribute specifies
 the full pathname and arguments for the program to be executed when the
 entry matches.
 
 The command line can reference any attributes from both check and reply
 pairlists using attribute macros @ref{Macro substitution}.
 
-Before the execution of the program @code{radiusd} switches to
+Before the execution of the program @command{radiusd} switches to
 uid and gid of user @code{daemon}, group @code{daemon}. You can
-override these defaults by setting variables @code{exec-program-user}
-and @code{exec-program-group} in configuration file to proper values
+override these defaults by setting variable @code{exec-program-user}
+in configuration file to a proper value.
 @ref{option,, The option statement}.
 
 The daemon will wait until the program terminates. The return value
@@ -1257,8 +1257,8 @@ DEFAULT Auth-Type = System,
 @noindent
 Then, upon successful matching, the program
 @file{/usr/local/sbin/telauth} will be executed. It will get as its
-arguments the values of @code{User-Name} and @code{Calling-Station-Id}
-attributes from the request check pairs.
+arguments the values of @attr{User-Name} and @attr{Calling-Station-Id}
+attributes from the request pairs.
 
 The @file{/usr/local/sbin/telauth} can, for example, contain the
 following:
@@ -1285,14 +1285,14 @@ authorized to use login service.
 
 @comment **************************************************************
 @node Hint, Pam-Auth, Exec-Program-Wait, Attribute list
-@unnumberedsec Hint
+@section Hint
 @atindex Hint
 
 @example
 ATTRIBUTE  Hint              1040                 string  
 @end example
 
-Use @code{Hint} attribute to specify additional matching criterium
+Use @attr{Hint} attribute to specify additional matching criterium
 depending on the hint (@pxref{hints file}).
 
 Let the @file{hints} contain:
@@ -1314,20 +1314,20 @@ DEFAULT Hint = "SLIP",
 
 @noindent
 
-Then any user having a valid system account and coming from NAS
+Then any user having a valid system account and coming from @NAS{}
 @samp{11.10.10.12} will be provided SLIP service if his username
 starts with @samp{S}.
                 
 @comment **************************************************************
 @node Pam-Auth, Login-Time, Hint, Attribute list
-@unnumberedsec Pam-Auth
+@section Pam-Auth
 @atindex Pam-Auth
 
 @example
 ATTRIBUTE  Pam-Auth          1041                 string  
 @end example
 
-The @code{Pam-Auth} attribute can be used in conjunction with
+The @attr{Pam-Auth} attribute can be used in conjunction with
 
 @example
 Auth-Type = Pam
@@ -1335,21 +1335,21 @@ Auth-Type = Pam
 
 @noindent
 to supply the PAM service name instead of the default @samp{radius}.
-It is ignored if @code{Auth-Type} attribute is not set to @code{Pam}.
+It is ignored if @attr{Auth-Type} attribute is not set to @code{Pam}.
 
 @comment **************************************************************
 @node Login-Time, Replace-User-Name, Pam-Auth, Attribute list
-@unnumberedsec Login-Time
+@section Login-Time
 @atindex Login-Time
 
 @example
 ATTRIBUTE  Login-Time        1042                 string  
 @end example
 
-The @code{Login-Time} attribute specifies the time range when the user
-is allowed to log in. The attribute should be specified in check-pairs.
+The @attr{Login-Time} attribute specifies the time range when the user
+is allowed to log in. The attribute should be specified in @LHS{}.
 
-Format of the @code{Login-Time} string is the same as that of UUCP
+Format of the @attr{Login-Time} string is the same as that of UUCP
 time ranges. The following description of time range format is
 adopted from the documentation for Taylor UUCP package:
 
@@ -1398,7 +1398,7 @@ any day.
 
 @comment **************************************************************
 @node Replace-User-Name, Rewrite-Function, Login-Time, Attribute list
-@unnumberedsec Replace-User-Name
+@section Replace-User-Name
 @atindex Replace-User-Name
 
 @example
@@ -1408,8 +1408,8 @@ VALUE      Replace-User-Name  Yes                  1
 @end example
 
 Use this attribute to modify username from the incoming packet. The
-@code{Replace-User-Name} can reference any attributes from both check
-and reply pairlists using attribute macros @ref{Macro substitution}.
+@attr{Replace-User-Name} can reference any attributes from both @LHS{}
+and @RHS{} pairlists using attribute macros @ref{Macro substitution}.
 
 For example the following @file{users} entry
 
@@ -1423,22 +1423,22 @@ guest   NAS-IP-Address = 11.10.10.11,
 @end example
 
 @noindent
-Allows usage of PPP service for username guest, coming from NAS
-@samp{11.10.10.11} with non-empty @code{Calling-Station-Id} attribute.
+Allows usage of PPP service for username guest, coming from @NAS{}
+@samp{11.10.10.11} with non-empty @attr{Calling-Station-Id} attribute.
 The string consisting of @samp{#} character followed by
-@code{Calling-Station-Id} value is appended to the username.
+@attr{Calling-Station-Id} value is appended to the username.
 
 
 @comment **************************************************************
 @node Rewrite-Function, Match-Profile, Replace-User-Name, Attribute list
-@unnumberedsec Rewrite-Function
+@section Rewrite-Function
 @atindex Rewrite-Function
 
 @example
 ATTRIBUTE  Rewrite-Function  2004                 string  
 @end example
 
-The @code{Rewrite-Function} attribute specifies the name of the
+The @attr{Rewrite-Function} attribute specifies the name of the
 rewriting function to be applied to the request. The attribute
 may be specified in either pairlist in the entries of
 @file{hints} or @file{huntgroups} configuration files.
@@ -1458,20 +1458,20 @@ i.e. it should return integer value and should not take any arguments.
 
 @comment **************************************************************
 @node Match-Profile, , Rewrite-Function, Attribute list
-@unnumberedsec Match-Profile
+@section Match-Profile
 @atindex Match-Profile
 
 @example
 ATTRIBUTE  Match-Profile     2004                 string
 @end example
 
-The Match-Profile attribute can be used in check and reply lists of a
+The Match-Profile attribute can be used in @LHS{} and @RHS{} lists of a
 user profile. Its value is the name of another user's profile (target
-profile). When Match-Profile is used in the check list, the incoming
+profile). When Match-Profile is used in the @LHS{}, the incoming
 packet will match this profile only if it matches the target profile.
-In this case the reply pairs will be formed concatenating the reply
+In this case the reply pairs will be formed concatenating the @RHS{}
 lists from both profiles.
-When used in the reply list, this attribute causes the reply pairs
+When used in @RHS{}, this attribute causes the reply pairs
 from the target profile to be appended to the reply from the current
 profile if the target profile matches the incoming request.
 
@@ -1489,7 +1489,7 @@ guest   Auth-Type = SQL
         Match-Profile = IPPOOL
 @end example
 
-In this example, when user ``guest'' comes from NAS 10.10.10.1 he is
-assigned IP address 10.10.10.2, otherwise if he is coming from NAS
-10.10.11.1 he is assigned IP address 10.10.11.2.
+In this example, when user ``guest'' comes from @NAS{} @code{10.10.10.1} he is
+assigned @IP{} @code{10.10.10.2}, otherwise if he is coming from @NAS{}
+@code{10.10.11.1} he is assigned @IP{} @code{10.10.11.2}.
                 

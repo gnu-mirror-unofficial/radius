@@ -7,7 +7,7 @@
 @cindex Debugging
 
 GNU Radius provides extensive debugging features. These are enabled
-either by @samp{-x} command option to the @code{radiusd}
+either by @option{-x} command option to the @command{radiusd}
 @ref{Invocation}, or by @code{level} statement in debug category
 @ref{logging,,logging statement}. Both cases require as an argument
 a valid debug specification.

@@ -2,3 +2,26 @@
 @set RADLOG /var/log
 @set RADACCT /var/log/radacct
 
+@macro attr{name}
+@code{\name\}
+@end macro
+
+@macro RADIUS{}
+@sc{radius}
+@end macro
+
+@macro NAS{}
+@sc{nas}
+@end macro
+
+@macro LHS{}
+@sc{lhs}
+@end macro
+
+@macro RHS{}
+@sc{rhs}
+@end macro
+
+@macro IP{}
+@sc{ip} address
+@end macro

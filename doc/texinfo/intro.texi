@@ -5,9 +5,9 @@
 @node Intro, Glossary, Copying, Top
 @unnumbered Introduction to Radius
 
-Radius is a system serving for authentication and accounting. The name
-RADIUS (all capitals) stands for Remote Authentication in Dial-In User
-Service and usually denotes the underlying protocol name.
+Radius is a system serving for authentication and accounting. The acronym
+@RADIUS{} stands for Remote Authentication in Dial-In User Service and 
+usually denotes the underlying protocol name.
 
 Historically, radius servers were used as a means to authenticate the user
 coming from a dial-in connection, but GNU Radius is much more than an
@@ -30,22 +30,22 @@ Throughout this document the following terms are used:
 
 @table @asis
 
-@item RADIUS
+@item @RADIUS{}
 (All capitals) The Remote Authentication in Dial-In User Service
 protocol as described in RFC 2138, 2865 and 2866.
 
-@cindex NAS
+@cindex @sc{nas}
 @cindex Network Access Server
-@item NAS
-NAS stands for Network Access Server. It is a computer or a special device
+@item @NAS{}
+@NAS{} stands for Network Access Server. It is a computer or a special device
 designed to provide access to the network. For example, it can be a
 computer connected to the network and equipped with several modems. Such
-NAS would allow the user connecting to one of its modems to access the
+@NAS{} would allow the user connecting to one of its modems to access the
 network. 
 
 @cindex Service
 @item Service
-A service, such as PPP, SLIP, telnet, etc., provided to a user by the NAS.
+A service, such as PPP, SLIP, telnet, etc., provided to a user by the @NAS{}.
 
 @cindex Session
 @item Session
@@ -54,7 +54,7 @@ first provided and ends when the service is ended. A user may have multiple
 sessions active simultaneously if he is allowed to.
 
 @cindex Session ID
-@item Session ID
+@item Session @sc{id}
 Session Identifier. A string of characters uniquely identifying the session.
 
 @cindex A/V pair

@@ -6,22 +6,22 @@
 @chapter Radwho
 @pindex radwho
 
-@code{Radwho} displays the list of users currently logged in by the
+@command{Radwho} displays the list of users currently logged in by the
 Radius server.
 
 Default output information is made compatible with that of the standard
-unix finger(1) utility. For each user the following information is
-displayed: login name, name, connection protocol, NAS port, login date,
-NAS name, assigned IP address or corresponding network name.
+UNIX finger(1) utility. For each user the following information is
+displayed: login name, name, connection protocol, @NAS{} port, login date,
+@NAS{} name, assigned @IP{} or corresponding network name.
 
-When used with @samp{-l} option, the long output format is used. In
+When used with @option{-l} option, the long output format is used. In
 this format the following information is output:
 
 @table @samp
 @item Login
 Login name of the user
 @item SessionID
-Unique session ID assigned by the terminal server.
+Unique session @sc{id} assigned by the terminal server.
 @item Proto
 Connection prototype.
 @item Port
@@ -29,11 +29,11 @@ Port number
 @item When
 Login date and time
 @item From
-The name of NAS that accepted the connection.
+The name of @NAS{} that accepted the connection.
 @item Location
-Framed IP address or the corresponding network name.
+Framed @IP{} or the corresponding network name.
 @item Caller
-Caller station ID ad reported by the NAS.
+Caller station @sc{id} ad reported by the @NAS{}.
 @item Duration
 Duration of the session.
 @end table
@@ -50,7 +50,7 @@ Duration of the session.
 The following command line options can be used to modify the behavior
 of the program:
 
-@table @samp
+@table @option
 @item -A
 @itemx --all
 Display the information about logged-out users as well. The logged-out
@@ -58,7 +58,7 @@ users are shown with Proto field set to HUP.
 
 @item -c
 @itemx --calling-id
-Display the calling station ID in the second column.
+Display the calling station @sc{id} in the second column.
 
 @item -d NAME
 @itemx --directory NAME
@@ -69,7 +69,7 @@ Set the radius configuration directory name.
 Set the date representation. By default dates are output as
 @code{DOW HH:MM}, where DOW means the day of week abbreviation,
 HH and MM mean hours and minutes respectively. This corresponds to
-option @samp{-D short}. Other available formats are:
+option @option{-D short}. Other available formats are:
 
 @table @samp
 @item abbr
@@ -87,21 +87,21 @@ Mon Dec 18 12:29:38 EET 2000
 @item -e STRING
 @itemx --empty STRING
 Display any empty field as STRING. This is useful when the output of
-@code{radwho} is fed to some analyzing program, as it helps to keep
+@command{radwho} is fed to some analyzing program, as it helps to keep
 the same number of columns on each line of output.
 
 @item -F
 @itemx --finger
-Start in fingerd mode. In this mode @code{radwho} emulates the
+Start in fingerd mode. In this mode @command{radwho} emulates the
 behavior of fingerd(8) utility. Use this option if starting
-@code{radwho} from the /etc/inetd.conf line like this:
+@command{radwho} from the /etc/inetd.conf line like this:
 
 @example
 finger  stream  tcp   nowait  nobody   /usr/sbin/radwho radwho -fL
 @end example
 
 @noindent
-This mode is also enabled by default if @code{radwho} notices that its
+This mode is also enabled by default if @command{radwho} notices that its
 name (argv[0]) is @samp{fingerd} or @samp{in.fingerd}.
 
 @item -H
@@ -110,21 +110,21 @@ Don't display header line.
 
 @item -i
 @itemx --session-id
-Display session ID instead of GECOS in the second column.
+Display session @sc{id} instead of @sc{gecos} in the second column.
 
 @item -I @{smart|ip|nodomain@}
 @itemx --ip-format @{smart|ip|nodomain@}
-Change IP address representation. The meaning of the argument is as follows:
+Change @IP{} representation. The meaning of the argument is as follows:
 
 @table @samp
 @item smart
 Select the best representation. The following rules apply:
 
 @enumerate 1
-@item For a NAS use its short name from @file{naslist}. If there is no
+@item For a @NAS{} use its short name from @file{naslist}. If there is no
 short name, use its long name. If there is no long name either, go to
 2.
-@item Resolve IP address to FQDN.
+@item Resolve @IP{} to FQDN.
 @item If the IP cannot be resolved, use dotted-quad representation of
 the IP
 @end enumerate
@@ -140,11 +140,11 @@ hostname part of it, i.e. any characters up to the first dot.
 @item -u
 @itemx --local-also
 Display information about local users from the system @file{utmp} file.
-May prove useful when running @code{radwho} as a finger daemon.
+May prove useful when running @command{radwho} as a finger daemon.
 
 @item -n
 @itemx --no-resolve
-Do not resolve IP addresses. It is a synonym for -I ip.
+Do not resolve @IP{}. It is a synonym for -I ip.
 
 @item -o FORMAT
 @itemx --format FORMAT
@@ -176,16 +176,16 @@ Login name
 Original login name as supplied with the request.
 
 @item port
-NAS port number
+@NAS{} port number
 
 @item sid
-The Session ID
+The Session @sc{id}
 
 @item nas
-The NAS name or IP address.
+The @NAS{} name or @IP{}.
 
 @item ip
-Framed IP address assigned to the user, if it is provided framed
+Framed @IP{} assigned to the user, if it is provided framed
 service.
 
 @item proto
@@ -240,10 +240,10 @@ Port type. This is one of the following letters:
 Total time of the session duration.
 
 @item clid
-The calling station ID.
+The calling station @sc{id}.
 
 @item uname
-The GECOS field from local /etc/passwd, corresponding to the login name.
+The @sc{gecos} field from local /etc/passwd, corresponding to the login name.
 If the user does not have a local account, his login name is output.
 
 @end table

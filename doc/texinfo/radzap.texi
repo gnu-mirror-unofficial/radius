@@ -6,10 +6,10 @@
 @chapter Radzap
 @pindex radzap
 
-@code{radzap} searches the Radius accounting database for matching login
+@command{radzap} searches the Radius accounting database for matching login
 records and closes them.
 
-At least one of @samp{-n}, @samp{-p} options or username must be
+At least one of @option{-n}, @option{-p} options or username must be
 specified. If they are used in conjunction, they are taken as if
 joined by logical AND operation.
 
@@ -22,7 +22,7 @@ before zapping each matching record. Every line beginning with a `y'
 is taken as positive response, otherwise it is taken as negative
 response.
 
-The confirm mode is toggled by the command line option @samp{-c}.
+The confirm mode is toggled by the command line option @option{-c}.
 
 @subheading Syntax
 
@@ -33,7 +33,7 @@ radzap [options] [username]
 @noindent
 Options are:
 
-@table @samp
+@table @option
 @item -c
 @itemx --confirm
 Enable confirm mode. 
@@ -45,7 +45,7 @@ Disable confirm mode.
 Display short help summary and exit.
 @item -n @var{NAME}
 @itemx --nas @var{NAME}
-Specify NAS name to zap user from.
+Specify @NAS{} name to zap user from.
 @item -p @var{PORT}
 @itemx --port @var{PORT}
 Specify the port number of the session to be zapped. The port number

@@ -7,10 +7,10 @@
 @pindex radscm
 @cindex guile interface
 
-@code{Radscm} is a Scheme interpreter based on Guile with the addition
+@command{Radscm} is a Scheme interpreter based on Guile with the addition
 of special functions and variables for communicating with
-@code{radiusd}. This chapter concentrates on the special features
-provided by @code{radscm}. Please refer to Guile documentation for
+@command{radiusd}. This chapter concentrates on the special features
+provided by @command{radscm}. Please refer to Guile documentation for
 information about Scheme and Guile @xref{Top,,Overview,guile,The Guile Reference Manual}.
 
 @heading Variables
@@ -30,8 +30,8 @@ A list of radius servers. Each element of the list is:
 where:
 
 @multitable @columnfractions .40 .45
-@item ID-STR            @tab Server ID,
-@item HOST-STR          @tab Server hostname or IP address,
+@item ID-STR            @tab Server @sc{id},
+@item HOST-STR          @tab Server hostname or @IP{},
 @item SECRET-STR        @tab Shared secret key to use,
 @item AUTH-NUM          @tab Authentication port number,
 @item ACCT-NUM          @tab Accounting port number,
@@ -93,11 +93,11 @@ the radius server is printed.
 
 @deffn Function rad-client-list-servers
 List currently configured servers. Two columns for each server are displayed:
-Server ID and IP address.
+Server @sc{id} and @IP{}.
 @end deffn
 
 @deffn Function rad-get-server
-Returns the ID of the currently selected server.
+Returns the @sc{id} of the currently selected server.
 @end deffn
 
 @deffn Function rad-client-set-server LIST
@@ -110,8 +110,8 @@ Selects for use the server described by LIST. A LIST should be:
 where:
 
 @multitable @columnfractions .40 .45
-@item ID-STR            @tab Server ID,
-@item HOST-STR          @tab Server hostname or IP address,
+@item ID-STR            @tab Server @sc{id},
+@item HOST-STR          @tab Server hostname or @IP{},
 @item SECRET-STR        @tab Shared secret key to use,
 @item AUTH-NUM          @tab Authentication port number,
 @item ACCT-NUM          @tab Accounting port number,
@@ -131,8 +131,8 @@ A LIST should be:
 where:
 
 @multitable @columnfractions .40 .45
-@item ID-STR            @tab Server ID,
-@item HOST-STR          @tab Server hostname or IP address,
+@item ID-STR            @tab Server @sc{id},
+@item HOST-STR          @tab Server hostname or @IP{},
 @item SECRET-STR        @tab Shared secret key to use,
 @item AUTH-NUM          @tab Authentication port number,
 @item ACCT-NUM          @tab Accounting port number,
@@ -177,8 +177,8 @@ This is the interface to the C getpass(3) function.
 @end deffn
 
 @deffn Function rad-client-source-ip IP-STR
-Sets the IP address to be used as source IP. IP-STR can be either an
-IP address in dotted-quad form or a hostname.
+Sets the @IP{} to be used as source. IP-STR can be either an
+@IP{} in dotted-quad form or a hostname.
 @end deffn
 
 @deffn Function rad-client-timeout NUMBER
@@ -237,8 +237,8 @@ text.
 @end deffn
 
 @deffn Function rad-list-servers
-For each server from @code{rad-server-list} print its ID and hostname
-or IP address.
+For each server from @code{rad-server-list} print its @sc{id} and hostname
+or @IP{}.
 @end deffn
 
 @deffn Function rad-select-server ID-STR

@@ -8,7 +8,7 @@
 @cindex Invoking the radius daemon
 @pindex radiusd
 
-When started @code{radiusd} uses the configuration values from the following
+When started @command{radiusd} uses the configuration values from the following
 sources (in order of increasing precedence):
 
 @itemize @bullet
@@ -22,7 +22,7 @@ use of this equivalent should be preferred (@pxref{config file}).
 
 The following command line options are accepted:
 
-@table @samp
+@table @option
 
 @c ** -A option (radiusd)
 @c ** --log-auth-detail (radiusd)
@@ -31,7 +31,7 @@ The following command line options are accepted:
 Enable detailed authentication logging. When this option is specified
 each authentication request is logged to the file
 @file{radacct/NASNAME/detail.auth}, where NASNAME is replaced by the
-short name of the NAS from @file{raddb/naslist}
+short name of the @NAS{} from @file{raddb/naslist}
 @ref{Naming conventions}.
 
 Config file equivalent: @code{auth @{ detail yes; @};}.
@@ -68,9 +68,9 @@ Stay in foreground. We recommend to use it for debugging purposes only.
 @c ** --ip-address
 @item -i IP
 @itemx --ip-address
-Specifies a source IP address. @code{Radiusd} will listen to packets
+Specifies a source @IP{}. @command{Radiusd} will listen to packets
 coming to this address. If this option is not specified, the program
-picks up the IP address of first non-loopback interface it sees on the
+picks up the @IP{} of first non-loopback interface it sees on the
 machine.
 
 Config file equivalent: @code{option @{ source-ip IP; @};}. 
@@ -108,7 +108,7 @@ log channels.
 @c ** --mode t (radiusd)
 @item -mt
 @itemx --mode t
-Test mode. In this mode @code{radiusd} starts an interactive interpreter
+Test mode. In this mode @command{radiusd} starts an interactive interpreter
 which allows to test various aspects of its configuration.
 
 @c ** -n option (radiusd)
@@ -121,7 +121,7 @@ Process only authentication requests.
 @c ** --port option (radiusd)
 @item -p PORTNO
 @itemx --port PORTNO
-Listen the UDP port PORTNO. The accounting port is computed as @var{PORTNO} + 1.
+Listen the @sc{udp} port PORTNO. The accounting port is computed as @var{PORTNO} + 1.
 
 @c ** -P (radiusd)
 @c ** --pid-file-dir (radiusd)

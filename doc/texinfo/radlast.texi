@@ -6,14 +6,14 @@
 @chapter Radlast
 @pindex radlast
 
-The @code{radlast} utility lists sessions of specified users, NASes,
-NAS ports and hosts, in reverse time order. By default, each line of output
-contains the login name, NAS short name and port number from where the
-session was conducted, host IP address or name, the start and stop
+The @command{radlast} utility lists sessions of specified users, @NAS{}es,
+@NAS{} ports and hosts, in reverse time order. By default, each line of output
+contains the login name, @NAS{} short name and port number from where the
+session was conducted, host @IP{} or name, the start and stop
 times for the session, and the duration of the session. If the session
-is still continuing, @code{radlast} will so indicate.
+is still continuing, @command{radlast} will so indicate.
 
-When specified the @samp{-l} option, @code{radlast} produces long
+When specified the @option{-l} option, @command{radlast} produces long
 output. It includes following fields:
 
 @itemize @bullet
@@ -22,8 +22,8 @@ output. It includes following fields:
 @item port number
 @item prototype
 @item port type
-@item Session ID
-@item Caller ID
+@item Session @sc{id}
+@item Caller @sc{id}
 @item Framed IP address
 @item Session Start Time
 @item Session Stop Time
@@ -37,17 +37,17 @@ output. It includes following fields:
 
 @comment *******************************************************************
 @node radlast options, , , Radlast
-@section @code{radlast} command line options
-@pindex @code{radlast}, options
+@section @command{radlast} command line options
+@pindex @command{radlast}, options
 
 Use following command line options to control the behavior of
-@code{radlast} utility:
+@command{radlast} utility:
 
-@table @samp
+@table @option
 @item -@var{number}
 @itemx -c @var{number}
 @itemx --count @var{number}
-When given this option @code{radlast} will output at most this many
+When given this option @command{radlast} will output at most this many
 lines of information. 
 
 @item -f
@@ -61,7 +61,7 @@ Report the logins from given host. Host can be either a name or a
 
 @item -n @var{shortname}
 @itemx --nas @var{shortname}
-Report the logins from given Network Access Server (NAS).
+Report the logins from given Network Access Server (@NAS{}).
 
 @item -l
 @itemx --long-format
@@ -79,7 +79,7 @@ Report the duration of the login session in seconds instead of the
 default days, hours and minutes.
 
 @item -t
-The same as @samp{-p}. This flag is provided for compatibility with last(1).
+The same as @option{-p}. This flag is provided for compatibility with last(1).
 
 @item -w
 @itemx --wide
@@ -90,11 +90,11 @@ hours and minutes.
 
 If multiple arguments are given, the logical OR operation between them
 is assumed, i.e. the information selected by each argument
-is printed. This, however, does not apply to @code{-c} option. This option is
+is printed. This, however, does not apply to @option{-c} option. This option is
 always combined with the rest of command line by logical AND.
 
 The pseudo-user ~reboot logs in on every reboot of network access
 server.
 
-If @code{radlast} is interrupted, it indicates to what date the search
+If @command{radlast} is interrupted, it indicates to what date the search
 was progressed.

@@ -9,11 +9,11 @@
 This utility allows to quickly lookup the user in the radius accounting
 database using a regular expression match.
 
-@code{radgrep} scans the output of @code{radwho} utility and outputs
-only the lines that match given @code{grep} regular expressions.
+@command{radgrep} scans the output of @command{radwho} utility and outputs
+only the lines that match given regular expressions.
 
 @subheading Syntax
-@code{radgrep} accepts two sets of options separated by @samp{--}
+@command{radgrep} accepts two sets of options separated by @samp{--}
 (double-dash) sign. First subset is passed as command line to
-@code{radwho} utility. The second one is passed to @code{grep}.
+@command{radwho} utility. The second one is passed to @command{grep}.
 

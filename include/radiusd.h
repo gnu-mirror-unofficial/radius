@@ -455,6 +455,8 @@ int proxy_send(REQUEST *req);
 int proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int activefd);
 void proxy_retry(RADIUS_REQ *radreq, int fd);
 int proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r);
+VALUE_PAIR *proxy_request_recode(RADIUS_REQ *radreq, u_char *secret,
+				 u_char *vector);
 
 /* menu.c */
 #define MAX_PATH_LENGTH                 256
@@ -570,6 +572,6 @@ int rad_cfg_forward_auth(int argc, cfg_value_t *argv,
 int rad_cfg_forward_acct(int argc, cfg_value_t *argv,
 			 void *block_data, void *handler_data);
 void forward_init();
-void forward_request(int type, void *input, size_t inputsize);
+void forward_request(int type, RADIUS_REQ *req);
 
 

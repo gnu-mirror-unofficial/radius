@@ -1,9 +1,9 @@
 <!-- X-URL: %BASE_URL% -->
 <!-- Date: %DATE% -->
-<BASE HREF="%BASE_URL%">
 <!DOCTYPE html PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <HTML>
 <HEAD>
+<BASE HREF="%BASE_URL%">
 <TITLE>%PACKAGE_NAME% Reference Manual - Table of Contents - GNU Project - Free Software Foundation (FSF)</TITLE>
 <LINK REV="made" HREF="mailto:webmasters@www.gnu.org">
 </HEAD>

@@ -513,13 +513,15 @@ filter_symbol_lock(sym, type)
 	int type;
 {
 	int rc;
+ 	int counter = sym->counter;
 	
 	if (sym->common
 	    && sym->max_percent
-	    && sym->counter > num_threads * sym->max_percent / 100) {
+	    && num_threads > max_threads * sym->max_percent / 10
+	    && counter > num_threads * sym->max_percent / 100) {
 		radlog(L_NOTICE,
 		       _("Too many (%d) threads waiting for filter %s."),
-		       sym->counter,
+		       counter,
 		       sym->name);
 		return 1;
 	}
@@ -777,6 +779,7 @@ filter_auth(name, req, reply_pairs)
 			radlog(L_ERR|L_PERROR,
 		       	       _("reading from filter %s"),
 		       	       filter->sym->name);
+			filter_close(filter);
 			rc = err;
 		} else if (isdigit(buffer[0])) {
 			char *ptr;
@@ -844,6 +847,7 @@ filter_acct(name, req)
 		       	       _("reading from filter %s"),
 		       	       filter->sym->name);
 			rc = err;
+			filter_close(filter);
 		} else if (isdigit(buffer[0])) {
 			char *ptr;
 			char *errp;

@@ -188,6 +188,27 @@ request_cleanup(type, data)
                 request_class[type].cleanup(type, data);
 }
 
+/* Request lifecycle:
+   A request starts its life in RS_WAITING state. It remains in this
+   state until either it is picked up by some thread for processing
+   or time-to-live seconds expire. When a thread starts processing
+   the request, it changes its state to RS_PENDING. When processing
+   of the request is finished, its state is changed to RS_COMPLETED.
+   If the request in RS_WAITING state does not switch to RS_PENDING
+   within time-to-live seconds, this request is removed from the queue.
+   If the request in RS_PENDING state does not switch to RS_COMPLETED
+   state within time-to-live seconds, it changes its state to RS_HUNG.
+   If a request remains in RS_HUNG state for more than time-to-live seconds,
+   it changes its state to RS_DEAD and its handling thread is cancelled.
+   If everything goes well, the thread being cancelled will shift
+   the request into RS_COMPLETED state and it will be eventually removed
+   from the queue. Otherwise, if the thread is stuck for good and the
+   request remains in RS_DEAD state for more than time-to-live seconds
+   the daemon either tries to restart itself or aborts, depending on its
+   current watching mode.
+   Finally, a request in RS_COMPLETED state remains in queue for
+   request-cleanup-delay seconds, after which it is removed. */
+
 REQUEST *
 request_put(type, data, activefd, numpending)
         int type;
@@ -441,6 +462,7 @@ request_flush_list()
 				curreq->timestamp = curtime;
 				curreq->status = RS_HUNG;
 			}
+			request_count++;
 			prevreq = curreq;
 			curreq = curreq->next;
 			break;
@@ -457,9 +479,9 @@ request_flush_list()
 				pthread_cancel(curreq->child_id);
 				curreq->timestamp = curtime;
 			}
+			request_count++;
 			prevreq = curreq;
 			curreq = curreq->next;
-			request_count++;
 			break;
 
 		case RS_DEAD:

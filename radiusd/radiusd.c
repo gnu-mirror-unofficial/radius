@@ -218,6 +218,9 @@ main(argc, argv)
         else
                 progname++;
 
+        for (t = getmaxfd(); t >= 3; t--)
+                close(t);
+
         /* debug_flag can be set only from debugger.
            It means developer is taking control in his hands, so
            we won't modify any variables that could prevent him
@@ -335,9 +338,6 @@ main(argc, argv)
         if (radius_mode != MODE_DAEMON)
                 log_set_to_console();
         
-        for (t = getmaxfd(); t >= 3; t--)
-                close(t);
-
         /* Determine default port numbers for authentication and accounting */
         if (radius_port)
                 auth_port = radius_port;

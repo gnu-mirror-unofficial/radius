@@ -271,7 +271,8 @@ radius_run_filter(argc, argv, p)
 	pid_t  pid;
 	int    rightp[2], leftp[2];
 	struct passwd *pwd;
- 	   
+	int i;
+	
         pwd = getpwnam(exec_user);
         if (!pwd) {
                 radlog(L_ERR,
@@ -298,7 +299,12 @@ radius_run_filter(argc, argv, p)
 		close(0);
 		dup2(leftp[0], 0);
 		close(leftp[1]);
-                radius_change_uid(pwd);
+
+		/* Close unneded descripitors */
+		for (i = getmaxfd(); i > 1; i--)
+			close(i);
+
+		radius_change_uid(pwd);
 		execvp(argv[0], argv);
 		
                 /* Report error via syslog: we might not be able
@@ -347,16 +353,17 @@ typedef struct filter_symbol {
 	int line_num;
 	int  argc;   
         char **argv;           /* Invocation vector */
-	char *auth_input_fmt;  /* Format for input data -- authentication */
-	char *acct_input_fmt;  /* Format for input data -- accounting */
-	int wait_reply;
+	struct {
+		char *input_fmt;
+		int wait_reply;
+	} auth, acct;
 	/* Runtime data */
 	pid_t  pid;
 	size_t lines_input;
 	size_t lines_output;
 	FILE   *input;
 	FILE   *output;
-	/* FIXME: mutex */
+	pthread_mutex_t mutex; 
 } Filter_symbol;
 
 static Symtab *filter_tab;
@@ -386,6 +393,20 @@ _close_filter(data, sym)
 	return 0;
 }
 
+static void
+filter_lock(sym)
+	Filter_symbol *sym;
+{
+	Pthread_mutex_lock(&sym->mutex);
+}
+
+static void
+filter_unlock(sym)
+        Filter_symbol *sym;
+{
+	Pthread_mutex_unlock(&sym->mutex);
+}
+
 int
 filter_sigchild(pid, status)
 	pid_t pid;
@@ -408,6 +429,7 @@ filter_close(sym)
 	sym->pid = -1;
 }
 
+/* Note: on successful return the filter is always locked */
 static Filter_symbol *
 filter_open(name, req)
 	char *name;
@@ -420,6 +442,7 @@ filter_open(name, req)
 			   name);
 		return NULL;
 	}
+	filter_lock(sym);
 	if (sym->pid <= 0) {
 		int pipe[2];
 		sym->pid = radius_run_filter(sym->argc, sym->argv, pipe);
@@ -427,6 +450,7 @@ filter_open(name, req)
 			radlog_req(L_ERR|L_PERROR, req,
 				   _("cannot run filter `%s'"),
 				   name);
+			filter_unlock(sym);
 			return NULL;
 		}
 		sym->input  = fdopen(pipe[0], "r");
@@ -439,7 +463,9 @@ filter_open(name, req)
 		radlog_req(L_ERR|L_PERROR, req,
 			   _("filter `%s'"),
 			   name);
+		filter_unlock(sym);
 		filter_close(sym);
+		return NULL;
 	}
 	return sym;
 }
@@ -462,8 +488,10 @@ filter_write(sym, fmt, radreq)
 	struct obstack stack;
 	char *str;
 	
+	if (!fmt)
+		return -1;
+	
 	obstack_init(&stack);
-
 	pthread_cleanup_push(cleanup_obstack, &stack);
 	str = radius_xlate(&stack, fmt, radreq, NULL);
 	length = strlen(str);
@@ -486,52 +514,55 @@ filter_auth(name, req, reply_pairs)
 {
 	Filter_symbol *sym;
 	int rc = -1;
-	char *buf = NULL;
-	char *errp;
-	size_t size;
-	VALUE_PAIR *vp = NULL;
-	char buffer[1024];
-	
+
 	sym = filter_open(name, req);
 	if (!sym)
 		return -1;
-	if (filter_write(sym, sym->auth_input_fmt, req))
-		return -1;
 
-	if (!sym->wait_reply)
-		return 0;
-	
-        pthread_cleanup_push(filter_close, sym);
-	buf = fgets(buffer, sizeof buffer, sym->input);
-	pthread_cleanup_pop(0);
-	if (!buf) {
-		radlog(L_ERR|L_PERROR,
-		       "reading from filter %s",
-		       sym->name);
+	pthread_cleanup_push(filter_unlock, sym);
+	if (filter_write(sym, sym->auth.input_fmt, req)) {
+		rc = -1;
+	} else if (!sym->auth.wait_reply) {
+		rc = 0;
 	} else {
-		sym->lines_input++;
-		if (isdigit(*buf)) {
-			char *ptr;
-
-                	debug(1, ("%s > \"%s\"", sym->name, buffer));
-			rc = strtoul(buf, &ptr, 0);
-			if (userparse(ptr, &vp, &errp)) {
-				radlog(L_ERR,
-				       _("<stdout of %s>:%d: %s"),
-				       sym->name, sym->lines_output, errp);
-				avl_free(vp);
-				vp = NULL;
-			}
+		char *buf = NULL;
+		char buffer[1024];
+	
+        	pthread_cleanup_push(filter_close, sym);
+		buf = fgets(buffer, sizeof buffer, sym->input);
+		pthread_cleanup_pop(0);
+		if (!buf) {
+			radlog(L_ERR|L_PERROR,
+		       	       "reading from filter %s",
+		       	       sym->name);
+			rc = -1;
 		} else {
-			radlog(L_ERR,
-			       "filter %s: bad output: %s",
-			       sym->name, buf);
+			sym->lines_input++;
+			if (isdigit(*buf)) {
+				char *ptr;
+				VALUE_PAIR *vp = NULL;
+				char *errp;
+
+                		debug(1, ("%s > \"%s\"", sym->name, buffer));
+				rc = strtoul(buf, &ptr, 0);
+				if (userparse(ptr, &vp, &errp)) {
+					radlog(L_ERR,
+				       		_("<stdout of %s>:%d: %s"),
+				       		sym->name, sym->lines_output,
+                                                errp);
+					avl_free(vp);
+				} else
+                			avl_merge(reply_pairs, &vp);
+			} else {
+				radlog(L_ERR,
+			       		"filter %s: bad output: %s",
+			       		sym->name, buf);
+				rc = -1;
+			}
 		}
 	}
 
-        if (vp) 
-                avl_merge(reply_pairs, &vp);
-
+	pthread_cleanup_pop(1);
 	return rc;
 }
 
@@ -551,23 +582,27 @@ filter_acct(name, req)
 	sym = filter_open(name, req);
 	if (!sym)
 		return -1;
-	if (filter_write(sym, sym->acct_input_fmt, req))
-		return -1;
 
-	if (!sym->wait_reply)
-		return 0;
+	pthread_cleanup_push(filter_unlock, sym);
+	if (filter_write(sym, sym->acct.input_fmt, req)) 
+		rc = -1;
+	else if (sym->acct.wait_reply) {
+		/*FIXME*/;
+	} else
+		rc = 0;
 
-	/*FIXME*/
-	return 0;
+	pthread_cleanup_pop(1);
+	return rc;
 }
 	
 static int
 free_symbol_entry(sym)
         Filter_symbol *sym;
 {
-	efree(sym->auth_input_fmt);
-	efree(sym->acct_input_fmt);
+	efree(sym->auth.input_fmt);
+	efree(sym->acct.input_fmt);
 	argcv_free(sym->argc, sym->argv);
+	pthread_mutex_destroy(&sym->mutex);
 	if (sym->pid > 0)
 		filter_close(sym);
 	return 0;
@@ -609,7 +644,8 @@ filter_stmt_handler(argc, argv, block_data, handler_data)
 	memset(&filter_symbol, 0, sizeof filter_symbol);
 	filter_symbol.line_num = cfg_line_num;
 	filter_symbol.name = argv[1].v.string;
-	filter_symbol.wait_reply = 1;
+	filter_symbol.auth.wait_reply = 1;
+	filter_symbol.acct.wait_reply = 1;
 	return 0;
 }
 
@@ -633,10 +669,12 @@ filter_stmt_end(block_data, handler_data)
 		sym->line_num = filter_symbol.line_num;
 		sym->argc     = filter_symbol.argc;
 		sym->argv     = filter_symbol.argv;
-		sym->auth_input_fmt = estrdup(filter_symbol.auth_input_fmt);
-		sym->acct_input_fmt = estrdup(filter_symbol.acct_input_fmt);
-		sym->wait_reply = filter_symbol.wait_reply;
+		sym->auth.input_fmt = estrdup(filter_symbol.auth.input_fmt);
+		sym->acct.input_fmt = estrdup(filter_symbol.acct.input_fmt);
+		sym->auth.wait_reply = filter_symbol.auth.wait_reply;
+		sym->acct.wait_reply = filter_symbol.acct.wait_reply;
 		sym->pid = -1;
+		pthread_mutex_init(&sym->mutex, NULL);
 	}
 	return 0;
 }
@@ -687,15 +725,27 @@ _store_format_ptr(argc, argv, block_data, handler_data)
 	return 0;
 }
 
+static struct cfg_stmt filter_auth_stmt[] = {
+	{ "input-format", CS_STMT, NULL,
+	  _store_format_ptr, &filter_symbol.auth.input_fmt, NULL, NULL },
+	{ "wait-reply", CS_STMT, NULL,
+	  cfg_get_boolean, &filter_symbol.auth.wait_reply, NULL, NULL },
+	{ NULL },
+};
+
+static struct cfg_stmt filter_acct_stmt[] = {
+	{ "input-format", CS_STMT, NULL,
+	  _store_format_ptr, &filter_symbol.acct.input_fmt, NULL, NULL },
+	{ "wait-reply", CS_STMT, NULL,
+	  cfg_get_boolean, &filter_symbol.acct.wait_reply, NULL, NULL },
+	{ NULL },
+};
+
 /* Configuration issues */
 static struct cfg_stmt filter_stmt[] = {
 	{ "exec-path", CS_STMT, NULL, exec_path_handler, NULL, NULL, NULL },
-	{ "auth-input-format", CS_STMT, NULL,
-	  _store_format_ptr, &filter_symbol.auth_input_fmt, NULL, NULL },
-	{ "acct-input-format", CS_STMT, NULL,
-	  _store_format_ptr, &filter_symbol.acct_input_fmt, NULL, NULL },
-	{ "wait-reply", CS_STMT, NULL,
-	  cfg_get_boolean, &filter_symbol.wait_reply, NULL, NULL },
+	{ "auth", CS_BLOCK, NULL, NULL, NULL, filter_auth_stmt, NULL },
+	{ "acct", CS_BLOCK, NULL, NULL, NULL, filter_acct_stmt, NULL },
 	{ NULL },
 };
 	

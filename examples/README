@@ -19,7 +19,6 @@ comos.rw	    Handle the use of Start/Stop accounting packets
 		    instead of Acct-Status-Type=Accounting-{On|Off}
 filter.rw	    Sample filter input processor. Used by the testsuite.
 jetstream.rw        Handle various anomalies of Jetstream 8500
-nas_ip.rw	    If the request lacks NAS-IP-Address attribute, add it.
 nt.rw               Decode compound usernames sent by some Windows NT
                     stations
 

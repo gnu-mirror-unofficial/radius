@@ -54,8 +54,8 @@ static PROXY_ID *proxy_id;
 static void random_vector(char *vector);
 static VALUE_PAIR *proxy_addinfo(RADIUS_REQ *radreq, int proxy_id, UINT4 remip);
 void proxy_addrequest(RADIUS_REQ *radreq);
-static void passwd_recode(char *secret_key, char *vector,
-			  char *pw_digest, VALUE_PAIR *pair);
+static void passwd_recode(VALUE_PAIR *pair,
+			  char *old_secret, char *new_secret, char *vector);
 
 
 /* ************************************************************************* */
@@ -167,14 +167,14 @@ random_vector(vector)
 }
 
 void
-rad_send_request(fd, ipaddr, port, id, code, pw_digest, secret_key, request)
+rad_send_request(fd, ipaddr, port, id, code, old_secret, new_secret, request)
 	int   fd;
 	UINT4 ipaddr;
 	int   port;
 	int   id;
 	int   code;
-	char  *pw_digest;
-	char  *secret_key;
+	char  *old_secret;
+	char  *new_secret;
 	VALUE_PAIR *request;
 {
 	AUTH_HDR		*auth;
@@ -240,8 +240,9 @@ rad_send_request(fd, ipaddr, port, id, code, pw_digest, secret_key, request)
 			 *	Re-encode passwd on the fly.
 			 */
 			if (vp->attribute == DA_PASSWORD)
-				passwd_recode(secret_key, vector,
-					      pw_digest, vp);
+				passwd_recode(vp, old_secret, new_secret,
+					      vector);
+			
                         checkovf(vp->strlength + 2);
 
 			*ptr++ = vp->strlength + 2;
@@ -278,9 +279,9 @@ rad_send_request(fd, ipaddr, port, id, code, pw_digest, secret_key, request)
 	 *	and put it in the vector.
 	 */
 	if (auth->code != PW_AUTHENTICATION_REQUEST) {
-		len = strlen(secret_key);
+		len = strlen(new_secret);
 		if (total_length + len < sizeof(i_send_buffer)) {
-			strcpy(send_buffer + total_length, secret_key);
+			strcpy(send_buffer + total_length, new_secret);
 			md5_calc(auth->vector, send_buffer, total_length+len);
 		}
 	}
@@ -342,48 +343,18 @@ proxy_addinfo(radreq, proxy_id, remip)
  *	Decode a password and encode it again.
  */
 static void
-passwd_recode(secret_key, vector, pw_digest, pass_pair)
-	char *secret_key;
-	char *vector;
-	char *pw_digest;
+passwd_recode(pass_pair, old_secret, new_secret, vector)
 	VALUE_PAIR *pass_pair;
+	char *old_secret;
+	char *new_secret;
+	char *vector;
 {
-	char	passtmp[AUTH_PASS_LEN];
-	char	passwd[AUTH_PASS_LEN];
-	char	md5buf[256];
-	int	i;
-	int	len;
-
-	/*
-	 * Decode. First fixup the password padding it with
-	 * zeroes to next 16-character boundary
-	 */
-	memset(passwd, 0, AUTH_PASS_LEN);
-	memcpy(passwd, pass_pair->strvalue, AUTH_PASS_LEN);
-
-	for(i = 0 ; i < AUTH_PASS_LEN; i++)
-		passwd[i] ^= pw_digest[i];
-
-	/*
-	 *	Encode with new secret.
-	 */
-	memset(passtmp, 0, sizeof(passtmp));
-	len = strlen(secret_key);
-	strcpy(md5buf, secret_key);
-	memcpy(md5buf + len, vector, AUTH_VECTOR_LEN);
-	md5_calc(passtmp, md5buf, len + AUTH_VECTOR_LEN);
-	for (i = 0; i < AUTH_PASS_LEN; i++)
-		passtmp[i] ^= passwd[i];
-
-	/*
-	 *	Copy newly encoded password back to
-	 *	where we got it from.
-	 */
-	if (pass_pair->strlength < AUTH_PASS_LEN) {
-		free_string(pass_pair->strvalue);
-		pass_pair->strvalue = alloc_string(AUTH_PASS_LEN);
-	}
-	memcpy(pass_pair->strvalue, passtmp, AUTH_PASS_LEN);
+	char	password[AUTH_STRING_LEN];
+	decrypt_password(password, pass_pair, vector, old_secret);
+	free_string(pass_pair->strvalue);
+	encrypt_password(pass_pair, password, vector, new_secret);
+	/* Don't let the cleantext hang around */
+	memset(password, 0, AUTH_STRING_LEN);
 }
 
 /* ************************************************************************* */
@@ -411,7 +382,6 @@ proxy_send(radreq, activefd)
 	CLIENT			*client;
 	short			rport;
 	char                    *what;
-	char			pw_digest[16];
 	char                    *secret_key;
 	u_char                  proxy_id;
 	
@@ -492,11 +462,11 @@ proxy_send(radreq, activefd)
 	switch (radreq->code) {
 	case PW_AUTHENTICATION_REQUEST:
 		what = _("authentication");
-		rc = calc_digest(pw_digest, radreq) != 0;
+		rc = 0;
 		break;
 	case PW_ACCOUNTING_REQUEST:
 		what = _("accounting");
-		rc = calc_acctdigest(pw_digest, radreq) < 0;
+		rc = calc_acctdigest(radreq) < 0;
 		break;
 	default:
 		what = _("unknown");
@@ -545,7 +515,8 @@ proxy_send(radreq, activefd)
 	 */
 	rad_send_request(activefd, realm->ipaddr, rport,
 			 proxy_id, radreq->code,
-			 pw_digest, secret_key,
+			 radreq->secret,
+			 secret_key,
 			 radreq->request);
 	
 	/*
@@ -747,7 +718,7 @@ proxy_receive(radreq, activefd)
 	radreq->udp_port     = oldreq->udp_port;
 	radreq->id           = oldreq->id;
 	memcpy(radreq->vector, oldreq->vector, sizeof radreq->vector);
-	memcpy(radreq->secret, oldreq->secret, sizeof radreq->secret);
+	radreq->secret       = oldreq->secret;
 	radreq->request      = avl_dup(oldreq->request);
 
 	/* Proxy support fields */

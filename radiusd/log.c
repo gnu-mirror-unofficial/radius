@@ -305,6 +305,7 @@ void
 channel_free(chan)
 	Channel *chan;
 {
+	efree(chan->name);
 	if (chan->mode == LM_FILE)
 		efree(chan->id.file);
 	free_entry(chan);
@@ -337,11 +338,23 @@ log_release(chan)
 	int emerg, alert, crit;
 	
 	for (cp = chanlist; cp; prev = cp, cp = cp->next)
-		if (cp == chan) {
-			channel_free_list(chan);
+		if (cp == chan)
+			break;
+
+	while (cp) {
+		Channel *next = cp->next;
+		if (cp->options & LO_PERSIST) {
 			if (prev)
-				prev->next = NULL;
+				prev->next = cp;
+			prev = cp;
+		} else {
+			channel_free(cp);
 		}
+		cp = next;
+	}
+	if (prev)
+		prev->next = NULL;
+
 	/* Make sure we have at least a channel for categories below
 	   L_CRIT */
 	emerg = L_EMERG;
@@ -383,7 +396,7 @@ register_channel(chan)
 	FILE *fp;
 	Channel *channel;
 	char *filename;
-	
+
 	if (chan->mode == LM_FILE) {
 		if (strcmp(chan->id.file, "stdout")) {
 			filename = mkfilename(radlog_dir ?
@@ -424,7 +437,7 @@ register_category(cat, pri, chanlist)
 {
 	Channel *chan;
 	int primask;
-	
+
 	if (pri == -1)
 		pri = L_UPTO(L_DEBUG);
 	
@@ -469,7 +482,7 @@ log_set_to_console()
 	chan.mode = LM_FILE;
 	chan.name = "stdout";
 	chan.id.file = "stdout";
-	chan.options = LO_CAT|LO_PRI;
+	chan.options = LO_CAT|LO_PRI|LO_PERSIST;
 	register_channel(&chan);
 
 	chanlist.next = NULL;

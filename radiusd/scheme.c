@@ -368,7 +368,6 @@ scheme_generic_call(fun, procname, req, user_check, user_reply_ptr)
                 atime.tv_sec = now.tv_sec + 1;
                 atime.tv_nsec = 0;
                 debug(50, ("APP: Waiting"));
-//              pthread_cond_timedwait(&p->cond, &p->mutex, &atime);
                 pthread_cond_wait(&p->cond, &p->mutex);
         }
         

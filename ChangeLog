@@ -9,7 +9,7 @@
 	* radlib/dict.c: Likewise.
 	* radiusd/files.c: Likewise. Added checks for maximum number of
 	fields, where applicable. Possibly should use nfields() from
-	fict.c for this.
+	dict.c for this.
 	Use envar_parse_argcv instead of envar_parse.
 	* radlib/nas.c: Likewise. 
 	

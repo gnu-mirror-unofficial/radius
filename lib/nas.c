@@ -23,25 +23,22 @@
 #include <radius.h>
 #include <checkrad.h>
 
-static NAS  *naslist;      /* raddb/naslist */
+static RAD_LIST /* of NAS */ *naslist;      /* raddb/naslist */
 
 /* ****************************************************************************
  * raddb/naslist
  */
 
 /* Free a NAS list */
-static void
-nas_free_list(NAS *list)
+static int
+_nas_mem_free(void *item, void *data ARG_UNUSED)
 {
-        NAS *next;
-
-        while (list) {
-                next = list->next;
-                grad_envar_free_list(&list->args);
-                grad_free(list);
-                list = next;
-        }
+	NAS *p = item;
+	grad_envar_free_list(&p->args);
+	grad_free(p);
+	return 0;
 }
+
 
 /*
  * parser
@@ -78,12 +75,11 @@ read_naslist_entry(void *unused ARG_UNUSED, int fc, char **fv, LOCUS *loc)
                 nas.args = grad_envar_parse_argcv(fc-3, &fv[3]);
         
         nasp = grad_emalloc(sizeof(NAS));
-
+	
         memcpy(nasp, &nas, sizeof(nas));
-
-        nasp->next = naslist;
-        naslist = nasp;
-        
+	if (!naslist)
+		naslist = grad_list_create();
+	grad_list_prepend(naslist, nasp);
         return 0;
 }
 
@@ -93,9 +89,7 @@ read_naslist_entry(void *unused ARG_UNUSED, int fc, char **fv, LOCUS *loc)
 int
 grad_nas_read_file(char *file)
 {
-        nas_free_list(naslist);
-        naslist = NULL;
-
+	grad_list_destroy(&naslist, _nas_mem_free, NULL);
         return grad_read_raddb_file(file, 1, read_naslist_entry, NULL);
 }
 
@@ -108,14 +102,18 @@ grad_nas_lookup_name(char *name)
 {
         NAS *nas;
         NAS *defnas = NULL;
-        
-        for (nas = naslist; nas; nas = nas->next) {
+        ITERATOR *itr = iterator_create(naslist);
+
+	if (!itr)
+		return NULL;
+	for (nas = iterator_first(itr); nas; nas = iterator_next(itr)) {
                 if (nas->netdef.ipaddr == 0 && nas->netdef.netmask == 0)
                         defnas = nas;
                 else if (strcmp(nas->shortname, name) == 0
                          || strcmp(nas->longname, name) == 0)
                         break;
         }
+        iterator_destroy(&itr);
         return nas ? nas : defnas;
 }
 
@@ -123,14 +121,17 @@ grad_nas_lookup_name(char *name)
 NAS *
 grad_nas_lookup_ip(UINT4 ipaddr)
 {
-        NAS *nas;
-        NAS *defnas = NULL;
-        
-        for (nas = naslist; nas; nas = nas->next) {
+        NAS *nas = NULL;
+        ITERATOR *itr = iterator_create(naslist);
+
+	if (!itr)
+		return NULL;
+	for (nas = iterator_first(itr); nas; nas = iterator_next(itr)) {
                 if (grad_ip_in_net_p(&nas->netdef, ipaddr))
                         break;
         }
-        return nas ? nas : defnas;
+	iterator_destroy(&itr);
+        return nas;
 }
 
 
@@ -185,11 +186,9 @@ grad_nas_request_to_name(const RADIUS_REQ *radreq, char *buf, size_t size)
         return grad_ip_gethostname(ipaddr, buf, size);
 }
 
-NAS *
-grad_nas_next(NAS *p)
+ITERATOR *
+grad_nas_iterator()
 {
-        if (!p)
-                return naslist;
-        return p->next;
+	return iterator_create(naslist);
 }
-        
+

@@ -175,8 +175,10 @@ radclient_send(config, port_type, code, pair)
                         FD_ZERO(&readfds);
                         FD_SET(sockfd, &readfds);
                         if (select(sockfd+1, &readfds, NULL, NULL, &tm) < 0) {
-                                if (errno == EINTR)
+                                if (errno == EINTR) {
+					i--;
                                         continue;
+				}
                                 radlog(L_NOTICE, _("select() interrupted"));
                                 break;
                         }

@@ -52,7 +52,6 @@
 	extern void enable_usr_dbg();
 	static char *addstring();
 	static char *addquote();
-	static int backslash(int c);
 	
 	static struct obstack stack;
 
@@ -250,13 +249,3 @@ users_sync()
 	}
 }
 
-int
-backslash(c)
-        int c;
-{
-	static char transtab[] = "b\bf\fn\nr\rt\t";
-	if (strchr(transtab, c))
-		return strchr(transtab, c)[1];
-        return c;
-}
-	

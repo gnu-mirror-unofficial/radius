@@ -2658,6 +2658,8 @@ snmp_decode(SNMP_REQ *req, u_char *buf, size_t len)
         int comm_len;
         char ipbuf[DOTTED_QUAD_LEN];
         
+        log_open(L_SNMP);
+	
         if ((pdu = snmp_pdu_create(0)) == NULL) {
                 radlog(L_ERR,
                        _("can't create SNMP PDU: %s"),
@@ -2744,7 +2746,6 @@ snmp_req_respond(REQUEST *request)
         struct snmp_pdu *pdu;
         int len;
 
-        log_open(L_SNMP);
         pdu = snmp_agent_response(req->pdu, req->access);
         if (pdu) {
                 session.version = SNMP_VERSION_1;

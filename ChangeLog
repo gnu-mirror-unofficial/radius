@@ -1,3 +1,12 @@
+2003-07-16  Sergey Poznyakoff 
+
+	* radiusd/radck.c (fix_check_pairs): Take into account
+	eventual CHAP-Password for Auth-Type=Local. Thanks to Cornel
+	Cristea for reporting.
+	* radiusd/exec.c (radius_exec_program): Bugfix. Close stdout
+	in child process. Thanks to Dale <lnxus@yahoo.com> for
+	help in tracing the bug.	
+
 2003-07-15  Sergey Poznyakoff 
 
 	* radiusd/config.y (_get_value): Bugfix. Coerce CFG_NETWORK

@@ -24,6 +24,7 @@
 #include <radius.h>
 #include <radpaths.h>
 #include <signal.h>
+#include <cfg.h>
 
 /* Debugging macros */
 #define Pthread_mutex_lock(m) \
@@ -43,19 +44,6 @@
 /* Server data structures */
 struct radutmp; /* declared in radutmp.h */
 struct obstack;
-
-typedef struct hostdecl HOSTDECL;
-struct hostdecl {
-        HOSTDECL *next;
-        UINT4    ipaddr;
-        UINT4    port;
-};
-
-typedef struct {
-        int checkrad_assume_logged;
-        int max_requests;
-        char *exec_user;
-} Config;
 
 enum reload_what {
         reload_config,
@@ -262,16 +250,17 @@ typedef struct snmp_req {
  *      Global variables.
  */
 extern int radius_mode;
-extern Config config;
 extern int debug_flag;
 extern int auth_detail;
 extern int acct_detail;
 extern int strip_names;
+extern int checkrad_assume_logged;
+extern int max_requests;
+extern char *exec_user;
 extern UINT4 expiration_seconds;
 extern UINT4 warning_seconds;
 extern int use_dbm;
 extern UINT4 myip;
-extern UINT4 warning_seconds;
 extern int auth_port;
 extern int acct_port;
 extern int suspend_flag;
@@ -292,6 +281,7 @@ extern u_int scheme_task_timeout;
 extern int snmp_port;
 extern char *server_id;
 extern Server_stat server_stat;
+extern struct cfg_stmt snmp_stmt[];
 #endif
 
 /*
@@ -313,8 +303,6 @@ void rad_thread_init();
 int rad_flush_queues();
 void schedule_restart();
 void rad_mainloop();
-void listen_auth(HOSTDECL *host);
-void listen_acct(HOSTDECL *host);
 void rad_req_drop(int type, RADIUS_REQ *req, RADIUS_REQ *orig, int fd,
 		  char *status_str);
 void socket_list_iterate(void (*fun)());
@@ -416,6 +404,7 @@ Community * snmp_find_community(char *);
 void snmp_add_community(char *str, int access);
 void snmp_free_communities();
 void snmp_sort_nas_stat();
+int snmp_stmt_begin(void *data, void *up_data);
 #endif
 
 /* stat.c */
@@ -449,9 +438,14 @@ char *radius_xlate(struct obstack *obp, char *str,
 
 /* log.c */
 void sqllog __PVAR((int status, char *msg, ...));
+int logging_stmt_handler(int argc, cfg_value_t *argv, void *block_data,
+			 void *handler_data);
+int logging_stmt_end(void *block_data, void *handler_data);
+int logging_stmt_begin(int finish, void *block_data, void *handler_data);
+extern struct cfg_stmt logging_stmt[];
 
 /* rewrite.y */
-extern int rewrite_stack_size;
+extern struct cfg_stmt rewrite_stmt[];
 int run_rewrite(char *name, VALUE_PAIR *req);
 int parse_rewrite(char *name);
 int va_run_init __PVAR((char *name, VALUE_PAIR *request, char *typestr, ...));
@@ -476,6 +470,9 @@ void scheme_read_eval_loop();
 void scheme_before_reconfig();
 void scheme_after_reconfig();
 void start_guile();
+int guile_cfg_handler(int argc, cfg_value_t *argv,
+		      void *block_data, void *handler_data);
+extern struct cfg_stmt guile_stmt[];
 
 /* request.c */
 typedef void (*request_thread_command_fp)(void *);

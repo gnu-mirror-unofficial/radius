@@ -477,15 +477,6 @@ void app_setup();
         
 #define RADIUS_DEBUG_BUFFER_SIZE 1024
 
-typedef struct {
-        int type;
-        union {
-                char string[256];
-                UINT4 ipaddr;
-                int number;
-                int bool;
-        } v;
-} Value;
 
 typedef struct channel Channel;
 

@@ -272,7 +272,7 @@ flush_seg(bufp, seg, ptr, runlen)
    preceeded by a backslash (\%03o).
    Return number of characters, _output_ to BUF. If BUF is NULL, no
    printing is done, but the number of characters that would be output
-   is returned. */
+   (not counting null terminator) is returned. */
 
 int
 format_string_visual(buf, runlen, str, len)
@@ -304,8 +304,13 @@ format_string_visual(buf, runlen, str, len)
 		len--;
 		ptr++;
 	}
-	if (seg) 
-		outbytes += flush_seg(&buf, seg, ptr, runlen);
+	/* Make last segment printable no matter how many chars it contains */
+	if (seg) {
+		outbytes += ptr - seg;
+		if (buf)
+			while (seg < ptr) 
+				*buf++ = *seg++;
+	}
 	if (buf)
 		*buf++ = 0;
 	return outbytes;
@@ -353,10 +358,13 @@ format_pair(pair)
 
 	switch (pair->eval ? TYPE_STRING : pair->type) {
 	case TYPE_STRING:
-		if (pair->attribute != DA_VENDOR_SPECIFIC)
+		if (pair->attribute != DA_VENDOR_SPECIFIC) {
+			int len = strlen (pair->strvalue);
+			if (len != pair->strlength-1)
+				len = pair->strlength;
 			format_string_visual(buf2, 4,
-					     pair->strvalue, pair->strlength);
-		else if (pair->strlength < 6) 
+					     pair->strvalue, len);
+		} else if (pair->strlength < 6) 
 			snprintf(buf2, sizeof(buf2),
 				 "[invalid length: %d]", pair->strlength);
 		else {

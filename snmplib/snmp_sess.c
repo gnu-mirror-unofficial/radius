@@ -149,7 +149,7 @@ snmp_session_create(community, host, port, cfn, closure)
         sp->retries = snmp_def.retries;
         sp->timeout = snmp_def.timeout;
         
-        len = strlen(host);
+        len = strlen(host) + 1;
         sp->remote_host = snmp_alloc(len);
         if (!sp->remote_host) {
                 SNMP_SET_ERRNO(E_SNMP_NOMEM);

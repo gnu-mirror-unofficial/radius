@@ -87,10 +87,10 @@ attr_to_str(obp, request, attr, defval)
 	
 	if ((pair = avl_find(request, attr->value)) == NULL) {
 		if (!defval) {
-		if (attr->type == PW_TYPE_STRING)
-				defval = ":-";
+			if (attr->type == PW_TYPE_STRING)
+				defval = "-";
 			else
-				defval = ":-0";
+				defval = "-0";
 		}
 		
 		switch (*defval++) {
@@ -239,7 +239,7 @@ parse_dict_attr(p, endp, defval)
 					break;
 			}
 			if (*p == 0)
-			return NULL;
+				return NULL;
 
 			size = p - start + 1;
 			*defval = emalloc(size);

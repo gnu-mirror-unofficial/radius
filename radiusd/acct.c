@@ -260,7 +260,7 @@ rad_acct_system(radreq, dowtmp)
 
 	/* Add any specific attributes for this username. */
 	if (!rb_record && vp != NULL) {
-		hints_setup(radreq->request);
+		hints_setup(radreq);
 		presuf_setup(radreq->request);
 	}
 	time(&t);
@@ -602,11 +602,8 @@ rad_acct_ext(radreq)
 {
 	VALUE_PAIR *p;
 
-	if (p = avl_find(radreq->request, DA_ACCT_EXT_PROGRAM)) {
-		radius_exec_program(p->strvalue,
-				    radreq->request, NULL,
-				    0, NULL);
-	}
+	if (p = avl_find(radreq->request, DA_ACCT_EXT_PROGRAM)) 
+		radius_exec_program(p->strvalue, radreq, NULL, 0, NULL);
 	return 0;
 }
 

@@ -62,6 +62,8 @@ static struct argp_option options[] = {
 	 "ask for confirmation before zapping", 0},
         {"log-directory", 'l', "DIR", 0,
 	 "set logging directory", 0},
+	{"file", 'f', "FILE", 0,
+	 "operate on FILE instead of /var/log/radutmp", 0},
         {"nas", 'n', "NASNAME", 0,
 	 "zap user from given NAS", 0},
         {"port", 'p', "NUMBER", 0,
@@ -85,6 +87,9 @@ parse_opt (key, arg, state)
 		break;
 	case 'l':
 		radlog_dir = arg;
+		break;
+	case 'f':
+		radutmp_path = arg;
 		break;
 	case 'n':
 		args->nas = arg;

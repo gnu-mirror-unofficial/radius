@@ -1,7 +1,7 @@
 ;; This is a sample configuration file for radctl and session
 ;; scripts.
 (set! rad-server-list
-      '(("local" "localhost" "foobar" @AUTH_PORT@ @ACCT_PORT@ @CNTL_PORT@)))
+      '(("local" "localhost" "foobar" @AUTH_PORT@ @ACCT_PORT@)))
 (rad-client-timeout 3)
 (rad-client-retry 1)
 (rad-select-server "local")

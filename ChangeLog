@@ -1,3 +1,48 @@
+2002-06-12  Sergey Poznyakoff  
+
+	Fixed all varargs declarations (stdarg vs. varargs).
+	Also a couple of bugfixes.
+	
+	* include/log.h: Removed
+	* include/Makefile.am: Removed log.h
+	* include/radius.h: Added logging stuff from log.h
+
+	* include/sysdep.h: Check STDC_HEADERS and include either
+	  stdarg.h or varargs.h. Define macro __PVAR for varargs
+	  prototyping.
+	* include/radiusd.h: Proper prototypes for varargs functions
+	* radtest/radtest.h: Likewise.
+	* lib/md5crypt.c (md5crypt): Fixed declaration.
+
+	* lib/printutmp.c (output_hostname): Bugfix.
+	* radscm/rscm_rewrite.c (rad_rewrite_execute_string): Fixed `type'
+	  declaration.
+	
+	* lib/mem.c: Removed include <log.h>
+	* lib/sysdep.c: Likewise.
+	* radiusd/config.kw: Likewise.
+	* radiusd/menu.c: Likewise.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/stat.c: Likewise.
+	* radlast/radlast.c: Likewise.
+	* radscm/rscm_radlog.c: Likewise.
+	* radtest/main.c: Likewise.
+	* raduse/raduse.h: Likevise.
+	* scripts/debugmod.m4: Likevise.
+	
+	* radiusd/snmpserv.c: Removed include <varargs.h>
+	* radiusd/pam.c: Include <stdlib.h>
+	
+	* radiusd/log.c: Changed declarations of varargs functions.
+	* client/pam_radius/pam_radius.c: Likevise.
+	* lib/applog.c: Likevise.
+	* lib/debug.c: Likevise.
+	* lib/insist.c: Likevise.
+	* lib/leakdetect.c: Likevise.
+	* lib/logger.c: Likevise.
+	* radiusd/rewrite.y: Likevise.	
+	* radtest/gram.y: Likevise.
+	
 2002-06-12  Sergey Poznyakoff 
 
 	* TODO: Updated.

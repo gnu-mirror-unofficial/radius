@@ -328,7 +328,7 @@ format_string_visual(buf, runlen, str, len)
                                 seg = NULL;
                         }
                         if (buf) {
-                                sprintf(buf, "\\%03o", *ptr);
+                                sprintf(buf, "\\%03o", *(u_char*)ptr);
                                 buf += 4;
                         }
                         outbytes += 4;

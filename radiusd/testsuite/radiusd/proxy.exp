@@ -26,6 +26,10 @@ radius_test "send auth 1 User-Name = \"reject@remote\"" "expect 3"
 radius_test "send auth 1 User-Name = \"local@remote\" User-Password = \"guessme\"" "expect 2" 
 radius_test "send auth 1 User-Name = \"local@remote\" User-Password = \"bad\"" "expect 3" 
 radius_test "send auth 1 User-Name = \"crypt@remote\" User-Password = \"hamlet\"" "expect 2" 
+radius_test "send auth 1 User-Name = \"chap@remote\" \
+             CHAP-Password = \"\\001\\357\\213\\343\\126\\266\\311\\072\\202\\020\\176\\017\\121\\101\\227\\155\\244\" \
+             CHAP-Challenge = \"0123456789abcdef\"" \
+             "expect 2"
 
 radius_test "send auth 1 User-Name = \"accept@iGnoReCaSE\"" "expect 2"  
 

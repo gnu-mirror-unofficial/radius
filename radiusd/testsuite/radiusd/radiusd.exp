@@ -31,6 +31,11 @@ radius_test "send auth 1 User-Name = \"local\" User-Password = \"guessme\"" "exp
 radius_test "send auth 1 User-Name = \"local\" User-Password = \"bad\"" "expect 3" 
 radius_test "send auth 1 User-Name = \"crypt\" User-Password = \"hamlet\"" "expect 2" 
 
+radius_test "send auth 1 User-Name = \"chap\" \
+             CHAP-Password = \"\\001\\357\\213\\343\\126\\266\\311\\072\\202\\020\\176\\017\\121\\101\\227\\155\\244\" \
+             CHAP-Challenge = \"0123456789abcdef\"" \
+             "expect 2"
+
 #clone_output "Checking Reply Attributes"
 radius_test "send auth 1 User-Name = \"reply\" User-Password = \"guessme\"" "expect 2 Service-Type = 2 Framed-Protocol = 1" 
 radius_test "send auth 1 User-Name = \"framed-ip\" NAS-Port-Id = 10" "expect 2 Service-Type = 2 Framed-Protocol = 1 Framed-IP-Address = 127.0.0.11" 

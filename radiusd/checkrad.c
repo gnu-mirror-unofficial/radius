@@ -111,14 +111,15 @@ int
 compare(struct check_instance *checkp, char *str)
 {
 	UINT4 result;
-	/* FIXME: what to do if invoke fails? */
-	rewrite_invoke(Integer, &result,
-		       checkp->func, NULL,
-		       "ssis",
-		       str,
-		       checkp->name,
-		       checkp->port,
-		       checkp->sid);
+
+	if (rewrite_invoke(Integer, &result,
+			   checkp->func, NULL,
+			   "ssis",
+			   str,
+			   checkp->name,
+			   checkp->port,
+			   checkp->sid))
+		return -1;
 	return result;
 }
 

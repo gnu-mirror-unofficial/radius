@@ -1,21 +1,35 @@
-After `make install' Emacs should be able to use radius-mode when
-editing appropriate configuration files. You will have to add
-the following to your .emacs or site-start file:
+These are Emacs major modes for editing following configuration files:
 
+	radius-mode.el		raddb/users
+				raddb/hints
+				raddb/huntgroups
 
-(autoload 'radius-mode "radius-mode")
+	radconf-mode.el		raddb/config
+
+After `make install' Emacs should be able to use radius-mode and
+radconf-mode when editing appropriate configuration files. You will
+have to add the following to your .emacs or site-start file:
+
+(autoload 'radius-mode "Radius-mode")
+(autoload 'radconf-mode "Radius-Config")
+
 (setq radius-db-path <path-to-raddb-directory>)
 (setq auto-mode-alist (append auto-mode-alist
                        '(("raddb/users$" . radius-mode)
                          ("raddb/hints$" . radius-mode)
-                         ("raddb/huntgroups$" . radius-mode))))
+                         ("raddb/huntgroups$" . radius-mode)
+                         ("raddb/config$" . radconf-mode))))
 
 Replace <path-to-raddb-directory> with actual path to raddb directory.
 It can be obtained from the output of radiusd -v.
 
 You may also wish to modify the following variables:
 
+(these control indentation of raddb/users,hints and huntgroups)
    radius-initial-pair-indent -- Amount of indentation for the first A/V
                                  pair in the list.
-   radius-cont-pair-indent    -- Additional amount of indentation for the
-                                 subsequent A/V pairs in the list
+   radius-cont-pair-indent    -- Additional amount of indentation for any
+                                 subsequent A/V pairs in the list.
+
+(this controls indentation of raddb/config) 
+   radconf-level-indent       -- Amount of indentation per block nesting level.

@@ -38,8 +38,8 @@ static char rcsid[] =
 #include <ctype.h>
 
 static void sql_check_config(SQL_cfg *);
-static struct sql_connection *attach_sql_connection(int type, RADIUS_REQ *req);
-static void detach_sql_connection(int type, RADIUS_REQ *req);
+static struct sql_connection *attach_sql_connection(int type);
+static void detach_sql_connection(int type);
 
 static char *getline();
 static int get_boolean(char *str, int *retval);
@@ -531,10 +531,25 @@ rad_sql_init()
         return 0;
 }
 
+static void
+rad_sql_shutdown_thread(unused)
+	void *unused;
+{
+	struct sql_connection *conn;
+
+	debug(10, ("shutting down sql connections"));
+	conn = pthread_getspecific(sql_conn_key[SQL_AUTH]);
+	if (conn)
+		disp_sql_disconnect(SQL_AUTH, conn);
+	conn = pthread_getspecific(sql_conn_key[SQL_ACCT]);
+	if (conn)
+		disp_sql_disconnect(SQL_ACCT, conn);
+}
+
 void
 rad_sql_shutdown()
 {
-        /*FIXME*/
+	request_thread_command(rad_sql_shutdown_thread, NULL);
 }
 
 void
@@ -610,13 +625,12 @@ sql_flush()
         radlog(L_NOTICE,
                _("SQL configuration changed: closing existing connections"));
         rad_flush_queues();
+	rad_sql_shutdown();
 }
 
-/*FIXME: radreq not needed */
 struct sql_connection *
-attach_sql_connection(type, radreq)
+attach_sql_connection(type)
         int type;
-        RADIUS_REQ *radreq;
 {
         struct sql_connection *conn;
         time_t now;
@@ -628,7 +642,6 @@ attach_sql_connection(type, radreq)
 
                 conn = alloc_entry(sizeof(struct sql_connection));
                 conn->owner = NULL;
-                conn->delete_on_close = !sql_cfg.keepopen;
                 conn->connected = 0;
                 conn->last_used = now;
                 conn->type = type;
@@ -640,23 +653,22 @@ attach_sql_connection(type, radreq)
                 debug(1, ("connection %d timed out: reconnect", type));
                 disp_sql_reconnect(sql_cfg.interface, type, conn);
         }
+	conn->delete_on_close = !sql_cfg.keepopen;
         conn->last_used = now;
-        debug(1, ("attaching %p->%p [%d]", radreq, conn, type));
+        debug(1, ("attaching %p [%d]", conn, type));
         return conn;
 }
 
-/*FIXME: radreq not needed */
 void
-detach_sql_connection(type, radreq)
+detach_sql_connection(type)
         int type;
-        RADIUS_REQ *radreq;
 {
         struct sql_connection *conn;
 
         conn = pthread_getspecific(sql_conn_key[type]);
         if (!conn)
                 return;
-        debug(1, ("detaching %p->%p [%d]", radreq, conn, type));
+        debug(1, ("detaching %p [%d]", conn, type));
         if (conn->delete_on_close) {
                 debug(1, ("destructing sql connection %p",
                           conn));
@@ -667,13 +679,14 @@ detach_sql_connection(type, radreq)
         }
 }
 
+/*ARGSUSED*/
 void
 rad_sql_cleanup(type, req)
         int type;
-        RADIUS_REQ *req;
+        RADIUS_REQ *req; /* Unused */
 {
         if (sql_cfg.active[type])
-                detach_sql_connection(type, req);
+                detach_sql_connection(type);
 }
 
 /*
@@ -701,7 +714,7 @@ rad_sql_acct(radreq)
         }
         status = pair->lvalue;
 
-        conn = attach_sql_connection(SQL_ACCT, radreq);
+        conn = attach_sql_connection(SQL_ACCT);
         obstack_init(&stack);
 	pthread_cleanup_push(rad_sql_thread_cleanup, &stack);
 
@@ -817,7 +830,7 @@ rad_sql_pass(req, authdata)
         query = radius_xlate(&stack, sql_cfg.auth_query, req, NULL);
         avl_delete(&req->request, DA_AUTH_DATA);
         
-        conn = attach_sql_connection(SQL_AUTH, req);
+        conn = attach_sql_connection(SQL_AUTH);
         pthread_cleanup_push(rad_sql_thread_cleanup, &stack);
         mysql_passwd = disp_sql_getpwd(sql_cfg.interface, conn, query);
         pthread_cleanup_pop(0);
@@ -845,7 +858,7 @@ rad_sql_checkgroup(req, groupname)
         if (sql_cfg.doauth == 0 || sql_cfg.group_query == NULL) 
                 return -1;
 
-        conn = attach_sql_connection(SQL_AUTH, req);
+        conn = attach_sql_connection(SQL_AUTH);
         if (!conn)
                 return -1;
 
@@ -941,7 +954,7 @@ rad_sql_reply_attr_query(req, reply_pairs)
         if (sql_cfg.doauth == 0 || !sql_cfg.reply_attr_query)
                 return 0;
         
-        conn = attach_sql_connection(SQL_AUTH, req);
+        conn = attach_sql_connection(SQL_AUTH);
         obstack_init(&stack);
 	pthread_cleanup_push(rad_sql_thread_cleanup, &stack);
 
@@ -966,7 +979,7 @@ rad_sql_check_attr_query(req, return_pairs)
         if (sql_cfg.doauth == 0 || !sql_cfg.check_attr_query)
                 return 0;
         
-        conn = attach_sql_connection(SQL_AUTH, req);
+        conn = attach_sql_connection(SQL_AUTH);
         obstack_init(&stack);
 	pthread_cleanup_push(rad_sql_thread_cleanup, &stack);
 	

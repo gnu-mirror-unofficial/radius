@@ -22,6 +22,7 @@
 #define METHOD_FINGER 0
 #define METHOD_SNMP   1 
 #define METHOD_EXT    2
+#define METHOD_GUILE  3
 
 typedef struct radck_type RADCK_TYPE;
 

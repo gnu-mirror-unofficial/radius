@@ -49,7 +49,7 @@ if MAINTAINER_MODE
 BASE_URL="http://www.gnu.org/software/radius/manual/"
 TEXI2HTML=${SHELL} `cd $(top_srcdir); pwd`/scripts/missing --run texi2html
 INFO=${SHELL} `cd $(top_srcdir); pwd`/scripts/missing --run info
-PKG=radius
+DVIPDF=${SHELL} `cd $(top_srcdir); pwd`/scripts/missing --run dvipdf
 
 clean-local:
 	rm -rf $(WEB_BIN) $(WEB_HTML) index.html
@@ -78,6 +78,11 @@ ps: radius.ps
 
 radius.ps: radius.dvi
 	$(DVIPS) -oradius.ps radius.dvi
+
+# Override the default rule. The texinfo <= 4.5 is unable to cope with
+# radius docs.
+radius.pdf: radius.dvi
+	$(DVIPDF) radius.dvi
 
 text: radius.text
 
@@ -139,13 +144,13 @@ index.html: index.html.in $(WEBDOC)
 	@echo "s/%DATE%/`date`/;" >> .webdoc
 	@echo "s/%UPDATED%/`date +'%B, %d'`/;" >> .webdoc
 	@echo "s/%PACKAGE_NAME%/$(PACKAGE_NAME)/" >> .webdoc
-	@echo "s/%PACKAGE%/$(PKG)/" >> .webdoc
+	@echo "s/%PACKAGE%/$(PACKAGE)/" >> .webdoc
 	@echo "s/%VERSION%/$(VERSION)/" >> .webdoc
-	@for file in `sed -n 's,.*"other/%PACKAGE%\(.*\)".*,$(PKG)\1,pg;s,.*"\(.*\)%PACKAGE%\(.*\)".*,\1$(PKG)\2,pg' index.html.in`; \
+	@for file in `sed -n 's,.*"other/%PACKAGE%\(.*\)".*,$(PACKAGE)\1,pg;s,.*"\(.*\)%PACKAGE%\(.*\)".*,\1$(PACKAGE)\2,pg' index.html.in`; \
 	do\
 		ls -sk $$file; \
 	done |\
-         $(AWK) -vPACKAGE=$(PKG) \
+         $(AWK) -vPACKAGE=$(PACKAGE) \
                 'BEGIN { len = length(PACKAGE) } \
                  { gsub("\\.", "_", $$2); \
                    if (match($$2,"/")) \
@@ -154,7 +159,7 @@ index.html: index.html.in $(WEBDOC)
 	sed -f .webdoc index.html.in > index.html
 	rm -f .webdoc
 
-webdocname=$(PKG)-$(VERSION)-doc
+webdocname=$(PACKAGE)-$(VERSION)-doc
 WEBDOCDIR=$(webdocname)
 
 webdoc: $(WEBDOC) index.html

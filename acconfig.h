@@ -30,9 +30,6 @@
 /* Directory for pidfile */
 #undef RADPID_DIR
 
-#define SQL_MYSQL    1
-#define SQL_POSTGRES 2
-
 #define DBM_DBM  1
 #define DBM_NDBM 2
 
@@ -93,6 +90,9 @@
 
 /* Define this to enable MYSQL subsystem of SQL support */
 #undef USE_SQL_MYSQL
+
+/* Define this to enable POSTRES subsystem of SQL support */
+#undef USE_SQL_POSTGRES
 
 /* Define this to enable Livingston-compatible menus */
 #undef USE_LIVINGSTON_MENUS

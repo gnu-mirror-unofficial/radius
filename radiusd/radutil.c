@@ -33,10 +33,14 @@ static char rcsid[] =
 #include <radiusd.h>
 #include <obstack1.h>
 
-static void attr_to_str(struct obstack *obp, char *pw_digest,
-			VALUE_PAIR *request, DICT_ATTR  *attr, char *defval);
+static void attr_to_str(struct obstack *obp,
+			RADIUS_REQ *req,
+			VALUE_PAIR *pairlist,
+			DICT_ATTR  *attr, char *defval);
 static void curtime_to_str(struct obstack *obp, VALUE_PAIR *request, int gmt);
-static void attrno_to_str(struct obstack *obp, VALUE_PAIR *request,
+static void attrno_to_str(struct obstack *obp,
+			  RADIUS_REQ *req,
+			  VALUE_PAIR *pairlist,
 			 int attr_no, char *defval);
 static DICT_ATTR *parse_dict_attr(char *p, char **endp, char **defval);
 
@@ -62,17 +66,17 @@ static DICT_ATTR *parse_dict_attr(char *p, char **endp, char **defval);
  *
  */
 
-/* Find attribute `attr' in pairlist `request' and store it's formatted
+/* Find attribute `attr' in pairlist `pairlist' and store it's formatted
  * value into obstack.
  * If no attribute found, store the provided default value (defval). If
  * the latter is NULL, store "unknown" for string type and "0" for
  * others.
  */
 void
-attr_to_str(obp, pw_digest, request, attr, defval)
+attr_to_str(obp, req, pairlist, attr, defval)
 	struct obstack *obp;
-	char *pw_digest;
-	VALUE_PAIR *request;
+	RADIUS_REQ *req;
+	VALUE_PAIR *pairlist;
 	DICT_ATTR  *attr;
 	char *defval;
 {
@@ -85,7 +89,7 @@ attr_to_str(obp, pw_digest, request, attr, defval)
 		return;
 	}
 	
-	if ((pair = avl_find(request, attr->value)) == NULL) {
+	if ((pair = avl_find(pairlist, attr->value)) == NULL) {
 		if (!defval) {
 			if (attr->type == PW_TYPE_STRING)
 				defval = "-";
@@ -107,12 +111,12 @@ attr_to_str(obp, pw_digest, request, attr, defval)
 			       attr->name, defval);
 			break;
 		case '=':
-			if (request) {
+			if (pairlist) {
 				pair = install_pair(attr->name,
 						    PW_OPERATOR_EQUAL,
 						    defval);
 				if (pair)
-					avl_add_list(&request, pair);
+					avl_add_list(&pairlist, pair);
 			}
 			break;
 		default:
@@ -136,16 +140,14 @@ attr_to_str(obp, pw_digest, request, attr, defval)
 	tmp[AUTH_STRING_LEN] = 0;
 	switch (attr->type) {
 	case PW_TYPE_STRING:
-		if (attr->value == DA_PASSWORD && pw_digest) {
-			char string[AUTH_PASS_LEN+1];
-			int i;
-			
-			memcpy(string, pair->strvalue, AUTH_PASS_LEN);
-			for (i = 0; i < AUTH_PASS_LEN; i++) 
-				if ((string[i] ^= pw_digest[i]) == 0)
-					break;
-			string[i] = '\0';
-			obstack_grow(obp, string, i);
+		if (attr->value == DA_PASSWORD && req) {
+			char string[AUTH_STRING_LEN+1];
+			int len;
+			decrypt_password(string, pair,
+					 req->vector, req->secret);
+			string[AUTH_STRING_LEN] = '\0';
+			len = strlen(string);
+			obstack_grow(obp, string, len);
 		} else {
 			/* strvalue might include terminating zero character,
 			   so we need to recalculate it */
@@ -201,19 +203,20 @@ curtime_to_str(obp, request, gmt)
 	obstack_grow(obp, tbuf, len);
 }
 
-/* Find attribute number `attr_no' in pairlist `request' and store it's
+/* Find attribute number `attr_no' in pairlist `pairlist' and store it's
  * formatted value into obstack.
  * If no attribute found, use provided default value (see comment to
  * attr_to_str)
  */
 void
-attrno_to_str(obp, request, attr_no, defval)
+attrno_to_str(obp, req, pairlist, attr_no, defval)
 	struct obstack *obp;
-	VALUE_PAIR *request;
+	RADIUS_REQ *req;
+	VALUE_PAIR *pairlist;
 	int attr_no;
 	char *defval;
 {
-	return attr_to_str(obp, NULL, request,
+	return attr_to_str(obp, req, pairlist,
 			   attr_number_to_dict(attr_no), defval);
 }
 
@@ -304,53 +307,53 @@ radius_xlate(obp, str, req, reply)
 				curtime_to_str(obp, req->request, 1);
 				break;
 			case 'f': /* Framed IP address */
-				attrno_to_str(obp, reply,
+				attrno_to_str(obp, NULL, reply,
 					      DA_FRAMED_IP_ADDRESS, NULL);
 				break;
 			case 'n': /* NAS IP address */
-				attrno_to_str(obp, req->request,
+				attrno_to_str(obp, req, req->request,
 					      DA_NAS_IP_ADDRESS, NULL);
 				break;
 			case 't': /* MTU */
-				attrno_to_str(obp, reply,
+				attrno_to_str(obp, NULL, reply,
 					      DA_FRAMED_MTU, NULL);
 				break;
 			case 'p': /* Port number */
-				attrno_to_str(obp, req->request,
+				attrno_to_str(obp, req, req->request,
 					      DA_NAS_PORT_ID, NULL);
 				break;
 			case 'u': /* User name */
-				attrno_to_str(obp, req->request,
+				attrno_to_str(obp, req, req->request,
 					      DA_USER_NAME, NULL);
 				break;
 			case 'c': /* Callback-Number */
-				attrno_to_str(obp, reply,
+				attrno_to_str(obp, NULL, reply,
 					      DA_CALLBACK_NUMBER, NULL);
 				break;
 			case 'i': /* Calling station ID */
-				attrno_to_str(obp, req->request,
+				attrno_to_str(obp, req, req->request,
 					      DA_CALLING_STATION_ID, NULL);
 				break;
 			case 'a': /* Protocol: SLIP/PPP */
-				attrno_to_str(obp, reply,
+				attrno_to_str(obp, NULL, reply,
 					      DA_FRAMED_PROTOCOL, NULL);
 				break;
 			case 's': /* Speed */
-				attrno_to_str(obp, req->request,
+				attrno_to_str(obp, req, req->request,
 					      DA_CONNECT_INFO, NULL);
 				break;
 			case 'C':
 				/* Check pair */
 				da = parse_dict_attr(p, &p, &defval);
-				attr_to_str(obp, req->digest, req->request,
+				attr_to_str(obp, req, req->request,
 					    da, defval);
 				efree(defval);
 				break;
 			case 'R':
 				/* Reply pair */
 				da = parse_dict_attr(p, &p, &defval);
-				attr_to_str(obp, NULL, req->request,
-					    da, defval);
+				attr_to_str(obp, NULL,
+					    req->request, da, defval);
 				break;
 			default:					
 				obstack_1grow(obp, '%');

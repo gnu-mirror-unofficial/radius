@@ -33,6 +33,8 @@
 
 static int logging_category = L_CAT(L_MAIN);
 static RAD_LIST /* of Channel*/ *chanlist;     /* List of defined channels */
+static char *log_prefix_hook;             /* Name of the global prefix hook */
+static char *log_suffix_hook;             /* Name of the global suffix hook */
 
 #define SP(p) ((p)?(p):"")
 
@@ -101,12 +103,14 @@ run_log_hook(const RADIUS_REQ *req, const char *hook_name)
 static void
 channel_format_prefix(char **bufp, Channel *chan, const RADIUS_REQ *req)
 {
+	char **hook_name_ptr = &(chan->prefix_hook ? 
+		                   chan->prefix_hook : log_prefix_hook);
 	char *hook_res = NULL;
 
-	if (chan->prefix_hook) {
-		hook_res = run_log_hook(req, chan->prefix_hook);
-		if (!hook_res)
-			chan->prefix_hook = NULL;
+	if (*hook_name_ptr) {
+		hook_res = run_log_hook(req, *hook_name_ptr);
+		if (!hook_res) 
+			*hook_name_ptr = NULL;
 	}
 
 	if (hook_res)  
@@ -116,12 +120,14 @@ channel_format_prefix(char **bufp, Channel *chan, const RADIUS_REQ *req)
 static void
 channel_format_suffix(char **bufp, Channel *chan, const RADIUS_REQ *req)
 {
+	char **hook_name_ptr = &(chan->suffix_hook ? 
+		                   chan->suffix_hook : log_suffix_hook);
 	char *hook_res = NULL;
-
-	if (chan->suffix_hook) {
-		hook_res = run_log_hook(req, chan->suffix_hook);
-		if (!hook_res)
-			chan->suffix_hook = NULL;
+	
+	if (*hook_name_ptr) {
+		hook_res = run_log_hook(req, *hook_name_ptr);
+		if (!hook_res) 
+			*hook_name_ptr = NULL;
 	}
 
 	if (hook_res)  
@@ -177,7 +183,7 @@ log_to_channel(Channel *chan, int cat, int pri,
         if (cat_pref)
                 free(cat_pref);
 
-	if (req) {
+  	if (req) {
 		channel_format_prefix(&req_prefix_buf, chan, req);
 		channel_format_suffix(&req_suffix_buf, chan, req);
 	}
@@ -262,7 +268,7 @@ vlog(int level,
         char *buf1 = NULL;
         char *buf2 = NULL;
         char *buf3 = NULL;
-	ITERATOR *itr = iterator_create(chanlist);
+        ITERATOR *itr = iterator_create(chanlist);
 
         cat = L_CAT(level);
         if (cat == 0)
@@ -592,6 +598,10 @@ logging_stmt_handler(int argc, cfg_value_t *argv, void *block_data,
 		     void *handler_data)
 {
 	mark = log_mark();
+	efree(log_prefix_hook);
+	log_prefix_hook = NULL;
+	efree(log_suffix_hook);
+	log_suffix_hook = NULL;
 	return 0;
 }
 
@@ -1020,6 +1030,10 @@ struct cfg_stmt logging_stmt[] = {
 	  channel_stmt_handler, NULL, channel_stmt, channel_stmt_end },
 	{ "category", CS_BLOCK, NULL,
 	  category_stmt_handler, NULL, category_stmt, category_stmt_end }, 
+	{ "prefix-hook", CS_STMT, NULL, cfg_get_string, &log_prefix_hook,
+	  NULL, NULL },
+	{ "suffix-hook", CS_STMT, NULL, cfg_get_string, &log_suffix_hook,
+	  NULL, NULL },
 	{ NULL },
 };
 

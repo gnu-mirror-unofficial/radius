@@ -178,11 +178,12 @@ pipe_read(int fd, void *ptr, size_t size, struct timeval *tv)
 static int
 rpp_fd_read(int fd, void *data, size_t size, struct timeval *tv)
 {
-	size_t sz, nbytes;
+	size_t sz, nbytes = 0;
 
 	sz = pipe_read(fd, &nbytes, sizeof(nbytes), tv);
 	if (sz == 0)
 		return 0; /* eof */
+	debug(100,("nbytes=%lu",nbytes));
 	if (sz != sizeof(nbytes)) 
 		return -1;
 	sz = nbytes > size ? size : nbytes;
@@ -190,16 +191,20 @@ rpp_fd_read(int fd, void *data, size_t size, struct timeval *tv)
 		return -2;
 	for (;nbytes > size; nbytes--) {
 		char c;
-		pipe_read(fd, &c, 1, tv);
+		if (pipe_read(fd, &c, 1, tv) != 1) {
+			debug(1,("pipe_read failed"));
+			return -3;
+		}
 	}
 	
 	return sz;
 }
 
-/* Write SIZE bytes from DATA to the pipe (FD. TV sets timeout */
+/* Write SIZE bytes from DATA to the pipe FD. TV sets timeout */
 static int
 rpp_fd_write(int fd, void *data, size_t size, struct timeval *tv)
 {
+	debug(100,("size=%lu",size));
 	if (pipe_write(fd, &size, sizeof(size), tv) != sizeof(size))
 		return -1;
 	if (pipe_write(fd, data, size, tv) != size)
@@ -633,11 +638,10 @@ rpp_request_handler(void *arg ARG_UNUSED)
 			         _("Child received malformed data"));
 			radiusd_exit0();
 		}
-		
-	debug(1,("%d",__LINE__));
+
 		req = request_create(frq.type, frq.fd, &frq.addr,
 				     data, frq.size);
-	debug(1,("%d",__LINE__));
+
 		req->status = RS_COMPLETED;
 		rc = request_handle(req, request_respond);
 			

@@ -347,9 +347,7 @@ radius_req_update(void *req_ptr, void *data_ptr)
 void
 radius_req_free(void *req)
 {
-        debug(1,("enter: %p",req));
         radreq_free((RADIUS_REQ *)req);
-        debug(1,("exit"));
 }
 
 /*ARGSUSED*/

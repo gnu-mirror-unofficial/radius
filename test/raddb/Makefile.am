@@ -12,6 +12,7 @@
 EXTRA_DIST = \
  access.deny\
  auth.bin\
+ auth.scm\
  checkrad.conf\
  clients\
  client.conf.in\

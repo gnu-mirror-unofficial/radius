@@ -1746,7 +1746,7 @@ void
 dump_matching_rules(FILE *fp, char *header, RAD_LIST *list)
 {
 	MATCHING_RULE *rule;
-	ITERATOR *itr = iterator_create(hints);
+	ITERATOR *itr = iterator_create(list);
 
         fprintf(fp, "%s {\n", header);
  	for (rule = iterator_first(itr); rule; rule = iterator_next(itr)) {

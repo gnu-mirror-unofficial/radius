@@ -17,6 +17,9 @@
 # along with GNU Radius; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+noinst_LIBRARIES = libradextra.a
+libradextra_a_SOURCES = readline.c 
+
 lib_LTLIBRARIES=libgnuradius.la
 libgnuradius_la_SOURCES= \
 argcv.c \

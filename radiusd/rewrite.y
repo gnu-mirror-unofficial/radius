@@ -1853,7 +1853,7 @@ yylex()
                 }
                 if (!attr) {
                         grad_log_loc(L_ERR, &locus,
-				     _("unknown attribute %s"),
+				     _("unknown attribute `%s'"),
 				     attr_name);
                         errcnt++;
                         return BOGUS;

@@ -112,7 +112,7 @@ static int user_find_sym(char *name, VALUE_PAIR *request_pairs,
 #ifdef USE_DBM
 static int user_find_db(char *name, VALUE_PAIR *request_pairs,
 			VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
-static VALUE_PAIR * decode_dbm(VALUE_PAIR **dbm_ptr);
+static VALUE_PAIR * decode_dbm(int **dbm_ptr);
 static int dbm_find(DBM_FILE dbmfile, char *name, VALUE_PAIR *request_pairs,
 		    VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 #endif
@@ -441,40 +441,59 @@ match_user(sym, request_pairs, check_pairs, reply_pairs)
 }
 
 #ifdef USE_DBM
+static char *_dbm_dup_name(char *buf, size_t bufsize, char *name, int ordnum);
+static char *_dbm_number_name(char *buf, size_t bufsize, char *name, int ordnum);
+static int dbm_match(DBM_FILE dbmfile, char *name, char *(*fn)(), 
+		     VALUE_PAIR *request_pairs, VALUE_PAIR **check_pairs,
+		     VALUE_PAIR **reply_pairs, int  *fallthru);
+
 /*
  * DBM lookup:
  *	-1 username not found
  *	0 username found but profile doesn't match the request.
  *	1 username found and matches.
  */
+#define NINT(n) ((n) + sizeof(int) - 1)/sizeof(int)
 
 VALUE_PAIR *
-decode_dbm(dbm_ptr)
-	VALUE_PAIR **dbm_ptr;
+decode_dbm(pptr)
+	int **pptr;
 {
-	VALUE_PAIR *ptr;
+	int *ptr, *endp, len;
 	VALUE_PAIR *next_pair, *first_pair, *last_pair;
-
-	ptr = *dbm_ptr;
+	
+	ptr = *pptr;
+	len = *ptr++;
+	endp = ptr + len;
+	
 	last_pair = first_pair = NULL;
-	do {
+	while (ptr < endp) {
 		next_pair = alloc_pair();
-		*next_pair = *ptr++;
+		next_pair->attribute = *ptr++;
+		next_pair->type = *ptr++;
+		next_pair->operator = *ptr++;
 		if (next_pair->type == PW_TYPE_STRING) {
 			next_pair->strvalue = make_string((char*)ptr);
-			ptr = (VALUE_PAIR*)((char*)ptr + next_pair->strlength + 1);
-		}
+			next_pair->strlength = strlen(next_pair->strvalue);
+			ptr += NINT(next_pair->strlength+1);
+		} else
+			next_pair->lvalue = *ptr++;
+		next_pair->name = NULL;
 		if (last_pair)
 			last_pair->next = next_pair;
 		else
 			first_pair = next_pair;
 		last_pair = next_pair;
-	} while (next_pair->next);
+	} 
 
-	*dbm_ptr = ptr;
+	*pptr = ptr;
 	return first_pair;
 }
 
+/* FIXME: The DBM functions below follow exactly the same algorythm as
+ * user_find_sym/match_user pair. This is superfluous. The common wrapper
+ * for both calls is needed.
+ */
 int
 dbm_find(file, name, request_pairs, check_pairs, reply_pairs)
 	DBM_FILE file;
@@ -485,11 +504,10 @@ dbm_find(file, name, request_pairs, check_pairs, reply_pairs)
 {
 	DBM_DATUM	named;
 	DBM_DATUM	contentd;
-	VALUE_PAIR	*ptr;
+	int             *ptr;
 	VALUE_PAIR	*check_tmp;
 	VALUE_PAIR	*reply_tmp;
 	int		ret = 0;
-	int             unused; /* strange, fetch on solaris seems to clobber stack */
 	
 	named.dptr = name;
 	named.dsize = strlen(name);
@@ -503,7 +521,7 @@ dbm_find(file, name, request_pairs, check_pairs, reply_pairs)
 	/*
 	 *	Parse the check values
 	 */
-	ptr = (VALUE_PAIR*) contentd.dptr;
+	ptr = (int*)contentd.dptr;
 	/* check pairs */
 	check_tmp = decode_dbm(&ptr);
 
@@ -514,10 +532,33 @@ dbm_find(file, name, request_pairs, check_pairs, reply_pairs)
 	 *	See if the check_pairs match.
 	 */
 	if (paircmp(request_pairs, check_tmp) == 0) {
-		pairmove(reply_pairs, &reply_tmp);
-		pairmove(check_pairs, &check_tmp);
+		VALUE_PAIR *p;
+
+		/*
+		 * Found an almost matching entry. See if it has a
+		 * Match-Profile attribute and if so check
+		 * the profile it points to.
+		 */
 		ret = 1;
+		if (p = pairfind(check_tmp, DA_MATCH_PROFILE)) {
+			int dummy;
+			char *name;
+			
+			debug(1, ("submatch: %s", p->strvalue));
+			name = dup_string(p->strvalue);
+			if (!dbm_match(file, name, _dbm_dup_name,
+				       request_pairs,
+				       &check_tmp, &reply_tmp, &dummy))
+				ret = 0;
+			free_string(name);
+		} 
+		
+		if (ret == 1) {
+			pairmove(reply_pairs, &reply_tmp);
+			pairmove(check_pairs, &check_tmp);
+		}
 	}
+	
 	/* Should we
 	 *  free(contentd.dptr);
 	 */
@@ -525,6 +566,103 @@ dbm_find(file, name, request_pairs, check_pairs, reply_pairs)
 	pairfree(check_tmp);
 
 	return ret;
+}
+
+/*ARGSUSED*/
+char *
+_dbm_dup_name(buf, bufsize, name, ordnum)
+	char *buf;
+	size_t bufsize;
+	char *name;
+	int ordnum;
+{
+	strncpy(buf, name, bufsize);
+	buf[bufsize-1] = 0;
+	return buf;
+}
+
+char *
+_dbm_number_name(buf, bufsize, name, ordnum)
+	char *buf;
+	size_t bufsize;
+	char *name;
+	int ordnum;
+{
+	radsprintf(buf, bufsize, "%s%d", name, ordnum);
+	return buf;
+}
+
+int
+dbm_match(dbmfile, name, fn, request_pairs, check_pairs, reply_pairs, fallthru)
+	DBM_FILE dbmfile;
+	char *name;
+	char *(*fn)();
+	VALUE_PAIR *request_pairs;
+	VALUE_PAIR **check_pairs;
+	VALUE_PAIR **reply_pairs;
+	int  *fallthru;
+{
+	int  found = 0;
+	int  i, r;
+	char buffer[64];
+	VALUE_PAIR *p;
+	
+	*fallthru = 0;
+	for (i = 0;;i++) {
+		r = dbm_find(dbmfile,
+			     (*fn)(buffer, sizeof(buffer), name, i),
+			     request_pairs, check_pairs, reply_pairs);
+		if (r == 0) {
+			if (strcmp(name, buffer))
+				continue;
+			break;
+		}
+		
+		if (r < 0) 
+			break;
+		
+		/* OK, found matching entry */
+
+		found = 1;
+
+		if (p = pairfind(request_pairs, DA_INCLUDE_PROFILE)) {
+			VALUE_PAIR *pl;
+			int dummy;
+			
+			debug(1, ("include: %s", p->strvalue));
+			/* Create a copy of the request pairs without
+			 * this Include-Profile attribute in order
+			 * to prevent infinite recursion.
+			 */
+			pl = paircopy(request_pairs);
+			pairdelete(&pl, DA_INCLUDE_PROFILE);
+
+			dbm_match(dbmfile, p->strvalue, _dbm_dup_name,
+				  request_pairs,
+				  check_pairs, reply_pairs, &dummy);
+
+			pairfree(pl);
+		}
+
+		if (p = pairfind(*reply_pairs, DA_MATCH_PROFILE)) {
+			int dummy;
+			char *name;
+			
+			debug(1, ("next: %s", p->strvalue));
+			name = dup_string(p->strvalue);
+			pairdelete(reply_pairs, DA_MATCH_PROFILE);
+			dbm_match(dbmfile, name, _dbm_dup_name,
+				  request_pairs,
+				  check_pairs, reply_pairs, &dummy);
+			free_string(name);
+		}
+
+		if (!fallthrough(*reply_pairs))
+			break;
+		pairdelete(reply_pairs, DA_FALL_THROUGH);
+		*fallthru = 1;
+	}
+	return found;
 }
 
 /*
@@ -538,14 +676,10 @@ user_find_db(name, request_pairs, check_pairs, reply_pairs)
 	VALUE_PAIR **reply_pairs;
 {
 	int		found = 0;
-	int		i, r;
 	char		*path;
-	char		buffer[64];
 	DBM_FILE        dbmfile;
-
-	/*
-	 *	FIXME: No Prefix / Suffix support for DBM.
-	 */
+	int             fallthru;
+	
 	path = mkfilename(radius_dir, RADIUS_USERS);
 	if (open_dbm(path, &dbmfile)) {
 		radlog(L_ERR, _("cannot open dbm file %s"), path);
@@ -553,26 +687,30 @@ user_find_db(name, request_pairs, check_pairs, reply_pairs)
 		return 0;
 	}
 
-	r = dbm_find(dbmfile, name, request_pairs, check_pairs, reply_pairs);
-	if (r > 0)
-		found = 1;
-	if (r <= 0 || fallthrough(*reply_pairs)) {
+	/* This is a fake loop: it is here so we don't have to
+	 * stack up if's or use goto's
+	 */
+	for (;;) {
+		found = dbm_match(dbmfile, "BEGIN", _dbm_number_name,
+				  request_pairs,
+				  check_pairs, reply_pairs, &fallthru);
+		if (found && fallthru == 0)
+			break;
+		
+		found = dbm_match(dbmfile, name, _dbm_dup_name,
+				  request_pairs,
+				  check_pairs, reply_pairs, &fallthru);
 
-		pairdelete(reply_pairs, DA_FALL_THROUGH);
+		if (found && fallthru == 0)
+			break;
 
-		radsprintf(buffer, sizeof(buffer), "DEFAULT");
-		i = 0;
-		while ((r = dbm_find(dbmfile, buffer, request_pairs,
-				     check_pairs, reply_pairs)) >= 0) {
-			if (r > 0) {
-				found = 1;
-				if (!fallthrough(*reply_pairs))
-					break;
-				pairdelete(reply_pairs, DA_FALL_THROUGH);
-			}
-			radsprintf(buffer, sizeof(buffer), "DEFAULT%d", i++);
-		}
+		found = dbm_match(dbmfile, "DEFAULT", _dbm_number_name,
+				  request_pairs,
+				  check_pairs, reply_pairs, &fallthru);
+		break;
+		/*NOTREACHED*/
 	}
+
 	close_dbm(dbmfile);
 	efree(path);
 
@@ -609,27 +747,14 @@ user_find(name, request_pairs, check_pairs, reply_pairs)
 	 *	Find the entry for the user.
 	 */
 #ifdef USE_DBM
-	switch (use_dbm) {
-	case DBM_ONLY:
+	if (use_dbm) 
 		found = user_find_db(name,
 				     request_pairs, check_pairs, reply_pairs);
-		break;
-	case DBM_ALSO:
-		found = user_find_sym(name, 
-				      request_pairs, check_pairs, reply_pairs);
-		if (!found)
-			found = user_find_db(name, 
-					     request_pairs, check_pairs,
-					     reply_pairs);
-		break;
-	default:
-		found = user_find_sym(name, 
-				      request_pairs, check_pairs, reply_pairs);
-	} 
-#else
-	found = user_find_sym(name, 
-			      request_pairs, check_pairs, reply_pairs);
+	else
 #endif
+		found = user_find_sym(name, 
+				      request_pairs, check_pairs, reply_pairs);
+
 	/*
 	 *	See if we succeeded.
 	 */
@@ -2497,19 +2622,26 @@ reload_config_file(what)
 		path = mkfilename(radius_dir, RADIUS_USERS);
 	
 #if USE_DBM
-		if (!use_dbm &&
-		    (checkdbm(path, ".dir") == 0 ||
-		     checkdbm(path, ".db") == 0))
-			radlog(L_WARN,
-			       _("DBM files found but no -b flag given - NOT using DBM"));
+		if (use_dbm) {
+			if (access(path, 0) == 0) {
+				radlog(L_WARN,
+				       _("using only dbm: USERS NOT LOADED"));
+			}
+		} else {
+			if (checkdbm(path, ".dir") == 0 ||
+			    checkdbm(path, ".db") == 0)
+				radlog(L_WARN,
+		    _("DBM files found but no -b flag given - NOT using DBM"));
+	        
 #endif
-		if (use_dbm == DBM_ONLY) 
-			radlog(L_WARN, _("using only dbm: USERS NOT LOADED"));
-		else if (read_users(path)) {
+		if (read_users(path)) {
 			radlog(L_CRIT, _("can't load %s: exited"), path);
 			exit(1);
 		} else
-			radlog(L_INFO, _("%s reloaded."), path);	
+			radlog(L_INFO, _("%s reloaded."), path);
+#if USE_DBM
+		}
+#endif
 		efree(path);
 		break;
 

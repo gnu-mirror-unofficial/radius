@@ -38,67 +38,13 @@ typedef struct {
 static int
 pipe_write(int fd, void *ptr, size_t size)
 {
-	char *data = ptr;
-	int rc;
-	struct timeval to;
-	fd_set wr_set;
-	size_t n;
-		
-	for (n = 0; n < size;) {
-		to.tv_usec = 5;
-		to.tv_sec = 0;
-		FD_ZERO(&wr_set);
-		FD_SET(fd, &wr_set);
-		rc = select(fd + 1, NULL, &wr_set, NULL, &to);
-		if (rc < 0) {
-			if (errno == EINTR)
-				continue;
-			break;
-		} else if (rc > 0) {
-			rc = write(fd, data, 1);
-			if (rc != 1) {
-				if (errno == EINTR)
-					continue;
-				break;
-			}
-			data++;
-			n++;
-		}
-	}
-	return n;
+	return write(fd, ptr, size);
 }
 
 static int
 pipe_read(int fd, void *ptr, size_t size)
 {
-	char *data = ptr;
-	int rc;
-	struct timeval to;
-	fd_set rd_set;
-	size_t n;
-		
-	for (n = 0; n < size;) {
-		to.tv_usec = 5;
-		to.tv_sec = 0;
-		FD_ZERO(&rd_set);
-		FD_SET(fd, &rd_set);
-		rc = select(fd + 1, &rd_set, NULL, NULL, &to);
-		if (rc < 0) {
-			if (errno == EINTR)
-				continue;
-			break;
-		} else if (rc > 0) {
-			rc = read(fd, data, 1);
-			if (rc != 1) {
-				/* if (errno == EINTR)
-				   continue;*/
-				break;
-			}
-			data++;
-			n++;
-		}
-	}
-	return n;
+	return read(fd, ptr, size);
 }
 
 static int
@@ -452,7 +398,7 @@ sig_handler(int sig)
 		
 	case SIGTERM:
 	case SIGQUIT:
-		radiusd_exit();
+	        radiusd_exit0();
 
 	case SIGCHLD:
 		child_cleanup();
@@ -489,7 +435,7 @@ rpp_request_handler(void *arg ARG_UNUSED)
 			radlog(L_ERR,
 			       _("Child received malformed header. len = %d, errno = %s"),
 			       len, strerror(errno));
-			radiusd_exit();
+			radiusd_exit0();
 		}
 
 		if (datasize < frq.size) {

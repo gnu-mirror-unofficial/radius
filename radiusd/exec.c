@@ -91,6 +91,22 @@ radius_change_uid(pwd)
 	}
 }
 
+static int
+exec_sigchld(sig, data, id, owner)
+        int sig;
+	void *data;
+	rad_sigid_t id;
+	const void *owner;
+{
+	int status;
+	pid_t pid = *(pid_t*)data;
+	if (waitpid(pid, &status, 0) == pid) {
+		rad_signal_remove(sig, id, owner);
+		return 0;
+	}
+	return 1;
+}
+
 /* Execute a program on successful authentication.
    Return 0 if exec_wait == 0.
    Return the exit code of the called program if exec_wait != 0.
@@ -115,6 +131,7 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         struct cleanup_data cleanup_data;
 	pid_t pid;
 	int status;
+	rad_sigid_t id = NULL;
 	
         if (cmd[0] != '/') {
                 radlog(L_ERR,
@@ -139,7 +156,8 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
                         radlog(L_ERR|L_PERROR, _("couldn't open pipe"));
                         return -1;
                 }
-        }
+        } else
+		id = rad_signal_install(SIGCHLD, SH_SYNC, exec_sigchld,	&pid);
 
         if ((pid = fork()) == 0) {
                 int argc;
@@ -183,6 +201,8 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         /* Parent branch */ 
         if (pid < 0) {
                 radlog(L_ERR|L_PERROR, "fork");
+		if (id)
+			rad_signal_remove (SIGCHLD, id, NULL);
                 return -1;
         }
         if (!exec_wait)
@@ -201,7 +221,6 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
 	cleanup_data.pid = pid;
 	pthread_cleanup_push((void (*)(void*))rad_exec_cleanup, &cleanup_data);
 
-  again:
         while (ptr = fgets(buffer, sizeof(buffer), fp)) {
                 line_num++;
                 debug(1, ("got `%s'", buffer));
@@ -214,8 +233,7 @@ radius_exec_program(cmd, req, reply, exec_wait, user_msg)
                 }
         }
 
-	if (waitpid(pid, &status, 0) != pid)
-		goto again;
+	waitpid(pid, &status, 0);
 
 	pthread_cleanup_pop(0);
 
@@ -524,7 +542,11 @@ filter_unlock(filter)
 }
 
 int
-filter_sigchld(int sig, void *data, void *owner)
+filter_sigchld(sig, data, id, owner)
+	int sig;
+	void *data;
+	rad_sigid_t id;
+	void *owner;
 {
 	Filter *filter = data;
 	int status;

@@ -11,3 +11,4 @@ libtool
 config.cache
 config.status
 stamp-h
+*.tar.gz

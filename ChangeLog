@@ -1,3 +1,8 @@
+2003-07-15  Sergey Poznyakoff 
+
+	* radiusd/config.y (_get_value): Bugfix. Coerce CFG_NETWORK
+	to CFG_IPADDR.
+
 2003-07-11  Sergey Poznyakoff 
 
 	* configure.ac: Raised version number to 1.0.1

@@ -1,4 +1,4 @@
-GNU Radius NEWS -- history of user-visible changes. 2004-08-04
+GNU Radius NEWS -- history of user-visible changes. 2004-09-15
 Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
@@ -30,7 +30,7 @@ section of 'raddb/config':
 
 ** New constructs in dictionary file
 
-** BEGIN VENDOR blocks.
+*** BEGIN VENDOR blocks.
 
 These simplify declaration of vendor-specific attributes. Instead of
 explicitely specifying vendor name for each VSA, you can enclose all
@@ -43,7 +43,7 @@ related declarations in BEGIN VENDOR statement:
 An alternative form BEGIN-VENDOR ... END-VENDOR is supported for
 compatibility with FreeRadius
  
-** Specifying - (dash) for non-VSA attributes that have syntax flags
+*** Specifying - (dash) for non-VSA attributes that have syntax flags
 specifications is no longer obligatory.
 
 ** Improved checking for multiple logins. Previous versions relied entirely
@@ -94,6 +94,12 @@ are processed, then the ones from the LHS list. Notice, that in
 contrast with the previous versions, any number of Rewrite-Function
 attributes is allowed in both lists.
 
+* SQL support has been modified to use dynamic loading. This allows
+for easy integration of third-party SQL drivers. All existing SQL
+drivers are now built as loadable modules on systems that support
+dynamic loading. You may still compile them statically by giving
+--disable-shared option to configure.
+
 * Rewrite language
 
 ** Added i18n support
@@ -123,7 +129,19 @@ supersedes radscm program, which has been removed.
 The utility is rewritten from scratch. Now it provides a simple yet
 powerful scripting language useful for writing RADIUS client applications.
 
-* New contributions added to contrib/ directory.
+* New contributions added to contrib/ directory:
+
+ php                A php module for interfacing with Radius
+ passcvt            Converts system password database to Radius SQL
+		    table on systems with shadow password file (e.g.
+		    GNU/Linux)
+ passwd_to_db 	    Converts system password database to Radius SQL
+		    table on Free-BSD	     
+ radsend	    Simplified interface to radtest utility
+
+See README files in corresponding directories. 
+
+* Testsuite rewritten in autotest.
 
 * Bugfixes
 
@@ -132,6 +150,8 @@ described in the documentation.
     
 ** Fixed several inconsistencies in parsing Ascend-Data-Filter and
 Ascend-Call-Filter attributes.
+
+** Fixed bugs in SNMP library (CAN-2004-0849)
 
 
 Version 1.2:

@@ -1,3 +1,18 @@
+2004-09-15  Sergey Poznyakoff
+
+	-== Alpha release 1.2.94 ==-
+
+	* sql/postgres.c (rad_postgres_query): Included proposition
+	of Oleg Gawriloff.
+	* radiusd/rpp.c: Do not use descriptors 0 and 1: user procedures
+	and/or some libraries may attempt to write to stdout.
+	* radiusd/exec.c (radius_exec_program): Do not dup p[1] if it
+	equals 1
+	(radius_run_filter): Process 'left-side' pipe first. Avoid
+	duplcating descriptors if they already have desired values.
+	* contrib/php/README: Updated
+	* NEWS: Updated
+
 2004-09-14  Sergey Poznyakoff
 
 	* radiusd/auth.c (from_base64): Assume right to left

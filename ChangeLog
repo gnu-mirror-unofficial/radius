@@ -1,5 +1,12 @@
 2004-04-13  Sergey Poznyakoff
 
+	* examples/config.syntax: Updated
+	* radiusd/scheme.c (catch_body): Removed call to scheme_debug.
+	Enabling debugging that early makes guile coredump. Sigh.
+	* radscm/ttl.scm: Updated
+
+2004-04-13  Sergey Poznyakoff
+
 	* NEWS: Updated
 	* radiusd/config.y (yylex): Recognize tokens starting with dash
 	as strings

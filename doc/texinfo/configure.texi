@@ -1047,6 +1047,8 @@ guile @{
         [ debug @var{bool} ; ]
         [ load-path @var{string} ; ]
         [ load @var{string} ; ]
+        [ load-module @var{string} [ @var{string} ... ] ; ]
+        [ eval @var{expression} [ @var{expression} ... ] ; 
         [ gc-interval @var{number} ; ]
         [ outfile @var{string} ; ]
 @};
@@ -1083,6 +1085,8 @@ and garbage collections in particular, see @ref{Memory Management,,Memory Manage
 Add specified pathname to @code{%load-path} variable.
 @item load
 Loads the specified source file on startup.
+@item load-module
+Loads the specified Scheme module on startup. 
 @item outfile
 Redirects the standard output and standard error streams of the @code{Guile}
 functions to the given file. Unless the filename starts with @samp{/},

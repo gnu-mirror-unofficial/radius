@@ -286,15 +286,40 @@ guile {
 	# Perform garbage collection once an hour
 	gc-interval 3600;
 
-	# Add given path to guile's %load-list
+	# Evaluate a Scheme expression
+	eval "(set! my-variable \"Text\")";
+		
+	# Add given path to guile's %load-path
 	load-path "/usr/local/libexec/guile";
 
 	# Load given file
 	load "lib.scm";
 
 	# Load Guile module
-	load-module "module-name";
-		
+	# First argument is the name of the module (without .scm
+	# suffix.
+	# The rest of arguments are optional. If they are present,
+	# then they are given as argument list to the function
+	# <module-name>-init. When converting arguments to
+	# Scheme data types, the following conventions apply:
+	#
+	# Argument       Converted to
+	# "string"       "string"
+	# "#f"           #f
+	# "#t"           #t
+	# "#x34"         #x34
+	# -key           #:key
+	# 345            345
+	# 127.0.0.1      ( #x7f000001 . #xffffffff )
+	# 127.0.0.1/16   ( #x7f000001 . #xffff0000 )
+        # 127.0.0.1:1645 ( #x7f000001 . 1645)
+	#	
+	# The example below is equivalent to calling
+	#
+	# (ttl-init #:dest-ip (cons #x7f000001 #xffffffff) #:dest-port 5000)
+	#	
+	load-module "ttl" -dest-ip 127.0.0.1 -dest-port 5000;
+
 	# Redirect the guile output to the given file.
 	outfile	"guile.out";	
 };

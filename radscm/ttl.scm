@@ -1,5 +1,5 @@
 ;;;; This file is part of GNU Radius.
-;;;; Copyright (C) 2001,2002,2003 Free Software Foundation, Inc.
+;;;; Copyright (C) 2001,2002,2003,2004 Free Software Foundation, Inc.
 ;;;;
 ;;;; Written by Sergey Poznyakoff
 ;;;;
@@ -52,8 +52,7 @@
 ;;;;
 ;;;; raddb/config (section 'guile'):
 ;;;;
-;;;; load-module "ttl"
-;;;;             "(ttl-init #:dest-ip \"<ip-addr>\" #:dest-port <port> p ..)";
+;;;; load-module "ttl" -dest-ip <ip-addr> -dest-port <port>;
 ;;;; 
 ;;;; raddb/hints:
 ;;;; DEFAULT    NULL  Scheme-Acct-Procedure = "ttl-session"

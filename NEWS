@@ -30,7 +30,7 @@ RADIUS request.
 * radiusd
 
 ** Improved checking for multiple logins. Previous versions relied entirely
-on the contents of /var/log/radutmp file. Starting from this version,
+on the contents of /var/log/radutmp file. Starting at this version,
 radiusd offers at least two methods of checking for multiple logins:
 using the traditional radutmp file and using the SQL database. New
 keywords has been added to the sqlserver file that declare the SQL
@@ -38,6 +38,25 @@ queries to be used when retrieving the information about currently
 active sessions.
 
 More methods of checking will be added in future versions.
+
+** When an unsupported authentication type is requested, radiusd first
+checks if an extension Scheme module is provided that handles that
+authentication type. If such module is found, it is invoked to handle
+the authentication.
+
+** System accounting can be turned off by specifying `system no;' in
+`acct' section of raddb/config.
+
+** New configuration statement 'load-module' allows to load arbitrary
+Scheme modules.
+
+** Support for Guile versions prior to 1.6 has been withdrawn.
+
+* Bugfixes
+
+** Allow to omit port numbers in `listen' statements (raddb/config), as
+described in the documentation.
+    
 
 
 Version 1.2:

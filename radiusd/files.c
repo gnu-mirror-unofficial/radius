@@ -188,7 +188,7 @@ struct temp_list {
 
 int
 add_pairlist(struct temp_list *closure, char *filename, int line,
-	     char *name, VALUE_PAIR *lhs, VALUE_PAIR *rhs)
+             char *name, VALUE_PAIR *lhs, VALUE_PAIR *rhs)
 {
         MATCHING_RULE *pl;
         
@@ -298,7 +298,7 @@ static int match_user(User_symbol *sym, RADIUS_REQ *req,
  */
 int
 user_find_sym(char *name, RADIUS_REQ *req,
-	      VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs)
+              VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs)
 {
         int found = 0;
         User_symbol *sym;
@@ -320,7 +320,7 @@ user_find_sym(char *name, RADIUS_REQ *req,
 
 int
 match_user(User_symbol *sym, RADIUS_REQ *req,
-	   VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs)
+           VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs)
 {
         VALUE_PAIR *p;
         VALUE_PAIR *check_tmp;
@@ -390,7 +390,7 @@ match_user(User_symbol *sym, RADIUS_REQ *req,
  */
 int
 user_find(char *name, RADIUS_REQ *req,
-	  VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs)
+          VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs)
 {
         int found = 0;
 
@@ -487,9 +487,9 @@ nextkn(char **sptr, char *token, int toksize)
                                 }
                                 ++*sptr;
                                 toksize--;
-			} else if (**sptr == '"') {
-				++*sptr;
-				break;
+                        } else if (**sptr == '"') {
+                                ++*sptr;
+                                break;
                         } else 
                                 *token++ = *(*sptr)++;
                 }
@@ -550,14 +550,14 @@ userparse(char *buffer, VALUE_PAIR **first_pair, char **errmsg)
                         break;
                         
                 case PS_RHS:
-			pair = install_pair("<stdin>", 0, attr->name, 
+                        pair = install_pair("<stdin>", 0, attr->name, 
                                              op, token);
-			if (!pair) {
-				snprintf(errbuf, sizeof(errbuf),
-				         _("install_pair failed on %s"),
-					 attr->name);
-				return -1;
-			}
+                        if (!pair) {
+                                snprintf(errbuf, sizeof(errbuf),
+                                         _("install_pair failed on %s"),
+                                         attr->name);
+                                return -1;
+                        }
                         avl_merge(first_pair, &pair);
                         state = PS_END;
                         break;
@@ -596,21 +596,21 @@ hints_setup(RADIUS_REQ *req)
         MATCHING_RULE   *i;
         int             matched = 0;
 
-	/* Add Proxy-Replied pair if necessary */
+        /* Add Proxy-Replied pair if necessary */
         switch (req->code) {
-	case RT_AUTHENTICATION_ACK:
-	case RT_AUTHENTICATION_REJECT:
-	case RT_ACCOUNTING_RESPONSE:
-	case RT_ACCESS_CHALLENGE:
-		tmp = avp_create_integer(DA_PROXY_REPLIED, 1);
-		avl_merge(&request_pairs, &tmp);
-		avp_free(tmp);
-		break;
+        case RT_AUTHENTICATION_ACK:
+        case RT_AUTHENTICATION_REJECT:
+        case RT_ACCOUNTING_RESPONSE:
+        case RT_ACCESS_CHALLENGE:
+                tmp = avp_create_integer(DA_PROXY_REPLIED, 1);
+                avl_merge(&request_pairs, &tmp);
+                avp_free(tmp);
+                break;
 
-	case RT_STATUS_SERVER:
-		return 0;
-	}
-	
+        case RT_STATUS_SERVER:
+                return 0;
+        }
+        
         if (hints == NULL)
                 return 0;
 
@@ -618,12 +618,12 @@ hints_setup(RADIUS_REQ *req)
          *      Check for valid input, zero length names not permitted 
          */
         if ((name_pair = avl_find(request_pairs, DA_USER_NAME)) == NULL) {
-		name_pair = avp_create_string(DA_USER_NAME, "");
+                name_pair = avp_create_string(DA_USER_NAME, "");
                 orig_name_pair = NULL;
         } else {
                 orig_name_pair = avp_create_string(DA_ORIG_USER_NAME,
-						   name_pair->avp_strvalue);
-	}
+                                                   name_pair->avp_strvalue);
+        }
 
         debug(1, ("called for `%s'", name_pair->avp_strvalue));
         
@@ -680,7 +680,7 @@ hints_setup(RADIUS_REQ *req)
                                 radlog(L_ERR, "hints:%d: %s(): %s",
                                        i->lineno,
                                        tmp->avp_strvalue,
-				       _("not defined"));
+                                       _("not defined"));
                         }
                 }
 
@@ -707,19 +707,19 @@ hints_setup(RADIUS_REQ *req)
         }
 
         if (matched) {
-		if (orig_name_pair)
-			avl_add_pair(&request_pairs, orig_name_pair);
-		else
-			avl_add_pair(&request_pairs, name_pair);
-	} else {
-		if (orig_name_pair)
-			avp_free(orig_name_pair);
-		else
-			avp_free(name_pair);
-	}
+                if (orig_name_pair)
+                        avl_add_pair(&request_pairs, orig_name_pair);
+                else
+                        avl_add_pair(&request_pairs, name_pair);
+        } else {
+                if (orig_name_pair)
+                        avp_free(orig_name_pair);
+                else
+                        avp_free(name_pair);
+        }
 
         req->request = request_pairs;
-	
+        
         return 0;
 }
 
@@ -783,7 +783,7 @@ huntgroup_access(RADIUS_REQ *radreq)
                         radlog(L_ERR, "huntgroups:%d: %s(): %s",
                                pl->lineno,
                                pair->avp_strvalue,
-			       _("not defined"));
+                               _("not defined"));
                 }
         }
 #endif  
@@ -811,14 +811,14 @@ read_naslist_file(char *file)
 /*ARGSUSED*/
 int
 read_clients_entry(void *u ARG_UNUSED, int fc, char **fv,
-		   char *file, int lineno)
+                   char *file, int lineno)
 {
         CLIENT *cp;
         
         if (fc != 2) {
                 radlog(L_ERR, "%s:%d: %s",
                        file, lineno,
-		       _("wrong number of fields"));
+                       _("wrong number of fields"));
                 return -1;
         }
 
@@ -829,7 +829,7 @@ read_clients_entry(void *u ARG_UNUSED, int fc, char **fv,
         if (fc == 3)
                 STRING_COPY(cp->shortname, fv[2]);
         ip_gethostname(cp->ipaddr, cp->longname, sizeof(cp->longname));
-	list_append(clients, cp);
+        list_append(clients, cp);
         return 0;
 }
 
@@ -837,9 +837,9 @@ static int
 client_free(void *item, void *data ARG_UNUSED)
 {
         CLIENT *cl = item;
-	efree(cl->secret);
-	efree(cl);
-	return 0;
+        efree(cl->secret);
+        efree(cl);
+        return 0;
 }
 
 /*
@@ -848,8 +848,8 @@ client_free(void *item, void *data ARG_UNUSED)
 int
 read_clients_file(char *file)
 {
-	list_destroy(&clients, client_free, NULL);
-	clients = list_create();
+        list_destroy(&clients, client_free, NULL);
+        clients = list_create();
         return read_raddb_file(file, 1, read_clients_entry, NULL);
 }
 
@@ -861,14 +861,14 @@ CLIENT *
 client_lookup_ip(UINT4 ipaddr)
 {
         CLIENT *cl;
-	ITERATOR *itr = iterator_create(clients);
+        ITERATOR *itr = iterator_create(clients);
 
-	if (!itr)
-		return NULL;
+        if (!itr)
+                return NULL;
         for (cl = iterator_first(itr); cl; cl = iterator_next(itr))
                 if (ipaddr == cl->ipaddr)
                         break;
-	iterator_destroy(&itr);
+        iterator_destroy(&itr);
         return cl;
 }
 
@@ -901,14 +901,14 @@ client_lookup_name(UINT4 ipaddr, char *buf, size_t bufsize)
 /*ARGSUSED*/
 int
 read_nastypes_entry(void *u ARG_UNUSED, int fc, char **fv,
-		    char *file, int lineno)
+                    char *file, int lineno)
 {
         RADCK_TYPE *mp;
         int method;
 
         if (fc < 2) {
                 radlog(L_ERR, "%s:%d: %s", file, lineno,
-		       _("too few fields"));
+                       _("too few fields"));
                 return -1;
         }
 
@@ -928,7 +928,7 @@ read_nastypes_entry(void *u ARG_UNUSED, int fc, char **fv,
         mp->method = method;
         if (fc > 2)
                 mp->args = envar_parse_argcv(fc-2, &fv[2]);
-        else
+	else
                 mp->args = NULL;
 	list_append(radck_type, mp);
         return 0;
@@ -1632,11 +1632,11 @@ reload_data(enum reload_what what, int *do_radck)
 
         case reload_naslist:
                 /*FIXME*/
-                path = mkfilename(radius_dir, RADIUS_NASTYPES);
+		path = mkfilename(radius_dir, RADIUS_NASTYPES);
                 read_nastypes_file(path);
                 efree(path);
                 /*EMXIF*/
-                
+
                 path = mkfilename(radius_dir, RADIUS_NASLIST);
                 if (read_naslist_file(path) < 0)
                         rc = 1;
@@ -1666,6 +1666,7 @@ reload_data(enum reload_what what, int *do_radck)
 #endif
 
         case reload_rewrite:
+		rewrite_load_all();
                 break;
                 
         default:

@@ -81,7 +81,7 @@ radius_mlc_collect_realm(grad_request_t *request, grad_list_t **sess_list)
 void
 radius_mlc_close(struct radutmp *up)
 {
-        char ipbuf[DOTTED_QUAD_LEN];
+        char ipbuf[GRAD_IPV4_STRING_LENGTH];
 	
 	debug(20,("Closing session: NAS %s port %d",
 	      grad_ip_iptostr(ntohl(up->nas_address), ipbuf),

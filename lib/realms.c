@@ -27,7 +27,7 @@ static grad_list_t /* of grad_realm_t */ *realms;
 
 struct _parse_data {
 	int (*fun)();
-	int ports[PORT_MAX];
+	int ports[GRAD_PORT_MAX];
 	grad_locus_t *loc;
 };
 
@@ -41,16 +41,16 @@ _parse_server(int argc, char **argv, struct _parse_data *pd, int *np,
 	if (*np+1 < argc && argv[*np][0] == ':') {
 		char *p;
 		
-                srv->port[PORT_AUTH] = strtoul(argv[++*np], &p, 0);
+                srv->port[GRAD_PORT_AUTH] = strtoul(argv[++*np], &p, 0);
 		if (*np+2 < argc && argv[*np+1][0] == ':') {
 			++*np;
-			srv->port[PORT_ACCT] = strtoul(argv[++*np], &p, 0);
+			srv->port[GRAD_PORT_ACCT] = strtoul(argv[++*np], &p, 0);
 		} else
-			srv->port[PORT_ACCT] = srv->port[PORT_AUTH] + 1;
+			srv->port[GRAD_PORT_ACCT] = srv->port[GRAD_PORT_AUTH] + 1;
 		++*np;
 	} else {
-		srv->port[PORT_AUTH] = pd->ports[PORT_AUTH];
-		srv->port[PORT_ACCT] = pd->ports[PORT_ACCT];
+		srv->port[GRAD_PORT_AUTH] = pd->ports[GRAD_PORT_AUTH];
+		srv->port[GRAD_PORT_ACCT] = pd->ports[GRAD_PORT_ACCT];
 	}
 	if (pd->fun && pd->fun(srv)) {
 		grad_log_loc(L_ERR, pd->loc,
@@ -167,8 +167,8 @@ grad_read_realms(char *file, int auth_port, int acct_port, int (*set_secret)())
 	grad_list_destroy(&realms, _realm_mem_free, NULL);
         realms = NULL;
 	pd.fun = set_secret;
-	pd.ports[PORT_AUTH] = auth_port;
-	pd.ports[PORT_ACCT] = acct_port;
+	pd.ports[GRAD_PORT_AUTH] = auth_port;
+	pd.ports[GRAD_PORT_ACCT] = acct_port;
         return grad_read_raddb_file(file, 1, NULL, read_realms_entry, &pd);
 }
 

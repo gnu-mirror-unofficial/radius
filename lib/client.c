@@ -36,15 +36,15 @@
 #include <common.h>
 
 void
-grad_client_random_vector(char *vector)
+grad_client_random_authenticator(char *authenticator)
 {
         int randno;
         int i;
 
-        for (i = 0; i < AUTH_VECTOR_LEN; ) {
+        for (i = 0; i < GRAD_AUTHENTICATOR_LENGTH; ) {
                 randno = rand();
-                memcpy(vector, &randno, sizeof(int));
-                vector += sizeof(int);
+                memcpy(authenticator, &randno, sizeof(int));
+                authenticator += sizeof(int);
                 i += sizeof(int);
         }
 }
@@ -108,13 +108,13 @@ grad_client_message_id(grad_server_t *server)
 }
 	
 grad_request_t *
-grad_client_recv(grad_uint32_t host, u_short udp_port, char *secret, char *vector,
+grad_client_recv(grad_uint32_t host, u_short udp_port, char *secret, char *authenticator,
 	     char *buffer, int length)
 {
         grad_packet_header_t *auth;
         int totallen;
-        u_char reply_digest[AUTH_VECTOR_LEN];
-        u_char calc_digest[AUTH_VECTOR_LEN];
+        u_char reply_digest[GRAD_AUTHENTICATOR_LENGTH];
+        u_char calc_digest[GRAD_AUTHENTICATOR_LENGTH];
         int  secretlen;
 	grad_request_t *req;
 	
@@ -130,13 +130,13 @@ grad_client_recv(grad_uint32_t host, u_short udp_port, char *secret, char *vecto
 
         /* Verify the reply digest */
         secretlen = strlen(secret);
-        memcpy(reply_digest, auth->vector, AUTH_VECTOR_LEN);
-        memcpy(auth->vector, vector, AUTH_VECTOR_LEN);
+        memcpy(reply_digest, auth->authenticator, GRAD_AUTHENTICATOR_LENGTH);
+        memcpy(auth->authenticator, authenticator, GRAD_AUTHENTICATOR_LENGTH);
         memcpy(buffer + length, secret, secretlen);
         grad_md5_calc(calc_digest, (unsigned char *)auth, length + secretlen);
         
 	debug(1, ("received %s", grad_request_code_to_name(auth->code)));
-        if (memcmp(reply_digest, calc_digest, AUTH_VECTOR_LEN) != 0) {
+        if (memcmp(reply_digest, calc_digest, GRAD_AUTHENTICATOR_LENGTH) != 0) {
                 grad_log(L_WARN, _("Received invalid reply digest from server"));
         }
 
@@ -147,19 +147,19 @@ grad_client_recv(grad_uint32_t host, u_short udp_port, char *secret, char *vecto
 }
 
 grad_avp_t *
-grad_client_encrypt_pairlist(grad_avp_t *plist, u_char *vector, u_char *secret)
+grad_client_encrypt_pairlist(grad_avp_t *plist, u_char *authenticator, u_char *secret)
 {
 	grad_avp_t *p;
 	
 	for (p = plist; p; p = p->next) {
-		if (p->prop & AP_ENCRYPT_RFC2138) {
+		if (p->prop & GRAD_AP_ENCRYPT_RFC2138) {
 			char *pass = p->avp_strvalue;
-			grad_encrypt_password(p, pass, vector, secret);
+			grad_encrypt_password(p, pass, authenticator, secret);
 			grad_free(pass);
-		} else if (p->prop & AP_ENCRYPT_RFC2868) {
+		} else if (p->prop & GRAD_AP_ENCRYPT_RFC2868) {
 			char *pass = p->avp_strvalue;
 			grad_encrypt_tunnel_password(p, 0, pass,
-						     vector, secret);
+						     authenticator, secret);
 			grad_free(pass);
 		}
 	}
@@ -167,24 +167,24 @@ grad_client_encrypt_pairlist(grad_avp_t *plist, u_char *vector, u_char *secret)
 }	
 
 grad_avp_t *
-grad_client_decrypt_pairlist(grad_avp_t *plist, u_char *vector, u_char *secret)
+grad_client_decrypt_pairlist(grad_avp_t *plist, u_char *authenticator, u_char *secret)
 {
 	grad_avp_t *p;
-	char password[AUTH_STRING_LEN+1];
+	char password[GRAD_STRING_LENGTH+1];
 	
 	for (p = plist; p; p = p->next) {
-		if (p->prop & AP_ENCRYPT_RFC2138) {
-			grad_decrypt_password(password, p, vector, secret);
+		if (p->prop & GRAD_AP_ENCRYPT_RFC2138) {
+			grad_decrypt_password(password, p, authenticator, secret);
 			grad_free(p->avp_strvalue);
 			p->avp_strvalue = grad_estrdup(password);
 			p->avp_strlength = strlen(p->avp_strvalue);
-		} else if (p->prop & AP_ENCRYPT_RFC2868) {
+		} else if (p->prop & GRAD_AP_ENCRYPT_RFC2868) {
 			u_char tag;
 			
 			grad_decrypt_tunnel_password(password,
 						     &tag,
 						     p,
-						     vector,
+						     authenticator,
 						     secret);
 			grad_free(p->avp_strvalue);
 			p->avp_strvalue = grad_estrdup(password);
@@ -209,7 +209,7 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
         int i;
         grad_request_t *req = NULL;
         grad_server_t *server;
-        char ipbuf[DOTTED_QUAD_LEN];
+        char ipbuf[GRAD_IPV4_STRING_LENGTH];
 	char *recv_buf;
 	grad_iterator_t *itr;
 	int id;
@@ -252,7 +252,7 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
 		fd_set readfds;
 		struct timeval tm;
 		int result;
-		u_char vector[AUTH_VECTOR_LEN];
+		u_char authenticator[GRAD_AUTHENTICATOR_LENGTH];
 		void *pdu;
 		size_t size;
 		grad_avp_t *pair;
@@ -267,25 +267,25 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
                 }
 
                 if (authid && (flags & RADCLT_AUTHENTICATOR))
-			memcpy(vector, authvec, sizeof vector);
+			memcpy(authenticator, authvec, sizeof authenticator);
 		else
-			grad_client_random_vector(vector);
+			grad_client_random_authenticator(authenticator);
 		if (authid && (flags & RADCLT_ID))
 			id = *authid;
 		else
 			id = grad_client_message_id(server);
 		pair = grad_client_encrypt_pairlist(grad_avl_dup(pairlist),
-						    vector, server->secret);
+						    authenticator, server->secret);
 		size = grad_create_pdu(&pdu, code,
 				       id,
-				       vector,
+				       authenticator,
 				       server->secret,
 				       pair,
 				       NULL);
 		if (authid && !(flags & RADCLT_ID))
 			*authid = id;
 		if (authvec && !(flags & RADCLT_AUTHENTICATOR))
-			memcpy(authvec, vector, sizeof vector);
+			memcpy(authvec, authenticator, sizeof authenticator);
 		
 		grad_avl_free(pair);
 		
@@ -335,7 +335,7 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
 						sin->sin_addr.s_addr,
                                                 sin->sin_port,
                                                 server->secret,
-                                                vector,
+                                                authenticator,
                                                 recv_buf,
                                                 result);
                                 else 

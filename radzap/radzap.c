@@ -161,7 +161,7 @@ radzap(grad_netdef_t *netdef, int port, char *user, time_t t)
 int
 confirm(struct radutmp *utp)
 {
-        char buf[MAX_LONGNAME];
+        char buf[GRAD_MAX_LONGNAME];
         grad_nas_t *cl;
         char *s = NULL;
         

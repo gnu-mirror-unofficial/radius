@@ -89,7 +89,7 @@ attr_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
 {
         grad_avp_t *pair;
         int len;
-        char tmp[AUTH_STRING_LEN + 1];
+        char tmp[GRAD_STRING_LENGTH + 1];
         char *str;
 	
         if (!attr) {
@@ -99,7 +99,7 @@ attr_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
         
         if ((pair = grad_avl_find(pairlist, attr->value)) == NULL) {
                 if (!defval) {
-                        if (attr->type == TYPE_STRING)
+                        if (attr->type == GRAD_TYPE_STRING)
                                 defval = "-";
                         else
                                 defval = "-0";
@@ -149,16 +149,16 @@ attr_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
                 return;
         }
 
-        tmp[AUTH_STRING_LEN-1] = 0;
+        tmp[GRAD_STRING_LENGTH-1] = 0;
         switch (attr->type) {
-        case TYPE_STRING:
-                if ((attr->prop & AP_ENCRYPT) && req) {
+        case GRAD_TYPE_STRING:
+                if ((attr->prop & GRAD_AP_ENCRYPT) && req) {
                         req_decrypt_password(tmp, req, pair);
 			str = tmp;
 		} else
 			str = pair->avp_strvalue;
 
-		if (attr->prop & AP_BINARY_STRING) 
+		if (attr->prop & GRAD_AP_BINARY_STRING) 
 			len = pair->avp_strlength;
 		else
 			/* strvalue might include terminating zero
@@ -170,11 +170,11 @@ attr_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
 			obstack_grow(obp, str, len);
                 break;
 		
-        case TYPE_INTEGER:
+        case GRAD_TYPE_INTEGER:
 	{
 		grad_dict_value_t *dval;
 		
-                if (escape && (pair->prop & AP_TRANSLATE))
+                if (escape && (pair->prop & GRAD_AP_TRANSLATE))
                         dval = grad_value_lookup(pair->avp_lvalue, pair->name);
                 else
                         dval = NULL;
@@ -188,13 +188,13 @@ attr_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
 		break;
 	}
 		
-        case TYPE_IPADDR:
+        case GRAD_TYPE_IPADDR:
                 grad_ip_iptostr(pair->avp_lvalue, tmp);
                 len = strlen(tmp);
                 obstack_grow(obp, tmp, len);
                 break;
 		
-        case TYPE_DATE:
+        case GRAD_TYPE_DATE:
                 snprintf(tmp, sizeof(tmp), "%ld", pair->avp_lvalue);
                 len = strlen(tmp);
                 obstack_grow(obp, tmp, len);
@@ -215,7 +215,7 @@ curtime_to_str(struct obstack *obp, grad_avp_t *request, int gmt)
         time_t curtime;
         struct tm *tm, tms;
         grad_avp_t *pair;
-        char tbuf[AUTH_STRING_LEN];
+        char tbuf[GRAD_STRING_LENGTH];
         int len;
         
         curtime = time(NULL);
@@ -226,7 +226,7 @@ curtime_to_str(struct obstack *obp, grad_avp_t *request, int gmt)
         else
                 tm = localtime_r(&curtime, &tms);
                                 
-        len = strftime(tbuf, AUTH_STRING_LEN, "%Y-%m-%d %H:%M:%S", tm);
+        len = strftime(tbuf, GRAD_STRING_LENGTH, "%Y-%m-%d %H:%M:%S", tm);
         obstack_grow(obp, tbuf, len);
 }
 
@@ -246,7 +246,7 @@ attrno_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
 static grad_dict_attr_t *
 parse_dict_attr(char *p, char **endp, char **defval)
 {
-        char namebuf[MAX_DICTNAME];
+        char namebuf[GRAD_MAX_DICTNAME];
         
         *defval = NULL;
         if (isdigit(*p)) {

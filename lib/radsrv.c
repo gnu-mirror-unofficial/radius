@@ -46,12 +46,12 @@ grad_server_send_reply(int fd, grad_request_t *radreq)
         size_t length;
 
         length = grad_create_pdu(&pdu, radreq->reply_code,
-				 radreq->id, radreq->vector, radreq->secret,
+				 radreq->id, radreq->authenticator, radreq->secret,
 				 radreq->reply_pairs, radreq->reply_msg);
         if (length > 0) {
                 struct sockaddr saremote;
                 struct sockaddr_in *sin;
-                char buf[MAX_LONGNAME];
+                char buf[GRAD_MAX_LONGNAME];
 
                 debug(1, ("Sending %s of id %d to %lx (nas %s)",
                           grad_request_code_to_name(radreq->reply_code), 
@@ -92,14 +92,14 @@ grad_server_send_challenge(int fd, grad_request_t *radreq, char *msg, char *stat
 	reply = grad_avl_dup(radreq->reply_pairs);
 	grad_avl_merge(&reply, &p);
         length = grad_create_pdu(&pdu, RT_ACCESS_CHALLENGE, radreq->id,
-				 radreq->vector, radreq->secret, reply, msg);
+				 radreq->authenticator, radreq->secret, reply, msg);
 	grad_avl_free(reply);
 	grad_avl_free(p);
 	
         if (length > 0) {
                 struct sockaddr saremote;
                 struct sockaddr_in *sin;
-                char buf[MAX_LONGNAME];
+                char buf[GRAD_MAX_LONGNAME];
 
                 debug(1, ("Sending Challenge of id %d to %lx (nas %s)",
                           radreq->id, (u_long)radreq->ipaddr,

@@ -247,7 +247,7 @@ parse_opt(int key, char *arg, struct argp_state *state)
 		
         case 'x':
                 x_debug_spec = optarg;
-                set_debug_levels(optarg);
+                grad_set_debug_levels(optarg);
                 break;
 		
         case 'y':
@@ -1092,7 +1092,7 @@ udp_open(int type, grad_uint32_t ipaddr, int port, int nonblock)
         s.sin_addr.s_addr = htonl(ipaddr);
         s.sin_port = htons(port);
 	if (p = input_find_channel(radius_input, "udp", &s)) {
-		char buffer[DOTTED_QUAD_LEN];
+		char buffer[GRAD_IPV4_STRING_LENGTH];
 		grad_log(L_ERR,
 		         _("socket %s:%d is already assigned for %s"),
 		         grad_ip_iptostr(ipaddr, buffer),

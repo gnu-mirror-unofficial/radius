@@ -2507,11 +2507,11 @@ Datatype
 attr_datatype(int type)
 {
         switch (type) {
-        case TYPE_STRING:
-        case TYPE_DATE:
+        case GRAD_TYPE_STRING:
+        case GRAD_TYPE_DATE:
                 return String;
-        case TYPE_INTEGER:
-        case TYPE_IPADDR:
+        case GRAD_TYPE_INTEGER:
+        case GRAD_TYPE_IPADDR:
                 return Integer;
         default:
                 grad_insist_fail("unknown attribute type");
@@ -4337,14 +4337,14 @@ attrasgn_internal(int attr, grad_avp_t *pair, RWSTYPE val)
          }
 		
 	switch (pair->type) {
-	case TYPE_STRING:
-	case TYPE_DATE:
+	case GRAD_TYPE_STRING:
+	case GRAD_TYPE_DATE:
 		grad_string_replace(&pair->avp_strvalue, (char*)val);
 		pair->avp_strlength = strlen((char*) val);
 		break;
 		
-	case TYPE_INTEGER:
-	case TYPE_IPADDR:
+	case GRAD_TYPE_INTEGER:
+	case GRAD_TYPE_IPADDR:
 		pair->avp_lvalue = val;
 		break;
 	}
@@ -4383,8 +4383,8 @@ rw_attrs0()
         
         if ((pair = grad_avl_find(AVPLIST(&mach), attr)) == NULL) 
                 pushs(&nil, 1);
-        else if (pair->prop & AP_ENCRYPT) {
-		char string[AUTH_STRING_LEN+1];
+        else if (pair->prop & GRAD_AP_ENCRYPT) {
+		char string[GRAD_STRING_LENGTH+1];
 		int len;
 		req_decrypt_password(string, mach.req, pair);
 		len = strlen(string);
@@ -5023,7 +5023,7 @@ bi_ntohs()
 static void
 bi_inet_ntoa()
 {
-	char buffer[DOTTED_QUAD_LEN];
+	char buffer[GRAD_IPV4_STRING_LENGTH];
 	char *s = grad_ip_iptostr(getarg(1), buffer);
 	pushstr(s, strlen(s));
 }
@@ -5109,7 +5109,7 @@ bi_nas_name()
 		char *s = nas->shortname[0] ? nas->shortname : nas->longname;
 		pushstr(s, strlen(s));
         } else {
-		char nasname[MAX_LONGNAME];
+		char nasname[GRAD_MAX_LONGNAME];
 		
 		grad_ip_gethostname(ip, nasname, sizeof(nasname));
 		pushstr(nasname, strlen(nasname));
@@ -5125,7 +5125,7 @@ bi_nas_short_name()
 	if ((nas = grad_nas_lookup_ip(ip)) && nas->shortname[0]) {
 		pushstr(nas->shortname, strlen(nas->shortname));
         } else {
-		char nasname[MAX_LONGNAME];
+		char nasname[GRAD_MAX_LONGNAME];
 		
 		grad_ip_gethostname(ip, nasname, sizeof(nasname));
 		pushstr(nasname, strlen(nasname));
@@ -5141,7 +5141,7 @@ bi_nas_full_name()
 	if ((nas = grad_nas_lookup_ip(ip)) != NULL) {
 		pushstr(nas->longname, strlen(nas->longname));
         } else {
-		char nasname[MAX_LONGNAME];
+		char nasname[GRAD_MAX_LONGNAME];
 		
 		grad_ip_gethostname(ip, nasname, sizeof(nasname));
 		pushstr(nasname, strlen(nasname));
@@ -5152,7 +5152,7 @@ static void
 bi_gethostbyaddr()
 {
 	grad_uint32_t ip = (grad_uint32_t) getarg(1);
-	char nasname[MAX_LONGNAME];
+	char nasname[GRAD_MAX_LONGNAME];
 		
 	grad_ip_gethostname(ip, nasname, sizeof(nasname));
 	pushstr(nasname, strlen(nasname));

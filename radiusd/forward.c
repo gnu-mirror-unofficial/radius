@@ -104,7 +104,7 @@ forward_data(grad_server_t *srv, int type, void *data, size_t size)
 	rc = sendto(forward_fd, data, size, 0,
 		    (struct sockaddr *)&addr, sizeof(addr));
 	if (rc < 0) {
-		char buffer[DOTTED_QUAD_LEN];
+		char buffer[GRAD_IPV4_STRING_LENGTH];
 
 		grad_log(L_ERR|L_PERROR,
 		         _("Can't forward to %s:%d"),
@@ -132,7 +132,7 @@ forwarder(void *item, void *data)
 			vp = proxy_request_recode(r->req,
 						  grad_avl_dup(r->req->request),
 						  secret,
-						  r->req->vector);
+						  r->req->authenticator);
 			plist = vp;
 			id = grad_client_message_id(srv);
 		} else {
@@ -143,7 +143,7 @@ forwarder(void *item, void *data)
 		size = grad_create_pdu(&pdu,
 				      r->req->code,
 				      id,
-				      r->req->vector,
+				      r->req->authenticator,
 				      secret,
 				      plist,
 				      NULL);
@@ -175,7 +175,7 @@ fixup_forward_server(void *item, void *data)
 	grad_server_t *srv = item;
 	CLIENT *cl = client_lookup_ip(srv->addr);
 	if (!cl) {
-		char buffer[DOTTED_QUAD_LEN];
+		char buffer[GRAD_IPV4_STRING_LENGTH];
 		grad_log(L_NOTICE,
 		         _("Forwarding host %s not listed in clients"),
 		         grad_ip_iptostr(srv->addr, buffer));

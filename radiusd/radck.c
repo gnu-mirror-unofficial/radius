@@ -222,7 +222,7 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
                 
                 dict = grad_attr_number_to_dict(p->attribute);
                 if (dict) {
-                        if (!(dict->prop & AF_LHS(cf_file))) {
+                        if (!(dict->prop & GRAD_AF_LHS(cf_file))) {
                                 grad_log_loc(L_ERR, loc,
 					 _("attribute %s not allowed in LHS"),
 					     dict->name);
@@ -288,7 +288,7 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
                 }
         }
 
-        if (cf_file != CF_USERS)
+        if (cf_file != GRAD_CF_USERS)
                 return 0;
 
         /*
@@ -417,7 +417,7 @@ fix_reply_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
         for (p = *pairs; p; p = p->next) {
                 dict = grad_attr_number_to_dict(p->attribute);
                 if (dict) {
-                        if (!(dict->prop & AF_RHS(cf_file))) {
+                        if (!(dict->prop & GRAD_AF_RHS(cf_file))) {
                                 grad_log_loc(L_ERR, loc,
 					  _("attribute %s not allowed in RHS"),
 					     dict->name);

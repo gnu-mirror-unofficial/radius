@@ -138,7 +138,7 @@ converse(type, sp, pdu, closure)
         struct snmp_var *var;
         int ind;
         SNMP_GET_TAB *tab;
-        char ipbuf[DOTTED_QUAD_LEN];
+        char ipbuf[GRAD_IPV4_STRING_LENGTH];
         
         if (type == SNMP_CONV_TIMEOUT) {
                 grad_log(L_ERR, "timed out in waiting SNMP response from %s\n",
@@ -251,7 +251,7 @@ walk_converse(type, sp, pdu, closure)
         SNMP_WALK_TAB *tab;
         struct snmp_walk_data *data = (struct snmp_walk_data *) closure;
         int err = 0;
-        char ipbuf[DOTTED_QUAD_LEN];
+        char ipbuf[GRAD_IPV4_STRING_LENGTH];
         
         data->varlist = NULL;
 

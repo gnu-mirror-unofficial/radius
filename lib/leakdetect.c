@@ -217,6 +217,15 @@ grad_free(void *ptr)
         free(ptr);
 }
 
+void
+grad_destroy(void **pptr)
+{
+	if (*pptr) {
+		grad_free(*pptr);
+		*pptr = NULL;
+	}
+}
+
 void *
 grad_emalloc(size_t size)
 {

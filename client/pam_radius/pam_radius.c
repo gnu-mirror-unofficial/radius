@@ -417,7 +417,7 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
 							  dv->value));
         }
         authreq = grad_client_send(queue,
-				   PORT_AUTH, RT_ACCESS_REQUEST, pairs);
+				   GRAD_PORT_AUTH, RT_ACCESS_REQUEST, pairs);
         if (authreq == NULL) {
                 _pam_log(LOG_ERR,
                          "no response from radius server");
@@ -562,7 +562,8 @@ _radius_acct(pam_handle_t *pamh, struct radutmp *ut)
 			  grad_avp_create_integer(DA_ACCT_STATUS_TYPE,
 						  type));
 
-	req = grad_client_send(queue, PORT_ACCT, RT_ACCOUNTING_REQUEST, pairs);
+	req = grad_client_send(queue, GRAD_PORT_ACCT, RT_ACCOUNTING_REQUEST, 
+                               pairs);
         if (req == NULL) {
                 _pam_log(LOG_ERR,
                          "no response from radius server");

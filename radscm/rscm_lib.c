@@ -105,14 +105,14 @@ radscm_avp_to_cons(grad_avp_t *pair)
         else
                 scm_attr = SCM_MAKINUM(pair->attribute);
         switch (pair->type) {
-        case TYPE_STRING:
-        case TYPE_DATE:
+        case GRAD_TYPE_STRING:
+        case GRAD_TYPE_DATE:
                 scm_value = scm_makfrom0str(pair->avp_strvalue);
                 break;
-        case TYPE_INTEGER:
+        case GRAD_TYPE_INTEGER:
                 scm_value = scm_long2num(pair->avp_lvalue);
                 break;
-        case TYPE_IPADDR:
+        case GRAD_TYPE_IPADDR:
                 scm_value = scm_ulong2num(pair->avp_lvalue);
                 break;
         default:
@@ -161,7 +161,7 @@ radscm_cons_to_avp(SCM scm)
         pair.prop = dict->prop;
 
         switch (pair.type) {
-        case TYPE_INTEGER:
+        case GRAD_TYPE_INTEGER:
                 if (SCM_IMP(cdr) && SCM_INUMP(cdr)) {
                         pair.avp_lvalue = SCM_INUM(cdr);
                 } else if (SCM_BIGP(cdr)) {
@@ -180,7 +180,7 @@ radscm_cons_to_avp(SCM scm)
                         return NULL;
                 break;
                 
-        case TYPE_IPADDR:
+        case GRAD_TYPE_IPADDR:
                 if (SCM_IMP(cdr) && SCM_INUMP(cdr)) {
                         pair.avp_lvalue = SCM_INUM(cdr);
                 } else if (SCM_BIGP(cdr)) {
@@ -191,8 +191,8 @@ radscm_cons_to_avp(SCM scm)
                 } else
                         return NULL;
                 break;
-        case TYPE_STRING:
-        case TYPE_DATE:
+        case GRAD_TYPE_STRING:
+        case GRAD_TYPE_DATE:
                 if (!(SCM_NIMP(cdr) && SCM_STRINGP(cdr)))
                         return NULL;
                 pair.avp_strvalue = grad_estrdup(SCM_STRING_CHARS(cdr));

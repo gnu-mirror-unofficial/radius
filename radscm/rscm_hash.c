@@ -34,7 +34,7 @@ SCM_DEFINE(rscm_md5_calc, "md5-calc", 1, 0, 0,
 	   "Compute MD5 hash of @var{input}")
 #define FUNC_NAME s_rscm_md5_calc
 {
-	char digest[AUTH_VECTOR_LEN];
+	char digest[GRAD_AUTHENTICATOR_LENGTH];
 	
 	SCM_ASSERT (SCM_NIMP(INPUT) && SCM_STRINGP(INPUT),
 		    INPUT, SCM_ARG1, FUNC_NAME);

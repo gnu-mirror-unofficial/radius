@@ -42,47 +42,47 @@
 
 /* Decode a password and encode it again. */
 static void
-passwd_recode(grad_avp_t *pass_pair, char *new_secret, char *new_vector,
+passwd_recode(grad_avp_t *pass_pair, char *new_secret, char *new_authenticator,
 	      grad_request_t *req)
 {
-        char password[AUTH_STRING_LEN+1];
+        char password[GRAD_STRING_LENGTH+1];
         req_decrypt_password(password, req, pass_pair);
         grad_free(pass_pair->avp_strvalue);
-        grad_encrypt_password(pass_pair, password, new_vector, new_secret);
+        grad_encrypt_password(pass_pair, password, new_authenticator, new_secret);
         /* Don't let the cleantext hang around */
-        memset(password, 0, AUTH_STRING_LEN);
+        memset(password, 0, GRAD_STRING_LENGTH);
 }
 
 /* Decode a password and encode it again. */
 static void
-tunnel_passwd_recode(grad_avp_t *pass_pair, char *new_secret, char *new_vector,
+tunnel_passwd_recode(grad_avp_t *pass_pair, char *new_secret, char *new_authenticator,
 		     grad_request_t *req)
 {
-        char password[AUTH_STRING_LEN+1];
+        char password[GRAD_STRING_LENGTH+1];
 	u_char tag;
 	
 	grad_decrypt_tunnel_password(password, 
 				     &tag, pass_pair,
-				     req->vector, req->secret);
+				     req->authenticator, req->secret);
         grad_free(pass_pair->avp_strvalue);
 	grad_encrypt_tunnel_password(pass_pair,
 				     tag, password, 
-				     new_vector, new_secret);
-	memset(password, 0, AUTH_STRING_LEN);
+				     new_authenticator, new_secret);
+	memset(password, 0, GRAD_STRING_LENGTH);
 }
 
 grad_avp_t *
 proxy_request_recode(grad_request_t *radreq, grad_avp_t *plist,
-		     u_char *secret, u_char *vector)
+		     u_char *secret, u_char *authenticator)
 {
 	grad_avp_t *p;
 
 	/* Recode password pair(s) */
 	for (p = plist; p; p = p->next) {
-		if (p->prop & AP_ENCRYPT_RFC2138)
-			passwd_recode(p, secret, vector, radreq);
-		else if (p->prop & AP_ENCRYPT_RFC2868)
-			tunnel_passwd_recode(p, secret, vector, radreq);
+		if (p->prop & GRAD_AP_ENCRYPT_RFC2138)
+			passwd_recode(p, secret, authenticator, radreq);
+		else if (p->prop & GRAD_AP_ENCRYPT_RFC2868)
+			tunnel_passwd_recode(p, secret, authenticator, radreq);
 	}
 	return plist;
 }
@@ -163,7 +163,8 @@ proxy_send_pdu(int fd, grad_server_t *server, grad_request_t *radreq,
 	sin.sin_addr.s_addr = htonl(server->addr);
 	
 	sin.sin_port = htons((radreq->code == RT_ACCESS_REQUEST) ?
-			     server->port[PORT_AUTH] : server->port[PORT_ACCT]);
+			     server->port[GRAD_PORT_AUTH] 
+                              : server->port[GRAD_PORT_ACCT]);
 
 	debug(1, ("Proxying id %d to %lx",
 		  radreq->id, (u_long)server->addr));
@@ -198,7 +199,7 @@ proxy_send_request(int fd, grad_request_t *radreq)
 		radreq->server_id = grad_client_message_id(server);
 	radreq->attempt_no++;
 
-	grad_client_random_vector(radreq->remote_auth);
+	grad_client_random_authenticator(radreq->remote_auth);
 	plist = proxy_request_recode(radreq, grad_avl_dup(radreq->request),
 				     server->secret, radreq->remote_auth);
 
@@ -206,7 +207,7 @@ proxy_send_request(int fd, grad_request_t *radreq)
 	p = grad_avp_alloc();
 	p->name = "Proxy-State";
 	p->attribute = DA_PROXY_STATE;
-	p->type = TYPE_STRING;
+	p->type = GRAD_TYPE_STRING;
 	p->avp_strlength = sizeof(PROXY_STATE);
 	p->avp_strvalue = grad_emalloc(p->avp_strlength);
 	
@@ -391,7 +392,7 @@ proxy_retry(grad_request_t *req, int fd)
 static int
 select_propagated(void *null ARG_UNUSED, grad_avp_t *pair)
 {
-        return pair->prop & AP_PROPAGATE;
+        return pair->prop & GRAD_AP_PROPAGATE;
 }
 
 /* Called when a response from a remote radius server has been received.
@@ -434,10 +435,10 @@ proxy_receive(grad_request_t *radreq, grad_request_t *oldreq, int fd)
         /* Rebuild the grad_request_t struct, so that the normal functions
            can process it. Take care not to modify oldreq! */
 
-	memcpy(radreq->vector, oldreq->remote_auth, sizeof radreq->vector);
+	memcpy(radreq->authenticator, oldreq->remote_auth, sizeof radreq->authenticator);
  	radreq->server_reply = proxy_request_recode(radreq, allowed_pairs,
 						    oldreq->secret,
-						    oldreq->vector);
+						    oldreq->authenticator);
         radreq->validated    = 1;
         radreq->server_code  = radreq->code;
         radreq->code         = oldreq->code;
@@ -446,7 +447,7 @@ proxy_receive(grad_request_t *radreq, grad_request_t *oldreq, int fd)
         radreq->udp_port     = oldreq->udp_port;
         radreq->id           = oldreq->id;
 
-	memcpy(radreq->vector, oldreq->vector, sizeof radreq->vector);
+	memcpy(radreq->authenticator, oldreq->authenticator, sizeof radreq->authenticator);
         radreq->secret       = oldreq->secret;
         radreq->request      = grad_avl_dup(oldreq->request);
 

@@ -278,7 +278,7 @@ rawread()
         struct tm *tm;
         char ct[256];
         grad_uint32_t ipaddr;
-        char ip_str[DOTTED_QUAD_LEN];
+        char ip_str[GRAD_IPV4_STRING_LENGTH];
         
         if ((wfd = open(file, O_RDONLY, 0)) < 0) {
                 grad_log(L_ERR|L_PERROR, "can't open %s", file);
@@ -695,7 +695,7 @@ print_entry(WTMP *pp, struct radutmp *bp, int mark)
         char ip_str[IP_ADDR_LEN+1];
         time_t delta;
         grad_uint32_t ipaddr;
-        char buf[MAX_LONGNAME];
+        char buf[GRAD_MAX_LONGNAME];
         
         tm = localtime(&bp->time);
         strftime(ct, sizeof(ct), "%a %b %d %H:%M", tm);
@@ -781,7 +781,7 @@ print_reboot_entry(struct radutmp *bp)
         char *s;
         struct tm *tm;
         char ct[256];
-        char buf[MAX_LONGNAME];
+        char buf[GRAD_MAX_LONGNAME];
         
         tm = localtime(&bp->time);
         strftime(ct, sizeof(ct), "%a %b %d %H:%M", tm);
@@ -804,7 +804,7 @@ print_acct_toggle(struct radutmp *bp)
         char *s;
         struct tm *tm;
         char ct[256];
-        char buf[MAX_LONGNAME];
+        char buf[GRAD_MAX_LONGNAME];
         
         tm = localtime(&bp->time);
         strftime(ct, sizeof(ct), "%a %b %d %H:%M", tm);

@@ -176,8 +176,8 @@ add_user_entry(void *closure, grad_locus_t *loc,
                 name = "BEGIN";
 
         if ((check == NULL && reply == NULL)
-            || fix_check_pairs(CF_USERS, loc, name, &check)
-            || fix_reply_pairs(CF_USERS, loc, name, &reply)) {
+            || fix_check_pairs(GRAD_CF_USERS, loc, name, &check)
+            || fix_reply_pairs(GRAD_CF_USERS, loc, name, &reply)) {
                 grad_log_loc(L_ERR, loc,
 			     _("discarding user `%s'"),
 			     name);
@@ -655,7 +655,7 @@ int
 hints_setup(grad_request_t *req)
 {
         grad_avp_t      *request_pairs = req->request;
-        char            newname[AUTH_STRING_LEN];
+        char            newname[GRAD_STRING_LENGTH];
         grad_avp_t      *name_pair;
         grad_avp_t      *orig_name_pair;
         grad_avp_t      *tmp;
@@ -930,8 +930,8 @@ client_lookup_ip(grad_uint32_t ipaddr)
                 return NULL;
         for (cl = grad_iterator_first(itr); cl; cl = grad_iterator_next(itr))
 		if (grad_ip_in_net_p(&cl->netdef, ipaddr)) {
-			char ipbuf[DOTTED_QUAD_LEN];
-			char maskbuf[DOTTED_QUAD_LEN];
+			char ipbuf[GRAD_IPV4_STRING_LENGTH];
+			char maskbuf[GRAD_IPV4_STRING_LENGTH];
 
 			debug(10,
 			      ("Found secret for %s/%s (%s): %s",
@@ -1140,7 +1140,7 @@ fallthrough(grad_avp_t *vp)
 int
 portcmp(grad_avp_t *check, grad_avp_t *request)
 {
-        char buf[AUTH_STRING_LEN];
+        char buf[GRAD_STRING_LENGTH];
         char *s, *p, *save;
         int lo, hi;
         int port = request->avp_lvalue;
@@ -1281,7 +1281,7 @@ server_attr(int attr)
 {
         int i;
 
-        for (i = 0; i < NITEMS(server_check_items); i++) 
+        for (i = 0; i < GRAD_NITEMS(server_check_items); i++) 
                 if (server_check_items[i] == attr)
                         return 1;       
         return 0;
@@ -1296,7 +1296,7 @@ paircmp(grad_request_t *request, grad_avp_t *check, char *pusername)
 {
         grad_avp_t *check_item = check;
         grad_avp_t *auth_item;
-        char username[AUTH_STRING_LEN];
+        char username[GRAD_STRING_LENGTH];
         int result = 0;
         int compare;
         char *save;
@@ -1370,7 +1370,7 @@ paircmp(grad_request_t *request, grad_avp_t *check, char *pusername)
                 
                 compare = 0;    /* default result */
                 switch (check_item->type) {
-                case TYPE_STRING:
+                case GRAD_TYPE_STRING:
                         switch (check_item->attribute) {
                         case DA_PREFIX:
                         case DA_SUFFIX:
@@ -1403,7 +1403,7 @@ paircmp(grad_request_t *request, grad_avp_t *check, char *pusername)
                         }
                         break;
 
-                case TYPE_INTEGER:
+                case GRAD_TYPE_INTEGER:
                         switch (check_item->attribute) {
                         case DA_USER_UID:
                                 compare = uidcmp(check_item, username);
@@ -1411,7 +1411,7 @@ paircmp(grad_request_t *request, grad_avp_t *check, char *pusername)
                         }
                         /*FALLTHRU*/
 			
-                case TYPE_IPADDR:
+                case GRAD_TYPE_IPADDR:
                         compare = auth_item->avp_lvalue - check_item->avp_lvalue;
                         break;
                         
@@ -1577,7 +1577,7 @@ wild_match(char *expr, char *name, char *return_name)
 int
 matches(grad_request_t *req, char *name, grad_matching_rule_t *pl, char *matchpart)
 {
-	memcpy(matchpart, name, AUTH_STRING_LEN);
+	memcpy(matchpart, name, GRAD_STRING_LENGTH);
         if (strncmp(pl->name, "DEFAULT", 7) == 0
 	    || wild_match(pl->name, name, matchpart) == 0)
                 return paircmp(req, pl->lhs, matchpart);
@@ -1684,14 +1684,14 @@ reload_data(enum reload_what what, int *do_radck)
         case reload_huntgroups:
                 grad_list_destroy(&huntgroups, matching_rule_free, NULL);
                 path = grad_mkfilename(radius_dir, RADIUS_HUNTGROUPS);
-                huntgroups = file_read(CF_HUNTGROUPS, path);
+                huntgroups = file_read(GRAD_CF_HUNTGROUPS, path);
                 grad_free(path);
                 break;
                 
         case reload_hints:
                 grad_list_destroy(&hints, matching_rule_free, NULL);
                 path = grad_mkfilename(radius_dir, RADIUS_HINTS);
-                hints = file_read(CF_HINTS, path);
+                hints = file_read(GRAD_CF_HINTS, path);
                 grad_free(path);
                 if (!use_dbm) 
                         *do_radck = 1;
@@ -1846,7 +1846,7 @@ void
 strip_username(int do_strip, char *name, grad_avp_t *check_item,
 	       char *stripped_name)
 {
-        char tmpname[AUTH_STRING_LEN];
+        char tmpname[GRAD_STRING_LENGTH];
         char *source_ptr = name;
         grad_avp_t *presuf_item, *tmp;
         

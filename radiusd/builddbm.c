@@ -50,7 +50,7 @@ append_symbol(DBM_closure *closure, User_symbol *sym)
         int     *q;
         DBM_DATUM       named;
         DBM_DATUM       contentd;
-        char    name[AUTH_STRING_LEN];
+        char    name[GRAD_STRING_LENGTH];
         
         check_len = list_length(sym->check);
         reply_len = list_length(sym->reply);
@@ -68,7 +68,7 @@ append_symbol(DBM_closure *closure, User_symbol *sym)
                 *q++ = vp->attribute;
                 *q++ = vp->type;
                 *q++ = vp->operator;
-                if (vp->type == TYPE_STRING) {
+                if (vp->type == GRAD_TYPE_STRING) {
                         strcpy((char*)q, vp->avp_strvalue);
                         q += NINT(vp->avp_strlength+1);
                 } else
@@ -79,7 +79,7 @@ append_symbol(DBM_closure *closure, User_symbol *sym)
                 *q++ = vp->attribute;
                 *q++ = vp->type;
                 *q++ = vp->operator;
-                if (vp->type == TYPE_STRING) {
+                if (vp->type == GRAD_TYPE_STRING) {
                         strcpy((char*)q, vp->avp_strvalue);
                         q += NINT(vp->avp_strlength+1);
                 } else
@@ -112,7 +112,7 @@ list_length(grad_avp_t *vp)
         
         for (len = 0; vp; vp = vp->next) {
                 len += 3;
-                if (vp->type == TYPE_STRING)
+                if (vp->type == GRAD_TYPE_STRING)
                         len += NINT(vp->avp_strlength + 1);
                 else
                         len++;
@@ -183,7 +183,7 @@ decode_dbm(int **pptr)
                 next_pair->attribute = *ptr++;
                 next_pair->type = *ptr++;
                 next_pair->operator = *ptr++;
-                if (next_pair->type == TYPE_STRING) {
+                if (next_pair->type == GRAD_TYPE_STRING) {
                         next_pair->avp_strvalue = grad_estrdup((char*)ptr);
                         next_pair->avp_strlength = strlen(next_pair->avp_strvalue);
                         ptr += NINT(next_pair->avp_strlength+1);

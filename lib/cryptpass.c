@@ -73,7 +73,7 @@ void
 grad_encrypt_text(u_char **encr_text,
 		  size_t *encr_size,
 		  u_char *password,   /* Cleantext password */
-		  u_char *vector,     /* Request authenticator */
+		  u_char *authenticator,     /* Request authenticator */
 		  u_char *secret,     /* Shared secret */
 		  u_char *salt,
 		  size_t saltlen)
@@ -85,13 +85,13 @@ grad_encrypt_text(u_char **encr_text,
         u_char *passbuf;
         int md5len;
         u_char *md5buf;
-        u_char digest[AUTH_VECTOR_LEN];
+        u_char digest[GRAD_AUTHENTICATOR_LENGTH];
         u_char *cp;
         int i, j;
         
         passlen = strlen(password);
-        nchunks = (passlen + AUTH_VECTOR_LEN - 1) / AUTH_VECTOR_LEN;
-        buflen = nchunks * AUTH_VECTOR_LEN;
+        nchunks = (passlen + GRAD_AUTHENTICATOR_LENGTH - 1) / GRAD_AUTHENTICATOR_LENGTH;
+        buflen = nchunks * GRAD_AUTHENTICATOR_LENGTH;
 
         *encr_text = grad_emalloc(buflen);
         *encr_size = buflen;
@@ -102,14 +102,14 @@ grad_encrypt_text(u_char **encr_text,
         memcpy(passbuf, password, passlen);
 
         secretlen = strlen(secret);
-        md5len = secretlen + AUTH_VECTOR_LEN;
+        md5len = secretlen + GRAD_AUTHENTICATOR_LENGTH;
         md5buf = grad_emalloc(md5len + saltlen);
         memcpy(md5buf, secret, secretlen);
 
-        cp = vector;
+        cp = authenticator;
         for (i = 0; i < buflen; ) {
                 /* Compute next MD5 hash */
-                memcpy(md5buf + secretlen, cp, AUTH_VECTOR_LEN);
+                memcpy(md5buf + secretlen, cp, GRAD_AUTHENTICATOR_LENGTH);
 		if (i == 0 && saltlen) {
 			memcpy(md5buf + md5len, salt, saltlen);
 			grad_md5_calc(digest, md5buf, md5len + saltlen);
@@ -118,26 +118,26 @@ grad_encrypt_text(u_char **encr_text,
                 /* Save hash start */
                 cp = passbuf + i;
                 /* Encrypt next chunk */
-                for (j = 0; j < AUTH_VECTOR_LEN; j++, i++)
+                for (j = 0; j < GRAD_AUTHENTICATOR_LENGTH; j++, i++)
                         passbuf[i] ^= digest[j];
         }
         grad_free(md5buf);
 }
 
 void
-grad_decrypt_text(u_char *password,   /* At least AUTH_STRING_LEN+1
+grad_decrypt_text(u_char *password,   /* At least GRAD_STRING_LENGTH+1
 					 characters long */
 		  u_char *encr_text,  /* encrypted text */
 		  size_t encr_size,   /* Size of encr_text and password
 					 buffers */
-		  u_char *vector,     /* Request authenticator */
+		  u_char *authenticator,     /* Request authenticator */
 		  u_char *secret,     /* Shared secret */
 		  u_char *salt,
 		  size_t saltsize)
 {
         int md5len;
         u_char *md5buf;
-        u_char digest[AUTH_VECTOR_LEN];
+        u_char digest[GRAD_AUTHENTICATOR_LENGTH];
         u_char *cp;
         int secretlen;
         int i, j;
@@ -147,14 +147,14 @@ grad_decrypt_text(u_char *password,   /* At least AUTH_STRING_LEN+1
         
         /* Prepare md5buf */
         secretlen = strlen(secret);
-        md5len = secretlen + AUTH_VECTOR_LEN;
+        md5len = secretlen + GRAD_AUTHENTICATOR_LENGTH;
         md5buf = grad_emalloc(md5len);
         memcpy(md5buf, secret, secretlen);
 
-        cp = vector;
+        cp = authenticator;
         for (i = 0; i < encr_size; ) {
                 /* Compute next MD5 hash */
-                memcpy(md5buf + secretlen, cp, AUTH_VECTOR_LEN);
+                memcpy(md5buf + secretlen, cp, GRAD_AUTHENTICATOR_LENGTH);
 		if (i == 0 && saltsize) {
 			memcpy(md5buf + md5len, salt, saltsize);
 			grad_md5_calc(digest, md5buf, md5len + saltsize);
@@ -163,7 +163,7 @@ grad_decrypt_text(u_char *password,   /* At least AUTH_STRING_LEN+1
                 /* Save hash start */
                 cp = encr_text + i;
                 /* Decrypt next chunk */
-                for (j = 0; j < AUTH_VECTOR_LEN; j++, i++)
+                for (j = 0; j < GRAD_AUTHENTICATOR_LENGTH; j++, i++)
                         password[i] ^= digest[j];
         }
         password[encr_size] = 0;
@@ -175,30 +175,30 @@ grad_decrypt_text(u_char *password,   /* At least AUTH_STRING_LEN+1
 void
 grad_encrypt_password(grad_avp_t *pair,
 		      char *password, /* Cleantext password */
-		      char *vector,   /* Request authenticator */
+		      char *authenticator,   /* Request authenticator */
 		      char *secret)   /* Shared secret */
 {
 	u_char *encr_text;
 	size_t encr_size;
 	
 	grad_encrypt_text(&encr_text, &encr_size,
-			  password, vector, secret, 
+			  password, authenticator, secret, 
 			  NULL, 0);
         pair->avp_strvalue = encr_text;
         pair->avp_strlength = encr_size;
 }
 
 void
-grad_decrypt_password(char *password,   /* At least AUTH_STRING_LEN+1
+grad_decrypt_password(char *password,   /* At least GRAD_STRING_LENGTH+1
 					   characters long */
 		      grad_avp_t *pair, /* Password pair */
-		      char *vector,     /* Request authenticator */
+		      char *authenticator,     /* Request authenticator */
 		      char *secret)     /* Shared secret */
 {
 	grad_decrypt_text(password,
 			  pair->avp_strvalue,
 			  pair->avp_strlength,
-			  vector,
+			  authenticator,
 			  secret, 
 			  NULL,
 		     0);
@@ -208,15 +208,15 @@ grad_decrypt_password(char *password,   /* At least AUTH_STRING_LEN+1
    Decrypt a password encrypted using broken algorythm.
    This is for use with such brain-damaged NASes as MAX ascend. */
 void
-grad_decrypt_password_broken(char *password, /* At least AUTH_STRING_LEN+1
+grad_decrypt_password_broken(char *password, /* At least GRAD_STRING_LENGTH+1
 						characters long */
 			     grad_avp_t *pair, /* Password pair */
-			     char *vector,     /* Request authenticator */
+			     char *authenticator,     /* Request authenticator */
 			     char *secret)     /* Shared secret */
 {
         int md5len;
         char *md5buf;
-        char digest[AUTH_VECTOR_LEN];
+        char digest[GRAD_AUTHENTICATOR_LENGTH];
         int secretlen;
         int passlen;
         int i, j;
@@ -228,17 +228,17 @@ grad_decrypt_password_broken(char *password, /* At least AUTH_STRING_LEN+1
         
         /* Prepare md5buf */
         secretlen = strlen(secret);
-        md5len = secretlen + AUTH_VECTOR_LEN;
+        md5len = secretlen + GRAD_AUTHENTICATOR_LENGTH;
         md5buf = grad_emalloc(md5len);
         memcpy(md5buf, secret, secretlen);
 
         /* Compute next MD5 hash */
-        memcpy(md5buf + secretlen, vector, AUTH_VECTOR_LEN);
+        memcpy(md5buf + secretlen, authenticator, GRAD_AUTHENTICATOR_LENGTH);
         grad_md5_calc(digest, md5buf, md5len);
 
         for (i = 0; i < passlen; ) {
                 /* Decrypt next chunk */
-                for (j = 0; j < AUTH_VECTOR_LEN; j++, i++)
+                for (j = 0; j < GRAD_AUTHENTICATOR_LENGTH; j++, i++)
                         password[i] ^= digest[j];
         }
         grad_free(md5buf);
@@ -251,21 +251,21 @@ void
 grad_encrypt_tunnel_password(grad_avp_t *pair,
 			     u_char tag,
 			     char *password, /* Cleantext password */
-			     char *vector,   /* Request authenticator */
+			     char *authenticator,   /* Request authenticator */
 			     char *secret)   /* Shared secret */
 {
 	u_char *encr_text;
 	size_t encr_size;
 	char *plaintext;
 	size_t length = strlen(password);
-	unsigned short salt = htons( (((long)pair ^ *(long *)vector) & 0xffff)
+	unsigned short salt = htons( (((long)pair ^ *(long *)authenticator) & 0xffff)
 				     | 0x8000 );
 	
 	plaintext = grad_emalloc(length+2);
 	plaintext[0] = length;
 	memcpy(&plaintext[1], password, length + 1);
 	grad_encrypt_text(&encr_text, &encr_size,
-			  plaintext, vector, secret, 
+			  plaintext, authenticator, secret, 
 			  (u_char*) &salt, 2);
 	grad_free(plaintext);
 	
@@ -278,18 +278,18 @@ grad_encrypt_tunnel_password(grad_avp_t *pair,
 }
 
 void
-grad_decrypt_tunnel_password(char *password,   /* At least AUTH_STRING_LEN+1
+grad_decrypt_tunnel_password(char *password,   /* At least GRAD_STRING_LENGTH+1
 						  characters long */
 			     u_char *tag,
 			     grad_avp_t *pair, /* Password pair */
-			     char *vector,     /* Request authenticator */
+			     char *authenticator,     /* Request authenticator */
 			     char *secret)     /* Shared secret */
 {
 	size_t length;
 	grad_decrypt_text(password,
 			  pair->avp_strvalue + 3,
 			  pair->avp_strlength - 3,
-			  vector,
+			  authenticator,
 			  secret, 
 			  &pair->avp_strvalue[1],
 			  2);

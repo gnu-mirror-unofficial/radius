@@ -34,6 +34,7 @@ void *grad_emalloc(size_t);
 void *grad_realloc(void *, size_t);
 void *grad_erealloc(void *, size_t);
 void grad_free(void *);
+void grad_destroy(void **);
 char *grad_estrdup(const char *);
 
 char *grad_string_replace(char **str, const char *value);

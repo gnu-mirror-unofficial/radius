@@ -114,9 +114,9 @@ typedef struct queue_stat QUEUE_STAT[R_MAX];
 
 typedef struct client {
 	grad_netdef_t           netdef;
-        char                    longname[MAX_LONGNAME+1];
+        char                    longname[GRAD_MAX_LONGNAME+1];
         u_char                  *secret;
-        char                    shortname[MAX_SHORTNAME+1];
+        char                    shortname[GRAD_MAX_SHORTNAME+1];
 } CLIENT;
 
 typedef struct proxy_state {
@@ -479,7 +479,7 @@ int proxy_receive(grad_request_t *radreq, grad_request_t *oldreq, int activefd);
 void proxy_retry(grad_request_t *radreq, int fd);
 int proxy_cmp(grad_request_t *qr, grad_request_t *r);
 grad_avp_t *proxy_request_recode(grad_request_t *radreq, grad_avp_t *plist,
-				 u_char *secret, u_char *vector);
+				 u_char *secret, u_char *authenticator);
 
 /* menu.c */
 #define MAX_PATH_LENGTH                 256

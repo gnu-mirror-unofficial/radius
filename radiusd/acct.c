@@ -185,7 +185,7 @@ rad_acct_system(grad_request_t *radreq, int dowtmp)
         time_t t;
         int ret = 0, rc;
         int port_seen = 0;
-        char buf[MAX_LONGNAME];
+        char buf[GRAD_MAX_LONGNAME];
 
 	/* Do not do anything if system accounting is not requested */
 	if (!acct_system)
@@ -542,7 +542,7 @@ acct_init()
 static char *
 make_legacy_detail_filename(grad_request_t *radreq, char *default_filename)
 {
-	char nasname[MAX_LONGNAME];
+	char nasname[GRAD_MAX_LONGNAME];
 	grad_nas_t *cl;
 	grad_uint32_t ip;
 	grad_avp_t *pair;
@@ -699,7 +699,7 @@ write_detail(grad_request_t *radreq, int authtype, int rtype)
 
                 /* Write each attribute/value to the log file */
                 for (pair = radreq->request; pair; pair = pair->next) {
-			if (pair->prop & AP_INTERNAL)
+			if (pair->prop & GRAD_AP_INTERNAL)
 				continue;
                         switch (pair->attribute) {
                         case DA_USER_PASSWORD:

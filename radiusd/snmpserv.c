@@ -739,7 +739,7 @@ snmp_tree_init()
         
         snmp_init(0, 0, (snmp_alloc_t)grad_emalloc, (snmp_free_t)grad_free);
 
-        for (p = mib_data; p < mib_data + NITEMS(mib_data); p++) {
+        for (p = mib_data; p < mib_data + GRAD_NITEMS(mib_data); p++) {
                 mib_insert(&mib_tree, p->oid, &node);
                 if (p->handler) {
                         node->handler = p->handler;
@@ -2673,7 +2673,7 @@ snmp_decode(SNMP_REQ *req, u_char *buf, size_t len)
         int access;
         char comm[128];
         int comm_len;
-        char ipbuf[DOTTED_QUAD_LEN];
+        char ipbuf[GRAD_IPV4_STRING_LENGTH];
         
         log_open(L_SNMP);
 	
@@ -2747,7 +2747,7 @@ snmp_req_drop(int type, void *data, void *orig_data,
 	      int fd, const char *status_str)
 {
         SNMP_REQ *req = data ? data : orig_data;
-        char ipbuf[DOTTED_QUAD_LEN];
+        char ipbuf[GRAD_IPV4_STRING_LENGTH];
 
         grad_log(L_NOTICE,
                  _("Dropping SNMP request from client %s: %s"),

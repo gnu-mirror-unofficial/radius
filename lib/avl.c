@@ -53,7 +53,7 @@ grad_avp_free(grad_avp_t *p)
 {
         if (!p)
                 return;
-        if (p->type == TYPE_STRING || p->eval_type != eval_const) 
+        if (p->type == GRAD_TYPE_STRING || p->eval_type != eval_const) 
                 grad_free(p->avp_strvalue);
         grad_free(p);
 }
@@ -68,7 +68,7 @@ grad_avp_dup(grad_avp_t *vp)
 
         memcpy(ret, vp, sizeof(grad_avp_t));
         ret->next = NULL;
-        if (ret->type == TYPE_STRING || ret->eval_type != eval_const) {
+        if (ret->type == GRAD_TYPE_STRING || ret->eval_type != eval_const) {
 		ret->avp_strlength = vp->avp_strlength;
                 ret->avp_strvalue = grad_emalloc(ret->avp_strlength+1);
 		memcpy(ret->avp_strvalue, vp->avp_strvalue,
@@ -146,8 +146,8 @@ grad_avp_move(grad_avp_t **first, grad_avp_t *new)
                 return 0;
         }
 
-        switch (ADDITIVITY(new->prop)) {
-        case AP_ADD_NONE:
+        switch (GRAD_GET_ADDITIVITY(new->prop)) {
+        case GRAD_AP_ADD_NONE:
                 for (pair = *first; pair; prev = pair, pair = pair->next)
                         if (pair->attribute == new->attribute)
                                 return new;
@@ -155,7 +155,7 @@ grad_avp_move(grad_avp_t **first, grad_avp_t *new)
                 new->next = NULL;
                 return NULL;
 
-        case AP_ADD_REPLACE:
+        case GRAD_AP_ADD_REPLACE:
                 if ((*first)->attribute == new->attribute) {
                         prev = *first;
                         new->next = prev->next;
@@ -174,7 +174,7 @@ grad_avp_move(grad_avp_t **first, grad_avp_t *new)
                 prev->next = new;
                 return NULL;
 
-        case AP_ADD_APPEND:
+        case GRAD_AP_ADD_APPEND:
                 for (pair = *first; pair->next; pair = pair->next)
                         ;
                 new->next = NULL;
@@ -193,7 +193,7 @@ grad_avp_cmp(grad_avp_t *a, grad_avp_t *b)
 		return 1;
 	
 	switch (a->type) {
-	case TYPE_STRING:
+	case GRAD_TYPE_STRING:
 		if (a->avp_strlength != b->avp_strlength)
 			rc = 1;
 		else
@@ -201,8 +201,8 @@ grad_avp_cmp(grad_avp_t *a, grad_avp_t *b)
                                     a->avp_strlength);
 		break;
 
-	case TYPE_INTEGER:
-	case TYPE_IPADDR:
+	case GRAD_TYPE_INTEGER:
+	case GRAD_TYPE_IPADDR:
 		rc = a->avp_lvalue != b->avp_lvalue;
 		break;
 	}
@@ -214,7 +214,7 @@ grad_avp_null_string_p(grad_avp_t *pair)
 {
 	if (!pair)
 		return 1;
-	if (pair->type != TYPE_STRING)
+	if (pair->type != GRAD_TYPE_STRING)
 		return 1;
 	return strlen(pair->avp_strvalue) == 0;
 }
@@ -427,7 +427,7 @@ grad_avl_dup(grad_avp_t *from)
         for ( ; from; from = from->next) {
                 temp = grad_avp_alloc();
                 memcpy(temp, from, sizeof(grad_avp_t));
-                if (temp->type == TYPE_STRING || temp->eval_type != eval_const) {
+                if (temp->type == GRAD_TYPE_STRING || temp->eval_type != eval_const) {
 			char *p = grad_emalloc(temp->avp_strlength+1);
 			memcpy(p, temp->avp_strvalue, temp->avp_strlength);
 			p[temp->avp_strlength] = 0;

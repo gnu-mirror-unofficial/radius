@@ -126,7 +126,7 @@ radutmp_putent(char *filename, struct radutmp *ut, int status)
 {
         radut_file_t file;
         struct radutmp *ent;
-        char ipbuf[DOTTED_QUAD_LEN];
+        char ipbuf[GRAD_IPV4_STRING_LENGTH];
         int rc = PUTENT_SUCCESS;
 
         if ((file = rut_setent(filename, 0)) == NULL)

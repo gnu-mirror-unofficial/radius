@@ -87,7 +87,7 @@ static char *
 run_log_hook(const grad_request_t *req, const char *hook_name)
 {
 	char *result;
-	char nasbuf[MAX_LONGNAME];
+	char nasbuf[GRAD_MAX_LONGNAME];
 
 	/* FIXME: Should make sure that the hook does not modify the
 	   request, either by passing rewrite_invoke a copy of the
@@ -902,7 +902,7 @@ category_set_level(int argc, cfg_value_t *argv,
 {
 	int i;
 
-	clear_debug();
+	grad_clear_debug();
 	for (i = 1; i < argc; ) {
 		char *modname;
 		int level;
@@ -923,7 +923,7 @@ category_set_level(int argc, cfg_value_t *argv,
 				return 1;
 			level = argv[i++].v.number;
 		}
-		if (set_module_debug_level(modname, level)) {
+		if (grad_set_module_debug_level(modname, level)) {
 			grad_log(L_WARN,
 			         _("%s:%d: no such module name: %s"),
 			         cfg_filename, cfg_line_num, modname);

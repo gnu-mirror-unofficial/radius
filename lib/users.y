@@ -230,7 +230,7 @@ grad_create_pair(grad_locus_t *loc, char *name,
         pair->eval_type = eval_const;
         
         switch (pair->type) {
-        case TYPE_STRING:
+        case GRAD_TYPE_STRING:
                 if (pair->attribute == DA_EXEC_PROGRAM ||
                     pair->attribute == DA_EXEC_PROGRAM_WAIT) {
                         if (valstr[0] != '/' && valstr[0] != '|') {
@@ -257,7 +257,7 @@ grad_create_pair(grad_locus_t *loc, char *name,
 
                 break;
 
-        case TYPE_INTEGER:
+        case GRAD_TYPE_INTEGER:
                 /*
                  *      For DA_NAS_PORT_ID, allow a
                  *      port range instead of just a port.
@@ -267,7 +267,7 @@ grad_create_pair(grad_locus_t *loc, char *name,
                                 if (!isdigit(*s))
                                         break;
                         if (*s) {
-                                pair->type = TYPE_STRING;
+                                pair->type = GRAD_TYPE_STRING;
                                 pair->avp_strvalue = grad_estrdup(valstr);
                                 pair->avp_strlength = strlen(pair->avp_strvalue);
                                 break;
@@ -288,7 +288,7 @@ grad_create_pair(grad_locus_t *loc, char *name,
                 }
                 break;
 
-        case TYPE_IPADDR:
+        case GRAD_TYPE_IPADDR:
                 if (pair->attribute != DA_FRAMED_IP_ADDRESS) {
                         pair->avp_lvalue = grad_ip_gethostaddr(valstr);
                 } else {
@@ -320,7 +320,7 @@ grad_create_pair(grad_locus_t *loc, char *name,
                 }
                 break;
                 
-        case TYPE_DATE:
+        case GRAD_TYPE_DATE:
                 timeval = time(0);
                 tm = localtime_r(&timeval, &tms);
                 if (grad_parse_time_string(valstr, tm)) {

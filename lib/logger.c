@@ -134,7 +134,7 @@ _dolog(int level, char *file, size_t line, char *func_name, char *fmt, ...)
 }
 
 void
-_debug_print(char *file, size_t line, char *func_name, char *str)
+_grad_debug_print(char *file, size_t line, char *func_name, char *str)
 {
         _dolog(L_DEBUG, file, line, func_name, "%s", str);
         free(str);
@@ -142,7 +142,7 @@ _debug_print(char *file, size_t line, char *func_name, char *str)
 
 /*VARARGS*/
 char *
-_debug_format_string(char *fmt, ...)
+_grad_debug_format_string(char *fmt, ...)
 {
         va_list ap;
         char *str = NULL;

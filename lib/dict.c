@@ -107,15 +107,11 @@ free_value(void *ptr, void *closure ARG_UNUSED)
 void
 dict_free()
 {
-        if (dict_attr_tab)
-                grad_symtab_clear(dict_attr_tab);
-        else
-                dict_attr_tab = grad_symtab_create(sizeof(DICT_SYMBOL), NULL);
+	grad_symtab_free(&dict_attr_tab);
         memset(dict_attr_index, 0, sizeof dict_attr_index);
 
 	grad_list_destroy(&dictionary_values, free_value, NULL);
         grad_list_destroy(&dictionary_vendors, free_vendor, NULL);
-        vendorno = 1;
 }
 
 static int
@@ -183,6 +179,29 @@ dict_register_parser(int attr, attr_parser_fp fun)
 	attr_parser_tab = e;
 }
 
+static void
+parser_tab_init()
+{
+	if (!attr_parser_tab) {
+		/* Register ascend filters */
+		dict_register_parser(242, grad_ascend_parse_filter);
+		dict_register_parser(243, grad_ascend_parse_filter);
+	}
+}	
+
+static void
+parser_tab_free()
+{
+	ATTR_PARSER_TAB *ep = attr_parser_tab;
+
+	while (ep) {
+		ATTR_PARSER_TAB *next = ep->next;
+		grad_free(ep);
+		ep = next;
+	}
+	attr_parser_tab = NULL;
+}
+
 /* **************************************************************************
  * Parser
  */
@@ -204,10 +223,10 @@ static int parse_dict(char *name);
 #define VENDOR_VALUE fv[2]
 
 static struct keyword type_kw[] = {
-        { "string", TYPE_STRING },
-        { "integer", TYPE_INTEGER },
-        { "ipaddr", TYPE_IPADDR },
-        { "date", TYPE_DATE }
+        { "string", GRAD_TYPE_STRING },
+        { "integer", GRAD_TYPE_INTEGER },
+        { "ipaddr", GRAD_TYPE_IPADDR },
+        { "date", GRAD_TYPE_DATE }
 };
 
 /*ARGSUSED*/
@@ -226,7 +245,7 @@ parse_flags(char **ptr, int *flags, grad_locus_t *loc)
         int i;
         char *p;
         
-        for (p = *ptr+1, i = 0; i < CF_MAX; i++) {
+        for (p = *ptr+1, i = 0; i < GRAD_CF_MAX; i++) {
                 if (*p == 0) {
                         grad_log_loc(L_ERR, loc, _("missing ]"), *p);
                         return 1;
@@ -234,10 +253,10 @@ parse_flags(char **ptr, int *flags, grad_locus_t *loc)
                 switch (*p++) {
                 case 'C':
                 case 'L':
-                        *flags |= AF_LHS(i);
+                        *flags |= GRAD_AF_LHS(i);
                         break;
                 case '-':
-                        *flags &= ~AF_LHS(i);
+                        *flags &= ~GRAD_AF_LHS(i);
                         break;
                 case ']':
                         p--;
@@ -250,10 +269,10 @@ parse_flags(char **ptr, int *flags, grad_locus_t *loc)
                 }
                 switch (*p++) {
                 case 'R':
-                        *flags |= AF_RHS(i);
+                        *flags |= GRAD_AF_RHS(i);
                         break;
                 case '-':
-                        *flags &= ~AF_RHS(i);
+                        *flags &= ~GRAD_AF_RHS(i);
                         break;
                 default:
                         grad_log_loc(L_ERR, loc,
@@ -263,8 +282,8 @@ parse_flags(char **ptr, int *flags, grad_locus_t *loc)
                 }
         }
   stop:
-        for (; i < CF_MAX; i++) 
-                *flags |= AF_LHS(i)|AF_RHS(i);
+        for (; i < GRAD_CF_MAX; i++) 
+                *flags |= GRAD_AF_LHS(i)|GRAD_AF_RHS(i);
         *ptr = p;
         return 0;
 }
@@ -279,14 +298,14 @@ parse_attr_properties(grad_locus_t *loc, char *str, int *flags, int *prop)
 		switch (*p) {
 		case 'C':
 		case 'L':
-			*flags |= AF_LHS(CF_USERS)
-				   |AF_LHS(CF_HINTS)
-				   |AF_LHS(CF_HUNTGROUPS);
+			*flags |= GRAD_AF_LHS(GRAD_CF_USERS)
+				   |GRAD_AF_LHS(GRAD_CF_HINTS)
+				   |GRAD_AF_LHS(GRAD_CF_HUNTGROUPS);
 			break;
 		case 'R':
-			*flags |= AF_RHS(CF_USERS)
-				   |AF_RHS(CF_HINTS)
-				   |AF_RHS(CF_HUNTGROUPS);
+			*flags |= GRAD_AF_RHS(GRAD_CF_USERS)
+				   |GRAD_AF_RHS(GRAD_CF_HINTS)
+				   |GRAD_AF_RHS(GRAD_CF_HUNTGROUPS);
 			break;
 		case '[':
 			if (parse_flags(&p, flags, loc)) {
@@ -296,19 +315,19 @@ parse_attr_properties(grad_locus_t *loc, char *str, int *flags, int *prop)
 			}
 			break;
 		case '=':
-			SET_ADDITIVITY(*prop, AP_ADD_REPLACE);
+			GRAD_SET_ADDITIVITY(*prop, GRAD_AP_ADD_REPLACE);
 			break;
 		case '+':
-			SET_ADDITIVITY(*prop, AP_ADD_APPEND);
+			GRAD_SET_ADDITIVITY(*prop, GRAD_AP_ADD_APPEND);
 			break;
 		case 'N':
-			SET_ADDITIVITY(*prop, AP_ADD_NONE);
+			GRAD_SET_ADDITIVITY(*prop, GRAD_AP_ADD_NONE);
 			break;
 		case 'P':
-			*prop |= AP_PROPAGATE;
+			*prop |= GRAD_AP_PROPAGATE;
 			break;
 		case 'l':
-			*flags &= ~AP_INTERNAL;
+			*flags &= ~GRAD_AP_INTERNAL;
 			break;
 		case '1':
 		case '2':
@@ -319,16 +338,16 @@ parse_attr_properties(grad_locus_t *loc, char *str, int *flags, int *prop)
 		case '7':
 		case '8':
 		case '9':
-			*prop |= AP_USER_FLAG(*p-'0');
+			*prop |= GRAD_AP_USER_FLAG(*p-'0');
 			break;
 		case 'b':
-			*prop |= AP_BINARY_STRING;
+			*prop |= GRAD_AP_BINARY_STRING;
 			break;
 		case 'E':
-			*prop |= AP_ENCRYPT_RFC2138;
+			*prop |= GRAD_AP_ENCRYPT_RFC2138;
 			break;
 		case 'T':
-			*prop |= AP_ENCRYPT_RFC2868;
+			*prop |= GRAD_AP_ENCRYPT_RFC2868;
 			break;
 		case 'c':
 			/* Retained for compatibility */
@@ -347,17 +366,17 @@ parse_attr_properties(grad_locus_t *loc, char *str, int *flags, int *prop)
 static void
 set_default_attr_properties(int value, int *flags, int *prop)
 {
-        *flags = AF_DEFAULT_FLAGS;
-        *prop  = AP_DEFAULT_ADD;
+        *flags = GRAD_AF_DEFAULT_FLAGS;
+        *prop  = GRAD_AP_DEFAULT_ADD;
 
 	if (GRAD_VENDOR_CODE(value) == 0) {
 		if (value > 255)
-			*flags |= AP_INTERNAL;
+			*flags |= GRAD_AP_INTERNAL;
 		/* FIXME: A temporary hack until all users update
 		   their dictionaries */
 		else if (value == DA_USER_PASSWORD
 			 || value == DA_USER_PASSWORD)
-			*prop |= AP_ENCRYPT_RFC2138;
+			*prop |= GRAD_AP_ENCRYPT_RFC2138;
 	}
 }
 
@@ -390,7 +409,7 @@ _dict_attribute(int *errcnt, int fc, char **fv, grad_locus_t *loc)
         }
 
 	if (strcmp(ATTR_TYPE, "abinary") == 0) {
-		type = TYPE_STRING;
+		type = GRAD_TYPE_STRING;
 		fp = dict_find_parser(value);
 		if (!fp) {
 			grad_log_loc(L_WARN, loc,
@@ -398,9 +417,9 @@ _dict_attribute(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 			return 0;
 		}
 	} else
-		type = grad_xlat_keyword(type_kw, ATTR_TYPE, TYPE_INVALID);
+		type = grad_xlat_keyword(type_kw, ATTR_TYPE, GRAD_TYPE_INVALID);
 	
-        if (type == TYPE_INVALID) {
+        if (type == GRAD_TYPE_INVALID) {
                 grad_log_loc(L_ERR, loc,
 			     "%s",
 			     _("invalid type"));
@@ -584,7 +603,7 @@ _dict_value(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 		return 0;
 	}
 
-	attr->prop |= AP_TRANSLATE;
+	attr->prop |= GRAD_AP_TRANSLATE;
 	
         /* Create a new VALUE entry for the list */
         dval = grad_emalloc(sizeof(grad_dict_value_t));
@@ -699,13 +718,20 @@ parse_dict(char *name)
 int
 grad_dict_init()
 {
-	if (!attr_parser_tab) {
-		/* Register ascend filters */
-		dict_register_parser(242, grad_ascend_parse_filter);
-		dict_register_parser(243, grad_ascend_parse_filter);
-	}
+	parser_tab_free();
         dict_free();
+
+	parser_tab_init();
+	dict_attr_tab = grad_symtab_create(sizeof(DICT_SYMBOL), NULL);
+        vendorno = 1;
         return parse_dict(RADIUS_DICTIONARY);
+}
+
+void
+grad_dict_free()
+{
+	parser_tab_free();
+        dict_free();
 }
 
 /* **************************************************************************

@@ -139,13 +139,13 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 break;
 		
         case 'x':
-                set_debug_levels(optarg);
+                grad_set_debug_levels(optarg);
                 break;
 		
         case 'v':
                 verbose++;
-		set_module_debug_level("radpdu", 100);
-		set_module_debug_level("client", 100);
+		grad_set_module_debug_level("radpdu", 100);
+		grad_set_module_debug_level("client", 100);
                 break;
 
         default:
@@ -396,7 +396,7 @@ print_pairs(FILE *fp, grad_avp_t *pair)
 void
 var_print(radtest_variable_t *var)
 {
-        char buf[DOTTED_QUAD_LEN];
+        char buf[GRAD_IPV4_STRING_LENGTH];
         if (!var)
                 return;
         switch (var->type) {
@@ -460,7 +460,7 @@ radtest_send(int port, int code, grad_avp_t *avl, grad_symtab_t *cntl)
 		auth = grad_client_send(srv_queue, port, code, avl);
 	} else {
 		int id;
-		u_char vector[AUTH_VECTOR_LEN];
+		u_char authenticator[GRAD_AUTHENTICATOR_LENGTH];
 		int sflags = 0;
 		int retry = 1;
 		radtest_variable_t *delay = (radtest_variable_t*)grad_sym_lookup(cntl, "delay");
@@ -482,7 +482,7 @@ radtest_send(int port, int code, grad_avp_t *avl, grad_symtab_t *cntl)
 					 avl,
 					 0,
 					 &id,
-					 vector);
+					 authenticator);
 		while (--retry) {
 			if (delay)
 				sleep(delay->datum.number);
@@ -492,7 +492,7 @@ radtest_send(int port, int code, grad_avp_t *avl, grad_symtab_t *cntl)
 						 avl,
 						 sflags,
 						 &id,
-						 vector);
+						 authenticator);
 		}
 	}
 
@@ -504,7 +504,7 @@ radtest_send(int port, int code, grad_avp_t *avl, grad_symtab_t *cntl)
         p->datum.number = reply_code;
 
         reply_list = grad_client_decrypt_pairlist(grad_avl_dup(auth->request),
-						  auth->vector, auth->secret);
+						  auth->authenticator, auth->secret);
 
         p = (radtest_variable_t*)grad_sym_lookup(vartab, "REPLY");
         p->type = rtv_avl;
@@ -567,11 +567,11 @@ compare_lists(grad_avp_t *reply, grad_avp_t *sample)
                 if (!p)
                         return -1;
                 switch (p->type) {
-                case TYPE_STRING:
+                case GRAD_TYPE_STRING:
                         result = strcmp(sample->avp_strvalue, p->avp_strvalue);
                         break;
-                case TYPE_INTEGER:
-                case TYPE_IPADDR:
+                case GRAD_TYPE_INTEGER:
+                case GRAD_TYPE_IPADDR:
                         result = sample->avp_lvalue - p->avp_lvalue;
                         break;
                 default:

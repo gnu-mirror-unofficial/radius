@@ -120,7 +120,7 @@ grad_ip_gethostaddr(const char *host)
 char *
 grad_ip_iptostr(grad_uint32_t ipaddr, char *bufp)
 {
-	static char buffer[DOTTED_QUAD_LEN];
+	static char buffer[GRAD_IPV4_STRING_LENGTH];
 	if (!bufp)
 		bufp = buffer;
         sprintf(bufp, "%u.%u.%u.%u",
@@ -189,10 +189,10 @@ grad_ip_getnetaddr(const char *str, grad_netdef_t *netdef)
 		netdef->netmask = 0xfffffffful;
 		netdef->ipaddr = grad_ip_gethostaddr(str);
 	} else {
-		char buf[DOTTED_QUAD_LEN];
+		char buf[GRAD_IPV4_STRING_LENGTH];
 		size_t len = p - str;
 
-		if (len >= DOTTED_QUAD_LEN)
+		if (len >= GRAD_IPV4_STRING_LENGTH)
 			return 1;
 		memcpy(buf, str, len);
 		buf[len] = 0;

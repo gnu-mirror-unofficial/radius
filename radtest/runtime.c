@@ -594,16 +594,16 @@ rt_eval_pairlist(grad_locus_t *locus,
 			
 		case rtv_integer:
 			switch (p->attr->type) {
-			case TYPE_STRING:
-			case TYPE_DATE:
+			case GRAD_TYPE_STRING:
+			case GRAD_TYPE_DATE:
 				snprintf(buf, sizeof buf, "%ld",
 					 val.datum.number);
 				pair = grad_avp_create_string(p->attr->value,
 							      buf);
 				break;
 				
-			case TYPE_INTEGER:
-			case TYPE_IPADDR:
+			case GRAD_TYPE_INTEGER:
+			case GRAD_TYPE_IPADDR:
 				pair = grad_avp_create_integer(p->attr->value,
 							       val.datum.number);
 				break;
@@ -612,16 +612,16 @@ rt_eval_pairlist(grad_locus_t *locus,
 			
 		case rtv_ipaddress:
 			switch (p->attr->type) {
-			case TYPE_STRING:
-			case TYPE_DATE:
+			case GRAD_TYPE_STRING:
+			case GRAD_TYPE_DATE:
 				snprintf(buf, sizeof buf, "%lu",
 					 (unsigned long) val.datum.ipaddr);
 				pair = grad_avp_create_string(p->attr->value,
 							      buf);
 				break;
 				
-			case TYPE_INTEGER:
-			case TYPE_IPADDR:
+			case GRAD_TYPE_INTEGER:
+			case GRAD_TYPE_IPADDR:
 				pair = grad_avp_create_integer(p->attr->value,
 							       val.datum.ipaddr);
 				break;
@@ -630,13 +630,13 @@ rt_eval_pairlist(grad_locus_t *locus,
 
 		case rtv_string:
 			switch (p->attr->type) {
-			case TYPE_STRING:
-			case TYPE_DATE:
+			case GRAD_TYPE_STRING:
+			case GRAD_TYPE_DATE:
 				pair = grad_avp_create_string(p->attr->value,
 							      val.datum.string);
 				break;
 				
-			case TYPE_INTEGER:
+			case GRAD_TYPE_INTEGER:
 			{
 				grad_dict_value_t *dv =
 				    grad_value_name_to_value(val.datum.string,
@@ -650,7 +650,7 @@ rt_eval_pairlist(grad_locus_t *locus,
 			}
 			/*FALLTHROUGH*/
 					
-			case TYPE_IPADDR:
+			case GRAD_TYPE_IPADDR:
 				/*FIXME: error checking*/
 				n = strtoul(val.datum.string, NULL, 0);
 				pair = grad_avp_create_integer(p->attr->value,
@@ -1086,7 +1086,7 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 			runtime_error(&node->locus, _("not a pair list"));
 		p = grad_avl_find(left.datum.avl, node->v.attr.dict->value);
 		switch (node->v.attr.dict->type) {
-		case TYPE_STRING:
+		case GRAD_TYPE_STRING:
 			result->type = rtv_string;
 			if (node->v.attr.all) {
 				size_t len = 1;
@@ -1108,17 +1108,17 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 					                 p->avp_strvalue : "";
 			break;
 			
-		case TYPE_DATE:    
+		case GRAD_TYPE_DATE:    
 			result->type = rtv_string;
 			result->datum.string = p ? p->avp_strvalue : "";
 			break;
 			
-		case TYPE_INTEGER:
+		case GRAD_TYPE_INTEGER:
 			result->type = rtv_integer;
 			result->datum.number = p ? p->avp_lvalue : 0;
 			break;
 			
-		case TYPE_IPADDR:
+		case GRAD_TYPE_IPADDR:
 			result->type = rtv_ipaddress;
 			result->datum.number = p ? p->avp_lvalue : 0;
 			break;

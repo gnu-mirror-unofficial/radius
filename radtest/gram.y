@@ -484,11 +484,11 @@ nesting_level : /* empty */
 
 port_type     : AUTH
                 {
-			$$ = PORT_AUTH;
+			$$ = GRAD_PORT_AUTH;
 		}
               | ACCT
                 {
-			$$ = PORT_ACCT;
+			$$ = GRAD_PORT_ACCT;
 		}
               ;
 
@@ -657,7 +657,7 @@ expr          : value
 				$$->v.attr.node = $1;
 				$$->v.attr.dict = dict;
 				$$->v.attr.all = $4;
-				if ($4 && dict->type != TYPE_STRING) 
+				if ($4 && dict->type != GRAD_TYPE_STRING) 
 					parse_error(
 		     _("warning: '*' is meaningless for this attribute type"));
 			}

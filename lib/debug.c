@@ -139,12 +139,12 @@ free_debug_module(void *item, void *data)
 }
 
 int
-set_module_debug_level(char *name, int level)
+grad_set_module_debug_level(char *name, int level)
 {
 	struct debug_module *lp;
 	
         if (level == -1)
-                level = MAX_DEBUG_LEVEL;
+                level = GRAD_MAX_DEBUG_LEVEL;
 
 	if (!_grad_debug_list)
 		_grad_debug_list = grad_list_create();
@@ -162,7 +162,7 @@ set_module_debug_level(char *name, int level)
 }
 
 void
-set_debug_levels(char *str)
+grad_set_debug_levels(char *str)
 {
         char *tok, *p, *save;
         int  level;
@@ -174,14 +174,14 @@ set_debug_levels(char *str)
                         *p++ = 0;
                         level  = atoi(p);
                 } else {
-                        level  = MAX_DEBUG_LEVEL;
+                        level  = GRAD_MAX_DEBUG_LEVEL;
                 }
-		set_module_debug_level(tok, level);
+		grad_set_module_debug_level(tok, level);
         }
 }
 
 void
-clear_debug()
+grad_clear_debug()
 {
 	grad_list_destroy(&_grad_debug_list, free_debug_module, NULL);
 }
@@ -202,20 +202,20 @@ grad_debug_p(char *name, int level)
 
 /*ARGSUSED*/
 int
-set_module_debug_level(char *name, int level)
+grad_set_module_debug_level(char *name, int level)
 {
         grad_log(L_ERR, _("compiled without debugging support"));
 }
 
 /*ARGSUSED*/
 void
-set_debug_levels(char *str)
+grad_set_debug_levels(char *str)
 {
         grad_log(L_ERR, _("compiled without debugging support"));
 }
 
 void
-clear_debug()
+grad_clear_debug()
 {
 }
 

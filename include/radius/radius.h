@@ -38,29 +38,33 @@
 
 struct obstack;
 
+/* Length of an IPv4 address in 'dotted-quad' representation including
+   null terminator */
+#define GRAD_IPV4_STRING_LENGTH        16
 
-#define DOTTED_QUAD_LEN         16
-
-#define AUTH_VECTOR_LEN         16
-#define AUTH_PASS_LEN           16
-#define AUTH_DIGEST_LEN         16
-#define AUTH_STRING_LEN        253
+/* Length of a RADIUS request authenticator */
+#define GRAD_AUTHENTICATOR_LENGTH      16
+/* Length of an MD5 digest */
+#define GRAD_MD5_DIGEST_LENGTH         16
+/* Maximum length of a string that can be carried by a RADIUS A/V pair */
+#define GRAD_STRING_LENGTH            253
+/* Length of a CHAP digest string */ 
+#define GRAD_CHAP_VALUE_LENGTH         16
 
 typedef struct {
         u_char code;            /* Request code (see RT_ macros below)*/ 
         u_char id;              /* Request ID */
         u_short length;         /* Request length */ 
-        u_char vector[AUTH_VECTOR_LEN]; /* Request authenticator */
+        u_char authenticator[GRAD_AUTHENTICATOR_LENGTH];
+	                        /* Request authenticator */
 } grad_packet_header_t;
 
-#define CHAP_VALUE_LENGTH               16
-
 /* Radius data types */
-#define TYPE_INVALID                   -1
-#define TYPE_STRING                     0
-#define TYPE_INTEGER                    1
-#define TYPE_IPADDR                     2
-#define TYPE_DATE                       3
+#define GRAD_TYPE_INVALID              -1
+#define GRAD_TYPE_STRING                0
+#define GRAD_TYPE_INTEGER               1
+#define GRAD_TYPE_IPADDR                2
+#define GRAD_TYPE_DATE                  3
 
 /* Request types */
 #define RT_ACCESS_REQUEST               1
@@ -98,11 +102,11 @@ enum grad_operator {
 
 /* ************************** Data structures ****************************** */
 
-#define MAX_DICTNAME  32
-#define MAX_SECRETLEN 32
-#define MAX_REALMNAME 256
-#define MAX_LONGNAME  256
-#define MAX_SHORTNAME 32
+#define GRAD_MAX_DICTNAME  32
+#define GRAD_MAX_SECRETLEN 32
+#define GRAD_MAX_REALMNAME 256
+#define GRAD_MAX_LONGNAME  256
+#define GRAD_MAX_SHORTNAME 32
 
 /* Attribute flags and properties:
 
@@ -121,44 +125,45 @@ enum grad_operator {
    Bits 7 and 24-31 are unused */
 
 /* Attribute properties */
-#define AP_ADD_REPLACE   0
-#define AP_ADD_APPEND    1
-#define AP_ADD_NONE      2
+#define GRAD_AP_ADD_REPLACE   0
+#define GRAD_AP_ADD_APPEND    1
+#define GRAD_AP_ADD_NONE      2
 
 /* Encryption bits */
-#define AP_ENCRYPT_RFC2138 0x4 /* Encrypted per RFC 2138 */
-#define AP_ENCRYPT_RFC2868 0x8 /* Encrypted per RFC 2868 */
+#define GRAD_AP_ENCRYPT_RFC2138 0x4 /* Encrypted per RFC 2138 */
+#define GRAD_AP_ENCRYPT_RFC2868 0x8 /* Encrypted per RFC 2868 */
 
-#define AP_ENCRYPT (AP_ENCRYPT_RFC2138|AP_ENCRYPT_RFC2868)
+#define GRAD_AP_ENCRYPT (GRAD_AP_ENCRYPT_RFC2138|GRAD_AP_ENCRYPT_RFC2868)
 
-#define AP_PROPAGATE     0x10 /* Propagate attribute through the proxy chain */
-#define AP_INTERNAL      0x20 /* Internal attribute. */
-#define AP_BINARY_STRING 0x40 /* Binary string value. No str..() functions
-				 should be used */
-#define AP_TRANSLATE     0x80 /* Attribute has dictionary translations */
+#define GRAD_AP_PROPAGATE     0x10 /* Propagate attribute through the proxy
+				      chain */
+#define GRAD_AP_INTERNAL      0x20 /* Internal attribute. */
+#define GRAD_AP_BINARY_STRING 0x40 /* Binary string value. No str..()
+				      functions should be used */
+#define GRAD_AP_TRANSLATE     0x80 /* Attribute has dictionary translations */
 				 
-#define AP_USER_FLAG(n) (0x4000<<(n))
+#define GRAD_AP_USER_FLAG(n) (0x4000<<(n))
 
-#define ADDITIVITY(val) ((val) & 0x3)
-#define SET_ADDITIVITY(val,a) ((val) = ((val) & ~0x3) | (a))
+#define GRAD_GET_ADDITIVITY(val) ((val) & 0x3)
+#define GRAD_SET_ADDITIVITY(val,a) ((val) = ((val) & ~0x3) | (a))
 
 /* Configuration files types */
-#define CF_USERS      0
-#define CF_HINTS      1
-#define CF_HUNTGROUPS 2
-#define CF_MAX        3
+#define GRAD_CF_USERS      0
+#define GRAD_CF_HINTS      1
+#define GRAD_CF_HUNTGROUPS 2
+#define GRAD_CF_MAX        3
 
-#define AF_LHS(cf) (0x0100<<(cf))
-#define AF_RHS(cf) (0x0800<<(cf))
+#define GRAD_AF_LHS(cf) (0x0100<<(cf))
+#define GRAD_AF_RHS(cf) (0x0800<<(cf))
 
-#define AF_DEFAULT_FLAGS (AF_LHS(0)|AF_LHS(1)|AF_LHS(2)\
-                         |AF_RHS(0)|AF_RHS(1)|AF_RHS(2))
-#define AP_DEFAULT_ADD   AP_ADD_APPEND
+#define GRAD_AF_DEFAULT_FLAGS (GRAD_AF_LHS(0)|GRAD_AF_LHS(1)|GRAD_AF_LHS(2)\
+                               |GRAD_AF_RHS(0)|GRAD_AF_RHS(1)|GRAD_AF_RHS(2))
+#define GRAD_AP_DEFAULT_ADD   GRAD_AP_ADD_APPEND
 
 
-#define PORT_AUTH 0
-#define PORT_ACCT 1
-#define PORT_MAX  2
+#define GRAD_PORT_AUTH 0
+#define GRAD_PORT_ACCT 1
+#define GRAD_PORT_MAX  2
 
 typedef struct {                
 	char *file;             /* File name */
@@ -180,9 +185,10 @@ typedef struct radius_server grad_server_t;
 struct radius_server {
         char   *name;           /* Symbolic name of this server */
         grad_uint32_t addr;     /* IP address of it */
-        int    port[PORT_MAX];  /* Ports to use */
+        int    port[GRAD_PORT_MAX];  /* Ports to use */
         char   *secret;         /* Shared secret */
-	off_t  id_offset;       /* Offset of the grad_server_id_t in the id file */
+	off_t  id_offset;       /* Offset of the grad_server_id_t in the id
+				   file */
 };
 
 typedef struct {
@@ -194,8 +200,8 @@ typedef struct {
         grad_list_t   *servers;  /* List of servers */
 } grad_server_queue_t;    
 
-struct value_pair;
-typedef int (*attr_parser_fp)(struct value_pair *p, char **s);
+struct grad_value_pair;
+typedef int (*attr_parser_fp)(struct grad_value_pair *p, char **s);
 
 /* Dictionary attribute */
 
@@ -230,16 +236,16 @@ enum grad_avp_eval_type {
 };
 
 /* An attribute/value pair */
-typedef struct value_pair {
-        struct value_pair       *next;      /* Link to next A/V pair in list */
+typedef struct grad_value_pair {
+        struct grad_value_pair  *next;      /* Link to next A/V pair in list */
         char                    *name;      /* Attribute name */
         int                     attribute;  /* Attribute value */
         int                     type;       /* Data type */
         enum grad_avp_eval_type eval_type;  /* Evaluation flag */
         int                     prop;       /* Properties */ 
-        enum grad_operator operator;   /* Comparison operator */
+        enum grad_operator operator;        /* Comparison operator */
         union {
-                grad_uint32_t           ival;       /* integer value */
+                grad_uint32_t   ival;       /* integer value */
                 struct {
                         int     s_length;   /* length of s_value w/o
                                              * trailing 0
@@ -256,15 +262,15 @@ typedef struct value_pair {
 
 typedef struct nas {
 	grad_netdef_t netdef;
-        char longname[MAX_LONGNAME+1];
-        char shortname[MAX_SHORTNAME+1];
-        char nastype[MAX_DICTNAME+1];
+        char longname[GRAD_MAX_LONGNAME+1];
+        char shortname[GRAD_MAX_SHORTNAME+1];
+        char nastype[GRAD_MAX_DICTNAME+1];
         grad_envar_t *args;
         void *app_data;
 } grad_nas_t;
 
 typedef struct realm {
-        char realm[MAX_REALMNAME+1];
+        char realm[GRAD_MAX_REALMNAME+1];
 	grad_envar_t *args;
 	grad_server_queue_t *queue;
 } grad_realm_t;
@@ -274,7 +280,8 @@ typedef struct radius_req {
         u_short       udp_port;     /* Source port */
         u_char        id;           /* Request identifier */
         u_char        code;         /* Request code */
-        u_char        vector[AUTH_VECTOR_LEN]; /* Rq authenticator */
+        u_char        authenticator[GRAD_AUTHENTICATOR_LENGTH];
+	                            /* Request authenticator */
         u_char        *secret;      /* Shared secret */
         grad_avp_t    *request;     /* Request pairs */
 
@@ -296,8 +303,8 @@ typedef struct radius_req {
 	int           attempt_no;
         grad_uint32_t server_id;     /* Proxy ID of the packet */
 	char          *remote_user;  /* Remote username (stringobj)*/
-        u_char        remote_auth[AUTH_VECTOR_LEN];
-	
+        u_char        remote_auth[GRAD_AUTHENTICATOR_LENGTH];
+	                             /* Remote request authenticator */	
         int           server_code;   /* Reply code from other srv */
         grad_avp_t    *server_reply; /* Reply from other server */
 } grad_request_t;
@@ -335,10 +342,10 @@ int grad_parser_lex_init(char *name);
 void grad_parser_lex_finish();
 int grad_parser_lex_sync();
 
-#define NITEMS(a) sizeof(a)/sizeof((a)[0])
+#define GRAD_NITEMS(a) sizeof(a)/sizeof((a)[0])
 
 size_t grad_create_pdu(void **rptr, int code, int id,
-		       u_char *vector, u_char *secret,
+		       u_char *authenticator, u_char *secret,
 		       grad_avp_t *pairlist, char *msg);
 
 grad_request_t *grad_decode_pdu(grad_uint32_t host,
@@ -355,6 +362,7 @@ int grad_server_send_challenge(int fd, grad_request_t *radreq,
 #define GRAD_VSA_ATTR_NUMBER(attrno,code) ((attrno) | (code) << 16)
 
 int grad_dict_init();
+void grad_dict_free();
 grad_dict_attr_t *grad_attr_number_to_dict(int);
 grad_dict_attr_t *grad_attr_name_to_dict(char *);
 grad_dict_value_t *grad_value_name_to_value(char *, int);
@@ -467,16 +475,16 @@ void grad_obstack_grow_backslash(struct obstack *stk, char *text,
 
 /* cryptpass.c */
 void grad_encrypt_password(grad_avp_t *pair, char *password,
-			   char *vector, char *secret);
+			   char *authenticator, char *secret);
 void grad_decrypt_password(char *password, grad_avp_t *pair,
-			   char *vector, char *secret);
+			   char *authenticator, char *secret);
 void grad_decrypt_password_broken(char *password, grad_avp_t *pair,
-				  char *vector, char *secret);
+				  char *authenticator, char *secret);
 void grad_encrypt_tunnel_password(grad_avp_t *pair, u_char tag, char *password,
-				  char *vector, char *secret);
+				  char *authenticator, char *secret);
 void grad_decrypt_tunnel_password(char *password, u_char *tag,
 				  grad_avp_t *pair,
-				  char *vector, char *secret);
+				  char *authenticator, char *secret);
 
 /* gethost_r.c */
 struct hostent *grad_gethostbyname_r(const char *name, struct hostent *result,
@@ -512,11 +520,11 @@ void grad_client_free_server(grad_server_t *server);
 void grad_client_append_server(grad_server_queue_t *qp, grad_server_t *server);
 void grad_client_clear_server_list(grad_server_queue_t *qp);
 grad_server_t *grad_client_find_server(grad_server_queue_t *qp, char *name);
-void grad_client_random_vector(char *vector);
+void grad_client_random_authenticator(char *authenticator);
 grad_avp_t *grad_client_encrypt_pairlist(grad_avp_t *plist,
-					 u_char *vector, u_char *secret);
+					 u_char *authenticator, u_char *secret);
 grad_avp_t *grad_client_decrypt_pairlist(grad_avp_t *plist,
-					 u_char *vector, u_char *secret);
+					 u_char *authenticator, u_char *secret);
 
 /* log.c */
 char *rad_print_request(grad_request_t *req, char *outbuf, size_t size);
@@ -587,15 +595,16 @@ void grad_log_req(int level, grad_request_t *req, const char *fmt, ...);
 void grad_log_loc(int lvl, grad_locus_t *loc, const char *msg, ...);
 
 /* Debugging facilities */
-#ifndef MAX_DEBUG_LEVEL
-# define MAX_DEBUG_LEVEL 100
+#ifndef GRAD_MAX_DEBUG_LEVEL
+# define GRAD_MAX_DEBUG_LEVEL 100
 #endif
 
 #if RADIUS_DEBUG
 # define debug_on(level) grad_debug_p(__FILE__, level)
 # define debug(level, vlist) \
    if (grad_debug_p(__FILE__, level)) \
-    _debug_print(__FILE__, __LINE__, __FUNCTION__, _debug_format_string vlist)
+    _grad_debug_print(__FILE__, __LINE__, __FUNCTION__, \
+                      _grad_debug_format_string vlist)
 #else
 # define debug_on(level) 0
 # define debug(mode,vlist)
@@ -603,12 +612,12 @@ void grad_log_loc(int lvl, grad_locus_t *loc, const char *msg, ...);
 
 int grad_debug_p(char *name, int level);
 void _debug_print(char *file, size_t line, char *func_name, char *str);
-char *_debug_format_string(char *fmt, ...);
+char *_grad_debug_format_string(char *fmt, ...);
 const char *grad_request_code_to_name(int code);
 int grad_request_name_to_code(const char *);
-void set_debug_levels(char *str);
-int set_module_debug_level(char *name, int level);
-void clear_debug();
+void grad_set_debug_levels(char *str);
+int grad_set_module_debug_level(char *name, int level);
+void grad_clear_debug();
 
 const char *grad_next_matching_code_name(void *data);
 const char *grad_first_matching_code_name(const char *name, void **ptr);

@@ -277,7 +277,7 @@ stat_update(struct radutmp *ut, int status)
 	grad_nas_t *nas;
 	PORT_STAT *port;
 	long dt;
-        char ipbuf[DOTTED_QUAD_LEN];
+        char ipbuf[GRAD_IPV4_STRING_LENGTH];
 	
 	if (!server_stat)
 		return;

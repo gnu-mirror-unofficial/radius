@@ -213,7 +213,7 @@ test()
         char buf[64];
         struct nas_usage *nasp;
         struct port_usage *port;
-        char ipbuf[DOTTED_QUAD_LEN];
+        char ipbuf[GRAD_IPV4_STRING_LENGTH];
                 
         run_query(get_stat_tab);
         run_query(get_auth_tab);

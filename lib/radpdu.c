@@ -45,7 +45,7 @@ struct radius_pdu {
 struct radius_attr {
         u_char attrno;       /* Attribute number */
         u_char length;       /* Length of the data collected so far */
-        u_char data[AUTH_STRING_LEN];    
+        u_char data[GRAD_STRING_LENGTH];    
 };
 
 void grad_pdu_destroy(struct radius_pdu *pdu);
@@ -65,19 +65,19 @@ grad_pdu_init(struct radius_pdu *pdu)
    Input: pdu    -- PDU structure.
           code   -- Reply code.
           id     -- Request ID.
-          vector -- Request authenticator.
+          authenticator -- Request authenticator.
    Output:
           *ptr   -- Radius reply.
    Return value: length of the data on *ptr. */   
 static size_t
 grad_pdu_finish(void **ptr, struct radius_pdu *pdu,
-		int code, int id, u_char *vector, u_char *secret)
+		int code, int id, u_char *authenticator, u_char *secret)
 {
         grad_packet_header_t *hdr;
         void *p;
         size_t secretlen = 0;
         size_t len = sizeof(grad_packet_header_t) + pdu->size;
-        u_char digest[AUTH_DIGEST_LEN];
+        u_char digest[GRAD_MD5_DIGEST_LENGTH];
         
 	if (code != RT_ACCESS_REQUEST && code != RT_STATUS_SERVER) {
                 secretlen = strlen(secret);
@@ -97,16 +97,16 @@ grad_pdu_finish(void **ptr, struct radius_pdu *pdu,
 	switch (code) {
 	case RT_ACCESS_REQUEST:
 	case RT_STATUS_SERVER:
-		memcpy(hdr->vector, vector, AUTH_VECTOR_LEN);
+		memcpy(hdr->authenticator, authenticator, GRAD_AUTHENTICATOR_LENGTH);
 		break;
 		
 	case RT_ACCOUNTING_REQUEST:
 		/* For an accounting request, we need to calculate
 		   the md5 hash over the entire packet and put it in the
-		   vector. */
+		   authenticator. */
                 secretlen = strlen(secret);
-                grad_md5_calc(hdr->vector, (u_char *)hdr, len + secretlen);
-		memcpy(vector, hdr->vector, AUTH_VECTOR_LEN);
+                grad_md5_calc(hdr->authenticator, (u_char *)hdr, len + secretlen);
+		memcpy(authenticator, hdr->authenticator, GRAD_AUTHENTICATOR_LENGTH);
                 memset((char*)hdr + len, 0, secretlen);
 		break;
 		
@@ -114,14 +114,14 @@ grad_pdu_finish(void **ptr, struct radius_pdu *pdu,
 	case RT_ACCESS_REJECT:
 	case RT_ACCOUNTING_RESPONSE:
 	case RT_ACCESS_CHALLENGE:
-		memcpy(hdr->vector, vector, AUTH_VECTOR_LEN);
+		memcpy(hdr->authenticator, authenticator, GRAD_AUTHENTICATOR_LENGTH);
 		/*FALL THROUGH*/
 		
 	default:
 		/* This is a reply message. Calculate the response digest
 		   and store it in the pdu */
 		grad_md5_calc(digest, (u_char *)hdr, len + secretlen);
-		memcpy(hdr->vector, digest, AUTH_VECTOR_LEN);
+		memcpy(hdr->authenticator, digest, GRAD_AUTHENTICATOR_LENGTH);
 		memset((char*)hdr + len, 0, secretlen);
 		break;
 	}
@@ -169,19 +169,19 @@ grad_encode_pair(struct radius_attr *ap, grad_avp_t *pair)
         int rc;
 
         switch (pair->type) {
-        case TYPE_STRING:
+        case GRAD_TYPE_STRING:
                 /* Do we need it? */
                 if (pair->avp_strlength == 0 && pair->avp_strvalue[0] != 0)
                         pair->avp_strlength = strlen(pair->avp_strvalue);
 
                 len = pair->avp_strlength;
-                if (len > AUTH_STRING_LEN) 
-                        len = AUTH_STRING_LEN;
+                if (len > GRAD_STRING_LENGTH) 
+                        len = GRAD_STRING_LENGTH;
                 rc = grad_attr_write(ap, pair->avp_strvalue, len);
                 break;
                 
-        case TYPE_INTEGER:
-        case TYPE_IPADDR:
+        case GRAD_TYPE_INTEGER:
+        case GRAD_TYPE_IPADDR:
                 lval = htonl(pair->avp_lvalue);
                 rc = grad_attr_write(ap, &lval, sizeof(grad_uint32_t));
                 break;
@@ -201,7 +201,7 @@ grad_encode_pair(struct radius_attr *ap, grad_avp_t *pair)
    Return value: lenght of the data in *rptr. 0 on error */
    
 size_t
-grad_create_pdu(void **rptr, int code, int id, u_char *vector,
+grad_create_pdu(void **rptr, int code, int id, u_char *authenticator,
 		u_char *secret, grad_avp_t *pairlist, char *msg)
 {
         struct radius_pdu pdu;
@@ -267,8 +267,8 @@ grad_create_pdu(void **rptr, int code, int id, u_char *vector,
                 struct radius_attr attr;
 
                 while (len > 0) {
-                        if (len > AUTH_STRING_LEN) 
-                                block_len = AUTH_STRING_LEN;
+                        if (len > GRAD_STRING_LENGTH) 
+                                block_len = GRAD_STRING_LENGTH;
                         else 
                                 block_len = len;
 
@@ -288,7 +288,7 @@ grad_create_pdu(void **rptr, int code, int id, u_char *vector,
         }
 
         if (status == 0) 
-		attrlen = grad_pdu_finish(rptr, &pdu, code, id, vector, secret);
+		attrlen = grad_pdu_finish(rptr, &pdu, code, id, authenticator, secret);
 	else
                 attrlen = 0;
         grad_pdu_destroy(&pdu);
@@ -307,9 +307,9 @@ grad_decode_pair(grad_uint32_t attrno, char *ptr, size_t attrlen)
                 return NULL;
         }
 
-        if ( attrlen > AUTH_STRING_LEN ) {
+        if ( attrlen > GRAD_STRING_LENGTH ) {
                 debug(1, ("attribute %d too long, %d >= %d", attrno,
-                          attrlen, AUTH_STRING_LEN));
+                          attrlen, GRAD_STRING_LENGTH));
                 return NULL;
         }
 
@@ -323,8 +323,8 @@ grad_decode_pair(grad_uint32_t attrno, char *ptr, size_t attrlen)
 
         switch (attr->type) {
 
-        case TYPE_STRING:
-                /* attrlen always <= AUTH_STRING_LEN */
+        case GRAD_TYPE_STRING:
+                /* attrlen always <= GRAD_STRING_LENGTH */
                 pair->avp_strlength = attrlen;
                 pair->avp_strvalue = grad_emalloc(attrlen + 1);
                 memcpy(pair->avp_strvalue, ptr, attrlen);
@@ -339,8 +339,8 @@ grad_decode_pair(grad_uint32_t attrno, char *ptr, size_t attrlen)
 
                 break;
                         
-        case TYPE_INTEGER:
-        case TYPE_IPADDR:
+        case GRAD_TYPE_INTEGER:
+        case GRAD_TYPE_IPADDR:
                 memcpy(&lval, ptr, sizeof(grad_uint32_t));
                 pair->avp_lvalue = ntohl(lval);
 
@@ -421,7 +421,7 @@ grad_decode_pdu(grad_uint32_t host, u_short udp_port, u_char *buffer, size_t len
         radreq->udp_port = udp_port;
         radreq->id = auth->id;
         radreq->code = auth->code;
-        memcpy(radreq->vector, auth->vector, AUTH_VECTOR_LEN);
+        memcpy(radreq->authenticator, auth->authenticator, GRAD_AUTHENTICATOR_LENGTH);
 
         /* Extract attribute-value pairs  */
         ptr = (u_char*) (auth + 1);

@@ -122,7 +122,7 @@ SCM_DEFINE(rad_client_list_servers, "rad-client-list-servers", 0, 0, 0,
 #define FUNC_NAME s_rad_client_list_servers        
 {
         grad_server_t *s;
-        char p[DOTTED_QUAD_LEN+1];
+        char p[GRAD_IPV4_STRING_LENGTH+1];
         SCM tail = SCM_EOL;
         grad_iterator_t *itr = grad_iterator_create(srv_queue->servers);
 
@@ -181,12 +181,12 @@ scheme_to_server(SRVLIST, func)
         scm = SCM_CADDDR(SRVLIST);
         SCM_ASSERT(SCM_IMP(scm) && SCM_INUMP(scm),
                    scm, SCM_ARG1, func);
-        serv.port[PORT_AUTH] = SCM_INUM(scm);
+        serv.port[GRAD_PORT_AUTH] = SCM_INUM(scm);
         
         scm = SCM_CAR(SCM_CDDDDR(SRVLIST));
         SCM_ASSERT(SCM_IMP(scm) && SCM_INUMP(scm),
                    scm, SCM_ARG1, func);
-        serv.port[PORT_ACCT] = SCM_INUM(scm);
+        serv.port[GRAD_PORT_ACCT] = SCM_INUM(scm);
 
         return grad_client_alloc_server(&serv);
 }

@@ -278,7 +278,7 @@ typedef struct auth_mach {
         
         grad_avp_t *namepair;
         grad_avp_t *check_pair;
-        char       userpass[AUTH_STRING_LEN+1];
+        char       userpass[GRAD_STRING_LENGTH+1];
 
         char       *user_msg;
         struct obstack msg_stack;
@@ -431,14 +431,14 @@ rad_check_password(grad_request_t *radreq, AUTH_MACH *m, time_t *exp)
 {
         char *ptr;
         char *real_password = NULL;
-        char name[AUTH_STRING_LEN];
+        char name[GRAD_STRING_LENGTH];
         grad_avp_t *auth_item;
         grad_avp_t *tmp;
         int auth_type = -1;
         int length;
         enum auth_status result = auth_ok;
         char *authdata = NULL;
-        char pw_digest[AUTH_VECTOR_LEN];
+        char pw_digest[GRAD_AUTHENTICATOR_LENGTH];
         int pwlen;
         char *pwbuf;
         char *challenge;
@@ -594,8 +594,8 @@ rad_check_password(grad_request_t *radreq, AUTH_MACH *m, time_t *exp)
                         challenge = tmp->avp_strvalue;
                         challenge_len = tmp->avp_strlength;
                 } else {
-                        challenge = radreq->vector;
-                        challenge_len = AUTH_VECTOR_LEN;
+                        challenge = radreq->authenticator;
+                        challenge_len = GRAD_AUTHENTICATOR_LENGTH;
                 }
 
                 pwlen = 1 + length + challenge_len;
@@ -613,7 +613,7 @@ rad_check_password(grad_request_t *radreq, AUTH_MACH *m, time_t *exp)
 		
                 /* Compare them */
                 if (memcmp(pw_digest, auth_item->avp_strvalue + 1,
-			   CHAP_VALUE_LENGTH) != 0)
+			   GRAD_CHAP_VALUE_LENGTH) != 0)
                         result = auth_fail;
                 else
                         strcpy(m->userpass, real_password);
@@ -982,7 +982,7 @@ sfn_realmuse(AUTH_MACH *m)
 void
 sfn_simuse(AUTH_MACH *m)
 {
-        char  name[AUTH_STRING_LEN];
+        char  name[GRAD_STRING_LENGTH];
         int rc;
         int count;
 	
@@ -1236,21 +1236,21 @@ req_decrypt_password(char *password, grad_request_t *req, grad_avp_t *pair)
                         return;
         }
 
-	if (pair->prop & AP_ENCRYPT_RFC2138) {
+	if (pair->prop & GRAD_AP_ENCRYPT_RFC2138) {
 		/* Determine whether we need to use broken decoding */
 		nas = grad_nas_request_to_nas(req);
 		if (nas
 		    && (s = grad_envar_lookup(nas->args, "broken_pass")) != NULL
 		    && s[0] == '1')
 			grad_decrypt_password_broken(password, pair,
-						     req->vector, req->secret);
+						     req->authenticator, req->secret);
 		else
 			grad_decrypt_password(password, pair,
-					      req->vector, req->secret);
-	} else if (pair->prop & AP_ENCRYPT_RFC2868) {
+					      req->authenticator, req->secret);
+	} else if (pair->prop & GRAD_AP_ENCRYPT_RFC2868) {
 		u_char tag; /* FIXME: not accessible for user */
 		grad_decrypt_tunnel_password(password, 
 					     &tag, pair,
-					     req->vector, req->secret);
+					     req->authenticator, req->secret);
 	}
 }

@@ -65,7 +65,7 @@ radius_send_reply(int code, grad_request_t *radreq,
                 default:
                         radreq->reply_pairs =
 				grad_client_encrypt_pairlist(reply,
-							     radreq->vector,
+							     radreq->authenticator,
 							     radreq->secret);
                 }
         } 
@@ -115,9 +115,9 @@ radius_verify_digest(REQUEST *req)
 	grad_request_t *radreq = req->data;
 	size_t len = req->rawsize;
         int  secretlen;
-        char zero[AUTH_VECTOR_LEN];
+        char zero[GRAD_AUTHENTICATOR_LENGTH];
         u_char  *recvbuf;
-        u_char digest[AUTH_VECTOR_LEN];
+        u_char digest[GRAD_AUTHENTICATOR_LENGTH];
 
         secretlen = strlen(radreq->secret);
 
@@ -127,19 +127,19 @@ radius_verify_digest(REQUEST *req)
         /* Older clients have the authentication vector set to
            all zeros. Return `1' in that case. */
         memset(zero, 0, sizeof(zero));
-        if (memcmp(radreq->vector, zero, AUTH_VECTOR_LEN) == 0)
+        if (memcmp(radreq->authenticator, zero, GRAD_AUTHENTICATOR_LENGTH) == 0)
                 return REQ_AUTH_ZERO;
 
         /* Zero out the auth_vector in the received packet.
            Then append the shared secret to the received packet,
            and calculate the MD5 sum. This must be the same
-           as the original MD5 sum (radreq->vector). */
-        memset(recvbuf + 4, 0, AUTH_VECTOR_LEN);
+           as the original MD5 sum (radreq->authenticator). */
+        memset(recvbuf + 4, 0, GRAD_AUTHENTICATOR_LENGTH);
         memcpy(recvbuf + len, radreq->secret, secretlen);
         grad_md5_calc(digest, recvbuf, len + secretlen);
         grad_free(recvbuf);
         
-        return memcmp(digest, radreq->vector, AUTH_VECTOR_LEN) ?
+        return memcmp(digest, radreq->authenticator, GRAD_AUTHENTICATOR_LENGTH) ?
                           REQ_AUTH_BAD : REQ_AUTH_OK;
 }
 
@@ -181,8 +181,8 @@ radius_auth_req_decode(struct sockaddr_in *sa,
 	if (grad_avl_find(radreq->request, DA_CHAP_PASSWORD)
 	    && !grad_avl_find(radreq->request, DA_CHAP_CHALLENGE)) {
 		grad_avp_t *p = grad_avp_create_binary(DA_CHAP_CHALLENGE,
-						       AUTH_VECTOR_LEN,
-						       radreq->vector);
+						       GRAD_AUTHENTICATOR_LENGTH,
+						       radreq->authenticator);
 		grad_avl_add_pair(&radreq->request, p);
 	}
 	
@@ -223,8 +223,8 @@ radius_acct_req_decode(struct sockaddr_in *sa,
 static void
 decrypt_pair(grad_request_t *req, grad_avp_t *pair)
 {
-	if (pair->prop & AP_ENCRYPT) {
-		char password[AUTH_STRING_LEN+1];
+	if (pair->prop & GRAD_AP_ENCRYPT) {
+		char password[GRAD_STRING_LENGTH+1];
 		req_decrypt_password(password, req, pair);
 		grad_free(pair->avp_strvalue);
 		pair->avp_strvalue = grad_estrdup(password);
@@ -251,7 +251,7 @@ radius_destroy_pairs(grad_avp_t **p)
 	if (!p || !*p)
 		return;
 	for (pair = *p; pair; pair = pair->next) {
-		if (pair->prop & (AP_ENCRYPT_RFC2138|AP_ENCRYPT_RFC2868))
+		if (pair->prop & GRAD_AP_ENCRYPT)
 			memset(pair->avp_strvalue, 0,
 			       pair->avp_strlength);
 	}
@@ -266,12 +266,11 @@ _extract_pairs(grad_request_t *req, int prop)
 	int i;
 	grad_avp_t *newlist = NULL;
 	grad_avp_t *pair;
-	char password[AUTH_STRING_LEN+1];
+	char password[GRAD_STRING_LENGTH+1];
 	int found = 0;
 	
 	for (pair = req->request; !found && pair; pair = pair->next)
-		if (pair->prop &
-		    (prop|AP_ENCRYPT_RFC2138|AP_ENCRYPT_RFC2868)) {
+		if (pair->prop & (prop|GRAD_AP_ENCRYPT)) {
 			found = 1;
 			break;
 		}
@@ -312,7 +311,7 @@ radius_req_cmp(void *adata, void *bdata)
 		return RCMP_NE;
 	
 	if (a->id == b->id
-	    && memcmp(a->vector, b->vector, sizeof(a->vector)) == 0)
+	    && memcmp(a->authenticator, b->authenticator, sizeof(a->authenticator)) == 0)
 		return RCMP_EQ;
 
 	nas = grad_nas_request_to_nas(a);
@@ -343,7 +342,7 @@ radius_req_cmp(void *adata, void *bdata)
 	if (prop == 0) 
 		return RCMP_NE;
 
-	prop = AP_USER_FLAG(prop);
+	prop = GRAD_AP_USER_FLAG(prop);
 	alist = _extract_pairs(a, prop);
 	blist = _extract_pairs(b, prop);
 
@@ -360,7 +359,7 @@ radius_req_cmp(void *adata, void *bdata)
 		   so that the reply is signed correctly.
 		   Notice that the raw data will be replaced by
 		   request_retransmit() */
-		memcpy(a->vector, b->vector, sizeof(a->vector));
+		memcpy(a->authenticator, b->authenticator, sizeof(a->authenticator));
 		grad_avl_free(a->request);
 		a->request = grad_avl_dup(b->request);
 		a->id = b->id;
@@ -491,7 +490,7 @@ radius_respond(REQUEST *req)
 	case RT_ACCOUNTING_RESPONSE:
 	case RT_ACCESS_CHALLENGE:
 		if (!req->orig) {
-			char buf[MAX_SHORTNAME];
+			char buf[GRAD_MAX_SHORTNAME];
 			grad_log_req(L_PROXY|L_ERR, radreq,
 				     _("Unrecognized proxy reply from server %s, proxy ID %d"),
 				     client_lookup_name(radreq->ipaddr,

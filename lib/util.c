@@ -403,7 +403,7 @@ grad_format_pair(grad_avp_t *pair, int typeflag, char **savep)
 {
         char *buf1 = NULL;
         char *buf2ptr = NULL;
-        char buf2[4*AUTH_STRING_LEN+1]; /* Enough to hold longest possible
+        char buf2[4*GRAD_STRING_LENGTH+1]; /* Enough to hold longest possible
                                            string value all converted to
                                            octal */
         grad_dict_value_t *dval;
@@ -412,8 +412,8 @@ grad_format_pair(grad_avp_t *pair, int typeflag, char **savep)
 	
         *savep = NULL;
 
-        switch (pair->eval_type == eval_const ? pair->type : TYPE_STRING) {
-        case TYPE_STRING:
+        switch (pair->eval_type == eval_const ? pair->type : GRAD_TYPE_STRING) {
+        case GRAD_TYPE_STRING:
                 if (pair->attribute != DA_VENDOR_SPECIFIC) {
                         int len = strlen (pair->avp_strvalue);
                         if (len != pair->avp_strlength-1)
@@ -436,8 +436,8 @@ grad_format_pair(grad_avp_t *pair, int typeflag, char **savep)
                 }
                 break;
                                         
-        case TYPE_INTEGER:
-                if (pair->name && (pair->prop & AP_TRANSLATE))
+        case GRAD_TYPE_INTEGER:
+                if (pair->name && (pair->prop & GRAD_AP_TRANSLATE))
                         dval = grad_value_lookup(pair->avp_lvalue, pair->name);
                 else
                         dval = NULL;
@@ -448,11 +448,11 @@ grad_format_pair(grad_avp_t *pair, int typeflag, char **savep)
                         snprintf(buf2, sizeof(buf2), "%s", dval->name);
                 break;
                 
-        case TYPE_IPADDR:
+        case GRAD_TYPE_IPADDR:
                 grad_ip_iptostr(pair->avp_lvalue, buf2);
                 break;
                 
-        case TYPE_DATE:
+        case GRAD_TYPE_DATE:
                 strftime(buf2, sizeof(buf2), "\"%b %e %Y\"",
                          localtime_r((time_t *)&pair->avp_lvalue, &tm));
                 break;
@@ -462,19 +462,19 @@ grad_format_pair(grad_avp_t *pair, int typeflag, char **savep)
 
 	if (typeflag) {
 		switch (pair->type) {
-		case TYPE_STRING:
+		case GRAD_TYPE_STRING:
 			type = "(STRING) ";
 			break;
 			
-		case TYPE_INTEGER:
+		case GRAD_TYPE_INTEGER:
 			type = "(INTEGER) ";
 			break;
 			
-		case TYPE_IPADDR:
+		case GRAD_TYPE_IPADDR:
 			type = "(IPADDR) ";
 			break;
 			
-		case TYPE_DATE:
+		case GRAD_TYPE_DATE:
 			type = "(DATE) ";
 			break;
 		}

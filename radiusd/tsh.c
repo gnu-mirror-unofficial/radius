@@ -329,7 +329,7 @@ tsh_debug(int argc, char **argv, char *cmd ARG_UNUSED)
 		return;
 	}
 	while (--argc)
-		set_debug_levels(*++argv);
+		grad_set_debug_levels(*++argv);
 }
 
 static void

@@ -56,3 +56,16 @@ grad_path_init()
 	grad_free(radmsgid_path);
 	radmsgid_path = grad_mkfilename(radlog_dir, RADMSGID);
 }
+
+void
+grad_path_free()
+{
+	grad_destroy((void**)&radius_dir);
+	grad_destroy((void**)&radlog_dir);
+	grad_destroy((void**)&radacct_dir);
+	grad_destroy((void**)&radutmp_path);
+	grad_destroy((void**)&radwtmp_path);
+	grad_destroy((void**)&radstat_path);
+	grad_destroy((void**)&radmsgid_path);
+	grad_destroy((void**)&radpid_dir);
+}

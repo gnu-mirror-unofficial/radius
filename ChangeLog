@@ -1,3 +1,69 @@
+2001-10-14 Sergey Poznyakoff
+
+	Bunch of fixes to handle correctly passwords longer than 16 bytes:
+
+	* radlib/cryptpass.c: (new) Functions for password
+	encryption/decryption.
+	* radlib/Makefile.am: Added cryptpass.c
+	* radlib/client.c: radclient_build_request(): Use encrypt_password().
+
+	* include/radius.h: Changes to struct radius_req: removed digest
+	field, changed type of secret field (was char [], now char *).
+	Secret now points to the shared secret from corresponding
+	CLIENT structure (no free needed when freeing the request).
+	Added protos for encrypt_password() and decrypt_password().
+	* include/radiusd.h: Removed calc_digest() proto, changed
+	calc_acctdigest(). Added proto for validate_client(). Changed
+	process_menu() proto.
+	* radiusd/acct.c: Changed invocation of calc_acctdigest().
+	* radiusd/auth.c: Changed rad_check_password(): removed pw_digest
+	argument. The function uses decrypt_password().
+	rad_auth_init(): Do not free radreq upon failure. It is
+	responsibility of the caller. Removed calc_digest check.
+	rad_authenticate(): Changed call to process_menu().
+
+	* radiusd/menu.c: process_menu(): removed pw_digest parameter;
+	the function uses decrypt_password().
+	* radiusd/proxy.c: Changes due to introduction of decrypt_password
+	and to the changes in RADIUS_REQ structure.
+	* radiusd/radius.c: Removed calc_digest().
+	Introduced validate_client(). Removed digest parameter from
+	calc_acctdigest().
+	* radiusd/radiusd.c: auth_respond(): Free radreq if radrespond()
+	failed.
+	radrespond(): Return 1 if suspend flag is on. Call validate_client()
+	early (see FIXME, though).
+	* radiusd/radutil.c: Reflect introduction of decrypt_password().
+
+	* NEWS: Reflect recent changes. The stuff is still unreadable for
+	normal human beings.
+	* TODO: Updated.
+
+	* radiusd/files.c: Fixed wild_match(): it returned 0
+	on partial matches.
+
+	* doc/texinfo/acct.texi: Reorganised structure. 
+	* doc/texinfo/attributes.texi: Likewise.
+	* doc/texinfo/auth.texi: Likewise.
+	* doc/texinfo/bugs.texi: Likewise.
+	* doc/texinfo/builddbm.texi: Likewise. 
+	* doc/texinfo/configure.texi: Likewise.
+	* doc/texinfo/debug.texi: Likewise.
+	* doc/texinfo/invoke.texi: Likewise.
+	* doc/texinfo/logging.texi: Likewise.
+	* doc/texinfo/naming.texi: Likewise.
+	* doc/texinfo/operation.texi: Likewise.
+	* doc/texinfo/radauth.texi: Likewise.
+	* doc/texinfo/radctl.texi: Likewise.
+	* doc/texinfo/radgrep.texi: Likewise.
+	* doc/texinfo/radius.texi: Likewise.
+	* doc/texinfo/radlast.texi: Likewise.
+	* doc/texinfo/radping.texi: Likewise.
+	* doc/texinfo/radscm.texi: Likewise.
+	* doc/texinfo/raduse.texi: Likewise.
+	* doc/texinfo/radwho.texi: Likewise.
+	* doc/texinfo/radzap.texi: Likewise.
+
 2001-10-04 Sergey Poznyakoff
 
 	* .cvsignore: Added *.tar.gz

@@ -1,3 +1,5 @@
+Passwords longer than 16 bytes are allowed.
+
 Client package
 
 possibility to retrieve arbitrary reply pairs from the SQL database.

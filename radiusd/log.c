@@ -19,6 +19,8 @@
 # include <config.h>
 #endif
 
+#include <sys/types.h>
+#include <sys/wait.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -501,6 +503,24 @@ log_set_default(name, cat, pri)
         register_category(cat, pri, &chanlist);
 }
 
+
+void
+format_exit_status(buffer, buflen, status)
+	char *buffer;
+	int buflen;
+	int status;
+{
+	if (WIFEXITED(status)) {
+		snprintf(buffer, buflen,
+			 _("exited with status %d"),
+			 WEXITSTATUS(status));
+	} else if (WIFSIGNALED(status)) {
+		snprintf(buffer, buflen,
+			 _("terminated on signal %d"),
+			 WTERMSIG(status));
+	} else
+		snprintf(buffer, buflen, _("terminated"));
+}
 
 /* ************************************************************************* */
 /* Configuration issues */

@@ -38,7 +38,8 @@ int rewrite_interpret(char *expr, grad_request_t *req,
 int rewrite_eval(char *func, grad_request_t *req,
 		 Datatype *type, Datum *datum);
 int rewrite_invoke(Datatype rettype, void *ret,
-		   char *name, grad_request_t *request, char *typestr, ...);
+		   const char *name,
+		   grad_request_t *request, char *typestr, ...);
 char *rewrite_compile(char *expr);
 int rewrite_stmt_term(int finish, void *block_data, void *handler_data);
 size_t rewrite_get_stack_size();

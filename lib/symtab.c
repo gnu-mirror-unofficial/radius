@@ -42,10 +42,39 @@ static size_t hash_size[] = {
 /* Maximum number of re-hashes: */
 static int max_rehash = sizeof (hash_size) / sizeof (hash_size[0]);
 
+grad_symbol_t *
+alloc_sym(const char *s, unsigned size)
+{
+        grad_symbol_t *ptr;
+        ptr = grad_emalloc(size);
+        ptr->name = grad_estrdup(s);
+        return ptr;
+}
 
-grad_symbol_t * alloc_sym(char *, unsigned);
-static unsigned int hashval(unsigned char *s, unsigned bias);
-static void _sym_add(grad_symtab_t *symtab, unsigned h, grad_symbol_t *sp);
+static unsigned int
+hashval(const unsigned char *s, unsigned bias)
+{
+        unsigned h = 0;
+
+        for (; *s; s++) {
+                h <<= 1;
+                h ^= *s;
+        }
+        return h % bias;
+}
+
+static void
+_sym_add(grad_symtab_t *symtab, unsigned h, grad_symbol_t *sp)
+{
+        sp->next = NULL;
+        if (symtab->sym[h]) {
+                grad_symbol_t *prev;
+                for (prev = symtab->sym[h]; prev->next; prev = prev->next)
+                        ;
+                prev->next = sp;
+        } else
+                symtab->sym[h] = sp;
+}
 
 grad_symtab_t *
 grad_symtab_create(unsigned esize, int (*elfree)())
@@ -59,31 +88,6 @@ grad_symtab_create(unsigned esize, int (*elfree)())
         symtab->elfree = elfree;
         symtab->sym = NULL;
         return symtab;
-}
-
-unsigned int
-hashval(unsigned char *s, unsigned bias)
-{
-        unsigned h = 0;
-
-        for (; *s; s++) {
-                h <<= 1;
-                h ^= *s;
-        }
-        return h % bias;
-}
-
-void
-_sym_add(grad_symtab_t *symtab, unsigned h, grad_symbol_t *sp)
-{
-        sp->next = NULL;
-        if (symtab->sym[h]) {
-                grad_symbol_t *prev;
-                for (prev = symtab->sym[h]; prev->next; prev = prev->next)
-                        ;
-                prev->next = sp;
-        } else
-                symtab->sym[h] = sp;
 }
 
 int
@@ -123,7 +127,8 @@ grad_symtab_rehash(grad_symtab_t *symtab)
 }
 
 void *
-grad_sym_lookup_or_install(grad_symtab_t *symtab, char *name, int install)
+grad_sym_lookup_or_install(grad_symtab_t *symtab, const char *name,
+			   int install)
 {
         if (symtab->sym) {
                 grad_symbol_t *sp;
@@ -131,7 +136,7 @@ grad_sym_lookup_or_install(grad_symtab_t *symtab, char *name, int install)
 
                 h = hashval((unsigned char *)name,
                             hash_size[symtab->hash_num]);
-
+		
                 for (sp = symtab->sym[h]; sp; sp = sp->next) {
                         if (strcmp(sp->name, name) == 0)
                                 return sp;
@@ -145,7 +150,7 @@ grad_sym_lookup_or_install(grad_symtab_t *symtab, char *name, int install)
 }
 
 void *
-grad_sym_install(grad_symtab_t *symtab, char *name)
+grad_sym_install(grad_symtab_t *symtab, const char *name)
 {
         grad_symbol_t *sp;
         unsigned int h;
@@ -163,7 +168,7 @@ grad_sym_install(grad_symtab_t *symtab, char *name)
 }
 
 void *
-grad_sym_lookup(grad_symtab_t *symtab, char *name)
+grad_sym_lookup(grad_symtab_t *symtab, const char *name)
 {
         return grad_sym_lookup_or_install(symtab, name, 0);
 }
@@ -177,15 +182,6 @@ grad_sym_next(grad_symbol_t *sym)
                         return sym;
         }
         return NULL;
-}
-
-grad_symbol_t *
-alloc_sym(char *s, unsigned size)
-{
-        grad_symbol_t *ptr;
-        ptr = grad_emalloc(size);
-        ptr->name = grad_estrdup(s);
-        return ptr;
 }
 
 /*

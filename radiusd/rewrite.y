@@ -218,7 +218,7 @@ typedef struct function_def {
         int        nparm;        /* Number of parameters */
         PARAMETER  *parm;        /* List of parameters */
         stkoff_t   stack_alloc;  /* required stack allocation */
-        grad_locus_t      loc;          /* source location where the function
+        grad_locus_t      loc;   /* source location where the function
                                   * was declared
                                   */
 } FUNCTION;
@@ -379,7 +379,7 @@ typedef struct {
         MTX *link;          /* Link to the next jump matrix
                              * (for break and continue matrices)
                              */
-        MTX      *dest;     /* Jump destination (usually NOP matrix) */
+        MTX      *dest;     /* Jump destination (usually a NOP matrix) */
 } JUMP_MTX;
 /*
  * Conditional branch
@@ -388,7 +388,7 @@ typedef struct {
 typedef struct {
         COMMON_MTX
         int      cond;      /* Condition: 1 - equal, 0 - not equal */
-        MTX      *dest;     /* Jump destination (usually NOP matrix) */
+        MTX      *dest;     /* Jump destination (usually a NOP matrix) */
 } BRANCH_MTX;
 /*
  * Stack frame matrix
@@ -408,7 +408,8 @@ typedef struct {
 } TGT_MTX;
 /*
  * No-op matrix. It is always inserted at the branch destination
- * points. It's purpose is to fixup the jump statements.
+ * points. Its purpose is to keep a singly-linked list of jump
+ * locations for fixing up jump statements.
  * Type: Nop
  */
 typedef struct {
@@ -522,7 +523,7 @@ void loop_unwind_all();
  * Lexical analyzer stuff
  */
 static FILE *infile;               /* Input file */ 
-static grad_locus_t locus;                /* Input location */
+static grad_locus_t locus;         /* Input location */
 
 static char *inbuf;                /* Input string */
 static char *curp;                 /* Current pointer */
@@ -533,7 +534,7 @@ static struct obstack input_stk;   /* Symbol stack */
 static Datatype return_type = Undefined;
                                    /* Data type of the topmost expression. */
 
-static int regcomp_flags = 0;     /* Flags to be used with regcomps */
+static int regcomp_flags = 0;      /* Flags to be used with regcomps */
 
 #define regex_init() regcomp_flags = 0
  
@@ -1996,7 +1997,7 @@ yysync()
  * Generalized list functions
  */
 static RWLIST *_list_insert(RWLIST **first, RWLIST **last, RWLIST *prev,
-                         RWLIST *obj, int before);
+			    RWLIST *obj, int before);
 static RWLIST *_list_remove(RWLIST **first, RWLIST **last, RWLIST *obj);
 static RWLIST *_list_append(RWLIST **first, RWLIST **last, RWLIST *obj);
 
@@ -2008,8 +2009,7 @@ static RWLIST *_list_append(RWLIST **first, RWLIST **last, RWLIST *obj);
  _list_append((RWLIST**)first, (RWLIST**)last, (RWLIST*)obj)
         
 RWLIST *
-_list_append(first, last, obj)
-        RWLIST **first, **last, *obj;
+_list_append(RWLIST **first, RWLIST **last, RWLIST *obj)
 {
         return rw_list_insert(first, last, *last, obj, 0);
 }
@@ -2261,8 +2261,7 @@ var_unwind_level()
 {
         int cnt = 0;
         
-        while (var_last && 
-               var_last->level == curframe->level) {
+        while (var_last && var_last->level == curframe->level) {
                 rw_list_remove(&var_first, &var_last, var_last);
                 cnt++;
         }
@@ -3540,7 +3539,7 @@ debug_dump_code()
 static int pushn(RWSTYPE n);
 static int cpopn(RWSTYPE *np);
 static RWSTYPE popn();
-static int checkpop(int cnt);
+static void checkpop(int cnt);
 static int pushref(char *str, int from, int to);
 static char *heap_reserve(int size);
 static void pushs(RWSTYPE *sptr, int len);
@@ -4106,7 +4105,7 @@ cpopn(RWSTYPE *np)
 }
 
 /*
- * Pop the number from stack without error checking. A checkpop() function
+ * Pop the number from stack without error checking. checkpop() function
  * should be called before calling this one.
  */
 RWSTYPE
@@ -4124,13 +4123,11 @@ tos()
 /*
  * Check if the stack contains at list CNT elements.
  */
-int
+void
 checkpop(int cnt)
 {
-        if (mach.st >= cnt)
-                return 0;
-        rw_error(_("out of popup"));
-        /*NOTREACHED*/
+        if (mach.st < cnt)
+		rw_error(_("out of popup"));
 }
         
 /*
@@ -5507,7 +5504,7 @@ rw_mach_destroy()
 }
 
 FUNCTION *
-rewrite_check_function(char *name, Datatype rettype, char *typestr)
+rewrite_check_function(const char *name, Datatype rettype, char *typestr)
 {
 	int i;
 	PARAMETER *p;
@@ -5619,7 +5616,7 @@ evaluate(pctr_t pc, grad_request_t *req, Datatype rettype, Datum *datum)
 
 int
 rewrite_invoke(Datatype rettype, void *ret,
-	       char *name, grad_request_t *request, char *typestr, ...)
+	       const char *name, grad_request_t *request, char *typestr, ...)
 {
         FILE *fp;
         va_list ap;
@@ -5711,7 +5708,8 @@ rewrite_compile(char *expr)
 }
 
 int
-rewrite_interpret(char *expr, grad_request_t *req, Datatype *type, Datum *datum)
+rewrite_interpret(char *expr, grad_request_t *req,
+		  Datatype *type, Datum *datum)
 {
 	pctr_t save_pc = rw_pc;
 	int rc;
@@ -6071,8 +6069,8 @@ radscm_rewrite_execute(const char *func_name, SCM ARGS)
                         scm_misc_error(func_name,
 				       _("type mismatch in argument ~S(~S) in call to ~S"),
                                        scm_list_3(SCM_MAKINUM(nargs),
-                                                 car,
-                                                 FNAME));
+						  car,
+						  FNAME));
                 }
         }
 

@@ -31,8 +31,8 @@
 #define RUT_PNSIZE 24           /* Phone number size */
 
 struct radutmp {
-        char login[RUT_NAMESIZE];       /* Loginname (maybe modified) */
-        char orig_login[RUT_NAMESIZE];  /* Original loginname */
+        char login[RUT_NAMESIZE];       /* Login name (maybe modified) */
+        char orig_login[RUT_NAMESIZE];  /* Original login name */
         int  nas_port;                  /* Port on the terminal server */
         char session_id[RUT_IDSIZE];    /* Radius session ID */
                                         /* (last RUT_IDSIZE bytes at least)*/

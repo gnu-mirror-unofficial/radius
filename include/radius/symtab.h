@@ -38,14 +38,14 @@ grad_symtab_t * grad_symtab_create(unsigned esize, int (*)());
 void grad_symtab_free(grad_symtab_t **symtab);
 void grad_symtab_clear(grad_symtab_t *symtab);
 
-void *grad_sym_install(grad_symtab_t *symtab, char *name);
-void *grad_sym_lookup(grad_symtab_t *symtab, char *name);
-void *grad_sym_lookup_or_install(grad_symtab_t *symtab, char *name, int install);
+void *grad_sym_install(grad_symtab_t *symtab, const char *name);
+void *grad_sym_lookup(grad_symtab_t *symtab, const char *name);
+void *grad_sym_lookup_or_install(grad_symtab_t *symtab,
+				 const char *name, int install);
 void *grad_sym_next(grad_symbol_t *sym);
 void grad_symtab_iterate(grad_symtab_t *symtab, int (*fn)(), void *closure);
 int grad_symtab_delete(grad_symtab_t *symtab, grad_symbol_t *sym);
 
-grad_symbol_t * alloc_sym(char *, unsigned);
 void     grad_sym_free(grad_symbol_t *);
 
 #endif

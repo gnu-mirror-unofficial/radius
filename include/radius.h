@@ -120,6 +120,11 @@ enum {
 #define PORT_ACCT 1
 #define PORT_MAX  2
 
+typedef struct {
+	UINT4 addr;             /* Server IP address */
+	u_char id;              /* Current id */
+} SERVER_ID;
+
 typedef struct radius_server RADIUS_SERVER;
 struct radius_server {
         RADIUS_SERVER *next;    /* Next server in queue */
@@ -127,6 +132,7 @@ struct radius_server {
         UINT4  addr;            /* IP address of it */
         int    port[PORT_MAX];  /* Ports to use */
         char   *secret;         /* Shared secret */
+	off_t  id_offset;       /* Offset of the SERVER_ID in the id file */
 };
 
 typedef struct {
@@ -134,7 +140,6 @@ typedef struct {
         unsigned timeout;       /* Amount of time to wait for the response */
         unsigned retries;       /* Number of re-sends to each server before
 				   giving up */
-        unsigned messg_id;      /* Current message identifier */
 	size_t buffer_size;     /* Size of the recv buffer */
         RADIUS_SERVER *first_server;   /* List of servers */
 } RADIUS_SERVER_QUEUE;    
@@ -256,6 +261,7 @@ extern char *radacct_dir;
 extern char *radutmp_path;
 extern char *radwtmp_path;
 extern char *radstat_path;
+extern char *radmsgid_path;
 extern char *radpid_dir;
 extern char *bug_report_address;
 
@@ -411,6 +417,7 @@ RADIUS_SERVER *rad_clt_append_server(RADIUS_SERVER *list,
 void rad_clt_clear_server_list(RADIUS_SERVER *list);
 RADIUS_SERVER *rad_clt_find_server(RADIUS_SERVER *list, char *name);
 void rad_clt_random_vector(char *vector);
+unsigned rad_clt_message_id(RADIUS_SERVER *server);
 
 /* log.c */
 char *rad_print_request(RADIUS_REQ *req, char *outbuf, size_t size);

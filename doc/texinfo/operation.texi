@@ -1,5 +1,5 @@
-@c This is part of the Radius manual.
-@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c This is part of the GNU Radius manual.
+@c Copyright (C) 2003 Free Software Foundation
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Operation, Invocation, Naming Conventions, Top
@@ -7,62 +7,10 @@
 @cindex @sc{nas}
 @cindex Network Access Server
 
-The main purpose of Radius is to centralize authentication of users coming
-from various network stations. Its primary usage is for dial-in users,
-though it can be used for any kind of network connection.
-
-Radius uses the Client/Server model. The main server keeps the centralized
-user database. Each user's profile in this database determines which services
-are allowed for this particular user.
-
-The Network Access Server (@NAS{} in short) is a machine that actually provides
-a service for the user. It can do so, e.g. by running a pool of modems the
-users can connect to. Otherwise, it can be a machine connected to the network
-and allowing some form of remote access, like telnet or ssh. It can even be
-a workstation allowing console logins to it. Whichever service it provides
-the @NAS{} sends the request to the central Radius server in order to determine
-whether the user trying to access the service is allowed to do so. Such
-request carries information about user's login name, password, @NAS{}
-identifier (such as its @IP{}), etc.
-
-On receiving such request Radius server retrieves from its database
-a profile corresponding to the user's login name. The profile basically
-consists of two parts: a checklist used for authentication and a reply
-list used for authorization. The server checks the authenticity of the
-user using first part of the retrieved profile. If this check succeeds,
-it uses second part of the profile to authorize the user, i.e. to
-determine which service he should be provided. Then, the server responds
-with the parameters of the service, such as connection speed, framed IP
-address, etc. If any of the described checks had failed, the server sends
-the negative response.
-
-If the server needs some additional information in order to process the
-request, it asks the @NAS{} to supply such information. Thus, for example, if
-the user is allowed to use several services, he can be asked which one of
-them he wishes to use, etc.
-
-When @NAS{} receives the positive authentication response, it initiates the
-connection.
-
-The @NAS{} can be configured to notify Radius server about such events as
-session start, session stop or changing some parameters during the
-session. It can also notify the server about other events, such as @NAS{}
-shutdown or startup. This is called @dfn{accounting} and the radius server
-responsible for processing this information is called an @dfn{accounting
-server}. The responses to accounting requests carry no attributes.
-
-The radius server may fail to receive some incoming requests or may
-fail to process them due to high server load. In order to prevent
-such requests from being lost, the @NAS{} retransmits the request
-if no response from the server is received within a
-predefined interval of time (a @dfn{timeout} interval). Usually the
-@NAS{} is configured in such a way that it continues retransmitting
-failed requests until either it receives a reply from the server
-or a predefined number of @dfn{retries} expires, whichever occurs first.
-Furthermore, the @NAS{} may be configured to communicate with a set
-of @dfn{backup} radius servers. In this case it applies the described
-process to each server from the set, until some of them responds or
-the set is exhausted.
+The main purpose of GNU Radius is to centralize authentication of
+users coming from various network stations, pursuant to the @RADIUS{}
+specification. Its primary usage is for dial-in users, though it can
+be used for any kind of network connection.  @xref{Intro}
 
 @menu
 * Attributes::                  Attributes.
@@ -81,7 +29,7 @@ the set is exhausted.
 @cindex Propagation of an attribute
 @cindex Properties of an attribute
 
-The information the Radius requests carry is stored as a list of
+Information carried by @RADIUS{} requests is stored as a list of
 @dfn{Attribute-Value pairs}. Each pair consists of @dfn{Attribute
 number} and @dfn{Attribute value}. The @dfn{Attribute number} identifies
 the type of information the pair carries and the @dfn{Attribute Value}
@@ -103,7 +51,7 @@ For convenience, the attributes and the values of some frequently used
 integer attributes are given symbolic names. These names are assigned to
 attributes and values in the dictionary file @ref{dictionary file}.
 
-The attribute numbers range from 1 to 255. The attributes with the numbers
+Attribute numbers range from 1 to 255. Attributes with numbers
 greater than 255 are used internally by the sever and cannot be sent to
 the @NAS{}.
 
@@ -119,12 +67,12 @@ properties are:
 These flags determine usage of the attribute in configuration
 files @file{huntgroups}, @file{hints} and @file{users}.
 @item propagation
-When a radius server functions in proxy mode, it uses the @dfn{propagation}
-bit to determine which attributes from the reply packet should be passed
+When a @RADIUS{} server functions in proxy mode, it uses the @dfn{propagation
+bit} to determine which attributes from the reply packet should be passed
 back to the requesting @NAS{} (@pxref{Proxy Service}).
 @item additivity
-Some configuration rules may cause addition of new @AVP{}s to the
-incoming request. Before addition of a new pair, @command{radiusd}
+Some configuration rules may cause the addition of new @AVP{}s to the
+incoming request. Before the addition of a new pair, @radiusd{}
 scans the request to see if it already contains a pair with the same
 attribute. If it does, the value of @dfn{additivity} determines the
 further actions:
@@ -140,18 +88,18 @@ The new pair is appended to the end of the pair list.
 @end table
 @end table
 
-The attributes are declared in @file{raddb/dictionary} file. For a
-detailed description of it, @xref{ATTRIBUTE}.
+The attributes are declared in the @file{raddb/dictionary} file. For a
+detailed description, @xref{ATTRIBUTE}.
 For information about particular attributes, @xref{Attribute List}.
 
 @comment *L2****************************************************************
 @node Requests
-@section Radius Requests
+@section @RADIUS{} Requests
 @cindex Request
 
-The term @dfn{request} means both the authentication/accounting request
-from @NAS{} to a Radius server and the response that the server sends back
-to the @NAS{}.
+The term @dfn{request} refers to both the authentication/accounting
+request packet  from a @NAS{} to a Radius server and the response
+packet that the server sends back to the @NAS{}.
 
 Each request contains the following fields
 

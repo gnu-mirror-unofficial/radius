@@ -18,23 +18,35 @@
 #ifndef SYSDEP_H_INCLUDED
 #define SYSDEP_H_INCLUDED
 
-#if defined(__alpha) && (defined(__osf__) || defined(__linux__))
-typedef unsigned int    UINT4;
-#else
-typedef unsigned long   UINT4;
-#endif
-
-#ifdef HAVE_SYS_TYPES_H
-# include <sys/types.h>
-#endif
-
 #ifdef HAVE_STRINGS_H
 # include <strings.h>
 #endif
 #include <string.h>
 
+/*FIXME
+#ifndef HAVE_STRCHR
+# define strchr index
+# define strrchr rindex
+#endif
+#ifndef HAVE_MEMCPY
+# define memcpy(d, s, n) bcopy ((s), (d), (n))
+# define memmove(d, s, n) bcopy ((s), (d), (n))
+#endif
+*/
 #ifndef HAVE_BZERO
 # define bzero(s,n) memset(s, 0, n)
+#endif
+
+#if STDC_HEADERS
+# include <stdarg.h>
+# define __PVAR(c) c
+#else
+# include <varargs.h>
+# define __PVAR(c) 
+#endif
+
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
 #endif
 
 #ifdef HAVE_SYS_TIME_H
@@ -63,7 +75,7 @@ int asprintf(/*char **result, const char *format, ...*/);
 #endif
 
 #if !HAVE_DECL_VASPRINTF
-int vasprintf(/*char **result, const char *format, va_list args*/);
+int vasprintf(char **result, const char *format, va_list args);
 #endif
 
 #if defined (sun) && defined(__svr4__)
@@ -72,6 +84,12 @@ RETSIGTYPE (*sun_signal(int signo, void (*func)(int)))(int);
 #endif
 int set_nonblocking(int fd);
 int getmaxfd();
+
+#if defined(__alpha) && (defined(__osf__) || defined(__linux__))
+typedef unsigned int    UINT4;
+#else
+typedef unsigned long   UINT4;
+#endif
 
 typedef unsigned long counter;
 

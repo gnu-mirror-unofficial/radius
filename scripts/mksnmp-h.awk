@@ -52,5 +52,8 @@ END {
         print "#ifdef SERVER"
         for (i = 0; i < mib_count; i++) 
                 print "subid_t oid_" mib_name[i] "[] = { LEN_" mib_name[i] ", MIB_" mib_name[i] " };"
+        print "#else"
+        for (i = 0; i < mib_count; i++) 
+                print "extern subid_t oid_" mib_name[i] "[];"
         print "#endif"
 }

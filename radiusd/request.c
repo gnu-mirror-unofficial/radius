@@ -131,8 +131,12 @@ request_thread_command(fun, data)
         debug(100,("Signalling"));
         pthread_cond_broadcast(&request_cond);
         Pthread_mutex_unlock(&request_mutex);
+#if 0
 	while (request_command_count < num_threads)
 		;
+#else
+	sleep(5);/*FIXME*/
+#endif
 	request_command = NULL;
 }
 

@@ -1,10 +1,6 @@
 #! /bin/sh
 
-aclocal -I m4 &&
- libtoolize --automake -c &&
- autoheader &&
- automake -a -c &&
- autoconf
+autoreconf -I m4 -f -i -s
 
 if [ ! -r include/debugmod.h ]; then
     echo "NOTE: Now you should do the following:"

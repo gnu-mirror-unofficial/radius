@@ -1,3 +1,18 @@
+2002-01-05 Sergey Poznyakoff
+	
+	* db/db.m4: Use ENUM_T instead of enum.
+	* db/mysql.m4: Define ENUM_T. Changed quoting.
+	* db/pgsql.m4: Likewise.
+
+	  Bugfixes:
+	
+	* radiusd/shmem.c: mmap returns -1 on failure. Change
+	  condition accordingly.
+	* radiusd/stat.c: Maxstat was improperly initialized. This
+	  caused grief when the number of NASes grew beyond a
+	  certain limit.
+	* radlib/radutmp.c: Check for fd==-1 after open().
+	
 2001-12-28 Vlad Lungu
 
 	* sql/odbc.c: Apparently, there is no Postgres ODBC driver

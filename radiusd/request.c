@@ -71,7 +71,8 @@ request_thread0(arg)
         
         sigemptyset(&sig);
         pthread_sigmask(SIG_SETMASK, &sig, NULL);
-
+	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+	
         while (1) {
 		REQUEST *req;
 		while (req = request_get())
@@ -415,7 +416,7 @@ rad_cleanup_thread(arg)
         void *arg;
 {
         REQUEST *curreq = arg;
-        debug(2, ("cleaning up request %lu", curreq->child_id));
+        debug(1, ("cleaning up request %lu", (u_long) curreq->child_id));
         curreq->child_id = 0;
 	curreq->status = RS_COMPLETED;
         time(&curreq->timestamp);
@@ -431,11 +432,12 @@ request_handle(req)
 	if (!req)
 		return;
 
-	debug(1, ("called"));
         pthread_cleanup_push(rad_cleanup_thread, req);
 	req->status = RS_PENDING;
+	req->child_id = pthread_self();
 	time(&req->timestamp);
-	debug(1, ("setup: %p", request_class[req->type].setup) );
+	debug(1, ("setup: %lu: %p",
+		  (u_long) req->child_id, request_class[req->type].setup));
 	if (request_class[req->type].setup) 
 		rc = request_class[req->type].setup(req);
 	if (rc == 0)

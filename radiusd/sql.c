@@ -616,6 +616,8 @@ attach_sql_connection(type, radreq)
 	conn = radreq->conn;
 	if (conn)
 		return conn;
+
+	time(&now);
 	conn = pthread_getspecific(sql_conn_key[type]);
 	if (!conn) {
 		debug(1, ("allocating new %d sql connection", type));
@@ -624,18 +626,17 @@ attach_sql_connection(type, radreq)
 		conn->owner = NULL;
 		conn->delete_on_close = !sql_cfg.keepopen;
 		conn->connected = 0;
-		time(&conn->last_used);
+		conn->last_used = now;
 		conn->type = type;
 
 		pthread_setspecific(sql_conn_key[type], conn);
 	}
 
-	time(&now);
 	if (!conn->connected || now - conn->last_used > sql_cfg.idle_timeout) {
 		debug(1, ("connection %d timed out: reconnect", type));
 		disp_sql_reconnect(sql_cfg.interface, type, conn);
 	}
-	time(&conn->last_used);
+	conn->last_used = now;
 	radreq->conn = conn;
 	debug(1, ("attaching %p->%p [%d]", radreq, conn, type));
 	return conn;

@@ -3088,29 +3088,29 @@ debug_print_mtxlist(char *s)
                         fprintf(fp, "%3.3s A:%d I:%d",
                                 datatype_str_nom(mtx->gen.datatype),
                                 mtx->attr.attrno,
-				mtx->attr.index->gen.id);
+				mtx->attr.index ? mtx->attr.index->gen.id : 0);
                         break;
 
                 CASE (Attr_check)
                         fprintf(fp, "%3.3s A:%d I:%d",
                                 datatype_str_nom(mtx->gen.datatype),
                                 mtx->attr.attrno,
-				mtx->attr.index->gen.id);
+				mtx->attr.index ? mtx->attr.index->gen.id : 0);
                         break;
                         
                 CASE (Attr_asgn)
                         fprintf(fp, "%3.3s A:%d I:%d M:%d",
                                 datatype_str_nom(mtx->gen.datatype),
                                 mtx->attr.attrno,
-				mtx->attr.index->gen.id,
-                                LINK(mtx->attr.rval));
+				mtx->attr.index ? mtx->attr.index->gen.id : 0,
+				LINK(mtx->attr.rval));
                         break;
                         
 		CASE (Attr_delete)
 			fprintf(fp, "%3.3s A:%d I:%d",
 				datatype_str_nom(mtx->gen.datatype),
 				mtx->attr.attrno,
-				mtx->attr.index->gen.id);
+				mtx->attr.index ? mtx->attr.index->gen.id : 0);
 		        break;
  
                 default:

@@ -9,4 +9,6 @@ guile-procedures.txt
 *.l[ao]
 radsession
 gnuradius.scm
+radiusd.scm
 *.inc
+*.exp

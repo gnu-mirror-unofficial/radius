@@ -37,6 +37,7 @@ iputil.c \
 leakdetect.c \
 list.c \
 logger.c \
+md4.c \
 md5.c \
 md5crypt.c \
 nas.c \
@@ -48,6 +49,8 @@ radpdu.c \
 radsrv.c \
 radutmp.c \
 realms.c \
+sha1.c \
+smbdes.c \
 symtab.c \
 sysdep.c \
 users_gram.c \

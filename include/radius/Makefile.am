@@ -34,6 +34,7 @@ pkginclude_HEADERS = \
  argcv.h\
  envar.h\
  list.h\
+ md4.h\
  md5.h\
  mem.h\
  radargp.h\
@@ -41,6 +42,7 @@ pkginclude_HEADERS = \
  radpaths.h\
  radscm.h\
  radutmp.h\
+ sha1.h\
  symtab.h\
  @GNU_INCLUDES@
 

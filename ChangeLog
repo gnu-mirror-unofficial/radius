@@ -1,3 +1,46 @@
+2004-04-12  Sergey Poznyakoff
+
+	* configure.ac: Modified assignement to RADSCM_PKGDATA so
+	that all further changes will go to radscm/Makefile.am
+	* examples/config.syntax: Added example of load-module
+	statement.
+
+	* radiusd/auth.c (rad_check_password): Changed declaration.
+	If an unknown Auth-Type is supplied, try to load extension
+	module.
+	* radiusd/scheme.c (catch_body): Always load "radiusd" module.
+	(scheme_try_auth): New function.
+	(guile_stmt): Added load-module statement
+
+	* radscm/gnuradius.scm.in: Added new exports
+	* radscm/radiusd.scm.in: New file.
+	* radscm/Makefile.am: Modified
+	* radscm/rscm_dict.c (rad-dict-value->name): Throw exception
+	on errors.
+	* radscm/mschap.scm: New file
+	
+	* raddb/dict/microsoft: Added 'fixme' comment
+	* raddb/dict/standard: Added auth-type MS-CHAP
+	
+	* radiusd/sql.c: Fixed misplaced `#if defined(USE_SQL)'.
+	
+	* lib/md4.c: New file
+	* lib/md5.c: Use grad_uint32_t
+	* lib/sha1.c: New file
+	* lib/smbdes.c: New file	
+	* lib/Makefile.am: Updated
+
+	* include/radius/md4.h: New file
+	* include/radius/md5.h: Use grad_uint32_t
+	* include/radius/sha1.h: New file
+	* include/radius/Makefile.am: Updated
+
+	* radiusd/testsuite/Makefile.am: Updated
+	* radiusd/testsuite/lib/radiusd.exp: Set GUILE_LOAD_PATH envvar
+	* radscm/rscm_lib.c (grad_scm_init): Load rscm_hash_init()
+	* radscm/rscm_hash.c: New file
+	* radscm/.cvsignore: Updated
+	
 2004-04-10  Sergey Poznyakoff 
 
 	* examples/config.syntax: Example of 'acct/system no'

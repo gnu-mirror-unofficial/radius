@@ -26,7 +26,7 @@ begin
   case $OPTVAR in
   "-n")	NASIP = $OPTARG 
   "-s")	SID = $OPTARG 
-  "-P") pid = $OPTARG 
+  "-P") PID = $OPTARG 
   "-v")	set -v 
   "-h") begin
           print <<-EOT
@@ -46,7 +46,7 @@ begin
           exit 0
         end
   ".*")	begin
-          print "Unknown option: " $1
+          print "Unknown option: " $OPTVAR "\n"
 	  exit 1
         end
   end
@@ -54,7 +54,7 @@ end
 
 SHIFT ${OPTIND}-1
 
-if $# > 4
+if $# > 3
 begin
 	print "Wrong number of arguments."
 	print "Try radauth -h for more info"
@@ -76,13 +76,13 @@ if ${NASIP:-} = ""
 
 LIST = ( User-Name = $LOGIN NAS-IP-Address = $NASIP )
 
-accounting
+'acct'
 begin
   if ${SID:-} = ""
     input "Enter session ID: " SID
-  if ${pid:-} = ""
-    input "Enter NAS port ID: " pid
-  send auth Accounting-Request $1 + (Acct-Session-Id = $SID NAS-Port-Id = $pid)
+  if ${PID:-} = ""
+    input "Enter NAS port ID: " PID
+  send auth Accounting-Request $1 + (Acct-Session-Id = $SID NAS-Port-Id = $PID)
   if $REPLY_CODE != Accounting-Response
   begin
     print "Accounting failed.\n"
@@ -92,7 +92,7 @@ begin
   exit 0
 end
 
-authenticate
+'auth'
 begin
   send auth Access-Request $1 + (User-Password = $2)
   while 1
@@ -102,7 +102,7 @@ begin
       print "Authentication passed. " + $REPLY[[Reply-Message*]] + "\n"
       if ${3:-no} = no
 	exit 0
-      accounting($1 + ( Acct-Status-Type = Start ))
+      'acct'($1 + ( Acct-Status-Type = Start ))
     end else if $REPLY_CODE = Access-Reject
     begin
       print "Authentication failed. " + $REPLY[[Reply-Message*]] + "\n"
@@ -122,10 +122,10 @@ begin
 end
 
 case ${COMMAND} in
-"auth")		authenticate($LIST, ${2:&Password: }, no)
-"acct")         authenticate($LIST, ${2:&Password: }, yes)
-"start")	accounting($LIST+(Acct-Status-Type = Start))
-"stop")         accounting($LIST+(Acct-Status-Type = Stop))
+"auth")		'auth'($LIST, ${2:&Password: }, no)
+"acct")         'auth'($LIST, ${2:&Password: }, yes)
+"start")	'acct'($LIST+(Acct-Status-Type = Start))
+"stop")         'acct'($LIST+(Acct-Status-Type = Stop))
 ".*")		begin
 		  print "Unknown command. Try radauth -h for more info"
 		  exit 1

@@ -285,11 +285,8 @@ rad_check_password(authreq, activefd, check_item, namepair,
 	int		auth_type = -1;
 	int		i;
 	int		result;
-
-#ifdef USE_PAM
-        VALUE_PAIR      *pampair;
-	char *pamauth;
-#endif
+        VALUE_PAIR      *p;
+	char            *authdata = NULL;
 	
 	result = AUTH_OK;
 	userpass[0] = 0;
@@ -311,11 +308,9 @@ rad_check_password(authreq, activefd, check_item, namepair,
 		return AUTH_REJECT;
 	}
 
-#ifdef USE_PAM
-        if ((pampair = pairfind(check_item, DA_PAM_AUTH)) != NULL) {
-		pamauth = pampair->strvalue;
+        if ((p = pairfind(check_item, DA_AUTH_DATA)) != NULL) {
+		authdata = p->strvalue;
         }
-#endif
 	
 	/*
 	 *	Find the password sent by the user. It SHOULD be there,
@@ -379,6 +374,9 @@ rad_check_password(authreq, activefd, check_item, namepair,
 		 auth_type, string, name,
 		 password_pair ? password_pair->strvalue : ""));
 
+	if ((p = pairfind(check_item, DA_AUTH_DATA)) != NULL) 
+		authdata = p->strvalue;
+
 	switch (auth_type) {
 		case DV_AUTH_TYPE_SYSTEM:
 			debug(1, ("  auth: System"));
@@ -392,28 +390,29 @@ rad_check_password(authreq, activefd, check_item, namepair,
 #ifdef USE_PAM
 			debug(1, ("  auth: Pam"));
 			/*
-			 *	Use the PAM database.
-			 *
-			 *	cjd 19980706 --
-			 *	Use what we found for pamauth or set it to
-			 *	the default "radius" and then jump into
-			 *	pam_pass with the extra info.
+			 * Provide defaults for authdata
 			 */
-			pamauth = pamauth ? pamauth : PAM_DEFAULT_TYPE;
-			if (pam_pass(name, string, pamauth) != 0)
+			if (authdata == NULL &&
+			    (p = pairfind(check_item, DA_PAM_AUTH)) != NULL) {
+				authdata = p->strvalue;
+			}
+			authdata = authdata ? authdata : PAM_DEFAULT_TYPE;
+			if (pam_pass(name, string, authdata) != 0)
 				result = AUTH_FAIL;
 #else
-			radlog(L_ERR, _("%s: PAM authentication not available"),
-				name);
+			radlog(L_ERR,
+			       _("%s: PAM authentication not available"),
+			       name);
 			result = AUTH_NOUSER;
 #endif
 			break;
 		case DV_AUTH_TYPE_MYSQL:
 #ifdef USE_SQL
-			result = rad_sql_pass(authreq, string);
+			result = rad_sql_pass(authreq, authdata, string);
 #else
-			radlog(L_ERR, _("%s: MYSQL authentication not available"),
-				name);
+			radlog(L_ERR,
+			       _("%s: MYSQL authentication not available"),
+			       name);
 			result = AUTH_NOUSER;
 #endif
 			break;
@@ -425,7 +424,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 			}
 			if (strcmp(password_pair->strvalue,
 			    md5crypt(string, password_pair->strvalue)) != 0)
-					result = AUTH_FAIL;
+				result = AUTH_FAIL;
 			break;
 		case DV_AUTH_TYPE_LOCAL:
 			debug(1, ("  auth: Local"));

@@ -50,7 +50,6 @@ snarf_x() {
 snarf_doc() {
     $CPP -DSCM_MAGIC_SNARF_DOCS "$@" > ${temp}
     cpp_exit=$?
-    cp $temp /tmp/l
     $AWK '
 NF<2 {next}
 state == 0 && /\^\^ {/ { state = 1; print; next }
@@ -60,8 +59,6 @@ state == 1 { print }
 state == 0 { next }' $temp |\
       tr -d '\n' | tr '^' '\n' |\
       awk -f $BASEDIR/guile-doc-snarf.awk > $OUTFILE
-      
-#    grep '\^\^' ${temp} | tr '\n' ' ' | tr '^' '\n' > $OUTFILE
 }
 
 case "$DOCFILE" in

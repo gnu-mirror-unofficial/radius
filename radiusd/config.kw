@@ -124,6 +124,8 @@ multiple-login, T_MESGDEF, _Y(MSG_MULTIPLE_LOGIN)
 second-login, T_MESGDEF, _Y(MSG_SECOND_LOGIN)
 timespan-violation, T_MESGDEF, _Y(MSG_TIMESPAN_VIOLATION)
 task-timeout, T_TASK_TIMEOUT
+rewrite, T_REWRITE
+stack-size, T_STACK_SIZE
 %%
 
 int

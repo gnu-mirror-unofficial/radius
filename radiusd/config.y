@@ -158,6 +158,7 @@ static void obsolete(char *stmt, int ign);
 %token T_MAX_REQUESTS T_MESSAGE T_PORT T_REQUEST_CLEANUP_DELAY T_RETRY T_SPAWN 
 %token T_STRIP_NAMES T_TTL T_USERNAME_CHARS T_USR2DELAY T_RESOLVE T_MAX_THREADS
 %token T_GC_INTERVAL T_TASK_TIMEOUT
+%token T_REWRITE T_STACK_SIZE
 
 %token T_SOURCE_IP T_ACCT_DIR T_ACCT T_CNTL T_PROXY T_CHANNEL
 %token T_SYSLOG T_NOTIFY T_SNMP T_COMMUNITY T_ACL
@@ -210,6 +211,7 @@ stmt            : logging_stmt
                 | snmp_stmt
                 | guile_stmt
                 | message_stmt
+                | rewrite_stmt
                 ;
 
 
@@ -1088,6 +1090,22 @@ message_line    : T_MESGDEF value EOL
                   {
                           asgn(&message_text[MSG_PASSWORD_EXPIRE_WARNING], &$2, AT_STRING, 0);
                   }
+                ;
+
+
+       /* Rewrte definitions */
+
+rewrite_stmt    : T_REWRITE '{' rewrite_list '}'
+                ;
+
+rewrite_list    : rewrite_def
+                | rewrite_list rewrite_def
+                ;
+
+rewrite_def     : T_STACK_SIZE value EOL
+                  {
+			  asgn(&rewrite_stack_size, &$2, AT_INT, 0);
+		  }
                 ;
 
        /* Obsolete syntax: for compatibility with 0.95 and earlier */ 

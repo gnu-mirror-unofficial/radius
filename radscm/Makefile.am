@@ -23,8 +23,7 @@ libradscm_a_SOURCES= \
  rscm_syslog.c\
  rscm_utmp.c\
  rscm_lib.c\
- radscm.c\
- radscm.h
+ radscm.c
 
 libservscm_a_SOURCES= \
  rscm_radlog.c \
@@ -52,24 +51,24 @@ radsession: $(srcdir)/radsession.in
 
 radscm_LDADD=@GUILE_LIBS@ ./libradscm.a ../lib/liblog.la ../lib/librad.la ../lib/libdebug.la @LIBINTL@
 
-INCLUDES  = -I$(top_builddir) -I$(top_srcdir)/include -I$(srcdir) @INCLUDEPATH@ @GUILE_INCLUDES@
+INCLUDES  = -I$(top_builddir) -I$(top_srcdir)/include -I$(srcdir) -I. @INCLUDEPATH@ @GUILE_INCLUDES@
 CPPFLAGS=-DDATADIR=\"$(pkgdatadir)\"
 ETAGS_ARGS = --regex='/SCM_\(GLOBAL_\)?\(G?PROC\|G?PROC1\|SYMBOL\|VCELL\|CONST_LONG\).*\"\([^\"]\)*\"/\3/' \
    --regex='/[ \t]*SCM_[G]?DEFINE1?[ \t]*(\([^,]*\),[^,]*/\1/'
 
-GUILE_DOC_SNARF=$(top_srcdir)/scripts/guile/guile-doc-snarf
+GUILE_DOC_SNARF=$(top_srcdir)/scripts/guile/$(GUILE_SNARF_VERSION)/guile-doc-snarf
 
 SUFFIXES=.x .doc
 
 .c.x:
 	AWK=$(AWK) \
-	$(GUILE_DOC_SNARF) $< $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) \
-                           $< > $@ || { rm $@; false; }
+	$(GUILE_DOC_SNARF) -o $@ \
+                           $< $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) 
 
 .c.doc:
 	AWK=$(AWK) \
-	$(GUILE_DOC_SNARF) $< $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) \
-                           $< > /dev/null || { rm $@; false; }
+	$(GUILE_DOC_SNARF) -d -o $@ \
+                           $< $(DEFS) $(INCLUDES) $(CPPFLAGS) $(CFLAGS) 
 
 guile-procedures.txt: $(DOT_DOC_FILES)
 	cat $(DOT_DOC_FILES) > $@

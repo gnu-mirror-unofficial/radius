@@ -440,11 +440,14 @@ avl_dup(VALUE_PAIR *from)
 
 /* write a pairlist to the file */
 void
-avl_fprint(FILE *fp, VALUE_PAIR *avl)
+avl_fprint(FILE *fp, char *prefix, int typeflag, VALUE_PAIR *avl)
 {
         char *save;
+	if (!prefix)
+		prefix = "";
         for (;avl; avl = avl->next) {
-                fprintf(fp, "    %s\n", format_pair(avl, &save));
+                fprintf(fp, "%s%s\n", prefix,
+			format_pair(avl, typeflag, &save));
                 free(save);
         }
 }

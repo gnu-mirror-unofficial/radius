@@ -46,13 +46,13 @@ typedef long RWSTYPE;
 /*
  * Generalized list structure
  */
-typedef struct list_t LIST;
-#define LIST(type) \
+typedef struct rw_list RWLIST;
+#define RWLIST(type) \
         type     *next;\
         type     *prev
 
-struct list_t {
-        LIST(LIST);
+struct rw_list {
+        RWLIST(RWLIST);
 };
 
 /*
@@ -61,7 +61,7 @@ struct list_t {
 typedef struct object_t OBJECT ;
 
 #define OBJ(type) \
-        LIST(type);\
+        RWLIST(type);\
         type    *alloc
 
 struct object_t {
@@ -1751,31 +1751,31 @@ yysync()
 /* ****************************************************************************
  * Generalized list functions
  */
-static LIST *_list_insert(LIST **first, LIST **last, LIST *prev,
-                         LIST *obj, int before);
-static LIST *_list_remove(LIST **first, LIST **last, LIST *obj);
-static LIST *_list_append(LIST **first, LIST **last, LIST *obj);
+static RWLIST *_list_insert(RWLIST **first, RWLIST **last, RWLIST *prev,
+                         RWLIST *obj, int before);
+static RWLIST *_list_remove(RWLIST **first, RWLIST **last, RWLIST *obj);
+static RWLIST *_list_append(RWLIST **first, RWLIST **last, RWLIST *obj);
 
 #define list_insert(first, last, prev, obj, before) \
- _list_insert((LIST**)first,(LIST**)last,(LIST*)prev,(LIST*)obj, before)
+ _list_insert((RWLIST**)first,(RWLIST**)last,(RWLIST*)prev,(RWLIST*)obj, before)
 #define list_remove(first, last, obj) \
- _list_remove((LIST**)first,(LIST**)last,(LIST *)obj)
+ _list_remove((RWLIST**)first,(RWLIST**)last,(RWLIST *)obj)
 #define list_append(first, last, obj) \
- _list_append((LIST**)first, (LIST**)last, (LIST*)obj)
+ _list_append((RWLIST**)first, (RWLIST**)last, (RWLIST*)obj)
         
-LIST *
+RWLIST *
 _list_append(first, last, obj)
-        LIST **first, **last, *obj;
+        RWLIST **first, **last, *obj;
 {
         return list_insert(first, last, *last, obj, 0);
 }
 
-LIST *
+RWLIST *
 _list_insert(first, last, prev, obj, before)
-        LIST **first, **last, *prev, *obj;
+        RWLIST **first, **last, *prev, *obj;
         int before;
 {
-        LIST   *next;
+        RWLIST   *next;
 
         /*
          * No first element: initialize whole list
@@ -1815,11 +1815,11 @@ _list_insert(first, last, prev, obj, before)
         return obj;
 }
 
-LIST *
+RWLIST *
 _list_remove(first, last, obj)
-        LIST **first, **last, *obj;
+        RWLIST **first, **last, *obj;
 {
-        LIST *temp;
+        RWLIST *temp;
 
         if (temp = obj->prev) 
                 temp->next = obj->next;

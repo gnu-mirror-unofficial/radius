@@ -29,6 +29,7 @@ logging {
 	};
 	channel debug {
 		file "radius.debug";
+		print-pid yes;
 	};
 	category auth {
 		channel default;

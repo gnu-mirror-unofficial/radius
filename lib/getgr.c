@@ -20,10 +20,9 @@
 #endif
 #include <sys/types.h>
 #include <grp.h>
-#include <pthread.h>
 #include <mem.h>
 
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+LOCK_DECLARE(lock)
 
 struct group *
 store_group(grp)
@@ -74,9 +73,8 @@ rad_getgrnam(name)
 {
 	struct group *grp;
 
-	pthread_cleanup_push((void (*)(void*))pthread_mutex_unlock, &mutex);
-        pthread_mutex_lock(&mutex);
+	LOCK_SET(lock);
 	grp = store_group(getgrnam(name));
-	pthread_cleanup_pop(1);
+	LOCK_RELEASE(lock);
 	return grp;
 }

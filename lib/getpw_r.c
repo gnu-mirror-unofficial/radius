@@ -21,9 +21,8 @@
 
 #include <sys/types.h>
 #include <pwd.h>
-#include <pthread.h>
 
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+LOCK_DECLARE(lock)
 
 int
 store_passwd(pwd, result, buffer, buflen)
@@ -37,12 +36,12 @@ store_passwd(pwd, result, buffer, buflen)
 	*result = *pwd;
 
 #define COPY(m) \
-	result->##m = buffer;\
-	len = strlen(pwd->##m) + 1;\
+	result->m = buffer;\
+	len = strlen(pwd->m) + 1;\
 	if (len	> buflen) return -1;\
 	buflen -= len;\
 	buffer += len;\
-	strcpy(result->##m, pwd->##m)
+	strcpy(result->m, pwd->m)
 
 	COPY(pw_name);
 	COPY(pw_passwd);
@@ -63,12 +62,11 @@ rad_getpwnam_r(name, result, buffer, buflen)
 	int buflen;
 {
 	struct passwd *pwd;
-	pthread_cleanup_push((void (*)(void*))pthread_mutex_unlock, &mutex);
-        pthread_mutex_lock(&mutex);
+	LOCK_SET(lock);
 	pwd = getpwnam(name);
 	if (!pwd || store_passwd(pwd, result, buffer, buflen))
 		result = NULL;
-	pthread_cleanup_pop(1);
+	LOCK_RELEASE(lock);
 	return result;
 }
 

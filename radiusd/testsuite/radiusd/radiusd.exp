@@ -91,7 +91,7 @@ radius_test "send auth 1 User-Name = \"bad-one\"" "expect 3 Reply-Message = \"So
 
 #clone_output "Checking Expiration Attribute"
 radius_test "send auth 1 User-Name = \"expire\" User-Password = \"expire\"" "expect 3 Reply-Message = \"Password has expired\\r\\n\"" 
- radius_test "send auth 1 User-Name = \"no-expire\" User-Password = \"expire\"" "expect 2" 
+radius_test "send auth 1 User-Name = \"no-expire\" User-Password = \"expire\"" "expect 2" 
 
 #clone_output "Checking Menus"
 radius_test -prereq USE_LIVINGSTON_MENUS \

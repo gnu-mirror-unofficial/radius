@@ -29,7 +29,6 @@ static char rcsid[] =
 #include <stdio.h>
 #include <sysdep.h>
 #include <radius.h>
-#include <pthread.h>
 
 typedef struct entry *Entry;
 struct entry {
@@ -59,10 +58,10 @@ union bucket {
 };
 
 Bucketclass bucket_class;
-static pthread_mutex_t mem_mutex = PTHREAD_MUTEX_INITIALIZER;
+LOCK_DECLARE(mem_lock)
 
-#define mem_lock()    pthread_mutex_lock(&mem_mutex)
-#define mem_unlock()  pthread_mutex_unlock(&mem_mutex)
+#define mem_lock()    LOCK_SET(mem_lock)
+#define mem_unlock()  LOCK_RELEASE(mem_lock)
 
 void *alloc_page();
 static Bucketclass alloc_class(size_t size);
@@ -488,7 +487,7 @@ typedef union {
 
 #define BLKCNT(length) ((length + HDRSIZE + MINSTRSIZE - 1) / (MINSTRSIZE - 1))
 
-static pthread_mutex_t string_mutex = PTHREAD_MUTEX_INITIALIZER;
+LOCK_DECLARE(string_lock)
 
 /* string_alloc(): Allocate a string of given length
  */
@@ -534,13 +533,13 @@ string_dup(str)
 
         if (!str)
                 return NULL;
-        pthread_mutex_lock(&string_mutex);
+        LOCK_SET(string_lock);
         hp = (STRHDR*)str - 1;
         if (hp->s.nref == 255)  /* FIXME: use limits.h */
                 str = string_create(str);
 	else
 		hp->s.nref++;
-        pthread_mutex_unlock(&string_mutex);
+        LOCK_RELEASE(string_lock);
         return str;
 }
 
@@ -558,16 +557,16 @@ string_replace(str, string_value)
         if (!*str)
                 return *str = string_create(string_value);
         
-        pthread_mutex_lock(&string_mutex);
+        LOCK_SET(string_lock);
         hp = (STRHDR*)*str - 1;
         if ( hp->s.nref > 1 || hp->s.nblk < BLKCNT(length) ) {
-                pthread_mutex_unlock(&string_mutex);
+                LOCK_RELEASE(string_lock);
                 string_free(*str);
-                pthread_mutex_lock(&string_mutex);
+                LOCK_SET(string_lock);
                 *str = string_alloc(length + 1);
         }
         strcpy(*str, string_value);
-        pthread_mutex_unlock(&string_mutex);
+        LOCK_RELEASE(string_lock);
         return *str;
 }
 
@@ -583,11 +582,11 @@ string_free(str)
         if (!str)
                 return;
         
-        pthread_mutex_lock(&string_mutex);
+        LOCK_SET(string_lock);
         hp = (STRHDR*)str - 1;
         if (--hp->s.nref == 0)
                 mem_cfree(hp, hp->s.nblk);
-        pthread_mutex_unlock(&string_mutex);
+        LOCK_RELEASE(string_lock);
 }
 
 /* ************************************************************************* */

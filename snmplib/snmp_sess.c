@@ -29,7 +29,9 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <pthread.h>
+#if defined(USE_PTHREAD)
+# include <pthread.h>
+#endif
 #if defined(HAVE_SYS_SELECT_H)
 # include <sys/select.h>
 #endif
@@ -45,6 +47,7 @@ struct snmp_def snmp_def = {
         3,     /* timeout */
 };
 
+#if defined(USE_PTHREAD)
 static pthread_once_t snmp_errno_once = PTHREAD_ONCE_INIT;
 static pthread_key_t snmp_errno_key;
 
@@ -76,7 +79,16 @@ __snmp_errno_location()
         }
         return p;
 }
-        
+#else
+static int __snmp_errno;
+
+int *
+__snmp_errno_location()
+{
+	return &__snmp_errno;
+}
+#endif
+
 int
 snmp_req_id()
 {

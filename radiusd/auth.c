@@ -117,7 +117,7 @@ check_user_name(p)
         return *p;
 }
 
-static pthread_mutex_t pwd_mutex = PTHREAD_MUTEX_INITIALIZER;
+LOCK_DECLARE(lock)
 
 /*
  * Check the users password against UNIX password database.
@@ -144,9 +144,7 @@ unix_pass(name, passwd)
         struct pr_passwd *pr_pw;
 #endif
 	
-	pthread_cleanup_push((void (*)(void*))pthread_mutex_unlock,
-			     &pwd_mutex);
-        pthread_mutex_lock(&pwd_mutex);
+	LOCK_SET(lock);
 
 #if defined(OSFC2)
         if (pr_pw = getprpwnam(name))
@@ -195,7 +193,8 @@ unix_pass(name, passwd)
 		else
 			encrypted_pass = estrdup(encrypted_pass);
 	}
-	pthread_cleanup_pop(1);
+	
+	LOCK_RELEASE(lock);
 
         if (!encrypted_pass)
                 return -1;
@@ -480,8 +479,8 @@ rad_auth_init(radreq, activefd)
          */
         if (!huntgroup_access(radreq)) {
                 radlog_req(L_NOTICE, radreq, _("No huntgroup access"));
-                rad_send_reply(RT_AUTHENTICATION_REJECT, radreq,
-                               radreq->request, NULL, activefd);
+                radius_send_reply(RT_AUTHENTICATION_REJECT, radreq,
+                                  radreq->request, NULL, activefd);
                 return -1;
         }
 
@@ -829,11 +828,11 @@ sfn_init(m)
 		break;
 
 	default:
-		rad_send_reply(radreq->server_code,
-			       radreq,
-			       radreq->server_reply,
-			       NULL,
-			       m->activefd);
+		radius_send_reply(radreq->server_code,
+			          radreq,
+			          radreq->server_reply,
+			          NULL,
+			          m->activefd);
 		newstate(as_stop);
 		return;
 	}
@@ -1278,7 +1277,7 @@ sfn_menu_challenge(m)
         msg = get_menu(m->check_pair->avp_strvalue);
         snprintf(state_value, sizeof(state_value),
                    "MENU=%s", m->check_pair->avp_strvalue);
-        send_challenge(m->req, msg, state_value, m->activefd);
+        radius_send_challenge(m->req, msg, state_value, m->activefd);
         
         debug(1,
               ("sending challenge (menu %s) to %s",
@@ -1295,11 +1294,11 @@ sfn_ack(m)
         
         stat_inc(auth, m->req->ipaddr, num_accepts);
 
-        rad_send_reply(RT_AUTHENTICATION_ACK,
-                       m->req,
-                       m->user_reply,
-                       auth_finish_msg(m),
-                       m->activefd);
+        radius_send_reply(RT_AUTHENTICATION_ACK,
+                          m->req,
+                          m->user_reply,
+                          auth_finish_msg(m),
+                          m->activefd);
         
         if (is_log_mode(m, RLOG_AUTH)) {
                 auth_log(m, _("Login OK"),
@@ -1319,11 +1318,11 @@ sfn_reject(m)
         AUTH_MACH *m;
 {
         debug(1, ("REJECT: %s", m->namepair->avp_strvalue));
-        rad_send_reply(RT_AUTHENTICATION_REJECT,
-                       m->req,
-                       m->user_reply,
-                       auth_finish_msg(m),
-                       m->activefd);
+        radius_send_reply(RT_AUTHENTICATION_REJECT,
+                          m->req,
+                          m->user_reply,
+                          auth_finish_msg(m),
+                          m->activefd);
         stat_inc(auth, m->req->ipaddr, num_rejects);
 }
 

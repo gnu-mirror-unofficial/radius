@@ -68,7 +68,7 @@ int rad_sql_init();
 void rad_sql_acct(RADIUS_REQ *req);
 char *rad_sql_pass(RADIUS_REQ *req, char *data);
 void rad_sql_check_connect(int type);
-void rad_sql_cleanup(int type, RADIUS_REQ *req);
+void rad_sql_cleanup(int type, void *req);
 int rad_sql_checkgroup(RADIUS_REQ *req, char *groupname);
 int rad_sql_check_attr_query(RADIUS_REQ *req, VALUE_PAIR **check_pairs);
 int rad_sql_reply_attr_query(RADIUS_REQ *req, VALUE_PAIR **reply_pairs);
@@ -119,7 +119,7 @@ extern SQL_DISPATCH_TAB odbc_dispatch_tab[];
 
 # define rad_sql_check_connect(a)
 # define rad_sql_setup NULL
-# define rad_sql_cleanup NULL
+# define rad_sql_cleanup (void (*)(int, void *)) NULL
 # define rad_sql_shutdown()
 # define rad_sql_idle_check()
 

@@ -63,33 +63,6 @@ set_nonblocking(fd)
         return 0;
 }
 
-RETSIGTYPE
-(*install_signal_flags(signo, func, flags))(int)
-        int signo;
-        void (*func)(int);
-	int flags;
-{
-	struct sigaction act, oact;
-		
-	act.sa_handler = func;
-	sigemptyset(&act.sa_mask);
-	act.sa_flags = flags;
-#ifdef  SA_INTERRUPT            /* SunOS */
-        act.sa_flags |= SA_INTERRUPT;
-#endif
-        if (sigaction(signo, &act, &oact) < 0)
-                return SIG_ERR;
-        return oact.sa_handler;
-}
-
-RETSIGTYPE
-(*install_signal(signo, func))(int)
-        int signo;
-        void (*func)(int);
-{
-	return install_signal_flags(signo, func, SA_RESTART);
-}
-
 #define DEFMAXFD 512
 
 /*

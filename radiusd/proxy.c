@@ -118,21 +118,8 @@ proxy_cleanup()
  */
 /*ARGSUSED*/
 int
-rad_proxy(radreq, activefd)
-        RADIUS_REQ *radreq;
-        int activefd;
+rad_proxy(REQUEST *req ARG_UNUSED)
 {
-        void *ptr;
-        
-        /*
-         *      Copy the static data into malloc()ed memory.
-         */
-        ptr = emalloc(radreq->data_len);
-        debug(1,("allocated ptr %p", ptr));
-        memcpy(ptr, radreq->data, radreq->data_len);
-        radreq->data = ptr;
-        radreq->data_alloced = 1;
-
         return 0;
 }
 
@@ -333,27 +320,6 @@ proxy_send(radreq, activefd)
         radreq->server_id = next_proxy_id(radreq->server->addr);
 	radreq->remote_user = string_create(username);
 	
-        /* Is this a valid & signed request ? */
-        switch (radreq->code) {
-        case RT_AUTHENTICATION_REQUEST:
-                rc = 0;
-                break;
-        case RT_ACCOUNTING_REQUEST:
-                what = _("digest mismatch");
-                rc = calc_acctdigest(radreq) < 0;
-                break;
-        default:
-                what = _("unknown request code");
-                rc = 1;
-        }
-
-        if (rc) {
-                radlog_req(L_NOTICE, radreq,
-                           _("Possible Security Breach: %s"), what);
-                efree(saved_username);
-                return -1;
-        }
-
         /* If there is no DA_CHAP_CHALLENGE attribute but there
            is a DA_CHAP_PASSWORD we need to add it since we can't
 	   use the request authenticator anymore - we changed it. */
@@ -386,18 +352,16 @@ proxy_send(radreq, activefd)
 }
 
 void
-proxy_retry(type, radreq, orig_req, fd, status_str)
-        int type;
-        RADIUS_REQ *radreq;
-	RADIUS_REQ *orig_req;
-	int fd;
-        char *status_str;
+proxy_retry(int type, void *data, void *orig_data,
+	    int fd, char *status_str)
 {
+	RADIUS_REQ *radreq = data ? data : orig_data;
+	RADIUS_REQ *orig_req = orig_data;
 	VALUE_PAIR *namepair;
 	char *saved_username;
 	
 	if (!(orig_req && radreq)) {
-		rad_req_drop(type, radreq, orig_req, fd, status_str);
+		radius_req_drop(type, radreq, orig_req, fd, status_str);
 		return;
 	}
 	
@@ -435,10 +399,11 @@ struct proxy_data {
 /* proxy_compare_request(): Find matching request based on the information
    preserved in the Proxy-State pair. */
 int
-proxy_compare_request(data, oldreq)
-        struct proxy_data *data;
-        RADIUS_REQ *oldreq;
+proxy_compare_request(void *item, void *datap)
 {
+        RADIUS_REQ *oldreq = item;
+        struct proxy_data *data = datap;
+
         debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x, proxy_id %d %d, server_addr %#8x %#8x", 
 		   oldreq->id, data->state->id,
 		   data->ipaddr, data->state->ipaddr,
@@ -462,10 +427,11 @@ proxy_compare_request(data, oldreq)
         FIXME: hmmm, perhaps we don't even need Proxy-State
         after all! */
 int
-proxy_compare_request_no_state(data, oldreq)
-        struct proxy_data *data;
-        RADIUS_REQ *oldreq;
+proxy_compare_request_no_state(void *item, void *datap)
 {
+        RADIUS_REQ *oldreq = item;
+        struct proxy_data *data = datap;
+	
         debug(10, ("(old=data) id %d %d, ipaddr %#8x %#8x",
 		   oldreq->server_id,
 		   data->radreq->id,

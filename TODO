@@ -1,22 +1,18 @@
-     Switching to multithread server:
--50  :  Fall back to pth if POSIX threads are not available?
+* Get rid of radscm (or build it only on systems that do not support
+shared libraries). Build a shared Guile module instead. Make
+server queue a SMOB instead of a hidden list.
 
-     General:
--100 : Get rid of radscm (or build it only on systems that do not support
-       shared libraries). Build a shared Guile module instead. Make
-       server queue a SMOB instead of a hidden list.
--50  : Add \ line continuation to read_raddb_files.
--50  : redesign raduse to use snmp queries instead of peeking in radstat.
--10  : Clean up the semantics of log_init/log_done.
--3   : Enable use of port number in rewrite:check_unix()
-5    : Add include feature to config files that don't have it.
-5    : Write radctl substitute which would use SNMP.
-5    : Write a unified configuration utility in guile.
-10   : Need a more flexible IP allocation strategy
+* Add \ line continuation to read_raddb_files.
+* redesign raduse to use snmp queries instead of peeking in radstat.
+* Clean up the semantics of log_init/log_done.
+* Enable use of port number in rewrite:check_unix()
+* Add include feature to config files that don't have it.
+* Write radctl substitute which would use SNMP.
+* Write a unified configuration utility in guile.
+* Need a more flexible IP allocation strategy
 
-# Local Variables:
-# mode: indented-text
-# left-margin: 8
-# fill-column: 74
-# version-control: never
-# End:
+
+Local variables:
+mode: outline
+paragraph-separate: "[ 	]*$"
+end:

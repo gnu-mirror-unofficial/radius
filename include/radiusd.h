@@ -20,26 +20,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
-#include <pthread.h>
 #include <radius.h>
 #include <radpaths.h>
 #include <signal.h>
 #include <cfg.h>
-
-/* Debugging macros */
-#define Pthread_mutex_lock(m) \
- do { \
-      debug(100,("locking " #m)); \
-      pthread_mutex_lock(m);\
-      debug(100,("locked " #m)); \
- } while (0)
-
-#define Pthread_mutex_unlock(m) \
- do { \
-      debug(100,("unlocking " #m)); \
-      pthread_mutex_unlock(m);\
-      debug(100,("unlocked " #m)); \
- } while (0)
+#include <list.h>
 
 /* Server data structures */
 struct radutmp; /* declared in radutmp.h */
@@ -71,6 +56,24 @@ enum reload_what {
 #define R_SNMP  3        /* SNMP request */
 #define R_MAX   4
 
+#define RS_WAITING   0     /* Request waiting for processing */
+#define RS_COMPLETED 1     /* Request is completed */
+
+typedef struct request {
+        int             type;         /* request type */
+        int             status;       /* request status */
+        time_t          timestamp;    /* when was the request accepted */
+        pid_t           child_id;     /* ID of the handling process */
+        int             code;         /* Child return code if completed */
+        void           *data;         /* Request-specific data */
+	void           *rawdata;      /* Raw data as received from the
+					 socket */  
+	size_t          rawsize;      /* Size of the data */
+        int             fd;           /* socket the request came from */
+	struct sockaddr_in addr;      /* Remote party address */
+	
+} REQUEST;
+
 /* Request class structure
  */
 typedef struct request_class {
@@ -78,38 +81,17 @@ typedef struct request_class {
         int  max_requests;    /* Max.number of pending requests of this type */
         int  ttl;             /* Request time-to-live */
         int  cleanup_delay;   /* Delay before cleaning the completed request */
-        int  (*setup)();      /* Setup function */
-        int  (*handler)();    /* Handler function */
-        void (*xmit)();       /* Retransmit function */
-        int  (*comp)();       /* Compare function */
-        void (*free)();       /* Free */
-        void (*drop)();       /* Drop request error message */
-        void (*cleanup)();    /* Cleanup function */
+	int  (*decode)(struct sockaddr_in *sa,
+		       void *input, size_t inputsize, void **output);
+        int  (*respond)(REQUEST *r);          /* Handler function */
+        void (*xmit)(REQUEST *r);             /* Retransmit function */
+        int  (*comp)(void *a, void *b);       /* Compare function */
+        void (*free)(void *data);             /* Free the associated data */
+        void (*drop)(int type, void *data, void *old_data, int fd, char *msg);
+	                                      /* Drop the request */
+        void (*cleanup)(int type, void *data);/* Cleanup function */
+        int (*failure)(int type, struct sockaddr_in *addr);
 } REQUEST_CLASS;
-
-typedef struct socket_list SOCKET_LIST;
-struct request_handler_tab {
-        int (*success)(struct sockaddr *, int);
-        int (*respond)(int fd, struct sockaddr *, int, u_char *, int);
-        int (*failure)(struct sockaddr *, int);
-};
-
-#define RS_WAITING   0     /* Request waiting for processing */
-#define RS_PENDING   1     /* Request is being processed */
-#define RS_COMPLETED 2     /* Request is completed */
-#define RS_HUNG      3     /* Request is (possibly) hung */
-#define RS_DEAD      4     /* Request was killed */
-
-typedef struct request {
-        struct request *next;         /* Link to the next request */
-        int             type;         /* request type */
-        int             status;       /* request status */
-        time_t          timestamp;    /* when was the request accepted */
-        pthread_t       child_id;     /* ID of the handling process (or -1) */
-        int             child_return; /* Child return code if completed */
-        void           *data;         /* Request-specific data */
-        int             fd;           /* socket the request came from */
-} REQUEST;
 
 struct queue_stat {
         size_t waiting;
@@ -198,9 +180,9 @@ typedef struct {
 #define stat_inc(m,a,c) \
  do {\
         NAS *nas;\
-        server_stat . ##m . ##c ++;\
+        server_stat . m . c ++;\
         if ((nas = nas_lookup_ip(a)) != NULL && nas->app_data)\
-                ((struct nas_stat*)nas->app_data)-> ##m . ##c ++;\
+                ((struct nas_stat*)nas->app_data)-> m . c ++;\
  } while (0)
 
 extern struct radstat radstat;
@@ -223,7 +205,7 @@ typedef void (*config_hook_fp)(void *func_data, void *app_data);
 #define MAX_REQUEST_TIME        60
 #define CLEANUP_DELAY           10
 #define MAX_REQUESTS            255
-
+#define MAX_CHILDREN            8
 
 /*
  * Authentication results
@@ -260,14 +242,14 @@ typedef void (*config_hook_fp)(void *func_data, void *app_data);
 /*
  *      Global variables.
  */
-extern SOCKET_LIST *socket_first;
 extern int radius_mode;
 extern int debug_flag;
 extern int auth_detail;
 extern int acct_detail;
 extern int strip_names;
 extern int checkrad_assume_logged;
-extern int max_requests;
+extern size_t max_requests;
+extern size_t max_children;
 extern char *exec_user;
 extern UINT4 expiration_seconds;
 extern UINT4 warning_seconds;
@@ -283,7 +265,6 @@ extern char *message_text[MSG_COUNT];
 extern char *username_valid_chars;
 extern unsigned long stat_start_time;
 extern REQUEST_CLASS    request_class[];
-extern pthread_attr_t thread_attr;
 extern int max_threads;
 extern int num_threads;
 #ifdef USE_SERVER_GUILE
@@ -296,40 +277,93 @@ extern char *server_id;
 extern Server_stat server_stat;
 extern struct cfg_stmt snmp_stmt[];
 #endif
+extern int auth_comp_flag; 
+extern int acct_comp_flag; 
 
-/*
- *      Function prototypes.
- */
+/* Input subsystem (input.c) */
 
-/* acct.c */
-int rad_accounting(RADIUS_REQ *, int);
-int radzap(UINT4 nas, int port, char *user, time_t t);
-int rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul, int *pcount);
-int rad_check_realm(REALM *realm);
-int write_detail(RADIUS_REQ *radreq, int authtype, char *f);
+typedef struct input_system INPUT;
+
+INPUT *input_create();
+void input_register_method(INPUT *input,
+			   const char *name,
+			   int (*handler)(int, void *),
+			   int (*close)(int, void *),
+			   int (*cmp)(const void *, const void *));
+int input_register_channel(INPUT *input, char *name, int fd, void *data);
+void input_close_channels(INPUT *input);
+void input_close_channel_fd(INPUT *input, int fd);
+void input_close_channel_data(INPUT *input, char *name, void *data); 
+int input_select(INPUT *input, struct timeval *tv);
+void *input_find_channel(INPUT *input, char *name, void *data);
+
+/* rpp.c */
+int rpp_ready();
+int rpp_forward_request(REQUEST *req);
+void rpp_remove(pid_t pid);
+void rpp_flush();
+int rpp_input_handler(int fd, void *data);
+int rpp_input_close(int fd, void *data);
+void rpp_kill(pid_t pid, int signo);
+
+/* request.c */
+REQUEST *request_create(int type, int fd, struct sockaddr_in *sa,
+			u_char *buf, size_t bufsize);
+void request_free(REQUEST *req);
+int request_respond(REQUEST *req);
+int request_handle(REQUEST *req, int (*handler)(REQUEST *));
+void request_fail(int type, struct sockaddr_in *addr);
+void request_init_queue();
+void *request_scan_list(int type, list_iterator_t itr, void *closure);
+void request_set_status(pid_t pid, int status);
 
 /* radiusd.c */
-int stat_request_list(QUEUE_STAT);
-void *scan_request_list(int type, int (*handler)(), void *closure);
-int set_nonblocking(int fd);
-void radiusd_thread_init();
-int radiusd_flush_queues();
-void schedule_restart();
-void radiusd_mainloop();
-void rad_req_drop(int type, RADIUS_REQ *req, RADIUS_REQ *orig, int fd,
-		  char *status_str);
-int radiusd_mutex_lock(pthread_mutex_t *mutex, int type);
-int radiusd_mutex_unlock(pthread_mutex_t *mutex);
+int udp_input_handler(int fd, void *data);
+int udp_input_close(int fd, void *data);
+int udp_input_cmp(const void *a, const void *b);
+
 void radiusd_pidfile_write(char *name);
 pid_t radiusd_pidfile_read(char *name);
 void radiusd_pidfile_remove(char *name);
-int radiusd_is_watched();
-int radiusd_restart();
-int radiusd_primitive_restart();
-void run_before_config_hooks(void *data);
-void run_after_config_hooks(void *data);
-void register_before_config_hook(config_hook_fp fp, void *data);
-void register_after_config_hook(config_hook_fp fp, void *data);
+
+void radiusd_signal_init(RETSIGTYPE (*)(int));
+void radiusd_cleanup();
+void radiusd_restart();
+void radiusd_flush_queue();
+void radiusd_exit();
+void radiusd_reconfigure();
+int radiusd_master();
+
+/* exec.c */
+int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **, int, char **);
+void filter_cleanup(pid_t pid, int status);
+int filter_auth(char *name, RADIUS_REQ *req, VALUE_PAIR **reply_pairs);
+int filter_acct(char *name, RADIUS_REQ *req);
+int filters_stmt_term(int finish, void *block_data, void *handler_data);
+extern struct cfg_stmt filters_stmt[];
+
+/* scheme.c */
+void rad_boot();
+void scheme_load(char *filename);
+void scheme_load_path(char *pathname);
+void scheme_debug(int val);
+int scheme_auth(char *procname, RADIUS_REQ *req,
+                VALUE_PAIR *user_check, VALUE_PAIR **user_reply_ptr);
+int scheme_acct(char *procname, RADIUS_REQ *req);
+void scheme_add_load_path(char *path);
+void scheme_read_eval_loop();
+void start_guile();
+int guile_cfg_handler(int argc, cfg_value_t *argv,
+		      void *block_data, void *handler_data);
+extern struct cfg_stmt guile_stmt[];
+
+/* log.c */
+void sqllog __PVAR((int status, char *msg, ...));
+int logging_stmt_handler(int argc, cfg_value_t *argv, void *block_data,
+			 void *handler_data);
+int logging_stmt_end(void *block_data, void *handler_data);
+int logging_stmt_begin(int finish, void *block_data, void *handler_data);
+extern struct cfg_stmt logging_stmt[];
 
 /* radius.c */
 
@@ -337,11 +371,27 @@ void register_after_config_hook(config_hook_fp fp, void *data);
 #define REQ_AUTH_ZERO 1
 #define REQ_AUTH_BAD  2
 
-void rad_send_reply(int, RADIUS_REQ *, VALUE_PAIR *, char *, int);
-RADIUS_REQ *radrecv (UINT4, u_short, u_char *, int);
-int validate_client(RADIUS_REQ *radreq);
-int calc_acctdigest(RADIUS_REQ *radreq);
-void send_challenge(RADIUS_REQ *radreq, char *msg, char *state, int activefd);
+void radius_send_reply(int, RADIUS_REQ *, VALUE_PAIR *, char *, int);
+void radius_send_challenge(RADIUS_REQ *radreq, char *msg, char *state, int fd);
+int radius_verify_digest(REQUEST *req);
+
+int radius_req_decode(struct sockaddr_in *sa,
+		      void *input, size_t inputsize, void **output);
+int radius_req_cmp(void *a, void *b);
+void radius_req_free(void *req);
+void radius_req_drop(int type, void *radreq, void *origreq,
+		     int fd, char *status_str);
+void radius_req_xmit(REQUEST *request);
+int radius_req_failure(int type, struct sockaddr_in *addr);
+int radius_respond(REQUEST *req);
+
+/*FIXME*/
+/* acct.c */
+int rad_accounting(RADIUS_REQ *, int, int);
+int radzap(UINT4 nas, int port, char *user, time_t t);
+int rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul, int *pcount);
+int rad_check_realm(REALM *realm);
+int write_detail(RADIUS_REQ *radreq, int authtype, char *f);
 
 
 /* files.c */
@@ -379,12 +429,12 @@ int pam_pass(char *name, char *passwd, const char *pamauth, char **reply_msg);
 #endif
 
 /* proxy.c */
-int rad_proxy(RADIUS_REQ *radreq, int activefd);
+int rad_proxy(REQUEST *req);
 void rad_proxy_free(RADIUS_REQ *req);
 int proxy_send(RADIUS_REQ *radreq, int activefd);
 int proxy_receive(RADIUS_REQ *radreq, int activefd);
-void proxy_retry(int type, RADIUS_REQ *radreq, RADIUS_REQ *orig_req,
-		int fd, char *status_str);
+void proxy_retry(int type, void *radreq, void *orig_req,
+		 int fd, char *status_str);
 
 void proxy_cleanup();
 
@@ -392,15 +442,6 @@ void proxy_cleanup();
 int rad_auth_init(RADIUS_REQ *radreq, int activefd);
 int rad_authenticate (RADIUS_REQ *, int);
 void req_decrypt_password(char *password, RADIUS_REQ *req, VALUE_PAIR *pair);
-
-/* exec.c */
-int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **,
-                        int, char **user_msg);
-void filter_cleanup();
-int filter_auth(char *name, RADIUS_REQ *req, VALUE_PAIR **reply_pairs);
-int filter_acct(char *name, RADIUS_REQ *req);
-int filters_stmt_term(int finish, void *block_data, void *handler_data);
-extern struct cfg_stmt filters_stmt[];
 
 /* menu.c */
 void process_menu(RADIUS_REQ *radreq, int fd);
@@ -465,14 +506,6 @@ int snmp_answer(struct snmp_req *req, int fd);
 char *radius_xlate(struct obstack *obp, char *str,
                    RADIUS_REQ *req, VALUE_PAIR *reply_pairs);
 
-/* log.c */
-void sqllog __PVAR((int status, char *msg, ...));
-int logging_stmt_handler(int argc, cfg_value_t *argv, void *block_data,
-			 void *handler_data);
-int logging_stmt_end(void *block_data, void *handler_data);
-int logging_stmt_begin(int finish, void *block_data, void *handler_data);
-extern struct cfg_stmt logging_stmt[];
-
 /* rewrite.y */
 extern struct cfg_stmt rewrite_stmt[];
 int run_rewrite(char *name, RADIUS_REQ *req);
@@ -486,60 +519,10 @@ int fix_reply_pairs(int cf_file, char *filename, int line, char *name,
                     VALUE_PAIR **pairs);
 void radck();
 
-/* scheme.c */
-void rad_boot();
-void scheme_load(char *filename);
-void scheme_load_path(char *pathname);
-void scheme_debug(int val);
-int scheme_auth(char *procname, RADIUS_REQ *req,
-                VALUE_PAIR *user_check, VALUE_PAIR **user_reply_ptr);
-int scheme_acct(char *procname, RADIUS_REQ *req);
-void scheme_add_load_path(char *path);
-void scheme_read_eval_loop();
-void start_guile();
-int guile_cfg_handler(int argc, cfg_value_t *argv,
-		      void *block_data, void *handler_data);
-extern struct cfg_stmt guile_stmt[];
-
-/* request.c */
-typedef void (*request_thread_command_fp)(void *);
-
-int request_start_thread();
-void request_signal();
-REQUEST *request_put(int type, void *data, int fd, unsigned *numpending);
-REQUEST *request_get();
-int request_flush_list();
-int request_stat_list(QUEUE_STAT stat);
-void request_handle(REQUEST *req);
-void *request_scan_list(int type, int (*handler)(), void *closure);
-void request_thread_command(request_thread_command_fp fun, void *data);
 
 
 /* checkrad.c */
 int checkrad(NAS *nas, struct radutmp *up);
 
-/* socklist.c */
-int socket_list_add(SOCKET_LIST **slist, int type, UINT4 ipaddr, int port);
-void socket_list_init(SOCKET_LIST *slist);
-int socket_list_open(SOCKET_LIST **slist);
-int socket_list_select(struct socket_list *list,
-		       struct request_handler_tab *ht,
-		       size_t numh,
-		       struct timeval *tv);
-void socket_list_close(SOCKET_LIST **slist);
-void socket_list_iterate(SOCKET_LIST *slist, void (*fun)());
-
-/* signal.c */
-#define SH_SYNC  0
-#define SH_ASYNC 1
-#define SH_DELETED 2
-
-typedef void *rad_sigid_t;
-typedef int (*rad_signal_t) (int sig, void *data, rad_sigid_t id,
-			     const void *owner);
-
-rad_sigid_t rad_signal_install (int sig, int type,
-				rad_signal_t handler, void *data);
-rad_sigid_t rad_signal_remove (int sig, rad_sigid_t id, const void *owner);
 
 

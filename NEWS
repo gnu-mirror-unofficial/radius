@@ -39,11 +39,11 @@ This keyword controls the maximum number of threads the dispatcher is
 allowed to start. It may be used in `option' block (see raddb/config.status
 for an example). Default number of threads is 128.
 
-Note, that the main dispatcher thread and the scheme interpreter thread
-(if guile support is enabled) are not counted in this number.
-So, the actual maximum number of threads is max_threads + 2 for the
-server with guile support and max_threads + 1 for the server without
-guile support.
+Note, that the main dispatcher thread, the signal handler thread, and
+the scheme interpreter thread (if guile support is enabled) are not 
+counted in this number.  So, the actual maximum number of threads is
+max_threads + 3 for the server with guile support and max_threads + 2 for 
+the server without guile support.
 
 ** New keywords print-tid and print-milliseconds
 

@@ -1,26 +1,22 @@
-/* This file is part of GNU RADIUS.
+/* This file is part of GNU Radius.
    Copyright (C) 2000,2001, Sergey Poznyakoff
  
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
  
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
  
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #define RADIUS_MODULE_ACCT_C 
 
-#ifndef lint
-static char rcsid[] =
-"@(#) $Id$";
-#endif
 #define LOG_EMPTY_USERNAME
 
 #ifdef HAVE_CONFIG_H
@@ -64,11 +60,7 @@ int rad_acct_ext(RADIUS_REQ *radreq);
 
 /* Zap a user, or all users on a NAS, from the radutmp file. */
 int
-radzap(nasaddr, port, user, t)
-        UINT4 nasaddr;
-        int port;
-        char *user;
-        time_t t;
+radzap(UINT4 nasaddr, int port, char *user, time_t t)
 {
         struct radutmp  *up;
         radut_file_t    file;
@@ -99,11 +91,7 @@ radzap(nasaddr, port, user, t)
 }
 
 static void
-store_session_id(buffer, len, id, idlen)
-        char *buffer;
-        int len;
-        char *id;
-        int idlen;
+store_session_id(char *buffer, int len, char *id, int idlen)
 {
         int off = idlen - len;
         if (off < 0)
@@ -113,17 +101,13 @@ store_session_id(buffer, len, id, idlen)
 }
 
 int
-write_wtmp(ut)
-        struct radutmp *ut;
+write_wtmp(struct radutmp *ut)
 {
         return radwtmp_putent(radwtmp_path, ut);
 }
 
 void
-backslashify(dst, src, len)
-        char *dst;
-        char *src;
-        int len;
+backslashify(char *dst, char *src, int len)
 {
 #define CHECK(l,m) \
  if (l <= m) goto end; else l -= m
@@ -168,11 +152,8 @@ end:
 }
 
 int
-check_attribute(check_pairs, pair_attr, pair_value, def)
-        VALUE_PAIR *check_pairs;
-        int pair_attr;
-        int pair_value;
-        int def;
+check_attribute(VALUE_PAIR *check_pairs, int pair_attr,
+		int pair_value, int def)
 {
         VALUE_PAIR *pair;
 
@@ -195,9 +176,7 @@ check_attribute(check_pairs, pair_attr, pair_value, def)
 
 /*  Store logins in the RADIUS utmp file. */
 int
-rad_acct_system(radreq, dowtmp)
-        RADIUS_REQ *radreq;
-        int dowtmp;
+rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
 {
         struct radutmp  ut;
         VALUE_PAIR *vp;
@@ -453,10 +432,7 @@ check_acct_dir()
 }
 
 int
-write_detail(radreq, authtype, f)
-        RADIUS_REQ *radreq;
-        int authtype;
-        char *f;
+write_detail(RADIUS_REQ *radreq, int authtype, char *f)
 {
         FILE            *outfd;
         char            nasname[MAX_LONGNAME];
@@ -570,9 +546,7 @@ write_detail(radreq, authtype, f)
 }
 
 int
-rad_acct_db(radreq, authtype)
-        RADIUS_REQ *radreq;
-        int authtype;
+rad_acct_db(RADIUS_REQ *radreq, int authtype)
 {
         int rc = 0;
 
@@ -586,8 +560,7 @@ rad_acct_db(radreq, authtype)
 }
 
 int
-rad_acct_ext(radreq)
-        RADIUS_REQ *radreq;
+rad_acct_ext(RADIUS_REQ *radreq)
 {
         VALUE_PAIR *p;
 
@@ -614,36 +587,28 @@ rad_acct_ext(radreq)
 
 /* run accounting modules */
 int
-rad_accounting(radreq, activefd)
-        RADIUS_REQ *radreq;
-        int activefd;
+rad_accounting(RADIUS_REQ *radreq, int activefd, int verified)
 {
-        int auth;
-
         log_open(L_ACCT);
-        /* See if we know this client, then check the request authenticator. */
-        auth = calc_acctdigest(radreq);
-        if (auth == REQ_AUTH_BAD) 
-                stat_inc(acct, radreq->ipaddr, num_bad_sign);
 
         huntgroup_access(radreq);
 
 #if defined(RT_ASCEND_EVENT_REQUEST) && defined(RT_ASCEND_EVENT_RESPONSE)
         /* Special handling for Ascend-Event-Request */
         if (radreq->code == RT_ASCEND_EVENT_REQUEST) {
-                write_detail(radreq, auth, "detail");
-                rad_send_reply(RT_ASCEND_EVENT_RESPONSE,
-                               radreq, NULL, NULL, activefd);
+                write_detail(radreq, verified, "detail");
+                radius_send_reply(RT_ASCEND_EVENT_RESPONSE,
+                                  radreq, NULL, NULL, activefd);
                 stat_inc(acct, radreq->ipaddr, num_resp);
                 return 0;
         }
 #endif
         
         if (rad_acct_system(radreq, doradwtmp) == 0 &&
-            rad_acct_db(radreq, auth) == 0 &&
+            rad_acct_db(radreq, verified) == 0 &&
             rad_acct_ext(radreq) == 0) {
                 /* Now send back an ACK to the NAS. */
-                rad_send_reply(RT_ACCOUNTING_RESPONSE,
+                radius_send_reply(RT_ACCOUNTING_RESPONSE,
                                radreq, NULL, NULL, activefd);
                 stat_inc(acct, radreq->ipaddr, num_resp);
                 return 0;
@@ -658,8 +623,7 @@ rad_accounting(radreq, activefd)
         0 if user is not logged in */
 
 static int
-rad_check_ts(ut)
-        struct radutmp *ut;
+rad_check_ts(struct radutmp *ut)
 {
         int result;
         
@@ -685,8 +649,7 @@ rad_check_ts(ut)
 /* Return value: that of CHECKRAD process, i.e. 1 means true (user FOUND)
    0 means false (user NOT found) */
 static int
-check_ts(ut)
-        struct radutmp *ut;
+check_ts(struct radutmp *ut)
 {
         NAS     *nas;
 
@@ -706,8 +669,7 @@ check_ts(ut)
 }
 
 int
-rad_check_realm(realm)
-        REALM *realm;
+rad_check_realm(REALM *realm)
 {
         int count;
         struct radutmp *up;
@@ -766,11 +728,7 @@ rad_check_realm(realm)
       0 == OK,
       1 == user exceeds its simultaneous-use parameter */
 int
-rad_check_multi(name, request, maxsimul, pcount)
-        char *name;
-        VALUE_PAIR *request;
-        int maxsimul;
-        int *pcount;
+rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul, int *pcount)
 {
         radut_file_t file;
         int             count;
@@ -838,9 +796,7 @@ rad_check_multi(name, request, maxsimul, pcount)
 }
 
 int
-write_nas_restart(status, addr)
-        int status;
-        UINT4 addr;
+write_nas_restart(int status, UINT4 addr)
 {
         struct radutmp ut;
 

@@ -18,11 +18,10 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
-#include <pthread.h>
 #include <netdb.h>
 #include <string.h>
 
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+LOCK_DECLARE(lock)
 
 static int
 store_hostent(h_in, h_out, buf, buflen, h_errnop)
@@ -105,12 +104,11 @@ rad_gethostbyname_r(name, result, buffer, buflen, h_errnop)
 {
         struct hostent *host;
 
-	pthread_cleanup_push((void (*)(void*))pthread_mutex_unlock, &mutex);
-        pthread_mutex_lock(&mutex);
+        LOCK_SET(lock)
         host = gethostbyname(name);
         if (!host || store_hostent(host, result, buffer, buflen, h_errnop))
                 result = NULL;
-        pthread_cleanup_pop(1);
+        LOCK_RELEASE(lock)
         return result;
 }
 
@@ -126,12 +124,11 @@ rad_gethostbyaddr_r(addr, length, type, result, buffer, buflen, h_errnop)
 {
         struct hostent *host;
 
-	pthread_cleanup_push((void (*)(void*))pthread_mutex_unlock, &mutex);
-        pthread_mutex_lock (&mutex);
+        LOCK_SET(lock);
         host = gethostbyaddr (addr, length, type);
         if (!host || store_hostent(host, result, buffer, buflen, h_errnop))
                 result = NULL;
-        pthread_cleanup_pop(1);
+        LOCK_RELEASE(lock);
         return result;
 }
 

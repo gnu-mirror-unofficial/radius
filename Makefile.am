@@ -14,7 +14,7 @@ AUTOMAKE_OPTIONS = 1.7.1 readme-alpha
 ACLOCAL_AMFLAGS = -I m4
 
 SUBDIRS= intl m4 include lib sql snmplib radscm radiusd radwho radzap radlast\
-        raduse radscripts elisp raddb db client radtest examples doc po\
+        radscripts elisp raddb db client radtest examples doc po\
         mibs scripts contrib 
 
 if MAINTAINER_MODE

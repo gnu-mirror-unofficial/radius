@@ -1,579 +1,302 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001 Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #define RADIUS_MODULE_REQUEST_C
 
-#ifndef lint
-static char rcsid[] =
-"@(#) $Id$";
-#endif
-
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
-
+#include <sys/types.h>
+#include <errno.h>
 #include <radiusd.h>
+#include <radsql.h>
+#include <list.h>
 
-extern struct request_class request_class[];
+struct request_class request_class[] = {
+        { "AUTH", 0, MAX_REQUEST_TIME, CLEANUP_DELAY,
+	  radius_req_decode,   /* Decoder */
+          radius_respond,      /* Handler */
+	  radius_req_xmit,     /* Retransmitter */
+	  radius_req_cmp,      /* Comparator */
+          radius_req_free,     /* Deallocator */
+	  radius_req_drop,     /* Drop function */
+	  rad_sql_cleanup,  /* Cleanup function */
+	  radius_req_failure,  /* Failure indicator */
+	},
+        { "ACCT", 0, MAX_REQUEST_TIME, CLEANUP_DELAY,
+	  radius_req_decode,   /* Decoder */
+          radius_respond,      /* Handler */
+	  radius_req_xmit,     /* Retransmitter */
+	  radius_req_cmp,      /* Comparator */
+          radius_req_free,     /* Deallocator */
+	  radius_req_drop,     /* Drop function */
+	  rad_sql_cleanup,  /* Cleanup function */
+	  radius_req_failure,  /* Failure indicator */
+	},
+        { "PROXY",0, MAX_REQUEST_TIME, CLEANUP_DELAY,
+	  radius_req_decode,   /* Decoder */
+          rad_proxy,        /* Handler */
+	  radius_req_xmit,     /* Retransmitter */
+	  radius_req_cmp,      /* Comparator */ 
+          radius_req_free,     /* Deallocator */  
+	  proxy_retry,      /* Drop function */ 
+	  NULL,             /* Cleanup function */
+	  NULL,             /* Failure indicator */
+	},
+#ifdef USE_SNMP
+        { "SNMP", 0, MAX_REQUEST_TIME, 0, 
+	  snmp_decode,      /* Decoder */
+	  snmp_answer,      /* Handler */
+	  NULL,             /* Retransmitter */ 
+	  snmp_req_cmp,     /* Comparator */ 
+          snmp_req_free,    /* Deallocator */  
+	  snmp_req_drop,    /* Drop function */ 
+	  NULL,             /* Cleanup function */
+	  NULL,             /* Failure indicator */
+	},
+#endif
+        { NULL, }
+};
 
-/* the request queue */
-static REQUEST *first_request;
-pthread_mutex_t request_list_mutex = PTHREAD_MUTEX_INITIALIZER;
+static LIST *request_list; /* List of REQUEST structures */
 
-#define request_list_block()   Pthread_mutex_lock(&request_list_mutex)
-#define request_list_unblock() Pthread_mutex_unlock(&request_list_mutex)
-        
-static void request_free(REQUEST *req);
-static void request_drop(int type, void *data, void *orig_data, int fd,
-			 char *status_str);
-static void request_xmit(int type, int code, void *data, int fd);
-static void request_cleanup(int type, void *data);
-static void *request_thread0(void *arg);
-static int request_process_command();
+
+/* ************************* General-purpose functions ********************* */
 
-static pthread_mutex_t request_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t request_cond = PTHREAD_COND_INITIALIZER;
-
-static request_thread_command_fp request_command;
-static void *request_command_arg;
-static int request_command_count;
-
-int
-request_start_thread()
+REQUEST *
+request_create(int type, int fd, struct sockaddr_in *sa,
+	       u_char *buf, size_t bufsize)
 {
-        pthread_t tid;
-        int rc = pthread_create(&tid, &thread_attr, request_thread0, NULL);
-        if (rc) {
-                radlog(L_ERR, _("Can't spawn new thread: %s"),
-                       strerror(rc));
-                return -1;
-        }
-        num_threads++;
-        debug(1, ("started new thread: %x", (u_long) tid));
-        return 0;
-}
-
-void
-rad_cleanup_thread0(arg)
-        void *arg;
-{
-	filter_cleanup();
-	num_threads--;
-}
-
-void *
-request_thread0(arg)
-        void *arg;
-{
-	radiusd_thread_init();
-
-	pthread_cleanup_push(rad_cleanup_thread0, NULL);
-        while (1) {
-                REQUEST *req;
-
-		request_process_command();
-		
-                while (req = request_get())
-                        request_handle(req);
-                Pthread_mutex_lock(&request_mutex);
-                debug(1,("thread waiting"));
-                pthread_cond_wait(&request_cond, &request_mutex);
-                debug(1,("thread waken up"));
-                Pthread_mutex_unlock(&request_mutex);
-        }
-        /*NOTREACHED*/
-	pthread_cleanup_pop(1);
-        return NULL;
-}
-
-void
-request_signal()
-{
-        Pthread_mutex_lock(&request_mutex);
-        debug(100,("Signalling"));
-        pthread_cond_signal(&request_cond);
-        Pthread_mutex_unlock(&request_mutex);
-}
-
-int
-request_process_command()
-{
-	if (request_command_count > 0 && request_command) {
-		(*request_command)(request_command_arg);
-		request_command_count--;
-		return 1;
-	}
-	return 0;
-}
-
-void
-request_thread_command(fun, data)
-	request_thread_command_fp fun;
 	void *data;
-{
-        Pthread_mutex_lock(&request_mutex);
-	request_command = fun;
-	request_command_arg = data;
-	request_command_count = num_threads;
-        debug(100,("Signalling"));
-        pthread_cond_broadcast(&request_cond);
-        Pthread_mutex_unlock(&request_mutex);
+	REQUEST *req;
+
+	if (request_class[type].decode(sa, buf, bufsize, &data))
+		return NULL;
+	req = emalloc(sizeof *req);
+	req->data = data;
+	time(&req->timestamp);
+        req->type = type;
+	req->addr = *sa;
+	req->rawdata = emalloc(bufsize);
+	memcpy(req->rawdata, buf, bufsize);
+	req->rawsize = bufsize;
+        req->child_id = 0;
+        req->status = RS_WAITING;
+        req->fd = fd;
+	return req;
 }
 
 void
-request_free(req)
-        REQUEST *req;
+request_free(REQUEST *req)
 {
-        request_class[req->type].free(req->data);
-        mem_free(req);
+	if (req) {
+		request_class[req->type].free(req->data);
+		efree(req->rawdata);
+		efree(req);
+	}
 }
 
 void
-request_drop(type, data, orig_data, fd, status_str)
-        int type;
-        void *data;
-	void *orig_data;
-	int fd;
-        char *status_str;
+request_drop(int type, void *data, void *orig_data, int fd, char *status_str)
 {
         request_class[type].drop(type, data, orig_data, fd, status_str);
 }
 
-void
-request_xmit(type, code, data, fd)
-        int type;
-        int code;
-        void *data;
-        int fd;
+int
+request_respond(REQUEST *req)
 {
-        if (request_class[type].xmit) 
-                request_class[type].xmit(type, code, data, fd);
+	return request_class[req->type].respond(req);
+}
 
-        switch (type) {
-        case R_AUTH:
-                stat_inc(auth, ((RADIUS_REQ*)data)->ipaddr, num_dup_req);
-                break;
-        case R_ACCT:
-                stat_inc(acct, ((RADIUS_REQ*)data)->ipaddr, num_dup_req);
-        }
+void
+request_xmit(REQUEST *req)
+{
+        if (request_class[req->type].xmit) 
+                request_class[req->type].xmit(req);
 }
 
 int
-request_cmp(type, a, b)
-        int type;
-        void *a, *b;
+request_cmp(int type, void *a, void *b)
 {
         return request_class[type].comp(a, b);
 }
 
 void
-request_cleanup(type, data)
-        int type;
-        void *data;
+request_cleanup(int type, void *data)
 {
         if (request_class[type].cleanup)
                 request_class[type].cleanup(type, data);
 }
 
-/* Request lifecycle:
-   A request starts its life in RS_WAITING state. It remains in this
-   state until either it is picked up by some thread for processing
-   or time-to-live seconds expire. When a thread starts processing
-   the request, it changes its state to RS_PENDING. When processing
-   of the request is finished, its state is changed to RS_COMPLETED.
-   If the request in RS_WAITING state does not switch to RS_PENDING
-   within time-to-live seconds, this request is removed from the queue.
-   If the request in RS_PENDING state does not switch to RS_COMPLETED
-   state within time-to-live seconds, it changes its state to RS_HUNG.
-   If a request remains in RS_HUNG state for more than time-to-live seconds,
-   it changes its state to RS_DEAD and its handling thread is cancelled.
-   If everything goes well, the thread being cancelled will shift
-   the request into RS_COMPLETED state and it will be eventually removed
-   from the queue. Otherwise, if the thread is stuck for good and the
-   request remains in RS_DEAD state for more than time-to-live seconds
-   the daemon tries to restart itself.
+struct request_closure {
+	int type;                  /* Type of the request */
+	void *data;                /* Request contents */
+	time_t curtime;            /* Current timestamp */
+	/* Output: */
+        size_t request_count;      /* Total number of requests */
+	size_t request_type_count; /* Number of requests of this type */
+};
 
-   Finally, a request in RS_COMPLETED state remains in queue for
-   request-cleanup-delay seconds, after which it is removed. */
-
-REQUEST *
-request_put(type, data, activefd, numpending)
-        int type;
-        void *data;
-        int activefd;
-        unsigned *numpending;
+static int
+_request_iterator(void *item, void *data)
 {
-        REQUEST *curreq;
-        REQUEST *prevreq;
-        REQUEST *to_replace;
-        time_t curtime;
-        int request_count, request_type_count;
+	REQUEST *req = item;
+	struct request_closure *rp = data;
+	
+	if (req->status == RS_COMPLETED) {
+		if (req->timestamp + request_class[req->type].cleanup_delay
+		             <= rp->curtime) {
+			debug(1, ("deleting completed %s request",
+				  request_class[req->type].name));
+			list_remove_current(request_list);
+			request_free(req);
+			return 0;
+		}
+	} else if (req->timestamp + request_class[req->type].ttl
+		      <= rp->curtime) {
 
-        time(&curtime);
-        request_count = request_type_count = 0;
-        curreq = first_request;
-        prevreq = NULL;
-        to_replace = NULL; 
-        *numpending = 0;
-        
-        /* Block asynchronous access to the list */
-        request_list_block();
+		radlog(L_NOTICE,
+		       _("Killing unresponsive %s child %lu"),
+		       request_class[req->type].name,
+		       (unsigned long) req->child_id);
+		rpp_kill(req->child_id, SIGKILL);
+		rpp_remove(req->child_id);
+		return 0;
+	}
 
-        while (curreq != NULL) {
+	if (!rp->data)
+		return 0;
+	
+	if (req->type == rp->type
+	    && request_cmp(req->type, req->data, data) == 0) {
+		/* This is a duplicate request. If it is already completed,
+		   then hand it over to the child.
+		   Otherwise drop the request. */
+		if (req->status == RS_COMPLETED) {
+			if (radiusd_master())
+				rpp_forward_request(req);
+			else
+                                request_xmit(req);
 
-                if (curreq->status == RS_PENDING)
-                        ++*numpending;
-
-                if (curreq->status == RS_COMPLETED) {
-			if (curreq->timestamp +
-			    request_class[curreq->type].cleanup_delay
-			         <= curtime) {
-				debug(1, ("deleting completed %s request",
-					  request_class[curreq->type].name));
-				if (prevreq == NULL) {
-					first_request = curreq->next;
-					request_free(curreq);
-					curreq = first_request;
-				} else {
-					prevreq->next = curreq->next;
-					request_free(curreq);
-					curreq = prevreq->next;
-				}
-				continue;
-			}
-                } else if (curreq->timestamp + 
-                           request_class[curreq->type].ttl <= curtime) {
-                        switch (curreq->status) {
-                        case RS_WAITING:
-                                request_drop(curreq->type, NULL, curreq->data,
-					     curreq->fd,
-                                             _("request timed out in queue"));
-                                
-                                if (prevreq == NULL) {
-                                        first_request = curreq->next;
-                                        request_free(curreq);
-                                        curreq = first_request;
-                                } else {
-                                        prevreq->next = curreq->next;
-                                        request_free(curreq);
-                                        curreq = prevreq->next;
-                                }
-                                break;
-                                
-                        case RS_PENDING:
-                                radlog(L_NOTICE,
-                                     _("thread %d (%s) did not respond within %d seconds"),
-                                       curreq->child_id,
-                                       request_class[curreq->type].name,
-				       request_class[curreq->type].ttl);
-				curreq->timestamp = curtime;
-				curreq->status = RS_HUNG;
-				prevreq = curreq;
-				curreq = curreq->next;
-				break;
-				
-			case RS_HUNG:
-				radlog(L_NOTICE,
-				       _("Killing unresponsive %s thread %d"),
-				       request_class[curreq->type].name,
-				       curreq->child_id);
-				curreq->status = RS_DEAD;
-                                /*FIXME: This causes much grief */
-                                pthread_cancel(curreq->child_id);
-				curreq->timestamp = curtime;
-				prevreq = curreq;
-                                curreq = curreq->next;
-                                break;
-
-			case RS_DEAD:
-				radiusd_primitive_restart(0);
-                        }
-                        continue;
-                }
- 
-                if (curreq->type == type
-                    && request_cmp(type, curreq->data, data) == 0) {
-                        /* This is a duplicate request.
-                           If the handling process has already finished --
-                           retransmit its results, if possible.
-                           Otherwise drop the request. */
-                        if (curreq->status == RS_COMPLETED) 
-                                request_xmit(type,
-                                             curreq->child_return,
-                                             curreq->data,
-                                             activefd);
-                        else
-                                request_drop(type, data, curreq->data,
-					     curreq->fd,
-                                             _("duplicate request"));
-                        request_list_unblock();
-
-                        return NULL;
-                } else {
-                        if (curreq->type == type) {
-                                request_type_count++;
-                                if (type != R_PROXY
-                                    && curreq->status == RS_COMPLETED
-                                    && (to_replace == NULL
-                                        || to_replace->timestamp >
-                                                           curreq->timestamp))
-                                        to_replace = curreq;
-                        }
-                        request_count++;
-                        prevreq = curreq;
-                        curreq = curreq->next;
-                }
+		} else
+			request_drop(req->type, data, req->data, req->fd,
+				     _("duplicate request"));
+		/* Indicate end of request processing */
+		rp->data = NULL;
+		return 0;
+	} else {
+		if (req->type == rp->type) 
+			rp->request_type_count++;
+		rp->request_count++;
         }
+	return 0;
+}
 
+int
+request_handle(REQUEST *req, int (*handler)(REQUEST *))
+{
+	struct request_closure rc;
+
+	if (!req)
+		return 1;
+	
+	rc.type = req->type;
+	rc.data = req->data;
+        time(&rc.curtime);
+        rc.request_count = rc.request_type_count = 0;
+
+	if (!request_list)
+		request_list = list_create();
+	else
+		list_iterate(request_list, _request_iterator, &rc);
+
+	if (!rc.data)
+		return 1;
+	
         /* This is a new request */
-        if (request_count >= max_requests) {
-                if (!to_replace) {
-                        request_drop(type, data, NULL,
-				     activefd,
-                                     _("too many requests in queue"));
+        if (rc.request_count >= max_requests) {
+		request_drop(req->type, req->data, NULL, req->fd,
+			     _("too many requests in queue"));
+		return 1;
+        } else if (request_class[req->type].max_requests
+                   && rc.request_type_count >= request_class[req->type].max_requests) {
+		request_drop(req->type, req->data, NULL, req->fd,
+			     _("too many requests of this type"));
+		return 1;
+        } 
 
-                        request_list_unblock();
-                        return NULL;
-                }
-        } else if (request_class[type].max_requests
-                   && request_type_count >= request_class[type].max_requests) {
-                if (!to_replace) {
-                        request_drop(type, data, NULL,
-				     activefd,
-                                     _("too many requests of this type"));
-
-                        request_list_unblock();
-                        return NULL;
-                }
-        } else
-                to_replace = NULL;
-
-        /*
-         * Add this request to the list
-         */
-        if (to_replace == NULL) {
-                curreq = mem_alloc(sizeof *curreq);
-                curreq->next = first_request;
-                first_request = curreq;
-        } else {
-                debug(1, ("replacing request dated %s",
-                          ctime(&to_replace->timestamp)));
-                                
-                request_class[to_replace->type].free(to_replace->data);
-                curreq = to_replace;
-        }
-
-        curreq->timestamp = curtime;
-        curreq->type = type;
-        curreq->data = data;
-        curreq->child_id = 0;
-        curreq->status = RS_WAITING;
-        curreq->fd = activefd;
-        
+	/* Do we have free handlers? */
+	if (radiusd_master() && !rpp_ready()) {
+		radlog(L_NOTICE, _("Maximum number of children active"));
+		return 1;
+	}
+	
+	/* Add request to the queue */
         debug(1, ("%s request %lu added to the list. %d requests held.", 
-                  request_class[type].name,
-                  (u_long) curreq->child_id,
-                  request_count+1));
+                  request_class[req->type].name,
+                  (u_long) req->child_id,
+                  rc.request_count+1));
 
-        request_list_unblock();
-
-        return curreq;
+	list_append(request_list, req);
+	return (*handler)(req);
 }
 
-REQUEST *
-request_get()
+void
+request_set_status(pid_t pid, int status)
 {
-        REQUEST *curreq;
+	REQUEST *p;
 
-        request_list_block();
-        for (curreq = first_request; curreq; curreq = curreq->next) 
-                if (curreq->status == RS_WAITING) {
-                        curreq->status = RS_PENDING;
-                        curreq->child_id = pthread_self();
-                        time(&curreq->timestamp);
-                        break;
-                }
-        request_list_unblock();
-        return curreq;
+	for (p = list_first(request_list); p; p = list_next(request_list))
+		if (p->child_id == pid) {
+			p->status = status;
+			break;
+		}
 }
-
-int
-request_flush_list()
-{
-        REQUEST *curreq;
-        REQUEST *prevreq;
-        time_t  curtime;
-        int     request_count;
-        
-        time(&curtime);
-        request_count = 0;
-        curreq = first_request;
-        prevreq = NULL;
-
-        /* Block asynchronous access to the list
-         */
-        request_list_block();
-
-        while (curreq != NULL) {
-		switch (curreq->status) {
-		case RS_COMPLETED:
-		case RS_WAITING:
-                        /* Request completed/waiting, delete it no matter how
-                           long does it reside in the queue */
-                        debug(1, (curreq->status == RS_COMPLETED ?
-				  "deleting completed %s request" :
-				  "deleting waiting %s request",
-				  request_class[curreq->type].name));
-                        if (prevreq == NULL) {
-                                first_request = curreq->next;
-                                request_free(curreq);
-                                curreq = first_request;
-                        } else {
-                                prevreq->next = curreq->next;
-                                request_free(curreq);
-                                curreq = prevreq->next;
-                        }
-			break;
-
-		case RS_PENDING:
-			if (curreq->timestamp +
-			    request_class[curreq->type].ttl <= curtime) {
-                                radlog(L_NOTICE,
-	       _("thread %d (%s) did not respond within %d seconds"),
-				       curreq->child_id,
-				       request_class[curreq->type].name,
-				       request_class[curreq->type].ttl);
-				curreq->timestamp = curtime;
-				curreq->status = RS_HUNG;
-			}
-			request_count++;
-			prevreq = curreq;
-			curreq = curreq->next;
-			break;
 			
-		case RS_HUNG:
-			if (curreq->timestamp +
-			    request_class[curreq->type].ttl <= curtime) {
-				radlog(L_NOTICE,
-				       _("Killing unresponsive %s thread %d"),
-				       request_class[curreq->type].name,
-				       curreq->child_id);
-				curreq->status = RS_DEAD;
-				/*FIXME: This causes much grief */
-				pthread_cancel(curreq->child_id);
-				curreq->timestamp = curtime;
-			}
-			request_count++;
-			prevreq = curreq;
-			curreq = curreq->next;
-			break;
 
-		case RS_DEAD:
-			radiusd_primitive_restart(0);
-			break;
-
-		default:
-			abort();
-                }
-        }
-
-        request_list_unblock();
-        return request_count;
+void
+request_fail(int type, struct sockaddr_in *addr)
+{
+	if (request_class[type].failure)
+		request_class[type].failure(type, addr);
 }
 
-int
-request_stat_list(stat)
-        QUEUE_STAT stat;
+static int
+_destroy_request(void *item, void *data)
 {
-        REQUEST *curreq;
+	request_free((REQUEST*)item);
+	return 0;
+}
 
-        memset(stat, 0, sizeof(QUEUE_STAT));
-        
-        /* Block asynchronous access to the list
-         */
-        request_list_block();
-        for (curreq = first_request; curreq != NULL; curreq = curreq->next) {
-                switch (curreq->status) {
-                case RS_COMPLETED:
-                        stat[curreq->type].completed++;
-                        break;
-                case RS_PENDING:
-                        stat[curreq->type].pending++;
-                        break;
-                case RS_WAITING:
-                        stat[curreq->type].waiting++;
-                        break;
-                }
-        }
-        request_list_unblock();
-
-        return 0;
+void
+request_init_queue()
+{
+	list_destroy(&request_list, _destroy_request, NULL);
 }
 
 void *
-request_scan_list(type, handler, closure)
-        int type;
-        int (*handler)();
-        void *closure;
+request_scan_list(int type, list_iterator_t itr, void *closure)
 {
-        REQUEST *curreq;
+	REQUEST *p;
 
-        for (curreq = first_request; curreq; curreq = curreq->next) {
-                if (curreq->type == type &&
-                    handler(closure, curreq->data) == 0)
-                        return curreq->data;
+	for (p = list_first(request_list); p; p = list_next(request_list)) {
+                if (p->type == type
+		    && itr(p->data, closure) == 0)
+                        return p->data;
         }
         return NULL;
 }
-
-void
-rad_cleanup_thread(arg)
-        void *arg;
-{
-        REQUEST *curreq = arg;
-        debug(1, ("cleaning up request %lu", (u_long) curreq->child_id));
-        curreq->child_id = 0;
-        curreq->status = RS_COMPLETED;
-        time(&curreq->timestamp);
-        request_cleanup(curreq->type, curreq->data);
-}
-
-void
-request_handle(req)
-        REQUEST *req;
-{
-        int rc = 0;
-
-        if (!req)
-                return;
-
-        pthread_cleanup_push(rad_cleanup_thread, req);
-        req->status = RS_PENDING;
-        req->child_id = pthread_self();
-        time(&req->timestamp);
-        debug(1, ("setup: %lu: %p",
-                  (u_long) req->child_id, request_class[req->type].setup));
-        if (request_class[req->type].setup) 
-                rc = request_class[req->type].setup(req);
-        if (rc == 0)
-                req->child_return = request_class[req->type].handler(req->data,
-                                                                     req->fd);
-        pthread_cleanup_pop(1);
-        log_close();
-        debug(1, ("exiting"));
-}
-

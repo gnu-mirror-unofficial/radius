@@ -16,7 +16,7 @@
 
 	* configure.ac: Raised prerequisite autoconf version to 2.57
 	  AC_INIT: Let autoconf determine package name. This removes
-	  superfluous gnu- prefix from the tarvball name.
+	  superfluous gnu- prefix from the tarball name.
 	* client/pam_radius/pam_radius.c: Initial implementation of
 	  session management.
 	* lib/printutmp.c (nas_port_fh): Bugfix.

@@ -37,6 +37,7 @@ static char rcsid[] =
 #include <netdb.h>
 #include <unistd.h>
 #include <ctype.h>
+#include <setjmp.h>
 #include <errno.h>
 #ifdef HAVE_SYS_UIO_H
 # include <sys/uio.h>
@@ -358,12 +359,12 @@ snmp_check(checkp, nas)
 }
 
 
-static int ring;
+static jmp_buf to_env;
 
 static RETSIGTYPE
 alrm_handler()
 {
-        ring = 1;
+	longjmp(to_env, 1);
 }
 
 #define MIN(a,b) ((a)<(b))?(a):(b)
@@ -466,10 +467,20 @@ finger_check(checkp, nas)
          */
         lastc = 0;
         if ((fp = fdopen(s, "r")) != NULL) {
+		if (setjmp(to_env)) {
+			radlog(L_NOTICE,
+			       _("timed out in waiting for finger response from NAS %s"),
+			       checkp->hostname);
+			fclose(fp);
+			obstack_free(&stk, NULL);
+			alarm(0);
+			signal(SIGALRM, handler);
+			return checkp->result = -1;
+		}
+
                 to = ilookup(checkp, "timeout", 10);
-		
-		install_signal_flags(SIGALRM, alrm_handler, 0);
-                alarm(to);
+		handler = signal(SIGALRM, alrm_handler);
+		alarm(to);
 
                 while ((c = getc(fp)) != EOF) {
                         if (c == 0x0d) {
@@ -494,8 +505,8 @@ finger_check(checkp, nas)
                                 /* Make sure no alarm arrives while
                                  * processing data
                                  */
-                                to = alarm(0);
-                                install_signal(SIGALRM, handler);
+				to = alarm(0);
+				signal(SIGALRM, handler);
                                 
                                 obstack_1grow(&stk, 0);
                                 ptr = obstack_finish(&stk);
@@ -506,8 +517,8 @@ finger_check(checkp, nas)
                                         break;
 
                                 /* restore alarm settings */
-                                install_signal_flags(SIGALRM, alrm_handler, 0);
-                                alarm(to);
+				signal(SIGALRM, alrm_handler);
+				alarm(to);
                         }
                 }
                 
@@ -516,7 +527,7 @@ finger_check(checkp, nas)
                          * processing data
                          */
                         alarm(0);
-                        install_signal(SIGALRM, handler);
+			signal(SIGALRM, handler);
 
                         obstack_1grow(&stk, '\n');
                         obstack_1grow(&stk, 0);
@@ -534,7 +545,7 @@ finger_check(checkp, nas)
 
         /* restore alarm settings */
         alarm(0);
-        install_signal(SIGALRM, handler);
+	signal(SIGALRM, handler);
 
         debug(1, ("result: %d", found));
         checkp->result = found;

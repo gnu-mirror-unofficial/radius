@@ -1,18 +1,18 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #ifdef HAVE_CONFIG_H
@@ -29,8 +29,7 @@
 #include <radiusd.h>
 #include <slist.h>
 
-static pthread_once_t log_once = PTHREAD_ONCE_INIT;
-static pthread_key_t log_key;
+static int logging_category = L_CAT(L_MAIN);
 static Channel *chanlist;                  /* List of defined channels */
 
 static void log_to_channel(Channel *chan, int cat, int pri,
@@ -42,32 +41,20 @@ static void channel_close_file(Channel *chan, FILE *fp);
 
 #define SP(p) ((p)?(p):"")
 
-static void
-log_init_specific()
-{
-        pthread_key_create(&log_key, NULL);
-}
-
 static int
 log_get_category()
 {
-        void *p;
-        pthread_once(&log_once, log_init_specific);
-        p = pthread_getspecific(log_key);
-        return p ? (int) p : L_CAT(L_MAIN);
+        return logging_category;
 }
 
 static void
-log_set_category(cat)
-        int cat;
+log_set_category(int cat)
 {
-        pthread_once(&log_once, log_init_specific);
-        pthread_setspecific(log_key, (const void*) L_CAT(cat));
+        logging_category = L_CAT(cat);
 }
 
 void
-log_open(cat)
-        int cat;
+log_open(int cat)
 {
         log_set_category(cat);
 }
@@ -79,14 +66,8 @@ log_close()
 }
 
 void
-vlog(level, file, line, func_name, en, fmt, ap)
-        int level;
-        char *file;
-        int line;
-        char *func_name;
-        int en;
-        char *fmt;
-        va_list ap;
+vlog(int level, char *file, int line, char *func_name,
+     int en, char *fmt, va_list ap)
 {
         Channel *chan;
         int cat, pri;
@@ -141,10 +122,8 @@ static char *priname[] = { /* priority names */
 };
 
 void
-log_to_channel(chan, cat, pri, buf1, buf2, buf3)
-        Channel *chan;
-        int cat, pri;
-        char *buf1, *buf2, *buf3;
+log_to_channel(Channel *chan, int cat, int pri,
+	       char *buf1, char *buf2, char *buf3)
 {
         char *cat_pref = NULL;
         char *prefix = NULL;
@@ -194,8 +173,6 @@ log_to_channel(chan, cat, pri, buf1, buf2, buf3)
                 fprintf(fp, "%s ", buffer);
                 if (chan->options & LO_PID) 
                         fprintf(fp, "[%lu]: ", getpid());
-                if (chan->options & LO_TID) 
-                        fprintf(fp, "(%lu): ", (long) pthread_self());
                 if (prefix)
                         fprintf(fp, "%s: ", prefix);
                 if (buf1)
@@ -212,17 +189,12 @@ log_to_channel(chan, cat, pri, buf1, buf2, buf3)
                 spri = chan->id.prio;
                 if (chan->options & LO_PID)
                         spri |= LOG_PID;
-                if (chan->options & LO_TID) 
-                        snprintf(buffer, sizeof buffer, "(%#lx): ",
-                                 (long) pthread_self());
-                else
-                        buffer[0] = 0;
                 if (prefix)
-                        syslog(spri, "%s%s: %s%s%s",
-                               buffer, prefix, SP(buf1), SP(buf2), SP(buf3));
+                        syslog(spri, "%s: %s%s%s",
+			       prefix, SP(buf1), SP(buf2), SP(buf3));
                 else
-                        syslog(spri, "%s%s%s%s",
-                               buffer, SP(buf1), SP(buf2), SP(buf3));
+                        syslog(spri, "%s%s%s",
+                               SP(buf1), SP(buf2), SP(buf3));
                 break;
         }
         
@@ -231,8 +203,7 @@ log_to_channel(chan, cat, pri, buf1, buf2, buf3)
 }
 
 FILE *
-channel_open_file(chan)
-        Channel *chan;
+channel_open_file(Channel *chan)
 {
         FILE *fp = NULL;
 
@@ -243,9 +214,7 @@ channel_open_file(chan)
 
 /*ARGSUSED*/
 void
-channel_close_file(chan, fp)
-        Channel *chan;
-        FILE *fp;
+channel_close_file(Channel *chan, FILE *fp)
 {
         if (fp != stderr)
                 fclose(fp);
@@ -256,15 +225,7 @@ channel_close_file(chan, fp)
 #ifdef USE_SQL
 /*PRINTFLIKE2*/
 void
-sqllog
-#if STDC_HEADERS
-      (int status, char *msg, ...)
-#else
-      (status, msg, va_alist)
-        int status;
-        char *msg;
-        va_dcl
-#endif
+sqllog(int status, char *msg, ...)
 {
         va_list ap;
         FILE *fp;
@@ -279,11 +240,7 @@ sqllog
                 return;
         }
         efree(path);
-#if STDC_HEADERS
 	va_start(ap, msg);
-#else
-        va_start(ap);
-#endif
         vfprintf(fp, msg, ap);
         fprintf(fp, ";\n");
         va_end(ap);
@@ -294,8 +251,7 @@ sqllog
 /* Registering functions */
 
 void
-channel_free(chan)
-        Channel *chan;
+channel_free(Channel *chan)
 {
         efree(chan->name);
         if (chan->mode == LM_FILE)
@@ -304,8 +260,7 @@ channel_free(chan)
 }
 
 void
-channel_free_list(chan)
-        Channel *chan;
+channel_free_list(Channel *chan)
 {
         Channel *next;
 
@@ -323,8 +278,7 @@ log_mark()
 }
 
 void
-log_release(chan)
-        Channel *chan;
+log_release(Channel *chan)
 {
         Channel *cp, *prev = NULL;
         int emerg, alert, crit;
@@ -369,8 +323,7 @@ log_release(chan)
 }
 
 Channel *
-channel_lookup(name)
-        char *name;
+channel_lookup(char *name)
 {
         Channel *chan;
 
@@ -382,8 +335,7 @@ channel_lookup(name)
 }
 
 void
-register_channel(chan)
-        Channel *chan;
+register_channel(Channel *chan)
 {
         FILE *fp;
         Channel *channel;
@@ -422,10 +374,7 @@ register_channel(chan)
 }
 
 void
-register_category(cat, pri, chanlist)
-        int cat;
-        int pri;
-        Chanlist *chanlist;
+register_category(int cat, int pri, Chanlist *chanlist)
 {
         Channel *chan;
 
@@ -447,8 +396,7 @@ register_category(cat, pri, chanlist)
 
 /* channel lists */
 Chanlist *
-make_chanlist(chan)
-        Channel *chan;
+make_chanlist(Channel *chan)
 {
         Chanlist *cl = mem_alloc(sizeof(*cl));
         cl->next = NULL;
@@ -457,8 +405,7 @@ make_chanlist(chan)
 }
         
 void
-free_chanlist(cp)
-        Chanlist *cp;
+free_chanlist(Chanlist *cp)
 {
         free_slist((struct slist*)cp, NULL);
 }
@@ -482,10 +429,7 @@ log_set_to_console()
 }
 
 void
-log_set_default(name, cat, pri)
-        char *name;
-        int cat;
-        int pri;
+log_set_default(char *name, int cat, int pri)
 {
         Channel chan;
         Chanlist chanlist;
@@ -505,10 +449,7 @@ log_set_default(name, cat, pri)
 
 
 void
-format_exit_status(buffer, buflen, status)
-	char *buffer;
-	int buflen;
-	int status;
+format_exit_status(char *buffer, int buflen, int status)
 {
 	if (WIFEXITED(status)) {
 		snprintf(buffer, buflen,
@@ -583,11 +524,8 @@ static struct keyword log_priorities[] = {
 };
 
 int
-logging_stmt_handler(argc, argv, block_data, handler_data)
-	int argc;
-	cfg_value_t *argv;
-	void *block_data;
-	void *handler_data;
+logging_stmt_handler(int argc, cfg_value_t *argv, void *block_data,
+		     void *handler_data)
 {
 	mark = log_mark();
 	return 0;
@@ -595,30 +533,22 @@ logging_stmt_handler(argc, argv, block_data, handler_data)
 
 
 int
-logging_stmt_end(block_data, handler_data)
-	void *block_data;
-	void *handler_data;
+logging_stmt_end(void *block_data, void *handler_data)
 {
 	log_release(mark);
 	return 0;
 }
 
 int
-logging_stmt_begin(finish, block_data, handler_data)
-	int finish;
-	void *block_data;
-	void *handler_data;
+logging_stmt_begin(int finish, void *block_data, void *handler_data)
 {
 	/*FIXME*/
 	return 0;
 }
 
 static int
-channel_stmt_handler(argc, argv, block_data, handler_data)
-	int argc;
-	cfg_value_t *argv;
-	void *block_data;
-	void *handler_data;
+channel_stmt_handler(int argc, cfg_value_t *argv, void *block_data,
+		     void *handler_data)
 {
 	if (argc != 2) {
 		cfg_argc_error(argc < 2);
@@ -636,9 +566,7 @@ channel_stmt_handler(argc, argv, block_data, handler_data)
 }
 
 static int
-channel_stmt_end(block_data, handler_data)
-	void *block_data;
-	void *handler_data;
+channel_stmt_end(void *block_data, void *handler_data)
 {
 	if (channel.mode == LM_UNKNOWN) {
 		radlog(L_ERR,
@@ -650,8 +578,7 @@ channel_stmt_end(block_data, handler_data)
 }
 
 static int
-get_priority(argv)
-	cfg_value_t *argv;
+get_priority(cfg_value_t *argv)
 {
 	if (argv[0].type != CFG_CHAR || argv[1].type != CFG_STRING)
 		return 1;
@@ -677,11 +604,8 @@ get_priority(argv)
 }	
 
 static int
-category_stmt_handler(argc, argv, block_data, handler_data)
-	int argc;
-	cfg_value_t *argv;
-	void *block_data;
-	void *handler_data;
+category_stmt_handler(int argc, cfg_value_t *argv,
+		      void *block_data, void *handler_data)
 {
 	cat_def.init = 0;
 	cat_def.cat = cat_def.pri = -1;
@@ -797,9 +721,7 @@ category_stmt_handler(argc, argv, block_data, handler_data)
 }
 
 static int
-category_stmt_end(block_data, handler_data)
-	void *block_data;
-	void *handler_data;
+category_stmt_end(void *block_data, void *handler_data)
 {
 	if (cat_def.init) {
 		switch (cat_def.cat) {
@@ -820,11 +742,8 @@ category_stmt_end(block_data, handler_data)
 }
 
 static int
-category_set_channel(argc, argv, block_data, handler_data)
-	int argc;
-	cfg_value_t *argv;
-	void *block_data;
-	void *handler_data;
+category_set_channel(int argc, cfg_value_t *argv,
+		     void *block_data, void *handler_data)
 {
 	Channel *channel;
 		
@@ -855,11 +774,8 @@ category_set_channel(argc, argv, block_data, handler_data)
 }
 
 static int
-category_set_flag(argc, argv, block_data, handler_data)
-	int argc;
-	cfg_value_t *argv;
-	void *block_data;
-	void *handler_data;
+category_set_flag(int argc, cfg_value_t *argv, void *block_data,
+		  void *handler_data)
 {
 	int flag = (int) handler_data;
 	if (argc != 2) {
@@ -878,11 +794,8 @@ category_set_flag(argc, argv, block_data, handler_data)
 }
 
 static int
-category_set_level(argc, argv, block_data, handler_data)
-	int argc;
-	cfg_value_t *argv;
-	void *block_data;
-	void *handler_data;
+category_set_level(int argc, cfg_value_t *argv,
+		   void *block_data, void *handler_data)
 {
 	int i;
 
@@ -917,11 +830,8 @@ category_set_level(argc, argv, block_data, handler_data)
 }
 
 static int
-channel_file_handler(argc, argv, block_data, handler_data)
-	int argc;
-	cfg_value_t *argv;
-	void *block_data;
-	void *handler_data;
+channel_file_handler(int argc, cfg_value_t *argv, void *block_data,
+		     void *handler_data)
 {
 	if (argc != 2) {
 		cfg_argc_error(argc < 2);
@@ -937,11 +847,8 @@ channel_file_handler(argc, argv, block_data, handler_data)
 }
 
 static int
-channel_syslog_handler(argc, argv, block_data, handler_data)
-	int argc;
-	cfg_value_t *argv;
-	void *block_data;
-	void *handler_data;
+channel_syslog_handler(int argc, cfg_value_t *argv, void *block_data,
+		       void *handler_data)
 {
 	int facility;
 	int prio;
@@ -992,11 +899,8 @@ channel_syslog_handler(argc, argv, block_data, handler_data)
 }
 
 static int
-channel_set_flag(argc, argv, block_data, handler_data)
-	int argc;
-	cfg_value_t *argv;
-	void *block_data;
-	void *handler_data;
+channel_set_flag(int argc, cfg_value_t *argv,
+		 void *block_data, void *handler_data)
 {
 	int flag = (int) handler_data;
 	if (argc != 2) {
@@ -1027,8 +931,6 @@ static struct cfg_stmt channel_stmt[] = {
 	{ "print-category", CS_STMT, NULL, channel_set_flag, (void*)LO_CAT,
 	  NULL, NULL },
 	{ "print-priority", CS_STMT, NULL, channel_set_flag, (void*)LO_PRI,
-	  NULL, NULL },
-	{ "print-tid", CS_STMT, NULL, channel_set_flag, (void*)LO_TID,
 	  NULL, NULL },
 	{ "print-milliseconds", CS_STMT, NULL, channel_set_flag,
 	  (void*)LO_MSEC, NULL, NULL },

@@ -28,7 +28,6 @@
 #define RADIUS_NASLIST          "naslist"
 #define RADIUS_NASTYPES         "nastypes"
 #define RADIUS_USERS            "users"
-#define RADIUS_HOLD             "holdusers"
 #define RADIUS_LOG              "radius.log"
 #define RADIUS_HINTS            "hints"
 #define RADIUS_HUNTGROUPS       "huntgroups"

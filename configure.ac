@@ -143,20 +143,6 @@ AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(nsl, gethostbyaddr)
 AC_CHECK_LIB(crypt, crypt)
 
-HAVE_PTHREAD=no
-AC_CHECK_LIB(pthread, pthread_self,
-             [ HAVE_PTHREAD=yes
-               LIBS="$LIBS -lpthread -lc" ],
-             [ LIBS="$LIBS -pthread"
-               AC_CHECK_FUNC(pthread_self,
-                             [HAVE_PTHREAD=yes]) ])
-
-if test $HAVE_PTHREAD != yes; then
-	AC_MSG_ERROR("POSIX threads library not found. Please install one and then reconfigure")
-fi
-
-AC_CHECK_FUNCS(pthread_atfork)
-
 ## * Checks for header files.
 
 # Override CPPFLAGS
@@ -272,7 +258,7 @@ AC_ARG_WITH(included-argp,
         [USE_INCLUDED_ARGP=no])
 
 AC_CHECK_FUNCS(argp_parse, :, USE_INCLUDED_ARGP=yes)
-if test "$ac_cv_header_argp_h" = "yes"; then
+if test "$ac_cv_header_argp_h" = "no"; then
 	USE_INCLUDED_ARGP=yes
 fi
 
@@ -502,26 +488,14 @@ USE_SQL=0
 AC_ARG_WITH(mysql,
         [  --with-mysql          Configure to work with MySQL],
 	[case $withval in
-	 yes)    RA_CHECK_LIB(mysqlclient_r, mysql_real_connect, "-lm",
+	 yes)   RA_CHECK_LIB(mysqlclient, mysql_real_connect, "-lm",
                             [ USE_SQL=1
                               AC_DEFINE(USE_SQL_MYSQL)
                               AC_DEFINE(HAVE_LIBMYSQL)
-                              RA_RADIUSD_LDADD($ra_cv_lib_mysqlclient_r)
+                              RA_RADIUSD_LDADD($ra_cv_lib_mysqlclient)
                             ],
 			    :,
                             [/usr/local/lib/mysql /usr/lib/mysql])
-
-	         if test "$USE_SQL" != "1"; then
-	             RA_CHECK_LIB(mysqlclient, mysql_real_connect, "-lm",
-                                  [ AC_MSG_WARN([libmysqlclient_r not found. Will use libmysqlclient. Consider upgrading your MySQL.])
-                                    USE_SQL=1
-                                    AC_DEFINE(USE_SQL_MYSQL)
-                                    AC_DEFINE(HAVE_LIBMYSQL)
-                                    RA_RADIUSD_LDADD($ra_cv_lib_mysqlclient)
-                                  ],
-			          [ AC_MSG_ERROR(-lmysqlclient not found)],
-                                  [/usr/local/lib/mysql /usr/lib/mysql])
-                 fi
 		;;
 	 no)    ;;
         esac])
@@ -670,8 +644,29 @@ if test "$EMACS" != "no"; then
 fi
 AC_SUBST(lisp_LISP)
 
-AC_OUTPUT(Makefile m4/Makefile intl/Makefile po/Makefile.in 
-          include/Makefile include/snmp/Makefile
+dnl Define ARG_UNUSED macro
+dnl
+AH_BOTTOM([
+#if __GNUC__ < 2 || (__GNUC__ == 2 && __GNUC_MINOR__ < 7)
+#  define __attribute__(x)
+#endif
+
+#ifndef ARG_UNUSED
+# define ARG_UNUSED __attribute__ ((__unused__))
+#endif
+
+#define LOCK_DECLARE(name)
+#define LOCK_SET(name)
+#define LOCK_RELEASE(name)
+])
+
+
+AC_OUTPUT(Makefile 
+          m4/Makefile 
+          intl/Makefile 
+          po/Makefile.in 
+          include/Makefile 
+          include/snmp/Makefile
           lib/Makefile
           sql/Makefile
           snmplib/Makefile 
@@ -680,10 +675,14 @@ AC_OUTPUT(Makefile m4/Makefile intl/Makefile po/Makefile.in
           radiusd/testsuite/Makefile 
           radiusd/testsuite/raddb/Makefile 
           radiusd/testsuite/proxy/Makefile 
-          radlast/Makefile radwho/Makefile 
-          raduse/Makefile radzap/Makefile 
-          radscripts/Makefile doc/Makefile 
-	  doc/texinfo/Makefile doc/man/Makefile doc/man/config.so 
+          radlast/Makefile 
+          radwho/Makefile 
+          radzap/Makefile
+          radscripts/Makefile 
+          doc/Makefile 
+	  doc/texinfo/Makefile
+	  doc/man/Makefile 
+	  doc/man/config.so 
           doc/rfc/Makefile 
           mibs/Makefile 
           elisp/Makefile 

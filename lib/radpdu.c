@@ -1,25 +1,21 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #define RADIUS_MODULE_RADPDU_C
-#ifndef lint
-static char rcsid[] =
-"@(#) $Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -53,23 +49,14 @@ struct radius_attr {
         u_char data[AUTH_STRING_LEN];    
 };
 
-static void rad_pdu_init(struct radius_pdu *pdu);
-static VALUE_PAIR *rad_decode_pair(int attrno, char *ptr, int attrlen);
-size_t rad_pdu_finish_reply(void **ptr, struct radius_pdu *pdu, int code,
-			    int id, u_char *vector, u_char *secret);
-size_t rad_pdu_finish_request(void **ptr, struct radius_pdu *pdu,
-                              int code, int id, u_char *vector,
-                              u_char *secret);
-
 void rad_pdu_destroy(struct radius_pdu *pdu);
 int rad_attr_write(struct radius_attr *ap, void *data, size_t size);
 int rad_encode_pair(struct radius_attr *ap, VALUE_PAIR *pair);
 
 
 /* Initialize a PDU */
-void
-rad_pdu_init(pdu)
-        struct radius_pdu *pdu;
+static void
+rad_pdu_init(struct radius_pdu *pdu)
 {
         pdu->size = 0;
         obstack_init(&pdu->st);
@@ -83,14 +70,9 @@ rad_pdu_init(pdu)
    Output:
           *ptr   -- Radius reply.
    Return value: length of the data on *ptr. */   
-size_t
-rad_pdu_finish(ptr, pdu, code, id, vector, secret)
-        void **ptr;
-        struct radius_pdu *pdu;
-        int code;
-        int id;
-        u_char *vector;
-        u_char *secret;
+static size_t
+rad_pdu_finish(void **ptr, struct radius_pdu *pdu,
+	       int code, int id, u_char *vector, u_char *secret)
 {
         AUTH_HDR *hdr;
         void *p;
@@ -150,8 +132,7 @@ rad_pdu_finish(ptr, pdu, code, id, vector, secret)
 
 /* Destroy the PDU */
 void 
-rad_pdu_destroy(pdu)
-        struct radius_pdu *pdu;
+rad_pdu_destroy(struct radius_pdu *pdu)
 {
         obstack_free(&pdu->st, NULL);
 }
@@ -166,10 +147,7 @@ rad_pdu_destroy(pdu)
 
 /* Append SIZE bytes from DATA to radius_attr AP. */    
 int
-rad_attr_write(ap, data, size)
-        struct radius_attr *ap;
-        void *data;
-        size_t size;
+rad_attr_write(struct radius_attr *ap, void *data, size_t size)
 {
         if (sizeof(ap->data) - ap->length + 2 < size)
                 return 0;
@@ -184,9 +162,7 @@ rad_attr_write(ap, data, size)
    Return value: length of the encoded data or 0 if an error occurred */
    
 int
-rad_encode_pair(ap, pair)
-        struct radius_attr *ap;
-        VALUE_PAIR *pair;
+rad_encode_pair(struct radius_attr *ap, VALUE_PAIR *pair)
 {
         UINT4 lval;
         size_t len;
@@ -225,14 +201,8 @@ rad_encode_pair(ap, pair)
    Return value: lenght of the data in *rptr. 0 on error */
    
 size_t
-rad_create_pdu(rptr, code, id, vector, secret, pairlist, msg)
-        void **rptr;
-        int code;
-        int id;
-        u_char *vector;
-        u_char *secret;
-        VALUE_PAIR *pairlist;
-        char *msg;
+rad_create_pdu(void **rptr, int code, int id, u_char *vector,
+	       u_char *secret, VALUE_PAIR *pairlist, char *msg)
 {
         struct radius_pdu pdu;
         size_t attrlen = 0;
@@ -273,7 +243,7 @@ rad_create_pdu(rptr, code, id, vector, secret, pairlist, msg)
 			attr.attrno = pair->attribute;
 			attrlen = rad_encode_pair(&attr, pair);
 		}
-                if (attrlen <= 0) {
+                if (attrlen < 0) {
                         radlog(L_ERR, "attrlen = %d", attrlen);
                         status = 1;
                         break;
@@ -318,16 +288,81 @@ rad_create_pdu(rptr, code, id, vector, secret, pairlist, msg)
         return attrlen;
 }
 
+static VALUE_PAIR *
+rad_decode_pair(int attrno, char *ptr, int attrlen)
+{
+        DICT_ATTR *attr;
+        VALUE_PAIR *pair;
+        UINT4 lval;
+        
+        if ((attr = attr_number_to_dict(attrno)) == NULL) {
+                debug(1, ("Received unknown attribute %d", attrno));
+                return NULL;
+        }
+
+        if ( attrlen > AUTH_STRING_LEN ) {
+                debug(1, ("attribute %d too long, %d >= %d", attrno,
+                          attrlen, AUTH_STRING_LEN));
+                return NULL;
+        }
+
+        pair = avp_alloc();
+        
+        pair->name = attr->name;
+        pair->attribute = attr->value;
+        pair->type = attr->type;
+        pair->prop = attr->prop;
+        pair->next = NULL;
+
+        switch (attr->type) {
+
+        case TYPE_STRING:
+                /* attrlen always <= AUTH_STRING_LEN */
+                pair->avp_strlength = attrlen;
+                pair->avp_strvalue = string_alloc(attrlen + 1);
+                memcpy(pair->avp_strvalue, ptr, attrlen);
+                pair->avp_strvalue[attrlen] = 0;
+
+                if (debug_on(10)) {
+                        char *save;
+                        radlog(L_DEBUG, "recv: %s",
+                               format_pair(pair, &save));
+                        free(save);
+                }
+
+                break;
+                        
+        case TYPE_INTEGER:
+        case TYPE_IPADDR:
+                memcpy(&lval, ptr, sizeof(UINT4));
+                pair->avp_lvalue = ntohl(lval);
+
+                if (debug_on(10)) {
+                        char *save;
+                        radlog(L_DEBUG, 
+                               "recv: %s", 
+                               format_pair(pair, &save));
+                        free(save);
+                }
+                break;
+                        
+        default:
+                debug(1, ("    %s (Unknown Type %d)",
+                          attr->name,attr->type));
+                avp_free(pair);
+                pair = NULL;
+                break;
+        }
+        
+        return pair;
+}
+
 /* Receive UDP client requests, build an authorization request
    structure, and attach attribute-value pairs contained in the request
    to the new structure. */
 
 RADIUS_REQ *
-rad_decode_pdu(host, udp_port, buffer, length)
-        UINT4 host;
-        u_short udp_port;
-        u_char *buffer;
-        int length;
+rad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, int length)
 {
         u_char          *ptr;
         AUTH_HDR        *auth;
@@ -363,8 +398,6 @@ rad_decode_pdu(host, udp_port, buffer, length)
         radreq->id = auth->id;
         radreq->code = auth->code;
         memcpy(radreq->vector, auth->vector, AUTH_VECTOR_LEN);
-        radreq->data = buffer;
-        radreq->data_len = length;
 
         /* Extract attribute-value pairs  */
         ptr = (u_char*) (auth + 1);
@@ -460,74 +493,3 @@ rad_decode_pdu(host, udp_port, buffer, length)
         return radreq;
 }
 
-VALUE_PAIR *
-rad_decode_pair(attrno, ptr, attrlen)
-        int attrno;
-        char *ptr;
-        int attrlen;
-{
-        DICT_ATTR *attr;
-        VALUE_PAIR *pair;
-        UINT4 lval;
-        
-        if ((attr = attr_number_to_dict(attrno)) == NULL) {
-                debug(1, ("Received unknown attribute %d", attrno));
-                return NULL;
-        }
-
-        if ( attrlen > AUTH_STRING_LEN ) {
-                debug(1, ("attribute %d too long, %d >= %d", attrno,
-                          attrlen, AUTH_STRING_LEN));
-                return NULL;
-        }
-
-        pair = avp_alloc();
-        
-        pair->name = attr->name;
-        pair->attribute = attr->value;
-        pair->type = attr->type;
-        pair->prop = attr->prop;
-        pair->next = NULL;
-
-        switch (attr->type) {
-
-        case TYPE_STRING:
-                /* attrlen always <= AUTH_STRING_LEN */
-                pair->avp_strlength = attrlen;
-                pair->avp_strvalue = string_alloc(attrlen + 1);
-                memcpy(pair->avp_strvalue, ptr, attrlen);
-                pair->avp_strvalue[attrlen] = 0;
-
-                if (debug_on(10)) {
-                        char *save;
-                        radlog(L_DEBUG, "recv: %s",
-                               format_pair(pair, &save));
-                        free(save);
-                }
-
-                break;
-                        
-        case TYPE_INTEGER:
-        case TYPE_IPADDR:
-                memcpy(&lval, ptr, sizeof(UINT4));
-                pair->avp_lvalue = ntohl(lval);
-
-                if (debug_on(10)) {
-                        char *save;
-                        radlog(L_DEBUG, 
-                               "recv: %s", 
-                               format_pair(pair, &save));
-                        free(save);
-                }
-                break;
-                        
-        default:
-                debug(1, ("    %s (Unknown Type %d)",
-                          attr->name,attr->type));
-                avp_free(pair);
-                pair = NULL;
-                break;
-        }
-        
-        return pair;
-}

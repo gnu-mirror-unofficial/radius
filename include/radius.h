@@ -222,9 +222,6 @@ typedef struct radius_req {
         u_char                  vector[AUTH_VECTOR_LEN]; /* Rq authenticator */
         u_char                  *secret;      /* Shared secret */
         VALUE_PAIR              *request;     /* Request pairs */
-        u_char                  *data;        /* Raw received data */
-        int                     data_len;     /* Length of raw data */
-        int                     data_alloced; /* Was the data malloced */
         
         /* Saved reply values */
         int                     reply_code;   /* Reply code */
@@ -467,8 +464,7 @@ void app_setup();
 #define LO_PID   0x0002
 #define LO_CAT   0x0004
 #define LO_PRI   0x0008
-#define LO_TID   0x0010
-#define LO_MSEC  0x0020
+#define LO_MSEC  0x0010
 #define LO_PERSIST 0x8000
 
 #define MKSTRING(x) #x 

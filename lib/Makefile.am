@@ -29,6 +29,7 @@ insist.c \
 intl.c \
 iputil.c \
 leakdetect.c \
+list.c \
 logger.c \
 md5.c \
 md5crypt.c \

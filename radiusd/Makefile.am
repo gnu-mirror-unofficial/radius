@@ -22,6 +22,7 @@ radiusd_SOURCES = \
  debugmod.c\
  exec.c\
  files.c\
+ input.c\
  log.c\
  menu.c\
  pam.c\
@@ -32,10 +33,9 @@ radiusd_SOURCES = \
  radutil.c\
  request.c\
  rewrite.c\
+ rpp.c\
  scheme.c\
- signal.c\
  snmpserv.c\
- sockets.c\
  sql.c\
  stat.c\
  timestr.c\

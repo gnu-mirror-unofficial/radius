@@ -22,7 +22,6 @@ static char rcsid[] = "$Id$";
 #include <stdio.h>
 #include <sysdep.h>
 #include <md5.h>
-#include <pthread.h>
 
 static unsigned char itoa64[] =         /* 0 ... 63 => ascii - 64 */
         "./0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -41,7 +40,7 @@ to64(s, v, n)
         }
 }
 
-static pthread_mutex_t crypt_mutex = PTHREAD_MUTEX_INITIALIZER;
+LOCK_DECLARE(lock)
 
 /*
  * UNIX password
@@ -75,9 +74,9 @@ md5crypt(pw, salt, passwd, size)
         if (!strncmp(sp, magic, strlen(magic)))
                 sp += strlen(magic);
         else {
-                pthread_mutex_lock(&crypt_mutex);
+                LOCK_SET(lock);
                 strncpy(passwd, crypt(pw, salt), size);
-                pthread_mutex_unlock(&crypt_mutex);
+                LOCK_RELEASE(lock);
                 return passwd;
         }
                 

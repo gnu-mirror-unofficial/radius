@@ -16,9 +16,8 @@
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #include <time.h>
-#include <pthread.h>
 
-static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+LOCK_DECLARE(lock)
 
 struct tm *
 localtime_r(timep, res)
@@ -27,10 +26,9 @@ localtime_r(timep, res)
 {
         struct tm *tm;
 
-	pthread_cleanup_push((void (*)(void*))pthread_mutex_unlock, &mutex);
-        pthread_mutex_lock(&mutex);
+        LOCK_SET(lock);
         tm = localtime(timep);
         memcpy(res, tm, sizeof(*res));
-        pthread_cleanup_pop(1);
+        LOCK_RELEASE(lock);
         return res;
 }

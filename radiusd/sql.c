@@ -1,25 +1,21 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #define RADIUS_MODULE_SQL_C
-#ifndef lint
-static char rcsid[] =
-"@(#) $Id$";
-#endif
 
 #if defined(HAVE_CONFIG_H)
 # include <config.h>
@@ -43,7 +39,6 @@ static void detach_sql_connection(int type);
 
 static char *getline();
 static int get_boolean(char *str, int *retval);
-static int get_unsigned(char *str, unsigned *retval);
 static char * sql_digest(SQL_cfg *cfg);
 static int sql_digest_comp(char *d1, char *d2);
 static int sql_cfg_comp(SQL_cfg *a, SQL_cfg *b);
@@ -51,6 +46,7 @@ static int chop(char *str);
 static void sql_flush();
 
 SQL_cfg sql_cfg;
+static struct sql_connection *sql_conn[SQL_NSERVICE];
 
 #define STMT_SERVER                 1
 #define STMT_PORT                   2
@@ -81,9 +77,6 @@ static int line_no;
 static char *cur_line, *cur_ptr;
 static struct obstack parse_stack;
 static int stmt_type;
-
-static pthread_key_t sql_conn_key[SQL_NSERVICE];
-static pthread_once_t sql_conn_key_once = PTHREAD_ONCE_INIT;
 
 struct keyword sql_keyword[] = {
         "server",             STMT_SERVER,
@@ -117,8 +110,7 @@ struct keyword sql_keyword[] = {
  * Chop off trailing whitespace. Return length of the resulting string
  */
 int
-chop(str)
-        char *str;
+chop(char *str)
 {
         int len;
 
@@ -183,9 +175,7 @@ getline()
 }
 
 int
-get_boolean(str, retval)
-        char *str;
-        int *retval;
+get_boolean(char *str, int *retval)
 {
         if (strcmp(str, "yes") == 0)
                 *retval = 1;
@@ -197,8 +187,7 @@ get_boolean(str, retval)
 }
 
 char *
-sql_digest(cfg)
-        SQL_cfg *cfg;
+sql_digest(SQL_cfg *cfg)
 {
         int length;
         char *digest, *p;
@@ -246,8 +235,7 @@ sql_digest(cfg)
 }
 
 int
-sql_digest_comp(d1, d2)
-        char *d1, *d2;
+sql_digest_comp(char *d1, char *d2)
 {
         int len;
 
@@ -258,8 +246,7 @@ sql_digest_comp(d1, d2)
 }
 
 int
-sql_cfg_comp(a, b)
-        SQL_cfg *a, *b;
+sql_cfg_comp(SQL_cfg *a, SQL_cfg *b)
 {
         char *dig1, *dig2;
         int rc;
@@ -272,35 +259,6 @@ sql_cfg_comp(a, b)
         return rc;
 }
 
-static void
-sql_conn_destroy(void *data)
-{
-	struct sql_connection *conn = data;
-	disp_sql_disconnect(sql_cfg.interface, conn);
-	mem_free(conn);
-}
-
-static void
-sql_conn_key_alloc()
-{
-        pthread_key_create(&sql_conn_key[SQL_AUTH], sql_conn_destroy);
-        pthread_key_create(&sql_conn_key[SQL_ACCT], sql_conn_destroy);
-}
-
-void
-rad_sql_thread_cleanup(arg)
-	void *arg;
-{
-	struct obstack *stk = arg;
-	
-	obstack_free(stk, NULL);
-
-	disp_sql_drop(sql_cfg.interface, 
-		      pthread_getspecific(sql_conn_key[SQL_AUTH]));
-	disp_sql_drop(sql_cfg.interface,
-		      pthread_getspecific(sql_conn_key[SQL_ACCT]));
-}
-
 int 
 rad_sql_init()
 {
@@ -310,8 +268,6 @@ rad_sql_init()
         time_t timeout;
         SQL_cfg new_cfg;
 
-        pthread_once(&sql_conn_key_once, sql_conn_key_alloc);
-        
 #define FREE(a) if (a) efree(a); a = NULL
 
         bzero(&new_cfg, sizeof(new_cfg));
@@ -526,29 +482,24 @@ rad_sql_init()
 }
 
 static void
-radiusd_sql_shutdown_thread(unused)
-	void *unused;
+sql_conn_destroy(struct sql_connection **conn)
 {
-	struct sql_connection *conn;
-
-	debug(10, ("shutting down sql connections"));
-	conn = pthread_getspecific(sql_conn_key[SQL_AUTH]);
-	if (conn)
-		disp_sql_disconnect(SQL_AUTH, conn);
-	conn = pthread_getspecific(sql_conn_key[SQL_ACCT]);
-	if (conn)
-		disp_sql_disconnect(SQL_ACCT, conn);
+	if (*conn) {
+		disp_sql_disconnect(sql_cfg.interface, *conn);
+		mem_free(*conn);
+		*conn = NULL;
+	}
 }
 
 void
 radiusd_sql_shutdown()
 {
-	request_thread_command(radiusd_sql_shutdown_thread, NULL);
+	sql_conn_destroy(&sql_conn[SQL_AUTH]);
+	sql_conn_destroy(&sql_conn[SQL_ACCT]);
 }
 
 void
-sql_check_config(cfg)
-        SQL_cfg *cfg;
+sql_check_config(SQL_cfg *cfg)
 {
 #define FREE_IF_EMPTY(s) if (s && strcmp(s, "none") == 0) {\
                                 efree(s);\
@@ -618,19 +569,18 @@ sql_flush()
 {
         radlog(L_NOTICE,
                _("SQL configuration changed: closing existing connections"));
-        radiusd_flush_queues();
+        radiusd_flush_queue();
 	radiusd_sql_shutdown();
 }
 
 struct sql_connection *
-attach_sql_connection(type)
-        int type;
+attach_sql_connection(int type)
 {
         struct sql_connection *conn;
         time_t now;
         
         time(&now);
-        conn = pthread_getspecific(sql_conn_key[type]);
+        conn = sql_conn[type];
         if (!conn) {
                 debug(1, ("allocating new %d sql connection", type));
 
@@ -640,7 +590,7 @@ attach_sql_connection(type)
                 conn->last_used = now;
                 conn->type = type;
 
-                pthread_setspecific(sql_conn_key[type], conn);
+                sql_conn[type] = conn;
         }
 
         if (!conn->connected || now - conn->last_used > sql_cfg.idle_timeout) {
@@ -654,12 +604,11 @@ attach_sql_connection(type)
 }
 
 void
-detach_sql_connection(type)
-        int type;
+detach_sql_connection(int type)
 {
         struct sql_connection *conn;
 
-        conn = pthread_getspecific(sql_conn_key[type]);
+        conn = sql_conn[type];
         if (!conn)
                 return;
         debug(1, ("detaching %p [%d]", conn, type));
@@ -669,15 +618,13 @@ detach_sql_connection(type)
                 if (conn->connected)
                         disp_sql_disconnect(sql_cfg.interface, conn);
                 mem_free(conn);
-                pthread_setspecific(sql_conn_key[type], NULL);
+                sql_conn[type] = NULL;
         }
 }
 
 /*ARGSUSED*/
 void
-rad_sql_cleanup(type, req)
-        int type;
-        RADIUS_REQ *req; /* Unused */
+rad_sql_cleanup(int type, void *req ARG_UNUSED)
 {
         if (sql_cfg.active[type])
                 detach_sql_connection(type);
@@ -687,8 +634,7 @@ rad_sql_cleanup(type, req)
  * Perform normal accounting
  */ 
 void
-rad_sql_acct(radreq)
-        RADIUS_REQ *radreq;
+rad_sql_acct(RADIUS_REQ *radreq)
 {
         int rc, count;
         int status;
@@ -712,7 +658,6 @@ rad_sql_acct(radreq)
 
         conn = attach_sql_connection(SQL_ACCT);
         obstack_init(&stack);
-	pthread_cleanup_push(rad_sql_thread_cleanup, &stack);
 
         switch (status) {
         case DV_ACCT_STATUS_TYPE_START:
@@ -798,15 +743,12 @@ rad_sql_acct(radreq)
 			   count);
 	}
 
-	pthread_cleanup_pop(0);
         obstack_free(&stack, NULL);
 }
 
 
 char *
-rad_sql_pass(req, authdata)
-        RADIUS_REQ *req;
-        char *authdata;
+rad_sql_pass(RADIUS_REQ *req, char *authdata)
 {
         char *mysql_passwd;
         struct sql_connection *conn;
@@ -831,9 +773,7 @@ rad_sql_pass(req, authdata)
         avl_delete(&req->request, DA_AUTH_DATA);
         
         conn = attach_sql_connection(SQL_AUTH);
-        pthread_cleanup_push(rad_sql_thread_cleanup, &stack);
         mysql_passwd = disp_sql_getpwd(sql_cfg.interface, conn, query);
-        pthread_cleanup_pop(0);
 	
         if (mysql_passwd) 
                 chop(mysql_passwd);
@@ -843,19 +783,6 @@ rad_sql_pass(req, authdata)
         return mysql_passwd;
 }
 
-struct cleanup_data {
-	struct sql_connection *conn;
-	void *data;
-};
-
-void
-rad_sql_data_cleanup(arg)
-	void *arg;
-{
-	struct cleanup_data *p = arg;
-	disp_sql_free(sql_cfg.interface, p->conn, p->data);
-}
-	
 int
 rad_sql_checkgroup(req, groupname)
         RADIUS_REQ *req;
@@ -867,7 +794,6 @@ rad_sql_checkgroup(req, groupname)
         char *p;
         char *query;
         struct obstack stack;
-        struct cleanup_data cleanup_data;
 	
         if (sql_cfg.doauth == 0 || sql_cfg.group_query == NULL) 
                 return -1;
@@ -877,16 +803,11 @@ rad_sql_checkgroup(req, groupname)
                 return -1;
 
         obstack_init(&stack);
-	pthread_cleanup_push(rad_sql_thread_cleanup, &stack);
 	
         query = radius_xlate(&stack, sql_cfg.group_query, req, NULL);
 
         data = disp_sql_exec(sql_cfg.interface, conn, query);
 
-	cleanup_data.conn = conn;
-	cleanup_data.data = data;
-	pthread_cleanup_push(rad_sql_data_cleanup, &cleanup_data);
-	
         while (rc != 0
                && disp_sql_next_tuple(sql_cfg.interface, conn, data) == 0) {
                 if ((p = disp_sql_column(sql_cfg.interface, data, 0)) == NULL)
@@ -897,24 +818,15 @@ rad_sql_checkgroup(req, groupname)
         }
         disp_sql_free(sql_cfg.interface, conn, data);
 	
-	pthread_cleanup_pop(0); 
-        pthread_cleanup_pop(0);
-	
         obstack_free(&stack, NULL);
         return rc;
 }
 
-static int rad_sql_retrieve_pairs(struct sql_connection *conn,
-                                  char *query,
-                                  VALUE_PAIR **return_pairs,
-                                  int op_too);
-
-int
-rad_sql_retrieve_pairs(conn, query, return_pairs, op_too)
-        struct sql_connection *conn;
-        char *query;
-        VALUE_PAIR **return_pairs;
-        int op_too;
+static int
+rad_sql_retrieve_pairs(struct sql_connection *conn,
+		       char *query,
+		       VALUE_PAIR **return_pairs,
+		       int op_too)
 {
         void *data;
         int i;
@@ -964,9 +876,7 @@ rad_sql_retrieve_pairs(conn, query, return_pairs, op_too)
 }
 
 int
-rad_sql_reply_attr_query(req, reply_pairs)
-        RADIUS_REQ *req;
-        VALUE_PAIR **reply_pairs;
+rad_sql_reply_attr_query(RADIUS_REQ *req, VALUE_PAIR **reply_pairs)
 {
         struct sql_connection *conn;
         char *query;
@@ -978,20 +888,16 @@ rad_sql_reply_attr_query(req, reply_pairs)
         
         conn = attach_sql_connection(SQL_AUTH);
         obstack_init(&stack);
-	pthread_cleanup_push(rad_sql_thread_cleanup, &stack);
 
         query = radius_xlate(&stack, sql_cfg.reply_attr_query, req, NULL);
         rc = rad_sql_retrieve_pairs(conn, query, reply_pairs, 0);
 
-        pthread_cleanup_pop(0);
         obstack_free(&stack, NULL);
         return rc == 0;
 }
 
 int
-rad_sql_check_attr_query(req, return_pairs)
-        RADIUS_REQ *req;
-        VALUE_PAIR **return_pairs;
+rad_sql_check_attr_query(RADIUS_REQ *req, VALUE_PAIR **return_pairs)
 {
         struct sql_connection *conn;
         char *query;
@@ -1003,12 +909,10 @@ rad_sql_check_attr_query(req, return_pairs)
         
         conn = attach_sql_connection(SQL_AUTH);
         obstack_init(&stack);
-	pthread_cleanup_push(rad_sql_thread_cleanup, &stack);
 	
         query = radius_xlate(&stack, sql_cfg.check_attr_query, req, NULL);
         rc = rad_sql_retrieve_pairs(conn, query, return_pairs, 1);
         
-	pthread_cleanup_pop(0);
         obstack_free(&stack, NULL);
         return rc == 0;
 }

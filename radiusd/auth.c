@@ -563,6 +563,7 @@ enum auth_state {
 	as_simuse, 
 	as_time, 
 	as_eval,
+	as_scheme,
 	as_ttl, 
 	as_ipaddr, 
 	as_exec_wait, 
@@ -583,7 +584,7 @@ enum list_id {
 };
 
 typedef struct auth_mach {
-	RADIUS_REQ   *req;
+	RADIUS_REQ *req;
 	VALUE_PAIR *user_check;
 	VALUE_PAIR *user_reply;
 	VALUE_PAIR *proxy_pairs;
@@ -602,6 +603,7 @@ typedef struct auth_mach {
 static void sfn_init(MACH*);
 static void sfn_validate(MACH*);
 static void sfn_eval_reply(MACH*);
+static void sfn_scheme(MACH*);
 static void sfn_service(MACH*);
 static void sfn_disable(MACH*);
 static void sfn_service_type(MACH*);
@@ -652,9 +654,12 @@ struct auth_state_s states[] = {
 	as_time,         as_eval,
 	                 DA_LOGIN_TIME,   L_check, sfn_time,
 	
-	as_eval,         as_ttl,
+	as_eval,         as_scheme,
 	                 0,               L_null,  sfn_eval_reply,
 
+	as_scheme,       as_ttl,
+	                 DA_SCHEME_PROCEDURE, L_reply, sfn_scheme,
+	
 	as_ttl,          as_ipaddr,
 	                 0,               L_null, sfn_ttl,
 	
@@ -923,6 +928,37 @@ sfn_eval_reply(m)
 	if (errcnt)
 		newstate(as_reject);
 }		
+
+void
+sfn_scheme(m)
+	MACH *m;
+{
+#ifdef USE_GUILE
+	VALUE_PAIR *p;
+	
+	if (!use_guile) {
+		radlog(L_ERR,
+		       _("Guile authentication disabled in config"));
+		newstate(as_reject);
+		return;
+	}
+
+	for (p = avl_find(m->user_reply, DA_SCHEME_PROCEDURE);
+	     p;
+	     p = avl_find(p->next, DA_SCHEME_PROCEDURE)) {
+		if (scheme_auth(p->strvalue,
+				m->req, m->user_check, &m->user_reply)) {
+			newstate(as_reject);
+			break;
+		}
+	}
+#else
+	radlog(L_ERR,
+	       _("Guile authentication not available"));
+	newstate(as_reject);
+	return;
+#endif
+}
 
 void
 sfn_validate(m)

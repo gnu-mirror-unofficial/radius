@@ -132,6 +132,11 @@ enum {
 #define PORT_ACCT 1
 #define PORT_MAX  2
 
+typedef struct {                
+	char *file;             /* File name */
+	size_t line;            /* Line number */
+} LOCUS;
+
 typedef struct {
 	UINT4 addr;             /* Server IP address */
 	u_char id;              /* Current id */
@@ -364,7 +369,7 @@ void realm_iterate(int (*fun)());
 RADIUS_REQ *radreq_alloc();
 
 /* raddb.c */
-int read_raddb_file(char *name, int vital, int (*fun)(), void *closure);
+int read_raddb_file(char *name, int vital, int (*fun)(void*,int,char**,LOCUS*), void *closure);
 
 /* mem.c */
 void *emalloc(size_t);
@@ -375,10 +380,11 @@ char *estrdup(const char *);
 void radpath_init();
 
 /* users.y */
-int parse_file(char *file, void *c, int (*f)());
+typedef int (*register_rule_fp) (void *, LOCUS *, char *,
+				 VALUE_PAIR *, VALUE_PAIR *);
+int parse_file(char *file, void *c, register_rule_fp f);
 int user_gettime(char *valstr, struct tm *tm);
-VALUE_PAIR *install_pair(char *file, int line,
-			 char *name, int op, char *valstr);
+VALUE_PAIR *install_pair(LOCUS *loc, char *name, int op, char *valstr);
 
 
 /* util.c */
@@ -525,11 +531,12 @@ extern int debug_level[];
 void initlog(char*);
 void radlog_open(int category);
 void radlog_close();
-void vlog(int lvl, const char *file, int line, const char *func_name, int en,
-          const char *fmt, va_list ap);
+void vlog(int lvl, const char *file, size_t line, const char *func_name,
+	  int en, const char *fmt, va_list ap);
 void radlog __PVAR((int level, const char *fmt, ...));
 int __insist_failure(const char *, const char *, int);
 void radlog_req __PVAR((int level, RADIUS_REQ *req, const char *fmt, ...));
+void radlog_loc __PVAR((int lvl, LOCUS *loc, const char *msg, ...));
 
 #define MAXIDBUFSIZE \
  4+1+MAX_LONGNAME+1+4+2*AUTH_STRING_LEN+3+1+AUTH_STRING_LEN+1+1
@@ -556,7 +563,7 @@ extern struct debug_module debug_module[];
 # define debug(mode,vlist)
 #endif
 
-void _debug_print(char *file, int line, char *func_name, char *str);
+void _debug_print(char *file, size_t line, char *func_name, char *str);
 char *_debug_format_string __PVAR((char *fmt, ...));
 const char *auth_code_str(int code);
 const char *auth_code_abbr(int code);

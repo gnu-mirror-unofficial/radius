@@ -39,3 +39,8 @@ struct radck_type {
 };
 
 RADCK_TYPE * find_radck_type(char *name);
+void free_radck_arg(RADCK_ARG *arg);
+RADCK_ARG *parse_radck_args(char *str);
+void free_radck_type(RADCK_TYPE *rp);
+RADCK_ARG *parse_radck_args(char *str);
+

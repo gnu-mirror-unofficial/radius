@@ -30,7 +30,7 @@
 
 /* obstack_grow with quoting of potentially dangerous characters */
 static void
-obstack_grow_quoted(struct obstack *obp, char *str, int len)
+obstack_grow_escaped(struct obstack *obp, char *str, int len)
 {
         for (; len > 0; len--, str++) {
                 switch (*str) {
@@ -85,7 +85,7 @@ obstack_grow_quoted(struct obstack *obp, char *str, int len)
  */
 static void
 attr_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
-            grad_dict_attr_t  *attr, char *defval)
+            grad_dict_attr_t  *attr, char *defval, int escape_strings)
 {
         grad_avp_t *pair;
         int len;
@@ -164,7 +164,10 @@ attr_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
 			/* strvalue might include terminating zero
 			   character, so we need to recalculate it */
 			len = strlen(str);
-		obstack_grow_quoted(obp, str, len);
+		if (escape_strings)
+			obstack_grow_escaped(obp, str, len);
+		else
+			obstack_grow(obp, str, len);
                 break;
 		
         case TYPE_INTEGER:
@@ -222,10 +225,10 @@ curtime_to_str(struct obstack *obp, grad_avp_t *request, int gmt)
  */
 static void
 attrno_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
-              int attr_no, char *defval)
+              int attr_no, char *defval, int escape_str)
 {
         attr_to_str(obp, req, pairlist,
-		    grad_attr_number_to_dict(attr_no), defval);
+		    grad_attr_number_to_dict(attr_no), defval, escape_str);
 }
 
 static grad_dict_attr_t *
@@ -283,7 +286,8 @@ radius_xlate0(struct obstack *obp, char *str, grad_request_t *req,
         char *p;
         grad_dict_attr_t *da;
         char *defval;
-
+	int escape;
+	
         for (p = str; *p; ) {
                 switch (c = *p++) {
                 default:
@@ -303,6 +307,7 @@ radius_xlate0(struct obstack *obp, char *str, grad_request_t *req,
                                 obstack_1grow(obp, c);
                                 break;
                         }
+			escape = (p > str+1 && (p[-2] == '\'' || p[-2] == '"'));
                         switch (c = *p++) {
                         case '%':
                                 obstack_1grow(obp, c);
@@ -318,62 +323,79 @@ radius_xlate0(struct obstack *obp, char *str, grad_request_t *req,
 				
                         case 'f': /* Framed IP address */
                                 attrno_to_str(obp, NULL, reply,
-                                              DA_FRAMED_IP_ADDRESS, NULL);
+                                              DA_FRAMED_IP_ADDRESS, NULL,
+					      escape);
                                 break;
 				
                         case 'n': /* NAS IP address */
                                 attrno_to_str(obp, req, req->request,
-                                              DA_NAS_IP_ADDRESS, NULL);
+                                              DA_NAS_IP_ADDRESS, NULL,
+					      escape);
                                 break;
 				
                         case 't': /* MTU */
                                 attrno_to_str(obp, NULL, reply,
-                                              DA_FRAMED_MTU, NULL);
+                                              DA_FRAMED_MTU, NULL,
+					      escape);
                                 break;
 				
                         case 'p': /* Port number */
                                 attrno_to_str(obp, req, req->request,
-                                              DA_NAS_PORT_ID, NULL);
+                                              DA_NAS_PORT_ID, NULL,
+					      escape);
                                 break;
 				
                         case 'u': /* User name */
                                 attrno_to_str(obp, req, req->request,
-                                              DA_USER_NAME, NULL);
+                                              DA_USER_NAME, NULL,
+					      escape);
                                 break;
 				
                         case 'c': /* Callback-Number */
                                 attrno_to_str(obp, NULL, reply,
-                                              DA_CALLBACK_NUMBER, NULL);
+                                              DA_CALLBACK_NUMBER, NULL,
+					      escape);
                                 break;
 				
                         case 'i': /* Calling station ID */
                                 attrno_to_str(obp, req, req->request,
-                                              DA_CALLING_STATION_ID, NULL);
+                                              DA_CALLING_STATION_ID, NULL,
+					      escape);
                                 break;
 				
                         case 'a': /* Protocol: SLIP/PPP */
                                 attrno_to_str(obp, NULL, reply,
-                                              DA_FRAMED_PROTOCOL, NULL);
+                                              DA_FRAMED_PROTOCOL, NULL,
+					      escape);
                                 break;
 				
                         case 's': /* Speed */
                                 attrno_to_str(obp, req, req->request,
-                                              DA_CONNECT_INFO, NULL);
+                                              DA_CONNECT_INFO, NULL,
+					      escape);
                                 break;
 				
                         case 'C':
+				if (*p == '\\') {
+					escape = 1;
+					p++;
+				} 
                                 /* Check pair */
                                 da = parse_dict_attr(p, &p, &defval);
                                 attr_to_str(obp, req, req->request,
-                                            da, defval);
+                                            da, defval, escape);
                                 grad_free(defval);
                                 break;
 				
                         case 'R':
+				if (*p == '\\') {
+					escape = 1;
+					p++;
+				}
                                 /* Reply pair */
                                 da = parse_dict_attr(p, &p, &defval);
                                 attr_to_str(obp, NULL,
-                                            reply, da, defval);
+                                            reply, da, defval, escape);
                                 break;
 				
                         default:                                        

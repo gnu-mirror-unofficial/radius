@@ -39,6 +39,8 @@ static char rcsid[] =
 #include <radiusd.h>
 #include <obstack1.h>
 
+#undef DEBUG_ONLY 
+
 /* Structure for building radius PDU. */
 struct radius_pdu {
 	size_t size;        /* Size of the data, collected so far */
@@ -368,9 +370,9 @@ rad_send_reply(code, radreq, reply_pairs, msg, fd)
 		case RT_PASSWORD_REJECT:
 		case RT_AUTHENTICATION_REJECT:
 			radreq->reply_pairs = NULL;
-			avl_move_attr(&reply, &radreq->reply_pairs,
+			avl_move_attr(&radreq->reply_pairs, &reply, 
 				      DA_REPLY_MESSAGE);
-			avl_move_attr(&reply, &radreq->reply_pairs,
+			avl_move_attr(&radreq->reply_pairs, &reply, 
 				      DA_PROXY_STATE);
 			avl_free(reply);
 			break;
@@ -421,8 +423,10 @@ rad_send_reply(code, radreq, reply_pairs, msg, fd)
 		sin->sin_family = AF_INET;
 		sin->sin_addr.s_addr = htonl(radreq->ipaddr);
 		sin->sin_port = htons(radreq->udp_port);
+#ifndef DEBUG_ONLY
 		sendto(fd, pdu, length, 0,
 		       &saremote, sizeof(struct sockaddr_in));
+#endif
 		efree(pdu);
 	}
 }
@@ -464,8 +468,10 @@ send_challenge(radreq, msg, state, fd)
 		sin->sin_addr.s_addr = htonl(radreq->ipaddr);
 		sin->sin_port = htons(radreq->udp_port);
 
+#ifndef DEBUG_ONLY
 		sendto(fd, pdu, length, 0,
 		       &saremote, sizeof(struct sockaddr_in));
+#endif
 		efree(pdu);
 	}
 	avp_free(p);
@@ -642,6 +648,13 @@ radrecv(host, udp_port, buffer, length)
 	}
 
         radreq->request = first_pair;
+#ifdef DEBUG_ONLY
+        {
+                VALUE_PAIR *p = avl_find(radreq->request, DA_NAS_IP_ADDRESS);
+                if (p)
+                        radreq->ipaddr = p->lvalue;
+        }
+#endif
         return radreq;
 }
 

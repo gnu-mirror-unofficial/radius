@@ -9,56 +9,6 @@ radctl - Radius daemon control interface
 \fBradctl\fR \fB-h\fR
 
 .SH DESCRIPTION
-This command is a control interface to \fBradiusd\fR daemon. It allows
-administrator to query it about various aspects of its work and issue
-administrative commands to it. 
-
-\fBRadctl\fR communicates with radius using either a regular
-UNIX-style signal interface or a special UDP control channel.
-
-.SH OPTIONS
-.IP "-s, --signal"
-Use UNIX-style signal interface. This option is retained fo compatibility
-with previous versions of radctl.
-
-.IP "-h, --help"
-Display short usage help and exit.
-
-.SH COMMANDS
-
-.IP start
-Start the \fBradiusd\fR server. Any surplus arguments after \fBstart\fR
-command are passed as a command line to the server.
-.IP stop
-Shut down running \fBradiusd\fR server.
-.IP restart
-Restart running \fBradiusd\fR server, i.e. shut it down and start again.
-.IP reload
-Force \fBradiusd\fR server to reload its configuration files.
-.IP status
-Tell \fBradiusd\fR to dump its memory usage information to log channel
-\fBinfo\fR.
-.IP which
-Determine if the server is running. If so, display its status on the
-standard output and return to the shell with 0 exit code. Otherwise,
-return to the shell with 1 exit code. 
-.IP dumpdb
-Tell \fBradiusd\fR to dump its user database, i.e. the parsed
-contents of files \fBhints\fR, \fBhuntgroups\fR and \fBusers\fR
-from the \fB\*(RD\fR directory to disk file. The filename is
-\fR\*(RL/radius.parse\fB.
-
-.SH FILES
-.IP \fR\*(RP/radius.pid
-Keeps the PID of the running \fBradiusd\fR process.
-
-.SH BUGS
-The information in this manpage may be obsolete or incomplete. Please
-refer to texinfo documentation for full information about GNU Radius
-tools.
-
+.De radctl
 .SH AUTHORS
 \*(AU
-
-.SH SEE ALSO
-radiusd(8rad)

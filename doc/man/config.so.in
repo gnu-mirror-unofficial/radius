@@ -1,5 +1,15 @@
 .ds RD @ETC_DIR@/raddb
 .ds RL @RADLOG_DIR@
 .ds RP @RADPID_DIR@
-.ds AU Sergey Poznyakoff \fB<\fRgray@Mirddin.farlep.net\fB>\fR
+.ds AU Sergey Poznyakoff \fB<\fRgray@gnu.org\fB>\fR
 .ds DA December 27, 2001
+.de De
+GNU Radius tools are fully documented in the texinfo documentation.
+To access the help from your command line, type
+.PP
+\fBinfo \\$1\fR
+.PP
+The online copy of the documentation is available at the following address:
+.PP
+http://www.gnu.org/software/radius/manual.
+..

@@ -8,12 +8,7 @@ radping - send ICMP ECHO_REQUEST packets to a dial-up host.
 \fBradping\fR username
 
 .SH DESCRIPTION
-\fBRadping\fR determines the framed IP address of the given user and
-starts ping(8) utility to send ICMP ECHO_REQUEST packets to this address.
-
+.De radping
 .SH AUTHORS
 \*(AU
-
-.SH SEE ALSO
-radiusd(8rad), radwho(1rad), ping(8)
 

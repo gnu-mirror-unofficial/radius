@@ -405,6 +405,10 @@ match_user(sym, request_pairs, check_pairs, reply_pairs)
 		reply_tmp = paircopy(sym->reply);
 		pairmove(reply_pairs, &reply_tmp);
 		pairmove(check_pairs, &check_tmp);
+#ifdef USE_SQL
+		rad_sql_attr_query(request_pairs, reply_pairs);
+#endif
+
 		pairfree(reply_tmp);
 		pairfree(check_tmp);
 

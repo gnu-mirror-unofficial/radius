@@ -77,6 +77,7 @@ SQL_cfg sql_cfg;
 #define STMT_MAX_AUTH_CONNECTIONS  18
 #define STMT_MAX_ACCT_CONNECTIONS  19
 #define STMT_GROUP_QUERY           20
+#define STMT_ATTR_QUERY            21
 
 static FILE  *sqlfd;
 static int line_no;
@@ -99,6 +100,7 @@ struct keyword sql_keyword[] = {
 	"acct_db",            STMT_ACCT_DB,
 	"auth_query",         STMT_AUTH_QUERY,
 	"group_query",        STMT_GROUP_QUERY,
+	"attr_query",         STMT_ATTR_QUERY, 
 	"acct_start_query",   STMT_ACCT_START_QUERY,
 	"acct_stop_query",    STMT_ACCT_STOP_QUERY,
 	"acct_alive_query",   STMT_ACCT_KEEPALIVE_QUERY,
@@ -456,6 +458,10 @@ rad_sql_init()
 			new_cfg.acct_nasdown_query = estrdup(cur_ptr);
 			break;
 			
+		case STMT_ATTR_QUERY:
+			new_cfg.attr_query = estrdup(cur_ptr);
+			break;
+
 		case STMT_QUERY_BUFFER_SIZE:
 			bufsize = strtol(cur_ptr, &ptr, 0);
 			if (*ptr != 0 && !isspace(*ptr)) {
@@ -489,6 +495,7 @@ rad_sql_init()
 	FREE(sql_cfg.acct_nasup_query);
 	FREE(sql_cfg.acct_nasdown_query);
 	FREE(sql_cfg.acct_keepalive_query);
+	FREE(sql_cfg.attr_query);
 	FREE(sql_cfg.buf.ptr);
 
 	/* copy new config */
@@ -1110,5 +1117,61 @@ rad_sql_checkgroup(req, groupname)
 	
 	return rc;
 }
+
+int
+rad_sql_attr_query(request_pairs, reply_pairs)
+         VALUE_PAIR	*request_pairs;
+         VALUE_PAIR	**reply_pairs;
+{
+	struct sql_connection	*conn;
+	void			*data;
+	char			*attribute;
+	char			*value;
+	char			*cols_array[2];
+	VALUE_PAIR		*pair;
+	int			i;
+	qid_t                   qid;
+
+	if (!sql_cfg.attr_query)
+		return 0;
+	
+	if ((pair = pairfind(request_pairs, DA_QUEUE_ID)) == NULL) {
+		/* this should never happen, but just in case... */
+		radlog(L_ERR, "No queue ID in request");
+		return -1;
+	}
+	qid = (qid_t)pair->lvalue;
+	conn = attach_sql_connection(SQL_AUTH, qid);
+	
+	radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size, sql_cfg.attr_query,
+		     request_pairs, NULL);
+	
+        data = rad_sql_exec(conn, sql_cfg.buf.ptr);
+	if (!data)
+		return 0;
+	
+        for (i = 0; rad_sql_next_tuple(conn, data) == 0; i++) {
+                if ((attribute = rad_sql_column(data,0)) == NULL ||
+                    (value = rad_sql_column(data, 1)) == NULL) {
+                        break;
+                }
+                chop(attribute);
+		chop(value);
+
+		pair = install_pair(attribute, PW_OPERATOR_EQUAL, value);
+ 
+                if (pair)
+                        pairlistadd(reply_pairs, pair);
+        }
+ 
+        rad_sql_free(conn, data);
+ 
+        if (!sql_cfg.keepopen) 
+                unattach_sql_connection(SQL_AUTH, qid);
+
+	return i == 0;
+}
+
+
 
 #endif

@@ -246,7 +246,6 @@ catch_body(void *data)
 	scm_init_load_path();
 	grad_scm_init();
 	rscm_server_init();
-	scheme_debug(1);
 	scheme_load_module("radiusd");
 	radiusd_main();
 	return SCM_BOOL_F;

@@ -45,7 +45,8 @@ radxmalloc(size_t size)
 
         p = malloc(size + EXTRA);
 
-        debug(10, ("malloc(%d) = %p", size, p));
+	if (debug_on(10)) 
+		printf("malloc(%d) = %p\n", size, p);
         
         if (p) {
 #ifdef LEAK_DETECTOR
@@ -131,9 +132,11 @@ efree(void *ptr)
         mallocstat.size -= mhdr->s.size;
         mallocstat.count--;
         
-        debug(10, ("free(%p) %d bytes", mhdr, mhdr->s.size));
+        if (debug_on(10))
+		printf("free(%p) %d bytes\n", mhdr, mhdr->s.size);
 #else
-        debug(10, ("free(%p)", ptr));
+        if (debug_on(10))
+		printf("free(%p)\n", ptr);
 #endif
         free(ptr);
 }

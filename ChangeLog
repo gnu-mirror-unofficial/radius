@@ -1,3 +1,14 @@
+2003-12-16  Sergey Poznyakoff
+
+	* configure.ac: Minor change
+	* radiusd/testsuite/proxy/dictionary.in: Added PROPERTY
+	declaration for Cisco-AVPair
+	* radiusd/testsuite/raddb/dictionary.in: Added final newline.
+	* radiusd/testsuite/raddb/users.in (vsa-propagation): New
+	profile
+	* radiusd/testsuite/radiusd/proxy.exp: Test propagation of
+	VSA attributes.
+
 2003-12-15  Sergey Poznyakoff 
 
 	* raddb/dict/compat: Fixed indentation

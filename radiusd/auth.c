@@ -188,215 +188,6 @@ unix_pass(char *name, char *passwd)
         return 0;
 }
 
-
-/* Check password. */
-static enum auth_status 
-rad_check_password(grad_request_t *radreq, grad_avp_t *check_item,
-                   grad_avp_t *namepair, char **user_msg,
-		   char *userpass,
-		   time_t *exp)
-{
-        char *ptr;
-        char *real_password = NULL;
-        char name[AUTH_STRING_LEN];
-        grad_avp_t *auth_item;
-        grad_avp_t *tmp;
-        int auth_type = -1;
-        int length;
-        enum auth_status result = auth_ok;
-        char *authdata = NULL;
-        char pw_digest[AUTH_VECTOR_LEN];
-        int pwlen;
-        char *pwbuf;
-        char *challenge;
-	int challenge_len;
-	
-        userpass[0] = 0;
-
-        /* Process immediate authentication types */
-        if ((tmp = grad_avl_find(check_item, DA_AUTH_TYPE)) != NULL)
-                auth_type = tmp->avp_lvalue;
-
-	switch (auth_type) {
-	case DV_AUTH_TYPE_ACCEPT:
-                return auth_ok;
-
-	case DV_AUTH_TYPE_REJECT:
-                return auth_reject;
-
-	case DV_AUTH_TYPE_IGNORE:
-		return auth_ignore;
-	}
-
-        /* Find the password sent by the user. If it's not present,
-           authentication fails. */
-        
-        if (auth_item = grad_avl_find(radreq->request, DA_CHAP_PASSWORD))
-                auth_type = DV_AUTH_TYPE_LOCAL;
-        else
-                auth_item = grad_avl_find(radreq->request, DA_USER_PASSWORD);
-        
-        /* Decrypt the password. */
-        if (auth_item) {
-                if (auth_item->avp_strlength == 0)
-                        userpass[0] = 0;
-                else
-                        req_decrypt_password(userpass, radreq,
-                                             auth_item);
-        } else /* if (auth_item == NULL) */
-                return auth_fail;
-        
-        /* Set up authentication data */
-        if ((tmp = grad_avl_find(check_item, DA_AUTH_DATA)) != NULL) 
-                authdata = tmp->avp_strvalue;
-
-        /* Find the 'real' password */
-        tmp = grad_avl_find(check_item, DA_USER_PASSWORD);
-        if (tmp)
-                real_password = grad_estrdup(tmp->avp_strvalue);
-        else if (tmp = grad_avl_find(check_item, DA_PASSWORD_LOCATION)) {
-                switch (tmp->avp_lvalue) {
-                case DV_PASSWORD_LOCATION_SQL:
-#ifdef USE_SQL
-                        real_password = rad_sql_pass(radreq, authdata);
-                        if (!real_password)
-                                return auth_nouser;
-                        break;
-#endif
-                /* NOTE: add any new location types here */
-                default:
-                        grad_log(L_ERR,
-                                 _("unknown Password-Location value: %ld"),
-                                 tmp->avp_lvalue);
-                        return auth_fail;
-                }
-        }
-
-        /* Process any prefixes/suffixes. */
-        strip_username(1, namepair->avp_strvalue, check_item, name);
-
-        debug(1,
-                ("auth_type=%d, userpass=%s, name=%s, password=%s",
-                 auth_type, userpass, name,
-                 real_password ? real_password : "NONE"));
-
-        switch (auth_type) {
-        case DV_AUTH_TYPE_SYSTEM:
-                debug(1, ("  auth: System"));
-                if (unix_pass(name, userpass) != 0)
-                        result = auth_fail;
-		else
-			result = unix_expiration(name, exp);
-                break;
-		
-        case DV_AUTH_TYPE_PAM:
-#ifdef USE_PAM
-                debug(1, ("  auth: Pam"));
-                /* Provide defaults for authdata */
-                if (authdata == NULL &&
-                    (tmp = grad_avl_find(check_item, DA_PAM_AUTH)) != NULL) {
-                        authdata = tmp->avp_strvalue;
-                }
-                authdata = authdata ? authdata : PAM_DEFAULT_TYPE;
-                if (pam_pass(name, userpass, authdata, user_msg) != 0)
-                        result = auth_fail;
-#else
-                grad_log_req(L_ERR, radreq,
-                             _("PAM authentication not available"));
-                result = auth_nouser;
-#endif
-                break;
-
-        case DV_AUTH_TYPE_CRYPT_LOCAL:
-                debug(1, ("  auth: Crypt"));
-                if (real_password == NULL) {
-                        result = auth_fail;
-                        break;
-                }
-                pwlen = strlen(real_password)+1;
-                pwbuf = grad_emalloc(pwlen);
-                if (!grad_md5crypt(userpass, real_password, pwbuf, pwlen))
-                        result = auth_fail;
-                else if (strcmp(real_password, pwbuf) != 0)
-                        result = auth_fail;
-                debug(1,("pwbuf: %s", pwbuf));
-                grad_free(pwbuf);
-                break;
-                
-        case DV_AUTH_TYPE_LOCAL:
-                debug(1, ("  auth: Local"));
-                /* Local password is just plain text. */
-                if (auth_item->attribute != DA_CHAP_PASSWORD) {
-                        if (real_password == NULL ||
-                            strcmp(real_password, userpass) != 0)
-                                result = auth_fail;
-                        break;
-                }
-
-                /* CHAP: RFC 2865, page 7
-		   The RADIUS server looks up a password based on the
-		   User-Name, encrypts the challenge using MD5 on the
-		   CHAP ID octet, that password, and the CHAP challenge 
-		   (from the CHAP-Challenge attribute if present,
-		   otherwise from the Request Authenticator), and compares
-		   that result to the CHAP-Password.  If they match, the
-		   server sends back an Access-Accept, otherwise it sends
-		   back an Access-Reject. */
-
-		/* Provide some userpass in case authentication fails */
-                strcpy(userpass, "{chap-password}");
-		
-                if (real_password == NULL) {
-                        result = auth_fail;
-                        break;
-                }
-
-		/* Compute the length of the password buffer and
-		   allocate it */
-                length = strlen(real_password);
-		
-                if (tmp = grad_avl_find(radreq->request, DA_CHAP_CHALLENGE)) {
-                        challenge = tmp->avp_strvalue;
-                        challenge_len = tmp->avp_strlength;
-                } else {
-                        challenge = radreq->vector;
-                        challenge_len = AUTH_VECTOR_LEN;
-                }
-
-                pwlen = 1 + length + challenge_len;
-		pwbuf = grad_emalloc(pwlen);
-		
-                ptr = pwbuf;
-                *ptr++ = *auth_item->avp_strvalue;
-                memcpy(ptr, real_password, length);
-                ptr += length;
-                memcpy(ptr, challenge, challenge_len);
-
-		/* Compute the MD5 hash */
-                grad_md5_calc(pw_digest, (u_char*) pwbuf, pwlen);
-                grad_free(pwbuf);
-		
-                /* Compare them */
-                if (memcmp(pw_digest, auth_item->avp_strvalue + 1,
-			   CHAP_VALUE_LENGTH) != 0)
-                        result = auth_fail;
-                else
-                        strcpy(userpass, real_password);
-                break;
-		
-        default:
-                result = auth_fail;
-                break;
-        }
-
-        if (real_password) {
-                /* just in case: */
-                memset(real_password, 0, strlen(real_password)); 
-                grad_free(real_password);
-        }
-        return result;
-}
-
 int
 rad_auth_check_username(grad_request_t *radreq, int activefd)
 {
@@ -634,6 +425,216 @@ auth_finish_msg(AUTH_MACH *m)
                             m->req, m->user_reply);
 }
 
+/* Check password. */
+static enum auth_status 
+rad_check_password(grad_request_t *radreq, AUTH_MACH *m, time_t *exp)
+{
+        char *ptr;
+        char *real_password = NULL;
+        char name[AUTH_STRING_LEN];
+        grad_avp_t *auth_item;
+        grad_avp_t *tmp;
+        int auth_type = -1;
+        int length;
+        enum auth_status result = auth_ok;
+        char *authdata = NULL;
+        char pw_digest[AUTH_VECTOR_LEN];
+        int pwlen;
+        char *pwbuf;
+        char *challenge;
+	int challenge_len;
+	
+        m->userpass[0] = 0;
+
+        /* Process immediate authentication types */
+        if ((tmp = grad_avl_find(m->user_check, DA_AUTH_TYPE)) != NULL)
+                auth_type = tmp->avp_lvalue;
+
+	switch (auth_type) {
+	case DV_AUTH_TYPE_ACCEPT:
+                return auth_ok;
+
+	case DV_AUTH_TYPE_REJECT:
+                return auth_reject;
+
+	case DV_AUTH_TYPE_IGNORE:
+		return auth_ignore;
+	}
+
+        /* Find the password sent by the user. If it's not present,
+           authentication fails. */
+        
+        if (auth_item = grad_avl_find(radreq->request, DA_CHAP_PASSWORD))
+                auth_type = DV_AUTH_TYPE_LOCAL;
+        else
+                auth_item = grad_avl_find(radreq->request, DA_USER_PASSWORD);
+        
+        /* Decrypt the password. */
+        if (auth_item) {
+                if (auth_item->avp_strlength == 0)
+                        m->userpass[0] = 0;
+                else
+                        req_decrypt_password(m->userpass, radreq,
+                                             auth_item);
+        } else /* if (auth_item == NULL) */
+                return auth_fail;
+        
+        /* Set up authentication data */
+        if ((tmp = grad_avl_find(m->user_check, DA_AUTH_DATA)) != NULL) 
+                authdata = tmp->avp_strvalue;
+
+        /* Find the 'real' password */
+        tmp = grad_avl_find(m->user_check, DA_USER_PASSWORD);
+        if (tmp)
+                real_password = grad_estrdup(tmp->avp_strvalue);
+        else if (tmp = grad_avl_find(m->user_check, DA_PASSWORD_LOCATION)) {
+                switch (tmp->avp_lvalue) {
+                case DV_PASSWORD_LOCATION_SQL:
+#ifdef USE_SQL
+                        real_password = rad_sql_pass(radreq, authdata);
+                        if (!real_password)
+                                return auth_nouser;
+			grad_avl_add_pair(&m->user_check,
+					  grad_avp_create_string(DA_USER_PASSWORD, real_password));
+                        break;
+#endif
+                /* NOTE: add any new location types here */
+                default:
+                        grad_log(L_ERR,
+                                 _("unknown Password-Location value: %ld"),
+                                 tmp->avp_lvalue);
+                        return auth_fail;
+                }
+        }
+
+        /* Process any prefixes/suffixes. */
+        strip_username(1, m->namepair->avp_strvalue, m->user_check, name);
+
+        debug(1,
+	      ("auth_type=%d, userpass=%s, name=%s, password=%s",
+	       auth_type, m->userpass, name,
+	       real_password ? real_password : "NONE"));
+
+        switch (auth_type) {
+        case DV_AUTH_TYPE_SYSTEM:
+                debug(1, ("  auth: System"));
+                if (unix_pass(name, m->userpass) != 0)
+                        result = auth_fail;
+		else
+			result = unix_expiration(name, exp);
+                break;
+		
+        case DV_AUTH_TYPE_PAM:
+#ifdef USE_PAM
+                debug(1, ("  auth: Pam"));
+                /* Provide defaults for authdata */
+                if (authdata == NULL &&
+                    (tmp = grad_avl_find(m->user_check, DA_PAM_AUTH)) != NULL) {
+                        authdata = tmp->avp_strvalue;
+                }
+                authdata = authdata ? authdata : PAM_DEFAULT_TYPE;
+                if (pam_pass(name, m->userpass, authdata, &m->user_msg) != 0)
+                        result = auth_fail;
+#else
+                grad_log_req(L_ERR, radreq,
+                             _("PAM authentication not available"));
+                result = auth_nouser;
+#endif
+                break;
+
+        case DV_AUTH_TYPE_CRYPT_LOCAL:
+                debug(1, ("  auth: Crypt"));
+                if (real_password == NULL) {
+                        result = auth_fail;
+                        break;
+                }
+                pwlen = strlen(real_password)+1;
+                pwbuf = grad_emalloc(pwlen);
+                if (!grad_md5crypt(m->userpass, real_password, pwbuf, pwlen))
+                        result = auth_fail;
+                else if (strcmp(real_password, pwbuf) != 0)
+                        result = auth_fail;
+                debug(1,("pwbuf: %s", pwbuf));
+                grad_free(pwbuf);
+                break;
+                
+        case DV_AUTH_TYPE_LOCAL:
+                debug(1, ("  auth: Local"));
+                /* Local password is just plain text. */
+                if (auth_item->attribute != DA_CHAP_PASSWORD) {
+                        if (real_password == NULL ||
+                            strcmp(real_password, m->userpass) != 0)
+                                result = auth_fail;
+                        break;
+                }
+
+                /* CHAP: RFC 2865, page 7
+		   The RADIUS server looks up a password based on the
+		   User-Name, encrypts the challenge using MD5 on the
+		   CHAP ID octet, that password, and the CHAP challenge 
+		   (from the CHAP-Challenge attribute if present,
+		   otherwise from the Request Authenticator), and compares
+		   that result to the CHAP-Password.  If they match, the
+		   server sends back an Access-Accept, otherwise it sends
+		   back an Access-Reject. */
+
+		/* Provide some userpass in case authentication fails */
+                strcpy(m->userpass, "{chap-password}");
+		
+                if (real_password == NULL) {
+                        result = auth_fail;
+                        break;
+                }
+
+		/* Compute the length of the password buffer and
+		   allocate it */
+                length = strlen(real_password);
+		
+                if (tmp = grad_avl_find(radreq->request, DA_CHAP_CHALLENGE)) {
+                        challenge = tmp->avp_strvalue;
+                        challenge_len = tmp->avp_strlength;
+                } else {
+                        challenge = radreq->vector;
+                        challenge_len = AUTH_VECTOR_LEN;
+                }
+
+                pwlen = 1 + length + challenge_len;
+		pwbuf = grad_emalloc(pwlen);
+		
+                ptr = pwbuf;
+                *ptr++ = *auth_item->avp_strvalue;
+                memcpy(ptr, real_password, length);
+                ptr += length;
+                memcpy(ptr, challenge, challenge_len);
+
+		/* Compute the MD5 hash */
+                grad_md5_calc(pw_digest, (u_char*) pwbuf, pwlen);
+                grad_free(pwbuf);
+		
+                /* Compare them */
+                if (memcmp(pw_digest, auth_item->avp_strvalue + 1,
+			   CHAP_VALUE_LENGTH) != 0)
+                        result = auth_fail;
+                else
+                        strcpy(m->userpass, real_password);
+                break;
+		
+        default:
+		/* Try loadable modules. */
+		result = scheme_try_auth(auth_type, radreq,
+					 m->user_check,
+					 &m->user_reply) ?  auth_fail : auth_ok;
+                break;
+        }
+
+        if (real_password) {
+                /* just in case: */
+                memset(real_password, 0, strlen(real_password)); 
+                grad_free(real_password);
+        }
+        return result;
+}
+
 /* Check if account has expired, and if user may login now. */
 enum auth_status 
 radius_check_expiration(AUTH_MACH *m, time_t *exp)
@@ -844,11 +845,7 @@ sfn_validate(AUTH_MACH *m)
 	time_t exp;
 	grad_avp_t *pair;
 	
-	rc = rad_check_password(radreq,
-				m->user_check, m->namepair,
-				&m->user_msg,
-				m->userpass,
-				&exp);
+	rc = rad_check_password(radreq, m, &exp);
 
 	if (rc == auth_ok) 
 		rc = radius_check_expiration(m, &exp);

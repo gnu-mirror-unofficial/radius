@@ -10,6 +10,7 @@ config.h
 libtool
 config.cache
 config.status
+config.rpath
 stamp-h
 stamp-h1
 *.tar.gz

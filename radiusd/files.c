@@ -805,7 +805,7 @@ hints_setup(req)
                 /* Is the rewrite function specified? */
                 if ((tmp = avl_find(i->rhs, DA_REWRITE_FUNCTION))
                     || (tmp = avl_find(i->lhs, DA_REWRITE_FUNCTION))) {
-                        if (run_rewrite(tmp->strvalue, request_pairs)) {
+                        if (run_rewrite(tmp->strvalue, req)) {
                                 radlog(L_ERR, "hints:%d: %s(): %s",
                                        i->lineno,
                                        tmp->strvalue,
@@ -903,7 +903,7 @@ huntgroup_access(radreq)
 #ifdef DA_REWRITE_FUNCTION
         if (pl &&
             (pair = avl_find(pl->lhs, DA_REWRITE_FUNCTION)) != NULL) {
-                if (run_rewrite(pair->strvalue, radreq->request)) {
+                if (run_rewrite(pair->strvalue, radreq)) {
                         radlog(L_ERR, "huntgroups:%d: %s(): %s",
                                pl->lineno,
                                pair->strvalue,

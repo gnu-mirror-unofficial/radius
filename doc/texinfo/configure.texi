@@ -80,7 +80,6 @@ These are the basic statements:
 * logging::     Fine-tune the logging.
 * auth::        Configure authentication service.
 * acct::        Configure accounting service.
-* proxy::       Configure proxy service.
 * usedbm::      Enable the DBM feature.
 * snmp::        Configure SNMP service.
 * rewrite::     Configure Rewrite interface.
@@ -607,39 +606,6 @@ The argument to this statement is a character from @samp{1} through
 @samp{9}. This statement modifies the request comparison method for
 authentication requests. @xref{Extended Comparison}, for a detailed
 description of its usage.
-
-@end table
-
-@comment **L3***************************************************************
-@node proxy
-@subsection @code{proxy} statement
-@cindex Proxy service parameters
-@cindex Customizing proxy server
-@kwindex proxy
-@kwindex max-requests 
-@kwindex request-cleanup-delay 
-
-@subheading Syntax:
-@smallexample
-proxy @{
-        [ max-requests @var{number} ; ]
-        [ request-cleanup-delay @var{number} ; ]
-@} ;
-@end smallexample
-
-@subheading Usage:
-The @code{proxy} statement configures the parameters of the proxy service.
-
-@subheading Numeric statements
-
-@table @code
-@item max-requests
-Sets the maximum number of accounting requests in the queue. Any
-surplus requests will be discarded.
-
-@item request-cleanup-delay
-Sets the request cleanup delay in seconds, i.e. determines how long will
-the completed account request reside in the queue.
 
 @end table
 

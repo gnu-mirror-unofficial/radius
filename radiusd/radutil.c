@@ -85,7 +85,7 @@ obstack_grow_escaped(struct obstack *obp, char *str, int len)
  */
 static void
 attr_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
-            grad_dict_attr_t  *attr, char *defval, int escape_strings)
+            grad_dict_attr_t  *attr, char *defval, int escape)
 {
         grad_avp_t *pair;
         int len;
@@ -164,17 +164,29 @@ attr_to_str(struct obstack *obp, grad_request_t *req, grad_avp_t *pairlist,
 			/* strvalue might include terminating zero
 			   character, so we need to recalculate it */
 			len = strlen(str);
-		if (escape_strings)
+		if (escape)
 			obstack_grow_escaped(obp, str, len);
 		else
 			obstack_grow(obp, str, len);
                 break;
 		
         case TYPE_INTEGER:
-                snprintf(tmp, sizeof(tmp), "%lu", pair->avp_lvalue);
-                len = strlen(tmp);
-                obstack_grow(obp, tmp, len);
-                break;
+	{
+		grad_dict_value_t *dval;
+		
+                if (escape && (pair->prop & AP_TRANSLATE))
+                        dval = grad_value_lookup(pair->avp_lvalue, pair->name);
+                else
+                        dval = NULL;
+                
+                if (!dval) {
+			snprintf(tmp, sizeof(tmp), "%lu", pair->avp_lvalue);
+			len = strlen(tmp);
+			obstack_grow(obp, tmp, len);
+		} else 
+			obstack_grow(obp, dval->name, strlen (dval->name));
+		break;
+	}
 		
         case TYPE_IPADDR:
                 grad_ip_iptostr(pair->avp_lvalue, tmp);

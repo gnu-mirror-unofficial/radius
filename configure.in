@@ -12,7 +12,7 @@
 AC_REVISION($Revision$)
 AC_INIT(radiusd/radiusd.c)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(gnu-radius, 0.94.4)
+AM_INIT_AUTOMAKE(gnu-radius, 0.94.5)
 AM_CONFIG_HEADER(config.h)
 AM_MAINTAINER_MODE
 
@@ -100,7 +100,7 @@ AC_CHECK_HEADERS(fcntl.h malloc.h strings.h\
  sys/file.h sys/time.h sys/types.h unistd.h\
  ctype.h sys/socket.h netinet/in.h arpa/inet.h\
  netdb.h stdarg.h varargs.h termcap.h termios.h termio.h sgtty.h\
- crypt.h sys/uio.h sys/select.h sys/resources.h)
+ crypt.h sys/uio.h sys/select.h sys/resources.h getopt.h)
 
 ## * Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST

@@ -584,6 +584,32 @@ ext_check(struct check_instance *checkp, grad_nas_t *nas)
 }
 
 int
+guile_check(struct check_instance *checkp, grad_nas_t *nas)
+{
+	char *s, *expr;
+	int rc;
+	
+	s = slookup(checkp, "expr", NULL);
+	if (!s) {
+                grad_log(L_ERR, _("expr variable not set"));
+                return -1;
+	}
+	expr = checkrad_xlat_new(checkp, s);
+	if (!expr) /* The diagnostics has already been issued */
+		return -1;
+
+	rc = scheme_eval_boolean_expr(expr);
+	switch (rc) {
+	case 0:
+	case 1:
+		return rc;
+	default:
+		return -1;
+	}
+        return -1;
+}
+
+int
 checkrad(grad_nas_t *nas, struct radutmp *up)
 {
         struct check_instance checkp;
@@ -602,6 +628,9 @@ checkrad(grad_nas_t *nas, struct radutmp *up)
         case METHOD_EXT:
                 rc = ext_check(&checkp, nas);
                 break;
+	case METHOD_GUILE:
+		rc = guile_check(&checkp, nas);
+		break;
         default:
                 grad_insist_fail("bad method");
         }

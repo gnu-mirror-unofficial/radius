@@ -92,8 +92,8 @@ static REQUEST		*first_request;
  * This flag was used to block the asynchronous access to the request
  * queue. 
  * Now all the list fiddling is done synchronously but I prefere to keep
- * the request_list_[un]block placeholders around. They could be needed
- * when I at last write a multi-threaded version.
+ * the request_list_[un]block placeholders around. They could come handy
+ * with the multi-threaded version some time.
  */
 #if 0
  static int		request_list_busy = 0;
@@ -159,7 +159,7 @@ serv_stat saved_status;
 #endif
 
 Config config = {
-	10,              /* delayed_hup_wait */
+	10,              /* FIXME: delayed_hup_wait */
 	1,               /* checkrad_assume_logged */
 	MAX_REQUESTS,    /* maximum number of requests */
 	NULL,            /* exec_program_user */
@@ -182,25 +182,12 @@ static int i_recv_buffer[RAD_BUFFER_SIZE];
 static u_char *recv_buffer = (u_char *)i_recv_buffer;
 
 pth_t radius_pid; /* The PID of the main process */
-
-/* This flag signals that there is a need to sweep out the dead children,
-   and clean up the request structures associated with them. */
-static int need_child_cleanup = 0;
-#define schedule_child_cleanup()  need_child_cleanup = 1
-#define clear_child_cleanup()     need_child_cleanup = 0
-
-static void rad_child_cleanup();
+pth_attr_t thread_attr;
 
 static int need_reload = 0;  /* the reload of the configuration is needed */
 static int need_restart = 0; /* try to restart ourselves when set to 1 */
 
 static void check_reload();
-
-/* Keeps the timestamp of the last USR2 signal. The need_reload flag gets
-   raised when time(NULL) - delayed_hup_time >= config.delayed_hup_wait.
-   This allows for buffering re-configuration requests. */
-static time_t delayed_hup_time = 0;
-
 
 static void set_config_defaults();
 static void usage(void);
@@ -208,7 +195,6 @@ void rad_exit(int);
 static RETSIGTYPE sig_fatal (int);
 static RETSIGTYPE sig_hup (int);
 static RETSIGTYPE sig_usr1 (int);
-static RETSIGTYPE sig_usr2 (int);
 static RETSIGTYPE sig_dumpdb (int);
 
 static int radrespond (RADIUS_REQ *, int);
@@ -389,10 +375,9 @@ main(argc, argv)
 	
 	signal(SIGHUP, sig_hup);
 	signal(SIGUSR1, sig_usr1);
-	signal(SIGUSR2, sig_usr2);
 	signal(SIGQUIT, sig_fatal);
 	signal(SIGTERM, sig_fatal);
-	signal(SIGCHLD, sig_cleanup);
+	signal(SIGCHLD, SIG_IGN);
 	signal(SIGBUS, sig_fatal);
 	signal(SIGTRAP, sig_fatal);
 	signal(SIGFPE, sig_fatal);
@@ -432,6 +417,8 @@ main(argc, argv)
 	}
 
 	radius_pid = pth_self();
+	thread_attr = pth_attr_new();
+	pth_attr_set(thread_attr, PTH_ATTR_JOINABLE, FALSE);
 
 #ifdef USE_SERVER_GUILE
 	start_guile();
@@ -549,7 +536,6 @@ rad_main(extra_arg)
 	radlog(L_INFO, _("Ready to process requests."));
 
 	for(;;) {
-		rad_child_cleanup();
 		check_reload();
 		rad_sql_idle_check(); 
 		rad_select();
@@ -630,8 +616,6 @@ rad_select()
 	fd_set readfds;
 	struct socket_list *ctl;
 	struct timeval tv;
-	static pth_key_t ev_key = PTH_KEY_INIT;
-	pth_event_t evt;
 	
 	pth_yield(NULL);
 	
@@ -642,12 +626,7 @@ rad_select()
 	for (ctl = socket_first; ctl; ctl = ctl->next) 
 		FD_SET(ctl->fd, &readfds);
 
-	evt = pth_event(PTH_EVENT_TID|PTH_UNTIL_TID_DEAD|PTH_MODE_STATIC,
-			&ev_key, NULL);
-	
-	status = pth_select_ev(max_fd, &readfds, NULL, NULL, &tv, evt);
-	if (pth_event_occurred(evt))
-		schedule_child_cleanup();
+	status = pth_select(max_fd, &readfds, NULL, NULL, &tv);
 
 	if (status == -1) {
 		if (errno == EINTR) 
@@ -750,7 +729,7 @@ snmp_respond(fd, sa, salen, buf, size)
 	
 	if (req = rad_snmp_respond(buf, size, sin)) {
 		req->fd = fd;
-		if (!pth_spawn(PTH_ATTR_DEFAULT, snmp_respond0, req)) {
+		if (!pth_spawn(thread_attr, snmp_respond0, req)) {
 			radlog(L_ERR|L_PERROR, _("Can't spawn new thread"));
 			return -1;
 		}
@@ -882,12 +861,6 @@ check_reload()
 	if (need_restart)
 		rad_restart();
 	
-	if (delayed_hup_time &&
-	    time(NULL) - delayed_hup_time >= config.delayed_hup_wait) {
-		delayed_hup_time = 0;
-		need_reload = 1;
-	}
-			
 	if (need_reload) {
 		reread_config(1);
 		need_reload = 0;
@@ -982,7 +955,7 @@ radrespond(radreq, activefd)
 	radreq->fd = activefd;
 
 	if (spawn_flag) {
-		if (!pth_spawn(PTH_ATTR_DEFAULT, radrespond0, radreq)) {
+		if (!pth_spawn(thread_attr, radrespond0, radreq)) {
 			radlog(L_ERR|L_PERROR, _("Can't spawn new thread"));
 			return -1;
 		}
@@ -1145,6 +1118,16 @@ scan_request_list(type, handler, closure)
 	return NULL;
 }
 
+void
+rad_cleanup_thread(arg)
+	void *arg;
+{
+	REQUEST *curreq = arg;
+	curreq->child_pid = NULL;
+	curreq->timestamp = time(NULL);
+	request_cleanup(curreq->type, curreq->data);
+}
+
 /* Handle the incoming request. This function also
    cleans up complete child requests, and verifies that there
    is only one process responding to each request (duplicate
@@ -1171,6 +1154,23 @@ rad_handle_request(type, data, activefd)
 	request_list_block();
 
 	while (curreq != NULL) {
+
+		if (curreq->child_pid) {
+			pth_attr_t attr;
+			pth_state_t state;
+		
+			attr = pth_attr_of(curreq->child_pid);
+			pth_attr_get(attr, PTH_ATTR_STATE, &state);
+
+			if (state == PTH_STATE_DEAD) {
+				debug(1, ("thread %p has finished",
+					  curreq->child_pid));
+				curreq->child_pid = NULL;
+				curreq->timestamp = time(NULL);
+				request_cleanup(curreq->type, curreq->data);
+			}
+		}
+		
 		if (curreq->child_pid == NULL
 		    && curreq->timestamp + 
 		        request_class[curreq->type].cleanup_delay <= curtime) {
@@ -1204,7 +1204,6 @@ rad_handle_request(type, data, activefd)
 				request_drop(type, data,
 					     _("duplicate request"));
 			request_list_unblock();
-			schedule_child_cleanup();
 
 			return;
 		} else {
@@ -1248,7 +1247,6 @@ rad_handle_request(type, data, activefd)
 				     _("too many requests in queue"));
 		
 			request_list_unblock();
-			schedule_child_cleanup();
 			/*FIXME: radreq_free*/
 			return;
 		}
@@ -1259,7 +1257,6 @@ rad_handle_request(type, data, activefd)
 				     _("too many requests of this type"));
 
 			request_list_unblock();
-			schedule_child_cleanup();
 			/*FIXME: radreq_free*/		
 			return;
 		}
@@ -1272,7 +1269,6 @@ rad_handle_request(type, data, activefd)
 		request_drop(type, data, _("request setup failed"));
 
 		request_list_unblock();
-		schedule_child_cleanup();
 		/*FIXME: radreq_free*/		
 		return;
 	}
@@ -1311,43 +1307,14 @@ rad_handle_request(type, data, activefd)
 
 	request_list_unblock();
 
+	if (spawn_flag)
+		pth_cleanup_push(rad_cleanup_thread, curreq);
+	
 	/* Finally, handle the request */
 	curreq->child_return = request_class[type].handler(data, activefd);
 	request_cleanup(type, curreq->data);
 	log_close();
 	return;
-}
-
-
-void
-rad_child_cleanup()
-{
-	REQUEST *curreq;
- 
-	if (!need_child_cleanup)
-		return;
-	clear_child_cleanup();
-
-	request_list_block();
-			
-	for (curreq = first_request; curreq; curreq = curreq->next) {
-		pth_attr_t attr;
-		pth_state_t state;
-		
-		if (curreq->child_pid == NULL)
-			continue;
-		
-		attr = pth_attr_of(curreq->child_pid);
-		pth_attr_get(attr, PTH_ATTR_STATE, &state);
-
-		if (state == PTH_STATE_DEAD) {
-			curreq->child_pid = NULL;
-			curreq->timestamp = time(NULL);
-			request_cleanup(curreq->type, curreq->data);
-			break;
-		}
-	}
-	request_list_unblock();
 }
 
 int
@@ -1490,15 +1457,6 @@ rad_req_drop(type, radreq, status_str)
 }
 /* ************************************************************************* */
 
-/*ARGSUSED*/
-RETSIGTYPE
-sig_cleanup(sig)
-	int sig;
-{
-	schedule_child_cleanup();
-	signal(SIGCHLD, sig_cleanup);
-}
-
 /*
  *	Display the syntax for starting this program.
  */
@@ -1577,11 +1535,17 @@ rad_exit(sig)
 int
 rad_flush_queues()
 {
+	static pth_key_t ev_key = PTH_KEY_INIT;
+	pth_event_t evt;
+
+	evt = pth_event(PTH_EVENT_TID|PTH_UNTIL_TID_DEAD|PTH_MODE_STATIC,
+			&ev_key, NULL);
+		
 	/* Flush request queues */
 	radlog(L_NOTICE, _("flushing request queues"));
 
 	while (flush_request_list())
-		rad_child_cleanup();
+		pth_wait(evt);
 
 	return 0;
 }
@@ -1733,17 +1697,6 @@ sig_usr1(sig)
 	flush_request_list();
 	meminfo();
 	signal(SIGUSR1, sig_usr1);
-}
-
-/*ARGSUSED*/
-RETSIGTYPE
-sig_usr2(sig)
-	int sig;
-{
-	radlog(L_INFO, _("got USR2. Reloading configuration in %u sec."),
-	       config.delayed_hup_wait);
-	delayed_hup_time = time(NULL);
-	signal(SIGUSR2, sig_usr2);
 }
 
 /*ARGSUSED*/
@@ -1929,8 +1882,3 @@ test_shell()
 	return 0;
 }
 
-int
-master_process()
-{
- 	return radius_pid == NULL || pth_self() == radius_pid;
-}

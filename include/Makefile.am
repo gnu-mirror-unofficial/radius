@@ -23,3 +23,33 @@ radmibs.h: ../mibs/radmibs.h.in
 lint:;
 
 endif
+
+SUBDIRS=snmp
+
+EXTRA_DIST = \
+checkrad.h \
+display.h \
+getopt1.h \
+log.h \
+md5.h \
+mem.h \
+obstack1.h \
+parser.h \
+radclient.h \
+radctl.h \
+raddbm.h \
+raddict.h \
+radius.h \
+radiusd.h \
+radlast.h \
+radmibs.h \
+radpaths.h \
+radsnmp.h \
+radsql.h \
+radutmp.h \
+radwho.h \
+rewrite.h \
+slist.h \
+symtab.h \
+sysdep.h \
+timestr.h 

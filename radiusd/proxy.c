@@ -136,7 +136,6 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 	}
 	server = list_item(radreq->realm->queue->servers, radreq->server_no);
 
-
 	if (!server) {
 		radlog_req(L_NOTICE, radreq,
 		           _("couldn't send request to realm %s"),
@@ -156,8 +155,7 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 	for (p = plist; p; p = p->next) {
 		if (p->attribute == DA_USER_PASSWORD
 		    || p->attribute == DA_CHAP_PASSWORD)
-			passwd_recode(p, server->secret,
-				      vector, radreq);
+			passwd_recode(p, server->secret, vector, radreq);
 	}
 	
 	/* Add a proxy-pair to the end of the request. */
@@ -187,6 +185,27 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 			      NULL);
 	avl_free(plist);
 
+	if (!radiusd_master()) {
+		RADIUS_UPDATE *upd;
+		size_t size;
+		
+                /* Prepare update data. */
+		size = sizeof(*upd) + strlen(radreq->realm->realm) + 1;
+		upd = emalloc(size);
+		upd->id = radreq->id;
+		upd->proxy_id = radreq->server_id;
+		upd->server_no = radreq->server_no;
+		strcpy(upd->realmname, radreq->realm->realm);
+
+		debug(100,
+		      ("Update id=%d, proxy_id=%d, realm=%s, server_no=%d",
+		       upd->id,upd->proxy_id,upd->realmname,
+		       upd->server_no));
+
+		rpp_update(upd, size);
+		efree(upd);
+	}
+	
 	if (size > 0) {
 		/* Send the request */
 		memset(&sin, 0, sizeof (sin));
@@ -225,7 +244,6 @@ proxy_send(REQUEST *req)
         char *realmname;
         REALM *realm;
         char *what;
-        RADIUS_UPDATE *upd;
 
         /* Look up name. */
         namepair = avl_find(radreq->request, DA_USER_NAME);
@@ -301,17 +319,6 @@ proxy_send(REQUEST *req)
 	
 	proxy_send_request(req->fd, radreq);
 
-	/* Prepare update data. This should follow the proxy_send_request(),
-	   since it creates server_id and server_no */
-	req->update_size = sizeof(*upd) + strlen(realm->realm);
-	upd = emalloc(req->update_size);
-	upd->proxy_id = radreq->server_id;
-	upd->server_no = radreq->server_no;
-	strcpy(upd->realmname, realm->realm);
-	req->update = upd;
-	debug(100, ("Update id=%d, proxy_id=%d, realm=%s, server_no=%d",
-		    radreq->id,upd->proxy_id,upd->realmname,upd->server_no));
-	
         return 1;
 }
 

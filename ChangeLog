@@ -1,5 +1,10 @@
 2003-12-03  Sergey Poznyakoff 
 
+	* raddb/dict/tunnel: Updated
+	* scripts/update-dict.awk: Updated
+
+2003-12-03  Sergey Poznyakoff 
+
 	* Makefile.am (update-dictionary): New rule
 	* raddb/Makefile.am: Likewise
 	* NEWS: Updated

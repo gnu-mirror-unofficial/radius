@@ -148,7 +148,7 @@
 		    ------------------
 
     If you have guile version 1.4 or better installed, you can use
-    session.scm script to send authentication/accounting requests
+    radsession script to send authentication/accounting requests
     to the server. To do so, you will first need to edit your
     raddb/client.conf file. The template installed from the distribution
     will suffice to test the server in default configuration.
@@ -156,14 +156,13 @@
 
     1. To test authentication do
 
-	radscm -s session.scm -l LOGIN -p PASSWD -P PORT-ID --auth
+	radsession -l LOGIN -p PASSWD -P PORT-ID --auth
 
     2. To test accounting do
 
-	radscm -s session.scm -l LOGIN -p PASSWD -P PORT-ID
-               -s SESSION-ID --start
+	radsession -l LOGIN -p PASSWD -P PORT-ID -s SESSION-ID --start
      or
-	radscm -s session.scm -l LOGIN -P PORT-ID -s SESSION-ID --stop
+	radsession -l LOGIN -P PORT-ID -s SESSION-ID --stop
 
     Here,
 	LOGIN		is the user's login name
@@ -179,7 +178,7 @@
     For example, supposing user `hamlet' has an entry in the users file,
     the following would authenticate it and open a session for it:
 
-	radtest -l hamlet -p guessme -P 1 -s "0001" --start
+	radsession -l hamlet -p guessme -P 1 -s "0001" --start
 
     Now, if you run radwho, you would get something like:
 
@@ -194,7 +193,7 @@ radwtmp begins Fri Dec 01 16:36:59 2000
 
     Then, suppose you run:
 
-	radscm -s session.scm -l hamlet -P 1 -s "0001" --stop
+	radsess -l hamlet -P 1 -s "0001" --stop
 
     This will send a stop record for session 0001. Radlast would then show
     something like:

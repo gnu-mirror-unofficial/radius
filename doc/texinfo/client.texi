@@ -14,7 +14,7 @@ package.
 
 @menu
 * config::        Configuration file is common for all client utilities.
-* session.scm::   Send arbitrary requests to radius server.
+* radsession::    Send arbitrary requests to radius server.
 * nas.scm::       A @NAS{} implementation for GNU/Linux machines.
 * pam_radius.so:: A PAM module for authentication via radius.
 @end menu
@@ -97,15 +97,15 @@ retry 5
 @end example
 
 @comment *L2****************************************************************
-@node session.scm
-@section session.scm
-@pindex session.scm
+@node radsession
+@section radsession
+@pindex radsession
 
-@command{session.scm} is a Guile script that sends authentication and
+@command{radsession} is a Guile script that sends authentication and
 accounting requests to the radius server. To invoke the script, run
 
 @example
-radscm -s session.scm @var{options} @var{action}
+radsession @var{options} @var{action}
 @end example
 
 Possible actions are:

@@ -65,8 +65,16 @@ disp_sql_reconnect(type, conn_type, conn)
         struct sql_connection *conn;
 {
         if (conn->connected)
-                disp_sql_entry(type)->disconnect(conn);
+                disp_sql_entry(type)->disconnect(conn, 0);
         return disp_sql_entry(type)->reconnect(conn_type, conn);
+}
+
+void
+disp_sql_drop(type, conn)
+        int type;
+        struct sql_connection *conn;
+{
+        disp_sql_entry(type)->disconnect(conn, 1);
 }
 
 void
@@ -74,7 +82,7 @@ disp_sql_disconnect(type, conn)
         int type;
         struct sql_connection *conn;
 {
-        disp_sql_entry(type)->disconnect(conn);
+        disp_sql_entry(type)->disconnect(conn, 0);
 }
 
 int

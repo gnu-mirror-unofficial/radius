@@ -110,6 +110,7 @@ argcv_get (const char *command, const char *delim, int *argc, char ***argv)
       i++;
     }
   while (end < len);
+  (*argv)[i] = NULL;
   return 0;
 }
 

@@ -1,0 +1,42 @@
+Remote testing.
+
+Let's suppose you have built Radius on machine R and wish to test it,
+but the machine does not have DejaGNU. In this case you should do
+the following:
+
+ 1. Choose any machine that does have DejaGNU installed. Let's call it
+    `machine L'
+
+ On machine R:
+
+ 2. Setup the exec and rlogin service to accept requests from L
+    without prompting for password. Consult rshd(8) and rlogind(8)
+    (on some systems -- in.rshd(8) and in.rlogind(8)) for instructions
+    on how to do that.
+ 3. Copy test/dejagnu/remote.exp to the machine L. If the file does
+    not exist, do
+	cd test/dejagnu
+        make remote.exp
+
+ On machine L:
+
+ 4. Check the connection between L and R. Try `rsh R ls /', this should
+    output the contents of root directory on the machine R. Then try
+    `rlogin R', this should start your shell on R without prompting you
+    for the password. If both tests succeed, go on to step 5.
+ 
+ 6. Untar the distribution tarball.
+ 6. Change to the distribution directory and run ./configure
+ 7. Change to test/dejagnu and run make site.exp
+ 8. Append contents of file remote.exp, copied from R in step 3, to the
+    end of file site.exp, e.g.:
+
+	cat remote.exp >> site.exp
+
+ 8. Run `runtest'. If you have renamed the site.exp in step 8, supply
+    the full path to it via environment variable DEJAGNU.
+
+
+
+
+ 

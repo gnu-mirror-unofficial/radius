@@ -12,10 +12,6 @@
 #include <varargs.h>
 #endif
 
-#if !HAVE_SNPRINTF
-#include <snprintf.h>
-#endif
-
 #if STDC_HEADERS
 void (*snmplib_debug_hook) (int, char *,...) = NULL;
 #else
@@ -42,12 +38,12 @@ snmplib_debug(va_alist)
     fmt = va_arg(args, char *);
 #endif
     if (snmplib_debug_hook != NULL) {
-	vsnprintf(buf, BUFSIZ, fmt, args);
+	radvsprintf(buf, BUFSIZ, fmt, args);
 	snmplib_debug_hook(lvl, buf);
     } 
 #ifdef DEBUG_ON_STDERR
     else {
-	vfprintf(stderr, fmt, args);
+	radvfprintf(stderr, fmt, args);
     }
 #endif
     va_end(args);

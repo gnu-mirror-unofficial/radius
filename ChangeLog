@@ -1,3 +1,31 @@
+2002-05-31  Sergey Poznyakoff 
+
+	* lib/mem.c: Again fixed mem_lock/mem_unlock. Previous
+	  fix, dated 2002-03-17, seems to have been lost. Don't
+	  know how it came...
+	
+	* include/display.h: Removed.
+	* radiusd/radck.c: Renamed setbit to radck_setbit: the name
+	  caused conflict on HP. Renamed bitisset for symmetry.
+	  
+	* include/timestr.h: Added forgotten copyright statement.
+
+	Synchronized with 0.96.3:
+	
+	* include/radius.h: (DICT_ATTR): Added attr_parser_fp member.
+	  (dict_register_parser, ascend_parse_filter): New protos.
+
+	* lib/ascend.c: Implementation of ascend-specific filters.
+	* lib/Makefile.am: Added ascend.c
+	* lib/dict.c: Handle `abinary' attribute type.
+	* lib/users.y: Likewise.
+	* lib/util.c: (format_string_visual): Bugfix. Characters > 128
+	  were printed incorrectly.
+	* raddb/dict/ascend: Added Ascend-Call-Filter and
+	  Ascend-Data-Filter attributes.
+	* raddb/dict/ascend.vs: Changed type of Ascend-.*-Filter attributes
+	  to abinary.
+
 2002-05-29  Sergey Poznyakoff  
 
 	* lib/radpdu.c (rad_pdu_finish): Bugfix: sealing of

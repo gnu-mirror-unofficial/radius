@@ -47,7 +47,8 @@
     (start)
     (stop)
     (auth)
-    (help (single-char #\h))))
+    (help (single-char #\h))
+    (version)))
 
 (define (cons? p)
   (and (pair? p) (not (list? p))))
@@ -177,12 +178,14 @@
 (define (usage)
   (format #t "usage: ~A [options] {--auth|--start|--stop}\n"
 	  (basename (car (command-line))))
-  (format #t "\nOptions are:\n")
-  (format #t "     -l, --login STRING\n")
-  (format #t "     -p, --passwd STRING\n")
-  (format #t "     -n, --nas IP\n")
-  (format #t "     -s, --sid STRING\n")
-  (format #t "     -P, --port NUMBER\n"))
+  (display "\nOptions are:\n")
+  (display "     -l, --login STRING\n")
+  (display "     -p, --passwd STRING\n")
+  (display "     -n, --nas IP\n")
+  (display "     -s, --sid STRING\n")
+  (display "     -P, --port NUMBER\n")
+  (display "     -h, --help\n")
+  (display "         --version\n"))
 
 ;;; Main
 ;; Parse command line
@@ -192,7 +195,7 @@
 		 (case (car x)
 		   ((port)
 		    (set! opt-port (string->number (cdr x))))
-		   ((start stop auth help)
+		   ((start stop auth help version)
 		    (set! action (car x)))
 		   ((verbose)
 		    (set! flag-verbose #t))
@@ -225,9 +228,17 @@
 (case action
   ((help nil)
    (usage))
+  ((version)
+   (display "radsession (PACKAGE_STRING)")
+   (newline)
+   (exit 0))
   ((auth)
    (check-auth))
   ((start)
    (session-start))
   ((stop)
    (session-stop)))
+
+;; Local Variables:
+;; mode: scheme
+;; End:

@@ -134,7 +134,7 @@ int yyerror(char *s);
 
 %type <op> op
 %type <pair> pair
-%type <list> pair_list prlist maybe_prlist list caselist
+%type <list> pair_list maybe_pair_list prlist maybe_prlist list caselist
 %type <i> closure req_code nesting_level port_type
 %type <node> stmt lstmt expr maybe_expr value bool cond expr_or_pair_list
              pritem 
@@ -219,12 +219,16 @@ lstmt         : /* empty */ EOL
                 }
 	      ;
 
+maybe_eol     :
+              | EOL
+              ;
+
 stmt          : T_BEGIN list T_END
                 {
 			$$ = radtest_node_alloc(radtest_node_stmt);
 			$$->v.list = $2;			
 		}
-              | if cond EOL stmt 
+              | if cond maybe_eol stmt 
                 {
 			pop_ctx();
 			$$ = radtest_node_alloc(radtest_node_cond);
@@ -232,7 +236,7 @@ stmt          : T_BEGIN list T_END
 			$$->v.cond.iftrue = $4;
 			$$->v.cond.iffalse = NULL;
 		}
-              | if cond EOL stmt else stmt 
+              | if cond maybe_eol stmt else stmt 
                 {
 			pop_ctx();
 			$$ = radtest_node_alloc(radtest_node_cond);
@@ -423,18 +427,13 @@ while         : WHILE
 		}
               ;  
 
-else          : ELSE
-                {
-			pop_ctx();
-		}
-              | ELSE EOL
+else          : ELSE maybe_eol
                 {
 			pop_ctx();
 		}
               ;
 
-in            : IN
-              | IN EOL
+in            : IN maybe_eol
               ;
 
 caselist      : casecond
@@ -704,6 +703,10 @@ expr          : value
 			$$->v.unary.op = radtest_op_neg;
 			$$->v.unary.operand = $2;
 		}
+              | '+' expr %prec UMINUS
+                {
+			$$ = $2;
+		}
               ;
 
 maybe_expr    : /* empty */
@@ -779,7 +782,7 @@ imm_value     : NUMBER
 			$$ = radtest_var_alloc(rtv_string);
 			$$->datum.string = $1;
 		}
-              | '(' pair_list ')'
+              | '(' maybe_pair_list ')'
                 {
 			$$ = radtest_var_alloc(rtv_pairlist);
 			$$->datum.list = $2;
@@ -792,6 +795,13 @@ maybe_prlist  : /* empty */
 		}
               | prlist 
               ;
+
+maybe_pair_list: /* empty */
+                {
+			$$ = NULL;
+		}
+	      | pair_list
+	      ;
 
 pair_list     : pair
                 {

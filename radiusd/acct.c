@@ -614,185 +614,6 @@ rad_accounting(grad_request_t *radreq, int activefd, int verified)
         return -1;
 }
 
-/* Check one terminal server to see if a user is logged in.
-   Return value:
-        1 if user is logged in
-        0 if user is not logged in */
-
-static int
-rad_check_ts(struct radutmp *ut)
-{
-        int result;
-        
-        switch (result = check_ts(ut)) {
-        case 0:
-        case 1:
-                return result;
-
-                /* The default return value is a question of policy.
-                   It is defined in /etc/raddb/config */
-        default:
-                if (checkrad_assume_logged) 
-                        grad_log(L_NOTICE, _("assuming `%s' is logged in"),
-                                 ut->login);
-                else
-                        grad_log(L_NOTICE, _("assuming `%s' is NOT logged in"),
-                                 ut->login);
-                return checkrad_assume_logged;
-        }
-        /*NOTREACHED*/
-}
-
-/* Return value: that of CHECKRAD process, i.e. 1 means true (user FOUND)
-   0 means false (user NOT found) */
-static int
-check_ts(struct radutmp *ut)
-{
-        grad_nas_t     *nas;
-
-        /* Find NAS type. */
-        if ((nas = grad_nas_lookup_ip(ntohl(ut->nas_address))) == NULL) {
-                grad_log(L_NOTICE, _("check_ts(): unknown NAS"));
-                return -1; 
-        }
-
-        /* Handle two special types */
-        if (strcmp(nas->nastype, "true") == 0)
-                return 1;
-        else if (strcmp(nas->nastype, "false") == 0)
-                return 0;
-
-        return checkrad(nas, ut);
-}
-
-int
-rad_check_realm(grad_realm_t *realm)
-{
-        int count;
-        struct radutmp *up;
-        radut_file_t file;
-        size_t maxlogins;
-		
-        if (!realm || (maxlogins = grad_realm_get_quota(realm)) == 0)
-                return 0;
-
-        if ((file = rut_setent(radutmp_path, 0)) == NULL)
-                return 0;
-
-        /* Pass I: scan radutmp file */
-        count = 0;
-        while (up = rut_getent(file))
-                if (up->type == P_LOGIN
-		    && grad_realm_verify_ip(realm, up->realm_address))
-                        count++;
-
-        if (count < maxlogins) {
-                rut_endent(file);
-                return 0;
-        }
-
-        /* Pass II: verify logins */
-        rut_rewind(file);
-        count = 0;
-
-        while (up = rut_getent(file)) {
-                if (!(up->type == P_LOGIN
-		      && grad_realm_verify_ip(realm, up->realm_address)))
-                        continue;
-
-                if (rad_check_ts(up) == 1) {
-                        count++;
-                } else {
-                        /* Hung record - zap it. */
-                        up->type = P_IDLE;
-                        up->time = time(NULL);
-                                
-                        rut_putent(file, up);
-                        write_wtmp(up);
-                }
-        }
-        rut_endent(file);
-        return !(count < maxlogins);
-}
-
-/* See if a user is already logged in.
-   Check twice. If on the first pass the user exceeds his
-   max. number of logins, do a second pass and validate all
-   logins by querying the terminal server.
-
-   MPP validation is not as reliable as I'd wish it to be.
-
-   Return:
-      0 == OK,
-      1 == user exceeds its simultaneous-use parameter */
-int
-rad_check_multi(char *name, grad_avp_t *request, int maxsimul, int *pcount)
-{
-        radut_file_t file;
-        int             count;
-        struct radutmp  *up;
-        grad_avp_t      *fra;
-        int             mpp = 1; /* MPP flag. The sense is reversed: 1 if
-                                    the session is NOT an MPP one */
-        grad_uint32_t           ipno = 0;
-        
-        if ((file = rut_setent(radutmp_path, 0)) == NULL)
-                return 0;
-
-        /*
-         * Pass I.
-         */
-        count = 0;
-        while (up = rut_getent(file)) 
-                if (strncmp(name, up->login, RUT_NAMESIZE) == 0 &&
-                    up->type == P_LOGIN) {
-                        count++;
-                }
-
-        *pcount = count;
-        
-        if (count < maxsimul) {
-                rut_endent(file);
-                return 0;
-        }
-
-
-        if ((fra = grad_avl_find(request, DA_FRAMED_IP_ADDRESS)) != NULL)
-                ipno = htonl(fra->avp_lvalue);
-
-        /* Pass II. Check all registered logins. */
-
-        count = 0;
-
-        rut_rewind(file);
-        while (up = rut_getent(file)) {
-                if (strncmp(name, up->login, RUT_NAMESIZE) == 0
-                    && up->type == P_LOGIN) {
-                        if (rad_check_ts(up) == 1) {
-                                count++;
-                                /* Does it look like a MPP attempt? */
-                                if (ipno && up->framed_address == ipno)
-                                        switch (up->proto) {
-                                        case DV_FRAMED_PROTOCOL_PPP:
-                                        case DV_FRAMED_PROTOCOL_SLIP:
-                                        case 256: /* Ascend MPP */
-                                        	mpp = 0;
-                                        }
-                        } else {
-                                /* Hung record */
-                                up->type = P_IDLE;
-                                up->time = time(NULL);
-                                rut_putent(file, up);
-                                write_wtmp(up);
-                        }
-                }
-        }
-        rut_endent(file);
-
-        *pcount = count;
-        return (count < maxsimul) ? 0 : mpp;
-}
-
 int
 write_nas_restart(int status, grad_uint32_t addr)
 {
@@ -806,6 +627,68 @@ write_nas_restart(int status, grad_uint32_t addr)
         ut.nas_address = addr;
         time(&ut.time);
         return write_wtmp(&ut);
+}
+
+
+/* Multiple login checking */
+
+int
+radutmp_mlc_collect_user(char *name, grad_avp_t *request,
+			 grad_list_t **sess_list)
+{
+        radut_file_t file;
+	struct radutmp *up;
+		
+        if ((file = rut_setent(radutmp_path, 0)) == NULL)
+                return 1;
+
+        while (up = rut_getent(file)) {
+                if (strncmp(name, up->login, RUT_NAMESIZE) == 0 &&
+                    up->type == P_LOGIN) {
+			struct radutmp *tmp;
+			
+			if (*sess_list == NULL) 
+				*sess_list = grad_list_create();
+			tmp = grad_emalloc(sizeof(*tmp));
+			memcpy(tmp, up, sizeof(*tmp));
+			grad_list_append(*sess_list, tmp);
+                }
+	}
+	rut_endent(file);
+	return 0;
+}
+
+int
+radutmp_mlc_collect_realm(grad_realm_t *realm, grad_list_t **sess_list)
+{
+        radut_file_t file;
+	struct radutmp *up;
+		
+        if ((file = rut_setent(radutmp_path, 0)) == NULL)
+                return 1;
+
+        while (up = rut_getent(file)) {
+                if (up->type == P_LOGIN
+		    && grad_realm_verify_ip(realm, up->realm_address)) {
+			struct radutmp *tmp;
+			
+			if (*sess_list == NULL) 
+				*sess_list = grad_list_create();
+			tmp = grad_emalloc(sizeof(*tmp));
+			memcpy(tmp, up, sizeof(*tmp));
+			grad_list_append(*sess_list, tmp);
+                }
+	}
+	rut_endent(file);
+	return 0;
+}
+
+void
+radutmp_mlc_close(struct radutmp *up)
+{
+	up->type = P_IDLE;
+	up->time = time(NULL);
+	radutmp_putent(radutmp_path, up, DV_ACCT_STATUS_TYPE_STOP);
 }
 
 

@@ -30,6 +30,8 @@
 #include <setjmp.h>
 #include <errno.h>
 
+unsigned scheme_gc_interval = 3600;
+
 /* Protos to be moved to radscm */
 SCM scm_makenum (unsigned long val);
 SCM radscm_avl_to_list(VALUE_PAIR *pair);
@@ -44,7 +46,7 @@ catch_body(void *data)
 	radscm_init();
 	rscm_radlog_init();
 	rscm_rewrite_init();
-	rad_mainloop(data);
+	radiusd_main();
 	return SCM_BOOL_F;
 }
 
@@ -56,7 +58,7 @@ catch_handler(void *data, SCM tag, SCM throw_args)
 
 
 void
-rad_boot(void *closure, int argc, char **argv)
+scheme_boot(void *closure, int argc, char **argv)
 {
 	scm_internal_catch(SCM_BOOL_T,
 			   catch_body, closure,
@@ -76,7 +78,7 @@ scheme_debug(int val)
 static SCM
 eval_catch_body (void *list)
 {
-	return scm_eval((SCM)list);
+	return scm_primitive_eval_x((SCM)list);
 }
 
 static SCM
@@ -128,7 +130,7 @@ scheme_auth(char *procname, RADIUS_REQ *req,
 	if (SCM_IMP(res) && SCM_BOOLP(res)) 
 		return res == SCM_BOOL_F;
 	if (SCM_NIMP(res) && SCM_CONSP(res)) {
-		int code = SCM_CAR(res);
+		SCM code = SCM_CAR(res);
 		VALUE_PAIR *list = radscm_list_to_avl(SCM_CDR(res));
 		avl_merge(user_reply_ptr, &list);
 		avl_free(list);
@@ -167,6 +169,11 @@ scheme_acct(char *procname, RADIUS_REQ *req)
 	return 1;
 }
 
+void
+scheme_add_load_path(char *path)
+{
+	rscm_add_load_path(path);
+}
 
 void
 scheme_load(char *filename)
@@ -183,15 +190,16 @@ scheme_end_reconfig()
 void
 scheme_read_eval_loop()
 {
-	SCM list;
-	int status;
-	SCM sym_top_repl = scm_symbol_value0("top-repl");
-	SCM sym_begin = scm_symbol_value0("begin");
-	
-	list = scm_cons(sym_begin, SCM_LIST1(scm_cons(sym_top_repl, SCM_EOL)));
-	status = scm_exit_status(scm_eval_x(list));
-	printf("%d\n", status);
+        SCM list;
+        int status;
+        SCM sym_top_repl = RAD_SCM_SYMBOL_VALUE("top-repl");
+        SCM sym_begin = RAD_SCM_SYMBOL_VALUE("begin");
+
+        list = scm_cons(sym_begin, scm_list_1(scm_cons(sym_top_repl, SCM_EOL)));
+	status = scm_exit_status(scm_primitive_eval_x(list));
+        printf("%d\n", status);
 }
+
 
 
 /* *************************** Configuration ******************************* */
@@ -262,8 +270,6 @@ struct cfg_stmt guile_stmt[] = {
 	{ "debug", CS_STMT, NULL, scheme_cfg_debug, NULL, NULL, NULL },
 	{ "gc-interval", CS_STMT, NULL, cfg_get_integer, &scheme_gc_interval,
 	  NULL, NULL },
-	{ "task-timeout", CS_STMT, NULL, cfg_get_integer, &scheme_task_timeout,
-	  NULL, NULL},
 	{ NULL }
 };
 

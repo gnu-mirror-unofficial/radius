@@ -1,3 +1,38 @@
+2002-05-17  Sergey Poznyakoff
+
+	Implemented retransmitting of the proxy requests.
+	
+	* configure.ac: Check declarations of strncasecmp, strtok_r,
+	  localtime_r
+	* m4/common.m4: Added comment to RA_CHECK_STRUCT_FIELD.
+	* include/radius.h (struct radius_req): Changed type of `realm'
+	  to REALM. Added new members: server_port and remote_user.
+	* include/radiusd.h (proxy_retry): added prototype.
+	  (snmp_req_drop): fixed prototype.
+	* include/sysdep.h: Use HAVE_DECL_ defines to guard extra
+	  prototypes. Removed utmp-related stuff.
+	* lib/util.c (radreq_free): free remote_user. realm now points
+	  to a global list entry and should not be freed any more.
+	  
+	* radiusd/acct.c: Reflect changes to RADIUS_REQ.
+	* radiusd/auth.c: Likewise.
+
+	* radiusd/proxy.c (get_socket_addr): new function.
+	  (proxy_addinfo): Modified.
+	  (proxy_retry): New. Retransmit the request.
+	* radiusd/radiusd.c: Retransmit proxy requests.
+	* radiusd/request.c (request_drop and dependents): Changed
+	  prototype to allow for re-transmitting the
+	  original request (namely, for proxy requests).
+	* radiusd/snmpserv.c (snmp_req_drop): Changed prototype.
+
+	* radlast/radlast.c (parse_opt): Bugfix.
+	* radwho/radwho.c: Added utmp-related preprocessor stuff, taken
+	  from include/sysdep.h
+
+	* po/no.po: Updated.
+	* TODO: Updated.
+	
 2002-05-16  Sergey Poznyakoff  
 
 	* radlib/*: Moved to

@@ -149,7 +149,6 @@ stmt          : /* empty */ EOL
 					pass = 0;
 				/*FIXME: free $3 */
 			}
-			fprintf(stderr, "RET: %s", pass ? "PASS" : "FAIL");
 			printf("%s\n", pass ? "PASS" : "FAIL");
 		} 
               | error EOL

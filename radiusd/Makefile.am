@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2003 Free Software Foundation, Inc.
+# Copyright (C) 2000,2001,2003,2004 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -20,7 +20,6 @@ radiusd_SOURCES = \
  builddbm.c\
  checkrad.c\
  config.c\
- debugmod.c\
  exec.c\
  files.c\
  forward.c\
@@ -77,13 +76,6 @@ radiusd_LNS=$(radiusd_SOURCES:.c=.ln)
 
 lint:  $(radiusd_LNS)
 	$(LINT.c) -u $(radiusd_LNS) -L../lib -lrad
-
-FILELIST:
-	-echo $(radiusd_SOURCES) $(BUILT_SOURCES) $(EXTRA_DIST)|\
-	tr -s ' ' '\n'|\
-	sort|\
-	uniq -u|\
-	xargs grep -l '#define *RADIUS_MODULE' > .list
 
 endif
 

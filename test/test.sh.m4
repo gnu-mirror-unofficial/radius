@@ -90,10 +90,12 @@ make_raddb() {
     done
     [[ -d $NAME/log ]] || mkdir $NAME/log
     [[ -d $NAME/acct ]] || mkdir $NAME/acct
-    for file in radwtmp radutmp radius.log radius.info radius.debug radius.stderr 
-    do
-        cat /dev/null > $NAME/log/$file
-    done    
+    if [[ x"$ZERO_LOGS" != x ]]; then
+	for file in radwtmp radutmp radius.log radius.info radius.debug radius.stderr 
+	do
+	    cat /dev/null > $NAME/log/$file
+	done
+    fi    
 }
 
 make_raddb raddb config client.conf users acct.scm realms

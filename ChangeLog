@@ -1,3 +1,11 @@
+2001-09-03 Sergey Poznyakoff
+
+	* radiusd/log.c: static qualifiers to catname, priname.
+	* radiusd/scheme.c: Fixed closure to eval_catch_body.
+	* radiusd/sql.c: Fixed bug in rad_sql_attr_query: did not
+	unattach connection if disp_sql_exec() returned NULL.
+	
+
 2001-09-02 Sergey Poznyakoff
 
 	Further changes integrating Guile support.

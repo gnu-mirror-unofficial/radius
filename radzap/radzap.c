@@ -335,6 +335,7 @@ void
 usage()
 {
 	printf("%s", usage_text);
+	printf("\nReport bugs to <%s>\n", bug_report_address);
 }
 
 char license_text[] =

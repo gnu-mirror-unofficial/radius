@@ -803,6 +803,7 @@ void
 usage()
 {
 	printf("%s", usage_str);
+	printf("\nReport bugs to <%s>\n", bug_report_address);
 	exit(1);
 }
 

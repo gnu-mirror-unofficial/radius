@@ -1396,8 +1396,9 @@ usage()
 "                                parameters and exit.\n"
 "    -x, --debug debug_level     Set debugging level.\n"
 "    -y, --log-auth              Log authentications.\n"
-"    -z, --log-auth-pass         Log passwords used.\n" ;
+"    -z, --log-auth-pass         Log passwords used.\n"; 
 	fprintf(stdout, "%s", ustr);
+	fprintf(stdout, "\nReport bugs to <%s>\n", bug_report_address);
 	exit(1);
 }
 

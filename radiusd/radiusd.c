@@ -301,7 +301,8 @@ main(argc, argv)
 	 * Set up some default values
 	 */
 	config.exec_user  = make_string("daemon");
-	
+	username_valid_chars = make_string(".-_!@#$%^&");
+
 	/*
 	 *	Process the options.
 	 */

@@ -213,14 +213,9 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
 		       _("external program `%s' %s"), cmd, buffer);
 	}
 
-        if (vp) {
-		if (status) {
-			avl_free(*reply);
-			*reply = NULL;
-		}
+        if (vp && reply) 
                 avl_merge(reply, &vp);
-		avl_free(vp);
-	}
+	avl_free(vp);
 
         return status;
 }
@@ -579,13 +574,8 @@ filter_auth(char *name, RADIUS_REQ *req, VALUE_PAIR **reply_pairs)
 				       filter->lines_output,
 				       errp);
 				avl_free(vp);
-			} else {
-				if (rc) {
-					avl_free(*reply_pairs);
-					*reply_pairs = NULL;
-				}
+			} else 
 				avl_merge(reply_pairs, &vp);
-			}
 		} else {
 			radlog(L_ERR,
 			       _("filter %s (auth): bad output: %s"),

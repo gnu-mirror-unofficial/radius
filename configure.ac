@@ -10,10 +10,10 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-AC_PREREQ(2.54)
+AC_PREREQ(2.57)
 
 AC_REVISION($Revision$)
-AC_INIT(GNU Radius, 0.99.98, bug-gnu-radius@gnu.org, gnu-radius)
+AC_INIT(GNU Radius, 0.99.98, bug-gnu-radius@gnu.org)
 AC_CONFIG_SRCDIR(radiusd/radiusd.c)
 AC_CONFIG_AUX_DIR([scripts])
 AC_CANONICAL_SYSTEM

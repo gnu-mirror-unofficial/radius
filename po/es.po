@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
 "POT-Creation-Date: 2002-06-14 12:37+0300\n"
-"PO-Revision-Date: 2002-06-12 14:12+0300\n"
+"PO-Revision-Date: 2002-06-14 13:07+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Spanish <es@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -609,6 +609,7 @@ msgstr "%s:%d: no existe tal módulo: %s"
 msgid "%s:%d: invalid level: %s"
 msgstr "%s:%d: nivel inválido: %s"
 
+# mejor `no será tenido en cuenta'?
 #: radiusd/config.y:736
 msgid "usedbm statement ignored: radiusd compiled without DBM support"
 msgstr ""
@@ -1404,6 +1405,7 @@ msgstr "%s:%d: conversión implícita de entero a cadena"
 msgid "%s:%d: (arg %d) implicit %s to %s coercion"
 msgstr "%s:%d: (arg %d) conversión implícita de `%s' a `%s'"
 
+# mejor `la llamada a'?
 #: radiusd/rewrite.y:2455 radiusd/rewrite.y:2522
 #, c-format
 msgid "%s:%d: too many arguments in call to %s"

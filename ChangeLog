@@ -1,3 +1,14 @@
+2002-06-14  Sergey Poznyakoff 
+
+*	* radiusd/radiusd.c: Added `watcher' feature. When radiusd
+	  is started with the command line option --watcher, it
+	  creates a watcher process which wakes up periodically to
+	  check if the daemon is running. If it is not, the watcher
+	  restarts it.
+
+	* po/es.po: Updated.
+	* po/no.po: Likewise.
+
 2002-06-13  Sergey Poznyakoff
 
 	* radiusd/auth.c (rad_check_password): Fixed bug introduced

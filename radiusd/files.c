@@ -938,7 +938,6 @@ read_naslist_file(file)
 		snmp_attach_nas_stat(nas);
 	snmp_sort_nas_stat();
 #endif	
-	stat_create();
 	return rc;
 }
 

@@ -18,11 +18,10 @@
 # file, correspondingly.
 # Kyword file is a list of terminal symbols, one symbol per line. Each
 # line should follow the format:
-#    token  input  matchlength  
+#    token  input  
 # where:
 #    token       is the token symbolic name as used in the input grammar
 #    input       is the corresponding input sequence
-#    matchlength is the minimal length of matching input
 #
 # Skeleton file is the completion framework in C. 
 #
@@ -42,8 +41,8 @@ BEGIN {
 	# Read the keyword file
 	kwcount = 0
 	while (getline < KEYWORD) {
-		if (NF == 3 && !match($0, "^#")) {
-			kw[$1] = sprintf("\t\"%s\",%s,%s",$2,$3,$1)
+		if (NF == 2 && !match($0, "^#")) {
+			kw[$1] = sprintf("\t\"%s\",%d,%s",$2,length($2),$1)
 			kwnum[$1] = kwcount
 			kwpos[kwcount++] = $1	
 #			kwind[$1] = -1	

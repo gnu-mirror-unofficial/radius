@@ -1647,7 +1647,7 @@ meminfo()
 	radlog(L_INFO,
 	       _("    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"));
 	
-	mem_stat_enumerate(meminfo_report);
+	mem_stat_enumerate(meminfo_report, NULL);
 
 #ifdef LEAK_DETECTOR
 	radlog(L_INFO, _("malloc statistics: %d blocks, %d bytes"),

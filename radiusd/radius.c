@@ -288,7 +288,7 @@ rad_create_pdu(rptr, code, id, vector, secret, pairlist, msg)
 			rad_attr_write(&attr, &c, 1); 
 			rad_attr_write(&attr, &lval, 1); /* Reserve a byte */
 			attrlen = rad_encode_pair(&attr, pair);
-			attr.data[5] = attrlen;
+			attr.data[5] = attrlen; /* Fill in the reserved byte */
 		} else if (pair->attribute <= 0xff) {
 			attr.attrno = pair->attribute;
 			attrlen = rad_encode_pair(&attr, pair);
@@ -354,52 +354,59 @@ rad_send_reply(code, radreq, reply_pairs, msg, fd)
 {
 	void *pdu;
 	char *what;
-	VALUE_PAIR *reply;
 	size_t length;
 	
 	if (radreq->reply_code == 0) {
-		/* Save the data */
+		VALUE_PAIR *reply;
+		
+                /* Save the data */
 		radreq->reply_code = code;
-		radreq->reply_pairs = avl_dup(reply_pairs);
 		radreq->reply_msg = estrdup(msg);
+
+		reply = avl_dup(reply_pairs);
+		switch (code) {
+		case RT_PASSWORD_REJECT:
+		case RT_AUTHENTICATION_REJECT:
+			radreq->reply_pairs = NULL;
+			avl_move_attr(&reply, &radreq->reply_pairs,
+				      DA_REPLY_MESSAGE);
+			avl_move_attr(&reply, &radreq->reply_pairs,
+				      DA_PROXY_STATE);
+			avl_free(reply);
+			break;
+
+		default:
+			radreq->reply_pairs = reply;
+		}
 	} 
 
 	switch (code) {
 	case RT_PASSWORD_REJECT:
 	case RT_AUTHENTICATION_REJECT:
 		what = _("Reject");
-		reply = NULL;
-		avl_move_attr(&reply, &radreq->reply_pairs,
-			      DA_REPLY_MESSAGE);
-		avl_move_attr(&reply, &radreq->reply_pairs,
-			      DA_PROXY_STATE);
 		break;
 			
 	case RT_ACCESS_CHALLENGE:
 		what = _("Challenge");
-		reply = radreq->reply_pairs;
 		stat_inc(auth, radreq->ipaddr, num_challenges);
 		break;
 			
 	case RT_AUTHENTICATION_ACK:
 		what = _("Ack");
-		reply = radreq->reply_pairs;
 		break;
 		
 	case RT_ACCOUNTING_RESPONSE:
 		what = _("Accounting Ack");
-		reply = radreq->reply_pairs;
 		break;
 			
 	default:
 		what = _("Reply");
-		reply = radreq->reply_pairs;
 		break;
         }
 
 	length = rad_create_pdu(&pdu, code,
 				radreq->id, radreq->vector, radreq->secret,
-				reply, radreq->reply_msg);
+				radreq->reply_pairs, radreq->reply_msg);
 	if (length > 0) {
 		struct sockaddr saremote;
 		struct sockaddr_in *sin;
@@ -418,9 +425,6 @@ rad_send_reply(code, radreq, reply_pairs, msg, fd)
 		       &saremote, sizeof(struct sockaddr_in));
 		efree(pdu);
 	}
-	
-	if (reply != radreq->reply_pairs) 
-		avl_add_list(&radreq->reply_pairs, reply);
 }
 
 #ifdef USE_LIVINGSTON_MENUS

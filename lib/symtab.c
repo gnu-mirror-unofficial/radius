@@ -265,6 +265,8 @@ symtab_clear(Symtab *symtab)
 void
 symtab_free(Symtab **symtab)
 {
+	if (!symtab || !*symtab)
+		return;
         symtab_clear(*symtab);
         efree((*symtab)->sym);
         efree(*symtab);

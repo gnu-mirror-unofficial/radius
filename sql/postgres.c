@@ -106,6 +106,7 @@ rad_postgres_query(struct sql_connection *conn, char *query, int *return_count)
                 grad_log(L_ERR,
                          "PQexec: %s",
                          PQerrorMessage((PGconn*)conn->data));
+		rad_postgres_disconnect(conn, 0);
                 return -1;
         }
         
@@ -148,6 +149,7 @@ rad_postgres_getpwd(struct sql_connection *conn, char *query)
                 grad_log(L_ERR,
                          "PQexec: %s",
                          PQerrorMessage((PGconn*)conn->data));
+		rad_postgres_disconnect(conn, 0);
                 return NULL;
         }
         
@@ -223,6 +225,7 @@ rad_postgres_exec(struct sql_connection *conn, char *query)
                 grad_log(L_ERR,
                          "PQexec: %s",
                          PQerrorMessage((PGconn*)conn->data));
+		rad_postgres_disconnect(conn, 0);
                 return NULL;
         }
         

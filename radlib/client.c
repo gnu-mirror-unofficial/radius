@@ -283,7 +283,6 @@ radclient_build_request(config, server, code, pair)
 				CHECKSIZE(attrlen+2);
 				*ptr++ = attrlen + 2;
 				memcpy(ptr, ppair->strvalue, attrlen);
-				ptr += attrlen;
 				avp_free(ppair);
 			} else {
 				attrlen = pair->strlength;

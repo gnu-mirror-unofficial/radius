@@ -1,21 +1,19 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
+   Copyright (C) 2000, Sergey Poznyakoff
+  
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+  
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+  
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #define RADIUS_MODULE_PROXY_C
 #ifndef lint
@@ -55,7 +53,11 @@ static void random_vector(char *vector);
 static VALUE_PAIR *proxy_addinfo(RADIUS_REQ *radreq, int proxy_id, UINT4 remip);
 void proxy_addrequest(RADIUS_REQ *radreq);
 static void passwd_recode(VALUE_PAIR *pair,
-			  char *old_secret, char *new_secret, char *vector);
+			  char *old_secret, char *new_secret,
+			  char *old_vector, char *new_vector);
+static void rad_send_request(int fd, UINT4 ipaddr, int port, int id,
+			     int code, char *old_vector, char *old_secret,
+			     char *new_secret, VALUE_PAIR *request);
 
 
 /* ************************************************************************* */
@@ -147,9 +149,7 @@ rad_proxy(radreq, activefd)
 /* ************************************************************************* */
 /* Reply functions. Possibly these should go to libclient? */
 
-/*
- *	Generate a random vector.
- */
+/* Generate a random vector. */
 static void
 random_vector(vector)
 	char *vector;
@@ -167,12 +167,14 @@ random_vector(vector)
 }
 
 void
-rad_send_request(fd, ipaddr, port, id, code, old_secret, new_secret, request)
+rad_send_request(fd, ipaddr, port, id, code, old_vector, old_secret,
+		 new_secret, request)
 	int   fd;
 	UINT4 ipaddr;
 	int   port;
 	int   id;
 	int   code;
+	char  *old_vector;
 	char  *old_secret;
 	char  *new_secret;
 	VALUE_PAIR *request;
@@ -210,9 +212,7 @@ rad_send_request(fd, ipaddr, port, id, code, old_secret, new_secret, request)
 		if (debug_on(10))
 			debug_pair("proxy_send", vp);
 
-		/*
-		 *	This could be a vendor-specific attribute.
-		 */
+		/* This could be a vendor-specific attribute. */
 		length_ptr = NULL;
 		if ((vendorcode = VENDOR(vp->attribute)) > 0 &&
 		    (vendorpec  = vendor_id_to_pec(vendorcode)) > 0) {
@@ -225,9 +225,6 @@ rad_send_request(fd, ipaddr, port, id, code, old_secret, new_secret, request)
 			ptr += 4;
 			total_length += 6;
 		} else if (vp->attribute > 0xff) {
-			/*
-			 *	Ignore attributes > 0xff
-			 */
 			continue;
 		} else
 			vendorpec = 0;
@@ -241,7 +238,7 @@ rad_send_request(fd, ipaddr, port, id, code, old_secret, new_secret, request)
 			 */
 			if (vp->attribute == DA_PASSWORD)
 				passwd_recode(vp, old_secret, new_secret,
-					      vector);
+					      old_vector, vector);
 			
                         checkovf(vp->strlength + 2);
 
@@ -273,11 +270,8 @@ rad_send_request(fd, ipaddr, port, id, code, old_secret, new_secret, request)
 	}
 	auth->length = htons(total_length);
 
-	/*
-	 *	If this is not an authentication request, we
-	 *	need to calculate the md5 hash over the entire packet
-	 *	and put it in the vector.
-	 */
+	/* If this is not an authentication request, we	need to calculate
+	   the md5 hash over the entire packet and put it in the vector. */
 	if (auth->code != PW_AUTHENTICATION_REQUEST) {
 		len = strlen(new_secret);
 		if (total_length + len < sizeof(i_send_buffer)) {
@@ -343,16 +337,17 @@ proxy_addinfo(radreq, proxy_id, remip)
  *	Decode a password and encode it again.
  */
 static void
-passwd_recode(pass_pair, old_secret, new_secret, vector)
+passwd_recode(pass_pair, old_secret, new_secret, old_vector, new_vector)
 	VALUE_PAIR *pass_pair;
 	char *old_secret;
 	char *new_secret;
-	char *vector;
+	char *old_vector;
+	char *new_vector;
 {
 	char	password[AUTH_STRING_LEN];
-	decrypt_password(password, pass_pair, vector, old_secret);
+	decrypt_password(password, pass_pair, old_vector, old_secret);
 	free_string(pass_pair->strvalue);
-	encrypt_password(pass_pair, password, vector, new_secret);
+	encrypt_password(pass_pair, password, new_vector, new_secret);
 	/* Don't let the cleantext hang around */
 	memset(password, 0, AUTH_STRING_LEN);
 }
@@ -510,18 +505,15 @@ proxy_send(radreq, activefd)
 	debug(1, ("Sending %s request of id %d to %lx (server %s:%d)",
 		 what, proxy_id, realm->ipaddr, realm->server, rport));
 
-	/*
-	 *	Now build a new request and send it to the remote radiusd.
-	 */
+	/* Now build a new request and send it to the remote radiusd. */
 	rad_send_request(activefd, realm->ipaddr, rport,
 			 proxy_id, radreq->code,
+			 radreq->vector,
 			 radreq->secret,
 			 secret_key,
 			 radreq->request);
 	
-	/*
-	 *	Remove proxy-state from list.
-	 */
+	/* Remove proxy-state from list. */
 	if (pp->next) {
 		VALUE_PAIR *p = pp->next;
 		pp->next = p->next;
@@ -529,9 +521,7 @@ proxy_send(radreq, activefd)
 		avl_free(p);
 	}
 #if 1	
-	/*
-	 *	And restore username.
-	 */
+	/* And restore username. */
 	replace_string(&namepair->strvalue, saved_username);
 	namepair->strlength = strlen(namepair->strvalue);
 #endif
@@ -542,7 +532,7 @@ proxy_send(radreq, activefd)
 
 /* ************************************************************************* */
 /* Functions for finding the matching request in the list of outstanding ones.
- * There seem to be two cases: i) when the remote server retains the
+ * There appear to be two cases: i) when the remote server retains the
  * Proxy-State A/V pair, which seems to correspond to RFC 2865,
  * and ii) when the remote server drops the Proxy-State pair.
  */
@@ -553,8 +543,7 @@ struct proxy_data {
 };
 
 /* proxy_compare_request(): Find matching request based on the information
- * preserved in the Proxy-State pair.
- */
+   preserved in the Proxy-State pair. */
 int
 proxy_compare_request(data, oldreq)
 	struct proxy_data *data;
@@ -571,13 +560,12 @@ proxy_compare_request(data, oldreq)
 }
 
 /* proxy_compare_request_no_state(): Find matching outstanding request if the
- * server did not retain the Proxy-State pair.
- * miquels@cistron.nl says:
- *	Some servers drop the proxy pair. So
- *      compare in another way if needed.
- *	FIXME: hmmm, perhaps we don't even need Proxy-State
- *	after all!
- */
+   server did not retain the Proxy-State pair.
+   miquels@cistron.nl says:
+  	Some servers drop the proxy pair. So
+        compare in another way if needed.
+  	FIXME: hmmm, perhaps we don't even need Proxy-State
+  	after all! */
 int
 proxy_compare_request_no_state(data, oldreq)
 	struct proxy_data *data;
@@ -605,12 +593,11 @@ select_allowed(unused, pair)
 	return pair->prop & AP_PROPAGATE;
 }
 
-/*
- *	We received a response from a remote radius server.
- *	Find the original request, then return.
- *	Returns:   0 proxy found
- *		  -1 error don't reply
- */
+/* Called when a response from a remote radius server has been received.
+   The function finds the original request and replaces all fields in
+   radreq, except `request' with the original data.
+   Return:   0 proxy found
+  	    -1 error don't reply */
 int
 proxy_receive(radreq, activefd)
 	RADIUS_REQ        *radreq;
@@ -623,13 +610,9 @@ proxy_receive(radreq, activefd)
 	struct proxy_data data;
 	int             i;
 	
-	/*
-	 *	FIXME: calculate md5 checksum!
-	 */
+	/* FIXME: calculate md5 checksum! */
 
-	/*
-	 *	Find the last PROXY_STATE attribute.
-	 */
+	/* Find the last PROXY_STATE attribute. */
 
 	oldreq  = NULL;
 	proxy_state_pair = x = prev = NULL;
@@ -652,9 +635,7 @@ proxy_receive(radreq, activefd)
 		 state->proxy_id,
 		 state->rem_ipaddr));
 
-	/*
-	 *	Now find matching request in the list of outstanding requests.
-	 */
+	/* Find matching request in the list of outstanding requests. */
 	data.state = state;
 	data.radreq = radreq;
 
@@ -683,9 +664,7 @@ proxy_receive(radreq, activefd)
 		return -1;
 	}
 
-	/*
-	 *	Remove proxy pair from list.
-	 */
+	/* Remove proxy pair from the list. */
 	if (proxy_state_pair) {
 		if (prev)
 			prev->next = proxy_state_pair->next;
@@ -695,19 +674,14 @@ proxy_receive(radreq, activefd)
 	        avl_free(proxy_state_pair);
 	}
 
-	/*
-	 *	Only allow some attributes to be propagated from
-	 *	the remote server back to the NAS, for security.
-	 */
+	/* Only allow some attributes to be propagated from
+	   the remote server back to the NAS, for security. */
 	allowed_pairs = NULL;
 	avl_move_pairs(&allowed_pairs, &radreq->request, select_allowed, NULL);
 	avl_free(radreq->request);
 
-	/*
-	 *	Now rebuild the RADIUS_REQ struct, so that the
-	 *	normal functions can process it. Take care not to modify
-	 *      oldreq!
-	 */
+	/* Rebuild the RADIUS_REQ struct, so that the normal functions
+	   can process it. Take care not to modify oldreq! */
 	
 	radreq->server_reply = allowed_pairs;
 	radreq->validated    = 1;

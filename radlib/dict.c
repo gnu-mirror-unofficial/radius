@@ -569,7 +569,7 @@ valnum_cmp(v, d)
 	struct val_lookup *d;
 {
 	return !(strcmp(d->attrname, v->attr->name) == 0
-		 && strcmp(v->name, d->name) == 0); 
+		 && d->number == v->value); 
 }
 
 DICT_VALUE *

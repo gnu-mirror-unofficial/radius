@@ -1,3 +1,8 @@
+2001-04-28  gray  <gray@farlep.net>
+	Fixed errors in acct_stop_query and acct_keepalive_query in
+	the default sqlserver file. Reported by Oleg Gawriloff 
+	<Oleg_Gawriloff@atlantm.com>.
+
 2001-04-26  gray  <gray@farlep.net>
 	Added AM_PROG_CC_STDC to configure.in. Modified postgres.c
 	to properly handle fatal error conditions. Reported by

@@ -1,21 +1,20 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000,2001, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
+   Copyright (C) 2000,2001, Sergey Poznyakoff
+  
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+  
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+  
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
 #define RADIUS_MODULE 15
 #if defined(HAVE_CONFIG_H)
 # include <config.h>
@@ -170,6 +169,8 @@ int snmp_acct_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
 		      struct snmp_var **varp, int *errp);
 int snmp_acct_v_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
 			struct snmp_var **varp, int *errp);
+int snmp_serv_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
+		      struct snmp_var **varp, int *errp);
 int snmp_stat_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
 		      struct snmp_var **varp, int *errp);
 
@@ -283,6 +284,11 @@ static struct mib_data {
 	oid_AccServNoRecords,                snmp_acct_v_handler,&acct_closure,
 	oid_AccServUnknownTypes,             snmp_acct_v_handler,&acct_closure,
 
+	/* Server */
+	oid_radiusServerUpTime,              snmp_serv_handler, NULL,
+	oid_radiusServerResetTime,           snmp_serv_handler, NULL,
+	oid_radiusServerState,               snmp_serv_handler, NULL,
+	
 	/* Statistics */
 	oid_StatIdent,                       snmp_stat_handler, NULL,
 	oid_StatUpTime,	                     snmp_stat_handler, NULL,
@@ -856,9 +862,7 @@ snmp_agent_response(pdu, access)
 
 			vresp = &answer->var;
 			/* Loop through all variables */
-			for (vpp = &pdu->var;
-			     *vpp;
-			     vpp = &(*vpp)->next) {
+			for (vpp = &pdu->var; *vpp; vpp = &(*vpp)->next) {
 				vp = *vpp;
 
 				index++;
@@ -997,7 +1001,8 @@ snmp_auth_var_get(subid, oid, errp)
 		gettimeofday(&tv, &tz);
 		ret->type = SMI_TIMETICKS;
 		ret->val_length = sizeof(counter);
-		ret->var_int = timeval_diff(&tv, &server_stat->auth.reset_time);
+		ret->var_int = timeval_diff(&tv,
+					    &server_stat->auth.reset_time);
 		break;
 
 	case MIB_KEY_AuthServConfigReset:
@@ -1647,6 +1652,159 @@ get_acct_nasstat(nas, var, key)
 		var->var_int = statp->acct.num_unknowntypes;
 		break;
 	}
+}
+
+/* ************************************************************************* */
+/* Server */
+struct snmp_var *snmp_serv_var_get(subid_t subid, oid_t oid, int *errp);
+int snmp_serv_var_set(subid_t subid, struct snmp_var **vp, int *errp);
+
+/* Handler function for fixed oids from the server subtree */
+/*ARGSUSED*/
+int
+snmp_serv_handler(cmd, closure, subid, varp, errp)
+	enum mib_node_cmd cmd;
+	void *closure;
+	subid_t subid;
+	struct snmp_var **varp;
+	int *errp;
+{
+	oid_t oid = (*varp)->name;
+	
+	switch (cmd) {
+	case MIB_NODE_GET:
+		if ((*varp = snmp_serv_var_get(subid, oid, errp)) == NULL)
+			return -1;
+		break;
+		
+	case MIB_NODE_SET:
+		return snmp_serv_var_set(subid, varp, errp);
+		
+	case MIB_NODE_SET_TRY:
+		return snmp_serv_var_set(subid, varp, errp);
+		
+	case MIB_NODE_RESET:
+		break;
+		
+	default: /* unused: should never get there */
+		abort();
+
+	}
+	
+	return 0;
+}
+
+struct snmp_var *
+snmp_serv_var_get(subid, oid, errp)
+	subid_t subid;
+	oid_t oid;
+	int *errp;
+{
+	struct snmp_var *ret;
+	struct timeval tv;
+	struct timezone tz;
+	char *p;
+	
+	ret = snmp_var_create(oid);
+	*errp = SNMP_ERR_NOERROR;
+
+	switch (subid) {
+
+	case MIB_KEY_radiusServerUpTime:
+		gettimeofday(&tv, &tz);
+		ret->type = SMI_TIMETICKS;
+		ret->val_length = sizeof(counter);
+		ret->var_int = timeval_diff(&tv, &server_stat->start_time);
+		break;
+
+	case MIB_KEY_radiusServerResetTime:
+		gettimeofday(&tv, &tz);
+		ret->type = SMI_TIMETICKS;
+		ret->val_length = sizeof(counter);
+		ret->var_int = timeval_diff(&tv,
+					    &server_stat->auth.reset_time);
+		break;
+
+	case MIB_KEY_radiusServerState:
+		ret->type = ASN_INTEGER;
+		ret->val_length = sizeof(counter);
+		ret->var_int = server_stat->auth.status;/*FIXME*/
+		break;
+	default:
+		*errp = SNMP_ERR_NOSUCHNAME;
+		snmp_var_free(ret);
+		return NULL;
+	}
+	return ret;
+}
+
+int
+snmp_serv_var_set(subid, vp, errp)
+	subid_t subid;
+	struct snmp_var **vp;
+	int *errp;
+{
+	if (errp) { /* just test */
+		*errp = SNMP_ERR_NOERROR;
+		switch (subid) {
+		
+		case MIB_KEY_radiusServerState:
+			if ((*vp)->type != ASN_INTEGER) {
+				*errp = SNMP_ERR_BADVALUE;
+				*vp = NULL;
+			} else {
+				switch ((*vp)->var_int) {
+				case serv_reset:
+				case serv_init:
+				case serv_running:
+				case serv_suspended:
+				case serv_shutdown:
+					break;
+				default:
+					*errp = SNMP_ERR_BADVALUE;
+					*vp = NULL;
+				}
+			}
+			break;
+		default:
+			*errp = SNMP_ERR_BADVALUE;
+			(*vp) = NULL;
+		}
+	} else {
+		/* do set it */
+		*vp = snmp_var_dup(*vp);
+		
+		switch (subid) {
+
+		case MIB_KEY_radiusServerState:
+			server_stat->auth.status = (*vp)->var_int;
+			switch ((*vp)->var_int) {
+			case serv_reset:
+				radlog(L_NOTICE,
+				       _("server re-initializing on SNMP request"));
+				break;
+			case serv_init:
+				radlog(L_NOTICE,
+				       _("server restart on SNMP request"));
+				break;
+			case serv_running:
+				radlog(L_NOTICE,
+				       _("server continuing on SNMP request"));
+				break;
+			case serv_suspended:
+				radlog(L_NOTICE,
+				       _("server suspending on SNMP request"));
+				break;
+			case serv_shutdown:
+				radlog(L_NOTICE,
+				       _("server shutting down on SNMP request"));
+				break;
+			}
+			break;
+
+		}
+	}
+	return (*vp == NULL);
 }
 
 /* ************************************************************************* */

@@ -1,5 +1,11 @@
 2001-11-25 Sergey Poznyakoff
 
+	* m4/guile.m4: Control guile version. It should be >= 1.4
+	* m4/rx.m4: Rewritten basing on Jim Meyering's jm_INCLUDED_REGEX.
+	* configure.in: Use rad_REPLACE_REGEX.
+	
+2001-11-25 Sergey Poznyakoff
+
 	Support for remote testing.
 
 	* configure.in: RADTEST and TESTDIR are no longer relevant. Removed.

@@ -1,21 +1,20 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2001, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
+   Copyright (C) 2001, Sergey Poznyakoff
+  
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+  
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+  
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+ 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -217,9 +216,11 @@ check_dup_attr(prev, ptr, line)
 
 /*ARGSUSED*/
 int
-fix_check_pairs(name, line, pairs)
-	char *name;
+fix_check_pairs(cf_file, filename, line, name, pairs)
+	int cf_file;
+	char *filename;
 	int line;
+	char *name;
 	VALUE_PAIR **pairs;
 {
 	VALUE_PAIR *p;
@@ -234,6 +235,18 @@ fix_check_pairs(name, line, pairs)
 	
 	for (p = *pairs; p; p = p->next) {
 		
+		dict = attr_number_to_dict(p->attribute);
+		if (dict) {
+			if (!(dict->prop & AF_CHECKLIST(cf_file))) {
+				radlog(L_ERR,
+			_("%s:%d: attribute %s not allowed in check pairs"),
+				       filename, line, dict->name);
+				errcnt++;
+				continue;
+			}
+		}
+
+		/* Specific attribute checks */
 		switch (p->attribute) {
 		case DA_AUTH_TYPE:
 			check_dup_attr(&auth_type, p, line);
@@ -263,30 +276,21 @@ fix_check_pairs(name, line, pairs)
 			if (strncmp(p->strvalue, "DEFAULT", 7) == 0 ||
 			    strncmp(p->strvalue, "BEGIN", 5) == 0) {
 				radlog(L_ERR,
-			_("users:%d: Match-Profile refers to a DEFAULT entry"),
-				       line);
+			_("%s:%d: Match-Profile refers to a DEFAULT entry"),
+				       filename, line);
 				errcnt++;
 			}
 			break;
-
-		default:
-			dict = attr_number_to_dict(p->attribute);
-			if (!dict)
-				break; /* just in case */
-			if (!(dict->flags & AF_CHECKLIST)) {
-				radlog(L_ERR,
-			_("users:%d: attribute %s not allowed in check pairs"),
-				       line, dict->name);
-				errcnt++;
-			}
 		}
 		
 	}
 
+	if (cf_file != CF_USERS)
+		return 0;
+
 	/*
 	 * Now let's check what we've got
 	 */
-
 	if (!auth_type) {
 		int type;
 		
@@ -297,8 +301,8 @@ fix_check_pairs(name, line, pairs)
 				type = DV_AUTH_TYPE_SYSTEM;
 			else if (!strcmp(password->strvalue, "PAM"))
 				type = DV_AUTH_TYPE_PAM;
-			else if (!strcmp(password->strvalue, "MYSQL") ||
-				 !strcmp(password->strvalue, "SQL"))
+			else if (!strcmp(password->strvalue, "MYSQL")
+				 || !strcmp(password->strvalue, "SQL"))
 				type = DV_AUTH_TYPE_MYSQL;
 			else
 				type = DV_AUTH_TYPE_LOCAL;
@@ -313,8 +317,8 @@ fix_check_pairs(name, line, pairs)
 	case DV_AUTH_TYPE_LOCAL:
 		if (!password) {
 			radlog(L_ERR,
-			 _("users:%d: No Password attribute in the checklist"),
-			       line);
+			 _("%s:%d: No Password attribute in the checklist"),
+			       filename, line);
 			errcnt++;
 		}
 		break;
@@ -324,31 +328,32 @@ fix_check_pairs(name, line, pairs)
 	case DV_AUTH_TYPE_ACCEPT:
 		if (password) {
 			radlog(L_WARN,
-		  _("users:%d: Password attribute ignored for this Auth-Type"),
-			       line);
+		  _("%s:%d: Password attribute ignored for this Auth-Type"),
+			       filename, line);
 		}
 		break;
 		
 	case DV_AUTH_TYPE_CRYPT_LOCAL:
 		if (!password && !crypt_password) {
 			radlog(L_ERR,
-		       _("users:%d: No Password attribute in the checklist"),
-			       line);
+		       _("%s:%d: No Password attribute in the checklist"),
+			       filename, line);
 			errcnt++;
 		}
 		break;
 
 	case DV_AUTH_TYPE_SECURID:
 		radlog(L_ERR,
-		       _("users:%d: Authentication type not supported"), line);
+		       _("%s:%d: Authentication type not supported"),
+		       filename, line);
 		errcnt++;
 		break;
 		
 	case DV_AUTH_TYPE_SQL:
 		if (password || crypt_password) {
 			radlog(L_WARN,
-		  _("users:%d: Password attribute ignored for this Auth-Type"),
-			       line);
+		  _("%s:%d: Password attribute ignored for this Auth-Type"),
+			       filename, line);
 		}
 		auth_data = NULL;
 		break;
@@ -356,8 +361,8 @@ fix_check_pairs(name, line, pairs)
 	case DV_AUTH_TYPE_PAM:
 		if (pam_auth && auth_data) {
 			radlog(L_WARN,
-		 _("users:%d: Both Auth-Data and PAM-Auth attributes present"),
-			       line);
+		 _("%s:%d: Both Auth-Data and PAM-Auth attributes present"),
+			       filename, line);
 			auth_data = NULL;
 		} else 
 			pam_auth = auth_data = NULL;
@@ -368,9 +373,11 @@ fix_check_pairs(name, line, pairs)
 }
 
 int
-fix_reply_pairs(name, line, pairs)
-	char *name;
+fix_reply_pairs(cf_file, filename, line, name, pairs)
+	int cf_file;
+	char *filename;
 	int line;
+	char *name;
 	VALUE_PAIR **pairs;
 {
 	VALUE_PAIR *p;
@@ -379,27 +386,29 @@ fix_reply_pairs(name, line, pairs)
 	int errcnt = 0;
 	
 	for (p = *pairs; p; p = p->next) {
+		dict = attr_number_to_dict(p->attribute);
+		if (dict) {
+			if (!(dict->prop & AF_REPLYLIST(cf_file))) {
+				radlog(L_ERR,
+			_("%s:%d: attribute %s not allowed in reply pairs"),
+				       filename, line, dict->name);
+				errcnt++;
+				continue;
+			}
+		}
+
+		/* Specific attribute checks */
 		switch (p->attribute) {
 		case DA_FALL_THROUGH:
 			fall_through++;
 			break;
-		default:
-			dict = attr_number_to_dict(p->attribute);
-			if (!dict)
-				break; /* just in case */
-			if (!(dict->flags & AF_REPLYLIST)) {
-				radlog(L_ERR,
-			_("users:%d: attribute %s not allowed in reply pairs"),
-				       line, dict->name);
-				errcnt++;
-			}
 		}
 	}
 
 	if (strncmp(name, "BEGIN", 5) == 0 && fall_through == 0) {
 		radlog(L_WARN,
-		       _("users:%d: BEGIN without Fall-Through"),
-			 line);
+		       _("%s:%d: BEGIN without Fall-Through"),
+		       filename, line);
 	}
 	return errcnt;
 }

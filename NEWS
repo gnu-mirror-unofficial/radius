@@ -4,7 +4,7 @@ See the end of file for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
 ^L
-Version 1.2.91:
+Version 1.2.92:
 
 * libgnuradius
 
@@ -60,6 +60,19 @@ Scheme modules.
 statements in `auth' and `acct' sections of raddb/config.
 
 ** Support for Guile versions prior to 1.6 has been withdrawn.
+
+** Support for locking user accounts based on the number of authentication
+failures:
+
+*** New attribute Auth-Failure-Trigger specifies an external program or
+a Scheme expression to be run upon an authentication failure. It can
+update failure counts that subsequently will be used by
+Exec-Program-Wait or Scheme-Procedure.
+
+*** New keywords auth_success_query and auth_failure_query set 
+SQL queries to be executed upon authentication success and failure,
+respectively. These may maintain failure counts, that can be
+used by group_query to control the authentication.
 
 * Bugfixes
 

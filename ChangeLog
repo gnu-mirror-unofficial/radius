@@ -1,3 +1,34 @@
+2004-05-24  Sergey Poznyakoff
+
+	* configure.ac: Raised version number to 1.2.92
+	* NEWS: Updated
+	* include/radsql.h: Prefixed global functions with radiusd_.
+	* radiusd/acct.c: Removed #ifdef USE_SQL.
+	* radiusd/files.c: Likewise.
+	* radiusd/radius.c: Likewise.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/request.c: Likewise.
+
+	* raddb/dict/standard: New attribute Auth-Failure-Trigger
+	* radiusd/auth.c (sfn_validate): Depending on the result of
+	rad_check_password call execute an appropriate SQL query.
+	Invoke authentication trigger is rad_check_password returned
+	auth_fail.
+	* radiusd/sql.c: New queries auth_success_query and
+	auth_failure_query.
+	(rad_sql_init): Renamed to radiusd_sql_config
+	(rad_sql_cleanup) Renamed to radiusd_sql_cleanup
+	(rad_sql_acct): Renamed to radiusd_sql_acct
+	(rad_sql_pass): Renamed to radiusd_sql_pass
+	(rad_sql_checkgroup-rad_sql_checkgroup): Renamed to
+	radiusd_sql_checkgroup
+	(rad_sql_reply_attr_query): Renamed to radiusd_sql_reply_attr_query
+	(rad_sql_check_attr_query): Renamed to radiusd_sql_check_attr_query
+	(radiusd_sql_auth_result_query): New function. Execute
+	auth_failure_query or auth_success_query.
+
+	* radlast/radlast.c (print_acct_toggle): Forward declaration.
+	
 2004-05-18  Sergey Poznyakoff
 
 	* raddb/sqlserver (mlc_user_query): Fixed

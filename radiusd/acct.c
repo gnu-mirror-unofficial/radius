@@ -186,6 +186,10 @@ rad_acct_system(grad_request_t *radreq, int dowtmp)
         int port_seen = 0;
         char buf[MAX_LONGNAME];
 
+	/* Do not do anything if system accounting is not requested */
+	if (!acct_system)
+		return 0;
+	
         /* A packet should have Acct-Status-Type attribute */
         if ((vp = grad_avl_find(radreq->request, DA_ACCT_STATUS_TYPE))
 	        == NULL) {
@@ -369,6 +373,82 @@ rad_acct_system(grad_request_t *radreq, int dowtmp)
                 grad_log_req(L_NOTICE, radreq, _("NOT writing wtmp record"));
         }
         return ret;
+}
+
+static void
+disable_system_acct()
+{
+        radut_file_t file;
+	struct radutmp *up;
+	int written = 0;
+		
+        if ((file = rut_setent(radutmp_path, 0)) == NULL)
+                return;
+
+        while (up = rut_getent(file)) {
+                switch (up->type) {
+		case P_LOGIN:
+                        up->type = P_IDLE;
+                        time(&up->time);
+                        rut_putent(file, up);
+                        /* Add a logout entry to the wtmp file. */
+                        write_wtmp(up);
+			break;
+
+		case P_ACCT_ENABLED:
+			time(&up->time);
+			up->type = P_ACCT_DISABLED;
+			rut_putent(file, up);
+			write_wtmp(up);
+			written = 1;
+			break;
+
+		case P_ACCT_DISABLED:
+			written = 1;
+			break;
+                }
+	}
+
+	if (!written) {
+		struct radutmp ut;
+		
+		memset(&ut, 0, sizeof ut);
+		time(&ut.time);
+		ut.type = P_ACCT_DISABLED;
+		rut_putent(file, &ut);
+	}
+	rut_endent(file);
+	grad_log(L_INFO, _("System accounting is disabled"));
+}
+
+static void
+enable_system_acct()
+{
+        radut_file_t file;
+	struct radutmp *up, ut;
+		
+        if ((file = rut_setent(radutmp_path, 0)) == NULL)
+                return;
+
+        while (up = rut_getent(file)) {
+                if (up->type == P_ACCT_DISABLED) {
+                        up->type = P_ACCT_ENABLED;
+                        time(&up->time);
+                        rut_putent(file, up);
+                        /* Add an entry to the wtmp file. */
+                        write_wtmp(up);
+                }
+	}
+	rut_endent(file);
+}
+
+void
+system_acct_init()
+{
+	if (acct_system)
+		enable_system_acct();
+	else
+		disable_system_acct();
 }
 
 static int
@@ -691,7 +771,12 @@ radutmp_mlc_close(struct radutmp *up)
 	radutmp_putent(radutmp_path, up, DV_ACCT_STATUS_TYPE_STOP);
 }
 
-
+int
+radutmp_mlc_enabled_p()
+{
+	return acct_system;
+}
+	
 
 
 

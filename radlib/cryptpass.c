@@ -133,6 +133,6 @@ decrypt_password(password, pair, vector, secret)
 		for (j = 0; j < AUTH_VECTOR_LEN; j++, i++)
 			password[i] ^= digest[j];
 	}
-	password[passlen+1] = 0;
+	password[passlen] = 0;
 	efree(md5buf);
 }

@@ -897,8 +897,8 @@ Both @code{Prefix} and @code{Suffix} attributes may be specified in
 a profile. In this case the record is matched only if the username
 contains both prefix and suffix specified.
 
-@xref{Suffix}
-@xref{Strip-User-Name}
+@ref{Suffix}
+@ref{Strip-User-Name}
 
 @comment **************************************************************
 @node Suffix, Group, Prefix, Attribute list
@@ -930,8 +930,8 @@ Both @code{Prefix} and @code{Suffix} attributes may be specified in
 a profile. In this case the record is matched only if the username
 contains both prefix and suffix specified.
 
-@xref{Prefix}
-@xref{Strip-User-Name}
+@ref{Prefix}
+@ref{Strip-User-Name}
 
 @comment **************************************************************
 @node Group, Crypt-Password, Suffix, Attribute list

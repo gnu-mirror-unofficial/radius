@@ -24,8 +24,8 @@ radiusd_SOURCES = radiusd.c acct.c auth.c exec.c files.c menu.c sql.c\
 
 radiusd_LDADD   = @LEXLIB@ ../radlib/librad.la -L../snmplib -lsnmp $(LIBSQL) @RADIUSD_LDADD@
 BUILT_SOURCES   = config.c rewrite.c
-DISTCLEANFILES  = config.c rewrite.c y.output
-INCLUDES        = -I$(top_srcdir) -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp -I$(top_srcdir)/radlib @INCLUDEPATH@
+MAINTAINERCLEANFILES=config.c rewrite.c y.output
+INCLUDES        = -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp -I$(top_srcdir)/radlib @INCLUDEPATH@
 EXTRA_DIST      = config.y rewrite.y .gdbinit
 YLWRAP = $(SHELL) $(top_srcdir)/ylwrap
 
@@ -44,8 +44,6 @@ SUFFIXES=.S .c .ln .o .s
 # Maintainer-specific code
 if MAINTAINER_MODE
 
-CFLAGS=-ggdb -DMAINTAINER_MODE=1
-MAINTAINERCLEANFILES=core *~ err out 
 CLEANFILES=*.ln
 LINTFLAGS=-gezra -fAI -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 $(INCLUDES)
 radiusd_LNS=$(radiusd_SOURCES:.c=.ln)

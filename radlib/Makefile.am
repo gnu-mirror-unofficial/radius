@@ -21,7 +21,7 @@ librad_la_SOURCES=intl.c radpaths.c sysdep.c alloc.c radprintf.c \
 		 md5.c md5crypt.c mem.c leakdetect.c \
                  users_gram.c users_lex.c util.c client.c \
 		 insist.c debug.c slist.c dbm.c \
-		 radutmp.c
+		 radutmp.c nas.c
 LIBADD=@LIBOBJS@
 librad_la_LIBADD = $(LIBADD:.o=.lo)
 liblog_la_SOURCES=log.c 
@@ -31,8 +31,8 @@ AM_CFLAGS=-static
 
 BUILT_SOURCES=users_gram.c users_lex.c
 noinst_HEADERS=users_gram.h 
-DISTCLEANFILES=users_gram.c users_gram.h users_lex.c
-INCLUDES= -I$(srcdir) -I$(top_srcdir)/include @INCLUDEPATH@
+MAINTAINERCLEANFILES=users_gram.c users_gram.h users_lex.c
+INCLUDES= -I$(top_srcdir)/include @INCLUDEPATH@
 EXTRA_DIST=users.y users.l mysql.c postgres.c strncasecmp.c strerror.c \
            obstack.c obstack.h rx.c rx.h regex.h regexp.h \
 	   getopt.c getopt1.c getopt.h
@@ -51,9 +51,8 @@ users_lex.o: users_lex.c users_gram.h $(top_srcdir)/include/parser.h
 users_gram.o: users_gram.c users_gram.h $(top_srcdir)/include/parser.h
 
 SUFFIXES=.S .c .ln .o .s
+
 if MAINTAINER_MODE
-CFLAGS=-ggdb -DMAINTAINER_MODE=1
-MAINTAINERCLEANFILES=core *~ err out
 
 CLEANFILES=*.ln
 LINTFLAGS=-gzra -fAI -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)

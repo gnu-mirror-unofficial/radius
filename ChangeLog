@@ -1,3 +1,73 @@
+2001-08-22 Sergey Poznyakoff
+
+	Somewhat regretfully, removed radlib/radprintf.c, and
+	switched to using snprintf functions instead of
+	rad.*printf(). The latter were OK, but the only
+	major advantage they provided was %I and %A specifiers,
+	which are not such a big deal, after all. Besides, they
+	make lint ang gcc -Wall angry...
+	Points 1,2 and 4 of left-to-do's mentioned in the entry
+	from yesterday remain in force.
+
+	* configure.in: Check for snprintf function.
+	* radlib/radprintf.c: removed.
+	* radlib/snprintf.[ch]: (new) (v)snprintf replacement for
+	systems lacking it.
+
+	* radlib/util.c: debug_pair(), format_ipaddr(),
+	format_pair() functions.
+	* include/radius.h: Prototypes for the above functions.
+	* include/radiusd.h: Removed not needed protos.
+	* include/log.h: Removed prototypes for rad.*printf() functions.
+
+	* radiusd/debugmod.c: Removed (generated file).
+	* radlib/debugmod.c: Removed (generated file).
+
+	* radiusd/.cvsignore: Added debugmod.c
+	* radlib/.cvsignore: Added debugmod.c
+
+        * client/pam_radius/pam_radius.c: Changed rad.*printf calls to
+	(v)snprintf calls, using format_pair and format_ipaddr where
+	necessary:
+        * radiusd/acct.c: Likewise.
+        * radiusd/auth.c: Likewise.
+        * radiusd/builddbm.c: Likewise.
+        * radiusd/checkrad.c: Likewise.
+        * radiusd/config.y: Likewise.
+        * radiusd/files.c: Likewise.
+        * radiusd/log.c: Likewise.
+        * radiusd/menu.c: Likewise.
+        * radiusd/radiusd.c: Likewise.
+        * radiusd/radutil.c: Likewise.
+        * radiusd/rewrite.y: Likewise.
+        * radiusd/snmpserv.c: Likewise.
+        * radiusd/stat.c: Likewise.
+        * radlib/avl.c: Likewise.
+        * radlib/client.c: Likewise.
+        * radlib/log.c: Likewise.
+        * radlib/radutmp.c: Likewise.
+        * radlib/strerror.c: Likewise.
+        * radlib/util.c: Likewise.
+        * raduse/raduse.c: Likewise.
+        * sql/postgres.c: Likewise.
+
+        * radlib/vasprintf.c: Reverted previous change.
+
+	* include/radmibs.h: removed (generated file).
+
+	* TODO: Removed radprintf-related entry.
+
+        * radlib/Makefile.am: Added snprintf.[ch]. Moved headers to
+	noinst_HEADERS variable. Removed -fAI from the lint invocation.
+
+        * radiusd/Makefile.am: Removed -fAI from the lint invocation.
+        * radlast/Makefile.am: Likewise.
+        * radscm/Makefile.am: Likewise.
+        * raduse/Makefile.am: Likewise.
+        * radwho/Makefile.am: Likewise.
+        * radzap/Makefile.am: Likewise.
+        * sql/Makefile.am: Likewise.
+
 2001-08-21 Sergey Poznyakoff
 
 	Further changes to log subsystem. This commit compiles

@@ -189,7 +189,7 @@ snmp_session_open(struct snmp_session *sp, ip_addr_t local_ip,
                 sp->retries = snmp_def.retries;
         if (local_ip == 0)
                 local_ip = INADDR_ANY;
-        sp->sd = socket(AF_INET, SOCK_DGRAM, 0);
+        sp->sd = socket(PF_INET, SOCK_DGRAM, 0);
         if (sp->sd < 0) {
                 SNMP_SET_ERRNO(E_SNMP_SOCKET);
                 snmp_session_free(sp);

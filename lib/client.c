@@ -180,7 +180,7 @@ rad_clt_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
                 radlog(L_ERR, _("invalid port type"));
                 return NULL;
         }
-        sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+        sockfd = socket(PF_INET, SOCK_DGRAM, 0);
         if (sockfd < 0) {
                 radlog(L_ERR|L_PERROR, "socket");
                 return NULL;

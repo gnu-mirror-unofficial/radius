@@ -92,7 +92,7 @@ get_first_ip_nameindex()
 	struct ifconf ifc;
 	struct sockaddr_in *sinp;
 	int rq_len, last_len;
-	int fd = socket (AF_INET, SOCK_STREAM, 0);
+	int fd = socket (PF_INET, SOCK_STREAM, 0);
 	
 	if (fd == -1)
 		return INADDR_ANY;

@@ -45,7 +45,6 @@
 /* ************************************************************************* */
 /* Shared memory interface */
 
-extern char *radacct_dir;
 static int tempfd = -1;
 static unsigned offset;
 static char *shmem_base;
@@ -236,7 +235,7 @@ stat_get_port_index(NAS *nas, int port_no)
 		if (port->ip == 0)
 			break;
 		if (port->ip == nas->ipaddr && port->port_no == port_no)
-			return port - port_stat;
+			return port - port_stat + 1;
 	}
 	return 0;
 }

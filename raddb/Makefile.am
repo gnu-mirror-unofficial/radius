@@ -42,7 +42,7 @@ rewrite \
 rewrite.full \
 sqlserver 
 
-raddb_files_600 = clients users 
+raddb_files_600 = clients client.conf users 
 raddb_files=$(raddb_files_600) $(raddb_files_644)
 EXTRA_DIST=$(raddb_files)
 

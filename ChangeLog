@@ -1,3 +1,16 @@
+2002-04-25  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* radiusd/acct.c (rad_acct_system): Ignore only requests
+	  without NAS-Port-Id or with Acct-Type!=System
+	* radiusd/radius.c (rad_create_pdu): Changed error
+	  control.
+	  (rad_send_reply): Append 'reply' back to radreq->request.
+	  This should be eliminated soon.
+	  (request_xmit): No need to drop the request
+	  if there is no xmit function associated with its type.
+	
+	* radiusd/.gdbinit: Handle SIGHUP. Set spawn_flag=1
+
 2002-04-15  Sergey Poznyakoff
 
 	* include/radius.h (typedef struct radius_req): New fields

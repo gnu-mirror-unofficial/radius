@@ -1,7 +1,7 @@
 #! /bin/sh
 # $Id$
 # This file is part of GNU Radius.
-# Copyright (C) 2001,2003 Free Software Foundation, Inc.
+# Copyright (C) 2001,2003,2004 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -18,20 +18,29 @@ RADOPT=
 GREPOPT=
 VAR=RADOPT
 
+usage() {
+    echo "usage: radgrep [radwho-options] [-- grep-options] regexp" 
+    exit ${1:-0}
+}
+
 # collect arguments for radwho
 while TEST($# -ne 0); 
 do
-	case $1 in
-		--)	VAR=GREPOPT # collect grep arguments 
-			SHIFT;;
-		-*) 	eval $VAR=\"\$$VAR $1\"
-			SHIFT;;
-		*)	break;;
-	esac
+  case $1 in
+      OPT_HELP) usage;;
+      OPT_VERSION)
+                echo "$0: PACKAGE_STRING"
+                exit 0;;
+      --)	VAR=GREPOPT # collect grep arguments 
+                SHIFT;;
+      -*) 	eval $VAR=\"\$$VAR $1\"
+                SHIFT;;
+      *)	break;;
+  esac
 done
 
 if TEST($# -eq 0); then
-	echo "usage: radgrep [radwho-options] [-- grep-options] regexp" >&2
-	exit 1
+	usage 1 >&2
 fi
 radwho $RADOPT | grep $GREPOPT $*
+# End of radgrep.m4

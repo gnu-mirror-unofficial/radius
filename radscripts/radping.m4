@@ -18,24 +18,24 @@ PATH=$PATH:/sbin:/usr/sbin
 usage() {
     echo "usage: radping login"
     echo "       radping -c caller_id"
-    exit 1
+    exit ${1:-0}
 }
 
-set -- `GETOPT "c" $*`
 while TEST($# -ne 0); 
 do
-	case $1 in
-	-c) 	
-		CALLERID=1
-		SHIFT;;
-	--)	SHIFT
-		break;;
-	*)	usage;;
-	esac
+  case $1 in
+      OPT_HELP) usage;;
+      OPT_VERSION)
+                echo "$0: PACKAGE_STRING"
+                exit 0;;
+      -c)       CALLERID=1
+	        SHIFT;;
+      *)        break;;
+  esac
 done
 
 if TEST($# != 1); then
-    usage
+    usage 1 >&2
 fi
 
 if TEST("$CALLERID" = "1"); then
@@ -53,3 +53,4 @@ if TEST(x"$IPADDR" = x""); then
 fi
 ping $IPADDR 
 	     
+# End of radping.m4

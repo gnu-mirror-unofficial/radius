@@ -26,93 +26,104 @@ PATH=/bin:/usr/bin:/usr/ucb:$PATH; export PATH
 [PROGNAME]=PROGNAME
 
 usage() {
-	cat - <<EOF
+    cat - <<EOF
 usage: $0 {start|stop|restart|reload|which|dump}
 EOF
-	exit 0
+    exit ${1:-0}
 }
 
 start() {
-	$[PROGNAME] ${1} && {
-		sleep 5
-		if TEST(-r $[PIDFILE]) ; then
-			echo "RADIUS server started"
-		else
-			echo "can't start RADIUS server"
-		fi
-	}
+    $[PROGNAME] ${1} && {
+	sleep 5
+	if TEST(-r $[PIDFILE]) ; then
+	    echo "RADIUS server started"
+	else
+	    echo "can't start RADIUS server"
+	fi
+    }
 }
 
 stop() {
-	TEST($RUNNING -eq 1) && {
-		echo "sending TERM to RADIUS server ($PID)"
-		kill -TERM $PID && sleep 5
-		TEST(-r $[PIDFILE]) && {
-			echo "radiusd ($PID) is still running. Sending KILL"
-			kill -9 $PID && sleep 5
-		}
+    TEST($RUNNING -eq 1) && {
+	echo "sending TERM to RADIUS server ($PID)"
+	kill -TERM $PID && sleep 5
+	TEST(-r $[PIDFILE]) && {
+	    echo "radiusd ($PID) is still running. Sending KILL"
+	    kill -9 $PID && sleep 5
 	}
-	rm -f $[PIDFILE]
+    }
+    rm -f $[PIDFILE]
 }
 
 chan_signal() {
-	case $1 in
-		reload) 
-                        TEST($RUNNING -eq 0) && {
-                                echo $PROCESS
-                                exit 1
-                        }
-			kill -HUP  $PID && echo "Reloading configs";;
-		start)
-			TEST($RUNNING -eq 1) && {
-				echo "$0: start: radiusd (pid $PID) already running"
-				exit 1
-			}
-			rm -f $[PIDFILE]
-			SHIFT
-			start $*;;
-		stop)   stop;;
+    case $1 in
+	OPT_HELP)
+	   usage;;
+	      
+	OPT_VERSION)
+           echo "$0: PACKAGE_STRING"
+           exit 0;;
+    
+	reload) 
+           TEST($RUNNING -eq 0) && {
+	       echo $PROCESS
+	       exit 1
+	   }
+	   kill -HUP  $PID && echo "Reloading configs";;
+	   
+	start)
+	   TEST($RUNNING -eq 1) && {
+	       echo "$0: start: radiusd (pid $PID) already running"
+	       exit 1
+	   }
+	   rm -f $[PIDFILE]
+	   SHIFT
+	   start $*;;
+	   
+	stop)
+	   stop;;
 
-		which)  echo $PROCESS;;
+	which)
+	   echo $PROCESS;;
 
-		restart)
-			stop
-			SHIFT
-			start $*;;
+	restart)
+	   stop
+	   SHIFT
+	   start $*;;
 
-		dump)
-                        TEST($RUNNING -eq 0) && {
-                                echo $PROCESS
-                                exit 1
-                        }
-			kill -USR2 $PID && echo "Dumping users database";;
+	dump)
+	   TEST($RUNNING -eq 0) && {
+	       echo $PROCESS
+	       exit 1
+	   }
+	   kill -USR2 $PID && echo "Dumping users database";;
 			
-		*)	usage;;
-	esac
+	*) usage >&2;;
+    esac
 
-	exit 0
+    exit 0
 }
 
 if TEST(-f $[PIDFILE]); then
-	PID=`cat $[PIDFILE]`
-	PROCESS=`$[PS] -p $PID | sed -n '2p'`
-	RUNNING=1
-	TEST(`echo $PROCESS | wc -w` -ne 0) || {
-		PROCESS="radiusd (pid $PID?) not running"
-		RUNNING=0
-	}
-else
-	PROCESS="radiusd not running"
+    PID=`cat $[PIDFILE]`
+    PROCESS=`$[PS] -p $PID | sed -n '2p'`
+    RUNNING=1
+    TEST(`echo $PROCESS | wc -w` -ne 0) || {
+	PROCESS="radiusd (pid $PID?) not running"
 	RUNNING=0
+    }
+else
+    PROCESS="radiusd not running"
+    RUNNING=0
 fi
 
 if TEST(x"$1" = x"--debug"); then
-	DEBUG=$1
-	SHIFT
+    DEBUG=$1
+    SHIFT
 fi	    
 
 if TEST(x"$1" = x"-s" -o x"$1" = x"--signal"); then
-	SHIFT 
+    SHIFT 
 fi
 chan_signal $*
 

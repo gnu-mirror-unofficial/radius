@@ -1,6 +1,7 @@
+#! /bin/sh
 # $Id$
 # This file is part of GNU Radius.
-# Copyright (C) 2001 Free Software Foundation, Inc.
+# Copyright (C) 2001,2004 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -13,4 +14,13 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 include(SRCDIR/radscripts.m4)dnl
 
+case "$1" in
+    OPT_HELP) echo "usage: $0"
+              exit 0;;
+    OPT_VERSION) echo "$0: PACKAGE_STRING"
+              exit 0;;
+esac
+
 SBINDIR/radiusd -mb $*
+
+# End of builddbm.m4

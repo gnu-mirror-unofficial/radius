@@ -1707,7 +1707,7 @@ of @AVP{}s to be sent to the server.
  61     input "Enter session ID: " SID
  62   if $@{PID:-@} = ""
  63     input "Enter NAS port ID: " PID
- 64   send auth Accounting-Request $1 + \
+ 64   send acct Accounting-Request $1 + \
             (Acct-Session-Id = $SID NAS-Port-Id = $PID)
 @end group
 @end smallexample

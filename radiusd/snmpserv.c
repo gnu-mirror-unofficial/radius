@@ -165,6 +165,31 @@ destroy_netlist(netlist)
 	efree(netlist->name);
 }
 
+int
+snmp_cfg_listen(argc, argv, block_data, handler_data)
+	int argc;
+	cfg_value_t *argv;
+	void *block_data;
+	void *handler_data;
+{
+	int i, errcnt = 0;
+	
+	for (i = 1; i < argc; i++) 
+		if (argv[i].type != CFG_HOST) {
+			cfg_type_error(CFG_HOST);
+			errcnt++;
+		}
+	
+	if (errcnt == 0 && radius_mode == MODE_DAEMON) 
+		for (i = 1; i < argc; i++) 
+			socket_list_add(&socket_first,
+					R_SNMP,
+					argv[i].v.host.ipaddr,
+					argv[i].v.host.port > 0 ?
+					argv[i].v.host.port : snmp_port);
+	return 0;
+}
+
 static int
 snmp_cfg_network(argc, argv, block_data, handler_data)
 	int argc;
@@ -287,6 +312,7 @@ static struct cfg_stmt acl_stmt[] = {
 
 struct cfg_stmt snmp_stmt[] = {
 	{ "port", CS_STMT, NULL, cfg_get_port, &snmp_port, NULL, NULL },
+	{ "listen", CS_STMT, NULL, snmp_cfg_listen, NULL, NULL, NULL },
 	{ "max-requests", CS_STMT, NULL,
 	  cfg_get_integer, &request_class[R_SNMP].max_requests,
 	  NULL, NULL },

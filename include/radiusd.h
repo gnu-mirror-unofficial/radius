@@ -531,6 +531,7 @@ void socket_list_iterate(SOCKET_LIST *slist, void (*fun)());
 /* signal.c */
 #define SH_SYNC  0
 #define SH_ASYNC 1
+#define SH_DELETED 2
 
 typedef void *rad_sigid_t;
 typedef int (*rad_signal_t) (int sig, void *data, rad_sigid_t id,

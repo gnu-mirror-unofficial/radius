@@ -1,3 +1,43 @@
+2003-11-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* include/argcv.h: Updated from the mailutils repository (with
+	certain additions).
+	* lib/argcv.c: Likewise.
+	* lib/ascend.c: Use new argcv_get syntax.
+	* lib/envar.c: Likewise.
+	* lib/raddb.c: Likewise.
+	* lib/realms.c: Likewise.
+	* radiusd/exec.c: Likewise.
+	* radiusd/tsh.c: Likewise.
+	* radtest/main.c: Likewise.
+	
+	* lib/debug.c (auth_codes_abbr): Added more request codes.
+
+	* radiusd/log.c (run_log_hook): Changed first parameter of
+	the logging hook from string to integer representing the
+	request code.
+	* radiusd/rewrite.y (bi_request_code_string,bi_quote_string)
+	(bi_unquote_string): New builtin functions.
+	
+	* raddb/config.in: Removed suffix hook
+	* raddb/log-hook.rw: Use new prefix format. Provide functions
+	for generating backward-compatible logs.
+	
+	* NEWS: Updated
+
+2003-11-27  Sergey Poznyakoff  
+
+	* include/radius.h (avp_null_string): Renamed to
+	avp_null_string_p.
+	* lib/avl.c: Likewise.
+	* radiusd/proxy.c: Likewise.
+	* include/radiusd.h (rad_auth_check_username): New function
+	* radiusd/auth.c: Likewise.
+	* radiusd/radius.c (radius_respond): Check the username validity
+	before hints_setup().
+	Increase accounting request counter upon receiving each accounting
+	request.
+	
 2003-11-27  Sergey Poznyakoff
 
 	* NEWS: Updated

@@ -1,4 +1,4 @@
-GNU Radius NEWS -- history of user-visible changes. 2003-11-27
+GNU Radius NEWS -- history of user-visible changes. 2003-11-28
 Copyright (C) 2002,2003 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
@@ -36,22 +36,7 @@ will make Orig-User-Name attribute visible in detailed log files.
 
 *** usual dotted-quad notation may be used to represent IP numbers.
 
-*** gsub(R,S,T): built-in function
-For each substring matching the regular expression R in the string
-T, substitute the string s, and return the resulting string.
-
-*** qprn(S): built-in function
-Replace all non-printable characters in string S with their
-corresponding hex value preceeded by a percent sign. Return the
-resulting string.
-
-*** toupper(S): built-in function
-Returns the copy of the string S with all alphabetical characters
-converted to upper case.
-
-*** tolower(S): built-in function
-Returns the copy of the string S with all alphabetical characters
-converted to lower case.
+*** a number of new built-in functions is added
 
 *** #pragma regexp allows to alter the type of regular expressions
 used. The rest of line following `#pragma regexp' must consist of

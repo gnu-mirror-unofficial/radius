@@ -1,6 +1,5 @@
-2003-11-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+2003-11-28  Sergey Poznyakoff 
 
-	* extensions.texi (Built-in Functions):
 	* configure.texi: Document new features.
 	* extensions.texi: Document new features.
 

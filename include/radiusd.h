@@ -450,6 +450,7 @@ char *radius_xlate(struct obstack *obp, char *str,
 void sqllog __PVAR((int status, char *msg, ...));
 
 /* rewrite.y */
+extern int rewrite_stack_size;
 int run_rewrite(char *name, VALUE_PAIR *req);
 int parse_rewrite(char *name);
 int va_run_init __PVAR((char *name, VALUE_PAIR *request, char *typestr, ...));

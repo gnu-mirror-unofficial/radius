@@ -110,6 +110,18 @@ drv_guile() {
                        --build-dir $[BUILDDIR]
 }
 
+start_server() {
+    rm -f $1/radiusd.pid >/dev/null 2>&1
+    $RADIUSD -d $1 \
+             -l $1/log \
+	     -a $1/acct \
+	     -P $1
+    while [[ ! -r $1/radiusd.pid ]]
+    do
+        sleep 1
+    done
+}
+
 stop_server() {
     for dir in $*
     do
@@ -127,21 +139,14 @@ LOCAL_CONF=$[BUILDDIR]/test/raddb
 PROXY_CONF=$[BUILDDIR]/test/proxy
 
 drv_dejagnu() {
-    $RADIUSD -d $LOCAL_CONF \
-             -l $LOCAL_CONF/log \
-	     -a $LOCAL_CONF/acct \
-	     -P $LOCAL_CONF
+    start_server $LOCAL_CONF
     if test $PROXY -ne 0; then
-        $RADIUSD -d $PROXY_CONF \
-                 -l $PROXY_CONF/log \
-	         -a $PROXY_CONF/acct \
-	         -P $PROXY_CONF
+	start_server $PROXY_CONF
 	CONF=$PROXY_CONF
     else
         CONF=$LOCAL_CONF
     fi
     trap "stop_server $LOCAL_CONF $PROXY_CONF" 1 3 15
-    sleep 5
     $RADTEST -d $CONF 2>/tmp/radtest.err
     stop_server $LOCAL_CONF $PROXY_CONF
 }	     

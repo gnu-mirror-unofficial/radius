@@ -1,3 +1,86 @@
+2003-05-29  Sergey Poznyakoff 
+
+	* radiusd/scheme.c: New configuration keyword `outfile'
+	* radiusd/acct.c: Removed the ComOS hack. 
+	* radiusd/files.c (hints_setup): Work even if the request
+	lacks User-Name
+	* examples/comos.rw: New file.
+	* examples/Makefile.am: Added new file.
+	
+	* Makefile.am: Fixed copyleft statement.
+	* configure.ac: Likewise.
+	* client/Makefile.am: Likewise.
+	* client/nas/Makefile.am: Likewise.
+	* client/nas/nas.scm.in: Likewise.
+	* client/pam_radius/Makefile.am: Likewise.
+	* contrib/Makefile.am: Likewise.
+	* db/db.m4: Likewise.
+	* db/mysql.m4: Likewise.
+	* db/pgsql.m4: Likewise.
+	* doc/Makefile.am: Likewise.
+	* doc/man/Makefile.am: Likewise.
+	* doc/rfc/Makefile.am: Likewise.
+	* doc/texinfo/Makefile.am: Likewise.
+	* examples/ascend.rw: Likewise.
+	* examples/cisco.rw: Likewise.
+	* examples/config.syntax: Likewise.
+	* examples/filter.rw: Likewise.
+	* examples/jetstream.rw: Likewise.
+	* examples/nt.rw: Likewise.
+	* include/Makefile.am: Likewise.
+	* include/snmp/Makefile.am: Likewise.
+	* lib/Makefile.am: Likewise.
+	* lib/envar.c: Likewise.
+	* lib/logger.c: Likewise.
+	* lib/strcspn.c: Likewise.
+	* m4/guile.m4: Likewise.
+	* m4/inaddr.m4: Likewise.
+	* mibs/GNU-RADIUS-SERVER-MIB.txt: Likewise.
+	* mibs/GNU-RADIUS-STAT-MIB.txt: Likewise.
+	* mibs/Makefile.am: Likewise.
+	* mibs/radmibs.h.in: Likewise.
+	* raddb/Makefile.am: Likewise.
+	* radiusd/.gdbinit: Likewise.
+	* radiusd/Makefile.am: Likewise.
+	* radiusd/testsuite/Makefile.am: Likewise.
+	* radiusd/testsuite/findport.c: Likewise.
+	* radiusd/testsuite/test.sh.m4: Likewise.
+	* radiusd/testsuite/lib/radiusd.exp: Likewise.
+	* radiusd/testsuite/proxy/Makefile.am: Likewise.
+	* radiusd/testsuite/proxy/config.in: Likewise.
+	* radiusd/testsuite/raddb/Makefile.am: Likewise.
+	* radiusd/testsuite/raddb/acct.scm.in: Likewise.
+	* radiusd/testsuite/raddb/ascend.bin: Likewise.
+	* radiusd/testsuite/raddb/auth.bin: Likewise.
+	* radiusd/testsuite/raddb/auth.scm: Likewise.
+	* radiusd/testsuite/raddb/config.in: Likewise.
+	* radiusd/testsuite/raddb/filter: Likewise.
+	* radiusd/testsuite/raddb/hints: Likewise.
+	* radiusd/testsuite/raddb/huntgroups: Likewise.
+	* radiusd/testsuite/raddb/users.in: Likewise.
+	* radlast/Makefile.am: Likewise.
+	* radscm/Makefile.am: Likewise.
+	* radscm/boot.scm: Likewise.
+	* radscm/radsession.in: Likewise.
+	* radscripts/Makefile.am: Likewise.
+	* radscripts/builddbm.m4: Likewise.
+	* radscripts/radauth.m4: Likewise.
+	* radscripts/radctl.m4: Likewise.
+	* radscripts/radgrep.m4: Likewise.
+	* radscripts/radping.m4: Likewise.
+	* radtest/Makefile.am: Likewise.
+	* radwho/Makefile.am: Likewise.
+	* radzap/Makefile.am: Likewise.
+	* scripts/Makefile.am: Likewise.
+	* scripts/config-conv.awk: Likewise.
+	* scripts/debug.sh: Likewise.
+	* scripts/debugmod.m4: Likewise.
+	* scripts/dict.awk: Likewise.
+	* scripts/guile/Makefile.am: Likewise.
+	* scripts/guile/1.4/Makefile.am: Likewise.
+	* scripts/guile/1.6/Makefile.am: Likewise.
+	* sql/Makefile.am: Likewise.
+
 2003-05-29  Sergey Poznyakoff  
 
 	* configure.ac: Raised the patchlevel

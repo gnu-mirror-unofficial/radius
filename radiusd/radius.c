@@ -484,3 +484,11 @@ radius_respond(REQUEST *req)
         }       
         return 0;
 }
+
+void
+radius_req_register_locus(RADIUS_REQ *req, LOCUS *loc)
+{
+	/*if (!some_global_flag)
+  	     return; */
+	list_prepend(req->locus_list, loc);
+}

@@ -21,7 +21,6 @@
 
 #include <radius.h>
 #include <radsql.h>
-#include <pth.h>
 
 static SQL_DISPATCH_TAB *sql_dispatch_tab[] = {
         NULL,

@@ -478,11 +478,28 @@ rpp_kill(pid_t pid, int signo)
 		rpp_proc_t *p = rpp_lookup_pid(pid);
 		if (p) {
 			kill(p->pid, signo);
-			_rpp_remove(p);
+			rpp_check_pid(p->pid);
 		} else
      		        return 1;
 	} else 
 		grad_list_iterate(process_list, _kill_itr, &signo);
+	return 0;
+}
+
+pid_t
+rpp_check_pid(pid_t pid)
+{
+	int status;
+	rpp_proc_t *p = rpp_lookup_pid(pid);
+	if (!p)
+		return -1;
+	if (p->status != process_finished) {
+		pid_t npid = waitpid(pid, &status, WNOHANG);
+		if (npid <= 0)
+			return pid;
+		rpp_status_changed(pid, status);
+	}
+	rpp_remove (p);
 	return 0;
 }
 

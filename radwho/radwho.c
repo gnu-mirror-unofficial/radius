@@ -492,7 +492,7 @@ local_who()
 			rt.type = P_CONSOLE;
 			strncpy(rt.login, ut.ut_name, RUT_NAMESIZE);
 			strncpy(rt.orig_login, ut.ut_host, RUT_NAMESIZE);
-#ifdef __svr4__
+#if defined __svr4__ || defined __sgi
 			rt.time = ut.ut_xtime;
 #else
 			rt.time = ut.ut_time;

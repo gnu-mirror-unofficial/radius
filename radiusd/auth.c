@@ -810,10 +810,15 @@ sfn_init(AUTH_MACH *m)
 #endif
 
 	/* If this request was proxied to another server, we need
-	   to add the reply pairs from the server to the initial reply. */
+	   to add the reply pairs from the server to the initial reply.
+	   We need to scan and decrypt them first. It could have been
+	   done in proxy_receive, but this would mean that their plaintext
+	   values would hang around in queue, which is not acceptable. */
 
         if (radreq->server_reply) {
-                m->user_reply = radreq->server_reply;
+                m->user_reply =
+			radius_decrypt_request_pairs(radreq,
+						     radreq->server_reply);
                 radreq->server_reply = NULL;
         }
 

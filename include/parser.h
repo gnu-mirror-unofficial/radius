@@ -36,4 +36,4 @@ extern MATCHING_RULE *pair_result();
 int init_parse(char *name, int complain);
 int init_lex(char *name);
 void done_lex();
-void users_sync();
+int users_sync();

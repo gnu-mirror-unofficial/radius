@@ -1,0 +1,48 @@
+@c This is part of the Radius manual.
+@c Copyright (C) 2004 Free Software Foundation, Inc.
+@c Written by Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
+@node radtest
+@section radtest
+@pindex radtest
+@UNREVISED{}
+
+@command{Radtest} provides a simple radius client shell. Its main
+purpose is to provide a simple and convenient language for sending
+requests to @RADIUS{} servers and analyzing their reply packets.
+
+@menu
+* Interacting with Radius Servers::
+* Values and Variables::
+* Conditional Statements::
+* Loops::
+* Built-in Primitives::
+* Complete Radtest Syntax Description::
+@end menu
+
+@node Interacting with Radius Servers
+@subsection Interacting with Radius Servers
+@UNREVISED{}
+
+@node Values and Variables
+@subsection Values and Variables
+@UNREVISED{}
+
+@node Conditional Statements
+@subsection Conditional Statements
+@UNREVISED{}
+
+@node Loops
+@subsection Loops
+@UNREVISED{}
+
+@node Built-in Primitives
+@subsection Built-in Primitives
+@UNREVISED{}
+
+@node Complete Radtest Syntax Description
+@subsection Complete Radtest Syntax Description
+@UNREVISED{}
+
+@c End of radtest.texi

@@ -753,8 +753,8 @@ rad_check_realm(realm)
    max. number of logins, do a second pass and validate all
    logins by querying the terminal server.
 
-   FIXME: mpp?
-   
+   MPP validation is not as reliable as I'd wish it to be.
+
    Return:
       0 == OK,
       1 == user exceeds its simultaneous-use parameter */
@@ -769,7 +769,8 @@ rad_check_multi(name, request, maxsimul, pcount)
         int             count;
         struct radutmp  *up;
         VALUE_PAIR      *fra;
-        int             mpp = 1;
+        int             mpp = 1; /* MPP flag. The sense is reversed: 1 if
+                                    the session is NOT an MPP one */
         UINT4           ipno = 0;
         
         if ((file = rut_setent(radutmp_path, 0)) == NULL)
@@ -812,7 +813,7 @@ rad_check_multi(name, request, maxsimul, pcount)
                                         case DV_FRAMED_PROTOCOL_PPP:
                                         case DV_FRAMED_PROTOCOL_SLIP:
                                         case 256: /* Ascend MPP */
-                                        mpp = 1;
+                                        	mpp = 0;
                                         }
                         } else {
                                 /* Hung record */

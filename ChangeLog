@@ -1,3 +1,17 @@
+2001-11-14 Sergey Poznyakoff
+
+	Tested SQL check pairs support.
+
+	* db/db.m4: Changed structure of attrib table to allow for
+	retrieving the check pairs from it.
+	* raddb/sqlserver: Removed obsolete attr_query. Added
+	check_attr_query and reply_attr_query.
+
+	* doc/texinfo/acct.texi: Fixed some overfill boxes in tex
+	output.
+	* doc/texinfo/bugs.texi: Likewise.
+	* doc/texinfo/radscm.texi: Likewise.
+
 2001-11-13 Sergey Poznyakoff
 
 	* configure.in: Fixed bug in handling --with-lib-path arguments.
@@ -1730,6 +1744,10 @@
 	Added client suite. Converted Makefile.am's to use libtool.
 	Added Makefile.am to raddb subdirectory.
 
+2001-05-03 Sergey Poznyakoff
+
+	-== Version 0.95 released ==-
+
 2001-04-28  Sergey Poznyakoff <gray@farlep.net>
 	Fixed errors in acct_stop_query and acct_keepalive_query in
 	the default sqlserver file. Reported by Oleg Gawriloff 
@@ -1820,6 +1838,10 @@
 	Got rid of last annoying traces of snprinf calls in
 	snmplib. Have to rewrite snmplib as soon as possible.
 
+2001-13-12 Sergey Poznyakoff
+
+	-== Version 0.94 released ==-
+
 2001-03-10  Sergey Poznyakoff <gray@farlep.net>
 	Rewritten radiusd/pam.c. 
 	Modified radiusd/log.c so that it echoes log messages to
@@ -1899,6 +1921,10 @@
 	<oaguirre@reacciun.ve>.
 	Fixed radlib/md5.c (did not work on Sparks). 
 
+2001-01-26 Sergey Poznyakoff
+
+	-== Version 0.93 released ==-
+
 2001-01-23  Sergey Poznyakoff <gray@farlep.net>
 	Added boolean shortcut evaluation and bitwise operations
 	to rewrite.y
@@ -1940,6 +1966,10 @@
 
 2000-12-25  Sergey Poznyakoff <gray@farlep.net>
 	Added support for PostgreSQL and fixed some bugs in sql.c
+
+2000-12-21 Sergey Poznyakoff
+
+	-== Version 0.92.1 released ==-
 
 2000-12-20  Sergey Poznyakoff <gray@farlep.net>
 	Replaced radlib/md5.c and raduse/screen.c

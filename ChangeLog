@@ -1,4 +1,16 @@
-2004-11-01  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+2004-11-02  Sergey Poznyakoff
+
+	* radiusd/rpp.c (pipe_read, pipe_write): Set errno = ETIMEDOUT
+	if select returned 0.
+	* radiusd/rewrite.y (rw_mach_destroy): Fix memory leak: pmatch was
+	not freed.
+	* radiusd/radutil.c (parse_dict_attr): Fixed memory overrun. The bug
+	was pretty long-standing: it was introduced with revision 1.10 
+	(2001-07-26). 
+	* radiusd/radius.c (radius_verify_digest): Minor fix: do not copy 
+	garbage bytes from the memory area after rawdata.
+
+2004-11-01  Sergey Poznyakoff 
 
 	* configure.ac: Allow to set LEAK_DETECT from the command line.
 	* radiusd/log.c: Added comment

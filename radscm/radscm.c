@@ -341,19 +341,18 @@ rad_scheme_init(int argc, char **argv)
         
 #include <radscm.x>
 
-        scm_loc = SCM_CDRLOC (scm_c_define ("%raddb-path", SCM_EOL));
-        *scm_loc = scm_makfrom0str(radius_dir);
+        scm_c_define ("%raddb-path", scm_makfrom0str(radius_dir));
 
         if (!(bootpath = getenv("RADSCM_BOOTPATH")))
-                bootpath = DATADIR;     
+		bootpath = DATADIR;     
 #if 0
         /*
          * Reset %load-path
-         */
-        scm = scm_cons(scm_makfrom0str(bootpath),
+         */ 
+        {SCM scm = scm_cons(scm_makfrom0str(bootpath),
                        RAD_SCM_SYMBOL_VALUE("%load-path"));
         scm_loc = SCM_CDRLOC (scm_c_define ("%load-path", SCM_EOL));
-        *scm_loc = scm;
+        *scm_loc = scm;}
 #endif
         /*
          * Load radius scheme modules

@@ -26,6 +26,7 @@ static char rcsid[] =
 
 #include <libguile.h>
 #include <radius.h>
+#define RADIUS_SERVER_GUILE
 #include <rewrite.h>
 #include <radscm.h>
 
@@ -73,4 +74,14 @@ void
 rscm_rewrite_init()
 {
 #include <rscm_rewrite.x>
+}
+
+void
+rscm_server_init()
+{
+	rscm_radlog_init();
+	rscm_rewrite_init();
+#if defined(USE_SQL)
+	rscm_sql_init();
+#endif
 }

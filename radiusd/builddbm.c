@@ -372,9 +372,9 @@ dbm_match(dbmfile, name, fn, request_pairs, check_pairs, reply_pairs, fallthru)
  * Find matching profile in the DBM database
  */
 int
-user_find_db(name, request_pairs, check_pairs, reply_pairs)
+user_find_db(name, req, check_pairs, reply_pairs)
 	char *name;
-	VALUE_PAIR *request_pairs;
+        RADIUS_REQ *req;
 	VALUE_PAIR **check_pairs;
 	VALUE_PAIR **reply_pairs;
 {
@@ -395,20 +395,20 @@ user_find_db(name, request_pairs, check_pairs, reply_pairs)
 	 */
 	for (;;) {
 		found = dbm_match(dbmfile, "BEGIN", _dbm_number_name,
-				  request_pairs,
+				  req->request,
 				  check_pairs, reply_pairs, &fallthru);
 		if (found && fallthru == 0)
 			break;
 		
 		found = dbm_match(dbmfile, name, _dbm_dup_name,
-				  request_pairs,
+				  req->request,
 				  check_pairs, reply_pairs, &fallthru);
 
 		if (found && fallthru == 0)
 			break;
 
 		found = dbm_match(dbmfile, "DEFAULT", _dbm_number_name,
-				  request_pairs,
+				  req->request,
 				  check_pairs, reply_pairs, &fallthru);
 		break;
 		/*NOTREACHED*/

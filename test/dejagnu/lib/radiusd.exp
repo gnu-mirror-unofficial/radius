@@ -325,7 +325,6 @@ proc radius_test { args } {
 	    set result 0
 	}
 	-re "FAIL" {
-	    send_user "DEF is $default\n"
 	    if { "$default" == "" || "$default" != "FAIL" } {
 		fail "$message"
 	    } else {

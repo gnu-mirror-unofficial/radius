@@ -1,3 +1,28 @@
+2001-11-22 Sergey Poznyakoff
+
+	* test/dejagnu/s.radiusd/Match.exp: (new) Test Match-Profile attr.
+	* test/dejagnu/s.radiusd/Scheme.exp: (new) Test Scheme-Procedure attr.
+	* test/dejagnu/s.radiusd/Makefile.am: Added Match.exp and
+	Scheme.exp.
+	* test/dejagnu/s.radiusd/Testlist: Likewise.
+	* test/dejagnu/.cvsignore: Updatesd.
+	
+	* test/raddb/auth.scm: (new) Scheme script to test
+	Scheme-Procedure attribute
+	* test/raddb/Makefile.am: Added auth.scm
+	* test/raddb/config.in: Added (conditional) guile block
+	* test/raddb/users.in: More tests.
+	
+	* test/test.sh: --guile option.
+	* test/dejagnu/lib/radiusd.exp: Pass --guile to test.sh
+	invocation if radiusd supports server guile.
+	* test/dejagnu/s.radiusd/Default.exp: Changed NAS IPs to use.
+	
+	* radscm/rscm_avl.c: avl-merge(): Allow both arguments to
+	be empty lists.
+	* radscm/rscm_lib.c: radscm_list_to_avl(): Allow for SCM_EOL
+	input parameter.
+	
 2001-11-21 Sergey Poznyakoff
 
 	Further modification to the testsuite. Since the tests in

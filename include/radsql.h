@@ -1,34 +1,28 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
- *
- * This program is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- *
- */
+   Copyright (C) 2000,2001 Sergey Poznyakoff
+  
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+  
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+  
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.*/
 
 typedef unsigned long qid_t; /* queue identifier */
 
-#ifdef USE_SQL
+#define SQLT_NONE     0
+#define SQLT_MYSQL    1
+#define SQLT_POSTGRES 2
+#define SQLT_MAX      3
 
-#ifndef RAD_SQL_PORT
-# if USE_SQL == SQL_MYSQL
-#  define RAD_SQL_PORT                 3306
-# endif
-# if USE_SQL == SQL_POSTGRES
-#  define RAD_SQL_PORT                 5432
-# endif
-#endif
+#ifdef USE_SQL
 
 #define SQL_AUTH     0
 #define SQL_ACCT     1
@@ -45,6 +39,7 @@ struct sql_connection {
 };
 
 typedef struct {
+	int      interface;
 	char     *server;
 	int      port;
 	char     *login;
@@ -79,16 +74,42 @@ void rad_sql_cleanup(int type, qid_t qid);
 int rad_sql_checkgroup(RADIUS_REQ *req, char *groupname);
 int rad_sql_attr_query(RADIUS_REQ *req, VALUE_PAIR **reply_pairs);
 void rad_sql_shutdown();
+int disp_sql_interface_index(char *name);
 
-/* Lower level routines: */
-void rad_sql_connect(int type);
-int rad_sql_reconnect(int type, struct sql_connection *);	
-int rad_sql_query(struct sql_connection *, char *query, int *report_cnt);
-char * rad_sql_getpwd(struct sql_connection *, char *query);
-void * rad_sql_exec(struct sql_connection *conn, char *query);
-char * rad_sql_column(void *data, int ncol);
-int rad_sql_next_tuple(struct sql_connection *conn, void *data);
-void rad_sql_free(struct sql_connection *conn, void *data);
+/* Dispatcher routines */
+int disp_sql_reconnect(int interface, int conn_type, struct sql_connection *);
+void disp_sql_disconnect(int interface, struct sql_connection *);
+int disp_sql_query(int interface, struct sql_connection *,
+		   char *query, int *report_cnt);
+char * disp_sql_getpwd(int interface, struct sql_connection *, char *query);
+void * disp_sql_exec(int interface, struct sql_connection *conn, char *query);
+char * disp_sql_column(int interface, void *data, int ncol);
+int disp_sql_next_tuple(int interface, struct sql_connection *conn, void *data);
+void disp_sql_free(int interface, struct sql_connection *conn, void *data);
+
+typedef struct {
+	char *name;
+	int port;
+	int (*reconnect)(int type, struct sql_connection *);
+	void (*disconnect)(struct sql_connection *conn);
+	int (*query)(struct sql_connection *, char *query, int *report_cnt);
+	char *(*getpwd)(struct sql_connection *, char *query);
+	void *(*exec_query)(struct sql_connection *conn, char *query);
+	char *(*column)(void *data, int ncol);
+	int  (*next_tuple)(struct sql_connection *conn, void *data);
+	void (*free)(struct sql_connection *conn, void *data);
+} SQL_DISPATCH_TAB;
+
+#ifdef USE_SQL_MYSQL
+extern SQL_DISPATCH_TAB mysql_dispatch_tab[];
+#else
+#define mysql_dispatch_tab NULL
+#endif
+#ifdef USE_SQL_POSTGRES
+extern SQL_DISPATCH_TAB postgres_dispatch_tab[];
+#else
+#define postgres_dispatch_tab NULL
+#endif
 
 #else
 

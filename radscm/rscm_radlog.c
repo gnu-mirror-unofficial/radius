@@ -1,0 +1,137 @@
+/* This file is part of GNU RADIUS.
+   Copyright (C) 2000,2001 Sergey Poznyakoff
+  
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+  
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+  
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
+#ifndef lint
+static char rcsid[] =
+"@(#) $Id$";
+#endif
+
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+
+#include <libguile.h>
+#include <radius.h>
+#include <log.h>
+
+static struct keyword radlog_kw[] = {
+#define D(c) #c, c
+	/* log categories */
+	D(L_MAIN),
+	D(L_AUTH),
+	D(L_ACCT),
+	D(L_PROXY),
+	D(L_SNMP),
+	/* log priorities */
+	D(L_EMERG),
+	D(L_ALERT),
+	D(L_CRIT),
+	D(L_ERR),
+	D(L_WARN),
+	D(L_NOTICE),
+	D(L_INFO),
+	D(L_DEBUG),
+	NULL
+#undef D
+};
+
+static int
+parse_facility(list)
+	SCM list;
+{
+	int accval = 0;
+	do {
+		SCM car = SCM_CAR(list);
+		int val = 0;
+		
+		if (SCM_IMP(car) && SCM_INUMP(car)) 
+			val = SCM_INUM(car);
+		else if (SCM_NIMP(car) && SCM_STRINGP(car))
+			val = xlat_keyword(radlog_kw, SCM_CHARS(car), 0);
+		else
+			continue;
+		accval |= val;
+	} while ((list = SCM_CDR(list)) != SCM_EOL);
+	return accval;
+}
+
+SCM_DEFINE(rad_log_open, "rad-log-open", 1, 0, 0,
+	   (SCM PRIO),
+"FIXME: rad-log-open docstring")	   
+#define FUNC_NAME s_rad_log_open
+{
+	int prio;
+
+	if (SCM_IMP(PRIO) && SCM_INUMP(PRIO)) {
+		prio = SCM_INUM(PRIO);
+	} else if (SCM_BIGP(PRIO)) {
+		prio = (UINT4) scm_big2dbl(PRIO);
+	} else {
+		SCM_ASSERT(SCM_NIMP(PRIO) && SCM_CONSP(PRIO),
+			   PRIO, SCM_ARG1, FUNC_NAME);
+		prio = parse_facility(PRIO);
+	}
+
+	log_open(prio);
+	return SCM_UNSPECIFIED;
+}
+#undef FUNC_NAME
+
+SCM_DEFINE(rad_log, "rad-log", 2, 0, 0,
+	   (SCM PRIO, SCM TEXT),
+	   "FIXME")
+#define FUNC_NAME s_rad_log
+{
+	int prio;
+	if (PRIO == SCM_BOOL_F) {
+		prio = L_INFO;
+	} else if (SCM_IMP(PRIO) && SCM_INUMP(PRIO)) {
+		prio = SCM_INUM(PRIO);
+	} else if (SCM_BIGP(PRIO)) {
+		prio = (UINT4) scm_big2dbl(PRIO);
+	} else {
+		SCM_ASSERT(SCM_NIMP(PRIO) && SCM_CONSP(PRIO),
+			   PRIO, SCM_ARG1, FUNC_NAME);
+		prio = parse_facility(PRIO);
+	}
+
+	SCM_ASSERT(SCM_NIMP(TEXT) && SCM_STRINGP(TEXT),
+		   TEXT, SCM_ARG1, FUNC_NAME);
+	radlog(prio, "%s", SCM_CHARS(TEXT));
+	return SCM_UNSPECIFIED;
+}
+#undef FUNC_NAME
+
+SCM_DEFINE(rad_log_close, "rad-log-close", 0, 0, 0,
+	   (),
+"FIXME: rad-log-close docstring")	   
+#define FUNC_NAME s_rad_log_close
+{
+	log_close();
+	return SCM_UNSPECIFIED;
+}
+#undef FUNC_NAME
+
+void
+rscm_radlog_init()
+{
+	int i;
+	for (i = 0; radlog_kw[i].name; i++)
+		scm_sysintern(radlog_kw[i].name,
+			      SCM_MAKINUM(radlog_kw[i].tok));
+#include <rscm_radlog.x>
+}

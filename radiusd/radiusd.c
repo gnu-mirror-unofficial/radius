@@ -158,8 +158,9 @@ Config config = {
 	NULL,            /* exec_program_user */
 };
 
-UINT4			myip = INADDR_ANY;
 UINT4			warning_seconds;
+
+UINT4			myip = INADDR_ANY;
 int			auth_port;
 int			acct_port;
 #ifdef USE_SNMP
@@ -1425,37 +1426,6 @@ usage()
 	fprintf(stdout, "%s", ustr);
 	fprintf(stdout, "\nReport bugs to <%s>\n", bug_report_address);
 	exit(1);
-}
-
-
-/*
- *	Intializes configuration values:
- *
- *		warning_seconds - When acknowledging a user authentication
- *			time remaining for valid password to notify user
- *			of password expiration.
- *
- *	These values are read from the SERVER_CONFIG part of the
- *	dictionary (of all places!)
- */
-/*UNUSED*/
-int
-config_init()
-{
-	DICT_VALUE	*dval;
-
-	if (!(dval = value_name_to_value("Password-Warning"))) 
-		warning_seconds = (UINT4)0;
-	else 
-		warning_seconds = dval->value * (UINT4)SECONDS_PER_DAY;
-
-#if 0
-	if (!(dval = value_name_to_value("Password-Expiration"))) 
-		password_expiration = 0;
-	else
-		passvord_expiration = dval->value * SECONDS_PER_DAY;
-#endif
-	return 0;
 }
 
 /*

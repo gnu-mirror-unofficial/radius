@@ -11,13 +11,14 @@
 
 ## Uncomment any of these as appropriate:
 
-$INCLUDE dictionary.compat		## Compatibility issues
-$INCLUDE dictionary.livingston		## Livingston compatibility
-#$INCLUDE dictionary.tunnel		## Tunnel attrs. as per RFC 2867
-#$INCLUDE dictionary.usr		## USR Robotics
-#$INCLUDE dictionary.ascend		## MAX Ascend
-#$INCLUDE dictionary.cisco		## Cisco
-#$INCLUDE dictionary.voip		## Special attributes to be used
+$INCLUDE dict/compat			## Compatibility issues
+$INCLUDE dict/livingston		## Livingston compatibility
+#$INCLUDE dict/tunnel			## Tunnel attrs. as per RFC 2867
+#$INCLUDE dict/usr			## USR Robotics
+#$INCLUDE dict/ascend			## MAX Ascend
+#$INCLUDE dict/ascend.vs		## MAX Ascend -- vendor-specific
+#$INCLUDE dict/cisco			## Cisco
+#$INCLUDE dict/voip			## Special attributes to be used
 					## with rewriting functions
 
 ##

@@ -28,8 +28,8 @@ EXTRA_DIST = \
 
 ALLTARGETS= \
  dictionary\
- dictionary.voip\
- dictionary.cisco\
+ dict.voip\
+ dict.cisco\
  nastypes\
  rewrite
 
@@ -38,12 +38,12 @@ all: $(ALLTARGETS)
 RADDB=$(top_srcdir)/raddb
 
 dictionary: $(RADDB)/dictionary
-	sed 's/\$$INCLUDE dictionary.compat/#\$$INCLUDE dictionary.compat/;s/\$$INCLUDE dictionary.livingston/#\$$INCLUDE dictionary.livingston/;s/#\$$INCLUDE dictionary.cisco/\$$INCLUDE dictionary.cisco/;s/#\$$INCLUDE dictionary.voip/\$$INCLUDE dictionary.voip/' $(RADDB)/dictionary > dictionary
+	sed '/\$$INCLUDE dict\/compat/d;/\$$INCLUDE dict\/livingston/d;s/#\$$INCLUDE dict\/cisco/\$$INCLUDE dict.cisco/;s/#\$$INCLUDE dict\/voip/\$$INCLUDE dict.voip/' $(RADDB)/dictionary > dictionary
 
-dictionary.voip: $(RADDB)/dictionary.voip
+dict.voip: $(RADDB)/dict/voip
 	$(LN_S) $? $@
 
-dictionary.cisco: $(RADDB)/dictionary.cisco
+dict.cisco: $(RADDB)/dict/cisco
 	$(LN_S) $? $@
 
 nastypes: $(RADDB)/nastypes

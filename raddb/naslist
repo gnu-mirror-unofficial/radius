@@ -4,30 +4,31 @@
 #
 # Each record consists of following fields:
 #
-# 	i. 	A valid hostname or IP address for the client.
-#	ii. 	The short name to use in the logfiles for this NAS.
-#	iii.	Type of device. Valid values are those listed in 
-#		/etc/raddb/nastypes file. Two types are predefined:
-#		true 		Means no check will be made and 1 code
-#				will be returned,
-#		false		Means no check will be made and 0 code
-#				will be returned.		
-#       ** The following is optional:
-#       iv.	Additional arguments to query NAS with. Multiple arguments 
-#		should be separated by commas (,) with no intervening 
-#		whitespace.
-#		Currently radiusd recognizes following arguments (S means
-#		string, N - number):
-#		a. Common arguments:
-#		  port=N	Use port number N instead of the default
-#		  password=S	Use password (community for snmp) S
-#		b. Method snmp arguments
-#		  retries=N	Retry N times before giving up
-#		  timeout=N	Timeout N seconds on each retry
-#		  community=S	Use community S	
-#		c. Method finger arguments
-#		  tcp=0		Disable the use of T/TCP for hosts with
-#				a broken TCP implementation.
+# i.    A valid hostname or IP address for the client.
+# ii.   The short name to use in the logfiles for this NAS.
+# iii.  Type of device. Valid values are those listed in 
+#       /etc/raddb/nastypes file. Two types are predefined:
+#       true            Means no check will be made and 1 code
+#                       will be returned,
+#       false           Means no check will be made and 0 code
+#                       will be returned.               
+# ** The following is optional:
+# iv.   Additional arguments to query NAS with. Multiple arguments 
+# should be separated by commas (,) with no intervening whitespace.
+# Currently radiusd recognizes following arguments (S means string,
+# N - number):
+#   a. Common arguments:
+#     port=N            Use port number N instead of the default
+#     password=S        Use password (community for snmp) 
+#   b. Method snmp arguments
+#     retries=N         Retry N times before giving up
+#     timeout=N         Timeout N seconds on each retry
+#     community=S       Use community S 
+#   c. Method finger arguments
+#     arg=S             Argument to query for. By default it is %u
+#                       (username).                     
+#     tcp=0             Disable the use of T/TCP for hosts with
+#                       a broken TCP implementation.
 #
 
 # NAS Name		Short Name	Type		Checkrad flags

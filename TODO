@@ -1,5 +1,5 @@
--110 : MAX Ascends encode passwords longer than 16 chars using the
-       same digest. Try to work around.
+-100 : Try to use argcv_get for parsing traditional raddb files.
+-100 : Document broken_pass flag. 
 -100 : Document Auth-Type = (Crypt-)Local, Password-Location
 -100 : Docs for Scheme- attributes and server guile interface.
 -100 : Clean up the semantics of log_init/log_done.

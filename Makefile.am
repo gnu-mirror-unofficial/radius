@@ -11,8 +11,9 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 AUTOMAKE_OPTIONS = 1.6
+ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS=m4 include radlib sql snmplib radscm radiusd radwho radzap radlast\
+SUBDIRS= intl m4 include radlib sql snmplib radscm radiusd radwho radzap radlast\
         raduse radscripts elisp raddb db client radtest test doc po mibs\
         scripts contrib
 
@@ -40,7 +41,7 @@ alphacheck:
 
 endif
 
-EXTRA_DIST=ylwrap README-alpha
+EXTRA_DIST= config.rpath ylwrap README-alpha ABOUT-NLS
 
 distcleancheck_listfiles = \
 	find . -type f -exec sh -c 'test -f $(top_srcdir)/{} || echo {}' \;
@@ -70,3 +71,4 @@ distcheck: dist
 	@echo "$(distdir).tar.gz is ready for distribution" | \
 	 sed 'h;s/./=/g;p;x;p;x'
  
+

@@ -1,10 +1,12 @@
+# NOTE: This file may be overwritten by radius installation procedure.
+# Please add your customizations to the main dictionary file.
+# Run
+#       info Radius dictionary
+# for detailed description of the format of this file.
+# Please report errors to <bug-gnu-radius@gnu.org>
+
 #
 # dictionary.usr	USR Robotics dictionary.
-#
-# Taken from the dictionary included with the USR RADIUS server,
-# and adjusted a bit. ATTRIB_NMCs have been removed and replaced
-# by ATTRIBUTE ... USR lines.
-#
 #
 
 VENDOR	USR	429
@@ -147,12 +149,6 @@ ATTRIBUTE	USR-Primary_DNS_Server			0x900f	ipaddr USR
 ATTRIBUTE	USR-Secondary_DNS_Server		0x9010	ipaddr USR
 ATTRIBUTE	USR-Primary_NBNS_Server			0x9011	ipaddr USR
 ATTRIBUTE	USR-Secondary_NBNS_Server		0x9012	ipaddr USR
-ATTRIBUTE	USR-Syslog-Tap				0x9013	integer USR
-ATTRIBUTE	USR-Chassis-Call-Slot			0x9019	integer USR
-ATTRIBUTE	USR-Chassis-Call-Span			0x901A	integer USR
-ATTRIBUTE	USR-Chassis-Call-Channel		0x901B	integer USR
-ATTRIBUTE	USR-Keypress-Timeout			0x901C	integer USR
-ATTRIBUTE	USR-Unauthenticated-Time		0x901D	integer USR
 ATTRIBUTE	USR-Connect-Speed			0x9023	integer USR
 ATTRIBUTE	USR-Framed_IP_Address_Pool_Name		0x9024	string USR
 ATTRIBUTE	USR-MP-EDO				0x9025	string	 USR

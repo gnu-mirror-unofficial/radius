@@ -1,11 +1,8 @@
-# A minimum config file. See config.syntax for explanation of 
-# the syntax.
-#
+# For detailed description, run:
+#       info Radius config
+
 option {
 	max-requests 1024;
-	# Uncomment and edit these if you need to:
-#	log-dir "/var/log";
-#	acct-dir "/var/acct";
 	resolve no;
 };
 

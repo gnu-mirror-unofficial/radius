@@ -1,9 +1,9 @@
-#
-# Vendor-Specific attributes use the SMI Network Management Private
-# Enterprise Code from the "Assigned Numbers" RFC
-#
-# $Id$
-#
+# NOTE: This file may be overwritten by radius installation procedure.
+# Please add your customizations to the main dictionary file.
+# Run
+#       info Radius dictionary
+# for detailed description of the format of this file.
+# Please report errors to <bug-gnu-radius@gnu.org>
 
 VENDOR		Livingston	307
 

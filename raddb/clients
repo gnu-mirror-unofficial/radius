@@ -1,9 +1,6 @@
-# This is a list of clients which are allowed to make authentication 
-# requests.
-# Each record consists of two fields:
-#	i.  Valid hostname.
-#	ii. The shared encryption key for this hostname. 
-#
+# For detailed description, run:
+#       info Radius clients
+
 #Client Name		Key
 #----------------	-------------------
 localhost		foobar

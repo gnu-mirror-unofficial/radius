@@ -1,22 +1,6 @@
-#
-# This file contains a list of Network Access Servers (NAS) known
-# to radiusd.
-#
-# Each record consists of following fields:
-#
-# i.    A valid hostname or IP address for the client.
-# ii.   The short name to use in the logfiles for this NAS.
-# iii.  Type of device. Valid values are those listed in 
-#       /etc/raddb/nastypes file. Two types are predefined:
-#       true            Means no check will be made and 1 code
-#                       will be returned,
-#       false           Means no check will be made and 0 code
-#                       will be returned.               
-# iv.   [optional] Additional arguments to query NAS with.
-#
-# See the documentation for detailed description.
-#
+# For detailed description, run:
+#       info Radius naslist
 
-# NAS Name		Short Name	Type		Checkrad flags
+# NAS Name		Short Name	Type		Flags
 #----------------	----------	----		---------------
 localhost		local		true

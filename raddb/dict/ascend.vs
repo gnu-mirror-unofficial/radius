@@ -1,5 +1,12 @@
+# NOTE: This file may be overwritten by radius installation procedure.
+# Please add your customizations to the main dictionary file.
+# Run
+#       info Radius dictionary
+# for detailed description of the format of this file.
+# Please report errors to <bug-gnu-radius@gnu.org>
+
 #
-# Ascend dictionary.
+# Ascend vendor-specific dictionary
 #
 # Enable by putting the line "$INCLUDE dict/ascend.vs" into
 # the main dictionary file.
@@ -8,6 +15,7 @@
 #		for software version 9.0, january 2001
 # Version:	1.00  21-Jul-1997  Jens Glaser <jens@regio.net>
 #
+
 VENDOR          Ascend				529
 
 #

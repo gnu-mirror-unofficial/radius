@@ -1,11 +1,3 @@
-#
-# This file contains a list of realms. When a user logs in with @realm 
-# as the last part of the loginname, the realm part is looked up in this 
-# file. If found, the request is sent to the listed remote radius server.
-#
-# See the documentation for detailed information.
+# For detailed description, run:
+#       info Radius realms
 
-# Realm                 Remote server[:port[:port]]	flags	
-#----------------	---------------------		--------
-#isp2.com		radius.isp2.com			nostrip,quota=10
-#company.com		radius1.company.com:1645,radius2.company.com:1645 nostrip

@@ -1,10 +1,15 @@
+# NOTE: This file may be overwritten by radius installation procedure.
+# Please add your customizations to the main dictionary file.
+# Run 
+#	info Radius dictionary
+# for detailed description of the format of this file.
+# Please report errors to <bug-gnu-radius@gnu.org>
+
 #
-# Ascend dictionary.
+# Dictionary file for MAX Ascend terminal servers.
 #
 # Enable by putting the line "$INCLUDE dict/ascend" into
 # the main dictionary file.
-#
-# Version:	1.00  21-Jul-1997  Jens Glaser <jens@regio.net>
 #
 
 

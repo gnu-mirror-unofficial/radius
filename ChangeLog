@@ -1,5 +1,26 @@
 2001-11-23 Sergey Poznyakoff
 
+	Compatibility issues:
+
+	* doc/man/Makefile.am: Use $? instead of $<. (Sun make expands
+	the latter to an empty string when it is used in an explicit
+	rule).
+	* m4/rx.m4: Added --with-included-regex switch (Sun's regex
+	is badly broken).
+	* radlib/rx.c: Remove typecast to __compar_fn_t, it may not
+	be defined.
+	* radscm/rscm_utmp.c: Removed unneeded include.
+	* scripts/mktest.awk: Escape +, even when used at a start of
+	a regexp (nawk bails out at it).
+	* test/dejagnu/s.radiusd/Makefile.am: Use $? instead of $<.
+	Add a space between -v and its argument in the invocation
+	of awk (nawk silently ignores -vVAR assignment).
+	Pass regexp to sed as one string.
+
+	(Thanks to sun for providing us with all this headache).
+	
+2001-11-23 Sergey Poznyakoff
+
 	* NEWS: Fixed inconsistency in description of
 	  Scheme-Acct-Procedure attribute.
 	* raddb/dictionary: Missed values for Strip-User-Name.

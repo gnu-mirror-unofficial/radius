@@ -197,15 +197,16 @@ struct value_pair;
 typedef int (*attr_parser_fp)(struct value_pair *p, char **s);
 
 /* Dictionary attribute */
-typedef struct dict_attr {
-        struct dict_attr        *next;      /* Link to the next attribute */
-        char                    *name;      /* Attribute name */
-        int                     value;      /* Attribute value */
-        int                     type;       /* Data type */
-        int                     vendor;     /* Vendor index */
-        int                     prop;       /* Properties */
-	attr_parser_fp          parser;     /* Not-NULL for "abinary" */
-} DICT_ATTR;
+
+typedef struct dict_attr DICT_ATTR;
+struct dict_attr {
+        char   *name;          /* Attribute name */
+	int    value;          /* Attribute value */
+	int    type;           /* Data type */
+	int    vendor;         /* Vendor index */
+	int    prop;           /* Properties */
+	attr_parser_fp parser; /* Not-NULL for "abinary" */
+};
 
 /* Dictionary value */
 typedef struct dict_value {

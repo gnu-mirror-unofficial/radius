@@ -491,7 +491,7 @@ rad_check_password(grad_request_t *radreq, AUTH_MACH *m, time_t *exp)
                 switch (tmp->avp_lvalue) {
                 case DV_PASSWORD_LOCATION_SQL:
 #ifdef USE_SQL
-                        real_password = rad_sql_pass(radreq, authdata);
+                        real_password = radiusd_sql_pass(radreq, authdata);
                         if (!real_password)
                                 return auth_nouser;
 			grad_avl_add_pair(&m->user_check,
@@ -837,6 +837,34 @@ sfn_scheme(AUTH_MACH *m)
 #endif
 }
 
+/* Execute an Authentication Failure Trigger, if the one is specified */
+static void
+auth_failure(AUTH_MACH *m)
+{
+	grad_avp_t *pair;
+	char *cmd;
+	struct obstack stk;
+	
+	pair = grad_avl_find(m->user_reply, DA_AUTH_FAILURE_TRIGGER);
+	if (!pair) 
+		return;
+
+	obstack_init(&stk);
+	cmd = util_xlate(&m->msg_stack, pair->avp_strvalue, m->req);
+	switch (cmd[0]) {
+	case '(':
+		scheme_eval_boolean_expr(cmd);
+		break;
+
+	case '/':
+		radius_exec_command(cmd);
+		break;
+
+	default:
+	}
+	obstack_free(&stk, NULL);
+}
+
 void
 sfn_validate(AUTH_MACH *m)
 {
@@ -847,8 +875,13 @@ sfn_validate(AUTH_MACH *m)
 	
 	rc = rad_check_password(radreq, m, &exp);
 
-	if (rc == auth_ok) 
+	if (rc == auth_ok) {
+		radiusd_sql_auth_result_query(m->req, 0);
 		rc = radius_check_expiration(m, &exp);
+	} else if (rc == auth_fail) {
+		radiusd_sql_auth_result_query(m->req, 1);
+		auth_failure(m);
+	}
 	
 	switch (rc) {
 	case auth_ok:

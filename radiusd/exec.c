@@ -53,9 +53,9 @@ static char rcsid[] =
  *
  */
 int
-radius_exec_program(cmd, request, reply, exec_wait, user_msg)
+radius_exec_program(cmd, req, reply, exec_wait, user_msg)
 	char *cmd;
-	VALUE_PAIR *request;
+	RADIUS_REQ *req;
 	VALUE_PAIR **reply;
 	int exec_wait;
 	char **user_msg;
@@ -138,7 +138,7 @@ radius_exec_program(cmd, request, reply, exec_wait, user_msg)
 		obstack_init(&s);
 		
 		/* child branch */
-		ptr = radius_xlate(&s, cmd, request, reply ? *reply : NULL);
+		ptr = radius_xlate(&s, cmd, req, reply ? *reply : NULL);
 
 		debug(1,
 			("command line: %s", ptr));

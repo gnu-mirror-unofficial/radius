@@ -602,6 +602,10 @@ rad_acct_ext(radreq)
 {
 	VALUE_PAIR *p;
 
+#ifdef USE_SERVER_GUILE
+	if (p = avl_find(radreq->request, DA_SCHEME_ACCT_PROCEDURE))
+		scheme_acct(p->strvalue, radreq);
+#endif
 	if (p = avl_find(radreq->request, DA_ACCT_EXT_PROGRAM)) 
 		radius_exec_program(p->strvalue, radreq, NULL, 0, NULL);
 	return 0;

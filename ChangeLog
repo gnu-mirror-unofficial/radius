@@ -1,3 +1,14 @@
+
+2001-03-20  gray  <gray@farlep.net>
+	Changed typedef ipaddr to ipaddr_t to prevent possible name
+	clashes (snmplib, include/snmp/snmp.h). Fixed inclusion of
+	<sys/time.h>, <time.h> in sysdep.h.
+
+2001-03-19  gray  <gray@farlep.net>
+	Added Log-Mode-Mask attribute. The attribute modifies logging
+	mode for a given username/hint-group. Works like UNIX umask,
+	i.e. effective-log-mode = log_mode & ~Log-Mode-Mask.
+
 2001-03-18  gray  <gray@farlep.net>
 	Finally finished writing SNMP library and attached it instead
 	of hacked up CMU version used previously. Adapted

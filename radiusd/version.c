@@ -80,12 +80,13 @@ static char *compile_flag_str[] = {
 #if defined(USE_PAM)
 	"USE_PAM",
 #endif
-#if defined(DBM)
-	"DBM",
-#endif
-#if defined(NDBM)
-	"NDBM",
-#endif
+#if defined(USE_DBM)
+# if USE_DBM == DBM_DBM	
+	"USE_DBM=DBM",
+# elif USE_DBM == DBM_NDBM
+	"USE_DBM=NDBM",
+# endif
+#endif /* USE_DBM */
 #if defined(USE_SQL)	
 # if USE_SQL == SQL_MYSQL
 	"USE_SQL=SQL_MYSQL",

@@ -15,7 +15,7 @@
 /* **************************************************************************
  * DBM wrappers
  */
-#ifdef NDBM
+#if USE_DBM == DBM_NDBM
 # include <ndbm.h>
 typedef DBM *DBM_FILE;
 #else

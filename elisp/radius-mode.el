@@ -1,3 +1,5 @@
+;;; radius-mode.el -- - major mode for editing GNU radius configuration files
+
 ;; Authors: 2000 Sergey Poznyakoff
 ;; Version:  1.0
 ;; Keywords: radius
@@ -21,6 +23,27 @@
 ;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ;; Boston, MA 02111-1307, USA.
 
+;; Installation.
+;;  You may wish to use precompiled version of the module. To create it
+;;  run:
+;;    emacs -batch -f batch-byte-compile radius-mode.el
+;;  Install files radius-mode.el and radius-mode.elc to any directory in
+;;  Emacs's load-path.
+
+;; Customization:
+;;  To your .emacs or site-start add:
+;;  (autoload 'radius-mode "radius-mode")
+;;  (setq radius-db-path <path-to-raddb-directory>)
+;;  (setq auto-mode-alist (append auto-mode-alist
+;;                                '(("raddb/users$" . radius-mode)
+;;                                  ("raddb/hints$" . radius-mode)
+;;                                  ("raddb/huntgroups$" . radius-mode))))
+
+;; You may also wish to modify the following variables:
+;;   radius-initial-pair-indent -- Amount of indentation for the first A/V
+;;                                 pair in the list.
+;;   radius-cont-pair-indent    -- Additional amount of indentation for the
+;;                                 subsequent A/V pairs in the list
 
 (defvar rad-mode-syntax-table nil
   "Syntax table used in radius-mode buffers.")
@@ -49,6 +72,17 @@
   (define-key rad-mode-map "," 'rad-electric-comma)
   (define-key rad-mode-map "\t" 'rad-indent-command) )
 
+
+(defconst rad-re-value "\\(\\w\\|\\s\"\\|\\.\\)+"
+  "regular expression representing value part of an A/V pair")
+(defconst rad-re-attrname "\\w+"
+  "regular expression representing attribute name")
+(defconst rad-re-pair (concat rad-re-attrname
+			      "\\s *=\\s *"
+			      rad-re-value)
+  "regular expression representing an A/V pair")
+  
+
 ;; Guess syntax context of the current line. Return a cons whose car
 ;; is the current syntax and cdr -- number of lines we needed to
 ;; read back to determine it.
@@ -58,8 +92,10 @@
     (cond
      ((looking-at "\\s *#")
       (cons 'rad-comment 0))
-     ((looking-at "\\w+\\s +\\w+\\s *=\\s *[^#,]+,")
-      (cons 'rad-defn 0))
+     ((or
+       (looking-at (concat "\\w+\\s +" rad-re-pair ","))
+       (looking-at (concat "\\w+\\s +" rad-re-pair )))
+      (cons 'rad-defn 0))	
      (t
       (let ((syntax nil)
 	    (count 0))
@@ -67,11 +103,13 @@
 	  (forward-line -1)
 	  (setq count (1+ count))
 	  (cond
-	   ((looking-at "\\w+\\s +\\w+\\s *=\\s *[^#,]+,")
+	   ((looking-at (concat "\\w+\\s +" rad-re-pair ",\\s *$"))
 	    (setq syntax 'rad-check-pair))
+	   ((looking-at (concat "\\w+\\s +.*" rad-re-pair "\\s *$"))
+	    (setq syntax 'rad-reply-pair))
 	   ((or
-	     (looking-at "\\s *\\w+\\s *=\\s *[^#,]+\\s *$")
-	     (looking-at "\\s *\\w+\\s *=\\s *[^#,]+\\s *#.*$"))
+	     (looking-at (concat "\\s *" rad-re-pair "\\s *$"))
+	     (looking-at (concat "\\s *" rad-re-pair "\\s *#.*$")))
 	    (setq syntax
 		  (if (eq (car (rad-guess-syntax)) 'rad-check-pair)
 			  'rad-reply-pair
@@ -98,7 +136,7 @@
     (let* ((cur-point (point))
 	   (shift-amt (cond
 		       ((eq s 'rad-comment)
-			0) ;; FIXME: edit to the previos comment indent level
+			0) ;; FIXME?: edit to the previous comment indent level
 		       ((eq s 'rad-check-pair)
 			(+ radius-initial-pair-indent
 			   (if (= l 0)
@@ -142,39 +180,52 @@
 							 (match-end 1)))))
 	 ((looking-at "ATTRIBUTE\\s +\\(\\w+\\)\\s +\\([0-9]+\\)\\s +\\(\\w+\\)")
 	  (let ((data (match-data)))
-	    (setq rad-attr-dict (append rad-attr-dict
-					 (list
-					  (list
-					   (buffer-substring (nth 2 data)
-							     (nth 3 data))
-					   (string-to-number
-					    (buffer-substring (nth 4 data)
-							      (nth 5 data)))
-					   (buffer-substring (nth 6 data)
-							     (nth 7 data))))))))
+	    (setq rad-attr-dict (append
+				 rad-attr-dict
+				 (list
+				  (list
+				   (buffer-substring (nth 2 data)
+						     (nth 3 data))
+				   (string-to-number
+				    (buffer-substring (nth 4 data)
+						      (nth 5 data)))
+				   (buffer-substring (nth 6 data)
+						     (nth 7 data))))))))
 	 ((looking-at "VALUE\\s +\\(\\w+\\)\\s +\\(\\w+\\)\\s +\\([0-9]+\\)")
-	  (let ((data (match-data)))
-	    (setq rad-value-dict (append rad-value-dict
-					 (list
-					  (list
-					   (buffer-substring (nth 4 data)
-							     (nth 5 data))
-					   (buffer-substring (nth 2 data)
-							     (nth 3 data))
-					   (buffer-substring (nth 6 data)
-							     (nth 7 data)))))))))
+	  (let* ((data (match-data))
+		 (attr (buffer-substring (nth 2 data)
+					 (nth 3 data)))
+		 (value (buffer-substring (nth 4 data)
+					  (nth 5 data)))
+		 (intval (string-to-number
+			  (buffer-substring (nth 6 data)
+					    (nth 7 data))))
+		 (alist (assoc attr rad-value-dict)))
+	    (if alist
+		(setcdr alist (append (list
+				       (list value intval))
+				      (cdr alist)))
+	      (setq rad-value-dict (append (list
+					    (cons
+					     attr
+					     (list
+					      (list value intval))))
+					   rad-value-dict))) )))
 	(forward-line)))
     (kill-buffer buf)))
 
-(defun rad-complete (regexp dict &optional prompt c)
+(defun rad-complete (regexp dict &optional select prompt c)
   (let ((here (point)))
     (if (search-backward-regexp regexp nil t)
 	(let* ((from (match-beginning 1))
 	       (to (match-end 1))
 	       (attr (buffer-substring from to))
 	       (str (if (not (assoc attr dict))
-			(let ((compl (completing-read (or prompt "ah? ")
-						      dict
+			(let ((compl (completing-read (or prompt "what? ")
+						      (if select
+							  (funcall select
+								   dict)
+							dict)
 						      nil nil attr nil)))
 			  (if compl
 			      compl
@@ -192,11 +243,24 @@
 
 (defun rad-electric-equal (arg)
   (interactive "p")
-  (rad-complete "\\W\\(\\w+\\)\\s *" rad-attr-dict "attribute: " ?=))
+  (rad-complete "\\W\\(\\w+\\)\\s *" rad-attr-dict nil "attribute: " ?=))
+
+(defun rad-select-attr-values (dict)
+  (save-excursion
+    (forward-char)
+    (if (search-backward-regexp "\\W\\(\\w+\\)\\s *=")
+	(let* ((attr (buffer-substring (match-beginning 1)
+				       (match-end 1)))
+	       (alist (assoc attr dict)))
+	  (if alist
+	      (cdr alist)
+	    nil))
+      nil)))
 
 (defun rad-electric-comma (arg)
   (interactive "p")
-  (rad-complete "\\W\\(\\w+\\)" rad-value-dict "value: " ?,))
+  (rad-complete "=\\s *\\(\\w+\\)" rad-value-dict
+		'rad-select-attr-values "value: " ?,))
 
 (defvar radius-db-path "/usr/local/etc/raddb")
 

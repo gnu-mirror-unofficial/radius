@@ -59,10 +59,11 @@ char            *input="users";
 
 typedef struct {
 	DBM_FILE dbmfile;
-	int defno;   /* ordinal number of next default entry */
+	int begno;   /* ordinal number of next BEGIN entry */
+	int defno;   /* ordinal number of next DEFAULT entry */
 } DBM_closure;
 
-VALUE_PAIR pair_buffer[512];
+int pair_buffer[RAD_BUFFER_SIZE];
 void usage();
 int add_user(DBM_closure *closure, int line,
 	     char *name, VALUE_PAIR *check, VALUE_PAIR *reply);
@@ -72,7 +73,6 @@ main(argc, argv)
 	int argc;
 	char **argv;
 {
-	char    *dict_file;
 	int     c;
 	DBM_closure closure;
 #ifdef DBM
@@ -116,7 +116,7 @@ main(argc, argv)
 	/*
 	 *	Initialize a new, empty database.
 	 */
-	closure.defno = 0;
+	closure.defno = closure.begno = 0;
 	if (create_dbm(db_file, &closure.dbmfile)) {
 		radlog(L_ERR|L_PERROR, _("can't open `%s'"), db_file);
 		return 1;
@@ -129,6 +129,8 @@ main(argc, argv)
 	return 0;
 }
 
+#define NINT(n) ((n) + sizeof(int) - 1)/sizeof(int)
+
 /*ARGSUSED*/
 int
 add_user(closure, line, name, check, reply)
@@ -137,53 +139,55 @@ add_user(closure, line, name, check, reply)
 	char *name;
 	VALUE_PAIR *check, *reply;
 {
-	int len;
-	VALUE_PAIR *vp, *q;
+	int     check_len;
+	int     reply_len;
+	VALUE_PAIR *vp;
+	int     *q;
 	datum	named;
 	datum	contentd;
 	
-	len = list_length(check) + list_length(reply);
+	check_len = list_length(check);
+	reply_len = list_length(reply);
 
-	if (len > sizeof(pair_buffer)) {
+	if (2 + check_len + reply_len > sizeof(pair_buffer)) {
 		radlog(L_ERR, _("%s:%d: too many attributes"),
 		       source_filename, source_line_num);
 		return -1;
 	}
 
 	q = pair_buffer;
+	*q++ = check_len;
 	for (vp = check; vp; vp = vp->next) {
-		*q = *vp;
-		if (vp->next)
-			q->next = (VALUE_PAIR*)1;
-		q->strvalue = NULL;
-		q++;
+		*q++ = vp->attribute;
+		*q++ = vp->type;
+		*q++ = vp->operator;
 		if (vp->type == PW_TYPE_STRING) {
 			strcpy((char*)q, vp->strvalue);
-			q = (VALUE_PAIR*)((char*)q + strlen(vp->strvalue) + 1);
-		}
+			q += NINT(vp->strlength+1);
+		} else
+			*q++ = vp->lvalue;
 	}
+	*q++ = reply_len;
 	for (vp = reply; vp; vp = vp->next) {
-		*q = *vp;
-		if (vp->next)
-			q->next = (VALUE_PAIR*)1;
-		q->strvalue = NULL;
-		q++;
+		*q++ = vp->attribute;
+		*q++ = vp->type;
+		*q++ = vp->operator;
 		if (vp->type == PW_TYPE_STRING) {
 			strcpy((char*)q, vp->strvalue);
-			q = (VALUE_PAIR*)((char*)q + strlen(vp->strvalue) + 1);
-		}
+			q += NINT(vp->strlength+1);
+		} else
+			*q++ = vp->lvalue;
 	}
 	
-	if (strcmp(name, "DEFAULT") == 0) {
-		if (closure->defno > 0)
-			sprintf(name, "DEFAULT%d", closure->defno);
-		closure->defno++;
-	}
-
+	if (strncmp(name, "DEFAULT", 7) == 0) 
+		sprintf(name, "DEFAULT%d", closure->defno++);
+	else if (strncmp(name, "BEGIN", 5) == 0) 
+		sprintf(name, "BEGIN%d", closure->begno++);
+	
 	named.dptr = name;
 	named.dsize = strlen(name);
 	contentd.dptr = (char*)pair_buffer;
-	contentd.dsize = len;
+	contentd.dsize = (2 + check_len + reply_len) * sizeof(int);
 	if (insert_dbm(closure->dbmfile, named, contentd)) {
 		radlog(L_ERR, _("can't store datum for %s"), name);
 		exit(1);
@@ -246,11 +250,13 @@ list_length(vp)
 	VALUE_PAIR *vp;
 {
 	int len;
-
+	
 	for (len = 0; vp; vp = vp->next) {
-		len += sizeof(VALUE_PAIR);
+		len += 3;
 		if (vp->type == PW_TYPE_STRING)
-			len += vp->strlength + 1;
+			len += NINT(vp->strlength + 1);
+		else
+			len++;
 	}
 	return len;
 }

@@ -1,3 +1,8 @@
+2001-10-25 Sergey Poznyakoff
+
+	* radiusd/auth.c: Fixed bug in req_decrypt_password (possible
+	dereference of NULL pointer).
+
 2001-10-22 Sergey Poznyakoff
 
 	Configurable reply-messages. The messages are defined under

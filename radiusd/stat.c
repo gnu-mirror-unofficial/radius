@@ -492,7 +492,6 @@ struct nas_stat *
 find_nas_stat(ip_addr)
         UINT4 ip_addr;
 {
-        int i;
         struct nas_stat *np;
 
         for (np = server_stat.nas_head; np; np = np->next)

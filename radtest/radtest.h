@@ -71,5 +71,9 @@ void parse_error();
 void print(Variable *var);
 void radtest_send(int port, int code, Variable *var);
 void putback(char *str);
+void prompt();
+void var_free(Variable *var);
+void var_print(Variable *var);
+int compare_lists(VALUE_PAIR *reply, VALUE_PAIR *sample);
 
 

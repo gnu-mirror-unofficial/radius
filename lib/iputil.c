@@ -130,10 +130,10 @@ ip_iptostr(ipaddr, buffer)
         char *buffer; 
 {
         sprintf(buffer, "%u.%u.%u.%u",
-                (ipaddr >> 24) & 0xff,
-                (ipaddr >> 16) & 0xff,
-                (ipaddr >> 8) & 0xff,
-                ipaddr & 0xff);
+                (u_int) ((ipaddr >> 24) & 0xff),
+                (u_int) ((ipaddr >> 16) & 0xff),
+                (u_int) ((ipaddr >> 8) & 0xff),
+                (u_int) (ipaddr & 0xff));
         return buffer;
 }
 

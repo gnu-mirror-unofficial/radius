@@ -28,6 +28,7 @@ static char rcsid[] =
 
 #ifdef USE_SERVER_GUILE
 
+#include <unistd.h>
 #include <radiusd.h>
 #include <libguile.h>
 #include <radscm.h>
@@ -127,6 +128,7 @@ guile_boot0(arg)
         return NULL;
 }       
 
+/*ARGSUSED*/
 static SCM
 boot_body (void *data)
 {
@@ -170,16 +172,18 @@ boot_body (void *data)
                         debug(50, ("SRV: Released client mutex"));
                 }
         }
-        
+        /*NOTREACHED*/
         return SCM_BOOL_F;
 }
 
+/*ARGSUSED*/
 static SCM
 boot_handler (void *data, SCM tag, SCM throw_args)
 {
         return scm_handle_by_message_noexit("radiusd", tag, throw_args);
 }
 
+/*ARGSUSED*/
 void
 guile_boot1(closure, argc, argv)
         void *closure;
@@ -211,6 +215,7 @@ eval_catch_body (void *list)
         return scm_primitive_eval_x((SCM)list);
 }
 
+/*ARGSUSED*/
 static SCM
 eval_catch_handler (void *data, SCM tag, SCM throw_args)
 {
@@ -223,7 +228,7 @@ scheme_auth_internal(p)
         struct call_data *p;
 {
         SCM s_request, s_check, s_reply;
-        SCM res, env;
+        SCM res;
         SCM procsym;
         jmp_buf jmp_env;
         
@@ -296,6 +301,7 @@ scheme_acct_internal(p)
         return 1;
 }
 
+/*ARGSUSED*/
 int
 scheme_end_reconfig_internal(p)
         struct call_data *p;
@@ -332,7 +338,6 @@ scheme_generic_call(fun, procname, req, user_check, user_reply_ptr)
 {
         struct call_data *p = emalloc(sizeof(*p));
         int rc;
-        struct timespec timeout;
     
         while (!scheme_inited)
                 sleep(1);
@@ -394,7 +399,7 @@ scheme_load(filename)
         scheme_generic_call(scheme_load_internal, filename, NULL, NULL, NULL);
 }
 
-int
+void
 scheme_end_reconfig()
 {
         scheme_generic_call(scheme_end_reconfig_internal,
@@ -444,6 +449,7 @@ scheme_read_eval_loop()
 
 void    
 scheme_add_load_path(path)
+	char *path;
 {
         scheme_generic_call(scheme_add_load_path_internal,
                             path, NULL, NULL, NULL);

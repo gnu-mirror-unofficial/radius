@@ -21,8 +21,12 @@
 # include <config.h>
 #endif
 
+#include <ctype.h>
+#include <unistd.h>
+#include <stdlib.h>
 #include <netdb.h>
 #include <radiusd.h>
+#include <argcv.h>
 
 enum ascend_filter_type {
 	ascend_filter_generic,      /* 0 */
@@ -139,7 +143,6 @@ _get_token(pb, require)
 	struct ascend_parse_buf *pb;
 	int require;
 {
-	char *tok;
 
 	if (!_moreinput(pb)) {
 		if (require) {
@@ -369,7 +372,6 @@ _get_direction_type(pb, suffix, lookahead)
 	int lookahead;
 {
 	char *tok = lookahead ? _lookahead(pb) : _get_token(pb, 1);
-	int rc = -1;
 
 	if (!tok && lookahead) 
 		return ASCEND_DIR_NONE;
@@ -540,7 +542,6 @@ int
 _ascend_parse_port_clause(pb)
 	struct ascend_parse_buf *pb;
 {
-	int port;
 	int n = _get_port(pb);
 
 	if (n == ASCEND_DIR_NONE)
@@ -640,6 +641,7 @@ _ascend_parse(pb)
 	case ascend_filter_ipx:
 		return _ascend_parse_ipx(pb);
 	}
+	return 1;
 }
 
 /* Parse a single ascend filter specification.

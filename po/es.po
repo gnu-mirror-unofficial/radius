@@ -10,7 +10,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-06-03 12:52+0300\n"
+"POT-Creation-Date: 2002-06-07 02:36+0300\n"
 "PO-Revision-Date: 2002-06-04 11:10+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Spanish <es@li.org>\n"
@@ -50,58 +50,54 @@ msgstr "error al recibir datos de %s:%d"
 msgid "compiled without debugging support"
 msgstr "El programa fue compilada sin soporte para depuración"
 
-#: lib/dict.c:95 lib/nas.c:64 radiusd/files.c:1059
-#, c-format
-msgid "%s:%d: too few fields"
-msgstr "%s:%d: insuficiente número de campos"
+#: lib/dict.c:97 lib/nas.c:64 radiusd/files.c:1062
+msgid "too few fields"
+msgstr "insuficiente número de campos"
 
-#: lib/dict.c:100
-#, c-format
-msgid "%s:%d: too many fields"
-msgstr "%s:%d: Demasiados campos"
+#: lib/dict.c:103
+msgid "too many fields"
+msgstr "Demasiados campos"
 
-#: lib/dict.c:225
+#: lib/dict.c:227
 #, c-format
 msgid "%s:%d: missing ]"
 msgstr "%s:%d: falta ]"
 
-#: lib/dict.c:242 lib/dict.c:255
+#: lib/dict.c:244 lib/dict.c:257
 #, c-format
 msgid "%s:%d: invalid syntax flag %c"
 msgstr "%s:%d: opción de sintaxis inválida: %c"
 
-#: lib/dict.c:293 lib/dict.c:410 lib/dict.c:449
+#: lib/dict.c:295 lib/dict.c:416 lib/dict.c:455
 #, c-format
 msgid "%s:%d: value not a number (near %s)"
 msgstr "%s:%d: el valor no es un número (cerca de %s)"
 
-#: lib/dict.c:304
+#: lib/dict.c:306
 #, c-format
 msgid "%s:%d: no parser registered for this attribute"
 msgstr "%s:%d: no hay analizador registrado para este atributo"
 
-#: lib/dict.c:313
-#, c-format
-msgid "%s:%d: invalid type"
-msgstr "%s:%d: tipo inválido"
+#: lib/dict.c:317
+msgid "invalid type"
+msgstr "tipo invalido"
 
-#: lib/dict.c:322
+#: lib/dict.c:325
 #, fuzzy, c-format
 msgid "%s:%d: unknown vendor"
 msgstr "%s:%d: vendor inválido"
 
-#: lib/dict.c:369
+#: lib/dict.c:375
 #, c-format
 msgid "%s:%d: invalid flag %c"
 msgstr "%s:%d: opción %c es inválida"
 
-#: lib/dict.c:501
-#, c-format
-msgid "%s:%d: unknown keyword"
-msgstr "%s:%d: palabra clave desconocida"
+#: lib/dict.c:509
+msgid "unknown keyword"
+msgstr "palabra clave desconocida"
 
 # FIXME: should use new gettext features
-#: lib/dict.c:519
+#: lib/dict.c:526
 #, c-format
 msgid "%s: %d errors"
 msgstr "%s: %d errores"
@@ -196,39 +192,39 @@ msgstr ""
 msgid "alloc_string(): string too long"
 msgstr "alloc_string(): cadena de caracteres es demasiado larga"
 
-#: lib/raddb.c:52 lib/raddb.c:56 radiusd/rewrite.y:1181 radiusd/rewrite.y:2576
+#: lib/raddb.c:56 lib/raddb.c:60 radiusd/rewrite.y:1181 radiusd/rewrite.y:2576
 #, c-format
 msgid "can't open file `%s'"
 msgstr "no se puede abrir archivo `%s'"
 
-#: lib/radutmp.c:50
+#: lib/radutmp.c:51
 #, c-format
 msgid "rut_setent(): cannot open `%s'"
 msgstr "rut_setent(): no se puede abrir `%s'"
 
-#: lib/radutmp.c:168
+#: lib/radutmp.c:169
 #, c-format
 msgid "login: entry for NAS %s port %d duplicate"
 msgstr "login: entrada para NAS %s, puerto %d es duplicada"
 
-#: lib/radutmp.c:173
+#: lib/radutmp.c:174
 #, c-format
 msgid "login: entry for NAS %s port %d wrong order"
 msgstr "login: entrada para NAS %s, puerto %d es en orden incorrecto"
 
-#: lib/radutmp.c:184
+#: lib/radutmp.c:185
 #, c-format
 msgid "logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"
 msgstr ""
 "logout: entrada para NAS %s, puerto %d tiene ID incorrecto (se esperaba %s, "
 "se ha encontrado %s)"
 
-#: lib/radutmp.c:207
+#: lib/radutmp.c:208
 #, c-format
 msgid "logout: login entry for NAS %s port %d not found"
 msgstr "logout: no se ha encontrado entrada login para NAS %s, puerto %d"
 
-#: lib/radutmp.c:227 radiusd/acct.c:511
+#: lib/radutmp.c:228 radiusd/acct.c:511
 #, c-format
 msgid "can't open %s"
 msgstr "no se puede abrir %s"
@@ -237,7 +233,7 @@ msgstr "no se puede abrir %s"
 msgid "not enough memory"
 msgstr "memoria insuficiente"
 
-#: lib/users.l:239 radiusd/config.y:1348
+#: lib/users.l:239 radiusd/config.y:1338
 #, c-format
 msgid "can't stat `%s'"
 msgstr "stat ha fallado para `%s'"
@@ -262,41 +258,41 @@ msgstr "no se puede abrir `%s'"
 msgid "discarding user `%s'"
 msgstr "borrando entrada del usuario `%s'"
 
-#: lib/users.y:203 gram.y:472 radtest/gram.y:472
+#: lib/users.y:204 gram.y:472 radtest/gram.y:472
 #, c-format
 msgid "%s:%d: unknown attribute `%s'"
 msgstr "%s:%d: atributo desconocido: `%s'"
 
-#: lib/users.y:232 gram.y:501 radtest/gram.y:501
+#: lib/users.y:233 gram.y:501 radtest/gram.y:501
 #, c-format
 msgid "%s:%d: %s: not an absolute pathname"
 msgstr "%s:%d: %s: no es un nombre de archivo absoluto"
 
-#: lib/users.y:245
+#: lib/users.y:246
 msgid "attribute"
 msgstr "atributo"
 
-#: lib/users.y:275
+#: lib/users.y:276
 #, c-format
 msgid "%s:%d: cannot translate value %s"
 msgstr "%s:%d: no se puede traducir el valor %s"
 
-#: lib/users.y:323 gram.y:549 radtest/gram.y:549
+#: lib/users.y:324 gram.y:549 radtest/gram.y:549
 #, c-format
 msgid "%s:%d: %s: can't parse date"
 msgstr "%s:%d: %s: no se puede analizar la fecha"
 
-#: lib/users.y:336 gram.y:562 radtest/gram.y:562
+#: lib/users.y:337 gram.y:562 radtest/gram.y:562
 #, c-format
 msgid "%s:%d: %s: unknown attribute type %d"
 msgstr "%s:%d: %s: tipo de atributo %d es desconocido"
 
-#: lib/users.y:373
+#: lib/users.y:374
 #, c-format
 msgid "%s:%d: enabled userfile parser debugging"
 msgstr "%s:%d: depuración de analizador del archivo `users' activada"
 
-#: lib/users.y:376
+#: lib/users.y:377
 #, c-format
 msgid "%s:%d: disabled userfile parser debugging"
 msgstr "%s:%d: depuración de analizador del archivo `users' desactivada"
@@ -351,23 +347,23 @@ msgstr "Pruebe `%s --help'o `%s --usage' para más información.\n"
 msgid "Report bugs to %s.\n"
 msgstr "Comunicar `bugs' a %s.\n"
 
-#: lib/printutmp.c:552
+#: lib/printutmp.c:581
 #, c-format
 msgid "missing closing quote in string started near `%s'"
 msgstr ""
 "Falta comilla cerrante en la cadena de caracteres empezada cerca de `%s'"
 
-#: lib/printutmp.c:634
+#: lib/printutmp.c:664
 #, c-format
 msgid "error in format spec: unknown format %s"
 msgstr "error en la especificación del formato: formato %s es desconocido"
 
-#: lib/printutmp.c:656
+#: lib/printutmp.c:686
 #, c-format
 msgid "wrong number of arguments to form %s"
 msgstr "número incorrecto de argumentos para %s"
 
-#: lib/printutmp.c:684
+#: lib/printutmp.c:714
 #, c-format
 msgid "form `%s' not closed"
 msgstr ""
@@ -444,89 +440,89 @@ msgid "SQL authentication not available"
 msgstr "autentificación SQL no está disponible"
 
 #: radiusd/auth.c:309
-#, c-format
-msgid "unknown Password-Location value: %d"
-msgstr "valor desconocido de Password-Location: %d"
+#, fuzzy, c-format
+msgid "unknown Password-Location value: %ld"
+msgstr "valor desconocido de Password-Location: %ld"
 
 #: radiusd/auth.c:342
 msgid "PAM authentication not available"
 msgstr "autentificación PAM no está disponible"
 
-#: radiusd/auth.c:449
+#: radiusd/auth.c:445
 msgid "No username"
 msgstr "Falta nombre del usuario"
 
-#: radiusd/auth.c:455
+#: radiusd/auth.c:451
 msgid "Malformed username"
 msgstr "Nombre mal escrito"
 
-#: radiusd/auth.c:472
+#: radiusd/auth.c:468
 msgid "No huntgroup access"
 msgstr "Acceso denegado por `huntgroup'"
 
-#: radiusd/auth.c:846 radiusd/sql.c:741 radiusd/sql.c:743
+#: radiusd/auth.c:840 radiusd/sql.c:724 radiusd/sql.c:726
 msgid "unknown"
 msgstr "desconocido"
 
-#: radiusd/auth.c:856 radiusd/auth.c:964
+#: radiusd/auth.c:850 radiusd/auth.c:958
 msgid "Invalid user"
 msgstr "Usuario no existente"
 
-#: radiusd/auth.c:910
+#: radiusd/auth.c:904
 msgid "Guile authentication disabled in config"
 msgstr "autentificación Guile está desactivada para configuración"
 
-#: radiusd/auth.c:929
+#: radiusd/auth.c:923
 msgid "Guile authentication not available"
 msgstr "autentificación Guile no está disponible"
 
-#: radiusd/auth.c:959
+#: radiusd/auth.c:953
 msgid "Rejected"
 msgstr "Rechazado"
 
-#: radiusd/auth.c:984 radiusd/auth.c:1176
+#: radiusd/auth.c:978 radiusd/auth.c:1168
 msgid "Login incorrect"
 msgstr "Login incorrecto"
 
-#: radiusd/auth.c:1010
+#: radiusd/auth.c:1004
 msgid "Account disabled"
 msgstr "Cuenta desactivada"
 
-#: radiusd/auth.c:1020
+#: radiusd/auth.c:1014
 msgid "Login rejected"
 msgstr "Login rechazado"
 
-#: radiusd/auth.c:1021
+#: radiusd/auth.c:1015
 msgid "Authenticate only user"
 msgstr ""
 
-#: radiusd/auth.c:1037
+#: radiusd/auth.c:1031
 msgid "Login failed"
 msgstr "Login ha fallado"
 
-#: radiusd/auth.c:1038
+#: radiusd/auth.c:1032
 msgid "realm quota exceeded for "
 msgstr "Se ha excedido la cuota de `realm' para "
 
-#: radiusd/auth.c:1065
+#: radiusd/auth.c:1058
 #, c-format
 msgid "Multiple logins: [%s] max. %ld%s, CLID %s"
 msgstr "Logins múltiples: [%s} max. %ld%s, CLID %s"
 
-#: radiusd/auth.c:1068
+#: radiusd/auth.c:1061
 msgid " [MPP attempt]"
 msgstr " [tentativa MPP]"
 
-#: radiusd/auth.c:1104
+#: radiusd/auth.c:1096
 #, c-format
 msgid "Outside allowed timespan, time allowed: %s"
 msgstr "Fuera de tiempo permitido (%s)"
 
-#: radiusd/auth.c:1177
+#: radiusd/auth.c:1169
 msgid "external check failed"
 msgstr "prueba externa ha fallado"
 
-#: radiusd/auth.c:1249
+#: radiusd/auth.c:1241
 msgid "Login OK"
 msgstr "Autentificación válida"
 
@@ -613,162 +609,162 @@ msgstr "%s:%d: no existe tal módulo: %s"
 msgid "%s:%d: invalid level: %s"
 msgstr "%s:%d: nivel inválido: %s"
 
-#: radiusd/config.y:738
+#: radiusd/config.y:736
 msgid "usedbm statement ignored: radiusd compiled without DBM support"
 msgstr ""
 "orden `usedbm' se pasa por alto: radiusd fue compilado sin soporte para DBM"
 
-#: radiusd/config.y:751
+#: radiusd/config.y:749
 msgid "snmp statement ignored: radiusd compiled without snmp support"
 msgstr ""
 "orden `snmp' se pasa por alto: radiusd fue compilado sin soporte para SNMP"
 
-#: radiusd/config.y:760
+#: radiusd/config.y:758
 #, c-format
 msgid "invalid netmask length: %d"
 msgstr "Longitud de `netmask' es incorrecta: %d"
 
-#: radiusd/config.y:809
+#: radiusd/config.y:807
 #, c-format
 msgid "%s:%d: no such acl: %s"
 msgstr "%s:%d: no existe tal acl: %s"
 
-#: radiusd/config.y:875
+#: radiusd/config.y:873
 #, c-format
 msgid "%s:%d: community %s already declared"
 msgstr "%s:%d: comunidad %s ya esta declarada"
 
-#: radiusd/config.y:913
+#: radiusd/config.y:911
 #, c-format
 msgid "%s:%d: undefined community %s"
 msgstr "%s:%d: comunidad %s no definida"
 
-#: radiusd/config.y:1008
+#: radiusd/config.y:1006
 msgid "guile statement ignored: radiusd compiled without guile support"
 msgstr ""
 "orden `guile' pasa por alto: radiusd fue compilado sin soporte para Guile"
 
-#: radiusd/config.y:1025 radiusd/config.y:1037
+#: radiusd/config.y:1023 radiusd/config.y:1035
 msgid "wrong datatype (should be string)"
 msgstr "tipo de datos incorrecto: debe ser `string'"
 
-#: radiusd/config.y:1183 radiusd/rewrite.y:1436
+#: radiusd/config.y:1181 radiusd/rewrite.y:1436
 #, c-format
 msgid "%s:%d: unexpected EOF in comment started at line %d"
 msgstr "%s:%d: fin de archivo inesperado en comento empezado en línea %d"
 
-#: radiusd/config.y:1233
+#: radiusd/config.y:1231
 #, c-format
 msgid "INTERNAL ERROR parsing %s near %d: out of putback space"
 msgstr "ERROR INTERNO al analizar %s, cerca de línea %d: pila agotada"
 
-#: radiusd/config.y:1283 radiusd/config.y:1304 radiusd/config.y:1328
+#: radiusd/config.y:1273 radiusd/config.y:1294 radiusd/config.y:1318
 msgid "token too long"
 msgstr ""
 
-#: radiusd/config.y:1356
+#: radiusd/config.y:1346
 #, c-format
 msgid "can't open config file `%s'"
 msgstr "no se puede abrir archivo de configuración `%s'"
 
-#: radiusd/config.y:1373
+#: radiusd/config.y:1363
 #, c-format
 msgid "reading %s"
 msgstr "leyendo %s"
 
-#: radiusd/config.y:1404
+#: radiusd/config.y:1392
 msgid "ready"
 msgstr "listo"
 
-#: radiusd/config.y:1430
+#: radiusd/config.y:1418
 #, c-format
 msgid "%s:%d: no such service: %s"
 msgstr "%s:%d: no existe tal servicio: %s"
 
-#: radiusd/config.y:1453 radiusd/sql.c:360
+#: radiusd/config.y:1441 radiusd/sql.c:344
 #, c-format
 msgid "%s:%d: unknown host: %s"
 msgstr "%s:%d: host desconocido: %s"
 
-#: radiusd/config.y:1467
+#: radiusd/config.y:1455
 #, c-format
 msgid "%s:%d: wrong datatype (should be %s)"
 msgstr "%s:%d: tipo de datos incorrecto (debe ser `%s')"
 
-#: radiusd/config.y:1496
+#: radiusd/config.y:1484
 #, c-format
 msgid "INTERNAL ERROR at %s:%d: unknown datatype %d"
 msgstr "ERROR INTERNO en %s:%d: tipo de datos desconocido (%d)"
 
-#: radiusd/config.y:1565
+#: radiusd/config.y:1553
 msgid "Statement has no effect."
 msgstr ""
 
-#: radiusd/config.y:1567
+#: radiusd/config.y:1555
 #, c-format
 msgid "%s:%d: `%s' is obsolete. %s"
 msgstr "%s:%d: `%s' se ha hecho viejo. %s"
 
-#: radiusd/exec.c:76
+#: radiusd/exec.c:77
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
 msgstr ""
 "radius_exec_program(): no se puede ejecutar: el nombre del programa no es "
 "ruta absoluta: %s"
 
-#: radiusd/exec.c:88
+#: radiusd/exec.c:89
 #, c-format
 msgid "radius_exec_program(): won't execute, no such user: %s"
 msgstr "radius_exec_program(): no se puede ejecutar: el usuario `%s' no existe"
 
-#: radiusd/exec.c:95
+#: radiusd/exec.c:96
 msgid "couldn't open pipe"
 msgstr "no se puede abrir la tubería"
 
-#: radiusd/exec.c:101
+#: radiusd/exec.c:102
 msgid "can't reset SIGCHLD"
 msgstr "no se puede reinicializar SIGCHLD"
 
-#: radiusd/exec.c:123 radiusd/exec.c:176
+#: radiusd/exec.c:124 radiusd/exec.c:177
 msgid "can't close pipe"
 msgstr "no se puede cerrar la tubería"
 
-#: radiusd/exec.c:125
+#: radiusd/exec.c:126
 msgid "can't dup stdout"
 msgstr "no se puede duplicar la salida estándar"
 
-#: radiusd/exec.c:135
+#: radiusd/exec.c:136
 #, c-format
 msgid "setgid(%d) failed"
 msgstr "setdig(%d) falló"
 
-#: radiusd/exec.c:141
+#: radiusd/exec.c:142
 #, c-format
 msgid "seteuid(%d) failed (ruid=%d, euid=%d)"
 msgstr "seteuid(%d) falló (ruid=%d, euid=%d)"
 
-#: radiusd/exec.c:146
+#: radiusd/exec.c:147
 #, c-format
 msgid "setreuid(0,%d) failed (ruid=%d, euid=%d)"
 msgstr "setreuid(0,%d) falló (ruid=%d, euid=%d)"
 
-#: radiusd/exec.c:188
+#: radiusd/exec.c:189
 #, c-format
 msgid "<stdout of %s>:%d: %s"
 msgstr "<salida de %s>:%d: %s"
 
-#: radiusd/exec.c:205
+#: radiusd/exec.c:206
 msgid "can't restore SIGCHLD"
 msgstr "no se puede reinstalar SIGCHLD"
 
-#: radiusd/exec.c:212
+#: radiusd/exec.c:213
 msgid ""
 "can't run external program (reason reported via syslog channel user.err)"
 msgstr ""
 "no se puede ejecutar el programa: la razón se comunique a través del canal "
 "syslog `user.err'"
 
-#: radiusd/exec.c:216
+#: radiusd/exec.c:217
 #, fuzzy
 msgid "radius_exec_program(): abnormal child exit"
 msgstr "radius_exec_program(): el proceso hijo terminó anormalmente"
@@ -817,148 +813,141 @@ msgstr "tipo de atributo desconocido %d"
 msgid "expected , but found %s"
 msgstr "se esperaba , pero se ha encontrado %s"
 
-#: radiusd/files.c:809
-#, c-format
-msgid "hints:%d: %s(): not defined"
-msgstr "hints:%d: %s(): función no definida"
+#: radiusd/files.c:812 radiusd/files.c:910
+#, fuzzy
+msgid "not defined"
+msgstr "No definido"
 
-#: radiusd/files.c:907
-#, c-format
-msgid "huntgroups:%d: %s(): not defined"
-msgstr "huntgroups:%d: %s(): función no definida"
+#: radiusd/files.c:960 radiusd/files.c:1145
+msgid "wrong number of fields"
+msgstr "número incorrecto de campos"
 
-#: radiusd/files.c:957 radiusd/files.c:1139
-#, c-format
-msgid "%s:%d: wrong number of fields (%d)"
-msgstr "%s:%d: número incorrecto de campos (%d)"
+#: radiusd/files.c:1073
+msgid "unknown method"
+msgstr "método desconocido"
 
-#: radiusd/files.c:1070
-#, c-format
-msgid "%s:%d: unknown method"
-msgstr "%s:%d: método desconocido"
-
-#: radiusd/files.c:1145
+#: radiusd/files.c:1150
 #, c-format
 msgid "user `%s' already found in %s"
 msgstr "usuario `%s' ya fue encontrado en %s"
 
 # FIXME: plural!
-#: radiusd/files.c:1170
+#: radiusd/files.c:1175
 #, c-format
 msgid "%d users disabled"
 msgstr "%d usuarios desactivados"
 
-#: radiusd/files.c:1772
+#: radiusd/files.c:1777
 msgid "using only dbm: USERS NOT LOADED"
 msgstr "usando solo dbm: ARCHIVO USERS NO SE HA CARGADO"
 
-#: radiusd/files.c:1780
+#: radiusd/files.c:1785
 msgid "DBM files found but no -b flag given - NOT using DBM"
 msgstr ""
 "archivos DBM se han encontrados, pero la opción -b no es especificada -- NO "
 "usando DBM"
 
-#: radiusd/files.c:1784
+#: radiusd/files.c:1789
 #, c-format
 msgid "can't load %s: exited"
 msgstr "no se puede cargar %s: terminando"
 
-#: radiusd/files.c:1787
+#: radiusd/files.c:1792
 #, c-format
 msgid "%s reloaded."
 msgstr "%s recargado."
 
-#: radiusd/files.c:1863
+#: radiusd/files.c:1868
 msgid "SQL Error: SQL client could not be initialized"
 msgstr "Error SQL: no se puede inicializar el cliente SQL"
 
-#: radiusd/files.c:1876
+#: radiusd/files.c:1881
 #, c-format
 msgid "INTERNAL ERROR: unknown reload code: %d"
 msgstr "ERROR INTERNO: código de recargo desconocido: %d"
 
-#: radiusd/files.c:2007
+#: radiusd/files.c:2012
 #, c-format
 msgid "can't create parser output file `%s'"
 msgstr "no se puede crear archivo de salida del analizador `%s'"
 
-#: radiusd/files.c:2021
+#: radiusd/files.c:2026
 #, c-format
 msgid "dumped users database to %s"
 msgstr "base de usuarios guardada en archivo %s"
 
-#: radiusd/log.c:123
+#: radiusd/log.c:124
 msgid "none"
 msgstr "ninguno"
 
-#: radiusd/log.c:124
+#: radiusd/log.c:125
 msgid "Main"
 msgstr "Principal"
 
-#: radiusd/log.c:125
+#: radiusd/log.c:126
 msgid "Auth"
 msgstr "Autent"
 
-#: radiusd/log.c:126
+#: radiusd/log.c:127
 msgid "Acct"
 msgstr "Acct"
 
-#: radiusd/log.c:127
+#: radiusd/log.c:128
 msgid "Proxy"
 msgstr "Proxy"
 
-#: radiusd/log.c:128
+#: radiusd/log.c:129
 msgid "SNMP"
 msgstr "SNMP"
 
-#: radiusd/log.c:132
+#: radiusd/log.c:133
 msgid "emerg"
 msgstr "emerg"
 
-#: radiusd/log.c:133
+#: radiusd/log.c:134
 msgid "alert"
 msgstr "alert"
 
-#: radiusd/log.c:134
+#: radiusd/log.c:135
 msgid "crit"
 msgstr "crit"
 
-#: radiusd/log.c:135
+#: radiusd/log.c:136
 msgid "error"
 msgstr "error"
 
-#: radiusd/log.c:136
+#: radiusd/log.c:137
 msgid "warning"
 msgstr "aviso"
 
-#: radiusd/log.c:137
+#: radiusd/log.c:138
 msgid "notice"
 msgstr "noticia"
 
-#: radiusd/log.c:138
+#: radiusd/log.c:139
 msgid "info"
 msgstr "info"
 
-#: radiusd/log.c:139
+#: radiusd/log.c:140
 msgid "debug"
 msgstr "debug"
 
-#: radiusd/log.c:271
+#: radiusd/log.c:272
 #, c-format
 msgid "could not append to file %s"
 msgstr "no se puede añadir al archivo %s"
 
-#: radiusd/log.c:392
+#: radiusd/log.c:393
 #, c-format
 msgid "can't access `%s'"
 msgstr "no se puede acceder al archivo `%s'"
 
-#: radiusd/menu.c:128 radiusd/menu.c:182
+#: radiusd/menu.c:127 radiusd/menu.c:181
 #, c-format
 msgid "can't open menu `%s'"
 msgstr "no se puede abrir al archivo menú `%s'"
 
-#: radiusd/menu.c:130
+#: radiusd/menu.c:129
 msgid ""
 "\n"
 "*** User Menu is Not Available ***\n"
@@ -966,7 +955,7 @@ msgstr ""
 "\n"
 "*** Menú del usuario no es disponible ***\n"
 
-#: radiusd/menu.c:232
+#: radiusd/menu.c:231
 #, c-format
 msgid "menu %s:%d: %s"
 msgstr "menú %s:%d: %s"
@@ -976,25 +965,25 @@ msgstr "menú %s:%d: %s"
 msgid "rad_pam_conv(): no application-specific data passed"
 msgstr "rad_pam_conv(): información específica de aplicación no entregada"
 
-#: radiusd/proxy.c:165
+#: radiusd/proxy.c:163
 #, c-format
 msgid "couldn't send request to realm %s"
 msgstr "no se puede enviar petición a `realm' %s"
 
-#: radiusd/proxy.c:345
+#: radiusd/proxy.c:339
 msgid "digest mismatch"
 msgstr "Discordancia de signatura"
 
-#: radiusd/proxy.c:349
+#: radiusd/proxy.c:343
 msgid "unknown request code"
 msgstr "Código de petición desconocido"
 
-#: radiusd/proxy.c:355
+#: radiusd/proxy.c:349
 #, c-format
 msgid "Possible Security Breach: %s"
 msgstr ""
 
-#: radiusd/proxy.c:557
+#: radiusd/proxy.c:550
 #, c-format
 msgid "Unrecognized proxy reply from server %s, proxy ID %d"
 msgstr "Respuesta `proxy' de servidor %s (proxy ID %d) no reconocida"
@@ -1009,173 +998,173 @@ msgstr "users:%d: Match-Profile se refiere a entrada no existente (%s)"
 msgid "users:%d: circular dependency for %s"
 msgstr "users:%d: dependencia circular (%s)"
 
-#: radiusd/radck.c:164
+#: radiusd/radck.c:161
 msgid "not enough memory for transitivity check"
 msgstr "falta memoria para la prueba de transitividad"
 
-#: radiusd/radck.c:195
+#: radiusd/radck.c:186
 msgid "USER LIST IS EMPTY"
 msgstr "BASE DE USUARIOS ESTÁ VACÍA"
 
-#: radiusd/radck.c:212
+#: radiusd/radck.c:197
 #, c-format
 msgid "users:%d: duplicate %s attribute"
 msgstr "users:%d: atributo %s es duplicado"
 
-#: radiusd/radck.c:244
+#: radiusd/radck.c:229
 #, c-format
 msgid "%s:%d: attribute %s not allowed in LHS"
 msgstr "%s:%d: atributo %s no se permite en LHS"
 
-#: radiusd/radck.c:287
+#: radiusd/radck.c:272
 msgid "Match-Profile refers to a DEFAULT entry"
 msgstr "Match-Profile se refiere a entrada DEFAULT"
 
-#: radiusd/radck.c:330 radiusd/radck.c:357
+#: radiusd/radck.c:315 radiusd/radck.c:342
 msgid "No User-Password attribute in LHS"
 msgstr "Falta atributo User-Password en LHS"
 
-#: radiusd/radck.c:342 radiusd/radck.c:375
+#: radiusd/radck.c:327 radiusd/radck.c:360
 msgid "User-Password attribute ignored for this Auth-Type"
 msgstr "atributo User-Password pasa por alto para este Auth-Type"
 
-#: radiusd/radck.c:348
+#: radiusd/radck.c:333
 msgid "Password-Location attribute ignored for this Auth-Type"
 msgstr "atributo Password-Location pasa por alto para este Auth-Type"
 
-#: radiusd/radck.c:366
+#: radiusd/radck.c:351
 msgid "Authentication type not supported"
 msgstr "Tipo de autentificación no soportado"
 
-#: radiusd/radck.c:394
+#: radiusd/radck.c:379
 msgid "Both Auth-Data and PAM-Auth attributes present"
 msgstr "Auth-Data y PAM-Auth no pueden usarse juntos"
 
-#: radiusd/radck.c:422
+#: radiusd/radck.c:407
 #, c-format
 msgid "%s:%d: attribute %s not allowed in RHS"
 msgstr "%s:%d: atributo %s no se permite en RHS"
 
-#: radiusd/radck.c:441
+#: radiusd/radck.c:426
 msgid "BEGIN without Fall-Through"
 msgstr "entrada BEGIN usada sin atributo Fall-Through"
 
-#: radiusd/radius.c:108
+#: radiusd/radius.c:103
 msgid "request from unknown client"
 msgstr "petición de un cliente desconocido"
 
-#: radiusd/radiusd.c:181
+#: radiusd/radiusd.c:185
 msgid "GNU radius daemon"
 msgstr "GNU radius daemon"
 
-#: radiusd/radiusd.c:185
+#: radiusd/radiusd.c:189
 msgid "radiusd specific switches:"
 msgstr "opciones específicas para radius:"
 
-#: radiusd/radiusd.c:187
+#: radiusd/radiusd.c:191
 msgid "Do detailed authentication logging"
 msgstr "Mantener un registro de autentificación detallado"
 
-#: radiusd/radiusd.c:188 radiusd/radiusd.c:196 radiusd/radiusd.c:208
+#: radiusd/radiusd.c:192 radiusd/radiusd.c:200 radiusd/radiusd.c:212
 msgid "DIR"
 msgstr "DIR"
 
-#: radiusd/radiusd.c:189
+#: radiusd/radiusd.c:193
 msgid "Set accounting directory"
 msgstr "Establecer el directorio de registro `accounting'"
 
-#: radiusd/radiusd.c:192
+#: radiusd/radiusd.c:196
 msgid "Enable DBM support"
 msgstr "Activar el soporte DBM"
 
-#: radiusd/radiusd.c:195
+#: radiusd/radiusd.c:199
 msgid "Stay in foreground"
 msgstr ""
 
-#: radiusd/radiusd.c:197
+#: radiusd/radiusd.c:201
 msgid "Set logging directory name"
 msgstr "Establecer directorio de archivos log"
 
-#: radiusd/radiusd.c:199
+#: radiusd/radiusd.c:203
 msgid "Select operation mode: test, checkconf, builddbm."
 msgstr "Establecer el modo de operación: test, checkconf, builddbm"
 
-#: radiusd/radiusd.c:201
+#: radiusd/radiusd.c:205
 msgid "Do only authentication"
 msgstr "Hacer solo autentificación"
 
-#: radiusd/radiusd.c:203
+#: radiusd/radiusd.c:207
 msgid "Do not resolve IP addresses"
 msgstr ""
 
-#: radiusd/radiusd.c:204 radlast/radlast.c:129
+#: radiusd/radiusd.c:208 radlast/radlast.c:130
 msgid "IPADDR"
 msgstr "IP"
 
-#: radiusd/radiusd.c:205
+#: radiusd/radiusd.c:209
 #, fuzzy
 msgid "Listen on IPADDR"
 msgstr "Escuchar el interfaz IP"
 
-#: radiusd/radiusd.c:207
+#: radiusd/radiusd.c:211
 msgid "Set authentication port number"
 msgstr "Establecer número de puerto para autentificación"
 
-#: radiusd/radiusd.c:209
+#: radiusd/radiusd.c:213
 msgid "Store pidfile in DIR"
 msgstr "Guardar archivo pid en directorio DIR"
 
-#: radiusd/radiusd.c:211
+#: radiusd/radiusd.c:215
 msgid "Strip prefixes/suffixes off user names before logging"
 msgstr "Registrar nombres de usuarios sin prefijos/sufijos"
 
-#: radiusd/radiusd.c:213
+#: radiusd/radiusd.c:217
 msgid "Run in single process mode"
 msgstr "Correr en proceso único"
 
-#: radiusd/radiusd.c:214
+#: radiusd/radiusd.c:218
 msgid "DEBUGSPEC"
 msgstr "DEBUGSPEC"
 
-#: radiusd/radiusd.c:215
+#: radiusd/radiusd.c:219
 msgid "Set debugging level"
 msgstr "Establecer nivel de depuración"
 
-#: radiusd/radiusd.c:217
+#: radiusd/radiusd.c:221
 msgid "Log authentications"
 msgstr "Registrar autentificaciones"
 
-#: radiusd/radiusd.c:219
+#: radiusd/radiusd.c:223
 msgid "Log users' passwords"
 msgstr "Mostrar contraseñas de usuarios"
 
-#: radiusd/radiusd.c:257
+#: radiusd/radiusd.c:262
 msgid "radiusd compiled without DBM support"
 msgstr "radiusd compilado sin soporte para DBM"
 
-#: radiusd/radiusd.c:266
+#: radiusd/radiusd.c:271
 #, c-format
 msgid "unknown mode: %s"
 msgstr "modo desconocido: %s"
 
-#: radiusd/radiusd.c:278
+#: radiusd/radiusd.c:283
 #, c-format
 msgid "invalid IP address: %s"
 msgstr "dirección IP inválida: %s"
 
-#: radiusd/radiusd.c:385
+#: radiusd/radiusd.c:391
 msgid "Sorry, your account is currently closed\n"
 msgstr "Disculpe, por el momento su cuenta está desactivada\n"
 
-#: radiusd/radiusd.c:387
+#: radiusd/radiusd.c:393
 msgid "Password has expired\n"
 msgstr "Contraseña ha expirado\n"
 
-#: radiusd/radiusd.c:389
+#: radiusd/radiusd.c:395
 msgid "Password will expire in %R{Password-Expire-Days} Days\n"
 msgstr "Contraseña expira dentro de %R{Password-Expire-Days} días\n"
 
-#: radiusd/radiusd.c:391
+#: radiusd/radiusd.c:397
 msgid ""
 "\n"
 "Access denied\n"
@@ -1183,7 +1172,7 @@ msgstr ""
 "\n"
 "Acceso denegado\n"
 
-#: radiusd/radiusd.c:393
+#: radiusd/radiusd.c:399
 msgid ""
 "\n"
 "Realm quota exceeded - access denied\n"
@@ -1191,7 +1180,7 @@ msgstr ""
 "\n"
 "Se ha excedido la cuota de `realm' -- acceso denegado\n"
 
-#: radiusd/radiusd.c:395
+#: radiusd/radiusd.c:401
 msgid ""
 "\n"
 "You are already logged in %R{Simultaneous-Use} times - access denied\n"
@@ -1199,7 +1188,7 @@ msgstr ""
 "\n"
 "Acceso denegado - hay %R{Simultaneous-Use} sesiones abiertas para Ud.\n"
 
-#: radiusd/radiusd.c:397
+#: radiusd/radiusd.c:403
 msgid ""
 "\n"
 "You are already logged in - access denied\n"
@@ -1207,118 +1196,118 @@ msgstr ""
 "\n"
 "Acceso denegado - hay una sesión abierta para Ud.\n"
 
-#: radiusd/radiusd.c:399
+#: radiusd/radiusd.c:405
 msgid "You are calling outside your allowed timespan\n"
 msgstr "Llamada fuera de tiempo permitido\n"
 
-#: radiusd/radiusd.c:524
+#: radiusd/radiusd.c:529
 msgid "Ready to process requests."
 msgstr "Preparado para conexiones."
 
-#: radiusd/radiusd.c:709
+#: radiusd/radiusd.c:714
 msgid "failed in select() - exit."
 msgstr "select() ha fallado."
 
-#: radiusd/radiusd.c:713
+#: radiusd/radiusd.c:718
 msgid "Normal shutdown."
 msgstr "Apagado completado."
 
-#: radiusd/radiusd.c:716
+#: radiusd/radiusd.c:721
 #, c-format
 msgid "exit on signal (%d)"
 msgstr "se ha recibido señal %d: abortando"
 
-#: radiusd/radiusd.c:728
+#: radiusd/radiusd.c:733
 msgid "flushing request queues"
 msgstr ""
 
-#: radiusd/radiusd.c:744
+#: radiusd/radiusd.c:748
 msgid "restart initiated"
 msgstr "reinicialización"
 
-#: radiusd/radiusd.c:747
+#: radiusd/radiusd.c:751
 msgid "can't restart: not started as absolute pathname"
 msgstr "no se puede reiniciar: el nombre del programa no es ruta absoluta"
 
-#: radiusd/radiusd.c:792
+#: radiusd/radiusd.c:796
 msgid "restarting radius"
 msgstr "reiniciando radius"
 
-#: radiusd/radiusd.c:794
+#: radiusd/radiusd.c:798
 msgid "RADIUS NOT RESTARTED: exec failed"
 msgstr "RADIUS NO REINICIADO: exec() falló"
 
-#: radiusd/radiusd.c:811
+#: radiusd/radiusd.c:814
 msgid "Starting - reading configuration files ..."
 msgstr "Iniciando -- leyendo archivos de configuración ..."
 
-#: radiusd/radiusd.c:813
+#: radiusd/radiusd.c:816
 msgid "Reloading configuration files."
 msgstr "Recargando archivos de configuración."
 
-#: radiusd/radiusd.c:859
+#: radiusd/radiusd.c:862
 msgid "Errors reading config file - EXITING"
 msgstr "Había errores al leer archivos de configuración - ABORTANDO"
 
-#: radiusd/radiusd.c:884
+#: radiusd/radiusd.c:887
 msgid "can't find out my own IP address"
 msgstr "no se puede determinar mi propio dirección IP"
 
-#: radiusd/radiusd.c:898
+#: radiusd/radiusd.c:901
 msgid "Reloading configuration now"
 msgstr "Recargando la configuración ahora"
 
-#: radiusd/radiusd.c:908
+#: radiusd/radiusd.c:911
 #, c-format
 msgid "Dumping users db to `%s'"
 msgstr "Guardando base de usuarios en `%s'"
 
-#: radiusd/radiusd.c:928
+#: radiusd/radiusd.c:931
 msgid "can't restart: radiusd not started as absolute pathname"
 msgstr "no se puede reiniciar: el nombre del programa no es ruta absoluta"
 
-#: radiusd/radiusd.c:941
+#: radiusd/radiusd.c:944
 msgid "RADIUSD RUNNING"
 msgstr "RADIUSD CORRIENDO"
 
-#: radiusd/radiusd.c:948
+#: radiusd/radiusd.c:951
 msgid "RADIUSD SUSPENDED"
 msgstr "RADIUSD SUSPENDIDO"
 
-#: radiusd/radiusd.c:986
+#: radiusd/radiusd.c:989
 #, c-format
-msgid "%lu classes, %lu buckets are using %lu bytes of memory"
-msgstr "%lu clases, %lu buckets usan %lu bytes de memoria"
+msgid "%u classes, %u buckets are using %u bytes of memory"
+msgstr "%u clases, %u buckets usan %u bytes de memoria"
 
-#: radiusd/radiusd.c:993
+#: radiusd/radiusd.c:996
 #, c-format
-msgid "memory utilization: %ld.%1ld%%"
-msgstr "utilización de memoria: %ld.%1ld%%"
+msgid "memory utilization: %u.%1u%%"
+msgstr "utilización de memoria: %u.%1u%%"
 
-#: radiusd/radiusd.c:998
+#: radiusd/radiusd.c:1001
 msgid "    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"
 msgstr ""
 
-#: radiusd/radiusd.c:1003
+#: radiusd/radiusd.c:1006
 #, c-format
 msgid "malloc statistics: %d blocks, %d bytes"
 msgstr "estadística de malloc: %d bloques, %d bytes"
 
-#: radiusd/radiusd.c:1149
+#: radiusd/radiusd.c:1177
 #, c-format
 msgid "Dropping %s packet from client %s, ID: %d: %s"
 msgstr "Descartando petición %s de cliente %s, ID %d: %s"
 
-#: radiusd/radiusd.c:1177
+#: radiusd/radiusd.c:1204
 #, c-format
 msgid "Retransmitting %s reply"
 msgstr "Retransmitiendo respuesta %s"
 
-#: radiusd/radiusd.c:1181
+#: radiusd/radiusd.c:1208
 msgid "request failed"
 msgstr "petición falló"
 
-#: radiusd/radiusd.c:1298
+#: radiusd/radiusd.c:1326
 #, c-format
 msgid "unknown request code %d"
 msgstr "código de petición desconocido: %d"
@@ -1531,12 +1520,12 @@ msgstr "insuficiente número de argumentos para %s"
 msgid "function %s() requires %d parameters"
 msgstr "función %s() requiere %d parámetros"
 
-#: radiusd/scheme.c:112
+#: radiusd/scheme.c:113
 #, c-format
 msgid "Can't spawn guile thread: %s"
 msgstr "no se puede crear hila Guile: %s"
 
-#: radiusd/scheme.c:239 radiusd/scheme.c:283
+#: radiusd/scheme.c:243 radiusd/scheme.c:287
 #, c-format
 msgid "%s is not a procedure object"
 msgstr "%s no es un objeto procedural"
@@ -1551,18 +1540,18 @@ msgstr "no se puede descodificar paquete SNMP recibido de %s: %s"
 msgid "DENIED attempt to access community %s from %s"
 msgstr "Tentativa de acceso a comunidad %s de %s RENEGADA"
 
-#: radiusd/snmpserv.c:625
+#: radiusd/snmpserv.c:626
 #, c-format
 msgid "Dropping SNMP request from client %s: %s"
 msgstr "Descartando petición SNMP de cliente %s: %s"
 
-#: radiusd/snmpserv.c:1241
+#: radiusd/snmpserv.c:1242
 msgid "acct server re-initializing on SNMP request"
 msgstr ""
 "Petición SNMP requiere que el servidor de accounting recargue la "
 "configuración"
 
-#: radiusd/snmpserv.c:1615
+#: radiusd/snmpserv.c:1616
 msgid "auth server re-initializing on SNMP request"
 msgstr ""
 "Petición SNMP requiere que el servidor de autorización recargue la "
@@ -1588,103 +1577,103 @@ msgstr "Petición SNMP requiere que el servidor se suspenda"
 msgid "server shutting down on SNMP request"
 msgstr "Petición SNMP requiere que el servidor apague"
 
-#: radiusd/sql.c:331
+#: radiusd/sql.c:315
 #, c-format
 msgid "could not read sqlserver file %s"
 msgstr "no se puede leer archivo sqlserver %s"
 
-#: radiusd/sql.c:343
+#: radiusd/sql.c:327
 msgid "unrecognized keyword"
 msgstr "palabra clave desconocida"
 
-#: radiusd/sql.c:351
+#: radiusd/sql.c:335
 msgid "required argument missing"
 msgstr "falta argumento requerido"
 
-#: radiusd/sql.c:376 radiusd/sql.c:403
+#: radiusd/sql.c:360 radiusd/sql.c:387
 msgid "number parse error"
 msgstr "el número no se puede analizar"
 
-#: radiusd/sql.c:395 radiusd/sql.c:413 radiusd/sql.c:421
+#: radiusd/sql.c:379 radiusd/sql.c:397 radiusd/sql.c:405
 msgid "expected boolean value"
 msgstr "se ha esperado un valor boolean"
 
-#: radiusd/sql.c:472
+#: radiusd/sql.c:456
 msgid "auth_max_connections is obsolete"
 msgstr "auth_max_connections cayó en desuso"
 
-#: radiusd/sql.c:479
+#: radiusd/sql.c:463
 msgid "acct_max_connections is obsolete"
 msgstr "acct_max_connections cayó en desuso"
 
-#: radiusd/sql.c:486
+#: radiusd/sql.c:470
 msgid "query_buffer_size is obsolete"
 msgstr "query_buffer_size cayó en desuso"
 
-#: radiusd/sql.c:494
+#: radiusd/sql.c:478
 msgid "Unsupported SQL interface"
 msgstr "Interfaz SQL no soportado"
 
-#: radiusd/sql.c:561
+#: radiusd/sql.c:545
 msgid "disabling SQL auth: no auth_query specified"
 msgstr "desactivando autentificación SQL: auth_query no especificada"
 
-#: radiusd/sql.c:566
+#: radiusd/sql.c:550
 msgid "SQL auth: no group_query specified"
 msgstr "autentificación SQL: group_query no especificada"
 
-#: radiusd/sql.c:576
+#: radiusd/sql.c:560
 msgid "SQL acct: no acct_start_query specified"
 msgstr "accounting SQL: acct_start_query no especificada"
 
-#: radiusd/sql.c:582
+#: radiusd/sql.c:566
 msgid "disabling SQL acct: no acct_stop_query specified"
 msgstr "desactivando accounting SQL: acct_stop_query no especificada"
 
-#: radiusd/sql.c:589
+#: radiusd/sql.c:573
 msgid "SQL acct: no acct_nasdown_query specified"
 msgstr "accounting SQL: acct_nasdown_query no especificada"
 
-#: radiusd/sql.c:595
+#: radiusd/sql.c:579
 msgid "SQL acct: no acct_nasup_query specified"
 msgstr "accounting SQL: acct_nasup_query no especificada"
 
-#: radiusd/sql.c:617
+#: radiusd/sql.c:601
 msgid "SQL configuration changed: closing existing connections"
 msgstr "configuración SQL se ha cambiado: cerrando conexiones."
 
-#: radiusd/sql.c:710
+#: radiusd/sql.c:693
 msgid "no Acct-Status-Type attribute in rad_sql_acct()"
 msgstr "rad_sql_acct(): falta atributo Acct-Status-Type"
 
 # FIXME: plural
-#: radiusd/sql.c:745
+#: radiusd/sql.c:728
 #, c-format
 msgid "acct_stop_query: %d rows changed"
 msgstr "acct_stop_query: cambiado %d registros"
 
-#: radiusd/sql.c:760
+#: radiusd/sql.c:743
 #, c-format
 msgid "acct_nasup_query updated %d records"
 msgstr "acct_nasup_query modificó %d registros"
 
-#: radiusd/sql.c:775
+#: radiusd/sql.c:758
 #, c-format
 msgid "acct_nasdown_query updated %d records"
 msgstr "acct_nasdown_query modificó %d registros"
 
-#: radiusd/sql.c:790
+#: radiusd/sql.c:773
 #, c-format
 msgid "acct_keepalive_query updated %d records"
 msgstr "acct_keepalive_query modificó %d registros"
 
-#: radiusd/sql.c:814
+#: radiusd/sql.c:796
 msgid "SQL Auth specified in users file, but not in sqlserver file"
 msgstr ""
 "Autentificación SQL se requiere por archivo `users' pero no esta activada en "
 "archivo `sqlserver'"
 
-#: radiusd/sql.c:915
+#: radiusd/sql.c:897
 #, c-format
 msgid "SQL: invalid operator: %s"
 msgstr "SQL: operador inválido: %s"
@@ -1777,73 +1766,73 @@ msgstr " archivo pid:                 %s\n"
 msgid " no pidfile\n"
 msgstr " sin archivo pid\n"
 
-#: radlast/radlast.c:110
+#: radlast/radlast.c:111
 msgid "report last logins from Radius database."
 msgstr "mostrar últimos logins de base de datos Radius"
 
-#: radlast/radlast.c:114
+#: radlast/radlast.c:115
 msgid "radlast specific switches:"
 msgstr "opciones especificas para radlast:"
 
-#: radlast/radlast.c:125 radlast/radlast.c:137 radtest/main.c:84
-#: radtest/main.c:88 radzap/radzap.c:69
+#: radlast/radlast.c:126 radlast/radlast.c:138 radtest/main.c:83
+#: radtest/main.c:87 radzap/radzap.c:69
 msgid "NUMBER"
 msgstr "NÚMERO"
 
-#: radlast/radlast.c:126
+#: radlast/radlast.c:127
 msgid "show at most NUMBER records"
 msgstr "mostrar no más de NÚMERO registros"
 
-#: radlast/radlast.c:127 radtest/main.c:78 radwho/radwho.c:142
+#: radlast/radlast.c:128 radtest/main.c:77 radwho/radwho.c:143
 #: radzap/radzap.c:65
 msgid "FILE"
 msgstr "ARCHIVO"
 
-#: radlast/radlast.c:128
+#: radlast/radlast.c:129
 msgid "use FILE as radwtmp"
 msgstr "leer ARCHIVO en vez de radwtmp"
 
-#: radlast/radlast.c:130
+#: radlast/radlast.c:131
 msgid "show logins with IPADDR"
 msgstr "mostrar entradas con IP asignado"
 
-#: radlast/radlast.c:132
+#: radlast/radlast.c:133
 msgid "mark records with missed stops with bump (!)"
 msgstr ""
 
-#: radlast/radlast.c:133 radzap/radzap.c:67
+#: radlast/radlast.c:134 radzap/radzap.c:67
 msgid "NASNAME"
 msgstr "NOMBRE-NAS"
 
-#: radlast/radlast.c:134
+#: radlast/radlast.c:135
 msgid "show logins from given NAS"
 msgstr "mostrar logins de NAS especificado"
 
-#: radlast/radlast.c:136
+#: radlast/radlast.c:137
 msgid "use long output format"
 msgstr "usar formato de salida detallado"
 
-#: radlast/radlast.c:138
+#: radlast/radlast.c:139
 msgid "show logins from given port"
 msgstr "mostrar logins con número de puerto especificado"
 
-#: radlast/radlast.c:140
+#: radlast/radlast.c:141
 msgid "show the login session duration in seconds"
 msgstr "mostrar tiempo de sesión en segundas"
 
-#: radlast/radlast.c:142
+#: radlast/radlast.c:143
 msgid "widen the duration field to show seconds"
 msgstr ""
 
-#: radlast/radlast.c:209
+#: radlast/radlast.c:210
 msgid "--width is incompatible with --show-seconds"
 msgstr "sólo se puede especificar una de las opciones --width o --show-seconds"
 
-#: radscm/radscm.c:330 radtest/main.c:169
+#: radscm/radscm.c:330 radtest/main.c:166
 msgid "error reading dictionary file"
 msgstr "error al leer archivo de diccionario"
 
-#: gram.y:450 radtest/gram.y:450
+#: gram.y:451 radtest/gram.y:451
 #, c-format
 msgid "attribute %s has unknown type"
 msgstr "atributo %s tiene tipo desconocido"
@@ -1853,27 +1842,27 @@ msgstr "atributo %s tiene tipo desconocido"
 msgid "%s:%d: unknown value %s"
 msgstr "%s:%d: valor desconocido %s"
 
-#: radtest/main.c:69
+#: radtest/main.c:68
 msgid "send arbitrary radius packets"
 msgstr "mandar peticiones radius arbitrarias"
 
-#: radtest/main.c:73
+#: radtest/main.c:72
 msgid "radtest specific switches:"
 msgstr "opciones especificas para radtest:"
 
-#: radtest/main.c:74
+#: radtest/main.c:73
 msgid "VARIABLE=VALUE"
 msgstr "VARIABLE=VALOR"
 
-#: radtest/main.c:75
+#: radtest/main.c:74
 msgid "assign a VALUE to VARIABLE"
 msgstr "asignar VALOR a VARIABLE"
 
-#: radtest/main.c:77
+#: radtest/main.c:76
 msgid "set debugging level"
 msgstr "establecer el nivel de depuración"
 
-#: radtest/main.c:79
+#: radtest/main.c:78
 msgid ""
 "Read input from FILE. When this option is used, all unknown options in the "
 "form --VAR=VALUE are treated as variable assignments"
@@ -1881,124 +1870,124 @@ msgstr ""
 "Leer ARCHIVO en vez de entrada estándar. Si se usa esta opción, entonces\n"
 "todas las opciones desconocidas en forma --VAR=VALOR ..."
 
-#: radtest/main.c:85
+#: radtest/main.c:84
 msgid "set number of retries"
 msgstr "establecer numero de tentativas de conexión"
 
-#: radtest/main.c:86
+#: radtest/main.c:85
 msgid "SERVER"
 msgstr "SERVIDOR"
 
-#: radtest/main.c:87
+#: radtest/main.c:86
 msgid "set radius server parameters"
 msgstr "establecer parámetros de servidor radius"
 
-#: radtest/main.c:89
+#: radtest/main.c:88
 msgid "set timeout"
 msgstr ""
 
-#: radtest/main.c:91
+#: radtest/main.c:90
 msgid "verbose mode"
 msgstr ""
 
-#: radtest/main.c:305
+#: radtest/main.c:301
 msgid "assign: expected `='\n"
 msgstr "se ha esperado `='\n"
 
-#: radtest/main.c:329
+#: radtest/main.c:325
 msgid "assign: missing closing quote\n"
 msgstr "falta comilla cerrante\n"
 
-#: radtest/main.c:348 radtest/main.c:357
+#: radtest/main.c:344 radtest/main.c:353
 #, c-format
 msgid "assign: invalid IP address: %s\n"
 msgstr "dirección IP inválida: %s\n"
 
-#: radtest/main.c:486
+#: radtest/main.c:483
 msgid "wrong datatype: expected vector"
 msgstr "tipo de datos erróneo: se ha esperado vector"
 
-#: radwho/radwho.c:129
+#: radwho/radwho.c:130
 msgid "display who is logged on by Radius"
 msgstr "mostrar usuarios admitidos por radius"
 
-#: radwho/radwho.c:133
+#: radwho/radwho.c:134
 msgid "radwho specific switches:"
 msgstr "opciones especificas para radwho:"
 
-#: radwho/radwho.c:135
+#: radwho/radwho.c:136
 msgid "print all entries, not only active ones"
 msgstr "mostrar todos los registros, no sólo activos"
 
-#: radwho/radwho.c:137
+#: radwho/radwho.c:138
 msgid "display CLID in second column"
 msgstr "mostrar CLID en la segunda columna"
 
-#: radwho/radwho.c:138
+#: radwho/radwho.c:139
 msgid "DATEFMT"
 msgstr "FORMATO-FECHA"
 
-#: radwho/radwho.c:139
+#: radwho/radwho.c:140
 msgid "change date representation format"
 msgstr "establecer formato de representación de fechas"
 
-#: radwho/radwho.c:140
+#: radwho/radwho.c:141
 msgid "STRING"
 msgstr "CADENA"
 
-#: radwho/radwho.c:141
+#: radwho/radwho.c:142
 msgid "print STRING instead of an empty column"
 msgstr "escribir CADENA en vez de una columna vacía"
 
-#: radwho/radwho.c:143
+#: radwho/radwho.c:144
 msgid "Use FILE instead of /var/log/radutmp"
 msgstr "Leer ARCHIVO en vez de /var/log/radutmp"
 
-#: radwho/radwho.c:145
+#: radwho/radwho.c:146
 msgid "act as a finger daemon"
 msgstr "actuar como daemon `finger'"
 
-#: radwho/radwho.c:147
+#: radwho/radwho.c:148
 msgid "do not display header line"
 msgstr "no mostrar la línea de cabecera"
 
-#: radwho/radwho.c:149
+#: radwho/radwho.c:150
 msgid "display session ID in the second column"
 msgstr "mostrar identificador de sesión en la segunda columna"
 
-#: radwho/radwho.c:151
+#: radwho/radwho.c:152
 msgid "display hostnames without domain part"
 msgstr "mostrar nombres de máquinas sin parte de dominio"
 
-#: radwho/radwho.c:153
+#: radwho/radwho.c:154
 msgid "Long output. All fields will be printed."
 msgstr "Salida detallada. Muestra todos los campos."
 
-#: radwho/radwho.c:156
+#: radwho/radwho.c:157
 msgid "display also local users"
 msgstr ""
 
-#: radwho/radwho.c:158
+#: radwho/radwho.c:159
 msgid "do not resolve hostnames."
 msgstr ""
 
-#: radwho/radwho.c:159
+#: radwho/radwho.c:160
 msgid "FORMAT"
 msgstr "FORMATO"
 
-#: radwho/radwho.c:160
+#: radwho/radwho.c:161
 msgid "change output format"
 msgstr "establecer formato de salida"
 
-#: radwho/radwho.c:162
+#: radwho/radwho.c:163
 msgid "secure mode: requires that the username be specified"
 msgstr "modo seguro: requiere que se especifique el nombre de usuario"
 
-#: radwho/radwho.c:297
+#: radwho/radwho.c:298
 msgid "must provide username\n"
 msgstr "se requiere un nombre de usuario\n"
 
-#: radwho/radwho.c:335
+#: radwho/radwho.c:336
 #, c-format
 msgid "can't open file: %s"
 msgstr "no se puede abrir archivo: %s"
@@ -2094,12 +2083,12 @@ msgstr "MYSQL Error: no se puede obtener resultado para autentificación"
 msgid "MYSQL Error: can't get result"
 msgstr "MYSQL Error: no se puede obtener resultado"
 
-#: sql/mysql.c:306 sql/odbc.c:342 sql/postgres.c:370
+#: sql/mysql.c:306 sql/odbc.c:341 sql/postgres.c:370
 #, c-format
 msgid "too few columns returned (%d req'd)"
 msgstr "número de columnas insuficiente (debe ser %d)"
 
-#: sql/odbc.c:257
+#: sql/odbc.c:256
 #, c-format
 msgid "query returned more tuples: %s"
 msgstr "petición volvió mas tuplas: %s"
@@ -2123,3 +2112,15 @@ msgstr "petición devolvió %d tuplas: %s"
 #, c-format
 msgid "PQexec returned %s"
 msgstr "PQexec: %s"
+
+#~ msgid "%s:%d: too few fields"
+#~ msgstr "%s:%d: insuficiente número de campos"
+
+#~ msgid "%s:%d: invalid type"
+#~ msgstr "%s:%d: tipo inválido"
+
+#~ msgid "hints:%d: %s(): not defined"
+#~ msgstr "hints:%d: %s(): función no definida"
+
+#~ msgid "huntgroups:%d: %s(): not defined"
+#~ msgstr "huntgroups:%d: %s(): función no definida"

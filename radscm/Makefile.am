@@ -83,8 +83,11 @@ LINTFLAGS=-gezra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDE
 .c.ln:
 	$(LINT.c) -i $<
 
-lint: $(radscm_SOURCES:.c=.ln)
-	$(LINT.c) -u $(radscm_SOURCES:.c=.ln) $(radscm_LDADD)
+llib-lradscm.ln: $(libradscm_a_SOURCES:.c=.ln)
+	$(LINT.c) -Cradscm $(libradscm_a_SOURCES:.c=.ln) 
+
+lint: $(radscm_SOURCES:.c=.ln) llib-lradscm.ln
+	$(LINT.c) -u $(radscm_SOURCES:.c=.ln) -lradscm -L../lib -llog -lrad -ldebug
 
 endif
 

@@ -405,7 +405,6 @@ request_stat_list(stat)
         QUEUE_STAT stat;
 {
         REQUEST *curreq;
-        int i;
 
         memset(stat, 0, sizeof(QUEUE_STAT));
         

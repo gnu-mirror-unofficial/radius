@@ -19,6 +19,11 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+
+#include <stdlib.h>
+#include <ctype.h>
+#include <netinet/in.h>
+
 #include <radius.h>
 #include <obstack1.h>
 #include <radutmp.h>
@@ -68,6 +73,20 @@ struct format_data {
 	} v;
 };
 
+
+int output_string(char *string, int width, int align);
+int output_string_key(char *string, int width, format_key_t *key);
+int output_tab(int column, int tabstop);
+int output_hostname(UINT4 ip, int width, format_key_t *key);
+int output_time(time_t t, int width, format_key_t *key);
+char *get_hostname(UINT4 ipaddr, int nodomain, char *buf, size_t size);
+
+static void format_key_free(format_key_t *key);
+static char *format_key_lookup(format_key_t *key, char *name);
+static int key_align(format_key_t *key);
+static char *key_date_format(format_key_t *key);
+static char *key_empty(format_key_t *key);
+static int key_nodomain(format_key_t *key);
 
 void
 format_key_free(key)
@@ -198,8 +217,6 @@ get_hostname(ipaddr, nodomain, buf, size)
         char *buf;
         size_t size;
 {
-        static char ipbuf[DOTTED_QUAD_LEN];
-        
         if (ipaddr == 0 || ipaddr == (UINT4)-1 || ipaddr == (UINT4)-2)
                 return "";
 
@@ -255,6 +272,7 @@ output_time(t, width, key)
 	return width;
 }
 
+/*ARGSUSED*/
 int
 login_fh(outbytes, width, key, up)
 	int outbytes;
@@ -265,6 +283,7 @@ login_fh(outbytes, width, key, up)
 	return output_string_key(up->login, width, key);
 }
 
+/*ARGSUSED*/
 int
 orig_login_fh(outbytes, width, key, up)
 	int outbytes;
@@ -275,6 +294,7 @@ orig_login_fh(outbytes, width, key, up)
 	return output_string_key(up->orig_login, width, key);
 }
 
+/*ARGSUSED*/
 int
 gecos_fh(outbytes, width, key, up)
 	int outbytes;
@@ -294,6 +314,7 @@ gecos_fh(outbytes, width, key, up)
 	return output_string_key(s, width, key);
 }
 
+/*ARGSUSED*/
 int
 nas_port_fh(outbytes, width, key, up)
 	int outbytes;
@@ -307,6 +328,7 @@ nas_port_fh(outbytes, width, key, up)
 	return output_string_key(buf, width, key);
 }
 
+/*ARGSUSED*/
 int
 session_id_fh(outbytes, width, key, up)
 	int outbytes;
@@ -317,6 +339,7 @@ session_id_fh(outbytes, width, key, up)
 	return output_string_key(up->session_id, width, key);
 }
 
+/*ARGSUSED*/
 int
 nas_address_fh(outbytes, width, key, up)
 	int outbytes;
@@ -336,6 +359,7 @@ nas_address_fh(outbytes, width, key, up)
 	return output_hostname(up->nas_address, width, key);
 }
 
+/*ARGSUSED*/
 int
 framed_address_fh(outbytes, width, key, up)
 	int outbytes;
@@ -346,6 +370,7 @@ framed_address_fh(outbytes, width, key, up)
 	return output_hostname(up->framed_address, width, key);
 }
 
+/*ARGSUSED*/
 int
 protocol_fh(outbytes, width, key, up)
 	int outbytes;
@@ -360,12 +385,13 @@ protocol_fh(outbytes, width, key, up)
         if (dval)
 		s = dval->name;
 	else {
-                snprintf(buf, sizeof(buf), "%lu", up->proto);
+                snprintf(buf, sizeof(buf), "%u", up->proto);
 		s = buf;
 	}
 	return output_string_key(s, width, key);
 }
 
+/*ARGSUSED*/
 int
 time_fh(outbytes, width, key, up)
 	int outbytes;
@@ -373,13 +399,13 @@ time_fh(outbytes, width, key, up)
 	format_key_t *key;
 	struct radutmp *up;
 {
-        int len;
         char buf[80];
 	
 	strftime(buf, sizeof buf, key_date_format(key), localtime(&up->time));
 	return output_string_key(buf, width, key);
 }
 
+/*ARGSUSED*/
 int
 duration_fh(outbytes, width, key, up)
 	int outbytes;
@@ -392,6 +418,7 @@ duration_fh(outbytes, width, key, up)
 			   width, key);
 }
 
+/*ARGSUSED*/
 int
 delay_fh(outbytes, width, key, up)
 	int outbytes;
@@ -402,6 +429,7 @@ delay_fh(outbytes, width, key, up)
 	return output_time(up->delay, width, key);
 }
 
+/*ARGSUSED*/
 int
 port_type_fh(outbytes, width, key, up)
 	int outbytes;
@@ -416,12 +444,13 @@ port_type_fh(outbytes, width, key, up)
         if (dval)
 		s = dval->name;
 	else {
-                snprintf(buf, sizeof(buf), "%lu", up->porttype);
+                snprintf(buf, sizeof(buf), "%u", up->porttype);
 		s = buf;
 	}
 	return output_string_key(s, width, key);
 }
 
+/*ARGSUSED*/
 int
 clid_fh(outbytes, width, key, up)
 	int outbytes;
@@ -432,6 +461,7 @@ clid_fh(outbytes, width, key, up)
 	return output_string_key(up->caller_id, width, key);
 }
 
+/*ARGSUSED*/
 int
 realm_address_fh(outbytes, width, key, up)
 	int outbytes;
@@ -489,7 +519,6 @@ parse_string0(fmt, form, cond, closure)
 	void *closure;
 {
 	char *p;
-	int rc;
 	
 	for (p = fmt; *p && (*cond)(closure, p) == 0; p++) {
 		if (*p == '\\') {
@@ -557,6 +586,7 @@ parse_quote(fmtp, form)
 	return 0;
 }
 
+/*ARGSUSED*/
 static int
 _is_delim(closure, p)
 	void *closure;

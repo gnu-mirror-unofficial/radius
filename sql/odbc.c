@@ -166,7 +166,7 @@ rad_odbc_query(conn, query, return_count)
         ODBCconn        *odata;
         long            result;
         SQLHSTMT        stmt;
-        SQLSMALLINT     count;
+        SQLINTEGER      count;
 
         if (!conn || !conn->data)
                 return -1;
@@ -208,7 +208,6 @@ rad_odbc_getpwd(conn, query)
         ODBCconn        *odata;
         long            result;
         SQLHSTMT        stmt;
-        SQLSMALLINT     count;
         SQLINTEGER      size;
         SQLCHAR         passwd[128];
         char           *return_passwd = NULL;
@@ -287,7 +286,7 @@ rad_odbc_exec(conn, query)
         ODBCconn        *odata;
         long            result;
         SQLHSTMT        stmt;
-        SQLSMALLINT     ccount, rcount;
+        SQLSMALLINT     ccount;
         EXEC_DATA      *data;
         
         if (!conn || !conn->data)

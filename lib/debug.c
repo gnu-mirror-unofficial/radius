@@ -36,7 +36,7 @@ static char rcsid[] =
 #include <radius.h>
 
 static struct keyword auth_codes[] = {
-#define D(a) #a, a      
+#define D(a)  {#a, a}
         D(RT_AUTHENTICATION_REQUEST),
         D(RT_AUTHENTICATION_ACK),
         D(RT_AUTHENTICATION_REJECT),

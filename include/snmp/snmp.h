@@ -182,6 +182,7 @@ u_char *snmp_pdu_encode(u_char *data, int *length, struct snmp_pdu *pdu);
 u_char *snmp_pdu_decode(u_char *data, int *length, struct snmp_pdu *pdu);
 
 int snmp_send(struct snmp_session *sess, struct snmp_pdu *pdu);
+int snmp_request_xmit(struct snmp_session *sess, struct snmp_request *req);
 
 int snmp_req_id(void);
 struct snmp_session *snmp_session_create(char *community, char *host,

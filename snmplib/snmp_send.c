@@ -176,7 +176,6 @@ snmp_decode_request(sess, pdu, packet, length, comm, comm_len)
         int vers;
         u_char *buf;
         u_char type;
-        int len;
 
         buf = asn_decode_header(packet, &length, &type);
         if (!buf) 

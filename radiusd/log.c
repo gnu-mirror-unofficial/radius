@@ -27,6 +27,7 @@
 #include <syslog.h>
 #include <radiusd.h>
 #include <log.h>
+#include <slist.h>
 
 static pthread_once_t log_once = PTHREAD_ONCE_INIT;
 static pthread_key_t log_key;
@@ -181,7 +182,7 @@ log_to_channel(chan, cat, pri, buf1, buf2, buf3)
                         strftime(buffer, sizeof(buffer), "%b %d %H:%M:%S", tm);
                         len = strlen(buffer);
                         snprintf(buffer+len, sizeof(buffer)-len,
-                                 ".%06d", tv.tv_usec);
+                                 ".%06d", (int) tv.tv_usec);
                 } else {
                         timeval = time(NULL);
                         tm = localtime_r(&timeval, &tms);
@@ -418,7 +419,6 @@ register_category(cat, pri, chanlist)
         Chanlist *chanlist;
 {
         Channel *chan;
-        int primask;
 
         if (pri == -1)
                 pri = L_UPTO(L_DEBUG);

@@ -286,6 +286,7 @@ extern Server_stat server_stat;
 int rad_accounting(RADIUS_REQ *, int);
 int radzap(UINT4 nas, int port, char *user, time_t t);
 int rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul, int *pcount);
+int rad_check_realm(REALM *realm);
 int write_detail(RADIUS_REQ *radreq, int authtype, char *f);
 
 /* radiusd.c */
@@ -295,6 +296,10 @@ int set_nonblocking(int fd);
 int rad_flush_queues();
 void schedule_restart();
 void rad_mainloop();
+void listen_auth(HOSTDECL *host);
+void listen_acct(HOSTDECL *host);
+void rad_req_drop(int type, RADIUS_REQ *req, RADIUS_REQ *orig, int fd,
+		  char *status_str);
 
 /* radius.c */
 
@@ -395,15 +400,15 @@ void snmp_free_communities();
 void snmp_sort_nas_stat();
 #endif
 
-int xlat_keyword(struct keyword *kw, char *str, int def);
-
-
 /* stat.c */
 #ifdef USE_SNMP
 void stat_init();
 void stat_done();
 void stat_update(struct radutmp *ut, int status);
 void stat_count_ports();
+struct nas_stat * find_nas_stat(UINT4 ip_addr);
+int stat_get_port_index(NAS *nas, int port_no);
+int stat_get_next_port_no(NAS *nas, int port_no);
 #else
 # define stat_init()
 # define stat_done()
@@ -423,9 +428,6 @@ int snmp_answer(struct snmp_req *req, int fd);
 /* radutil.c */
 char *radius_xlate(struct obstack *obp, char *str,
                    RADIUS_REQ *req, VALUE_PAIR *reply_pairs);
-
-/* intl.c */
-void app_setup();
 
 /* log.c */
 void sqllog(/* int status, char *msg, va_alist */);
@@ -449,7 +451,11 @@ void scheme_debug(int val);
 int scheme_auth(char *procname, RADIUS_REQ *req,
                 VALUE_PAIR *user_check, VALUE_PAIR **user_reply_ptr);
 int scheme_acct(char *procname, RADIUS_REQ *req);
-
+void scheme_add_load_path(char *path);
+void scheme_read_eval_loop();
+void scheme_end_reconfig();
+void start_guile();
+	
 int request_start_thread();
 void request_signal();
 REQUEST *request_put(int type, void *data, int fd, unsigned *numpending);
@@ -458,4 +464,7 @@ int request_flush_list();
 int request_stat_list(QUEUE_STAT stat);
 void request_handle(REQUEST *req);
 void *request_scan_list(int type, int (*handler)(), void *closure);
-        
+
+/* checkrad.c */
+int checkrad(NAS *nas, struct radutmp *up);
+

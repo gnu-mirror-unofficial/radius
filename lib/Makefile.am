@@ -88,21 +88,21 @@ SUFFIXES=.S .c .ln .o .s
 
 if MAINTAINER_MODE
 CLEANFILES=*.ln
-LINTFLAGS=-gzra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
+LINTFLAGS=-gzra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -DLOCALEDIR=\"$(localedir)\" -I$(top_srcdir) -I$(srcdir) $(INCLUDES)
 
 .c.ln:
 	$(LINT.c) -i $<
 
-llib-llog.ln: $(liblog_a_SOURCES:.c=.ln)
-	$(LINT.c) -Clog $(liblog_a_SOURCES:.c=.ln)
+llib-llog.ln: $(liblog_la_SOURCES:.c=.ln)
+	$(LINT.c) -Clog $(liblog_la_SOURCES:.c=.ln)
 
-llib-lrad.ln: $(librad_a_SOURCES:.c=.ln)  llib-llog.ln
-	$(LINT.c) -Crad $(librad_a_SOURCES:.c=.ln) -L. -llog
+llib-lrad.ln: $(librad_la_SOURCES:.c=.ln)  llib-llog.ln
+	$(LINT.c) -Crad $(librad_la_SOURCES:.c=.ln) -L. -llog
 
-llib-ldebug.ln: $(libdebug_a_SOURCES:.c=.ln) llib-llog.ln
-	$(LINT.c) -Cdebug $(libdebug_a_SOURCES:.c=.ln) -L. -llog
+llib-ldebug.ln: $(libdebug_la_SOURCES:.c=.ln) llib-llog.ln
+	$(LINT.c) -Cdebug $(libdebug_la_SOURCES:.c=.ln) -L. -llog
 
-lint:: llib-llog.ln llib-lrad.ln llib-ldebug.ln llib-lsql.ln
+lint:: llib-llog.ln llib-lrad.ln llib-ldebug.ln 
 
 LIBLIST:; @echo $(librad_la_SOURCES) > .list
 endif

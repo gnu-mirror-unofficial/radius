@@ -179,6 +179,7 @@ value    : STRING
 
 %%
 
+int
 yyerror(s)
         char *s;
 {

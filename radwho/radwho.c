@@ -42,6 +42,7 @@ static char rcsid[] =
 void local_who();
 void radius_who();
 void print_header();
+int want_rad_record(struct radutmp *rt);
 
 /* UTMP stuff. Uses utmpx on svr4 */
 #if defined(__svr4__) || defined(__sgi)  

@@ -53,7 +53,7 @@ struct radius_attr {
         u_char data[AUTH_STRING_LEN];    
 };
 
-static int rad_pdu_init(struct radius_pdu *pdu);
+static void rad_pdu_init(struct radius_pdu *pdu);
 static VALUE_PAIR *rad_decode_pair(int attrno, char *ptr, int attrlen);
 size_t rad_pdu_finish_reply(void **ptr, struct radius_pdu *pdu, int code,
 			    int id, u_char *vector, u_char *secret);
@@ -61,13 +61,13 @@ size_t rad_pdu_finish_request(void **ptr, struct radius_pdu *pdu,
                               int code, int id, u_char *vector,
                               u_char *secret);
 
-void * rad_pdu_destroy(struct radius_pdu *pdu);
+void rad_pdu_destroy(struct radius_pdu *pdu);
 int rad_attr_write(struct radius_attr *ap, void *data, size_t size);
 int rad_encode_pair(struct radius_attr *ap, VALUE_PAIR *pair);
 
 
 /* Initialize a PDU */
-int
+void
 rad_pdu_init(pdu)
         struct radius_pdu *pdu;
 {
@@ -149,7 +149,7 @@ rad_pdu_finish(ptr, pdu, code, id, vector, secret)
 }
 
 /* Destroy the PDU */
-void *
+void 
 rad_pdu_destroy(pdu)
         struct radius_pdu *pdu;
 {
@@ -234,7 +234,6 @@ rad_create_pdu(rptr, code, id, vector, secret, pairlist, msg)
         VALUE_PAIR *pairlist;
         char *msg;
 {
-        AUTH_HDR *hdr;
         struct radius_pdu pdu;
         size_t attrlen = 0;
         int status = 0;
@@ -245,7 +244,6 @@ rad_create_pdu(rptr, code, id, vector, secret, pairlist, msg)
 
         for (pair = pairlist; pair; pair = pair->next) {
                 struct radius_attr attr;
-                u_char *ptr;
                 UINT4 lval;
                 int vendorcode, vendorpec;
                 

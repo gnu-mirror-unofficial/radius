@@ -26,7 +26,7 @@ LINTFLAGS=-gezra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDE
 	$(LINT.c) -i $<
 
 lint: $(radlast_SOURCES:.c=.ln)
-	$(LINT.c) -u $(radlast_SOURCES:.c=.ln) $(radlast_LDADD)
+	$(LINT.c) -u $(radlast_SOURCES:.c=.ln) -L../lib -llog -lrad -ldebug
 
 endif
 

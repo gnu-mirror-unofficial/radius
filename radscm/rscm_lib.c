@@ -63,7 +63,7 @@ SCM
 radscm_avl_to_list(pair)
         VALUE_PAIR *pair;
 {
-        SCM scm_first = SCM_EOL, scm_last, new;
+        SCM scm_first = SCM_EOL, scm_last;
         
         for (; pair; pair = pair->next) {
                 SCM new = rad_scm_cell(radscm_avp_to_cons(pair), SCM_EOL);

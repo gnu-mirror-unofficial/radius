@@ -23,6 +23,7 @@
 #endif
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <asn1.h>
 #include <snmp.h>
 

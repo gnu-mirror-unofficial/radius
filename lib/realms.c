@@ -19,8 +19,12 @@
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
+
+#include <stdlib.h>
+#include <argcv.h>
 #include <radius.h>
 #include <envar.h>
+#include <slist.h>
 
 static REALM *realms; 
 
@@ -106,8 +110,6 @@ read_realms_entry(pd, fc, fv, file, lineno)
         int lineno;
 {
         REALM *rp;
-        char *p;
-	RADIUS_SERVER srv;
 	int i;
 	
         if (fc < 2) {

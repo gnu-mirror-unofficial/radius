@@ -25,7 +25,10 @@ void rscm_syslog_init();
 void rscm_utmp_init();
 void rscm_avl_init();
 void rscm_dict_init();
-
+void rscm_radlog_init();
+void rscm_rewrite_init();
+void rscm_add_load_path(char *path);
+	
 char *rscm_load_path(char *);
 
 #if GUILE_VERSION == 14

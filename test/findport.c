@@ -99,8 +99,8 @@ main(argc, argv)
                 fd = socket(AF_INET, SOCK_DGRAM, 0);
                 if (fd < 0) {
                         fprintf(stderr,
-                                "%s: can't open socket: %s\n",
-                                progname, strerror(errno));
+                                "%s: can't open socket: %d\n",
+                                progname, errno);
                         return 1;
                 }
 

@@ -43,6 +43,7 @@ void *sym_lookup(Symtab *symtab, char *name);
 void *sym_lookup_or_install(Symtab *symtab, char *name, int install);
 void *sym_next(Symbol *sym);
 void symtab_iterate(Symtab *symtab, int (*fn)(), void *closure);
+int symtab_delete(Symtab *symtab, Symbol *sym);
 
 Symbol * alloc_sym(char *, unsigned);
 void     sym_free(Symbol *);

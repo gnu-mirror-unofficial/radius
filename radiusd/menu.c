@@ -43,7 +43,6 @@ process_menu(radreq, activefd)
         char menu_name[MAX_MENU_NAME];
         char menu_input[MAX_MENU_INPUT];
         char state_value[MAX_STATE_VALUE];
-        int i;
         char *msg;
 
         if ((pair = avl_find(radreq->request, DA_STATE)) == NULL ||

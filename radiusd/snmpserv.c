@@ -609,6 +609,7 @@ snmp_req_free(req)
         free_entry(req);
 }
 
+/*ARGSUSED*/
 void
 snmp_req_drop(type, req, orig, fd, status_str)
         int type;
@@ -1835,7 +1836,6 @@ snmp_serv_var_get(subid, oid, errp)
         struct snmp_var *ret;
         struct timeval tv;
         struct timezone tz;
-        char *p;
         
         ret = snmp_var_create(oid);
         *errp = SNMP_ERR_NOERROR;
@@ -2167,8 +2167,6 @@ get_queue_stat(qno, var, key)
         struct snmp_var *var;
         subid_t key;
 {
-        struct timeval tv;
-        struct timezone tz;
         QUEUE_STAT stat;
         
         request_stat_list(stat);
@@ -2215,7 +2213,6 @@ get_queue_stat(qno, var, key)
 
 /* Memory table */
 static struct snmp_var *snmp_mem_get(subid_t subid, oid_t oid, int *errp);
-static void get_mem_stat(int no, struct snmp_var *var, subid_t key);
 static struct snmp_var *snmp_class_get(subid_t subid,
                                        struct snmp_var *varp, int *errp);
 static int _mem_get_class(subid_t, CLASS_STAT*);
@@ -2231,7 +2228,6 @@ snmp_serv_mem_summary(cmd, closure, subid, varp, errp)
         int *errp;
 {
         oid_t oid = (*varp)->name;
-        CLASS_STAT stat;
         
         switch (cmd) {
         case MIB_NODE_GET:
@@ -2264,8 +2260,6 @@ snmp_mem_get(subid, oid, errp)
         int *errp;
 {
         struct snmp_var *ret;
-        struct timeval tv;
-        struct timezone tz;
         MEM_STAT stat;
         
         ret = snmp_var_create(oid);

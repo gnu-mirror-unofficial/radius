@@ -58,6 +58,13 @@ extern char *strtok_r(char *s, const char *delim, char **save_ptr);
 extern struct tm *localtime_r(const time_t *timep, struct tm *res);
 #endif
 
+#if !HAVE_DECL_ASPRINTF
+int asprintf(/*char **result, const char *format, ...*/);
+#endif
+
+#if !HAVE_DECL_VASPRINTF
+int vasprintf(/*char **result, const char *format, va_list args*/);
+#endif
 
 #if defined (sun) && defined(__svr4__)
 RETSIGTYPE (*sun_signal(int signo, void (*func)(int)))(int);

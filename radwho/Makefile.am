@@ -27,7 +27,7 @@ LINTFLAGS=-gezra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDE
 	$(LINT.c) -i $<
 
 lint: $(radwho_SOURCES:.c=.ln)
-	$(LINT.c) -u $(radwho_SOURCES:.c=.ln) $(radwho_LDADD)
+	$(LINT.c) -u $(radwho_SOURCES:.c=.ln) -L../lib -llog -lrad -ldebug
 
 
 

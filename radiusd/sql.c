@@ -196,21 +196,6 @@ get_boolean(str, retval)
         return 0;
 }
 
-int
-get_unsigned(str, retval)
-        char *str;
-        unsigned *retval;
-{
-        unsigned val;
-        
-        val = strtol(str, &str, 0);
-        if (*str != 0 && !isspace(*str))
-                return 1;
-
-        *retval = val;
-        return 0;
-}
-
 char *
 sql_digest(cfg)
         SQL_cfg *cfg;
@@ -311,7 +296,6 @@ rad_sql_init()
         char *sqlfile;
         UINT4 ipaddr;
         char *ptr;
-        size_t bufsize = 0;
         time_t timeout;
         SQL_cfg new_cfg;
 
@@ -698,7 +682,6 @@ rad_sql_acct(radreq)
         VALUE_PAIR *pair;
         char *query;
         struct sql_connection *conn;
-        char buf[MAX_LONGNAME];
         struct obstack stack;
         
         if (!sql_cfg.doacct)
@@ -803,7 +786,6 @@ rad_sql_pass(req, authdata)
         RADIUS_REQ *req;
         char *authdata;
 {
-        int   rc;
         char *mysql_passwd;
         struct sql_connection *conn;
         char *query;
@@ -938,8 +920,6 @@ rad_sql_reply_attr_query(req, reply_pairs)
         RADIUS_REQ *req;
         VALUE_PAIR **reply_pairs;
 {
-        VALUE_PAIR *request_pairs = req->request;
-        VALUE_PAIR *pair;
         struct sql_connection *conn;
         char *query;
         int rc;
@@ -964,8 +944,6 @@ rad_sql_check_attr_query(req, return_pairs)
         RADIUS_REQ *req;
         VALUE_PAIR **return_pairs;
 {
-        VALUE_PAIR *request_pairs = req->request;
-        VALUE_PAIR *pair;
         struct sql_connection *conn;
         char *query;
         int rc;

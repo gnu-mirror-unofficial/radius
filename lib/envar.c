@@ -23,6 +23,7 @@
 #include <mem.h>
 #include <envar.h>
 #include <argcv.h>
+#include <slist.h>
 
 static void
 envar_parse_internal(str, phead, ptail)

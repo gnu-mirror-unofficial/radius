@@ -44,6 +44,10 @@ static char rcsid[] =
 #include <radtest.h>
 #include "gram.h"
 
+#if !HAVE_DECL_GETLINE
+int getline (char **lineptr, size_t *n, FILE *stream);
+#endif
+
 int source_line_num;
 char *source_filename;
 static int interactive;
@@ -263,7 +267,7 @@ add_num(skip, base, text, leng)
         char *text;
         int leng;
 {
-        int n, d;
+        int n;
 
         n = 1;
         while (leng - n > 0 && text[leng - n] != '\\')

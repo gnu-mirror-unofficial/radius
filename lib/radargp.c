@@ -83,8 +83,6 @@ rad_common_argp_parser (key, arg, state)
         char *arg;
         struct argp_state *state;
 {
-        char *p;
-        
         switch (key) {
         case 'd':
                 radius_dir = arg;

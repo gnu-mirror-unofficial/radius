@@ -51,7 +51,6 @@ rad_srv_send_reply(fd, radreq)
         RADIUS_REQ *radreq;
 {
         void *pdu;
-        char *what;
         size_t length;
 
         length = rad_create_pdu(&pdu, radreq->reply_code,

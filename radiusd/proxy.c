@@ -45,8 +45,6 @@ static char rcsid[] =
 
 static PROXY_ID *proxy_id;
 
-static void random_vector(char *vector);
-static VALUE_PAIR *proxy_addinfo(RADIUS_REQ *radreq, int proxy_id, int fd, UINT4 remip);
 void proxy_addrequest(RADIUS_REQ *radreq);
 static void passwd_recode(VALUE_PAIR *pair,
                           char *new_secret, char *new_vector, RADIUS_REQ *req);
@@ -278,14 +276,10 @@ proxy_send(radreq, activefd)
         char *saved_username;
         char *username;
         VALUE_PAIR *namepair;
-        VALUE_PAIR *vp, *pp;
+        VALUE_PAIR *vp;
         char *realmname;
         REALM *realm;
-        CLIENT *client;
-        short rport;
         char *what;
-        char *secret_key;
-        char buf[MAX_LONGNAME];
         
         /* Look up name. */
         namepair = avl_find(radreq->request, DA_USER_NAME);
@@ -501,7 +495,6 @@ proxy_receive(radreq, activefd)
         RADIUS_REQ      *oldreq;
         PROXY_STATE     *state;
         struct proxy_data data;
-        char buf[MAX_LONGNAME];
         
         /* FIXME: calculate md5 checksum! */
 

@@ -44,6 +44,7 @@ static char rcsid[] =
 #include <syslog.h>
 #include <radiusd.h>
 #include <obstack1.h>
+#include <argcv.h>
 
 /*
  *      Execute a program on successful authentication.

@@ -356,6 +356,7 @@ pritem        : expr
 
 %%
 
+int
 yyerror(s)
         char *s;
 {
@@ -462,9 +463,8 @@ install_pair(name, op, valstr)
 {
         DICT_ATTR       *attr = NULL;
         DICT_VALUE      *dval;
-        VALUE_PAIR      *pair, *pair2;
+        VALUE_PAIR      *pair;
         char *s;
-        int x;
         time_t timeval;
         struct tm *tm;
         

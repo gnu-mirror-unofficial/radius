@@ -37,6 +37,7 @@ static char rcsid[] =
 #include <radpaths.h>
 #include <log.h>
 #include <radtest.h>
+#include <argcv.h>
 
 Symtab *vartab;
 char *radius_dir = RADIUS_DIR;
@@ -50,10 +51,8 @@ int debug_flag = 0;
 int abort_on_failure = 0;
 
 void init_symbols();
-static void print_usage();
-static void print_license();
-static void print_version();
 static void assign(char *);
+int parse_datum(char *p, union datum *dp);
 
 int x_argmax;
 int x_argc;
@@ -98,8 +97,6 @@ parse_opt (key, arg, state)
         char *arg;
         struct argp_state *state;
 {
-        char *p;
-        
         switch (key) {
         case 'a':
                 assign(optarg);
@@ -298,7 +295,6 @@ assign(s)
         Variable *var;
         union datum datum;
         int type = Undefined;
-        int length;
         
         p = strchr(s, '=');
         if (!p) {
@@ -385,6 +381,7 @@ print_ident(var)
         case Vector:
                 return make_string("VECTOR");
         }
+	return NULL;
 }
 
 void

@@ -29,6 +29,7 @@ static char rcsid[] =
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/time.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <netdb.h>
 #include <fcntl.h>
@@ -48,12 +49,14 @@ static char rcsid[] =
 #ifdef USE_SERVER_GUILE
 # include <libguile.h>
 #endif
+#include <snmp/asn1.h>
+#include <snmp/snmp.h>
+#include <argcv.h>
+#include <envar.h>
 
 /* ********************** Request list handling **************************** */
         
 void rad_req_free(RADIUS_REQ *req);
-void rad_req_drop(int type, RADIUS_REQ *req, RADIUS_REQ *orig, int fd,
-		  char *status_str);
 int rad_req_cmp(RADIUS_REQ *a, RADIUS_REQ *b);
 int rad_req_setup(REQUEST *radreq);
 void rad_req_xmit(int type, int code, void *data, int fd);
@@ -97,6 +100,7 @@ int acct_success(struct sockaddr *sa, int salen);
 int acct_failure(struct sockaddr *sa, int salen);
 int snmp_respond(int fd, struct sockaddr *sa, int salen,
                  u_char *buf, int size);
+int radrespond(RADIUS_REQ *radreq, int activefd);
 
 /* *************************** Global variables. ************************** */
 
@@ -165,7 +169,7 @@ static void open_socket_list(HOSTDECL *hostlist, int defport, char *descr,
                              int (*s)(), int (*r)(), int (*f)());
 
 static void reread_config(int reload);
-static void rad_main(char *extra_arg);
+static void rad_main();
 static void meminfo();
 
 int radius_mode = MODE_DAEMON;    
@@ -220,6 +224,7 @@ static struct argp_option options[] = {
         {NULL, 0, NULL, 0, NULL, 0}
 };
         
+/*ARGSUSED*/
 static error_t
 parse_opt (key, arg, state)
         int key;
@@ -373,7 +378,8 @@ main(argc, argv)
         
         snmp_init(0, 0, emalloc, efree);
 
-        rad_main(argv[optind]);
+        rad_main();
+	/*NOTREACHED*/
 }
 
 void
@@ -495,8 +501,7 @@ common_init()
 }       
 
 void
-rad_main(extra_arg)
-        char *extra_arg;
+rad_main()
 {
         switch (radius_mode) {
         case MODE_CHECKCONF:
@@ -739,7 +744,6 @@ int
 rad_restart()
 {
         pid_t pid;
-        struct socket_list *slist;
         
         radlog(L_NOTICE, _("restart initiated"));
         if (xargv[0][0] != '/') {
@@ -805,7 +809,6 @@ reread_config(reload)
         int reload;
 {
         int res = 0;
-        int pid = getpid();
         
         if (!reload) {
                 radlog(L_INFO, _("Starting - reading configuration files ..."));
@@ -983,14 +986,14 @@ meminfo()
         mem_get_stat(&stat);
 
         radlog(L_INFO,
-               _("%lu classes, %lu buckets are using %lu bytes of memory"),
+               _("%u classes, %u buckets are using %u bytes of memory"),
                stat.class_cnt,
                stat.bucket_cnt,
                stat.bytes_allocated);
         
         if (stat.bytes_allocated) 
                 radlog(L_INFO,
-                       _("memory utilization: %ld.%1ld%%"),
+                       _("memory utilization: %u.%1u%%"),
                        stat.bytes_used * 100 / stat.bytes_allocated,
                        (stat.bytes_used * 1000 / stat.bytes_allocated) % 10);
 
@@ -1114,13 +1117,37 @@ sig_dumpdb(sig)
 /* ************************************************************************* */
 /* RADIUS request handling functions */
 
+#define REQ_CMP_AUTHENTICATOR 0x01
+#define REQ_CMP_CONTENTS      0x02
+
 int
 rad_req_cmp(a, b)
         RADIUS_REQ *a, *b;
 {
-        return !(a->ipaddr == b->ipaddr &&
-                 a->id == b->id &&
-                        memcmp(a->vector, b->vector, sizeof(a->vector)) == 0);
+	NAS *nas;
+	int cmp = 0;
+		
+	if (a->ipaddr != b->ipaddr || a->id != b->id)
+		return 1;
+	
+	nas = nas_request_to_nas(a);
+	if (!nas)
+		cmp = REQ_CMP_AUTHENTICATOR;
+	else {
+		if (envar_lookup_int(nas->args, "cmpauth", 1))
+			cmp |= REQ_CMP_AUTHENTICATOR;
+		if (envar_lookup_int(nas->args, "cmppairs", 0))
+			cmp |= REQ_CMP_CONTENTS;
+	}
+	    
+	if ((cmp & REQ_CMP_AUTHENTICATOR)
+	    && memcmp(a->vector, b->vector, sizeof(a->vector)))
+		return 1;
+
+	if ((cmp & REQ_CMP_CONTENTS) && avl_cmp(a->request, b->request))
+		return 1;
+
+	return 0;
 }
 
 void
@@ -1134,6 +1161,7 @@ rad_req_free(req)
         debug(1,("exit"));
 }
 
+/*ARGSUSED*/
 void
 rad_req_drop(type, radreq, origreq, fd, status_str)
         int type;
@@ -1170,7 +1198,6 @@ rad_req_xmit(type, code, data, fd)
         int fd;
 {
         RADIUS_REQ *req = (RADIUS_REQ*)data;
-        char buf[MAX_LONGNAME];
 
         if (code == 0) {
                 rad_send_reply(0, req, NULL, NULL, fd);
@@ -1182,6 +1209,7 @@ rad_req_xmit(type, code, data, fd)
         }
 }
 
+/*ARGSUSED*/
 int
 auth_respond(fd, sa, salen, buf, size)
         int fd;
@@ -1203,6 +1231,7 @@ auth_respond(fd, sa, salen, buf, size)
         return 0;
 }
 
+/*ARGSUSED*/
 int
 acct_success(sa, salen)
         struct sockaddr *sa;
@@ -1213,6 +1242,7 @@ acct_success(sa, salen)
         return 0;
 }
 
+/*ARGSUSED*/
 int
 acct_failure(sa, salen)
         struct sockaddr *sa;
@@ -1267,9 +1297,7 @@ radrespond(radreq, activefd)
         RADIUS_REQ *radreq;
         int activefd;
 {
-        REQUEST *req;
         int type;
-        unsigned num_active;
         
         if (suspend_flag)
                 return 1;
@@ -1349,6 +1377,7 @@ rad_req_setup(req)
 /* SNMP request handling functions */
 #ifdef USE_SNMP
 
+/*ARGSUSED*/
 int
 snmp_respond(fd, sa, salen, buf, size)
         int fd;

@@ -18,6 +18,17 @@ INCLUDES        = -I$(top_srcdir)/include -I$(top_srcdir)/lib -I$(srcdir) @INCLU
 AM_YFLAGS = -vdt 
 
 if MAINTAINER_MODE
+CLEANFILES=*.ln
+
+LINTFLAGS=-gezra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
+
+.c.ln:
+	$(LINT.c) -i $<
+
+radtest_ln=main.ln gram.ln input.ln debugmod.ln
+lint: $(radtest_ln)
+	$(LINT.c) -u $(radtest_ln) -L../lib -llog -lrad 
+
 FILELIST:; @echo gram.y > .list
 endif
 

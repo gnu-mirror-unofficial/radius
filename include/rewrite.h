@@ -13,3 +13,4 @@ typedef union {
         char      *sval;
 } Datum;
 
+int interpret(char *fcall, RADIUS_REQ *req, Datatype *type, Datum *datum);

@@ -25,8 +25,8 @@ LINTFLAGS=-gzra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES
 .c.ln:
 	$(LINT.c) -i $<
 
-llib-lsql.ln: $(libsql_la_SOURCES:.c=.ln) llib-llog.ln llib-lrad.ln
-	$(LINT.c) -Csql $(libsql_la_SOURCES:.c=.ln) -L. -llog -lrad
+llib-lsql.ln: $(libsql_la_SOURCES:.c=.ln)
+	$(LINT.c) -Csql $(libsql_la_SOURCES:.c=.ln) -L../lib -llog -lrad
 
 lint:: llib-lsql.ln
 

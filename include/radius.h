@@ -378,6 +378,7 @@ char *format_pair(VALUE_PAIR *pair, char **save);
 int format_string_visual(char *buf, int runlen, char *str, int len);
 char *op_to_str(int op);
 int str_to_op(char *str);
+int xlat_keyword(struct keyword *kw, char *str, int def);
 
 /* cryptpass.c */
 void encrypt_password(VALUE_PAIR *pair, char *password,
@@ -410,9 +411,14 @@ RADIUS_SERVER *rad_clt_append_server(RADIUS_SERVER *list,
 				     RADIUS_SERVER *server);
 void rad_clt_clear_server_list(RADIUS_SERVER *list);
 RADIUS_SERVER *rad_clt_find_server(RADIUS_SERVER *list, char *name);
+void rad_clt_random_vector(char *vector);
 
 /* log.c */
 char *rad_print_request(RADIUS_REQ *req, char *outbuf, size_t size);
 
 /* ascend.c */
 int ascend_parse_filter(VALUE_PAIR *pair, char **errp);
+
+/* intl.c */
+void app_setup();
+

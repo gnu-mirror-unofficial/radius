@@ -3,5 +3,5 @@
 #ifdef HAVE_OBSTACK
 # include <obstack.h>
 #else
-# include <../radlib/obstack.h>
+# include <../lib/obstack.h>
 #endif

@@ -44,10 +44,6 @@ rad_send_reply(code, radreq, reply_pairs, msg, fd)
         char *msg;
         int fd;
 {
-        void *pdu;
-        char *what;
-        size_t length;
-
         if (radreq->reply_code == 0) {
                 VALUE_PAIR *reply;
                 
@@ -102,7 +98,6 @@ validate_client(radreq)
         RADIUS_REQ *radreq;
 {
         CLIENT  *cl;
-        char buf[MAX_LONGNAME];
         
         if ((cl = client_lookup_ip(radreq->ipaddr)) == NULL) {
                 radlog_req(L_ERR, radreq, _("request from unknown client"));

@@ -3189,7 +3189,7 @@ debug_dump_code()
         do {
                 fprintf(fp, "%4d:", pc);
                 for (i = 0; i < 8 && pc < rw_rt.codesize; i++, pc++)
-                        fprintf(fp, " %8x", rw_rt.code[pc]);
+                        fprintf(fp, " %8x", (u_int) rw_rt.code[pc]);
                 fprintf(fp, "\n");
         } while (pc < rw_rt.codesize);
         

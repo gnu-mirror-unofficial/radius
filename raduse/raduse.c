@@ -89,8 +89,6 @@ main(argc, argv)
         int argc;
         char **argv;
 {
-        int c;
-        
         app_setup();    
         initlog(argv[0]);
 

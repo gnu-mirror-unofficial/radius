@@ -82,7 +82,6 @@ rad_print_request(req, outbuf, size)
 {
 	char nasbuf[MAX_LONGNAME];
 	VALUE_PAIR *stat_pair, *name_pair;
-	char *buf = NULL;
 	char sbuf[2*AUTH_STRING_LEN+3];
 
 	sbuf[0] = 0;
@@ -97,7 +96,7 @@ rad_print_request(req, outbuf, size)
 		if (dval)
 			stat = dval->name;
 		else {
-			snprintf(nbuf, sizeof nbuf, "%d", sid_pair->lvalue);
+			snprintf(nbuf, sizeof nbuf, "%ld", sid_pair->lvalue);
 			stat = sbuf;
 		}
 				 
@@ -179,6 +178,7 @@ _debug_print(file, line, func_name, str)
         free(str);
 }
 
+/*VARARGS*/
 char *
 _debug_format_string(va_alist)
         va_dcl

@@ -123,11 +123,12 @@ disp_sql_next_tuple(type, conn, data)
         return disp_sql_entry(type)->next_tuple(conn, data);
 }
 
+/*ARGSUSED*/
 void
 disp_sql_free(type, conn, data)
         int type;
         struct sql_connection *conn;
         void *data;
 {
-        return disp_sql_entry(type)->free(conn, data);
+        disp_sql_entry(type)->free(conn, data);
 }

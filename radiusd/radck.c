@@ -152,53 +152,38 @@ radck()
         user_count = 0;
         symtab_iterate(user_tab, sym_counter, &user_count);
 
-        if (user_count == 0)
-                /* There's nothing to check ... */
-                return;
+        if (user_count) {
+		/* Allocate matrix */
+		size = (user_count + BITS_PER_WORD - 1) / BITS_PER_WORD;
+		r = radxmalloc(user_count*size*sizeof(unsigned));
+		if (!r) {
+			radlog(L_ERR,
+			       _("not enough memory for transitivity check"));
+			return;
+		}
 
-        /* Allocate matrix */
-        size = (user_count + BITS_PER_WORD - 1) / BITS_PER_WORD;
-        r = radxmalloc(user_count*size*sizeof(unsigned));
-        if (!r) {
-                radlog(L_ERR,
-                       _("not enough memory for transitivity check"));
-                return;
-        }
+		/* Initialize array */
+		datum.symtab = user_tab;
+		datum.count  = user_count;
+		datum.rlen   = size;
+		datum.r      = r;
+		
+		/* First pass: mark directly connected entries */
+		symtab_iterate(user_tab, pass1, &datum);
 
-        /*
-         * Initialize array
-         */
-        datum.symtab = user_tab;
-        datum.count  = user_count;
-        datum.rlen   = size;
-        datum.r      = r;
+		/* Compute transitive closure of the matrix r */
+		TC(datum.r, user_count);
 
-        /*
-         * First pass: mark directly connected entries
-         */
-        symtab_iterate(user_tab, pass1, &datum);
+		/* Select all non-zero diagonal elements and delete
+		   corresponding profiles  */
+		symtab_iterate(user_tab, pass2, &datum);
+		efree(datum.r);
 
-        /*
-         * Compute transitive closure of the matrix r
-         */
-        TC(datum.r, user_count);
-
-        /*
-         * Select all non-zero diagonal elements and delete corresponding
-         * profiles
-         */
-        symtab_iterate(user_tab, pass2, &datum);
-
-        if (datum.count == 0) {
-                /* just in case */
-                radlog(L_ERR,
-                       _("USER LIST IS EMPTY"));
-        }
-        
-        /*
-         * Free allocated memory
-         */
-        efree(datum.r);
+		user_count = datum.count;
+	}
+	
+        if (user_count == 0) 
+                radlog(L_ERR, _("USER LIST IS EMPTY"));
 }
 
 void

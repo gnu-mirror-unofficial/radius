@@ -58,6 +58,7 @@ struct wtmp_chain {
         struct radutmp ut;
 };      
 
+int read_naslist();
 void radwtmp();
 void adduser(char*);
 int want(struct radutmp *);
@@ -312,7 +313,7 @@ rawread()
 
                        proto_str(ut.proto),
 
-                       ut.porttype,
+                       port_type_str(ut.porttype),
 
                        RUT_IDSIZE, RUT_IDSIZE,
                        ut.session_id,
@@ -427,8 +428,8 @@ radwtmp()
         }
         
         tm = localtime(&buf[0].time);
-        (void) strftime(ct, sizeof(ct), "\nradwtmp begins %c\n", tm);
-        printf(ct);
+        strftime(ct, sizeof(ct), "%c", tm);
+        printf("\nradwtmp begins %s\n", ct);
 }
 
 int
@@ -667,10 +668,26 @@ proto_str(id)
         static char buf[64];
         
         if (!dval) {
-                snprintf(buf, sizeof(buf), "%lu", id);
+                snprintf(buf, sizeof(buf), "%u", id);
                 return buf;
         }
         return dval->name;
+}
+
+char *
+port_type_str(porttype)
+{
+	DICT_VALUE *dval = value_lookup(porttype, "NAS-Port-Type");
+	static char buf[80];
+	char *s;
+	
+        if (dval) 
+		s = dval->name;
+	else {
+                snprintf(buf, sizeof buf, "%u", porttype);
+		s = buf;
+	}
+	return s;
 }
 
 /* NOTE:
@@ -712,7 +729,7 @@ print_entry(pp, bp, mark)
 
                        proto_str(bp->proto),
 
-                       bp->porttype,
+                       port_type_str(bp->porttype),
 
                        RUT_IDSIZE, RUT_IDSIZE,
                        bp->session_id,

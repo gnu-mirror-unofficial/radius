@@ -306,7 +306,7 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
                 /*NOTE: add any new location types here */
                 default:
                         radlog(L_ERR,
-                               _("unknown Password-Location value: %d"),
+                               _("unknown Password-Location value: %ld"),
                                tmp->lvalue);
                         return AUTH_FAIL;
                 }
@@ -434,10 +434,6 @@ rad_auth_init(radreq, activefd)
         int       activefd;
 {
         VALUE_PAIR *namepair;
-#ifdef USE_SQL
-        VALUE_PAIR *p;
-#endif
-        char buf[MAX_LONGNAME];
         
         /*
          * Get the username from the request
@@ -628,8 +624,6 @@ auth_log(m, diag, pass, reason, addstr)
         char *reason;
         char *addstr;
 {
-        char buf[MAX_LONGNAME];
-        
         if (reason)
                 radlog_req(L_NOTICE, m->req,
 			   "%s [%s%s%s]: %s%s, CLID %s",
@@ -1044,7 +1038,6 @@ sfn_simuse(m)
         AUTH_MACH *m;
 {
         char  name[AUTH_STRING_LEN];
-        char buf[MAX_LONGNAME];
         int rc;
         int count;
         
@@ -1090,7 +1083,6 @@ sfn_time(m)
         int rc;
         time_t t;
         unsigned rest;
-        char buf[MAX_LONGNAME];
         
         time(&t);
         rc = ts_check(m->check_pair->strvalue, &t, &rest, NULL);

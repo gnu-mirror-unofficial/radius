@@ -309,6 +309,7 @@ rad_mysql_column(data, ncol)
         return dp->row[ncol];
 }
 
+/*ARGSUSED*/
 int
 rad_mysql_next_tuple(conn, data)
         struct sql_connection *conn;
@@ -321,6 +322,7 @@ rad_mysql_next_tuple(conn, data)
         return (dp->row = mysql_fetch_row(dp->result)) == NULL;
 }
 
+/*ARGSUSED*/
 void
 rad_mysql_free(conn, data)
         struct sql_connection *conn;

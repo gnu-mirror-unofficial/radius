@@ -307,7 +307,9 @@ symtab_iterate(symtab, fn, closure)
 {
         int i;
         Symbol *sym, *next;
-        
+
+	if (!symtab->sym)
+		return;
         for (i = 0; i < hash_size[symtab->hash_num]; i++) {
                 sym = symtab->sym[i];
                 while (sym) {

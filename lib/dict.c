@@ -92,13 +92,15 @@ nfields(fc, minf, maxf, file, lineno)
 {
         if (fc < minf) {
                 radlog(L_ERR,
-                       _("%s:%d: too few fields"),
-                       file, lineno);
+                       "%s:%d: %s",
+                       file, lineno,
+		       _("too few fields"));
                 return -1;
         } else if (fc > maxf) {
                 radlog(L_ERR,
-                       _("%s:%d: too many fields"),
-                       file, lineno);
+                       "%s:%d: %s",
+                       file, lineno,
+		       _("too many fields"));
                 return -1;
         }
         return 0;
@@ -310,8 +312,9 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 	
         if (type == TYPE_INVALID) {
                 radlog(L_ERR,
-                       _("%s:%d: invalid type"),
-                       file, lineno);
+                       "%s:%d: %s",
+                       file, lineno,
+		       _("invalid type"));
                 (*errcnt)++;
                 return 0;
         }
@@ -501,8 +504,9 @@ parse_dict_entry(errcnt, fc, fv, file, lineno)
                 break;
         default:
                 radlog(L_ERR,
-                       _("%s:%d: unknown keyword"),
-                       file, lineno);
+                       "%s:%d: %s",
+                       file, lineno,
+		       _("unknown keyword"));
                 break;
         }
         return 0;

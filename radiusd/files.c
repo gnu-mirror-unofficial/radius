@@ -56,6 +56,7 @@ static char rcsid[] =
 #endif
 #include <raddbm.h>
 #include <obstack1.h>
+#include <slist.h>
 
 /*
  * Symbol tables and lists
@@ -86,7 +87,6 @@ int fallthrough(VALUE_PAIR *vp);
 static int portcmp(VALUE_PAIR *check, VALUE_PAIR *request);
 static int groupcmp(RADIUS_REQ *req, char *groupname, char *username);
 static int uidcmp(VALUE_PAIR *check, char *username);
-static int huntgroup_paircmp(VALUE_PAIR *request, VALUE_PAIR *check);
 static void matchrule_free(MATCHING_RULE **pl);
 static int matches(RADIUS_REQ *req, char *name, MATCHING_RULE *pl, char *matchpart);
 static int huntgroup_match(RADIUS_REQ *req, char *huntgroup);
@@ -806,9 +806,10 @@ hints_setup(req)
                 if ((tmp = avl_find(i->rhs, DA_REWRITE_FUNCTION))
                     || (tmp = avl_find(i->lhs, DA_REWRITE_FUNCTION))) {
                         if (run_rewrite(tmp->strvalue, request_pairs)) {
-                                radlog(L_ERR, _("hints:%d: %s(): not defined"),
+                                radlog(L_ERR, "hints:%d: %s(): %s",
                                        i->lineno,
-                                       tmp->strvalue);
+                                       tmp->strvalue,
+				       _("not defined"));
                         }
                 }
 
@@ -881,14 +882,13 @@ int
 huntgroup_access(radreq)
         RADIUS_REQ *radreq;
 {
-        VALUE_PAIR      *request_pairs, *pair;
+        VALUE_PAIR      *pair;
         MATCHING_RULE   *pl;
         int             r = 1;
 
         if (huntgroups == NULL)
                 return 1;
 
-        request_pairs = radreq->request;
         for (pl = huntgroups; pl; pl = pl->next) {
                 /*
                  *      See if this entry matches.
@@ -904,9 +904,10 @@ huntgroup_access(radreq)
         if (pl &&
             (pair = avl_find(pl->lhs, DA_REWRITE_FUNCTION)) != NULL) {
                 if (run_rewrite(pair->strvalue, radreq->request)) {
-                        radlog(L_ERR, _("huntgroups:%d: %s(): not defined"),
+                        radlog(L_ERR, "huntgroups:%d: %s(): %s",
                                pl->lineno,
-                               pair->strvalue);
+                               pair->strvalue,
+			       _("not defined"));
                 }
         }
 #endif  
@@ -954,8 +955,9 @@ read_clients_entry(unused, fc, fv, file, lineno)
         CLIENT *cp;
         
         if (fc != 2) {
-                radlog(L_ERR, _("%s:%d: wrong number of fields (%d)"),
-                       file, lineno, fc);
+                radlog(L_ERR, "%s:%d: %s",
+                       file, lineno,
+		       _("wrong number of fields"));
                 return -1;
         }
 
@@ -1056,7 +1058,8 @@ read_nastypes_entry(unused, fc, fv, file, lineno)
         int method;
 
         if (fc < 2) {
-                radlog(L_ERR, _("%s:%d: too few fields"), file, lineno);
+                radlog(L_ERR, "%s:%d: %s", file, lineno,
+		       _("too few fields"));
                 return -1;
         }
 
@@ -1067,7 +1070,7 @@ read_nastypes_entry(unused, fc, fv, file, lineno)
         else if (strcmp(fv[1], "ext") == 0)
                 method = METHOD_EXT;
         else {
-                radlog(L_ERR, _("%s:%d: unknown method"), file, lineno);
+                radlog(L_ERR, "%s:%d: %s", file, lineno, _("unknown method"));
                 return -1;
         }
                         
@@ -1136,8 +1139,10 @@ read_denylist_entry(denycnt, fc, fv, file, lineno)
         int lineno;
 {
         if (fc != 1) {
-                radlog(L_ERR, _("%s:%d: wrong number of fields (%d)"),
-                       file, lineno, fc);
+                radlog(L_ERR,
+		       "%s:%d: %s",
+                       file, lineno,
+		       _("wrong number of fields"));
                 return -1;
         }
 

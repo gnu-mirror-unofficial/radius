@@ -157,7 +157,7 @@ attr_to_str(obp, req, pairlist, attr, defval)
                 return;
         }
 
-        tmp[AUTH_STRING_LEN] = 0;
+        tmp[AUTH_STRING_LEN-1] = 0;
         switch (attr->type) {
         case TYPE_STRING:
                 if (attr->value == DA_USER_PASSWORD && req) {
@@ -234,8 +234,8 @@ attrno_to_str(obp, req, pairlist, attr_no, defval)
         int attr_no;
         char *defval;
 {
-        return attr_to_str(obp, req, pairlist,
-                           attr_number_to_dict(attr_no), defval);
+        attr_to_str(obp, req, pairlist,
+		    attr_number_to_dict(attr_no), defval);
 }
 
 static DICT_ATTR *

@@ -405,7 +405,7 @@ format_pair(pair, savep)
                         if (!buf2ptr) {
                                 radlog(L_ERR,
                                        "%s:%d: can't alloc %d bytes",
-                                       __FILE__, __LINE__);
+                                       __FILE__, __LINE__, len+1);
                                 buf2[0] = 0;
                         } else
                                 format_vendor_pair(buf2ptr, pair);

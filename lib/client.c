@@ -65,8 +65,8 @@ rad_clt_recv(host, udp_port, secret, vector, buffer, length)
 {
         AUTH_HDR *auth;
         int totallen;
-        char reply_digest[AUTH_VECTOR_LEN];
-        char calc_digest[AUTH_VECTOR_LEN];
+        u_char reply_digest[AUTH_VECTOR_LEN];
+        u_char calc_digest[AUTH_VECTOR_LEN];
         int  secretlen;
 
         auth = (AUTH_HDR *)buffer;

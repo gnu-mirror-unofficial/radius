@@ -31,6 +31,10 @@ static char rcsid[] =
 #include <argcv.h>
 #include <radius.h>
 
+#if !HAVE_DECL_GETLINE
+int getline (char **lineptr, size_t *n, FILE *stream);
+#endif
+
 int
 read_raddb_file(filename, vital, fun, closure)
         char *filename;   /* file name */

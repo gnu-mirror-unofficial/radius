@@ -61,7 +61,7 @@ read_naslist_entry(unused, fc, fv, file, lineno)
         NAS nas, *nasp;
 
         if (fc < 2) {
-                radlog(L_ERR, _("%s:%d: too few fields"), file, lineno);
+                radlog(L_ERR, "%s:%d: %s", file, lineno, _("too few fields"));
                 return -1;
         }
 

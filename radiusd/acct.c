@@ -466,7 +466,7 @@ write_detail(radreq, authtype, f)
         FILE            *outfd;
         char            nasname[MAX_LONGNAME];
         char            *dir, *path;
-        char            *s, *save;
+        char            *save;
         VALUE_PAIR      *pair;
         UINT4           nas;
         NAS             *cl;

@@ -40,6 +40,7 @@ static char rcsid[] =
 #include <unistd.h>
 #include <syslog.h> 
 #include <radiusd.h>
+#include <slist.h>
  
 #define YYMAXDEPTH 16
 
@@ -117,7 +118,6 @@ static void putback(char *tok, int length);
 
 static int got_listen;
 static int first_time = 1;
-static int debug_config;
 
 static void asgn(void *base, Value *value, int type, int once);
 static void obsolete(char *stmt, int ign);
@@ -729,8 +729,6 @@ usedbm_stmt     : T_USEDBM T_BOOL
                   {
 #ifdef USE_DBM
                           use_dbm = $2;
-                          if (debug_config)
-                                  radlog(L_DEBUG, "use dbm: %d", use_dbm);
 #else
                           radlog(L_WARN,
                                  "%s:%d: %s",
@@ -1255,14 +1253,6 @@ skipline()
                 curp++;
 }
 
-void
-skipstmt()
-{
-        int c;
-        while ((c = yylex()) != 0 && c != EOL)
-                ;
-}
-
 int
 isword(c)
         int c;
@@ -1378,10 +1368,8 @@ get_config()
  *       define YYDEBUG after including code block
  */     
                 yydebug = 1;
-                debug_config = 1;
         } else {
                 yydebug = 0;
-                debug_config = 0;
         }
 
         mark = log_mark();

@@ -113,7 +113,6 @@ _signal_entry_runqueue (int sig, int type, struct _signal_entry *e)
 	for (q = e->head; q; ) {
 		struct _signal_queue *next = q->next;
 		if (q->type == type) {
-			debug (10, ("sig=%d, handler=%p", sig, q->handler));
 			rc = q->handler (sig, q->data, e);
 			if (rc == 0)
 				break;
@@ -130,14 +129,21 @@ _signal_deliver (int sig, int type)
 {
 	unsigned i, pass;
 
-	if (!sigtab[sig].used)
+	if (!sigtab[sig].used || !sigtab[sig].count)
 		return;
 		
 	for (i = pass = 0; i < sigtab[sig].count; i++)
 		if (_signal_entry_runqueue (sig, type, &sigtab[sig]) == 0)
 			pass++;
 	sigtab[sig].count -= pass;
-	debug(1,("sig=%d, count=%d", sig, sigtab[sig].count));
+}
+
+void
+_awake_signal_thread ()
+{
+	Pthread_mutex_lock (&signal_mutex);
+	pthread_cond_signal (&signal_cond);
+	Pthread_mutex_unlock (&signal_mutex);
 }
 
 void
@@ -147,10 +153,7 @@ rad_signal_deliver ()
 
 	for (sig = 0; sig < NSIG; sig++)
 		if (sigtab[sig].used && sigtab[sig].count) {
-			Pthread_mutex_lock (&signal_mutex);
-			debug(100,("Signalling"));
-			pthread_cond_signal (&signal_cond);
-			Pthread_mutex_unlock (&signal_mutex);
+			_awake_signal_thread ();
 			break;
 		}
 }
@@ -161,11 +164,16 @@ signal_thread0 (void *arg)
 {
 	while (1) {
 		int sig;
+		struct timespec atime;
+		struct timeval now;
 		
 		pthread_mutex_lock (&signal_mutex);
-                debug(1,("thread waiting"));
-		pthread_cond_wait (&signal_cond, &signal_mutex);
-		for (sig = 0; sig < NSIG; sig++)
+		gettimeofday(&now, NULL);
+		atime.tv_sec = now.tv_sec;
+		atime.tv_nsec = now.tv_usec * 1000 + 10;
+		
+		pthread_cond_timedwait (&signal_cond, &signal_mutex, &atime);
+ 		for (sig = 0; sig < NSIG; sig++)
 			_signal_deliver (sig, SH_ASYNC);
 		pthread_mutex_unlock (&signal_mutex);
 	}
@@ -213,7 +221,7 @@ rad_signal_install (int sig, int type, rad_signal_t handler, void *data)
 
 		act.sa_handler = signal_handler;
 		sigemptyset (&act.sa_mask);
-		act.sa_flags = 0;
+		act.sa_flags = SA_RESTART;
 		sigaction (sig, &act, NULL);
 		_signal_entry_init (entry);
 	}

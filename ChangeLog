@@ -1,3 +1,8 @@
+2002-07-13  Sergey Poznyakoff 
+
+	* radiusd/exec.c (filter_auth, filter_acct): Check for
+	  sym==NULL after filter_open.
+
 2002-07-12  Sergey Poznyakoff 
 
 	* radiusd/exec.c (filter_open): Return the filter unlocked.

@@ -138,6 +138,7 @@ main(argc, argv)
 {
 	int c;
 	char *p;
+	char *nas_name = NULL;
 
 	initlog(argv[0]);
 	while ((c = getopt_long(argc, argv, OPTSTR, longopt, NULL)) != EOF)
@@ -179,17 +180,7 @@ main(argc, argv)
 			mark_missing_stops++;
 			break;
 		case 'n':
-			nas_ip = get_ipaddr(optarg);
-			if (!nas_ip) {
-				NAS *nas;
-				read_naslist();
-				nas = nas_find_by_name(optarg);
-				if (nas)
-					nas_ip = nas->ipaddr;
-				else
-					radlog(L_ERR, "unknown nas: %s", optarg);
-			}
-			nas_ip = htonl(nas_ip);
+			nas_name = optarg;
 			break;
 		case 'l':
 			long_fmt++;
@@ -226,6 +217,20 @@ main(argc, argv)
 	}
 	radpath_init();
 	read_naslist();
+
+	if (nas_name) {
+		nas_ip = get_ipaddr(nas_name);
+		if (!nas_ip) {
+			NAS *nas = nas_find_by_name(nas_name);
+			if (nas)
+				nas_ip = nas->ipaddr;
+			else {
+				radlog(L_ERR, "unknown nas: %s", nas_name);
+				return 1;
+			}
+		}	
+		nas_ip = htonl(nas_ip);
+	}
 	radwtmp();
 	return 0;
 }

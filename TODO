@@ -39,7 +39,6 @@ altogether?
 
 * Redesign raduse to use snmp queries instead of peeking in radstat.
 * Write radctl substitute which would use SNMP.
-* Revise radtest to make it more useful.
 
 
 

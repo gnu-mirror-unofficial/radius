@@ -49,6 +49,8 @@ typedef struct radtest_node_asgn radtest_node_asgn_t;
 typedef struct radtest_node_loop radtest_node_loop_t;
 typedef struct radtest_node_cond radtest_node_cond_t;
 typedef struct radtest_node_input radtest_node_input_t;
+typedef struct radtest_node_set radtest_node_set_t;
+typedef struct radtest_node_getopt radtest_node_getopt_t;
 
 struct radtest_pair {
 	grad_dict_attr_t *attr;
@@ -88,7 +90,10 @@ typedef enum {
 	radtest_node_break,
 	radtest_node_loop,
 	radtest_node_cond,
-	radtest_node_input
+	radtest_node_input,
+	radtest_node_set,
+	radtest_node_shift,
+	radtest_node_getopt
 } radtest_node_type;
 
 struct radtest_node_send {
@@ -170,7 +175,20 @@ struct radtest_node_cond {
 
 struct radtest_node_input {
 	radtest_node_t *expr;
-	char *name;
+	radtest_variable_t *var;
+};
+
+struct radtest_node_set {
+	int argc;
+	char **argv;
+};
+
+struct radtest_node_getopt {
+	char *optstr;
+	int last;
+	radtest_variable_t *var;
+	radtest_variable_t *arg;
+	radtest_variable_t *ind;
 };
 
 struct radtest_node {
@@ -195,6 +213,8 @@ struct radtest_node {
 		radtest_node_loop_t loop;
 		radtest_node_cond_t cond;
 		radtest_node_input_t input;
+		radtest_node_set_t set;
+		radtest_node_getopt_t gopt;
 	} v;
 };
 
@@ -221,6 +241,7 @@ int open_input(char *name);
 void close_input();
 void set_yydebug();
 void parse_error(const char *fmt, ...);
+void parse_error_loc(grad_locus_t *locus, const char *fmt, ...);
 void print(radtest_variable_t *var);
 void radtest_send(int port, int code, grad_avp_t *avl, grad_symtab_t *cntl);
 void putback(char *str);
@@ -246,6 +267,8 @@ void radtest_free_strings();
 void radtest_start_string(char *str);
 void radtest_add_string(char *str);
 char *radtest_end_string();
+
+int _free_item(void *item, void *data);
 
 
 /* Readline completion */

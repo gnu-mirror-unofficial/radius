@@ -1,3 +1,18 @@
+2004-07-18  Sergey Poznyakoff
+
+	* radtest/gram.y: New statements 'set', 'shift', 'getopt'
+	* radtest/runtime.c: Likewise.
+	* radtest/input.l: New keywords 'set', 'shift', 'getopt'
+	Support for 'here document' syntax
+	Attempt to diagnose unbalanced brackets.
+	* radtest/main.c (main,parse_opt): -f (--file) stops argument
+	processing.
+	Removed legacy assignment syntax (--name=value).
+	(radtest_parse_options): New function.
+	* radtest/radtest.h: Updated
+	* radscripts/radauth.m4: Rewritten from scratch.
+	* TODO: Updated
+
 2004-07-17  Sergey Poznyakoff
 
 	* radtest/gram.y: New statement 'input'. Minor changes to loop

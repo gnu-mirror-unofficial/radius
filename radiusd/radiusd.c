@@ -626,13 +626,16 @@ radiusd_cleanup()
 {
 	pid_t pid;
 	int status;
-
+	char buffer[128];
+	
         for (;;) {
+
 		pid = waitpid((pid_t)-1, &status, WNOHANG);
                 if (pid <= 0)
                         break;
 
-		debug(2, ("child %d exited: %d", pid, WEXITSTATUS(status)));
+		format_exit_status(buffer, sizeof buffer, status);
+		radlog(L_NOTICE, "child %d %s", pid, buffer);
 
 		rpp_remove(pid);
 	}
@@ -858,7 +861,7 @@ radiusd_signal_init(RETSIGTYPE (*hp)(int sig))
 {
 	static int signum[] = {
 		SIGHUP, SIGUSR1, SIGUSR2, SIGQUIT,
-		SIGTERM, SIGCHLD, SIGBUS, SIGTRAP,
+		SIGTERM, SIGCHLD, SIGBUS, 
 		SIGFPE, SIGSEGV, SIGILL, SIGPIPE
 	};
 	int i;

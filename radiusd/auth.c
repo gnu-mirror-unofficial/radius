@@ -1051,22 +1051,9 @@ sfn_ipaddr(AUTH_MACH *m)
                 if (p = avl_find(m->req->request, DA_FRAMED_IP_ADDRESS)) {
                         /* termserver hint */
                         avl_add_pair(&m->user_reply, avp_dup(p));
-                        if (p = avl_find(m->req->request,
-                                         DA_ADD_PORT_TO_IP_ADDRESS))
-                                avl_add_pair(&m->user_reply, avp_dup(p));
                 }
         }
         
-        if ((p = avl_find(m->user_reply, DA_FRAMED_IP_ADDRESS)) &&
-            (tmp = avl_find(m->user_reply, DA_ADD_PORT_TO_IP_ADDRESS)) &&
-            tmp->avp_lvalue &&
-            (pp = avl_find(m->req->request, DA_NAS_PORT_ID)))
-                /* NOTE: This only works because IP numbers are stored in
-                 * host order throughout the program.
-                 */
-                p->avp_lvalue += pp->avp_lvalue;
-                
-        avl_delete(&m->user_reply, DA_ADD_PORT_TO_IP_ADDRESS);
 }
 
 void

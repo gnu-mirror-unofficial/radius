@@ -160,7 +160,7 @@ cntl_respond(fd, sa, salen, buf, size)
 	avl_add_pair(&radreq->request, pair);
 	
 	user_check = user_reply = NULL;
-	if (user_find(namepair->strvalue, radreq->request,
+	if (user_find(namepair->strvalue, radreq,
 		      &user_check, &user_reply) != 0) {
 		radlog(L_NOTICE, _("Invalid user: [%s] (from %s) trying to access control channel"),
 		       namepair->strvalue,

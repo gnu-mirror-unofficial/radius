@@ -98,6 +98,9 @@ static char *compile_flag_str[] = {
 #ifdef USE_SQL_POSTGRES
 	"USE_SQL_POSTGRES",
 #endif	
+#ifdef USE_SQL_ODBC
+	"USE_SQL_ODBC",
+#endif	
 #if defined(USE_SNMP)
 	"USE_SNMP",
 #endif

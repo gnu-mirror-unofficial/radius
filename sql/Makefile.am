@@ -14,7 +14,7 @@ noinst_LTLIBRARIES=@BUILD_SQL@
 EXTRA_LTLIBRARIES=libsql.la
 
 INCLUDES= -I$(top_srcdir)/include @INCLUDEPATH@
-libsql_la_SOURCES=disp.c mysql.c postgres.c
+libsql_la_SOURCES=disp.c mysql.c postgres.c odbc.c
 
 SUFFIXES=.S .c .ln .o .s
 

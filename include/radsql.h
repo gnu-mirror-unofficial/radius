@@ -20,7 +20,8 @@ typedef unsigned long qid_t; /* queue identifier */
 #define SQLT_NONE     0
 #define SQLT_MYSQL    1
 #define SQLT_POSTGRES 2
-#define SQLT_MAX      3
+#define SQLT_ODBC     3
+#define SQLT_MAX      4
 
 #ifdef USE_SQL
 
@@ -111,6 +112,11 @@ extern SQL_DISPATCH_TAB mysql_dispatch_tab[];
 extern SQL_DISPATCH_TAB postgres_dispatch_tab[];
 #else
 #define postgres_dispatch_tab NULL
+#endif
+#ifdef USE_SQL_ODBC
+extern SQL_DISPATCH_TAB odbc_dispatch_tab[];
+#else
+#define odbc_dispatch_tab NULL
 #endif
 
 #else

@@ -71,6 +71,8 @@
 
 #undef HAVE_LIBPQ
 
+#undef HAVE_LIBODBC
+
 /* Define this to disable shadow support */
 #undef PWD_SHADOW
 
@@ -93,8 +95,11 @@
 /* Define this to enable MYSQL subsystem of SQL support */
 #undef USE_SQL_MYSQL
 
-/* Define this to enable POSTRES subsystem of SQL support */
+/* Define this to enable POSTGRES subsystem of SQL support */
 #undef USE_SQL_POSTGRES
+
+/* Define this to enable ODBC subsystem of SQL support */
+#undef USE_SQL_ODBC
 
 /* Define this to enable Livingston-compatible menus */
 #undef USE_LIVINGSTON_MENUS

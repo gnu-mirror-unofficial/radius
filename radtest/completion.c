@@ -37,12 +37,14 @@ struct key_tab {
 };
 
 static struct key_tab key_tab[] = {
-	"auth",4,AUTH,0,
-	"print",5,PRINT,1,
-	"send",4,SEND,1,
-	"exit",4,EXIT,1,
-	"expect",6,EXPECT,1,
-	"acct",4,ACCT,0,
+	"auth",  4, AUTH,    0,
+	"print", 5, PRINT,   1,
+	"send",  4, SEND,    1,
+	"exit",  4, EXIT,    1,
+	"expect",6, EXPECT,  1,
+	"acct",  4, ACCT,    0,
+	"begin", 5, T_BEGIN, 0,
+	"end",   3, T_END,   0,
 	NULL
 };
 

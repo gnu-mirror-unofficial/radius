@@ -1,0 +1,9 @@
+server localhost
+port 3306
+login radius
+password password
+
+doauth no
+group_query none
+doacct no
+

@@ -1,0 +1,29 @@
+menu
+MENU2(ra,sol,weevil,top,quit)
+end
+ra
+        Service-Type = Login-User,
+	Login-IP-Host = ra,
+        Login-Service = Rlogin,
+        Termination-Menu = "menu2"
+#
+sol
+        Service-Type = Login-User,
+	Login-IP-Host = 127.0.0.1,
+        Login-Service = Rlogin,
+        Termination-Menu = "menu2"
+#
+weevil
+        Service-Type = Login-User,
+	Login-IP-Host = weevil,
+        Login-Service = Rlogin,
+        Termination-Menu = "menu2"
+#
+top
+	Menu = "menu1"
+#
+quit
+	Menu = "EXIT"
+#
+DEFAULT
+	Menu = "menu2"

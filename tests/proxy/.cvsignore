@@ -1,0 +1,14 @@
+Makefile.in
+Makefile
+dictionary
+client.conf
+config
+realms
+log
+acct
+clients
+dict.voip
+dict.cisco
+naslist
+nastypes
+radiusd.pid

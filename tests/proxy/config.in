@@ -1,0 +1,87 @@
+# -*- radconf -*-
+# This file is part of GNU Radius test suite.
+# Copyright (C) 2000,2001,2003 Free Software Foundation, Inc.
+#
+# Written by Sergey Poznyakoff
+#
+# GNU Radius is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# GNU Radius is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GNU Radius; if not, write to the Free Software Foundation,
+# Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+option {
+	max-requests 1024;
+	exec-program-user "@USER@";	
+};
+
+logging {
+        prefix-hook "default_log_prefix";
+	channel default {
+		file "radius.log";
+		print-level yes;
+		print-category yes;
+		print-pid yes;
+		print-milliseconds yes;
+	};
+	channel debug {
+		file "radius.debug";
+		print-pid yes;
+		print-milliseconds yes;
+	};
+	category auth {
+		channel default;
+		print-auth yes;
+		print-failed-pass yes;
+	};
+	category debug {
+		channel debug;
+		level acct=1,radpdu,radsrv,proxy=100,request,radius;
+	};
+	category !debug {
+		channel default;
+	};
+};
+
+auth {
+	port @PROXY_AUTH_PORT@;
+	max-requests 127;
+	request-cleanup-delay 2;
+	detail yes;
+	strip-names yes;
+	checkrad-assume-logged yes;
+};
+
+acct {
+	port @PROXY_ACCT_PORT@;
+	max-requests 127;
+	request-cleanup-delay 2;
+};
+
+rewrite {
+        load-path "@SOURCEDIR@/../raddb";
+        load "log-hook.rw";
+};
+
+@SNMP@snmp {
+@SNMP@         listen no;
+@SNMP@         storage {
+@SNMP@                  file "@BUILDDIR@/proxy/log/radius.stat";
+@SNMP@                  perms 0600;		
+@SNMP@	       };
+@SNMP@};		
+
+@GUILE@guile {
+@GUILE@        debug yes;
+@GUILE@        load-path "@BUILDDIR@/raddb";
+@GUILE@        load "auth.scm";
+@GUILE@        load "acct.scm";
+@GUILE@};

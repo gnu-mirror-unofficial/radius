@@ -622,7 +622,6 @@ void
 rad_thread_init()
 {
         pthread_sigmask(SIG_SETMASK, &rad_signal_set, NULL);
-        pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 }
 
 void

@@ -75,6 +75,7 @@ log, T_LOGGING
 log-dir, T_LOG_DIR
 logging, T_LOGGING, 
 max-requests, T_MAX_REQUESTS
+max-threads, T_MAX_THREADS
 network, T_NETWORK,
 no, T_BOOL, _Y(0),
 notice, T_SEVERITY, _Y(L_NOTICE)
@@ -108,6 +109,7 @@ print-tid, T_LOGOPT, _Y(LO_TID)
 print-category, T_LOGOPT, _Y(LO_CAT)
 print-cons, T_LOGOPT, _Y(LO_CONS)
 print-level, T_LOGOPT, _Y(LO_PRI),
+print-milliseconds, T_LOGOPT, _Y(LO_MSEC),
 print-priority, T_LOGOPT, _Y(LO_PRI)
 print-auth, T_LOGLEVEL, _Y(RLOG_AUTH)
 print-pass, T_LOGLEVEL, _Y(RLOG_AUTH_PASS)

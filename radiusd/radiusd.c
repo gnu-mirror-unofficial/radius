@@ -928,8 +928,17 @@ request_xmit(type, code, data, fd)
 {
 	if (request_class[type].xmit) 
 		request_class[type].xmit(type, code, data, fd);
-	else
+	else 
 		request_class[type].drop(type, data, _("duplicate request"));
+
+	switch (type) {
+	case R_AUTH:
+		stat_inc(auth, ((AUTH_REQ*)data)->ipaddr, num_dup_req);
+		break;
+	case R_ACCT:
+		stat_inc(acct, ((AUTH_REQ*)data)->ipaddr, num_dup_req);
+	}
+
 	request_class[type].free(data);
 }
 

@@ -39,6 +39,16 @@ oid_dup(oid)
 	return new_oid;
 }
 
+oid_t
+oid_create(len)
+	int len;
+{
+	oid_t oid;
+
+	if ((oid = snmp_alloc((len+1)*sizeof(oid[0])))) 
+		OIDLEN(oid) = len;
+	return oid;
+}
 
 oid_t 
 oid_create_from_string(str)
@@ -119,9 +129,9 @@ sprint_oid(buf, buflen, oid)
 			break;
 		}
 		buflen -= d;
+		*buf++ = '.';
 		for (p = temp; *p; )
 		     *buf++ = *p++;
-		*buf++ = '.';
 		name++;
 	}
 	*buf = 0;

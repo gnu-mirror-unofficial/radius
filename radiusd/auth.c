@@ -426,11 +426,7 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
         return result;
 }
 
-/*
- *      Initial step of authentication.
- *      Find username, calculate MD5 digest, and
- *      process the hints and huntgroups file.
- */
+/* Initial step of authentication. */
 int
 rad_auth_init(RADIUS_REQ *radreq, int activefd)
 {

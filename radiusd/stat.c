@@ -213,7 +213,7 @@ stat_find_port(NAS *nas, int port_no)
 	/* Port not found */
 	if ((port = stat_alloc_port()) == NULL) {
 		radlog(L_WARN,
-		       _("can't allocate port_stat: increase stat_port_count"));
+		       _("reached SNMP storage limit for the number of monitored ports: increase max-port-count"));
 		return NULL;
 	}
 	port->ip = nas->ipaddr;
@@ -450,7 +450,7 @@ snmp_attach_nas_stat(NAS *nas)
         if (!np) {
 		if (server_stat->nas_index >= server_stat->nas_count) {
 			radlog(L_WARN,
-			       _("can't allocate nas_stat: increase stat_nas_count"));
+			       _("reached SNMP storage limit for the number of monitored NASes: increase max-nas-count"));
 			return;
 		}
 		np = nas_stat + server_stat->nas_index;
@@ -463,7 +463,7 @@ snmp_attach_nas_stat(NAS *nas)
 static int
 nas_ip_cmp(const void *ap, const void *bp)
 {
-        struct nas_stat *a = ap, *b = bp;
+        const struct nas_stat *a = ap, *b = bp;
         return a->ipaddr - b->ipaddr;
 }
 
@@ -482,5 +482,16 @@ snmp_sort_nas_stat()
                 np->index = i++;
 	}
 }
+
+
+/* ************************************************************************* */
+/* Configuration */
+struct cfg_stmt storage_stmt[] = {
+	{ "max-port-count", CS_STMT, NULL,
+	  cfg_get_integer, &stat_port_count, NULL, NULL },
+	{ "max-nas-count", CS_STMT, NULL,
+	  cfg_get_integer, &stat_nas_count, NULL, NULL },
+	{ NULL, }
+};
 
 #endif

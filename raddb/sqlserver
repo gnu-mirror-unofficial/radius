@@ -21,40 +21,6 @@
 ##	%a             Protocol (SLIP/PPP)
 ##	%s             Speed (DA_CONNECT_INFO)
 ##
-## The queries used in this file are designed for the following tables:
-## CREATE TABLE passwd(
-##   user_name           char(32),
-##   password            char(64),
-##   UNIQUE (user_name)
-## );
-## CREATE TABLE groups(
-##   user_name           char(32),
-##   user_group          char(32),
-##   KEY (user_name)
-## );
-## CREATE TABLE attrib(
-##   user_name           char(32) DEFAULT '' NOT NULL,
-##   attr                char(32),
-##   value               char(128),
-##   INDEX user_name (user_name)
-## );
-## CREATE TABLE calls (
-##   status              int(3),
-##   user_name           char(32),
-##   event_date_time     datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
-##   nas_ip_address      char(17),
-##   nas_port_id         int(6),
-##   acct_session_id     char(16) DEFAULT '' NOT NULL,
-##   acct_session_time   int(11),
-##   acct_input_octets   int(11),
-##   acct_output_octets  int(11),
-##   connect_term_reason int(4),
-##   framed_ip_address   char(17),
-##   unused              int(1),
-##   called_station_id   char(32),
-##   calling_station_id  char(32),
-##   KEY name_sess (user_name,acct_session_id)
-## );
 ##############################################################################
 
 #########
@@ -137,7 +103,6 @@ acct_start_query     INSERT INTO calls \
                             0,\
                             0,\
                             '%C{Framed-IP-Address}',\
-                            0,\
                             '%C{Called-Station-Id}',\
                             '%C{Calling-Station-Id}')
 

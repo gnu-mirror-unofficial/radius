@@ -28,7 +28,8 @@
 #include <radiusd.h>
 #include <log.h>
 
-static int log_category = L_CAT(L_MAIN);  /* Default logging category */
+static pthread_once_t log_once = PTHREAD_ONCE_INIT;
+static pthread_key_t log_key;
 static Channel *chanlist;                  /* List of defined channels */
 
 static void log_to_channel(Channel *chan, int cat, int pri,
@@ -40,17 +41,40 @@ static void channel_close_file(Channel *chan, FILE *fp);
 
 #define SP(p) ((p)?(p):"")
 
+static void
+log_init_specific()
+{
+	pthread_key_create(&log_key, NULL);
+}
+
+static int
+log_get_category()
+{
+	void *p;
+	pthread_once(&log_once, log_init_specific);
+	p = pthread_getspecific(log_key);
+	return p ? (int) p : L_CAT(L_MAIN);
+}
+
+static void
+log_set_category(cat)
+	int cat;
+{
+	pthread_once(&log_once, log_init_specific);
+	pthread_setspecific(log_key, (const void*) L_CAT(cat));
+}
+
 void
 log_open(cat)
         int cat;
 {
-        log_category = L_CAT(cat);
+        log_set_category(cat);
 }
 
 void
 log_close()
 {
-        log_category = L_CAT(L_MAIN);
+        log_set_category(L_MAIN);
 }
 
 void
@@ -71,7 +95,7 @@ vlog(level, file, line, func_name, en, fmt, ap)
 
         cat = L_CAT(level);
         if (cat == 0)
-                cat = log_category;
+                cat = log_get_category();
         pri = L_PRI(level);
         
         if (file) 

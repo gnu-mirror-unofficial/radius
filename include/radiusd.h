@@ -436,6 +436,17 @@ int proxy_send(REQUEST *req);
 int proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int activefd);
 void proxy_retry(RADIUS_REQ *radreq, int fd);
 
+/* menu.c */
+#define MAX_PATH_LENGTH                 256
+#define MAX_MENU_SIZE                   4096
+#define MAX_MENU_NAME                   128
+#define MAX_MENU_INPUT                  32
+#define MAX_STATE_VALUE                 128
+#define RAD_BUFFER_SIZE                 4096
+
+void menu_reply(RADIUS_REQ *radreq, int fd);
+char *menu_read_text(char *menu_name);
+
 /*FIXME*/
 /* acct.c */
 int rad_accounting(RADIUS_REQ *, int, int);
@@ -476,19 +487,6 @@ void version();
 int rad_auth_init(RADIUS_REQ *radreq, int activefd);
 int rad_authenticate (RADIUS_REQ *, int);
 void req_decrypt_password(char *password, RADIUS_REQ *req, VALUE_PAIR *pair);
-
-/* menu.c */
-void process_menu(RADIUS_REQ *radreq, int fd);
-char * get_menu(char *menu_name);
-
-
-#define MAX_PATH_LENGTH                 256
-#define MAX_MENU_SIZE                   4096
-#define MAX_MENU_NAME                   128
-#define MAX_MENU_INPUT                  32
-#define MAX_STATE_VALUE                 128
-#define RAD_BUFFER_SIZE                 4096
-
 
 /* timestr.c */
 int timestr_match(char *, time_t);
@@ -545,8 +543,6 @@ int fix_check_pairs(int sf_file, char *filename, int line, char *name,
 int fix_reply_pairs(int cf_file, char *filename, int line, char *name,
                     VALUE_PAIR **pairs);
 void radck();
-
-
 
 /* checkrad.c */
 int checkrad(NAS *nas, struct radutmp *up);

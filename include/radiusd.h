@@ -533,7 +533,8 @@ void socket_list_iterate(SOCKET_LIST *slist, void (*fun)());
 #define SH_ASYNC 1
 
 typedef void *rad_sigid_t;
-typedef int (*rad_signal_t) (int sig, void *data, const void *owner);
+typedef int (*rad_signal_t) (int sig, void *data, rad_sigid_t id,
+			     const void *owner);
 
 rad_sigid_t rad_signal_install (int sig, int type,
 				rad_signal_t handler, void *data);

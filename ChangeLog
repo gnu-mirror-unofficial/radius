@@ -1,3 +1,13 @@
+2004-11-03  Sergey Poznyakoff
+
+	* lib/radsrv.c (grad_server_send_reply)
+	(grad_server_send_challenge): Issue warnings to L_DEBUG if
+	DEBUG_ONLY is enabled.
+	* radiusd/rpp.c (rpp_lookup_pid): Bugfix. The function was not
+	signal-safe due to calls to malloc/free (from
+	grad_iterator.*). This caused grief on BSD systems. Rewritten
+	using grad_list_locate, which is reentrant.
+
 2004-11-02  Sergey Poznyakoff
 
 	* scripts/gud-wrapper: A wrapper for debugging radiusd from

@@ -1,3 +1,12 @@
+2001-03-14  gray  <gray@farlep.net>
+	Added @ to the array of symbols allowed in a username.
+	Thanks to Jody Owens for reporting the bug.
+
+2001-03-13  gray  <gray@farlep.net>
+	Added ! to the array of symbols allowed in a username.
+	Got rid of last annoying traces of snprinf calls in
+	snmplib. Have to rewrite snmplib as soon as possible.
+
 2001-03-10  gray  <gray@farlep.net>
 	Rewritten radiusd/pam.c. 
 	Modified radiusd/log.c so that it echoes log messages to

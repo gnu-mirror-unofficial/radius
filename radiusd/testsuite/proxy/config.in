@@ -63,6 +63,14 @@ acct {
 	request-cleanup-delay 2;
 };
 
+@SNMP@snmp {
+@SNMP@         listen no;
+@SNMP@         storage {
+@SNMP@                  file "@BUILDDIR@/proxy/log/radius.stat";
+@SNMP@                  perms 0600;		
+@SNMP@	       };
+@SNMP@};		
+
 @GUILE@guile {
 @GUILE@        debug yes;
 @GUILE@        load-path "@BUILDDIR@/raddb";

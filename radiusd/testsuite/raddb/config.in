@@ -94,12 +94,12 @@ filters {
 rewrite {
 	load-path "@SOURCEDIR@/../../examples";
 	load "ascend.rw";
-	load "cisco.rw";
-	load "jetstream.rw";
-	load "nt.rw";
-	load "filter.rw";
+        load "cisco.rw";
+        load "jetstream.rw";
+        load "nt.rw";
+        load "filter.rw";
 };
-		
+                
 @GUILE@guile {
 @GUILE@        debug yes;
 @GUILE@        load-path "@BUILDDIR@/raddb";
@@ -107,3 +107,10 @@ rewrite {
 @GUILE@        load "acct.scm";
 @GUILE@};
 
+@SNMP@snmp {
+@SNMP@         port @SNMP_PORT@;
+@SNMP@         storage {
+@SNMP@			file "@BUILDDIR@/raddb/log/radius.stat";
+@SNMP@			perms 0600;		
+@SNMP@	       };
+@SNMP@};		

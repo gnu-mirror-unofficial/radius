@@ -1,10 +1,10 @@
-GNU Radius NEWS -- history of user-visible changes. 2003-10-14
+GNU Radius NEWS -- history of user-visible changes. 2003-10-16
 Copyright (C) 2002,2003 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
 
-Version 1.1.90:
+Version 1.1.91:
 
 * Bugfixes
 ** Renamed LIST to RAD_LIST to eliminate possible name clashes with the
@@ -22,6 +22,9 @@ file.
 ** The main configuration file raddb/config allows to specify several
 Rewrite source files to be loaded instead of the single predefined
 file raddb/rewrite.
+
+** New configuration file option `trace-rules' allows to trace the
+configuration rules that were used when processing the request.
 
 ** Arbitrary Rewrite expressions may be used in A/V pairs.
 

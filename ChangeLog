@@ -1,3 +1,19 @@
+2003-10-16  Sergey Poznyakoff
+
+	* configure.ac: Raised patchlevel to 91
+	* NEWS: Updated
+	* include/radiusd.h (auth_trace_rules,acct_trace_rules): External
+	variables.
+	(radius_trace_path): New function.
+	* radiusd/radius.c (radius_respond): Call radius_trace_path().
+	(radius_req_register_locus): Take into account .*_acct_trace_rules
+	variables.
+	(radius_trace_path): New functions.
+	* radiusd/testsuite/raddb/config.in (auth,acct): Enable trace-rules.
+	* radiusd/rewrite.y [!MAINTAINER_MODE] (COMMON_MTX): Bugfix.
+	* radiusd/files.c (reload_data): Load rewrite right after dictionaries.
+	Require explicit dependency of users,hints,huntgroups on it.
+
 2003-10-16  Sergey Poznyakoff 
 
 	* examples/config.syntax: Provide samples of trace-rules

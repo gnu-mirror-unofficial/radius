@@ -2,6 +2,7 @@
 
 	* radiusd/rewrite.y (rewrite_before_config_hook): Fixed memory
 	leak: code_init() must be called here.
+	(check_codesize): Fixed a *gross* bug
 
 2003-11-24  Sergey Poznyakoff
 

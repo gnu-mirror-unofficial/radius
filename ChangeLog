@@ -1,4 +1,11 @@
 2001-12-18 Sergey Poznyakoff
+	
+	* radiusd/radius.c: (calc_acctdigest): Fixed possible buffer
+	  overflow.
+	  (radrecv): Fixed handling of Vendor-Specific attributes
+          (a malformed attribute could have a length < 2).
+
+2001-12-18 Sergey Poznyakoff
 
 	* radiusd/radutil.c: Escape '\'', '"' and '\\' in radius_xlat.
 	  Thanks to Michael Samuel for noticing.

@@ -289,12 +289,15 @@ calc_acctdigest(radreq)
 {
 	int	secretlen;
 	char zero[AUTH_VECTOR_LEN];
-	u_char	* recvbuf = (u_char*) radreq->data;
+	u_char	*recvbuf;
 	int	len = radreq->data_len;
 	u_char digest[AUTH_VECTOR_LEN];
 
 	secretlen = strlen(radreq->secret);
 
+	recvbuf = emalloc(len + secretlen);
+	memcpy(recvbuf, radreq->data, len + secretlen);
+	
 	/* Older clients have the authentication vector set to
 	   all zeros. Return `1' in that case. */
 	memset(zero, 0, sizeof(zero));
@@ -308,7 +311,8 @@ calc_acctdigest(radreq)
 	memset(recvbuf + 4, 0, AUTH_VECTOR_LEN);
 	memcpy(recvbuf + len, radreq->secret, secretlen);
 	md5_calc(digest, recvbuf, len + secretlen);
-
+	efree(recvbuf);
+	
 	/*
 	 *	Return 0 if OK, 2 if not OK.
 	 */
@@ -329,9 +333,9 @@ radrecv(host, udp_port, buffer, length)
 {
 	u_char		*ptr;
 	AUTH_HDR	*auth;
-	int		totallen;
-	int		attribute;
-	int		attrlen;
+	unsigned	totallen;
+	unsigned	attribute;
+	unsigned	attrlen;
  	DICT_ATTR	*attr;
 	UINT4		lval;
 	UINT4		vendorcode;

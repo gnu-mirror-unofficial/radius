@@ -600,12 +600,10 @@ filter_kill(filter)
 {
 	if (filter->pid == -1 || !filter->stopped)  
 		return;
-	do
-	  {
-	    kill(filter->pid, SIGKILL);
-	    sleep(2);
-	  }
-	while (filter->pid != -1);
+	do {
+		kill(filter->pid, SIGKILL);
+		sleep(2);
+	} while (filter->pid != -1);
 }
 
 static Filter *

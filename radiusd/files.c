@@ -573,8 +573,11 @@ userparse(char *buffer, VALUE_PAIR **first_pair, char **errmsg)
                         op = xlat_keyword(op_tab, token, -1);
                         if (op == -1) {
                                 snprintf(errbuf, sizeof(errbuf),
-                                        _("expected opcode but found %s"),
-                                        token);
+					 _("expected %s, but found %s"),
+/* TRANSLATORS: This is used in place of the first %s in the message
+   "expected %s, but found %s", i.e. it acts as a direct object to
+   the verb 'expect'. Please bear this in mind when translating */
+					 _("opcode"), token);
                                 *errmsg = errbuf; 
                                 return -1;
                         }
@@ -596,8 +599,8 @@ userparse(char *buffer, VALUE_PAIR **first_pair, char **errmsg)
                 case PS_END:
                         if (token[0] != ',' && token[0] != '\n') {
                                 snprintf(errbuf, sizeof(errbuf),
-                                        _("expected , but found %s"),
-                                        token);
+					 _("expected %s, but found %s"),
+					 "','", token);
                                 *errmsg = errbuf;
                                 return -1;
                         }

@@ -149,12 +149,12 @@ static void asgn(void *base, Value *value, int type, int once);
 };
 
 %token EOL
-%token T_ALLOW T_AUTH T_CATEGORY T_DENY T_DETAIL T_EXPWARNING T_FILE T_INFO
-%token T_IDENT T_LEVEL T_LISTEN T_LOGGING T_NETWORK T_MAIN T_OPTION T_USEDBM
-%token T_CHECKRAD_ASSUME_LOGGED T_DELAY T_DETAIL T_HOST           
-%token T_EXEC_PROGRAM_GROUP T_EXEC_PROGRAM_USER T_LOG_DIR T_MAX_REQUESTS
-%token T_PORT T_REQUEST_CLEANUP_DELAY T_RETRY T_SPAWN T_STRIP_NAMES   
-%token T_TTL T_USR2DELAY              
+%token T_ALLOW T_AUTH T_CATEGORY T_DENY T_DETAIL T_EXPWARNING T_FILE T_GUILE
+%token T_INFO T_IDENT T_LEVEL T_LISTEN T_LOGGING T_NETWORK T_MAIN T_OPTION 
+%token T_USEDBM T_CHECKRAD_ASSUME_LOGGED T_DELAY T_DETAIL T_HOST           
+%token T_EXEC_PROGRAM_GROUP T_EXEC_PROGRAM_USER T_LOAD T_LOAD_PATH T_LOG_DIR
+%token T_MAX_REQUESTS T_PORT T_REQUEST_CLEANUP_DELAY T_RETRY T_SPAWN 
+%token T_STRIP_NAMES T_TTL T_USR2DELAY              
 
 %token T_SOURCE_IP T_ACCT_DIR T_ACCT T_CNTL T_PROXY T_CHANNEL
 %token T_SYSLOG T_NOTIFY T_SNMP T_COMMUNITY T_ACL
@@ -204,6 +204,7 @@ stmt            : logging_stmt
                 | proxy_stmt 
                 | cntl_stmt
                 | snmp_stmt
+                | guile_stmt
                 ;
 
 
@@ -714,21 +715,21 @@ level           : T_STRING
 
 usedbm_stmt     : T_USEDBM T_BOOL
                   {
-                   #ifdef USE_DBM
+#ifdef USE_DBM
 			  use_dbm = $2;
 			  if (debug_config)
 				  radlog(L_DEBUG, _("use dbm: %d"), use_dbm);
-		   #else
+#else
 			  radlog(L_WARN,
 				 _("%s:%d: usedbm statement ignored: radiusd compiled without DBM support"),
 				 filename, line_num);
-                   #endif
+#endif
 		  }
                 ;
 
 notify_stmt     : T_NOTIFY '{' notify_list '}'
                   {
-                   #ifdef USE_NOTIFY
+#ifdef USE_NOTIFY
 			  if (debug_config)
 				  radlog(L_DEBUG, 
 					_("TTL server %s:%d %d, %d sec"),
@@ -736,15 +737,15 @@ notify_stmt     : T_NOTIFY '{' notify_list '}'
 					 notify_cfg.port,
 					 notify_cfg.retry,
 					 notify_cfg.timeout);
-		   #else
+#else
 			  radlog(L_WARN,
 				 _("%s:%d: notify statement ignored: radiusd compiled without TTL notification support"),
 				 filename, line_num);
-                   #endif
+#endif
 		  }
                 | T_NOTIFY T_BOOL
                   {
-                   #ifdef USE_NOTIFY
+#ifdef USE_NOTIFY
 			  if ($2 == 0) {
 				  notify_cfg.ipaddr = notify_cfg.port = 0;
 				  if (debug_config)
@@ -752,7 +753,7 @@ notify_stmt     : T_NOTIFY '{' notify_list '}'
 			  } else {
 				  yyerror("syntax error: `off' expected");
 			  }
-                   #endif
+#endif
 		  }
                 ;
 
@@ -771,27 +772,27 @@ notify_line     : /* empty */ EOL
 
 notify_def      : T_HOST value
                   {
-		   #ifdef USE_NOTIFY 
+#ifdef USE_NOTIFY 
 			  asgn(&notify_cfg.ipaddr, &$2, AT_IPADDR,0);
-                   #endif
+#endif
 		  }
                 | T_PORT value
                   {
-		   #ifdef USE_NOTIFY 
+#ifdef USE_NOTIFY 
 			  asgn(&notify_cfg.port, &$2, AT_PORT, 0);
-                   #endif
+#endif
 		  }
                 | T_RETRY value
                   {
-		   #ifdef USE_NOTIFY 
+#ifdef USE_NOTIFY 
 			  asgn(&notify_cfg.retry, &$2, AT_INT, 0);
-                   #endif
+#endif
 		  }
                 | T_DELAY value
                   {
-		   #ifdef USE_NOTIFY 
+#ifdef USE_NOTIFY 
 			  asgn(&notify_cfg.timeout, &$2, AT_INT, 0);
-                   #endif
+#endif
 		  }
                 ;
 
@@ -799,11 +800,11 @@ notify_def      : T_HOST value
 
 snmp_stmt       : T_SNMP '{' snmp_list '}'
                   {
-		   #ifndef USE_SNMP
+#ifndef USE_SNMP
 			  radlog(L_WARN,
 				 _("%s:%d: snmp statement ignored: radiusd compiled without snmp support"),
 				 filename, line_num);
-		   #endif
+#endif
 		  }
                 ;
 
@@ -820,53 +821,53 @@ netmask         : T_IPADDR
 
 network         : T_IPADDR '/' netmask
                   {
-                   #ifdef USE_SNMP
+#ifdef USE_SNMP
 			  ACL *p = alloc_entry(sizeof(*p));
 
 			  p->ipaddr = htonl($1);
 			  p->netmask = htonl($3);
 			  $$ = p;
-                   #endif
+#endif
 		  }
 		| T_IPADDR
                   {
-                   #ifdef USE_SNMP
+#ifdef USE_SNMP
 			  ACL *p = alloc_entry(sizeof(*p));
 
 			  p->ipaddr = htonl($1);
 			  p->netmask = 0xfffffffful;
 			  $$ = p;
-                   #endif
+#endif
 		  }
                 ;
 
 netlist         : network
 	          {
-                   #ifdef USE_SNMP
+#ifdef USE_SNMP
 			  $$.head = $$.tail = $1;
-                   #endif
+#endif
 		  }
                 | netlist network
 	          {
-                   #ifdef USE_SNMP
+#ifdef USE_SNMP
 			  $1.tail->next = $2;
 			  $1.tail = $2;
 			  $$ = $1;
-                   #endif
+#endif
 		  }
                 ;
 
 acl             : T_STRING
                   {
-                   #ifdef USE_SNMP
+#ifdef USE_SNMP
 			  if (($$ = find_netlist($1)) == NULL) {
 				  radlog(L_ERR, _("%s:%d: no such acl: %s"),
 				      filename, line_num, $1);
 				  YYERROR;
 			  }
-                   #else
+#else
 			  $$ = 0;
-                   #endif
+#endif
 		  }
 		;
 
@@ -885,47 +886,47 @@ snmp_line       : /* empty */ EOL
 
 snmp_def        : T_IDENT T_STRING
                   {
-                   #ifdef USE_SNMP
+#ifdef USE_SNMP
                           if (server_id)
 			         efree(server_id);
                           server_id = ident_string($2);
-                   #endif
+#endif
                   }
                 | T_PORT value
                   {
-                   #ifdef USE_SNMP
+#ifdef USE_SNMP
 			  asgn(&snmp_port, &$2, AT_PORT, 0);
-                   #endif
+#endif
 		  }      
                 | T_SPAWN value
                   {
-                   #ifdef USE_SNMP
+#ifdef USE_SNMP
 			  asgn(&request_class[R_SNMP].spawn, &$2, AT_BOOL, 0);
-                   #endif
+#endif
 		  }      
                 | T_TTL value
                   {
-                   #ifdef USE_SNMP
+#ifdef USE_SNMP
 			  asgn(&request_class[R_SNMP].ttl, &$2, AT_INT, 0);
-                   #endif
+#endif
 		  }      
                 | T_MAX_REQUESTS value
                   {
-                   #ifdef USE_SNMP
+#ifdef USE_SNMP
 			  asgn(&request_class[R_SNMP].max_requests, &$2,
 			       AT_INT, 0);
-                   #endif
+#endif
 		  }      
                 | T_REQUEST_CLEANUP_DELAY value
                   {
-                   #ifdef USE_SNMP
+#ifdef USE_SNMP
 			  asgn(&request_class[R_SNMP].cleanup_delay, &$2,
 			       AT_INT, 0);
-                   #endif
+#endif
 		  }      
 		| T_COMMUNITY T_STRING T_SNMP_ACCESS
                   {
-                   #ifdef USE_SNMP
+#ifdef USE_SNMP
 			  if (snmp_find_community($2)) {
 				  radlog(L_ERR,
 				      _("%s:%d: community %s already declared"),
@@ -933,13 +934,13 @@ snmp_def        : T_IDENT T_STRING
 			  } else {
 				  snmp_add_community($2, $3);
 			  }
-                   #endif
+#endif
 		  }
                 | T_NETWORK T_STRING netlist
 	          {
-                   #ifdef USE_SNMP
+#ifdef USE_SNMP
 			  add_netlist($2, $3.head);
-                   #endif
+#endif
 		  }
                 | acl_stmt
 		;
@@ -962,7 +963,7 @@ acl_line        : /* empty */ EOL
 
 acl_def         : T_ALLOW acl T_STRING
 	          {
-                   #ifdef USE_SNMP
+#ifdef USE_SNMP
 			  Community *comm = snmp_find_community($3);
 			  if (!comm) {
 				  radlog(L_ERR, 
@@ -970,13 +971,13 @@ acl_def         : T_ALLOW acl T_STRING
 				      filename, line_num, $2);
 			  } else
 				  snmp_add_acl($2, comm);
-                   #endif
+#endif
 		  }
 	        | T_DENY acl
 		  {
-                   #ifdef USE_SNMP
+#ifdef USE_SNMP
 			  snmp_add_acl($2, NULL);
-                   #endif
+#endif
 		  }
                 ;
 
@@ -1051,6 +1052,59 @@ host            : value
 			  asgn(&$$.ipaddr, &$1, AT_IPADDR, 0);
 			  asgn(&$$.port, &$3, AT_PORT, 0);
 		  }
+                ;
+
+guile_stmt      : T_GUILE '{' guile_list '}'
+                  {
+#ifdef USE_GUILE
+			  use_guile = 1;
+#else
+			  radlog(L_WARN,
+				 _("%s:%d: guile statement ignored: radiusd compiled without guile support"),
+				 filename, line_num);
+#endif
+		  }
+                ;
+
+guile_list      : guile_def
+                | guile_list guile_def
+                ;
+
+guile_def       : T_LOAD_PATH value EOL
+                  {
+#ifdef USE_GUILE
+			  if ($2.type != AT_STRING) {
+				  radlog(L_ERR, 
+					 _("%s:%d: wrong datatype (should be string)"),
+					 filename, line_num);
+			  } else
+				  scheme_load_path($2.v.string);
+#endif
+		  }
+                | T_LOAD value EOL
+                  {
+#ifdef USE_GUILE
+			  if ($2.type != AT_STRING) {
+				  radlog(L_ERR, 
+					 _("%s:%d: wrong datatype (should be string)"),
+					 filename, line_num);
+			  } else {
+				  scheme_load($2.v.string);
+			  }
+#endif
+		  }
+                | T_SEVERITY value EOL
+                  {
+			  if ($1 == L_DEBUG) {
+#ifdef USE_GUILE
+				  int dbg;
+				  asgn(&dbg, &$2, AT_BOOL, 0);
+				  scheme_debug(dbg);
+#endif
+			  } else {
+				  yyerror("syntax error");
+			  }
+		  }  
                 ;
 
        /* Obsolete syntax: for compatibility with 0.95 and earlier */ 

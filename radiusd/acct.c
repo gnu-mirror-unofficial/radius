@@ -618,11 +618,10 @@ rad_accounting(radreq, activefd)
 	int activefd;
 {
 	int auth;
-	u_char pw_digest[AUTH_PASS_LEN];
 
 	log_open(L_ACCT);
 	/* See if we know this client, then check the request authenticator. */
-	auth = calc_acctdigest(pw_digest, radreq);
+	auth = calc_acctdigest(radreq);
 	if (auth < 0) {
 		stat_inc(acct, radreq->ipaddr, num_bad_sign);
 		return -1;

@@ -33,11 +33,6 @@
 
 #include <timestr.h>
 
-#ifdef STANDALONE
-# undef ALLOC
-# undef FREE
-#endif
-
 #ifndef ALLOC
 # define ALLOC malloc
 #endif
@@ -286,51 +281,3 @@ ts_check(char *str, time_t *time, unsigned *rest, char **endp)
         return rc;
 }
 
-#ifdef STANDALONE
-int main(int argc, char **argv)
-{
-        int             l;
-        time_t          t;
-        TIMESPAN       *ts;
-        char           *p;
-        unsigned       rest;
-        int i;
-        struct tm tm;
-
-        time(&t);
-        localtime_r(&t, &tm);
-        
-        switch (argc) {
-        default:
-                fprintf(stderr, "Usage: %s timestring [dow hh mm]\n",
-                        argv[0]);
-                exit(1);
-        case 5:
-                tm.tm_min = atoi(argv[4]);
-        case 4:
-                tm.tm_hour = atoi(argv[3]);
-        case 3:
-                tm.tm_wday = 0;
-                tm.tm_mday += atoi(argv[2]);
-                tm.tm_yday += atoi(argv[2]);
-                t = mktime(&tm);
-                break;
-        case 2:
-                break;
-        }
-
-        printf("ctime: %s", ctime(&t));
-        
-        if (ts_parse(&ts, argv[1], &p)) {
-                printf("bad timestring near %s\n", p);
-                return 1;
-        }
-
-        l = ts_match(ts, &t, &rest);
-        if (l == 0)
-                printf("inside %s: %d seconds left\n", argv[1], rest);
-        else
-                printf("OUTSIDE %s: %d seconds to wait\n", argv[1], rest);
-        return 0;
-}
-#endif

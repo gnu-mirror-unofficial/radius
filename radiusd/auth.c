@@ -431,7 +431,8 @@ int
 rad_auth_init(RADIUS_REQ *radreq, int activefd)
 {
         VALUE_PAIR *namepair;
-        
+	LOCUS loc;
+	
 	log_open(L_AUTH);
         /*
          * Get the username from the request
@@ -456,8 +457,10 @@ rad_auth_init(RADIUS_REQ *radreq, int activefd)
         /*
          * See if the user has access to this huntgroup.
          */
-        if (!huntgroup_access(radreq)) {
-                radlog_req(L_NOTICE, radreq, _("No huntgroup access"));
+        if (!huntgroup_access(radreq, &loc)) {
+                radlog_req(L_NOTICE, radreq,
+			   _("Access denied by huntgroup %s:%d"),
+			   loc.file, loc.line);
                 radius_send_reply(RT_AUTHENTICATION_REJECT, radreq,
                                   radreq->request, NULL, activefd);
                 return -1;

@@ -152,7 +152,6 @@ static RETSIGTYPE sig_handler(int sig);
 void radiusd_main_loop();
 static size_t radius_count_channels();
 void radiusd_run_preconfig_hooks(void *data);
-static int test_shell();	
 struct cfg_stmt config_syntax[];
 
 
@@ -495,7 +494,7 @@ radiusd_main()
 
         case MODE_TEST:
                 common_init();
-                exit(test_shell());
+                tsh();
                 
 #ifdef USE_DBM          
         case MODE_BUILDDBM:
@@ -946,196 +945,6 @@ radiusd_signal_init(RETSIGTYPE (*hp)(int sig))
 
 	for (i = 0; i < sizeof(signum)/sizeof(signum[0]); i++)
 		signal(signum[i], hp);
-}
-
-
-/* ****************************** Test Shell ******************************* */
-   
-static char buf[128];
-int doprompt;
-
-static char *
-moreinput(char *buf, size_t bufsize)
-{
-        if (doprompt)
-                printf("%% ");
-        return fgets(buf, bufsize, stdin);
-}
-
-static int
-tsck(int argc, char **argv)
-{
-        int             l;
-        time_t          t;
-        TIMESPAN       *ts;
-        char           *p;
-        unsigned       rest;
-        int i;
-        struct tm tm;
-
-        time(&t);
-        localtime_r(&t, &tm);
-        
-        switch (argc) {
-        default:
-		return 1;
-        case 4:
-                tm.tm_min = atoi(argv[3]);
-        case 3:
-                tm.tm_hour = atoi(argv[2]);
-        case 2:
-                tm.tm_wday = 0;
-                tm.tm_mday += atoi(argv[1]);
-                tm.tm_yday += atoi(argv[1]);
-                t = mktime(&tm);
-                break;
-        case 1:
-                break;
-        }
-
-        printf("ctime: %s", ctime(&t));
-        
-        if (ts_parse(&ts, argv[0], &p)) {
-                printf("bad timestring near %s\n", p);
-                return 1;
-        }
-
-        l = ts_match(ts, &t, &rest);
-        if (l == 0)
-                printf("inside %s: %d seconds left\n", argv[0], rest);
-        else
-                printf("OUTSIDE %s: %d seconds to wait\n", argv[0], rest);
-        return 0;
-}
-
-static int
-test_shell()
-{
-        char *tok;
-        int c;
-        NAS *nas;
-        struct radutmp ut;
-        Datatype type;
-        Datum datum;
-
-        printf("** TEST MODE **\n");
-        doprompt = isatty(fileno(stdin));
-        while (tok = moreinput(buf, sizeof(buf))) {
-                int argc;
-                char **argv;
-
-                while (*tok && isspace(*tok))
-                        tok++;
-                c = strlen(tok);
-                if (c > 1 && tok[c-1] == '\n')
-                        tok[c-1] = 0;
-                c = *tok++;
-                                                                
-                switch (c) {
-                case 0:
-                case '#':
-                        continue;
-                case 'h':
-                case '?':
-                        printf("h,?                        help\n");
-                        printf("c NAS LOGIN SID PORT [IP]  checkrad\n");
-                        printf("d LEVEL[,LEVEL]            set debug level\n");
-#ifdef USE_SERVER_GUILE
-                        printf("g                          enter guile shell\n");
-#endif
-                        printf("r FUNCALL                  function call\n");
-			printf("s FILENAME                 source Rewrite file\n");
-			printf("t TIMESPAN [DOW [HH [MM]]] Check the timespan interval\n");
-                        /*printf("m                          display memory usage\n"); */
-                        printf("q,<EOF>                    quit\n");
-                        break;
-			
-                case 'd':
-                        set_debug_levels(tok);
-                        break;
-#ifdef USE_SERVER_GUILE
-                case 'g':
-                        scheme_read_eval_loop();
-                        break;
-#endif
-                case 'q':
-                        return 0;
-                case 'c': /* checkrad */
-                        if (argcv_get(tok, "", &argc, &argv)) {
-                                fprintf(stderr, "can't parse input\n");
-                                argcv_free(argc, argv);
-                                continue;
-                        }
-
-                        if (argc < 4 || argc > 5) {
-                                fprintf(stderr, "arg count\n");
-                                continue;
-                        }
-                        nas = nas_lookup_name(argv[0]);
-                        if (!nas) {
-                                printf("bad nas\n");
-                                argcv_free(argc, argv);
-                                continue;
-                        }
-                        ut.nas_address = nas->ipaddr;
-
-                        strncpy(ut.orig_login, argv[1], sizeof(ut.orig_login));
-                        strncpy(ut.session_id, argv[2], sizeof(ut.session_id));
-                        ut.nas_port = atoi(argv[3]);
-                        if (argc == 5) 
-                                ut.framed_address = ip_strtoip(argv[5]);
-                        argcv_free(argc, argv);
-                        printf("%d\n", checkrad(nas, &ut));
-                        break;
-                case 'r':
-                        /* r funcall */
-                        if (interpret(tok, NULL, &type, &datum))
-                                printf("?\n");
-                        else {
-                                switch (type) {
-                                case Integer:
-                                        printf("%d (%u)", datum.ival,
-                                                     (unsigned) datum.ival);
-                                        break;
-					
-                                case String:
-                                        printf("%s", datum.sval);
-                                        break;
-					
-				case Undefined:
-					printf("Undefined");
-					break;
-
-				default:
-					abort();
-                                }
-                                printf("\n");
-                        }
-                        break;
-                case 's':
-                        printf("%d\n", parse_rewrite(tok));
-                        break;
-		case 't':
-                        if (argcv_get(tok, "", &argc, &argv)) {
-                                fprintf(stderr, "can't parse input\n");
-                                argcv_free(argc, argv);
-                                continue;
-                        }
-
-                        if (argc > 5) {
-                                fprintf(stderr, "arg count\n");
-                                continue;
-                        }
-			tsck(argc, argv);
-                        argcv_free(argc, argv);
-			break;
-                case 'm': /*memory statistics */
-                        break;
-                default:
-                        printf("no command\n");
-                }
-        }
-        return 0;
 }
 
 

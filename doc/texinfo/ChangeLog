@@ -1,3 +1,7 @@
+2003-11-08  Sergey Poznyakoff 
+
+	* debug.texi: Documented rule tracing mode.
+
 2003-11-07  Sergey Poznyakoff 
 
 	* acct.texi: Documented new features.

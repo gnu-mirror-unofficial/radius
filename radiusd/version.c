@@ -63,9 +63,6 @@ static char *sys_def[] = {
 #if defined(__linux__)
         "linux",
 #endif
-#if defined(M_UNIX)
-        "M_UNIX",
-#endif
         NULL
 };
 
@@ -78,7 +75,11 @@ static char *debug_flag_str[] = {
 
 static char *compile_flag_str[] = {
 #if defined(PWD_SHADOW)
-        "PWD_SHADOW",
+# if PWD_SHADOW == SHADOW	
+        "PWD_SHADOW=SHADOW",
+# else
+	"PWD_SHADOW=OSFC2",
+# endif	
 #endif
 #if defined(USE_SERVER_GUILE)
         "USE_SERVER_GUILE",
@@ -114,9 +115,6 @@ static char *compile_flag_str[] = {
 #endif
 #if defined(DENY_SHELL)
         "DENY_SHELL",
-#endif
-#if defined(OSFC2)
-        "OSFC2",
 #endif
         NULL
 };

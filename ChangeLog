@@ -1,5 +1,14 @@
 2003-11-08  Sergey Poznyakoff
 
+	* README: Updated
+	* configure.ac: Rewrote auto-detection of shadow suite.
+	Removed unused options.
+	* include/sysdep.h [!HAVE_DECL_CRYPT]: Provide declaration of crypt().
+	* radiusd/auth.c: Rewrote shadow suite support.
+	* radiusd/version.c: Updated
+
+2003-11-08  Sergey Poznyakoff
+
 	* All files: changed copyright holder to Free Software Foundation.
 	* configure.ac: Report missing libraries using
 	AC_MSG_FAILURE. Added -lz requisite to check for libmysqlclient

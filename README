@@ -28,10 +28,6 @@ The applications-specific options are:
 	your configuration. Multiple directories are separated by
 	colons.
 
-*** --enable-shadow
-	Enable shadow support. Use this only if ./configure was unable to
-        correctly determine if it should use the shadow support.
-
 *** --enable-pam
     	Enable PAM support.
 	
@@ -61,10 +57,12 @@ The applications-specific options are:
 	Build client programs. Requires presence of Guile >=1.4 and
 	PAM on your system.
 
-*** --with-pamdir=DIR
-	Install PAM modules in the given DIR. Default is
-    	$prefix/lib/security.
+*** --with-readline
+	Enable GNU readline support for radiusd test shell mode.
 
+*** --without-readline
+	Disable GNU readline support
+	
 *** --enable-snmp[=compat]
 	Enable SNMP support. By default this enables the use of enterprise
         subtree .iso.org.dod.internet.private.enterprises.gnu.radius
@@ -79,6 +77,21 @@ The applications-specific options are:
 
 *** --enable-deny-shell=SHELL
 	Always reject users with the given shell.
+
+*** --with-pamdir=DIR
+	Install PAM modules in the given DIR. Default is
+    	$prefix/lib/security.
+
+*** --with-log-dir=DIRNAME
+	Specifies the full pathname to the default logging directory.
+	By default it is either /var/log or /usr/adm, whichever is
+	applicable to your operationg system and directory layout.
+	
+*** --with-pid-dir=DIRNAME
+	Specifies the full pathname to the directory where radiusd
+	will store its pid-file (radiusd.pid). Default is either
+	"/var/run", or, if this directory does not exist,
+	"$sysconfdir/raddb".
 
 ** Run make.
 
@@ -165,12 +178,8 @@ of this file.
 Use radauth to send authentication requests to the running
 server. The invocation syntax is:
 
-            radauth [-v][-sSERVER:SECRET[:PORT]] username [pass]
+            radauth username [pass]
 
-The -v (--verbose) option produces verbose output. The -s (--server)
-option allows to set the parameters of the radius server to send
-the request to.
- 
 If you have guile version 1.4 or better installed, you can use
 radsession script to send authentication/accounting requests
 to the server. To do so, you will first need to edit your

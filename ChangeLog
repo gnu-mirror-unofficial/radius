@@ -1,3 +1,42 @@
+2002-01-08  Sergey Poznyakoff  
+
+	* THANKS: Added Robert Abbate.
+	* TODO: Updated.
+	* configure.in: Replace strtok_r and localtime_r.
+	* radlib/Makefile.am: Likewise.
+	* radlib/strtok_r.c: (new) Replacement for strtok_r().
+	* radlib/localtime_r.c: (new) Replacement for localtime_r().
+
+	* radiusd/radiusd.c: (snmp_respond) spawn new thread to handle
+	  the request.
+	* radiusd/sql.c: Major rewrite.
+
+	* radlib/util.c: (format_pair): rewritten to be thread-safe.
+	* include/radius.h: Removed qid_t declaration: not needed any
+	  longer. Changed qid in struct radius_req to void *conn. This
+	  keeps a pointer to the actually attached sql connection.
+	  Changed format_pair() proto.
+	* include/radiusd.h: (SNMP_REQ): new field fd.
+	* include/radsql.h: (struct sql_connection): Removed qid.
+	  New field 'owner' keeps pointer to RADIUS_REQ structure
+	  to which this connection is attached.
+	  (rad_sql_setup): Removed declaration.
+	* include/sysdep.h: Added protos for strtok_r(), localtime_r().
+	* radiusd/acct.c: Use thread-safe format_pair().
+*	* radiusd/config.y: spawn statement is obsoleted.
+	* raddb/config.syntax: Removed spawn statements.
+	
+	* radiusd/files.c: Use thread-safe functions.
+	* radiusd/log.c: Likewise.
+	* radiusd/proxy.c: Likewise.
+	* radiusd/radius.c: Likewise.
+	* radiusd/radutil.c: Likewise.
+	* radiusd/timestr.c: Likewise.
+	* radlib/avl.c: Likewise.
+	* radlib/client.c: Likewise.
+	* radlib/debug.c: Likewise.
+	* radlib/users.y: Likewise.
+
 2002-01-08 Sergey Poznyakoff
 
 	Started redesigning radiusd to multithreaded model. Initially
@@ -3342,9 +3381,7 @@
         
 
 Local Variables:
-mode: indented-text
-left-margin: 8
-fill-column: 74
+mode: change-log
 version-control: never
 End:
 

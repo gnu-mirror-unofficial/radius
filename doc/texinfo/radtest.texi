@@ -15,9 +15,9 @@ analyzing their reply packets.
 @menu
 * Literal Values::
 * Reserved Keywords::
-* Variables::
+* Variables in radtest::
 * Positional Parameters::
-* Expressions::
+* Expressions in radtest::
 * Function Definitions::
 * Interacting with Radius Servers::
 * Conditional Statements::
@@ -162,7 +162,7 @@ $@{case@} + 2
 @end smallexample
 @end itemize
 
-@node Variables
+@node Variables in radtest
 @subsection Variables
 
 Variables are means of storing data values at one point of your
@@ -174,6 +174,7 @@ command line.
 * Using Variables::
 * Variable Assignments::
 * Dereferencing Variables::
+* Accessing Elements of A/V Pair Lists::
 * Assignment Options::
 * Built-in Variables::
 @end menu
@@ -367,6 +368,42 @@ being compromised.
 
 @end table
 
+@node Accessing Elements of A/V Pair Lists
+@subsubsection Accessing Elements of A/V Pair Lists
+
+Elements of an @code{avlist} are accessed as if it were an array,
+i.e.:
+
+@smallexample
+$@var{variable} [ @var{attribute-name} ]
+@end smallexample
+
+If the attribute @var{attribute-name} is of @code{string} data type
+and @var{variable} may contain more than one pair with this attribute,
+adding an asterisk after @var{attribute-name} returns concatenated
+values of all such pairs:
+
+@smallexample
+$@var{variable} [ @var{attribute-name} * ]
+@end smallexample
+
+Examples:
+
+@smallexample
+@group
+x = (NAS-Port-Id = 127.0.0.1 \
+     Reply-Message = "a long"
+     Reply-Message = " string"
+
+$x[NAS-Port-Id] @result{} 127.0.0.1
+$x[Reply-Message] @result{} "a long"
+$x[Reply-Message*] @result{} "a long string"
+@end group
+@end smallexample
+
+@FIXME{How to get @var{n}th instance of an attribute? What gets
+returned if there is no such attribute in the list?}
+
 @node Assignment Options
 @subsubsection Assignment Options
 
@@ -454,7 +491,6 @@ in your @file{client.conf} file (@pxref{client.conf}).
 
 @node Positional Parameters
 @subsection Positional Parameters
-@UNREVISED{}
 
 Normally @command{radtest} stops parsing its command line
 when it encounters either first non-optional argument
@@ -474,6 +510,9 @@ is used, where @var{n} is the number of the parameter. Alternative
 forms, such as @code{$@{@var{n}@}} or @code{$@{@var{n}:-text@}},
 can also be used. These work exactly as described in
 @ref{Dereferencing Variables}).
+
+The number of positional parameters can be accessed using a special
+notation @code{$#}.
 
 Several things need to be mentioned:
 
@@ -513,7 +552,7 @@ $2 @result{} 5
 @end group
 @end smallexample
 
-@node Expressions
+@node Expressions in radtest
 @subsection Expressions
 
 An @dfn{expression} evaluates to a value, which can be printed,
@@ -854,39 +893,198 @@ end
 
 @node Interacting with Radius Servers
 @subsection Interacting with Radius Servers
-@UNREVISED{}
+
+@command{Radtest} provides two commands for interaction with remote
+@RADIUS{} servers.
+
+Command @code{send} sends request to the server specified in
+@file{raddb/client.conf}. Its syntax is:
+
+@smallexample
+send [@var{flags}] @var{port-type} @var{code} [@var{expr-or-pair-list}]
+@end smallexample
+
+Optional @var{flags} can be used for fine-tuning the internals of
+@code{send}. You will seldom need to use these, unless you are
+developing GNU Radius. @FIXME-xref{send-flags}, for the detailed
+description of these.
+
+The first obligatory argument, @var{port-type}, specifies which
+@RADIUS{} port to send the request to. Specifying @samp{auth} will
+send the request to the authentication port (@pxref{client.conf,auth-port});
+specifying @samp{acct} will send it to the accounting port
+(@pxref{client.conf,acct-port}).
+
+Argument @var{code} gives the request code. It is either a number or
+a symbolic request code name (@FIXME-xref{}).
+
+The last argument, @var{expr-or-pair-list} is either a
+@command{radtest} expression evaluating to @code{avlist} or a list
+of @AVP{}s. These pairs will be included in the request.
+
+Here are several examples:
+
+@smallexample
+# Send a @code{Status-Server} request without attributes.
+send auth Status-Server
+
+# Send an @code{Access-Request} with two attributes
+send auth Access-Request User-Name = "foo" User-Password = "bar"
+
+# Send an Accounting-Request, taking attributes from the variable
+# @var{attr}
+send acct Accounting-Request $attr
+@end smallexample
+
+Command @code{send} stores the reply code into the variable
+@code{REPLY_CODE} and reply pairs into the variable @code{REPLY}
+(@pxref{Built-in Variables}).
+@FIXME{How to know if @code{send} has failed?}
+
+Another primitive is @code{expect}. @code{Expect} takes at most two
+arguments: a request code (either numeric or symbolic) and optional
+list of @AVP{}s (similar to @code{send} @var{expr-or-pair-list}
+argument). @code{Expect} check if these match current
+@code{REPLY_CODE} and @code{REPLY} values and if so, prints
+the string @samp{PASS}. Otherwise, it prints @samp{FAIL}. This
+command is designed primarily for use in GNU Radius testsuite.
+
+@code{Expect} is usually used right after @code{send}, as shown
+in the example below:
+
+@smallexample
+@group
+send auth Access-Request User-Name = "foo" User-Password = "bar"
+expect Access-Accept Reply-Message = "Access allowed"
+@end group
+@end smallexample
 
 @node Conditional Statements
 @subsection Conditional Statements
 @UNREVISED{}
 
+@command{Radtest} provides two kinds of conditional statements:
+@code{if} and @code{case}.
+
+@subheading If statement
+
+An @code{if} statement in its simplest form is:
+
 @smallexample
-@group
-if @var{cond}
-  @var{stmt}
-@end group
+if @var{cond} @var{stmt}
 @end smallexample
+
+@noindent
+where @var{cond} is a conditional expression and @var{stmt} is a
+valid @command{radtest} statement. Optional newline may be inserted
+between @var{cond} @var{stmt}.
+
+In this form, @code{if} evaluates the condition and if it yields true,
+executes the statement. For example:
 
 @smallexample
 @group
-if @var{cond}
-  @var{stmt-1} else @var{stmt-1} 
+if $REPLY[NAS-IP-Address] = 127.0.0.1
+   print "Request from localhost"
 @end group
 @end smallexample
+
+More complex form of this statement allows to select between the two
+statements:
+
+@smallexample
+@group
+if @var{cond} @var{stmt-1} else @var{stmt-2} 
+@end group
+@end smallexample
+
+@noindent
+Here, @var{stmt-1} will be executed if @var{cond} evaluates to true,
+and @var{stmt-2} will be executed if @var{cond} evaluates to false.
+
+Notice, that an optional newline is allowed between @var{cond} and
+@var{stmt-1} and right after @code{else} keyword. However, a newline
+before @code{else} constitutes an error.
+
+If several statements should be executed in a branch of the @code{if}
+statement, use compound statement as in the example below:
+
+@smallexample
+@group
+if $REPLY_CODE != Accounting-Response
+begin
+  print "Accounting failed.\n"
+  exit 1	
+end else
+  print "Accounting succeeded.\n"
+@end group
+@end smallexample
+
+@code{If} statements can be nested to any depth.
+
+@subheading Case statement
+
+@code{Case} statement allows select a statement based on whether
+a @code{string} expression matches given regular expression. The
+syntax of @code{case} statement is:
 
 @smallexample
 @group
 case @var{expr} in
 @var{expr-1} ) @var{stmt-1}
 @var{expr-2} ) @var{stmt-2}
-...
+@dots{}
+@var{expr-n} ) @var{stmt-n}
 end
 @end group
 @end smallexample
 
+@noindent
+where @var{expr} is a control expression, @var{expr-1}, @var{expr-2}
+etc. are expressions evaluating to @emph{extended} POSIX regular
+expressions (for the detailed description of these
+@pxref{Top,,Regular Expression Library,regex,Regular Expression
+Library}).
+
+@code{Case} statement first evaluates @var{expr} and converts it to
+@code{string} data type. Then it evaluates each @var{expr-n} in turn
+and tests if the resulting regular expression matches @var{expr}. If
+so, the statement @var{stmt-n} is executed and the execution of
+@code{case} statement finishes.
+
+The following example illustrates the concept:
+
+@smallexample
+@group
+case $COMMAND in
+"auth.*")	authenticate($LIST, no)
+"acct")         authenticate($LIST, yes)
+".*")		begin
+		  print "Unknown command."
+		  exit 1
+	        end
+end
+@end group
+@end smallexample
+
+@code{Bourne shell} programmers should notice that:
+
+@itemize @bullet
+@item @code{Case} statement ends with @code{end}, not @code{esac}.
+@item There is no need to put @code{;;} at the end of each branch,
+@item Boolean operations are not allowed in @var{expr-n}.
+@end itemize
+
 @node Loops
 @subsection Loops
-@UNREVISED{}
+@UNREVISED
+
+Two looping constructs are provided: @code{while} and
+@code{do...while}.
+
+@subsection While loop
+
+The syntax of a while loop is:
 
 @smallexample
 @group
@@ -895,6 +1093,10 @@ while @var{cond}
 @end group
 @end smallexample 
 
+Newline after @var{cond} is obligatory.
+
+@subheading Do...while loop
+
 @smallexample
 @group
 do
@@ -902,6 +1104,65 @@ do
 while @var{cond}
 @end group
 @end smallexample  
+
+As usual @code{do...while} loop differs from its @code{while}
+counterpart in that its @var{stmt} is executed at least once.
+
+The looping constructs can be nested to any depth.
+
+Two special statements are provided for branching within loop
+constructs. These are @code{break} and @code{continue}.
+
+@code{Break} statement stops the execution of the current
+loop statement and passes control to the statement immediately
+following it
+
+@smallexample
+@group
+while $x < 10
+begin
+  if $x < $y
+     break
+  @dots{}
+  x = $x + 1
+end
+print "OK\n"
+@end group
+@end smallexample
+
+@noindent
+In the example above, execution of @code{break} statement passes
+control to @code{print} statement.
+
+@code{Break} may also take an argument: a literal number representing
+the number of nested loop statements to break from. For example, the
+@code{break} statement in the sample code below will exit from the
+outermost @code{while}:
+
+@smallexample
+@group
+while $y < 10
+begin
+  while $x < 10
+  begin
+    if $x < $y
+       break 2
+    @dots{}
+    x = $x + 1 
+  end
+  @dots{}
+  y = $y + 1 
+end  
+print "OK\n"
+@end group
+@end smallexample
+
+@code{Continue} statement passes control to the condition of the
+current looping construct. When used with a numeric argument, the
+latter specifies the number of the nesting looping construct to
+pass control to (as with @code{break}, the innermost loop is
+considered to have number 1, so @code{continue} is equivalent
+to @code{continue 1}).
 
 @node Built-in Primitives
 @subsection Built-in Primitives
@@ -935,6 +1196,15 @@ while @var{cond}
 @end deffn
 
 @deffn {Radtest statement} send [@var{flags}] auth|acct @var{code} @var{expr-or-pair-list}
+@var{flags} are a whitespace-separated list of variable
+assignments. Following variables are understood:
+
+@table @code
+@item repeat
+@item id
+@item keepauth
+@end table
+
 @end deffn
 
 @deffn {Radtest statement} expect @var{code} [@var{expr-or-pair-list}]

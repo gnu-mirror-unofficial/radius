@@ -58,7 +58,7 @@ set_nonblocking(int fd)
                 return -1;
         }
         if (fcntl(fd, F_SETFL, flags | FCNTL_NONBLOCK) < 0) {
-                radlog(L_ERR|L_PERROR, "F_GETFL");
+                radlog(L_ERR|L_PERROR, "F_SETFL");
                 return -1;
         }
         return 0;

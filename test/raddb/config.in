@@ -1,3 +1,4 @@
+# -*- radconf -*-
 # This file is part of GNU RADIUS test suite.
 # Copyright (C) 2000,2001 Sergey Poznyakoff
 #
@@ -22,21 +23,25 @@ option {
 };
 
 logging {
+	channel default {
+		file "radius.log";
+		print-level yes;
+		print-category yes;
+	};
 	channel debug {
 		file "radius.debug";
 	};
-	channel auth {
-		file "radius.log";
-		print-cons yes;
-	};
 	category auth {
-		channel "auth";
+		channel default;
 		print-auth yes;
 		print-failed-pass yes;
 	};
 	category debug {
 		channel debug;
 		level acct=1,"radius.c";
+	};
+	category !debug {
+		channel default;
 	};
 };
 
@@ -64,4 +69,5 @@ proxy {
 @GUILE@        debug yes;
 @GUILE@        load-path "@BUILDDIR@/test/raddb";
 @GUILE@        load "auth.scm";
+@GUILE@        load "acct.scm";
 @GUILE@};

@@ -25,10 +25,14 @@ option {
 	master-read-timeout 0;
 	master-write-timeout 0;
 
+	# Run with this user privileges.
+	radiusd-user "radius";
+
 	# The following specifies the uid under which external processes
 	# (those triggered by Exec-Program and Exec-Program-Wait 
 	# attributes) should be run. The corresponding gid is determined
 	# from the user's passwd entry. Default is daemon.
+	# NOTE: ignored if radiusd-user is set.
 	exec-program-user "daemon";
 
 	# Specify the logging directory (-l command line option)
@@ -56,8 +60,8 @@ logging {
 		print-severity yes;     # Synonim for the above
 		print-milliseconds yes; # Print timestamp with milliseconds
 		print-category yes;     # Print category description
-		prefix-hook "log-prefix"  
-                suffix-hook "log-suffix"
+		prefix-hook "log-prefix"  # Overrides global prefix-hook
+                suffix-hook "log-suffix"  # Overrides global suffix-hook
 	};
 
 	# This defines output channel that sends it info to syslog whith

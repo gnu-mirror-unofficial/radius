@@ -1,407 +1,403 @@
-# -*- mode: po; buffer-file-coding-system: iso-8859-1; default-input-method: latin-1-prefix -*-
-#     
-# Norwegian messages for GNU Radius (bokmЕl dialect)
+# -*- mode: po; buffer-file-coding-system: koi8-r; default-input-method: cyrillic-yawerty -*-
+#
+# Russian messages for GNU Radius
 # Copyright (C) 2002 Free Software Foundation, Inc.
 # This file is distributed under the same license as the GNU Radius package.
-# Sergey Poznyakoff <gray@gnu.org>, 2002.
 #
-# Local Variables:
-# Local IspellDict: norsk
-# End:
+# Sergey Poznyakoff       <gray@gnu.org>, 2002.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-07-25 14:52+0300\n"
-"PO-Revision-Date: 2002-07-25 16:17+0300\n"
+"POT-Creation-Date: 2002-07-25 19:41+0300\n"
+"PO-Revision-Date: 2002-07-26 11:34+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
-"Language-Team: Norwegian-bokmЕl <no@li.org>\n"
+"Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ISO-8859-1\n"
+"Content-Type: text/plain; charset=KOI8-R\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
 
 #: lib/avl.c:94
 #, c-format
 msgid "make_pair(): dictionary attr %d not found"
-msgstr "make_pair(): attributt %d ikke funnet"
+msgstr "make_pair(): атрибут %d не найден"
 
 #: lib/client.c:77
 #, c-format
 msgid "Actual request length does not match reported length (%d, %d)"
-msgstr "Aktuell og meddelt forespЬrsellengde stemmer ikke (%d, %d)"
+msgstr "Действительная длина запроса не совпадает с сообщенной (%d, %d)"
 
 #: lib/client.c:91
 msgid "Received invalid reply digest from server"
-msgstr ""
+msgstr "Подпись ответа от сервера недействительна"
 
 #: lib/client.c:136
 msgid "invalid port type"
-msgstr "ugyldig port type"
+msgstr "неверный тип порта"
 
 #: lib/client.c:228
 msgid "select() interrupted"
-msgstr "select() ble avbryttet"
+msgstr "select() прерван"
 
 #: lib/client.c:248
 #, c-format
 msgid "error receiving data from %s:%d"
-msgstr "feilet Е ta imot svar fra %s:%d"
+msgstr "ошибка при получении данных от %s:%d"
 
 #: lib/debug.c:167 lib/debug.c:175
 msgid "compiled without debugging support"
-msgstr "programmet ble kompilert uten feilsЬking stЬtte"
+msgstr "поддержка отладки не включена при компиляции"
 
 #: lib/dict.c:97 lib/nas.c:64 radiusd/files.c:1062
 msgid "too few fields"
-msgstr "for fЕ felter"
+msgstr "недостаточно полей"
 
 #: lib/dict.c:103
 msgid "too many fields"
-msgstr "for mange felter"
+msgstr "слишком много полей"
 
 #: lib/dict.c:227
 #, c-format
 msgid "%s:%d: missing ]"
-msgstr "%s:%d: mangler ]"
+msgstr "%s:%d: отсутсвует ]"
 
 #: lib/dict.c:244 lib/dict.c:257
 #, c-format
 msgid "%s:%d: invalid syntax flag %c"
-msgstr "%s:%d: ugyldig syntaksflagg %c"
+msgstr "%s:%d: недействительный флаг синтаксиса: %c"
 
 #: lib/dict.c:295 lib/dict.c:416 lib/dict.c:455
 #, c-format
 msgid "%s:%d: value not a number (near %s)"
-msgstr "%s:%d: ikke en tallverdi (nФr %s)"
+msgstr "%s:%d: не число (возле %s)"
 
 #: lib/dict.c:306
 #, c-format
 msgid "%s:%d: no parser registered for this attribute"
-msgstr ""
+msgstr "%s:%d: парсер для этого атрибута не зарегистрирован"
 
 #: lib/dict.c:317
 msgid "invalid type"
-msgstr "ugyldig type"
+msgstr "недействительный тип"
 
 #: lib/dict.c:325
 #, c-format
 msgid "%s:%d: unknown vendor"
-msgstr ""
+msgstr "%s:%d: поставщик неизвестен"
 
 #: lib/dict.c:375
 #, c-format
 msgid "%s:%d: invalid flag %c"
-msgstr "%s:%d: ugyldig flagg %c"
+msgstr "%s:%s: недействительный флаг %c"
 
 #: lib/dict.c:509 radiusd/config.y:216
 msgid "unknown keyword"
-msgstr "ukjent nЬkkelord"
+msgstr "неизвестное ключевое слово"
 
 #: lib/dict.c:527
 #, c-format
 msgid "%s: %d error"
 msgid_plural "%s: %d errors"
-msgstr[0] "%s: %d feil"
-msgstr[1] "%s: %d feil"
+msgstr[0] "%s:%d ошибка"
+msgstr[1] "%s:%d: %d ошибок"
 
 #: lib/getopt.c:686
 #, c-format
 msgid "%s: option `%s' is ambiguous\n"
-msgstr "%s: flagget ╚%s╩ er flertydig\n"
+msgstr "%s: опция `%s' неоднозначна\n"
 
 #: lib/getopt.c:711
 #, c-format
 msgid "%s: option `--%s' doesn't allow an argument\n"
-msgstr "%s: flagget ╚--%s╩ tar ikke argumenter\n"
+msgstr "%s: опция `--%s' не принимает аргументов\n"
 
 #: lib/getopt.c:716
 #, c-format
 msgid "%s: option `%c%s' doesn't allow an argument\n"
-msgstr "%s: flagget ╚%c%s╩ tar ikke argumenter\n"
+msgstr "%s: опция `%c%s' не принимает аргументов\n"
 
 #: lib/getopt.c:734 lib/getopt.c:907
 #, c-format
 msgid "%s: option `%s' requires an argument\n"
-msgstr "%s: flagget mЕ ha et argument -- %s\n"
+msgstr "%s: опция `%s' требует аргумента\n"
 
 #: lib/getopt.c:763
 #, c-format
 msgid "%s: unrecognized option `--%s'\n"
-msgstr "%s: ukjent flagg ╚--%s╩\n"
+msgstr "%s: неопознанная опция `--%s'\n"
 
 #: lib/getopt.c:767
 #, c-format
 msgid "%s: unrecognized option `%c%s'\n"
-msgstr "%s: ukjent flagg ╚%c%s╩\n"
+msgstr "%s: неопознанная опция `%c%s'\n"
 
 #: lib/getopt.c:793
 #, c-format
 msgid "%s: illegal option -- %c\n"
-msgstr "%s: ulovlig flagg -- %c\n"
+msgstr "%s: недействительная опция -- %c\n"
 
 #: lib/getopt.c:796
 #, c-format
 msgid "%s: invalid option -- %c\n"
-msgstr "%s: ugyldig flagg -- %c\n"
+msgstr "%s: неправильная опция -- %c\n"
 
 #: lib/getopt.c:826 lib/getopt.c:956
 #, c-format
 msgid "%s: option requires an argument -- %c\n"
-msgstr "%s: flagget mЕ ha et argument -- %c\n"
+msgstr "%s: опция требует аргумента -- %c\n"
 
 #: lib/getopt.c:873
 #, c-format
 msgid "%s: option `-W %s' is ambiguous\n"
-msgstr "%s: flagget ╚-W %s╩ er flertydig\n"
+msgstr "%s: опция `-W %s' неоднозначна\n"
 
 #: lib/getopt.c:891
 #, c-format
 msgid "%s: option `-W %s' doesn't allow an argument\n"
-msgstr "%s: flagget ╚-W %s╩ tar ikke argumenter\n"
+msgstr "%s: опция `-W %s' не берет аргументов\n"
 
 #: lib/leakdetect.c:104 lib/leakdetect.c:117 lib/mem.c:216 lib/mem.c:223
 #: lib/mem.c:317 lib/mem.c:376
 msgid "low core: aborting"
-msgstr "minnet oppbrukt: programmet avsluttes!"
+msgstr "недостаточно памяти: завершение работы"
 
 #: lib/mem.c:126
 #, c-format
 msgid "Page too small to alloc %d-byte objects"
-msgstr "Siden for lite for Е tildele %d-byter objekter"
+msgstr "Страница слишком мала для размещения объектов размерон %d байт"
 
 #: lib/mem.c:131
 msgid "can't allocate bucket class"
-msgstr "kan ikke tildele minneklasse"
+msgstr "невозможно разместить класс контейнера"
 
 #: lib/mem.c:163
 msgid "can't allocate bucket page"
-msgstr "kan ikke tildele siden"
+msgstr "невозможно разместить страницу контейнера"
 
 #: lib/mem.c:328
 #, c-format
 msgid "calloc_entry(): too many contiguous objects requested (%d/%d)"
-msgstr "calloc_entry(): for mange sammenhengende objekter kreves (%d/%d)"
+msgstr "calloc_entry(): затребовано слишком много непрерывно расположенных объектов (%d/%d)"
 
 #: lib/mem.c:372
 msgid "calloc_entry(): infinite loop detected"
-msgstr ""
+msgstr "calloc_entry(): обнаружено зацикливание"
 
 #: lib/mem.c:493
 msgid "alloc_string(): string too long"
-msgstr "alloc_string(): strengen er for lang"
+msgstr "alloc_string(): слишком длинная строка"
 
 #: lib/raddb.c:56 lib/raddb.c:60 radiusd/rewrite.y:1230 radiusd/rewrite.y:2645
 #, c-format
 msgid "can't open file `%s'"
-msgstr "kan ikke Еpne filen ╚%s╩"
+msgstr "невозможно открыть файл `%s'"
 
 #: lib/radutmp.c:51
 #, c-format
 msgid "rut_setent(): cannot open `%s'"
-msgstr "rut_setent(): kan ikke Еpne ╚%s╩"
+msgstr "rut_setent(): невозможно открыть файл `%s'"
 
 #: lib/radutmp.c:169
 #, c-format
 msgid "login: entry for NAS %s port %d duplicate"
-msgstr "innlogging: duplisert post for NAS %s port %d"
+msgstr "логин: запись для NAS %s, порт %d уже есть"
 
 #: lib/radutmp.c:174
 #, c-format
 msgid "login: entry for NAS %s port %d wrong order"
-msgstr "innlogging: postet for NAS %s port %d ugyldig rekkefЬlge"
+msgstr "логин: записи для NAS %s, порт %d в неправильном порядке"
 
 #: lib/radutmp.c:185
 #, c-format
 msgid "logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"
-msgstr ""
-"utlogging: postet for NAS %s port %d har ugyldig ID (%s forventet, funnet %s)"
+msgstr "логаут: неверный ID у записи для NAS %s, порт %d (ожидался %s, обнаружен %s)"
 
 #: lib/radutmp.c:208
 #, c-format
 msgid "logout: login entry for NAS %s port %d not found"
-msgstr "utlogging: innlogging post for NAS %s port %d ikke funnet"
+msgstr "логаут: не найдена запись login для NAS %s, порт %d"
 
 #: lib/radutmp.c:228 radiusd/acct.c:506
 #, c-format
 msgid "can't open %s"
-msgstr "kan ikke Еpne ╚%s╩"
+msgstr "невозможно открыть %s"
 
 #: lib/users.l:137
 msgid "not enough memory"
-msgstr "minnet oppbrukt"
+msgstr "недостаточно памяти\n"
 
 #: lib/users.l:239 radiusd/config.y:889
 #, c-format
 msgid "can't stat `%s'"
-msgstr "╚stat╩ feilet for ╚%s╩"
+msgstr "stat(%s) не сработал"
 
 #: lib/users.l:251
 #, c-format
 msgid "%s:%d: `%s' already included here"
-msgstr "%s:%d: ╚%s╩ ble allerede inkludert her"
+msgstr "%s:%d: `%s' уже включен здесь"
 
 #: lib/users.l:254
 #, c-format
 msgid "`%s' already included at top level"
-msgstr "╚%s╩ ble inkludert pЕ Ьverste nivЕ"
+msgstr "`%s' уже включен на верхнем уровне"
 
 #: lib/users.l:261 radiusd/builddbm.c:152
 #, c-format
 msgid "can't open `%s'"
-msgstr "kan ikke Еpne ╚%s╩"
+msgstr "невозможно открыть `%s'"
 
 #: lib/users.y:103
 #, c-format
 msgid "discarding user `%s'"
-msgstr "brukeren ╚%s╩ ble slettet"
+msgstr "пользователь `%s' исключен"
 
 #: lib/users.y:216
 #, c-format
 msgid "%s:%d: unknown attribute `%s'"
-msgstr "%s:%d: ukjent attributt ╚%s╩"
+msgstr "%s:%d: неизвестный атрибут `%s'"
 
+# Логин неудачен
 #: lib/users.y:245
 #, c-format
 msgid "%s:%d: %s: not an absolute pathname"
-msgstr "%s:%d: %s: ikke et absolutt filnavn"
+msgstr "%s:%d: %s: имя файла должно быть абсолютным"
 
 #: lib/users.y:258
 msgid "attribute"
-msgstr "attributt"
+msgstr "атрибут"
 
 #: lib/users.y:288
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d: value %s is not declared for attribute %s"
-msgstr "%s:%d: tallverdien %s er ikke definert for attributtet %s"
+msgstr "%s:%d: значение %s не объявлено для атрибута %s"
 
 #: lib/users.y:335
 #, c-format
 msgid "%s:%d: %s: can't parse date"
-msgstr "%s:%d: %s: kan ikke tolke dato"
+msgstr "%s:%d: %s: не могу расшифровать дату"
 
 #: lib/users.y:348
 #, c-format
 msgid "%s:%d: %s: unknown attribute type %d"
-msgstr "%s:%d: %s: ukjent attributtype %d"
+msgstr "%s:%d: %s: неизвестный тип атрибута %d"
 
 #: lib/users.y:384
 #, c-format
 msgid "%s:%d: enabled userfile parser debugging"
-msgstr ""
+msgstr "%s:%d: отладка парсера файла `users' включена"
 
 #: lib/users.y:387
 #, c-format
 msgid "%s:%d: disabled userfile parser debugging"
-msgstr ""
+msgstr "%s:%d: отладка парсера файла `users' выключена"
 
-# FIXME: should disappear
 #: lib/util.c:220
 #, c-format
 msgid "string too long: %s"
-msgstr "strengen for lang: %s"
+msgstr "слишком длинная строка: %s"
 
+# FUZZY
 #: lib/argp-help.c:213
 #, c-format
 msgid "%.*s: ARGP_HELP_FMT parameter requires a value"
-msgstr "  %.*s: ARGP_HELP_FMT-parameteren krever en verdi"
+msgstr "%.*s: параметр ARGP_HELP_FMT требует значения"
 
 #: lib/argp-help.c:222
 #, c-format
 msgid "%.*s: Unknown ARGP_HELP_FMT parameter"
-msgstr "  %.*s: Ukjent ARGP_HELP_FMT-parameter"
+msgstr "%.*s: Неизвестный параметр ARGP_HELP_FMT"
 
 #: lib/argp-help.c:234
 #, c-format
 msgid "Garbage in ARGP_HELP_FMT: %s"
-msgstr "  SЬppel i ARGP_HELP_FMT: %s"
+msgstr "Мусор в ARGP_HELP_FMT: %s"
 
 #: lib/argp-help.c:1196
 msgid ""
 "Mandatory or optional arguments to long options are also mandatory or "
 "optional for any corresponding short options."
-msgstr ""
-"  Obligatoriske eller frivillige argumenter til lange flagg er ogsЕ "
-"obligatoriske eller frivillige for tilsvarende korte flagg."
+msgstr "Обязательные или необязательные аргументы к длинным опциям остаются таковыми и к соответсвующим коротким опциям."
 
 #: lib/argp-help.c:1576
 msgid "Usage:"
-msgstr "  Bruk:"
+msgstr "Использование:"
 
 #: lib/argp-help.c:1580
 msgid "  or: "
-msgstr "    eller: "
+msgstr "  или: "
 
 #: lib/argp-help.c:1592
 msgid " [OPTION...]"
-msgstr "   [FLAGG...]"
+msgstr " [ОПЦИЯ...]"
 
 #: lib/argp-help.c:1619
 #, c-format
 msgid "Try `%s --help' or `%s --usage' for more information.\n"
-msgstr "  PrЬv ╚%s --help╩ eller ╚%s --usage╩ for mer informasjon.\n"
+msgstr "Попробуй `%s --help' или `%s --usage' для получения подробной информации.\n"
 
 #: lib/argp-help.c:1647
 #, c-format
 msgid "Report bugs to %s.\n"
-msgstr "  Rapporter bugs til %s.\n"
+msgstr "Об ошибках сообщай по адресу %s.\n"
 
 #: lib/printutmp.c:585
 #, c-format
 msgid "missing closing quote in string started near `%s'"
-msgstr ""
+msgstr "строка, начатая возле `%s', не закрыта кавычкой"
 
 #: lib/printutmp.c:668
 #, c-format
 msgid "error in format spec: unknown format %s"
-msgstr "feil i formatspesifikasjonen: ukjent format %s"
+msgstr "ошибка в спецификации формата: неизвестный формат %s"
 
 #: lib/printutmp.c:690
 #, c-format
 msgid "wrong number of arguments to form %s"
-msgstr "feil antall argumenter til %s"
+msgstr "ошибочное число аргументов к форме %s"
 
 #: lib/printutmp.c:718
 #, c-format
 msgid "form `%s' not closed"
-msgstr ""
+msgstr "форма `%s' не закрыта"
 
 #: radiusd/acct.c:216
 msgid "no Acct-Status-Type attribute"
-msgstr "intet Acct-Status-Type attributt"
+msgstr "отсутствует атрибут Acct-Status-Type"
 
 #: radiusd/acct.c:245
 msgid "converting reboot records"
-msgstr "konverterer forespЬrsel om Е starte pЕ nytt"
+msgstr "преобразование пакетов reboot"
 
 #: radiusd/acct.c:351
 #, c-format
 msgid "NAS %s started (Accounting-On packet seen)"
-msgstr "NAS %s ble startet (fЕtt forespЬrsel om Accounting-ON)"
+msgstr "NAS %s запущен (получен пакет Accounting-On)"
 
 #: radiusd/acct.c:359
 #, c-format
 msgid "NAS %s shut down (Accounting-Off packet seen)"
-msgstr "NAS %s ble avsluttet (fЕtt Accounting-Off forespЬrsel)"
+msgstr "NAS %s остановлен (получен пакет Accounting-Off)"
 
 #: radiusd/acct.c:371
 #, c-format
 msgid "unknown packet type (%d)"
-msgstr "ukjent forespЬrsel type (%d)"
+msgstr "неизвестный тип пакета (%d)"
 
 #: radiusd/acct.c:426
 msgid "NOT writing wtmp record"
-msgstr "wtmp post IKKE lagret"
+msgstr "запись wtmp НЕ сохранена"
 
 #: radiusd/acct.c:441
 #, c-format
 msgid "%s: not a directory"
-msgstr "%s: ikke en katalog"
+msgstr "%s: не директория"
 
+# FUZZY: what's accounting in Russian?
 #: radiusd/acct.c:448
 #, c-format
 msgid "can't create accounting directory `%s'"
-msgstr "kan ikke opprette katalogen ╚%s╩"
+msgstr "невозможно создать директорию `%s'"
 
 #: radiusd/acct.c:675
 #, c-format
@@ -413,84 +409,82 @@ msgstr ""
 msgid "assuming `%s' is NOT logged in"
 msgstr ""
 
-# FIXME: message too hazy
 #: radiusd/acct.c:695
 msgid "check_ts(): unknown NAS"
-msgstr "check_ts(): ukjent NAS"
+msgstr "check_ts(): неизвестный NAS"
 
 #: radiusd/auth.c:176
 msgid "password has expired"
-msgstr "passordet er ikke lenger gyldig"
+msgstr "срок действия пароля истек"
 
 #: radiusd/auth.c:186
 msgid "account locked"
-msgstr "konto er stengt"
+msgstr "счет заблокирован"
 
 #: radiusd/auth.c:304
 msgid "SQL authentication not available"
-msgstr "SQL godkjenning er ikke tilgjengelig"
+msgstr "авторизация через SQL недоступна"
 
 #: radiusd/auth.c:311
 #, c-format
 msgid "unknown Password-Location value: %ld"
-msgstr "ulovlig verdi for Password-Location attributt: %ld"
+msgstr "неизвестное значение для Password-Location: %ld"
 
 #: radiusd/auth.c:345
 msgid "PAM authentication not available"
-msgstr "PAM godkjenning er ikke tilgjengelig"
+msgstr "авторизация через PAM недоступна"
 
 #: radiusd/auth.c:459
 msgid "No username"
-msgstr "intet brukernavn i forespЬrselen"
+msgstr "Отсутствует имя пользователя"
 
 #: radiusd/auth.c:465
 msgid "Malformed username"
-msgstr "Feilaktig brukernavn"
+msgstr "Недействительное имя пользователя"
 
 #: radiusd/auth.c:482
 msgid "No huntgroup access"
-msgstr "Tilgang nektet av ╚huntgroup╩"
+msgstr "Отказано в доступе от huntgroup"
 
 #: radiusd/auth.c:854 radiusd/sql.c:739 radiusd/sql.c:741
 msgid "unknown"
-msgstr "ukjent"
+msgstr "неизвестный"
 
 #: radiusd/auth.c:864 radiusd/auth.c:974
 msgid "Invalid user"
-msgstr "Ugyldig bruker"
+msgstr "Несуществующий пользователь"
 
 #: radiusd/auth.c:918
 msgid "Guile authentication disabled in config"
-msgstr "Guile autentisering slЕtt av i konfigurasjonsfilen"
+msgstr "Авторизация через Guile отключена в конфигурации"
 
 #: radiusd/auth.c:937
 msgid "Guile authentication not available"
-msgstr "Guile godkjenning ikke tilgjengelig"
+msgstr "вторизация через Guile недоступна"
 
 #: radiusd/auth.c:963
 msgid "Rejected"
-msgstr "Forkastet"
+msgstr "Отвергнут"
 
 #: radiusd/auth.c:968
 msgid "Ignored"
-msgstr "Ignorert"
+msgstr "Игнрируется"
 
-# FIXME: translation coincides with `Login failed'
 #: radiusd/auth.c:980 radiusd/auth.c:1000 radiusd/auth.c:1205
 msgid "Login incorrect"
-msgstr "Innlogging feil"
+msgstr "Логин неверен"
 
 #: radiusd/auth.c:1003
 msgid "Password expired"
-msgstr "Passordet er ikke lenger gyldig"
+msgstr "Срок действия пароля истек"
 
 #: radiusd/auth.c:1026
 msgid "Account disabled"
-msgstr "Konto er stengt"
+msgstr "Счет заблокирован"
 
 #: radiusd/auth.c:1036
 msgid "Login rejected"
-msgstr "Innlogging forkastet"
+msgstr "Логин отвергнут"
 
 #: radiusd/auth.c:1037
 msgid "Authenticate only user"
@@ -498,387 +492,374 @@ msgstr ""
 
 #: radiusd/auth.c:1053
 msgid "Login failed"
-msgstr "Innlogging feilet"
+msgstr "Логин не удался"
 
 #: radiusd/auth.c:1054
 msgid "realm quota exceeded for "
-msgstr "╚realm╩ kvoten er overskredet for "
+msgstr "превышена квота для зоны "
 
 #: radiusd/auth.c:1080
 #, c-format
 msgid "Multiple logins: [%s] max. %ld%s, CLID %s"
-msgstr "Flere innlogginger: [%s] max. %ld%s, CLID %s"
+msgstr "Многократные попытки доступа: [%s] предел %ld%s, CLID %s"
 
 #: radiusd/auth.c:1083
 msgid " [MPP attempt]"
-msgstr " [MPP forsЬk]"
+msgstr " [попытка MPP]"
 
 #: radiusd/auth.c:1118
-#, fuzzy, c-format
+#, c-format
 msgid "Outside allowed timespan (%s)"
-msgstr "Utenfor gyldig tidsintervall (%s)"
+msgstr "Вне дозволенного интервала (%s)"
 
 #: radiusd/auth.c:1207
 msgid "external check failed"
-msgstr ""
+msgstr "внешняя проверка не удалась"
 
 #: radiusd/auth.c:1279
-#, fuzzy
 msgid "Login OK"
-msgstr "Innlogging tillatet"
+msgstr "Успешный логин"
 
 #: radiusd/builddbm.c:70
 msgid "too many attributes"
-msgstr "for mange attributter"
+msgstr "слишком много атрибутов"
 
 #: radiusd/builddbm.c:110
 #, c-format
 msgid "can't store datum for %s"
-msgstr "kan ikke lage datum for %s"
+msgstr "невозможно сохранить datum для %s"
 
 #: radiusd/builddbm.c:389
 #, c-format
 msgid "cannot open dbm file %s"
-msgstr "feil under Еpning av dbm fila ╚%s╩"
+msgstr "невозможно открыть файл dbm %s"
 
 #: radiusd/checkrad.c:85
 #, c-format
 msgid "unknown NAS type: %s (nas %s)"
-msgstr "ukjent NAS type: %s (nas %s)"
+msgstr "неизвестный тип NAS-а: %s (NAS %s)"
 
 #: radiusd/checkrad.c:225
 #, c-format
 msgid "timed out in waiting SNMP response from NAS %s"
-msgstr "overskred tidsgrensen mens forventning til SNMP svaret fra NAS %s"
+msgstr "время ожидания ответа SNMP от NAS %s истекло"
 
 #: radiusd/checkrad.c:277
 msgid "no snmp_oid"
-msgstr "intet snmp_oid"
+msgstr "отсутствует snmp_oid"
 
 #: radiusd/checkrad.c:284
 #, c-format
 msgid "invalid OID: %s"
-msgstr "ugyldig OID: %s"
+msgstr "недействительный OID: %s"
 
 #: radiusd/checkrad.c:302
 #, c-format
 msgid "can't create snmp session: %s"
-msgstr "kan ikke opprette snmp sesjon: %s"
+msgstr "невозможно создать сессию SNMP: %s"
 
 #: radiusd/checkrad.c:311
 #, c-format
 msgid "can't open snmp session: %s"
-msgstr "kan ikke Еpne snmp sesjon: %s"
+msgstr "невозможно открыть сессию SNMP: %s"
 
 #: radiusd/checkrad.c:320 radiusd/checkrad.c:330 radiusd/snmpserv.c:817
 #, c-format
 msgid "can't create SNMP PDU: %s"
-msgstr "kan ikke opprette SNMP PDU: %s"
+msgstr "невозможно создать PDU SNMP: %s"
 
 #: radiusd/checkrad.c:409
 #, c-format
 msgid "unknown host: %s"
-msgstr "ukjent vert: %s"
+msgstr "неизвестная машина: %s"
 
 #: radiusd/checkrad.c:475
 #, c-format
 msgid "timed out in waiting for finger response from NAS %s"
-msgstr "overskred tidsgrensen mens forventning til ╚finger╩ svaret fra NAS %s"
+msgstr "время ожидания ответа finger от NAS %s истекло"
 
 #: radiusd/config.y:176
 msgid "unknown block statement"
-msgstr ""
+msgstr "неизвестное составное утверждение"
 
 #: radiusd/config.y:302
 #, c-format
 msgid "invalid netmask length: %d"
-msgstr "ugyldig nettmask lengde: %d"
+msgstr "недействительная длина маски подсети: %d"
 
 #: radiusd/config.y:342 radiusd/rewrite.y:1485
 #, c-format
 msgid "%s:%d: unexpected EOF in comment started at line %d"
-msgstr "%s:%d: uventet slutt-pЕ-fil i kommentar begynt pЕ linje %d"
+msgstr "%s:%d: неожиданный конец файла в комментарии открытом в строке %d"
 
 #: radiusd/config.y:396
 #, c-format
 msgid "INTERNAL ERROR parsing %s near %d: out of putback space"
-msgstr "INTERN FEIL ved kjЬring av %s nФr linje %d: Ikke ledig plass"
+msgstr "ВНУТРЕННЯЯ ОШИБКА при обработке %s возле %d: недостаточно места дла отката"
 
 #: radiusd/config.y:690
 #, c-format
 msgid "%s:%d: no such service: %s"
-msgstr "%s:%d: ingen slik tjeneste: %s"
+msgstr "%s:%d: нет такого сервиса: %s"
 
 #: radiusd/config.y:716 radiusd/sql.c:355
 #, c-format
 msgid "%s:%d: unknown host: %s"
-msgstr "%s:%d: ukjent vert: %s"
+msgstr "%s:%d: неизвестная машина: %s"
 
 #: radiusd/config.y:759
 #, c-format
 msgid "INTERNAL ERROR at %s:%d: unknown datatype %d"
-msgstr "INTERN FEIL (%s:%d): ukjent datatype %d"
+msgstr "ВНУТРЕННЯЯ ОШИБКА в %s:%d: неизвестный тип данных %d"
 
 #: radiusd/config.y:787
 #, c-format
 msgid "%s:%d: wrong datatype (should be %s)"
-msgstr "%s:%d: feil datatype (forventet %s)"
+msgstr "%s:%d: неизвестный тип данных (должен быть %s)"
 
 #: radiusd/config.y:798
 msgid "too few arguments"
-msgstr "for fЕ argumenter"
+msgstr "недостаточно аргументов"
 
 #: radiusd/config.y:798 radiusd/config.y:803
-#, fuzzy
 msgid "too many arguments"
-msgstr "for mange argumenter"
+msgstr "слишком много аргументов"
 
 #: radiusd/config.y:896
 #, c-format
 msgid "can't open config file `%s'"
-msgstr "kan ikke Еpne konfigurasjonsfil ╚%s╩"
+msgstr "невозможно открыть файл конфигурации `%s'"
 
 #: radiusd/config.y:906
 #, c-format
 msgid "reading %s"
-msgstr "lese %s"
+msgstr "чтение %s"
 
 #: radiusd/config.y:933
 msgid "ready"
-msgstr "klar"
+msgstr "готов"
 
 #: radiusd/exec.c:75
 #, c-format
 msgid "setgid(%d) failed"
-msgstr "setgid(%d) feil"
+msgstr "setgid(%d) не сработал"
 
 #: radiusd/exec.c:81
 #, c-format
 msgid "seteuid(%d) failed (ruid=%d, euid=%d)"
-msgstr "seteuid(%d) feilet (ruid=%d, euid=%d)"
+msgstr "seteuid(%d) не сработал (ruid=%d, euid=%d)"
 
 #: radiusd/exec.c:86
 #, c-format
 msgid "setreuid(0,%d) failed (ruid=%d, euid=%d)"
-msgstr "setreuid(0,%d) feilet (ruid=%d, euid=%d)"
+msgstr "setreuid(%d) не сработал (ruid=%d, euid=%d)"
 
 #: radiusd/exec.c:142
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
-msgstr ""
-"radius_exec_program(): ville ikke kjЬre kommando: ikke et absolutt filnavn: %"
-"s"
+msgstr "radius_exec_program(): невозможно выполнить, имя программы не начинается абсолютным путем: %s"
 
 #: radiusd/exec.c:153
 #, c-format
 msgid "radius_exec_program(): won't execute, no such user: %s"
-msgstr ""
-"radius_exec_program(): ville ikke kjЬre kommando: ingen slik bruker: %s"
+msgstr "radius_exec_program(): невозможно выполнить, неизвестный пользователь %s"
 
 #: radiusd/exec.c:160
 msgid "couldn't open pipe"
-msgstr "kan ikke Еpne rЬret"
+msgstr "невозможно отрыть канал"
 
 #: radiusd/exec.c:185 radiusd/exec.c:217
 msgid "can't close pipe"
-msgstr "kan ikke stenge rЬret"
+msgstr "невозможно закрыть канал"
 
 #: radiusd/exec.c:187
 msgid "can't dup stdout"
-msgstr "kan ikke duplisere standard utgang"
+msgstr ""
 
 #: radiusd/exec.c:234 radiusd/exec.c:823
 #, c-format
 msgid "<stdout of %s>:%d: %s"
-msgstr "<standard ut av %s>:%d: %s"
+msgstr ""
 
 #: radiusd/exec.c:258
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "can't run external program `%s' (reason reported via syslog channel user.err)"
-msgstr ""
-"kan ikke kjЬre subprocess ╚%s╩ (Еrsaken rapportert gjennom syslogkanalen "
-"╚user.err╩)"
+msgstr "невозможно выполнить програму `%s' (причина сообщается через syslog, канал user.err)"
 
 #: radiusd/exec.c:267
 #, c-format
 msgid "external program `%s' %s"
-msgstr ""
+msgstr "внешняя программа `%s' %s"
 
 #: radiusd/exec.c:288
-#, fuzzy, c-format
+#, c-format
 msgid "won't execute, no such user: %s"
-msgstr ""
-"radius_exec_program(): ville ikke kjЬre kommando: ingen slik bruker: %s"
+msgstr "невозможно выполнить; нет такого пользователя: %s"
 
 #: radiusd/exec.c:517
-#, fuzzy, c-format
+#, c-format
 msgid "filter %s (pid %d) %s (in: %u, out: %u)"
-msgstr "filter %s (pid %d) %s (inn: %u, ut: %u)"
+msgstr "фильтр %s (pid %d) %s (считано: %u, записано: %u)"
 
-# FUZZY
 #: radiusd/exec.c:552
 #, c-format
 msgid "Too many (%d) threads waiting for filter %s."
-msgstr ""
+msgstr "Слишком много (%d) потоков ожидает освобождения фильтра %s."
 
-# FIXME
 #: radiusd/exec.c:630
 #, c-format
 msgid "filter %s is not declared"
-msgstr "filter %s er ikke definert"
+msgstr "фильтр %s не объявлен"
 
-# FUZZY
 #: radiusd/exec.c:665
-#, fuzzy, c-format
+#, c-format
 msgid "cannot run filter %s"
-msgstr "kan ikke eksekvere filter ╚%s╩"
+msgstr "невозможно выполнить фильтр %s"
 
 #: radiusd/exec.c:682
 #, c-format
 msgid "filter %s"
-msgstr "filter %s"
+msgstr "фильтр %s"
 
 #: radiusd/exec.c:714
 msgid "wrong return type"
-msgstr ""
+msgstr "неправильный тип возврата"
 
-# FUZZY
 #: radiusd/exec.c:809 radiusd/exec.c:876
 #, c-format
 msgid "reading from filter %s"
-msgstr "lese fra filter ╚%s╩"
+msgstr "чтение из фильтра %s"
 
 #: radiusd/exec.c:832
 #, c-format
 msgid "filter %s (auth): bad output: %s"
-msgstr "filter %s (auth): ugyldig utdata: %s"
+msgstr "фильтр %s (auth): плохой выход"
 
 #: radiusd/exec.c:889
 #, c-format
 msgid "filter %s (acct): bad output: %s"
-msgstr "filter %s (acct): ugyldig utdata: %s"
+msgstr "фильтр %s (auth): плохой выход"
 
 #: radiusd/exec.c:974
 #, c-format
 msgid "%s:%d: filter already declared at %s:%d"
-msgstr "%s:%d: filter allerede deklarert i %s:%d"
+msgstr "%s:%d: фильтр уже объявлен в %s:%d"
 
 #: radiusd/files.c:170
 #, c-format
 msgid "%s:%d: discarding user `%s'"
-msgstr "%s:%d: brukeren ╚%s╩ ble slettet"
+msgstr "%s:%d: исключение пользователя `%s'"
 
 #: radiusd/files.c:215
 #, c-format
 msgid "%s:%d: discarding entry `%s'"
-msgstr "%s:%d: posten ╚%s╩ ble slettet"
+msgstr "%s:%d: исключение профиля `%s'"
 
 #: radiusd/files.c:432
 msgid "zero length username not permitted"
-msgstr "et brukernavn mЕ ha minst Иn bokstav"
+msgstr "пустое имя пользователя не разрешено"
 
 #: radiusd/files.c:572
 #, c-format
 msgid "unknown attribute `%s/%s'"
-msgstr "ukjent attributt ╚%s/%s╩"
+msgstr "неизвестный атрибут `%s/%s'"
 
 #: radiusd/files.c:584
 #, c-format
 msgid "expected opcode but found %s"
-msgstr "operasjonskode forventet men funnet %s"
+msgstr "ожидается код операции, однако обнаружен %s"
 
 #: radiusd/files.c:627
 #, c-format
 msgid "unknown value %s"
-msgstr "ukjent verdi %s"
+msgstr "неизвестное значение %s"
 
 #: radiusd/files.c:675
 #, c-format
 msgid "%s: error parsing date %s"
-msgstr "%s: feil under tolkning av dato %s"
+msgstr "%s: невозможно расшифровать дату"
 
 #: radiusd/files.c:688
 #, c-format
 msgid "unknown attribute type %d"
-msgstr "ukjent attributtype %d"
+msgstr "неизвестный тип атрибута %d"
 
 #: radiusd/files.c:702
 #, c-format
 msgid "expected , but found %s"
-msgstr "forventet , men funnet %s"
+msgstr "ожидается , однако обнаружен %s"
 
+# Function is feminine
 #: radiusd/files.c:812 radiusd/files.c:910
-#, fuzzy
 msgid "not defined"
-msgstr "Ikke definert"
+msgstr "не определена"
 
 #: radiusd/files.c:960 radiusd/files.c:1145
 msgid "wrong number of fields"
-msgstr "feil antall felter"
+msgstr "неверное количество полей"
 
 #: radiusd/files.c:1073
-#, fuzzy
 msgid "unknown method"
-msgstr "ukjent metode"
+msgstr "неизвестный метод"
 
 #: radiusd/files.c:1150
 #, c-format
 msgid "user `%s' already found in %s"
-msgstr "brukeren ╚%s╩ allerede funnet i %s"
+msgstr "имя пользователя `%s' уже встречалось в %s"
 
 #: radiusd/files.c:1176
 #, c-format
 msgid "%d user disabled"
 msgid_plural "%d users disabled"
-msgstr[0] "%d bruker lukket"
-msgstr[1] "%d brukere lukket"
+msgstr[0] "%d пользователь отключен"
+msgstr[1] "%d пользователя отключены"
+msgstr[2] "%d пользователей отключено"
 
 #: radiusd/files.c:1782
 msgid "using only dbm: USERS NOT LOADED"
-msgstr "bruker bare dbm: USERS IKKE LEST"
+msgstr "используется только DBM: БАЗА ПОЛЬЗОВАТЕЛЕЙ НЕ ЗАГРУЖЕНА"
 
 #: radiusd/files.c:1790
 msgid "DBM files found but no -b flag given - NOT using DBM"
-msgstr "DBM filene funnet men -b flagg ikke spesifisert - DBM BRUKES IKKE"
+msgstr "обнаружены файлы DBM, однако флаг -b не был задан - DBM не используется"
 
 #: radiusd/files.c:1794
 #, c-format
 msgid "can't load %s: exited"
-msgstr "kan ikke laste %s: Avslutter!"
+msgstr "невозможно загрузить %s: завершение работы"
 
 #: radiusd/files.c:1797
 #, c-format
 msgid "%s reloaded."
-msgstr "%s omlastet."
+msgstr "%s загружен"
 
 #: radiusd/files.c:1873
 msgid "SQL Error: SQL client could not be initialized"
-msgstr "SQL Feil: kunne ikke starte SQL klient"
+msgstr "Ошибка SQL: невозможно инициализировать клиентскую часть"
 
 #: radiusd/files.c:1886
 #, c-format
 msgid "INTERNAL ERROR: unknown reload code: %d"
-msgstr "INTERN FEIL: ukjent omlastkode: %d"
+msgstr "ВНУТРЕННЯЯ ОШИБКА: неизвестный код загрузки: %d"
 
 #: radiusd/files.c:2017
 #, c-format
 msgid "can't create parser output file `%s'"
-msgstr "kan ikke opprette utskrift fil ╚%s╩"
+msgstr "невозможно создать выходной файл отладки парсера `%s'"
 
 #: radiusd/files.c:2031
 #, c-format
 msgid "dumped users database to %s"
-msgstr "lagret bruker database i %s"
+msgstr "база пользователей скопирована в %s"
 
 #: radiusd/log.c:124
 msgid "none"
-msgstr "intet"
+msgstr ""
 
 #: radiusd/log.c:125
-#, fuzzy
 msgid "Main"
-msgstr "Hoved"
+msgstr ""
 
 #: radiusd/log.c:126
 msgid "Auth"
@@ -900,270 +881,257 @@ msgstr ""
 msgid "emerg"
 msgstr ""
 
-# ЕrvЕken?vaktsom?
 #: radiusd/log.c:134
 msgid "alert"
-msgstr "alarm"
+msgstr ""
 
 #: radiusd/log.c:135
 msgid "crit"
-msgstr "kritisk"
+msgstr ""
 
 #: radiusd/log.c:136
 msgid "error"
-msgstr "feil"
+msgstr ""
 
 #: radiusd/log.c:137
 msgid "warning"
-msgstr "advarsel"
+msgstr ""
 
 #: radiusd/log.c:138
 msgid "notice"
-msgstr "merknad"
+msgstr ""
 
 #: radiusd/log.c:139
 msgid "info"
-msgstr "info"
+msgstr ""
 
 #: radiusd/log.c:140
 msgid "debug"
-msgstr "feilsЬk"
+msgstr ""
 
 #: radiusd/log.c:277
 #, c-format
 msgid "could not append to file %s"
-msgstr "kan ikke tilfЬye til filen %s"
+msgstr "добавление к файлу %s невозможно"
 
 #: radiusd/log.c:402
 #, c-format
 msgid "can't access `%s'"
-msgstr "kan ikke aksessere ╚%s╩"
+msgstr "нет доступа к `%s'"
 
 #: radiusd/log.c:515
 #, c-format
 msgid "exited with status %d"
-msgstr "avsluttet med status %d"
+msgstr "вышел со статусом %d"
 
 #: radiusd/log.c:519
-#, fuzzy, c-format
+#, c-format
 msgid "terminated on signal %d"
-msgstr "avsluttet under signal %d"
+msgstr "завершился по сигналу %d"
 
 #: radiusd/log.c:522
-#, fuzzy
 msgid "terminated"
-msgstr "radiusd avsluttet"
+msgstr "завершился"
 
 #: radiusd/log.c:645
 #, c-format
 msgid "%s:%d: no channel mode for `%s'"
-msgstr "%s:%d: intet modus for kanal ╚%s╩"
+msgstr "%s:%d: не указан режим для канала `%s'"
 
 #: radiusd/log.c:814
 msgid "no levels applicable for this category"
-msgstr ""
+msgstr "нет уровней, применимых к этой категории"
 
 #: radiusd/log.c:843
 #, c-format
 msgid "%s:%d: channel `%s' not defined"
-msgstr "%s:%d: kanal ╚%s╩ ikke definert"
+msgstr "%s:%d: канал `%s' не определен"
 
 #: radiusd/log.c:896 radiusd/snmpserv.c:196
 #, c-format
 msgid "%s:%d: list item %d has wrong datatype"
-msgstr ""
+msgstr "%s:%d: неверный тип для элемента списка %d"
 
 #: radiusd/log.c:912
 #, c-format
 msgid "%s:%d: no such module name: %s"
-msgstr "%s:%d: intet slik modul: %s"
+msgstr "%s:%d: нет такого модуля: %s"
 
 #: radiusd/menu.c:126 radiusd/menu.c:180
 #, c-format
 msgid "can't open menu `%s'"
-msgstr "kan ikke Еpne menufil ╚%s╩"
+msgstr "невозможно открыть меню `%s'"
 
 #: radiusd/menu.c:128
 msgid ""
 "\n"
 "*** User Menu is Not Available ***\n"
-msgstr ""
-"\n"
-"*** Brukermeny er ikke tilgjengelig ***\n"
+msgstr "\n*** Меню пользователя недоступно ***\n"
 
 #: radiusd/menu.c:230
 #, c-format
 msgid "menu %s:%d: %s"
-msgstr "meny %s:%d: %s"
+msgstr "меню %s:%d: %s"
 
-# FIXME: revise pam.c
 #: radiusd/pam.c:73
 msgid "rad_pam_conv(): no application-specific data passed"
-msgstr "rad_pam_conv(): OverfЬrt intet data spesifikk for vedlegget"
+msgstr "rad_pam_conv(): данные приложения не переданы"
 
 #: radiusd/proxy.c:163
-#, fuzzy, c-format
+#, c-format
 msgid "couldn't send request to realm %s"
-msgstr "kan ikke sende forespЬrselen over til %s"
+msgstr "невозможно отослать запрос в зону %s"
 
 #: radiusd/proxy.c:339
 msgid "digest mismatch"
-msgstr ""
+msgstr "подписи не совпадают"
 
 #: radiusd/proxy.c:343
 msgid "unknown request code"
-msgstr "ukjent forespЬrselkode"
+msgstr "неизвестный тип запроса"
 
 #: radiusd/proxy.c:349
 #, c-format
 msgid "Possible Security Breach: %s"
-msgstr ""
+msgstr "Возможное нарушение безопасности: %s"
 
 #: radiusd/proxy.c:550
-#, fuzzy, c-format
+#, c-format
 msgid "Unrecognized proxy reply from server %s, proxy ID %d"
-msgstr "Ulovlig proxy svar fra tjenester %s, ID %d"
+msgstr "Нераспознанный ответ от сервера %s, proxy ID %d"
 
 #: radiusd/radck.c:88
-#, fuzzy, c-format
+#, c-format
 msgid "users:%d: Match-Profile refers to non-existing profile (%s)"
-msgstr "users:%d: Match-Profile referanser ikke eksisterende profildata (%s)"
+msgstr "users:%d: Match-Profile ссылается на несуществующий профиль (%s)"
 
-# FIXME: circular dependency?
 #: radiusd/radck.c:134
-#, fuzzy, c-format
+#, c-format
 msgid "users:%d: circular dependency for %s"
-msgstr "users:%d: gjensidig avhengighet for %s"
+msgstr "users:%d: циклическая зависимость для %s"
 
 #: radiusd/radck.c:161
 msgid "not enough memory for transitivity check"
-msgstr ""
+msgstr "недостаточно памяти для проверки транзитивности"
 
 #: radiusd/radck.c:186
 msgid "USER LIST IS EMPTY"
-msgstr "BRUKERLISTEN ER TOM"
+msgstr "СПИСОК ПОЛЬЗОВАТЕЛЕЙ ПУСТ"
 
 #: radiusd/radck.c:197
-#, fuzzy, c-format
+#, c-format
 msgid "users:%d: duplicate %s attribute"
-msgstr "users:%d: attributt ╚%s╩ duplisert"
+msgstr "users:%d: атрибут %s встречается дважды"
 
 #: radiusd/radck.c:229
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d: attribute %s not allowed in LHS"
-msgstr "%s:%d: attributt %s er ikke gyldig i LHS"
+msgstr "%s:%d: атрибут %s не разрешен в LHS"
 
 #: radiusd/radck.c:272
-#, fuzzy
 msgid "Match-Profile refers to a DEFAULT entry"
-msgstr "Match-Profile referanser et DEFAULT innslag"
+msgstr "Match-Profile ссылается на профиль DEFAULT"
 
 #: radiusd/radck.c:315 radiusd/radck.c:342
 msgid "No User-Password attribute in LHS"
-msgstr "Intet User-Password attributt i LHS"
+msgstr "Атрибут User-Password отсутствует в LHS"
 
 #: radiusd/radck.c:327 radiusd/radck.c:360
 msgid "User-Password attribute ignored for this Auth-Type"
-msgstr "User-Password attributt ignorert for dette Auth-Type"
+msgstr "Атрибут User-Password не имеет смысла для этого Auth-Type"
 
 #: radiusd/radck.c:333
 msgid "Password-Location attribute ignored for this Auth-Type"
-msgstr "Password-Location attributt ignorert for dette Auth-Type"
+msgstr "Атрибут Password-Location не имеет смысла для этого Auth-Type"
 
 #: radiusd/radck.c:351
 msgid "Authentication type not supported"
-msgstr "Autentiserungtypen er ikke stЬttet"
+msgstr "Тип авторизации не поддерживается"
 
 #: radiusd/radck.c:379
 msgid "Both Auth-Data and PAM-Auth attributes present"
-msgstr "Auth-Data og PAM-Auth mЕ ikke brukes i lag"
+msgstr "Auth-Data и PAM-Auth не могут указываться одновременно"
 
 #: radiusd/radck.c:407
 #, c-format
 msgid "%s:%d: attribute %s not allowed in RHS"
-msgstr "%s:%d: attributt %s er ikke gyldig i RHS"
+msgstr "%s:%d: атрибут %s не разрешен в RHS"
 
 #: radiusd/radck.c:426
 msgid "BEGIN without Fall-Through"
-msgstr "BEGIN ble brukt uten Fall-Through"
+msgstr "BEGIN без Fall-Through"
 
 #: radiusd/radius.c:103
 msgid "request from unknown client"
-msgstr "forespЬrsel fra en ukjent klient"
+msgstr "запрос от неизвестного клиента"
 
 #: radiusd/radiusd.c:219
 msgid "GNU radius daemon"
-msgstr ""
+msgstr "Демон GNU radius"
 
 #: radiusd/radiusd.c:223
 msgid "radiusd specific switches:"
-msgstr "Flagg spesifikk for radiusd:"
+msgstr "опции radiusd:"
 
-# FIXME: very fuzzy
 #: radiusd/radiusd.c:225
-#, fuzzy
 msgid "Do detailed authentication logging"
-msgstr "SlЕ pЕ detaljert autentisering logging"
+msgstr "Вести детальный журнал авторизации"
 
 #: radiusd/radiusd.c:226 radiusd/radiusd.c:234 radiusd/radiusd.c:246
 msgid "DIR"
-msgstr "KATALOG"
+msgstr "ДИРЕКТОРИЯ"
 
 #: radiusd/radiusd.c:227
 msgid "Set accounting directory"
-msgstr ""
+msgstr "Задать директорию для аккаунтинга"
 
 #: radiusd/radiusd.c:230
 msgid "Enable DBM support"
-msgstr "SlЕ pЕ DBM stЬtte"
+msgstr "Включить поддержку DBM"
 
 #: radiusd/radiusd.c:233
 msgid "Stay in foreground"
-msgstr ""
+msgstr "Остаться на переднем плане"
 
 #: radiusd/radiusd.c:235
-#, fuzzy
 msgid "Set logging directory name"
-msgstr "Sette navnet til loggkatalog"
+msgstr "Задать директорию для журналов"
 
 #: radiusd/radiusd.c:237
-#, fuzzy
 msgid "Select operation mode: test, checkconf, builddbm."
-msgstr "Velge operasjonmodus: test, checkconf, builddbm."
+msgstr "Выбрать режим работы: test, checkconf, builddbm."
 
 #: radiusd/radiusd.c:239
 msgid "Do only authentication"
-msgstr ""
+msgstr "Вести только авторизацию"
 
 #: radiusd/radiusd.c:241
 msgid "Do not resolve IP addresses"
-msgstr ""
+msgstr "Не разворачивать IP адреса"
 
 #: radiusd/radiusd.c:242 radlast/radlast.c:129
 msgid "IPADDR"
-msgstr "IPADR"
+msgstr "IPADDR"
 
 #: radiusd/radiusd.c:243
 msgid "Listen on IPADDR"
-msgstr ""
+msgstr "Слушать IPADDR"
 
 #: radiusd/radiusd.c:245
 msgid "Set authentication port number"
-msgstr ""
+msgstr "Задать номер порта для авторизации"
 
 #: radiusd/radiusd.c:247
-#, fuzzy
 msgid "Store pidfile in DIR"
-msgstr "Lage pidfilen i KATALOG"
+msgstr "Сохранить pidfile в ДИРЕКТОРИИ"
 
 #: radiusd/radiusd.c:249
-#, fuzzy
 msgid "Strip prefixes/suffixes off user names before logging"
-msgstr "Logge brukernavn uten prefikser og suffikser"
+msgstr "Удалять префиксы и суффиксы из имени пользователя перед записью в журнал"
 
 #: radiusd/radiusd.c:251
 msgid "Run in single process mode"
-msgstr ""
+msgstr "Работать в режиме одного процесса"
 
 #: radiusd/radiusd.c:252
 msgid "DEBUGSPEC"
@@ -1171,20 +1139,21 @@ msgstr "DEBUGSPEC"
 
 #: radiusd/radiusd.c:253
 msgid "Set debugging level"
-msgstr "Sette modus for feilsЬkning"
+msgstr "Задать уровень отладки"
 
 #: radiusd/radiusd.c:255
+#, fuzzy
 msgid "Log authentications"
-msgstr ""
+msgstr "Вести журнал авторизаций"
 
 #: radiusd/radiusd.c:256 radlast/radlast.c:125 radlast/radlast.c:137
 #: radtest/main.c:82 radtest/main.c:86 radzap/radzap.c:69
 msgid "NUMBER"
-msgstr "TALL"
+msgstr "ЧИСЛО"
 
 #: radiusd/radiusd.c:257
 msgid "Start watcher process"
-msgstr ""
+msgstr "Запустить контрольный процесс"
 
 #: radiusd/radiusd.c:259
 msgid "Log users' passwords"
@@ -1192,148 +1161,136 @@ msgstr ""
 
 #: radiusd/radiusd.c:298
 msgid "radiusd compiled without DBM support"
-msgstr "radiusd ble bygget uten DBM"
+msgstr ""
 
 #: radiusd/radiusd.c:307
 #, c-format
 msgid "unknown mode: %s"
-msgstr "ukjent modus: %s"
+msgstr ""
 
 #: radiusd/radiusd.c:319
 #, c-format
 msgid "invalid IP address: %s"
-msgstr "ulovlig IP adresse: %s"
+msgstr ""
 
-# FUZZY
 #: radiusd/radiusd.c:447
-#, fuzzy
 msgid "can't create watcher: not started as absolute pathname"
-msgstr "programnavnet er ikke et absolutt filnavn"
+msgstr ""
 
 #: radiusd/radiusd.c:476
 msgid "Sorry, your account is currently closed\n"
-msgstr "Beklager, Deres konto er stengt\n"
+msgstr ""
 
 #: radiusd/radiusd.c:478
 msgid "Password has expired\n"
-msgstr "Passordet er ikke lenger gyldig\n"
+msgstr ""
 
 #: radiusd/radiusd.c:480
 msgid "Password will expire in %R{Password-Expire-Days} Days\n"
-msgstr "Passordet mЕ endres innen %R{Password-Expire-Days} dager\n"
+msgstr ""
 
 #: radiusd/radiusd.c:482
 msgid ""
 "\n"
 "Access denied\n"
 msgstr ""
-"\n"
-"Tilgang nektet\n"
 
 #: radiusd/radiusd.c:484
 msgid ""
 "\n"
 "Realm quota exceeded - access denied\n"
 msgstr ""
-"\n"
-"╚realm╩ kvoten er overskredet - tilgang nektet\n"
 
 #: radiusd/radiusd.c:486
 msgid ""
 "\n"
 "You are already logged in %R{Simultaneous-Use} times - access denied\n"
 msgstr ""
-"\n"
-"De er allerede innlogget %R{Simultaneous-Use} ganger - tilgang nektet\n"
 
 #: radiusd/radiusd.c:488
 msgid ""
 "\n"
 "You are already logged in - access denied\n"
 msgstr ""
-"\n"
-"De er allerede innlogget - tilgang nektet\n"
 
 #: radiusd/radiusd.c:490
 msgid "You are calling outside your allowed timespan\n"
-msgstr "ForespЬrsel utenfor gyldig tidsintervall\n"
+msgstr ""
 
 #: radiusd/radiusd.c:644
 msgid "Ready to process requests."
-msgstr "Klar for tilkoblinger."
+msgstr ""
 
 #: radiusd/radiusd.c:819
 msgid "Normal shutdown."
-msgstr "Normal avslutning."
+msgstr ""
 
 #: radiusd/radiusd.c:839
 msgid "flushing request queues"
-msgstr "tЬmmer forespЬrsel-kЬer"
+msgstr ""
 
 #: radiusd/radiusd.c:855
 msgid "restart initiated"
-msgstr "omstart pЕbegynt"
+msgstr ""
 
 #: radiusd/radiusd.c:858
 msgid "can't restart: not started as absolute pathname"
-msgstr "Kan ikke starte om: programnavnet er ikke et absolutt filnavn"
+msgstr ""
 
 #: radiusd/radiusd.c:907
 msgid "restarting radius"
-msgstr "starter tjenesten pЕ nytt"
+msgstr ""
 
 #: radiusd/radiusd.c:909
 msgid "RADIUS NOT RESTARTED: exec failed"
-msgstr "RADIUSD STARTET IKKE: feil under exec"
+msgstr ""
 
 #: radiusd/radiusd.c:1108
 msgid "Starting - reading configuration files ..."
-msgstr "Starter - leser konfigurasjonsfiler"
+msgstr ""
 
 #: radiusd/radiusd.c:1110
 msgid "Reloading configuration files."
-msgstr "Omleser konfiguratjonsfiler"
+msgstr ""
 
 #: radiusd/radiusd.c:1162
 msgid "Errors reading config file - EXITING"
-msgstr "Feil ved lesing av konfigurasjonsfiler - avslutter!"
+msgstr ""
 
 #: radiusd/radiusd.c:1189
 msgid "can't find out my own IP address"
-msgstr "kan ikke finne min egen IP adresse"
+msgstr ""
 
 #: radiusd/radiusd.c:1203
 msgid "Reloading configuration now"
-msgstr "NЕ leser konfigurasjonsfiler pЕ nytt"
+msgstr ""
 
 #: radiusd/radiusd.c:1216
 #, c-format
 msgid "Dumping users db to `%s'"
-msgstr "bruker database lagret til ╚%s╩"
+msgstr ""
 
 #: radiusd/radiusd.c:1240
 msgid "can't restart: radiusd not started as absolute pathname"
-msgstr "Kan ikke starte om: programnavnet er ikke et absolutt filnavn"
+msgstr ""
 
 #: radiusd/radiusd.c:1253
 msgid "RADIUSD RUNNING"
-msgstr "RADIUSD KJьRER"
+msgstr ""
 
-# FIXME: Suspendert?
 #: radiusd/radiusd.c:1260
-#, fuzzy
 msgid "RADIUSD SUSPENDED"
-msgstr "RADIUSD STANSET"
+msgstr ""
 
 #: radiusd/radiusd.c:1297
 #, c-format
 msgid "%u classes, %u buckets are using %u bytes of memory"
-msgstr "%u klasser, %u sider bruker %u byter av minnet"
+msgstr ""
 
 #: radiusd/radiusd.c:1304
 #, c-format
 msgid "memory utilization: %u.%1u%%"
-msgstr "minneutnyttelse: %u.%1u%%"
+msgstr ""
 
 #: radiusd/radiusd.c:1309
 msgid "    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"
@@ -1345,18 +1302,18 @@ msgid "malloc statistics: %d blocks, %d bytes"
 msgstr ""
 
 #: radiusd/radiusd.c:1388
-#, fuzzy, c-format
+#, c-format
 msgid "exit on signal %d"
-msgstr "avslutning under signal %d"
+msgstr ""
 
 #: radiusd/radiusd.c:1496
 msgid "Dropping packet"
-msgstr "Slet forespЬrselen"
+msgstr ""
 
 #: radiusd/radiusd.c:1519
 #, c-format
 msgid "Retransmitting %s reply"
-msgstr "Sender %s svaret pЕ nytt"
+msgstr ""
 
 #: radiusd/radiusd.c:1524
 msgid "request failed"
@@ -1365,22 +1322,21 @@ msgstr ""
 #: radiusd/radiusd.c:1642
 #, c-format
 msgid "unknown request code %d"
-msgstr "ukjent forespЬrselkode %d"
+msgstr ""
 
 #: radiusd/radutil.c:194
 #, c-format
 msgid "INTERNAL ERROR (%s:%d): attribute %d has bad type (%d)"
-msgstr "INTERN FEIL (%s:%d): attributt %d har ulovlig type (%d)"
+msgstr ""
 
 #: radiusd/request.c:61
 #, c-format
 msgid "Can't spawn new thread: %s"
-msgstr "Kan ikke starter ny trЕd: %s"
+msgstr ""
 
 #: radiusd/request.c:264
-#, fuzzy
 msgid "request timed out in queue"
-msgstr "ForespЬrsel overskred tidsgrensen mens i kЬen"
+msgstr ""
 
 #: radiusd/request.c:279 radiusd/request.c:459
 #, c-format
@@ -1394,15 +1350,15 @@ msgstr ""
 
 #: radiusd/request.c:325
 msgid "duplicate request"
-msgstr "duplisert forespЬrsel"
+msgstr ""
 
 #: radiusd/request.c:350
 msgid "too many requests in queue"
-msgstr "for mange forespЬrsler i kЬen"
+msgstr ""
 
 #: radiusd/request.c:360
 msgid "too many requests of this type"
-msgstr "for mange forespЬrsler av denne typen"
+msgstr ""
 
 #: radiusd/rewrite.y:970
 msgid "nothing to break from"
@@ -1415,16 +1371,16 @@ msgstr ""
 #: radiusd/rewrite.y:1054
 #, c-format
 msgid "%s:%d: undefined variable: %s"
-msgstr "%s:%d: variabel ╚%s╩ er ikke definert"
+msgstr ""
 
 #: radiusd/rewrite.y:1566
 msgid "unterminated character constant"
 msgstr ""
 
 #: radiusd/rewrite.y:1610
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d: unknown attribute %s"
-msgstr "%s:%d: ukjent attributt ╚%s╩"
+msgstr ""
 
 #: radiusd/rewrite.y:2330 radiusd/rewrite.y:2985
 #, c-format
@@ -1451,31 +1407,30 @@ msgid "%s:%d: (arg %d) implicit %s to %s coercion"
 msgstr ""
 
 #: radiusd/rewrite.y:2525 radiusd/rewrite.y:2592
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d: too many arguments in call to %s"
-msgstr "%s:%d: for mange attributter til %s"
+msgstr ""
 
 #: radiusd/rewrite.y:2530 radiusd/rewrite.y:2598
-#, fuzzy, c-format
+#, c-format
 msgid "%s:%d: too few arguments in call to %s"
-msgstr "%s:%d: for fЕ argumenter til %s"
+msgstr ""
 
 #: radiusd/rewrite.y:2626
 msgid "Undefined"
-msgstr "Ikke definert"
+msgstr ""
 
 #: radiusd/rewrite.y:2628
 msgid "integer"
 msgstr ""
 
 #: radiusd/rewrite.y:2630
-#, fuzzy
 msgid "string"
-msgstr "streng"
+msgstr ""
 
 #: radiusd/rewrite.y:2632
 msgid "UNKNOWN"
-msgstr "UKJENT"
+msgstr ""
 
 #: radiusd/rewrite.y:2959
 #, c-format
@@ -1509,9 +1464,8 @@ msgid "rewrite runtime error"
 msgstr ""
 
 #: radiusd/rewrite.y:4038
-#, fuzzy
 msgid "code requires that the request be present"
-msgstr "sikkerhet modus: krever at brukernavn vФre spesifisert"
+msgstr ""
 
 #: radiusd/rewrite.y:4078
 msgid "can't create A/V pair"
@@ -1543,25 +1497,25 @@ msgstr ""
 #: radiusd/rewrite.y:4999 radiusd/rewrite.y:5102
 #, c-format
 msgid "function %s not defined"
-msgstr "Funksjonen %s er ikke definert"
+msgstr ""
 
 #: radiusd/rewrite.y:5042
-#, fuzzy, c-format
+#, c-format
 msgid "%s(): wrong number of arguments (should be %d, passed %d)"
-msgstr "%s(): feil antall argumenter (forventet %d, overfЬrt %d)"
+msgstr ""
 
 #: radiusd/rewrite.y:5084
 #, c-format
 msgid "malformed function call: %s"
-msgstr "feilaktig funksjonkall: %s"
+msgstr ""
 
 #: radiusd/rewrite.y:5092
 msgid "missing '(' in function call"
-msgstr "mangler '(' i funksjonkall"
+msgstr ""
 
 #: radiusd/rewrite.y:5096
 msgid "missing ')' in function call"
-msgstr "mangler ')' i funksjonkall"
+msgstr ""
 
 #: radiusd/rewrite.y:5133
 #, c-format
@@ -1571,29 +1525,29 @@ msgstr ""
 #: radiusd/rewrite.y:5143
 #, c-format
 msgid "too many arguments for %s"
-msgstr "for mange argumenter til %s"
+msgstr ""
 
 #: radiusd/rewrite.y:5169
 #, c-format
 msgid "too few arguments for %s"
-msgstr "for fЕ argumenter til %s"
+msgstr ""
 
 #: radiusd/rewrite.y:5219
-#, fuzzy, c-format
+#, c-format
 msgid "function %s() requires %d parameter"
 msgid_plural "function %s() requires %d parameters"
-msgstr[0] "Funksjonen %s() mЕ ha %d argument"
-msgstr[1] "Funksjonen %s() mЕ ha %d argumenter"
+msgstr[0] ""
+msgstr[1] ""
 
 #: radiusd/scheme.c:182
-#, fuzzy, c-format
+#, c-format
 msgid "Can't spawn guile thread: %s"
-msgstr "Kan ikke starte en trЕd til guile: %s"
+msgstr ""
 
 #: radiusd/scheme.c:321 radiusd/scheme.c:365
 #, c-format
 msgid "%s is not a procedure object"
-msgstr "%s er ikke en prosedyre objekt"
+msgstr ""
 
 #: radiusd/scheme.c:500
 msgid "scheme task timed out"
@@ -1602,33 +1556,32 @@ msgstr ""
 #: radiusd/snmpserv.c:151
 #, c-format
 msgid "%s:%d: community %s already declared"
-msgstr "%s:%d: felleskapen ╚%s╩ ble allerede definert"
+msgstr ""
 
-# FIXME: This is not an acl at all. The message is ambiguous
 #: radiusd/snmpserv.c:236 radiusd/snmpserv.c:273
 #, c-format
 msgid "%s:%d: no such acl: %s"
-msgstr "%s:%d: intet slik ACL: %s"
+msgstr ""
 
 #: radiusd/snmpserv.c:244
 #, c-format
 msgid "%s:%d: undefined community %s"
-msgstr "%s:%d: felleskapen ╚%s╩ er ikke definert"
+msgstr ""
 
 #: radiusd/snmpserv.c:824
 #, c-format
 msgid "can't decode SNMP packet from %s: %s"
-msgstr "kan ikke dekode SNMP forespЬrsel fra %s: %s"
+msgstr ""
 
 #: radiusd/snmpserv.c:833
-#, fuzzy, c-format
+#, c-format
 msgid "DENIED attempt to access community %s from %s"
-msgstr "IKKE TILGANG for felleskapen ╚%s╩ fra %s"
+msgstr ""
 
 #: radiusd/snmpserv.c:877
 #, c-format
 msgid "Dropping SNMP request from client %s: %s"
-msgstr "Hopper over forespЬrsel fra klient %s: %s"
+msgstr ""
 
 #: radiusd/snmpserv.c:1493
 msgid "acct server re-initializing on SNMP request"
@@ -1661,79 +1614,71 @@ msgstr ""
 #: radiusd/sql.c:326
 #, c-format
 msgid "could not read sqlserver file %s"
-msgstr "kan ikke leser sqlserver fil ╚%s╩"
+msgstr ""
 
 #: radiusd/sql.c:338
-#, fuzzy
 msgid "unrecognized keyword"
-msgstr "ukjent nЬkkelord"
+msgstr ""
 
 #: radiusd/sql.c:346
-#, fuzzy
 msgid "required argument missing"
-msgstr "mangler nЬdvendig argument"
+msgstr ""
 
 #: radiusd/sql.c:371 radiusd/sql.c:398
-#, fuzzy
 msgid "number parse error"
-msgstr "feil under tolkning av tallet"
+msgstr ""
 
 #: radiusd/sql.c:390 radiusd/sql.c:408 radiusd/sql.c:416
-#, fuzzy
 msgid "expected boolean value"
-msgstr "booleansk verdi forventet"
+msgstr ""
 
 #: radiusd/sql.c:467
-#, fuzzy
 msgid "auth_max_connections is obsolete"
-msgstr "acct_max_connections er foreldet"
+msgstr ""
 
 #: radiusd/sql.c:474
-#, fuzzy
 msgid "acct_max_connections is obsolete"
-msgstr "acct_max_connections er foreldet"
+msgstr ""
 
 #: radiusd/sql.c:481
-#, fuzzy
 msgid "query_buffer_size is obsolete"
-msgstr "query_buffer_size er foreldet"
+msgstr ""
 
 #: radiusd/sql.c:489
 msgid "Unsupported SQL interface"
 msgstr ""
 
 #: radiusd/sql.c:564
-#, fuzzy
 msgid "disabling SQL auth: no auth_query specified"
-msgstr "slЕ av SQL autentisering: intet auth_query"
+msgstr ""
 
 #: radiusd/sql.c:569
 msgid "SQL auth: no group_query specified"
-msgstr "SQL autentisering: intet group_query"
+msgstr ""
 
 #: radiusd/sql.c:579
 msgid "SQL acct: no acct_start_query specified"
-msgstr "SQL autentisering: intet acct_start_query"
+msgstr ""
 
 #: radiusd/sql.c:585
 msgid "disabling SQL acct: no acct_stop_query specified"
-msgstr "slЕ av SQL acct: intet acct_stop_query"
+msgstr ""
 
 #: radiusd/sql.c:592
 msgid "SQL acct: no acct_nasdown_query specified"
-msgstr "SQL acct: intet acct_nasdown_query"
+msgstr ""
 
 #: radiusd/sql.c:598
 msgid "SQL acct: no acct_nasup_query specified"
-msgstr "SQL acct: intet acct_nasup_query"
+msgstr ""
 
 #: radiusd/sql.c:620
 msgid "SQL configuration changed: closing existing connections"
-msgstr "SQL konfigurasjon vekslet: lukke av eksisterende tilkoblinger"
+msgstr ""
 
 #: radiusd/sql.c:706
 msgid "no Acct-Status-Type attribute in rad_sql_acct()"
-msgstr "intet Acct-Status-Type attributt i rad_sql_acct()"
+msgstr ""
 
 #: radiusd/sql.c:743
 #, c-format
@@ -1760,8 +1705,6 @@ msgstr ""
 #: radiusd/sql.c:814
 msgid "SQL Auth specified in users file, but not in sqlserver file"
 msgstr ""
-"SQL autentisering er brukt i ╚users╩-filen men ikke krevet i ╚sqlserver╩-"
-"filen"
 
 #: radiusd/sql.c:941
 #, c-format
@@ -1771,22 +1714,22 @@ msgstr ""
 #: radiusd/stat.c:177
 #, c-format
 msgid "Error writing to statfile %s"
-msgstr "Feil ved skriving til statistikk fil %s"
+msgstr ""
 
 #: radiusd/stat.c:237
 #, c-format
 msgid "Cannot open statfile %s"
-msgstr "Kan ikke Еpne statistikk fil %s"
+msgstr ""
 
 #: radiusd/stat.c:357
 #, c-format
 msgid "stat_update(): portno %d: can't find nas for IP %s"
-msgstr "stat_update(): port %d: kan ikke finne nas med IP %s"
+msgstr ""
 
 #: radiusd/stat.c:368
 #, c-format
 msgid "stat_update(): port %d not found on NAS %s"
-msgstr "stat_update(): port %d ikke funnet for NAS %s"
+msgstr ""
 
 #: radiusd/stat.c:382
 msgid "negative port idle time"
@@ -1798,107 +1741,97 @@ msgstr ""
 
 #: radiusd/version.c:138
 msgid "GNU RADIUS server version "
-msgstr "GNU RADIUS server versjon"
+msgstr ""
 
 #: radiusd/version.c:156
 #, c-format
 msgid "%s: GNU Radius version %s"
-msgstr "%s: GNU Radius versjon %s"
+msgstr ""
 
 #: radiusd/version.c:162
 msgid "Compilation platform: "
-msgstr "Plattform for kompilering:"
+msgstr ""
 
 #: radiusd/version.c:166
 msgid ""
 "\n"
 "Debugging flags: "
 msgstr ""
-"\n"
-"Flagg for feilsЬking:"
 
 #: radiusd/version.c:171
 msgid ""
 "\n"
 "Compilation flags: "
 msgstr ""
-"\n"
-"Flagg for kompilering:"
 
 #: radiusd/version.c:183
 #, c-format
 msgid " configuration directory: %s\n"
-msgstr " konfigurasjon katalog: %s\n"
+msgstr ""
 
 #: radiusd/version.c:184
 #, c-format
 msgid " logging directory:       %s\n"
-msgstr " loggkatalog:           %s\n"
+msgstr ""
 
 #: radiusd/version.c:185
-#, fuzzy, c-format
+#, c-format
 msgid " accounting directory:    %s\n"
-msgstr "acct katalog:           %s\n"
+msgstr ""
 
 #: radiusd/version.c:187
 #, c-format
 msgid " pidfile:                 %s\n"
-msgstr " pidfil:                %s\n"
+msgstr ""
 
 #: radiusd/version.c:189
 msgid " no pidfile\n"
-msgstr " intet pidfil\n"
+msgstr ""
 
 #: radlast/radlast.c:110
-#, fuzzy
 msgid "report last logins from Radius database."
-msgstr "Rapporter siste innlogginger fra Radius database"
+msgstr ""
 
 #: radlast/radlast.c:114
 msgid "radlast specific switches:"
-msgstr "flagg spesifikk for radlast:"
+msgstr ""
 
 #: radlast/radlast.c:126
-#, fuzzy
 msgid "show at most NUMBER records"
-msgstr "vis ikke mer enn TALL poster"
+msgstr ""
 
 #: radlast/radlast.c:127 radtest/main.c:76 radwho/radwho.c:143
 #: radzap/radzap.c:65
 msgid "FILE"
-msgstr "FIL"
+msgstr ""
 
 #: radlast/radlast.c:128
-#, fuzzy
 msgid "use FILE as radwtmp"
-msgstr "les FIL istedenfor forvalgte radwtmp"
+msgstr ""
 
 #: radlast/radlast.c:130
-#, fuzzy
 msgid "show logins with IPADDR"
-msgstr "vis poster med IP adresse IPADR"
+msgstr ""
 
 #: radlast/radlast.c:132
 msgid "mark records with missed stops with bump (!)"
-msgstr "merke poster uten stopper med et utropstegn"
+msgstr ""
 
 #: radlast/radlast.c:133 radzap/radzap.c:67
 msgid "NASNAME"
-msgstr "NASNAVN"
+msgstr ""
 
 #: radlast/radlast.c:134
 msgid "show logins from given NAS"
-msgstr "vis innlogginger fra angitt NAS"
+msgstr ""
 
 #: radlast/radlast.c:136
-#, fuzzy
 msgid "use long output format"
-msgstr "bruk lang ut-format"
+msgstr ""
 
 #: radlast/radlast.c:138
-#, fuzzy
 msgid "show logins from given port"
-msgstr "vis innlogginger fra angitt port"
+msgstr ""
 
 #: radlast/radlast.c:140
 msgid "show the login session duration in seconds"
@@ -1910,48 +1843,42 @@ msgstr ""
 
 #: radlast/radlast.c:209
 msgid "--width is incompatible with --show-seconds"
-msgstr "--width er ikke kompatible med --show-seconds"
+msgstr ""
 
 #: radscm/radscm.c:330 radtest/main.c:165
 msgid "error reading dictionary file"
-msgstr "feil under lesing av ordliste"
+msgstr ""
 
 #: gram.y:461 radtest/gram.y:461
 #, c-format
 msgid "attribute %s has unknown type"
-msgstr "attributt %s har ukjent type"
+msgstr ""
 
 #: radtest/main.c:67
-#, fuzzy
 msgid "send arbitrary radius packets"
-msgstr "sende vilkЕrlige radius forespЬrsler"
+msgstr ""
 
 #: radtest/main.c:71
 msgid "radtest specific switches:"
-msgstr "flagg spesifikk for radtest:"
+msgstr ""
 
 #: radtest/main.c:72
 msgid "VARIABLE=VALUE"
-msgstr "VARIABEL=VERDI"
+msgstr ""
 
 #: radtest/main.c:73
-#, fuzzy
 msgid "assign a VALUE to VARIABLE"
-msgstr "del VERDI til VARIABEL"
+msgstr ""
 
 #: radtest/main.c:75
 msgid "set debugging level"
-msgstr "sette modus for feilsЬkning"
+msgstr ""
 
 #: radtest/main.c:77
-#, fuzzy
 msgid ""
 "Read input from FILE. When this option is used, all unknown options in the "
 "form --VAR=VALUE are treated as variable assignments"
 msgstr ""
-"Les inn fra FIL. Dersom dette flagg brukes alle flagg i formen ╚--"
-"VAR=VERDI╩\n"
-"er behandles som tildelinger av VERDI til variabelen VAR"
 
 #: radtest/main.c:83
 msgid "set number of retries"
@@ -1959,23 +1886,23 @@ msgstr ""
 
 #: radtest/main.c:84
 msgid "SERVER"
-msgstr "TJENESTER"
+msgstr ""
 
 #: radtest/main.c:85
 msgid "set radius server parameters"
-msgstr "sette parameteren til radius tjener"
+msgstr ""
 
 #: radtest/main.c:87
 msgid "set timeout"
-msgstr "sette tidsgrensen"
+msgstr ""
 
 #: radtest/main.c:89
 msgid "verbose mode"
-msgstr "gi mer fyldige meldinger"
+msgstr ""
 
 #: radtest/main.c:300
 msgid "assign: expected `='\n"
-msgstr "assign: forventet ╚=╩\n"
+msgstr ""
 
 #: radtest/main.c:324
 msgid "assign: missing closing quote\n"
@@ -1984,66 +1911,59 @@ msgstr ""
 #: radtest/main.c:343 radtest/main.c:352
 #, c-format
 msgid "assign: invalid IP address: %s\n"
-msgstr "assign: ulovlig IP adresse: %s\n"
+msgstr ""
 
 #: radtest/main.c:482
 msgid "wrong datatype: expected vector"
-msgstr "feil datatype: forventet vektor"
+msgstr ""
 
 #: radwho/radwho.c:130
-#, fuzzy
 msgid "display who is logged on by Radius"
-msgstr "vis brukerer innlogget av Radius"
+msgstr ""
 
 #: radwho/radwho.c:134
 msgid "radwho specific switches:"
-msgstr "flagg spesifikk for radwho:"
+msgstr ""
 
 #: radwho/radwho.c:136
-#, fuzzy
 msgid "print all entries, not only active ones"
-msgstr "vis alle de innslag"
+msgstr ""
 
 #: radwho/radwho.c:138
-#, fuzzy
 msgid "display CLID in second column"
-msgstr "vis CLID i annen kolonne"
+msgstr ""
 
 #: radwho/radwho.c:139
 msgid "DATEFMT"
-msgstr "DATEFMT"
+msgstr ""
 
 #: radwho/radwho.c:140
-#, fuzzy
 msgid "change date representation format"
-msgstr "velg format for representasjon av datoer"
+msgstr ""
 
 #: radwho/radwho.c:141
 msgid "STRING"
-msgstr "STRENG"
+msgstr ""
 
 #: radwho/radwho.c:142
 msgid "print STRING instead of an empty column"
-msgstr "vis STRENG istedenfor tom kolonne"
+msgstr ""
 
 #: radwho/radwho.c:144
-#, fuzzy
 msgid "Use FILE instead of /var/log/radutmp"
-msgstr "les FIL istedenfor /var/log/radutmp"
+msgstr ""
 
 #: radwho/radwho.c:146
 msgid "act as a finger daemon"
 msgstr ""
 
 #: radwho/radwho.c:148
-#, fuzzy
 msgid "do not display header line"
-msgstr "vis ikke hodeslinje"
+msgstr ""
 
 #: radwho/radwho.c:150
-#, fuzzy
 msgid "display session ID in the second column"
-msgstr "vis sesjon ID i annen kolonne"
+msgstr ""
 
 #: radwho/radwho.c:152
 msgid "display hostnames without domain part"
@@ -2066,46 +1986,41 @@ msgid "FORMAT"
 msgstr ""
 
 #: radwho/radwho.c:161
-#, fuzzy
 msgid "change output format"
-msgstr "velg ut-format"
+msgstr ""
 
 #: radwho/radwho.c:163
-#, fuzzy
 msgid "secure mode: requires that the username be specified"
-msgstr "sikkerhet modus: krever at brukernavn vФre spesifisert"
+msgstr ""
 
 #: radwho/radwho.c:298
-#, fuzzy
 msgid "must provide username\n"
-msgstr "brukernavn mЕ spesifiseres\n"
+msgstr ""
 
 #: radwho/radwho.c:336
 #, c-format
 msgid "can't open file: %s"
-msgstr "kan ikke Еpne fil: %s"
+msgstr ""
 
 #: radzap/radzap.c:56
-#, fuzzy
 msgid "delete Radius login records"
-msgstr "ta bort Radius innlogging poster"
+msgstr ""
 
 #: radzap/radzap.c:60
 msgid "radzap specific switches:"
-msgstr "flagg spesifikk for radzap:"
+msgstr ""
 
 #: radzap/radzap.c:62
 msgid "ask for confirmation before zapping"
 msgstr ""
 
 #: radzap/radzap.c:64
-#, fuzzy
 msgid "set logging directory"
-msgstr "sette katalog til loggfila"
+msgstr ""
 
 #: radzap/radzap.c:66
 msgid "operate on FILE instead of /var/log/radutmp"
-msgstr "behandle FIL istedenfor /var/log/radutmp"
+msgstr ""
 
 #: radzap/radzap.c:68
 msgid "zap user from given NAS"
@@ -2130,32 +2045,29 @@ msgstr ""
 
 #: radzap/radzap.c:247
 msgid "Not confirmed\n"
-msgstr "Bekreftet ikke\n"
+msgstr ""
 
 #: sql/disp.c:105
-#, fuzzy
 msgid "Failed query was"
-msgstr "Feilet forespЬrsel var"
+msgstr ""
 
 #: sql/mysql.c:93
-#, fuzzy
 msgid "gave up on connect"
-msgstr "Kan ikke koble. Gitt opp."
+msgstr ""
 
 #: sql/mysql.c:123
-#, fuzzy, c-format
+#, c-format
 msgid "[MYSQL] cannot connect to %s as %s: %s"
-msgstr "[MYSQL] feil under kobling til %s som bruker %s: %s"
+msgstr ""
 
 #: sql/mysql.c:185 sql/mysql.c:224
-#, fuzzy
 msgid "[MYSQL]: can't get result"
-msgstr "[MYSQL]: kan ikke fЕ resultat"
+msgstr ""
 
 #: sql/mysql.c:250 sql/odbc.c:342 sql/postgres.c:373
-#, fuzzy, c-format
+#, c-format
 msgid "too few columns returned (%d req'd)"
-msgstr "for fЕ kolonner fЕtt (%d kreves)"
+msgstr ""
 
 #: sql/odbc.c:257
 #, c-format
@@ -2165,11 +2077,11 @@ msgstr ""
 #: sql/postgres.c:127 sql/postgres.c:156
 #, c-format
 msgid "PQconnectStart failed: %s"
-msgstr "PQconnectStart feilet: %s"
+msgstr ""
 
 #: sql/postgres.c:150
 msgid "PQconnectStart failed"
-msgstr "PQconnectStart feilet"
+msgstr ""
 
 #: sql/postgres.c:292
 #, c-format

@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
 "POT-Creation-Date: 2002-07-25 14:52+0300\n"
-"PO-Revision-Date: 2002-07-25 14:57+0300\n"
+"PO-Revision-Date: 2002-07-25 16:09+0300\n"
 "Last-Translator: Krzysztof Kopera <Krzysztof_Kopera/HeadQ@netia.pl>\n"
 "Language-Team: Polish <pl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -865,7 +865,7 @@ msgid "INTERNAL ERROR: unknown reload code: %d"
 msgstr "B£¡D WEWNÊTRZNY: niewiadomy kod ³adowania: %d"
 
 #: radiusd/files.c:2017
-#, fuzzy, c-format
+#, c-format
 msgid "can't create parser output file `%s'"
 msgstr "nie mogê stworzyæ plika wyj¶ciowego `%s'"
 

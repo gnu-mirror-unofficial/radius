@@ -1,3 +1,13 @@
+2002-07-26  Sergey Poznyakoff
+
+	* po/ru.po: (new) Russian localization
+	* po/pl.po: Updated
+	* po/no.po: Updated
+	* po/LINGUAS: Added ru.po
+	* elisp/radconf-mode.el: added support for recent changes
+	  in config. filter->auth and filter->acct are not handled
+	  yet.
+
 2002-07-25  Sergey Poznyakoff 
 
 	* lib/dict.c: Correctly handle plurals in diagnostics.

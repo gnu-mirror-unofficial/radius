@@ -64,7 +64,10 @@ radius_send_reply(int code, RADIUS_REQ *radreq,
 			/*FALLTHROUGH*/
 			
                 default:
-                        radreq->reply_pairs = reply;
+                        radreq->reply_pairs =
+				rad_clt_encrypt_pairlist(reply,
+							 radreq->vector,
+							 radreq->secret);
                 }
         } 
 
@@ -230,15 +233,14 @@ decrypt_pair(RADIUS_REQ *req, VALUE_PAIR *pair)
 }
 
 VALUE_PAIR *
-radius_decrypt_request_pairs(RADIUS_REQ *req)
+radius_decrypt_request_pairs(RADIUS_REQ *req, VALUE_PAIR *plist)
 {
-	VALUE_PAIR *newlist = avl_dup(req->request);
 	VALUE_PAIR *pair;
 
-	for (pair = newlist; pair; pair = pair->next) 
+	for (pair = plist; pair; pair = pair->next) 
 		decrypt_pair(req, pair);
 	
-	return newlist;
+	return plist;
 }
 
 void

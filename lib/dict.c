@@ -362,7 +362,7 @@ _dict_attribute(int *errcnt, int fc, char **fv, char *file, int lineno)
 	attr->parser = fp;
         if (vendor)
                 attr->value |= (vendor << 16);
-        if (attr->value < DICT_INDEX_SIZE) 
+        if (attr->value >= 0 && attr->value < DICT_INDEX_SIZE) 
                 dict_attr_index[attr->value] = attr;
         
         return 0;
@@ -529,7 +529,7 @@ DICT_ATTR *
 attr_number_to_dict(int attribute)
 {
         struct attr_value av;
-        if (attribute < DICT_INDEX_SIZE)
+        if (attribute >= 0 && attribute < DICT_INDEX_SIZE)
                 return dict_attr_index[attribute];
         av.value = attribute;
         av.da = NULL;

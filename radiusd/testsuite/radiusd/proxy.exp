@@ -27,6 +27,8 @@ radius_test "send auth 1 User-Name = \"local@remote\" User-Password = \"guessme\
 radius_test "send auth 1 User-Name = \"local@remote\" User-Password = \"bad\"" "expect 3" 
 radius_test "send auth 1 User-Name = \"crypt@remote\" User-Password = \"hamlet\"" "expect 2" 
 
+radius_test "send auth 1 User-Name = \"accept@iGnoReCaSE\"" "expect 2"  
+
 #clone_output "Checking Menus"
 
 radius_test -prereq USE_LIVINGSTON_MENUS\

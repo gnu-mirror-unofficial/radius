@@ -123,7 +123,10 @@ rpp_fd_read(int fd, void *data, size_t size, struct timeval *tv)
 {
 	size_t sz, nbytes;
 
-	if (pipe_read(fd, &nbytes, sizeof(nbytes), tv) != sizeof(nbytes)) 
+	sz = pipe_read(fd, &nbytes, sizeof(nbytes), tv);
+	if (sz == 0)
+		return 0; /* eof */
+	if (sz != sizeof(nbytes)) 
 		return -1;
 	sz = nbytes > size ? size : nbytes;
 	if (pipe_read (fd, data, sz, tv) != sz)
@@ -526,7 +529,8 @@ rpp_input_handler(int fd, void *data)
 	struct rpp_reply repl;
 	rpp_proc_t *p = rpp_lookup_fd(fd);
 	struct timeval tv, *tvp;
-
+	int sz;
+	
 	insist(p != NULL);
 	
 	if (radiusd_read_timeout) {
@@ -535,8 +539,9 @@ rpp_input_handler(int fd, void *data)
 		tvp = &tv;
 	} else
 		tvp = NULL;
-	
-	if (rpp_fd_read(fd, &repl, sizeof(repl), tvp) == sizeof(repl)) {
+
+	sz = rpp_fd_read(fd, &repl, sizeof(repl), tvp);
+	if (sz == sizeof(repl)) {
 		void *data = NULL;
 
 		if (repl.size) {
@@ -555,7 +560,7 @@ rpp_input_handler(int fd, void *data)
 			request_update(p->pid, RS_COMPLETED, data);
 		} 
 		efree(data);
-	} else {
+	} else if (sz != 0) {
 		_rpp_slay(p);
 		return 1;
 	}

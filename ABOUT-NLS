@@ -221,6 +221,7 @@ translation percentage of at least 50%.
      parted          |    []    [] []          []       [] |
      ptx             |          [] []          [] []    [] |
      python          |                                     |
+     radius          |                         ()          |
      recode          |          [] [] []    [] []       [] |
      sed             |       [] [] [] []    [] [] []    [] |
      sh-utils        |    [] [] [] [] []       [] []    [] |
@@ -285,6 +286,7 @@ translation percentage of at least 50%.
      parted          | []                []             [] |
      ptx             | []          []             [] []    |
      python          |                                     |
+     radius          |                                     |
      recode          | [] []          []                   |
      sed             | [] []       [] [] [] []       []    |
      sh-utils        | []             [] []       [] []    |
@@ -349,6 +351,7 @@ translation percentage of at least 50%.
      parted          |       []  []            []             | 11
      ptx             | [] [] []       []       [] []          | 15
      python          |                                        |  0
+     radius          | []                                     |  2
      recode          |    []          []    [] []             | 13
      sed             |           []   [] [] [] [] []          | 21
      sh-utils        | [] []     []   [] [] [] [] []     []   | 22

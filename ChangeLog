@@ -1,5 +1,14 @@
 2002-01-08  Sergey Poznyakoff  
 
+	* m4/inaddr.m4: (new) Check whether INADDR_LOOPBACK is defined.
+	* m4/Makefile.am: Added inaddr.m4.
+	* acconfig.h: Prepare for defining INADDR_LOOPBACK.
+	* configure.in: Call rad_CHECK_INADDR_LOOPBACK.
+
+	* radwho/radwho.c: Use INADDR_LOOPBACK instead of hardcoded IP.
+	
+2002-01-08  Sergey Poznyakoff  
+
 	* THANKS: Added Robert Abbate.
 	* TODO: Updated.
 	* configure.in: Replace strtok_r and localtime_r.

@@ -91,6 +91,9 @@
 /* Define this to enable SNMP support */
 #undef USE_SNMP
 
+/* Define this to enable SNMP oids, compatible with versions 0.95 and 0.96 */
+#undef SNMP_COMPAT_0_96
+
 /* Define this to enable SQL support */
 #undef USE_SQL 
 

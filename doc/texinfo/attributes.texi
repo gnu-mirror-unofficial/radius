@@ -5,7 +5,7 @@
 
 @comment **L3***************************************************************
 @node Attribute list, , , Top
-@section Attribute list
+@chapter Attribute list
 
 The following chapters describe the most frequently used RADIUS
 attributes.

@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Logging, Debugging, Accounting, Top
-@section Logging
+@chapter Logging
 @cindex Logging
 
 GNU Radius reports every event worth mentioning. The events are

@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Radgrep, Radping, Radzap, Top
-@section Radgrep
+@chapter Radgrep
 @pindex radgrep
 
 This utility allows to quickly lookup the user in the radius accounting

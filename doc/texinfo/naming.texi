@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Naming conventions, Operation, Glossary, Top
-@section Naming conventions.
+@chapter Naming conventions.
 @cindex naming conventions
 
 This chapter describes file naming conventions used throughout this

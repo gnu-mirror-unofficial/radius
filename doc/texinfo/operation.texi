@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Operation, Invocation, Naming conventions, Top
-@section How Radius operates.
+@chapter How Radius operates.
 @cindex NAS
 @cindex Network Access Server
 
@@ -61,7 +61,7 @@ server}.
 
 @comment *L2****************************************************************
 @node Attributes, User Profile, Operation, Operation
-@subsection Attributes
+@section Attributes
 @cindex Attribute
 @cindex Attribute-Value pair
 @cindex A/V pair
@@ -100,7 +100,7 @@ attributes. @ref{Vendor-Specific,, Vendor-Specific attribute}.
 
 @comment *L2****************************************************************
 @node User Profile, Requests, Attributes, Operation
-@subsection User Profile
+@section User Profile
 
 A record in the radius database containing all the authentication and
 authorization data for a given user is called a @dfn{User Profile}.
@@ -146,13 +146,13 @@ is passed to rule 1 again. Otherwise the authentication stops.
 The authentication is successful if the request satisfied at least one
 of profiles retrieved in step 1.
 
-Radius keeps users' profile database in file @file{raddb/users} (@xref{users}).
+Radius keeps users' profile database in file @file{raddb/users} (@pxref{users}).
 
 [FIXME: Some more explanations needed]
 
 @comment *L2****************************************************************
 @node Requests, Processing requests, User Profile, Operation
-@subsection Radius requests
+@section Radius requests
 @cindex Request
 
 The term @dfn{request} means both the authentication/accounting request
@@ -189,7 +189,7 @@ request.
 
 @comment **L3***************************************************************
 @node Authentication requests, Accounting requests, , Requests
-@subsubsection Authentication requests
+@subsection Authentication requests
 @cindex Authentication requests
 @cindex requests, authentication
 
@@ -258,7 +258,7 @@ Access-Challenge, if any.
 
 @comment **L3***************************************************************
 @node Accounting requests, , Authentication requests, Requests
-@subsubsection Accounting requests
+@subsection Accounting requests
 @cindex Accounting requests
 @cindex requests, accounting
 
@@ -295,7 +295,7 @@ that attribute MUST contain the actual IP address of the user.
 
 @comment *L2****************************************************************
 @node Processing requests, Realms, Requests, Operation
-@subsection Processing requests
+@section Processing requests
 
 @chapter Processing requests
 @cindex Request processing
@@ -326,16 +326,16 @@ the value of the @code{Password} attribute.
 depending on user name and his credentials. These rules allow to divide
 users into distinct groups, each group having its own authentication
 and/or accounting methods. The user-name hints are stored in
-@file{raddb/hints} (@xref{hints}).
+@file{raddb/hints} (@pxref{hints}).
 @item Process huntgroup rules.
 @dfn{Huntgroup rules} allow to segregate incoming requests depending
 on the NAS and/or port number they came from. These rules are stored in
-@file{raddb/huntgroups} (@xref{huntgroups}).
+@file{raddb/huntgroups} (@pxref{huntgroups}).
 @end table
 
 @comment *L2****************************************************************
 @node Realms, , Processing requests, Operation
-@chapter Realms
+@section Realms
 @cindex Realms
 
 We call a @dfn{realm} a community of users served by a single Radius

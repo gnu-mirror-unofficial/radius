@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Radzap, Radgrep, Raduse, Top
-@section Radzap
+@chapter Radzap
 @pindex radzap
 
 @code{radzap} searches the Radius accounting database for matching login

@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Radscm, , Builddbm, Top
-@section Radscm: A guile interface to radius functions.
+@chapter Radscm: A guile interface to radius functions.
 @pindex radscm
 @cindex guile interface
 

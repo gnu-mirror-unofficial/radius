@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Radping, Radauth, Radgrep, Top
-@section Radping
+@chapter Radping
 @pindex radping
 
 This utility is a shell program that determines the user's

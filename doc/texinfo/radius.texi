@@ -607,5 +607,5 @@ Public License instead of this License.
 @bye
 
 Local Variables:
-compile-command: "makeinfo --force radius.texinfo"
+compile-command: "makeinfo --force radius.texi"
 End:

@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Builddbm, Radscm, Radctl, Top
-@section Builddbm
+@chapter Builddbm
 @pindex buildbm
 
 @subheading Usage

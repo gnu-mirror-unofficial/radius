@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Debugging, Radwho, Logging, Top
-@subsection Debugging
+@chapter Debugging
 @cindex Debugging
 
 GNU Radius provides extensive debugging features. These are enabled

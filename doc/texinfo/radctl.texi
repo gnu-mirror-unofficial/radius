@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Radctl, Builddbm, Radauth, Top
-@section Radctl
+@chapter Radctl
 @pindex radctl
 
 @code{radctl} is a control interface to @code{radiusd} daemon. It allows
@@ -20,7 +20,7 @@ UNIX-style signal interface or a special UDP control channel.
 
 @comment *L2****************************************************************
 @node Signal Interface, Control Channel, , Radctl
-@subsection Signal Interface
+@section Signal Interface
 @cindex signaling radius
 @cindex radctl, signal interface
 
@@ -73,7 +73,7 @@ interface.
 
 @comment *L2****************************************************************
 @node Control Channel, , Signal Interface, Radctl
-@subsection Control Channel
+@section Control Channel
 @cindex control channel
 @cindex radctl, control channel
 
@@ -99,7 +99,7 @@ to security issues while configuring the server.
 
 @comment **L3***************************************************************
 @node radctl configuration, radctl invocation, , Control Channel
-@subsubsection Configuring @code{radctl}.
+@subsection Configuring @code{radctl}.
 @cindex configuring radctl
 @cindex radctl, configuring
 @cindex radctl.rc file
@@ -193,7 +193,7 @@ and have permissions of at least 0600.
 
 @comment **L3***************************************************************
 @node radctl invocation, radctl commands, radctl configuration, Control Channel
-@subsubsection How to invoke @code{radctl}.
+@subsection How to invoke @code{radctl}.
 @cindex radctl, invocation
 
 When started in control channel mode, @code{radctl} understands the
@@ -237,7 +237,7 @@ Display short usage help and exit.
 
 @comment **L3***************************************************************
 @node radctl commands, , radctl invocation, Control Channel
-@subsubsection Radctl commands
+@subsection Radctl commands
 @cindex radctl commands
 @cindex commands, radctl
 

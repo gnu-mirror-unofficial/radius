@@ -3,7 +3,7 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Invocation, Configuration files, Operation, Top
-@section How to start the daemon.
+@chapter How to start the daemon.
 @cindex Radius daemon invocation
 @cindex Invoking the radius daemon
 @pindex radiusd
@@ -18,7 +18,7 @@ sources (in order of increasing precedence):
 @end itemize
 
 Whenever a command line options has its equivalent in config file the
-use of this equivalent should be preferred (@xref{config}).
+use of this equivalent should be preferred (@pxref{config}).
 
 The following command line options are accepted:
 

@@ -33,12 +33,12 @@ A new attribute Log-Mode-Mask has been added. The attribute modifies
 logging	mode for a given username/hint-group. Works like UNIX umask,
 i.e. effective-log-mode = log_mode & ~Log-Mode-Mask.
 
-III. Elisp radius mode
------------------------
+III. Emacs modes for editing configuration files
+-------------------------------------------------
 
-This is a major mode for editing configuration files `users', `hints' and
-`huntgroups'. The installation instructions are in file elisp/README.
-
+The major modes for editing configuration files users, hints,
+huntgroups and config are provided. The installation instructions
+are in file elisp/README.
 
 
 =============================================================================

@@ -57,6 +57,8 @@
 #undef u_long
 /* ************************************************************************** */
 
+#undef HAVE_GETOPT_LONG
+
 #undef HAVE_SYS_ERRLIST
 
 #undef HAVE_LIBDBM

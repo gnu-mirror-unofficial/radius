@@ -68,10 +68,10 @@ static int check_expiration(VALUE_PAIR *check_item, char **user_msg);
 static int unix_pass(char *name, char *passwd);
 
 /*
- *	Tests to see if the users password has expired.
+ * Tests to see if the users password has expired.
  *
- *	Return: Number of days before expiration if a warning is required
- *		otherwise 0 for success and -1 for failure.
+ * Return: Number of days before expiration if a warning is required
+ *         otherwise 0 for success and -1 for failure.
  */
 static int
 pw_expired(exptime)
@@ -126,7 +126,7 @@ check_disable(username, user_msg)
 }
 
 /*
- *	Check if account has expired, and if user may login now.
+ * Check if account has expired, and if user may login now.
  */
 int
 check_expiration(check_item, user_msg)
@@ -154,8 +154,7 @@ check_expiration(check_item, user_msg)
 	return result;
 }
 /*
- *	Check the users password against the standard UNIX
- *	password table.
+ * Check the users password against UNIX password database.
  */
 int
 unix_pass(name, passwd)
@@ -212,7 +211,7 @@ unix_pass(name, passwd)
 
 #if defined(PWD_SHADOW) && !defined(M_UNIX)
 	/*
-	 *      Check if password has expired.
+	 * Check if password has expired.
 	 */
 	if (spwd && spwd->sp_expire > 0 &&
 	    (time(NULL) / 86400) > spwd->sp_expire) {
@@ -223,7 +222,7 @@ unix_pass(name, passwd)
 
 #ifdef OSFC2
 	/*
-	 *	Check if account is locked.
+	 * Check if the account is locked.
 	 */
 	if (pr_pw->uflg.fg_lock != 1) {
 		radlog(L_AUTH, _("unix_pass: [%s]: account locked"), name);
@@ -287,9 +286,9 @@ rad_check_password(authreq, activefd, check_item, namepair,
 	string[0] = 0;
 
 	/*
-	 *	Look for matching check items. We skip the whole lot
-	 *	if the authentication type is DV_AUTH_TYPE_ACCEPT or
-	 *	DV_AUTH_TYPE_REJECT.
+	 * Look for matching check items. We skip the whole lot
+	 * if the authentication type is DV_AUTH_TYPE_ACCEPT or
+	 * DV_AUTH_TYPE_REJECT.
 	 */
 	if ((auth_type_pair = pairfind(check_item, DA_AUTH_TYPE)) != NULL)
 		auth_type = auth_type_pair->lvalue;
@@ -307,10 +306,8 @@ rad_check_password(authreq, activefd, check_item, namepair,
         }
 	
 	/*
-	 *	Find the password sent by the user. It SHOULD be there,
-	 *	if it's not authentication fails.
-	 *
-	 *	FIXME: add MS-CHAP support ?
+	 * Find the password sent by the user. It SHOULD be there,
+	 * if it's not authentication fails.
 	 */
 	if ((auth_item = pairfind(authreq->request, DA_CHAP_PASSWORD)) == NULL)
 		auth_item = pairfind(authreq->request, DA_PASSWORD);
@@ -318,7 +315,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 		return AUTH_FAIL;
 
 	/*
-	 *	Find the password from the users file.
+	 * Find the password from the users file.
 	 */
 	if ((password_pair = pairfind(check_item, DA_CRYPT_PASSWORD)) != NULL)
 		auth_type = DV_AUTH_TYPE_CRYPT_LOCAL;
@@ -326,12 +323,12 @@ rad_check_password(authreq, activefd, check_item, namepair,
 		password_pair = pairfind(check_item, DA_PASSWORD);
 
 	/*
-	 *	See if there was a Prefix or Suffix included.
+	 * See if there was a Prefix or Suffix included.
 	 */
 	strip_username(1, namepair->strvalue, check_item, name);
 
 	/*
-	 *	Decrypt the password.
+	 * Decrypt the password.
 	 */
 	if (auth_item != NULL && auth_item->attribute == DA_PASSWORD) {
 		if (auth_item->strlength == 0)
@@ -358,7 +355,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 		case DV_AUTH_TYPE_SYSTEM:
 			debug(1, ("  auth: System"));
 			/*
-			 *	Check the password against /etc/passwd.
+			 * Check the password against /etc/passwd.
 			 */
 			if (unix_pass(name, string) != 0)
 				result = AUTH_FAIL;
@@ -406,7 +403,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 		case DV_AUTH_TYPE_LOCAL:
 			debug(1, ("  auth: Local"));
 			/*
-			 *	Local password is just plain text.
+			 * Local password is just plain text.
 	 		 */
 			if (auth_item->attribute != DA_CHAP_PASSWORD) {
 				/*
@@ -419,13 +416,13 @@ rad_check_password(authreq, activefd, check_item, namepair,
 			}
 
 			/*
-			 *	CHAP - calculate MD5 sum over CHAP-ID,
-			 *	plain-text password and the Chap-Challenge.
-			 *	Compare to Chap-Response (strvalue + 1).
+			 * CHAP - calculate MD5 sum over CHAP-ID,
+			 * plain-text password and the Chap-Challenge.
+			 * Compare to Chap-Response (strvalue + 1).
 			 *
-			 *	FIXME: might not work with Ascend because
-			 *	we use vp->strlength, and Ascend gear likes
-			 *	to send an extra '\0' in the string!
+			 * FIXME: might not work with Ascend because
+			 * we use vp->strlength, and Ascend gear likes
+			 * to send an extra '\0' in the string!
 			 */
 			strcpy(string, "{chap-password}");
 			if (password_pair == NULL) {
@@ -441,8 +438,8 @@ rad_check_password(authreq, activefd, check_item, namepair,
 			ptr += password_pair->strlength;
 			i += password_pair->strlength;
 			/*
-			 *	Use Chap-Challenge pair if present,
-			 *	Request-Authenticator otherwise.
+			 * Use Chap-Challenge pair if present,
+			 * Request-Authenticator otherwise.
 			 */
 			if ((tmp = pairfind(authreq->request,
 					    DA_CHAP_CHALLENGE)) != NULL) {
@@ -455,7 +452,7 @@ rad_check_password(authreq, activefd, check_item, namepair,
 			md5_calc(pw_digest, (u_char*) string, i);
 
 			/*
-			 *	Compare them
+			 * Compare them
 			 */
 			if (memcmp(pw_digest, auth_item->strvalue + 1,
 					CHAP_VALUE_LENGTH) != 0)
@@ -468,10 +465,6 @@ rad_check_password(authreq, activefd, check_item, namepair,
 			break;
 	}
 
-	/*??
-	if (result < 0)
-		*user_msg = NULL;
-	*/
 	return result;
 }
 
@@ -491,7 +484,7 @@ rad_auth_init(authreq, activefd)
 #endif
 
 	/*
-	 *	Get the username from the request
+	 * Get the username from the request
 	 */
 	namepair = pairfind(authreq->request, DA_USER_NAME);
 
@@ -514,11 +507,11 @@ rad_auth_init(authreq, activefd)
 	}
 		
 	/*
-	 *	Verify the client and Calculate the MD5 Password Digest
+	 * Verify the client and Calculate the MD5 Password Digest
 	 */
 	if (calc_digest(authreq->digest, authreq) != 0) {
 		/*
-		 *	We don't respond when this fails
+		 * We don't respond when this fails
 		 */
 		radlog(L_NOTICE,
 		       _("from client %s - Security Breach: %s"),
@@ -533,7 +526,7 @@ rad_auth_init(authreq, activefd)
 		pairadd(&authreq->request, p);
 #endif
 	/*
-	 *	Add any specific attributes for this username.
+	 * Add any specific attributes for this username.
 	 */
 	hints_setup(authreq->request);
 
@@ -541,7 +534,7 @@ rad_auth_init(authreq, activefd)
 		write_detail(authreq, -1, "detail.auth");
 
 	/*
-	 *	See if the user has access to this huntgroup.
+	 * See if the user has access to this huntgroup.
 	 */
 	if (!huntgroup_access(authreq)) {
 		radlog(L_AUTH, _("No huntgroup access: [%s] (from nas %s)"),
@@ -840,10 +833,10 @@ sfn_init(m)
 	pairmove2(&m->proxy_pairs, &authreq->request, DA_PROXY_STATE);
 
 	/*
-	 *	If this request got proxied to another server, we need
-	 *	to add an initial Auth-Type: Auth-Accept for success,
-	 *	Auth-Reject for fail. We also need to add the reply
-	 *	pairs from the server to the initial reply.
+	 * If this request got proxied to another server, we need
+	 * to add an initial Auth-Type: Auth-Accept for success,
+	 * Auth-Reject for fail. We also need to add the reply
+	 * pairs from the server to the initial reply.
 	 */
 	if (authreq->server_code == PW_AUTHENTICATION_REJECT ||
 	    authreq->server_code == PW_AUTHENTICATION_ACK) {
@@ -866,7 +859,7 @@ sfn_init(m)
 		m->clid = _("unknown");
 
 	/*
-	 *	Get the user from the database
+	 * Get the user from the database
 	 */
 	if (!proxied &&
 	    user_find(m->namepair->strvalue, authreq->request,
@@ -891,7 +884,7 @@ sfn_validate(m)
 	int rc;
 	
 	/*
-	 *	Validate the user
+	 * Validate the user
 	 */
 	if ((rc = check_expiration(m->user_check, &m->user_msg)) >= 0) {
 		rc = rad_check_password(authreq, m->activefd,
@@ -925,7 +918,7 @@ sfn_validate(m)
 
 	if (rc != AUTH_OK) {
 		/*
-		 *	Failed to validate the user.
+		 * Failed to validate the user.
 		 */
 		newstate(as_reject);
 		if (is_log_mode(m, RLOG_AUTH)) {
@@ -943,7 +936,7 @@ sfn_service(m)
 	MACH *m;
 {
 	/* FIXME: Other service types should also be handled,
-	 *        I suppose       -- Gray
+	 *        I suppose     
 	 */
 	if (m->check_pair->lvalue != DV_SERVICE_TYPE_AUTHENTICATE_ONLY)
 		return;
@@ -1051,7 +1044,7 @@ sfn_time(m)
 	rc = ts_check(m->check_pair->strvalue, &t, &rest, NULL);
 	if (rc == 1) {
 		/*
-		 *	User called outside allowed time interval.
+		 * User called outside allowed time interval.
 		 */
 		m->user_msg = make_string(
 		      _("You are calling outside your allowed timespan\r\n"));
@@ -1063,7 +1056,7 @@ sfn_time(m)
 		newstate(as_reject);
 	} else if (rc == 0) {
 		/*
-		 *	User is allowed, but set Session-Timeout.
+		 * User is allowed, but set Session-Timeout.
 		 */
 		timeout_pair(m)->lvalue = rest;
 		debug(2, ("user %s, span %s, timeout %d",
@@ -1143,9 +1136,9 @@ sfn_exec_wait(m)
 				1,
 				&m->user_msg) != 0) {
 		/*
-		 *	Error. radius_exec_program() returns -1 on
-		 *	fork/exec errors, or >0 if the exec'ed program
-		 *	had a non-zero exit status.
+		 * Error. radius_exec_program() returns -1 on
+		 * fork/exec errors, or >0 if the exec'ed program
+		 * had a non-zero exit status.
 		 */
 
 		newstate(as_reject);

@@ -67,10 +67,6 @@
 #define LO_CAT   0x0004
 #define LO_PRI   0x0008
 
-int radvsprintf(/*char *string, size_t size, char *fmt, va_list ap*/);
-int radsprintf(/*char *string, size_t size, char *fmt, va_alist*/);
-int radfprintf(/*FILE *file, char *fmt, va_alist*/);
-
 #define MKSTRING(x) #x 
 #define insist(cond) \
  ((void) ((cond) || __insist_failure(MKSTRING(cond), __FILE__, __LINE__)))

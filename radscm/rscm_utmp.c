@@ -22,6 +22,7 @@
 #endif
 
 #include <stdlib.h>
+#include <sys/types.h>
 #include <netinet/in.h>
 
 #include <libguile.h>

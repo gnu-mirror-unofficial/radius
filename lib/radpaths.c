@@ -31,6 +31,7 @@ char    *radacct_dir;
 char    *radutmp_path;
 char    *radwtmp_path;
 char    *radstat_path;
+char    *radmsgid_path;
 char    *radpid_dir;
 char    *bug_report_address = "bug-gnu-radius@gnu.org";
 
@@ -45,7 +46,7 @@ radpath_init()
                 radacct_dir = string_create(RADACCT_DIR);
         if (!radpid_dir)
                 radpid_dir = string_create(RADPID_DIR);
-        
+
         efree(radutmp_path);
         radutmp_path = mkfilename(radlog_dir, RADUTMP);
 
@@ -54,4 +55,7 @@ radpath_init()
 
         efree(radstat_path);
         radstat_path = mkfilename(radlog_dir, RADSTAT);
+
+	efree(radmsgid_path);
+	radmsgid_path = mkfilename(radlog_dir, RADMSGID);
 }

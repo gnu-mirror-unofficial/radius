@@ -111,6 +111,14 @@ print-auth, T_LOGLEVEL, _Y(RLOG_AUTH)
 print-pass, T_LOGLEVEL, _Y(RLOG_AUTH_PASS)
 print-failed-pass, T_LOGLEVEL, _Y(RLOG_FAILED_PASS)
 username-chars, T_USERNAME_CHARS
+message, T_MESSAGE
+account-closed, T_MESGDEF, _Y(MSG_ACCOUNT_CLOSED)
+password-expired, T_MESGDEF, _Y(MSG_PASSWORD_EXPIRED)
+access-denied, T_MESGDEF, _Y(MSG_ACCESS_DENIED)
+realm-quota, T_MESGDEF, _Y(MSG_REALM_QUOTA)
+multiple-login, T_MESGDEF, _Y(MSG_MULTIPLE_LOGIN)
+second-login, T_MESGDEF, _Y(MSG_SECOND_LOGIN)
+timespan-violation, T_MESGDEF, _Y(MSG_TIMESPAN_VIOLATION)
 %%
 
 int

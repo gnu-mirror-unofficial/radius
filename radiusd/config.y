@@ -153,7 +153,7 @@ static void asgn(void *base, Value *value, int type, int once);
 %token T_INFO T_IDENT T_LEVEL T_LISTEN T_LOGGING T_NETWORK T_MAIN T_OPTION 
 %token T_USEDBM T_CHECKRAD_ASSUME_LOGGED T_DELAY T_DETAIL T_HOST           
 %token T_EXEC_PROGRAM_GROUP T_EXEC_PROGRAM_USER T_LOAD T_LOAD_PATH T_LOG_DIR
-%token T_MAX_REQUESTS T_PORT T_REQUEST_CLEANUP_DELAY T_RETRY T_SPAWN 
+%token T_MAX_REQUESTS T_MESSAGE T_PORT T_REQUEST_CLEANUP_DELAY T_RETRY T_SPAWN 
 %token T_STRIP_NAMES T_TTL T_USERNAME_CHARS T_USR2DELAY              
 
 %token T_SOURCE_IP T_ACCT_DIR T_ACCT T_CNTL T_PROXY T_CHANNEL
@@ -164,6 +164,7 @@ static void asgn(void *base, Value *value, int type, int once);
 %token <ipaddr> T_IPADDR
 %token <string> T_STRING
 %token <bool> T_BOOL
+%token <number> T_MESGDEF
 
 %type <string> channel_name
 %type <ipaddr> netmask
@@ -205,6 +206,7 @@ stmt            : logging_stmt
                 | cntl_stmt
                 | snmp_stmt
                 | guile_stmt
+                | message_stmt
                 ;
 
 
@@ -1109,6 +1111,30 @@ guile_def       : T_LOAD_PATH value EOL
 				  yyerror("syntax error");
 			  }
 		  }  
+                ;
+
+
+       /* Message definitions */
+
+message_stmt    : T_MESSAGE '{' message_list '}'
+                ;
+
+message_list    : message_line
+                | message_list message_line
+                | message_list error errmark
+                  {
+			  yyclearin; yyerrok;
+                  }
+                ;
+
+message_line    : T_MESGDEF value EOL
+                  {
+			  asgn(&message_text[$1], &$2, AT_STRING, 0);
+		  }
+		| T_EXPWARNING value EOL
+                  {
+			  asgn(&message_text[MSG_PASSWORD_EXPIRE_WARNING], &$2, AT_STRING, 0);
+		  }
                 ;
 
        /* Obsolete syntax: for compatibility with 0.95 and earlier */ 

@@ -370,13 +370,16 @@ stat_count_ports()
 	NAS *nas;
 	struct nas_stat *statp;
 	PORT_STAT *port;
-	
+	ITERATOR *itr;
+
 	if (!server_stat)
 		return;
-	for (nas = grad_nas_next(NULL); nas; nas = grad_nas_next(nas)) {
+ 	itr = grad_nas_iterator();	
+	for (nas = iterator_first(itr); nas; nas = iterator_next(itr)) {
 		statp = nas->app_data;
 		statp->ports_active = statp->ports_idle = 0;
 	}
+	iterator_destroy(&itr);
 	
 	radstat.port_active_count = radstat.port_idle_count = 0;
 

@@ -461,7 +461,8 @@ snmpserv_after_config_hook(void *arg, void *data ARG_UNUSED)
 {
 	if (server_stat) {
 		NAS *nas;
-		
+		ITERATOR *itr;
+	
 		server_stat->auth.status =
 			suspend_flag ? serv_suspended : serv_running;
 		snmp_auth_server_reset();
@@ -471,8 +472,10 @@ snmpserv_after_config_hook(void *arg, void *data ARG_UNUSED)
                 
 		*(serv_stat*)arg = server_stat->auth.status;
 		snmp_init_nas_stat();
-		for (nas = grad_nas_next(NULL); nas; nas = grad_nas_next(nas))
+		itr = grad_nas_iterator();
+		for (nas = iterator_first(itr); nas; nas = iterator_next(itr))
 			snmp_attach_nas_stat(nas);
+		iterator_destroy(&itr);
 		snmp_sort_nas_stat();
 	}
 }
@@ -2645,13 +2648,15 @@ NAS *
 nas_lookup_index(int ind)
 {
         NAS *nas;
+	ITERATOR *itr = grad_nas_iterator();
         struct nas_stat *ns;
         
-        for (nas = grad_nas_next(NULL); nas; nas = grad_nas_next(nas)) {
+        for (nas = iterator_first(itr); nas; nas = iterator_next(itr)) {
                 ns = nas->app_data;
                 if (ns && ns->index == ind)
                         break;
         }
+	iterator_destroy(&itr);
         return nas;
 }
 

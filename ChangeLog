@@ -74,7 +74,7 @@
 	Removed unused activefd parameter from its declaration. The function
 	is essentially rewritten to accept new semantics of Local and Crypt-
 	Local auth-types.
-	Added DA_PASSWORD_LOCATION to server_check_items.
+	* radiusd/files.c: Added DA_PASSWORD_LOCATION to server_check_items.
 	* radiusd/radck.c: Updated fix_check_pairs() to accord with the new
 	semantics of Local auth-types.
 	

@@ -101,16 +101,38 @@ enum {
 #define MAX_LONGNAME  256
 #define MAX_SHORTNAME 32
 
+/* Attribute flags and properties:
+
+    0                   1                   2                   3
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+   | A | E |  P  | | LHS | RHS |     USER FLAGS    |               |
+   +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+   A - Additivity bits
+   E - Encryption bits
+   P - Property flags
+   LHS - Syntax flags for LHS
+   RHS - Syntax flags for RHS
+   
+   Bits 7 and 24-31 are unused */
+
 /* Attribute properties */
 #define AP_ADD_REPLACE   0
 #define AP_ADD_APPEND    1
 #define AP_ADD_NONE      2
 
+/* Encryption bits */
+#define AP_ENCRYPT_RFC2138 0x4 /* Encrypted per RFC 2138 */
+#define AP_ENCRYPT_RFC2868 0x8 /* Encrypted per RFC 2868 */
+
+#define AP_ENCRYPT (AP_ENCRYPT_RFC2138|AP_ENCRYPT_RFC2868)
+
 #define AP_PROPAGATE     0x10 /* Propagate attribute through the proxy chain */
-#define AP_REQ_CMP       0x20 /* Not used */ 
-#define AP_BINARY_STRING 0x40 /* Binary string value. A special interpreter
-				 must be registered for this attribute */
-#define AP_INTERNAL      0x80 /* Internal attribute. */
+#define AP_INTERNAL      0x20 /* Internal attribute. */
+#define AP_BINARY_STRING 0x40 /* Binary string value. No str..() functions
+				 should be used */
+
 #define AP_USER_FLAG(n) (0x4000<<(n))
 
 #define ADDITIVITY(val) ((val) & 0x3)
@@ -420,6 +442,10 @@ void decrypt_password(char *password, VALUE_PAIR *pair,
                       char *vector, char *secret);
 void decrypt_password_broken(char *password, VALUE_PAIR *pair,
                              char *vector, char *secret);
+void encrypt_tunnel_password(VALUE_PAIR *pair, u_char tag, char *password,
+			     char *vector, char *secret);
+void decrypt_tunnel_password(char *password, u_char *tag, VALUE_PAIR *pair,
+			     char *vector, char *secret);
 
 /* gethost_r.c */
 struct hostent *rad_gethostbyname_r(const char *name, struct hostent *result,

@@ -38,7 +38,6 @@ struct hostdecl {
 };
 
 typedef struct {
-	unsigned delayed_hup_wait;
 	int checkrad_assume_logged;
 	int max_requests;
 	char *exec_user;
@@ -252,8 +251,6 @@ extern char *message_text[MSG_COUNT];
 extern char *username_valid_chars;
 extern unsigned long stat_start_time;
 extern REQUEST_CLASS    request_class[];
-
-extern pth_t radius_pid;
 
 #ifdef USE_SNMP
 extern int snmp_port;

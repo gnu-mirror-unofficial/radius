@@ -1,3 +1,17 @@
+2002-01-13  Sergey Poznyakoff
+
+	* radiusd/radiusd.c (main): Removed auto argval.
+	* radiusd/snmpserv.c (mib_data): Added server-specific oids.
+	* radiusd/stat.c (stat_get_next_port_no): Fixed erroneous
+	  conditional.
+	* raduse/raduse.h: New declarations: struct port_usage and
+	  port_session.
+	* raduse/session.c: Added debugging prints.
+	  (walk_converse, run_walk): Do not allocate new objects for
+	  each query, rather insert the data into appropriate places,
+	  possibly reusing memory, allocated previously.
+	* raduse/stat.c: Collect port usage statistics.
+
 2002-01-11  Sergey Poznyakoff  
 
 	* snmplib/snmp_recv.c: Bugfix.

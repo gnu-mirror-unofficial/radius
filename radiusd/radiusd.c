@@ -41,6 +41,7 @@
 #ifdef USE_SQL
 # include <radsql.h>
 #endif
+#include <timestr.h>
 
 const char *argp_program_version = "radiusd (" PACKAGE ") " VERSION;
 static char doc[] = N_("GNU radius daemon");
@@ -379,6 +380,9 @@ radiusd_setup()
 		auth_port = get_port_number("radius", "udp", DEF_AUTH_PORT);
 	if (acct_port == 0)
 		acct_port = get_port_number("radacct", "udp", auth_port+1);
+#ifdef USE_SNMP
+	snmp_port = get_port_number("snmp", "udp", 161);
+#endif
         srand(time(NULL));
 
 	/* Register radiusd hooks first. This ensures they will be
@@ -959,6 +963,52 @@ moreinput(char *buf, size_t bufsize)
 }
 
 static int
+tsck(int argc, char **argv)
+{
+        int             l;
+        time_t          t;
+        TIMESPAN       *ts;
+        char           *p;
+        unsigned       rest;
+        int i;
+        struct tm tm;
+
+        time(&t);
+        localtime_r(&t, &tm);
+        
+        switch (argc) {
+        default:
+		return 1;
+        case 4:
+                tm.tm_min = atoi(argv[3]);
+        case 3:
+                tm.tm_hour = atoi(argv[2]);
+        case 2:
+                tm.tm_wday = 0;
+                tm.tm_mday += atoi(argv[1]);
+                tm.tm_yday += atoi(argv[1]);
+                t = mktime(&tm);
+                break;
+        case 1:
+                break;
+        }
+
+        printf("ctime: %s", ctime(&t));
+        
+        if (ts_parse(&ts, argv[0], &p)) {
+                printf("bad timestring near %s\n", p);
+                return 1;
+        }
+
+        l = ts_match(ts, &t, &rest);
+        if (l == 0)
+                printf("inside %s: %d seconds left\n", argv[0], rest);
+        else
+                printf("OUTSIDE %s: %d seconds to wait\n", argv[0], rest);
+        return 0;
+}
+
+static int
 test_shell()
 {
         char *tok;
@@ -987,16 +1037,19 @@ test_shell()
                         continue;
                 case 'h':
                 case '?':
-                        printf("h,?                       help\n");
-                        printf("q,<EOF>                   quit\n");
-                        printf("c NAS LOGIN SID PORT [IP] checkrad\n");
-                        printf("r FUNCALL                 function call\n");
-                        printf("d LEVEL[,LEVEL]           set debug level\n");
+                        printf("h,?                        help\n");
+                        printf("c NAS LOGIN SID PORT [IP]  checkrad\n");
+                        printf("d LEVEL[,LEVEL]            set debug level\n");
 #ifdef USE_SERVER_GUILE
-                        printf("g                         enter guile shell\n");
+                        printf("g                          enter guile shell\n");
 #endif
-                        printf("m                         display memory usage\n"); 
+                        printf("r FUNCALL                  function call\n");
+			printf("s FILENAME                 source Rewrite file\n");
+			printf("t TIMESPAN [DOW [HH [MM]]] Check the timespan interval\n");
+                        /*printf("m                          display memory usage\n"); */
+                        printf("q,<EOF>                    quit\n");
                         break;
+			
                 case 'd':
                         set_debug_levels(tok);
                         break;
@@ -1062,6 +1115,20 @@ test_shell()
                 case 's':
                         printf("%d\n", parse_rewrite(tok));
                         break;
+		case 't':
+                        if (argcv_get(tok, "", &argc, &argv)) {
+                                fprintf(stderr, "can't parse input\n");
+                                argcv_free(argc, argv);
+                                continue;
+                        }
+
+                        if (argc > 5) {
+                                fprintf(stderr, "arg count\n");
+                                continue;
+                        }
+			tsck(argc, argv);
+                        argcv_free(argc, argv);
+			break;
                 case 'm': /*memory statistics */
                         break;
                 default:

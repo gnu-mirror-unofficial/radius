@@ -15,6 +15,7 @@ AC_PREREQ(2.54)
 AC_REVISION($Revision$)
 AC_INIT(GNU Radius, 0.99.98, bug-gnu-radius@gnu.org, gnu-radius)
 AC_CONFIG_SRCDIR(radiusd/radiusd.c)
+AC_CONFIG_AUX_DIR([scripts])
 AC_CANONICAL_SYSTEM
 AM_INIT_AUTOMAKE(no-exeext)
 AM_CONFIG_HEADER(config.h)

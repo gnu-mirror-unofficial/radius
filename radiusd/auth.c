@@ -645,7 +645,7 @@ auth_log(m, diag, pass, reason, addstr)
 			   pass ? "/" : "",
 			   pass ? pass : "",
 			   reason,
-			   addstr,
+			   addstr ? addstr : "",
 			   m->clid);
         else
                 radlog_req(L_NOTICE, m->req,
@@ -945,53 +945,55 @@ sfn_validate(m)
 {
         RADIUS_REQ *radreq = m->req;
         int rc;
-        
-        /*
-         * Validate the user
-         */
-        if ((rc = check_expiration(m)) >= 0) {
-                rc = rad_check_password(radreq,
-                                        m->user_check, m->namepair,
-                                        &m->user_msg,
-                                        m->userpass);
+        char *reason = NULL;
+	
+	rc = rad_check_password(radreq,
+				m->user_check, m->namepair,
+				&m->user_msg,
+				m->userpass);
 
-                if (rc != AUTH_OK) { 
-                        stat_inc(auth, radreq->ipaddr, num_rejects);
-                        newstate(as_reject);
-                        auth_format_msg(m, MSG_ACCESS_DENIED);
 
-                        if (is_log_mode(m, RLOG_AUTH)) {
-                                switch (rc) {
-                                case AUTH_REJECT:
-                                        auth_log(m, _("Rejected"),
-                                                 NULL, NULL, NULL);  
-                                        return;
+	if (rc != AUTH_OK) { 
+		stat_inc(auth, radreq->ipaddr, num_rejects);
+		newstate(as_reject);
+		auth_format_msg(m, MSG_ACCESS_DENIED);
+
+		if (is_log_mode(m, RLOG_AUTH)) {
+			switch (rc) {
+			case AUTH_REJECT:
+				auth_log(m, _("Rejected"),
+					 NULL, NULL, NULL);  
+				return;
                                 
-                                case AUTH_NOUSER:
-                                        auth_log(m, _("Invalid user"),
-                                                 NULL, NULL, NULL);
-                                        return;
+			case AUTH_NOUSER:
+				auth_log(m, _("Invalid user"),
+					 NULL, NULL, NULL);
+				return;
                                 
-                                case AUTH_FAIL:
-                                        break;
-                                }
-                        }
-                }               
-              /*if (p = avl_find(m->user_reply, DA_REPLY_MESSAGE))
-                        m->user_msg = dup_string(p->strvalue);*/
-        }
+			case AUTH_FAIL:
+				auth_log(m,
+					 _("Login incorrect"),
+					 is_log_mode(m, RLOG_FAILED_PASS) ?
+					 m->userpass : NULL,
+					 NULL, NULL);
+				return;
 
-        if (rc != AUTH_OK) {
-                /*
-                 * Failed to validate the user.
-                 */
+			default:
+				insist_fail("sfn_validate");
+			}
+		}
+	}
+
+	rc = check_expiration(m);
+
+	if (rc != AUTH_OK) {
                 newstate(as_reject);
                 if (is_log_mode(m, RLOG_AUTH)) {
                         auth_log(m,
                                  _("Login incorrect"),
                                  is_log_mode(m, RLOG_FAILED_PASS) ?
-                                                       m->userpass : NULL,
-                                 NULL, NULL);
+				 m->userpass : NULL,
+                                 _("Password expired"), NULL);
                 }
         }
 }

@@ -5,6 +5,7 @@
 @settitle GNU radius
 @c %**end of header
 @setchapternewpage odd
+
 @c Define new indices
 @c at -- Attribute index
 @defcodeindex at
@@ -12,6 +13,13 @@
 @defcodeindex kw
 @c ex -- Example index
 @defindex ex
+
+@c Combine everything into one
+@syncodeindex at cp
+@syncodeindex kw cp
+@syncodeindex ex cp
+@syncodeindex fn cp
+@syncodeindex pg cp
 
 @include version.texi
 @include config.texi
@@ -117,12 +125,7 @@ Appendices
 * Copying This Manual:: The GNU Free Documentation License.
 
 Indices
-* Program Index::       Index of programs
-* Keyword Index::       Index of keywords
-* Example Index::       Index of examples
-* Variable Index::      Index of variables
-* Attribute Index::     Index of @RADIUS{} attributes
-* Concept Index::       Index of concepts
+* Index::               
 
 @ignore
 Enable this when necessary
@@ -260,36 +263,11 @@ And of course, thanks to Richard M. Stallman for founding the FSF and
 starting the GNU project.
 
 @comment *******************************************************************
-@node Copying This Manual, , Acknowledgements, Top
+@node Copying This Manual, Index, Acknowledgements, Top
 @include fdl.texi
 
-@node Program Index, Keyword Index, , Top
-@unnumbered Program Index
-@printindex pg
-@page
-
-@node Keyword Index, Example Index, Program Index, Top
-@unnumbered Keyword Index
-@printindex kw
-@page
-
-@node Example Index, Variable Index, Keyword Index, Top
-@unnumbered Examples Index
-@printindex ex
-@page
-
-@node Variable Index, Attribute Index, Example Index, Top
-@unnumbered Index of Functions and Variables
-@printindex fn
-@page
-
-@node Attribute Index, Concept Index, Variable Index , Top
-@unnumbered Attribute Index
-@printindex at
-@page
-
-@node Concept Index, , Attribute Index, Top
-@unnumbered Concept Index
+@node Index, , Copying This Manual, Top
+@unnumbered Index
 @printindex cp
 @page
 

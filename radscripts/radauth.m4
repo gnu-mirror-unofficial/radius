@@ -46,51 +46,83 @@ begin
 end
 
 [shift] ${OPTIND}-1
-LOGIN=${1:?}
-PWD=${2:&Password: }
+
+if $# > 4
+begin
+	print "Wrong number of arguments."
+	print "Try radauth -h for more info"
+	exit 1
+end
+
+case $1 in
+"auth|acct|start|stop") begin
+                          COMMAND=$1
+                          [shift] 1
+                        end
+".*")	COMMAND="auth"
+end
+
+LOGIN=${1:?User name is not specified. Try radauth -h for more info.}
 
 if ${NASIP:-} = ""
 	NASIP=$SOURCEIP
 
-LIST = ( User-Name = $LOGIN User-Password = $PWD NAS-IP-Address = $NASIP )
-if ${pid:-} != ""
-	LIST = $LIST + (NAS-Port-Id = $pid)
+LIST = ( User-Name = $LOGIN NAS-IP-Address = $NASIP )
 
-send auth Access-Request $LIST
-
-while 1
+accounting
 begin
-  if $REPLY_CODE = Access-Accept
+  if ${SID:-} = ""
+    input "Enter session ID: " SID
+  if ${pid:-} = ""
+    input "Enter NAS port ID: " pid
+  send auth Accounting-Request $1 + (Acct-Session-Id = $SID NAS-Port-Id = $pid)
+  if $REPLY_CODE != Accounting-Response
   begin
-     print "Authentication passed. " + $REPLY[[Reply-Message*]] + "\n"
-     if ${ACCT:-no} = no
-	exit 0
-     if ${SID:-} = ""
-     	input "Enter session ID " SID
-     send auth Accounting-Request $LIST + \
-               ( Acct-Status-Type = Start Acct-Session-Id = $SID )
-     if $REPLY_CODE != Accounting-Response
-     begin
-        print "Accounting failed.\n"
-        break
-     end
-     print "Accounting OK.\n"
-     exit 0
-  end else if $REPLY_CODE = Access-Reject
-  begin
-     print "Authentication failed. " + $REPLY[[Reply-Message*]] + "\n"
-     break
-  end else if $REPLY_CODE = Access-Challenge
-  begin
-     print $REPLY[[Reply-Message*]]
-     input 
-     send auth Access-Request \
-          (User-Name = $LOGIN User-Password = $INPUT State = $REPLY[[State]])
-  end else begin
-     print "Authentication failed. Reply code " + $REPLY_CODE + "\n"
-     break
+    print "Accounting failed.\n"
+    exit 1	
   end
+  print "Accounting OK.\n"
+  exit 0
 end
-exit 1
+
+authenticate
+begin
+  send auth Access-Request $1 + (User-Password = $2)
+  while 1
+  begin
+    if $REPLY_CODE = Access-Accept
+    begin
+      print "Authentication passed. " + $REPLY[[Reply-Message*]] + "\n"
+      if ${3:-no} = no
+	exit 0
+      accounting($1 + ( Acct-Status-Type = Start ))
+    end else if $REPLY_CODE = Access-Reject
+    begin
+      print "Authentication failed. " + $REPLY[[Reply-Message*]] + "\n"
+      break
+    end else if $REPLY_CODE = Access-Challenge
+    begin
+      print $REPLY[[Reply-Message*]]
+      input 
+      send auth Access-Request \
+           (User-Name = $LOGIN User-Password = $INPUT State = $REPLY[[State]])
+      end else begin
+        print "Authentication failed. Reply code " + $REPLY_CODE + "\n"
+        break
+      end
+  end
+  exit 1
+end
+
+case ${COMMAND} in
+"auth")		authenticate($LIST, ${2:&Password: }, no)
+"acct")         authenticate($LIST, ${2:&Password: }, yes)
+"start")	accounting($LIST+(Acct-Status-Type = Start))
+"stop")         accounting($LIST+(Acct-Status-Type = Stop))
+".*")		begin
+		  print "Unknown command. Try radauth -h for more info"
+		  exit 1
+	        end
+end
 
 # End of radauth

@@ -48,17 +48,25 @@
 #include <snmp/snmp.h>
 
 struct check_instance {
-        char          *name;
-        int           port;
-        char          *sid;
-        grad_uint32_t ip;
-        int           result;
-        int           timeout;
-        int           method;
-        char          *func;
-        grad_envar_t  *args;
-        char          *hostname;
-	struct obstack stack;
+	/* Data from the radutmp entry */
+        char          *name;       /* User name */
+	grad_uint32_t nas_ip;      /* NAS IP address */
+        int           port;        /* NAS port number */
+        char          *sid;        /* Session ID */
+        grad_uint32_t framed_ip;   /* Framed IP address */
+
+	/* Data from the nastypes entry */
+	int           method;      /* Method to be used */
+        char          *func;       /* Name of the rewrite function */
+        grad_envar_t  *args;       /* Method arguments */
+
+	/* Additional data */
+        char          *nasname;    /* Name of the NAS (for diagnostics) */
+	struct obstack stack;      /* Memory allocation stack */
+
+	/* Results */
+        int           timeout;     /* Was the timeout hit? */
+        int           result;      /* Result of the test */
 };
 
 char *
@@ -88,10 +96,11 @@ create_instance(struct check_instance *cptr, grad_nas_t *nas, struct radutmp *up
         cptr->name = up->orig_login;
         cptr->port = up->nas_port;
         cptr->sid  = up->session_id;
-        cptr->ip   = up->framed_address;
-        cptr->result = -1;
+        cptr->framed_ip = up->framed_address;
+	cptr->nas_ip = up->nas_address;
+	cptr->result = -1;
         cptr->timeout = 0;
-        cptr->hostname = nas->shortname ? nas->shortname : nas->longname;
+        cptr->nasname = nas->shortname ? nas->shortname : nas->longname;
         
         cptr->method = radck_type->method;
         cptr->args = grad_envar_merge_lists((grad_envar_t*) nas->args,
@@ -143,7 +152,10 @@ checkrad_xlat_new(struct check_instance *checkp, char *template)
 						 checkp->sid));
 	grad_avl_add_pair(&req->request,
 			  grad_avp_create_integer(DA_FRAMED_IP_ADDRESS,
-						  checkp->ip));
+						  checkp->framed_ip));
+	grad_avl_add_pair(&req->request,
+			  grad_avp_create_integer(DA_NAS_IP_ADDRESS,
+						  checkp->nas_ip));
 
 	str = util_xlate(&checkp->stack, template, req);
 
@@ -190,7 +202,7 @@ checkrad_xlat_old(struct check_instance *checkp, char *str)
                                 ptr = buf;
                                 break;
                         case 'i':
-                                grad_ip_iptostr(checkp->ip, buf);
+                                grad_ip_iptostr(checkp->framed_ip, buf);
                                 ptr = buf;
                                 break;
                         default:
@@ -232,7 +244,7 @@ converse(int type, struct snmp_session *sp, struct snmp_pdu *pdu, void *closure)
         if (type == SNMP_CONV_TIMEOUT) {
                 grad_log(L_NOTICE,
                          _("timed out in waiting SNMP response from NAS %s"),
-                         checkp->hostname);
+                         checkp->nasname);
                 checkp->timeout++;
                 return 1;
         }
@@ -477,7 +489,7 @@ finger_check(struct check_instance *checkp, grad_nas_t *nas)
 		if (setjmp(to_env)) {
 			grad_log(L_NOTICE,
 			       _("timed out in waiting for finger response from NAS %s"),
-			       checkp->hostname);
+			       checkp->nasname);
 			fclose(fp);
 			alarm(0);
 			grad_set_signal(SIGALRM, handler);

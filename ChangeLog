@@ -1,7 +1,36 @@
+2004-09-09  Sergey Poznyakoff
+
+	* configure.ac: Check for crypt_set_format
+	* radiusd/radiusd.c (radiusd_setup): Call crypt_set_format if
+	available.
+
+	* lib/dict.c: Added support for BEGIN VENDOR ... END
+	and BEGIN-VENDOR ... END-VENDOR blocks 
+
+	* raddb/dict/usr: Use improved VSA declaration syntax 
+	* raddb/dict/microsoft: Likewise
+	* raddb/dict/cisco: Likewise
+	* raddb/dict/ascend.vs: Likewise
+	* raddb/dict/standard: Likewise
+
+	* include/radiusd.h: Set non-zero defaults for master read/write
+	timeouts. 
+
+	* sql/disp.c (disp_sql_interface_index): name==NULL means checking
+	for available default sql interface.
+	* radiusd/scheme.c (scheme_boot,catch_body): The proper place
+	for setting preconfig hook is in catch_body(), otherwise
+	radiusd forgets about its default loading paths
+	($sharedir/VERSION/scheme).
+
+	* radiusd/rpp.c (rpp_fd_read): Exit from padding loop if
+	pipe_read fails.
+	Added more debugging info.
+	
 2004-08-29  Sergey Poznyakoff 
 
 	* radiusd/auth.c (unix_expiration)[EMBEDDED_EXPIRATION_INFO]:
-	(unix_pass)[EMBEDDED_EXPIRATION_INFO]: Account for old method
+	(unix_pass)[EMBEDDED_EXPIRATION_INFO]: Account for the old method
 	of keeping password aging info in /etc/passwd.
 
 2004-08-28  Sergey Poznyakoff 

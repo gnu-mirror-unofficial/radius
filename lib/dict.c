@@ -212,10 +212,9 @@ static int parse_dict(char *name);
 #define ATTR_VALUE   fv[2]
 #define ATTR_TYPE    fv[3]
 #define ATTR_VENDOR  fv[4]
-#define ATTR_FLAGS   fv[5]
-#define ATTR_ADDITIVITY fv[6]
-#define HAS_VENDOR(c,p)     ((c>=5)&&strcmp(p[4],"-"))
-#define HAS_FLAGS(c,p)      (c==6)
+#define ATTR_FLAGS   ((fc == 6) ? fv[5] : fv[4])
+#define HAS_VENDOR(c,p)     ((c>=5) && strcmp(p[4],"-") && p[4][0] != '[')
+#define HAS_FLAGS(c,p)      ((c==6) || (c==5 && p[4][0] == '['))
 #define VALUE_ATTR   fv[1]
 #define VALUE_NAME   fv[2]
 #define VALUE_NUM    fv[3]
@@ -229,9 +228,15 @@ static grad_keyword_t type_kw[] = {
         { "date", GRAD_TYPE_DATE }
 };
 
+struct parse_data {
+	int vendor;
+	grad_locus_t begin_locus;
+	int errcnt;
+};
+
 /*ARGSUSED*/
 static int
-_dict_include(int *errcnt, int fc, char **fv, grad_locus_t *loc)
+_dict_include(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 {
         if (nfields(fc, 2, 2, loc)) 
                 return 0;
@@ -381,7 +386,7 @@ set_default_attr_properties(int value, int *flags, int *prop)
 }
 
 static int
-_dict_attribute(int *errcnt, int fc, char **fv, grad_locus_t *loc)
+_dict_attribute(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 {
 	DICT_SYMBOL *sym;
         grad_dict_attr_t *attr;
@@ -395,6 +400,14 @@ _dict_attribute(int *errcnt, int fc, char **fv, grad_locus_t *loc)
         
         if (nfields(fc, 4, 6, loc))
                 return 0;
+
+	debug(100,
+	      ("%s:%lu: ATTR_NAME=%s ATTR_VALUE=%s ATTR_TYPE=%s ATTR_VENDOR=%s ATTR_FLAGS=%s",
+	       loc->file, loc->line,
+	       ATTR_NAME,ATTR_VALUE,ATTR_TYPE,
+	       HAS_VENDOR(fc, fv) ? ATTR_VENDOR : pd->vendor ? "BLOCK" : "N/A",
+	       HAS_FLAGS(fc,fv) ? ATTR_FLAGS : "N/A"));
+	
         /*
          * Validate all entries
          */
@@ -404,7 +417,7 @@ _dict_attribute(int *errcnt, int fc, char **fv, grad_locus_t *loc)
                 grad_log_loc(L_ERR, loc,
 			     _("value not a number (near %s)"),
 			     p);
-                (*errcnt)++;
+                pd->errcnt++;
                 return 0;
         }
 
@@ -423,24 +436,27 @@ _dict_attribute(int *errcnt, int fc, char **fv, grad_locus_t *loc)
                 grad_log_loc(L_ERR, loc,
 			     "%s",
 			     _("invalid type"));
-                (*errcnt)++;
+                pd->errcnt++;
                 return 0;
         }
 
         if (HAS_VENDOR(fc, fv)) {
                 if ((vendor = grad_vendor_name_to_id(ATTR_VENDOR)) == 0) {
                         grad_log_loc(L_ERR, loc, _("unknown vendor"));
-			(*errcnt)++;
+			pd->errcnt++;
                         return 0;
                 }
-		value |= (vendor << 16);
-        } 
+        } else if (pd->vendor)
+		vendor = pd->vendor;
+
+	value |= (vendor << 16);
+	
 	set_default_attr_properties(value, &flags, &prop);
 
         if (HAS_FLAGS(fc,fv)) {
 		int rc = parse_attr_properties(loc, ATTR_FLAGS, &flags, &prop);
 		if (rc) {
-			++*errcnt;
+			pd->errcnt++;
 			return 0;
 		}
         }
@@ -480,7 +496,7 @@ _dict_attribute(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 /* Syntax:
    ALIAS oldname newname */
 static int
-_dict_alias(int *errcnt, int fc, char **fv, grad_locus_t *loc)
+_dict_alias(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 {
 	DICT_SYMBOL *sym;
 	grad_dict_attr_t *attr;
@@ -514,7 +530,7 @@ _dict_alias(int *errcnt, int fc, char **fv, grad_locus_t *loc)
    
    PROPERTY Attribute Flags */
 static int
-_dict_property(int *errcnt, int fc, char **fv, grad_locus_t *loc)
+_dict_property(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 {
 	grad_dict_attr_t *attr;
 	int i;
@@ -538,7 +554,7 @@ _dict_property(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 			flags = prop = 0;
 			if (parse_attr_properties(loc, fv[i]+1,
 						  &flags, &prop)) {
-				++*errcnt;
+				pd->errcnt++;
 				break;
 			}
 			attr->prop |= flags | prop;
@@ -548,7 +564,7 @@ _dict_property(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 			flags = prop = 0;
 			if (parse_attr_properties(loc, fv[i]+1,
 						  &flags, &prop)) {
-				++*errcnt;
+				pd->errcnt++;
 				break;
 			}
 			attr->prop &= ~(flags | prop);
@@ -558,7 +574,7 @@ _dict_property(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 			if (i > 2) {
 				grad_log_loc(L_ERR, loc,
 					     _("PROPERTY syntax error"));
-				++*errcnt;
+				pd->errcnt++;
 			} else {
 				set_default_attr_properties(attr->value,
 							    &flags, &prop);
@@ -566,7 +582,7 @@ _dict_property(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 							  &flags, &prop) == 0)
 					attr->prop = flags | prop;
 				else
-					++*errcnt;
+					pd->errcnt++;
 				break;
 			}
 		}
@@ -575,7 +591,7 @@ _dict_property(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 }
 
 static int
-_dict_value(int *errcnt, int fc, char **fv, grad_locus_t *loc)
+_dict_value(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 {
         grad_dict_value_t *dval;
         grad_dict_attr_t *attr;
@@ -590,7 +606,7 @@ _dict_value(int *errcnt, int fc, char **fv, grad_locus_t *loc)
                 grad_log_loc(L_ERR, loc,
 			     _("value not a number (near %s)"),
 			     p);
-                (*errcnt)++;
+                pd->errcnt++;
                 return 0;
         }
 
@@ -599,7 +615,7 @@ _dict_value(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 		grad_log_loc(L_ERR, loc,
 			     _("Attribute %s is not defined"),
 			     VALUE_ATTR);
-                (*errcnt)++;
+                pd->errcnt++;
 		return 0;
 	}
 
@@ -621,29 +637,101 @@ _dict_value(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 }
 
 static int
-_dict_vendor(int *errcnt, int fc, char **fv, grad_locus_t *loc)
+_dict_vendor(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
 {
         int value;
         char *p;
 
         if (nfields(fc, 3, 3, loc))
-                return 0;
+                return 1;
 
         value = strtol(VENDOR_VALUE, &p, 0);
         if (*p) {
                 grad_log_loc(L_ERR, loc,
 			     _("value not a number (near %s)"),
 			     p);
-                (*errcnt)++;
-                return 0;
+                pd->errcnt++;
+                return 1;
         }
 
         if (addvendor(VENDOR_NAME, value) < 0) {
-                (*errcnt)++;
+                pd->errcnt++;
+		return 1;
         }
 
         return 0;
 
+}
+
+static void
+_dict_begin(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
+{
+	if (pd->vendor) {
+		grad_log_loc(L_ERR, loc, _("blocks cannot be nested"));
+		grad_log_loc(L_ERR, &pd->begin_locus,
+			     _("block opened here"));
+		pd->errcnt++;
+		return;
+	}
+
+        if (nfields(fc, 3, 4, loc)) {
+		pd->errcnt++;
+                return;
+	}
+	
+	if (strcmp (fv[1], "VENDOR")) {
+		grad_log_loc(L_ERR, loc,
+			     _("block syntax: expected `VENDOR' but found `%s'"),
+			     fv[1]);
+		pd->errcnt++;
+		return;
+	}
+
+	if (fc == 4 && _dict_vendor(pd, fc-1, fv+1, loc))
+		return;
+			
+	if ((pd->vendor = grad_vendor_name_to_id(fv[2])) == 0) {
+		grad_log_loc(L_ERR, loc, _("unknown vendor"));
+		pd->errcnt++;
+		return;
+	}
+	pd->begin_locus = *loc;
+	debug(1, ("%s:%lu: BEGIN VENDOR %s (%d)",
+		  loc->file, loc->line, fv[2], pd->vendor));
+}
+
+static void
+_dict_end(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
+{
+	if (!pd->vendor) {
+		grad_log_loc(L_ERR, loc, _("unexpected END"));
+		pd->errcnt++;
+	}
+	debug(1, ("END VENDOR %d", pd->vendor));
+	pd->vendor = 0;
+}
+
+static void
+_dict_begin_vendor(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
+{
+	char *args[4];
+
+        if (nfields(fc, 2, 2, loc)) {
+		pd->errcnt++;
+		return;
+	}
+	
+	args[0] = "BEGIN";
+	args[1] = "VENDOR";
+	args[2] = fv[1];
+	args[3] = NULL;
+	_dict_begin(pd, 3, args, loc);
+}
+
+static void
+_dict_end_vendor(struct parse_data *pd, int fc, char **fv, grad_locus_t *loc)
+{
+	_dict_end(pd, fc, fv, loc);
 }
 
 enum {
@@ -652,7 +740,11 @@ enum {
 	KW_ALIAS,
         KW_VALUE,
         KW_VENDOR,
-	KW_PROPERTY
+	KW_PROPERTY,
+	KW_BEGIN,
+	KW_BEGIN_VENDOR,
+	KW_END_VENDOR,
+	KW_END
 };
 
 static grad_keyword_t dict_kw[] = {
@@ -662,32 +754,58 @@ static grad_keyword_t dict_kw[] = {
         { "VALUE", KW_VALUE },
         { "VENDOR", KW_VENDOR },
 	{ "PROPERTY", KW_PROPERTY },
+	{ "BEGIN", KW_BEGIN },
+	{ "END", KW_END },
+	{ "BEGIN-VENDOR", KW_BEGIN_VENDOR },
+	{ "END-VENDOR", KW_END_VENDOR },
         { NULL, 0 }
 };
 
 static int
 parse_dict_entry(void *closure, int fc, char **fv, grad_locus_t *loc)
 {
-	int *errcnt = closure;
+	struct parse_data *pd = closure;
         switch (grad_xlat_keyword(dict_kw, KEYWORD, -1)) {
         case KW_INCLUDE:
-                _dict_include(errcnt, fc, fv, loc);
+                _dict_include(pd, fc, fv, loc);
                 break;
+		
         case KW_ATTRIBUTE:
-                _dict_attribute(errcnt, fc, fv, loc);
+                _dict_attribute(pd, fc, fv, loc);
                 break;
+		
 	case KW_ALIAS:
-		_dict_alias(errcnt, fc, fv, loc);
+		_dict_alias(pd, fc, fv, loc);
 		break;
+		
         case KW_VALUE:
-                _dict_value(errcnt, fc, fv, loc);
+                _dict_value(pd, fc, fv, loc);
                 break;
+		
         case KW_VENDOR:
-                _dict_vendor(errcnt, fc, fv, loc);
+                _dict_vendor(pd, fc, fv, loc);
                 break;
+		
 	case KW_PROPERTY:
-		_dict_property(errcnt, fc, fv, loc);
+		_dict_property(pd, fc, fv, loc);
 		break;
+
+	case KW_BEGIN:
+		_dict_begin(pd, fc, fv, loc);
+		break;
+		
+	case KW_END:
+		_dict_end(pd, fc, fv, loc);
+		break;
+
+	case KW_BEGIN_VENDOR:
+		_dict_begin_vendor(pd, fc, fv, loc);
+		break;
+
+	case KW_END_VENDOR:
+		_dict_end_vendor(pd, fc, fv, loc);
+		break;
+		
         default:
                 grad_log_loc(L_ERR, loc, "%s", _("unknown keyword"));
                 break;
@@ -700,17 +818,26 @@ parse_dict(char *name)
 {
         char *path;
         int   rc;
-        int   errcnt = 0;
+	struct parse_data pd;
 
+	pd.errcnt = 0;
+	pd.vendor = 0;
+	
 	if (name[0] == '/')
 		path = grad_estrdup(name);
 	else
 		path = grad_mkfilename(radius_dir, name);
-        rc = grad_read_raddb_file(path, 1, NULL, parse_dict_entry, &errcnt);
-        if (errcnt)
+	debug(1,("parsing %s", path));
+        rc = grad_read_raddb_file(path, 1, NULL, parse_dict_entry, &pd);
+	if (pd.vendor) {
+		grad_log_loc(L_ERR, &pd.begin_locus, _("BEGIN without END"));
+		pd.vendor = 0;
+		pd.errcnt++;
+	}
+        if (pd.errcnt)
                 grad_log(L_NOTICE,
 		         ngettext("%s: %d error", "%s: %d errors",
-			  	  errcnt), path, errcnt);
+			  	  pd.errcnt), path, pd.errcnt);
         grad_free(path);
         return rc;
 }

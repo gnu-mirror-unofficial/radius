@@ -1,3 +1,21 @@
+2003-10-30  Sergey Poznyakoff 
+
+	* examples/config.syntax: Sample "forward" statements.
+	* include/radiusd.h (rad_cfg_forward_auth,rad_cfg_forward_acct)
+	(forward_init,forward_request): New functions.
+	* radiusd/forward.c: New file.
+	* radiusd/Makefile.am: Added forward.c
+	* radiusd/proxy.c: Removed "retransmit" realms.
+	* radiusd/radius.c (radius_auth_req_decode)
+	(radius_acct_req_decode): Request forwarding.
+	* radiusd/radiusd.c (common_init): Call forward_init().
+	* include/radius.h (AP_INTERNAL): New define. Marks internal
+	attributes.
+	* lib/dict.c (_dict_attribute) Raise AP_INTERNAL flag for
+	internal attributes.
+	* radiusd/acct.c (write_detail): Ignore attributes with
+	AP_INTERNAL bit set.
+	
 2003-10-28  Sergey Poznyakoff 
 
 	* include/radius.h (struct realm): striprealm,maxlogins removed.

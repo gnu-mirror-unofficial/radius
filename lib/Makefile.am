@@ -22,7 +22,9 @@ dbm.c \
 debug.c \
 dict.c \
 envar.c \
+getgr.c\
 gethost_r.c\
+getpw_r.c\
 insist.c \
 intl.c \
 iputil.c \

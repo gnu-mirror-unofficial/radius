@@ -1,3 +1,12 @@
+2003-01-08  Sergey Poznyakoff 
+
+	* configure.ac: Raised prerequisite autoconf version to 2.57
+	  AC_INIT: Let autoconf determine package name. This removes
+	  superfluous gnu- prefix from the tarvball name.
+	* client/pam_radius/pam_radius.c: Initial implementation of
+	  session management.
+	* lib/printutmp.c (nas_port_fh): Bugfix.
+
 2002-12-30 Sergey Poznyakoff 
 
 	* configure.ac: Use -pthread instead of -lc_r on BSD systems.

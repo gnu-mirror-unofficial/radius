@@ -54,7 +54,7 @@ grad_server_send_reply(int fd, grad_request_t *radreq)
                 char buf[MAX_LONGNAME];
 
                 debug(1, ("Sending %s of id %d to %lx (nas %s)",
-                          grad_request_code_name(radreq->reply_code), 
+                          grad_request_code_to_name(radreq->reply_code), 
                           radreq->id,
 			  (u_long)radreq->ipaddr,
                           grad_nas_request_to_name(radreq, buf, sizeof buf)));

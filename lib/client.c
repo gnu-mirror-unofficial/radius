@@ -135,7 +135,7 @@ grad_client_recv(grad_uint32_t host, u_short udp_port, char *secret, char *vecto
         memcpy(buffer + length, secret, secretlen);
         grad_md5_calc(calc_digest, (unsigned char *)auth, length + secretlen);
         
-	debug(1, ("received %s", grad_request_code_name(auth->code)));
+	debug(1, ("received %s", grad_request_code_to_name(auth->code)));
         if (memcmp(reply_digest, calc_digest, AUTH_VECTOR_LEN) != 0) {
                 grad_log(L_WARN, _("Received invalid reply digest from server"));
         }
@@ -244,7 +244,7 @@ grad_client_send0(grad_server_queue_t *config, int port_type, int code,
         }
 
 	debug(1,
-	      ("sending %s", grad_request_code_name(code)));
+	      ("sending %s", grad_request_code_to_name(code)));
 	recv_buf = grad_emalloc(config->buffer_size);
         itr = grad_iterator_create(config->servers);
         server = grad_iterator_first(itr);

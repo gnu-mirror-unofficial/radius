@@ -45,8 +45,8 @@ static void request_xmit(int type, int code, void *data, int fd);
 static void request_cleanup(int type, void *data);
 static void *request_thread0(void *arg);
 
-static pthread_mutex_t call_mutex = PTHREAD_MUTEX_INITIALIZER;
-static pthread_cond_t call_cond = PTHREAD_COND_INITIALIZER;
+static pthread_mutex_t request_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t request_cond = PTHREAD_COND_INITIALIZER;
 
 int
 request_start_thread()
@@ -73,11 +73,13 @@ request_thread0(arg)
         pthread_sigmask(SIG_SETMASK, &sig, NULL);
 
         while (1) {
-		pthread_mutex_lock(&call_mutex);
-		request_handle(request_get());
-                pthread_cond_wait(&call_cond, &call_mutex);
-		pthread_mutex_unlock(&call_mutex);
-		request_handle(request_get());
+		REQUEST *req;
+		while (req = request_get())
+			request_handle(req);
+		pthread_mutex_lock(&request_mutex);
+		debug(1,("thread waiting"));
+                pthread_cond_wait(&request_cond, &request_mutex);
+		pthread_mutex_unlock(&request_mutex);
 	}
 	/*NOTREACHED*/
 	return NULL;
@@ -86,7 +88,8 @@ request_thread0(arg)
 void
 request_signal()
 {
-	pthread_cond_signal(&call_cond);
+	debug(1,("signalling"));
+	pthread_cond_signal(&request_cond);
 }
 
 void

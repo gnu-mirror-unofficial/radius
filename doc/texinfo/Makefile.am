@@ -27,6 +27,7 @@ radius_TEXINFOS=acct.texi\
  configure.texi\
  debug.texi\
  extensions.texi\
+ fdl.texi\
  intro.texi\
  invoke.texi\
  logging.texi\

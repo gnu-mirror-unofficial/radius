@@ -272,6 +272,8 @@ extern int radius_mode;
 extern int debug_flag;
 extern int auth_detail;
 extern int acct_detail;
+extern int auth_trace_rules;
+extern int acct_trace_rules;
 extern int strip_names;
 extern int checkrad_assume_logged;
 extern size_t max_requests;
@@ -435,6 +437,7 @@ int radius_req_failure(int type, struct sockaddr_in *addr);
 void radius_req_update(void *req_ptr, void *data_ptr);
 int radius_respond(REQUEST *req);
 void radius_req_register_locus(RADIUS_REQ *req, LOCUS *loc);
+void radius_trace_path(RADIUS_REQ *req);
 
 /* shmem.c */
 int shmem_alloc(size_t size);

@@ -73,7 +73,6 @@ read_raddb_file(char *filename, int vital, int (*fun)(), void *closure)
                         if (n)
                                 fun(closure, n, argv, &loc);
                 }
-                loc.line++;
                 if (argv)
                         argcv_free(argc, argv);
         }

@@ -56,23 +56,30 @@ static grad_list_t /* of grad_dict_value_t */ *dictionary_values;
 static grad_list_t /* of grad_dict_vendor_t */ *dictionary_vendors;
 static int         vendorno;
 
+
+static grad_dict_attr_t *
+dict_symbol_ptr(DICT_SYMBOL *sym)
+{
+	switch (sym->type) {
+	case dict_symbol_uninitialized:
+		grad_insist_fail("uninitialized dictionary symbol found!");
+		break;
+			
+	case dict_symbol_attribute:
+		return &sym->v.attr;
+
+	case dict_symbol_alias:
+		return sym->v.alias;
+	}
+}
+
 static grad_dict_attr_t *
 dict_attr_lookup(char *ident)
 {
 	DICT_SYMBOL *sym = grad_sym_lookup(dict_attr_tab, ident);
-	if (sym) {
-		switch (sym->type) {
-		case dict_symbol_uninitialized:
-			grad_insist_fail("grad_sym_lookup returned uninitialized symbol!");
-			break;
-			
-		case dict_symbol_attribute:
-			return &sym->v.attr;
+	if (sym) 
+		return dict_symbol_ptr(sym);
 
-		case dict_symbol_alias:
-			return sym->v.alias;
-		}
-	}
 	return NULL;
 }
 
@@ -716,8 +723,10 @@ struct attr_value {
 };
 
 static int
-attrval_cmp(struct attr_value *av, DICT_SYMBOL *sym)
+attrval_cmp(void *data, grad_symbol_t *s)
 {
+	struct attr_value *av = data;
+	DICT_SYMBOL *sym = (DICT_SYMBOL *) s;
 	
 	if (sym->type == dict_symbol_attribute
 	    && sym->v.attr.value == av->value) {
@@ -874,4 +883,50 @@ grad_vendor_name_to_id(char *name)
 	vp = grad_list_locate(dictionary_vendors, name, vendor_cmp);
         return vp ? vp->vendorcode : 0;
 }
-        
+
+struct dict_iterator {
+	dict_iterator_fp fp;
+	void *closure;
+};
+
+int
+dict_iter_helper(void *data, grad_symbol_t *symbol)
+{
+	struct dict_iterator *p = data;
+	DICT_SYMBOL *dsym = (DICT_SYMBOL *) symbol;
+	grad_dict_attr_t *attr;
+
+	return p->fp(p->closure, dsym->name, dict_symbol_ptr(dsym));
+}
+	
+void
+grad_dictionary_iterate(dict_iterator_fp fp, void *closure)
+{
+	static struct dict_iterator d;
+	d.fp = fp;
+	d.closure = closure;
+	grad_symtab_iterate(dict_attr_tab, dict_iter_helper, &d);
+}
+
+struct dict_value_iterator {
+	dict_value_iterator_fp fp;
+	void *closure;
+};
+
+static int
+dict_value_iter_helper(void *item, void *data)
+{
+	struct dict_value_iterator *p = data;
+	return p->fp(p->closure, item);
+}
+
+void
+grad_dictionary_value_iterate(dict_value_iterator_fp fp, void *closure)
+{
+	static struct dict_value_iterator d;
+	d.fp = fp;
+	d.closure = closure;
+	grad_list_iterate(dictionary_values, dict_value_iter_helper, &d);
+}
+
+

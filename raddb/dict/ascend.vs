@@ -232,8 +232,8 @@ ATTRIBUTE	Ascend-Seconds-Of-History	238	integer		Ascend
 ATTRIBUTE	Ascend-History-Weigh-Type	239	integer		Ascend
 ATTRIBUTE	Ascend-Add-Seconds		240	integer		Ascend
 ATTRIBUTE	Ascend-Remove-Seconds		241	integer		Ascend
-ATTRIBUTE	Ascend-Data-Filter		242	string		Ascend
-ATTRIBUTE	Ascend-Call-Filter		243	string		Ascend
+ATTRIBUTE	Ascend-Data-Filter		242	abinary		Ascend
+ATTRIBUTE	Ascend-Call-Filter		243	abinary		Ascend
 ATTRIBUTE	Ascend-Idle-Limit		244	integer		Ascend
 ATTRIBUTE	Ascend-Preempt-Limit		245	integer		Ascend
 ATTRIBUTE	Ascend-Callback			246	integer		Ascend

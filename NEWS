@@ -1,5 +1,5 @@
-GNU Radius NEWS -- history of user-visible changes. 2002-26-31
-Copyright (C) 2002 Free Software Foundation, Inc.
+GNU Radius NEWS -- history of user-visible changes. 2003-06-11
+Copyright (C) 2002,2003 Free Software Foundation, Inc.
 See the end for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
@@ -18,7 +18,7 @@ duplicate requests arrive.
 
 ** Support for Guile version 1.6 and newer.
 
-** Allow several servers per radius realm. 
+** Multiple remote servers may be defined in a radius realm. 
 
 * Changes to configure
 
@@ -33,13 +33,20 @@ the official GNU subtree.
 
 * Changes in raddb/config 
 
-** New keyword max-processes
+** New keywords (see example/config.syntax)
+
+*** max-processes
 
 This keyword controls the maximum number of handler processes the
 dispatcher is allowed to start. It may be used in `option' block
 (see raddb/config.status for an example). The default value is 32.
 
-** New keyword print-milliseconds
+*** process-idle-timeout
+
+Each subprocess waits for the request for this amount of time.
+If no request arrives, the subprocess exits.
+
+*** New keyword print-milliseconds
 
 This boolean keyword that can be used in `channel' statement of
 the `logging' block. It makes radiusd print log timestamps with
@@ -56,7 +63,7 @@ Filters are another way of adding radius extensions.
 See accompanying documentations for more detail (node `Filters').
 
 * sqlserver: auth_max_connections and acct_max_connections are
-   deprecated
+deprecated
 
 The maximum number of connections to the authentication database equals
 the maximum number of processes set by `max-processes' statement. The

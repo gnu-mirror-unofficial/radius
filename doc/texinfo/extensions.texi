@@ -85,7 +85,7 @@ filters @{
         @};
     @};        
 @};                        
-@end smallexample	
+@end smallexample       
 
 Let's analyze this declaration line by line:
 
@@ -125,7 +125,7 @@ the incoming request (@pxref{Macro Substitution}).
 @code{radiusd} will wait for the reply from this filter to decide whether to
 authenticate the user. 
 @end enumerate
-		
+                
 @node Invoking the Filter from a User Profile
 @subsection Invoking the Filter from a User Profile
 
@@ -752,9 +752,9 @@ incoming request data:
 string
 compat_log_prefix(integer reqtype, string nas, integer id)
 @{
-	string result;
+        string result;
 
-	return "(" + request_code_string(reqtype) + " "
+        return "(" + request_code_string(reqtype) + " "
                    + nas + " " + (string)id + " " + %[User-Name] + ")";
 @}
 @end smallexample

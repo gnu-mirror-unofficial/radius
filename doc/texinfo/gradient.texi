@@ -12,12 +12,13 @@ for comments}, and, in the long run, as a guide for GNU Radius
 developers.
 
 @menu
-* Present State:: A brief description of Currently Used Approach
-* Deficiencies::   Deficiencies of Current Operation Model and Configuration Suite
-* Solution::      A Proposed Solution
-* New Rewrite::   Changes to Rewrite Language
+* Present State::             A brief description of Currently Used Approach
+* Deficiencies::              Deficiencies of Current Operation Model
+                              and Configuration Suite
+* Solution::                  A Proposed Solution
+* New Rewrite::               Changes to Rewrite Language
 * Traditional Configuration:: Support for Traditional Configuration Files.
-* New Configuration:: New Configuration Files
+* New Configuration::         New Configuration Files
 @end menu
 
 

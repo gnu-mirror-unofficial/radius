@@ -843,10 +843,10 @@ accounting.
 @defattr{Acct-Type,2003,integer,L-,-R,-R,Append,@acronym{N/A}}
 
 @smallexample
-VALUE		Acct-Type		None	0
-VALUE		Acct-Type		System	1
-VALUE		Acct-Type		Detail	2
-VALUE		Acct-Type		SQL	3
+VALUE           Acct-Type               None    0
+VALUE           Acct-Type               System  1
+VALUE           Acct-Type               Detail  2
+VALUE           Acct-Type               SQL     3
 @end smallexample
 
 The @attr{Acct-Type} allows one to control which accounting methods
@@ -1307,11 +1307,11 @@ Then the authentication request will succeed, since it contains
 @defattr{Log-Mode-Mask,2007,integer,L-,-R,-R,Append,@acronym{N/A}}
 
 @smallexample
-VALUE		Log-Mode-Mask		Log-Auth		1
-VALUE		Log-Mode-Mask		Log-Auth-Pass		2
-VALUE		Log-Mode-Mask		Log-Failed-Pass		4
-VALUE		Log-Mode-Mask		Log-Pass		6
-VALUE		Log-Mode-Mask		Log-All			7
+VALUE           Log-Mode-Mask           Log-Auth                1
+VALUE           Log-Mode-Mask           Log-Auth-Pass           2
+VALUE           Log-Mode-Mask           Log-Failed-Pass         4
+VALUE           Log-Mode-Mask           Log-Pass                6
+VALUE           Log-Mode-Mask           Log-All                 7
 @end smallexample
 
 @attr{Log-Mode-Mask} is used to control the verbosity of authentication

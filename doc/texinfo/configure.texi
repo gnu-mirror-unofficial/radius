@@ -687,7 +687,6 @@ description of its usage.
 @kwindex request-cleanup-delay
 @kwindex detail
 @kwindex compare-atribute-flag
-@UNREVISED{}
 
 @subheading Syntax:
 @smallexample
@@ -1274,14 +1273,13 @@ this to @code{yes}. Otherwise, if the filter produces no output, use
 @kwindex mlc
 @kwindex sql
 @kwindex system
-@UNREVISED
 
 @subheading Syntax
 
 @smallexample
 mlc @{
-	method (system|sql);  
-	checkrad-assume-logged @var{bool};
+        method (system|sql);  
+        checkrad-assume-logged @var{bool};
 @};
 @end smallexample
 
@@ -1550,10 +1548,10 @@ The following is the usual way of definig vendor-specific attributes:
 
 @smallexample
 @group
-VENDOR		Livingston	307
+VENDOR          Livingston      307
 
-ATTRIBUTE	LE-Terminate-Detail	2	string	Livingston
-ATTRIBUTE	LE-Advice-of-Charge	3	string	Livingston
+ATTRIBUTE       LE-Terminate-Detail     2       string  Livingston
+ATTRIBUTE       LE-Advice-of-Charge     3       string  Livingston
 @end group
 @end smallexample
 
@@ -1564,8 +1562,8 @@ The following two examples show the alternative ways:
 @group
 VENDOR Livingston 307
 BEGIN VENDOR Livingston
-ATTRIBUTE	LE-Terminate-Detail	2	string	
-ATTRIBUTE	LE-Advice-of-Charge	3	string
+ATTRIBUTE       LE-Terminate-Detail     2       string  
+ATTRIBUTE       LE-Advice-of-Charge     3       string
 END
 @end group
 @end smallexample
@@ -1573,8 +1571,8 @@ END
 @smallexample
 @group
 BEGIN VENDOR Livingston 307
-ATTRIBUTE	LE-Terminate-Detail	2	string	
-ATTRIBUTE	LE-Advice-of-Charge	3	string
+ATTRIBUTE       LE-Terminate-Detail     2       string  
+ATTRIBUTE       LE-Advice-of-Charge     3       string
 END
 @end group
 @end smallexample
@@ -2839,12 +2837,12 @@ For example, in our setup these queries will be:
 @smallexample     
 mlc_user_query SELECT user_name,nas_ip_address,nas_port_id,acct_session_id \
                FROM calls \
-	       WHERE user_name='%C@{User-Name@}' \
+               WHERE user_name='%C@{User-Name@}' \
                AND status = 1
 
 mlc_realm_query SELECT user_name,nas_ip_address,nas_port_id,acct_session_id \
-	        FROM calls \
-		WHERE realm_name='%C@{Realm-Name@}'	
+                FROM calls \
+                WHERE realm_name='%C@{Realm-Name@}'     
 @end smallexample
 
 While performing multiple login checking @command{radiusd} will

@@ -124,7 +124,7 @@ PROPERTY       Acct-Session-Time       +2
 
 @smallexample
         auth @{
-        	max-requests 127;
+                max-requests 127;
                 request-cleanup-delay 2;
                 compare-attribute-flag 1;
         @};

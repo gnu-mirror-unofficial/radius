@@ -1209,7 +1209,7 @@ statement, use compound statement as in the example below:
 if $REPLY_CODE != Accounting-Response
 begin
   print "Accounting failed.\n"
-  exit 1	
+  exit 1        
 end else
   print "Accounting succeeded.\n"
 @end group
@@ -1252,12 +1252,12 @@ The following example illustrates the concept:
 @smallexample
 @group
 case $COMMAND in
-"auth.*")	authenticate($LIST, no)
+"auth.*")       authenticate($LIST, no)
 "acct")         authenticate($LIST, yes)
-".*")		begin
-		  print "Unknown command."
-		  exit 1
-	        end
+".*")           begin
+                  print "Unknown command."
+                  exit 1
+                end
 end
 @end group
 @end smallexample
@@ -1394,7 +1394,7 @@ case $OPTVAR in
 "-f")  print "Got -f option. Argument is " $OPTARG "\n"
 ".*")  begin
           print "Unknown option: " $OPTVAR "\n"
-	  exit 1
+          exit 1
        end
   end
 end
@@ -1741,7 +1741,7 @@ server:
  65   if $REPLY_CODE != Accounting-Response
  66   begin
  67     print "Accounting failed.\n"
- 68     exit 1	
+ 68     exit 1  
  69   end
  70   print "Accounting OK.\n"
  71   exit 0
@@ -1816,7 +1816,7 @@ First, the function handles @code{Access-Accept} and
  80     begin
  81       print "Authentication passed. " + $REPLY[Reply-Message*] + "\n"
  82       if $@{3:-no@} = no
- 83 	    exit 0
+ 83         exit 0
  84       'acct'($1 + ( Acct-Status-Type = Start ))
  85     end else if $REPLY_CODE = Access-Reject
  86     begin
@@ -1934,10 +1934,10 @@ executes it. It is equivalent to the @code{main} function in a
 105 "acct")   'auth'($LIST, $@{2:&Password: @}, yes)
 106 "start")  'acct'($LIST+(Acct-Status-Type = Start))
 107 "stop")   'acct'($LIST+(Acct-Status-Type = Stop))
-108 ".*")	begin
-109 		  print "Unknown command. Try radauth -h for more info"
-110 		  exit 1
-111 	        end
+108 ".*")       begin
+109               print "Unknown command. Try radauth -h for more info"
+110               exit 1
+111             end
 112 end
 113 
 114 # End of radauth

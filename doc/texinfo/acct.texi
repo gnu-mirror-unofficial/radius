@@ -22,9 +22,16 @@ sequence:
 @item Custom accounting 
 @end enumerate
 
-In this sequence, only System accounting is obligatory; all
-other methods are applied only when enabled.@FIXME{This is
-not true anymore. Describe why. Give a reference to MLC node}.
+Any method can be enabled or disabled. Thus, you can even disable them
+all, thereby disabling accounting altogether.
+
+Notice, that the multiple login checking scheme relies on 
+accounting being enabled. By default it uses system accounting, but
+can also be configured to use @acronym{sql} accounting. So, if you
+disable system accounting and still wish to use reliable multiple login
+checking, make sure you configure @command{radiusd} to use @acronym{sql}
+for this purpose. @xref{Multiple Login Checking}, for the detailed information
+about the subject.
 
 If any accounting type in this sequence fails, the accounting
 is deemed to fail and all subsequent methods are not invoked.

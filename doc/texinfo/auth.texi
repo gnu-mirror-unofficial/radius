@@ -278,7 +278,6 @@ an example of its use, see @ref{Exec-Program-Wait}.
 @section Multiple Login Checking
 @cindex Multiple Login Checking
 @cindex Simultaneous logins, checking for
-@UNREVISED{}
 
 The number of sessions a user can have open simultaneously can be
 restricted by setting @attr{Simultaneous-Use} attribute in the user's
@@ -353,12 +352,12 @@ Here is an example of @code{mlc_user_query} and @code{mlc_realm_query}:
 @smallexample     
 mlc_user_query SELECT user_name,nas_ip_address,nas_port_id,acct_session_id \
                FROM calls \
-	       WHERE user_name='%C@{User-Name@}' \
+               WHERE user_name='%C@{User-Name@}' \
                AND status = 1
 
 mlc_realm_query SELECT user_name,nas_ip_address,nas_port_id,acct_session_id \
-	        FROM calls \
-		WHERE realm_name='%C@{Realm-Name@}'	
+                FROM calls \
+                WHERE realm_name='%C@{Realm-Name@}'     
 @end smallexample
 
 Apart from these two queries you may also wish to provide a query for

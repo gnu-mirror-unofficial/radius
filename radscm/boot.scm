@@ -17,6 +17,8 @@
 ;;;;
 ;;;; $Id$
 
+(use-modules (ice-9 format))
+
 ;; Ports
 (define :port-auth 0)
 (define :port-acct 1)

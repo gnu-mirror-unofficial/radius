@@ -54,6 +54,8 @@
 ;;;; raddb/users:
 ;;;; BEGIN      NULL  Scheme-Procedure = "ttl-query", Fall-Through = Yes
 
+(use-modules (ice-9 format))
+
 (define ttl-source-ip-address INADDR_ANY)
 (define ttl-source-port 0)
 (define ttl-dest-ip-address 0)

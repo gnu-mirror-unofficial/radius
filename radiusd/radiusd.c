@@ -790,9 +790,10 @@ reread_config(reload)
                 radlog(L_INFO, _("Reloading configuration files."));
                 rad_flush_queues();
                 socket_list_close(socket_first);
-		socket_first = NULL;
         }
 
+	socket_first = NULL;
+	
 #ifdef USE_SNMP
         server_stat.auth.status = serv_init;
         server_stat.acct.status = serv_init;

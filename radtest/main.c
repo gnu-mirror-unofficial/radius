@@ -530,7 +530,9 @@ radtest_send(int port, int code, Variable *var, Symtab *cntl)
         var->type = Integer;
         var->datum.number = reply_code;
 
-        reply_list = avl_dup(auth->request);
+        reply_list = rad_clt_decrypt_pairlist(avl_dup(auth->request),
+					      auth->vector, auth->secret);
+
         var = (Variable*)sym_lookup(vartab, "REPLY");
         var->type = Vector;
         var->datum.vector = NULL;

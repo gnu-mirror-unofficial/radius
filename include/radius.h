@@ -479,6 +479,8 @@ void rad_clt_append_server(RADIUS_SERVER_QUEUE *qp, RADIUS_SERVER *server);
 void rad_clt_clear_server_list(RADIUS_SERVER_QUEUE *qp);
 RADIUS_SERVER *rad_clt_find_server(RADIUS_SERVER_QUEUE *qp, char *name);
 void rad_clt_random_vector(char *vector);
+VALUE_PAIR *rad_clt_encrypt_pairlist(VALUE_PAIR *plist,
+				     u_char *vector, u_char *secret);
 
 /* log.c */
 char *rad_print_request(RADIUS_REQ *req, char *outbuf, size_t size);

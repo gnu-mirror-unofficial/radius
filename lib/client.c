@@ -140,12 +140,12 @@ rad_clt_recv(UINT4 host, u_short udp_port, char *secret, char *vector,
         return rad_decode_pdu(host, udp_port, buffer, length);
 }
 
-static VALUE_PAIR *
-_encode_pairlist(VALUE_PAIR *p, u_char *vector, u_char *secret)
+VALUE_PAIR *
+rad_clt_encrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
 {
-	VALUE_PAIR *ret = avl_dup(p);
-
-	for (p = ret; p; p = p->next) {
+	VALUE_PAIR *p;
+	
+	for (p = plist; p; p = p->next) {
 		if (p->prop & AP_ENCRYPT_RFC2138) {
 			char *pass = p->avp_strvalue;
 			encrypt_password(p, pass, vector, secret);
@@ -156,9 +156,8 @@ _encode_pairlist(VALUE_PAIR *p, u_char *vector, u_char *secret)
 			efree(pass);
 		}
 	}
-	return ret;
-}
-
+	return plist;
+}	
 
 RADIUS_REQ *
 rad_clt_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
@@ -240,7 +239,8 @@ rad_clt_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 			id = *authid;
 		else
 			id = rad_clt_message_id(server);
-		pair = _encode_pairlist(pairlist, vector, server->secret);
+		pair = rad_clt_encrypt_pairlist(avl_dup(pairlist),
+						vector, server->secret);
 		size = rad_create_pdu(&pdu, code,
 				      id,
 				      vector,

@@ -117,3 +117,32 @@
 ~ StatPortInUseMaxTime			1,3,6,1,4,1,9163,3,1,8,1,16
 ~ StatPortInUseMaxTimestamp		1,3,6,1,4,1,9163,3,1,8,1,17
 
+/* Server */
+/* fixed oids */
+= radiusServerUpTime			1,3,6,1,4,1,9163,1,1
+= radiusServerResetTime			1,3,6,1,4,1,9163,1,2
+= radiusServerState			1,3,6,1,4,1,9163,1,3
+
+/* variable oids */
+~ queueIndex				1,3,6,1,4,1,9163,1,4,1,1
+~ queueName				1,3,6,1,4,1,9163,1,4,1,2
+~ queueActive				1,3,6,1,4,1,9163,1,4,1,3
+~ queueHeld				1,3,6,1,4,1,9163,1,4,1,4
+~ queueTotal				1,3,6,1,4,1,9163,1,4,1,5
+
+~ memoryNumClasses			1,3,6,1,4,1,9163,1,5,1
+~ memoryNumBuckets			1,3,6,1,4,1,9163,1,5,2
+~ memoryNumBytes			1,3,6,1,4,1,9163,1,5,3
+
+~ classIndex				1,3,6,1,4,1,9163,1,5,4,1,1
+~ classSize				1,3,6,1,4,1,9163,1,5,4,1,2
+~ classElsPerBucket			1,3,6,1,4,1,9163,1,5,4,1,3
+~ classNumBuckets			1,3,6,1,4,1,9163,1,5,4,1,4
+~ classElsTotal				1,3,6,1,4,1,9163,1,5,4,1,5
+~ classElsUsed				1,3,6,1,4,1,9163,1,5,4,1,6
+
+~ memoryUtilization			1,3,6,1,4,1,9163,1,5,5
+~ memoryMallocBlocks			1,3,6,1,4,1,9163,1,5,6
+~ memoryMallocBytes			1,3,6,1,4,1,9163,1,5,7
+
+

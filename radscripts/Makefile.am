@@ -1,5 +1,5 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2003 Free Software Foundation, Inc.
+# Copyright (C) 2000,2001,2003,2004 Free Software Foundation, Inc.
 #
 # Written by Sergey Poznyakoff
 #
@@ -17,9 +17,13 @@ EXTRA_DIST=radscripts.m4 radctl.m4 radauth.m4 \
            radping.m4 radgrep.m4 builddbm.m4
 CLEANFILES=$(sbin_SCRIPTS) $(bin_SCRIPTS)
 M4_DEFINES=-DSRCDIR=$(srcdir) -DPROGNAME=$(sbindir)/radiusd \
+           -DPACKAGE_STRING="$(PACKAGE_STRING)" \
            -DBINDIR=$(bindir) -DSBINDIR=$(sbindir) -DDATADIR=$(pkgdatadir) \
            -DPIDFILE=$(RADPID_DIR)/radiusd.pid -DPS=$(PS) \
 	   -DAWK=$(AWK) -DGETOPT=$(GETOPT)
+
+AM_INSTALLCHECK_STD_OPTIONS_EXEMPT = radauth
+
 radctl: $(srcdir)/radctl.m4
 	$(M4) $(M4_DEFINES) $(srcdir)/radctl.m4 > radctl
 

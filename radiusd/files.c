@@ -676,7 +676,7 @@ hints_setup(RADIUS_REQ *req)
                 /* Is the rewrite function specified? */
                 if ((tmp = avl_find(i->rhs, DA_REWRITE_FUNCTION))
                     || (tmp = avl_find(i->lhs, DA_REWRITE_FUNCTION))) {
-                        if (run_rewrite(tmp->avp_strvalue, req)) {
+                        if (rewrite_eval(tmp->avp_strvalue, req, NULL, NULL)) {
                                 radlog(L_ERR, "hints:%d: %s(): %s",
                                        i->lineno,
                                        tmp->avp_strvalue,
@@ -779,7 +779,7 @@ huntgroup_access(RADIUS_REQ *radreq)
 #ifdef DA_REWRITE_FUNCTION
         if (pl &&
             (pair = avl_find(pl->lhs, DA_REWRITE_FUNCTION)) != NULL) {
-                if (run_rewrite(pair->avp_strvalue, radreq)) {
+                if (rewrite_eval(pair->avp_strvalue, radreq, NULL, NULL)) {
                         radlog(L_ERR, "huntgroups:%d: %s(): %s",
                                pl->lineno,
                                pair->avp_strvalue,
@@ -1721,7 +1721,7 @@ dump_pairs(FILE *fp, VALUE_PAIR *pair)
                         fprintf(fp, "(%d) ", pair->type);
                 }
 
-                if (pair->eval) {
+                if (pair->eval_type != eval_const) {
                         etype = TYPE_STRING;
                         fprintf(fp, "=");
                 } else

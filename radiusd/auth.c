@@ -325,10 +325,12 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
 		case DV_PASSWORD_LOCATION_SQL:
 #ifdef USE_SQL
 			real_password = rad_sql_pass(radreq, authdata);
+			if (!real_password)
+				return AUTH_NOUSER;
 #else
 			radlog(L_ERR,
 			       _("%s: SQL authentication not available"),
-			       name);
+			       namepair->strvalue);
 			return AUTH_NOUSER;
 #endif
 			break;

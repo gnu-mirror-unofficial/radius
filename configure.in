@@ -167,7 +167,7 @@ AC_CHECK_FUNCS(setsid gethostname gettimeofday \
 AM_FUNC_OBSTACK
 AC_REPLACE_FUNCS(strerror strncasecmp strcspn snprintf vasprintf)
 rad_REPLACE_GNU_GETOPT
-rad_LIB_REGEX
+rad_REPLACE_REGEX
 
 AC_MSG_CHECKING(for sys_errlist and sys_nerr)
 AC_TRY_RUN(

@@ -235,7 +235,10 @@ input_select(INPUT *input, struct timeval *tv)
 			input->fd_max = -1;
 	}
 
-	insist(input->fd_max >= 0);
+	if (input->fd_max < 0) {
+		pause();
+		return errno;
+	}
 	
 	readfds = input->fdset;
 

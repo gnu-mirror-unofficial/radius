@@ -106,13 +106,13 @@ static struct keyword op_tab[] = {
  * Static declarations
  */
 static int portcmp(VALUE_PAIR *check, VALUE_PAIR *request);
-static int groupcmp(VALUE_PAIR *check, char *username);
+static int groupcmp(VALUE_PAIR *request, char *groupname, char *username);
 static int uidcmp(VALUE_PAIR *check, char *username);
 static int paircmp(VALUE_PAIR *request, VALUE_PAIR *check);
 static int hunt_paircmp(VALUE_PAIR *request, VALUE_PAIR *check);
 static void pairlist_free(PAIR_LIST **pl);
 static int fallthrough(VALUE_PAIR *vp);
-static int matches(char *name, PAIR_LIST *pl, char *matchpart);
+static int matches(VALUE_PAIR *req, char *name, PAIR_LIST *pl, char *matchpart);
 static int huntgroup_match(VALUE_PAIR *request_pairs, char *huntgroup);
 static void clients_free(CLIENT *cl);
 static void nas_free(NAS *cl);
@@ -576,7 +576,7 @@ user_find_db(name, request_pairs, check_pairs, reply_pairs)
 
 		pairdelete(reply_pairs, DA_FALL_THROUGH);
 
-		sprintf(buffer, "DEFAULT");
+		radsprintf(buffer, sizeof(buffer), "DEFAULT");
 		i = 0;
 		while ((r = dbm_find(buffer, request_pairs,
 				     check_pairs, reply_pairs)) >= 0 ||
@@ -587,7 +587,7 @@ user_find_db(name, request_pairs, check_pairs, reply_pairs)
 					break;
 				pairdelete(reply_pairs, DA_FALL_THROUGH);
 			}
-			sprintf(buffer, "DEFAULT%d", i++);
+			radsprintf(buffer, sizeof(buffer), "DEFAULT%d", i++);
 		}
 	}
 #ifdef DBM
@@ -777,7 +777,7 @@ userparse(buffer, first_pair, errmsg)
 			if (token[0] == '\n' || token[0] == '#')
 				continue;
 			if (!(attr = attr_name_to_dict(token))) {
-				sprintf(errbuf,
+				radsprintf(errbuf, sizeof(errbuf),
 					_("unknown attribute `%s/%s'"), 
 					token, buffer);
 				*errmsg = errbuf; 
@@ -789,7 +789,7 @@ userparse(buffer, first_pair, errmsg)
 		case PS_OPS:
 			op = xlat_keyword(op_tab, token, -1);
 			if (op == -1) {
-				sprintf(errbuf,
+				radsprintf(errbuf, sizeof(errbuf),
 					_("expected opcode but found %s"),
 					token);
 				*errmsg = errbuf; 
@@ -832,7 +832,7 @@ userparse(buffer, first_pair, errmsg)
 					pair->lvalue = atoi(token);
 				} else if (!(dval = value_name_to_value(token))) {
 					free_pair(pair);
-					sprintf(errbuf,
+					radsprintf(errbuf, sizeof(errbuf),
 						_("unknown value %s"),
 						token);
 					*errmsg = errbuf;
@@ -880,7 +880,7 @@ userparse(buffer, first_pair, errmsg)
 				timeval = time(NULL);
 				tm = localtime(&timeval);
 				if (user_gettime(token, tm)) {
-					sprintf(errbuf,
+					radsprintf(errbuf, sizeof(errbuf),
 						_("%s: error parsing date %s"),
 						attr->name, token);	
 					goto error;
@@ -893,7 +893,7 @@ userparse(buffer, first_pair, errmsg)
 				break;
 
 			default:
-				sprintf(errbuf,
+				radsprintf(errbuf, sizeof(errbuf),
 					_("unknown attribute type %d"),
 					pair->type);
 			error:
@@ -907,7 +907,7 @@ userparse(buffer, first_pair, errmsg)
 			
 		case PS_END:
 			if (token[0] != ',' && token[0] != '\n') {
-				sprintf(errbuf,
+				radsprintf(errbuf, sizeof(errbuf),
 					_("expected , but found %s"),
 					token);
 				*errmsg = errbuf;
@@ -981,7 +981,7 @@ hints_setup(request_pairs)
 
 
 	for (i = hints; i; i = i->next) {
-		if (matches(name, i, newname) == 0) {
+		if (matches(request_pairs, name, i, newname) == 0) {
 			debug(1, ("matched %s at hints:%d",
 				 i->name, i->lineno));
 			break;
@@ -1083,7 +1083,7 @@ hunt_paircmp(request, check)
 			continue;
 		}
 
-		debug(20, ("check_item: %s", debug_print_pair(check_item)));
+		debug(20, ("check_item: %A", check_item));
 
 		/*
 		 *	See if this item is present in the request.
@@ -1104,7 +1104,7 @@ hunt_paircmp(request, check)
 			continue;
 		}
 
-		debug(20, ("auth_item: %s", debug_print_pair(auth_item)));
+		debug(20, ("auth_item: %A", auth_item));
 
 		/*
 		 *	OK it is present now compare them.
@@ -1119,7 +1119,8 @@ hunt_paircmp(request, check)
 				break;
 			case DA_GROUP_NAME:
 			case DA_GROUP:
-				result = groupcmp(check_item,
+				result = groupcmp(request,
+						  check_item->strvalue,
 						  auth_item->strvalue);
 				break;
 			case DA_HUNTGROUP_NAME:
@@ -1373,7 +1374,7 @@ free_radck_type(rp)
 	RADCK_TYPE *rp;
 {
 	efree(rp->type);
-	free_slist(rp->args, free_radck_arg);
+	free_slist((struct slist*)rp->args, free_radck_arg);
 }
 
 /*
@@ -1452,7 +1453,7 @@ nas_free(cl)
 
 	while(cl) {
 		next = cl->next;
-		free_slist(cl->args, free_radck_arg);
+		free_slist((struct slist*)cl->args, free_radck_arg);
 		free_entry(cl);
 		cl = next;
 	}
@@ -1968,14 +1969,26 @@ uidcmp(check, username)
 
 	return pwd->pw_uid - check->lvalue;
 }
-	
+
+AUTH_REQ *
+auth_request(request_pairs)
+	VALUE_PAIR *request_pairs;
+{
+	VALUE_PAIR *p;
+
+	if (p = pairfind(request_pairs, DA_QUEUE_ID))
+		return (AUTH_REQ*)p->lvalue;
+	return NULL;
+}
+
 /*
  *	See if user is member of a group.
  *	We also handle additional groups.
  */
 int
-groupcmp(check, username)
-	VALUE_PAIR *check;
+groupcmp(request, groupname, username)
+	VALUE_PAIR *request;
+	char *groupname;
 	char *username;
 {
 	struct passwd *pwd;
@@ -1983,23 +1996,16 @@ groupcmp(check, username)
 	char **member;
 	int retval;
 
-#if 0
-/*FIXME: should query sql here! */	
-/*#ifdef USE_SQL*/
-        if (sql_cfg.doauth == 1) {
-		if ((pwd = mysql_getpwnam(username)) == NULL)
-			return -1;
-        } else {
-		if ((pwd = getpwnam(username)) == NULL)
-			return -1;
-        }
-#else
+#ifdef USE_SQL
+	AUTH_REQ *req = auth_request(request);
+	if (req && rad_sql_checkgroup(req, groupname) == 0)
+		return 0;
+#endif
+
         if ((pwd = getpwnam(username)) == NULL)
                 return -1;
 
-#endif
-
-	if ((grp = getgrnam(check->strvalue)) == NULL)
+	if ((grp = getgrnam(groupname)) == NULL)
 		return -1;
 
 	retval = (pwd->pw_gid == grp->gr_gid) ? 0 : -1;
@@ -2073,7 +2079,8 @@ static int server_check_items[] = {
 	DA_TERMINATION_MENU,
 	DA_GROUP_NAME,
 	DA_MATCH_PROFILE,
-	DA_INCLUDE_PROFILE
+	DA_INCLUDE_PROFILE,
+	DA_QUEUE_ID
 };
 
 int
@@ -2108,7 +2115,7 @@ paircmp(request, check)
 			check_item = check_item->next;
 			continue;
 		}
-		debug(20, ("check_item: %s", debug_print_pair(check_item)));
+		debug(20, ("check_item: %A", check_item));
 
 		/*
 		 *	See if this item is present in the request.
@@ -2121,6 +2128,7 @@ paircmp(request, check)
 			case DA_PREFIX:
 			case DA_SUFFIX:
 			case DA_GROUP_NAME:
+			case DA_GROUP:
 				if (auth_item->attribute != DA_USER_NAME)
 					continue;
 				/*FALLTHRU*/
@@ -2146,7 +2154,7 @@ paircmp(request, check)
 			continue;
 		}
 
-		debug(20, ("auth_item: %s", debug_print_pair(auth_item)));
+		debug(20, ("auth_item: %A", auth_item));
 
 		/*
 		 *	OK it is present now compare them.
@@ -2168,7 +2176,9 @@ paircmp(request, check)
 				break;
 			case DA_GROUP_NAME:
 			case DA_GROUP:
-				compare = groupcmp(check_item, username);
+				compare = groupcmp(request,
+						   check_item->strvalue,
+						   username);
 				break;
 			case DA_HUNTGROUP_NAME:
 				compare = !huntgroup_match(request,
@@ -2275,8 +2285,9 @@ pairlist_free(pl)
 }
 
 int
-hints_pairmatch(pl, name, ret_name)
+hints_pairmatch(pl, req, name, ret_name)
 	PAIR_LIST *pl;
+	VALUE_PAIR *req;
 	char *name;
 	char *ret_name;
 {
@@ -2299,7 +2310,7 @@ hints_pairmatch(pl, name, ret_name)
 			compare = uidcmp(pair, username);
 			break;
 		case DA_GROUP:
-			compare = groupcmp(pair, username);
+			compare = groupcmp(req, pair->strvalue, username);
 			break;
 		default:
 			continue;
@@ -2442,14 +2453,15 @@ wild_match(expr, name, return_name)
  * Match a username with a wildcard expression.
  */
 int
-matches(name, pl, matchpart)
+matches(req, name, pl, matchpart)
+	VALUE_PAIR *req;
 	char *name;
 	PAIR_LIST *pl;
 	char *matchpart;
 {
 	if (strncmp(pl->name, "DEFAULT", 7) == 0 ||
 	    wild_match(pl->name, name, matchpart) == 0)
-	    return hints_pairmatch(pl, name, matchpart);
+	    return hints_pairmatch(pl, req, name, matchpart);
 	return 1;
 }	
 	
@@ -2559,7 +2571,7 @@ reload_config_file(what)
 
 	case reload_naslist:
 		/*FIXME*/
-		path = mkfilename(radius_dir, "nastypes");
+		path = mkfilename(radius_dir, RADIUS_NASTYPES);
 		read_nastypes_file(path);
 		efree(path);
 		/*END*/

@@ -2,6 +2,9 @@ Makefile
 Makefile.in
 config.c
 rewrite.c
+config_tok.h
+y.output
+config_kw.c
 .deps
 radiusd
 .libs

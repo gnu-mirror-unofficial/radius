@@ -1,5 +1,10 @@
 2001-08-27 Sergey Poznyakoff
 
+	* include/radiusd.h: Removed unused RLOG_PID define.
+	* radiusd/config.y: Changed handling of 'category' statement.
+
+2001-08-27 Sergey Poznyakoff
+
 	* radiusd/auth.c: Do not display "Invalid user" diagnostics when
 	print-auth is no.
 	* radiusd/snmpserv.c: Fixed snmp_sort_nas_stat(): simple sorting

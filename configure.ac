@@ -699,14 +699,5 @@ AC_OUTPUT(Makefile
           scripts/guile/1.6/Makefile 
           contrib/Makefile)
 
-if test "x$USE_SERVER_GUILE" = xyes; then
-        cat <<EOF
-WARNING: You have used --with-server-guile flag. Please note
-that enabling Guile support in the multithreaded server is
-temporarly discouraged due to the thread-unsafe nature of
-libguile. This limitation will disappear when the thread-safe
-version of Guile is released.
-EOF
-fi
 
 

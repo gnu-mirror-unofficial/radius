@@ -85,12 +85,10 @@ auth_code_abbr(code)
         int code;
 {
         struct keyword *p;
-	char buf[64];
         for (p = auth_codes_abbr; p->name; p++)
                 if (p->tok == code)
                         return p->name;
-	snprintf(buf, sizeof buf, "%d", code);
-	return buf;
+	return "Unknown";
 }
 
 #if RADIUS_DEBUG

@@ -168,8 +168,6 @@ typedef struct value_pair {
 
 } VALUE_PAIR;
 
-typedef unsigned long qid_t; /* queue identifier */
-
 typedef struct radius_req {
 	UINT4			ipaddr;       /* Source IP address */
 	u_short			udp_port;     /* Source port */
@@ -181,7 +179,7 @@ typedef struct radius_req {
 	u_char			*data;	      /* Raw received data */
 	int			data_len;     /* Length of raw data */
 	int                     data_alloced; /* Was the data malloced */
-	qid_t                   qid;          /* Queue ID */
+	void                    *conn;        /* SQL connection */
 	int                     fd;           /* socket desc */
         /* Proxy support fields */
 	char			*realm;       /* stringobj, actually */
@@ -317,7 +315,7 @@ char *mkfilename3(char *dir, char *subdir, char *name);
 int backslash(int c);
 void string_copy(char *d, char *s, int  len);
 #define STRING_COPY(s,d) string_copy(s,d,sizeof(s)-1)
-char *format_pair(VALUE_PAIR *pair);
+char *format_pair(VALUE_PAIR *pair, char **save);
 char *format_ipaddr(UINT4 ipaddr);
 int format_string_visual(char *buf, int runlen, char *str, int len);
 char *op_to_str(int op);

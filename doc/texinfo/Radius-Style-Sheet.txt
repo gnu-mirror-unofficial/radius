@@ -1,0 +1,123 @@
+Joseph C. Fineman                          GNU Radius Reference Manual
+495 Pleasant St., #1, Malden, MA 02148     Update 20 May 2003
+(781) 324-6899; jcf@TheWorld.com           STYLE NOTES
+
+Exceptions to the generalities below, and special cases, are collected
+alphabetically at the end.
+
+(c/e) means a decision by me.  (Texinfo) means following the
+  recommendation or usage of the Texinfo manual.  (spec) means
+  specified by Lisa.  (GCC) means extracted from the GCC Coding
+  Conventions.
+
+Spelling:  U.S.
+
+Serial comma is used:  user login name, user password, and NAS IP.
+  (Texinfo)
+
+Quotation marks:  
+  Logical style is used for punctuation:  Only what belongs to the
+    quotation goes inside.
+  Singlequotes are normally used to form names of strings.
+
+Hyphens:
+  Prefixes are not normally hyphenated:  sublist (c/e)
+  Noun phrase used as adjective or verb is sometimes hyphenated; I
+    have followed the author's usage if consistent & clear.
+  Noun + participle or other adjective is hyphenated as adjective:
+    user-defined
+  Symbol + noun is hyphenated as noun:  IP-number
+  Yoke between grammatically equivalent words:  Ordinary hyphen is
+    used unless one or the other side contains a space or hyphen:
+    attribute-value pair
+
+Possessives:  Chicago rules:  Jones's (c/e)
+Contractions allowed:  Let's
+
+Acronyms & the like:  Most are small cap (& have special coding), but
+  a few are full cap.  The latter are listed in the alphabetical
+  section below, as are all in which the MS is inconsistent and I have
+  chosen one or the other.
+
+"Which" vs. "that":  "That" preferred in restrictive clauses (c/e)
+"Shall" is not used:  68
+
+Common-gender pronouns:  Trade off unobtrusively between masculine &
+  feminine, in a ratio of about 3:1 (spec).
+
+Hierarchy of subheadings:  4.5.1  54-56
+
+Amalgamate indexes?
+
+Below, "[ -]" means hyphenated if used attributively, spaced
+  otherwise.
+
+access-control (a)  4
+accounting-off packet (c/e)  65
+accounting-on packet (c/e)  66
+acknowledgement
+AM, PM 159
+ASCII, sm cap
+attribute-value pair
+AVP, sm cap
+back-end (a)  (GCC)
+32-bit (a)  (GCC)
+bit-field (n&a)  (GCC)
+boolean
+calling station (a)
+cleantext 148
+command line (a)
+configuration file (a)
+data  singular? 117  plural 128
+DBM, full cap  43
+define:  I have not tried to police the vogue use of this word
+dialog
+dial-up (n)  57
+due to, adv, allowed
+fine-tune (v)
+Finger (program)
+front-end (a)  (GCC)
+GNU, full cap
+hostname  40
+huntgroup 29
+ID, sm cap
+Internet
+IP, full cap
+ISP, full cap
+keepalive (n)
+LHS, sm cap
+logfile  33
+login (n, a)
+log in (v) (c/e)
+matching[ -]rule (c/e)
+MAX Ascend series (sm cap MAX A)  53, 97
+MIPS  (GCC)
+NAS, sm cap; plural NASes
+netmask  138
+NT, sm cap  100
+pairlist
+PEC, sm cap  112
+plaintext  78
+PPP, full cap
+read-only (a)  45
+regular-expression (a) (c/e)
+Rewrite (programming language)
+RFC, sm cap  96
+RHS, sm cap
+run[ -]time (in the sense of the time at which a program is run;
+  cf. compile time, configuration time)
+Scheme (language)  47
+singlequote (c/e)  103
+SLIP, full cap
+SNMP, full cap  44
+SQL, sm cap  84->83
+syslog?  38
+telnet
+timeout  46
+time-to-live (n)  40
+UDP?, sm cap  32
+UNIX, sm cap  101->83
+user[ -]name
+user session (a)
+VAX  (GCC)
+Web5

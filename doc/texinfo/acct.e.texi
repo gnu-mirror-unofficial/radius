@@ -1,0 +1,161 @@
+@c This is part of the Radius manual.
+@c Copyright (C) 1999,2000,2001,2002 Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
+@node Accounting, Logging, Authentication, Top
+@chapter Accounting
+@cindex Accounting Types
+
+By default GNU Radius supports three types of accounting. Any
+additional accounting methods can be defined using extension
+mechanisms.
+
+The accounting methods are applied to a request in a following
+sequence:
+
+@enumerate 1
+@item UNIX accounting
+@item Detailed request accounting
+@item @acronym{sql} accounting 
+@item Custom accounting 
+@end enumerate
+
+In this sequence, only UNIX accounting is obligatory; all
+other methods are applied only when enabled.
+
+If any accounting type in this sequence fails, the accounting
+is deemed to fail and all subsequent methods are not invoked.
+
+@menu
+* UNIX Accounting::                     UNIX style utmp/wtmp accounting.
+* Detailed Request Accounting::         Detailed requests.
+* SQL Accounting::                      Accounting to SQL server.
+* Custom Acct::                         Defining Custom Accounting Types.
+@end menu
+
+@comment *L2****************************************************************
+@node UNIX Accounting
+@section UNIX Accounting
+@cindex UNIX Accounting
+
+This accounting method is always enabled.
+
+Radius keeps files @file{radutmp} and @file{radwtmp} in its logging
+directory  and stores the accounting data there. The utilities
+@command{radwho} and @command{radlast} can be used to list information about
+users' sessions.
+
+@comment *L2****************************************************************
+@node Detailed Request Accounting
+@section Detailed Request Accounting
+@cindex Detailed Request Accounting
+
+Radius stores the detailed information about accounting packets it receives
+in files @file{radacct/@var{nasname}/detail} (@pxref{Naming Conventions}), 
+where @var{nasname} is replaced with the short name of the @NAS{} from
+the @file{raddb/naslist} file (@pxref{naslist file}).
+
+By default, this accounting type is always enabled, provided that
+@file{radacct} directory exists and is writable
+(@pxref{Naming Conventions}). To turn the detailed accounting off,
+use the @code{detail} statement in the @file{config} file. For more information
+about it, @xref{acct}.
+
+The accounting detail files consist of a record for each accounting
+request. A record includes the timestamp and detailed
+dump of attributes from the packet, e.g.:
+
+@example
+Fri Dec 15 18:00:24 2000
+        Acct-Session-Id = "2193976896017"
+        User-Name = "e2"
+        Acct-Status-Type = Start
+        Acct-Authentic = RADIUS
+        Service-Type = Framed-User
+        Framed-Protocol = PPP
+        Framed-IP-Address = 11.10.10.125
+        Calling-Station-Id = "+15678023561"
+        NAS-IP-Address = 11.10.10.11
+        NAS-Port-Id = 8
+        Acct-Delay-Time = 0
+        Timestamp = 976896024
+        Request-Authenticator = Unverified
+
+Fri Dec 15 18:32:09 2000
+        Acct-Session-Id = "2193976896017"
+        User-Name = "e2"
+        Acct-Status-Type = Stop
+        Acct-Authentic = RADIUS
+        Acct-Output-Octets = 5382
+        Acct-Input-Octets = 7761
+        Service-Type = Framed-User
+        Framed-Protocol = PPP
+        Framed-IP-Address = 11.10.10.125
+        Acct-Session-Time = 1905
+        NAS-IP-Address = 11.10.10.11
+        NAS-Port-Id = 8
+        Acct-Delay-Time = 0
+        Timestamp = 976897929
+        Request-Authenticator = Unverified
+@end example
+
+@comment *L2****************************************************************
+@node SQL Accounting
+@section @acronym{sql} Accounting
+@cindex SQL Accounting
+
+The @acronym{sql} accounting method is enabled when Radius is configured with
+@option{--enable-sql} option and the @file{sqlserver} file in its
+configuration directory is properly set up (@pxref{sqlserver file}).
+
+This version of GNU Radius (@value{VERSION}) supports MySQL and
+PostgreSQL servers. Support for Oracle servers will be added soon.
+
+With this accounting method enabled, @command{radiusd} will store the
+information about accounting requests in the configured @acronym{sql} database.
+The accounting method is fully configurable: the Radius administrator
+defines both the types of requests to be accounted and the information
+to be stored into the database (@pxref{sqlserver file}).
+
+@comment *L2****************************************************************
+@node Custom Acct
+@section Defining Custom Accounting Types
+@cindex Custom Accounting Types
+
+If the built-in accounting methods do not meet your requirements,
+you can implement your own. There are two ways
+of doing so:
+
+@enumerate 1
+@item Using a Guile procedure.
+@item Using an external program
+@end enumerate
+
+To use a Guile procedure for accounting, the name of the procedure
+must be specified as a value to the @attr{Scheme-Acct-Procedure} attribute
+in the @RHS{} list of a @file{hints} entry, e.g.:
+
+@example
+DEFAULT NULL Scheme-Acct-Procedure = "my-acct"
+@end example
+@noindent
+
+For a detailed description of Scheme accounting procedures,
+@pxref{Accounting with Scheme}.
+
+Another way of implementing your own accounting method is using
+an external program. This is less effective than the methods described
+above, but may be necessary sometimes. To invoke the program, use
+the following statement in the @LHS{} of the @file{hints} entry:
+
+@example
+Acct-Ext-Program = "@var{progname} @var{args}"
+@end example
+
+The @var{progname} must be the full path to the program, and @var{args}
+any arguments it needs. The usual substitutions may be used in
+@var{args} to pass any request attributes to the program
+(@pxref{Macro Substitution}).
+
+For a detailed description of @attr{Acct-Ext-Program},
+@pxref{Acct-Ext-Program}.

@@ -1,0 +1,54 @@
+@c This is part of the Radius manual.
+@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
+@node Logging, Debugging, Accounting, Top
+@chapter Logging
+@cindex Logging
+
+GNU Radius reports every event worth mentioning. The events are
+segregated by their severity level. Radius discerns the following
+levels (in order of increasing severity):
+
+@table @code
+@item Debug
+The debug messages (@ref{Debugging}).
+
+@item Auth
+Under this level every authentication attempt is logged. This is enabled
+by setting
+@example
+level auth;
+@end example
+@noindent
+in the @code{category auth} statement of the @file{config} file.
+
+@item Proxy
+Messages regarding proxy requests (@pxref{Proxying}).
+
+@item Info
+Informational messages.
+
+@item Notice
+Normal, but significant conditions.
+
+@item Warning
+Warning conditions. These mean some deviations from normal work.
+
+@item Error
+Error conditions. Usually these require special attention.
+
+@item CRIT
+Critical conditions due to which Radius is no longer able to continue
+working. These require urgent actions from the site administrator.
+
+@end table
+
+By default, all messages in all levels are output to the file
+@file{radlog/radius.log}. In addition, messages in level
+@code{CRIT} are also duplicated to the system console. These defaults
+can be overridden using @code{logging} statement in the
+@file{raddb/config} file.
+(@xref{logging,,logging statement}, for the description of logging
+statement syntax; @pxref{Naming Conventions} for information about the 
+locations of different Radius configuration files.)

@@ -149,6 +149,8 @@ VALUE           Proxy-Replied	        Yes                     1
 
 ATTRIBUTE	Realm-Name		2013	string	- [L-L-L-]
 
+ATTRIBUTE	Auth-Failure-Trigger	2014	string	- [-R----]
+
 # These are used by rewriting functions:
 ATTRIBUTE	Orig-User-Name		2101	string	- [L--R-R]
 ATTRIBUTE	Orig-NAS-Port-Id	2105	integer	- [L--R-R]

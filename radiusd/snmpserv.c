@@ -428,6 +428,8 @@ struct cfg_stmt snmp_stmt[] = {
 	  NULL, NULL },
 	{ "community", CS_STMT, NULL, snmp_cfg_community, NULL, 
 	  NULL, NULL },
+	{ "storage", CS_BLOCK, NULL, NULL, NULL,
+	  storage_stmt, NULL },
 	{ "network", CS_STMT, NULL, snmp_cfg_network, NULL,
 	  NULL, NULL },
 	{ "acl", CS_BLOCK, NULL, NULL, NULL, acl_stmt, NULL },

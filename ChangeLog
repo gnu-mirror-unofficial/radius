@@ -1,3 +1,22 @@
+2002-06-06  Sergey Poznyakoff
+
+	* TODO: Updated.
+	* include/radius.h: New attribute property AP_REQ_CMP marks
+	  attributes that can be used in request comparisons to
+	  determine duplicate requests.
+	* lib/avl.c (avp_cmp): New function. Compares two A/V pairs
+	  (a la eq?). Note: useless for comparing password attributes.
+	  (avl_cmp): New function. Compares two A/V lists using
+	  avp_cmp. Only attributes marked with AP_REQ_CMP are involved
+	  in comparison.
+*	* lib/dict.c: New property flag 'c'. Sets AP_REQ_CMP bit.
+*	* lib/nas.c (read_naslist_entry): Allow two fields for
+	  compatibility with previous versions. Set default nas type to
+	  `true'
+	* raddb/dictionary: Mark attributes that can be used for
+	  comparisons.
+	* radscm/rscm_avl.c (rscm_avl_match_p): Use avp_cmp().
+
 2002-06-05  Sergey Poznyakoff
 
 	* NEWS: Updated.

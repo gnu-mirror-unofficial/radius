@@ -130,3 +130,16 @@ rewrite_cisco NAS-Port-Id = 123,
 		Voip-Connection-Type = "Telephony"
 	      Reply-Message = "OK"
 
+## Filter.exp
+
+filter-ok  Auth-Type = Accept
+	   Exec-Program-Wait = "|filter"
+
+filter-bad Auth-Type = Accept
+	   Exec-Program-Wait = "|filter"
+
+frw-ok     Auth-Type = Accept
+	   Exec-Program-Wait = "|filter_rw" 		
+
+frw-bad    Auth-Type = Accept
+	   Exec-Program-Wait = "|filter_rw"

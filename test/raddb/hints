@@ -29,3 +29,9 @@ DEFAULT Suffix = ".2"
 
 # Scheme-acct.exp
 scheme NULL  Scheme-Acct-Procedure = "acct"
+
+DEFAULT Prefix = "frw", Strip-User-Name = No
+	Acct-Ext-Program = "|filter_rw"
+
+DEFAULT Prefix = "filter", Strip-User-Name = No
+	Acct-Ext-Program = "|filter"

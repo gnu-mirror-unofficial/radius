@@ -1,34 +1,30 @@
-GNU Radius NEWS -- history of user-visible changes. 2004-06-14
+GNU Radius NEWS -- history of user-visible changes. 2004-06-24
 Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
 ^L
-Version 1.2.92:
+Version 1.2.93:
 
-* libgnuradius
+* Important compatibility note.
 
-This is a library of functions for creation, handling and sending
-requests using RADIUS protocol.
+Previous versions of GNU Radius were silently adding an NAS-IP-Address
+attribute/value pair to any requests lacking it. Whereas such behavior
+is sometimes useful, it is not always needed. Therefore, the new
+version of GNU Radius does not automatically add this attribute.
+Instead, a rewrite rule is provided for this purpose. The default
+raddb/hints file is shipped with this rule enabled. If you are
+upgrading from a previously installed version of GNU Radius, you might
+wish to add the following rule to the very beginning of your
+'raddb/hints':
 
-All programs have been rewritten to link with libgnuradius. On most
-sites this will mean linking against a shared library, which will
-reduce the size of the executables.
+  DEFAULT Rewrite-Function = restore_nas_ip
+          Fall-Through = Yes
 
-* gnuradius.scm
-
-This is a guile module allowing to use libgnuradius functions. It
-supersedes radscm program, which has been removed.
-
-* Rewrite language
-
-** Added i18n support
-
-** New built-in functions:
-
-*** Functions to access internal fields of a RADIUS request.
-*** Interfaces to the Radius NAS database (raddb/naslist).
-*** Interfaces to DNS lookup functions.
+If you chose to do so, add the following statement to the "rewrite"
+section of 'raddb/config':
+	  
+	load "nas-ip.rw";
 
 * radiusd
 
@@ -56,7 +52,7 @@ the authentication.
 ** New configuration statement 'load-module' allows to load arbitrary
 Scheme modules.
 
-** Detailed log filenames are configurable via `detail-file-name'
+** The file names of detailed log files are configurable via `detail-file-name'
 statements in `auth' and `acct' sections of raddb/config.
 
 ** Support for Guile versions prior to 1.6 has been withdrawn.
@@ -80,11 +76,40 @@ are processed, then the ones from the LHS list. Notice, that in
 contrast with the previous versions, any number of Rewrite-Function
 attributes is allowed in both lists.
 
+* Rewrite language
+
+** Added i18n support
+
+** New built-in functions:
+
+*** Functions to access internal fields of a RADIUS request.
+*** Interfaces to the Radius NAS database (raddb/naslist).
+*** Interfaces to DNS lookup functions.
+
+* libgnuradius
+
+This is a library of functions for creation, handling and sending
+requests using RADIUS protocol.
+
+All programs have been rewritten to link with libgnuradius. On most
+sites this will mean linking against a shared library, which will
+reduce the size of the executables.
+
+* gnuradius.scm
+
+This is a guile module allowing to use libgnuradius functions. It
+supersedes radscm program, which has been removed.
+
 * Bugfixes
 
 ** Allow to omit port numbers in `listen' statements (raddb/config), as
 described in the documentation.
     
+** Fixed several inconsistencies in parsing Ascend-Data-Filter and
+Ascend-Call-Filter attributes.
+
+** Fixed a long-standing bug in radtest that caused misinterpretation
+of optional arguments if the program was invoked from '#!' shell magic.
 
 
 Version 1.2:

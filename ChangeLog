@@ -1,3 +1,28 @@
+2004-06-24  Sergey Poznyakoff
+
+	* NEWS: Updated
+	* README: Updated. Brought back options to radauth
+	* configure.ac: Removed work-around for autoconf 2.53
+	Removed check for /bin/getopt: it is no longer used.
+	Raised version number to 1.2.93
+	
+	* examples/Makefile.am: Removed nas_ip.rw
+	* examples/README: Likewise
+	* examples/mas_ip.rw: Moved to raddb/nas-ip.rw
+
+	* raddb/nas-ip.rw: New file.
+	* raddb/Makefile.am: Added nas-ip.rw.
+	* raddb/config.in (rewrite): Load nas-ip.rw
+	* raddb/hints: Run restore_nas_ip
+	* raddb/sqlserver: Replace '%G' with 'now()'
+
+	* radscripts/Makefile.am (M4_DEFINES): Removed GETOPT
+
+	* radtest/main.c (main,parse_opt): Use 5th argument to
+	grad_argp_parse to get the index of first non-optional
+	argument.
+	Added missing gettext markers.
+	
 2004-06-18  Sergey Poznyakoff
 
 	* radscm/ttl.scm (ttl-message): Ignore interrupts during select.

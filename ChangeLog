@@ -1,4 +1,17 @@
-2002-03-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+2002-03-05  Sergey Poznyakoff  
+
+	* radlib/client.c (random_vector): Removed superfluous call to
+	  srand().
+	  (radclient_build_request): Added handling of accounting request.
+	* radiusd/proxy.c (random_vector): Removed superfluous call to
+	  srand().
+	* include/radiusd.h: Define macros for return value of
+	  calc_acctdigest().
+	* radiusd/acct.c (write_detail): Use REQ_AUTH macros.
+	* radiusd/radius.c (calc_acctdigest): Likewise.
+	* radiusd/radiusd.c (main): Initialize random number generator.
+	
+2002-03-04  Sergey Poznyakoff  
 
 +	* snmplib/asn1.c (asn_decode_int): Removed count > intsize
 	  limitation: some hosts return 5 bytes of information (leading 0).

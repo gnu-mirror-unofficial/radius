@@ -1,3 +1,8 @@
+2004-09-18  Sergey Poznyakoff
+
+	* radiusd/auth.c (unix_pass): Bugfix
+	* radtest/completion.c [!WITH_READLINE]: Bugfix
+
 2004-09-17  Sergey Poznyakoff
 
 	* radiusd/sql.c (rad_sql_retrieve_sessions): Fill in .orig_login

@@ -77,7 +77,7 @@ if test $USE_GUILE = yes; then
                          RADSCM=radscm
 			 RADSESSION=radsession
 			 RADSCM_BUILT_SOURCES_LIST='gnuradius.scm $(DOT_X_FILES) $(DOT_DOC_FILES)'
-			 RADSCM_PKGDATA="guile-procedures.txt gnuradius.scm"
+			 RADSCM_PKGDATA='${RADSCM_PKGDATA_FILES}'
                          GUILE_BINDIR=`guile-config info bindir`
 			 if test $USE_SERVER_GUILE = yes; then
 				AC_DEFINE(USE_SERVER_GUILE,1,

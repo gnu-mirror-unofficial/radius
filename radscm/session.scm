@@ -83,7 +83,8 @@
     (rad-send :port-auth :auth-req pack flag-verbose)))
 
 (define (rad-acct acct-type . plist)
-  (let ((pack (list (cons "User-Name"  opt-login)
+  (let ((pack (list (cons "NAS-IP-Address" opt-nas)
+		    (cons "User-Name"  opt-login)
 		    (cons "Acct-Status-Type" acct-type)
 		    (cons "Acct-Session-Id" opt-sid))))
     (cond

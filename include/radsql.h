@@ -58,6 +58,7 @@ typedef struct {
 	char     *acct_nasup_query;
 	char     *acct_nasdown_query;
 	char     *acct_keepalive_query;
+	char     *attr_query;
 	BUFFER   buf;
 	int      keepopen;
 	time_t   idle_timeout;

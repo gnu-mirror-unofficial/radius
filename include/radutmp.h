@@ -33,7 +33,7 @@ struct radutmp {
         int  nas_port;                  /* Port on the terminal server */
         char session_id[RUT_IDSIZE];    /* Radius session ID */
                                         /* (last RUT_IDSIZE bytes at least)*/
-        unsigned int nas_address;       /* IP of portmaster. */
+        unsigned int nas_address;       /* IP of the NAS */
         unsigned int framed_address;    /* SLIP/PPP address or login-host. */
         int proto;                      /* Protocol. */
         time_t time;                    /* Time the entry was last updated. */
@@ -88,5 +88,16 @@ void rut_rewind(radut_file_t file);
 
 int radutmp_putent(char *filename, struct radutmp *ut, int status);
 int radwtmp_putent(char *filename, struct radutmp *ut);
+
+typedef struct format_data format_data_t;
+
+int radutent_print(format_data_t *form, struct radutmp *up, int nl);
+format_data_t *radutent_compile_form(char *fmt);
+void printutmp_header(format_data_t *form);
+
+extern int printutmp_ip_nodomain; /* do not display domain names */
+extern int printutmp_use_naslist; /* use naslist when displaying nas names */
+extern char *printutmp_date_format;
+extern char *printutmp_empty_string;
 
 #endif /* _RADUTMP_H */

@@ -880,9 +880,9 @@ sfn_init(m)
 	/*
 	 * Get the user from the database
 	 */
-	if (!proxied &&
-	    user_find(m->namepair->strvalue, radreq,
-		      &m->user_check, &m->user_reply) != 0) {
+	if (user_find(m->namepair->strvalue, radreq,
+		      &m->user_check, &m->user_reply) != 0
+	    && !proxied) {
 
 		if (is_log_mode(m, RLOG_AUTH)) 
 			auth_log(m, _("Invalid user"), NULL, NULL, NULL);
@@ -907,8 +907,7 @@ sfn_eval_reply(m)
 			Datatype type;
 			Datum datum;
 			
-			if (interpret(p->strvalue, m->req->request,
-				      &type, &datum)) {
+			if (interpret(p->strvalue, m->req, &type, &datum)) {
 				errcnt++;
 				continue;
 			}
@@ -917,7 +916,7 @@ sfn_eval_reply(m)
 				p->lvalue = datum.ival;
 				break;
 			case String:
-				replace_string(&p->strvalue, datum.sval);
+				p->strvalue = make_string(datum.sval);
 				p->strlength = strlen(p->strvalue);
 				break;
 			default:
@@ -1029,11 +1028,6 @@ sfn_service(m)
 	 */
 	if (m->check_pair->lvalue != DV_SERVICE_TYPE_AUTHENTICATE_ONLY)
 		return;
-	if (is_log_mode(m, RLOG_AUTH)) {
-		auth_log(m, _("Authentication OK"),
-			 is_log_mode(m, RLOG_AUTH_PASS) ? m->userpass : NULL,
-			 NULL, NULL);
-	}
 	newstate(as_ack);
 }
 

@@ -479,6 +479,9 @@ rpp_request_handler(void *arg ARG_UNUSED)
 
 	radiusd_signal_init(sig_handler);
 	request_init_queue();
+#ifdef USE_SERVER_GUILE
+        scheme_redirect_output();
+#endif
 
 	while (1) {
 		int len = rpp_fd_read(0, &frq, sizeof frq);

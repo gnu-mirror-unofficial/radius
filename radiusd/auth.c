@@ -56,6 +56,7 @@ static char rcsid[] =
 # include <radsql.h>
 #endif
 #include <timestr.h>
+#include <envar.h>
 
 #if !defined(__linux__) && !defined(__GLIBC__)
   extern char *crypt();
@@ -302,10 +303,9 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
 		if (auth_item) {
 			if (auth_item->strlength == 0)
 				userpass[0] = 0;
-			else 
-				decrypt_password(userpass, auth_item,
-						 radreq->vector,
-						 radreq->secret);
+			else
+				req_decrypt_password(userpass, radreq,
+						     auth_item);
 		}
 	}
 		
@@ -1295,4 +1295,27 @@ sfn_reject(m)
 	stat_inc(auth, m->req->ipaddr, num_rejects);
 }
 
-
+void
+req_decrypt_password(password, req, pair)
+	char *password;
+	RADIUS_REQ *req;
+	VALUE_PAIR *pair; /* Password pair */
+{
+	NAS *nas;
+	char *s;
+	
+	if (!pair) {
+		pair = avl_find(req->request, DA_PASSWORD);
+		if (!pair)
+			return;
+	}
+	/* Determine whether we need to use broken decoding */
+	nas = nas_request_to_nas(req);
+	if ((s = envar_lookup(nas->args, "broken_pass")) != NULL
+	    && s[0] == '1')
+		decrypt_password_broken(password, pair,
+					req->vector, req->secret);
+	else
+		decrypt_password(password, pair,
+				 req->vector, req->secret);
+}

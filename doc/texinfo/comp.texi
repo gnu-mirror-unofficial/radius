@@ -187,7 +187,7 @@ to find out where these values are configured.
 In general, these parameters must satisfy the following relation:
 
 @smallexample
-     request-cleanup-delay + @var{const} = Nretries * Ntimeout
+     request-cleanup-delay = Nretries * Ntimeout + @var{const}
 @end smallexample
 
 @noindent

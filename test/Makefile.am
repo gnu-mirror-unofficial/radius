@@ -12,7 +12,7 @@
 if MAINTAINER_MODE
 MAINTAINERCLEANFILES=core *~ err out
 endif
-INCLUDES=-I$(top_srcdir)/include
+INCLUDES=-I$(top_srcdir)/include @INCLUDEPATH@
 noinst_PROGRAMS=findport
 findport_SOURCES=findport.c
 SUBDIRS=raddb proxy dejagnu shell

@@ -227,7 +227,7 @@ unix_pass(name, passwd)
  *                      AUTH_FAIL    Password fail
  *                      AUTH_NOUSER  No such user 
  *                      AUTH_REJECT  Rejected
- *                      
+ *                      AUTH_IGNORE  Silently ignored                 
  */
 int
 rad_check_password(radreq, check_item, namepair, user_msg, userpass)
@@ -259,11 +259,16 @@ rad_check_password(radreq, check_item, namepair, user_msg, userpass)
         if ((tmp = avl_find(check_item, DA_AUTH_TYPE)) != NULL)
                 auth_type = tmp->lvalue;
 
-        if (auth_type == DV_AUTH_TYPE_ACCEPT)
+	switch (auth_type) {
+	case DV_AUTH_TYPE_ACCEPT:
                 return AUTH_OK;
 
-        if (auth_type == DV_AUTH_TYPE_REJECT) 
+	case DV_AUTH_TYPE_REJECT:
                 return AUTH_REJECT;
+
+	case DV_AUTH_TYPE_IGNORE:
+		return AUTH_IGNORE;
+	}
 
         /* Find the password sent by the user. If it's not present,
            authentication fails. */
@@ -955,20 +960,24 @@ sfn_validate(m)
 
 	if (rc != AUTH_OK) { 
 		stat_inc(auth, radreq->ipaddr, num_rejects);
-		newstate(as_reject);
-		auth_format_msg(m, MSG_ACCESS_DENIED);
 
 		if (is_log_mode(m, RLOG_AUTH)) {
 			switch (rc) {
 			case AUTH_REJECT:
 				auth_log(m, _("Rejected"),
 					 NULL, NULL, NULL);  
-				return;
+				break;
+
+			case AUTH_IGNORE:
+				auth_log(m, _("Ignored"),
+					 NULL, NULL, NULL);
+				newstate(as_stop);
+				return; /*NOTE: do not break!*/
                                 
 			case AUTH_NOUSER:
 				auth_log(m, _("Invalid user"),
 					 NULL, NULL, NULL);
-				return;
+				break;
                                 
 			case AUTH_FAIL:
 				auth_log(m,
@@ -976,12 +985,14 @@ sfn_validate(m)
 					 is_log_mode(m, RLOG_FAILED_PASS) ?
 					 m->userpass : NULL,
 					 NULL, NULL);
-				return;
+				break;
 
 			default:
 				insist_fail("sfn_validate");
 			}
 		}
+		newstate(as_reject);
+		auth_format_msg(m, MSG_ACCESS_DENIED);
 	}
 
 	rc = check_expiration(m);

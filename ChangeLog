@@ -1,3 +1,46 @@
+2001-12-25 Sergey Poznyakoff
+	
+	* NEWS: Updated
+	* doc/texinfo/configure.texi: Updated.
+
+	* radiusd/Makefile.am: Renamed libsnmp to libradsnmp to
+	  avoid conflicts with other snmp libraries.
+	* snmplib/Makefile.am: Likewise.
+	
+	Added shell-based test suite.
+
+	* radtest/input.l: Use obstack instead of static array.
+	
+	* configure.in: Added test/shell/Makefile
+	
+	* test/Makefile.am: Added shell subdir
+	* test/shell: New dir
+	* test/shell/Makefile.am: (new)
+	* test/shell/runtest.sh: (new)
+	* test/shell/shell.m4: (new)
+	* test/proto.m4: Do not use eval, some m4's (namely,
+	  BSD's) do not implement it correctly.
+	* test/proxy.m4: Use QUOTE and ESC instead of implicit
+	  quotation marks and backslashes.
+	* test/radiusd.m4: Likewise.
+	* test/dejagnu.m4: Removed.
+	* test/dejagnu/dejagnu.m4: Moved from ..
+	* test/dejagnu/Makefile.am: Create radiusd and radiusd.proxy
+	  subdirs.
+	* test/raddb/menus/menu1: Simplified.
+	* test/raddb/menus/menu2: Simplified.
+	
+2001-12-24 Sergey Poznyakoff
+
+	* radlib/nas.c: Implemented DEFAULT keyword.
+	* radiusd/stat.c: Do not update statistics for DEFAULT NASes.
+	* db/db.m4: Added `active' field to `passwd' table. Proposed
+	  by Robert Abbate.
+	* raddb/sqlserver: Use passwd.active in auth_query. Use
+	  %D instead ogf %G in acct_start_query.
+
+	* configure.in: Raised patchlevel.
+	
 2001-12-22 Sergey Poznyakoff
 
 	* radlib/util.c: (format_pair) Fixed a dumb error.
@@ -99,7 +142,7 @@
 
 	New features:
 	
-*	* radiusd/files.c: Allow to specify accounting port in
+	* radiusd/files.c: Allow to specify accounting port in
 	  a realms entry. Syntax is: hostname[:auth-port:[acct-port]].
 	* radtest/main.c: Honour checklist opcodes.
 	* raddb/realms: Removed obsolete fourth field.

@@ -52,10 +52,33 @@ my_ascend		my_ascend	max		broken_pass
 The variable allows for specifying the finger query string. It
 defaults to %u, i.e. user name.
 
+** raddb/naslist:
+
+The word DEFAULT may be used in the first column to match any
+NAS, not explicitely defined in the file. E.g.:
+
+# NAS Name		Short Name	Type		  Flags
+#----------------	----------	----		---------------
+DEFAULT			other		
+
+Logins from the DEFAULT NASes are not reported by raduse, neither
+are they reflected in SNMP variables.
+
 ** raddb/realms: Special realm NOREALM is supported.
 
 The realm is matched when the user did not specify any explicit realm
 with his username.
+
+** raddb/realms: Both authentication and accouting ports can be
+specified.
+
+The syntax is: servername[:auth-port[:acct-port]], with brackets surrounding
+optional fields, e.g.:
+
+#Realm name	Radius server
+#----------	-------------
+remote.net	radius.remote.net:1923:2023
+
 
 ** raddb/config: cntl statement is obsoleted.
 

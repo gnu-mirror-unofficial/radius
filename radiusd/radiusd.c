@@ -163,6 +163,7 @@ void rad_exit(int);
 static RETSIGTYPE sig_fatal (int);
 static RETSIGTYPE sig_hup (int);
 static RETSIGTYPE sig_dumpdb (int);
+static RETSIGTYPE sig_child (int);
 
 static struct signal_list {
 	int mask;  /* 1 if the signal should be masked in the threads */
@@ -172,7 +173,7 @@ static struct signal_list {
         1, SIGHUP,  sig_hup,
         0, SIGQUIT, sig_fatal,
         0, SIGTERM, sig_fatal,
-        0, SIGCHLD, SIG_DFL,
+        0, SIGCHLD, sig_child,
         0, SIGPIPE, SIG_IGN,
         0, SIGBUS,  sig_fatal,
         0, SIGTRAP, sig_fatal,
@@ -638,7 +639,7 @@ rad_main_loop()
                 struct timeval tv;
 
                 check_reload();
-                tv.tv_sec = 30;
+                tv.tv_sec = 2;
                 tv.tv_usec = 0;
                 socket_list_select(socket_first, &tv);
         }
@@ -951,6 +952,7 @@ acct_stmt_begin(finish, block_data, handler_data)
 	else if (radius_mode == MODE_DAEMON && !_opened_acct_sockets)
 		open_socket_list(0, NULL, acct_port, "acct",
 				 acct_success, auth_respond, acct_failure);
+	_opened_acct_sockets++;
 	return 0;
 }
 
@@ -1077,6 +1079,8 @@ struct cfg_stmt config_syntax[] = {
 	{ "acct", CS_BLOCK, acct_stmt_begin, NULL, NULL, acct_stmt, NULL  },
 	{ "proxy", CS_BLOCK, NULL, NULL, NULL, proxy_stmt, NULL  },
 	{ "rewrite", CS_BLOCK, NULL, NULL, NULL, rewrite_stmt, NULL },
+	{ "filters", CS_BLOCK, filters_stmt_term, NULL, NULL, filters_stmt,
+	  NULL },
 #ifdef USE_DBM
 	{ "usedbm", CS_STMT, NULL, cfg_get_boolean, &use_dbm, NULL, NULL },
 #endif
@@ -1395,6 +1399,23 @@ sig_dumpdb(sig)
         signal(sig, sig_dumpdb);
 }
 
+/*ARGSUSED*/
+RETSIGTYPE
+sig_child(sig)
+	int sig;
+{
+	int status;
+	pid_t pid;
+	struct _sigchld_handler *p;
+		
+	for (;;) {
+		pid = waitpid((pid_t)-1, &status, WNOHANG);
+		if (pid <= 0)
+			break;
+		filter_sigchild(pid, status);
+	}
+	signal(sig, sig_child);
+}
 
 /* ************************************************************************* */
 /* RADIUS request handling functions */

@@ -1,7 +1,7 @@
-#! BINDIR/radscm -s
+#! GUILE_BINDIR/guile -s
 !#
 ;;;; This file is part of GNU Radius.
-;;;; Copyright (C) 2000,2003 Free Software Foundation, Inc.
+;;;; Copyright (C) 2000,2003,2004 Free Software Foundation, Inc.
 ;;;;
 ;;;; Written by Sergey Poznyakoff
 ;;;;
@@ -21,7 +21,10 @@
 ;;;;
 ;;;; $Id$
 
+(set! %load-path (append %load-path
+			 (list "SCHEMEDIR")))
 (use-modules (ice-9 getopt-long))
+(use-modules (gnuradius))
 
 (define opt-login "")
 (define opt-passwd "")
@@ -204,10 +207,13 @@
 					 (rad-read-no-echo "Password: ")
 					 (cdr x))))
 		   (else
-		    (eval (list 'set! (string->symbol
-				       (string-append "opt-"
-						      (symbol->string (car x))))
-				(cdr x)))))))
+		    (primitive-eval (list
+				     set!
+				     (string->symbol
+				     (string-append
+				      "opt-"
+				      (symbol->string (car x))))
+				    (cdr x)))))))
 	  cmd-list)
 
 ;; Load profiles

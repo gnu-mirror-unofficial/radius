@@ -466,7 +466,7 @@ write_detail(RADIUS_REQ *radreq, int authtype, char *f)
                                 pair = avl_find(radreq->request, DA_USER_NAME);
                         if (pair) {
                                 fprintf(outfd, "\t%s\n", 
-                                        format_pair(pair, &save));
+                                        format_pair(pair, 0, &save));
                                 free(save);
                         }
                 }
@@ -483,7 +483,7 @@ write_detail(RADIUS_REQ *radreq, int authtype, char *f)
                                         break;
                         default:
                                 fprintf(outfd, "\t%s\n", 
-                                        format_pair(pair, &save));
+                                        format_pair(pair, 0, &save));
                                 free(save);
                         } 
                         pair = pair->next;

@@ -5182,6 +5182,8 @@ function_install(FUNCTION *fun)
  * Runtime functions
  */
 
+static char pair_print_prefix[] = "    ";
+
 static void
 rw_mach_init()
 {
@@ -5216,7 +5218,7 @@ run_init(pctr_t pc, RADIUS_REQ *request)
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "Before rewriting:\n");
-                avl_fprint(fp, AVPLIST(&mach));
+                avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
                 fclose(fp);
         }
 
@@ -5226,7 +5228,7 @@ run_init(pctr_t pc, RADIUS_REQ *request)
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "After rewriting\n");
-                avl_fprint(fp, AVPLIST(&mach));
+                avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
                 fclose(fp);
         }
 	rw_mach_destroy();
@@ -5281,7 +5283,7 @@ rewrite_invoke(char *name, RADIUS_REQ *request, char *typestr, ...)
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "Before rewriting:\n");
-                avl_fprint(fp, AVPLIST(&mach));
+                avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
                 fclose(fp);
         }
 
@@ -5319,7 +5321,7 @@ rewrite_invoke(char *name, RADIUS_REQ *request, char *typestr, ...)
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "After rewriting\n");
-                avl_fprint(fp, AVPLIST(&mach));
+                avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
                 fclose(fp);
         }
 	ret = mach.rA;

@@ -221,7 +221,7 @@ rad_create_pdu(void **rptr, int code, int id, u_char *vector,
                 if (debug_on(10)) {
                         char *save;
                         radlog(L_DEBUG,
-                               "send: %s", format_pair(pair, &save));
+                               "send: %s", format_pair(pair, 1, &save));
                         free(save);
                 }
 
@@ -334,7 +334,7 @@ rad_decode_pair(UINT4 attrno, char *ptr, size_t attrlen)
                 if (debug_on(10)) {
                         char *save;
                         radlog(L_DEBUG, "recv: %s",
-                               format_pair(pair, &save));
+                               format_pair(pair, 1, &save));
                         free(save);
                 }
 
@@ -349,7 +349,7 @@ rad_decode_pair(UINT4 attrno, char *ptr, size_t attrlen)
                         char *save;
                         radlog(L_DEBUG, 
                                "recv: %s", 
-                               format_pair(pair, &save));
+                               format_pair(pair, 1, &save));
                         free(save);
                 }
                 break;

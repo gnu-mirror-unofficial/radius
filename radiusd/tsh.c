@@ -363,7 +363,7 @@ tsh_req_define(int argc, char **argv, char *cmd)
 static void
 tsh_req_print(int argc, char **argv, char *cmd)
 {
-	avl_fprint(stdout, test_req.request);
+	avl_fprint(stdout, "    ", 1, test_req.request);
 }
 
 

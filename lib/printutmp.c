@@ -305,10 +305,11 @@ gecos_fh(outbytes, width, key, up)
 	format_key_t *key;
 	struct radutmp *up;
 {
-        struct passwd *pwd;
+        struct passwd pw, *pwd;
         char *s;
+	char buffer[512];
 
-        if ((pwd = getpwnam(up->login)) != NULL) {
+        if (pwd = rad_getpwnam_r(up->login, &pw, buffer, sizeof buffer)) {
                 if ((s = strchr(pwd->pw_gecos, ',')) != NULL)
                         *s = 0;
                 s = pwd->pw_gecos;

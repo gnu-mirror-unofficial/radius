@@ -1239,9 +1239,10 @@ uidcmp(check, username)
         VALUE_PAIR *check;
         char *username;
 {
-        struct passwd *pwd;
+        struct passwd pw, *pwd;
+	char buffer[512];
 
-        if ((pwd = getpwnam(username)) == NULL)
+        if (!(pwd = rad_getpwnam_r(username, &pw, buffer, sizeof buffer)))
                 return -1;
 
         return pwd->pw_uid - check->lvalue;
@@ -1257,9 +1258,10 @@ groupcmp(req, groupname, username)
         char *groupname;
         char *username;
 {
-        struct passwd *pwd;
-        struct group *grp;
+        struct passwd pw, *pwd;
+        struct group gr, *grp;
         char **member;
+        char pwbuf[512];
         int retval;
 
 #ifdef USE_SQL
@@ -1267,10 +1269,10 @@ groupcmp(req, groupname, username)
                 return 0;
 #endif
 
-        if ((pwd = getpwnam(username)) == NULL)
+        if ((pwd = rad_getpwnam_r(username, &pw, pwbuf, sizeof pwbuf)) == NULL)
                 return -1;
 
-        if ((grp = getgrnam(groupname)) == NULL)
+        if ((grp = rad_getgrnam(groupname)) == NULL)
                 return -1;
 
         retval = (pwd->pw_gid == grp->gr_gid) ? 0 : -1;
@@ -1280,6 +1282,7 @@ groupcmp(req, groupname, username)
                                 retval = 0;
                 }
         }
+	efree(grp);
         return retval;
 }
 

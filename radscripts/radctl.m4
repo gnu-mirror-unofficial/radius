@@ -69,7 +69,7 @@ chan_signal() {
 		start)
 			TEST($RUNNING -eq 1) && {
 				echo "$0: start: radiusd (pid $PID) already running"
-				continue
+				exit 1
 			}
 			rm -f $[PIDFILE]
 			SHIFT

@@ -1,3 +1,8 @@
+2002-05-06  Sergey Poznyakof
+
+	* radiusd/radutil.c: Expand \n to \r\n. 
+	* TODO: Updated.
+
 2002-05-06  Sergey Poznyakoff
 
 	* radiusd/acct.c: Fixed diagnostics.

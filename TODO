@@ -1,6 +1,5 @@
      Switching to multithread server:
 -100 :  redesign raduse to use snmp queries instead of peeking in radstat.
--100 :  expand \n -> \r\n in reply messages
 -80  :  spawn statement in config is obsoleted (update docs).	
 -50  :  Fall back to pth if POSIX threads are not available?
 -30  :  retransmit proxy requests

@@ -175,7 +175,6 @@ int
 proxy_send_request(int fd, RADIUS_REQ *radreq)
 {
 	VALUE_PAIR *plist, *p;
-	char vector[AUTH_VECTOR_LEN];
 	void *pdu;
 	size_t size;
 	RADIUS_SERVER *server;
@@ -198,10 +197,9 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 		radreq->server_id = rad_clt_message_id(server);
 	radreq->attempt_no++;
 
-	rad_clt_random_vector(vector);
-
+	rad_clt_random_vector(radreq->remote_auth);
 	plist = proxy_request_recode(radreq, avl_dup(radreq->request),
-				     server->secret, vector);
+				     server->secret, radreq->remote_auth);
 
 	/* Add a proxy-pair to the end of the request. */
 	p = avp_alloc();
@@ -224,7 +222,7 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 	/* Create the pdu */
 	size = rad_create_pdu(&pdu, radreq->code,
 			      radreq->server_id,
-			      vector,
+			      radreq->remote_auth,
 			      server->secret,
 			      plist,
 			      NULL);
@@ -390,7 +388,7 @@ proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int fd)
 {
         VALUE_PAIR *vp, *proxy_state_pair, *prev, *x;
         VALUE_PAIR *allowed_pairs;
-        
+	
         /* Remove the last proxy pair from the list. */
         proxy_state_pair = x = prev = NULL;
 
@@ -420,6 +418,7 @@ proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int fd)
         /* Rebuild the RADIUS_REQ struct, so that the normal functions
            can process it. Take care not to modify oldreq! */
 
+	memcpy(radreq->vector, oldreq->remote_auth, sizeof radreq->vector);
  	radreq->server_reply = proxy_request_recode(radreq, allowed_pairs,
 						    oldreq->secret,
 						    oldreq->vector);
@@ -430,7 +429,8 @@ proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int fd)
         radreq->ipaddr       = oldreq->ipaddr;
         radreq->udp_port     = oldreq->udp_port;
         radreq->id           = oldreq->id;
-        memcpy(radreq->vector, oldreq->vector, sizeof radreq->vector);
+
+	memcpy(radreq->vector, oldreq->vector, sizeof radreq->vector);
         radreq->secret       = oldreq->secret;
         radreq->request      = avl_dup(oldreq->request);
 

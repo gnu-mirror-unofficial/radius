@@ -312,7 +312,7 @@ format_string_visual(buf, runlen, str, len)
 }
 
 int
-pairstr_format(buf, pair)
+format_vendor_pair(buf, pair)
 	char *buf;
 	VALUE_PAIR *pair;
 {
@@ -341,7 +341,10 @@ format_pair(pair)
 	VALUE_PAIR *pair;
 {
 	static char *buf1;
-	char *buf2ptr = NULL, buf2[AUTH_STRING_LEN+1];
+	char *buf2ptr = NULL;
+	char buf2[4*AUTH_STRING_LEN+1]; /* Enough to hold longest possible
+					   string value all converted to
+					   octal */
 	DICT_VALUE *dval;
 	
 	if (buf1)
@@ -350,17 +353,18 @@ format_pair(pair)
 
 	switch (pair->eval ? TYPE_STRING : pair->type) {
 	case TYPE_STRING:
-		if (pair->attribute != DA_VENDOR_SPECIFIC) 
-			snprintf(buf2, sizeof(buf2), "\"%s\"", pair->strvalue);
+		if (pair->attribute != DA_VENDOR_SPECIFIC)
+			format_string_visual(buf2, 4,
+					     pair->strvalue, pair->strlength);
 		else if (pair->strlength < 6) 
 			snprintf(buf2, sizeof(buf2),
 				 "[invalid length: %d]", pair->strlength);
 		else {
-			int len = pairstr_format(NULL, pair);
+			int len = format_vendor_pair(NULL, pair);
 			buf2ptr = malloc(len+1);
 			if (buf2ptr)
 				abort();/*FIXME*/
-			pairstr_format(buf2ptr, pair);
+			format_vendor_pair(buf2ptr, pair);
 		}
 		break;
 					
@@ -414,11 +418,5 @@ format_ipaddr(ipaddr)
 	return buf;
 }
 
-void
-debug_pair(prefix, pair)
-	char *prefix;
-	VALUE_PAIR *pair;
-{
-	fprintf(stdout, "%10.10s: %s\n", prefix, format_pair(pair));
-}
+
 

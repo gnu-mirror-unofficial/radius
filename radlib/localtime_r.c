@@ -16,13 +16,20 @@
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #include <time.h>
+#include <pthread.h>
+
+static pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 struct tm *
 localtime_r(timep, res)
 	const time_t *timep;
 	struct tm *res;
 {
-	struct tm *tm = localtime(timep);
+	struct tm *tm;
+
+	pthread_mutex_lock(&mutex);
+	tm = localtime(timep);
 	memcpy(res, tm, sizeof(*res));
+	pthread_mutex_unlock(&mutex);
 	return res;
 }

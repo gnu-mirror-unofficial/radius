@@ -24,13 +24,13 @@
 @c Please remember to specify the edition, version numbers and date in
 @c *three* places: 1. First ifinfo section, 2. Title page, 3. Top node
 @ifinfo
-This file documents the GNU radius
+This file documents GNU Radius
 
 Published by the Free Software Foundation
 59 Temple Place, Suite 330
 Boston, MA  02111-1307 USA
 
-Copyright @copyright{} 1999 Sergey Poznyakoff
+Copyright @copyright{} 2003 Sergey Poznyakoff
 Permission is granted to make and distribute verbatim copies of
 this manual provided the copyright notice and this permission notice
 are preserved on all copies.
@@ -98,7 +98,7 @@ approved by the Foundation.
 @ifinfo
 @top The GNU Radius
 
-Radius is a suite of programs for performing user authentication
+GNU Radius is a suite of programs for performing user authentication
 and accounting using @RADIUS{} protocol.
 
 This Info file documents the version @value{VERSION} of the package.
@@ -107,41 +107,41 @@ This Info file documents the version @value{VERSION} of the package.
 
 @comment *******************************************************************
 @menu
-* Distrib::             How to get the radius distribution.
+* Distrib::             How to get the GNU Radius distribution
 * Copying::             The GNU General Public License gives you permission
-                        to redistribute the program on certain terms.
-* Intro::               An introduction to radius concepts.
-* Glossary::            The glossary.
+                        to redistribute the program on certain terms
+* Intro::               An introduction to @RADIUS{} concepts
+* Glossary::            The glossary
 
-The radius daemon
-* Naming Conventions::  Conventions about naming files and directories.
-* Operation::           How radius operates.
-* Invocation::          How to start the daemon.
-* Configuration Files:: Radius configuration files.
-* Request Comparison::  How are duplicate requests dealt with.
-* Authentication::      How the users are authenticated.
-* Accounting::          Accounting methods.
-* Logging::             What gets logged and where.
-* Debugging::           An extensive logging information.
-* Extensions::          Extending radiusd.
+The @radius{} daemon
+* Naming Conventions::  Conventions about naming files and directories
+* Operation::           How @radius{} operates
+* Invocation::          How to start the daemon
+* Configuration Files:: @radius{} configuration files
+* Request Comparison::  How duplicate requests are dealt with
+* Authentication::      How users are authenticated
+* Accounting::          Accounting methods
+* Logging::             What gets logged and where
+* Debugging::           Extensive logging information
+* Extensions::          Extending @radius{}
 
 * Utility Programs::
 * Client Package::
 
 Radius Attributes
-* Attribute List::      Some frequently used attributes.
+* Attribute List::      Some frequently used attributes
 
 Reporting Bugs and getting information
-* Bugs::                How to report a bug.
-* News::                Where to get info about GNU radius.
+* Bugs::                How to report a bug
+* News::                Where to get info about GNU Radius
 
 Indices
-* Program Index::       Index of programs.
-* Keyword Index::       Index of keywords.
-* Example Index::       Index of examples.
-* Variable Index::      Index of variables.
-* Attribute Index::     Index of RADIUS attributes.
-* Concept Index::       Index of concepts.
+* Program Index::       Index of programs
+* Keyword Index::       Index of keywords
+* Example Index::       Index of examples
+* Variable Index::      Index of variables
+* Attribute Index::     Index of @RADIUS{} attributes
+* Concept Index::       Index of concepts
 
 @ignore
 Enable this when necessary

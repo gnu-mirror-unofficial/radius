@@ -1,26 +1,27 @@
-@c This is part of the Radius manual.
-@c Copyright (C) 2002 Sergey Poznyakoff
+@c This is part of the GNU Radius manual.
+@c Copyright (C) 2003 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Intro, Glossary, Copying, Top
 @unnumbered Introduction to Radius
 
 Radius is a system serving for authentication and accounting. The acronym
-@RADIUS{} stands for Remote Authentication in Dial-In User Service and 
+@RADIUS{} stands for @dfn{Remote Authentication Dial In User Service} and 
 usually denotes the underlying protocol name.
 
-Historically, radius servers were used as a means to authenticate the user
+Historically, @RADIUS{} servers were used as a means to authenticate the user
 coming from a dial-in connection, but GNU Radius is much more than an
 authentication system: it is an advanced, customizable and extensible system
 for controlling access to the network.
 
 GNU Radius has several built-in authentication and accounting methods.
-When these methods are not enough, it allows administrator to implement
+When these methods are not enough, it allows the administrator to implement
 any new method he deems convenient. 
 
-GNU Radius includes radius server program capable of serving authentication
-and accounting requests, and a set of accompanying programs designed to
-monitor the activity of the server and analyze the information it provides.
+The GNU Radius distribution includes the radius server program which
+responds to authentication and accounting requests, and a set of
+accompanying programs designed to monitor the activity of the server
+and analyze the information it provides.
 
 @menu
 * Overview::
@@ -30,137 +31,145 @@ monitor the activity of the server and analyze the information it provides.
 @node Overview
 @section Overview
 
-To illustrate what Radius does, let's consider an imaginary Internet
-Service Provider. Let our provider have two @dfn{network access servers}
-(@NAS{}es for short), i.e. pieces of equipment which directly accept
-users' connections, and a core router, which connects the ISP's internal
+To illustrate what GNU Radius does, let's consider an imaginary Internet
+Service Provider. Our provider has two @dfn{network access servers}
+(@NAS{}es for short) -- i.e., two pieces of equipment which directly accept
+users' connections --  and a core router which connects the ISP's internal
 network with the Internet backbone.
 
-When a user connects to an access server, the server first has to
-verify if such user is actually registered and whether the credentials
-he has supplied are correct. This process is called
-@dfn{authentication}. Then, having verified the user authenticity,
-the access server has to decide which services and to what extent is
-this particular user allowed to use. That is called @dfn{authorization}.
+When a user connects to a @NAS{}, the server must verify if the
+user is actually registered and whether the credentials he has
+supplied are correct. This first step is called
+@dfn{authentication}.
 
-When these two stages have been successfully completed, the @NAS{}
-starts the @dfn{user session}, i.e. it establishes the connection
-between the user and the main server. For the purposes of @dfn{accounting},
-it has to remember the exact time of the start of the session.
-Then, when the session is terminated, the duration of the session and
-the number of bytes transferred has to be recorded too.
+Upon authenticating the user, the @NAS{} must determine which services
+the user is permitted to use and to what extent the user may use
+them. This second step is called @dfn{authorization}.
 
-All three tasks can be solved using local user and accounting database
-on each terminal server. However, this is not convenient and very error
-prone, since the task of keeping such databases in task is not a trivial
-one. The bigger the number of terminal servers the more difficult this
-problem becomes.
+When the first two stages have been successfully completed, the @NAS{}
+takes the third step and establishes the connection between the user
+and the main server. This connection is called a @dfn{user session}.
+For the purposes of @dfn{accounting}, the @NAS{} remembers the exact
+time of the start of the session.  When the session is terminated, the
+duration of the session and the number of bytes transferred are
+recorded as well.
 
-@subheading How Does Radius Solve These Tasks
+All three tasks can be accomplished by the use of user and accounting
+databases on each terminal server. However, this is not convenient,
+and it is error prone since the maintenance of separate databases for
+the same users is not a trivial task. Even worse, as the number of
+terminal servers grows, the more difficult this maintenance problem
+becomes.
 
-Radius allows to keep the authentication and accounting data in a
-single place, no matter how many access servers are actually present.
-The network access servers communicate with this central server
-to perform authentication and accounting.
+@subheading How Does @RADIUS{} Solve These Tasks?
 
-Let's return to our imaginary ISP. Suppose it runs a radius daemon 
-on its central server. Each access server runs the @dfn{client software}
-that communicates with the server by sending @dfn{radius packets}.
+RADIUS{} allows an administrator to keep authentication and accounting
+data in a single place, no matter how many network access servers are
+actually present.  Using @RADIUS, @NAS{}es communicate with this
+central server to perform authentication and accounting.
+
+Let's return to our imaginary ISP. Suppose it runs a @RADIUS{} daemon
+on its central server. Each @NAS{} runs @dfn{client software} to
+communicate with the @RADIUS{} server by sending @dfn{radius packets}.
 
 @c @image{isp} 
 
-Now, an average user session life cycle looks as follows.
+An average user session life cycle looks as follows.
 
-A user connects to the nearest @NAS{} and supplies his login and password.
-The @NAS{} forms an authentication request and sends it to the server
+A user connects to the nearest @NAS{} and supplies his login and
+password.  The @NAS{} forms an authentication request and sends it to
+the @RADIUS{} server.
 
 @c @image{authreq}
 
-The server verifies user's credentials and finds them sufficient.
-It then retrieves from its database the authorization information
-for this user, packages it into an acknowledge packet and sends it
-back to the @NAS{} 
+The @RADIUS{} server verifies user's credentials and finds them
+sufficient.  It then retrieves the user's authorization information
+from its database, packages it into an @dfn{acknowledgement packet},
+and then sends it back to the @NAS{}
 
 @c @image{authack}
 
-The @NAS{} receives the acknowledge packet and starts the user session.
-The information brought with the packet tells him to establish
-a connection between the core router and the user, and assign the
-user a certain IP address. Having established the session, @NAS{}
-informs the server about it by sending it accounting start packet.
-The server acknowledges the receipt of the packet.
+The @NAS{} receives the acknowledgement packet and starts the user
+session.  The information brought with the packet tells the @NAS{} to
+establish a connection between the core router and the user, and to
+assign the user a certain IP address. Having established the session,
+the @NAS{} informs the @RADIUS{} server by sending it an
+@dfn{accounting start packet}.  The server acknowledges the receipt of
+the accounting packet.
 
 @c @image{acctstart}
 
-Now, after a certain time the user decides to break the connection.
-@NAS{} notices this, terminates the user session and sends an
-accounting stop packet to mark this event. Again, the server
-acknowledges the receipt of the packet.
+Now suppose, after some time, the user decides to break the
+connection.  The @NAS{} notices this and terminates the user's
+session. The @NAS{} then sends an accounting stop packet to the
+@RADIUS{} server to mark this event. Again, the server acknowledges
+the receipt of the packet.
 
 @c @image{acctstop}
 
-@subheading Radius Attributes
+@subheading @RADIUS{} Attributes
 
-@dfn{Attributes} are means of passing the information between
-the @NAS{} and the server. Basically, an attribute is an integer
-number that identifies some piece of information. A set of
-@dfn{properties} is associated with each attribute, specifying
-the way of using this attribute. The most important property
-is @dfn{data type}. It declares the type of data this attribute
-identifies (character string, integer number, IP address, or
-raw binary data).
+@dfn{Attributes} are means of passing the information between the
+@NAS{} and the server. Basically, an attribute is an integer number
+that identifies some piece of information. A set of @dfn{properties}
+are associated with each attribute, specifying the way to interpret
+the attribute. The most important property is the @dfn{data type}. The
+data type property declares the type of data that the attribute
+identifies (@dfn{character string}, @dfn{integer number}, @dfn{IP
+address}, or @dfn{raw binary data}).
 
-The information to be transmitted with the request is packaged
-in a set of @dfn{Attribute-value pairs} (or @AVP{}s for short).
-Each such pair consists of attribute number and the data associated
-with this particular instance of it.
+The information to be transmitted with the request is packaged in a
+set of @dfn{Attribute-value pairs} (or @AVP{}s for short).  Such pairs
+consist of attribute numbers and the associated data.
 
-@subheading Radius Packets
+@subheading @RADIUS{} Packets
 
-There exist two basic kinds of radius packets: authentication and
-accounting packets. Each of them is subdivided into @dfn{requests}
-and @dfn{replies}.
+There exist two basic kinds of @RADIUS{} packets: authentication and
+accounting packets. Each of them is subdivided into @dfn{requests} and
+@dfn{replies}.
 
-The @dfn{authentication requests} are sent from the @NAS{} to the server
-and contain the information necessary to check the identity of the
-user. The minimum set of data in such packets is: user login name,
-user password, @NAS{} @IP{} or identifier.
+@dfn{Authentication requests} are sent from the @NAS{} to the
+@RADIUS{} server and contain the information necessary to check the
+identity of the user. The minimum set of data in such packets are:
+user login name, user password, and @NAS{} @IP{} or identifier.
 
-The @dfn{authentication replies} are sent by radius server and contain
-the reply code and a set of additional attributes. By their reply code
-the authentication replies are subdivided into
-@dfn{authentication acknowleges},
-@dfn{authentication rejects} and @dfn{authentication challenges}.
+@dfn{Authentication replies} are sent by the @RADIUS server and
+contain the reply code and a set of additional attributes. By their
+reply code the authentication replies are subdivided into
+@dfn{authentication acknowlegements}, @dfn{authentication rejections},
+and @dfn{authentication challenges}.
 
-An authentication acknowledge packet is sent to the @NAS{} if the credentials
-supplied with the authentication request were correct. It tells the @NAS{}
-to establish the normal user session. The additional attributes
-in such packets are carrying the @dfn{authorization data}, i.e.
-they determine which kind of service the user is to be provided.
+An authentication acknowledgement packet is sent to the @NAS{} if the
+credentials supplied with the authentication request were
+correct. This kind of packet tells the @NAS{} to establish the normal
+user session. The additional attributes in such packets are carrying
+the @dfn{authorization data}, i.e.  they determine which kind of
+service the user is to be provided.
 
 An authentication reject is sent to the @NAS{} if the authentication
-failed. This packet forbids the @NAS{} to provide any service to the user.
-The additional attributes may carry descriptive text to be displayed
-as answer to the user.
+failed. This packet forbids the @NAS{} from providing any service to
+the user.  The additional attributes may carry descriptive text to be
+displayed as an explanation to the user for the failed request for
+services.
 
 Finally, an authentication challenge packet is sent to the @NAS{} if
 the supplied credentials did not suffice to establish the authenticity
-of the user. This means the continuation of the dialog between
-the @NAS{} and the server, during which the server is asking
-for more authentication credentials and the @NAS{} is playing a
-role of go-between, passing the server requests to the user and
-sending user replies back to the server. Such dialog ends when the server
-sends either an acknowledge or a reject packet.
+of the user. This means that the dialog between the @NAS{} and the
+@RADIUS{} server continues, during which the server asks for
+additional authentication credentials and the @NAS{} acts as a
+liaison, passing the server requests to the user and sending user
+replies back to the server. Such a dialog ends when the server sends
+either an acknowledgement or a rejection packet.
 
-An @dfn{accounting request} is sent to the server when the @NAS{} wishes
-to report some event in the user session, e.g. start of the
+An @dfn{accounting request} is sent to the server when the @NAS{}
+wishes to report some event in the user session, e.g. start of the
 session, session termination, etc. The attributes carry the actual
 information about the event.
 
-For each accounting request that has been received and successfully processed
-radius server sends back an @dfn{accounting acknowlege}. This packet carries
-no attributes, it simply informs the @NAS{} that the information it had sent
-was received.
+For each accounting request that has been received and successfully
+processed, the @RADIUS{} server sends back an @dfn{accounting
+acknowlegement}. This packet carries no attributes, but simply informs
+the @NAS{} that the information it had sent was received.
 
 @comment *******************************************************************
 @node Glossary, Naming Conventions, Intro, Top
@@ -171,7 +180,7 @@ Throughout this document the following terms are used:
 @table @asis
 
 @item @RADIUS{}
-(All capitals) The Remote Authentication in Dial-In User Service
+(All capitals) The Remote Authentication Dial In User Service
 protocol as described in RFC 2138, 2865 and 2866.
 
 @cindex @sc{nas}
@@ -189,8 +198,8 @@ A service, such as PPP, SLIP, telnet, etc., provided to a user by the @NAS{}.
 
 @cindex Session
 @item Session
-Every single instance of a service. Session starts when the service was
-first provided and ends when the service is ended. A user may have multiple
+Each instance of a service. Sessions start when the service is
+first provided and close when the service is ended. A user may have multiple
 sessions active simultaneously if he is allowed to.
 
 @cindex Session ID
@@ -209,11 +218,11 @@ Stands for Attribute-Value pair @ref{Attributes}.
 A user connecting to a service through the modem line.
 
 @item User Database
-A database where Radius server keeps information about users, their
+A database where a @RADIUS{} server keeps information about users, their
 authentication information, etc.
 
 @item User's Profile
-A record in the User Database describing a particular user. User's
+A record in the User Database describing a particular user. The User's
 Profile keeps the authentication and authorization information for
 that user, i.e. it contains data describing how this user should
 be authenticated as well as which services he is allowed to be

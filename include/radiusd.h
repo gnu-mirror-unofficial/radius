@@ -290,7 +290,6 @@ int rad_accounting(RADIUS_REQ *, int);
 int radzap(UINT4 nas, int port, char *user, time_t t);
 int rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul, int *pcount);
 int write_detail(RADIUS_REQ *radreq, int authtype, char *f);
-void rad_acct_xmit(int type, int code, void *data, int fd);
 
 /* radiusd.c */
 int stat_request_list(QUEUE_STAT);
@@ -306,7 +305,7 @@ void rad_mainloop();
 #define REQ_AUTH_ZERO 1
 #define REQ_AUTH_BAD  2
 
-int rad_send_reply(int, RADIUS_REQ *, VALUE_PAIR *, char *, int);
+void rad_send_reply(int, RADIUS_REQ *, VALUE_PAIR *, char *, int);
 RADIUS_REQ *radrecv (UINT4, u_short, u_char *, int);
 int validate_client(RADIUS_REQ *radreq);
 int calc_acctdigest(RADIUS_REQ *radreq);

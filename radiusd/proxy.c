@@ -467,7 +467,7 @@ proxy_send(radreq, activefd)
 	}
 
 	if ((client = client_lookup_ip(realm->ipaddr)) == NULL) {
-		radlog(L_PROXY,
+		radlog(L_PROXY|L_ERR,
 		       _("cannot find secret for server %s in clients file"),
 		       realm->server);
 		efree(saved_username);
@@ -712,7 +712,7 @@ proxy_receive(radreq, activefd)
 	}
 	
 	if (oldreq == NULL) {
-		radlog(L_PROXY,
+		radlog(L_PROXY|L_ERR,
 		       _("Unrecognized proxy reply from server %s - ID %d"),
 		       client_lookup_name(radreq->ipaddr), radreq->id);
 		return -1;

@@ -309,17 +309,17 @@ static struct mib_data {
 	oid_StatPortFramedAddress,	     snmp_port_table, &port_table,
 	oid_StatPortTotalLogins,             snmp_port_table, &port_table,
 	oid_StatPortStatus,		     snmp_port_table, &port_table,
-	oid_StatPortStatusDate,		     snmp_port_table, &port_table,
+	oid_StatPortStatusChangeTimestamp,   snmp_port_table, &port_table,
 	oid_StatPortUpTime,		     snmp_port_table, &port_table,
 	oid_StatPortLastLoginName,	     snmp_port_table, &port_table,
-	oid_StatPortLastLoginDate,	     snmp_port_table, &port_table,
-	oid_StatPortLastLogoutDate,	     snmp_port_table, &port_table,
+	oid_StatPortLastLoginTimestamp,	     snmp_port_table, &port_table,
+	oid_StatPortLastLogoutTimestamp,     snmp_port_table, &port_table,
 	oid_StatPortIdleTotalTime,	     snmp_port_table, &port_table,
 	oid_StatPortIdleMaxTime,	     snmp_port_table, &port_table,
-	oid_StatPortIdleMaxDate,	     snmp_port_table, &port_table,
+	oid_StatPortIdleMaxTimestamp,	     snmp_port_table, &port_table,
 	oid_StatPortInUseTotalTime,	     snmp_port_table, &port_table,
 	oid_StatPortInUseMaxTime,	     snmp_port_table, &port_table,
-	oid_StatPortInUseMaxDate,	     snmp_port_table, &port_table,
+	oid_StatPortInUseMaxTimestamp,	     snmp_port_table, &port_table,
 	
 };					    
 					    
@@ -2215,17 +2215,17 @@ snmp_port_get(subid, var, errp)
 	case MIB_KEY_StatPortFramedAddress:
 	case MIB_KEY_StatPortTotalLogins:                 
 	case MIB_KEY_StatPortStatus:        
-	case MIB_KEY_StatPortStatusDate:             
+	case MIB_KEY_StatPortStatusChangeTimestamp:             
 	case MIB_KEY_StatPortUpTime:         
 	case MIB_KEY_StatPortLastLoginName:             
-	case MIB_KEY_StatPortLastLoginDate:      
-	case MIB_KEY_StatPortLastLogoutDate:      
+	case MIB_KEY_StatPortLastLoginTimestamp:      
+	case MIB_KEY_StatPortLastLogoutTimestamp:      
 	case MIB_KEY_StatPortIdleTotalTime:     
 	case MIB_KEY_StatPortIdleMaxTime:      
-	case MIB_KEY_StatPortIdleMaxDate:        
+	case MIB_KEY_StatPortIdleMaxTimestamp:        
 	case MIB_KEY_StatPortInUseTotalTime:        
 	case MIB_KEY_StatPortInUseMaxTime:     
-	case MIB_KEY_StatPortInUseMaxDate:       
+	case MIB_KEY_StatPortInUseMaxTimestamp:       
 		if (port = findportbyindex(subid)) {
  			get_port_stat(port, ret, key);
 			break;
@@ -2307,11 +2307,10 @@ get_port_stat(port, var, key)
 		var->var_int = port->active ? port_active : port_idle;
 		break;
 
-	case MIB_KEY_StatPortStatusDate:
-		p = timestr(port->start);
-		var->type = ASN_OCTET_STR;
-		var->val_length = strlen(p);
-		var->var_str = snmp_strdup(p);
+	case MIB_KEY_StatPortStatusChangeTimestamp:
+		var->type = ASN_INTEGER;
+		var->val_length = sizeof(int);
+		var->var_int = port->start;
 		break;
 
 	case MIB_KEY_StatPortUpTime:         
@@ -2327,18 +2326,16 @@ get_port_stat(port, var, key)
 		var->var_str = snmp_strdup(port->login);
 		break;
 
-	case MIB_KEY_StatPortLastLoginDate:
-		p = timestr(port->lastin);
-		var->type = ASN_OCTET_STR;
-		var->val_length = strlen(p);
-		var->var_str = snmp_strdup(p);
+	case MIB_KEY_StatPortLastLoginTimestamp:
+		var->type = ASN_INTEGER;
+		var->val_length = sizeof(int);
+		var->var_int = port->lastin;
 		break;
 
-	case MIB_KEY_StatPortLastLogoutDate:      
-		p = timestr(port->lastout);
-		var->type = ASN_OCTET_STR;
-		var->val_length = strlen(p);
-		var->var_str = snmp_strdup(p);
+	case MIB_KEY_StatPortLastLogoutTimestamp:      
+		var->type = ASN_INTEGER;
+		var->val_length = sizeof(int);
+		var->var_int = port->lastout;
 		break;
 
 	case MIB_KEY_StatPortIdleTotalTime:     
@@ -2353,11 +2350,10 @@ get_port_stat(port, var, key)
 		var->var_int = port->maxidle.time * 100;
 		break;
 		
-	case MIB_KEY_StatPortIdleMaxDate:
-		p = timestr(port->maxidle.start);
-		var->type = ASN_OCTET_STR;
-		var->val_length = strlen(p);
-		var->var_str = snmp_strdup(p);
+	case MIB_KEY_StatPortIdleMaxTimestamp:
+		var->type = ASN_INTEGER;
+		var->val_length = sizeof(int);
+		var->var_int = port->maxidle.start;
 		break;
 
 	case MIB_KEY_StatPortInUseTotalTime:        
@@ -2372,11 +2368,10 @@ get_port_stat(port, var, key)
 		var->var_int = port->maxinuse.time * 100;
 		break;
 		
-	case MIB_KEY_StatPortInUseMaxDate:
-		p = timestr(port->maxinuse.start);
-		var->type = ASN_OCTET_STR;
-		var->val_length = strlen(p);
-		var->var_str = snmp_strdup(p);
+	case MIB_KEY_StatPortInUseMaxTimestamp:
+		var->type = ASN_INTEGER;
+		var->val_length = sizeof(int);
+		var->var_int = port->maxinuse.start;
 		break;
 	}
 }

@@ -46,8 +46,8 @@ find_keyword(char *text, int start, int len)
         struct key_tab *kp;
 	
 	for (kp = key_tab; kp->name; kp++) {
-                if (len >= kp->len &&
-		    strncasecmp(kp->name, text+start, len) == 0) 
+                if (len == kp->len
+		    && strncmp(kp->name, text+start, len) == 0) 
                         return kp;
         }
 	return NULL;
@@ -60,18 +60,17 @@ find_prev_word(int start)
 
 	if (start == 0)
 		return 0;
-	start--;
-	while (start > 0 && isspace(rl_line_buffer[start]))
-		start--;
+	for (start--; start > 0 && isspace(rl_line_buffer[start]); start--)
+		;
 	if (start == 0)
 		return 0;
 	/* find start of the word */
-	len = 0;
-	while (start > 0 && !isspace(rl_line_buffer[start])) {
+	len = 1;
+	while (start > 0 && !isspace(rl_line_buffer[start-1])) {
 		start--;
 		len++;
 	}
-	
+//	printf ("FOUND '%*.*s'\n", len,len,rl_line_buffer+start);
 	return find_keyword(rl_line_buffer, start, len);
 }
 
@@ -90,19 +89,21 @@ static char *
 gen_state0_list(const char *text, int state)
 {
 	static int len;
-	static struct key_tab *kp;
+	static struct key_tab *cursor;
+	struct key_tab *kp;
 	char *str;
 	
 	if (!state) {
 		len = strlen(text);
-		kp = key_tab;
+		cursor = key_tab;
 	}
 
-	while (str = (kp++)->name) 
-		if (len == 0
-		    || (len <= strlen(str) && strncasecmp(str, text, len) == 0))
-			
-			return strdup(str);
+	while ((kp = cursor++)->name) 
+		if (kp->initial
+		    && (len == 0
+			|| (len <= strlen(kp->name)
+			    && strncmp(kp->name, text, len) == 0)))
+			return strdup(kp->name);
 	return NULL;
 }
 

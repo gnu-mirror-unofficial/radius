@@ -1,7 +1,7 @@
-# token		input	     matchlength	
-AUTH		auth	     2			
-ACCT		acct	     2				
-SEND		send	     1			
-EXPECT		expect	     2			
-PRINT		print	     1			
-EXIT		exit	     2			
+# token		input	     
+AUTH		auth	     
+ACCT		acct	     	
+SEND		send	     
+EXPECT		expect	     
+PRINT		print	     
+EXIT		exit

@@ -561,7 +561,7 @@ snmp_build_acct_tree()
 void
 snmp_tree_init()
 {
-	snmp_init(0, 0, emalloc, efree);
+	snmp_init(0, 0, (snmp_alloc_t)emalloc, (snmp_free_t)efree);
 	snmp_build_acct_tree();
 }
 

@@ -86,18 +86,25 @@
 #define DA_REPLACE_USER_NAME 2001
 #define DA_REWRITE_FUNCTION 2002
 #define DA_ACCT_TYPE 2003
-#define DA_MATCH_PROFILE 2004
-#define DA_AUTH_DATA 2006
-#define DA_QUEUE_ID 65534
 #define DV_ACCT_TYPE_NONE 0
 #define DV_ACCT_TYPE_SYSTEM 1
 #define DV_ACCT_TYPE_DETAIL 2
 #define DV_ACCT_TYPE_SQL 3
+#define DA_MATCH_PROFILE 2004
+#define DA_AUTH_DATA 2006
+#define DA_LOG_MODE_MASK 2007
+#define DV_LOG_MODE_MASK_LOG_ALL 0
+#define DV_LOG_MODE_MASK_LOG_AUTH 1
+#define DV_LOG_MODE_MASK_LOG_AUTH_PASS 2
+#define DV_LOG_MODE_MASK_LOG_FAILED_PASS 4
 /*  These are used by rewriting functions:
  */
 #define DA_ORIG_USER_NAME 2101
 #define DA_ORIG_NAS_PORT_ID 2105
 #define DA_ORIG_ACCT_SESSION_ID 2144
+/*  Used internally by the server
+ */
+#define DA_QUEUE_ID 65534
 /* 
  *  Non-Protocol Attributes
  *  These attributes are used internally by the server

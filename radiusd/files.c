@@ -1882,6 +1882,9 @@ static int server_check_items[] = {
 #ifdef DA_ACCT_TYPE
 	DA_ACCT_TYPE,
 #endif
+#ifdef DA_LOG_MODE_MASK
+	DA_LOG_MODE_MASK,
+#endif
 	DA_MENU,
 	DA_TERMINATION_MENU,
 	DA_GROUP_NAME,

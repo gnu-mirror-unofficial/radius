@@ -1126,6 +1126,13 @@ sql_mlc_collect(const char *query_template,
 }
 
 int
+rad_sql_mlc_enabled_p()
+{
+	return sql_cfg.active[SQL_ACCT]
+		&& sql_cfg.query[mlc_user_query];
+}
+
+int
 rad_sql_mlc_collect_user(char *name, grad_request_t *request,
 			 grad_list_t **sess_list)
 {
@@ -1192,7 +1199,8 @@ sql_init()
 	mlc_register_method("sql",
 			    rad_sql_mlc_collect_user,
 			    rad_sql_mlc_collect_realm,
-			    rad_sql_mlc_close);
+			    rad_sql_mlc_close,
+			    rad_sql_mlc_enabled_p);
 }
 
 

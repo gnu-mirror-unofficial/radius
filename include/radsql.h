@@ -15,8 +15,6 @@
    along with this program; if not, write to the Free Software
    Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.*/
 
-typedef unsigned long qid_t; /* queue identifier */
-
 #define SQLT_NONE     0
 #define SQLT_MYSQL    1
 #define SQLT_POSTGRES 2

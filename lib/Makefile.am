@@ -110,5 +110,9 @@ llib-ldebug.ln: $(libdebug_la_SOURCES:.c=.ln) llib-llog.ln
 
 lint:: llib-llog.ln llib-lrad.ln llib-ldebug.ln 
 
-LIBLIST:; @echo $(librad_la_SOURCES) > .list
+LIBLIST: -echo $(librad_la_SOURCES) $(BUILT_SOURCES) |\
+	tr -s ' ' '\n'|\
+	sort|\
+	uniq -u|\
+	xargs grep -l '#define *RADIUS_MODULE' > .list
 endif

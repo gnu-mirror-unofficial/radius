@@ -6,9 +6,9 @@
 @section Radauth
 @pindex radauth
 
-The @command{radauth} utility sends the Radius server Access-Request
+The @command{radauth} utility sends the Radius server an Access-Request
 packet and displays the result it gets. It can be used to test the
-configuration files. The usage is:
+configuration files. The usage is
 
 @example
 radauth [-v] username password
@@ -23,7 +23,7 @@ and turn the echoing on again, thus preventing the password from being
 compromised.
 
 The program determines which Radius server to use, the authentication
-port number and shared secret following the procedure common for all
+port number, and the shared secret, following the procedure common to all
 client scripts (@pxref{config}).
 
 

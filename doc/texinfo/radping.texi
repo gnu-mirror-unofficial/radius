@@ -7,7 +7,7 @@
 @pindex radping
 
 This utility is a shell program that determines the user's
-framed @IP{} and runs @command{ping} on that address.
+framed IP and runs @command{ping} on that address.
 
 @subheading Syntax
 @example
@@ -17,6 +17,6 @@ radping -c @var{calling-station-id}
 @end group
 @end example
 
-The second way of invoking the program allows to use calling station
-@sc{id} in order to indicate the user.
+The second way of invoking the program allows one to use the calling station
+@sc{id} to indicate the user.
 

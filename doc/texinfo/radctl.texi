@@ -3,22 +3,24 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Radctl, Builddbm, Radauth, Utility Programs
-@section Radctl
+@section @command{radctl}
 @pindex radctl
 
-@command{Radctl} is a control interface to @command{radiusd} daemon. It allows
+@command{Radctl} is a control interface to the @command{radiusd}
+daemon. It allows the
 user running it to query @command{radiusd} about various aspects of its
-work and issue administrative commands to it. 
+work and to issue administrative commands to it. The syntax is
 
 @example
 radctl -s @var{command} [@var{args}]
 @end example
 
-Where @var{command} is a command telling @command{radctl} which actions to
+@noindent
+where @var{command} is a command telling @command{radctl} which actions to
 take, and @var{args} are optional arguments to the command. Only one
 command can be specified per invocation.
 
-The valid @var{command}s are as follows:
+The valid commands are as follows:
 
 @table @code
 
@@ -35,7 +37,7 @@ Stops the server and then starts it again. When present, @var{args}
 are passed as the command line to the server.
 
 @item reload
-Causes running @command{radiusd} server to re-read its configuration files.
+Causes the running @command{radiusd} server to reread its configuration files.
 
 @item dumpdb
 Tells @command{radiusd} to dump its user hash table into the file
@@ -44,10 +46,10 @@ configuration files.
 
 @item status
 @command{radiusd} reports its memory usage statistics. The information is
-logged under @code{Info} log level.
+logged at the @code{Info} log level.
 
 @item which
-Reports the information about the running copy of @command{radiusd}.
+Reports the the running version of @command{radiusd}.
 
 @end table
 

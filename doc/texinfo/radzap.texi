@@ -3,24 +3,24 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Radzap, Radgrep, Radlast, Utility Programs
-@section Radzap
+@section @command{radzap}
 @pindex radzap
 @cindex Deleting hung user sessions
 
 @command{radzap} searches the Radius accounting database for matching login
 records and closes them.
 
-At least one of @option{-n}, @option{-p} options or username must be
+At least one of the options @option{-n}, @option{-p}, or the user name must be
 specified. If they are used in conjunction, they are taken as if
-joined by logical @sc{and} operation.
+joined by the logical @sc{and} operation.
 
-@samp{radzap} operates in two modes: silent and confirm. The silent
-mode is enabled by default. When run in this mode, radzap deletes
-every record that matched the search conditions given.
+@command{radzap} operates in two modes: silent and confirm. The silent
+mode is enabled by default. When run in this mode, @command{radzap} deletes
+every record that matches the search conditions given.
 
-In confirm mode @samp{radzap} will ask for a confirmation
-before zapping each matching record. Every line beginning with a @samp{y}
-is taken as positive response, otherwise it is taken as negative
+In confirm mode @command{radzap} will ask for a confirmation
+before zapping each matching record. Any line beginning with a @samp{y}
+is taken as a positive response; any other line is taken as a negative
 response.
 
 The confirm mode is toggled by the command line option @option{-c}.
@@ -28,7 +28,7 @@ The confirm mode is toggled by the command line option @option{-c}.
 @subheading Syntax
 
 @example
-radzap [options] [username]
+radzap [@var{options}] [@var{username}]
 @end example
 
 @noindent
@@ -47,22 +47,23 @@ Operate on @var{file} instead of the default
 @file{@var{RADLOG}/radutmp}.
 @item -l @var{dir}
 @itemx --log-directory @var{dir}
-Search file @file{radutmp} in the given directory. @emph{Note}, that
-this option is deprecated. It is currently retained for backward
+Search the file @file{radutmp} in the given directory.
+
+This option is deprecated. It is currently retained for backward
 compatibility with previous versions.
 @item -q
 @itemx --quiet
 Disable confirm mode.
 @item -h
 @itemx --help
-Display short help summary and exit.
+Display a short help summary, and exit.
 @item -n @var{name}
 @itemx --nas @var{name}
 Specify @NAS{} name to zap user from.
 @item -p @var{port}
 @itemx --port @var{port}
 Specify the port number of the session to be zapped. The port number
-can be specified either in its full form, i.e @code{radzap -p S02} or in
-its short form, like @code{radzap -p 2}.
+can be specified either in its full form, e.g. @code{radzap -p S02}, or in
+its short form, e.g. @code{radzap -p 2}.
 
 @end table

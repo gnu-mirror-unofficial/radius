@@ -3,17 +3,16 @@
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
 @node Radgrep, Radping, Radzap, Utility Programs
-@section Radgrep
+@section @command{radgrep}
 @pindex radgrep
 
-This utility allows to quickly lookup the user in the radius accounting
-database using a regular expression match.
-
-@command{radgrep} scans the output of @command{radwho} utility and outputs
-only the lines that match given regular expressions.
+This utility allows one to quickly look up the user in the Radius
+accounting database, using a regular expression match.
+@command{radgrep} scans the output of @command{radwho} utility and
+outputs only the lines that match given regular expressions.
 
 @subheading Syntax
 @command{radgrep} accepts two sets of options separated by @samp{--}
-(double-dash) sign. First subset is passed as command line to
+(double hyphen). The first subset is passed as the command line to the
 @command{radwho} utility. The second one is passed to @command{grep}.
 

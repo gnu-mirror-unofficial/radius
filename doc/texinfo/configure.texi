@@ -89,6 +89,7 @@ These are the basic statements:
 * usedbm::      Enable the DBM feature.
 * snmp::        Configure SNMP service.
 * guile::       Configure Guile interface.
+* message::     Configure server reply messages.
 @end menu
 
 @comment **L3***************************************************************
@@ -650,7 +651,7 @@ Deny access to SNMP service from any host in the group @var{network_name}.
 @end table
 
 @comment **L3***************************************************************
-@node guile, , snmp, config
+@node guile, message, snmp, config
 @subsection @code{guile} statement (raddb/config)
 @cindex guile statement (raddb/config)
 
@@ -686,6 +687,73 @@ Load the specified source file on startup.
 @end table
 
 [FIXME: xref to description of Guile interface]
+
+@comment **L3***************************************************************
+@node  message, , guile, config
+@subsection @code{message} statement (raddb/config)
+@cindex message statement (raddb/config)
+
+The @code{message} statement allows to set up the messages that are
+returned to the user with authentication-response packets.
+
+@subheading Syntax
+
+@example
+message @{
+        [ account-closed @var{string} ; ]
+        [ password-expired @var{string} ; ]
+        [ password-expire-warning @var{string} ; ]
+        [ access-denied @var{string} ; ]
+        [ realm-quota @var{string} ; ]
+        [ multiple-login @var{string} ; ]
+        [ second-login @var{string} ; ]
+        [ timespan-violation @var{string} ; ]
+@};
+@end example
+
+All variables in @code{message} block take a string argument. In
+@var{string} you can use the usual C backslash notation to represent
+non-printable characters. The use of %C@{@} and %R@{@} sequences
+is also allowed (@pxref{Macro substitution}).
+
+@subheading String statements
+@table @code
+@item account-closed
+This message will be returned to the user whose account is
+administratively closed.
+@item password-expired
+This message will be returned to the user whose password has expired.
+@item password-expire-warning
+This is a warning message that will be returned along with an
+authentication-acknowledge packet for the user whose password will
+expire in less than @var{n} seconds. The value of @var{n} is set by
+@code{password-expire-warning} variable in @code{auth} block.
+@xref{auth}. In this string, you can use the %R@{Password-Expire-Days@}
+substitution, to represent the actual number of @emph{days} left
+to the expiration date. The default is
+
+@example
+Password Will Expire in %R@{Password-Expire-Days@} Days\r\n
+@end example
+@item access-denied
+This message is returned to the user who supplies an incorrect password or
+a not-existent user-name as his authentication credentials.
+@item realm-quota
+This message is returned when the user is trying to log in using a
+realm, and number of users that are currently logged in from this realm
+reaches maximum value. For a description of realms, see @ref{realms}.
+@item multiple-login
+This message is returned to the user, who has logged in more than
+allowed number of times. For description of how to set the maximum
+number of concurrent logins, see @ref{Simultaneous-Use}.
+@item second-login
+This is a special case of @code{multiple-login}, which is used when
+the user's login limit is 1.
+@item timespan-violation
+This message is returned to the user who is trying to login outside of
+allowed time interval. For description of how to limit user's login
+time, see @ref{Login-Time}.
+@end table
 
 @comment *L2****************************************************************
 @node dictionary, clients, config            , Configuration files

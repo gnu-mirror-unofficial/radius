@@ -305,14 +305,7 @@ int
 write_wtmp(ut)
 	struct radutmp *ut;
 {
-	radut_file_t file;
-		
-	file = rut_setent(radwtmp_path, 1);
-	if (file == NULL) 
-		return 1;
-	rut_putent(file, ut);
-	rut_endent(file);
-	return 0;
+	return radwtmp_putent(radwtmp_path, ut);
 }
 
 /*

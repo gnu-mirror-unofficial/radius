@@ -75,9 +75,11 @@ cd $[BUILDDIR]
 
 if test ! -f raddb/config.in ; then
     cp -r ${[SOURCEDIR]}/raddb .
+    chmod -R u+w ./raddb
 fi
 if test ! -f proxy/config.in ; then
     cp -r ${[SOURCEDIR]}/proxy .
+    chmod -R u+w ./proxy
 fi
 
 EXPR=`./findport -c5 -s1644 "-fs^@AUTH_PORT@^%d^;\

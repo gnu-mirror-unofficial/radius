@@ -1,5 +1,5 @@
 include(SRCDIR/radscripts.m4)dnl
-#! BINDIR/radtest -S
+#! BINDIR/radtest -f
 # $Id$
 # This file is part of GNU RADIUS.
 # Copyright (C) 2001, Sergey Poznyakoff
@@ -12,7 +12,7 @@ include(SRCDIR/radscripts.m4)dnl
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-send auth 1 User-Name = $usr \
-            Password = $pwd \
-            NAS-Port-Id = $pid
+send auth 1 User-Name = ${1:?} \
+            Password = ${2:&Password: } \
+            NAS-Port-Id = ${pid:-0}
 expect 2

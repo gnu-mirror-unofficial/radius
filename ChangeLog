@@ -1,3 +1,43 @@
+2001-08-16 Sergey Poznyakoff
+
+	Removed control port support from radiusd/. All its functionality
+	is to be transferred to snmp. Implemented listening to multiple
+	interfaces/ports.
+
+	* radiusd/radctl.c: Removed.
+	* radiusd/Makefile.am: Removed radctl.c.
+	* radiusd/config.y: New keyword: "listen". Currently it is used
+	in auth and acct statements. "cntl" statement is obsolete: retained
+	for backward compatibility.
+	* radiusd/config.kw: Added "listen" keyword.
+	* radiusd/radiusd.c: Removed cntl_port. Implemented listening
+	to multiple interfaces/ports.
+	getmyip(): removed hostname length restriction.
+	* include/radiusd.h: Added declaration for HOSTDECL. Removed cntl_port.
+
+	* raddb/config: Reflect changes in the syntax.
+	* raddb/config.status: Likewise.
+	* raddb/huntgroups: Removed cntl-specific huntgroups.
+
+	* radlib/leakdetect.c: Added xrealloc(), erealloc().
+	* include/mem.h: Protos for the above.
+
+	* radiusd/files.c: realm_find(): do not return DEFAULT realm when asked
+	for NOREALM.
+
+	* test/raddb/config.in: Removed CNTL_PORT.
+	* test/test.sh: Removed CNTL_PORT.
+	* test/raddb/users: Removed ROOT.
+	* test/raddb/huntgroups: Removed cntl-specific huntgroups.
+	* test/raddb/test.scm: Removed cntl-specific functions.
+
+	NOTE: currently `make check' does not work due to the lack of
+	radctl functionality.
+
+	* TODO: Updated.
+	* NEWS: Updated. I should make it understandable to human beings
+	when I'm through doing the changes.
+
 2001-08-15 Sergey Poznyakoff
 
 	* radiusd/radutil.c: Do not add extra spaces after expanding
@@ -6,6 +46,7 @@
 	LOCAL realm (Reported by Michael Smirnov). Handle NOREALM
 	special realm.
 	* radiusd/files.c: Handle NOREALM special realm.
+	* radiusd/radiusd.c: Removed check for @ before calling proxy_send().
 
 	* THANKS: Added Michael Smirnov.
 	* TODO: Updated.
@@ -50,7 +91,7 @@
 	* include/radiusd.h: Changed DICT_ATTR and DICT_VALUE to fit the
 	new allocation mechanism (symtabs instead of slists).
 
-	* test/raddb/sqlserver: removed query_buffer-size clause.
+	* test/raddb/sqlserver: removed query_buffer_size claus.
 
 2001-07-31 Sergey Poznyakoff <gray@farlep.net>
 	Bunch of changes to make %C{Password} substitution return plaintext

@@ -80,7 +80,7 @@ rad_pdu_finish(void **ptr, struct radius_pdu *pdu,
         size_t len = sizeof(AUTH_HDR) + pdu->size;
         u_char digest[AUTH_DIGEST_LEN];
         
-	if (code != RT_AUTHENTICATION_REQUEST) {
+	if (code != RT_AUTHENTICATION_REQUEST && code != RT_STATUS_SERVER) {
                 secretlen = strlen(secret);
                 obstack_grow(&pdu->st, secret, secretlen);
         }
@@ -97,6 +97,7 @@ rad_pdu_finish(void **ptr, struct radius_pdu *pdu,
 	   appended to the pdu wherever necessary */
 	switch (code) {
 	case RT_AUTHENTICATION_REQUEST:
+	case RT_STATUS_SERVER:
 		memcpy(hdr->vector, vector, AUTH_VECTOR_LEN);
 		break;
 		

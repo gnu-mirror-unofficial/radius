@@ -139,7 +139,8 @@ if test $status -eq 0; then
 	 # resulting debug information to point at an absolute srcdir;
 	 # it is better for it to just mention the .y file with no
 	 # path.
-	 EXPR="/^#/ s,$input_rx/,,"
+	 T=`basename $target`
+	 EXPR="/^#/ s,$input_rx/,,;s,\"$from\",\"$T\","
 	 if [ ! -z "$YYREPL" ]; then
 	    EXPR="$EXPR;s/yy/$YYREPL/g"
 	 fi

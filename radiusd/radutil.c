@@ -46,8 +46,8 @@ static DICT_ATTR *parse_dict_attr(char *p, char **endp, char **defval);
 /*
  *	Replace %<whatever> in a string.
  *
- *      %Cnum          attribute number `num' from check pairs
- *      %C{attr-name}  attribute `attr-name' from check pairs
+ *      %Cnum          attribute number `num' from request pairs
+ *      %C{attr-name}  attribute `attr-name' from request pairs
  *      %Rnum          attribute number `num' from reply pairs
  *      %R{attr-name}  attribute `attr-name' from reply pairs
  *      %D             current date/time (localtime)
@@ -269,7 +269,7 @@ parse_dict_attr(p, endp, defval)
 }
 
 char *
-radius_xlate(obp, str, req, reply)
+radius_xlate0(obp, str, req, reply)
 	struct obstack *obp;
 	char *str;
 	RADIUS_REQ *req;
@@ -280,11 +280,6 @@ radius_xlate(obp, str, req, reply)
 	DICT_ATTR *da;
 	char *defval;
 
-	if (!req) {
-		int len = strlen(str);
-		obstack_grow(obp, str, len);
-		return obstack_finish(obp);
-	}
 	for (p = str; *p; ) {
 		switch (c = *p++) {
 		default:
@@ -293,6 +288,10 @@ radius_xlate(obp, str, req, reply)
 		case 0:
 			goto end;
 		case '%':
+			if (!req) {
+				obstack_1grow(obp, c);
+				break;
+			}
 			switch (c = *p++) {
 			case '%':
 				obstack_1grow(obp, c);
@@ -350,7 +349,7 @@ radius_xlate(obp, str, req, reply)
 				/* Reply pair */
 				da = parse_dict_attr(p, &p, &defval);
 				attr_to_str(obp, NULL,
-					    req->request, da, defval);
+					    reply, da, defval);
 				break;
 			default:					
 				obstack_1grow(obp, '%');
@@ -385,19 +384,27 @@ radius_xlate(obp, str, req, reply)
 			case 0:
 				goto end;
 			default:
-				obstack_1grow(obp, '%');
+				obstack_1grow(obp, '\\');
 				obstack_1grow(obp, c);
 				break;
 			}
 		}
 	}
-	
 end:
+	return;
+}
+
+char *
+radius_xlate(obp, str, req, reply)
+	struct obstack *obp;
+	char *str;
+	RADIUS_REQ *req;
+	VALUE_PAIR *reply;
+{
+	radius_xlate0(obp, str, req, reply);
 	obstack_1grow(obp, 0);
 	return obstack_finish(obp);
 }
-
-
 
 
 

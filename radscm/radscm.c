@@ -20,11 +20,12 @@
 # include <config.h>
 #endif
 
-#include <libguile.h>
+#include <unistd.h>
+#include <pwd.h>
 #include <syslog.h>
+#include <libguile.h>
 #include <radiusd.h>
 #include <radclient.h>
-#include <pwd.h>
 
 static RADCLIENT *radclient;
 

@@ -1,3 +1,20 @@
+2001-08-19 Sergey Poznyakoff
+
+	* radiusd/radiusd.c: Unlink pidfile on shutdown.
+	* radlib/radpaths.c: Global variable radpid_dir.
+	* include/radius.h: Declaration for radpid_dir.
+
+	* radlib/client.c: Removed PORT_CNTL.
+	* include/radclient.h: Likewise.
+
+	* test/raddb/radctl.rc.in: Removed @CNTL_PORT@
+	* test/test.scm: Restored functionality. rad-cntl uses
+	signals instead of obsolete cntl interface.
+
+	* radscm/radscm.c: rad-client-set-server: removed CNTL-NUM.
+
+	* TODO: Updated.
+
 2001-08-18 Sergey Poznyakoff
 
 	* mibs/GNU-RADIUS-SERVER-MIB.txt: Updated.

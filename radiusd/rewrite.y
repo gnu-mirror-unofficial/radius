@@ -24,7 +24,7 @@
 #include <sys/types.h>
 #include <ctype.h>
 #include <errno.h>
-#include <regex.h>
+#include <regex1.h>
 #include <radiusd.h>
 #include <symtab.h>
 #include <setjmp.h>

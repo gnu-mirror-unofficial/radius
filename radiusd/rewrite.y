@@ -4654,6 +4654,12 @@ static void bi_rindex(RWMACH *mach);
 static void bi_substr(RWMACH *mach);
 static void bi_field(RWMACH *mach);
 static void bi_logit(RWMACH *mach);
+static void bi_inet_ntoa(RWMACH *mach);
+static void bi_inet_aton(RWMACH *mach);
+static void bi_ntohl(RWMACH *mach);
+static void bi_htonl(RWMACH *mach);
+static void bi_ntohs(RWMACH *mach);
+static void bi_htons(RWMACH *mach);
 
 /*
  * integer length(string s)
@@ -4758,6 +4764,52 @@ bi_logit(mach)
         pushn(mach, 0);
 }
 
+void
+bi_htonl(mach)
+	RWMACH *mach;
+{
+	pushn(mach, htonl(getarg(mach, 1)));
+}
+
+void
+bi_ntohl(mach)
+	RWMACH *mach;
+{
+	pushn(mach, ntohl(getarg(mach, 1)));
+}
+
+void
+bi_htons(mach)
+	RWMACH *mach;
+{
+	pushn(mach, htons(getarg(mach, 1) & 0xffff));
+}
+
+void
+bi_ntohs(mach)
+	RWMACH *mach;
+{
+	pushn(mach, ntohs(getarg(mach, 1) & 0xffff));
+}
+
+void
+bi_inet_ntoa(mach)
+	RWMACH *mach;
+{
+	char buffer[DOTTED_QUAD_LEN];
+	char *s = ip_iptostr(getarg(mach, 1), buffer);
+	pushstr(mach, s, strlen(s));
+}
+
+void
+bi_inet_aton(mach)
+	RWMACH *mach;
+{
+	/* Note: inet_aton is not always present. See lib/iputils.c */
+	pushn(mach, ip_strtoip((char*)getarg(mach, 1)));
+}
+
+
 static builtin_t builtin[] = {
         bi_length,  "length", Integer, "s",
         bi_index,   "index",  Integer, "si",
@@ -4765,6 +4817,12 @@ static builtin_t builtin[] = {
         bi_substr,  "substr", String,  "sii",
         bi_logit,   "logit",  Integer, "s",
         bi_field,   "field",  String,  "si",
+	bi_ntohl, "ntohl", Integer, "i",
+	bi_htonl, "htonl", Integer, "i",
+	bi_ntohs, "ntohs", Integer, "i",
+	bi_htons, "htons", Integer, "i",
+	bi_inet_ntoa, "inet_ntoa", String, "i",
+	bi_inet_aton, "inet_aton", Integer, "s",
         NULL
 };
 

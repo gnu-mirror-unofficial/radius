@@ -4932,7 +4932,7 @@ bi_rindex()
 }
 
 /*
- * integer substr(string s, int start, int length)
+ * string substr(string s, int start, int length)
  */
 static void
 bi_substr()
@@ -5032,6 +5032,34 @@ bi_inet_aton()
 	/* Note: inet_aton is not always present. See lib/iputils.c */
 	pushn(ip_strtoip((char*)getarg(1)));
 }
+
+static void
+bi_tolower()
+{
+	char *src = (char*)getarg(1);
+	char *dest;
+	int i, len = strlen(src);
+	
+	dest = heap_reserve(len+1);
+	dest[len] = 0;
+	for (i = 0; i < len; i++)
+		dest[i] = tolower(src[i]);
+	pushn((RWSTYPE) dest);
+}	
+
+static void
+bi_toupper()
+{
+	char *src = (char*)getarg(1);
+	char *dest;
+	int i, len = strlen(src);
+	
+	dest = heap_reserve(len+1);
+	dest[len] = 0;
+	for (i = 0; i < len; i++)
+		dest[i] = toupper(src[i]);
+	pushn((RWSTYPE) dest);
+}	
 
 static void
 rw_regerror(const char *prefix, regex_t *rx, int rc)
@@ -5298,6 +5326,8 @@ static builtin_t builtin[] = {
 	{ bi_sub, "sub", String, "sss" },
 	{ bi_gsub, "gsub", String, "sss" },
 	{ bi_qprn, "qprn", String, "s" },
+	{ bi_tolower, "tolower", String, "s" },
+	{ bi_toupper, "toupper", String, "s" },
 	{ NULL }
 };
 

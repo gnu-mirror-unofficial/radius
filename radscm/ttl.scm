@@ -73,11 +73,17 @@
 (define ttl-max-retry 1)
 (define ttl-timeout 3)
 
+(define (host-spec? x)
+  (and
+   (pair? x)
+   (number? (car x))
+   (number? (cdr x)) (= (cdr x) #xffffffff)))
+
 (define-public (ttl-init . rest)
   (call-with-current-continuation
    (lambda (stop)
      (letrec ((value #f)
-	      (checkval (lambda (key)
+	      (checkval (lambda (key pred)
 			  (cond
 			   ((not value)
 			    (rad-log L_ERR
@@ -85,33 +91,45 @@
 				      #f
 				      "ttl-init: No value specified for keyword ~A"
 				      key))
+			    (stop))
+			   ((not (pred value))
+			    (rad-log L_ERR
+				     (format
+				      #f
+				      "ttl-init: Invalid data type specified for keyword ~A"
+				      key))
 			    (stop))))))
        (for-each
 	(lambda (key)
 	  (cond
 	   ((keyword? key)
-	     (checkval key)
-	     (case key
-	       ((#:dest-ip-address #:dest-ip)
-		(set! ttl-dest-ip-address (inet-aton value)))
-	       ((#:dest-port)
-		(set! ttl-dest-port value))
-	       ((#:source-ip-address #:source-ip)
-		(set! ttl-source-ip-address (inet-aton value)))
-	       ((#:source-port)
-		(set! ttl-source-port value))
-	       ((#:max-retry)
-		(set! ttl-max-retry value))
-	       ((#:timeout)
-		(set! ttl-timeout value))
-	       (else
+	    (case key
+	      ((#:dest-ip-address #:dest-ip)
+	       (checkval key host-spec?)
+	       (set! ttl-dest-ip-address (car value)))
+	      ((#:dest-port)
+	       (checkval key number?)
+	       (set! ttl-dest-port value))
+	      ((#:source-ip-address #:source-ip)
+	       (checkval key host-spec?)
+	       (set! ttl-source-ip-address (car value)))
+	      ((#:source-port)
+	       (checkval key number?)
+	       (set! ttl-source-port value))
+	      ((#:max-retry)
+	       (checkval key number?)
+	       (set! ttl-max-retry value))
+	      ((#:timeout)
+	       (checkval key number?)
+	       (set! ttl-timeout value))
+	      (else
 		(rad-log L_ERR
 			 (string-append
 			  (format #f
 				  "ttl-init: Undefined keyword ~A"
 				  key)))
 		(stop)))
-	     (set! value #f))
+	    (set! value #f))
 	   ((not value)
 	    (set! value key))
 	   (else

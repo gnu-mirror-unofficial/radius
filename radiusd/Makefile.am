@@ -20,6 +20,7 @@ radiusd_SOURCES = \
  builddbm.c\
  checkrad.c\
  config.c\
+ dynload.c\
  exec.c\
  files.c\
  forward.c\

@@ -1,3 +1,9 @@
+2003-11-28  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* extensions.texi (Built-in Functions):
+	* configure.texi: Document new features.
+	* extensions.texi: Document new features.
+
 2003-11-25  Sergey Poznyakoff
 
 	* configure.texi (realms file): Document ignorecase

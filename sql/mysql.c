@@ -106,25 +106,21 @@ do_mysql_query(conn, query)
                         return ret;
                 }
                 
-                if (!strcasecmp(mysql_error(mysql),
+		radlog(L_ERR, _("MYSQL error: %s"), mysql_error(mysql));
+		radlog(L_ERR, _("Failed query was: %s"), query);
+		
+		/*FIXME*/
+		if (!strcasecmp(mysql_error(mysql),
                                 "mysql server has gone away")) {
-                        radlog(L_ERR,
-                               _("MYSQL Error (retrying %d): Cannot Query:%s"), 
-                               ret, query);
-                        radlog(L_ERR, _("MYSQL error: %s"),
-                               mysql_error(mysql));
                         mysql_close(mysql);
                         conn->connected = 0;
                 } else {
-                        radlog(L_ERR, _("MYSQL Error (%d): Cannot Query:%s"),
-                               ret, query);
-                        radlog(L_ERR, _("MYSQL error: %s"), mysql_error(mysql));
                         rad_sql_need_reconnect(conn->type);
                         return ret;
                 }
         }
         debug(1,("FAILURE"));
-        radlog(L_ERR, _("MYSQL Error (giving up): Cannot Query:%s"), query);
+        radlog(L_ERR, _("MYSQL Error: giving up"));
         rad_sql_need_reconnect(conn->type);
         return ret;
 }
@@ -174,12 +170,12 @@ rad_mysql_reconnect(type, conn)
         if (mysql != NULL) {
                 for (i = 0; i < 10; i++) {/* Try it 10 Times  */
                         if (mysql_select_db(mysql, dbname)) {
-                                radlog(L_ERR, _("MYSQL cannot select db %s"), 
+                                radlog(L_ERR, _("MYSQL: cannot select db %s"), 
                                        dbname);
-                                radlog(L_ERR, _("MYSQL error: %s"), 
+                                radlog(L_ERR, _("MYSQL: error: %s"), 
                                        mysql_error(mysql));
                         } else {
-                                debug(1, ("MYSQL Connected to db %s", dbname));
+                                debug(1, ("MYSQL: Connected to db %s", dbname));
                                 return 0;
                         }
                 }
@@ -199,7 +195,7 @@ rad_mysql_disconnect(conn)
 {
         mysql_close(conn->data);
         free_entry(conn->data);
-	conn->connected = 0;
+        conn->connected = 0;
 }
 
 int

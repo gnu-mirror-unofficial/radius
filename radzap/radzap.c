@@ -48,83 +48,83 @@ UINT4 findnas(char *nasname);
 int confirm_flag;
 
 struct arguments {
-	char *user;
-	char *nas;
-	int port;
+        char *user;
+        char *nas;
+        int port;
 };
 const char *argp_program_version = "radzap (" PACKAGE ") " VERSION;
-static char doc[] = "delete Radius login record";
+static char doc[] = N_("delete Radius login records");
 
 static struct argp_option options[] = {
-	{NULL, 0, NULL, 0,
-	 "radzap specific switches:", 0},
+        {NULL, 0, NULL, 0,
+         N_("radzap specific switches:"), 0},
         {"confirm", 'c', NULL, 0,
-	 "ask for confirmation before zapping", 0},
+         N_("ask for confirmation before zapping"), 0},
         {"log-directory", 'l', "DIR", 0,
-	 "set logging directory", 0},
-	{"file", 'f', "FILE", 0,
-	 "operate on FILE instead of /var/log/radutmp", 0},
+         N_("set logging directory"), 0},
+        {"file", 'f', "FILE", 0,
+         N_("operate on FILE instead of /var/log/radutmp"), 0},
         {"nas", 'n', "NASNAME", 0,
-	 "zap user from given NAS", 0},
+         N_("zap user from given NAS"), 0},
         {"port", 'p', "NUMBER", 0,
-	 "zap user coming from given port", 0},
+         N_("zap user coming from given port"), 0},
         {"quiet", 'q', NULL, 0,
-	 "do not ask for confirmation before zapping", 0},
-	{NULL, 0, NULL, 0, NULL, 0}
+         N_("do not ask for confirmation before zapping"), 0},
+        {NULL, 0, NULL, 0, NULL, 0}
 };
 
 static error_t
 parse_opt (key, arg, state)
-	int key;
-	char *arg;
-	struct argp_state *state;
+        int key;
+        char *arg;
+        struct argp_state *state;
 {
-	struct arguments *args = state->input;
-	
-	switch (key) {
-	case 'c':
-		confirm_flag = 1;
-		break;
-	case 'l':
-		radlog_dir = arg;
-		break;
-	case 'f':
-		radutmp_path = arg;
-		break;
-	case 'n':
-		args->nas = arg;
-		break;
-	case 'p':
-		if (*arg == 's' || *arg == 'S')
-			++arg;
-		args->port = atoi(arg);
-		break;
-	case 'q':
-		confirm_flag = 0;
-		break;
-	case ARGP_KEY_ARG:
-		args->user = state->argv[state->next - 1];
-		break;
-	case ARGP_KEY_FINI:
-		if (!args->user && !args->nas && args->port == -1) {
-			radlog(L_ERR,
-			       _("at least one port, nas or user must be specified"));
-			exit(1);
-		}
-		break;
-	default:
-		return ARGP_ERR_UNKNOWN;
-	}
-	return 0;
+        struct arguments *args = state->input;
+        
+        switch (key) {
+        case 'c':
+                confirm_flag = 1;
+                break;
+        case 'l':
+                radlog_dir = arg;
+                break;
+        case 'f':
+                radutmp_path = arg;
+                break;
+        case 'n':
+                args->nas = arg;
+                break;
+        case 'p':
+                if (*arg == 's' || *arg == 'S')
+                        ++arg;
+                args->port = atoi(arg);
+                break;
+        case 'q':
+                confirm_flag = 0;
+                break;
+        case ARGP_KEY_ARG:
+                args->user = state->argv[state->next - 1];
+                break;
+        case ARGP_KEY_FINI:
+                if (!args->user && !args->nas && args->port == -1) {
+                        radlog(L_ERR,
+                               _("at least one port, nas or user must be specified"));
+                        exit(1);
+                }
+                break;
+        default:
+                return ARGP_ERR_UNKNOWN;
+        }
+        return 0;
 }
 
 static struct argp argp = {
-	options,
-	parse_opt,
-	NULL,
-	doc,
-	&rad_common_argp_child,
-	NULL, NULL
+        options,
+        parse_opt,
+        NULL,
+        doc,
+        &rad_common_argp_child,
+        NULL, NULL
 };
 
 
@@ -136,22 +136,22 @@ main(argc, argv)
         int argc;
         char **argv;
 {
-	UINT4   ip = 0;
+        UINT4   ip = 0;
         time_t  t;
         char    *path;
         char *s;        
-	struct arguments args;
-	
+        struct arguments args;
+        
         app_setup();
         initlog(argv[0]);
 
         if (s = getenv("RADZAP_CONFIRM"))
                 confirm_flag = atoi(s);
-	args.user = NULL;
-	args.nas  = NULL;
-	args.port = -1;
-	if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, &args))
-		return 1;
+        args.user = NULL;
+        args.nas  = NULL;
+        args.port = -1;
+        if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, &args))
+                return 1;
 
         /*
          *      Read the "naslist" file.

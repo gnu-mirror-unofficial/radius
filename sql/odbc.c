@@ -72,7 +72,7 @@ rad_odbc_diag(handle_type, handle, what)
                       &nerror,
                       message, sizeof message, &msglen);
         radlog(L_ERR,
-               _("%s: %s %d %s"),
+               "%s: %s %d %s",
                what, state, nerror, message);
 }
 

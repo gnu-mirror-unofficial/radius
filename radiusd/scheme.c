@@ -108,8 +108,8 @@ start_guile()
         int rc;
 
         if (rc = pthread_create(&guile_tid, NULL, guile_boot0, NULL))
-                radlog(L_ERR|L_PERROR, _("Can't spawn guile thread: %s"),
-                       strerror(errno));
+                radlog(L_ERR, _("Can't spawn guile thread: %s"),
+                       strerror(rc));
 }
 
 void *

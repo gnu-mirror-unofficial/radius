@@ -47,7 +47,7 @@ rut_setent(name, append)
         }
         if (fd == -1) {
                 radlog(L_ERR|L_PERROR, 
-                       _("rut_setent(): cannot open"));
+                       _("rut_setent(): cannot open `%s'"), name);
                 return NULL;
         }
         if (append)
@@ -105,7 +105,7 @@ rut_putent(file, ent)
         if (!file->eof &&
             lseek(file->fd, -(off_t)sizeof(file->ut), SEEK_CUR) < 0) {
                 radlog(L_ERR|L_PERROR, 
-                       _("rut_putent(): negative lseek"));
+                       "rut_putent(): lseek");
                 lseek(file->fd, (off_t)0, SEEK_SET);
                 return -1;
         }
@@ -114,7 +114,7 @@ rut_putent(file, ent)
 
         if (write(file->fd, ent, sizeof(*ent)) != sizeof(*ent)) {
                 radlog(L_ERR|L_PERROR, 
-                       _("rut_putent(): write"));
+                       "rut_putent(): write");
         }
 
         memcpy(&file->ut, ent, sizeof(file->ut));

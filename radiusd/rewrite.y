@@ -4692,7 +4692,7 @@ va_run_init(name, request, typestr, va_alist)
 
         if (fun->nparm != nargs) {
                 radlog(L_ERR,
-                       _("%s(): wrong number of arguments (should be %d, passed %d"),
+                       _("%s(): wrong number of arguments (should be %d, passed %d)"),
                        name, fun->nparm, nargs);
                 rw_code_unlock(&locker, 1);
                 return -1;

@@ -49,11 +49,11 @@ set_nonblocking(fd)
         int flags;
 
         if ((flags = fcntl(fd, F_GETFL, 0)) < 0) {
-                radlog(L_ERR, "F_GETFL: %s", strerror(errno));
+                radlog(L_ERR|L_PERROR, "F_GETFL");
                 return -1;
         }
         if (fcntl(fd, F_SETFL, flags | FCNTL_NONBLOCK) < 0) {
-                radlog(L_ERR, "F_GETFL: %s", strerror(errno));
+                radlog(L_ERR|L_PERROR, "F_GETFL");
                 return -1;
         }
         return 0;

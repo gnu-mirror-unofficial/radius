@@ -259,9 +259,10 @@ install_pair(name, op, valstr)
                         pair->lvalue = atoi(valstr);
                 } else if ((dval = value_name_to_value(valstr, pair->attribute)) == NULL) {
                         avp_free(pair);
-                        radlog(L_ERR, _("%s:%d: unknown value %s"),
-                            source_filename, source_line_num,
-                            valstr);
+                        radlog(L_ERR,
+			       _("%s:%d: cannot translate value %s"),
+			       source_filename, source_line_num,
+			       valstr);
                         return NULL;
                 } else {
                         pair->lvalue = dval->value;

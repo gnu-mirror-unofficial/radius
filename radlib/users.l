@@ -235,7 +235,8 @@ push_source(name)
         struct stat st;
         
         if (stat(name, &st)) {
-                radlog(L_ERR|L_PERROR, _("can't stat `%s'"),  name);
+                radlog(L_ERR|L_PERROR,
+		       _("can't stat `%s'"), name);
                 yyerror("can't include file");
                 return 1;
         }

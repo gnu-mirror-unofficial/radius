@@ -33,7 +33,6 @@ newdict=\
 raddb_files_644=\
  access.deny\
  config\
- config.syntax\
  $(newdict)\
  hints\
  huntgroups\
@@ -43,7 +42,6 @@ raddb_files_644=\
  nastypes\
  realms\
  rewrite\
- rewrite.full\
  sqlserver 
 
 raddb_files_600 = clients client.conf users 

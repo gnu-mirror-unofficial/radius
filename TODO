@@ -1,4 +1,7 @@
+-100 : Check for strcspn() and provide substitute if necessary.
 -100 : Add documentation and default configs for attr_query!
+-100 : Add documentation for default attribute values in % substitutions.
+-100 : query_buffer_size is obsoleted. Update docs accordingly.
 -3   : Enable use of port number in rewrite:check_unix()
 0    : Multiple servers per realm? (Rasmus Aveskogh <rasmus.aveskogh@utfors.se>)
 0    : Think about the possibility to serve multiple interfaces/ports.

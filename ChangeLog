@@ -1,3 +1,30 @@
+2001-07-25 Sergey Poznyakoff <gray@farlep.net>
+	* radiusd/acct.c: added external accounting (function rad_acct_ext).
+	Renamed rad_accounting_orig -> rad_acct_detail,
+	rad_accounting_new -> rad_acct_system for consistency.
+	* radiusd/radutil.c: Modified radius_xlate & friends to use obstack
+	instead of fixed size output array. This removes buffer size
+	restrictions. Added provisions for specifying default values
+	for undefined attributes (shell-like syntax: %{Acct-Sessison-Time:-0},
+	%{Acct-Sessison-Time:?not defined}, etc.).
+	* radiusd/exec.c: Use argcv_get() instead of ad hoc parsing. Check for
+	NULL before dereferencing reply. Changed invocations of radius_xlate()
+	to conform to its new syntax.
+	* radiusd/sql.c,radiusd/files.c: Changed invocations of radius_xlate()
+	to conform to its new syntax.
+	* include/radsql.h: removed buf member.
+	* include/radiusd.h: Changed proto for radius_xlate(). Removed
+	typedef BUFFER.
+	* raddb/dictionary: Added Acct-Ext-Program attribute.
+	* raddb/sqlserver: Removed query_buffer_size.
+
+	* radlib/avl.c: avp_free(): free associated strvalue if p->eval is
+	set.
+
+	* raduse/raduse.c: Changed formatting of time values. The previous
+	version was affected by LC_TIME settings.
+
+
 2001-07-16 Sergey Poznyakoff <gray@farlep.net>
 	* configure.in: When --with-client is specified build any part
 	of client that can be built.

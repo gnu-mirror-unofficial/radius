@@ -168,6 +168,8 @@ typedef struct value_pair {
 
 } VALUE_PAIR;
 
+typedef unsigned long qid_t; /* queue identifier */
+
 typedef struct radius_req {
 	UINT4			ipaddr;       /* Source IP address */
 	u_short			udp_port;     /* Source port */
@@ -179,6 +181,7 @@ typedef struct radius_req {
 	u_char			*data;	      /* Raw received data */
 	int			data_len;     /* Length of raw data */
 	int                     data_alloced; /* Was the data malloced */
+	qid_t                   qid;          /* Queue ID */
         /* Proxy support fields */
 	char			*realm;       /* stringobj, actually */
 	int			validated;    /* Already md5 checked */

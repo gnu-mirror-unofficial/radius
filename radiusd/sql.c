@@ -912,8 +912,10 @@ rad_sql_retrieve_pairs(conn, query, return_pairs, op_too)
                 
                 pair = install_pair(attribute, op, value);
                 
-                if (pair)
-                        avl_add_list(return_pairs, pair);
+                if (pair) {
+			avl_merge(return_pairs, &pair);
+			avl_free(pair);
+		}
         }
 
         disp_sql_free(sql_cfg.interface, conn, data);

@@ -2,7 +2,7 @@
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
-@node Extensions, Utility Programs, Debugging, Top
+@node Extensions, Utility Programs, Problem Tracking, Top
 @chapter Extensions
 @cindex Extensions
 

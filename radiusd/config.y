@@ -411,7 +411,7 @@ yylex()
 again:
         skipws();
 
-        if (*curp == '#') { 
+        if (*curp == '#') {
                 skipline();
                 goto again;
         } 
@@ -449,7 +449,14 @@ again:
                 yylval.string = copy_string();
                 return T_STRING;
         }
-        
+
+	if (*curp == '-' && !isspace(curp[1])) {
+		/* For the sake of passing keyword arguments
+		   to scheme */
+		yylval.string = copy_alpha();
+		return T_STRING;
+	}
+	
         if (isdigit(*curp)) {
                 if (copy_digit()) {
                         /* IP address */

@@ -204,6 +204,15 @@ radius_test "send auth 1 User-Name = \"tunnel\" \
 		       Framed-Protocol = PPTP \
 		       Tunnel-Password = tUnnEl"
 
+radius_test "send auth 1 User-Name = \"log-mode-mask\" \
+                         User-Password = \"test\"" \
+            "expect 2  Service-Type = Framed-User \
+		       Framed-Protocol = PPP"
+
+radius_test "send auth 1 User-Name = \"log-mode-mask\" \
+                         User-Password = \"wrong\"" \
+            "expect 3"
+
 radius_exit
 
 # End of radiusd.exp

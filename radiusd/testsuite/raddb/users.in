@@ -155,4 +155,18 @@ tunnel 	   Auth-Type = Local,
 		Framed-Protocol = PPTP,
 		Tunnel-Password = tUnnEl
 
+# Tunnel attributes
+tunnel 	   Auth-Type = Local,
+		User-Password = test
+	   Service-Type = Framed-User,
+		Framed-Protocol = PPTP,
+		Tunnel-Password = tUnnEl
+
+# Test for Log-Mode-Mask bug
+log-mode-mask Auth-Type = Local,
+		User-Password = test,
+		Log-Mode-Mask = Log-All
+	Service-Type = Framed-User,
+		Framed-Protocol = PPP
+
 # End of users.in

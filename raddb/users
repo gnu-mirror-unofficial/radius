@@ -1,6 +1,11 @@
 # For detailed description, run:
 #       info Radius users
 
+DEFAULT Group = "*LOCKED_ACCOUNT*",
+		Auth-Type = Reject
+	Reply-Message = "Your account is currently locked.\n\
+Please, contact your system administrator\n"
+
 DEFAULT	Auth-Type = SQL,
 		Simultaneous-Use = 1	
 	Service-Type = Framed-User,

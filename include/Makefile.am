@@ -39,6 +39,7 @@ debugmod.h \
 cfg.h \
 checkrad.h \
 envar.h \
+gettext.h \
 list.h \
 md5.h \
 mem.h \

@@ -13,12 +13,6 @@
 # include <config.h>
 #endif
 
-#ifdef ENABLE_NLS
-# ifdef HAVE_SETLOCALE
-#  include <locale.h>
-# endif
-#endif
-
 void
 app_setup()
 {

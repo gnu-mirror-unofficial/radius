@@ -3,6 +3,12 @@
 	OpenBSD (Thanks to Andrey Pavlenko <lance@evitel.net>).
 	* radiusd/timestr.c: Fixed typo in comment. Improved
 	standalone mode.
+	* radlast/radlast.c: defer processing the -n option until
+	radpath_init() is called.
+	* client/pam_radius/pam_radius.c: assign a unique messg_id
+	after creating radclient structure. This is needed if a
+	client program calls pam_authenticate() several times.
+	
 
 2001-06-20  Sergey Poznyakoff <gray@farlep.net>
 	* radscm/session.scm: added NAS-IP-Address to the packet

@@ -80,9 +80,15 @@ AC_PROG_RANLIB
 AC_PROG_YACC
 AM_PROG_LEX
 AC_PROG_AWK
-AC_PATH_PROG(M4, m4, no, $PATH:/usr/ccs/bin:/usr/bin:/usr/local/bin)
-AC_PATH_PROG(PS, ps, no, $PATH:/usr/bin:/usr/local/bin)
-AC_PATH_PROG(GETOPT, getopt, no, $PATH:/usr/bin)
+
+dnl Override a bug in autoconf 2.53: AS_LITERAL_IF incorrectly optimizes
+dnl out ac_dummy indirection if the argument has shell variables in it.
+dnl To compensate, I have to use my own dummy variable.
+
+ra_PATH=$PATH:/usr/ccs/bin:/usr/bin:/usr/local/bin
+AC_PATH_PROG(M4, m4, no, $ra_PATH)
+AC_PATH_PROG(PS, ps, no, $ra_PATH)
+AC_PATH_PROG(GETOPT, getopt, no, $ra_PATH)
 AC_PROG_LN_S
 AM_PROG_LIBTOOL
 

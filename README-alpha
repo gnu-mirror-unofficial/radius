@@ -1,0 +1,30 @@
+This is the GNU Radius package.
+
+This is a *pre-release* version, and not ready for production use yet. If you
+are taking source from CVS, you will need to have libtool, automake, and
+autoconf installed to help contribute. The script autogen.sh is provided to
+help autoconfigure mailutils from the cvs src.  After you run
+autogen.sh, there should be a file 'INSTALL' with (generic)
+installation instructions.
+
+Report bugs to <bug-gnu-radius@gnu.org>
+
+The following instructions apply if you wish to obtain sources from
+the CVS repository:
+
+To checkout the source tree from CVS issue the following commands:
+
+cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/radius login
+
+Press enter when prompted for a password.
+
+cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/radius checkout radius
+
+This will give you read-only access.  If you think you need write access,
+contact <gray@mirddin.farlep.net>
+
+In order to build this you will need to call the auto* tools with
+the right arguments, see or run autogen.sh. After this, make sure
+you run the first configure with --enable-maintainer-mode option.
+This is needed for make to correctly rebuild the dependencies.
+

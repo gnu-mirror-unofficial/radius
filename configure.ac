@@ -1,5 +1,7 @@
 # This file is part of GNU Radius.
-# Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
+# Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+#
+# Written by Sergey Poznyakoff
 #
 # GNU Radius is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -470,8 +472,7 @@ if test x$USE_PAM = xyes; then
 	AC_CHECK_LIB(pam, pam_start,
 			[ AC_DEFINE(HAVE_LIBPAM,1,[Define if you have libpam]) 
                		  RA_RADIUSD_LDADD(-lpam) ],
-		[ AC_MSG_ERROR(-lpam not found) 
-		  exit 1])
+		[AC_MSG_FAILURE([The requested library libpam is not found or is unusable])])
 fi
 
 
@@ -490,7 +491,7 @@ rad_lib_dbm() {
 		AC_CHECK_LIB(dbm, dbminit,
 			[ AC_DEFINE(HAVE_LIBDBM) 
 			  RA_RADIUSD_LDADD(-ldbm) ],
-		 [ AC_MSG_ERROR(-ldbm not found) ])) 
+		 [AC_MSG_FAILURE([The requested library libdbm is not found or is unusable])])) 
 }
 
 rad_lib_ndbm() {
@@ -501,7 +502,7 @@ rad_lib_ndbm() {
 		AC_CHECK_LIB(ndbm, dbm_open,
 			[ AC_DEFINE(HAVE_LIBNDBM) 
 			  RA_RADIUSD_LDADD(-lndbm) ],
-		[ AC_MSG_ERROR(-lndbm not found) ]))
+		[AC_MSG_FAILURE([The requested library libndbm is not found or is unusable])]))
 }
 
 AH_TEMPLATE(USE_DBM,[Define this to enable DBM support])
@@ -543,13 +544,13 @@ AC_ARG_WITH(mysql,
 	AC_HELP_STRING([--with-mysql],
 	[Configure to work with MySQL]),
 	[case $withval in
-	 yes)   RA_CHECK_LIB(mysqlclient, mysql_real_connect, "-lm",
+	 yes)   RA_CHECK_LIB(mysqlclient, mysql_real_connect, "-lm -lz",
                             [ USE_SQL=1
                               AC_DEFINE(USE_SQL_MYSQL)
                               AC_DEFINE(HAVE_LIBMYSQL)
                               RA_RADIUSD_LDADD($ra_cv_lib_mysqlclient)
                             ],
-			    :,
+			    [AC_MSG_FAILURE([The requested library libmysqlclient is not found or is unusable])],
                             [/usr/local/lib/mysql /usr/lib/mysql])
 		;;
 	 no)    ;;
@@ -564,7 +565,7 @@ AC_ARG_WITH(postgres,
                               AC_DEFINE(USE_SQL_POSTGRES)
                               AC_DEFINE(HAVE_LIBPQ) 
                               RA_RADIUSD_LDADD($ra_cv_lib_pq) ],
-		            [ AC_MSG_ERROR(-lpq not found) ],
+		            [AC_MSG_FAILURE([The requested library libpq is not found or is unusable])],
                             [/usr/local/pgsql/lib /usr/pgsql/lib])
 		;;
 	 no)    ;;
@@ -576,7 +577,7 @@ RA_CHECK_LIB(odbc, SQLAllocHandle, [],
                               AC_DEFINE(USE_SQL_ODBC)
                               AC_DEFINE(HAVE_LIBODBC) 
                               RA_RADIUSD_LDADD($ra_cv_lib_odbc) ],
-		            [ AC_MSG_ERROR(-lodbc not found) ],
+                            [AC_MSG_FAILURE([The requested library libobdc is not found or is unusable])],
                             [/usr/local/lib])
 }
 
@@ -586,7 +587,7 @@ RA_CHECK_LIB(iodbc, SQLAllocHandle, [],
                               AC_DEFINE(USE_SQL_ODBC)
                               AC_DEFINE(HAVE_LIBODBC) 
                               RA_RADIUSD_LDADD($ra_cv_lib_iodbc) ],
-		            [ AC_MSG_ERROR(-liodbc not found) ],
+		            [AC_MSG_FAILURE([The requested library libiodbc is not found or is unusable])],
                             [/usr/local/lib])
 }
 

@@ -79,18 +79,18 @@ static struct keyword op_tab[] = {
 	0
 };
 
-int paircmp(VALUE_PAIR *request, VALUE_PAIR *check);
+int paircmp(RADIUS_REQ *req, VALUE_PAIR *check);
 int fallthrough(VALUE_PAIR *vp);
 /*
  * Static declarations
  */
 static int portcmp(VALUE_PAIR *check, VALUE_PAIR *request);
-static int groupcmp(VALUE_PAIR *request, char *groupname, char *username);
+static int groupcmp(RADIUS_REQ *req, char *groupname, char *username);
 static int uidcmp(VALUE_PAIR *check, char *username);
 static int huntgroup_paircmp(VALUE_PAIR *request, VALUE_PAIR *check);
 static void matchrule_free(MATCHING_RULE **pl);
-static int matches(VALUE_PAIR *req, char *name, MATCHING_RULE *pl, char *matchpart);
-static int huntgroup_match(VALUE_PAIR *request_pairs, char *huntgroup);
+static int matches(RADIUS_REQ *req, char *name, MATCHING_RULE *pl, char *matchpart);
+static int huntgroup_match(RADIUS_REQ *req, char *huntgroup);
 static int user_find_sym(char *name, RADIUS_REQ *req, 
 			 VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 #ifdef USE_DBM
@@ -351,7 +351,6 @@ match_user(sym, req, check_pairs, reply_pairs)
 	VALUE_PAIR **check_pairs;
 	VALUE_PAIR **reply_pairs;
 {
-	VALUE_PAIR *request_pairs = req->request;
 	VALUE_PAIR *p;
 	VALUE_PAIR *check_tmp;
 	VALUE_PAIR *reply_tmp;
@@ -366,7 +365,7 @@ match_user(sym, req, check_pairs, reply_pairs)
 #ifdef USE_SQL
 		rad_sql_check_attr_query(req, &check_tmp);
 #endif
-		if (paircmp(request_pairs, check_tmp)) {
+		if (paircmp(req, check_tmp)) {
 			avl_free(check_tmp);
 			continue;
 		}
@@ -775,7 +774,7 @@ hints_setup(req)
 		
 		name = name_pair->strvalue;
 
-		if (matches(request_pairs, name, i, newname))
+		if (matches(req, name, i, newname))
 			continue;
 
 		matched++;
@@ -858,16 +857,16 @@ hints_setup(req)
  * See if the huntgroup matches.
  */
 int
-huntgroup_match(request_pairs, huntgroup)
-	VALUE_PAIR      *request_pairs;
-	char            *huntgroup;
+huntgroup_match(req, huntgroup)
+	RADIUS_REQ *req;
+	char       *huntgroup;
 {
 	MATCHING_RULE *pl;
 	
 	for (pl = huntgroups; pl; pl = pl->next) {
 		if (strcmp(pl->name, huntgroup) != 0)
 			continue;
-		if (paircmp(request_pairs, pl->lhs) == 0) {
+		if (paircmp(req, pl->lhs) == 0) {
 			debug(1, ("matched %s at huntgroups:%d",
 				 pl->name, pl->lineno));
 			break;
@@ -900,10 +899,10 @@ huntgroup_access(radreq)
 		/*
 		 *	See if this entry matches.
 		 */
-		if (paircmp(request_pairs, pl->lhs) != 0)
+		if (paircmp(radreq, pl->lhs) != 0)
 			continue;
 		debug(1, ("matched huntgroup at huntgroups:%d", pl->lineno));
-		r = paircmp(request_pairs, pl->rhs) == 0;
+		r = paircmp(radreq, pl->rhs) == 0;
 		break;
 	}
 
@@ -1357,24 +1356,13 @@ uidcmp(check, username)
 	return pwd->pw_uid - check->lvalue;
 }
 
-RADIUS_REQ *
-auth_request(request_pairs)
-	VALUE_PAIR *request_pairs;
-{
-	VALUE_PAIR *p;
-
-	if (p = avl_find(request_pairs, DA_QUEUE_ID))
-		return (RADIUS_REQ*)p->lvalue;
-	return NULL;
-}
-
 /*
  *	See if user is member of a group.
  *	We also handle additional groups.
  */
 int
-groupcmp(request, groupname, username)
-	VALUE_PAIR *request;
+groupcmp(req, groupname, username)
+	RADIUS_REQ *req;
 	char *groupname;
 	char *username;
 {
@@ -1384,8 +1372,7 @@ groupcmp(request, groupname, username)
 	int retval;
 
 #ifdef USE_SQL
-	RADIUS_REQ *req = auth_request(request);
-	if (req && rad_sql_checkgroup(req, groupname) == 0)
+	if (rad_sql_checkgroup(req, groupname) == 0)
 		return 0;
 #endif
 
@@ -1470,8 +1457,7 @@ static int server_check_items[] = {
 	DA_TERMINATION_MENU,
 	DA_GROUP_NAME,
 	DA_MATCH_PROFILE,
-	DA_AUTH_DATA,
-	DA_QUEUE_ID
+	DA_AUTH_DATA
 };
 
 int
@@ -1492,7 +1478,7 @@ server_attr(attr)
  */
 int
 paircmp(request, check)
-	VALUE_PAIR *request;
+	RADIUS_REQ *request;
 	VALUE_PAIR *check;
 {
 	VALUE_PAIR *check_item = check;
@@ -1511,7 +1497,7 @@ paircmp(request, check)
 		/*
 		 *	See if this item is present in the request.
 		 */
-		for (auth_item = request; auth_item; 
+		for (auth_item = request->request; auth_item; 
 				auth_item = auth_item->next) {
 			debug(30, ("trying %d", auth_item->attribute));
 
@@ -1636,7 +1622,7 @@ matchrule_free(pl)
 int
 hints_pairmatch(pl, req, name, ret_name)
 	MATCHING_RULE *pl;
-	VALUE_PAIR *req;
+	RADIUS_REQ *req;
 	char *name;
 	char *ret_name;
 {
@@ -1803,7 +1789,7 @@ wild_match(expr, name, return_name)
  */
 int
 matches(req, name, pl, matchpart)
-	VALUE_PAIR *req;
+	RADIUS_REQ *req;
 	char *name;
 	MATCHING_RULE *pl;
 	char *matchpart;

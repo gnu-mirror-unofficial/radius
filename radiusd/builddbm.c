@@ -160,12 +160,13 @@ builddbm(name)
 /* ************ */
 
 static VALUE_PAIR * decode_dbm(int **dbm_ptr);
-static int dbm_find(DBM_FILE dbmfile, char *name, VALUE_PAIR *request_pairs,
+static int dbm_find(DBM_FILE dbmfile, char *name,
+		    RADIUS_REQ *req, 
 		    VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 static char *_dbm_dup_name(char *buf, size_t bufsize, char *name, int ordnum);
 static char *_dbm_number_name(char *buf, size_t bufsize, char *name, int ordnum);
 static int dbm_match(DBM_FILE dbmfile, char *name, char *(*fn)(), 
-		     VALUE_PAIR *request_pairs, VALUE_PAIR **check_pairs,
+		     RADIUS_REQ *req, VALUE_PAIR **check_pairs,
 		     VALUE_PAIR **reply_pairs, int  *fallthru);
 
 /*
@@ -216,10 +217,10 @@ decode_dbm(pptr)
  * for both calls is needed.
  */
 int
-dbm_find(file, name, request_pairs, check_pairs, reply_pairs)
+dbm_find(file, name, req, check_pairs, reply_pairs)
 	DBM_FILE file;
 	char       *name;
-	VALUE_PAIR *request_pairs;
+	RADIUS_REQ *req;
 	VALUE_PAIR **check_pairs;
 	VALUE_PAIR **reply_pairs;
 {
@@ -252,7 +253,7 @@ dbm_find(file, name, request_pairs, check_pairs, reply_pairs)
 	/*
 	 *	See if the check_pairs match.
 	 */
-	if (paircmp(request_pairs, check_tmp) == 0) {
+	if (paircmp(req, check_tmp) == 0) {
 		VALUE_PAIR *p;
 
 		/*
@@ -268,7 +269,7 @@ dbm_find(file, name, request_pairs, check_pairs, reply_pairs)
 			debug(1, ("submatch: %s", p->strvalue));
 			name = dup_string(p->strvalue);
 			if (!dbm_match(file, name, _dbm_dup_name,
-				       request_pairs,
+				       req,
 				       &check_tmp, &reply_tmp, &dummy))
 				ret = 0;
 			free_string(name);
@@ -314,11 +315,11 @@ _dbm_number_name(buf, bufsize, name, ordnum)
 }
 
 int
-dbm_match(dbmfile, name, fn, request_pairs, check_pairs, reply_pairs, fallthru)
+dbm_match(dbmfile, name, fn, req, check_pairs, reply_pairs, fallthru)
 	DBM_FILE dbmfile;
 	char *name;
 	char *(*fn)();
-	VALUE_PAIR *request_pairs;
+	RADIUS_REQ *req;
 	VALUE_PAIR **check_pairs;
 	VALUE_PAIR **reply_pairs;
 	int  *fallthru;
@@ -332,7 +333,7 @@ dbm_match(dbmfile, name, fn, request_pairs, check_pairs, reply_pairs, fallthru)
 	for (i = 0;;i++) {
 		r = dbm_find(dbmfile,
 			     (*fn)(buffer, sizeof(buffer), name, i),
-			     request_pairs, check_pairs, reply_pairs);
+			     req, check_pairs, reply_pairs);
 		if (r == 0) {
 			if (strcmp(name, buffer))
 				continue;
@@ -354,7 +355,7 @@ dbm_match(dbmfile, name, fn, request_pairs, check_pairs, reply_pairs, fallthru)
 			name = dup_string(p->strvalue);
 			avl_delete(reply_pairs, DA_MATCH_PROFILE);
 			dbm_match(dbmfile, name, _dbm_dup_name,
-				  request_pairs,
+				  req,
 				  check_pairs, reply_pairs, &dummy);
 			free_string(name);
 		}
@@ -394,20 +395,20 @@ user_find_db(name, req, check_pairs, reply_pairs)
 	 */
 	for (;;) {
 		found = dbm_match(dbmfile, "BEGIN", _dbm_number_name,
-				  req->request,
+				  req,
 				  check_pairs, reply_pairs, &fallthru);
 		if (found && fallthru == 0)
 			break;
 		
 		found = dbm_match(dbmfile, name, _dbm_dup_name,
-				  req->request,
+				  req,
 				  check_pairs, reply_pairs, &fallthru);
 
 		if (found && fallthru == 0)
 			break;
 
 		found = dbm_match(dbmfile, "DEFAULT", _dbm_number_name,
-				  req->request,
+				  req,
 				  check_pairs, reply_pairs, &fallthru);
 		break;
 		/*NOTREACHED*/

@@ -657,8 +657,8 @@ Public License instead of this License.
 @node Acknowledgements, , Copying, Top
 @unnumbered Acknowledgements
 
-I would like to acknowledge Oswaldo E. Aguirre M. and Francisco
-J. Obispo S.  who invested a lot of time and effort to debug and test
+I would like to acknowledge Oswaldo Aguirre and Francisco
+Obispo, who invested a lot of time and effort to debug and test
 the program. They also wrote @command{web-radact} --- a web interface
 to the radius database.
 

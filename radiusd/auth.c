@@ -684,6 +684,61 @@ struct auth_state_s states[] = {
 	                 0,               L_null, sfn_reject,
 };
 
+static void auth_log(MACH *m, char *diag, char *pass, char *reason,
+		     char *addstr);
+static int is_log_mode(MACH *m, int mask);
+
+void
+auth_log(m, diag, pass, reason, addstr)
+	MACH *m;
+	char *diag;
+	char *pass;
+	char *reason;
+	char *addstr;
+{
+	if (reason)
+		radlog(L_AUTH,
+		       _("%s: [%s%s%s]: %s%s: CLID %s (from nas %s)"),
+		       diag,
+		       m->namepair->strvalue,
+		       pass ? "/" : "",
+		       pass ? pass : "",
+		       reason,
+		       addstr ? addstr : "",
+		       m->clid,
+		       nas_name2(m->req));
+	else
+		radlog(L_AUTH,
+		       _("%s: [%s%s%s]: CLID %s (from nas %s)"),
+		       diag,
+		       m->namepair->strvalue,
+		       pass ? "/" : "",
+		       pass ? pass : "",
+		       m->clid,
+		       nas_name2(m->req));
+}
+
+int
+is_log_mode(m, mask)
+	MACH *m;
+	int mask;
+{
+	int mode = log_mode;
+#ifdef DA_LOG_MODE_MASK
+	VALUE_PAIR *p;
+	
+	for (p = pairfind(m->user_check, DA_LOG_MODE_MASK);
+	     p;
+	     p = p->next ? pairfind(p->next, DA_LOG_MODE_MASK) : NULL) 
+		mode &= ~p->lvalue;
+	for (p = pairfind(m->req->request, DA_LOG_MODE_MASK);
+	     p;
+	     p = p->next ? pairfind(p->next, DA_LOG_MODE_MASK) : NULL) 
+		mode &= ~p->lvalue;
+#endif
+	return mode & mask;
+}
+
 int
 rad_authenticate(authreq, activefd)
 	AUTH_REQ  *authreq;
@@ -816,10 +871,8 @@ sfn_init(m)
 	if (!proxied &&
 	    user_find(m->namepair->strvalue, authreq->request,
 		      &m->user_check, &m->user_reply) != 0) {
-		radlog(L_AUTH, _("Invalid user: [%s] CLID %s (from nas %s)"),
-		       m->namepair->strvalue,
-		       m->clid,
-		       nas_name2(authreq));
+
+		auth_log(m, _("Invalid user"), NULL, NULL, NULL);
 
 		/* Send reject packet with proxy-pairs as a reply */
 		newstate(as_reject);
@@ -852,19 +905,12 @@ sfn_validate(m)
 			
 			switch (rc) {
 			case AUTH_REJECT:
-				radlog(L_AUTH,
-			      _("Rejected user: [%s] CLID %s (from nas %s)"),
-				       m->namepair->strvalue,
-				       m->clid,
-				       nas_name2(authreq));
+				auth_log(m, _("Rejected"), NULL, NULL, NULL);  
 				return;
 				
 			case AUTH_NOUSER:
-				radlog(L_AUTH,
-			       _("Invalid user: [%s] CLID %s (from nas %s)"),
-				       m->namepair->strvalue,
-				       m->clid,
-				       nas_name2(authreq));
+				auth_log(m, _("Invalid user"), NULL,
+					 NULL, NULL);
 				return;
 				
 			case AUTH_FAIL:
@@ -882,21 +928,12 @@ sfn_validate(m)
 		 *	Failed to validate the user.
 		 */
 		newstate(as_reject);
-		if (log_mode & RLOG_AUTH) {
-			if (log_mode & RLOG_FAILED_PASS) {
-				radlog(L_AUTH,
-				       _("Login incorrect: [%s/%s] CLID %s (from nas %s)"),
-				       m->namepair->strvalue,
-				       m->userpass,
-				       m->clid,
-				       nas_name2(authreq));
-			} else {			
-				radlog(L_AUTH,
-				       _("Login incorrect: [%s] CLID %s (from nas %s)"),
-				       m->namepair->strvalue,
-				       m->clid,
-				       nas_name2(authreq));
-			}
+		if (is_log_mode(m, RLOG_AUTH)) {
+			auth_log(m,
+				 _("Login incorrect"),
+				 is_log_mode(m, RLOG_FAILED_PASS) ?
+				                       m->userpass : NULL,
+				 NULL, NULL);
 		}
 	}
 }
@@ -910,15 +947,10 @@ sfn_service(m)
 	 */
 	if (m->check_pair->lvalue != DV_SERVICE_TYPE_AUTHENTICATE_ONLY)
 		return;
-	if (log_mode & RLOG_AUTH) {
-		radlog(L_AUTH,
-		       _("Authentication OK: [%s%s%s] (from nas %s)"),
-		       m->namepair->strvalue,
-		       (log_mode & RLOG_AUTH_PASS)
-		                ? "/" : "",
-		       (log_mode & RLOG_AUTH_PASS)
-		                ? m->userpass : "",
-		       nas_name2(m->req));
+	if (is_log_mode(m, RLOG_AUTH)) {
+		auth_log(m, _("Authentication OK"),
+			 is_log_mode(m, RLOG_AUTH_PASS) ? m->userpass : NULL,
+			 NULL, NULL);
 	}
 	newstate(as_ack);
 }
@@ -928,8 +960,7 @@ sfn_disable(m)
 	MACH *m;
 {
 	if (check_disable(m->namepair->strvalue, &m->user_msg)) {
-		radlog(L_AUTH, "Account disabled: [%s]",
-		       m->namepair->strvalue);
+		auth_log(m, _("Account disabled"), NULL, NULL, NULL);
 		newstate(as_reject);
 	}
 }
@@ -939,9 +970,8 @@ sfn_service_type(m)
 	MACH *m;
 {
 	if (m->check_pair->lvalue == DV_SERVICE_TYPE_AUTHENTICATE_ONLY) {
-		radlog(L_AUTH,
-		       "Login rejected [%s]. Authenticate only user.",
-		       m->namepair->strvalue); 
+		auth_log(m, _("Login rejected"), NULL,
+			 _("Authenticate only user"), NULL);
 		m->user_msg = make_string(_("\r\nAccess denied\r\n"));
 		newstate(as_reject);
 	}
@@ -958,12 +988,8 @@ sfn_realmuse(m)
 		return;
 	m->user_msg = make_string(
 		_("\r\nRealm quota exceeded - access denied\r\n"));
-	radlog(L_AUTH,
-   _("Login failed: [%s]: realm quota exceeded for %s: CLID %s (from nas %s)"),
-	       m->namepair->strvalue,
-	       m->req->realm,
-	       m->clid,
-	       nas_name2(m->req));
+	auth_log(m, _("Login failed"), NULL,
+		 _("realm quota exceeded for "), m->req->realm);
 	newstate(as_reject);
 }
 
@@ -1058,8 +1084,10 @@ sfn_ttl(m)
 		if (r > 0) {
 			timeout_pair(m)->lvalue = r;
 		} else {
-			radlog(L_AUTH, _("Zero time to live: [%s]"),
-			       m->namepair->strvalue); 
+			auth_log(m,
+				 _("Zero time to live"),
+				 NULL, NULL, NULL);
+
 			m->user_msg = make_string(
 			 _("\r\nSorry, your account is currently closed\r\n"));
 			newstate(as_reject);
@@ -1126,12 +1154,9 @@ sfn_exec_wait(m)
 			m->user_msg = make_string(
 			     _("\r\nAccess denied (external check failed)."));
 
-		if (log_mode & RLOG_AUTH) {
-			radlog(L_AUTH,
-	  _("Login incorrect: [%s] CLID %s (from nas %s): external check failed"),
-			       m->namepair->strvalue,
-			       m->clid,
-			       nas_name2(m->req));
+		if (is_log_mode(m, RLOG_AUTH)) {
+			auth_log(m, _("Login incorrect"),
+				 NULL, _("external check failed"), NULL);
 		}
 	}
 }
@@ -1200,18 +1225,10 @@ sfn_ack(m)
 		       m->user_msg,
 		       m->activefd);
 	
-	if (log_mode & RLOG_AUTH) {
-	   #if RADIUS_DEBUG
-		if (strcmp(m->namepair->strvalue, "gray") == 0)
-			strcpy(m->userpass, "guess");
-           #endif
-		radlog(L_AUTH,
-		    _("Login OK: [%s%s%s] CLID %s (from nas %s)"),
-		       m->namepair->strvalue,
-		       (log_mode & RLOG_AUTH_PASS) ? "/" : "",
-		       (log_mode & RLOG_AUTH_PASS) ? m->userpass : "",
-		       m->clid,
-		       nas_name2(m->req));
+	if (is_log_mode(m, RLOG_AUTH)) {
+		auth_log(m, "Login OK",
+			 is_log_mode(m, RLOG_AUTH_PASS) ? m->userpass : NULL,
+			 NULL, NULL);
 	}
 
 	if (timeout_pair(m)) {

@@ -208,7 +208,6 @@ scheme_debug(val)
 static SCM
 eval_catch_body (void *list)
 {
-	scm_display(list,scm_current_output_port());
         return scm_primitive_eval_x((SCM)list);
 }
 

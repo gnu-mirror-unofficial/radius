@@ -38,7 +38,6 @@
 # endif
 #endif
 #define RADIUS_PID              RADPID_DIR "/radiusd.pid"
-#define RADIUS_CTL              RADPID_DIR "/radctl"
 
 #define RADIUS_DIR		RADDB_DIR
 
@@ -60,7 +59,7 @@
 #define RADUTMP			"radutmp"
 #define RADWTMP			"radwtmp"
 
-#define RADSTAT                 "radstat"
+#define RADSTAT                 "radius.stat"
 
 #define RADIUS_DUMPDB_NAME      "radius.parse"
 

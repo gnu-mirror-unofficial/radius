@@ -265,6 +265,14 @@ fix_check_pairs(int cf_file, grad_locus_t *loc, char *name, grad_avp_t **pairs)
                                 errcnt++;
                         }
                         break;
+
+		case DA_SIMULTANEOUS_USE:
+			if (!radius_mlc_enabled_p()) {
+				grad_log_loc(L_ERR, loc,
+					     "%s",
+					     _("Simultaneous-Use is used, but multiple login checking is not enabled"));
+				errcnt++;
+			}
                 }
         }
 

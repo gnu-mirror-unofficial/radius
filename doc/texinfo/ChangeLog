@@ -1,8 +1,15 @@
+2003-01-31  Sergey Poznyakoff
+
+	* intro.texi: Fixed Texinfo syntax.
+
 2003-01-30  Daniel Barowy <dan@barowy.net>
 
-	* Grammar corrections and minor rewordings for clarification in 'radius.texi', and 'intro.tex'.
+	* Grammar corrections and minor rewordings for
+	  clarification in 'radius.texi', and 'intro.tex'.
 
-	* Added the macro '@radius{}' to 'config.texi' to display the radius daemon name (radius) as a texinfo-formatted command.
+	* Added the macro '@radius{}' to 'config.texi' to
+	  display the radius daemon name (radius) as a texinfo-formatted
+	  command.
 
 2003-01-27  Sergey Poznyakoff
 	

@@ -1,3 +1,27 @@
+2001-09-25 Sergey Poznyakoff
+
+	* Makefile.am: Added alpha: rule
+
+	* include/radius.h: DICT_VALUE contains a pointer to entire
+	DICT_ATTR structure, not just the attribute name. This
+	facilitates look-ups.
+	* include/sysdep.h: Forgotten defined(__sgi) :((
+
+	* radlib/dict.c: Use linked lists for dictionary values.
+	This reverses some part of changes from 2001-08-07. Reason:
+	symtab provides no convenient way for multiple key indexing.
+
+	value_name_to_value(): second argument: the attribute name
+	the value belongs to.
+	value_lookup(): Changed accordingly.
+
+	* radiusd/files.c: Fixed invocation of value_name_to_value.
+	* radscm/rscm_dict.c: Likewise.
+	* radscm/rscm_lib.c: Likewise.
+	
+	* radlib/symtab.c: Preserve the order of entries in collision lists
+	when rehashing.
+
 2001-09-23 Sergey Poznyakoff
 
 	* radscm/rscm_avl.c: (new) Scheme interface to some avl

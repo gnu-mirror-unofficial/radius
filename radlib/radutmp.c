@@ -64,6 +64,7 @@ rut_rewind(file)
 	radut_file_t file;
 {
 	lseek(file->fd, 0, SEEK_SET);
+	file->eof = 0;
 }
 
 void

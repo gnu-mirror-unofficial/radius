@@ -49,9 +49,9 @@ raddb_files_644=\
 raddb_files_600 = clients client.conf users 
 raddb_files=$(raddb_files_600) $(raddb_files_644)
 
-rewrite_DATA = checknas.rw log-hook.rw
+rewrite_DATA = checknas.rw log-hook.rw nas-ip.rw
 
-EXTRA_DIST=$(raddb_files) $(dictionaries) client.conf.in config.in checknas.rw log-hook.rw
+EXTRA_DIST=$(raddb_files) $(dictionaries) client.conf.in config.in $(rewrite_DATA) 
 DISTCLEANFILES=client.conf
 
 update-dictionary:

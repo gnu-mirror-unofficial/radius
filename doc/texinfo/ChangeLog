@@ -1,3 +1,24 @@
+2003-05-23  Sergey Poznyakoff
+
+	* radctl.texi: Minor change
+	* radlast.texi: Minor change
+	* radscm.texi: Downcase @var{} arguments. Provide a
+	cross-reference to Guile format function.
+	* radwho.texi: Minor change.
+
+2003-05-22  Lisa M. Opus Goldstein <opus@gnu.org>
+
+	* builddbm.texi: Last revision from Joe
+	* radauth.texi: Likewise.
+	* radctl.texi: Likewise.
+	* radgrep.texi: Likewise.
+	* radlast.texi: Likewise.
+	* radping.texi: Likewise.
+	* radscm.texi: Likewise. 
+	* raduse.texi: Likewise.
+	* radwho.texi: Likewise.
+	* radzap.texi: Likewise.
+
 2003-05-22  Sergey Poznyakoff 
 
 	* attributes.texi: Corrections by Joe Fineman.

@@ -33,6 +33,10 @@
 
 #include <timestr.h>
 
+#ifdef STANDALONE
+# undef ALLOC
+# undef FREE
+#endif
 
 #ifndef ALLOC
 # define ALLOC malloc
@@ -63,7 +67,7 @@ timespan_day(TIMESPAN **ts, int day, int start, int stop)
         
         if (stop < start) {
                 timespan_day(ts, day, start, DAYMIN);
-                timespan_day(ts, (day+1)%7, 0, stop);
+                timespan_day(ts, day % 7, 0, stop);
                 return;
         }
 
@@ -99,11 +103,11 @@ timespan_day(TIMESPAN **ts, int day, int start, int stop)
                         tp->start = start;
                         return;
                 }
-                
+
                 if (tp->stop == start) {
                         tp->stop = stop;
                         return;
-                }
+		}
         }
 
         tp = timespan_new(start, stop);

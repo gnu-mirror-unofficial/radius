@@ -362,25 +362,31 @@ match_user(sym, req, check_pairs, reply_pairs)
 
 	found = 0;
 	do {
-		if (paircmp(request_pairs, sym->check))
+		check_tmp = avl_dup(sym->check);
+#ifdef USE_SQL
+		rad_sql_check_attr_query(req, &check_tmp);
+#endif
+		if (paircmp(request_pairs, check_tmp)) {
+			avl_free(check_tmp);
 			continue;
-		
+		}
 		if (p = avl_find(sym->check, DA_MATCH_PROFILE)) {
 			debug(1, ("submatch: %s", p->strvalue));
 
 			if (!match_user(sym_lookup(user_tab, p->strvalue),
-					req, check_pairs, reply_pairs))
+					req, check_pairs, reply_pairs)) {
+				avl_free(check_tmp);
 				continue;
+			}
 		}			
 
 		found = 1;
 
-		check_tmp = avl_dup(sym->check);
 		reply_tmp = avl_dup(sym->reply);
 		avl_merge(reply_pairs, &reply_tmp);
 		avl_merge(check_pairs, &check_tmp);
 #ifdef USE_SQL
-		rad_sql_attr_query(req, reply_pairs);
+		rad_sql_reply_attr_query(req, reply_pairs);
 #endif
 
 		avl_free(reply_tmp);
@@ -398,7 +404,6 @@ match_user(sym, req, check_pairs, reply_pairs)
 
 	return found;
 }
-
 
 /*
  * Find the named user in the database.  Create the

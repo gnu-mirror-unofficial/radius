@@ -5800,6 +5800,7 @@ rewrite_before_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 {
 	list_destroy(&source_candidate_list, free_path, NULL);
 	source_candidate_list = list_create();
+	code_init();
 }
 
 static int
@@ -5833,7 +5834,6 @@ void
 rewrite_init()
 {
 	rewrite_tab = symtab_create(sizeof(FUNCTION), function_free);
-	code_init();
 	radiusd_set_preconfig_hook(rewrite_before_config_hook, NULL, 0);
 }
 

@@ -180,9 +180,7 @@ rad_mysql_reconnect(type, conn)
 				radlog(L_ERR, _("MYSQL error: %s"), 
 				       mysql_error(mysql));
 			} else {
-				radlog(L_INFO,
-				       _("MYSQL Connected to db %s"),
-				       dbname);
+				debug(1, ("MYSQL Connected to db %s", dbname));
 				return 0;
 			}
 		}

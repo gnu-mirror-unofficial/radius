@@ -30,6 +30,7 @@ static char rcsid[] =
 #include <sysdep.h>
 #include <mem.h>
 #include <log.h>
+#include <pthread.h>
 
 typedef struct entry *Entry;
 struct entry {
@@ -59,6 +60,7 @@ union bucket {
 };
 
 Bucketclass bucket_class;
+pthread_mutex_t memory_mutex = PTHREAD_RECURSIVE_MUTEX_INITIALIZER_NP;
 
 Bucketclass alloc_class(size_t size);
 Bucket alloc_bucket(Bucketclass);
@@ -90,6 +92,7 @@ alloc_class_mem()
 			(Bucket)0,
 			(Entry)0
 		};
+		
 		Bucket bp = alloc_bucket(&class);
 		bucket_class = &class; /* to fake alloc_entry() */
 		bucket_class = alloc_entry(CLASS_SIZE);
@@ -157,6 +160,7 @@ alloc_bucket(class)
 		radlog(L_ERR, _("can't allocate bucket page"));
 		return 0;
 	}
+
 	bp->s.class = class;
 	bp->s.next = class->first;
 	class->first = bp;
@@ -177,6 +181,7 @@ alloc_bucket(class)
 	}
 	
 	class->bucket_cnt++;
+
 	debug(1, ("Bucket count for class %d is %d", 
 			class->elsize, class->bucket_cnt));
 	return bp;
@@ -195,6 +200,8 @@ alloc_entry(size)
 {
 	Bucketclass class_ptr;
 	Entry ptr;
+
+	pthread_mutex_lock(&memory_mutex);
 
 	if (size < ENTRY_SIZE)
 		size = ENTRY_SIZE;
@@ -219,6 +226,8 @@ alloc_entry(size)
 	class_ptr->allocated_cnt++;
 	ptr = class_ptr->free;
 	class_ptr->free = ptr->next;
+	pthread_mutex_unlock(&memory_mutex);
+
 	bzero(ptr, class_ptr->elsize);
 	return ptr;
 }
@@ -229,6 +238,7 @@ put_back(class, ptr)
 	void *ptr;
 {
 	Entry eptr = (Entry)ptr;
+
 	class->allocated_cnt--;
 	insist(class->allocated_cnt <= class->bucket_cnt * class->elcnt);
 	bzero(ptr, class->elsize);
@@ -243,6 +253,7 @@ free_entry(ptr)
 	Bucketclass class;
 	Bucket bucket;
 
+	pthread_mutex_lock(&memory_mutex);
 	for (class = bucket_class; class; class = class->next)
 		for (bucket = class->first; bucket; bucket = bucket->s.next) 
 			if (ptr >= (void*)ENTRY(bucket, 0) && 
@@ -251,8 +262,10 @@ free_entry(ptr)
 					put_back_cont(class, ptr, 1);
 				else
 					put_back(class, ptr);
+				pthread_mutex_unlock(&memory_mutex);
 				return;
 			}
+	pthread_mutex_unlock(&memory_mutex);
 	debug(1, ("attempt to free an alien pointer (%p)", ptr));
 }
 
@@ -276,6 +289,7 @@ calloc_entry(count, size)
 	/* Fix-up entry size if less than minimum */
 	if (size < ENTRY_SIZE)
 		size = ENTRY_SIZE;
+	pthread_mutex_lock(&memory_mutex);
 	/* Find the appropriate class */
 	for (class_ptr = bucket_class; class_ptr; class_ptr = class_ptr->next) 
 		if (class_ptr->cont && class_ptr->elsize == size) 
@@ -354,6 +368,7 @@ again:
 		pre_first->next = last->next;
 	else
 		class_ptr->free = last->next;
+	pthread_mutex_unlock(&memory_mutex);
 	bzero(first, class_ptr->elsize * count);
 	return first;
 }
@@ -369,13 +384,16 @@ cfree_entry(ptr, count)
 	Bucketclass class;
 	Bucket bucket;
 
+	pthread_mutex_lock(&memory_mutex);
 	for (class = bucket_class; class; class = class->next)
 		for (bucket = class->first; bucket; bucket = bucket->s.next) 
 			if (ptr >= (void*)ENTRY(bucket, 0) && 
 				ptr < (void*)ENTRY(bucket, class->elcnt)) {
 				put_back_cont(class, ptr, count);
+				pthread_mutex_unlock(&memory_mutex);
 				return;
 			}
+	pthread_mutex_unlock(&memory_mutex);
 	debug(1, ("attempt to free an alien pointer (%p)", ptr));
 }
 

@@ -1,3 +1,50 @@
+2001-08-25 Sergey Poznyakoff
+
+	Changed distribution technique: removed dist-hook from the
+	main Makefile.am and provided separate Makefile.am's for
+	each directory in the distribution.
+
+	* contrib/Makefile.am contrib/.cvsignore: (new)
+	* doc/rfc/Makefile.am doc/rfc/.cvsignore: (new)
+	* mibs/Makefile.am mibs/.cvsignore: (new)
+	* scripts/Makefile.am scripts/.cvsignore: (new)
+	* scripts/guile/Makefile.am scripts/guile/.cvsignore: (new)
+	* test/raddb/Makefile.am: (new)
+	* test/raddb/.cvsignore: Added Makefile, Makefile.in
+
+	* Makefile.am: Removed conditional GUILE block. Removed
+	subdirs from EXTRA_DIST.Removed dist-hook. Removed TEST
+	variables.
+	* configure.in: Changed version number to pre-release 0.95.90.
+	Added substitutions RADSCM and TESTDIR.
+	AC_OUTPUT new makefiles.
+	* doc/Makefile.am: Added rfc to SUBDIRS.
+	* doc/man/Makefile.am: Added *.man to EXTRA_DIST. Changed explicit
+	rules to use $@ and $<.
+	* doc/texinfo/Makefile.am: Added radius_TEXINFOS.
+	* radlib/Makefile.am: Merged noinst_HEADERS statements.
+	* radscm/Makefile.am: Use substitution in bin_PROGRAMS,
+	provide EXTRA_PROGRAMS in case the former is empty. Do not
+	distribute *.x and *.doc files. Moved MKDEP variable off
+	the MAINTAINER_MODE conditional.
+
+	* test/Makefile.am: Added TESTS and TESTS_ENVIRONMENT (previously
+	they were in the main Makefile.am).
+	* test/test.sh: Removed sub-shell invocation, fixed paths.
+
+	Some minor fixes:
+
+	* raddb/users: Removed ROOT profile, not needed since the removal
+	of cntl functionality.
+	
+	* sql/disp.c: Fixed wrong comparison in disp_sql_interface_index().
+	* radiusd/config.y: Fixed usage of in_category tie-in.
+
+	* doc/texinfo/attributes.texinfo: Added @setfilename.
+
+	* TODO: Updated.
+	
+
 2001-08-23 Sergey Poznyakoff
 
 	Further changes to the logging subsystem. Left-to-do's are:

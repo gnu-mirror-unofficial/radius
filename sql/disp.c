@@ -76,7 +76,7 @@ disp_sql_drop(type, conn)
         int type;
         struct sql_connection *conn;
 {
-	if (conn)
+	if (conn && conn->connected)
 		disp_sql_entry(type)->disconnect(conn, 1);
 }
 

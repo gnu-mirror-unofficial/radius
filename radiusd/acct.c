@@ -640,31 +640,6 @@ rad_accounting(radreq, activefd)
         return -1;
 }
 
-/*ARGSUSED*/
-void
-rad_acct_xmit(type, code, data, fd)
-        int type;
-        int code;
-        void *data;
-        int fd;
-{
-        RADIUS_REQ *req = (RADIUS_REQ*)data;
-        char buf[MAX_LONGNAME];
-        
-        if (code == 0) {
-                rad_send_reply(RT_ACCOUNTING_RESPONSE, req, NULL, NULL, fd);
-                radlog(L_NOTICE,
-                       _("Retransmitting ACCT reply: client %s, ID: %d"),
-                       client_lookup_name(req->ipaddr, buf, sizeof buf),
-                       req->id);
-        } else {
-                radlog(L_NOTICE,
-                       _("Dropping ACCT packet: client %s, ID: %d: duplicate packet"),
-                       client_lookup_name(req->ipaddr, buf, sizeof buf),
-                       req->id);
-        }
-}
-
 /* Check one terminal server to see if a user is logged in.
    Return value:
         1 if user is logged in

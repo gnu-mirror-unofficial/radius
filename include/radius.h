@@ -391,8 +391,8 @@ int nas_read_file(char *file);
 NAS *nas_lookup_name(char *name);
 NAS *nas_lookup_ip(UINT4 ipaddr);
 char *nas_ip_to_name(UINT4 ipaddr, char *buf, size_t size);
-NAS *nas_request_to_nas(RADIUS_REQ *radreq);
-char *nas_request_to_name(RADIUS_REQ *radreq, char *buf, size_t size);
+NAS *nas_request_to_nas(const RADIUS_REQ *radreq);
+char *nas_request_to_name(const RADIUS_REQ *radreq, char *buf, size_t size);
 
 /* realms.c */
 REALM *realm_lookup_name(char *name);
@@ -569,6 +569,8 @@ struct channel {
                 char *file;      /* file: output file name */
         } id;
         int options;
+	char *prefix_hook;       /* prefix hook function */
+	char *suffix_hook;       /* suffix hook function */
 };
 
 /* Global variables */
@@ -578,7 +580,9 @@ extern int debug_level[];
 void initlog(char*);
 void radlog_open(int category);
 void radlog_close();
-void vlog(int lvl, const char *file, size_t line, const char *func_name,
+void vlog(int lvl,
+	  const RADIUS_REQ *req,
+	  const LOCUS *loc, const char *func_name,
 	  int en, const char *fmt, va_list ap);
 void radlog __PVAR((int level, const char *fmt, ...));
 int __insist_failure(const char *, const char *, int);

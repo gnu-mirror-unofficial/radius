@@ -10,8 +10,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-06-20 17:17+0300\n"
-"PO-Revision-Date: 2002-06-12 14:20+0300\n"
+"POT-Creation-Date: 2002-06-26 13:18+0300\n"
+"PO-Revision-Date: 2002-06-26 13:22+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Norwegian-bokmål <no@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -218,7 +218,7 @@ msgstr ""
 msgid "logout: login entry for NAS %s port %d not found"
 msgstr "utlogging: innlogging post for NAS %s port %d ikke funnet"
 
-#: lib/radutmp.c:228 radiusd/acct.c:511
+#: lib/radutmp.c:228 radiusd/acct.c:506
 #, c-format
 msgid "can't open %s"
 msgstr "kan ikke åpne «%s»"
@@ -227,7 +227,7 @@ msgstr "kan ikke åpne «%s»"
 msgid "not enough memory"
 msgstr "minnet oppbrukt"
 
-#: lib/users.l:239 radiusd/config.y:1339
+#: lib/users.l:239 radiusd/config.y:1345
 #, c-format
 msgid "can't stat `%s'"
 msgstr "«stat» feilet for «%s»"
@@ -370,51 +370,47 @@ msgstr "intet Acct-Status-Type attributt"
 msgid "converting reboot records"
 msgstr "konverterer forespørsel om å starte på nytt"
 
-#: radiusd/acct.c:254
-msgid "no username in record"
-msgstr "intet brukernavn i forespørselen"
-
-#: radiusd/acct.c:356
+#: radiusd/acct.c:351
 #, c-format
 msgid "NAS %s restarted (Accounting-On packet seen)"
 msgstr "NAS %s ble startet på nytt (fått forespørsel om Accounting-ON)"
 
-#: radiusd/acct.c:364
+#: radiusd/acct.c:359
 #, c-format
 msgid "NAS %s rebooted (Accounting-Off packet seen)"
 msgstr "NAS %s ble avsluttet (fått Accounting-Off forespørsel)"
 
-#: radiusd/acct.c:376
+#: radiusd/acct.c:371
 #, c-format
 msgid "unknown packet type (%d)"
 msgstr "ukjent forespørsel type (%d)"
 
-#: radiusd/acct.c:431
+#: radiusd/acct.c:426
 msgid "NOT writing wtmp record"
 msgstr "wtmp post IKKE lagret"
 
-#: radiusd/acct.c:446
+#: radiusd/acct.c:441
 #, c-format
 msgid "%s: not a directory"
 msgstr "%s: ikke en katalog"
 
-#: radiusd/acct.c:453
+#: radiusd/acct.c:448
 #, c-format
 msgid "can't create accounting directory `%s'"
 msgstr "kan ikke opprette katalogen «%s»"
 
-#: radiusd/acct.c:668
+#: radiusd/acct.c:663
 #, c-format
 msgid "assuming `%s' is logged in"
 msgstr ""
 
-#: radiusd/acct.c:671
+#: radiusd/acct.c:666
 #, c-format
 msgid "assuming `%s' is NOT logged in"
 msgstr ""
 
 # FIXME: message too hazy
-#: radiusd/acct.c:688
+#: radiusd/acct.c:683
 msgid "check_ts(): unknown NAS"
 msgstr "check_ts(): ukjent NAS"
 
@@ -455,7 +451,7 @@ msgstr "Feilaktig brukernavn"
 msgid "No huntgroup access"
 msgstr "Tilgang nektet av «huntgroup»"
 
-#: radiusd/auth.c:853 radiusd/sql.c:713 radiusd/sql.c:715
+#: radiusd/auth.c:853 radiusd/sql.c:745 radiusd/sql.c:747
 msgid "unknown"
 msgstr "ukjent"
 
@@ -642,125 +638,117 @@ msgstr "guile ignorert: radiusd ble kompilert uten støtte for guile"
 msgid "wrong datatype (should be string)"
 msgstr "feil datatype (forventet streng)"
 
-#: radiusd/config.y:1182 radiusd/rewrite.y:1458
+#: radiusd/config.y:1188 radiusd/rewrite.y:1458
 #, c-format
 msgid "%s:%d: unexpected EOF in comment started at line %d"
 msgstr "%s:%d: uventet slutt-på-fil i kommentar begynt på linje %d"
 
-#: radiusd/config.y:1232
+#: radiusd/config.y:1238
 #, c-format
 msgid "INTERNAL ERROR parsing %s near %d: out of putback space"
 msgstr "INTERN FEIL ved kjøring av %s nær linje %d: Ikke ledig plass"
 
-#: radiusd/config.y:1274 radiusd/config.y:1295 radiusd/config.y:1319
+#: radiusd/config.y:1280 radiusd/config.y:1301 radiusd/config.y:1325
 #, fuzzy
 msgid "token too long"
 msgstr "strengen for lang"
 
-#: radiusd/config.y:1347
+#: radiusd/config.y:1353
 #, c-format
 msgid "can't open config file `%s'"
 msgstr "kan ikke åpne konfigurasjonsfil «%s»"
 
-#: radiusd/config.y:1364
+#: radiusd/config.y:1370
 #, c-format
 msgid "reading %s"
 msgstr "lese %s"
 
-#: radiusd/config.y:1393
+#: radiusd/config.y:1399
 msgid "ready"
 msgstr "klar"
 
-#: radiusd/config.y:1419
+#: radiusd/config.y:1425
 #, c-format
 msgid "%s:%d: no such service: %s"
 msgstr "%s:%d: ingen slik tjeneste: %s"
 
-#: radiusd/config.y:1442 radiusd/sql.c:344
+#: radiusd/config.y:1448 radiusd/sql.c:361
 #, c-format
 msgid "%s:%d: unknown host: %s"
 msgstr "%s:%d: ukjent vert: %s"
 
-#: radiusd/config.y:1456
+#: radiusd/config.y:1462
 #, c-format
 msgid "%s:%d: wrong datatype (should be %s)"
 msgstr "%s:%d: feil datatype (forventet %s)"
 
-#: radiusd/config.y:1485
+#: radiusd/config.y:1491
 #, c-format
 msgid "INTERNAL ERROR at %s:%d: unknown datatype %d"
 msgstr "INTERN FEIL (%s:%d): ukjent datatype %d"
 
-#: radiusd/config.y:1554
+#: radiusd/config.y:1560
 msgid "Statement has no effect."
 msgstr ""
 
-#: radiusd/config.y:1556
+#: radiusd/config.y:1562
 #, c-format
 msgid "%s:%d: `%s' is obsolete. %s"
 msgstr "%s:%d: «%s» er utdatert. %s"
 
-#: radiusd/exec.c:77
+#: radiusd/exec.c:93
 #, c-format
 msgid "radius_exec_program(): won't execute, not an absolute pathname: %s"
 msgstr ""
 "radius_exec_program(): ville ikke kjøre kommando: ikke et absolutt filnavn: %"
 "s"
 
-#: radiusd/exec.c:89
+#: radiusd/exec.c:104
 #, c-format
 msgid "radius_exec_program(): won't execute, no such user: %s"
 msgstr ""
 "radius_exec_program(): ville ikke kjøre kommando: ingen slik bruker: %s"
 
-#: radiusd/exec.c:96
+#: radiusd/exec.c:111
 msgid "couldn't open pipe"
 msgstr "kan ikke åpne utfilen"
 
-#: radiusd/exec.c:102
-msgid "can't reset SIGCHLD"
-msgstr "kan ikke gjenopprette SIGCHLD"
-
-#: radiusd/exec.c:124 radiusd/exec.c:177
+#: radiusd/exec.c:132 radiusd/exec.c:181
 msgid "can't close pipe"
 msgstr "kan ikke stenge utfilen"
 
-#: radiusd/exec.c:126
+#: radiusd/exec.c:134
 msgid "can't dup stdout"
 msgstr "kan ikke duplisere standard utgang"
 
-#: radiusd/exec.c:136
+#: radiusd/exec.c:144
 #, c-format
 msgid "setgid(%d) failed"
 msgstr "setgid(%d) feil"
 
-#: radiusd/exec.c:142
+#: radiusd/exec.c:150
 #, c-format
 msgid "seteuid(%d) failed (ruid=%d, euid=%d)"
 msgstr "seteuid(%d) feilet (ruid=%d, euid=%d)"
 
-#: radiusd/exec.c:147
+#: radiusd/exec.c:155
 #, c-format
 msgid "setreuid(0,%d) failed (ruid=%d, euid=%d)"
 msgstr "setreuid(0,%d) feilet (ruid=%d, euid=%d)"
 
-#: radiusd/exec.c:189
+#: radiusd/exec.c:198
 #, c-format
 msgid "<stdout of %s>:%d: %s"
 msgstr "<standard ut av %s>:%d: %s"
 
-#: radiusd/exec.c:206
-msgid "can't restore SIGCHLD"
-msgstr "kan ikke gjenopprette SIGCHLD"
-
-#: radiusd/exec.c:213
+#: radiusd/exec.c:220
 msgid ""
 "can't run external program (reason reported via syslog channel user.err)"
 msgstr ""
 "kan ikke kjøre subprocess (årsaken rapportert gjennom syslogkanalen «user."
 "err»)"
 
-#: radiusd/exec.c:217
+#: radiusd/exec.c:224
 msgid "radius_exec_program(): abnormal child exit"
 msgstr "radius_exec_program(): ugyldig avslutning av underprosess"
 
@@ -1216,32 +1204,32 @@ msgstr ""
 msgid "You are calling outside your allowed timespan\n"
 msgstr "Forespørsel utenfor gyldig tidsintervall\n"
 
-#: radiusd/radiusd.c:631
+#: radiusd/radiusd.c:630
 msgid "Ready to process requests."
 msgstr "Klar for tilkoblinger."
 
-#: radiusd/radiusd.c:816
+#: radiusd/radiusd.c:815
 msgid "failed in select() - exit."
 msgstr "feil under select() - avslutning."
 
-#: radiusd/radiusd.c:820
+#: radiusd/radiusd.c:819
 msgid "Normal shutdown."
 msgstr "Normal avslutning."
 
-#: radiusd/radiusd.c:823
+#: radiusd/radiusd.c:822
 #, c-format
 msgid "exit on signal (%d)"
 msgstr "avslutning under signal (%d)"
 
-#: radiusd/radiusd.c:834
+#: radiusd/radiusd.c:833
 msgid "flushing request queues"
 msgstr "tømmer forespørsel-køer"
 
-#: radiusd/radiusd.c:851
+#: radiusd/radiusd.c:850
 msgid "restart initiated"
 msgstr "omstart påbegynt"
 
-#: radiusd/radiusd.c:854
+#: radiusd/radiusd.c:853
 msgid "can't restart: not started as absolute pathname"
 msgstr "Kan ikke starte om: programnavnet er ikke et absolutt filnavn"
 
@@ -1320,11 +1308,11 @@ msgstr "Slet forespørselen"
 msgid "Retransmitting %s reply"
 msgstr "Sender %s svaret på nytt"
 
-#: radiusd/radiusd.c:1300
+#: radiusd/radiusd.c:1301
 msgid "request failed"
 msgstr ""
 
-#: radiusd/radiusd.c:1418
+#: radiusd/radiusd.c:1419
 #, c-format
 msgid "unknown request code %d"
 msgstr "ukjent forespørselkode %d"
@@ -1334,30 +1322,30 @@ msgstr "ukjent forespørselkode %d"
 msgid "INTERNAL ERROR (%s:%d): attribute %d has bad type (%d)"
 msgstr "INTERN FEIL (%s:%d): attributt %d har ulovlig type (%d)"
 
-#: radiusd/request.c:72
+#: radiusd/request.c:61
 #, c-format
 msgid "Can't spawn new thread: %s"
 msgstr "Kan ikke starter ny tråd: %s"
 
-#: radiusd/request.c:225
+#: radiusd/request.c:243
 #, fuzzy
 msgid "request timed out in queue"
 msgstr "Forespørsel overskred tidsgrensen mens i køen"
 
-#: radiusd/request.c:240 radiusd/request.c:396
+#: radiusd/request.c:258 radiusd/request.c:414
 #, c-format
 msgid "Killing unresponsive %s thread %d"
 msgstr ""
 
-#: radiusd/request.c:268
+#: radiusd/request.c:286
 msgid "duplicate request"
 msgstr "duplisert forespørsel"
 
-#: radiusd/request.c:293
+#: radiusd/request.c:311
 msgid "too many requests in queue"
 msgstr "for mange forespørsler i køen"
 
-#: radiusd/request.c:303
+#: radiusd/request.c:321
 msgid "too many requests of this type"
 msgstr "for mange forespørsler av denne typen"
 
@@ -1535,15 +1523,19 @@ msgstr "for få argumenter til %s"
 msgid "function %s() requires %d parameters"
 msgstr ""
 
-#: radiusd/scheme.c:113
+#: radiusd/scheme.c:141
 #, fuzzy, c-format
 msgid "Can't spawn guile thread: %s"
 msgstr "Kan ikke starte en tråd til guile: %s"
 
-#: radiusd/scheme.c:239 radiusd/scheme.c:283
+#: radiusd/scheme.c:275 radiusd/scheme.c:319
 #, c-format
 msgid "%s is not a procedure object"
 msgstr "%s er ikke en prosedyre objekt"
+
+#: radiusd/scheme.c:446
+msgid "scheme task timed out"
+msgstr ""
 
 #: radiusd/snmpserv.c:572
 #, c-format
@@ -1588,110 +1580,110 @@ msgstr ""
 msgid "server shutting down on SNMP request"
 msgstr ""
 
-#: radiusd/sql.c:315
+#: radiusd/sql.c:332
 #, c-format
 msgid "could not read sqlserver file %s"
 msgstr "kan ikke leser sqlserver fil «%s»"
 
-#: radiusd/sql.c:327
+#: radiusd/sql.c:344
 #, fuzzy
 msgid "unrecognized keyword"
 msgstr "ukjent nøkkelord"
 
-#: radiusd/sql.c:335
+#: radiusd/sql.c:352
 #, fuzzy
 msgid "required argument missing"
 msgstr "mangler nødvendig argument"
 
-#: radiusd/sql.c:360 radiusd/sql.c:387
+#: radiusd/sql.c:377 radiusd/sql.c:404
 #, fuzzy
 msgid "number parse error"
 msgstr "feil under tolkning av tallet"
 
-#: radiusd/sql.c:379 radiusd/sql.c:397 radiusd/sql.c:405
+#: radiusd/sql.c:396 radiusd/sql.c:414 radiusd/sql.c:422
 #, fuzzy
 msgid "expected boolean value"
 msgstr "booleansk verdi forventet"
 
-#: radiusd/sql.c:456
+#: radiusd/sql.c:473
 #, fuzzy
 msgid "auth_max_connections is obsolete"
 msgstr "acct_max_connections er foreldet"
 
-#: radiusd/sql.c:463
+#: radiusd/sql.c:480
 #, fuzzy
 msgid "acct_max_connections is obsolete"
 msgstr "acct_max_connections er foreldet"
 
-#: radiusd/sql.c:470
+#: radiusd/sql.c:487
 #, fuzzy
 msgid "query_buffer_size is obsolete"
 msgstr "query_buffer_size er foreldet"
 
-#: radiusd/sql.c:478
+#: radiusd/sql.c:495
 msgid "Unsupported SQL interface"
 msgstr ""
 
-#: radiusd/sql.c:538
+#: radiusd/sql.c:570
 #, fuzzy
 msgid "disabling SQL auth: no auth_query specified"
 msgstr "slå av SQL autentisering: intet auth_query"
 
-#: radiusd/sql.c:543
+#: radiusd/sql.c:575
 msgid "SQL auth: no group_query specified"
 msgstr "SQL autentisering: intet group_query"
 
-#: radiusd/sql.c:553
+#: radiusd/sql.c:585
 msgid "SQL acct: no acct_start_query specified"
 msgstr "SQL autentisering: intet acct_start_query"
 
-#: radiusd/sql.c:559
+#: radiusd/sql.c:591
 msgid "disabling SQL acct: no acct_stop_query specified"
 msgstr "slå av SQL acct: intet acct_stop_query"
 
-#: radiusd/sql.c:566
+#: radiusd/sql.c:598
 msgid "SQL acct: no acct_nasdown_query specified"
 msgstr "SQL acct: intet acct_nasdown_query"
 
-#: radiusd/sql.c:572
+#: radiusd/sql.c:604
 msgid "SQL acct: no acct_nasup_query specified"
 msgstr "SQL acct: intet acct_nasup_query"
 
-#: radiusd/sql.c:594
+#: radiusd/sql.c:626
 msgid "SQL configuration changed: closing existing connections"
 msgstr "SQL konfigurasjon vekslet: lukke av eksisterende tilkoblinger"
 
-#: radiusd/sql.c:682
+#: radiusd/sql.c:712
 msgid "no Acct-Status-Type attribute in rad_sql_acct()"
 msgstr "intet Acct-Status-Type attributt i rad_sql_acct()"
 
-#: radiusd/sql.c:717
+#: radiusd/sql.c:749
 #, c-format
 msgid "acct_stop_query: %d rows changed"
 msgstr ""
 
-#: radiusd/sql.c:732
+#: radiusd/sql.c:764
 #, c-format
 msgid "acct_nasup_query updated %d records"
 msgstr ""
 
-#: radiusd/sql.c:747
+#: radiusd/sql.c:779
 #, c-format
 msgid "acct_nasdown_query updated %d records"
 msgstr ""
 
-#: radiusd/sql.c:762
+#: radiusd/sql.c:794
 #, c-format
 msgid "acct_keepalive_query updated %d records"
 msgstr ""
 
-#: radiusd/sql.c:785
+#: radiusd/sql.c:818
 msgid "SQL Auth specified in users file, but not in sqlserver file"
 msgstr ""
 "SQL autentisering er brukt i «users»-filen men ikke krevet i «sqlserver»-"
 "filen"
 
-#: radiusd/sql.c:886
+#: radiusd/sql.c:923
 #, c-format
 msgid "SQL: invalid operator: %s"
 msgstr ""
@@ -2072,7 +2064,7 @@ msgstr ""
 msgid "Not confirmed\n"
 msgstr "Bekreftet ikke\n"
 
-#: sql/disp.c:90
+#: sql/disp.c:99
 #, fuzzy
 msgid "Failed query was"
 msgstr "Feilet forespørsel var"
@@ -2087,17 +2079,17 @@ msgstr "Kan ikke koble. Gitt opp."
 msgid "[MYSQL] cannot connect to %s as %s: %s"
 msgstr "[MYSQL] feil under kobling til %s som bruker %s: %s"
 
-#: sql/mysql.c:183 sql/mysql.c:222
+#: sql/mysql.c:185 sql/mysql.c:224
 #, fuzzy
 msgid "[MYSQL]: can't get result"
 msgstr "[MYSQL]: kan ikke få resultat"
 
-#: sql/mysql.c:248 sql/odbc.c:341 sql/postgres.c:370
+#: sql/mysql.c:250 sql/odbc.c:342 sql/postgres.c:371
 #, fuzzy, c-format
 msgid "too few columns returned (%d req'd)"
 msgstr "for få kolonner fått (%d kreves)"
 
-#: sql/odbc.c:256
+#: sql/odbc.c:257
 #, c-format
 msgid "query returned more tuples: %s"
 msgstr ""
@@ -2111,12 +2103,21 @@ msgstr "PQconnectStart feilet: %s"
 msgid "PQconnectStart failed"
 msgstr "PQconnectStart feilet"
 
-#: sql/postgres.c:291
+#: sql/postgres.c:292
 #, c-format
 msgid "query returned %d tuples: %s"
 msgstr ""
 
-#: sql/postgres.c:298 sql/postgres.c:344
+#: sql/postgres.c:299 sql/postgres.c:345
 #, c-format
 msgid "PQexec returned %s"
 msgstr ""
+
+#~ msgid "no username in record"
+#~ msgstr "intet brukernavn i forespørselen"
+
+#~ msgid "can't reset SIGCHLD"
+#~ msgstr "kan ikke gjenopprette SIGCHLD"
+
+#~ msgid "can't restore SIGCHLD"
+#~ msgstr "kan ikke gjenopprette SIGCHLD"

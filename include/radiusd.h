@@ -404,13 +404,10 @@ extern struct cfg_stmt filters_stmt[];
 
 /* scheme.c */
 void scheme_main();
-void scheme_load(char *filename);
 void scheme_load_path(char *pathname);
-void scheme_debug(int val);
 int scheme_auth(char *procname, grad_request_t *req,
                 grad_avp_t *user_check, grad_avp_t **user_reply_ptr);
 int scheme_acct(char *procname, grad_request_t *req);
-void scheme_add_load_path(char *path);
 void scheme_read_eval_loop();
 void scheme_redirect_output();
 void start_guile();

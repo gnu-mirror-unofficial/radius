@@ -122,7 +122,7 @@ SCM_DEFINE(rad_dict_name_to_value, "rad-dict-name->value", 2, 0, 0,
 	/*FIXME:
 	  val = value_name_to_value_strict(attr->value, SCM_CHARS(VALUE));
 	  */
-	val = value_name_to_value(SCM_CHARS(VALUE));
+	val = value_name_to_value(SCM_CHARS(VALUE), attr->value);
 	return val ? scm_makenum(val->value) : SCM_BOOL_F;
 }
 #undef FUNC_NAME

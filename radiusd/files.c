@@ -611,7 +611,7 @@ userparse(buffer, first_pair, errmsg)
 				}
 				if (isdigit(*token)) {
 					pair->lvalue = atoi(token);
-				} else if (!(dval = value_name_to_value(token))) {
+				} else if (!(dval = value_name_to_value(token, pair->attribute))) {
 					avp_free(pair);
 					snprintf(errbuf, sizeof(errbuf),
 						_("unknown value %s"),

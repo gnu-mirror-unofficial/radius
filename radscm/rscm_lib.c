@@ -162,7 +162,7 @@ radscm_cons_to_avp(scm)
 			pair.lvalue = (UINT4) scm_big2dbl(cdr);
 		} else if (SCM_NIMP(cdr) && SCM_STRINGP(cdr)) {
 			char *name = SCM_CHARS(cdr);
-			val = value_name_to_value(name);
+			val = value_name_to_value(name, pair.attribute);
 			if (val) {
 				pair.lvalue = val->value;
 			} else {

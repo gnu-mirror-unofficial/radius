@@ -217,7 +217,7 @@ rad_set_signal(int sig, signal_handler_t sighandler)
 }
 
 void
-rad_reset_signal(int sig ARG_UNUSED, signal_handler_t sighandler ARG_UNUSED)
+rad_reset_signal(int sig, signal_handler_t sighandler)
 {
 	rad_set_signal(sig, sighandler);
 }

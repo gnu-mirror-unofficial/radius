@@ -10,8 +10,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-05-12 19:18+0300\n"
-"PO-Revision-Date: 2002-05-10 16:50+0300\n"
+"POT-Creation-Date: 2002-05-14 13:25+0300\n"
+"PO-Revision-Date: 2002-05-14 13:09+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Norwegian-bokmål <no@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -1423,7 +1423,7 @@ msgstr ""
 #: rewrite.y:1014 radiusd/rewrite.y:1014
 #, fuzzy, c-format
 msgid "%s:%d: undefined variable: %s"
-msgstr "%s:%d: felleskapen «%s» er ikke definert"
+msgstr "%s:%d: variabel «%s» er ikke definert"
 
 #: rewrite.y:1511 radiusd/rewrite.y:1511
 #, c-format
@@ -1472,7 +1472,7 @@ msgstr "for få argumenter til %s"
 
 #: rewrite.y:2552 radiusd/rewrite.y:2552
 msgid "Undefined"
-msgstr ""
+msgstr "Ikke definert"
 
 #: rewrite.y:2554 radiusd/rewrite.y:2554
 msgid "integer"
@@ -1481,11 +1481,11 @@ msgstr ""
 #: rewrite.y:2556 radiusd/rewrite.y:2556
 #, fuzzy
 msgid "string"
-msgstr "advarsel"
+msgstr "streng"
 
 #: rewrite.y:2558 radiusd/rewrite.y:2558
 msgid "UNKNOWN"
-msgstr ""
+msgstr "UKJENT"
 
 #: rewrite.y:2875 radiusd/rewrite.y:2875
 #, fuzzy, c-format
@@ -1607,7 +1607,7 @@ msgstr "kan ikke dekode SNMP forespørsel fra %s: %s"
 #: radiusd/snmpserv.c:582
 #, fuzzy, c-format
 msgid "DENIED attempt to access community %s from %s"
-msgstr "IKKE TILGANG for «community» %s fra %s"
+msgstr "IKKE TILGANG for felleskapen «%s» fra %s"
 
 #: radiusd/snmpserv.c:620
 #, c-format

@@ -173,23 +173,16 @@ version(stream, state)
                 fprintf(stream, "%s ", compile_flag_str[i]);
         }
         fprintf(stream, "\n");
-        fprintf(stream, "Ports in use:\n");
+	fprintf(stream, _("Compilation defaults:\n"));
+        fprintf(stream, _("Ports in use:\n"));
         fprintf(stream, " AUTH: %d\n", DEF_AUTH_PORT);
         fprintf(stream, " ACCT: %d\n", DEF_ACCT_PORT);
-#if defined(USE_MYSQL)
-        fprintf(stream, " SQL : %d\n", RAD_SQL_PORT);
-#endif
-        fprintf(stream, "Paths:\n");
+        fprintf(stream, _("Paths:\n"));
         fprintf(stream, _(" configuration directory: %s\n"), RADIUS_DIR);
         fprintf(stream, _(" logging directory:       %s\n"), RADLOG_DIR);
         fprintf(stream, _(" accounting directory:    %s\n"), RADACCT_DIR);
-#ifdef RADIUS_PID
-        fprintf(stream, _(" pidfile:                 %s\n"), RADIUS_PID);
-#else
-        fprintf(stream, _(" no pidfile\n"));
-#endif
-
-        fprintf(stream, "\nReport bugs to <%s>\n", bug_report_address);
+        fprintf(stream, _(" pidfile directory:       %s\n"), RADPID_DIR);
+        fprintf(stream, _("\nReport bugs to <%s>\n"), bug_report_address);
         exit(0);
 }
 

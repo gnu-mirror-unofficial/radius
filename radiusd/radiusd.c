@@ -1378,6 +1378,7 @@ static RETSIGTYPE
 sig_fatal(sig)
         int sig;
 {
+	radlog(L_CRIT, _("exit on signal %d"), sig);
 	abort();
 }
 

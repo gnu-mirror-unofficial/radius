@@ -4,8 +4,8 @@
 -100 : Add documentation and default configs for attr_query!
 -100 : Add documentation for default attribute values in % substitutions.
 -100 : query_buffer_size is obsoleted. Update docs accordingly.
--50  : Check for strcspn() and provide substitute if necessary.
 -3   : Enable use of port number in rewrite:check_unix()
 0    : Multiple servers per realm? (Rasmus Aveskogh <rasmus.aveskogh@utfors.se>)
+5    : Write radctl substitute which would use SNMP.
 5    : Write a unified configuration utility in guile.
 10   : Need a more flexible IP allocation strategy

@@ -53,10 +53,10 @@ store_group(struct group *grp)
 	buffer = (char*)(result->gr_mem + grcnt + 1);
 	
 #define COPY(m) do { \
-	result->##m = buffer;\
-	len = strlen(grp->##m) + 1;\
+	result-> m = buffer;\
+	len = strlen(grp-> m) + 1;\
 	buffer += len;\
-	strcpy(result->##m, grp->##m); } while (0)
+	strcpy(result-> m, grp-> m); } while (0)
 
 	COPY(gr_name);
 	COPY(gr_passwd);

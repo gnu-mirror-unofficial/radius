@@ -51,11 +51,8 @@ static char rcsid[] =
 #include <radutmp.h>
 #include <checkrad.h>
 
-#include <snmp.h>
-#include <snmp_impl.h>
 #include <asn1.h>
-#include <snmp_api.h>
-#include <snmp_vars.h>
+#include <snmp.h>
 
 struct check_instance {
 	char      *name;
@@ -259,49 +256,50 @@ checkrad_xlat(checkp, str)
 	return str;
 }
 
+static int converse(int type, struct snmp_session *sp, struct snmp_pdu *pdu,
+		    void *closure);
+
 /*ARGSUSED*/
 int
-callback(type, sp, requid, pdu, closure)
+converse(type, sp, pdu, closure)
 	int type;
 	struct snmp_session *sp;
-	int requid;
 	struct snmp_pdu *pdu;
 	void *closure;
 {
 	int rc = 0;
-	struct variable_list *vlist;
+	struct snmp_var *vlist;
 	struct check_instance *checkp = (struct check_instance *)closure;
 	char buf[64];
 
-	if (type == TIMED_OUT) {
+	if (type == SNMP_CONV_TIMEOUT) {
 		radlog(L_NOTICE,
 		       _("timed out in waiting SNMP response from NAS %s"),
 		       checkp->hostname);
 		checkp->timeout++;
 		return 1;
 	}
-	if (type != RECEIVED_MESSAGE)
+	if (type != SNMP_CONV_RECV_MSG)
 		return 1;
 
-	for (vlist = pdu->variables; rc == 0 && vlist;
-				     vlist = vlist->next_variable)  
+	for (vlist = pdu->var; rc == 0 && vlist; vlist = vlist->next)  
 		switch (vlist->type) {
 		case SMI_STRING:
-			rc = compare(checkp, vlist->val.string);
-			debug(2, ("(STRING) %s: %d", vlist->val.string, rc));
+			rc = compare(checkp, vlist->var_str);
+			debug(2, ("(STRING) %s: %d", vlist->var_str, rc));
 			break;
 		case SMI_INTEGER:
 		case SMI_COUNTER32:
 		case SMI_COUNTER64:
-			radsprintf(buf, sizeof(buf), "%d", *vlist->val.integer);
+			radsprintf(buf, sizeof(buf), "%d", vlist->var_int);
 			rc = compare(checkp, buf);
-			debug(2, ("(INT) %d: %d", *vlist->val.integer, rc));
+			debug(2, ("(INT) %d: %d", vlist->var_int, rc));
 			break;
 		case SMI_IPADDRESS:
-			ipaddr2str(buf, *(UINT4*)vlist->val.string);
+			ipaddr2str(buf, *(UINT4*)vlist->var_int);
 			rc = compare(checkp, buf);
 			debug(2, ("(IPADDR) %#x: %d",
-				  *(UINT4*)vlist->val.string, rc));
+				  *(UINT4*)vlist->var_str, rc));
 			break;
 		}
 
@@ -317,113 +315,102 @@ snmp_check(checkp, nas)
 {
 	int rc = -1;
 	struct snmp_pdu *pdu;
-        struct snmp_session *sp, session;
-	struct variable_list *vlist;
+        struct snmp_session *sp;
+	struct snmp_var *var;
+	char *community;
+	int retries;
+	int timeout;
+	char *peername;
+	int remote_port;
 	int namelen;
-	oid *name;
-	int numfds;
-	fd_set fdset;
-	struct timeval timeout;
-	int block = 0;
+	oid_t oid;
 	char *snmp_oid;
-	oid * create_oid(char *str, int *length);
 	
 	if ((snmp_oid = slookup(checkp, "oid", NULL)) == NULL) {
 		radlog(L_ERR, _("no snmp_oid"));
 		return -1;
 	}
 	snmp_oid = checkrad_xlat(checkp, snmp_oid);
+	oid = oid_create_from_string(snmp_oid);
+	if (!oid) {
+		radlog(L_ERR,
+		       _("invalid OID: %s"), snmp_oid);
+		efree(snmp_oid);
+		return -1;
+	}
 	
-	bzero(&session, sizeof(session));
-	session.Version = SNMP_VERSION_1;
-	if ((session.community = slookup(checkp, "password", NULL)) == NULL &&
-	    (session.community = slookup(checkp, "community", NULL)) == NULL)
-		session.community = "public";
-	session.community_len = strlen(session.community);
-	session.retries = ilookup(checkp, "retries", 3);
-	session.timeout = ilookup(checkp, "timeout", 2);
-	session.peername = nas->longname;
-	session.remote_port = ilookup(checkp, "port", 161);
-	session.local_port = 0;
-	session.callback = callback;
-	session.callback_magic = checkp;
+	if ((community = slookup(checkp, "password", NULL)) == NULL &&
+	    (community = slookup(checkp, "community", NULL)) == NULL)
+		community = "public";
+
+	retries = ilookup(checkp, "retries", 3);
+	timeout = ilookup(checkp, "timeout", 2);
+	peername = nas->longname;
+	remote_port = ilookup(checkp, "port", 161);
+
+	sp = snmp_session_create(community, peername, 0, converse, checkp);
+	if (!sp) {
+		radlog(L_ERR,
+		       _("can't create snmp session: %s"),
+			 snmp_strerror(snmp_errno));
+		efree(snmp_oid);
+		snmp_free(oid);
+		return -1;
+	}
 	
-	sp = snmp_open(&session);
-
-	pdu = snmp_pdu_create(SNMP_PDU_GET);
-
-	name = create_oid(snmp_oid, &namelen);
-	vlist = snmp_var_new(name, namelen);
-	efree(name);
-	pdu->variables = vlist;
-
-	debug(1, ("snmpget: %s:%d %s %s",
-		  session.peername,
-		  session.remote_port,
-		  session.community,
-		  snmp_oid));
-	
-	snmp_send(sp, pdu);
-
-	numfds = 0;
-	if (snmp_select_info(&numfds, &fdset, &timeout, &block)) {
-		while (!checkp->timeout) {
-			timeout.tv_usec = 0;
-			timeout.tv_sec = 1; 
-			rc = select(numfds, &fdset, NULL, NULL, &timeout);
-			if (rc < 0) {
-				if (errno == EINTR)
-					continue;
-				break;
-			} else if (rc == 0) {
-				snmp_timeout();
-			} else {
-				snmp_read(&fdset);
-				break;
-			}
-		}
+	if (snmp_session_open(sp, myip, 0, timeout, retries)) {
+		radlog(L_ERR,
+		       _("can't open snmp session: %s"),
+			 snmp_strerror(snmp_errno));
+		efree(snmp_oid);		
+		snmp_free(oid);
+		return -1;
 	}
 
+	if ((pdu = snmp_pdu_create(SNMP_PDU_GET)) == NULL) {
+		radlog(L_ERR,
+		       _("can't create SNMP PDU: %s"),
+			 snmp_strerror(snmp_errno));
+		efree(snmp_oid);
+		snmp_free(oid);
+		snmp_session_close(sp);
+		return -1;
+	}
+		
+	if ((var = snmp_var_create(oid)) == NULL) {
+		radlog(L_ERR,
+		       _("can't create SNMP PDU: %s"),
+			 snmp_strerror(snmp_errno));
+		efree(snmp_oid);
+		snmp_free(oid);
+		snmp_session_close(sp);
+		snmp_pdu_free(pdu);
+		return -1;
+	}
+
+	snmp_pdu_add_var(pdu, var);
+	snmp_free(oid);
+
+	debug(1, ("snmpget: %s:%d %s %s",
+		  peername,
+		  remote_port,
+		  community,
+		  snmp_oid));
+
+	efree(snmp_oid);
+
+	checkp->result = rc;
+	
+	snmp_query(sp, pdu);
+
 	rc = checkp->result;
-	snmp_close(sp);
+	snmp_session_close(sp);
 	efree(snmp_oid);
 	
 	debug(1, ("result: %d", rc));
 	return rc;
 }
 
-oid *
-create_oid(str, length)
-	char *str;
-	int *length;
-{
-	char *tok;
-	int len;
-	oid *name, *p;
-
-	if (*str == '.')
-		str++;
-	
-	for (tok = str, len = 0; *tok; tok++)
-		if (*tok == '.')
-			len++;
-	name = emalloc(sizeof(*name) * (len+1));
-
-	p = name;
-	tok = str;
-	for (;;) {
-		*p++ = strtol(tok, &tok, 10);
-		if (*tok == 0)
-			break;
-		if (*tok++ != '.') {
-			radlog(L_ERR, "malformed oid near %s", tok-1);
-			break;
-		}
-	} 
-
-	*length = p-name;
-	return name;
-}
 
 /*
  * Timeout handler 
@@ -657,3 +644,4 @@ checkrad(nas, up)
 	free_instance(&checkp);
 	return rc;
 }
+

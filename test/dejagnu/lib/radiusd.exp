@@ -23,9 +23,23 @@ if ![info exists RADIUSD] {
     if ![is_remote host] {
 	set RADIUSD [findfile $base_dir/../../radiusd/radiusd "$base_dir/../../radiusd/radiusd" [transform radiusd]]
     } else {
-	set RADIUSD [transform radiusd]
+	if [info exists host_board] {
+	    if [board_info $host_board exists top_builddir] {
+		append RADIUSD "[board_info $host_board top_builddir]/radiusd/radiusd"
+	    } elseif [board_info $host_board exists top_srcdir] {
+		append RADIUSD "[board_info $host_board top_srcdir]/radiusd/radiusd"
+	    }
+	}
+
+	if ![info exists RADIUSD] {
+	    perror "The test suite is not set up for the remote testing"
+	    perror "Please, read file README in test/dejagnu subdirectory"
+	    perror "for instructions on how to set up it."
+	    exit 1
+	}
     }
 }
+
 verbose "using RADIUSD = $RADIUSD" 2
 
 set num [regsub "(.*)/radiusd/radiusd" $RADIUSD "\\1/radtest/radtest" RADTEST]
@@ -59,7 +73,7 @@ proc default_radiusd_version {} {
     set tmp [split [lindex $output 1] '\n'];
     regsub ".*GNU Radius version (\[0-9.\]+).*" [lindex $tmp 0] "\\1" RADIUSVERSION
     set flags ""
-    regexp "Compilation flags: (.*)\r" [lindex $tmp 3] m RADIUSFLAGS
+    regexp "Compilation flags: (.*)\r?" [lindex $tmp 3] m RADIUSFLAGS
     set flg [split $RADIUSFLAGS]
     for {set i 0} {$i < [llength $flg]} {incr i} {
 	set CAPABILITY([lindex $flg $i]) 1
@@ -90,13 +104,29 @@ proc default_radiusd_start {} {
     global CAPABILITY
 
     default_radiusd_version
+
+    set sw ""
     if [info exists CAPABILITY(USE_SERVER_GUILE)] {
-	set sw "--guile"
-    } else {
-	set sw ""
+	append sw "--guile"
+    } 
+
+    if [info exists host_board] {
+	if [board_info $host_board exists top_srcdir] {
+	    append sw " --srcdir [board_info $host_board top_srcdir]"
+	}
+	if [board_info $host_board exists top_builddir] {
+	    append sw " --builddir [board_info $host_board top_builddir]"
+	}
     }
-	
-    set radiusd_cmd "$srcdir/../test.sh --srcdir $srcdir/../.. --builddir $base_dir/../.. --radiusd $RADIUSD --radtest $RADTEST $sw --driver dejagnu"
+
+    append sw " --radiusd $RADIUSD --radtest $RADTEST --driver dejagnu"
+    
+    if {![is_remote host]} {
+        set radiusd_cmd "$srcdir/../test.sh $sw"
+    } else {
+        regexp "(.*)/radiusd$"  $RADIUSD m path
+        set radiusd_cmd "$path/../test/test.sh $sw"
+    }
 
     verbose "Spawning $radiusd_cmd"
 

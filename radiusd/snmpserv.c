@@ -162,7 +162,7 @@ _acl_iterator(void *item, void *data)
 	    && strcmp(acl->community->name, clos->community))
 		return 0;
 	if (list_locate(acl->netlist, data, _netdef_cmp)) {
-		clos->access = acl->community->access;
+		clos->access = acl->community ? acl->community->access : 0;
 		return 1;
 	}
 	return 0;
@@ -1127,7 +1127,6 @@ snmp_agent_response(struct snmp_pdu *pdu, int access)
                                         debug(1, ("returning"));
                                         /* preserve the rest of vars */
                                         *vresp = snmp_var_dup_list(vp);
-                                        *vpp = NULL;
                                         return answer;
                                 }
                                 /* No error.
@@ -1159,7 +1158,6 @@ snmp_agent_response(struct snmp_pdu *pdu, int access)
 						  answer->err_stat));
                                         /* preserve the rest of vars */
                                         *vresp = snmp_var_dup_list(vp);
-                                        *vpp = NULL;
                                         return answer;
                                 }
                                 /* No error.

@@ -1,3 +1,11 @@
+2002-07-19  Sergey Poznyakoff 
+
+	* radiusd/log.c (channel_syslog_handler): Bugfix. Thanks to
+	  Ilguiz Latypov <ilatypov@superbt.com>.
+	* radiusd/rewrite.y (mtx_bool): Fixed boolean shortcut
+	  optimization.
+	* TODO: Updated.
+
 2002-07-19  Sergey Poznyakoff
 
 	* include/sysdep.h: Add definition of timercmp (just on case).

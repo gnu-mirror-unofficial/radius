@@ -1,13 +1,8 @@
--100 : Reflect new sqlserver directive reply_attr_query in the documentation
-       and examples. 
 -100 : Add \ line continuation to read_raddb_files.
        do_not_resolve is global. Possibly could be used in radwho (-n)
 -100 : Document Auth-Type = (Crypt-)Local, Password-Location
 -100 : Docs for Scheme- attributes and server guile interface.
--100 : Clean up the semantics of log_init/log_done.
--100 : Add documentation for NOREALM.
--100 : Add documentation and default configs for attr_query!
--100 : Add documentation for default attribute values in % substitutions.
+-50  : Clean up the semantics of log_init/log_done.
 -3   : Enable use of port number in rewrite:check_unix()
 0    : Multiple servers per realm? (Rasmus Aveskogh <rasmus.aveskogh@utfors.se>)
 5    : Write radctl substitute which would use SNMP.

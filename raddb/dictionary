@@ -23,20 +23,20 @@ $INCLUDE dictionary.livingston		## Livingston compatibility
 ##
 ##	Following are the proper new names. Use these.
 ## syntax flags: [us-hi-hu]
-ATTRIBUTE	User-Name		1	string	- [CR-RCR]
-ATTRIBUTE	Password		2	string	- [C-----]	
-ATTRIBUTE	CHAP-Password		3	string	- [C-----]
-ATTRIBUTE	NAS-IP-Address		4	ipaddr	- [C--RCR]	
-ATTRIBUTE	NAS-Port-Id		5	integer	- [CR-RCR]
-ATTRIBUTE	Service-Type		6	integer	- [CR-RCR]=P	
-ATTRIBUTE	Framed-Protocol		7	integer	- [CR-RCR]=P	
-ATTRIBUTE	Framed-IP-Address	8	ipaddr	- [CR-RCR]=	
-ATTRIBUTE	Framed-IP-Netmask	9	ipaddr	- [CR-RCR]=
+ATTRIBUTE	User-Name		1	string	- [LR-RLR]
+ATTRIBUTE	Password		2	string	- [L-----]	
+ATTRIBUTE	CHAP-Password		3	string	- [L-----]
+ATTRIBUTE	NAS-IP-Address		4	ipaddr	- [L--RLR]	
+ATTRIBUTE	NAS-Port-Id		5	integer	- [LR-RLR]
+ATTRIBUTE	Service-Type		6	integer	- [LR-RLR]=P	
+ATTRIBUTE	Framed-Protocol		7	integer	- [LR-RLR]=P	
+ATTRIBUTE	Framed-IP-Address	8	ipaddr	- [LR-RLR]=	
+ATTRIBUTE	Framed-IP-Netmask	9	ipaddr	- [LR-RLR]=
 ATTRIBUTE	Framed-Routing		10	integer	- [-R-R-R]=
 ATTRIBUTE	Filter-Id		11	string	- [-R-R-R]=P
-ATTRIBUTE	Framed-MTU		12	integer	- [CR-R-R]=P
-ATTRIBUTE	Framed-Compression	13	integer	- [CR-RCR]=P
-ATTRIBUTE	Login-IP-Host		14	ipaddr	- [CR-R-R]=
+ATTRIBUTE	Framed-MTU		12	integer	- [LR-R-R]=P
+ATTRIBUTE	Framed-Compression	13	integer	- [LR-RLR]=P
+ATTRIBUTE	Login-IP-Host		14	ipaddr	- [LR-R-R]=
 ATTRIBUTE	Login-Service		15	integer	- [-R-R-R]=P
 ATTRIBUTE	Login-TCP-Port		16	integer	- [-R-R-R]=
 ATTRIBUTE	Reply-Message		18	string	- [-R----]+P
@@ -44,15 +44,15 @@ ATTRIBUTE	Callback-Number		19	string	- [-R----]=
 ATTRIBUTE	Callback-Id		20	string	- [-R----]=	
 ATTRIBUTE	Framed-Route		22	string	- [-R----]=
 ATTRIBUTE	Framed-IPX-Network	23	ipaddr	- [-R----]=
-ATTRIBUTE	State			24	string	- [CRCRCR]
-ATTRIBUTE	Class			25	string	- [CRCRCR]
-ATTRIBUTE	Vendor-Specific		26	string	- [CR-R-R]
+ATTRIBUTE	State			24	string	- [LRLRLR]
+ATTRIBUTE	Class			25	string	- [LRLRLR]
+ATTRIBUTE	Vendor-Specific		26	string	- [LR-R-R]
 ATTRIBUTE	Session-Timeout		27	integer	- [-R----]=P
 ATTRIBUTE	Idle-Timeout		28	integer	- [-R----]=P
-ATTRIBUTE	Termination-Action	29	integer	- [CR-R-R]=
-ATTRIBUTE	Called-Station-Id	30	string	- [C--RCR]
-ATTRIBUTE	Calling-Station-Id	31	string	- [C--RCR]
-ATTRIBUTE	NAS-Identifier		32	string	- [C--RCR]
+ATTRIBUTE	Termination-Action	29	integer	- [LR-R-R]=
+ATTRIBUTE	Called-Station-Id	30	string	- [L--RLR]
+ATTRIBUTE	Calling-Station-Id	31	string	- [L--RLR]
+ATTRIBUTE	NAS-Identifier		32	string	- [L--RLR]
 ATTRIBUTE	Proxy-State		33	string	- [------]
 ATTRIBUTE	Login-LAT-Service	34	string	- [-R---R]=
 ATTRIBUTE	Login-LAT-Node		35	string	- [-R---R]=
@@ -81,40 +81,40 @@ ATTRIBUTE	Login-LAT-Port		63	integer	- []
 
 ATTRIBUTE	Connect-Info		77	string	- []
 
-ATTRIBUTE       User-UID                99      integer	- [CRCRCR]
-ATTRIBUTE	User-GID		100	integer	- [CRCRCR]
+ATTRIBUTE       User-UID                99      integer	- [LRLRLR]
+ATTRIBUTE	User-GID		100	integer	- [LRLRLR]
 
 #
 # Cistron-Radius compatibility
 #
-ATTRIBUTE	Huntgroup-Name		221	string	- [C--RCR]
-ATTRIBUTE	User-Category		1029	string	- [C--R-R]
-ATTRIBUTE	Group-Name		1030	string	- [C--R-R]
-ATTRIBUTE	Simultaneous-Use	1034	integer	- [C--R-R]
-ATTRIBUTE	Strip-User-Name		1035	integer	- [CRCR-R]
-ATTRIBUTE	Fall-Through		1036	integer	- [CRCR--]
+ATTRIBUTE	Huntgroup-Name		221	string	- [L--RLR]
+ATTRIBUTE	User-Category		1029	string	- [L--R-R]
+ATTRIBUTE	Group-Name		1030	string	- [L--R-R]
+ATTRIBUTE	Simultaneous-Use	1034	integer	- [L--R-R]
+ATTRIBUTE	Strip-User-Name		1035	integer	- [LRLR-R]
+ATTRIBUTE	Fall-Through		1036	integer	- [LRLR--]
 ATTRIBUTE	Add-Port-To-IP-Address	1037	integer	- [-R-R--]=
 ATTRIBUTE	Exec-Program		1038	string	- [-R----]=
 ATTRIBUTE	Exec-Program-Wait	1039	string	- [-R----]=
-ATTRIBUTE	Hint			1040	string	- [C--R-R]
-ATTRIBUTE	Pam-Auth		1041	string	- [C--R-R]
-ATTRIBUTE	Login-Time		1042	string	- [C-----]
+ATTRIBUTE	Hint			1040	string	- [L--R-R]
+ATTRIBUTE	Pam-Auth		1041	string	- [L--R-R]
+ATTRIBUTE	Login-Time		1042	string	- [L-----]
 
 # Attributes used by GNU Radius
-ATTRIBUTE	Replace-User-Name	2001	string	- [CRCR--]
-ATTRIBUTE	Rewrite-Function	2002	string	- [CRCRCR]
+ATTRIBUTE	Replace-User-Name	2001	string	- [LRLR--]
+ATTRIBUTE	Rewrite-Function	2002	string	- [LRLRLR]
 
-ATTRIBUTE	Acct-Type		2003	integer	- [C--R-R]
+ATTRIBUTE	Acct-Type		2003	integer	- [L--R-R]
 VALUE		Acct-Type		None	0
 VALUE		Acct-Type		System	1
 VALUE		Acct-Type		Detail	2
 VALUE		Acct-Type		SQL	3
 
-ATTRIBUTE	Match-Profile		2004	string	- [CR-R-R]
+ATTRIBUTE	Match-Profile		2004	string	- [LR-R-R]
 ## ATTRIBUTE	Include-Profile		2005	string 
-ATTRIBUTE	Auth-Data		2006	string	- [C--R-R]
+ATTRIBUTE	Auth-Data		2006	string	- [L--R-R]
 
-ATTRIBUTE	Log-Mode-Mask		2007	integer	- [C--R-R]+
+ATTRIBUTE	Log-Mode-Mask		2007	integer	- [L--R-R]+
 VALUE		Log-Mode-Mask		Log-Auth		1
 VALUE		Log-Mode-Mask		Log-Auth-Pass		2
 VALUE		Log-Mode-Mask		Log-Failed-Pass		4
@@ -125,13 +125,13 @@ ATTRIBUTE	Acct-Ext-Program	2008	string	- [---R--]=
 ATTRIBUTE	Scheme-Procedure	2009	string	- [-R----]
 ATTRIBUTE	Scheme-Acct-Procedure	2010	string	- [---R--]=
 
-ATTRIBUTE       Password-Location       2011    integer - [C-----]
+ATTRIBUTE       Password-Location       2011    integer - [L-----]
 VALUE           Password-Location       SQL			1
 
 # These are used by rewriting functions:
-ATTRIBUTE	Orig-User-Name		2101	string	- [C--R-R]
-ATTRIBUTE	Orig-NAS-Port-Id	2105	integer	- [C--R-R]
-ATTRIBUTE	Orig-Acct-Session-Id	2144	integer	- [C--R-R]
+ATTRIBUTE	Orig-User-Name		2101	string	- [L--R-R]
+ATTRIBUTE	Orig-NAS-Port-Id	2105	integer	- [L--R-R]
+ATTRIBUTE	Orig-Acct-Session-Id	2144	integer	- [L--R-R]
 
 ATTRIBUTE	Password-Expire-Days	2145	integer - [------]
 
@@ -143,13 +143,13 @@ ATTRIBUTE       Queue-Id	        65534	integer - [------]
 # These attributes are used internally by the server
 #
 ATTRIBUTE	Expiration		  21	date	- [------]
-ATTRIBUTE	Auth-Type		1000	integer	- [C--R-R]	
+ATTRIBUTE	Auth-Type		1000	integer	- [L--R-R]	
 ATTRIBUTE	Menu			1001	string	- [-R----]=
 ATTRIBUTE	Termination-Menu	1002	string	- [-R----]=
-ATTRIBUTE	Prefix			1003	string	- [C-C-CR]
-ATTRIBUTE	Suffix			1004	string	- [C-C-CR]
-ATTRIBUTE	Group			1005	string	- [C-C-CR]
-ATTRIBUTE	Crypt-Password		1006	string	- [C-----]
+ATTRIBUTE	Prefix			1003	string	- [L-L-LR]
+ATTRIBUTE	Suffix			1004	string	- [L-L-LR]
+ATTRIBUTE	Group			1005	string	- [L-L-LR]
+ATTRIBUTE	Crypt-Password		1006	string	- [L-----]
 ATTRIBUTE	Connect-Rate		1007	integer	- [------]
 
 #

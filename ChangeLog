@@ -6,6 +6,9 @@
 	* doc/texinfo/extensions.texi: (new)
 	* doc/texinfo/Makefile.am: Added new files.
 	* doc/texinfo/*.texi: Updated.
+
+	* TODO: Updated.
+	* raddb/dictionary: For consistency, changed C flag to L.
 	
 2001-11-29 Sergey Poznyakoff
 	

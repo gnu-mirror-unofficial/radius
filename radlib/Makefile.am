@@ -10,12 +10,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-if SQL
-LIBSQL=libsql.la
-libsql_la_SOURCES=mysql.c postgres.c
-endif
-
-noinst_LTLIBRARIES=librad.la $(LIBSQL) liblog.la libdebug.la 
+noinst_LTLIBRARIES=librad.la liblog.la libdebug.la 
 librad_la_SOURCES= \
 alloc.c \
 argcv.c \
@@ -54,7 +49,7 @@ BUILT_SOURCES=users_gram.c users_lex.c
 noinst_HEADERS=users_gram.h 
 MAINTAINERCLEANFILES=users_gram.c users_gram.h users_lex.c
 INCLUDES= -I$(top_srcdir)/include @INCLUDEPATH@
-EXTRA_DIST=users.y users.l mysql.c postgres.c strncasecmp.c strerror.c \
+EXTRA_DIST=users.y users.l strncasecmp.c strerror.c \
            obstack.c obstack.h rx.c rx.h regex.h regexp.h \
 	   getopt.c getopt1.c getopt.h
 YLWRAP=$(SHELL) $(top_srcdir)/ylwrap
@@ -88,9 +83,6 @@ llib-lrad.ln: $(librad_a_SOURCES:.c=.ln)  llib-llog.ln
 
 llib-ldebug.ln: $(libdebug_a_SOURCES:.c=.ln) llib-llog.ln
 	$(LINT.c) -Cdebug $(libdebug_a_SOURCES:.c=.ln) -L. -llog
-
-llib-lsql.ln: $(libsql_a_SOURCES:.c=.ln) llib-llog.ln llib-lrad.ln
-	$(LINT.c) -Csql $(libsql_a_SOURCES:.c=.ln) -L. -llog -lrad
 
 lint:: llib-llog.ln llib-lrad.ln llib-ldebug.ln llib-lsql.ln
 

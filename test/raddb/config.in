@@ -40,7 +40,7 @@ logging {
 	};
 	category debug {
 		channel debug;
-		level acct=1,"radius.c",radiusd=2,request=2,scheme;
+		level acct=1,radpdu,radsrv,radiusd=2,request=2,scheme;
 	};
 	category !debug {
 		channel default;
@@ -65,6 +65,32 @@ acct {
 proxy {
 	max-requests 127;
 	request-cleanup-delay 2;
+};
+
+filters {
+	filter filter {
+		exec-path "@BUILDDIR@/test/raddb/filter";
+	        auth {
+			input-format "AUTH %C{User-Name} %C{User-Password}";
+			wait-reply yes;
+	        };
+		acct {
+			input-format "ACCT%C{Acct-Status-Type} %C{User-Name}"
+			wait-reply yes;
+		};
+	};
+
+	filter filter_rw {
+		exec-path "@BUILDDIR@/test/raddb/filter";
+	        auth {
+			input-format "=filter_rw()";
+			wait-reply yes;
+	        };
+		acct {
+			input-format "=filter_rw()";
+			wait-reply yes;
+		};
+	};
 };
 
 @GUILE@guile {

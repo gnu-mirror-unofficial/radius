@@ -173,9 +173,14 @@ of this file.
 Use radauth to send authentication requests to the running
 server. The invocation syntax is:
 
-            radauth username [pass]
+            radauth [-v][-sSERVER:SECRET[:PORT]] username [pass]
 
-If you have guile version 1.4 or better installed, you can use
+The -v (--verbose) option produces verbose output. The -s (--server)
+option allows to override the parameters of the radius server to send
+the request to. Usually you don't need to use it, unless you wish
+to override the settings of your 'raddb/client.conf' file.
+		    
+If you have guile version 1.6.4 or better installed, you can use
 radsession script to send authentication/accounting requests
 to the server. To do so, you will first need to edit your
 raddb/client.conf file. The template installed from the distribution

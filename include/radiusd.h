@@ -321,7 +321,6 @@ int huntgroup_access(RADIUS_REQ *radreq);
 CLIENT *client_lookup_ip(UINT4 ipno);
 char *client_lookup_name(UINT4 ipno, char *buf, size_t size);
 int read_clients_file(char *);
-REALM *realm_find(char *);
 NAS *nas_find(UINT4 ipno);
 NAS *nas_by_name(char *name);
 char *nas_name(UINT4 ipno);

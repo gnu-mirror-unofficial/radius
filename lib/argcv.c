@@ -31,14 +31,15 @@
  */
 
 #define isws(c) ((c)==' '||(c)=='\t'||(c)=='\n')
-#define isdelim(c,delim) ((c)=='"'||strchr(delim,(c))!=NULL)
+#define isdelim(c,delim) (strchr(delim,(c))!=NULL)
 
 static int
 argcv_scan (int len, const char *command, const char *delim, const char* cmnt,
 	    int *start, int *end, int *save)
 {
   int i = 0;
-
+  int expect_delim;
+  
   for (;;)
     {
       i = *save;
@@ -66,9 +67,27 @@ argcv_scan (int len, const char *command, const char *delim, const char* cmnt,
 	    break;
 	  /* Skip until next whitespace character or end of line. Honor
 	     escaped whitespace. */
-	  while (++i < len &&
-		 !((isws (command[i]) && command[i-1] != '\\')
-		   || isdelim (command[i], delim)));
+	  expect_delim = 0;
+	  while (++i < len)
+	    {
+	      if (expect_delim)
+		{
+		  if (command[i-1] != '\\' && command[i] == expect_delim)
+		    expect_delim = 0;
+		  else
+		    continue;
+		}
+	      
+	      if (command[i-1] != '\\')
+		{
+		  if (command[i] == '\'' || command[i] == '"')
+		    expect_delim = command[i];
+		  else if (isws (command[i]) || isdelim (command[i], delim))
+		    break;
+		}
+	      else
+		i++; /* skip the escaped character */
+	    }
 	  i--;
 	  break;
 	}
@@ -170,12 +189,24 @@ void
 argcv_unquote_copy (char *dst, const char *src, size_t n)
 {
   int c;
+  int expect_delim = 0;
   
   while (n > 0)
     {
       n--;
-      if (*src == '\\')
+
+      switch (*src)
 	{
+	case '\'':
+	case '"':
+	  ++src;
+	  if (expect_delim)
+	    expect_delim = 0;
+	  else
+	    expect_delim = *src;
+	  break;
+	  
+	case '\\':
 	  switch (*++src)
 	    {
 	    case 'x':
@@ -233,9 +264,8 @@ argcv_unquote_copy (char *dst, const char *src, size_t n)
 	      *dst++ = argcv_unquote_char (*src++);
 	      n--;
 	    }
-	}
-      else
-	{
+
+	default:
 	  *dst++ = *src++;
 	}
     }

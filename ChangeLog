@@ -1,3 +1,15 @@
+2003-06-05  Sergey Poznyakoff 
+
+	* radiusd/input.c: Do not use assert().
+	* radiusd/snmpserv.c (snmpserv_after_config_hook): Call
+	snmp_init_nas_stat()
+	(snmp_stmt): Added `storage' block statement.
+	* radiusd/stat.c (snmp_attach_nas_stat): Bugfix
+	Make stat_port_count and stat_nas_count configurable via
+	the configuration block statement `storage'.
+	* include/radiusd.h (storage_stmt): New declaration. 
+	* examples/config.syntax: A sample of storage statement.
+	
 2003-06-05  Sergey Poznyakoff
 
 	* radiusd/radiusd.c (radiusd_main_loop): Do not set timeout.

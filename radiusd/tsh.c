@@ -579,7 +579,11 @@ tsh_find_function(char *name)
 static void
 tsh_run_function(int argc, char **argv, char *cmd)
 {
-	tsh_command fp = tsh_find_function(argv[0]);
+	tsh_command fp;
+
+	if (argc == 0)
+		return;
+	fp = tsh_find_function(argv[0]);
 	if (fp)
 		fp(argc, argv, cmd);
 	else

@@ -398,7 +398,6 @@ int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **,
 void filter_cleanup();
 int filter_auth(char *name, RADIUS_REQ *req, VALUE_PAIR **reply_pairs);
 int filter_acct(char *name, RADIUS_REQ *req);
-int filter_sigchild(pid_t pid, int status);
 int filters_stmt_term(int finish, void *block_data, void *handler_data);
 extern struct cfg_stmt filters_stmt[];
 
@@ -528,3 +527,16 @@ int socket_list_select(struct socket_list *list,
 		       struct timeval *tv);
 void socket_list_close(SOCKET_LIST **slist);
 void socket_list_iterate(SOCKET_LIST *slist, void (*fun)());
+
+/* signal.c */
+#define SH_SYNC  0
+#define SH_ASYNC 1
+
+typedef void *rad_sigid_t;
+typedef int (*rad_signal_t) (int sig, void *data, const void *owner);
+
+rad_sigid_t rad_signal_install (int sig, int type,
+				rad_signal_t handler, void *data);
+rad_sigid_t rad_signal_remove (int sig, rad_sigid_t id, const void *owner);
+
+

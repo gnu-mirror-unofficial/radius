@@ -26,15 +26,9 @@
 #include <netdb.h>
 #include <radiusd.h>
 
-struct forward_data {
-	int type;
-	struct sockaddr_in addr;
-};
-
 struct request_data {
 	int type;
-	void *ptr;
-	size_t size;
+	RADIUS_REQ *req;
 };
 
 static int forward_fd = -1;
@@ -43,7 +37,7 @@ static RAD_LIST *forward_list;
 static void
 add_forward(int type, UINT4 ip, int port)
 {
-	struct forward_data *fp;
+	RADIUS_SERVER *srv;
 
 	if (!forward_list) {
 		forward_list = list_create();
@@ -51,11 +45,11 @@ add_forward(int type, UINT4 ip, int port)
 			return; /* FIXME */
 	}
 		
-	fp = emalloc(sizeof(*fp));
-	fp->type = type;
-	fp->addr.sin_addr.s_addr = htonl(ip);
-	fp->addr.sin_port = htons(port);
-	list_append(forward_list, fp);
+	srv = emalloc(sizeof(*srv));
+	srv->name = NULL;
+	srv->addr = ip;
+	srv->port[type] = port;
+	list_append(forward_list, srv);
 }
 
 static int
@@ -93,24 +87,84 @@ rad_cfg_forward_acct(int argc, cfg_value_t *argv,
 {
 	return rad_cfg_forward(argc, argv, R_ACCT, acct_port);
 }
-	
+
+
+static void
+forward_data(RADIUS_SERVER *srv, int type, void *data, size_t size)
+{
+	int rc;
+	struct sockaddr_in addr;
+
+	addr.sin_family = AF_INET;
+	addr.sin_addr.s_addr = htonl(srv->addr);
+	addr.sin_port = htons(srv->port[type]);
+
+	rc = sendto(forward_fd, data, size, 0,
+		    (struct sockaddr *)&addr, sizeof(addr));
+	if (rc < 0) {
+		char buffer[DOTTED_QUAD_LEN];
+
+		radlog(L_ERR|L_PERROR,
+		       _("Can't forward to %s:%d"),
+		       ip_iptostr(srv->addr, buffer),
+		       srv->port[type]);
+	}
+}
+
+static void
+forward_request_recode(RADIUS_SERVER *srv, struct request_data *r)
+{
+	VALUE_PAIR *vp;
+	void *pdu;
+	size_t size;
+
+	vp = proxy_request_recode(r->req, srv->secret, r->req->vector);
+	size = rad_create_pdu(&pdu, r->req->code,
+			      rad_clt_message_id(srv),
+			      r->req->vector,
+			      srv->secret,
+			      vp,
+			      NULL);
+	avl_free(vp);
+	forward_data(srv, r->type, pdu, size);
+	efree(pdu);
+}
+
 static int
 forwarder(void *item, void *data)
 {
-	struct forward_data *f = item;
+	RADIUS_SERVER *srv = item;
 	struct request_data *r = data;
 	int rc;
 
-	if (f->type == r->type) {
-		rc = sendto(forward_fd, r->ptr, r->size, 0,
-			    (struct sockaddr *)&f->addr, sizeof(f->addr));
-		if (rc < 0) {
-			char buffer[DOTTED_QUAD_LEN];
-			ip_iptostr(ntohl(f->addr.sin_addr.s_addr), buffer);
-			radlog(L_ERR|L_PERROR,
-			       _("Can't send to %s:%d"),
-			       buffer, ntohs(f->addr.sin_port));
+	if (srv->port[r->type] != 0) {
+		VALUE_PAIR *vp = NULL, *plist;
+		void *pdu;
+		size_t size;
+		int id;
+		u_char *secret;
+		
+		if (srv->secret) {
+			secret = srv->secret;
+			vp = proxy_request_recode(r->req, secret,
+						  r->req->vector);
+			plist = vp;
+			id = rad_clt_message_id(srv);
+		} else {
+			secret = r->req->secret;
+			plist = r->req->request;
+			id = r->req->id;
 		}
+		size = rad_create_pdu(&pdu,
+				      r->req->code,
+				      id,
+				      r->req->vector,
+				      secret,
+				      plist,
+				      NULL);
+		avl_free(vp);
+		forward_data(srv, r->type, pdu, size);
+		efree(pdu);
 	}
 	return 0;
 }
@@ -130,31 +184,72 @@ forward_before_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 	list_destroy(&forward_list, free_mem, NULL);
 }
 
+static int
+fixup_forward_server(void *item, void *data)
+{
+	RADIUS_SERVER *srv = item;
+	CLIENT *cl = client_lookup_ip(srv->addr);
+	if (!cl) {
+		char buffer[DOTTED_QUAD_LEN];
+		radlog(L_NOTICE,
+		       _("Forwarding host %s not listed in clients"),
+		       ip_iptostr(srv->addr, buffer));
+	} else
+		srv->secret = cl->secret;
+	return 0;
+}
+
+static void
+forward_after_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
+{
+	struct sockaddr_in s;
+	
+	if (list_count(forward_list) == 0)
+		return;
+	
+	forward_fd = socket(PF_INET, SOCK_DGRAM, 0);
+
+	if (forward_fd == -1) {
+		radlog(L_ERR|L_PERROR,
+		       _("Can't open forwarding socket"));
+		return;
+	}
+
+        memset (&s, 0, sizeof (s));
+        s.sin_family = AF_INET;
+        s.sin_addr.s_addr = htonl(ref_ip);
+	s.sin_port = 0;
+	if (bind(forward_fd, (struct sockaddr*)&s, sizeof (s)) < 0) 
+		radlog(L_ERR|L_PERROR, _("Can't bind forwarding socket"));
+	
+	list_iterate(forward_list, fixup_forward_server, NULL);
+}
+
 void
 forward_init()
 {
 	radiusd_set_preconfig_hook(forward_before_config_hook, NULL, 0);
+	radiusd_set_postconfig_hook(forward_after_config_hook, NULL, 0);
 }
 
 void
-forward_request(int type, void *data, size_t size)
+forward_request(int type, RADIUS_REQ *req)
 {
 	struct request_data rd;
 
-	if (!forward_list)
+	if (!forward_list || forward_fd == -1) 
 		return;
 	
-	if (forward_fd == -1) {
-		forward_fd = socket(PF_INET, SOCK_DGRAM, 0);
-
-		if (forward_fd == -1) {
-			radlog(L_ERR|L_PERROR,
-			       _("Can't open forwarding socket"));
-			return;
-		}
+	switch (type) {
+	case R_AUTH:
+	case R_ACCT:
+		break;
+	default:
+		return;
 	}
+	
 	rd.type = type;
-	rd.ptr = data;
-	rd.size = size;
+	rd.req = req;
 	list_iterate(forward_list, forwarder, &rd);
 }
+

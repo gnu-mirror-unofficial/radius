@@ -135,8 +135,13 @@ AC_CHECK_LIB(socket, socket)
 AC_CHECK_LIB(nsl, gethostbyaddr)
 AC_CHECK_LIB(intl, gettext)
 AC_CHECK_LIB(crypt, crypt)
+AC_CHECK_LIB(pthread, pthread_self)
 
-AC_CHECK_PTH(1.4.0)
+if test $ac_cv_lib_pthread_pthread_self = yes; then
+	LIBS="$LIBS -lc"
+else
+	AC_MSG_ERROR("POSIX threads library not found. Please install one and then reconfigure")
+fi
 
 ## * Checks for header files.
 AC_HEADER_STDC
@@ -623,8 +628,9 @@ if test x$BUILD_CLIENT = xyes; then
 	fi
 fi
 
+
 AC_OUTPUT(Makefile m4/Makefile 
-          include/Makefile include/snmp/Makefile 
+          include/Makefile include/snmp/Makefile
           radlib/Makefile sql/Makefile snmplib/Makefile 
 	  radscm/Makefile 
           radiusd/Makefile radlast/Makefile radwho/Makefile 

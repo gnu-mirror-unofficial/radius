@@ -157,7 +157,7 @@ log_to_channel(chan, cat, pri, buf1, buf2, buf3)
 		if (chan->options & LO_PID) 
 			fprintf(fp, "[%lu]: ", getpid());
 		if (chan->options & LO_TID) 
-			fprintf(fp, "(%#lx): ", (long) pth_self());
+			fprintf(fp, "(%#lx): ", (long) pthread_self());
 		if (prefix)
 			fprintf(fp, "%s: ", prefix);
 		if (buf1)
@@ -176,7 +176,7 @@ log_to_channel(chan, cat, pri, buf1, buf2, buf3)
 			spri |= LOG_PID;
 		if (chan->options & LO_TID) 
 			snprintf(buffer, sizeof buffer, "(%#lx): ",
-				 (long) pth_self());
+				 (long) pthread_self());
 		else
 			buffer[0] = 0;
 		if (prefix)

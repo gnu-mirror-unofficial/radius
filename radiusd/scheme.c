@@ -29,6 +29,7 @@ static char rcsid[] =
 #include <radiusd.h>
 #include <libguile.h>
 #include <setjmp.h>
+#include <errno.h>
 
 /* Protos to be moved to radscm */
 SCM scm_makenum (unsigned long val);
@@ -41,11 +42,10 @@ VALUE_PAIR *radscm_cons_to_avp(SCM scm);
 static void *guile_boot0(void *ignored);
 static void guile_boot1(void *closure, int argc, char **argv);
 
-pth_t guile_tid;
-pth_msgport_t guile_mp;
-
 struct call_data {
-	pth_message_t head;
+	struct call_data *next;
+	pthread_cond_t cond;
+	int ready;
 	int retval;
 	int (*fun)(struct call_data*);
 	char *procname;
@@ -53,19 +53,62 @@ struct call_data {
 	VALUE_PAIR *user_check;
 	VALUE_PAIR **user_reply_ptr;
 };
+
+pthread_t guile_tid;
+static pthread_mutex_t call_mutex = PTHREAD_MUTEX_INITIALIZER;
+static pthread_cond_t call_cond = PTHREAD_COND_INITIALIZER;
+struct call_data *data_head, *data_tail;
+
+void
+call_place(cp)
+	struct call_data *cp;
+{
+	pthread_mutex_lock(&call_mutex);
+	cp->next = NULL;
+	if (!data_head)
+		data_head = cp;
+	else
+		data_tail->next = cp;
+	data_tail = cp;
+	pthread_mutex_unlock(&call_mutex);
+}
+
+void
+call_remove(cp)
+	struct call_data *cp;
+{
+	struct call_data *p, *prev = NULL;
+
+	pthread_mutex_lock(&call_mutex);
+	for (p = data_head; p; ) {
+		if (p == cp)
+			break;
+		prev = p;
+		p = p->next;
+	}
 	
+	if (p) {
+		if (prev)
+			prev->next = p->next;
+		else
+			data_head = p->next;
+		if (p == data_tail)
+			data_tail = prev;
+	}
+	pthread_mutex_unlock(&call_mutex);
+}
+
 /* ************************************************************************* */
 /* Boot up stuff */
 
 void
 start_guile()
 {
-	pth_attr_t attr = pth_attr_new();
-	pth_attr_set(attr, PTH_ATTR_STACK_SIZE, 1024*1024);
-	guile_tid = pth_spawn(PTH_ATTR_DEFAULT, guile_boot0, NULL);
-	if (!guile_tid) 
-		radlog(L_ERR|L_PERROR, _("Can't spawn guile thread"));
-	pth_yield(guile_tid);
+	int rc;
+
+	if (rc = pthread_create(&guile_tid, NULL, guile_boot0, NULL))
+		radlog(L_ERR|L_PERROR, _("Can't spawn guile thread: %s"),
+		       strerror(errno));
 }
 
 void *
@@ -80,23 +123,30 @@ guile_boot0(arg)
 static SCM
 boot_body (void *data)
 {
-	struct call_data *p;
-	static pth_key_t ev_key = PTH_KEY_INIT;
-	pth_event_t ev;
-
-	guile_mp = pth_msgport_create("guile");
-	ev = pth_event(PTH_EVENT_MSG|PTH_MODE_STATIC, &ev_key, guile_mp);
+	struct call_data *p, *next;
+	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
 
 	scm_init_load_path();
 	radscm_init();
 	rscm_radlog_init();
 	rscm_rewrite_init();
 
+	pthread_mutex_lock(&mutex);
+
 	while (1) {
-		pth_wait(ev);
-		p = (struct call_data*) pth_msgport_get(guile_mp);
-		p->retval = p->fun(p);
-		pth_msgport_reply((pth_message_t*)p);
+		struct timespec timeout;
+                timeout.tv_sec = time(NULL)+1;
+                timeout.tv_nsec = 0;
+		pthread_cond_timedwait(&call_cond, &mutex, &timeout);
+		for (p = data_head; p; ) {
+			next = p->next;
+			if (!p->ready) {
+				p->retval = p->fun(p);
+				p->ready = 1;
+			}
+			pthread_cond_signal(&p->cond);
+			p = next;
+		}
 	}
 	
 	return SCM_BOOL_F;
@@ -244,6 +294,13 @@ scheme_load_internal(p)
 }
 
 
+void
+scheme_add_load_path_internal(p)
+	struct call_data *p;
+{
+	rscm_add_load_path(p->procname);
+}
+
 /* ************************************************************************* */
 /* Functions running in arbitrary address space */
 
@@ -256,24 +313,29 @@ scheme_generic_call(fun, procname, req, user_check, user_reply_ptr)
 	VALUE_PAIR **user_reply_ptr;
 {
 	struct call_data *p = emalloc(sizeof(*p));
-	static pth_key_t ev_key = PTH_KEY_INIT;
-	pth_event_t ev;
-	pth_msgport_t mp;
 	int rc;
-	
-	mp = pth_msgport_create("scheme_call");
-	p->head.m_replyport = mp;
+	pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+	struct timespec timeout;
+    
 	p->fun = fun;
 	p->procname = procname;
 	p->request = req;
 	p->user_check = user_check;
 	p->user_reply_ptr = user_reply_ptr;
+	p->ready = 0;
+	call_place(p);
 
-	pth_msgport_put(guile_mp, (pth_message_t*)p);
-	ev = pth_event(PTH_EVENT_MSG|PTH_MODE_STATIC, &ev_key, mp);
-	pth_wait(ev);
-	pth_msgport_get(mp);
-	pth_msgport_destroy(mp);
+	pthread_mutex_lock(&mutex);
+	while (!p->ready) {
+//		printf("CALLING GUILE\n");
+		timeout.tv_sec = time(NULL)+1;
+		timeout.tv_nsec = 1;
+		pthread_cond_signal(&call_cond);
+		//pthread_cond_wait(&p->cond, &mutex);
+		pthread_cond_timedwait(&p->cond, &mutex, &timeout);
+	}
+//	printf("REMOVING THE CALL\n");
+	call_remove(p);
 	rc = p->retval;
 	efree(p);
 	return rc;
@@ -315,7 +377,7 @@ scheme_acct(procname, req)
 }
 
 void
-scheme_read_eval_loop()
+scheme_read_eval_loop_internal()
 {
 	SCM list;
 	int status;
@@ -325,6 +387,20 @@ scheme_read_eval_loop()
 	list = scm_cons(sym_begin, SCM_LIST1(scm_cons(sym_top_repl, SCM_EOL)));
 	status = scm_exit_status(scm_eval_x(list));
 	printf("%d\n", status);
+}
+
+void
+scheme_read_eval_loop()
+{
+	scheme_generic_call(scheme_read_eval_loop_internal,
+			    NULL, NULL, NULL, NULL);
+}
+
+void	
+scheme_add_load_path(path)
+{
+	scheme_generic_call(scheme_add_load_path_internal,
+			    path, NULL, NULL, NULL);
 }
 
 #endif

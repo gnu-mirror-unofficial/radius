@@ -20,7 +20,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <stdio.h>
-#include <pth.h>
+#include <pthread.h>
 #include <radius.h>
 #include <radpaths.h>
 

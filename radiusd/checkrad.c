@@ -114,11 +114,7 @@ slookup(checkp, name, defval)
 	char *name;
 	char *defval;
 {
-	char *s;
-
-	if (s = envar_lookup(checkp->args, name))
-		return s;
-	return defval;
+	return envar_lookup_str(checkp->args, name, defval);
 }
 
 int
@@ -127,11 +123,7 @@ ilookup(checkp, name, defval)
 	char *name;
 	int defval;
 {
-	char *s;
-	
-	if (s = envar_lookup(checkp->args, name))
-		return atoi(s);
-	return defval;
+	return envar_lookup_int(checkp->args, name, defval);
 }
 	
 int

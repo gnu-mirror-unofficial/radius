@@ -1030,6 +1030,7 @@ read_naslist_file(file)
 #ifdef USE_SNMP	
 	for (nas = nas_next(NULL); nas; nas = nas_next(nas))
 		snmp_attach_nas_stat(nas);
+	snmp_sort_nas_stat();
 #endif	
 	stat_create();
 	return rc;

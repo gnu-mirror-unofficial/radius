@@ -24,7 +24,7 @@ lint:;
 
 endif
 
-MAINTAINERCLEANFILES = raddict.h radmibs.h
+MAINTAINERCLEANFILES = raddict.h radmibs.h debugmod.h
 
 SUBDIRS=snmp
 

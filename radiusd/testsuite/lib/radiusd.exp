@@ -24,6 +24,8 @@ if [info exists TOOL_EXECUTABLE] {
 if ![info exists RADIUSD] {
     if ![is_remote host] {
 	set RADIUSD [findfile $base_dir/../radiusd "$base_dir/../radiusd" [transform radiusd]]
+	# FIXME: The following line breaks remote testing
+        set env(GUILE_LOAD_PATH) $base_dir/../../radscm
     } else {
 	if [info exists host_board] {
 	    if [board_info $host_board exists top_builddir] {

@@ -9,9 +9,6 @@
 # This program is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-if DBM
-DBMDIR=builddbm
-endif
 
 if GUILE
 SCMDIR=radscm
@@ -20,7 +17,8 @@ TESTS=@top_srcdir@/test/test.sh
 TESTS_ENVIRONMENT=BUILDDIR=$(top_builddir) SOURCEDIR=$(top_srcdir)
 endif
 
-SUBDIRS=include radlib snmplib radiusd  radwho radzap radlast raduse radscripts $(DBMDIR) $(SCMDIR) $(TESTDIR) doc po
+SUBDIRS=include radlib snmplib radiusd  radwho radzap radlast raduse\
+        radscripts $(SCMDIR) $(TESTDIR) doc po
 
 if MAINTAINER_MODE
 CFLAGS=-ggdb
@@ -40,7 +38,6 @@ EXTRA_DIST=include raddb doc mibs scripts contrib
 
 dist-hook:
 	(cd $(distdir); \
-	 rm -f radlib/users_gram.c radlib/users_lex.c radiusd/config.c; \
 	 find . \( -name CVS -o -name .emacs.desktop -o -name .deps -o \
                    -name '*~' -o -name core \) -exec rm -rf {} \; )
 

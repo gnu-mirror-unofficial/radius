@@ -157,6 +157,7 @@ typedef enum {
         Attr,
         Attr_asgn,
         Attr_check,
+	Attr_delete,
         Max_mtxtype
 } Mtxtype;
 
@@ -426,6 +427,7 @@ typedef struct {
 typedef struct {
         COMMON_EXPR_MTX
         int       attrno;   /* Attribute number */
+	MTX       *index;   /* Index expression */
         MTX       *rval;    /* Rvalue */
 } ATTR_MTX;
 
@@ -560,9 +562,10 @@ static MTX * mtx_cond(MTX *cond, MTX *if_true, MTX *if_false);
 static MTX * mtx_coerce(Datatype type, MTX *arg);
 static MTX * mtx_call(FUNCTION *fun, MTX *args);
 static MTX * mtx_builtin(builtin_t *bin, MTX *args);
-static MTX * mtx_attr(DICT_ATTR *attr);
-static MTX * mtx_attr_asgn(DICT_ATTR *attr, MTX *rval);
-static MTX * mtx_attr_check(DICT_ATTR *attr);
+static MTX * mtx_attr(DICT_ATTR *attr, MTX *index);
+static MTX * mtx_attr_asgn(DICT_ATTR *attr, MTX *index, MTX *rval);
+static MTX * mtx_attr_check(DICT_ATTR *attr, MTX *index);
+static MTX * mtx_attr_delete(DICT_ATTR *attr, MTX *index);
 
 static MTX * coerce(MTX  *arg, Datatype type);
 /*
@@ -631,7 +634,7 @@ static pthread_mutex_t rewrite_code_mutex = PTHREAD_MUTEX_INITIALIZER;
 };
 
 %token <type>   TYPE
-%token IF ELSE RETURN WHILE FOR DO BREAK CONTINUE
+%token IF ELSE RETURN WHILE FOR DO BREAK CONTINUE DELETE
 %token <string> STRING IDENT
 %token <number> NUMBER REFERENCE
 %token <var> VARIABLE
@@ -960,6 +963,14 @@ stmt    : begin list end
                   $$->jump.link = (MTX*)loop_last->lp_cont;
                   loop_last->lp_cont = (JUMP_MTX*)$$;
           }
+        | DELETE ATTR ';'
+          {
+		  $$ = mtx_attr_delete($2, NULL);
+	  }
+	| DELETE ATTR '(' expr ')' ';'
+          {
+		  $$ = mtx_attr_delete($2, $4);
+	  }
         ;
 
 while   : WHILE
@@ -1024,15 +1035,27 @@ expr    : NUMBER
           }
         | ATTR
           {
-                  $$ = mtx_attr($1);
+                  $$ = mtx_attr($1, NULL);
+          }
+        | ATTR '(' expr ')'
+          {
+                  $$ = mtx_attr($1, $3);
           }
         | '*' ATTR
           {
-                  $$ = mtx_attr_check($2);
+                  $$ = mtx_attr_check($2, NULL);
           }
+        | '*' ATTR '(' expr ')'
+          {
+		  $$ = mtx_attr_check($2, $4);
+	  }
         | ATTR '=' expr
           {
-                  $$ = mtx_attr_asgn($1, $3);
+                  $$ = mtx_attr_asgn($1, NULL, $3);
+          }
+        | ATTR '(' expr ')' '=' expr
+          {
+                  $$ = mtx_attr_asgn($1, $3, $6);
           }
         | FUN '(' args ')'
           {
@@ -1462,6 +1485,7 @@ static struct keyword rw_kw[] = {
         "while",    WHILE,
         "break",    BREAK,
         "continue", CONTINUE,
+	"delete",   DELETE,
         NULL
 };
 
@@ -2239,30 +2263,35 @@ attr_datatype(type)
 }
 
 MTX *
-mtx_attr(attr)
+mtx_attr(attr, index)
         DICT_ATTR *attr;
+	MTX *index;
 {
         ATTR_MTX *mtx = (ATTR_MTX*)mtx_alloc(Attr);
         mtx_append(mtx);
         mtx->attrno   = attr->value;
         mtx->datatype = attr_datatype(attr->type);
+	mtx->index = index;
         return (MTX*)mtx;
 }
 
 MTX *
-mtx_attr_check(attr)
+mtx_attr_check(attr, index)
         DICT_ATTR *attr;
+	MTX *index;
 {
         ATTR_MTX *mtx = (ATTR_MTX*)mtx_alloc(Attr_check);
         mtx_append(mtx);
         mtx->attrno   = attr->value;
         mtx->datatype = Integer;
+	mtx->index = index;
         return (MTX*)mtx;
 }
 
 MTX *
-mtx_attr_asgn(attr, rval)
+mtx_attr_asgn(attr, index, rval)
         DICT_ATTR *attr;
+	MTX       *index;
         MTX       *rval;
 {
         ATTR_MTX *mtx = (ATTR_MTX*)mtx_alloc(Attr_asgn);
@@ -2277,7 +2306,21 @@ mtx_attr_asgn(attr, rval)
                        datatype_str(mtx->datatype));
                 rval = coerce(rval, mtx->datatype);
         }
+	mtx->index = index;
         mtx->rval = rval;
+        return (MTX*)mtx;
+}
+
+MTX *
+mtx_attr_delete(attr, index)
+        DICT_ATTR *attr;
+	MTX *index;
+{
+        ATTR_MTX *mtx = (ATTR_MTX*)mtx_alloc(Attr_delete);
+        mtx_append(mtx);
+        mtx->attrno   = attr->value;
+        mtx->datatype = attr_datatype(attr->type);
+	mtx->index = index;
         return (MTX*)mtx;
 }
 
@@ -2793,24 +2836,34 @@ debug_print_mtxlist(s)
                         break;
                 
                 CASE (Attr)
-                        fprintf(fp, "%3.3s A:%d",
+                        fprintf(fp, "%3.3s A:%d I:%d",
                                 datatype_str(mtx->gen.datatype),
-                                mtx->attr.attrno);
+                                mtx->attr.attrno,
+				mtx->attr.index);
                         break;
 
                 CASE (Attr_check)
-                        fprintf(fp, "%3.3s A:%d",
+                        fprintf(fp, "%3.3s A:%d I:%d",
                                 datatype_str(mtx->gen.datatype),
-                                mtx->attr.attrno);
+                                mtx->attr.attrno,
+				mtx->attr.index);
                         break;
                         
                 CASE (Attr_asgn)
-                        fprintf(fp, "%3.3s A:%d M:%d",
+                        fprintf(fp, "%3.3s A:%d I:%d M:%d",
                                 datatype_str(mtx->gen.datatype),
                                 mtx->attr.attrno,
+				mtx->attr.index,
                                 LINK(mtx->attr.rval));
                         break;
                         
+		CASE (Attr_delete)
+			fprintf(fp, "%3.3s A:%d I:%d",
+				datatype_str(mtx->gen.datatype),
+				mtx->attr.attrno,
+				mtx->attr.index);
+		        break;
+ 
                 default:
                         fprintf(fp, "UNKNOWN: %d", mtx->gen.type);
                 }
@@ -3099,8 +3152,8 @@ pass2()
                                         case String:
                                                 /*NO STRING OPS SO FAR */;
                                         }
-                                } else if (mtx->bin.opcode == And ||
-                                           mtx->bin.opcode == Or) {
+                                } else if (mtx->bin.opcode == And
+					   || mtx->bin.opcode == Or) {
                                         mtx_bool(mtx);
                                 }
                                 break;
@@ -3108,6 +3161,16 @@ pass2()
                         case Jump:
                                 if (mtx->jump.dest == mtx->jump.next)
                                         mtx_remove(mtx);
+				break;
+
+			case Attr:
+			case Attr_asgn:
+			case Attr_check:
+			case Attr_delete:
+				/*FIXME: the rw_attr.0 functions should
+				  expect an immediate value after the
+				  attribute number */
+				break;
                         }
                         mtx = next;
                 }
@@ -3252,9 +3315,15 @@ static void rw_popa();
 static void rw_call();
 static void rw_builtin();
 static void rw_attrs();
+static void rw_attrs0();
 static void rw_attrn();
+static void rw_attrn0();
 static void rw_attrcheck();
+static void rw_attrcheck0();
 static void rw_attrasgn();
+static void rw_attrasgn0();
+static void rw_attr_delete();
+static void rw_attr_delete0();
 
 INSTR bin_codetab[] = {
         rw_eq,              
@@ -3470,25 +3539,44 @@ codegen()
                 case Attr:
                         switch (mtx->attr.datatype) {
                         case Integer:
-                                code(rw_attrn);
+				if (mtx->attr.index)
+					code(rw_attrn);
+				else
+					code(rw_attrn0);
                                 break;
                         case String:
-                                code(rw_attrs);
+				if (mtx->attr.index)
+					code(rw_attrs);
+				else
+					code(rw_attrs0);
                                 break;
                         }
                         data(mtx->attr.attrno);
                         break;
 
                 case Attr_check:
-                        code(rw_attrcheck);
+			if (mtx->attr.index) 
+				code(rw_attrcheck);
+			else
+				code(rw_attrcheck0);
                         data(mtx->attr.attrno);
                         break;
                         
                 case Attr_asgn:
-                        code(rw_attrasgn);
+			if (mtx->attr.index)
+				code(rw_attrasgn);
+			else
+				code(rw_attrasgn0);
                         data(mtx->attr.attrno);
                         break;
                                 
+		case Attr_delete:
+			if (mtx->attr.index)
+				code(rw_attr_delete);
+			else
+				code(rw_attr_delete0);
+			data(mtx->attr.attrno);
+			break;
                 }
         }
 
@@ -3902,51 +3990,82 @@ rw_asgn()
         pushn(n);
 }
 
-/*
- * Check if the A/V pair is supplied in the request
+/* Check if the A/V pair is supplied in the request
  */
+void
+rw_attrcheck0()
+{
+        int attr = (int) rw_rt.code[rw_rt.pc++];
+
+	pushn(avl_find(rw_rt.request, attr) != NULL);
+}
+
 void
 rw_attrcheck()
 {
         int attr = (int) rw_rt.code[rw_rt.pc++];
-
-        pushn(avl_find(rw_rt.request, attr) != NULL);
+	RWSTYPE index;
+	VALUE_PAIR *p = rw_rt.request;
+ 
+	cpopn(&index);
+	pushn(avl_find_n(rw_rt.request, attr, index) != NULL);
 }
 
-/*
- * Assign a value to an A/V pair
- */
+ /*
+  * Assign a value to an A/V pair
+  */
+ void
+attrasgn_internal(attr, pair, val)
+	int attr;
+	VALUE_PAIR *pair;
+	RWSTYPE val;
+{
+	if (!pair) {
+                 pair = avp_create(attr, 0, NULL, 0);
+                 if (!pair)
+                        rw_error(_("can't create A/V pair"));
+                 avl_add_pair(&rw_rt.request, pair);
+         }
+		
+	switch (pair->type) {
+	case TYPE_STRING:
+	case TYPE_DATE:
+		replace_string(&pair->strvalue, (char*)val);
+		pair->strlength = strlen((char*) val);
+		break;
+	case TYPE_INTEGER:
+	case TYPE_IPADDR:
+		pair->lvalue = val;
+		break;
+	}
+	
+	pushn(val);
+}
+
+void
+rw_attrasgn0()
+{
+        int attr = (int) rw_rt.code[rw_rt.pc++];
+        RWSTYPE val;
+        
+        cpopn(&val);
+	attrasgn_internal(attr, avl_find(rw_rt.request, attr), val);
+}
+
 void
 rw_attrasgn()
 {
         int attr = (int) rw_rt.code[rw_rt.pc++];
         RWSTYPE val;
-        VALUE_PAIR *pair;
-        
+	RWSTYPE index;
+ 
         cpopn(&val);
-        if ((pair = avl_find(rw_rt.request, attr)) == NULL) {
-                pair = avp_create(attr, 0, NULL, 0);
-                if (!pair)
-                        rw_error(_("can't create A/V pair"));
-                avl_add_pair(&rw_rt.request, pair);
-        }
-        switch (pair->type) {
-        case TYPE_STRING:
-        case TYPE_DATE:
-                replace_string(&pair->strvalue, (char*)val);
-                pair->strlength = strlen((char*) val);
-                break;
-        case TYPE_INTEGER:
-        case TYPE_IPADDR:
-                pair->lvalue = val;
-                break;
-        }
-
-        pushn(val);
+	cpopn(&index);
+	attrasgn_internal(attr, avl_find_n(rw_rt.request, attr, index), val);
 }
 
 void
-rw_attrs()
+rw_attrs0()
 {
         int attr = (int) rw_rt.code[rw_rt.pc++];
         VALUE_PAIR *pair;
@@ -3958,7 +4077,7 @@ rw_attrs()
 }
 
 void
-rw_attrn()
+rw_attrn0()
 {
         int attr = (int) rw_rt.code[rw_rt.pc++];
         VALUE_PAIR *pair;
@@ -3967,6 +4086,51 @@ rw_attrn()
                 pushn(0);
         else
                 pushn(pair->lvalue);
+}
+
+void
+rw_attrs()
+{
+        int attr = (int) rw_rt.code[rw_rt.pc++];
+        VALUE_PAIR *pair;
+	RWSTYPE index;
+
+	cpopn(&index);
+        if ((pair = avl_find_n(rw_rt.request, attr, index)) == NULL) 
+                pushs(&nil, 1);
+        else
+                pushstr(pair->strvalue, pair->strlength);
+}
+
+void
+rw_attrn()
+{
+        int attr = (int) rw_rt.code[rw_rt.pc++];
+        VALUE_PAIR *pair;
+	RWSTYPE index;
+
+	cpopn(&index);
+        if ((pair = avl_find_n(rw_rt.request, attr, index)) == NULL)
+                pushn(0);
+        else
+                pushn(pair->lvalue);
+}
+
+void
+rw_attr_delete0()
+{
+        int attr = (int) rw_rt.code[rw_rt.pc++];
+	avl_delete(&rw_rt.request, attr);
+}
+
+void
+rw_attr_delete()
+{
+        int attr = (int) rw_rt.code[rw_rt.pc++];
+	RWSTYPE index;
+
+	cpopn(&index);
+	avl_delete_n(&rw_rt.request, attr, index);
 }
 
 /*

@@ -132,7 +132,7 @@ typedef struct dict_attr {
 typedef struct dict_value {
 	struct dict_value	*next;
 	char			*name;
-	char			*attrname;
+	DICT_ATTR               *attr;
 	int			value;
 } DICT_VALUE;
 
@@ -237,7 +237,7 @@ extern char             *bug_report_address;
 int		dict_init();
 DICT_ATTR	*attr_number_to_dict(int);
 DICT_ATTR       *attr_name_to_dict(char *);
-DICT_VALUE      *value_name_to_value(char *);
+DICT_VALUE      *value_name_to_value(char *, int);
 DICT_VALUE      *value_lookup(UINT4, char *);
 int             vendor_id_to_pec(int);
 int             vendor_pec_to_id(int);

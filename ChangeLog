@@ -1,3 +1,19 @@
+2004-10-09  Sergey Poznyakoff 
+
+	* configure.ac: Raised version number to 1.2.96
+	* NEWS: Likewise
+	* doc/texinfo/Makefile.am: texi2html does not understand
+	'/@/' separators. Compensate for it.
+	Fixed rule for generating plain text output
+	* include/radiusd.h (RS_TERMINATED): New state
+	(rpp_check_pid): New function
+	* radiusd/request.c: When terminating a child send
+	SIGTERM first and mark it as RS_TERMINATED. On the next iteration,
+	if the child is still up, send it a SIGKILL.
+	* radiusd/rpp.c (rpp_kill): Call rpp_check_pid() instead
+	of simply removing the child.
+	(rpp_check_pid): New function.
+
 2004-10-01  Sergey Poznyakoff
 
 	* radiusd/request.c (_request_iterator): Remove request after

@@ -17,7 +17,7 @@ dnl along with this program; if not, write to the Free Software Foundation,
 dnl Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
 divert{}dnl
 define({ARGS},ifdef({server},{ -hserver})ifdef({port},{ -pport})dnl
-ifdef({password},{ -W}))
+ifdef({CREATOR_PASSWORD},{ -W}))
 
 define({CREATEDATABASE},ifelse(MODE,{CREATE}, {
 createdb ARGS {$1}

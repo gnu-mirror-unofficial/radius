@@ -16,7 +16,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software Foundation,
 dnl Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. 
 divert{}dnl
-define({ARGS},ifdef({server}, -hserver) ifdef({port}, -P port)  ifdef({username},-u username) ifdef({password}, -p password))
+define({ARGS},ifdef({server}, -hserver) ifdef({port}, -P port)  ifdef({CREATOR},-u CREATOR) ifdef({CREATOR_PASSWORD}, -p CREATOR_PASSWORD))
 define({CREATEDATABASE},
 ifelse(MODE,{STRUCT},{
 CREATE DATABASE $1;

@@ -10,7 +10,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-SUBDIRS=texinfo man
+SUBDIRS=texinfo man rfc
 EXTRA_DIST=COPYING.FDL
 
 if MAINTAINER_MODE

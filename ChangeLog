@@ -1,3 +1,8 @@
+2002-07-01  Sergey Poznyakoff  
+
+	* lib/radpdu.c (rad_decode_pdu): Add NAS-IP-Address to the packet
+	  if the NAS didn't send one.
+
 2002-06-27  Sergey Poznyakoff
 
 	* examples: New dir

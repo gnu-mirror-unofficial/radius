@@ -533,7 +533,10 @@ static int   yyeof;                /* rised when EOF is encountered */
 static struct obstack input_stk;   /* Symbol stack */ 
 
 static Datatype return_type = Undefined;
+                                   /* Data type of the topmost expression. */
 
+static int regcomp_flags = 0;     /* Flags to be used with regcomps */
+ 
 /* Runtime */
 static size_t rewrite_stack_size = 4096;  /* Size of stack+heap */
 static RWSTYPE *runtime_stack;
@@ -1543,6 +1546,11 @@ read_to_delim(int c)
 #define isword(c) (isalnum(c) || c == '_' || c == '$')
 
 /*
+ * Is `c' a whitespace character?
+ */
+#define isws(c) ((c) == ' ' || (c) == '\t')
+
+/*
  * Read identifier
  */
 char *
@@ -1596,6 +1604,134 @@ c_comment()
         return 0;
 }
 
+
+/* Pragmatic comments */
+enum pragma_handler_phase {
+	pragma_begin,
+	pragma_cont,
+	pragma_error,
+	pragma_end
+};
+
+typedef int (*pragma_handler_fp) (enum pragma_handler_phase);
+
+static int
+regex_pragma (enum pragma_handler_phase phase)
+{
+	int disable = 0;
+	int bit;
+	char *s;
+	static int regexp_accum;
+	
+	switch (phase) {
+	case pragma_begin:
+		regexp_accum = 0;
+		return 0;
+		
+	case pragma_end:
+		regcomp_flags = regexp_accum;
+		return 0;
+
+	case pragma_error:
+		return 0;
+		
+	case pragma_cont:
+		break;
+	}
+
+	switch (yychar) {
+	case '+':
+		disable = 0;
+		input();
+		break;
+
+	case '-':
+		disable = 1;
+		input();
+		break;
+	}
+	if (!isword(yychar))
+		return 1;
+	s = read_ident(yychar);
+
+	if (strcmp (s, "extended") == 0)
+		bit = REG_EXTENDED;
+	else if (strcmp (s, "icase") == 0)
+		bit = REG_ICASE;
+	else if (strcmp (s, "newline") == 0)
+		bit = REG_NEWLINE;
+	else {
+		radlog_loc(L_ERR, &locus,
+			   _("Unknown regexp flag: %s"), s);
+		return 1;
+	}
+
+	if (disable)
+		regexp_accum &= ~bit;
+	else
+		regexp_accum |= bit;
+	return 0;
+}
+
+static pragma_handler_fp
+find_pragma_handler(char *s)
+{
+	if (strcmp(s, "regex") == 0)
+		return regex_pragma;
+	return NULL;
+}
+
+static void
+handle_pragma()
+{
+	int rc;
+	pragma_handler_fp pragma_handler;
+	
+	while (input() && isws(yychar))
+		;
+	if (yychar == 0)
+		return;
+			
+	pragma_handler = find_pragma_handler (read_ident(yychar));
+		
+	if (pragma_handler) {
+		pragma_handler(pragma_begin);
+
+		do {
+			while (input() && isws(yychar))
+				;
+			if (yychar == 0 || yychar == '\n')
+				break;
+			rc = pragma_handler(pragma_cont);
+		} while (rc == 0 && yychar != '\n' && yychar != 0);
+		
+		pragma_handler(rc ? pragma_error : pragma_end);
+	}
+}
+
+
+
+
+/* Parse a 'sharp' (single-line) comment */
+void
+sharp_comment()
+{
+	while (input() && isws(yychar))
+		;
+	if (yychar == 0)
+		return;
+	else if (yychar == '\n') {
+		locus.line++;
+		return;
+	} else if (isword(yychar)) {
+		if (strcmp(read_ident(yychar), "pragma") == 0)
+			handle_pragma();
+	}
+		
+	skip_to_nl();
+}
+
+
 #if defined(MAINTAINER_MODE)
 # define DEBUG_LEX1(s) if (debug_on(60)) printf("yylex: " s "\n")
 # define DEBUG_LEX2(s,v) if (debug_on(60)) printf("yylex: " s "\n", v)
@@ -1637,7 +1773,7 @@ yylex()
                         return 0;
 
                 if (yychar == '#') {
-                        skip_to_nl();
+                        sharp_comment();
                         nl = 1;
                 }
         } while (nl || c_comment());
@@ -3812,7 +3948,7 @@ compile_regexp(char *str)
         regex_t  regex;
         int      nmatch;
         
-        int rc = regcomp(&regex, str, 0);
+        int rc = regcomp(&regex, str, regcomp_flags);
         if (rc) {
                 char errbuf[512];
                 regerror(rc, &regex, errbuf, sizeof(errbuf));
@@ -4818,7 +4954,7 @@ bi_field()
         char *s = (char*)&nil;
         int len = 1;
 
-        while (fn--) {
+        while (*str && fn--) {
                 /* skip initial whitespace */
                 while (*str && isspace(*str))
                         str++;
@@ -4831,12 +4967,16 @@ bi_field()
                 }
         }
 
-        str = heap_reserve(len+1);
-        if (len) {
-                memcpy(str, s, len);
-                str[len] = 0;
-        }
-        pushn((RWSTYPE) str);
+	if (!*str && fn) 
+		pushs(&nil, 1);
+	else {
+		str = heap_reserve(len+1);
+		if (len) {
+			memcpy(str, s, len);
+			str[len] = 0;
+		}
+		pushn((RWSTYPE) str);
+	}
 }
 
 static void
@@ -5045,7 +5185,7 @@ bi_gsub()
 	regex_t rx;
 	RAD_LIST *subst;
 	
-        int rc = regcomp(&rx, re_str, 0);
+        int rc = regcomp(&rx, re_str, regcomp_flags);
         if (rc) 
 		rw_regerror(_("regexp compile error: "), &rx, rc);
 
@@ -5061,6 +5201,8 @@ bi_gsub()
 		temp_space_copy(&base, arg, mach.pmatch[0].rm_so);
 		subst_run(subst, rx.re_nsub + 1, &base, arg);
 		arg += mach.pmatch[0].rm_eo;
+		if (mach.pmatch[0].rm_eo == 0)
+			arg++;
 	}
 	temp_space_copy(&base, arg, strlen(arg) + 1);
 	subst_destroy(subst);
@@ -5079,7 +5221,7 @@ bi_sub()
 	regex_t rx;
 	RAD_LIST *subst;
 	
-        int rc = regcomp(&rx, re_str, 0);
+        int rc = regcomp(&rx, re_str, regcomp_flags);
         if (rc) 
 		rw_regerror(_("regexp compile error: "), &rx, rc);
 

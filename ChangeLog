@@ -1,5 +1,26 @@
 2001-12-03 Sergey Poznyakoff
 
+	* doc/texinfo/configure.texi: Updated.
+	* doc/texinfo/extensions.texi: Updated.
+	
+	* include/radiusd.h: Changed proto of rewrite_parse().
+	* radiusd/files.c: Likewise.
+	* radiusd/radiusd.c: New option to test_shell: 's' (source).
+	  Causes parsing of the specified rewrite source file.
+	* radiusd/rewrite.y: Changed declaration of rewrite_parse to
+	  take the source file name as an argument.
+	  Fixed awful bug in `if' production: it did not generate
+	  the nop matrix for the jump from the true branch. This caused
+	  the jump target to remain unresolved. Strange no one has noticed
+	  it before.
+	  Another bug: when loading function arguments in interpret,
+	  parm was incremented instead of following the `next' link. As
+	  a result, interpret worked only for zero to single argument
+	  functions. Luckily, this can be noticed only when running a
+	  function from the test shell.
+	
+2001-12-03 Sergey Poznyakoff
+
 	* NEWS: Fixed typo.
 	* doc/texinfo/config.texi: New macro @AVP{} for A/V pair.
 	* doc/texinfo/attributes.texi: Updated.

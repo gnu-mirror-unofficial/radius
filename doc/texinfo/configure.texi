@@ -565,7 +565,7 @@ Use only the DBM database and ignore @file{raddb/users}.
 
 @comment **L3***************************************************************
 @node snmp, guile, usedbm, config file
-@subsection @code{snmp} statement (raddb/config)
+@subsection @code{snmp} statement 
 @cindex SNMP service parameters
 @cindex Customizing SNMP server
 @kwindex snmp
@@ -665,7 +665,7 @@ Deny access to SNMP service from any host in the group @var{network_name}.
 
 @comment **L3***************************************************************
 @node guile, message, snmp, config file
-@subsection @code{guile} statement (raddb/config)
+@subsection @code{guile} statement
 @cindex Guile interface configuration
 @cindex Customizing Radiusd Guile interface
 @kwindex guile 
@@ -708,7 +708,7 @@ For the detailed description of Guile extensions interface, @xref{Guile}.
 
 @comment **L3***************************************************************
 @node  message, , guile, config file
-@subsection @code{message} statement (raddb/config)
+@subsection @code{message} statement
 @cindex Messages: configuring
 @cindex Customizing reply messages
 @kwindex message
@@ -819,7 +819,7 @@ century.
 @end table
 @end table
 
-There are 6 kinds of statements:
+There are following kinds of statements:
 
 @menu
 * Comment::             Introducing a comment line.

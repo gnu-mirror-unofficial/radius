@@ -44,10 +44,39 @@ in verifying the activity of user sessions
 @subsection Syntax Overview
 @cindex Rewrite, syntax overview
 
+Rewrite syntax resembles that of C. Rewrite has two basic data types:
+integer and string. It does not have global variables, all variables are
+automatic. The only exception are the @AVP{}s from the incoming request,
+which are accessible to Rewrite functions via special notation
+@code{%[@var{attr}]}. 
+
 @comment *L2****************************************************************
 @node Quick Start, Interaction with Radius, Syntax Overview, Rewrite
 @subsection Quick Start
 @cindex Rewrite, quick start introduction
+
+As an example, let's consider the following Rewrite function:
+
+@example
+@group
+string
+foo(integer i)
+@{
+    string rc;
+    if (i % 2)
+        rc = "odd";
+    else
+        rc = "even";
+    return "the number is " + rc;
+@}
+@end group
+@end example
+
+The function takes an integer argument and return string
+``the number is odd'' or ``the number is even'', depending on the
+value of @var{i}. This illustrates the fact that in Rewrite the
+addition operator is defined on the string type. The result of
+such operation is the concatenation of operands.
 
 @comment *L2****************************************************************
 @node Interaction with Radius, Rewriting incoming requests, Quick Start, Rewrite

@@ -334,7 +334,7 @@ stat_get_next_port_no(nas, port_no)
 	for (port = server_stat.port_head; port; port = port->next) {
 		if (port->ip == nas->ipaddr
 		    && port->port_no > port_no
-		    && port->port_no > nextn)
+		    && (nextn == 0 || port->port_no < nextn))
 			nextn = port->port_no;
 	}
 	return nextn;

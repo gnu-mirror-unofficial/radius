@@ -114,7 +114,8 @@ rad_clt_recv(UINT4 host, u_short udp_port, char *secret, char *vector,
         u_char reply_digest[AUTH_VECTOR_LEN];
         u_char calc_digest[AUTH_VECTOR_LEN];
         int  secretlen;
-
+	RADIUS_REQ *req;
+	
         auth = (AUTH_HDR *)buffer;
         totallen = ntohs(auth->length);
 
@@ -137,7 +138,10 @@ rad_clt_recv(UINT4 host, u_short udp_port, char *secret, char *vector,
                 radlog(L_WARN, _("Received invalid reply digest from server"));
         }
 
-        return rad_decode_pdu(host, udp_port, buffer, length);
+        req = rad_decode_pdu(host, udp_port, buffer, length);
+	req->secret = secret;
+		
+	return req;
 }
 
 VALUE_PAIR *
@@ -158,6 +162,34 @@ rad_clt_encrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
 	}
 	return plist;
 }	
+
+VALUE_PAIR *
+rad_clt_decrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
+{
+	VALUE_PAIR *p;
+	char password[AUTH_STRING_LEN+1];
+	
+	for (p = plist; p; p = p->next) {
+		if (p->prop & AP_ENCRYPT_RFC2138) {
+			decrypt_password(password, p, vector, secret);
+			efree(p->avp_strvalue);
+			p->avp_strvalue = estrdup(password);
+			p->avp_strlength = strlen(p->avp_strvalue);
+		} else if (p->prop & AP_ENCRYPT_RFC2868) {
+			u_char tag;
+			
+			decrypt_tunnel_password(password,
+						&tag,
+						p,
+						vector,
+						secret);
+			efree(p->avp_strvalue);
+			p->avp_strvalue = estrdup(password);
+			p->avp_strlength = strlen(p->avp_strvalue);
+		}
+	}
+	return plist;
+}
 
 RADIUS_REQ *
 rad_clt_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,

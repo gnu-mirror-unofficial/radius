@@ -1,3 +1,13 @@
+2002-03-22  Sergey Poznyakoff
+
+        * radlib/users.l (pop_source): Zero out yyin when no more
+          sources are on stack.
+          (xinput -- both versions): Correctly handle yyin==NULL.
+	
+2002-03-21  Sergey Poznyakoff 
+
+	* doc/MACHINES: Added entry about Hurd.
+
 2002-03-20  Sergey Poznyakoff 
 
 	According to RFC 2138, renamed Password attribute to

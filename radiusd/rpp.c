@@ -75,14 +75,15 @@ pipe_write(int fd, void *ptr, size_t size, struct timeval *tv)
 static int
 pipe_read(int fd, void *ptr, size_t size, struct timeval *tv)
 {
+	char *data = ptr;
 	int rc;
 
 	if (!tv) {
 		int rdbytes = 0;
 		do {
-			rc = read(fd, ptr, size);
+			rc = read(fd, data, size);
 			if (rc > 0) {
-				ptr += rc;
+				data += rc;
 				size -= rc;
 				rdbytes += rc;
 			} else
@@ -90,7 +91,6 @@ pipe_read(int fd, void *ptr, size_t size, struct timeval *tv)
 		} while (size > 0);
 		return rdbytes;
 	} else {
-		char *data = ptr;
 		struct timeval to;
 		fd_set rd_set;
 		size_t n;
@@ -459,7 +459,7 @@ sig_handler(int sig)
 	default:
 		abort();
 	}
-	signal(sig, sig_handler);
+	rad_reset_signal(sig, sig_handler);
 }
 
 /* Main loop for a child process */
@@ -473,7 +473,7 @@ rpp_request_handler(void *arg ARG_UNUSED)
 	REQUEST *req;
 
 	radiusd_signal_init(sig_handler);
-	signal(SIGALRM, sig_handler);
+	rad_set_signal(SIGALRM, sig_handler);
 	request_init_queue();
 #ifdef USE_SERVER_GUILE
         scheme_redirect_output();

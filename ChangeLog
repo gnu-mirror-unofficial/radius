@@ -1,3 +1,15 @@
+2004-11-01  Sergey Poznyakoff 
+
+	* lib/list.c (grad_iterator_attach,grad_iterator_detach): New
+	functions.
+	(grad_iterator_create,grad_iterator_destroy): Use the new
+	functions.
+	(grad_list_iterate): Use the new functions. This is to make sure
+	grad_list_iterate does not allocate any memory (especially
+	important for radiusd/log.c)
+	* radiusd/log.c: Do not allocate any memory. Use only static buffers.
+	* sql/postgres.c (rad_postgres_exec): Several bugfixes.
+
 2004-10-29  Sergey Poznyakoff 
 
 	* radiusd/files.c (hints_setup): Removed local variable

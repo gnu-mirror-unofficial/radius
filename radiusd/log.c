@@ -33,8 +33,8 @@ Channel *chanlist;                  /* List of defined channels */
 
 static void log_to_channel(Channel *chan, int cat, int pri,
 			   char *buf1, char *buf2, char *buf3);
-static void vlog(int lvl, char *file, int line, char *func_name, int errno,
-		 char *fmt, va_list ap);
+void vlog(int lvl, char *file, int line, char *func_name, int errno,
+	  char *fmt, va_list ap);
 static FILE *channel_open_file(Channel *chan);
 static void channel_close_file(Channel *chan, FILE *fp);
 
@@ -207,68 +207,6 @@ channel_close_file(chan, fp)
 }
 
 /* Interface */
-
-/*PRINTFLIKE2*/
-void
-radlog(level, msg, va_alist)
-	int level;
-	char *msg;
-	va_dcl
-{
-	va_list ap;
-	int ec = 0;
-	
-	if (level & L_PERROR)
-		ec = errno;
-	va_start(ap);
-	vlog(level, NULL, 0, NULL, ec, msg, ap);
-	va_end(ap);
-}
-
-void
-_dolog(level, file, line, func_name, fmt, va_alist)
-	int level;
-	char *file;
-	int line;
-	char *func_name;
-	char *fmt;
-	va_dcl
-{
-	va_list ap;
-	int ec = 0;
-	
-	if (level & L_PERROR)
-		ec = errno;
-	va_start(ap);
-	vlog(level, file, line, func_name, ec, fmt, ap);
-	va_end(ap);
-}
-
-void
-_debug_print(file, line, func_name, str)
-	char *file;
-	int line;
-	char *func_name;
-	char *str;
-{
-	_dolog(L_DEBUG, file, line, func_name, "%s", str);
-	free(str);
-}
-
-char *
-_debug_format_string(va_alist)
-	va_dcl
-{
-	va_list ap;
-	char *fmt;
-	char *str = NULL;
-	
-	va_start(ap);
-	fmt = va_arg(ap,char*);
-	vasprintf(&str, fmt, ap);
-	va_end(ap);
-	return str;
-}
 
 #ifdef USE_SQL
 /*PRINTFLIKE2*/

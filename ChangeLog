@@ -1,5 +1,8 @@
 2002-02-25  Sergey Poznyakoff 
 
+	* radiusd/radiusd.c (reread_config): Initialize socket_first to
+	  zero.
+
 	* m4/guile.m4: Emit extra newline after calling guile-config.
 	  Needed for Sun's native sed (and possibly others).
 	

@@ -11,7 +11,6 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 include(SRCDIR/radscripts.m4)dnl
-
 PATH=$PATH:/sbin:/usr/sbin
 
 usage() {
@@ -21,7 +20,7 @@ usage() {
 }
 
 set -- `GETOPT "c" $*`
-while [ $# -ne 0 ]; 
+while TEST($# -ne 0); 
 do
 	case $1 in
 	-c) 	
@@ -33,11 +32,11 @@ do
 	esac
 done
 
-if [ $# != 1 ]; then
+if TEST($# != 1); then
     usage
 fi
 
-if [ "$CALLERID" = "1" ]; then
+if TEST("$CALLERID" = "1"); then
     FORMAT="-oclid:20,ip:16"
 else
     FORMAT="-ologin:20,ip:16"
@@ -46,7 +45,7 @@ fi
 IPADDR=`radwho -n $FORMAT -e:NULL: |
  AWK -vVALUE=$1 '$1==VALUE { if ($2 != ":NULL:") print $2; exit }'`
 
-if [ x"$IPADDR" = x"" ]; then
+if TEST(x"$IPADDR" = x""); then
     echo "user $1 is not online"
     exit 1
 fi

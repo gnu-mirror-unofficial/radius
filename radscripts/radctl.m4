@@ -19,9 +19,9 @@
 include(SRCDIR/radscripts.m4)dnl
 
 PATH=/bin:/usr/bin:/usr/ucb:$PATH; export PATH
-%PS@="PS"
-%PIDFILE@=PIDFILE
-%PROGNAME@=PROGNAME
+[PS]="PS"
+[PIDFILE]=PIDFILE
+[PROGNAME]=PROGNAME
 
 usage() {
 	cat - <<EOF
@@ -31,9 +31,9 @@ EOF
 }
 
 start() {
-	$%PROGNAME@ ${1} && {
+	$[PROGNAME] ${1} && {
 		sleep 5
-		if [ -r $%PIDFILE@ ]; then
+		if TEST(-r $[PIDFILE]) ; then
 			echo "RADIUS server started"
 		else
 			echo "can't start RADIUS server"
@@ -42,21 +42,21 @@ start() {
 }
 
 stop() {
-	[ $RUNNING -eq 1 ] && {
+	TEST($RUNNING -eq 1) && {
 		echo "sending TERM to RADIUS server ($PID)"
 		kill -TERM $PID && sleep 5
-		[ -r $%PIDFILE@ ] && {
+		TEST(-r $[PIDFILE]) && {
 			echo "radiusd ($PID) is still running. Sending KILL"
 			kill -9 $PID && sleep 5
 		}
 	}
-	rm -f $%PIDFILE@
+	rm -f $[PIDFILE]
 }
 
 chan_signal() {
 	case $1 in
 		reload|status|dumpdb)	
-			[ $RUNNING -eq 0 ] && {
+			TEST($RUNNING -eq 0) && {
 				echo $PROCESS
 				exit 1
 			};;
@@ -67,11 +67,11 @@ chan_signal() {
 		status)	kill -USR1 $PID && echo "Dumping statistics";;
 		dumpdb)	kill -INT  $PID && echo "Dumping Database";;
 		start)
-			[ $RUNNING -eq 1 ] && {
+			TEST($RUNNING -eq 1) && {
 				echo "$0: start: radiusd (pid $PID) already running"
 				continue
 			}
-			rm -f $%PIDFILE@
+			rm -f $[PIDFILE]
 			SHIFT
 			start $*;;
 		stop)   stop;;
@@ -89,11 +89,11 @@ chan_signal() {
 	exit 0
 }
 
-if [ -f $%PIDFILE@ ]; then
-	PID=`cat $%PIDFILE@`
-	PROCESS=`$%PS@ -p $PID | sed -n '2p'`
+if TEST(-f $[PIDFILE]); then
+	PID=`cat $[PIDFILE]`
+	PROCESS=`$[PS] -p $PID | sed -n '2p'`
 	RUNNING=1
-	[ `echo $PROCESS | wc -w` -ne 0 ] || {
+	TEST(`echo $PROCESS | wc -w` -ne 0) || {
 		PROCESS="radiusd (pid $PID?) not running"
 		RUNNING=0
 	}
@@ -102,12 +102,12 @@ else
 	RUNNING=0
 fi
 
-if [ x"$1" = x"--debug" ]; then
+if TEST(x"$1" = x"--debug"); then
 	DEBUG=$1
 	SHIFT
 fi	    
 
-if [ x"$1" = x"-s" -o x"$1" = x"--signal" ]; then
+if TEST(x"$1" = x"-s" -o x"$1" = x"--signal"); then
 	SHIFT 
 fi
 chan_signal $*

@@ -1,4 +1,6 @@
-divert(-1)
-changequote(%,@)
-define(%SHIFT@,%%shift@@)
-divert(0)
+divert(-1)dnl
+changequote([,])
+changecom
+define([SHIFT],[[shift]])
+define([TEST],[[ [ $1 ] ]])
+divert(0)dnl

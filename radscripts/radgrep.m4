@@ -1,4 +1,3 @@
-changequote(%,@)dnl
 #! /bin/sh
 # $Id$
 # This file is part of GNU RADIUS.
@@ -11,13 +10,14 @@ changequote(%,@)dnl
 # This program is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+include(SRCDIR/radscripts.m4)dnl
 
 RADOPT=
 GREPOPT=
 VAR=RADOPT
 
 # collect arguments for radwho
-while [ $# -ne 0 ]; 
+while TEST($# -ne 0); 
 do
 	case $1 in
 		--)	VAR=GREPOPT # collect grep arguments 
@@ -28,7 +28,7 @@ do
 	esac
 done
 
-if [ $# -eq 0 ]; then
+if TEST($# -eq 0); then
 	echo "usage: radgrep [radwho-options] [-- grep-options] regexp" >&2
 	exit 1
 fi

@@ -106,8 +106,10 @@ scheme_auth(char *procname, RADIUS_REQ *req,
 	SCM res;
 	SCM procsym;
  	jmp_buf jmp_env;
+	VALUE_PAIR *tmp = radius_decrypt_request_pairs(req);
 	
-	s_request = radscm_avl_to_list(req->request);
+	s_request = radscm_avl_to_list(tmp);
+	radius_destroy_pairs(&tmp);
 	s_check = radscm_avl_to_list(user_check);
 	s_reply = radscm_avl_to_list(*user_reply_ptr);
 

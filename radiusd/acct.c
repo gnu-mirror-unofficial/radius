@@ -825,15 +825,16 @@ rad_check_multi(name, request, maxsimul, pcount)
 
 	rut_rewind(file);
 	while (up = rut_getent(file)) {
-		if (strncmp(name, up->login, RUT_NAMESIZE) == 0 &&
-		    up->type == P_LOGIN) {
+		if (strncmp(name, up->login, RUT_NAMESIZE) == 0
+		    && up->type == P_LOGIN) {
 			if (rad_check_ts(up) == 1) {
 				count++;
 				/*
 				 *	Does it look like a MPP attempt?
 				 */
-				if (strchr("SCPA", up->proto) &&
-				    ipno && up->framed_address == ipno)
+				if (strchr("SCPA", up->proto)
+				    && ipno
+				    && up->framed_address == ipno)
 					mpp = 1;
 			} else {
 				/* Hung record */

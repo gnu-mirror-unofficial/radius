@@ -31,6 +31,8 @@ struct input_system {
 typedef struct input_method METHOD;
 struct input_method {
 	const char *name;
+	fd_set fdset;
+	int fd_max;
 	int (*handler)(int, void *);
 	int (*close)(int, void *);
 	int (*cmp)(const void *, const void *);
@@ -70,6 +72,8 @@ input_register_method(INPUT *input,
 	m->handler = handler;
 	m->close = close;
 	m->cmp = cmp ? cmp : def_cmp;
+	FD_ZERO(&m->fdset);
+	m->fd_max = -2;
 	list_append(input->methods, m);
 }
 
@@ -94,6 +98,9 @@ input_register_channel(INPUT *input, char *name, int fd, void *data)
 	c->fd = fd;
 	c->data = data;
 	c->method = m;
+	FD_SET(fd, &m->fdset);
+	if (fd > m->fd_max)
+		m->fd_max = fd;
 	list_append(input->channels, c);
 	return 0;
 }
@@ -101,8 +108,10 @@ input_register_channel(INPUT *input, char *name, int fd, void *data)
 static void
 channel_close(CHANNEL *chan)
 {
-	if (chan->method->close)
+	if (chan->method->close) 
 		chan->method->close(chan->fd, chan->data);
+	FD_CLR(chan->fd, &chan->method->fdset);
+	chan->method->fd_max = -2;
 }
 
 static int
@@ -153,7 +162,7 @@ input_close_channel_fd(INPUT *input, int fd)
 	CHANNEL *p = list_locate(input->channels, &fd, _channel_cmp_fd);
 	
 	if (p) {
-		efree(p);
+		channel_close(p);
 		list_remove_current(input->channels);
 	}
 }
@@ -180,6 +189,7 @@ input_close_channel_data(INPUT *input, char *name, void *data)
 	clos.data = data;
 	p = list_locate(input->channels, &clos, _channel_cmp);
 	if (p) {
+		channel_close(p);
 		efree(p);
 		list_remove_current(input->channels);
 	}
@@ -188,31 +198,41 @@ input_close_channel_data(INPUT *input, char *name, void *data)
 int
 input_select(INPUT *input, struct timeval *tv)
 {
-	CHANNEL *p;
-        fd_set readfds;
-        int max_fd = 0;
+	METHOD *m;
 	int status;
-	
-        FD_ZERO(&readfds);
 
-	for (p = list_first(input->channels); p;
-	     p = list_next(input->channels)) {
-                FD_SET(p->fd, &readfds);
-                if (p->fd > max_fd)
-                        max_fd = p->fd;
-	}
+	for (m = list_first(input->methods); m;
+	     m = list_next(input->methods)) {
+		CHANNEL *p;
+		fd_set readfds;
 
-        status = select(max_fd + 1, &readfds, NULL, NULL, tv);
-        
-        if (status == -1) {
-                if (errno == EINTR) 
-                        return 0;
-        } else if (status > 0) {
-		for (p = list_first(input->channels); p;
-		     p = list_next(input->channels)) {
-			if (FD_ISSET(p->fd, &readfds)) 
-				channel_handle(p);
+		if (m->fd_max == -2) {
+			for (p = list_first(input->channels); p;
+			     p = list_next(input->channels)) {
+				if (p->method == m && p->fd > m->fd_max)
+					m->fd_max = p->fd;
+			}
+			if (m->fd_max == -2)
+				m->fd_max = -1;
 		}
+
+		if (m->fd_max < 0)
+			continue;
+		
+		readfds = m->fdset;
+		
+		status = select(m->fd_max + 1, &readfds, NULL, NULL, tv);
+        
+		if (status == -1) {
+			if (errno == EINTR) 
+				return 0;
+		} else if (status > 0) {
+			for (p = list_first(input->channels); p;
+			     p = list_next(input->channels)) {
+				if (FD_ISSET(p->fd, &readfds)) 
+					channel_handle(p);
+			}
+		} 
 	}
 	return status;
 }

@@ -1,3 +1,10 @@
+2004-07-21  Sergey Poznyakoff
+
+	* radtest/input.l: Check if the literal is a request name
+	and return NUMBER if so.
+	* radtest/radtest.h (RTV_MAX): New define
+	* radtest/runtime.c: Implemented AWK-like typecast rules.
+
 2004-07-20  Sergey Poznyakoff 
 
 	* radiusd/proxy.c (proxy_send_request): Fixed semantics

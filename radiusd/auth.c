@@ -944,8 +944,7 @@ sfn_validate(AUTH_MACH *m)
                 if (is_log_mode(m, RLOG_AUTH)) {
                         auth_log(m,
                                  _("Login incorrect"),
-                                 is_log_mode(m, RLOG_FAILED_PASS) ?
-				 m->userpass : NULL,
+				 NULL,
                                  _("Account expired"), NULL);
                 }
 		break;
@@ -956,8 +955,7 @@ sfn_validate(AUTH_MACH *m)
                 if (is_log_mode(m, RLOG_AUTH)) {
                         auth_log(m,
                                  _("Login incorrect"),
-                                 is_log_mode(m, RLOG_FAILED_PASS) ?
-				 m->userpass : NULL,
+				 NULL,
                                  _("Password expired"), NULL);
                 }
 		break;

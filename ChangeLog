@@ -1,3 +1,37 @@
+2002-12-21  Sergey Poznyakoff
+
+	* NEWS: Merged news entries from 0.96 maintenance series.
+	* configure.ac: Removed --enable-notify altogether.
+	  Added warning about --with-server-guile
+	* include/radpaths.h: Removed RADIUSD_WATCHER_FILE
+	* include/sysdep.h (sun_signal): Removed
+	  (install_signal): New function.
+	* lib/sysdep.c: Likewise.
+	* radiusd/checkrad.c: Got rid of risky usage of longjmp from
+	  the signal handler.
+
+	* radiusd/exec.c: Simplified waiting for exec-program-wait
+	  program.
+*	* radiusd/radiusd.c: Removed --watcher mode. Install default
+	  SIGCHLD handler for waitpid to work.
+	* radiusd/request.c: Fixed comment.
+	* radiusd/signal.c: Removed RADIUS_MODULE_ define. Calling
+	  debugging functions from signal handlers is unsafe.
+
+	* radiusd/testsuite/test.sh.m4 (start_server): Removed -w0
+	* radiusd/testsuite/lib/radiusd.exp (default_radiusd_stop): Call
+	  radius_exit
+	  (simple_radius_test): New flag -prereq is used to specify
+	  the prerequisite capabilities for the given test.
+	* radiusd/testsuite/radiusd/radiusd.exp: Use -prereq option where
+	  necessary.
+	  Commented out clone_output commands.
+	* radiusd/testsuite/radiusd/proxy.exp: Commented out clone_output
+	  commands.
+	  
+	* lib/getgr.c: Include <config.h>
+	* lib/getpw_r.c: Likewise.
+
 2002-12-20  Sergey Poznyakoff  
 
 	* configure.ac: Raised version number to 0.99.98

@@ -58,6 +58,7 @@ struct check_instance {
 	char      *name;
 	int       port;
 	char      *sid;
+	UINT4     ip;
 	int       result;
 	int       timeout;
 	int       method;
@@ -139,6 +140,7 @@ create_instance(cptr, nas, up)
 	cptr->name = up->orig_login;
 	cptr->port = up->nas_port;
 	cptr->sid  = up->session_id;
+	cptr->ip   = up->framed_address;
 	cptr->result = -1;
 	cptr->timeout = 0;
 	cptr->hostname = nas->shortname ? nas->shortname : nas->longname;
@@ -234,6 +236,11 @@ checkrad_xlat(checkp, str)
 			case 'P':
 				radsprintf(buf, sizeof(buf), "%d",
 					 checkp->port + 1);
+				ptr = buf;
+				break;
+			case 'i':
+				radsprintf(buf, sizeof(buf), "%I",
+					   checkp->ip);
 				ptr = buf;
 				break;
 			default:

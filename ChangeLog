@@ -1,3 +1,12 @@
+2003-06-17  Sergey Poznyakoff 
+
+	* configure.ac: Use gettext.h
+	* include/gettext.h: New file
+	* include/Makefile.am: Added gettext.h
+	* lib/intl.c: Updated for use with gettext.h
+	* lib/radargp.c: Bugfix
+	* sql/odbc.c: Removed superfluous declarations.
+
 2003-06-17  Sergey Poznyakoff
 
 	* NEWS: Updated
@@ -15,9 +24,9 @@
 	* lib/obstack.c: Likewise.
 	* include/cfg.h (cfg_ignore,cfg_obsolete): New functions
 	* radiusd/config.y: Likewise.
-	* include/radiusd.h: Minor change
+	* include/radiusd.h: Minor change.
 	* lib/Makefile.am: Fixed LIBLIST rule
-	* radiusd/snmpserv.c: Removed handling for queue and memory
+	* radiusd/snmpserv.c: Removed handling of queue- and memory
 	related OIDs. This should be revised in the future release.
 
 	* doc/COPYING.FDL: Removed.

@@ -18,6 +18,7 @@
 #if defined(HAVE_CONFIG_H)
 # include <config.h>
 #endif
+#include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
 #include <errno.h>
@@ -28,6 +29,9 @@
 #endif
 #include <unistd.h>
 #include <signal.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <net/if.h>
 
 #include <radius.h>
 
@@ -106,4 +110,107 @@ getmaxfd()
         return DEFMAXFD;
 #endif
 }
-                
+
+static UINT4
+get_first_ip_nameindex()
+{
+	UINT4 ip = INADDR_ANY;
+#ifdef SIOCGIFCONF
+	struct ifreq *ifr, *end, *cur;
+	struct ifconf ifc;
+	struct sockaddr_in *sinp;
+	int rq_len, last_len;
+	int fd = socket (AF_INET, SOCK_STREAM, 0);
+	
+	if (fd == -1)
+		return INADDR_ANY;
+	
+	/* A first estimate.  */
+	rq_len = 4 * sizeof (struct ifreq);
+
+	ifc.ifc_buf = NULL;
+	ifc.ifc_len = 0;
+
+        /* Read all the interfaces out of the kernel.  */
+	do {
+		last_len = ifc.ifc_len;
+		ifc.ifc_buf = malloc(ifc.ifc_len = rq_len);
+		if (ifc.ifc_buf == NULL || ioctl (fd, SIOCGIFCONF, &ifc) < 0) {
+			free(ifc.ifc_buf);
+			close(fd);
+			return INADDR_ANY;
+		}
+		rq_len *= 2;
+	}
+	while (ifc.ifc_len != last_len);
+
+	/* Now find first non-loopback address */
+	ifr = (struct ifreq *)ifc.ifc_req;
+	end = (struct ifreq *)((caddr_t)ifr + ifc.ifc_len);
+
+	while (ifr < end) {
+		int len = 0;
+#ifdef HAVE_SOCKADDR_SA_LEN
+		len = ifr->ifr_addr.sa_len;
+#endif
+		if (sizeof(struct sockaddr) > len)
+			len = sizeof(struct sockaddr);
+
+		cur = ifr;
+      
+		/* Advance the pointer for the next loop */
+		ifr = (struct ifreq *)((caddr_t)ifr + len + IFNAMSIZ);
+
+		sinp = (struct sockaddr_in *)&cur->ifr_addr;
+		if (sinp->sin_family == AF_INET) {
+			UINT4 n = ntohl(sinp->sin_addr.s_addr);
+
+			if (n != INADDR_LOOPBACK) {
+				ip = n;
+				break;
+			}
+		}
+	}
+
+	free(ifc.ifc_buf);
+	close(fd);
+#endif
+	return ip;
+}
+
+static UINT4
+get_first_ip_hostname()
+{
+	UINT4 ip = INADDR_ANY;
+	char *name;
+	int name_len = 256;
+	int status;
+
+	name = emalloc(name_len);
+	while (name
+	       && (status = gethostname(name, name_len)) == 0
+	       && !memchr(name, 0, name_len)) {
+		name_len *= 2;
+		name = erealloc(name, name_len);
+	}
+	if (status == 0) 
+		ip = ip_gethostaddr(name);
+	efree(name);
+	return ip;
+}
+
+UINT4
+get_first_ip()
+{
+	UINT4 ip = INADDR_ANY;
+
+	ip = get_first_ip_nameindex();
+	if (ip == INADDR_ANY)
+		/* Too bad. Try to use older approach */
+		ip = get_first_ip_hostname();
+	
+	return ip;
+}
+		
+	
+	

@@ -123,11 +123,11 @@ static void asgn(void *base, Value *value, int type, int once);
 %}
 
 %union {
-	char string[256];
-	char *sptr;
 	int number;
 	int bool;
 	UINT4 ipaddr;
+	char string[256];
+	char *sptr;
 	Value value;
 	HOSTDECL hostdecl;
 	struct {

@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: radius 1.2\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
-"POT-Creation-Date: 2003-12-13 20:06+0200\n"
-"PO-Revision-Date: 2003-12-10 11:47+0100\n"
+"POT-Creation-Date: 2003-12-16 13:36+0200\n"
+"PO-Revision-Date: 2003-12-16 13:53+0200\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Catalan <ca@dodds.net>\n"
 "MIME-Version: 1.0\n"
@@ -900,13 +900,13 @@ msgid "unknown attribute `%s/%s'"
 msgstr "atribut desconegut `%s/%s'"
 
 #: radiusd/files.c:576 radiusd/files.c:599
-#, fuzzy, c-format
+#, c-format
 msgid "expected %s, but found %s"
 msgstr "s'esperava %s, però s'ha trobat «%s»"
 
 #: radiusd/files.c:577
 msgid "opcode"
-msgstr ""
+msgstr "un codi d'operació"
 
 #: radiusd/files.c:588
 #, c-format

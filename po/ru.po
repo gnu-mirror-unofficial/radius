@@ -16,8 +16,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: radius 1.2\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
-"POT-Creation-Date: 2003-12-13 20:06+0200\n"
-"PO-Revision-Date: 2003-12-05 12:29+0200\n"
+"POT-Creation-Date: 2003-12-16 13:36+0200\n"
+"PO-Revision-Date: 2003-12-16 13:52+0200\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Russian <ru@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -904,13 +904,13 @@ msgid "unknown attribute `%s/%s'"
 msgstr "неизвестный атрибут `%s/%s'"
 
 #: radiusd/files.c:576 radiusd/files.c:599
-#, fuzzy, c-format
+#, c-format
 msgid "expected %s, but found %s"
 msgstr "ожидается %s, однако обнаружен %s"
 
 #: radiusd/files.c:577
 msgid "opcode"
-msgstr ""
+msgstr "код операции"
 
 #: radiusd/files.c:588
 #, c-format

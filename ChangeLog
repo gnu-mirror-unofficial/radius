@@ -1,3 +1,8 @@
+2003-12-24  Sergey Poznyakoff  
+	
+	Moved back to Savannah
+	* README-alpha: Updated
+
 2003-12-23  Sergey Poznyakoff  
 
 	* lib/sysdep.c (rad_reset_signal): Removed ARG_UNUSED qualifier
@@ -33,7 +38,7 @@
 	Date from	Date to		Repository
 	========	=======		==========
 	2000-12-01	2003-12-03	Savannah	
-	2003-12-04	***		Mirddin
+	2003-12-04	2003-12-24	Mirddin
 
 2003-12-10  Sergey Poznyakoff
 

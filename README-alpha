@@ -22,13 +22,12 @@ Report bugs to <bug-gnu-radius@gnu.org>
 The following instructions apply if you wish to obtain sources from
 the CVS repository:
 
-To checkout the source tree from CVS issue the following commands:
+To checkout the source tree from CVS issue the following command:
 
-cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/radius login
+CVS_RSH=ssh \
+ cvs -d :ext:anoncvs@savannah.gnu.org:/cvsroot/radius checkout radius
 
-Press enter when prompted for a password.
-
-cvs -d :pserver:anoncvs@subversions.gnu.org:/cvsroot/radius checkout radius
+Make sure SSHv2 is used.
 
 This will give you read-only access.  If you think you need write access,
 contact <gray@mirddin.farlep.net>

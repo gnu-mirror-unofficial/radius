@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: GNU radius 1.2\n"
 "Report-Msgid-Bugs-To: bug-gnu-radius@gnu.org\n"
-"POT-Creation-Date: 2003-12-13 20:06+0200\n"
-"PO-Revision-Date: 2003-12-12 08:00-0500\n"
+"POT-Creation-Date: 2003-12-16 13:36+0200\n"
+"PO-Revision-Date: 2003-12-16 13:49+0200\n"
 "Last-Translator: Michel Robitaille <robitail@IRO.UMontreal.CA>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "MIME-Version: 1.0\n"
@@ -891,9 +891,9 @@ msgid "unknown attribute `%s/%s'"
 msgstr "attribut inconnue « %s/%s »"
 
 #: radiusd/files.c:576 radiusd/files.c:599
-#, fuzzy, c-format
+#, c-format
 msgid "expected %s, but found %s"
-msgstr "attendait %s mais a trouvé %s"
+msgstr "attendu %s, mais a trouvé %s"
 
 #: radiusd/files.c:577
 msgid "opcode"

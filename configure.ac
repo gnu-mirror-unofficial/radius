@@ -92,12 +92,6 @@ AM_PROG_LIBTOOL
 AC_SUBST(build_POFILTER)
 RA_MAINTAINER_MODE([build_POFILTER=pofilter])
 
-AC_SUBST(GPERF)
-AC_PATH_PROG(GPERF, gperf, missing, $PATH)
-if test x$GPERF = xmissing; then
-	GPERF='$(top_srcdir)/missing gperf'
-fi
-
 ### Make sure Guile is installed.
 AC_ARG_WITH(guile,
 	[  --without-guile                do not compile Guile support],

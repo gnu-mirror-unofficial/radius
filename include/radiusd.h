@@ -59,6 +59,9 @@ enum reload_what {
 #define RS_COMPLETED 1     /* Request is completed */
 #define RS_PROXY     2     /* Proxy request waiting for its handler
 			      to become free */
+#define RS_XMIT      3     /* The request is to be retransmitted to its
+			      handler and is waiting for it to
+			      become free */
 
 /* Request comparison results */
 #define RCMP_NE     0      /* Requests not equal */
@@ -323,7 +326,7 @@ void rpp_remove(pid_t pid);
 void rpp_flush();
 int rpp_input_handler(int fd, void *data);
 int rpp_input_close(int fd, void *data);
-void rpp_kill(pid_t pid, int signo);
+int rpp_kill(pid_t pid, int signo);
 
 /* request.c */
 REQUEST *request_create(int type, int fd, struct sockaddr_in *sa,

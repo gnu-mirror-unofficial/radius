@@ -445,10 +445,15 @@ int scheme_auth(char *procname, radiusd_request_t *req,
                 grad_avp_t *user_check, grad_avp_t **user_reply_ptr);
 int scheme_acct(char *procname, radiusd_request_t *req);
 int scheme_eval_boolean_expr(char *expr);
+int scheme_eval_avl (radiusd_request_t *request,
+		     grad_avp_t *lhs, grad_avp_t *rhs,
+		     grad_avp_t **reply,
+		     grad_avp_t **pfailed);
 void scheme_eval_unspecified_expr(char *expr);
 void scheme_read_eval_loop();
 void scheme_redirect_output();
 void start_guile();
+
 int guile_cfg_handler(int argc, cfg_value_t *argv,
 		      void *block_data, void *handler_data);
 extern struct cfg_stmt guile_stmt[];
@@ -579,6 +584,8 @@ char *make_server_ident();
 void dump_users_db();
 void strip_username(int do_strip, char *name,
                     grad_avp_t *check_item, char *stripped_name);
+int exec_program_wait (radiusd_request_t *request, grad_avp_t *rhs,
+		       grad_avp_t **reply, grad_avp_t **pfailed);
 
 /* version.c */
 void version();

@@ -504,6 +504,12 @@ rad_sql_init()
 	return 0;
 }
 
+void
+rad_sql_shutdown()
+{
+	close_sql_connections(SQL_AUTH);
+	close_sql_connections(SQL_ACCT);
+}
 
 void
 sql_check_config(cfg)

@@ -77,6 +77,7 @@ void rad_sql_need_reconnect(int type);
 int rad_sql_setup(int type, qid_t qid);
 void rad_sql_cleanup(int type, qid_t qid);
 int rad_sql_checkgroup(AUTH_REQ *req, char *groupname);
+void rad_sql_shutdown();
 
 /* Lower level routines: */
 void rad_sql_connect(int type);
@@ -93,5 +94,6 @@ void rad_sql_free(struct sql_connection *conn, void *data);
 # define rad_sql_check_connect(a)
 # define rad_sql_setup NULL
 # define rad_sql_cleanup NULL
+# define rad_sql_shutdown()
 
 #endif

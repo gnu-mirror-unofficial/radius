@@ -234,6 +234,7 @@ extern int		auth_port;
 extern int		acct_port;
 extern int              suspend_flag;
 extern int              log_mode;
+extern int              use_guile;
 
 extern unsigned long stat_start_time;
 extern REQUEST_CLASS    request_class[];
@@ -268,7 +269,7 @@ int             set_nonblocking(int fd);
 int             master_process();
 int             rad_flush_queues();
 void            schedule_restart();
-
+void            rad_mainloop();
 
 
 /* radius.c */
@@ -419,3 +420,8 @@ int fix_reply_pairs(int cf_file, char *filename, int line, char *name,
 		    VALUE_PAIR **pairs);
 void radck();
 
+/* scheme.c */
+void rad_boot();
+void scheme_load(char *filename);
+void scheme_load_path(char *pathname);
+void scheme_debug(int val);

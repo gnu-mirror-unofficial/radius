@@ -208,7 +208,6 @@ typedef struct snmp_req {
 #define stat_inc(m,a,c)
 #endif
 
-
 #define SECONDS_PER_DAY         86400
 #define MAX_REQUEST_TIME        60
 #define CLEANUP_DELAY           10
@@ -372,6 +371,8 @@ void req_decrypt_password(char *password, RADIUS_REQ *req, VALUE_PAIR *pair);
 /* exec.c */
 int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **,
                         int, char **user_msg);
+int filters_stmt_term(int finish, void *block_data, void *handler_data);
+extern struct cfg_stmt filters_stmt[];
 
 /* menu.c */
 void process_menu(RADIUS_REQ *radreq, int fd);
@@ -404,7 +405,7 @@ Community * snmp_find_community(char *);
 void snmp_add_community(char *str, int access);
 void snmp_free_communities();
 void snmp_sort_nas_stat();
-int snmp_stmt_begin(void *data, void *up_data);
+int snmp_stmt_begin(int finish, void *data, void *up_data);
 #endif
 
 /* stat.c */

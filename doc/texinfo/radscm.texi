@@ -24,34 +24,34 @@ A path to the Radius configuration directory.
 A list of radius servers. Each element of the list is:
 
 @lisp
-(list @var{ID-STR HOST-STR SECRET-STR AUTH-NUM ACCT-NUM
-      CNTL-NUM})
+(list @var{id-str host-str secret-str auth-num acct-num
+      cntl-num})
 @end lisp
 
 @noindent
 where the arguments are as follows:
 
 @multitable @columnfractions .40 .45
-@item @var{ID-STR}            @tab Server @sc{id}
-@item @var{HOST-STR}          @tab Server hostname or IP
-@item @var{SECRET-STR}        @tab Shared secret key to use
-@item @var{AUTH-NUM}          @tab Authentication port number
-@item @var{ACCT-NUM}          @tab Accounting port number
-@item @var{CNTL-NUM}          @tab Control channel port number
+@item @var{id-str}            @tab Server @sc{id}
+@item @var{host-str}          @tab Server hostname or IP
+@item @var{secret-str}        @tab Shared secret key to use
+@item @var{auth-num}          @tab Authentication port number
+@item @var{acct-num}          @tab Accounting port number
+@item @var{cntl-num}          @tab Control channel port number
 @end multitable
 Thus, each entry can be used as an argument to
-@function{rad-client-set-server} or
-@function{rad-client-add-server}.
+@code{rad-client-set-server} or
+@code{rad-client-add-server}.
 @end deffn
 
 @heading Functions
 
-@deffn Function rad-send-internal PORT-NUMBER CODE-NUMBER PAIR-LIST
+@deffn Function rad-send-internal @var{port-number} @var{code-number} @var{pair-list}
 Sends the request to currently selected server.
 Arguments are:
 
 @table @var
-@item  PORT-NUMBER
+@item  port-number
 Port number to use. These values are allowed:
 
 @multitable @columnfractions .40 .40
@@ -62,23 +62,23 @@ Port number to use. These values are allowed:
 @noindent
 The actual port numbers are those configured for
 the given server.
-@item  CODE-NUMBER
+@item  code-number
 Request code.
-@item  PAIR-LIST
+@item  pair-list
 List of attribute-value pairs. Each pair is either
 @lisp
-        (cons @var{ATTR-NAME-STR VALUE})
+        (cons @var{attr-name-str value})
 @end lisp
 or
 @lisp
-        (cons @var{ATTR-NUMBER VALUE})
+        (cons @var{attr-number value})
 @end lisp
 @end table
 @noindent
 
 Return: On success,
 @lisp
-        (list RETURN-CODE-NUMBER PAIR-LIST)
+        (list @var{return-code-number pair-list})
 @end lisp
 On failure,
 @lisp
@@ -86,10 +86,10 @@ On failure,
 @end lisp
 @end deffn
 
-@deffn Function rad-send PORT-NUMBER CODE-NUMBER PAIR-LIST . VERBOSE
+@deffn Function rad-send @var{port-number} @var{code-number} @var{pair-list} . @var{verbose}
 Sends a radius request. Actually it does the same work as
 @command{rad-send-internal},
-but if @var{VERBOSE} is specified, the verbose report about interaction with
+but if @var{verbose} is specified, the verbose report about interaction with
 the radius server is printed.
 @end deffn
 
@@ -102,112 +102,113 @@ server @sc{id} and IP.
 Returns the @sc{id} of the currently selected server.
 @end deffn
 
-@deffn Function rad-client-set-server LIST
-Selects for use the server described by @var{LIST}. Here @var{LIST}
+@deffn Function rad-client-set-server @var{list}
+Selects for use the server described by @var{list}. Here @var{list}
 takes the form
 
 @lisp
-(list @var{ID-STR HOST-STR SECRET-STR AUTH-NUM ACCT-NUM
-      CNTL-NUM})
+(list @var{id-str host-str secret-str auth-num acct-num
+      cntl-num})
 @end lisp
 @noindent
-where the arguments are as follows:
+where the elements are as follows:
 
 @multitable @columnfractions .40 .45
-@item @var{ID-STR}            @tab Server @sc{id}
-@item @var{HOST-STR}          @tab Server hostname or IP
-@item @var{SECRET-STR}        @tab Shared secret key to use
-@item @var{AUTH-NUM}          @tab Authentication port number
-@item @var{ACCT-NUM}          @tab Accounting port number
-@item @var{CNTL-NUM}          @tab Control channel port number
+@item @var{id-str}            @tab Server @sc{id}
+@item @var{host-str}          @tab Server hostname or IP
+@item @var{secret-str}        @tab Shared secret key to use
+@item @var{auth-num}          @tab Authentication port number
+@item @var{acct-num}          @tab Accounting port number
+@item @var{cntl-num}          @tab Control channel port number
 @end multitable
 @end deffn
 
-@deffn Function rad-client-add-server LIST
-Adds the server described by @var{LIST} to the list of active servers.
-Here @var{LIST} takes the form
+@deffn Function rad-client-add-server @var{list}
+Adds the server described by @var{list} to the list of active servers.
+Here @var{list} takes the form
 
 @lisp
-(list @var{ID-STR HOST-STR SECRET-STR AUTH-NUM ACCT-NUM
-      CNTL-NUM})
+(list @var{id-str host-str secret-str auth-num acct-num
+      cntl-num})
 @end lisp
 
 @noindent
-where the arguments are as follows:
+where the elements are as follows:
 
 @multitable @columnfractions .40 .45
-@item @var{ID-STR}            @tab Server @sc{id}
-@item @var{HOST-STR}          @tab Server hostname or IP
-@item @var{SECRET-STR}        @tab Shared secret key to use
-@item @var{AUTH-NUM}          @tab Authentication port number
-@item @var{ACCT-NUM}          @tab Accounting port number
-@item @var{CNTL-NUM}          @tab Control channel port number
+@item @var{id-str}            @tab Server @sc{id}
+@item @var{host-str}          @tab Server hostname or IP
+@item @var{secret-str}        @tab Shared secret key to use
+@item @var{auth-num}          @tab Authentication port number
+@item @var{acct-num}          @tab Accounting port number
+@item @var{cntl-num}          @tab Control channel port number
 @end multitable
 @end deffn
 
-@deffn Function rad-read-no-echo PROMPT-STR
-Prints the given @var{PROMPT-STR}, disables echoing, reads a string up to the
+@deffn Function rad-read-no-echo @var{prompt-str}
+Prints the given @var{prompt-str}, disables echoing, reads a string up to the
 next newline character, restores echoing, and returns the string entered.
 This is the interface to the C @command{getpass(3)} function.
 @end deffn
 
-@deffn Function rad-client-source-ip IP-STR
-Sets the IP to be used as source. @var{IP-STR} can be either an
+@deffn Function rad-client-source-ip @var{ip-str}
+Sets the IP to be used as source. @var{ip-str} can be either an
 IP in dotted-quad form or a hostname.
 @end deffn
 
-@deffn Function rad-client-timeout NUMBER
+@deffn Function rad-client-timeout @var{number}
 Sets the timeout in seconds for waiting for a server reply.
 @end deffn
 
-@deffn Function rad-client-retry NUMBER
+@deffn Function rad-client-retry @var{number}
 Sets the number of retries for sending requests to a Radius server.
 @end deffn
 
-@deffn Function rad-format-code DEST-BOOL CODE-NUMBER
+@deffn Function rad-format-code @var{dest-bool} @var{code-number}
 Format a radius reply code into a human-readable form.
-@var{DEST-BOOL} has the same meaning as in format.
+@var{dest-bool} has the same meaning as in @code{format}
+(@xref{Formatted Output,,Formatted Output,guile,The Guile Reference Manual}.)
 @end deffn
 
-@deffn Function rad-format-pair DEST-BOOL PAIR
+@deffn Function rad-format-pair @var{dest-bool} @var{pair}
 Format a radius attribute-value pair for output.
-@var{DEST-BOOL} has the same meaning as in format.
-PAIR is either
+@var{dest-bool} has the same meaning as in @code{format}.
+@var{pair} is either
 @lisp
-                (cons @var{NAME-STR VALUE})
+                (cons @var{name-str value})
 @end lisp
 or
 @lisp
-                (cons @var{ATTR-NUMBER VALUE})
+                (cons @var{attr-number value})
 @end lisp
 @noindent
-where @var{VALUE} may be of any type appropriate for the given attribute.
+where @var{value} may be of any type appropriate for the given attribute.
 @end deffn
 
-@deffn Function rad-print-pairs DEST-BOOL PAIR-LIST
-Output the radius attribute-value pairs from @var{PAIR-LIST}.
-@var{DEST-BOOL} has the same meaning as in format.
-@var{PAIR-LIST} is a list of pairs in the form
+@deffn Function rad-print-pairs @var{dest-bool} @var{pair-list}
+Output the radius attribute-value pairs from @var{pair-list}.
+@var{dest-bool} has the same meaning as in format.
+@var{pair-list} is a list of pairs in the form
 
 @lisp
-                (cons @var{NAME-STR VALUE})
+                (cons @var{name-str value})
 @end lisp
 @noindent
 or
 
 @lisp
-                (cons @var{ATTR-NUMBER VALUE})
+                (cons @var{attr-number value})
 @end lisp
 @noindent
-where @var{VALUE} may be of any type appropriate for the given attribute.
+where @var{value} may be of any type appropriate for the given attribute.
 
 All @attr{Reply-Message} pairs from the list are concatenated and displayed
 as one.
 @end deffn
 
-@deffn Function rad-format-reply-msg PAIR-LIST . TEXT
+@deffn Function rad-format-reply-msg @var{pair-list} . @var{text}
 Concatenate and print text from all @attr{Reply-Message} pairs from
-@var{PAIR-LIST}. If @var{TEXT} is specified, it is printed before the
+@var{pair-list}. If @var{text} is specified, it is printed before the
 concatenated 
 text.
 @end deffn
@@ -217,12 +218,14 @@ For each server from @code{rad-server-list}, print its @sc{id} and hostname
 or IP.
 @end deffn
 
-@deffn Function rad-select-server ID-STR
-Select the server identified by @var{ID-STR} as a current server. The server
+@deffn Function rad-select-server @var{ID-STR}
+Select the server identified by @var{id-str} as a current server. The server
 data are looked up in rad-server-list variable.
 @end deffn
 
-@deffn Function rad-add-server ID-STR
-Add the server identified by ID-STR to the list of current servers.
+@deffn Function rad-add-server @var{id-str}
+Add the server identified by @var{id-str} to the list of current servers.
 The server data are looked up in rad-server-list variable.
 @end deffn
+
+

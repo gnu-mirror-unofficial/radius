@@ -115,6 +115,10 @@ void radlog_open(int category);
 void radlog_close();
 void radlog(/*int, char *, ...*/);
 int __insist_failure(char *, char *, int);
+void radlog_req(/*int, RADIUS_REQ*, char *, ...*/);
+
+#define MAXIDBUFSIZE \
+ 4+1+MAX_LONGNAME+1+4+2*AUTH_STRING_LEN+3+1+AUTH_STRING_LEN+1+1
 
 /* Debugging facilities */
 #ifndef MAX_DEBUG_LEVEL

@@ -794,7 +794,7 @@ VALUE      Auth-Type         Accept               254
 @end example
 
 This attribute tells the server which type of authentication
-to apply to a paricular user. It can be used in check-pairs of
+to apply to a particular user. It can be used in check-pairs of
 the user's profile. @xref{Authentication}.
 
 Radius interprets values of @code{Auth-Type} attribute as follows:
@@ -802,7 +802,7 @@ Radius interprets values of @code{Auth-Type} attribute as follows:
 @table @code
 @item Local
 The value of the @code{Password} attribute from the record is taken
-as a cleantext password and is compaired against the @code{Password} value
+as a cleantext password and is compared against the @code{Password} value
 from the input packet. 
 
 @item System
@@ -974,14 +974,14 @@ file record.
 When encountered in check-pairlist of a particular @file{users} profile,
 this attribute indicates the huntgroup name to be matched. Radius looks
 up the corresponding record in the @file{huntgroups} file. If such
-record is found, each A/V pair from its reply-list is compaired against
-the corresponing pair from the request being processed. The request
+record is found, each A/V pair from its reply-list is compared against
+the corresponding pair from the request being processed. The request
 matches only if it contains all the attributes from the specified
 huntgroup, and their values satisfy the conditions listed in the
 huntgroup pairs.
 
-For example, suppose that the athentication request contained the
-following attrbutes:
+For example, suppose that the authentication request contained the
+following attributes:
 
 @example
 User-Name = "john",
@@ -1111,7 +1111,7 @@ DEFAULT NAS-IP-Address = 11.10.10.1
 @end example
 
 @noindent
-Then after successfull matching of a particular user's record,
+Then after successful matching of a particular user's record,
 the matching will continue until it finds the DEFAULT entry,
 which would add its reply pairs to the reply pairs for
 this request. The effect is, that if user @samp{johns} authenticates
@@ -1164,7 +1164,7 @@ sign. For example the following:
 	Framed-IP-Address = 10.10.0.1+
 @end example
 @noindent
-is equivalient to
+is equivalent to
 
 @example
 	Framed-IP-Address = 10.10.0.1,
@@ -1234,7 +1234,7 @@ override these defaults by setting variables @code{exec-program-user}
 and @code{exec-program-group} in configuration file to proper values
 @ref{option,, The option statement}.
 
-The deamon will wait until the program terminates. The return value
+The daemon will wait until the program terminates. The return value
 of its execution determines whether the entry matches. If the program
 exits with a non-zero code then the match fails. If it exits with a
 zero code, the match succeeds. In this case the standard output of the

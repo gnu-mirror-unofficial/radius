@@ -38,7 +38,7 @@ Permission is granted to copy and distribute modified versions of this
 manual under the conditions for verbatim copying, provided also that the
 sections entitled ``The GNU Manifesto'', ``Distribution'' and ``GNU
 General Public License'' are included exactly as in the original, and
-rovided that the entire resulting derived work is distributed under the
+provided that the entire resulting derived work is distributed under the
 terms of a permission notice identical to this one.
 
 Permission is granted to copy and distribute translations of this manual
@@ -97,13 +97,13 @@ This Info file documents the version @value{VERSION} of the package.
 @menu
 * Distrib::             How to get the radius distribution.
 * Copying::             The GNU General Public License gives you permission
-                        to redistribute the program on certyain terms.
+                        to redistribute the program on certain terms.
 * Intro::               An introduction to radius concepts.
 * Glossary::            The glossary.
 
 The radius daemon
 * Operation::           How radius operates.
-* Naming conventions::  Conventions abount naming files and directories.
+* Naming conventions::  Conventions about naming files and directories.
 * Invocation::          How to start the daemon.
 * Configuration files:: Radius configuration files.
 * Authentication::      How the users are authenticated
@@ -588,7 +588,7 @@ simple customization.
 
 GNU Radius includes radius server program capable of serving authentication
 and accounting requests, and a set of accompanying programs designed to
-monitor the activity of the server and analize the information it provides.
+monitor the activity of the server and analyze the information it provides.
 
 @comment *******************************************************************
 @node Glossary, Operation, Intro, Top
@@ -1010,8 +1010,8 @@ any username.
 
 @item 2. Determine the authentication type and verify the user's authentity. 
 
-@item 3. Compaire check-pair list with pairlist from the request
-While compairing any internal A/V pairs contained in check-pairs
+@item 3. Compare check-pair list with pairlist from the request
+While comparing any internal A/V pairs contained in check-pairs
 are ignored. 
 
 The internal A/V pairs are those with the attribute number greater than 255,
@@ -1202,7 +1202,7 @@ short names, e.g. saying
 @noindent
 we actually mean @file{@value{RADDB}/sqlserver}.
 
-If necessary, locations of these directories can be overidden by
+If necessary, locations of these directories can be overridden by
 specifying appropriate command line options to a program. For
 example, any program from the GNU Radius package accepts command
 line option @code{-d} or @code{--directory}, which introduces
@@ -1361,7 +1361,7 @@ authentication attempt into its logfile @ref{Logging}.
 @item -z
 @itemx --log-auth-pass
 Log passwords along with authentication information. @emph{Do not use} this
-option. It is @emph{very} unsecure, since all users' passwords will be
+option. It is @emph{very} insecure, since all users' passwords will be
 echoed in the logfile. This option is provided only for debugging purposes.
 
 @end table
@@ -1814,7 +1814,7 @@ The @code{notify off;} form of the statement disables the service.
 Specify the port number to send the TTL notifications to.
 
 @item retry
-Specifies how many time @code{radiusd} should try to resend notifications
+Specifies how many time @code{radiusd} should try to re-send notifications
 if the remote party doesn't respond.
 
 @item delay
@@ -1993,7 +1993,7 @@ There are 6 kinds of statements:
 @node Comment, $INCLUDE, dictionary, dictionary
 @chapter Comments
 Comments are introduced by a pound sign (@samp{#}). Everything starting from
-the first occurence of @samp{#} up to the end of line is ignored.
+the first occurrence of @samp{#} up to the end of line is ignored.
 
 @comment **L3***************************************************************
 @node $INCLUDE, VENDOR, Comment, dictionary
@@ -2154,7 +2154,7 @@ is used as a link to @file{nastypes} entry @ref{nastypes}.
 
 @item Checkrad arguments
 Additional arguments for querying a NAS. Multiple arguments should be
-separated by commas. No itervening whitespace is allowed in this field.
+separated by commas. No intervening whitespace is allowed in this field.
 @emph{Please note}, that these arguments override the ones specified in
 @file{nastypes} and can thus be used to override the default
 values. @ref{nastypes,,Full list of allowed arguments}.
@@ -2236,7 +2236,7 @@ finger and snmp.
 
 @heading Arguments
 
-In the discussion below @var{n} means numberic and @var{s} string value.
+In the discussion below @var{n} means numeric and @var{s} string value.
 
 The following arguments are predefined:
 
@@ -2401,7 +2401,7 @@ some.nas        A-NAS           unix
 @subheading Checking user name
 
 SNMP queries to NASes of MAX Ascend and Cisco AS5300 series return
-a username. To check for it the following fuction can be used:
+a username. To check for it the following function can be used:
 
 @example
 integer
@@ -2482,7 +2482,7 @@ On receiving the incoming packet, Radius attempts to find a matching
 record in the @file{hints} file using the procedure described below.
 If the matching record is found, then the reply-pairs from this record are
 appended to the end of the request's pairlist. Thus, these pairs will
-further be used just as if NAS has sent them alog with the request.
+further be used just as if NAS has sent them along with the request.
 
 @comment @xref{Examples of request processing:reqproc}
 
@@ -2685,7 +2685,7 @@ File @file{raddb/users} contains the database of Radius users.
 
 Each record in the file describes a user's profile. When trying
 to find a match for an input request, @code{radiusd} uses the
-following algorythm:
+following algorithm:
 
 @heading Matching rules
 
@@ -2800,7 +2800,7 @@ DEFAULT Hint = "SLIP",
 
 ## The following authenticates users using system passwd files.
 ## The users are allowed to log in from 7:55 to 23:05 on any weekday,
-## except the weekend, and from 07:55 to 12:00 on sunday.
+## except the weekend, and from 07:55 to 12:00 on Sunday.
 ## Only one login is allowed per user.
 ## The program telauth is used to further check the authentication
 ## information and provide the reply pairs
@@ -3004,7 +3004,7 @@ The queries to use for each of these types are set up in the file
 @file{sqlserver}. This chapter describes in detail how to write such
 queries.
 
-@heading Autheniticaton
+@heading Authentication
 
 @subheading @code{auth_query} template.
 
@@ -3378,7 +3378,7 @@ requirements:
 @enumerate 1
 @item It starts with either a lower- or uppercase letter of the latin
 alphabet or any of the following symbols: @samp{_}, @samp{$}.
-@item It consists of alphanumeric characters, undersores(@samp{_}) and
+@item It consists of alphanumeric characters, underscores(@samp{_}) and
 dollar signs (@samp{$}).
 @end enumerate
 
@@ -3506,12 +3506,12 @@ The following built-in functions are provided:
 Returns the length of string @code{s}.
 
 @item integer index(string s, integer c);
-Returns the index of the first occurence of the character @code{c} in
-the string @code{s}. Returns -1 if no such occurence is found.
+Returns the index of the first occurrence of the character @code{c} in
+the string @code{s}. Returns -1 if no such occurrence is found.
 
 @item integer rindex(string s, integer i);
-Returns the index of the last occurence of the character @code{c} in
-the string @code{s}. Returns -1 if no such occurence is found.
+Returns the index of the last occurrence of the character @code{c} in
+the string @code{s}. Returns -1 if no such occurrence is found.
 
 @item string substr(string s, integer start, integer length);
 Returns the at most @code{length} substring of @code{s} starting at
@@ -3909,7 +3909,7 @@ pairlist.
 This is replaced by the value of attribute named `attr-name'. The
 attribute is looked up in the reply pairlist.
 @item %D
-This is replaced ny current date/time (localtime).
+This is replaced by current date/time (localtime).
 @item %G
 This is replaced by current date/time in GMT.
 @end table
@@ -3950,7 +3950,7 @@ of @code{Auth-Type} attribute in his profile.
 * Local Password Auth::           Authenticate using plaintext password.
 * Encrypted Password Auth::       Authenticate using MD5 encrypted password.
 * System Auth::                   Authenticate using system account.
-* SQL Auth::                      Athenticate using SQL.
+* SQL Auth::                      Authenticate using SQL.
 * PAM Auth::                      Authenticate using PAM.
 * Checking Simultaneous Logins::  
 @end menu
@@ -4019,7 +4019,7 @@ The @code{Password} attribute in user's profile contains the
 user coincide, then the user is authenticated.
 
 We do not recommend the use of this authentication type, since keeping
-plaintext passwords in @file{users} is very unsecure, even though the
+plaintext passwords in @file{users} is very insecure, even though the
 file is owned by root and its permissions are 0600.
 
 @comment *L2****************************************************************
@@ -4141,7 +4141,7 @@ Radius queries the NAS whether the session listed in the entry is
 currently active. If the NAS replies positive, the session count
 is incremented, if it replies negative, such entry is marked as
 closed and is not counted. There may also be cases when the NAS
-is unreachable due to some reasons. In such cases the Radius behaviour
+is unreachable due to some reasons. In such cases the Radius behavior
 is determined by the value of @code{checkrad-assume-logged} in
 @file{config} file @ref{auth,,auth statement (raddb/config)}.
 If the value is @code{yes}, Radius assumes the session is still
@@ -4164,7 +4164,7 @@ latter, and can thus be used to override default values specified
 in @file{nastypes}.
 
 Having determined the query method and its argument, Radius queries
-NAS and analises its output. To analise it Radius uses user-supplied
+NAS and analyses its output. To analyze it Radius uses user-supplied
 functions defined in file @file{raddb/rewrite}. The function to use
 is specified by the @code{function=} argument to the method. It is
 called each time a line of output is received from the NAS (for
@@ -4185,7 +4185,7 @@ session is not active.
 @cindex Accounting Types
 
 GNU Radius supports three types of accounting. By default Unix and
-Detailed request ccounting types are always enabled. 
+Detailed request accounting types are always enabled. 
 
 @menu
 * Unix Accounting::                     Unix style utmp/wtmp accounting.
@@ -4412,7 +4412,7 @@ Duration of the session.
 @chapter Radwho command line options
 @cindex radwho, command line options
 
-The following command line options can be used to modify the behaviour
+The following command line options can be used to modify the behavior
 of the program:
 
 @table @samp
@@ -4458,7 +4458,7 @@ the same number of columns on each line of output.
 @item -F
 @itemx --finger
 Start in fingerd mode. In this mode @code{radwho} emulates the
-behaviour of fingerd(8) utility. Use this option if starting
+behavior of fingerd(8) utility. Use this option if starting
 @code{radwho} from the /etc/inetd.conf line like this:
 
 @example
@@ -4509,7 +4509,7 @@ May prove useful when running @code{radwho} as a finger daemon.
 
 @item -n
 @itemx --no-resolve
-Do not resolve IP addresses. It is a synonim for -I ip.
+Do not resolve IP addresses. It is a synonym for -I ip.
 
 @item -o FORMAT
 @itemx --format FORMAT
@@ -4658,7 +4658,7 @@ output. It includes following fields:
 @chapter @code{radlast} command line options
 @pindex @code{radlast}, options
 
-Use following command line options to control the behaviour of
+Use following command line options to control the behavior of
 @code{radlast} utility:
 
 @table @samp
@@ -4797,7 +4797,7 @@ interactive commands
 @chapter Raduse Command Line Options
 @cindex raduse, command line options
 
-The following options modify the behaviour of @code{raduse}:
+The following options modify the behavior of @code{raduse}:
 
 @table @samp
 @item -b
@@ -4901,7 +4901,7 @@ specified. If they are used in conjunction, they are taken as if
 joined by logical AND operation.
 
 @samp{radzap} operates in two modes: silent and confirm. The silent
-mode is enabeld by default. When run in this mode, radzap deletes
+mode is enabled by default. When run in this mode, radzap deletes
 every record that matched the search conditions given.
 
 In confirm mode @samp{radzap} will ask for a confirmation
@@ -5020,7 +5020,7 @@ UNIX-style signal interface or a special UDP control channel.
 @comment *L2****************************************************************
 @node Signal Interface, Control Channel, , Radctl
 @chapter Signal Interface
-@cindex signalling radius
+@cindex signaling radius
 @cindex radctl, signal interface
 
 In order to use the signal interface invoke @code{Radctl} with
@@ -5244,13 +5244,13 @@ A command in radctl interactive mode consists of a command verb and
 optional arguments. Any non-ambiguous abbreviated form of a command
 verb is accepted. Command arguments, however, may not be abbreviated.
 
-Commands fall into two groups: those that control the behaviour of
+Commands fall into two groups: those that control the behavior of
 the @code{radctl} monitor itself, and those that are sent directly
 to the server.
 
 @subheading Internal commands
 
-These commands modify the behaviour of radctl itself.
+These commands modify the behavior of radctl itself.
 
 @table @code
 
@@ -5389,7 +5389,7 @@ Undo the effect of the last @code{suspend} command.
 DBM files. Some versions of Radius daemon have used this to
 speed up the access to the users database.
 
-Howewer in this implementation things go the other way around.
+However in this implementation things go the other way around.
 The server reads entire plaintext database, converts it into internal
 form and stores into hash table which provides for fast
 access. Actually, using DBM version of the users database slows
@@ -5643,7 +5643,7 @@ DEST-BOOL has the same meaning as in format.
 
 Format a radius attribute/value pair for output.
 DEST-BOOL has the same meaning as in format.
-PAIR is eihter
+PAIR is either
 @lisp
 		(cons NAME-STRING VALUE)
 @end lisp

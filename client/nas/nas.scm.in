@@ -407,7 +407,7 @@
   (let ((login "")
 	(port 0)
 	(port-type #\A)
-	(proto #\P)
+	(proto "PPP")
 	(session-id "none")
 	(caller-id "")
 	(framed-ip-addr "")

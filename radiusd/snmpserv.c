@@ -610,12 +610,17 @@ snmp_req_free(req)
 }
 
 void
-snmp_req_drop(type, req, status_str)
+snmp_req_drop(type, req, orig, fd, status_str)
         int type;
         SNMP_REQ *req;
+	SNMP_REQ *orig;
+	int fd;
         char *status_str;
 {
         char ipbuf[DOTTED_QUAD_LEN];
+
+	if (!req)
+		req = orig;
         radlog(L_NOTICE,
                _("Dropping SNMP request from client %s: %s"),
                ip_iptostr(ntohl(req->sa.sin_addr.s_addr), ipbuf),

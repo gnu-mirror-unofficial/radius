@@ -23,6 +23,9 @@
 #include <list.h>
 #include <envar.h>
 
+/* Forward declarations */
+struct obstack;
+
 /* Internationalization support */
 #include <gettext.h>
 #define _(s) gettext(s)
@@ -231,7 +234,7 @@ typedef struct radius_req {
         u_char                  vector[AUTH_VECTOR_LEN]; /* Rq authenticator */
         u_char                  *secret;      /* Shared secret */
         VALUE_PAIR              *request;     /* Request pairs */
-        
+
         /* Saved reply values */
         int                     reply_code;   /* Reply code */
         VALUE_PAIR              *reply_pairs; /* Reply pairs */
@@ -386,6 +389,9 @@ int format_string_visual(char *buf, int runlen, char *str, int len);
 char *op_to_str(int op);
 int str_to_op(char *str);
 int xlat_keyword(struct keyword *kw, char *str, int def);
+void obstack_grow_backslash_num(struct obstack *stk, char *text, int len, int base);
+void obstack_grow_backslash(struct obstack *stk, char *text, char **endp);
+
 
 /* cryptpass.c */
 void encrypt_password(VALUE_PAIR *pair, char *password,
@@ -407,6 +413,12 @@ struct passwd *rad_getpwnam_r(const char *name, struct passwd *result,
 struct group *rad_getgrnam(const char *name);
 
 /* client.c */
+#define RADCLT_ID            0x1
+#define RADCLT_AUTHENTICATOR 0x2
+
+RADIUS_REQ *rad_clt_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
+			  VALUE_PAIR *pairlist, int flags, int *authid,
+			  u_char *authvec);
 RADIUS_REQ *rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 			 VALUE_PAIR *pairlist);
 unsigned rad_clt_message_id(RADIUS_SERVER *server);

@@ -127,7 +127,7 @@ get_menu(menu_name)
         if ((fp = fopen(menu_path, "r")) == NULL) {
                 radlog(L_NOTICE|L_PERROR, _("can't open menu `%s'"), menu_name);
                 efree(menu_path);
-                return _("\r\n*** User Menu is Not Available ***\r\n");
+                return _("\n*** User Menu is Not Available ***\n");
         }
 
         mode = 0;

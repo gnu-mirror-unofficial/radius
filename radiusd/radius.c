@@ -390,24 +390,24 @@ rad_send_reply(code, radreq, reply_pairs, msg, fd)
         switch (code) {
         case RT_PASSWORD_REJECT:
         case RT_AUTHENTICATION_REJECT:
-                what = _("Reject");
+                what = "Reject";
                 break;
                         
         case RT_ACCESS_CHALLENGE:
-                what = _("Challenge");
+                what = "Challenge";
                 stat_inc(auth, radreq->ipaddr, num_challenges);
                 break;
                         
         case RT_AUTHENTICATION_ACK:
-                what = _("Authentication Acknowledge");
+                what = "Ack";
                 break;
                 
         case RT_ACCOUNTING_RESPONSE:
-                what = _("Accounting Acknowledge");
+                what = "Acct-Ack";
                 break;
                         
         default:
-                what = _("Reply");
+                what = "Reply";
                 break;
         }
 

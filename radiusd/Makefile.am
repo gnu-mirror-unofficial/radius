@@ -17,8 +17,6 @@ radiusd_SOURCES = \
  builddbm.c\
  checkrad.c\
  config.c\
- config_kw.c\
- config_tok.h\
  debugmod.c\
  exec.c\
  files.c\
@@ -40,28 +38,23 @@ radiusd_SOURCES = \
  version.c
 
 radiusd_LDADD = @LEXLIB@ @SQLLIB@ ../snmplib/libradsnmp.a @RADIUSD_LDADD_LIST@ ../lib/librad.la @LIBINTL@
-BUILT_SOURCES   = config.c config_kw.c rewrite.c
-MAINTAINERCLEANFILES=config.c config_tok.h config_kw.c rewrite.c y.output
+BUILT_SOURCES   = config.c rewrite.c
+MAINTAINERCLEANFILES=config.c rewrite.c y.output
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp -I$(top_srcdir)/lib @INCLUDEPATH@ @GUILE_INCLUDES@
-EXTRA_DIST      = config.y config.kw rewrite.y .gdbinit
+EXTRA_DIST      = config.y rewrite.y .gdbinit
 YLWRAP = $(SHELL) $(top_srcdir)/ylwrap
 GPERF=@GPERF@
 
-config.c config_tok.h: $(srcdir)/config.y
+config.c: $(srcdir)/config.y
 	$(YLWRAP) "$(YACC)" $(srcdir)/config.y \
-                  y.tab.c config.c y.tab.h config_tok.h y.output y.output \
+                  y.tab.c config.c y.output config.y.output \
                   -- -yy cc -vdt 
-
-config_kw.c: $(srcdir)/config.kw
-	$(YLWRAP) "$(GPERF)" $(srcdir)/config.kw \
-	   	  config_kw.c config_kw.c \
-                  -- -yy cc -stdout -k1,2,6,7,11,13,$$ -t 
 
 config.o: config.c ../include/radiusd.h 
 
 rewrite.c: $(srcdir)/rewrite.y
 	$(YLWRAP) "$(YACC)" $(srcdir)/rewrite.y \
-		  y.tab.c rewrite.c -- -yy rw_yy -vt
+		  y.tab.c rewrite.c y.output rewrite.y.output -- -yy rw_yy -vt
 
 SUFFIXES=.S .c .ln .o .s
 

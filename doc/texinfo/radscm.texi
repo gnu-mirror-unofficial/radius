@@ -167,7 +167,7 @@ Sets the number of retries for sending requests to a Radius server.
 @deffn Function rad-format-code @var{dest-bool} @var{code-number}
 Format a radius reply code into a human-readable form.
 @var{dest-bool} has the same meaning as in @code{format}
-(@xref{Formatted Output,,Formatted Output,guile,The Guile Reference Manual}.)
+(@pxref{Formatted Output,,Formatted Output,guile,The Guile Reference Manual}.)
 @end deffn
 
 @deffn Function rad-format-pair @var{dest-bool} @var{pair}

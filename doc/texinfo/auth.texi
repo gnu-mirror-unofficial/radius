@@ -191,9 +191,9 @@ Auth-Type = Crypt-Local, Password-Location = SQL
 and is provided as a shortcut and for backward compatibility with
 previous versions of GNU Radius.
 
-For description of @acronym{SQL} authentication, @xref{Encrypted
+For description of @acronym{SQL} authentication, see @ref{Encrypted
 Password Auth}. The configuration of @acronym{SQL} subsystem
-is described in @xref{sqlserver file}.
+is described in @ref{sqlserver file}.
 
 @comment *L2****************************************************************
 @node PAM Auth
@@ -270,7 +270,7 @@ any arguments it needs. The usual substitutions may be used in
 (@pxref{Macro Substitution}).
 
 For a detailed description of @attr{Exec-Program-Wait} attribute and
-an example of its use, @xref{Exec-Program-Wait}.
+an example of its use, see @ref{Exec-Program-Wait}.
 
 @comment *L2****************************************************************
 @node Checking Simultaneous Logins
@@ -320,7 +320,7 @@ acts accordingly to the value of configuration variable
 Otherwise, Radius determines the query method to use from the second
 field of this entry, and constructs its arguments by appending
 arguments from the @file{naslist} entry to those of @code{nastypes}
-entry. @emph{Note}, that the former take precedence over the
+entry. Note, that the former take precedence over the
 latter, and can thus be used to override default values specified
 in @file{nastypes}.
 

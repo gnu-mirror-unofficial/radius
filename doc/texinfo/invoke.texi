@@ -75,8 +75,8 @@ IP addresses, assigned to the machine it runs on.
 
 Config file equivalent: @code{option @{ source-ip IP; @};}.
 
-@emph{Note} that @code{listen} statement in @file{raddb/config}
-provides a better control over @IP{}es to listen on (@xref{auth}, and
+Note that @code{listen} statement in @file{raddb/config}
+provides a better control over @IP{}es to listen on (@pxref{auth}, and
 @pxref{acct}). 
 
 @c ** -L option (radiusd)

@@ -1110,8 +1110,7 @@ extension language for GNU Radius. It assumes that the reader is
 sufficiently familiar with the Scheme language. For information about
 the language, refer to
 @ref{Top,,,r4rs,Revised(4) Report on the Algorithmic Language Scheme}.
-For more
-about Guile, @xref{Top,,Overview,guile,The Guile Reference Manual}.
+For more information about Guile, see @ref{Top,,Overview,guile,The Guile Reference Manual}.
 
 Scheme procedures can be called for processing both authentication
 and accounting requests. The invocation of a Scheme procedure for an

@@ -59,7 +59,7 @@ By default, this accounting type is always enabled, provided that
 @file{radacct} directory exists and is writable
 (@pxref{Naming Conventions}). To turn the detailed accounting off,
 use the @code{detail} statement in the @file{config} file. For more information
-about it, @xref{acct}.
+about it, see @ref{acct}.
 
 The accounting detail files consist of a record for each accounting
 request. A record includes the timestamp and detailed

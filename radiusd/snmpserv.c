@@ -169,15 +169,23 @@ int snmp_acct_v_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
 			struct snmp_var **varp, int *errp);
 int snmp_stat_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
 		      struct snmp_var **varp, int *errp);
-int snmp_stat_nas(enum mib_node_cmd cmd, void *closure, subid_t subid,
-		  struct snmp_var **varp, int *errp);
+
+int snmp_stat_nas1(enum mib_node_cmd cmd, void *closure, subid_t subid,
+		   struct snmp_var **varp, int *errp);
+int snmp_stat_nas2(enum mib_node_cmd cmd, void *closure, subid_t subid,
+		   struct snmp_var **varp, int *errp);
+int snmp_stat_nas3(enum mib_node_cmd cmd, void *closure, subid_t subid,
+		   struct snmp_var **varp, int *errp);
+int snmp_stat_nas4(enum mib_node_cmd cmd, void *closure, subid_t subid,
+		   struct snmp_var **varp, int *errp);
 
 struct auth_mib_closure {
 	int nas_index;
 };
 
 struct nas_closure {
-	UINT4 ipaddr;
+	int last_index;
+	subid_t quad[4];
 };
 
 struct auth_mib_closure auth_closure, acct_closure;
@@ -258,7 +266,10 @@ static struct mib_data {
 	oid_StatTotalLinesIdle,              snmp_stat_handler, NULL,
 
 	/* Variable oids */
-/*	oid_NASIndex,                        snmp_stat_nas, &nas_closure,*/
+	oid_NASIndex1,                       snmp_stat_nas1, &nas_closure,
+	oid_NASIndex2,                       snmp_stat_nas2, &nas_closure,
+	oid_NASIndex3,                       snmp_stat_nas3, &nas_closure,
+	oid_NASIndex4,                       snmp_stat_nas4, &nas_closure,
 	
 };					    
 					    
@@ -590,10 +601,12 @@ mib_get_next(node, varp, errp)
 		} else {
 			int depth = 0;
 			node = found_node;
+			mib_reset(node);
+			
 			while (node) {
-				if (depth++ && node->handler)
+				if (depth++ && node->next == NULL) 
 					break;
-				
+
 				if (node->next) {
 					node = node->next;
 					mib_reset(node);
@@ -1734,6 +1747,132 @@ snmp_stat_var_get(subid, oid, errp)
 		return NULL;
 	}
 	return ret;
+}
+
+int
+snmp_stat_nas(num, cmd, closure, subid, varp, errp)
+	int num;
+	enum mib_node_cmd cmd;
+	struct nas_closure *closure;
+	subid_t subid;
+	struct snmp_var **varp;
+	int *errp;
+{
+	NAS *nas;
+	struct nas_stat *nsp;
+	UINT4 ip;
+	struct snmp_var *var;
+
+	
+	switch (cmd) {
+	case MIB_NODE_GET:
+		if (num != 3 || OIDLEN((*varp)->name) != LEN_NASIndex4) {
+			*errp = SNMP_ERR_NOSUCHNAME;
+			return -1;
+		}
+		ip = (closure->quad[0]<<24)+
+			(closure->quad[1]<<16)+
+			(closure->quad[2]<<8) +
+			closure->quad[3];
+
+		if ((nsp = find_nas_stat(ip)) == NULL) {
+			*errp = SNMP_ERR_NOSUCHNAME;
+			return -1;
+		}
+
+		closure->last_index = nsp->index;
+		
+		*errp = SNMP_ERR_NOERROR;
+		var = snmp_var_create((*varp)->name);
+		var->type = ASN_INTEGER;
+		var->val_length = sizeof(int);
+		var->var_int = nsp->index;
+
+		*varp = var;
+		break;
+		
+	case MIB_NODE_SET:
+	case MIB_NODE_SET_TRY:
+		/* None of these can be set */
+		if (errp)
+			*errp = SNMP_ERR_NOSUCHNAME;
+		return -1;
+		
+	case MIB_NODE_COMPARE:
+		closure->quad[num] = subid;
+		return 0;
+		
+	case MIB_NODE_NEXT:
+/*		if (num == 3)
+			closure->last_index++;*/
+		if ((nas = findnasbyindex(1+closure->last_index)) == NULL) {
+			return -1;
+		}
+		for (num = 0; num < 4; num++)
+			closure->quad[num] = (nas->ipaddr >>
+					      (8*(3-num))) & 0xff;
+		break;
+		
+	case MIB_NODE_GET_SUBID:
+		return closure->quad[num];
+		
+	case MIB_NODE_RESET:
+		if (num == 0) {
+			closure->last_index = 1;
+			if (nas = findnasbyindex(closure->last_index))
+				for (num = 0; num < 4; num++)
+					closure->quad[num] = (nas->ipaddr >>
+							      (8*(3-num))) & 0xff;
+		}
+		break;
+
+	}
+	
+	return 0;
+}
+
+int
+snmp_stat_nas1(cmd, closure, subid, varp, errp)
+	enum mib_node_cmd cmd;
+	void *closure;
+	subid_t subid;
+	struct snmp_var **varp;
+	int *errp;
+{
+	return snmp_stat_nas(0, cmd, closure, subid, varp, errp);
+}
+
+int
+snmp_stat_nas2(cmd, closure, subid, varp, errp)
+	enum mib_node_cmd cmd;
+	void *closure;
+	subid_t subid;
+	struct snmp_var **varp;
+	int *errp;
+{
+	return snmp_stat_nas(1, cmd, closure, subid, varp, errp);
+}
+
+int
+snmp_stat_nas3(cmd, closure, subid, varp, errp)
+	enum mib_node_cmd cmd;
+	void *closure;
+	subid_t subid;
+	struct snmp_var **varp;
+	int *errp;
+{
+	return snmp_stat_nas(2, cmd, closure, subid, varp, errp);
+}
+
+int
+snmp_stat_nas4(cmd, closure, subid, varp, errp)
+	enum mib_node_cmd cmd;
+	void *closure;
+	subid_t subid;
+	struct snmp_var **varp;
+	int *errp;
+{
+	return snmp_stat_nas(3, cmd, closure, subid, varp, errp);
 }
 
 #endif

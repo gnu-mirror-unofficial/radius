@@ -5,8 +5,3 @@ DEFAULT	Auth-Type = SQL,
 	Service-Type = Framed-User,
 		Framed-Protocol = PPP
 
-## Be very careful with this:
-ROOT	Auth-Type = System,
-		Huntgroup-Name = "ROOT"
-	Service-Type = RADIUS-Administrative-User
-

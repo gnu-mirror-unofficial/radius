@@ -63,7 +63,10 @@ D3 [0-9]{1,3}
 DQ {D3}\.{D3}\.{D3}\.{D3}
 
 %%
-#.*\n   { /* a comment */ return EOL; }	
+#.*\n   { /* a comment */
+	source_line_num++;
+	return EOL;
+}	
 #.*     /* end-of-file comment */;
 auth    return AUTH;
 acct    return ACCT;
@@ -94,6 +97,8 @@ exit    return EXIT;
 }
 \"[^\\"]*\\. {
 	BEGIN(STRING);
+	if (yytext[yyleng-1] == '\n')
+		source_line_num++;
         add_str(yytext+1, yyleng - 3);
         add_chr(backspace(yytext[yyleng-1]));
 }
@@ -112,6 +117,8 @@ exit    return EXIT;
 	add_num(1, 16, yytext, yyleng);
 }
 <STRING>[^\\"]*\\. {
+	if (yytext[yyleng-1] == '\n')
+		source_line_num++;
 	add_str(yytext, yyleng - 2);
 	add_chr(backspace(yytext[yyleng-1]));
 }
@@ -130,7 +137,8 @@ exit    return EXIT;
 	return NUMBER;
 }
 {WS}    ;
-\n      return EOL;
+\\\n    source_line_num++;
+\n      { source_line_num++; return EOL; }
 ;       return EOL;
 "="     return EQ;
 "!="    return NE;
@@ -193,7 +201,6 @@ char prompt_str[] = "radtest> ";
 void
 prompt()
 {
-	source_line_num++;
 	if (interactive) 
 		printf("%s", prompt_str);
 }

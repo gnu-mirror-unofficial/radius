@@ -298,4 +298,7 @@ char           *mkfilename3(char *dir, char *subdir, char *name);
 int             backslash(int c);
 void string_copy(char *d, char *s, int  len);
 #define STRING_COPY(s,d) string_copy(s,d,sizeof(s)-1)
+char *format_pair(VALUE_PAIR *pair);
+char *format_ipaddr(UINT4 ipaddr);
+void debug_pair(char *prefix, VALUE_PAIR *pair);
 

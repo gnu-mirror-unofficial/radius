@@ -1,3 +1,14 @@
+2004-09-17  Sergey Poznyakoff
+
+	* radiusd/sql.c (rad_sql_retrieve_sessions): Fill in .orig_login
+	* radiusd/checkrad.c (create_instance): Fall back to .login if
+	.orig_login is empty
+	* radiusd/exec.c (radius_exec_command): Close all descriptors
+	except stderr.
+	* radiusd/rpp.c (rpp_start_process): Redirect stdout to stderr
+	* sql/postgres.c: Test PQstatus before disconnecting on
+	PGRES_FATAL_ERROR.
+	
 2004-09-16  Sergey Poznyakoff
 
 	* radiusd/auth.c: Removed stray #define

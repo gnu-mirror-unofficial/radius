@@ -1,3 +1,15 @@
+2003-10-28  Sergey Poznyakoff 
+
+	* include/radius.h (struct realm): striprealm,maxlogins removed.
+	args: New member.
+	(realm_strip_p,realm_get_quota): New functions.
+	* lib/realms.c (read_realms_entry): Initialize realm->args
+	(realm_strip_p,realm_get_quota): New functions.
+	* radiusd/acct.c (rad_check_realm): Use new realm functions.
+	* radiusd/proxy.c (proxy_send_request): Modified to handle
+	"retransmit" realms. This fixes a memory leak, by the way.
+	* radiusd/testsuite/raddb/config.in: Do not load "rewrite".
+	
 2003-10-26  Sergey Poznyakoff  
 
 	* radiusd/acct.c (check_ts): Return -1 if the NAS type

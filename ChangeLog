@@ -1,3 +1,19 @@
+2001-10-28 Sergey Poznyakoff
+
+	* doc/texinfo/Makefile.am: Rule for generating postscript
+	output.
+	* doc/texinfo/configure.texi: Updated.
+	* doc/texinfo/acct.texi: Likewise.
+	* doc/texinfo/attributes.texi: Likewise.
+	* doc/texinfo/auth.texi: Likewise.
+	* doc/texinfo/configure.texi: Likewise.
+	* doc/texinfo/invoke.texi: Likewise.
+	* doc/texinfo/operation.texi: Likewise.
+	* doc/texinfo/radctl.texi: Likewise.
+	* doc/texinfo/radius.texi: Likewise.
+
+	* TODO: Updated.
+
 2001-10-26 Sergey Poznyakoff
 
 	* radlib/util.c: New function format_string_visual(): format a

@@ -65,7 +65,8 @@ Auth-Type = Reject
 
 @subheading Usage
 The @code{Reject} authentication type causes the request to be rejected
-unconditionally. It can be used to disable a user account @ref{access.deny}.
+unconditionally. It can be used to disable a user account. For another
+method of disabling user accounts, see @ref{access.deny file}.
 
 @comment *L2****************************************************************
 @node Local Password Auth, Encrypted Password Auth, Reject Auth, Authentication
@@ -150,7 +151,7 @@ It will then compute the MD5 hash over the supplied password and
 compare it with the string returned by the query. If both strings
 coincide, the user will be authenticated.
 
-@xref{sqlserver}.
+@xref{sqlserver file}.
 @xref{Queries,,Writing SQL query templates}.
 
 @comment *L2****************************************************************
@@ -214,10 +215,10 @@ active and increases the session count, otherwise it proceeds as
 if the NAS returned negative reply.
 
 To query a NAS, Radius first looks up its type and additional parameters
-in @file{naslist} file @ref{naslist}. If the NAS type is @samp{true},
+in @file{naslist} file (@pxref{naslist file}). If the NAS type is @samp{true},
 Radius acts as if the NAS returned 1, if the type is @samp{false}, it
 acts as if the NAS returned 0, otherwise it looks up the entry
-in the @file{nastypes} which has matching type @ref{nastypes}.
+in the @file{nastypes} which has matching type (@pxref{nastypes file}).
 If such entry does not exist, Radius issues the error message and
 acts accordingly to the value of configuration variable
 @code{checkrad-assume-logged}.

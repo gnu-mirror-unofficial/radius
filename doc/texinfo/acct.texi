@@ -40,9 +40,10 @@ users' sessions.
 
 This accounting method is always enabled.
 
-Radius stores the detailed information about accounting packets received
-in files @file{radacct/@var{nasname}/detail} @ref{Naming conventions}, where
-@var{nasname} means short nas name from the @file{raddb/naslist} file @ref{naslist}.
+Radius stores the detailed information about accounting packets it receives
+in files @file{radacct/@var{nasname}/detail} (@pxref{Naming conventions}), 
+where @var{nasname} means short nas name from the @file{raddb/naslist} file
+(@pxref{naslist file}).
 
 The information stored there includes the timestamp and detailed
 dump of attributes from each packet, e.g.:
@@ -88,7 +89,7 @@ Fri Dec 15 18:32:09 2000
 
 The SQL accounting method is enabled when Radius is configured with
 @code{--enable-sql} option and @file{sqlserver} file in its
-configuration directory is properly set up @ref{sqlserver}.
+configuration directory is properly set up (@pxref{sqlserver file}).
 
 This version of GNU Radius (@value{VERSION}) supports MySQL and
 PostgreSQL servers. Support for Oracle servers will be added in the
@@ -98,4 +99,4 @@ With this accounting method enabled, @code{radiusd} will store the
 information about accounting requests in the configured SQL database.
 The accounting method is fully configurable: the Radius administrator
 defines both the types of requests to be accounted and the information
-to be stored into the database. @ref{sqlserver}.
+to be stored into the database. (@pxref{sqlserver file}).

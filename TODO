@@ -7,7 +7,6 @@ URGNT: Add \ line continuation to read_raddb_files.
 -100 : Add documentation for NOREALM.
 -100 : Add documentation and default configs for attr_query!
 -100 : Add documentation for default attribute values in % substitutions.
--100 : query_buffer_size is obsoleted. Update docs accordingly.
 -3   : Enable use of port number in rewrite:check_unix()
 0    : Multiple servers per realm? (Rasmus Aveskogh <rasmus.aveskogh@utfors.se>)
 5    : Write radctl substitute which would use SNMP.

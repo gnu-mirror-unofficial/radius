@@ -77,7 +77,7 @@ Radius Internal Attributes
 @comment **************************************************************
 @node User-Name, Password , , Attribute list
 @unnumberedsec User-Name
-@vindex User-Name
+@atindex User-Name
 
 @example
 ATTRIBUTE  User-Name         1                    string  
@@ -95,13 +95,13 @@ Some NASes have peculiarities about sending long usernames. For example,
 Specialix Jetstream 8500 24 port access server inserts a @samp{/}
 character after the 10th character if the username is longer than
 10 characters. In such cases, we recommend to apply rewrite functions
-in order to bring username to its ``normal'' form @ref{rewrite}.
+in order to bring username to its ``normal'' form (@pxref{rewrite file}).
 
 
 @comment **************************************************************
 @node Password , CHAP-Password , User-Name, Attribute list
 @unnumberedsec Password
-@vindex Password
+@atindex Password
 
 @example
 ATTRIBUTE  Password          2                    string  
@@ -134,7 +134,7 @@ characters.
 @comment **************************************************************
 @node CHAP-Password , NAS-IP-Address , Password, Attribute list
 @unnumberedsec CHAP-Password
-@vindex CHAP-Password
+@atindex CHAP-Password
 
 @example
 ATTRIBUTE  CHAP-Password     3                    string  
@@ -152,7 +152,7 @@ Authenticator field.
 @comment **************************************************************
 @node NAS-IP-Address , NAS-Port-Id , CHAP-Password, Attribute list
 @unnumberedsec NAS-IP-Address
-@vindex NAS-IP-Address
+@atindex NAS-IP-Address
 
 @example
 ATTRIBUTE  NAS-IP-Address    4                    ipaddr  
@@ -167,7 +167,7 @@ either @code{NAS-IP-Address} or @code{NAS-Identifier} attribute
 @comment **************************************************************
 @node NAS-Port-Id , Service-Type , NAS-IP-Address, Attribute list
 @unnumberedsec NAS-Port-Id
-@vindex NAS-Port-Id
+@atindex NAS-Port-Id
 
 @example
 ATTRIBUTE  NAS-Port-Id       5                    integer 
@@ -184,14 +184,14 @@ attribute value. For example MAX Ascend terminal server constructs
 @code{NAS-Port-Id} concatenating line type (one-digit), line number
 (two-digits), and the channel number (two-digits) thus producing
 a 5-digit port number. In order to ``normalize'' such encoded
-port numbers we recommend to use a rewrite function @ref{rewrite}.
+port numbers we recommend to use a rewrite function (@pxref{rewrite file}).
 A rewrite function for MAX Ascend servers is provided in the
 distribution.
 
 @comment **************************************************************
 @node Service-Type , Framed-Protocol , NAS-Port-Id, Attribute list
 @unnumberedsec Service-Type
-@vindex Service-Type
+@atindex Service-Type
 
 @example
 ATTRIBUTE  Service-Type      6                    integer 
@@ -265,7 +265,7 @@ FIXME
 @comment **************************************************************
 @node Framed-Protocol , Framed-IP-Address , Service-Type, Attribute list
 @unnumberedsec Framed-Protocol
-@vindex Framed-Protocol
+@atindex Framed-Protocol
 
 @example
 ATTRIBUTE  Framed-Protocol   7                    integer 
@@ -280,7 +280,7 @@ It may be used in both Access-Request and Access-Accept packets.
 @comment **************************************************************
 @node Framed-IP-Address , Framed-IP-Netmask , Framed-Protocol, Attribute list
 @unnumberedsec Framed-IP-Address
-@vindex Framed-IP-Address
+@atindex Framed-IP-Address
 
 @example
 ATTRIBUTE  Framed-IP-Address  8                    ipaddr  
@@ -312,7 +312,7 @@ Also @ref{Add-Port-To-IP-Address}.
 @comment **************************************************************
 @node Framed-IP-Netmask , Framed-Routing , Framed-IP-Address, Attribute list
 @unnumberedsec Framed-IP-Netmask
-@vindex Framed-IP-Netmask
+@atindex Framed-IP-Netmask
 
 @example
 ATTRIBUTE  Framed-IP-Netmask  9                    ipaddr  
@@ -328,7 +328,7 @@ netmask, but the server is not required to honor the hint.
 @comment **************************************************************
 @node Framed-Routing , Framed-MTU , Framed-IP-Netmask, Attribute list
 @unnumberedsec Framed-Routing
-@vindex Framed-Routing
+@atindex Framed-Routing
 
 @example
 ATTRIBUTE  Framed-Routing    10                   integer 
@@ -346,7 +346,7 @@ packets.
 @comment **************************************************************
 @node Framed-MTU , Framed-Compression , Framed-Routing, Attribute list
 @unnumberedsec Framed-MTU
-@vindex Framed-MTU
+@atindex Framed-MTU
 
 @example
 ATTRIBUTE  Framed-MTU        12                   integer 
@@ -359,7 +359,7 @@ means (such as PPP).  It is only used in Access-Accept packets.
 @comment **************************************************************
 @node Framed-Compression , Reply-Message , Framed-MTU, Attribute list
 @unnumberedsec Framed-Compression
-@vindex Framed-Compression
+@atindex Framed-Compression
 
 @example
 ATTRIBUTE  Framed-Compression  13                   integer 
@@ -380,7 +380,7 @@ protocol to appropriate link traffic.
 @comment **************************************************************
 @node Reply-Message , Callback-Number , Framed-Compression, Attribute list
 @unnumberedsec Reply-Message
-@vindex Reply-Message
+@atindex Reply-Message
 
 @example
 ATTRIBUTE  Reply-Message     18                   string  
@@ -404,7 +404,7 @@ packet.
 @comment **************************************************************
 @node Callback-Number , Callback-Id , Reply-Message, Attribute list
 @unnumberedsec Callback-Number
-@vindex Callback-Number
+@atindex Callback-Number
 
 @example
 ATTRIBUTE  Callback-Number   19                   string  
@@ -419,7 +419,7 @@ hint.
 @comment **************************************************************
 @node Callback-Id , Framed-Route , Callback-Number, Attribute list
 @unnumberedsec Callback-Id
-@vindex Callback-Id
+@atindex Callback-Id
 
 @example
 ATTRIBUTE  Callback-Id       20                   string  
@@ -431,7 +431,7 @@ interpreted by the NAS.  It may be used in Access-Accept packets.
 @comment **************************************************************
 @node Framed-Route , State , Callback-Id, Attribute list
 @unnumberedsec Framed-Route
-@vindex Framed-Route
+@atindex Framed-Route
 
 @example
 ATTRIBUTE  Framed-Route      22                   string  
@@ -444,7 +444,7 @@ can appear multiple times.
 @comment **************************************************************
 @node State , Class , Framed-Route, Attribute list
 @unnumberedsec State
-@vindex State
+@atindex State
 
 @example
 ATTRIBUTE  State             24                   string  
@@ -468,7 +468,7 @@ A packet may have only one @code{State} Attribute.
 @comment **************************************************************
 @node Class , Vendor-Specific , State, Attribute list
 @unnumberedsec Class
-@vindex Class
+@atindex Class
 
 @example
 ATTRIBUTE  Class             25                   string  
@@ -482,7 +482,7 @@ accounting is supported.
 @comment **************************************************************
 @node Vendor-Specific , Session-Timeout , Class, Attribute list
 @unnumberedsec Vendor-Specific
-@vindex Vendor-Specific
+@atindex Vendor-Specific
 
 @example
 ATTRIBUTE  Vendor-Specific   26                   string  
@@ -495,7 +495,7 @@ FIXME
 @comment **************************************************************
 @node Session-Timeout , Idle-Timeout , Vendor-Specific, Attribute list
 @unnumberedsec Session-Timeout
-@vindex Session-Timeout
+@atindex Session-Timeout
 
 @example
 ATTRIBUTE  Session-Timeout   27                   integer 
@@ -509,7 +509,7 @@ or Access-Challenge.
 @comment **************************************************************
 @node Idle-Timeout , Termination-Action , Session-Timeout, Attribute list
 @unnumberedsec Idle-Timeout
-@vindex Idle-Timeout
+@atindex Idle-Timeout
 
 @example
 ATTRIBUTE  Idle-Timeout      28                   integer 
@@ -523,7 +523,7 @@ in an Access-Accept or Access-Challenge.
 @comment **************************************************************
 @node Termination-Action , Called-Station-Id , Idle-Timeout, Attribute list
 @unnumberedsec Termination-Action
-@vindex Termination-Action
+@atindex Termination-Action
 
 @example
 ATTRIBUTE  Termination-Action  29                   integer 
@@ -538,7 +538,7 @@ packets.
 @comment **************************************************************
 @node Called-Station-Id , Calling-Station-Id , Termination-Action, Attribute list
 @unnumberedsec Called-Station-Id
-@vindex Called-Station-Id
+@atindex Called-Station-Id
 
 @example
 ATTRIBUTE  Called-Station-Id  30                   string  
@@ -553,7 +553,7 @@ used in Access-Request packets.
 @comment **************************************************************
 @node Calling-Station-Id , NAS-Identifier , Called-Station-Id, Attribute list
 @unnumberedsec Calling-Station-Id
-@vindex Calling-Station-Id
+@atindex Calling-Station-Id
 
 @example
 ATTRIBUTE  Calling-Station-Id  31                   string  
@@ -567,7 +567,7 @@ Access-Request packets.
 @comment **************************************************************
 @node NAS-Identifier , NAS-Port-Type , Calling-Station-Id, Attribute list
 @unnumberedsec NAS-Identifier
-@vindex NAS-Identifier
+@atindex NAS-Identifier
 
 @example
 ATTRIBUTE  NAS-Identifier    32                   string  
@@ -583,7 +583,7 @@ Access-Request packet.
 @comment **************************************************************
 @node NAS-Port-Type , Acct-Status-Type, NAS-Identifier, Attribute list
 @unnumberedsec NAS-Port-Type
-@vindex NAS-Port-Type
+@atindex NAS-Port-Type
 
 @example
 ATTRIBUTE  NAS-Port-Type     61                   integer 
@@ -604,7 +604,7 @@ differentiates among its ports.
 @comment **************************************************************
 @node Acct-Status-Type, Acct-Delay-Time, NAS-Port-Type, Attribute list
 @unnumberedsec Acct-Status-Type
-@vindex Acct-Status-Type
+@atindex Acct-Status-Type
 
 @example
 ATTRIBUTE       Acct-Status-Type        40      integer
@@ -630,7 +630,7 @@ last Alive record.
 @comment **************************************************************
 @node Acct-Delay-Time, Acct-Input-Octets, Acct-Status-Type, Attribute list
 @unnumberedsec Acct-Delay-Time
-@vindex Acct-Delay-Time
+@atindex Acct-Delay-Time
 
 @example
 ATTRIBUTE       Acct-Delay-Time         41      integer
@@ -645,7 +645,7 @@ is ignored.)
 @comment **************************************************************
 @node Acct-Input-Octets, Acct-Output-Octets, Acct-Delay-Time, Attribute list
 @unnumberedsec Acct-Input-Octets
-@vindex Acct-Input-Octets
+@atindex Acct-Input-Octets
 
 @example
 ATTRIBUTE       Acct-Input-Octets       42      integer
@@ -659,7 +659,7 @@ Acct-Status-Type is set to Stop.
 @comment **************************************************************
 @node Acct-Output-Octets, Acct-Session-Id, Acct-Input-Octets, Attribute list
 @unnumberedsec Acct-Output-Octets
-@vindex Acct-Output-Octets
+@atindex Acct-Output-Octets
 
 @example
 ATTRIBUTE       Acct-Output-Octets      43      integer
@@ -673,7 +673,7 @@ is set to Stop.
 @comment **************************************************************
 @node Acct-Session-Id, Acct-Authentic, Acct-Output-Octets, Attribute list
 @unnumberedsec Acct-Session-Id
-@vindex Acct-Session-Id
+@atindex Acct-Session-Id
 
 @example
 ATTRIBUTE       Acct-Session-Id         44      string
@@ -690,7 +690,7 @@ packets for that session.
 @comment **************************************************************
 @node Acct-Authentic, Acct-Session-Time, Acct-Session-Id, Attribute list
 @unnumberedsec Acct-Authentic
-@vindex Acct-Authentic
+@atindex Acct-Authentic
 
 @example
 ATTRIBUTE       Acct-Authentic          45              integer
@@ -708,7 +708,7 @@ generate Accounting records.
 @comment **************************************************************
 @node Acct-Session-Time, Acct-Input-Packets, Acct-Authentic, Attribute list
 @unnumberedsec Acct-Session-Time
-@vindex Acct-Session-Time
+@atindex Acct-Session-Time
 
 @example
 ATTRIBUTE       Acct-Session-Time       46      integer
@@ -721,7 +721,7 @@ where the Acct-Status-Type is set to Stop.
 @comment **************************************************************
 @node Acct-Input-Packets, Acct-Output-Packets, Acct-Session-Time, Attribute list
 @unnumberedsec Acct-Input-Packets
-@vindex Acct-Input-Packets
+@atindex Acct-Input-Packets
 
 @example
 ATTRIBUTE       Acct-Input-Packets      47      integer
@@ -735,7 +735,7 @@ where the Acct-Status-Type is set to Stop.
 @comment **************************************************************
 @node Acct-Output-Packets, Acct-Terminate-Cause, Acct-Input-Packets, Attribute list
 @unnumberedsec Acct-Output-Packets
-@vindex Acct-Output-Packets
+@atindex Acct-Output-Packets
 
 @example
 ATTRIBUTE       Acct-Output-Packets     48      integer
@@ -749,7 +749,7 @@ Acct-Status-Type is set to Stop.
 @comment **************************************************************
 @node Acct-Terminate-Cause, Auth-Type, Acct-Output-Packets, Attribute list
 @unnumberedsec Acct-Terminate-Cause
-@vindex Acct-Terminate-Cause
+@atindex Acct-Terminate-Cause
 
 @example
 ATTRIBUTE       Acct-Terminate-Cause    49      integer
@@ -781,7 +781,7 @@ Status-Type is set to Stop.
 @comment **************************************************************
 @node Auth-Type, Menu, Acct-Terminate-Cause, Attribute list
 @unnumberedsec Auth-Type
-@vindex Auth-Type
+@atindex Auth-Type
 
 @example
 ATTRIBUTE  Auth-Type         1000                 integer 
@@ -837,7 +837,7 @@ The username/password combination is checked using PAM.
 @comment **************************************************************
 @node Menu, Termination-Menu, Auth-Type, Attribute list
 @unnumberedsec Menu
-@vindex Menu
+@atindex Menu
 
 @example
 ATTRIBUTE  Menu              1001                 string  
@@ -848,13 +848,13 @@ be the only reply item.
 
 The @code{Menu} attribute specifies the name of the menu to be presented
 to the user. The corresponding menu code is looked up in
-@file{RADIUS_DIR/menus/} directory. @ref{menus}.
+@file{RADIUS_DIR/menus/} directory (@pxref{menus file}).
 
 
 @comment **************************************************************
 @node Termination-Menu, Prefix, Menu, Attribute list
 @unnumberedsec Termination-Menu
-@vindex Termination-Menu
+@atindex Termination-Menu
 
 @example
 ATTRIBUTE  Termination-Menu  1002                 string  
@@ -865,13 +865,13 @@ be the only reply item.
 
 The @code{Termination-Menu} specifies the name of the menu file to be
 presented to the user after finishing his session. The corresponding
-menu code is looked up in
-@file{RADIUS_DIR/menus/} directory. @ref{menus}.
+menu code is looked up in @file{RADIUS_DIR/menus/} directory
+(@pxref{menus file}).
 
 @comment **************************************************************
 @node Prefix, Suffix, Termination-Menu, Attribute list
 @unnumberedsec Prefix
-@vindex Prefix
+@atindex Prefix
 
 @example
 ATTRIBUTE  Prefix            1003                 string  
@@ -903,7 +903,7 @@ contains both prefix and suffix specified.
 @comment **************************************************************
 @node Suffix, Group, Prefix, Attribute list
 @unnumberedsec Suffix
-@vindex Suffix
+@atindex Suffix
 
 @example
 ATTRIBUTE  Suffix            1004                 string  
@@ -936,7 +936,7 @@ contains both prefix and suffix specified.
 @comment **************************************************************
 @node Group, Crypt-Password, Suffix, Attribute list
 @unnumberedsec Group
-@vindex Group
+@atindex Group
 
 @example
 ATTRIBUTE  Group             1005                 string  
@@ -945,7 +945,7 @@ ATTRIBUTE  Group             1005                 string
 @comment **************************************************************
 @node Crypt-Password, Huntgroup-Name, Group, Attribute list
 @unnumberedsec Crypt-Password
-@vindex Crypt-Password
+@atindex Crypt-Password
 
 @example
 ATTRIBUTE  Crypt-Password    1006                 string  
@@ -962,7 +962,7 @@ ignored.
 @comment **************************************************************
 @node Huntgroup-Name, Simultaneous-Use, Crypt-Password, Attribute list
 @unnumberedsec Huntgroup-Name
-@vindex Huntgroup-Name
+@atindex Huntgroup-Name
 
 @example
 ATTRIBUTE  Huntgroup-Name    221                  string  
@@ -1012,12 +1012,12 @@ users_group     NAS-IP-Address = 10.11.11.1
 Then the authentication request would succeed since it contains
 @code{NAS-Port-Id} attribute and its value is less than 32.
 
-@xref{huntgroups}.
+@xref{huntgroups file}.
 
 @comment **************************************************************
 @node Simultaneous-Use, Strip-User-Name, Huntgroup-Name, Attribute list
 @unnumberedsec Simultaneous-Use
-@vindex Simultaneous-Use
+@atindex Simultaneous-Use
 
 @example
 ATTRIBUTE  Simultaneous-Use  1034                 integer 
@@ -1032,7 +1032,7 @@ number of times any surplus attempts to log in are rejected.
 @comment **************************************************************
 @node Strip-User-Name, Fall-Through, Simultaneous-Use, Attribute list
 @unnumberedsec Strip-User-Name
-@vindex Strip-User-Name
+@atindex Strip-User-Name
 
 @example
 ATTRIBUTE  Strip-User-Name   1035                 integer 
@@ -1078,7 +1078,7 @@ under his real username @samp{johns}.
 @comment **************************************************************
 @node Fall-Through, Add-Port-To-IP-Address, Strip-User-Name, Attribute list
 @unnumberedsec Fall-Through
-@vindex Fall-Through
+@atindex Fall-Through
 
 @example
 ATTRIBUTE  Fall-Through      1036                 integer 
@@ -1140,7 +1140,7 @@ is never returned to the NAS.
 @comment **************************************************************
 @node Add-Port-To-IP-Address, Exec-Program, Fall-Through, Attribute list
 @unnumberedsec Add-Port-To-IP-Address
-@vindex Add-Port-To-IP-Address
+@atindex Add-Port-To-IP-Address
 
 @example
 ATTRIBUTE  Add-Port-To-IP-Address  1037                 integer 
@@ -1175,7 +1175,7 @@ is equivalent to
 @comment **************************************************************
 @node Exec-Program, Exec-Program-Wait, Add-Port-To-IP-Address, Attribute list
 @unnumberedsec Exec-Program
-@vindex Exec-Program
+@atindex Exec-Program
 
 @example
 ATTRIBUTE  Exec-Program      1038                 string  
@@ -1216,7 +1216,7 @@ attributes from the request check pairs.
 @comment **************************************************************
 @node Exec-Program-Wait, Hint, Exec-Program, Attribute list
 @unnumberedsec Exec-Program-Wait
-@vindex Exec-Program-Wait
+@atindex Exec-Program-Wait
 
 @example
 ATTRIBUTE  Exec-Program-Wait  1039                 string  
@@ -1249,7 +1249,9 @@ Suppose the @file{users} file contains the following entry:
 @example
 DEFAULT Auth-Type = System,
                 Simultaneous-Use = 1
-        Exec-Program-Wait = "/usr/local/sbin/telauth %C@{User-Name@} %C@{Calling-Station-Id@}"
+        Exec-Program-Wait = "/usr/local/sbin/telauth \
+                             %C@{User-Name@} \
+                             %C@{Calling-Station-Id@}"
 @end example
 
 @noindent
@@ -1284,14 +1286,14 @@ authorized to use login service.
 @comment **************************************************************
 @node Hint, Pam-Auth, Exec-Program-Wait, Attribute list
 @unnumberedsec Hint
-@vindex Hint
+@atindex Hint
 
 @example
 ATTRIBUTE  Hint              1040                 string  
 @end example
 
 Use @code{Hint} attribute to specify additional matching criterium
-depending on the hint @ref{hints,,The hints file}.
+depending on the hint (@pxref{hints file}).
 
 Let the @file{hints} contain:
 
@@ -1319,7 +1321,7 @@ starts with @samp{S}.
 @comment **************************************************************
 @node Pam-Auth, Login-Time, Hint, Attribute list
 @unnumberedsec Pam-Auth
-@vindex Pam-Auth
+@atindex Pam-Auth
 
 @example
 ATTRIBUTE  Pam-Auth          1041                 string  
@@ -1338,7 +1340,7 @@ It is ignored if @code{Auth-Type} attribute is not set to @code{Pam}.
 @comment **************************************************************
 @node Login-Time, Replace-User-Name, Pam-Auth, Attribute list
 @unnumberedsec Login-Time
-@vindex Login-Time
+@atindex Login-Time
 
 @example
 ATTRIBUTE  Login-Time        1042                 string  
@@ -1397,7 +1399,7 @@ any day.
 @comment **************************************************************
 @node Replace-User-Name, Rewrite-Function, Login-Time, Attribute list
 @unnumberedsec Replace-User-Name
-@vindex Replace-User-Name
+@atindex Replace-User-Name
 
 @example
 ATTRIBUTE  Replace-User-Name  2001                 string  
@@ -1430,7 +1432,7 @@ The string consisting of @samp{#} character followed by
 @comment **************************************************************
 @node Rewrite-Function, Match-Profile, Replace-User-Name, Attribute list
 @unnumberedsec Rewrite-Function
-@vindex Rewrite-Function
+@atindex Rewrite-Function
 
 @example
 ATTRIBUTE  Rewrite-Function  2004                 string  
@@ -1450,14 +1452,14 @@ integer @var{name}()
 @noindent
 i.e. it should return integer value and should not take any arguments.
 
-@xref{rewrite,, Packet rewriting rules}.
-@xref{hints}
-@xref{huntgroups}
+@xref{rewrite file,, Packet rewriting rules}.
+@xref{hints file}.
+@xref{huntgroups file}.
 
 @comment **************************************************************
 @node Match-Profile, , Rewrite-Function, Attribute list
 @unnumberedsec Match-Profile
-@vindex Match-Profile
+@atindex Match-Profile
 
 @example
 ATTRIBUTE  Match-Profile     2004                 string

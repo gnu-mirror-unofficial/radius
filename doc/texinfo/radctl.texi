@@ -117,7 +117,7 @@ The port number to listen to incoming control requests is set in
 @item Create administrative huntgroup.
 Since @code{radctl} interface provides some potentially dangerous
 commands, we recommend to restrict its usage to some trusted
-hosts. This can be done using huntgroups mechanism @ref{huntgroups}.
+hosts. This can be done using huntgroups mechanism (@pxref{huntgroups file}).
 The administrative huntgroup definition should include the
 trusted host IP address and name of a command which is allowed from
 this host. The command name must be listed in @code{State} attribute.

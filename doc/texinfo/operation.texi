@@ -53,14 +53,13 @@ server}.
 
 @menu
 * Attributes::                  Attributes.
-* User Profile::                How the user information is stored.
 * Requests::                    Radius requests.
-* Processing requests::         How Radius processes incoming requests.
-* Realms::                      Co-operation between multiple Radiuses.
+* User Profile::                How the user information is stored.
+* Request processing::          How Radius processes incoming requests.
 @end menu
 
 @comment *L2****************************************************************
-@node Attributes, User Profile, Operation, Operation
+@node Attributes, Requests, Operation, Operation
 @section Attributes
 @cindex Attribute
 @cindex Attribute-Value pair
@@ -86,7 +85,7 @@ A character string up to 253 characters long.
 
 For convenience, the attributes and the values of some frequently used
 integer attributes are given symbolic names. These names are assigned to
-attributes and values in the dictionary file @ref{dictionary,,dictionary file}.
+attributes and values in the dictionary file @ref{dictionary file}.
 
 The attribute numbers range from 1 to 255. The attributes with the numbers
 greater than 255 are used internally by the sever and cannot be sent to
@@ -96,62 +95,10 @@ The special attribute 26, @dfn{Vendor-Specific}, is available to allow
 vendors of the NAS hardware or software to support their own extended
 attributes. @ref{Vendor-Specific,, Vendor-Specific attribute}.
 
-@ref{Attribute list}.
+@xref{Attribute list}.
 
 @comment *L2****************************************************************
-@node User Profile, Requests, Attributes, Operation
-@section User Profile
-
-A record in the radius database containing all the authentication and
-authorization data for a given user is called a @dfn{User Profile}.
-The profile consists of three distinct parts:
-
-@table @asis
-@item User Name
-This is used as a primary look-up key. Two special user names are
-reserved: DEFAULT and BEGIN. These will be described in detail
-below.
-
-@item Check List
-The list of attribute-value pairs used for authentication.
-
-@item Reply List
-The list of attribute-value pairs that will be sent in the response
-packet to the NAS.
-@end table
-
-Upon receiving an authentication request, radius uses the following rules:
-
-@table @asis
-@item 1. Retrieve the user's profile.
-Radiusd looks up a @code{User-Name} attribute in the incoming
-packet. The value of this attribute is used as a look-up key for finding
-user's profile. 
-@item 2. Verify user's password
-The incoming request must contain @code{Password} or
-@code{CHAP-Password} attribute. The value of @code{Auth-Type} checklist
-attribute is used to choose the method of verifying this password (See
-@xref{Authentication}.) If password check fails, the request
-gets negative response.
-@item 3. Compare request pairlist and checklist of the retrieved profile.
-The list of attribute-value pairs from the request is compared against
-the checklist of the user's profile. If the lists do not match, then control
-passes to rule 1. The rules of comparison are described below.
-@item 4. Append A/V pairs from the reply list to the response packet.
-Before appending, the pairs are evaluated. If the reply list contains
-attribute @code{Fall-Through} and its value is @code{Yes}, then control
-is passed to rule 1 again. Otherwise the authentication stops.
-@end table
-
-The authentication is successful if the request satisfied at least one
-of profiles retrieved in step 1.
-
-Radius keeps users' profile database in file @file{raddb/users} (@pxref{users}).
-
-[FIXME: Some more explanations needed]
-
-@comment *L2****************************************************************
-@node Requests, Processing requests, User Profile, Operation
+@node Requests, User Profile, Attributes, Operation
 @section Radius requests
 @cindex Request
 
@@ -292,19 +239,44 @@ port or the NAS does not distinguish among its ports.
 If the Accounting-Request packet includes a Framed-IP-Address,
 that attribute MUST contain the actual IP address of the user.
 
+@comment *L2****************************************************************
+@node User Profile, Request processing, Requests, Operation
+@section User Profile
+
+A record in the radius database containing all the authentication and
+authorization data for a given user is called a @dfn{User Profile}.
+The profile consists of three distinct parts:
+
+@table @asis
+@item User Name
+This is used as a primary look-up key. Two special user names are
+reserved: DEFAULT and BEGIN. These will be described in detail
+below.
+
+@item Check List
+The list of attribute-value pairs used for matching the profile against
+an incoming request.
+
+@item Reply List
+The list of attribute-value pairs that are used if the profile matches
+an incoming request.
+@end table
+
+The following radius configuration files keep data in a User Profile
+format: @file{hints}, @file{huntgroups} and @file{users}. Although
+they keep data in similar format, the rules that are used to match
+incoming requests against contents of these files differ from file
+to file. The following section describes these rules in detail.
 
 @comment *L2****************************************************************
-@node Processing requests, Realms, Requests, Operation
+@node Request processing, , User Profile, Operation
 @section Processing requests
-
-@chapter Processing requests
-@cindex Request processing
 @cindex Processing requests
 
-Upon receiving the request Radius applies to it a number of checks to
-determine whether the request comes from the authorized source. If these
+Upon receiving request Radius applies to it a number of checks to
+determine whether the request comes from an authorized source. If these
 checks succeed, the request is processed and answered. Otherwise, the
-request is dropped and corresponding error message is issued @ref{Logging}.
+request is dropped and corresponding error message is issued (@pxref{Logging}).
 
 The following checks are performed:
 
@@ -313,8 +285,8 @@ The following checks are performed:
 If the packet lacks @code{User-Name} attribute it is not processed
 @item Check if the NAS is allowed to speak
 The source IP address of the machine that sent the packet is looked
-up in the @file{clients} file @ref{clients}. If no match is found,
-the request is not processed. 
+up in the @file{clients} file (@pxref{clients file}). If no match is found,
+the request is rejected. 
 @item Compute the encryption key
 Using the data from the packet and the shared key value from the @file{clients}
 file, Radius computes the MD5 encryption key that will be used to decrypt
@@ -326,16 +298,25 @@ the value of the @code{Password} attribute.
 depending on user name and his credentials. These rules allow to divide
 users into distinct groups, each group having its own authentication
 and/or accounting methods. The user-name hints are stored in
-@file{raddb/hints} (@pxref{hints}).
+@file{raddb/hints} (@pxref{hints file}).
 @item Process huntgroup rules.
 @dfn{Huntgroup rules} allow to segregate incoming requests depending
 on the NAS and/or port number they came from. These rules are stored in
-@file{raddb/huntgroups} (@pxref{huntgroups}).
+@file{raddb/huntgroups} (@pxref{huntgroups file}).
+@item Process individual user profiles.
+This step applies only to authentication requests.
 @end table
 
-@comment *L2****************************************************************
-@node Realms, , Processing requests, Operation
-@section Realms
+@menu
+* Realms::      
+* Hints::
+* Huntgroups::
+* Users::
+@end menu
+
+@comment **L3***************************************************************
+@node Realms, Hints, , Request processing
+@subsection Realms
 @cindex Realms
 
 We call a @dfn{realm} a community of users served by a single Radius
@@ -361,3 +342,62 @@ simply passes the response back to NAS. In other words @dfn{radius.a}
 server acts as a proxy between the NAS to which the user is trying
 to connect and the Radius server which is responsible for authenticating
 the user.
+
+@comment **L3***************************************************************
+@node Hints, Huntgroups, Realms, Request processing
+@subsection Hints
+@cindex Hints
+
+@dfn{User-name hints} are special rules that modify the incoming request
+depending on user name and his credentials. Hints are stored as a list
+of @dfn{User profiles} (@pxref{User Profile}). Upon receiving a request,
+@code{radiusd} scans the hints entries sequentially, comparing the
+hint's @dfn{User Name} with the value of @code{User-Name} attribute from
+the request. If they coincide, then @code{radiusd} appends the contents
+of the hint's reply pairs to the request pair-list.
+
+Both user names must match exactly in order for a hint to
+take effect, unless the hint's checklist contains either @code{Prefix} or
+@code{Suffix} attribute. The special name @samp{DEFAULT} or
+@samp{DEFAULT%d} (where %d denotes any decimal number), used as hint's
+@dfn{User Name} matches any username.
+
+The two special attributes, @code{Prefix} and @code{Suffix}, may be used
+in check pairlist to restrict the match to a specified part of a
+user-name. Both are string attributes. The @code{Prefix} instructs
+radius to accept the hint only if the username begins with the given
+prefix. Similarly, @code{Suffix} instructs radius to accept the hint
+only if the username ends with the given suffix. A hint may contain
+both @code{Prefix} and @code{Suffix} attributes.
+
+In addition to these two attributes, a hint's check list may
+contain @code{User-ID} and @code{Group} attributes. 
+
+The following attributes, when used in a hint's reply list have
+special meaning. They are not appended to the request pair-list.
+Instead, they are removed after completing their function:
+@table @code
+@item Fall-Through
+If this attribute is present, and is set to @code{Yes}, @code{radiusd}
+continues scanning the hints, after processing current entry. This
+allows for applying several hints to a single packet.
+@item Rewrite-Function
+If this attribute is present, the specified rewrite function is invoked.
+@item Replace-User-Name
+The value of this attribute is expanded (@pxref{Macro substitution}),
+and replaces the value of @code{User-Name} attribute from the request.
+@end table
+
+@xref{hints file}.
+
+@comment **L3***************************************************************
+@node Huntgroups, Users, Hints, Request processing
+@subsection Huntgroups
+@cindex Huntgroups
+
+
+
+@comment **L3***************************************************************
+@node Users, , Huntgroups, Request processing
+@subsection Users
+@cindex Users

@@ -18,7 +18,7 @@ sources (in order of increasing precedence):
 @end itemize
 
 Whenever a command line options has its equivalent in config file the
-use of this equivalent should be preferred (@pxref{config}).
+use of this equivalent should be preferred (@pxref{config file}).
 
 The following command line options are accepted:
 
@@ -201,6 +201,6 @@ logging @{
 
 @end table
 
-@ref{config}.
+@xref{config file}.
 
 @c  LocalWords:  pid

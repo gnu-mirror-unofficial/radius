@@ -339,16 +339,17 @@ request_update(pid_t pid, int status, void *ptr)
 	REQUEST *p;
 	ITERATOR *itr;
 	
-	debug(100,("enter"));
+	debug(100,("enter, pid=%lu, ptr = %p", (unsigned long)pid, ptr));
 	itr = iterator_create(request_list);
 	if (!itr)
 		return;
-	for (p = iterator_first(itr); p; p = iterator_next(itr))
-		if (p->child_id == pid) {
+	for (p = iterator_first(itr); p; p = iterator_next(itr)) {
+		if (p->child_id == pid && p->status == RS_WAITING) {
 			p->status = status;
-			if (ptr && request_class[p->type].update)
+			if (ptr && request_class[p->type].update) 
 				request_class[p->type].update(p->data, ptr);
 		}
+	}
 	iterator_destroy(&itr);
 	debug(100,("exit"));
 }

@@ -15,6 +15,8 @@
    along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
+#define RADIUS_MODULE_INPUT_C
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -121,6 +123,7 @@ channel_close(CHANNEL *chan)
 static int
 channel_handle(CHANNEL *chan)
 {
+	debug(1, ("handling method %s", chan->method->name));
 	return chan->method->handler(chan->fd, chan->data);
 }
 
@@ -207,7 +210,9 @@ input_select(INPUT *input, struct timeval *tv)
 	METHOD *m;
 	int status;
 	int count = 0;
-	
+
+	/*FIXME*/tv=NULL;
+	debug(100,("enter"));
 	if (!input->citr)
 		input->citr = iterator_create(input->channels);
 	if (!input->mitr)
@@ -234,13 +239,14 @@ input_select(INPUT *input, struct timeval *tv)
 		count++;
 		
 		readfds = m->fdset;
-		
+
 		status = select(m->fd_max + 1, &readfds, NULL, NULL, tv);
         
 		if (status == -1) {
 			if (errno == EINTR) 
 				return 0;
 		} else if (status > 0) {
+			debug(1, ("select returned %d", status));
 			for (p = iterator_first(input->citr); p;
 			     p = iterator_next(input->citr)) {
 				if (FD_ISSET(p->fd, &readfds)) 
@@ -250,5 +256,6 @@ input_select(INPUT *input, struct timeval *tv)
 	}
 	assert(count > 0);
 	
+	debug(100,("exit"));
 	return status;
 }

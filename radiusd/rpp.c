@@ -17,6 +17,8 @@
 
 /* RPP is a Radius Process Pool */
 
+#define RADIUS_MODULE_RPP_C
+
 #ifdef HAVE_CONFIG_H
 # include <config.h>
 #endif
@@ -166,7 +168,7 @@ rpp_lookup_ready(int (*proc_main)(void *), void *data)
 		if (rpp_start_process(&proc, proc_main, data)) 
 			return NULL;
 		radiusd_register_input_fd("rpp", proc.p[0], NULL);
-		p = mem_alloc(sizeof(*p));
+		p = emalloc(sizeof(*p));
 		*p = proc;
 		list_append(process_list, p);
 	}
@@ -193,7 +195,7 @@ _rpp_remove(rpp_proc_t *p)
 	close(p->p[1]);
 	radiusd_close_channel(p->p[0]);
 	if (list_remove(process_list, p, NULL))
-		mem_free(p);
+		efree(p);
 }
 
 void
@@ -355,7 +357,7 @@ rpp_forward_request(REQUEST *req)
 
 	if (!p)
 		return 1;
-	radlog(L_DEBUG, "sending request to %d", p->pid);
+	debug(1, ("sending request to %d", p->pid));
 	
 	frq.type = req->type;
 	frq.addr = req->addr;
@@ -455,7 +457,7 @@ rpp_request_handler(void *arg ARG_UNUSED)
 		repl.code = request_handle(req, request_respond);
 			
 		/* Inform the master */
-		radlog(L_DEBUG, "notifying the master");
+		debug(1, ("notifying the master"));
 		repl.size = req->update_size;
 		rpp_fd_write(1, &repl, sizeof repl);
 		if (req->update) {
@@ -487,7 +489,7 @@ rpp_input_handler(int fd, void *data)
 		}
 
 		if (p) {
-		        radlog(L_DEBUG, "updating pid %d", p->pid);
+		        debug(1, ("updating pid %d", p->pid));
 			p->ready = 1;
 			request_update(p->pid, RS_COMPLETED, data);
 		} 

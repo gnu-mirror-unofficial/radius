@@ -208,7 +208,7 @@ radclient_build_request(config, server, code, pair)
 	int      attrlen;
 	AUTH_HDR *auth;
 	char     passbuf[AUTH_PASS_LEN];
-	char     md5buf[256];
+	u_char   md5buf[256];
 	char     *ptr, *length_ptr;
 	int      secretlen;
 	int      i;
@@ -240,9 +240,7 @@ radclient_build_request(config, server, code, pair)
 	for (; pair; pair = pair->next) {
 
 		if (radclient_debug) {
-			printf(_("send: "));
-			fprint_attr_val(stdout, pair);
-			printf("\n");
+			radfprintf(stdout, "%10.10s: %A\n", _("send"), pair);
 		}
 
 		/*
@@ -379,7 +377,6 @@ decode_buffer(host, udp_port, buffer, length)
 {
 	u_char		*ptr;
 	AUTH_HDR	*auth;
-	int		totallen;
 	int		attribute;
 	int		attrlen;
 	DICT_ATTR	*attr;
@@ -396,7 +393,6 @@ decode_buffer(host, udp_port, buffer, length)
 	authreq = alloc_request();
 
 	auth = (AUTH_HDR *)buffer;
-	totallen = ntohs(auth->length);
 
 	/*
 	 *	Fill header fields
@@ -484,9 +480,8 @@ decode_buffer(host, udp_port, buffer, length)
 			}
 
 			if (radclient_debug && pair) {
-				printf(_("recv: "));
-				fprint_attr_val(stdout, pair);
-				printf("\n");
+				radfprintf(stdout, "%10.10s: %A\n", 
+						_("recv"), pair);
 			}
 
 		}

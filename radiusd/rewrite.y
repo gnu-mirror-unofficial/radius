@@ -4146,7 +4146,7 @@ rw_string()
 	int n = popn();
 	int buf[64];
 	
-	sprintf((char*)buf, "%d", n);
+	radsprintf((char*)buf, sizeof(buf), "%d", n);
 	pushs(buf, 64);
 }
 
@@ -4402,6 +4402,7 @@ run_init(pc, request)
 	}
 }
 
+/*VARARGS3*/
 int
 va_run_init(name, request, typestr, va_alist)
 	char *name;
@@ -4813,8 +4814,8 @@ function_install(fun)
 
 	if (fp = (FUNCTION *)sym_lookup(rewrite_tab, fun->name)) {
 		radlog(L_ERR,
-		       "%s:%d: redefinition of function %d",
-		       input_filename, fun->line);
+		       "%s:%d: redefinition of function %s",
+		       input_filename, fun->line, fun->name);
 		radlog(L_ERR,
 		       "%s:%d: previuosly defined here",
 		       input_filename, fun->line);

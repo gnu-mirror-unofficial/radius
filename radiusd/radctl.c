@@ -114,6 +114,7 @@ format_reply(s)
 	*reply_ptr++ = '\r';
 	*reply_ptr++ = '\n';
 	*reply_ptr = 0;
+	return 0;
 }
 
 /*ARGSUSED*/

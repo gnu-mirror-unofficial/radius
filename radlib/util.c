@@ -337,6 +337,20 @@ mkfilename3(dir, subdir, name)
 	return p;
 }
 
+
+/*
+ *	Write a whole list of A/V pairs.
+ */
+void 
+fprint_attr_list(fd, pair)
+	FILE *fd;
+	VALUE_PAIR *pair;
+{
+	while (pair) {
+		radfprintf(fd, "    %A\n", pair);
+	}
+}
+
 #if 0
 int
 parse_exec_program(cmd, program, uid, gid)

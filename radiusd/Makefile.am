@@ -12,7 +12,7 @@ radiusd_SOURCES = radiusd.c acct.c auth.c exec.c files.c menu.c sql.c\
                   symtab.c timestr.c version.c log.c stat.c\
                   snmpserv.c shmem.c radutil.c radctl.c\
                   rewrite.c checkrad.c debugmod.c
-radiusd_LDADD   = @LEXLIB@ -L ../radlib -lrad -L ../snmplib -lsnmp $(LIBSQL) @RADIUSD_LDADD@
+radiusd_LDADD   = @LEXLIB@ -L../radlib -lrad -L../snmplib -lsnmp $(LIBSQL) @RADIUSD_LDADD@
 BUILT_SOURCES   = config.c rewrite.c
 DISTCLEANFILES  = config.c y.output
 INCLUDES        = -I$(top_srcdir) -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp @INCLUDEPATH@
@@ -36,14 +36,14 @@ if MAINTAINER_MODE
 MCFLAGS=-ggdb -DMAINTAINER_MODE=1
 MAINTAINERCLEANFILES=core *~ err out 
 CLEANFILES=*.ln
-LINTFLAGS=-gezra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 $(INCLUDES)
+LINTFLAGS=-gezra -fAI -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 $(INCLUDES)
 radiusd_LNS=$(radiusd_SOURCES:.c=.ln)
 
 .c.ln:
 	$(LINT.c) -i $<
 
 lint:  $(radiusd_LNS)
-	$(LINT.c) -u $(radiusd_LNS) -L ../radlib -lrad
+	$(LINT.c) -u $(radiusd_LNS) -L../radlib -lrad
 
 SRCS=radiusd.c acct.c auth.c exec.c files.c menu.c sql.c\
          notify.c config.y pam.c proxy.c radius.c\

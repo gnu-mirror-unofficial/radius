@@ -200,7 +200,7 @@ typedef struct proxy_state {
 #ifdef USE_SNMP
 struct nas_stat;
 #endif
-struct nas_arg;
+struct radck_arg;
 
 typedef struct nas {
 	struct nas		*next;
@@ -208,7 +208,7 @@ typedef struct nas {
 	char			longname[MAX_LONGNAME+1];
 	char			shortname[MAX_SHORTNAME+1];
 	char			nastype[MAX_DICTNAME+1];
-	struct nas_arg          *args;
+	struct radck_arg        *args;
 #ifdef USE_SNMP
 	struct nas_stat         *nas_stat;
 #endif	
@@ -553,6 +553,7 @@ int		timestr_match(char *, time_t);
 
 /* notify.c */
 int notify(char *login, int what, long *ttl_ptr);
+int notify_acct(char *login, int what);
 int timetolive(char *user_name, long *ttl);
 
 /* shmem.c */
@@ -584,7 +585,7 @@ int read_raddb_file(char *name, int vital, int fcnt, int (*fun)(),
 int xlat_keyword(struct keyword *kw, char *str, int def);
 
 /* mem.c */
-void *emalloc(unsigned);
+void *emalloc(size_t);
 void efree(void*);
 char *estrdup(char *);
 

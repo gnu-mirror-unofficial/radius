@@ -24,7 +24,7 @@ logging {
 };
 
 auth {
-	port 1648;
+	port 1647;
 	max-requests 127;
 	request-cleanup-delay 2;
 	detail yes;
@@ -33,7 +33,7 @@ auth {
 };
 
 acct {
-	port 1649;
+	port 1648;
 	max-requests 127;
 	request-cleanup-delay 2;
 };
@@ -44,7 +44,7 @@ proxy {
 };
 
 cntl {
-	port 1650;
+	port 1649;
 };
 
 #usedbm never;

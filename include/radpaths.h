@@ -49,6 +49,7 @@
 #define RADIUS_DICTIONARY	"dictionary"
 #define RADIUS_CLIENTS		"clients"
 #define RADIUS_NASLIST		"naslist"
+#define RADIUS_NASTYPES         "nastypes"
 #define RADIUS_USERS		"users"
 #define RADIUS_HOLD		"holdusers"
 #define RADIUS_LOG		"radius.log"

@@ -788,7 +788,10 @@ format_time(buf, fmt, up)
 	FORMAT         *fmt;
 	struct radutmp *up;
 {
-	time_str(buf, up->duration);
+	if (up->type == P_IDLE)
+		time_str(buf, up->duration);
+	else
+		time_str(buf, time(NULL) - up->time);
 }	
 
 /*ARGSUSED*/

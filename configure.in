@@ -23,8 +23,7 @@ case $target in
 	*-*-linux*)	SHADOW_SUPPORT=yes
 			ST="BSD";;
 
-	*-*-solaris*)	LIBS="$LIBS -L/usr/ucblib"
-			SHADOW_SUPPORT=yes
+	*-*-solaris*)   SHADOW_SUPPORT=yes
                         ST="SYSV";;
 
 	*-*-*bsd*)	ST="BSD";;
@@ -71,7 +70,7 @@ AC_CHECK_HEADERS(fcntl.h malloc.h strings.h\
  sys/file.h sys/time.h sys/types.h unistd.h\
  ctype.h sys/socket.h netinet/in.h arpa/inet.h\
  netdb.h stdarg.h varargs.h termcap.h termios.h termio.h sgtty.h\
- crypt.h sys/uio.h)
+ crypt.h sys/uio.h sys/select.h)
 
 ## * Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -92,8 +91,8 @@ AC_FUNC_STRFTIME
 AC_FUNC_VPRINTF
 AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  mkdir mktime select socket strdup strtol lockf \
- strncasecmp vsnprintf getopt_long setlocale strerror bzero \
- regcomp inet_ntoa inet_aton) 
+ strncasecmp getopt_long setlocale strerror bzero \
+ regcomp inet_ntoa inet_aton setvbuf seteuid setreuid) 
 
 AC_MSG_CHECKING(for sys_errlist and sys_nerr)
 AC_TRY_RUN(

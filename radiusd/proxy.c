@@ -676,7 +676,7 @@ proxy_receive(authreq, activefd)
 		   (PROXY_STATE *)proxy_state_pair->strvalue : NULL;
 
 	if (state)
-	  debug(1, ("state: ipaddr %08x, id %d, proxy_id %d, rem_ipaddr %08x",
+	  debug(1, ("state: ipaddr %08x, id %u, proxy_id %u, rem_ipaddr %08x",
 		 state->ipaddr,
 		 state->id,
 		 state->proxy_id,

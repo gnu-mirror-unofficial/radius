@@ -90,7 +90,7 @@ main(argc, argv)
 	char 	*nas = NULL;
 	UINT4	ip = 0;
 	time_t	t;
-	char	buf[256];
+	char    *path;
 	char *s;	
 	int force_wtmp = 0;
 
@@ -149,9 +149,10 @@ main(argc, argv)
 	/*
 	 *	Read the "naslist" file.
 	 */
-	sprintf(buf, "%s/%s", RADIUS_DIR, RADIUS_NASLIST);
-	if (read_naslist_file(buf) < 0)
+	path = mkfilename(radius_dir, RADIUS_NASLIST);
+	if (read_naslist_file(path) < 0)
 		exit(1);
+	efree(path);
 
 	if (nas) {
 		/*

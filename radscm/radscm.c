@@ -21,6 +21,7 @@
 #endif
 
 #include <libguile.h>
+#include <syslog.h>
 #include <radiusd.h>
 #include <radclient.h>
 #include <pwd.h>
@@ -36,10 +37,14 @@ static SCM rad_client_set_server(SCM);
 static SCM rad_client_add_server(SCM);
 static SCM rad_client_list_servers();
 static SCM rad_dict_name_to_value(SCM g_attr, SCM g_value);
+static SCM rad_dict_value_to_name(SCM g_attr, SCM g_value);
 static SCM rad_dict_name_to_attr(SCM g_name);
 static SCM rad_dict_pec_to_vendor(SCM g_pec);
 static SCM rad_read_no_echo(SCM g_prompt);
 static SCM rad_client_source_ip(SCM g_ip);
+static SCM rad_openlog(SCM g_ident, SCM g_option, SCM g_facility);
+static SCM rad_syslog(SCM g_prio, SCM g_text);
+static SCM rad_closelog();
 
 static SCM scm_makenum(unsigned long val);
 static int scheme_to_pair(SCM scm, VALUE_PAIR *pair);
@@ -54,6 +59,34 @@ die(msg)
 	radlog(L_ERR, "%s", msg);
 }
 
+
+static struct keyword syslog_kw[] = {
+	"LOG_USER",     LOG_USER,   
+	"LOG_DAEMON",	LOG_DAEMON,
+	"LOG_AUTH",	LOG_AUTH,  
+	"LOG_LOCAL0",	LOG_LOCAL0,
+	"LOG_LOCAL1",	LOG_LOCAL1,
+	"LOG_LOCAL2",	LOG_LOCAL2,
+	"LOG_LOCAL3",	LOG_LOCAL3,
+	"LOG_LOCAL4",	LOG_LOCAL4,
+	"LOG_LOCAL5",	LOG_LOCAL5,
+	"LOG_LOCAL6",	LOG_LOCAL6,
+	"LOG_LOCAL7",	LOG_LOCAL7,
+	/* severity */
+	"LOG_EMERG",    LOG_EMERG,    
+	"LOG_ALERT",	LOG_ALERT,   
+	"LOG_CRIT",	LOG_CRIT,    
+	"LOG_ERR",	LOG_ERR,     
+	"LOG_WARNING",	LOG_WARNING, 
+	"LOG_NOTICE",	LOG_NOTICE,  
+	"LOG_INFO",	LOG_INFO,    
+	"LOG_DEBUG",   	LOG_DEBUG,   
+	/* options */
+	"LOG_CONS",     LOG_CONS,   
+	"LOG_NDELAY",	LOG_NDELAY, 
+	"LOG_PID",    	LOG_PID,
+	NULL
+};
 
 void
 rad_scheme_init(argc, argv)
@@ -115,6 +148,7 @@ rad_scheme_init(argc, argv)
 
 	scm_make_gsubr("rad-directory", 1, 0, 0, rad_directory);
 	scm_make_gsubr("rad-dict-name->value", 2, 0, 0, rad_dict_name_to_value);
+	scm_make_gsubr("rad-dict-value->name", 2, 0, 0, rad_dict_value_to_name);
 	scm_make_gsubr("rad-dict-name->attr", 1, 0, 0, rad_dict_name_to_attr);
 	scm_make_gsubr("rad-dict-pec->vendor", 1, 0, 0, rad_dict_pec_to_vendor);
 	scm_make_gsubr("rad-read-no-echo", 1, 0, 0, rad_read_no_echo);
@@ -122,14 +156,20 @@ rad_scheme_init(argc, argv)
 	scm_make_gsubr("rad-client-source-ip", 1, 0, 0, rad_client_source_ip);
 	scm_make_gsubr("rad-client-timeout", 1, 0, 0, rad_client_timeout);
 	scm_make_gsubr("rad-client-retry", 1, 0, 0, rad_client_retry);
-
 	scm_make_gsubr("rad-client-set-server", 1, 0, 0, rad_client_set_server);
 	scm_make_gsubr("rad-client-add-server", 1, 0, 0, rad_client_add_server);
 	scm_make_gsubr("rad-client-list-servers", 0, 0, 0, rad_client_list_servers);
+	scm_make_gsubr("rad-openlog", 3, 0, 0, rad_openlog);
+	scm_make_gsubr("rad-syslog", 2, 0, 0, rad_syslog);
+	scm_make_gsubr("rad-closelog", 1, 0, 0, rad_closelog);
 
 	scm_loc = SCM_CDRLOC (scm_sysintern ("%raddb-path", SCM_EOL));
 	*scm_loc = scm_makfrom0str(radius_dir);
-		
+
+	for (si = 0; syslog_kw[si].name; si++)
+		scm_sysintern(syslog_kw[si].name,
+			      SCM_MAKINUM(syslog_kw[si].tok));
+	
 	if (!(bootpath = getenv("RADSCM_BOOTPATH")))
 		bootpath = DATADIR;	
 #if 0
@@ -155,7 +195,7 @@ SCM
 scm_makenum(val)
 	unsigned long val;
 {
-	if (SCM_FIXABLE(val)) {
+	if (SCM_FIXABLE((long)val)) {
 		return SCM_MAKINUM(val);
 	}
 #ifdef SCM_BIGDIG
@@ -307,7 +347,7 @@ SCM
 rad_client_set_server(g_list)
 	SCM g_list;
 {
-        SERVER *s = scheme_to_server(g_list, FUNC_NAME);
+	SERVER *s = scheme_to_server(g_list, FUNC_NAME);
 
 	radclient_clear_server_list(radclient->first_server);
 	radclient->first_server = radclient_append_server(NULL, s);
@@ -394,6 +434,33 @@ rad_dict_name_to_attr(g_name)
 }
 
 SCM
+rad_dict_value_to_name(g_attr, g_value)
+	SCM g_attr;
+	SCM g_value;
+{
+	DICT_ATTR *attr;
+	DICT_VALUE *val;
+
+	if (SCM_IMP(g_attr) && SCM_INUMP(g_attr)) {
+		attr = attr_number_to_dict(SCM_INUM(g_attr));
+	} else if (SCM_NIMP(g_attr) && SCM_STRINGP(g_attr)) {
+		attr = attr_name_to_dict(SCM_CHARS(g_attr));
+	}
+
+	if (!attr) {
+		scm_misc_error("rad-dict-value->name",
+			       "Unknown attribute: ~S",
+			       SCM_LIST1(g_attr));
+		return SCM_BOOL_F;
+	}
+
+	SCM_ASSERT((SCM_IMP(g_value) && SCM_INUMP(g_value)),
+		   g_value, SCM_ARG1, "rad-dict-value->name");
+	val = value_lookup(SCM_INUM(g_value), attr->name);
+	return val ? scm_makfrom0str(val->name) : SCM_BOOL_F;
+}
+
+SCM
 rad_dict_name_to_value(g_attr, g_value)
 	SCM g_attr;
 	SCM g_value;
@@ -466,8 +533,10 @@ list_to_scheme(pair)
 			scm_value = scm_makfrom0str(pair->strvalue);
 			break;
 		case PW_TYPE_INTEGER:
-		case PW_TYPE_IPADDR:
 			scm_value = scm_makenum(pair->lvalue);
+			break;
+		case PW_TYPE_IPADDR:
+			scm_value = scm_ulong2num(pair->lvalue);
 			break;
 		default:
 			abort();
@@ -570,12 +639,15 @@ scheme_to_pair(scm, pair)
 		} else if (SCM_NIMP(cdr) && SCM_STRINGP(cdr)) {
 			char *name = SCM_CHARS(cdr);
 			val = value_name_to_value(name);
-			if (!val) {
-				scm_misc_error("%%scheme_to_pair",
-					       "Bad value: ~S",
-					       SCM_LIST1(cdr));
+			if (val) {
+				pair->lvalue = val->value;
+			} else {
+				pair->lvalue = strtol(name, &name, 0);
+				if (*name)
+					scm_misc_error("%%scheme_to_pair",
+						       "Bad value: ~S",
+						       SCM_LIST1(cdr));
 			}
-			pair->lvalue = val->value;
 		} else
 			SCM_OUTOFRANGE;
 		break;
@@ -603,3 +675,97 @@ scheme_to_pair(scm, pair)
 	return 0;
 }
 
+int
+parse_facility(list)
+	SCM list;
+{
+	SCM car;
+	int accval = 0;
+	int val;
+	do {
+		car = SCM_CAR(list);
+		val = 0;
+		
+		if (SCM_IMP(car) && SCM_INUMP(car)) 
+			val = SCM_INUM(car);
+		else if (SCM_NIMP(car) && SCM_STRINGP(car))
+			val = xlat_keyword(syslog_kw, SCM_CHARS(car), 0);
+		else
+			continue;
+		accval |= val;
+	} while ((list = SCM_CDR(list)) != SCM_EOL);
+	return accval;
+}
+
+#define FUNC_NAME "rad-openlog"
+SCM
+rad_openlog(g_ident, g_option, g_facility)
+	SCM g_ident;
+	SCM g_option;
+	SCM g_facility;
+{
+	char *ident;
+	int option, facility;
+
+	if (g_ident == SCM_BOOL_F)
+		ident = "radscm";
+	else {
+		SCM_ASSERT(SCM_NIMP(g_ident) && SCM_STRINGP(g_ident),
+			   g_ident, SCM_ARG1, FUNC_NAME);
+		ident = SCM_CHARS(g_ident);
+	}
+	
+	if (SCM_IMP(g_option) && SCM_INUMP(g_option)) {
+		option = SCM_INUM(g_option);
+	} else if (SCM_BIGP(g_option)) {
+		option = (UINT4) scm_big2dbl(g_option);
+	} else {
+		option = parse_facility(g_option);
+	}
+
+	if (SCM_IMP(g_facility) && SCM_INUMP(g_facility)) {
+		facility = SCM_INUM(g_facility);
+	} else if (SCM_BIGP(g_facility)) {
+		facility = (UINT4) scm_big2dbl(g_facility);
+	} else {
+		facility = parse_facility(g_facility);
+	}
+
+	openlog(ident, option, facility);
+	return SCM_UNSPECIFIED;
+}
+#undef FUNC_NAME
+
+#define FUNC_NAME "rad-syslog"
+SCM
+rad_syslog(g_prio, g_text)
+	SCM g_prio;
+	SCM g_text;
+{
+	int prio;
+
+	if (g_prio == SCM_BOOL_F) {
+		prio = LOG_INFO;
+	} else if (SCM_IMP(g_prio) && SCM_INUMP(g_prio)) {
+		prio = SCM_INUM(g_prio);
+	} else if (SCM_BIGP(g_prio)) {
+		prio = (UINT4) scm_big2dbl(g_prio);
+	} else {
+		prio = parse_facility(g_prio);
+	}
+
+	SCM_ASSERT(SCM_NIMP(g_text) && SCM_STRINGP(g_text),
+		   g_text, SCM_ARG1, FUNC_NAME);
+	syslog(prio, "%s", SCM_CHARS(g_text));
+	return SCM_UNSPECIFIED;
+}
+#undef FUNC_NAME
+
+#define FUNC_NAME "rad-closelog"
+SCM
+rad_closelog()
+{
+	closelog();
+	return SCM_UNSPECIFIED;
+}
+#undef FUNC_NAME

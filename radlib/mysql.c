@@ -248,7 +248,88 @@ rad_sql_getpwd(conn, query)
 	return return_passwd;
 }
 
+typedef struct {
+	MYSQL_RES      *result;
+	MYSQL_ROW       row;
+} RADMYSQL_DATA;
 
+void *
+rad_sql_exec(conn, query)
+	struct sql_connection *conn;
+	char *query;
+{
+	MYSQL_RES      *result;
+	RADMYSQL_DATA  *data;
+	int nrows;
+	
+	if (!conn)
+		return NULL;
+	
+	debug(1, ("query: %s", query));
+	
+	if (do_mysql_query(conn, query, MYSQL_AUTH))
+		return NULL;
+
+	if (!(result = mysql_store_result((MYSQL*)conn->data))) {
+		radlog(L_ERR,
+		       _("MYSQL Error: can't get result"));
+		return NULL;
+	}
+	nrows = mysql_num_rows(result);
+	debug(1, ("got %d rows", nrows));
+	if (nrows == 0) {
+		mysql_free_result(result);
+		return NULL;
+	}
+
+	data = emalloc(sizeof(*data));
+	data->result = result;
+	return (void*)data;
+}
+
+char *
+rad_sql_column(data, ncol)
+	void *data;
+	int ncol;
+{
+	RADMYSQL_DATA  *dp = (RADMYSQL_DATA *) data;
+
+	if (!data)
+		return NULL;
+	if (ncol >= mysql_num_fields(dp->result)) {
+		radlog(L_ERR,
+		       _("too few columns returned (%d req'd)"), ncol);
+		return NULL;
+	}
+	return dp->row[ncol];
+}
+
+int
+rad_sql_next_tuple(conn, data)
+	struct sql_connection *conn;
+	void *data;
+{
+	RADMYSQL_DATA  *dp = (RADMYSQL_DATA *) data;
+
+	if (!data)
+		return 1;
+	return (dp->row = mysql_fetch_row(dp->result)) == NULL;
+}
+
+void
+rad_sql_free(conn, data)
+	struct sql_connection *conn;
+	void *data;
+{
+	RADMYSQL_DATA  *dp = (RADMYSQL_DATA *) data;
+
+	if (!data)
+		return;
+
+	mysql_free_result(dp->result);
+	efree(dp);
+}
+	
 #endif /* defined (USE_SQL) */
 
 #endif /* USE_SQL == SQL_MYSQL */

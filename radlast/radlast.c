@@ -45,7 +45,6 @@ static char rcsid[] =
 #include <sysdep.h>
 #include <radiusd.h>
 #include <radutmp.h>
-#include <nas.h>
 #include <log.h>
 
 #define IP_ADDR_LEN 15
@@ -80,6 +79,12 @@ WTMP *delete_wtmp_entry(WTMP **first, WTMP *pp);
 WTMP *find_wtmp_nas(WTMP *first, struct radutmp *bp);
 WTMP *find_wtmp_nas_port(WTMP *first, struct radutmp *bp);
 WTMP *find_wtmp_nas_port_sid(WTMP *first, struct radutmp *bp);
+
+NAS * nas_find(UINT4 ipaddr);
+NAS * nas_find_by_name(char *name);
+char * nas_name(UINT4 ipaddr);
+
+extern NAS *naslist;
 
 UINT4 host_ip = 0;
 UINT4 nas_ip = 0;

@@ -54,6 +54,10 @@
 
 #define RLOG_DEFAULT            (RLOG_AUTH | RLOG_FAILED_PASS)
 
+int radvsprintf(/*char *string, size_t size, char *fmt, va_list ap*/);
+int radsprintf(/*char *string, size_t size, char *fmt, va_alist*/);
+int radfprintf(/*FILE *file, char *fmt, va_alist*/);
+
 #define MKSTRING(x) #x 
 #define insist(cond) \
  ((void) ((cond) || __insist_failure(MKSTRING(cond), __FILE__, __LINE__)))
@@ -118,6 +122,7 @@ void log_cleanup();
 Channel *register_channel(Channel *);
 Channel *install_channel(char *name, int mode, int prio, char *file, int opt);
 void register_category(int cat, Chanlist *chanlist);
+Chanlist *make_chanlist(Channel *chan);
 
 Channel *channel_lookup(char *name);
 

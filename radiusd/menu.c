@@ -76,7 +76,8 @@ process_menu(authreq, activefd, pw_digest)
 	
 	if ((term_pair = pairfind(pair, DA_TERMINATION_MENU)) != NULL) {
 		/* Change this to a menu state */
-		sprintf(state_value, "MENU=%s", term_pair->strvalue);
+		radsprintf(state_value, sizeof(state_value),
+				"MENU=%s", term_pair->strvalue);
 		term_pair->attribute = DA_STATE;
 		replace_string(&term_pair->strvalue, state_value);
 		term_pair->strlength = strlen(state_value);
@@ -99,7 +100,8 @@ process_menu(authreq, activefd, pw_digest)
 	} else if (pair) {
 		if (new_pair = pairfind(pair, DA_MENU)) {
 			msg = get_menu(new_pair->strvalue);
-			sprintf(state_value, "MENU=%s", new_pair->strvalue);
+			radsprintf(state_value, sizeof(state_value),
+					"MENU=%s", new_pair->strvalue);
 			send_challenge(authreq, msg, state_value, activefd);
 		} else {
 			rad_send_reply(PW_AUTHENTICATION_ACK, authreq,

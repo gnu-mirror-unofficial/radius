@@ -37,19 +37,6 @@ stop() {
 	rm -f $%PIDFILE@
 }
 
-if [ -f $%PIDFILE@ ]; then
-	PID=`cat $%PIDFILE@`
-	PROCESS=`$%PS@ -p $PID | sed -n '2p'`
-	RUNNING=1
-	[ `echo $PROCESS | wc -w` -ne 0 ] || {
-		PROCESS="radiusd (pid $PID?) not running"
-		RUNNING=0
-	}
-else
-	PROCESS="radiusd not running"
-	RUNNING=0
-fi
-
 chan_signal() {
 	case $1 in
 		start|stop|restart)
@@ -89,9 +76,26 @@ chan_signal() {
 
 ifdef(%GUILE@,
 chan_socket() {
-	BINDIR/radscm --debug -s DATADIR/radctl.scm $*
+	BINDIR/radscm $DEBUG -s DATADIR/radctl.scm $*
 })
 
+if [ -f $%PIDFILE@ ]; then
+	PID=`cat $%PIDFILE@`
+	PROCESS=`$%PS@ -p $PID | sed -n '2p'`
+	RUNNING=1
+	[ `echo $PROCESS | wc -w` -ne 0 ] || {
+		PROCESS="radiusd (pid $PID?) not running"
+		RUNNING=0
+	}
+else
+	PROCESS="radiusd not running"
+	RUNNING=0
+fi
+
+if [ x"$1" = x"--debug" ]; then
+	DEBUG=$1
+	SHIFT
+fi	    
 ifdef(%GUILE@,
 if [ x"$1" = x"-s" -o x"$1" = x"--signal" ]; then
 	%SHIFT@ 

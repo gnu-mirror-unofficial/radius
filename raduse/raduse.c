@@ -237,12 +237,10 @@ stat_insert_port(port)
 	NASSTAT *nas = nasstat_find(port->ip);
 
 	if (!nas) {
-		char ipbuf[DOTTED_QUAD_LEN];
-		
 		radlog(L_ERR,
-		    _("stat_insert_port(): portno %d: can't find nas for IP %s"),
+		    _("stat_insert_port(): portno %d: can't find nas for IP %I"),
 		    port->port_no,
-		    ipaddr2str(ipbuf, port->ip));
+		    port->ip);
 		free_entry(port);
 		return -1;
 	}
@@ -274,7 +272,6 @@ collect(fd)
 	PORT_STAT stat;
 	PORT_STAT *port;
 	NASSTAT *nas;
-	char ipbuf[DOTTED_QUAD_LEN];
 	
 	if (lseek(fd, sizeof(PORT_STAT), SEEK_SET) != sizeof(PORT_STAT)) {
 		radlog(L_ERR, _("lseek error on `%s' (%d): %s"),
@@ -288,9 +285,9 @@ collect(fd)
 		nas = nasstat_find(stat.ip);
 		if (!nas) {
 			radlog(L_ERR,
-			    _("collect(): port %d: can't find nas for IP %s"),
+			    _("collect(): port %d: can't find nas for IP %I"),
 			    stat.port_no,
-			    ipaddr2str(ipbuf, stat.ip));
+			    stat.ip);
 			return 1;
 		}
 
@@ -605,13 +602,12 @@ void
 listnas()
 {
 	NASSTAT *p;
-	char ipaddr[16];
 	
 	for (p = naslist; p; p = p->next) {
-		printf("%-32.32s %-10.10s %-16.16s\n",
+		printf("%-32.32s %-10.10s %-16.16I\n",
 		       p->longname,
 		       p->shortname,
-		       ipaddr2str(ipaddr, p->ipaddr));
+		       p->ipaddr);
 	}
 }
 
@@ -729,13 +725,13 @@ void
 select_nas()
 {
 	char buf[80];
-	int n, nas_cnt = 0;
+	int nas_cnt = 0;
 	char *p, *nasname;
 
 #define PROMPT _("NASes to show:")       
 	msg(MT_standout, PROMPT);
 
-	if ((n = readline(buf, sizeof(buf)-sizeof(PROMPT), 0)) > 0) {
+	if (readline(buf, sizeof(buf)-sizeof(PROMPT), 0) > 0) {
 		mark_all(0);
 		p = buf;
 		do {

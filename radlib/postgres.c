@@ -72,7 +72,7 @@ postgres_conninfo(type)
 		strlen(sql_cfg.password) + 1;
 	conninfo = emalloc(len);
 
-	sprintf(conninfo,
+	radsprintf(conninfo, sizeof(conninfo),
 		"%s%s %s%s %s%s %s%s",
 		CI_HOST, sql_cfg.server,
 		CI_DBNAME, dbname,
@@ -107,7 +107,7 @@ rad_sql_reconnect(type, conn)
 		portstr = NULL;
 	else {
 		portstr = portbuf;
-		snprintf(portbuf, sizeof portbuf, "%d", sql_cfg.port);
+		radsprintf(portbuf, sizeof(portbuf), "%d", sql_cfg.port);
 	}
 		
 	pgconn = PQsetdbLogin(sql_cfg.server, portstr, NULL, NULL,
@@ -289,6 +289,104 @@ rad_sql_getpwd(conn, query)
 	}
 	PQclear(res);
 	return return_passwd;
+}
+
+typedef struct {
+	PGresult       *res;
+	int            nfields;
+	int            ntuples;
+	int            curtuple;
+} EXEC_DATA;
+
+void *
+rad_sql_exec(conn, query)
+	struct sql_connection *conn;
+	char *query;
+{
+	PGresult       *res;
+	ExecStatusType stat;
+	EXEC_DATA      *data;
+	
+	if (!conn || !conn->data)
+		return NULL;
+
+	debug(1, ("query: %s", query));
+	
+	res = PQexec((PGconn*)conn->data, query);
+	if (res == NULL) {
+		radlog(L_ERR,
+		       _("PQexec: %s"),
+		       PQerrorMessage((PGconn*)conn->data));
+		return NULL;
+	}
+	
+	stat = PQresultStatus(res);
+
+	debug(1,
+	      ("status: %s",
+	      PQresStatus(stat)));
+
+	if (stat != PGRES_TUPLES_OK) {
+		radlog(L_ERR,
+		       _("PQexec returned %s"),
+		       PQresStatus(stat));
+		PQclear(res);
+		return NULL;
+	}
+
+	data = emalloc(sizeof(*data));
+	data->res = res;
+	data->ntuples = PQntuples(res);
+	data->curtuple = -1;
+	data->nfields = PQnfields(res);
+	return (void*)data;
+}
+
+char *
+rad_sql_column(data, ncol)
+	void *data;
+	int ncol;
+{
+	EXEC_DATA *edata = (EXEC_DATA*)data;
+	if (!data)
+		return NULL;
+	if (ncol >= edata->nfields) {
+		radlog(L_ERR,
+		       _("too few columns returned (%d req'd)"), ncol);
+		return NULL;
+	}							
+	return PQgetvalue(edata->res, edata->curtuple, ncol);
+}
+
+/*ARGSUSED*/
+int
+rad_sql_next_tuple(conn, data)
+	struct sql_connection *conn;
+	void *data;
+{
+	EXEC_DATA *edata = (EXEC_DATA*)data;
+	if (!data)
+		return 1;
+
+	if (edata->curtuple+1 >= edata->ntuples)
+		return 1;
+	edata->curtuple++;
+	return 0;
+}
+
+/*ARGSUSED*/
+void
+rad_sql_free(conn, data)
+	struct sql_connection *conn;
+	void *data;
+{
+	EXEC_DATA *edata = (EXEC_DATA*)data;
+
+	if (!data)
+		return;
+	
+	PQclear(edata->res);
+	efree(edata);
 }
 
 #endif

@@ -1,7 +1,7 @@
 # $Id$
 bin_PROGRAMS    = radwho
 radwho_SOURCES = radwho.c 
-radwho_LDADD   = -L ../radlib -lrad -llog -ldebug
+radwho_LDADD   = -L../radlib -lrad -llog -ldebug
 INCLUDES        = -I$(top_srcdir) -I$(top_srcdir)/include -I$(srcdir) @INCLUDEPATH@
 
 
@@ -12,7 +12,7 @@ CFLAGS=-ggdb -DMAINTAINER_MODE=1
 MAINTAINERCLEANFILES=core *~ err out
 CLEANFILES=*.ln
 
-LINTFLAGS=-gezra -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
+LINTFLAGS=-gezra -fAI -DHAVE_CONFIG_H=1 -DMAINTAINER_MODE=1 -I$(top_srcdir) $(INCLUDES)
 
 .c.ln:
 	$(LINT.c) -i $<

@@ -285,7 +285,6 @@ rad_accounting_new(authreq, dowtmp)
 	int		just_an_update = 0;
 	int		port_seen = 0;
 	int		nas_port_type = 0;
-	char           *called_id = NULL;
 	
 	/*
 	 *	Which type is this.
@@ -391,7 +390,6 @@ rad_accounting_new(authreq, dowtmp)
 					 vp->strlength);
 			break;
 		case DA_CALLED_STATION_ID:
-			called_id = vp->strvalue;
 			break;
 		case DA_ACCT_SESSION_ID:
 			store_session_id(ut.session_id,
@@ -481,7 +479,7 @@ rad_accounting_new(authreq, dowtmp)
 
 #ifdef USE_NOTIFY
 	if (!port_seen) {
-		notify_acct(ut.login, status, called_id);
+		notify_acct(ut.login, status);
 	}
 #endif
 	
@@ -750,9 +748,7 @@ write_detail(authreq, authtype, f)
 			else
 				pair = pairfind(authreq->request, DA_USER_NAME);
 			if (pair) {
-				fprintf(outfd, "\t");
-				fprint_attr_val(outfd, pair);
-				fprintf(outfd, "\n");
+				radfprintf(outfd, "\t%A\n", pair);
 			}
 		}
 
@@ -767,9 +763,7 @@ write_detail(authreq, authtype, f)
 				if (!strip_names)
 					break;
 			default:
-				fprintf(outfd, "\t");
-				fprint_attr_val(outfd, pair);
-				fprintf(outfd, "\n");
+				radfprintf(outfd, "\t%A\n", pair);
 			} 
 			pair = pair->next;
 		}
@@ -884,7 +878,7 @@ rad_acct_xmit(type, code, data, fd)
 		       req->id);
 	} else {
 		radlog(L_NOTICE,
-		       _("Dropping ACCT packet: client %s, ID: %d"),
+		       _("Dropping ACCT packet: client %s, ID: %d: duplicate packet"),
 		       client_name(req->ipaddr),
 		       req->id);
 	}

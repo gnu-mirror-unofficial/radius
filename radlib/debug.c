@@ -122,7 +122,7 @@ debug_sprintf(msg, va_alist)
 	static char debug_buffer[RADIUS_DEBUG_BUFFER_SIZE];
 
 	va_start(ap);
-	vsnprintf(debug_buffer, sizeof(debug_buffer), msg, ap);
+	radvsprintf(debug_buffer, sizeof(debug_buffer), msg, ap);
 	va_end(ap);
 	return debug_buffer;
 }

@@ -52,6 +52,7 @@ typedef struct {
 	char     *acct_db;
 	char     *auth_db;
 	char     *auth_query;
+	char     *group_query;
 	char     *acct_start_query;
 	char     *acct_stop_query;
 	char     *acct_nasup_query;
@@ -75,12 +76,17 @@ void rad_sql_check_connect(int type);
 void rad_sql_need_reconnect(int type);
 int rad_sql_setup(int type, qid_t qid);
 void rad_sql_cleanup(int type, qid_t qid);
+int rad_sql_checkgroup(AUTH_REQ *req, char *groupname);
 
 /* Lower level routines: */
 void rad_sql_connect(int type);
 int rad_sql_reconnect(int type, struct sql_connection *);	
 int rad_sql_query(struct sql_connection *, char *query, int *report_cnt);
 char * rad_sql_getpwd(struct sql_connection *, char *query);
+void * rad_sql_exec(struct sql_connection *conn, char *query);
+char * rad_sql_column(void *data, int ncol);
+int rad_sql_next_tuple(struct sql_connection *conn, void *data);
+void rad_sql_free(struct sql_connection *conn, void *data);
 
 #else
 

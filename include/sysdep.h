@@ -57,9 +57,9 @@ extern int strncasecmp(char*, char*, int);
 # endif  /* FreeBSD */
 #endif	/* bsdi */
 
-#if defined(aix)
+#if defined(HAVE_SYS_SELECT_H)  
 # include <sys/select.h>
-#endif	/* aix 	*/
+#endif	/* needed for AIX */
 
 /* UTMP stuff. Uses utmpx on svr4 */
 #ifdef __svr4__

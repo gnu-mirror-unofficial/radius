@@ -555,17 +555,17 @@ meminfo(report)
 		bucket_cnt += class->bucket_cnt;
 	}
 
-	sprintf(buffer, 
-		_("%d classes, %d buckets are using %ld pages (%ld bytes) of memory"),
-		class_cnt, bucket_cnt,
-		total_page_cnt, total_page_cnt*MEM_PAGESIZE);
+	radsprintf(buffer, sizeof(buffer),
+		_("%lu classes, %lu buckets are using %lu pages (%lu bytes) of memory"),
+		   class_cnt, bucket_cnt,
+		   total_page_cnt, total_page_cnt*MEM_PAGESIZE);
 	report(buffer);
 
 	report(_("    Class Cont  Els/Bucket   Buckets   ElsUsed  ElsTotal"));
 
 	total_bytes = total_used = 0;
 	for (class = bucket_class; class; class = class->next) {
-		sprintf(buffer,
+		radsprintf(buffer, sizeof(buffer),
 			"%9d   %1d    %9d %9d %9d %9d",
 			class->elsize,
 			class->cont, 
@@ -578,7 +578,7 @@ meminfo(report)
 			        class->elsize;
 		total_used  +=  class->allocated_cnt * class->elsize;
 	}
-	sprintf(buffer,
+	radsprintf(buffer, sizeof(buffer),
 		_("memory utilization: %ld.%1ld%%"),
 		total_used * 100 / total_bytes,
 		(total_used * 1000 / total_bytes) % 10);
@@ -601,7 +601,7 @@ check_cont(report)
 			prev = NULL;
 			while (ep) {
 				if (prev && ep < prev) {
-					sprintf(buf,
+					radsprintf(buf, sizeof(buf),
 						"CLASS %d CONTAINS ERRORS",
 						class->elsize);
 					report(buf);

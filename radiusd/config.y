@@ -644,8 +644,6 @@ category_def    : T_CHANNEL T_STRING EOL
 				  $$.type = 0;
 				  $$.chanlist = NULL;
 			  } else {
-				  Chanlist *cl;
-				  
 				  $$.type = CT_CHANNEL;
 				  $$.chanlist = make_chanlist(channel);
 			  }
@@ -741,12 +739,10 @@ usedbm_stmt     : T_USEDBM dbm_mode
 notify_stmt     : T_NOTIFY '{' notify_list '}'
                   {
                    #ifdef USE_NOTIFY
-			  char buf[DOTTED_QUAD_LEN];
-
 			  if (debug_config)
 				  radlog(L_DBG, 
-					_("TTL server %s:%d %d, %d sec"),
-					 ipaddr2str(buf, notify_cfg.ipaddr),
+					_("TTL server %I:%d %d, %d sec"),
+					 notify_cfg.ipaddr,
 					 notify_cfg.port,
 					 notify_cfg.retry,
 					 notify_cfg.timeout);
@@ -1042,7 +1038,7 @@ hostname        : T_STRING
 					 filename, line_num);
 				  YYERROR;
 			  }
-			  sprintf($$, "%s.%s", $1, $3);
+			  radsprintf($$, sizeof($$), "%s.%s", $1, $3);
                   }	
                 ;
 
@@ -1385,7 +1381,8 @@ get_config()
 #endif
 		debug_config = 0;
 	}
-
+	
+	clear_debug();
 	log_init();
 	yyparse();
 	efree(filename);
@@ -1428,7 +1425,7 @@ do_asgn(varlist, asgn)
 	if (var->type != asgn->type) {
 		radlog(L_ERR, 
                        _("%s:%d: wrong datatype for `%s' (should be %s)"),
-		       filename, line_num, typestr[var->type]);
+		       filename, line_num, asgn->name, typestr[var->type]);
 		return;
 	}
 

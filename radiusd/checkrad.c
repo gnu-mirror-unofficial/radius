@@ -132,6 +132,13 @@ create_instance(cptr, nas, up)
 {
 	RADCK_TYPE *radck_type;
 		
+	if ((radck_type = find_radck_type(nas->nastype)) == NULL) {
+		radlog(L_ERR,
+		       _("unknown NAS type: %s (nas %s)"),
+		       nas->nastype,
+		       nas->shortname);
+		return NULL;
+	}
 	cptr->name = up->orig_login;
 	cptr->port = up->nas_port;
 	cptr->sid  = up->session_id;
@@ -139,7 +146,6 @@ create_instance(cptr, nas, up)
 	cptr->timeout = 0;
 	cptr->hostname = nas->shortname ? nas->shortname : nas->longname;
 	
-	radck_type = find_radck_type(nas->nastype);
 	cptr->method = radck_type->method;
 	cptr->args = merge_args((RADCK_ARG*) nas->args, radck_type->args);
 	cptr->func = slookup(cptr, "function", NULL);
@@ -219,16 +225,18 @@ checkrad_xlat(checkp, str)
 				ptr = checkp->sid;
 				break;
 			case 'd':
-				sprintf(buf, "%d",
-					strtol(checkp->sid, NULL, 16));
+				radsprintf(buf, sizeof(buf), "%lu",
+					   strtol(checkp->sid, NULL, 16));
 				ptr = buf;
 				break;
 			case 'p':
-				sprintf(buf, "%d", checkp->port);
+				radsprintf(buf, sizeof(buf), "%d", 
+					checkp->port);
 				ptr = buf;
 				break;
 			case 'P':
-				sprintf(buf, "%d", checkp->port + 1);
+				radsprintf(buf, sizeof(buf), "%d",
+					 checkp->port + 1);
 				ptr = buf;
 				break;
 			default:
@@ -285,14 +293,14 @@ callback(type, sp, requid, pdu, closure)
 		case SMI_INTEGER:
 		case SMI_COUNTER32:
 		case SMI_COUNTER64:
-			sprintf(buf, "%d", *vlist->val.integer);
+			radsprintf(buf, sizeof(buf), "%d", *vlist->val.integer);
 			rc = compare(checkp, buf);
 			debug(2, ("(INT) %d: %d", *vlist->val.integer, rc));
 			break;
 		case SMI_IPADDRESS:
 			ipaddr2str(buf, *(UINT4*)vlist->val.string);
 			rc = compare(checkp, buf);
-			debug(2, ("(IPADDR) %d: %d",
+			debug(2, ("(IPADDR) %#x: %d",
 				  *(UINT4*)vlist->val.string, rc));
 			break;
 		}
@@ -447,7 +455,7 @@ finger_check(checkp, nas)
 	int found = 0;
 	struct obstack stk;
 	char *ptr;
-	RETSIGTYPE (*handler)();
+	RETSIGTYPE (*handler)() = SIG_IGN;
 	unsigned int to;
 	
 	/* Copy at most RUT_NAMESIZE bytes from the user name */

@@ -52,6 +52,7 @@ static int get_unsigned(char *str, unsigned *retval);
 static char * sql_digest(SQL_cfg *cfg);
 static int sql_digest_comp(char *d1, char *d2);
 static int sql_cfg_comp(SQL_cfg *a, SQL_cfg *b);
+static int chop(char *str);
 
 SQL_cfg sql_cfg;
 
@@ -74,6 +75,7 @@ SQL_cfg sql_cfg;
 #define STMT_IDLE_TIMEOUT          17
 #define STMT_MAX_AUTH_CONNECTIONS  18
 #define STMT_MAX_ACCT_CONNECTIONS  19
+#define STMT_GROUP_QUERY           20
 
 static FILE  *sqlfd;
 static int line_no;
@@ -95,6 +97,7 @@ struct keyword sql_keyword[] = {
 	"auth_db",            STMT_AUTH_DB,
 	"acct_db",            STMT_ACCT_DB,
 	"auth_query",         STMT_AUTH_QUERY,
+	"group_query",        STMT_GROUP_QUERY,
 	"acct_start_query",   STMT_ACCT_START_QUERY,
 	"acct_stop_query",    STMT_ACCT_STOP_QUERY,
 	"acct_alive_query",   STMT_ACCT_KEEPALIVE_QUERY,
@@ -115,6 +118,21 @@ static char *reconnect_file[SQL_NSERVICE] = {
 	"acct.reconnect"
 };
 
+
+/*
+ * Chop off trailing whitespace. Return length of the resulting string
+ */
+int
+chop(str)
+	char *str;
+{
+	int len;
+
+	for (len = strlen(str); len > 0 && isspace(str[len-1]); len--)
+		;
+	str[len] = 0;
+	return len;
+}
 
 char *
 getline()
@@ -412,6 +430,10 @@ rad_sql_init()
 		case STMT_AUTH_QUERY:
 			new_cfg.auth_query = estrdup(cur_ptr);
 			break;
+
+		case STMT_GROUP_QUERY:
+			new_cfg.group_query = estrdup(cur_ptr);
+			break;
 			
 		case STMT_ACCT_START_QUERY:
 			new_cfg.acct_start_query = estrdup(cur_ptr);
@@ -466,6 +488,7 @@ rad_sql_init()
 	FREE(sql_cfg.password);
 	FREE(sql_cfg.acct_db) ;
 	FREE(sql_cfg.auth_db);
+	FREE(sql_cfg.group_query);
 	FREE(sql_cfg.auth_query);
 	FREE(sql_cfg.acct_start_query);
 	FREE(sql_cfg.acct_stop_query);
@@ -486,13 +509,25 @@ void
 sql_check_config(cfg)
 	SQL_cfg *cfg;
 {
+#define FREE_IF_EMPTY(s) if (s && strcmp(s, "none") == 0) {\
+				efree(s);\
+				s = NULL;\
+			 }
 	/*
 	 * Check if we should do SQL authentication
 	 */
-	if (cfg->doauth && !cfg->auth_query) {
-		radlog(L_ERR,
-		       _("disabling SQL auth: no auth_query specified"));
-		cfg->doauth = 0;
+	if (cfg->doauth) {
+		FREE_IF_EMPTY(cfg->auth_query);
+		if (!cfg->auth_query) {
+			radlog(L_ERR,
+			    _("disabling SQL auth: no auth_query specified"));
+			cfg->doauth = 0;
+		}
+		if (!cfg->group_query) {
+			radlog(L_WARN,
+			       _("SQL auth: no group_query specified"));
+		}
+		FREE_IF_EMPTY(cfg->group_query);
 	}
 	/*
 	 * Check if we should do SQL accounting
@@ -502,19 +537,26 @@ sql_check_config(cfg)
 			radlog(L_WARN,
 			       _("SQL acct: no acct_start_query specified"));
 		}
+		FREE_IF_EMPTY(cfg->acct_start_query);
+
 		if (!cfg->acct_stop_query) {
 			radlog(L_ERR,
 		     _("disabling SQL acct: no acct_stop_query specified"));
 			cfg->doacct = 0;
 		}
+		FREE_IF_EMPTY(cfg->acct_stop_query);
+
 		if (!cfg->acct_nasdown_query) {
 			radlog(L_WARN,
 		     _("SQL acct: no acct_nasdown_query specified"));
 		}
+		FREE_IF_EMPTY(cfg->acct_nasdown_query);
+
 		if (!cfg->acct_nasup_query) {
 			radlog(L_WARN,
 		     _("SQL acct: no acct_nasup_query specified"));
 		}
+		FREE_IF_EMPTY(cfg->acct_nasup_query);
 	}
 	
 	if (cfg->port == 0)
@@ -998,9 +1040,44 @@ rad_sql_pass(req, passwd)
 	if (!mysql_passwd) {
 		rc = -1;
 	} else {
+		chop(mysql_passwd);
 		rc = strcmp(mysql_passwd, md5crypt(passwd, mysql_passwd));
 		efree(mysql_passwd);
 	}
+	
+	if (!sql_cfg.keepopen)
+		unattach_sql_connection(SQL_AUTH, (qid_t)req);
+	
+	return rc;
+}
+
+int
+rad_sql_checkgroup(req, groupname)
+	AUTH_REQ *req;
+	char *groupname;
+{
+	int   rc = -1;
+	struct sql_connection *conn;
+	void *data;
+	char *p;
+	
+	if (sql_cfg.group_query == NULL) 
+		return -1;
+
+	radius_xlate(sql_cfg.buf.ptr, sql_cfg.buf.size,
+		     sql_cfg.group_query,
+		     req->request, NULL);
+
+	conn = attach_sql_connection(SQL_AUTH, (qid_t)req);
+	data = rad_sql_exec(conn, sql_cfg.buf.ptr);
+	while (rc != 0 && rad_sql_next_tuple(conn, data) == 0) {
+		if ((p = rad_sql_column(data,0)) == NULL)
+			break;
+		chop(p);
+		if (strcmp(p, groupname) == 0)
+			rc = 0;
+	}
+	rad_sql_free(conn, data);
 	
 	if (!sql_cfg.keepopen)
 		unattach_sql_connection(SQL_AUTH, (qid_t)req);

@@ -43,7 +43,7 @@ strerror(err)
 	static char buf[80];
 
 	if (err > sys_nerr) {
-		sprintf(buf, "error %d", err);
+		radsprintf(buf, sizeof(buf), "error %d", err);
 		return buf;
 	}
 	return sys_errlist[err];
@@ -57,7 +57,7 @@ strerror(err)
 {
 	static char buf[80];
 
-	sprintf(buf, "error %d", err);
+	radsprintf(buf, sizeof(buf), "error %d", err);
 	return buf;
 }
 

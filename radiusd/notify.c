@@ -57,12 +57,11 @@ struct notify_packet {
 Notify notify_cfg;
 int    sockfd;
 
-int _notify( char *login, char *called_id, int what, long *ttl_ptr );
+int _notify( char *login, int what, long *ttl_ptr );
 
 int
-_notify(login, called_id, what, ttl_ptr)
+_notify(login, what, ttl_ptr)
 	char *login;
-	char *called_id;
 	int what;
 	long *ttl_ptr;
 {
@@ -232,16 +231,15 @@ notify(login, what, ttl_ptr)
 	int what;
 	long *ttl_ptr;
 {
-	return _notify(login, NULL, what, ttl_ptr);
+	return _notify(login, what, ttl_ptr);
 }
 
 int
-notify_acct(login, what, called_id)
+notify_acct(login, what)
 	char *login;
 	int what;
-	char *called_id;
 {
-	return _notify(login, called_id, what, NULL);
+	return _notify(login, what, NULL);
 }
 
 int

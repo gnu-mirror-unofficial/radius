@@ -44,7 +44,7 @@ check_unix(string str, string name, integer pid, string sid)
 {
 	logit("check_snmp_s: got " + str + " " + (string)pid + " " + sid);
 	return field(str, 1) == name &&
-               field(str, 3) == pid &&
+               (integer) field(str, 3) == pid &&
                field(str, 7) == sid;
 }
 

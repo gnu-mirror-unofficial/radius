@@ -91,13 +91,13 @@ attr_to_str(buf, request, attr)
 		strncpy(tmp, pair->strvalue, AUTH_STRING_LEN);
 		break;
 	case PW_TYPE_INTEGER:
-		sprintf(tmp, "%ld", pair->lvalue);
+		radsprintf(tmp, sizeof(tmp), "%ld", pair->lvalue);
 		break;
 	case PW_TYPE_IPADDR:
 		ipaddr2str(tmp, pair->lvalue);
 		break;
 	case PW_TYPE_DATE:
-		sprintf(tmp, "%ld", pair->lvalue);
+		radsprintf(tmp, sizeof(tmp), "%ld", pair->lvalue);
 		break;
 	default:
 		radlog(L_CRIT,

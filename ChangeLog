@@ -1,3 +1,22 @@
+2001-01-02  gray  <gray@farlep.net>
+	Introduced HAVE_SETEUID switches to radiusd/exec.c.
+
+2001-01-01  gray  <gray@farlep.net>
+	Changed setlinebuf() in radiusd/radiusd.c to setvbuf(). Added
+	check for <sys/select.h> needed by AIX. Reported by Alexandre Oliva.
+
+2001-02-28  gray  <gray@farlep.net>
+	groupcheck() did not attempt to fetch group name from SQL
+	database. Fixed it. Added group_query to raddb/sqlserver.
+	Added necessary changes to radlib/mysql.c and radlib/postgres.c
+	This requires the use of an additional attribute (Queue-Id) which
+	seems to be a kludge.
+
+2001-02-25  gray  <gray@farlep.net>
+	Added radsprintf functions. Fixed statements in configure.in and
+	*/Makefile.am which were not compatible with Digital Unix and
+	Solaris. Patches kindly donated by Alexandre Oliva <oliva@gnu.org>.
+
 2001-02-18  gray  <gray@farlep.net>
 	radiusd/timestr.c completely rewritten. The new version is
 	much faster and does a reliable error-checking.

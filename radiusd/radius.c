@@ -27,19 +27,18 @@ static char rcsid[] =
 # include <config.h>
 #endif
 
-#include	<sys/types.h>
-#include	<sys/socket.h>
-#include	<sys/time.h>
-#include	<netinet/in.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/time.h>
+#include <netinet/in.h>
 
-#include	<stdio.h>
-#include	<stdlib.h>
-#include	<netdb.h>
-#include	<pwd.h>
-#include	<time.h>
-#include	<ctype.h>
-
-#include	<radiusd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <netdb.h>
+#include <pwd.h>
+#include <time.h>
+#include <ctype.h>
+#include <radiusd.h>
 
 
 /*
@@ -355,7 +354,6 @@ calc_acctdigest(digest, authreq)
 	return memcmp(digest, authreq->vector, AUTH_VECTOR_LEN) ? 2 : 0;
 }
 
-
 /*
  *	Receive UDP client requests, build an authorization request
  *	structure, and attach attribute-value pairs contained in
@@ -474,8 +472,10 @@ radrecv(host, udp_port, buffer, length)
 				pair->strvalue = alloc_string(attrlen + 1);
 				memcpy(pair->strvalue, ptr, attrlen);
 				pair->strvalue[attrlen] = 0;
-				if (debug_on(10))
-					debug_pair("send", pair);
+
+				if (debug_on(10)) 
+					debug_pair("recv", pair);
+
 				if (first_pair == (VALUE_PAIR *)NULL) {
 					first_pair = pair;
 				}
@@ -489,8 +489,10 @@ radrecv(host, udp_port, buffer, length)
 			case PW_TYPE_IPADDR:
 				memcpy(&lval, ptr, sizeof(UINT4));
 				pair->lvalue = ntohl(lval);
-				if (debug_on(10))
-					debug_pair("send", pair);
+
+				if (debug_on(10)) 
+					debug_pair("recv", pair);
+
 				if (first_pair == (VALUE_PAIR *)NULL) {
 					first_pair = pair;
 				}

@@ -704,9 +704,9 @@ rad_snmp_respond(buf, len, sa)
 	req->sa = *sa;
 
 	debug(1,
-		("got %d bytes from %s",
+		("got %d bytes from %I",
 		 len,
-		 ipaddr2str(ipbuf, ntohl(req->sa.sin_addr.s_addr))));
+		 ntohl(req->sa.sin_addr.s_addr)));
 	
 	if (snmp_decode(req, buf, len)) {
 		free_entry(req);
@@ -735,10 +735,10 @@ snmp_decode(req, buf, len)
 		access = check_acl(req->sa.sin_addr.s_addr, community);
 		if (!access) {
 			radlog(L_NOTICE,
-			       _("DENIED attempt to access community %s from %s (%s)"),
+			       _("DENIED attempt to access community %s from %s (%I)"),
 			       community,
 			       ip_hostname(ntohl(req->sa.sin_addr.s_addr)),
-			       ipaddr2str(ipbuf, ntohl(req->sa.sin_addr.s_addr)));
+			       ntohl(req->sa.sin_addr.s_addr));
 			return 1;
 		}
 		req->pdu = pdu;
@@ -747,9 +747,9 @@ snmp_decode(req, buf, len)
 		return 0;
 	} else {
 		char ipbuf[DOTTED_QUAD_LEN];
-		radlog(L_ERR, _("failed SNMP query from %s (%s)"),
+		radlog(L_ERR, _("failed SNMP query from %s (%I)"),
 		    ip_hostname(ntohl(req->sa.sin_addr.s_addr)),
-		    ipaddr2str(ipbuf, ntohl(req->sa.sin_addr.s_addr)));
+		    ntohl(req->sa.sin_addr.s_addr));
 		efree(community);	
 		return 1;
 	}
@@ -778,11 +778,9 @@ snmp_req_drop(type, req, status_str)
 	SNMP_REQ *req;
 	char *status_str;
 {
-	char ipbuf[DOTTED_QUAD_LEN];
-	
 	radlog(L_NOTICE,
-	       _("Dropping SNMP request from client %s: %s"),
-	       ipaddr2str(ipbuf, ntohl(req->sa.sin_addr.s_addr)),
+	       _("Dropping SNMP request from client %I: %s"),
+	       ntohl(req->sa.sin_addr.s_addr),
 	       status_str);
 }
 

@@ -397,7 +397,7 @@ char *mkfilename3(char *dir, char *subdir, char *name);
 int backslash(int c);
 void string_copy(char *d, char *s, int  len);
 #define STRING_COPY(s,d) string_copy(s,d,sizeof(s)-1)
-char *format_pair(VALUE_PAIR *pair, char **save);
+char *format_pair(VALUE_PAIR *pair, int typeflag, char **save);
 int format_string_visual(char *buf, int runlen, char *str, int len);
 char *op_to_str(int op);
 int str_to_op(char *str);

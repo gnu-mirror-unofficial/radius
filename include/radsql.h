@@ -66,7 +66,7 @@ extern SQL_cfg sql_cfg;
 
 int rad_sql_init();
 void rad_sql_acct(RADIUS_REQ *req);
-int rad_sql_pass(RADIUS_REQ *req, char *data, char *passwd);
+char *rad_sql_pass(RADIUS_REQ *req, char *data);
 void rad_sql_check_connect(int type);
 void rad_sql_need_reconnect(int type);
 int rad_sql_setup(int type, qid_t qid);

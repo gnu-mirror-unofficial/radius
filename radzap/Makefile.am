@@ -11,7 +11,7 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 bin_PROGRAMS    = radzap
 radzap_SOURCES = radzap.c 
-radzap_LDADD   = ../radlib/liblog.la ../radlib/librad.la ../radlib/libdebug.la
+radzap_LDADD   = ../radlib/liblog.la ../radlib/librad.la ../radlib/libdebug.la @LIBINTL@
 INCLUDES       = -I$(top_srcdir)/include -I$(top_srcdir)/radlib @INCLUDEPATH@
 
 SUFFIXES=.S .c .ln .o .s

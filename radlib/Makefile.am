@@ -42,12 +42,14 @@ users_gram.c \
 users_lex.c \
 util.c
 
+localedir = $(datadir)/locale
+
 LIBADD=@LIBOBJS@
 librad_la_LIBADD = $(LIBADD:.o=.lo)
 liblog_la_SOURCES=applog.c 
 libdebug_la_SOURCES=debugmod.c
 LDFLAGS=-all-static
-AM_CFLAGS=-static
+AM_CFLAGS=-static -DLOCALEDIR=\"$(localedir)\"
 
 BUILT_SOURCES=users_gram.c users_lex.c
 MAINTAINERCLEANFILES=users_gram.c users_gram.h users_lex.c

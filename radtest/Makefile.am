@@ -12,7 +12,7 @@
 
 bin_PROGRAMS    = radtest
 radtest_SOURCES = main.c gram.y input.l debugmod.c radtest.h
-radtest_LDADD   = ../radlib/liblog.la ../radlib/librad.la
+radtest_LDADD   = ../radlib/liblog.la ../radlib/librad.la @LIBINTL@
 noinst_HEADERS  = gram.h
 INCLUDES        = -I$(top_srcdir)/include -I$(top_srcdir)/radlib -I$(srcdir) @INCLUDEPATH@
 AM_YFLAGS = -vdt 

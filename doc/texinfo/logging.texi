@@ -24,7 +24,7 @@ level auth;
 in @code{category auth} statement of @file{config} file.
 
 @item Proxy
-Messages regarding proxy requests @ref{Realms}.
+Messages regarding proxy requests (@pxref{Proxying}).
 
 @item Info
 Informational messages.

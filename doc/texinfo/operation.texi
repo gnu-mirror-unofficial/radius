@@ -59,11 +59,14 @@ server}.
 @end menu
 
 @comment *L2****************************************************************
-@node Attributes, Requests, Operation, Operation
+@node Attributes
 @section Attributes
 @cindex Attribute
 @cindex Attribute-Value pair
 @cindex A/V pair
+@cindex additivity of an attribute
+@cindex propagation of an attribute
+@cindex properties of an attribute
 
 The information the Radius requests carry is stored as a list of
 @dfn{Attribute-Value pairs}. Each pair consists of @dfn{Attribute
@@ -95,10 +98,41 @@ The special attribute 26, @dfn{Vendor-Specific}, is available to allow
 vendors of the @NAS{} hardware or software to support their own extended
 attributes. @ref{Vendor-Specific,, Vendor-Specific attribute}.
 
-@xref{Attribute list}.
+Each attribute has a set of properties associated with it. The
+properties are:
+
+@table @dfn
+@item usage flags
+These flags determine usage of the attribute in configuration
+files @file{huntgroups}, @file{hints} and @file{users}.
+@item propagation
+When a radius server functions in proxy mode, it uses the @dfn{propagation}
+bit to determine which attributes from the reply packet should be passed
+back to the requesting @NAS{} (@pxref{Proxy Service}).
+@item additivity
+Some configuration rules may cause addition of new @AVP{}s to the
+incoming request. Before addition of a new pair, @command{radiusd}
+scans the request to see if it already contains a pair with the same
+attribute. If it does, the value of @dfn{additivity} determines the
+further actions:
+@table @asis
+@item None
+The old pair is retained in the request, the new pair is not added to
+it.
+@item Replace
+The old pair is retained in the request, but its value is replaced with
+that of the new pair.
+@item Append
+The new pair is appended to the end of the pair list.
+@end table
+@end table
+
+The attributes are declared in @file{raddb/dictionary} file. For a
+detailed description of it, @xref{ATTRIBUTE}.
+For information about particular attributes, @xref{Attribute list}.
 
 @comment *L2****************************************************************
-@node Requests, Matching Rule, Attributes, Operation
+@node Requests
 @section Radius requests
 @cindex Request
 
@@ -135,7 +169,7 @@ request.
 @end menu
 
 @comment **L3***************************************************************
-@node Authentication requests, Accounting requests, , Requests
+@node Authentication requests
 @subsection Authentication requests
 @cindex Authentication requests
 @cindex requests, authentication
@@ -204,7 +238,7 @@ response, and including the @attr{State} attribute from the
 Access-Challenge, if any. 
 
 @comment **L3***************************************************************
-@node Accounting requests, , Authentication requests, Requests
+@node Accounting requests
 @subsection Accounting requests
 @cindex Accounting requests
 @cindex requests, accounting
@@ -310,7 +344,7 @@ must contain at least the following attributes:
 @end table
 
 @comment *L2****************************************************************
-@node Matching Rule, Request processing, Requests, Operation
+@node Matching Rule
 @section Matching Rule
 @cindex Matching Rule
 @cindex Label, Matching Rule
@@ -344,7 +378,7 @@ incoming requests against contents of these files differ from file
 to file. The following section describes these rules in detail.
 
 @comment *L2****************************************************************
-@node Request processing, , Matching Rule, Operation
+@node Request processing
 @section Processing requests
 @cindex Processing requests
 
@@ -366,8 +400,6 @@ the request is rejected.
 Using the data from the packet and the shared key value from the @file{clients}
 file, Radius computes the MD5 encryption key that will be used to decrypt
 the value of the @attr{Password} attribute.
-@item Determine the realm the request belongs to.
-[FIXME]
 @item Process user-name hints.
 @dfn{User-name hints} are special rules that modify the request
 depending on user name and his credentials. These rules allow to divide
@@ -378,48 +410,112 @@ and/or accounting methods. The user-name hints are stored in
 @dfn{Huntgroup rules} allow to segregate incoming requests depending
 on the @NAS{} and/or port number they came from. These rules are stored in
 @file{raddb/huntgroups} (@pxref{huntgroups file}).
+@item Determine whether the request must be proxied to another radius
+server
+The requests pertaining to another realm are immediately forwarded
+to the remote radius server for further processing. @xref{Proxying},
+for the description of this process.
 @item Process individual user profiles.
 This step applies only to authentication requests.
 @end table
 
 @menu
-* Realms::      
+* Proxying::      
 * Hints::
 * Huntgroups::
 * User Profiles::
 @end menu
 
 @comment **L3***************************************************************
-@node Realms, Hints, , Request processing
-@subsection Realms
+@node Proxying
+@subsection Proxying
+@cindex Proxying
+
+@dfn{Proxying} is a mode of operation when a radius server forwards 
+an incoming requests from a @NAS{} to another radius server, waits
+for the latter to reply, and forwards the reply back to the requesting
+@NAS{}. A common use for such operation mode is to provide @dfn{roaming}
+between several Internet Service Providers (@acronym{ISP}s). Roaming
+permits the @acronym{ISP}s to share their resources, allowing 
+each other's users to connect to other party's equipment. Thus, users
+traveling outside the area of one @acronym{ISP}'s coverage are still
+able to access their services through another @acronym{ISP}.
+
+@menu
+* Proxy Service::        
+* Realms::
+@end menu
+
+@comment ***L4**************************************************************
+@node Proxy Service
+@subsubsection Proxy Service
+@cindex Proxy Service
+
+Suppose the @acronym{ISP} @samp{Local} has a roaming arrangement with the
+@acronym{ISP} @samp{Remote}. When the user of @samp{Remote} dials in
+to the @NAS{} of @samp{Local}, the @NAS{} sends the authentication
+request to @samp{Local} radius server. The server then determines that this
+is a roaming user, stores a copy of the request in its
+internal queue, and forwards the request to @samp{Remote} radius
+server for processing. Thus, @samp{Local} radius acts as a client for
+@samp{Remote} radius. When @samp{Remote} radius responds, the
+@samp{Local} receives the response, and passes it back to the @NAS{}.
+The copy of the request from the server's queue serves to determine
+which @NAS{} originated the request. Before passing the request
+back to the @NAS{}, radius removes from it the information,
+specific for @samp{Remote} site, such as @attr{Framed-IP-Address},
+@attr{Framed-Netmask}, etc. Only the attributes marked with
+@samp{propagate} flag (@pxref{Attributes}) are passed back to
+the @NAS{}. After removing site-specific attributes, @samp{Local} radius
+passes the request through its user profiles (@pxref{User Profiles}) to
+insert any local site-specific information that might be
+needed. Finally, it passes the reply back to the @NAS{}.
+
+The accounting requests are processed in the similar manner, except that
+no attribute filtering takes place, as the accounting responces do
+not carry any @AVP{}s.
+
+This example illustrates the simplest @dfn{proxy chain}, consisting of
+only two servers. The proxy chains may consist of several servers. In
+our example, the @samp{Remote} radius server may also act as a proxy
+and forward the request to still another radius server, etc.
+
+@emph{Note}, that when the accounting request passes through a chain of
+forwarding servers, the accounting records are stored on all servers in
+the chain.
+
+@comment ***L4**************************************************************
+@node Realms
+@subsubsection Realms
 @cindex Realms
 
-We call a @dfn{realm} a community of users served by a single Radius
-server. Several such servers can co-operate with each other thus allowing
-users from a particular @dfn{realm} to be authorized using another
-@dfn{realm}'s server.
+Radius server determines which server a request must be forwarded to
+by request's @dfn{authentication realm}. There are three kinds of
+realms:
 
-Let's illustrate this concept. Suppose an ISP has its affiliates in two
-different cities, and each of these affiliates is using its own Radius
-server. Let's call the affiliates @dfn{A} and @dfn{B} and let's call
-the corresponding servers @dfn{radius.a} and @dfn{radius.b}. If the
-user of affiliate @dfn{A} moves to city @dfn{B} he is no longer able
-to use the service provided by @dfn{radius.a}, neither is he able to
-use the service provided by @dfn{radius.b} because he is not in the
-users database of the latter. To solve this situation, both Radius
-servers should be able to share their database information with each
-other. This is done by a very simple means: if user @samp{foo}
-connects to the equipment of the @dfn{B} and authenticates itself as
-@samp{foo@@A} then Radius server @dfn{radius.b} knows that the
-user belongs to another realm and passes the request to server
-@dfn{radius.a}. When the latter responds, server @dfn{radius.a} 
-simply passes the response back to @NAS{}. In other words @dfn{radius.a}
-server acts as a proxy between the @NAS{} to which the user is trying
-to connect and the Radius server which is responsible for authenticating
-the user.
+@enumerate 1
+@item A @dfn{Named Realm} is the part of a user name following the
+@samp{at sign} (@samp{@@}). For example, if the user name is
+@samp{jsmith@@this.net}, then @samp{this.net} is the realm.
+
+The named realms can be cascaded, e.g. a request with user name
+@samp{jsmith@@this.net@@remote.net} will first be forwarded to
+the radius server of realm @samp{remote.net}, which in turn
+will forward it to @samp{this.net}.
+@item A @dfn{Default Realm} defines the server to which the requests
+for realms, not mentioned explicitly in the configuration, 
+are forwarded.
+@item An @dfn{Empty Realm} defines the server to which the requests
+@emph{without} explicit named realm are forwarded. If the configuration
+does not define the empty realm, such requests are processed by the
+server itself.
+@end enumerate
+
+GNU Radius keeps the information about the realms it serves in
+configuration file @file{raddb/realms} (@pxref{realms file}).
 
 @comment **L3***************************************************************
-@node Hints, Huntgroups, Realms, Request processing
+@node Hints
 @subsection Hints
 @cindex Hints
 
@@ -463,10 +559,11 @@ The value of this attribute is expanded (@pxref{Macro substitution}),
 and replaces the value of @attr{User-Name} attribute from the request.
 @end table
 
-@ref{hints file}
+The hints rules are defined in @file{raddb/hints} file
+(@pxref{hints file}).
 
 @comment **L3***************************************************************
-@node Huntgroups, User Profiles, Hints, Request processing
+@node Huntgroups
 @subsection Huntgroups
 @cindex Huntgroups
 
@@ -486,10 +583,11 @@ with the same label form a single huntgroup. The special attribute
 @attr{Huntgroup-Name} can be used to request a match against a
 particular huntgroup (@pxref{Huntgroup-Name}). 
 
-@ref{huntgroups file}
+The huntgroups rules are defined in @file{raddb/huntgroups} file
+(@pxref{huntgroups file}).
 
 @comment **L3***************************************************************
-@node User Profiles, , Huntgroups, Request processing
+@node User Profiles
 @subsection User Profiles
 @cindex User Profiles
 @cindex Authentication
@@ -524,7 +622,8 @@ When the list is exhausted, the authentication result is sent back
 to the @NAS{} along with the @AVP{}s collected in the @dfn{Reply
 List}.
 
-[FIXME: links to the description of raddb/users and auth]
+The user profiles are defined in @file{raddb/users} file
+(@pxref{users file}).
 
 
 

@@ -121,6 +121,7 @@ The radius daemon
 * Extensions::          Extending radiusd.
 
 * Utility Programs::
+* Client Package::
 
 Radius Attributes
 * Attribute list::      Some frequently used attributes.
@@ -579,6 +580,7 @@ Public License instead of this License.
 @include debug.texi
 @include extensions.texi
 @include programs.texi
+@include client.texi
 @include attributes.texi
 @include bugs.texi
 

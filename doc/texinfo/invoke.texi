@@ -68,13 +68,15 @@ Stay in foreground. We recommend to use it for debugging purposes only.
 @c ** --ip-address
 @item -i IP
 @itemx --ip-address
-Specifies a source @IP{}. @command{Radiusd} will listen to packets
-coming to this address. If this option is not specified, the program
-picks up the @IP{} of first non-loopback interface it sees on the
-machine.
+Specifies the @IP{} @command{radiusd} will listen on.
+If this option is not specified, the program will listen on all
+IP addresses, assigned to the machine it runs on.
 
-Config file equivalent: @code{option @{ source-ip IP; @};}. 
-FIXME: xref listen statement
+Config file equivalent: @code{option @{ source-ip IP; @};}.
+
+@emph{Please note}, that @code{listen} statement in @file{raddb/config}
+provides a better control over @IP{}es to listen on (@xref{auth}, and
+@pxref{acct}). 
 
 @c ** -L option (radiusd)
 @c ** --license option (radiusd)

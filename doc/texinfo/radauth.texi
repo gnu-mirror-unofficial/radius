@@ -24,6 +24,6 @@ compromised.
 
 The program determines which Radius server to use, the authentication
 port number and shared secret following the procedure common for all
-client scripts. [FIXME: add reference to session.scm and explain
-which startup files are used]
+client scripts (@pxref{config}).
+
 

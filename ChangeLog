@@ -1,3 +1,23 @@
+2001-12-12 Sergey Poznyakoff
+
+	* radiusd/radiusd.c: (reread_config): Use rad_flush_queues()
+	  instead of flush_request_list().
+	  (rad_flush_queues): Call rad_child_cleanup() after each
+	  flush_request_list() to clean up the children remains.
+	
+	* NEWS: Updated
+	* client/nas/nas.rc: Updated.
+	
+	* doc/texinfo/client.texi: (new)
+	* doc/texinfo/Makefile.am: Added client.texi
+	* doc/texinfo/attributes.texi: Updated.
+	* doc/texinfo/configure.texi: Updated.
+	* doc/texinfo/extensions.texi: Updated.
+	* doc/texinfo/invoke.texi: Updated.
+	* doc/texinfo/logging.texi: Updated.
+	* doc/texinfo/operation.texi: Updated.
+	* doc/texinfo/programs.texi: Updated.
+	
 2001-12-11 Sergey Poznyakoff
 
 	* THANKS: Added Dave Restall.

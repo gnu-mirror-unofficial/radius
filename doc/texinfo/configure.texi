@@ -883,6 +883,8 @@ ATTRIBUTE  @var{name}  @var{number}  @var{type} [@var{vendor} [@var{flags}]]
 
 @subheading Usage
 The @code{ATTRIBUTE} statement defines the translation for an attribute.
+Its parts have the following meaning:
+
 @table @var
 @item name
 The attribute name.
@@ -894,24 +896,61 @@ The attribute type.
 Vendor name for vendor-specific attributes. For usual attributes this
 field is empty or contains a dash (@samp{-}).
 @item flags
-Flags, defining attribute properties.
+Flags, defining attribute properties (@pxref{Attributes}).
 @end table
+
+The @dfn{attribute property flags} consist of a sequence of letters,
+whose meaning is determined by the following rules:
+@footnote{The @var{flags} are optional for compatibility with previous
+versions of GNU Radius. If they are omitted, the default is @samp{[LRLRLR]+}}
+
+@enumerate 1
+@item
+The attribute usage is described by three pairs of symbols, enclosed
+in square brackets. Each pair describes how the attribute can be
+used in each of three configuration files. The first pair corresponds
+to @file{raddb/users}, the second one corresponds to @file{raddb/hints},
+and the third one corresponds to @file{raddb/huntgroups}. Within each
+pair, the letter @samp{L} in first position means that the attribute
+is allowed in @LHS{} of a rule. The letter @samp{R} in second position
+means that the attribute is allowed in @RHS{} of a rule. The absense of
+any of these letters is indicated by dash (@samp{-}). Thus, the
+following usage specification:
+
+@example
+        [L--RLR]
+@end example
+@noindent
+
+means that the attribute may be used in @LHS{} of a rule in @file{raddb/users},
+in @RHS{} of a rule in @file{raddb/hints}, and in both sides of a rule
+in @file{raddb/huntgroups}.
+@item
+The attribute additivity is described by one of the following letters:
+@table @asis
+@item =
+Additivity = Replace
+@item +
+Additivity = Append
+@item N
+Additivity = None
+@end table
+@item
+The presence of letter @samp{P} in property flags raises the propagation
+bit.
+@end enumerate
 
 @subheading Example
 
-The following assigns the translation string @samp{Service-Type} to the
-attribute number 6:
-
 @example
-ATTRIBUTE  Service-Type  6 integer 
+ATTRIBUTE  Service-Type  6 integer - [LR-RLR]=P	
 @end example
 
-The following defines a vendor-specific attribute for vendor-id
-@samp{Livingston}, defined in the previous chapter:
-
-@example
-ATTRIBUTE       LE-Terminate-Detail     2       string  Livingston
-@end example
+This statement assigns the translation string @samp{Service-Type} to the
+attribute number 6. It allows the use of this attribute in any part
+of matching rules, except in @LHS{} of a @file{raddb/hints} rule. The
+additivity of @attr{Service-Type} is set to @samp{Replace}. The
+attribute will be propagated through the proxy chain.
 
 @comment **L3***************************************************************
 @node VALUE, , ATTRIBUTE, dictionary file
@@ -1245,7 +1284,6 @@ Replace @var{comm} with your actual SNMP community name.
 @item livingston --- Livingston Portmaster
 Type @code{livingston} queries portmaster using SNMP.
 @end table
-[FIXME]
 
 @comment *L2****************************************************************
 @node hints file, huntgroups file, nastypes file, Configuration files
@@ -1327,7 +1365,7 @@ DEFAULT NAS-IP-Address = 11.10.10.11, Rewrite-Function = "max_fixup"
 @cindex @samp{NOREALM}, special realm name
 
 The @file{raddb/realms} file lists remote Radius servers that are allowed to
-communicate with the local Radius server (@pxref{Realms}).
+communicate with the local Radius server (@pxref{Proxying}).
 
 Each record consists of up to three fields, separated by whitespace.
 Two of them are mandatory. The fields are:
@@ -1336,7 +1374,8 @@ Two of them are mandatory. The fields are:
 @item Realm name
 Specifies the name of the realm being defined, i.e. part of the login
 name after the @samp{@@} symbol. The special realm name @samp{NOREALM}
-matches user names without explicit realm.
+defines the empty realm, the name @samp{DEFAULT} defines the default
+realm (@pxref{Realms}).
 @item Remote server
 Specifies the remote server to which the requests for this realm should
 be forwarded. A port number can also be specified using syntax

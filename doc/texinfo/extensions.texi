@@ -1,4 +1,4 @@
-o@c This is part of the Radius manual.
+@c This is part of the Radius manual.
 @c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************

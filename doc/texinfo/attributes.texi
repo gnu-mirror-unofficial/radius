@@ -481,7 +481,7 @@ accounting is supported.
 
 This Attribute is available to allow vendors to support their own
 extended Attributes not suitable for general usage.
-@c [FIXME]
+@c [FIXME: some more detail over the VSAs ]
 
 @comment **************************************************************
 @node Session-Timeout

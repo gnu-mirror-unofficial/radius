@@ -302,7 +302,7 @@ _ascend_parse_generic(struct ascend_parse_buf *pb)
 		pb->flt->v.generic.more = 1;
 	else {
 		asprintf(pb->errmsg,
-			 _("Expected `more' but found `%s'"),
+			 _("Expected `more', but found `%s'"),
 			 tok);
 		return 1;
 	}
@@ -354,7 +354,7 @@ _get_direction_type(struct ascend_parse_buf *pb, char *suffix, int lookahead)
 	}
 	if (!lookahead)
 		asprintf(pb->errmsg,
-			 _("Expected {src|dst}port but found `%s'"), tok);
+			 _("Expected `{src|dst}port', but found `%s'"), tok);
 	return ASCEND_DIR_NONE;
 }
 
@@ -505,24 +505,33 @@ _get_port(struct ascend_parse_buf *pb)
 	return dir;
 }
 
+/* Return value:
+   0 - No port specification found
+   1 - Port specification is found and processed
+   -1 - Parse error pb->errmsg *might* contain diagnostics */
 static int
 _ascend_parse_port_clause(struct ascend_parse_buf *pb)
 {
-	int n = _get_port(pb);
+	int n;
+	
+	if (_get_direction_type(pb, "port", 1) == ASCEND_DIR_NONE)
+		return 0;
+	
+	n = _get_port(pb);
 
 	if (n == ASCEND_DIR_NONE)
-		return 1;
+		return -1;
 	if (_get_direction_type(pb, "port", 1) != ASCEND_DIR_NONE) {
 		int n1 = _get_port(pb);
 		if (n1 == ASCEND_DIR_NONE)
-			return 1;
+			return -1;
 		if (n1 == n) {
 			asprintf(pb->errmsg,
-				 _("Duplicate IP specification"));
-			return 1;
+				 _("Duplicate port specification"));
+			return -1;
 		}
 	}
-	return 0;
+	return 1;
 }
 
 /* IP filter specification is
@@ -553,7 +562,8 @@ _ascend_parse_ip(struct ascend_parse_buf *pb)
 			return 1;
 		if (_moreinput(pb)) {
 			char *tok;
-			if (_ascend_parse_port_clause(pb))
+			int have_port = _ascend_parse_port_clause(pb);
+			if (have_port == -1)
 				return 1;
 			tok = _get_token(pb, 0);
 			if (!tok)
@@ -562,7 +572,9 @@ _ascend_parse_ip(struct ascend_parse_buf *pb)
 				pb->flt->v.ip.established = 1;
 			else {
 				asprintf(pb->errmsg,
-					 _("Expected `est' but found `%s'"),
+					 have_port ?
+					 _("Expected `est' but found `%s'") :
+					 _("Expected `{src|dst}port' or `est', but found `%s'"),
 					 tok);
 				return 1;
 			}

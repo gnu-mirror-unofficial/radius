@@ -19,33 +19,29 @@ include(SRCDIR/radscripts.m4)dnl
 # along with GNU Radius; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  
 
-while getopt "An:s:P:h"
+while getopt "An:s:P:hv"
 begin
-  if $OPTVAR = "-n"
-	NASIP = $OPTARG \
-  else if $OPTVAR = "-s"
-	SID = $OPTARG \
-  else if $OPTVAR = "-P"
-	pid = $OPTARG \
-  else if $OPTVAR = "-v" 
-	set -v \
-  else if $OPTVAR = "-A"
-	ACCT=yes \
-  else if $OPTVAR = "-h"
-  begin
-    print <<-EOT
-	usage: rs [[OPTIONS]] login [[password]]
-	Options are:
-	  -A            Run accounting after successful authentication
-	  -n IP		Set NAS IP address
-	  -s SID	Set session ID
-	  -P PORT	Set NAS port number
-	EOT
-    exit 0
-  end else
-  begin
-	print "Unknown option: " $1
-	exit 1
+  case $OPTVAR in
+  "-n")	NASIP = $OPTARG 
+  "-s")	SID = $OPTARG 
+  "-P") pid = $OPTARG 
+  "-v")	set -v 
+  "-A")	ACCT = yes 
+  "-h") begin
+          print <<-EOT
+		usage: radauth [[OPTIONS]] login [[password]]
+		Options are:
+		  -A            Run accounting after successful authentication
+		  -n IP		Set NAS IP address
+		  -s SID	Set session ID
+		  -P PORT	Set NAS port number
+		EOT
+          exit 0
+        end
+  ".*")	begin
+          print "Unknown option: " $1
+	  exit 1
+        end
   end
 end
 
@@ -96,4 +92,5 @@ begin
   end
 end
 exit 1
-         
+
+# End of radauth

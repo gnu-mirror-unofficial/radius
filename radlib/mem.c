@@ -181,9 +181,11 @@ alloc_bucket(class)
         bp->s.next = class->first;
         class->first = bp;
 
+        class->bucket_cnt++;
+
         if (class->cont) {
-                put_back_cont(class, ENTRY(bp, 0), class->elcnt);
                 class->allocated_cnt += class->elcnt;
+                put_back_cont(class, ENTRY(bp, 0), class->elcnt);
 		insist(class->allocated_cnt <= class->bucket_cnt * class->elcnt);
         } else {
                 end_ptr = ENTRY(bp, class->elcnt);
@@ -197,8 +199,6 @@ alloc_bucket(class)
                 class->free = ENTRY(bp, 0);
         }
         
-        class->bucket_cnt++;
-
         debug(1, ("Bucket count for class %d is %d", 
                         class->elsize, class->bucket_cnt));
         return bp;

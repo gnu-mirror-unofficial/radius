@@ -253,8 +253,8 @@ The module understands following command line options:
   use_authtok       -  Use authentication token passed from the previous module
                        in stack.
   confdir=PATH      -  Use PATH as a configuration directory
-                       (default $sysconfdir/etc).
-  service_type=STR  -  Add Service-Type=STR in the auth packet. STR should
+                       (defaults to $sysconfdir/etc/raddb).
+  service_type=STR  -  Add Service-Type=STR to the auth packet. STR should
                        be a valid value, described in dictionary file.
 
 The default configuration file, $sysconfdir/raddb/client.conf, is installed

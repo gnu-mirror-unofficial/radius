@@ -1,12 +1,15 @@
 ;; This is a sample configuration file for radctl and session
 ;; scripts.
-(set! rad-server-list
-      '(("local" "localhost" "guessme" 1645 1646 0)))
-(define nas-ip "127.0.0.1")
-(rad-client-source-ip nas-ip)
-(rad-client-timeout 10)
-(rad-client-retry 3)
-(rad-select-server "emris")
+
+;; These statements can be used to override the defaults set in
+;; raddb/client.conf
+;(set! rad-server-list
+;      '(("local" "localhost" "guessme" 1645 1646 0)))
+;(define nas-ip "127.0.0.1")
+;(rad-client-source-ip nas-ip)
+;(rad-client-timeout 10)
+;(rad-client-retry 3)
+;(rad-select-server "local")
 
 (set! nas-log-facility LOG_LOCAL4)
 (set! pppd-args (list

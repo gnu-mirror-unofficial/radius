@@ -25,29 +25,33 @@ This manual is available in the following formats:
 <P>
 <UL>
   <LI>formatted in <A HREF="html_mono/%PACKAGE%.html">HTML
-      (%HTML_SIZE%K characters)</A> entirely on one web page.
+      (%HTML_SIZE%K characters)</A> entirely on one web page.</LI>
   <P>
   <LI> formatted in <a href="html_chapter/%PACKAGE%_toc.html">HTML</a>
-       with one web page per chapter.
-  <p>
+       with one web page per chapter.</LI>
+  <P>
   <LI> formatted in <a href="html_node/%PACKAGE%_toc.html">HTML</a>
-       with one web page per node.
-  <p>
+       with one web page per node.</LI>
+  <P>
   <LI>formatted as an
       <A HREF="other/%PACKAGE%.info.tar.gz">Info document (%INFO_TAR_GZ_SIZE%K characters
-      gzipped tar file)</A>.
+      gzipped tar file)</A>.</LI>
   <P>
   <LI>formatted as
-      <A HREF="other/%PACKAGE%.text">ASCII text (%TEXT_SIZE%K characters)</A>.
+      <A HREF="other/%PACKAGE%.text">ASCII text (%TEXT_SIZE%K characters)</A>.</LI>
   <P>
   <LI>formatted as
       <A HREF="other/%PACKAGE%.dvi.gz">a TeX dvi file (%DVI_GZ_SIZE%K characters
-      gzipped)</A>.
+      gzipped)</A>.</LI>
   <P>
-  <li>formatted as
+  <LI>formatted as
       <A href="other/%PACKAGE%.ps.gz">a PostScript file (%PS_GZ_SIZE%K characters
-      gzipped)</a>.
-  <p>
+      gzipped)</A>.</LI>
+  <P>
+  <LI>formatted as
+      <A href="other/%PACKAGE%.pdf.gz">a PDF file (%PDF_GZ_SIZE%K characters
+      gzipped)</A>.</LI>
+  <P>
   <LI>the original
       <A HREF="other/%PACKAGE%.texi.tar.gz">Texinfo source (%TEXI_TAR_GZ_SIZE%K characters
       gzipped tar file)</A>
@@ -59,7 +63,7 @@ This manual is available in the following formats:
 
 Return to <A HREF="/home.html">GNU's home page</A>.
 <P>
-FSF &amp; GNU inquiries &amp; questions to
+Send FSF &amp; GNU inquiries &amp; questions to
 <A HREF="mailto:gnu@gnu.org"><EM>gnu@gnu.org</EM></A>.
 Other <A HREF="/home.html#ContactInfo">ways to contact</A> the FSF.
 <P>

@@ -1,3 +1,11 @@
+2002-06-17  Sergey Poznyakoff 
+
+	* configure.ac: Do not panic if libmysqlclient_r wasn't found.
+	* radiusd/request.c (rad_cleanup_thread0): a placeholder for
+	  the cleanup function.
+	  (request_put): Prevent successive invocations of pthread_cancel
+	  by updating the request timestamp to the current time.
+
 2002-06-14  Sergey Poznyakoff 
 
 *	* radiusd/radiusd.c: Added `watcher' feature. When radiusd

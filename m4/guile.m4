@@ -18,7 +18,7 @@ dnl along with GNU Radius; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl
 
-AC_DEFUN(RA_CHECK_GUILE,
+AC_DEFUN([RA_CHECK_GUILE],
 [
  if test "x$ra_cv_lib_guile" = x; then
    cached=""

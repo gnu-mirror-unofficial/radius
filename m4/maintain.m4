@@ -12,7 +12,7 @@ dnl
 dnl Check for --enable-maintainer-mode and enable maintainer-specific
 dnl settings.
 
-AC_DEFUN(RA_MAINTAINER_MODE,
+AC_DEFUN([RA_MAINTAINER_MODE],
   [AM_MAINTAINER_MODE
    if test x"$USE_MAINTAINER_MODE" = xyes; then
      if test x"$GCC" = xyes; then

@@ -1,7 +1,7 @@
 ## $Id$
 
 ## Based on Jim Meyering's jm_INCLUDED_REGEX:
-AC_DEFUN(RA_REPLACE_REGEX,
+AC_DEFUN([RA_REPLACE_REGEX],
   [
     AC_ARG_WITH(included-regex,
                 [  --without-included-regex don't compile regex; this is the default on

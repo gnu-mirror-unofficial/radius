@@ -10,7 +10,7 @@
 ## defun.
 
 AH_TEMPLATE(HAVE_GNU_GETOPT, [Define if your system has GNU getopt functions])
-AC_DEFUN(RA_REPLACE_GNU_GETOPT,
+AC_DEFUN([RA_REPLACE_GNU_GETOPT],
 [
  AC_CACHE_CHECK([for GNU getopt], ra_cv_have_gnu_getopt,
   [AC_TRY_RUN([

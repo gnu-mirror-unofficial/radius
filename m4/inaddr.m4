@@ -17,7 +17,7 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with GNU Radius; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl
-AC_DEFUN(RA_CHECK_INADDR_LOOPBACK,
+AC_DEFUN([RA_CHECK_INADDR_LOOPBACK],
   [
     AC_MSG_CHECKING(for INADDR_LOOPBACK)
     AC_CACHE_VAL(ra_cv_decl_inaddrloopback,[

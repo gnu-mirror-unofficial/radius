@@ -481,7 +481,8 @@ logging @{
 
 @smallexample
 auth @{
-        [ listen @var{addr-list} ; ]
+        [ listen ( @var{addr-list} | no ); ]
+        [ forward @var{addr-list}; ]
         [ port @var{number} ; ]
         [ max-requests @var{number} ; ]
         [ time-to-live @var{number} ; ]
@@ -492,6 +493,7 @@ auth @{
         [ password-expire-warning @var{number} ; ]
         [ compare-atribute-flag @var{character} ; ]
         [ trace-rules @var{bool} ; ]
+        [ reject-malformed-names @var{bool} ; ]
 @} ;
 @end smallexample
 
@@ -499,7 +501,7 @@ auth @{
 The @code{auth} statement configures the parameters of the authentication
 service.
 
-@subheading listen statement
+@subheading @code{listen} statement
 
 This statement determines on which addresses radiusd will listen for incoming
 authentication requests. Its argument is a comma-separated list of items
@@ -511,6 +513,9 @@ default authentication port is assumed.
 If the @code{listen} statement is omitted, radiusd will accept incoming
 requests from any interface on the machine.
 
+The special value @code{no} disables listening for authentication
+requests.
+
 The following example configures radius to listen for the incoming
 requests on the default authentication port on the address 10.10.10.1
 and on port 1645 on address 10.10.11.2.
@@ -518,6 +523,17 @@ and on port 1645 on address 10.10.11.2.
 @smallexample
 listen 10.10.10.1, 10.10.11.2:1645;
 @end smallexample
+
+@subheading @code{forward} statement
+
+This statement enables @dfn{forwarding} of the requests to the given
+set of servers. Forwarding is an experimental feature of GNU Radius,
+it differs from proxying in that the requests are sent to the remote
+server (or servers) @emph{and} processed locally. The remote server
+is not expected to reply.
+
+This mode is intended primarily for debugging purposes. It could also
+be useful in some very complex and unusual configurations. 
 
 @subheading Numeric statements
 
@@ -553,8 +569,9 @@ is 0.
 
 @item detail
 When set to true, @command{radiusd} will produce the detailed log of each
-received packet in the file @file{radacct/NASNAME/detail.auth}.
-(@pxref{Naming Conventions}).
+received packet in the file @file{radacct/NASNAME/detail.auth}. The
+format of such log files is identical to the format of detailed
+accounting files (@pxref{Detailed Request Accounting}).
 
 @item strip-names
 Determines whether @command{radiusd} should strip any prefixes/suffixes
@@ -571,6 +588,13 @@ Otherwise @command{radiusd} assumes the user @emph{is not} logged in.
 Enables tracing of the configuration rules that were matched during
 processing of each received authentication request. @xref{Rule
 Tracing}, for detailed information about this mode.
+
+@item reject-malformed-names
+Enables sending access-reject replies for the access-accept requests
+that contain an invalid value in @attr{User-Name} attribute. By default
+such requests are discarded without answering. See the description of
+@code{username-chars} (@pxref{option,username-chars,Option statement}).
+
 @end table
 
 @subheading Character statement
@@ -602,7 +626,8 @@ description of its usage.
 @subheading Syntax:
 @smallexample
 acct @{
-        [ listen @var{addr-list} ; ]
+        [ listen ( @var{addr-list} | no ); ]
+        [ forward @var{addr-list} ; ]
         [ port @var{number} ; ]
         [ detail @var{bool}; ]
         [ max-requests @var{number} ; ]
@@ -630,6 +655,9 @@ default accounting port is assumed.
 If the @code{listen} statement is omitted, radiusd will accept incoming
 requests from any interface on the machine.
 
+The special value @code{no} disables listening for accounting
+requests.
+
 The following example configures radius to listen for the incoming
 requests on the default accounting port on the address 10.10.10.1
 and on port 1646 on address 10.10.11.2.
@@ -637,6 +665,17 @@ and on port 1646 on address 10.10.11.2.
 @smallexample
 listen 10.10.10.1, 10.10.11.2:1646;
 @end smallexample
+
+@subheading @code{forward} statement
+
+This statement enables @dfn{forwarding} of the requests to the given
+set of servers. Forwarding is an experimental feature of GNU Radius,
+it differs from proxying in that the requests are sent to the remote
+server (or servers) @emph{and} processed locally. The remote server
+is not expected to reply.
+
+This mode is intended primarily for debugging purposes. It could also
+be useful in some very complex and unusual configurations. 
 
 @subheading Numeric statements
 
@@ -735,7 +774,7 @@ Use only the DBM database and ignore @file{raddb/users}.
 @smallexample
 snmp @{
         [ port @var{portno} ; ]
-        [ listen @var{addr-list} ; ]
+        [ listen ( @var{addr-list} | no ); ]
         [ max-requests @var{number} ; ]
         [ time-to-live @var{number} ; ]
         [ request-cleanup-delay @var{number} ; ]
@@ -769,6 +808,8 @@ default SNMP port (161) is used.
 
 If the @code{listen} statement is omitted, radiusd will accept incoming
 requests from any interface on the machine.
+
+The special value @code{no} disables listening for SNMP requests.
 
 The following example configures radius to listen for the incoming
 SNMP requests on the default SNMP port on the address 10.10.10.1
@@ -1278,6 +1319,18 @@ Additivity = None
 @item
 The presence of letter @samp{P} in property flags raises the propagation
 bit.
+@item
+Letter @samp{l} (lower-case ell) enables logging the given attribute
+in detail file (@pxref{Detailed Request Accounting}). This is meaningful
+only for internal attributes, i.e. the ones whose decimal value is
+greater than 255 (@pxref{Radius Internal Attributes}). By default such
+attributes do not appear in detailed logs. The flag @samp{l} reverts
+this behavior.
+@item 
+Letter @samp{E} marks attributes encrypted as described in RFC 2138.
+Currently these are User-Password and CHAP-Password. 
+@item 
+Letter @samp{F} marks attribute encrypted according to RFC 2868.
 @item
 The characters from @samp{1} to @samp{9} denote nine user-defined flags
 (@pxref{Extended Comparison}).
@@ -1790,6 +1843,11 @@ Number of attempts to connect a server. If the server does not
 respond after the last attempt, the next server from the list
 is tried. 
 
+@item auth
+Proxy only authentication requests.
+
+@item acct
+Proxy only accounting requests.
 @end table
 
 @menu

@@ -1281,6 +1281,24 @@ qprn("a string/value") @result{} "a%20string%2Fvalue"
 @noindent
 @end deftypefn
 
+@deftypefn Function string toupper (string @var{str})
+Returns the copy of the string @var{str} with all alphabetical characters
+converted to upper case. For example:
+
+@smallexample
+toupper("a-string") @result{} "A-STRING"
+@end smallexample
+@end deftypefn
+
+@deftypefn Function string tolower (string @var{str})
+Returns the copy of the string @var{str} with all alphabetical characters
+converted to lower case. For example:
+
+@smallexample
+tolower("A-STRING") @result{} "a-string"
+@end smallexample
+@end deftypefn
+
 @comment *L1****************************************************************
 @node Guile
 @section Guile

@@ -99,6 +99,35 @@ Fri Dec 15 18:32:09 2000
         Request-Authenticator = Unverified
 @end smallexample
 
+Notice that @command{radiusd} always adds two pseudo-attributes to
+detailed listings. Attribute @attr{Timestamp} shows the UNIX timestamp
+when @command{radiusd} has received the request. Attribute
+@attr{Request-Authenticator} shows the result of checking the request
+authenticator. Its possible values are:
+
+@table @asis
+@item Verified
+The authenticator check was successful.
+
+@item Unverified
+The authenticator check failed. This could mean that either the
+request was forged or that the remote @NAS{} and @command{radiusd}
+do not agree on the value of the shared secret.
+
+@item None
+The authenticator check is not applicable for this request type.
+@end table
+
+Notice also that the so-called @dfn{internal attributes} by default are not
+logged in the detail file. Internal attributes are those whose decimal
+value is greater than 255. Such attributes are used internally by
+radius and cannot be transferred via @RADIUS{} protocol. Examples of
+such attributes are @attr{Fall-Through}, @attr{Hint} and
+@attr{Huntgroup-Name}. @xref{Radius Internal Attributes}, for detailed
+listing of all internal attributes. The special attribute flag
+@code{l} (lower-case ell) may be used to force logging of such
+attributes (@pxref{ATTRIBUTE}).
+
 @comment *L2****************************************************************
 @node SQL Accounting
 @section @acronym{sql} Accounting

@@ -84,7 +84,7 @@ its status to 'RSRV', its user_name to the user name from the packet,
 and then returns the IP address associated with it.
 
 If no free entries are found, the above process is repeated 10 times with
-a 500 microseconds intervals between the retries (these numbers may
+500 microseconds intervals between the retries (these numbers may
 be changed, see the chapter 'Configuring ipalloc.scm' below).
 
 Thus, after the processing of an authentication request, the entry listing
@@ -93,7 +93,7 @@ the framed IP for the user is marked as 'RSRV'.
 ** Start of the session
 
 When the session is started, an accounting request arrives with the
-Acct-Session-Type attribute set to Start. Then the ipalloc looks up
+Acct-Session-Type attribute set to Start. Then ipalloc looks up
 the entry with the matching pool and user_name and the value of status
 field set to 'RSRV'. If such an entry is found, its status is changed
 to 'ASGN', thus ensuring it will not be used until the user logs out.
@@ -105,7 +105,7 @@ be reused as described in the 'Authentication' paragraph above.
 
 When the user ends the session, an accounting request arrives with the
 Acct-Session-Type attribute set to Stop. Upon its arrival, ipalloc
-looks up an entry with the values of poll and user_name matching the
+looks up an entry with the values of pool and user_name matching the
 request, and status column set to 'ASGN'. If such an entry is found,
 its status is reset to 'FREE', thereby returning this entry to the pool.
 
@@ -117,8 +117,9 @@ user will always receive this IP address.
 
 * Usage
 
-The module is installed in $prefix/share/radius/ipalloc.scm. To
-enable it, modify the following files:
+The module is installed in $prefix/share/radius/$version/scheme/ipalloc.scm,
+where $prefix is the installation prefix and $version represents the
+distribution version number. To enable it, modify the following files:
 
 ** raddb/config 
 

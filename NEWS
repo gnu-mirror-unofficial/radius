@@ -1,4 +1,4 @@
-GNU Radius NEWS -- history of user-visible changes. 2004-04-23
+GNU Radius NEWS -- history of user-visible changes. 2004-04-27
 Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
@@ -18,7 +18,7 @@ reduce the size of the executables.
 * gnuradius.scm
 
 This is a guile module allowing to use libgnuradius functions. It
-supercedes radscm program, which has been removed.
+supersedes radscm program, which has been removed.
 
 * Rewrite language
 
@@ -37,7 +37,7 @@ on the contents of /var/log/radutmp file. Starting at this version,
 radiusd offers at least two methods of checking for multiple logins:
 using the traditional radutmp file and using the SQL database. New
 keywords has been added to the sqlserver file that declare the SQL
-queries to be used when retrieving the information about currently
+queries to be used when retrieving information about currently
 active sessions.
 
 More methods of checking will be added in future versions.

@@ -86,13 +86,16 @@ SCM_DEFINE(rad_dict_value_to_name, "rad-dict-value->name", 2, 0, 0,
                 scm_misc_error(FUNC_NAME,
                                "Unknown attribute: ~S",
                                scm_list_1(ATTR));
-                return SCM_BOOL_F;
         }
 
         SCM_ASSERT((SCM_IMP(VALUE) && SCM_INUMP(VALUE)),
                    VALUE, SCM_ARG1, FUNC_NAME);
         val = grad_value_lookup(SCM_INUM(VALUE), attr->name);
-        return val ? scm_makfrom0str(val->name) : SCM_BOOL_F;
+	if (!val)
+		scm_misc_error(FUNC_NAME,
+                               "Value ~S not defined for attribute ~S",
+                               scm_list_2(VALUE, ATTR));
+        return scm_makfrom0str(val->name);
 }
 #undef FUNC_NAME
 
@@ -114,8 +117,8 @@ SCM_DEFINE(rad_dict_name_to_value, "rad-dict-name->value", 2, 0, 0,
                                "Unknown attribute: ~S",
                                scm_list_1(ATTR));
         }
-        SCM_ASSERT((SCM_NIMP(VALUE) && SCM_STRINGP(VALUE)),
-                   VALUE, SCM_ARG1, FUNC_NAME);
+	SCM_ASSERT (SCM_NIMP(VALUE) && SCM_STRINGP(VALUE),
+		    VALUE, SCM_ARG2, FUNC_NAME);
         
         /*FIXME:
           val = grad_value_name_to_value_strict(attr->value, SCM_STRING_CHARS(VALUE));

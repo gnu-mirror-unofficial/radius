@@ -60,14 +60,17 @@ read_naslist_entry(unused, fc, fv, file, lineno)
 {
         NAS nas, *nasp;
 
-        if (fc < 3) {
+        if (fc < 2) {
                 radlog(L_ERR, _("%s:%d: too few fields"), file, lineno);
                 return -1;
         }
 
         bzero(&nas, sizeof(nas));
         STRING_COPY(nas.shortname, fv[1]);
-        STRING_COPY(nas.nastype, fv[2]);
+	if (fv[2][0] == 0)
+		STRING_COPY(nas.nastype, "true");
+	else
+		STRING_COPY(nas.nastype, fv[2]);
         if (strcmp(fv[0], "DEFAULT") == 0) {
                 nas.ipaddr = 0;
                 STRING_COPY(nas.longname, fv[0]);

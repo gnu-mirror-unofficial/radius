@@ -289,7 +289,7 @@ flush_seg(bufp, seg, ptr, runlen)
                 outbytes += 4*(ptr - seg);
                 if (buf)
                         while (seg < ptr) {
-                                sprintf(buf, "\\%03o", *seg);
+                                sprintf(buf, "\\%03o", *(u_char*)seg);
                                 seg++;
                                 buf += 4;
                         }

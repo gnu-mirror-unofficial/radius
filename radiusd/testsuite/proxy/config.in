@@ -24,6 +24,7 @@ option {
 };
 
 logging {
+        prefix-hook "default_log_prefix";
 	channel default {
 		file "radius.log";
 		print-level yes;
@@ -63,6 +64,11 @@ acct {
 	port @PROXY_ACCT_PORT@;
 	max-requests 127;
 	request-cleanup-delay 2;
+};
+
+rewrite {
+        load-path "@SOURCEDIR@/../../raddb";
+        load "log-hook.rw";
 };
 
 @SNMP@snmp {

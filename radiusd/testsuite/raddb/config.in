@@ -25,6 +25,7 @@ option {
 };
 
 logging {
+	prefix-hook "default_log_prefix";
 	channel default {
 		file "radius.log";
 		print-level yes;
@@ -100,6 +101,8 @@ rewrite {
         load "jetstream.rw";
         load "nt.rw";
         load "filter.rw";
+	load-path "@SOURCEDIR@/../../raddb";
+	load "log-hook.rw";
 };
                 
 @GUILE@guile {

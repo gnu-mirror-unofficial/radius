@@ -42,6 +42,14 @@ Replace all non-printable characters in string S by their
 corresponding hex value preceeded by a percent sign. Return the
 resulting string.
 
+*** toupper(S): built-in function
+Returns the copy of the string S with all alphabetical characters
+converted to upper case.
+
+*** tolower(S): built-in function
+Returns the copy of the string S with all alphabetical characters
+converted to lower case.
+
 *** #pragma regexp allows to alter the type of regular expressions
 used. By default, basic regular expressions are used. The rest of
 line following #pragma regexp must consist of whitespace-separated
@@ -66,7 +74,7 @@ will send only authentication requests to the server `remote.server.net'
 
 ** New configuration file statements
 
-*** forward
+*** forward ip[:port]...
 
 This statement can be used in `auth' and `acct' blocks to request
 forwarding of the requests to remote server or servers. The syntax
@@ -77,7 +85,7 @@ intended primarily for debugging purposes. It could also be useful in
 some very complex configurations. See examples/config.status for
 examples of the `forward' statements.
 
-*** trace-rules
+*** trace-rules {yes|no}
 
 Enables tracing of configuration rules matched while processing 
 requests. The statement may be used in `auth' and `acct' blocks.
@@ -99,6 +107,12 @@ file users      line 157
 Notice that the rules are listed in reverse chronological order
 (the last processed is listed first) and that the full pathname
 appears only on the first file.
+
+*** reject-malformed-names {yes|no}
+
+Used in `auth' block. Normally radiusd does not send access-reject
+message if access-request contained invalid user name. Setting
+this option to `yes' alters this behavior.
 
 * Emacs files: Improved radconf-mode.el
 

@@ -41,6 +41,30 @@ struct nas_usage {
 	Acct_server_stat acct;
 };
 
+struct port_session {
+	time_t start;
+	struct timeval duration;
+};
+
+struct port_usage {
+	struct port_usage *next;
+	int nas_index;             /* Index of the corresponding NAS */
+	int port_no;               /* port number */
+	int active;                /* is the port used now */
+	char *login;               /* last login name */
+	UINT4 framed_address;      /* IP address assigned to that port */
+	unsigned long count;       /* number of logins */
+	time_t start;
+	time_t lastin;             /* last time the user logged in */
+	time_t lastout;            /* last time the user logged out */
+	
+	struct timeval inuse;      /* total time the line was in use */
+	struct timeval idle;       /* total idle time */
+
+	struct port_session maxinuse;
+	struct port_session maxidle;
+};	
+
 extern char *hostname;
 extern char *community;
 extern int port;

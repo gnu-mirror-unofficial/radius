@@ -234,7 +234,7 @@
 		deny)
     (guile      debug
 		load-path
-		load))
+		load)))
 
 ;; Valid successors for keywords.
 (defconst radconf-keyword-successor

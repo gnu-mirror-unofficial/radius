@@ -14,7 +14,7 @@
 set main
 
 # Find radlib sources
-#dir ../radlib
+dir ../radlib
 
 # Make sure radiusd won't spawn any children 
 break main

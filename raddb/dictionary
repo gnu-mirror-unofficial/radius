@@ -125,6 +125,9 @@ ATTRIBUTE	Acct-Ext-Program	2008	string	- [---R--]=
 ATTRIBUTE	Scheme-Procedure	2009	string	- [-R----]
 ATTRIBUTE	Scheme-Acct-Procedure	2010	string	- [---R--]=
 
+ATTRIBUTE       Password-Location       2011    integer - [C-----]
+VALUE           Password-Location       SQL			1
+
 # These are used by rewriting functions:
 ATTRIBUTE	Orig-User-Name		2101	string	- [C--R-R]
 ATTRIBUTE	Orig-NAS-Port-Id	2105	integer	- [C--R-R]

@@ -569,24 +569,24 @@ if test x$BUILD_CLIENT = xyes; then
 	fi
 fi
 
-AC_OUTPUT(Makefile m4/Makefile \
-          include/Makefile include/snmp/Makefile \
-          radlib/Makefile sql/Makefile snmplib/Makefile \
-	  radscm/Makefile \
-          radiusd/Makefile radlast/Makefile radwho/Makefile \
-          raduse/Makefile radzap/Makefile \
-          radscripts/Makefile doc/Makefile \
-	  doc/texinfo/Makefile doc/man/Makefile doc/man/config.so \
-          doc/rfc/Makefile \
-          mibs/Makefile \
-          po/Makefile \
-          elisp/Makefile \
-          raddb/Makefile \
-          db/Makefile \
-          client/Makefile \
-          client/nas/Makefile \
-          client/pam_radius/Makefile \
-          test/Makefile test/raddb/Makefile \
-          scripts/Makefile scripts/guile/Makefile \
+AC_OUTPUT(Makefile m4/Makefile 
+          include/Makefile include/snmp/Makefile 
+          radlib/Makefile sql/Makefile snmplib/Makefile 
+	  radscm/Makefile 
+          radiusd/Makefile radlast/Makefile radwho/Makefile 
+          raduse/Makefile radzap/Makefile 
+          radscripts/Makefile doc/Makefile 
+	  doc/texinfo/Makefile doc/man/Makefile doc/man/config.so 
+          doc/rfc/Makefile 
+          mibs/Makefile 
+          po/Makefile 
+          elisp/Makefile 
+          raddb/Makefile 
+          db/Makefile 
+          client/Makefile 
+          client/nas/Makefile 
+          client/pam_radius/Makefile 
+          test/Makefile test/raddb/Makefile 
+          scripts/Makefile scripts/guile/Makefile 
           contrib/Makefile)
 

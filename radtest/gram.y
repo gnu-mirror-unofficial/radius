@@ -133,10 +133,11 @@ stmt          : /* empty */ EOL
 				printf("got    %d\n", reply_code);
 			}
 			if (reply_code != $2) {
-				parse_error("expect failed: got %d\n",
-					    reply_code);
-				if (abort_on_failure)
+				if (abort_on_failure) {
+					parse_error("expect failed: got %d\n",
+						    reply_code);
 					YYACCEPT;
+				}
 				pass = 0;
 			}
 			if ($3) {

@@ -280,7 +280,8 @@ tsh_timespan(int argc, char **argv, char *cmd ARG_UNUSED)
         unsigned       rest;
         int i;
         struct tm tm;
-
+	int diff, dow;
+	
 	if (argc < 2 || argc > 5) {
 		fprintf(stderr,
 			_("%s: wrong number of arguments\n"), argv[0]);
@@ -298,9 +299,11 @@ tsh_timespan(int argc, char **argv, char *cmd ARG_UNUSED)
         case 4:
                 tm.tm_hour = atoi(argv[3]);
         case 3:
-                tm.tm_wday = 0;
-                tm.tm_mday += atoi(argv[2]);
-                tm.tm_yday += atoi(argv[2]);
+		dow = atoi(argv[2]);
+		diff = dow - tm.tm_wday;
+		tm.tm_wday = dow;
+		tm.tm_mday += diff;
+		tm.tm_yday += diff;
                 t = mktime(&tm);
                 break;
         case 2:

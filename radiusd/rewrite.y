@@ -70,6 +70,7 @@ typedef struct {
 } OBUCKET;
 
         
+
 /* ************************************************************
  * Basic data types
  */
@@ -219,6 +220,8 @@ typedef struct function_def {
         int        nparm;        /* Number of parameters */
         PARAMETER  *parm;        /* List of parameters */
         stkoff_t   stack_alloc;  /* required stack allocation */
+	char       *source_file; /* Source file where the function
+				    was declared */
         int        line;         /* source line where the function
                                   * was declared
                                   */
@@ -482,6 +485,7 @@ struct frame_t {
         stkoff_t  stack_offset; /* offset in the stack */
 };
 
+
 /* *****************************************************************
  * Static data
  */
@@ -523,11 +527,17 @@ void loop_unwind_all();
  */
 static FILE *infile;               /* Input file */ 
 static char *input_filename;       /* Input location: file */
-static int   input_line;           /* ------------- : line */ 
+static int   input_line;           /* ------------- : line */
+
+static char *inbuf;                /* Input string */
+static char *curp;                 /* Current pointer */
+ 
 static int   yyeof;                /* rised when EOF is encountered */ 
 static struct obstack input_stk;   /* Symbol stack */ 
 
+static Datatype return_type = Undefined;
 
+
 /* ***************************************************************
  * Function declarations
  */
@@ -612,6 +622,7 @@ static builtin_t * builtin_lookup(char *name);
 static int optimize();
 static pctr_t codegen();
 static void code_init();
+static void code_check();
 
 /*
  * Auxiliary and debugging functions
@@ -629,6 +640,7 @@ static void gc();
 static void run(RWMACH *mach, pctr_t pc);
 static void run_init(pctr_t pc, RADIUS_REQ *req);
 static int rw_error(RWMACH *mach, const char *msg);
+static int rw_error_free(RWMACH *mach, char *msg);
  
 /* These used to lock/unlock access to rw_code array. Now this is
    not needed. However, I left the placeholders for a while... */
@@ -638,6 +650,7 @@ static int rw_error(RWMACH *mach, const char *msg);
 #define AVPLIST(m) ((m)->req ? (m)->req->request : NULL)
 %}
 
+
 %union {
         int   number;
         int   type;
@@ -688,12 +701,40 @@ static int rw_error(RWMACH *mach, const char *msg);
 
 %%
 
-input   : dcllist
+program : input
           {
                   var_free_all();
                   loop_free_all();
                   frame_free_all();
                   mtx_free_all();
+          }
+        ;
+
+input   : dcllist
+          {
+		  return_type = Undefined;
+	  }
+        | expr
+          {
+		  FUNCTION main;
+
+                  if (errcnt) {
+                          YYERROR;
+                  }
+		  
+		  mtx_return($1);
+                  
+		  memset(&main, 0, sizeof(main));
+		  main.name = "main";
+		  main.rettype = return_type = $1->gen.datatype;
+		  function = &main;
+
+                  if (optimize() == 0) {
+                          codegen();
+                          if (errcnt) {
+                                  YYERROR;
+                          }
+                  }
           }
         ;
 
@@ -1212,6 +1253,7 @@ yyerror(char *s)
 	return 0;
 }
 
+
 /* **************************************************************************
  * Interface functions
  */
@@ -1225,21 +1267,48 @@ parse_rewrite(char *path)
                         radlog(L_ERR|L_PERROR,
                                _("can't open file `%s'"),
                                input_filename);
+			return -1;
                 }
-                return -1;
+                return -2;
         }
 
-        if (!rewrite_tab) 
-                rewrite_tab = symtab_create(sizeof(FUNCTION), function_free);
-        else
-                symtab_clear(rewrite_tab);
-
+	debug(1,("Loading file %s", input_filename));
         rw_code_lock();
         yyeof = 0;
         input_line = 1;
+	errcnt = 0;
         obstack_init(&input_stk);
 
-        code_init();
+        mtx_init();
+        var_init();
+        loop_init();
+        frame_init();
+        
+        frame_push();
+        
+        yyparse();
+
+        var_free_all();
+        frame_free_all();
+        mtx_free_all();
+                
+        fclose(infile);
+        obstack_free(&input_stk, NULL);
+        rw_code_unlock();
+        return 0;
+}
+
+static int
+parse_rewrite_string(char *str)
+{
+        rw_code_lock();
+	code_check();
+        yyeof = 0;
+	input_filename = "<string>";
+	input_line = 1;
+	errcnt = 0;
+        obstack_init(&input_stk);
+
         mtx_init();
         var_init();
         loop_init();
@@ -1250,6 +1319,9 @@ parse_rewrite(char *path)
         if (debug_on(50))
                 yydebug++;
 
+	infile = 0;
+	inbuf = curp = str;
+	
         yyparse();
 
 #if defined(MAINTAINER_MODE)
@@ -1261,27 +1333,42 @@ parse_rewrite(char *path)
         frame_free_all();
         mtx_free_all();
                 
-        fclose(infile);
         obstack_free(&input_stk, NULL);
         rw_code_unlock();
-        return 0;
+        return errcnt;
 }
 
+
 /* **************************************************************************
  * Lexical analyzer stuff: too simple to be written in lex.
  */
-#define unput(c) (c ? ungetc(c, infile) : 0)
-static int input();
+static int
+unput(int c)
+{
+	if (!c)
+		return 0;
+	if (infile)
+		ungetc(c, infile);
+	else if (curp > inbuf)
+		*--curp = c;
+	return c;
+}
 
-int
+static int 
 input()
 {
         if (yyeof)
                 return 0;
-        if ((yychar = getc(infile)) <= 0) {
-                yyeof++;
-                yychar = 0;
-        }
+	if (infile) {
+		if ((yychar = getc(infile)) <= 0) {
+			yyeof++;
+			yychar = 0;
+		}
+	} else if (curp) {
+		yychar = *curp++;
+		if (!yychar)
+			yyeof++;
+	}
         return yychar;
 }
 
@@ -1739,6 +1826,7 @@ yysync()
         unput(yychar);
 }
 
+
 /* ****************************************************************************
  * Generalized list functions
  */
@@ -1747,18 +1835,18 @@ static RWLIST *_list_insert(RWLIST **first, RWLIST **last, RWLIST *prev,
 static RWLIST *_list_remove(RWLIST **first, RWLIST **last, RWLIST *obj);
 static RWLIST *_list_append(RWLIST **first, RWLIST **last, RWLIST *obj);
 
-#define list_insert(first, last, prev, obj, before) \
+#define rw_list_insert(first, last, prev, obj, before) \
  _list_insert((RWLIST**)first,(RWLIST**)last,(RWLIST*)prev,(RWLIST*)obj, before)
-#define list_remove(first, last, obj) \
+#define rw_list_remove(first, last, obj) \
  _list_remove((RWLIST**)first,(RWLIST**)last,(RWLIST *)obj)
-#define list_append(first, last, obj) \
+#define rw_list_append(first, last, obj) \
  _list_append((RWLIST**)first, (RWLIST**)last, (RWLIST*)obj)
         
 RWLIST *
 _list_append(first, last, obj)
         RWLIST **first, **last, *obj;
 {
-        return list_insert(first, last, *last, obj, 0);
+        return rw_list_insert(first, last, *last, obj, 0);
 }
 
 RWLIST *
@@ -1825,6 +1913,7 @@ _list_remove(RWLIST **first, RWLIST **last, RWLIST *obj)
         return obj;
 }
 
+
 /* ****************************************************************************
  * Generalized object handling
  */
@@ -1863,6 +1952,7 @@ obj_free_all(OBUCKET *bucket)
         bucket->alloc_list = NULL;
 }
 
+
 /* **************************************************************************
  * Frames
  */
@@ -1889,13 +1979,13 @@ frame_push()
                         this_frame->stack_offset = frame_last->stack_offset;
                 this_frame->level = frame_last->level + 1;
         } 
-        list_append(&frame_first, &frame_last, this_frame);
+        rw_list_append(&frame_first, &frame_last, this_frame);
 }
 
 void
 frame_pop()
 {
-        list_remove(&frame_first, &frame_last, frame_last);
+        rw_list_remove(&frame_first, &frame_last, frame_last);
 }
 
 void
@@ -1918,10 +2008,11 @@ void
 frame_unwind_all()
 {
         while (frame_last)
-                list_remove(&frame_first, &frame_last, frame_last);
+                rw_list_remove(&frame_first, &frame_last, frame_last);
         frame_push();
 }
 
+
 /* **************************************************************************
  * Loops
  */
@@ -1951,13 +2042,13 @@ void
 loop_push(MTX *mtx)
 {
         LOOP *this_loop = obj_alloc(&loop_bkt);
-        list_append(&loop_first, &loop_last, this_loop);
+        rw_list_append(&loop_first, &loop_last, this_loop);
 }
 
 void
 loop_pop()
 {
-        list_remove(&loop_first, &loop_last, loop_last);
+        rw_list_remove(&loop_first, &loop_last, loop_last);
 }
 
 void
@@ -1969,6 +2060,7 @@ loop_fixup(JUMP_MTX *list, MTX *target)
                 jp->dest = target;
 }
 
+
 /* **************************************************************************
  * Variables
  */
@@ -1987,7 +2079,7 @@ var_alloc(Datatype type, char *name, int grow)
         VAR *var;
 
         var = (VAR*) obj_alloc(&var_bucket);
-        list_append(&var_first, &var_last, var);
+        rw_list_append(&var_first, &var_last, var);
 
         /* Initialize fields */
         var->name     = name;
@@ -2006,7 +2098,7 @@ var_unwind_level()
         
         while (var_last && 
                var_last->level == curframe->level) {
-                list_remove(&var_first, &var_last, var_last);
+                rw_list_remove(&var_first, &var_last, var_last);
                 cnt++;
         }
 
@@ -2018,7 +2110,7 @@ void
 var_unwind_all()
 {
         while (var_last)
-                list_remove(&var_first, &var_last, var_last);
+                rw_list_remove(&var_first, &var_last, var_last);
 }
 
 void
@@ -2046,6 +2138,7 @@ var_lookup(char *name)
         return var;
 }
 
+
 /* **************************************************************************
  * Matrix generation
  */
@@ -2057,15 +2150,15 @@ int mtx_current_id ;
 /*
  * Insert a matrix into list
  */
-#define mtx_remove(mtx) list_remove(&mtx_first, &mtx_last, mtx)
-#define mtx_append(mtx) list_append(&mtx_first, &mtx_last, mtx)
+#define mtx_remove(mtx) rw_list_remove(&mtx_first, &mtx_last, mtx)
+#define mtx_append(mtx) rw_list_append(&mtx_first, &mtx_last, mtx)
 
 void
 mtx_insert(MTX *prev, MTX *mtx)
 {
         MTX *up;
 
-        list_insert(&mtx_first, &mtx_last, prev, mtx, 0);
+        rw_list_insert(&mtx_first, &mtx_last, prev, mtx, 0);
         if (up = prev->gen.uplink) {
                 switch (up->gen.type) {
                 case Unary:
@@ -2098,7 +2191,7 @@ void
 mtx_unwind_all()
 {
         while (mtx_last)
-                list_remove(&mtx_first, &mtx_last, mtx_last);
+                rw_list_remove(&mtx_first, &mtx_last, mtx_last);
 }
 
 void
@@ -2289,7 +2382,7 @@ void
 rw_coercion_warning(Datatype from, Datatype to, char *pref)
 {
 	radlog(L_WARN,
-	       _("%s:%d: %s implicit %s %s coercion"),
+	       _("%s:%d: %s implicit coercion %s %s"),
 	       input_filename, input_line,
 	       pref ? pref : "",
 	       datatype_str_abl(from),
@@ -2560,6 +2653,7 @@ mtx_builtin(builtin_t *bin, MTX *args)
         return (MTX*) call;
 }
 
+
 /* ****************************************************************************
  * Code optimizer (rudimentary)
  */
@@ -2918,7 +3012,7 @@ pass1()
          * Create an entry matrix
          */
         mtx = mtx_alloc(Enter);
-        list_insert(&mtx_first, &mtx_last, mtx_first, mtx, 1);
+        rw_list_insert(&mtx_first, &mtx_last, mtx_first, mtx, 1);
         mtx->frame.stacksize = function->stack_alloc;
         
         /*
@@ -2952,7 +3046,7 @@ pass1()
          * Insert a no-op matrix before the `leave' one
          */
         end = mtx_alloc(Nop);
-        list_insert(&mtx_first, &mtx_last, mtx_last, end, 1);
+        rw_list_insert(&mtx_first, &mtx_last, mtx_last, end, 1);
         
         for (mtx = mtx_first; mtx; mtx = mtx->gen.next) {
                 if (mtx->gen.type == Return) {
@@ -3231,6 +3325,7 @@ optimize()
         return 0;
 }       
 
+
 /* ****************************************************************************
  * Code generator
  */
@@ -3242,12 +3337,18 @@ static size_t rw_codesize;      /* Length of code segment */
 static int rewrite_stack_size = 4096;  /* Size of stack+heap */
 
 void
-code_init()
+code_check()
 {
         if (rw_code == NULL) {
                 rw_codesize  = 4096;
                 rw_code  = emalloc(rw_codesize * sizeof(rw_code[0]));
         }
+}
+
+void
+code_init()
+{
+	code_check();
         /* 0's code element is the default return address */
 	rw_code[0] = 0;
 	rw_pc = 1;
@@ -3678,7 +3779,7 @@ rx_alloc(regex_t *regex, int nmatch)
         rx = emalloc(sizeof(*rx));
         rx->regex  = *regex;
         rx->nmatch = nmatch;
-        list_insert(&function->rx_list, NULL, function->rx_list, rx, 1);
+        rw_list_insert(&function->rx_list, NULL, function->rx_list, rx, 1);
         return rx;
 }
 
@@ -3741,6 +3842,7 @@ function_cleanup()
         function = NULL;
 }
 
+
 /* ****************************************************************************
  * Runtime functions
  */
@@ -3802,6 +3904,38 @@ heap_reserve(RWMACH *mach, int size)
         return (char*)(mach->stack + mach->ht--);
 }
 
+
+/* Temporary space functions */
+char *
+temp_space_create(RWMACH *mach)
+{
+	return (char*)(mach->stack + mach->st);
+}
+
+void
+temp_space_copy(RWMACH *mach, char **baseptr, char *text, size_t size)
+{
+        size_t len = (size + sizeof(mach->stack[0])) / sizeof(mach->stack[0]);
+	if (*baseptr + len >= (char*)(mach->stack + mach->ht))
+		rw_error(mach, _("out of heap space"));
+	memcpy(*baseptr, text, size);
+	*baseptr += size;
+}
+
+char *
+temp_space_fix(RWMACH *mach, char *end)
+{
+	size_t len, size;
+	char *base = (char*)(mach->stack + mach->st);
+
+	size = end - base;
+	len = (size + sizeof(mach->stack[0])) / sizeof(mach->stack[0]);
+        mach->ht -= len;
+	memmove(mach->stack + mach->ht, base, size);
+        return (char*)(mach->stack + mach->ht--);
+}
+
+
 /*
  * Pop number from stack and store into NP.
  */
@@ -3892,6 +4026,8 @@ getarg(RWMACH *mach, int num)
 {
         return mach->stack[mach->sb - (STACK_BASE + num)];
 }
+
+
 /* ****************************************************************************
  * Instructions
  */
@@ -3904,6 +4040,17 @@ rw_error(RWMACH *mach, const char *msg)
         radlog(L_ERR,
 	       "%s: %s",
                _("rewrite runtime error"), msg);
+        longjmp(mach->jmp, 1);
+        /*NOTREACHED*/
+}
+                
+static int
+rw_error_free(RWMACH *mach, char *msg)
+{
+        radlog(L_ERR,
+	       "%s: %s",
+               _("rewrite runtime error"), msg);
+	free(msg);
         longjmp(mach->jmp, 1);
         /*NOTREACHED*/
 }
@@ -4498,6 +4645,17 @@ rw_not(RWMACH *mach)
         pushn(mach, !n);
 }
 
+static void
+need_pmatch(RWMACH *mach, size_t n)
+{
+	n++;
+        if (mach->nmatch < n) {
+                efree(mach->pmatch);
+                mach->nmatch = n;
+                mach->pmatch = emalloc(n * sizeof(mach->pmatch[0]));
+        }
+}
+
 void
 rw_match(RWMACH *mach)
 {
@@ -4505,13 +4663,7 @@ rw_match(RWMACH *mach)
         char *s = (char*)popn(mach);
         int rc;
         
-        if (mach->nmatch < rx->nmatch + 1) {
-                efree(mach->pmatch);
-                mach->nmatch = rx->nmatch + 1;
-                mach->pmatch = emalloc((rx->nmatch + 1) *
-                                       sizeof(mach->pmatch[0]));
-        }
-
+	need_pmatch(mach, rx->nmatch);
         mach->sA = s;
         
         rc = regexec(&rx->regex, mach->sA, 
@@ -4577,6 +4729,7 @@ run(RWMACH *mach, pctr_t pc)
         }
 }
 
+
 /* ****************************************************************************
  * A placeholder for the garbage collector
  */
@@ -4586,27 +4739,15 @@ gc(RWMACH *mach)
 {
 }
 
+
 /* ****************************************************************************
  * Built-in functions
  */
 
-static void bi_length(RWMACH *mach);
-static void bi_index(RWMACH *mach);
-static void bi_rindex(RWMACH *mach);
-static void bi_substr(RWMACH *mach);
-static void bi_field(RWMACH *mach);
-static void bi_logit(RWMACH *mach);
-static void bi_inet_ntoa(RWMACH *mach);
-static void bi_inet_aton(RWMACH *mach);
-static void bi_ntohl(RWMACH *mach);
-static void bi_htonl(RWMACH *mach);
-static void bi_ntohs(RWMACH *mach);
-static void bi_htons(RWMACH *mach);
-
 /*
  * integer length(string s)
  */
-void
+static void
 bi_length(RWMACH *mach)
 {
         pushn(mach, strlen((char*)getarg(mach, 1)));
@@ -4615,7 +4756,7 @@ bi_length(RWMACH *mach)
 /*
  * integer index(string s, integer a)
  */
-void
+static void
 bi_index(RWMACH *mach)
 {
         char *s, *p;
@@ -4630,7 +4771,7 @@ bi_index(RWMACH *mach)
 /*
  * integer rindex(string s, integer a)
  */
-void
+static void
 bi_rindex(RWMACH *mach)
 {
         char *s, *p;
@@ -4644,7 +4785,7 @@ bi_rindex(RWMACH *mach)
 /*
  * integer substr(string s, int start, int length)
  */
-void
+static void
 bi_substr(RWMACH *mach)
 {
         char *src, *dest;
@@ -4663,7 +4804,7 @@ bi_substr(RWMACH *mach)
         pushn(mach, (RWSTYPE) dest);
 }
 
-void
+static void
 bi_field(RWMACH *mach)
 {
         char *str = (char*) getarg(mach, 2);
@@ -4692,7 +4833,7 @@ bi_field(RWMACH *mach)
         pushn(mach, (RWSTYPE) str);
 }
 
-void
+static void
 bi_logit(RWMACH *mach)
 {
         char *msg = (char*) getarg(mach, 1);
@@ -4700,31 +4841,31 @@ bi_logit(RWMACH *mach)
         pushn(mach, 0);
 }
 
-void
+static void
 bi_htonl(RWMACH *mach)
 {
 	pushn(mach, htonl(getarg(mach, 1)));
 }
 
-void
+static void
 bi_ntohl(RWMACH *mach)
 {
 	pushn(mach, ntohl(getarg(mach, 1)));
 }
 
-void
+static void
 bi_htons(RWMACH *mach)
 {
 	pushn(mach, htons(getarg(mach, 1) & 0xffff));
 }
 
-void
+static void
 bi_ntohs(RWMACH *mach)
 {
 	pushn(mach, ntohs(getarg(mach, 1) & 0xffff));
 }
 
-void
+static void
 bi_inet_ntoa(RWMACH *mach)
 {
 	char buffer[DOTTED_QUAD_LEN];
@@ -4732,11 +4873,227 @@ bi_inet_ntoa(RWMACH *mach)
 	pushstr(mach, s, strlen(s));
 }
 
-void
+static void
 bi_inet_aton(RWMACH *mach)
 {
 	/* Note: inet_aton is not always present. See lib/iputils.c */
 	pushn(mach, ip_strtoip((char*)getarg(mach, 1)));
+}
+
+static void
+rw_regerror(RWMACH *mach, const char *prefix, regex_t *rx, int rc)
+{
+	size_t sz = regerror(rc, rx, NULL, 0);
+	char *errbuf = malloc(sz + strlen (prefix) + 1);
+	if (!errbuf) 
+		rw_error(mach, prefix);
+	else {
+		strcpy (errbuf, prefix);
+		regerror(rc, rx, errbuf + strlen(prefix), sz);
+		rw_error_free(mach, errbuf);
+	}
+}
+
+enum subst_segment_type {
+	subst_text,       /* pure text */
+	subst_ref,        /* back reference (\NN) */
+	subst_match       /* substitute whole match (&) */
+};
+
+struct subst_segment {
+	enum subst_segment_type type;
+	union {
+		struct {
+			char *ptr;
+			size_t len; 
+		} text;      /* type == subst_text */
+		size_t ref;  /* type == subst_ref */
+	} v;
+};
+
+static void
+add_text_segment(RAD_LIST *lst, char *ptr, char *end)
+{
+	struct subst_segment *seg;
+	if (ptr >= end)
+		return;
+	seg = emalloc(sizeof(*seg));
+	seg->type = subst_text;
+	seg->v.text.ptr = ptr;
+	seg->v.text.len = end - ptr;
+	list_append(lst, seg);
+}
+
+static void
+add_match_segment(RAD_LIST *lst)
+{
+	struct subst_segment *seg = emalloc(sizeof(*seg));
+	seg->type = subst_match;
+	list_append(lst, seg);
+}
+
+static void
+add_ref_segment(RAD_LIST *lst, size_t ref)
+{
+	struct subst_segment *seg = emalloc(sizeof(*seg));
+	seg->type = subst_ref;
+	seg->v.ref = ref;
+	list_append(lst, seg);
+}
+
+RAD_LIST *
+subst_create(char *text)
+{
+	char *p;
+	RAD_LIST *lst = list_create();
+	if (!lst)
+		return lst;
+
+	p = text;
+	while (*p) {
+		if (*p == '\\' && p[1]) {
+			if (p[1] == '&') {
+				add_text_segment(lst, text, p);
+				text = ++p;
+				p++;
+			} else if (p[1] == '\\') {
+				add_text_segment(lst, text, p+1);
+				p += 2;
+				text = p;
+			} else if (isdigit(p[1])) {
+				size_t ref;
+				char *q;
+				
+				add_text_segment(lst, text, p);
+				ref = strtoul(p+1, &q, 10);
+				add_ref_segment(lst, ref);
+				text = p = q;
+			} else {
+				add_text_segment(lst, text, p);
+				text = ++p;
+			}
+		} else if (*p == '&') {
+			add_text_segment(lst, text, p);
+			add_match_segment(lst);
+			text = ++p;
+		} else
+			p++;
+	}
+	add_text_segment(lst, text, p);
+	return lst;	
+}
+
+int
+seg_free(void *item, void *data ARG_UNUSED)
+{
+	efree(item);
+	return 0;
+}
+
+void
+subst_destroy(RAD_LIST *lst)
+{
+	list_destroy(&lst, seg_free, NULL);
+}
+
+void
+subst_run(RWMACH *mach, RAD_LIST *subst, size_t nsub,
+	  char **baseptr, char *arg)
+{
+	ITERATOR *itr = iterator_create(subst);
+	struct subst_segment *seg;
+	
+	for (seg = iterator_first(itr); seg; seg = iterator_next(itr)) {
+		switch (seg->type) {
+		case subst_text:
+			temp_space_copy(mach, baseptr,
+					seg->v.text.ptr, seg->v.text.len);
+			break;
+			
+		case subst_ref:
+			if (seg->v.ref >= nsub)
+				rw_error(mach, _("Invalid backreference"));
+			temp_space_copy(mach, baseptr,
+					arg + mach->pmatch[seg->v.ref].rm_so,
+					mach->pmatch[seg->v.ref].rm_eo -
+					  mach->pmatch[seg->v.ref].rm_so);
+			break;
+			    
+		case subst_match:
+			temp_space_copy(mach, baseptr,
+					arg + mach->pmatch[0].rm_so,
+					mach->pmatch[0].rm_eo -
+					  mach->pmatch[0].rm_so);
+		}
+	}
+	iterator_destroy(&itr);
+}
+
+static void
+bi_gsub(RWMACH *mach)
+{
+	char *re_str = (char*) getarg(mach, 3);
+	char *repl = (char*) getarg(mach, 2);
+	char *arg = (char*) getarg(mach, 1);
+	char *base;
+	regex_t rx;
+	RAD_LIST *subst;
+	
+        int rc = regcomp(&rx, re_str, 0);
+        if (rc) 
+		rw_regerror(mach, _("regexp compile error: "), &rx, rc);
+
+	need_pmatch(mach, rx.re_nsub);
+
+	subst = subst_create(repl);
+	if (!subst)
+		rw_error(mach, _("gsub: not enough memory"));
+	
+	base = temp_space_create(mach);
+	while (*arg
+	       && regexec(&rx, arg, rx.re_nsub + 1, mach->pmatch, 0) == 0) {
+		temp_space_copy(mach, &base, arg, mach->pmatch[0].rm_so);
+		subst_run(mach, subst, rx.re_nsub + 1, &base, arg);
+		arg += mach->pmatch[0].rm_eo;
+	}
+	temp_space_copy(mach, &base, arg, strlen(arg) + 1);
+	subst_destroy(subst);
+	regfree(&rx);
+
+	pushn(mach, (RWSTYPE) temp_space_fix(mach, base));
+}
+
+static void
+bi_sub(RWMACH *mach)
+{
+	char *re_str = (char*) getarg(mach, 3);
+	char *repl = (char*) getarg(mach, 2);
+	char *arg = (char*) getarg(mach, 1);
+	char *base;
+	regex_t rx;
+	RAD_LIST *subst;
+	
+        int rc = regcomp(&rx, re_str, 0);
+        if (rc) 
+		rw_regerror(mach, _("regexp compile error: "), &rx, rc);
+
+	need_pmatch(mach, rx.re_nsub);
+
+	subst = subst_create(repl);
+	if (!subst)
+		rw_error(mach, _("sub: not enough memory"));
+	
+	base = temp_space_create(mach);
+	if (regexec(&rx, arg, rx.re_nsub + 1, mach->pmatch, 0) == 0) {
+		temp_space_copy(mach, &base, arg, mach->pmatch[0].rm_so);
+		subst_run(mach, subst, rx.re_nsub + 1, &base, arg);
+		arg += mach->pmatch[0].rm_eo;
+	}
+	temp_space_copy(mach, &base, arg, strlen(arg) + 1);
+	subst_destroy(subst);
+	regfree(&rx);
+
+	pushn(mach, (RWSTYPE) temp_space_fix(mach, base));
 }
 
 
@@ -4753,6 +5110,8 @@ static builtin_t builtin[] = {
 	{ bi_htons, "htons", Integer, "i" },
 	{ bi_inet_ntoa, "inet_ntoa", String, "i" },
 	{ bi_inet_aton, "inet_aton", Integer, "s" },
+	{ bi_sub, "sub", String, "sss" },
+	{ bi_gsub, "gsub", String, "sss" },
 	{ NULL }
 };
 
@@ -4767,6 +5126,7 @@ builtin_lookup(char *name)
         return NULL;
 }
 
+
 /* ****************************************************************************
  * Function registering/unregistering 
  */
@@ -4797,7 +5157,7 @@ function_install(FUNCTION *fun)
                        input_filename, fun->line, fun->name);
                 radlog(L_ERR,
                        _("%s:%d: previously defined here"),
-                       input_filename, fun->line);
+                       fun->source_file, fun->line);
                 errcnt++;
                 return fp;
         }  
@@ -4812,6 +5172,7 @@ function_install(FUNCTION *fun)
         return fp;
 }
 
+
 /* ****************************************************************************
  * Runtime functions
  */
@@ -4951,52 +5312,26 @@ va_run_init
         return ret;
 }
 
-
 int
 interpret(char *fcall, RADIUS_REQ *req, Datatype *type, Datum *datum)
 {
         FILE *fp;
-        FUNCTION *fun;
-        PARAMETER *parm;
-        int nargs;
-        char **argv = NULL;
-        int argc;
-        int i, errcnt = 0;
         struct obstack obs;
-        char *args;
         RWMACH mach;
+	pctr_t save_pc = rw_pc;
+	int rc;
+	
+	rc = parse_rewrite_string(fcall);
+	rw_pc = save_pc;
+	if (rc)
+		return rc;
+
+	if (return_type == Undefined) {
+		*type = return_type;
+		return -1;
+	}
 	
         obstack_init(&obs);
-        args = radius_xlate(&obs, fcall, req, NULL);
-        if (argcv_get(args, "(),", &argc, &argv) || argc < 3) {
-                radlog(L_ERR, _("malformed function call: %s"), fcall);
-                obstack_free(&obs, NULL);
-                if (argv)
-                        argcv_free(argc, argv);
-                return 1;
-        }
-
-        if (argv[1][0] != '(') {
-                radlog(L_ERR, _("missing '(' in function call"));
-                errcnt++;
-        } 
-        if (argv[argc-1][0] != ')') {
-                radlog(L_ERR, _("missing ')' in function call"));
-                errcnt++;
-        }       
-
-        fun = (FUNCTION*) sym_lookup(rewrite_tab, argv[0]);
-        if (!fun) {
-                radlog(L_ERR, _("function %s not defined"), argv[0]);
-                errcnt++;
-        }
-
-        if (errcnt) {
-                obstack_free(&obs, NULL);
-                argcv_free(argc, argv);
-                return 1;
-        }
-        
 	rw_mach_init(&mach, rewrite_stack_size);
         mach.req = req;
         if (debug_on(2)) {
@@ -5006,63 +5341,6 @@ interpret(char *fcall, RADIUS_REQ *req, Datatype *type, Datum *datum)
                 fclose(fp);
         }
 
-        /* Pass arguments */
-        nargs = 0;
-        parm = fun->parm;
-
-        for (i = 2; i < argc-1; i++) {
-                int n;
-                char *p;
-                
-                if (i % 2) {
-                        if (argv[i][0] == ',')
-                                continue;
-                        radlog(L_ERR,
-                       _("calling %s: expected ',' but found %s after arg %d"),
-                               argv[0], argv[i], parm);
-                        obstack_free(&obs, NULL);
-                        argcv_free(argc, argv);
-                        rw_mach_destroy(&mach);
-                        return -1;
-                }
-
-                if (++nargs > fun->nparm) {
-                        radlog(L_ERR,
-			       _("too many arguments for %s"), argv[0]);
-                        obstack_free(&obs, NULL);
-                        argcv_free(argc, argv);
-                        rw_mach_destroy(&mach);
-                        return -1;
-                }
-
-                switch (parm->datatype) {
-                case Integer:
-                        n = strtol(argv[i], &p, 0);
-                        if (*p) 
-                                n = ip_gethostaddr(argv[i]);
-                        pushn(&mach, n);
-                        break;
-                case String:
-                        pushstr(&mach, argv[i], strlen(argv[i]));
-                        break;
-                default:
-                        insist_fail("datatype!");
-                }
-                parm = parm->next;
-        }
-        obstack_free(&obs, NULL);
-        
-        if (fun->nparm != nargs) {
-                radlog(L_ERR,
-                       _("too few arguments for %s"),
-                         argv[0]);
-                argcv_free(argc, argv);
-		rw_mach_destroy(&mach);
-                return -1;
-        }
-
-        argcv_free(argc, argv);
-
         /* Imitate a function call */
         if (setjmp(mach.jmp)) {
                 rw_mach_destroy(&mach);
@@ -5070,7 +5348,7 @@ interpret(char *fcall, RADIUS_REQ *req, Datatype *type, Datum *datum)
         }
         
         pushn(&mach, 0);                         /* Return address */
-        run(&mach, fun->entry);                  /* call function */
+        run(&mach, rw_pc);                       /* call function */
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "After rewriting\n");
@@ -5078,7 +5356,7 @@ interpret(char *fcall, RADIUS_REQ *req, Datatype *type, Datum *datum)
                 fclose(fp);
         }
         
-        switch (fun->rettype) {
+        switch (return_type) {
         case Integer:   
                 datum->ival = mach.rA;
                 break;
@@ -5088,7 +5366,8 @@ interpret(char *fcall, RADIUS_REQ *req, Datatype *type, Datum *datum)
         default:
                 abort();
         }
-        *type = fun->rettype;
+        *type = return_type;
+
 	rw_mach_destroy(&mach);
         return 0;
 }
@@ -5114,15 +5393,185 @@ run_rewrite(char *name, RADIUS_REQ *req)
         return -1;
 }
 
+
 /* ****************************************************************************
  * Configuration
  */
+
+static RAD_LIST *source_list;        /* List of loaded source files */
+static RAD_LIST *rewrite_load_path;  /* Load path list */
+
+/* Add a path to load path */
+static void
+rewrite_add_load_path(const char *str)
+{
+	if (!rewrite_load_path)
+		rewrite_load_path = list_create();
+	list_append(rewrite_load_path, estrdup(str));
+}
+
+void
+register_source_name(char *path)
+{
+	if (!source_list)
+		source_list = list_create();
+	list_append(source_list, path);
+}
+
+struct load_data {
+	int rc;
+	char *name;
+};
+
+/* Try to load a source file.
+   ITEM is a directory name, DATA is struct load_data.
+   Return 1 if the file was found (no matter was it loaded or not) */
+static int
+try_load(void *item, void *data)
+{
+	int rc = 0;
+	struct load_data *lp = data;
+	char *path = mkfilename((char*)item, lp->name);
+
+	lp->rc = parse_rewrite(path);
+	if (lp->rc >= 0) {
+		register_source_name(path);
+		rc = 1;
+	} else
+		efree(path);
+	return rc;
+}
+
+/* Load the given rewrite module. */
+int
+rewrite_load_module(char *name)
+{
+	int rc;
+	if (name[0] == '/') {
+		register_source_name(estrdup(name));
+		rc = parse_rewrite(name);
+	} else {
+		struct load_data ld;
+		ld.rc = 1;
+		ld.name = name;
+		list_iterate(rewrite_load_path, try_load, &ld);
+		rc = ld.rc;
+	}
+	return rc;
+}
+
+static int
+free_path(void *item, void *data ARG_UNUSED)
+{
+	efree(item);
+}
+
+static RAD_LIST *source_candidate_list; /* List of modules that are to
+					   be loaded */
+
+int
+rewrite_stmt_term(int finish, void *block_data, void *handler_data)
+{
+	if (!finish) {
+		symtab_clear(rewrite_tab);
+		
+		yydebug = debug_on(50);
+		list_destroy(&source_list, free_path, NULL);
+		list_destroy(&rewrite_load_path, free_path, NULL);
+		rewrite_add_load_path(radius_dir);
+	}
+	return 0;
+}
+
+static int
+rewrite_cfg_add_load_path(int argc, cfg_value_t *argv,
+			  void *block_data, void *handler_data)
+{
+	if (argc > 2) {
+		cfg_argc_error(0);
+		return 0;
+	}
+
+ 	if (argv[1].type != CFG_STRING) {
+		cfg_type_error(CFG_STRING);
+		return 0;
+	}
+
+	rewrite_add_load_path(argv[1].v.string);
+	return 0;
+}
+
+static int
+rewrite_cfg_load(int argc, cfg_value_t *argv,
+		 void *block_data, void *handler_data)
+{
+	if (argc > 2) {
+		cfg_argc_error(0);
+		return 0;
+	}
+
+ 	if (argv[1].type != CFG_STRING) {
+		cfg_type_error(CFG_STRING);
+		return 0;
+	}
+
+	list_append(source_candidate_list, estrdup(argv[1].v.string));
+	return 0;
+}
+
+/* Configuration hooks and initialization */
+
+static void
+rewrite_before_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
+{
+	list_destroy(&source_candidate_list, free_path, NULL);
+	source_candidate_list = list_create();
+}
+
+static int
+_load_module(void *item, void *data ARG_UNUSED)
+{
+	if (rewrite_load_module(item) == -2)
+		radlog(L_ERR, _("file not found: %s"), item);
+	return 0;
+}
+
+static void
+rewrite_after_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
+{
+	/* For compatibility with previous versions load the
+	   file $radius_dir/rewrite, if no explicit "load" statements
+	   were given */
+	if (list_count(source_candidate_list) == 0)
+		rewrite_load_module("rewrite");
+	
+	list_iterate(source_candidate_list, _load_module, NULL);
+	list_destroy(&source_candidate_list, free_path, NULL);
+#if defined(MAINTAINER_MODE)
+        if (debug_on(100))
+                debug_dump_code();
+#endif
+}
+
+void
+rewrite_init()
+{
+	rewrite_tab = symtab_create(sizeof(FUNCTION), function_free);
+	code_init();
+	radiusd_set_preconfig_hook(rewrite_before_config_hook, NULL, 0);
+	radiusd_set_postconfig_hook(rewrite_after_config_hook, NULL, 0);
+}
+
+
 struct cfg_stmt rewrite_stmt[] = {
 	{ "stack-size", CS_STMT, NULL, cfg_get_integer, &rewrite_stack_size,
 	  NULL, NULL },
+	{ "load-path", CS_STMT, NULL, rewrite_cfg_add_load_path, NULL, NULL, NULL },
+	{ "load", CS_STMT, NULL, rewrite_cfg_load, NULL, NULL, NULL },
 	{ NULL, }
 };
 
+
 /* ****************************************************************************
  * Guile interface
  */
@@ -5196,7 +5645,7 @@ radscm_rewrite_execute(const char *func_name, SCM ARGS)
         fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
         if (!fun) 
                 scm_misc_error(func_name,
-                               "function ~S not defined",
+                               _("function ~S not defined"),
                                scm_list_1(FNAME));
 	
         rw_mach_init(&mach, rewrite_stack_size);
@@ -5211,7 +5660,7 @@ radscm_rewrite_execute(const char *func_name, SCM ARGS)
                 if (++nargs > fun->nparm) {
                         rw_code_unlock();
                         scm_misc_error(func_name,
-                                       "too many arguments for ~S",
+                                       _("too many arguments for ~S"),
                                        scm_list_1(FNAME));
                 }
 
@@ -5238,7 +5687,7 @@ radscm_rewrite_execute(const char *func_name, SCM ARGS)
                 if (rc) {
                         rw_mach_destroy(&mach);
                         scm_misc_error(func_name,
-                             "type mismatch in argument ~S(~S) in call to ~S",
+				       _("type mismatch in argument ~S(~S) in call to ~S"),
                                        scm_list_3(SCM_MAKINUM(nargs),
                                                  car,
                                                  FNAME));
@@ -5248,7 +5697,7 @@ radscm_rewrite_execute(const char *func_name, SCM ARGS)
         if (fun->nparm != nargs) {
 		rw_mach_destroy(&mach);
                 scm_misc_error(func_name,
-                               "too few arguments for ~S",
+                               _("too few arguments for ~S"),
                                scm_list_1(FNAME));
         }
         

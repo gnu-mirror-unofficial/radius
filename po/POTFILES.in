@@ -38,6 +38,7 @@ radiusd/snmpserv.c
 radiusd/sql.c
 radiusd/stat.c
 radiusd/version.c
+radiusd/sockets.c
 radlast/radlast.c
 
 radscm/radscm.c

@@ -332,7 +332,7 @@ char **
 radtest_command_completion(char *text ARG_UNUSED, int start ARG_UNUSED,
 			   int end ARG_UNUSED)
 {
-	return NULL;
+	return 0;
 }
 
 #endif /* WITH_READLINE */

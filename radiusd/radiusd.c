@@ -408,6 +408,7 @@ radiusd_setup()
 	radiusd_set_postconfig_hook(radiusd_postconfig_hook, NULL, 0);
 
 	rewrite_init();
+	dynload_init();
         snmp_init(0, 0, (snmp_alloc_t)grad_emalloc, (snmp_free_t)grad_free);
 	mlc_init();
 	sql_init();
@@ -1421,6 +1422,8 @@ struct cfg_stmt config_syntax[] = {
 	{ "rewrite", CS_BLOCK, rewrite_stmt_term, NULL, NULL, rewrite_stmt, NULL },
 	{ "filters", CS_BLOCK, filters_stmt_term, NULL, NULL, filters_stmt,
 	  NULL },
+	{ "loadable-modules", CS_BLOCK, dynload_stmt_term, NULL, NULL,
+	  dynload_stmt, NULL },
 #ifdef USE_DBM
 	{ "usedbm", CS_STMT, NULL, cfg_get_boolean, &use_dbm, NULL, NULL },
 #endif

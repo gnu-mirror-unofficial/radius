@@ -412,7 +412,7 @@ grad_decode_pdu(grad_uint32_t host, u_short udp_port, u_char *buffer, size_t len
                 
         debug(1, ("%s from %s, id=%d, length=%d",
 		  grad_request_code_to_name(auth->code),
-		  grad_ip_iptostr(host, NULL),
+		  grad_ip_iptostr(ntohl(host), NULL),
 		  auth->id,
                   ntohs(auth->length)));
 

@@ -32,10 +32,9 @@ typedef struct pw_auth_hdr {
         u_char          id;
         u_short         length;
         u_char          vector[AUTH_VECTOR_LEN];
-        u_char          data[2];
 } AUTH_HDR;
 
-#define AUTH_HDR_LEN                    20
+#define AUTH_HDR_LEN                    sizeof(AUTH_HDR)
 #define CHAP_VALUE_LENGTH               16
 
 #ifndef DEF_AUTH_PORT
@@ -180,13 +179,19 @@ typedef struct radius_req {
         int                     data_len;     /* Length of raw data */
         int                     data_alloced; /* Was the data malloced */
         void                    *conn;        /* SQL connection */
+	
+	/* Saved reply values */
+        int                     reply_code;   /* Reply code */
+        VALUE_PAIR              *reply_pairs; /* Reply pairs */
+	char                    *reply_msg;   /* FIXME: Reply message */
+	
         /* Proxy support fields */
         char                    *realm;       /* stringobj, actually */
         int                     validated;    /* Already md5 checked */
         UINT4                   server_ipaddr;
         UINT4                   server_id;
-        VALUE_PAIR              *server_reply;/* Reply from other server */
         int                     server_code;  /* Reply code from other srv */
+        VALUE_PAIR              *server_reply;/* Reply from other server */
 } RADIUS_REQ;
 
 struct envar_t;

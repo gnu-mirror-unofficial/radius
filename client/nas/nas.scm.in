@@ -24,9 +24,8 @@
 (define *pppd-path* "/usr/sbin/pppd")
 
 (define nas-log-facility LOG_LOCAL3)
-(define *acct-dir* "/tmp")
 (define *session-base* 16)
-(define *acct-dir* "/var/account/port")
+(define *acct-dir* "/var/log")
 (define *login-timeout* 60)
 (define pppd-args '())
 (define welcome-banner #f)
@@ -408,25 +407,26 @@
   (let ((login "")
 	(port 0)
 	(port-type #\A)
+	(proto #\P)
 	(session-id "none")
 	(caller-id "")
 	(framed-ip-addr "")
 	(nas-ip-addr nas-ip))
     (do ((p av-pairs (cdr p)))
-	(#f (null p))
+	((null? p) #f)
       (let ((attr (car (car p)))
 	    (val (cdr (car p))))
 	(cond
 	 ((string=? attr "User-Name")
 	  (set! login val))
 	 ((string=? attr "NAS-Port-Id")
-	  (set! port val))
+	  (set! port (string->number val)))
 	 ((string=? attr "Service-Type")
 	  ;;FIXME: set port_type
 	  )
-	 ((string=? attr "Acct-Session-ID")
+	 ((string=? attr "Acct-Session-Id")
 	  (set! session-id val))
-	 ((string=? attr "Calling-Station-ID")
+	 ((string=? attr "Calling-Station-Id")
 	  (set! caller-id val))
 	 ((string=? attr "Framed-IP-Address")
 	  (set! framed-ip-addr val))
@@ -445,15 +445,17 @@
 
 (define (nas-login iface av-pairs)
   (let ((ut (nas-utmp-list av-pairs)))
+    (logit LOG_DEBUG (format #f "nas-login: ~A:~A:~A:~A" (radutmp-file) (radwtmp-file) av-pairs ut))	
     (rad-utmp-putent 1 0 ut (radutmp-file) (radwtmp-file))))
        
 (define (nas-logout iface av-pairs)
   (let* ((ut (nas-utmp-list av-pairs))
 	 (diff (rad-utmp-putent 2 0 ut (radutmp-file) (radwtmp-file))))
+    (logit LOG_DEBUG (format #f "nas-logout: ~A:~A:~A" (radutmp-file) (radwtmp-file) diff))	
     (list
-     (cons "Acct-Session-Time" (nth diff 1))
-     (cons "Acct-Input-Packets" (nth diff 2))
-     (cons "Acct-Output-Packets" (nth diff 3)))))
+     (cons "Acct-Session-Time" (nth diff 0))
+     (cons "Acct-Input-Packets" (nth diff 1))
+     (cons "Acct-Output-Packets" (nth diff 2)))))
 
 (define (acct-start args)
   (cond
@@ -468,7 +470,7 @@
 		            (cons "Framed-IP-Address" remote-ip)
 		            (cons "Acct-Status-Type" "Start")
 		            (cons "Acct-Authentic" "RADIUS"))
-		            ipparam))
+		            ipparam)))
 ;;    (format #t "~A" ipparam)
     (rad-send :port-acct :acct-req 
 	      av-pairs
@@ -491,6 +493,7 @@
 			    (cons "Acct-Authentic" "RADIUS"))
 			    ipparam))
 	 (logout (nas-logout iface av-pairs)))
+    (logit LOG_DEBUG (format #f "logout: ~A" (append av-pairs logout)))	
     (rad-send :port-acct :acct-req 
 	      (append av-pairs logout)
 	      flag-verbose)))    

@@ -10,7 +10,7 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-AC_PREREQ(2.53)
+AC_PREREQ(2.54)
 
 AC_REVISION($Revision$)
 AC_INIT(GNU Radius, 0.99.97, bug-gnu-radius@gnu.org, gnu-radius)
@@ -42,7 +42,6 @@ esac
 ## * Checks for programs.
 AC_PROG_CC
 AM_PROG_CC_STDC
-AC_PROG_RANLIB
 AC_PROG_YACC
 AM_PROG_LEX
 AC_PROG_AWK
@@ -691,7 +690,11 @@ AC_OUTPUT(Makefile m4/Makefile  intl/Makefile po/Makefile.in
           include/Makefile include/snmp/Makefile
           lib/Makefile sql/Makefile snmplib/Makefile 
 	  radscm/Makefile 
-          radiusd/Makefile radlast/Makefile radwho/Makefile 
+          radiusd/Makefile 
+          radiusd/testsuite/Makefile 
+          radiusd/testsuite/raddb/Makefile 
+          radiusd/testsuite/proxy/Makefile 
+          radlast/Makefile radwho/Makefile 
           raduse/Makefile radzap/Makefile 
           radscripts/Makefile doc/Makefile 
 	  doc/texinfo/Makefile doc/man/Makefile doc/man/config.so 
@@ -705,12 +708,6 @@ AC_OUTPUT(Makefile m4/Makefile  intl/Makefile po/Makefile.in
           client/pam_radius/Makefile 
           radtest/Makefile
           examples/Makefile 
-          test/Makefile 
-          test/raddb/Makefile 
-          test/proxy/Makefile 
-          test/shell/Makefile
-          test/dejagnu/Makefile
-          test/dejagnu/lib/Makefile
           scripts/Makefile
           scripts/guile/Makefile 
           scripts/guile/1.4/Makefile 

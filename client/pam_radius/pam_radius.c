@@ -360,7 +360,7 @@ _read_client_config(pam_handle_t *pamh, char *name)
 			radclient->retries = atoi(arg);
 			break;
 		}
-		if (strtok(NULL, 0))
+		if (strtok(NULL, " \t"))
 			_pam_log(LOG_WARNING,
 				 "%s:%d: junk at the end of line",
 				 name, line);

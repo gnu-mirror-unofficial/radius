@@ -10,8 +10,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: GNU Radius 0.99.95\n"
-"POT-Creation-Date: 2002-06-02 13:13+0300\n"
-"PO-Revision-Date: 2002-05-17 16:00+0300\n"
+"POT-Creation-Date: 2002-06-03 12:52+0300\n"
+"PO-Revision-Date: 2002-06-03 12:58+0300\n"
 "Last-Translator: Sergey Poznyakoff <gray@gnu.org>\n"
 "Language-Team: Norwegian-bokmål <no@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -990,7 +990,7 @@ msgstr "ukjent forespørselkode %d"
 msgid "Possible Security Breach: %s"
 msgstr ""
 
-#: radiusd/proxy.c:556
+#: radiusd/proxy.c:557
 #, fuzzy, c-format
 msgid "Unrecognized proxy reply from server %s, proxy ID %d"
 msgstr "Ulovlig proxy svar fra tjenester %s, ID %d"
@@ -1076,6 +1076,10 @@ msgstr "Flagg spesifikk for radiusd:"
 msgid "Do detailed authentication logging"
 msgstr "Slå på detaljert autentisering logging"
 
+#: radiusd/radiusd.c:188 radiusd/radiusd.c:196 radiusd/radiusd.c:208
+msgid "DIR"
+msgstr "KATALOG"
+
 #: radiusd/radiusd.c:189
 msgid "Set accounting directory"
 msgstr ""
@@ -1106,8 +1110,12 @@ msgstr ""
 msgid "Do not resolve IP addresses"
 msgstr ""
 
+#: radiusd/radiusd.c:204 radlast/radlast.c:129
+msgid "IPADDR"
+msgstr "IPADR"
+
 #: radiusd/radiusd.c:205
-msgid "Listen on ADDRESS"
+msgid "Listen on IPADDR"
 msgstr ""
 
 #: radiusd/radiusd.c:207
@@ -1117,7 +1125,7 @@ msgstr ""
 #: radiusd/radiusd.c:209
 #, fuzzy
 msgid "Store pidfile in DIR"
-msgstr "Lage pidfilen i DIR"
+msgstr "Lage pidfilen i KATALOG"
 
 #: radiusd/radiusd.c:211
 #, fuzzy
@@ -1127,6 +1135,10 @@ msgstr "Logge brukernavn uten prefikser og suffikser"
 #: radiusd/radiusd.c:213
 msgid "Run in single process mode"
 msgstr ""
+
+#: radiusd/radiusd.c:214
+msgid "DEBUGSPEC"
+msgstr "DEBUGSPEC"
 
 #: radiusd/radiusd.c:215
 msgid "Set debugging level"
@@ -1780,24 +1792,38 @@ msgstr "Rapporter siste innlogginger fra Radius database"
 msgid "radlast specific switches:"
 msgstr "flagg spesifikk for radlast:"
 
+#: radlast/radlast.c:125 radlast/radlast.c:137 radtest/main.c:84
+#: radtest/main.c:88 radzap/radzap.c:69
+msgid "NUMBER"
+msgstr "TALL"
+
 #: radlast/radlast.c:126
 #, fuzzy
 msgid "show at most NUMBER records"
-msgstr "vis ikke mer enn NUMBER poster"
+msgstr "vis ikke mer enn TALL poster"
+
+#: radlast/radlast.c:127 radtest/main.c:78 radwho/radwho.c:142
+#: radzap/radzap.c:65
+msgid "FILE"
+msgstr "FIL"
 
 #: radlast/radlast.c:128
 #, fuzzy
-msgid "use FILENAME as radwtmp"
-msgstr "les FILENAME istedenfor forvalgte radwtmp"
+msgid "use FILE as radwtmp"
+msgstr "les FIL istedenfor forvalgte radwtmp"
 
 #: radlast/radlast.c:130
 #, fuzzy
 msgid "show logins with IPADDR"
-msgstr "vis poster med IP adresse IPADDR"
+msgstr "vis poster med IP adresse IPADR"
 
 #: radlast/radlast.c:132
 msgid "mark records with missed stops with bump (!)"
 msgstr "merke poster uten stopper med et utropstegn"
+
+#: radlast/radlast.c:133 radzap/radzap.c:67
+msgid "NASNAME"
+msgstr "NASNAME"
 
 #: radlast/radlast.c:134
 msgid "show logins from given NAS"
@@ -1848,10 +1874,14 @@ msgstr "sende vilkårlige radius forespørsler"
 msgid "radtest specific switches:"
 msgstr "flagg spesifikk for radtest:"
 
+#: radtest/main.c:74
+msgid "VARIABLE=VALUE"
+msgstr "VARIABEL=VERDI"
+
 #: radtest/main.c:75
 #, fuzzy
 msgid "assign a VALUE to VARIABLE"
-msgstr "del VALUE til VARIABLE"
+msgstr "del VERDI til VARIABEL"
 
 #: radtest/main.c:77
 msgid "set debugging level"
@@ -1863,13 +1893,16 @@ msgid ""
 "Read input from FILE. When this option is used, all unknown options in the "
 "form --VAR=VALUE are treated as variable assignments"
 msgstr ""
-"Les inn fra FILE. Dersom dette flagg brukes alle flagg i formen «--"
-"VAR=VERDI»\n"
+"Les inn fra FIL. Dersom dette flagg brukes alle flagg i formen «--VAR=VERDI»\n"
 "er behandles som tildelinger av VERDI til variabelen VAR"
 
 #: radtest/main.c:85
 msgid "set number of retries"
 msgstr ""
+
+#: radtest/main.c:86
+msgid "SERVER"
+msgstr "TJENESTER"
 
 #: radtest/main.c:87
 msgid "set radius server parameters"
@@ -1919,19 +1952,27 @@ msgstr "vis alle de innslag"
 msgid "display CLID in second column"
 msgstr "vis CLID i annen kolonne"
 
+#: radwho/radwho.c:138
+msgid "DATEFMT"
+msgstr "DATEFMT"
+
 #: radwho/radwho.c:139
 #, fuzzy
 msgid "change date representation format"
 msgstr "velg format for representasjon av datoer"
 
+#: radwho/radwho.c:140
+msgid "STRING"
+msgstr "STRENG"
+
 #: radwho/radwho.c:141
 msgid "print STRING instead of an empty column"
-msgstr "vis STRING istedenfor tom kolonne"
+msgstr "vis STRENG istedenfor tom kolonne"
 
 #: radwho/radwho.c:143
 #, fuzzy
 msgid "Use FILE instead of /var/log/radutmp"
-msgstr "les FILE istedenfor /var/log/radutmp"
+msgstr "les FIL istedenfor /var/log/radutmp"
 
 #: radwho/radwho.c:145
 msgid "act as a finger daemon"
@@ -1961,6 +2002,10 @@ msgstr ""
 
 #: radwho/radwho.c:158
 msgid "do not resolve hostnames."
+msgstr ""
+
+#: radwho/radwho.c:159
+msgid "FORMAT"
 msgstr ""
 
 #: radwho/radwho.c:160
@@ -2003,7 +2048,7 @@ msgstr "sette katalog til loggfila"
 
 #: radzap/radzap.c:66
 msgid "operate on FILE instead of /var/log/radutmp"
-msgstr "behandle FILE istedenfor /var/log/radutmp"
+msgstr "behandle FIL istedenfor /var/log/radutmp"
 
 #: radzap/radzap.c:68
 msgid "zap user from given NAS"

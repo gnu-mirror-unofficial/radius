@@ -1,3 +1,11 @@
+2001-12-10 Sergey Poznyakoff
+	   
+	* Makefile.am: Added rules for generating web documentation
+	  archive.
+	* doc/texinfo/Makefile.am: Likewise.
+	* doc/texinfo/index.html.in: (new) Template for creating
+	  online documentation page.
+	
 2001-12-08 Sergey Poznyakoff
 
 	* radlib/util.c: Print integer attributes as unsigned.

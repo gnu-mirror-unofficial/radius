@@ -843,6 +843,19 @@ rad_sql_pass(req, authdata)
         return mysql_passwd;
 }
 
+struct cleanup_data {
+	struct sql_connection *conn;
+	void *data;
+};
+
+void
+rad_sql_data_cleanup(arg)
+	void *arg;
+{
+	struct cleanup_data *p = arg;
+	disp_sql_free(sql_cfg.interface, p->conn, p->data);
+}
+	
 int
 rad_sql_checkgroup(req, groupname)
         RADIUS_REQ *req;
@@ -854,7 +867,8 @@ rad_sql_checkgroup(req, groupname)
         char *p;
         char *query;
         struct obstack stack;
-        
+        struct cleanup_data cleanup_data;
+	
         if (sql_cfg.doauth == 0 || sql_cfg.group_query == NULL) 
                 return -1;
 
@@ -864,9 +878,15 @@ rad_sql_checkgroup(req, groupname)
 
         obstack_init(&stack);
 	pthread_cleanup_push(rad_sql_thread_cleanup, &stack);
+	
         query = radius_xlate(&stack, sql_cfg.group_query, req, NULL);
 
         data = disp_sql_exec(sql_cfg.interface, conn, query);
+
+	cleanup_data.conn = conn;
+	cleanup_data.data = data;
+	pthread_cleanup_push(rad_sql_data_cleanup, &cleanup_data);
+	
         while (rc != 0
                && disp_sql_next_tuple(sql_cfg.interface, conn, data) == 0) {
                 if ((p = disp_sql_column(sql_cfg.interface, data, 0)) == NULL)
@@ -876,6 +896,8 @@ rad_sql_checkgroup(req, groupname)
                         rc = 0;
         }
         disp_sql_free(sql_cfg.interface, conn, data);
+	
+	pthread_cleanup_pop(0); 
         pthread_cleanup_pop(0);
 	
         obstack_free(&stack, NULL);

@@ -25,6 +25,102 @@
 #include <common.h>
 
 #ifdef LEAK_DETECTOR
+# if LEAK_DETECTOR > 1
+
+# ifndef MAX_BLOCK_SIZE
+#  define MAX_BLOCK_SIZE 4096
+# endif
+
+# ifndef MEMORY_CHECK_INTERVAL
+#  define MEMORY_CHECK_INTERVAL 5*60
+# endif
+
+static size_t nsamples;    /* Number of samples collected */
+static time_t last_time;   /* Time the last sample was taken */
+
+/* Memory usage counters. In each array below, Nth element contains
+   the number of allocated memory blocks of size N */
+static size_t last_counter[MAX_BLOCK_SIZE]; /* The memory usage at last_time */
+static size_t counter[MAX_BLOCK_SIZE];      /* Current memory usage */
+/* Differences */
+static long long diff[MAX_BLOCK_SIZE];      /* Difference between counter and
+					       last_counter */
+static double mean_diff[MAX_BLOCK_SIZE];    /* Mean speed of memory
+					       allocation */
+static double mean_acc[MAX_BLOCK_SIZE];     /* Mean acceleration of memory
+					       allocation */
+
+static void
+dump(time_t t)
+{
+	FILE *fp;
+	char *fname;
+	
+	if (!radlog_dir)
+		return;
+	asprintf(&fname, "%s/radmem.%lu",
+		 radlog_dir, (unsigned long) getpid());
+	fp = fopen(fname, "w");
+	if (!fp) 
+		grad_log(L_ERR|L_PERROR, "cannot open file %s", fname);
+	else {
+		size_t i;
+				
+		fprintf(fp, "%lu\t%lu\n", (unsigned long) t, nsamples + 1);
+		fprintf(fp, "Size\tCprev\tCnow\tDiff\tMdiff\tMacc\n");
+		for (i = 0; i < MAX_BLOCK_SIZE; i++) {
+			long long d = (long long)counter[i] - last_counter[i];
+			double a = d - diff[i];
+
+			diff[i] = d;
+			mean_diff[i] = (double) (nsamples * mean_diff[i] + d)
+				           / (nsamples + 1);
+			
+			mean_acc[i] = (double) (nsamples * mean_acc[i] + a)
+				           / (nsamples + 1);
+			if (d != 0) {
+				fprintf(fp, "%lu\t%lu\t%lu\t%lli\t%7.3f\t%7.3f\n",
+					i,
+					last_counter[i],
+					counter[i],
+					d,
+					mean_diff[i],
+					mean_acc[i]);
+			}
+		}
+		nsamples++;
+		fclose(fp);
+	}
+	memcpy(last_counter, counter, sizeof last_counter);
+	free(fname);
+}
+
+static void
+check_dump()
+{
+	time_t t = time(NULL);
+	if (t - last_time > MEMORY_CHECK_INTERVAL) {
+		dump(t);
+		last_time = t;
+	}
+}
+
+#  define INCREASE(s) do {\
+	if (s < MAX_BLOCK_SIZE)\
+		counter[s]++;\
+	check_dump();\
+} while (0)
+
+#  define DECREASE(s) do {\
+	if (s < MAX_BLOCK_SIZE)\
+		counter[s]--;\
+	check_dump();\
+} while (0)
+# else  /* not LEAK_DETECTOR > 1 */
+#  define INCREASE(s)
+#  define DECREASE(s)
+# endif /* LEAK_DETECTOR > 1 */
+	   
 typedef union mem_header MHDR;
 union mem_header {
         struct {
@@ -52,6 +148,7 @@ grad_malloc(size_t size)
 #ifdef LEAK_DETECTOR
                 MHDR *mhdr;
                 
+		INCREASE(size);
                 mallocstat.size += size;
                 mallocstat.count++;
 
@@ -84,6 +181,8 @@ grad_realloc(void *ptr, size_t size)
                         mallocstat.size += size - osize;
                         ptr = (char*)ptr + EXTRA;
                 }
+		DECREASE(osize);
+		INCREASE(size);
 #else
                 ptr = realloc(ptr, size);
 #endif
@@ -105,6 +204,7 @@ grad_free(void *ptr)
         ptr = (char*)ptr - EXTRA;
         mhdr = (MHDR*)ptr;
 
+	DECREASE(mhdr->s.size);
         mallocstat.size -= mhdr->s.size;
         mallocstat.count--;
         

@@ -39,167 +39,8 @@ static char rcsid[] =
 #include <radargp.h>
 #include <radpaths.h>
 
-#define ALIGN_LEFT    0
-#define ALIGN_RIGHT   1
-
-typedef struct {
-        int      align;
-        int      width;
-        void     (*out)();
-        char     *title;
-} FORMAT;
-
-void format_radutmp_field(char *buf, FORMAT *fmt, struct radutmp *up);
-void format_radutmp_entry(FORMAT *fmt, struct radutmp *up);
-void format_header(FORMAT *fmt);
-
-void format_login(char *buf, FORMAT *fmt, struct radutmp *up);
-void format_username(char *buf, FORMAT  *fmt, struct radutmp *up);
-void format_date(char *buf, FORMAT *fmt, struct radutmp *up);
-void format_porttype(char *buf, FORMAT *fmt, struct radutmp *up);
-void format_port(char *buf, FORMAT *fmt, struct radutmp *up);
-void format_nas(char *buf, FORMAT *fmt, struct radutmp *up);
-void format_address(char *buf, FORMAT *fmt, struct radutmp *up);
-void format_orig(char *buf, FORMAT *fmt, struct radutmp *ut);
-void format_sid(char *buf, FORMAT *fmt, struct radutmp *ut);
-void format_proto(char *buf, FORMAT *fmt, struct radutmp *ut);
-void format_delay(char *buf, FORMAT *fmt, struct radutmp *ut);
-void format_type(char *buf, FORMAT *fmt, struct radutmp *ut);
-void format_time(char *buf, FORMAT *fmt, struct radutmp *ut);
-void format_clid(char *buf, FORMAT *fmt, struct radutmp *ut);
-void format_realm(char *buf, FORMAT *fmt, struct radutmp *ut);
-
-NAS * my_read_naslist_file(char *file);
-void my_read_realms(char *file);
-char *realm_name(UINT4 ip, char *buf, size_t size);
 void local_who();
 void radius_who();
-void print_header();
-char * time_str(char *buffer, time_t t);
-char * proto(struct radutmp *rt);
-char * nasname(UINT4 ipaddr, char *buf, size_t size);
-char * hostname(UINT4 ipaddr, char *buf, size_t size);
-void parse_fmtspec(char *str);
-void set_date_format(char *s);
-void set_ip_format(char *s);
-
-FORMAT end_fmt = { 0, 0, NULL, NULL };
-
-FORMAT login_fmt = {
-        ALIGN_LEFT,        
-        10,
-        format_login,
-        "Login"
-};
-
-FORMAT name_fmt = {
-        ALIGN_LEFT,        
-        17,
-        format_username,
-        "Name"
-};
-
-FORMAT porttype_fmt = {
-        ALIGN_LEFT,        
-        2,
-        format_porttype,
-        "PType"
-};
-
-FORMAT port_fmt = {
-        ALIGN_LEFT,        
-        5,
-        format_port,
-        "TTY"
-};
-
-FORMAT date_fmt = {
-        ALIGN_LEFT,        
-        9,
-        format_date,
-        "When"
-};
-
-FORMAT nas_fmt = {
-        ALIGN_LEFT,        
-        9,
-        format_nas,
-        "From"
-};
-
-FORMAT address_fmt = {
-        ALIGN_LEFT,        
-        16,
-        format_address,
-        "Location"
-};
-
-FORMAT orig_fmt = {
-        ALIGN_LEFT,        
-        10,
-        format_orig,
-        "OrigLogin"
-};
-
-FORMAT sid_fmt = {
-        ALIGN_LEFT,        
-        16,
-        format_sid,
-        "Session ID"
-};
-
-FORMAT proto_fmt = {
-        ALIGN_LEFT,        
-        4,
-        format_proto,
-        "What"
-};
-
-FORMAT delay_fmt = {
-        ALIGN_LEFT,        
-        5,
-        format_delay,
-        "Delay"
-};
-
-FORMAT type_fmt = {
-        ALIGN_LEFT,        
-        4,
-        format_type,
-        "Type"
-};
-
-FORMAT time_fmt = {
-        ALIGN_LEFT,        
-        5,
-        format_time,
-        "Time"
-};
-
-FORMAT clid_fmt = {
-        ALIGN_LEFT,        
-        16,
-        format_clid,
-        "CLID"
-};
-
-FORMAT realm_fmt = {
-        ALIGN_LEFT,
-        16,
-        format_realm,
-        "Realm"
-};
-
-#define MAX_FMT 20
-FORMAT radwho_fmt[MAX_FMT];
-
-#define SIP_SMART    0
-#define SIP_NODOMAIN 1
-#define SIP_IPADDR   2
-
-#define SD_SMART     0
-#define SD_FULL      1
-#define SD_ABBR      2
 
 #define P_CONSOLE -1  /* Special radutmp type value for local users */
 
@@ -208,53 +49,53 @@ int  secure;              /* Secure mode: do not answer queries w/o username */
 int  showlocal;           /* Display local users as well */
 int  display_header = 1;  /* Display header line */
 int  showall;             /* Display all records */
-int  showip = SIP_SMART;  /* IP address display mode */
-int  showdate = SD_SMART; /* Date display mode */
 
 char *username = NULL;
 
 char *filename = NULL;    /* radutmp filename */
-char *empty = "";         /* empty field replacement */
 char *eol = "\n";         /* line delimiter */
-NAS  *naslist;            /* List of known NASes */
-REALM *realms;            /* List of realms */
 
-#define DEFFMT "login:10:Login,"\
-               "uname:17:Name,"\
-               "proto:5:What,"\
-               "port:5:TTY,"\
-               "date:9:When,"\
-               "nas:9:From,"\
-               "ip:16:Location"
+static struct {
+	char *name;
+	char *fmt;
+} fmtdef[] = {
+	{ "default",
+	  "(login 10 Login) (gecos 17 Name) (protocol 5 Proto) (nas-port 5 TTY) (time 9 When) (nas-address 9 From) (framed-address 16 Location)" },
+	{ "sid",
+	  "(login 10 Login) (session-id 17 SID) (protocol 5 Proto) (nas-port 5 TTY) (time 9 When) (nas-address 9 From) (framed-address 16 Location)" },
+	{ "clid",
+	  "(login 10 Login) (clid 17 CLID) (protocol 5 Proto) (nas-port 5 TTY) (time 9 When) (nas-address 9 From) (framed-address 16 Location)" },
+	{ "long",
+	  "(login 32 Login) (session-id 32 SID) (protocol 5 Proto) (nas-port 5 Port) (time 27 Date) (nas-address 32 NAS) (clid 17 CLID) (duration 7 Duration) (framed-address 16 Location) (realm 16 Realm)" },
+	{ "gnu",
+	  "User: (login)(newline)\
+In real life: (gecos)(newline)\
+Logged in: (time)(newline)\
+NAS: (nas-address)(newline)\
+Port: (nas-port)(newline)\
+CLID: (clid)(newline)\
+Protocol: (protocol)(newline)\
+Session ID: (session-id)(newline)\
+Uptime: (duration)(newline)\
+Assigned IP: (framed-address)(newline)\
+Realm: (realm)(newline)" },
 
-#define SIDFMT "login:10:Login,"\
-               "sid:17:Session ID,"\
-               "proto:5:What,"\
-               "port:5:TTY,"\
-               "date:9:When,"\
-               "nas:9:From,"\
-               "ip:16:Location"
+	NULL
+};
 
-#define CLIDFMT "login:10:Login,"\
-                "clid:17:CLID,"\
-                "proto:5:What,"\
-                "port:5:TTY,"\
-                "date:9:When,"\
-                "nas:9:From,"\
-                "ip:16:Location"
+static char *
+lookup_format(name)
+	char *name;
+{
+	int i;
+	for (i = 0; fmtdef[i].name; i++)
+		if (strcmp(fmtdef[i].name, name) == 0)
+			return fmtdef[i].fmt;
+	return name;
+}
 
-#define LONGFMT "login:32,"\
-                "sid:32,"\
-                "proto:5:Proto,"\
-                "port:5,"\
-                "date:27,"\
-                "nas:32,"\
-                "clid:17,"\
-                "time:7,"\
-                "ip:16:Location,"\
-                "realm:16"
-               
 char *fmtspec = NULL;
+format_data_t *form;
 
 const char *argp_program_version = "radwho (" PACKAGE ") " VERSION;
 static char doc[] = N_("display who is logged on by Radius");
@@ -266,7 +107,7 @@ static struct argp_option options[] = {
          N_("print all entries, not only active ones"), 0},
         {"calling-id", 'c', NULL, 0,
          N_("display CLID in second column"), 0},
-        {"date-format", 'D', "{short|abbr|full}", 0,
+        {"date-format", 'D', "DATEFMT", 0,
          N_("change date representation format"), 0},
         {"empty", 'e', "STRING", 0,
          N_("print STRING instead of an empty column"), 0},
@@ -278,16 +119,16 @@ static struct argp_option options[] = {
          N_("do not display header line"), 0},
         {"session-id", 'i', NULL, 0,
          N_("display session ID in the second column"), 0},
-        {"ip-format", 'I', "{smart|ip|nodomain}", 0,
-         N_("select IP address representation format"), 0},
+        {"ip-strip-domain", 'I', NULL, 0,
+         N_("display hostnames without domain part"), 0},
         {"long", 'l', NULL, 0,
-         N_("Long output. All fields will be printed. Implies -D full -I smart"),
+         N_("Long output. All fields will be printed."),
          0},
         {"local-also", 'u', NULL, 0,
          N_("display also local users"), 0},
         {"no-resolve", 'n', NULL, 0,
-         N_("do not resolve hostnames. Synonim for -I ip"), 0},
-        {"format", 'o', NULL, 0,
+         N_("do not resolve hostnames."), 0},
+        {"format", 'o', "FORMAT", 0,
          N_("change output format"), 0},
         {"secure", 's', NULL, 0,
          N_("secure mode: requires that the username be specified"), 0},
@@ -305,13 +146,13 @@ parse_opt (key, arg, state)
                 showall++;
                 break;
         case 'c': /* CLID instead of GECOS */
-                fmtspec = estrdup(CLIDFMT);
+                fmtspec = lookup_format("clid");
                 break;
         case 'D': /* Date format */
-                set_date_format(optarg);
+                printutmp_date_format = optarg;
                 break;
         case 'e': /* empty field replacement */
-                empty = estrdup(optarg);
+                printutmp_empty_string = optarg;
                 break;
         case 'f': /* filename */
                 filename = optarg;
@@ -323,21 +164,19 @@ parse_opt (key, arg, state)
                 display_header = 0;
                 break;
         case 'i': /* Display SID instead of GECOS */
-                fmtspec = estrdup(SIDFMT);
+                fmtspec = lookup_format("sid");
                 break;
         case 'I': /* Ipaddr format */
-                set_ip_format(optarg);
+                /*FIXME set_ip_format(optarg);*/
                 break;
         case 'l': /* long output */
-                fmtspec = estrdup(LONGFMT);
-                showip = SIP_SMART;
-                showdate = SD_FULL;
+                fmtspec = lookup_format("long");
                 break;
         case 'n':
-                showip = SIP_IPADDR;
+                resolve_hostnames = 0;
                 break;
         case 'o':
-                fmtspec = optarg;
+                fmtspec = lookup_format(optarg);
                 break;
         case 's':
                 secure++;
@@ -380,8 +219,11 @@ main(argc, argv)
                 fmtspec = getenv("RADWHO_FORMAT");
 
         if (!fmtspec)
-                fmtspec = estrdup(DEFFMT);
-        parse_fmtspec(fmtspec);
+                fmtspec = lookup_format("default");
+
+	form = radutent_compile_form(fmtspec);
+	if (!form)
+		exit(1);
 
         if (!filename)
                 filename = radutmp_path;
@@ -390,12 +232,12 @@ main(argc, argv)
         dict_init();
         /* Read the "naslist" file. */
         path = mkfilename(radius_dir, RADIUS_NASLIST);
-        if ((naslist = my_read_naslist_file(path)) == NULL)
+	if (nas_read_file(path))
                 exit(1);
         efree(path);
         /* Read realms */
         path = mkfilename(radius_dir, RADIUS_REALMS);
-        my_read_realms(path);
+	realm_read_file(path, 0, 0);
         efree(path);
         
         /*
@@ -441,34 +283,6 @@ main(argc, argv)
 }
 
 void
-set_date_format(s)
-        char *s;
-{
-        if (strcmp(s, "short") == 0)
-                showdate = SD_SMART;
-        else if (strcmp(s, "full") == 0)
-                showdate = SD_FULL;
-        else if (strcmp(s, "abbr") == 0)
-                showdate = SD_ABBR;
-        else
-                radlog(L_ERR, _("invalid date format: %s"), s);
-}
-
-void
-set_ip_format(s)
-        char *s;
-{
-        if (strcmp(s, "smart") == 0)
-                showip = SIP_SMART;
-        else if (strcmp(s, "ip") == 0)
-                showip = SIP_IPADDR;
-        else if (strcmp(s, "nodomain") == 0)
-                showip = SIP_NODOMAIN;
-        else
-                radlog(L_ERR, _("invalid IP format: %s"), s);
-}
-
-void
 tty_to_port(rt, tty)
         struct radutmp *rt;
         char *tty;
@@ -479,7 +293,7 @@ tty_to_port(rt, tty)
         while (p >= tty && isdigit(*p))
                 p--;
         rt->nas_port = atoi(p+1);
-        rt->porttype = "tty";
+        rt->porttype = 0;/*FIXME*/
 }
 
 void
@@ -517,7 +331,7 @@ local_who()
 #endif
                         tty_to_port(&rt, ut.ut_line);
                         if (want_rad_record(&rt)) 
-                                format_radutmp_entry(radwho_fmt, &rt);
+                                radutent_print(form, &rt, 1);
                 }
         }
         fclose(fp);
@@ -538,7 +352,7 @@ radius_who()
 
         while (up = rut_getent(file)) {
                 if (want_rad_record(up)) 
-                        format_radutmp_entry(radwho_fmt, up);
+                        radutent_print(form, up, 1);
         }
         rut_endent(file);
 }
@@ -547,7 +361,7 @@ void
 print_header()
 {
         if (display_header) {
-                format_header(radwho_fmt);
+                printutmp_header(form);
                 display_header = 0;
         }
 }
@@ -570,556 +384,4 @@ want_rad_record(rt)
         }
 }
 
-/* ***************************************************************************
- * Basic output functions
- */
-
-
-void
-format_radutmp_field(buffer, fmt, up)
-        char           *buffer;
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-        int  len;
-        
-        fmt->out(buffer, fmt, up);
-
-        len = strlen(buffer);
-
-        switch (fmt->align) {
-        case ALIGN_LEFT:
-                while (len < fmt->width)
-                        buffer[len++] = ' ';
-                buffer[fmt->width] = 0;
-                printf("%s", buffer);
-                break;
-                
-        case ALIGN_RIGHT:
-                if (len && len < fmt->width) {
-                        char *p, *q;
-
-                        p = buffer + fmt->width - 1;
-                        q = buffer + len - 1;
-                        while (q >= buffer)
-                                *p-- = *q--;
-                        while (p >= buffer)
-                                *p-- = ' ';
-                }
-                buffer[fmt->width] = 0;
-                printf("%s", buffer);
-        }
-}
-
-char buffer[1024]; /* FIXME */
-
-void
-format_radutmp_entry(fmt, up)
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-        for (; fmt->out; fmt++) {
-                format_radutmp_field(buffer, fmt, up);
-                if (fmt[1].out)
-                        printf(" ");
-        }
-        printf("%s", eol);
-}
-
-void
-format_header(fmt)
-        FORMAT *fmt;
-{
-        for (; fmt->out; fmt++) 
-                printf("%*.*s", fmt->width, fmt->width, fmt->title);
-        printf("%s", eol);
-}
-
-/*ARGSUSED*/
-void
-format_login(buf, fmt, up)
-        char           *buf;
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-        strcpy(buf, up->login);
-}
-
-/*ARGSUSED*/
-void
-format_username(buf, fmt, up)
-        char           *buf;
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-        struct passwd *pwd;
-        char *s;
-
-        if ((pwd = getpwnam(up->login)) != NULL) {
-                if ((s = strchr(pwd->pw_gecos, ',')) != NULL)
-                        *s = 0;
-                s = pwd->pw_gecos;
-        } else
-                s = up->login;
-        strcpy(buf, s);
-}
-
-/*ARGSUSED*/
-void
-format_porttype(buf, fmt, up)
-        char           *buf; 
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-	DICT_VALUE *dval = value_lookup(up->porttype, "NAS-Port-Type");
-
-        if (!dval)
-                snprintf(buf, fmt->width, "%lu", up->porttype);
-        else
-                snprintf(buf, fmt->width, "%s", dval->name);
-}
-
-/*ARGSUSED*/
-void
-format_port(buf, fmt, up)
-        char           *buf; 
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-        sprintf(buf, "S%03d", up->nas_port);
-}
-
-/*
- *      Return a time in the form day hh:mm
- */
-/*ARGSUSED*/
-void
-format_date(buf, fmt, up)
-        char           *buf; 
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-        int len;
-        
-        switch (showdate) {
-        case SD_SMART:
-                strftime(buf, 120, "%a %H:%M", localtime(&up->time));
-                break;
-        case SD_FULL:
-                strcpy(buf, ctime(&up->time));
-                len = strlen(buf);
-                if (buf[len - 1] == '\n')
-                        buf[len - 1] = 0;
-                break;
-        case SD_ABBR:
-                strftime(buf, 120, "%d/%m %H:%M", localtime(&up->time));
-        }
-}
-
-void
-format_nas(buf, fmt, up)
-        char           *buf; 
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-        if (showip == SIP_IPADDR)
-                fmt->width = DOTTED_QUAD_LEN;
-        nasname(up->nas_address, buf, fmt->width);
-}
-
-void
-format_address(buf, fmt, up)
-        char           *buf; 
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-        if (showip == SIP_IPADDR)
-                fmt->width = DOTTED_QUAD_LEN;
-        hostname(up->framed_address, buf, fmt->width);
-}
-
-void
-format_realm(buf, fmt, up)
-        char           *buf; 
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-        if (up->realm_address == 0)
-                strncpy(buf, empty, fmt->width);
-        else
-                realm_name(up->realm_address, buf, fmt->width);
-}
-
-/*ARGSUSED*/
-void
-format_orig(buf, fmt, up)
-        char           *buf; 
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-        strcpy(buf, up->orig_login);
-}
-
-/*ARGSUSED*/
-void
-format_sid(buf, fmt, up)
-        char           *buf; 
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-        strcpy(buf, up->session_id);
-}       
-
-/*ARGSUSED*/
-void
-format_proto(buf, fmt, up)
-        char           *buf; 
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-        DICT_VALUE *dval = value_lookup(up->proto, "Framed-Protocol");
-        
-        if (!dval)
-                snprintf(buf, fmt->width, "%lu", up->proto);
-        else
-                snprintf(buf, fmt->width, "%s", dval->name);
-}       
-
-/*ARGSUSED*/
-void
-format_delay(buf, fmt, up)
-        char           *buf; 
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-        time_str(buf, up->delay);
-}       
-
-/*ARGSUSED*/
-void
-format_type(buf, fmt, up)
-        char           *buf; 
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-        sprintf(buf, "%d", up->type);
-}       
-
-/*ARGSUSED*/
-void
-format_time(buf, fmt, up)
-        char           *buf; 
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-        if (up->type == P_IDLE)
-                time_str(buf, up->duration);
-        else
-                time_str(buf, time(NULL) - up->time);
-}       
-
-/*ARGSUSED*/
-void
-format_clid(buf, fmt, up)
-        char           *buf; 
-        FORMAT         *fmt;
-        struct radutmp *up;
-{
-        sprintf(buf, up->caller_id);
-}       
-
-/* ***************************************************************************
- * Other formatting functions
- */
-
-char *
-time_str(buffer, t)
-        char   *buffer;
-        time_t t;
-{
-        int d,h,m,s;
-
-        d = t / 86400;
-        t %= 86400;
-        
-        s = t % 60;
-        m = t / 60;
-        if (m > 59) {
-                h = m / 60;
-                m -= h*60;
-        } else
-                h = 0;
-        if (d)
-                sprintf(buffer, "%d+%02d:%02d", d, h, m);
-        else
-                sprintf(buffer, "%02d:%02d", h, m);
-        return buffer;
-}
-
-/*
- *      Find name of NAS
- */
-char *
-nasname(ipaddr, buf, size)
-        UINT4 ipaddr;
-        char *buf;
-        size_t size;
-{
-        NAS *cl;
-        UINT4 ip;
-        
-        if (showip != SIP_SMART)
-                return hostname(ipaddr, buf, size);
-
-        ip = ntohl(ipaddr);
-        for(cl = naslist; cl; cl = cl->next)
-                if (cl->ipaddr == ip)
-                        break;
-        if (cl == NULL)
-                return hostname(ipaddr, buf, size);
-        if (cl->shortname[0])
-                return cl->shortname;
-        return cl->longname;
-}
-
-
-/*
- *      Print address of NAS.
- */
-char *
-hostname(ipaddr, buf, size)
-        UINT4 ipaddr;
-        char *buf;
-        size_t size;
-{
-        char *s, *p;
-        static char ipbuf[DOTTED_QUAD_LEN];
-        
-        if (ipaddr == 0 || ipaddr == (UINT4)-1 || ipaddr == (UINT4)-2)
-                return empty;
-
-        switch (showip) {
-        case SIP_SMART:
-                return ip_gethostname(ntohl(ipaddr), buf, size);
-        case SIP_NODOMAIN:
-                s = ip_gethostname(ntohl(ipaddr), buf, size);
-                for (p = s; *p && (isdigit(*p) || *p == '.'); p++)
-                        ;
-                if (*p == 0)
-                        return s;
-                if ((p = strchr(s, '.')) != NULL)
-                        *p = 0;
-                return s;
-        default:
-        case SIP_IPADDR:
-                ip_iptostr(ntohl(ipaddr), ipbuf);
-                return ipbuf;
-        }
-}
-
-/* ***************************************************************************
- * Functions for parsing format spec
- */
-typedef struct {
-        char    *name;
-        FORMAT  *fmt;
-} Keyword;
-
-Keyword kwd[] = {
-        "login",  &login_fmt,
-        "orig",   &orig_fmt,
-        "port",   &port_fmt,
-        "sid",    &sid_fmt,
-        "nas",    &nas_fmt,
-        "ip",     &address_fmt,
-        "proto",  &proto_fmt,
-        "date",   &date_fmt,
-        "delay",  &delay_fmt,
-        "type",   &type_fmt,
-        "ptype",  &porttype_fmt,
-        "time",   &time_fmt,
-        "clid",   &clid_fmt,
-        "uname",  &name_fmt,
-        "realm",  &realm_fmt
-};
-
-#define NKW sizeof(kwd)/sizeof(kwd[0])
-
-FORMAT *
-lookup_kw(name)
-        char *name;
-{
-        Keyword *kp;
-
-        for (kp = kwd; kp < kwd + NKW; kp++)
-                if (strcmp(kp->name, name) == 0)
-                        return kp->fmt;
-        return NULL;
-}
-
-void
-parse_fmtspec(str)
-        char *str;
-{
-        FORMAT *fmt, *fp;
-        char *p;
-        int nfmt = 0;
-        int c;
-        
-        while (*str) {
-                if (nfmt >= MAX_FMT) {
-                        radlog(L_ERR,
-                               _("too many format specs"));
-                        exit(1);
-                }
-                
-                fp = &radwho_fmt[nfmt++];
-
-                p = str;
-                while (*p && !(*p == ':' || *p == ','))
-                        p++;
-                if (*p) {
-                        c = *p;
-                        *p++ = 0;
-                } else
-                        c = 0;
-
-                if ((fmt = lookup_kw(str)) == NULL) {
-                        radlog(L_ERR,
-                               _("no such format name: %s"), str);
-                        exit(1);
-                }
-
-                *fp = *fmt;
-
-                if (c == ':') {
-                        if (*p == '+') {
-                                fp->align = ALIGN_RIGHT;
-                                p++;
-                        } else if (*p == '-') {
-                                fp->align = ALIGN_LEFT;
-                                p++;
-                        }
-                        fp->width = strtol(p, &p, 10);
-                        if (*p == ':') {
-                                str = ++p;
-                                while (*p && *p != ',')
-                                        p++;
-                                if (*p)
-                                        *p++ = 0;
-                                fp->title = estrdup(str);
-                        } else if (*p != ',' && *p != 0) {
-                                radlog(L_ERR,
-                                       _("error in format spec near %s"),
-                                       p);
-                                exit(1);
-                        } else if (*p == ',')
-                                p++;
-                }
-                str = p;
-        }
-        radwho_fmt[nfmt] = end_fmt;
-}
-
-/* ***************************************************************************
- */
-
-/*
- *      Read the naslist file.
- */
-NAS *
-my_read_naslist_file(file)
-        char *file;
-{
-        FILE    *fp;
-        char    buffer[256];
-        char    hostnm[128];
-        char    shortnm[32];
-        char    nastype[32];
-        int     lineno = 0;
-        NAS     *cl = NULL;
-        NAS     *c;
-
-        if ((fp = fopen(file, "r")) == NULL) {
-                fprintf(stderr, _("can't open %s"), file);
-                fprintf(stderr, "\n");
-                return NULL;
-        }
-        while(fgets(buffer, sizeof(buffer), fp) != NULL) {
-                lineno++;
-                if (buffer[0] == '#' || buffer[0] == '\n')
-                        continue;
-                shortnm[0] = 0;
-                if (sscanf(buffer, "%s%s%s", hostnm, shortnm, nastype) < 2) {
-                        fprintf(stderr, _("%s:%d: syntax error\n"), file, lineno);
-                        continue;
-                }
-                c = Alloc_entry(NAS);
-
-                c->ipaddr = ip_gethostaddr(hostnm);
-                strcpy(c->nastype, nastype);
-                strcpy(c->shortname, shortnm);
-                ip_gethostname(c->ipaddr, c->longname, sizeof(c->longname));
-
-                c->next = cl;
-                cl = c;
-        }
-        fclose(fp);
-
-        return cl;
-}
-
-void
-my_read_realms(file)
-        char *file;
-{
-        FILE *fp;
-        REALM rb, *rp;
-        char *tok, *p;
-        int lineno;
-        
-        if ((fp = fopen(file, "r")) == NULL) {
-                fprintf(stderr, _("can't open %s"), file);
-                fprintf(stderr, "\n");
-                return;
-        }
-        lineno = 0;
-        while (fgets(buffer, sizeof(buffer), fp) != NULL) {
-                lineno++;
-                if (buffer[0] == '#' || buffer[0] == '\n')
-                        continue;
-                memset(&rb, 0, sizeof(rb));
-                tok = strtok(buffer, " \t");
-                if (!tok)
-                        continue;
-                strncpy(rb.realm, tok, sizeof(rb.realm));
-                rb.realm[sizeof(rb.realm)-1] = 0;
-                if (!tok)
-                        continue;
-                tok = strtok(NULL, " \t");
-                p = strtok(tok, ":");
-                if (!p)
-                        continue;
-                rb.ipaddr = ip_gethostaddr(p);
-                rp = Alloc_entry(REALM);
-                memcpy(rp, &rb, sizeof(*rp));
-                rp->next = realms;
-                realms = rp;
-        }
-        fclose(fp);
-}
-
-char *
-realm_name(ip, buf, size)
-        UINT4 ip;
-        char *buf;
-        size_t size;
-{
-        REALM *rp;
-
-        for (rp = realms; rp; rp = rp->next)
-                if (rp->ipaddr == ip)
-                        return rp->realm;
-        return hostname(ip, buf, size);
-}
 

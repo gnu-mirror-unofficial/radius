@@ -380,7 +380,7 @@ radius_xlate0(struct obstack *obp, char *str, grad_request_t *req,
 					escape = 1;
 					p++;
 				} 
-                                /* Check pair */
+                                /* Request pair */
                                 da = parse_dict_attr(p, &p, &defval);
                                 attr_to_str(obp, req, req->request,
                                             da, defval, escape);

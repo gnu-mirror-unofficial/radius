@@ -4,7 +4,7 @@
 	a. it is immediately preceeded by a quote (either single or
 	double)
 	b. it is written as %C\{} or %R\{}
-	* radiusd/files.c (groupcmp): Check getpwnam first to avoid
+	* radiusd/files.c (groupcmp): Check getpwnam first, to avoid
 	performing useless SQL requests.
 
 2004-05-25  Sergey Poznyakoff

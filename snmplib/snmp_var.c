@@ -179,7 +179,7 @@ snmp_var_decode(u_char *data, int *length, struct snmp_var **var_head,
         int list_length = *length;
         int var_length, data_len;
         subid_t oid[MAX_OID_LEN+1];
-        struct snmp_var *var, *var_tail;
+        struct snmp_var *var = NULL, *var_tail;
         
         /* Determine length of the variable list */
         buf = asn_decode_header(data, &list_length, &type);

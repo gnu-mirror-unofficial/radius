@@ -37,7 +37,7 @@ logging {
 	};
 	category debug {
 		channel debug;
-		level acct=1,"radius.c";
+		level acct=1,"radius.c",proxy=100;
 	};
 	category !debug {
 		channel default;

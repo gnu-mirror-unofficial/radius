@@ -103,21 +103,31 @@ ATTRIBUTE	Login-Time		1042	string
 # Attributes used by GNU Radius
 ATTRIBUTE	Replace-User-Name	2001	string
 ATTRIBUTE	Rewrite-Function	2002	string
-ATTRIBUTE	Acct-Type		2003	integer
-ATTRIBUTE	Match-Profile		2004	string
-## ATTRIBUTE	Include-Profile		2005	string 
-ATTRIBUTE	Auth-Data		2006	string
-ATTRIBUTE       Queue-Id	        65534	integer 
 
+ATTRIBUTE	Acct-Type		2003	integer
 VALUE		Acct-Type		None	0
 VALUE		Acct-Type		System	1
 VALUE		Acct-Type		Detail	2
 VALUE		Acct-Type		SQL	3
 
+ATTRIBUTE	Match-Profile		2004	string
+## ATTRIBUTE	Include-Profile		2005	string 
+ATTRIBUTE	Auth-Data		2006	string
+
+ATTRIBUTE	Log-Mode-Mask		2007	integer
+VALUE		Log-Mode-Mask		Log-Auth		1
+VALUE		Log-Mode-Mask		Log-Auth-Pass		2
+VALUE		Log-Mode-Mask		Log-Failed-Pass		4
+VALUE		Log-Mode-Mask		Log-Pass		6
+VALUE		Log-Mode-Mask		Log-All			7
+
 # These are used by rewriting functions:
 ATTRIBUTE	Orig-User-Name		2101	string
 ATTRIBUTE	Orig-NAS-Port-Id	2105	integer
 ATTRIBUTE	Orig-Acct-Session-Id	2144	integer
+
+# Used internally by the server
+ATTRIBUTE       Queue-Id	        65534	integer 
 
 #
 # Non-Protocol Attributes

@@ -467,7 +467,7 @@ rt_eval_parm(radtest_node_t *node, radtest_variable_t *result)
 	
 	var = radtest_env_get(curenv, num);
 	if (var) {
-		radtest_var_copy(result, var);
+		rt_eval_variable(&node->locus, result, var);
 		return;
 	}
         
@@ -656,15 +656,15 @@ rt_eval_variable(grad_locus_t *locus,
 static void
 rt_eval_call(radtest_node_t *stmt, radtest_variable_t *result)
 {
-	grad_list_t *env = curenv;
+	grad_list_t *env, *tmp;
 	grad_iterator_t *itr;
 	radtest_node_t *expr;
 	radtest_variable_t *var;
 	
-	curenv = grad_list_create();
+	env = grad_list_create();
 	var = radtest_var_alloc(rtv_string);
 	var->datum.string = stmt->v.call.fun->name;
-	radtest_env_add(curenv, var);
+	radtest_env_add(env, var);
 	
 	itr = grad_iterator_create(stmt->v.call.args);
 	for (expr = grad_iterator_first(itr);
@@ -673,16 +673,18 @@ rt_eval_call(radtest_node_t *stmt, radtest_variable_t *result)
 		radtest_variable_t result;
 
 		rt_eval_expr(expr, &result);
-		radtest_env_add(curenv, radtest_var_dup(&result));
+		radtest_env_add(env, radtest_var_dup(&result));
 	}
 	grad_iterator_destroy(&itr);
-	
+
+	tmp = curenv;
+	curenv = env;
 	function_result.type = rtv_undefined;
 	rt_eval_stmt_list(stmt->v.call.fun->body);
 
 	grad_list_destroy(&env, NULL, NULL);
 	
-	curenv = env;
+	curenv = tmp;
 	if (result)
 		*result = function_result;
 	break_level = 0;

@@ -278,6 +278,7 @@ stmt          : T_BEGIN list T_END
 			$1->body = $2;
 			radtest_fix_mem();
 			$$ = NULL;
+			defn.function = NULL;
 		}
               | T_RETURN maybe_expr
                 {
@@ -309,8 +310,8 @@ function_def  : NAME EOL T_BEGIN EOL
 			radtest_function_t *fun;
 			
 			if (defn.function) {
-				parse_error(_("Nesting function definitions "
-					      "is not allowed"));
+				parse_error(_("Nested function definitions "
+					      "are not allowed"));
 				parse_error_loc(&defn.locus,
 						_("This is the location of "
 						  "the current function "
@@ -401,7 +402,7 @@ req_code      : NUMBER
                 {
 			$$ = grad_request_name_to_code($1);
 			if ($$ == 0) {
-				yyerror("expected integer value or request code name");
+				yyerror(_("expected integer value or request code name"));
 				YYERROR;
 			}
 		}
@@ -755,6 +756,11 @@ prlist        : pritem
                 {
 			$$ = grad_list_create();
 			grad_list_append($$, $1);
+		}
+              | prlist ',' pritem
+                {
+			grad_list_append($1, $3);
+			$$ = $1;
 		}
               | prlist pritem
                 {

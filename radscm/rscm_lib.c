@@ -212,6 +212,8 @@ void
 rscm_add_load_path(char *path)
 {
         SCM scm, path_scm;
+	SCM *pscm;
+	
         path_scm = RAD_SCM_SYMBOL_VALUE("%load-path");
         for (scm = path_scm; scm != SCM_EOL; scm = SCM_CDR(scm)) {
                 SCM val = SCM_CAR(scm);
@@ -219,19 +221,11 @@ rscm_add_load_path(char *path)
                         if (strcmp(SCM_STRING_CHARS(val), path) == 0)
                                 return;
         }
-#if GUILE_VERSION == 14
-        scm_c_define ("%load-path",
-                       scm_append(scm_list_3(path_scm,
-					     scm_list_1(scm_makfrom0str(path)),
-					     SCM_EOL)));
-#else
-	{
-		SCM *scm = SCM_VARIABLE_LOC(scm_c_lookup("%load-path"));
-		*scm = scm_append(scm_list_3(path_scm,
-					    scm_list_1(scm_makfrom0str(path)),
-					    SCM_EOL));
-	}
-#endif
+
+	pscm = SCM_VARIABLE_LOC(scm_c_lookup("%load-path"));
+	*pscm = scm_append(scm_list_3(path_scm,
+				      scm_list_1(scm_makfrom0str(path)),
+				      SCM_EOL));
 }
 
 void

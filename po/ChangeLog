@@ -1,3 +1,27 @@
+2003-12-12  Sergey Poznyakoff 
+
+	* fr.po: French translation by Michel Robitaille 
+	<robitail@IRO.UMontreal.CA>
+	* LINGUAS: Added catalan translation (revised by Jordi) and
+	french translation
+
+2003-12-09  Sergey Poznyakoff 
+
+        * pl.po: Official translation
+        * ru.po: Likewise.
+
+2003-12-05  Sergey Poznyakoff
+
+	* pl.po: Updated
+	* ru.po: Updated
+
+2003-12-04  Sergey Poznyakoff
+
+	* pl.po: Updated
+	* ru.po: Updated
+	* es.po: Updated
+	* ca.po: Updated
+
 2003-12-03  Sergey Poznyakoff
 
 	* ca.po: Minor change

@@ -1,3 +1,10 @@
+2003-12-17  Sergey Poznyakoff 
+
+	* radiusd/files.c: Added translators comments
+	* radiusd/log.c: Likewise.
+	* radiusd/radiusd.c (radiusd_cleanup): Added missing gettext
+	marker.
+
 2003-12-16  Sergey Poznyakoff
 
 	* configure.ac: Minor change

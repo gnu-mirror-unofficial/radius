@@ -1,3 +1,15 @@
+2003-06-19  Sergey Poznyakoff 
+
+	* configure.ac: Moved include <gettext.h> to radius.h
+	* include/gettext.h: Update
+	* include/radius.h: Include <gettext.h>
+	* lib/argp-help.c: Removed <malloc.h>
+	* lib/intl.c: Include <locale.h>
+	* m4/getopt.m4: Test for getopt_long_only: argp requires this
+	* radiusd/scheme.c: Use eval instead of eval_x
+	* radiusd/sql.c (rad_sql_init): Allow server name to start with
+	a '/' (means postgres socket).
+	
 2003-06-17  Sergey Poznyakoff 
 
 	* configure.ac: Use gettext.h

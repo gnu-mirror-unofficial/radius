@@ -1,4 +1,4 @@
-GNU Radius NEWS -- history of user-visible changes. 2003-10-25
+GNU Radius NEWS -- history of user-visible changes. 2003-10-31
 Copyright (C) 2002,2003 Free Software Foundation, Inc.
 See the end of file for copying conditions.
 
@@ -21,21 +21,28 @@ configuration rules that were used when processing the request.
 
 ** Test shell mode considerably improved.
 
-** Rewrite: usual dotted-quad notation may be used to represent
-IP numbers.
+** The internal attributes do not appear in detailed logs. The
+special flag 'l' has been added to the dictionary syntax to
+turn this feature off. Thus, for example:
 
-** Rewrite: new builtin functions:
+ATTRIBUTE Orig-User-Name  2101	string	- [L--R-R]l
 
-*** gsub(R,S,T)
+will make Orig-User-Name attribute visible in detailed log files.
+
+** Changes to Rewrite language
+
+*** usual dotted-quad notation may be used to represent IP numbers.
+
+*** gsub(R,S,T): built-in function
 For each substring matching the regular expression R in the string
 T, substitute the string s, and return the resulting string.
 
-*** qprn(S)
+*** qprn(S): built-in function
 Replace all non-printable characters in string S by their
 corresponding hex value preceeded by a percent sign. Return the
 resulting string.
 
-** Rewrite: #pragma regexp allows to alter the type of regular expressions
+*** #pragma regexp allows to alter the type of regular expressions
 used. By default, basic regular expressions are used. The rest of
 line following #pragma regexp must consist of whitespace-separated
 regexp modifiers. Each regexp modifier is one of the following
@@ -47,6 +54,51 @@ keywords:
 
 optionally preceeded by plus, indicating enabling the feature, or
 minus, indicating disabling it.
+
+** Realms
+
+*** New flags auth and acct allow to select which type of requests is to be
+proxied to the remote server. For example, the statement:
+
+some.realm   remote.server.net	  auth
+
+will send only authentication requests to the server `remote.server.net'
+
+** New configuration file statements
+
+*** forward
+
+This statement can be used in `auth' and `acct' blocks to request
+forwarding of the requests to remote server or servers. The syntax
+is the same as of `listen' statement. Forwarding differs from proxying
+in that the requests are sent to the remote server *and* processed
+locally. The remote server is not expected to reply. This mode is
+intended primarily for debugging purposes. It could also be useful in
+some very complex configurations. See examples/config.status for
+examples of the `forward' statements.
+
+*** trace-rules
+
+Enables tracing of configuration rules matched while processing 
+requests. The statement may be used in `auth' and `acct' blocks.
+The example of information appearing in trace mode:
+
+Oct 31 11:37:17 [28322]: Auth.info: (AUTHREQ foo 170 bar):
+rule trace: /etc/raddb/users:157,22,3; huntgroups:72; hints:34
+
+This means that when processing the authentication request
+from server `foo' for user `bar' with ID 170, the following rules
+lead to the decision on whether to accept or reject the requests:
+
+file hints      line 34
+file huntgroups line 72 
+file users      line 3
+file users      line 22
+file users      line 157
+
+Notice that the rules are listed in reverse chronological order
+(the last processed is listed first) and that the full pathname
+appears only on the first file.
 
 * Emacs files: Improved radconf-mode.el
 

@@ -15,6 +15,7 @@
 	internal attributes.
 	* radiusd/acct.c (write_detail): Ignore attributes with
 	AP_INTERNAL bit set.
+	* NEWS: Updated
 	
 2003-10-28  Sergey Poznyakoff 
 

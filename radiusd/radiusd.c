@@ -148,11 +148,12 @@ int        log_mode;
 
 static int foreground; /* Stay in the foreground */
 static int spawn_flag; 
-int	   use_dbm = 0;
-int        open_acct = 1;
-int        auth_detail = 0;
-int        strip_names;
-int        suspend_flag;
+int use_dbm = 0;
+int open_acct = 1;
+int auth_detail = 0;
+int acct_detail = 1;      
+int strip_names;
+int suspend_flag;
 #ifdef USE_SNMP
 serv_stat saved_status;
 #endif

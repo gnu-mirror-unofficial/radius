@@ -232,6 +232,7 @@ extern int radius_mode;
 extern Config config;
 extern int debug_flag;
 extern int auth_detail;
+extern int acct_detail;
 extern int strip_names;
 extern UINT4 expiration_seconds;
 extern UINT4 warning_seconds;

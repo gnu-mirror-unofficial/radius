@@ -33,6 +33,7 @@ ALLTARGETS= \
  dict.ascend\
  dict.voip\
  dict.cisco\
+ dict.tunnel\
  nastypes
 
 all: $(ALLTARGETS)
@@ -41,7 +42,7 @@ RADDB=$(top_srcdir)/raddb
 EXDIR=$(top_srcdir)/examples
 
 dictionary: $(RADDB)/dictionary
-	sed '/\$$INCLUDE dict\/compat/d;/\$$INCLUDE dict\/livingston/d;/#\$$INCLUDE dict\/ascend\.vs/d;s/#\$$INCLUDE dict\/cisco/\$$INCLUDE dict.cisco/;s/#\$$INCLUDE dict\/voip/\$$INCLUDE dict.voip/;s/#\$$INCLUDE dict\/ascend/\$$INCLUDE dict.ascend/' $(RADDB)/dictionary > dictionary
+	sed '/\$$INCLUDE dict\/compat/d;/\$$INCLUDE dict\/livingston/d;/#\$$INCLUDE dict\/ascend\.vs/d;s/#\$$INCLUDE dict\/cisco/\$$INCLUDE dict.cisco/;s/#\$$INCLUDE dict\/voip/\$$INCLUDE dict.voip/;s/#\$$INCLUDE dict\/ascend/\$$INCLUDE dict.ascend/;s/#\$$INCLUDE dict\/tunnel/\$$INCLUDE dict.tunnel/' $(RADDB)/dictionary > dictionary
 
 dict.ascend: $(RADDB)/dict/ascend
 	$(LN_S) $? $@
@@ -50,6 +51,9 @@ dict.voip: $(RADDB)/dict/voip
 	$(LN_S) $? $@
 
 dict.cisco: $(RADDB)/dict/cisco
+	$(LN_S) $? $@
+
+dict.tunnel: $(RADDB)/dict/tunnel
 	$(LN_S) $? $@
 
 nastypes: $(RADDB)/nastypes

@@ -54,6 +54,9 @@ AC_PROG_LN_S
 ### Make sure Guile is installed.
 AC_PATH_PROG(GUILE_CONFIG, guile-config, no, $PATH)
 
+### Check for Emacs site-lisp directory
+AM_PATH_LISPDIR
+
 ## * Check for preprocessor capabilities
 AC_MSG_CHECKING(whether compiler defines __FUNCTION__)
 AC_TRY_RUN(
@@ -483,5 +486,6 @@ AC_OUTPUT(Makefile include/Makefile radlib/Makefile snmplib/Makefile \
           radscripts/Makefile doc/Makefile \
 	  doc/texinfo/Makefile doc/man/Makefile po/Makefile \
           doc/texinfo/config.texi doc/man/config.so \
+          elisp/Makefile \
           test/Makefile)
 

@@ -20,7 +20,7 @@ TOOLDIR(radiusd.proxy)
 BEGIN(--proxy)
 
 SEQUENCE(Auth,
-Checking Basic Authentication Types,
+Checking Proxy Basic Authentication Types,
 TEST(send auth 1 User-Name = QUOTE(accept@remote), expect 2) 
 TEST(send auth 1 User-Name = QUOTE(reject@remote), expect 3) 
 TEST(send auth 1 User-Name = QUOTE(local@remote) Password = QUOTE(guessme),
@@ -31,11 +31,11 @@ TEST(send auth 1 User-Name = QUOTE(crypt@remote) Password = QUOTE(hamlet),
      expect 2)) 
 
 SEQUENCE(Nest,
-Checking Nested realms,
+Checking Nested Realms,
 TEST(send auth 1 User-Name = QUOTE(accept@local@remote), expect 2))
 
 SEQUENCE(Acct-Start,
-Checking accountng start,
+Checking Proxy Accountng Start,
 TEST(send acct 4 User-Name = QUOTE(simuse@remote) \
                     NAS-IP-Address = 127.0.0.1 \
                     NAS-Port-Id = 1 \
@@ -44,7 +44,7 @@ TEST(send acct 4 User-Name = QUOTE(simuse@remote) \
      expect 5))
 
 SEQUENCE(Acct-Stop,
-Checking accountng stop,
+Checking Proxy Accountng Stop,
 TEST(send acct 4 User-Name = QUOTE(simuse@remote) \
                     NAS-IP-Address = 127.0.0.1 \
                     NAS-Port-Id = 1 \

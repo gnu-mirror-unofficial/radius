@@ -59,7 +59,7 @@ Checking Match-Profile,
 TEST(send auth 1 User-Name = QUOTE(match1) \
                     NAS-IP-Address = 127.0.0.1 \
                     NAS-Port-Id = 1 \
-                    NAS-Identifier = QUOTE(een),
+                    NAS-Identifier = QUOTE(en),
     expect 2 Service-Type = Framed-User \
                Framed-Protocol = PPP \
                Framed-IP-Address = 127.10.10.1 )
@@ -81,7 +81,7 @@ TEST(send auth 1 User-Name = QUOTE(match1) \
      expect 3))
 
 SEQUENCE(Hints,
-Checking hints,
+Checking Hints,
 TEST(send auth 1 User-Name = QUOTE(hint.1),
      expect 2 Reply-Message = QUOTE(Hint 1))
 TEST(send auth 1 User-Name = QUOTE(hint.2),
@@ -90,7 +90,7 @@ TEST(send auth 1 User-Name = QUOTE(hint),
      expect 3 Reply-Message = QUOTE(No suffix)))
 
 SEQUENCE(Huntgroups,
-Checking huntgroups,
+Checking Huntgroups,
 TEST(send auth 1 User-Name = QUOTE(accept) \
              NAS-IP-Address = 127.0.0.4 \
 	     NAS-Port-Id = 2,
@@ -110,7 +110,7 @@ TEST(send auth 1 User-Name = QUOTE(scheme) \
          expect 2 Framed-MTU = 256))
 
 SEQUENCE(Access,
-Checking Access lists,
+Checking Access Lists,
 [TEST(send auth 1 User-Name = QUOTE(bad-one),
  expect 3 Reply-Message = QUOTE([[Sorry, your account is currently closed]]ESC(\r,\n)))])
 
@@ -132,32 +132,32 @@ TEST(send auth 1 User-Name = QUOTE(menu) \
                   Termination-Action = 1)]) 
 
 SEQUENCE(Acct-start,
-Checking accountng start,
+Checking Accountng Start,
 TEST(send acct 4 User-Name = QUOTE(simuse) \
                   NAS-IP-Address = 127.0.0.1 \
                   NAS-Port-Id = 1 \
                   Acct-Session-Id = QUOTE(0001) \
                   Acct-Status-Type = Start,
       expect 5)
-DISPLAY(Checking Simultaneous-Use attribute)
+DISPLAY(Checking Simultaneous-Use Attribute)
 TEST(send auth 1 User-Name = QUOTE(simuse),
      expect 3 Reply-Message = QUOTE(ESC(\r,\n)You are already logged in - access denied[]ESC(\r,\n))))
 
 
 SEQUENCE(Acct-Stop,
-Checking accountng stop,
+Checking Accountng Stop,
 TEST(send acct 4 User-Name = QUOTE(simuse) \
                   NAS-IP-Address = 127.0.0.1 \
                   NAS-Port-Id = 1 \
                   Acct-Session-Id = QUOTE(0001) \
                   Acct-Status-Type = Stop,
       expect 5)
-DISPLAY(Checking Simultaneous-Use attribute)
+DISPLAY(Checking Simultaneous-Use Attribute)
 TEST(send auth 1 User-Name = QUOTE(simuse),
 	    expect 2 Service-Type = 2))
 
 SEQUENCE(Rewrite,
-Checking rewrite rules,
+Checking Rewrite Rules,
 [
 TEST(send auth 1 User-Name = rewrite_max \
 	          NAS-IP-Address = 127.0.0.5 \
@@ -178,7 +178,7 @@ Acct-Session-Id = QUOTE(120104/18:02:06.020 EEST Thu Dec 7 2000/hostname/1B22539
      expect 2 Reply-Message = OK)])
 
 SEQUENCE(Exec-Program-Wait,
-Checking Exec-Program-Wait attribute,
+Checking Exec-Program-Wait Attribute,
 [
 TEST(send auth 1 User-Name = QUOTE(execwait) NAS-Port-Id = 0,
      expect 2 Service-Type = 1 Reply-Message = QUOTE([[Welcome, execwait]]))

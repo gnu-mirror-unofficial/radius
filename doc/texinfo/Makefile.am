@@ -35,3 +35,9 @@ radius_TEXINFOS=acct.texi\
  radzap.texi\
  version.texi
 
+if MAINTAINER_MODE
+TEXI2HTML=$(top_srcdir)/scripts/texi2html
+
+radius.html: radius.texi $(radius_TEXINFOS)
+	$(TEXI2HTML) -menu -monolithic radius.texi
+endif

@@ -74,7 +74,7 @@ static struct keyword op_tab[] = {
         0
 };
 
-int paircmp(RADIUS_REQ *req, VALUE_PAIR *check);
+int paircmp(RADIUS_REQ *req, VALUE_PAIR *check, char *pusername);
 int fallthrough(VALUE_PAIR *vp);
 /*
  * Static declarations
@@ -336,7 +336,7 @@ match_user(User_symbol *sym, RADIUS_REQ *req,
 #ifdef USE_SQL
                 rad_sql_check_attr_query(req, &check_tmp);
 #endif
-                if (paircmp(req, check_tmp)) {
+                if (paircmp(req, check_tmp, NULL)) {
                         avl_free(check_tmp);
                         continue;
                 }
@@ -598,6 +598,18 @@ hints_setup(RADIUS_REQ *req)
         MATCHING_RULE   *i;
         int             matched = 0;
 
+	/* Add Proxy-Replied pair if necessary */
+        switch (req->code) {
+	case RT_AUTHENTICATION_ACK:
+	case RT_AUTHENTICATION_REJECT:
+	case RT_ACCOUNTING_RESPONSE:
+	case RT_ACCESS_CHALLENGE:
+		tmp = avp_create(DA_PROXY_REPLIED, 0, NULL, 1);
+		avl_merge(&request_pairs, &tmp);
+		avp_free(tmp);
+		break;
+	}
+	
         if (hints == NULL)
                 return 0;
 
@@ -724,7 +736,7 @@ huntgroup_match(RADIUS_REQ *req, char *huntgroup)
         for (pl = huntgroups; pl; pl = pl->next) {
                 if (strcmp(pl->name, huntgroup) != 0)
                         continue;
-                if (paircmp(req, pl->lhs) == 0) {
+                if (paircmp(req, pl->lhs, NULL) == 0) {
                         debug(1, ("matched %s at huntgroups:%d",
                                  pl->name, pl->lineno));
                         break;
@@ -755,10 +767,10 @@ huntgroup_access(RADIUS_REQ *radreq)
                 /*
                  *      See if this entry matches.
                  */
-                if (paircmp(radreq, pl->lhs) != 0)
+                if (paircmp(radreq, pl->lhs, NULL) != 0)
                         continue;
                 debug(1, ("matched huntgroup at huntgroups:%d", pl->lineno));
-                r = paircmp(radreq, pl->rhs) == 0;
+                r = paircmp(radreq, pl->rhs, NULL) == 0;
                 break;
         }
 
@@ -1200,7 +1212,7 @@ server_attr(int attr)
  * Return 0 on match.
  */
 int
-paircmp(RADIUS_REQ *request, VALUE_PAIR *check)
+paircmp(RADIUS_REQ *request, VALUE_PAIR *check, char *pusername)
 {
         VALUE_PAIR *check_item = check;
         VALUE_PAIR *auth_item;
@@ -1209,6 +1221,9 @@ paircmp(RADIUS_REQ *request, VALUE_PAIR *check)
         int compare;
         char *save;
 
+	if (!pusername)
+		pusername = username;
+	
         while (result == 0 && check_item != NULL) {
                 if (server_attr(check_item->attribute)) {  
                         check_item = check_item->next;
@@ -1237,9 +1252,11 @@ paircmp(RADIUS_REQ *request, VALUE_PAIR *check)
                                 if (auth_item->attribute != DA_USER_NAME)
                                         continue;
                                 /*FALLTHRU*/
+				
                         case DA_HUNTGROUP_NAME:
                         case DA_USER_UID:
                                 break;
+				
                         case DA_HINT:
                                 if (auth_item->attribute != check_item->attribute)
                                         continue;
@@ -1247,6 +1264,7 @@ paircmp(RADIUS_REQ *request, VALUE_PAIR *check)
                                            auth_item->avp_strvalue) != 0)
                                         continue;
                                 break;
+				
                         default:
                                 if (auth_item->attribute !=
                                     check_item->attribute)
@@ -1276,14 +1294,16 @@ paircmp(RADIUS_REQ *request, VALUE_PAIR *check)
                         switch (check_item->attribute) {
                         case DA_PREFIX:
                         case DA_SUFFIX:
-                                strcpy(username, auth_item->avp_strvalue);
+                                strcpy(pusername, auth_item->avp_strvalue);
                                 compare = presufcmp(check_item,
                                                     auth_item->avp_strvalue,
-                                                    username);
+                                                    pusername);
                                 break;
+				
                         case DA_NAS_PORT_ID:
                                 compare = portcmp(check_item, auth_item);
                                 break;
+				
                         case DA_GROUP_NAME:
                         case DA_GROUP:
                                 strcpy(username, auth_item->avp_strvalue);
@@ -1291,10 +1311,12 @@ paircmp(RADIUS_REQ *request, VALUE_PAIR *check)
                                                    check_item->avp_strvalue,
                                                    username);
                                 break;
+				
                         case DA_HUNTGROUP_NAME:
                                 compare = !huntgroup_match(request,
                                                          check_item->avp_strvalue);
                                 break;
+				
                         default:
                                 compare = strcmp(auth_item->avp_strvalue,
                                                  check_item->avp_strvalue);
@@ -1308,6 +1330,7 @@ paircmp(RADIUS_REQ *request, VALUE_PAIR *check)
                                 break;
                         }
                         /*FALLTHRU*/
+			
                 case TYPE_IPADDR:
                         compare = auth_item->avp_lvalue - check_item->avp_lvalue;
                         break;
@@ -1327,7 +1350,6 @@ paircmp(RADIUS_REQ *request, VALUE_PAIR *check)
 
         debug(20, ("returning %d", result));
         return result;
-
 }
 
 /*
@@ -1349,39 +1371,6 @@ matchrule_free(MATCHING_RULE **pl)
                 mem_free(p);
         }
         *pl = NULL;
-}
-
-int
-hints_pairmatch(MATCHING_RULE *pl, RADIUS_REQ *req, char *name, char *ret_name)
-{
-        VALUE_PAIR *pair;
-        char username[AUTH_STRING_LEN];
-        int compare;
-        
-        strcpy(ret_name, name);
-        strncpy(username, name, AUTH_STRING_LEN);
-
-        compare = 0;
-        for (pair = pl->lhs; compare == 0 && pair; pair = pair->next) {
-                switch (pair->attribute) {
-                case DA_PREFIX:
-                case DA_SUFFIX:
-                        compare = presufcmp(pair, username, ret_name);
-                        strncpy(username, ret_name, AUTH_STRING_LEN);
-                        break;
-                case DA_USER_UID:
-                        compare = uidcmp(pair, username);
-                        break;
-                case DA_GROUP:
-                        compare = groupcmp(req, pair->avp_strvalue, username);
-                        break;
-                default:
-                        continue;
-                }
-                compare = comp_op(pair->operator, compare);
-        }
-
-        return compare;
 }
 
 /* ***************************************************************************
@@ -1514,7 +1503,7 @@ matches(RADIUS_REQ *req, char *name, MATCHING_RULE *pl, char *matchpart)
 {
         if (strncmp(pl->name, "DEFAULT", 7) == 0 ||
             wild_match(pl->name, name, matchpart) == 0)
-                return hints_pairmatch(pl, req, name, matchpart);
+                return paircmp(req, pl->lhs, matchpart);
         return 1;
 }       
         
@@ -1828,43 +1817,6 @@ dump_users_db()
 /* ***************************************************************************
  * Various utils exported to other modules
  */
-
-/*
- * Strip a username, based on Prefix/Suffix from the "users" file.
- * Not 100% safe, since we don't compare attributes.
- */
-void
-presuf_setup(VALUE_PAIR *request_pairs)
-{
-        User_symbol *sym;
-        USER_LOOKUP lu;
-        VALUE_PAIR  *presuf_pair;
-        VALUE_PAIR  *name_pair;
-        VALUE_PAIR  *tmp;
-        char         name[RUT_NAMESIZE+1];
-        
-        if ((name_pair = avl_find(request_pairs, DA_USER_NAME)) == NULL)
-                return ;
-
-        for (sym = user_lookup(name_pair->avp_strvalue, &lu); sym;
-             sym = user_next(&lu)) {
-
-                if ((presuf_pair = avl_find(sym->check, DA_PREFIX)) == NULL &&
-                    (presuf_pair = avl_find(sym->check, DA_SUFFIX)) == NULL)
-                        continue;
-                if (presufcmp(presuf_pair, name_pair->avp_strvalue, name) != 0)
-                        continue;
-                /*
-                 *      See if username must be stripped.
-                 */
-                if ((tmp = avl_find(sym->check, DA_STRIP_USER_NAME)) != NULL &&
-                    tmp->avp_lvalue == 0)
-                        continue;
-                string_replace(&name_pair->avp_strvalue, name);
-                name_pair->avp_strlength = strlen(name_pair->avp_strvalue);
-                break;
-        }
-}
 
 void
 strip_username(int do_strip, char *name, VALUE_PAIR *check_item,

@@ -21,9 +21,9 @@ while TEST($# -ne 0);
 do
 	case $1 in
 		--)	VAR=GREPOPT # collect grep arguments 
-			%shift@;;
+			SHIFT;;
 		-*) 	eval $VAR=\"\$$VAR $1\"
-			%shift@;;
+			SHIFT;;
 		*)	break;;
 	esac
 done

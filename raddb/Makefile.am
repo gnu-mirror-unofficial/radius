@@ -17,30 +17,34 @@
 #
 
 raddbdir=@ETC_DIR@/raddb
+raddb_subdirs=dict menu
 
-raddb_files_644=access.deny \
-config \
-config.syntax \
-dictionary \
-dict/ascend \
-dict/ascend.vs \
-dict/cisco \
-dict/compat \
-dict/livingston \
-dict/tunnel \
-dict/usr \
-dict/voip \
-hints \
-huntgroups \
-menus/menu1 \
-menus/menu2 \
-naslist \
-nastypes \
-radctl.rc \
-realms \
-rewrite \
-rewrite.full \
-sqlserver 
+newdict=\
+ dictionary\
+ dict/ascend\
+ dict/ascend.vs\
+ dict/cisco\
+ dict/compat\
+ dict/livingston\
+ dict/tunnel\
+ dict/usr\
+ dict/voip
+
+raddb_files_644=\
+ access.deny\
+ config\
+ config.syntax\
+ $(newdict)\
+ hints\
+ huntgroups\
+ menus/menu1\
+ menus/menu2\
+ naslist\
+ nastypes\
+ realms\
+ rewrite\
+ rewrite.full\
+ sqlserver 
 
 raddb_files_600 = clients client.conf users 
 raddb_files=$(raddb_files_600) $(raddb_files_644)
@@ -50,10 +54,17 @@ install-data-local:
 	@if [ ! -d $(raddbdir) ]; then \
 		${INSTALL} -d $(raddbdir); \
 	fi
+	@for dir in $(raddb_subdirs); do \
+		if [ ! -d $(raddbdir)/$$dir ]; then \
+			${INSTALL} -d $(raddbdir)/$$dir; \
+		fi; \
+	done
 	@if [ -r $(raddbdir)/users ]; then \
 		echo "Warning: The configuration directory $(raddbdir) already exists"; \
 		cp $(raddbdir)/dictionary $(raddbdir)/dictionary~; \
-		${INSTALL} -m 644 $(top_srcdir)/raddb/dictionary $(raddbdir)/dictionary; \
+		for file in $(newdict); do \
+			${INSTALL} -m 644 $(top_srcdir)/raddb/$$file $(raddbdir)/$$file; \
+		done; \
 	else \
 		for file in $(raddb_files_644); do \
 			${INSTALL} -m 644 $(top_srcdir)/raddb/$$file $(raddbdir)/$$file; \
@@ -62,3 +73,4 @@ install-data-local:
 			${INSTALL} -m 600 $(top_srcdir)/raddb/$$file $(raddbdir)/$$file; \
 		done; \
 	fi
+

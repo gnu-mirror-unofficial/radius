@@ -1,3 +1,34 @@
+2003-04-29  Sergey Poznyakoff
+
+	* lib/list.c (list_remove_current, list_remove): Bugfix.
+
+	* include/checkrad.h: Use lists from list.c.
+	* include/envar.h: Likewise.
+	* include/radius.h: Likewise.
+	* include/radiusd.h: Likewise.
+	* lib/client.c: Likewise.
+	* lib/dict.c: Likewise.
+	* lib/envar.c: Likewise.
+	* lib/nas.c: Likewise.
+	* radiusd/checkrad.c: Likewise.
+	* radiusd/config.y: Likewise.
+	* radiusd/files.c: Likewise.
+	* radiusd/log.c: Likewise.
+	
+	* client/pam_radius/pam_radius.c: Reflect changes to the
+	  client sub-system.
+	* lib/realms.c: Likewise.
+	* radiusd/acct.c: Likewise.
+	* radiusd/proxy.c: Likewise.
+	* radiusd/radius.c: Likewise.
+	* radscm/radscm.c: Likewise.
+	* radtest/main.c: Likewise.
+	
+	* include/slist.h: Removed
+	* include/Makefile.am: Removed slist.h
+	* lib/slist.c: Removed.
+	* lib/Makefile.am: Removed slist.c
+	
 2003-04-28  Sergey Poznyakoff  
 
 	Fixed proxy-id functions.

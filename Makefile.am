@@ -20,7 +20,7 @@
 AUTOMAKE_OPTIONS = gnits 1.8 dist-bzip2
 ACLOCAL_AMFLAGS = -I m4
 
-SUBDIRS= intl m4 include lib sql snmplib radscm radiusd radwho radzap radlast\
+SUBDIRS= intl include lib sql snmplib radscm radiusd radwho radzap radlast\
         radscripts elisp raddb db client radtest examples doc po\
         mibs scripts contrib 
 

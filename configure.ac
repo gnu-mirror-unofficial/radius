@@ -780,7 +780,6 @@ AC_SUBST(LIBGNURADIUS)
 LIBGNURADIUS='${top_builddir}/lib/libgnuradius.la'
 
 AC_OUTPUT(Makefile 
-          m4/Makefile 
           intl/Makefile 
           po/Makefile.in
           raddb/client.conf

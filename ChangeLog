@@ -1,6 +1,7 @@
 2003-07-31  Sergey Poznyakoff 
 
 	* scripts/texi2html.diff: Updated
+	* elisp/radconf-mode.el: Updated
 
 2003-07-29  Sergey Poznyakoff 
 

@@ -371,12 +371,15 @@
 (defun radconf-describe-keywords ()
   "Depending on the context invoke appropriate info page"
   (interactive)
-  (let* ((elt (assoc (radconf-block) radconf-keyword-nodes))
-         (file (car (cdr elt)))
-         (node (car (cdr (cdr elt)))))
-    (Info-goto-node (concat "(" file ")" node))
-    (if (get-buffer "*info*")
-        (switch-to-buffer "*info*"))))
+  (let ((block (radconf-locate-block)))
+    (if (not block)
+	(error "No documentation found")
+      (let* ((elt (assoc (car block) radconf-keyword-nodes))
+             (file (car (cdr elt)))
+             (node (car (cdr (cdr elt)))))
+	(Info-goto-node (concat "(" file ")" node))
+	(if (get-buffer "*info*")
+	    (switch-to-buffer "*info*"))))))
 
 ;;;###autoload
 (defun radconf-mode ()

@@ -201,9 +201,6 @@ typedef struct snmp_req {
         int fd;
 } SNMP_REQ;
 
-void snmp_req_free(SNMP_REQ *req);
-void snmp_req_drop(int type, SNMP_REQ *req, char *status_str);
-        
 #else
 #define stat_inc(m,a,c)
 #endif
@@ -351,6 +348,9 @@ int rad_proxy(RADIUS_REQ *radreq, int activefd);
 void rad_proxy_free(RADIUS_REQ *req);
 int proxy_send(RADIUS_REQ *radreq, int activefd);
 int proxy_receive(RADIUS_REQ *radreq, int activefd);
+void proxy_retry(int type, RADIUS_REQ *radreq, RADIUS_REQ *orig_req,
+		int fd, char *status_str);
+
 void proxy_cleanup();
 
 /* auth.c */
@@ -416,7 +416,8 @@ struct snmp_req * rad_snmp_respond(u_char *buf, int len,
                                    struct sockaddr_in *sa);
 int snmp_req_cmp(struct snmp_req *a, struct snmp_req *b);
 void snmp_req_free(struct snmp_req  *req);
-void snmp_req_drop(int type, struct snmp_req *req, char *status_str);
+void snmp_req_drop(int type, struct snmp_req *req, struct snmp_req *orig_req,
+		   int fd, char *status_str);
 int snmp_answer(struct snmp_req *req, int fd);
         
 /* radutil.c */

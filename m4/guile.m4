@@ -3,10 +3,7 @@ AC_DEFUN(rad_CHECK_GUILE,
  if test "x$rad_cv_lib_guile" = x; then
    cached=""
    AC_PATH_PROG(GUILE_CONFIG, guile-config, no, $PATH)
-   if test $GUILE_CONFIG != no; then
-     GUILE_INCLUDES=`guile-config compile`
-     GUILE_LIBS=`guile-config link`
-   else
+   if test $GUILE_CONFIG = no; then
      rad_cv_lib_guile=no
    fi
 
@@ -38,6 +35,8 @@ AC_DEFUN(rad_CHECK_GUILE,
    fi
  else
    cached=" (cached) "
+   GUILE_INCLUDES=`guile-config compile`
+   GUILE_LIBS=`guile-config link`
  fi
  AC_MSG_CHECKING(whether to build guile support)
  rad_RESULT_ACTIONS([rad_cv_lib_guile],[LIBGUILE],[$2],[$3])

@@ -130,6 +130,32 @@ envar_lookup(env, name)
 	return NULL;
 }
 
+char *
+envar_lookup_str(env, name, defval)
+	envar_t *env;
+	char *name;
+	char *defval;
+{
+	char *s;
+
+	if (s = envar_lookup(env, name))
+		return s;
+	return defval;
+}
+
+int
+envar_lookup_int(env, name, defval)
+	envar_t *env;
+	char *name;
+	int defval;
+{
+	char *s;
+	
+	if (s = envar_lookup(env, name))
+		return atoi(s);
+	return defval;
+}
+
 envar_t *
 envar_dup(env)
 	envar_t *env;

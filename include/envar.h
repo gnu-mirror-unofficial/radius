@@ -28,6 +28,8 @@ envar_t *envar_parse_argcv(int argc, char **argv);
 void envar_free(envar_t *);
 void envar_free_list(envar_t *);
 char *envar_lookup(envar_t *, char *);
+char *envar_lookup_str(envar_t *env, char *name, char *defval);
+int envar_lookup_int(envar_t *env, char *name, int defval);
 envar_t *envar_dup(envar_t *env);
 envar_t *envar_merge_lists(envar_t *prim, envar_t *sec);
 

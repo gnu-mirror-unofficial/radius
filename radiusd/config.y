@@ -170,7 +170,8 @@ block_open  : keyword tag '{'
 
 block_close : '}'
               {
-		      _cfg_pop_block();
+		      if (block->prev)
+			      _cfg_pop_block();
 	      }
             ;
 

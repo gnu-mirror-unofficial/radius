@@ -17,7 +17,7 @@
 # $Id$
 
 TOOLDIR(radiusd)
-BEGIN
+BEGIN(--zero-logs)
 
 SEQUENCE(Auth,
 Checking Basic Authentication Types,
@@ -35,7 +35,7 @@ TEST(send auth 1 User-Name = QUOTE(framed-ip) NAS-Port-Id = 10,
      expect 2 Service-Type = 2 Framed-Protocol = 1 Framed-IP-Address = 127.0.0.11))
 
 SEQUENCE(Begin,
-[Checking BEGIN Keyword],
+[Checking [BEGIN] Keyword],
 TEST(send auth 1 User-Name = QUOTE(accept) NAS-IP-Address = 127.0.0.2 NAS-Port-Id = 2,
      expect 2 Framed-IP-Address = 127.10.0.3)) 
 
@@ -195,5 +195,58 @@ TEST(send acct 4 User-Name = QUOTE(scheme) \
 	        expect 5)
 # Fixme: check file
 )
+
+GENSEQUENCE(Stress, Stress test,
+dejagnu,
+[set message "Stress test"
+set count 5000
+set success 0
+set failed 0
+
+clone_output "Sending $count authentication requests."
+clone_output "Please, wait: this can take a while..."
+
+for {set i 0} {$i < $count} {incr i} {
+    set status [[default_radius_test \
+                       "send auth 1 User-Name = \"accept\" \
+                               NAS-IP-Address = 127.0.0.1 \
+                               NAS-Port-Id = 1 \
+                               NAS-Port-Type = Sync \
+                               Called-Station-Id = \"99999999999\" \
+                               Calling-Station-Id = \"11111111111\"" \
+                               "expect 2" "PASS"]]
+    #clone_output "$i -- $status"
+    if {$status == 0} {
+        incr success
+    } else {
+        incr failed
+    }
+}
+
+if {$failed == 0 && $success == $count} {
+    pass "$message"
+} else {
+    fail "$message ($failed out of $count)"
+}],
+shell,
+[define([_TEST_NUM],incr(_TEST_NUM))
+ awk '[BEGIN] {
+ COUNT=5000
+ print "print \"Sending " COUNT " authentication requests.\"" 
+ print "print \"Please, wait: this can take a while...\""
+ print ":_TEST_NUM:"
+ for(i=0; i<COUNT;i++) {
+   print "print \"%:" i ":\""
+   print "send auth 1 User-Name = \"accept\" \\"
+   print "NAS-IP-Address = 127.0.0.1 \\"
+   print "NAS-Port-Id = 1 \\"
+   print "NAS-Port-Type = Sync \\"
+   print "Called-Station-Id = \"99999999999\" \\"
+   print "Calling-Station-Id = \"11111111111\"" 
+   print "expect 2"
+ }
+ print "%:[END]:" COUNT  
+exit(0)
+}'])
 
 END

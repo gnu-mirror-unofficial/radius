@@ -120,11 +120,13 @@ static void rad_scheme_place_task(struct rad_scheme_task *cp);
 static void rad_scheme_remove_task(struct rad_scheme_task *cp);
 static int scheme_auth_internal(struct rad_scheme_task *p);
 static int scheme_acct_internal(struct rad_scheme_task *p);
-static int scheme_before_reconfig_internal(struct rad_scheme_task *p);
-static int scheme_after_reconfig_internal(struct rad_scheme_task *p);
+static int scheme_before_config_internal(struct rad_scheme_task *p);
+static int scheme_after_config_internal(struct rad_scheme_task *p);
 static int scheme_load_internal(struct rad_scheme_task *p);
 static int scheme_add_load_path_internal(struct rad_scheme_task *p);
 static int scheme_read_eval_loop_internal(struct rad_scheme_task *unused);
+static void scheme_before_config_hook(void *unused1, void *unused2);
+static void scheme_after_config_hook(void *unused1, void *unused2);
 
 /* variables */
 pthread_t guile_tid;
@@ -178,6 +180,8 @@ start_guile()
 {
         int rc;
 
+	register_before_config_hook(scheme_before_config_hook, NULL);
+	register_after_config_hook(scheme_after_config_hook, NULL);
         if (rc = pthread_create(&guile_tid, NULL, guile_boot0, NULL))
                 radlog(L_ERR, _("Can't spawn guile thread: %s"),
                        strerror(rc));
@@ -381,14 +385,14 @@ scheme_acct_internal(p)
 
 /*ARGSUSED*/
 int
-scheme_before_reconfig_internal(p)
+scheme_before_config_internal(p)
 	struct rad_scheme_task *p;
 {
 }
 
 /*ARGSUSED*/
 int
-scheme_after_reconfig_internal(p)
+scheme_after_config_internal(p)
         struct rad_scheme_task *p;
 {
 	scm_gc();
@@ -515,16 +519,20 @@ scheme_load(filename)
 }
 
 void
-scheme_before_reconfig()
+scheme_before_config_hook(unused1, unused2)
+	void *unused1;
+	void *unused2;
 {
-        scheme_generic_call(R_AUTH, scheme_before_reconfig_internal,
+        scheme_generic_call(R_AUTH, scheme_before_config_internal,
                             NULL, NULL, NULL, NULL, 0);
 }
 
 void
-scheme_after_reconfig()
+scheme_after_config_hook(unused1, unused2)
+	void *unused1;
+	void *unused2;
 {
-        scheme_generic_call(R_AUTH, scheme_after_reconfig_internal,
+        scheme_generic_call(R_AUTH, scheme_after_config_internal,
                             NULL, NULL, NULL, NULL, 0);
 }
 

@@ -42,13 +42,12 @@ static char rcsid[] = "@(#) $Id$";
 #define MAXOIDLEN 512
  
 struct snmp_pdu * snmp_agent_response(struct snmp_pdu *pdu, int access);
-
 int snmp_decode(SNMP_REQ *req, u_char *buf, int len);
-
 int variable_cmp(struct snmp_var *v1, struct snmp_var *v2);
-
 static NAS *nas_lookup_index(int ind);
-
+static void snmpserv_before_config_hook(void *unused1, void *unused2);
+static void snmpserv_after_config_hook(void *arg, void *unused);
+static void snmp_tree_init();
 
 ACL *snmp_acl, *snmp_acl_tail;
 Community *commlist, *commlist_tail;
@@ -338,6 +337,38 @@ struct cfg_stmt snmp_stmt[] = {
 	{ "acl", CS_BLOCK, NULL, NULL, NULL, acl_stmt, NULL },
 	{ NULL, }
 };
+
+void
+snmpserv_before_config_hook(unused1, unused2)
+	void *unused1;
+	void *unused2;
+{
+        server_stat.auth.status = serv_init;
+        server_stat.acct.status = serv_init;
+}
+
+void
+snmpserv_after_config_hook(arg, unused)
+	void *arg;
+	void *unused;
+{
+        server_stat.auth.status = suspend_flag ? serv_suspended : serv_running;
+        snmp_auth_server_reset();
+
+        server_stat.acct.status = server_stat.auth.status;
+        snmp_acct_server_reset();
+                
+        *(serv_stat*)arg = server_stat.auth.status;
+}
+
+void
+snmpserv_init(arg)
+	void *arg;
+{
+	register_before_config_hook(snmpserv_before_config_hook, NULL);
+	register_after_config_hook(snmpserv_after_config_hook, arg);
+	snmp_tree_init();
+}
 
 /* ************************************************************************ */
 /* ACL fiddling */

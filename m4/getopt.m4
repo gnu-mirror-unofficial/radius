@@ -9,9 +9,10 @@
 ## since automake (at least up to version 1.4) does not provide this
 ## defun.
 
-AC_DEFUN(rad_REPLACE_GNU_GETOPT,
+AH_TEMPLATE(HAVE_GNU_GETOPT, [Define if your system has GNU getopt functions])
+AC_DEFUN(RA_REPLACE_GNU_GETOPT,
 [
- AC_CACHE_CHECK([for GNU getopt], rad_cv_have_gnu_getopt,
+ AC_CACHE_CHECK([for GNU getopt], ra_cv_have_gnu_getopt,
   [AC_TRY_RUN([
 #include <unistd.h>
 #ifdef HAVE_GETOPT_H
@@ -29,12 +30,13 @@ int argc; char **argv;
 	getopt_long(argc, argv, "h", longopt, (int*)0);
 	return 0;
 }             ],
-              rad_cv_have_gnu_getopt=yes,
-              rad_cv_have_gnu_getopt=no,
-              rad_cv_have_gnu_getopt=no)])
+              ra_cv_have_gnu_getopt=yes,
+              ra_cv_have_gnu_getopt=no,
+              ra_cv_have_gnu_getopt=no)])
 
- if test x"$rad_cv_have_gnu_getopt" != xyes ; then
-   LIBOBJS="$LIBOBJS getopt.o getopt1.o"
+ if test x"$ra_cv_have_gnu_getopt" != xyes ; then
+   AC_LIBOBJ(getopt)
+   AC_LIBOBJ(getopt1)
  else
    AC_DEFINE(HAVE_GNU_GETOPT)
  fi

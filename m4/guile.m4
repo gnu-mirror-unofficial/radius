@@ -15,13 +15,13 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with this program; if not, write to the Free Software
 dnl Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 dnl
-AC_DEFUN(rad_CHECK_GUILE,
+AC_DEFUN(RA_CHECK_GUILE,
 [
- if test "x$rad_cv_lib_guile" = x; then
+ if test "x$ra_cv_lib_guile" = x; then
    cached=""
    AC_PATH_PROG(GUILE_CONFIG, guile-config, no, $PATH)
    if test $GUILE_CONFIG = no; then
-     rad_cv_lib_guile=no
+     ra_cv_lib_guile=no
    else
      GUILE_INCLUDES=`guile-config compile`
      GUILE_LIBS=`guile-config link`
@@ -34,7 +34,7 @@ AC_DEFUN(rad_CHECK_GUILE,
      x[[0-9]]*)
        if test $GV -lt 14; then
          AC_MSG_RESULT(Nope. Version number too low.)
-         rad_cv_lib_guile=no
+         ra_cv_lib_guile=no
        else
          AC_MSG_RESULT(OK)
          save_LIBS=$LIBS
@@ -44,13 +44,13 @@ AC_DEFUN(rad_CHECK_GUILE,
          AC_TRY_LINK([#include <libguile.h>],
                      void main(argc, argv) int argc; char **argv;
                       { ifelse([$1], , scm_shell(argc, argv);, [$1]) },
-                     [rad_cv_lib_guile=yes],
-                     [rad_cv_lib_guile=no])
+                     [ra_cv_lib_guile=yes],
+                     [ra_cv_lib_guile=no])
          LIBS=$save_LIBS
          CFLAGS=$save_CFLAGS
        fi ;;
      *) AC_MSG_RESULT(Nope. Unknown version number)
-        rad_cv_lib_guile=no;;
+        ra_cv_lib_guile=no;;
      esac
    fi
  else
@@ -59,8 +59,8 @@ AC_DEFUN(rad_CHECK_GUILE,
    GUILE_LIBS=`guile-config link`
  fi
  AC_MSG_CHECKING(whether to build guile support)
- rad_RESULT_ACTIONS([rad_cv_lib_guile],[LIBGUILE],[$2],[$3])
- AC_MSG_RESULT(${cached}$rad_cv_lib_guile)
+ RA_RESULT_ACTIONS([ra_cv_lib_guile],[LIBGUILE],[$2],[$3])
+ AC_MSG_RESULT(${cached}$ra_cv_lib_guile)
 ])
  
 	

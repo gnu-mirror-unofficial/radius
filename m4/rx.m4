@@ -1,16 +1,16 @@
 ## $Id$
 
 ## Based on Jim Meyering's jm_INCLUDED_REGEX:
-AC_DEFUN(rad_REPLACE_REGEX,
+AC_DEFUN(RA_REPLACE_REGEX,
   [
     AC_ARG_WITH(included-regex,
                 [  --without-included-regex don't compile regex; this is the default on
                           systems with version 2 of the GNU C library
                           (use with caution on other system)],
-		[rad_with_regex=$withval],
-		[rad_with_regex=x]) 
+		[ra_with_regex=$withval],
+		[ra_with_regex=x]) 
 
-    if test "$rad_with_regex" = x; then
+    if test "$ra_with_regex" = x; then
       # Default is to use the included regex.c.
       ac_use_included_regex=yes
 
@@ -21,7 +21,7 @@ AC_DEFUN(rad_REPLACE_REGEX,
       # regex.c.  The first failing regular expression is from `Spencer ere
       # test #75' in grep-2.3.
       AC_CACHE_CHECK([for working re_compile_pattern],
-	  	      rad_cv_func_working_re_compile_pattern,
+	  	      ra_cv_func_working_re_compile_pattern,
         AC_TRY_RUN(
 	  changequote(<<, >>)dnl
 	  <<
@@ -48,19 +48,18 @@ AC_DEFUN(rad_REPLACE_REGEX,
 	  >>,
 	  changequote([, ])dnl
 
-	  rad_cv_func_working_re_compile_pattern=yes,
-	  rad_cv_func_working_re_compile_pattern=no,
+	  ra_cv_func_working_re_compile_pattern=yes,
+	  ra_cv_func_working_re_compile_pattern=no,
 	  dnl When crosscompiling, assume it's broken.
-	  rad_cv_func_working_re_compile_pattern=no))
+	  ra_cv_func_working_re_compile_pattern=no))
 
-      if test $rad_cv_func_working_re_compile_pattern = yes; then
+      if test $ra_cv_func_working_re_compile_pattern = yes; then
          ac_use_included_regex=no
       fi
-      rad_with_regex=$ac_use_included_regex
+      ra_with_regex=$ac_use_included_regex
     fi
-    if test "$rad_with_regex" = yes; then
-      AC_SUBST(LIBOBJS)
-      LIBOBJS="$LIBOBJS rx.$ac_objext"
+    if test "$ra_with_regex" = yes; then
+      AC_LIBOBJ([rx])
     fi
  ]
 )

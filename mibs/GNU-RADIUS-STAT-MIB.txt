@@ -8,7 +8,7 @@ IMPORTS
 
 radiusStatMIB MODULE-IDENTITY
        LAST-UPDATED "0001020000Z"
-       ORGANIZATION "IETF RADIUS Working Group."
+       ORGANIZATION ""
        CONTACT-INFO
               " Sergey Poznyakoff
                 email: gray@farlep.net"

@@ -2,6 +2,7 @@
 
      +-(67) radiusMIB
        +-(3) radiusStatistics
+-- -------------------------------------
         +-(1) radiusStatMIB
           +-(1) radiusStatIdent            -- System ID
           +-(2) radiusStatUpTime           -- Statistics uptime
@@ -9,7 +10,7 @@
           +-(4) radiusStatTotalLines       -- Total number of d.u. lines
           +-(5) radiusStatTotalLinesInUse  -- dialups currently in use
           +-(6) radiusStatTotalLinesIdle   -- dialups currently idle
-          +-(7) radiusStatNASTable               
+          +-(7) radiusStatNASTable
             +-(1) radiusStatNASEntry
               +-(1) NASIndex               
               +-(2) NASAddress

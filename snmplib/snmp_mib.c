@@ -27,7 +27,7 @@
 
 #define SCMP(node, s, op) \
 (((node)->subid == SUBID_X) ? \
-((*(node)->handler)(VAR_SUBID_COMPARE, (node)->closure, s, NULL, NULL) \
+((*(node)->handler)(MIB_NODE_COMPARE, (node)->closure, s, NULL, NULL) \
      op 0) :\
  ((node)->subid op s)) 	
 

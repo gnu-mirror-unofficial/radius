@@ -179,7 +179,9 @@ DQ {D3}\.{D3}\.{D3}\.{D3}
 \"while\"    |
 \"do\"       |
 \"break\"    |
-\"continue\" {
+\"continue\" |
+\"not\"      |
+\"input\" {
 	add_str(yytext+1,yyleng-2);
         yylval.string = end_str();
         return NAME;
@@ -198,6 +200,8 @@ while   return WHILE;
 do      return DO;
 break   return BREAK;
 continue return CONTINUE;
+not     return NOT;
+input   return INPUT;
 {IDENTIFIER} {
 	add_str(yytext,yyleng);
         yylval.string = end_str();
@@ -332,6 +336,7 @@ continue return CONTINUE;
 "<"     return LT;
 ">="    return GE;
 "<="    return LE;
+"!"     return NOT;
 .       return yytext[0];
 
 %%

@@ -1096,11 +1096,10 @@ rad_sql_acct(radreq)
 }
 
 
-int
-rad_sql_pass(req, authdata, passwd)
+char *
+rad_sql_pass(req, authdata)
 	RADIUS_REQ *req;
 	char *authdata;
-	char *passwd;
 {
 	int   rc;
 	char *mysql_passwd;
@@ -1110,7 +1109,7 @@ rad_sql_pass(req, authdata, passwd)
 	if (sql_cfg.doauth == 0) {
 		radlog(L_ERR,
 		       _("SQL Auth specified in users file, but not in sqlserver file"));
-		return AUTH_FAIL;
+		return NULL;
 	}
 	
 	if (authdata) {
@@ -1125,16 +1124,8 @@ rad_sql_pass(req, authdata, passwd)
 	conn = attach_sql_connection(SQL_AUTH, (qid_t)req);
 	mysql_passwd = disp_sql_getpwd(sql_cfg.interface, conn, query);
 	
-	if (!mysql_passwd) {
-		rc = AUTH_NOUSER;
-	} else {
+	if (mysql_passwd) 
 		chop(mysql_passwd);
-		if (strcmp(mysql_passwd, md5crypt(passwd, mysql_passwd)) == 0)
-			rc = AUTH_OK;
-		else
-			rc = AUTH_FAIL;
-		efree(mysql_passwd);
-	}
 	
 	if (!sql_cfg.keepopen)
 		unattach_sql_connection(SQL_AUTH, (qid_t)req);
@@ -1142,7 +1133,7 @@ rad_sql_pass(req, authdata, passwd)
 	if (!query)
 		obstack_free(&stack, query);
 	
-	return rc;
+	return mysql_passwd;
 }
 
 int

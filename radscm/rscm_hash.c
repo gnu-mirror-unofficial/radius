@@ -31,7 +31,7 @@
 
 SCM_DEFINE(rscm_md5_calc, "md5-calc", 1, 0, 0,
            (SCM INPUT),
-	   "FIXME")
+	   "Compute MD5 hash of @var{input}")
 #define FUNC_NAME s_rscm_md5_calc
 {
 	char digest[AUTH_VECTOR_LEN];
@@ -46,7 +46,7 @@ SCM_DEFINE(rscm_md5_calc, "md5-calc", 1, 0, 0,
 
 SCM_DEFINE(rscm_md4_calc, "md4-calc", 1, 0, 0,
            (SCM INPUT),
-	   "FIXME")
+	   ""Compute MD4 hash of @var{input}"")
 #define FUNC_NAME s_rscm_md4_calc
 {
 	char digest[16];
@@ -61,7 +61,7 @@ SCM_DEFINE(rscm_md4_calc, "md4-calc", 1, 0, 0,
 
 SCM_DEFINE(rscm_sha1_calc_list, "sha1-calc-list", 1, 0, 0,
            (SCM HLIST),
-	   "FIXME")
+	   "Compute SHA1 hash of strings from @var{hlist}")
 #define FUNC_NAME s_rscm_sha1_calc_list
 {
 	unsigned char *input;
@@ -87,7 +87,7 @@ SCM_DEFINE(rscm_sha1_calc_list, "sha1-calc-list", 1, 0, 0,
 
 SCM_DEFINE(rscm_lm_password_hash, "lm-password-hash", 1, 0, 0,
            (SCM INPUT),
-	   "FIXME")
+	   "Create an \"LM-password\" hash from the given @var{input}.")
 #define FUNC_NAME s_rscm_lm_password_hash
 {
 	unsigned char digest[72];
@@ -119,7 +119,7 @@ static const char *xlet = "0123456789ABCDEF";
 
 SCM_DEFINE(rscm_string_hex_to_bin, "string-hex->bin", 1, 0, 0,
            (SCM STR),
-	   "FIXME")
+	   "Convert @var{str} from hex to binary representation.")
 #define FUNC_NAME s_rscm_string_hex_to_bin
 {
 	int i, len;
@@ -153,7 +153,7 @@ SCM_DEFINE(rscm_string_hex_to_bin, "string-hex->bin", 1, 0, 0,
 
 SCM_DEFINE(rscm_string_bin_to_hex, "string-bin->hex", 1, 0, 0,
            (SCM STR),
-	   "FIXME")
+	   "Convert @var{str} from binary to hex representation.")
 #define FUNC_NAME s_rscm_string_bin_to_hex
 {
 	int i, len;

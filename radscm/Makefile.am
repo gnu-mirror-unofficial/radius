@@ -54,7 +54,7 @@ EXTRA_DIST=boot.scm ttl.scm ipalloc.scm radsession.in
 CLEANFILES = *.x *.doc radsession guile-procedures.txt
 
 radsession: $(srcdir)/radsession.in
-	sed 's,BINDIR,$(bindir),' $? > $@
+	sed 's,BINDIR,$(bindir),;s,PACKAGE_STRING,$(PACKAGE_STRING),' $? > $@
 
 radscm_LDADD=@GUILE_LIBS@ ./libradscm.a ../lib/liblog.la @LIBGNURADIUS@ ../lib/libdebug.la @LIBINTL@
 

@@ -256,152 +256,24 @@ _cleanup_request(pam_handle_t *pamh, void *x, int error_status)
 #define TOK_RETRY      5
 
 int
-_read_client_config(pam_handle_t *pamh, char *name)
+_read_client_config(pam_handle_t *pamh)
 {
-	FILE *fp;
-	char buf[128], *ptr;
-	int len;
 	int errcnt = 0;
-	int line = 0;
-	char *tok, *arg;
-	SERVER serv;
-	int tokid;
-	struct timeval tv;
-
-	if ((fp = fopen(name, "r")) == NULL) {
-		_pam_log(LOG_ERR,
-			 "can't open configuration file `%s': %s",
-			 name, strerror(errno));
-		return -1;
-	}
-
+	RADCLIENT *radclient;
+	
 	radclient = radclient_alloc(0x7f000001, 0);
-	gettimeofday(&tv, NULL);
-	srand(tv.tv_usec);
-	radclient->messg_id = random() % 256;
-	memset(&serv, 0, sizeof(serv));
-	
-	while (ptr = fgets(buf, sizeof(buf), fp)) {
-		line++;
-		len = strlen(ptr);
-		if (len == 0)
-			continue;
-		if (ptr[len-1] != '\n') {
-			_pam_log(LOG_ERR,
-				 "%s:%d: missing newline or line too long",
-				 name, line);
-			errcnt++;
-			break;
-		}
-		ptr[len-1] = 0;
-		while (*ptr && isspace(*ptr))
-			ptr++;
-		if (*ptr == 0 || *ptr == '#')
-			continue;
-		tok = strtok(ptr, " \t");
-		if (!tok) {
-			_pam_log(LOG_ERR,
-				 "%s:%d: syntax error",
-				 name, line);
-			continue;
-		}
-		DEBUG(10,("token %s", tok));
-		if (!strcmp(tok, "source_ip")) {
-			tokid = TOK_SOURCE_IP;
-		} else if (!strcmp(tok, "server")) {
-			tokid = TOK_SERVER;
-		} else if (!strcmp(tok, "timeout")) {
-			tokid = TOK_TIMEOUT;
-		} else if (!strcmp(tok, "retry")) {
-			tokid = TOK_RETRY;
-		} else {
-			_pam_log(LOG_ERR,
-				 "%s:%d: unknown keyword",
-				 name, line);
-			continue;
-		}
-
-		arg = strtok(NULL, " \t");
-		if (!arg) {
-			_pam_log(LOG_ERR,
-				 "%s:%d: missing argument",
-				 name, line);
-			continue;
-		}
-
-		switch (tokid) {
-		case TOK_SOURCE_IP:
-			radclient->source_ip = get_ipaddr(arg);
-			break;
-		case TOK_SERVER:
-
-			#define NEXTARG() \
-			if (!(arg = strtok(NULL, " \t"))) {\
-				_pam_log(LOG_ERR,"%s:%d: too few fields",\
-					 name, line);\
-				continue;\
-			}
-
-			serv.name = strdup(arg);  /*FIXME: never freed */
-
-			NEXTARG();
-			serv.addr = get_ipaddr(arg);
-			if (!serv.addr) {
-				_pam_log(LOG_ERR,
-					 "%s:%d: bad IP address or host name",
-					 name, line);
-				continue;
-			}
-
-			NEXTARG();
-			serv.secret = strdup(arg);
-			
-			NEXTARG();
-			serv.port[0] = atoi(arg);
-			NEXTARG();
-			serv.port[1] = atoi(arg);
-
-			radclient->first_server =
-				radclient_append_server(
-					radclient->first_server,
-				        radclient_alloc_server(&serv));
-			free(serv.name);
-			free(serv.secret);
-			break;
-
-		case TOK_TIMEOUT:
-			radclient->timeout = atoi(arg);
-			break;
-
-		case TOK_RETRY:
-			radclient->retries = atoi(arg);
-			break;
-		}
-		if (strtok(NULL, " \t"))
-			_pam_log(LOG_WARNING,
-				 "%s:%d: junk at the end of line",
-				 name, line);
-	}
-	fclose(fp);
-	
+	if (!radclient)
+		return -1;
 	/*
 	 * Consistency check
 	 */
 	if (radclient->first_server == NULL) {
-		_pam_log(LOG_ERR,
-			 "%s: no server selected", name);
+		_pam_log(LOG_ERR, "config: no server selected");
 		errcnt++;
 	}
 
 	if (radclient->timeout == 0) {
-		_pam_log(LOG_ERR,
-			 "%s: zero timeout value", name);
-		errcnt++;
-	}
-
-	if (radclient->source_ip == 0) {
-		_pam_log(LOG_ERR,
-			 "%s: bad source IP address", name);
+		_pam_log(LOG_ERR, "config: zero timeout value");
 		errcnt++;
 	}
 
@@ -428,7 +300,6 @@ _read_client_config(pam_handle_t *pamh, char *name)
 static int
 _pam_init_radius_client(pam_handle_t *pamh)
 {
-	char *name;
 	int rc = 0;
 	
 	DEBUG(100,("enter _pam_init_radius_client"));
@@ -440,13 +311,7 @@ _pam_init_radius_client(pam_handle_t *pamh)
 			 "dict_init failed");
 		return 1;
 	}
-	/*
-	 * read config file
-	 */
-	name = mkfilename(radius_confdir, "client.conf");
-	DEBUG(10,("config file: %s", name));
-	rc = _read_client_config(pamh, name);
-	efree(name);
+	rc = _read_client_config(pamh);
 	
 	DEBUG(100,("exit _pam_init_radius_client"));
 	return rc;

@@ -33,3 +33,16 @@
 @macro UNIX{}
 @sc{unix}
 @end macro
+
+@macro defattr{name,value,type,us,hnt,hgr,add,prop}
+@example
+ATTRIBUTE \name\ \value\ \type\
+@end example
+@multitable @columnfractions .10 .35 .55
+@item @tab Users: @tab @code{\us\}
+@item @tab Hints: @tab @code{\hnt\}
+@item @tab Huntgroups: @tab @code{\hgr\}
+@item @tab Additivity: @tab \add\
+@item @tab Proxy propagated: @tab \prop\
+@end multitable
+@end macro

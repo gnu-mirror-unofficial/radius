@@ -17,7 +17,7 @@ TESTS=@top_srcdir@/test/test.sh
 TESTS_ENVIRONMENT=BUILDDIR=$(top_builddir) SOURCEDIR=$(top_srcdir)
 endif
 
-SUBDIRS=m4 include radlib snmplib radiusd radwho radzap radlast raduse\
+SUBDIRS=m4 include radlib sql snmplib radiusd radwho radzap radlast raduse\
         radscripts elisp raddb client $(SCMDIR) $(TESTDIR) doc po
 
 if MAINTAINER_MODE

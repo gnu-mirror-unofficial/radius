@@ -275,6 +275,55 @@ fi
 AC_REPLACE_FUNCS(getline strerror strncasecmp strcspn snprintf vasprintf\
  strtok_r localtime_r strchrnul strndup strnlen)
 
+AC_ARG_WITH([readline],
+            AC_HELP_STRING([--without-readline],
+                           [do not use readline]),
+            [
+case "${withval}" in
+  yes) usereadline=yes ;;
+  no)  usereadline=no ;;
+  *)   AC_MSG_ERROR(bad value ${withval} for --without-readline) ;;
+esac],[usereadline=yes])
+
+dnl Check for GNU Readline
+AC_SUBST(READLINE_LIBS)
+
+if test x"$usereadline" = x"yes"; then
+
+	dnl FIXME This should only link in the curses libraries if it's
+	dnl really needed!
+	
+	dnl Check for Curses libs.
+	CURSES_LIBS=
+	for lib in ncurses curses termcap
+	do
+		AC_CHECK_LIB($lib, tputs, [CURSES_LIBS="-l$lib"; break])
+	done
+
+	saved_LIBS=$LIBS
+	LIBS="$LIBS $CURSES_LIBS"
+	AC_CHECK_LIB(readline, readline, ra_have_readline=yes)
+	LIBS=$saved_LIBS
+	
+	if test x"$ra_have_readline" = x"yes"; then
+		AC_CHECK_HEADERS(readline/readline.h,
+			AC_DEFINE(WITH_READLINE,1,[Enable use of readline]))
+			READLINE_LIBS="-lreadline $CURSES_LIBS"
+			saved_LIBS=$LIBS
+			LIBS="$LIBS $READLINE_LIBS"
+			AC_CHECK_FUNCS(rl_completion_matches)
+			LIBS=$saved_LIBS
+	else
+		AC_MSG_WARN(readline requested but does not seem to be installed)
+	fi
+
+fi
+AH_BOTTOM([
+/* Newer versions of readline have rl_completion_matches */
+#ifndef HAVE_RL_COMPLETION_MATCHES
+# define rl_completion_matches completion_matches
+#endif])
+
 RA_CHECK_STRUCT_FIELD(hostent, h_addr_list,
                        [#include <netdb.h>])
 RA_REPLACE_GNU_GETOPT

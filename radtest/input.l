@@ -40,13 +40,15 @@ static char rcsid[] =
 #include <sys/wait.h>
 
 #include <radius.h>
+#include <obstack1.h> 
 #include <radtest.h>
 #include "gram.h"
 
 int source_line_num;
 char *source_filename;
 static int interactive;
-
+static struct obstack string_stk;
+ 
 static void add_str(char *str, int  len);
 static void add_chr(int c);
 static char *end_str();
@@ -199,6 +201,7 @@ open_input(name)
 {
 	FILE *fp;
 
+	obstack_init(&string_stk);
 	if (name && strcmp(name, "-")) {
 		source_filename = name;
 		fp = fopen(name, "r");
@@ -230,6 +233,7 @@ close_input()
 #endif	
 	fclose(yyin);
 	yyin = NULL;
+	obstack_free(&string_stk, NULL);
 }
 
 
@@ -277,11 +281,7 @@ add_str(str, len)
 	char *str;
 	int  len;
 {
-	if (string_len + len >= sizeof(string_acc)) 
-		len = sizeof(string_acc) - string_len;
-	if (len == 0)
-		return;
-	strncpy(string_acc + string_len, str, len);
+	obstack_grow(&string_stk, str, len);
 	string_len += len;
 }
 
@@ -289,17 +289,14 @@ void
 add_chr(c)
 	int c;
 {
-	if (string_len + 1 >= sizeof(string_acc)) 
-		return;
-	string_acc[string_len++] = c;
+	obstack_1grow(&string_stk, c);
+	string_len++;
 }
 
 char *
 end_str()
 {
-	string_acc[string_len] = 0;
-	string_len = 0;
-	return string_acc;
+	return obstack_finish(&string_stk);
 }
 
 int

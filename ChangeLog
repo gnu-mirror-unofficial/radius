@@ -1,3 +1,13 @@
+2003-07-07  Sergey Poznyakoff 
+
+	* THANKS: Added Christian Schrader
+	* configure.ac: Changed handling of PS,GETOPT and M4
+	variables.
+	* lib/radpdu.c (rad_decode_pdu): Do not stop decoding
+	upon encountering of an unknown or malformed attribute.
+	Thanks Christian Schrader <c.schrader@gkas.de> for
+	giving access to his box.
+
 2003-06-23  Sergey Poznyakoff 
 
 	-== Version 1.0 released ==-

@@ -26,6 +26,7 @@ radiusd_SOURCES = \
  input.c\
  log.c\
  menu.c\
+ mlc.c\
  pam.c\
  proxy.c\
  radck.c\

@@ -40,7 +40,7 @@ radiusd_SOURCES = \
  timestr.c\
  version.c
 
-radiusd_LDADD = @LEXLIB@ -L../snmplib -lsnmp @SQLLIB@ @RADIUSD_LDADD@ @GUILE_LIBS@ ../radlib/librad.la 
+radiusd_LDADD = @LEXLIB@ -L../snmplib -lsnmp @SQLLIB@ @RADIUSD_LDADD@ ../radlib/librad.la 
 BUILT_SOURCES   = config.c config_kw.c rewrite.c
 MAINTAINERCLEANFILES=config.c config_tok.h config_kw.c rewrite.c y.output
 INCLUDES = -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp -I$(top_srcdir)/radlib @INCLUDEPATH@ @GUILE_INCLUDES@

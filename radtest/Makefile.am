@@ -12,11 +12,20 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 bin_PROGRAMS    = radtest
-radtest_SOURCES = main.c gram.y input.l radtest.h
-radtest_LDADD   = @LIBGNURADIUS@ @LIBINTL@
+radtest_SOURCES = main.c gram.y input.l radtest.h completion.c
+radtest_LDADD   = @LIBGNURADIUS@ ../lib/libradextra.a @READLINE_LIBS@ @LIBINTL@
 noinst_HEADERS  = gram.h
 INCLUDES        = @RADIUS_INCLUDE_PATH@ -I$(srcdir) 
 AM_YFLAGS = -vdt 
+BUILT_SOURCES = completion.c
+
+completion.c: $(srcdir)/gram.output $(top_builddir)/radtest/completion.skel $(top_builddir)/radtest/keywords
+	$(AWK) -f $(top_srcdir)/scripts/comptab.awk \
+               -v SKEL=$(top_builddir)/radtest/completion.skel \
+	       -v KEYWORD=$(top_builddir)/radtest/keywords \
+               $(srcdir)/gram.output > completion.c
+
+EXTRA_DIST=keywords completion.skel 
 
 if MAINTAINER_MODE
 CLEANFILES=*.ln

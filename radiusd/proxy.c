@@ -261,16 +261,18 @@ static REALM *
 proxy_lookup_realm(RADIUS_REQ *req, char *name)
 {
 	REALM *realm = realm_lookup_name(name);
-
+	static char *var[] = { "auth", "acct" };
+	int t;
+	
 	if (realm) {
-		char *var = NULL;
+		int rc;
 		switch (req->code) {
 		case RT_AUTHENTICATION_REQUEST:
-			var = "auth";
+			t = R_AUTH;
 			break;
 		
 		case RT_ACCOUNTING_REQUEST:
-			var = "acct";
+			t = R_ACCT;
 			break;
 			
 		default:
@@ -278,8 +280,17 @@ proxy_lookup_realm(RADIUS_REQ *req, char *name)
 			insist_fail("unexpected request code");
 		}
 
-		if (envar_lookup_int(realm->args, var, 1) == 0)
+		rc = envar_lookup_int(realm->args, var[t], -1);
+		if (rc == -1) {
+			/* Neither {var} nor no{var} is specified. Check
+			   the orthogonal variable. If it is not set, proxying
+			   is enabled for both authentication and
+			   accounting. */
+			rc = !envar_lookup_int(realm->args, var[!t], 0);
+		}
+		if (!rc)
 			realm = NULL;
+		
 	}
 	return realm;
 }

@@ -155,11 +155,10 @@ Config config = {
 	10,              /* delayed_hup_wait */
 	1,               /* checkrad_assume_logged */
 	MAX_REQUESTS,    /* maximum number of requests */
-	NULL,            /* exec-program user */
-	NULL,            /* exec-program group */
+	NULL,            /* exec_program_user */
 };
 
-UINT4			myip;
+UINT4			myip = INADDR_ANY;
 UINT4			warning_seconds;
 int			auth_port;
 int			acct_port;
@@ -203,7 +202,7 @@ static void     check_reload();
 /*
  * Keeps the timestamp of the last USR2 signal. The need_reload flag gets
  * raised when time(NULL) - delayed_hup_time >= config.delayed_hup_wait.
- * This allows for buffering the configuration requests.
+ * This allows for buffering re-configuration requests.
  */
 static time_t           delayed_hup_time = 0;
 
@@ -223,7 +222,6 @@ static void open_socket_list(HOSTDECL *hostlist, int defport, char *descr,
 			     int (*s)(), int (*r)(), int (*f)());
 
 static void reread_config(int reload);
-static UINT4 getmyip(void);
 
 #define OPTSTR "Aa:bd:fhl:Lm:ni:p:P:Ssvx:yz"
 
@@ -257,6 +255,8 @@ struct option longopt[] = {
 #define MODE_TEST      2
 #define MODE_BUILDDBM  3
 
+static int radius_mode = MODE_DAEMON;    
+
 int  xargc;
 char **xargv;
 char *x_debug_spec;
@@ -272,7 +272,6 @@ main(argc, argv)
 	int fd;
 	int pid;
 	int radius_port = 0;
-	int mode = MODE_DAEMON;    
 	FILE *fp;
 	char *p;
 	
@@ -301,7 +300,6 @@ main(argc, argv)
 	 * Set up some default values
 	 */
 	config.exec_user  = make_string("daemon");
-	config.exec_group = dup_string(config.exec_user);
 	
 	/*
 	 *	Process the options.
@@ -334,11 +332,11 @@ main(argc, argv)
 		case 'm':
 			switch (optarg[0]) {
 			case 't':
-				mode = MODE_TEST;
+				radius_mode = MODE_TEST;
 				break;
 			case 'b':
 #ifdef USE_DBM
-				mode = MODE_BUILDDBM;
+				radius_mode = MODE_BUILDDBM;
 #else
 				fprintf(stderr,
 				    _("radiusd compiled without DBM support"));
@@ -346,7 +344,7 @@ main(argc, argv)
 #endif
 				break;
 			case 'c':
-				mode = MODE_CHECKCONF;
+				radius_mode = MODE_CHECKCONF;
 				break;
 			default:
 				radlog(L_ERR,
@@ -397,7 +395,7 @@ main(argc, argv)
 	}
 
 	log_set_default("default.log", -1, -1);
-	if (mode != MODE_DAEMON)
+	if (radius_mode != MODE_DAEMON)
 		log_set_to_console();
 	
 	signal(SIGHUP, sig_hup);
@@ -413,7 +411,7 @@ main(argc, argv)
 	signal(SIGILL, sig_fatal);
 	/* Do not handle SIGIOT, please! */
 
-	if (!foreground && mode != MODE_CHECKCONF)
+	if (!foreground && radius_mode != MODE_CHECKCONF)
 		signal(SIGINT, sig_dumpdb);
 	else
 		signal(SIGINT, sig_fatal);
@@ -446,7 +444,7 @@ main(argc, argv)
 	radpath_init();
 	reread_config(0);
 
-	switch (mode) {
+	switch (radius_mode) {
 	case MODE_CHECKCONF:
 		exit(0);
 
@@ -533,6 +531,8 @@ void
 listen_auth(list)
 	HOSTDECL *list;
 {
+	if (radius_mode != MODE_DAEMON)
+		return;
 	open_socket_list(list, auth_port, "auth",
 			 NULL, auth_respond, NULL);
 }
@@ -542,7 +542,7 @@ void
 listen_acct(list)
 	HOSTDECL *list;
 {
-	if (!open_acct)
+	if (!open_acct || radius_mode != MODE_DAEMON)
 		return;
 	open_socket_list(list, acct_port, "acct",
 			 acct_success, auth_respond, acct_failure);
@@ -748,16 +748,12 @@ reread_config(reload)
 		stat_init();
 	}
 
-	if (myip == 0 && (myip = getmyip()) == 0) {
-		radlog(L_CRIT, _("can't find out my own IP address"));
-		exit(1);
+#ifdef USE_SNMP
+	if (radius_mode == MODE_DAEMON) {
+		fd = open_socket(myip, snmp_port, "SNMP");
+		set_nonblocking(fd);
+		add_socket_list(fd, NULL, snmp_respond, NULL);
 	}
-	radlog(L_INFO, "using %s as my IP address", format_ipaddr(myip));
-
-#ifdef USE_SNMP	
-	fd = open_socket(myip, snmp_port, "SNMP");
-	set_nonblocking(fd);
-	add_socket_list(fd, NULL, snmp_respond, NULL);
 #endif
 	
 	res = reload_config_file(reload_all);
@@ -1725,7 +1721,7 @@ open_socket_list(hostlist, defport, descr, s, r, f)
 	int fd;
 
 	if (!hostlist) {
-		fd = open_socket(INADDR_ANY, defport, descr);
+		fd = open_socket(myip, defport, descr);
 		add_socket_list(fd, s, r, f);
 		return;
 	}

@@ -1,3 +1,14 @@
+2001-06-09  gray  <gray@farlep.net>
+	* Added Guile functions for dealing with rad[uw]tmp files.
+	* radlib/log.c: use rad?printf() functions instead of ?printf().
+	* radscripts/Makefile.am: use of _SCRIPTS instead of _PROGRAMS.
+
+2001-05-09  gray  <gray@farlep.net>
+	* notify.c: return 0 ttl when the peer responds with '-'.
+	Reported by Andrey Y. Mosienko <feo@ttn.ru>
+	* Added radwtmp_putent() function (radlib/radutmp.c), modified
+	  other sources accordingly.
+
 2001-05-08  gray  <gray@farlep.net>
 	radscm/ sources: added autogeneration of *.x, *.doc files.
 	Changed function declarations in radscm/radscm.c accordingly.

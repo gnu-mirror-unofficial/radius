@@ -136,6 +136,8 @@ AC_CHECK_LIB(nsl, gethostbyaddr)
 AC_CHECK_LIB(intl, gettext)
 AC_CHECK_LIB(crypt, crypt)
 
+AC_CHECK_PTH(1.4.0)
+
 ## * Checks for header files.
 AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
@@ -197,17 +199,6 @@ AC_ARG_ENABLE(debug,
 	 esac])
 
 AC_DEFINE_UNQUOTED(RADIUS_DEBUG, $RADIUS_DEBUG)
-
-## **************
-## yydebug
-## **************
-AC_ARG_ENABLE(yydebug,
-	[  --enable-yydebug	         enable parser debugging],
-	[case $enableval in
-		yes) 	AC_DEFINE(YACC_DEBUG)		
-			YACC_OPTS="-t";;
-		*)	;;
-	esac])
 
 # Set ETC_DIR. I suppose it's better to be defined in config.h,
 # so I do this dirty work here, instead of adding -DETC_DIR=$sysconfdir

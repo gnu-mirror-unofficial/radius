@@ -69,6 +69,35 @@ runtime_error(grad_locus_t *locus, const char *fmt, ...)
 	longjmp(errbuf, 1);
 }
 
+void
+var_asgn(radtest_variable_t *var, radtest_variable_t *result)
+{
+	var->type = result->type;
+
+	switch (result->type) {
+        case rtv_undefined:
+        case rtv_integer:
+        case rtv_ipaddress:
+		var->datum = result->datum;
+		break;
+		
+        case rtv_string:
+		/* FIXME: memory leak */
+		var->datum.string = grad_estrdup(result->datum.string);
+		break;
+		
+	case rtv_avl:
+		var->datum.avl = result->datum.avl;
+		break;
+		
+        case rtv_pairlist:
+		grad_insist_fail("rtv_pairlist in assignment");
+		
+	default:
+		grad_insist_fail("invalid data type in assignment");
+	}
+}
+
 
 /* Radtest environment */
 
@@ -853,6 +882,30 @@ cast_to_string(grad_locus_t *locus, radtest_variable_t const *var)
 }
 
 static int
+cast_to_boolean(grad_locus_t *locus, radtest_variable_t const *var)
+{
+	switch (var->type) {
+	case rtv_string:
+		return var->datum.string[0];
+		
+	case rtv_integer:
+		return var->datum.number;
+			
+	case rtv_ipaddress:
+		return var->datum.ipaddr != 0;
+		break;
+
+	case rtv_avl:
+		return var->datum.avl != NULL;
+		break;
+		
+	default:
+		typecast_error(locus, var->type, rtv_string);
+	}
+	return 0;
+}
+
+static int
 strnum_p(radtest_variable_t *var)
 {
 	char *p;
@@ -894,7 +947,19 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 		
 	case radtest_node_bin:
 		rt_eval_expr(node->v.bin.left, &left);
+
+		/* Boolean shortcut */
+		if (node->v.bin.op == radtest_op_and
+		    || node->v.bin.op == radtest_op_or) {
+			result->type = rtv_integer;
+			result->datum.number = node->v.bin.op == radtest_op_or;
+			if (cast_to_boolean(&node->locus, &left)
+			    == result->datum.number) 
+				break;
+		}
+		
 		rt_eval_expr(node->v.bin.right, &right);
+		
 		if (left.type != right.type) {
 			if (node->v.bin.left->type == radtest_node_value
 			    && try_typecast(&right, left.type) == 0)
@@ -1111,6 +1176,8 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 	default:
 		grad_insist_fail("Unexpected node type");
 	}
+	
+	var_asgn(grad_sym_lookup_or_install(vartab, "_", 1), result);
 }
 
 static int
@@ -1138,29 +1205,8 @@ rt_asgn(radtest_node_t *node)
 	
 	var = (radtest_variable_t*)
 		grad_sym_lookup_or_install(vartab, node->v.asgn.name, 1);
-	
-	var->type = result.type;
-	switch (result.type) {
-        case rtv_undefined:
-        case rtv_integer:
-        case rtv_ipaddress:
-		var->datum = result.datum;
-		break;
-		
-        case rtv_string:
-		var->datum.string = grad_estrdup(result.datum.string);
-		break;
-		
-	case rtv_avl:
-		var->datum.avl = result.datum.avl;
-		break;
-		
-        case rtv_pairlist:
-		grad_insist_fail("rtv_pairlist in assignment");
-		
-	default:
-		grad_insist_fail("invalid data type in assignment");
-	}
+
+	var_asgn(var, &result);
 }
 
 static void

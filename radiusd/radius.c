@@ -329,16 +329,20 @@ radius_respond(REQUEST *req)
                 return -1;
         }
 
+	log_open(L_MAIN);
+
+        /* Add any specific attributes for this username. */
+        hints_setup(radreq);
+
         /* Check if we support this request */
         switch (radreq->code) {
         case RT_AUTHENTICATION_REQUEST:
                 stat_inc(auth, radreq->ipaddr, num_access_req);
                 if (rad_auth_init(radreq, req->fd) < 0) 
                         return 1;
-		/*FALLTHRU*/		
+		/*FALLTHRU*/
+		
         case RT_ACCOUNTING_REQUEST:
-                if (avl_find(radreq->request, DA_USER_NAME) == NULL)
-                        break;
                 if (proxy_send(req) != 0) {
                         return 0;
                 }

@@ -408,36 +408,38 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
         return result;
 }
 
+int
+rad_auth_check_username(RADIUS_REQ *radreq, int activefd)
+{
+        VALUE_PAIR *namepair = avl_find(radreq->request, DA_USER_NAME);
+
+	log_open(L_AUTH);
+
+        if (avp_null_string_p(namepair)) 
+                radlog_req(L_ERR, radreq, _("No username"));
+	else if (check_user_name(namepair->avp_strvalue)) 
+                radlog_req(L_ERR, radreq, _("Malformed username"));
+	else
+		return 0;
+
+	/* Process a malformed request */
+	if (auth_reject_malformed_names) 
+		radius_send_reply(RT_AUTHENTICATION_REJECT, radreq,
+				  radreq->request,
+				  message_text[MSG_ACCESS_DENIED],
+				  activefd);
+	else
+		stat_inc(auth, radreq->ipaddr, num_bad_req);
+	return -1;
+}
+
 /* Initial step of authentication. */
 int
 rad_auth_init(RADIUS_REQ *radreq, int activefd)
 {
-        VALUE_PAIR *namepair;
 	LOCUS loc;
 	
 	log_open(L_AUTH);
-        /*
-         * Get the username from the request
-         */
-        namepair = avl_find(radreq->request, DA_USER_NAME);
-
-        if (avp_null_string(namepair)) {
-                radlog_req(L_ERR, radreq, _("No username"));
-                stat_inc(auth, radreq->ipaddr, num_bad_req);
-                return -1;
-        }
-        debug(1,("checking username: %s", namepair->avp_strvalue));
-        if (check_user_name(namepair->avp_strvalue)) {
-                radlog_req(L_ERR, radreq, _("Malformed username"));
-		if (auth_reject_malformed_names) 
-			radius_send_reply(RT_AUTHENTICATION_REJECT, radreq,
-					  radreq->request,
-					  message_text[MSG_ACCESS_DENIED],
-					  activefd);
-		else
-			stat_inc(auth, radreq->ipaddr, num_bad_req);
-                return -1;
-        }
                 
         if (auth_detail)
                 write_detail(radreq, REQ_AUTH_ZERO, "detail.auth");

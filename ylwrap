@@ -64,7 +64,10 @@ done
 if [ $# -ne 0 ]; then
     if [ "x$1" = "x-yy" ]; then
 	shift
-	[ $# -eq 0 ] && { echo "ylwrap: -yy requires an argument"; exit 1 }  
+	if [ $# -eq 0 ]; then 
+		echo "ylwrap: -yy requires an argument"
+		exit 1 
+	fi
 	YYREPL=$1
 	shift
     fi

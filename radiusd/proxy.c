@@ -148,6 +148,7 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 	size_t size;
 	RADIUS_SERVER *server;
 	int rc;
+	PROXY_STATE *proxy_state;
 	
 	if (radreq->attempt_no > radreq->realm->queue->retries) {
 		radreq->server_no++;
@@ -177,27 +178,23 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 			passwd_recode(p, server->secret, vector, radreq);
 	}
 
-	if (!envar_lookup_int(radreq->realm->args, "retransmit", 0)) {
-		PROXY_STATE *proxy_state;
-		
-		/* Add a proxy-pair to the end of the request. */
-		p = avp_alloc();
-		p->name = "Proxy-State";
-		p->attribute = DA_PROXY_STATE;
-		p->type = TYPE_STRING;
-		p->avp_strlength = sizeof(PROXY_STATE);
-		p->avp_strvalue = emalloc(p->avp_strlength);
-		
-		proxy_state = (PROXY_STATE *)p->avp_strvalue;
-		
-		proxy_state->ref_ip = ref_ip;
-		proxy_state->client_ip = radreq->ipaddr;
-		proxy_state->id = radreq->id;
-		proxy_state->proxy_id = radreq->server_id;
-		proxy_state->remote_ip = server->addr;
-		
-		avl_add_pair(&plist, p);
-	}
+	/* Add a proxy-pair to the end of the request. */
+	p = avp_alloc();
+	p->name = "Proxy-State";
+	p->attribute = DA_PROXY_STATE;
+	p->type = TYPE_STRING;
+	p->avp_strlength = sizeof(PROXY_STATE);
+	p->avp_strvalue = emalloc(p->avp_strlength);
+	
+	proxy_state = (PROXY_STATE *)p->avp_strvalue;
+	
+	proxy_state->ref_ip = ref_ip;
+	proxy_state->client_ip = radreq->ipaddr;
+	proxy_state->id = radreq->id;
+	proxy_state->proxy_id = radreq->server_id;
+	proxy_state->remote_ip = server->addr;
+	
+	avl_add_pair(&plist, p);
 	
 	/* Create the pdu */
 	size = rad_create_pdu(&pdu, radreq->code,
@@ -320,29 +317,13 @@ proxy_send(REQUEST *req)
 	   should remain the same */
 	radreq->remote_user = estrdup(username); 
 
-        /* If there is no DA_CHAP_CHALLENGE attribute but there
-           is a DA_CHAP_PASSWORD we need to add it since we can't
-	   use the request authenticator anymore - we changed it. */
-        if (avl_find(radreq->request, DA_CHAP_PASSWORD) &&
-            avl_find(radreq->request, DA_CHAP_CHALLENGE) == NULL) {
-                vp = avp_alloc();
-                
-                memset(vp, 0, sizeof(VALUE_PAIR));
-
-                vp->name = "CHAP-Challenge";
-                vp->attribute = DA_CHAP_CHALLENGE;
-                vp->type = TYPE_STRING;
-                vp->avp_strlength = AUTH_VECTOR_LEN;
-                vp->avp_strvalue = emalloc(AUTH_VECTOR_LEN);
-                memcpy(vp->avp_strvalue, radreq->vector, AUTH_VECTOR_LEN);
-                avl_add_pair(&radreq->request, vp);
-        }
+        /* If there is a DA_CHAP_PASSWORD attribute, there is
+	   also a DA_CHAP_CHALLENGE. If you change the code of
+	   radius_auth_req_decode(), you will have
+	   to manually take care of this. */
 
 	proxy_send_request(req->fd, radreq);
 
-	if (envar_lookup_int(realm->args, "retransmit", 0))
-		return 0;
-	
         return 1;
 }
 

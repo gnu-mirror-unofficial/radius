@@ -68,9 +68,9 @@ AC_ARG_WITH(guile,
         [USE_GUILE=yes])
 
 AC_ARG_WITH(server-guile,
-	[  --without-server-guile         do not compile server Guile support],
+	[  --with-server-guile            compile server Guile support (WARNING: see README for details)],
         [USE_SERVER_GUILE=$withval],
-        [USE_SERVER_GUILE=$USE_GUILE])
+        [USE_SERVER_GUILE=0])
 
 if test $USE_GUILE = yes; then
 	RA_CHECK_GUILE(,

@@ -1,3 +1,18 @@
+2002-03-17  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* radiusd/files.c (hints_setup): Use avp_free instead
+	  of avl_free to free a single pair.
+	* radiusd/proxy.c (proxy_send): Likewise.
+	* radiusd/radiusd.c: Do not call thread-related functions
+	  (radlog is) from the signal handlers.
+	* radiusd/sql.c: Removed obparse_stack_ready. (rad_sql_init):
+	  init the obstack and destroy it after finishing.
+	* radlib/client.c (radclient_send): Do not update number of
+	  retries if select returns -1.
+	
+	* radlib/mem.c: mem_lock/mem_unlock were completely broken.
+	  Fixed.
+
 2002-03-11  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	Fixed snmp_errno thread-safety. Second todo from the

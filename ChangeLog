@@ -1,5 +1,34 @@
 2001-11-27 Sergey Poznyakoff
 
+	Interoperation between Guile and Rewrite. The support for
+	it is split between two modules: radscm/rscm_rewrite.c
+	contains Guile interface functions, radiusd/rewrite.y
+	contains Rewrite internal functions.
+	The interoperation is currently one-way: Guile programs
+	may invoke Rewrite functions, but not vice-versa.
+	
+	* configure.in: Use libservscm.a instead of libradlog.a.
+	* radscm/Makefile.am: Likewise. Added rscm_rewrite.c
+	* radscm/rscm_rewrite.c: (new) Interface for invoking
+	Rewrite functions from within Guile.
+
+	* radiusd/radiusd.c: test_shell: new command 'g': invoke
+	guile read-eval-print loop.
+	* radiusd/scheme.c: Call scm_init_load_path() before calling
+	radscm_init().
+	New function scheme_read_eval_loop().
+	
+	* radiusd/rewrite.y: Allow for recursive invocations of
+	run_init/va_run_init/interpret.
+	Added Guile interface functions.
+
+	* radscm/rscm_radlog.c: Added documentation strings.
+	* radscm/rscm_syslog.c: Likewise.
+	* radscm/ttl.scm: Return Reply-Message if the account has
+	expired.
+	
+2001-11-27 Sergey Poznyakoff
+
 	Unified header comments. 
 
 2001-11-27 Sergey Poznyakoff

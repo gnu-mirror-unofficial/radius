@@ -266,7 +266,9 @@ extern REQUEST_CLASS    request_class[];
 extern pthread_attr_t thread_attr;
 extern int max_threads;
 extern int num_threads;
-
+#ifdef USE_SERVER_GUILE
+extern unsigned scheme_gc_interval;
+#endif
 #ifdef USE_SNMP
 extern int snmp_port;
 extern char *server_id;

@@ -28,7 +28,6 @@ static char rcsid[] =
 #include <radius.h>
 #include <radscm.h>
 
-#ifndef HAVE_SCM_CELL
 SCM 
 rad_scm_cell(car, cdr)
 	SCM car;
@@ -41,7 +40,6 @@ rad_scm_cell(car, cdr)
 	SCM_SETCDR(c, cdr);
 	return c;
 }
-#endif
 
 #ifndef HAVE_SCM_LONG2NUM
 SCM 

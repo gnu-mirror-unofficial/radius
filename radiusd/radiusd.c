@@ -71,10 +71,10 @@ int radreq_cmp(RADIUS_REQ *a, RADIUS_REQ *b);
 struct request_class request_class[] = {
 	{ "AUTH", 0, MAX_REQUEST_TIME, CLEANUP_DELAY, 1,
 	  rad_authenticate, NULL, radreq_cmp, rad_req_free,
-	  rad_req_drop, rad_sql_setup, rad_sql_cleanup },
+	  rad_req_drop, NULL, rad_sql_cleanup },
 	{ "ACCT", 0, MAX_REQUEST_TIME, CLEANUP_DELAY, 1,
 	  rad_accounting, rad_acct_xmit, radreq_cmp, rad_req_free,
-	  rad_req_drop, rad_sql_setup, rad_sql_cleanup },
+	  rad_req_drop, NULL, rad_sql_cleanup },
 	{ "PROXY",0, MAX_REQUEST_TIME, CLEANUP_DELAY, 0,
 	  rad_proxy, NULL, radreq_cmp, rad_req_free,
 	  rad_req_drop, NULL, NULL },
@@ -724,6 +724,19 @@ acct_failure(sa, salen)
 
 #ifdef USE_SNMP
 
+void *
+snmp_respond0(arg)
+	void *arg;
+{
+	struct snmp_req *req = (struct snmp_req *)arg;
+	sigset_t sig;
+	
+	sigemptyset(&sig);
+	pth_sigmask(SIG_SETMASK, &sig, NULL);
+	rad_handle_request(R_SNMP, req, req->fd);
+	return NULL;
+}
+
 int
 snmp_respond(fd, sa, salen, buf, size)
 	int fd;
@@ -735,8 +748,13 @@ snmp_respond(fd, sa, salen, buf, size)
 	struct snmp_req *req;
 	struct sockaddr_in *sin = (struct sockaddr_in *) sa;
 	
-	if (req = rad_snmp_respond(buf, size, sin))
-		rad_handle_request(R_SNMP, req, fd);
+	if (req = rad_snmp_respond(buf, size, sin)) {
+		req->fd = fd;
+		if (!pth_spawn(PTH_ATTR_DEFAULT, snmp_respond0, req)) {
+			radlog(L_ERR|L_PERROR, _("Can't spawn new thread"));
+			return -1;
+		}
+	}
 	return 0;
 }
 
@@ -963,10 +981,7 @@ radrespond(radreq, activefd)
 	radreq->data_alloced = 1;
 	radreq->fd = activefd;
 
-	if (spawn_flag  /*FIXME!request_class[type].spawn*/) {
-		pth_attr_t attr = pth_attr_new();
-		pth_attr_set(attr, PTH_ATTR_STACK_SIZE, 1024*1024);
-		pth_attr_set(attr, PTH_ATTR_JOINABLE, FALSE);
+	if (spawn_flag) {
 		if (!pth_spawn(PTH_ATTR_DEFAULT, radrespond0, radreq)) {
 			radlog(L_ERR|L_PERROR, _("Can't spawn new thread"));
 			return -1;

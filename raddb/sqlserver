@@ -72,6 +72,7 @@ acct_db RADIUS
 acct_start_query     INSERT INTO calls \
                      VALUES(%C{Acct-Status-Type},\
                             '%u',\
+                            '%C{Realm-Name}',\
                             '%G',\
                             '%C{NAS-IP-Address}',\
                             %C{NAS-Port-Id},\
@@ -121,4 +122,21 @@ acct_nasup_query   UPDATE calls \
                    WHERE status=1 AND nas_ip_address='%C{NAS-IP-Address}'
 
 
+# Multiple Login Checking
 
+mlc_user_query     SELECT user_name,nas_port_id,acct_session_id \
+	           FROM calls \
+		   WHERE user_name='%C{User-Name}' \
+	           AND nas_ip_address='%C{NAS-IP-Address}' \
+                   AND status = 1
+
+mlc_realm_query    SELECT user_name,nas_port_id,acct_session_id \
+	           FROM calls \
+		   WHERE realm_name='%C{Realm-Name}'	
+
+mlc_stop_query     UPDATE calls \
+                     SET status=4,\
+                         acct_session_time=unix_timestamp(now())-unix_timestamp(event_date_time) 
+                     WHERE user_name='%C{User-Name}' \
+                       AND status = 1 \
+                       AND acct_session_id='%C{Acct-Session-Id}' 

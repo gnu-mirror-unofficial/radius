@@ -445,15 +445,19 @@ avl_fprint(fp, avl)
 }
 
 int
-avl_cmp(a, b)
+avl_cmp(a, b, prop)
 	VALUE_PAIR *a, *b;
+	int prop;
 {
+	int cmp_count = 0;
+	
 	for (; a; a = a->next) {
-		if (a->prop & AP_REQ_CMP) {
+		if (a->prop & prop) {
 			VALUE_PAIR *p = avl_find(b, a->attribute);
 			if (!p || avp_cmp(a, p))
 				return 1;
+			cmp_count++;
 		}
 	}
-	return 0;
+	return cmp_count == 0;
 }

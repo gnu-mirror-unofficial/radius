@@ -146,6 +146,7 @@ typedef struct value_pair {
 	char	                *name;      /* Attribute name */
 	int			attribute;  /* Attribute value */
 	int			type;       /* Data type */
+	int                     eval;       /* Evaluation flag */
 	int                     additivity; 
 	int			operator;   /* Comparison operator */
 	union {
@@ -397,6 +398,7 @@ extern char      	*radacct_dir;
 extern char             *radutmp_path;
 extern char             *radwtmp_path;
 extern char             *radstat_path;
+extern char             *bug_report_address;
 extern UINT4		expiration_seconds;
 extern UINT4		warning_seconds;
 extern int		radius_pid;

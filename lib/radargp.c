@@ -110,6 +110,8 @@ grad_argp_parse(const struct argp *argp, int *pargc, char **pargv[],
         program_invocation_short_name = strrchr(program_invocation_name, '/');
         if (!program_invocation_short_name)
                 program_invocation_short_name = program_invocation_name;
+	else
+		program_invocation_short_name++;
 #endif
         ret = argp_parse (argp, *pargc, *pargv, flags, arg_index, input);
         return ret;

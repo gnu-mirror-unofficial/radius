@@ -32,11 +32,12 @@ begin
           print <<-EOT
 		usage: radauth [[OPTIONS]] [[COMMAND]] login [[password]]
 		Options are:
+                  -v            Print verbose descriptions of what is being done
 		  -n IP		Set NAS IP address
 		  -s SID	Set session ID
 		  -P PORT	Set NAS port number
 		COMMAND is one of:
-		  auth		Send only Access-Request
+		  auth		Send only Access-Request (default)
 		  acct		Send Access-Request. If successfull, send
 		                accounting start request
 		  start		Send accounting start request

@@ -13,7 +13,8 @@ statement `load "filename";', and follow the instructions given in the file.
 
  File                Purpose
 ascend.rw           Handle MAX Ascend coded port numbers
-c3620.rw            Create a unique NAS-Port-Id for PPPoE/PPTP/L2TP connections.
+c3620.rw            Create a unique NAS-Port-Id for PPPoE/PPTP/L2TP
+                    connections.
 cisco.rw            Handle various anomalies of Cisco AS5300
 comos.rw	    Handle the use of Start/Stop accounting packets 
 		    instead of Acct-Status-Type=Accounting-{On|Off}

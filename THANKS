@@ -7,8 +7,8 @@ the possibility to test Radius on Sparc platform and for valuable
 improvements he had proposed.
 
 Francisco J. Obispo S. <fobispo@reacciun.ve> invested a lot of his time and
-efforts in testing the program. He also wrote the WEB-RADACT -- the web
-interface to radius accounting information.
+efforts in testing the program. He also wrote WEB-RADACT -- a web interface
+to radius accounting database.
 
 Alexandre Oliva <aoliva@gnu.org> provided a lot of good advices and offered
 valuable help in testing Radius on various platforms.

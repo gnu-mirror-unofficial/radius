@@ -657,7 +657,6 @@ hints_eval_compat(radiusd_request_t *req, grad_avp_t *name_pair, grad_matching_r
 int
 hints_setup(radiusd_request_t *req)
 {
-        grad_avp_t      *request_pairs = req->request->avlist;
         char            newname[GRAD_STRING_LENGTH];
         grad_avp_t      *name_pair;
         grad_avp_t      *orig_name_pair;
@@ -673,7 +672,7 @@ hints_setup(radiusd_request_t *req)
         case RT_ACCOUNTING_RESPONSE:
         case RT_ACCESS_CHALLENGE:
                 tmp = grad_avp_create_integer(DA_PROXY_REPLIED, 1);
-                grad_avl_merge(&request_pairs, &tmp);
+                grad_avl_merge(&req->request->avlist, &tmp);
                 grad_avp_free(tmp);
                 break;
 
@@ -687,7 +686,8 @@ hints_setup(radiusd_request_t *req)
         /* 
          *      Check for valid input, zero length names not permitted 
          */
-        if ((name_pair = grad_avl_find(request_pairs, DA_USER_NAME)) == NULL) {
+        if ((name_pair = grad_avl_find(req->request->avlist,
+				       DA_USER_NAME)) == NULL) {
                 name_pair = grad_avp_create_string(DA_USER_NAME, "");
                 orig_name_pair = NULL;
         } else {
@@ -699,12 +699,12 @@ hints_setup(radiusd_request_t *req)
         
         /* if Framed-Protocol is present but Service-Type is missing, add
            Service-Type = Framed-User. */
-        if (grad_avl_find(request_pairs, DA_FRAMED_PROTOCOL) != NULL &&
-            grad_avl_find(request_pairs, DA_SERVICE_TYPE) == NULL) {
+        if (grad_avl_find(req->request->avlist, DA_FRAMED_PROTOCOL) != NULL &&
+            grad_avl_find(req->request->avlist, DA_SERVICE_TYPE) == NULL) {
                 tmp = grad_avp_create_integer(DA_SERVICE_TYPE,
 					      DV_SERVICE_TYPE_FRAMED_USER);
                 if (tmp) 
-                        grad_avl_merge(&request_pairs, &tmp);
+                        grad_avl_merge(&req->request->avlist, &tmp);
         }
 
 	itr = grad_iterator_create(hints);
@@ -749,7 +749,7 @@ hints_setup(radiusd_request_t *req)
                 grad_avl_delete(&add, DA_STRIP_USER_NAME);
                 grad_avl_delete(&add, DA_REPLACE_USER_NAME);
                 grad_avl_delete(&add, DA_REWRITE_FUNCTION);
-                grad_avl_merge(&request_pairs, &add);
+                grad_avl_merge(&req->request->avlist, &add);
                 grad_avl_free(add);
                 
                 /* Ok, let's see if we need to further check the
@@ -767,11 +767,12 @@ hints_setup(radiusd_request_t *req)
 	
         if (matched) {
                 if (orig_name_pair)
-                        grad_avl_add_pair(&request_pairs, orig_name_pair);
+                        grad_avl_add_pair(&req->request->avlist,
+					  orig_name_pair);
 		/* A rewrite function might have installed the new
 		   User-Name. Take care not to discard it. */
-                else if (!grad_avl_find(request_pairs, DA_USER_NAME))
-                        grad_avl_add_pair(&request_pairs, name_pair);
+                else if (!grad_avl_find(req->request->avlist, DA_USER_NAME))
+                        grad_avl_add_pair(&req->request->avlist, name_pair);
 		else
 			grad_avp_free(name_pair);
         } else {
@@ -781,8 +782,6 @@ hints_setup(radiusd_request_t *req)
                         grad_avp_free(name_pair);
         }
 
-        req->request->avlist = request_pairs;
-        
         return 0;
 }
 

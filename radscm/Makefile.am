@@ -26,11 +26,11 @@ libradscm_a_SOURCES= \
 
 radscm_SOURCES=main.c radscm.c
 
-pkgdata_DATA=boot.scm session.scm @GUILE_PROCEDURES_TXT@
+pkgdata_DATA=boot.scm session.scm ttl.scm @GUILE_PROCEDURES_TXT@
 DOT_X_FILES=rscm_avl.x rscm_dict.x rscm_syslog.x rscm_utmp.x rscm_lib.x radscm.x
 DOT_DOC_FILES=$(DOT_X_FILES:.x=.doc)
 BUILT_SOURCES=@RADSCM_BUILT_SOURCES@
-EXTRA_DIST=boot.scm session.scm 
+EXTRA_DIST=boot.scm session.scm ttl.scm
 CLEANFILES = *.x *.doc
 
 radscm_LDADD=@GUILE_LIBS@ ./libradscm.a ../radlib/liblog.la ../radlib/librad.la ../radlib/libdebug.la 

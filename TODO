@@ -1,9 +1,7 @@
      Switching to multithread server:
--100 :  gethosbyname() is not thread-safe.
 -100 :  redesign raduse to use snmp queries instead of peeking in radstat.
 -80  :  spawn statement in config is obsoleted (update docs).	
--50  :  Include pth library in the distribution, update configure.in
-	accordingly.
+-50  :  Fall back to pth if POSIX threads are not available?
 -30  :  retransmit proxy (and possibly auth?) requests
 	
      General:	

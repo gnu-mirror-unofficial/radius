@@ -1,3 +1,35 @@
+2002-01-27  Sergey Poznyakoff  
+
+	Fixed a couple of bugs. Tested authentication under stress
+	conditions.
+	
+	* TODO: Updated.
+
+	* include/radius.h: Renamed do_not_resolve to resolve_hostnames,
+	  reversed its sense accordingly.
+*	* radiusd/config.y: Added new keyword `resolve [bool]'.	Determines
+	  whether IP numbers should be resolved to hostnames.
+	* radiusd/config.kw: Likewise.
+	* raddb/config.syntax: Added sample `resolve' statement.
+	* radiusd/radiusd.c: Renamed do_not_resolve to resolve_hostnames.
+	  Bugfix: Create all threads with PTHREAD_CREATE_DETACHED bit on.
+	  Removed duplicate call to request_cleanup.
+	* radlib/iputil.c: Renamed do_not_resolve to resolve_hostnames,
+          reversed its sense accordingly.
+	  (ip_iptostr): Fixed byte order dependency.
+
+	* test/proto.m4: Added driver-dependent tests.
+	* test/dejagnu/dejagnu.m4: Likewise.
+	* test/shell/shell.m4: Likewise.
+	* test/shell/runtest.sh: Support for subtests.
+	* test/radiusd.m4: Added stress test (authentication).
+	* test/test.sh.m4: New option: --zero-logs to zero out the
+	  log files.
+	* test/raddb/config.in: Added `resolve no'. Currently commented
+	  out.
+	
+	* radiusd/Makefile.am: Removed stray `shmem.c' entry
+
 2002-01-25  Sergey Poznyakoff  
 
 	Renamed IP-conversion functions:

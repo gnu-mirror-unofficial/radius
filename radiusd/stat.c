@@ -46,81 +46,232 @@ static char rcsid[] =
 #include <log.h>
 
 #ifdef USE_SNMP
-struct radstat radstat;
-#endif
-PORT_STAT *stat_base;
-unsigned maxstat = STAT_MAX_PORT_COUNT;
+extern Server_stat server_stat;
+extern struct radstat radstat;
 
-#ifdef USE_SNMP
+
+/* Statistics file format:
+
+   struct stat_header +
+   Auth_server_stat +
+   Acct_server_stat +
+   struct nas_stat [...] +
+   struct port_stat [...] 
+*/
+
+struct stat_header {
+	char sign[4];
+	unsigned checksum;
+	unsigned nas_count;
+	unsigned port_count;
+	struct timeval start_time;
+};
+
 void
-stat_init()
+update_checksum(sump, data, length)
+	unsigned *sump;
+	u_char *data;
+	int length;
 {
-	struct timeval tv;
-	struct timezone tz;
+	while (length-- > 0) 
+		*sump += *data++;
+}
 
-	if (shmem_alloc(STAT_MAX_PORT_COUNT * sizeof(PORT_STAT) +
-			sizeof(*server_stat) +
-			STAT_MAX_NAS_COUNT * sizeof(struct nas_stat))) {
-		radlog(L_CRIT, _("stat_init failed"));
-		exit(1);
-	}
 
-	stat_base   = shmem_get(STAT_MAX_PORT_COUNT * sizeof(PORT_STAT), 0);
-
-	server_stat = shmem_get(sizeof(*server_stat) +
-				STAT_MAX_NAS_COUNT * sizeof(struct nas_stat),
-				1);
+int
+statfile_verify(fd, hdr, auth, acct)
+	int fd;
+	struct stat_header *hdr;
+	Auth_server_stat *auth;
+	Acct_server_stat *acct;
+{
+	unsigned saved_checksum, checksum = 0;
+	u_char *buf;
+	unsigned bufsize = 1024;
+	long here;
 	
-	gettimeofday(&tv, &tz);
-	server_stat->start_time = tv;
-	server_stat->auth.reset_time = tv;
-	server_stat->acct.reset_time = tv;	
-	server_stat->auth.status = serv_running;
-	server_stat->acct.status = serv_running;
+	if (read(fd, hdr, sizeof(*hdr)) != sizeof(*hdr))
+		return 1;
+	saved_checksum = hdr->checksum;
+	hdr->checksum = 0;
+	update_checksum(&checksum, (u_char*)hdr, sizeof(*hdr));
+	
+	if (read(fd, auth, sizeof(*auth)) != sizeof(*auth))
+		return 1;
+	update_checksum(&checksum, (u_char*)auth, sizeof(*auth));
+	
+	if (read(fd, acct, sizeof(*acct)) != sizeof(*acct))
+		return 1;
+	update_checksum(&checksum, (u_char*)acct, sizeof(*acct));
+
+	here = lseek(fd, 0, SEEK_CUR);
+	
+	buf = emalloc(bufsize);
+	while (1) {
+		int rdsize = read(fd, buf, bufsize);
+		if (rdsize <= 0)
+			break;
+		update_checksum(&checksum, buf, rdsize);
+	}
+
+	lseek(fd, here, SEEK_SET);
+	return checksum != saved_checksum;
 }
-#else
+
+int
+statfile_read_nas_stat(fd, hdr)
+	int fd;
+	struct stat_header *hdr;
+{
+	struct nas_stat *np;
+	unsigned n;
+
+	server_stat.nas_count = 0;
+	for (n = 0; n < hdr->nas_count; n++) {
+		np = alloc_entry(sizeof(*np));
+		if (read(fd, np, sizeof(*np)) != sizeof(*np))
+			return -1;
+		np->next = NULL;
+		if (!server_stat.nas_head)
+			server_stat.nas_head = np;
+		else
+			server_stat.nas_tail->next = np;
+		server_stat.nas_tail = np;
+		server_stat.nas_count++;
+	}
+	return 0;
+}
+
+int
+statfile_read_port_stat(fd, hdr)
+	int fd;
+	struct stat_header *hdr;
+{
+	struct port_stat *port;
+	unsigned n;
+
+	server_stat.port_count = 0;
+	for (n = 0; n < hdr->port_count; n++) {
+		port = alloc_entry(sizeof(*port));
+		if (read(fd, port, sizeof(*port)) != sizeof(*port))
+			return -1;
+		port->next = NULL;
+		if (!server_stat.port_head)
+			server_stat.port_head = port;
+		else
+			server_stat.port_tail->next = port;
+		server_stat.port_tail = port;
+		server_stat.port_count++;
+	}
+	return 0;
+}
+
+int
+statfile_write(fd, data, length, sump)
+	int fd;
+	u_char *data;
+	int length;
+	unsigned *sump;
+{
+	if (write(fd, data, length) != length) {
+		radlog(L_ERR|L_PERROR,
+		       _("Error writing to statfile %s"),
+		       radstat_path);
+		return 1;
+	}
+	update_checksum(sump, data, length);
+	return 0;
+}
+
 void
 stat_init()
 {
-	if (shmem_alloc(STAT_MAX_PORT_COUNT * sizeof(PORT_STAT))) {
-		radlog(L_CRIT, _("stat_init failed"));
-		exit(1);
+	struct stat_header hdr;
+	int fd;
+
+	memset(&server_stat, 0, sizeof server_stat);
+	fd = open(radstat_path, O_RDONLY);
+	if (fd > 0) {
+		struct timeval tv;
+		struct timezone tz;
+		if (statfile_verify(fd, &hdr,
+				    &server_stat.auth, &server_stat.acct)) {
+			close(fd);
+			fd = -1;
+			hdr.nas_count = 0;
+			hdr.port_count = 0;
+			gettimeofday(&hdr.start_time, &tz);
+		} 
 	}
-	stat_base   = shmem_get(STAT_MAX_PORT_COUNT * sizeof(PORT_STAT), 0);
+	server_stat.nas_count = hdr.nas_count;
+	server_stat.port_count = hdr.port_count;
+	server_stat.start_time = hdr.start_time;
+	server_stat.auth.reset_time = hdr.start_time;
+	server_stat.acct.reset_time = hdr.start_time;
+	server_stat.auth.status = serv_running;
+	server_stat.acct.status = serv_running;
+	radstat.start_time = hdr.start_time;
+
+	if (fd > 0) {
+		statfile_read_nas_stat(fd, &hdr);
+		statfile_read_port_stat(fd, &hdr);
+	
+		close(fd);
+	}
 }
-#endif
+
+#define PERMS S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP
 
 void
 stat_done()
 {
-	shmem_free();
-}
+	struct stat_header hdr;
+	unsigned checksum = 0;
+	struct nas_stat *np;
+	struct port_stat *pp;
+	int fd;
 
-void
-stat_create()
-{
-	PORT_STAT *port;
-
-	if (!stat_base) 
+	fd = open(radstat_path, O_RDWR|O_CREAT|O_TRUNC, PERMS);
+	if (fd == -1) {
+		radlog(L_ERR|L_PERROR,
+		       _("Cannot open statfile %s"),
+		       radstat_path);
 		return;
-	
-	if (stat_base->start == 0) {
-		stat_base->start = time(NULL);
 	}
-#ifdef USE_SNMP
-	radstat.start_time.tv_sec = stat_base->start;
-	radstat.start_time.tv_usec = 0;
-#endif
+	memset(&hdr, 0, sizeof hdr);
+	hdr.start_time = server_stat.start_time;
+	
+	lseek(fd, sizeof hdr, SEEK_SET);
 
-	if (debug_on(2)) {
-		for (port = stat_base + 1; port < stat_base + 1 + maxstat; port++) {
-			if (port->ip == 0)
-				break;
-			
-			debug(2, ("read NAS %#x port %d",
-				     port->ip, port->port_no));
+	if (statfile_write(fd, (u_char*)&server_stat.auth,
+			   sizeof(server_stat.auth), &checksum)
+	    || statfile_write(fd, (u_char*)&server_stat.acct,
+			      sizeof(server_stat.acct), &checksum)) {
+		close(fd);
+		return;
+	}
+
+	for (np = server_stat.nas_head; np; np = np->next) {
+		hdr.nas_count++;
+		if (statfile_write(fd, (u_char*)np, sizeof(*np), &checksum)) {
+			close(fd);
+			return;
 		}
 	}
+	
+	for (pp = server_stat.port_head; pp; pp = pp->next) {
+		hdr.port_count++;
+		if (statfile_write(fd, (u_char*)pp, sizeof(*pp), &checksum)) {
+			close(fd);
+			return;
+		}
+	}
+	
+	lseek(fd, 0, SEEK_SET);
+	update_checksum(&checksum, (u_char*)&hdr, sizeof(hdr));
+	hdr.checksum = checksum;
+	write(fd, &hdr, sizeof(hdr));
+	close(fd);
 }
 
 PORT_STAT *
@@ -128,11 +279,13 @@ stat_alloc_port()
 {
 	PORT_STAT *port;
 	
-	for (port = stat_base + 1; port < stat_base + 1 + maxstat; port++) {
-		if (port->ip == 0)
-			return port;
-	}
-	return NULL;
+	port = alloc_entry(sizeof(*port));
+	if (!server_stat.port_head)
+		server_stat.port_head = port;
+	else
+		server_stat.port_tail->next = port;
+	server_stat.port_tail = port;
+	return port;
 }
 
 PORT_STAT *
@@ -142,24 +295,16 @@ stat_find_port(nas, port_no)
 {
 	PORT_STAT *port;
 	
-	for (port = stat_base + 1; port < stat_base + 1 + maxstat; port++) {
-		if (port->ip == 0)
-			break;
+	for (port = server_stat.port_head; port; port = port->next) {
 		if (port->ip == nas->ipaddr && port->port_no == port_no)
 			return port;
 	}
 
 	/* Port not found */
-	if ((port = stat_alloc_port()) == NULL) {
-		radlog(L_ERR,
-		    _("can't allocate port_stat: increase maxstat and recompile"));
-		return NULL;
-	}
+	port = stat_alloc_port();
 	port->ip = nas->ipaddr;
 	port->port_no = port_no;
 	
-	debug(1, ("next offset %d", port - stat_base));
-
 	return port;
 }
 
@@ -169,12 +314,10 @@ stat_get_port_index(nas, port_no)
 	int port_no;
 {
 	PORT_STAT *port;
-	
-	for (port = stat_base + 1; port < stat_base + 1 + maxstat; port++) {
-		if (port->ip == 0)
-			break;
+	int ind = 1;
+	for (port = server_stat.port_head; port; port = port->next, ind++) {
 		if (port->ip == nas->ipaddr && port->port_no == port_no)
-			return port - stat_base;
+			return ind;
 	}
 	return 0;
 }
@@ -185,17 +328,15 @@ stat_get_next_port_no(nas, port_no)
 	int port_no;
 {
 	PORT_STAT *port;
-	int next = STAT_MAX_PORT_COUNT;
+	int nextn = 0;
 	
-	for (port = stat_base + 1; port < stat_base + 1 + maxstat; port++) {
-		if (port->ip == 0)
-			break;
-		if (port->ip == nas->ipaddr &&
-		    port->port_no > port_no &&
-		    port->port_no < next)
-			next = port->port_no;
+	for (port = server_stat.port_head; port; port = port->next) {
+		if (port->ip == nas->ipaddr
+		    && port->port_no > port_no
+		    && port->port_no > nextn)
+			nextn = port->port_no;
 	}
-	return (next == STAT_MAX_PORT_COUNT) ? 0 : next; 
+	return nextn;
 }
 
 void
@@ -286,7 +427,6 @@ stat_update(ut, status)
 		 port->idle, port->maxidle.time));
 }
 
-#ifdef USE_SNMP
 void
 stat_count_ports()
 {
@@ -301,10 +441,7 @@ stat_count_ports()
 	
 	radstat.port_active_count = radstat.port_idle_count = 0;
 
-	for (port = stat_base + 1; port < stat_base + 1 + maxstat; port++) {
-		if (port->ip == 0)
-			break;
-
+	for (port = server_stat.port_head; port; port = port->next) {
 		nas = nas_lookup_ip(port->ip);
 		if (!nas) {
 			/* Silently ignore */
@@ -320,23 +457,94 @@ stat_count_ports()
 		}
 	}
 }
-#endif
 
 PORT_STAT *
 findportbyindex(ind)
 	int ind;
 {
-	PORT_STAT *p;
+	PORT_STAT *port;
 	int i;
 
-        if (ind < 1 || ind > STAT_MAX_PORT_COUNT)
+        if (ind < 1)
                 return NULL;
-	for (i = 1, p = stat_base+1;
-	     i < ind && p < stat_base + STAT_MAX_PORT_COUNT + 1 && p->ip;
-	     i++, p++) /* empty */ ;
 
-	if (p->ip == 0)
-		return NULL;
-	return p;
+	for (i = 1, port = server_stat.port_head;
+	     i < ind && port; port = port->next, i++)
+		/* empty */ ;
+	return port;
 }
 
+/* ************************************************************************* */
+
+void
+snmp_init_nas_stat()
+{
+	server_stat.nas_index = 1;
+}
+
+/* For a given ip_address return NAS statistics info associated with it.
+   if no NAS with this address is known, return NULL */
+struct nas_stat *
+find_nas_stat(ip_addr)
+	UINT4 ip_addr;
+{
+	int i;
+	struct nas_stat *np;
+
+	for (np = server_stat.nas_head; np; np = np->next)
+		if (np->ipaddr == ip_addr)
+			break;
+	return np;
+}
+
+
+/* Attach NAS stat info to a given NAS structure. */
+void
+snmp_attach_nas_stat(nas)
+	NAS *nas;
+{
+	struct nas_stat *np;
+
+	np = find_nas_stat(nas->ipaddr);
+	if (!np) {
+		np = alloc_entry(sizeof(*np));
+		if (!server_stat.nas_head)
+			server_stat.nas_head = np;
+		else
+			server_stat.nas_tail->next = np;
+		server_stat.nas_tail = np;
+		np->ipaddr = nas->ipaddr;
+		server_stat.nas_count++;
+	}
+	np->index = server_stat.nas_index++;
+	nas->app_data = np;
+}
+
+static int
+nas_ip_cmp(a, b)
+	struct nas_stat **a, **b;
+{
+	return (*a)->ipaddr - (*b)->ipaddr;
+}
+
+void
+snmp_sort_nas_stat()
+{
+	struct nas_stat **nsarray, *nsp;
+	int i;
+
+	nsarray = emalloc(server_stat.nas_count * sizeof(nsarray[0]));
+	for (i = 0, nsp = server_stat.nas_head; 
+		i < server_stat.nas_count; 
+		i++, nsp = nsp->next) 
+		nsarray[i] = nsp;	
+	qsort(nsarray, server_stat.nas_count,
+	      sizeof(struct nas_stat*), nas_ip_cmp);
+	for (i = 0, nsp = server_stat.nas_head; 
+		i < server_stat.nas_count; 
+		i++, nsp = nsp->next) 
+		nsarray[i]->index = i + 1;
+	efree(nsarray);
+}
+
+#endif

@@ -108,7 +108,7 @@ if [ x"$1" = x"--debug" ]; then
 fi	    
 
 if [ x"$1" = x"-s" -o x"$1" = x"--signal" ]; then
-	%SHIFT@ 
+	SHIFT 
 fi
 chan_signal $*
 

@@ -157,29 +157,26 @@ static void check_snmp_request();
 
 static void set_config_defaults();
 void radiusd_exit();
-static RETSIGTYPE sig_exit (int);
-static RETSIGTYPE sig_fatal (int);
-static RETSIGTYPE sig_hup (int);
-static RETSIGTYPE sig_dumpdb (int);
-static RETSIGTYPE sig_child (int);
+static int sig_exit (int, void *, const void *);
+static int sig_fatal (int, void *, const void *);
+static int sig_hup (int, void *, const void *);
+static int sig_dumpdb (int, void *, const void *);
 
 static struct signal_list {
 	int mask;  /* 1 if the signal should be masked in the threads */
 	int sig;
-	RETSIGTYPE (*handler)();
+	int type;
+	rad_signal_t handler;
 } rad_signal_list[] = {
-        1, SIGHUP,  sig_hup,
-        0, SIGQUIT, sig_exit,
-        0, SIGTERM, sig_exit,
-        0, SIGCHLD, sig_child,
-        0, SIGPIPE, SIG_IGN,
-        0, SIGBUS,  sig_fatal,
-        0, SIGTRAP, sig_fatal,
-        0, SIGFPE,  sig_fatal,
-        0, SIGSEGV, sig_fatal,
-        0, SIGILL,  sig_fatal,
-        0, SIGIOT,  SIG_DFL,
-        1, SIGINT,  sig_dumpdb
+        1, SIGHUP,  SH_ASYNC, sig_hup,
+        0, SIGQUIT, SH_ASYNC, sig_exit,
+        0, SIGTERM, SH_ASYNC, sig_exit,
+        0, SIGBUS,  SH_ASYNC, sig_fatal,
+        0, SIGTRAP, SH_ASYNC, sig_fatal,
+        0, SIGFPE,  SH_ASYNC, sig_fatal,
+        0, SIGSEGV, SH_ASYNC, sig_fatal,
+        0, SIGILL,  SH_ASYNC, sig_fatal,
+        1, SIGINT,  SH_ASYNC, sig_dumpdb
 };
 
 sigset_t rad_signal_set;
@@ -609,14 +606,6 @@ common_init()
 	
 	radlog(L_INFO, _("Starting"));
 
-        /* Install signal handlers */
-	sigemptyset(&rad_signal_set);
-	for (i = 0; i < NITEMS(rad_signal_list); i++) {
-		signal(rad_signal_list[i].sig, rad_signal_list[i].handler);
-		if (rad_signal_list[i].mask)
-			sigaddset(&rad_signal_set, rad_signal_list[i].sig);
-	}
-        
 #ifdef HAVE_SETVBUF
         setvbuf(stdout, NULL, _IOLBF, 0);
 #endif
@@ -626,6 +615,20 @@ common_init()
 #ifdef HAVE_PTHREAD_ATFORK
 	pthread_atfork(NULL, NULL, radiusd_fork_child_handler);
 #endif
+
+        /* Install signal handlers */
+	signal(SIGPIPE, SIG_IGN);
+        signal(SIGIOT, SIG_DFL);
+
+	sigemptyset(&rad_signal_set);
+	for (i = 0; i < NITEMS(rad_signal_list); i++) {
+		rad_signal_install (rad_signal_list[i].sig,
+		                    rad_signal_list[i].type,
+				    rad_signal_list[i].handler, NULL);
+		if (rad_signal_list[i].mask)
+			sigaddset(&rad_signal_set, rad_signal_list[i].sig);
+	}
+        
 #ifdef USE_SERVER_GUILE
         start_guile();
 #endif
@@ -651,6 +654,7 @@ radiusd_main_loop()
         for(;;) {
                 struct timeval tv;
 
+		rad_signal_deliver ();
                 check_reload();
                 tv.tv_sec = 2;
                 tv.tv_usec = 0;
@@ -1415,55 +1419,47 @@ meminfo()
 /* ************************************************************************* */
 /* Signal handling */
 
-static RETSIGTYPE
-sig_fatal(sig)
+static int
+sig_fatal(sig, data, owner)
         int sig;
+	void *data;
+	const void *owner;
 {
 	radlog(L_CRIT, _("exit on signal %d"), sig);
 	abort();
+	return 0;
 }
 
-static RETSIGTYPE
-sig_exit(sig)
+static int
+sig_exit(sig, data, owner)
         int sig;
+	void *data;
+	const void *owner;
 {
 	daemon_command = CMD_SHUTDOWN;
+	return 0;
 }
 
 /*ARGSUSED*/
-static RETSIGTYPE
-sig_hup(sig)
+static int
+sig_hup(sig, data, owner)
         int sig;
+	void *data;
+	const void *owner;
 {
         daemon_command = CMD_RELOAD;
-        signal(SIGHUP, sig_hup);
+	return 0;
 }
 
 /*ARGSUSED*/
-RETSIGTYPE
-sig_dumpdb(sig)
+static int
+sig_dumpdb(sig, data, owner)
         int sig;
+	void *data;
+	const void *owner;
 {
         daemon_command = CMD_DUMPDB;
-        signal(sig, sig_dumpdb);
-}
-
-/*ARGSUSED*/
-RETSIGTYPE
-sig_child(sig)
-	int sig;
-{
-	int status;
-	pid_t pid;
-	struct _sigchld_handler *p;
-		
-	for (;;) {
-		pid = waitpid((pid_t)-1, &status, WNOHANG);
-		if (pid <= 0)
-			break;
-		filter_sigchild(pid, status);
-	}
-	signal(sig, sig_child);
+        return 0;
 }
 
 /* ************************************************************************* */

@@ -26,6 +26,8 @@
 	* radiusd/rpp.c (rpp_fd_read): Exit from padding loop if
 	pipe_read fails.
 	Added more debugging info.
+
+	* lib/symtab.c (hash_size): removed debugging entries 
 	
 2004-08-29  Sergey Poznyakoff 
 

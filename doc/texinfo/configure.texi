@@ -1330,6 +1330,7 @@ century.
 * $INCLUDE::            Include a file.
 * VENDOR::              Define a vendor-id.
 * ATTRIBUTE::           Define an attribute translation.
+* BEGIN::               Blocks of vendor-specific attributes
 * ALIAS::               Define alternative name for an attribute.
 * PROPERTY::            Define attribute properties.
 * VALUE::               Define a value translation.
@@ -1363,11 +1364,12 @@ directory, unless its name starts with a slash.
 
 @subheading Syntax
 @smallexample
-VENDOR  Vendor-Name  @var{number}
+VENDOR  @var{vendor-name} @var{vendor-id}
 @end smallexample 
 
 @subheading Usage
-A @code{VENDOR} statement defines the symbolic name for a Vendor-Id.
+A @code{VENDOR} statement defines the symbolic name @var{vendor-name}
+for vendor identifier @var{vendor-id}.
 This name can subsequently be used in @code{ATTRIBUTE} statements
 to define Vendor-Specific attribute translations. @xref{Vendor-Specific}.
 
@@ -1382,7 +1384,7 @@ VENDOR  Livingston  307
 @kwindex ATTRIBUTE 
 @subheading Syntax
 @smallexample
-ATTRIBUTE  @var{name}  @var{number}  @var{type} [@var{vendor} [@var{flags}]]
+ATTRIBUTE  @var{name}  @var{number}  @var{type} [@var{vendor}] [@var{flags}]
 @end smallexample
 
 @subheading Usage
@@ -1399,7 +1401,8 @@ The attribute @acronym{ID} (number).
 The attribute type. 
 @item vendor
 Vendor name for vendor-specific attributes. For usual attributes this
-field is empty or contains a dash (@samp{-}).
+field is empty or contains a dash (@samp{-}). The latter usage is
+for compatibility with previos version of GNU Radius
 @item flags
 Flags, defining attribute properties (@pxref{Attributes}).
 @end table
@@ -1472,6 +1475,94 @@ integer data type and it may be used  in any part of matching rules,
 except in @LHS{} of a @file{raddb/hints} rule. The
 additivity of @attr{Service-Type} is set to @samp{Replace}. The
 attribute will be propagated through the proxy chain.
+
+@comment **L3***************************************************************
+@node BEGIN
+@subsection Blocks of Vendor-Specific Attributes
+@kwindex BEGIN
+@kwindex END
+@kwindex BEGIN-VENDOR
+@kwindex END-VENDOR
+@UNREVISED{}
+
+@subheading Syntax
+@smallexample
+@group
+BEGIN VENDOR @var{vendor-name} [@var{vendor-id}]
+@dots{}
+END 
+@end group
+@end smallexample
+
+@subheading Usage
+The @code{BEGIN} keyword marks start of the block of definitions of
+vendor-specific attributes. The block is terminated by @code{END}
+keyword, optionally followed by an arbitrary number of words,
+which are regarded as a comment. The block may contain any valid
+dictionary declarations, except other blocks: nesting of declaration
+blocks is not allowed.
+
+If @var{vendor-id} is absent, the value of vendor ID is looked
+up in the internal table of vendors; therefore, it must be
+defined before @code{BEGIN} statement (@pxref{VENDOR}).
+
+@code{BEGIN---END} block alters the handling of @code{ATTRIBUTE}
+statements within it. If @code{ATTRIBUTE} statement does not
+contain an explicit vendor-id specification, the value of 
+@var{vendor-id} is used instead.
+
+For compatibility with FreeRadius an alternative syntax is also
+supported:
+
+@smallexample
+@group
+BEGIN-VENDOR @var{vendor-name}
+@dots{}
+END-VENDOR @var{vendor-name}
+@end group
+@end smallexample
+
+@noindent
+Such compatibility blocks must appear only ater the declaration of
+@var{vendor-name} (@pxref{VENDOR}).
+
+@subheading Example
+
+The following is the usual way of definig vendor-specific attributes:
+
+@smallexample
+@group
+VENDOR		Livingston	307
+
+ATTRIBUTE	LE-Terminate-Detail	2	string	Livingston
+ATTRIBUTE	LE-Advice-of-Charge	3	string	Livingston
+@end group
+@end smallexample
+
+@noindent
+The following two examples show the alternative ways:
+ 
+@smallexample
+@group
+VENDOR Livingston 307
+BEGIN VENDOR Livingston
+ATTRIBUTE	LE-Terminate-Detail	2	string	
+ATTRIBUTE	LE-Advice-of-Charge	3	string
+END
+@end group
+@end smallexample
+
+@smallexample
+@group
+BEGIN VENDOR Livingston 307
+ATTRIBUTE	LE-Terminate-Detail	2	string	
+ATTRIBUTE	LE-Advice-of-Charge	3	string
+END
+@end group
+@end smallexample
+
+@noindent
+These three examples are completely equivalent to each other.
 
 @comment **L3***************************************************************
 @node ALIAS

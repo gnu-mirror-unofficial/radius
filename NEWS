@@ -28,6 +28,24 @@ section of 'raddb/config':
 
 * radiusd
 
+** New constructs in dictionary file
+
+** BEGIN VENDOR blocks.
+
+These simplify declaration of vendor-specific attributes. Instead of
+explicitely specifying vendor name for each VSA, you can enclose all
+related declarations in BEGIN VENDOR statement:
+
+ BEGIN VENDOR Unix 4
+ ....
+ END
+
+An alternative form BEGIN-VENDOR ... END-VENDOR is supported for
+compatibility with FreeRadius
+ 
+** Specifying - (dash) for non-VSA attributes that have syntax flags
+specifications is no longer obligatory.
+
 ** Improved checking for multiple logins. Previous versions relied entirely
 on the contents of /var/log/radutmp file. Starting at this version,
 radiusd offers at least two methods of checking for multiple logins:

@@ -13,6 +13,10 @@ options {
 	# Exec-Program-Wait attributes). Default is daemon:daemon
 	exec-program-user "daemon";
 	exec-program-group "other";
+	# Specify the logging directory (-l command line option)
+       	log-dir "/var/log";
+	# Specify the detailed accounting directory (-a command line option)
+       	acct-dir "/var/acct";
 };
 
 logging {

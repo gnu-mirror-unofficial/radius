@@ -128,7 +128,7 @@ attr_to_str(obp, req, pairlist, attr, defval)
                         if (*defval == 0)
                                 defval = "Attribute is not present";
                         radlog_req(L_ERR, req, "%s: %s",
-                               attr->name, defval);
+				   attr->name, defval);
                         break;
                 case '=':
                         if (pairlist) {
@@ -161,11 +161,15 @@ attr_to_str(obp, req, pairlist, attr, defval)
         tmp[AUTH_STRING_LEN-1] = 0;
         switch (attr->type) {
         case TYPE_STRING:
-                if (attr->value == DA_USER_PASSWORD && req) {
+                if ((attr->value == DA_USER_PASSWORD
+		     || attr->value == DA_CHAP_PASSWORD) && req) {
                         char string[AUTH_STRING_LEN+1];
                         int len;
                         req_decrypt_password(string, req, pair);
-                        len = strlen(string);
+			if (attr->value == DA_USER_PASSWORD)
+                        	len = strlen(string);
+			else
+				len = pair->avp_strlength;
                         obstack_grow_quoted(obp, string, len);
                 } else {
                         /* strvalue might include terminating zero character,
@@ -175,7 +179,7 @@ attr_to_str(obp, req, pairlist, attr, defval)
                 }
                 break;
         case TYPE_INTEGER:
-                snprintf(tmp, sizeof(tmp), "%ld", pair->avp_lvalue);
+                snprintf(tmp, sizeof(tmp), "%lu", pair->avp_lvalue);
                 len = strlen(tmp);
                 obstack_grow(obp, tmp, len);
                 break;

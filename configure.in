@@ -69,12 +69,27 @@ AC_ARG_WITH(guile,
 AC_ARG_WITH(guile,
 	[  --without-server-guile         do not compile server Guile support],
         [USE_SERVER_GUILE=$withval],
-        [USE_SERVER_GUILE=yes])
+        [USE_SERVER_GUILE=$USE_GUILE])
 
 if test $USE_GUILE = yes; then
-	AC_PATH_PROG(GUILE_CONFIG, guile-config, no, $PATH)
-	AC_DEFINE(USE_GUILE)
+	rad_CHECK_GUILE(,
+			[LIBRADSCM=libradscm.a
+                         RADSCM=radscm
+			 RADTEST=radtest
+			 TESTDIR=test.sh
+			 if test $USE_SERVER_GUILE = yes; then
+				AC_DEFINE(USE_SERVER_GUILE)
+				RADIUSD_LDADD="$RADIUSD_LDADD ../radscm/libradscm.a"
+			 fi],
+                        [USE_GUILE=no])
 fi
+
+AC_SUBST(GUILE_INCLUDES)
+AC_SUBST(GUILE_LIBS)
+AC_SUBST(LIBRADSCM)
+AC_SUBST(RADSCM)
+AC_SUBST(RADTEST)
+AC_SUBST(TESTDIR)
 
 ### Check for Emacs site-lisp directory
 AM_PATH_LISPDIR
@@ -537,39 +552,25 @@ AC_PATH_PROG(GMSGFMT, $PROG, missing, $PATH:/usr/bin)
 ## *           Do some final checks and create Makefiles                 *
 ## ***********************************************************************
 
-AC_SUBST(GUILE_INCLUDES)
-AC_SUBST(GUILE_LIBS)
-AC_SUBST(RADSCM)
-AC_SUBST(TESTDIR)
-if test x$GUILE_CONFIG != xno; then
-	GUILE_INCLUDES=`guile-config compile`
-	GUILE_LIBS=`guile-config link`
-	RADSCM=radscm
-	TESTDIR=test.sh
-fi
-
 AC_SUBST(BUILD_NAS_SCM)
 AC_SUBST(BUILD_PAM_RADIUS_LA)
 if test x$BUILD_CLIENT = xyes; then
 	AC_CHECK_LIB(pam, pam_start,
 			[ BUILD_PAM_RADIUS_LA=pam_radius.la ],
 			[ AC_MSG_WARN([-lpam not found. Won't build pam_radius.so])])
-	if test x$GUILE_CONFIG != xno; then
+	if test x$USE_GUILE != xno; then
 		BUILD_NAS_SCM=nas.scm
 	else
 		AC_MSG_WARN([GUILE not installed. Won't build nas.scm])
 	fi
 fi
 
-AM_CONDITIONAL(SQL, test x$USE_SQL != xno)
-AM_CONDITIONAL(GUILE, test x$GUILE_CONFIG != xno)
-
 AC_OUTPUT(Makefile m4/Makefile \
           include/Makefile include/snmp/Makefile \
           radlib/Makefile sql/Makefile snmplib/Makefile \
+	  radscm/Makefile \
           radiusd/Makefile radlast/Makefile radwho/Makefile \
           raduse/Makefile radzap/Makefile \
-	  radscm/Makefile \
           radscripts/Makefile doc/Makefile \
 	  doc/texinfo/Makefile doc/man/Makefile doc/man/config.so \
           doc/rfc/Makefile \

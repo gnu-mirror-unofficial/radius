@@ -397,6 +397,7 @@ void radiusd_close_channel(int fd);
 /* exec.c */
 int radius_get_user_ids(RADIUS_USER *usr, const char *name);
 int radius_switch_to_user(RADIUS_USER *usr);
+int radius_exec_command(char *cmd);
 int radius_exec_program(char *, grad_request_t *, grad_avp_t **, int);
 void filter_cleanup(pid_t pid, int status);
 int filter_auth(char *name, grad_request_t *req, grad_avp_t **reply_pairs);
@@ -597,6 +598,7 @@ int snmp_req_respond(REQUEST *request);
 char *radius_xlate(struct obstack *obp, char *str,
                    grad_request_t *req, grad_avp_t *reply_pairs);
 int radius_eval_avl(grad_request_t *req, grad_avp_t *p);
+char *util_xlate(struct obstack *sp, char *fmt, grad_request_t *radreq);
 
 /* rewrite.y */
 extern struct cfg_stmt rewrite_stmt[];

@@ -175,8 +175,14 @@ message {
 filters {
 	filter ttl_filter {
 		exec-path "/usr/local/libexec/ttl-compute -f -";
-		auth-input-format "%C{User-Name} ?";
-		acct-input-format "%C{User-Name} %C{Acct-Status-Type}";
-		wait-reply yes;
+		single yes;
+		auth {
+			input-format "%C{User-Name} ?";
+			wait-reply yes;
+		};
+		acct {
+			input-format "%C{User-Name} %C{Acct-Status-Type}";
+			wait-reply no;
+		};
 	};
 };

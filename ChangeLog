@@ -1,3 +1,16 @@
+2003-06-16  Sergey Poznyakoff
+
+	* lib/Makefile.am (LIBLIST): Modified
+	* radiusd/Makefile.am (FILELIST): Modified
+	* sql/odbc.c (rad_odbc_column): Fixed type of the second
+	parameter.
+
+	* lib/argcv.c: Updated FSF address
+	* lib/radargp.c: Likewise.
+	* lib/rx.c: Likewise.
+	* lib/snprintf.c: Likewise.
+	* lib/snprintf.h: Likewise.
+	
 2003-06-15  Sergey Poznyakoff  
 
 	* README: Updated

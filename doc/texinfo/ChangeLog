@@ -1,3 +1,10 @@
+2003-06-16  Sergey Poznyakoff  
+
+	* fdl.texi: New file
+	* Makefile.am: Added fdl.texi
+	* radius.texi: Use @copying statement.
+	Fixed the two-column output in `Published by'.
+	
 2003-06-13  Sergey Poznyakoff 
 
 	* comp.texi: Fixed request-cleanup-delay formula

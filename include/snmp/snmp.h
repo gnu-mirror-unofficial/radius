@@ -158,8 +158,15 @@ struct snmp_session {
 	struct snmp_request *request_list;  /* list of outstanding requests */
 };
 
+typedef void *(*snmp_alloc_t)(size_t);
+typedef void *(*snmp_free_t)(void*);
+
 void *snmp_alloc(size_t);
 void snmp_free(void*);
+char *snmp_strdup(char *str);
+
+void snmp_init(int retries, int timeout,
+	       snmp_alloc_t memalloc, snmp_free_t memfree);
 
 oid_t oid_dup(oid_t oid);
 oid_t oid_create_from_string(char *str);

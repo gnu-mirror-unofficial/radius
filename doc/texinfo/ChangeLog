@@ -1,3 +1,8 @@
+2005-01-17  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
+	* fdl.texi: Fixed sectioning. Reverted to @appendix
+	* gradient.texi: Likewise.
+
 2005-01-15  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
 
 	* Makefile.am: Rewritten to use gendocs.sh. Currently

@@ -78,6 +78,7 @@ SQL_cfg sql_cfg;
 #define STMT_MAX_ACCT_CONNECTIONS  19
 #define STMT_GROUP_QUERY           20
 #define STMT_ATTR_QUERY            21
+#define STMT_INTERFACE             22
 
 static FILE  *sqlfd;
 static int line_no;
@@ -108,7 +109,7 @@ struct keyword sql_keyword[] = {
 	"acct_keepalive_query", STMT_ACCT_KEEPALIVE_QUERY,
 	"acct_nasup_query",   STMT_ACCT_NASUP_QUERY,
 	"acct_nasdown_query", STMT_ACCT_NASDOWN_QUERY,
-	"query_buffer_size",  STMT_QUERY_BUFFER_SIZE,
+	"interface",          STMT_INTERFACE,
 	NULL,
 };
 
@@ -231,7 +232,7 @@ sql_digest(cfg)
 #define STRLEN(a) (a ? strlen(a) : 0)
 #define STPCPY(d,s) if (s) { strcpy(d,s); d += strlen(s); }
 	
-	length =  5 * sizeof(int)
+	length =  6 * sizeof(int)
 		+ 2 * sizeof(unsigned)
 		+ STRLEN(cfg->server)
 		+ STRLEN(cfg->login)
@@ -244,6 +245,9 @@ sql_digest(cfg)
 	p = digest;
 	
 	*(int*)p = length;
+	p += sizeof(int);
+
+	*(int*)p = cfg->interface;
 	p += sizeof(int);
 	
 	*(int*)p = cfg->keepopen;
@@ -469,6 +473,14 @@ rad_sql_init()
 			radlog(L_WARN, "%s:%d: query_buffer_size is obsolete",
 				       sqlfile, line_no);
 			break;
+			
+		case STMT_INTERFACE:
+			new_cfg.interface = disp_sql_interface_index(cur_ptr);
+			if (!new_cfg.interface) {
+				radlog(L_WARN, "%s:%d: Unsupported SQL interface.",
+				       sqlfile, line_no);
+			}
+			break;
 		}
 		
 	}
@@ -566,9 +578,6 @@ sql_check_config(cfg)
 		FREE_IF_EMPTY(cfg->acct_nasup_query);
 	}
 	
-	if (cfg->port == 0)
-		cfg->port = RAD_SQL_PORT;
-	
 	debug(1, ("SQL init using: %s:%d,%s,%s,%s,%d,%ld,%d,%d",
 	       cfg->server,
 	       cfg->port,
@@ -659,7 +668,7 @@ create_sql_connection(type)
 		conn_last = conn;
 
 	conn_count[type]++;
-	rad_sql_reconnect(type, conn);	
+	disp_sql_reconnect(sql_cfg.interface, type, conn);	
 	return conn;
 }
 
@@ -677,7 +686,7 @@ close_sql_connection(conn, prev)
 		 conn_count[SQL_AUTH] + conn_count[SQL_ACCT] - 1));
 	
 	if (conn->connected)
-		rad_sql_disconnect(conn);
+		disp_sql_disconnect(sql_cfg.interface, conn);
 	if (prev)
 		prev->next = conn->next;
 	if (conn_first == conn)
@@ -1003,7 +1012,7 @@ rad_sql_acct(radreq)
 		query = radius_xlate(&stack,
 				     sql_cfg.acct_start_query,
 				     radreq, NULL);
-		rc = rad_sql_query(conn, query, NULL);
+		rc = disp_sql_query(sql_cfg.interface, conn, query, NULL);
 		sqllog(rc, query);
 		break;
 		
@@ -1013,7 +1022,7 @@ rad_sql_acct(radreq)
 		query = radius_xlate(&stack,
 				     sql_cfg.acct_stop_query,
 				     radreq, NULL);
-		rc = rad_sql_query(conn, query, &count);
+		rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
 		sqllog(rc, query);
 		if (rc == 0 && count != 1) {
 			char *name;
@@ -1035,7 +1044,7 @@ rad_sql_acct(radreq)
 		query = radius_xlate(&stack,
 				     sql_cfg.acct_nasup_query,
 				     radreq, NULL);
-		rc = rad_sql_query(conn, query, &count);
+		rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
 		sqllog(rc, query);
 		if (rc == 0) {
 			radlog(L_INFO,
@@ -1051,7 +1060,7 @@ rad_sql_acct(radreq)
 		query = radius_xlate(&stack,
 				     sql_cfg.acct_nasdown_query,
 				     radreq, NULL);
-		rc = rad_sql_query(conn, query, &count);
+		rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
 		sqllog(rc, query);
 		if (rc == 0) {
 			radlog(L_INFO,
@@ -1067,7 +1076,7 @@ rad_sql_acct(radreq)
 		query = radius_xlate(&stack,
 				     sql_cfg.acct_keepalive_query,
 				     radreq, NULL);
-		rc = rad_sql_query(conn, query, &count);
+		rc = disp_sql_query(sql_cfg.interface, conn, query, &count);
 		sqllog(rc, query);
 		if (rc != 0) {
 			radlog(L_INFO,
@@ -1114,7 +1123,7 @@ rad_sql_pass(req, authdata, passwd)
 	avl_delete(&req->request, DA_AUTH_DATA);
 	
 	conn = attach_sql_connection(SQL_AUTH, (qid_t)req);
-	mysql_passwd = rad_sql_getpwd(conn, query);
+	mysql_passwd = disp_sql_getpwd(sql_cfg.interface, conn, query);
 	
 	if (!mysql_passwd) {
 		rc = AUTH_NOUSER;
@@ -1153,15 +1162,15 @@ rad_sql_checkgroup(req, groupname)
 	query = radius_xlate(&stack, sql_cfg.group_query, req, NULL);
 
 	conn = attach_sql_connection(SQL_AUTH, (qid_t)req);
-	data = rad_sql_exec(conn, query);
-	while (rc != 0 && rad_sql_next_tuple(conn, data) == 0) {
-		if ((p = rad_sql_column(data,0)) == NULL)
+	data = disp_sql_exec(sql_cfg.interface, conn, query);
+	while (rc != 0 && disp_sql_next_tuple(sql_cfg.interface, conn, data) == 0) {
+		if ((p = disp_sql_column(sql_cfg.interface, data, 0)) == NULL)
 			break;
 		chop(p);
 		if (strcmp(p, groupname) == 0)
 			rc = 0;
 	}
-	rad_sql_free(conn, data);
+	disp_sql_free(sql_cfg.interface, conn, data);
 	
 	if (!sql_cfg.keepopen)
 		unattach_sql_connection(SQL_AUTH, (qid_t)req);
@@ -1200,13 +1209,13 @@ rad_sql_attr_query(req, reply_pairs)
 	
 	query = radius_xlate(&stack, sql_cfg.attr_query, req, NULL);
 	
-        data = rad_sql_exec(conn, query);
+        data = disp_sql_exec(sql_cfg.interface, conn, query);
 	if (!data)
 		return 0;
 	
-        for (i = 0; rad_sql_next_tuple(conn, data) == 0; i++) {
-                if ((attribute = rad_sql_column(data,0)) == NULL ||
-                    (value = rad_sql_column(data, 1)) == NULL) {
+        for (i = 0; disp_sql_next_tuple(sql_cfg.interface, conn, data) == 0; i++) {
+                if (!(attribute = disp_sql_column(sql_cfg.interface, data, 0))
+		    || !(value = disp_sql_column(sql_cfg.interface, data, 1))) {
                         break;
                 }
                 chop(attribute);
@@ -1218,7 +1227,7 @@ rad_sql_attr_query(req, reply_pairs)
                         avl_add_list(reply_pairs, pair);
         }
  
-        rad_sql_free(conn, data);
+        disp_sql_free(sql_cfg.interface, conn, data);
  
         if (!sql_cfg.keepopen) 
                 unattach_sql_connection(SQL_AUTH, qid);

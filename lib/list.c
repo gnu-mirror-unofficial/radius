@@ -276,4 +276,30 @@ list_locate(struct list *list, void *data, list_comp_t cmp)
 	return cur ? cur->data : NULL;
 }
 	
+int
+list_insert_sorted(struct list *list, void *data, list_comp_t cmp)
+{
+	struct list_entry *cur, *prev;
+	
+	if (!list)
+		return -1;
+	if (!cmp)
+		return -1;
+		
+	for (cur = list->head, prev = NULL; cur; prev = cur, cur = cur->next)
+		if (cmp(cur->data, data) > 0)
+			break;
+
+	if (!prev) {
+		list_prepend(list, data);
+	} else if (!cur) {
+		list_append(list, data);
+	} else {
+		struct list_entry *ep = emalloc(sizeof(*ep));
+		ep->data = data;
+		ep->next = cur;
+		prev->next = ep;
+	}
+	return 0;
+}
 

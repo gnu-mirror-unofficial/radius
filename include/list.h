@@ -31,6 +31,7 @@ void *list_item(LIST *list, size_t n);
 size_t list_count(LIST *list);
 void list_append(LIST *list, void *data);
 void list_prepend(LIST *list, void *data);
+int list_insert_sorted(struct list *list, void *data, list_comp_t cmp);
 void *list_locate(LIST *list, void *data, list_comp_t cmp);
 void *list_remove(LIST *list, void *data, list_comp_t cmp);
 

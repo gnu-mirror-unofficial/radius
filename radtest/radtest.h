@@ -39,7 +39,7 @@ struct variable {
 	int type;
 	union datum {
 		int number;
-		char string[MAX_STRING];
+		char *string;
 		VALUE_PAIR *vector;
 		UINT4 ipaddr;
 		DICT_VALUE *dval;

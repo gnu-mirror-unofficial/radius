@@ -74,8 +74,7 @@ send    return SEND;
 expect  return EXPECT;
 exit    return EXIT;
 {IDENTIFIER} {
-	strncpy(yylval.string, yytext, sizeof(yylval.string));
-	yylval.string[sizeof(yylval.string)-1] = 0;
+	yylval.string = make_string(yytext);
 	return NAME;
 }
 \${IDENTIFIER} {
@@ -88,13 +87,9 @@ exit    return EXIT;
 	return IDENT;
 }
 \"[^\\"]*\" {
-        if (yyleng - 2 < sizeof(yylval.string)) { 
-		strncpy(yylval.string, yytext+1, yyleng - 2);
-		yylval.string[yyleng-2] = 0;
-	} else {
-		strncpy(yylval.string, yytext+1, sizeof(yylval.string));
-		yylval.string[sizeof(yylval.string)-1] = 0;
-	}
+        yylval.string = alloc_string(yyleng - 1);
+	memcpy(yylval.string, yytext+1, yyleng - 2);
+	yylval.string[yyleng-2] = 0;
         return QUOTE;
 }
 \"[^\\"]*\\. {
@@ -123,8 +118,7 @@ exit    return EXIT;
 <STRING>[^\\"]*\" {
 	BEGIN(INITIAL);
 	add_str(yytext, yyleng - 1);
-	strncpy(yylval.string, end_str(), sizeof(yylval.string));
-	yylval.string[sizeof(yylval.string)-1] = 0;
+	yylval.string = make_string(end_str());
 	return QUOTE;
 }
 {DQ} {

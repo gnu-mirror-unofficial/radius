@@ -306,13 +306,8 @@ assign(s)
 		}
 		p[length-1] = 0;
 		
-		if (length > MAX_STRING) {
-			fprintf(stderr, _("assign: string too long\n"));
-			return;
-		}
-		
 		type = String;
-		strcpy(datum.string, p);
+		datum.string = make_string(p);
 	} else if (isdigit(*p)) {
 		char *endp;
 		
@@ -342,15 +337,8 @@ assign(s)
 			return;
 		}
 	} else {
-		length = strlen(p);
-		
-		if (length > MAX_STRING) {
-			fprintf(stderr, _("assign: string too long\n"));
-			return;
-		}
-		
 		type = String;
-		strcpy(datum.string, p);
+		datum.string = make_string(p);
 	}
 	
 	var = (Variable*)sym_install(vartab, s);
@@ -358,26 +346,26 @@ assign(s)
 	var->datum = datum;
 }
 
-void
-print_ident(buf, var)
-	char *buf;
+char *
+print_ident(var)
 	Variable *var;
 {
+	char buf[64];
 	switch (var->type) {
 	case Undefined:
-		sprintf(buf, _("UNDEFINED"));
+		return make_string("UNDEFINED");
 		break;
 	case Integer:
 		sprintf(buf, "%d", var->datum.number);
-		break;
+		return make_string(buf);
 	case Ipaddress:
 		ipaddr2str(buf, var->datum.ipaddr);
-		break;
+		return make_string(buf);
 	case String:
-		sprintf(buf, "%s", var->datum.string);
+		return dup_string(var->datum.string);
 		break;
 	case Vector:
-		break;
+		return make_string("VECTOR");
 	}
 }
 

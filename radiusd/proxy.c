@@ -344,7 +344,7 @@ passwd_recode(pass_pair, old_secret, new_secret, old_vector, new_vector)
 	char *old_vector;
 	char *new_vector;
 {
-	char	password[AUTH_STRING_LEN];
+	char	password[AUTH_STRING_LEN+1];
 	decrypt_password(password, pass_pair, old_vector, old_secret);
 	free_string(pass_pair->strvalue);
 	encrypt_password(pass_pair, password, new_vector, new_secret);

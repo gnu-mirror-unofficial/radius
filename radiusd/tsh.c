@@ -50,6 +50,8 @@ static RADIUS_REQ test_req;
 static char *tsh_ps1 = "(radiusd) ";
 static char *tsh_ps2 = "[radiusd] ";
 
+static char *tsh_readline(const char *prompt);
+
 static void tsh_help(int argc, char **argv, char *cmd);
 static void tsh_query_nas(int argc, char **argv, char *cmd);
 #ifdef USE_SERVER_GUILE
@@ -62,6 +64,7 @@ static void tsh_debug(int argc, char **argv, char *cmd);
 static void tsh_quit(int argc, char **argv, char *cmd);
 static void tsh_req_define(int argc, char **argv, char *cmd);
 static void tsh_req_print(int argc, char **argv, char *cmd);
+static void tsh_rewrite_stack(int argc, char **argv, char *cmd);
 
 typedef void (*tsh_command) (int argc, char **argv, char *cmd);
 
@@ -78,6 +81,9 @@ struct command_table {
 #ifdef USE_SERVER_GUILE
 	{"g", "guile", NULL, N_("Enter Guile"), tsh_guile},
 #endif
+	{"rs", "rewrite-stack", N_("[NUMBER]"),
+	 N_("Print or set the Rewrite stack size"),
+	 tsh_rewrite_stack},
 	{"r", "run-rewrite", N_("FUNCTION(args..)"),
 	 N_("Run given Rewrite function"), tsh_run_rewrite},
 	{"s", "source", N_("FILE"),
@@ -85,9 +91,9 @@ struct command_table {
 	{"t", "timespan", N_("TIMESPAN [DOW [HH [MM]]]"),
 	 N_("Check the timespan interval"), tsh_timespan},
 	{"d", "debug", N_("LEVEL"), N_("Set debugging level"), tsh_debug},
-	{"request-d", "request-define", N_("[PAIR [,PAIR]]"), N_("Define a request"),
+	{"rd", "request-define", N_("[PAIR [,PAIR]]"), N_("Define a request"),
 	 tsh_req_define },
-	{"request-p", "request-print", NULL, N_("Print the request"),
+	{"rp", "request-print", NULL, N_("Print the request"),
 	 tsh_req_print},
 	{"quit", "quit", NULL, N_("Quit the shell"), tsh_quit},
 	{NULL}
@@ -140,11 +146,8 @@ tsh_help(int argc, char **argv, char *cmd ARG_UNUSED)
 	
 	for (cp = command_table; cp->shortname; cp++) {
 		int len = strlen(cp->shortname);
-		if (len == strlen(cp->longname))
-			n = printf("%s", cp->longname);
-		else 
-			n = printf("(%*.*s)%s", len, len, cp->longname,
-				   cp->longname + len);
+
+		n = printf("%-8.8s%s", cp->shortname, cp->longname);
 		if (cp->usage)
 			n += printf(" %s", cp->usage);
 		print_doc(n, gettext(cp->doc));
@@ -188,6 +191,27 @@ tsh_guile(int argc ARG_UNUSED, char **argv ARG_UNUSED, char *cmd ARG_UNUSED)
 #endif
 
 static void
+tsh_rewrite_stack(int argc, char **argv, char *cmd)
+{
+	if (argc > 2) {
+		fprintf(stderr,
+			_("%s: wrong number of arguments\n"), argv[0]);
+		return;
+	}
+	if (argc == 1) 
+		printf("%lu\n", (long unsigned) rewrite_get_stack_size());
+	else {
+		char *p;
+		size_t n = strtoul(argv[1], &p, 0);
+		if (*p) 
+			fprintf(stderr,
+				_("%s: argument is not a number\n"), argv[0]);
+		else
+			rewrite_set_stack_size(n);
+	}
+}
+
+static void
 tsh_run_rewrite(int argc, char **argv, char *cmd)
 {
 	Datatype type;
@@ -204,7 +228,7 @@ tsh_run_rewrite(int argc, char **argv, char *cmd)
 	while (*cmd && !isspace(*cmd))
 		cmd++;
 
-	if (interpret(cmd, &test_req, &type, &datum))
+	if (rewrite_interpret(cmd, &test_req, &type, &datum))
 		printf("?\n");
 	else {
 		switch (type) {
@@ -458,7 +482,7 @@ tsh_readline_internal()
 	}
 }
 
-char *
+static char *
 tsh_readline(const char *prompt)
 {
 	if (interactive)
@@ -539,7 +563,10 @@ tsh_find_entry(char *cmd)
 static tsh_command
 tsh_find_function(char *name)
 {
-	struct command_table *cp = tsh_find_entry(name);
+	struct command_table *cp;
+	if (name[0] == '?' && name[1] == 0)
+		name = "help";
+	cp = tsh_find_entry(name);
 	return cp ? cp->handler : NULL;
 }
 

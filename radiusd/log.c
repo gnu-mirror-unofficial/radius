@@ -29,14 +29,10 @@
 #include <errno.h>
 #include <syslog.h>
 #include <radiusd.h>
+#include <rewrite.h>
 
 static int logging_category = L_CAT(L_MAIN);
 static RAD_LIST /* of Channel*/ *chanlist;     /* List of defined channels */
-
-static void log_to_channel(Channel *chan, int cat, int pri,
-                           char *buf1, char *buf2, char *buf3);
-static FILE *channel_open_file(Channel *chan);
-static void channel_close_file(Channel *chan, FILE *fp);
 
 #define SP(p) ((p)?(p):"")
 
@@ -64,53 +60,6 @@ log_close()
         log_set_category(L_MAIN);
 }
 
-void
-vlog(int level,
-     const char *file, size_t line,
-     const char *func_name, int en,
-     const char *fmt, va_list ap)
-{
-        Channel *chan;
-        int cat, pri;
-        char *buf1 = NULL;
-        char *buf2 = NULL;
-        char *buf3 = NULL;
-	ITERATOR *itr = iterator_create(chanlist);
-
-        cat = L_CAT(level);
-        if (cat == 0)
-                cat = log_get_category();
-        pri = L_PRI(level);
-        
-        if (file) {
-		if (func_name)
-			asprintf(&buf1,
-				 "%s:%d:%s: ", file, line, func_name);
-		else
-			asprintf(&buf1,
-				 "%s:%d: ", file, line);
-	}
-	
-        if (en)
-                asprintf(&buf3, ": %s", strerror(en));
-
-        vasprintf(&buf2, fmt, ap);
-        
-        for (chan = iterator_first(itr); chan; chan = iterator_next(itr)) {
-                /* Skip channels whith incorrect priority */
-                if (chan->pmask[cat] & L_MASK(pri))
-                        log_to_channel(chan, cat, pri, buf1, buf2, buf3);
-        }
-        iterator_destroy(&itr);
-
-        if (buf1)
-                free(buf1);
-        if (buf2)
-                free(buf2);
-        if (buf3)
-                free(buf3);     
-}
-
 static char *catname[] = { /* category names */
         N_("none"),
         N_("Main"),
@@ -131,12 +80,80 @@ static char *priname[] = { /* priority names */
         N_("debug")
 };
 
+static char *
+run_log_hook(const RADIUS_REQ *req, const char *hook_name)
+{
+	char *result;
+	char nasbuf[MAX_LONGNAME];
+	
+	if (rewrite_invoke(String,
+			   &result,
+			   hook_name,
+			   req,
+			   "ssi",
+			   auth_code_abbr(req->code),
+			   nas_request_to_name(req, nasbuf, sizeof nasbuf),
+			   req->id))
+		return NULL;
+	return result;
+}
+
+static void
+channel_format_prefix(char **bufp, Channel *chan, const RADIUS_REQ *req)
+{
+	char *hook_res = NULL;
+
+	if (chan->prefix_hook) {
+		hook_res = run_log_hook(req, chan->prefix_hook);
+		if (!hook_res)
+			chan->prefix_hook = NULL;
+	}
+
+	if (hook_res)  
+		asprintf(bufp, "%s", hook_res);
+}
+
+static void
+channel_format_suffix(char **bufp, Channel *chan, const RADIUS_REQ *req)
+{
+	char *hook_res = NULL;
+
+	if (chan->suffix_hook) {
+		hook_res = run_log_hook(req, chan->suffix_hook);
+		if (!hook_res)
+			chan->suffix_hook = NULL;
+	}
+
+	if (hook_res)  
+		asprintf(bufp, "%s", hook_res);
+}
+
+static FILE *
+channel_open_file(Channel *chan)
+{
+        FILE *fp = NULL;
+
+        if (strcmp(chan->id.file, "stdout"))
+                fp = fopen(chan->id.file, "a");
+        return fp ? fp : stderr;
+}
+
+/*ARGSUSED*/
+static void
+channel_close_file(Channel *chan, FILE *fp)
+{
+        if (fp != stderr)
+                fclose(fp);
+}
+
 void
 log_to_channel(Channel *chan, int cat, int pri,
+	       const RADIUS_REQ *req,
 	       char *buf1, char *buf2, char *buf3)
 {
         char *cat_pref = NULL;
         char *prefix = NULL;
+	char *req_prefix_buf = NULL, *req_suffix_buf = NULL;
         time_t  timeval;
         char buffer[256];
         struct tm *tm, tms;
@@ -160,6 +177,11 @@ log_to_channel(Channel *chan, int cat, int pri,
         if (cat_pref)
                 free(cat_pref);
 
+	if (req) {
+		channel_format_prefix(&req_prefix_buf, chan, req);
+		channel_format_suffix(&req_suffix_buf, chan, req);
+	}
+	
         switch (chan->mode) {
         case LM_FILE:
                 if (chan->options & LO_MSEC) {
@@ -187,10 +209,14 @@ log_to_channel(Channel *chan, int cat, int pri,
                         fprintf(fp, "%s: ", prefix);
                 if (buf1)
                         fprintf(fp, "%s", buf1);
+		if (req_prefix_buf)
+			fprintf(fp, "%s", req_prefix_buf);
                 if (buf2)
                         fprintf(fp, "%s", buf2);
                 if (buf3)
                         fprintf(fp, "%s", buf3);
+		if (req_suffix_buf)
+			fprintf(fp, "%s", req_suffix_buf);
                 fprintf(fp, "\n");
                 channel_close_file(chan, fp);
                 break;
@@ -200,34 +226,77 @@ log_to_channel(Channel *chan, int cat, int pri,
                 if (chan->options & LO_PID)
                         spri |= LOG_PID;
                 if (prefix)
-                        syslog(spri, "%s: %s%s%s",
-			       prefix, SP(buf1), SP(buf2), SP(buf3));
+                        syslog(spri, "%s: %s%s%s%s%s",
+			       prefix,
+			       SP(buf1),
+			       SP(req_prefix_buf),
+			       SP(buf2), SP(buf3),
+			       SP(req_suffix_buf));
                 else
-                        syslog(spri, "%s%s%s",
-                               SP(buf1), SP(buf2), SP(buf3));
+                        syslog(spri, "%s%s%s%s%s",
+                               SP(buf1),
+			       SP(req_prefix_buf),
+			       SP(buf2), SP(buf3),
+			       SP(req_suffix_buf));
                 break;
         }
         
         if (prefix)
                 free(prefix);
+	if (req_prefix_buf)
+		free(req_prefix_buf);
+	if (req_suffix_buf)
+		free(req_suffix_buf);
 }
 
-FILE *
-channel_open_file(Channel *chan)
-{
-        FILE *fp = NULL;
-
-        if (strcmp(chan->id.file, "stdout"))
-                fp = fopen(chan->id.file, "a");
-        return fp ? fp : stderr;
-}
-
-/*ARGSUSED*/
 void
-channel_close_file(Channel *chan, FILE *fp)
+vlog(int level,
+     const RADIUS_REQ *req,
+     const LOCUS *loc,
+     const char *func_name,
+     int en,
+     const char *fmt, va_list ap)
 {
-        if (fp != stderr)
-                fclose(fp);
+        Channel *chan;
+        int cat, pri;
+        char *buf1 = NULL;
+        char *buf2 = NULL;
+        char *buf3 = NULL;
+	ITERATOR *itr = iterator_create(chanlist);
+
+        cat = L_CAT(level);
+        if (cat == 0)
+                cat = log_get_category();
+        pri = L_PRI(level);
+        
+        if (loc) {
+		if (func_name)
+			asprintf(&buf1,
+				 "%s:%d:%s: ", loc->file, loc->line,
+				 func_name);
+		else
+			asprintf(&buf1,
+				 "%s:%d: ", loc->file, loc->line);
+	}
+	
+        if (en)
+                asprintf(&buf3, ": %s", strerror(en));
+
+        vasprintf(&buf2, fmt, ap);
+        
+        for (chan = iterator_first(itr); chan; chan = iterator_next(itr)) {
+                /* Skip channels whith incorrect priority */
+                if (chan->pmask[cat] & L_MASK(pri))
+                        log_to_channel(chan, cat, pri, req, buf1, buf2, buf3);
+        }
+        iterator_destroy(&itr);
+
+        if (buf1)
+                free(buf1);
+        if (buf2)
+                free(buf2);
+        if (buf3)
+                free(buf3);     
 }
 
 /* Interface */
@@ -266,6 +335,8 @@ channel_free(Channel *chan)
         efree(chan->name);
         if (chan->mode == LM_FILE)
                 efree(chan->id.file);
+	efree(chan->prefix_hook);
+	efree(chan->suffix_hook);
         efree(chan);
 }
 
@@ -362,7 +433,9 @@ register_channel(Channel *chan)
         else if (chan->mode == LM_SYSLOG)
                 channel->id.prio = chan->id.prio;
         channel->options = chan->options;
-
+	channel->prefix_hook = chan->prefix_hook;
+	channel->suffix_hook = chan->suffix_hook;
+	
 	if (!chanlist)
 		chanlist = list_create();
 	list_prepend(chanlist, channel);
@@ -430,7 +503,8 @@ log_set_default(char *name, int cat, int pri)
         chan.name = name;
         chan.id.file = "radius.log";
         chan.options = LO_CAT|LO_PRI;
-
+	chan.prefix_hook = chan.suffix_hook = NULL;
+	
         if (!channel_lookup(name))
                 register_channel(&chan);
         register_category0(cat, pri, channel_lookup(name));
@@ -452,6 +526,7 @@ format_exit_status(char *buffer, int buflen, int status)
 		snprintf(buffer, buflen, _("terminated"));
 }
 
+
 /* ************************************************************************* */
 /* Configuration issues */
 
@@ -462,7 +537,6 @@ static struct category_def {
 	int pri;
         RAD_LIST /* of Channel */ *clist;
         int level;
-	char *hook;
 } cat_def;
 
 static struct keyword syslog_facility[] = {
@@ -717,7 +791,6 @@ category_stmt_end(void *block_data, void *handler_data)
 		switch (cat_def.cat) {
 		case L_AUTH:
 			log_mode = cat_def.level;
-			auth_log_hook = cat_def.hook;
 			break;
 		default:
 			if (cat_def.level)
@@ -922,6 +995,10 @@ static struct cfg_stmt channel_stmt[] = {
 	  NULL, NULL },
 	{ "print-milliseconds", CS_STMT, NULL, channel_set_flag,
 	  (void*)LO_MSEC, NULL, NULL },
+	{ "prefix-hook", CS_STMT, NULL, cfg_get_string, &channel.prefix_hook,
+	  NULL, NULL },
+	{ "suffix-hook", CS_STMT, NULL, cfg_get_string, &channel.suffix_hook,
+	  NULL, NULL },
 	{ NULL }
 };
 
@@ -935,8 +1012,6 @@ static struct cfg_stmt category_stmt[] = {
 	  category_set_flag, (void*)RLOG_AUTH_PASS, NULL, NULL },
 	{ "level", CS_STMT, NULL,
 	  category_set_level, NULL, NULL, NULL },
-	{ "hook", CS_STMT, NULL, cfg_get_string, &cat_def.hook,
-	  NULL, NULL },
 	{ NULL }
 };
 

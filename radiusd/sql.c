@@ -1,5 +1,5 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
+ * Copyright (C) 2000,2001, Sergey Poznyakoff
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -53,6 +53,7 @@ static char * sql_digest(SQL_cfg *cfg);
 static int sql_digest_comp(char *d1, char *d2);
 static int sql_cfg_comp(SQL_cfg *a, SQL_cfg *b);
 static int chop(char *str);
+static void sql_flush();
 
 SQL_cfg sql_cfg;
 
@@ -472,15 +473,8 @@ rad_sql_init()
 
 	sql_check_config(&new_cfg);
 
-	if (sql_cfg_comp(&new_cfg, &sql_cfg)) {
-		radlog(L_NOTICE,
-		 _("SQL configuration changed: closing existing connections"));
-
-		rad_flush_queues();
-		
-		close_sql_connections(SQL_AUTH);
-		close_sql_connections(SQL_ACCT);
-	}
+	if (sql_cfg_comp(&new_cfg, &sql_cfg)) 
+		sql_flush();
 
 	/* Free old configuration structure */
 	FREE(sql_cfg.server);
@@ -568,7 +562,7 @@ sql_check_config(cfg)
 	if (cfg->port == 0)
 		cfg->port = RAD_SQL_PORT;
 	
-	radlog(L_INFO, _("SQL init using: %s:%d,%s,%s,%s,%d,%ld,%d,%d"),
+	debug(1, ("SQL init using: %s:%d,%s,%s,%s,%d,%ld,%d,%d",
 	       cfg->server,
 	       cfg->port,
 	       cfg->login,
@@ -577,7 +571,7 @@ sql_check_config(cfg)
 	       cfg->keepopen,
 	       cfg->idle_timeout,
 	       cfg->doacct,
-	       cfg->doauth);
+	       cfg->doauth));
 }
 
 /* ************************************************************************* */
@@ -618,6 +612,20 @@ print_queue()
 			prev = conn;
 		}
 		insist(conn_last == prev);
+	}
+}
+
+void
+sql_flush()
+{
+	if (conn_first != NULL) {
+		radlog(L_NOTICE,
+		 _("SQL configuration changed: closing existing connections"));
+
+		rad_flush_queues();
+		
+		close_sql_connections(SQL_AUTH);
+		close_sql_connections(SQL_ACCT);
 	}
 }
 

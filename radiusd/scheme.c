@@ -49,6 +49,7 @@ catch_body(void *data)
 	scm_init_load_path();
 	grad_scm_init();
 	rscm_server_init();
+	scm_c_use_module("radiusd");
 	radiusd_main();
 	return SCM_BOOL_F;
 }
@@ -96,6 +97,71 @@ eval_catch_handler (void *data, SCM tag, SCM throw_args)
 {
 	scm_handle_by_message_noexit("radiusd", tag, throw_args);
 	longjmp(*(jmp_buf*)data, 1);
+}
+
+int
+scheme_try_auth(int auth_type, grad_request_t *req,
+		grad_avp_t *user_check,
+		grad_avp_t **user_reply_ptr)
+{
+	SCM s_request, s_check, s_reply;
+	SCM res;
+	SCM procsym;
+ 	jmp_buf jmp_env;
+	grad_avp_t *tmp =
+		radius_decrypt_request_pairs(req,
+					     grad_avl_dup(req->request));
+	static const char *try_auth = "radiusd-try-auth";
+	
+	s_request = radscm_avl_to_list(tmp);
+	radius_destroy_pairs(&tmp);
+	s_check = radscm_avl_to_list(user_check);
+	s_reply = radscm_avl_to_list(*user_reply_ptr);
+
+	/* Evaluate the procedure */
+	procsym = RAD_SCM_SYMBOL_VALUE(try_auth);
+	if (scm_procedure_p(procsym) != SCM_BOOL_T) {
+		grad_log(L_ERR,
+		         _("%s is not a procedure object"), try_auth);
+		return 1;
+	}
+	if (setjmp(jmp_env)) {
+		grad_log(L_NOTICE,
+		         _("Procedure `%s' failed: see error output for details"),
+		         try_auth);
+		return 1;
+	}
+	res = scm_internal_lazy_catch(
+		SCM_BOOL_T,
+		eval_catch_body,
+		(void*) SCM_LIST5(procsym,
+				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+					      scm_long2num(auth_type),
+					      SCM_UNDEFINED),
+				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+					      s_request,
+					      SCM_UNDEFINED),
+				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+					      s_check,
+					      SCM_UNDEFINED),
+				  scm_listify(scm_copy_tree(SCM_IM_QUOTE),
+					      s_reply,
+					      SCM_UNDEFINED)),
+		eval_catch_handler, &jmp_env);
+	
+	if (SCM_IMP(res) && SCM_BOOLP(res)) 
+		return res == SCM_BOOL_F;
+	if (SCM_NIMP(res) && SCM_CONSP(res)) {
+		SCM code = SCM_CAR(res);
+		grad_avp_t *list = radscm_list_to_avl(SCM_CDR(res));
+		grad_avl_merge(user_reply_ptr, &list);
+		grad_avl_free(list);
+		return code == SCM_BOOL_F;
+	}
+	grad_log(L_ERR,
+	         _("Unexpected return value from Guile authentication function `%s'"),
+	         try_auth);
+	return 1;
 }
 
 int
@@ -208,6 +274,12 @@ void
 scheme_load(char *filename)
 {
 	scm_primitive_load_path(scm_makfrom0str(filename));
+}
+
+void
+scheme_load_module(char *filename)
+{
+	scm_c_use_module(filename);
 }
 
 void
@@ -330,6 +402,23 @@ scheme_cfg_load(int argc, cfg_value_t *argv, void *block_data,
 }
 
 static int
+scheme_cfg_load_module(int argc, cfg_value_t *argv, void *block_data,
+		       void *handler_data)
+{
+	if (argc > 2) {
+		cfg_argc_error(0);
+		return 0;
+	}
+
+ 	if (argv[1].type != CFG_STRING) {
+		cfg_type_error(CFG_STRING);
+		return 0;
+	}
+	scheme_load_module(argv[1].v.string);
+	return 0;
+}
+
+static int
 scheme_cfg_debug(int argc, cfg_value_t *argv,
 		 void *block_data, void *handler_data)
 {
@@ -367,6 +456,7 @@ scheme_cfg_outfile(int argc, cfg_value_t *argv,
 struct cfg_stmt guile_stmt[] = {
 	{ "load-path", CS_STMT, NULL, scheme_cfg_add_load_path, NULL, NULL, NULL },
 	{ "load", CS_STMT, NULL, scheme_cfg_load, NULL, NULL, NULL },
+	{ "load-module", CS_STMT, NULL, scheme_cfg_load_module, NULL, NULL, NULL },
 	{ "debug", CS_STMT, NULL, scheme_cfg_debug, NULL, NULL, NULL },
 	{ "outfile", CS_STMT, NULL, scheme_cfg_outfile, NULL, NULL, NULL },
 	{ "gc-interval", CS_STMT, NULL, cfg_get_integer, &scheme_gc_interval,
@@ -374,5 +464,14 @@ struct cfg_stmt guile_stmt[] = {
 	{ NULL }
 };
 
+#else
+
+int
+scheme_try_auth(int auth_type, grad_request_t *req,
+	    grad_avp_t *user_check,
+	    grad_avp_t **user_reply_ptr)
+{
+	return 1;
+}
 
 #endif

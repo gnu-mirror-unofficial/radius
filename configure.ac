@@ -18,7 +18,7 @@
 AC_PREREQ(2.57)
 
 AC_REVISION($Revision$)
-AC_INIT(GNU Radius, 0.99.102, bug-gnu-radius@gnu.org)
+AC_INIT(GNU Radius, 0.99.103, bug-gnu-radius@gnu.org)
 AC_CONFIG_SRCDIR(radiusd/radiusd.c)
 AC_CONFIG_AUX_DIR([scripts])
 AC_CANONICAL_SYSTEM
@@ -67,14 +67,15 @@ RA_MAINTAINER_MODE([build_POFILTER=pofilter])
 
 ### Make sure Guile is installed.
 AC_ARG_WITH(guile,
-	[  --without-guile                do not compile Guile support],
-        [USE_GUILE=$withval],
-        [USE_GUILE=yes])
+	AC_HELP_STRING([--without-guile],
+	[do not compile Guile support]),
+	[USE_GUILE=$withval],
+	[USE_GUILE=yes])
 
 AC_ARG_WITH(server-guile,
-	[  --with-server-guile            compile server Guile support (WARNING: see README for details)],
-        [USE_SERVER_GUILE=$withval],
-        [USE_SERVER_GUILE=yes])
+	AC_HELP_STRING([--with-server-guile], [compile server Guile support]),
+	[USE_SERVER_GUILE=$withval],
+	[USE_SERVER_GUILE=yes])
 
 if test $USE_GUILE = yes; then
 	RA_CHECK_GUILE(,
@@ -125,9 +126,8 @@ dnl ** AM_DISABLE_SHARED
 ## *************************************
 AC_MSG_CHECKING(for additional includes)
 AC_ARG_WITH(include-path,
-	[  --with-include-path=PATH      specify additional include paths.
-                                         PATH is a ':' separated list of additional
-                                         include paths.  ],
+	AC_HELP_STRING([--with-include-path=PATH],
+	[specify additional include paths. PATH is a ':' separated list of additional include paths.]),
 	[ for path in `echo $withval | sed 's/:/ /g'`
           do
             INCLUDEPATH="$INCLUDEPATH -I$path"
@@ -136,7 +136,8 @@ AC_MSG_RESULT($INCLUDEPATH)
 
 AC_MSG_CHECKING(for additional libraries)
 AC_ARG_WITH(lib-path,    
-	[  --with-lib-path=PATH          specify additional library paths.],
+	AC_HELP_STRING([--with-lib-path=PATH],
+	[specify additional library paths.]),
 	[ for path in `echo $withval | sed 's/:/ /g'`
           do
             LIBS="$LIBS -L$path"
@@ -259,9 +260,10 @@ AC_CHECK_DECLS([strncasecmp, strtok_r, localtime_r, asprintf, vasprintf, getline
 CPPFLAGS=$save_CPPFLAGS
 
 AC_ARG_WITH(included-argp,
-	[  --with-included-argp           Use included argp library],
-        [USE_INCLUDED_ARGP=$withval],
-        [USE_INCLUDED_ARGP=no])
+	AC_HELP_STRING([--with-included-argp],
+	[use included argp library.]),
+	[USE_INCLUDED_ARGP=$withval],
+	[USE_INCLUDED_ARGP=no])
 
 AC_CHECK_FUNCS(argp_parse, :, USE_INCLUDED_ARGP=yes)
 if test "$ac_cv_header_argp_h" = "no"; then
@@ -312,7 +314,8 @@ main() { char *s = sys_errlist[[0]]; return 0; },
 ## **************
 RADIUS_DEBUG=1
 AC_ARG_ENABLE(debug,                     
-	[  --disable-debug               disable debugging functions],
+	AC_HELP_STRING([--disable-debug],
+	[disable debugging functions]),
 	[case $enableval in
 		yes)	RADIUS_DEBUG=1;;
 		no)	RADIUS_DEBUG=0;;
@@ -332,7 +335,8 @@ esac
 
 AC_MSG_CHECKING(for log directory path)
 AC_ARG_WITH(log-dir,
-[  --with-log-dir=PATH     Use PATH instead of default log directory pah],
+	AC_HELP_STRING([--with-log-dir=PATH],
+	[Use PATH instead of default log directory path]),
 	[case "x$withval" in
 	 x/*) RADLOG_DIR=$withval;;
          *)  AC_MSG_ERROR(Argument must be an absolute pathname);;
@@ -341,7 +345,8 @@ AC_MSG_RESULT($RADLOG_DIR)
 
 AC_MSG_CHECKING(for pidfile directory path)
 AC_ARG_WITH(pid-dir,
-[  --with-pid-dir=PATH     Use PATH instead of default podfile location],
+	AC_HELP_STRING([--with-pid-dir=PATH],
+	[Use PATH instead of default podfile location]),
 	[case "x$withval" in
 	 x/*) RADPID_DIR=$withval;;
          *)  AC_MSG_ERROR(Argument must be an absolute pathname);;
@@ -361,7 +366,8 @@ AC_DEFINE_UNQUOTED(BUILD_TARGET,
 ## ***************
 AC_MSG_CHECKING(whether to build client programs)
 AC_ARG_WITH(client,
-	[  --with-client                 compile client programs],
+	AC_HELP_STRING([--with-client],
+	[compile client programs]),
 	[BUILD_CLIENT=$withval],
 	[BUILD_CLIENT=no])
 AC_MSG_RESULT($BUILD_CLIENT)
@@ -371,7 +377,8 @@ AC_MSG_RESULT($BUILD_CLIENT)
 ## **************
 AC_MSG_CHECKING(authentication port number)
 AC_ARG_WITH(auth-port,
-	[  --with-auth-port=NUMBER	 specify port number to use for authentication],
+	AC_HELP_STRING([--with-auth-port=NUMBER],
+	[specify port number to use for authentication]),
 	[case $withval in
 		[[0-9]][[0-9]]*)	AUTH_PORT=$withval
 				;;
@@ -396,7 +403,8 @@ AC_DEFINE_UNQUOTED(DEF_ACCT_PORT, $ACCT_PORT, [Default accounting port])
 ## **************
 AC_MSG_CHECKING(whether to enable shadow support)
 AC_ARG_ENABLE(shadow,
-	[  --enable-shadow	         enable shadow support],
+	AC_HELP_STRING([--enable-shadow],
+	[enable shadow support]),
 	[case $enableval in
 		yes) 	SHADOW_SUPPORT=yes;;
 		*)	SHADOW_SUPPORT=no;;
@@ -412,7 +420,8 @@ fi
 ## PAM support
 ## **************
 AC_ARG_ENABLE(pam,
-	[  --enable-pam		         enable pam support],
+	AC_HELP_STRING([--enable-pam],
+	[enable pam support]),
 	[case $enableval in
 		yes)		USE_PAM=yes
                                 AC_DEFINE(USE_PAM,1,
@@ -461,7 +470,8 @@ rad_lib_ndbm() {
 
 AH_TEMPLATE(USE_DBM,[Define this to enable DBM support])
 AC_ARG_ENABLE(dbm,
-	[  --enable-dbm][[={dbm|ndbm}]][      include dbm support],
+	AC_HELP_STRING([--enable-dbm[={dbm|ndbm}]],
+	[include dbm support]),
 	[case $enableval in
 		yes)	    rad_lib_ndbm
 			    AC_DEFINE_UNQUOTED(USE_DBM,DBM_NDBM);;
@@ -494,7 +504,8 @@ AH_TEMPLATE(USE_SQL,[Enables SQL support])
 
 USE_SQL=0
 AC_ARG_WITH(mysql,
-        [  --with-mysql          Configure to work with MySQL],
+	AC_HELP_STRING([--with-mysql],
+	[Configure to work with MySQL]),
 	[case $withval in
 	 yes)   RA_CHECK_LIB(mysqlclient, mysql_real_connect, "-lm",
                             [ USE_SQL=1
@@ -509,7 +520,8 @@ AC_ARG_WITH(mysql,
         esac])
 
 AC_ARG_WITH(postgres,
-        [  --with-postgres       Configure to work with Postgres],
+	AC_HELP_STRING([--with-postgres],
+	[Configure to work with Postgres]),
 	[case $withval in
 	 yes)	RA_CHECK_LIB(pq, PQconnectStart, [],
 			    [ USE_SQL=1
@@ -544,7 +556,8 @@ RA_CHECK_LIB(iodbc, SQLAllocHandle, [],
 
 
 AC_ARG_WITH(odbc,
-	[  --with-odbc][[={odbc|iodbc}]][      Configure to work with ODBC (EXPERIMENTAL)],
+	AC_HELP_STRING([--with-odbc[={odbc|iodbc}]],
+	[Configure to work with ODBC]),
 	[case $withval in
 	 yes)			rad_lib_odbc
 		;;
@@ -572,7 +585,8 @@ AC_SUBST(SQLLIB)
 
 AH_TEMPLATE(USE_SNMP, [Define this to enable SNMP support])
 AC_ARG_ENABLE(snmp,
-[  --enable-snmp][[={yes|no|compat}]][                  enable SNMP support],
+	AC_HELP_STRING([--enable-snmp[={yes|no|compat}]],
+	[enable SNMP support]),
 	[case $enableval in
 		compat)		USE_SNMP=yes
 				AC_DEFINE(USE_SNMP)
@@ -597,7 +611,8 @@ AH_BOTTOM([
 ## **************
 PAMDIR='$(prefix)/lib/security'
 AC_ARG_WITH(pamdir,
-	[  --with-pamdir=DIR             install PAM modiles in DIR [PREFIX/lib/security]],
+	AC_HELP_STRING([--with-pamdir=DIR],
+	[install PAM modules in DIR [[PREFIX/lib/security)]]]),
 	[PAMDIR=$withval])
 AC_SUBST(PAMDIR)
 
@@ -606,7 +621,8 @@ AC_SUBST(PAMDIR)
 ## ***********************************************************************
 
 AC_ARG_ENABLE(livingston-menus,
-	[  --enable-livingston-menus	 enable Livingston-compatible menus],
+	AC_HELP_STRING([--enable-livingston-menus],
+	[enable Livingston-compatible menus]),
 	[case $enableval in
 		yes) 	AC_DEFINE(USE_LIVINGSTON_MENUS,1,
                                   [Enable support for Livingstone menus]);;
@@ -617,7 +633,8 @@ AH_TEMPLATE(DENY_SHELL,
             [When defined, users with the given shell will be always denied
              access])
 AC_ARG_ENABLE(deny_shell,
-	[  --enable-deny-shell=STRING 	 always reject users with given shell],
+	AC_HELP_STRING([--enable-deny-shell=STRING],
+	[always reject users with given shell]),
 	[case $enableval in
 		yes|no)		AC_MSG_ERROR(--enable-deny-shell requires an argument)
 				exit 1;;
@@ -626,7 +643,8 @@ AC_ARG_ENABLE(deny_shell,
 	esac])
 
 AC_ARG_ENABLE(osfc2,
-	[  --enable-osfc2	         enable OSFC2 support],
+	AC_HELP_STRING([--enable-osfc2],
+	[enable OSFC2 support]),
 	[case $enableval in
 		yes)		AC_DEFINE(OSFC2,1,
                                           [Define this to enable OSFC2 support<]);;

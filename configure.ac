@@ -259,8 +259,16 @@ AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  mkdir mktime select socket strdup strtol lockf \
  setlocale bzero \
  inet_ntoa inet_aton \
- setvbuf setegid setregid setresgid seteuid setreuid getdtablesize sigaction) 
-AC_FUNC_OBSTACK
+ setvbuf setegid setregid setresgid seteuid setreuid getdtablesize sigaction)
+
+AC_SUBST(GNU_INCLUDES)
+
+AC_CHECK_HEADER([obstack.h],
+                [AC_FUNC_OBSTACK],
+	        [AC_CONFIG_LINKS(include/radius/obstack.h:lib/obstack.h)
+                 GNU_INCLUDES="$GNU_INCLUDES obstack.h"
+                 AC_LIBOBJ(obstack)])
+
 
 AC_CHECK_DECLS([strncasecmp, strtok_r, localtime_r, asprintf, vasprintf,
 getline, crypt], , ,
@@ -331,6 +339,11 @@ AC_TRY_COMPILE([#include <argp.h>
 if test $USE_INCLUDED_ARGP = yes; then
         AC_DEFINE(WITH_INCLUDED_ARGP, 1,
                   [Define if we're using included argp])
+
+        AC_CONFIG_LINKS([include/radius/getopt.h:lib/getopt.h
+                         include/radius/argp.h:lib/argp.h])
+        GNU_INCLUDES="$GNU_INCLUDES argp.h getopt.h"
+
 	AC_LIBOBJ([argp-ba])
         AC_LIBOBJ([argp-eexst])
         AC_LIBOBJ([argp-fmtstream])
@@ -787,7 +800,8 @@ AC_OUTPUT(Makefile
           po/Makefile.in
           raddb/client.conf
           raddb/config
-          include/Makefile 
+          include/Makefile
+	  include/radius/Makefile
           include/snmp/Makefile
           lib/Makefile
           sql/Makefile

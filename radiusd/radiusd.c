@@ -1469,11 +1469,49 @@ sig_child(sig)
 /* ************************************************************************* */
 /* RADIUS request handling functions */
 
+VALUE_PAIR *
+rad_req_recode(req, prop)
+	RADIUS_REQ *req;
+	int prop;
+{
+	static int attrlist[] = { DA_USER_PASSWORD, DA_CHAP_PASSWORD };
+	int i;
+	VALUE_PAIR *newlist = NULL;
+	VALUE_PAIR *pair;
+	char password[AUTH_STRING_LEN+1];
+
+	for (pair = req->request; pair; pair = pair->next) 
+		for (i = 0; i < NITEMS(attrlist); i++) {
+			if (pair->attribute == attrlist[i]
+			    && (pair->prop & prop))
+				break;
+		}
+
+	if (!pair)
+		return NULL;
+
+	newlist = avl_dup(req->request);
+	for (pair = newlist; pair; pair = pair->next) 
+		for (i = 0; i < NITEMS(attrlist); i++) {
+			if (pair->attribute == attrlist[i]
+			    && (pair->prop & prop)) {
+				req_decrypt_password(password, req, pair);
+				string_free(pair->avp_strvalue);
+				pair->avp_strvalue = string_create(password);
+				pair->avp_strlength = strlen(pair->avp_strvalue);
+			}
+		}
+	return newlist;
+}
+
 int
 rad_req_cmp(a, b)
         RADIUS_REQ *a, *b;
 {
 	int prop = 0;
+	VALUE_PAIR *alist = NULL, *blist = NULL, *ap, *bp;
+	int rc;
+	NAS *nas;
 	
 	if (a->ipaddr != b->ipaddr || a->code != b->code)
 		return 1;
@@ -1482,24 +1520,42 @@ rad_req_cmp(a, b)
 	    && memcmp(a->vector, b->vector, sizeof(a->vector)) == 0)
 		return 0;
 
-	switch (a->code) {
-	case RT_AUTHENTICATION_REQUEST:
-	case RT_AUTHENTICATION_ACK:
-	case RT_AUTHENTICATION_REJECT:
-	case RT_ACCESS_CHALLENGE:
-		prop = auth_comp_flag;
-		break;
-	case RT_ACCOUNTING_REQUEST:
-	case RT_ACCOUNTING_RESPONSE:
-	case RT_ACCOUNTING_STATUS:
-	case RT_ACCOUNTING_MESSAGE:
-		prop = acct_comp_flag;
-		break;
-	}
-	
-	return avl_cmp(a->request, b->request, AP_REQ_CMP|prop);
-}
+	if (nas = nas_request_to_nas(a))
+		prop = envar_lookup_int(nas->args, "compare-atribute-flag", 0);
 
+	if (!prop) {
+		switch (a->code) {
+		case RT_AUTHENTICATION_REQUEST:
+		case RT_AUTHENTICATION_ACK:
+		case RT_AUTHENTICATION_REJECT:
+		case RT_ACCESS_CHALLENGE:
+			prop = auth_comp_flag;
+			break;
+		case RT_ACCOUNTING_REQUEST:
+		case RT_ACCOUNTING_RESPONSE:
+		case RT_ACCOUNTING_STATUS:
+		case RT_ACCOUNTING_MESSAGE:
+			prop = acct_comp_flag;
+			break;
+		}
+	}
+
+	if (prop == 0) 
+		return 1;
+
+	prop |= AP_REQ_CMP;
+	alist = rad_req_recode(a, prop);
+	blist = rad_req_recode(b, prop);
+
+	ap = alist ? alist : a->request;
+	bp = blist ? blist : b->request;
+	
+	rc = avl_cmp(ap, bp, prop) || avl_cmp(bp, ap, prop);
+
+	avl_free(alist);
+	avl_free(blist);
+	return rc;
+}
 
 void
 rad_req_free(req)

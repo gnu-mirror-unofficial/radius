@@ -32,7 +32,6 @@ radiusd_SOURCES = \
  radutil.c\
  rewrite.c\
  scheme.c\
- shmem.c\
  snmpserv.c\
  sql.c\
  stat.c\

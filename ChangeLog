@@ -1,3 +1,26 @@
+2001-10-19 Sergey Poznyakoff
+
+	* THANKS: Ajoute Clement Gerouville.
+	* TODO: Updated.
+
+2001-10-19 Clement Gerouville
+
+	* radiusd/radiusd.c: Un detail mise en configuration par
+	defaut de : int auth_detail = 0; Ajout de l'option -N (do-not-resolve)
+	no reverse DNS lookup.
+	Un etrange Hack de la fonction rad_spawn_child():
+	Preferons remplacer une vieille requette (REQUEST * to_replace)
+	plutot que dropper la nouvelle en attendant que le garbage-collector
+	libere de la place. On peut raisonnablement penser que la reponse a
+	ete recue par le NAS. Ameliore sensiblement le nombre de
+	requettes/secondes du serveur.
+	* radlib/iputil.c: Ajout de l'option -N (do-not-resolve)
+	Bugfix d'un potentiel probleme : 'unlinking' de la requette si
+	le fork() faille.
+	* radlib/mem.c: multiple free() dans certaines conditions (unsigned
+	char hp->s.nref == 255, hp->s.nref++ :)
+	cela est arrive en faisant un benchmark avec toujours le meme username.
+
 2001-10-18 Sergey Poznyakoff
 
 	* radlib/envar.c: New function envar_parse_argcv().

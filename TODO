@@ -1,4 +1,6 @@
 URGNT: Add \ line continuation to read_raddb_files.
+       Swap N and n options (radiusd)
+       do_not_resolve is global. Possibly could be used in radwho (-n)
 -100 : Document broken_pass flag. 
 -100 : Document Auth-Type = (Crypt-)Local, Password-Location
 -100 : Docs for Scheme- attributes and server guile interface.

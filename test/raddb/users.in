@@ -97,3 +97,24 @@ hint    Hint = "2",
 
 hint    Auth-Type = Reject
 	Reply-Message = "No suffix"
+
+## Rewrite.exp
+
+rewrite_max   NAS-Port-Id = 43,
+		Auth-Type = Accept
+	      Reply-Message = "OK"
+
+rewrite_nt    Auth-Type = Accept
+	      Reply-Message = "OK"
+
+rewrite_jetstream  Auth-Type = Accept
+	      Reply-Message = "OK"
+
+rewrite_cisco NAS-Port-Id = 123,
+		Auth-Type = Accept,
+		Acct-Session-Id = "120104",
+		Voip-Connection-ID = "1B22539E 86E6603F 0 19C974C0",
+		Voip-Call-Leg-Type = "answer",
+		Voip-Connection-Type = "Telephony"
+	      Reply-Message = "OK"
+

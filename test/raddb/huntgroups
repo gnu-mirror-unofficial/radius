@@ -1,16 +1,27 @@
-# This file defines the `huntgroups' that you have. 
-# A huntgroup is defined by specifying the IP address of the NAS and 
-# possibly a port range.
-#
-# Matching is done while RADIUS scans the user file; if it includes the 
-# selection criterium "Huntgroup-Name = XXX" the huntgroup is looked up 
-# in this file to see if it matches. If there are multiple definitions 
-# of the same huntgroup, then the first one that matches will be used.
-#
+## Huntgroups.exp
+## Allow only ports 1-4 from fourth NAS
 
-## Use the following for NASes that need packet rewriting:
-##
-#DEFAULT	NAS-IP-Address = 10.0.15.1, Rewrite-Function = "func"	NULL
-##
-## Replace 10.0.15.1 with proper IP address and func with the name of
-## function to use.
+DEFAULT NAS-IP-Address = 127.0.0.4
+	NAS-Port-Id >= 1,
+		NAS-Port-Id <= 4
+
+## Rewrite.exp
+DEFAULT NAS-IP-Address = 127.0.0.5,
+		NAS-Port-Id = 20212,
+		Rewrite-Function = "max_fixup"
+	NULL
+
+DEFAULT NAS-IP-Address = 127.0.0.5,
+		NAS-Port-Id = 2,
+		Rewrite-Function = "nt_fixup"
+	NULL
+	
+DEFAULT NAS-IP-Address = 127.0.0.5,
+		NAS-Port-Id = 3,
+		Rewrite-Function = "jetstream_fixup"
+	NULL
+
+DEFAULT NAS-IP-Address = 127.0.0.5,
+		Cisco-PRI-Circuit = "ISDN 2:D:123",
+		Rewrite-Function = "cisco_fixup"
+	NULL

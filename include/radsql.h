@@ -27,6 +27,15 @@
 #define SQL_ACCT     1
 #define SQL_NSERVICE 2
 
+#define SQL_CACHE_SIZE 16
+typedef char **SQL_TUPLE;
+
+typedef struct {
+	char *query;
+	size_t ntuples;
+	size_t nfields;
+	SQL_TUPLE *tuple;
+} SQL_RESULT;
 
 struct sql_connection {
 	int    interface;        /* One of SQLT_ values */
@@ -34,8 +43,12 @@ struct sql_connection {
         int    connected;        /* Connected to the database? */
         int    destroy_on_close; /* Should the connection be closed upon
 				    the end of a transaction */
-        time_t last_used;        /* When it was lastly used */
+        time_t last_used;        /* Time it was lastly used */
         void   *data;            /* connection-specific data */
+	
+	SQL_RESULT *cache[SQL_CACHE_SIZE];
+	size_t head;
+	size_t tail;
 };
 
 typedef struct {

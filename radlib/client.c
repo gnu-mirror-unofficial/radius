@@ -274,29 +274,17 @@ radclient_build_request(config, server, code, pair)
 		case PW_TYPE_STRING:
 			/* attrlen always < AUTH_STRING_LEN */
 			if (pair->attribute == DA_PASSWORD) {
-				char *p;
-
-				attrlen = AUTH_PASS_LEN;
-				CHECKSIZE(AUTH_PASS_LEN+2);
+				VALUE_PAIR *ppair;
+				ppair = avp_alloc();
+				encrypt_password(ppair, pair->strvalue,
+						 auth->vector, server->secret);
+				
+				attrlen = ppair->strlength;
+				CHECKSIZE(attrlen+2);
 				*ptr++ = attrlen + 2;
-				memset(passbuf, 0, attrlen);
-				memcpy(passbuf, pair->strvalue,
-				       pair->strlength < AUTH_PASS_LEN ?
-                                              pair->strlength : AUTH_PASS_LEN);
-
-				/* Calculate the MD5 Digest */
-				secretlen = strlen(server->secret);
-				strcpy(md5buf, server->secret);
-				memcpy(md5buf + secretlen, auth->vector,
-				       AUTH_VECTOR_LEN);
-				md5_calc(ptr, md5buf,
-					 secretlen + AUTH_VECTOR_LEN);
-				
-				/* Xor the password into the MD5 digest */
-				p = ptr;
-				for (i = 0; i < AUTH_PASS_LEN; i++) 
-					*p++ ^= passbuf[i];
-				
+				memcpy(ptr, ppair->strvalue, attrlen);
+				ptr += attrlen;
+				avp_free(ppair);
 			} else {
 				attrlen = pair->strlength;
 				CHECKSIZE(attrlen+2);

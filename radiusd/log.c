@@ -344,7 +344,7 @@ register_channel(Channel *chan)
                         fp = fopen(filename, "a");
                         if (!fp) {
                                 radlog(L_CRIT|L_PERROR,
-                                       _("can't access `%s'"), filename);
+                                       _("can't access log file `%s'"), filename);
                                 efree(filename);
                                 filename = estrdup("stdout");
                         } else

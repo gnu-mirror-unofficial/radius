@@ -87,7 +87,37 @@
 	    flag-verbose))
 
 (define (rad-cntl command . cmdlist)
- )
+  (case command
+    ((getpid)
+     (catch 'system-error
+       (lambda ()
+	 (let* ((pidfile (string-append
+			  radius-build-dir "/test/log/radiusd.pid"))
+		(port (open-file pidfile "r"))
+		(line (read-line port)))
+	   (close port)
+	   (if (string? line)
+	       (string->number line)
+	     #f)))
+       (lambda args #f)))
+    ((shutdown)
+     (let ((pid (rad-cntl 'getpid)))
+       (if pid
+	   (catch 'system-error
+	     (lambda ()
+	       (kill pid SIGTERM)
+	       (sleep 2)
+	       (cond
+		((rad-cntl 'getpid)
+		 (message #f
+		  "The daemon did not shut down on TERM signal. Sending KILL")
+		 (kill pid SIGKILL))))
+	     (lambda args
+	       (message #f "The daemon is not running")
+	       (exit 1)))
+	 (message #f "The daemon is not running"))))
+    (else
+     #f)))
 
 (define (remark rest)
   (rad-cntl 'remark 
@@ -172,12 +202,14 @@
 		       " -d " radius-build-dir "/test/raddb"
 		       " -l " radius-build-dir "/test/log"
 		       " -a " radius-build-dir "/test/acct"
+		       " -P " radius-build-dir "/test/log"
 		       " -i 127.0.0.1" ))
+(sleep 2) ;; Let the things settle.
 ;;; See if it is running
 (cond
  ((not (rad-cntl 'getpid))
   (error "Can't start radius daemon. Abort.")
-  (exit)))
+  (exit 1)))
 
 (define nas-ip-address "127.0.0.1")
 (define total-error-count 0)

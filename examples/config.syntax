@@ -11,6 +11,14 @@ option {
 	# Child terminates if it does not receive any requests within
 	# this number of seconds:
 	process-idle-timeout 3600;
+	# The following two statements set timeout values for the 
+	# master process I/O operations. If the master is not able
+	# to perform the I/O within the corresponding interval
+	# of time, it kills the child it was trying to communicate with
+	# and resumes further operation. The value of zero means no timeout
+	# at all (the default).
+	master-read-timeout 0;
+	master-write-timeout 0;
 	# The following specifies the uid under which external processes
 	# (those triggered by Exec-Program and Exec-Program-Wait 
 	# attributes) should be run. The corresponding gid is determined

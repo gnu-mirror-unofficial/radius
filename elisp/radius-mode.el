@@ -304,7 +304,7 @@ or indent the current line"
 		'rad-select-attr-values "value: " ?,))
 
 ;; Wrapper for rad-{next,prev}-profile functions
-;; Arguments: dir   -- seek direction, ether 1 or -1
+;; Arguments: dir   -- seek direction, either 1 or -1
 ;;            comp  -- function returning t where we should stop the search
 ;;            count -- seek for count-th profile
 (defun rad-move-to-profile (dir comp count)

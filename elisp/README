@@ -10,8 +10,8 @@ After `make install' Emacs should be able to use radius-mode and
 radconf-mode when editing appropriate configuration files. You will
 have to add the following to your .emacs or site-start file:
 
-(autoload 'radius-mode "Radius-mode")
-(autoload 'radconf-mode "Radius-Config")
+(autoload 'radius-mode "radius-mode")
+(autoload 'radconf-mode "radconf-mode")
 
 (setq radius-db-path <path-to-raddb-directory>)
 (setq auto-mode-alist (append auto-mode-alist

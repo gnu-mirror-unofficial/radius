@@ -1,3 +1,16 @@
+2002-01-09  Sergey Poznyakoff  
+
+	* raddb/Makefile.am: Fixed typo in raddb_subdirs (reported
+	  by Andrey Mironenko).
+	* radiusd/exec.c: Removed call to sig_cleanup.
+	* radiusd/radiusd.c: Fixed thread termination routines.
+	  Removed some conflicting/unneeded signal handlers.
+	  (master_process): Removed.
+	  (rad_child_cleanup): Removed.
+	* include/radiusd.h: (master_process): Removed.
+	  (sig_cleanup): Removed.
+	* radiusd/sql.c: (attach_sql_connection): Bugfix.
+
 2002-01-08  Sergey Poznyakoff  
 
 	* m4/inaddr.m4: (new) Check whether INADDR_LOOPBACK is defined.

@@ -267,6 +267,12 @@ enum auth_status {
 #define MSG_TIMESPAN_VIOLATION      7
 #define MSG_COUNT                   8
 
+typedef struct radiusd_user {
+	char *username;
+	uid_t uid;
+	gid_t gid;
+} RADIUS_USER;
+
 /*
  *      Global variables.
  */
@@ -284,7 +290,6 @@ extern size_t max_children;
 extern unsigned process_timeout;
 extern unsigned radiusd_write_timeout;
 extern unsigned radiusd_read_timeout;
-extern char *exec_user;
 extern UINT4 expiration_seconds;
 extern UINT4 warning_seconds;
 extern int use_dbm;
@@ -314,6 +319,8 @@ extern struct cfg_stmt snmp_stmt[];
 #endif
 extern int auth_comp_flag; 
 extern int acct_comp_flag; 
+extern RADIUS_USER exec_user;
+extern RADIUS_USER radiusd_user;
 
 /* Input subsystem (input.c) */
 
@@ -386,6 +393,8 @@ void radiusd_register_input_fd(char *name, int fd, void *data);
 void radiusd_close_channel(int fd);
 
 /* exec.c */
+int radius_get_user_ids(RADIUS_USER *usr, const char *name);
+int radius_switch_to_user(RADIUS_USER *usr);
 int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **, int);
 void filter_cleanup(pid_t pid, int status);
 int filter_auth(char *name, RADIUS_REQ *req, VALUE_PAIR **reply_pairs);
@@ -416,6 +425,7 @@ int logging_stmt_handler(int argc, cfg_value_t *argv, void *block_data,
 int logging_stmt_end(void *block_data, void *handler_data);
 int logging_stmt_begin(int finish, void *block_data, void *handler_data);
 void format_exit_status(char *buffer, int buflen, int status);
+int log_change_owner(RADIUS_USER *usr);
 extern struct cfg_stmt logging_stmt[];
 
 /* radius.c */

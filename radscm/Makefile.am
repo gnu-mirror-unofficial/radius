@@ -32,8 +32,14 @@ libservscm_a_SOURCES= \
  rscm_sql.c
 
 schemedir=$(pkgdatadir)/$(VERSION)/scheme
-RADSCM_PKGDATA_FILES=guile-procedures.txt gnuradius.scm radiusd.scm
-scheme_DATA=ttl.scm @RADSCM_PKGDATA@
+RADSCM_PKGDATA_FILES=\
+ guile-procedures.txt\
+ gnuradius.scm\
+ radiusd.scm\
+ ttl.scm\
+ ipalloc.scm
+
+scheme_DATA=@RADSCM_PKGDATA@
 DOT_X_FILES=\
  rscm_avl.x\
  rscm_dict.x\
@@ -46,6 +52,7 @@ DOT_X_FILES=\
  rscm_lib.x\
  radscm.x
 DOT_DOC_FILES=$(DOT_X_FILES:.x=.doc)
+RADSCM_BUILT_SOURCE_FILES=gnuradius.scm $(DOT_X_FILES) $(DOT_DOC_FILES)
 BUILT_SOURCES=@RADSCM_BUILT_SOURCES_LIST@
 EXTRA_DIST=ttl.scm ipalloc.scm radsession.in \
  gnuradius.scm gnuradius.scm.in radiusd.scm radiusd.scm.in

@@ -15,14 +15,27 @@ endif
 INCLUDES=-I$(top_srcdir)/include
 noinst_PROGRAMS=findport
 findport_SOURCES=findport.c
-SUBDIRS=raddb proxy guile dejagnu
+SUBDIRS=raddb proxy dejagnu
 noinst_SCRIPTS=test.sh
-EXTRA_DIST=test.sh.m4
-CLEANFILES=acct log raddb/config raddb/client.conf
+EXTRA_DIST=test.sh.m4 radiusd.m4 dejagnu.m4 proxy.m4
+CLEANFILES=acct log raddb/config raddb/client.conf 
 #TESTS=@TESTDIR@
 TESTS_ENVIRONMENT=BUILDDIR=$(top_builddir) SOURCEDIR=$(top_srcdir)
 
+M4_DEFINES=-DBUILDDIR=`cd $(top_builddir); pwd` \
+           -DSOURCEDIR=`cd $(top_srcdir); pwd`
+
 test.sh: $(srcdir)/test.sh.m4
-	$(M4) -DBUILDDIR=`cd $(top_builddir); pwd` \
-              -DSOURCEDIR=`cd $(top_srcdir); pwd` $? > $@
+	$(M4) $(M4_DEFINES) $? > $@
 	chmod 755 $@
+
+radiusd-stamp: $(srcdir)/dejagnu.m4 $(srcdir)/radiusd.m4
+	$(M4) $(M4_DEFINES) $(srcdir)/dejagnu.m4 $(srcdir)/radiusd.m4|$(SHELL)
+	touch radiusd-stamp
+
+proxy-stamp: $(srcdir)/dejagnu.m4 $(srcdir)/proxy.m4
+	$(M4) $(M4_DEFINES) $(srcdir)/dejagnu.m4 $(srcdir)/proxy.m4|$(SHELL)
+	touch proxy-stamp
+
+
+all: test.sh radiusd-stamp proxy-stamp

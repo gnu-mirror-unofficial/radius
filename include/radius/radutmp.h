@@ -25,6 +25,8 @@
 #define P_LOGIN         1
 #define P_NAS_START     128
 #define P_NAS_SHUTDOWN  129
+#define P_ACCT_DISABLED 130
+#define P_ACCT_ENABLED  131
 
 #define RUT_NAMESIZE 32
 #define RUT_IDSIZE 16

@@ -28,7 +28,14 @@
 #include <sysdep.h>
 
 #ifdef LEAK_DETECTOR
-# define EXTRA sizeof(unsigned)
+typedef union mem_header MHDR;
+union mem_header {
+	struct {
+		size_t size;
+	} s;
+	Align_t align;
+};
+# define EXTRA sizeof(MHDR)
 struct mallocstat mallocstat;
 #else
 # define EXTRA 0	
@@ -46,15 +53,47 @@ xmalloc(size)
 	
 	if (p) {
 #ifdef LEAK_DETECTOR
+		MHDR *mhdr;
+		
 		mallocstat.size += size;
 		mallocstat.count++;
-		
-		*(unsigned *)p = size;
+
+		mhdr = (MHDR*)p;
+		mhdr->s.size = size;
 		p += EXTRA;
 #endif
 		bzero(p, size);
 	}
 	return p;
+}
+
+void *
+xrealloc(ptr, size)
+	void *ptr;
+	size_t size;
+{
+	if (!ptr)
+		return xmalloc(size);
+	else {
+#ifdef LEAK_DETECTOR
+		MHDR *mhdr;
+		size_t osize;
+		
+		mhdr = (MHDR*)((char*)ptr - EXTRA);
+		osize = mhdr->s.size;
+
+		ptr = realloc(mhdr, size + EXTRA);
+		if (ptr) {
+			mhdr = (MHDR*)ptr;
+			mhdr->s.size = size;
+			mallocstat.size += size - osize;
+			ptr = (char*)ptr + EXTRA;
+		}
+#else
+		ptr = realloc(ptr, size);
+#endif
+	}
+	return ptr;
 }
 
 void *
@@ -71,13 +110,25 @@ emalloc(size)
 	return p;
 }
 
+void *
+erealloc(ptr, size)
+	void *ptr;
+	size_t size;
+{
+	ptr = xrealloc(ptr, size);
+	if (!ptr) {
+		radlog(L_CRIT, _("low core: aborting"));
+		abort();
+	} 
+	return ptr;
+}
 
 void 
 efree(ptr)
 	void *ptr;
 {
 #ifdef LEAK_DETECTOR
-	unsigned size;
+	MHDR *mhdr;
 #endif
 
 	if (!ptr)
@@ -85,12 +136,12 @@ efree(ptr)
 
 #ifdef LEAK_DETECTOR
 	ptr = (char*)ptr - EXTRA;
-	size = *(unsigned*)ptr;
+	mhdr = (MHDR*)ptr;
 
-        mallocstat.size -= size;
+        mallocstat.size -= mhdr->s.size;
 	mallocstat.count--;
 	
-	debug(10, ("free(%p) %d bytes", ptr, size));
+	debug(10, ("free(%p) %d bytes", mhdr, mhdr->s.size));
 #else
 	debug(10, ("free(%p)", ptr));
 #endif

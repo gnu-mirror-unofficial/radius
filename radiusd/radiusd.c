@@ -790,6 +790,7 @@ reread_config(reload)
                 radlog(L_INFO, _("Reloading configuration files."));
                 rad_flush_queues();
                 socket_list_close(socket_first);
+		socket_first = NULL;
         }
 
 #ifdef USE_SNMP
@@ -913,7 +914,7 @@ check_reload()
                 }
                 saved_status = server_stat.auth.status;
         }
-#endif          
+#endif
 }       
 
 /* ************************************************************************* */
@@ -1347,7 +1348,7 @@ socket_list_select(list, tv)
         fd_set readfds;
         struct socket_list *ctl;
         int max_fd = 0;
-	
+
         FD_ZERO(&readfds);
         for (ctl = list; ctl; ctl = ctl->next) {
                 FD_SET(ctl->fd, &readfds);

@@ -10,12 +10,12 @@ This utility is a shell program that determines the user's
 framed IP and runs @command{ping} on that address.
 
 @subheading Syntax
-@example
+@smallexample
 @group
 radping @var{username}
 radping -c @var{calling-station-id}
 @end group
-@end example
+@end smallexample
 
 The second way of invoking the program allows one to use the calling station
 @sc{id} to indicate the user.

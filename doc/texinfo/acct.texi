@@ -65,7 +65,7 @@ The accounting detail files consist of a record for each accounting
 request. A record includes the timestamp and detailed
 dump of attributes from the packet, e.g.:
 
-@example
+@smallexample
 Fri Dec 15 18:00:24 2000
         Acct-Session-Id = "2193976896017"
         User-Name = "e2"
@@ -97,7 +97,7 @@ Fri Dec 15 18:32:09 2000
         Acct-Delay-Time = 0
         Timestamp = 976897929
         Request-Authenticator = Unverified
-@end example
+@end smallexample
 
 @comment *L2****************************************************************
 @node SQL Accounting
@@ -136,9 +136,9 @@ To use a Guile procedure for accounting, the name of the procedure
 must be specified as a value to the @attr{Scheme-Acct-Procedure} attribute
 in the @RHS{} list of a @file{hints} entry, e.g.:
 
-@example
+@smallexample
 DEFAULT NULL Scheme-Acct-Procedure = "my-acct"
-@end example
+@end smallexample
 @noindent
 
 For a detailed description of Scheme accounting procedures,
@@ -149,9 +149,9 @@ an external program. This is less effective than the methods described
 above, but may be necessary sometimes. To invoke the program, use
 the following statement in the @LHS{} of the @file{hints} entry:
 
-@example
+@smallexample
 Acct-Ext-Program = "@var{progname} @var{args}"
-@end example
+@end smallexample
 
 The @var{progname} must be the full path to the program, and @var{args}
 any arguments it needs. The usual substitutions may be used in

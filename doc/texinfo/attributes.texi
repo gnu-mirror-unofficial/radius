@@ -208,7 +208,7 @@ distribution.
 
 @defattr{Service-Type,6,integer,LR,-R,LR,Replace,Yes}
 
-@example
+@smallexample
 VALUE      Service-Type      Login-User           1       
 VALUE      Service-Type      Framed-User          2       
 VALUE      Service-Type      Callback-Login-User  3       
@@ -218,7 +218,7 @@ VALUE      Service-Type      Administrative-User  6
 VALUE      Service-Type      NAS-Prompt-User      7       
 VALUE      Service-Type      Authenticate-Only    8       
 VALUE      Service-Type      Call-Check           10      
-@end example
+@end smallexample
 
 This attribute indicates the type of service the user has
 requested, or the type of service to be provided.  It may be used
@@ -279,10 +279,10 @@ prompt on the @NAS{}, from which nonprivileged commands can be executed.
 
 @defattr{Framed-Protocol,7,integer,LR,-R,LR,Replace,Yes}
 
-@example
+@smallexample
 VALUE      Framed-Protocol   PPP                  1       
 VALUE      Framed-Protocol   SLIP                 2       
-@end example
+@end smallexample
 
 This attribute indicates the framing to be used for framed access.
 It may be used in both Access-Request and Access-Accept packets.
@@ -314,9 +314,9 @@ optionally be followed by a plus sign. This usage means that
 the value of @attr{NAS-Port-Id} must be added to this IP before
 replying. For example,
 
-@example
+@smallexample
         Framed-IP-Address = 10.10.0.1+
-@end example
+@end smallexample
 
 See also @ref{Add-Port-To-IP-Address}.
 
@@ -341,12 +341,12 @@ netmask, but the server is not required to honor the hint.
 
 @defattr{Framed-Routing,10,integer,-R,-R,-R,Replace,No}
 
-@example
+@smallexample
 VALUE      Framed-Routing    None                 0       
 VALUE      Framed-Routing    Broadcast            1       
 VALUE      Framed-Routing    Listen               2       
 VALUE      Framed-Routing    Broadcast-Listen     3       
-@end example
+@end smallexample
 
 This attribute indicates the routing method for the user when the
 user is a router to a network.  It is only used in Access-Accept
@@ -371,10 +371,10 @@ means (such as PPP).  It is only used in Access-Accept packets.
 
 @defattr{Framed-Compression,13,integer,LR,-R,LR,Replace,Yes}
 
-@example
+@smallexample
 VALUE      Framed-Compression  None                 0       
 VALUE      Framed-Compression  Van-Jacobson-TCP-IP  1       
-@end example
+@end smallexample
 
 This attribute indicates a compression protocol to be used for the
 link.  It may be used in Access-Accept packets.  It may be used in
@@ -519,10 +519,10 @@ in an Access-Accept or Access-Challenge.
 
 @defattr{Termination-Action,29,integer,LR,-R,-R,Replace,No}
 
-@example
+@smallexample
 VALUE      Termination-Action  Default              0       
 VALUE      Termination-Action  RADIUS-Request       1       
-@end example
+@end smallexample
 
 This attribute indicates what action the @NAS{} should take when the
 specified service is completed.  It is only used in Access-Accept
@@ -574,13 +574,13 @@ Access-Request packet.
 
 @defattr{NAS-Port-Type,61,integer,--,--,--,Append,No}
 
-@example
+@smallexample
 VALUE      NAS-Port-Type     Async                0       
 VALUE      NAS-Port-Type     Sync                 1       
 VALUE      NAS-Port-Type     ISDN                 2       
 VALUE      NAS-Port-Type     ISDN-V120            3       
 VALUE      NAS-Port-Type     ISDN-V110            4       
-@end example
+@end smallexample
 
 This attribute indicates the type of the physical port of the @NAS{}
 that is authenticating the user.  It can be used instead of or in
@@ -617,13 +617,13 @@ These attributes can not be used in matching rules.
 
 @defattr{Acct-Status-Type,40,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
 
-@example
+@smallexample
 VALUE    Acct-Status-Type    Start              1
 VALUE    Acct-Status-Type    Stop               2 
 VALUE    Acct-Status-Type    Alive              3
 VALUE    Acct-Status-Type    Accounting-On      7
 VALUE    Acct-Status-Type    Accounting-Off     8
-@end example
+@end smallexample
 
 This attribute indicates whether this Accounting-Request marks the
 beginning of the user service (@code{Start}) or the end (@code{Stop}).
@@ -697,11 +697,11 @@ packets for that session.
 
 @defattr{Acct-Authentic,45,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
 
-@example
+@smallexample
 VALUE           Acct-Authentic          RADIUS          1
 VALUE           Acct-Authentic          Local           2
 VALUE           Acct-Authentic          Remote          3
-@end example
+@end smallexample
 
 This attribute may be included in an Accounting-Request to
 indicate how the user was authenticated, whether by Radius, the
@@ -751,7 +751,7 @@ and can only be present in Accounting-Request records where
 
 @defattr{Acct-Terminate-Cause,49,integer,--,--,--,@acronym{N/A},@acronym{N/A}}
 
-@example
+@smallexample
 VALUE    Acct-Terminate-Cause    User-Request            1
 VALUE    Acct-Terminate-Cause    Lost-Carrier            2
 VALUE    Acct-Terminate-Cause    Lost-Service            3
@@ -770,7 +770,7 @@ VALUE    Acct-Terminate-Cause    Service-Unavailable     15
 VALUE    Acct-Terminate-Cause    Callback                16
 VALUE    Acct-Terminate-Cause    User-Error              17
 VALUE    Acct-Terminate-Cause    Host-Request            18
-@end example
+@end smallexample
 
 This attribute indicates how the session was terminated, and can
 only be present in Accounting-Request records where
@@ -820,7 +820,7 @@ used in matching rules.
 
 @defattr{Auth-Type,1000,integer,L-,-R,-R,Append,No}
 
-@example
+@smallexample
 VALUE      Auth-Type         Local                0       
 VALUE      Auth-Type         System               1       
 VALUE      Auth-Type         Crypt-Local          3       
@@ -828,7 +828,7 @@ VALUE      Auth-Type         Reject               4
 VALUE      Auth-Type         SQL                  252     
 VALUE      Auth-Type         Pam                  253     
 VALUE      Auth-Type         Accept               254     
-@end example
+@end smallexample
 
 This attribute tells the server which type of authentication
 to apply to a particular user. It can be used in the @LHS{} of
@@ -931,10 +931,10 @@ of the @file{users} or @file{hints} file.
 
 For example, if the @file{users} file contained
 
-@example
+@smallexample
 DEFAULT Prefix = "U", Auth-Type = System
                 Service-Type = Login-User
-@end example
+@end smallexample
 
 @noindent
 then the user names @samp{Ugray} and @samp{Uyoda} would match this record,
@@ -961,12 +961,12 @@ of the @file{users} or @file{hints} file.
 
 For example, if the @file{users} file contained
 
-@example
+@smallexample
 DEFAULT Suffix = ".ppp", Auth-Type = System,
                 Strip-User-Name = Yes
         Service-Type = Framed-User,
                 Framed-Protocol = PPP        
-@end example
+@end smallexample
 
 @noindent
 then the user names @samp{gray.ppp} and @samp{yoda.ppp} would match this record,
@@ -1024,30 +1024,30 @@ huntgroup pairs.
 For example, suppose that the authentication request contains the
 following attributes:
 
-@example
+@smallexample
 User-Name = "john",
 User-Password = "guess",
 NAS-IP-Address = 10.11.11.1,
 NAS-Port-Id = 24
-@end example
+@end smallexample
 
 @noindent
 Let us further suppose that the @file{users} file contains the following
 entry:
 
-@example
+@smallexample
 john    Huntgroup-Name = "users_group",
                 Auth-Type = System
         Service-Type = Login
-@end example
+@end smallexample
 
 @noindent
 and, finally, @file{huntgroups} contains the following entry:
 
-@example
+@smallexample
 users_group     NAS-IP-Address = 10.11.11.1
                 NAS-Port-Id < 32
-@end example
+@end smallexample
 
 @noindent
 Then the authentication request will succeed, since it contains
@@ -1075,10 +1075,10 @@ number of times, any further attempts to log in are rejected.
 
 @defattr{Strip-User-Name,1035,integer,LR,LR,-R,Append,No}
 
-@example
+@smallexample
 VALUE      Strip-User-Name   No                   0       
 VALUE      Strip-User-Name   Yes                  1       
-@end example
+@end smallexample
 
 The value of @attr{Strip-User-Name} indicates whether Radius should
 strip any prefixes/suffixes specified in the user's profile from the
@@ -1092,7 +1092,7 @@ consistent.
 
 For example, let's suppose the @file{users} file contains
 
-@example
+@smallexample
 DEFAULT Suffix = ".ppp",
                 Strip-User-Name = Yes,
                 Auth-Type = SQL
@@ -1104,7 +1104,7 @@ DEFAULT Suffix = ".slip",
                 Auth-Type = SQL
         Service-Type = Framed-User,
                 Framed-Protocol = SLIP
-@end example
+@end smallexample
 
 @noindent
 Now, user @samp{johns}, having a valid account in the @sc{sql} database,
@@ -1122,10 +1122,10 @@ under her real user name @samp{johns}.
 
 @defattr{Fall-Through,1036,integer,LR,LR,--,Append,No}
 
-@example
+@smallexample
 VALUE      Fall-Through      No                   0       
 VALUE      Fall-Through      Yes                  1       
-@end example
+@end smallexample
 
 The @attr{Fall-Through} attribute should be used in the reply list.
 If its value is set to @code{Yes} in a particular record, that
@@ -1136,7 +1136,7 @@ default values for several profiles.
 Consider the following example. Let's suppose the @file{users} file
 contains the following:
 
-@example
+@smallexample
 
 johns   Auth-Type = SQL
                 Framed-IP-Address = 11.10.10.251,
@@ -1150,7 +1150,7 @@ DEFAULT NAS-IP-Address = 11.10.10.1
         Service-Type = Framed-User,
                 Framed-Protocol = PPP
 
-@end example
+@end smallexample
 
 @noindent
 Then after successful matching of a particular user's record,
@@ -1159,20 +1159,20 @@ which will add its @RHS{} to the reply pairs for
 this request. The effect is that, if user @samp{johns} authenticates
 successfully she gets the following reply pairs:
 
-@example
+@smallexample
         Service-Type = Framed-User,
         Framed-Protocol = PPP,  
         Framed-IP-Address = 11.10.10.251
-@end example
+@end smallexample
 
 @noindent
 whereas user @code{smith} gets
 
-@example
+@smallexample
         Service-Type = Framed-User,
         Framed-Protocol = PPP,  
         Framed-IP-Address = 11.10.10.252
-@end example
+@end smallexample
 
 @noindent
 Note that the attribute @attr{Fall-Through} itself
@@ -1185,10 +1185,10 @@ is never returned to the @NAS{}.
 
 @defattr{Add-Port-To-IP-Address,1037,integer,-R,-R,--,Replace,No}
 
-@example
+@smallexample
 VALUE      Add-Port-To-IP-Address  No                   0       
 VALUE      Add-Port-To-IP-Address  Yes                  1       
-@end example
+@end smallexample
 
 If this attribute is present in the @RHS{} and has the value
 @code{Yes}, then the value of the @attr{NAS-Port-Id} attribute from
@@ -1203,16 +1203,16 @@ This attribute is implicitly added to the @RHS{} when the
 value of a @attr{Framed-IP-Address} attribute ends with @samp{+}
 sign. For example,
 
-@example
+@smallexample
         Framed-IP-Address = 10.10.0.1+
-@end example
+@end smallexample
 @noindent
 is equivalent to
 
-@example
+@smallexample
         Framed-IP-Address = 10.10.0.1,
         Add-Port-To-IP-Address = Yes
-@end example
+@end smallexample
 
 @comment **************************************************************
 @node Exec-Program
@@ -1240,13 +1240,13 @@ The daemon does not wait for the process to terminate.
 
 Suppose the @file{users} file contains the following entry:
 
-@example
+@smallexample
 DEFAULT Auth-Type = System,
                 Simultaneous-Use = 1
         Exec-Program = "/usr/local/sbin/logauth \
                         %C@{User-Name@} \
                         %C@{Calling-Station-Id@}"
-@end example
+@end smallexample
 
 @noindent
 Then, upon successful matching, the program
@@ -1299,13 +1299,13 @@ thus obtained are added to the entry's reply attributes.
 
 Suppose the @file{users} file contains the following entry:
 
-@example
+@smallexample
 DEFAULT Auth-Type = System,
                 Simultaneous-Use = 1
         Exec-Program-Wait = "/usr/local/sbin/telauth \
                              %C@{User-Name@} \
                              %C@{Calling-Station-Id@}"
-@end example
+@end smallexample
 
 @noindent
 Then, upon successful matching, the program
@@ -1316,7 +1316,7 @@ attributes from the request pairs.
 The @file{/usr/local/sbin/telauth} can, for example, contain the
 following:
 
-@example
+@smallexample
 #! /bin/sh
 
 DB=/var/db/userlist
@@ -1330,7 +1330,7 @@ else
           \"You are not authorized to log in\""
     exit 1
 fi
-@end example
+@end smallexample
 
 @noindent
 It is assumed that @file{/var/db/userlist} contains a list of
@@ -1350,11 +1350,11 @@ declared in @file{raddb/config} (@pxref{filters}).
 @subheading Example.
 Let the @file{users} file contain the following entry:
 
-@example
+@smallexample
 DEFAULT Auth-Type = System,
                 Simultaneous-Use = 1
         Exec-Program-Wait = "|myfilter"
-@end example
+@end smallexample
 
 @noindent
 and let the @file{raddb/config} contain the following 
@@ -1362,7 +1362,7 @@ and let the @file{raddb/config} contain the following
 split on two lines to fit the page width. It must occupy a @emph{single line}
 in the real configuration file.}:
 
-@example
+@smallexample
 filters @{
     filter myfilter @{
         exec-path "/usr/libexec/myfilter";
@@ -1374,7 +1374,7 @@ filters @{
         @};
     @};        
 @};                        
-@end example
+@end smallexample
 @noindent
 Then, upon successful authentication, the program
 @command{/usr/libexec/myfilter} will be invoked, if it hasn't already been
@@ -1387,7 +1387,7 @@ program.
 The following is a sample @command{/usr/libexec/myfilter} written
 in the shell:
 
-@example
+@smallexample
 #! /bin/sh
 
 DB=/var/db/userlist
@@ -1401,7 +1401,7 @@ do
               \"You are not authorized to log in\""
     fi
 done
-@end example
+@end smallexample
 
 @comment **************************************************************
 @node Acct-Ext-Program
@@ -1442,21 +1442,21 @@ depending on the hint (@pxref{hints file}).
 
 Let the @file{hints} file contain
 
-@example
+@smallexample
 DEFAULT         Prefix = "S", Strip-User-Name = No
                 Hint = "SLIP"
-@end example
+@end smallexample
 
 @noindent
 and the @file{users} file contain
 
-@example
+@smallexample
 DEFAULT Hint = "SLIP",
                 NAS-IP-Address = 11.10.10.12,
                 Auth-Type = System
         Service-Type = Framed-User,
                 Framed-Protocol = SLIP
-@end example
+@end smallexample
 
 @noindent
 
@@ -1473,9 +1473,9 @@ starts with @samp{S}.
 
 The @attr{Pam-Auth} attribute can be used in conjunction with
 
-@example
+@smallexample
 Auth-Type = Pam
-@end example
+@end smallexample
 
 @noindent
 to supply the PAM service name instead of the default @samp{radius}.
@@ -1545,10 +1545,10 @@ any day.
 
 @defattr{Replace-User-Name,2001,string,LR,LR,--,Append,No}
 
-@example
+@smallexample
 VALUE      Replace-User-Name  No                   0       
 VALUE      Replace-User-Name  Yes                  1       
-@end example
+@end smallexample
 
 Use this attribute to modify the user name from the incoming packet. The
 @attr{Replace-User-Name} can reference any attributes from both @LHS{}
@@ -1556,14 +1556,14 @@ and @RHS{} pairlists using attribute macros (@ref{Macro Substitution}).
 
 For example, the @file{users} entry
 
-@example
+@smallexample
 guest   NAS-IP-Address = 11.10.10.11,
                 Calling-Station-Id != ""
                 Auth-Type = Accept
         Replace-User-Name = "guest#%C@{Calling-Station-Id@}",
                 Service-Type = Framed-User,
                 Framed-Protocol = PPP
-@end example
+@end smallexample
 
 @noindent
 allows the use of PPP service for user name @code{guest}, coming from @NAS{}
@@ -1586,9 +1586,9 @@ the @file{hints} or @file{huntgroups} configuration file.
 
 The corresponding function should be defined in @file{rewrite} as
 
-@example
+@smallexample
 integer @var{name}()
-@end example
+@end smallexample
 
 @noindent
 i.e., it should return an integer value and should not take any arguments.
@@ -1616,7 +1616,7 @@ profile if the target profile matches the incoming request.
 
 For example:
 
-@example
+@smallexample
 IPPOOL  NAS-IP-Address = 10.10.10.1
                 Framed-Protocol = PPP,
                 Framed-IP-Address = "10.10.10.2"
@@ -1628,7 +1628,7 @@ IPPOOL  NAS-IP-Address = 10.10.11.1
 guest   Auth-Type = SQL
                 Service-Type = Framed-User,
         Match-Profile = IPPOOL
-@end example
+@end smallexample
 
 In this example, when user @code{guest} comes from @NAS{}
 @code{10.10.10.1}, he is
@@ -1662,13 +1662,13 @@ information about how to write Scheme accounting procedures.
 
 @defattr{Log-Mode-Mask,2007,integer,L-,-R,-R,Append,@acronym{N/A}}
 
-@example
+@smallexample
 VALUE		Log-Mode-Mask		Log-Auth		1
 VALUE		Log-Mode-Mask		Log-Auth-Pass		2
 VALUE		Log-Mode-Mask		Log-Failed-Pass		4
 VALUE		Log-Mode-Mask		Log-Pass		6
 VALUE		Log-Mode-Mask		Log-All			7
-@end example
+@end smallexample
 
 @attr{Log-Mode-Mask} is used to control the verbosity of authentication
 log messages for given user or class of users. The meaning of its
@@ -1699,12 +1699,12 @@ mode. The value thus obtained is used as effective log mode.
 
 @defattr{Acct-Type,2003,integer,L-,-R,-R,Append,@acronym{N/A}}
 
-@example
+@smallexample
 VALUE		Acct-Type		None	0
 VALUE		Acct-Type		System	1
 VALUE		Acct-Type		Detail	2
 VALUE		Acct-Type		SQL	3
-@end example
+@end smallexample
 
 The @attr{Acct-Type} allows one to control which accounting methods
 must be used for a given user or group of users. In the absence

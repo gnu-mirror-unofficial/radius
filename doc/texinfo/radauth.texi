@@ -10,9 +10,9 @@ The @command{radauth} utility sends the Radius server an Access-Request
 packet and displays the result it gets. It can be used to test the
 configuration files. The usage is
 
-@example
+@smallexample
 radauth [-v] username password
-@end example
+@end smallexample
 
 The @option{-v} or @option{--verbose} option forces @command{radauth} to be
 verbose on output.

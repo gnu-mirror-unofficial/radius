@@ -88,10 +88,10 @@ behavior of the @command{fingerd(8)} utility. Use this option if starting
 split on two lines to fit the page width. It must occupy a
 @emph{single line} in the real configuration file.}:
 
-@example
+@smallexample
 finger stream tcp nowait nobody /usr/sbin/radwho
 radwho -fL
-@end example
+@end smallexample
 
 @noindent
 This mode is also enabled by default if @command{radwho} notices that its
@@ -279,12 +279,12 @@ the connection was initiated, @NAS{} IP, and assigned framed IP. This
 corresponds to the following format specification (split in several
 lines for readability:
 
-@example
+@smallexample
 (login 10 Login) (gecos 17 Name) \
 (protocol 5 Proto) (nas-port 5 TTY) \
 (time 9 When) (nas-address 9 From) \
 (framed-address 16 Location)
-@end example
+@end smallexample
 
 @item sid
 The same as @samp{default}, except that the session ID is output in
@@ -298,19 +298,19 @@ the second column.
 Outputs all information from each @file{radutmp} record. It is
 equivalent to specifying the following format string:
 
-@example
+@smallexample
 (login 32 Login) (session-id 32 SID) \
 (protocol 5 Proto) (nas-port 5 Port) \
 (time 27 Date) (nas-address 32 NAS) \
 (clid 17 CLID) (duration 7 Duration) \
 (framed-address 16 Location) (realm 16 Realm)
-@end example
+@end smallexample
 
 @item gnu
 Each @file{radutmp} record is represented as a table. It is
 equivalent to specifying the following format string:
 
-@example
+@smallexample
 User: (login)(newline)\
 In real life: (gecos)(newline)\
 Logged in: (time)(newline)\
@@ -322,7 +322,7 @@ Session ID: (session-id)(newline)\
 Uptime: (duration)(newline)\
 Assigned IP: (framed-address)(newline)\
 Realm: (realm)(newline)"
-@end example
+@end smallexample
 
 @end table
 

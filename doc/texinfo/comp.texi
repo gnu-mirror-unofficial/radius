@@ -62,9 +62,9 @@ of attribute property flags.
 To enable the extended comparison for authentication requests,
 add to your @code{auth} block the statement
 
-@example
+@smallexample
         compare-attribute-flag @var{flag};
-@end example
+@end smallexample
 
 The @var{flag} is the same symbol you used in the dictionary to mark
 comparable attributes for authentication.
@@ -79,9 +79,9 @@ selected @NAS{}es, declare extended comparison flags in
 Add the following statement to the declaration of those @NAS{}es,
 that require using the extended comparison (in flags column):
 
-@example
+@smallexample
         compare-auth-flag=@var{flag},compare-acct-flag=@var{flag}
-@end example
+@end smallexample
 
 @noindent
 @xref{naslist file}, for a description of naslist file syntax.
@@ -103,7 +103,7 @@ the accounting comparable attributes.
 
 @subheading @file{raddb/dictionary}
 
-@example
+@smallexample
 ATTRIBUTE       User-Name               1       string  - [LR-RLR]12
 ATTRIBUTE       Password                2       string  - [L-----]1
 ATTRIBUTE       NAS-Port-Id             5       integer - [LR-RLR]12
@@ -113,11 +113,11 @@ ATTRIBUTE       Calling-Station-Id      31      string  - [L--RLR]12
 ATTRIBUTE       Acct-Status-Type        40      integer - []2
 ATTRIBUTE       Acct-Session-Id         44      string  - []2
 ATTRIBUTE       Acct-Session-Time       46      integer - []2
-@end example
+@end smallexample
 
 @subheading @file{raddb/config}
 
-@example
+@smallexample
         auth @{
         	max-requests 127;
                 request-cleanup-delay 2;
@@ -128,7 +128,7 @@ ATTRIBUTE       Acct-Session-Time       46      integer - []2
                 request-cleanup-delay 2;
                 compare-attribute-flag 2;
         @};                
-@end example
+@end smallexample
 
 @node Comparable Attributes                      
 @subsection List of attributes that can be declared comparable.
@@ -186,9 +186,9 @@ to find out where these values are configured.
 
 In general, these parameters must satisfy the following relation:
 
-@example
+@smallexample
      request-cleanup-delay + @var{const} = Nretries * Ntimeout
-@end example
+@end smallexample
 
 @noindent
 where @var{const} is an empirical constant that depends on the
@@ -197,22 +197,22 @@ between 0 and 10 seconds.
 
 For example, if the configuration of your @NAS{} sets
 
-@example
+@smallexample
    Nretries = 3
    Ntimeout = 10
-@end example
+@end smallexample
 
 @noindent
 then your raddb/config should contain:
 
-@example
+@smallexample
 auth @{ 
         request-cleanup-delay 40;
 @};
 acct @{ 
         request-cleanup-delay 40;
 @};
-@end example
+@end smallexample
 
 Notice the duplication of @code{request-cleanup-delay}:
 @command{radiusd} uses distinct values for authentication

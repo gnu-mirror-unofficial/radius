@@ -21,9 +21,9 @@ to the first @math{N} characters, in which case the first matching module is
 selected. Several such specifications can be specified, in which case
 they should be separated by commas. For example, the following is a
 valid debug specification:
-@example
+@smallexample
         proxy.c=10,files.c,config.y=1
-@end example
+@end smallexample
 
 @noindent
 It sets debug level 10 for module @code{proxy.c}, 100 for

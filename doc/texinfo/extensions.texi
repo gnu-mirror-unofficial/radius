@@ -52,7 +52,7 @@ database and @code{1} otherwise. Let's suppose for the sake of example
 that the database is a plaintext file and the filter is written in
 a shell programming language. Then it will look like
 
-@example
+@smallexample
 #! /bin/sh
 
 DB=/var/db/userlist
@@ -65,14 +65,14 @@ do
         echo "1"
     fi
 done
-@end example
+@end smallexample
 
 @node Declaring the Filter
 @subsection Declaring the Filter
 
 Here is how this filter is declared in the @file{raddb/config} file:
 
-@example
+@smallexample
 filters @{
     filter check_clid @{
         exec-path "/usr/libexec/myfilter";
@@ -84,7 +84,7 @@ filters @{
         @};
     @};        
 @};                        
-@end example	
+@end smallexample	
 
 Let's analyze this declaration line by line:
 
@@ -132,11 +132,11 @@ To invoke this filter from the user profile, specify its name prefixed
 with @samp{|} in the value of @attr{Exec-Program-Wait} attribute,
 like this:
 
-@example
+@smallexample
 DEFAULT Auth-Type = System,
                 Simultaneous-Use = 1
         Exec-Program-Wait = "|check_clid"
-@end example
+@end smallexample
 
 @node Adding Reply Attributes
 @subsection Adding Reply Attributes
@@ -144,7 +144,7 @@ DEFAULT Auth-Type = System,
 Apart from simply deciding whether to authenticate a user, the filter
 can also modify the reply pairs. 
 
-@example
+@smallexample
 #! /bin/sh
 
 DB=/var/db/userlist
@@ -158,7 +158,7 @@ do
               \"You are not authorized to log in\""
     fi
 done
-@end example
+@end smallexample
 
 @node Accounting Filters
 @subsection Accounting Filters
@@ -172,7 +172,7 @@ requests will contain a timestamp.
 
 Now, our filter program will look as follows:
 
-@example
+@smallexample
 #! /bin/sh
 
 AUTH_DB=/var/db/userlist
@@ -192,11 +192,11 @@ do
     acct)
         echo "$CODE $NAME $CLID $DATE" >> $ACCT_DB
 done
-@end example
+@end smallexample
 
 Its declaration in the @file{raddb/config} will also change:
 
-@example
+@smallexample
 filter check_clid @{
     exec-path "/usr/libexec/myfilter";
     error-log "myfilter.log";
@@ -211,7 +211,7 @@ filter check_clid @{
         wait-reply no;
     @};
 @};        
-@end example
+@end smallexample
 
 @noindent
 (The @code{input-format} lines are split for readability. Each of them
@@ -228,10 +228,10 @@ To invoke the accounting filter, specify its name prefixed with a
 vertical bar character as a value of @attr{Acct-Ext-Program} in our
 @file{raddb/hints} file. For example:
 
-@example
+@smallexample
 DEFAULT NULL
         Acct-Ext-Program = "|check_clid:
-@end example        
+@end smallexample        
 
 @comment *L1****************************************************************
 @node Rewrite
@@ -274,7 +274,7 @@ which are accessible to Rewrite functions via the special notation
 
 As an example, let's consider the following Rewrite function:
 
-@example
+@smallexample
 @group
 string
 foo(integer i)
@@ -287,7 +287,7 @@ foo(integer i)
     return "the number is " + rc;
 @}
 @end group
-@end example
+@end smallexample
 
 @noindent
 The function takes an integer argument and returns the string
@@ -299,7 +299,7 @@ such operation is the concatenation of operands.
 Another example is a function that adds a prefix to the @attr{User-Name}
 attribute:
 
-@example
+@smallexample
 @group
 integer
 px_add()
@@ -308,7 +308,7 @@ px_add()
         return 0;
 @}
 @end group
-@end example
+@end smallexample
 
 @noindent
 This function manipulates the contents of the incoming request; its
@@ -372,12 +372,12 @@ to be invoked when the incoming request matches the huntgroup
 invoked for each packet from the @NAS{} @code{10.10.10.11}, the
 following huntgroup rule may be used:
 
-@example
+@smallexample
 @group
 DEFAULT  NAS-IP-Address = 11.10.10.11
          Rewrite-Function = "fixup"
 @end group
-@end example
+@end smallexample
 
 The @attr{Rewrite-Function} attribute may also be used in a @file{hints}
 rule. In this case, it will invoke the function if the request matches
@@ -385,12 +385,12 @@ the rule (@pxref{Hints}). For example, this @file{hints} rule will
 cause the function to be invoked for each request containing the user name
 starting with @samp{P}:
 
-@example
+@smallexample
 @group
 DEFAULT  Prefix = "P"
          Rewrite-Function = "fixup"
 @end group
-@end example
+@end smallexample
 
 @noindent
 Note that in both cases the attribute can be used
@@ -399,13 +399,13 @@ either in @LHS{} or in @RHS{} pairs of a rule.
 The packet rewrite function must be declared as having no arguments
 and returning an integer value:
 
-@example
+@smallexample
 @group
 integer fixup()
 @{
 @}
 @end group
-@end example
+@end smallexample
 
 @noindent
 The actual return value from such a function is ignored, the integer
@@ -443,7 +443,7 @@ represents the real number of physical ports available on the @NAS{}.
 Such a port number can be used, for example, with the
 @attr{Add-Port-To-IP-Address} attribute (@pxref{Add-Port-To-IP-Address}):
 
-@example
+@smallexample
 @group
 /*
  * decode MAX port number
@@ -481,7 +481,7 @@ max_fixup()
     return 0;
 @}
 @end group
-@end example
+@end smallexample
 
 @subheading 2. Session @sc{id} parsing for Cisco AS 5300 series
 
@@ -501,7 +501,7 @@ the information it contains in various other attributes, generates a
 normal @attr{Acct-Session-Id}, and attempts to generate a
 @attr{NAS-Port-Id} attribute.
 
-@example
+@smallexample
 @group
 /* 
  * The port rewriting function for Cisco AS5300 used for
@@ -574,7 +574,7 @@ cisco_fixup()
     return 0;
 @}
 @end group
-@end example
+@end smallexample
 
 @subheading 3. User-name rewriting for @sc{nt} machines
 
@@ -582,7 +582,7 @@ Users coming from Windows @sc{nt} machines often authenticate themselves as
 @samp{NT_DOMAIN\@var{username}}. The following function selects the
 user-name part and stores it in the @attr{User-Name} attribute:
 
-@example
+@smallexample
 @group
 integer
 login_nt(string uname)
@@ -602,7 +602,7 @@ nt_rewrite()
     return 0;
 @}
 @end group
-@end example
+@end smallexample
 
 @comment *L2**************************************************************
 @node Login Verification Functions
@@ -615,14 +615,14 @@ The function to be invoked for given @NAS{} is defined by
 a @code{function} flag in the @file{raddb/nastypes} or @file{raddb/naslist}
 file (@pxref{nastypes file}). It must be defined as follows:
 
-@example
+@smallexample
 @group
 integer check(string @var{str}, string @var{name}, integer @var{pid}, 
               string @var{sid})
 @{
 @}
 @end group
-@end example
+@end smallexample
 
 @noindent
 Its arguments are:
@@ -663,7 +663,7 @@ third field, the
 The function must return 1 if the three fields match the input
 user name and port and session @sc{id}s:
 
-@example
+@smallexample
 integer
 check_unix(string str, string name, integer pid, string sid)
 @{
@@ -671,7 +671,7 @@ check_unix(string str, string name, integer pid, string sid)
            && field(str, 3) == pid
            && field(str, 7) == sid;
 @}
-@end example
+@end smallexample
 
 @c @xref{UNIX Finger}.
 
@@ -680,13 +680,13 @@ The next example is a function to analyze a line of output from an SNMP
 query returning a user name. This function must return 1 if the entire input
 line matches the user name:
 
-@example
+@smallexample
 integer
 check_username(string str, string name, integer pid, string sid)
 @{
     return str == name;
 @}
-@end example
+@end smallexample
 
 @comment **L3***************************************************************
 @node Attribute Creation Functions
@@ -699,13 +699,13 @@ of its return is determined by the type of Radius attribute the
 value will be assigned to. To invoke the function, write its name
 in the @AVP{} of the @RHS{} in the @file{raddb/users} file, e.g.:
 
-@example
+@smallexample
 @group
 DEFAULT Auth-Type = SQL
         Service-Type = Framed-User,
             Framed-IP-Address = "=get_ip_addr(10.10.10.1)"
 @end group
-@end example
+@end smallexample
 
 @noindent
 The function @code{get_ip_addr} will be invoked after successful
@@ -713,7 +713,7 @@ authentication and it will be passed the IP @code{10.10.10.1} as its
 argument. An example of a useful function that can be invoked this
 way is
 
-@example
+@smallexample
 @group
 @exindex IP pools for MAX Ascend 
 integer
@@ -722,7 +722,7 @@ get_ip_address(integer base)
     return base + %[NAS-Port-Id] - %[NAS-Port-Id]/16;
 @}
 @end group
-@end example
+@end smallexample
 
 @comment *L2****************************************************************
 @node Full Syntax Description
@@ -808,10 +808,10 @@ The incoming request is passed implicitly to functions invoked via the
 @attr{Rewrite-Function} attribute. It is kept as an associative array,
 whose entries can be accessed using the following syntax:
 
-@example
+@smallexample
 @samp{%[} @var{attribute-name} @samp{]}
 @samp{%[} @var{attribute-name} @samp{]} @samp{(} @var{n} @samp{)}
-@end example
+@end smallexample
 
 @noindent
 The first form returns the value of the attribute @var{attribute-name}.
@@ -821,16 +821,16 @@ Here @var{attribute-name} should be a valid Radius dictionary name
 The second form returns the value of the @var{n}th attribute of type
 @var{attribute-name}. The index @var{n} is counted from zero, so
 
-@example
+@smallexample
         %[@var{attribute-name}](0)
-@end example
+@end smallexample
 
 @noindent
 is equivalent to
 
-@example
+@smallexample
         %[@var{attribute-name}]
-@end example
+@end smallexample
 
 @item Identifiers
 Identifiers represent functions and variables. These are described in
@@ -838,9 +838,9 @@ the next sub-subsection.
 @item Regexp group references
 A sequence of characters in the form
 
-@example
+@smallexample
 @samp{\@var{number}}
-@end example
+@end smallexample
 
 @noindent
 
@@ -848,7 +848,7 @@ refers to the contents of parenthesized group number @var{number}
 obtained as a result of the last executed @samp{=~} command.
 The regexp group reference has always string data type. For example:
 
-@example
+@smallexample
 @group
 string
 basename(string @var{arg})
@@ -859,7 +859,7 @@ basename(string @var{arg})
         return arg;
 @}
 @end group
-@end example
+@end smallexample
 
 This function strips from @var{arg} all leading components up to the
 last slash character, and all trailing components after the last dot
@@ -894,9 +894,9 @@ dollar signs (@samp{$}).
 
 A Rewrite function is declared as follows:
 
-@example
+@smallexample
 @var{type} @var{function-name} (@var{parameter-list})
-@end example
+@end smallexample
 
 @noindent
 where @var{type} specifies the return type of the function,
@@ -904,9 +904,9 @@ where @var{type} specifies the return type of the function,
 @var{parameter-list} declares the formal parameters to the function.
 It is a comma-separated list of declarations in the form
 
-@example
+@smallexample
 @var{type} @var{parm-name}
-@end example
+@end smallexample
 
 @noindent
 @var{type} being the parameter type, and @var{parm-name} being its
@@ -920,9 +920,9 @@ The local variables are declared right after the opening curly brace
 (@samp{@{}) and before any executable statements. The declaration
 syntax is
 
-@example
+@smallexample
 @var{type} @var{ident_list} ;
-@end example
+@end smallexample
 
 @noindent
 Here @var{ident_list} is either a valid Rewrite identifier or a 
@@ -956,9 +956,9 @@ An @dfn{expression} is one of the following:
 @subheading Type coercion
 The type coercion is like a type cast in C. Its syntax is
 
-@example
+@smallexample
 @samp{(} @var{type} @samp{)} @var{ident}
-@end example
+@end smallexample
 
 @noindent
 The result of type coercion is as follows:
@@ -989,9 +989,9 @@ the integer; otherwise the result of the conversion is undefined.
 @subheading Assignment
 An assignment is
 
-@example
+@smallexample
 @var{ident} = @var{expression} ;
-@end example
+@end smallexample
 
 @noindent
 The variable @var{ident} is assigned the value of @var{expression}.
@@ -999,9 +999,9 @@ The variable @var{ident} is assigned the value of @var{expression}.
 @subheading Function calls
 These take the form
 
-@example
+@smallexample
 @var{ident} ( @var{arg-list} )
-@end example
+@end smallexample
 
 @noindent
 where @var{ident} is the identifier representing the function, and
@@ -1019,10 +1019,10 @@ compiled function declaration is not an error but rather a warning.
 The @samp{delete} statement is used to delete an attribute or attributes
 from the incoming request. Its syntax is:
 
-@example
+@smallexample
 delete @var{attribute-name};
 delete @var{attribute-name}(@var{n});
-@end example
+@end smallexample
 
 The first variant deletes @emph{all} the attributes of the given type.
 The second variant deletes only the @var{n}th occurrence of the matching
@@ -1136,24 +1136,24 @@ address these issues in more detail.
 is extremely convenient for representation of such objects. A Radius @AVP{}
 is represented by a Scheme pair; e.g.,
 
-@example
+@smallexample
         Session-Timeout = 10
-@end example
+@end smallexample
 
 @noindent
 is represented in Guile as
 
-@lisp
+@smalllisp
         (cons "Session-Timeout" 10)
-@end lisp
+@end smalllisp
 
 The @code{car} of the pair can contain either the attribute dictionary
 name or the attribute number. Thus, the above pair may also be
 written in Scheme as
 
-@lisp
+@smalllisp
         (cons 27 10)
-@end lisp
+@end smalllisp
 
 @noindent
 (because @attr{Session-Timeout} corresponds to attribute number 27).
@@ -1161,19 +1161,19 @@ written in Scheme as
 Lists of @AVP{}s are represented by Scheme lists. For example,
 the Radius pair list
 
-@example
+@smallexample
 @group
         User-Name = "jsmith",
                 User-Password = "guessme",
                 NAS-IP-Address = 10.10.10.1,
                 NAS-Port-Id = 10
 @end group
-@end example
+@end smallexample
 
 @noindent
 is written in Scheme as
 
-@lisp
+@smalllisp
 @group
         (list
           (cons "User-Name" "jsmith")
@@ -1181,7 +1181,7 @@ is written in Scheme as
           (cons "NAS-IP-Address" "10.10.10.1")
           (cons "NAS-Port-Id" 10))
 @end group
-@end lisp
+@end smalllisp
         
 @comment **L2***************************************************************
 @node Authentication with Scheme
@@ -1213,9 +1213,9 @@ of @code{#f} causes it to fail.
 For a function to add something to the reply @AVP{}s, it
 should return a pair in the form
 
-@lisp
+@smalllisp
     (cons @var{return-code} @var{list})
-@end lisp
+@end smalllisp
 
 @noindent
 where @var{return-code} is a boolean value of the same meaning as
@@ -1224,7 +1224,7 @@ to the reply list. For example, the following function will always
 deny the authentication, returning an appropriate message to the user:
 
 @exindex Scheme authentication function
-@lisp
+@smalllisp
 @group
 (define (decline-auth request-list check-list reply-list)
   (cons #f
@@ -1233,13 +1233,13 @@ deny the authentication, returning an appropriate message to the user:
                "\r\nSorry, you are not
                 allowed to log in\r\n"))))
 @end group
-@end lisp
+@end smalllisp
 
 As a more constructive example, let's consider a function that
 allows the authentication only if a user name is found in its
 internal database:
 
-@lisp
+@smalllisp
 @group
 (define staff-data
   (list
@@ -1275,7 +1275,7 @@ internal database:
      #t
      reply-list)))
 @end group
-@end lisp
+@end smalllisp
 
 To trigger the invocation of the Scheme authentication function, assign
 its name to the @attr{Scheme-Procedure} attribute in the @RHS{} of a
@@ -1283,12 +1283,12 @@ corresponding @file{raddb/users} profile. For example:
 
 @exindex Invoking Scheme authentication function
 @exindex Scheme authentication function, invocation
-@example
+@smallexample
 @group
 DEFAULT Auth-Type = SQL
         Scheme-Procedure = "auth"
 @end group
-@end example
+@end smallexample
 
 @comment **L2***************************************************************
 @node Accounting with Scheme
@@ -1312,7 +1312,7 @@ Here is an example of a Scheme accounting function. The function dumps
 the contents of the incoming request to a file:
 
 @exindex Scheme accounting function
-@lisp
+@smalllisp
 @group
 (define radius-acct-file "/var/log/acct/radius")
 
@@ -1328,7 +1328,7 @@ the contents of the incoming request to a file:
       (newline port)))
   #t)
 @end group
-@end lisp
+@end smalllisp
 
 @comment **L2***************************************************************
 @node Radius-Specific Functions

@@ -11,9 +11,9 @@ daemon. It allows the
 user running it to query @command{radiusd} about various aspects of its
 work and to issue administrative commands to it. The syntax is
 
-@example
+@smallexample
 radctl -s @var{command} [@var{args}]
-@end example
+@end smallexample
 
 @noindent
 where @var{command} is a command telling @command{radctl} which actions to

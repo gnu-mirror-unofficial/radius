@@ -27,9 +27,9 @@ The confirm mode is toggled by the command line option @option{-c}.
 
 @subheading Syntax
 
-@example
+@smallexample
 radzap [@var{options}] [@var{username}]
-@end example
+@end smallexample
 
 @noindent
 Options are:

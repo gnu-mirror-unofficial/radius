@@ -23,10 +23,10 @@ A path to the Radius configuration directory.
 @deffn Function rad-server-list
 A list of radius servers. Each element of the list is:
 
-@lisp
+@smalllisp
 (list @var{id-str host-str secret-str auth-num acct-num
       cntl-num})
-@end lisp
+@end smalllisp
 
 @noindent
 where the arguments are as follows:
@@ -66,24 +66,24 @@ the given server.
 Request code.
 @item  pair-list
 List of attribute-value pairs. Each pair is either
-@lisp
+@smalllisp
         (cons @var{attr-name-str value})
-@end lisp
+@end smalllisp
 or
-@lisp
+@smalllisp
         (cons @var{attr-number value})
-@end lisp
+@end smalllisp
 @end table
 @noindent
 
 Return: On success,
-@lisp
+@smalllisp
         (list @var{return-code-number pair-list})
-@end lisp
+@end smalllisp
 On failure,
-@lisp
+@smalllisp
         '()
-@end lisp
+@end smalllisp
 @end deffn
 
 @deffn Function rad-send @var{port-number} @var{code-number} @var{pair-list} . @var{verbose}
@@ -106,10 +106,10 @@ Returns the @sc{id} of the currently selected server.
 Selects for use the server described by @var{list}. Here @var{list}
 takes the form
 
-@lisp
+@smalllisp
 (list @var{id-str host-str secret-str auth-num acct-num
       cntl-num})
-@end lisp
+@end smalllisp
 @noindent
 where the elements are as follows:
 
@@ -127,10 +127,10 @@ where the elements are as follows:
 Adds the server described by @var{list} to the list of active servers.
 Here @var{list} takes the form
 
-@lisp
+@smalllisp
 (list @var{id-str host-str secret-str auth-num acct-num
       cntl-num})
-@end lisp
+@end smalllisp
 
 @noindent
 where the elements are as follows:
@@ -174,13 +174,13 @@ Format a radius reply code into a human-readable form.
 Format a radius attribute-value pair for output.
 @var{dest-bool} has the same meaning as in @code{format}.
 @var{pair} is either
-@lisp
+@smalllisp
                 (cons @var{name-str value})
-@end lisp
+@end smalllisp
 or
-@lisp
+@smalllisp
                 (cons @var{attr-number value})
-@end lisp
+@end smalllisp
 @noindent
 where @var{value} may be of any type appropriate for the given attribute.
 @end deffn
@@ -190,15 +190,15 @@ Output the radius attribute-value pairs from @var{pair-list}.
 @var{dest-bool} has the same meaning as in format.
 @var{pair-list} is a list of pairs in the form
 
-@lisp
+@smalllisp
                 (cons @var{name-str value})
-@end lisp
+@end smalllisp
 @noindent
 or
 
-@lisp
+@smalllisp
                 (cons @var{attr-number value})
-@end lisp
+@end smalllisp
 @noindent
 where @var{value} may be of any type appropriate for the given attribute.
 

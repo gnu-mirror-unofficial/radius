@@ -48,7 +48,7 @@ duration started.
 
 An example of a default display:
 
-@example
+@smallexample
 @group
 uptime    90+20:35         Sun Dec 17 12:21                                    
 235 lines,  71 active, 164 idle. Pool load 0.30
@@ -75,7 +75,7 @@ max          006  3014 roland        00:39 Sun Dec 17 11:41
              48+17:39       05:30 Fri Nov 24 01:57 - 07:28
 max          007  2937 [idle]        00:06 Sun Dec 17 12:15
 @end group
-@end example
+@end smallexample
 
 This default display can be altered using command line options or
 interactive commands

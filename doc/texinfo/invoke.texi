@@ -171,22 +171,22 @@ Display program version and compilation options.
 Set debugging level. @var{DEBUG_LEVEL} is a comma-separated list of
 assignments in the forms
 
-@example
+@smallexample
 MODULE
 MODULE = LEVEL
-@end example
+@end smallexample
 
 where @var{MODULE} is the module name or any non-ambiguous assignment
 thereof, LEVEL is the debugging level in the range 0-100. @ref{Debugging}
 
 Config file equivalent:
-@example
+@smallexample
 logging @{
         category debug @{
                 level DEBUG_LEVEL;
         @};
 @};
-@end example
+@end smallexample
 
 @c ** -y option (radiusd)
 @c ** --log-auth option (radiusd)
@@ -205,13 +205,13 @@ option. It is @emph{very} insecure, since all users' passwords will be
 echoed in the logfile. This option is provided only for debugging purposes.
 
 Config file equivalent:
-@example
+@smallexample
 logging @{
         category auth @{
                 print-pass yes;
         @};
 @};
-@end example
+@end smallexample
 
 @end table
 

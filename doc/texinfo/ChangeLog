@@ -1,3 +1,28 @@
+2003-05-24  Sergey Poznyakoff  <gray@Noldor.runasimi.org>
+
+	* radius.texi: Rearranged chapters.
+	* intro.texi: Likewise.
+	* naming.texi: Likewise.
+	
+	* acct.texi: Use @small... commands
+	* attributes.texi: Likewise.
+	* auth.texi: Likewise.
+	* client.texi: Likewise.
+	* comp.texi: Likewise.
+	* config.texi: Likewise.
+	* configure.texi: Likewise.
+	* debug.texi: Likewise.
+	* extensions.texi: Likewise.
+	* invoke.texi: Likewise.
+	* logging.texi: Likewise.
+	* radauth.texi: Likewise.
+	* radctl.texi: Likewise.
+	* radping.texi: Likewise.
+	* radscm.texi: Likewise.
+	* raduse.texi: Likewise.
+	* radwho.texi: Likewise.
+	* radzap.texi: Likewise.
+
 2003-05-23  Sergey Poznyakoff
 
 	* radctl.texi: Minor change

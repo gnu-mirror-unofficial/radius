@@ -33,9 +33,9 @@ Empty lines are ignored; the command @samp{#} introduces an end-of-line comment.
 The source IP is introduced with the @code{source_ip} statement. Its
 syntax is:
 
-@example
+@smallexample
 source_ip @var{ip-addr}
-@end example
+@end smallexample
 
 @noindent
 where @var{ip-addr} must be the IP in dotted-quad notation.
@@ -43,9 +43,9 @@ where @var{ip-addr} must be the IP in dotted-quad notation.
 The Radius server to send the requests to is introduced with
 @code{server} statement:
 
-@example
+@smallexample
 server @var{name} @var{ip-addr} @var{secret} @var{auth-port} @var{acct-port}
-@end example
+@end smallexample
 @noindent
 
 Its parts are:
@@ -69,9 +69,9 @@ turn until one of them replies to the request.
 The amount of time a client program waits for the reply from a
 server is configured using the @code{timeout} statement:
 
-@example
+@smallexample
 timeout @var{number}
-@end example
+@end smallexample
 @noindent
 
 If the program does not receive any response within @var{number} seconds,
@@ -79,14 +79,14 @@ it assumes the server does not respond and either retries the
 transmission or tries the next available server. The number of retries is
 set with the @code{retry} statement:
 
-@example
+@smallexample
 retry @var{number}
-@end example
+@end smallexample
 
 The example @file{raddb/client.conf} follows:
 
 @exindex @file{client.conf}
-@example
+@smallexample
 @group
 server first 10.11.10.1 secret 1645 1646
 server second 10.11.10.1 secret 1645 1646
@@ -94,7 +94,7 @@ source_ip 127.0.0.1
 timeout 3
 retry 5
 @end group
-@end example
+@end smallexample
 
 @comment *L2****************************************************************
 @node radsession
@@ -104,9 +104,9 @@ retry 5
 @command{radsession} is a Guile script that sends authentication and
 accounting requests to the Radius server. To invoke the script, run
 
-@example
+@smallexample
 radsession @var{options} @var{action}
-@end example
+@end smallexample
 
 Possible actions are:
 
@@ -159,12 +159,12 @@ To use it, you will basically need to do the following:
 @enumerate 1
 @item Create links:
 
-@example
+@smallexample
 @group
 ln -s @var{libexec}/nas.scm /etc/ppp/ip-up
 ln -s @var{libexec}/nas.scm /etc/ppp/ip-down
 @end group
-@end example
+@end smallexample
 @noindent
 
 Here, @var{libexec} denotes the location of your libexec directory,
@@ -184,25 +184,25 @@ arguments to be given to @command{ppp}.
 For example, if you use @command{mgetty}, then the @file{inittab}
 entries for dial-up lines will look like:
 
-@example
+@smallexample
 @group
 d0:345:respawn:/sbin/mgetty ttyS0 vt100
 d1:345:respawn:/sbin/mgetty ttyS1 vt100
 ...
 @end group
-@end example
+@end smallexample
 @noindent
 
 @command{mgetty}'s @file{login.config} will then contain the following line:
 
-@example
+@smallexample
 *       -       -       /usr/local/libexec/nas.scm @@
-@end example
+@end smallexample
 
 If you use @command{agetty}, then the @file{inittab} will contain
 (with the long lines split for readability)
 
-@example
+@smallexample
 @group
 d0:345:respawn:/sbin/agetty -mt60 \
    -l /usr/local/libexec/nas.scm 38400,19200,9600 \
@@ -212,7 +212,7 @@ d1:345:respawn:/sbin/agetty -mt60 \
    ttyS1 vt100
 ...
 @end group
-@end example
+@end smallexample
 @noindent
 
 @end enumerate
@@ -253,9 +253,9 @@ to be sent with the request.
 This option is retained for compatibility with the 0.96 series of GNU
 Radius. It is equivalent to
 
-@example
+@smallexample
         attr: Service-Type=@var{type}
-@end example        
+@end smallexample        
 @end table
 
 The @command{pam_radius.so} module logs its messages under @code{LOG_AUTH}

@@ -39,9 +39,9 @@
 @end macro
 
 @macro defattr{name,value,type,us,hnt,hgr,add,prop}
-@example
+@smallexample
 ATTRIBUTE \name\ \value\ \type\
-@end example
+@end smallexample
 @multitable @columnfractions .10 .35 .55
 @item @tab Users: @tab @code{\us\}
 @item @tab Hints: @tab @code{\hnt\}

@@ -37,22 +37,22 @@ is required for authentication.
 This authentication type is used for each @file{users} entry, whose
 @LHS{} contains
 
-@example
+@smallexample
 Auth-Type = Accept
-@end example
+@end smallexample
 @noindent
 
 This authentication type can be used for guest accounts, e.g. the
 following profile in @file{users}:
 
-@example
+@smallexample
 @group
 guest   Auth-Type = Accept,
                 Simultaneous-Use = 10
         Service-Type = Framed-User,
                 Framed-Protocol = PPP
 @end group
-@end example
+@end smallexample
 
 @noindent
 allows up to 10 simultaneous guest PPP accounts. To log in using such
@@ -72,9 +72,9 @@ method of disabling user accounts, @pxref{access.deny file}).
 This authentication type is used for each @file{users} entry, whose
 @LHS{} contains
 
-@example
+@smallexample
 Auth-Type = Reject
-@end example
+@end smallexample
 
 @comment *L2****************************************************************
 @node Local Password Auth
@@ -93,24 +93,24 @@ There are two ways of using this authentication type
 To keep the plaintext passwords in @file{users} file, the profile
 entry must follow this pattern:
 
-@example
+@smallexample
 @group
 @var{user-name}  Auth-Type = Local,
                      User-Password = @var{plaintext}
 @end group
-@end example
+@end smallexample
 
 The @var{plaintext} is the user's plaintext password. Obviously,
 @var{user-name} may not be @code{DEFAULT} nor @code{BEGIN}.
 
 @subheading Specifying Passwords in SQL Database.
 
-@example
+@smallexample
 @group
 @var{user-name}   Auth-Type = Local,
                       Password-Location = SQL
 @end group
-@end example
+@end smallexample
 
 When the user is authenticated using such profile, its password
 is retrieved from the authentication database using @code{auth_query}.
@@ -128,26 +128,26 @@ two ways of using this authentication type.
 
 @subheading Specifying Passwords in users File.
 
-@example
+@smallexample
 @var{user-name}  Auth-Type = Crypt-Local,
                      User-Password = @var{crypt-pass}
-@end example
+@end smallexample
 @noindent
 
 The @attr{Crypt-Password} is a shortcut for the above notation:
 
-@example
+@smallexample
 @var{user-name}  Crypt-Password = @var{crypt-pass}
-@end example
+@end smallexample
 
 @subheading Specifying Passwords in SQL Database.
 
-@example
+@smallexample
 @group
 @var{user-name}   Auth-Type = Crypt-Local,
                       Password-Location = SQL
 @end group
-@end example
+@end smallexample
 
 Using this profile, the user's password is retrieved from the
 authentication database using @code{auth_query}.
@@ -168,9 +168,9 @@ The @dfn{System} authentication type requires that the user
 have a valid system account on the machine where the radius
 server is running. The use of this type is triggered by setting
 
-@example
+@smallexample
 Auth-Type = System
-@end example
+@end smallexample
 @noindent
 
 in the @LHS{} of a @file{users} entry.
@@ -183,9 +183,9 @@ in the @LHS{} of a @file{users} entry.
 Setting @code{Auth-Type = SQL} or @code{Auth-Type = Mysql}
 in the @LHS{} of a @file{users} entry is a synonym for
 
-@example
+@smallexample
 Auth-Type = Crypt-Local, Password-Location = SQL
-@end example
+@end smallexample
 @noindent
 
 and is provided as a shortcut and for backward compatibility with
@@ -204,9 +204,9 @@ is described in @xref{sqlserver file}.
 using @acronym{PAM} (Pluggable Authentication Module) framework. The
 simplest way of usage is:
 
-@example
+@smallexample
 Auth-Type = PAM
-@end example
+@end smallexample
 @noindent
 
 Any user whose @file{users} profile contains the above, will be
@@ -214,10 +214,10 @@ authenticated via @acronym{PAM}, using service name @samp{radius}.
 If you wish to use another service name, set it using @attr{Auth-Data}
 attribute, e.g.:
 
-@example
+@smallexample
 Auth-Type = PAM,
     Auth-Data = @var{pam-service}
-@end example
+@end smallexample
 
 @comment *L2****************************************************************
 @node Custom Auth
@@ -244,12 +244,12 @@ For example, if one wrote a procedure @code{my-auth}, to apply it to
 all users, one will place the following profile in his @file{users}
 file:
 
-@example
+@smallexample
 @group
 DEFAULT  Auth-Type = Accept
          Scheme-Procedure = "my-auth"
 @end group
-@end example
+@end smallexample
 
 For a discussion of how to write Scheme authentication procedures,
 @xref{Authentication with Scheme}.
@@ -259,9 +259,9 @@ an external program. This is less effective than the methods described
 above, but may be necessary sometimes. To invoke the program, use
 the following statement in the @RHS{} of @file{users} entry:
 
-@example
+@smallexample
 Exec-Program-Wait = "@var{progname} @var{args}"
-@end example
+@end smallexample
 @noindent
 
 The @var{progname} must be the full path to the program, @var{args} ---

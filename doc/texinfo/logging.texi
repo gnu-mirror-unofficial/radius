@@ -17,9 +17,9 @@ The debug messages (@ref{Debugging}).
 @item Auth
 Under this level every authentication attempt is logged. This is enabled
 by setting
-@example
+@smallexample
 level auth;
-@end example
+@end smallexample
 @noindent
 in the @code{category auth} statement of the @file{config} file.
 

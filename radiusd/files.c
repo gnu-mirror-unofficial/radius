@@ -928,9 +928,8 @@ read_naslist_file(file)
 	int rc;
 #ifdef USE_SNMP	
 	NAS *nas;
-	if (master_process()) {
-		snmp_init_nas_stat();
-	}
+
+	snmp_init_nas_stat();
 #endif
 	rc = nas_read_file(file);
 	

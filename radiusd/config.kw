@@ -1,0 +1,126 @@
+%{
+/* This file is part of GNU RADIUS.
+   Copyright (C) 2000,2001, Sergey Poznyakoff
+  
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+  
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+  
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+#ifdef HAVE_CONFIG_H
+# include <config.h>
+#endif
+#include <syslog.h>
+#include <radiusd.h>
+#include <log.h>
+#include <config_tok.h>
+#define _Y(x) (int)(x)
+
+#define S_ALERT   0
+#define S_CRIT    1
+#define S_DEBUG   2
+#define S_EMERG   3
+#define S_ERR     4
+#define S_INFO    5
+#define S_NOTICE  6
+#define S_WARNING 7
+
+%}
+struct conf_tok {
+	char *name;
+	int token;
+	YYSTYPE lval;
+};
+%%
+acct, T_ACCT
+acct-dir, T_ACCT_DIR
+acl, T_ACL
+alert, T_SEVERITY, _Y(S_ALERT)
+allow, T_ALLOW,
+auth, T_AUTH,
+category, T_CATEGORY,
+channel, T_CHANNEL
+checkrad-assume-logged, T_CHECKRAD_ASSUME_LOGGED
+cntl, T_CNTL
+community, T_COMMUNITY
+crit, T_SEVERITY, _Y(S_CRIT)
+daemon, T_FACILITY, _Y(LOG_DAEMON),
+debug, T_SEVERITY, _Y(S_DEBUG)
+delay, T_DELAY 
+deny, T_DENY,
+detail, T_DETAIL
+emerg, T_SEVERITY, _Y(S_EMERG),
+err, T_SEVERITY, _Y(S_ERR)
+error, T_SEVERITY, _Y(S_ERR)
+exec-program-group, T_EXEC_PROGRAM_GROUP
+exec-program-user, T_EXEC_PROGRAM_USER
+file, T_FILE,
+host, T_HOST
+ident, T_IDENT
+info, T_SEVERITY, _Y(S_INFO),
+level, T_LEVEL,
+local0, T_FACILITY, _Y(LOG_LOCAL0)
+local1, T_FACILITY, _Y(LOG_LOCAL1)
+local2, T_FACILITY, _Y(LOG_LOCAL2)
+local3, T_FACILITY, _Y(LOG_LOCAL3)
+local4, T_FACILITY, _Y(LOG_LOCAL4)
+local5, T_FACILITY, _Y(LOG_LOCAL5)
+local6, T_FACILITY, _Y(LOG_LOCAL6)
+local7, T_FACILITY, _Y(LOG_LOCAL7)
+log, T_LOGGING
+log-dir, T_LOG_DIR
+logging, T_LOGGING, 
+max-requests, T_MAX_REQUESTS
+network, T_NETWORK,
+no, T_BOOL, _Y(0),
+notice, T_SEVERITY, _Y(S_NOTICE)
+notify, T_NOTIFY
+off, T_BOOL, _Y(0)
+on, T_BOOL, _Y(1)
+option, T_OPTION
+port, T_PORT
+proxy, T_PROXY
+read_only, T_SNMP_ACCESS, _Y(SNMP_RO)
+read_write, T_SNMP_ACCESS, _Y(SNMP_RW)
+request-cleanup-delay, T_REQUEST_CLEANUP_DELAY
+retry, T_RETRY
+ro, T_SNMP_ACCESS, _Y(SNMP_RO)
+rw, T_SNMP_ACCESS, _Y(SNMP_RW)
+snmp, T_SNMP
+source-ip, T_SOURCE_IP
+spawn, T_SPAWN
+strip-names, T_STRIP_NAMES
+syslog, T_SYSLOG
+time-to-live, T_TTL
+usedbm, T_USEDBM
+user, T_FACILITY, _Y(LOG_USER)
+usr2delay, T_USR2DELAY
+warning, T_SEVERITY, _Y(S_WARNING)
+yes, T_BOOL, _Y(1)
+print-pid, T_LOGOPT, _Y(LO_PID)
+print-cons, T_LOGOPT, _Y(LO_CONS)
+print-level, T_LOGOPT, _Y(LO_LEVEL),
+print-auth, T_LOGLEVEL, _Y(RLOG_AUTH)
+print-pass, T_LOGLEVEL, _Y(RLOG_AUTH_PASS)
+print-failed-pass, T_LOGLEVEL, _Y(RLOG_FAILED_PASS)
+%%
+
+int
+keyword()
+{
+	struct conf_tok *p = in_word_set(conf_yylval.string,
+					 strlen(conf_yylval.string));
+	if (p) {
+		conf_yylval = p->lval;
+		return p->token;
+	}
+	return T_STRING;
+}

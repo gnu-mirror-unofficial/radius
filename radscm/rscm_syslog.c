@@ -26,7 +26,7 @@
 #include <radius/radius.h>
 #include <radius/radscm.h>
 
-static struct keyword syslog_kw[] = {
+static grad_keyword_t syslog_kw[] = {
         { "LOG_USER",     LOG_USER },   
         { "LOG_DAEMON",   LOG_DAEMON },
         { "LOG_AUTH",     LOG_AUTH },  

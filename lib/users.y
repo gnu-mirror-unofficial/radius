@@ -221,13 +221,13 @@ grad_create_pair(grad_locus_t *loc, char *name,
         pair->operator = op;
 
         if (valstr[0] == '=') {
-                pair->eval_type = eval_interpret;
+                pair->eval_type = grad_eval_interpret;
                 pair->avp_strvalue = grad_estrdup(valstr+1);
                 pair->avp_strlength = strlen(pair->avp_strvalue);
                 return pair;
         }
 
-        pair->eval_type = eval_const;
+        pair->eval_type = grad_eval_const;
         
         switch (pair->type) {
         case GRAD_TYPE_STRING:
@@ -314,7 +314,7 @@ grad_create_pair(grad_locus_t *loc, char *name,
 					 pair->avp_lvalue);
 				pair->avp_strvalue = grad_estrdup(s);
 				pair->avp_strlength = strlen(pair->avp_strvalue);
-				pair->eval_type = eval_interpret;
+				pair->eval_type = grad_eval_interpret;
 				free(s);
 			}
                 }

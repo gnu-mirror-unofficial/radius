@@ -1750,7 +1750,7 @@ sharp_comment()
 # define DEBUG_LEX2(s,v)
 #endif
 
-static struct keyword rw_kw[] = {
+static grad_keyword_t rw_kw[] = {
         { "if",       IF },
         { "else",     ELSE },
         { "return",   RETURN },

@@ -31,7 +31,7 @@
 #include <string.h>
 #include <common.h>
 
-static struct keyword auth_codes_abbr[] = {
+static grad_keyword_t auth_codes_abbr[] = {
         { "Access-Request", RT_ACCESS_REQUEST }, 
         { "Access-Accept", RT_ACCESS_ACCEPT },     
         { "Access-Reject", RT_ACCESS_REJECT },  
@@ -88,7 +88,7 @@ grad_first_matching_code_name(const char *name, void **ptr)
 const char *
 grad_request_code_to_name(int code)
 {
-        struct keyword *p;
+        grad_keyword_t *p;
         for (p = auth_codes_abbr; p->name; p++)
                 if (p->tok == code)
                         return p->name;

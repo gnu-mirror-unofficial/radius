@@ -86,7 +86,7 @@ static grad_list_t /* of grad_matching_rule_t */  *hints;        /* raddb/hints 
 static grad_list_t /* of CLIENT */ *clients; /* raddb/clients */
 static grad_list_t /* of RADCK_TYPE */ *radck_type;   /* raddb/nastypes */
 
-static struct keyword op_tab[] = {
+static grad_keyword_t op_tab[] = {
         { "=", grad_operator_equal },
         { "!=", grad_operator_not_equal },
         { ">", grad_operator_greater_than },
@@ -331,6 +331,8 @@ user_find_sym(char *name, grad_request_t *req,
                         lu.sym = NULL; /* force jump to next state */
                 }
         }
+	if (found)
+		radiusd_sql_reply_attr_query(req, reply_pairs);
         debug(1, ("returning %d", found));
         return found;
 }
@@ -377,7 +379,6 @@ match_user(User_symbol *sym, grad_request_t *req,
                 reply_tmp = grad_avl_dup(sym->reply);
                 grad_avl_merge(reply_pairs, &reply_tmp);
                 grad_avl_merge(check_pairs, &check_tmp);
-                radiusd_sql_reply_attr_query(req, reply_pairs);
 
                 grad_avl_free(reply_tmp);
                 grad_avl_free(check_tmp);

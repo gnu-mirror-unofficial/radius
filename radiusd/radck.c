@@ -191,11 +191,11 @@ check_dup_attr(grad_avp_t **prev, grad_avp_t *ptr, grad_locus_t *loc)
 static int
 compile_pair(grad_avp_t *pair)
 {
-	if (pair->eval_type == eval_interpret) {
+	if (pair->eval_type == grad_eval_interpret) {
 		char *symname = rewrite_compile(pair->avp_strvalue);
 		if (symname == 0) 
 			return -1;
-		pair->eval_type = eval_compiled;
+		pair->eval_type = grad_eval_compiled;
 		grad_free(pair->avp_strvalue);
 		pair->avp_strvalue = symname;
 		pair->avp_strlength = strlen(symname);

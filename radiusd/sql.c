@@ -83,7 +83,7 @@ static char *cur_line, *cur_ptr;
 static struct obstack parse_stack;
 static int stmt_type;
 
-struct keyword sql_keyword[] = {
+static grad_keyword_t sql_keyword[] = {
         { "server",             STMT_SERVER },
         { "port",               STMT_PORT },
         { "login",              STMT_LOGIN },
@@ -119,7 +119,7 @@ struct keyword sql_keyword[] = {
 static char *
 sql_keyword_name(int kw)
 {
-	struct keyword *p;
+	grad_keyword_t *p;
 
 	for (p = sql_keyword; p->name; p++)
 		if (p->tok == kw)
@@ -1001,7 +1001,7 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
 		if (op_too) {
 			char *opstr = res->tuple[i][2];
                         op = grad_str_to_op(opstr);
-                        if (op == NUM_OPERATORS) {
+                        if (op == grad_operator_invalid) {
                                 grad_log(L_NOTICE,
                                          _("SQL: invalid operator: %s"), opstr);
                                 continue;

@@ -45,7 +45,7 @@ SCM_DEFINE(radius_sql_query, "radius-sql-query", 2, 0, 0,
 }
 #undef FUNC_NAME
 
-static struct keyword kw[] = {
+static grad_keyword_t kw[] = {
 	{ "SQL_AUTH", SQL_AUTH },
 	{ "SQL_ACCT", SQL_ACCT },
 	{ NULL }

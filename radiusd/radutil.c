@@ -513,7 +513,7 @@ pair_set_value(grad_avp_t *p, Datatype type, Datum *datum)
 	default:
 		grad_insist_fail("bad Datatype");
 	}
-	p->eval_type = eval_const;
+	p->eval_type = grad_eval_const;
 }
 
 int
@@ -525,10 +525,10 @@ radius_eval_avl(grad_request_t *req, grad_avp_t *p)
 		Datum datum;
 		
 		switch (p->eval_type) {
-		case eval_const:
+		case grad_eval_const:
 			break;
 			
-		case eval_interpret:
+		case grad_eval_interpret:
 			if (rewrite_interpret(p->avp_strvalue,
 					      req, &type, &datum)) {
                                 errcnt++;
@@ -537,7 +537,7 @@ radius_eval_avl(grad_request_t *req, grad_avp_t *p)
 			pair_set_value(p, type, &datum);
 			break;
 
-		case eval_compiled:
+		case grad_eval_compiled:
 			if (rewrite_eval(p->avp_strvalue,
 					 req, &type, &datum)) {
                                 errcnt++;

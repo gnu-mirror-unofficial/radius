@@ -97,7 +97,8 @@ enum grad_operator {
         grad_operator_greater_than,          /* > */
         grad_operator_less_equal,            /* <= */
         grad_operator_greater_equal,         /* >= */
-        NUM_OPERATORS                   /* number of operators */
+	grad_operator_invalid                /* Invalid operator */
+#define GRAD_NUM_OPERATORS grad_operator_invalid /* number of operators */
 };
 
 /* ************************** Data structures ****************************** */
@@ -201,7 +202,7 @@ typedef struct {
 } grad_server_queue_t;    
 
 struct grad_value_pair;
-typedef int (*attr_parser_fp)(struct grad_value_pair *p, char **s);
+typedef int (*grad_attr_parser_fp)(struct grad_value_pair *p, char **s);
 
 /* Dictionary attribute */
 
@@ -212,7 +213,7 @@ struct dict_attr {
 	int    type;           /* Data type */
 	int    vendor;         /* Vendor index */
 	int    prop;           /* Properties */
-	attr_parser_fp parser; /* Not-NULL for "abinary" */
+	grad_attr_parser_fp parser; /* Not-NULL for "abinary" */
 };
 
 /* Dictionary value */
@@ -229,10 +230,14 @@ typedef struct dict_vendor {
         int  vendorcode;        /* Internal code of this vendor */
 } grad_dict_vendor_t;
 
+/* Attribute evaluation type */
 enum grad_avp_eval_type {
-	eval_const,
-	eval_interpret,
-	eval_compiled
+	grad_eval_const,     /* Value is a constant */  
+	grad_eval_interpret, /* avp_strvalue contains a Rewrite expression that
+				must be interpreted */
+	grad_eval_compiled   /* avp_strvalue contains a symbolic name of a
+				compiled Rewrite expression. Use rewrite_eval()
+				to evaluate it */
 };
 
 /* An attribute/value pair */
@@ -260,7 +265,7 @@ typedef struct grad_value_pair {
 
 } grad_avp_t;
 
-typedef struct nas {
+typedef struct grad_nas {
 	grad_netdef_t netdef;
         char longname[GRAD_MAX_LONGNAME+1];
         char shortname[GRAD_MAX_SHORTNAME+1];
@@ -269,13 +274,13 @@ typedef struct nas {
         void *app_data;
 } grad_nas_t;
 
-typedef struct realm {
+typedef struct grad_realm {
         char realm[GRAD_MAX_REALMNAME+1];
 	grad_envar_t *args;
 	grad_server_queue_t *queue;
 } grad_realm_t;
 
-typedef struct radius_req {
+typedef struct grad_request {
         grad_uint32_t ipaddr;       /* Source IP address */
         u_short       udp_port;     /* Source port */
         u_char        id;           /* Request identifier */
@@ -302,21 +307,21 @@ typedef struct radius_req {
 	int           server_no;
 	int           attempt_no;
         grad_uint32_t server_id;     /* Proxy ID of the packet */
-	char          *remote_user;  /* Remote username (stringobj)*/
+	char          *remote_user;  /* Remote username */
         u_char        remote_auth[GRAD_AUTHENTICATOR_LENGTH];
 	                             /* Remote request authenticator */	
         int           server_code;   /* Reply code from other srv */
         grad_avp_t    *server_reply; /* Reply from other server */
 } grad_request_t;
 
-struct keyword {
+typedef struct grad_keyword grad_keyword_t;
+struct grad_keyword {
         char *name;
         int tok;
 };
 
-
-typedef struct matching_rule grad_matching_rule_t;
-struct matching_rule {
+typedef struct grad_matching_rule grad_matching_rule_t;
+struct grad_matching_rule {
         char *name;
         grad_avp_t *lhs;
         grad_avp_t *rhs;
@@ -466,7 +471,7 @@ char *grad_format_pair(grad_avp_t *pair, int typeflag, char **save);
 int grad_format_string_visual(char *buf, int runlen, char *str, int len);
 char *grad_op_to_str(enum grad_operator op);
 enum grad_operator grad_str_to_op(char *str);
-int grad_xlat_keyword(struct keyword *kw, const char *str, int def);
+int grad_xlat_keyword(grad_keyword_t *kw, const char *str, int def);
 void grad_obstack_grow_backslash_num(struct obstack *stk, char *text,
 				     int len, int base);
 void grad_obstack_grow_backslash(struct obstack *stk, char *text,

@@ -53,7 +53,7 @@ grad_avp_free(grad_avp_t *p)
 {
         if (!p)
                 return;
-        if (p->type == GRAD_TYPE_STRING || p->eval_type != eval_const) 
+        if (p->type == GRAD_TYPE_STRING || p->eval_type != grad_eval_const) 
                 grad_free(p->avp_strvalue);
         grad_free(p);
 }
@@ -68,7 +68,7 @@ grad_avp_dup(grad_avp_t *vp)
 
         memcpy(ret, vp, sizeof(grad_avp_t));
         ret->next = NULL;
-        if (ret->type == GRAD_TYPE_STRING || ret->eval_type != eval_const) {
+        if (ret->type == GRAD_TYPE_STRING || ret->eval_type != grad_eval_const) {
 		ret->avp_strlength = vp->avp_strlength;
                 ret->avp_strvalue = grad_emalloc(ret->avp_strlength+1);
 		memcpy(ret->avp_strvalue, vp->avp_strvalue,
@@ -427,7 +427,7 @@ grad_avl_dup(grad_avp_t *from)
         for ( ; from; from = from->next) {
                 temp = grad_avp_alloc();
                 memcpy(temp, from, sizeof(grad_avp_t));
-                if (temp->type == GRAD_TYPE_STRING || temp->eval_type != eval_const) {
+                if (temp->type == GRAD_TYPE_STRING || temp->eval_type != grad_eval_const) {
 			char *p = grad_emalloc(temp->avp_strlength+1);
 			memcpy(p, temp->avp_strvalue, temp->avp_strlength);
 			p[temp->avp_strlength] = 0;

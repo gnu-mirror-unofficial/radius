@@ -380,7 +380,7 @@ grad_client_send(grad_server_queue_t *config, int port_type, int code,
 #define TOK_TIMEOUT    3
 #define TOK_RETRY      4
 
-static struct keyword kwd[] = {
+static grad_keyword_t kwd[] = {
         { "source_ip", TOK_SOURCE_IP },
         { "source-ip", TOK_SOURCE_IP },
         { "server", TOK_SERVER },

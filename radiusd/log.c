@@ -577,7 +577,7 @@ static struct category_def {
         int level;
 } cat_def;
 
-static struct keyword syslog_facility[] = {
+static grad_keyword_t syslog_facility[] = {
 	{ "user", 	LOG_USER },
 	{ "daemon", 	LOG_DAEMON },
 	{ "auth", 	LOG_AUTH },
@@ -592,7 +592,7 @@ static struct keyword syslog_facility[] = {
 	{ 0 }
 };
 
-static struct keyword syslog_priority[] = {
+static grad_keyword_t syslog_priority[] = {
 	{ "emerg", 	LOG_EMERG },
 	{ "alert", 	LOG_ALERT },
 	{ "crit", 	LOG_CRIT },
@@ -604,7 +604,7 @@ static struct keyword syslog_priority[] = {
 	{ 0 }
 };
 
-static struct keyword log_categories[] = {
+static grad_keyword_t log_categories[] = {
 	{ "main",       L_MAIN },
 	{ "auth",       L_AUTH },
 	{ "acct",       L_ACCT },
@@ -613,7 +613,7 @@ static struct keyword log_categories[] = {
 	{ 0 }
 };
 
-static struct keyword log_priorities[] = {
+static grad_keyword_t log_priorities[] = {
 	{ "emerg",      L_EMERG },
 	{ "alert",      L_ALERT },
 	{ "crit",       L_CRIT },

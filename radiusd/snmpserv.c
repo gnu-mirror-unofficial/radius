@@ -246,7 +246,7 @@ snmp_cfg_ident(int argc, cfg_value_t *argv, void *block_data,
 	return 0;
 }
 
-static struct keyword snmp_access[] = {
+static grad_keyword_t snmp_access[] = {
 	{ "read-only", SNMP_RO },
 	{ "read-write", SNMP_RW },
 	{ "ro", SNMP_RO },

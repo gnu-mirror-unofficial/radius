@@ -25,7 +25,7 @@
 #include <radius/radius.h>
 #include <radius/radscm.h>
 
-static struct keyword radlog_kw[] = {
+static grad_keyword_t radlog_kw[] = {
 #define D(c) { #c, c }
         /* log categories */
         D(L_MAIN),

@@ -383,7 +383,7 @@ copy_digit()
         return dot;
 }
 
-struct keyword booleans[] = {
+static grad_keyword_t booleans[] = {
 	{ "on", 1 }, 
 	{ "off", 0 },
 	{ "yes", 1 }, 

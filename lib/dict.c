@@ -155,11 +155,11 @@ typedef struct attr_parser_tab ATTR_PARSER_TAB;
 struct attr_parser_tab {
 	ATTR_PARSER_TAB *next;
 	int attr;
-	attr_parser_fp fun;
+	grad_attr_parser_fp fun;
 };
 static ATTR_PARSER_TAB *attr_parser_tab;
 
-static attr_parser_fp
+static grad_attr_parser_fp
 dict_find_parser(int attr)
 {
 	ATTR_PARSER_TAB *ep;
@@ -170,7 +170,7 @@ dict_find_parser(int attr)
 }
 
 void
-dict_register_parser(int attr, attr_parser_fp fun)
+dict_register_parser(int attr, grad_attr_parser_fp fun)
 {
 	ATTR_PARSER_TAB *e = grad_emalloc(sizeof(*e));
 	e->attr = attr;
@@ -222,7 +222,7 @@ static int parse_dict(char *name);
 #define VENDOR_NAME  fv[1]
 #define VENDOR_VALUE fv[2]
 
-static struct keyword type_kw[] = {
+static grad_keyword_t type_kw[] = {
         { "string", GRAD_TYPE_STRING },
         { "integer", GRAD_TYPE_INTEGER },
         { "ipaddr", GRAD_TYPE_IPADDR },
@@ -389,7 +389,7 @@ _dict_attribute(int *errcnt, int fc, char **fv, grad_locus_t *loc)
         int vendor = 0;
         unsigned value;
         char *p;
-	attr_parser_fp fp = NULL;
+	grad_attr_parser_fp fp = NULL;
         int flags;
         int prop;
         
@@ -655,7 +655,7 @@ enum {
 	KW_PROPERTY
 };
 
-static struct keyword dict_kw[] = {
+static grad_keyword_t dict_kw[] = {
         { "$INCLUDE", KW_INCLUDE },
         { "ATTRIBUTE", KW_ATTRIBUTE },
 	{ "ALIAS", KW_ALIAS },

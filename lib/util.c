@@ -135,11 +135,11 @@ grad_unlock_file(int fd, size_t size, off_t offset, int whence)
         fcntl(fd, F_SETLKW, &fl);
 }
 
-/* Find a struct keyword matching the given string. Return keyword token
+/* Find a grad_keyword_t matching the given string. Return keyword token
  * number if found. Otherwise return default value `def'.
  */
 int
-grad_xlat_keyword(struct keyword *kw, const char *str, int def)
+grad_xlat_keyword(grad_keyword_t *kw, const char *str, int def)
 {
         for ( ; kw->name; kw++) 
                 if (strcmp(str, kw->name) == 0)
@@ -277,7 +277,7 @@ grad_op_to_str(enum grad_operator op)
 enum grad_operator
 grad_str_to_op(char *str)
 {
-        int op = NUM_OPERATORS;
+        int op = grad_operator_invalid;
         switch (*str++) {
         case '=':
                 op = grad_operator_equal;
@@ -300,7 +300,7 @@ grad_str_to_op(char *str)
                 break;
         }
         if (*str)
-                op = NUM_OPERATORS;
+                op = grad_operator_invalid;
         return op;
 }
 
@@ -412,7 +412,7 @@ grad_format_pair(grad_avp_t *pair, int typeflag, char **savep)
 	
         *savep = NULL;
 
-        switch (pair->eval_type == eval_const ? pair->type : GRAD_TYPE_STRING) {
+        switch (pair->eval_type == grad_eval_const ? pair->type : GRAD_TYPE_STRING) {
         case GRAD_TYPE_STRING:
                 if (pair->attribute != DA_VENDOR_SPECIFIC) {
                         int len = strlen (pair->avp_strvalue);

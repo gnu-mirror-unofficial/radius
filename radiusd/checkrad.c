@@ -406,7 +406,6 @@ snmp_check(checkp, nas)
 
 	rc = checkp->result;
 	snmp_session_close(sp);
-	efree(snmp_oid);
 	
 	debug(1, ("result: %d", rc));
 	return rc;

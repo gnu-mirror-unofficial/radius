@@ -53,14 +53,14 @@ char *
 md5crypt(pw, salt, passwd, size)
         register const char *pw;
         register const char *salt;
-	const char *passwd;
-	size_t size;
+        const char *passwd;
+        size_t size;
 {
         static char magic[] = "$1$"; /* This string is magic for
-				      * this algorithm.  Having
-				      * it this way, we can get
-				      * better later on
-				      */
+                                      * this algorithm.  Having
+                                      * it this way, we can get
+                                      * better later on
+                                      */
         char *p;
         static const char *sp, *ep;
         unsigned char   final[16];
@@ -75,12 +75,12 @@ md5crypt(pw, salt, passwd, size)
         if(!strncmp(sp,magic,strlen(magic)))
                 sp += strlen(magic);
         else {
-		pthread_mutex_lock(&crypt_mutex);
+                pthread_mutex_lock(&crypt_mutex);
                 strncpy(passwd, crypt(pw, salt), size);
-		pthread_mutex_unlock(&crypt_mutex);
-		return passwd;
-	}
-		
+                pthread_mutex_unlock(&crypt_mutex);
+                return passwd;
+        }
+                
 
         /* It stops at the first '$', max 8 chars */
         for(ep=sp;*ep && *ep != '$' && ep < (sp+8);ep++)
@@ -89,10 +89,10 @@ md5crypt(pw, salt, passwd, size)
         /* get the length of the true salt */
         sl = ep - sp;
 
-	/* Check if the buffer can accomodate the whole password */
-	if (sizeof(magic)+sl+1+22 > size)
-		return NULL;
-	
+        /* Check if the buffer can accomodate the whole password */
+        if (sizeof(magic)+sl+1+22 > size)
+                return NULL;
+        
         MD5Init(&ctx);
 
         /* The password first, since that is what is most unknown */

@@ -55,8 +55,8 @@ void
 avp_free(p)     
         VALUE_PAIR *p;
 {
-	if (!p)
-		return;
+        if (!p)
+                return;
         if (p->type == TYPE_STRING || p->eval) 
                 free_string(p->strvalue);
         free_entry(p);

@@ -175,8 +175,8 @@ int snmp_serv_queue_handler(enum mib_node_cmd cmd, void *closure,
                             subid_t subid, struct snmp_var **varp, int *errp);
 #ifdef SNMP_COMPAT_0_96
 int snmp_serv_queue_handler_compat(enum mib_node_cmd cmd, void *closure,
-				   subid_t subid, struct snmp_var **varp,
-				   int *errp);
+                                   subid_t subid, struct snmp_var **varp,
+                                   int *errp);
 #endif
 int snmp_serv_mem_summary(enum mib_node_cmd cmd, void *closure,
                             subid_t subid, struct snmp_var **varp, int *errp);
@@ -233,13 +233,13 @@ struct mem_data {
 };
 
 union snmpserv_data {
-	struct auth_mib_data auth_mib;
-	struct nas_data nas;
-	struct nas_table_data nas_data;
-	struct port_data port;
-	struct port_table_data port_table;
-	struct queue_data queue;
-	struct mem_data mem;
+        struct auth_mib_data auth_mib;
+        struct nas_data nas;
+        struct nas_table_data nas_data;
+        struct port_data port;
+        struct port_table_data port_table;
+        struct queue_data queue;
+        struct mem_data mem;
 };
 
 static pthread_once_t snmpserv_once = PTHREAD_ONCE_INIT;
@@ -247,29 +247,29 @@ static pthread_key_t snmpserv_key;
 
 static void
 snmpserv_data_destroy(ptr)
-	void *ptr;
+        void *ptr;
 {
-	efree(ptr);
+        efree(ptr);
 }
 
 static void
 snmpserv_data_create()
 {
-	pthread_key_create(&snmpserv_key, snmpserv_data_destroy);
+        pthread_key_create(&snmpserv_key, snmpserv_data_destroy);
 }
 
 static void *
 snmpserv_get_data()
 {
-	union snmpserv_data *p;
-	pthread_once(&snmpserv_once, snmpserv_data_create);
-	p = pthread_getspecific(snmpserv_key);
-	if (!p) {
-		p = emalloc(sizeof(*p));
-		p->auth_mib.nas_index = 1;
-		pthread_setspecific(snmpserv_key, p);
-	}
-	return p;
+        union snmpserv_data *p;
+        pthread_once(&snmpserv_once, snmpserv_data_create);
+        p = pthread_getspecific(snmpserv_key);
+        if (!p) {
+                p = emalloc(sizeof(*p));
+                p->auth_mib.nas_index = 1;
+                pthread_setspecific(snmpserv_key, p);
+        }
+        return p;
 }
 
 static struct mib_data {
@@ -1260,8 +1260,8 @@ snmp_auth_v_handler(cmd, unused, subid, varp, errp)
         struct snmp_var **varp;
         int *errp;
 {
-	struct auth_mib_data *data = (struct auth_mib_data *)
-		                            snmpserv_get_data();
+        struct auth_mib_data *data = (struct auth_mib_data *)
+                                            snmpserv_get_data();
         switch (cmd) {
         case MIB_NODE_GET:
                 if ((*varp = snmp_auth_var_v_get(subid, *varp, errp)) == NULL)
@@ -1632,7 +1632,7 @@ snmp_acct_v_handler(cmd, unused, subid, varp, errp)
         int *errp;
 {
         struct auth_mib_data *data = (struct auth_mib_data *)
-		                        snmpserv_get_data();
+                                        snmpserv_get_data();
         switch (cmd) {
         case MIB_NODE_GET:
                 if ((*varp = snmp_acct_var_v_get(subid, *varp, errp)) == NULL)
@@ -1939,8 +1939,8 @@ snmp_serv_var_set(subid, vp, errp)
 
 #ifdef SNMP_COMPAT_0_96
 static struct snmp_var *snmp_queue_get_compat(subid_t subid,
-					      struct snmp_var *var,
-					      int *errp);
+                                              struct snmp_var *var,
+                                              int *errp);
 static void get_queue_stat_compat(int qno, struct snmp_var *var, subid_t key);
 
 int
@@ -2063,8 +2063,8 @@ get_queue_stat_compat(qno, var, key)
                 var->type = SMI_COUNTER32;
                 var->val_length = sizeof(counter);
                 var->var_int = stat[qno].pending
-			       + stat[qno].waiting
-			       + stat[qno].completed;
+                               + stat[qno].waiting
+                               + stat[qno].completed;
                 break;
         }
 }
@@ -2139,7 +2139,7 @@ snmp_queue_get(subid, var, errp)
         case MIB_KEY_queueName:                 
         case MIB_KEY_queueWaiting:
         case MIB_KEY_queuePending:
-	case MIB_KEY_queueCompleted:
+        case MIB_KEY_queueCompleted:
         case MIB_KEY_queueTotal:
                 if (subid-1 < R_MAX) {
                         get_queue_stat(subid-1, ret, key);
@@ -2202,8 +2202,8 @@ get_queue_stat(qno, var, key)
                 var->type = SMI_COUNTER32;
                 var->val_length = sizeof(counter);
                 var->var_int = stat[qno].pending
-			       + stat[qno].waiting
-			       + stat[qno].completed;
+                               + stat[qno].waiting
+                               + stat[qno].completed;
                 break;
         }
 }
@@ -2673,8 +2673,8 @@ snmp_stat_nas1(cmd, unused, subid, varp, errp)
         int *errp;
 {
         return snmp_stat_nas(0, cmd,
-			     (struct nas_data*)snmpserv_get_data(), subid,
-			     varp, errp);
+                             (struct nas_data*)snmpserv_get_data(), subid,
+                             varp, errp);
 }
 
 int
@@ -2686,8 +2686,8 @@ snmp_stat_nas2(cmd, unused, subid, varp, errp)
         int *errp;
 {
         return snmp_stat_nas(1, cmd,
-			     (struct nas_data*)snmpserv_get_data(), subid,
-			     varp, errp);
+                             (struct nas_data*)snmpserv_get_data(), subid,
+                             varp, errp);
 }
 
 int
@@ -2699,8 +2699,8 @@ snmp_stat_nas3(cmd, unused, subid, varp, errp)
         int *errp;
 {
         return snmp_stat_nas(2, cmd,
-			     (struct nas_data*)snmpserv_get_data(), subid,
-			     varp, errp);
+                             (struct nas_data*)snmpserv_get_data(), subid,
+                             varp, errp);
 }
 
 int
@@ -2712,8 +2712,8 @@ snmp_stat_nas4(cmd, unused, subid, varp, errp)
         int *errp;
 {
         return snmp_stat_nas(3, cmd,
-			     (struct nas_data*)snmpserv_get_data(), subid,
-			     varp, errp);
+                             (struct nas_data*)snmpserv_get_data(), subid,
+                             varp, errp);
 }
 
 
@@ -2729,7 +2729,7 @@ snmp_nas_table(cmd, unused, subid, varp, errp)
         int *errp;
 {
         struct nas_table_data *data = (struct nas_table_data*)
-		                         snmpserv_get_data();
+                                         snmpserv_get_data();
         switch (cmd) {
         case MIB_NODE_GET:
                 if ((*varp = snmp_nas_table_get(subid, (*varp)->name, errp))
@@ -2972,7 +2972,7 @@ snmp_port_table(cmd, unused, subid, varp, errp)
         int *errp;
 {
         struct port_table_data *p = (struct port_table_data*)
-		                         snmpserv_get_data();
+                                         snmpserv_get_data();
         
         switch (cmd) {
         case MIB_NODE_GET:

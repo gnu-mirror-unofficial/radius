@@ -74,7 +74,7 @@ typedef struct request_class {
         int  max_requests;    /* Max.number of pending requests of this type */
         int  ttl;             /* Request time-to-live */
         int  cleanup_delay;   /* Delay before cleaning the completed request */
-	int  (*setup)();      /* Setup function */
+        int  (*setup)();      /* Setup function */
         int  (*handler)();    /* Handler function */
         void (*xmit)();       /* Retransmit function */
         int  (*comp)();       /* Compare function */
@@ -91,18 +91,18 @@ typedef struct request_class {
 typedef struct request {
         struct request *next;         /* Link to the next request */
         int             type;         /* request type */
-	int             status;       /* request status */
+        int             status;       /* request status */
         time_t          timestamp;    /* when was the request accepted */
         pthread_t       child_id;     /* ID of the handling process (or -1) */
         int             child_return; /* Child return code if completed */
         void           *data;         /* Request-specific data */
-	int             fd;           /* socket the request came from */
+        int             fd;           /* socket the request came from */
 } REQUEST;
 
 struct queue_stat {
-	size_t waiting;
-	size_t pending;
-	size_t completed;
+        size_t waiting;
+        size_t pending;
+        size_t completed;
 };
 typedef struct queue_stat QUEUE_STAT[R_MAX];
         
@@ -458,4 +458,4 @@ int request_flush_list();
 int request_stat_list(QUEUE_STAT stat);
 void request_handle(REQUEST *req);
 void *request_scan_list(int type, int (*handler)(), void *closure);
-	
+        

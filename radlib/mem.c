@@ -186,7 +186,7 @@ alloc_bucket(class)
         if (class->cont) {
                 class->allocated_cnt += class->elcnt;
                 put_back_cont(class, ENTRY(bp, 0), class->elcnt);
-		insist(class->allocated_cnt <= class->bucket_cnt * class->elcnt);
+                insist(class->allocated_cnt <= class->bucket_cnt * class->elcnt);
         } else {
                 end_ptr = ENTRY(bp, class->elcnt);
                 prev = ENTRY(bp, 0);
@@ -241,7 +241,7 @@ alloc_entry(size)
         }
 
         class_ptr->allocated_cnt++;
-	insist(class_ptr->allocated_cnt <= class_ptr->bucket_cnt * class_ptr->elcnt);
+        insist(class_ptr->allocated_cnt <= class_ptr->bucket_cnt * class_ptr->elcnt);
         ptr = class_ptr->free;
         class_ptr->free = ptr->next;
         mem_unlock();
@@ -259,8 +259,8 @@ put_back(class, ptr)
 
         class->allocated_cnt--;
         debug(10,
-	      ("elsize=%d, allocated_cnt=%d",
-	       class->elsize,class->allocated_cnt));
+              ("elsize=%d, allocated_cnt=%d",
+               class->elsize,class->allocated_cnt));
         insist(class->allocated_cnt <= class->bucket_cnt * class->elcnt);
         bzero(ptr, class->elsize);
         eptr->next = class->free;
@@ -385,7 +385,7 @@ again:
         }
 
         class_ptr->allocated_cnt += count;
-	insist(class_ptr->allocated_cnt <= class_ptr->bucket_cnt * class_ptr->elcnt);
+        insist(class_ptr->allocated_cnt <= class_ptr->bucket_cnt * class_ptr->elcnt);
         if (pre_first)  
                 pre_first->next = last->next;
         else
@@ -431,7 +431,7 @@ put_back_cont(class, ptr, count)
         Entry this_p, prev_p;
 
         class->allocated_cnt -= count;
-	insist(class->allocated_cnt <= class->bucket_cnt * class->elcnt);
+        insist(class->allocated_cnt <= class->bucket_cnt * class->elcnt);
 
         bzero(ptr, class->elsize * count);
 
@@ -578,7 +578,7 @@ free_string(str)
         pthread_mutex_lock(&string_mutex);
         hp = (STRHDR*)str - 1;
         if (--hp->s.nref == 0)
-		cfree_entry(hp, hp->s.nblk);
+                cfree_entry(hp, hp->s.nblk);
         pthread_mutex_unlock(&string_mutex);
 }
 

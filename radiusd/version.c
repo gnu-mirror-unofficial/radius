@@ -157,8 +157,8 @@ make_server_ident()
  */
 void
 version(stream, state)
-	FILE *stream;
-	struct argp_state *state;
+        FILE *stream;
+        struct argp_state *state;
 {
         int i;
         

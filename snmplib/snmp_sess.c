@@ -50,33 +50,33 @@ static pthread_key_t snmp_errno_key;
 
 static void
 snmp_errno_destroy(ptr)
-	void *ptr;
+        void *ptr;
 {
-	free(ptr);
+        free(ptr);
 }
 
 static void
 snmp_errno_create()
 {
-	pthread_key_create(&snmp_errno_key, snmp_errno_destroy);
+        pthread_key_create(&snmp_errno_key, snmp_errno_destroy);
 }
 
 int *
 __snmp_errno_location()
 {
-	int *p;
-	pthread_once(&snmp_errno_once, snmp_errno_create);
-	p = pthread_getspecific(snmp_errno_key);
-	if (!p) {
-		p = malloc(sizeof(*p));
-		if (!p)
-			abort ();
-		*p = 0;
-		pthread_setspecific(snmp_errno_key, p);
-	}
-	return p;
+        int *p;
+        pthread_once(&snmp_errno_once, snmp_errno_create);
+        p = pthread_getspecific(snmp_errno_key);
+        if (!p) {
+                p = malloc(sizeof(*p));
+                if (!p)
+                        abort ();
+                *p = 0;
+                pthread_setspecific(snmp_errno_key, p);
+        }
+        return p;
 }
-	
+        
 int
 snmp_req_id()
 {
@@ -170,7 +170,7 @@ snmp_session_create(community, host, port, cfn, closure)
         sp->next = NULL;
         sp->request_list = NULL;
 
-	return sp;
+        return sp;
 }
 
 int

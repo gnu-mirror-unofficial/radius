@@ -179,12 +179,12 @@ typedef struct radius_req {
         int                     data_len;     /* Length of raw data */
         int                     data_alloced; /* Was the data malloced */
         void                    *conn;        /* SQL connection */
-	
-	/* Saved reply values */
+        
+        /* Saved reply values */
         int                     reply_code;   /* Reply code */
         VALUE_PAIR              *reply_pairs; /* Reply pairs */
-	char                    *reply_msg;   /* FIXME: Reply message */
-	
+        char                    *reply_msg;   /* FIXME: Reply message */
+        
         /* Proxy support fields */
         char                    *realm;       /* stringobj, actually */
         int                     validated;    /* Already md5 checked */

@@ -1,3 +1,50 @@
+2001-11-06 Sergey Poznyakoff
+
+	* radlib/envar.c: Syntax cleanup.
+	* radlib/argcv.c: Likewise.
+	* radlib/client.c: Likewise.
+	* radlib/cryptpass.c: Likewise.
+	* radlib/dbm.c: Likewise.
+	* radlib/nas.c: Likewise.
+	* radlib/symtab.c: Likewise.
+	* radlib/users.l: Likewise.
+	* radlib/raddb.c: Likewise.
+	* snmplib/snmp_send.c: Likewise.
+	* snmplib/snmp_sess.c: Likewise.
+	* snmplib/snmp_mib.c: Likewise.
+	* radscm/rscm_utmp.c: Likewise.
+	* radscm/rscm_lib.c: Likewise.
+	* radscm/radscm.h: Likewise.
+	* radiusd/auth.c: Likewise.
+	* radiusd/files.c: Likewise.
+	* radiusd/proxy.c: Likewise.
+	* radiusd/radiusd.c: Likewise.
+	* radiusd/radutil.c: Likewise.
+	* radiusd/rewrite.y: Likewise.
+	* radiusd/log.c: Likewise..
+
+	* raduse/raduse.c: Bugfix.
+	* radiusd/scheme.c: Bugfix in scheme_auth.
+
+	* radiusd/checkrad.c: finger_check(): Get argument from the
+	`arg' envar.
+	* raddb/naslist: Reflect the new variable (arg).
+	* raddb/config: Removed usedbm and notify clauses.
+
+	* scripts/config-conv.awk: Changed default channel to
+	"radius.log", for compatibility.
+	* scripts/Makefile.am: Added config-conv.
+
+	* raddb/Makefile.am: Name dictionary backup file dictionary~.
+
+	* NEWS: Finally converted to human-readable form.
+	* configure.in: Increased version patchlevel.
+	* README-alpha: (new)
+	* Makefile.am: Added README-alpha.
+
+	* doc/texinfo/.ispell_english: updated
+	* doc/texinfo/operation.texi: updated
+
 2001-11-01 Sergey Poznyakoff
 
 	* radiusd/rewrite.y: Fixed bug in yylex() which prevented

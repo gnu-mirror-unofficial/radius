@@ -1,9 +1,25 @@
-Special thanks to Oswaldo E. Aguirre M. for offering the possibility
-to test Radius on Spark platform and for valuable improvements he had
-proposed.
+GNU Radius THANKS file.
 
-Thanks to Alexandre Oliva for his good advices and for help in testing 
-Radius on various platforms.
+GNU Radius would have never appeared without help from many individuals.
 
-Thanks to Dustin Mitchell for help in improving the texinfo documentation.
+Special thanks to Oswaldo E. Aguirre M. <oaguirre@reacciun.ve> for offering
+the possibility to test Radius on Spark platform and for valuable
+improvements he had proposed.
+
+Francisco J. Obispo S. <fobispo@reacciun.ve> invested a lot of his time and
+efforts in testing the program. He also wrote the WEB-RADACT -- the web
+interface to radius accounting information.
+
+Alexandre Oliva <aoliva@gnu.org> provided a lot of good advices and offered
+valuable help in testing Radius on various platforms.
+
+Thanks to Dustin Mitchell <dustin@cs.uchicago.edu> for help in improving 
+texinfo documentation.
+
+Thanks to all of the following for their
+bug reports/discussions/contributions:
+
+Jody Owens		jowens@worldinter.net
+Andrey Y. Mosienko	feo@ttn.ru
+Oleg Gawriloff		Oleg_Gawriloff@atlantm.com
 

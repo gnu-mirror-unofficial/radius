@@ -1,3 +1,6 @@
+2001-04-17  gray  <gray@farlep.net>
+	Fixed getopt_long detection in configure.in.
+
 2001-04-12  gray  <gray@farlep.net>	
 	Written radconf-mode.el -- a major mode for editing raddb/config
 	file.

@@ -1,0 +1,51 @@
+/* This file is part of GNU RADIUS.
+   Copyright (C) 2000,2001 Sergey Poznyakoff
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
+/* *************************************************************************
+ * The functions for deocding MAX Ascend port numbers.
+ * The port number is coded as XYYZZ
+ *   where X = 1 for digital, X = 2 for analog;
+ *         YY = line number (1 for first PRI/T1/E1, 2 for second, so on);
+ *         ZZ = channel number (on the PRI or Channelized T1/E1).
+ * usage:
+ *     1. Add following to your huntgroups file:
+ *        DEFAULT NAS-IP-Address = <IPADDR>, Rewrite-Function = "max_fixup"
+ *                NULL
+ *        where <IPADDR> is the IP address of your MAX server.
+ */
+integer
+max_decode_port(integer P, integer portcnt)
+{
+	if (P > 9999) {
+		integer s, l, c;
+
+		s = P / 10000; 
+		l = (P - (10000 * s))/100; 
+		c = P - ((10000 * s) + (100 * l)); 
+		return (c-1) + (l-1) * portcnt;
+	}
+	return P;
+}
+
+integer
+max_fixup()
+{
+	%[Orig-NAS-Port-Id] = %[NAS-Port-Id]; # Preserve original data
+	%[NAS-Port-Id] = max_decode_port(%[NAS-Port-Id], 32);
+	return 0;
+}
+

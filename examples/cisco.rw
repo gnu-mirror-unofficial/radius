@@ -1,0 +1,96 @@
+/* This file is part of GNU RADIUS.
+   Copyright (C) 2000,2001 Sergey Poznyakoff
+
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2 of the License, or
+   (at your option) any later version.
+
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software Foundation,
+   Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
+/* ************************************************************************ 
+ * Functions for normalizing packets coming from a cisco AS5300
+ * usage:
+ *     1. Uncomment $INCLUDE dictionary.voip in raddb/dictionary
+ *     2. Add following to your huntgroups file:
+ *        DEFAULT NAS-IP-Address = <IPADDR>, Rewrite-Function = "cisco_fixup"
+ *                NULL
+ *        where <IPADDR> is the cisco IP address.
+ */
+/* 
+ * The port rewriting function for cisco AS5300 used for voip.
+ * This function is used to generate NAS-Port-Id pair on the basis
+ * of vendor-specific pair 2. If the latter is in the form 
+ * "ISDN 9:D:999" (where each 9 represents a decimal digit), then 
+ * the function returns the number after the last colon. This is
+ * used as a port number.
+ */
+integer
+cisco_pid(string A)
+{
+	if (A =~ ".*\([0-9][0-9]*\):[A-Z]:\([0-9][0-9]*\)") {
+		return (integer)\2;
+	}
+	return -1;
+}
+
+/* This rewrites the brain-damaged cisco session id.
+ * The actual sid is the number before the first slash character.
+ * Other possibly relevant fields are also parsed out and saved 
+ * in the Voip-* A/V pairs.
+ * Note that you should $INCLUDE dictionary.voip in your main 
+ * dictionary file.
+ */
+string
+cisco_sid(string S)
+{
+	if (S =~ "\(.[^/]*\)/[^/]*/[^/]*/\([^/]*\)/\([^/]*\)/\([^/]*\)/\([^/]*\)/\([^/]*\)/\([^/]*\)/\([^/]*\).*") {
+		%[Voip-Connection-ID] = \2;
+		%[Voip-Call-Leg-Type] = \3;
+		%[Voip-Connection-Type] = \4;
+		%[Voip-Connect-Time] = \5;
+		%[Voip-Disconnect-Time] = \6;
+		%[Voip-Disconnect-Cause] = \7;
+		%[Voip-Remote-IP] = \8;
+		return \1;
+	} 
+	return S;
+}
+
+/* *************************************************************************
+ * If you don't need other parts of cisco sid, you can just use this:
+string
+cisco_sid(string S)
+{
+	if (S =~ "\(.[^/]*\)/.*") {
+		return \1;
+	} 
+	return S;
+}
+ *
+ *************/
+
+/*
+ * Compensate for cisco AS5300 anomalies
+ */
+integer
+cisco_fixup()
+{
+	integer pid;
+
+	if ((pid = cisco_pid(%[Cisco-PRI-Circuit])) != -1) {
+		if (*%[NAS-Port-Id])
+			%[Orig-NAS-Port-Id] = %[NAS-Port-Id];
+		%[NAS-Port-Id] = pid;
+	}
+	if (*%[Acct-Session-Id])
+		%[Acct-Session-Id] = cisco_sid(%[Acct-Session-Id]);
+	return 0;
+}

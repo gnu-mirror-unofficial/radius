@@ -355,7 +355,22 @@ radius_close_filter(pid, pipe)
 	kill(pid, SIGTERM);
 }
 
-typedef struct filter_symbol {
+typedef struct filter_symbol Filter_symbol;
+typedef struct filter_runtime_data Filter;
+
+struct filter_runtime_data {
+	Filter *next;
+	Filter_symbol *sym;
+	pthread_t tid;              /* Thread ID of the thread this filter
+				       belongs to */
+	pid_t  pid;                 /* Pid of the filter process */
+	size_t lines_input;         /* Number of lines read from the filter */
+	size_t lines_output;        /* Number of lines written to the filter */
+	FILE   *input;              /* Input stream */
+	FILE   *output;             /* Output stream */
+};
+
+struct filter_symbol {
         struct user_symbol *next;
 	char *name;                 /* Name of the filter */
 	/* Configuration data */
@@ -364,19 +379,15 @@ typedef struct filter_symbol {
 	int  argc;                  /* Number of entries in the argv */
         char **argv;                /* Invocation vector */
 	char *errfile;              /* Filename for error output (fd 2) */
-	
+	int common;                 /* Is the filter common for all threads */
 	struct {
 		char *input_fmt;    
 		int wait_reply;
 	} auth, acct;
-	/* Runtime data */
-	pid_t  pid;                 /* Pid of the filter process */
-	size_t lines_input;         /* Number of lines read from the filter */
-	size_t lines_output;        /* Number of lines written to the filter */
-	FILE   *input;              /* Input stream */
-	FILE   *output;             /* Output stream */
-	pthread_mutex_t mutex; 
-} Filter_symbol;
+	
+	Filter *filter;             /* Runtime data */
+	pthread_mutex_t mutex;      /* Prevent concurrent access */
+}; 
 
 static Symtab *filter_tab;
 static Filter_symbol filter_symbol;
@@ -386,43 +397,66 @@ struct filter_sigchild_data {
 	int status;
 };
 
+static void filter_lock(Filter *filter);
+static void filter_unlock(Filter *filter);
+static void filter_close(Filter *filter);
+static Filter *filter_open(char *name, RADIUS_REQ *req);
+static char *filter_xlate(struct obstack *sp, char *fmt, RADIUS_REQ *radreq);
+static int filter_write(Filter *filter, char *fmt, RADIUS_REQ *radreq);
+static int filter_stmt_handler(int argc, cfg_value_t *argv, void *block_data,
+			       void *handler_data);
+static int filter_stmt_end(void *block_data, void *handler_data);
+static int exec_path_handler(int argc, cfg_value_t *argv, void *block_data,
+			     void *handler_data);
+static int error_log_handler(int argc, cfg_value_t *argv, void *block_data,
+			     void *handler_data);
+static int _store_format_ptr(int argc, cfg_value_t *argv, void *block_data,
+			     void *handler_data);
+
 static int
 _close_filter(data, sym)
 	struct filter_sigchild_data *data;
-        Filter_symbol *sym;
+	Filter_symbol *sym;
 {
-	if (sym->pid == data->pid) {
-		if (sym->input) {
-			fclose(sym->input);
-			sym->input = NULL;
+	Filter *filter;
+
+	for (filter = sym->filter; filter; filter = filter->next) {
+		if (filter->pid == data->pid) {
+			if (filter->input) {
+				fclose(filter->input);
+				filter->input = NULL;
+			}
+			if (filter->output) {
+				fclose(filter->output);
+				filter->output = NULL;
+			}
+			radlog(L_ERR,
+	      _("filter %s (pid %d) exited with status %d (in: %u, out: %u)"),
+			       sym->name, filter->pid,
+			       WEXITSTATUS(data->status),
+			       filter->lines_input, filter->lines_output);
+			filter->pid = -1;
+			data->pid = 0;
+			return 1;
 		}
-		if (sym->output) {
-			fclose(sym->output);
-			sym->output = NULL;
-		}
-		sym->pid = -1;
-		radlog(L_ERR,
-		       "filter %s exited with status %d (in: %u, out: %u)",
-		       sym->name, WEXITSTATUS(data->status),
-		       sym->lines_input, sym->lines_output);
-		data->pid = 0;
-		return 1;
 	}
 	return 0;
 }
 
 static void
-filter_lock(sym)
-	Filter_symbol *sym;
+filter_lock(filter)
+	Filter *filter;
 {
-	Pthread_mutex_lock(&sym->mutex);
+	if (filter->sym->common)
+		Pthread_mutex_lock(&filter->sym->mutex);
 }
 
 static void
-filter_unlock(sym)
-        Filter_symbol *sym;
+filter_unlock(filter)
+        Filter *filter;
 {
-	Pthread_mutex_unlock(&sym->mutex);
+	if (filter->sym->common)
+		Pthread_mutex_unlock(&filter->sym->mutex);
 }
 
 int
@@ -438,70 +472,87 @@ filter_sigchild(pid, status)
 }
 	
 void
-filter_close(sym)
-	Filter_symbol *sym;
+filter_close(filter)
+	Filter *filter;
 {
-	if (sym->pid == -1) 
+	if (filter->pid == -1) 
 		return;
 
-	if (sym->input) {
-		fclose(sym->input);
-		sym->input = NULL;
+	if (filter->input) {
+		fclose(filter->input);
+		filter->input = NULL;
 	}
-	if (sym->output) {
-		fclose(sym->output);
-		sym->output = NULL;
+	if (filter->output) {
+		fclose(filter->output);
+		filter->output = NULL;
 	}
-	kill(sym->pid, SIGTERM);
-	sym->pid = -1;
+	kill(filter->pid, SIGTERM);
+	filter->pid = -1;
 }
 
-static Filter_symbol *
+static Filter *
 filter_open(name, req)
 	char *name;
 	RADIUS_REQ *req;
 {
+	Filter *filter;
 	Filter_symbol *sym = sym_lookup(filter_tab, name);
 	if (!sym) {
 		radlog_req(L_ERR, req,
-			   _("filter `%s' is not declared"),
+			   _("filter %s is not declared"),
 			   name);
 		return NULL;
 	}
-	filter_lock(sym);
-	if (sym->pid <= 0) {
+
+	pthread_mutex_lock(&sym->mutex);
+	if (!sym->common) {
+		pthread_t tid = pthread_self();
+		for (filter = sym->filter; filter; filter = filter->next) 
+			if (filter->tid == tid)
+				break;
+	} else
+		filter = sym->filter;
+	if (!filter) {
+		filter = alloc_entry(sizeof(*filter));
+		filter->tid = pthread_self();
+		filter->sym = sym;
+		filter->next = sym->filter;
+		sym->filter = filter;
+	}
+	
+	if (filter->pid <= 0) {
 		int pipe[2];
-		sym->pid = radius_run_filter(sym->argc, sym->argv,
-					     sym->errfile,
-					     pipe);
-		if (sym->pid < 0) {
+		filter->pid = radius_run_filter(sym->argc, sym->argv,
+						sym->errfile,
+						pipe);
+		if (filter->pid < 0) {
 			radlog_req(L_ERR|L_PERROR, req,
-				   _("cannot run filter `%s'"),
+				   _("cannot run filter %s"),
 				   name);
-			filter_unlock(sym);
+			pthread_mutex_unlock(&sym->mutex);
 			return NULL;
 		}
 
 		if (!sym->auth.wait_reply && !sym->acct.wait_reply) {
 			close(pipe[0]);
-			sym->input = NULL;
+			filter->input = NULL;
 		} else
-			sym->input  = fdopen(pipe[0], "r");
-		sym->output = fdopen(pipe[1], "w");
-		sym->lines_input = 0;
-		sym->lines_output = 0; 
+			filter->input  = fdopen(pipe[0], "r");
+		filter->output = fdopen(pipe[1], "w");
+		filter->lines_input = 0;
+		filter->lines_output = 0; 
 	}
 
-	if (kill(sym->pid, 0)) {
+	if (kill(filter->pid, 0)) {
 		radlog_req(L_ERR|L_PERROR, req,
-			   _("filter `%s'"),
+			   _("filter %s"),
 			   name);
-		filter_close(sym);
-		filter_unlock(sym);
-		return NULL;
+		filter_close(filter);
+		filter = NULL;
 	}
-	filter_unlock(sym);
-	return sym;
+	pthread_mutex_unlock(&sym->mutex);
+
+	return filter;
 }
 
 static void
@@ -526,7 +577,8 @@ filter_xlate(sp, fmt, radreq)
 		if (interpret(fmt+1, radreq, &type, &datum)) 
 			return NULL;
 		if (type != String) {
-			radlog(L_ERR, "wrong return type");
+			radlog(L_ERR, "%s: %s",
+			       fmt+1, _("wrong return type"));
 			return NULL;
 		}
 		obstack_grow(sp, datum.sval, strlen(datum.sval)+1);
@@ -539,8 +591,8 @@ filter_xlate(sp, fmt, radreq)
 }
 
 static int
-filter_write(sym, fmt, radreq)
-	Filter_symbol *sym;
+filter_write(filter, fmt, radreq)
+	Filter *filter;
 	char *fmt;
 	RADIUS_REQ *radreq;
 {
@@ -558,12 +610,12 @@ filter_write(sym, fmt, radreq)
 		rc = length = 0;
 	} else {
 		length = strlen(str);
-		debug(1,("%s < \"%s\"", sym->name, str));
-		rc = fprintf(sym->output, "%s\n", str);
-		fflush(sym->output);
+		debug(1,("%s < \"%s\"", filter->sym->name, str));
+		rc = fprintf(filter->output, "%s\n", str);
+		fflush(filter->output);
 	}
 	pthread_cleanup_pop(1);
-	sym->lines_output++;
+	filter->lines_output++;
 	return rc != length + 1;
 }
 
@@ -576,53 +628,55 @@ filter_auth(name, req, reply_pairs)
 	RADIUS_REQ *req;
 	VALUE_PAIR **reply_pairs;
 {
-	Filter_symbol *sym;
+	Filter *filter;
 	int rc = -1;
 
-	sym = filter_open(name, req);
-	if (!sym)
+	filter = filter_open(name, req);
+	if (!filter)
 		return -1;
-	pthread_cleanup_push(filter_unlock, sym);
-	filter_lock(sym);
-	if (sym->pid == -1)
+	pthread_cleanup_push((void (*)(void)) filter_unlock, filter);
+	filter_lock(filter);
+	if (filter->pid == -1)
 		rc = -1;
-	else if (filter_write(sym, sym->auth.input_fmt, req)) 
+	else if (filter_write(filter, filter->sym->auth.input_fmt, req)) 
 		rc = -1;
-	else if (!sym->auth.wait_reply) 
+	else if (!filter->sym->auth.wait_reply) 
 		rc = 0;
 	else {
 		char *buf = NULL;
 		char buffer[1024];
 	
-        	pthread_cleanup_push(filter_close, sym);
-		buf = fgets(buffer, sizeof buffer, sym->input);
+        	pthread_cleanup_push((void (*)(void)) filter_close, filter);
+		buf = fgets(buffer, sizeof buffer, filter->input);
 		pthread_cleanup_pop(0);
 		if (!buf) {
 			radlog(L_ERR|L_PERROR,
-		       	       "reading from filter %s",
-		       	       sym->name);
+		       	       _("reading from filter %s"),
+		       	       filter->sym->name);
 			rc = -1;
 		} else {
-			sym->lines_input++;
+			filter->lines_input++;
 			if (isdigit(*buf)) {
 				char *ptr;
 				VALUE_PAIR *vp = NULL;
 				char *errp;
 
-                		debug(1, ("%s > \"%s\"", sym->name, buffer));
+                		debug(1, ("%s > \"%s\"", filter->sym->name,
+					  buffer));
 				rc = strtoul(buf, &ptr, 0);
 				if (userparse(ptr, &vp, &errp)) {
 					radlog(L_ERR,
 				       		_("<stdout of %s>:%d: %s"),
-				       		sym->name, sym->lines_output,
-                                                errp);
+					       filter->sym->name,
+					       filter->lines_output,
+					       errp);
 					avl_free(vp);
 				} else
                 			avl_merge(reply_pairs, &vp);
 			} else {
 				radlog(L_ERR,
-			       		"filter %s(auth): bad output: %s",
-			       		sym->name, buf);
+				       _("filter %s (auth): bad output: %s"),
+					 filter->sym->name, buf);
 				rc = -1;
 			}
 		}
@@ -637,7 +691,7 @@ filter_acct(name, req)
 	char *name;
 	RADIUS_REQ *req;
 {
-	Filter_symbol *sym;
+	Filter *filter;
 	int rc = -1;
 	char *buf = NULL;
 	char *errp;
@@ -645,41 +699,42 @@ filter_acct(name, req)
 	VALUE_PAIR *vp = NULL;
 	char buffer[1024];
 	
-	sym = filter_open(name, req);
-	if (!sym)
+	filter = filter_open(name, req);
+	if (!filter)
 		return -1;
-	pthread_cleanup_push(filter_unlock, sym);
-	filter_lock(sym);
-	if (sym->pid == -1)
+	pthread_cleanup_push((void (*)(void)) filter_unlock, filter);
+	filter_lock(filter);
+	if (filter->pid == -1)
 		rc = -1;
-	else if (filter_write(sym, sym->acct.input_fmt, req)) 
+	else if (filter_write(filter, filter->sym->acct.input_fmt, req)) 
 		rc = -1;
-	else if (!sym->acct.wait_reply) 
+	else if (!filter->sym->acct.wait_reply) 
 		rc = 0;
 	else {
 		char *buf = NULL;
 		char buffer[1024];
 	
-        	pthread_cleanup_push(filter_close, sym);
-		buf = fgets(buffer, sizeof buffer, sym->input);
+                pthread_cleanup_push((void (*)(void)) filter_close, filter);
+		buf = fgets(buffer, sizeof buffer, filter->input);
 		pthread_cleanup_pop(0);
 		if (!buf) {
 			radlog(L_ERR|L_PERROR,
-		       	       "reading from filter %s",
-		       	       sym->name);
+		       	       _("reading from filter %s"),
+		       	       filter->sym->name);
 			rc = -1;
 		} else {
-			sym->lines_input++;
+			filter->lines_input++;
 			if (isdigit(*buf)) {
 				char *ptr;
 				char *errp;
 
-				debug(1, ("%s > \"%s\"", sym->name, buffer));
+				debug(1, ("%s > \"%s\"",
+					  filter->sym->name, buffer));
 				rc = strtoul(buf, &ptr, 0);
 			} else {
 				radlog(L_ERR,
-				       "filter %s(acct): bad output: %s",
-				       sym->name, buf);
+				       _("filter %s (acct): bad output: %s"),
+				       filter->sym->name, buf);
 				rc = -1;
 			}
 		}
@@ -693,13 +748,20 @@ static int
 free_symbol_entry(sym)
         Filter_symbol *sym;
 {
+	Filter *filter;
 	efree(sym->auth.input_fmt);
 	efree(sym->acct.input_fmt);
 	argcv_free(sym->argc, sym->argv);
 	efree(sym->errfile);
+	filter = sym->filter;
+	while (filter) {
+		Filter *next = filter->next;
+		if (filter->pid > 0)
+			filter_close(filter);
+		free_entry(filter);
+		filter = next;
+	}
 	pthread_mutex_destroy(&sym->mutex);
-	if (sym->pid > 0)
-		filter_close(sym);
 	return 0;
 }
 
@@ -742,6 +804,7 @@ filter_stmt_handler(argc, argv, block_data, handler_data)
 	filter_symbol.errfile = NULL;
 	filter_symbol.auth.wait_reply = 1;
 	filter_symbol.acct.wait_reply = 1;
+	filter_symbol.common = 0;
 	return 0;
 }
 
@@ -770,7 +833,8 @@ filter_stmt_end(block_data, handler_data)
 		sym->auth.wait_reply = filter_symbol.auth.wait_reply;
 		sym->acct.wait_reply = filter_symbol.acct.wait_reply;
 		sym->errfile  = estrdup(filter_symbol.errfile);
-		sym->pid = -1;
+		sym->common   = filter_symbol.common;
+		sym->filter = NULL;
 		pthread_mutex_init(&sym->mutex, NULL);
 	}
 	return 0;
@@ -872,6 +936,8 @@ static struct cfg_stmt filter_acct_stmt[] = {
 static struct cfg_stmt filter_stmt[] = {
 	{ "exec-path", CS_STMT, NULL, exec_path_handler, NULL, NULL, NULL },
 	{ "error-log", CS_STMT, NULL, error_log_handler, NULL, NULL, NULL },
+	{ "common", CS_STMT, NULL, cfg_get_boolean, &filter_symbol.common,
+	  NULL, NULL },
 	{ "auth", CS_BLOCK, NULL, NULL, NULL, filter_auth_stmt, NULL },
 	{ "acct", CS_BLOCK, NULL, NULL, NULL, filter_acct_stmt, NULL },
 	{ NULL },

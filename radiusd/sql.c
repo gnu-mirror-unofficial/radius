@@ -728,7 +728,8 @@ attach_sql_connection(int type)
                 debug(1, ("allocating new %d sql connection", type));
 
                 conn = grad_emalloc(sizeof(struct sql_connection));
-                conn->connected = 0;
+		conn->cfg = &sql_cfg;
+		conn->connected = 0;
                 conn->last_used = now;
                 conn->type = type;
 
@@ -1237,6 +1238,7 @@ sql_init()
 			    rad_sql_mlc_collect_realm,
 			    rad_sql_mlc_close,
 			    rad_sql_mlc_enabled_p);
+	disp_init();
 }
 
 

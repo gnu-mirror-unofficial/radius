@@ -42,6 +42,8 @@ grad_avp_t *radscm_list_to_avl(SCM list);
 SCM radscm_avp_to_cons(grad_avp_t *pair);
 grad_avp_t *radscm_cons_to_avp(SCM scm);
 
+static void scheme_before_config_hook(void *a, void *b);
+
 
 /* General-purpose eval handlers */
 
@@ -273,13 +275,26 @@ catch_handler(void *data, SCM tag, SCM throw_args)
 }
 
 
+static void
+scheme_before_config_hook(void *data, void *b ARG_UNUSED)
+{
+	SCM *pscm;
+	pscm = SCM_VARIABLE_LOC(scm_c_lookup("%load-path"));
+	*pscm = (SCM) data;
+}
+
 void
 scheme_boot(void *closure, int argc, char **argv)
 {
+        SCM orig_load_path = RAD_SCM_SYMBOL_VALUE("%load-path");
+         
+	radiusd_set_preconfig_hook(scheme_before_config_hook, orig_load_path,
+				   0);
 	scm_internal_catch(SCM_BOOL_T,
 			   catch_body, closure,
 			   catch_handler, NULL);
 }
+
 
 void
 scheme_main()

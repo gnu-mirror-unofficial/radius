@@ -18,19 +18,41 @@
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 string
-default_log_prefix(string reqtype, string nas, integer id)
+default_log_prefix(integer reqtype, string nas, integer id)
+{
+        string result;
+
+        result = "(" + request_code_string(reqtype) + " "
+                 + nas + " " + (string)id + " "
+                 + "\"" quote_string(%[User-Name]) + "\"";
+        if (*%[Calling-Station-Id])
+                result = result + " CLID=" + %[Calling-Station-Id];
+        if (*%[Called-Station-Id])
+                result = result + " CSID=" + %[Called-Station-Id];
+        return result + "): ";
+}
+
+/* The following two hooks emulate log files of versions 1.0 and 1.1.
+   To use, add to the logging clause of your raddb/config file the
+   following two lines:
+
+ 	prefix-hook "compat_log_prefix";
+	suffix-hook "compat_log_suffix"; */
+
+string
+compat_log_prefix(integer reqtype, string nas, integer id)
 {
 	string result;
 
-	result = "(" + reqtype + " " + nas + " " + (string)id + " " +
-                 %[User-Name];
+	result = "(" + request_code_string(reqtype) + " "
+                 + nas + " " + (string)id + " " + %[User-Name];
 	if (*%[Acct-Session-Id])
-		result = result + + %[Acct-Session-Id];
+		result = result + %[Acct-Session-Id];
 	return result + "): ";
 }
 
 string
-default_log_suffix(string reqtype, string nas, integer id)
+compat_log_suffix(integer reqtype, string nas, integer id)
 {
 	string result;
 	if (*%[Calling-Station-Id])

@@ -14,18 +14,20 @@ logging {
 		file "radius.log";
 		print-category yes;
 		print-level yes;
+		prefix-hook "default_log_prefix";
 	};
 	channel info {
 		file "radius.info";
 		print-pid yes;
+		prefix-hook "default_log_prefix";
 	};	
 	channel debug {
 		file "radius.debug";
+		prefix-hook "default_log_prefix";
 	};
 	category auth {
 		print-auth yes;
 		print-failed-pass yes;
-		hook "show_station_ids";
 	};
 	category info {
 		channel info;

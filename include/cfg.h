@@ -75,6 +75,10 @@ struct cfg_stmt {
 extern char *cfg_filename;
 extern int cfg_line_num;
 
+int cfg_ignore(int argc, cfg_value_t *argv,
+	       void *block_data, void *handler_data);
+int cfg_obsolete(int argc, cfg_value_t *argv,
+		 void *block_data, void *handler_data);
 int cfg_get_ipaddr(int argc, cfg_value_t *argv,
 		   void *block_data, void *handler_data);
 int cfg_get_integer(int argc, cfg_value_t *argv,

@@ -759,6 +759,22 @@ cfg_argc_error(int few)
  }		
 
 int
+cfg_ignore(int argc ARG_UNUSED, cfg_value_t *argv ARG_UNUSED,
+	   void *block_data ARG_UNUSED, void *handler_data ARG_UNUSED)
+{
+	return 0;
+}
+
+int
+cfg_obsolete(int argc ARG_UNUSED, cfg_value_t *argv ARG_UNUSED,
+	     void *block_data ARG_UNUSED, void *handler_data ARG_UNUSED)
+{
+	radlog(L_WARN, _("%s:%d: obsolete statement"),
+	       cfg_filename, cfg_line_num);
+	return 0;
+}
+
+int
 cfg_get_ipaddr(int argc, cfg_value_t *argv, void *block_data,
 	       void *handler_data)
 {

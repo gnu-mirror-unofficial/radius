@@ -22,6 +22,8 @@ debugmod:; here=`cd $(top_srcdir); pwd`; \
            $$here/scripts/debug.sh \
                  $$here/scripts/debugmod.m4 radlib $(SUBDIRS)
 
+webdoc:;   $(MAKE) -C doc/texinfo webdoc
+
 lint::
 	for dir in $(SUBDIRS); \
 	do \

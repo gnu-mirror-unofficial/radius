@@ -302,6 +302,8 @@ rad_create_pdu(rptr, code, id, vector, secret, pairlist, msg)
                                 status = 1;
                                 break;
                         }
+			debug(10,("send: Reply-Message = %*.*s",
+				  block_len, block_len, attr.data));
                         rad_pdu_add(&pdu, attr);
                         msg += block_len;
                         len -= block_len;

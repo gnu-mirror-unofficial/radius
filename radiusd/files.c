@@ -1145,12 +1145,6 @@ read_realms_entry(unused, fc, fv, file, lineno)
 		       file, lineno, fc);
 		return -1;
 	}
-	if (fc > 4) {
-		/*FIXME: Allow for variable number of fields */
-		radlog(L_ERR, _("%s:%d: too many fields (%d)"),
-		       file, lineno, fc);
-		return -1;
-	}
 	
 	rp = Alloc_entry(REALM);
 
@@ -1166,18 +1160,26 @@ read_realms_entry(unused, fc, fv, file, lineno)
 		rp->ipaddr = get_ipaddr(fv[1]);
 	STRING_COPY(rp->realm, fv[0]);
 	STRING_COPY(rp->server, fv[1]);
-	if (fc >= 3) {
-		if (strcmp(fv[2], "nostrip") == 0)
-			rp->striprealm = 0;
-		else if (strcmp(fv[2], "strip") == 0)
-			rp->striprealm = 1;
-		else {
-			radlog(L_ERR, _("%s:%d: invalid flag"),
-			       file, lineno);
-		}
+	
+	if (fc > 3 && isdigit(fv[fc-1][0])) {
+		/* Compatibility quirk: set login quota and decrease the
+		   number of fields. */
+		rp->maxlogins = atoi(fv[fc-1]);
+		fc--;
 	}
-	if (fc == 4) 
-		rp->maxlogins = atoi(fv[3]);
+	
+	if (fc > 2) {
+		envar_t *args;
+		int n;
+		
+		args = envar_parse_argcv(fc-2, &fv[2]);
+
+		rp->striprealm = envar_lookup_int(args, "strip", 1);
+		n = envar_lookup_int(args, "quota", 0);
+		if (n)
+			rp->maxlogins = n;
+		envar_free_list(args);
+	}
 	rp->next = realms;
 	realms = rp;
 	return 0;

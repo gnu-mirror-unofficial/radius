@@ -472,8 +472,9 @@ write_detail(RADIUS_REQ *radreq, int authtype, char *f)
                 }
 
                 /* Write each attribute/value to the log file */
-                pair = radreq->request;
-                while (pair != (VALUE_PAIR *)NULL) {
+                for (pair = radreq->request; pair; pair = pair->next) {
+			if (pair->prop & AP_INTERNAL)
+				continue;
                         switch (pair->attribute) {
                         case DA_USER_PASSWORD:
                                 break;
@@ -486,25 +487,26 @@ write_detail(RADIUS_REQ *radreq, int authtype, char *f)
                                         format_pair(pair, 0, &save));
                                 free(save);
                         } 
-                        pair = pair->next;
                 }
 
                 /* Add non-protocol attibutes. */
                 fprintf(outfd, "\tTimestamp = %ld\n", curtime);
                 switch (authtype) {
-                    case REQ_AUTH_OK:
-                        fprintf( outfd, "\tRequest-Authenticator = Verified\n");
+		case REQ_AUTH_OK:
+			fprintf(outfd, "\tRequest-Authenticator = Verified\n");
                         break;
-                    case REQ_AUTH_ZERO:
-                        fprintf( outfd, "\tRequest-Authenticator = None\n");
+		case REQ_AUTH_ZERO:
+                        fprintf(outfd, "\tRequest-Authenticator = None\n");
                         break;
-                    case REQ_AUTH_BAD:
-                        fprintf( outfd, "\tRequest-Authenticator = Unverified\n");
+		case REQ_AUTH_BAD:
+                        fprintf(outfd, "\tRequest-Authenticator = Unverified\n");
                         break;
-                    default:
+		default:
+			fprintf(outfd, "\tRequest-Authenticator = %d",
+				authtype);
                         break;
                 }
-                fprintf( outfd, "\n");
+                fprintf(outfd, "\n");
                 fclose(outfd);
                 ret = 0;
         }

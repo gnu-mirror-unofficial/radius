@@ -1,0 +1,29 @@
+@c This is part of the Radius manual.
+@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
+@node Radauth, Radctl, Radping, Top
+@chapter Radauth
+@pindex radauth
+
+The @code{radauth} utility sends the Radius server Access-Request
+packet and displays the result it gets. It can be used to test the
+configuration files. The usage is:
+
+@example
+raduse [-v] username password
+@end example
+
+The @code{-v} or @code{--verbose} option forces @code{raduse} to be
+verbose on output.
+
+If you enter @samp{.} (dot) instead of the password, the program
+will disable echoing on the screen, prompt you to enter it,
+and turn the echoing on again, thus preventing the password from being
+compromised.
+
+The program determines which Radius server to use, the authentication
+port number and shared secret following the procedure common for all
+client scripts. [FIXME: add reference to session.scm and explain
+which startup files are used]
+

@@ -1,0 +1,101 @@
+@c This is part of the Radius manual.
+@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
+@node Accounting, Logging, Authentication, Top
+@chapter Accounting
+@cindex Accounting Types
+
+GNU Radius supports three types of accounting. By default Unix and
+Detailed request accounting types are always enabled. 
+
+@menu
+* Unix Accounting::                     Unix style utmp/wtmp accounting.
+* Detailed Request Accounting::         Detailed requests.
+* SQL Accounting::                      Accounting to SQL server.
+@end menu
+
+@comment *L2****************************************************************
+@node Unix Accounting, Detailed Request Accounting, , Accounting
+@chapter Unix Accounting
+@cindex Unix Accounting
+
+This accounting method is always enabled.
+
+Radius keeps files @file{radutmp} and @file{radwtmp} in its logging
+directory  and stores the accounting data there. The utilities
+@code{radwho} and @code{radlast} can be used to list information about
+users' sessions.
+
+@xref{Naming conventions}.
+
+@xref{Radwho}.
+
+@xref{Radlast}.
+
+@comment *L2****************************************************************
+@node Detailed Request Accounting, SQL Accounting, Unix Accounting, Accounting
+@chapter Detailed Request Accounting
+@cindex Detailed Request Accounting
+
+This accounting method is always enabled.
+
+Radius stores the detailed information about accounting packets received
+in files @file{radacct/@var{nasname}/detail} @ref{Naming conventions}, where
+@var{nasname} means short nas name from the @file{raddb/naslist} file @ref{naslist}.
+
+The information stored there includes the timestamp and detailed
+dump of attributes from each packet, e.g.:
+
+@example
+Fri Dec 15 18:00:24 2000
+	Acct-Session-Id = "2193976896017"
+	User-Name = "e2"
+	Acct-Status-Type = Start
+	Acct-Authentic = RADIUS
+	Service-Type = Framed-User
+	Framed-Protocol = PPP
+	Framed-IP-Address = 11.10.10.125
+	Calling-Station-Id = "+15678023561"
+	NAS-IP-Address = 11.10.10.11
+	NAS-Port-Id = 8
+	Acct-Delay-Time = 0
+	Timestamp = 976896024
+	Request-Authenticator = Unverified
+
+Fri Dec 15 18:32:09 2000
+	Acct-Session-Id = "2193976896017"
+	User-Name = "e2"
+	Acct-Status-Type = Stop
+	Acct-Authentic = RADIUS
+	Acct-Output-Octets = 5382
+	Acct-Input-Octets = 7761
+	Service-Type = Framed-User
+	Framed-Protocol = PPP
+	Framed-IP-Address = 11.10.10.125
+	Acct-Session-Time = 1905
+	NAS-IP-Address = 11.10.10.11
+	NAS-Port-Id = 8
+	Acct-Delay-Time = 0
+	Timestamp = 976897929
+	Request-Authenticator = Unverified
+@end example
+
+@comment *L2****************************************************************
+@node SQL Accounting, , Detailed Request Accounting, Accounting
+@chapter SQL Accounting
+@cindex SQL Accounting
+
+The SQL accounting method is enabled when Radius is configured with
+@code{--enable-sql} option and @file{sqlserver} file in its
+configuration directory is properly set up @ref{sqlserver}.
+
+This version of GNU Radius (@value{VERSION}) supports MySQL and
+PostgreSQL servers. Support for Oracle servers will be added in the
+nearest future.
+
+With this accounting method enabled, @code{radiusd} will store the
+information about accounting requests in the configured SQL database.
+The accounting method is fully configurable: the Radius administrator
+defines both the types of requests to be accounted and the information
+to be stored into the database. @ref{sqlserver}.

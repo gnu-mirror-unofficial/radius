@@ -1,0 +1,55 @@
+@c This is part of the Radius manual.
+@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
+@node Radzap, Radgrep, Raduse, Top
+@chapter Radzap
+@pindex radzap
+
+@code{radzap} searches the Radius accounting database for matching login
+records and closes them.
+
+At least one of @samp{-n}, @samp{-p} options or username must be
+specified. If they are used in conjunction, they are taken as if
+joined by logical AND operation.
+
+@samp{radzap} operates in two modes: silent and confirm. The silent
+mode is enabled by default. When run in this mode, radzap deletes
+every record that matched the search conditions given.
+
+In confirm mode @samp{radzap} will ask for a confirmation
+before zapping each matching record. Every line beginning with a `y'
+is taken as positive response, otherwise it is taken as negative
+response.
+
+The confirm mode is toggled by the command line option @samp{-c}.
+
+@subheading Syntax
+
+@example
+radzap [options] [username]
+@end example
+
+@noindent
+Options are:
+
+@table @samp
+@item -c
+@itemx --confirm
+Enable confirm mode. 
+@item -q
+@itemx --quiet
+Disable confirm mode.
+@item -h
+@itemx --help
+Display short help summary and exit.
+@item -n @var{NAME}
+@itemx --nas @var{NAME}
+Specify NAS name to zap user from.
+@item -p @var{PORT}
+@itemx --port @var{PORT}
+Specify the port number of the session to be zapped. The port number
+can be specified either in its full form, i.e @code{radzap -p S02} or in
+its short form, like @code{radzap -p 2}.
+
+@end table

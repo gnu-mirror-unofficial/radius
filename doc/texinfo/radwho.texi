@@ -1,0 +1,255 @@
+@c This is part of the Radius manual.
+@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
+@node Radwho, Radlast, Debugging, Top
+@chapter Radwho
+@pindex radwho
+
+@code{Radwho} displays the list of users currently logged in by the
+Radius server.
+
+Default output information is made compatible with that of the standard
+unix finger(1) utility. For each user the following information is
+displayed: login name, name, connection protocol, NAS port, login date,
+NAS name, assigned IP address or corresponding network name.
+
+When used with @samp{-l} option, the long output format is used. In
+this format the following information is output:
+
+@table @samp
+@item Login
+Login name of the user
+@item SessionID
+Unique session ID assigned by the terminal server.
+@item Proto
+Connection prototype.
+@item Port
+Port number
+@item When
+Login date and time
+@item From
+The name of NAS that accepted the connection.
+@item Location
+Framed IP address or the corresponding network name.
+@item Caller
+Caller station ID ad reported by the NAS.
+@item Duration
+Duration of the session.
+@end table
+
+@menu
+* Options: radwho options.      Command line options.
+@end menu
+
+@comment *L2****************************************************************
+@node radwho options, , , Radwho
+@chapter Radwho command line options
+@cindex radwho, command line options
+
+The following command line options can be used to modify the behavior
+of the program:
+
+@table @samp
+@item -A
+@itemx --all
+Display the information about logged-out users as well. The logged-out
+users are shown with Proto field set to HUP.
+
+@item -c
+@itemx --calling-id
+Display the calling station ID in the second column.
+
+@item -d NAME
+@itemx --directory NAME
+Set the radius configuration directory name.
+
+@item -D @{short|abbr|full@}
+@itemx --date-formap @{short|abbr|full@}
+Set the date representation. By default dates are output as
+@code{DOW HH:MM}, where DOW means the day of week abbreviation,
+HH and MM mean hours and minutes respectively. This corresponds to
+option @samp{-D short}. Other available formats are:
+
+@table @samp
+@item abbr
+Abbreviated date: MM/DD HH:MM, where MM is a two-digit month number,
+DD --- a two-digit day of month.
+@item full
+Full data output, like this:
+
+@example
+Mon Dec 18 12:29:38 EET 2000
+@end example
+
+@end table
+
+@item -e STRING
+@itemx --empty STRING
+Display any empty field as STRING. This is useful when the output of
+@code{radwho} is fed to some analyzing program, as it helps to keep
+the same number of columns on each line of output.
+
+@item -F
+@itemx --finger
+Start in fingerd mode. In this mode @code{radwho} emulates the
+behavior of fingerd(8) utility. Use this option if starting
+@code{radwho} from the /etc/inetd.conf line like this:
+
+@example
+finger  stream  tcp   nowait  nobody   /usr/sbin/radwho radwho -fL
+@end example
+
+@noindent
+This mode is also enabled by default if @code{radwho} notices that its
+name (argv[0]) is @samp{fingerd} or @samp{in.fingerd}.
+
+@item -H
+@itemx --no-header
+Don't display header line.
+
+@item -i
+@itemx --session-id
+Display session ID instead of GECOS in the second column.
+
+@item -I @{smart|ip|nodomain@}
+@itemx --ip-format @{smart|ip|nodomain@}
+Change IP address representation. The meaning of the argument is as follows:
+
+@table @samp
+@item smart
+Select the best representation. The following rules apply:
+
+@enumerate 1
+@item For a NAS use its short name from @file{naslist}. If there is no
+short name, use its long name. If there is no long name either, go to
+2.
+@item Resolve IP address to FQDN.
+@item If the IP cannot be resolved, use dotted-quad representation of
+the IP
+@end enumerate
+
+@item ip
+Display IP in dotted-quad form.
+
+@item nodomain
+If the IP can be resolved to a fully qualified domain name, use the
+hostname part of it, i.e. any characters up to the first dot.
+@end table
+
+@item -u
+@itemx --local-also
+Display information about local users from the system @file{utmp} file.
+May prove useful when running @code{radwho} as a finger daemon.
+
+@item -n
+@itemx --no-resolve
+Do not resolve IP addresses. It is a synonym for -I ip.
+
+@item -o FORMAT
+@itemx --format FORMAT
+Select customized output format. This can also be changed by setting
+the value of environment variable @code{RADWHO_FORMAT}.
+The format string is a comma-separated list of format specifications
+in one of the following forms:
+
+@table @asis
+@item @var{field}
+Output @var{field} with its default width, heading and alignment. The
+field names and corresponding default values are discussed in detail below.
+@item @var{field}:@var{width}
+Output @var{field}, use column width @var{width}. If @var{width} starts
+with @samp{+}, the field will be right-aligned, if it starts with
+@samp{-}, the field will be left-aligned. Otherwise the default
+alignment will be used
+@item @var{field}:@var{width}:@var{heading}
+The same as above, but also supplies the heading for the column
+@end table
+
+The field names are:
+
+@table @code
+@item login
+Login name
+
+@item orig
+Original login name as supplied with the request.
+
+@item port
+NAS port number
+
+@item sid
+The Session ID
+
+@item nas
+The NAS name or IP address.
+
+@item ip
+Framed IP address assigned to the user, if it is provided framed
+service.
+
+@item proto
+Connection protocol. Its possible values are:
+
+@itemize @bullet
+@item @samp{PPP} for a point-to-point link
+@item @samp{SLIP} for a SLIP link
+@item @samp{HUP} for closed session
+@item @samp{shell} for shell user
+@end itemize
+
+@item date
+Date/time when the session started
+
+@item delay
+Delay time @ref{Acct-Delay-Time}.
+
+@item type
+Entry type in decimal.
+
+@item ptype
+Port type. This is one of the following letters:
+
+@multitable @columnfractions .15 .50
+@item Type @tab Meaning
+@item @samp{L}
+@tab Local connection
+@item @samp{R}
+@tab Rlogin connection
+@item @samp{S}
+@tab SLIP connection
+@item @samp{C}
+@tab CSLIP connection
+@item @samp{P}
+@tab PPP connection
+@item @samp{A}
+@tab Auto PPP connection
+@item @samp{E}
+@tab Telnet session
+@item @samp{T}
+@tab ``Clear TCP'' connection
+@item @samp{U}
+@tab TCP login service
+@item @samp{!}
+@tab Console session
+@item @samp{X}
+@tab Shell
+@end multitable
+
+@item time
+Total time of the session duration.
+
+@item clid
+The calling station ID.
+
+@item uname
+The GECOS field from local /etc/passwd, corresponding to the login name.
+If the user does not have a local account, his login name is output.
+
+@end table
+
+@item -s
+@itemx --secure
+Run in secure mode. Queries without a user name are rejected.
+
+@end table

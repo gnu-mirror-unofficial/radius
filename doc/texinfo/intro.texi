@@ -1,0 +1,83 @@
+@c This is part of the Radius manual.
+@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
+@node Intro, Glossary, Copying, Top
+@unnumbered Introduction to Radius
+
+Radius is a system serving for authentication and accounting. The name
+RADIUS (all capitals) stands for Remote Authentication in Dial-In User
+Service and usually denotes the underlying protocol name.
+
+Historically, radius servers were used as a means to authenticate the user
+coming from a dial-in connection, but GNU Radius is much more than an
+authentication system: it is an advanced, customizable and extensible system
+for controlling access to the network.
+
+GNU Radius has several built-in authentication and accounting methods.
+When these methods are not enough, it allows administrator to implement
+any new method he deems convenient. 
+
+GNU Radius includes radius server program capable of serving authentication
+and accounting requests, and a set of accompanying programs designed to
+monitor the activity of the server and analyze the information it provides.
+
+@comment *******************************************************************
+@node Glossary, Operation, Intro, Top
+@unnumbered Radius Glossary
+
+Throughout this document the following terms are used:
+
+@table @asis
+
+@item RADIUS
+(All capitals) The Remote Authentication in Dial-In User Service
+protocol as described in RFC 2138, 2865 and 2866.
+
+@cindex NAS
+@cindex Network Access Server
+@item NAS
+NAS stands for Network Access Server. It is a computer or a special device
+designed to provide access to the network. For example, it can be a
+computer connected to the network and equipped with several modems. Such
+NAS would allow the user connecting to one of its modems to access the
+network. 
+
+@cindex Service
+@item Service
+A service, such as PPP, SLIP, telnet, etc., provided to a user by the NAS.
+
+@cindex Session
+@item Session
+Every single instance of a service. Session starts when the service was
+first provided and ends when the service is ended. A user may have multiple
+sessions active simultaneously if he is allowed to.
+
+@cindex Session ID
+@item Session ID
+Session Identifier. A string of characters uniquely identifying the session.
+
+@cindex A/V pair
+@cindex Attribute
+@cindex Attribute-Value pair
+@item A/V pair
+Stands for Attribute-Value pair @ref{Attributes}. 
+
+@cindex Dial-In user
+@cindex Dial-Up user
+@item Dial-In or Dial-Up user
+A user connecting to a service through the modem line.
+
+@item User Database
+A database in which Radius server keeps information about users, their
+authentication information, etc.
+
+@item User's Profile
+A record in the User Database describing a particular user. User's
+Profile keeps the authentication and authorization information for
+that user, i.e. it contains data describing how this user should
+be authenticated as well as which services he is allowed to be
+provided and parameters of these services.
+
+@end table
+

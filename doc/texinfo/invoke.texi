@@ -1,0 +1,161 @@
+@c This is part of the Radius manual.
+@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
+@node Invocation, Configuration files, Naming conventions, Top
+@chapter How to start the daemon.
+@cindex Radius daemon invocation
+@cindex Invoking the radius daemon
+@pindex radiusd
+
+When started @code{radiusd} uses the configuration values from the following
+sources (in order of increasing precedence):
+
+@itemize @bullet
+@item Compiled-in defaults
+@item @file{raddb/config} file.
+@item Command line arguments
+@end itemize
+
+The following command line options are accepted:
+
+@table @samp
+
+@c ** -A option (radiusd)
+@c ** --log-auth-detail (radiusd)
+@item -A
+@itemx --log-auth-detail
+Enable detailed authentication logging. When this option is specified
+each authentication request is logged to the file
+@file{radacct/NASNAME/detail.auth}, where NASNAME is replaced by the
+short name of the NAS from @file{raddb/naslist}
+@ref{Naming conventions}.
+
+@c ** -a option (radiusd)
+@c ** --acct-directory (radiusd)
+@item -a DIR
+@itemx --acct-directory DIR
+Specify accounting directory.
+
+@c ** -b option (radiusd)
+@c ** --dbm option (radiusd)
+@item -b
+@itemx --dbm
+Enable DBM support.
+
+@c ** -d (radiusd)
+@c ** --config-directory option (radiusd)
+@item -d DIR
+@itemx --config-directory DIR
+Specify alternate configuration directory. Default is @file{@value{RADDB}}.
+
+@c ** -f option (radiusd)
+@c ** --foreground option (radiusd)
+@item -f
+@itemx --foreground
+Stay in foreground. We recommend to use it for debugging purposes only.
+
+@c ** -i option (radiusd)
+@c ** --ip-address
+@item -i IP
+@itemx --ip-address
+Specifies a source IP address. @code{Radiusd} will listen to packets
+coming to this address. If this option is not specified, the program
+picks up the first IP address it sees on the machine.
+
+@c ** -l option (radiusd)
+@c ** --logging-directory option (radiusd)
+@item -l DIR
+@itemx --logging-directory DIR
+Specify alternate logging directory. 
+
+@c ** -mb option (radiusd)
+@c ** --mode b (radiusd)
+@item -mb
+@itemx --mode b
+``Builddbm'' mode. Builds a DBM version of a plaintext users database.
+@ref{Builddbm}.
+
+@c ** -mc option (radiusd)
+@c ** --mode c (radiusd)
+@item -mc
+@itemx --mode c
+Check configuration files and exit. All errors are reported via usual
+log channels.
+
+@c ** -mt option (radiusd)
+@c ** --mode t (radiusd)
+@item -mt
+@itemx --mode t
+Test mode. In this mode @code{radiusd} starts an interactive interpreter
+which allows to test various aspects of its configuration.
+
+@c ** -n option (radiusd)
+@c ** --auth-only option (radiusd)
+@item -n
+@itemx --auth-only
+Process only authentication requests.
+
+@c ** -p option (radiusd)
+@c ** --port option (radiusd)
+@item -p PORTNO
+@itemx --port PORTNO
+Listen the udp port PORTNO. The accounting port is computed as @var{PORTNO} + 1.
+
+@c ** -P (radiusd)
+@c ** --pid-file-dir (radiusd)
+@item -P DIR
+@itemx --pid-file-dir DIR
+Specifies the alternate path for the pidfile. 
+
+@c ** -S option (radiusd)
+@c ** --log-stripped-names option (radiusd)
+@item -S
+@itemx --log-stripped-names
+Log usernames stripped off any prefixes/suffixes.
+
+@c ** -s option (radiusd)
+@c ** --single-process option (radiusd)
+@item -s
+@itemx --single-process
+Run in single process mode. This is for debugging purposes only. We strongly
+recommend @emph{against} using this option. Use it only when absolutely
+necessary.
+
+@c ** -v option (radiusd)
+@c ** --version option (radiusd)
+@item -v
+@itemx --version
+Display program version and exit
+
+@c ** -x option (radiusd)
+@c ** --debug option (radiusd)
+@item -x DEBUG_LEVEL
+@itemx --debug DEBUG_LEVEL
+Set debugging level. @var{DEBUG_LEVEL} is a comma-separated list of
+assignments in the forms
+
+@example
+MODULE
+MODULE = LEVEL
+@end example
+
+where @var{MODULE} is the module name or any non-ambiguous assignment
+thereof, LEVEL is the debugging level in the range 0-100. @ref{Debugging}
+
+@c ** -y option (radiusd)
+@c ** --log-auth option (radiusd)
+@item -y
+@itemx --log-auth
+Log authentications. With this option enabled, Radius will log any
+authentication attempt into its logfile @ref{Logging}.
+
+@item -z
+@itemx --log-auth-pass
+Log passwords along with authentication information. @emph{Do not use} this
+option. It is @emph{very} insecure, since all users' passwords will be
+echoed in the logfile. This option is provided only for debugging purposes.
+
+@end table
+
+

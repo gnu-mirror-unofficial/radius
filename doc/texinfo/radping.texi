@@ -1,0 +1,20 @@
+@c This is part of the Radius manual.
+@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
+@node Radping, Radauth, Radgrep, Top
+@chapter Radping
+@pindex radping
+
+This utility is a shell program that determines the user's
+framed IP address and runs @code{ping} on that address.
+
+@subheading Syntax
+@example
+radping @var{username}
+radping -c @var{calling-station-id} 
+@end example
+
+The second way of invoking the program allows to use calling station
+ID in order to indicate the user.
+

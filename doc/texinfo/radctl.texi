@@ -1,0 +1,381 @@
+@c This is part of the Radius manual.
+@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
+@node Radctl, Builddbm, Radauth, Top
+@chapter Radctl
+@pindex radctl
+
+@code{radctl} is a control interface to @code{radiusd} daemon. It allows
+user running it to query @code{radiusd} about various aspects of its
+work and issue administrative commands to it. 
+
+@code{Radctl} communicates with radius using either a regular
+UNIX-style signal interface or a special UDP control channel.
+
+@menu
+* Signal Interface::            Invoking radctl to use signal interface.
+* Control Channel::             Using radius control channel.
+@end menu
+
+@comment *L2****************************************************************
+@node Signal Interface, Control Channel, , Radctl
+@chapter Signal Interface
+@cindex signaling radius
+@cindex radctl, signal interface
+
+In order to use the signal interface invoke @code{Radctl} with
+@samp{-s} or @samp{--signal} option. The usage is:
+
+@example
+radctl -s @var{command} [@var{args}]
+@end example
+
+Where @var{command} is a command telling @code{radctl} which actions to
+take, and @var{args} are optional arguments to the command. Only one
+command can be specified per invocation.
+
+The valid @var{command}s are as follows:
+
+@table @code
+
+@item start [@var{args}]
+If @code{radiusd} is not running already, it is started. When
+present, @var{args} are passed as the command line to the
+server.
+
+@item stop
+Stops running @code{radiusd}.
+
+@item restart [@var{args}]
+Stops the server and then starts it again. When present, @var{args}
+are passed as the command line to the server.
+
+@item reload
+Causes running @code{radiusd} server to re-read its configuration files.
+
+@item dumpdb
+Tells @code{radiusd} to dump its user hash table into the file
+@file{@value{RADLOG}/radius.parse}. This can be used for debugging 
+configuration files.
+
+@item status
+@code{radiusd} reports its memory usage statistics. The information is
+logged under @code{Info} log level.
+
+@item which
+Reports the information about the running copy of @code{radiusd}.
+
+@end table
+
+No special configuration is needed in order to use radius signal
+interface.
+
+@comment *L2****************************************************************
+@node Control Channel, , Signal Interface, Radctl
+@chapter Control Channel
+@cindex control channel
+@cindex radctl, control channel
+
+Control channel offers much more flexible monitoring and control
+capabilities than regular UNIX-style signal interface. @code{radctl}
+uses control channel when invoked without @samp{-s} option.
+
+When using control channel interface, @code{radctl} switches to
+interactive mode, which allows you to directly send commands to
+the server and to immediately see the server replies.
+
+Since this option uses UDP channel, special attention must be paid
+to security issues while configuring the server.
+
+@menu
+
+* Configuring:radctl configuration.     Configuring radius to use
+                                        control channel.
+* Invocation:radctl invocation.         How to invoke @code{radctl}.
+* Commands:radctl commands.             Commands available in interactive
+                                        mode.
+@end menu
+
+@comment **L3***************************************************************
+@node radctl configuration, radctl invocation, , Control Channel
+@chapter Configuring @code{radctl}.
+@cindex configuring radctl
+@cindex radctl, configuring
+@cindex radctl.rc file
+@heading Configuring radius daemon
+
+To configure Radius to use @code{radctl} control channel the following
+actions must be performed:
+
+@table @asis
+
+@item Configure the port number to listen to.
+The port number to listen to incoming control requests is set in
+@code{cntl} statement in @file{config} file.
+
+@item Create administrative huntgroup.
+Since @code{radctl} interface provides some potentially dangerous
+commands, we recommend to restrict its usage to some trusted
+hosts. This can be done using huntgroups mechanism @ref{huntgroups}.
+The administrative huntgroup definition should include the
+trusted host IP address and name of a command which is allowed from
+this host. The command name must be listed in @code{State} attribute.
+See example below.
+
+@item Create administrative user.
+The administrative user profile should be created in the @file{users}
+file. It should be restricted to administrative huntgroup.
+
+@end table
+
+@heading Example @code{radctl} configuration.
+
+In the example below, we suppose that port 5000 is chosen as Radius
+administrative port, administrative user name is ROOT, and he is
+allowed to connect only from localhost. Then the following modifications
+would be needed:
+
+@subheading @file{config} file
+
+@example
+cntl @{
+        port 5000;
+@};
+@end example
+
+@subheading @file{huntgroups} file
+
+@example
+ROOT    NAS-IP-Address = 127.0.0.1, State = "getpid"            NULL
+ROOT    NAS-IP-Address = 127.0.0.1, State = "get-m-stat"        NULL
+ROOT    NAS-IP-Address = 127.0.0.1, State = "get-q-stat"        NULL
+ROOT    NAS-IP-Address = 127.0.0.1, State = "reload"            NULL
+ROOT    NAS-IP-Address = 127.0.0.1, State = "restart"           NULL
+ROOT    NAS-IP-Address = 127.0.0.1, State = "shutdown"          NULL
+ROOT    NAS-IP-Address = 127.0.0.1, State = "dumpdb"            NULL
+@end example
+
+@subheading @file{users}
+
+@example
+ROOT    Auth-Type = System,
+                Huntgroup-Name = "ROOT"
+        Service-Type = RADIUS-Administrative-User
+@end example
+
+@heading Configuring radctl
+
+Upon startup @code{Radctl} reads file @code{@value{RADDB}/radctl.rc},
+then file @code{@var{$HOME}/.radctl}. Both are usual Scheme sources. This is
+an example of @code{radctl.rc} file:
+
+@lisp
+;; Define a list of available servers. 
+(set! rad-server-list
+;;         ID      Hostname  Secret   Auth Acct Cntl
+;;       -------------------------------------------
+      '(("local" "localhost" "foobar" 1645 1646 5000)))
+
+;; Set client source address
+(rad-client-source-ip "127.0.0.1")
+;; Set timeout and the number of retransmission retries
+(rad-client-timeout 3)
+(rad-client-retry 2)
+;; Select default server to use
+(rad-select-server "local") 
+@end lisp
+
+@emph{Please note}, that the shared secret is listed in plaintext,
+as a usual Scheme string. Thus, special attention must be paid to
+security issues. The file @code{radctl.rc} should be owned by root
+and have permissions of at least 0600.
+
+@comment **L3***************************************************************
+@node radctl invocation, radctl commands, radctl configuration, Control Channel
+@chapter How to invoke @code{radctl}.
+@cindex radctl, invocation
+
+When started in control channel mode, @code{radctl} understands the
+following command line options:
+
+@table @code
+@item -d DIR
+@itemx --directory DIR
+Specifies the directory where radius dictionary files and
+@code{radctl.rc} file reside.
+
+@item -S HOST
+@itemx --server HOST
+Specifies the name of the server to connect to. @emph{Please note} that
+this is not a domain name, but rather the server ID under which it was
+registered using @samp{(set! rad-server-list ...)} statement in
+@code{radctl.rc} file. [FIXME:add reference]
+
+@item -u USERNAME
+@itemx --user USERNAME
+@itemx -l USERNAME
+@itemx --login USERNAME
+Specifies the username. If you start @code{radctl} without this option,
+you will have to issue @code{user} command from inside it.
+
+@item -p PASSWORD
+@itemx --password PASSWORD
+Specifies the password to be used while connecting to the
+server. Special password @samp{.} (dot) tells @code{radctl} to
+prompt you for the password with terminal echoing turned off.
+
+@item -v
+@itemx --verbose
+Enable verbose mode. In verbose mode all conversation with the
+Radius server is echoed on stderr.
+
+@item -h
+@itemx --help
+Display short usage help and exit.
+@end table
+
+@comment **L3***************************************************************
+@node radctl commands, , radctl invocation, Control Channel
+@chapter Radctl commands
+@cindex radctl commands
+@cindex commands, radctl
+
+A command in radctl interactive mode consists of a command verb and
+optional arguments. Any non-ambiguous abbreviated form of a command
+verb is accepted. Command arguments, however, may not be abbreviated.
+
+Commands fall into two groups: those that control the behavior of
+the @code{radctl} monitor itself, and those that are sent directly
+to the server.
+
+@subheading Internal commands
+
+These commands modify the behavior of radctl itself.
+
+@table @code
+
+@item help
+Output short help information.
+
+@item quit
+@itemx bye
+Exit the program.
+
+@item server
+Display the ID of the current radius server.
+
+@item server @var{id}
+Set current radius server.
+
+@itemx verbose
+Toggle verbose mode on/off. When verbose mode is on, @code{radctl}
+displays to stderr detailed log of its conversation with Radius
+server.
+
+@item login @var{name}
+@itemx user @var{name}
+Use @var{name} as administrative user login name.
+
+@item password @var{pass}
+Use the specified password. If @samp{.} (dot) is entered instead of
+plaintext password, @code{radctl} reads the password from
+@code{/dev/tty} with character echoing turned off and generation
+of signals by tty special characters disabled. This reduces the
+possibility of the password being compromised.
+
+@item list
+@itemx list active
+Display detailed information about current radius server.
+
+@item list avail
+List available radius servers. Only server ID and hostname (or IP
+address) are listed.
+
+@end table
+
+@subheading Server commands
+
+These are sent directly to the server:
+
+@table @code
+@item getpid
+Output the PID of the master Radius process.
+
+@item get-m-stat
+Display detailed memory usage statistics.
+
+@item get-q-stat
+Display detailed queue statistics. Four fields are displayed for each
+queue:
+@enumerate 1
+@item Queue number
+@item Number of pending requests
+@item Number of processed requests still residing in the queue
+@item Total number of requests in queue
+@end enumerate
+
+@item dumpdb
+Tells @code{radiusd} to dump its user database, i.e. the parsed
+contents of files @file{hints}, @file{huntgroups} and @file{users}
+to disk file. The filename is @file{radlog/radius.parse}
+@ref{Naming conventions}.
+
+@item reload @var{what}
+Instructs the server to reload a particular part of its configuration.
+The @var{what} argument specifies which of the configuration files to reload:
+
+@table @code
+@item all
+Reload all configuration files.
+
+@item users
+Reload the @file{users} file.
+
+@item dict
+Reload @file{dictionary} file. This implies reloading of @file{users},
+@file{huntgroups} and @file{hints}.
+
+@item huntgroups
+Reload @file{huntgroups} file.
+
+@item hints
+Reload @file{hints} file.
+
+@item clients
+Reload @file{clients} file.
+
+@item naslist
+Reload @file{naslist} file.
+
+@item realms
+Reload @file{realms} file.
+
+@item deny
+Reload @file{access.deny} file.
+
+@item sql
+Reload @file{sqlserver} file.
+
+@item rewrite
+Reload @file{rewrite} file.
+
+@end table
+
+@item restart
+Instructs Radius to flush all request queues and restart itself. In
+order to use this command, the @code{radiusd} program should have
+been started with its full pathname.
+
+@item shutdown
+Instructs Radius to flush all pending requests and shut down.
+
+@item suspend
+Tells radiusd to stop servicing incoming requests. The server becomes
+idle and listens only to the control channel.
+
+@item continue
+Undo the effect of the last @code{suspend} command.
+
+@end table
+

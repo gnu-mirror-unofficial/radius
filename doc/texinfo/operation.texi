@@ -1,0 +1,352 @@
+@c This is part of the Radius manual.
+@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
+@node Operation, Naming conventions, Glossary, Top
+@chapter  How Radius operates.
+@cindex NAS
+@cindex Network Access Server
+
+The main purpose of Radius is to centralize authentication of users coming
+from various network stations. Its primary usage is for dial-in users,
+though it can be used for any kind of network connection.
+
+Radius uses the Client/Server model. The main server keeps the centralized
+user database. Each user's profile in this database determines which services
+are allowed for this particular user.
+
+The Network Access Server (NAS in short) is a machine that actually provides
+a service for the user. It can do so, e.g. by running a pool of modems the
+users can connect to. Otherwise, it can be a machine connected to the network
+and allowing some form of remote access, like telnet or ssh. It can even be
+a workstation allowing console logins to it. Whichever service it provides
+the NAS sends the request to the central Radius server in order to determine
+whether the user trying to access the service is allowed to do so. Such
+request carries information about user's login name, password, NAS
+identifier (such as its IP address), etc.
+
+On receiving such request Radius server retrieves from its database
+a profile corresponding to the user's login name. The profile basically
+consists of two parts: a checklist used for authentication and a reply
+list used for authorization. The server checks the authenticity of the
+user using first part of the retrieved profile. If this check succedes,
+it uses second part of the profile to authorize the user, i.e. to
+determine which service he should be provided. Then, the server responds
+with the parameters of the service, such as connection speed, framed IP
+address, etc. If any of the described checks had failed, the server sends
+the negative response.
+
+If the server needs some additional information in order to process the
+request, it asks such information from the NAS. Thus, for example, if
+the user is allowed to use several services, he can be asked which one of
+them he wishes to use, etc.
+
+The Radius server can also be configured to perform session accounting.
+When NAS receives the positive Radius response, it initiates the connection
+and sends accounting start request to the Radius accounting server. On
+ending the connection the accounting stop request is sent. The NAS can also
+notify the server about other events, such as system shutdown or startup.
+The server receives these accounting requests and stores them in the
+database.
+
+@menu
+* Attributes::                  Attributes.
+* User Profile::                How the user information is stored.
+* Requests::                    Radius requests.
+* Processing requests::         How Radius processes incoming requests.
+* Realms::                      Co-operation between multiple Radiuses.
+@end menu
+
+@comment *L2****************************************************************
+@node Attributes, User Profile, Operation, Operation
+@chapter Attributes
+@cindex Attribute
+@cindex Attribute-Value pair
+@cindex A/V pair
+
+The information the Radius requests carry is stored as a list of
+@dfn{Attribute-Value pairs}. Each pair consists of @dfn{Attribute
+number} and @dfn{Attribute value}. The @dfn{Attribute number} identifies
+the type of information the pair carries and the @dfn{Attribute Value}
+keeps the actual data.
+
+The Value part of an attribute can contain the data of one of the
+following types:
+
+@table @asis
+@item Integer
+A 32-bit unsigned integer value.
+@item IP-number
+An IPv4 IP-number.
+@item String
+A character string up to 253 characters long.
+@end table
+
+For convenience, the attributes and the values of some frequently used
+integer attributes are given symbolic names. These names are assigned to
+attributes and values in the dictionary file @ref{dictionary,,dictionary file}.
+
+The attribute numbers range from 1 to 255. The attributes with the numbers
+greater than 255 are used internally by the sever and cannot be sent to
+the NAS.
+
+The special attribute 26, @dfn{Vendor-Specific}, is available to allow
+vendors of the NAS hardware or software to support their own extended
+attributes. @ref{Vendor-Specific,, Vendor-Specific attribute}.
+
+@ref{Attribute list}.
+
+@comment *L2****************************************************************
+@node User Profile, Requests, Attributes, Operation
+@chapter User Profile
+
+A record in the radius database containing all the authentication and
+authorization data for a given user is called a @dfn{User Profile}.
+The profile consists of three distinct parts:
+
+@table @asis
+@item User Name
+This is used as a primary look-up key. Two special user names are
+reserved: DEFAULT and BEGIN. These will be described in detail
+below.
+
+@item Check List
+The list of attribute-value pairs used for authentication.
+
+@item Reply List
+The list of attribute-value pairs which will be sent in the response
+packet to the NAS.
+
+@end table
+
+
+
+@comment *L2****************************************************************
+@node Requests, Processing requests, User Profile, Operation
+@chapter Radius requests
+@cindex Request
+
+The term @dfn{request} means both the authentication/accounting request
+from NAS to a Radius server and the response that the server sends back
+to the NAS.
+
+Each request contains the following fields
+
+@table @samp
+
+@item Code
+The code field identifies the type of the request. 
+
+@item Identifier
+The number in the range 0-255 used to match the request with the reply.
+
+@item Length
+The length of the request packet.
+
+@item Authenticator
+The 16-byte hash value used to authenticate the packet.
+
+@item Attributes
+
+The list of attribute/value pairs carrying actual information about the
+request. 
+
+@end table
+
+@menu
+* Authentication requests::
+* Accounting requests::
+@end menu
+
+@comment **L3***************************************************************
+@node Authentication requests, Accounting requests, , Requests
+@chapter Authentication requests
+@cindex Authentication requests
+@cindex requests, authentication
+
+A NAS sends authentication requests (packets with code Access-Request)
+to a RADIUS server when a user is trying to connect to that NAS. Such
+requests convey information used to determine whether a user
+is allowed access to the NAS, and any special services requested for
+that user.
+
+An Access-Request must contain a @code{User-Name} attribute
+@ref{User-Name}. It should contain either a @code{NAS-IP-Address}
+attribute or @code{NAS-Identifier} attribute, or both of them.
+It also must contain either a @code{Password} attribute or @code{CHAP-Password}
+attribute. These attributes are passed encoded using a method based
+on the RSA Message Digest Algorithm MD5.
+
+The Access-Request should contain a @code{NAS-Port} or @code{NAS-Port-Type}
+attribute or both unless the type of access being requested does
+not involve a port or the NAS does not distinguish among its
+ports.
+
+Upon receiving Access-Request packet for a particular user and
+authenticating that user, Radius server replies to the NAS that
+has sent the packet with either of the following packets:
+
+@itemize @bullet
+@item Access-Accept
+@item Access-Reject
+@item Access-Challenge
+@end itemize
+
+Radius replies with Access-Accept packet when it has successfully
+authenticated the user. Such reply packet provides specific
+configuration information necessary to begin delivery of service to
+the user.
+
+Radius replies with Access-Reject packet when it was unable to
+authenticate the user. Such packet may contain a descriptive
+text encapsulated in one or more @code{Reply-Message} attributes.
+The NAS may display this text along with its response to the
+user.
+
+Radius replies with Access-Challenge packet when it desires to
+obtain more information from the user in order to determine its
+authenticity or to determine the kind of service to be provided
+to the user.
+
+An Access-Challenge packet may include one or more @code{Reply-Message}
+attributes, and may also include a single @code{State} attribute, or
+none. No other Attributes are permitted in an Access-Challenge.
+
+On receipt of an Access-Challenge, the Identifier field is matched
+with a pending Access-Request.  Additionally, the Response Authenticator
+field must contain the correct response for the  pending Access-Request.
+Radius discards invalid packets and issues appropriate log message.
+
+If the NAS does not support challenge/response, it treats an
+Access-Challenge as though it had received an Access-Reject instead.
+Otherwise, upon receipt of a valid Access-Challenge the NAS prompts the
+user for a response, possibly displaying the text message provided in
+@code{Reply-Message} attributes of the request. It then sends its
+original Access-Request with a new request ID and Request Authenticator,
+with the @code{Password} attribute replaced by the encrypted user's
+response, and including the @code{State} attribute from the
+Access-Challenge, if any. 
+
+@comment **L3***************************************************************
+@node Accounting requests, , Authentication requests, Requests
+@chapter Accounting requests
+@cindex Accounting requests
+@cindex requests, accounting
+
+Accounting-Request packets are sent from a NAS to a Radius server
+to allow for accounting of a service provided to a user.
+
+Upon receipt of an Accounting-Request, the server attempts to record
+the accounting packet @ref{Accounting}, and if it succeeds in doing
+so it replies with an Accounting-Response packet. Otherwise it sends
+no reply, which then causes the NAS to retransmit its request within
+a preconfigured interval of time. Such retransmits will continue until
+either the server responds with an Accounting-Response packet or a
+preconfigured number of retransmits is reached, whichever occurs first.
+
+Any attribute valid in an Access-Request or Access-Accept packet
+is also valid in an Accounting-Request packet, except the following
+attributes, which are never present in an Accounting-Request packet:
+
+@itemize @bullet
+@item User-Password
+@item CHAP-Password
+@item Reply-Message
+@item State
+@end itemize
+
+Either @code{NAS-IP-Address} or @code{NAS-Identifier} must be present in an
+Accounting-Request.  It should contain a @code{NAS-Port} or
+@code{NAS-Port-Type} attribute or both unless the service does not involve a
+port or the NAS does not distinguish among its ports.
+
+If the Accounting-Request packet includes a Framed-IP-Address,
+that attribute MUST contain the actual IP address of the user.
+
+
+
+@comment *L2****************************************************************
+@node Processing requests, Realms, Requests, Operation
+
+@chapter Processing requests
+@cindex Request processing
+@cindex Processing requests
+
+Upon receiving the request Radius applies to it a number of checks to
+determine whether the request comes from the authorized source. If these
+checks succeed, the request is processed and responded. Otherwise, the
+request is dropped and corresponding error message is issued @ref{Logging}.
+
+The following checks are performed:
+
+@table @asis
+
+@item Check if the username is supplied
+If the packet lacks @code{User-Name} attribute it is not processed
+
+@item Check if the NAS is allowed to speak
+The source IP address of the machine that sent the packet is looked
+up in the @file{clients} file @ref{clients}. If no match is found,
+the request is not processed. 
+
+@item Compute the encryption key
+Using the data from the packet and the shared key value from the @file{clients}
+file, Radius computes the MD5 encryption key that will be used to decrypt
+the value of the @code{Password} attribute.
+
+@item Process @file{hints} file.
+Radius matches the packet against the contents of @file{hints} file
+using the following rules:
+
+Rule 1. Match the username
+If the username from the packet does not match the one in the record,
+the record does not match. @emph{Please note} that the special usernames
+@code{DEFAULT} or @code{DEFAULT%d} (%d means any decimal number) match
+any username.
+
+Rule 2. Modify the attributes.
+
+If the reply-pairs contain @code{Strip-User-Name} attribute and its
+value is @code{Yes} (1), then any prefixes/suffixes are stripped off
+the value of @code{User-Name} attribute.
+
+If the reply-pairs contain the @code{Rewrite-Function} attribute, the
+function specified in the value of this attribute is applied @ref{rewrite}.
+
+If the reply pairs contain @code{Fall-Through} attribute and its value is
+@code{Yes} (1) then Radius switches to the next record and goes back to
+the rule 1. Otherwise the matching process stops and returns the reply pairs
+from the record.
+
+@xref{hints}
+
+@end table
+
+@comment *L2****************************************************************
+@node Realms, , Processing requests, Operation
+@chapter Realms
+@cindex Realms
+
+We call a @dfn{realm} a community of users served by a single Radius
+server. Several such servers can co-operate with each other thus allowing
+users from a particular @dfn{realm} to be authorized using another
+@dfn{realm}'s server.
+
+Let's illustrate this concept. Suppose an ISP has its affiliates in two
+different cities, and each of these affiliates is using its own Radius
+server. Let's call the affiliates @dfn{A} and @dfn{B} and let's call
+the corresponding servers @dfn{radius.a} and @dfn{radius.b}. If the
+user of affiliate @dfn{A} moves to city @dfn{B} he is no longer able
+to use the service provided by @dfn{radius.a}, neither is he able to
+use the service provided by @dfn{radius.b} because he is not in the
+users database of the latter. To solve this situation, both Radius
+servers should be able to share their database information with each
+other. This is done by a very simple means: if user @samp{foo}
+connects to the equipment of the @dfn{B} and authenticates itself as
+@samp{foo@@A} then Radius server @dfn{radius.b} knows that the
+user belongs to another realm and passes the request to server
+@dfn{radius.a}. When the latter responds, server @dfn{radius.a} 
+simply passes the response back to NAS. In other words @dfn{radius.a}
+server acts as a proxy between the NAS to which the user is trying
+to connect and the Radius server which is responsible for authenticating
+the user.

@@ -1,0 +1,70 @@
+@c This is part of the Radius manual.
+@c Copyright (C) 1999,2000,2001 Sergey Poznyakoff
+@c See file radius.texi for copying conditions.
+@comment *******************************************************************
+@node Naming conventions, Invocation, Operation, Top
+@chapter Naming conventions.
+@cindex naming conventions
+
+This chapter describes file naming conventions used throughout this
+document.
+
+Programs from the GNU Radius package use the following directories
+to store various configuration and log files:
+
+@table @dfn
+@item Configuration or database directory
+A directory where all configuration files are stored.
+
+@item Log directory
+A directory where @code{radiusd} stores its radius files.
+
+@item Accounting directory
+A directory where @code{radiusd} stores accounting detail files
+@ref{Detailed Request Accounting}.
+
+@end table
+
+The default locations of these directories are determined at compile
+time. These are:
+
+@include config.texi
+@multitable @columnfractions .40 .15 .45
+@item Directory @tab Short Name @tab Default location 
+
+@item Configuration directory
+@cindex Configuration directory
+@cindex @file{raddb}
+@tab raddb
+@tab @value{RADDB}
+
+@item Log directory
+@cindex Log directory
+@cindex @file{radlog}
+@tab radlog
+@tab @value{RADLOG}
+
+@item Accounting directory
+@cindex Accounting directory
+@cindex radacct
+@tab radacct
+@tab @value{RADACCT}
+
+@end multitable
+
+Throughout this document we will refer to these directories by their
+short names, e.g. saying
+
+@example
+... this information is contained in file @file{raddb/sqlserver} 
+@end example
+
+@noindent
+we actually mean @file{@value{RADDB}/sqlserver}.
+
+If necessary, locations of these directories can be overridden by
+specifying appropriate command line options to a program. For
+example, any program from the GNU Radius package accepts command
+line option @code{-d} or @code{--directory}, which introduces
+the configuration directory path. 
+

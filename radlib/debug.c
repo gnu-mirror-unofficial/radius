@@ -119,4 +119,9 @@ set_debug_levels(str)
         radlog(L_ERR, _("compiled without debugging support"));
 }
 
+void
+clear_debug()
+{
+}
+
 #endif

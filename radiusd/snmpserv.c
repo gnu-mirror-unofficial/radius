@@ -44,40 +44,177 @@ static void snmpserv_before_config_hook(void *unused1, void *unused2);
 static void snmpserv_after_config_hook(void *arg, void *unused);
 static void snmp_tree_init();
 
-ACL *snmp_acl, *snmp_acl_tail;
-Community *commlist, *commlist_tail;
+static LIST /* of ACL */ *snmp_acl;
+static LIST /* of Community */ *commlist;
 Server_stat *server_stat;
 struct radstat radstat;
 
 /* ************************************************************************ */
 /* Configuration file */
 
-typedef struct netlist Netlist;
-struct netlist {
-        Netlist *next;
-        char *name;
-        ACL *acl;
-};
-static Netlist *netlist;
+static LIST /* of NETNAME */ *netlist;
 
-static ACL *
-find_netlist(char *name)
+static int
+_netname_cmp(const void *item, const void *data)
 {
-        Netlist *p;
-
-        for (p = netlist; p; p = p->next)
-                if (strcmp(p->name, name) == 0) 
-                        return p->acl;
-
-        return NULL;
+	const NETNAME *p = item;
+	const char *name = data;
+	return strcmp(p->name, name);
 }
 
+static NETNAME *
+netname_find(char *name)
+{
+        return list_locate(netlist, name, _netname_cmp);
+}
+
+static int
+_netdef_destroy(void *item, void *data ARG_UNUSED)
+{
+	efree(item);
+	return 0;
+}
+
+static int
+_netname_destroy(void *item, void *data ARG_UNUSED)
+{
+	NETNAME *p = item;
+	efree(p->name);
+	list_destroy(&p->netlist, _netdef_destroy, NULL);
+	efree(p);
+	return 0;
+}
+
+static void
+netlist_destroy()
+{
+	list_destroy(&netlist, _netname_destroy, NULL);
+}
+
+/* ************************************************************************ */
+/* ACL fiddling */
+
+void
+snmp_add_community(char *str, int access)
+{
+        Community *p = emalloc(sizeof(*p));
+        p->name = estrdup(str);
+        p->access = access;
+	if (!commlist)
+		commlist = list_create();
+        list_append(commlist, p);
+}
+
+
+static int
+_community_cmp(const void *item, const void *data)
+{
+        const Community *p = item;
+	return strcmp(p->name, (const char*) data);
+}
+
+
+Community *
+snmp_find_community(char *str)
+{
+	return list_locate(commlist, str, _community_cmp);
+}
+
+static int
+_community_destroy(void *item, void *data)
+{
+	Community *p = item;
+	efree(p->name);
+	efree(p);
+	return 0;
+}
+
+void
+snmp_free_communities()
+{
+	list_destroy(&commlist, _community_destroy, NULL);
+}
+
+struct acl_closure {
+	UINT4 ip;
+	char *community;
+	int access;
+};
+
+int
+_netdef_cmp(void *item, void *data)
+{
+	NETDEF *nd = item;
+	struct acl_closure *clos = data;
+
+	if (nd->ipaddr == (clos->ip & nd->netmask))
+		return 0;
+	return 1;
+}
+
+int
+_acl_iterator(void *item, void *data)
+{
+	ACL *acl = item;
+	struct acl_closure *clos = data;
+
+	if (acl->community
+	    && strcmp(acl->community->name, clos->community))
+		return 0;
+	if (list_locate(acl->netlist, data, _netdef_cmp)) {
+		clos->access = acl->community->access;
+		return 1;
+	}
+	return 0;
+}
+
+int
+check_acl(UINT4 ip, char *community)
+{
+	struct acl_closure clos;
+
+	clos.ip = ntohl(ip);
+	clos.community = community;
+	clos.access = 0;
+	list_iterate(snmp_acl, _acl_iterator, &clos);
+        return clos.access;
+}
+
+void
+snmp_add_acl(Community *community, LIST /* of NETDEF */ *netlist)
+{
+        ACL *acl;
+
+	acl = emalloc(sizeof(*acl));
+	acl->community = community;
+	acl->netlist = netlist;
+	if (!snmp_acl)
+		snmp_acl = list_create();
+	list_append(snmp_acl, acl);
+}
+
+static int
+_acl_destroy(void *item, void *data)
+{
+	efree(item);
+	return 0;
+}
+		
+void
+snmp_free_acl()
+{
+	list_destroy(&snmp_acl, _acl_destroy, NULL);
+}
+
+
+/* ************************************************************************* */
 static int _opened_snmp_sockets;
 
 int
 snmp_stmt_begin(int finish, void *data, void *up_data)
 {
 	if (!finish) {
+		netlist_destroy();
 		snmp_free_communities();
 		snmp_free_acl();
 		_opened_snmp_sockets = 0;
@@ -145,14 +282,6 @@ snmp_cfg_community(int argc, cfg_value_t *argv,
 	return 0;
 }
 
-static void
-destroy_netlist(void *np)
-{
-	Netlist *netlist = np;
-	free_acl(netlist->acl);
-	efree(netlist->name);
-}
-
 int
 snmp_cfg_listen(int argc, cfg_value_t *argv,
 		void *block_data, void *handler_data)
@@ -181,8 +310,7 @@ snmp_cfg_network(int argc, cfg_value_t *argv,
 		 void *block_data, void *handler_data)
 {
 	int i;
-	Netlist *p;
-	ACL *head = NULL, *tail = NULL;
+	NETNAME *np;
 	
 	if (argc < 3) {
 		cfg_argc_error(1);
@@ -194,10 +322,13 @@ snmp_cfg_network(int argc, cfg_value_t *argv,
 		return 0;
 	}
 
-        p = cfg_malloc(sizeof(*p), destroy_netlist);
-        p->next = netlist;
-        p->name = estrdup(argv[1].v.string);
-	
+        np = emalloc(sizeof(*np));
+	if (!netlist) 
+		netlist = list_create(netlist);
+		
+	list_append(netlist, np);
+        np->name = estrdup(argv[1].v.string);
+	np->netlist = list_create();
 	for (i = 2; i < argc; i++) {
 		if (argv[i].type != CFG_NETWORK) {
 			radlog(L_ERR,
@@ -205,18 +336,12 @@ snmp_cfg_network(int argc, cfg_value_t *argv,
 			       cfg_filename, cfg_line_num,
 			       i);
 		} else {
-			ACL *acl = mem_alloc(sizeof(*acl));
-			acl->ipaddr = argv[i].v.network.ipaddr;
-			acl->netmask = argv[i].v.network.netmask;
-			if (tail)
-				tail->next = acl;
-			else
-				head = acl;
-			tail = acl;
+			NETDEF *net = emalloc(sizeof(*net));
+			net->ipaddr = argv[i].v.network.ipaddr;
+			net->netmask = argv[i].v.network.netmask;
+			list_append(np->netlist, net);
 		}
 	}
-        p->acl = head;
-        netlist = p;
 	return 0;
 }
 
@@ -225,7 +350,7 @@ snmp_cfg_allow(int argc, cfg_value_t *argv,
 	       void *block_data, void *handler_data)
 {
 	Community *comm;
-	ACL *acl;
+	NETNAME *nn;
 	
 	if (argc != 3) {
 		cfg_argc_error(argc < 3);
@@ -237,8 +362,8 @@ snmp_cfg_allow(int argc, cfg_value_t *argv,
 		return 0;
 	}
 
-	if ((acl = find_netlist(argv[1].v.string)) == NULL) {
-		radlog(L_ERR, _("%s:%d: no such acl: %s"),
+	if ((nn = netname_find(argv[1].v.string)) == NULL) {
+		radlog(L_ERR, _("%s:%d: no such network: %s"),
 		       cfg_filename, cfg_line_num, argv[1].v.string);
 		return 0;
 	}
@@ -251,7 +376,7 @@ snmp_cfg_allow(int argc, cfg_value_t *argv,
 		return 0;
 	} 
 
-	snmp_add_acl(acl, comm);
+	snmp_add_acl(comm, nn->netlist);
 	return 0;
 }
 
@@ -259,7 +384,7 @@ static int
 snmp_cfg_deny(int argc, cfg_value_t *argv,
 	      void *block_data, void *handler_data)
 {
-	ACL *acl;
+	NETNAME *nn;
 	
 	if (argc != 2) {
 		cfg_argc_error(argc < 2);
@@ -271,13 +396,13 @@ snmp_cfg_deny(int argc, cfg_value_t *argv,
 		return 0;
 	}
 
-	if ((acl = find_netlist(argv[1].v.string)) == NULL) {
-		radlog(L_ERR, _("%s:%d: no such acl: %s"),
+	if ((nn = netname_find(argv[1].v.string)) == NULL) {
+		radlog(L_ERR, _("%s:%d: no such network: %s"),
 		       cfg_filename, cfg_line_num, argv[1].v.string);
 		return 0;
 	}
 
-	snmp_add_acl(acl, NULL);
+	snmp_add_acl(NULL, nn->netlist);
 	return 0;
 }
 
@@ -347,100 +472,6 @@ snmpserv_init(void *arg)
 	radiusd_set_postconfig_hook(snmpserv_after_config_hook, arg, 0);
 	snmp_tree_init();
 	snmpserv_after_config_hook(arg, NULL);
-}
-
-/* ************************************************************************ */
-/* ACL fiddling */
-
-void
-snmp_add_community(char *str, int access)
-{
-        Community *p = mem_alloc(sizeof(*p));
-        p->name = estrdup(str);
-        p->access = access;
-        if (commlist_tail)
-                commlist_tail->next = p;
-        else
-                commlist = p;
-        commlist_tail = p;
-}
-
-Community *
-snmp_find_community(char *str)
-{
-        Community *p;
-
-        for (p = commlist; p; p = p->next)
-                if (strcmp(p->name, str) == 0)
-                        return p;
-        return NULL;
-}
-
-void
-snmp_free_communities()
-{
-        Community *p = commlist, *next;
-        while (p) {
-                next = p->next;
-                efree(p->name);
-                mem_free(p);
-                p = next;
-        }
-        commlist = commlist_tail = NULL;
-}
-
-int
-check_acl(UINT4 ip, char *community)
-{
-        ACL *acl;
-
-        for (acl = snmp_acl; acl; acl = acl->next) {
-                if (acl->ipaddr == (ip & acl->netmask)) {
-                        if (!acl->community)
-                                return 0;
-                        else if (strcmp(acl->community->name, community) == 0)
-                                return acl->community->access;
-                }
-        }
-        return 0;
-}
-
-void
-snmp_add_acl(ACL *acl, Community *community)
-{
-        ACL *new_acl;
-        
-        for (; acl; acl = acl->next) {
-                new_acl = mem_alloc(sizeof(*new_acl));
-                memcpy(new_acl, acl, sizeof(ACL));
-                new_acl->community = community;
-		new_acl->ipaddr = ntohl(new_acl->ipaddr);
-		new_acl->netmask = ntohl(new_acl->netmask);
-                if (snmp_acl_tail)
-                        snmp_acl_tail->next = new_acl;
-                else
-                        snmp_acl = new_acl;
-                snmp_acl_tail = new_acl;
-        }
-}
-
-void
-snmp_free_acl()
-{
-        free_acl(snmp_acl);
-        snmp_acl = snmp_acl_tail = NULL;
-}
-
-void
-free_acl(ACL *acl)
-{
-        ACL *next;
-
-        while (acl) {
-                next = acl->next;
-                mem_free(acl);
-                acl = next;
-        }
 }
 
 /* ************************************************************************ */

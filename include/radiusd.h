@@ -151,19 +151,28 @@ typedef struct user_symbol {
 
 #include <radsnmp.h>
 
-typedef struct community_list Community;
-struct community_list {
-        Community *next;
+typedef struct netdef NETDEF;
+struct netdef {
+        UINT4 ipaddr;        /* IP address */
+        UINT4 netmask;
+};
+
+typedef struct netname NETNAME;
+struct netname {
+	char *name;
+	LIST /* of NETDEF */ *netlist;
+};
+
+typedef struct community Community;
+struct community {
         char *name;
         int access;
 } ;
 
 typedef struct access_control_list ACL;
 struct access_control_list {
-        ACL *next;           /* next ACL */
-        Community *community;/* community or NULL to deny access */
-        UINT4 ipaddr;        /* IP address */
-        UINT4 netmask;
+        Community *community;   /* community or NULL to deny access */
+	LIST /* of NETDEF */ *netlist;
 };
 
 struct radstat {
@@ -491,13 +500,6 @@ void snmp_auth_server_reset();
 void snmp_acct_server_reset();
 void snmp_attach_nas_stat(NAS *nas);
 void snmp_init_nas_stat();
-int check_acl(UINT4 ipaddr, char *community);
-void snmp_free_acl();
-void free_acl(ACL *);
-void snmp_add_acl(ACL *, Community *);
-Community * snmp_find_community(char *);
-void snmp_add_community(char *str, int access);
-void snmp_free_communities();
 void snmp_sort_nas_stat();
 int snmp_stmt_begin(int finish, void *data, void *up_data);
 #endif

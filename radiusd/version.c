@@ -183,10 +183,6 @@ version(stream, state)
         fprintf(stream, _(" configuration directory: %s\n"), RADIUS_DIR);
         fprintf(stream, _(" logging directory:       %s\n"), RADLOG_DIR);
         fprintf(stream, _(" accounting directory:    %s\n"), RADACCT_DIR);
-#if defined(DENY_SHELL)
-        fprintf(stream, _(" deny shell:              %s\n"), DENY_SHELL);
-#endif
-
 #ifdef RADIUS_PID
         fprintf(stream, _(" pidfile:                 %s\n"), RADIUS_PID);
 #else

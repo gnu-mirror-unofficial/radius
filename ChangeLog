@@ -1,5 +1,10 @@
 2003-11-24  Sergey Poznyakoff
 
+	* radiusd/rewrite.y (rewrite_before_config_hook): Fixed memory
+	leak: code_init() must be called here.
+
+2003-11-24  Sergey Poznyakoff
+
 	* configure.ac: Detect struct passwd.pw_expire and pw_check
 	Raised version number to 1.1.93
 	* include/radiusd.h (enum auth_status): New data type.

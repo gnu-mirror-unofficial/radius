@@ -25,6 +25,6 @@ compromised.
 
 The program determines which Radius server to use, the authentication
 port number, and the shared secret, following the procedure common to all
-client scripts (@pxref{config}).
+client scripts (@pxref{client.conf}).
 
 

@@ -14,14 +14,14 @@ The following sections describe in detail the parts of the Radius client
 package.
 
 @menu
-* config::        Configuration file is common for all client utilities.
+* client.conf::   Configuration file is common for all client utilities.
 * radsession::    Send arbitrary requests to Radius server.
 * nas.scm::       A @NAS{} implementation for GNU/Linux machines.
 * pam_radius.so:: A PAM module for authentication via Radius.
 @end menu
 
 @comment *L2****************************************************************
-@node config
+@node client.conf
 @section Client Configuration
 @cindex Client Configuration
 @cindex @file{client.conf}

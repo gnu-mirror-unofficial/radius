@@ -1,7 +1,5 @@
-# This is the users database.
-#
-# See the documentation for detailed description.
-#
+# For detailed description, run:
+#       info Radius users
 
 DEFAULT	Auth-Type = SQL,
 		Simultaneous-Use = 1	

@@ -1,8 +1,15 @@
+# NOTE: This file may be overwritten by radius installation procedure.
+# Please add your customizations to the main dictionary file.
+# Run
+#       info Radius dictionary
+# for detailed description of the format of this file.
+# Please report errors to <bug-gnu-radius@gnu.org>
+
 # These A/V pairs are used to hold the values from the garbled session
 # id Cisco VoIP IOS produces.
-# See accompanying rewrite source for details.
+# See accompanying rewrite source (examples/cisco.rw) for details.
 # 
-#
+
 ATTRIBUTE       Voip-Connection-ID	3000	string
 ATTRIBUTE	Voip-Call-Leg-Type	3001	string
 ATTRIBUTE	Voip-Connection-Type	3002	string

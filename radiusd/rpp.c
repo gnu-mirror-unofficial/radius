@@ -90,8 +90,8 @@ pipe_read(int fd, void *ptr, size_t size)
 		} else if (rc > 0) {
 			rc = read(fd, data, 1);
 			if (rc != 1) {
-				if (errno == EINTR)
-					continue;
+			  //				if (errno == EINTR)
+			  //		continue;
 				break;
 			}
 			data++;
@@ -208,8 +208,10 @@ rpp_lookup_ready(int (*proc_main)(void *), void *data)
 		     p = iterator_next(itr))
 			;
 		iterator_destroy(&itr);
-	} else
+	} else {
 		process_list = list_create();
+		p = NULL;
+	}
 	
 	if (!p) {
 		rpp_proc_t proc;
@@ -243,18 +245,17 @@ _rpp_remove(rpp_proc_t *p)
 {
 	close(p->p[0]);
 	close(p->p[1]);
-	list_remove(process_list, p, NULL);
-	mem_free(p);
+	radiusd_close_channel(p->p[0]);
+	if (list_remove(process_list, p, NULL))
+		mem_free(p);
 }
 
 void
 rpp_remove(pid_t pid)
 {
 	rpp_proc_t *p = rpp_lookup_pid(pid);
-	if (!p)
-		return;
-	radiusd_close_channel(p->p[0]);
-	_rpp_remove(p);
+	if (p)
+		_rpp_remove(p);
 }
 
 int
@@ -366,7 +367,7 @@ _kill_itr(void *item, void *data)
 	return 0;
 }
 	
-void
+int
 rpp_kill(pid_t pid, int signo)
 {
 	if (pid > 0) {
@@ -374,10 +375,11 @@ rpp_kill(pid_t pid, int signo)
 		if (p) {
 			kill(p->pid, signo);
 			_rpp_remove(p);
-			radiusd_close_channel(p->p[0]);
-		}
-	}
-	list_iterate(process_list, _kill_itr, &signo);
+		} else
+     		        return 1;
+	} else 
+		list_iterate(process_list, _kill_itr, &signo);
+	return 0;
 }
 
 struct rpp_request {
@@ -479,10 +481,13 @@ rpp_request_handler(void *arg ARG_UNUSED)
 	request_init_queue();
 
 	while (1) {
-		if (rpp_fd_read(0, &frq, sizeof frq) != sizeof frq) {
+		int len = rpp_fd_read(0, &frq, sizeof frq);
+		if (len != sizeof frq) {
+			radlog(L_ERR,
+			       _("Child received malformed header. len = %d, errno = %s"),
+			       len, strerror(errno));
 			abort();
-			radlog(L_ERR, _("Child received malformed header"));
-			radiusd_exit();
+			//radiusd_exit();
 		}
 
 		if (datasize < frq.size) {
@@ -502,6 +507,7 @@ rpp_request_handler(void *arg ARG_UNUSED)
 		repl.code = request_handle(req, request_respond);
 			
 		/* Inform the master */
+		radlog(L_DEBUG, "notifying the master");
 		repl.size = req->update_size;
 		rpp_fd_write(1, &repl, sizeof repl);
 		if (req->update) {
@@ -531,8 +537,9 @@ rpp_input_handler(int fd, void *data)
 			data = emalloc(repl.size);
 			rpp_fd_read(fd, data, repl.size);
 		}
-		
+
 		if (p) {
+		        radlog(L_DEBUG, "updating pid %d", p->pid);
 			p->ready = 1;
 			request_update(p->pid, RS_COMPLETED, data);
 		} 

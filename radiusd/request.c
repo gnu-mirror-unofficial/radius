@@ -114,7 +114,9 @@ request_drop(int type, void *data, void *orig_data, int fd, char *status_str)
 int
 request_respond(REQUEST *req)
 {
-	return request_class[req->type].respond(req);
+	int rc = request_class[req->type].respond(req);
+	req->status = RS_COMPLETED;
+	return rc;
 }
 
 void
@@ -135,6 +137,23 @@ request_cleanup(int type, void *data)
 {
         if (request_class[type].cleanup)
                 request_class[type].cleanup(type, data);
+}
+
+int
+request_forward(REQUEST *req)
+{
+	if (radiusd_master()) {
+		if (rpp_ready(req->child_id)) { 
+			rpp_forward_request(req);
+			req->status = RS_COMPLETED;
+			return 0;
+		} else {
+			req->status = RS_XMIT;
+			return 1;
+		}
+	} else
+		request_xmit(req);
+	return 0;
 }
 
 struct request_closure {
@@ -180,15 +199,21 @@ _request_iterator(void *item, void *clos)
 			list_remove(request_list, req, NULL);
 			request_free(req);
 		}
-	} else if (req->timestamp + request_class[req->type].ttl
+	} else {
+		if (req->status == RS_XMIT && request_forward(req) == 0) 
+			return 0;
+
+		if (req->timestamp + request_class[req->type].ttl
 		      <= rp->curtime) {
 
-		radlog(L_NOTICE,
-		       _("Killing unresponsive %s child %lu"),
-		       request_class[req->type].name,
-		       (unsigned long) req->child_id);
-		rpp_kill(req->child_id, SIGKILL);
-		rpp_remove(req->child_id);
+			if (req->status == RS_XMIT)
+				req->status = RS_COMPLETED;
+			else if (rpp_kill(req->child_id, SIGKILL) == 0) 
+				radlog(L_NOTICE,
+				       _("Killing unresponsive %s child %lu"),
+				       request_class[req->type].name,
+				       (unsigned long) req->child_id);
+		}
 		return 0;
 	}
 
@@ -206,12 +231,10 @@ _request_iterator(void *item, void *clos)
 			/* This is a duplicate request. If it is already
 			   completed, hand it over to the child.
 			   Otherwise drop the request. */
-			if (req->status == RS_COMPLETED) {
-				if (radiusd_master())
-					rpp_forward_request(req);
-				else
-					request_xmit(req);
-			} else
+			if (req->status == RS_COMPLETED
+			    && request_forward(req) == 0)
+				break;
+			else
 				request_drop(req->type, rp->data,
 					     req->data, req->fd,
 					     _("duplicate request"));
@@ -325,7 +348,6 @@ request_update(pid_t pid, int status, void *ptr)
 			p->status = status;
 			if (ptr && request_class[p->type].update)
 				request_class[p->type].update(p->data, ptr);
-			break;
 		}
 	iterator_destroy(&itr);
 	debug(100,("exit"));

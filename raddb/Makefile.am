@@ -46,7 +46,8 @@ raddb_files_644=\
 
 raddb_files_600 = clients client.conf users 
 raddb_files=$(raddb_files_600) $(raddb_files_644)
-EXTRA_DIST=$(raddb_files)
+EXTRA_DIST=$(raddb_files) client.conf.in
+DISTCLEANFILES=client.conf
 
 install-data-local:
 	@if [ ! -d $(raddbdir) ]; then \

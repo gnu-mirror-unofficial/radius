@@ -441,16 +441,29 @@ snmp_attach_nas_stat(nas)
 
 static int
 nas_ip_cmp(a, b)
-	struct nas_stat *a, *b;
+	struct nas_stat **a, **b;
 {
-	return a->ipaddr - b->ipaddr;
+	return (*a)->ipaddr - (*b)->ipaddr;
 }
 
 void
 snmp_sort_nas_stat()
 {
-	qsort(server_stat + 1, server_stat->nas_count,
-	      sizeof(struct nas_stat), nas_ip_cmp);
+	struct nas_stat **nsarray, *nsp;
+	int i;
+
+	nsarray = emalloc(server_stat->nas_count*sizeof(nsarray[0]));
+	for (i = 0, nsp = (struct nas_stat*)(server_stat + 1); 
+		i < server_stat->nas_count; 
+		i++, nsp++) 
+		nsarray[i] = nsp;	
+	qsort(nsarray, server_stat->nas_count,
+	      sizeof(struct nas_stat*), nas_ip_cmp);
+	for (i = 0, nsp = (struct nas_stat*)(server_stat + 1); 
+		i < server_stat->nas_count; 
+		i++, nsp++) 
+		nsarray[i]->index = i+1;
+	efree(nsarray);
 }
 
 /* Mark reset of the auth server. Do not do any real work, though.

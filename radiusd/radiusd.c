@@ -93,7 +93,9 @@ int spawn_flag;        /* Whether to spawn new children for handling
 
 int use_dbm = 0;       /* Use DBM storage */
 int auth_detail = 0;   /* Produce detailed logs of authentication packets */
+char *auth_detail_template; /* Template for filenames of these logs */
 int acct_detail = 1;   /* Produce detailed logs of accounting packets */
+char *acct_detail_template; /* Template for filenames of these logs */
 int acct_system = 1;   /* Run system accounting into radutmp/radwtmp files */
 int auth_trace_rules = 0; /* Produce trace logs for each auth request */
 int acct_trace_rules = 0; /* Produce trace logs for each acct request */
@@ -1350,6 +1352,8 @@ struct cfg_stmt auth_stmt[] = {
 	  cfg_get_integer, &request_class[R_AUTH].cleanup_delay, NULL, NULL },
 	{ "detail", CS_STMT, NULL, cfg_get_boolean, &auth_detail,
 	  NULL, NULL },
+	{ "detail-file-name", CS_STMT, NULL, cfg_get_string,
+	  &auth_detail_template, NULL, NULL },
 	{ "strip-names", CS_STMT, NULL, cfg_get_boolean, &strip_names,
 	  NULL, NULL },
 	{ "checkrad-assume-logged", CS_STMT, NULL,
@@ -1386,6 +1390,8 @@ struct cfg_stmt acct_stmt[] = {
 	  NULL, NULL },
 	{ "detail", CS_STMT, NULL, cfg_get_boolean, &acct_detail,
 	  NULL, NULL },
+	{ "detail-file-name", CS_STMT, NULL, cfg_get_string,
+	  &acct_detail_template, NULL, NULL },
 	{ "system", CS_STMT, NULL, cfg_get_boolean, &acct_system,
 	  NULL, NULL },
 	{ "compare-attribute-flag", CS_STMT, NULL,

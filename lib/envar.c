@@ -23,20 +23,20 @@
 #include <mem.h>
 #include <envar.h>
 #include <argcv.h>
-#include <slist.h>
+#include <list.h>
+
+typedef struct envar {
+        char *name;
+        char *value;
+} ENVAR;
 
 static void
-envar_parse_internal(str, phead, ptail)
-        char *str;
-        envar_t **phead;
-        envar_t **ptail;
+envar_parse_internal(char *str, LIST **plist)
 {
         int i;
         int argc;
         char **argv;
-        envar_t *head = NULL, *tail;
 
-        *phead = *ptail = NULL;
         if (argcv_get(str, ",", &argc, &argv)) {
                 if (argv)
                         argcv_free(argc, argv);
@@ -44,12 +44,12 @@ envar_parse_internal(str, phead, ptail)
         }
 
         for (i = 0; i < argc; i++) {
-                envar_t *env;
+                ENVAR *env;
                 char *p;
                 
                 if (argv[i][0] == ',')
                         continue;
-                env = mem_alloc(sizeof(*env));
+                env = emalloc(sizeof(*env));
                 p = strchr(argv[i], '=');
                 if (p) {
                         int len = p - argv[i];
@@ -65,77 +65,60 @@ envar_parse_internal(str, phead, ptail)
                         env->name = estrdup(argv[i]);
                         env->value = estrdup("1");
                 }
-                if (!head)
-                        head = env;
-                else
-                        tail->next = env;
-                tail = env;
+		if (!*plist)
+			*plist = list_create();
+		list_append(*plist, env);
         }
-
-        argcv_free(argc, argv);
-        *phead = head;
-        *ptail = tail;
 }
 
 envar_t *
-envar_parse(str)
-        char *str;
+envar_parse(char *str)
 {
-        envar_t *head, *tail;
-        envar_parse_internal(str, &head, &tail);
-        return head;
+	LIST *list = NULL;
+        envar_parse_internal(str, &list);
+        return list;
 }
 
 envar_t *
-envar_parse_argcv(argc, argv)
-        int argc;
-        char **argv;
+envar_parse_argcv(int argc, char **argv)
 {
-        envar_t *head = NULL, *tail;
+	LIST *list = NULL;
         while (argc--) {
-                envar_t *ph, *pt;
-                envar_parse_internal(*argv++, &ph, &pt);
-                if (!head)
-                        head = ph;
-                else
-                        tail->next = ph;
-                tail = pt;
+                envar_parse_internal(*argv++, &list);
         }
-        return head;
+        return list;
 }
 
-void
-envar_free(env)
-        envar_t *env;
+static int
+envar_free(void *item, void *data)
 {
+        ENVAR *env = item;
         efree(env->name);
         efree(env->value);
+	efree(env);
+	return 0;
 }
 
 void
-envar_free_list(env)
-        envar_t *env;
+envar_free_list(envar_t **evp)
 {
-        free_slist((struct slist*)env, envar_free);
+	list_destroy(evp, envar_free, NULL);
 }
 
 char *
-envar_lookup(env, name)
-        envar_t *env;
-        char *name;
+envar_lookup(envar_t *env, char *name)
 {
-        for (; env; env = env->next) {
-                if (strcmp(env->name, name) == 0)
-                        return env->value;
+	ENVAR *p;
+
+	for (p = list_first(env); p; p = list_next(env)) {
+                if (strcmp(p->name, name) == 0)
+                        return p->value;
         }
         return NULL;
 }
 
 char *
-envar_lookup_str(env, name, defval)
-        envar_t *env;
-        char *name;
-        char *defval;
+envar_lookup_str(envar_t *env, char *name, char *defval)
 {
         char *s;
 
@@ -145,10 +128,7 @@ envar_lookup_str(env, name, defval)
 }
 
 int
-envar_lookup_int(env, name, defval)
-        envar_t *env;
-        char *name;
-        int defval;
+envar_lookup_int(envar_t *env, char *name, int defval)
 {
         char *s;
         
@@ -157,36 +137,30 @@ envar_lookup_int(env, name, defval)
         return defval;
 }
 
-envar_t *
-envar_dup(env)
-        envar_t *env;
+ENVAR *
+envar_dup(ENVAR *env)
 {
-        envar_t *ep;
+        ENVAR *ep;
 
-        ep = mem_alloc(sizeof(*ep));
+        ep = emalloc(sizeof(*ep));
         ep->name  = estrdup(env->name);
         ep->value = estrdup(env->value);
         return ep;
 }
 
 envar_t *
-envar_merge_lists(prim, sec)
-        envar_t *prim;
-        envar_t *sec;
+envar_merge_lists(envar_t *prim, envar_t *sec)
 {
-        envar_t *list, *p;
+        envar_t *list;
+	ENVAR *p;
 
-        list = NULL;
-        for (; sec; sec = sec->next)
-                if (!envar_lookup(prim, sec->name)) {
-                        p = envar_dup(sec);
-                        p->next = list;
-                        list = p;
+        list = list_create();
+	for (p = list_first(sec); p; p = list_next(sec))
+                if (!envar_lookup(prim, p->name)) {
+			list_append(list, envar_dup(p));
                 }
-        for (; prim; prim = prim->next) {
-                p = envar_dup(prim);
-                p->next = list;
-                list = p;
+        for (p = list_first(prim); p; p = list_next(prim)) {
+                list_append(list, envar_dup(p));
         }
         return list;
 }

@@ -1,28 +1,24 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 /* This file deals with contents of /etc/raddb directory (except config and
    dictionaries) */
 
 #define RADIUS_MODULE_FILES_C
-#ifndef lint
-static char rcsid[] =
-"@(#) $Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -56,7 +52,6 @@ static char rcsid[] =
 #endif
 #include <raddbm.h>
 #include <obstack1.h>
-#include <slist.h>
 
 /*
  * Symbol tables and lists
@@ -66,8 +61,8 @@ Symtab          *deny_tab;     /* raddb/access.deny */
 
 MATCHING_RULE   *huntgroups;   /* raddb/huntgroups */ 
 MATCHING_RULE   *hints;        /* raddb/hints */
-CLIENT          *clients;      /* raddb/clients */
-RADCK_TYPE      *radck_type;   /* raddb/nastypes */
+LIST /* of CLIENT */ *clients; /* raddb/clients */
+LIST /* of RADCK_TYPE */ *radck_type;   /* raddb/nastypes */
 
 static struct keyword op_tab[] = {
         "=", OPERATOR_EQUAL,
@@ -846,12 +841,8 @@ read_naslist_file(file)
  */
 /*ARGSUSED*/
 int
-read_clients_entry(unused, fc, fv, file, lineno)
-        void *unused;
-        int fc;
-        char **fv;
-        char *file;
-        int lineno;
+read_clients_entry(void *u ARG_UNUSED, int fc, char **fv,
+		   char *file, int lineno)
 {
         CLIENT *cp;
         
@@ -862,37 +853,34 @@ read_clients_entry(unused, fc, fv, file, lineno)
                 return -1;
         }
 
-        cp = mem_alloc(sizeof(CLIENT));
+        cp = emalloc(sizeof(CLIENT));
 
         cp->ipaddr = ip_gethostaddr(fv[0]);
         cp->secret = estrdup(fv[1]);
         if (fc == 3)
                 STRING_COPY(cp->shortname, fv[2]);
         ip_gethostname(cp->ipaddr, cp->longname, sizeof(cp->longname));
-
-        cp->next = clients;
-        clients = cp;
-
+	list_append(clients, cp);
         return 0;
 }
 
-static void
-client_free(cl)
-        CLIENT *cl;
+static int
+client_free(void *item, void *data ARG_UNUSED)
 {
-        efree(cl->secret);
+        CLIENT *cl = item;
+	efree(cl->secret);
+	efree(cl);
+	return 0;
 }
 
 /*
  * Read the clients file.
  */
 int
-read_clients_file(file)
-        char *file;
+read_clients_file(char *file)
 {
-        free_slist((struct slist*)clients, client_free);
-        clients = NULL;
-
+	list_destroy(&clients, client_free, NULL);
+	clients = list_create();
         return read_raddb_file(file, 1, read_clients_entry, NULL);
 }
 
@@ -901,12 +889,11 @@ read_clients_file(file)
  * Find a client in the CLIENTS list.
  */
 CLIENT *
-client_lookup_ip(ipaddr)
-        UINT4 ipaddr;
+client_lookup_ip(UINT4 ipaddr)
 {
         CLIENT *cl;
 
-        for(cl = clients; cl; cl = cl->next)
+        for (cl = list_first(clients); cl; cl = list_next(clients))
                 if (ipaddr == cl->ipaddr)
                         break;
 
@@ -918,10 +905,7 @@ client_lookup_ip(ipaddr)
  * Find the name of a client (prefer short name).
  */
 char *
-client_lookup_name(ipaddr, buf, bufsize)
-        UINT4 ipaddr;
-        char *buf;
-        size_t bufsize;
+client_lookup_name(UINT4 ipaddr, char *buf, size_t bufsize)
 {
         CLIENT *cl;
 
@@ -938,22 +922,14 @@ client_lookup_name(ipaddr, buf, bufsize)
  * raddb/nastypes
  */
 
-int read_nastypes_entry(void *unused, int fc, char **fv, char *file,
-                        int lineno);
-int read_nastypes_file(char *file);
-
 
 /*
  * parser
  */
 /*ARGSUSED*/
 int
-read_nastypes_entry(unused, fc, fv, file, lineno)
-        void *unused;
-        int fc;
-        char **fv;
-        char *file;
-        int lineno;
+read_nastypes_entry(void *u ARG_UNUSED, int fc, char **fv,
+		    char *file, int lineno)
 {
         RADCK_TYPE *mp;
         int method;
@@ -975,32 +951,33 @@ read_nastypes_entry(unused, fc, fv, file, lineno)
                 return -1;
         }
                         
-        mp = mem_alloc(sizeof(*mp));
+        mp = emalloc(sizeof(*mp));
         mp->type = estrdup(fv[0]);
         mp->method = method;
         if (fc > 2)
                 mp->args = envar_parse_argcv(fc-2, &fv[2]);
         else
                 mp->args = NULL;
-        mp->next = radck_type;
-        radck_type = mp;
+	list_append(radck_type, mp);
         return 0;
 }
         
-void
-free_radck_type(rp)
-        RADCK_TYPE *rp;
+static int
+free_radck_type(void *item, void *data ARG_UNUSED)
 {
+        RADCK_TYPE *rp = item;
+
         efree(rp->type);
-        envar_free_list(rp->args);
+        envar_free_list(&rp->args);
+	efree(rp);
+	return 0;
 }
 
 int
-read_nastypes_file(file)
-        char *file;
+read_nastypes_file(char *file)
 {
-        free_slist((struct slist *)radck_type, free_radck_type);
-        radck_type = NULL;
+	list_destroy(&radck_type, free_radck_type, NULL);
+	radck_type = list_create();
         return read_raddb_file(file, 0, read_nastypes_entry, NULL);
 }
 
@@ -1010,7 +987,9 @@ find_radck_type(name)
 {
         RADCK_TYPE *tp;
         
-        for (tp = radck_type; tp && strcmp(tp->type, name); tp = tp->next)
+        for (tp = list_first(radck_type);
+	     tp && strcmp(tp->type, name);
+	     tp = list_next(radck_type))
                 ;
         return tp;
 }

@@ -27,10 +27,9 @@
 #include <errno.h>
 #include <syslog.h>
 #include <radiusd.h>
-#include <slist.h>
 
 static int logging_category = L_CAT(L_MAIN);
-static Channel *chanlist;                  /* List of defined channels */
+static LIST /* of Channel*/ *chanlist;     /* List of defined channels */
 
 static void log_to_channel(Channel *chan, int cat, int pri,
                            char *buf1, char *buf2, char *buf3);
@@ -87,7 +86,7 @@ vlog(int level, char *file, int line, char *func_name,
 
         vasprintf(&buf2, fmt, ap);
         
-        for (chan = chanlist; chan; chan = chan->next) {
+        for (chan = list_first(chanlist); chan; chan = list_next(chanlist)) {
                 /* Skip channels whith incorrect priority */
                 if (chan->pmask[cat] & L_MASK(pri))
                         log_to_channel(chan, cat, pri, buf1, buf2, buf3);
@@ -256,25 +255,13 @@ channel_free(Channel *chan)
         efree(chan->name);
         if (chan->mode == LM_FILE)
                 efree(chan->id.file);
-        mem_free(chan);
-}
-
-void
-channel_free_list(Channel *chan)
-{
-        Channel *next;
-
-        while (chan) {
-                next = chan->next;
-                channel_free(chan);
-                chan = next;
-        }
+        efree(chan);
 }
 
 Channel *
 log_mark()
 {
-        return chanlist;
+        return list_first(chanlist);
 }
 
 void
@@ -282,31 +269,23 @@ log_release(Channel *chan)
 {
         Channel *cp, *prev = NULL;
         int emerg, alert, crit;
-        
-        for (cp = chanlist; cp; prev = cp, cp = cp->next)
-                if (cp == chan)
-                        break;
+
+	cp = list_locate(chanlist, chan, NULL);
 
         while (cp) {
-                Channel *next = cp->next;
-                if (cp->options & LO_PERSIST) {
-                        if (prev)
-                                prev->next = cp;
-                        prev = cp;
-                } else {
+                if (!(cp->options & LO_PERSIST)) {
+			list_remove_current(chanlist);
                         channel_free(cp);
                 }
-                cp = next;
+		cp = list_next(chanlist);
         }
-        if (prev)
-                prev->next = NULL;
 
         /* Make sure we have at least a channel for categories below
            L_CRIT */
         emerg = L_EMERG;
         alert = L_ALERT;
         crit  = L_CRIT;
-        for (cp = chanlist; cp; cp = cp->next) {
+        for (cp = list_first(chanlist); cp; cp = list_next(chanlist)) {
                 int i;
                 for (i = 1; i < L_NCAT; i++) {
                         if (emerg && (cp->pmask[i] & L_MASK(emerg)))
@@ -327,7 +306,7 @@ channel_lookup(char *name)
 {
         Channel *chan;
 
-        for (chan = chanlist; chan; chan = chan->next) {
+        for (chan = list_first(chanlist); chan; chan = list_next(chanlist)) {
                 if (strcmp(chan->name, name) == 0)
                         break ;
         }
@@ -361,7 +340,7 @@ register_channel(Channel *chan)
         } else if (chan->mode == LM_SYSLOG) {
         } 
 
-        channel = mem_alloc(sizeof(*channel));
+        channel = emalloc(sizeof(*channel));
         channel->name = estrdup(chan->name);
         channel->mode = chan->mode;
         if (chan->mode == LM_FILE)
@@ -369,45 +348,33 @@ register_channel(Channel *chan)
         else if (chan->mode == LM_SYSLOG)
                 channel->id.prio = chan->id.prio;
         channel->options = chan->options;
-        channel->next = chanlist;
-        chanlist = channel;
+
+	if (!chanlist)
+		chanlist = list_create();
+	list_prepend(chanlist, channel);
 }
 
 void
-register_category(int cat, int pri, Chanlist *chanlist)
+register_category0(int cat, int pri, Channel *chan)
+{
+	if (cat == -1) {
+		int i;
+		for (i = 0; i < L_NCAT; i++)
+			chan->pmask[i] |= pri;
+	} else
+		chan->pmask[L_CAT(cat)] |= pri;
+}
+
+void
+register_category(int cat, int pri, LIST *clist)
 {
         Channel *chan;
 
         if (pri == -1)
                 pri = L_UPTO(L_DEBUG);
-        
-        for (; chanlist; chanlist = chanlist->next) {
-                chan = chanlist->chan ? chanlist->chan
-                         : channel_lookup("default");
 
-                if (cat == -1) {
-                        int i;
-                        for (i = 0; i < L_NCAT; i++)
-                                chan->pmask[i] |= pri;
-                } else
-                        chan->pmask[L_CAT(cat)] |= pri;
-        }
-}
-
-/* channel lists */
-Chanlist *
-make_chanlist(Channel *chan)
-{
-        Chanlist *cl = mem_alloc(sizeof(*cl));
-        cl->next = NULL;
-        cl->chan = chan;
-        return cl;
-}
-        
-void
-free_chanlist(Chanlist *cp)
-{
-        free_slist((struct slist*)cp, NULL);
+	for (chan = list_first(clist); chan; chan = list_next(clist))
+		register_category0(cat, pri, chan);
 }
 
 /* Auxiliary calls */
@@ -415,7 +382,6 @@ void
 log_set_to_console()
 {
         Channel chan;
-        Chanlist chanlist;
         
         chan.mode = LM_FILE;
         chan.name = "stdout";
@@ -423,16 +389,13 @@ log_set_to_console()
         chan.options = LO_CAT|LO_PRI|LO_PERSIST;
         register_channel(&chan);
 
-        chanlist.next = NULL;
-        chanlist.chan = channel_lookup("stdout");
-        register_category(-1, -1, &chanlist);
+        register_category0(-1, -1, channel_lookup("stdout"));
 }
 
 void
 log_set_default(char *name, int cat, int pri)
 {
         Channel chan;
-        Chanlist chanlist;
         
         chan.mode = LM_FILE;
         chan.name = name;
@@ -441,10 +404,7 @@ log_set_default(char *name, int cat, int pri)
 
         if (!channel_lookup(name))
                 register_channel(&chan);
-
-        chanlist.next = NULL;
-        chanlist.chan = channel_lookup(name);
-        register_category(cat, pri, &chanlist);
+        register_category0(cat, pri, channel_lookup(name));
 }
 
 
@@ -471,7 +431,7 @@ static struct category_def {
 	int init;
 	int cat;
 	int pri;
-        Chanlist *head, *tail;
+        LIST /* of Channel */ *clist;
         int level;
 } cat_def;
 
@@ -716,7 +676,7 @@ category_stmt_handler(int argc, cfg_value_t *argv,
 		return 0;
 	}
 	cat_def.init = 1;
-	cat_def.head = cat_def.tail = NULL;
+	cat_def.clist = NULL;
 	return 0;
 }
 
@@ -735,8 +695,8 @@ category_stmt_end(void *block_data, void *handler_data)
 				       cfg_filename, cfg_line_num,
 				_("no levels applicable for this category"));
 		}
-		register_category(cat_def.cat, cat_def.pri, cat_def.head);
-		free_chanlist(cat_def.head);
+		register_category(cat_def.cat, cat_def.pri, cat_def.clist);
+		list_destroy(&cat_def.clist, NULL, NULL);
 	}
 	return 0;
 }
@@ -762,12 +722,9 @@ category_set_channel(int argc, cfg_value_t *argv,
 		       _("%s:%d: channel `%s' not defined"),
 		       cfg_filename, cfg_line_num, argv[1].v.string);
 	} else {
-		Chanlist *chanlist = make_chanlist(channel);
-		if (cat_def.tail)
-			cat_def.tail->next = chanlist;
-		else
-			cat_def.head = chanlist;
-		cat_def.tail = chanlist;
+		if (!cat_def.clist)
+			cat_def.clist = list_create();
+		list_append(cat_def.clist, channel);
 	}
 	
 	return 0;

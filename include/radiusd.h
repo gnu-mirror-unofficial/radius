@@ -113,7 +113,6 @@ struct queue_stat {
 typedef struct queue_stat QUEUE_STAT[R_MAX];
         
 typedef struct client {
-        struct client           *next;
         UINT4                   ipaddr;
         char                    longname[MAX_LONGNAME+1];
         u_char                  *secret;

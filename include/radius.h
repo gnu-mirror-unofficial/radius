@@ -1,18 +1,18 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
   
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
   
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
 #include <sysdep.h>
@@ -20,6 +20,8 @@
 #include <mem.h>
 #include <pwd.h>
 #include <grp.h>
+#include <list.h>
+#include <envar.h>
 
 #define DOTTED_QUAD_LEN         16
 
@@ -127,7 +129,6 @@ typedef struct {
 
 typedef struct radius_server RADIUS_SERVER;
 struct radius_server {
-        RADIUS_SERVER *next;    /* Next server in queue */
         char   *name;           /* Symbolic name of this server */
         UINT4  addr;            /* IP address of it */
         int    port[PORT_MAX];  /* Ports to use */
@@ -141,7 +142,7 @@ typedef struct {
         unsigned retries;       /* Number of re-sends to each server before
 				   giving up */
 	size_t buffer_size;     /* Size of the recv buffer */
-        RADIUS_SERVER *first_server;   /* List of servers */
+        LIST   *servers;        /* List of servers */
 } RADIUS_SERVER_QUEUE;    
 
 struct value_pair;
@@ -160,7 +161,6 @@ typedef struct dict_attr {
 
 /* Dictionary value */
 typedef struct dict_value {
-        struct dict_value       *next;
         char                    *name;
         DICT_ATTR               *attr;
         int                     value;
@@ -168,7 +168,6 @@ typedef struct dict_value {
 
 /* Dictionary vendor information */
 typedef struct dict_vendor {
-        struct dict_vendor      *next;
         char                    *vendorname;
         int                     vendorpec;
         int                     vendorcode;
@@ -207,12 +206,11 @@ typedef struct nas {
         char                    longname[MAX_LONGNAME+1];
         char                    shortname[MAX_SHORTNAME+1];
         char                    nastype[MAX_DICTNAME+1];
-        struct envar_t          *args;
+        envar_t                 *args;
         void                    *app_data;
 } NAS;
 
 typedef struct realm {
-        struct realm            *next;
         char                    realm[MAX_REALMNAME+1];
         int                     striprealm;
         int                     maxlogins;
@@ -238,7 +236,7 @@ typedef struct radius_req {
         /* Proxy support fields */
         REALM                   *realm;       
         int                     validated;     /* Already md5 checked */
-	RADIUS_SERVER           *server;       
+	int                     server_no;
 	int                     attempt_no;
         UINT4                   server_id;     /* Proxy ID of the packet */
 	char                    *remote_user;  /* Remote username (stringobj)*/
@@ -402,22 +400,20 @@ struct passwd *rad_getpwnam_r(const char *name, struct passwd *result,
 struct group *rad_getgrnam(const char *name);
 
 /* client.c */
+RADIUS_REQ *rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
+			 VALUE_PAIR *pairlist);
+unsigned rad_clt_message_id(RADIUS_SERVER *server);
 RADIUS_SERVER_QUEUE *rad_clt_create_queue(int read_cfg,
 					  UINT4 source_ip, size_t bufsize);
 void rad_clt_destroy_queue(RADIUS_SERVER_QUEUE *queue);
-RADIUS_REQ *rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type,
-                         int code, VALUE_PAIR *pair);
-
-RADIUS_SERVER *rad_clt_alloc_server(RADIUS_SERVER *data);
-
+RADIUS_SERVER *rad_clt_alloc_server(RADIUS_SERVER *src);
 RADIUS_SERVER *rad_clt_dup_server(RADIUS_SERVER *src);
+
 void rad_clt_free_server(RADIUS_SERVER *server);
-RADIUS_SERVER *rad_clt_append_server(RADIUS_SERVER *list,
+RADIUS_SERVER *rad_clt_append_server(RADIUS_SERVER_QUEUE *qp,
 				     RADIUS_SERVER *server);
-void rad_clt_clear_server_list(RADIUS_SERVER *list);
-RADIUS_SERVER *rad_clt_find_server(RADIUS_SERVER *list, char *name);
-void rad_clt_random_vector(char *vector);
-unsigned rad_clt_message_id(RADIUS_SERVER *server);
+void rad_clt_clear_server_list(RADIUS_SERVER_QUEUE *qp);
+RADIUS_SERVER *rad_clt_find_server(RADIUS_SERVER_QUEUE *qp, char *name);
 
 /* log.c */
 char *rad_print_request(RADIUS_REQ *req, char *outbuf, size_t size);
@@ -486,7 +482,6 @@ void app_setup();
 typedef struct channel Channel;
 
 struct channel {
-        struct channel *next;
         char *name;
         int  pmask[L_NCAT]; 
         int mode;   /* LM_ constant */
@@ -495,12 +490,6 @@ struct channel {
                 char *file;      /* file: output file name */
         } id;
         int options;
-};
-
-typedef struct chanlist Chanlist;
-struct chanlist {  /* for keeping channels while parsing config file */
-        Chanlist *next;
-        Channel *chan;
 };
 
 /* Global variables */
@@ -550,12 +539,8 @@ void channel_free_list(Channel *chan);
 Channel * log_mark();
 void log_release();
 
-Chanlist * make_chanlist(Channel *chan);
-void free_chanlist(Chanlist *cp);
-
 void register_channel(Channel *chan);
-void register_category(int cat, int pri, Chanlist *chanlist);
-
+void register_category(int cat, int pri, LIST *chanlist);
 
 void set_debug_levels(char *str);
 int set_module_debug_level(char *name, int level);

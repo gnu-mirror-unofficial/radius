@@ -40,7 +40,7 @@ nas_free_list(list)
 
         while (list) {
                 next = list->next;
-                envar_free_list(list->args);
+                envar_free_list(&list->args);
                 mem_free(list);
                 list = next;
         }

@@ -34,7 +34,6 @@
 #include <ctype.h>
 
 #include <radius.h>
-#include <slist.h>
 #include <debugmod.h>
 
 void
@@ -205,7 +204,7 @@ rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 	debug(1,
 	      ("sending %s", auth_code_str(code)));
 	recv_buf = emalloc(config->buffer_size);
-        server = config->first_server;
+        server = list_first(config->servers);
         do {
 		fd_set readfds;
 		struct timeval tm;
@@ -302,7 +301,7 @@ rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 				  ip_iptostr(server->addr, ipbuf),
 				  server->port[port_type]));
 		
-        } while (!req && (server = server->next) != NULL);
+        } while (!req && (server = list_next(config->servers)) != NULL);
 
 	efree(recv_buf);
         close(sockfd);
@@ -377,10 +376,8 @@ parse_client_config(RADIUS_SERVER_QUEUE *client, int argc, char **argv,
                                file, lineno, argv[4]);
                         break;
                 }
-                
-                client->first_server =
-                        rad_clt_append_server(client->first_server,
-                                                rad_clt_alloc_server(&serv));
+
+		rad_clt_append_server(client, rad_clt_alloc_server(&serv));
                 break;
                 
         case TOK_TIMEOUT:
@@ -416,7 +413,7 @@ rad_clt_create_queue(int read_cfg, UINT4 source_ip, size_t bufsize)
         client->timeout = 1;
         client->retries = 3;
         client->buffer_size = bufsize ? bufsize : 4096;
-        client->first_server = NULL;
+        client->servers = 0;
 
         if (read_cfg) {
                 filename = mkfilename(radius_dir, "client.conf");
@@ -430,7 +427,7 @@ void
 rad_clt_destroy_queue(RADIUS_SERVER_QUEUE *queue)
 {
 	if (queue) {
-		rad_clt_clear_server_list(queue->first_server);
+		rad_clt_clear_server_list(queue);
 		efree(queue);
 	}
 }
@@ -440,12 +437,13 @@ rad_clt_alloc_server(RADIUS_SERVER *src)
 {
         RADIUS_SERVER *server;
 
-        server = mem_alloc(sizeof(*server));
+        server = emalloc(sizeof(*server));
         server->name = string_create(src->name);
         server->addr = src->addr;
         server->port[0] = src->port[0];
         server->port[1] = src->port[1];
         server->secret = string_create(src->secret);
+	server->id_offset = (off_t)-1;
         return server;
 }
 
@@ -454,7 +452,7 @@ rad_clt_dup_server(RADIUS_SERVER *src)
 {
         RADIUS_SERVER *dest;
 
-        dest = mem_alloc(sizeof(*dest));
+        dest = emalloc(sizeof(*dest));
         dest->addr = src->addr;
         dest->name = string_dup(src->name);
         dest->port[0] = src->port[0];
@@ -472,40 +470,46 @@ rad_clt_free_server(RADIUS_SERVER *server)
 {
         string_free(server->name);
         string_free(server->secret);
-        mem_free(server);
+        efree(server);
 }
 
 RADIUS_SERVER *
-rad_clt_append_server(RADIUS_SERVER *list, RADIUS_SERVER *server)
+rad_clt_append_server(RADIUS_SERVER_QUEUE *qp, RADIUS_SERVER *server)
 {
-        return (RADIUS_SERVER*)append_slist((struct slist*)list,
-                                     (struct slist*)server);
-}
-
-static void
-rad_clt_internal_free_server(RADIUS_SERVER *server)
-{
-        string_free(server->name);
-        string_free(server->secret);
-}
-
-void
-rad_clt_clear_server_list(RADIUS_SERVER *list)
-{
-        free_slist((struct slist *)list, rad_clt_internal_free_server);
+	if (!qp->servers)
+		qp->servers = list_create();
+	list_append(qp->servers, server);
 }
 
 static int
-server_cmp(RADIUS_SERVER *serv, char *id)
+rad_clt_internal_free_server(void *item, void *data)
 {
-        return strcmp(serv->name, id);
+	RADIUS_SERVER *server = item;
+        string_free(server->name);
+        string_free(server->secret);
+	efree(server);
+	return 0;
+}
+
+void
+rad_clt_clear_server_list(RADIUS_SERVER_QUEUE *qp)
+{
+	list_destroy(&qp->servers, rad_clt_internal_free_server, NULL);
+}
+
+static int
+server_cmp(void *item, void *data)
+{
+	RADIUS_SERVER *serv = item;
+	char *id = data;
+
+        return strcmp(serv->name, id) == 0;
 }
 
 RADIUS_SERVER *
-rad_clt_find_server(RADIUS_SERVER *list, char *name)
+rad_clt_find_server(RADIUS_SERVER_QUEUE *qp, char *name)
 {
-        return (RADIUS_SERVER*)find_slist((struct slist *)list,
-                                   server_cmp,
-                                   name);
+	list_iterate(qp->servers, server_cmp, name);
+	return list_current(qp->servers);
 }
 

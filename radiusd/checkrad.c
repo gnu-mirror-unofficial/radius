@@ -105,7 +105,7 @@ void
 free_instance(cptr)
         struct check_instance *cptr;
 {
-        envar_free_list(cptr->args);
+        envar_free_list(&cptr->args);
 }
 
 char *

@@ -15,21 +15,19 @@
    along with this program; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
 
-typedef struct envar_t envar_t;
+#ifndef __ENVAR_H
+#define __ENVAR_H
 
-struct envar_t {
-        struct envar_t *next;
-        char *name;
-        char *value;
-};
+#include <list.h>
+
+typedef LIST envar_t;
 
 envar_t *envar_parse(char *str);
 envar_t *envar_parse_argcv(int argc, char **argv);
-void envar_free(envar_t *);
-void envar_free_list(envar_t *);
+void envar_free_list(envar_t **);
 char *envar_lookup(envar_t *, char *);
 char *envar_lookup_str(envar_t *env, char *name, char *defval);
 int envar_lookup_int(envar_t *env, char *name, int defval);
-envar_t *envar_dup(envar_t *env);
 envar_t *envar_merge_lists(envar_t *prim, envar_t *sec);
 
+#endif

@@ -1,24 +1,19 @@
-/* This file is part of GNU RADIUS.
-   Copyright (C) 2000,2001, Sergey Poznyakoff
+/* This file is part of GNU Radius.
+   Copyright (C) 2000,2001,2002,2003 Sergey Poznyakoff
  
-   This program is free software; you can redistribute it and/or modify
+   GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
    the Free Software Foundation; either version 2 of the License, or
    (at your option) any later version.
    
-   This program is distributed in the hope that it will be useful,
+   GNU Radius is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
    GNU General Public License for more details.
   
    You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software Foundation,
+   along with GNU Radius; if not, write to the Free Software Foundation,
    Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
-
-#ifndef lint
-static char rcsid[] = 
-"$Id$";
-#endif
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -32,7 +27,7 @@ static char rcsid[] =
 
 #include <radius.h>
 #include <radpaths.h>
-#include <slist.h>
+#include <list.h>
 #include <symtab.h>
 
 #ifndef DICT_INDEX_SIZE
@@ -41,27 +36,29 @@ static char rcsid[] =
 
 static Symtab    *dict_attr_tab;
 static DICT_ATTR *dict_attr_index[DICT_INDEX_SIZE];
-static DICT_VALUE  *dictionary_values;
-static DICT_VENDOR *dictionary_vendors;
+static LIST /* of DICT_VALUE */ *dictionary_values;
+static LIST /* of DICT_VENDOR */ *dictionary_vendors;
 static int         vendorno;
-
-int nfields(int  fc, int  minf, int  maxfm, char *file, int  lineno);
 
 /* ************************************************************************ */
 
-static void
-free_vendor(vp)
-        DICT_VENDOR *vp;
+static int
+free_vendor(void *ptr, void *closure ARG_UNUSED)
 {
+        DICT_VENDOR *vp = ptr;
         if (vp->vendorname)
                 efree(vp->vendorname);
+	efree(vp);
+	return 0;
 }
 
-static void
-free_value(vp)
-        DICT_VALUE *vp;
+static int
+free_value(void *ptr, void *closure ARG_UNUSED)
 {
+        DICT_VALUE *vp = ptr;
         efree(vp->name);
+	efree(vp);
+	return 0;
 }
 
 void
@@ -73,34 +70,19 @@ dict_free()
                 dict_attr_tab = symtab_create(sizeof(DICT_ATTR), NULL);
         memset(dict_attr_index, 0, sizeof dict_attr_index);
 
-        free_slist((struct slist*)dictionary_values, free_value);
-        dictionary_values = NULL;
-        
-        free_slist((struct slist*)dictionary_vendors, free_vendor);
-
-        dictionary_vendors = NULL;
+	list_destroy(&dictionary_values, free_value, NULL);
+        list_destroy(&dictionary_vendors, free_vendor, NULL);
         vendorno = 1;
 }
 
-int
-nfields(fc, minf, maxf, file, lineno)
-        int  fc;
-        int  minf;
-        int  maxf;
-        char *file;
-        int  lineno;
+static int
+nfields(int fc, int minf, int maxf, char *file, int lineno)
 {
         if (fc < minf) {
-                radlog(L_ERR,
-                       "%s:%d: %s",
-                       file, lineno,
-		       _("too few fields"));
+                radlog(L_ERR, "%s:%d: %s", file, lineno, _("too few fields"));
                 return -1;
         } else if (fc > maxf) {
-                radlog(L_ERR,
-                       "%s:%d: %s",
-                       file, lineno,
-		       _("too many fields"));
+                radlog(L_ERR, "%s:%d: %s", file, lineno, _("too many fields"));
                 return -1;
         }
         return 0;
@@ -110,21 +92,18 @@ nfields(fc, minf, maxf, file, lineno)
  *      Add vendor to the list.
  */
 int
-addvendor(name, value)
-        char *name;
-        int value;
+addvendor(char *name, int value)
 {
         DICT_VENDOR *vval;
 
-        vval = mem_alloc(sizeof(DICT_VENDOR));
+        vval = emalloc(sizeof(DICT_VENDOR));
         
         vval->vendorname = estrdup(name);
         vval->vendorpec  = value;
         vval->vendorcode = vendorno++;
-
-        /* Insert at front. */
-        vval->next = dictionary_vendors;
-        dictionary_vendors = vval;
+	if (!dictionary_vendors)
+		dictionary_vendors = list_create();
+	list_prepend(dictionary_vendors, vval);
 
         return 0;
 }
@@ -143,7 +122,7 @@ static ATTR_PARSER_TAB *attr_parser_tab;
 static attr_parser_fp dict_find_parser(int);
 
 attr_parser_fp
-dict_find_parser(attr)
+dict_find_parser(int attr)
 {
 	ATTR_PARSER_TAB *ep;
 	for (ep = attr_parser_tab; ep; ep = ep->next)
@@ -153,9 +132,7 @@ dict_find_parser(attr)
 }
 
 void
-dict_register_parser(attr, fun)
-	int attr;
-	attr_parser_fp fun;
+dict_register_parser(int attr, attr_parser_fp fun)
 {
 	ATTR_PARSER_TAB *e = mem_alloc(sizeof(*e));
 	e->attr = attr;
@@ -198,12 +175,7 @@ static struct keyword type_kw[] = {
 
 /*ARGSUSED*/
 int
-_dict_include(errcnt, fc, fv, file, lineno)
-        int    *errcnt;
-        int     fc;
-        char    **fv;
-        char    *file;
-        int     lineno;
+_dict_include(int *errcnt, int fc, char **fv, char *file, int lineno)
 {
         if (nfields(fc, 2, 2, file, lineno)) 
                 return 0;
@@ -212,11 +184,7 @@ _dict_include(errcnt, fc, fv, file, lineno)
 }
 
 int
-parse_flags(ptr, flags, filename, line)
-        char **ptr;
-        int *flags;
-        char *filename;
-        int line;
+parse_flags(char **ptr, int *flags, char *filename, int line)
 {
         int i;
         char *p;
@@ -267,12 +235,7 @@ parse_flags(ptr, flags, filename, line)
 }
 
 int
-_dict_attribute(errcnt, fc, fv, file, lineno)
-        int    *errcnt;
-        int     fc;
-        char    **fv;
-        char    *file;
-        int     lineno;
+_dict_attribute(int *errcnt, int fc, char **fv, char *file, int lineno)
 {
         DICT_ATTR *attr;
         int type;
@@ -406,12 +369,7 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 }
 
 int
-_dict_value(errcnt, fc, fv, file, lineno)
-        int    *errcnt;
-        int     fc;
-        char    **fv;
-        char    *file;
-        int     lineno;
+_dict_value(int *errcnt, int fc, char **fv, char *file, int lineno)
 {
         DICT_VALUE *dval;
         DICT_ATTR *attr;
@@ -433,29 +391,25 @@ _dict_value(errcnt, fc, fv, file, lineno)
         attr = sym_lookup_or_install(dict_attr_tab, VALUE_ATTR, 1);
         
         /* Create a new VALUE entry for the list */
-        dval = mem_alloc(sizeof(DICT_VALUE));
+        dval = emalloc(sizeof(DICT_VALUE));
                         
         dval->name = estrdup(VALUE_NAME);
         dval->attr = attr;
         dval->value = value;
 
         /* Insert at front. */
-        dval->next = dictionary_values;
-        dictionary_values = dval;
+	if (!dictionary_values)
+		dictionary_values = list_create();
+	list_prepend(dictionary_values, dval);
         
         return 0;
 }
 
 int
-_dict_vendor(errcnt, fc, fv, file, lineno)
-        int    *errcnt;
-        int     fc;
-        char    **fv;
-        char    *file;
-        int     lineno;
+_dict_vendor(int *errcnt, int fc, char **fv, char *file, int lineno)
 {
-        int             value;
-        char            *p;
+        int value;
+        char *p;
 
         if (nfields(fc, 3, 3, file, lineno))
                 return 0;
@@ -493,12 +447,7 @@ static struct keyword dict_kw[] = {
 };
 
 int
-parse_dict_entry(errcnt, fc, fv, file, lineno)
-        int    *errcnt;
-        int     fc;
-        char    **fv;
-        char    *file;
-        int     lineno;
+parse_dict_entry(int *errcnt, int fc, char **fv, char *file, int lineno)
 {
         switch (xlat_keyword(dict_kw, KEYWORD, -1)) {
         case KW_INCLUDE:
@@ -524,8 +473,7 @@ parse_dict_entry(errcnt, fc, fv, file, lineno)
 }
 
 int
-parse_dict(name)
-        char *name;
+parse_dict(char *name)
 {
         char *path;
         int   rc;
@@ -568,9 +516,7 @@ struct attr_value {
 };
 
 int
-attrval_cmp(av, attr)
-        struct attr_value *av;
-        DICT_ATTR *attr;
+attrval_cmp(struct attr_value *av, DICT_ATTR *attr)
 {
         if (attr->value == av->value) {
                 av->da = attr;
@@ -580,8 +526,7 @@ attrval_cmp(av, attr)
 }
 
 DICT_ATTR *
-attr_number_to_dict(attribute)
-        int     attribute;
+attr_number_to_dict(int attribute)
 {
         struct attr_value av;
         if (attribute < DICT_INDEX_SIZE)
@@ -597,8 +542,7 @@ attr_number_to_dict(attribute)
  */
 
 DICT_ATTR *
-attr_name_to_dict(attrname)
-        char    *attrname;
+attr_name_to_dict(char *attrname)
 {
         return sym_lookup(dict_attr_tab, attrname);
 }
@@ -612,26 +556,23 @@ struct val_lookup {
         int number;
 };
 
-int
-valname_cmp(v, d)
-        DICT_VALUE *v;
-        struct val_lookup *d;
+static int
+valname_cmp(const void *item, const void *data)
 {
-        return !(d->number == v->attr->value
-                 && strcmp(v->name, d->name) == 0); 
+	const DICT_VALUE *v = item;
+	const struct val_lookup *d = data;
+        if (d->number == v->attr->value && strcmp(v->name, d->name) == 0) 
+		return 0;
+	return 1;
 }
 
 DICT_VALUE *
-value_name_to_value(valname, attr)
-        char    *valname;
-        int attr;
+value_name_to_value(char *valname, int attr)
 {
         struct val_lookup data;
         data.name = valname;
         data.number = attr;
-        return (DICT_VALUE *)find_slist((struct slist*) dictionary_values,
-                                        valname_cmp,
-                                        &data);
+	return list_locate(dictionary_values, &data, valname_cmp);
 }
 
 /*
@@ -639,25 +580,23 @@ value_name_to_value(valname, attr)
  * the associated attribute name.
  */
 int
-valnum_cmp(v, d)
-        DICT_VALUE *v;
-        struct val_lookup *d;
+valnum_cmp(const void *item, const void *data)
 {
-        return !(strcmp(d->attrname, v->attr->name) == 0
-                 && d->number == v->value); 
+	const DICT_VALUE *v = item;
+	const struct val_lookup *d = data;
+
+        if (strcmp(d->attrname, v->attr->name) == 0 && d->number == v->value) 
+		return 0;
+	return 1;
 }
 
 DICT_VALUE *
-value_lookup(value, attrname)
-        UINT4   value;
-        char    *attrname;
+value_lookup(UINT4 value, char *attrname)
 {
         struct val_lookup data;
         data.number = value;
         data.attrname = attrname;
-        return (DICT_VALUE *)find_slist((struct slist*) dictionary_values,
-                                        valnum_cmp,
-                                        &data);
+	return list_locate(dictionary_values, &data, valnum_cmp);
 }
 
 /*
@@ -665,22 +604,20 @@ value_lookup(value, attrname)
  * based on it's internal number.
  */
 int
-code_cmp(v, code)
-        DICT_VENDOR *v;
-        int *code;
+code_cmp(const void *item, const void *data)
 {
-        return v->vendorcode - *code;
+	const DICT_VENDOR *v = item;
+	const int *code = data;
+
+        return v->vendorcode != *code;
 }
 
 int 
-vendor_id_to_pec(code)
-        int code;
+vendor_id_to_pec(int code)
 {
         DICT_VENDOR *vp;
 
-        vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
-                                      code_cmp,
-                                      &code);
+	vp = list_locate(dictionary_vendors, &code, code_cmp);
         return vp ? vp->vendorpec : 0;
 }
 
@@ -688,34 +625,29 @@ vendor_id_to_pec(code)
  * Get the internal code of the vendor based on its PEC.
  */
 int
-pec_cmp(v, pec)
-        DICT_VENDOR *v;
-        int *pec;
+pec_cmp(const void *item, const void *data)
 {
-        return v->vendorpec - *pec;
+	const DICT_VENDOR *v = item;
+	const int *pec = data;
+
+        return v->vendorpec != *pec;
 }
 
 int 
-vendor_pec_to_id(pec)
-        int pec;
+vendor_pec_to_id(int pec)
 {
         DICT_VENDOR *vp;
 
-        vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
-                                      pec_cmp,
-                                      &pec);
+	vp = list_locate(dictionary_vendors, &pec, pec_cmp);
         return vp ? vp->vendorcode : 0;
 }
         
 char *
-vendor_pec_to_name(pec)
-        int pec;
+vendor_pec_to_name(int pec)
 {
         DICT_VENDOR *vp;
 
-        vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
-                                      pec_cmp,
-                                      &pec);
+	vp = list_locate(dictionary_vendors, &pec, pec_cmp);
         return vp ? vp->vendorname : NULL;
 }
         
@@ -724,22 +656,20 @@ vendor_pec_to_name(pec)
  * Get the internal code of the vendor based on its name.
  */
 int
-vendor_cmp(v, s)
-        DICT_VENDOR *v;
-        char        *s;
+vendor_cmp(const void *item, const void *data)
 {
+	const DICT_VENDOR *v = item;
+	const char *s = data;
+
         return strcmp(v->vendorname, s);
 }
 
 int 
-vendor_name_to_id(name)
-        char *name;
+vendor_name_to_id(char *name)
 {
         DICT_VENDOR *vp;
 
-        vp = (DICT_VENDOR*)find_slist((struct slist*) dictionary_vendors,
-                                      vendor_cmp,
-                                      name);
+	vp = list_locate(dictionary_vendors, name, vendor_cmp);
         return vp ? vp->vendorcode : 0;
 }
         

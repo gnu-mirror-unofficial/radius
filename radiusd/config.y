@@ -36,7 +36,6 @@ static char rcsid[] =
 #include <unistd.h>
  
 #include <radiusd.h>
-#include <slist.h>
 #include <obstack1.h>
 #include <cfg.h>
  

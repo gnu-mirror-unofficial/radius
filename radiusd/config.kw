@@ -53,6 +53,7 @@ err, T_SEVERITY, _Y(L_ERR)
 error, T_SEVERITY, _Y(L_ERR)
 exec-program-group, T_EXEC_PROGRAM_GROUP
 exec-program-user, T_EXEC_PROGRAM_USER
+gc-interval, T_GC_INTERVAL
 guile, T_GUILE,
 main, T_MAIN,
 file, T_FILE,

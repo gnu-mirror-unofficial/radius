@@ -15,5 +15,8 @@ endif
 INCLUDES=-I$(top_srcdir)/include
 noinst_PROGRAMS=findport
 findport_SOURCES=findport.c
-EXTRA_DIST=raddb test.sh test.scm
+SUBDIRS=raddb
+EXTRA_DIST=test.sh test.scm
 CLEANFILES=acct log raddb/config raddb/radctl.rc
+TESTS=@TESTDIR@
+TESTS_ENVIRONMENT=BUILDDIR=$(top_builddir) SOURCEDIR=$(top_srcdir)

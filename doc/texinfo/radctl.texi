@@ -39,7 +39,7 @@ Causes running @command{radiusd} server to re-read its configuration files.
 
 @item dumpdb
 Tells @command{radiusd} to dump its user hash table into the file
-@file{@value{RADLOG}/radius.parse}. This can be used for debugging 
+@file{@var{radlog}/radius.parse}. This can be used for debugging 
 configuration files.
 
 @item status

@@ -32,7 +32,7 @@ The two places to look for any news regarding Radius are
 the Radius homepage at @url{http://www.gnu.org/software/radius},
 and the Radius project page at @url{http://savannah.gnu.org/projects/radius}.
 
-There exist following mailing lists related to GNU Radius:
+The following mailing lists are related to GNU Radius:
 
 @table @email
 @item info-gnu-radius@@gnu.org

@@ -1,3 +1,32 @@
+2001-12-13 Sergey Poznyakoff
+
+	* radiusd/radiusd.c: Added --directory switch for compatibility
+	  with other utilities.
+	* raduse/raduse.c: Untabify.
+
+	* scripts/texi2html: Fixed processing of @multitable (@item and
+	  @tab on a single line) and @example-like statements.
+	
+	* doc/man/config.so.in: Updated.
+	* doc/man/builddbm.8.man: Updated.
+	* doc/man/radctl.8.man: Updated.
+	* doc/man/radgrep.1.man: Updated.
+	* doc/man/radiusd.8.man: Updated.
+	* doc/man/radlast.1.man: Updated.
+	* doc/man/radping.8.man: Updated.
+	* doc/man/raduse.1.man: Updated.
+	* doc/man/radwho.1.man: Updated.
+	* doc/man/radzap.8.man: Updated.
+	* doc/man/template: Updated.
+	
+	* doc/texinfo/bugs.texi: Updated.
+	* doc/texinfo/builddbm.texi: Updated.
+	* doc/texinfo/extensions.texi: Updated.
+	* doc/texinfo/invoke.texi: Updated.
+	* doc/texinfo/naming.texi: Updated.
+	
+	* doc/texinfo/index.html.in: Updated.
+	
 2001-12-12 Sergey Poznyakoff
 
 	* radiusd/radiusd.c: (reread_config): Use rad_flush_queues()

@@ -1,6 +1,6 @@
 .\" $Id$
 .so config.so
-.TH BUILDDBM 8 "March 10, 2000" "FSF"
+.TH BUILDDBM 8 "\*(DA" "FSF"
 .SH NAME
 builddbm - build a DBM version of Radius users database
 .SH SYNOPSIS
@@ -47,7 +47,7 @@ The information in this manpage may be obsolete or incomplete. Please
 refer to texinfo documentation for full information about GNU Radius
 tools.
 .SH AUTHORS
-Sergey Poznyakoff, gray@farlep.net
+\*(AU
 
 .SH SEE ALSO
 users(5rad), radiusd(8rad), config(5rad)

@@ -1,6 +1,6 @@
 .\" $Id$
 .so config.so
-.TH Radiusd 8 "March 10, 2000" "FSF"
+.TH Radiusd 8 "\*(DA" "FSF"
 .SH NAME
 radiusd - Authentication and accounting server
 .SH SYNOPSIS
@@ -53,76 +53,102 @@ A child process may be forked during this stage to handle the request.
 .PP
 
 .SH OPTIONS
-.IP -A
+.IP "-A, --log-auth-detail"
 Write a file named \fBdetail.auth\fR in the same directory as
 \fBdetail\fR file. This file contains all the Attribute-Value pairs
 for each authentication packet. Normally this should be used for
 debugging purposes.
-.IP -a
+.IP
+Configuration file equivalent: \fBdetail yes\fR in \fBauth\fR block.
+.IP "-a, --acct-directory PATH"
 Specify alternate directory for accounting. Usually this defaults to
 \fB\*(RL/radacct\fR.
-.IP -b
+.IP
+Configuration file equivalent: \fBacct-dir PATH\fR in \fBoption\fR block.
+.IP "-b, --dbm"
 If the \fBradiusd\fR server was configured with \fB--enable-dbm\fR
 option, this flag instructs it to use the DBM version of the users
 database (\fB\*(RD/users.db\fR or \fB\*(RD/users.pag\fR,
 \fB\*(RD/users.dir\fR pair) instead of the plain text file
 (\fB\*(RD/users\fR).
 .IP
-Note that this makes the processing of each authentication request
-\fBmuch more slower\fR when the number of users grows beyond some
-limit.
-.IP -d
+Configuration file equivalent: \fBusedbm yes\fR.
+.IP "-d, --config-directory, --directory PATH"
 Specifies alternate name for the configuration
 directory. \fBRadiusd\fR looks there for its configuration files. It
 defaults to \fB\*(RD\fR.
-.IP -f
+.IP "-f, --foreground"
 Instructs the server to not detach itself from the controlling
 terminal. This is used for debugging.
-.IP -l
+.IP "-i, --ip-address IP"
+Specifies the IP address to listen on. If this option is not specified,
+the program will listen on all IP addresses, assigned to the machine it
+runs on.
+.IP
+Configuration file equivalent: \fBsource-ip IP\fR in \fBoption\fR block.
+.IP
+Please note, that \fBlisten\fR statement in \fBraddb/config\fR
+provides a better control over IP addresses to listen on.
+.IP "-L, --license"
+Display GNU General Public License and exit.
+
+.IP "-l, --logging-directory PATH"
 Specifies alternate name for logging directory. \fBRadiusd\fR writes
 there its logfile(s). The default is \fB\*(RL\fR.
-.IP -mc
+.IP
+Configuration file equivalent: \fBlog-dir PATH\fR in \fBoption\fR block.
+.IP "-m, --mode c"
 Check mode. In this mode \fBradiusd\fR starts as usual, checks its
 configuration files and exits. All log channels are duplicated to
 stdout.
-.IP -mb
+.IP "-m, --mode b"
 Build DBM users database out of plaintext file. If no argument is
 specified, the file \*(RD/users is taken as input.  Otherwise the
 argument specifies the filename to be used as input. This option
 takes effect only if the program was configured with \fB--enable-dbm\fR
 option.
-.IP -mt
+.IP "-m, --mode t"
 Start in test mode. In this mode \fBradiusd\fR starts interactive
 interpreter which allows to test various aspects of its configuration.
-.IP -p
+.IP "-p, --port PORT"
 Specifies alternate port for authentication requests. The port number
 for accounting requests is determined by adding 1 to this number. Port
 number should be specified in decimal. Defaults are 1645 and 1646.
-.IP -S
+.IP "-S, --log-stripped-names"
 Strip off the suffix and prefix from the username before writing it to
 the \fBdetail\fR file.
-.IP -s
+.IP
+Configuration file equivalent: \fBstrip-names yes\fR in \fBauth\fR block.
+.IP "-s, --single-process"
 Tells the authentication server to operate in single process
 mode. When specified this flag, the authentications server will handle
 each request itself instead of forking child process to do that. This
 slows down the authentication processing to a crawl and should only be
 used for debugging purposes. The most convenient use is with the
 \fB-f\fR option.
-.IP -v
+.IP "-v, --version"
 When given this option \fBradiusd\fR prints on the standard output its
 version number, compilation flags and the file names it uses and exits
 with zero code.
-.IP -x
-Sets the debug level. The level should be specified as decimal, octal
-or hex number. The usage of this option is discouraged. Use
-\fBdebug\fR statement in the configuration file instead.
-.IP -y
-Write in the log file detailed information about each authentication
+.IP "-x, --debug MOD-LIST"
+Sets the debug level. \fBMOD-LIST\fR is a comma-separated list of
+\fBmodule-level\fR specifications. Each module-level specification
+is either \fBMOD-NAME\fR or \fBMOD-NAME\fR=\fBLEVEL\fR, where
+\fBMOD-NAME\fR is the name of the source module, \fBLEVEL\fR is
+the debugging level to be set for that module (0 <= \fBLEVEL\fR <= 100)
+If \fBLEVEL\fR is omitted, it defaults to 100.
+.IP
+Configuration file equivalent: \fBdebug MOD-LIST\fR in \fBlogging\fR block.
+.IP "-y, --log-auth"
+Write to the log file detailed information about each authentication
 request. The information is logged under \fBauth\fR loglevel.
-.IP -z
-Log the password along with user name for each login. This is very
-insecure.
-
+.IP
+Configuration file equivalent: \fBprint-auth yes\fR in \fBlogging\fR block.
+.IP "-z, --log-auth-pass"
+Log the password along with the user name for each login. This is very
+insecure. This option is provided only for debugging purposes.
+.IP
+Configuration file equivalent: \fBprint-pass yes\fR in \fBlogging\fR block.
 .SH CONFIGURATION
 \fBRadiusd\fR uses rather complicated configuration file suite. The
 files live in \fB\*(RD\fR directory. The place of their location
@@ -142,7 +168,7 @@ database. This is used when the server is compiled with
 \fB--enable-dbm\fR option and either \fB-b\fR flag is specified in the
 command line, or \fBusedbm yes\fR option is
 used in \fBconfig\fR file.
-.IP radius.deny
+.IP access.deny
 The list of users whose access is denied for some reason.
 .IP dictionary
 Defines the symbolic representation of the \fBRadius\fR attributes,
@@ -184,9 +210,8 @@ Holds the PID number of the master \fBRadius\fR process.
 The information in this manpage may be obsolete or incomplete. Please
 refer to texinfo documentation for full information about GNU Radius
 tools.
-
 .SH AUTHORS
-Sergey Poznyakoff, gray@farlep.net
+\*(AU
 
 .SH SEE ALSO
 users(5rad), config(5rad), dictionary(5rad), naslist(5rad), clients(5rad),

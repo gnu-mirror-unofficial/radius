@@ -1,6 +1,6 @@
 .\" $Id$
 .so config.so
-.TH radwho 1 "March 10, 2000" "FSF"
+.TH radwho 1 "\*(DA" "FSF"
 .SH NAME
 radwho - display who is logged on by the Radius
 
@@ -186,7 +186,7 @@ refer to texinfo documentation for full information about GNU Radius
 tools.
 
 .SH AUTHORS
-Sergey Poznyakoff, gray@farlep.net
+\*(AU
 
 .SH SEE ALSO
 radiusd(8rad), radgrep(1rad),

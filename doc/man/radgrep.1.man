@@ -1,6 +1,6 @@
 .\" $Id$
 .so config.so
-.TH radgrep 1 "March 10, 2000" "FSF"
+.TH radgrep 1 "\*(DA" "FSF"
 .SH NAME
 radgrep - find a user by regular expression
 
@@ -25,7 +25,7 @@ refer to texinfo documentation for full information about GNU Radius
 tools.
 
 .SH AUTHORS
-Sergey Poznyakoff, gray@farlep.net
+\*(AU
 
 .SH SEE ALSO
 radiusd(8rad), radwho(1rad), grep(1)

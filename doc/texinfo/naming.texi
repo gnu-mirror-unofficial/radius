@@ -29,8 +29,8 @@ The default locations of these directories are determined at compile
 time. By default these are:
 
 @multitable @columnfractions .40 .15 .45
-@item Directory @tab Short Name @tab Default location 
 
+@item Directory @tab Short Name @tab Default location 
 @item Configuration directory
 @cindex Configuration directory
 @cindex @file{raddb}

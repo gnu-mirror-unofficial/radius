@@ -56,6 +56,7 @@ Config file equivalent: @code{usedbm yes;}.
 @c ** --config-directory option (radiusd)
 @item -d DIR
 @itemx --config-directory DIR
+@itemx --directory D
 Specify alternate configuration directory. Default is @file{@value{RADDB}}.
 
 @c ** -f option (radiusd)
@@ -184,7 +185,8 @@ logging @{
 Log authentications. With this option enabled, Radius will log any
 authentication attempt into its logfile @ref{Logging}.
 
-Config file equivalent: @code{auth @{ detail yes; @};}.
+Config file equivalent: @code{logging @{ category auth @{ detail yes;
+@}; @}; }.
 
 @item -z
 @itemx --log-auth-pass

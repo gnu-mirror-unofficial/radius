@@ -1,6 +1,6 @@
 .\" $Id$
 .so config.so
-.TH radlast 1 "March 10, 2000" "FSF"
+.TH radlast 1 "\*(DA" "FSF"
 .SH NAME
 radlast - report last logins from Radius database.
 .SH SYNOPSIS
@@ -28,37 +28,34 @@ login name, NAS short name, port number, prototype, port type, Session
 ID, Caller ID, Framed IP address, start and stop time of the session,
 and the duration of the session.
 .SH OPTIONS
-.IP -#
+.IP "-#, -c, --count #"
 Where \fB#\fR represents any decimal number. When given this option
 \fBradlast\fR will output at most this many lines of information.
 For compatibility with some versions of last(1), the
 initial \fB-\fR sign can be omitted.
-.IP -f
+.IP "-f, --file NAME"
 Read the specified file instead of the default \fB\*(RL/radwtmp\fR.
-
-.IP -h
-Report the logins from given host. Host can be either a name or a
-"dotted quad" internet address.
-
-.IP -n
+.IP "-h, --host IP"
+Report logins from given host. Host can be either a name
+or a "dotted quad" internet address.
+.IP "-?, --help
+Display short usage message and exit.
+.IP "-n, --nas NAS"
 Report the logins from given Network Access Server (NAS).
-
-.IP -l
+.IP "-L, --license"
+Display GNU General Public License and exit.
+.IP "-l, --long-format"
 "Long" output format. Report all the information stored in
 \fBradwtmp\fR file.
-
-.IP -p
+.IP "-p, --port PORT"
 Report the logins on a given port. The port may be specified fully or
 abbreviated, e.g. ``radlast -p 3'' or ``radlast -p S03''.
-
-.IP -s
+.IP "-s, --show-seconds"
 Report the duration of the login session in seconds instead of the
 default days, hours and minutes.
-
 .IP -t
 See \fB-p\fR. This flag is provided for compatibility with last(1).
-
-.IP -w
+.IP "-w, --wide"
 Widen the duration field to show seconds as well as the default days,
 hours and minutes.
 
@@ -80,7 +77,7 @@ refer to texinfo documentation for full information about GNU Radius
 tools.
 
 .SH AUTHORS
-Sergey Poznyakoff, gray@farlep.net
+\*(AU
 
 .SH SEE ALSO
 radiusd(8rad), radwho(1rad), radzap(8rad), radgrep(1rad)

@@ -1,6 +1,6 @@
 .\" $Id$
 .so config.so
-.TH raduse 1 "March 10, 2000" "FSF"
+.TH raduse 1 "\*(DA" "FSF"
 .SH NAME
 raduse - monitor the usage of dialup lines.
 .SH SYNOPSIS
@@ -48,34 +48,36 @@ amount of time in this state, and starting date and time when maximum
 duration was perceived.
 
 .SH OPTIONS
-.IP -b
+.IP "-b, --brief"
 Start up in brief mode. In this mode only first line of information for
 each dialup line is displayed.
-.IP -d
+.IP "-d, --display COUNT"
 Show only count displays, then exit. A display is considered to be one
 update of the screen.
-.IP -D
+.IP "-D, --dump"
 Dump the statistics database to the standard output and then
 exit. This is for debugging purposes only.
-.IP -I
+.IP "-I, --no-idle-lines"
 Do not display idle lines. By default \fBraduse\fR displays all dialup
 lines.
-.IP -i
+.IP "-i, --interactive"
 Use interactive mode. In this mode any input is immediately read for
 processing. See the \fBCOMMANDS\fR section for the description of
 commands usable in interactive mode. After processing each command the
 screen is updated immediately, no matter was the command understood or
 not. This mode is the default when the standard output is an
 intelligent terminal.
-.IP -n
+.IP "-n, --no-interactive"
 Use non-interactive mode.
-.IP -s
+.IP "-s, --delay NUM"
 Specify delay in seconds between screen updates.
-.IP -w
+.IP "-w, --widen"
 Widen the time display fields to show the seconds.
-.IP -l
+.IP "-L, --license"
+Display GNU General Public License and exit.
+.IP "-l, --list-nas"
 List the names and IP numbers of network access servers and then exit.
-.IP -h
+.IP "-h, --help"
 Display short usage summary.
 
 .SH COMMANDS
@@ -137,7 +139,7 @@ refer to texinfo documentation for full information about GNU Radius
 tools.
 
 .SH AUTHORS
-Sergey Poznyakoff, gray@farlep.net
+\*(AU
 
 .SH SEE ALSO
 radiusd(8rad), radwho(1rad), radgrep(1rad), naslist(5rad)

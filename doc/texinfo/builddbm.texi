@@ -33,7 +33,7 @@ Use the following command line options to modify the operation of
 @table @option
 @item -d @var{dir}
 Specifies alternate directory for the Radius configuration
-files. This defaults to @file{@value{raddb}}.
+files. This defaults to @file{@value{RADDB}}.
 
 @item -h
 Outputs short usage summary and exits with 0 exit code.

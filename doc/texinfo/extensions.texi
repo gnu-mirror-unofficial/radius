@@ -8,7 +8,7 @@
 
 The use of extension language allows to extend the functionality of
 GNU Radius without having to modify its source code. The two extension
-languages supported are Rewrite and Scheme. The use of Rewrite is always
+languages supported are Rewrite and Scheme. Use of Rewrite is always
 enabled. Use of Scheme requires Guile version 1.4 or higher.
 
 @menu

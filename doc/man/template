@@ -1,6 +1,6 @@
 .\" $Id$
 .so config.so
-.TH . 8 "March 10, 2000" "FSF"
+.TH . 8 "\*(DA" "FSF"
 .SH NAME
 
 .SH SYNOPSIS
@@ -10,7 +10,7 @@
 .SH OPTIONS
 
 .SH AUTHORS
-Sergey Poznyakoff, gray@farlep.net
+\*(AU
 
 .SH SEE ALSO
 radiusd(8rad)

@@ -51,12 +51,12 @@ Arguments are:
 @item  PORT-NUMBER
 Port number to use. These values are allowed:
 
-        @multitable @columnfractions .40 .40
-                @item  0         @tab Authentication port,
-                @item  1         @tab Accounting port,
-                @item  2         @tab Control port.
-        @end multitable
-        @noindent
+@multitable @columnfractions .40 .40
+@item  0         @tab Authentication port,
+@item  1         @tab Accounting port,
+@item  2         @tab Control port.
+@end multitable
+@noindent
 The actual port numbers are those configured for
 the given server.
 @item  CODE-NUMBER
@@ -153,10 +153,10 @@ The entry is a list of the form:
 where:
 
 @multitable @columnfractions .40 .45
-        @item NAME-STR          @tab is the attribute name,
-        @item VALUE-NUMBER      @tab is the attribute number,
-        @item TYPE-NUMBER       @tab is the attribute type,
-        @item VENDOR
+@item NAME-STR          @tab is the attribute name,
+@item VALUE-NUMBER      @tab is the attribute number,
+@item TYPE-NUMBER       @tab is the attribute type,
+@item VENDOR
 @tab is the vendor PEC, if the attribute is a Vendor-Specific one, or #f otherwise.
 @end multitable
 @end deffn

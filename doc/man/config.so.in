@@ -1,3 +1,5 @@
 .ds RD @ETC_DIR@/raddb
 .ds RL @RADLOG_DIR@
 .ds RP @RADPID_DIR@
+.ds AU Sergey Poznyakoff \fB<\fRgray@Mirddin.farlep.net\fB>\fR
+.ds DA December 13, 2001

@@ -1,13 +1,10 @@
 .\" $Id$
 .so config.so
-.TH radctl 8 "March 10, 2000" "FSF"
+.TH radctl 8 "\*(DA" "FSF"
 .SH NAME
 radctl - Radius daemon control interface
 .SH SYNOPSIS
-\fBradctl\fR -s command [options]
-.br
-\fBradctl\fR [\fB-d, --directory\fR DIR][\fB-S, --server\fR ID]
-[\fB-u, --user\fR NAME][\fB-p, --password\fR PASS][\fB-v, --verbose\fR]
+\fBradctl\fR [-s] command 
 .br
 \fBradctl\fR \fB-h\fR
 
@@ -21,105 +18,39 @@ UNIX-style signal interface or a special UDP control channel.
 
 .SH OPTIONS
 .IP "-s, --signal"
-Use UNIX-style signal interface.
-
-.IP "-d, --directory DIR"
-Specifies the directory where radius dictionary files and \fBradctl.rc\fR
-file reside.
-
-.IP "-S, --server ID"
-Specifies the name of the server to connect to. \fBPlease note\fR that
-this is not a domain name, but rather the server ID under which it was
-registered using \fI(set! rad-server-list ...)\fR statement in
-\fBradctl.rc\fR file.
-
-.IP "-u, --user NAME"
-Specifies the username. If you start \fBradctl\fR without this option,
-you will have to issue \fBuser\fR command from inside it.
-
-.IP "-l, --login NAME"
-An alias for \fB-u, --user\fR option.
-
-.IP "-v, --verbose"
-Enable verbose mode. In verbose mode all conversation with the
-Radius server is echoed on stderr.
+Use UNIX-style signal interface. This option is retained fo compatibility
+with previous versions of radctl.
 
 .IP "-h, --help"
 Display short usage help and exit.
 
 .SH COMMANDS
 
-A command in radctl interactive mode consists of a command verb and
-optional arguments. Any non-ambiguous abbreviated form of a command
-verb is accepted. Command arguments, however, may not be abbreviated.
-
-These are commands that control the operation of the \fBradctl\fR
-monitor itself:
-
-.IP help
-Output short help information.
-
-.IP "quit, bye"
-Exit the program.
-
-.IP server
-Display the ID of the current radius server.
-
-.IP "server ID"
-Set current radius server.
-
-.IP verbose
-Toggle verbose mode on/off. When verbose mode is on, \fBradctl\fR
-displays to stderr detailed log of its conversation with Radius
-server.
-
-.IP "login, user NAME"
-Use NAME as administrative user login name.
-
-.IP "password PASS"
-Use the specified password. If `\fB.\fR' (dot) is entered instead of
-plaintext password, \fBradctl\fR reads the password from /dev/tty with
-character echoing turned off and generation of signals by tty special
-characters disabled. This reduces the possibility of the password being
-compromised.
-
-.IP "list, list active"
-Display detailed information about current radius server.
-
-.IP "list avail"
-List available radius servers. Only server ID and hostname (or IP
-address) are listed.
-
-These commands are sent directly to the server:
-
-.IP getpid
-Output the PID of the master Radius process.
-
-.IP get-m-stat
-Display detailed memory usage statistics.
-
-.IP get-q-stat
-Display detailed queue statistics. Four fields are displayed for each
-queue:
-.IP
-Queue number
-.IP
-Number of pending requests
-.IP
-Number of processed requests still residing in the queue
-.IP
-Total number of requests in queue
-
+.IP start
+Start the \fBradiusd\fR server. Any surplus arguments after \fBstart\fR
+command are passed as a command line to the server.
+.IP stop
+Shut down running \fBradiusd\fR server.
+.IP restart
+Restart running \fBradiusd\fR server, i.e. shut it down and start again.
+.IP reload
+Force \fBradiusd\fR server to reload its configuration files.
+.IP status
+Tell \fBradiusd\fR to dump its memory usage information to log channel
+\fBinfo\fR.
+.IP which
+Determine if the server is running. If so, display its status on the
+standard output and return to the shell with 0 exit code. Otherwise,
+return to the shell with 1 exit code. 
 .IP dumpdb
-Tells \fBradiusd\fR to dump its user database, i.e. the parsed
+Tell \fBradiusd\fR to dump its user database, i.e. the parsed
 contents of files \fBhints\fR, \fBhuntgroups\fR and \fBusers\fR
 from the \fB\*(RD\fR directory to disk file. The filename is
 \fR\*(RL/radius.parse\fB.
 
 .SH FILES
-.IP \*(RD/radctl.rc
-.IP $HOME/.radctl
-Initialization files.
+.IP \fR\*(RP/radius.pid
+Keeps the PID of the running \fBradiusd\fR process.
 
 .SH BUGS
 The information in this manpage may be obsolete or incomplete. Please
@@ -127,7 +58,7 @@ refer to texinfo documentation for full information about GNU Radius
 tools.
 
 .SH AUTHORS
-Sergey Poznyakoff, gray@farlep.net
+\*(AU
 
 .SH SEE ALSO
 radiusd(8rad)

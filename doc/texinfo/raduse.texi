@@ -111,7 +111,7 @@ screen is updated immediately, no matter was the command understood or
 not. This mode is the default when the standard output is an
 intelligent terminal.
 @item -n
-@itemx -no-interactive
+@itemx --no-interactive
 Use non-interactive mode.
 @item -s @var{num}
 @itemx --delay @var{num}

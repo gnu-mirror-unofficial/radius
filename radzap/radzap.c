@@ -162,7 +162,7 @@ confirm(struct radutmp *utp)
 {
         char buf[MAX_LONGNAME];
         NAS *cl;
-        char *s;
+        char *s = NULL;
         
         if (cl = nas_lookup_ip(ntohl(utp->nas_address)))
                 s = cl->shortname;

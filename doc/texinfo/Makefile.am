@@ -40,6 +40,9 @@ radius_TEXINFOS=acct.texi\
 
 EXTRA_DIST=index.html.in
 
+CLEANFILES=*.tmp *.ats *.cps *.exs *.fns *.kws *.pgs \
+ *.text *.html html_node/* html_chapter/* html_mono/* *.gz index.html
+
 if MAINTAINER_MODE
 
 html: html_mono html_node html_chapter
@@ -150,6 +153,5 @@ webdoc: $(WEBDOC) index.html
 	tar cfz $(webdocname).tar.gz $(webdocname) &&\
 	rm -r $(webdocname)
 
-CLEANFILES=*.text *.html html_node/* html_chapter/* html_mono/* *.gz index.html
 endif
 

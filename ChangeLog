@@ -1,3 +1,28 @@
+2002-04-15  Sergey Poznyakoff
+
+	* include/radius.h (typedef struct radius_req): New fields
+	  reply_code, reply_pairs and reply_msg. These are used
+	  to keep the reply values for already processed requests.
+	  These values are retransmitted when the need arises.
+	* include/radiusd.h: Removed proto of rad_acct_xmit().
+	* radiusd/acct.c (rad_acct_xmit): Removed.
+	* radiusd/radius.c: Rewritten from scratch.
+	* radiusd/radiusd.c (rad_req_xmit): New function. Retransmits
+	  previous replies for AUTH and ACCT requests.
+	  (request_class request_class): Use rad_req_xmit().
+	* radlib/util.c (radreq_free): Free memory allocated  for
+	  reply_.* members.
+
+	* radiusd/proxy.c: Updated to reflect changes in the AUTH_HDR
+	  structure.
+	* radlib/client.c: Likewise.
+	
+	* radscm/rscm_utmp.c (rad_utmp_putent): Fixed typo in error
+	  diagnostic string.
+	* client/nas/nas.rc: Cleaned up wording in the heading comment.
+
+	* AUTHORS: Updated.
+
 2002-04-11  Sergey Poznyakoff
 
         * include/radutmp.h: Removed P_ protocol defines.

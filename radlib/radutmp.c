@@ -201,3 +201,20 @@ radutmp_putent(filename, ut, status)
 	return rc;
 }
 	
+int
+radwtmp_putent(filename, ut)
+	char *filename;
+	struct radutmp *ut;
+{
+	radut_file_t file;
+		
+	file = rut_setent(filename, 1);
+	if (file == NULL) {
+		radlog(L_ERR|L_PERROR, _("can't open %s"), radwtmp_path);
+		return 1;
+	}
+	rut_putent(file, ut);
+	rut_endent(file);
+	return 0;
+}
+

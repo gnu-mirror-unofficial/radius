@@ -196,8 +196,9 @@ _notify(login, what, ttl_ptr)
 				}
 				break;
 			case '?':
+				result = 0;
 				if (hpack->text[0] == '-') {
-					result = 1;
+					ttl = 0;
 				} else {
 					ttl = strtol(hpack->text, &p, 0);
 					if (*p) {
@@ -208,9 +209,8 @@ _notify(login, what, ttl_ptr)
 						    *p);
 						ttl = 0;
 					}
-					result = 0;
-					*ttl_ptr = ttl;
 				}
+				*ttl_ptr = ttl;
 			}
 			break;
 		}

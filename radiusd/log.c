@@ -95,7 +95,7 @@ vlog(level, file, line, func_name, errno, fmt, ap)
 		free(buf3);
 }
 
-char *catname[] = { /* category names */
+static char *catname[] = { /* category names */
 	"none",
 	"Main",
 	"Auth",
@@ -104,7 +104,7 @@ char *catname[] = { /* category names */
 	"SNMP"
 };
 
-char *priname[] = { /* priority names */
+static char *priname[] = { /* priority names */
 	"emerg",
 	"alert",
 	"crit",

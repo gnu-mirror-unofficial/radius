@@ -1,5 +1,23 @@
 2001-08-25 Sergey Poznyakoff
 
+	* db: (new dir) Contains scripts for automatic creation
+	of authentication/accounting databases.
+	* db/Makefile.am: (new)
+	* db/.cvsignore: (new)
+	* db/config.m4: (new) Template for site-specific definitions.
+	* db/db.m4: (new) Implementation-independent database structure
+	template.
+	* db/mysql.m4: (new) MySQL-specific definitions.
+	* db/pgsql.m4: (new) PostgreSQL-specific definitions.
+
+	* Makefile.am: Added db to SUBDIRS
+	* configure.in: AC_OUTPUT db/Makefile.am
+
+	* raddb/sqlserver: Removed database description from the comment.
+	Fixed sql queries to match new database structure.
+
+2001-08-25 Sergey Poznyakoff
+
 	Changed distribution technique: removed dist-hook from the
 	main Makefile.am and provided separate Makefile.am's for
 	each directory in the distribution.
@@ -25,7 +43,7 @@
 	* radlib/Makefile.am: Merged noinst_HEADERS statements.
 	* radscm/Makefile.am: Use substitution in bin_PROGRAMS,
 	provide EXTRA_PROGRAMS in case the former is empty. Do not
-	distribute *.x and *.doc files. Moved MKDEP variable off
+	distribute *.x and *.doc files. Moved MKDEP variable out of
 	the MAINTAINER_MODE conditional.
 
 	* test/Makefile.am: Added TESTS and TESTS_ENVIRONMENT (previously

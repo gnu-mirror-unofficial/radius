@@ -100,6 +100,10 @@ These are the basic statements:
 @kwindex option
 @kwindex source-ip
 @kwindex max-requests
+@kwindex max-processes
+@kwindex process-idle-timeout
+@kwindex master-read-timeout
+@kwindex master-write-timeout
 @kwindex exec-program-user 
 @kwindex username-chars
 @kwindex log-dir
@@ -117,6 +121,10 @@ option @{
         [ log-dir @var{string} ; ]
         [ acct-dir @var{string} ; ]
         [ resolve @var{bool} ; ]
+        [ max-processes @var{number} ; ]
+        [ process-idle-timeout @var{number} ; ]
+        [ master-read-timeout @var{number} ; ]
+        [ master-write-timeout @var{number} ; ]
 @} ;
 @end smallexample
 
@@ -146,6 +154,28 @@ will be used as source.
 
 @item max-requests
 Sets the maximum number of the requests in queue.
+
+@item max-processes
+Sets the maximum number of child processes. The default value is
+16. If you plan to raise this value, make sure you have enough
+file descriptors available, as each child occupies four descriptors
+for its input/output channels.
+
+@item process-idle-timeout
+Sets the maximum idle time for child processes. A child terminates
+if it does not receive any requests from the main process within this
+number of seconds. By default, this parameter is 3600 seconds
+(one hour).
+
+@item master-read-timeout
+@itemx master-write-timeout
+These two values set the timeout values for the interprocess input/output
+operations in the main server process. More specifically,
+@code{master-read-timeout} sets the maximum number of seconds the main
+process will wait for the answer from the subprocess, and
+@code{master-write-timeout} sets the maximum number of seconds the main
+process will wait for the subprocess's comunication channel to become
+ready for input. By default, no timeouts are imposed.
 
 @end table
 
@@ -620,6 +650,11 @@ Use only the DBM database and ignore @file{raddb/users}.
 @kwindex acl
 @kwindex allow
 @kwindex deny
+@kwindex storage
+@kwindex file
+@kwindex perms
+@kwindex max-nas-count
+@kwindex max-port-count
 
 @subheading Syntax:
 @smallexample
@@ -635,6 +670,12 @@ snmp @{
         [ acl @{
                 [ allow @var{network_name} @var{community_name} ; ]
                 [ deny @var{network_name} ; ]
+        @} ; ]
+        [ storage @{
+                [ file @var{filename} ; ]
+                [ perms @var{number} ; ]
+                [ max-nas-count @var{number} ; ]
+                [ max-port-count @var{number} ; ]
         @} ; ]
 @};
 @end smallexample
@@ -706,6 +747,53 @@ allow hosts from the group @var{network_name} access to community
 Deny access to SNMP service from any host in the group @var{network_name}.
 @end table
 
+@subheading Storage control
+
+GNU Radius stores the SNMP monitoring data in an area of shared
+memory mapped to an external file. This allows all subprocesses
+to share this information and to accumulate the statistics across
+invocations of the daemon.
+
+The @code{storage} statement controls the usage of the storage for
+the SNMP data.
+
+@table @code
+@item file
+Sets the file name for the SNMP storage file. Unless the filename
+begins with a @samp{/} it is taken as relative to the current
+logging directory.
+
+@item perms
+Sets the access permissions for the storage file. @emph{Notice}, that
+this statement does not interpret its argument as octal by default, so
+be sure to prefix it with @samp{0} to use an octal value.
+
+@item max-nas-count
+Sets maximum number of NASes the storage file is able to handle. Default
+is 512. Raise this number if you see the following message in your log
+file:
+
+@cartouche
+@example
+reached SNMP storage limit for the number of monitored NASes:
+increase max-nas-count
+@end example
+@end cartouche
+
+@item max-port-count
+Sets maximum number of ports the storage file is able to handle. Default
+is 1024. Raise this number if you see the following message in your log
+file:
+
+@cartouche
+@example
+reached SNMP storage limit for the number of monitored ports:
+increase max-port-count
+@end example
+@end cartouche
+
+@end table
+
 @comment **L3***************************************************************
 @node rewrite
 @subsection @code{rewrite} statement.
@@ -715,7 +803,7 @@ Deny access to SNMP service from any host in the group @var{network_name}.
 @subheading Syntax:
 @smallexample
 rewrite @{
-	[ stack-size @var{number};
+        [ stack-size @var{number};
 @};
 @end smallexample
 
@@ -1107,7 +1195,7 @@ The characters from @samp{1} to @samp{9} denote nine user-defined flags
 @subheading Example
 
 @smallexample
-ATTRIBUTE  Service-Type  6 integer - [LR-RLR]=P	
+ATTRIBUTE  Service-Type  6 integer - [LR-RLR]=P 
 @end smallexample
 
 This statement assigns the translation string @samp{Service-Type} to the

@@ -13,8 +13,6 @@
 	* include/radiusd.h: Changed proto for stat_request_list().
 	Added typedef QUEUE_STAT.
 
-	* mibs/radmibs.h.in: Added mibs from radiusServerMIB subtree.
-
 2001-08-17 Sergey Poznyakoff
 
 	* mibs/GNU-RADIUS-SERVER-MIB.txt: (new) MIBs describing internals

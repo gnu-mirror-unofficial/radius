@@ -1,3 +1,83 @@
+2001-09-30 Sergey Poznyakoff
+
+	Started rewriting documentation.
+
+	* doc/texinfo/radius.texinfo: removed
+	* doc/texinfo/attributes.texinfo: removed
+
+	* doc/texinfo/acct.texi: (new)
+	* doc/texinfo/attributes.texi: (new)
+	* doc/texinfo/auth.texi: (new)
+	* doc/texinfo/bugs.texi: (new)
+	* doc/texinfo/builddbm.texi: (new)
+	* doc/texinfo/configure.texi: (new)
+	* doc/texinfo/debug.texi: (new)
+	* doc/texinfo/intro.texi: (new)
+	* doc/texinfo/invoke.texi: (new)
+	* doc/texinfo/logging.texi: (new)
+	* doc/texinfo/naming.texi: (new)
+	* doc/texinfo/operation.texi: (new)
+	* doc/texinfo/radauth.texi: (new)
+	* doc/texinfo/radctl.texi: (new)
+	* doc/texinfo/radgrep.texi: (new)
+	* doc/texinfo/radius.texi: (new)
+	* doc/texinfo/radlast.texi: (new)
+	* doc/texinfo/radping.texi: (new)
+	* doc/texinfo/radscm.texi: (new)
+	* doc/texinfo/raduse.texi: (new)
+	* doc/texinfo/radwho.texi: (new)
+	* doc/texinfo/radzap.texi: (new)
+	* doc/texinfo/Makefile.am: Updated.
+
+2001-09-29 Sergey Poznyakoff
+
+	* configure.in: Options --with-include-path, --with-lib-path
+	replace old --enable-add-.*-path options.
+
+	* client/pam_radius/pam_radius.c: Fixed call to value_name_to_value.
+
+	Changed semantics of Local and Crypt-Local auth-types. As before,
+	Local means that the user's password is stored in cleantext and
+	Crypt-Local means it is stored in a crypted form. The difference
+	is that the value of password itself can be retrieved from
+	different places, depending on the value of a new server attribute,
+	Password-Location. The absense of this attribute means that
+	the password is stored in Password or Crypt-Password attribute
+	of the checklist in the users file. This provides backward
+	compatibility with the previous implementations.
+	Password-Location = SQL means that the password should be retrieved
+	from SQL database using auth_query. More Password-Location values
+	will be added as the need arises.
+
+	Consequences:
+	1. CHAP authentication can now coexist with SQL
+	authentication type:
+
+		Auth-Type = Local, Password-Location = SQL
+
+	2. Auth-Type = SQL is actually translated to:
+
+		Auth-Type = Crypt-Local, Password-Location = SQL
+	
+	* include/radiusd.h: Removed rad_check_password proto.
+	* include/radsql.h: Changed rad_sql_pass() proto: accept two
+	arguments and return a character string.
+	* radiusd/sql.c: rad_sql_pass() returns a ponter to retrieved user
+	password. The storage is allocated dynamically and must be efree'd.
+
+	* raddb/dictionary: New attribute Password-Location describes 
+	where to get the password for Local and Crypt-Local auth-types.
+	When absent, the password is read from Password or Crypt-Password
+	attribute. When set to SQL, cleantext or hashed password is retrieved
+	from the SQL database.
+	* radiusd/auth.c: Made rad_check_password() static to the module.
+	Removed unused activefd parameter from its declaration. The function
+	is essentially rewritten to accept new semantics of Local and Crypt-
+	Local auth-types.
+	Added DA_PASSWORD_LOCATION to server_check_items.
+	* radiusd/radck.c: Updated fix_check_pairs() to accord with the new
+	semantics of Local auth-types.
+	
 2001-09-25 Sergey Poznyakoff
 
 	* Makefile.am: Added alpha: rule

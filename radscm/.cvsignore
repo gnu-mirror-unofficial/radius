@@ -3,3 +3,6 @@ Makefile.in
 guile-procedures.txt
 *.x
 *.doc
+.deps
+.libs
+radscm

@@ -1,2 +1,8 @@
 Makefile
 Makefile.in
+radping
+radgrep
+builddbm
+radctl
+radauth
+radtest

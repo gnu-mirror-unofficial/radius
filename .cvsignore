@@ -5,3 +5,9 @@ config.h.in
 configure
 ltconfig
 ltmain.sh
+config.log
+config.h
+libtool
+config.cache
+config.status
+stamp-h

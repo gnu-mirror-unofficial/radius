@@ -7,3 +7,5 @@ lex.yy.c
 y.output
 *.la
 *.lo
+.deps
+.libs

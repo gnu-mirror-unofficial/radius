@@ -254,7 +254,6 @@ typedef struct value_pair {
 } VALUE_PAIR;
 
 typedef struct nas {
-        struct nas              *next;
 	NETDEF                  netdef;
         char                    longname[MAX_LONGNAME+1];
         char                    shortname[MAX_SHORTNAME+1];
@@ -383,7 +382,7 @@ int grad_ip_getnetaddr(const char *str, NETDEF *netdef);
 int grad_ip_in_net_p(const NETDEF *netdef, UINT4 ipaddr);
 
 /* nas.c */
-NAS *grad_nas_next(NAS *p);
+ITERATOR *grad_nas_iterator();
 int grad_nas_read_file(char *file);
 NAS *grad_nas_lookup_name(char *name);
 NAS *grad_nas_lookup_ip(UINT4 ipaddr);

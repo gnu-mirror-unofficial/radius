@@ -733,75 +733,6 @@ usedbm_stmt     : T_USEDBM T_BOOL
 		  }
                 ;
 
-notify_stmt     : T_NOTIFY '{' notify_list '}'
-                  {
-#ifdef USE_NOTIFY
-			  if (debug_config)
-				  radlog(L_DEBUG, 
-					_("TTL server %s:%d %d, %d sec"),
-					 format_ipaddr(notify_cfg.ipaddr),
-					 notify_cfg.port,
-					 notify_cfg.retry,
-					 notify_cfg.timeout);
-#else
-			  radlog(L_WARN,
-				 _("%s:%d: notify statement ignored: radiusd compiled without TTL notification support"),
-				 filename, line_num);
-#endif
-		  }
-                | T_NOTIFY T_BOOL
-                  {
-#ifdef USE_NOTIFY
-			  if ($2 == 0) {
-				  notify_cfg.ipaddr = notify_cfg.port = 0;
-				  if (debug_config)
-					  radlog(L_DEBUG, _("TTL service OFF"));
-			  } else {
-				  yyerror("syntax error: `off' expected");
-			  }
-#endif
-		  }
-                ;
-
-notify_list     : notify_line
-                | notify_list notify_line
-                | notify_list error errmark
-                  {
-			  yyclearin;
-                          yyerrok;
-		  }
-                ;
-
-notify_line     : /* empty */ EOL
-                | notify_def EOL
-                ;
-
-notify_def      : T_HOST value
-                  {
-#ifdef USE_NOTIFY 
-			  asgn(&notify_cfg.ipaddr, &$2, AT_IPADDR,0);
-#endif
-		  }
-                | T_PORT value
-                  {
-#ifdef USE_NOTIFY 
-			  asgn(&notify_cfg.port, &$2, AT_PORT, 0);
-#endif
-		  }
-                | T_RETRY value
-                  {
-#ifdef USE_NOTIFY 
-			  asgn(&notify_cfg.retry, &$2, AT_INT, 0);
-#endif
-		  }
-                | T_DELAY value
-                  {
-#ifdef USE_NOTIFY 
-			  asgn(&notify_cfg.timeout, &$2, AT_INT, 0);
-#endif
-		  }
-                ;
-
 	/* SNMP server parameters */
 
 snmp_stmt       : T_SNMP '{' snmp_list '}'
@@ -1084,7 +1015,7 @@ guile_def       : T_LOAD_PATH value EOL
 					 _("%s:%d: wrong datatype (should be string)"),
 					 filename, line_num);
 			  } else
-				  scheme_load_path($2.v.string);
+				  rscm_add_load_path($2.v.string);
 #endif
 		  }
                 | T_LOAD value EOL
@@ -1183,6 +1114,39 @@ cntl_line       : /* empty */ EOL
                 ;
 
 cntl_def        : T_PORT value
+                ;
+
+notify_stmt     : T_NOTIFY '{' notify_list '}'
+                  {
+			  radlog(L_WARN,
+				_("%s:%d: ignoring obsolete notify statement"),
+				 filename, line_num);
+		  }
+                | T_NOTIFY T_BOOL
+                  {
+			  radlog(L_WARN,
+				_("%s:%d: ignoring obsolete notify statement"),
+				 filename, line_num);
+		  }
+                ;
+
+notify_list     : notify_line
+                | notify_list notify_line
+                | notify_list error errmark
+                  {
+			  yyclearin;
+                          yyerrok;
+		  }
+                ;
+
+notify_line     : /* empty */ EOL
+                | notify_def EOL
+                ;
+
+notify_def      : T_HOST value
+                | T_PORT value
+                | T_RETRY value
+                | T_DELAY value
                 ;
 
 %%

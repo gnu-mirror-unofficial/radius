@@ -143,6 +143,7 @@ char *x_debug_spec;
 static RETSIGTYPE sig_handler(int sig);
 void radiusd_main_loop();
 static size_t radius_count_channels();
+void radiusd_run_preconfig_hooks(void *data);
 	
 struct cfg_stmt config_syntax[];
 
@@ -291,23 +292,51 @@ get_port_number(char *name, char *proto, int defval)
 	return svp ? ntohs(svp->s_port) : defval;
 }
 
+unsigned 
+max_ttl(time_t *t)
+{
+	unsigned i, delta = 0;
+
+	for (i = 0; i < R_MAX; i++)
+		if (delta < request_class[i].ttl)
+			delta = request_class[i].ttl;
+	if (t) {
+		time(t);
+		*t += delta;
+	}
+	return delta;
+}
+
 static void
 terminate_subprocesses()
 {
-	int sig;
-
+	int i;
+	int kill_sent = 0;
+	time_t t;
+	
         /* Flush any pending requests and empty the request queue */
 	radiusd_flush_queue();
 	request_init_queue();
 	
 	/* Terminate all subprocesses */
 	radlog(L_INFO, _("Terminating the subprocesses"));
-	sig = SIGTERM;
+	rpp_kill(-1, SIGTERM);
+	
+	max_ttl(&t);
+	
 	while (rpp_count()) {
-		rpp_kill(-1, sig);
-		sleep(2);
+		sleep(1);
 		radiusd_cleanup();
-		sig = SIGKILL;
+		if (time(NULL) >= t) {
+			if (kill_sent) {
+				radlog(L_CRIT, _("%d processes left!"),
+					rpp_count());
+				break;
+			}
+			max_ttl(&t);
+			rpp_kill(-1, SIGKILL);
+			kill_sent = 1;
+		}
 	}
 }
 
@@ -720,14 +749,7 @@ void
 radiusd_flush_queue()
 {
 	time_t t;
-	unsigned i, delta = 0;
-
-	for (i = 0; i < R_MAX; i++)
-		if (delta < request_class[i].ttl)
-			delta = request_class[i].ttl;
-
-	time(&t);
-	t += delta;
+	max_ttl(&t);
 	rpp_flush(radiusd_rpp_wait, &t);
 }
 		

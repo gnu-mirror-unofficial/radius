@@ -121,8 +121,14 @@ if test $USE_GUILE = yes; then
                         [USE_GUILE=no])
 fi
 
+case "$GUILE_VERSION" in
+	14) GUILE_SNARF_VERSION="1.4";;
+	16|17) GUILE_SNARF_VERSION="1.6";;
+	*) GUILE_SNARF_VERSION="1.6";;
+esac
 AC_SUBST(GUILE_INCLUDES)
 AC_SUBST(GUILE_LIBS)
+AC_SUBST(GUILE_SNARF_VERSION)
 AC_SUBST(LIBRADSCM)
 AC_SUBST(RADSCM)
 AC_SUBST(RADSESSION)
@@ -701,7 +707,10 @@ AC_OUTPUT(Makefile m4/Makefile  intl/Makefile po/Makefile.in
           test/shell/Makefile
           test/dejagnu/Makefile
           test/dejagnu/lib/Makefile
-          scripts/Makefile scripts/guile/Makefile 
+          scripts/Makefile
+          scripts/guile/Makefile 
+          scripts/guile/1.4/Makefile 
+          scripts/guile/1.6/Makefile 
           contrib/Makefile)
 
 if test "x$USE_NOTIFY" = xyes; then

@@ -1,3 +1,18 @@
+2002-12-24  Sergey Poznyakoff
+
+	* configure.ac: AC_CONFIG_AUX_DIR([scripts])
+	* ABOUT-NLS: Removed
+	* ylwrap: Moved to ...
+	* scripts/ylwrap: ... there
+	* Makefile.am: Remove ylwrap, ABOUT-NLS
+	* scripts/Makefile.am: Add ylwrap
+
+	* lib/Makefile.am: Change YLWRAP variable
+	* radiusd/Makefile.am: Likewise.
+
+	* scripts/.cvsignore: Updated
+	* po/.cvsignore: Updated
+
 2002-12-24  Sergey Poznyakoff 
 
 	* configure.ac: Require gettext version 0.11.5

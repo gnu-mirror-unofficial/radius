@@ -113,7 +113,7 @@ struct queue_stat {
 typedef struct queue_stat QUEUE_STAT[R_MAX];
 
 typedef struct client {
-	grad_netdef_t                  netdef;
+	grad_netdef_t           netdef;
         char                    longname[MAX_LONGNAME+1];
         u_char                  *secret;
         char                    shortname[MAX_SHORTNAME+1];

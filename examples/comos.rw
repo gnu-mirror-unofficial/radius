@@ -28,7 +28,7 @@
 integer
 comos_start_stop()
 {
-	if (!*%[User-Name]
+	if ((!*%[User-Name] || %[User-Name] == "")
             && (!*%[Acct-Session-Time] || %[Acct-Session-Time] == 0)
             && (*%[Acct-Session-Id] && %[Acct-Session-Id] == "00000000")) {
 		logit("converting reboot packet");

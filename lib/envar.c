@@ -69,6 +69,7 @@ envar_parse_internal(char *str, RAD_LIST **plist)
 			*plist = list_create();
 		list_append(*plist, env);
         }
+	argcv_free(argc, argv);
 }
 
 envar_t *

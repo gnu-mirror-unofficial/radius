@@ -261,13 +261,9 @@ rad_check_password(grad_request_t *radreq, grad_avp_t *check_item,
                         real_password = rad_sql_pass(radreq, authdata);
                         if (!real_password)
                                 return auth_nouser;
-#else
-                        grad_log_req(L_ERR, radreq,
-                                     _("SQL authentication not available"));
-                        return auth_nouser;
-#endif
                         break;
-                /*NOTE: add any new location types here */
+#endif
+                /* NOTE: add any new location types here */
                 default:
                         grad_log(L_ERR,
                                  _("unknown Password-Location value: %ld"),

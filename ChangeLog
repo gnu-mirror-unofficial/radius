@@ -1,3 +1,7 @@
+2001-06-01  Peter Kazmier           <pete@kazmier.com>
+	* radiusd/radiusd.c, radiusd/sql.c, include/radsql.h: fixed
+	  expiring of SQL connections.
+
 2001-05-24  gray  <gray@farlep.net>
 	* client/pam/pam_radius.c: finished namespace houskeeping.
 	  Added debugging hook. Fixed trivial bugs in DEBUG macros.

@@ -12,6 +12,18 @@
 	* doc/texinfo/bugs.texi: Likewise.
 	* doc/texinfo/radscm.texi: Likewise.
 
+	Resurrected radtest. It will be needed for planned DejaGNU
+	testsuit and also as a check tool for those who have not
+	Guile installed on their system.
+
+	* radtest/Makefile.am: (new)
+	* radtest/gram.y: (new)
+	* radtest/input.l: (new)
+	* radtest/main.c: (new)
+	* radtest/radtest.c: (new) 
+	* radtest/radtest.h: (new)
+	* radtest/.cvsigore: (new)
+
 2001-11-13 Sergey Poznyakoff
 
 	* configure.in: Fixed bug in handling --with-lib-path arguments.

@@ -5067,7 +5067,7 @@ static void
 bi_request_code_string()
 {
         int code = (int) getarg(1);
-	const char *s = auth_code_abbr(code);
+	const char *s = grad_request_code_to_string(code);
 	pushstr(s, strlen(s));
 }
 

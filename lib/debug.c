@@ -51,7 +51,7 @@ static struct keyword auth_codes[] = {
 };
 
 const char *
-auth_code_str(int code)
+grad_request_code_name(int code)
 {
         struct keyword *p;
 
@@ -84,13 +84,19 @@ static struct keyword auth_codes_abbr[] = {
 };
 
 const char *
-auth_code_abbr(int code)
+grad_request_code_to_string(int code)
 {
         struct keyword *p;
         for (p = auth_codes_abbr; p->name; p++)
                 if (p->tok == code)
                         return p->name;
 	return "Unknown";
+}
+
+int
+grad_string_to_request_code(const char *ident)
+{
+	return grad_xlat_keyword(auth_codes_abbr, ident, 0);
 }
 
 #if RADIUS_DEBUG

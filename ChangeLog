@@ -1,3 +1,17 @@
+2002-03-06  Sergey Poznyakoff
+
+	* configure.in (enable-snmp): documented compat value.
+	* include/radiusd.h: Changed definition of QUEUE_STAT.
+
+	* mibs/GNU-RADIUS-SERVER-MIB.chart: Changed queue statistic
+	  variables.
+	* mibs/GNU-RADIUS-SERVER-MIB.txt: Likewise.
+	* mibs/radmibs.h.in: Likewise.
+	* radiusd/snmpserv.c: Handle new mibs.
+	  (snmp_port_index2) Fixed gross bug. 
+	* radiusd/request.c (request_put): Expire PS_WAITING requests
+	  (request_stat_list) Use new QUEUE_STAT structure.
+	
 2002-03-05  Sergey Poznyakoff  
 
 	* radlib/client.c (random_vector): Removed superfluous call to

@@ -26,6 +26,7 @@ EXTRA_DIST=\
  comos.rw\
  jetstream.rw \
  hints-0.96 \
+ nas_ip.rw \
  nt.rw \
  filter.rw \
  config.syntax \

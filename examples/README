@@ -7,7 +7,7 @@ config.syntax
 * Rewrite modules.
 
 These sources contain rewrite functions for various NAS types. To
-use a file, copy it to a directory which forms a part of your Rewrite 
+use a file, copy it to a directory which forms part of your Rewrite 
 load-path, add to the `rewrite' block of your raddb/config file the 
 statement `load "filename";', and follow the instructions given in the file.
 
@@ -19,6 +19,7 @@ comos.rw	    Handle the use of Start/Stop accounting packets
 		    instead of Acct-Status-Type=Accounting-{On|Off}
 filter.rw	    Sample filter input processor. Used by the testsuite.
 jetstream.rw        Handle various anomalies of Jetstream 8500
+nas_ip.rw	    If the request lacks NAS-IP-Address attribute, add it.
 nt.rw               Decode compound usernames sent by some Windows NT
                     stations
 

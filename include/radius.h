@@ -254,6 +254,10 @@ typedef struct radius_req {
 	                                      /* FIXME: should probably be
 						 incorporated to reply_pairs
 						 at once */
+	/* List of cfg file locations that lead to the decision on this
+	   request */
+	RAD_LIST                *locus_list;
+	
         /* Proxy support fields */
         REALM                   *realm;       
         int                     validated;     /* Already md5 checked */

@@ -54,14 +54,21 @@ cd $BUILDDIR/test
 if [ ! -f raddb/config.in ]; then
     cp -r ${SOURCEDIR}/test/raddb .
 fi
-EXPR=`.//findport -c2 -s1644 "-fs/@AUTH_PORT@/%d/;s/@ACCT_PORT@/%d/"`
+
+EXPR=`./findport -c2 -s1644 "-fs^@AUTH_PORT@^%d^;\
+s^@ACCT_PORT@^%d^;\
+s^@USER@^gray^;\
+s^@BUILDDIR@^$BUILDDIR^"`
 sed $EXPR raddb/config.in > raddb/config
 sed $EXPR raddb/client.conf.in > raddb/client.conf
+sed $EXPR raddb/users.in > raddb/users
 
 [ -d log ] || mkdir log
 [ -d acct ] || mkdir acct
-cat /dev/null > log/radwtmp
-cat /dev/null > log/radutmp
+for file in log/radwtmp log/radutmp log/radius.log log/radius.info log/radius.debug
+do
+    cat /dev/null > $file
+done    
 
 drv_guile() {
     RADSCM_BOOTPATH=${SOURCEDIR}/radscm \

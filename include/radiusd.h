@@ -120,12 +120,6 @@ typedef struct client {
         char                    shortname[MAX_SHORTNAME+1];
 } CLIENT;
 
-typedef struct proxy_id {
-        struct proxy_id         *next;
-        UINT4                   ipaddr;
-        u_char                  id;
-} PROXY_ID;
-
 typedef struct proxy_state {
         UINT4                   ipaddr;
         UINT4                   id;
@@ -469,8 +463,6 @@ int proxy_send(REQUEST *req);
 int proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int activefd);
 void proxy_retry(int type, void *radreq, void *orig_req,
 		 int fd, char *status_str);
-
-void proxy_cleanup();
 
 /* auth.c */
 int rad_auth_init(RADIUS_REQ *radreq, int activefd);

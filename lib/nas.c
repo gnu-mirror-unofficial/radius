@@ -154,7 +154,7 @@ nas_ip_to_name(UINT4 ipaddr, char *buf, size_t size)
 
 /* Find the name of a nas (prefer short name) based on the request */
 NAS *
-nas_request_to_nas(RADIUS_REQ *radreq)
+nas_request_to_nas(const RADIUS_REQ *radreq)
 {
         UINT4 ipaddr;
         VALUE_PAIR *pair;
@@ -168,7 +168,7 @@ nas_request_to_nas(RADIUS_REQ *radreq)
 }
 
 char *
-nas_request_to_name(RADIUS_REQ *radreq, char *buf, size_t size)
+nas_request_to_name(const RADIUS_REQ *radreq, char *buf, size_t size)
 {
         UINT4 ipaddr;
         NAS *nas;

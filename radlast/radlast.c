@@ -155,7 +155,7 @@ parse_opt (key, arg, state)
                 if (maxrec == -1) {
                         char *p;
                         
-                        maxrec = strtoul(state->argv[state->next-1]+1, &p, 0);
+                        maxrec = strtoul(state->argv[state->next]+1, &p, 0);
                         if (!maxrec) {
                                 radlog(L_ERR,
                                        "invalid number (near %s)",

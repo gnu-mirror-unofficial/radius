@@ -43,6 +43,7 @@
 
 #include <radiusd.h>
 #include <radius/radutmp.h>
+#include <rewrite.h>
 
 int     doradwtmp = 1;
 
@@ -451,32 +452,69 @@ system_acct_init()
 		disable_system_acct();
 }
 
+int
+mkdir_path(char *path, int perms)
+{
+	struct stat st;
+	
+	if (stat(path, &st)) {
+		char *p;
+		
+		if (errno != ENOENT) {
+			grad_log(L_ERR|L_PERROR,
+				 _("Cannot stat path component: %s"),
+				 path);
+			return 1;
+		}
+
+		p = strrchr(path, '/');
+		if (p && p > path) {
+			int rc;
+			*p = 0;
+			rc = mkdir_path(path, perms);
+			*p = '/';
+			if (rc)
+				return 1;
+		}
+
+		if (mkdir(path, perms)) {
+			grad_log(L_ERR|L_PERROR,
+				 _("Cannot create directory %s"),
+				 path);
+			return 1;
+		}
+	} else if (!S_ISDIR(st.st_mode)) {
+		grad_log(L_ERR,
+			 _("Path component is not a directory: %s"),
+			 path);
+		return 1;
+	}
+	return 0;
+}
+
 static int
 check_acct_dir()
 {
         struct stat st;
 
-        if (stat(radacct_dir, &st) == 0) {
-                if (S_ISDIR(st.st_mode)) {
+	if (stat(radacct_dir, &st) == 0) {
+		if (S_ISDIR(st.st_mode)) {
 			if (access(radacct_dir, W_OK)) {
 				grad_log(L_ERR,
-				         _("%s: directory not writable"),
-				         radacct_dir);
+					 _("%s: directory not writable"),
+					 radacct_dir);
 				return 1;
 			}
-                        return 0;
+			return 0;
 		} else {
-                        grad_log(L_ERR, _("%s: not a directory"),
-			         radacct_dir);
-                        return 1;
-                }
-        }
-        if (mkdir(radacct_dir, 0755)) {
-                grad_log(L_ERR|L_PERROR,
-                         _("can't create accounting directory `%s'"),
-                         radacct_dir);
+			grad_log(L_ERR, _("%s: not a directory"),
+				 radacct_dir);
+			return 1;
+		}
+	}
+
+	if (mkdir_path(radacct_dir, 0755)) 
                 return 1;
-        }
         return 0;
 }
 
@@ -501,41 +539,33 @@ acct_init()
 	radiusd_set_postconfig_hook(acct_after_config_hook, NULL, 0);
 }
 
-int
-write_detail(grad_request_t *radreq, int authtype, char *f)
+static char *
+make_legacy_detail_filename(grad_request_t *radreq, char *default_filename)
 {
-        FILE *outfd;
-        char nasname[MAX_LONGNAME];
-        char *dir, *path;
-        char *save;
-        grad_avp_t *pair;
-        grad_uint32_t nas;
-        grad_nas_t *cl;
-        time_t curtime;
-        int ret = 0;
-
-	if (acct_dir_status)
-		return;
+	char nasname[MAX_LONGNAME];
+	grad_nas_t *cl;
+	grad_uint32_t ip;
+	grad_avp_t *pair;
 	
-        curtime = time(0);
-        
         /* Find out the name of this terminal server. We try to find
            the DA_NAS_IP_ADDRESS in the naslist file. If that fails,
            we look for the originating address.
            Only if that fails we resort to a name lookup. */
+	
         cl = NULL;
-        nas = radreq->ipaddr;
+        ip = radreq->ipaddr;
         if ((pair = grad_avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
-                nas = pair->avp_lvalue;
+                ip = pair->avp_lvalue;
+
         if (radreq->realm) {
 		grad_server_t *server =
 			grad_list_item(radreq->realm->queue->servers,
 				       radreq->server_no);
 		if (server)
-			nas = server->addr;
+			ip = server->addr;
 	}
 
-        if ((cl = grad_nas_lookup_ip(nas)) != NULL) {
+        if ((cl = grad_nas_lookup_ip(ip)) != NULL) {
                 if (cl->shortname[0])
                         strcpy(nasname, cl->shortname);
                 else
@@ -543,18 +573,106 @@ write_detail(grad_request_t *radreq, int authtype, char *f)
         }
 
         if (cl == NULL) 
-                grad_ip_gethostname(nas, nasname, sizeof(nasname));
-        
+                grad_ip_gethostname(ip, nasname, sizeof(nasname));
+
+	return grad_mkfilename(nasname, default_filename);
+}
+
+static char *
+make_detail_filename(grad_request_t *req, char *template,
+		     char *default_filename)
+{
+	if (!template) {
+		return make_legacy_detail_filename(req, default_filename);
+	} else if (template[0] == '=') {
+		Datatype type;
+		Datum datum;
+
+		/*FIXME: Should be compiled!*/
+		if (rewrite_interpret(template+1, req, &type, &datum)) 
+			return NULL;
+		if (type != String) {
+			grad_log(L_ERR, "%s: %s",
+			         template+1, _("wrong return type"));
+			return NULL;
+		}
+		return datum.sval;
+	} else {
+		struct obstack stk;
+		char *ptr;
+		
+		obstack_init(&stk);
+		ptr = radius_xlate(&stk, template, req, NULL);
+		if (ptr) 
+			ptr = grad_estrdup(ptr);
+		obstack_free(&stk, NULL);
+		return ptr;
+	}
+}
+
+static int
+make_path_to_file(char *filename, int perms)
+{
+	char *p = strrchr(filename, '/');
+	if (p) {
+		int rc;
+		*p = 0;
+		rc = mkdir_path(filename, perms);
+		*p = '/';
+		return rc;
+	}
+	return 0;
+}
+
+int
+write_detail(grad_request_t *radreq, int authtype, int rtype)
+{
+        FILE *outfd;
+        char *save;
+        grad_avp_t *pair;
+        time_t curtime;
+        int ret = 0;
+	char *filename;
+	char *template;
+	char *deffilename;
+	
+	if (acct_dir_status)
+		return 1;
+
+	curtime = time(0);
+
+	switch (rtype) {
+	case R_ACCT:
+		template = acct_detail_template;
+		deffilename = "detail";
+		break;
+
+	case R_AUTH:
+		template = auth_detail_template;
+		deffilename = "detail.auth";
+		break;
+
+	default:
+		return 1;
+	}
+	
+        filename = make_detail_filename(radreq, template, deffilename);
+	if (!filename)
+		return 1;
+
+	/* Change to the accounting directory */
+	if (chdir(radacct_dir)) {
+		free(filename);
+		return 1;
+	}
+	
         /* Create a directory for this nas. */
-        dir = grad_mkfilename(radacct_dir, nasname);
-        mkdir(dir, 0755);
+        make_path_to_file(filename, 0755);
 
         /* Write Detail file. */
-        path = grad_mkfilename(dir, f);
-        grad_free(dir);
-        if ((outfd = fopen(path, "a")) == (FILE *)NULL) {
-                grad_log(L_ERR|L_PERROR, _("can't open %s"), path);
-                ret = -1;
+        if ((outfd = fopen(filename, "a")) == NULL) {
+                grad_log(L_ERR|L_PERROR, _("can't open %s"), filename);
+                ret = 1;
         } else {
 
                 /* Post a timestamp */
@@ -618,8 +736,9 @@ write_detail(grad_request_t *radreq, int authtype, char *f)
                 fclose(outfd);
                 ret = 0;
         }
-        grad_free(path);
-        
+	
+        grad_free(filename);
+        chdir("/");
         return ret;
 }
 
@@ -629,7 +748,7 @@ rad_acct_db(grad_request_t *radreq, int authtype)
         int rc = 0;
 
         if (acct_detail && ACCT_TYPE(radreq->request, DV_ACCT_TYPE_DETAIL))
-                rc = write_detail(radreq, authtype, "detail");
+                rc = write_detail(radreq, authtype, R_ACCT);
 #ifdef USE_SQL
         if (ACCT_TYPE(radreq->request, DV_ACCT_TYPE_SQL))
                 rad_sql_acct(radreq);
@@ -673,7 +792,7 @@ rad_accounting(grad_request_t *radreq, int activefd, int verified)
 #if defined(RT_ASCEND_EVENT_REQUEST) && defined(RT_ASCEND_EVENT_RESPONSE)
         /* Special handling for Ascend-Event-Request */
         if (radreq->code == RT_ASCEND_EVENT_REQUEST) {
-                write_detail(radreq, verified, "detail");
+                write_detail(radreq, verified, R_ACCT);
                 radius_send_reply(RT_ASCEND_EVENT_RESPONSE,
                                   radreq, NULL, NULL, activefd);
                 stat_inc(acct, radreq->ipaddr, num_resp);

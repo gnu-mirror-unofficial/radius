@@ -92,7 +92,7 @@ ATTRIBUTE	User-Category		1029	string	- [C--R-R]
 ATTRIBUTE	Group-Name		1030	string	- [C--R-R]
 ATTRIBUTE	Simultaneous-Use	1034	integer	- [C--R-R]
 ATTRIBUTE	Strip-User-Name		1035	integer	- [CRCR-R]
-ATTRIBUTE	Fall-Through		1036	integer	- [CRCR-R]
+ATTRIBUTE	Fall-Through		1036	integer	- [CRCR--]
 ATTRIBUTE	Add-Port-To-IP-Address	1037	integer	- [-R----]=
 ATTRIBUTE	Exec-Program		1038	string	- [-R----]=
 ATTRIBUTE	Exec-Program-Wait	1039	string	- [-R----]=
@@ -102,7 +102,7 @@ ATTRIBUTE	Login-Time		1042	string	- [C-----]
 
 # Attributes used by GNU Radius
 ATTRIBUTE	Replace-User-Name	2001	string	- [CRCR--]
-ATTRIBUTE	Rewrite-Function	2002	string	- [CRCR-R]
+ATTRIBUTE	Rewrite-Function	2002	string	- [CRCRCR]
 
 ATTRIBUTE	Acct-Type		2003	integer	- [C--R-R]
 VALUE		Acct-Type		None	0

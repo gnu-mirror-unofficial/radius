@@ -318,6 +318,8 @@ void input_close_channel_fd(INPUT *input, int fd);
 void input_close_channel_data(INPUT *input, char *name, void *data); 
 int input_select(INPUT *input, struct timeval *tv);
 void *input_find_channel(INPUT *input, char *name, void *data);
+int input_iterate_channels(INPUT *input, char *name, list_iterator_t fun,
+			   void *data);
 
 /* rpp.c */
 int rpp_ready();
@@ -327,6 +329,7 @@ void rpp_flush();
 int rpp_input_handler(int fd, void *data);
 int rpp_input_close(int fd, void *data);
 int rpp_kill(pid_t pid, int signo);
+size_t rpp_count();
 
 /* request.c */
 REQUEST *request_create(int type, int fd, struct sockaddr_in *sa,

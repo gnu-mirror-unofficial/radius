@@ -1,17 +1,23 @@
-GNU Radius NEWS -- history of user-visible changes. 2003-07-11
+GNU Radius NEWS -- history of user-visible changes. 2003-07-17
 Copyright (C) 2002,2003 Free Software Foundation, Inc.
 See the end for copying conditions.
 
 Please send radius bug reports to <bug-gnu-radius@gnu.org>
 
-Version 1.0.1:
+Version 1.1:
 
 * Bugfixes:
 
-** Do not stop decoding	upon encountering of an unknown or malformed
-attribute ('no Acct-Status-Record bug').
+** Do not stop decoding	of the incoming request upon encountering of an
+unknown or malformed attribute ('no Acct-Status-Record bug').
+** Fix Makefile.am's to allow for `make DESTDIR=whatever install'.
+** Close stdout when running Acct-Ext-Program, so that its eventual output
+does not disturb the main process.
 
-** Fix Makefiles to allow for `make DESTDIR=whatever install'.
+* New features:
+
+** Caching of the results of SQL queries during authentication and
+accounting.
 
 
 Version 1.0:

@@ -68,7 +68,7 @@ execwait Auth-Type = Accept
 	Exec-Program-Wait = "@BUILDDIR@/test/raddb/auth.bin %C{NAS-Port-Id} %C{User-Name}"
 
 # Match.exp: Check for working Match-Profile attributes		
-REQ0    NAS-Identifier = "een"
+REQ0    NAS-Identifier = "en"
 	Framed-IP-Address = 127.10.10.1
 REQ0    NAS-Identifier = "to"
 	Framed-IP-Address = 127.10.10.2

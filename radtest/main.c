@@ -34,12 +34,10 @@ static char rcsid[] =
 
 #include <radius.h>
 #include <radargp.h>
-#include <radpaths.h>
 #include <radtest.h>
 #include <argcv.h>
 
 Symtab *vartab;
-char *radius_dir = RADIUS_DIR;
 int verbose;
 extern int rad_clt_debug;
 RADIUS_SERVER_QUEUE *srv_queue;

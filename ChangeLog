@@ -1,3 +1,8 @@
+2004-01-22  Sergey Poznyakoff
+
+	* radlast/radlast.c (parse_opt): Fixed legacy syntax of
+	specifying the number of records to display.
+
 2003-12-24  Sergey Poznyakoff  
 	
 	Moved back to Savannah

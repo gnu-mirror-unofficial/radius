@@ -261,10 +261,11 @@ pair_list     : pair
                         if ($2) {
                                 if ($$.tail) {
                                         $$.tail->next = $2;
-                                        $$.tail = $2;   
                                 } else {
-                                        $$.head = $$.tail = $2;
+                                        $$.head = $2;
                                 }
+				for ($$.tail = $2; $$.tail->next; $$.tail = $$.tail->next)
+					;	
                         } 
                 }
               | pair_list ',' pair

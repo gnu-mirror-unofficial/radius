@@ -42,7 +42,7 @@ then only the first file name appears with the full prefix.
 Here is an example of trace rule diagram:
 @smallexample
 @cartouche
-Oct 31 11:37:17 [28322]: Auth.info: (AUTHREQ foo 170 bar):
+Oct 31 11:37:17 [28322]: Auth.info: (Access-Request foo 170 bar):
 rule trace: /etc/raddb/users:157,22,3; huntgroups:72; hints:34
 @end cartouche
 @end smallexample
@@ -123,8 +123,8 @@ in @command{radiusd} logs you see:
 
 @smallexample
 @cartouche
-Nov 06 21:25:24: Auth.notice: (AUTHREQ local 61 svp):
-  Login incorrect [svp], CLID unknown
+Nov 06 21:25:24: Auth.notice: (Access-Request local 61 svp):
+  Login incorrect [svp]
 @end cartouche
 @end smallexample
 
@@ -142,9 +142,9 @@ logs:
 
 @smallexample
 @cartouche
-Nov 06 21:31:24: Auth.notice: (AUTHREQ local 13 svp):
-  Login incorrect [svp], CLID unknown
-Nov 06 21:31:24: Auth.info: (AUTHREQ local 13 svp):
+Nov 06 21:31:24: Auth.notice: (Access-Request local 13 svp):
+  Login incorrect [svp]
+Nov 06 21:31:24: Auth.info: (Access-Request local 13 svp):
   rule trace: /etc/raddb/users:1, hints: 5
 @end cartouche
 @end smallexample
@@ -181,9 +181,9 @@ Now, you ask @samp{svp} to log in again, and see:
 
 @smallexample
 @cartouche
-Nov 06 21:35:14: Auth.notice: (AUTHREQ local 42 svp):
-  Login OK [svp], CLID unknown
-Nov 06 21:35:14: Auth.info: (AUTHREQ local 42 svp):
+Nov 06 21:35:14: Auth.notice: (Access-Request local 42 svp):
+  Login OK [svp]
+Nov 06 21:35:14: Auth.info: (Access-Request local 42 svp):
   rule trace: /etc/raddb/users:7, hints: 5
 @end cartouche
 @end smallexample
@@ -194,9 +194,9 @@ using SQL. When he logs in, you see in your logs:
 
 @smallexample
 @cartouche
-Nov 06 21:39:05: Auth.notice: (AUTHREQ local 122 plog):
-  Login OK [svp], CLID unknown
-Nov 06 21:39:05: Auth.info: (AUTHREQ local 122 plog):
+Nov 06 21:39:05: Auth.notice: (Access-Request local 122 plog):
+  Login OK [svp]
+Nov 06 21:39:05: Auth.info: (Access-Request local 122 plog):
   rule trace: /etc/raddb/users:14
 @end cartouche
 @end smallexample
@@ -242,4 +242,245 @@ to release.
 @node Test Mode
 @section Test Mode
 @cindex Test Mode
+
+@dfn{Test mode} is used to test various aspects of radius
+configuration, without starting the daemon. To enter test mode,
+run
+
+@smallexample
+radiusd -mt
+@end smallexample
+
+@noindent
+You will see usual @command{radiusd} diagnostics and the following two lines:
+
+@smallexample
+@cartouche
+** TEST SHELL **
+(radiusd) _
+@end cartouche
+@end smallexample
+
+The string @samp{** TEST SHELL **} indicates that @command{radiusd}
+has entered test mode, the string @samp{(radiusd)} is the shell
+prompt, indicating that @command{radiusd} is waiting for your
+commands.
+
+The syntax of test shell command resembles that of Bourne shell:
+each command consists of a list of @dfn{words} separated by
+any amount of whitespace. Each word is either a sequence of
+@dfn{allowed word characters} (i.e. alphabetical characters, decimal
+digits, dashes and underscores), or any sequence of characters
+enclosed in a pair of double quotes. The very first word is
+a @dfn{command verb}, the rest of words are arguments to this
+command verb. A command verb may be used in its full form,
+in its abbreviated form (i.e. you may type only several first
+characters of the verb, the only condition being that they
+do not coincide with another command verb), or in it's short
+form.
+
+The first command you should know is @code{help} (or, in its short
+form, @code{h}). This command takes no arguments and displays
+the short summary of all the available commands. Here is an example
+of its output:
+
+@smallexample
+@group
+@cartouche
+(radiusd) help
+h       help                           Print this help screen
+q       query-nas NAS LOGIN SID PORT [IP]
+                                       Query the given NAS
+g       guile                          Enter Guile
+rs      rewrite-stack [NUMBER]         Print or set the Rewrite
+                                       stack size
+r       run-rewrite FUNCTION(args..)   Run given Rewrite function
+s       source FILE                    Source the given Rewrite file
+t       timespan TIMESPAN [DOW [HH [MM]]]
+                                       Check the timespan interval
+d       debug LEVEL                    Set debugging level
+rd      request-define [PAIR [,PAIR]]  Define a request
+rp      request-print                  Print the request
+quit    quit                           Quit the shell
+@end cartouche
+@end group
+@end smallexample
+
+Each line of the output consists of three fields. The first field
+shows the short command form. The second one lists its full form
+and its arguments, optional arguments being enclosed in square
+brackets. The third field contains short textual description of
+the command. 
+
+
+
+@deffn {Test Shell Command} query-nas @var{nas} @var{login} @var{sid} @var{port} [@var{ip}]
+@deffnx {Test Shell Abbreviation} q
+Queries the given @NAS{} about the session described by its
+arguments. This command is useful in testing simultaneous login verification
+(@pxref{Checking Simultaneous Logins}. Its arguments are
+
+@table @var
+@item nas
+Specifies the @NAS{} to query. It cn be its short name as defined
+in @file{raddb/naslist}, or its fully qualified domain name, or
+its @IP{}.
+@item login
+Name of the user whose session should be verified.
+@item sid
+Session ID.
+@item port
+Port number on the @NAS{}.
+@item ip
+Framed @IP{}, assigned to the user.
+@end table
+
+The command displays the following result codes:
+
+@table @asis
+@item 0
+The session is not active.
+@item 1
+The session is active
+@item -1
+Some error occurred.
+@end table
+@end deffn
+
+@deffn {Test Shell Command} guile
+@deffnx {Test Shell Abbreviation} g
+Enter Guile shell. The command is only available if the package has
+been compiled with Guile support. For more information, @xref{Guile}.
+@end deffn
+
+@deffn {Test Shell Command} rewrite-stack [@var{number}]
+@deffnx {Test Shell Abbreviation} rs
+Prints or sets the Rewrite stack size. 
+@end deffn
+
+@deffn {Test Shell Command} run-rewrite @var{function}(@var{args} @dots{})   
+@deffnx {Test Shell Abbreviation} r
+Runs given Rewrite @var{function} and displays its return
+value. Function arguments are specified in the usual way, i.e. as a
+comma-separated list of Rewrite tokens. 
+
+If the function being tested operates on request contents
+(@pxref{Rewriting Incoming Requests}), you may supply the request
+using @code{request-define} command (see below).
+@end deffn
+
+@deffn {Test Shell Command} source @var{file} 
+@deffnx {Test Shell Abbreviation} s
+Reads and compiles (``source'') the given Rewrite @var{file}. The
+command prints @samp{0} if the file was compiled
+successfully. Otherwise, it prints @samp{1} and any relevant diagnostics.
+@end deffn
+
+@deffn {Test Shell Command} timespan @var{timespan} [@var{day-of-week} [@var{hour} [@var{minutes}]]]
+@deffnx {Test Shell Abbreviation} t       
+Checks whether the given time falls within the timespan
+interval. Its first argument, @var{timespan}, contains the valid
+@radiusd{} timespan specification (@pxref{Login-Time}). Rest of
+arguments define the time. If any of these is omitted, the
+corresponding value from current local time is used.
+
+@table @var
+@item day-of-week
+Ordinal day of week number, counted from 0. I.e.: Sunday -- 0, Monday
+-- 1, etc.
+@item hour
+Hours counted from 0 to 24.
+@item minutes
+Minutes.
+@end table
+
+The following set of samples illustrates this command:
+
+@smallexample
+@group
+@cartouche
+(radiusd) timespan Wk0900-1800
+ctime: Tue Dec  2 16:08:47 2003
+inside Wk0900-1800: 6720 seconds left
+
+(radiusd) timespan Wk0900-1800 0
+ctime: Sun Nov 30 16:09:03 2003
+OUTSIDE Wk0900-1800: 60660 seconds to wait
+
+(radiusd) timespan Wk0900-1800 0 12 30
+ctime: Sun Nov 30 12:30:13 2003
+OUTSIDE Wk0900-1800: 73800 seconds to wait
+
+(radiusd) timespan Wk0900-1800 1 05 00
+ctime: Mon Dec  1 05:00:33 2003
+OUTSIDE Wk0900-1800: 14400 seconds to wait
+
+(radiusd) timespan Wk0900-1800 1 09 10
+ctime: Wed Jan  7 22:09:41 2004
+OUTSIDE Wk0900-1800: 39060 seconds to wait
+
+(radiusd) timespan Wk0900-1800 1 09 10
+ctime: Mon Dec  1 09:10:44 2003
+inside Wk0900-1800: 31800 seconds left
+
+(radiusd) 
+@end cartouche
+@end group
+@end smallexample
+@end deffn
+
+@deffn {Test Shell Command} debug @var{level}
+@deffnx {Test Shell Abbreviation} d
+Set debugging level. @var{Level} is any valid debug level
+specification (@pxref{Debugging}).
+@end deffn
+
+@deffn {Test Shell Command} request-define [@var{pair} [,@var{pair}]]
+@deffnx {Test Shell Abbreviation} rd     
+Define a request for testing Rewrite functions. The optional arguments
+are a comma-separated list of @AVP{}s. If they are omitted, the
+command enters interactive mode, allowing you to enter the desired
+@AVP{}s, as in the following example:
+
+@smallexample
+@group
+@cartouche
+(radiusd) request-define
+Enter the pair list. End with end of file
+[radiusd] User-Name = smith, User-Password = guessme
+[radiusd] NAS-IP-Address = 10.10.10.1
+[radiusd] NAS-Port-Id = 34
+[radiusd] 
+(radiusd) 
+@end cartouche
+@end group
+@end smallexample
+
+Notice that any number of @AVP{}s may be specified in a line. To
+finish entering the request, either type an @key{EOF} character or
+enter an empty line.
+@end deffn
+
+@deffn {Test Shell Command} request-print 
+@deffnx {Test Shell Abbreviation} rp
+Prints the request, defined by @code{request-define}.
+
+@smallexample
+@group
+@cartouche
+(radiusd) request-print
+    User-Name = (STRING) smith
+    User-Password = (STRING) guessme
+    NAS-IP-Address = (IPADDR) 10.10.10.1
+    NAS-Port-Id = (INTEGER) 34
+(radiusd) 
+@end cartouche
+@end group
+@end smallexample
+@end deffn
+
+@deffn {Test Shell Command} quit
+Immediately quits the shell.
+@end deffn
+
 

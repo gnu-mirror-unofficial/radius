@@ -1,5 +1,5 @@
 /* This file is part of GNU RADIUS.
- * Copyright (C) 2000, Sergey Poznyakoff
+ * Copyright (C) 2000,2001, Sergey Poznyakoff
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,24 +50,13 @@ static char rcsid[] =
 #include <sysdep.h>
 #include <radiusd.h>
 #include <radutmp.h>
-#include <parser.h>
 #include <symtab.h>
+#include <parser.h>
 #include <checkrad.h>
 #ifdef USE_SQL
 # include <radsql.h>
 #endif
 #include <raddbm.h>
-
-/*
- * Internal representation of a user's profile
- */
-typedef struct user_symbol {
-	struct user_symbol *next;
-	char *name;
-	int lineno;
-	VALUE_PAIR *check;
-	VALUE_PAIR *reply;
-} User_symbol;
 
 /*
  * Symbol tables and lists
@@ -92,16 +81,16 @@ static struct keyword op_tab[] = {
 	0
 };
 
+int paircmp(VALUE_PAIR *request, VALUE_PAIR *check);
+int fallthrough(VALUE_PAIR *vp);
 /*
  * Static declarations
  */
 static int portcmp(VALUE_PAIR *check, VALUE_PAIR *request);
 static int groupcmp(VALUE_PAIR *request, char *groupname, char *username);
 static int uidcmp(VALUE_PAIR *check, char *username);
-static int paircmp(VALUE_PAIR *request, VALUE_PAIR *check);
 static int hunt_paircmp(VALUE_PAIR *request, VALUE_PAIR *check);
 static void pairlist_free(PAIR_LIST **pl);
-static int fallthrough(VALUE_PAIR *vp);
 static int matches(VALUE_PAIR *req, char *name, PAIR_LIST *pl, char *matchpart);
 static int huntgroup_match(VALUE_PAIR *request_pairs, char *huntgroup);
 static void clients_free(CLIENT *cl);
@@ -110,11 +99,8 @@ static void realm_free(REALM *cl);
 static int user_find_sym(char *name, VALUE_PAIR *request_pairs, 
 			 VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 #ifdef USE_DBM
-static int user_find_db(char *name, VALUE_PAIR *request_pairs,
+int user_find_db(char *name, VALUE_PAIR *request_pairs,
 			VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
-static VALUE_PAIR * decode_dbm(int **dbm_ptr);
-static int dbm_find(DBM_FILE dbmfile, char *name, VALUE_PAIR *request_pairs,
-		    VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 #endif
 
 /* ***************************************************************************
@@ -201,9 +187,21 @@ add_user_entry(symtab, line, name, check, reply)
 		name = "DEFAULT";
 	if (strncmp(name, "BEGIN", 5) == 0) 
 		name = "BEGIN";
-		
+
+	if ((check == NULL && reply == NULL) ||
+	    fix_check_pairs(name, line, &check) ||
+	    fix_reply_pairs(name, line, &reply)) {
+		radlog(L_ERR,
+		       _("users:%d: discarding user `%s'"),
+		       line, name);
+		pairfree(check);
+		pairfree(reply);
+		return 0;
+	}
+
+	
 	/* See if there are already any entries of this type. If so,
-	 * add to the end of such entries
+	 * add after the last of them.
 	 */
 	prev = (User_symbol*)sym_lookup(symtab, name);
 	if (prev) {
@@ -218,7 +216,6 @@ add_user_entry(symtab, line, name, check, reply)
 		sym = (User_symbol*)sym_install(symtab, name);
 	}
 	
-	auth_type_fixup(check);
 	sym->check = check;
 	sym->reply = reply;
 	sym->lineno = line;
@@ -248,9 +245,10 @@ add_pairlist(closure, line, name, check, reply)
 {
 	PAIR_LIST *pl;
 	
+	fix_check_pairs(name, line, &check);
+
 	pl = Alloc_entry(PAIR_LIST);
 	pl->name = estrdup(name);
-	auth_type_fixup(check);
 	pl->check = check;
 	pl->reply = reply;
 	pl->lineno = line;
@@ -410,22 +408,6 @@ match_user(sym, request_pairs, check_pairs, reply_pairs)
 		pairfree(reply_tmp);
 		pairfree(check_tmp);
 
-		if (p = pairfind(request_pairs, DA_INCLUDE_PROFILE)) {
-			User_symbol *nsym;
-			VALUE_PAIR *pl;
-			
-			nsym = (User_symbol*)sym_lookup(user_tab,
-							p->strvalue);
-			debug(1, ("include: %s", p->strvalue));
-			/* Create a copy of the request pairs without
-			 * this Include-Profile attribute in order
-			 * to prevent infinite recursion.
-			 */
-			pl = paircopy(request_pairs);
-			pairdelete(&pl, DA_INCLUDE_PROFILE);
-			match_user(nsym, pl, check_pairs, reply_pairs);
-			pairfree(pl);
-		}
 		if (p = pairfind(sym->reply, DA_MATCH_PROFILE)) {
 			debug(1, ("next: %s", p->strvalue));
 			match_user((User_symbol*)sym_lookup(user_tab,
@@ -440,285 +422,6 @@ match_user(sym, request_pairs, check_pairs, reply_pairs)
 	return found;
 }
 
-#ifdef USE_DBM
-static char *_dbm_dup_name(char *buf, size_t bufsize, char *name, int ordnum);
-static char *_dbm_number_name(char *buf, size_t bufsize, char *name, int ordnum);
-static int dbm_match(DBM_FILE dbmfile, char *name, char *(*fn)(), 
-		     VALUE_PAIR *request_pairs, VALUE_PAIR **check_pairs,
-		     VALUE_PAIR **reply_pairs, int  *fallthru);
-
-/*
- * DBM lookup:
- *	-1 username not found
- *	0 username found but profile doesn't match the request.
- *	1 username found and matches.
- */
-#define NINT(n) ((n) + sizeof(int) - 1)/sizeof(int)
-
-VALUE_PAIR *
-decode_dbm(pptr)
-	int **pptr;
-{
-	int *ptr, *endp, len;
-	VALUE_PAIR *next_pair, *first_pair, *last_pair;
-	
-	ptr = *pptr;
-	len = *ptr++;
-	endp = ptr + len;
-	
-	last_pair = first_pair = NULL;
-	while (ptr < endp) {
-		next_pair = alloc_pair();
-		next_pair->attribute = *ptr++;
-		next_pair->type = *ptr++;
-		next_pair->operator = *ptr++;
-		if (next_pair->type == PW_TYPE_STRING) {
-			next_pair->strvalue = make_string((char*)ptr);
-			next_pair->strlength = strlen(next_pair->strvalue);
-			ptr += NINT(next_pair->strlength+1);
-		} else
-			next_pair->lvalue = *ptr++;
-		next_pair->name = NULL;
-		if (last_pair)
-			last_pair->next = next_pair;
-		else
-			first_pair = next_pair;
-		last_pair = next_pair;
-	} 
-
-	*pptr = ptr;
-	return first_pair;
-}
-
-/* FIXME: The DBM functions below follow exactly the same algorythm as
- * user_find_sym/match_user pair. This is superfluous. The common wrapper
- * for both calls is needed.
- */
-int
-dbm_find(file, name, request_pairs, check_pairs, reply_pairs)
-	DBM_FILE file;
-	char       *name;
-	VALUE_PAIR *request_pairs;
-	VALUE_PAIR **check_pairs;
-	VALUE_PAIR **reply_pairs;
-{
-	DBM_DATUM	named;
-	DBM_DATUM	contentd;
-	int             *ptr;
-	VALUE_PAIR	*check_tmp;
-	VALUE_PAIR	*reply_tmp;
-	int		ret = 0;
-	
-	named.dptr = name;
-	named.dsize = strlen(name);
-
-	if (fetch_dbm(file, named, &contentd))
-		return -1;
-
-	check_tmp = NULL;
-	reply_tmp = NULL;
-
-	/*
-	 *	Parse the check values
-	 */
-	ptr = (int*)contentd.dptr;
-	/* check pairs */
-	check_tmp = decode_dbm(&ptr);
-
-	/* reply pairs */
-	reply_tmp = decode_dbm(&ptr);
-
-	/*
-	 *	See if the check_pairs match.
-	 */
-	if (paircmp(request_pairs, check_tmp) == 0) {
-		VALUE_PAIR *p;
-
-		/*
-		 * Found an almost matching entry. See if it has a
-		 * Match-Profile attribute and if so check
-		 * the profile it points to.
-		 */
-		ret = 1;
-		if (p = pairfind(check_tmp, DA_MATCH_PROFILE)) {
-			int dummy;
-			char *name;
-			
-			debug(1, ("submatch: %s", p->strvalue));
-			name = dup_string(p->strvalue);
-			if (!dbm_match(file, name, _dbm_dup_name,
-				       request_pairs,
-				       &check_tmp, &reply_tmp, &dummy))
-				ret = 0;
-			free_string(name);
-		} 
-		
-		if (ret == 1) {
-			pairmove(reply_pairs, &reply_tmp);
-			pairmove(check_pairs, &check_tmp);
-		}
-	}
-	
-	/* Should we
-	 *  free(contentd.dptr);
-	 */
-	pairfree(reply_tmp);
-	pairfree(check_tmp);
-
-	return ret;
-}
-
-/*ARGSUSED*/
-char *
-_dbm_dup_name(buf, bufsize, name, ordnum)
-	char *buf;
-	size_t bufsize;
-	char *name;
-	int ordnum;
-{
-	strncpy(buf, name, bufsize);
-	buf[bufsize-1] = 0;
-	return buf;
-}
-
-char *
-_dbm_number_name(buf, bufsize, name, ordnum)
-	char *buf;
-	size_t bufsize;
-	char *name;
-	int ordnum;
-{
-	radsprintf(buf, bufsize, "%s%d", name, ordnum);
-	return buf;
-}
-
-int
-dbm_match(dbmfile, name, fn, request_pairs, check_pairs, reply_pairs, fallthru)
-	DBM_FILE dbmfile;
-	char *name;
-	char *(*fn)();
-	VALUE_PAIR *request_pairs;
-	VALUE_PAIR **check_pairs;
-	VALUE_PAIR **reply_pairs;
-	int  *fallthru;
-{
-	int  found = 0;
-	int  i, r;
-	char buffer[64];
-	VALUE_PAIR *p;
-	
-	*fallthru = 0;
-	for (i = 0;;i++) {
-		r = dbm_find(dbmfile,
-			     (*fn)(buffer, sizeof(buffer), name, i),
-			     request_pairs, check_pairs, reply_pairs);
-		if (r == 0) {
-			if (strcmp(name, buffer))
-				continue;
-			break;
-		}
-		
-		if (r < 0) 
-			break;
-		
-		/* OK, found matching entry */
-
-		found = 1;
-
-		if (p = pairfind(request_pairs, DA_INCLUDE_PROFILE)) {
-			VALUE_PAIR *pl;
-			int dummy;
-			
-			debug(1, ("include: %s", p->strvalue));
-			/* Create a copy of the request pairs without
-			 * this Include-Profile attribute in order
-			 * to prevent infinite recursion.
-			 */
-			pl = paircopy(request_pairs);
-			pairdelete(&pl, DA_INCLUDE_PROFILE);
-
-			dbm_match(dbmfile, p->strvalue, _dbm_dup_name,
-				  request_pairs,
-				  check_pairs, reply_pairs, &dummy);
-
-			pairfree(pl);
-		}
-
-		if (p = pairfind(*reply_pairs, DA_MATCH_PROFILE)) {
-			int dummy;
-			char *name;
-			
-			debug(1, ("next: %s", p->strvalue));
-			name = dup_string(p->strvalue);
-			pairdelete(reply_pairs, DA_MATCH_PROFILE);
-			dbm_match(dbmfile, name, _dbm_dup_name,
-				  request_pairs,
-				  check_pairs, reply_pairs, &dummy);
-			free_string(name);
-		}
-
-		if (!fallthrough(*reply_pairs))
-			break;
-		pairdelete(reply_pairs, DA_FALL_THROUGH);
-		*fallthru = 1;
-	}
-	return found;
-}
-
-/*
- * Find matching profile in the DBM database
- */
-int
-user_find_db(name, request_pairs, check_pairs, reply_pairs)
-	char *name;
-	VALUE_PAIR *request_pairs;
-	VALUE_PAIR **check_pairs;
-	VALUE_PAIR **reply_pairs;
-{
-	int		found = 0;
-	char		*path;
-	DBM_FILE        dbmfile;
-	int             fallthru;
-	
-	path = mkfilename(radius_dir, RADIUS_USERS);
-	if (open_dbm(path, &dbmfile)) {
-		radlog(L_ERR, _("cannot open dbm file %s"), path);
-		efree(path);
-		return 0;
-	}
-
-	/* This is a fake loop: it is here so we don't have to
-	 * stack up if's or use goto's
-	 */
-	for (;;) {
-		found = dbm_match(dbmfile, "BEGIN", _dbm_number_name,
-				  request_pairs,
-				  check_pairs, reply_pairs, &fallthru);
-		if (found && fallthru == 0)
-			break;
-		
-		found = dbm_match(dbmfile, name, _dbm_dup_name,
-				  request_pairs,
-				  check_pairs, reply_pairs, &fallthru);
-
-		if (found && fallthru == 0)
-			break;
-
-		found = dbm_match(dbmfile, "DEFAULT", _dbm_number_name,
-				  request_pairs,
-				  check_pairs, reply_pairs, &fallthru);
-		break;
-		/*NOTREACHED*/
-	}
-
-	close_dbm(dbmfile);
-	efree(path);
-
-	debug(1, ("returning %d", found));
-
-	return found;
-}
-#endif
 
 /*
  * Find the named user in the database.  Create the
@@ -1868,7 +1571,8 @@ read_deny_file()
 
 	read_raddb_file(name, 0, 1, read_denylist_entry, &denycnt);
 	efree(name);
-	radlog(L_INFO, _("%d users disabled"), denycnt);
+	if (denycnt)
+		radlog(L_INFO, _("%d users disabled"), denycnt);
 }
 
 /*
@@ -2182,7 +1886,6 @@ static int server_check_items[] = {
 	DA_TERMINATION_MENU,
 	DA_GROUP_NAME,
 	DA_MATCH_PROFILE,
-	DA_INCLUDE_PROFILE,
 	DA_AUTH_DATA,
 	DA_QUEUE_ID
 };
@@ -2322,49 +2025,6 @@ paircmp(request, check)
 	debug(20, ("returning %d", result));
 	return result;
 
-}
-
-/*
- * Fixup a check line.
- * If Password or Crypt-Password is set, but there is no
- * Auth-Type, add one (kludge!).
- */
-void
-auth_type_fixup(check)
-	VALUE_PAIR *check;
-{
-	VALUE_PAIR	*vp;
-	VALUE_PAIR	*c = NULL;
-	int		n;
-
-	/*
-	 *	See if a password is present. Return right away
-	 *	if we see Auth-Type.
-	 */
-	for (vp = check; vp; vp = vp->next) {
-		if (vp->attribute == DA_AUTH_TYPE)
-			return;
-		if (vp->attribute == DA_PASSWORD) {
-			c = vp;
-			n = DV_AUTH_TYPE_LOCAL;
-		}
-		if (vp->attribute == DA_CRYPT_PASSWORD) {
-			c = vp;
-			n = DV_AUTH_TYPE_CRYPT_LOCAL;
-		}
-	}
-
-	if (c == NULL)
-		return;
-
-	/*
-	 *	Add an Auth-Type attribute.
-	 */
-	vp = create_pair(DA_AUTH_TYPE, 0, NULL, n);
-	if (vp) {
-		vp->next = c;
-		c = vp->next;
-	}
 }
 
 /*
@@ -2566,7 +2226,7 @@ matches(req, name, pl, matchpart)
 {
 	if (strncmp(pl->name, "DEFAULT", 7) == 0 ||
 	    wild_match(pl->name, name, matchpart) == 0)
-	    return hints_pairmatch(pl, req, name, matchpart);
+		return hints_pairmatch(pl, req, name, matchpart);
 	return 1;
 }	
 	
@@ -2595,9 +2255,13 @@ checkdbm(users, ext)
 }
 #endif
 
+
+static int reload_data(enum reload_what what, int *do_radck);
+
 int
-reload_config_file(what)
+reload_data(what, do_radck)
 	enum reload_what what;
+	int *do_radck;
 {
 	char *path;
 	int   rc = 0;
@@ -2605,16 +2269,16 @@ reload_config_file(what)
 	switch (what) {
 	case reload_all:
                 /* This implies reloading users, huntgroups and hints */
-		rc += reload_config_file(reload_dict);
+		rc += reload_data(reload_dict, do_radck);
 
-		rc += reload_config_file(reload_clients);
-		rc += reload_config_file(reload_naslist);
-		rc += reload_config_file(reload_realms);
-		rc += reload_config_file(reload_deny);
+		rc += reload_data(reload_clients, do_radck);
+		rc += reload_data(reload_naslist, do_radck);
+		rc += reload_data(reload_realms, do_radck);
+		rc += reload_data(reload_deny, do_radck);
 #ifdef USE_SQL
-		rc += reload_config_file(reload_sql);
+		rc += reload_data(reload_sql, do_radck);
 #endif
-		reload_config_file(reload_rewrite);
+		reload_data(reload_rewrite, do_radck);
 		break;
 		
 	case reload_users:
@@ -2643,6 +2307,7 @@ reload_config_file(what)
 		}
 #endif
 		efree(path);
+		*do_radck = 1;
 		break;
 
 	case reload_dict:
@@ -2654,9 +2319,9 @@ reload_config_file(what)
 		/* Users, huntgroups and hints should be reloaded after
 		 * changing dictionary.
 		 */
-		rc += reload_config_file(reload_users);
-		rc += reload_config_file(reload_huntgroups);
-		rc += reload_config_file(reload_hints);
+		rc += reload_data(reload_users, do_radck);
+		rc += reload_data(reload_huntgroups, do_radck);
+		rc += reload_data(reload_hints, do_radck);
 		break;
 		
 	case reload_huntgroups:
@@ -2671,6 +2336,8 @@ reload_config_file(what)
 		path = mkfilename(radius_dir, RADIUS_HINTS);
 		hints = file_read(path);
 		efree(path);
+		if (!use_dbm) 
+			*do_radck = 1;
 		break;
 		
 	case reload_clients:
@@ -2686,7 +2353,7 @@ reload_config_file(what)
 		path = mkfilename(radius_dir, RADIUS_NASTYPES);
 		read_nastypes_file(path);
 		efree(path);
-		/*END*/
+		/*EMXIF*/
 		
 		path = mkfilename(radius_dir, RADIUS_NASLIST);
 		if (read_naslist_file(path) < 0)
@@ -2724,7 +2391,19 @@ reload_config_file(what)
 		       what);
 	}
 		
-	
+	return rc;
+}
+
+int
+reload_config_file(what)
+	enum reload_what what;
+{
+	int do_radck;
+	int rc;
+
+	rc = reload_data(what, &do_radck);
+	if (rc == 0 && do_radck)
+		radck();
 	return rc;
 }
 

@@ -80,7 +80,6 @@ static FILE  *sqlfd;
 static int line_no;
 static char *cur_line, *cur_ptr;
 static struct obstack parse_stack;
-static int obparse_stack_ready;
 static int stmt_type;
 
 static pthread_key_t sql_conn_key[SQL_NSERVICE];
@@ -335,10 +334,7 @@ rad_sql_init()
         }
         line_no = 0;
         cur_line = NULL;
-        if (!obparse_stack_ready) {
-                obstack_init(&parse_stack);
-                obparse_stack_ready = 1;
-        } 
+        obstack_init(&parse_stack);
         while (getline()) {
                 if (stmt_type == -1) {
                         radlog(L_ERR,

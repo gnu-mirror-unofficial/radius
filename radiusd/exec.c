@@ -432,7 +432,6 @@ filter_close(sym)
 	sym->pid = -1;
 }
 
-/* Note: on successful return the filter is always locked */
 static Filter_symbol *
 filter_open(name, req)
 	char *name;
@@ -470,6 +469,7 @@ filter_open(name, req)
 		filter_unlock(sym);
 		return NULL;
 	}
+	filter_unlock(sym);
 	return sym;
 }
 
@@ -519,15 +519,15 @@ filter_auth(name, req, reply_pairs)
 	int rc = -1;
 
 	sym = filter_open(name, req);
-	if (!sym)
-		return -1;
-
 	pthread_cleanup_push(filter_unlock, sym);
-	if (filter_write(sym, sym->auth.input_fmt, req)) {
+	filter_lock(sym);
+	if (!sym || sym->pid == -1)
 		rc = -1;
-	} else if (!sym->auth.wait_reply) {
+	else if (filter_write(sym, sym->auth.input_fmt, req)) 
+		rc = -1;
+	else if (!sym->auth.wait_reply) 
 		rc = 0;
-	} else {
+	else {
 		char *buf = NULL;
 		char buffer[1024];
 	
@@ -583,11 +583,11 @@ filter_acct(name, req)
 	char buffer[1024];
 	
 	sym = filter_open(name, req);
-	if (!sym)
-		return -1;
-
 	pthread_cleanup_push(filter_unlock, sym);
-	if (filter_write(sym, sym->acct.input_fmt, req)) 
+	filter_lock(sym);
+	if (!sym || sym->pid == -1)
+		rc = -1;
+	else if (filter_write(sym, sym->acct.input_fmt, req)) 
 		rc = -1;
 	else if (sym->acct.wait_reply) {
 		/*FIXME*/;

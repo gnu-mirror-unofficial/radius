@@ -176,7 +176,7 @@ filters {
 	filter ttl_filter {
 		exec-path "/usr/local/libexec/ttl-compute -f -";
 		error-log "ttl.log";
-		single yes;
+		common yes;
 		auth {
 			input-format "%C{User-Name} ?";
 			wait-reply yes;

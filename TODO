@@ -9,13 +9,14 @@ Possibly this will allow to get rid from the so-called 'server
 attributes', this will make dictionary simpler and clearer.
 ** The current configuration file system should be supported as well.
 
-* Rewrite librad and make it an installable shared library.
-
-* Get rid of radscm (or build it only on systems that do not support
-shared libraries). Build a shared Guile module instead. Make
-server queue a SMOB instead of a hidden list.
+* Guile interface
+** Make server queue a usual Guile object (possibly a SMOB) instead of a
+hidden list.
+** Remove calls to grad_path_init and grad_dict_init from radscm_init to a
+separate function
 
 * The server:
+** Should NAS-IP-Address be added to the request, if it does not contain one?
 ** Add \ line continuation to read_raddb_files.
 ** Clean up the semantics of log_init/log_done.
 ** Enable use of port number in rewrite:check_unix()?

@@ -5,6 +5,8 @@ guile-procedures.txt
 *.doc
 .deps
 .libs
-libradscm.a
+*.a
+*.l[ao]
 radsession
 gnuradius.scm
+*.inc

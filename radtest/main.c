@@ -57,6 +57,7 @@ char *server = NULL;
 int retry = 0;
 int timeout = 0;
 int disable_readline;
+int dry_run;
 
 const char *argp_program_version = "radtest (" PACKAGE ") " VERSION;
 static char doc[] = N_("send arbitrary radius packets");
@@ -82,8 +83,10 @@ static struct argp_option options[] = {
          N_("set timeout"), 0},
         {"verbose", 'v', NULL, 0,
          N_("verbose mode"), 0},
-	{"no-interactive", 'n', NULL, 0,
+	{"no-interactive", 'i', NULL, 0,
 	 N_("disable interactive mode"), 0 },
+	{"dry-run", 'n', NULL, 0,
+	 N_("Check the input file syntax and exit"), 0 },
         {NULL, 0, NULL, 0, NULL, 0}
 };
 
@@ -111,8 +114,12 @@ parse_opt(int key, char *arg, struct argp_state *state)
                 filename = optarg;
                 break;
 
-	case 'n':
+	case 'i':
 		disable_readline = 1;
+		break;
+
+	case 'n':
+		dry_run = 1;
 		break;
 		
         case 't':
@@ -274,10 +281,8 @@ main(int argc, char **argv)
                         x_argv[x_argc++] = *argv;
         }
         x_argv[x_argc++] = NULL;
-        
-        if (open_input(filename))
-                return 1;
-        return yyparse();
+
+	return read_and_eval(filename);
 }
 
 void

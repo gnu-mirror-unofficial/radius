@@ -119,7 +119,8 @@ check_disable(username, user_msg)
 	char **user_msg;
 {
 	if (get_deny(username)) {
-		*user_msg = make_string(
+		*user_msg = NULL;
+		asprintf(user_msg, 
 			    _("Sorry, your account is currently closed\r\n"));
 		return -1;
 	}
@@ -136,19 +137,18 @@ check_expiration(check_item, user_msg)
 {
 	int result, rc;
 	VALUE_PAIR *pair;
-	char umsg[80];
 	
 	result = AUTH_OK;
 	if (pair = avl_find(check_item, DA_EXPIRATION)) {
 		rc = pw_expired(pair->lvalue);
 		if (rc < 0) {
 			result = AUTH_FAIL;
-			*user_msg = make_string(_("Password Has Expired\r\n"));
+			asprintf(user_msg,
+				 _("Password Has Expired\r\n"));
 		} else if (rc > 0) {
-			snprintf(umsg, sizeof(umsg),
+			asprintf(user_msg, 
 				   _("Password Will Expire in %d Days\r\n"),
 				   rc);
-			*user_msg = make_string(umsg);
 		}
 	}
 
@@ -815,7 +815,7 @@ rad_authenticate(radreq, activefd)
 	avl_free(m.user_reply);
 	avl_free(m.proxy_pairs);
 	if (m.user_msg)
-		free_string(m.user_msg);
+		free(m.user_msg);
 	bzero(m.userpass, sizeof(m.userpass));
 	return 0;
 }
@@ -1017,7 +1017,7 @@ sfn_service_type(m)
 	if (m->check_pair->lvalue == DV_SERVICE_TYPE_AUTHENTICATE_ONLY) {
 		auth_log(m, _("Login rejected"), NULL,
 			 _("Authenticate only user"), NULL);
-		m->user_msg = make_string(_("\r\nAccess denied\r\n"));
+		asprintf(&m->user_msg, _("\r\nAccess denied\r\n"));
 		newstate(as_reject);
 	}
 }
@@ -1031,7 +1031,7 @@ sfn_realmuse(m)
 	
 	if (rad_check_realm(m->req->realm) == 0)
 		return;
-	m->user_msg = make_string(
+	asprintf(&m->user_msg,
 		_("\r\nRealm quota exceeded - access denied\r\n"));
 	auth_log(m, _("Login failed"), NULL,
 		 _("realm quota exceeded for "), m->req->realm);
@@ -1044,7 +1044,6 @@ sfn_simuse(m)
 {
 	char  name[AUTH_STRING_LEN];
 	int   rc;
-	char  umsg[AUTH_STRING_LEN];
 
 	strip_username(strip_names,
 		       m->namepair->strvalue, m->user_check, name);
@@ -1053,12 +1052,11 @@ sfn_simuse(m)
 		return;
 	
 	if (m->check_pair->lvalue > 1) {
-		snprintf(umsg, sizeof(umsg),
+		asprintf(&m->user_msg,
 	      _("\r\nYou are already logged in %d times  - access denied\r\n"),
 			(int)m->check_pair->lvalue);
-		m->user_msg = make_string(umsg);
 	} else {
-		m->user_msg = make_string(
+		asprintf(&m->user_msg,
 		      _("\r\nYou are already logged in - access denied\r\n"));
 	}
 
@@ -1099,7 +1097,7 @@ sfn_time(m)
 		/*
 		 * User called outside allowed time interval.
 		 */
-		m->user_msg = make_string(
+		asprintf(&m->user_msg,
 		      _("You are calling outside your allowed timespan\r\n"));
 		radlog(L_ERR,
        _("Outside allowed timespan: [%s] (from nas %s) time allowed: %s"),
@@ -1134,7 +1132,7 @@ sfn_ttl(m)
 				 _("Zero time to live"),
 				 NULL, NULL, NULL);
 
-			m->user_msg = make_string(
+			asprintf(&m->user_msg,
 			 _("\r\nSorry, your account is currently closed\r\n"));
 			newstate(as_reject);
 		}
@@ -1197,7 +1195,7 @@ sfn_exec_wait(m)
 		newstate(as_reject);
 
 		if (!m->user_msg)
-			m->user_msg = make_string(
+			asprintf(&m->user_msg,
 			     _("\r\nAccess denied (external check failed)."));
 
 		if (is_log_mode(m, RLOG_AUTH)) {

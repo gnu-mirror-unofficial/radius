@@ -240,6 +240,8 @@ rad_sql_query(conn, query, return_count)
 		radlog(L_ERR,
 		       ("PQexec returned %s"),
 		       PQresStatus(stat));
+		if (stat == PGRES_FATAL_ERROR) 
+			rad_sql_need_reconnect(conn->type);
 		rc = -1;
 	}
 	PQclear(res);
@@ -287,6 +289,8 @@ rad_sql_getpwd(conn, query)
 		radlog(L_ERR,
 		       _("PQexec returned %s"),
 		       PQresStatus(stat));
+		if (stat == PGRES_FATAL_ERROR) 
+			rad_sql_need_reconnect(conn->type);
 	}
 	PQclear(res);
 	return return_passwd;
@@ -332,6 +336,8 @@ rad_sql_exec(conn, query)
 		       _("PQexec returned %s"),
 		       PQresStatus(stat));
 		PQclear(res);
+		if (stat == PGRES_FATAL_ERROR) 
+			rad_sql_need_reconnect(conn->type);
 		return NULL;
 	}
 

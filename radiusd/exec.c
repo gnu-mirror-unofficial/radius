@@ -512,6 +512,7 @@ filter_cleanup_proc(void *ptr, grad_symbol_t *sym)
 	return 0;
 }
 
+/* Note: signal-safe */
 void
 filter_cleanup(pid_t pid, int status)
 {	

@@ -141,7 +141,8 @@ char *x_debug_spec;
 /* Forward declarations */
 static RETSIGTYPE sig_handler(int sig);
 void radiusd_main_loop();
-
+static size_t radius_count_channels();
+	
 struct cfg_stmt config_syntax[];
 
 
@@ -300,18 +301,20 @@ radiusd_preconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 	rpp_kill(-1, SIGTERM);
 	sleep(2);
 	radiusd_cleanup();
+	if (rpp_count()) {
+		rpp_kill(-1, SIGKILL);
+		radiusd_cleanup();
+	}
 	input_close_channels(radius_input);
 }
 
 static void
 radiusd_postconfig_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 {
-	/*FIXME: Emit the warning:
-	  radlog(L_ALERT,
-          _("Radiusd is not listening on any port.
-	  Trying to continue anyway..."));
-
-	  If necessary..*/
+	if (radius_count_channels() == 0) {
+		radlog(L_ALERT,
+		       _("Radiusd is not listening on any port. Trying to continue anyway..."));
+	}
 }
 
 void
@@ -1129,6 +1132,24 @@ udp_open(int type, UINT4 ipaddr, int port, int nonblock)
 	p->addr = s;
 	input_register_channel(radius_input, "udp", fd, p);
 	return 0;
+}
+
+static int
+channel_counter(void *item, void *data)
+{
+	struct udp_data *p = item;
+	if (p->type == R_AUTH || p->type == R_ACCT)
+		++*(size_t*)data;
+	return 0;
+}
+
+static size_t
+radius_count_channels()
+{
+	size_t count = 0;
+	
+	input_iterate_channels(radius_input, "udp", channel_counter, &count);
+	return count;
 }
 
 

@@ -52,9 +52,11 @@ static void run_statement(radtest_node_t *node);
 %}
 
 %token EOL AUTH ACCT SEND EXPECT T_BEGIN T_END
-%token IF ELSE WHILE DO BREAK CONTINUE INPUT
+%token IF ELSE WHILE DO BREAK CONTINUE INPUT SHIFT GETOPT
+%token <set> SET
 %token PRINT 
 %token EXIT
+%token T_UNBALANCED
 %token <deref> IDENT
 %token <parm> PARM
 %token <string> NAME
@@ -78,7 +80,7 @@ static void run_statement(radtest_node_t *node);
              pritem 
 %type <var> send_flag imm_value
 %type <symtab> send_flags send_flag_list
-%type <string> name
+%type <string> name string
 
 %union {
 	int i;
@@ -93,6 +95,10 @@ static void run_statement(radtest_node_t *node);
 	grad_list_t *list;
 	radtest_variable_t *var;
 	grad_symtab_t *symtab;
+	struct {
+		int argc;
+		char **argv;
+	} set;
 }
 
 %%
@@ -149,7 +155,7 @@ stmt          : T_BEGIN list T_END
 			$$->v.cond.iftrue = $4;
 			$$->v.cond.iffalse = NULL;
 		}
-              | IF cond EOL stmt ELSE stmt 
+              | IF cond EOL stmt else stmt 
                 {
 			$$ = radtest_node_alloc(radtest_node_cond);
 			$$->v.cond.cond = $2;
@@ -223,16 +229,38 @@ stmt          : T_BEGIN list T_END
                 {
 			$$ = radtest_node_alloc(radtest_node_input);
 			$$->v.input.expr = $2;
-			$$->v.input.name = $3;
+			$$->v.input.var = (radtest_variable_t*)
+				grad_sym_lookup_or_install(vartab,
+							   $3 ? $3 : "INPUT",
+							   1);
 		}
+              | SET
+                {
+			$$ = radtest_node_alloc(radtest_node_set);
+			$$->v.set.argc = $1.argc;
+			$$->v.set.argv = $1.argv;
+		}
+              | SHIFT maybe_expr
+                {
+			$$ = radtest_node_alloc(radtest_node_shift);
+			$$->v.expr = $2;
+		}
+              ;
+
+else          : ELSE
+              | ELSE EOL
               ;
 
 name          : /* empty */
                 {
-			$$ = "INPUT";
+			$$ = NULL;
 		}
               | NAME
 	      ;
+
+string        : NAME
+              | QUOTE
+              ;
 
 nesting_level : /* empty */
                 {
@@ -388,6 +416,24 @@ bool          : expr
               ;
 
 expr          : value
+              | GETOPT string name name
+                {
+			char *name = $3 ? $3 : "OPTVAR";
+			$$ = radtest_node_alloc(radtest_node_getopt);
+			$$->v.gopt.last = 0;
+			$$->v.gopt.optstr = $2;
+			$$->v.gopt.var = (radtest_variable_t*)
+				grad_sym_lookup_or_install(vartab, name, 1);
+
+			name = $4 ? $4 : "OPTARG";
+			$$->v.gopt.arg = (radtest_variable_t*)
+				grad_sym_lookup_or_install(vartab, name, 1);
+
+			name = $4 ? $4 : "OPTIND";
+			$$->v.gopt.ind = (radtest_variable_t*)
+				grad_sym_lookup_or_install(vartab, name, 1);
+			
+		}
               | '(' expr ')'
                 {
 			$$ = $2;
@@ -590,6 +636,7 @@ int
 yyerror(char *s)
 {
 	parse_error(s);
+	bracket_error();
 }
 
 void
@@ -599,6 +646,19 @@ parse_error(const char *fmt, ...)
 
 	va_start(ap, fmt);
         fprintf(stderr, "%s:%lu: ", source_locus.file, source_locus.line);
+        vfprintf(stderr, fmt, ap);
+        va_end(ap);
+        fprintf(stderr, "\n");
+	error_count++;
+}
+
+void
+parse_error_loc(grad_locus_t *locus, const char *fmt, ...)
+{
+        va_list ap;
+
+	va_start(ap, fmt);
+        fprintf(stderr, "%s:%lu: ", locus->file, locus->line);
         vfprintf(stderr, fmt, ap);
         va_end(ap);
         fprintf(stderr, "\n");

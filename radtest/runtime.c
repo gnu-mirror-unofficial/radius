@@ -307,10 +307,12 @@ rt_eval_deref(radtest_node_t *node, radtest_variable_t *result)
 		
 	var = (radtest_variable_t*) grad_sym_lookup(vartab,
 						    node->v.deref.name);
-	if (!var)
-		result->type = rtv_undefined;
-	else
+	if (var && var->type != rtv_undefined) {
 		rt_eval_variable(&node->locus, result, var);
+		return;
+	}
+
+	result->type = rtv_undefined;
 
 	p = node->v.deref.repl;
 	if (p) switch (*p++) {
@@ -396,7 +398,7 @@ rt_eval_parm(radtest_node_t *node, radtest_variable_t *result)
 	size_t n;
 	
 	result->type = rtv_string;
-        if (num < x_argc && x_argv[num]) {
+        if (num <= x_argc && x_argv[num]) {
 		radtest_start_string(x_argv[num]);
 		result->datum.string = radtest_end_string();
                 return;
@@ -792,6 +794,36 @@ rt_eval_expr(radtest_node_t *node, radtest_variable_t *result)
 		break;
 	}
 	
+	case radtest_node_getopt:
+	{
+		int n;
+		char buf[3];
+
+		if (node->v.gopt.last <= 0) 
+			optind = 0;
+		node->v.gopt.last = getopt(x_argc, x_argv,
+					   node->v.gopt.optstr);
+		result->type = rtv_integer;
+		result->datum.number = node->v.gopt.last != EOF;
+
+		node->v.gopt.var->type = rtv_string;
+		grad_free(node->v.gopt.var->datum.string);
+		sprintf(buf, "-%c", node->v.gopt.last);
+		node->v.gopt.var->datum.string = grad_estrdup(buf);
+
+		grad_free(node->v.gopt.arg->datum.string);
+		if (!optarg)
+			node->v.gopt.arg->type = rtv_undefined;
+		else {
+			node->v.gopt.arg->type = rtv_string;
+			node->v.gopt.arg->datum.string = grad_estrdup(optarg);
+		}
+
+		node->v.gopt.ind->type = rtv_integer;
+		node->v.gopt.ind->datum.number = optind;
+		break;
+	}
+
 	default:
 		grad_insist_fail("Unexpected node type");
 	}
@@ -820,11 +852,9 @@ rt_asgn(radtest_node_t *node)
 	
 	rt_eval_expr(node->v.asgn.expr, &result);
 	
-	var = (radtest_variable_t*) grad_sym_lookup(vartab, node->v.asgn.name);
-
-	if (var == NULL)
-		var = (radtest_variable_t*) grad_sym_install(vartab,
-							     node->v.asgn.name);
+	var = (radtest_variable_t*) grad_sym_lookup_or_install(vartab,
+							       node->v.asgn.name,
+							       1);
 	
 	var->type = result.type;
 	switch (result.type) {
@@ -987,24 +1017,20 @@ rt_eval_input(radtest_node_t *stmt)
 	fflush(stdout);
 		
 	getline(&p, &n, stdin);
-	var = (radtest_variable_t*) grad_sym_lookup(vartab,
-						    stmt->v.input.name);
-	if (var) {
-		switch (var->type) {
-		case rtv_string:
-			grad_free(var->datum.string);
-			break;
+	var = stmt->v.input.var;
 
-		case rtv_avl:
-			grad_avl_free(var->datum.avl);
-			break;
+	switch (var->type) {
+	case rtv_string:
+		grad_free(var->datum.string);
+		break;
 
-		default:
-			break;
-		}
-	}  else
-		var = (radtest_variable_t*)
-			grad_sym_install(vartab, stmt->v.input.name);
+	case rtv_avl:
+		grad_avl_free(var->datum.avl);
+		break;
+
+	default:
+		break;
+	}
 	
 	var->type = rtv_string;
 	n = strlen(p);
@@ -1075,6 +1101,34 @@ rt_eval(radtest_node_t *stmt)
 		rt_eval_input(stmt);
 		break;
 
+	case radtest_node_set:
+		radtest_parse_options(stmt->v.set.argc, stmt->v.set.argv);
+		break;
+
+	case radtest_node_shift:
+	{
+		int level;
+
+		if (!stmt->v.expr)
+			level = 1;
+		else {
+			rt_eval_expr(stmt->v.expr, &result);
+			if (result.type != rtv_integer)
+				runtime_error(&stmt->locus,
+					      _("Invalid data type in 'shift'"));
+			level = result.datum.number;
+		}
+		if (level == 0)
+			break;
+		if (x_argc <= level)
+			runtime_error(&stmt->locus,
+				      _("Not enough arguments to shift"));
+		memmove(x_argv+1, x_argv + level + 1,
+                        sizeof(x_argv[0]) * (x_argc - level));
+		x_argc -= level;
+		break;
+	}
+	
 	default:
 		grad_insist_fail("Unexpected instruction code");
 	}
@@ -1107,7 +1161,7 @@ radtest_node_alloc(radtest_node_type type)
 	return node;
 }
 
-static int
+int
 _free_item(void *item, void *data)
 {
 	grad_free(item);

@@ -133,6 +133,8 @@ ATTRIBUTE	Orig-User-Name		2101	string	- [C--R-R]
 ATTRIBUTE	Orig-NAS-Port-Id	2105	integer	- [C--R-R]
 ATTRIBUTE	Orig-Acct-Session-Id	2144	integer	- [C--R-R]
 
+ATTRIBUTE	Password-Expire-Days	2145	integer - [------]
+
 # Used internally by the server
 ATTRIBUTE       Queue-Id	        65534	integer - [------]
 

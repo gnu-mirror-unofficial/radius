@@ -1,0 +1,127 @@
+##############################################################################
+## This file contains configuration data for connecting to an SQL server
+## NOTE: # introduces a comment line only if it is the first non-blank
+##       character in line.
+## The ???_query variables specify the queries the radius uses when
+## handling requests. The following pseudo-variables can be used in queries:
+##      %Cnum          attribute number `num' from check pairs
+##      %C{attr-name}  attribute `attr-name' from check pairs
+##      %Rnum          attribute number `num' from reply pairs
+##      %R{attr-name}  attribute `attr-name' from reply pairs
+##      %D             current date/time (localtime)
+##      %G             current date/time (GMT)
+##      Shortcuts:
+##	%p             Port number
+##	%n             NAS IP address
+##	%f             Framed IP address
+##	%u             User name
+##	%c             Callback-Number
+##      %i             Calling-Station-Id
+##	%t             MTU
+##	%a             Protocol (SLIP/PPP)
+##	%s             Speed (DA_CONNECT_INFO)
+##
+## The queries used in this file are designed for the following tables:
+## CREATE TABLE passwd(
+##   user_name           char(32),
+##   password            char(64),
+##   UNIQUE (user_name)
+## );
+## CREATE TABLE calls (
+##   status              int(3),
+##   user_name           char(32),
+##   Event_Date_Time     datetime DEFAULT '0000-00-00 00:00:00' NOT NULL,
+##   nas_ip_address      char(17),
+##   nas_port_id         int(6),
+##   acct_session_id     char(16) DEFAULT NOT NULL,
+##   acct_session_time   int(11),
+##   acct_input_octets   int(11),
+##   acct_output_octets  int(11),
+##   connect_term_reason int(4),
+##   framed_ip_address   char(17),
+##   unused              int(1),
+##   called_station_id   char(32),
+##   calling_station_id  char(32),
+##   KEY name_sess (user_name,acct_session_id)
+## );
+##############################################################################
+
+#########
+## General settings
+##
+server localhost
+port 3306
+login radius
+password password
+
+# Specifies whether radiusd should try to keep the connection open.
+# When set to no (the default), radiusd will open the new connection
+# before the transaction and close it right after finishing it.
+keepopen yes
+
+
+# The idle timeout for the connection (seconds). Default is 4 hours.
+# When a connection is idle for more than this amount of time it gets
+# closed. 
+# Note: This setting takes effect only when keepopen is set to
+# yes.
+idle_timeout 14400
+
+
+#########
+## Authentication-relevant settings
+##
+
+# Enable/Disable Mysql authentication: default no
+doauth no
+
+# authentication database name
+auth_db RADIUS
+
+# Query to select the password for the given user. Should return one string.
+auth_query select password from passwd where user_name='%u'
+
+#########
+# Accounting-relevant settings
+
+# Enable/Disable Mysql accounting: default no
+doacct no
+
+# accounting database name
+acct_db RADIUS
+
+# Query to be used on session start
+acct_start_query     INSERT INTO calls \
+		     VALUES(%C{Acct-Status-Type},\
+                            '%u',\
+                            '%G',\
+                            '%C{NAS-IP-Address}',\
+			    %C{NAS-Port-Id},\
+                            '%C{Acct-Session-Id}',\
+                            0,\
+                            0,\
+                            0,\
+                            0,\
+                            '%C{Framed-IP-Address}',\
+                            '%C{Called-Station-Id}',\
+                            '%C{Calling-Station-Id}')
+
+# Query to be used on session end
+acct_stop_query      UPDATE calls \
+                     SET status=%C{Acct-Status-Type},\
+                         acct_session_time=%C{Acct-Session-Time},\
+                         acct_input_octets=%C{Acct-Input-Octets},\
+                         acct_output_octets=%C{Acct-Output-Octets},\
+                         connect_term_reason=%C{Acct-Terminate-Cause} \
+                         WHERE user_name='%C{User-Name}' AND status = 1
+
+
+# Query to be used when a NAS goes down, i.e. when it sends 
+# Accounting-Off packet
+acct_nasdown_query   UPDATE calls \
+                        SET status=2,\
+                        acct_session_time=unix_timestamp(now())-unix_timestamp(event_date_time) \
+                      WHERE status=1 AND nas_ip_address='%C{NAS-IP-Address}'
+
+
+

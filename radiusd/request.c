@@ -26,6 +26,7 @@
 #include <radsql.h>
 #include <list.h>
 
+extern int spawn_flag; /* FIXME */
 struct request_class request_class[] = {
         { "AUTH", 0, MAX_REQUEST_TIME, CLEANUP_DELAY,
 	  radius_req_decode,   /* Decoder */
@@ -36,6 +37,7 @@ struct request_class request_class[] = {
 	  radius_req_drop,     /* Drop function */
 	  rad_sql_cleanup,  /* Cleanup function */
 	  radius_req_failure,  /* Failure indicator */
+	  radius_req_update,
 	},
         { "ACCT", 0, MAX_REQUEST_TIME, CLEANUP_DELAY,
 	  radius_req_decode,   /* Decoder */
@@ -46,16 +48,7 @@ struct request_class request_class[] = {
 	  radius_req_drop,     /* Drop function */
 	  rad_sql_cleanup,  /* Cleanup function */
 	  radius_req_failure,  /* Failure indicator */
-	},
-        { "PROXY",0, MAX_REQUEST_TIME, CLEANUP_DELAY,
-	  radius_req_decode,   /* Decoder */
-          rad_proxy,        /* Handler */
-	  radius_req_xmit,     /* Retransmitter */
-	  radius_req_cmp,      /* Comparator */ 
-          radius_req_free,     /* Deallocator */  
-	  proxy_retry,      /* Drop function */ 
-	  NULL,             /* Cleanup function */
-	  NULL,             /* Failure indicator */
+	  radius_req_update,
 	},
 #ifdef USE_SNMP
         { "SNMP", 0, MAX_REQUEST_TIME, 0, 
@@ -67,6 +60,7 @@ struct request_class request_class[] = {
 	  snmp_req_drop,    /* Drop function */ 
 	  NULL,             /* Cleanup function */
 	  NULL,             /* Failure indicator */
+	  NULL,
 	},
 #endif
         { NULL, }
@@ -106,6 +100,7 @@ request_free(REQUEST *req)
 	if (req) {
 		request_class[req->type].free(req->data);
 		efree(req->rawdata);
+		efree(req->update);
 		efree(req);
 	}
 }
@@ -130,9 +125,9 @@ request_xmit(REQUEST *req)
 }
 
 int
-request_cmp(int type, void *a, void *b)
+request_cmp(REQUEST *req, void *ptr)
 {
-        return request_class[type].comp(a, b);
+        return request_class[req->type].comp(req->data, ptr);
 }
 
 void
@@ -146,16 +141,19 @@ struct request_closure {
 	int type;                  /* Type of the request */
 	void *data;                /* Request contents */
 	time_t curtime;            /* Current timestamp */
+	int (*handler)(REQUEST *); /* Handler function */
 	/* Output: */
+	int state;                 /* Request compare state */
+	REQUEST *orig;             /* Matched request (for proxy requests) */
         size_t request_count;      /* Total number of requests */
 	size_t request_type_count; /* Number of requests of this type */
 };
 
 static int
-_request_iterator(void *item, void *data)
+_request_iterator(void *item, void *clos)
 {
 	REQUEST *req = item;
-	struct request_closure *rp = data;
+	struct request_closure *rp = clos;
 	
 	if (req->status == RS_COMPLETED) {
 		if (req->timestamp + request_class[req->type].cleanup_delay
@@ -165,6 +163,22 @@ _request_iterator(void *item, void *data)
 			list_remove_current(request_list);
 			request_free(req);
 			return 0;
+		}
+	} else if (req->status == RS_PROXY) {
+		if (!spawn_flag || rpp_ready(req->child_id)) {
+			debug(1, ("%s proxy reply. Process %lu", 
+				  request_class[req->type].name,
+				  (u_long) req->child_id));
+			(*rp->handler)(req);
+			list_remove_current(request_list);
+			request_free(req);
+		} else if (req->timestamp + request_class[req->type].ttl
+			   <= rp->curtime) {
+			radlog(L_NOTICE,
+			       _("Proxy %s request expired in queue"),
+			       request_class[req->type].name);
+			list_remove_current(request_list);
+			request_free(req);
 		}
 	} else if (req->timestamp + request_class[req->type].ttl
 		      <= rp->curtime) {
@@ -178,31 +192,37 @@ _request_iterator(void *item, void *data)
 		return 0;
 	}
 
-	if (!rp->data)
+	if (req->type == rp->type) 
+		rp->request_type_count++;
+	rp->request_count++;
+
+	if (rp->state != RCMP_NE)
 		return 0;
 	
-	if (req->type == rp->type
-	    && request_cmp(req->type, req->data, data) == 0) {
-		/* This is a duplicate request. If it is already completed,
-		   then hand it over to the child.
-		   Otherwise drop the request. */
-		if (req->status == RS_COMPLETED) {
-			if (radiusd_master())
-				rpp_forward_request(req);
-			else
-                                request_xmit(req);
+	if (req->type == rp->type) {
+		rp->state = request_cmp(req, rp->data);
+		switch (rp->state) {
+		case RCMP_EQ:
+			/* This is a duplicate request. If it is already
+			   completed, hand it over to the child.
+			   Otherwise drop the request. */
+			if (req->status == RS_COMPLETED) {
+				if (radiusd_master())
+					rpp_forward_request(req);
+				else
+					request_xmit(req);
+			} else
+				request_drop(req->type, rp->data,
+					     req->data, req->fd,
+					     _("duplicate request"));
+			break;
 
-		} else
-			request_drop(req->type, data, req->data, req->fd,
-				     _("duplicate request"));
-		/* Indicate end of request processing */
-		rp->data = NULL;
-		return 0;
-	} else {
-		if (req->type == rp->type) 
-			rp->request_type_count++;
-		rp->request_count++;
-        }
+		case RCMP_PROXY:
+			rp->orig = req;
+			break;
+		}
+	}
+	
 	return 0;
 }
 
@@ -216,6 +236,9 @@ request_handle(REQUEST *req, int (*handler)(REQUEST *))
 	
 	rc.type = req->type;
 	rc.data = req->data;
+	rc.orig = NULL;
+	rc.state = RCMP_NE;
+	rc.handler = handler;
         time(&rc.curtime);
         rc.request_count = rc.request_type_count = 0;
 
@@ -224,8 +247,37 @@ request_handle(REQUEST *req, int (*handler)(REQUEST *))
 	else
 		list_iterate(request_list, _request_iterator, &rc);
 
-	if (!rc.data)
+	switch (rc.state) {
+	case RCMP_EQ: /* duplicate */
 		return 1;
+
+	case RCMP_PROXY:
+		req->orig = rc.orig;
+		req->child_id = rc.orig->child_id;
+		if (!radiusd_master()) {
+			debug(1, ("%s proxy reply. Process %lu", 
+				  request_class[req->type].name,
+				  (u_long) req->child_id));
+			(*handler)(req);
+		} else {
+			if (!spawn_flag || rpp_ready(req->child_id)) {
+				debug(1, ("%s proxy reply. Process %lu", 
+					  request_class[req->type].name,
+					  (u_long) req->child_id));
+				(*handler)(req);
+			} else {
+				req->status = RS_PROXY;
+				/* Add request to the queue */
+				debug(1, ("Proxy %s request %lu added to the list. %d requests held.", 
+					  request_class[req->type].name,
+					  (u_long) req->child_id,
+					  rc.request_count+1));
+				list_append(request_list, req);
+				return 0;
+			}
+		}
+		return 1; /* Do not keep this request */
+	}
 	
         /* This is a new request */
         if (rc.request_count >= max_requests) {
@@ -238,33 +290,40 @@ request_handle(REQUEST *req, int (*handler)(REQUEST *))
 			     _("too many requests of this type"));
 		return 1;
         } 
-
-	/* Do we have free handlers? */
-	if (radiusd_master() && !rpp_ready()) {
+	
+	if (radiusd_master() && spawn_flag && !rpp_ready(0)) {
+		/* Do we have free handlers? */
 		radlog(L_NOTICE, _("Maximum number of children active"));
 		return 1;
 	}
-	
+		
 	/* Add request to the queue */
         debug(1, ("%s request %lu added to the list. %d requests held.", 
                   request_class[req->type].name,
                   (u_long) req->child_id,
                   rc.request_count+1));
 
-	list_append(request_list, req);
-	return (*handler)(req);
+	if ((*handler)(req) == 0) {
+		list_append(request_list, req);
+		return 0;
+	}
+	return 1;
 }
 
 void
-request_set_status(pid_t pid, int status)
+request_update(pid_t pid, int status, void *ptr)
 {
 	REQUEST *p;
 
+	debug(100,("enter"));
 	for (p = list_first(request_list); p; p = list_next(request_list))
 		if (p->child_id == pid) {
 			p->status = status;
+			if (ptr && request_class[p->type].update)
+				request_class[p->type].update(p->data, ptr);
 			break;
 		}
+	debug(100,("exit"));
 }
 			
 

@@ -46,6 +46,7 @@ int yyerror(char *s);
 extern int yylex();
 
 static int current_nesting_level; /* Nesting level of WHILE/DO statements */
+static int error_count;
  
 %}
 
@@ -99,13 +100,17 @@ program       : /* empty */
 
 input         : lstmt
                 {
-			radtest_eval($1);
+			if (!error_count)
+				radtest_eval($1);
 			radtest_free_mem();
+			error_count = 0;
 		}
               | input lstmt
                 {
-			radtest_eval($2);
+			if (!error_count)
+				radtest_eval($2);
 			radtest_free_mem();
+			error_count = 0;
 		}
               ;
 
@@ -140,19 +145,19 @@ stmt          : T_BEGIN list T_END
 			$$ = radtest_node_alloc(radtest_node_stmt);
 			$$->v.list = $2;			
 		}
-              | IF cond stmt 
+              | IF cond EOL stmt 
                 {
 			$$ = radtest_node_alloc(radtest_node_cond);
 			$$->v.cond.cond = $2;
-			$$->v.cond.iftrue = $3;
+			$$->v.cond.iftrue = $4;
 			$$->v.cond.iffalse = NULL;
 		}
-              | IF cond stmt ELSE stmt 
+              | IF cond EOL stmt ELSE stmt 
                 {
 			$$ = radtest_node_alloc(radtest_node_cond);
 			$$->v.cond.cond = $2;
-			$$->v.cond.iftrue = $3;
-			$$->v.cond.iffalse = $5;
+			$$->v.cond.iftrue = $4;
+			$$->v.cond.iffalse = $6;
 		}
               | WHILE cond { current_nesting_level++; } stmt
                 {
@@ -574,9 +579,7 @@ pritem        : expr
 int
 yyerror(char *s)
 {
-        fprintf(stderr, "%s:%lu: %s\n",
-                source_locus.file, (unsigned long) source_locus.line,
-                s);
+	parse_error(s);
 }
 
 void
@@ -589,6 +592,7 @@ parse_error(const char *fmt, ...)
         vfprintf(stderr, fmt, ap);
         va_end(ap);
         fprintf(stderr, "\n");
+	error_count++;
 }
 
 void

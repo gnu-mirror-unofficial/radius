@@ -45,7 +45,38 @@ struct snmp_def snmp_def = {
         3,     /* timeout */
 };
 
+static pthread_once_t snmp_errno_once = PTHREAD_ONCE_INIT;
+static pthread_key_t snmp_errno_key;
 
+static void
+snmp_errno_destroy(ptr)
+	void *ptr;
+{
+	free(ptr);
+}
+
+static void
+snmp_errno_create()
+{
+	pthread_key_create(&snmp_errno_key, snmp_errno_destroy);
+}
+
+int *
+__snmp_errno_location()
+{
+	int *p;
+	pthread_once(&snmp_errno_once, snmp_errno_create);
+	p = pthread_getspecific(snmp_errno_key);
+	if (!p) {
+		p = malloc(sizeof(*p));
+		if (!p)
+			abort ();
+		*p = 0;
+		pthread_setspecific(snmp_errno_key, p);
+	}
+	return p;
+}
+	
 int
 snmp_req_id()
 {

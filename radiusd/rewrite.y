@@ -4381,7 +4381,7 @@ rw_attrs0()
         
         if ((pair = avl_find(AVPLIST(&mach), attr)) == NULL) 
                 pushs(&nil, 1);
-        else if (attr == DA_USER_PASSWORD) {
+        else if (pair->prop & AP_ENCRYPT) {
 		char string[AUTH_STRING_LEN+1];
 		int len;
 		req_decrypt_password(string, mach.req, pair);

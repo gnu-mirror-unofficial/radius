@@ -596,15 +596,6 @@ rad_acct_db(radreq, authtype)
 	return rc;
 }
 
-volatile int _s=0;
-m()
-{
-	while (!_s) {
-		sleep(1);
-		_s = _s;
-	}
-}
-
 int
 rad_acct_ext(radreq)
 	RADIUS_REQ *radreq;

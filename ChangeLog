@@ -1,5 +1,14 @@
 2001-08-27 Sergey Poznyakoff
 
+	* radiusd/auth.c: Do not display "Invalid user" diagnostics when
+	print-auth is no.
+	* radiusd/snmpserv.c: Fixed snmp_sort_nas_stat(): simple sorting
+	of the nas_stat made the havoc in the statistics data.
+	* radiusd/stat.c: findportbyindex(): Check the validity of 
+	index before doing lookup.
+	
+2001-08-27 Sergey Poznyakoff
+
 	* configure.in: Use $withval when handling --with arguments.
 	* radiusd/config.y: Added "port" to typestr. Fixed handling of
 	obsolete level statements (auth).

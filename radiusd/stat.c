@@ -377,8 +377,9 @@ stat_update(ut, status)
                         dt = ut->time - port->start;
                         if (dt < 0) {
                                 radlog(L_NOTICE,
-                                    _("stat_update(START,%s,%s,%d): negative time skew"),
-                                    ut->login, nas->shortname, ut->nas_port);
+				       "stat_update(START,%s,%s,%d): %s",
+				       ut->login, nas->shortname, ut->nas_port,
+				       _("negative port idle time"));
                         } else {
                                 port->idle += dt;
                         }
@@ -400,8 +401,9 @@ stat_update(ut, status)
                         dt = ut->time - port->start;
                         if (dt < 0) {
                                 radlog(L_NOTICE,
-                                    _("stat_update(STOP,%s,%s,%d): negative time skew"),
-                                    ut->login, nas->shortname, ut->nas_port);
+				       "stat_update(STOP,%s,%s,%d): %s",
+				       ut->login, nas->shortname, ut->nas_port,
+				       _("negative port session time"));
                         } else {
                                 port->inuse += dt;
                         }

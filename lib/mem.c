@@ -369,7 +369,7 @@ again:
 
         if (found != count) {
                 if (dead_loop++) {
-                        radlog(L_CRIT, _("calloc_entry(): dead loop detected"));
+                        radlog(L_CRIT, _("calloc_entry(): infinite loop detected"));
                         abort();
                 }
                 if (!alloc_bucket(class_ptr)) {

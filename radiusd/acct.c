@@ -348,7 +348,7 @@ rad_acct_system(radreq, dowtmp)
         /* Process Accounting-On/Off records */
         if (status == DV_ACCT_STATUS_TYPE_ACCOUNTING_ON && nas_address) {
                 radlog(L_NOTICE, 
-                        _("NAS %s restarted (Accounting-On packet seen)"),
+                        _("NAS %s started (Accounting-On packet seen)"),
                         nas_ip_to_name(nas_address, buf, sizeof buf));
                 radzap(nas_address, -1, NULL, ut.time);
                 write_nas_restart(status, ut.nas_address);
@@ -356,7 +356,7 @@ rad_acct_system(radreq, dowtmp)
         }
         if (status == DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF && nas_address) {
                 radlog(L_NOTICE, 
-                        _("NAS %s rebooted (Accounting-Off packet seen)"),
+                        _("NAS %s shut down (Accounting-Off packet seen)"),
                         nas_ip_to_name(nas_address, buf, sizeof buf));
                 radzap(nas_address, -1, NULL, ut.time);
                 write_nas_restart(status, ut.nas_address);

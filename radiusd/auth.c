@@ -1115,7 +1115,7 @@ sfn_time(m)
                 auth_format_msg(m, MSG_TIMESPAN_VIOLATION);
                 radlog_req(L_ERR,
 			   m->req,
-       _("Outside allowed timespan, time allowed: %s"),
+			   _("Outside allowed timespan (%s)"),
 			   m->check_pair->strvalue);
                 newstate(as_reject);
         } else if (rc == 0) {

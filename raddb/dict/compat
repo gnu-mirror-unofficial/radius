@@ -8,19 +8,19 @@
 #
 # Obsolete names for backward compatibility with older users files.
 #
-ALIAS		User-Password	Password
-ALIAS		NAS-IP-Address	Client-Id
-ALIAS		NAS-Port-Id	Client-Port-Id
-ALIAS		Service-Type	User-Service-Type
+ALIAS		User-Password		Password
+ALIAS		NAS-IP-Address		Client-Id
+ALIAS		NAS-Port-Id		Client-Port-Id
+ALIAS		Service-Type		User-Service-Type
 ALIAS		Framed-IP-Address	Framed-Address
 ALIAS		Framed-IP-Netmask	Framed-Netmask
 ALIAS		Filter-Id		Framed-Filter-Id
-ALIAS		Login-IP-Host	Login-Host
-ALIAS		Login-TCP-Port	Login-Port
-ALIAS		Reply-Message	Port-Message
-ALIAS		Callback-Number	Dialback-No
-ALIAS		Callback-Id	Dialback-Name
-ALIAS		State		Challenge-State
+ALIAS		Login-IP-Host		Login-Host
+ALIAS		Login-TCP-Port		Login-Port
+ALIAS		Reply-Message		Port-Message
+ALIAS		Callback-Number		Dialback-No
+ALIAS		Callback-Id		Dialback-Name
+ALIAS		State			Challenge-State
 
 VALUE		Framed-Compression	Van-Jacobsen-TCP-IP	1
 VALUE		Framed-Compression	VJ-TCP-IP		1
@@ -32,9 +32,9 @@ VALUE		Service-Type		Dialback-Framed-User	4
 #
 #	For compatibility with MERIT users files.
 #
-ALIAS		NAS-Port-Id	NAS-Port
-ALIAS		Callback-Number	Login-Callback-Number
-ALIAS		Callback-Id	Framed-Callback-Id
+ALIAS		NAS-Port-Id		NAS-Port
+ALIAS		Callback-Number		Login-Callback-Number
+ALIAS		Callback-Id		Framed-Callback-Id
 ALIAS		Called-Station-Id	Client-Port-DNIS
 ALIAS		Calling-Station-Id	Caller-ID
 

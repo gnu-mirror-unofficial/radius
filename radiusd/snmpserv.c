@@ -171,6 +171,9 @@ int snmp_acct_v_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
 			struct snmp_var **varp, int *errp);
 int snmp_serv_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
 		      struct snmp_var **varp, int *errp);
+int snmp_serv_queue_handler(enum mib_node_cmd cmd, void *closure,
+			    subid_t subid, struct snmp_var **varp, int *errp);
+
 int snmp_stat_handler(enum mib_node_cmd cmd, void *closure, subid_t subid,
 		      struct snmp_var **varp, int *errp);
 
@@ -212,11 +215,16 @@ struct port_table_closure {
 	int port_index;
 };
 
-struct auth_mib_closure auth_closure, acct_closure;
-struct nas_closure nas_closure;
-struct nas_table nas_table;
-struct port_closure port_closure;
-struct port_table_closure port_table;
+struct queue_closure {
+	int queue_index;
+};
+
+static struct auth_mib_closure auth_closure, acct_closure;
+static struct nas_closure nas_closure;
+static struct nas_table nas_table;
+static struct port_closure port_closure;
+static struct port_table_closure port_table;
+static struct queue_closure queue_closure;
 
 static struct mib_data {
 	oid_t oid;
@@ -288,6 +296,13 @@ static struct mib_data {
 	oid_radiusServerUpTime,              snmp_serv_handler, NULL,
 	oid_radiusServerResetTime,           snmp_serv_handler, NULL,
 	oid_radiusServerState,               snmp_serv_handler, NULL,
+
+	/* Variable oids */
+	oid_queueIndex,        snmp_serv_queue_handler, &queue_closure,
+	oid_queueName,         snmp_serv_queue_handler, &queue_closure,	
+	oid_queueActive,       snmp_serv_queue_handler, &queue_closure,	
+	oid_queueHeld,         snmp_serv_queue_handler, &queue_closure,	
+	oid_queueTotal,        snmp_serv_queue_handler, &queue_closure,	
 	
 	/* Statistics */
 	oid_StatIdent,                       snmp_stat_handler, NULL,
@@ -1805,6 +1820,139 @@ snmp_serv_var_set(subid, vp, errp)
 		}
 	}
 	return (*vp == NULL);
+}
+
+
+/* Variable oids */
+
+/* Queue table */
+static struct snmp_var *snmp_queue_get(subid_t subid, struct snmp_var *var,
+				       int *errp);
+void get_queue_stat(int qno, struct snmp_var *var, subid_t key);
+
+int
+snmp_serv_queue_handler(cmd, closure, subid, varp, errp)
+	enum mib_node_cmd cmd;
+	void *closure;
+	subid_t subid;
+	struct snmp_var **varp;
+	int *errp;
+{
+	struct queue_closure *p = (struct queue_closure*)closure;
+	
+	switch (cmd) {
+	case MIB_NODE_GET:
+		if ((*varp = snmp_queue_get(subid, *varp, errp)) == NULL)
+			return -1;
+		break;
+		
+	case MIB_NODE_SET:
+	case MIB_NODE_SET_TRY:
+		/* None of these can be set */
+		if (errp)
+			*errp = SNMP_ERR_NOSUCHNAME;
+		return -1;
+		
+	case MIB_NODE_COMPARE: 
+		return 0;
+		
+	case MIB_NODE_NEXT:
+		if (subid < R_MAX) {
+			p->queue_index = subid+1;
+			return 0;
+		}
+		return -1;
+		
+	case MIB_NODE_GET_SUBID:
+		return p->queue_index;
+		
+	case MIB_NODE_RESET:
+		p->queue_index = 1;
+		break;
+
+	}
+	
+	return 0;
+}
+
+struct snmp_var *
+snmp_queue_get(subid, var, errp)
+	subid_t subid;
+	struct snmp_var *var;
+	int *errp;
+{
+	struct snmp_var *ret;
+	subid_t key;
+	oid_t oid = var->name;
+	
+	ret = snmp_var_create(oid);
+	*errp = SNMP_ERR_NOERROR;
+
+	switch (key = SUBID(oid, OIDLEN(oid)-2)) {
+
+	case MIB_KEY_queueIndex:
+	case MIB_KEY_queueName:			
+	case MIB_KEY_queueActive:
+	case MIB_KEY_queueHeld:
+	case MIB_KEY_queueTotal:
+		if (subid-1 < R_MAX) {
+			get_queue_stat(subid-1, ret, key);
+			break;
+
+		}
+		/*FALLTHRU*/
+		
+	default:
+		*errp = SNMP_ERR_NOSUCHNAME;
+		snmp_var_free(ret);
+		return NULL;
+	}
+	return ret;
+}
+
+void
+get_queue_stat(qno, var, key)
+	int qno;
+	struct snmp_var *var;
+	subid_t key;
+{
+	struct timeval tv;
+	struct timezone tz;
+	NAS *nas;
+	QUEUE_STAT stat;
+	
+	stat_request_list(stat);
+	switch (key) {
+	case MIB_KEY_queueIndex:
+		var->type = ASN_INTEGER;
+		var->val_length = sizeof(int);
+		var->var_int = qno+1;
+		break;
+		
+	case MIB_KEY_queueName:
+		var->type = ASN_OCTET_STR;
+		var->val_length = strlen(request_class[qno].name);
+		var->var_str = snmp_strdup(request_class[qno].name);
+		break;
+
+	case MIB_KEY_queueActive:
+		var->type = SMI_COUNTER32;
+		var->val_length = sizeof(counter);
+		var->var_int = stat[qno][0];
+		break;
+		
+	case MIB_KEY_queueHeld:
+		var->type = SMI_COUNTER32;
+		var->val_length = sizeof(counter);
+		var->var_int = stat[qno][1];
+		break;
+
+	case MIB_KEY_queueTotal:
+		var->type = SMI_COUNTER32;
+		var->val_length = sizeof(counter);
+		var->var_int = stat[qno][0]+stat[qno][1];
+		break;
+	}
 }
 
 /* ************************************************************************* */

@@ -11,7 +11,8 @@
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 pamdir=@PAMDIR@
-pam_PROGRAMS = pam_radius.la
+pam_PROGRAMS = @BUILD_PAM_RADIUS_LA@
+EXTRA_PROGRAMS = pam_radius.la
 pam_radius_la_SOURCES = pam_radius.c
 pam_radius_la_LDADD = -lpam ../../radlib/librad.la ../../radlib/libdebug.la 
 INCLUDES = -I$(top_builddir) -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp @INCLUDEPATH@

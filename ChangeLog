@@ -1,3 +1,25 @@
+2001-11-15 Sergey Poznyakoff
+
+	* Makefile.am: Added radtest.
+	* configure.in: Likewise.
+	* scripts/debug.sh: Removed TOPDIR. SKEL should always be
+	passed as an absolute pathname.
+
+	* radtest/radtest.c: Removed.
+	* radtest/Makefile.am: Removed radtest.c
+	* radtest/main.c: Inserted code from radtest.c. Implemented
+	-t, -r and -s switches.
+
+	* radlib/client.c: radclient_alloc(): Read client.conf file.
+	This allows the same configuration to be shared between
+	all client programs.
+	* client/pam_radius/pam_radius.c: Removed parsing of
+	client.conf
+	* client/pam_radius/client.conf: Removed.
+	* client/pam_radius/Makefile.am: Removed rules for client.conf.
+	* raddb/client.conf: (new) A template for client.conf.
+	* raddb/Makefile.am: Added client.conf.
+
 2001-11-14 Sergey Poznyakoff
 
 	Tested SQL check pairs support.
@@ -2294,4 +2316,11 @@
         	portmap
         Log Message:
         
+
+Local Variables:
+mode: indented-text
+left-margin: 8
+fill-column: 74
+version-control: never
+End:
 

@@ -273,10 +273,9 @@ VALUE           Auth-Type               Ignore			5
 #
 # Extensions introduced by Cistron
 #
-VALUE		Auth-Type		Mysql			252
-# A preferred alias for Mysql
+
 VALUE		Auth-Type		SQL			252
-VALUE		Auth-Type		Pam			253
+VALUE		Auth-Type		PAM			253
 VALUE		Auth-Type		Accept			254
 
 VALUE		Fall-Through		No			0

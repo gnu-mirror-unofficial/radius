@@ -21,6 +21,7 @@ radiusd_SOURCES = \
  debugmod.c\
  exec.c\
  files.c\
+ forward.c\
  input.c\
  log.c\
  menu.c\

@@ -113,17 +113,17 @@ This Info file documents the version @value{VERSION} of the package.
 * Intro::               An introduction to @RADIUS{} concepts
 * Glossary::            The glossary
 
-The @radius{} daemon
+The @RADIUS{} daemon
 * Naming Conventions::  Conventions about naming files and directories
-* Operation::           How @radius{} operates
+* Operation::           How @radiusd{} operates
 * Invocation::          How to start the daemon
-* Configuration Files:: @radius{} configuration files
+* Configuration Files:: @radiusd{} configuration files
 * Request Comparison::  How duplicate requests are dealt with
 * Authentication::      How users are authenticated
 * Accounting::          Accounting methods
 * Logging::             What gets logged and where
 * Debugging::           Extensive logging information
-* Extensions::          Extending @radius{}
+* Extensions::          Extending GNU Radius
 
 * Utility Programs::
 * Client Package::

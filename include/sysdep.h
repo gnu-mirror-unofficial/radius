@@ -98,5 +98,11 @@ int set_nonblocking(int fd);
 int getmaxfd();
 UINT4 get_first_ip();
 
+typedef RETSIGTYPE (*signal_handler_t)(int);
+
+signal_handler_t rad_set_signal(int sig, signal_handler_t sighandler);
+void rad_reset_signal(int sig, signal_handler_t sighandler);
+
+
 #endif /* SYSDEP_H_INCLUDED */
 

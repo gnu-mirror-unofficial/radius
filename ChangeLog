@@ -1,3 +1,12 @@
+2003-10-24  Sergey Poznyakoff 
+
+	* radiusd/rewrite.y (bi_qprn): New builtin function.
+	* radiusd/auth.c: Evaluate attributes immediately before
+	sending the reply. Make sure no extra attributes remain
+	in the reply in case subsequent states choose to reject
+	it.
+	* NEWS: Updated
+	
 2003-10-17  Sergey Poznyakoff  
 
 	* include/radiusd.h (radius_decrypt_request_pairs)

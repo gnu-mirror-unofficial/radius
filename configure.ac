@@ -32,18 +32,6 @@ AC_SUBST(INCLUDEPATH)
 AC_SUBST(YACC_OPTS)
 AC_SUBST(RADIUS_PID)
 
-case $target in
-	*-*-linux*)	SHADOW_SUPPORT=yes
-			ST="BSD";;
-
-	*-*-solaris*)   SHADOW_SUPPORT=yes
-                        ST="SYSV";;
-
-	*-*-*bsd*)	ST="BSD";;
-
-        *)              ST="BSD";;
-esac
-
 ## * Checks for programs.
 AC_PROG_CC
 AM_PROG_CC_STDC
@@ -169,6 +157,28 @@ AC_CHECK_HEADERS(argp.h fcntl.h malloc.h strings.h\
  netdb.h stdarg.h varargs.h termcap.h termios.h termio.h sgtty.h\
  crypt.h sys/uio.h sys/select.h sys/resources.h getopt.h libintl.h)
 
+## Check for shadow support
+AC_CHECK_HEADER([shadow.h],
+  [AC_CHECK_FUNCS(getspnam)
+   AC_CHECK_TYPES(struct spwd, , ,
+    [ #include <shadow.h> ])
+   AC_CHECK_MEMBERS([struct spwd.sp_expire], , ,
+    [ #include <shadow.h> ])],
+  [AC_CHECK_HEADER([sys/security.h],
+    [AC_CHECK_HEADER([prot.h],
+      [AC_CHECK_TYPES(struct pr_passwd, , ,
+       [ #include <sys/security.h>
+         #include <prot.h> ])
+       AC_CHECK_FUNCS(getprpwnam)
+       AC_CHECK_MEMBERS([struct pr_passwd.uflg.fg_lock])])])])
+
+AH_BOTTOM([
+#if defined(HAVE_GETSPNAM) && defined(HAVE_STRUCT_SPWD)
+# define PWD_SHADOW SHADOW
+#elif defined(HAVE_STRUCT_PR_PASSWD) && defined(HAVE_GETPRPWNAM)
+# define PWD_SHADOW OSFC2
+#endif])
+
 ## * Check for national language support
 AM_GNU_GETTEXT(no-libtool, need-ngettext)
 AM_GNU_GETTEXT_VERSION(0.12.1)
@@ -228,7 +238,8 @@ AC_CHECK_FUNCS(setsid gethostname gettimeofday \
  inet_ntoa inet_aton setvbuf seteuid setreuid getdtablesize sigaction) 
 AC_FUNC_OBSTACK
 
-AC_CHECK_DECLS([strncasecmp, strtok_r, localtime_r, asprintf, vasprintf, getline], , ,
+AC_CHECK_DECLS([strncasecmp, strtok_r, localtime_r, asprintf, vasprintf,
+getline, crypt], , ,
                [
 #define _REENTRANT
 #include <string.h>
@@ -242,6 +253,9 @@ AC_CHECK_DECLS([strncasecmp, strtok_r, localtime_r, asprintf, vasprintf, getline
 # endif
 #else
 # include <time.h>
+#endif
+#if defined(HAVE_CRYPT_H)
+# include <crypt.h>
 #endif
 #include <stdio.h>])
 
@@ -362,15 +376,6 @@ AC_ARG_ENABLE(debug,
 AC_DEFINE_UNQUOTED(RADIUS_DEBUG, $RADIUS_DEBUG,
                    [Define to 1 to enable debugging])
 
-case "$ST" in
-        "BSD")		RADLOG_DIR="/var/log"
-			RADPID_DIR="/var/run"
-			;;
-	"SYSV")		RADLOG_DIR="/usr/adm"           
-			RADPID_DIR='$(sysconfdir)/raddb'
-			;;
-esac
-
 AC_MSG_CHECKING(for log directory path)
 AC_ARG_WITH(log-dir,
 	AC_HELP_STRING([--with-log-dir=PATH],
@@ -378,8 +383,18 @@ AC_ARG_WITH(log-dir,
 	[case "x$withval" in
 	 x/*) RADLOG_DIR=$withval;;
          *)  AC_MSG_ERROR(Argument must be an absolute pathname);;
-         esac])
+         esac],
+        [if test -d /var/log; then
+  	    RADLOG_DIR="/var/log"
+         elif test -d /usr/adm; then
+            RADLOG_DIR="/usr/adm"
+         else
+            RADLOG_DIR="NONE"
+         fi])
 AC_MSG_RESULT($RADLOG_DIR)
+if test $RADLOG_DIR == NONE; then
+   AC_MSG_ERROR("Don't know where to place default logging directory")
+fi  
 
 AC_MSG_CHECKING(for pidfile directory path)
 AC_ARG_WITH(pid-dir,
@@ -388,7 +403,12 @@ AC_ARG_WITH(pid-dir,
 	[case "x$withval" in
 	 x/*) RADPID_DIR=$withval;;
          *)  AC_MSG_ERROR(Argument must be an absolute pathname);;
-         esac])
+         esac],
+        [if test -d /var/run; then
+           RADPID_DIR="/var/run"
+         else
+           RADPID_DIR='$(sysconfdir)/raddb'
+         fi])
 AC_MSG_RESULT($RADPID_DIR)
 
 AC_SUBST(PATHFLAGS)
@@ -435,25 +455,6 @@ AC_SUBST(ACCT_PORT)
 AC_DEFINE_UNQUOTED(DEF_AUTH_PORT, $AUTH_PORT, [Default authentication port])
 AC_DEFINE_UNQUOTED(DEF_ACCT_PORT, $ACCT_PORT, [Default accounting port])
 		
-
-## **************
-## shadow support
-## **************
-AC_MSG_CHECKING(whether to enable shadow support)
-AC_ARG_ENABLE(shadow,
-	AC_HELP_STRING([--enable-shadow],
-	[enable shadow support]),
-	[case $enableval in
-		yes) 	SHADOW_SUPPORT=yes;;
-		*)	SHADOW_SUPPORT=no;;
-	esac])
-AC_MSG_RESULT($SHADOW_SUPPORT)
-
-AH_TEMPLATE(PWD_SHADOW,1,[Define this if your system supports shadow suite])
-if test x$SHADOW_SUPPORT = xyes; then
-	AC_DEFINE(PWD_SHADOW)
-fi
-
 ## **************
 ## PAM support
 ## **************
@@ -544,7 +545,9 @@ AC_ARG_WITH(mysql,
 	AC_HELP_STRING([--with-mysql],
 	[Configure to work with MySQL]),
 	[case $withval in
-	 yes)   RA_CHECK_LIB(mysqlclient, mysql_real_connect, [-lm -lz],
+	 yes)   RA_CHECK_LIB(mysqlclient, 
+	                     mysql_real_connect, 
+	                    [-lm -lz],
                             [ USE_SQL=1
                               AC_DEFINE(USE_SQL_MYSQL)
                               AC_DEFINE(HAVE_LIBMYSQL)
@@ -677,17 +680,6 @@ AC_ARG_ENABLE(deny_shell,
 				exit 1;;
 		"*")		AC_DEFINE_UNQUOTED(DENY_SHELL, $enableval);;
 		*)		AC_DEFINE_UNQUOTED(DENY_SHELL, "$enableval");;
-	esac])
-
-AC_ARG_ENABLE(osfc2,
-	AC_HELP_STRING([--enable-osfc2],
-	[enable OSFC2 support]),
-	[case $enableval in
-		yes)		AC_DEFINE(OSFC2,1,
-                                          [Define this to enable OSFC2 support<]);;
-		no)		;;
-		*)		AC_MSG_ERROR(--enable-osfc2 can't be used with an argument)
-				exit 1;;
 	esac])
 
 ## ***********************************************************************

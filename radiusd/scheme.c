@@ -106,7 +106,8 @@ scheme_auth(char *procname, RADIUS_REQ *req,
 	SCM res;
 	SCM procsym;
  	jmp_buf jmp_env;
-	VALUE_PAIR *tmp = radius_decrypt_request_pairs(req);
+	VALUE_PAIR *tmp = radius_decrypt_request_pairs(req,
+						       avl_dup(req->request));
 	
 	s_request = radscm_avl_to_list(tmp);
 	radius_destroy_pairs(&tmp);

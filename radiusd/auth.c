@@ -222,7 +222,7 @@ rad_auth_init(grad_request_t *radreq, int activefd)
 	log_open(L_AUTH);
                 
         if (auth_detail)
-                write_detail(radreq, REQ_AUTH_ZERO, "detail.auth");
+                write_detail(radreq, REQ_AUTH_ZERO, R_AUTH);
 
         /*
          * See if the user has access to this huntgroup.

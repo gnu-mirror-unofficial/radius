@@ -29,4 +29,5 @@ EXTRA_DIST=\
  nt.rw \
  filter.rw \
  config.syntax \
- pam.conf
+ pam.conf \
+ radius.php

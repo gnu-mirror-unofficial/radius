@@ -32,6 +32,13 @@ authentication module.
 
 Mimics GNU Radius 0.96 series way of handling accounting packets.
 
+* radius.php
+
+A simple NAS simulator that uses Sergei Sinkovsky's mod_radius.c PHP
+module. See README (options --with-php and --with-php-moddir) for
+information on how to compile the module and contrib/php/README for
+the description of the module itself.
+
 
 Local Variables:
 mode: outline

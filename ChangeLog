@@ -1,3 +1,29 @@
+2004-08-28  Sergey Poznyakoff
+
+	* README: Updated
+	* examples/radius.php: New file.
+	* examples/Makefile.am: Updated
+	* examples/README: Updated
+	
+	* include/radius/radius.h: Namespace cleanup
+	* lib/avl.c: Likewise
+	* lib/client.c: Likewise
+	* lib/debug.c: Likewise
+	* lib/dict.c: Likewise
+	* lib/users.y: Likewise
+	* lib/util.c: Likewise
+	* radiusd/config.y: Likewise
+	* radiusd/files.c: Likewise
+	* radiusd/log.c: Likewise
+	* radiusd/radck.c: Likewise
+	* radiusd/radutil.c: Likewise
+	* radiusd/rewrite.y: Likewise
+	* radiusd/snmpserv.c: Likewise
+	* radiusd/sql.c: Likewise
+	* radscm/rscm_radlog.c: Likewise
+	* radscm/rscm_sql.c: Likewise
+	* radscm/rscm_syslog.c: Likewise
+	
 2004-08-26  Sergey Poznyakoff
 
 	* configure.ac: Renamed --without-server to --disable-server.

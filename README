@@ -73,10 +73,13 @@ The applications-specific options are:
 *** --without-server-guile
 	Do not compile server Guile support
 
-*** --with-client
-	Build client programs. Requires presence of Guile >=1.4 and
+*** --enable-client
+	Build client programs. Requires presence of Guile >=1.6 and
 	PAM on your system.
 
+*** --disable-server
+        Do not build radius server. This implies --enable-client.
+	
 *** --with-readline
 	Enable GNU readline support for radiusd test shell mode.
 

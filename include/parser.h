@@ -17,22 +17,22 @@
 
 #include <symtab.h>
 
-struct pair_list {
-	struct pair_list *next;
+struct matching_rule {
+	struct matching_rule *next;
 	char *name;
-	VALUE_PAIR *check;
-	VALUE_PAIR *reply;
+	VALUE_PAIR *lhs;
+	VALUE_PAIR *rhs;
 	int lineno;
 };
-typedef struct pair_list PAIR_LIST;
+typedef struct matching_rule MATCHING_RULE;
 
 extern char *source_filename;
 extern int source_line_num;
 
 extern Symtab *user_tab;
-extern PAIR_LIST *hints;
+extern MATCHING_RULE *hints;
 
-extern PAIR_LIST *pair_result();
+extern MATCHING_RULE *pair_result();
 int init_parse(char *name, int complain);
 int init_lex(char *name);
 void done_lex();

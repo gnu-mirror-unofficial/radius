@@ -63,8 +63,8 @@ static char rcsid[] =
 Symtab          *user_tab;     /* raddb/users  */
 Symtab          *deny_tab;     /* raddb/access.deny */
 
-PAIR_LIST	*huntgroups;   /* raddb/huntgroups */ 
-PAIR_LIST	*hints;        /* raddb/hints */
+MATCHING_RULE	*huntgroups;   /* raddb/huntgroups */ 
+MATCHING_RULE	*hints;        /* raddb/hints */
 CLIENT		*clients;      /* raddb/clients */
 REALM		*realms;       /* raddb/realms */ 
 RADCK_TYPE      *radck_type;   /* raddb/nastypes */
@@ -88,8 +88,8 @@ static int portcmp(VALUE_PAIR *check, VALUE_PAIR *request);
 static int groupcmp(VALUE_PAIR *request, char *groupname, char *username);
 static int uidcmp(VALUE_PAIR *check, char *username);
 static int huntgroup_paircmp(VALUE_PAIR *request, VALUE_PAIR *check);
-static void pairlist_free(PAIR_LIST **pl);
-static int matches(VALUE_PAIR *req, char *name, PAIR_LIST *pl, char *matchpart);
+static void matchrule_free(MATCHING_RULE **pl);
+static int matches(VALUE_PAIR *req, char *name, MATCHING_RULE *pl, char *matchpart);
 static int huntgroup_match(VALUE_PAIR *request_pairs, char *huntgroup);
 static int user_find_sym(char *name, RADIUS_REQ *req, 
 			 VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
@@ -97,7 +97,7 @@ static int user_find_sym(char *name, RADIUS_REQ *req,
 int user_find_db(char *name, RADIUS_REQ *req,
 			VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 #endif
-static PAIR_LIST *file_read(int cf_file, char *name);
+static MATCHING_RULE *file_read(int cf_file, char *name);
 
 int
 comp_op(op, result)
@@ -195,36 +195,36 @@ free_user_entry(sym)
 
 struct temp_list {
 	int cf_file;
-	PAIR_LIST *head;
-	PAIR_LIST *tail;
+	MATCHING_RULE *head;
+	MATCHING_RULE *tail;
 };
 
 int
-add_pairlist(closure, filename, line, name, check, reply)
+add_pairlist(closure, filename, line, name, lhs, rhs)
 	struct temp_list *closure;
 	char *filename;
 	int line;
 	char *name;
-	VALUE_PAIR *check, *reply;
+	VALUE_PAIR *lhs, *rhs;
 {
-	PAIR_LIST *pl;
+	MATCHING_RULE *pl;
 	
-	if ((check == NULL && reply == NULL)
-	    || fix_check_pairs(closure->cf_file, filename, line, name, &check)
-	    || fix_reply_pairs(closure->cf_file, filename, line, name, &reply)) {
+	if ((lhs == NULL && rhs == NULL)
+	    || fix_check_pairs(closure->cf_file, filename, line, name, &lhs)
+	    || fix_reply_pairs(closure->cf_file, filename, line, name, &rhs)) {
 		radlog(L_ERR,
 		       _("%s:%d: discarding entry `%s'"),
 		       filename,
 		       line, name);
-		avl_free(check);
-		avl_free(reply);
+		avl_free(lhs);
+		avl_free(rhs);
 		return 0;
 	}
 
-	pl = Alloc_entry(PAIR_LIST);
+	pl = Alloc_entry(MATCHING_RULE);
 	pl->name = estrdup(name);
-	pl->check = check;
-	pl->reply = reply;
+	pl->lhs = lhs;
+	pl->rhs = rhs;
 	pl->lineno = line;
 	if (closure->tail)
 		closure->tail->next = pl;
@@ -243,7 +243,7 @@ read_users(name)
 	return parse_file(name, user_tab, add_user_entry);
 }
 
-PAIR_LIST *
+MATCHING_RULE *
 file_read(cf_file, name)
 	int cf_file;
 	char *name;
@@ -734,7 +734,7 @@ hints_setup(req)
 	VALUE_PAIR      *name_pair;
 	VALUE_PAIR      *orig_name_pair;
 	VALUE_PAIR      *tmp;
-	PAIR_LIST	*i;
+	MATCHING_RULE	*i;
 	int		matched = 0;
 
 	if (hints == NULL)
@@ -782,20 +782,20 @@ hints_setup(req)
 		
 		debug(1, ("matched %s at hints:%d", i->name, i->lineno));
 	
-		add = avl_dup(i->reply);
+		add = avl_dup(i->rhs);
 	
 		/* See if we need to adjust the name. */
 		do_strip = 1;
-		if ((tmp = avl_find(i->reply, DA_STRIP_USER_NAME)) != NULL
-		    || (tmp = avl_find(i->check, DA_STRIP_USER_NAME)) != NULL)
+		if ((tmp = avl_find(i->rhs, DA_STRIP_USER_NAME)) != NULL
+		    || (tmp = avl_find(i->lhs, DA_STRIP_USER_NAME)) != NULL)
 			do_strip = tmp->lvalue;
 		
 		if (do_strip) 
 			replace_string(&name_pair->strvalue, newname);
 
 		/* Ok, let's see if we need to further modify the username */
-		if ((tmp = avl_find(i->reply, DA_REPLACE_USER_NAME))
-		    || (tmp = avl_find(i->check, DA_REPLACE_USER_NAME))) {
+		if ((tmp = avl_find(i->rhs, DA_REPLACE_USER_NAME))
+		    || (tmp = avl_find(i->lhs, DA_REPLACE_USER_NAME))) {
 			char *ptr;
 			
 			if (!hints_stk_ready) {
@@ -810,8 +810,8 @@ hints_setup(req)
 		}
 		
 		/* Is the rewrite function specified? */
-		if ((tmp = avl_find(i->reply, DA_REWRITE_FUNCTION))
-		    || (tmp = avl_find(i->check, DA_REWRITE_FUNCTION))) {
+		if ((tmp = avl_find(i->rhs, DA_REWRITE_FUNCTION))
+		    || (tmp = avl_find(i->lhs, DA_REWRITE_FUNCTION))) {
 			if (run_rewrite(tmp->strvalue, request_pairs)) {
 				radlog(L_ERR, _("hints:%d: %s(): not defined"),
 				       i->lineno,
@@ -835,8 +835,8 @@ hints_setup(req)
 		
                 /* Ok, let's see if we need to further check the
 		   hint's rules */
-		if (((tmp = avl_find(i->reply, DA_FALL_THROUGH)) != NULL
-		     || (tmp = avl_find(i->check, DA_FALL_THROUGH)) != NULL)
+		if (((tmp = avl_find(i->rhs, DA_FALL_THROUGH)) != NULL
+		     || (tmp = avl_find(i->lhs, DA_FALL_THROUGH)) != NULL)
 		    && tmp->lvalue)
 			continue;
 		break;
@@ -862,12 +862,12 @@ huntgroup_match(request_pairs, huntgroup)
 	VALUE_PAIR      *request_pairs;
 	char            *huntgroup;
 {
-	PAIR_LIST *pl;
+	MATCHING_RULE *pl;
 	
 	for (pl = huntgroups; pl; pl = pl->next) {
 		if (strcmp(pl->name, huntgroup) != 0)
 			continue;
-		if (paircmp(request_pairs, pl->check) == 0) {
+		if (paircmp(request_pairs, pl->lhs) == 0) {
 			debug(1, ("matched %s at huntgroups:%d",
 				 pl->name, pl->lineno));
 			break;
@@ -889,7 +889,7 @@ huntgroup_access(radreq)
 	RADIUS_REQ *radreq;
 {
 	VALUE_PAIR      *request_pairs, *pair;
-	PAIR_LIST	*pl;
+	MATCHING_RULE	*pl;
 	int		r = 1;
 
 	if (huntgroups == NULL)
@@ -900,16 +900,16 @@ huntgroup_access(radreq)
 		/*
 		 *	See if this entry matches.
 		 */
-		if (paircmp(request_pairs, pl->check) != 0)
+		if (paircmp(request_pairs, pl->lhs) != 0)
 			continue;
 		debug(1, ("matched huntgroup at huntgroups:%d", pl->lineno));
-		r = paircmp(request_pairs, pl->reply) == 0;
+		r = paircmp(request_pairs, pl->rhs) == 0;
 		break;
 	}
 
 #ifdef DA_REWRITE_FUNCTION
 	if (pl &&
-	    (pair = avl_find(pl->check, DA_REWRITE_FUNCTION)) != NULL) {
+	    (pair = avl_find(pl->lhs, DA_REWRITE_FUNCTION)) != NULL) {
 		if (run_rewrite(pair->strvalue, radreq->request)) {
 			radlog(L_ERR, _("huntgroups:%d: %s(): not defined"),
 			       pl->lineno,
@@ -1604,21 +1604,21 @@ paircmp(request, check)
 }
 
 /*
- * Free a PAIR_LIST
+ * Free a MATCHING_RULE
  */
 void
-pairlist_free(pl)
-	PAIR_LIST **pl;
+matchrule_free(pl)
+	MATCHING_RULE **pl;
 {
-	PAIR_LIST *p, *next;
+	MATCHING_RULE *p, *next;
 
 	for (p = *pl; p; p = next) {
 		if (p->name)
 			efree(p->name);
-		if (p->check)
-			avl_free(p->check);
-		if (p->reply)
-			avl_free(p->reply);
+		if (p->lhs)
+			avl_free(p->lhs);
+		if (p->rhs)
+			avl_free(p->rhs);
 		next = p->next;
 		free_entry(p);
 	}
@@ -1627,7 +1627,7 @@ pairlist_free(pl)
 
 int
 hints_pairmatch(pl, req, name, ret_name)
-	PAIR_LIST *pl;
+	MATCHING_RULE *pl;
 	VALUE_PAIR *req;
 	char *name;
 	char *ret_name;
@@ -1640,7 +1640,7 @@ hints_pairmatch(pl, req, name, ret_name)
 	strncpy(username, name, AUTH_STRING_LEN);
 
 	compare = 0;
-	for (pair = pl->check; compare == 0 && pair; pair = pair->next) {
+	for (pair = pl->lhs; compare == 0 && pair; pair = pair->next) {
 		switch (pair->attribute) {
 		case DA_PREFIX:
 		case DA_SUFFIX:
@@ -1797,7 +1797,7 @@ int
 matches(req, name, pl, matchpart)
 	VALUE_PAIR *req;
 	char *name;
-	PAIR_LIST *pl;
+	MATCHING_RULE *pl;
 	char *matchpart;
 {
 	if (strncmp(pl->name, "DEFAULT", 7) == 0 ||
@@ -1904,14 +1904,14 @@ reload_data(what, do_radck)
 		break;
 		
 	case reload_huntgroups:
-		pairlist_free(&huntgroups);
+		matchrule_free(&huntgroups);
 		path = mkfilename(radius_dir, RADIUS_HUNTGROUPS);
 		huntgroups = file_read(CF_HUNTGROUPS, path);
 		efree(path);
 		break;
 		
 	case reload_hints:
-		pairlist_free(&hints);
+		matchrule_free(&hints);
 		path = mkfilename(radius_dir, RADIUS_HINTS);
 		hints = file_read(CF_HINTS, path);
 		efree(path);
@@ -1989,7 +1989,7 @@ reload_config_file(what)
 /* ****************************************************************************
  * Debugging functions
  */
-static void dump_pair_list(FILE *fp, char *header, PAIR_LIST *pl);
+static void dump_pair_list(FILE *fp, char *header, MATCHING_RULE *pl);
 
 void
 dump_pairs(fp, pair)
@@ -2055,17 +2055,17 @@ void
 dump_pair_list(fp, header, pl)
 	FILE      *fp;
 	char      *header;
-	PAIR_LIST *pl;
+	MATCHING_RULE *pl;
 {
 	fprintf(fp, "%s {\n", header);
 	for ( ; pl; pl = pl->next) {
 		fprintf(fp, "\t%s:\n", pl->name);
-		fprintf(fp, "\tcheck {\n");
-		dump_pairs(fp, pl->check);
+		fprintf(fp, "\tlhs {\n");
+		dump_pairs(fp, pl->lhs);
 		fprintf(fp, "\t}\n");
 
-		fprintf(fp, "\treply {\n");
-		dump_pairs(fp, pl->reply);
+		fprintf(fp, "\trhs {\n");
+		dump_pairs(fp, pl->rhs);
 		fprintf(fp, "\t}\n");
 	}
 	fprintf(fp, "}\n");
@@ -2077,11 +2077,11 @@ dump_user(fp, sym)
 	User_symbol *sym;
 {
 	fprintf(fp, "\t%s:\n", sym->name);
-	fprintf(fp, "\tcheck {\n");
+	fprintf(fp, "\tlhs {\n");
 	dump_pairs(fp, sym->check);
 	fprintf(fp, "\t}\n");
 
-	fprintf(fp, "\treply {\n");
+	fprintf(fp, "\trhs {\n");
 	dump_pairs(fp, sym->reply);
 	fprintf(fp, "\t}\n");
 	

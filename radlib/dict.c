@@ -193,10 +193,11 @@ parse_flags(ptr, flags, filename, line)
 		}
 		switch (*p++) {
 		case 'C':
-			*flags |= AF_CHECKLIST(i);
+		case 'L':
+			*flags |= AF_LHS(i);
 			break;
 		case '-':
-			*flags &= ~AF_CHECKLIST(i);
+			*flags &= ~AF_LHS(i);
 			break;
 		case ']':
 			p--;
@@ -209,10 +210,10 @@ parse_flags(ptr, flags, filename, line)
 		}
 		switch (*p++) {
  		case 'R':
-			*flags |= AF_REPLYLIST(i);
+			*flags |= AF_RHS(i);
 			break;
 		case '-':
-			*flags &= ~AF_REPLYLIST(i);
+			*flags &= ~AF_RHS(i);
 			break;
 		default:
 			radlog(L_ERR,
@@ -223,7 +224,7 @@ parse_flags(ptr, flags, filename, line)
 	}
   stop:
 	for (; i < CF_MAX; i++) 
-		*flags |= AF_CHECKLIST(i)|AF_REPLYLIST(i);
+		*flags |= AF_LHS(i)|AF_RHS(i);
 	*ptr = p;
 	return 0;
 }
@@ -284,14 +285,15 @@ _dict_attribute(errcnt, fc, fv, file, lineno)
 		for (p = ATTR_FLAGS; *p; p++) {
 			switch (*p) {
 			case 'C':
-				flags |= AF_CHECKLIST(CF_USERS)
-					|AF_CHECKLIST(CF_HINTS)
-					|AF_CHECKLIST(CF_HUNTGROUPS);
+			case 'L':
+				flags |= AF_LHS(CF_USERS)
+					|AF_LHS(CF_HINTS)
+					|AF_LHS(CF_HUNTGROUPS);
 				break;
 			case 'R':
-				flags |= AF_REPLYLIST(CF_USERS)
-					|AF_REPLYLIST(CF_HINTS)
-					|AF_REPLYLIST(CF_HUNTGROUPS);
+				flags |= AF_RHS(CF_USERS)
+					|AF_RHS(CF_HINTS)
+					|AF_RHS(CF_HUNTGROUPS);
 				break;
 			case '[':
 				if (parse_flags(&p, &flags, file, lineno)) {

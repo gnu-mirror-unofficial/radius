@@ -61,16 +61,16 @@ VALUE_PAIR *install_pair(char *name, int op, char *valstr);
 %type <string> user value
 %type <descr> descr
 %type <pair> npairlist pairlist pair
-%type <pair_list> entry
+%type <rule> entry
 %type <op> op
 
 %start input
 
 %union {
 	char *string;
-	PAIR_LIST *pair_list;
+	MATCHING_RULE *rule;
 	struct {
-		VALUE_PAIR *check, *reply;
+		VALUE_PAIR *lhs, *rhs;
 	} descr;
 	VALUE_PAIR *pair;
 	int op;
@@ -96,7 +96,7 @@ entry    : user descr
            {
 		   add_entry(closure,
 			     source_filename,
-			     old_lineno, $1, $2.check, $2.reply);
+			     old_lineno, $1, $2.lhs, $2.rhs);
 	   }
 	 | user error
 	   {
@@ -113,8 +113,8 @@ user     : value
 
 descr    : npairlist npairlist
            {
-		   $$.check = $1;
-		   $$.reply = $2;
+		   $$.lhs = $1;
+		   $$.rhs = $2;
 	   }
          ;
 

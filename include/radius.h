@@ -109,11 +109,11 @@ enum {
 #define CF_HUNTGROUPS 2
 #define CF_MAX        3
 
-#define AF_CHECKLIST(cf) (0x0100<<(2*cf))
-#define AF_REPLYLIST(cf) (0x0200<<(2*cf))
+#define AF_LHS(cf) (0x0100<<(2*cf))
+#define AF_RHS(cf) (0x0200<<(2*cf))
 
-#define AF_DEFAULT_FLAGS (AF_CHECKLIST(0)|AF_CHECKLIST(1)|AF_CHECKLIST(2)\
-			 |AF_REPLYLIST(0)|AF_REPLYLIST(1)|AF_REPLYLIST(2))
+#define AF_DEFAULT_FLAGS (AF_LHS(0)|AF_LHS(1)|AF_LHS(2)\
+			 |AF_RHS(0)|AF_RHS(1)|AF_RHS(2))
 #define AP_DEFAULT_ADD   AP_ADD_APPEND
 
 

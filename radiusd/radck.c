@@ -238,9 +238,9 @@ fix_check_pairs(cf_file, filename, line, name, pairs)
 		
 		dict = attr_number_to_dict(p->attribute);
 		if (dict) {
-			if (!(dict->prop & AF_CHECKLIST(cf_file))) {
+			if (!(dict->prop & AF_LHS(cf_file))) {
 				radlog(L_ERR,
-			_("%s:%d: attribute %s not allowed in check pairs"),
+			_("%s:%d: attribute %s not allowed in LHS"),
 				       filename, line, dict->name);
 				errcnt++;
 				continue;
@@ -408,9 +408,9 @@ fix_reply_pairs(cf_file, filename, line, name, pairs)
 	for (p = *pairs; p; p = p->next) {
 		dict = attr_number_to_dict(p->attribute);
 		if (dict) {
-			if (!(dict->prop & AF_REPLYLIST(cf_file))) {
+			if (!(dict->prop & AF_RHS(cf_file))) {
 				radlog(L_ERR,
-			_("%s:%d: attribute %s not allowed in reply pairs"),
+			_("%s:%d: attribute %s not allowed in RHS"),
 				       filename, line, dict->name);
 				errcnt++;
 				continue;

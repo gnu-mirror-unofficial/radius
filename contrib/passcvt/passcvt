@@ -1,0 +1,162 @@
+#! /bin/sh
+# This file is part of GNU Radius.
+# Copyright (C) 2004 Sergey Poznyakoff
+#
+# Passcvt is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+# 
+# Passcvt is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with Passcvt; if not, write to the Free Software Foundation,
+# Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
+SYSCONFDIR="/etc"
+SERVICE="Framed-PPP"
+
+usage() {
+	cat - <<-EOF
+	Usage: $0 [OPTIONS]
+	$0 -- convert user data from passwd/shadow database to a series of SQL
+	statements.
+	OPTIONS are:
+	   -g, --group GROUP-LIST      Select only users from given groups.
+	                               GROUP-LIST is a comma-separated list of
+	                               group names or IDs.
+	   -s, --service STRING        Set service name [$SERVICE]
+	   -o, --outdir DIR            Set output directory name [.]
+	   --sysconfdir DIR            Override the name of the system configuration
+	                               directory [$SYSCONFDIR]
+	   --help                      Print this help text
+	   
+	EOF
+	exit 1
+}
+
+OPT=
+optname=
+
+assign() {
+	case $1 in
+	OUTDIR|SELECT)	
+		OPT="$OPT -v $1=$2"
+		;;
+	SERVICE)
+		SERVICE=$2
+		;;
+	SYSCONFDIR)
+		SYSCONFDIR=$2
+		;;
+	esac
+}
+
+for option
+do
+    if [ -z "$optname" ]; then
+	case "$option" in
+	-o|--o|--ou|--out|--outd|--outdi|--outdir)
+		optname=OUTDIR
+		;;
+	-s|--se|--ser|--serv|--servi|--servic|--service)
+		optname=SERVICE 	
+		;;
+	--sy|--sys|--sysc|--sysco|--syscon|--sysconf|--sysconfd|--sysconfdi|--sysconfdir)
+		optname=SYSCONFDIR
+		;;
+	-g|--g|--gr|--gro|--grou|--group)
+		optname=SELECT
+		;;
+	-h|--h|--he|--hel|--help)
+		usage
+		exit 0
+		;;		
+	*)	echo "unknown argument: $option" >&2
+		exit 1;;
+	esac
+    else
+	assign $optname $option
+	optname=
+    fi
+done
+
+if [ -z "$optname" ]; then
+	:
+else	
+	echo "missing argument for $optname" >&2
+	exit 1
+fi
+
+OPT="$OPT -v SERVICE=$SERVICE"
+
+rm -f sql passwd.new shadow.new shadow.only
+umask 066
+	       	       
+(cat $SYSCONFDIR/group
+ echo "SEPARATOR"
+ cat $SYSCONFDIR/passwd
+ echo "SEPARATOR"
+ cat $SYSCONFDIR/shadow) | ${AWK:-awk} $OPT '
+BEGIN {
+	FS=":"
+	if (!OUTDIR)
+		OUTDIR="."
+	if (SELECT) {
+		n = split(SELECT,a,",");
+		for (i = 1; i <= n; i++) 
+			GROUPLIST[a[i]] = 1
+	}
+	SQLFILE=OUTDIR "/sql"
+	PWDFILE=OUTDIR "/password.new"
+	SHDFILE=OUTDIR "/shadow.new"
+	state = 0
+}
+
+function wanted_group(n) {
+	if (!SELECT)
+		return 1
+	return GROUPLIST[n]==1
+}
+
+function wanted_user(login) {
+	if (USERLIST[login] > 0)
+		return 1;
+	return wanted_group(group[login])	
+}
+
+/SEPARATOR/ { state++; next }
+
+# Read groups file
+state == 0 && (wanted_group($1) || wanted_group($3)) {
+	n = split($4,a,",")
+	for (i = 1; i <= n; i++)
+		USERLIST[a[i]]++
+	next	
+}	
+
+# Read passwd file
+state == 1 {
+	pwdent[$1] = $0
+	group[$1] = $4
+	next	
+}
+
+# Read shadow file				
+state == 2 && wanted_user($1) {
+	print "insert into pass (user_name,password,service) values(\"" $1 "\",\"" $2 "\",\"" SERVICE "\");" > SQLFILE 
+	next
+}
+
+state == 2 {
+	if (pwdent[$1]) {
+		print pwdent[$1] > PWDFILE
+		print $0 > SHDFILE
+	} else
+		print $0 > OUTDIR "/shadow.only"
+}' 
+
+# EOF

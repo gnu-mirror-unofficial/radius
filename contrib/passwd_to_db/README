@@ -1,0 +1,35 @@
+
+[Bug-gnu-radius] /etc/master.passwd -> mysql conversion tools
+     _________________________________________________________________
+
+      From: Gerald
+   Subject: [Bug-gnu-radius] /etc/master.passwd -> mysql conversion tools
+      Date: Fri, 5 Dec 2003 16:04:16 -0500 (EST)
+     _________________________________________________________________
+
+I make the recommendation quite regularly to use a mysql database instead
+of the system password file. I finished cleaning up my perl script to suck
+in a FreeBSD password file into a mysql database.
+
+mysqldump:
+
+http://kod.inch.com/radius/users.sql
+
+perl script:
+
+http://kod.inch.com/radius/passwd_to_db.pl
+
+Anyone familiar with DBI can translate that in to all of the databases
+that DBI supports, and I tried to leave it pretty easy to customize it to
+different OS's shadow password file, but I was scratching my own itch so
+it just does FreeBSD at the moment.
+
+If you want to put those in contrib you are welcome to, and I'm always
+looking for suggestions for improvement. It could probably use a little
+more error checking in some parts, but I've looked at it enough for today.
+
+The next time I have to suck a users file into a database again I'll send
+you a link to the script I write to do that as well.
+
+Gerald
+

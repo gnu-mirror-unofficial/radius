@@ -1,0 +1,134 @@
+Replied: "<garcia_j14@tsm.es> "
+Replied: Tue, 20 Jul 2004 16:05:36 EEST
+Organization: Farlep-Internet
+Received: from mezas.tsm.es (mezas.tsm.es [195.235.179.50]) 
+	by Mirddin.farlep.net with ESMTP id i6JFCo012541
+	for <gray@Mirddin.farlep.net>; Mon, 19 Jul 2004 18:12:50 +0300
+X-Mailutils-Message-Id: i6JFCo012541
+Received: from abantos.tsm.inet ([10.65.17.1])
+          by mezas.tsm.es (Lotus Domino Release 5.0.11)
+          with ESMTP id 2004071917061548:183941 ;
+          Mon, 19 Jul 2004 17:06:15 +0200 
+Sensitivity: 
+Subject: Re: [Help-gnu-radius] problem with radtest
+To: Sergey Poznyakoff <gray@Mirddin.farlep.net>
+From: garcia_j14@tsm.es
+Date: Mon, 19 Jul 2004 17:12:44 +0200
+Message-ID: <OF9F2B382E.DB999708-ONC1256ED6.0051C91C@tsm.inet>
+MIME-Version: 1.0
+X-MIMETrack: Serialize by Router on abantos/TSM(Release 5.0.11 |September 30, 2002) at
+ 19/07/2004 17:12:43,
+	Itemize by SMTP Server on mezas/SMTPTME(Release 5.0.11 |September 30, 2002) at
+ 19/07/2004 17:06:15,
+	Serialize by Router on mezas/SMTPTME(Release 5.0.11 |September 30, 2002) at
+ 19/07/2004 17:06:21
+Content-type: multipart/mixed; 
+	Boundary="0__=4EBBE445DFC24F8C8f9e8a93df938690918c4EBBE445DFC24F8C"
+Content-Disposition: inline
+X-Envelope-Date: Mon Jul 19 18:12:51 2004
+X-Envelope-Sender: garcia_j14@tsm.es
+
+--0__=4EBBE445DFC24F8C8f9e8a93df938690918c4EBBE445DFC24F8C
+Content-transfer-encoding: quoted-printable
+Content-type: text/plain; charset=iso-8859-1
+
+
+
+Gracias Sergey, he cambiado los nombres de los atributos y me ha funcio=
+nado
+perfectamente.
+
+Por cierto, he hecho un script en perl que facilita el uso del radtest,=
+ se
+basa en un fichero de configuraci=F3n en el cual se introducen los atri=
+butos
+radius y el tipo de paquete en el que se quiere enviar cada uno. Una ve=
+z
+configurado el fichero s=F3lo hay que ejecutar el script con una de las=
+
+opciones auth, start, interim o stop (el diccionario tiene que estar en=
+ el
+mismo directorio que el script) .
+Es muy sencillo pero te lo env=EDo por si crees que puede resultar =FAt=
+il.
+
+(See attached file: simula.pl)(See attached file: paquetes.conf)
+
+Un saludo.
+Jorge.
+
+Organization: Farlep-Internet
+Received: from mezas.tsm.es (mezas.tsm.es [195.235.179.50]) 
+	by Mirddin.farlep.net with ESMTP id i6KE5O019624
+	for <gray@Mirddin.farlep.net>; Tue, 20 Jul 2004 17:05:24 +0300
+X-Mailutils-Message-Id: i6KE5O019624
+Received: from abantos.tsm.inet ([10.65.17.1])
+          by mezas.tsm.es (Lotus Domino Release 5.0.11)
+          with ESMTP id 2004072015585368:221991 ;
+          Tue, 20 Jul 2004 15:58:53 +0200 
+Sensitivity: 
+Subject: Re: [Help-gnu-radius] problem with radtest
+To: Sergey Poznyakoff <gray@Mirddin.farlep.net>
+From: garcia_j14@tsm.es
+Date: Tue, 20 Jul 2004 16:05:22 +0200
+Message-ID: <OFFD399D81.DB5D0403-ONC1256ED7.004C1DBD@tsm.inet>
+MIME-Version: 1.0
+X-MIMETrack: Serialize by Router on abantos/TSM(Release 5.0.11 |September 30, 2002) at
+ 20/07/2004 16:05:22,
+	Itemize by SMTP Server on mezas/SMTPTME(Release 5.0.11 |September 30, 2002) at
+ 20/07/2004 15:58:53,
+	Serialize by Router on mezas/SMTPTME(Release 5.0.11 |September 30, 2002) at
+ 20/07/2004 15:58:55,
+	Serialize complete at 20/07/2004 15:58:55
+Content-type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from quoted-printable to 8bit by Mirddin.farlep.net id i6KE5O019624
+X-Envelope-Date: Tue Jul 20 17:05:25 2004
+X-Envelope-Sender: garcia_j14@tsm.es
+
+
+Hola Sergey,
+
+por supuesto, si quieres puedes distibuirlo bajo GPL sin ningún problema
+(me alegro de que te parezca útil).
+
+Un saludo.
+Jorge.
+
+
+
+
+
+20/07/2004 15:05
+Sergey Poznyakoff <gray@Mirddin.farlep.net>
+
+
+Destinatarios:    garcia_j14@tsm.es
+CC:
+Asunto:     Re: [Help-gnu-radius] problem with radtest
+
+
+Hola,
+
+> Por cierto, he hecho un script en perl que facilita el uso del radtest,
+se
+> basa en un fichero de configuración en el cual se introducen los
+atributos
+> radius y el tipo de paquete en el que se quiere enviar cada uno. Una vez
+> configurado el fichero sólo hay que ejecutar el script con una de las
+> opciones auth, start, interim o stop (el diccionario tiene que estar en
+el
+> mismo directorio que el script) .
+> Es muy sencillo pero te lo envío por si crees que puede resultar útil.
+
+Muchísimas gracias! Es muy interesante y seguramente puede resultar
+útil. ¿Será posible redistribuirlo bajo la licencia GPL?
+
+Saludos,
+Sergey
+
+
+
+
+
+

@@ -1,0 +1,118 @@
+This file documents `passcvt' program. See end of file for
+copying conditions.
+
+* Introduction
+
+`Passcvt' reads information from the system passwd database (i.e.
+/etc/group, /etc/passwd and /etc/shadow files) and converts it to
+a series of SQL statements that can be used to populate RADIUS
+database. The primary use of this script is to facilitate switching
+from Auth-Type=System to Auth-Type=SQL.
+
+Notice, that `passcvt' works only for systems with usual shadow password
+suite. If you are running FreeBSD or similar system, see ../passwd_to_db.
+
+* Operation
+
+Each run of `passcvt' creates following files:
+
+ sql		An SQL script that can be directly fed to mysql to
+		populate the database with the users' data
+ password.new	A password file, containing all the users that did not
+	        get to `sql'.
+ shadow.new	A shadow file, containing all the users that did not
+	        get to `sql'.
+ shadow.only    This file contains all records from the original
+                `shadow' file that did not have their counterparts in `passwd'.
+
+All these files are created in the directory specified by --outdir
+command line option, or in the current working directory if this option
+was not given.
+
+The simplest way to use `passcvt' is to run it without arguments. In this
+case it will create only `sql' file (and, eventually `shadow.only' if 
+shadow file contained some hung records). Notice that `sql' file will
+contain information about all users on the system, even `root'!
+
+The more realistic example is when you wish to put into the database only
+those users that belong to a certain group or groups. Such groups may be
+specified using --group option. For example, to move users from groups
+101 and 102 into SQL, you may run:
+
+ passcvt --group 101,102
+
+Then, examine the output files. If everything is OK, feed `sql' to `mysql'
+and replace your `/etc/passwd' and `/etc/shadow' with `passwd.new' and
+`shadow.new':
+
+$ passcvt --group 101,102
+$ ls
+password.new shadow.new sql
+$ # Examine output files!!!
+$ mysql -uUSER -pPASS RADIUS < sql
+$ cp passwd.new /etc/passwd
+$ cp shadow.new /etc/shadow
+
+* Options
+
+`Passcvt' accepts the following options (defaults are given in brackets):
+
+   -g, --group GROUP-LIST      Select only users from given groups.
+                               GROUP-LIST is a comma-separated list of
+                               group names or IDs.
+   -s, --service STRING        Set service name [Framed-PPP]
+   -o, --outdir DIR            Set output directory name [.]
+   --sysconfdir DIR            Override the name of the system configuration
+                               directory [/etc]
+   --help                      Print the short help summary
+
+* Caveats
+
+** Do not use passcvt on FreeBSD and similar systems. Use passwd_to_db
+instead (see contrib/passwd_to_db).
+** You have to be root to access /etc/shadow
+** For security reasons, all output files are created with permissions 0600
+** Carefully examine passwd.new and shadow.new before copying them to
+/etc/passwd and /etc/shadow.
+** Pay special attention to shadow.only file. Its presense indicates that
+your /etc/passwd was not in sync with /etc/shadow.
+
+* License
+
+Passcvt is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 2 of the License, or
+(at your option) any later version.
+ 
+Passcvt is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Passcvt; if not, write to the Free Software Foundation,
+Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA. */
+
+
+* Copyright information:
+
+Copyright (C) 2004 Free Software Foundation, Inc.
+
+   Permission is granted to anyone to make or distribute verbatim copies
+   of this document as received, in any medium, provided that the
+   copyright notice and this permission notice are preserved,
+   thus giving the recipient permission to redistribute in turn.
+
+   Permission is granted to distribute modified versions
+   of this document, or of portions of it,
+   under the above conditions, provided also that they
+   carry prominent notices stating who last changed them.
+
+
+Local Variables:
+mode: outline
+paragraph-separate: "[ 	]*$"
+version-control: never
+End:
+
+

@@ -1,0 +1,58 @@
+	The WEB-RADACT interface.
+
+
+  This is a web interface to GNU Radius accounting database. It
+  displays the entries from MySQL database selected by the range
+  of date/time of call and possibly a user name. The entries can
+  be sorted by any field either in ascending or in descending
+  order.
+
+  1. Requirements
+  ===============
+
+  The system where you install WEB-RADACT should be running an
+  http server. It should have perl interpreter at least version
+  5.005 with DBI and Mysql perl modules installed.
+
+  2. Installation
+  ===============
+
+  To install WEB-RADACT, you first need to create in your radius
+  database a table containing title strings for the MySQL columns
+  you wish to see listed. The table should be named `call_title'.
+  The sample call_title tables are available in files call_table.en
+  and call_table.es. These are constructed to be used with the call
+  table structure desrcibed in the distributed raddb/sqlserver file.
+  You can create a table by specifying in your command line:
+
+	  mysql [OPTIONS] DBNAME < call_table.es
+
+  where OPTIONS are any optional arguments needed at your site and
+  DBNAME is the database name you have selected for your radius database.
+
+  Copy radact.cgi file to your cgi-bin directory and edit variables
+  $mysql_login, $mysql_pass, $mysql_table and  $mysql_dsn to suit
+  your needs. The file should have executable permissions set.
+
+  Copy file radius.css to your DocumentRoot directory.
+
+  3. Customization
+  =================
+
+  The number and order of fields to display can be specified by simply
+  editing table call_title. The fields are displayed in the order they
+  appear in this table.
+  Currently WEB-RADACT supports two languages: Spanish and English.
+  It can be easily configured to any other language: all you need to do
+  is to store translated column names in column `title' of the table
+  `call_title' and change variables @mesesNom (radact.cgi:60) and
+  %lang (radact.cgi:66) to contain strings in your native language.  
+  When you add some columns to your radius accounting table and wish
+  them to appear in the WEB-RADACT be sure to add appropriate records
+  to `call_title' table. 
+
+
+
+
+
+

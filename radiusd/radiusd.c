@@ -486,6 +486,8 @@ rad_daemon()
 	}
 	efree(p);
 
+	/* FIXME: Probably this is not needed, since we got rid
+	   of debug_pair(). But it will hang aroung for a while */
 	if (!foreground) {
 		char *p = mkfilename(radlog_dir, "radius.stderr");
 		t = open(p, O_CREAT|O_WRONLY, 0644);

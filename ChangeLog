@@ -1,3 +1,21 @@
+2001-12-18 Sergey Poznyakoff
+
+	* radiusd/radutil.c: Escape '\'', '"' and '\\' in radius_xlat.
+	  Thanks to Michael Samuel for noticing.
+
+	* radtest/gram.y: free unused memory.
+	* radtest/main.c: Introduced positional parameters. Changed
+	  invocation syntax: input filename must be specified with
+	  -f (--file) option. This also toggles shell mode. Any
+	  surplus words in the command line are assigned to positional
+	  parameters.
+	* radtest/radtest.h: Introduced positional parameters.
+	* radtest/input.l: Introduced positional parameters.
+	  Provided rudimentary default value substitution for
+	  variables and positional parameters.
+	
+	* radscripts/radauth.m4: Reflect new radtest syntax.
+	
 2001-12-16 Sergey Poznyakoff
 
 	* README: Updated.

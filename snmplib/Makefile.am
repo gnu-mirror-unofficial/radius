@@ -18,7 +18,7 @@ EXTRA_DIST=COPYING.LIB README
 noinst_LIBRARIES=libsnmp.a
 libsnmp_a_SOURCES=asn1.c snmp_mem.c snmp_oid.c snmp_pdu.c \
                   snmp_recv.c snmp_send.c snmp_sess.c snmp_var.c \
-                  snmp_err.c
+                  snmp_err.c snmp_mib.c
 
 INCLUDES= -I$(srcdir) -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp @INCLUDEPATH@
 

@@ -1,3 +1,11 @@
+2004-03-02  Sergey Poznyakoff
+
+	* raddb/dict/standard (CHAP-Password): Removed 'E' marker.
+	* radiusd/testsuite/raddb/users.in (chap): New user for
+	testing CHAP authentication
+	* radiusd/testsuite/radiusd/proxy.exp: Added CHAP test
+	* radiusd/testsuite/radiusd/radiusd.exp: Likewise
+
 2004-02-27  Sergey Poznyakoff
 
 	* radiusd/rewrite.y (input): Bugfix.

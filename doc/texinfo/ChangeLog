@@ -1,3 +1,7 @@
+2004-03-02  Sergey Poznyakoff
+
+	* extensions.texi: Minor fix
+
 2004-02-27  Sergey Poznyakoff
 
 	* extensions.texi (Built-in Functions): Documented gettext

@@ -1,3 +1,17 @@
+2003-06-10  Sergey Poznyakoff
+
+	* include/radiusd.h (struct request_class.xmit)
+	(radius_req_xmit, proxy_retry): Changed declaration.
+	* lib/realms.c (_parse_server): Bugfix.
+	* radiusd/proxy.c (proxy_retry): Rewritten
+	* radiusd/radius.c (radius_req_xmit): Rewritten
+	* radiusd/request.c (request_free,request_xmit)
+	(request_forward,_request_iterator): Updated.
+	* radiusd/rpp.c (rpp_request_handler): Use new
+	reply structure.
+	(rpp_update): New function.
+	* radiusd/stat.c (shmem_alloc): Bugfix.
+	
 2003-06-07  Sergey Poznyakoff 
 
 	* include/list.h (list_insert_sorted): New function.

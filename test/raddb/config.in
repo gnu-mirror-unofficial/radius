@@ -75,7 +75,7 @@ filters {
 			wait-reply yes;
 	        };
 		acct {
-			input-format "ACCT%C{Acct-Status-Type} %C{User-Name}"
+			input-format "ACCT%C{Acct-Status-Type} %C{User-Name}";
 			wait-reply yes;
 		};
 	};

@@ -1,3 +1,11 @@
+2002-03-04  Sergey Poznyakoff  <gray@Mirddin.farlep.net>
+
++	* snmplib/asn1.c (asn_decode_int): Removed count > intsize
+	  limitation: some hosts return 5 bytes of information (leading 0).
+	* include/radiusd.h: include <signal.h>
+	* radlib/avl.c (avp_dup): Duplicate string values of attributes
+	  with deferred evaluation.
+	
 2002-03-04  Sergey Poznyakoff
 
 	* radiusd/radiusd.c (rad_request_handle): Do not raise
@@ -6,6 +14,13 @@
 	* radiusd/request.c (request_get): Mark retrieved record with
 	  RS_PENDING flag. Added debug logs.
 	* radiusd/scheme.c: Reorganized inter-thread communication.
+
+2002-02-26  Sergey Poznyakoff
+
++	* radiusd/radius.c (rad_send_reply): Fixed memory leak
+	  on reject packets. 
+	* radiusd/request.c (request_thread0): Force async cancel type.
+	  (request_handle): Bugfix: set child_id.
 
 2002-02-25  Sergey Poznyakoff 
 
@@ -17,7 +32,7 @@
 	
 	* radiusd/auth.c (sfn_eval_reply): Free strvalue before
 	  assigning evaluated value. This caused memory leaks.
-	* radiusd/config.y (acct_def productions): Bugfix: R_AUTH
++	* radiusd/config.y (acct_def productions): Bugfix: R_AUTH
 	  was used instead of R_ACCT.
 
 	* radiusd/stat.c: Thread safety: mutexes around critical sections.

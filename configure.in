@@ -444,12 +444,12 @@ AC_ARG_ENABLE(snmp,
 	esac])
 	
 ## **************
-## TTL
+## TTL -- retained for backward compatibility.
 ## **************
 
 USE_NOTIFY=no
 AC_ARG_ENABLE(notify,
-	[  --enable-notify	         enable TTL notification],
+	[],
 	[case $enableval in
 		yes)		USE_NOTIFY=yes;;
 		no)		;;

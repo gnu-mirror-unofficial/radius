@@ -99,7 +99,7 @@ typedef struct client {
 	struct client		*next;
 	UINT4			ipaddr;
 	char			longname[MAX_LONGNAME+1];
-	u_char			secret[AUTH_PASS_LEN];
+	u_char			*secret;
 	char			shortname[MAX_SHORTNAME+1];
 } CLIENT;
 

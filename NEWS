@@ -1,3 +1,4 @@
+Shared secrets of arbitrary length are allowed.
 Passwords longer than 16 bytes are allowed.
 
 Client package

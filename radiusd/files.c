@@ -91,7 +91,6 @@ static int huntgroup_paircmp(VALUE_PAIR *request, VALUE_PAIR *check);
 static void pairlist_free(PAIR_LIST **pl);
 static int matches(VALUE_PAIR *req, char *name, PAIR_LIST *pl, char *matchpart);
 static int huntgroup_match(VALUE_PAIR *request_pairs, char *huntgroup);
-static void clients_free(CLIENT *cl);
 static int user_find_sym(char *name, RADIUS_REQ *req, 
 			 VALUE_PAIR **check_pairs, VALUE_PAIR **reply_pairs);
 #ifdef USE_DBM
@@ -1055,7 +1054,7 @@ read_clients_entry(unused, fc, fv, file, lineno)
 	cp = Alloc_entry(CLIENT);
 
 	cp->ipaddr = get_ipaddr(fv[0]);
-	STRING_COPY(cp->secret, fv[1]);
+	cp->secret = estrdup(fv[1]);
 	if (fc == 3)
 		STRING_COPY(cp->shortname, fv[2]);
 	STRING_COPY(cp->longname, ip_hostname(cp->ipaddr));
@@ -1066,6 +1065,13 @@ read_clients_entry(unused, fc, fv, file, lineno)
 	return 0;
 }
 
+static void
+client_free(cl)
+	CLIENT *cl;
+{
+	efree(cl->secret);
+}
+
 /*
  * Read the clients file.
  */
@@ -1073,7 +1079,7 @@ int
 read_clients_file(file)
 	char *file;
 {
-	free_slist((struct slist*)clients, NULL);
+	free_slist((struct slist*)clients, client_free);
 	clients = NULL;
 
 	return read_raddb_file(file, 1, 3, read_clients_entry, NULL);

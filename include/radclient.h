@@ -26,7 +26,7 @@ typedef struct server {
 	UINT4  addr;
 	char   *name;
 	int    port[PORT_MAX];
-	char   secret[AUTH_PASS_LEN+1];
+	char   *secret;
 } SERVER;
 
 typedef struct {

@@ -170,10 +170,9 @@ scheme_to_server(LIST, func)
 			       scm);
 
 	scm = SCM_CADDR(LIST);
-	SCM_ASSERT(SCM_NIMP(scm) && SCM_STRINGP(scm) &&
-		   SCM_LENGTH(scm) <= AUTH_PASS_LEN,
+	SCM_ASSERT(SCM_NIMP(scm) && SCM_STRINGP(scm),
 		   scm, SCM_ARG1, func);
-	strncpy(serv.secret, SCM_CHARS(scm), sizeof(serv.secret));
+	serv.secret = SCM_CHARS(scm);
 
 	scm = SCM_CADDDR(LIST);
 	SCM_ASSERT(SCM_IMP(scm) && SCM_INUMP(scm),

@@ -506,11 +506,11 @@ char *nas_request_to_name(RADIUS_REQ *radreq);
 
 
 /* files.c */
-int		user_find(char *name, VALUE_PAIR *,
-				VALUE_PAIR **, VALUE_PAIR **);
+int		user_find(char *name, RADIUS_REQ *,
+			  VALUE_PAIR **, VALUE_PAIR **);
 int		userparse(char *buf, VALUE_PAIR **first_pair, char **errmsg);
 void		presuf_setup(VALUE_PAIR *request_pairs);
-int		hints_setup(VALUE_PAIR *request_pairs);
+int		hints_setup(RADIUS_REQ *request);
 int		huntgroup_access(RADIUS_REQ *radreq);
 CLIENT		*client_lookup_ip(UINT4 ipno);
 char		*client_lookup_name(UINT4 ipno);
@@ -558,8 +558,8 @@ int  rad_check_password(RADIUS_REQ *radreq, int activefd,
 			u_char *pw_digest, char **user_msg, char *userpass);
 
 /* exec.c */
-int		radius_exec_program(char *, VALUE_PAIR *,
-				    VALUE_PAIR **, int, char **user_msg);
+int radius_exec_program(char *, RADIUS_REQ *, VALUE_PAIR **,
+			int, char **user_msg);
 
 /* menu.c */
 void process_menu(RADIUS_REQ *radreq, int fd, u_char *pw_digest);
@@ -645,7 +645,7 @@ int snmp_answer(struct snmp_req *req, int fd);
 	
 /* radutil.c */
 char *radius_xlate(struct obstack *obp, char *str,
-		   VALUE_PAIR *req, VALUE_PAIR *reply);
+		   RADIUS_REQ *req, VALUE_PAIR *reply_pairs);
 
 /* intl.c */
 void app_setup();

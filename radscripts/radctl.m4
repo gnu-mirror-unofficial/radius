@@ -25,7 +25,7 @@ PATH=/bin:/usr/bin:/usr/ucb:$PATH; export PATH
 
 usage() {
 	cat - <<EOF
-usage: $0 {start|stop|restart|reload|which}
+usage: $0 {start|stop|restart|reload|which|dump}
 EOF
 	exit 0
 }
@@ -78,6 +78,13 @@ chan_signal() {
 			SHIFT
 			start $*;;
 
+		dump)
+                        TEST($RUNNING -eq 0) && {
+                                echo $PROCESS
+                                exit 1
+                        }
+			kill -USR2 $PID && echo "Dumping users database";;
+			
 		*)	usage;;
 	esac
 

@@ -1,6 +1,6 @@
 .\" $Id$
 .so config.so
-.TH BUILDDBM 8 "\*(DA" "FSF"
+.TH BUILDDBM 8 "\*(DA" "GNU Radius"
 .SH NAME
 builddbm - build a DBM version of Radius users database
 .SH SYNOPSIS

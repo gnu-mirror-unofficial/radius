@@ -1,6 +1,6 @@
 .\" $Id$
 .so config.so
-.TH radctl 8 "\*(DA" "FSF"
+.TH radctl 8 "\*(DA" "GNU Radius"
 .SH NAME
 radctl - Radius daemon control interface
 .SH SYNOPSIS

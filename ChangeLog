@@ -1,5 +1,21 @@
 2003-10-16  Sergey Poznyakoff
 
+	* radiusd/rpp.c (rpp_request_handler): Minor fix
+
+	* doc/man/config.so.in: Minor fix.
+	* doc/man/builddbm.8.man: Remove obsolete description, refer
+	to the texinfo docs instead.
+	* doc/man/radgrep.1.man: Likewise.
+	* doc/man/radlast.1.man: Likewise.
+	* doc/man/raduse.1.man: Likewise.
+	* doc/man/radzap.8.man: Likewise.
+	* doc/man/radctl.8.man: Likewise.
+	* doc/man/radiusd.8.man: Likewise.
+	* doc/man/radping.8.man: Likewise.
+	* doc/man/radwho.1.man: Likewise.
+
+2003-10-16  Sergey Poznyakoff
+
 	* configure.ac: Raised patchlevel to 91
 	* NEWS: Updated
 	* TODO: Updated

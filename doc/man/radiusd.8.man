@@ -1,6 +1,6 @@
 .\" $Id$
 .so config.so
-.TH Radiusd 8 "\*(DA" "FSF"
+.TH Radiusd 8 "\*(DA" "GNU Radius"
 .SH NAME
 radiusd - Authentication and accounting server
 .SH SYNOPSIS

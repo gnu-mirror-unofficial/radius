@@ -1,6 +1,6 @@
 .\" $Id$
 .so config.so
-.TH radwho 1 "\*(DA" "FSF"
+.TH radwho 1 "\*(DA" "GNU Radius"
 .SH NAME
 radwho - display who is logged on by the Radius
 

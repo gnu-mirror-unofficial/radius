@@ -1,6 +1,6 @@
 .\" $Id$
 .so config.so
-.TH radgrep 1 "\*(DA" "FSF"
+.TH radgrep 1 "\*(DA" "GNU Radius"
 .SH NAME
 radgrep - find a user by regular expression
 

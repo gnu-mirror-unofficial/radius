@@ -1,6 +1,6 @@
 .\" $Id$
 .so config.so
-.TH radlast 1 "\*(DA" "FSF"
+.TH radlast 1 "\*(DA" "GNU Radius"
 .SH NAME
 radlast - report last logins from Radius database.
 .SH SYNOPSIS

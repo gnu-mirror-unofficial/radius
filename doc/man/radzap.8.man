@@ -1,6 +1,6 @@
 .\" $Id$
 .so config.so
-.TH radzap 8 "\*(DA" "FSF"
+.TH radzap 8 "\*(DA" "GNU Radius"
 .SH NAME
 radzap - delete Radius login record.
 

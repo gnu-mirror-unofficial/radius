@@ -1,6 +1,6 @@
 .\" $Id$
 .so config.so
-.TH radping 8 "\*(DA" "FSF"
+.TH radping 8 "\*(DA" "GNU Radius"
 .SH NAME
 radping - send ICMP ECHO_REQUEST packets to a dial-up host.
 

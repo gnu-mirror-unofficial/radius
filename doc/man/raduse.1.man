@@ -1,6 +1,6 @@
 .\" $Id$
 .so config.so
-.TH raduse 1 "\*(DA" "FSF"
+.TH raduse 1 "\*(DA" "GNU Radius"
 .SH NAME
 raduse 
 .SH WARNING

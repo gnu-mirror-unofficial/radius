@@ -86,7 +86,7 @@ pipe_read(int fd, void *ptr, size_t size, struct timeval *tv)
 				data += rc;
 				size -= rc;
 				rdbytes += rc;
-			} else
+			} else if (errno != EINTR)
 				break;
 		} while (size > 0);
 		return rdbytes;

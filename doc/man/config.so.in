@@ -2,7 +2,20 @@
 .ds RL @RADLOG_DIR@
 .ds RP @RADPID_DIR@
 .ds AU Sergey Poznyakoff \fB<\fRgray@gnu.org\fB>\fR
-.ds DA December 27, 2001
+.if \n(mo=1 .ds mo January
+.if \n(mo=2 .ds mo February
+.if \n(mo=3 .ds mo March
+.if \n(mo=4 .ds mo April
+.if \n(mo=5 .ds mo May
+.if \n(mo=6 .ds mo June
+.if \n(mo=7 .ds mo July
+.if \n(mo=8 .ds mo August
+.if \n(mo=9 .ds mo September
+.if \n(mo=10 .ds mo October
+.if \n(mo=11 .ds mo November
+.if \n(mo=12 .ds mo December
+.nr y4 \n(yr+1900
+.ds DA \*(mo \n(dy, \n(y4
 .de De
 GNU Radius tools are fully documented in the texinfo documentation.
 To access the help from your command line, type

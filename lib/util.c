@@ -38,6 +38,7 @@
 #include <grp.h>
 #include <radius.h>
 #include <checkrad.h>
+#include <obstack1.h>
 
 RADIUS_REQ *
 radreq_alloc()
@@ -173,7 +174,7 @@ mkfilename3(char *dir, char *subdir, char *name)
 int
 backslash(int c)
 {
-        static char transtab[] = "b\bf\fn\nr\rt\t";
+        static char transtab[] = "a\ab\bf\fn\nr\rt\t";
         char *p;
 
         for (p = transtab; *p; p += 2) {
@@ -181,6 +182,66 @@ backslash(int c)
                         return p[1];
         }
         return c;
+}
+
+#define to_num(c) \
+  (isdigit(c) ? c - '0' : (isxdigit(c) ? toupper(c) - 'A' + 10 : -1 ))
+
+void
+obstack_grow_backslash_num(struct obstack *stk, char *text, int len, int base)
+{
+	int i;
+	int c = 0;
+
+	for (i = len-1; i >= 0 && text[i] != '\\'; i--)
+		;
+	if (i)
+		obstack_grow(stk, text, i);
+	if (base == 16)
+		i++;
+	for (i++; i < len; i++) 
+		c = c*base + to_num(text[i]);
+	obstack_1grow(stk, c);
+}
+
+
+void
+obstack_grow_backslash(struct obstack *stk, char *text, char **endp)
+{
+	int c, i;
+	
+	switch (text[1]) {
+	case '\\':
+		obstack_1grow(stk, text[1]);
+		text += 2;
+		break;
+		
+	default:
+		c = backslash(text[1]);
+		obstack_1grow(stk, c);
+		text += 2;
+		break;
+		
+	case '0':
+		for (i = 0; i < 3 && isdigit(text[i+1]) && text[i+1] < '8'; i++)
+			;
+		if (i != 3)
+			break;
+		obstack_grow_backslash_num(stk, text, 4, 8);
+		text += 4;
+		break;
+		
+	case 'x':
+	case 'X':
+		for (i = 0; i < 2 && isxdigit(text[i+2]); i++)
+			;
+		if (i != 2)
+			break;
+		obstack_grow_backslash_num(stk, text, 3, 16);
+		text += 3;
+		break;
+	}
+	*endp = text;
 }
 
 void

@@ -1,5 +1,14 @@
-dnl * Process this file with autoconf to produce a configure script.
-dnl * $Id$
+# $Id$
+# This file is part of GNU RADIUS.
+# Copyright (C) 2001, Sergey Poznyakoff
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This program is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 AC_REVISION($Revision$)
 AC_INIT(radiusd/radiusd.c)
 AC_CANONICAL_SYSTEM
@@ -302,7 +311,7 @@ AC_ARG_ENABLE(sql,
 case "$USE_SQL" in
 	"SQL_MYSQL")
 		old_LIBS=$LIBS
-		STR="-L /usr/local/lib/mysql -L /usr/lib/mysql -lm -lmysqlclient"	
+		STR="-L/usr/local/lib/mysql -L/usr/lib/mysql -lm -lmysqlclient"	
 		LIBS="$LIBS $STR"	
 		AC_CHECK_LIB(mysqlclient, mysql_connect,
 				[ AC_DEFINE(HAVE_LIBMYSQL) 
@@ -314,7 +323,7 @@ case "$USE_SQL" in
 		;;
 	"SQL_POSTGRES")
 		old_LIBS=$LIBS
-		STR="-L /usr/local/pgsql/lib -lpq"
+		STR="-L/usr/local/pgsql/lib -lpq"
 		LIBS="$LIBS $STR"
 		AC_CHECK_LIB(pq, PQconnectStart,
 				[ AC_DEFINE(HAVE_LIBPQ) 

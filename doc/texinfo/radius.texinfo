@@ -1256,8 +1256,7 @@ log channels.
 @c ** --dbm option (radiusd)
 @item -b
 @itemx --dbm
-Enable DBM support. When used twice, allows to use both
-@file{raddb/users} file and DBM database.
+Enable DBM support.
 
 @c ** -d (radiusd)
 @c ** --config-directory option (radiusd)
@@ -1721,7 +1720,7 @@ Sets the hostname or IP address of the notification listener.
 
 @subheading Syntax:
 @example
-usedbm ( never | only | also ) ;
+usedbm ( yes | no ) ;
 @end example
 
 @subheading Usage
@@ -1729,14 +1728,12 @@ The @code{usedbm} statement determines whether the DBM support should
 be enabled.
 
 @table @code
-@item never
+@item no
 Do not use DBM support at all.
 
-@item only
+@item yes
 Use only the DBM database and ignore @file{raddb/users}.
 
-@item also
-Use both @file{raddb/users} and DBM.
 @end table
 
 @comment **L3***************************************************************

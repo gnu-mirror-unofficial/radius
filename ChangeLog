@@ -1,7 +1,15 @@
-2001-01-02  gray  <gray@farlep.net>
+2001-03-05  gray  <gray@farlep.net>
+	Fixed DBM file handling. Now it provides the same functionality
+	as plaintext user database.
+
+2001-03-04  gray  <gray@farlep.net>
+	Introduced Auth-Data attribute. Currently it is handled
+	by Pam and SQL Auth-Types.
+
+2001-03-02  gray  <gray@farlep.net>
 	Introduced HAVE_SETEUID switches to radiusd/exec.c.
 
-2001-01-01  gray  <gray@farlep.net>
+2001-03-01  gray  <gray@farlep.net>
 	Changed setlinebuf() in radiusd/radiusd.c to setvbuf(). Added
 	check for <sys/select.h> needed by AIX. Reported by Alexandre Oliva.
 

@@ -7,7 +7,7 @@ radiusd - Authentication and accounting server
 \fBradiusd\fR
 [\fB-A\fR]
 [\fB-a\fR acct_dir]
-[\fB-b\fR[\fBb\fR]]
+[\fB-b\fR]
 [\fB-d\fR config_dir]
 [\fB-f\fR]
 [\fB-l\fR log_dir]
@@ -69,15 +69,6 @@ database (\fB\*(RD/users.db\fR or \fB\*(RD/users.pag\fR,
 Note that this makes the processing of each authentication request
 \fBmuch more slower\fR when the number of users grows beyong some
 limit.
-.IP
-If this option is used twice, i.e. [-\fBbb\fR], it instructs the
-server to use both databases. In this case it first searches the login
-name in the internal hash (== in the plain text database), and if
-not found there, the server looks up the DBM database. This can be
-used to use the plain text database for keeping the information for those
-users that require the quickest possible auhtentication, and the DBM files
-to keep the information about those that can tolerate some delays in
-processing.
 .IP -d
 Specifies alternate name for the configuration
 directory. \fBRadiusd\fR looks there for its configuration files. It
@@ -134,7 +125,7 @@ accounting information.
 Or users.dir, users.pag pair. The DBM version of the users
 database. This is used when the server is compiled with
 \fB--enable-dbm\fR option and either \fB-b\fR flag is specified in the
-command line, or one of \fBusedbm always\fR, \fBusedbm also\fR options is
+command line, or one of \fBusedbm yes\fR option is
 used in \fBconfig\fR file.
 .IP radius.deny
 The list of users whose access is denied for some reason.

@@ -126,15 +126,16 @@ distribution version number. To enable it, modify the following files:
 Add the following statement:
 
 guile {
-      load "ipalloc.scm";
+      load-module "ipalloc";
 };
 
 ** raddb/users
 
 Add the following entry:
 
-BEGIN   Scheme-Procedure = "ip-alloc"
-	Fall-Through = Yes
+BEGIN	NULL
+        Scheme-Procedure = "ip-alloc",
+	        Fall-Through = Yes
 
 This will ensure that the ip-alloc procedure will be called by each user
 profile.
@@ -143,9 +144,18 @@ profile.
 
 To the beginning of file add the following entry:
 
-DEFAULT Scheme-Acct-Procedure = "ip-alloc-update"
-	Fall-Through = Yes
+DEFAULT NULL
+	Scheme-Acct-Procedure = "ip-alloc-update",
+	        Fall-Through = Yes
 
+Notice that ip-alloc-update relies on the presence
+of NAS-IP-Address attribute. If it is not the case, use
+restore_nas_ip() Rewrite function (see examples/nas_ip.rw):
+
+DEFAULT Rewrite-Function = restore_nas_ip
+        Scheme-Acct-Procedure = "ip-alloc-update",
+	        Fall-Through = Yes
+		
 * Configuring ipalloc.scm
 
 ** Number of attempts and the delay between them.
@@ -157,7 +167,7 @@ The variable `ipalloc-sleep-time' sets the delay in microseconds
 between the two consecutive attempts.
 
 
-  Copyright (C) 2003 Free Software Foundation
+  Copyright (C) 2003, 2004 Free Software Foundation
 
   Permission is granted to copy, distribute and/or modify this
   document under the terms of the GNU Free Documentation License,

@@ -1,3 +1,13 @@
+2004-05-02  Sergey Poznyakoff
+
+	* NEWS: Raised version number to 1.2.91
+	* radscm/ipalloc.scm: Rewritten as Guile module
+	* radscm/radiusd.scm.in: Export SQL_AUTH and SQL_ACCT
+	* doc/README.ipalloc: Updated
+	* lib/radargp.c: Initialize program_invocation_name
+	and program_invocation_short_name if necessary
+	* radiusd/radiusd.c (radiusd_daemon): Fixed the comment
+	
 2004-05-01  Sergey Poznyakoff
 
 	* configure.ac: New variable RADIUS_INCLUDE_PATH keeps the

@@ -1,3 +1,10 @@
+2002-07-05  Sergey Poznyakoff 
+
+	* sql/disp.c: Additional checks on arguments
+	* db/pgsql.m4: Bugfix.
+	* radiusd/sql.c (rad_sql_checkgroup): Install an additional
+	  cleanup handler.
+
 2002-07-03  Sergey Poznyakoff
 
 	* radiusd/radiusd.c (reread_config): Call scheme_before_reconfig()

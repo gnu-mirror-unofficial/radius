@@ -1,3 +1,10 @@
+2001-09-09 Sergey Poznyakoff
+
+	* configure.in: AC_SUBST for RADSCM_BUILT_SOURCES and 
+	GUILE_PROCEDURES_TXT.
+	* radscm/Makefile.am: Removed extra dependencies that prevented
+	the package from compiling without guile.
+	
 2001-09-06 Sergey Poznyakoff
 
 	* radiusd/radiusd.c: Hold previous value of server_stat->auth.status

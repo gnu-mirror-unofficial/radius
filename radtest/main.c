@@ -180,7 +180,7 @@ main(int argc, char **argv)
                 int i, argc;
                 char **argv;
 
-                if (argcv_get(server, ":", &argc, &argv)) {
+                if (argcv_get(server, ":", NULL, &argc, &argv)) {
                         radlog(L_ERR, "can't parse server definition");
                         exit(1);
                 }

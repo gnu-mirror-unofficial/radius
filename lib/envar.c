@@ -39,7 +39,7 @@ envar_parse_internal(char *str, RAD_LIST **plist)
         int argc;
         char **argv;
 
-        if (argcv_get(str, ",", &argc, &argv)) {
+        if (argcv_get(str, ",", NULL, &argc, &argv)) {
                 if (argv)
                         argcv_free(argc, argv);
                 return;

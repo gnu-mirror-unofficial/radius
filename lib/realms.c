@@ -70,7 +70,7 @@ _parse_server_list(RADIUS_SERVER_QUEUE *qp, char *str, struct _parse_data *pd)
 	int i, argc;
 	char **argv;
 
-	if (argcv_get(str, ",:", &argc, &argv)) 
+	if (argcv_get(str, ",:", NULL, &argc, &argv)) 
 		return 1;
 
 	for (i = 0; i < argc; i++) {

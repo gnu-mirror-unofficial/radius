@@ -136,7 +136,7 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
 
                 debug(1, ("command line: %s", ptr));
 
-                argcv_get(ptr, "", &argc, &argv);
+                argcv_get(ptr, "", NULL, &argc, &argv);
                 
                 if (exec_wait) {
                         if (close(p[0]))
@@ -742,7 +742,7 @@ exec_path_handler(int argc, cfg_value_t *argv,
 		return 0;
 	}
 	
-	if (argcv_get(argv[1].v.string, "",
+	if (argcv_get(argv[1].v.string, "", NULL,
 		      &filter_symbol.argc, &filter_symbol.argv)) {
 		argcv_free(filter_symbol.argc, filter_symbol.argv);
 		filter_symbol.argc = 0;

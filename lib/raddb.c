@@ -68,7 +68,7 @@ read_raddb_file(char *filename, int vital, int (*fun)(), void *closure)
 		}
 		if (lineptr[0] == 0)
 			continue;
-                if (argcv_get(lineptr, "", &argc, &argv) == 0) {
+                if (argcv_get(lineptr, "", NULL, &argc, &argv) == 0) {
                         int n;
                         for (n = 0; n < argc && argv[n][0] != '#'; n++)
                                 ;

@@ -596,7 +596,7 @@ tsh_run_command(char *cmd)
 		cmd++;
 	if (!cmd || cmd[0] == '#')
 		return;
-	if (argcv_get(cmd, "=", &argc, &argv) == 0) {
+	if (argcv_get(cmd, "=", NULL, &argc, &argv) == 0) {
 #ifdef WITH_READLINE
 		add_history(cmd);
 #endif

@@ -635,7 +635,7 @@ _ascend_parse_filter(const char *input, ASCEND_FILTER *flt, char **errp)
 	int rc;
 
 	*errp = NULL;
-	if (argcv_get(input, "/", &pb.tokc, &pb.tokv)) {
+	if (argcv_get(input, "/", NULL, &pb.tokc, &pb.tokv)) {
 		argcv_free(pb.tokc, pb.tokv);
 		asprintf(errp, _("Failed to tokenize"));
 		return 1;

@@ -1,3 +1,55 @@
+2002-02-16  Sergey Poznyakoff  
+
+	Changed the threading paradigm: instead of spawning a new
+	thread for each request, the server now keeps a pool of
+	threads. When a request arrives, the first free thread from
+	the pool undertakes to handle it. If there are no free threads
+	available, the server spawns a new thread, unless the number
+	of active threads reached the preconfigured maximum. In any
+	case, the request is placed on the request queue.
+	
+	* radiusd/Makefile.am: Added request.c
+	* radiusd/request.c: (new) Generic request handling functions.
+	* radiusd/radiusd.c: Rewritten to use generic request functions.
+	* radiusd/snmpserv.c: Use generic request functions.
+	* radiusd/proxy.c: Likewise.
+	
+	* radiusd/sql.c: Got rid of connection queue stuff: each tread now
+	  has (at most) two SQL connections associated with it. These are
+	  stored in thread specific memory.
+*	  Parameters auth_max_connections and acct_max_connections are
+	  deprecated.
+*	* radiusd/config.kw: new keyword max-threads
+*         new keyword: print-milliseconds.	
+	* radiusd/config.y: Handle max-threads keyword (`option' block).
+	  Handle print-millisecons (`channel' statement).
+	* include/log.h: Added LO_MSEC flag.
+        * radiusd/log.c (log_to_channel): Handle LO_MSEC flag
+	  (print-milliseconds yes).
+	
+	* include/radiusd.h: Added required prototypes.
+	* include/radius.h: Added required prototypes.
+	* include/radsql.h (struct SQL_cfg): Removed max_connections.
+	* raddb/sqlserver: Removed deprecated directives.
+	* raddb/config.syntax: Example of max-threads statement.
+
+	* sql/disp.c (disp_sql_reconnect): Disconnect if
+	  necessary.
+
+	* radiusd/scheme.c: Added debugging.
+	* radiusd/radius.c: Likewise.
+	
+	* test/raddb/config.in: Added more debugging levels.
+	* sql/mysql.c (rad_mysql_disconnect): reset conn->connected.
+	* radlib/gethost_r.c: Fixed #ifdefs.
+
+	* elisp/radius-mode.el: Fixed copyleft statement.
+	* elisp/radconf-mode.el: Updated
+
+	* db/db.m4: (table passwd): Modified `active' column definition.
+	
+	* README-alpha: Updated.
+	
 2002-02-14  Sergey Poznyakoff 
 
 	* scripts/untabify.el: (new) Emacs script to help untabify the

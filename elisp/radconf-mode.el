@@ -19,7 +19,7 @@
 ;; GNU General Public License for more details.
 
 ;; You should have received a copy of the GNU General Public License
-;; along with GNU Emacs; see the file COPYING.  If not, write to the
+;; along with GNU Radius; see the file COPYING.  If not, write to the
 ;; Free Software Foundation, Inc., 59 Temple Place - Suite 330,
 ;; Boston, MA 02111-1307, USA.
 
@@ -85,81 +85,81 @@
 (defun radconf-find-block (keyword-list)
   (save-excursion
     (let ((off (if (progn
-		     (beginning-of-line)
-		     (looking-at "[^#\n]*}.*$"))
-		   1
-		 0))
-	  (level 0)
-	  (keyword nil)
-	  (state (list 'start)))
+                     (beginning-of-line)
+                     (looking-at "[^#\n]*}.*$"))
+                   1
+                 0))
+          (level 0)
+          (keyword nil)
+          (state (list 'start)))
       (while (and (not (eq (car state) 'stop))
-		  (= (forward-line -1) 0))
-	(cond
-	 ((eq (car state) 'in-comment)
-	  (if (looking-at "[^#\n]*/\\*$")
-	      (setq state (cdr state))))
-	 ((eq (car state) 'in-block)
-	  (cond
-	   ((looking-at "[^#\n]*{.*$")
-	    (setq state (cdr state)))
-	   ((looking-at "[^#\n]*}.*$")
-	    (setq state (append (list 'in-block) state)))))
-	 (t ;; 'start
-	  (let* ((bound (save-excursion
-			  (end-of-line)
-			  (point)))
-		 (string (cond
-			  ((looking-at "\\([^#\n]*\\)#.*")
-			   (buffer-substring (match-beginning 1)
-					     (match-end 1)))
-			  ((looking-at "\\([^#\n]*\\)//.*")
-			   (buffer-substring (match-beginning 1)
-					     (match-end 1)))
-			  (t
-			   (buffer-substring (point) bound)))))
-	    (cond
-	     ((string-match "}" string)
-	      (setq state (append (list 'in-block) state)))
-	     ((string-match "\\*/" string)
-	      (if (not (string-match "/\\*" string))
-		  (setq state (append (list 'in-comment) state))))
-	     ((string-match "{" string)
-	      (beginning-of-line)
-	      (setq level (1+ level))
-	      (cond
-	       ((search-forward-regexp "\\s *\\w+\\s +\\w+\\s *{" bound t)
-		;; Skip `channel' and `category' statements
-		)
-	       ((search-forward-regexp "\\s *\\(\\w+\\)\\s *{" bound t)
-		(let ((word (intern (buffer-substring (match-beginning 1)
-						      (match-end 1)))))
-		  (if (and (memq word keyword-list)
-			   (null (cdr state)))
-		      (setq keyword word
-			    state (list 'stop))))))))))))
+                  (= (forward-line -1) 0))
+        (cond
+         ((eq (car state) 'in-comment)
+          (if (looking-at "[^#\n]*/\\*$")
+              (setq state (cdr state))))
+         ((eq (car state) 'in-block)
+          (cond
+           ((looking-at "[^#\n]*{.*$")
+            (setq state (cdr state)))
+           ((looking-at "[^#\n]*}.*$")
+            (setq state (append (list 'in-block) state)))))
+         (t ;; 'start
+          (let* ((bound (save-excursion
+                          (end-of-line)
+                          (point)))
+                 (string (cond
+                          ((looking-at "\\([^#\n]*\\)#.*")
+                           (buffer-substring (match-beginning 1)
+                                             (match-end 1)))
+                          ((looking-at "\\([^#\n]*\\)//.*")
+                           (buffer-substring (match-beginning 1)
+                                             (match-end 1)))
+                          (t
+                           (buffer-substring (point) bound)))))
+            (cond
+             ((string-match "}" string)
+              (setq state (append (list 'in-block) state)))
+             ((string-match "\\*/" string)
+              (if (not (string-match "/\\*" string))
+                  (setq state (append (list 'in-comment) state))))
+             ((string-match "{" string)
+              (beginning-of-line)
+              (setq level (1+ level))
+              (cond
+               ((search-forward-regexp "\\s *\\w+\\s +\\w+\\s *{" bound t)
+                ;; Skip `channel' and `category' statements
+                )
+               ((search-forward-regexp "\\s *\\(\\w+\\)\\s *{" bound t)
+                (let ((word (intern (buffer-substring (match-beginning 1)
+                                                      (match-end 1)))))
+                  (if (and (memq word keyword-list)
+                           (null (cdr state)))
+                      (setq keyword word
+                            state (list 'stop))))))))))))
       (if (> level 0)
-	  (- level off))
+          (- level off))
       (cons keyword level))))
 
 ;; Determine the nesting level of point.
 (defun radconf-nesting-level ()
   (let ((block (radconf-find-block radconf-toplevel-keywords)))
     (cdr block)))
-		    
+                    
 ;; Indent current line. Optional LEVEL-OFFSET is subtracted from
 ;; the determined amount of indentation.
 (defun radconf-indent-line (&optional level-offset)
   (let* ((start-of-line (save-excursion
-			  (beginning-of-line)
-			  (skip-syntax-forward "\\s *")
-			  (point)))
-	 (off (- (point) start-of-line))
-	 (shift-amt (* radconf-level-indent
-		       (-
-			(radconf-nesting-level)
-			(or level-offset 0)))))
+                          (beginning-of-line)
+                          (skip-syntax-forward "\\s *")
+                          (point)))
+         (off (- (point) start-of-line))
+         (shift-amt (* radconf-level-indent
+                       (-
+                        (radconf-nesting-level)
+                        (or level-offset 0)))))
     (if (null shift-amt)
-	()
+        ()
       (beginning-of-line)
       (delete-region (point) start-of-line)
       (indent-to shift-amt))
@@ -174,94 +174,93 @@
 (defconst radconf-keyword-dict
   ;; Block     Keyword-list
   '((nil        usedbm
-		option
-		logging
-		auth
-		acct
-		proxy
-		notify
-		snmp
-		guile)
+                option
+                logging
+                auth
+                acct
+                proxy
+                snmp
+                guile)
     (option     source-ip 
-		usr2delay
-		max-requests
-		exec-program-user
-		exec-program-group
-		log-dir
-		acct-dir)
+                max-requests
+                exec-program-user
+                log-dir
+                acct-dir
+                resolve)
     (logging    channel
-		category)
+                category)
     (channel    file
-		syslog
-		option
-		print-pid
-		print-category
-		print-cons
-		print-level
-		print-priority)
+                syslog
+                option
+                print-pid
+                print-category
+                print-cons
+                print-level
+                print-priority)
     (auth       port
-		listen
-		spawn
-		max-requests
-		time-to-live
-		request-cleanup-delay
-		detail
-		strip-names
-		checkrad-assume-logged
-		password-expire-warning)
+                listen
+                spawn
+                max-requests
+                time-to-live
+                request-cleanup-delay
+                detail
+                strip-names
+                checkrad-assume-logged
+                password-expire-warning)
     (acct       port
-		listen
-		spawn
-		max-requests
-		time-to-live
-		request-cleanup-delay)
+                listen
+                spawn
+                max-requests
+                time-to-live
+                request-cleanup-delay)
     (proxy      max-requests
-		request-cleanup-delay)
+                request-cleanup-delay)
     (notify     host
-		port
-		retry
-		delay)
+                port
+                retry
+                delay)
     (snmp       port
-		spawn
-		max-requests
-		time-to-live
-		request-cleanup-delay
-		ident
-		community
-		network
-		acl)
+                spawn
+                max-requests
+                time-to-live
+                request-cleanup-delay
+                ident
+                community
+                network
+                acl)
     (acl        allow
-		deny)
+                deny)
     (guile      debug
-		load-path
-		load)))
+                load-path
+                load)))
 
 ;; Valid successors for keywords.
 (defconst radconf-keyword-successor
   ;; Keyword                    List of successors
-  '((category			main auth acct snmp proxy 
-				debug info notice warning error
-				crit emerg alert)
-    (detail			yes no)
-    (strip-names		yes no)
-    (checkrad-assume-logged	yes no)
-    (usedbm			yes no)
+  '((category                   main auth acct snmp proxy 
+                                debug info notice warning error
+                                crit emerg alert)
+    (detail                     yes no)
+    (strip-names                yes no)
+    (checkrad-assume-logged     yes no)
+    (usedbm                     yes no)
     (print-pid                  yes no)
+    (print-tid                  yes no)
     (print-category             yes no)
     (print-cons                 yes no)
     (print-level                yes no)
     (print-priority             yes no) ))
 
 (defconst radconf-keyword-nodes
-  ;; Block kwd	Info file	Info node
-  '((nil        "radius"	"config")
-    (option     "radius"	"option")
-    (logging    "radius"	"logging")
-    (auth       "radius"	"auth")
-    (acct       "radius"	"acct")
-    (proxy      "radius"	"proxy")
-    (notify     "radius"	"notify")
-    (snmp       "radius"	"snmp")
+  ;; Block kwd  Info file       Info node
+  '((nil        "radius"        "config")
+    (option     "radius"        "option")
+    (logging    "radius"        "logging")
+    (auth       "radius"        "auth")
+    (acct       "radius"        "acct")
+    (proxy      "radius"        "proxy")
+    (notify     "radius"        "notify")
+    (snmp       "radius"        "snmp")
     (guile      "radius"        "guile") ))
 
 ;; Find the topmost block containing the point
@@ -272,66 +271,66 @@
 (defun radconf-complete-keyword (word &optional prompt require-match)
   (let ((table (assoc (radconf-block) radconf-keyword-dict)))
     (if table
-	(let ((compl (completing-read (or prompt "what? ")
-				      (mapcar
-				       (lambda (x)
-					 (cons (symbol-name x) nil))
-				       (cdr table))
-				      nil require-match word nil)))
-	  (or compl word)))))
+        (let ((compl (completing-read (or prompt "what? ")
+                                      (mapcar
+                                       (lambda (x)
+                                         (cons (symbol-name x) nil))
+                                       (cdr table))
+                                      nil require-match word nil)))
+          (or compl word)))))
 
 ;; Complete the argument to a keyword.
 (defun radconf-complete-argument (pred word &optional prompt require-match)
   (let ((table (assoc (intern pred) radconf-keyword-successor)))
     (if table
-	(let ((compl (completing-read (or prompt "what? ")
-				      (mapcar
-				       (lambda (x)
-					 (cons (symbol-name x) nil))
-				       (cdr table))
-				      nil require-match word nil)))
-	  (or compl word)))))
+        (let ((compl (completing-read (or prompt "what? ")
+                                      (mapcar
+                                       (lambda (x)
+                                         (cons (symbol-name x) nil))
+                                       (cdr table))
+                                      nil require-match word nil)))
+          (or compl word)))))
 
 (defun radconf-complete-or-indent (arg)
   "Complete the keyword the point stays on or indent the current line"
   (interactive "p")
   (let* ((here (point))
-	 (off 0)
-	 (bound (save-excursion
-		  (beginning-of-line)
-		  (point))))
+         (off 0)
+         (bound (save-excursion
+                  (beginning-of-line)
+                  (point))))
     (if (or (search-backward-regexp "^\\W\\(\\w+\\)" bound t)
-	    (search-backward-regexp "^\\(\\w+\\)" bound t))
-	(let* ((from (match-beginning 1))
-		(to (match-end 1))
-		(word (buffer-substring from to)))
-	  (if (= to here)
-	      ;; Process a keyword
-	      (let ((compl (radconf-complete-keyword word "keyword: ")))
-		(cond
-		 ((and compl (not (string-equal compl word)))
-		  (delete-region from to)
-		  (goto-char from)
-		  (insert compl)
-		  (setq off (- (point) here)))))
-	    ;; Process the argument
-	    (goto-char to)
-	    (if (looking-at "\\s *\\(\\w+\\).*$")
-		(let* ((from (match-beginning 1))
-		       (to (match-end 1))
-		       (arg (buffer-substring from to))
-		       (compl (radconf-complete-argument
-			       word
-			       arg
-			       "argument: ")))
-		  (cond
-		   ((and compl (not (string-equal compl arg)))
-		    (delete-region from to)
-		    (goto-char from)
-		    (insert compl)
-		    (setq off (- (point) here)))))))
-	  (goto-char (+ here off)) )
-	(radconf-indent-line) )))
+            (search-backward-regexp "^\\(\\w+\\)" bound t))
+        (let* ((from (match-beginning 1))
+                (to (match-end 1))
+                (word (buffer-substring from to)))
+          (if (= to here)
+              ;; Process a keyword
+              (let ((compl (radconf-complete-keyword word "keyword: ")))
+                (cond
+                 ((and compl (not (string-equal compl word)))
+                  (delete-region from to)
+                  (goto-char from)
+                  (insert compl)
+                  (setq off (- (point) here)))))
+            ;; Process the argument
+            (goto-char to)
+            (if (looking-at "\\s *\\(\\w+\\).*$")
+                (let* ((from (match-beginning 1))
+                       (to (match-end 1))
+                       (arg (buffer-substring from to))
+                       (compl (radconf-complete-argument
+                               word
+                               arg
+                               "argument: ")))
+                  (cond
+                   ((and compl (not (string-equal compl arg)))
+                    (delete-region from to)
+                    (goto-char from)
+                    (insert compl)
+                    (setq off (- (point) here)))))))
+          (goto-char (+ here off)) )
+        (radconf-indent-line) )))
 
 (defun radconf-electric-brace (arg)
   "Indent current line and insert a symbol"
@@ -343,11 +342,11 @@
   "Depending on the context invoke appropriate info page"
   (interactive)
   (let* ((elt (assoc (radconf-block) radconf-keyword-nodes))
-	 (file (car (cdr elt)))
-	 (node (car (cdr (cdr elt)))))
+         (file (car (cdr elt)))
+         (node (car (cdr (cdr elt)))))
     (Info-goto-node (concat "(" file ")" node))
     (if (get-buffer "*info*")
-	(switch-to-buffer "*info*"))))
+        (switch-to-buffer "*info*"))))
 
 ;;;###autoload
 (defun radconf-mode ()
@@ -361,10 +360,10 @@ Key bindings:
   (set-syntax-table radconf-mode-syntax-table)
   (make-local-variable 'indent-line-function)
   (setq major-mode 'radconf-mode
-	mode-name "Radius-Config"
-	local-abbrev-table radconf-mode-abbrev-table
-	indent-line-function 'radconf-indent-line
-	completion-ignore-case nil)
+        mode-name "Radius-Config"
+        local-abbrev-table radconf-mode-abbrev-table
+        indent-line-function 'radconf-indent-line
+        completion-ignore-case nil)
 
   (use-local-map radconf-mode-map))
 

@@ -5,7 +5,17 @@ are taking source from CVS, you will need to have libtool, automake, and
 autoconf installed to help contribute. The script autogen.sh is provided to
 help autoconfigure mailutils from the cvs src.  After you run
 autogen.sh, there should be a file 'INSTALL' with (generic)
-installation instructions.
+installation instructions. Refer to file 'README' for radius-specific
+installation instructions. 
+
+Please, note that the accompanying documentation may be inaccurate or
+incomplete. Take a look at ChangeLog to see the latest changes. ChangeLog
+entries marked with an asterisk in column zero document user-visible changes
+which are not otherwise documented. Thus, the following command will print
+a list of latest user-visible changes:
+
+	grep '^\*' ChangeLog
+
 
 Report bugs to <bug-gnu-radius@gnu.org>
 

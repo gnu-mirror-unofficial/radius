@@ -1,3 +1,93 @@
+2001-08-26 Sergey Poznyakoff
+
+	* db/Makefile.am: Use M4 variable. Allow user to define database
+	access password in config.m4.
+	* db/config.m4: Allow user to specify database user name and password.
+	* db/db.m4: Likewise.
+	* db/mysql.m4: Likewise.
+	* db/pgsql.m4: Likewise.
+
+	More elaborate syntax checking of pairlist config files (raddb/users,
+	raddb/hints and raddb/huntgroups). Each attribute has a set of
+	properties describing it. A six-bit part of these properties
+	describes in which list the attribute may appear in each of
+	the above-mentioned files. The syntax of dictionary files
+	is extended to hold the declaration of attribute properties.
+
+	* include/radius.h: Renamed AF_ADD_ constants to AP_ADD_. New
+	AP_PROPAGATE: attributes with this bit set will be propagated
+	through the proxy radius back to the NAS. Packed additivity into
+	the prop bitmask. Three sets of AF_CHECKLIST and AF_REPLYLIST
+	flags.
+	struct DICT_ATTR: merged flags and additivity into one member: prop
+	struct VALUE_PAIR: Renamed additivity to prop.
+	* raddb/dictionary: Changed flag field of ATTRIBUTE records to
+	reflect the addition of AP_PROPAGATE property (P flag) and
+	three levels of AF_.*LIST bits.
+	* raddb/sqlserver: Changed description of %s substitute.
+
+	* include/radiusd.h: Removed exec_group member.
+	Added protos for functions from radck.c
+	* radiusd/config.y: exec-program-group is obsolete.
+	* radiusd/exec.c: Set the group from pw_gid member of pwd.
+
+	* radiusd/files.c: Changed calls to fix_{check,reply}_pairs:
+	pass an extra argument, meaning which kind of file we are processing
+	now.
+	Extra member in struct temp_list (same semantics).
+	Extra argument to file_read (same semantics).
+
+	* radiusd/proxy.c: Removed allowed[] array: the AP_PROPAGATE bit
+	of attribute properties is used to determine whether an attribute
+	should be propagated back to the NAS.
+
+	* radiusd/radck.c: Use attribute property to determine whether an
+	attribute is allowed to be used in either list of a profile.
+
+	* radiusd/radius.c: Reflect changes of DICT_ATTR and VALUE_PAIR
+	types.
+	* radlib/users.y: Likewise.
+	* radlib/avl.c: Likewise.
+	New function avl_move_pairs() moves pairs matching a given criterium
+	between the two lists. The criterium is specified by supplying
+	selection function and a closure to it.
+	Implemented avl_move_attr() via avl_move_pairs().
+
+	* radiusd/radiusd.c: Initialize myip with INADDR_ANY. Removed
+	`mode' (local to main) and introduced static `radius_mode' with
+	the same semantics. listen_.*() functions exit immediately if
+	its value is not MODE_DAEMON.
+	Reflect removal of config.exec_group.
+	Use myip instead of INADDR_ANY in calls to open_socket wherever
+	hostlist passed to listen_.*() functions is empty.
+
+	* radlib/dict.c: Parse extended attribute property specification.
+	The specification may contain the following flags:
+
+		Flag	Meaning
+		P	Propagate the attribute through the proxy chain
+		=	Additivity = replace
+		+	Additivity = append
+		N	Additivity = none
+	
+	and a syntax specification. The simplest form of the latter is
+	[] meaning default syntax spec (the attribute may appear in either
+	list in any configuration file). More precise specification
+	is the symbol 'C' when the attribute may be used in checkpairs,
+	or the symbol 'R' when it may appear in replypairs (thus CR is
+	equivalent to []). The most specific form of the syntax spec is
+
+		[CRCRCR]
+
+	where the CR pairs correspond to raddb/users, raddb/hints and
+	raddb/groups. A dash indicates that the attribute cannot be
+	used in the corresponding list. 
+
+	* scripts/config-conv.awk: Delete obsolete exec-program-group
+	statement.
+	
+	* NEWS: Updated.
+
 2001-08-25 Sergey Poznyakoff
 
 	* db: (new dir) Contains scripts for automatic creation

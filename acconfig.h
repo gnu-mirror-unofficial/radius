@@ -49,13 +49,15 @@
 #endif
 #define N_(s) s
 
-/* ************************************************************************** */
-/* data types that might be missed */
+/* ************************************************************************* */
+/* data types and definitions that might be missed */
 #undef off_t
 #undef u_char
 #undef u_int
 #undef u_long
-/* ************************************************************************** */
+#undef INADDR_LOOPBACK
+/* ************************************************************************* */
+
 
 #undef HAVE_GNU_GETOPT
 

@@ -278,6 +278,7 @@ an example of its use, see @ref{Exec-Program-Wait}.
 @section Checking Simultaneous Logins
 @cindex Checking Simultaneous Logins
 @cindex Simultaneous logins, checking for
+@UNREVISED{}
 
 The number of sessions a user can have open simultaneously can be
 restricted by setting @attr{Simultaneous-Use} attribute in the user's
@@ -292,7 +293,9 @@ attribute the authentication request is rejected.
 
 To determine the number of open sessions, Radius scans the
 @file{radlog/radutmp} for any open entries marked with the
-user's login name @ref{System Accounting}. Such entries are created
+user's login name @ref{System Accounting}. @FIXME{It is not true
+with the introduction of @acronym{MLC} concept. I must rewrite this.}
+Such entries are created
 when Radius receives an Accounting-Request packet with
 @attr{Acct-Status-Type} attribute set to @code{Start}. An entry is
 marked closed when a corresponding Accounting-Request packet arrives with

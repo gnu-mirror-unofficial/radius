@@ -1,5 +1,5 @@
 @c This is part of the Radius manual.
-@c Copyright (C) 1999,2000,2001,2002,2003 Free Software Foundation, Inc.
+@c Copyright (C) 1999,2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 @c Written by Sergey Poznyakoff
 @c See file radius.texi for copying conditions.
 @comment *******************************************************************
@@ -150,6 +150,7 @@ These are the basic statements:
 * guile::       Configure Guile interface.
 * message::     Configure server reply messages.
 * filters::     Configure authentication and accounting filters.
+* mlc::         Configure multiple login checking.
 @end menu
 
 @comment **L3***************************************************************
@@ -688,6 +689,7 @@ description of its usage.
 @kwindex request-cleanup-delay
 @kwindex detail
 @kwindex compare-atribute-flag
+@UNREVISED{}
 
 @subheading Syntax:
 @smallexample
@@ -696,6 +698,7 @@ acct @{
         [ forward @var{addr-list} ; ]
         [ port @var{number} ; ]
         [ detail @var{bool}; ]
+        [ system @var{bool};
         [ max-requests @var{number} ; ]
         [ time-to-live @var{number} ; ]
         [ request-cleanup-delay @var{number} ; ]
@@ -769,8 +772,14 @@ the completed account request reside in the queue.
 
 @table @code
 @item detail
-When set to @code{false}, disables detailed accounting
+When set to @code{no}, disables detailed accounting
 (@pxref{Detailed Request Accounting}). 
+
+@item system
+When set to @code{no}, disables system accounting (@pxref{System
+Accounting}). @FIXME{This will disable simultaneous use checking as
+well, unless an alternative mlc method is used. Describe this.
+Possibly give an xref to the node discussing MLC.}
 
 @item trace-rules
 Enables tracing of the configuration rules that were matched during
@@ -990,6 +999,7 @@ monitored ports: increase max-port-count
 @subsection @code{rewrite} statement.
 @cindex Rewrite language settings
 @kwindex rewrite
+@UNREVISED{}
 
 @subheading Syntax:
 @smallexample
@@ -1033,9 +1043,11 @@ autoloading is necessary for Rewrite.}
 @kwindex guile 
 @kwindex debug
 @kwindex load-path
+@kwindex load-module
 @kwindex load
 @kwindex gc-interval
 @kwindex outfile
+@UNREVISED{}
 
 The @code{guile} statement allows to configure server interface with
 Guile. 
@@ -1086,7 +1098,9 @@ Add specified pathname to @code{%load-path} variable.
 @item load
 Loads the specified source file on startup.
 @item load-module
-Loads the specified Scheme module on startup. 
+Loads the specified Scheme module on startup. @FIXME{Describe in more
+detail the the loading sequence. Why are modules preferred over plain
+SCM programs, etc.}
 @item outfile
 Redirects the standard output and standard error streams of the @code{Guile}
 functions to the given file. Unless the filename starts with @samp{/},
@@ -1255,6 +1269,25 @@ this to @code{yes}. Otherwise, if the filter produces no output, use
 
 @end table
 
+@comment **L3***************************************************************
+@node mlc
+@subsection @code{mlc} statement
+@kwindex mlc
+@kwindex sql
+@kwindex system
+@UNREVISED
+
+@subheading Syntax
+
+@smallexample
+mlc @{
+	method (system|sql);  
+	checkrad-assume-logged @var{bool};
+@};
+@end smallexample
+
+@subheading Usage
+@FIXME{Describe it}
 
 @comment *L2****************************************************************
 @node dictionary file
@@ -1715,6 +1748,7 @@ query @NAS{}es about active user sessions.
 @subsection Syntax of @file{raddb/nastypes}
 @cindex @file{nastypes} file, syntax of
 @cindex Syntax of @file{nastypes}
+@UNREVISED{}
 
 @heading Syntax
 Each record consists of three fields separated by any amount of
@@ -1735,8 +1769,8 @@ field.
 
 @heading Methods
 
-Version @value{VERSION} of GNU Radius supports two querying methods:
-finger and snmp.
+Version @value{VERSION} of GNU Radius supports following querying methods:
+finger, snmp, external and guile. @FIXME{Describe these fully}.
 
 @heading Arguments
 
@@ -1786,6 +1820,8 @@ one of @dfn{macro variables}, described below.
 
 The following macro-variables are recognized and substituted when
 encountered in the @var{value} pair of an argument:
+@FIXME{Describe new syntax for extendable strings. Notice, that the
+use of old meta-characters is deprecated.}
 
 @table @samp
 @item %u
@@ -2241,6 +2277,8 @@ of time.
 @comment **L3***************************************************************
 @node Authentication Server Parameters
 @subsection Authentication Server Parameters
+@UNREVISED{}
+@FIXME{kwindices.}
 
 These parameters configure the @sc{sql} authentication. The general
 syntax is:
@@ -2259,6 +2297,10 @@ password.
 Specifies the query that retrieves the list of user groups the user
 belongs to. This query is used when @attr{Group} or @attr{Group-Name}
 attribute appears in the @LHS{} of a user's or hint's profile.
+@item auth_success_query @var{string}
+@FIXME{Description}
+@item auth_failure_query @var{string}
+@FIXME{Description}
 @end table
 
 @subheading Example of Authentication Server Parameters

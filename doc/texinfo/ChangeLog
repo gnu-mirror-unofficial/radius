@@ -1,3 +1,9 @@
+2004-06-16  Sergey Poznyakoff
+
+	* auth.texi: Minor changes
+	* configure.texi: Minor changes
+	* radctl.texi: Minor changes
+
 2004-05-27  Sergey Poznyakoff
 
 	* auth.texi: Minor fix.

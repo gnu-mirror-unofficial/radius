@@ -1,3 +1,17 @@
+2004-06-16  Sergey Poznyakoff
+
+	* db/db.m4: Minor fix. Added authfail table
+	* radiusd/auth.c (auth_failure): Minor fix.
+	* radiusd/scheme.c: Minor fix
+	* radscm/rscm_lib.c (rscm_add_load_path): Remove guile 1.14
+	code.
+	* radscm/ttl.scm (ttl-message): Fixed check for overall packet
+	length. It should not be less than 4.
+	* raddb/sqlserver: Minor fixes: add an alternative group_query
+	statement, add default auth_success_query and auth_failure_query
+	statements.
+	* raddb/users: Added profile for locked accounts.
+	
 2004-06-14  Sergey Poznyakoff
 
 	* radiusd/files.c (rule_eval_rewrite): New function. Used

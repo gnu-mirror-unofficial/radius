@@ -6,6 +6,7 @@
 @node Radctl, Builddbm, Radauth, Utility Programs
 @section @command{radctl}
 @pindex radctl
+@UNREVISED{}
 
 @command{Radctl} is a control interface to the @command{radiusd}
 daemon. It allows the

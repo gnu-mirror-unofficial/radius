@@ -116,6 +116,29 @@ enum {
 #define AP_DEFAULT_ADD   AP_ADD_APPEND
 
 
+#define PORT_AUTH 0
+#define PORT_ACCT 1
+#define PORT_MAX  2
+
+typedef struct radius_server RADIUS_SERVER;
+struct radius_server {
+        RADIUS_SERVER *next;    /* Next server in queue */
+        char   *name;           /* Symbolic name of this server */
+        UINT4  addr;            /* IP address of it */
+        int    port[PORT_MAX];  /* Ports to use */
+        char   *secret;         /* Shared secret */
+};
+
+typedef struct {
+        UINT4  source_ip;       /* Source IP address for xmits */
+        unsigned timeout;       /* Amount of time to wait for the response */
+        unsigned retries;       /* Number of re-sends to each server before
+				   giving up */
+        unsigned messg_id;      /* Current message identifier */
+	size_t buffer_size;     /* Size of the recv buffer */
+        RADIUS_SERVER *first_server;   /* List of servers */
+} RADIUS_SERVER_QUEUE;    
+
 /* Dictionary attribute */
 typedef struct dict_attr {
         struct dict_attr        *next;      /* Link to the next attribute */
@@ -182,12 +205,9 @@ typedef struct nas {
 typedef struct realm {
         struct realm            *next;
         char                    realm[MAX_REALMNAME+1];
-        char                    server[MAX_LONGNAME+1];
-        UINT4                   ipaddr;
-        int                     auth_port;
-        int                     acct_port;
         int                     striprealm;
         int                     maxlogins;
+	RADIUS_SERVER_QUEUE     *queue;
 } REALM;
 
 typedef struct radius_req {
@@ -213,10 +233,11 @@ typedef struct radius_req {
         /* Proxy support fields */
         REALM                   *realm;       
         int                     validated;     /* Already md5 checked */
-        UINT4                   server_ipaddr; /* IP of the remote server */
-	int                     server_port;   /* port to use */
+	RADIUS_SERVER           *server;       
+	int                     attempt_no;
         UINT4                   server_id;     /* Proxy ID of the packet */
 	char                    *remote_user;  /* Remote username (stringobj)*/
+	
         int                     server_code;   /* Reply code from other srv */
         VALUE_PAIR              *server_reply; /* Reply from other server */
 } RADIUS_REQ;
@@ -239,6 +260,20 @@ extern char *radpid_dir;
 extern char *bug_report_address;
 
 #define NITEMS(a) sizeof(a)/sizeof((a)[0])
+
+/*FIXME*/
+char *auth_code_str(int code);
+
+size_t rad_create_pdu(void **rptr, int code, int id,
+		      u_char *vector, u_char *secret,
+		      VALUE_PAIR *pairlist, char *msg);
+
+RADIUS_REQ *rad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer,
+			   int length);
+
+int rad_srv_send_reply(int fd, RADIUS_REQ *radreq);
+int rad_srv_send_challenge(int fd, RADIUS_REQ *radreq, char *msg, char *state);
+
 
 /* dict.c */
 #define VENDOR(x) (x >> 16)
@@ -295,7 +330,10 @@ char *nas_request_to_name(RADIUS_REQ *radreq, char *buf, size_t size);
 /* realms.c */
 REALM *realm_lookup_name(char *name);
 REALM *realm_lookup_ip(UINT4 ip);
-int realm_read_file(char *filename, int auth_port, int acct_port);
+int realm_read_file(char *filename, int auth_port, int acct_port,
+		    int (*set_secret)());
+int realm_verify_ip(REALM *realm, UINT4 ip);
+void realm_iterate(int (*fun)());
 
 /* fixalloc.c */
 #define Alloc_entry(t) alloc_entry(sizeof(t))
@@ -349,3 +387,19 @@ struct hostent *rad_gethostbyaddr_r(const char *addr, int length,
                                     int type, struct hostent *result,
                                     char *buffer, int buflen, int *h_errnop);
 
+
+/* client.c */
+RADIUS_SERVER_QUEUE *rad_clt_create_queue(int read_cfg,
+					  UINT4 source_ip, size_t bufsize);
+void rad_clt_destroy_queue(RADIUS_SERVER_QUEUE *queue);
+RADIUS_REQ *rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type,
+                         int code, VALUE_PAIR *pair);
+
+RADIUS_SERVER *rad_clt_alloc_server(RADIUS_SERVER *data);
+
+RADIUS_SERVER *rad_clt_dup_server(RADIUS_SERVER *src);
+void rad_clt_free_server(RADIUS_SERVER *server);
+RADIUS_SERVER *rad_clt_append_server(RADIUS_SERVER *list,
+				     RADIUS_SERVER *server);
+void rad_clt_clear_server_list(RADIUS_SERVER *list);
+RADIUS_SERVER *rad_clt_find_server(RADIUS_SERVER *list, char *name);

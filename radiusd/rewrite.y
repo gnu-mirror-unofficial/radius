@@ -5415,7 +5415,7 @@ rw_mach_destroy()
 {
 }
 
-int
+FUNCTION *
 rewrite_check_function(char *name, Datatype rettype, char *typestr)
 {
 	int i;
@@ -5424,27 +5424,27 @@ rewrite_check_function(char *name, Datatype rettype, char *typestr)
 	FUNCTION *fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
         if (!fun) {
                 radlog(L_ERR, _("function %s not defined"), name);
-                return -1;
+                return NULL;
         }
-	if (fun->rettype) {
+	if (fun->rettype != rettype) {
 		radlog(L_ERR, _("function %s returns wrong data type"), name);
-		return -1;
+		return NULL;
 	}
 
-	for (i = 0, p = fun->parm; i < fun->nparm; i++, p++) {
+	for (i = 0, p = fun->parm; i < fun->nparm; i++, p = p->next) {
                 switch (typestr[i]) {
 		case 0:
 			radlog(L_ERR,
-			       _("function %s takes too few arguments"),
+			       _("function %s takes too many arguments"),
 			       name);
-			return -1;
+			return NULL;
 			
                 case 'i':
                         if (p->datatype != Integer) {
 				radlog(L_ERR,
 				       _("function %s: argument %d must be integer"),
 				       name, i+1);
-				return -1;
+				return NULL;
 			}
                         break;
 			
@@ -5453,7 +5453,7 @@ rewrite_check_function(char *name, Datatype rettype, char *typestr)
 				radlog(L_ERR,
 				       _("function %s: argument %d must be string"),
 				       name, i+1);
-				return -1;
+				return NULL;
 			}
                         break;
 			
@@ -5464,14 +5464,14 @@ rewrite_check_function(char *name, Datatype rettype, char *typestr)
 
 	if (typestr[i]) {
 		radlog(L_ERR,
-		       _("function %s takes too many arguments"),
+		       _("function %s takes too few arguments"),
 		       name);
-		return -1;
+		return NULL;
 	}
 
-	return 0;
+	return fun;
 }
-	
+
 int
 run_init(pctr_t pc, RADIUS_REQ *request)
 {
@@ -5527,21 +5527,19 @@ evaluate(pctr_t pc, RADIUS_REQ *req, Datatype rettype, Datum *datum)
 }
 
 int
-rewrite_invoke(char *name, RADIUS_REQ *request, char *typestr, ...)
+rewrite_invoke(Datatype rettype, void *ret,
+	       char *name, RADIUS_REQ *request, char *typestr, ...)
 {
         FILE *fp;
         va_list ap;
         FUNCTION *fun;
         int nargs;
         char *s;
-        RWSTYPE ret;
 
-        fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
-        if (!fun) {
-                radlog(L_ERR, _("function %s not defined"), name);
-                return -1;
-        }
-        
+        fun = rewrite_check_function(name, rettype, typestr);
+	if (!fun)
+		return -1;
+
 	rw_mach_init();
         if (setjmp(mach.jmp)) {
                 rw_mach_destroy();
@@ -5576,14 +5574,6 @@ rewrite_invoke(char *name, RADIUS_REQ *request, char *typestr, ...)
         }
         va_end(ap);
 
-        if (fun->nparm != nargs) {
-                radlog(L_ERR,
-                       _("%s(): wrong number of arguments (should be %d, passed %d)"),
-                       name, fun->nparm, nargs);
-                rw_mach_destroy();
-                return -1;
-        }
-
         /* Imitate a function call */
         pushn(0);                  /* Return address */
         run(fun->entry);           /* call function */
@@ -5593,9 +5583,19 @@ rewrite_invoke(char *name, RADIUS_REQ *request, char *typestr, ...)
                 avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
                 fclose(fp);
         }
-	ret = mach.rA;
+
+	switch (rettype) {
+	case String:
+		/* FIXME: constant return. It may not be safe if
+		   rw_mach_destroy() actually does something */
+		*(char**)ret = (char *)mach.rA; 
+		break;
+
+	case Integer:
+		*(UINT4*)ret = mach.rA;
+	}
         rw_mach_destroy();
-        return ret;
+        return 0;
 }
 
 char *

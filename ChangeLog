@@ -1,3 +1,15 @@
+2001-11-16 Sergey Poznyakoff
+
+	* test/dejagnu/Makefile.am: Specify tool explicitly.   
+	* test/dejagnu/lib/radiusd.exp: (new)
+	* test/dejagnu/lib/Makefile.am: (new)
+	* configure.in: AC_OUTPUT test/dejagnu/lib/Makefile
+	
+	* radiusd/version.c: Print help/license on stdout, instead of
+	  stderr.
+	* radlast/radlast.c: Likewise
+	* radtest/main.c: Likewise
+	
 2001-11-15 Sergey Poznyakoff
 
 	* configure.in: Incremented patchlevel.

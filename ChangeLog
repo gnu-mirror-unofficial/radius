@@ -1,3 +1,10 @@
+2002-03-19  Sergey Poznyakoff
+	
+	* radiusd/sql.c (rad_sql_retrieve_pairs): Honor additivity
+	  when moving pairs to the return_pairs. (Reported by
+	  Ciprian Nica <nimaci@pcnet.ro>).
+	* radlib/avl.c (avp_free): Be more safe: check for NULL.
+	
 2002-03-19  Sergey Poznyakoff 
 
 	* configure.in: define lisp_LISP only if emacs was found

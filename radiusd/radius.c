@@ -295,7 +295,7 @@ radius_req_drop(int type, void *data, void *orig_data,
 }
 
 void
-radius_req_xmit(REQUEST *request)
+radius_req_xmit(REQUEST *request, void *orig_data)
 {
         RADIUS_REQ *req = request->data;
 
@@ -303,7 +303,9 @@ radius_req_xmit(REQUEST *request)
                 radius_send_reply(0, req, NULL, NULL, request->fd);
                 radlog_req(L_NOTICE, req, _("Retransmitting %s reply"),
 			   request_class[request->type].name);
-        } else {
+        } else if (req->realm && orig_data) {
+		proxy_retry(req, orig_data, request->fd);
+	} else {
                 radius_req_drop(request->type, NULL, req, request->fd,
 				_("request failed"));
         }

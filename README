@@ -78,7 +78,7 @@ The applications-specific options are:
         Enable support for Livingston-compatible menus.
 
 *** --enable-deny-shell=SHELL
-	Always reject users with given shell.
+	Always reject users with the given shell.
 
 ** Run make.
 

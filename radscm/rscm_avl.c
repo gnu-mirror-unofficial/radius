@@ -64,9 +64,9 @@ SCM_DEFINE(rscm_avl_merge, "avl-merge", 2, 0, 0,
 	VALUE_PAIR *dst, *src;
 	SCM RETVAL;
 	
-	SCM_ASSERT(SCM_NIMP(DST) && SCM_CONSP(DST),
+	SCM_ASSERT(DST == SCM_EOL || (SCM_NIMP(DST) && SCM_CONSP(DST)),
 		   DST, SCM_ARG1, FUNC_NAME);
-	SCM_ASSERT(SCM_NIMP(SRC) && SCM_CONSP(SRC),
+	SCM_ASSERT(SRC == SCM_EOL || SCM_NIMP(SRC) && SCM_CONSP(SRC),
 		   SRC, SCM_ARG2, FUNC_NAME);
 	dst =  radscm_list_to_avl(DST);
 	src =  radscm_list_to_avl(SRC);

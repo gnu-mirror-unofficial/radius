@@ -304,7 +304,7 @@ the value of NAS-Port-Id must be added to this IP address before
 replying. For example
 
 @example
-	Framed-IP-Address = 10.10.0.1+
+        Framed-IP-Address = 10.10.0.1+
 @end example
 
 Also @ref{Add-Port-To-IP-Address}.
@@ -1162,14 +1162,14 @@ value of a @code{Framed-IP-Address} attribute ends with @samp{+}
 sign. For example the following:
 
 @example
-	Framed-IP-Address = 10.10.0.1+
+        Framed-IP-Address = 10.10.0.1+
 @end example
 @noindent
 is equivalent to
 
 @example
-	Framed-IP-Address = 10.10.0.1,
-	Add-Port-To-IP-Address = Yes
+        Framed-IP-Address = 10.10.0.1,
+        Add-Port-To-IP-Address = Yes
 @end example
 
 @comment **************************************************************

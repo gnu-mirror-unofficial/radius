@@ -167,33 +167,6 @@ typedef struct value_pair {
 
 } VALUE_PAIR;
 
-typedef struct radius_req {
-        UINT4                   ipaddr;       /* Source IP address */
-        u_short                 udp_port;     /* Source port */
-        u_char                  id;           /* Request identifier */
-        u_char                  code;         /* Request code */
-        u_char                  vector[AUTH_VECTOR_LEN]; /* Rq authenticator */
-        u_char                  *secret;      /* Shared secret */
-        VALUE_PAIR              *request;     /* Request pairs */
-        u_char                  *data;        /* Raw received data */
-        int                     data_len;     /* Length of raw data */
-        int                     data_alloced; /* Was the data malloced */
-        void                    *conn;        /* SQL connection */
-        
-        /* Saved reply values */
-        int                     reply_code;   /* Reply code */
-        VALUE_PAIR              *reply_pairs; /* Reply pairs */
-        char                    *reply_msg;   /* FIXME: Reply message */
-        
-        /* Proxy support fields */
-        char                    *realm;       /* stringobj, actually */
-        int                     validated;    /* Already md5 checked */
-        UINT4                   server_ipaddr;
-        UINT4                   server_id;
-        int                     server_code;  /* Reply code from other srv */
-        VALUE_PAIR              *server_reply;/* Reply from other server */
-} RADIUS_REQ;
-
 struct envar_t;
 
 typedef struct nas {
@@ -216,6 +189,37 @@ typedef struct realm {
         int                     striprealm;
         int                     maxlogins;
 } REALM;
+
+typedef struct radius_req {
+        UINT4                   ipaddr;       /* Source IP address */
+        u_short                 udp_port;     /* Source port */
+        u_char                  id;           /* Request identifier */
+        u_char                  code;         /* Request code */
+        u_char                  vector[AUTH_VECTOR_LEN]; /* Rq authenticator */
+        u_char                  *secret;      /* Shared secret */
+        VALUE_PAIR              *request;     /* Request pairs */
+        u_char                  *data;        /* Raw received data */
+        int                     data_len;     /* Length of raw data */
+        int                     data_alloced; /* Was the data malloced */
+        void                    *conn;        /* SQL connection */
+        
+        /* Saved reply values */
+        int                     reply_code;   /* Reply code */
+        VALUE_PAIR              *reply_pairs; /* Reply pairs */
+        char                    *reply_msg;   /* Reply message */
+	                                      /* FIXME: should probably be
+						 incorporated to reply_pairs
+						 at once */
+        /* Proxy support fields */
+        REALM                   *realm;       
+        int                     validated;     /* Already md5 checked */
+        UINT4                   server_ipaddr; /* IP of the remote server */
+	int                     server_port;   /* port to use */
+        UINT4                   server_id;     /* Proxy ID of the packet */
+	char                    *remote_user;  /* Remote username (stringobj)*/
+        int                     server_code;   /* Reply code from other srv */
+        VALUE_PAIR              *server_reply; /* Reply from other server */
+} RADIUS_REQ;
 
 struct keyword {
         char *name;

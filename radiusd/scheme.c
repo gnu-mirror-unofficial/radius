@@ -139,7 +139,9 @@ scheme_auth(char *procname, RADIUS_REQ *req,
 		avl_free(list);
 		return code == SCM_BOOL_F;
 	}
-	/*FIXME: message*/
+	radlog(L_ERR,
+	       _("Unexpected return value from Guile authentication function `%s'"),
+	       procname);
 	return 1;
 }
 
@@ -169,6 +171,11 @@ scheme_acct(char *procname, RADIUS_REQ *req)
 		eval_catch_handler, &jmp_env);
 	if (SCM_IMP(res) && SCM_BOOLP(res)) 
 		return res == SCM_BOOL_F;
+	else
+		radlog(L_ERR,
+		       _("Unexpected return value from Guile accounting function `%s'"),
+		       procname);
+
 	return 1;
 }
 

@@ -6,7 +6,7 @@
 
 	  Bugfixes:
 	
-	* radiusd/shmem.c: mmap returns -1 on failure. Change
+	* radiusd/shmem.c: mmap returns -1 on failure. Change the
 	  condition accordingly.
 	* radiusd/stat.c: Maxstat was improperly initialized. This
 	  caused grief when the number of NASes grew beyond a

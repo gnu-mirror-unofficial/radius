@@ -157,9 +157,8 @@ proc default_radiusd_start {args} {
 }
 
 proc default_radiusd_stop {} {
-
     verbose "Stopping radiusd"
-    
+    radius_exit 
 }
 
 proc radiusd_start {} {
@@ -347,7 +346,8 @@ proc default_radius_test { args } {
     return $result
 }
 
-# simple_radius_test [-message MESSAGE][-default (FAIL|XFAIL)] COMMAND EXPECT [PATTERN]
+# simple_radius_test [-prereq CAPA][-message MESSAGE][-default (FAIL|XFAIL)]
+#                    COMMAND EXPECT [PATTERN]
 # COMMAND   - Command to send to radtest.
 # EXPECT    - Expect command.
 # PATTERN   - Sequence to expect in return. If ommitted, defaults to "PASS".
@@ -360,20 +360,24 @@ proc simple_radius_test { args } {
 
     set default ""
     set message ""
+    set capa [list]
     for {set i 0} {$i < [llength $args]} {incr i} {
 	set a [lindex $args $i]
 	if {"$a" == "-default"} {
-	    set default [lindex $args [expr $i + 1]]
 	    incr i
+	    set default [lindex $args $i]
 	} elseif {"$a" == "-message"} {
-	    set message [lindex $args [expr $i + 1]]
 	    incr i
+	    set message [lindex $args $i]
+	} elseif {"$a" == "-prereq"} {
+	    incr i
+	    lappend capa [lindex $args $i]
 	} else {
 	    set args [lrange $args $i [llength $args]]
 	    break
 	}
     }
-    
+
     if {"$message" == ""}  {
 	set message [lindex $args 0]
     }
@@ -383,6 +387,16 @@ proc simple_radius_test { args } {
     }
     set command [lindex $args 0]
     set expect [lindex $args 1]
+
+    # Check the prerequisite capabilities
+    default_radiusd_version
+    for {set i 0} {$i < [llength $capa]} {incr i} {
+	if {! [info exists CAPABILITY([lindex $capa $i])]} {
+	    verbose "Required capability [lindex $capa $i] not present" 1
+	    unsupported $message
+	    return 0
+	}
+    }    
 
     if {[llength $args] > 2} {
 	set result [default_radius_test $command $expect [lindex $args 2]]

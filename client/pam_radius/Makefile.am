@@ -17,10 +17,6 @@ pam_radius_la_SOURCES = pam_radius.c
 pam_radius_la_LDADD = -lpam ../../radlib/librad.la ../../radlib/libdebug.la 
 INCLUDES = -I$(top_builddir) -I$(top_srcdir)/include -I$(top_srcdir)/include/snmp @INCLUDEPATH@
 
-raddbdir=@ETC_DIR@/raddb
-raddb_DATA=client.conf
-EXTRA_DIST=client.conf
-
 pam_radius.lo: $(srcdir)/pam_radius.c
 	$(LIBTOOL) --mode=compile $(CC) -c -DHAVE_CONFIG_H \
                 $(CFLAGS) $(AM_CFLAGS) $(INCLUDES) $(srcdir)/pam_radius.c

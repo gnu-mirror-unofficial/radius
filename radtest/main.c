@@ -60,7 +60,7 @@ int disable_readline;
 int dry_run;
 
 const char *argp_program_version = "radtest (" PACKAGE ") " VERSION;
-static char doc[] = N_("send arbitrary radius packets");
+static char doc[] = N_("Radius client shell");
 
 static struct argp_option options[] = {
         {NULL, 0, NULL, 0,
@@ -70,11 +70,9 @@ static struct argp_option options[] = {
         {"debug", 'x', "DEBUGSPEC", 0,
          N_("set debugging level"), 0},
         {"file", 'f', N_("FILE"), 0,
-         N_("Read input from FILE. When this option is used, all unknown"
-         " options in the form --VAR=VALUE are treated as variable"
-         " assignments"), 0},
-        {"quick", 'q', NULL, 0,
-         "FIXME: quick mode", 0},
+         N_("Read input from FILE. Stops further processing of the command line."), 0},
+        {"quick", 'q', NULL, 0,     /* FIXME */
+         "Do not read the configuration file", 0},
         {"retry", 'r', N_("NUMBER"), 0,
          N_("set number of retries"), 0},
         {"server", 's', N_("SERVER"), 0,
@@ -112,6 +110,8 @@ parse_opt(int key, char *arg, struct argp_state *state)
 		
         case 'f':
                 filename = optarg;
+		*(int *)state->input = state->next;
+		state->next = state->argc;
                 break;
 
 	case 'i':
@@ -148,8 +148,17 @@ static struct argp argp = {
         NULL,
         doc,
         rad_common_argp_child,
-        NULL, NULL
+        NULL,
+	NULL
 };
+
+int
+radtest_parse_options(int argc, char **argv)
+{
+        int index;
+	return grad_argp_parse(&argp, &argc, &argv, ARGP_NO_EXIT,
+			       &index, NULL);
+}
 
 int
 main(int argc, char **argv)
@@ -162,7 +171,7 @@ main(int argc, char **argv)
         init_symbols();
 
         index = argc;
-        if (grad_argp_parse(&argp, &argc, &argv, 0, &index, NULL))
+        if (grad_argp_parse(&argp, &argc, &argv, ARGP_IN_ORDER, NULL, &index))
                 return 1;
 
         argv += index;
@@ -216,9 +225,11 @@ main(int argc, char **argv)
                                         exit(1);
                                 }
                                 break;
+				
                         case 2:
                                 serv.secret = argv[i];
                                 break;
+				
                         case 4:
                                 serv.port[0] = strtol(argv[i], &p, 0);
                                 if (*p) {
@@ -228,6 +239,7 @@ main(int argc, char **argv)
                                         break;
                                 }
                                 break;
+				
                         case 6:
                                 serv.port[1] = strtol(argv[i], &p, 0);
                                 if (*p) {
@@ -237,6 +249,7 @@ main(int argc, char **argv)
                                         break;
                                 }
                                 break;
+				
                         default:
                                 if (argv[i][0] != ':') {
                                         grad_log(L_ERR,
@@ -269,18 +282,13 @@ main(int argc, char **argv)
         x_argv[x_argc++] = filename;
 
         for (; argc; argv++, argc--) {
-                if (argv[0][0] == '-'
-                    && argv[0][1] == '-'
-                    && (p = strchr(argv[0], '=')) != NULL
-                    && !(p > argv[0] && p[-1] == '\\')) 
-                        assign(argv[0]+2);
-                else if ((p = strchr(*argv, '=')) != NULL &&
-                         !(p > *argv && p[-1] == '\\')) 
+                if ((p = strchr(*argv, '=')) != NULL &&
+		    !(p > *argv && p[-1] == '\\')) 
                         assign(*argv);
                 else 
                         x_argv[x_argc++] = *argv;
         }
-        x_argv[x_argc++] = NULL;
+        x_argv[x_argc] = NULL;
 
 	return read_and_eval(filename);
 }

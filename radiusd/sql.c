@@ -750,9 +750,10 @@ attach_sql_connection(type, req)
 			       	       service_name[type]);
 				return NULL;
 			}
+			conn = create_sql_connection(type);
 		}
-		conn = create_sql_connection(type);
 		conn->owner = req;
+		req->conn = conn;
 		conn->last_used = now;
 	}
 	return conn;
@@ -767,6 +768,9 @@ unattach_sql_connection(type, req)
 {
 	struct sql_connection *conn, *prev;
 
+	conn = req->conn;
+	if (!conn)
+		return;
 	if (sql_cfg.keepopen == 0 || conn->delete_on_close) {
 		free_sql_connection(req->conn);
 		return;
@@ -898,8 +902,7 @@ rad_sql_need_reconnect(type)
 	char *path;
 
 	insist(type >= 0 && type < SQL_NSERVICE);
-	if (master_process())
-		return;
+
 	if (sql_cfg.keepopen && sql_cfg.active[type]) {
 		path = mkfilename(radius_dir, reconnect_file[type]);
 		fd = open(path, O_CREAT|O_TRUNC|O_RDWR, S_IRUSR|S_IWUSR);

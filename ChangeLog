@@ -1,5 +1,26 @@
 2001-11-15 Sergey Poznyakoff
 
+	* NEWS: Updated
+
+	Added dejagnu test suite framework. Removed radctl.rc
+	from the test suite.
+	
+	* configure.in: Added test/guile/Makefile and
+	test/dejagnu/Makefile
+	* test/test.scm: (removed).
+	* test/guile: new directory
+	* test/guile/Makefile.am: (new)
+	* test/guile/test.scm: (new) Moved from ..
+	* test/Makefile.am: Added new subdirs: guile and dejagnu.
+	Removed raddb/radctl.rc dependencies. Added those for
+	raddb/client.conf.in.
+	* test/raddb/radctl.rc.in: Removed.
+	* test/raddb/client.conf.in: (new)
+	* test/raddb/Makefile.am: Removed radctl.rc.in, added
+	client.conf.in.
+	
+2001-11-15 Sergey Poznyakoff
+
 	* Makefile.am: Added radtest.
 	* configure.in: Likewise.
 	* scripts/debug.sh: Removed TOPDIR. SKEL should always be

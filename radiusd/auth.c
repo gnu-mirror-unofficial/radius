@@ -894,6 +894,7 @@ sfn_validate(AUTH_MACH *m)
 			case AUTH_REJECT:
 				auth_log(m, _("Rejected"),
 					 NULL, NULL, NULL);  
+				newstate(as_reject);
 				break;
 
 			case AUTH_IGNORE:
@@ -905,6 +906,7 @@ sfn_validate(AUTH_MACH *m)
 			case AUTH_NOUSER:
 				auth_log(m, _("Invalid user"),
 					 NULL, NULL, NULL);
+				newstate(as_reject_cleanup);
 				break;
                                 
 			case AUTH_FAIL:
@@ -913,14 +915,15 @@ sfn_validate(AUTH_MACH *m)
 					 is_log_mode(m, RLOG_FAILED_PASS) ?
 					 m->userpass : NULL,
 					 NULL, NULL);
+				newstate(as_reject_cleanup);
 				break;
 
 			default:
 				insist_fail("sfn_validate");
 			}
 		}
-		newstate(as_reject);
 		auth_format_msg(m, MSG_ACCESS_DENIED);
+		return;
 	}
 
 	rc = check_expiration(m);
@@ -1218,14 +1221,22 @@ req_decrypt_password(char *password, RADIUS_REQ *req, VALUE_PAIR *pair)
                 if (!pair)
                         return;
         }
-        /* Determine whether we need to use broken decoding */
-        nas = nas_request_to_nas(req);
-        if (nas
-            && (s = envar_lookup(nas->args, "broken_pass")) != NULL
-            && s[0] == '1')
-                decrypt_password_broken(password, pair,
-                                        req->vector, req->secret);
-        else
-                decrypt_password(password, pair,
-                                 req->vector, req->secret);
+
+	if (pair->prop & AP_ENCRYPT_RFC2138) {
+		/* Determine whether we need to use broken decoding */
+		nas = nas_request_to_nas(req);
+		if (nas
+		    && (s = envar_lookup(nas->args, "broken_pass")) != NULL
+		    && s[0] == '1')
+			decrypt_password_broken(password, pair,
+						req->vector, req->secret);
+		else
+			decrypt_password(password, pair,
+					 req->vector, req->secret);
+	} else if (pair->prop & AP_ENCRYPT_RFC2868) {
+		u_char tag; /* FIXME: not accessible for user */
+		decrypt_tunnel_password(password, 
+					&tag, pair,
+					req->vector, req->secret);
+	}
 }

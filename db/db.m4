@@ -65,10 +65,10 @@ CREATETABLE(calls, {
 
 CREATETABLE(ippool, {
   status ENUM_T(2,'FREE','BLCK','FIXD','ASGN','RSRV') default 'FREE' not null,
-  time TIME_T('0000-00-00 00:00:00') NOT NULL,
+  nas CHAR_T(17) default '0.0.0.0' not null,
   ipaddr CHAR_T(17) default '' not null,
-  user_name VARCHAR_T(32) CI default '' not null,
-  nas CHAR_T(17) default '0.0.0.0' not null COMMA
+  time TIME_T('0000-00-00 00:00:00') NOT NULL,
+  user_name VARCHAR_T(32) CI default '' not null COMMA
   INDEX(ippool_name,user_name) COMMA
   INDEX(ippool_ipaddr,ipaddr)
 })

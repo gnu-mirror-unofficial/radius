@@ -198,42 +198,74 @@ int snmp_port_index2(enum mib_node_cmd cmd, void *closure, subid_t subid,
 int snmp_port_table(enum mib_node_cmd cmd, void *closure, subid_t subid,
                     struct snmp_var **varp, int *errp);
 
-struct auth_mib_closure {
+struct auth_mib_data {
         int nas_index;
 };
 
-struct nas_closure {
+struct nas_data {
         subid_t quad[4];
 };
 
-struct nas_table {
+struct nas_table_data {
         int row;
 };
 
-struct port_closure {
+struct port_data {
         int nas_index;
         int port_no;
 };
 
-struct port_table_closure {
+struct port_table_data {
         int port_index;
 };
 
-struct queue_closure {
+struct queue_data {
         int queue_index;
 };
 
-struct mem_closure {
+struct mem_data {
         int mem_index;
 };
 
-static struct auth_mib_closure auth_closure, acct_closure;
-static struct nas_closure nas_closure;
-static struct nas_table nas_table;
-static struct port_closure port_closure;
-static struct port_table_closure port_table;
-static struct queue_closure queue_closure;
-static struct mem_closure mem_closure;
+union snmpserv_data {
+	struct auth_mib_data auth_mib;
+	struct nas_data nas;
+	struct nas_table_data nas_data;
+	struct port_data port;
+	struct port_table_data port_table;
+	struct queue_data queue;
+	struct mem_data mem;
+};
+
+static pthread_once_t snmpserv_once = PTHREAD_ONCE_INIT;
+static pthread_key_t snmpserv_key;
+
+static void
+snmpserv_data_destroy(ptr)
+	void *ptr;
+{
+	efree(ptr);
+}
+
+static void
+snmpserv_data_create()
+{
+	pthread_key_create(&snmpserv_key, snmpserv_data_destroy);
+}
+
+static void *
+snmpserv_get_data()
+{
+	union snmpserv_data *p;
+	pthread_once(&snmpserv_once, snmpserv_data_create);
+	p = pthread_getspecific(snmpserv_key);
+	if (!p) {
+		p = emalloc(sizeof(*p));
+		p->auth_mib.nas_index = 1;
+		pthread_setspecific(snmpserv_key, p);
+	}
+	return p;
+}
 
 static struct mib_data {
         oid_t oid;
@@ -259,18 +291,18 @@ static struct mib_data {
         oid_AuthServTotalUnknownTypes,       snmp_auth_handler, NULL,
 
         /* Variable oids */
-        oid_AuthClientIndex,                 snmp_auth_v_handler,&auth_closure,
-        oid_AuthClientAddress,               snmp_auth_v_handler,&auth_closure,
-        oid_AuthClientID,                    snmp_auth_v_handler,&auth_closure,
-        oid_AuthServAccessRequests,          snmp_auth_v_handler,&auth_closure,
-        oid_AuthServDupAccessRequests,       snmp_auth_v_handler,&auth_closure,
-        oid_AuthServAccessAccepts,           snmp_auth_v_handler,&auth_closure,
-        oid_AuthServAccessRejects,           snmp_auth_v_handler,&auth_closure,
-        oid_AuthServAccessChallenges,        snmp_auth_v_handler,&auth_closure,
-        oid_AuthServMalformedAccessRequests, snmp_auth_v_handler,&auth_closure,
-        oid_AuthServBadAuthenticators,       snmp_auth_v_handler,&auth_closure,
-        oid_AuthServPacketsDropped,          snmp_auth_v_handler,&auth_closure,
-        oid_AuthServUnknownTypes,            snmp_auth_v_handler,&auth_closure,
+        oid_AuthClientIndex,                 snmp_auth_v_handler,NULL,
+        oid_AuthClientAddress,               snmp_auth_v_handler,NULL,
+        oid_AuthClientID,                    snmp_auth_v_handler,NULL,
+        oid_AuthServAccessRequests,          snmp_auth_v_handler,NULL,
+        oid_AuthServDupAccessRequests,       snmp_auth_v_handler,NULL,
+        oid_AuthServAccessAccepts,           snmp_auth_v_handler,NULL,
+        oid_AuthServAccessRejects,           snmp_auth_v_handler,NULL,
+        oid_AuthServAccessChallenges,        snmp_auth_v_handler,NULL,
+        oid_AuthServMalformedAccessRequests, snmp_auth_v_handler,NULL,
+        oid_AuthServBadAuthenticators,       snmp_auth_v_handler,NULL,
+        oid_AuthServPacketsDropped,          snmp_auth_v_handler,NULL,
+        oid_AuthServUnknownTypes,            snmp_auth_v_handler,NULL,
         
         /* Accounting */
         /* Fixed oids */
@@ -289,17 +321,17 @@ static struct mib_data {
         oid_AccServTotalUnknownTypes,        snmp_acct_handler, NULL,      
 
         /* Variable oids */
-        oid_AccClientIndex,                  snmp_acct_v_handler,&acct_closure,
-        oid_AccClientAddress,                snmp_acct_v_handler,&acct_closure,
-        oid_AccClientID,                     snmp_acct_v_handler,&acct_closure,
-        oid_AccServPacketsDropped,           snmp_acct_v_handler,&acct_closure,
-        oid_AccServRequests,                 snmp_acct_v_handler,&acct_closure,
-        oid_AccServDupRequests,              snmp_acct_v_handler,&acct_closure,
-        oid_AccServResponses,                snmp_acct_v_handler,&acct_closure,
-        oid_AccServBadAuthenticators,        snmp_acct_v_handler,&acct_closure,
-        oid_AccServMalformedRequests,        snmp_acct_v_handler,&acct_closure,
-        oid_AccServNoRecords,                snmp_acct_v_handler,&acct_closure,
-        oid_AccServUnknownTypes,             snmp_acct_v_handler,&acct_closure,
+        oid_AccClientIndex,                  snmp_acct_v_handler,NULL,
+        oid_AccClientAddress,                snmp_acct_v_handler,NULL,
+        oid_AccClientID,                     snmp_acct_v_handler,NULL,
+        oid_AccServPacketsDropped,           snmp_acct_v_handler,NULL,
+        oid_AccServRequests,                 snmp_acct_v_handler,NULL,
+        oid_AccServDupRequests,              snmp_acct_v_handler,NULL,
+        oid_AccServResponses,                snmp_acct_v_handler,NULL,
+        oid_AccServBadAuthenticators,        snmp_acct_v_handler,NULL,
+        oid_AccServMalformedRequests,        snmp_acct_v_handler,NULL,
+        oid_AccServNoRecords,                snmp_acct_v_handler,NULL,
+        oid_AccServUnknownTypes,             snmp_acct_v_handler,NULL,
 
 #ifdef SNMP_COMPAT_0_96
         
@@ -309,22 +341,22 @@ static struct mib_data {
         oid_grad_radiusServerState,          snmp_serv_handler, NULL,
 
         /* Variable oids */
-        oid_grad_queueIndex,   snmp_serv_queue_handler, &queue_closure,
-        oid_grad_queueName,    snmp_serv_queue_handler, &queue_closure, 
-        oid_grad_queueActive,  snmp_serv_queue_handler, &queue_closure, 
-        oid_grad_queueHeld,    snmp_serv_queue_handler, &queue_closure, 
-        oid_grad_queueTotal,   snmp_serv_queue_handler, &queue_closure, 
+        oid_grad_queueIndex,   snmp_serv_queue_handler, NULL,
+        oid_grad_queueName,    snmp_serv_queue_handler, NULL,
+        oid_grad_queueActive,  snmp_serv_queue_handler, NULL,
+        oid_grad_queueHeld,    snmp_serv_queue_handler, NULL,
+        oid_grad_queueTotal,   snmp_serv_queue_handler, NULL,
 
         oid_grad_memoryNumClasses,      snmp_serv_mem_summary,   NULL,
         oid_grad_memoryNumBuckets,      snmp_serv_mem_summary,   NULL,
         oid_grad_memoryBytesAllocated,  snmp_serv_mem_summary,   NULL,
         oid_grad_memoryBytesUsed,       snmp_serv_mem_summary,   NULL,
         
-        oid_grad_classIndex,            snmp_serv_class_handler, &mem_closure,
-        oid_grad_classSize,             snmp_serv_class_handler, &mem_closure,
-        oid_grad_classElsPerBucket,     snmp_serv_class_handler, &mem_closure,
-        oid_grad_classNumBuckets,       snmp_serv_class_handler, &mem_closure,
-        oid_grad_classElsUsed,          snmp_serv_class_handler, &mem_closure,
+        oid_grad_classIndex,            snmp_serv_class_handler, NULL,
+        oid_grad_classSize,             snmp_serv_class_handler, NULL,
+        oid_grad_classElsPerBucket,     snmp_serv_class_handler, NULL,
+        oid_grad_classNumBuckets,       snmp_serv_class_handler, NULL,
+        oid_grad_classElsUsed,          snmp_serv_class_handler, NULL,
         
         oid_grad_memoryMallocBlocks,    snmp_serv_mem_summary,   NULL,
         oid_grad_memoryMallocBytes,     snmp_serv_mem_summary,   NULL,
@@ -338,37 +370,37 @@ static struct mib_data {
         oid_grad_StatTotalLinesIdle,    snmp_stat_handler, NULL,
 
         /* Variable oids */
-        oid_grad_NASIndex1,             snmp_stat_nas1, &nas_closure,
-        oid_grad_NASIndex2,             snmp_stat_nas2, &nas_closure,
-        oid_grad_NASIndex3,             snmp_stat_nas3, &nas_closure,
-        oid_grad_NASIndex4,             snmp_stat_nas4, &nas_closure,
+        oid_grad_NASIndex1,             snmp_stat_nas1, NULL,
+        oid_grad_NASIndex2,             snmp_stat_nas2, NULL,
+        oid_grad_NASIndex3,             snmp_stat_nas3, NULL,
+        oid_grad_NASIndex4,             snmp_stat_nas4, NULL,
 
-        oid_grad_NASAddress,            snmp_nas_table, &nas_table,
-        oid_grad_NASID,                 snmp_nas_table, &nas_table,
-        oid_grad_NASLines,              snmp_nas_table, &nas_table,
-        oid_grad_NASLinesInUse,         snmp_nas_table, &nas_table,
-        oid_grad_NASLinesIdle,          snmp_nas_table, &nas_table,
+        oid_grad_NASAddress,            snmp_nas_table, NULL,
+        oid_grad_NASID,                 snmp_nas_table, NULL,
+        oid_grad_NASLines,              snmp_nas_table, NULL,
+        oid_grad_NASLinesInUse,         snmp_nas_table, NULL,
+        oid_grad_NASLinesIdle,          snmp_nas_table, NULL,
 
-        oid_grad_StatPortIndex1,        snmp_port_index1, &port_closure,
-        oid_grad_StatPortIndex2,        snmp_port_index2, &port_closure,
+        oid_grad_StatPortIndex1,        snmp_port_index1, NULL,
+        oid_grad_StatPortIndex2,        snmp_port_index2, NULL,
 
         /* port table */
-        oid_grad_StatPortNASIndex,      snmp_port_table, &port_table,
-        oid_grad_StatPortID,            snmp_port_table, &port_table,
-        oid_grad_StatPortFramedAddress, snmp_port_table, &port_table,
-        oid_grad_StatPortTotalLogins,   snmp_port_table, &port_table,
-        oid_grad_StatPortStatus,        snmp_port_table, &port_table,
-        oid_grad_StatPortStatusChangeTimestamp,   snmp_port_table, &port_table,
-        oid_grad_StatPortUpTime,        snmp_port_table, &port_table,
-        oid_grad_StatPortLastLoginName, snmp_port_table, &port_table,
-        oid_grad_StatPortLastLoginTimestamp,  snmp_port_table, &port_table,
-        oid_grad_StatPortLastLogoutTimestamp, snmp_port_table, &port_table,
-        oid_grad_StatPortIdleTotalTime, snmp_port_table, &port_table,
-        oid_grad_StatPortIdleMaxTime,   snmp_port_table, &port_table,
-        oid_grad_StatPortIdleMaxTimestamp, snmp_port_table, &port_table,
-        oid_grad_StatPortInUseTotalTime, snmp_port_table, &port_table,
-        oid_grad_StatPortInUseMaxTime,   snmp_port_table, &port_table,
-        oid_grad_StatPortInUseMaxTimestamp, snmp_port_table, &port_table,
+        oid_grad_StatPortNASIndex,      snmp_port_table, NULL,
+        oid_grad_StatPortID,            snmp_port_table, NULL,
+        oid_grad_StatPortFramedAddress, snmp_port_table, NULL,
+        oid_grad_StatPortTotalLogins,   snmp_port_table, NULL,
+        oid_grad_StatPortStatus,        snmp_port_table, NULL,
+        oid_grad_StatPortStatusChangeTimestamp,   snmp_port_table, NULL,
+        oid_grad_StatPortUpTime,        snmp_port_table, NULL,
+        oid_grad_StatPortLastLoginName, snmp_port_table, NULL,
+        oid_grad_StatPortLastLoginTimestamp,  snmp_port_table, NULL,
+        oid_grad_StatPortLastLogoutTimestamp, snmp_port_table, NULL,
+        oid_grad_StatPortIdleTotalTime, snmp_port_table, NULL,
+        oid_grad_StatPortIdleMaxTime,   snmp_port_table, NULL,
+        oid_grad_StatPortIdleMaxTimestamp, snmp_port_table, NULL,
+        oid_grad_StatPortInUseTotalTime, snmp_port_table, NULL,
+        oid_grad_StatPortInUseMaxTime,   snmp_port_table, NULL,
+        oid_grad_StatPortInUseMaxTimestamp, snmp_port_table, NULL,
 #endif
         /* enterprise.gnu.radius subtree */
         /* Server */
@@ -377,22 +409,22 @@ static struct mib_data {
         oid_radiusServerState,          snmp_serv_handler, NULL,
 
         /* Variable oids */
-        oid_queueIndex,   snmp_serv_queue_handler, &queue_closure,
-        oid_queueName,    snmp_serv_queue_handler, &queue_closure,      
-        oid_queueActive,  snmp_serv_queue_handler, &queue_closure,      
-        oid_queueHeld,    snmp_serv_queue_handler, &queue_closure,      
-        oid_queueTotal,   snmp_serv_queue_handler, &queue_closure,      
+        oid_queueIndex,   snmp_serv_queue_handler, NULL,
+        oid_queueName,    snmp_serv_queue_handler, NULL,
+        oid_queueActive,  snmp_serv_queue_handler, NULL,
+        oid_queueHeld,    snmp_serv_queue_handler, NULL,
+        oid_queueTotal,   snmp_serv_queue_handler, NULL,
 
         oid_memoryNumClasses,      snmp_serv_mem_summary,   NULL,
         oid_memoryNumBuckets,      snmp_serv_mem_summary,   NULL,
         oid_memoryBytesAllocated,  snmp_serv_mem_summary,   NULL,
         oid_memoryBytesUsed,       snmp_serv_mem_summary,   NULL,
         
-        oid_classIndex,         snmp_serv_class_handler, &mem_closure,
-        oid_classSize,          snmp_serv_class_handler, &mem_closure,
-        oid_classElsPerBucket,     snmp_serv_class_handler, &mem_closure,
-        oid_classNumBuckets,    snmp_serv_class_handler, &mem_closure,
-        oid_classElsUsed,          snmp_serv_class_handler, &mem_closure,
+        oid_classIndex,         snmp_serv_class_handler, NULL,
+        oid_classSize,          snmp_serv_class_handler, NULL,
+        oid_classElsPerBucket,     snmp_serv_class_handler, NULL,
+        oid_classNumBuckets,    snmp_serv_class_handler, NULL,
+        oid_classElsUsed,          snmp_serv_class_handler, NULL,
         
         oid_memoryMallocBlocks, snmp_serv_mem_summary,   NULL,
         oid_memoryMallocBytes,  snmp_serv_mem_summary,   NULL,
@@ -406,37 +438,37 @@ static struct mib_data {
         oid_StatTotalLinesIdle,              snmp_stat_handler, NULL,
 
         /* Variable oids */
-        oid_NASIndex1,                       snmp_stat_nas1, &nas_closure,
-        oid_NASIndex2,                       snmp_stat_nas2, &nas_closure,
-        oid_NASIndex3,                       snmp_stat_nas3, &nas_closure,
-        oid_NASIndex4,                       snmp_stat_nas4, &nas_closure,
+        oid_NASIndex1,                       snmp_stat_nas1, NULL,
+        oid_NASIndex2,                       snmp_stat_nas2, NULL,
+        oid_NASIndex3,                       snmp_stat_nas3, NULL,
+        oid_NASIndex4,                       snmp_stat_nas4, NULL,
 
-        oid_NASAddress,                      snmp_nas_table, &nas_table,
-        oid_NASID,                           snmp_nas_table, &nas_table,
-        oid_NASLines,                        snmp_nas_table, &nas_table,
-        oid_NASLinesInUse,                   snmp_nas_table, &nas_table,
-        oid_NASLinesIdle,                    snmp_nas_table, &nas_table,
+        oid_NASAddress,                      snmp_nas_table, NULL,
+        oid_NASID,                           snmp_nas_table, NULL,
+        oid_NASLines,                        snmp_nas_table, NULL,
+        oid_NASLinesInUse,                   snmp_nas_table, NULL,
+        oid_NASLinesIdle,                    snmp_nas_table, NULL,
 
-        oid_StatPortIndex1,                  snmp_port_index1, &port_closure,
-        oid_StatPortIndex2,                  snmp_port_index2, &port_closure,
+        oid_StatPortIndex1,                  snmp_port_index1, NULL,
+        oid_StatPortIndex2,                  snmp_port_index2, NULL,
 
         /* port table */
-        oid_StatPortNASIndex,                snmp_port_table, &port_table,
-        oid_StatPortID,                      snmp_port_table, &port_table,
-        oid_StatPortFramedAddress,           snmp_port_table, &port_table,
-        oid_StatPortTotalLogins,             snmp_port_table, &port_table,
-        oid_StatPortStatus,                  snmp_port_table, &port_table,
-        oid_StatPortStatusChangeTimestamp,   snmp_port_table, &port_table,
-        oid_StatPortUpTime,                  snmp_port_table, &port_table,
-        oid_StatPortLastLoginName,           snmp_port_table, &port_table,
-        oid_StatPortLastLoginTimestamp,      snmp_port_table, &port_table,
-        oid_StatPortLastLogoutTimestamp,     snmp_port_table, &port_table,
-        oid_StatPortIdleTotalTime,           snmp_port_table, &port_table,
-        oid_StatPortIdleMaxTime,             snmp_port_table, &port_table,
-        oid_StatPortIdleMaxTimestamp,        snmp_port_table, &port_table,
-        oid_StatPortInUseTotalTime,          snmp_port_table, &port_table,
-        oid_StatPortInUseMaxTime,            snmp_port_table, &port_table,
-        oid_StatPortInUseMaxTimestamp,       snmp_port_table, &port_table,
+        oid_StatPortNASIndex,                snmp_port_table, NULL,
+        oid_StatPortID,                      snmp_port_table, NULL,
+        oid_StatPortFramedAddress,           snmp_port_table, NULL,
+        oid_StatPortTotalLogins,             snmp_port_table, NULL,
+        oid_StatPortStatus,                  snmp_port_table, NULL,
+        oid_StatPortStatusChangeTimestamp,   snmp_port_table, NULL,
+        oid_StatPortUpTime,                  snmp_port_table, NULL,
+        oid_StatPortLastLoginName,           snmp_port_table, NULL,
+        oid_StatPortLastLoginTimestamp,      snmp_port_table, NULL,
+        oid_StatPortLastLogoutTimestamp,     snmp_port_table, NULL,
+        oid_StatPortIdleTotalTime,           snmp_port_table, NULL,
+        oid_StatPortIdleMaxTime,             snmp_port_table, NULL,
+        oid_StatPortIdleMaxTimestamp,        snmp_port_table, NULL,
+        oid_StatPortInUseTotalTime,          snmp_port_table, NULL,
+        oid_StatPortInUseMaxTime,            snmp_port_table, NULL,
+        oid_StatPortInUseMaxTimestamp,       snmp_port_table, NULL,
 
 };                                          
 
@@ -448,9 +480,6 @@ snmp_tree_init()
         
         snmp_init(0, 0, (snmp_alloc_t)emalloc, (snmp_free_t)efree);
 
-        auth_closure.nas_index = 1;
-        acct_closure.nas_index = 1;
-        
         for (p = mib_data; p < mib_data + NITEMS(mib_data); p++) {
                 mib_insert(&mib_tree, p->oid, &node);
                 if (p->handler) {
@@ -1214,17 +1243,19 @@ int snmp_auth_v_handler(enum mib_node_cmd cmd, void *closure,
                         int *errp);
 struct snmp_var *snmp_auth_var_v_get(subid_t subid, struct snmp_var *var,
                                      int *errp);
-int snmp_auth_var_next(subid_t subid, struct auth_mib_closure *closure);
+int snmp_auth_var_next(subid_t subid, struct auth_mib_data *closure);
 
 /* Handler function for variable oid of the authentication subtree */ 
 int
-snmp_auth_v_handler(cmd, closure, subid, varp, errp)
+snmp_auth_v_handler(cmd, unused, subid, varp, errp)
         enum mib_node_cmd cmd;
-        void *closure;
+        void *unused;
         subid_t subid;
         struct snmp_var **varp;
         int *errp;
 {
+	struct auth_mib_data *data = (struct auth_mib_data *)
+		                            snmpserv_get_data();
         switch (cmd) {
         case MIB_NODE_GET:
                 if ((*varp = snmp_auth_var_v_get(subid, *varp, errp)) == NULL)
@@ -1242,13 +1273,13 @@ snmp_auth_v_handler(cmd, closure, subid, varp, errp)
                 return 0;
                 
         case MIB_NODE_NEXT:
-                return snmp_auth_var_next(subid+1, closure);
+                return snmp_auth_var_next(subid+1, data);
 
         case MIB_NODE_GET_SUBID:
-                return ((struct auth_mib_closure*)closure)->nas_index;
+                return data->nas_index;
                 
         case MIB_NODE_RESET:
-                ((struct auth_mib_closure*)closure)->nas_index = 1;
+                data->nas_index = 1;
                 break;
                 
         }
@@ -1259,7 +1290,7 @@ snmp_auth_v_handler(cmd, closure, subid, varp, errp)
 int
 snmp_auth_var_next(subid, closure)
         subid_t subid;
-        struct auth_mib_closure *closure;
+        struct auth_mib_data *closure;
 {
         if (!nas_lookup_index(subid)) 
                 return -1;
@@ -1587,14 +1618,15 @@ struct snmp_var *snmp_acct_var_v_get(subid_t subid, struct snmp_var *var,
 
 /* Handler function for variable oid of the authentication subtree */ 
 int
-snmp_acct_v_handler(cmd, closure, subid, varp, errp)
+snmp_acct_v_handler(cmd, unused, subid, varp, errp)
         enum mib_node_cmd cmd;
-        void *closure;
+        void *unused;
         subid_t subid;
         struct snmp_var **varp;
         int *errp;
 {
-        
+        struct auth_mib_data *data = (struct auth_mib_data *)
+		                        snmpserv_get_data();
         switch (cmd) {
         case MIB_NODE_GET:
                 if ((*varp = snmp_acct_var_v_get(subid, *varp, errp)) == NULL)
@@ -1612,13 +1644,13 @@ snmp_acct_v_handler(cmd, closure, subid, varp, errp)
                 return 0;
                 
         case MIB_NODE_NEXT:
-                return snmp_auth_var_next(subid+1, closure);
+                return snmp_auth_var_next(subid+1, data);
                 
         case MIB_NODE_GET_SUBID:
-                return ((struct auth_mib_closure*)closure)->nas_index;
+                return data->nas_index;
                 
         case MIB_NODE_RESET:
-                ((struct auth_mib_closure*)closure)->nas_index = 1;
+                data->nas_index = 1;
                 break;
 
         }
@@ -1905,14 +1937,14 @@ static struct snmp_var *snmp_queue_get(subid_t subid, struct snmp_var *var,
 static void get_queue_stat(int qno, struct snmp_var *var, subid_t key);
 
 int
-snmp_serv_queue_handler(cmd, closure, subid, varp, errp)
+snmp_serv_queue_handler(cmd, unused, subid, varp, errp)
         enum mib_node_cmd cmd;
-        void *closure;
+        void *unused;
         subid_t subid;
         struct snmp_var **varp;
         int *errp;
 {
-        struct queue_closure *p = (struct queue_closure*)closure;
+        struct queue_data *p = (struct queue_data *) snmpserv_get_data();
         
         switch (cmd) {
         case MIB_NODE_GET:
@@ -2164,14 +2196,14 @@ _mem_get_class(subid, stat)
 }
 
 int
-snmp_serv_class_handler(cmd, closure, subid, varp, errp)
+snmp_serv_class_handler(cmd, unused, subid, varp, errp)
         enum mib_node_cmd cmd;
-        void *closure;
+        void *unused;
         subid_t subid;
         struct snmp_var **varp;
         int *errp;
 {
-        struct mem_closure *p = (struct mem_closure*)closure;
+        struct mem_data *p = (struct mem_data *) snmpserv_get_data();
         CLASS_STAT stat;
         
         switch (cmd) {
@@ -2391,7 +2423,7 @@ int
 snmp_stat_nas(num, cmd, closure, subid, varp, errp)
         int num;
         enum mib_node_cmd cmd;
-        struct nas_closure *closure;
+        struct nas_data *closure;
         subid_t subid;
         struct snmp_var **varp;
         int *errp;
@@ -2485,47 +2517,55 @@ snmp_stat_nas(num, cmd, closure, subid, varp, errp)
 }
 
 int
-snmp_stat_nas1(cmd, closure, subid, varp, errp)
+snmp_stat_nas1(cmd, unused, subid, varp, errp)
         enum mib_node_cmd cmd;
-        void *closure;
+        void *unused;
         subid_t subid;
         struct snmp_var **varp;
         int *errp;
 {
-        return snmp_stat_nas(0, cmd, closure, subid, varp, errp);
+        return snmp_stat_nas(0, cmd,
+			     (struct nas_data*)snmpserv_get_data(), subid,
+			     varp, errp);
 }
 
 int
-snmp_stat_nas2(cmd, closure, subid, varp, errp)
+snmp_stat_nas2(cmd, unused, subid, varp, errp)
         enum mib_node_cmd cmd;
-        void *closure;
+        void *unused;
         subid_t subid;
         struct snmp_var **varp;
         int *errp;
 {
-        return snmp_stat_nas(1, cmd, closure, subid, varp, errp);
+        return snmp_stat_nas(1, cmd,
+			     (struct nas_data*)snmpserv_get_data(), subid,
+			     varp, errp);
 }
 
 int
-snmp_stat_nas3(cmd, closure, subid, varp, errp)
+snmp_stat_nas3(cmd, unused, subid, varp, errp)
         enum mib_node_cmd cmd;
-        void *closure;
+        void *unused;
         subid_t subid;
         struct snmp_var **varp;
         int *errp;
 {
-        return snmp_stat_nas(2, cmd, closure, subid, varp, errp);
+        return snmp_stat_nas(2, cmd,
+			     (struct nas_data*)snmpserv_get_data(), subid,
+			     varp, errp);
 }
 
 int
-snmp_stat_nas4(cmd, closure, subid, varp, errp)
+snmp_stat_nas4(cmd, unused, subid, varp, errp)
         enum mib_node_cmd cmd;
-        void *closure;
+        void *unused;
         subid_t subid;
         struct snmp_var **varp;
         int *errp;
 {
-        return snmp_stat_nas(3, cmd, closure, subid, varp, errp);
+        return snmp_stat_nas(3, cmd,
+			     (struct nas_data*)snmpserv_get_data(), subid,
+			     varp, errp);
 }
 
 
@@ -2533,14 +2573,15 @@ void get_stat_nasstat(NAS *nas, struct snmp_var *var, int ind);
 struct snmp_var *snmp_nas_table_get(subid_t subid, oid_t oid, int *errp);
 
 int
-snmp_nas_table(cmd, closure, subid, varp, errp)
+snmp_nas_table(cmd, unused, subid, varp, errp)
         enum mib_node_cmd cmd;
-        void *closure;
+        void *unused;
         subid_t subid;
         struct snmp_var **varp;
         int *errp;
 {
-        
+        struct nas_table_data *data = (struct nas_table_data*)
+		                         snmpserv_get_data();
         switch (cmd) {
         case MIB_NODE_GET:
                 if ((*varp = snmp_nas_table_get(subid, (*varp)->name, errp))
@@ -2558,15 +2599,15 @@ snmp_nas_table(cmd, closure, subid, varp, errp)
         case MIB_NODE_NEXT:
                 if (!nas_lookup_index(subid+1))
                         return -1;
-                ((struct nas_table*)closure)->row = subid+1;
+                data->row = subid+1;
                 break;
                         
         case MIB_NODE_RESET:
-                ((struct nas_table*)closure)->row = 1; 
+                data->row = 1; 
                 break;
 
         case MIB_NODE_GET_SUBID:
-                return ((struct nas_table*)closure)->row;
+                return data->row;
 
         case MIB_NODE_COMPARE:
                 return 0;
@@ -2661,15 +2702,15 @@ get_stat_nasstat(nas, var, ind)
 
 /*ARGSUSED*/
 int
-snmp_port_index1(cmd, closure, subid, varp, errp)
+snmp_port_index1(cmd, unused, subid, varp, errp)
         enum mib_node_cmd cmd;
-        void *closure;
+        void *unused;
         subid_t subid;
         struct snmp_var **varp;
         int *errp;
 {
         NAS *nas;
-        struct port_closure *pind = (struct port_closure*)closure;
+        struct port_data *pind = (struct port_data*)snmpserv_get_data();
         
         switch (cmd) {
         case MIB_NODE_GET:
@@ -2705,9 +2746,9 @@ snmp_port_index1(cmd, closure, subid, varp, errp)
 }
 
 int
-snmp_port_index2(cmd, closure, subid, varp, errp)
+snmp_port_index2(cmd, unused, subid, varp, errp)
         enum mib_node_cmd cmd;
-        void *closure;
+        void *unused;
         subid_t subid;
         struct snmp_var **varp;
         int *errp;
@@ -2715,7 +2756,7 @@ snmp_port_index2(cmd, closure, subid, varp, errp)
         NAS *nas;
         int index;
         struct snmp_var *var;
-        struct port_closure *pind = (struct port_closure*)closure;
+        struct port_data *pind = (struct port_data*)snmpserv_get_data;
         
         switch (cmd) {
         case MIB_NODE_GET:
@@ -2775,14 +2816,15 @@ struct snmp_var *snmp_port_get(subid_t subid, struct snmp_var *var, int *errp);
 void get_port_stat(PORT_STAT *port, struct snmp_var *var, subid_t key);
 
 int
-snmp_port_table(cmd, closure, subid, varp, errp)
+snmp_port_table(cmd, unused, subid, varp, errp)
         enum mib_node_cmd cmd;
-        void *closure;
+        void *unused;
         subid_t subid;
         struct snmp_var **varp;
         int *errp;
 {
-        struct port_table_closure *p = (struct port_table_closure*)closure;
+        struct port_table_data *p = (struct port_table_data*)
+		                         snmpserv_get_data();
         
         switch (cmd) {
         case MIB_NODE_GET:

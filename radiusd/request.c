@@ -78,12 +78,22 @@ request_start_thread()
         return 0;
 }
 
+void
+rad_cleanup_thread0(arg)
+        void *arg;
+{
+	/*FIXME: 1. unlock mutexes (if any)
+	         2. free any allocated memory
+		 3. flush pending i/o(???) */
+}
+
 void *
 request_thread0(arg)
         void *arg;
 {
 	rad_thread_init();
-        
+
+	pthread_cleanup_push(rad_cleanup_thread0, NULL);
         while (1) {
                 REQUEST *req;
                 while (req = request_get())
@@ -95,6 +105,7 @@ request_thread0(arg)
                 Pthread_mutex_unlock(&request_mutex);
         }
         /*NOTREACHED*/
+	pthread_cleanup_pop(1);
         return NULL;
 }
 
@@ -230,10 +241,10 @@ request_put(type, data, activefd, numpending)
                                        request_class[curreq->type].name,
                                        curreq->child_id);
                                 /*FIXME: This causes much grief */
-#if 0
                                 pthread_cancel(curreq->child_id);
-                                num_threads--;
-#endif
+				/* Prevent successive invocations of
+				   pthread_cancel */
+				curreq->timestamp = curtime;
                                 curreq = curreq->next;
                                 break;
                         }

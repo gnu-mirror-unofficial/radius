@@ -26,9 +26,10 @@ CREATEDATABASE(RADIUS)
 CREATETABLE(passwd, {
   user_name           VARCHAR_T(32) CI default '' not null,
   service             CHAR_T(16) default 'Framed-PPP' not null,
-  password            CHAR_T(64) COMMA
-  INDEX(uname, user_name) COMMA
-  UNIQUE(usrv, user_name,service) 
+  password            CHAR_T(64),
+  active              enum ('Y','N') COMMA
+  INDEX(uname, user_name,active) COMMA
+  UNIQUE(usrv, user_name,service,active) 
 })
 CREATETABLE(groups, {
   user_name           CHAR_T(32) CI default '' not null,

@@ -170,6 +170,23 @@ free_chanlist(cp)
 	free_slist((struct slist*)cp, NULL);
 }
 
+Chanlist *
+dup_chanlist(cl)
+	Chanlist *cl;
+{
+	Chanlist *head, *tail, *cp;
+
+	for (tail = NULL; cl; cl = cl->next) {
+		cp = make_chanlist(cl->channel);
+		if (!tail)
+			head = cp;
+		else
+			tail->next = cp;
+		tail = cp;
+	}
+	return head;
+}
+	
 /* ************************************************************************* */
 /* categories */
 
@@ -180,7 +197,12 @@ register_category(cat, chanlist)
 {
 	Chanlist *cp;
 	
-	if (chanlist) {
+	if (cat <= 0) {
+		for (cat = 1; cat < NCAT; cat++)
+			register_category(cat, dup_chanlist(chanlist));
+		free_chanlist(chanlist);
+		
+	} else if (chanlist) {
 		if (category[cat].chanlist) {
 			for (cp = chanlist; cp->next; cp = cp->next)
 				;

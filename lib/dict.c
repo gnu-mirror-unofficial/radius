@@ -117,7 +117,7 @@ nfields(int fc, int minf, int maxf, grad_locus_t *loc)
         if (fc < minf) {
                 grad_log_loc(L_ERR, loc, "%s", _("too few fields"));
                 return -1;
-        } else if (fc > maxf) {
+        } else if (maxf != -1 && fc > maxf) {
                 grad_log_loc(L_ERR, loc, "%s", _("too many fields"));
                 return -1;
         }
@@ -491,10 +491,11 @@ static int
 _dict_property(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 {
 	grad_dict_attr_t *attr;
+	int i;
 	int flags;
 	int prop;
 	
-	if (nfields(fc, 3, 3, loc))
+	if (nfields(fc, 3, -1, loc))
                 return 0;
 
         attr = dict_attr_lookup(fv[1]);
@@ -504,10 +505,46 @@ _dict_property(int *errcnt, int fc, char **fv, grad_locus_t *loc)
 			     fv[1]);
 		return 0;
 	}
-	set_default_attr_properties(attr->value, &flags, &prop);
-	if (parse_attr_properties(loc, fv[2], &flags, &prop))
-		++*errcnt;
-        attr->prop = flags | prop;
+
+	for (i = 2; i < fc; i++) {
+		switch (fv[i][0]) {
+		case '+':
+			flags = prop = 0;
+			if (parse_attr_properties(loc, fv[i]+1,
+						  &flags, &prop)) {
+				++*errcnt;
+				break;
+			}
+			attr->prop |= flags | prop;
+			break;
+			
+		case '-':
+			flags = prop = 0;
+			if (parse_attr_properties(loc, fv[i]+1,
+						  &flags, &prop)) {
+				++*errcnt;
+				break;
+			}
+			attr->prop &= ~(flags | prop);
+			break;
+			
+		default:
+			if (i > 2) {
+				grad_log_loc(L_ERR, loc,
+					     _("PROPERTY syntax error"));
+				++*errcnt;
+			} else {
+				set_default_attr_properties(attr->value,
+							    &flags, &prop);
+				if (parse_attr_properties(loc, fv[i],
+							  &flags, &prop) == 0)
+					attr->prop = flags | prop;
+				else
+					++*errcnt;
+				break;
+			}
+		}
+	}
 	return 0;
 }
 

@@ -101,9 +101,6 @@ static char *compile_flag_str[] = {
 #if defined(USE_SNMP)
 	"USE_SNMP",
 #endif
-#if defined(USE_NOTIFY)
-	"USE_NOTIFY",
-#endif
 #if defined(USE_LIVINGSTON_MENUS)
 	"USE_LIVINGSTON_MENUS",
 #endif

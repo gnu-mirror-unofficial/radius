@@ -100,9 +100,6 @@
 /* Define this to enable Livingston-compatible menus */
 #undef USE_LIVINGSTON_MENUS
 
-/* Define this to enable notification */
-#undef USE_NOTIFY
-
 /* Port to use to connect to MYSQL */
 /* leave undefined to use default one */
 #undef RAD_MYSQL_PORT

@@ -1,3 +1,37 @@
+2001-08-23 Sergey Poznyakoff
+
+	Further changes to the logging subsystem. Left-to-do's are:
+		1. Of course, document changes.
+		2? (in the long run) Make radiusd/log.c part of liblog
+		   library.
+
+	* include/log.h: New option LO_PERSIST for marking
+	channels that should not be deleted by log_release().
+	* radiusd/log.c: log_release(): Do not delete channels
+	marked with LO_PERSIST bit.
+	log_set_to_console(): Mark "stdout" with LO_PERSIST bit.
+	channel_free(): Fixed memory leak.
+
+	* radlib/log.c: vlog(): use priname array instead of switch when
+	printing priority name.
+
+	* radlib/strcspn.c: (new) Provides a strcspn() function for
+	systems lacking it.
+	* radlib/Makefile.am: Added strcspn.c
+	* configure.in: Added strcspn to AC_REPLACE.
+
+	* scripts/config-conv.awk: (new) Convert raddb/config from
+	version 0.95 to 0.96.
+
+	Further changes due to the removal of cntl functionality:
+
+	* radscm/radctl.scm: Removed. It is useless once all cntl
+	functionality has been passed to SNMP subsystem. See TODO.
+	* radscm/Makefile.am: Removed radctl.scm.
+	* radscripts/radctl.m4: Removed cntl interface.
+
+	* TODO: Updated.
+
 2001-08-22 Sergey Poznyakoff
 
 	Somewhat regretfully, removed radlib/radprintf.c, and

@@ -1,3 +1,59 @@
+2002-04-30  Sergey Poznyakoff
+
+	Configuration rewritten for autoconf-2.53 / automake-1.6.
+	
+	* acconfig.h: Removed.
+	* configure.in: Renamed to ...
+	* configure.ac: ... this.
+	* Makefile.am: Require automake 1.6. Override default
+	  distcheck rule since it requires _everything_ to be
+	  removed on uninstall, and we will not remove files
+	  from $sysconfdir.
+	  Similar considerations apply to distcleancheck_listfiles.
+	* .cvsignore: Updated.
+	* test/.cvsignore: Updated.
+	* test/dejagnu/.cvsignore: Updated.
+	* test/shell/.cvsignore: New.
+	
+	* client/pam_radius/Makefile.am: Reluctantly added $(EXEEXT)
+	  to the .la target.
+	* doc/texinfo/Makefile.am: Added CLEANFILES.
+
+	* m4/common.m4: Changed rad_ prefix to RA_ for defuns and to
+	  ra_ for variables.
+	* m4/getopt.m4: Likewise.
+	* m4/guile.m4: Likewise.
+	* m4/inaddr.m4: Likewise.
+	* m4/lib.m4: Likewise.
+	* m4/maintain.m4: Likewise.
+	* m4/rx.m4: Likewise.
+
+	* radiusd/Makefile.am: Automake barks at RADIUSD_LDADD. Renamed
+	  to RADIUSD_LDADD_LIST.
+	* radscm/Makefile.am: Renamed RADSCM_BUILT_SOURCES to
+	  RADSCM_BUILT_SOURCES_LIST. Added new CLEANFILES and
+	  INCLUDES.  
+	* test/Makefile.am: Changed CLEANFILES.
+	* test/dejagnu/Makefile.am: Changed DISTCLEANFILES.
+	* test/proxy/Makefile.am: Changed CLEANFILES. Provided
+	  distclean-local.
+	* test/raddb/Makefile.am: Likewise.
+	
++	* radscm/radscm.c: Protect #include <*.x> with #ifndef
+	  SCM_MAGIC_SNARFER.
+	* radscm/rscm_avl.c: Likewise.
+	* radscm/rscm_dict.c: Likewise.
+	* radscm/rscm_lib.c: Likewise.
+	* radscm/rscm_radlog.c: Likewise.
+	* radscm/rscm_rewrite.c: Likewise.
+	* radscm/rscm_syslog.c: Likewise.
+	* radscm/rscm_utmp.c: Likewise.
+	
+*	* radiusd/auth.c (rad_check_password): Attempt to autodetect
+	  CHAP authentication.
+	* radiusd/radius.c (rad_send_reply): Fixed silly bug.
+	* radlib/debug.c: Provide clear_debug() in the #else branch.
+	
 2002-04-26  Sergey Poznyakoff 
 
 	* radiusd/radius.c (rad_send_reply): Cleaned up handling of

@@ -443,14 +443,19 @@ formatdelta(outbuf, delta)
 	char ct[128];
 	char buf[128];
 	struct tm *tm;
+	int days;
 
+	if (delta >= 86400) {
+		days = delta / 86400;
+		delta %= 86400;
+	} else
+		days = 0;
 	tm = gmtime(&delta);
-	strftime(ct, sizeof(ct), "%c", tm);
-	if (delta < 86400)
-		sprintf(buf, "%*.*s", width, width, ct + 11);
+	strftime(ct, sizeof(ct), "%H:%M:%S", tm);
+	if (days == 0)
+		sprintf(buf, "%*.*s", width, width, ct);
 	else
-		sprintf(buf, "%ld+%*.*s",
-			delta / 86400, width, width, ct + 11);
+		sprintf(buf, "%ld+%*.*s", days, width, width, ct);
 	return sprintf(outbuf, "%11.11s ", buf);
 }
 
@@ -463,11 +468,8 @@ formattime(buf, time)
 	char ct[128];
 	
 	tm = localtime(&time);
-	strftime(ct, sizeof(ct), "%c", tm);
-	return sprintf(buf, "%10.10s %5.5s ", ct, ct + 11);
-
-	/*"%m/%d/%y %H:%M:%S", tm);
-	printf("%8.8s %5.5s ", buf, buf + 9);*/
+	strftime(ct, sizeof(ct), "%a %b %e %H:%M", tm);
+	return sprintf(buf, "%s ", ct);
 }
 
 int

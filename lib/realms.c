@@ -46,7 +46,8 @@ _parse_server(int argc, char **argv, struct _parse_data *pd, int *np,
 		char *p;
 		
                 srv->port[PORT_AUTH] = strtoul(argv[++*np], &p, 0);
-		if (++*np+1 < argc && argv[*np][0] == ':') {
+		if (*np+2 < argc && argv[*np+1][0] == ':') {
+			++*np;
 			srv->port[PORT_ACCT] = strtoul(argv[++*np], &p, 0);
 		} else
 			srv->port[PORT_ACCT] = srv->port[PORT_AUTH] + 1;
@@ -57,7 +58,7 @@ _parse_server(int argc, char **argv, struct _parse_data *pd, int *np,
 	}
 	if (pd->fun && pd->fun(srv)) {
 		radlog(L_ERR,
-		       "%s:%d: can't find secret for %s",
+		       _("%s:%d: can't find secret for %s"),
 		       pd->file, pd->line, srv->name);
 		return 1; 
 	}
@@ -126,7 +127,7 @@ read_realms_entry(struct _parse_data *pd, int fc, char **fv,
 		
 		if (list_count(rp->queue->servers) == 0) {
 			radlog(L_ERR,
-			       "%s:%d: cannot parse",
+			       _("%s:%d: cannot parse"),
 			       file, lineno);
 			rad_clt_destroy_queue(rp->queue);
 			efree(rp);

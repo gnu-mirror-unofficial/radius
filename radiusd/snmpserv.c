@@ -192,7 +192,6 @@ struct auth_mib_closure {
 };
 
 struct nas_closure {
-	int last_index;
 	subid_t quad[4];
 };
 
@@ -645,27 +644,22 @@ mib_get_next(node, varp, errp)
 	*errp = SNMP_ERR_NOERROR;
 
 	do {
-		if (found_node->next == NULL &&
-		    found_node->down == NULL &&
-		    mib_down(found_node, oid)) {
-			node = NULL;
-		} else {
-			int depth = 0;
-			node = found_node;
-			mib_reset(node);
+		int depth = 0;
+		node = found_node;
+		mib_reset(node);
 			
-			while (node) {
-				if (depth++ && node->next == NULL) 
-					break;
+		while (node) {
+			if (depth++ && node->next == NULL) 
+				break;
 
-				if (node->next) {
-					node = node->next;
-					mib_reset(node);
-				} else if (node->subid == SUBID_X) {
-					mib_down(node, oid);
-				} else
-					node = node->down;
-			}
+			if (node->next) {
+				node = node->next;
+				mib_reset(node);
+			} else if (node->subid == SUBID_X) {
+				if (mib_down(node, oid))
+					node = NULL;
+			} else
+				node = node->down;
 		}
 		
 		if (!node) {
@@ -1783,7 +1777,6 @@ snmp_stat_nas(num, cmd, closure, subid, varp, errp)
 	UINT4 ip;
 	struct snmp_var *var;
 
-	
 	switch (cmd) {
 	case MIB_NODE_GET:
 		if (num != 3 || OIDLEN((*varp)->name) != LEN_NASIndex4) {
@@ -1800,8 +1793,6 @@ snmp_stat_nas(num, cmd, closure, subid, varp, errp)
 			return -1;
 		}
 
-		closure->last_index = nsp->index;
-		
 		*errp = SNMP_ERR_NOERROR;
 		var = snmp_var_create((*varp)->name);
 		var->type = ASN_INTEGER;
@@ -1825,12 +1816,24 @@ snmp_stat_nas(num, cmd, closure, subid, varp, errp)
 	case MIB_NODE_NEXT:
 		if (num != 3)
 			return  -1; 
-		if ((nas = findnasbyindex(1+closure->last_index)) == NULL) {
+
+		ip = (closure->quad[0]<<24)+
+			(closure->quad[1]<<16)+
+			(closure->quad[2]<<8) +
+			closure->quad[3];
+
+		if ((nas = nas_find(ip)) == NULL) {
 			return -1;
 		}
+
+		if ((nas = findnasbyindex(nas->nas_stat->index+1)) == NULL) {
+			return -1;
+		}
+
 		for (num = 0; num < 4; num++)
 			closure->quad[num] = (nas->ipaddr >>
 					      (8*(3-num))) & 0xff;
+		
 		break;
 		
 	case MIB_NODE_GET_SUBID:
@@ -1838,8 +1841,7 @@ snmp_stat_nas(num, cmd, closure, subid, varp, errp)
 		
 	case MIB_NODE_RESET:
 		if (num == 0) {
-			closure->last_index = 1;
-			if (nas = findnasbyindex(closure->last_index))
+			if (nas = findnasbyindex(1))
 				for (num = 0; num < 4; num++)
 					closure->quad[num] = (nas->ipaddr >>
 							      (8*(3-num))) & 0xff;

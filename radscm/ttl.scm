@@ -114,7 +114,7 @@
 	 ((boolean? ttl)
 	  #t)
 	 ((= ttl 0)
-	  (ttl-syslog "Zero time to live " (cdr user-pair))
+	  (ttl-syslog LOG_NOTICE "Zero time to live " (cdr user-pair))
 	  #f)
 	 (else
 	  (cons #t

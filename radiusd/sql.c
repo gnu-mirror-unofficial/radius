@@ -39,10 +39,9 @@ static char rcsid[] =
 
 static void sql_check_config(SQL_cfg *);
 static struct sql_connection *create_sql_connection(int type);
-static struct sql_connection *attach_sql_connection(int type, qid_t qid, 
-                                                    int *keepopen);
-static void unattach_sql_connection(int type, qid_t qid, int keepopen);
-static void free_sql_connection(int type, qid_t qid);
+static struct sql_connection *attach_sql_connection(int type, RADIUS_REQ *req);
+static void unattach_sql_connection(int type, RADIUS_REQ *req);
+static void free_sql_connection(struct sql_connection *conn);
 static void close_sql_connections(int type);
 
 static char *getline();
@@ -491,9 +490,8 @@ rad_sql_init()
 		
 	}
 
-	if (cur_line)
-		obstack_free(&stack, cur_line);
-//	obstack_free(&stack,NULL);
+	obstack_free(&stack, NULL);
+
 	fclose(sqlfd);
 	efree(sqlfile);
 
@@ -597,17 +595,6 @@ sql_check_config(cfg)
 	       cfg->doauth));
 }
 
-static qid_t last_qid = 0;
-
-qid_t
-rad_sql_get_qid()
-{
-	/* Reserve 0 for debugging purposes */
-	if (++last_qid == 0)
-		++last_qid;
-	return last_qid;
-}
-
 /* ************************************************************************* */
 /* Internal routines
  *
@@ -641,8 +628,8 @@ print_queue()
 			     conn_count[SQL_AUTH], conn_count[SQL_ACCT]));
 		prev = NULL;
 		for (conn = conn_first; conn; conn = conn->next) {
-			debug(10, ("%d: %p (%d) %d",
-				     i++, conn, conn->type, conn->qid));
+			debug(10, ("%d: %p (%d) %p",
+				     i++, conn, conn->type, conn->owner));
 			prev = conn;
 		}
 		insist(conn_last == prev);
@@ -676,7 +663,9 @@ create_sql_connection(type)
 	print_queue();
 
 	conn = alloc_entry(sizeof(struct sql_connection));
-	conn->qid = 0;
+	conn->owner = NULL;
+	conn->delete_on_close = 0;
+	conn->connected = 0;
 	conn->type = type;
 
 	/* attach to the head of the list */
@@ -700,6 +689,11 @@ void
 close_sql_connection(conn, prev)
 	struct sql_connection *conn, *prev;
 {
+	if (conn->owner) {
+		conn->delete_on_close = 1;
+		return;
+	}
+		
 	debug(1, ("destructing sql connection: %d left in queue",
 		 conn_count[SQL_AUTH] + conn_count[SQL_ACCT] - 1));
 	
@@ -716,133 +710,76 @@ close_sql_connection(conn, prev)
 }
 
 /* Attach the SQL connection of the given type and queue id to the connection
- * list:
- *       1. Scan the list for the first unused connection of the given type
- *       2. If not found, allocate one.
- *       3. Mark the connection with new queue id, update its last usage
- *          timestamp and return.
- *       Additionally, while scanning, close all connections which have been
- *       idle for more than sql_cfg.idle_timeout seconds.
- *
- * Modified by kaz:
- *       Remove the code to scan for idle connections.  
- *
- *       Why?  This function is only called when the RADIUS server is
- *       about to log something to the SQL server. It is called in two
- *       places: in the master_process when it calls request_setup and 
- *       when the child process calls rad_accounting/rad_authenticate. 
- *
- *       Whats the problem?  If the RADIUS server is configured to 
- *       "keepopen" the SQL connections, then there is a potential 
- *       that the RADIUS server may be idle for a time greater than 
- *       the time expected by the SQL server's idle timeout, which 
- *       could result in an error.  On MySQL, it will complain about 
- *       an "Aborted connection ## to db".  For example, my RADIUS 
- *       server was using "keepopen", but it was not very busy.  My
- *       database "MySQL" was configured with a default "wait_timeout"
- *       of 8 hours.  Everytime, the 8 hours were exceeded, MySQL would
- *       mark the connection dead, yet, the RADIUS server still thought
- *       the connection was open and it resulted in error messages in 
- *       my MySQL logs.
- *
- *       Whats the solution?  Move the idle checking to the main loop
- *       of radiusd.c.  rad_select should be modified to wait only for 
- *       a fixed interval, perhaps 60 seconds, instead of blocking 
- *       indefinitely.  A new function should also be created in sql.c
- *       called rad_sql_idle_check() which will close connections that
- *       are now idle.
- * gray: The connection stuff is way too complicated and ugly. It must
- *       be rewritten from scratch. See `NOTE' below.
- */
+   list:
+         1. If the request already has a connection attached, return this
+	    connection.
+         2. Scan the list for the first unused connection of the given type
+         3. If not found, allocate one.
+         4. Update connection's owner, last usage timestamp and return. */
+
 struct sql_connection *
-attach_sql_connection(type, qid, keepopen)
+attach_sql_connection(type, req)
 	int type;
-	qid_t qid;
-	int *keepopen;
+	RADIUS_REQ *req;
 {
-	struct sql_connection *conn = NULL, *prev, *next;
-	time_t now = time(NULL);
+	struct sql_connection *conn = req->conn;
 
-	prev = NULL;
-	if (qid == 0) {
-		qid = rad_sql_get_qid();
-		debug(1, ("creating %d,%d", type, qid));
-		print_queue();
-		*keepopen = 0;
-	} else {
-		debug(1, ("attaching %d,%d", type, qid));
-
-		*keepopen = sql_cfg.keepopen;
-		if (sql_cfg.keepopen) {
-			print_queue();
-
-			conn = conn_first;
-			while (conn) {
-				if (conn->type == type) { 
-					if (conn->qid == qid)
-						return conn;
-					if (conn->qid == 0)
-						break;
-				}
-				next = conn->next;
-				prev = conn;
-				conn = next;
-			}
-		}
-	}
 	if (!conn) {
-		
-		if (prev) {
-			insist(conn_last == prev);
-		
-			if (conn_count[type] >= sql_cfg.max_connections[type]) {
+		struct sql_connection *prev, *next;
+		time_t now = time(NULL);
+
+		prev = NULL;
+
+		debug(1, ("attaching %d,%p", type, req));
+		print_queue();
+
+		conn = conn_first;
+		while (conn) {
+			if (conn->owner == NULL)
+				break;
+			next = conn->next;
+			prev = conn;
+			conn = next;
+		}
+
+		if (!conn) {
+			if (conn_count[type] >=
+			    sql_cfg.max_connections[type]) {
 				radlog(L_CRIT,
 	 _("can't create new %s SQL connection: too many connections open"),
 			       	       service_name[type]);
 				return NULL;
 			}
 		}
-		/* NOTE: prev == NULL (i.e. input qid==0) violates 
- 		   conn_count[type]. It is possible in two cases:
-			1. Where sql_cfg.keepopen==1. 
-			   The opened connection will be closed immediately
-			   after execution of the query.	
-			2. In master process _before_ spawning the child. 
-			   Thus, maximum number of connections is 
-		           conn_count[type]+1 */
 		conn = create_sql_connection(type);
+		conn->owner = req;
+		conn->last_used = now;
 	}
-	conn->qid = qid;
-	conn->last_used = now;
 	return conn;
 }
 
 /* Unattach the SQL connection. Move it to the end of the list.
  */
 void
-unattach_sql_connection(type, qid, keepopen)
+unattach_sql_connection(type, req)
 	int    type;
-	qid_t  qid;
-	int keepopen;
+	RADIUS_REQ *req;
 {
 	struct sql_connection *conn, *prev;
 
-	if (keepopen == 0) {
-		free_sql_connection(type, qid);
+	if (sql_cfg.keepopen == 0 || conn->delete_on_close) {
+		free_sql_connection(req->conn);
 		return;
 	}
-	debug(1, ("unattaching connection %d,%d", type,qid));
+	debug(1, ("unattaching connection %d,%p", type, req));
 
 	prev = NULL;
 	conn = conn_first;
 	while (conn) {
-		if (conn->type == type && conn->qid == qid) {
+		if (conn == req->conn) {
 			debug(5, ("unattaching connection: found"));
-			conn->qid = 0;
+			conn->owner = 0;
 
-			if (!master_process())
-				return;
-			
 			if (conn_last == conn)
 				return;
 
@@ -867,20 +804,18 @@ unattach_sql_connection(type, qid, keepopen)
 	print_queue();
 }
 
-/* Unlink from the list the SQL connection identified by type and queue id,
- * close it and free the memory associated with it.
- */
+/* Unlink the sql connection from the list. Close it and free any memory
+   associated with it. */
 void
-free_sql_connection(type, qid)
-	int    type;
-	qid_t  qid;
+free_sql_connection(sql_conn)
+	struct sql_connection *sql_conn;
 {
 	struct sql_connection *conn, *prev;
 
 	prev = NULL;
 	conn = conn_first;
 	while (conn) {
-		if (conn->type == type && conn->qid == qid) {
+		if (conn == sql_conn) {
 			close_sql_connection(conn, prev);
 			return;
 		}
@@ -916,24 +851,6 @@ close_sql_connections(type)
 
 /* ************************************************************************* */
 
-int
-rad_sql_setup(type, req)
-	int type;
-	RADIUS_REQ *req;
-{
-	int dummy;
-	insist(type >= 0 && type < SQL_NSERVICE);
-
-	if (!sql_cfg.keepopen)
-		return 0;
-	
-	req->qid = rad_sql_get_qid();
-	if (sql_cfg.active[type]) {
-		attach_sql_connection(type, req->qid, &dummy); 
-	}
-	return 0;
-}
-
 void
 rad_sql_idle_check(void)
 {
@@ -947,8 +864,7 @@ rad_sql_idle_check(void)
     		while (conn) {
 			next = conn->next;
 
-			if (master_process() &&
-			    conn->qid == 0 &&
+			if (conn->owner == NULL &&
 			    (now - conn->last_used) >= sql_cfg.idle_timeout) {
 				/* Close the idle connection */
 				debug(1,
@@ -970,11 +886,8 @@ rad_sql_cleanup(type, req)
 {
 	insist(type >= 0 && type < SQL_NSERVICE);
 
-	if (!sql_cfg.keepopen)
-		return;
-
 	if (sql_cfg.active[type])
-		unattach_sql_connection(type, req->qid, sql_cfg.keepopen);
+		unattach_sql_connection(type, req);
 }
 
 void
@@ -1017,8 +930,6 @@ rad_sql_check_connect(type)
 	efree(path);
 	if (pass)
 		close_sql_connections(type);
-        /*FIXME: mark active connections as close on exit */
-	
 }
 
 /*
@@ -1033,7 +944,6 @@ rad_sql_acct(radreq)
 	VALUE_PAIR *pair;
 	char *query;
 	struct sql_connection *conn;
-	int keepopen;
 	
 	if (!sql_cfg.doacct)
 		return;
@@ -1045,8 +955,7 @@ rad_sql_acct(radreq)
 	}
 	status = pair->lvalue;
 
-        debug(1, ("qid %d", radreq->qid));
-	conn = attach_sql_connection(SQL_ACCT, radreq->qid, &keepopen);
+	conn = attach_sql_connection(SQL_ACCT, radreq);
 
 	switch (status) {
 	case DV_ACCT_STATUS_TYPE_START:
@@ -1131,9 +1040,6 @@ rad_sql_acct(radreq)
 		
 	}
 
-	if (!keepopen)
-		unattach_sql_connection(SQL_ACCT, conn->qid, keepopen);
-
 	if (query)
 		obstack_free(&stack, query);
 }
@@ -1148,7 +1054,6 @@ rad_sql_pass(req, authdata)
 	char *mysql_passwd;
 	struct sql_connection *conn;
 	char *query;
-	int keepopen;
 
 	if (sql_cfg.doauth == 0) {
 		radlog(L_ERR,
@@ -1165,15 +1070,11 @@ rad_sql_pass(req, authdata)
 	query = radius_xlate(&stack, sql_cfg.auth_query, req, NULL);
 	avl_delete(&req->request, DA_AUTH_DATA);
 	
-        debug(1, ("qid %d", req->qid));
-	conn = attach_sql_connection(SQL_AUTH, req->qid, &keepopen);
+	conn = attach_sql_connection(SQL_AUTH, req);
 	mysql_passwd = disp_sql_getpwd(sql_cfg.interface, conn, query);
 	
 	if (mysql_passwd) 
 		chop(mysql_passwd);
-	
-	if (!keepopen)
-		unattach_sql_connection(SQL_AUTH, conn->qid, keepopen);
 	
 	if (!query)
 		obstack_free(&stack, query);
@@ -1191,20 +1092,19 @@ rad_sql_checkgroup(req, groupname)
 	void *data;
 	char *p;
 	char *query;
-	int keepopen;
 	
 	if (sql_cfg.doauth == 0 || sql_cfg.group_query == NULL) 
 		return -1;
 
-        debug(1, ("qid %d", req->qid));
-	conn = attach_sql_connection(SQL_AUTH, req->qid, &keepopen);
+	conn = attach_sql_connection(SQL_AUTH, req);
 	if (!conn)
 		return -1;
 
 	query = radius_xlate(&stack, sql_cfg.group_query, req, NULL);
 
 	data = disp_sql_exec(sql_cfg.interface, conn, query);
-	while (rc != 0 && disp_sql_next_tuple(sql_cfg.interface, conn, data) == 0) {
+	while (rc != 0
+	       && disp_sql_next_tuple(sql_cfg.interface, conn, data) == 0) {
 		if ((p = disp_sql_column(sql_cfg.interface, data, 0)) == NULL)
 			break;
 		chop(p);
@@ -1212,9 +1112,6 @@ rad_sql_checkgroup(req, groupname)
 			rc = 0;
 	}
 	disp_sql_free(sql_cfg.interface, conn, data);
-	
-	if (!keepopen)
-		unattach_sql_connection(SQL_AUTH, conn->qid, keepopen);
 	
 	if (query)
 		obstack_free(&stack, query);
@@ -1286,24 +1183,18 @@ rad_sql_reply_attr_query(req, reply_pairs)
         VALUE_PAIR *request_pairs = req->request;
 	VALUE_PAIR *pair;
 	struct sql_connection *conn;
-	qid_t qid;
 	char *query;
 	int rc;
-	int keepopen;
 	
 	if (sql_cfg.doauth == 0 || !sql_cfg.reply_attr_query)
 		return 0;
 	
-        debug(1, ("qid %d", req->qid));
-	conn = attach_sql_connection(SQL_AUTH, req->qid, &keepopen);
+	conn = attach_sql_connection(SQL_AUTH, req);
 	
 	query = radius_xlate(&stack, sql_cfg.reply_attr_query, req, NULL);
 
 	rc = rad_sql_retrieve_pairs(conn, query, reply_pairs, 0);
 	
-        if (!keepopen) 
-                unattach_sql_connection(SQL_AUTH, conn->qid, keepopen);
-
 	if (query)
 		obstack_free(&stack, query);
 	return rc == 0;
@@ -1317,24 +1208,18 @@ rad_sql_check_attr_query(req, return_pairs)
         VALUE_PAIR *request_pairs = req->request;
 	VALUE_PAIR *pair;
 	struct sql_connection *conn;
-	qid_t qid;
 	char *query;
 	int rc;
-	int keepopen;
 	
 	if (sql_cfg.doauth == 0 || !sql_cfg.check_attr_query)
 		return 0;
 	
-        debug(1, ("qid %d", req->qid));
-	conn = attach_sql_connection(SQL_AUTH, req->qid, &keepopen);
+	conn = attach_sql_connection(SQL_AUTH, req);
 	
 	query = radius_xlate(&stack, sql_cfg.check_attr_query, req, NULL);
 
 	rc = rad_sql_retrieve_pairs(conn, query, return_pairs, 1);
 	
-        if (!keepopen) 
-                unattach_sql_connection(SQL_AUTH, conn->qid, keepopen);
-
 	if (query)
 		obstack_free(&stack, query);
 	return rc == 0;

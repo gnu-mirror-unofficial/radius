@@ -38,7 +38,7 @@
 # include <libguile.h>
 #endif
 
-static void sql_check_config(SQL_cfg *);
+static void sql_check_config(const char *, SQL_cfg *);
 static struct sql_connection *attach_sql_connection(int type);
 static void detach_sql_connection(int type);
 static void sql_conn_destroy(struct sql_connection **conn);
@@ -226,10 +226,10 @@ sql_digest(SQL_cfg *cfg)
         *(int*)p = cfg->keepopen;
         p += sizeof(int);
         
-        *(int*)p = cfg->doauth;
+        *(int*)p = cfg->active[SQL_AUTH];
         p += sizeof(int);
         
-        *(int*)p = cfg->doacct;
+        *(int*)p = cfg->active[SQL_ACCT];
         p += sizeof(int);
         
         *(int*)p = cfg->port;
@@ -253,6 +253,17 @@ sql_digest_comp(char *d1, char *d2)
         if (len != *(int*)d2)
                 return 1;
         return memcmp(d1, d2, len);
+}
+
+static int
+sql_cfg_empty_p(SQL_cfg *cfg)
+{
+	char *p;
+
+	for (p = (char*)cfg; p < (char*)(cfg + 1); p++)
+		if (*p)
+			return 0;
+	return 1;
 }
 
 int
@@ -282,8 +293,8 @@ rad_sql_init()
         bzero(&new_cfg, sizeof(new_cfg));
         new_cfg.keepopen = 0;
         new_cfg.idle_timeout = 4*3600; /* four hours */
-        new_cfg.doacct = 0;
-        new_cfg.doauth = 0;
+        new_cfg.active[SQL_ACCT] = 0;
+        new_cfg.active[SQL_AUTH] = 0;
 
         sqlfile = mkfilename(radius_dir, "sqlserver");
         /* Open source file */
@@ -319,8 +330,8 @@ rad_sql_init()
                                        _("%s:%d: unknown host: %s"),
                                        sqlfile, line_no,
                                        cur_ptr);
-                                new_cfg.doacct = 0;
-                                new_cfg.doauth = 0;
+                                new_cfg.active[SQL_ACCT] = 0;
+                                new_cfg.active[SQL_AUTH] = 0;
                         } else {
                                 new_cfg.server = estrdup(cur_ptr);
                         }
@@ -333,8 +344,8 @@ rad_sql_init()
 				       "%s:%d: %s",
                                        sqlfile, line_no,
 				       _("number parse error"));
-                                new_cfg.doacct = 0;
-                                new_cfg.doauth = 0;
+                                new_cfg.active[SQL_ACCT] = 0;
+                                new_cfg.active[SQL_AUTH] = 0;
                         }
                         break;
                         
@@ -365,7 +376,7 @@ rad_sql_init()
                         break;
                         
                 case STMT_DOAUTH:       
-                        if (get_boolean(cur_ptr, &new_cfg.doauth))
+                        if (get_boolean(cur_ptr, &new_cfg.active[SQL_AUTH]))
                                 radlog(L_ERR,
                                        "%s:%d: %s",
                                        sqlfile, line_no,
@@ -373,7 +384,7 @@ rad_sql_init()
                         break;
                         
                 case STMT_DOACCT:
-                        if (get_boolean(cur_ptr, &new_cfg.doacct))
+                        if (get_boolean(cur_ptr, &new_cfg.active[SQL_ACCT]))
                                 radlog(L_ERR,
                                        "%s:%d: %s", 
                                        sqlfile, line_no,
@@ -460,11 +471,12 @@ rad_sql_init()
         obstack_free(&parse_stack, NULL);
 
         fclose(sqlfd);
+
+        sql_check_config(sqlfile, &new_cfg);
         efree(sqlfile);
 
-        sql_check_config(&new_cfg);
-
-        if (sql_cfg_comp(&new_cfg, &sql_cfg)) 
+        if (!sql_cfg_empty_p(&sql_cfg)
+	    && sql_cfg_comp(&new_cfg, &sql_cfg)) 
                 sql_flush();
 
         /* Free old configuration structure */
@@ -503,69 +515,93 @@ radiusd_sql_shutdown()
 	sql_conn_destroy(&sql_conn[SQL_ACCT]);
 }
 
-void
-sql_check_config(SQL_cfg *cfg)
+static void
+missing_statement(int prio, const char *filename, char *stmt)
 {
+	radlog(prio, _("%s: missing `%s' statement"),
+	       filename, stmt);
+}
+
+void
+sql_check_config(const char *filename, SQL_cfg *cfg)
+{
+	int doauth = cfg->active[SQL_AUTH];
+	int doacct = cfg->active[SQL_ACCT];
+
 #define FREE_IF_EMPTY(s) if (s && strcmp(s, "none") == 0) {\
                                 efree(s);\
                                 s = NULL;\
                          }
-        /*
-         * Check if we should do SQL authentication
-         */
-        if (cfg->doauth) {
-                FREE_IF_EMPTY(cfg->auth_query);
-                if (!cfg->auth_query) {
-                        radlog(L_ERR,
-                            _("disabling SQL auth: no auth_query specified"));
-                        cfg->doauth = 0;
-                }
-                if (!cfg->group_query) {
-                        radlog(L_WARN,
-                               _("SQL auth: no group_query specified"));
-                }
+
+	/* Check general SQL setup */
+	if (cfg->active[SQL_AUTH] || cfg->active[SQL_ACCT]) {
+		if (!cfg->server) {
+			missing_statement(L_ERR, filename, "server");
+			doacct = doauth = 0;
+		}
+
+		if (!cfg->login) {
+			missing_statement(L_ERR, filename, "login");
+			doacct = doauth = 0;
+		}
+
+		if (!cfg->password) {
+			missing_statement(L_ERR, filename, "password");
+			doacct = doauth = 0;
+		}
+	}
+	
+	/* Check SQL authentication setup */
+        if (cfg->active[SQL_AUTH]) {
+		if (!cfg->auth_db) {
+			missing_statement(L_ERR, filename, "auth_db");
+			doauth = 0;
+		}
+
+		FREE_IF_EMPTY(cfg->auth_query);
+		if (!cfg->auth_query) {
+			missing_statement(L_ERR, filename, "auth_query");
+			doauth = 0;
+		}
+			
+                if (!cfg->group_query) 
+			missing_statement(L_WARN, filename, "group_query");
                 FREE_IF_EMPTY(cfg->group_query);
         }
-        /*
-         * Check if we should do SQL accounting
-         */
-        if (cfg->doacct) {
-                if (!cfg->acct_start_query) {
-                        radlog(L_WARN,
-                               _("SQL acct: no acct_start_query specified"));
-                }
+
+	/* Check SQL accounting setup */
+        if (cfg->active[SQL_ACCT]) {
+		if (!cfg->acct_db) {
+			missing_statement(L_ERR, filename, "acct_db");
+			doacct = 0;
+		}
+                if (!cfg->acct_start_query) 
+			missing_statement(L_WARN, filename,
+					  "acct_start_query");
                 FREE_IF_EMPTY(cfg->acct_start_query);
 
-                if (!cfg->acct_stop_query) {
-                        radlog(L_ERR,
-                     _("disabling SQL acct: no acct_stop_query specified"));
-                        cfg->doacct = 0;
-                }
-                FREE_IF_EMPTY(cfg->acct_stop_query);
+		if (!cfg->acct_stop_query) {
+			missing_statement(L_ERR, filename, "acct_stop_query");
+			doacct = 0;
+		}
+		FREE_IF_EMPTY(cfg->acct_stop_query);
 
-                if (!cfg->acct_nasdown_query) {
-                        radlog(L_WARN,
-                     _("SQL acct: no acct_nasdown_query specified"));
-                }
+                if (!cfg->acct_nasdown_query) 
+			missing_statement(L_WARN, filename,
+					  "acct_nasdown_query");
                 FREE_IF_EMPTY(cfg->acct_nasdown_query);
 
-                if (!cfg->acct_nasup_query) {
-                        radlog(L_WARN,
-                     _("SQL acct: no acct_nasup_query specified"));
-                }
+                if (!cfg->acct_nasup_query)
+			missing_statement(L_WARN, filename,
+					  "acct_nasup_query");
                 FREE_IF_EMPTY(cfg->acct_nasup_query);
         }
-        
-        debug(1, ("SQL init using: %s:%d,%s,%s,%s,%d,%ld,%d,%d",
-               cfg->server,
-               cfg->port,
-               cfg->login,
-               cfg->acct_db,
-               cfg->auth_db,
-               cfg->keepopen,
-               cfg->idle_timeout,
-               cfg->doacct,
-               cfg->doauth));
+
+	/* Inform the user */
+	if (cfg->active[SQL_AUTH] != doauth)
+		radlog(L_NOTICE, _("disabling SQL authentication"));
+	if (cfg->active[SQL_ACCT] != doacct)
+		radlog(L_NOTICE, _("disabling SQL accounting"));
 }
 
 void
@@ -789,14 +825,14 @@ rad_sql_acct(RADIUS_REQ *radreq)
         char *query_name;
 	int log_facility = 0;
 	
-        if (!sql_cfg.doacct)
+        if (!sql_cfg.active[SQL_ACCT])
                 return;
 
         if ((pair = avl_find(radreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
                 /* should never happen!! */
                 radlog_req(L_ERR, radreq,
                            _("no Acct-Status-Type attribute in rad_sql_acct()"));
-                return ;
+                return;
         }
         status = pair->avp_lvalue;
 
@@ -891,7 +927,7 @@ rad_sql_pass(RADIUS_REQ *req, char *authdata)
         char *query;
         struct obstack stack;
         
-        if (sql_cfg.doauth == 0) {
+        if (sql_cfg.active[SQL_AUTH] == 0) {
                 radlog(L_ERR,
                        _("SQL Auth specified in users file, but not in sqlserver file"));
                 return NULL;
@@ -929,7 +965,7 @@ rad_sql_checkgroup(req, groupname)
 	SQL_RESULT *res;
 	size_t i;
 	
-        if (sql_cfg.doauth == 0 || sql_cfg.group_query == NULL) 
+        if (sql_cfg.active[SQL_AUTH] == 0 || sql_cfg.group_query == NULL) 
                 return -1;
 
         conn = attach_sql_connection(SQL_AUTH);
@@ -1019,7 +1055,7 @@ rad_sql_reply_attr_query(RADIUS_REQ *req, VALUE_PAIR **reply_pairs)
         int rc;
         struct obstack stack;
         
-        if (sql_cfg.doauth == 0 || !sql_cfg.reply_attr_query)
+        if (sql_cfg.active[SQL_AUTH] == 0 || !sql_cfg.reply_attr_query)
                 return 0;
         
         conn = attach_sql_connection(SQL_AUTH);
@@ -1040,7 +1076,7 @@ rad_sql_check_attr_query(RADIUS_REQ *req, VALUE_PAIR **return_pairs)
         int rc;
         struct obstack stack;
         
-        if (sql_cfg.doauth == 0 || !sql_cfg.check_attr_query)
+        if (sql_cfg.active[SQL_AUTH] == 0 || !sql_cfg.check_attr_query)
                 return 0;
         
         conn = attach_sql_connection(SQL_AUTH);

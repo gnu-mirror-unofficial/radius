@@ -111,7 +111,7 @@ set_module_debug_level(name, level)
 }
 
 /*ARGSUSED*/
-int
+void
 set_debug_levels(str)
 	char *str;
 {

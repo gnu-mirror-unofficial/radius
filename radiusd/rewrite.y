@@ -32,7 +32,10 @@
 #include <obstack1.h>
 #include <argcv.h>
 #include <rewrite.h>
-
+#ifdef USE_SERVER_GUILE	
+# include <libguile.h>
+#endif
+	
 #ifndef lint
 static char rcsid[] =
   "@(#) $Id$";
@@ -4371,6 +4374,8 @@ run(pc)
 	}
 }
 
+static int rewrite_call_level = 0;
+
 void
 run_init(pc, request)
 	pctr_t     pc;
@@ -4378,8 +4383,11 @@ run_init(pc, request)
 {
 	FILE *fp;
 
-	if (setjmp(rw_rt.jmp))
+	if (setjmp(rw_rt.jmp)) {
+		rewrite_call_level = 0;
 		return;
+	}
+	
 	rw_rt.request = request;
 	if (debug_on(2)) {
 		fp = debug_open_file();
@@ -4393,7 +4401,9 @@ run_init(pc, request)
 	rw_rt.pc = 0;
 	rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
 	pushn(0);                         /* Push on stack */
+	rewrite_call_level = 1;
 	run(pc);                          /* call function */
+	rewrite_call_level = 0;
 	if (debug_on(2)) {
 		fp = debug_open_file();
 		fprintf(fp, "After rewriting\n");
@@ -4422,8 +4432,10 @@ va_run_init(name, request, typestr, va_alist)
 		return -1;
 	}
 	
-	if (setjmp(rw_rt.jmp))
+	if (setjmp(rw_rt.jmp)) {
+		rewrite_call_level = 0;
 		return -1;
+	}
 	
 	rw_rt.request = request;
 	if (debug_on(2)) {
@@ -4465,7 +4477,9 @@ va_run_init(name, request, typestr, va_alist)
         /* Imitate a function call */
 	rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
 	pushn(0);                         /* Push on stack */
+	rewrite_call_level = 1;
 	run(fun->entry);                  /* call function */
+	rewrite_call_level = 0;
 	if (debug_on(2)) {
 		fp = debug_open_file();
 		fprintf(fp, "After rewriting\n");
@@ -4474,6 +4488,7 @@ va_run_init(name, request, typestr, va_alist)
 	}
 	return rw_rt.rA;
 }
+
 
 int
 interpret(fcall, req, type, datum)
@@ -4530,9 +4545,12 @@ interpret(fcall, req, type, datum)
 		avl_fprint(fp, rw_rt.request);
 		fclose(fp);
 	}
-	rw_rt.st = 0;                     /* Stack top */
-	rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
-	rw_rt.pc = 0;
+
+	if (rewrite_call_level == 0) {
+		rw_rt.st = 0;                     /* Stack top */
+		rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
+		rw_rt.pc = 0;
+	}
 
 	/* Pass arguments */
 	nargs = 0;
@@ -4586,13 +4604,19 @@ interpret(fcall, req, type, datum)
 	}
 
 	argcv_free(argc, argv);
+
+	++rewrite_call_level;
 	
         /* Imitate a function call */
-	if (setjmp(rw_rt.jmp))
+	if (setjmp(rw_rt.jmp)) {
+		--rewrite_call_level;
 		return -1;
+	}
+	
 	rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
 	pushn(0);                         /* Push on stack */
 	run(fun->entry);                  /* call function */
+	--rewrite_call_level;
 	if (debug_on(2)) {
 		fp = debug_open_file();
 		fprintf(fp, "After rewriting\n");
@@ -4820,45 +4844,157 @@ function_install(fun)
 	return fp;
 }
 
-#if 0
 /* ****************************************************************************
- * Test only
+ * Guile interface
  */
-void
-mp(s)
-	char *s;
-{
-	printf("%s\n", s);
-}
+#ifdef USE_SERVER_GUILE
 
-test_rewrite()
+SCM
+radscm_datum_to_scm(type, datum)
+	int type;
+	Datum datum;
 {
-	FUNCTION *fun;
-	VALUE_PAIR *pair;
+	switch (type) {
+	case Integer:
+		return scm_makenum(datum.ival);
 
-	parse_rewrite();
-/*	
-	rw_rt.request = avp_create(44, strlen(sid), sid, 0);
-	pair = avp_create(2005, strlen(pri), pri, 0);
-	avl_add_pair(&rw_rt.request, pair);
-*/
-	
-	fun = (FUNCTION*) sym_lookup(rewrite_tab, "test");
-	if (fun) {
-		run_init(fun->entry, NULL);
-		switch (fun->rettype) {
-		case Integer:
-			printf("int: %d\n", rw_rt.rA);
-			break;
-		case String:
-			printf("str: %s\n", (char*)rw_rt.rA);
-		}
+	case String:
+		return scm_makfrom0str(datum.sval);
+
 	}
-/*
-	avl_fprint(stdout, rw_rt.request);
-	avl_free(rw_rt.request);
-	*/
+	return SCM_UNSPECIFIED;
 }
+
+int
+radscm_scm_to_ival(cell, val)
+	SCM cell;
+	int *val;
+{
+	if (SCM_IMP(cell)) {
+		if (SCM_INUMP(cell))  
+			*val = SCM_INUM(cell);
+		else if (SCM_BIGP(cell)) 
+			*val = (UINT4) scm_big2dbl(cell);
+		else if (SCM_CHARP(cell))
+			*val = SCM_CHAR(cell);
+		else if (cell == SCM_BOOL_F)
+			*val = 0;
+		else if (cell == SCM_BOOL_T)
+			*val = 1;
+		else if (cell == SCM_EOL)
+			*val =0;
+		else
+			return -1;
+	} else {
+		if (SCM_STRINGP(cell)) {
+			char *p;
+			*val = strtol(SCM_ROCHARS(cell), &p, 0);
+			if (*p)
+				return -1;
+		} else
+			return -1;
+	}
+	return 0;
+}
+
+SCM
+radscm_rewrite_execute(char *func_name, SCM ARGS)
+{
+	char *name;
+	FUNCTION *fun;
+	PARAMETER *parm;
+	int nargs;
+	int n, rc;
+	Datum datum;
+	SCM cell;
+	SCM FNAME;
+
+	FNAME = SCM_CAR(ARGS);
+	ARGS  = SCM_CDR(ARGS);
+	SCM_ASSERT(SCM_NIMP(FNAME) && SCM_STRINGP(FNAME),
+		   FNAME, SCM_ARG1, func_name);
+
+	name = SCM_ROCHARS(FNAME);
+	fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
+	if (!fun) 
+		scm_misc_error(func_name,
+			       "function ~S not defined",
+			       SCM_LIST1(FNAME));
+
+	if (rewrite_call_level == 0) {
+		rw_rt.st = 0;                     /* Stack top */
+		rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
+		rw_rt.pc = 0;
+	}
+
+	/* Pass arguments */
+	nargs = 0;
+	parm = fun->parm;
+	
+	for (cell = ARGS; cell != SCM_EOL; cell = SCM_CDR(cell), parm = parm->next) {
+		SCM car = SCM_CAR(cell);
+
+		if (++nargs > fun->nparm) {
+			scm_misc_error(func_name,
+				       "too many arguments for ~S",
+				       SCM_LIST1(FNAME));
+		}
+
+		switch (parm->datatype) {
+		case Integer:
+			rc = radscm_scm_to_ival(car, &n);
+			if (!rc) 
+				pushn(n);
+			break;
+			
+		case String:
+			if (SCM_NIMP(car) && SCM_STRINGP(car)) {
+				char *p = SCM_ROCHARS(car);
+				pushstr(p, strlen(p));
+				rc = 0;
+			} else
+				rc = 1;
+		}
+
+		if (rc) 
+			scm_misc_error(func_name,
+			     "type mismatch in argument ~S(~S) in call to ~S",
+				       SCM_LIST3(SCM_MAKINUM(nargs),
+						 car,
+						 FNAME));
+	}
+
+	if (fun->nparm != nargs)
+		scm_misc_error(func_name,
+			       "too few arguments for ~S",
+			       SCM_LIST1(FNAME));
+
+	/* Imitate a function call */
+	++rewrite_call_level;
+	if (setjmp(rw_rt.jmp)) {
+		--rewrite_call_level;
+		return -1;
+	}
+	rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
+	pushn(0);                         /* Push on stack */
+	run(fun->entry);                  /* call function */
+	--rewrite_call_level;
+
+	switch (fun->rettype) {
+	case Integer:	
+		datum.ival = rw_rt.rA;
+		break;
+	case String:
+		datum.sval = (char*) rw_rt.rA;
+		break;
+	default:
+		abort();
+	}
+
+	return radscm_datum_to_scm(fun->rettype, datum);
+}
+
+
 #endif
 
 	/*HONY SOIT QUI MAL Y PENSE*/

@@ -605,33 +605,9 @@ static void run(pctr_t pc);
 static void run_init(pctr_t pc, VALUE_PAIR *req);
 
 static pthread_mutex_t rewrite_code_mutex = PTHREAD_MUTEX_INITIALIZER; 
-static int rewrite_call_level = 0;
 
-static void rw_code_lock(int *locker);
-static void rw_code_unlock(int *locker, int force);
- 
-static void
-rw_code_lock(locker)
-        int *locker;
-{
-        *locker = rewrite_call_level;
-        if (rewrite_call_level == 0)
-                pthread_mutex_lock(&rewrite_code_mutex);
-        rewrite_call_level++;
-}
-
-static void
-rw_code_unlock(locker, force)
-        int *locker;
-        int force;
-{
-        if (force)
-                rewrite_call_level = *locker;
-        else
-                --rewrite_call_level;
-        if (rewrite_call_level == 0)
-                pthread_mutex_unlock(&rewrite_code_mutex);
-}
+#define rw_code_lock() pthread_mutex_lock(&rewrite_code_mutex)
+#define rw_code_unlock() pthread_mutex_unlock(&rewrite_code_mutex)
  
 %}
 
@@ -1035,7 +1011,7 @@ expr    : NUMBER
           }
         | IDENT
           {
-                  radlog(L_ERR, "%s:%d: undefined variable: %s",
+                  radlog(L_ERR, _("%s:%d: undefined variable: %s"),
                          input_filename, input_line, $1);
                   errcnt++;
                   YYERROR;
@@ -1194,8 +1170,6 @@ int
 parse_rewrite(path)
         char *path;
 {
-        int locker;
-        
         input_filename = path;
         infile = fopen(input_filename, "r");
         if (!infile) {
@@ -1212,7 +1186,7 @@ parse_rewrite(path)
         else
                 symtab_clear(rewrite_tab);
 
-        rw_code_lock(&locker);
+        rw_code_lock();
         yyeof = 0;
         input_line = 1;
         obstack_init(&input_stk);
@@ -1241,7 +1215,7 @@ parse_rewrite(path)
                 
         fclose(infile);
         obstack_free(&input_stk, NULL);
-        rw_code_unlock(&locker, 0);
+        rw_code_unlock();
         return 0;
 }
 
@@ -1533,7 +1507,8 @@ yylex()
                 else
                         c = yychar;
                 if (input() != '\'') {
-                        radlog(L_ERR, "%s:%d: unterminated character constant",
+                        radlog(L_ERR,
+			       _("%s:%d: unterminated character constant"),
                                input_filename, input_line);
                         errcnt++;
                 }
@@ -1577,8 +1552,9 @@ yylex()
                         return '%';
                 }
                 if (!attr) {
-                        radlog(L_ERR, "%s:%d: unknown attribute",
-                               input_filename, input_line);
+                        radlog(L_ERR,
+			       _("%s:%d: unknown attribute %s"),
+                               input_filename, input_line, attr_name);
                         errcnt++;
                         return BOGUS;
                 }
@@ -2292,7 +2268,7 @@ mtx_attr_asgn(attr, rval)
         mtx->datatype = attr_datatype(attr->type);
         if (rval->gen.datatype != mtx->datatype) {
                 radlog(L_WARN,
-                       "%s:%d: implicit %s to %s coercion",
+                       _("%s:%d: implicit %s to %s coercion"),
                        input_filename, input_line,
                        datatype_str(rval->gen.datatype),
                        datatype_str(mtx->datatype));
@@ -2311,7 +2287,8 @@ mtx_bin(opcode, arg1, arg2)
 
         mtx_append(mtx);
         if (arg1->gen.datatype != arg2->gen.datatype) {
-                radlog(L_WARN,"%s:%d: implicit string to integer coercion",
+                radlog(L_WARN,
+		       _("%s:%d: implicit string to integer coercion"),
                        input_filename, input_line);
                 if (arg1->gen.datatype == String)
                         coerce(arg1, Integer);
@@ -2335,7 +2312,7 @@ mtx_bin(opcode, arg1, arg2)
                         break;
                 default:
                         radlog(L_ERR,
-                               "%s:%d: operation not applicable for strings",
+                               _("%s:%d: operation not applicable for strings"),
                                input_filename, input_line);
                         errcnt++;
                         return (MTX*)mtx;
@@ -2362,7 +2339,8 @@ mtx_un(opcode, arg)
 
         mtx_append(mtx);
         if (arg->gen.datatype != Integer) {
-                radlog(L_WARN,"%s:%d: implicit string to integer coercion",
+                radlog(L_WARN,
+		       _("%s:%d: implicit string to integer coercion"),
                        input_filename, input_line);
                 coerce(arg, Integer);
         }
@@ -2383,7 +2361,8 @@ mtx_match(negated, arg, rx)
 
         mtx_append(mtx);
         if (arg->gen.datatype != String) {
-                radlog(L_WARN,"%s:%d: implicit integer to string coercion",
+                radlog(L_WARN,
+		       _("%s:%d: implicit integer to string coercion"),
                        input_filename, input_line);
                 coerce(arg, String);
         }
@@ -2452,7 +2431,7 @@ mtx_call(fun, args)
         while (argp && parmp) {
                 if (argp->gen.datatype != parmp->datatype) {
                         radlog(L_WARN,
-                               "%s:%d: (arg %d) implicit %s to %s coercion",
+                               _("%s:%d: (arg %d) implicit %s to %s coercion"),
                                input_filename, input_line,
                                argn,
                                datatype_str(argp->gen.datatype),
@@ -2469,12 +2448,12 @@ mtx_call(fun, args)
          */
         if (argp) {
                 radlog(L_WARN,
-                       "%s:%d: too many arguments in call to %s",
+                       _("%s:%d: too many arguments in call to %s"),
                        input_filename, input_line,
                        fun->name);
         } else if (parmp) {
                 radlog(L_WARN,
-                       "%s:%d: too few arguments in call to %s",
+                       _("%s:%d: too few arguments in call to %s"),
                        input_filename, input_line,
                        fun->name);
         }
@@ -2522,7 +2501,7 @@ mtx_builtin(bin, args)
 
                 if (argp->gen.datatype != type) {
                         radlog(L_WARN,
-                               "%s:%d: (arg %d) implicit %s to %s coercion",
+                               _("%s:%d: (arg %d) implicit %s to %s coercion"),
                                input_filename, input_line,
                                argn,
                                datatype_str(argp->gen.datatype),
@@ -2536,13 +2515,13 @@ mtx_builtin(bin, args)
 
         if (argp) {
                 radlog(L_ERR,
-                       "%s:%d: too many arguments in call to %s",
+                       _("%s:%d: too many arguments in call to %s"),
                        input_filename, input_line,
                        bin->name);
                 errcnt++;
         } else if (*parmp) {
                 radlog(L_ERR,
-                       "%s:%d: too few arguments in call to %s",
+                       _("%s:%d: too few arguments in call to %s"),
                        input_filename, input_line,
                        bin->name);
                 errcnt++;
@@ -2570,13 +2549,13 @@ datatype_str(type)
 {
         switch (type) {
         case Undefined:
-                return "Undefined";
+                return _("Undefined");
         case Integer:
-                return "integer";
+                return _("integer");
         case String:
-                return "string";
+                return _("string");
         default:
-                return "UNKNOWN";
+                return _("UNKNOWN");
         }
 }
 
@@ -2893,7 +2872,7 @@ pass1()
         if (mtx_last->gen.type != Return) {
                 Datum datum;
                 radlog(L_WARN,
-                       "%s:%d: missing return statement",
+                       _("%s:%d: missing return statement"),
                        input_filename, mtx_last->gen.line);
                 switch (function->rettype) {
                 case Integer:
@@ -2919,7 +2898,7 @@ pass1()
                 if (mtx->gen.type == Return) {
                         if (mtx->ret.expr->gen.datatype != function->rettype) {
                                 radlog(L_WARN,
-                                       "%s:%d: implicit %s to %s coercion",
+                                       _("%s:%d: implicit %s to %s coercion"),
                                        input_filename, mtx->ret.line,
                                        datatype_str(mtx->ret.expr->gen.datatype),
                                        datatype_str(function->rettype));
@@ -3020,7 +2999,8 @@ pass2_binary(mtx)
                 break;
         case Div:
                 if (arg1->cnst.datum.ival == 0) {
-                        radlog(L_ERR, "%s:%d: divide by zero",
+                        radlog(L_ERR,
+			       _("%s:%d: divide by zero"),
                                input_filename,
                                arg1->cnst.line);
                         errcnt++;
@@ -3030,7 +3010,8 @@ pass2_binary(mtx)
                 break;
         case Rem:
                 if (arg1->cnst.datum.ival == 0) {
-                        radlog(L_ERR, "%s:%d: divide by zero",
+                        radlog(L_ERR,
+			       _("%s:%d: divide by zero"),
                                input_filename,
                                arg1->cnst.line);
                         errcnt++;
@@ -3614,7 +3595,8 @@ compile_regexp(str)
         if (rc) {
                 char errbuf[512];
                 regerror(rc, &regex, errbuf, sizeof(errbuf));
-                radlog(L_ERR, "%s:%d: regexp error: %s",
+                radlog(L_ERR,
+		       _("%s:%d: regexp error: %s"),
                        input_filename, input_line, errbuf);
                 return NULL;
         }
@@ -3662,7 +3644,7 @@ pushn(n)
         if (rw_rt.st >= rw_rt.ht) {
                 /*FIXME: gc();*/
                 debug(1, ("st=%d, ht=%d", rw_rt.st, rw_rt.ht));
-                rw_error("rewrite: out of pushdown space");
+                rw_error(_("out of pushdown space"));
         }
         rw_rt.stack[rw_rt.st++] = n;
         return 0;
@@ -3679,7 +3661,7 @@ pushs(sptr, len)
         if (rw_rt.ht - len <= rw_rt.st) {
                 /* Heap overrun: */
                 /*gc(); */
-                rw_error("Heap overrun");
+                rw_error(_("heap overrun"));
         }
 
         while (len)
@@ -3709,7 +3691,7 @@ heap_reserve(size)
                 /* Heap overrun: */
                 gc();
                 if (rw_rt.ht - len <= rw_rt.st) 
-                        rw_error("Heap overrun");
+                        rw_error(_("heap overrun"));
         }
         rw_rt.ht -= len;
         return (char*)(rw_rt.stack + rw_rt.ht--);
@@ -3723,7 +3705,7 @@ cpopn(np)
         RWSTYPE *np;
 {
         if (rw_rt.st <= 0) {
-                rw_error("rewrite: out of popup");
+                rw_error(_("out of popup"));
         }
         *np = rw_rt.stack[--rw_rt.st];
         return 0;
@@ -3754,7 +3736,7 @@ checkpop(cnt)
 {
         if (rw_rt.st >= cnt)
                 return 0;
-        rw_error("rw: out of popup");
+        rw_error(_("out of popup"));
         /*NOTREACHED*/
 }
         
@@ -3823,7 +3805,8 @@ rw_error(msg)
         char *msg;
 {
         radlog(L_ERR,
-               "rewrite runtime error: %s", msg);
+	       "%s: %s",
+               _("rewrite runtime error"), msg);
         longjmp(rw_rt.jmp, 1);
         /*NOTREACHED*/
 }
@@ -3940,7 +3923,7 @@ rw_attrasgn()
         if ((pair = avl_find(rw_rt.request, attr)) == NULL) {
                 pair = avp_create(attr, 0, NULL, 0);
                 if (!pair)
-                        rw_error("can't create A/V pair");
+                        rw_error(_("can't create A/V pair"));
                 avl_add_pair(&rw_rt.request, pair);
         }
         switch (pair->type) {
@@ -4148,7 +4131,7 @@ rw_div()
         n2 = popn();
         n1 = popn();
         if (n2 == 0) 
-                rw_error("division by zero!");
+                rw_error(_("division by zero!"));
         pushn(n1/n2);
 }
 
@@ -4164,7 +4147,7 @@ rw_rem()
         n2 = popn();
         n1 = popn();
         if (n2 == 0) 
-                rw_error("division by zero!");
+                rw_error(_("division by zero!"));
         pushn(n1%n2);
 }
 
@@ -4349,7 +4332,8 @@ rw_match()
                 char errbuf[512];
                 regerror(rc, &rx->regex,
                          errbuf, sizeof(errbuf));
-                radlog(L_DEBUG, "rewrite regex failure: %s. Input: %s",
+                radlog(L_DEBUG,
+		       _("rewrite regex failure: %s. Input: %s"),
                        errbuf, (char*)rw_rt.rA);
         }
         pushn(rc == 0);
@@ -4401,7 +4385,7 @@ run(pc)
         rw_rt.pc = pc;
         while (rw_rt.code[rw_rt.pc]) {
                 if (rw_rt.pc >= rw_rt.codesize)
-                        rw_error("pc out of range");
+                        rw_error(_("pc out of range"));
                 (*(rw_rt.code[rw_rt.pc++]))();
         }
 }
@@ -4573,10 +4557,10 @@ function_install(fun)
 
         if (fp = (FUNCTION *)sym_lookup(rewrite_tab, fun->name)) {
                 radlog(L_ERR,
-                       "%s:%d: redefinition of function %s",
+                       _("%s:%d: redefinition of function %s"),
                        input_filename, fun->line, fun->name);
                 radlog(L_ERR,
-                       "%s:%d: previuosly defined here",
+                       _("%s:%d: previously defined here"),
                        input_filename, fun->line);
                 errcnt++;
                 return fp;
@@ -4602,11 +4586,10 @@ run_init(pc, request)
         VALUE_PAIR *request;
 {
         FILE *fp;
-        int locker;
         
-        rw_code_lock(&locker);
+        rw_code_lock();
         if (setjmp(rw_rt.jmp)) {
-                rw_code_unlock(&locker, 1);
+                rw_code_unlock();
                 return;
         }
         
@@ -4630,7 +4613,7 @@ run_init(pc, request)
                 avl_fprint(fp, rw_rt.request);
                 fclose(fp);
         }
-        rw_code_unlock(&locker, 0);
+        rw_code_unlock();
 }
 
 /*VARARGS3*/
@@ -4646,17 +4629,17 @@ va_run_init(name, request, typestr, va_alist)
         FUNCTION *fun;
         int nargs;
         char *s;
-        int locker;
-        
+        RWSTYPE ret;
+	
         fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
         if (!fun) {
                 radlog(L_ERR, _("function %s not defined"), name);
                 return -1;
         }
         
-        rw_code_lock(&locker);
+        rw_code_lock();
         if (setjmp(rw_rt.jmp)) {
-                rw_code_unlock(&locker, 1);
+                rw_code_unlock();
                 return -1;
         }
         
@@ -4694,7 +4677,7 @@ va_run_init(name, request, typestr, va_alist)
                 radlog(L_ERR,
                        _("%s(): wrong number of arguments (should be %d, passed %d)"),
                        name, fun->nparm, nargs);
-                rw_code_unlock(&locker, 1);
+                rw_code_unlock();
                 return -1;
         }
 
@@ -4708,8 +4691,9 @@ va_run_init(name, request, typestr, va_alist)
                 avl_fprint(fp, rw_rt.request);
                 fclose(fp);
         }
-        rw_code_unlock(&locker, 0);
-        return rw_rt.rA;
+	ret = rw_rt.rA;
+        rw_code_unlock();
+        return ret;
 }
 
 
@@ -4729,7 +4713,6 @@ interpret(fcall, req, type, datum)
         int i, errcnt = 0;
         struct obstack obs;
         char *args;
-        int locker;
         
         obstack_init(&obs);
         args = radius_xlate(&obs, fcall, req, NULL);
@@ -4762,7 +4745,7 @@ interpret(fcall, req, type, datum)
                 return 1;
         }
         
-        rw_code_lock(&locker);
+        rw_code_lock();
         rw_rt.request = req ? req->request : NULL;
         if (debug_on(2)) {
                 fp = debug_open_file();
@@ -4771,11 +4754,9 @@ interpret(fcall, req, type, datum)
                 fclose(fp);
         }
 
-        if (rewrite_call_level == 1) {
-                rw_rt.st = 0;                     /* Stack top */
-                rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
-                rw_rt.pc = 0;
-        }
+	rw_rt.st = 0;                     /* Stack top */
+	rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
+	rw_rt.pc = 0;
 
         /* Pass arguments */
         nargs = 0;
@@ -4789,19 +4770,20 @@ interpret(fcall, req, type, datum)
                         if (argv[i][0] == ',')
                                 continue;
                         radlog(L_ERR,
-                        "calling %s: expected ',' but found %s after arg %d",
+                       _("calling %s: expected ',' but found %s after arg %d"),
                                argv[0], argv[i], parm);
                         obstack_free(&obs, NULL);
                         argcv_free(argc, argv);
-                        rw_code_unlock(&locker, 1);
+                        rw_code_unlock();
                         return -1;
                 }
 
                 if (++nargs > fun->nparm) {
-                        radlog(L_ERR, "too many arguments for %s", argv[0]);
+                        radlog(L_ERR,
+			       _("too many arguments for %s"), argv[0]);
                         obstack_free(&obs, NULL);
                         argcv_free(argc, argv);
-                        rw_code_unlock(&locker, 1);
+                        rw_code_unlock();
                         return -1;
                 }
 
@@ -4827,7 +4809,7 @@ interpret(fcall, req, type, datum)
                        _("too few arguments for %s"),
                          argv[0]);
                 argcv_free(argc, argv);
-                rw_code_unlock(&locker, 1);
+                rw_code_unlock();
                 return -1;
         }
 
@@ -4835,7 +4817,7 @@ interpret(fcall, req, type, datum)
 
         /* Imitate a function call */
         if (setjmp(rw_rt.jmp)) {
-                rw_code_unlock(&locker, 1);
+                rw_code_unlock();
                 return -1;
         }
         
@@ -4860,7 +4842,7 @@ interpret(fcall, req, type, datum)
                 abort();
         }
         *type = fun->rettype;
-        rw_code_unlock(&locker, 0);
+        rw_code_unlock();
         return 0;
 }
 
@@ -4874,7 +4856,8 @@ run_rewrite(name, req)
         fun = (FUNCTION*) sym_lookup(rewrite_tab, name);
         if (fun) {
                 if (fun->nparm) {
-                        radlog(L_ERR, "function %s() requires %d parameters",
+                        radlog(L_ERR,
+			       _("function %s() requires %d parameters"),
                                fun->name, fun->nparm);
                         return -1;
                 }
@@ -4948,7 +4931,6 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
         Datum datum;
         SCM cell;
         SCM FNAME;
-        int locker;
         
         FNAME = SCM_CAR(ARGS);
         ARGS  = SCM_CDR(ARGS);
@@ -4962,12 +4944,10 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
                                "function ~S not defined",
                                SCM_LIST1(FNAME));
 
-        rw_code_lock(&locker);
-        if (rewrite_call_level == 1) {
-                rw_rt.st = 0;                     /* Stack top */
-                rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
-                rw_rt.pc = 0;
-        }
+        rw_code_lock();
+	rw_rt.st = 0;                     /* Stack top */
+	rw_rt.ht = rw_rt.stacksize - 1;   /* Heap top */
+	rw_rt.pc = 0;
 
         /* Pass arguments */
         nargs = 0;
@@ -4977,7 +4957,7 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
                 SCM car = SCM_CAR(cell);
 
                 if (++nargs > fun->nparm) {
-                        rw_code_unlock(&locker, 1);
+                        rw_code_unlock();
                         scm_misc_error(func_name,
                                        "too many arguments for ~S",
                                        SCM_LIST1(FNAME));
@@ -5000,7 +4980,7 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
                 }
 
                 if (rc) {
-                        rw_code_unlock(&locker, 1);
+                        rw_code_unlock();
                         scm_misc_error(func_name,
                              "type mismatch in argument ~S(~S) in call to ~S",
                                        SCM_LIST3(SCM_MAKINUM(nargs),
@@ -5010,7 +4990,7 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
         }
 
         if (fun->nparm != nargs) {
-                rw_code_unlock(&locker, 1);
+                rw_code_unlock();
                 scm_misc_error(func_name,
                                "too few arguments for ~S",
                                SCM_LIST1(FNAME));
@@ -5018,7 +4998,7 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
         
         /* Imitate a function call */
         if (setjmp(rw_rt.jmp)) {
-                rw_code_unlock(&locker, 1);
+                rw_code_unlock();
                 return -1;
         }
         rw_rt.code[rw_rt.pc++] = NULL;    /* Return address */
@@ -5035,7 +5015,7 @@ radscm_rewrite_execute(char *func_name, SCM ARGS)
         default:
                 abort();
         }
-        rw_code_unlock(&locker, 0);
+        rw_code_unlock();
         return radscm_datum_to_scm(fun->rettype, datum);
 }
 

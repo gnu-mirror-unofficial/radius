@@ -47,7 +47,7 @@ CREATETABLE(attrib, {
 CREATETABLE(calls, {
   status              SHORTINT_T not null,
   user_name           VARCHAR_T(32) CI default '' not null,
-  event_date_time     TIME_T('0000-00-00 00:00:00') NOT NULL,
+  event_date_time     TIME_T('1970-01-01 00:00:00') NOT NULL,
   nas_ip_address      CHAR_T(17) default '0.0.0.0' not null,
   nas_port_id         INT_T,
   acct_session_id     CHAR_T(17) DEFAULT '' NOT NULL,
@@ -63,11 +63,17 @@ CREATETABLE(calls, {
   INDEX(stat_nas,status,nas_ip_address)
 })
 
-CREATETABLE(ippool, {
-  status ENUM_T(2,'FREE','BLCK','FIXD','ASGN','RSRV') default 'FREE' not null,
+CREATETABLE(naspools, {
   nas CHAR_T(17) default '0.0.0.0' not null,
+  pool CHAR_T(8),
+  PRIMARY KEY (nas)
+})
+
+CREATETABLE(ippool, {
+  pool CHAR_T(8) default 'DEFAULT' NOT NULL,
   ipaddr CHAR_T(17) default '' not null,
-  time TIME_T('0000-00-00 00:00:00') NOT NULL,
+  status ENUM_T(4,'FREE','BLCK','FIXD','ASGN','RSRV') default 'FREE' not null,
+  time TIME_T('1970-01-01 00:00:00') NOT NULL,
   user_name VARCHAR_T(32) CI default '' not null COMMA
   INDEX(ippool_name,user_name) COMMA
   INDEX(ippool_ipaddr,ipaddr)

@@ -41,18 +41,14 @@
 (define (ttl-reply-string packet)
   (make-shared-substring packet 1 (1- (ttl-reply-length packet))))
 
-(define (ttl-syslog level text)
-  (rad-syslog level text))
-
 (define (ttl-message code user-name)
   (let ((packet (ttl-make-packet code user-name))
 	(fd (socket AF_INET SOCK_DGRAM 0))
 	(ttl #f))
-    (ttl-syslog LOG_DEBUG
-		(format #f "Sending ~A, ~A" code user-name))
+    (rad-log L_DEBUG (format #f "Sending ~A, ~A" code user-name))
     (cond
      ((not fd)
-      (ttl-syslog LOG_ERR "can't open socket for ttl exchange"))
+      (rad-log L_ERR "can't open socket for ttl exchange"))
      (else
       (catch #t
 	(lambda ()
@@ -84,17 +80,17 @@
 					(ttl-reply-string packet))))
 			      (if (not num)
 				  (begin
-				    (ttl-syslog
-				     LOG_ERR
+				    (rad-log
+				     L_ERR
 				     (format #f "bad answer \"~A\""
 					     (ttl-reply-string packet)))
 				    (set! ttl 0)))
 				 (set! ttl num) ))))))))))))
 	(lambda args
 	  ;;FIXME: more verbose
-	  (ttl-syslog LOG_ERR (format #f "~A" args))))
+	  (rad-log L_ERR (format #f "~A" args))))
       (close-port fd)))
-    (ttl-syslog LOG_DEBUG (format #f "returning ~A" ttl))
+    (rad-log L_DEBUG (format #f "returning ~A" ttl))
     ttl))
 
 (define (ttl-query req check reply)
@@ -104,22 +100,22 @@
     (cond
      ((not user-pair)
       #f)
-     (ttl-pair
-      (ttl-syslog LOG_NOTICE "ttl-query: found ttl-pair in reply pairs for "
-		  (cdr user-pair))
-      #t)
      (else
       (let ((ttl (ttl-message #\? (cdr user-pair))))
 	(cond
 	 ((boolean? ttl)
 	  #t)
 	 ((= ttl 0)
-	  (ttl-syslog LOG_NOTICE "Zero time to live " (cdr user-pair))
+	  (rad-log L_NOTICE
+		   (format #f "Zero time to live ~A" (cdr user-pair)))
 	  #f)
-	 (else
+	 ((or (not ttl-pair) (< ttl (cdr ttl-pair)))
 	  (cons #t
 		(list
-		 (cons "Session-Timeout" ttl))))))))))
+		 (cons "Session-Timeout" ttl))))
+	 (else
+	  (rad-log L_NOTICE "Ignoring returned ttl")
+	  #t)))))))
 
 (define (ttl-session req)
   (let* ((user-pair (assoc "User-Name" req))
@@ -134,4 +130,4 @@
   #t)
 
 ;;;; Put any application-specific definifions here:
-;(rad-openlog "ttl" LOG_PID LOG_LOCAL1)
+

@@ -206,7 +206,7 @@ stat_init()
         }
         server_stat.nas_count = hdr.nas_count;
         server_stat.port_count = hdr.port_count;
-        server_stat.start_time = hdr.start_time;
+        gettimeofday(&server_stat.start_time, &tz);
         server_stat.auth.reset_time = hdr.start_time;
         server_stat.acct.reset_time = hdr.start_time;
         server_stat.auth.status = serv_running;

@@ -1,3 +1,11 @@
+2002-06-07  Sergey Poznyakoff 
+
+	* configure.ac: Include <stdio.h> when testing for strncasecmp
+	  delaration.
+	* include/radwho.h: removed  
+	* include/Makefile.am: Removed radwho.h
+	* po/es.po: Removed obsolete entries.
+
 2002-06-07  Sergey Poznyakoff  
 
 	* configure.ac: Check for declarations of (v)asprintf and getline

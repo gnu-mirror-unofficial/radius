@@ -180,6 +180,7 @@ rad_sql_reconnect(type, conn)
 
 	free_entry(conn->data);
 	conn->data = NULL;
+	conn->connected = 0;
 	radlog(L_ERR, _("MYSQL: Giving up on connect"));
 	rad_sql_need_reconnect(type);
 	return -1;

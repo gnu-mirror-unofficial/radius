@@ -263,7 +263,8 @@ unix_pass(char *name, char *passwd)
  }
 #endif
         rc = grad_md5crypt(passwd, encrypted_pass, encpw, pwlen+1) == NULL
-                || memcmp(encpw, encrypted_pass, pwlen);
+                || strlen (encpw) != pwlen
+		|| memcmp(encpw, encrypted_pass, pwlen);
         grad_free(encpw);
 	grad_free(encrypted_pass);
         if (rc)

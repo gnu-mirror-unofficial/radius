@@ -43,13 +43,182 @@ grad_avp_t *radscm_list_to_avl(SCM list);
 SCM radscm_avp_to_cons(grad_avp_t *pair);
 grad_avp_t *radscm_cons_to_avp(SCM scm);
 
+
+/* General-purpose eval handlers */
+
+static SCM
+eval_catch_body (void *list)
+{
+	return RAD_SCM_EVAL((SCM)list);
+}
+
+static SCM
+eval_catch_handler (void *data, SCM tag, SCM throw_args)
+{
+	scm_handle_by_message_noexit("radiusd", tag, throw_args);
+	longjmp(*(jmp_buf*)data, 1);
+}
+
+
+/* Configuration handlers and auxiliary functions */
+
+static void
+scheme_debug(int val)
+{
+	SCM_DEVAL_P = val;
+	SCM_BACKTRACE_P = val;
+	SCM_RECORD_POSITIONS_P = val;
+	SCM_RESET_DEBUG_MODE;
+}
+		
+static void
+scheme_add_load_path(char *path)
+{
+	rscm_add_load_path(path);
+}
+
+struct scheme_exec_data {
+	void (*handler) (void *data);
+	void *data;
+};
+
+static SCM
+scheme_safe_exec_body (void *data)
+{
+	struct scheme_exec_data *ed = data;
+	ed->handler (ed->data);
+	return SCM_BOOL_F;
+}
+
+static int
+scheme_safe_exec(void (*handler) (void *data), void *data)
+{
+ 	jmp_buf jmp_env;
+	struct scheme_exec_data ed;
+	
+	if (setjmp(jmp_env))
+		return 1;
+	ed.handler = handler;
+	ed.data = data;
+	scm_internal_lazy_catch(SCM_BOOL_T,
+				scheme_safe_exec_body, (void*)&ed,
+				eval_catch_handler, &jmp_env);
+	return 0;
+}
+
+static void
+load_path_handler(void *data)
+{
+	scm_primitive_load_path((SCM)data);
+}
+
+static int
+scheme_load(char *filename)
+{
+	return scheme_safe_exec(load_path_handler, scm_makfrom0str(filename));
+}
+
+static void
+load_module_handler(void *data)
+{
+	scm_c_use_module(data);
+}
+
+static int
+scheme_load_module(char *filename)
+{
+	return scheme_safe_exec(load_module_handler, filename);
+}
+
+static void
+eval_expr(void *data)
+{
+	scm_eval_string((SCM)data);
+}
+
+static int
+scheme_eval_expression(char *exp)
+{
+	return scheme_safe_exec(eval_expr, scm_makfrom0str(exp));
+}
+
+static void
+scheme_end_reconfig()
+{
+	scm_gc();
+}
+
+void
+scheme_read_eval_loop()
+{
+        SCM list;
+        int status;
+        SCM sym_top_repl = RAD_SCM_SYMBOL_VALUE("top-repl");
+        SCM sym_begin = RAD_SCM_SYMBOL_VALUE("begin");
+
+        list = scm_cons(sym_begin, scm_list_1(scm_cons(sym_top_repl, SCM_EOL)));
+	status = scm_exit_status(RAD_SCM_EVAL_X(list));
+        printf("%d\n", status);
+}
+
+static void
+close_port_handler(void *port)
+{
+	scm_close_port((SCM)port);
+}
+
+static void
+silent_close_port(SCM port)
+{
+	scheme_safe_exec(close_port_handler, port);
+}
+
+void
+scheme_redirect_output()
+{
+	SCM port;
+	char *mode = "a";
+	int fd = 2;
+
+	if (scheme_outfile) {
+		char *filename;
+
+		if (scheme_outfile[0] == '/')
+			filename = grad_estrdup(scheme_outfile);
+		else
+			filename = grad_mkfilename(radlog_dir ?
+						   radlog_dir : RADLOG_DIR,
+						   scheme_outfile);
+		fd = open(filename, O_RDWR|O_CREAT|O_APPEND, 0600);
+		if (fd == -1) {
+			grad_log(L_ERR|L_PERROR,
+			         _("can't open file `%s'"),
+			         filename);
+			fd = 2;
+		}
+		grad_free(filename);
+	}
+
+	port = scheme_error_port;
+	scheme_error_port = scm_fdes_to_port(fd, mode,
+					     scm_makfrom0str("<standard error>"));
+	scm_set_current_output_port(scheme_error_port);
+	scm_set_current_error_port(scheme_error_port);
+	if (port != SCM_EOL) 
+		silent_close_port(port);
+}
+
+
+/* Main loop */
+
 static SCM
 catch_body(void *data)
 {
 	scm_init_load_path();
 	grad_scm_init();
 	rscm_server_init();
-	scm_c_use_module("radiusd");
+	scheme_debug(1);
+	scheme_load_module("radiusd");
 	radiusd_main();
 	return SCM_BOOL_F;
 }
@@ -76,28 +245,8 @@ scheme_main()
 	scm_boot_guile (1, argv, scheme_boot, NULL);
 }
 
-void
-scheme_debug(int val)
-{
-	SCM_DEVAL_P = val;
-	SCM_BACKTRACE_P = val;
-	SCM_RECORD_POSITIONS_P = val;
-	SCM_RESET_DEBUG_MODE;
-}
-		
-
-static SCM
-eval_catch_body (void *list)
-{
-	return RAD_SCM_EVAL((SCM)list);
-}
-
-static SCM
-eval_catch_handler (void *data, SCM tag, SCM throw_args)
-{
-	scm_handle_by_message_noexit("radiusd", tag, throw_args);
-	longjmp(*(jmp_buf*)data, 1);
-}
+
+/* Entry points for main Radius tasks */
 
 int
 scheme_try_auth(int auth_type, grad_request_t *req,
@@ -264,97 +413,6 @@ scheme_acct(char *procname, grad_request_t *req)
 	return 1;
 }
 
-void
-scheme_add_load_path(char *path)
-{
-	rscm_add_load_path(path);
-}
-
-void
-scheme_load(char *filename)
-{
-	scm_primitive_load_path(scm_makfrom0str(filename));
-}
-
-void
-scheme_load_module(char *filename)
-{
-	scm_c_use_module(filename);
-}
-
-void
-scheme_end_reconfig()
-{
-	scm_gc();
-}
-
-void
-scheme_read_eval_loop()
-{
-        SCM list;
-        int status;
-        SCM sym_top_repl = RAD_SCM_SYMBOL_VALUE("top-repl");
-        SCM sym_begin = RAD_SCM_SYMBOL_VALUE("begin");
-
-        list = scm_cons(sym_begin, scm_list_1(scm_cons(sym_top_repl, SCM_EOL)));
-	status = scm_exit_status(RAD_SCM_EVAL_X(list));
-        printf("%d\n", status);
-}
-
-static SCM
-eval_close_port(void *port)
-{
-	scm_close_port((SCM)port);
-	return SCM_BOOL_F;
-}
-
-void
-silent_close_port(SCM port)
-{
- 	jmp_buf jmp_env;
-	
-	if (setjmp(jmp_env))
-		return;
-	scm_internal_lazy_catch(SCM_BOOL_T,
-				eval_close_port, (void*)port,
-				eval_catch_handler, &jmp_env);
-}
-
-void
-scheme_redirect_output()
-{
-	SCM port;
-	char *mode = "a";
-	int fd = 2;
-
-	if (scheme_outfile) {
-		char *filename;
-
-		if (scheme_outfile[0] == '/')
-			filename = grad_estrdup(scheme_outfile);
-		else
-			filename = grad_mkfilename(radlog_dir ?
-						   radlog_dir : RADLOG_DIR,
-						   scheme_outfile);
-		fd = open(filename, O_RDWR|O_CREAT|O_APPEND, 0600);
-		if (fd == -1) {
-			grad_log(L_ERR|L_PERROR,
-			         _("can't open file `%s'"),
-			         filename);
-			fd = 2;
-		}
-		grad_free(filename);
-	}
-
-	port = scheme_error_port;
-	scheme_error_port = scm_fdes_to_port(fd, mode,
-					     scm_makfrom0str("<standard error>"));
-	scm_set_current_output_port(scheme_error_port);
-	scm_set_current_error_port(scheme_error_port);
-	if (port != SCM_EOL) 
-		silent_close_port(port);
-}
-
 
 /* *************************** Configuration ******************************* */
 
@@ -405,7 +463,7 @@ static int
 scheme_cfg_load_module(int argc, cfg_value_t *argv, void *block_data,
 		       void *handler_data)
 {
-	if (argc > 2) {
+	if (argc < 2) {
 		cfg_argc_error(0);
 		return 0;
 	}
@@ -414,7 +472,16 @@ scheme_cfg_load_module(int argc, cfg_value_t *argv, void *block_data,
 		cfg_type_error(CFG_STRING);
 		return 0;
 	}
-	scheme_load_module(argv[1].v.string);
+	
+	if (scheme_load_module(argv[1].v.string) == 0) {
+		int i;
+		for (i = 2; i < argc; i++) {
+			if (argv[i].type != CFG_STRING)
+				cfg_type_error(CFG_STRING);
+			else
+				scheme_eval_expression(argv[i].v.string);
+		}
+	}
 	return 0;
 }
 

@@ -103,6 +103,7 @@ usr2delay, T_USR2DELAY
 warning, T_SEVERITY, _Y(L_WARN)
 yes, T_BOOL, _Y(1)
 print-pid, T_LOGOPT, _Y(LO_PID)
+print-tid, T_LOGOPT, _Y(LO_TID)
 print-category, T_LOGOPT, _Y(LO_CAT)
 print-cons, T_LOGOPT, _Y(LO_CONS)
 print-level, T_LOGOPT, _Y(LO_PRI),

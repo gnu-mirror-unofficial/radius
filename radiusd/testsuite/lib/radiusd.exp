@@ -407,7 +407,8 @@ proc simple_radius_test { args } {
 	pass "$message"
     } elseif {$result == 1} {
 	if { "$default" == "" || "$default" != "FAIL" } {
-	    fail "$message"
+	    set t [clock seconds]
+	    fail "([clock format $t]) $message"
 	} else {
 	    xfail "$message"
 	    set result 0

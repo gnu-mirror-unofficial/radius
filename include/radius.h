@@ -312,7 +312,10 @@ void avl_add_pair(VALUE_PAIR **, VALUE_PAIR *);
 VALUE_PAIR *avl_dup(VALUE_PAIR *from);
 VALUE_PAIR *avp_dup(VALUE_PAIR *vp);
 void avl_merge(VALUE_PAIR **dst_ptr, VALUE_PAIR **src_ptr);
-VALUE_PAIR *avp_create(int attr, int length, char *strval, int lval);
+VALUE_PAIR *avp_create(int attr);
+VALUE_PAIR *avp_create_integer(int attr, UINT4 value);
+VALUE_PAIR *avp_create_string(int attr, char *value);
+VALUE_PAIR *avp_create_binary(int attr, int length, u_char *value);
 void avl_move_attr(VALUE_PAIR **to, VALUE_PAIR **from, int attr);
 void avl_move_pairs(VALUE_PAIR **to, VALUE_PAIR **from,
                     int (*fun)(), void *closure);

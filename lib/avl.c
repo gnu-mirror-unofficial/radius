@@ -78,7 +78,7 @@ avp_dup(VALUE_PAIR *vp)
 
 /* Create a pair with given attribute, length and value; */
 VALUE_PAIR *
-avp_create(int attr, int length, char *strval, int lval)
+avp_create(int attr)
 {
         VALUE_PAIR *pair;
         DICT_ATTR  *dict;
@@ -94,13 +94,41 @@ avp_create(int attr, int length, char *strval, int lval)
         pair->attribute = attr;
         pair->type = dict->type;
         pair->prop = dict->prop;
-        if (strval) {
-                pair->avp_strlength = length;
-                pair->avp_strvalue = estrdup(strval);
-        } else
-                pair->avp_lvalue = lval;
+	return pair;
+}
 
-        return pair;
+VALUE_PAIR *
+avp_create_integer(int attr, UINT4 value)
+{
+	VALUE_PAIR *pair = avp_create(attr);
+
+	if (pair) 
+		pair->avp_lvalue = value;
+	return pair;
+}
+
+VALUE_PAIR *
+avp_create_string(int attr, char *value)
+{
+	VALUE_PAIR *pair = avp_create(attr);
+	if (pair) {
+		pair->avp_strvalue = estrdup(value);
+                pair->avp_strlength = strlen(value);
+	}
+	return pair;
+}
+
+VALUE_PAIR *
+avp_create_binary(int attr, int length, u_char *value)
+{
+	VALUE_PAIR *pair = avp_create(attr);
+	if (pair) {
+                pair->avp_strlength = length;
+                pair->avp_strvalue = emalloc(length + 1);
+		memcpy(pair->avp_strvalue, value, length);
+		pair->avp_strvalue[length] = 0;
+	}
+	return pair;
 }
 
 /* Add a pair to the end of a VALUE_PAIR list. */

@@ -42,7 +42,7 @@ function emit(s,lev) {
 ##     1   --  'logging' block
 ##     2   --  'category auth' block
 ##     3   --  'channel' block
-##     4   --  'cntl' block
+##     4   --  'cntl' or 'notify' block
 ##     5   --  'option' block
 
 # skip comments
@@ -85,7 +85,12 @@ state == 3 && $1 == "option" {
 state == 0 && $1 == "option" { state = 5 }
 state == 5 && $1 == "exec-program-group" { next }
 
-state == 0 && $1 == "cntl" { state = 4; }
+state == 0 && $1 == "cntl" { state = 4 }
+state == 0 && $1 == "notify" {
+	if ($2 == "on" || $2 == "off")
+		next
+	state = 4
+}
 
 /.*{.*/ { nesting_level++; }
 /.*}.*/ {

@@ -67,8 +67,8 @@ rad_exec_cleanup(arg)
 /* Execute a program on successful authentication.
    Return 0 if exec_wait == 0.
    Return the exit code of the called program if exec_wait != 0.
-   NOTE: The routine relies upon the fact that SIGCHLD and SIGPIPE
-   handlers are set to SIG_IGN. */
+   NOTE: The routine relies upon SIGCHLD and SIGPIPE being
+   set to SIG_IGN. */
 int
 radius_exec_program(cmd, req, reply, exec_wait, user_msg)
         char *cmd;

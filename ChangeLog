@@ -1,3 +1,17 @@
+2004-03-22  Sergey Poznyakoff
+
+	* examples/config.syntax: Sample mlc statement
+	* include/radiusd.h (mlc_stmt): New external
+	* include/radsql.h: New prototypes
+	* raddb/sqlserver (mlc_stop_query): Fixed
+	* radiusd/mlc.c: Allow MLC method to be configurable
+	* radiusd/radiusd.c: Likewise
+	* radiusd/sql.c: Likewise
+	
+	* include/radius/radutmp.h: Formatting changes
+	* lib/symtab.c: Likewise
+	* radiusd/rewrite.y: Likewise
+	
 2004-03-19  Sergey Poznyakoff
 
 	* include/radsql.h (struct SQL_cfg): Removed leftover auth_query

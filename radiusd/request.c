@@ -176,6 +176,7 @@ struct request_closure {
 	/* Output: */
 	int state;                 /* Request compare state */
 	REQUEST *orig;             /* Matched request (for proxy requests) */
+	REQUEST *lru;              /* Least recently used request */
         size_t request_count;      /* Total number of requests */
 	size_t request_type_count; /* Number of requests of this type */
 };
@@ -202,7 +203,11 @@ _request_iterator(void *item, void *clos)
 			grad_list_remove(request_list, req, NULL);
 			request_free(req);
 			return 0;
-		}
+		} else if (req->type == rp->type
+			   && (rp->lru == NULL
+			       || rp->lru->timestamp > req->timestamp))
+			rp->lru = req;
+			   
 	} else if (req->status == RS_PROXY) {
 		if (!spawn_flag || rpp_ready(req->child_id)) {
 			debug(1, ("%s proxy reply. Process %lu", 
@@ -284,6 +289,7 @@ request_handle(REQUEST *req, int (*handler)(REQUEST *))
 	rc.rawdata = req->rawdata;
 	rc.rawsize = req->rawsize;
 	rc.orig = NULL;
+	rc.lru = NULL;
 	rc.state = RCMP_NE;
 	rc.handler = handler;
         time(&rc.curtime);
@@ -327,16 +333,21 @@ request_handle(REQUEST *req, int (*handler)(REQUEST *))
 	}
 	
         /* This is a new request */
-        if (rc.request_count >= max_requests) {
-		request_drop(req->type, req->data, NULL, req->fd,
-			     _("too many requests in queue"));
-		return 1;
-        } else if (request_class[req->type].max_requests
-                   && rc.request_type_count >= request_class[req->type].max_requests) {
-		request_drop(req->type, req->data, NULL, req->fd,
-			     _("too many requests of this type"));
-		return 1;
-        } 
+	if (rc.request_count >= max_requests) {
+		if (!rc.lru) {
+			request_drop(req->type, req->data, NULL, req->fd,
+				     _("too many requests in queue"));
+			return 1;
+		}
+	} else if (request_class[req->type].max_requests
+		   && rc.request_type_count >= request_class[req->type].max_requests) {
+		if (!rc.lru) {
+			request_drop(req->type, req->data, NULL, req->fd,
+				     _("too many requests of this type"));
+			return 1;
+		}
+	} else
+		rc.lru = NULL;
 	
 	if (radiusd_master() && spawn_flag && !rpp_ready(0)) {
 		/* Do we have free handlers? */
@@ -344,7 +355,15 @@ request_handle(REQUEST *req, int (*handler)(REQUEST *))
 			     _("Maximum number of children active"));
 		return 1;
 	}
-		
+
+	if (rc.lru) {
+		debug(1, ("replacing request dated %s",
+			  ctime(&rc.lru->timestamp)));
+		grad_list_remove(request_list, rc.lru, NULL);
+		request_free(rc.lru);
+		rc.request_count--;
+	}
+	
 	/* Add request to the queue */
         debug(1, ("%s request %lu added to the list. %d requests held.", 
                   request_class[req->type].name,

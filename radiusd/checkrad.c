@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -59,20 +59,20 @@ struct check_instance {
         int       timeout;
         int       method;
         char      *func;
-        envar_t   *args;
+        grad_envar_t   *args;
         char      *hostname;
 };
 
 char *
 slookup(struct check_instance *checkp, char *name, char *defval)
 {
-        return envar_lookup_str(checkp->args, name, defval);
+        return grad_envar_lookup_str(checkp->args, name, defval);
 }
 
 int
 ilookup(struct check_instance *checkp, char *name, int defval)
 {
-        return envar_lookup_int(checkp->args, name, defval);
+        return grad_envar_lookup_int(checkp->args, name, defval);
 }
         
 struct check_instance *
@@ -96,7 +96,7 @@ create_instance(struct check_instance *cptr, NAS *nas, struct radutmp *up)
         cptr->hostname = nas->shortname ? nas->shortname : nas->longname;
         
         cptr->method = radck_type->method;
-        cptr->args = envar_merge_lists((envar_t*) nas->args, radck_type->args);
+        cptr->args = grad_envar_merge_lists((grad_envar_t*) nas->args, radck_type->args);
         cptr->func = slookup(cptr, "function", NULL);
         return cptr;
 }
@@ -104,7 +104,7 @@ create_instance(struct check_instance *cptr, NAS *nas, struct radutmp *up)
 void
 free_instance(struct check_instance *cptr)
 {
-        envar_free_list(&cptr->args);
+        grad_envar_free_list(&cptr->args);
 }
 
 int
@@ -163,7 +163,7 @@ checkrad_xlat(struct check_instance *checkp, char *str)
                                 ptr = buf;
                                 break;
                         case 'i':
-                                ip_iptostr(checkp->ip, buf);
+                                grad_ip_iptostr(checkp->ip, buf);
                                 ptr = buf;
                                 break;
                         default:
@@ -219,7 +219,7 @@ converse(int type, struct snmp_session *sp, struct snmp_pdu *pdu, void *closure)
                         debug(2, ("(INT) %d: %d", vlist->var_int, rc));
                         break;
                 case SMI_IPADDRESS:
-                        ip_iptostr(*(UINT4*)vlist->var_int, buf);
+                        grad_ip_iptostr(*(UINT4*)vlist->var_int, buf);
                         rc = compare(checkp, buf);
                         debug(2, ("(IPADDR) %#x: %d",
                                   *(UINT4*)vlist->var_str, rc));
@@ -445,12 +445,12 @@ finger_check(struct check_instance *checkp, NAS *nas)
 			fclose(fp);
 			obstack_free(&stk, NULL);
 			alarm(0);
-			rad_set_signal(SIGALRM, handler);
+			grad_set_signal(SIGALRM, handler);
 			return checkp->result = -1;
 		}
 
                 to = ilookup(checkp, "timeout", 10);
-		handler = rad_set_signal(SIGALRM, alrm_handler);
+		handler = grad_set_signal(SIGALRM, alrm_handler);
 		alarm(to);
 
                 while ((c = getc(fp)) != EOF) {
@@ -477,7 +477,7 @@ finger_check(struct check_instance *checkp, NAS *nas)
                                  * processing data
                                  */
 				to = alarm(0);
-				rad_set_signal(SIGALRM, handler);
+				grad_set_signal(SIGALRM, handler);
                                 
                                 obstack_1grow(&stk, 0);
                                 ptr = obstack_finish(&stk);
@@ -488,7 +488,7 @@ finger_check(struct check_instance *checkp, NAS *nas)
                                         break;
 
                                 /* restore alarm settings */
-				rad_set_signal(SIGALRM, alrm_handler);
+				grad_set_signal(SIGALRM, alrm_handler);
 				alarm(to);
                         }
                 }
@@ -498,7 +498,7 @@ finger_check(struct check_instance *checkp, NAS *nas)
                          * processing data
                          */
                         alarm(0);
-			rad_set_signal(SIGALRM, handler);
+			grad_set_signal(SIGALRM, handler);
 
                         obstack_1grow(&stk, '\n');
                         obstack_1grow(&stk, 0);
@@ -516,7 +516,6 @@ finger_check(struct check_instance *checkp, NAS *nas)
 
         /* restore alarm settings */
         alarm(0);
-	rad_set_signal(SIGALRM, handler);
 
         debug(1, ("result: %d", found));
         checkp->result = found;
@@ -551,7 +550,7 @@ checkrad(NAS *nas, struct radutmp *up)
                 rc = ext_check(&checkp, nas);
                 break;
         default:
-                insist_fail("bad method");
+                grad_insist_fail("bad method");
         }
         free_instance(&checkp);
         return rc;

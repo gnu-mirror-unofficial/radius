@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -50,7 +50,7 @@ passwd_recode(VALUE_PAIR *pass_pair, char *new_secret, char *new_vector,
         char password[AUTH_STRING_LEN+1];
         req_decrypt_password(password, req, pass_pair);
         efree(pass_pair->avp_strvalue);
-        encrypt_password(pass_pair, password, new_vector, new_secret);
+        grad_encrypt_password(pass_pair, password, new_vector, new_secret);
         /* Don't let the cleantext hang around */
         memset(password, 0, AUTH_STRING_LEN);
 }
@@ -63,11 +63,11 @@ tunnel_passwd_recode(VALUE_PAIR *pass_pair, char *new_secret, char *new_vector,
         char password[AUTH_STRING_LEN+1];
 	u_char tag;
 	
-	decrypt_tunnel_password(password, 
+	grad_decrypt_tunnel_password(password, 
 				&tag, pass_pair,
 				req->vector, req->secret);
         efree(pass_pair->avp_strvalue);
-	encrypt_tunnel_password(pass_pair,
+	grad_encrypt_tunnel_password(pass_pair,
 				tag, password, 
 				new_vector, new_secret);
 	memset(password, 0, AUTH_STRING_LEN);
@@ -103,7 +103,7 @@ proxy_cmp(RADIUS_REQ *qr, RADIUS_REQ *r)
 		debug(100,("no proxy realm"));
 		return 1;
 	}
-	server = list_item(qr->realm->queue->servers, qr->server_no);
+	server = grad_list_item(qr->realm->queue->servers, qr->server_no);
 	if (!server) {
 		debug(100,("no proxy server"));
 		return 1;
@@ -187,7 +187,7 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 		radreq->server_no++;
 		radreq->attempt_no = 0;
 	}
-	server = list_item(radreq->realm->queue->servers, radreq->server_no);
+	server = grad_list_item(radreq->realm->queue->servers, radreq->server_no);
 
 	if (!server) {
 		radlog_req(L_NOTICE, radreq,
@@ -196,15 +196,15 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 		return 0;
 	}
 	if (radreq->attempt_no == 0)
-		radreq->server_id = rad_clt_message_id(server);
+		radreq->server_id = grad_client_message_id(server);
 	radreq->attempt_no++;
 
-	rad_clt_random_vector(radreq->remote_auth);
-	plist = proxy_request_recode(radreq, avl_dup(radreq->request),
+	grad_client_random_vector(radreq->remote_auth);
+	plist = proxy_request_recode(radreq, grad_avl_dup(radreq->request),
 				     server->secret, radreq->remote_auth);
 
 	/* Add a proxy-pair to the end of the request. */
-	p = avp_alloc();
+	p = grad_avp_alloc();
 	p->name = "Proxy-State";
 	p->attribute = DA_PROXY_STATE;
 	p->type = TYPE_STRING;
@@ -219,16 +219,16 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 	proxy_state->proxy_id = radreq->server_id;
 	proxy_state->remote_ip = server->addr;
 	
-	avl_add_pair(&plist, p);
+	grad_avl_add_pair(&plist, p);
 	
 	/* Create the pdu */
-	size = rad_create_pdu(&pdu, radreq->code,
+	size = grad_create_pdu(&pdu, radreq->code,
 			      radreq->server_id,
 			      radreq->remote_auth,
 			      server->secret,
 			      plist,
 			      NULL);
-	avl_free(plist);
+	grad_avl_free(plist);
 
 	if (!radiusd_master()) {
 		RADIUS_UPDATE *upd;
@@ -262,7 +262,7 @@ proxy_send_request(int fd, RADIUS_REQ *radreq)
 static REALM *
 proxy_lookup_realm(RADIUS_REQ *req, char *name)
 {
-	REALM *realm = realm_lookup_name(name);
+	REALM *realm = grad_realm_lookup_name(name);
 	static char *var[] = { "auth", "acct" };
 	int t;
 	
@@ -279,16 +279,16 @@ proxy_lookup_realm(RADIUS_REQ *req, char *name)
 			
 		default:
 			/* Should not happen.. */
-			insist_fail("unexpected request code");
+			grad_insist_fail("unexpected request code");
 		}
 
-		rc = envar_lookup_int(realm->args, var[t], -1);
+		rc = grad_envar_lookup_int(realm->args, var[t], -1);
 		if (rc == -1) {
 			/* Neither {var} nor no{var} is specified. Check
 			   the orthogonal variable. If it is not set, proxying
 			   is enabled for both authentication and
 			   accounting. */
-			rc = !envar_lookup_int(realm->args, var[!t], 0);
+			rc = !grad_envar_lookup_int(realm->args, var[!t], 0);
 		}
 		if (!rc)
 			realm = NULL;
@@ -313,8 +313,8 @@ proxy_send(REQUEST *req)
         REALM *realm;
 
         /* Look up name. */
-        namepair = avl_find(radreq->request, DA_USER_NAME);
-        if (avp_null_string_p(namepair))
+        namepair = grad_avl_find(radreq->request, DA_USER_NAME);
+        if (grad_avp_null_string_p(namepair))
                 return 0;
 
         username = namepair->avp_strvalue;
@@ -325,11 +325,11 @@ proxy_send(REQUEST *req)
                LOCAL    -- process request locally.
                NOREALM  -- handle an empty realm name.
 
-           A realm with special name DEFAULT is returned by realm_lookup_name()
+           A realm with special name DEFAULT is returned by grad_realm_lookup_name()
            if no other realm name matches. */
 
         if ((realmname = strrchr(username, '@')) == NULL) {
-                if ((realm = realm_lookup_name("NOREALM")) == NULL) {
+                if ((realm = grad_realm_lookup_name("NOREALM")) == NULL) {
                         return 0;
                 }
         } else if ((realm = proxy_lookup_realm(radreq, realmname + 1))
@@ -338,7 +338,7 @@ proxy_send(REQUEST *req)
                 return 0;
         }
 
-	if (realmname && realm_strip_p(realm)) {
+	if (realmname && grad_realm_strip_p(realm)) {
 		*realmname = 0;
 		namepair->avp_strlength = strlen(namepair->avp_strvalue);
 	}
@@ -370,7 +370,7 @@ proxy_retry(RADIUS_REQ *req, int fd)
 	VALUE_PAIR *namepair;
 	char *saved_username;
 	
-        namepair = avl_find(req->request, DA_USER_NAME);
+        namepair = grad_avl_find(req->request, DA_USER_NAME);
         if (namepair == NULL)
                 return;
 
@@ -418,15 +418,15 @@ proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int fd)
                         prev->next = proxy_state_pair->next;
                 else
                         radreq->request = proxy_state_pair->next;
-                avp_free(proxy_state_pair);
+                grad_avp_free(proxy_state_pair);
         }
 
         /* Only allow some attributes to be propagated from
            the remote server back to the NAS, for security. */
         allowed_pairs = NULL;
-        avl_move_pairs(&allowed_pairs, &radreq->request,
+        grad_avl_move_pairs(&allowed_pairs, &radreq->request,
 		       select_propagated, NULL);
-        avl_free(radreq->request);
+        grad_avl_free(radreq->request);
 
         /* Rebuild the RADIUS_REQ struct, so that the normal functions
            can process it. Take care not to modify oldreq! */
@@ -445,7 +445,7 @@ proxy_receive(RADIUS_REQ *radreq, RADIUS_REQ *oldreq, int fd)
 
 	memcpy(radreq->vector, oldreq->vector, sizeof radreq->vector);
         radreq->secret       = oldreq->secret;
-        radreq->request      = avl_dup(oldreq->request);
+        radreq->request      = grad_avl_dup(oldreq->request);
 
         /* Proxy support fields */
         radreq->realm         = oldreq->realm;

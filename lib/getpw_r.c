@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -55,7 +55,7 @@ store_passwd(struct passwd *pwd, struct passwd *result, char *buffer,
               struct passwd *pwd, char *buffer, int buflen);
  */
 struct passwd *
-rad_getpwnam_r(const char  *name, struct passwd *result, char *buffer,
+grad_getpwnam_r(const char  *name, struct passwd *result, char *buffer,
 	       int buflen)
 {
 	struct passwd *pwd;

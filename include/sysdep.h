@@ -100,14 +100,14 @@ typedef unsigned long   UINT4;
 typedef unsigned long counter;
 
 RETSIGTYPE (*install_signal(int signo, void (*func)(int)))(int);
-int set_nonblocking(int fd);
-int getmaxfd();
-UINT4 get_first_ip();
+int grad_set_nonblocking(int fd);
+int grad_max_fd();
+UINT4 grad_first_ip();
 
 typedef RETSIGTYPE (*signal_handler_t)(int);
 
-signal_handler_t rad_set_signal(int sig, signal_handler_t sighandler);
-void rad_reset_signal(int sig, signal_handler_t sighandler);
+signal_handler_t grad_set_signal(int sig, signal_handler_t sighandler);
+void grad_reset_signal(int sig, signal_handler_t sighandler);
 
 
 #endif /* SYSDEP_H_INCLUDED */

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -19,7 +19,7 @@
 #include <radius.h>
 
 int
-__insist_failure(const char *str, const char *file, int line)
+__grad_insist_failure(const char *str, const char *file, int line)
 {
         radlog(L_CRIT,
                "INSIST FAILURE: %s at %s:%d", str, file, line);

@@ -94,9 +94,9 @@ int radwtmp_putent(char *filename, struct radutmp *ut);
 
 typedef struct format_data format_data_t;
 
-int radutent_print(format_data_t *form, struct radutmp *up, int nl);
-format_data_t *radutent_compile_form(char *fmt);
-void printutmp_header(format_data_t *form);
+int grad_radutent_print(format_data_t *form, struct radutmp *up, int nl);
+format_data_t *grad_radutent_compile_form(char *fmt);
+void grad_utent_print_header(format_data_t *form);
 
 extern int printutmp_ip_nodomain; /* do not display domain names */
 extern int printutmp_use_naslist; /* use naslist when displaying nas names */

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2001,2003 Free Software Foundation, Inc.
+   Copyright (C) 2001,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -98,11 +98,11 @@ mark_list(struct check_datum *datum, User_symbol *sym, VALUE_PAIR *list)
 {
         VALUE_PAIR *p;
 
-        if (p = avl_find(list, DA_MATCH_PROFILE)) {
+        if (p = grad_avl_find(list, DA_MATCH_PROFILE)) {
                 do {
                         mark_profile(datum, sym, p->avp_strvalue);
                 } while (p->next &&
-                         (p = avl_find(p->next, DA_MATCH_PROFILE)));
+                         (p = grad_avl_find(p->next, DA_MATCH_PROFILE)));
         }
 }
 
@@ -216,7 +216,7 @@ fix_check_pairs(int cf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs)
         
         for (p = *pairs; p; p = p->next) {
                 
-                dict = attr_number_to_dict(p->attribute);
+                dict = grad_attr_number_to_dict(p->attribute);
                 if (dict) {
                         if (!(dict->prop & AF_LHS(cf_file))) {
                                 radlog_loc(L_ERR, loc,
@@ -294,8 +294,8 @@ fix_check_pairs(int cf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs)
                 } else {
                         return 0;
                 }
-                auth_type = avp_create_integer(DA_AUTH_TYPE, type);
-                avl_add_pair(pairs, auth_type);
+                auth_type = grad_avp_create_integer(DA_AUTH_TYPE, type);
+                grad_avl_add_pair(pairs, auth_type);
         }
         
         switch (auth_type->avp_lvalue) {
@@ -353,14 +353,14 @@ fix_check_pairs(int cf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs)
 			       _("User-Password attribute ignored for this Auth-Type"));
                 }
 
-                avl_delete(pairs, DA_AUTH_TYPE);
-                p = avp_create_integer(DA_AUTH_TYPE, 
+                grad_avl_delete(pairs, DA_AUTH_TYPE);
+                p = grad_avp_create_integer(DA_AUTH_TYPE, 
                                        DV_AUTH_TYPE_CRYPT_LOCAL);
-                avl_add_pair(pairs, p);
+                grad_avl_add_pair(pairs, p);
                 
-                p = avp_create_integer(DA_PASSWORD_LOCATION, 
+                p = grad_avp_create_integer(DA_PASSWORD_LOCATION, 
                                        DV_PASSWORD_LOCATION_SQL);
-                avl_add_pair(pairs, p);
+                grad_avl_add_pair(pairs, p);
                 
                 break;
                 
@@ -387,7 +387,7 @@ fix_reply_pairs(int cf_file, LOCUS *loc, char *name, VALUE_PAIR **pairs)
         int errcnt = 0;
         
         for (p = *pairs; p; p = p->next) {
-                dict = attr_number_to_dict(p->attribute);
+                dict = grad_attr_number_to_dict(p->attribute);
                 if (dict) {
                         if (!(dict->prop & AF_RHS(cf_file))) {
                                 radlog_loc(L_ERR, loc,

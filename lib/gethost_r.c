@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -96,7 +96,7 @@ store_hostent(struct hostent *h_in,
 }
         
 struct hostent *
-rad_gethostbyname_r(const char *name,
+grad_gethostbyname_r(const char *name,
 		    struct hostent *result,
 		    char *buffer,
 		    int buflen,
@@ -113,7 +113,7 @@ rad_gethostbyname_r(const char *name,
 }
 
 struct hostent *
-rad_gethostbyaddr_r(const char *addr,
+grad_gethostbyaddr_r(const char *addr,
 		    int length,
 		    int type,
 		    struct hostent *result,

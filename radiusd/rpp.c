@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -230,20 +230,20 @@ rpp_lookup_ready(int (*proc_main)(void *), void *data)
 			;
 		iterator_destroy(&itr);
 	} else {
-		process_list = list_create();
+		process_list = grad_list_create();
 		p = NULL;
 	}
 	
 	if (!p) {
 		rpp_proc_t proc;
-		if (list_count(process_list) == max_children) 
+		if (grad_list_count(process_list) == max_children) 
 			return NULL;
 		if (rpp_start_process(&proc, proc_main, data)) 
 			return NULL;
 		radiusd_register_input_fd("rpp", proc.p[0], NULL);
 		p = emalloc(sizeof(*p));
 		*p = proc;
-		list_append(process_list, p);
+		grad_list_append(process_list, p);
 	}
 	return p;
 }
@@ -267,7 +267,7 @@ _rpp_remove(rpp_proc_t *p)
 	close(p->p[0]);
 	close(p->p[1]);
 	radiusd_close_channel(p->p[0]);
-	if (list_remove(process_list, p, NULL))
+	if (grad_list_remove(process_list, p, NULL))
 		efree(p);
 }
 
@@ -343,7 +343,7 @@ rpp_kill(pid_t pid, int signo)
 		} else
      		        return 1;
 	} else 
-		list_iterate(process_list, _kill_itr, &signo);
+		grad_list_iterate(process_list, _kill_itr, &signo);
 	return 0;
 }
 
@@ -358,7 +358,7 @@ _rpp_slay(rpp_proc_t *p)
 size_t
 rpp_count()
 {
-	return list_count(process_list);
+	return grad_list_count(process_list);
 }
 
 struct rpp_request {
@@ -461,7 +461,7 @@ sig_handler(int sig)
 	default:
 		abort();
 	}
-	rad_reset_signal(sig, sig_handler);
+	grad_reset_signal(sig, sig_handler);
 }
 
 /* Main loop for a child process */
@@ -475,7 +475,7 @@ rpp_request_handler(void *arg ARG_UNUSED)
 	REQUEST *req;
 
 	radiusd_signal_init(sig_handler);
-	rad_set_signal(SIGALRM, sig_handler);
+	grad_set_signal(SIGALRM, sig_handler);
 	request_init_queue();
 #ifdef USE_SERVER_GUILE
         scheme_redirect_output();
@@ -533,7 +533,7 @@ rpp_input_handler(int fd, void *data)
 	struct timeval tv, *tvp;
 	int sz;
 	
-	insist(p != NULL);
+	grad_insist(p != NULL);
 	
 	if (radiusd_read_timeout) {
 		tv.tv_sec = radiusd_read_timeout;

@@ -66,7 +66,7 @@ parse_facility(SCM list)
                 if (SCM_IMP(car) && SCM_INUMP(car)) 
                         val = SCM_INUM(car);
                 else if (SCM_NIMP(car) && SCM_STRINGP(car))
-                        val = xlat_keyword(syslog_kw, SCM_STRING_CHARS(car), 0);
+                        val = grad_xlat_keyword(syslog_kw, SCM_STRING_CHARS(car), 0);
                 else
                         continue;
                 accval |= val;

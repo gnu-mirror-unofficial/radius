@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -68,7 +68,7 @@ good_ipaddr(const char *addr)
  *      for the supplied IP address.
  */
 char * 
-ip_gethostname(UINT4 ipaddr, char *namebuf, size_t size)
+grad_ip_gethostname(UINT4 ipaddr, char *namebuf, size_t size)
 {
         struct hostent *hp, hent;
         char buffer[512];
@@ -78,11 +78,11 @@ ip_gethostname(UINT4 ipaddr, char *namebuf, size_t size)
         n_ipaddr = htonl(ipaddr);
         hp = (struct hostent *) NULL;
         if (resolve_hostnames) 
-                hp = rad_gethostbyaddr_r((char *)&n_ipaddr,
+                hp = grad_gethostbyaddr_r((char *)&n_ipaddr,
                                          sizeof (struct in_addr), AF_INET,
                                          &hent, buffer, sizeof buffer, &h_err);
         if (hp == (struct hostent *) NULL) 
-                return ip_iptostr(ipaddr, namebuf);
+                return grad_ip_iptostr(ipaddr, namebuf);
 
         len = strlen((char *)hp->h_name);
         if (len > size)
@@ -97,16 +97,16 @@ ip_gethostname(UINT4 ipaddr, char *namebuf, size_t size)
  * name or address in dot notation.
  */
 UINT4 
-ip_gethostaddr(const char *host)
+grad_ip_gethostaddr(const char *host)
 {
         struct hostent  *hp, hent;
         char buffer[512];
         int h_err;
         
         if (good_ipaddr(host) == 0) {
-                return ip_strtoip(host);
+                return grad_ip_strtoip(host);
         }
-        hp = rad_gethostbyname_r(host, &hent, buffer, sizeof(buffer), &h_err);
+        hp = grad_gethostbyname_r(host, &hent, buffer, sizeof(buffer), &h_err);
         if (!hp)
                 return 0;
         return ntohl(*(UINT4 *)hp->h_addr);
@@ -117,7 +117,7 @@ ip_gethostaddr(const char *host)
  * provided address in host long notation.
  */
 char *
-ip_iptostr(UINT4 ipaddr, char *buffer)
+grad_ip_iptostr(UINT4 ipaddr, char *buffer)
 {
         sprintf(buffer, "%u.%u.%u.%u",
                 (u_int) ((ipaddr >> 24) & 0xff),
@@ -132,7 +132,7 @@ ip_iptostr(UINT4 ipaddr, char *buffer)
  *      one supplied in standard dot notation.
  */
 UINT4 
-ip_strtoip(const char *ip_str)
+grad_ip_strtoip(const char *ip_str)
 #ifdef HAVE_INET_ATON
 {
         struct in_addr in;
@@ -178,12 +178,12 @@ ip_strtoip(const char *ip_str)
 #endif
 
 int
-ip_getnetaddr(const char *str, NETDEF *netdef)
+grad_ip_getnetaddr(const char *str, NETDEF *netdef)
 {
 	char *p = strchr(str, '/');
 	if (!p) {
 		netdef->netmask = 0xfffffffful;
-		netdef->ipaddr = ip_gethostaddr(str);
+		netdef->ipaddr = grad_ip_gethostaddr(str);
 	} else {
 		char buf[DOTTED_QUAD_LEN];
 		size_t len = p - str;
@@ -192,10 +192,10 @@ ip_getnetaddr(const char *str, NETDEF *netdef)
 			return 1;
 		memcpy(buf, str, len);
 		buf[len] = 0;
-		netdef->ipaddr = ip_strtoip(buf);
+		netdef->ipaddr = grad_ip_strtoip(buf);
 					
 		if (good_ipaddr(p+1) == 0)
-			netdef->netmask = ip_strtoip(p+1);
+			netdef->netmask = grad_ip_strtoip(p+1);
 		else {
 			char *endp;
 			UINT4 n = strtoul(p+1, &endp, 0);
@@ -212,7 +212,7 @@ ip_getnetaddr(const char *str, NETDEF *netdef)
 }
 
 int
-ip_addr_in_net_p(const NETDEF *netdef, UINT4 ipaddr)
+grad_ip_in_net_p(const NETDEF *netdef, UINT4 ipaddr)
 {
 	return netdef->ipaddr == (ipaddr & netdef->netmask);
 }

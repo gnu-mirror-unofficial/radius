@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -42,7 +42,7 @@ add_forward(int type, UINT4 ip, int port)
 	RADIUS_SERVER *srv;
 
 	if (!forward_list) {
-		forward_list = list_create();
+		forward_list = grad_list_create();
 		if (!forward_list) 
 			return; /* FIXME */
 	}
@@ -51,7 +51,7 @@ add_forward(int type, UINT4 ip, int port)
 	srv->name = NULL;
 	srv->addr = ip;
 	srv->port[type] = port;
-	list_append(forward_list, srv);
+	grad_list_append(forward_list, srv);
 }
 
 static int
@@ -108,7 +108,7 @@ forward_data(RADIUS_SERVER *srv, int type, void *data, size_t size)
 
 		radlog(L_ERR|L_PERROR,
 		       _("Can't forward to %s:%d"),
-		       ip_iptostr(srv->addr, buffer),
+		       grad_ip_iptostr(srv->addr, buffer),
 		       srv->port[type]);
 	}
 }
@@ -130,24 +130,24 @@ forwarder(void *item, void *data)
 		if (srv->secret) {
 			secret = srv->secret;
 			vp = proxy_request_recode(r->req,
-						  avl_dup(r->req->request),
+						  grad_avl_dup(r->req->request),
 						  secret,
 						  r->req->vector);
 			plist = vp;
-			id = rad_clt_message_id(srv);
+			id = grad_client_message_id(srv);
 		} else {
 			secret = r->req->secret;
 			plist = r->req->request;
 			id = r->req->id;
 		}
-		size = rad_create_pdu(&pdu,
+		size = grad_create_pdu(&pdu,
 				      r->req->code,
 				      id,
 				      r->req->vector,
 				      secret,
 				      plist,
 				      NULL);
-		avl_free(vp);
+		grad_avl_free(vp);
 		forward_data(srv, r->type, pdu, size);
 		efree(pdu);
 	}
@@ -166,7 +166,7 @@ forward_before_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 {
 	close(forward_fd);
 	forward_fd = -1;
-	list_destroy(&forward_list, free_mem, NULL);
+	grad_list_destroy(&forward_list, free_mem, NULL);
 }
 
 static int
@@ -178,7 +178,7 @@ fixup_forward_server(void *item, void *data)
 		char buffer[DOTTED_QUAD_LEN];
 		radlog(L_NOTICE,
 		       _("Forwarding host %s not listed in clients"),
-		       ip_iptostr(srv->addr, buffer));
+		       grad_ip_iptostr(srv->addr, buffer));
 	} else
 		srv->secret = cl->secret;
 	return 0;
@@ -189,7 +189,7 @@ forward_after_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 {
 	struct sockaddr_in s;
 	
-	if (list_count(forward_list) == 0)
+	if (grad_list_count(forward_list) == 0)
 		return;
 	
 	forward_fd = socket(PF_INET, SOCK_DGRAM, 0);
@@ -207,7 +207,7 @@ forward_after_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 	if (bind(forward_fd, (struct sockaddr*)&s, sizeof (s)) < 0) 
 		radlog(L_ERR|L_PERROR, _("Can't bind forwarding socket"));
 	
-	list_iterate(forward_list, fixup_forward_server, NULL);
+	grad_list_iterate(forward_list, fixup_forward_server, NULL);
 }
 
 void
@@ -235,6 +235,6 @@ forward_request(int type, RADIUS_REQ *req)
 	
 	rd.type = type;
 	rd.req = req;
-	list_iterate(forward_list, forwarder, &rd);
+	grad_list_iterate(forward_list, forwarder, &rd);
 }
 

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -42,12 +42,12 @@
           radreq      -- The request. */
 
 int
-rad_srv_send_reply(int fd, RADIUS_REQ *radreq)
+grad_server_send_reply(int fd, RADIUS_REQ *radreq)
 {
         void *pdu;
         size_t length;
 
-        length = rad_create_pdu(&pdu, radreq->reply_code,
+        length = grad_create_pdu(&pdu, radreq->reply_code,
                                 radreq->id, radreq->vector, radreq->secret,
                                 radreq->reply_pairs, radreq->reply_msg);
         if (length > 0) {
@@ -58,7 +58,7 @@ rad_srv_send_reply(int fd, RADIUS_REQ *radreq)
                 debug(1, ("Sending %s of id %d to %lx (nas %s)",
                           auth_code_str(radreq->reply_code), radreq->id,
 			  (u_long)radreq->ipaddr,
-                          nas_request_to_name(radreq, buf, sizeof buf)));
+                          grad_nas_request_to_name(radreq, buf, sizeof buf)));
                 
                 sin = (struct sockaddr_in *) &saremote;
                 memset ((char *) sin, '\0', sizeof (saremote));
@@ -83,19 +83,19 @@ rad_srv_send_reply(int fd, RADIUS_REQ *radreq)
           state       -- Value of the State attribute.
 */
 int
-rad_srv_send_challenge(int fd, RADIUS_REQ *radreq, char *msg, char *state)
+grad_server_send_challenge(int fd, RADIUS_REQ *radreq, char *msg, char *state)
 {
         void *pdu;
         size_t length;
-        VALUE_PAIR *p = avp_create_string(DA_STATE, state);
+        VALUE_PAIR *p = grad_avp_create_string(DA_STATE, state);
 	VALUE_PAIR *reply;
 
-	reply = avl_dup(radreq->reply_pairs);
-	avl_merge(&reply, &p);
-        length = rad_create_pdu(&pdu, RT_ACCESS_CHALLENGE, radreq->id,
+	reply = grad_avl_dup(radreq->reply_pairs);
+	grad_avl_merge(&reply, &p);
+        length = grad_create_pdu(&pdu, RT_ACCESS_CHALLENGE, radreq->id,
                                 radreq->vector, radreq->secret, reply, msg);
-	avl_free(reply);
-	avl_free(p);
+	grad_avl_free(reply);
+	grad_avl_free(p);
 	
         if (length > 0) {
                 struct sockaddr saremote;
@@ -104,7 +104,7 @@ rad_srv_send_challenge(int fd, RADIUS_REQ *radreq, char *msg, char *state)
 
                 debug(1, ("Sending Challenge of id %d to %lx (nas %s)",
                           radreq->id, (u_long)radreq->ipaddr,
-                          nas_request_to_name(radreq, buf, sizeof buf)));
+                          grad_nas_request_to_name(radreq, buf, sizeof buf)));
         
                 sin = (struct sockaddr_in *) &saremote;
                 memset ((char *) sin, '\0', sizeof (saremote));
@@ -118,7 +118,7 @@ rad_srv_send_challenge(int fd, RADIUS_REQ *radreq, char *msg, char *state)
 #endif
                 efree(pdu);
         }
-        avp_free(p);
+        grad_avp_free(p);
 	return length;
 }
 #endif

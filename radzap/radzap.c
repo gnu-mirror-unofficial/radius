@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -138,7 +138,7 @@ radzap(NETDEF *netdef, int port, char *user, time_t t)
          *      Find the entry for this NAS / portno combination.
          */
         while (up = rut_getent(file)) {
-                if ((netdef && !ip_addr_in_net_p(netdef, htonl(up->nas_address)))
+                if ((netdef && !grad_ip_in_net_p(netdef, htonl(up->nas_address)))
 		    || (port >= 0 && port != up->nas_port)
 		    || (user != NULL && strcmp(up->login, user))!= 0
 		    ||  up->type != P_LOGIN) {
@@ -164,10 +164,10 @@ confirm(struct radutmp *utp)
         NAS *cl;
         char *s = NULL;
         
-        if (cl = nas_lookup_ip(ntohl(utp->nas_address)))
+        if (cl = grad_nas_lookup_ip(ntohl(utp->nas_address)))
                 s = cl->shortname;
         if (s == NULL || s[0] == 0) 
-                s = ip_gethostname(ntohl(utp->nas_address), buf, sizeof(buf));
+                s = grad_ip_gethostname(ntohl(utp->nas_address), buf, sizeof(buf));
         
         printf(_("radzap: zapping %s from %s, port %d"),
                utp->login,
@@ -204,7 +204,7 @@ main(int argc, char **argv)
         char *s;        
         struct arguments args;
         
-        app_setup();
+        grad_app_setup();
         initlog(argv[0]);
 
         if (s = getenv("RADZAP_CONFIRM"))
@@ -212,24 +212,24 @@ main(int argc, char **argv)
         args.user = NULL;
         args.nas  = NULL;
         args.port = -1;
-        if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, &args))
+        if (grad_argp_parse(&argp, &argc, &argv, 0, NULL, &args))
                 return 1;
 
         /*
          *      Read the "naslist" file.
          */
-        path = mkfilename(radius_dir, RADIUS_NASLIST);
-        if (nas_read_file(path) < 0)
+        path = grad_mkfilename(radius_dir, RADIUS_NASLIST);
+        if (grad_nas_read_file(path) < 0)
                 exit(1);
         efree(path);
 
         if (args.nas) {
                 NAS *np;
-                np = nas_lookup_name(args.nas);
+                np = grad_nas_lookup_name(args.nas);
 		if (np) {
                         netdefp = &np->netdef;
 		} else {
-			if (ip_getnetaddr(args.nas, &netdef)) {
+			if (grad_ip_getnetaddr(args.nas, &netdef)) {
 				fprintf(stderr,
 					_("%s: host not found.\n"), args.nas);
 				return 1;

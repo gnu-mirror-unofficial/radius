@@ -202,7 +202,7 @@ _request_iterator(void *item, void *clos)
 		             <= rp->curtime) {
 			debug(1, ("deleting completed %s request",
 				  request_class[req->type].name));
-			list_remove(request_list, req, NULL);
+			grad_list_remove(request_list, req, NULL);
 			request_free(req);
 			return 0;
 		}
@@ -212,14 +212,14 @@ _request_iterator(void *item, void *clos)
 				  request_class[req->type].name,
 				  (u_long) req->child_id));
 			request_call_handler(rp->handler, req);
-			list_remove(request_list, req, NULL);
+			grad_list_remove(request_list, req, NULL);
 			request_free(req);
 		} else if (req->timestamp + request_class[req->type].ttl
 			   <= rp->curtime) {
 			radlog(L_NOTICE,
 			       _("Proxy %s request expired in queue"),
 			       request_class[req->type].name);
-			list_remove(request_list, req, NULL);
+			grad_list_remove(request_list, req, NULL);
 			request_free(req);
 		}
 	} else {
@@ -293,9 +293,9 @@ request_handle(REQUEST *req, int (*handler)(REQUEST *))
         rc.request_count = rc.request_type_count = 0;
 
 	if (!request_list)
-		request_list = list_create();
+		request_list = grad_list_create();
 	else
-		list_iterate(request_list, _request_iterator, &rc);
+		grad_list_iterate(request_list, _request_iterator, &rc);
 
 	switch (rc.state) {
 	case RCMP_EQ: /* duplicate */
@@ -322,7 +322,7 @@ request_handle(REQUEST *req, int (*handler)(REQUEST *))
 					  request_class[req->type].name,
 					  (u_long) req->child_id,
 					  rc.request_count+1));
-				list_append(request_list, req);
+				grad_list_append(request_list, req);
 				return 0;
 			}
 		}
@@ -356,7 +356,7 @@ request_handle(REQUEST *req, int (*handler)(REQUEST *))
 
 	status = request_call_handler(handler, req);
 	if (status == 0) 
-		list_append(request_list, req);
+		grad_list_append(request_list, req);
 	return status;
 }
 
@@ -399,7 +399,7 @@ _destroy_request(void *item, void *data)
 void
 request_init_queue()
 {
-	list_destroy(&request_list, _destroy_request, NULL);
+	grad_list_destroy(&request_list, _destroy_request, NULL);
 }
 
 void *
@@ -444,7 +444,7 @@ int
 request_stat_list(QUEUE_STAT stat)
 {
 	memset(stat, 0, sizeof(QUEUE_STAT));
-	list_iterate(request_list, _count_stat, &stat);
+	grad_list_iterate(request_list, _count_stat, &stat);
 	return 0;
 }
 	

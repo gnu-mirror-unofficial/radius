@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002, 2003 Free Software Foundation
+   Copyright (C) 2002, 2003, 2004 Free Software Foundation
   
    GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -34,13 +34,13 @@ struct _parse_data {
 	LOCUS *loc;
 };
 
-int
+static int
 _parse_server(int argc, char **argv, struct _parse_data *pd, int *np,
 	      RADIUS_SERVER *srv)
 {
 	memset(srv, 0, sizeof(*srv));
 	srv->name = argv[*np];
-	srv->addr = ip_gethostaddr(argv[(*np)++]);
+	srv->addr = grad_ip_gethostaddr(argv[(*np)++]);
 	if (*np+1 < argc && argv[*np][0] == ':') {
 		char *p;
 		
@@ -64,7 +64,7 @@ _parse_server(int argc, char **argv, struct _parse_data *pd, int *np,
 	return 0;
 }
 
-int
+static int
 _parse_server_list(RADIUS_SERVER_QUEUE *qp, char *str, struct _parse_data *pd)
 {
 	int i, argc;
@@ -76,7 +76,7 @@ _parse_server_list(RADIUS_SERVER_QUEUE *qp, char *str, struct _parse_data *pd)
 	for (i = 0; i < argc; i++) {
 		RADIUS_SERVER srv;
 		if (_parse_server(argc, argv, pd, &i, &srv) == 0) 
-			rad_clt_append_server(qp, rad_clt_alloc_server(&srv));
+			grad_client_append_server(qp, grad_client_alloc_server(&srv));
 
 		if (i < argc && argv[i][0] != ',') {
 			radlog_loc(L_ERR, pd->loc,
@@ -93,7 +93,7 @@ _parse_server_list(RADIUS_SERVER_QUEUE *qp, char *str, struct _parse_data *pd)
 
 /* read realms entry */
 /*ARGSUSED*/
-int
+static int
 read_realms_entry(void *closure, int fc, char **fv, LOCUS *loc)
 {
 	struct _parse_data *pd = closure;
@@ -112,19 +112,19 @@ read_realms_entry(void *closure, int fc, char **fv, LOCUS *loc)
         if (strcmp(fv[1], "LOCAL") == 0) {
 		i = 2;
 	} else {
-		rp->queue = rad_clt_create_queue(0, 0, 0);
+		rp->queue = grad_client_create_queue(0, 0, 0);
 		i = 0;
 		do {
 			if (_parse_server_list(rp->queue, fv[++i], pd)) {
-				rad_clt_clear_server_list(rp->queue);
+				grad_client_clear_server_list(rp->queue);
 				break;
 			}
 		} while (fv[i][strlen(fv[i])-1] == ',') ;
 		i++;
 		
-		if (list_count(rp->queue->servers) == 0) {
+		if (grad_list_count(rp->queue->servers) == 0) {
 			radlog_loc(L_NOTICE, loc, _("discarding entry"));
-			rad_clt_destroy_queue(rp->queue);
+			grad_client_destroy_queue(rp->queue);
 			efree(rp);
 			return 0;
 		}
@@ -133,18 +133,18 @@ read_realms_entry(void *closure, int fc, char **fv, LOCUS *loc)
         STRING_COPY(rp->realm, fv[0]);
         
         if (i < fc) {
-                rp->args = envar_parse_argcv(fc-i, &fv[i]);
+                rp->args = grad_envar_parse_argcv(fc-i, &fv[i]);
 
 		if (rp->queue) {
-			rp->queue->timeout = envar_lookup_int(rp->args,
+			rp->queue->timeout = grad_envar_lookup_int(rp->args,
 							      "timeout", 1);
-			rp->queue->retries = envar_lookup_int(rp->args,
+			rp->queue->retries = grad_envar_lookup_int(rp->args,
 							      "retries", 1);
 		}
         }
 	if (!realms)
-		realms = list_create();
-        list_prepend(realms, rp);
+		realms = grad_list_create();
+        grad_list_prepend(realms, rp);
         return 0;
 }
 
@@ -152,8 +152,8 @@ static int
 _realm_mem_free(void *item, void *data ARG_UNUSED)
 {
 	REALM *r = item;
-	rad_clt_destroy_queue(r->queue);
-	envar_free_list(&r->args);
+	grad_client_destroy_queue(r->queue);
+	grad_envar_free_list(&r->args);
 	efree(item);
 	return 0;
 }
@@ -162,16 +162,16 @@ _realm_mem_free(void *item, void *data ARG_UNUSED)
  * Read the realms file.
  */
 int
-realm_read_file(char *file, int auth_port, int acct_port, int (*set_secret)())
+grad_read_realms(char *file, int auth_port, int acct_port, int (*set_secret)())
 {
 	struct _parse_data pd;
 
-	list_destroy(&realms, _realm_mem_free, NULL);
+	grad_list_destroy(&realms, _realm_mem_free, NULL);
         realms = NULL;
 	pd.fun = set_secret;
 	pd.ports[PORT_AUTH] = auth_port;
 	pd.ports[PORT_ACCT] = acct_port;
-        return read_raddb_file(file, 1, read_realms_entry, &pd);
+        return grad_read_raddb_file(file, 1, read_realms_entry, &pd);
 }
 
 /* Realm Lookup Functions */
@@ -179,13 +179,13 @@ realm_read_file(char *file, int auth_port, int acct_port, int (*set_secret)())
 static int
 realm_match_name_p(const REALM *realm, const char *name)
 {
-	return (envar_lookup_int(realm->args, "ignorecase", 0) ?
+	return (grad_envar_lookup_int(realm->args, "ignorecase", 0) ?
 		strcasecmp : strcmp) (realm->realm, name) == 0;
 }
 
 /* Find a realm in the REALM list */
 REALM *
-realm_lookup_name(char *realm)
+grad_realm_lookup_name(char *realm)
 {
         REALM *p;
 	ITERATOR *itr = iterator_create(realms);
@@ -207,7 +207,7 @@ realm_lookup_name(char *realm)
 }
 
 int
-realm_verify_ip(REALM *realm, UINT4 ip)
+grad_realm_verify_ip(REALM *realm, UINT4 ip)
 {
 	RADIUS_SERVER *serv;
 	ITERATOR *itr;
@@ -223,7 +223,7 @@ realm_verify_ip(REALM *realm, UINT4 ip)
 }
 
 REALM *
-realm_lookup_ip(UINT4 ip)
+grad_realm_lookup_ip(UINT4 ip)
 {
 	REALM *p;
 	ITERATOR *itr;
@@ -231,21 +231,21 @@ realm_lookup_ip(UINT4 ip)
         if (!(itr = iterator_create(realms)))
 	    return NULL;
         for (p = iterator_first(itr); p; p = iterator_next(itr))
-		if (realm_verify_ip(p, ip))
+		if (grad_realm_verify_ip(p, ip))
 			break;
 	iterator_destroy(&itr);
 	return p;
 }
 
 int
-realm_strip_p(REALM *r)
+grad_realm_strip_p(REALM *r)
 {
-	return envar_lookup_int(r->args, "strip", 1);
+	return grad_envar_lookup_int(r->args, "strip", 1);
 }
 
 size_t
-realm_get_quota(REALM *r)
+grad_realm_get_quota(REALM *r)
 {
-	return envar_lookup_int(r->args, "quota", 0);
+	return grad_envar_lookup_int(r->args, "quota", 0);
 }
 		

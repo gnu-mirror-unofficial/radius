@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -190,8 +190,8 @@ add_user_entry(void *closure, LOCUS *loc,
                 radlog_loc(L_ERR, loc,
 			   _("discarding user `%s'"),
 			   name);
-                avl_free(check);
-                avl_free(reply);
+                grad_avl_free(check);
+                grad_avl_free(reply);
                 return 0;
         }
 
@@ -207,8 +207,8 @@ static int
 free_user_entry(User_symbol *sym)
 {
 	locus_free(&sym->loc);
-        avl_free(sym->check);
-        avl_free(sym->reply);
+        grad_avl_free(sym->check);
+        grad_avl_free(sym->reply);
         return 0;
 }
 
@@ -228,8 +228,8 @@ add_pairlist(void *closure, LOCUS *loc,
             || fix_check_pairs(data->cf_file, loc, name, &lhs)
             || fix_reply_pairs(data->cf_file, loc, name, &rhs)) {
                 radlog_loc(L_ERR, loc, _("discarding entry `%s'"), name);
-                avl_free(lhs);
-                avl_free(rhs);
+                grad_avl_free(lhs);
+                grad_avl_free(rhs);
                 return 0;
         }
 
@@ -238,7 +238,7 @@ add_pairlist(void *closure, LOCUS *loc,
         rule->lhs = lhs;
         rule->rhs = rhs;
         locus_dup(&rule->loc, loc);
-	list_append(data->list, rule);
+	grad_list_append(data->list, rule);
         return  0;
 }
 
@@ -247,7 +247,7 @@ read_users(char *name)
 {
         if (!user_tab)
                 user_tab = symtab_create(sizeof(User_symbol), free_user_entry);
-        return parse_file(name, user_tab, add_user_entry);
+        return grad_parse_rule_file(name, user_tab, add_user_entry);
 }
 
 static RAD_LIST *
@@ -256,8 +256,8 @@ file_read(int cf_file, char *name)
         struct temp_data tmp;
 
         tmp.cf_file = cf_file;
-        tmp.list = list_create();
-        parse_file(name, &tmp, add_pairlist);
+        tmp.list = grad_list_create();
+        grad_parse_rule_file(name, &tmp, add_pairlist);
         return tmp.list;
 }
 
@@ -357,21 +357,21 @@ match_user(User_symbol *sym, RADIUS_REQ *req,
 
         found = 0;
         do {
-                check_tmp = avl_dup(sym->check);
+                check_tmp = grad_avl_dup(sym->check);
 #ifdef USE_SQL
                 rad_sql_check_attr_query(req, &check_tmp);
 #endif
                 if (paircmp(req, check_tmp, NULL)) {
-                        avl_free(check_tmp);
+                        grad_avl_free(check_tmp);
                         continue;
                 }
 
 		radius_req_register_locus(req, &sym->loc);
                 found = 1;
 
-                for (p = avl_find(sym->check, DA_MATCH_PROFILE);
+                for (p = grad_avl_find(sym->check, DA_MATCH_PROFILE);
                      p; 
-                     p = avl_find(p->next, DA_MATCH_PROFILE)) {
+                     p = grad_avl_find(p->next, DA_MATCH_PROFILE)) {
                         debug(1, ("submatch: %s", p->avp_strvalue));
 
                         found = match_user(sym_lookup(user_tab,
@@ -380,23 +380,23 @@ match_user(User_symbol *sym, RADIUS_REQ *req,
                 }                       
 
                 if (!found) {
-                        avl_free(check_tmp);
+                        grad_avl_free(check_tmp);
                         continue;
                 }       
 
-                reply_tmp = avl_dup(sym->reply);
-                avl_merge(reply_pairs, &reply_tmp);
-                avl_merge(check_pairs, &check_tmp);
+                reply_tmp = grad_avl_dup(sym->reply);
+                grad_avl_merge(reply_pairs, &reply_tmp);
+                grad_avl_merge(check_pairs, &check_tmp);
 #ifdef USE_SQL
                 rad_sql_reply_attr_query(req, reply_pairs);
 #endif
 
-                avl_free(reply_tmp);
-                avl_free(check_tmp);
+                grad_avl_free(reply_tmp);
+                grad_avl_free(check_tmp);
 
-                for (p = avl_find(sym->reply, DA_MATCH_PROFILE);
+                for (p = grad_avl_find(sym->reply, DA_MATCH_PROFILE);
                      p;
-                     p = avl_find(p->next, DA_MATCH_PROFILE)) {
+                     p = grad_avl_find(p->next, DA_MATCH_PROFILE)) {
                         debug(1, ("next: %s", p->avp_strvalue));
                         match_user(sym_lookup(user_tab, p->avp_strvalue),
                                    req, check_pairs, reply_pairs);
@@ -449,8 +449,8 @@ user_find(char *name, RADIUS_REQ *req,
         /*
          *      Remove server internal parameters.
          */
-        avl_delete(reply_pairs, DA_FALL_THROUGH);
-        avl_delete(reply_pairs, DA_MATCH_PROFILE);
+        grad_avl_delete(reply_pairs, DA_FALL_THROUGH);
+        grad_avl_delete(reply_pairs, DA_MATCH_PROFILE);
         
         return 0;
 }
@@ -559,7 +559,7 @@ userparse(char *buffer, VALUE_PAIR **first_pair, char **errmsg)
                 case PS_LHS:
                         if (token[0] == '\n' || token[0] == '#')
                                 continue;
-                        if (!(attr = attr_name_to_dict(token))) {
+                        if (!(attr = grad_attr_name_to_dict(token))) {
                                 snprintf(errbuf, sizeof(errbuf),
                                         _("unknown attribute `%s/%s'"), 
                                         token, buffer);
@@ -570,7 +570,7 @@ userparse(char *buffer, VALUE_PAIR **first_pair, char **errmsg)
                         break;
                         
                 case PS_OPS:
-                        op = xlat_keyword(op_tab, token, -1);
+                        op = grad_xlat_keyword(op_tab, token, -1);
                         if (op == -1) {
                                 snprintf(errbuf, sizeof(errbuf),
 					 _("expected %s, but found %s"),
@@ -585,14 +585,14 @@ userparse(char *buffer, VALUE_PAIR **first_pair, char **errmsg)
                         break;
                         
                 case PS_RHS:
-                        pair = install_pair(&loc, attr->name, op, token);
+                        pair = grad_create_pair(&loc, attr->name, op, token);
                         if (!pair) {
                                 snprintf(errbuf, sizeof(errbuf),
-                                         _("install_pair failed on %s"),
+                                         _("grad_create_pair failed on %s"),
                                          attr->name);
                                 return -1;
                         }
-                        avl_merge(first_pair, &pair);
+                        grad_avl_merge(first_pair, &pair);
                         state = PS_END;
                         break;
                         
@@ -623,8 +623,8 @@ hints_eval_compat(RADIUS_REQ *req, VALUE_PAIR *name_pair, MATCHING_RULE *rule)
         VALUE_PAIR      *tmp;
 
 	/* Let's see if we need to further modify the username */
-	if ((tmp = avl_find(rule->rhs, DA_REPLACE_USER_NAME))
-	    || (tmp = avl_find(rule->lhs, DA_REPLACE_USER_NAME))) {
+	if ((tmp = grad_avl_find(rule->rhs, DA_REPLACE_USER_NAME))
+	    || (tmp = grad_avl_find(rule->lhs, DA_REPLACE_USER_NAME))) {
 		char *ptr;
 		struct obstack hints_stk;
  
@@ -637,8 +637,8 @@ hints_eval_compat(RADIUS_REQ *req, VALUE_PAIR *name_pair, MATCHING_RULE *rule)
 	}
                 
 	/* Is the rewrite function specified? */
-	if ((tmp = avl_find(rule->rhs, DA_REWRITE_FUNCTION))
-	    || (tmp = avl_find(rule->lhs, DA_REWRITE_FUNCTION))) {
+	if ((tmp = grad_avl_find(rule->rhs, DA_REWRITE_FUNCTION))
+	    || (tmp = grad_avl_find(rule->lhs, DA_REWRITE_FUNCTION))) {
 		if (rewrite_eval(tmp->avp_strvalue, req, NULL, NULL)) {
 			radlog_loc(L_ERR, &rule->loc, "%s(): %s",
 				   tmp->avp_strvalue,
@@ -668,9 +668,9 @@ hints_setup(RADIUS_REQ *req)
         case RT_ACCESS_REJECT:
         case RT_ACCOUNTING_RESPONSE:
         case RT_ACCESS_CHALLENGE:
-                tmp = avp_create_integer(DA_PROXY_REPLIED, 1);
-                avl_merge(&request_pairs, &tmp);
-                avp_free(tmp);
+                tmp = grad_avp_create_integer(DA_PROXY_REPLIED, 1);
+                grad_avl_merge(&request_pairs, &tmp);
+                grad_avp_free(tmp);
                 break;
 
         case RT_STATUS_SERVER:
@@ -683,11 +683,11 @@ hints_setup(RADIUS_REQ *req)
         /* 
          *      Check for valid input, zero length names not permitted 
          */
-        if ((name_pair = avl_find(request_pairs, DA_USER_NAME)) == NULL) {
-                name_pair = avp_create_string(DA_USER_NAME, "");
+        if ((name_pair = grad_avl_find(request_pairs, DA_USER_NAME)) == NULL) {
+                name_pair = grad_avp_create_string(DA_USER_NAME, "");
                 orig_name_pair = NULL;
         } else {
-                orig_name_pair = avp_create_string(DA_ORIG_USER_NAME,
+                orig_name_pair = grad_avp_create_string(DA_ORIG_USER_NAME,
                                                    name_pair->avp_strvalue);
         }
 
@@ -695,12 +695,12 @@ hints_setup(RADIUS_REQ *req)
         
         /* if Framed-Protocol is present but Service-Type is missing, add
            Service-Type = Framed-User. */
-        if (avl_find(request_pairs, DA_FRAMED_PROTOCOL) != NULL &&
-            avl_find(request_pairs, DA_SERVICE_TYPE) == NULL) {
-                tmp = avp_create_integer(DA_SERVICE_TYPE,
+        if (grad_avl_find(request_pairs, DA_FRAMED_PROTOCOL) != NULL &&
+            grad_avl_find(request_pairs, DA_SERVICE_TYPE) == NULL) {
+                tmp = grad_avp_create_integer(DA_SERVICE_TYPE,
                                          DV_SERVICE_TYPE_FRAMED_USER);
                 if (tmp) 
-                        avl_merge(&request_pairs, &tmp);
+                        grad_avl_merge(&request_pairs, &tmp);
         }
 
 	itr = iterator_create(hints);
@@ -717,12 +717,12 @@ hints_setup(RADIUS_REQ *req)
                 debug(1, ("matched %s at %s:%lu", rule->name, rule->loc.file,
 			  (unsigned long) rule->loc.line));
         
-                add = avl_dup(rule->rhs);
+                add = grad_avl_dup(rule->rhs);
         
                 /* See if we need to adjust the name. */
                 do_strip = 1;
-                if ((tmp = avl_find(rule->rhs, DA_STRIP_USER_NAME)) != NULL
-                    || (tmp = avl_find(rule->lhs, DA_STRIP_USER_NAME)) != NULL)
+                if ((tmp = grad_avl_find(rule->rhs, DA_STRIP_USER_NAME)) != NULL
+                    || (tmp = grad_avl_find(rule->lhs, DA_STRIP_USER_NAME)) != NULL)
                         do_strip = tmp->avp_lvalue;
                 
                 if (do_strip) 
@@ -740,16 +740,16 @@ hints_setup(RADIUS_REQ *req)
 
                 /* Add all attributes to the request list, except
 		   DA_STRIP_USER_NAME and DA_REPLACE_USER_NAME */
-                avl_delete(&add, DA_STRIP_USER_NAME);
-                avl_delete(&add, DA_REPLACE_USER_NAME);
-                avl_delete(&add, DA_REWRITE_FUNCTION);
-                avl_merge(&request_pairs, &add);
-                avl_free(add);
+                grad_avl_delete(&add, DA_STRIP_USER_NAME);
+                grad_avl_delete(&add, DA_REPLACE_USER_NAME);
+                grad_avl_delete(&add, DA_REWRITE_FUNCTION);
+                grad_avl_merge(&request_pairs, &add);
+                grad_avl_free(add);
                 
                 /* Ok, let's see if we need to further check the
                    hint's rules */
-                if (((tmp = avl_find(rule->rhs, DA_FALL_THROUGH)) != NULL
-                     || (tmp = avl_find(rule->lhs, DA_FALL_THROUGH)) != NULL)
+                if (((tmp = grad_avl_find(rule->rhs, DA_FALL_THROUGH)) != NULL
+                     || (tmp = grad_avl_find(rule->lhs, DA_FALL_THROUGH)) != NULL)
                     && tmp->avp_lvalue)
                         continue;
                 break;
@@ -759,14 +759,14 @@ hints_setup(RADIUS_REQ *req)
 	
         if (matched) {
                 if (orig_name_pair)
-                        avl_add_pair(&request_pairs, orig_name_pair);
+                        grad_avl_add_pair(&request_pairs, orig_name_pair);
                 else
-                        avl_add_pair(&request_pairs, name_pair);
+                        grad_avl_add_pair(&request_pairs, name_pair);
         } else {
                 if (orig_name_pair)
-                        avp_free(orig_name_pair);
+                        grad_avp_free(orig_name_pair);
                 else
-                        avp_free(name_pair);
+                        grad_avp_free(name_pair);
         }
 
         req->request = request_pairs;
@@ -841,7 +841,7 @@ huntgroup_access(RADIUS_REQ *radreq, LOCUS *loc)
 			*loc = rule->loc;
 		radius_req_register_locus(radreq, &rule->loc);
 #ifdef DA_REWRITE_FUNCTION
-		if ((pair = avl_find(rule->lhs, DA_REWRITE_FUNCTION)) != NULL
+		if ((pair = grad_avl_find(rule->lhs, DA_REWRITE_FUNCTION)) != NULL
 		    && rewrite_eval(pair->avp_strvalue, radreq, NULL, NULL)) {
                         radlog_loc(L_ERR, &rule->loc, "%s(): %s",
 				   pair->avp_strvalue,
@@ -859,7 +859,7 @@ read_naslist_file(char *file)
 #ifdef USE_SNMP 
         snmp_init_nas_stat();
 #endif
-        return nas_read_file(file);
+        return grad_nas_read_file(file);
 }
 
 /* ***************************************************************************
@@ -885,12 +885,12 @@ read_clients_entry(void *u ARG_UNUSED, int fc, char **fv, LOCUS *loc)
 	if (strcmp(fv[0], "DEFAULT") == 0) 
 		cp->netdef.ipaddr = cp->netdef.netmask = 0;
 	else
-		ip_getnetaddr(fv[0], &cp->netdef);
+		grad_ip_getnetaddr(fv[0], &cp->netdef);
         cp->secret = estrdup(fv[1]);
         if (fc == 3)
                 STRING_COPY(cp->shortname, fv[2]);
-        ip_gethostname(cp->netdef.ipaddr, cp->longname, sizeof(cp->longname));
-        list_append(clients, cp);
+        grad_ip_gethostname(cp->netdef.ipaddr, cp->longname, sizeof(cp->longname));
+        grad_list_append(clients, cp);
         return 0;
 }
 
@@ -909,9 +909,9 @@ client_free(void *item, void *data ARG_UNUSED)
 int
 read_clients_file(char *file)
 {
-        list_destroy(&clients, client_free, NULL);
-        clients = list_create();
-        return read_raddb_file(file, 1, read_clients_entry, NULL);
+        grad_list_destroy(&clients, client_free, NULL);
+        clients = grad_list_create();
+        return grad_read_raddb_file(file, 1, read_clients_entry, NULL);
 }
 
 
@@ -927,7 +927,7 @@ client_lookup_ip(UINT4 ipaddr)
         if (!itr)
                 return NULL;
         for (cl = iterator_first(itr); cl; cl = iterator_next(itr))
-		if (ip_addr_in_net_p(&cl->netdef, ipaddr))
+		if (grad_ip_in_net_p(&cl->netdef, ipaddr))
                         break;
         iterator_destroy(&itr);
         return cl;
@@ -948,7 +948,7 @@ client_lookup_name(UINT4 ipaddr, char *buf, size_t bufsize)
                 else
                         return cl->longname;
         }
-        return ip_gethostname(ipaddr, buf, bufsize);
+        return grad_ip_gethostname(ipaddr, buf, bufsize);
 }
 
 /* ****************************************************************************
@@ -986,10 +986,10 @@ read_nastypes_entry(void *u ARG_UNUSED, int fc, char **fv, LOCUS *loc)
         mp->type = estrdup(fv[0]);
         mp->method = method;
         if (fc > 2)
-                mp->args = envar_parse_argcv(fc-2, &fv[2]);
+                mp->args = grad_envar_parse_argcv(fc-2, &fv[2]);
 	else
                 mp->args = NULL;
-	list_append(radck_type, mp);
+	grad_list_append(radck_type, mp);
         return 0;
 }
         
@@ -999,7 +999,7 @@ free_radck_type(void *item, void *data ARG_UNUSED)
         RADCK_TYPE *rp = item;
 
         efree(rp->type);
-        envar_free_list(&rp->args);
+        grad_envar_free_list(&rp->args);
 	efree(rp);
 	return 0;
 }
@@ -1007,9 +1007,9 @@ free_radck_type(void *item, void *data ARG_UNUSED)
 int
 read_nastypes_file(char *file)
 {
-	list_destroy(&radck_type, free_radck_type, NULL);
-	radck_type = list_create();
-        return read_raddb_file(file, 0, read_nastypes_entry, NULL);
+	grad_list_destroy(&radck_type, free_radck_type, NULL);
+	radck_type = grad_list_create();
+        return grad_read_raddb_file(file, 0, read_nastypes_entry, NULL);
 }
 
 RADCK_TYPE *
@@ -1068,14 +1068,14 @@ read_deny_file()
         int denycnt;
         char *name;
         
-        name = mkfilename(radius_dir, RADIUS_DENY);
+        name = grad_mkfilename(radius_dir, RADIUS_DENY);
         if (deny_tab)
                 symtab_clear(deny_tab);
         else
                 deny_tab = symtab_create(sizeof(Symbol), NULL);
         denycnt = 0;
 
-        read_raddb_file(name, 0, read_denylist_entry, &denycnt);
+        grad_read_raddb_file(name, 0, read_denylist_entry, &denycnt);
         efree(name);
         if (denycnt)
                 radlog(L_INFO,
@@ -1105,7 +1105,7 @@ fallthrough(VALUE_PAIR *vp)
 {
         VALUE_PAIR *tmp;
 
-        return (tmp = avl_find(vp, DA_FALL_THROUGH)) ? tmp->avp_lvalue : 0;
+        return (tmp = grad_avl_find(vp, DA_FALL_THROUGH)) ? tmp->avp_lvalue : 0;
 }
 
 /*
@@ -1144,7 +1144,7 @@ uidcmp(VALUE_PAIR *check, char *username)
         struct passwd pw, *pwd;
 	char buffer[512];
 
-        if (!(pwd = rad_getpwnam_r(username, &pw, buffer, sizeof buffer)))
+        if (!(pwd = grad_getpwnam_r(username, &pw, buffer, sizeof buffer)))
                 return -1;
 
         return pwd->pw_uid - check->avp_lvalue;
@@ -1168,10 +1168,10 @@ groupcmp(RADIUS_REQ *req, char *groupname, char *username)
                 return 0;
 #endif
 
-        if ((pwd = rad_getpwnam_r(username, &pw, pwbuf, sizeof pwbuf)) == NULL)
+        if ((pwd = grad_getpwnam_r(username, &pw, pwbuf, sizeof pwbuf)) == NULL)
                 return -1;
 
-        if ((grp = rad_getgrnam(groupname)) == NULL)
+        if ((grp = grad_getgrnam(groupname)) == NULL)
                 return -1;
 
         retval = (pwd->pw_gid == grp->gr_gid) ? 0 : -1;
@@ -1287,7 +1287,7 @@ paircmp(RADIUS_REQ *request, VALUE_PAIR *check, char *pusername)
                 if (debug_on(20)) {
                         radlog(L_DEBUG, 
                                "check_item: %s", 
-                               format_pair(check_item, 1, &save));
+                               grad_format_pair(check_item, 1, &save));
                         free(save);
                 }
 
@@ -1334,7 +1334,7 @@ paircmp(RADIUS_REQ *request, VALUE_PAIR *check, char *pusername)
                 if (debug_on(20)) {
                         radlog(L_DEBUG,
                                "auth_item: %s",
-                               format_pair(auth_item, 1, &save));
+                               grad_format_pair(auth_item, 1, &save));
                         free(save);
                 }
 
@@ -1417,9 +1417,9 @@ matching_rule_free(void *item, void *data ARG_UNUSED)
 	if (p->name)
 		efree(p->name);
 	if (p->lhs)
-		avl_free(p->lhs);
+		grad_avl_free(p->lhs);
 	if (p->rhs)
-		avl_free(p->rhs);
+		grad_avl_free(p->rhs);
 	efree(p);
 }
 
@@ -1616,7 +1616,7 @@ reload_data(enum reload_what what, int *do_radck)
                 
         case reload_users:
                 symtab_clear(user_tab);
-                path = mkfilename(radius_dir, RADIUS_USERS);
+                path = grad_mkfilename(radius_dir, RADIUS_USERS);
         
 #if USE_DBM
                 if (use_dbm && radius_mode != MODE_BUILDDBM) {
@@ -1649,7 +1649,7 @@ reload_data(enum reload_what what, int *do_radck)
                 /* Non-zero result from dict_init means there was some real
                  * trouble.
                  */
-                if (dict_init())
+                if (grad_dict_init())
                         rc = 1;
 
                 /* reload_rewrite implies reloading users, huntgroups
@@ -1658,15 +1658,15 @@ reload_data(enum reload_what what, int *do_radck)
                 break;
                 
         case reload_huntgroups:
-                list_destroy(&huntgroups, matching_rule_free, NULL);
-                path = mkfilename(radius_dir, RADIUS_HUNTGROUPS);
+                grad_list_destroy(&huntgroups, matching_rule_free, NULL);
+                path = grad_mkfilename(radius_dir, RADIUS_HUNTGROUPS);
                 huntgroups = file_read(CF_HUNTGROUPS, path);
                 efree(path);
                 break;
                 
         case reload_hints:
-                list_destroy(&hints, matching_rule_free, NULL);
-                path = mkfilename(radius_dir, RADIUS_HINTS);
+                grad_list_destroy(&hints, matching_rule_free, NULL);
+                path = grad_mkfilename(radius_dir, RADIUS_HINTS);
                 hints = file_read(CF_HINTS, path);
                 efree(path);
                 if (!use_dbm) 
@@ -1674,7 +1674,7 @@ reload_data(enum reload_what what, int *do_radck)
                 break;
                 
         case reload_clients:
-                path = mkfilename(radius_dir, RADIUS_CLIENTS);
+                path = grad_mkfilename(radius_dir, RADIUS_CLIENTS);
                 if (read_clients_file(path) < 0)
                         rc = 1;
                 efree(path);
@@ -1682,20 +1682,20 @@ reload_data(enum reload_what what, int *do_radck)
 
         case reload_naslist:
                 /*FIXME*/
-		path = mkfilename(radius_dir, RADIUS_NASTYPES);
+		path = grad_mkfilename(radius_dir, RADIUS_NASTYPES);
                 read_nastypes_file(path);
                 efree(path);
                 /*EMXIF*/
 
-                path = mkfilename(radius_dir, RADIUS_NASLIST);
+                path = grad_mkfilename(radius_dir, RADIUS_NASLIST);
                 if (read_naslist_file(path) < 0)
                         rc = 1;
                 efree(path);
                 break;
 
         case reload_realms:
-                path = mkfilename(radius_dir, RADIUS_REALMS);
-                if (realm_read_file(path, auth_port, acct_port,
+                path = grad_mkfilename(radius_dir, RADIUS_REALMS);
+                if (grad_read_realms(path, auth_port, acct_port,
 				    realm_set_secret) < 0)
                         rc = 1;
                 efree(path);
@@ -1755,11 +1755,11 @@ dump_matching_rules(FILE *fp, char *header, RAD_LIST *list)
  	for (rule = iterator_first(itr); rule; rule = iterator_next(itr)) {
                 fprintf(fp, "\t%s:\n", rule->name);
                 fprintf(fp, "\tlhs {\n");
-		avl_fprint(fp, "\t\t", 1, rule->lhs);
+		grad_avl_fprint(fp, "\t\t", 1, rule->lhs);
                 fprintf(fp, "\t}\n");
 
                 fprintf(fp, "\trhs {\n"); 
-		avl_fprint(fp, "\t\t", 1, rule->rhs);
+		grad_avl_fprint(fp, "\t\t", 1, rule->rhs);
                 fprintf(fp, "\t}\n");
         }
 	iterator_destroy(&itr);
@@ -1772,11 +1772,11 @@ dump_user(FILE *fp, User_symbol *sym)
 {
         fprintf(fp, "\t%s:\n", sym->name);
         fprintf(fp, "\tlhs {\n");
-	avl_fprint(fp, "\t\t", 1, sym->check);
+	grad_avl_fprint(fp, "\t\t", 1, sym->check);
         fprintf(fp, "\t}\n");
 
         fprintf(fp, "\trhs {\n");
-	avl_fprint(fp, "\t\t", 1, sym->reply);
+	grad_avl_fprint(fp, "\t\t", 1, sym->reply);
         fprintf(fp, "\t}\n");
         
         return 0;
@@ -1786,7 +1786,7 @@ void
 dump_users_db()
 {
         FILE *fp;
-        char *name = mkfilename(radlog_dir, RADIUS_DUMPDB_NAME);
+        char *name = grad_mkfilename(radlog_dir, RADIUS_DUMPDB_NAME);
         
         fp = fopen(name, "w");
         if (!fp) {
@@ -1825,10 +1825,10 @@ strip_username(int do_strip, char *name, VALUE_PAIR *check_item,
         /*
          *      See if there was a Prefix or Suffix included.
          */
-        if ((presuf_item = avl_find(check_item, DA_PREFIX)) == NULL)
-                presuf_item = avl_find(check_item, DA_SUFFIX);
+        if ((presuf_item = grad_avl_find(check_item, DA_PREFIX)) == NULL)
+                presuf_item = grad_avl_find(check_item, DA_SUFFIX);
         if (presuf_item) {
-                if (tmp = avl_find(check_item, DA_STRIP_USER_NAME))
+                if (tmp = grad_avl_find(check_item, DA_STRIP_USER_NAME))
                         do_strip = tmp->avp_lvalue;
                 if (do_strip) { 
                         if (presufcmp(presuf_item, name, tmpname) == 0)

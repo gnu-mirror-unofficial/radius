@@ -1,6 +1,6 @@
 %{
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -230,7 +230,7 @@ expr          : value
                         } else if ($3.type != Vector) {
                                 parse_error("bad datatype of rarg in +");
                         } else {
-                                avl_add_list(&$1.datum.vector, $3.datum.vector);
+                                grad_avl_add_list(&$1.datum.vector, $3.datum.vector);
                                 $$ = $1;
                         }
                 }
@@ -282,14 +282,14 @@ pair_list     : pair
                 }
               | pair_list error 
                 {
-                        avl_free($1.head);
+                        grad_avl_free($1.head);
                         $$.head = $$.tail = NULL;
                 }
               ;
 
 pair          : NAME op string
                 {
-                        $$ = install_pair(&source_locus, $1, $2, $3);
+                        $$ = grad_create_pair(&source_locus, $1, $2, $3);
                         efree($3);
                 }
               ;
@@ -309,7 +309,7 @@ string        : QUOTE
               | IPADDRESS
                 {
                         char buf[DOTTED_QUAD_LEN];
-                        ip_iptostr($1, buf);
+                        grad_ip_iptostr($1, buf);
                         $$ = estrdup(buf);
                 }
               ;
@@ -433,12 +433,12 @@ subscript(Variable *var, char *attr_name, int all, Variable *ret_var)
                 parse_error("subscript on non-vector");
                 return -1;
         }
-        if ((dict = attr_name_to_dict(attr_name)) == NULL) {
+        if ((dict = grad_attr_name_to_dict(attr_name)) == NULL) {
                 parse_error("unknown attribute %s", attr_name);
                 return -1;
         }
         
-        pair = avl_find(var->datum.vector, dict->value);
+        pair = grad_avl_find(var->datum.vector, dict->value);
         if (!pair) 
                 return -1;
 
@@ -452,12 +452,12 @@ subscript(Variable *var, char *attr_name, int all, Variable *ret_var)
                         
                         /* First, count total length of all attribute
                            instances in the packet */
-                        for (p = pair; p; p = avl_find(p->next, dict->value)) 
+                        for (p = pair; p; p = grad_avl_find(p->next, dict->value)) 
                                 length += p->avp_strlength;
 
                         cp = ret_var->datum.string = emalloc(length+1);
                         /* Fill in the string contents */
-                        for (p = pair; p; p = avl_find(p->next, dict->value)) {
+                        for (p = pair; p; p = grad_avl_find(p->next, dict->value)) {
                                 memcpy(cp, p->avp_strvalue, p->avp_strlength);
                                 cp += p->avp_strlength;
                         }

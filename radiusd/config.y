@@ -1,6 +1,6 @@
 %{
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -47,8 +47,8 @@ struct cfg_memblock {
 
 static RAD_LIST /* of struct cfg_memblock */ *cfg_memory_pool;
  
-static RAD_LIST *_cfg_vlist_create(cfg_value_t *val);
-static void _cfg_vlist_append(RAD_LIST *vlist, cfg_value_t *val);
+static RAD_LIST *_cfg_vgrad_list_create(cfg_value_t *val);
+static void _cfg_vgrad_list_append(RAD_LIST *vlist, cfg_value_t *val);
 
 void *cfg_malloc(size_t size, void (*destructor)(void *));
  
@@ -215,16 +215,16 @@ simple_stmt : keyword value_list T_EOL
 
 value_list  : value
               {
-		      $$ = _cfg_vlist_create(&$1);
+		      $$ = _cfg_vgrad_list_create(&$1);
 	      }
             | value_list value
               {
-		      _cfg_vlist_append($1, &$2);
+		      _cfg_vgrad_list_append($1, &$2);
 		      $$ = $1;
 	      }
             | value_list ',' value
               {
-		      _cfg_vlist_append($1, &$3);
+		      _cfg_vgrad_list_append($1, &$3);
 		      $$ = $1;
 	      }
             ;
@@ -347,7 +347,7 @@ copy_string()
 
         while (*curp) {
 		if (*curp == '\\') {
-			obstack_grow_backslash(&cfg_obstack, curp, &curp);
+			grad_obstack_grow_backslash(&cfg_obstack, curp, &curp);
 		} else if (*curp == quote) {
                         curp++;
                         break;
@@ -397,7 +397,7 @@ keyword()
 {
 	int tok;
 	
-	if ((tok = xlat_keyword(booleans, yylval.string, -1)) != -1) {
+	if ((tok = grad_xlat_keyword(booleans, yylval.string, -1)) != -1) {
 		yylval.bool = tok;
 		return T_BOOL;
 	}
@@ -452,7 +452,7 @@ again:
         if (isdigit(*curp)) {
                 if (copy_digit()) {
                         /* IP address */
-                        yylval.ipaddr = ip_strtoip(yylval.string);
+                        yylval.ipaddr = grad_ip_strtoip(yylval.string);
                         return T_IPADDR;
                 }
                 yylval.number = strtol(yylval.string, NULL, 0);
@@ -515,7 +515,7 @@ _cfg_free_item(void *item, void *data)
 void
 _cfg_free_memory_pool()
 {
-	list_destroy(&cfg_memory_pool, _cfg_free_item, NULL);
+	grad_list_destroy(&cfg_memory_pool, _cfg_free_item, NULL);
 }
 
 int
@@ -524,7 +524,7 @@ _cfg_make_argv(cfg_value_t **argv, char *keyword, RAD_LIST *vlist)
 	int argc;
 
 	if (vlist)
-		argc = list_count(vlist) + 1;
+		argc = grad_list_count(vlist) + 1;
 	else
 		argc = 1;
 	*argv = emalloc(sizeof(**argv)*argc);
@@ -555,24 +555,24 @@ static void
 _cfg_vlist_destroy(void *arg)
 {
 	RAD_LIST **pl = arg;
-	list_destroy(pl, NULL, NULL);
+	grad_list_destroy(pl, NULL, NULL);
 }
 
 void
-_cfg_vlist_append(RAD_LIST *vlist, cfg_value_t *val)
+_cfg_vgrad_list_append(RAD_LIST *vlist, cfg_value_t *val)
 {
 	cfg_value_t *vp = cfg_malloc(sizeof(*vp), NULL);
 	*vp = *val;
-	list_append(vlist, vp);
+	grad_list_append(vlist, vp);
 }
 
 RAD_LIST *
-_cfg_vlist_create(cfg_value_t *val)
+_cfg_vgrad_list_create(cfg_value_t *val)
 {
-	RAD_LIST *vlist = list_create();
+	RAD_LIST *vlist = grad_list_create();
 	RAD_LIST **lp = cfg_malloc(sizeof(*lp), _cfg_vlist_destroy);
 	*lp = vlist;
-	_cfg_vlist_append(vlist, val);
+	_cfg_vgrad_list_append(vlist, val);
 	return vlist;
 }
 
@@ -656,7 +656,7 @@ _get_value(cfg_value_t *arg, int type, void *base)
                         break;
 			
                 case CFG_STRING:
-                        ipaddr = ip_gethostaddr(value.v.string);
+                        ipaddr = grad_ip_gethostaddr(value.v.string);
                         if (ipaddr == 0) {
                                 radlog(L_ERR, 
                                        _("%s:%d: unknown host: %s"),
@@ -726,8 +726,8 @@ cfg_malloc(size_t size,	void (*destructor)(void *))
 	p->destructor = destructor;
 	p->line_num = cfg_line_num;
 	if (!cfg_memory_pool)
-		cfg_memory_pool = list_create();
-	list_append(cfg_memory_pool, p);
+		cfg_memory_pool = grad_list_create();
+	grad_list_append(cfg_memory_pool, p);
 	return p+1;
 }
 

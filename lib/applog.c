@@ -30,16 +30,10 @@
 #include <radius.h>
 
 int debug_flag;
-char *progname;
 
 void
 initlog(char *name)
 {
-        progname = strrchr(name, '/');
-        if (progname)
-                progname++;
-        else
-                progname = name;
 }
 
 #define SP(p) ((p)?(p):"")
@@ -62,7 +56,8 @@ vlog(int level,
      const char *func_name, int en,
      const char *fmt, va_list ap)
 {
-        fprintf(stderr, "%s: %s: ", progname, priname[level & L_PRIMASK]);
+        fprintf(stderr, "%s: %s: ", program_invocation_short_name,
+		priname[level & L_PRIMASK]);
         if (loc) {
                 fprintf(stderr, "%s:%lu:", loc->file, (unsigned long) loc->line);
 		if (func_name)

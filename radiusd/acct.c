@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -159,13 +159,13 @@ check_attribute(VALUE_PAIR *check_pairs, int pair_attr,
 {
         VALUE_PAIR *pair;
 
-        if ((pair = avl_find(check_pairs, pair_attr)) == NULL)
+        if ((pair = grad_avl_find(check_pairs, pair_attr)) == NULL)
                 return def;
         do {
                 if (pair->avp_lvalue == pair_value)
                         return 1;
                 check_pairs = pair->next;
-        } while (check_pairs && (pair = avl_find(check_pairs, pair_attr)));
+        } while (check_pairs && (pair = grad_avl_find(check_pairs, pair_attr)));
         return 0;
 }
 
@@ -191,7 +191,7 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
         char buf[MAX_LONGNAME];
 
         /* A packet should have Acct-Status-Type attribute */
-        if ((vp = avl_find(radreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
+        if ((vp = grad_avl_find(radreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
                 radlog_req(L_ERR, radreq,
                            _("no Acct-Status-Type attribute"));
                 return -1;
@@ -204,7 +204,7 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
         ut.porttype = -1; /* Unknown so far */
 
         if (radreq->realm) {
-		RADIUS_SERVER *server = list_item(radreq->realm->queue->servers,
+		RADIUS_SERVER *server = grad_list_item(radreq->realm->queue->servers,
 						  radreq->server_no);
 		if (server)
 			ut.realm_address = server->addr;
@@ -294,7 +294,7 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
         if (status == DV_ACCT_STATUS_TYPE_ACCOUNTING_ON && nas_address) {
                 radlog(L_NOTICE, 
                         _("NAS %s started (Accounting-On packet seen)"),
-                        nas_ip_to_name(nas_address, buf, sizeof buf));
+                        grad_nas_ip_to_name(nas_address, buf, sizeof buf));
                 radzap(nas_address, -1, NULL, ut.time);
                 write_nas_restart(status, ut.nas_address);
                 return 0;
@@ -302,7 +302,7 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
         if (status == DV_ACCT_STATUS_TYPE_ACCOUNTING_OFF && nas_address) {
                 radlog(L_NOTICE, 
                         _("NAS %s shut down (Accounting-Off packet seen)"),
-                        nas_ip_to_name(nas_address, buf, sizeof buf));
+                        grad_nas_ip_to_name(nas_address, buf, sizeof buf));
                 radzap(nas_address, -1, NULL, ut.time);
                 write_nas_restart(status, ut.nas_address);
                 return 0;
@@ -322,7 +322,7 @@ rad_acct_system(RADIUS_REQ *radreq, int dowtmp)
                     ("%s: User %s at NAS %s port %d session %-*.*s",
                      status == DV_ACCT_STATUS_TYPE_START ? "start" : "stop",
                      ut.login,
-                     nas_ip_to_name(nas_address, buf, sizeof buf),
+                     grad_nas_ip_to_name(nas_address, buf, sizeof buf),
                      ut.nas_port,
                      sizeof(ut.session_id),
                      sizeof(ut.session_id),
@@ -447,16 +447,16 @@ write_detail(RADIUS_REQ *radreq, int authtype, char *f)
            Only if that fails we resort to a name lookup. */
         cl = NULL;
         nas = radreq->ipaddr;
-        if ((pair = avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
+        if ((pair = grad_avl_find(radreq->request, DA_NAS_IP_ADDRESS)) != NULL)
                 nas = pair->avp_lvalue;
         if (radreq->realm) {
-		RADIUS_SERVER *server = list_item(radreq->realm->queue->servers,
+		RADIUS_SERVER *server = grad_list_item(radreq->realm->queue->servers,
 						  radreq->server_no);
 		if (server)
 			nas = server->addr;
 	}
 
-        if ((cl = nas_lookup_ip(nas)) != NULL) {
+        if ((cl = grad_nas_lookup_ip(nas)) != NULL) {
                 if (cl->shortname[0])
                         strcpy(nasname, cl->shortname);
                 else
@@ -464,14 +464,14 @@ write_detail(RADIUS_REQ *radreq, int authtype, char *f)
         }
 
         if (cl == NULL) 
-                ip_gethostname(nas, nasname, sizeof(nasname));
+                grad_ip_gethostname(nas, nasname, sizeof(nasname));
         
         /* Create a directory for this nas. */
-        dir = mkfilename(radacct_dir, nasname);
+        dir = grad_mkfilename(radacct_dir, nasname);
         mkdir(dir, 0755);
 
         /* Write Detail file. */
-        path = mkfilename(dir, f);
+        path = grad_mkfilename(dir, f);
         efree(dir);
         if ((outfd = fopen(path, "a")) == (FILE *)NULL) {
                 radlog(L_ERR|L_PERROR, _("can't open %s"), path);
@@ -486,14 +486,14 @@ write_detail(RADIUS_REQ *radreq, int authtype, char *f)
                         /* user wants a full (non-stripped) name to appear
                            in detail */
                         
-                        pair = avl_find(radreq->request, DA_ORIG_USER_NAME);
+                        pair = grad_avl_find(radreq->request, DA_ORIG_USER_NAME);
                         if (pair) 
                                 pair->name = "User-Name";
                         else
-                                pair = avl_find(radreq->request, DA_USER_NAME);
+                                pair = grad_avl_find(radreq->request, DA_USER_NAME);
                         if (pair) {
                                 fprintf(outfd, "\t%s\n", 
-                                        format_pair(pair, 0, &save));
+                                        grad_format_pair(pair, 0, &save));
                                 free(save);
                         }
                 }
@@ -511,7 +511,7 @@ write_detail(RADIUS_REQ *radreq, int authtype, char *f)
                                         break;
                         default:
                                 fprintf(outfd, "\t%s\n", 
-                                        format_pair(pair, 0, &save));
+                                        grad_format_pair(pair, 0, &save));
                                 free(save);
                         } 
                 }
@@ -562,14 +562,14 @@ rad_acct_ext(RADIUS_REQ *radreq)
         VALUE_PAIR *p;
 
 #ifdef USE_SERVER_GUILE
-        for (p = avl_find(radreq->request, DA_SCHEME_ACCT_PROCEDURE);
+        for (p = grad_avl_find(radreq->request, DA_SCHEME_ACCT_PROCEDURE);
 	     p;
-	     p = avl_find(p->next, DA_SCHEME_ACCT_PROCEDURE))
+	     p = grad_avl_find(p->next, DA_SCHEME_ACCT_PROCEDURE))
                 scheme_acct(p->avp_strvalue, radreq);
 #endif
-        for (p = avl_find(radreq->request, DA_ACCT_EXT_PROGRAM);
+        for (p = grad_avl_find(radreq->request, DA_ACCT_EXT_PROGRAM);
 	     p;
-	     p = avl_find(p->next, DA_ACCT_EXT_PROGRAM)) {
+	     p = grad_avl_find(p->next, DA_ACCT_EXT_PROGRAM)) {
     		switch (p->avp_strvalue[0]) {
 		case '/':
                 	radius_exec_program(p->avp_strvalue, radreq, NULL, 0);
@@ -650,7 +650,7 @@ check_ts(struct radutmp *ut)
         NAS     *nas;
 
         /* Find NAS type. */
-        if ((nas = nas_lookup_ip(ntohl(ut->nas_address))) == NULL) {
+        if ((nas = grad_nas_lookup_ip(ntohl(ut->nas_address))) == NULL) {
                 radlog(L_NOTICE, _("check_ts(): unknown NAS"));
                 return -1; 
         }
@@ -672,7 +672,7 @@ rad_check_realm(REALM *realm)
         radut_file_t file;
         size_t maxlogins;
 		
-        if (!realm || (maxlogins = realm_get_quota(realm)) == 0)
+        if (!realm || (maxlogins = grad_realm_get_quota(realm)) == 0)
                 return 0;
 
         if ((file = rut_setent(radutmp_path, 0)) == NULL)
@@ -682,7 +682,7 @@ rad_check_realm(REALM *realm)
         count = 0;
         while (up = rut_getent(file))
                 if (up->type == P_LOGIN
-		    && realm_verify_ip(realm, up->realm_address))
+		    && grad_realm_verify_ip(realm, up->realm_address))
                         count++;
 
         if (count < maxlogins) {
@@ -696,7 +696,7 @@ rad_check_realm(REALM *realm)
 
         while (up = rut_getent(file)) {
                 if (!(up->type == P_LOGIN
-		      && realm_verify_ip(realm, up->realm_address)))
+		      && grad_realm_verify_ip(realm, up->realm_address)))
                         continue;
 
                 if (rad_check_ts(up) == 1) {
@@ -756,7 +756,7 @@ rad_check_multi(char *name, VALUE_PAIR *request, int maxsimul, int *pcount)
         }
 
 
-        if ((fra = avl_find(request, DA_FRAMED_IP_ADDRESS)) != NULL)
+        if ((fra = grad_avl_find(request, DA_FRAMED_IP_ADDRESS)) != NULL)
                 ipno = htonl(fra->avp_lvalue);
 
         /* Pass II. Check all registered logins. */

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -120,23 +120,6 @@ struct ascend_parse_buf {
 	char **errmsg;   /* Error message */
 };
 
-static char *_get_token(struct ascend_parse_buf *pb, int require);
-static char *_lookahead(struct ascend_parse_buf *pb);
-static int _get_type(struct ascend_parse_buf *pb);
-static int _get_dir(struct ascend_parse_buf *pb);
-static int _get_action(struct ascend_parse_buf *pb);
-static int _get_hex_string(struct ascend_parse_buf *pb, u_char *buf);
-static int _ascend_parse_generic(struct ascend_parse_buf *pb);
-static int _get_protocol(struct ascend_parse_buf *pb);
-static int _get_direction_type(struct ascend_parse_buf *pb, char *suffix, int la);
-static int _get_ip(struct ascend_parse_buf *pb);
-static int _ascend_parse_ip_clause(struct ascend_parse_buf *pb);
-static int _get_op(struct ascend_parse_buf *pb);
-static int _get_port(struct ascend_parse_buf *pb);
-static int _ascend_parse_port_clause(struct ascend_parse_buf *pb);
-static int _ascend_parse_ip(struct ascend_parse_buf *pb);
-static int _ascend_parse(struct ascend_parse_buf *pb);
- 
 /* generic (more or less) calls */
 #define _moreinput(pb) ((pb)->tokn < (pb)->tokc)
 
@@ -220,7 +203,7 @@ _get_action(struct ascend_parse_buf *pb)
 /* ************************************************************************* */
 /* GENERIC filter parsing */
 
-int
+static int
 _get_hex_string(struct ascend_parse_buf *pb, u_char *buf)
 {
 	u_char tmp[2*ASCEND_MAX_CMP_LENGTH], *p;
@@ -270,7 +253,7 @@ _get_hex_string(struct ascend_parse_buf *pb, u_char *buf)
 	offset is number
 	mask and value are hex strings */
    
-int
+static int
 _ascend_parse_generic(struct ascend_parse_buf *pb)
 {
 	char *p;
@@ -328,7 +311,7 @@ _ascend_parse_generic(struct ascend_parse_buf *pb)
 
 /* ************************************************************************* */
 /* IP filter parsing */
-int
+static int
 _get_protocol(struct ascend_parse_buf *pb)
 {
 	char *tok = _get_token(pb, 1);
@@ -356,7 +339,7 @@ _get_protocol(struct ascend_parse_buf *pb)
 #define ASCEND_DIR_SRC 0
 #define ASCEND_DIR_DST 1
 
-int
+static int
 _get_direction_type(struct ascend_parse_buf *pb, char *suffix, int lookahead)
 {
 	char *tok = lookahead ? _lookahead(pb) : _get_token(pb, 1);
@@ -375,7 +358,7 @@ _get_direction_type(struct ascend_parse_buf *pb, char *suffix, int lookahead)
 	return ASCEND_DIR_NONE;
 }
 
-int
+static int
 _get_ip(struct ascend_parse_buf *pb)
 {
 	int dir = _get_direction_type(pb, "ip", 0);
@@ -387,7 +370,7 @@ _get_ip(struct ascend_parse_buf *pb)
 	tok = _get_token(pb, 1);
 	if (!tok)
 		return ASCEND_DIR_NONE;
-	ip = ip_strtoip(tok); /*FIXME: no error checking */
+	ip = grad_ip_strtoip(tok); /*FIXME: no error checking */
 
 	if (_moreinput(pb) && _lookahead(pb)[0] == '/') {
 		char *p;
@@ -423,7 +406,7 @@ _get_ip(struct ascend_parse_buf *pb)
 
 /* FIXME: if second {src|dst}ip is misspelled, the function returns
    success, supposing it was a portspec */
-int
+static int
 _ascend_parse_ip_clause(struct ascend_parse_buf *pb)
 {
 	int n;
@@ -444,7 +427,7 @@ _ascend_parse_ip_clause(struct ascend_parse_buf *pb)
 	return 0;
 }
 
-int
+static int
 _get_op(struct ascend_parse_buf *pb)
 {
 	char *s = _get_token(pb, 1);
@@ -465,7 +448,7 @@ _get_op(struct ascend_parse_buf *pb)
 	return ascend_cmp_none;
 }
 
-int
+static int
 _get_port(struct ascend_parse_buf *pb)
 {
 	int dir = _get_direction_type(pb, "port", 0);
@@ -522,7 +505,7 @@ _get_port(struct ascend_parse_buf *pb)
 	return dir;
 }
 
-int
+static int
 _ascend_parse_port_clause(struct ascend_parse_buf *pb)
 {
 	int n = _get_port(pb);
@@ -556,7 +539,7 @@ _ascend_parse_port_clause(struct ascend_parse_buf *pb)
 	 PROTO  is either the protocol number or its name from /etc/protocols
 	 PORT   is either the port number or its name from /etc/services */
 
-int
+static int
 _ascend_parse_ip(struct ascend_parse_buf *pb)
 {
 	if (!_moreinput(pb))
@@ -597,14 +580,14 @@ _ascend_parse_ip(struct ascend_parse_buf *pb)
                      [ "srcipxsoc" cmp HEXNUM ]]
                     [ "dstipxnet" NETADDR "dstipxnode" NODE
   		     [ "dstipxsoc" cmp HEXNUM ]] */
-int
+static int
 _ascend_parse_ipx(struct ascend_parse_buf *pb)
 {
 	asprintf(pb->errmsg, "IPX filters are not yet supported");
 	return 1;
 }
  
-int
+static int
 _ascend_parse(struct ascend_parse_buf *pb)
 {
 	memset(pb->flt, 0, sizeof(pb->flt[0]));
@@ -628,7 +611,7 @@ _ascend_parse(struct ascend_parse_buf *pb)
    Return 0 and fill flt[0] if the specification is correct.
    Return !0 and return diagnostics in errp otherwise.
    NOTE: errp is malloced and should be freed using usual free() */
-int
+static int
 _ascend_parse_filter(const char *input, ASCEND_FILTER *flt, char **errp)
 {
 	struct ascend_parse_buf pb;
@@ -652,7 +635,7 @@ _ascend_parse_filter(const char *input, ASCEND_FILTER *flt, char **errp)
 }
 
 int
-ascend_parse_filter(VALUE_PAIR *pair, char **errp)
+grad_ascend_parse_filter(VALUE_PAIR *pair, char **errp)
 {
 	ASCEND_FILTER flt;
 	

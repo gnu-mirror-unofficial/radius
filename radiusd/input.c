@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2003 Free Software Foundation, Inc.
+   Copyright (C) 2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -55,8 +55,8 @@ INPUT *
 input_create()
 {
 	INPUT *p = emalloc(sizeof(*p));
-	p->methods = list_create();
-	p->channels = list_create();
+	p->methods = grad_list_create();
+	p->channels = grad_list_create();
 	FD_ZERO(&p->fdset);
 	p->fd_max = -2;
 	return p;
@@ -82,7 +82,7 @@ input_register_method(INPUT *input,
 	m->handler = handler;
 	m->close = close;
 	m->cmp = cmp ? cmp : def_cmp;
-	list_append(input->methods, m);
+	grad_list_append(input->methods, m);
 }
 
 static int
@@ -106,7 +106,7 @@ int
 input_register_channel(INPUT *input, char *name, int fd, void *data)
 {
 	CHANNEL *c;
-	METHOD *m = list_locate(input->methods, name, _method_comp);
+	METHOD *m = grad_list_locate(input->methods, name, _method_comp);
 
 	if (!m)
 		return -1;
@@ -118,7 +118,7 @@ input_register_channel(INPUT *input, char *name, int fd, void *data)
 	FD_SET(fd, &input->fdset);
 	if (fd > input->fd_max)
 		input->fd_max = fd;
-	list_insert_sorted(input->channels, c, _channel_prio_comp);
+	grad_list_insert_sorted(input->channels, c, _channel_prio_comp);
 	return 0;
 }
 
@@ -172,7 +172,7 @@ input_close_channels(INPUT *input)
 
 	for (p = iterator_first(input->citr); p;
 	     p = iterator_next(input->citr)) {
-		list_remove(input->channels, p, NULL);
+		grad_list_remove(input->channels, p, NULL);
 		channel_close(input, p);
 	}
 	iterator_destroy(&input->citr);
@@ -181,10 +181,10 @@ input_close_channels(INPUT *input)
 void
 input_close_channel_fd(INPUT *input, int fd)
 {
-	CHANNEL *p = list_locate(input->channels, &fd, _channel_cmp_fd);
+	CHANNEL *p = grad_list_locate(input->channels, &fd, _channel_cmp_fd);
 	
 	if (p) {
-		list_remove(input->channels, p, NULL);
+		grad_list_remove(input->channels, p, NULL);
 		channel_close(input, p);
 	}
 }
@@ -197,7 +197,7 @@ input_find_channel(INPUT *input, char *name, void *data)
 
 	clos.name = name;
 	clos.data = data;
-	p = list_locate(input->channels, &clos, _channel_cmp);
+	p = grad_list_locate(input->channels, &clos, _channel_cmp);
 	return p ? p->data : NULL;
 }
 		   
@@ -209,9 +209,9 @@ input_close_channel_data(INPUT *input, char *name, void *data)
 
 	clos.name = name;
 	clos.data = data;
-	p = list_locate(input->channels, &clos, _channel_cmp);
+	p = grad_list_locate(input->channels, &clos, _channel_cmp);
 	if (p) {
-		list_remove(input->channels, p, NULL);
+		grad_list_remove(input->channels, p, NULL);
 		channel_close(input, p);
 	}
 }
@@ -268,7 +268,7 @@ input_select_channel(INPUT *input, char *name, struct timeval *tv)
 	int status;
 	fd_set readfds;
 	int fd_max = -1;
-	METHOD *m = list_locate(input->methods, name, _method_comp);
+	METHOD *m = grad_list_locate(input->methods, name, _method_comp);
 
 	debug(100,("enter"));
 	
@@ -334,5 +334,5 @@ input_iterate_channels(INPUT *input, char *name,
 	clos.name = name;
 	clos.fun  = fun;
 	clos.data = data;
-	list_iterate(input->channels, _chan_itr, &clos);
+	grad_list_iterate(input->channels, _chan_itr, &clos);
 }

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -31,34 +31,34 @@
 #if USE_DBM == DBM_NDBM
 
 int
-open_dbm(char *name, DBM_FILE *dbmfile)
+grad_dbm_open(char *name, DBM_FILE *dbmfile)
 {
         return (*dbmfile = dbm_open(name, O_RDONLY, 0)) == NULL;
 }
 
 int
-create_dbm(char *name, DBM_FILE *dbmfile)
+grad_dbm_create(char *name, DBM_FILE *dbmfile)
 {
         return (*dbmfile = dbm_open(name, O_RDWR|O_CREAT|O_TRUNC, 0600))
                 == NULL;
 }
 
 int
-close_dbm(DBM_FILE dbmfile)
+grad_dbm_close(DBM_FILE dbmfile)
 {
         dbm_close(dbmfile);
         return 0;
 }
 
 int
-fetch_dbm(DBM_FILE dbmfile, DBM_DATUM key, DBM_DATUM *ret)
+grad_dbm_fetch(DBM_FILE dbmfile, DBM_DATUM key, DBM_DATUM *ret)
 {
         *ret = dbm_fetch(dbmfile, key);
         return ret->dptr == NULL;
 }
 
 int
-insert_dbm(DBM_FILE dbmfile, DBM_DATUM key, DBM_DATUM contents)
+grad_dbm_insert(DBM_FILE dbmfile, DBM_DATUM key, DBM_DATUM contents)
 {
         return dbm_store(dbmfile, key, contents, DBM_INSERT);
 }
@@ -67,13 +67,13 @@ insert_dbm(DBM_FILE dbmfile, DBM_DATUM key, DBM_DATUM contents)
 
 /*ARGSUSED*/
 int
-open_dbm(char *name, DBM_FILE *dbmfile)
+grad_dbm_open(char *name, DBM_FILE *dbmfile)
 {
         return dbminit(name);
 }
 
 int
-create_dbm(char *name, DBM_FILE *dbmfile)
+grad_dbm_create(char *name, DBM_FILE *dbmfile)
 {
         int fd;
         char *p;
@@ -98,21 +98,21 @@ create_dbm(char *name, DBM_FILE *dbmfile)
 
 /*ARGSUSED*/
 int
-close_dbm(DBM_FILE dbmfile)
+grad_dbm_close(DBM_FILE dbmfile)
 {
         dbmclose();
 }
 
 /*ARGSUSED*/
 int
-fetch_dbm(DBM_FILE dbmfile, DBM_DATUM key, DBM_DATUM *ret)
+grad_dbm_fetch(DBM_FILE dbmfile, DBM_DATUM key, DBM_DATUM *ret)
 {
         *ret = fetch(key);
         return ret->dptr == NULL;
 }
 
 int
-insert_dbm(DBM_FILE dbmfile, DBM_DATUM key, DBM_DATUM contents)
+grad_dbm_insert(DBM_FILE dbmfile, DBM_DATUM key, DBM_DATUM contents)
 {
         return store(key, contents);
 }

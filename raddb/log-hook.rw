@@ -79,7 +79,7 @@ compat_log_prefix(integer reqtype, string nas, integer id)
 	result = "(" + old_request_code_string(reqtype) + " "
                  + nas + " " + (string)id + " " + %[User-Name];
 	if (*%[Acct-Session-Id])
-		result = result + %[Acct-Session-Id];
+		result = result + " " + %[Acct-Session-Id];
 	return result + "): ";
 }
 

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -48,7 +48,7 @@ SCM_DEFINE(rad_directory, "rad-directory", 1, 0, 0,
         SCM_ASSERT(SCM_NIMP(DIR) && SCM_STRINGP(DIR),
                    DIR, SCM_ARG1, FUNC_NAME);
         radius_dir = SCM_STRING_CHARS(DIR);
-        if (dict_init())
+        if (grad_dict_init())
                 return SCM_BOOL_F;
         return SCM_BOOL_T;
 }
@@ -101,7 +101,7 @@ SCM_DEFINE(rad_send_internal, "rad-send-internal", 3, 0, 0,
         else
                 pairlist = radscm_list_to_avl(PAIRS);
 
-        auth = rad_clt_send(srv_queue, port, code, pairlist);
+        auth = grad_client_send(srv_queue, port, code, pairlist);
         if (!auth)
                 return SCM_EOL;
         /*
@@ -126,7 +126,7 @@ SCM_DEFINE(rad_client_list_servers, "rad-client-list-servers", 0, 0, 0,
         ITERATOR *itr = iterator_create(srv_queue->servers);
 
         for (s = iterator_first(itr); s; s = iterator_next(itr)) {
-                ip_iptostr(s->addr, p);
+                grad_ip_iptostr(s->addr, p);
                 tail = scm_cons(scm_list_2(scm_makfrom0str(s->name),
                                           scm_makfrom0str(p)),
                                 tail);
@@ -142,7 +142,7 @@ SCM_DEFINE(rad_get_server, "rad-get-server", 0, 0, 0,
 #define FUNC_NAME s_rad_get_server      
 {
 	/*FIXME*/
-	RADIUS_SERVER *s = list_item(srv_queue->servers, 0);
+	RADIUS_SERVER *s = grad_list_item(srv_queue->servers, 0);
 	return s ? scm_makfrom0str(s->name) : SCM_BOOL_F;
 }
 #undef FUNC_NAME
@@ -166,7 +166,7 @@ scheme_to_server(SRVLIST, func)
         scm = SCM_CADR(SRVLIST);
         SCM_ASSERT(SCM_NIMP(scm) && SCM_STRINGP(scm),
                    scm, SCM_ARG1, func);
-        serv.addr = ip_gethostaddr(SCM_STRING_CHARS(scm));
+        serv.addr = grad_ip_gethostaddr(SCM_STRING_CHARS(scm));
         if (serv.addr == 0) 
                 scm_misc_error(func,
                                "Bad hostname or ip address ~S\n",
@@ -187,7 +187,7 @@ scheme_to_server(SRVLIST, func)
                    scm, SCM_ARG1, func);
         serv.port[PORT_ACCT] = SCM_INUM(scm);
 
-        return rad_clt_alloc_server(&serv);
+        return grad_client_alloc_server(&serv);
 }
 
 SCM_DEFINE(rad_client_add_server, "rad-client-add-server", 1, 0, 0,
@@ -195,7 +195,7 @@ SCM_DEFINE(rad_client_add_server, "rad-client-add-server", 1, 0, 0,
            "Add a server to the list of configured radius servers")
 #define FUNC_NAME s_rad_client_add_server
 {
-	rad_clt_append_server(srv_queue, scheme_to_server(SRVLIST, FUNC_NAME));
+	grad_client_append_server(srv_queue, scheme_to_server(SRVLIST, FUNC_NAME));
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
@@ -215,8 +215,8 @@ SCM_DEFINE(rad_client_set_server, "rad-client-set-server", 1, 0, 0,
 {
         RADIUS_SERVER *s = scheme_to_server(SRVLIST, FUNC_NAME);
         
-        rad_clt_clear_server_list(srv_queue);
-        rad_clt_append_server(srv_queue, s);
+        grad_client_clear_server_list(srv_queue);
+        grad_client_append_server(srv_queue, s);
         return SCM_UNSPECIFIED;
 }
 #undef FUNC_NAME
@@ -229,7 +229,7 @@ SCM_DEFINE(rad_client_source_ip, "rad-client-source-ip", 1, 0, 0,
         UINT4 ip;
         
         SCM_ASSERT((SCM_NIMP(IP) && SCM_STRINGP(IP)), IP, SCM_ARG1, FUNC_NAME);
-        ip = ip_gethostaddr(SCM_STRING_CHARS(IP));
+        ip = grad_ip_gethostaddr(SCM_STRING_CHARS(IP));
         if (ip)
                 srv_queue->source_ip = ip;
         else {
@@ -326,12 +326,12 @@ rad_scheme_init(int argc, char **argv)
         /*
          * Initialize radius sub-system
          */
-        radpath_init();
-        if (dict_init()) {
+        grad_path_init();
+        if (grad_dict_init()) {
                 radlog(L_ERR, _("error reading dictionary file"));
                 exit(1);
         }
-        srv_queue = rad_clt_create_queue(1, 0, 0);
+        srv_queue = grad_client_create_queue(1, 0, 0);
 
         /*
          * Provide basic primitives
@@ -358,7 +358,7 @@ rad_scheme_init(int argc, char **argv)
         /*
          * Load radius scheme modules
          */
-        p = mkfilename(bootpath, "boot.scm");
+        p = grad_mkfilename(bootpath, "boot.scm");
         scm_primitive_load(scm_makfrom0str(p));
         efree(p);
 

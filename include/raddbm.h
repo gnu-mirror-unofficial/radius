@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2001 Free Software Foundation, Inc.
+   Copyright (C) 2001,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -26,8 +26,8 @@ typedef int DBM_FILE;
 
 typedef datum DBM_DATUM;
 
-int open_dbm(char *name, DBM_FILE *dbmfile);
-int close_dbm(DBM_FILE dbmfile);
-int fetch_dbm(DBM_FILE dbmfile, DBM_DATUM key, DBM_DATUM *ret);
+int grad_dbm_open(char *name, DBM_FILE *dbmfile);
+int grad_dbm_close(DBM_FILE dbmfile);
+int grad_dbm_fetch(DBM_FILE dbmfile, DBM_DATUM key, DBM_DATUM *ret);
 
 #endif

@@ -91,7 +91,7 @@ rad_common_argp_parser(int key, char *arg, struct argp_state *state)
                 exit (0);
 
         case ARGP_KEY_FINI:
-                radpath_init();
+                grad_path_init();
                 break;
       
         default:
@@ -100,19 +100,11 @@ rad_common_argp_parser(int key, char *arg, struct argp_state *state)
         return 0;
 }
 
-char *progname;
-
 error_t
-rad_argp_parse(const struct argp *argp, int *pargc, char **pargv[],
+grad_argp_parse(const struct argp *argp, int *pargc, char **pargv[],
 	       unsigned flags, int *arg_index, void *input)
 {
         error_t ret;
-  
-        if ((progname = strrchr((*pargv)[0], '/')) == NULL)
-                progname = (*pargv)[0];
-        else
-                progname++;
-
         ret = argp_parse (argp, *pargc, *pargv, flags, arg_index, input);
         return ret;
 }

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -174,7 +174,7 @@ parse_opt (int key, char *arg, struct argp_state *state)
                 file = arg;
                 break;
         case 'h':
-                host_ip = htonl(ip_gethostaddr(arg));
+                host_ip = htonl(grad_ip_gethostaddr(arg));
                 break;
         case 'm':
                 mark_missing_stops++;
@@ -230,9 +230,9 @@ main(int argc, char **argv)
 {
         int index;
 
-        app_setup();
+        grad_app_setup();
         initlog(argv[0]);
-        if (rad_argp_parse(&argp, &argc, &argv, 0, &index, NULL))
+        if (grad_argp_parse(&argp, &argc, &argv, 0, &index, NULL))
                 return 1;
 
         argv += index;
@@ -244,13 +244,13 @@ main(int argc, char **argv)
                         adduser(*argv);
         }
 
-        dict_init();
+        grad_dict_init();
         read_naslist();
 
         if (nas_name) {
-		NAS *nas = nas_lookup_name(nas_name);
+		NAS *nas = grad_nas_lookup_name(nas_name);
 		if (!nas) {
-			if (ip_getnetaddr(nas_name, &nas_ip)) {
+			if (grad_ip_getnetaddr(nas_name, &nas_ip)) {
                                 radlog(L_ERR, "unknown nas: %s", nas_name);
                                 return 1;
                         }
@@ -264,8 +264,8 @@ int
 read_naslist()
 {
         int rc;
-        char *path = mkfilename(radius_dir, RADIUS_NASLIST);
-        rc = nas_read_file(path);
+        char *path = grad_mkfilename(radius_dir, RADIUS_NASLIST);
+        rc = grad_nas_read_file(path);
         efree(path);
         return rc;
 }
@@ -290,7 +290,7 @@ rawread()
                 strftime(ct, sizeof(ct), "%c", tm);
 
                 ipaddr = ut.framed_address;
-                ip_iptostr(ntohl(ipaddr), ip_str);
+                grad_ip_iptostr(ntohl(ipaddr), ip_str);
                 
                 printf("%d %-*.*s %-*.*s %3.3d %-4.4s %2s %-*.*s %-*.*s %-*.*s %10.10s %5.5s\n",
                        ut.type,
@@ -299,7 +299,7 @@ rawread()
                        ut.login,
                        
                        nas_name_len, nas_name_len,
-                       nas_ip_to_name(ntohl(ut.nas_address)),
+                       grad_nas_ip_to_name(ntohl(ut.nas_address)),
 
                        ut.nas_port,
 
@@ -349,7 +349,7 @@ radwtmp()
         }
         bl = (stb.st_size + sizeof(buf) - 1) / sizeof(buf);
         
-        rad_set_signal(SIGINT, sig_int);
+        grad_set_signal(SIGINT, sig_int);
         stop = 0;
 
         /*time(&buf[0].ut_time);*/
@@ -431,11 +431,11 @@ want(struct radutmp *ut)
          */  
         if (ut->type == P_NAS_START) {
                 if (show_reboot_rec) 
-                        return ip_addr_in_net_p(&nas_ip,
+                        return grad_ip_in_net_p(&nas_ip,
 						ntohl(ut->nas_address));
         } else if (ut->type == P_NAS_SHUTDOWN) {
                 if (show_shutdown_rec)
-			return ip_addr_in_net_p(&nas_ip,
+			return grad_ip_in_net_p(&nas_ip,
 						ntohl(ut->nas_address));
         } else {
                 /* Process ususal login/logout entry */
@@ -448,7 +448,7 @@ want(struct radutmp *ut)
                                         if (host_ip != 0)
                                                 return ut->framed_address == host_ip ;
                                         if (nas_ip.ipaddr != 0)
-                                                return ip_addr_in_net_p(
+                                                return grad_ip_in_net_p(
 						       &nas_ip,
 						       ntohl(ut->nas_address));
 
@@ -465,7 +465,7 @@ want(struct radutmp *ut)
                         return 1;
 
                 if (nas_ip.ipaddr != 0 &&
-		    ip_addr_in_net_p(&nas_ip,  ntohl(ut->nas_address)))
+		    grad_ip_in_net_p(&nas_ip,  ntohl(ut->nas_address)))
                         return 1;
         
                 if (port != 0 && ut->nas_port == port)
@@ -643,7 +643,7 @@ delete_logout(WTMP *pp, struct radutmp *utp)
 char *
 proto_str(int id)
 {
-        DICT_VALUE *dval = value_lookup(id, "Framed-Protocol");
+        DICT_VALUE *dval = grad_value_lookup(id, "Framed-Protocol");
         static char buf[64];
         
         if (!dval) {
@@ -656,7 +656,7 @@ proto_str(int id)
 char *
 port_type_str(int porttype)
 {
-	DICT_VALUE *dval = value_lookup(porttype, "NAS-Port-Type");
+	DICT_VALUE *dval = grad_value_lookup(porttype, "NAS-Port-Type");
 	static char buf[80];
 	char *s;
 	
@@ -691,7 +691,7 @@ print_entry(WTMP *pp, struct radutmp *bp, int mark)
         ipaddr = bp->framed_address;
         if (ipaddr == 0 && pp)
                 ipaddr = pp->ut.framed_address;
-        ip_iptostr(ntohl(ipaddr), ip_str);
+        grad_ip_iptostr(ntohl(ipaddr), ip_str);
 
         if (long_fmt) {                                   
                 printf("%-*.*s %-*.*s %3.3d %-4.4s %2s %-*.*s %-*.*s %-*.*s %16.16s ",
@@ -699,7 +699,7 @@ print_entry(WTMP *pp, struct radutmp *bp, int mark)
                        bp->login,
                        
                        nas_name_len, nas_name_len,
-                       nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
+                       grad_nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
 
                        bp->nas_port,
 
@@ -723,7 +723,7 @@ print_entry(WTMP *pp, struct radutmp *bp, int mark)
                        bp->login,
                        
                        nas_name_len, nas_name_len,
-                       nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
+                       grad_nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
 
                        bp->nas_port,
 
@@ -780,7 +780,7 @@ print_reboot_entry(struct radutmp *bp)
                namesize, namesize,
                s,
                        
-               nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
+               grad_nas_ip_to_name(ntohl(bp->nas_address), buf, sizeof buf),
                ct);
 }
 

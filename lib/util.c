@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -43,7 +43,7 @@
 #include <obstack1.h>
 
 RADIUS_REQ *
-radreq_alloc()
+grad_request_alloc()
 {
         return emalloc(sizeof(RADIUS_REQ));
 }
@@ -51,14 +51,14 @@ radreq_alloc()
 /* Free a RADIUS_REQ struct.
  */
 void 
-radreq_free(RADIUS_REQ *radreq)
+grad_request_free(RADIUS_REQ *radreq)
 {
-	list_destroy(&radreq->locus_list, NULL, NULL);
+	grad_list_destroy(&radreq->locus_list, NULL, NULL);
 	efree(radreq->remote_user);
-        avl_free(radreq->reply_pairs);
+        grad_avl_free(radreq->reply_pairs);
         efree(radreq->reply_msg);
-        avl_free(radreq->server_reply);
-        avl_free(radreq->request);
+        grad_avl_free(radreq->server_reply);
+        grad_avl_free(radreq->request);
         efree(radreq);
 }
 
@@ -70,7 +70,7 @@ static char *months[] = {
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 
 int
-user_gettime(char *valstr, struct tm *tm)
+grad_parse_time_string(char *valstr, struct tm *tm)
 {
         int     i;
 
@@ -110,7 +110,7 @@ user_gettime(char *valstr, struct tm *tm)
  * `whence' determines from where the offset is counted (seek-like)
  */
 void
-rad_lock(int fd, size_t size, off_t offset, int whence)
+grad_lock_file(int fd, size_t size, off_t offset, int whence)
 {
         struct flock fl;
 
@@ -125,7 +125,7 @@ rad_lock(int fd, size_t size, off_t offset, int whence)
  * `whence' determines from where the offset is counted (seek-like)
  */
 void
-rad_unlock(int fd, size_t size, off_t offset, int whence)
+grad_unlock_file(int fd, size_t size, off_t offset, int whence)
 {
         struct flock fl;
 
@@ -140,7 +140,7 @@ rad_unlock(int fd, size_t size, off_t offset, int whence)
  * number if found. Otherwise return default value `def'.
  */
 int
-xlat_keyword(struct keyword *kw, char *str, int def)
+grad_xlat_keyword(struct keyword *kw, char *str, int def)
 {
         for ( ; kw->name; kw++) 
                 if (strcmp(str, kw->name) == 0)
@@ -151,7 +151,7 @@ xlat_keyword(struct keyword *kw, char *str, int def)
 /* compose a full pathname from given path and filename
  */
 char *
-mkfilename(char *dir, char *name)
+grad_mkfilename(char *dir, char *name)
 {
         int len = strlen(dir) + strlen(name);
         char *p = emalloc(len+2);
@@ -162,7 +162,7 @@ mkfilename(char *dir, char *name)
 /* compose a full pathname from given path, subdirectory and filename
  */
 char *
-mkfilename3(char *dir, char *subdir, char *name)
+grad_mkfilename3(char *dir, char *subdir, char *name)
 {
         int len = strlen(dir) + strlen(subdir) + strlen(name);
         char *p = emalloc(len+3); /* two intermediate slashes and
@@ -175,7 +175,7 @@ mkfilename3(char *dir, char *subdir, char *name)
 /* Convert second character of a backslash sequence to its ASCII
    value: */
 int
-backslash(int c)
+grad_decode_backslash(int c)
 {
         static char transtab[] = "a\ab\bf\fn\nr\rt\t";
         char *p;
@@ -191,7 +191,7 @@ backslash(int c)
   (isdigit(c) ? c - '0' : (isxdigit(c) ? toupper(c) - 'A' + 10 : -1 ))
 
 void
-obstack_grow_backslash_num(struct obstack *stk, char *text, int len, int base)
+grad_obstack_grow_backslash_num(struct obstack *stk, char *text, int len, int base)
 {
 	int i;
 	int c = 0;
@@ -209,7 +209,7 @@ obstack_grow_backslash_num(struct obstack *stk, char *text, int len, int base)
 
 
 void
-obstack_grow_backslash(struct obstack *stk, char *text, char **endp)
+grad_obstack_grow_backslash(struct obstack *stk, char *text, char **endp)
 {
 	int c, i;
 	
@@ -220,7 +220,7 @@ obstack_grow_backslash(struct obstack *stk, char *text, char **endp)
 		break;
 		
 	default:
-		c = backslash(text[1]);
+		c = grad_decode_backslash(text[1]);
 		obstack_1grow(stk, c);
 		text += 2;
 		break;
@@ -230,7 +230,7 @@ obstack_grow_backslash(struct obstack *stk, char *text, char **endp)
 			;
 		if (i != 3)
 			break;
-		obstack_grow_backslash_num(stk, text, 4, 8);
+		grad_obstack_grow_backslash_num(stk, text, 4, 8);
 		text += 4;
 		break;
 		
@@ -240,7 +240,7 @@ obstack_grow_backslash(struct obstack *stk, char *text, char **endp)
 			;
 		if (i != 2)
 			break;
-		obstack_grow_backslash_num(stk, text, 3, 16);
+		grad_obstack_grow_backslash_num(stk, text, 3, 16);
 		text += 3;
 		break;
 	}
@@ -248,7 +248,7 @@ obstack_grow_backslash(struct obstack *stk, char *text, char **endp)
 }
 
 void
-string_copy(char *d, char *s, int len)
+grad_string_copy(char *d, char *s, int len)
 {
         int slen = strlen(s);
         
@@ -259,7 +259,7 @@ string_copy(char *d, char *s, int len)
 }
 
 char *
-op_to_str(int op)
+grad_op_to_str(int op)
 {
         switch (op) {
         case OPERATOR_EQUAL:         return "=";
@@ -273,7 +273,7 @@ op_to_str(int op)
 }
 
 int
-str_to_op(char *str)
+grad_str_to_op(char *str)
 {
         int op = NUM_OPERATORS;
         switch (*str++) {
@@ -335,7 +335,7 @@ flush_seg(char **bufp, char *seg, char *ptr, int runlen)
    (not counting null terminator) is returned. */
 
 int
-format_string_visual(char *buf, int runlen, char *str, int len)
+grad_format_string_visual(char *buf, int runlen, char *str, int len)
 {
         char *seg, *ptr;
         int outbytes = 0;
@@ -373,7 +373,7 @@ format_string_visual(char *buf, int runlen, char *str, int len)
 }
 
 int
-format_vendor_pair(char *buf, VALUE_PAIR *pair)
+grad_format_vendor_pair(char *buf, VALUE_PAIR *pair)
 {
         int n;
         UINT4 vendor;
@@ -392,11 +392,11 @@ format_vendor_pair(char *buf, VALUE_PAIR *pair)
                 bufp += n;
         }
         
-        return n + format_string_visual(bufp, 4, ptr, pair->avp_strlength - 4);
+        return n + grad_format_string_visual(bufp, 4, ptr, pair->avp_strlength - 4);
 }
                 
 char *
-format_pair(VALUE_PAIR *pair, int typeflag, char **savep)
+grad_format_pair(VALUE_PAIR *pair, int typeflag, char **savep)
 {
         char *buf1 = NULL;
         char *buf2ptr = NULL;
@@ -415,13 +415,13 @@ format_pair(VALUE_PAIR *pair, int typeflag, char **savep)
                         int len = strlen (pair->avp_strvalue);
                         if (len != pair->avp_strlength-1)
                                 len = pair->avp_strlength;
-                        format_string_visual(buf2, 4,
+                        grad_format_string_visual(buf2, 4,
                                              pair->avp_strvalue, len);
                 } else if (pair->avp_strlength < 6) 
                         snprintf(buf2, sizeof(buf2),
                                  "[invalid length: %d]", pair->avp_strlength);
                 else {
-                        int len = format_vendor_pair(NULL, pair);
+                        int len = grad_format_vendor_pair(NULL, pair);
                         buf2ptr = malloc(len+1);
                         if (!buf2ptr) {
                                 radlog(L_ERR,
@@ -429,13 +429,13 @@ format_pair(VALUE_PAIR *pair, int typeflag, char **savep)
                                        __FILE__, __LINE__, len+1);
                                 buf2[0] = 0;
                         } else
-                                format_vendor_pair(buf2ptr, pair);
+                                grad_format_vendor_pair(buf2ptr, pair);
                 }
                 break;
                                         
         case TYPE_INTEGER:
                 if (pair->name)
-                        dval = value_lookup(pair->avp_lvalue, pair->name);
+                        dval = grad_value_lookup(pair->avp_lvalue, pair->name);
                 else
                         dval = NULL;
                 
@@ -446,7 +446,7 @@ format_pair(VALUE_PAIR *pair, int typeflag, char **savep)
                 break;
                 
         case TYPE_IPADDR:
-                ip_iptostr(pair->avp_lvalue, buf2);
+                grad_ip_iptostr(pair->avp_lvalue, buf2);
                 break;
                 
         case TYPE_DATE:
@@ -480,13 +480,13 @@ format_pair(VALUE_PAIR *pair, int typeflag, char **savep)
         if (pair->name)
                 asprintf(&buf1, "%s %s %s%s",
                          pair->name,
-                         op_to_str(pair->operator),
+                         grad_op_to_str(pair->operator),
 			 type,
                          buf2ptr ? buf2ptr : buf2);
         else
                 asprintf(&buf1, "%d %s %s%s",
                          pair->attribute,
-                         op_to_str(pair->operator),
+                         grad_op_to_str(pair->operator),
 			 type,
                          buf2ptr ? buf2ptr : buf2);
 

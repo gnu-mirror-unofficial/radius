@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -49,7 +49,7 @@
  * Put a socket on a non-blocking mode
  */
 int
-set_nonblocking(int fd)
+grad_set_nonblocking(int fd)
 {
         int flags;
 
@@ -70,7 +70,7 @@ set_nonblocking(int fd)
  * Return maximum number of file descriptors available
  */
 int
-getmaxfd()
+grad_max_fd()
 {
 #if defined(HAVE_GETDTABLESIZE)
         return getdtablesize();
@@ -86,7 +86,7 @@ getmaxfd()
 }
 
 static UINT4
-get_first_ip_nameindex()
+grad_first_ip_nameindex()
 {
 	UINT4 ip = INADDR_ANY;
 #ifdef SIOCGIFCONF
@@ -152,7 +152,7 @@ get_first_ip_nameindex()
 }
 
 static UINT4
-get_first_ip_hostname()
+grad_first_ip_hostname()
 {
 	UINT4 ip = INADDR_ANY;
 	char *name;
@@ -167,20 +167,20 @@ get_first_ip_hostname()
 		name = erealloc(name, name_len);
 	}
 	if (status == 0) 
-		ip = ip_gethostaddr(name);
+		ip = grad_ip_gethostaddr(name);
 	efree(name);
 	return ip;
 }
 
 UINT4
-get_first_ip()
+grad_first_ip()
 {
 	UINT4 ip = INADDR_ANY;
 
-	ip = get_first_ip_nameindex();
+	ip = grad_first_ip_nameindex();
 	if (ip == INADDR_ANY)
 		/* Too bad. Try to use older approach */
-		ip = get_first_ip_hostname();
+		ip = grad_first_ip_hostname();
 	
 	return ip;
 }
@@ -188,7 +188,7 @@ get_first_ip()
 #ifdef HAVE_SIGACTION
 
 signal_handler_t
-rad_set_signal(int sig, signal_handler_t sighandler)
+grad_set_signal(int sig, signal_handler_t sighandler)
 {
 	struct sigaction act, oact;
 	
@@ -204,22 +204,22 @@ rad_set_signal(int sig, signal_handler_t sighandler)
 }
 
 void
-rad_reset_signal(int sig ARG_UNUSED, signal_handler_t sighandler ARG_UNUSED)
+grad_reset_signal(int sig ARG_UNUSED, signal_handler_t sighandler ARG_UNUSED)
 {
 }
 
 #else
 
 signal_handler_t
-rad_set_signal(int sig, signal_handler_t sighandler)
+grad_set_signal(int sig, signal_handler_t sighandler)
 {
 	return signal(sig, sighandler);
 }
 
 void
-rad_reset_signal(int sig, signal_handler_t sighandler)
+grad_reset_signal(int sig, signal_handler_t sighandler)
 {
-	rad_set_signal(sig, sighandler);
+	grad_set_signal(sig, sighandler);
 }
 #endif
 

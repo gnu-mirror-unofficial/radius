@@ -106,7 +106,7 @@ rut_putent(radut_file_t file, struct radutmp *ent)
                 return -1;
         }
         /* Lock the utmp file.  */
-        rad_lock(file->fd, sizeof(*ent), 0, SEEK_CUR);
+        grad_lock_file(file->fd, sizeof(*ent), 0, SEEK_CUR);
 
         if (write(file->fd, ent, sizeof(*ent)) != sizeof(*ent)) {
                 radlog(L_ERR|L_PERROR, 
@@ -116,7 +116,7 @@ rut_putent(radut_file_t file, struct radutmp *ent)
         memcpy(&file->ut, ent, sizeof(file->ut));
                
         /* Unlock the file */
-        rad_unlock(file->fd, sizeof(*ent), -(off_t)sizeof(file->fd), SEEK_CUR);
+        grad_unlock_file(file->fd, sizeof(*ent), -(off_t)sizeof(file->fd), SEEK_CUR);
 
         return 0;
 }
@@ -159,12 +159,12 @@ radutmp_putent(char *filename, struct radutmp *ut, int status)
                         if (ent->type == P_LOGIN) {
                                 radlog(L_INFO,
                 _("login: entry for NAS %s port %d duplicate"),
-                                       ip_iptostr(ntohl(ent->nas_address), ipbuf),
+                                       grad_ip_iptostr(ntohl(ent->nas_address), ipbuf),
                                        ent->nas_port);
                         } else {
                                 radlog(L_INFO,
                 _("login: entry for NAS %s port %d wrong order"),
-                                       ip_iptostr(ntohl(ent->nas_address), ipbuf),
+                                       grad_ip_iptostr(ntohl(ent->nas_address), ipbuf),
                                        ent->nas_port);
                         }
                 }
@@ -175,7 +175,7 @@ radutmp_putent(char *filename, struct radutmp *ut, int status)
                         if (ent->type == P_LOGIN) {
                                 radlog(L_ERR,
    _("logout: entry for NAS %s port %d has wrong ID (expected %s found %s)"),
-                                       ip_iptostr(ntohl(ut->nas_address), ipbuf),
+                                       grad_ip_iptostr(ntohl(ut->nas_address), ipbuf),
                                        ent->nas_port,
                                        ut->session_id,
                                        ent->session_id);
@@ -198,7 +198,7 @@ radutmp_putent(char *filename, struct radutmp *ut, int status)
                 if (!ent) {
                         radlog(L_ERR,
                          _("logout: login entry for NAS %s port %d not found"),
-                               ip_iptostr(ntohl(ut->nas_address), ipbuf), 
+                               grad_ip_iptostr(ntohl(ut->nas_address), ipbuf), 
                                ut->nas_port);
                 }
                 break;

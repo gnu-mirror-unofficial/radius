@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -38,9 +38,8 @@
 
 Symtab *vartab;
 int verbose;
-extern int rad_clt_debug;
+extern int grad_client_debug;
 RADIUS_SERVER_QUEUE *srv_queue;
-char *progname;
 int reply_code;
 VALUE_PAIR *reply_list;
 int debug_flag = 0;
@@ -147,26 +146,26 @@ main(int argc, char **argv)
         char *p;
         int index;
         
-        app_setup();
+        grad_app_setup();
         initlog(argv[0]);
         init_symbols();
 
         index = argc;
-        if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, &index))
+        if (grad_argp_parse(&argp, &argc, &argv, 0, NULL, &index))
                 return 1;
 
         argv += index;
         argc -= index;
 
         set_yydebug();
-        radpath_init();
+        grad_path_init();
 	srand(time(NULL));
 	
-        if (dict_init()) {
+        if (grad_dict_init()) {
                 radlog(L_ERR, _("error reading dictionary file"));
                 return 1;
         }
-        srv_queue = rad_clt_create_queue(!quick, 0, 0);
+        srv_queue = grad_client_create_queue(!quick, 0, 0);
         
         if (!srv_queue)
                 return 1;
@@ -195,7 +194,7 @@ main(int argc, char **argv)
                 for (i = 0; i < argc; i++) {
                         switch (i) {
                         case 0:
-                                serv.addr = ip_gethostaddr(argv[i]);
+                                serv.addr = grad_ip_gethostaddr(argv[i]);
                                 if (!serv.addr) {
                                         radlog(L_ERR,
                                              "bad IP address or host name: %s",
@@ -239,11 +238,11 @@ main(int argc, char **argv)
                         serv.port[0] = DEF_AUTH_PORT;
                 if (argc < 6)
                         serv.port[1] = DEF_ACCT_PORT;
-		rad_clt_append_server(srv_queue, rad_clt_alloc_server(&serv));
+		grad_client_append_server(srv_queue, grad_client_alloc_server(&serv));
                 argcv_free(argc, argv);
         }
 
-        if (list_count(srv_queue->servers) == 0) {
+        if (grad_list_count(srv_queue->servers) == 0) {
                 radlog(L_ERR,
                        "No servers specfied. Use -s option.\n");
                 exit(1);
@@ -333,7 +332,7 @@ parse_datum(char *p, union datum *dp)
                         type = Integer;
                 } else {
                         /* IP address */
-                        if ((dp->ipaddr = ip_gethostaddr(p)) != 0)
+                        if ((dp->ipaddr = grad_ip_gethostaddr(p)) != 0)
                                 type = Ipaddress;
                         else {
                                 fprintf(stderr, _("assign: invalid IP address: %s\n"), p);
@@ -342,7 +341,7 @@ parse_datum(char *p, union datum *dp)
                 } 
         } else if (strchr(p, '.')) {
                 /* IP address */
-                if ((dp->ipaddr = ip_gethostaddr(p)) != 0)
+                if ((dp->ipaddr = grad_ip_gethostaddr(p)) != 0)
                         type = Ipaddress;
                 else {
                         fprintf(stderr, _("assign: invalid IP address: %s\n"), p);
@@ -367,7 +366,7 @@ print_ident(Variable *var)
                 sprintf(buf, "%d", var->datum.number);
                 return estrdup(buf);
         case Ipaddress:
-                ip_iptostr(var->datum.ipaddr, buf);
+                grad_ip_iptostr(var->datum.ipaddr, buf);
                 return estrdup(buf);
         case String:
                 return estrdup(var->datum.string);
@@ -425,7 +424,7 @@ var_print(Variable *var)
                 printf("%d", var->datum.number);
                 break;
         case Ipaddress:
-                printf("%s", ip_iptostr(var->datum.ipaddr, buf));
+                printf("%s", grad_ip_iptostr(var->datum.ipaddr, buf));
                 break;
         case String:
                 printf("%s", var->datum.string);
@@ -449,7 +448,7 @@ var_free(Variable *var)
                 efree(var->datum.string);
                 break;
         case Vector:
-                avl_free(var->datum.vector);
+                grad_avl_free(var->datum.vector);
                 break;
         }
 }
@@ -472,7 +471,7 @@ radtest_send(int port, int code, Variable *var, Symtab *cntl)
 	VALUE_PAIR *pair;
 	
         if (reply_list)
-                avl_free(reply_list);
+                grad_avl_free(reply_list);
         reply_list = NULL;
         reply_code = 0;
         
@@ -486,7 +485,7 @@ radtest_send(int port, int code, Variable *var, Symtab *cntl)
 		pair = NULL;
 
 	if (!cntl) {
-		auth = rad_clt_send(srv_queue, port, code, pair);
+		auth = grad_client_send(srv_queue, port, code, pair);
 	} else {
 		int id;
 		u_char vector[AUTH_VECTOR_LEN];
@@ -505,7 +504,7 @@ radtest_send(int port, int code, Variable *var, Symtab *cntl)
 		p = (Variable*)sym_lookup(cntl, "keepauth");
 		if (p && p->datum.number) 
 			sflags |= RADCLT_AUTHENTICATOR;
-		auth = rad_clt_send0(srv_queue,
+		auth = grad_client_send0(srv_queue,
 				     port,
 				     code,
 				     pair,
@@ -515,7 +514,7 @@ radtest_send(int port, int code, Variable *var, Symtab *cntl)
 		while (--retry) {
 			if (delay)
 				sleep(delay->datum.number);
-			auth = rad_clt_send0(srv_queue,
+			auth = grad_client_send0(srv_queue,
 					     port,
 					     code,
 					     var->datum.vector,
@@ -532,14 +531,14 @@ radtest_send(int port, int code, Variable *var, Symtab *cntl)
         var->type = Integer;
         var->datum.number = reply_code;
 
-        reply_list = rad_clt_decrypt_pairlist(avl_dup(auth->request),
+        reply_list = grad_client_decrypt_pairlist(grad_avl_dup(auth->request),
 					      auth->vector, auth->secret);
 
         var = (Variable*)sym_lookup(vartab, "REPLY");
         var->type = Vector;
         var->datum.vector = NULL;
         var->datum.vector = reply_list;
-        radreq_free(auth);
+        grad_request_free(auth);
 }
 
 /* FIXME: duplicated in radiusd/files.c */

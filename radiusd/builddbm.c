@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius
-   Copyright (C) 2001,2003 Free Software Foundation, Inc.
+   Copyright (C) 2001,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -101,7 +101,7 @@ append_symbol(DBM_closure *closure, User_symbol *sym)
         named.dsize = strlen(name);
         contentd.dptr = (char*)closure->pair_buffer;
         contentd.dsize = (2 + check_len + reply_len) * sizeof(int);
-        if (insert_dbm(closure->dbmfile, named, contentd)) {
+        if (grad_dbm_insert(closure->dbmfile, named, contentd)) {
                 radlog(L_ERR, _("can't store datum for %s"), name);
                 exit(1);
         }
@@ -132,7 +132,7 @@ builddbm(char *name)
 
         if (!name)
                 name = "users";
-        db_file = mkfilename(radius_dir, name);
+        db_file = grad_mkfilename(radius_dir, name);
 
         /*
          *      Initialize a new, empty database.
@@ -141,7 +141,7 @@ builddbm(char *name)
         closure.pair_buffer_size = RAD_BUFFER_SIZE;
         closure.pair_buffer = emalloc(closure.pair_buffer_size*sizeof(int));
         closure.defno = closure.begno = 0;
-        if (create_dbm(db_file, &closure.dbmfile)) {
+        if (grad_dbm_create(db_file, &closure.dbmfile)) {
                 radlog(L_ERR|L_PERROR, _("can't open `%s'"), db_file);
                 return 1;
         }
@@ -183,7 +183,7 @@ decode_dbm(int **pptr)
         
         last_pair = first_pair = NULL;
         while (ptr < endp) {
-                next_pair = avp_alloc();
+                next_pair = grad_avp_alloc();
                 next_pair->attribute = *ptr++;
                 next_pair->type = *ptr++;
                 next_pair->operator = *ptr++;
@@ -223,7 +223,7 @@ dbm_find(DBM_FILE file, char *name, RADIUS_REQ *req,
         named.dptr = name;
         named.dsize = strlen(name);
 
-        if (fetch_dbm(file, named, &contentd))
+        if (grad_dbm_fetch(file, named, &contentd))
                 return -1;
 
         check_tmp = NULL;
@@ -251,7 +251,7 @@ dbm_find(DBM_FILE file, char *name, RADIUS_REQ *req,
                  * the profile it points to.
                  */
                 ret = 1;
-                if (p = avl_find(check_tmp, DA_MATCH_PROFILE)) {
+                if (p = grad_avl_find(check_tmp, DA_MATCH_PROFILE)) {
                         int dummy;
                         char *name;
                         
@@ -265,16 +265,16 @@ dbm_find(DBM_FILE file, char *name, RADIUS_REQ *req,
                 } 
                 
                 if (ret == 1) {
-                        avl_merge(reply_pairs, &reply_tmp);
-                        avl_merge(check_pairs, &check_tmp);
+                        grad_avl_merge(reply_pairs, &reply_tmp);
+                        grad_avl_merge(check_pairs, &check_tmp);
                 }
         }
         
         /* Should we
          *  free(contentd.dptr);
          */
-        avl_free(reply_tmp);
-        avl_free(check_tmp);
+        grad_avl_free(reply_tmp);
+        grad_avl_free(check_tmp);
 
         return ret;
 }
@@ -322,13 +322,13 @@ dbm_match(DBM_FILE dbmfile, char *name, char *(*fn)(), RADIUS_REQ *req,
 
                 found = 1;
 
-                if (p = avl_find(*reply_pairs, DA_MATCH_PROFILE)) {
+                if (p = grad_avl_find(*reply_pairs, DA_MATCH_PROFILE)) {
                         int dummy;
                         char *name;
                         
                         debug(1, ("next: %s", p->avp_strvalue));
                         name = estrdup(p->avp_strvalue);
-                        avl_delete(reply_pairs, DA_MATCH_PROFILE);
+                        grad_avl_delete(reply_pairs, DA_MATCH_PROFILE);
                         dbm_match(dbmfile, name, _dbm_dup_name,
                                   req,
                                   check_pairs, reply_pairs, &dummy);
@@ -337,7 +337,7 @@ dbm_match(DBM_FILE dbmfile, char *name, char *(*fn)(), RADIUS_REQ *req,
 
                 if (!fallthrough(*reply_pairs))
                         break;
-                avl_delete(reply_pairs, DA_FALL_THROUGH);
+                grad_avl_delete(reply_pairs, DA_FALL_THROUGH);
                 *fallthru = 1;
         }
         return found;
@@ -355,8 +355,8 @@ user_find_db(char *name, RADIUS_REQ *req,
         DBM_FILE        dbmfile;
         int             fallthru;
         
-        path = mkfilename(radius_dir, RADIUS_USERS);
-        if (open_dbm(path, &dbmfile)) {
+        path = grad_mkfilename(radius_dir, RADIUS_USERS);
+        if (grad_dbm_open(path, &dbmfile)) {
                 radlog(L_ERR, _("cannot open dbm file %s"), path);
                 efree(path);
                 return 0;
@@ -386,7 +386,7 @@ user_find_db(char *name, RADIUS_REQ *req,
                 /*NOTREACHED*/
         }
 
-        close_dbm(dbmfile);
+        grad_dbm_close(dbmfile);
         efree(path);
 
         debug(1, ("returning %d", found));

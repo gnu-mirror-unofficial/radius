@@ -48,7 +48,7 @@
 #include <parser.h>
 #include <users_gram.h>
 
-extern void enable_usr_dbg(int);
+extern void grad_enable_rule_debug(int);
 extern int yyerror(char *s); 
 static char *addstring();
 static char *addquote();
@@ -320,7 +320,7 @@ D [0-9]{1,3}
 %%
 #.*\n   {
           if (strncmp(yytext+1, "debug", 5) == 0)
-                  enable_usr_dbg(1);
+                  grad_enable_rule_debug(1);
           source_locus.line++; /* a comment */
         }
 #.*     /* end-of-file comment */;
@@ -353,18 +353,18 @@ NULL    return NUL;
           BEGIN(in_string);
           if (yyleng > 3)
                  obstack_grow(&stack, yytext+1, yyleng-3);
-          obstack_1grow(&stack, backslash(yytext[yyleng-1]));
+          obstack_1grow(&stack, grad_decode_backslash(yytext[yyleng-1]));
 }
 \"[^"\\\n]*\\[xX]{X} |
 \"[^"\\\n]*\\[xX]{X}{X} {
 	  BEGIN(in_string);
-	  obstack_grow_backslash_num(&stack, yytext + 1, yyleng - 1, 16);
+	  grad_obstack_grow_backslash_num(&stack, yytext + 1, yyleng - 1, 16);
 }
 \"[^"\\\n]*\\{O} |
 \"[^"\\\n]*\\{O}{O} |
 \"[^"\\\n]*\\{O}{O}{O} {
           BEGIN(in_string);
-          obstack_grow_backslash_num(&stack, yytext + 1, yyleng - 1, 8); 
+          grad_obstack_grow_backslash_num(&stack, yytext + 1, yyleng - 1, 8); 
 }
 <in_string>[^"\\\n]*\\\n {
           obstack_grow(&stack, yytext, yyleng-2);
@@ -378,16 +378,16 @@ NULL    return NUL;
 <in_string>[^"\\\n]*\\[^xX0-9] {
           if (yyleng > 2)
                    obstack_grow(&stack, yytext, yyleng-2);
-          obstack_1grow(&stack, backslash(yytext[yyleng-1]));
+          obstack_1grow(&stack, grad_decode_backslash(yytext[yyleng-1]));
 }
 <in_string>[^"\\\n]*\\[xX]{X} |
 <in_string>[^"\\\n]*\\[xX]{X}{X} {
-	  obstack_grow_backslash_num(&stack, yytext, yyleng, 16);
+	  grad_obstack_grow_backslash_num(&stack, yytext, yyleng, 16);
 }
 <in_string>[^"\\\n]*\\{O} |
 <in_string>[^"\\\n]*\\{O}{O} |
 <in_string>[^"\\\n]*\\{O}{O}{O} {
-          obstack_grow_backslash_num(&stack, yytext, yyleng, 8);
+          grad_obstack_grow_backslash_num(&stack, yytext, yyleng, 8);
 }
 <in_string>[^"\\\n]*\" {
           BEGIN(INITIAL);
@@ -544,7 +544,7 @@ preproc()
                         v = 0;
                         break;
                 }
-                enable_usr_dbg(v);
+                grad_enable_rule_debug(v);
                 return 0;
         }
         return 1;

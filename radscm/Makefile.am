@@ -53,7 +53,7 @@ CLEANFILES = *.x *.doc radsession guile-procedures.txt
 radsession: $(srcdir)/radsession.in
 	sed 's,BINDIR,$(bindir),' $? > $@
 
-radscm_LDADD=@GUILE_LIBS@ ./libradscm.a ../lib/liblog.la ../lib/librad.la ../lib/libdebug.la @LIBINTL@
+radscm_LDADD=@GUILE_LIBS@ ./libradscm.a ../lib/liblog.la @LIBGNURADIUS@ ../lib/libdebug.la @LIBINTL@
 
 INCLUDES  = -I$(top_builddir) -I$(top_srcdir)/include -I$(srcdir) -I. @INCLUDEPATH@ @GUILE_INCLUDES@
 AM_CPPFLAGS=-DDATADIR=\"$(schemedir)\"

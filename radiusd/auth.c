@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -221,7 +221,7 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
         userpass[0] = 0;
 
         /* Process immediate authentication types */
-        if ((tmp = avl_find(check_item, DA_AUTH_TYPE)) != NULL)
+        if ((tmp = grad_avl_find(check_item, DA_AUTH_TYPE)) != NULL)
                 auth_type = tmp->avp_lvalue;
 
 	switch (auth_type) {
@@ -238,10 +238,10 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
         /* Find the password sent by the user. If it's not present,
            authentication fails. */
         
-        if (auth_item = avl_find(radreq->request, DA_CHAP_PASSWORD))
+        if (auth_item = grad_avl_find(radreq->request, DA_CHAP_PASSWORD))
                 auth_type = DV_AUTH_TYPE_LOCAL;
         else
-                auth_item = avl_find(radreq->request, DA_USER_PASSWORD);
+                auth_item = grad_avl_find(radreq->request, DA_USER_PASSWORD);
         
         /* Decrypt the password. */
         if (auth_item) {
@@ -254,14 +254,14 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
                 return auth_fail;
         
         /* Set up authentication data */
-        if ((tmp = avl_find(check_item, DA_AUTH_DATA)) != NULL) 
+        if ((tmp = grad_avl_find(check_item, DA_AUTH_DATA)) != NULL) 
                 authdata = tmp->avp_strvalue;
 
         /* Find the 'real' password */
-        tmp = avl_find(check_item, DA_USER_PASSWORD);
+        tmp = grad_avl_find(check_item, DA_USER_PASSWORD);
         if (tmp)
                 real_password = estrdup(tmp->avp_strvalue);
-        else if (tmp = avl_find(check_item, DA_PASSWORD_LOCATION)) {
+        else if (tmp = grad_avl_find(check_item, DA_PASSWORD_LOCATION)) {
                 switch (tmp->avp_lvalue) {
                 case DV_PASSWORD_LOCATION_SQL:
 #ifdef USE_SQL
@@ -305,7 +305,7 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
                 debug(1, ("  auth: Pam"));
                 /* Provide defaults for authdata */
                 if (authdata == NULL &&
-                    (tmp = avl_find(check_item, DA_PAM_AUTH)) != NULL) {
+                    (tmp = grad_avl_find(check_item, DA_PAM_AUTH)) != NULL) {
                         authdata = tmp->avp_strvalue;
                 }
                 authdata = authdata ? authdata : PAM_DEFAULT_TYPE;
@@ -366,7 +366,7 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
 		   allocate it */
                 length = strlen(real_password);
 		
-                if (tmp = avl_find(radreq->request, DA_CHAP_CHALLENGE)) {
+                if (tmp = grad_avl_find(radreq->request, DA_CHAP_CHALLENGE)) {
                         challenge = tmp->avp_strvalue;
                         challenge_len = tmp->avp_strlength;
                 } else {
@@ -411,11 +411,11 @@ rad_check_password(RADIUS_REQ *radreq, VALUE_PAIR *check_item,
 int
 rad_auth_check_username(RADIUS_REQ *radreq, int activefd)
 {
-        VALUE_PAIR *namepair = avl_find(radreq->request, DA_USER_NAME);
+        VALUE_PAIR *namepair = grad_avl_find(radreq->request, DA_USER_NAME);
 
 	log_open(L_AUTH);
 
-        if (avp_null_string_p(namepair)) 
+        if (grad_avp_null_string_p(namepair)) 
                 radlog_req(L_ERR, radreq, _("No username"));
 	else if (check_user_name(namepair->avp_strvalue)) 
                 radlog_req(L_ERR, radreq, _("Malformed username"));
@@ -616,13 +616,13 @@ is_log_mode(AUTH_MACH *m, int mask)
 #ifdef DA_LOG_MODE_MASK
         VALUE_PAIR *p;
 
-        for (p = avl_find(m->user_check, DA_LOG_MODE_MASK);
+        for (p = grad_avl_find(m->user_check, DA_LOG_MODE_MASK);
              p;
-             p = p->next ? avl_find(p->next, DA_LOG_MODE_MASK) : NULL)
+             p = p->next ? grad_avl_find(p->next, DA_LOG_MODE_MASK) : NULL)
                 xmask |= p->avp_lvalue;
-        for (p = avl_find(m->req->request, DA_LOG_MODE_MASK);
+        for (p = grad_avl_find(m->req->request, DA_LOG_MODE_MASK);
              p;
-             p = p->next ? avl_find(p->next, DA_LOG_MODE_MASK) : NULL)
+             p = p->next ? grad_avl_find(p->next, DA_LOG_MODE_MASK) : NULL)
                 xmask |= p->avp_lvalue;
 #endif
         return (mode & ~xmask) & mask;
@@ -651,7 +651,7 @@ radius_check_expiration(AUTH_MACH *m, time_t *exp)
 {
         VALUE_PAIR *pair;
         
-        if (pair = avl_find(m->user_check, DA_EXPIRATION)) {
+        if (pair = grad_avl_find(m->user_check, DA_EXPIRATION)) {
 		struct timeval tv;
 		gettimeofday(&tv, NULL);
 		if (tv.tv_sec > pair->avp_lvalue)
@@ -679,7 +679,7 @@ rad_authenticate(RADIUS_REQ *radreq, int activefd)
         m.user_msg   = NULL;
         obstack_init(&m.msg_stack);
 
-        m.namepair = avl_find(m.req->request, DA_USER_NAME);
+        m.namepair = grad_avl_find(m.req->request, DA_USER_NAME);
 
         debug(1, ("auth: %s", m.namepair->avp_strvalue)); 
         m.state = as_init;
@@ -703,7 +703,7 @@ rad_authenticate(RADIUS_REQ *radreq, int activefd)
                         default:
                                 abort();
                         }
-                        if (p = avl_find(p, sp->attr))
+                        if (p = grad_avl_find(p, sp->attr))
                                 m.check_pair = p;
                         else {
                                 m.state = sp->next;
@@ -717,8 +717,8 @@ rad_authenticate(RADIUS_REQ *radreq, int activefd)
         }
 
         /* Cleanup */
-        avl_free(m.user_check);
-        avl_free(m.user_reply);
+        grad_avl_free(m.user_check);
+        grad_avl_free(m.user_reply);
         if (m.user_msg)
                 free(m.user_msg);
         obstack_free(&m.msg_stack, NULL);
@@ -744,12 +744,12 @@ sfn_init(AUTH_MACH *m)
 
 	switch (radreq->server_code) {
 	case RT_ACCESS_REJECT:
-		m->user_check = avp_create_integer(DA_AUTH_TYPE, 
+		m->user_check = grad_avp_create_integer(DA_AUTH_TYPE, 
 					           DV_AUTH_TYPE_REJECT);
 		break;
 
 	case RT_ACCESS_ACCEPT:
-		m->user_check = avp_create_integer(DA_AUTH_TYPE, 
+		m->user_check = grad_avp_create_integer(DA_AUTH_TYPE, 
 					           DV_AUTH_TYPE_ACCEPT);
 		break;
 
@@ -771,7 +771,7 @@ sfn_init(AUTH_MACH *m)
 	 * If the request is processing a menu, service it here.
 	 */
 	if (radreq->server_code == 0
-	    && (pair_ptr = avl_find(m->req->request, DA_STATE)) != NULL
+	    && (pair_ptr = grad_avl_find(m->req->request, DA_STATE)) != NULL
 	    && strncmp(pair_ptr->avp_strvalue, "MENU=", 5) == 0) {
 		menu_reply(m->req, m->activefd);
 		newstate(as_stop);
@@ -822,10 +822,10 @@ sfn_scheme(AUTH_MACH *m)
                 return;
         }
 
-        reply = avl_dup(m->user_reply);
-        for (p = avl_find(reply, DA_SCHEME_PROCEDURE);
+        reply = grad_avl_dup(m->user_reply);
+        for (p = grad_avl_find(reply, DA_SCHEME_PROCEDURE);
              p;
-             p = avl_find(p->next, DA_SCHEME_PROCEDURE)) {
+             p = grad_avl_find(p->next, DA_SCHEME_PROCEDURE)) {
                 if (scheme_auth(p->avp_strvalue,
                                 m->req, m->user_check, &m->user_reply)) {
 			auth_log(m,
@@ -837,8 +837,8 @@ sfn_scheme(AUTH_MACH *m)
                         break;
                 }
         }
-        avl_delete(&m->user_reply, DA_SCHEME_PROCEDURE);
-        avl_free(reply);
+        grad_avl_delete(&m->user_reply, DA_SCHEME_PROCEDURE);
+        grad_avl_free(reply);
 #else
         radlog_req(L_ERR, m->req,
                _("Guile authentication not available"));
@@ -871,9 +871,9 @@ sfn_validate(AUTH_MACH *m)
 	case auth_valid:
 		exp /= SECONDS_PER_DAY;
 		if (warning_seconds != 0 && exp < warning_seconds) {
-			pair = avp_create_integer(DA_PASSWORD_EXPIRE_DAYS,
+			pair = grad_avp_create_integer(DA_PASSWORD_EXPIRE_DAYS,
 						  exp);
-			avl_add_pair(&m->user_reply, pair);
+			grad_avl_add_pair(&m->user_reply, pair);
 			auth_format_msg(m, MSG_PASSWORD_EXPIRE_WARNING);
 		}
 		break;
@@ -935,7 +935,7 @@ sfn_validate(AUTH_MACH *m)
 		break;
 
 	default:
-		insist_fail("sfn_validate");
+		grad_insist_fail("sfn_validate");
 	}
 	return;
 }
@@ -975,8 +975,8 @@ sfn_simuse(AUTH_MACH *m)
                        m->namepair->avp_strvalue, m->user_check, name);
         rc = rad_check_multi(name, m->req->request,
                              m->check_pair->avp_lvalue, &count);
-        avl_add_pair(&m->user_reply,
-                     avp_create_integer(DA_SIMULTANEOUS_USE, count));
+        grad_avl_add_pair(&m->user_reply,
+                     grad_avp_create_integer(DA_SIMULTANEOUS_USE, count));
         if (!rc)
                 return;
 
@@ -997,9 +997,9 @@ set_session_timeout(AUTH_MACH *m, UINT4 val)
 {
 	VALUE_PAIR *p;
 	
-        if (!(p = avl_find(m->user_reply, DA_SESSION_TIMEOUT))) {
-                p = avp_create_integer(DA_SESSION_TIMEOUT, val);
-                avl_add_pair(&m->user_reply, p);
+        if (!(p = grad_avl_find(m->user_reply, DA_SESSION_TIMEOUT))) {
+                p = grad_avp_create_integer(DA_SESSION_TIMEOUT, val);
+                grad_avl_add_pair(&m->user_reply, p);
         } else if (p->avp_lvalue > val)
 		p->avp_lvalue = val;
         return p->avp_lvalue;
@@ -1043,10 +1043,10 @@ sfn_ipaddr(AUTH_MACH *m)
         VALUE_PAIR *p, *tmp, *pp;
         
         /* Assign an IP if necessary */
-        if (!avl_find(m->user_reply, DA_FRAMED_IP_ADDRESS)) {
-                if (p = avl_find(m->req->request, DA_FRAMED_IP_ADDRESS)) {
+        if (!grad_avl_find(m->user_reply, DA_FRAMED_IP_ADDRESS)) {
+                if (p = grad_avl_find(m->req->request, DA_FRAMED_IP_ADDRESS)) {
                         /* termserver hint */
-                        avl_add_pair(&m->user_reply, avp_dup(p));
+                        grad_avl_add_pair(&m->user_reply, grad_avp_dup(p));
                 }
         }
         
@@ -1061,7 +1061,7 @@ sfn_exec_wait(AUTH_MACH *m)
 	
 	for (p = m->check_pair;
              p;
-             p = avl_find(p->next, DA_EXEC_PROGRAM_WAIT)) {
+             p = grad_avl_find(p->next, DA_EXEC_PROGRAM_WAIT)) {
 		VALUE_PAIR *tail = NULL;
 
 		if (m->user_reply)
@@ -1103,9 +1103,9 @@ sfn_exec_wait(AUTH_MACH *m)
 
 			p = tail->next;
 			tail->next = NULL;
-			avl_free(m->user_reply);
+			grad_avl_free(m->user_reply);
 			m->user_reply = p;
-			if (!avl_find(m->user_reply, DA_REPLY_MESSAGE))
+			if (!grad_avl_find(m->user_reply, DA_REPLY_MESSAGE))
 				auth_format_msg(m, MSG_ACCESS_DENIED);
 			
 			break;
@@ -1120,7 +1120,7 @@ sfn_exec_nowait(AUTH_MACH *m)
 	
 	for (p = m->check_pair;
              p;
-             p = avl_find(p->next, DA_EXEC_PROGRAM)) {
+             p = grad_avl_find(p->next, DA_EXEC_PROGRAM)) {
 		
 		radius_exec_program(m->check_pair->avp_strvalue,
 				    m->req, NULL, 0);
@@ -1146,7 +1146,7 @@ sfn_cleanup_cbkid(AUTH_MACH *m)
         int *ip;
 
         for (ip = delete_pairs; *ip; ip++)
-                avl_delete(&m->user_reply, *ip);
+                grad_avl_delete(&m->user_reply, *ip);
 }
 
 void
@@ -1192,7 +1192,7 @@ sfn_ack(AUTH_MACH *m)
 void
 sfn_reject_cleanup(AUTH_MACH *m)
 {
-	avl_free(m->user_reply);
+	grad_avl_free(m->user_reply);
 	m->user_reply = NULL;
 	newstate(as_reject);
 }
@@ -1216,25 +1216,25 @@ req_decrypt_password(char *password, RADIUS_REQ *req, VALUE_PAIR *pair)
         char *s;
         
         if (!pair) {
-                pair = avl_find(req->request, DA_USER_PASSWORD);
+                pair = grad_avl_find(req->request, DA_USER_PASSWORD);
                 if (!pair)
                         return;
         }
 
 	if (pair->prop & AP_ENCRYPT_RFC2138) {
 		/* Determine whether we need to use broken decoding */
-		nas = nas_request_to_nas(req);
+		nas = grad_nas_request_to_nas(req);
 		if (nas
-		    && (s = envar_lookup(nas->args, "broken_pass")) != NULL
+		    && (s = grad_envar_lookup(nas->args, "broken_pass")) != NULL
 		    && s[0] == '1')
-			decrypt_password_broken(password, pair,
+			grad_decrypt_password_broken(password, pair,
 						req->vector, req->secret);
 		else
-			decrypt_password(password, pair,
+			grad_decrypt_password(password, pair,
 					 req->vector, req->secret);
 	} else if (pair->prop & AP_ENCRYPT_RFC2868) {
 		u_char tag; /* FIXME: not accessible for user */
-		decrypt_tunnel_password(password, 
+		grad_decrypt_tunnel_password(password, 
 					&tag, pair,
 					req->vector, req->secret);
 	}

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -71,13 +71,13 @@
 /* General purpose encryption and decryption functions. These satisfy
    both rfc 2138 and 2868. */
 void
-encrypt_text(u_char **encr_text,
-	     size_t *encr_size,
-	     u_char *password,   /* Cleantext password */
-	     u_char *vector,     /* Request authenticator */
-	     u_char *secret,     /* Shared secret */
-	     u_char *salt,
-	     size_t saltlen)
+grad_encrypt_text(u_char **encr_text,
+		  size_t *encr_size,
+		  u_char *password,   /* Cleantext password */
+		  u_char *vector,     /* Request authenticator */
+		  u_char *secret,     /* Shared secret */
+		  u_char *salt,
+		  size_t saltlen)
 {
         int passlen;
         int secretlen;
@@ -126,14 +126,15 @@ encrypt_text(u_char **encr_text,
 }
 
 void
-decrypt_text(u_char *password,   /* At least AUTH_STRING_LEN+1
-				    characters long */
-	     u_char *encr_text,  /* encrypted text */
-	     size_t encr_size,   /* Size of encr_text and password buffers */
-	     u_char *vector,     /* Request authenticator */
-	     u_char *secret,     /* Shared secret */
-	     u_char *salt,
-	     size_t saltsize)
+grad_decrypt_text(u_char *password,   /* At least AUTH_STRING_LEN+1
+					 characters long */
+		  u_char *encr_text,  /* encrypted text */
+		  size_t encr_size,   /* Size of encr_text and password
+					 buffers */
+		  u_char *vector,     /* Request authenticator */
+		  u_char *secret,     /* Shared secret */
+		  u_char *salt,
+		  size_t saltsize)
 {
         int md5len;
         u_char *md5buf;
@@ -173,15 +174,15 @@ decrypt_text(u_char *password,   /* At least AUTH_STRING_LEN+1
 
 /* RFC 2138 functions */
 void
-encrypt_password(VALUE_PAIR *pair,
-		 char *password, /* Cleantext password */
-		 char *vector,   /* Request authenticator */
-		 char *secret)   /* Shared secret */
+grad_encrypt_password(VALUE_PAIR *pair,
+		      char *password, /* Cleantext password */
+		      char *vector,   /* Request authenticator */
+		      char *secret)   /* Shared secret */
 {
 	u_char *encr_text;
 	size_t encr_size;
 	
-	encrypt_text(&encr_text, &encr_size,
+	grad_encrypt_text(&encr_text, &encr_size,
 		     password, vector, secret, 
 		     NULL, 0);
         pair->avp_strvalue = encr_text;
@@ -189,13 +190,13 @@ encrypt_password(VALUE_PAIR *pair,
 }
 
 void
-decrypt_password(char *password,   /* At least AUTH_STRING_LEN+1
-				      characters long */
-		 VALUE_PAIR *pair, /* Password pair */
-		 char *vector,     /* Request authenticator */
-		 char *secret)     /* Shared secret */
+grad_decrypt_password(char *password,   /* At least AUTH_STRING_LEN+1
+					   characters long */
+		      VALUE_PAIR *pair, /* Password pair */
+		      char *vector,     /* Request authenticator */
+		      char *secret)     /* Shared secret */
 {
-	decrypt_text(password,
+	grad_decrypt_text(password,
 		     pair->avp_strvalue,
 		     pair->avp_strlength,
 		     vector,
@@ -208,11 +209,11 @@ decrypt_password(char *password,   /* At least AUTH_STRING_LEN+1
    Decrypt a password encrypted using broken algorythm.
    This is for use with such brain-damaged NASes as MAX ascend. */
 void
-decrypt_password_broken(char *password, /* At least AUTH_STRING_LEN+1
-					   characters long */
-			VALUE_PAIR *pair, /* Password pair */
-			char *vector,     /* Request authenticator */
-			char *secret)     /* Shared secret */
+grad_decrypt_password_broken(char *password, /* At least AUTH_STRING_LEN+1
+						characters long */
+			     VALUE_PAIR *pair, /* Password pair */
+			     char *vector,     /* Request authenticator */
+			     char *secret)     /* Shared secret */
 {
         int md5len;
         char *md5buf;
@@ -248,11 +249,11 @@ decrypt_password_broken(char *password, /* At least AUTH_STRING_LEN+1
 /* RFC 2868 */
       
 void
-encrypt_tunnel_password(VALUE_PAIR *pair,
-			u_char tag,
-			char *password, /* Cleantext password */
-			char *vector,   /* Request authenticator */
-			char *secret)   /* Shared secret */
+grad_encrypt_tunnel_password(VALUE_PAIR *pair,
+			     u_char tag,
+			     char *password, /* Cleantext password */
+			     char *vector,   /* Request authenticator */
+			     char *secret)   /* Shared secret */
 {
 	u_char *encr_text;
 	size_t encr_size;
@@ -264,7 +265,7 @@ encrypt_tunnel_password(VALUE_PAIR *pair,
 	plaintext = emalloc(length+2);
 	plaintext[0] = length;
 	memcpy(&plaintext[1], password, length + 1);
-	encrypt_text(&encr_text, &encr_size,
+	grad_encrypt_text(&encr_text, &encr_size,
 		     plaintext, vector, secret, 
 		     (u_char*) &salt, 2);
 	efree(plaintext);
@@ -278,15 +279,15 @@ encrypt_tunnel_password(VALUE_PAIR *pair,
 }
 
 void
-decrypt_tunnel_password(char *password,   /* At least AUTH_STRING_LEN+1
-					     characters long */
-			u_char *tag,
-			VALUE_PAIR *pair, /* Password pair */
-			char *vector,     /* Request authenticator */
-			char *secret)     /* Shared secret */
+grad_decrypt_tunnel_password(char *password,   /* At least AUTH_STRING_LEN+1
+						  characters long */
+			     u_char *tag,
+			     VALUE_PAIR *pair, /* Password pair */
+			     char *vector,     /* Request authenticator */
+			     char *secret)     /* Shared secret */
 {
 	size_t length;
-	decrypt_text(password,
+	grad_decrypt_text(password,
 		     pair->avp_strvalue + 3,
 		     pair->avp_strlength - 3,
 		     vector,

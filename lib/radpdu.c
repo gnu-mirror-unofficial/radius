@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -51,14 +51,14 @@ struct radius_attr {
         u_char data[AUTH_STRING_LEN];    
 };
 
-void rad_pdu_destroy(struct radius_pdu *pdu);
-int rad_attr_write(struct radius_attr *ap, void *data, size_t size);
-int rad_encode_pair(struct radius_attr *ap, VALUE_PAIR *pair);
+void grad_pdu_destroy(struct radius_pdu *pdu);
+int grad_attr_write(struct radius_attr *ap, void *data, size_t size);
+int grad_encode_pair(struct radius_attr *ap, VALUE_PAIR *pair);
 
 
 /* Initialize a PDU */
 static void
-rad_pdu_init(struct radius_pdu *pdu)
+grad_pdu_init(struct radius_pdu *pdu)
 {
         pdu->size = 0;
         obstack_init(&pdu->st);
@@ -73,7 +73,7 @@ rad_pdu_init(struct radius_pdu *pdu)
           *ptr   -- Radius reply.
    Return value: length of the data on *ptr. */   
 static size_t
-rad_pdu_finish(void **ptr, struct radius_pdu *pdu,
+grad_pdu_finish(void **ptr, struct radius_pdu *pdu,
 	       int code, int id, u_char *vector, u_char *secret)
 {
         AUTH_HDR *hdr;
@@ -135,22 +135,22 @@ rad_pdu_finish(void **ptr, struct radius_pdu *pdu,
 
 /* Destroy the PDU */
 void 
-rad_pdu_destroy(struct radius_pdu *pdu)
+grad_pdu_destroy(struct radius_pdu *pdu)
 {
         obstack_free(&pdu->st, NULL);
 }
 
 /* Append attribute A to the PDU P */
-#define rad_pdu_add(p,a) \
+#define grad_pdu_add(p,a) \
  do { obstack_grow(&(p)->st,&(a),(a).length); \
       (p)->size+=(a).length; } while (0)
 
 /* Initialize the attribute structure. */       
-#define rad_attr_init(a) (a)->length = 2
+#define grad_attr_init(a) (a)->length = 2
 
 /* Append SIZE bytes from DATA to radius_attr AP. */    
 int
-rad_attr_write(struct radius_attr *ap, void *data, size_t size)
+grad_attr_write(struct radius_attr *ap, void *data, size_t size)
 {
         if (sizeof(ap->data) - ap->length + 2 < size)
                 return 0;
@@ -165,7 +165,7 @@ rad_attr_write(struct radius_attr *ap, void *data, size_t size)
    Return value: length of the encoded data or 0 if an error occurred */
    
 int
-rad_encode_pair(struct radius_attr *ap, VALUE_PAIR *pair)
+grad_encode_pair(struct radius_attr *ap, VALUE_PAIR *pair)
 {
         UINT4 lval;
         size_t len;
@@ -180,13 +180,13 @@ rad_encode_pair(struct radius_attr *ap, VALUE_PAIR *pair)
                 len = pair->avp_strlength;
                 if (len > AUTH_STRING_LEN) 
                         len = AUTH_STRING_LEN;
-                rc = rad_attr_write(ap, pair->avp_strvalue, len);
+                rc = grad_attr_write(ap, pair->avp_strvalue, len);
                 break;
                 
         case TYPE_INTEGER:
         case TYPE_IPADDR:
                 lval = htonl(pair->avp_lvalue);
-                rc = rad_attr_write(ap, &lval, sizeof(UINT4));
+                rc = grad_attr_write(ap, &lval, sizeof(UINT4));
                 break;
 
         default:
@@ -204,7 +204,7 @@ rad_encode_pair(struct radius_attr *ap, VALUE_PAIR *pair)
    Return value: lenght of the data in *rptr. 0 on error */
    
 size_t
-rad_create_pdu(void **rptr, int code, int id, u_char *vector,
+grad_create_pdu(void **rptr, int code, int id, u_char *vector,
 	       u_char *secret, VALUE_PAIR *pairlist, char *msg)
 {
         struct radius_pdu pdu;
@@ -213,7 +213,7 @@ rad_create_pdu(void **rptr, int code, int id, u_char *vector,
         int len;
         VALUE_PAIR *pair;
         
-        rad_pdu_init(&pdu);
+        grad_pdu_init(&pdu);
 
         for (pair = pairlist; pair; pair = pair->next) {
                 struct radius_attr attr;
@@ -223,27 +223,27 @@ rad_create_pdu(void **rptr, int code, int id, u_char *vector,
                 if (debug_on(10)) {
                         char *save;
                         radlog(L_DEBUG,
-                               "send: %s", format_pair(pair, 1, &save));
+                               "send: %s", grad_format_pair(pair, 1, &save));
                         free(save);
                 }
 
-                rad_attr_init(&attr);
-                if ((vendorcode = VENDOR(pair->attribute)) > 0
-                    && (vendorpec  = vendor_id_to_pec(vendorcode)) > 0) {
+                grad_attr_init(&attr);
+                if ((vendorcode = GRAD_VENDOR_CODE(pair->attribute)) > 0
+                    && (vendorpec  = grad_vendor_id_to_pec(vendorcode)) > 0) {
                         attr.attrno = DA_VENDOR_SPECIFIC;
                         lval = htonl(vendorpec);
-                        rad_attr_write(&attr, &lval, 4);
+                        grad_attr_write(&attr, &lval, 4);
 			if (vendorpec == 429) {
 				/* Hack for non-compliant USR VSA */
 				UINT4 atval = htonl(pair->attribute & 0xffff);
-				rad_attr_write(&attr, &atval, 4);
-				attrlen = rad_encode_pair(&attr, pair);
+				grad_attr_write(&attr, &atval, 4);
+				attrlen = grad_encode_pair(&attr, pair);
 			} else {
 				u_char c = pair->attribute & 0xff;
-				rad_attr_write(&attr, &c, 1);
+				grad_attr_write(&attr, &c, 1);
 				/* Reserve a length byte */
-				rad_attr_write(&attr, &lval, 1); 
-				attrlen = rad_encode_pair(&attr, pair);
+				grad_attr_write(&attr, &lval, 1); 
+				attrlen = grad_encode_pair(&attr, pair);
 				/* Fill in the length */
 				attr.data[5] = 2+attrlen; 
 			}
@@ -251,14 +251,14 @@ rad_create_pdu(void **rptr, int code, int id, u_char *vector,
                         continue;
 		else {
 			attr.attrno = pair->attribute;
-			attrlen = rad_encode_pair(&attr, pair);
+			attrlen = grad_encode_pair(&attr, pair);
 		}
                 if (attrlen < 0) {
                         radlog(L_ERR, "attrlen = %d", attrlen);
                         status = 1;
                         break;
                 }
-                rad_pdu_add(&pdu, attr);
+                grad_pdu_add(&pdu, attr);
         }
 
         /* Append the user message
@@ -275,37 +275,37 @@ rad_create_pdu(void **rptr, int code, int id, u_char *vector,
                         else 
                                 block_len = len;
 
-                        rad_attr_init(&attr);
+                        grad_attr_init(&attr);
                         attr.attrno = DA_REPLY_MESSAGE;
-                        attrlen = rad_attr_write(&attr, msg, block_len);
+                        attrlen = grad_attr_write(&attr, msg, block_len);
                         if (attrlen <= 0) {
                                 status = 1;
                                 break;
                         }
 			debug(10,("send: Reply-Message = %*.*s",
 				  block_len, block_len, attr.data));
-                        rad_pdu_add(&pdu, attr);
+                        grad_pdu_add(&pdu, attr);
                         msg += block_len;
                         len -= block_len;
                 }
         }
 
         if (status == 0) 
-		attrlen = rad_pdu_finish(rptr, &pdu, code, id, vector, secret);
+		attrlen = grad_pdu_finish(rptr, &pdu, code, id, vector, secret);
 	else
                 attrlen = 0;
-        rad_pdu_destroy(&pdu);
+        grad_pdu_destroy(&pdu);
         return attrlen;
 }
 
 static VALUE_PAIR *
-rad_decode_pair(UINT4 attrno, char *ptr, size_t attrlen)
+grad_decode_pair(UINT4 attrno, char *ptr, size_t attrlen)
 {
         DICT_ATTR *attr;
         VALUE_PAIR *pair;
         UINT4 lval;
         
-        if ((attr = attr_number_to_dict(attrno)) == NULL) {
+        if ((attr = grad_attr_number_to_dict(attrno)) == NULL) {
                 debug(1, ("Received unknown attribute %d", attrno));
                 return NULL;
         }
@@ -316,7 +316,7 @@ rad_decode_pair(UINT4 attrno, char *ptr, size_t attrlen)
                 return NULL;
         }
 
-        pair = avp_alloc();
+        pair = grad_avp_alloc();
         
         pair->name = attr->name;
         pair->attribute = attr->value;
@@ -336,7 +336,7 @@ rad_decode_pair(UINT4 attrno, char *ptr, size_t attrlen)
                 if (debug_on(10)) {
                         char *save;
                         radlog(L_DEBUG, "recv: %s",
-                               format_pair(pair, 1, &save));
+                               grad_format_pair(pair, 1, &save));
                         free(save);
                 }
 
@@ -351,7 +351,7 @@ rad_decode_pair(UINT4 attrno, char *ptr, size_t attrlen)
                         char *save;
                         radlog(L_DEBUG, 
                                "recv: %s", 
-                               format_pair(pair, 1, &save));
+                               grad_format_pair(pair, 1, &save));
                         free(save);
                 }
                 break;
@@ -359,7 +359,7 @@ rad_decode_pair(UINT4 attrno, char *ptr, size_t attrlen)
         default:
                 debug(1, ("    %s (Unknown Type %d)",
                           attr->name,attr->type));
-                avp_free(pair);
+                grad_avp_free(pair);
                 pair = NULL;
                 break;
         }
@@ -379,7 +379,7 @@ decode_vsa(u_char *ptr, UINT4 attrlen, UINT4 *vendorpec, UINT4 *vendorcode)
 	}
 	memcpy(&x, ptr, 4);
 	*vendorpec = ntohl(x);
-	*vendorcode = vendor_pec_to_id(*vendorpec);
+	*vendorcode = grad_vendor_pec_to_id(*vendorpec);
 
 	return *vendorcode == 0;
 }
@@ -389,7 +389,7 @@ decode_vsa(u_char *ptr, UINT4 attrlen, UINT4 *vendorpec, UINT4 *vendorcode)
    to the new structure. */
 
 RADIUS_REQ *
-rad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, size_t length)
+grad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, size_t length)
 {
         u_char          *ptr;
         AUTH_HDR        *auth;
@@ -401,7 +401,7 @@ rad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, size_t length)
         u_char *endp;
         int stop;
         
-        radreq = radreq_alloc();
+        radreq = grad_request_alloc();
         debug(1,("allocated radreq: %p",radreq));
 	
         auth = (AUTH_HDR *)buffer;
@@ -457,19 +457,21 @@ rad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, size_t length)
 				if (vendorpec == 429) {
 					/* Hack for non-compliant USR VSA */
 					memcpy(&attrno, ptr, 4);
-					attrno = ntohl(attrno)
-						 | (vendorcode << 16);
+					attrno = GRAD_VSA_ATTR_NUMBER(
+						          ntohl(attrno),
+							  vendorcode);
 					ptr += 4;
 					attrlen -= 4;
 					len = attrlen;
 					attrlen = 0;
 				} else {
-					attrno = *ptr++ | (vendorcode << 16);
+					attrno = GRAD_VSA_ATTR_NUMBER(*ptr++,
+								   vendorcode);
 					len = *ptr++ - 2;
 					attrlen -= len + 2;
 				}
 				
-                                pair = rad_decode_pair(attrno, ptr, len);
+                                pair = grad_decode_pair(attrno, ptr, len);
                                 if (pair) {
                                 	if (first_pair == NULL) 
                                         	first_pair = pair;
@@ -480,7 +482,7 @@ rad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, size_t length)
                                 ptr += len;
                         }
                 } else {
-                        pair = rad_decode_pair(attrno, ptr, attrlen);
+                        pair = grad_decode_pair(attrno, ptr, attrlen);
                         ptr += attrlen;
                         if (pair) {
                         	if (first_pair == NULL) 
@@ -493,14 +495,14 @@ rad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer, size_t length)
         }
 
 	/* Add NAS-IP-Address if the NAS didn't send one */
-	if (!avl_find(first_pair, DA_NAS_IP_ADDRESS)) 
-		avl_add_pair(&first_pair,
-			     avp_create_integer(DA_NAS_IP_ADDRESS, host));
+	if (!grad_avl_find(first_pair, DA_NAS_IP_ADDRESS)) 
+		grad_avl_add_pair(&first_pair,
+			     grad_avp_create_integer(DA_NAS_IP_ADDRESS, host));
 	
         radreq->request = first_pair;
 #ifdef DEBUG_ONLY
         {
-                VALUE_PAIR *p = avl_find(radreq->request, DA_NAS_IP_ADDRESS);
+                VALUE_PAIR *p = grad_avl_find(radreq->request, DA_NAS_IP_ADDRESS);
                 if (p)
                         radreq->ipaddr = p->avp_lvalue;
         }

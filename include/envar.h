@@ -22,14 +22,14 @@
 
 #include <list.h>
 
-typedef RAD_LIST envar_t;
+typedef RAD_LIST grad_envar_t;
 
-envar_t *envar_parse(char *str);
-envar_t *envar_parse_argcv(int argc, char **argv);
-void envar_free_list(envar_t **);
-char *envar_lookup(envar_t *, char *);
-char *envar_lookup_str(envar_t *env, char *name, char *defval);
-int envar_lookup_int(envar_t *env, char *name, int defval);
-envar_t *envar_merge_lists(envar_t *prim, envar_t *sec);
+grad_envar_t *grad_envar_parse(char *str);
+grad_envar_t *grad_envar_parse_argcv(int argc, char **argv);
+void grad_envar_free_list(grad_envar_t **);
+char *grad_envar_lookup(grad_envar_t *, char *);
+char *grad_envar_lookup_str(grad_envar_t *env, char *name, char *defval);
+int grad_envar_lookup_int(grad_envar_t *env, char *name, int defval);
+grad_envar_t *grad_envar_merge_lists(grad_envar_t *prim, grad_envar_t *sec);
 
 #endif

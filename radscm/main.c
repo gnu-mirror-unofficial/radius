@@ -35,7 +35,7 @@ radscm_shell(void *closure ARG_UNUSED, int argc, char **argv)
 int
 main(int argc, char **argv)
 {
-        /*app_setup();*/
+        /*grad_app_setup();*/
         initlog(argv[0]);
         
         scm_boot_guile(argc, argv, radscm_shell, 0);

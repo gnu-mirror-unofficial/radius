@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -109,7 +109,7 @@ scheme_auth(char *procname, RADIUS_REQ *req,
 	SCM procsym;
  	jmp_buf jmp_env;
 	VALUE_PAIR *tmp = radius_decrypt_request_pairs(req,
-						       avl_dup(req->request));
+						       grad_avl_dup(req->request));
 	
 	s_request = radscm_avl_to_list(tmp);
 	radius_destroy_pairs(&tmp);
@@ -150,8 +150,8 @@ scheme_auth(char *procname, RADIUS_REQ *req,
 	if (SCM_NIMP(res) && SCM_CONSP(res)) {
 		SCM code = SCM_CAR(res);
 		VALUE_PAIR *list = radscm_list_to_avl(SCM_CDR(res));
-		avl_merge(user_reply_ptr, &list);
-		avl_free(list);
+		grad_avl_merge(user_reply_ptr, &list);
+		grad_avl_free(list);
 		return code == SCM_BOOL_F;
 	}
 	radlog(L_ERR,
@@ -261,7 +261,7 @@ scheme_redirect_output()
 		if (scheme_outfile[0] == '/')
 			filename = estrdup(scheme_outfile);
 		else
-			filename = mkfilename(radlog_dir ?
+			filename = grad_mkfilename(radlog_dir ?
 					      radlog_dir : RADLOG_DIR,
 					      scheme_outfile);
 		fd = open(filename, O_RDWR|O_CREAT|O_APPEND, 0600);

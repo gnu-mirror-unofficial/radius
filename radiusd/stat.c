@@ -220,7 +220,7 @@ stat_find_port(NAS *nas, int port_no)
 	FOR_EACH_PORT(port) {
 		if (port->ip == 0)
 			break;
-		if (ip_addr_in_net_p(&nas->netdef, port->ip)
+		if (grad_ip_in_net_p(&nas->netdef, port->ip)
 		    && port->port_no == port_no)
 			return port;
 	}
@@ -249,7 +249,7 @@ stat_get_port_index(NAS *nas, int port_no)
 	FOR_EACH_PORT(port) {
 		if (port->ip == 0)
 			break;
-		if (ip_addr_in_net_p(&nas->netdef, port->ip)
+		if (grad_ip_in_net_p(&nas->netdef, port->ip)
 		    && port->port_no == port_no)
 			return port - port_stat + 1;
 	}
@@ -267,7 +267,7 @@ stat_get_next_port_no(NAS *nas, int port_no)
 	FOR_EACH_PORT(port) {
 		if (port->ip == 0)
 			break;
-		if (ip_addr_in_net_p(&nas->netdef, port->ip)
+		if (grad_ip_in_net_p(&nas->netdef, port->ip)
 		    && port->port_no > port_no 
 		    && port->port_no < next)
 			next = port->port_no;
@@ -285,12 +285,12 @@ stat_update(struct radutmp *ut, int status)
 	
 	if (!server_stat)
 		return;
-	nas = nas_lookup_ip(ntohl(ut->nas_address));
+	nas = grad_nas_lookup_ip(ntohl(ut->nas_address));
 	if (!nas) {
 		radlog(L_WARN,
 		       _("stat_update(): portno %d: can't find nas for IP %s"),
 		       ut->nas_port,
-		       ip_iptostr(ntohl(ut->nas_address), ipbuf));
+		       grad_ip_iptostr(ntohl(ut->nas_address), ipbuf));
 		return;
 	}
 	if (nas->netdef.ipaddr == 0) /* DEFAULT nas */
@@ -301,7 +301,7 @@ stat_update(struct radutmp *ut, int status)
 		radlog(L_WARN,
 		       _("stat_update(): port %d not found on NAS %s"),
 		       ut->nas_port,
-		       ip_iptostr(ntohl(ut->nas_address), ipbuf));
+		       grad_ip_iptostr(ntohl(ut->nas_address), ipbuf));
 		return;
 	}
 
@@ -375,7 +375,7 @@ stat_count_ports()
 	
 	if (!server_stat)
 		return;
-	for (nas = nas_next(NULL); nas; nas = nas_next(nas)) {
+	for (nas = grad_nas_next(NULL); nas; nas = grad_nas_next(nas)) {
 		statp = nas->app_data;
 		statp->ports_active = statp->ports_idle = 0;
 	}
@@ -386,7 +386,7 @@ stat_count_ports()
 		if (port->ip == 0)
 			break;
 
-		nas = nas_lookup_ip(port->ip);
+		nas = grad_nas_lookup_ip(port->ip);
 		if (!nas) {
 			/* Silently ignore */
 			continue;
@@ -520,7 +520,7 @@ stat_cfg_file(int argc, cfg_value_t *argv,
 	if (argv[1].v.string[0] != '/')
 		radstat_path = estrdup(argv[1].v.string);
 	else
-		radstat_path = mkfilename(radlog_dir, argv[1].v.string); 
+		radstat_path = grad_mkfilename(radlog_dir, argv[1].v.string); 
 	
 	return 0;
 }

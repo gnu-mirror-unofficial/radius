@@ -1,5 +1,5 @@
 /* This file is part of GNU RADIUS.
-   Copyright (C) 2002, Sergey Poznyakoff
+   Copyright (C) 2002,2004 Sergey Poznyakoff
   
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -108,7 +108,7 @@ process_var(var, ptr)
                 break;
         case SMI_IPADDRESS:
                 *(UINT4*)ptr = *(unsigned int*)var->var_str;
-                DEBUG(("%s", ip_iptostr(ntohl(*(UINT4*)ptr), buf)));
+                DEBUG(("%s", grad_ip_iptostr(ntohl(*(UINT4*)ptr), buf)));
                 break;
         case SMI_OPAQUE:
                 sptr = (char**)ptr;
@@ -142,7 +142,7 @@ converse(type, sp, pdu, closure)
         
         if (type == SNMP_CONV_TIMEOUT) {
                 radlog(L_ERR, "timed out in waiting SNMP response from %s\n",
-                       ip_iptostr(sp->remote_sin.sin_addr.s_addr, ipbuf));
+                       grad_ip_iptostr(sp->remote_sin.sin_addr.s_addr, ipbuf));
                 /*FIXME: inform main that the timeout has occured */
                 return 1;
         }
@@ -257,7 +257,7 @@ walk_converse(type, sp, pdu, closure)
 
         if (type == SNMP_CONV_TIMEOUT) {
                 radlog(L_ERR, "timed out in waiting SNMP response from %s\n",
-                       ip_iptostr(sp->remote_sin.sin_addr.s_addr, ipbuf));
+                       grad_ip_iptostr(sp->remote_sin.sin_addr.s_addr, ipbuf));
                 /*FIXME: inform main that the timeout has occured */
                 return 1;
         }

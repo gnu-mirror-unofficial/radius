@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -39,7 +39,7 @@ menu_pairs(char *menu_name, char *menu_selection)
         VALUE_PAIR      *reply_first;
         int line_num;
         
-        menu_path = mkfilename3(radius_dir, "menus", menu_name);
+        menu_path = grad_mkfilename3(radius_dir, "menus", menu_name);
         if ((fp = fopen(menu_path, "r")) == NULL) {
                 radlog(L_NOTICE|L_PERROR, _("can't open menu `%s'"), menu_name);
                 efree(menu_path);
@@ -95,7 +95,7 @@ menu_pairs(char *menu_name, char *menu_selection)
                                                        menu_name,
                                                        line_num,
                                                        errp);
-                                                avl_free(reply_first);
+                                                grad_avl_free(reply_first);
                                                 reply_first = NULL;
                                                 break;
                                         }
@@ -121,7 +121,7 @@ menu_reply(RADIUS_REQ *radreq, int activefd)
         char state_value[MAX_STATE_VALUE];
         char *msg;
 
-        if ((pair = avl_find(radreq->request, DA_STATE)) == NULL
+        if ((pair = grad_avl_find(radreq->request, DA_STATE)) == NULL
 	    || pair->avp_strvalue == NULL
 	    || strncmp(pair->avp_strvalue, "MENU=", 5) != 0) 
                 return;
@@ -130,7 +130,7 @@ menu_reply(RADIUS_REQ *radreq, int activefd)
         strcpy(menu_name, pair->avp_strvalue + 5);
 
         /* The menu input is in the Password Field */
-        pair = avl_find(radreq->request, DA_USER_PASSWORD);
+        pair = grad_avl_find(radreq->request, DA_USER_PASSWORD);
         if (!pair) 
                 *menu_input = 0;
         else {
@@ -143,30 +143,30 @@ menu_reply(RADIUS_REQ *radreq, int activefd)
                 return;
         }
         
-        if ((term_pair = avl_find(pair, DA_TERMINATION_MENU)) != NULL) {
+        if ((term_pair = grad_avl_find(pair, DA_TERMINATION_MENU)) != NULL) {
                 /* Create a menu state attribute */
                 snprintf(state_value, sizeof(state_value),
 			 "MENU=%s", term_pair->avp_strvalue);
-		new_pair = avp_create_string(DA_STATE, state_value);
-		avl_merge(&pair, &new_pair);
-		avp_free(new_pair);
+		new_pair = grad_avp_create_string(DA_STATE, state_value);
+		grad_avl_merge(&pair, &new_pair);
+		grad_avp_free(new_pair);
 
 		/* Remove Termination-Menu */
-		avl_delete(&pair, DA_TERMINATION_MENU);
+		grad_avl_delete(&pair, DA_TERMINATION_MENU);
 		
                 /* Insert RADIUS termination option */
-                new_pair = avp_create_integer(DA_TERMINATION_ACTION,
+                new_pair = grad_avp_create_integer(DA_TERMINATION_ACTION,
 				      DV_TERMINATION_ACTION_RADIUS_REQUEST);
-	        avl_merge(&pair, &new_pair);
-		avp_free(new_pair);
+	        grad_avl_merge(&pair, &new_pair);
+		grad_avp_free(new_pair);
         }
 
-        if ((term_pair = avl_find(pair, DA_MENU)) != NULL
+        if ((term_pair = grad_avl_find(pair, DA_MENU)) != NULL
 	    && strcmp(term_pair->avp_strvalue, "EXIT") == 0) {
                 radius_send_reply(RT_ACCESS_REJECT, radreq,
                                   radreq->request, NULL, activefd);
         } else if (pair) {
-                if (new_pair = avl_find(pair, DA_MENU)) {
+                if (new_pair = grad_avl_find(pair, DA_MENU)) {
                         msg = menu_read_text(new_pair->avp_strvalue);
                         snprintf(state_value, sizeof(state_value),
                                         "MENU=%s", new_pair->avp_strvalue);
@@ -181,7 +181,7 @@ menu_reply(RADIUS_REQ *radreq, int activefd)
                                   radreq->request, NULL, activefd);
         }
 
-        avl_free(pair);
+        grad_avl_free(pair);
 
 }
 
@@ -196,7 +196,7 @@ menu_read_text(char *menu_name)
         int     nread;
         int     len;
                 
-        menu_path = mkfilename3(radius_dir, "menus", menu_name);
+        menu_path = grad_mkfilename3(radius_dir, "menus", menu_name);
         if ((fp = fopen(menu_path, "r")) == NULL) {
                 radlog(L_NOTICE|L_PERROR, _("can't open menu `%s'"), menu_name);
                 efree(menu_path);

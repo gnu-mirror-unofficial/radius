@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -230,9 +230,9 @@ main(int  argc, char **argv)
         char *p, *q;
         int index;
 
-        app_setup();
+        grad_app_setup();
         initlog(argv[0]);
-        if (rad_argp_parse(&argp, &argc, &argv, 0, &index, NULL))
+        if (grad_argp_parse(&argp, &argc, &argv, 0, &index, NULL))
                 return 1;
 
         if (!fmtspec)
@@ -241,7 +241,7 @@ main(int  argc, char **argv)
         if (!fmtspec)
                 fmtspec = lookup_format("default");
 
-	form = radutent_compile_form(fmtspec);
+	form = grad_utent_compile_form(fmtspec);
 	if (!form)
 		exit(1);
 
@@ -249,15 +249,15 @@ main(int  argc, char **argv)
                 filename = radutmp_path;
         
         /* Read the dictionary files */
-        dict_init();
+        grad_dict_init();
         /* Read the "naslist" file. */
-        path = mkfilename(radius_dir, RADIUS_NASLIST);
-	if (nas_read_file(path))
+        path = grad_mkfilename(radius_dir, RADIUS_NASLIST);
+	if (grad_nas_read_file(path))
                 exit(1);
         efree(path);
         /* Read realms */
-        path = mkfilename(radius_dir, RADIUS_REALMS);
-	realm_read_file(path, 0, 0, NULL);
+        path = grad_mkfilename(radius_dir, RADIUS_REALMS);
+	grad_read_realms(path, 0, 0, NULL);
         efree(path);
         
         /*
@@ -349,7 +349,7 @@ local_who()
 #endif
                         tty_to_port(&rt, ut.ut_line);
                         if (want_rad_record(&rt)) 
-                                radutent_print(form, &rt, 1);
+                                grad_utent_print(form, &rt, 1);
                 }
         }
         fclose(fp);
@@ -371,7 +371,7 @@ radius_who()
 
         while (up = rut_getent(file)) {
                 if (want_rad_record(up)) 
-                        radutent_print(form, up, 1);
+                        grad_utent_print(form, up, 1);
         }
         rut_endent(file);
 }
@@ -380,7 +380,7 @@ void
 print_header()
 {
         if (display_header) {
-                printutmp_header(form);
+                grad_utent_print_header(form);
                 display_header = 0;
         }
 }

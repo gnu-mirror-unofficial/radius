@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -180,7 +180,7 @@ getline()
                 while (*cur_ptr && isspace(*cur_ptr))
                         cur_ptr++;
         }
-        stmt_type = xlat_keyword(sql_keyword, cur_line, -1);
+        stmt_type = grad_xlat_keyword(sql_keyword, cur_line, -1);
         return cur_ptr;
 }
 
@@ -296,7 +296,7 @@ rad_sql_init()
         new_cfg.active[SQL_ACCT] = 0;
         new_cfg.active[SQL_AUTH] = 0;
 
-        sqlfile = mkfilename(radius_dir, "sqlserver");
+        sqlfile = grad_mkfilename(radius_dir, "sqlserver");
         /* Open source file */
         if ((sqlfd = fopen(sqlfile, "r")) == (FILE *) NULL) {
                 radlog(L_ERR, _("could not read sqlserver file %s"), sqlfile);
@@ -325,7 +325,7 @@ rad_sql_init()
                 
                 switch (stmt_type) {
                 case STMT_SERVER:
-                       	if (cur_ptr[0] != '/' && !ip_gethostaddr(cur_ptr)) {
+                       	if (cur_ptr[0] != '/' && !grad_ip_gethostaddr(cur_ptr)) {
                                 radlog(L_ERR,
                                        _("%s:%d: unknown host: %s"),
                                        sqlfile, line_no,
@@ -828,7 +828,7 @@ rad_sql_acct(RADIUS_REQ *radreq)
         if (!sql_cfg.active[SQL_ACCT])
                 return;
 
-        if ((pair = avl_find(radreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
+        if ((pair = grad_avl_find(radreq->request, DA_ACCT_STATUS_TYPE)) == NULL) {
                 /* should never happen!! */
                 radlog_req(L_ERR, radreq,
                            _("no Acct-Status-Type attribute in rad_sql_acct()"));
@@ -934,13 +934,13 @@ rad_sql_pass(RADIUS_REQ *req, char *authdata)
         }
         
         if (authdata) {
-                avl_add_pair(&req->request,
-                             avp_create_string(DA_AUTH_DATA, authdata));
+                grad_avl_add_pair(&req->request,
+                             grad_avp_create_string(DA_AUTH_DATA, authdata));
         }
         
         obstack_init(&stack);
         query = radius_xlate(&stack, sql_cfg.auth_query, req, NULL);
-        avl_delete(&req->request, DA_AUTH_DATA);
+        grad_avl_delete(&req->request, DA_AUTH_DATA);
         
         conn = attach_sql_connection(SQL_AUTH);
         mysql_passwd = disp_sql_getpwd(conn, query);
@@ -1022,7 +1022,7 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
 		
 		if (op_too) {
 			char *opstr = res->tuple[i][2];
-                        op = str_to_op(opstr);
+                        op = grad_str_to_op(opstr);
                         if (op == NUM_OPERATORS) {
                                 radlog(L_NOTICE,
                                        _("SQL: invalid operator: %s"), opstr);
@@ -1033,14 +1033,14 @@ rad_sql_retrieve_pairs(struct sql_connection *conn,
 
 		loc.file = __FILE__;
 		loc.line = __LINE__;
-                pair = install_pair(&loc,
+                pair = grad_create_pair(&loc,
 				    res->tuple[i][0],
 				    op,
 				    res->tuple[i][1]);
                 
                 if (pair) {
-                        avl_merge(return_pairs, &pair);
-                        avl_free(pair);
+                        grad_avl_merge(return_pairs, &pair);
+                        grad_avl_free(pair);
                 }
 	}		
 

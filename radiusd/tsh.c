@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2003 Free Software Foundation
+   Copyright (C) 2003,2004 Free Software Foundation
   
    GNU Radius is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -166,7 +166,7 @@ tsh_query_nas(int argc, char **argv, char *cmd ARG_UNUSED)
 			_("%s: wrong number of arguments\n"), argv[0]);
 		return;
 	}
-	nas = nas_lookup_name(argv[1]);
+	nas = grad_nas_lookup_name(argv[1]);
 	if (nas) {
 		if (nas->netdef.netmask != 32) {
 			fprintf(stderr, _("%s: is a network name\n"), argv[0]);
@@ -174,7 +174,7 @@ tsh_query_nas(int argc, char **argv, char *cmd ARG_UNUSED)
 		}
 		ut.nas_address = nas->netdef.ipaddr;
 	} else {
-		ut.nas_address = ip_gethostaddr(argv[0]);
+		ut.nas_address = grad_ip_gethostaddr(argv[0]);
 		if (!ut.nas_address) {
 			fprintf(stderr, _("%s: unknown nas\n"), argv[0]);
 			return;
@@ -185,7 +185,7 @@ tsh_query_nas(int argc, char **argv, char *cmd ARG_UNUSED)
 	strncpy(ut.session_id, argv[3], sizeof(ut.session_id));
 	ut.nas_port = atoi(argv[4]);
 	if (argc == 6)
-		ut.framed_address = ip_strtoip(argv[5]);
+		ut.framed_address = grad_ip_strtoip(argv[5]);
 	printf("%d\n", checkrad(nas, &ut));
 }
 
@@ -360,20 +360,20 @@ tsh_req_define(int argc, char **argv, char *cmd)
 			if (userparse(cmd, &vp, &errp)) {
 				radlog(L_ERR, "%s", errp);
 				free(cmd);
-				avl_free(vp);
+				grad_avl_free(vp);
 				return;
 			}
 			free(cmd);
 		}
 	}
-	avl_free(test_req.request);
+	grad_avl_free(test_req.request);
 	test_req.request = vp;
 }
 
 static void
 tsh_req_print(int argc, char **argv, char *cmd)
 {
-	avl_fprint(stdout, "    ", 1, test_req.request);
+	grad_avl_fprint(stdout, "    ", 1, test_req.request);
 }
 
 

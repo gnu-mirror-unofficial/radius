@@ -20,7 +20,7 @@
 AC_PREREQ(2.57)
 
 AC_REVISION($Revision$)
-AC_INIT(GNU Radius, 1.2, bug-gnu-radius@gnu.org)
+AC_INIT(GNU Radius, 1.2.1, bug-gnu-radius@gnu.org)
 AC_CONFIG_SRCDIR(radiusd/radiusd.c)
 AC_CONFIG_AUX_DIR([scripts])
 AC_CANONICAL_SYSTEM
@@ -276,6 +276,37 @@ AC_CHECK_FUNCS(argp_parse, :, USE_INCLUDED_ARGP=yes)
 if test "$ac_cv_header_argp_h" = "no"; then
 	USE_INCLUDED_ARGP=yes
 fi
+
+AC_MSG_CHECKING(whether extern program_invocation_name is declared)
+AC_TRY_COMPILE([#include <argp.h>
+#include <errno.h>],
+[ program_invocation_name = "test"; ],
+[AC_DEFINE(PROGRAM_INVOCATION_NAME_DECLARED,1,
+           [Define if program_invocation_name is declared in argp.h])
+ AC_MSG_RESULT(yes)],
+[AC_MSG_RESULT(no)])
+
+AH_BOTTOM([
+#ifndef PROGRAM_INVOCATION_NAME_DECLARED
+extern char *program_invocation_short_name;
+extern char *program_invocation_name;
+#endif])
+
+AC_MSG_CHECKING(whether program_invocation_name is present)
+AC_TRY_COMPILE([#include <argp.h>
+#include <errno.h>],
+[
+#ifndef PROGRAM_INVOCATION_NAME_DECLARED
+	extern char *program_invocation_name;
+#endif
+	program_invocation_name = "test";
+],
+[AC_DEFINE(HAVE_PROGRAM_INVOCATION_NAME,1,
+           [Define if the variable program_invocation_name exists])
+ AC_MSG_RESULT(yes)],
+[AC_MSG_RESULT(no)
+ USE_INCLUDED_ARGP=yes])
+
 
 if test $USE_INCLUDED_ARGP = yes; then
         AC_DEFINE(WITH_INCLUDED_ARGP, 1,
@@ -727,6 +758,9 @@ AH_BOTTOM([
 #define LOCK_SET(name)
 #define LOCK_RELEASE(name)
 ])
+
+AC_SUBST(LIBGNURADIUS)
+LIBGNURADIUS='${top_builddir}/lib/libgnuradius.la'
 
 AC_OUTPUT(Makefile 
           m4/Makefile 

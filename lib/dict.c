@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -66,7 +66,7 @@ dict_attr_lookup(char *ident)
 	if (sym) {
 		switch (sym->type) {
 		case dict_symbol_uninitialized:
-			insist_fail("sym_lookup returned uninitialized symbol!");
+			grad_insist_fail("sym_lookup returned uninitialized symbol!");
 			break;
 			
 		case dict_symbol_attribute:
@@ -109,8 +109,8 @@ dict_free()
                 dict_attr_tab = symtab_create(sizeof(DICT_SYMBOL), NULL);
         memset(dict_attr_index, 0, sizeof dict_attr_index);
 
-	list_destroy(&dictionary_values, free_value, NULL);
-        list_destroy(&dictionary_vendors, free_vendor, NULL);
+	grad_list_destroy(&dictionary_values, free_value, NULL);
+        grad_list_destroy(&dictionary_vendors, free_vendor, NULL);
         vendorno = 1;
 }
 
@@ -141,8 +141,8 @@ addvendor(char *name, int value)
         vval->vendorpec  = value;
         vval->vendorcode = vendorno++;
 	if (!dictionary_vendors)
-		dictionary_vendors = list_create();
-	list_prepend(dictionary_vendors, vval);
+		dictionary_vendors = grad_list_create();
+	grad_list_prepend(dictionary_vendors, vval);
 
         return 0;
 }
@@ -182,6 +182,8 @@ dict_register_parser(int attr, attr_parser_fp fun)
 /* **************************************************************************
  * Parser
  */
+static int parse_dict(char *name);
+	
 #define KEYWORD      fv[0]
 #define ATTR_NAME    fv[1]
 #define ATTR_VALUE   fv[2]
@@ -196,13 +198,6 @@ dict_register_parser(int attr, attr_parser_fp fun)
 #define VALUE_NUM    fv[3]
 #define VENDOR_NAME  fv[1]
 #define VENDOR_VALUE fv[2]
-
-static int _dict_include(int *, int, char **, LOCUS *);
-static int _dict_attribute(int *, int, char **, LOCUS *);
-static int _dict_value(int *, int, char **, LOCUS *);
-static int _dict_vendor(int *, int, char **, LOCUS *);
-static int parse_dict_entry(void *, int, char **, LOCUS *);
-static int parse_dict(char *name);
 
 static struct keyword type_kw[] = {
         { "string", TYPE_STRING },
@@ -351,7 +346,7 @@ set_default_attr_properties(int value, int *flags, int *prop)
         *flags = AF_DEFAULT_FLAGS;
         *prop  = AP_DEFAULT_ADD;
 
-	if (VENDOR(value) == 0) {
+	if (GRAD_VENDOR_CODE(value) == 0) {
 		if (value > 255)
 			*flags |= AP_INTERNAL;
 		/* FIXME: A temporary hack until all users update
@@ -399,7 +394,7 @@ _dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
 			return 0;
 		}
 	} else
-		type = xlat_keyword(type_kw, ATTR_TYPE, TYPE_INVALID);
+		type = grad_xlat_keyword(type_kw, ATTR_TYPE, TYPE_INVALID);
 	
         if (type == TYPE_INVALID) {
                 radlog_loc(L_ERR, loc,
@@ -410,7 +405,7 @@ _dict_attribute(int *errcnt, int fc, char **fv, LOCUS *loc)
         }
 
         if (HAS_VENDOR(fc, fv)) {
-                if ((vendor = vendor_name_to_id(ATTR_VENDOR)) == 0) {
+                if ((vendor = grad_vendor_name_to_id(ATTR_VENDOR)) == 0) {
                         radlog_loc(L_ERR, loc, _("unknown vendor"));
 			(*errcnt)++;
                         return 0;
@@ -557,8 +552,8 @@ _dict_value(int *errcnt, int fc, char **fv, LOCUS *loc)
 
         /* Insert at front. */
 	if (!dictionary_values)
-		dictionary_values = list_create();
-	list_prepend(dictionary_values, dval);
+		dictionary_values = grad_list_create();
+	grad_list_prepend(dictionary_values, dval);
         
         return 0;
 }
@@ -608,11 +603,11 @@ static struct keyword dict_kw[] = {
         { NULL, 0 }
 };
 
-int
+static int
 parse_dict_entry(void *closure, int fc, char **fv, LOCUS *loc)
 {
 	int *errcnt = closure;
-        switch (xlat_keyword(dict_kw, KEYWORD, -1)) {
+        switch (grad_xlat_keyword(dict_kw, KEYWORD, -1)) {
         case KW_INCLUDE:
                 _dict_include(errcnt, fc, fv, loc);
                 break;
@@ -638,7 +633,7 @@ parse_dict_entry(void *closure, int fc, char **fv, LOCUS *loc)
         return 0;
 }
 
-int
+static int
 parse_dict(char *name)
 {
         char *path;
@@ -648,8 +643,8 @@ parse_dict(char *name)
 	if (name[0] == '/')
 		path = estrdup(name);
 	else
-		path = mkfilename(radius_dir, name);
-        rc = read_raddb_file(path, 1, parse_dict_entry, &errcnt);
+		path = grad_mkfilename(radius_dir, name);
+        rc = grad_read_raddb_file(path, 1, parse_dict_entry, &errcnt);
         if (errcnt)
                 radlog(L_NOTICE,
 		       ngettext("%s: %d error", "%s: %d errors",
@@ -659,12 +654,12 @@ parse_dict(char *name)
 }
 
 int
-dict_init()
+grad_dict_init()
 {
 	if (!attr_parser_tab) {
 		/* Register ascend filters */
-		dict_register_parser(242, ascend_parse_filter);
-		dict_register_parser(243, ascend_parse_filter);
+		dict_register_parser(242, grad_ascend_parse_filter);
+		dict_register_parser(243, grad_ascend_parse_filter);
 	}
         dict_free();
         return parse_dict(RADIUS_DICTIONARY);
@@ -684,7 +679,7 @@ struct attr_value {
         DICT_ATTR *da;
 };
 
-int
+static int
 attrval_cmp(struct attr_value *av, DICT_SYMBOL *sym)
 {
 	DICT_ATTR *attr;
@@ -710,7 +705,7 @@ attrval_cmp(struct attr_value *av, DICT_SYMBOL *sym)
 }
 
 DICT_ATTR *
-attr_number_to_dict(int attribute)
+grad_attr_number_to_dict(int attribute)
 {
         struct attr_value av;
         if (attribute >= 0 && attribute < DICT_INDEX_SIZE)
@@ -726,7 +721,7 @@ attr_number_to_dict(int attribute)
  */
 
 DICT_ATTR *
-attr_name_to_dict(char *attrname)
+grad_attr_name_to_dict(char *attrname)
 {
         return dict_attr_lookup(attrname);
 }
@@ -751,19 +746,19 @@ valname_cmp(const void *item, const void *data)
 }
 
 DICT_VALUE *
-value_name_to_value(char *valname, int attr)
+grad_value_name_to_value(char *valname, int attr)
 {
         struct val_lookup data;
         data.name = valname;
         data.number = attr;
-	return list_locate(dictionary_values, &data, valname_cmp);
+	return grad_list_locate(dictionary_values, &data, valname_cmp);
 }
 
 /*
  * Return the full value structure based on the actual value and
  * the associated attribute name.
  */
-int
+static int
 valnum_cmp(const void *item, const void *data)
 {
 	const DICT_VALUE *v = item;
@@ -775,19 +770,19 @@ valnum_cmp(const void *item, const void *data)
 }
 
 DICT_VALUE *
-value_lookup(UINT4 value, char *attrname)
+grad_value_lookup(UINT4 value, char *attrname)
 {
         struct val_lookup data;
         data.number = value;
         data.attrname = attrname;
-	return list_locate(dictionary_values, &data, valnum_cmp);
+	return grad_list_locate(dictionary_values, &data, valnum_cmp);
 }
 
 /*
  * Get the PEC (Private Enterprise Code) of the vendor
  * based on it's internal number.
  */
-int
+static int
 code_cmp(const void *item, const void *data)
 {
 	const DICT_VENDOR *v = item;
@@ -797,18 +792,18 @@ code_cmp(const void *item, const void *data)
 }
 
 int 
-vendor_id_to_pec(int code)
+grad_vendor_id_to_pec(int code)
 {
         DICT_VENDOR *vp;
 
-	vp = list_locate(dictionary_vendors, &code, code_cmp);
+	vp = grad_list_locate(dictionary_vendors, &code, code_cmp);
         return vp ? vp->vendorpec : 0;
 }
 
 /*
  * Get the internal code of the vendor based on its PEC.
  */
-int
+static int
 pec_cmp(const void *item, const void *data)
 {
 	const DICT_VENDOR *v = item;
@@ -818,20 +813,20 @@ pec_cmp(const void *item, const void *data)
 }
 
 int 
-vendor_pec_to_id(int pec)
+grad_vendor_pec_to_id(int pec)
 {
         DICT_VENDOR *vp;
 
-	vp = list_locate(dictionary_vendors, &pec, pec_cmp);
+	vp = grad_list_locate(dictionary_vendors, &pec, pec_cmp);
         return vp ? vp->vendorcode : 0;
 }
         
 char *
-vendor_pec_to_name(int pec)
+grad_vendor_pec_to_name(int pec)
 {
         DICT_VENDOR *vp;
 
-	vp = list_locate(dictionary_vendors, &pec, pec_cmp);
+	vp = grad_list_locate(dictionary_vendors, &pec, pec_cmp);
         return vp ? vp->vendorname : NULL;
 }
         
@@ -839,7 +834,7 @@ vendor_pec_to_name(int pec)
 /*
  * Get the internal code of the vendor based on its name.
  */
-int
+static int
 vendor_cmp(const void *item, const void *data)
 {
 	const DICT_VENDOR *v = item;
@@ -849,11 +844,11 @@ vendor_cmp(const void *item, const void *data)
 }
 
 int 
-vendor_name_to_id(char *name)
+grad_vendor_name_to_id(char *name)
 {
         DICT_VENDOR *vp;
 
-	vp = list_locate(dictionary_vendors, name, vendor_cmp);
+	vp = grad_list_locate(dictionary_vendors, name, vendor_cmp);
         return vp ? vp->vendorcode : 0;
 }
         

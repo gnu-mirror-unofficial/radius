@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -33,7 +33,7 @@ typedef struct envar {
 } ENVAR;
 
 static void
-envar_parse_internal(char *str, RAD_LIST **plist)
+grad_envar_parse_internal(char *str, RAD_LIST **plist)
 {
         int i;
         int argc;
@@ -68,32 +68,32 @@ envar_parse_internal(char *str, RAD_LIST **plist)
                         env->value = estrdup("1");
                 }
 		if (!*plist)
-			*plist = list_create();
-		list_append(*plist, env);
+			*plist = grad_list_create();
+		grad_list_append(*plist, env);
         }
 	argcv_free(argc, argv);
 }
 
-envar_t *
-envar_parse(char *str)
+grad_envar_t *
+grad_envar_parse(char *str)
 {
 	RAD_LIST *list = NULL;
-        envar_parse_internal(str, &list);
+        grad_envar_parse_internal(str, &list);
         return list;
 }
 
-envar_t *
-envar_parse_argcv(int argc, char **argv)
+grad_envar_t *
+grad_envar_parse_argcv(int argc, char **argv)
 {
 	RAD_LIST *list = NULL;
         while (argc--) {
-                envar_parse_internal(*argv++, &list);
+                grad_envar_parse_internal(*argv++, &list);
         }
         return list;
 }
 
 static int
-envar_free(void *item, void *data)
+grad_envar_free(void *item, void *data)
 {
         ENVAR *env = item;
         efree(env->name);
@@ -103,13 +103,13 @@ envar_free(void *item, void *data)
 }
 
 void
-envar_free_list(envar_t **evp)
+grad_envar_free_list(grad_envar_t **evp)
 {
-	list_destroy(evp, envar_free, NULL);
+	grad_list_destroy(evp, grad_envar_free, NULL);
 }
 
 char *
-envar_lookup(envar_t *env, char *name)
+grad_envar_lookup(grad_envar_t *env, char *name)
 {
 	ENVAR *p;
 	ITERATOR *itr = iterator_create(env);
@@ -125,27 +125,27 @@ envar_lookup(envar_t *env, char *name)
 }
 
 char *
-envar_lookup_str(envar_t *env, char *name, char *defval)
+grad_envar_lookup_str(grad_envar_t *env, char *name, char *defval)
 {
         char *s;
 
-        if (s = envar_lookup(env, name))
+        if (s = grad_envar_lookup(env, name))
                 return s;
         return defval;
 }
 
 int
-envar_lookup_int(envar_t *env, char *name, int defval)
+grad_envar_lookup_int(grad_envar_t *env, char *name, int defval)
 {
         char *s;
         
-        if (s = envar_lookup(env, name))
+        if (s = grad_envar_lookup(env, name))
                 return atoi(s);
         return defval;
 }
 
 ENVAR *
-envar_dup(ENVAR *env)
+grad_envar_dup(ENVAR *env)
 {
         ENVAR *ep;
 
@@ -155,26 +155,26 @@ envar_dup(ENVAR *env)
         return ep;
 }
 
-envar_t *
-envar_merge_lists(envar_t *prim, envar_t *sec)
+grad_envar_t *
+grad_envar_merge_lists(grad_envar_t *prim, grad_envar_t *sec)
 {
-        envar_t *list;
+        grad_envar_t *list;
 	ENVAR *p;
 	ITERATOR *itr;
         
-        list = list_create();
+        list = grad_list_create();
 	itr = iterator_create(sec);
 	if (itr) {
 		for (p = iterator_first(itr); p; p = iterator_next(itr))
-                	if (!envar_lookup(prim, p->name)) {
-				list_append(list, envar_dup(p));
+                	if (!grad_envar_lookup(prim, p->name)) {
+				grad_list_append(list, grad_envar_dup(p));
                 	}
                 iterator_destroy(&itr);
         }
         itr = iterator_create(prim);
         if (itr) {
         	for (p = iterator_first(itr); p; p = iterator_next(itr)) 
-                	list_append(list, envar_dup(p));
+                	grad_list_append(list, grad_envar_dup(p));
                 iterator_destroy(&itr);
         }
         return list;

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -77,22 +77,7 @@ struct format_data {
 	} v;
 };
 
-
-int output_string(char *string, int width, int align);
-int output_string_key(char *string, int width, format_key_t *key);
-int output_tab(int column, int tabstop);
-int output_hostname(UINT4 ip, int width, format_key_t *key);
-int output_time(time_t t, int width, format_key_t *key);
-char *get_hostname(UINT4 ipaddr, int nodomain, char *buf, size_t size);
-
-static void format_key_free(format_key_t *key);
-static char *format_key_lookup(format_key_t *key, char *name);
-static int key_align(format_key_t *key);
-static char *key_date_format(format_key_t *key);
-static char *key_empty(format_key_t *key);
-static int key_nodomain(format_key_t *key);
-
-void
+static void
 format_key_free(format_key_t *key)
 {
 	format_key_t *next;
@@ -105,7 +90,7 @@ format_key_free(format_key_t *key)
 	}
 }
 
-char *
+static char *
 format_key_lookup(format_key_t *key, char *name)
 {
 	for (; key; key = key->next) {
@@ -115,7 +100,7 @@ format_key_lookup(format_key_t *key, char *name)
 	return NULL;
 }
 
-void
+static void
 form_free(format_data_t *form)
 {
 	format_data_t *next;
@@ -168,7 +153,7 @@ key_nodomain(format_key_t *key)
 	return p ? 1 : printutmp_ip_nodomain;
 }
 
-int
+static int
 output_string(char *string, int width, int align)
 {
 	if (width == 0) 
@@ -180,7 +165,7 @@ output_string(char *string, int width, int align)
 	return width;
 }
 
-int
+static int
 output_string_key(char *string, int width, format_key_t *key)
 {
 	if (strlen(string) == 0)
@@ -189,7 +174,7 @@ output_string_key(char *string, int width, format_key_t *key)
 }
 
 
-int
+static int
 output_tab(int column, int tabstop)
 {
 	int goal = (((column + TAB_SIZE - 1) / TAB_SIZE) + tabstop) * TAB_SIZE;
@@ -198,7 +183,7 @@ output_tab(int column, int tabstop)
 	return column;
 }
 
-char *
+static char *
 get_hostname(UINT4 ipaddr, int nodomain, char *buf, size_t size)
 {
         if (ipaddr == 0 || ipaddr == (UINT4)-1 || ipaddr == (UINT4)-2)
@@ -206,7 +191,7 @@ get_hostname(UINT4 ipaddr, int nodomain, char *buf, size_t size)
 
         if (nodomain) {
 		char *s, *p;
-                s = ip_gethostname(ntohl(ipaddr), buf, size);
+                s = grad_ip_gethostname(ntohl(ipaddr), buf, size);
                 for (p = s; *p && (isdigit(*p) || *p == '.'); p++)
                         ;
                 if (*p == 0)
@@ -216,10 +201,10 @@ get_hostname(UINT4 ipaddr, int nodomain, char *buf, size_t size)
                 return s;
 	}
 	
-	return ip_gethostname(ntohl(ipaddr), buf, size);
+	return grad_ip_gethostname(ntohl(ipaddr), buf, size);
 }
 
-int
+static int
 output_hostname(UINT4 ip, int width, format_key_t *key)
 {
 	char buf[80];
@@ -228,7 +213,7 @@ output_hostname(UINT4 ip, int width, format_key_t *key)
 }
 
 /*FIXME: ignores key */
-int
+static int
 output_time(time_t t, int width, format_key_t *key)
 {
         int d,h,m,s;
@@ -251,28 +236,28 @@ output_time(time_t t, int width, format_key_t *key)
 }
 
 /*ARGSUSED*/
-int
+static int
 login_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 {
 	return output_string_key(up->login, width, key);
 }
 
 /*ARGSUSED*/
-int
+static int
 orig_login_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 {
 	return output_string_key(up->orig_login, width, key);
 }
 
 /*ARGSUSED*/
-int
+static int
 gecos_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 {
         struct passwd pw, *pwd;
         char *s;
 	char buffer[512];
 
-        if (pwd = rad_getpwnam_r(up->login, &pw, buffer, sizeof buffer)) {
+        if (pwd = grad_getpwnam_r(up->login, &pw, buffer, sizeof buffer)) {
                 if ((s = strchr(pwd->pw_gecos, ',')) != NULL)
                         *s = 0;
                 s = pwd->pw_gecos;
@@ -282,7 +267,7 @@ gecos_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 }
 
 /*ARGSUSED*/
-int
+static int
 nas_port_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 {
 	char buf[6];
@@ -292,20 +277,20 @@ nas_port_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 }
 
 /*ARGSUSED*/
-int
+static int
 session_id_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 {
 	return output_string_key(up->session_id, width, key);
 }
 
 /*ARGSUSED*/
-int
+static int
 nas_address_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 {
 	if (printutmp_use_naslist) {
 		NAS *nas;
 	
-		nas = nas_lookup_ip(ntohl(up->nas_address));
+		nas = grad_nas_lookup_ip(ntohl(up->nas_address));
 		if (!nas)
 			return output_hostname(up->nas_address, width, key);
 		return output_string_key(nas->shortname[0] ?
@@ -315,7 +300,7 @@ nas_address_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 }
 
 /*ARGSUSED*/
-int
+static int
 framed_address_fh(int outbytes, int width, format_key_t *key,
 		  struct radutmp *up)
 {
@@ -323,10 +308,10 @@ framed_address_fh(int outbytes, int width, format_key_t *key,
 }
 
 /*ARGSUSED*/
-int
+static int
 protocol_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 {
-	DICT_VALUE *dval = value_lookup(up->proto, "Framed-Protocol");
+	DICT_VALUE *dval = grad_value_lookup(up->proto, "Framed-Protocol");
 	char buf[80];
 	char *s;
 	
@@ -340,7 +325,7 @@ protocol_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 }
 
 /*ARGSUSED*/
-int
+static int
 time_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 {
         char buf[80];
@@ -350,7 +335,7 @@ time_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 }
 
 /*ARGSUSED*/
-int
+static int
 duration_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 {
 	return output_time((up->type == P_IDLE) ?
@@ -359,17 +344,17 @@ duration_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 }
 
 /*ARGSUSED*/
-int
+static int
 delay_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 {
 	return output_time(up->delay, width, key);
 }
 
 /*ARGSUSED*/
-int
+static int
 port_type_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 {
-	DICT_VALUE *dval = value_lookup(up->porttype, "NAS-Port-Type");
+	DICT_VALUE *dval = grad_value_lookup(up->porttype, "NAS-Port-Type");
 	char buf[80];
 	char *s;
 	
@@ -383,21 +368,21 @@ port_type_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 }
 
 /*ARGSUSED*/
-int
+static int
 clid_fh(int outbytes, int width, format_key_t *key, struct radutmp *up)
 {
 	return output_string_key(up->caller_id, width, key);
 }
 
 /*ARGSUSED*/
-int
+static int
 realm_address_fh(int outbytes, int width, format_key_t *key,
 		 struct radutmp *up)
 {
         if (up->realm_address == 0)
 		return output_string_key("", width, key);
 	else {
-		REALM *rp = realm_lookup_ip(up->realm_address);
+		REALM *rp = grad_realm_lookup_ip(up->realm_address);
 		if (rp)
 			return output_string_key(rp->realm, width, key);
 	}
@@ -635,7 +620,7 @@ parse_form(char **fmtp, format_data_t *form)
 }
 
 format_data_t *
-radutent_compile_form(char *fmt)
+grad_utent_compile_form(char *fmt)
 {
 	format_data_t *form_head = NULL, *form_tail;
 	
@@ -670,7 +655,7 @@ radutent_compile_form(char *fmt)
 }
 
 int
-radutent_print(format_data_t *form, struct radutmp *up, int newline)
+grad_utent_print(format_data_t *form, struct radutmp *up, int newline)
 {
 	int i;
 	int outbytes = 0;
@@ -707,7 +692,7 @@ radutent_print(format_data_t *form, struct radutmp *up, int newline)
 }
 
 void
-printutmp_header(format_data_t *form)
+grad_utent_print_header(format_data_t *form)
 {
 	int i, outbytes = 0;
 	format_data_t *p;

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -46,18 +46,18 @@ radius_send_reply(int code, RADIUS_REQ *radreq,
                 radreq->reply_code = code;
                 radreq->reply_msg = estrdup(msg);
 
-                reply = avl_dup(reply_pairs);
-                avl_move_attr(&reply, &radreq->request, DA_PROXY_STATE);
+                reply = grad_avl_dup(reply_pairs);
+                grad_avl_move_attr(&reply, &radreq->request, DA_PROXY_STATE);
                 
                 switch (code) {
                 case RT_PASSWORD_REJECT:
                 case RT_ACCESS_REJECT:
                         radreq->reply_pairs = NULL;
-                        avl_move_attr(&radreq->reply_pairs, &reply, 
+                        grad_avl_move_attr(&radreq->reply_pairs, &reply, 
                                       DA_REPLY_MESSAGE);
-                        avl_move_attr(&radreq->reply_pairs, &reply, 
+                        grad_avl_move_attr(&radreq->reply_pairs, &reply, 
                                       DA_PROXY_STATE);
-                        avl_free(reply);
+                        grad_avl_free(reply);
 			stat_inc(auth, radreq->ipaddr, num_rejects);
                         break;
 
@@ -67,13 +67,13 @@ radius_send_reply(int code, RADIUS_REQ *radreq,
 			
                 default:
                         radreq->reply_pairs =
-				rad_clt_encrypt_pairlist(reply,
+				grad_client_encrypt_pairlist(reply,
 							 radreq->vector,
 							 radreq->secret);
                 }
         } 
 
-	rad_srv_send_reply(fd, radreq);
+	grad_server_send_reply(fd, radreq);
 }
 	
 #ifdef USE_LIVINGSTON_MENUS
@@ -87,8 +87,8 @@ void
 radius_send_challenge(RADIUS_REQ *radreq, char *msg, char *state, int fd)
 {
 	radreq->reply_pairs = NULL;
-	avl_move_attr(&radreq->reply_pairs, &radreq->request, DA_PROXY_STATE);
-	if (rad_srv_send_challenge(fd, radreq, msg, state))
+	grad_avl_move_attr(&radreq->reply_pairs, &radreq->request, DA_PROXY_STATE);
+	if (grad_server_send_challenge(fd, radreq, msg, state))
 		stat_inc(auth, radreq->ipaddr, num_challenges);
 }
 #endif
@@ -161,7 +161,7 @@ radius_auth_req_decode(struct sockaddr_in *sa,
                 return 1;
 	}
         
-        radreq = rad_decode_pdu(ntohl(sa->sin_addr.s_addr),
+        radreq = grad_decode_pdu(ntohl(sa->sin_addr.s_addr),
 				ntohs(sa->sin_port),
 				input,
 				inputsize);
@@ -170,7 +170,7 @@ radius_auth_req_decode(struct sockaddr_in *sa,
         
         if (validate_client(radreq)) {
 		stat_inc(auth, radreq->ipaddr, num_dropped);
-		radreq_free(radreq);
+		grad_request_free(radreq);
  		return 1;
         }
 	
@@ -180,12 +180,12 @@ radius_auth_req_decode(struct sockaddr_in *sa,
 	   it can be placed in the Request Authenticator field of
 	   the Access-Request packet. */
 
-	if (avl_find(radreq->request, DA_CHAP_PASSWORD)
-	    && !avl_find(radreq->request, DA_CHAP_CHALLENGE)) {
-		VALUE_PAIR *p = avp_create_binary(DA_CHAP_CHALLENGE,
+	if (grad_avl_find(radreq->request, DA_CHAP_PASSWORD)
+	    && !grad_avl_find(radreq->request, DA_CHAP_CHALLENGE)) {
+		VALUE_PAIR *p = grad_avp_create_binary(DA_CHAP_CHALLENGE,
 					          AUTH_VECTOR_LEN,
 					          radreq->vector);
-		avl_add_pair(&radreq->request, p);
+		grad_avl_add_pair(&radreq->request, p);
 	}
 	
 	*output = radreq;
@@ -205,7 +205,7 @@ radius_acct_req_decode(struct sockaddr_in *sa,
                 return 1;
 	}
         
-        radreq = rad_decode_pdu(ntohl(sa->sin_addr.s_addr),
+        radreq = grad_decode_pdu(ntohl(sa->sin_addr.s_addr),
 				ntohs(sa->sin_port),
 				input,
 				inputsize);
@@ -214,7 +214,7 @@ radius_acct_req_decode(struct sockaddr_in *sa,
         
         if (validate_client(radreq)) {
 		stat_inc(acct, radreq->ipaddr, num_dropped);
-		radreq_free(radreq);
+		grad_request_free(radreq);
  		return 1;
         }
 
@@ -258,7 +258,7 @@ radius_destroy_pairs(VALUE_PAIR **p)
 			       pair->avp_strlength);
 	}
 
-	avl_free(*p);
+	grad_avl_free(*p);
 	*p = NULL;
 }
 
@@ -281,7 +281,7 @@ _extract_pairs(RADIUS_REQ *req, int prop)
 	if (!found)
 		return NULL;
 
-	newlist = avl_dup(req->request);
+	newlist = grad_avl_dup(req->request);
 	for (pair = newlist; pair; pair = pair->next) { 
 		if (pair->prop & prop) 
 			decrypt_pair(req, pair);
@@ -294,7 +294,7 @@ find_prop(NAS *nas, char *name, int defval)
 {
 	if (!nas)
 		return defval;
-	return envar_lookup_int(nas->args, name, defval);
+	return grad_envar_lookup_int(nas->args, name, defval);
 }
 
 int
@@ -317,7 +317,7 @@ radius_req_cmp(void *adata, void *bdata)
 	    && memcmp(a->vector, b->vector, sizeof(a->vector)) == 0)
 		return RCMP_EQ;
 
-	nas = nas_request_to_nas(a);
+	nas = grad_nas_request_to_nas(a);
 
 	switch (a->code) {
 	case RT_ACCESS_REQUEST:
@@ -352,7 +352,7 @@ radius_req_cmp(void *adata, void *bdata)
 	ap = alist ? alist : a->request;
 	bp = blist ? blist : b->request;
 	
-	rc = avl_cmp(ap, bp, prop) || avl_cmp(bp, ap, prop);
+	rc = grad_avl_cmp(ap, bp, prop) || grad_avl_cmp(bp, ap, prop);
 
 	radius_destroy_pairs(&alist);
 	radius_destroy_pairs(&blist);
@@ -363,8 +363,8 @@ radius_req_cmp(void *adata, void *bdata)
 		   Notice that the raw data will be replaced by
 		   request_retransmit() */
 		memcpy(a->vector, b->vector, sizeof(a->vector));
-		avl_free(a->request);
-		a->request = avl_dup(b->request);
+		grad_avl_free(a->request);
+		a->request = grad_avl_dup(b->request);
 		a->id = b->id;
 	}
 	
@@ -380,7 +380,7 @@ radius_req_update(void *req_ptr, void *data_ptr)
 	if (req->id != upd->id)
 		return;
 	req->server_id = upd->proxy_id;
-	req->realm = realm_lookup_name(upd->realmname);
+	req->realm = grad_realm_lookup_name(upd->realmname);
 	req->server_no = upd->server_no;
 	debug(1, ("Update request %d: proxy_id=%d, realm=%s, server_no=%d",
 		  req->id,upd->proxy_id,upd->realmname,upd->server_no));
@@ -389,7 +389,7 @@ radius_req_update(void *req_ptr, void *data_ptr)
 void
 radius_req_free(void *req)
 {
-        radreq_free((RADIUS_REQ *)req);
+        grad_request_free((RADIUS_REQ *)req);
 }
 
 /*ARGSUSED*/
@@ -564,9 +564,9 @@ radius_req_register_locus(RADIUS_REQ *req, LOCUS *loc)
 	}
 
 	if (!req->locus_list)
-		req->locus_list = list_create();
+		req->locus_list = grad_list_create();
 	
-	list_prepend(req->locus_list, loc);
+	grad_list_prepend(req->locus_list, loc);
 }
 
 struct trace_data {
@@ -627,7 +627,7 @@ radius_trace_path(RADIUS_REQ *req)
 	
 	obstack_init(&td.stk);
 	td.file = NULL;
-	list_iterate(req->locus_list, _trace_path_compose, &td);
+	grad_list_iterate(req->locus_list, _trace_path_compose, &td);
 	p = obstack_finish(&td.stk);
 	radlog_req(L_INFO, req, _("rule trace: %s"), p);
 	obstack_free(&td.stk, NULL);

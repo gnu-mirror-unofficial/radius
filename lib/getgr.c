@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -70,7 +70,7 @@ store_group(struct group *grp)
 }
 	
 struct group *
-rad_getgrnam(const char *name)
+grad_getgrnam(const char *name)
 {
 	struct group *grp;
 

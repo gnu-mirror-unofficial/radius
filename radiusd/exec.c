@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -190,7 +190,7 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
                         radlog(L_ERR|L_PERROR, _("couldn't open pipe"));
                         return -1;
                 }
-		if ((oldsig = rad_set_signal(SIGCHLD, SIG_DFL)) == SIG_ERR) {
+		if ((oldsig = grad_set_signal(SIGCHLD, SIG_DFL)) == SIG_ERR) {
 			radlog(L_ERR|L_PERROR, _("can't reset SIGCHLD"));
 			return -1;
 		}
@@ -218,7 +218,7 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
                 } else
 			close(1);
 
-                for (n = getmaxfd(); n >= 3; n--)
+                for (n = grad_max_fd(); n >= 3; n--)
                         close(n);
 
                 chdir("/tmp");
@@ -260,7 +260,7 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
                         radlog(L_ERR,
 			       _("<stdout of %s>:%d: %s"),
 			       cmd, line_num, errp);
-                        avl_free(vp);
+                        grad_avl_free(vp);
                         vp = NULL;
                 }
         }
@@ -268,7 +268,7 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
         fclose(fp);
 
 	waitpid(pid, &status, 0);
-	if (rad_set_signal(SIGCHLD, oldsig) == SIG_ERR)
+	if (grad_set_signal(SIGCHLD, oldsig) == SIG_ERR)
 		radlog(L_CRIT|L_PERROR,
 			_("can't restore SIGCHLD"));
 
@@ -288,8 +288,8 @@ radius_exec_program(char *cmd, RADIUS_REQ *req, VALUE_PAIR **reply,
 	}
 
         if (vp && reply) 
-                avl_merge(reply, &vp);
-	avl_free(vp);
+                grad_avl_merge(reply, &vp);
+	grad_avl_free(vp);
 
         return status;
 }
@@ -328,7 +328,7 @@ radius_run_filter(int argc, char **argv, char *errfile, int *p)
 		}
 		
 		/* Close unneded descripitors */
-		for (i = getmaxfd(); i > 2; i--)
+		for (i = grad_max_fd(); i > 2; i--)
 			close(i);
 
 		if (radius_switch_to_user(&exec_user))
@@ -638,9 +638,9 @@ filter_auth(char *name, RADIUS_REQ *req, VALUE_PAIR **reply_pairs)
 				       filter->name,
 				       filter->lines_output,
 				       errp);
-				avl_free(vp);
+				grad_avl_free(vp);
 			} else 
-				avl_merge(reply_pairs, &vp);
+				grad_avl_merge(reply_pairs, &vp);
 		} else {
 			radlog(L_ERR,
 			       _("filter %s (auth): bad output: %s"),
@@ -832,7 +832,7 @@ error_log_handler(int argc, cfg_value_t *argv,
 	else if (argv[1].v.string[0] == '/')
 		filter_symbol.errfile = argv[1].v.string;
 	else {
-		char *p = mkfilename(radlog_dir, argv[1].v.string);
+		char *p = grad_mkfilename(radlog_dir, argv[1].v.string);
 		filter_symbol.errfile = cfg_malloc(strlen(p)+1, NULL);
 		strcpy(filter_symbol.errfile, p);
 		efree(p);

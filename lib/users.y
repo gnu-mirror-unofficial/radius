@@ -1,6 +1,6 @@
 %{
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -48,7 +48,7 @@ static LOCUS start_loc;
 
 static void *closure;
 static register_rule_fp add_entry;
-static VALUE_PAIR *install_pair0(char *name, int op, char *valstr);
+static VALUE_PAIR *grad_create_pair0(char *name, int op, char *valstr);
 
 int yyerror(char *s);
 extern int yylex();
@@ -133,7 +133,7 @@ pairlist : pair
            {
                    if ($1) {
                            if ($3) 
-                                   avl_add_list(&$1, $3);
+                                   grad_avl_add_list(&$1, $3);
                            $$ = $1;
                    } else
                            $$ = $3;
@@ -142,7 +142,7 @@ pairlist : pair
 
 pair     : STRING op value
            {
-                   $$ = install_pair0($1, $2, $3);   
+                   $$ = grad_create_pair0($1, $2, $3);   
            }
          | STRING op BOGUS
            {
@@ -190,13 +190,13 @@ yyerror(char *s)
 }
 
 VALUE_PAIR *
-install_pair0(char *name, int op, char *valstr)
+grad_create_pair0(char *name, int op, char *valstr)
 {
-	return install_pair(&source_locus, name, op, valstr);
+	return grad_create_pair(&source_locus, name, op, valstr);
 }
 
 VALUE_PAIR *
-install_pair(LOCUS *loc, char *name, int op, char *valstr)
+grad_create_pair(LOCUS *loc, char *name, int op, char *valstr)
 {
         DICT_ATTR       *attr = NULL;
         DICT_VALUE      *dval;
@@ -206,13 +206,13 @@ install_pair(LOCUS *loc, char *name, int op, char *valstr)
         time_t timeval;
         struct tm *tm, tms;
         
-        if ((attr = attr_name_to_dict(name)) == (DICT_ATTR *)NULL) {
+        if ((attr = grad_attr_name_to_dict(name)) == (DICT_ATTR *)NULL) {
                 radlog_loc(L_ERR, loc, _("unknown attribute `%s'"),
 			   name);
                 return NULL;
         }
 
-        pair = avp_alloc();
+        pair = grad_avp_alloc();
         
         pair->next = NULL;
         pair->name = attr->name;
@@ -238,7 +238,7 @@ install_pair(LOCUS *loc, char *name, int op, char *valstr)
                                 radlog_loc(L_ERR, loc,
 					   _("%s: not an absolute pathname"),
 					   name);
-                                avp_free(pair);
+                                grad_avp_free(pair);
                                 return NULL;
                         }
                 }
@@ -252,7 +252,7 @@ install_pair(LOCUS *loc, char *name, int op, char *valstr)
 				   _("attribute"),
 				   pair->name, s);
 			free(s);
-			avp_free(pair);
+			grad_avp_free(pair);
 			return NULL;
 		}
 
@@ -276,8 +276,8 @@ install_pair(LOCUS *loc, char *name, int op, char *valstr)
                 }
                 if (isdigit(*valstr)) {
                         pair->avp_lvalue = atoi(valstr);
-                } else if ((dval = value_name_to_value(valstr, pair->attribute)) == NULL) {
-                        avp_free(pair);
+                } else if ((dval = grad_value_name_to_value(valstr, pair->attribute)) == NULL) {
+                        grad_avp_free(pair);
                         radlog_loc(L_ERR, loc,
 				_("value %s is not declared for attribute %s"),
 				   valstr, name);
@@ -289,7 +289,7 @@ install_pair(LOCUS *loc, char *name, int op, char *valstr)
 
         case TYPE_IPADDR:
                 if (pair->attribute != DA_FRAMED_IP_ADDRESS) {
-                        pair->avp_lvalue = ip_gethostaddr(valstr);
+                        pair->avp_lvalue = grad_ip_gethostaddr(valstr);
                 } else {
                         /*
                          *      We allow a "+" at the end to
@@ -305,7 +305,7 @@ install_pair(LOCUS *loc, char *name, int op, char *valstr)
                                         x = 1;
                                 }
                         }
-                        pair->avp_lvalue = ip_gethostaddr(valstr);
+                        pair->avp_lvalue = grad_ip_gethostaddr(valstr);
 
 			if (x) {
 				char *s;
@@ -322,10 +322,10 @@ install_pair(LOCUS *loc, char *name, int op, char *valstr)
         case TYPE_DATE:
                 timeval = time(0);
                 tm = localtime_r(&timeval, &tms);
-                if (user_gettime(valstr, tm)) {
+                if (grad_parse_time_string(valstr, tm)) {
                         radlog_loc(L_ERR, loc, _("%s: can't parse date"),
 				   name);
-                        avp_free(pair);
+                        grad_avp_free(pair);
                         return NULL;
                 }
 #ifdef TIMELOCAL
@@ -339,7 +339,7 @@ install_pair(LOCUS *loc, char *name, int op, char *valstr)
                 radlog_loc(L_ERR, loc,
 			   _("%s: unknown attribute type %d"),
 			   name, pair->type);
-                avp_free(pair);
+                grad_avp_free(pair);
                 return NULL;
         }
 
@@ -349,7 +349,7 @@ install_pair(LOCUS *loc, char *name, int op, char *valstr)
 extern int yydebug;
 
 int
-parse_file(char *file, void *c, register_rule_fp f)
+grad_parse_rule_file(char *file, void *c, register_rule_fp f)
 {
         int rc;
         
@@ -365,7 +365,7 @@ parse_file(char *file, void *c, register_rule_fp f)
 }
 
 void
-enable_usr_dbg(int val)
+grad_enable_rule_debug(int val)
 {
         yydebug = val;
 	radlog_loc(L_NOTICE, &source_locus,

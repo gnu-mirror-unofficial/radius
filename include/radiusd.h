@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -201,7 +201,7 @@ typedef struct {
  do if (server_stat) {\
         NAS *nas;\
         server_stat -> m . c ++;\
-        if ((nas = nas_lookup_ip(a)) != NULL && nas->app_data)\
+        if ((nas = grad_nas_lookup_ip(a)) != NULL && nas->app_data)\
                 ((struct nas_stat*)nas->app_data)-> m . c ++;\
  } while (0)
 
@@ -501,11 +501,11 @@ int huntgroup_access(RADIUS_REQ *radreq, LOCUS *loc);
 CLIENT *client_lookup_ip(UINT4 ipno);
 char *client_lookup_name(UINT4 ipno, char *buf, size_t size);
 int read_clients_file(char *);
-NAS *nas_find(UINT4 ipno);
-NAS *nas_by_name(char *name);
-char *nas_name(UINT4 ipno);
+NAS *grad_nas_find(UINT4 ipno);
+NAS *grad_nas_by_name(char *name);
+char *grad_nas_name(UINT4 ipno);
 char *nas_name2(RADIUS_REQ *r);
-int read_naslist_file(char *);
+int read_nas_list_file(char *);
 int reload_config_file(enum reload_what);
 int presufcmp(VALUE_PAIR *check, char *name, char *rest);
 int get_config();

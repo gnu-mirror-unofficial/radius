@@ -151,7 +151,8 @@ version(FILE *stream, struct argp_state *state)
 {
         int i;
         
-        fprintf(stream, _("%s: GNU Radius version %s"), progname, VERSION);
+        fprintf(stream, _("%s: GNU Radius version %s"), 
+                program_invocation_short_name, VERSION);
 #ifdef BUILD_TARGET
         fprintf(stream, " (%s)", BUILD_TARGET);
 #endif

@@ -48,7 +48,7 @@ disp_sql_interface_index(char *name)
 SQL_DISPATCH_TAB *
 disp_sql_entry(int type)
 {
-        insist(type < SQLT_MAX);
+        grad_insist(type < SQLT_MAX);
         if (type == 0) {
                 for (type = 1; type < NDISP; type++)
                         if (sql_dispatch_tab[type])

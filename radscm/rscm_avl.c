@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -37,7 +37,7 @@ SCM_DEFINE(rscm_avl_delete, "avl-delete", 2, 0, 0,
                    LIST, SCM_ARG1, FUNC_NAME);
         pairlist = radscm_list_to_avl(LIST);
         if (SCM_NIMP(ATTR) && SCM_STRINGP(ATTR)) {
-                DICT_ATTR *da = attr_name_to_dict(SCM_STRING_CHARS(ATTR));
+                DICT_ATTR *da = grad_attr_name_to_dict(SCM_STRING_CHARS(ATTR));
                 if (!da)
                         scm_misc_error(FUNC_NAME,
                                        "Unknown attribute: ~S",
@@ -48,9 +48,9 @@ SCM_DEFINE(rscm_avl_delete, "avl-delete", 2, 0, 0,
                            ATTR, SCM_ARG2, FUNC_NAME);
                 attr = SCM_INUM(ATTR);
         }
-        avl_delete(&pairlist, attr);
+        grad_avl_delete(&pairlist, attr);
         RETVAL = radscm_avl_to_list(pairlist);
-        avl_free(pairlist);
+        grad_avl_free(pairlist);
         return RETVAL;
 }
 #undef FUNC_NAME
@@ -69,10 +69,10 @@ SCM_DEFINE(rscm_avl_merge, "avl-merge", 2, 0, 0,
                    SRC, SCM_ARG2, FUNC_NAME);
         dst =  radscm_list_to_avl(DST);
         src =  radscm_list_to_avl(SRC);
-        avl_merge(&dst, &src);
+        grad_avl_merge(&dst, &src);
         RETVAL = radscm_avl_to_list(dst);
-        avl_free(dst);
-        avl_free(src);
+        grad_avl_free(dst);
+        grad_avl_free(src);
         return RETVAL;
 }
 #undef FUNC_NAME
@@ -107,10 +107,10 @@ SCM_DEFINE(rscm_avl_match_p, "avl-match?", 2, 0, 0,
                      pair && pair->attribute != list->attribute;
                      pair = pair->next)
                         ;
-                rc = !pair || avp_cmp(check_pair, pair);
+                rc = !pair || grad_avp_cmp(check_pair, pair);
         }
-        avl_free(target);
-        avl_free(list);
+        grad_avl_free(target);
+        grad_avl_free(list);
         return rc == 0 ? SCM_BOOL_T : SCM_BOOL_F;
 }
 #undef FUNC_NAME

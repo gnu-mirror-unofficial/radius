@@ -38,13 +38,13 @@ ATTRIBUTE	Framed-Route		22	string	- [-R----]+
 ATTRIBUTE	Framed-IPX-Network	23	ipaddr	- [-R----]=
 ATTRIBUTE	State			24	string	- [LRLRLR]P
 ATTRIBUTE	Class			25	string	- [LRLRLR]
-ATTRIBUTE	Vendor-Specific		26	string	- [LR-R-R]
+ATTRIBUTE	Vendor-Specific		26	string	- [LRLR-R]
 ATTRIBUTE	Session-Timeout		27	integer	- [-R----]=P
 ATTRIBUTE	Idle-Timeout		28	integer	- [-R----]=P
 ATTRIBUTE	Termination-Action	29	integer	- [LR-R-R]=P
-ATTRIBUTE	Called-Station-Id	30	string	- [L--RLR]
-ATTRIBUTE	Calling-Station-Id	31	string	- [L--RLR]
-ATTRIBUTE	NAS-Identifier		32	string	- [L--RLR]
+ATTRIBUTE	Called-Station-Id	30	string	- [L-LRLR]
+ATTRIBUTE	Calling-Station-Id	31	string	- [L-LRLR]
+ATTRIBUTE	NAS-Identifier		32	string	- [L-LRLR]
 ATTRIBUTE	Proxy-State		33	string	- [------]
 ATTRIBUTE	Login-LAT-Service	34	string	- [-R---R]=
 ATTRIBUTE	Login-LAT-Node		35	string	- [-R---R]=

@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -253,21 +253,19 @@ typedef struct value_pair {
 
 } VALUE_PAIR;
 
-struct envar_t;
-
 typedef struct nas {
         struct nas              *next;
 	NETDEF                  netdef;
         char                    longname[MAX_LONGNAME+1];
         char                    shortname[MAX_SHORTNAME+1];
         char                    nastype[MAX_DICTNAME+1];
-        envar_t                 *args;
+        grad_envar_t            *args;
         void                    *app_data;
 } NAS;
 
 typedef struct realm {
         char                    realm[MAX_REALMNAME+1];
-	envar_t                 *args;
+	grad_envar_t            *args;
 	RADIUS_SERVER_QUEUE     *queue;
 } REALM;
 
@@ -311,7 +309,6 @@ struct keyword {
 
 /* External variables */
 
-extern char *progname;
 extern char *radius_dir;
 extern char *radlog_dir;
 extern char *radacct_dir;
@@ -324,29 +321,30 @@ extern char *bug_report_address;
 
 #define NITEMS(a) sizeof(a)/sizeof((a)[0])
 
-size_t rad_create_pdu(void **rptr, int code, int id,
+size_t grad_create_pdu(void **rptr, int code, int id,
 		      u_char *vector, u_char *secret,
 		      VALUE_PAIR *pairlist, char *msg);
 
-RADIUS_REQ *rad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer,
+RADIUS_REQ *grad_decode_pdu(UINT4 host, u_short udp_port, u_char *buffer,
 			   size_t length);
 
-int rad_srv_send_reply(int fd, RADIUS_REQ *radreq);
-int rad_srv_send_challenge(int fd, RADIUS_REQ *radreq, char *msg, char *state);
+int grad_server_send_reply(int fd, RADIUS_REQ *radreq);
+int grad_server_send_challenge(int fd, RADIUS_REQ *radreq, char *msg, char *state);
 
 
 /* dict.c */
-#define VENDOR(x) (x >> 16)
+#define GRAD_VENDOR_CODE(x) (x >> 16)
+#define GRAD_VSA_ATTR_NUMBER(attrno,code) ((attrno) | (code) << 16)
 
-int dict_init();
-DICT_ATTR *attr_number_to_dict(int);
-DICT_ATTR *attr_name_to_dict(char *);
-DICT_VALUE *value_name_to_value(char *, int);
-DICT_VALUE *value_lookup(UINT4, char *);
-int vendor_id_to_pec(int);
-int vendor_pec_to_id(int);
-char *vendor_pec_to_name(int);
-int vendor_name_to_id(char *);
+int grad_dict_init();
+DICT_ATTR *grad_attr_number_to_dict(int);
+DICT_ATTR *grad_attr_name_to_dict(char *);
+DICT_VALUE *grad_value_name_to_value(char *, int);
+DICT_VALUE *grad_value_lookup(UINT4, char *);
+int grad_vendor_id_to_pec(int);
+int grad_vendor_pec_to_id(int);
+char *grad_vendor_pec_to_name(int);
+int grad_vendor_name_to_id(char *);
 
 
 /* md5.c */
@@ -356,61 +354,61 @@ void md5_calc(u_char *, u_char *, u_int);
 char *md5crypt(const char *pw, const char *salt, char *pwbuf, size_t pwlen);
 
 /* avl.c */
-VALUE_PAIR *avp_alloc();
-void avp_free();
-void avl_free(VALUE_PAIR *);
-VALUE_PAIR *avl_find(VALUE_PAIR *, int);
-VALUE_PAIR *avl_find_n(VALUE_PAIR *, int, int);
-void avl_delete(VALUE_PAIR **, int);
-void avl_delete_n(VALUE_PAIR **first, int attr, int n);
-void avl_add_list(VALUE_PAIR **, VALUE_PAIR *);
-void avl_add_pair(VALUE_PAIR **, VALUE_PAIR *);
-VALUE_PAIR *avl_dup(VALUE_PAIR *from);
-VALUE_PAIR *avp_dup(VALUE_PAIR *vp);
-void avl_merge(VALUE_PAIR **dst_ptr, VALUE_PAIR **src_ptr);
-VALUE_PAIR *avp_create(int attr);
-VALUE_PAIR *avp_create_integer(int attr, UINT4 value);
-VALUE_PAIR *avp_create_string(int attr, char *value);
-VALUE_PAIR *avp_create_binary(int attr, int length, u_char *value);
-void avl_move_attr(VALUE_PAIR **to, VALUE_PAIR **from, int attr);
-void avl_move_pairs(VALUE_PAIR **to, VALUE_PAIR **from,
+VALUE_PAIR *grad_avp_alloc();
+void grad_avp_free();
+void grad_avl_free(VALUE_PAIR *);
+VALUE_PAIR *grad_avl_find(VALUE_PAIR *, int);
+VALUE_PAIR *grad_avl_find_n(VALUE_PAIR *, int, int);
+void grad_avl_delete(VALUE_PAIR **, int);
+void grad_avl_delete_n(VALUE_PAIR **first, int attr, int n);
+void grad_avl_add_list(VALUE_PAIR **, VALUE_PAIR *);
+void grad_avl_add_pair(VALUE_PAIR **, VALUE_PAIR *);
+VALUE_PAIR *grad_avl_dup(VALUE_PAIR *from);
+VALUE_PAIR *grad_avp_dup(VALUE_PAIR *vp);
+void grad_avl_merge(VALUE_PAIR **dst_ptr, VALUE_PAIR **src_ptr);
+VALUE_PAIR *grad_avp_create(int attr);
+VALUE_PAIR *grad_avp_create_integer(int attr, UINT4 value);
+VALUE_PAIR *grad_avp_create_string(int attr, char *value);
+VALUE_PAIR *grad_avp_create_binary(int attr, int length, u_char *value);
+void grad_avl_move_attr(VALUE_PAIR **to, VALUE_PAIR **from, int attr);
+void grad_avl_move_pairs(VALUE_PAIR **to, VALUE_PAIR **from,
                     int (*fun)(), void *closure);
-int avp_cmp(VALUE_PAIR *a, VALUE_PAIR *b);
-int avl_cmp(VALUE_PAIR *a, VALUE_PAIR *b, int prop);
-int avp_null_string_p(VALUE_PAIR *pair);
+int grad_avp_cmp(VALUE_PAIR *a, VALUE_PAIR *b);
+int grad_avl_cmp(VALUE_PAIR *a, VALUE_PAIR *b, int prop);
+int grad_avp_null_string_p(VALUE_PAIR *pair);
 	
 extern int resolve_hostnames;
-char *ip_gethostname (UINT4, char *buf, size_t size);
-UINT4 ip_gethostaddr (const char *);
-char *ip_iptostr(UINT4, char *);
-UINT4 ip_strtoip(const char *);
-int ip_getnetaddr(const char *str, NETDEF *netdef);
-int ip_addr_in_net_p(const NETDEF *netdef, UINT4 ipaddr);
+char *grad_ip_gethostname (UINT4, char *buf, size_t size);
+UINT4 grad_ip_gethostaddr (const char *);
+char *grad_ip_iptostr(UINT4, char *);
+UINT4 grad_ip_strtoip(const char *);
+int grad_ip_getnetaddr(const char *str, NETDEF *netdef);
+int grad_ip_in_net_p(const NETDEF *netdef, UINT4 ipaddr);
 
 /* nas.c */
-NAS *nas_next(NAS *p);
-int nas_read_file(char *file);
-NAS *nas_lookup_name(char *name);
-NAS *nas_lookup_ip(UINT4 ipaddr);
-char *nas_ip_to_name(UINT4 ipaddr, char *buf, size_t size);
-NAS *nas_request_to_nas(const RADIUS_REQ *radreq);
-char *nas_request_to_name(const RADIUS_REQ *radreq, char *buf, size_t size);
+NAS *grad_nas_next(NAS *p);
+int grad_nas_read_file(char *file);
+NAS *grad_nas_lookup_name(char *name);
+NAS *grad_nas_lookup_ip(UINT4 ipaddr);
+char *grad_nas_ip_to_name(UINT4 ipaddr, char *buf, size_t size);
+NAS *grad_nas_request_to_nas(const RADIUS_REQ *radreq);
+char *grad_nas_request_to_name(const RADIUS_REQ *radreq, char *buf, size_t size);
 
 /* realms.c */
-REALM *realm_lookup_name(char *name);
-REALM *realm_lookup_ip(UINT4 ip);
-int realm_read_file(char *filename, int auth_port, int acct_port,
+REALM *grad_realm_lookup_name(char *name);
+REALM *grad_realm_lookup_ip(UINT4 ip);
+int grad_read_realms(char *filename, int auth_port, int acct_port,
 		    int (*set_secret)());
-int realm_verify_ip(REALM *realm, UINT4 ip);
+int grad_realm_verify_ip(REALM *realm, UINT4 ip);
 void realm_iterate(int (*fun)());
-int realm_strip_p(REALM *r);
-size_t realm_get_quota(REALM *r);
+int grad_realm_strip_p(REALM *r);
+size_t grad_realm_get_quota(REALM *r);
 
 /* fixalloc.c */
-RADIUS_REQ *radreq_alloc();
+RADIUS_REQ *grad_request_alloc();
 
 /* raddb.c */
-int read_raddb_file(char *name, int vital, int (*fun)(void*,int,char**,LOCUS*), void *closure);
+int grad_read_raddb_file(char *name, int vital, int (*fun)(void*,int,char**,LOCUS*), void *closure);
 
 /* mem.c */
 void *emalloc(size_t);
@@ -418,92 +416,92 @@ void efree(void*);
 char *estrdup(const char *);
 
 /* radpaths.c */
-void radpath_init();
+void grad_path_init();
 
 /* users.y */
 typedef int (*register_rule_fp) (void *, LOCUS *, char *,
 				 VALUE_PAIR *, VALUE_PAIR *);
-int parse_file(char *file, void *c, register_rule_fp f);
-int user_gettime(char *valstr, struct tm *tm);
-VALUE_PAIR *install_pair(LOCUS *loc, char *name, int op, char *valstr);
+int grad_parse_rule_file(char *file, void *c, register_rule_fp f);
+int grad_parse_time_string(char *valstr, struct tm *tm);
+VALUE_PAIR *grad_create_pair(LOCUS *loc, char *name, int op, char *valstr);
 
 
 /* util.c */
 struct passwd *rad_getpwnam(char *);
-void radreq_free(RADIUS_REQ *radreq);
-void rad_lock(int fd, size_t size, off_t off, int whence);
-void rad_unlock(int fd, size_t size, off_t off, int whence);
-char *mkfilename(char *, char*);
-char *mkfilename3(char *dir, char *subdir, char *name);
-int backslash(int c);
-void string_copy(char *d, char *s, int  len);
-#define STRING_COPY(s,d) string_copy(s,d,sizeof(s)-1)
-char *format_pair(VALUE_PAIR *pair, int typeflag, char **save);
-int format_string_visual(char *buf, int runlen, char *str, int len);
-char *op_to_str(int op);
-int str_to_op(char *str);
-int xlat_keyword(struct keyword *kw, char *str, int def);
-void obstack_grow_backslash_num(struct obstack *stk, char *text, int len, int base);
-void obstack_grow_backslash(struct obstack *stk, char *text, char **endp);
+void grad_request_free(RADIUS_REQ *radreq);
+void grad_lock_file(int fd, size_t size, off_t off, int whence);
+void grad_unlock_file(int fd, size_t size, off_t off, int whence);
+char *grad_mkfilename(char *, char*);
+char *grad_mkfilename3(char *dir, char *subdir, char *name);
+int grad_decode_backslash(int c);
+void grad_string_copy(char *d, char *s, int  len);
+#define STRING_COPY(s,d) grad_string_copy(s,d,sizeof(s)-1)
+char *grad_format_pair(VALUE_PAIR *pair, int typeflag, char **save);
+int grad_format_string_visual(char *buf, int runlen, char *str, int len);
+char *grad_op_to_str(int op);
+int grad_str_to_op(char *str);
+int grad_xlat_keyword(struct keyword *kw, char *str, int def);
+void grad_obstack_grow_backslash_num(struct obstack *stk, char *text, int len, int base);
+void grad_obstack_grow_backslash(struct obstack *stk, char *text, char **endp);
 
 
 /* cryptpass.c */
-void encrypt_password(VALUE_PAIR *pair, char *password,
+void grad_encrypt_password(VALUE_PAIR *pair, char *password,
                       char *vector, char *secret);
-void decrypt_password(char *password, VALUE_PAIR *pair,
+void grad_decrypt_password(char *password, VALUE_PAIR *pair,
                       char *vector, char *secret);
-void decrypt_password_broken(char *password, VALUE_PAIR *pair,
+void grad_decrypt_password_broken(char *password, VALUE_PAIR *pair,
                              char *vector, char *secret);
-void encrypt_tunnel_password(VALUE_PAIR *pair, u_char tag, char *password,
+void grad_encrypt_tunnel_password(VALUE_PAIR *pair, u_char tag, char *password,
 			     char *vector, char *secret);
-void decrypt_tunnel_password(char *password, u_char *tag, VALUE_PAIR *pair,
+void grad_decrypt_tunnel_password(char *password, u_char *tag, VALUE_PAIR *pair,
 			     char *vector, char *secret);
 
 /* gethost_r.c */
-struct hostent *rad_gethostbyname_r(const char *name, struct hostent *result,
+struct hostent *grad_gethostbyname_r(const char *name, struct hostent *result,
                                     char *buffer, int buflen, int *h_errnop);
-struct hostent *rad_gethostbyaddr_r(const char *addr, int length,
+struct hostent *grad_gethostbyaddr_r(const char *addr, int length,
                                     int type, struct hostent *result,
                                     char *buffer, int buflen, int *h_errnop);
 
-struct passwd *rad_getpwnam_r(const char *name, struct passwd *result,
+struct passwd *grad_getpwnam_r(const char *name, struct passwd *result,
 			      char *buffer, int buflen);
-struct group *rad_getgrnam(const char *name);
+struct group *grad_getgrnam(const char *name);
 
 /* client.c */
 #define RADCLT_ID            0x1
 #define RADCLT_AUTHENTICATOR 0x2
 
-RADIUS_REQ *rad_clt_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
+RADIUS_REQ *grad_client_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 			  VALUE_PAIR *pairlist, int flags, int *authid,
 			  u_char *authvec);
-RADIUS_REQ *rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
+RADIUS_REQ *grad_client_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 			 VALUE_PAIR *pairlist);
-unsigned rad_clt_message_id(RADIUS_SERVER *server);
-RADIUS_SERVER_QUEUE *rad_clt_create_queue(int read_cfg,
+unsigned grad_client_message_id(RADIUS_SERVER *server);
+RADIUS_SERVER_QUEUE *grad_client_create_queue(int read_cfg,
 					  UINT4 source_ip, size_t bufsize);
-void rad_clt_destroy_queue(RADIUS_SERVER_QUEUE *queue);
-RADIUS_SERVER *rad_clt_alloc_server(RADIUS_SERVER *src);
-RADIUS_SERVER *rad_clt_dup_server(RADIUS_SERVER *src);
+void grad_client_destroy_queue(RADIUS_SERVER_QUEUE *queue);
+RADIUS_SERVER *grad_client_alloc_server(RADIUS_SERVER *src);
+RADIUS_SERVER *grad_client_dup_server(RADIUS_SERVER *src);
 
-void rad_clt_free_server(RADIUS_SERVER *server);
-void rad_clt_append_server(RADIUS_SERVER_QUEUE *qp, RADIUS_SERVER *server);
-void rad_clt_clear_server_list(RADIUS_SERVER_QUEUE *qp);
-RADIUS_SERVER *rad_clt_find_server(RADIUS_SERVER_QUEUE *qp, char *name);
-void rad_clt_random_vector(char *vector);
-VALUE_PAIR *rad_clt_encrypt_pairlist(VALUE_PAIR *plist,
+void grad_client_free_server(RADIUS_SERVER *server);
+void grad_client_append_server(RADIUS_SERVER_QUEUE *qp, RADIUS_SERVER *server);
+void grad_client_clear_server_list(RADIUS_SERVER_QUEUE *qp);
+RADIUS_SERVER *grad_client_find_server(RADIUS_SERVER_QUEUE *qp, char *name);
+void grad_client_random_vector(char *vector);
+VALUE_PAIR *grad_client_encrypt_pairlist(VALUE_PAIR *plist,
 				     u_char *vector, u_char *secret);
-VALUE_PAIR *rad_clt_decrypt_pairlist(VALUE_PAIR *plist,
+VALUE_PAIR *grad_client_decrypt_pairlist(VALUE_PAIR *plist,
 				     u_char *vector, u_char *secret);
 
 /* log.c */
 char *rad_print_request(RADIUS_REQ *req, char *outbuf, size_t size);
 
 /* ascend.c */
-int ascend_parse_filter(VALUE_PAIR *pair, char **errp);
+int grad_ascend_parse_filter(VALUE_PAIR *pair, char **errp);
 
 /* intl.c */
-void app_setup();
+void grad_app_setup();
 
 /* Logging */
 /* The category.priority system below is constructed after that
@@ -552,10 +550,10 @@ void app_setup();
 #define LO_PERSIST 0x8000
 
 #define MKSTRING(x) #x 
-#define insist(cond) \
- ((void) ((cond) || __insist_failure(MKSTRING(cond), __FILE__, __LINE__)))
-#define insist_fail(str) \
- __insist_failure(MKSTRING(str), __FILE__, __LINE__)
+#define grad_insist(cond) \
+ ((void) ((cond) || __grad_insist_failure(MKSTRING(cond), __FILE__, __LINE__)))
+#define grad_insist_fail(str) \
+ __grad_insist_failure(MKSTRING(str), __FILE__, __LINE__)
         
 #define RADIUS_DEBUG_BUFFER_SIZE 1024
 
@@ -587,7 +585,7 @@ void vlog(int lvl,
 	  const LOCUS *loc, const char *func_name,
 	  int en, const char *fmt, va_list ap);
 void radlog __PVAR((int level, const char *fmt, ...));
-int __insist_failure(const char *, const char *, int);
+int __grad_insist_failure(const char *, const char *, int);
 void radlog_req __PVAR((int level, RADIUS_REQ *req, const char *fmt, ...));
 void radlog_loc __PVAR((int lvl, LOCUS *loc, const char *msg, ...));
 

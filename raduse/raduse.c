@@ -87,10 +87,10 @@ main(argc, argv)
         app_setup();    
         initlog(argv[0]);
 
-        if (rad_argp_parse(&argp, &argc, &argv, 0, NULL, NULL))
+        if (grad_argp_parse(&argp, &argc, &argv, 0, NULL, NULL))
                 return 1;
         
-        radpath_init();
+        grad_path_init();
         snmp_init(0, 0, emalloc, efree);
         test();
 }

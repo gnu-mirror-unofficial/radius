@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -314,13 +314,13 @@ _pam_parse(pam_handle_t *pamh, int argc, const char **argv)
 static void
 _cleanup_server_queue(pam_handle_t *pamh, void *x, int error_status)
 {
-        rad_clt_destroy_queue(x);
+        grad_client_destroy_queue(x);
 }
 
 static void
 _cleanup_request(pam_handle_t *pamh, void *x, int error_status)
 {
-        radreq_free((RADIUS_REQ*)x);
+        grad_request_free((RADIUS_REQ*)x);
 }
 
 int
@@ -329,13 +329,13 @@ _read_client_config(pam_handle_t *pamh)
         int errcnt = 0;
         RADIUS_SERVER_QUEUE *queue;
         
-        queue = rad_clt_create_queue(1, 0, 0);
+        queue = grad_client_create_queue(1, 0, 0);
         if (!queue)
                 return -1;
         /*
          * Consistency check
          */
-        if (list_count(queue->servers) == 0) {
+        if (grad_list_count(queue->servers) == 0) {
                 _pam_log(LOG_ERR, "config: no server selected");
                 errcnt++;
         }
@@ -347,7 +347,7 @@ _read_client_config(pam_handle_t *pamh)
 
         if (errcnt) {
                 /* free allocated memory */
-                rad_clt_destroy_queue(queue);
+                grad_client_destroy_queue(queue);
         } else {
                 errcnt = pam_set_data(pamh,
                                       "radius_server_queue", 
@@ -358,7 +358,7 @@ _read_client_config(pam_handle_t *pamh)
                                  "can't keep data [%s]: %s",
                                  "radius_server_queue",
                                  pam_strerror(pamh, errcnt));
-                        rad_clt_destroy_queue(queue);
+                        grad_client_destroy_queue(queue);
                         errcnt = 1;
                 }
         }
@@ -373,9 +373,9 @@ _pam_init_radius_client(pam_handle_t *pamh)
         DEBUG(100,("enter _pam_init_radius_client"));
 
         radius_dir = radius_confdir;
-        radpath_init();
-        if (dict_init()) {
-                _pam_log(LOG_CRIT, "dict_init failed");
+        grad_path_init();
+        if (grad_dict_init()) {
+                _pam_log(LOG_CRIT, "grad_dict_init failed");
                 return 1;
         }
         rc = _read_client_config(pamh);
@@ -417,32 +417,32 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
          * Create authentication request
          */
         pairs = NULL;
-        avl_add_pair(&pairs,
-		     namepair = avp_create_string(DA_USER_NAME, name));
-        avl_add_pair(&pairs, avp_create_string(DA_USER_PASSWORD, password));
-        avl_add_pair(&pairs, avp_create_integer(DA_NAS_IP_ADDRESS,
+        grad_avl_add_pair(&pairs,
+		     namepair = grad_avp_create_string(DA_USER_NAME, name));
+        grad_avl_add_pair(&pairs, grad_avp_create_string(DA_USER_PASSWORD, password));
+        grad_avl_add_pair(&pairs, grad_avp_create_integer(DA_NAS_IP_ADDRESS,
 					        queue->source_ip));
 	/* Add any additional attributes */
 	for (; add_pair; add_pair = add_pair->next) {
-		VALUE_PAIR *p = install_pair(&loc,
+		VALUE_PAIR *p = grad_create_pair(&loc,
                                              add_pair->name, 
                                              OPERATOR_EQUAL,
 				             add_pair->avp_strvalue);
-		avl_add_pair(&pairs, p);
+		grad_avl_add_pair(&pairs, p);
 	}
 	/* For compatibility with previous versions handle service_type */
         if (service_type &&
-            (dv = value_name_to_value(service_type, DA_SERVICE_TYPE))) {
+            (dv = grad_value_name_to_value(service_type, DA_SERVICE_TYPE))) {
                 DEBUG(10, ("adding Service-Type=%d", dv->value));
-                avl_add_pair(&pairs,
-			     avp_create_integer(DA_SERVICE_TYPE, dv->value));
+                grad_avl_add_pair(&pairs,
+			     grad_avp_create_integer(DA_SERVICE_TYPE, dv->value));
         }
-        authreq = rad_clt_send(queue,
+        authreq = grad_client_send(queue,
 			       PORT_AUTH, RT_ACCESS_REQUEST, pairs);
         if (authreq == NULL) {
                 _pam_log(LOG_ERR,
                          "no response from radius server");
-                avl_free(pairs);
+                grad_avl_free(pairs);
                 return PAM_AUTHINFO_UNAVAIL;
         }
 
@@ -454,13 +454,13 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
                 /* FIXME: radius may have returned Reply-Message attribute.
                  * we should return it to the caller
                  */
-                radreq_free(authreq);
+                grad_request_free(authreq);
                 return PAM_USER_UNKNOWN;
 		
         default:
                 _pam_log(LOG_CRIT,
                          "received unexpected response: %d", authreq->code);
-                radreq_free(authreq);
+                grad_request_free(authreq);
                 return PAM_AUTH_ERR;
         }
 
@@ -475,10 +475,10 @@ _radius_auth(pam_handle_t *pamh, char *name, char *password)
                 _pam_log(LOG_CRIT, 
                          "can't keep data authreq: %s",
                          pam_strerror(pamh, retval));
-                radreq_free(authreq);
+                grad_request_free(authreq);
         }
         /* add username to the response (do we need it still?) */
-        avl_add_pair(&authreq->request, avp_dup(namepair));
+        grad_avl_add_pair(&authreq->request, grad_avp_dup(namepair));
 
         return PAM_SUCCESS;
 }
@@ -523,18 +523,18 @@ _radius_acct(pam_handle_t *pamh, struct radutmp *ut)
          * Create accounting request
          */
         pairs = NULL;
-        avl_add_pair(&pairs, avp_create_string(DA_USER_NAME, ut->login));
+        grad_avl_add_pair(&pairs, grad_avp_create_string(DA_USER_NAME, ut->login));
 
-	avl_add_pair(&pairs, avp_create_integer(DA_NAS_IP_ADDRESS,
+	grad_avl_add_pair(&pairs, grad_avp_create_integer(DA_NAS_IP_ADDRESS,
 					        queue->source_ip));
-	avl_add_pair(&pairs, avp_create_integer(DA_NAS_PORT_ID, ut->nas_port));
+	grad_avl_add_pair(&pairs, grad_avp_create_integer(DA_NAS_PORT_ID, ut->nas_port));
 	
-	avl_add_pair(&pairs,
-		     avp_create_string(DA_ACCT_SESSION_ID, ut->session_id));
+	grad_avl_add_pair(&pairs,
+		     grad_avp_create_string(DA_ACCT_SESSION_ID, ut->session_id));
 	
 	/* Add any additional attributes */
 	for (; add_pair; add_pair = add_pair->next) {
-		VALUE_PAIR *p = install_pair(&loc,
+		VALUE_PAIR *p = grad_create_pair(&loc,
                                              add_pair->name, 
                                              OPERATOR_EQUAL,
 				             add_pair->avp_strvalue);
@@ -556,7 +556,7 @@ _radius_acct(pam_handle_t *pamh, struct radutmp *ut)
 			ut->porttype = p->avp_lvalue;
                         break;
 		}
-		avl_add_pair(&pairs, p);
+		grad_avl_add_pair(&pairs, p);
 	}
 
 	switch (ut->type) {
@@ -568,19 +568,19 @@ _radius_acct(pam_handle_t *pamh, struct radutmp *ut)
 	case P_IDLE:
 		type = DV_ACCT_STATUS_TYPE_STOP;
 		radutmp_putent(radutmp_path, ut, type);
-		avl_add_pair(&pairs,
-			     avp_create_integer(DA_ACCT_SESSION_TIME,
+		grad_avl_add_pair(&pairs,
+			     grad_avp_create_integer(DA_ACCT_SESSION_TIME,
 					        ut->duration));
 		add_stat_pairs(pairs);
 	}
 					
-	avl_add_pair(&pairs, avp_create_integer(DA_ACCT_STATUS_TYPE, type));
+	grad_avl_add_pair(&pairs, grad_avp_create_integer(DA_ACCT_STATUS_TYPE, type));
 
-	req = rad_clt_send(queue, PORT_ACCT, RT_ACCOUNTING_REQUEST, pairs);
+	req = grad_client_send(queue, PORT_ACCT, RT_ACCOUNTING_REQUEST, pairs);
         if (req == NULL) {
                 _pam_log(LOG_ERR,
                          "no response from radius server");
-                avl_free(pairs);
+                grad_avl_free(pairs);
                 return PAM_SESSION_ERR;
         }
 
@@ -592,7 +592,7 @@ _radius_acct(pam_handle_t *pamh, struct radutmp *ut)
 		retval = PAM_SESSION_ERR;
 	}
 	
-	radreq_free(req);
+	grad_request_free(req);
         return retval;
 }
 

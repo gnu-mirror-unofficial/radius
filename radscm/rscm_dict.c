@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -45,9 +45,9 @@ SCM_DEFINE(rad_dict_name_to_attr, "rad-dict-name->attr", 1, 0, 0,
         int vendor;
         
         if (SCM_IMP(NAME) && SCM_INUMP(NAME)) {
-                attr = attr_number_to_dict(SCM_INUM(NAME));
+                attr = grad_attr_number_to_dict(SCM_INUM(NAME));
         } else if (SCM_NIMP(NAME) && SCM_STRINGP(NAME)) {
-                attr = attr_name_to_dict(SCM_STRING_CHARS(NAME));
+                attr = grad_attr_name_to_dict(SCM_STRING_CHARS(NAME));
         } else {
                 SCM_ASSERT(0, NAME, SCM_ARG1, FUNC_NAME);
         }
@@ -55,14 +55,14 @@ SCM_DEFINE(rad_dict_name_to_attr, "rad-dict-name->attr", 1, 0, 0,
         if (!attr)
                 return SCM_BOOL_F;
 
-        vendor = VENDOR(attr->value);
+        vendor = GRAD_VENDOR_CODE(attr->value);
         return scm_list_4(scm_makfrom0str(attr->name),
                          SCM_MAKINUM(vendor ?
                                      attr->value - (vendor << 16) :
                                      attr->value),
                          SCM_MAKINUM(attr->type),
                          vendor ?
-                         SCM_MAKINUM(vendor_id_to_pec(vendor)) :
+                         SCM_MAKINUM(grad_vendor_id_to_pec(vendor)) :
                          SCM_BOOL_F);
 }
 #undef FUNC_NAME
@@ -77,9 +77,9 @@ SCM_DEFINE(rad_dict_value_to_name, "rad-dict-value->name", 2, 0, 0,
         DICT_VALUE *val;
 
         if (SCM_IMP(ATTR) && SCM_INUMP(ATTR)) {
-                attr = attr_number_to_dict(SCM_INUM(ATTR));
+                attr = grad_attr_number_to_dict(SCM_INUM(ATTR));
         } else if (SCM_NIMP(ATTR) && SCM_STRINGP(ATTR)) {
-                attr = attr_name_to_dict(SCM_STRING_CHARS(ATTR));
+                attr = grad_attr_name_to_dict(SCM_STRING_CHARS(ATTR));
         }
 
         if (!attr) {
@@ -91,7 +91,7 @@ SCM_DEFINE(rad_dict_value_to_name, "rad-dict-value->name", 2, 0, 0,
 
         SCM_ASSERT((SCM_IMP(VALUE) && SCM_INUMP(VALUE)),
                    VALUE, SCM_ARG1, FUNC_NAME);
-        val = value_lookup(SCM_INUM(VALUE), attr->name);
+        val = grad_value_lookup(SCM_INUM(VALUE), attr->name);
         return val ? scm_makfrom0str(val->name) : SCM_BOOL_F;
 }
 #undef FUNC_NAME
@@ -105,9 +105,9 @@ SCM_DEFINE(rad_dict_name_to_value, "rad-dict-name->value", 2, 0, 0,
         DICT_VALUE *val;
         
         if (SCM_IMP(ATTR) && SCM_INUMP(ATTR)) {
-                attr = attr_number_to_dict(SCM_INUM(ATTR));
+                attr = grad_attr_number_to_dict(SCM_INUM(ATTR));
         } else if (SCM_NIMP(ATTR) && SCM_STRINGP(ATTR)) {
-                attr = attr_name_to_dict(SCM_STRING_CHARS(ATTR));
+                attr = grad_attr_name_to_dict(SCM_STRING_CHARS(ATTR));
         }
         if (!attr) {
                 scm_misc_error(FUNC_NAME,
@@ -118,9 +118,9 @@ SCM_DEFINE(rad_dict_name_to_value, "rad-dict-name->value", 2, 0, 0,
                    VALUE, SCM_ARG1, FUNC_NAME);
         
         /*FIXME:
-          val = value_name_to_value_strict(attr->value, SCM_STRING_CHARS(VALUE));
+          val = grad_value_name_to_value_strict(attr->value, SCM_STRING_CHARS(VALUE));
           */
-        val = value_name_to_value(SCM_STRING_CHARS(VALUE), attr->value);
+        val = grad_value_name_to_value(SCM_STRING_CHARS(VALUE), attr->value);
         return val ? scm_long2num(val->value) : SCM_BOOL_F;
 }
 #undef FUNC_NAME
@@ -133,7 +133,7 @@ SCM_DEFINE(rad_dict_pec_to_vendor, "rad-dict-pec->vendor", 1, 0, 0,
         char *s;
         
         SCM_ASSERT(SCM_IMP(PEC) && SCM_INUMP(PEC), PEC, SCM_ARG1, FUNC_NAME);
-        s = vendor_pec_to_name(SCM_INUM(PEC));
+        s = grad_vendor_pec_to_name(SCM_INUM(PEC));
         return s ? scm_makfrom0str(s) : SCM_BOOL_F;
 }
 #undef FUNC_NAME

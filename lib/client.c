@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
  
@@ -39,7 +39,7 @@
 #include <debugmod.h>
 
 void
-rad_clt_random_vector(char *vector)
+grad_client_random_vector(char *vector)
 {
         int randno;
         int i;
@@ -55,7 +55,7 @@ rad_clt_random_vector(char *vector)
 #define PERM S_IRUSR|S_IWUSR|S_IROTH|S_IRGRP
 
 unsigned
-rad_clt_message_id(RADIUS_SERVER *server)
+grad_client_message_id(RADIUS_SERVER *server)
 {
 	SERVER_ID sid;
 	int fd;
@@ -68,19 +68,19 @@ rad_clt_message_id(RADIUS_SERVER *server)
 		fstat(fd, &st);
 		if (server->id_offset != (off_t) -1
 		    && server->id_offset + sizeof(sid) <= st.st_size) {
-			rad_lock(fd, sizeof(sid), server->id_offset, SEEK_SET);
+			grad_lock_file(fd, sizeof(sid), server->id_offset, SEEK_SET);
 			lseek(fd, server->id_offset, SEEK_SET);
 			read(fd, &sid, sizeof(sid));
 			id = sid.id++;
 			lseek(fd, server->id_offset, SEEK_SET);
 			write(fd, &sid, sizeof(sid));
-			rad_unlock(fd, sizeof(sid),
+			grad_unlock_file(fd, sizeof(sid),
 				   server->id_offset, SEEK_SET);
 
 		} else {
 			off_t off = 0;
 			lseek(fd, 0, SEEK_SET);
-			rad_lock(fd, st.st_size + sizeof(sid), 0, SEEK_SET);
+			grad_lock_file(fd, st.st_size + sizeof(sid), 0, SEEK_SET);
 			while (read(fd, &sid, sizeof(sid)) == sizeof(sid)) {
 				if (sid.addr == server->addr) {
 					id = sid.id++;
@@ -98,7 +98,7 @@ rad_clt_message_id(RADIUS_SERVER *server)
 				server->id_offset = off;
 				id = 0;
 			} 
-			rad_unlock(fd, st.st_size + sizeof(sid), 0, SEEK_SET);
+			grad_unlock_file(fd, st.st_size + sizeof(sid), 0, SEEK_SET);
 		}
 		close(fd);
 	} else {
@@ -108,7 +108,7 @@ rad_clt_message_id(RADIUS_SERVER *server)
 }
 	
 RADIUS_REQ *
-rad_clt_recv(UINT4 host, u_short udp_port, char *secret, char *vector,
+grad_client_recv(UINT4 host, u_short udp_port, char *secret, char *vector,
 	     char *buffer, int length)
 {
         AUTH_HDR *auth;
@@ -140,25 +140,25 @@ rad_clt_recv(UINT4 host, u_short udp_port, char *secret, char *vector,
                 radlog(L_WARN, _("Received invalid reply digest from server"));
         }
 
-        req = rad_decode_pdu(host, udp_port, buffer, length);
+        req = grad_decode_pdu(host, udp_port, buffer, length);
 	req->secret = secret;
 		
 	return req;
 }
 
 VALUE_PAIR *
-rad_clt_encrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
+grad_client_encrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
 {
 	VALUE_PAIR *p;
 	
 	for (p = plist; p; p = p->next) {
 		if (p->prop & AP_ENCRYPT_RFC2138) {
 			char *pass = p->avp_strvalue;
-			encrypt_password(p, pass, vector, secret);
+			grad_encrypt_password(p, pass, vector, secret);
 			efree(pass);
 		} else if (p->prop & AP_ENCRYPT_RFC2868) {
 			char *pass = p->avp_strvalue;
-			encrypt_tunnel_password(p, 0, pass, vector, secret);
+			grad_encrypt_tunnel_password(p, 0, pass, vector, secret);
 			efree(pass);
 		}
 	}
@@ -166,21 +166,21 @@ rad_clt_encrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
 }	
 
 VALUE_PAIR *
-rad_clt_decrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
+grad_client_decrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
 {
 	VALUE_PAIR *p;
 	char password[AUTH_STRING_LEN+1];
 	
 	for (p = plist; p; p = p->next) {
 		if (p->prop & AP_ENCRYPT_RFC2138) {
-			decrypt_password(password, p, vector, secret);
+			grad_decrypt_password(password, p, vector, secret);
 			efree(p->avp_strvalue);
 			p->avp_strvalue = estrdup(password);
 			p->avp_strlength = strlen(p->avp_strvalue);
 		} else if (p->prop & AP_ENCRYPT_RFC2868) {
 			u_char tag;
 			
-			decrypt_tunnel_password(password,
+			grad_decrypt_tunnel_password(password,
 						&tag,
 						p,
 						vector,
@@ -194,7 +194,7 @@ rad_clt_decrypt_pairlist(VALUE_PAIR *plist, u_char *vector, u_char *secret)
 }
 
 RADIUS_REQ *
-rad_clt_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
+grad_client_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 	      VALUE_PAIR *pairlist,
 	      int flags,
 	      int *authid, u_char *authvec)
@@ -261,21 +261,21 @@ rad_clt_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
                 
                 if (debug_on(10)) {
                         radlog(L_DEBUG, "server %s:%d",
-                               ip_iptostr(server->addr, ipbuf),
+                               grad_ip_iptostr(server->addr, ipbuf),
                                server->port[port_type]);
                 }
 
                 if (authid && (flags & RADCLT_AUTHENTICATOR))
 			memcpy(vector, authvec, sizeof vector);
 		else
-			rad_clt_random_vector(vector);
+			grad_client_random_vector(vector);
 		if (authid && (flags & RADCLT_ID))
 			id = *authid;
 		else
-			id = rad_clt_message_id(server);
-		pair = rad_clt_encrypt_pairlist(avl_dup(pairlist),
+			id = grad_client_message_id(server);
+		pair = grad_client_encrypt_pairlist(grad_avl_dup(pairlist),
 						vector, server->secret);
-		size = rad_create_pdu(&pdu, code,
+		size = grad_create_pdu(&pdu, code,
 				      id,
 				      vector,
 				      server->secret,
@@ -286,7 +286,7 @@ rad_clt_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 		if (authvec && !(flags & RADCLT_AUTHENTICATOR))
 			memcpy(authvec, vector, sizeof vector);
 		
-		avl_free(pair);
+		grad_avl_free(pair);
 		
                 if (size <= 0) 
                         break; /*FIXME: continue anyway?*/
@@ -330,7 +330,7 @@ rad_clt_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
                                                   0, &saremote, &salen);
 
                                 if (result > 0) 
-                                        req = rad_clt_recv(
+                                        req = grad_client_recv(
 						sin->sin_addr.s_addr,
                                                 sin->sin_port,
                                                 server->secret,
@@ -340,7 +340,7 @@ rad_clt_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
                                 else 
                                         radlog(L_ERR|L_PERROR,
                                         _("error receiving data from %s:%d"),
-                                               ip_iptostr(server->addr, ipbuf),
+                                               grad_ip_iptostr(server->addr, ipbuf),
                                                server->port[port_type]);
                                 
                                 break;
@@ -352,7 +352,7 @@ rad_clt_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 		
                 if (!req)
                         debug(10,("no reply from %s:%d",
-				  ip_iptostr(server->addr, ipbuf),
+				  grad_ip_iptostr(server->addr, ipbuf),
 				  server->port[port_type]));
 		
         } while (!req && (server = iterator_next(itr)) != NULL);
@@ -364,10 +364,10 @@ rad_clt_send0(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 }
 
 RADIUS_REQ *
-rad_clt_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
+grad_client_send(RADIUS_SERVER_QUEUE *config, int port_type, int code,
 	     VALUE_PAIR *pairlist)
 {
-	return rad_clt_send0(config, port_type, code, pairlist, 0, NULL, NULL);
+	return grad_client_send0(config, port_type, code, pairlist, 0, NULL, NULL);
 }
 
 /* ************************************************************************* */
@@ -395,13 +395,13 @@ parse_client_config(void *closure, int argc, char **argv, LOCUS *loc)
         char *p;
         RADIUS_SERVER serv;
         
-        switch (xlat_keyword(kwd, argv[0], TOK_INVALID)) {
+        switch (grad_xlat_keyword(kwd, argv[0], TOK_INVALID)) {
         case TOK_INVALID:
                 radlog_loc(L_ERR, loc, _("unknown keyword"));
                 break;
                 
         case TOK_SOURCE_IP:
-                client->source_ip = ip_gethostaddr(argv[1]);
+                client->source_ip = grad_ip_gethostaddr(argv[1]);
                 break;
                 
         case TOK_SERVER:
@@ -412,7 +412,7 @@ parse_client_config(void *closure, int argc, char **argv, LOCUS *loc)
                 memset(&serv, 0, sizeof serv);
 
                 serv.name = argv[1];
-                serv.addr = ip_gethostaddr(argv[2]);
+                serv.addr = grad_ip_gethostaddr(argv[2]);
                 if (!serv.addr) {
                         radlog_loc(L_ERR, loc,
 				   _("bad IP address or host name"));
@@ -435,7 +435,7 @@ parse_client_config(void *closure, int argc, char **argv, LOCUS *loc)
                         break;
                 }
 
-		rad_clt_append_server(client, rad_clt_alloc_server(&serv));
+		grad_client_append_server(client, grad_client_alloc_server(&serv));
                 break;
                 
         case TOK_TIMEOUT:
@@ -455,7 +455,7 @@ parse_client_config(void *closure, int argc, char **argv, LOCUS *loc)
 
 
 RADIUS_SERVER_QUEUE *
-rad_clt_create_queue(int read_cfg, UINT4 source_ip, size_t bufsize)
+grad_client_create_queue(int read_cfg, UINT4 source_ip, size_t bufsize)
 {
         RADIUS_SERVER_QUEUE *client;
         char *filename;
@@ -470,24 +470,24 @@ rad_clt_create_queue(int read_cfg, UINT4 source_ip, size_t bufsize)
         client->servers = 0;
 
         if (read_cfg) {
-                filename = mkfilename(radius_dir, "client.conf");
-                read_raddb_file(filename, 1, parse_client_config, client);
+                filename = grad_mkfilename(radius_dir, "client.conf");
+                grad_read_raddb_file(filename, 1, parse_client_config, client);
                 efree(filename);
         }
         return client;
 }
 
 void
-rad_clt_destroy_queue(RADIUS_SERVER_QUEUE *queue)
+grad_client_destroy_queue(RADIUS_SERVER_QUEUE *queue)
 {
 	if (queue) {
-		rad_clt_clear_server_list(queue);
+		grad_client_clear_server_list(queue);
 		efree(queue);
 	}
 }
 
 RADIUS_SERVER *
-rad_clt_alloc_server(RADIUS_SERVER *src)
+grad_client_alloc_server(RADIUS_SERVER *src)
 {
         RADIUS_SERVER *server;
 
@@ -502,7 +502,7 @@ rad_clt_alloc_server(RADIUS_SERVER *src)
 }
 
 RADIUS_SERVER *
-rad_clt_dup_server(RADIUS_SERVER *src)
+grad_client_dup_server(RADIUS_SERVER *src)
 {
         RADIUS_SERVER *dest;
 
@@ -520,7 +520,7 @@ rad_clt_dup_server(RADIUS_SERVER *src)
  */
 
 void
-rad_clt_free_server(RADIUS_SERVER *server)
+grad_client_free_server(RADIUS_SERVER *server)
 {
         efree(server->name);
         efree(server->secret);
@@ -528,15 +528,15 @@ rad_clt_free_server(RADIUS_SERVER *server)
 }
 
 void
-rad_clt_append_server(RADIUS_SERVER_QUEUE *qp, RADIUS_SERVER *server)
+grad_client_append_server(RADIUS_SERVER_QUEUE *qp, RADIUS_SERVER *server)
 {
 	if (!qp->servers)
-		qp->servers = list_create();
-	list_append(qp->servers, server);
+		qp->servers = grad_list_create();
+	grad_list_append(qp->servers, server);
 }
 
 static int
-rad_clt_internal_free_server(void *item, void *data)
+grad_client_internal_free_server(void *item, void *data)
 {
 	RADIUS_SERVER *server = item;
         efree(server->name);
@@ -546,9 +546,9 @@ rad_clt_internal_free_server(void *item, void *data)
 }
 
 void
-rad_clt_clear_server_list(RADIUS_SERVER_QUEUE *qp)
+grad_client_clear_server_list(RADIUS_SERVER_QUEUE *qp)
 {
-	list_destroy(&qp->servers, rad_clt_internal_free_server, NULL);
+	grad_list_destroy(&qp->servers, grad_client_internal_free_server, NULL);
 }
 
 static int
@@ -561,8 +561,8 @@ server_cmp(const void *item, const void *data)
 }
 
 RADIUS_SERVER *
-rad_clt_find_server(RADIUS_SERVER_QUEUE *qp, char *name)
+grad_client_find_server(RADIUS_SERVER_QUEUE *qp, char *name)
 {
-	return list_locate(qp->servers, name, server_cmp);
+	return grad_list_locate(qp->servers, name, server_cmp);
 }
 

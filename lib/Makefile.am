@@ -17,8 +17,9 @@
 # along with GNU Radius; if not, write to the Free Software Foundation,
 # Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
-noinst_LTLIBRARIES=librad.la liblog.la libdebug.la 
-librad_la_SOURCES= \
+lib_LTLIBRARIES=libgnuradius.la
+noinst_LTLIBRARIES=liblog.la libdebug.la 
+libgnuradius_la_SOURCES= \
 argcv.c \
 ascend.c \
 avl.c \
@@ -56,11 +57,15 @@ util.c
 
 localedir = $(datadir)/locale
 
-librad_la_LIBADD = @LTLIBOBJS@
+libgnuradius_la_LIBADD = @LTLIBOBJS@
 liblog_la_SOURCES=applog.c 
 libdebug_la_SOURCES=debugmod.c
-AM_LDFLAGS=-all-static
-AM_CFLAGS=-static
+
+libdebug_la_LDFLAGS=-all-static
+libdebug_la_CFLAGS=-static
+liblog_la_LDFLAGS=-all-static
+liblog_la_CFLAGS=-static
+
 AM_CPPFLAGS=-DLOCALEDIR=\"$(localedir)\" @PATHFLAGS@
 
 BUILT_SOURCES=users_gram.c users_lex.c

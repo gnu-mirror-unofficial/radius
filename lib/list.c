@@ -42,7 +42,7 @@ struct iterator {
 };
 
 struct list *
-list_create()
+grad_list_create()
 {
 	struct list *p = emalloc(sizeof(*p));
 	p->head = p->tail = NULL;
@@ -51,7 +51,7 @@ list_create()
 }
 
 void
-list_destroy(struct list **plist, list_iterator_t user_free, void *data)
+grad_list_destroy(struct list **plist, list_iterator_t user_free, void *data)
 {
 	struct list_entry *p;
 
@@ -150,7 +150,7 @@ _iterator_advance(ITERATOR *ip, struct list_entry *e)
 }
 
 void *
-list_item(struct list *list, size_t n)
+grad_list_item(struct list *list, size_t n)
 {
 	struct list_entry *p;
 	if (n >= list->count)
@@ -161,7 +161,7 @@ list_item(struct list *list, size_t n)
 }
 
 size_t
-list_count(struct list *list)
+grad_list_count(struct list *list)
 {
 	if (!list)
 		return 0;
@@ -169,7 +169,7 @@ list_count(struct list *list)
 }
 
 void
-list_append(struct list *list, void *data)
+grad_list_append(struct list *list, void *data)
 {
 	struct list_entry *ep;
 
@@ -187,7 +187,7 @@ list_append(struct list *list, void *data)
 }
 
 void
-list_prepend(struct list *list, void *data)
+grad_list_prepend(struct list *list, void *data)
 {
 	struct list_entry *ep;
 
@@ -209,7 +209,7 @@ cmp_ptr(const void *a, const void *b)
 }
 
 void *
-list_remove(struct list *list, void *data, list_comp_t cmp)
+grad_list_remove(struct list *list, void *data, list_comp_t cmp)
 {
 	struct list_entry *p, *prev;
 
@@ -243,7 +243,7 @@ list_remove(struct list *list, void *data, list_comp_t cmp)
 }
 
 void
-list_iterate(struct list *list, list_iterator_t func, void *data)
+grad_list_iterate(struct list *list, list_iterator_t func, void *data)
 {
 	ITERATOR *itr;
 	void *p;
@@ -261,7 +261,7 @@ list_iterate(struct list *list, list_iterator_t func, void *data)
 }
 
 void *
-list_locate(struct list *list, void *data, list_comp_t cmp)
+grad_list_locate(struct list *list, void *data, list_comp_t cmp)
 {
 	struct list_entry *cur;
 	if (!list)
@@ -275,7 +275,7 @@ list_locate(struct list *list, void *data, list_comp_t cmp)
 }
 	
 int
-list_insert_sorted(struct list *list, void *data, list_comp_t cmp)
+grad_list_insert_sorted(struct list *list, void *data, list_comp_t cmp)
 {
 	struct list_entry *cur, *prev;
 	
@@ -289,9 +289,9 @@ list_insert_sorted(struct list *list, void *data, list_comp_t cmp)
 			break;
 
 	if (!prev) {
-		list_prepend(list, data);
+		grad_list_prepend(list, data);
 	} else if (!cur) {
-		list_append(list, data);
+		grad_list_append(list, data);
 	} else {
 		struct list_entry *ep = emalloc(sizeof(*ep));
 		ep->data = data;

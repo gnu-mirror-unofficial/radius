@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -100,7 +100,7 @@ radscm_avp_to_cons(VALUE_PAIR *pair)
         SCM scm_attr, scm_value;
         DICT_ATTR *dict;
         
-        if (dict = attr_number_to_dict(pair->attribute)) 
+        if (dict = grad_attr_number_to_dict(pair->attribute)) 
                 scm_attr = scm_makfrom0str(dict->name);
         else
                 scm_attr = SCM_MAKINUM(pair->attribute);
@@ -142,13 +142,13 @@ radscm_cons_to_avp(SCM scm)
         memset(&pair, 0, sizeof(pair));
         if (SCM_IMP(car) && SCM_INUMP(car)) {
                 pair.attribute = SCM_INUM(car);
-                dict = attr_number_to_dict(pair.attribute);
+                dict = grad_attr_number_to_dict(pair.attribute);
                 if (!dict) 
                         return NULL;
                 pair.name = dict->name;
         } else if (SCM_NIMP(car) && SCM_STRINGP(car)) {
                 pair.name = SCM_STRING_CHARS(car);
-                dict = attr_name_to_dict(pair.name);
+                dict = grad_attr_name_to_dict(pair.name);
                 if (!dict) 
                         return NULL;
                 pair.attribute = dict->value;
@@ -168,7 +168,7 @@ radscm_cons_to_avp(SCM scm)
                         pair.avp_lvalue = (UINT4) scm_i_big2dbl(cdr);
                 } else if (SCM_NIMP(cdr) && SCM_STRINGP(cdr)) {
                         char *name = SCM_STRING_CHARS(cdr);
-                        val = value_name_to_value(name, pair.attribute);
+                        val = grad_value_name_to_value(name, pair.attribute);
                         if (val) {
                                 pair.avp_lvalue = val->value;
                         } else {
@@ -186,7 +186,7 @@ radscm_cons_to_avp(SCM scm)
                 } else if (SCM_BIGP(cdr)) {
                         pair.avp_lvalue = (UINT4) scm_i_big2dbl(cdr);
                 } else if (SCM_NIMP(cdr) && SCM_STRINGP(cdr)) {
-                        pair.avp_lvalue = ip_gethostaddr(SCM_STRING_CHARS(cdr));
+                        pair.avp_lvalue = grad_ip_gethostaddr(SCM_STRING_CHARS(cdr));
                 } else
                         return NULL;
                 break;

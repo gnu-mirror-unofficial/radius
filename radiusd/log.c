@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -94,7 +94,7 @@ run_log_hook(const RADIUS_REQ *req, const char *hook_name)
 			   req,
 			   "isi",
 			   req->code,
-			   nas_request_to_name(req, nasbuf, sizeof nasbuf),
+			   grad_nas_request_to_name(req, nasbuf, sizeof nasbuf),
 			   req->id))
 		return NULL;
 	return result;
@@ -318,7 +318,7 @@ sqllog(int status, char *msg, ...)
         char *filename;
 
         filename = status ? "sql-lost" : "sql.log";
-        path = mkfilename(radacct_dir, filename);
+        path = grad_mkfilename(radacct_dir, filename);
         if ((fp = fopen(path, "a")) == NULL) {
                 radlog(L_ERR|L_PERROR, _("could not append to file %s"), path);
                 efree(path);
@@ -349,7 +349,7 @@ channel_free(Channel *chan)
 Channel *
 log_mark()
 {
-        return list_item(chanlist, 0);
+        return grad_list_item(chanlist, 0);
 }
 
 void
@@ -364,7 +364,7 @@ log_release(Channel *chan)
 			break;
         for (; cp; cp = iterator_next(itr)) {
                 if (!(cp->options & LO_PERSIST)) {
-			list_remove(chanlist, cp, NULL);
+			grad_list_remove(chanlist, cp, NULL);
                         channel_free(cp);
                 }
         }
@@ -420,7 +420,7 @@ _chancmp(const void *item, const void *data)
 Channel *
 channel_lookup(char *name)
 {
-        return list_locate(chanlist, name, _chancmp);
+        return grad_list_locate(chanlist, name, _chancmp);
 }
 
 void
@@ -432,7 +432,7 @@ register_channel(Channel *chan)
 
         if (chan->mode == LM_FILE) {
                 if (strcmp(chan->id.file, "stdout")) {
-                        filename = mkfilename(radlog_dir ?
+                        filename = grad_mkfilename(radlog_dir ?
                                               radlog_dir : RADLOG_DIR,
                                               chan->id.file);
                         
@@ -462,8 +462,8 @@ register_channel(Channel *chan)
 	channel->suffix_hook = chan->suffix_hook;
 	
 	if (!chanlist)
-		chanlist = list_create();
-	list_prepend(chanlist, channel);
+		chanlist = grad_list_create();
+	grad_list_prepend(chanlist, channel);
 }
 
 void
@@ -501,7 +501,7 @@ register_category(int cat, int pri, RAD_LIST *clist)
 
 	clos.cat = cat;
 	clos.pri = pri;
-	list_iterate(clist, _regcat, &clos);
+	grad_list_iterate(clist, _regcat, &clos);
 }
 
 /* Auxiliary calls */
@@ -680,7 +680,7 @@ get_priority(cfg_value_t *argv)
 {
 	if (argv[0].type != CFG_CHAR || argv[1].type != CFG_STRING)
 		return 1;
-	cat_def.pri = xlat_keyword(log_priorities,
+	cat_def.pri = grad_xlat_keyword(log_priorities,
 				   argv[1].v.string,
 				   -1);
 	if (cat_def.pri == -1)
@@ -720,10 +720,10 @@ category_stmt_handler(int argc, cfg_value_t *argv,
 			break;
 			
 		case CFG_STRING:
-			cat_def.cat = xlat_keyword(log_categories,
+			cat_def.cat = grad_xlat_keyword(log_categories,
 						   argv[1].v.string, -1);
 			if (cat_def.cat == -1) {
-				cat_def.pri = xlat_keyword(log_priorities,
+				cat_def.pri = grad_xlat_keyword(log_priorities,
 							   argv[1].v.string,
 							   -1);
 				if (cat_def.pri == -1)
@@ -751,7 +751,7 @@ category_stmt_handler(int argc, cfg_value_t *argv,
 			break;
 			
 		case CFG_STRING:
-			cat_def.cat = xlat_keyword(log_categories,
+			cat_def.cat = grad_xlat_keyword(log_categories,
 						   argv[1].v.string, -1);
 			if (cat_def.cat == -1) 
 				return 1;
@@ -770,7 +770,7 @@ category_stmt_handler(int argc, cfg_value_t *argv,
 			break;
 			
 		case CFG_STRING:
-			cat_def.pri = xlat_keyword(log_priorities,
+			cat_def.pri = grad_xlat_keyword(log_priorities,
 						   argv[3].v.string, -1);
 			if (cat_def.pri == -1) 
 				return 1;
@@ -795,7 +795,7 @@ category_stmt_handler(int argc, cfg_value_t *argv,
 			break;
 			
 		case CFG_STRING:
-			cat_def.cat = xlat_keyword(log_categories,
+			cat_def.cat = grad_xlat_keyword(log_categories,
 						   argv[1].v.string, -1);
 			if (cat_def.cat == -1) 
 				return 1;
@@ -834,7 +834,7 @@ category_stmt_end(void *block_data, void *handler_data)
 				_("no levels applicable for this category"));
 		}
 		register_category(cat_def.cat, cat_def.pri, cat_def.clist);
-		list_destroy(&cat_def.clist, NULL, NULL);
+		grad_list_destroy(&cat_def.clist, NULL, NULL);
 	}
 	return 0;
 }
@@ -861,8 +861,8 @@ category_set_channel(int argc, cfg_value_t *argv,
 		       cfg_filename, cfg_line_num, argv[1].v.string);
 	} else {
 		if (!cat_def.clist)
-			cat_def.clist = list_create();
-		list_append(cat_def.clist, channel);
+			cat_def.clist = grad_list_create();
+		grad_list_append(cat_def.clist, channel);
 	}
 	
 	return 0;
@@ -959,7 +959,7 @@ channel_syslog_handler(int argc, cfg_value_t *argv, void *block_data,
 		break;
 
 	case CFG_STRING:
-		facility = xlat_keyword(syslog_facility, argv[1].v.string, -1);
+		facility = grad_xlat_keyword(syslog_facility, argv[1].v.string, -1);
 		break;
 
 	default:
@@ -978,7 +978,7 @@ channel_syslog_handler(int argc, cfg_value_t *argv, void *block_data,
 		break;
 
 	case CFG_STRING:
-		prio = xlat_keyword(syslog_priority, argv[3].v.string, -1);
+		prio = grad_xlat_keyword(syslog_priority, argv[3].v.string, -1);
 		break;
 
 	default:

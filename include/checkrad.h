@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -28,7 +28,7 @@ typedef struct radck_type RADCK_TYPE;
 struct radck_type {
         char       *type;
         int        method;
-        envar_t    *args;
+        grad_envar_t    *args;
 };
 
 RADCK_TYPE *find_radck_type(char *name);

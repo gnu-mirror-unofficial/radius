@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius
-   Copyright (C) 2000,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -99,7 +99,7 @@ attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
                 return;
         }
         
-        if ((pair = avl_find(pairlist, attr->value)) == NULL) {
+        if ((pair = grad_avl_find(pairlist, attr->value)) == NULL) {
                 if (!defval) {
                         if (attr->type == TYPE_STRING)
                                 defval = "-";
@@ -125,12 +125,12 @@ attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
 				LOCUS loc;
 				loc.file = __FILE__; /*FIXME*/
 				loc.line = __LINE__;
-                                pair = install_pair(&loc,
+                                pair = grad_create_pair(&loc,
                                                     attr->name,
                                                     OPERATOR_EQUAL,
                                                     defval);
                                 if (pair)
-                                        avl_add_list(&pairlist, pair);
+                                        grad_avl_add_list(&pairlist, pair);
                         }
                         break;
                 default:
@@ -176,7 +176,7 @@ attr_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
                 break;
 		
         case TYPE_IPADDR:
-                ip_iptostr(pair->avp_lvalue, tmp);
+                grad_ip_iptostr(pair->avp_lvalue, tmp);
                 len = strlen(tmp);
                 obstack_grow(obp, tmp, len);
                 break;
@@ -206,7 +206,7 @@ curtime_to_str(struct obstack *obp, VALUE_PAIR *request, int gmt)
         int len;
         
         curtime = time(NULL);
-        if (pair = avl_find(request, DA_ACCT_DELAY_TIME))
+        if (pair = grad_avl_find(request, DA_ACCT_DELAY_TIME))
                 curtime -= pair->avp_lvalue;
         if (gmt)
                 tm = gmtime(&curtime);
@@ -227,7 +227,7 @@ attrno_to_str(struct obstack *obp, RADIUS_REQ *req, VALUE_PAIR *pairlist,
               int attr_no, char *defval)
 {
         attr_to_str(obp, req, pairlist,
-		    attr_number_to_dict(attr_no), defval);
+		    grad_attr_number_to_dict(attr_no), defval);
 }
 
 static DICT_ATTR *
@@ -237,7 +237,7 @@ parse_dict_attr(char *p, char **endp, char **defval)
         
         *defval = NULL;
         if (isdigit(*p)) {
-                return attr_number_to_dict(strtol(p, endp, 10));
+                return grad_attr_number_to_dict(strtol(p, endp, 10));
         }
 
         if (*p == '{') {
@@ -271,7 +271,7 @@ parse_dict_attr(char *p, char **endp, char **defval)
                         (*defval)[size] = 0;
                 }
                 *endp = p + 1;
-                return attr_name_to_dict(namebuf);
+                return grad_attr_name_to_dict(namebuf);
         }
         *endp = p;
         return NULL;
@@ -452,7 +452,7 @@ pair_set_value(VALUE_PAIR *p, Datatype type, Datum *datum)
 		break;
 		
 	default:
-		insist_fail("bad Datatype");
+		grad_insist_fail("bad Datatype");
 	}
 	p->eval_type = eval_const;
 }
@@ -488,7 +488,7 @@ radius_eval_avl(RADIUS_REQ *req, VALUE_PAIR *p)
 			break;
 
 		default:
-			insist_fail("bad eval_type");
+			grad_insist_fail("bad eval_type");
                 }
         }
 

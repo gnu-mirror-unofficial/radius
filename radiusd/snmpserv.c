@@ -1,5 +1,5 @@
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
 
@@ -67,7 +67,7 @@ _netname_cmp(const void *item, const void *data)
 static NETNAME *
 netname_find(char *name)
 {
-        return list_locate(netlist, name, _netname_cmp);
+        return grad_list_locate(netlist, name, _netname_cmp);
 }
 
 static int
@@ -82,15 +82,15 @@ _netname_destroy(void *item, void *data ARG_UNUSED)
 {
 	NETNAME *p = item;
 	efree(p->name);
-	list_destroy(&p->netlist, _netdef_destroy, NULL);
+	grad_list_destroy(&p->netlist, _netdef_destroy, NULL);
 	efree(p);
 	return 0;
 }
 
 static void
-netlist_destroy()
+netgrad_list_destroy()
 {
-	list_destroy(&netlist, _netname_destroy, NULL);
+	grad_list_destroy(&netlist, _netname_destroy, NULL);
 }
 
 /* ************************************************************************ */
@@ -103,8 +103,8 @@ snmp_add_community(char *str, int access)
         p->name = estrdup(str);
         p->access = access;
 	if (!commlist)
-		commlist = list_create();
-        list_append(commlist, p);
+		commlist = grad_list_create();
+        grad_list_append(commlist, p);
 }
 
 
@@ -119,7 +119,7 @@ _community_cmp(const void *item, const void *data)
 Community *
 snmp_find_community(char *str)
 {
-	return list_locate(commlist, str, _community_cmp);
+	return grad_list_locate(commlist, str, _community_cmp);
 }
 
 static int
@@ -134,7 +134,7 @@ _community_destroy(void *item, void *data)
 void
 snmp_free_communities()
 {
-	list_destroy(&commlist, _community_destroy, NULL);
+	grad_list_destroy(&commlist, _community_destroy, NULL);
 }
 
 struct acl_closure {
@@ -149,7 +149,7 @@ _netdef_cmp(const void *item, const void *data)
 	const NETDEF *nd = item;
 	const struct acl_closure *clos = data;
 
-	if (ip_addr_in_net_p(nd, clos->ip))
+	if (grad_ip_in_net_p(nd, clos->ip))
 		return 0;
 	return 1;
 }
@@ -163,7 +163,7 @@ _acl_iterator(void *item, void *data)
 	if (acl->community
 	    && strcmp(acl->community->name, clos->community))
 		return 0;
-	if (list_locate(acl->netlist, data, _netdef_cmp)) {
+	if (grad_list_locate(acl->netlist, data, _netdef_cmp)) {
 		clos->access = acl->community ? acl->community->access : 0;
 		return 1;
 	}
@@ -178,7 +178,7 @@ check_acl(UINT4 ip, char *community)
 	clos.ip = ntohl(ip);
 	clos.community = community;
 	clos.access = 0;
-	list_iterate(snmp_acl, _acl_iterator, &clos);
+	grad_list_iterate(snmp_acl, _acl_iterator, &clos);
         return clos.access;
 }
 
@@ -191,8 +191,8 @@ snmp_add_acl(Community *community, RAD_LIST /* of NETDEF */ *netlist)
 	acl->community = community;
 	acl->netlist = netlist;
 	if (!snmp_acl)
-		snmp_acl = list_create();
-	list_append(snmp_acl, acl);
+		snmp_acl = grad_list_create();
+	grad_list_append(snmp_acl, acl);
 }
 
 static int
@@ -205,7 +205,7 @@ _acl_destroy(void *item, void *data)
 void
 snmp_free_acl()
 {
-	list_destroy(&snmp_acl, _acl_destroy, NULL);
+	grad_list_destroy(&snmp_acl, _acl_destroy, NULL);
 }
 
 
@@ -216,7 +216,7 @@ int
 snmp_stmt_begin(int finish, void *data, void *up_data)
 {
 	if (!finish) {
-		netlist_destroy();
+		netgrad_list_destroy();
 		snmp_free_communities();
 		snmp_free_acl();
 		_opened_snmp_sockets = 0;
@@ -271,7 +271,7 @@ snmp_cfg_community(int argc, cfg_value_t *argv,
 		return 0;
 	}
 
-	access = xlat_keyword(snmp_access, argv[2].v.string, -1);
+	access = grad_xlat_keyword(snmp_access, argv[2].v.string, -1);
 	if (access == -1) 
 		return 1;
 		
@@ -334,11 +334,11 @@ snmp_cfg_network(int argc, cfg_value_t *argv,
 
         np = emalloc(sizeof(*np));
 	if (!netlist) 
-		netlist = list_create(netlist);
+		netlist = grad_list_create(netlist);
 		
-	list_append(netlist, np);
+	grad_list_append(netlist, np);
         np->name = estrdup(argv[1].v.string);
-	np->netlist = list_create();
+	np->netlist = grad_list_create();
 	for (i = 2; i < argc; i++) {
 		if (argv[i].type != CFG_NETWORK) {
 			radlog(L_ERR,
@@ -349,7 +349,7 @@ snmp_cfg_network(int argc, cfg_value_t *argv,
 			NETDEF *net = emalloc(sizeof(*net));
 			net->ipaddr = argv[i].v.network.ipaddr;
 			net->netmask = argv[i].v.network.netmask;
-			list_append(np->netlist, net);
+			grad_list_append(np->netlist, net);
 		}
 	}
 	return 0;
@@ -472,7 +472,7 @@ snmpserv_after_config_hook(void *arg, void *data ARG_UNUSED)
                 
 		*(serv_stat*)arg = server_stat->auth.status;
 		snmp_init_nas_stat();
-		for (nas = nas_next(NULL); nas; nas = nas_next(nas))
+		for (nas = grad_nas_next(NULL); nas; nas = grad_nas_next(nas))
 			snmp_attach_nas_stat(nas);
 		snmp_sort_nas_stat();
 	}
@@ -2142,7 +2142,7 @@ snmp_stat_nas(int num, enum mib_node_cmd cmd, struct nas_data *closure,
                         (closure->quad[2]<<8) +
                         closure->quad[3];
 
-                if ((nas = nas_lookup_ip(ip)) == NULL) {
+                if ((nas = grad_nas_lookup_ip(ip)) == NULL) {
                         return -1;
                 }
                 
@@ -2538,7 +2538,7 @@ get_port_stat(PORT_STAT *port, struct snmp_var *var, subid_t key)
         switch (key) {
 
         case MIB_KEY_StatPortNASIndex:
-                nas = nas_lookup_ip(port->ip);
+                nas = grad_nas_lookup_ip(port->ip);
                 var->type = ASN_INTEGER;
                 var->val_length = sizeof(counter);
                 if (nas && nas->app_data) {
@@ -2648,7 +2648,7 @@ nas_lookup_index(int ind)
         NAS *nas;
         struct nas_stat *ns;
         
-        for (nas = nas_next(NULL); nas; nas = nas_next(nas)) {
+        for (nas = grad_nas_next(NULL); nas; nas = grad_nas_next(nas)) {
                 ns = nas->app_data;
                 if (ns && ns->index == ind)
                         break;
@@ -2682,7 +2682,7 @@ snmp_decode(SNMP_REQ *req, u_char *buf, size_t len)
         if (snmp_decode_request(&sess, pdu, buf, len, comm, &comm_len)) {
                 radlog(L_ERR,
                        _("can't decode SNMP packet from %s: %s"),
-		       ip_iptostr(ntohl(req->addr.sin_addr.s_addr), ipbuf),
+		       grad_ip_iptostr(ntohl(req->addr.sin_addr.s_addr), ipbuf),
 		       snmp_strerror(snmp_errno));
                 return -1;
         }
@@ -2692,7 +2692,7 @@ snmp_decode(SNMP_REQ *req, u_char *buf, size_t len)
                 radlog(L_NOTICE,
                        _("DENIED attempt to access community %s from %s"),
                        comm,
-                       ip_iptostr(ntohl(req->addr.sin_addr.s_addr), ipbuf));
+                       grad_ip_iptostr(ntohl(req->addr.sin_addr.s_addr), ipbuf));
                 return 1;
         }
         req->pdu = pdu;
@@ -2744,7 +2744,7 @@ snmp_req_drop(int type, void *data, void *orig_data,
 
         radlog(L_NOTICE,
                _("Dropping SNMP request from client %s: %s"),
-               ip_iptostr(ntohl(req->addr.sin_addr.s_addr), ipbuf),
+               grad_ip_iptostr(ntohl(req->addr.sin_addr.s_addr), ipbuf),
                status_str);
 }
 

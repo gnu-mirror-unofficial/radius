@@ -1,6 +1,6 @@
 %{
 /* This file is part of GNU Radius.
-   Copyright (C) 2000,2001,2002,2003 Free Software Foundation, Inc.
+   Copyright (C) 2000,2001,2002,2003,2004 Free Software Foundation, Inc.
 
    Written by Sergey Poznyakoff
   
@@ -1845,7 +1845,7 @@ yylex()
                 input();
                 if (yychar == '[' || yychar == '{') {
                         attr_name = read_to_delim(yychar == '[' ? ']' : '}');
-                        attr = attr_name_to_dict(attr_name);
+                        attr = grad_attr_name_to_dict(attr_name);
                 } else {
                         unput(yychar);
                         return '%';
@@ -1879,7 +1879,7 @@ yylex()
                         return TYPE;
                 }
 
-                if ((c = xlat_keyword(rw_kw, yylval.string, 0)) != 0) {
+                if ((c = grad_xlat_keyword(rw_kw, yylval.string, 0)) != 0) {
                         DEBUG_LEX2("KW: %s", yylval.string);
                         return c;
                 }
@@ -1995,27 +1995,27 @@ yysync()
 /* ****************************************************************************
  * Generalized list functions
  */
-static RWLIST *_list_insert(RWLIST **first, RWLIST **last, RWLIST *prev,
+static RWLIST *_grad_list_insert(RWLIST **first, RWLIST **last, RWLIST *prev,
                          RWLIST *obj, int before);
-static RWLIST *_list_remove(RWLIST **first, RWLIST **last, RWLIST *obj);
-static RWLIST *_list_append(RWLIST **first, RWLIST **last, RWLIST *obj);
+static RWLIST *_grad_list_remove(RWLIST **first, RWLIST **last, RWLIST *obj);
+static RWLIST *_grad_list_append(RWLIST **first, RWLIST **last, RWLIST *obj);
 
-#define rw_list_insert(first, last, prev, obj, before) \
- _list_insert((RWLIST**)first,(RWLIST**)last,(RWLIST*)prev,(RWLIST*)obj, before)
-#define rw_list_remove(first, last, obj) \
- _list_remove((RWLIST**)first,(RWLIST**)last,(RWLIST *)obj)
-#define rw_list_append(first, last, obj) \
- _list_append((RWLIST**)first, (RWLIST**)last, (RWLIST*)obj)
+#define rw_grad_list_insert(first, last, prev, obj, before) \
+ _grad_list_insert((RWLIST**)first,(RWLIST**)last,(RWLIST*)prev,(RWLIST*)obj, before)
+#define rw_grad_list_remove(first, last, obj) \
+ _grad_list_remove((RWLIST**)first,(RWLIST**)last,(RWLIST *)obj)
+#define rw_grad_list_append(first, last, obj) \
+ _grad_list_append((RWLIST**)first, (RWLIST**)last, (RWLIST*)obj)
         
 RWLIST *
-_list_append(first, last, obj)
+_grad_list_append(first, last, obj)
         RWLIST **first, **last, *obj;
 {
-        return rw_list_insert(first, last, *last, obj, 0);
+        return rw_grad_list_insert(first, last, *last, obj, 0);
 }
 
 RWLIST *
-_list_insert(RWLIST **first, RWLIST **last, RWLIST *prev, RWLIST *obj,
+_grad_list_insert(RWLIST **first, RWLIST **last, RWLIST *prev, RWLIST *obj,
 	     int before)
 {
         RWLIST   *next;
@@ -2035,9 +2035,9 @@ _list_insert(RWLIST **first, RWLIST **last, RWLIST *prev, RWLIST *obj,
          * Insert before `prev'
          */
         if (before) {
-                _list_insert(first, last, prev, obj, 0);
-                _list_remove(first, last, prev);
-                _list_insert(first, last, obj, prev, 0);
+                _grad_list_insert(first, last, prev, obj, 0);
+                _grad_list_remove(first, last, prev);
+                _grad_list_insert(first, last, obj, prev, 0);
                 return obj;
         }
 
@@ -2059,7 +2059,7 @@ _list_insert(RWLIST **first, RWLIST **last, RWLIST *prev, RWLIST *obj,
 }
 
 RWLIST *
-_list_remove(RWLIST **first, RWLIST **last, RWLIST *obj)
+_grad_list_remove(RWLIST **first, RWLIST **last, RWLIST *obj)
 {
         RWLIST *temp;
 
@@ -2144,13 +2144,13 @@ frame_push()
                         this_frame->stack_offset = frame_last->stack_offset;
                 this_frame->level = frame_last->level + 1;
         } 
-        rw_list_append(&frame_first, &frame_last, this_frame);
+        rw_grad_list_append(&frame_first, &frame_last, this_frame);
 }
 
 void
 frame_pop()
 {
-        rw_list_remove(&frame_first, &frame_last, frame_last);
+        rw_grad_list_remove(&frame_first, &frame_last, frame_last);
 }
 
 void
@@ -2173,7 +2173,7 @@ void
 frame_unwind_all()
 {
         while (frame_last)
-                rw_list_remove(&frame_first, &frame_last, frame_last);
+                rw_grad_list_remove(&frame_first, &frame_last, frame_last);
         frame_push();
 }
 
@@ -2207,13 +2207,13 @@ void
 loop_push(MTX *mtx)
 {
         LOOP *this_loop = obj_alloc(&loop_bkt);
-        rw_list_append(&loop_first, &loop_last, this_loop);
+        rw_grad_list_append(&loop_first, &loop_last, this_loop);
 }
 
 void
 loop_pop()
 {
-        rw_list_remove(&loop_first, &loop_last, loop_last);
+        rw_grad_list_remove(&loop_first, &loop_last, loop_last);
 }
 
 void
@@ -2244,7 +2244,7 @@ var_alloc(Datatype type, char *name, int grow)
         VAR *var;
 
         var = (VAR*) obj_alloc(&var_bucket);
-        rw_list_append(&var_first, &var_last, var);
+        rw_grad_list_append(&var_first, &var_last, var);
 
         /* Initialize fields */
         var->name     = name;
@@ -2263,7 +2263,7 @@ var_unwind_level()
         
         while (var_last && 
                var_last->level == curframe->level) {
-                rw_list_remove(&var_first, &var_last, var_last);
+                rw_grad_list_remove(&var_first, &var_last, var_last);
                 cnt++;
         }
 
@@ -2275,7 +2275,7 @@ void
 var_unwind_all()
 {
         while (var_last)
-                rw_list_remove(&var_first, &var_last, var_last);
+                rw_grad_list_remove(&var_first, &var_last, var_last);
 }
 
 void
@@ -2315,15 +2315,15 @@ int mtx_current_id ;
 /*
  * Insert a matrix into list
  */
-#define mtx_remove(mtx) rw_list_remove(&mtx_first, &mtx_last, mtx)
-#define mtx_append(mtx) rw_list_append(&mtx_first, &mtx_last, mtx)
+#define mtx_remove(mtx) rw_grad_list_remove(&mtx_first, &mtx_last, mtx)
+#define mtx_append(mtx) rw_grad_list_append(&mtx_first, &mtx_last, mtx)
 
 void
 mtx_insert(MTX *prev, MTX *mtx)
 {
         MTX *up;
 
-        rw_list_insert(&mtx_first, &mtx_last, prev, mtx, 0);
+        rw_grad_list_insert(&mtx_first, &mtx_last, prev, mtx, 0);
         if (up = prev->gen.uplink) {
                 switch (up->gen.type) {
                 case Unary:
@@ -2356,7 +2356,7 @@ void
 mtx_unwind_all()
 {
         while (mtx_last)
-                rw_list_remove(&mtx_first, &mtx_last, mtx_last);
+                rw_grad_list_remove(&mtx_first, &mtx_last, mtx_last);
 }
 
 void
@@ -2461,7 +2461,7 @@ mtx_const(Datatype type, void *data)
 		break;
 		
 	default:
-		insist_fail("unknown data type");
+		grad_insist_fail("unknown data type");
         }
         return (MTX*)mtx;
 }
@@ -2515,7 +2515,7 @@ attr_datatype(int type)
         case TYPE_IPADDR:
                 return Integer;
         default:
-                insist_fail("unknown attribute type");
+                grad_insist_fail("unknown attribute type");
         }
         /*NOTREACHED*/
 }
@@ -2623,7 +2623,7 @@ mtx_bin(Bopcode opcode, MTX *arg1, MTX *arg2)
 		break;
 
 	default:
-		insist_fail("unknown data type");
+		grad_insist_fail("unknown data type");
         }
 
         mtx->opcode = opcode;
@@ -2775,7 +2775,7 @@ mtx_builtin(builtin_t *bin, MTX *args)
                         type = String;
                         break;
                 default:
-                        insist_fail("malformed builtin");
+                        grad_insist_fail("malformed builtin");
                 }
 
                 if (argp->gen.datatype != type) {
@@ -2868,7 +2868,7 @@ debug_open_file()
         FILE *fp;
         char *path;
         
-        path = mkfilename(radlog_dir, "radius.mtx");
+        path = grad_mkfilename(radlog_dir, "radius.mtx");
         if ((fp = fopen(path, "a")) == NULL) {
                 radlog(L_ERR|L_PERROR,
                        _("can't open file `%s'"),
@@ -2928,7 +2928,7 @@ debug_print_datum(FILE *fp, Datatype type, Datum *datum)
 		break;
 		
 	default:
-		insist_fail("unknown data type");
+		grad_insist_fail("unknown data type");
         }
 }
 
@@ -3171,7 +3171,7 @@ pass1()
          * Create an entry matrix
          */
         mtx = mtx_alloc(Enter);
-        rw_list_insert(&mtx_first, &mtx_last, mtx_first, mtx, 1);
+        rw_grad_list_insert(&mtx_first, &mtx_last, mtx_first, mtx, 1);
         mtx->frame.stacksize = function->stack_alloc;
         
         /*
@@ -3192,7 +3192,7 @@ pass1()
 			break;
 
 		default:
-			insist_fail("Unknown data type");
+			grad_insist_fail("Unknown data type");
                 }
                 mtx_const(function->rettype, &datum);
                 mtx_frame(Leave, function->stack_alloc);
@@ -3205,7 +3205,7 @@ pass1()
          * Insert a no-op matrix before the `leave' one
          */
         end = mtx_alloc(Nop);
-        rw_list_insert(&mtx_first, &mtx_last, mtx_last, end, 1);
+        rw_grad_list_insert(&mtx_first, &mtx_last, mtx_last, end, 1);
         
         for (mtx = mtx_first; mtx; mtx = mtx->gen.next) {
                 if (mtx->gen.type == Return) {
@@ -3243,7 +3243,7 @@ pass2_unary(MTX *mtx)
                 break;
 
 	default:
-		insist_fail("Unexpected opcode");
+		grad_insist_fail("Unexpected opcode");
         }
         mtx->gen.type = Constant;
         mtx->cnst.datum = arg->cnst.datum;
@@ -3347,7 +3347,7 @@ pass2_binary(MTX *mtx)
                 break;
 
 	default:
-		insist_fail("Unexpected opcode");
+		grad_insist_fail("Unexpected opcode");
         }
         mtx->gen.type = Constant;
         mtx->cnst.datum = dat;
@@ -3436,7 +3436,7 @@ pass2()
 					        break;
 
 					default:
-						insist_fail("Unknown data type");
+						grad_insist_fail("Unknown data type");
                                         }
                                 } else if (mtx->bin.opcode == And
 					   || mtx->bin.opcode == Or) {
@@ -3715,7 +3715,7 @@ codegen()
                                 break;
 
 			default:
-				insist_fail("Unknown data type");
+				grad_insist_fail("Unknown data type");
                         }
                         break;
                 case Matchref:
@@ -3739,7 +3739,7 @@ codegen()
                                 break;
 
 			default:
-				insist_fail("Unexpected opcode");
+				grad_insist_fail("Unexpected opcode");
                         }
                         break;
                 case Binary:
@@ -3831,7 +3831,7 @@ codegen()
                                 break;
 
 			default:
-				insist_fail("Unknown data type");
+				grad_insist_fail("Unknown data type");
                         }
                         data(mtx->attr.attrno);
                         break;
@@ -3933,7 +3933,7 @@ rx_alloc(regex_t *regex, int nmatch)
         rx = emalloc(sizeof(*rx));
         rx->regex  = *regex;
         rx->nmatch = nmatch;
-        rw_list_insert(&function->rx_list, NULL, function->rx_list, rx, 1);
+        rw_grad_list_insert(&function->rx_list, NULL, function->rx_list, rx, 1);
         return rx;
 }
 
@@ -4310,7 +4310,7 @@ rw_attrcheck0()
 {
         int attr = (int) rw_code[mach.pc++];
 
-	pushn(avl_find(AVPLIST(&mach), attr) != NULL);
+	pushn(grad_avl_find(AVPLIST(&mach), attr) != NULL);
 }
 
 void
@@ -4320,7 +4320,7 @@ rw_attrcheck()
 	RWSTYPE index;
  
 	cpopn(&index);
-	pushn(avl_find_n(AVPLIST(&mach), attr, index) != NULL);
+	pushn(grad_avl_find_n(AVPLIST(&mach), attr, index) != NULL);
 }
 
 /*
@@ -4331,10 +4331,10 @@ attrasgn_internal(int attr, VALUE_PAIR *pair, RWSTYPE val)
 {
 	assert_request_presence();
 	if (!pair) {
-                 pair = avp_create(attr);
+                 pair = grad_avp_create(attr);
                  if (!pair)
                         rw_error(_("can't create A/V pair"));
-                 avl_add_pair(&mach.req->request, pair);
+                 grad_avl_add_pair(&mach.req->request, pair);
          }
 		
 	switch (pair->type) {
@@ -4360,7 +4360,7 @@ rw_attrasgn0()
         RWSTYPE val;
         
         cpopn(&val);
-	attrasgn_internal(attr, avl_find(AVPLIST(&mach), attr), val);
+	attrasgn_internal(attr, grad_avl_find(AVPLIST(&mach), attr), val);
 }
 
 void
@@ -4372,7 +4372,7 @@ rw_attrasgn()
  
         cpopn(&val);
 	cpopn(&index);
-	attrasgn_internal(attr, avl_find_n(AVPLIST(&mach), attr, index), val);
+	attrasgn_internal(attr, grad_avl_find_n(AVPLIST(&mach), attr, index), val);
 }
 
 void
@@ -4381,7 +4381,7 @@ rw_attrs0()
         int attr = (int) rw_code[mach.pc++];
         VALUE_PAIR *pair;
         
-        if ((pair = avl_find(AVPLIST(&mach), attr)) == NULL) 
+        if ((pair = grad_avl_find(AVPLIST(&mach), attr)) == NULL) 
                 pushs(&nil, 1);
         else if (pair->prop & AP_ENCRYPT) {
 		char string[AUTH_STRING_LEN+1];
@@ -4399,7 +4399,7 @@ rw_attrn0()
         int attr = (int) rw_code[mach.pc++];
         VALUE_PAIR *pair;
 
-        if ((pair = avl_find(AVPLIST(&mach), attr)) == NULL)
+        if ((pair = grad_avl_find(AVPLIST(&mach), attr)) == NULL)
                 pushn(0);
         else
                 pushn(pair->avp_lvalue);
@@ -4413,7 +4413,7 @@ rw_attrs()
 	RWSTYPE index;
 
 	cpopn(&index);
-        if ((pair = avl_find_n(AVPLIST(&mach), attr, index)) == NULL) 
+        if ((pair = grad_avl_find_n(AVPLIST(&mach), attr, index)) == NULL) 
                 pushs(&nil, 1);
         else
                 pushstr(pair->avp_strvalue, pair->avp_strlength);
@@ -4427,7 +4427,7 @@ rw_attrn()
 	RWSTYPE index;
 
 	cpopn(&index);
-        if ((pair = avl_find_n(AVPLIST(&mach), attr, index)) == NULL)
+        if ((pair = grad_avl_find_n(AVPLIST(&mach), attr, index)) == NULL)
                 pushn(0);
         else
                 pushn(pair->avp_lvalue);
@@ -4437,7 +4437,7 @@ void
 rw_attr_delete0()
 {
         int attr = (int) rw_code[mach.pc++];
-	avl_delete(&mach.req->request, attr);
+	grad_avl_delete(&mach.req->request, attr);
 }
 
 void
@@ -4448,7 +4448,7 @@ rw_attr_delete()
 
 	assert_request_presence();
 	cpopn(&index);
-	avl_delete_n(&mach.req->request, attr, index);
+	grad_avl_delete_n(&mach.req->request, attr, index);
 }
 
 /*
@@ -5024,7 +5024,7 @@ static void
 bi_inet_ntoa()
 {
 	char buffer[DOTTED_QUAD_LEN];
-	char *s = ip_iptostr(getarg(1), buffer);
+	char *s = grad_ip_iptostr(getarg(1), buffer);
 	pushstr(s, strlen(s));
 }
 
@@ -5032,7 +5032,7 @@ static void
 bi_inet_aton()
 {
 	/* Note: inet_aton is not always present. See lib/iputils.c */
-	pushn(ip_strtoip((char*)getarg(1)));
+	pushn(grad_ip_strtoip((char*)getarg(1)));
 }
 
 static void
@@ -5067,7 +5067,7 @@ static void
 bi_request_code_string()
 {
         int code = (int) getarg(1);
-	char *s = auth_code_abbr(code);
+	const char *s = auth_code_abbr(code);
 	pushstr(s, strlen(s));
 }
 	
@@ -5112,7 +5112,7 @@ add_text_segment(RAD_LIST *lst, char *ptr, char *end)
 	seg->type = subst_text;
 	seg->v.text.ptr = ptr;
 	seg->v.text.len = end - ptr;
-	list_append(lst, seg);
+	grad_list_append(lst, seg);
 }
 
 static void
@@ -5120,7 +5120,7 @@ add_match_segment(RAD_LIST *lst)
 {
 	struct subst_segment *seg = emalloc(sizeof(*seg));
 	seg->type = subst_match;
-	list_append(lst, seg);
+	grad_list_append(lst, seg);
 }
 
 static void
@@ -5129,14 +5129,14 @@ add_ref_segment(RAD_LIST *lst, size_t ref)
 	struct subst_segment *seg = emalloc(sizeof(*seg));
 	seg->type = subst_ref;
 	seg->v.ref = ref;
-	list_append(lst, seg);
+	grad_list_append(lst, seg);
 }
 
 RAD_LIST *
 subst_create(char *text)
 {
 	char *p;
-	RAD_LIST *lst = list_create();
+	RAD_LIST *lst = grad_list_create();
 	if (!lst)
 		return lst;
 
@@ -5184,7 +5184,7 @@ seg_free(void *item, void *data ARG_UNUSED)
 void
 subst_destroy(RAD_LIST *lst)
 {
-	list_destroy(&lst, seg_free, NULL);
+	grad_list_destroy(&lst, seg_free, NULL);
 }
 
 void
@@ -5493,7 +5493,7 @@ rewrite_check_function(char *name, Datatype rettype, char *typestr)
                         break;
 			
                 default:
-                        insist_fail("bad datatype");
+                        grad_insist_fail("bad datatype");
                 }
         }
 
@@ -5522,7 +5522,7 @@ run_init(pctr_t pc, RADIUS_REQ *request)
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "Before rewriting:\n");
-                avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
+                grad_avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
                 fclose(fp);
         }
 
@@ -5532,7 +5532,7 @@ run_init(pctr_t pc, RADIUS_REQ *request)
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "After rewriting\n");
-                avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
+                grad_avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
                 fclose(fp);
         }
 	rw_mach_destroy();
@@ -5585,7 +5585,7 @@ rewrite_invoke(Datatype rettype, void *ret,
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "Before rewriting:\n");
-                avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
+                grad_avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
                 fclose(fp);
         }
 
@@ -5604,7 +5604,7 @@ rewrite_invoke(Datatype rettype, void *ret,
                         pushstr(s, strlen(s));
                         break;
                 default:
-                        insist_fail("bad datatype");
+                        grad_insist_fail("bad datatype");
                 }
         }
         va_end(ap);
@@ -5615,7 +5615,7 @@ rewrite_invoke(Datatype rettype, void *ret,
         if (debug_on(2)) {
                 fp = debug_open_file();
                 fprintf(fp, "After rewriting\n");
-                avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
+                grad_avl_fprint(fp, pair_print_prefix, 1, AVPLIST(&mach));
                 fclose(fp);
         }
 
@@ -5710,16 +5710,16 @@ static void
 rewrite_add_load_path(const char *str)
 {
 	if (!rewrite_load_path)
-		rewrite_load_path = list_create();
-	list_append(rewrite_load_path, estrdup(str));
+		rewrite_load_path = grad_list_create();
+	grad_list_append(rewrite_load_path, estrdup(str));
 }
 
 void
 register_source_name(char *path)
 {
 	if (!source_list)
-		source_list = list_create();
-	list_append(source_list, path);
+		source_list = grad_list_create();
+	grad_list_append(source_list, path);
 }
 
 struct load_data {
@@ -5735,7 +5735,7 @@ try_load(void *item, void *data)
 {
 	int rc = 0;
 	struct load_data *lp = data;
-	char *path = mkfilename((char*)item, lp->name);
+	char *path = grad_mkfilename((char*)item, lp->name);
 
 	lp->rc = parse_rewrite(path);
 	if (lp->rc >= 0) {
@@ -5758,7 +5758,7 @@ rewrite_load_module(char *name)
 		struct load_data ld;
 		ld.rc = 1;
 		ld.name = name;
-		list_iterate(rewrite_load_path, try_load, &ld);
+		grad_list_iterate(rewrite_load_path, try_load, &ld);
 		rc = ld.rc;
 	}
 	return rc;
@@ -5781,8 +5781,8 @@ rewrite_stmt_term(int finish, void *block_data, void *handler_data)
 		symtab_clear(rewrite_tab);
 		
 		yydebug = debug_on(50);
-		list_destroy(&source_list, free_path, NULL);
-		list_destroy(&rewrite_load_path, free_path, NULL);
+		grad_list_destroy(&source_list, free_path, NULL);
+		grad_list_destroy(&rewrite_load_path, free_path, NULL);
 		rewrite_add_load_path(radius_dir);
 		rewrite_add_load_path(RADIUS_DATADIR "/rewrite");
 
@@ -5824,7 +5824,7 @@ rewrite_cfg_load(int argc, cfg_value_t *argv,
 		return 0;
 	}
 
-	list_append(source_candidate_list, estrdup(argv[1].v.string));
+	grad_list_append(source_candidate_list, estrdup(argv[1].v.string));
 	return 0;
 }
 
@@ -5833,8 +5833,8 @@ rewrite_cfg_load(int argc, cfg_value_t *argv,
 static void
 rewrite_before_config_hook(void *a ARG_UNUSED, void *b ARG_UNUSED)
 {
-	list_destroy(&source_candidate_list, free_path, NULL);
-	source_candidate_list = list_create();
+	grad_list_destroy(&source_candidate_list, free_path, NULL);
+	source_candidate_list = grad_list_create();
 	code_init();
 }
 
@@ -5855,10 +5855,10 @@ rewrite_load_all(void *a ARG_UNUSED, void *b ARG_UNUSED)
 	/* For compatibility with previous versions load the
 	   file $radius_dir/rewrite, if no explicit "load" statements
 	   were given */
-	if (list_count(source_candidate_list) == 0)
+	if (grad_list_count(source_candidate_list) == 0)
 		rewrite_load_module("rewrite");
 	
-	list_iterate(source_candidate_list, _load_module, NULL);
+	grad_list_iterate(source_candidate_list, _load_module, NULL);
 #if defined(MAINTAINER_MODE)
         if (debug_on(100))
                 debug_dump_code();
@@ -5915,7 +5915,7 @@ radscm_datum_to_scm(Datatype type, Datum datum)
                 return scm_makfrom0str(datum.sval);
 
 	default:
-		insist_fail("Unknown data type");
+		grad_insist_fail("Unknown data type");
         }
         return SCM_UNSPECIFIED;
 }
@@ -6007,7 +6007,7 @@ radscm_rewrite_execute(const char *func_name, SCM ARGS)
 			break;
 
 		default:
-			insist_fail("Unknown data type");
+			grad_insist_fail("Unknown data type");
                 }
 
                 if (rc) {
